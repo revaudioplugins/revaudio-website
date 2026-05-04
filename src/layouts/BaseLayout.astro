@@ -7,12 +7,15 @@ interface Props {
   title: string;
   description?: string;
   ogImage?: string;
+  /** When true, allow search engines. Default false until launch-ready (Phase 2). */
+  index?: boolean;
 }
 
 const {
   title,
   description = 'RevAudio builds boutique VST plugins for producers who want tools that sound expensive and play simple.',
   ogImage = '/og-default.png',
+  index = false,
 } = Astro.props;
 
 const fullTitle = title === 'RevAudio'
@@ -27,6 +30,7 @@ const fullTitle = title === 'RevAudio'
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
     <meta name="generator" content={Astro.generator} />
+    {!index && <meta name="robots" content="noindex, nofollow" />}
 
     <!-- OG / social -->
     <meta property="og:title" content={fullTitle} />

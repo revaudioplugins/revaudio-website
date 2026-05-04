@@ -1,0 +1,177 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import BuyButton from '../../components/BuyButton.astro';
+import EmailCapture from '../../components/EmailCapture.astro';
+import { plugins } from '../../data/plugins';
+
+export function getStaticPaths() {
+  return plugins.map((p) => ({ params: { slug: p.slug }, props: { plugin: p } }));
+}
+
+const { plugin } = Astro.props;
+---
+
+<BaseLayout
+  title={`${plugin.name} — Buy`}
+  description={plugin.oneLiner}
+>
+  <section class="product-detail">
+    <div class="container">
+      <p class="breadcrumb"><a href="/store">&larr; Store</a></p>
+
+      <div class="product-head">
+        <div class="product-info">
+          <span class="status-pill">{plugin.statusLabel}</span>
+          <h1>{plugin.name}</h1>
+          <p class="tagline">{plugin.tagline}</p>
+          <p class="long">{plugin.longPitch}</p>
+        </div>
+
+        <aside class="product-aside">
+          <BuyButton plugin={plugin} />
+          <ul class="includes">
+            <li>VST3 plugin (Windows 64-bit)</li>
+            <li>Free updates within v1.x</li>
+            <li>Mac build included when shipped</li>
+            <li>14-day refund</li>
+            <li>Email support</li>
+          </ul>
+        </aside>
+      </div>
+
+      <div class="product-shot">
+        [ {plugin.name} screenshot &mdash; drop in /public/screenshots/{plugin.slug}-hero.png ]
+      </div>
+
+      <h2>Hear it</h2>
+      <div class="demo-block">
+        <div class="ab">
+          <h4>Vocal &mdash; A/B</h4>
+          <div class="placeholder">[ before / after WAV — wire when bounced ]</div>
+        </div>
+        <div class="ab">
+          <h4>Drum bus &mdash; A/B</h4>
+          <div class="placeholder">[ before / after WAV — wire when bounced ]</div>
+        </div>
+        <div class="ab">
+          <h4>Full mix &mdash; A/B</h4>
+          <div class="placeholder">[ before / after WAV — wire when bounced ]</div>
+        </div>
+      </div>
+
+      <h2>Specs</h2>
+      <div class="specs">
+        <div class="spec-row"><span class="key">Format</span><span class="val">VST3 (AU + AAX planned)</span></div>
+        <div class="spec-row"><span class="key">Platform</span><span class="val">Windows 64-bit (macOS planned)</span></div>
+        <div class="spec-row"><span class="key">License</span><span class="val">Single user, unlimited machines</span></div>
+        <div class="spec-row"><span class="key">Updates</span><span class="val">Free within v1.x</span></div>
+        <div class="spec-row"><span class="key">Refund</span><span class="val">14 days, no questions</span></div>
+        <div class="spec-row"><span class="key">Status</span><span class="val">{plugin.statusLabel}</span></div>
+      </div>
+
+      <div id="waitlist" style="margin-top: 4rem;">
+        <h2>Get notified</h2>
+        <p class="muted">First builds, demo codes, intro pricing — straight to your inbox the moment {plugin.name} ships.</p>
+      </div>
+    </div>
+  </section>
+
+  <EmailCapture
+    heading={`Reserve your ${plugin.name}`}
+    subhead="One email per release. No spam."
+  />
+</BaseLayout>
+
+<style>
+  .product-detail { padding: 3rem 0 5rem; }
+
+  .breadcrumb {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--fg-faint);
+    margin-bottom: 1.5rem;
+  }
+
+  .breadcrumb a { color: var(--fg-dim); }
+  .breadcrumb a:hover { color: var(--brass-bright); }
+
+  .product-head {
+    display: grid;
+    grid-template-columns: 1fr minmax(300px, 380px);
+    gap: 3rem;
+    align-items: start;
+    margin-bottom: 3rem;
+  }
+
+  @media (max-width: 800px) {
+    .product-head { grid-template-columns: 1fr; }
+  }
+
+  .status-pill {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--brass);
+    border: 1px solid var(--brass-dark);
+    padding: 0.25rem 0.6rem;
+    margin-bottom: 1rem;
+  }
+
+  .product-info h1 {
+    color: var(--brass-bright);
+    margin: 0 0 0.5rem;
+  }
+
+  .tagline {
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 0.1em;
+    color: var(--brass);
+    margin-bottom: 1.5rem;
+  }
+
+  .long { font-size: 1.05rem; color: var(--fg-dim); max-width: 60ch; }
+
+  .includes {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--fg-dim);
+  }
+
+  .includes li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .includes li::before {
+    content: '+ ';
+    color: var(--brass);
+    font-weight: 600;
+  }
+
+  .product-shot {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--fg-faint);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    margin: 2rem 0 3rem;
+  }
+
+  .specs {
+    margin: 1rem 0 3rem;
+  }
+
+  .demo-block { margin: 1rem 0 3rem; }
+</style>

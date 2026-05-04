@@ -1,0 +1,135 @@
+---
+import type { Plugin } from '../data/plugins';
+import { isBuyable, fmtPrice } from '../data/plugins';
+
+interface Props {
+  plugin: Plugin;
+  variant?: 'primary' | 'secondary';
+}
+
+const { plugin, variant = 'primary' } = Astro.props;
+const buyable = isBuyable(plugin);
+---
+
+<div class={`buy-block ${variant}`}>
+  {buyable && plugin.gumroadUrl ? (
+    <>
+      <div class="prices">
+        {plugin.introPriceUsd != null && plugin.regularPriceUsd != null && plugin.introPriceUsd < plugin.regularPriceUsd ? (
+          <>
+            <span class="price-now">{fmtPrice(plugin.introPriceUsd)}</span>
+            <span class="price-was">{fmtPrice(plugin.regularPriceUsd)}</span>
+            <span class="price-tag">Intro</span>
+          </>
+        ) : (
+          <span class="price-now">{fmtPrice(plugin.introPriceUsd ?? plugin.regularPriceUsd)}</span>
+        )}
+      </div>
+      <a class="btn primary" href={plugin.gumroadUrl} data-gumroad-product-id={plugin.slug}>
+        Buy {plugin.name}
+      </a>
+      {plugin.demoUrl && (
+        <a class="btn ghost" href={plugin.demoUrl}>Download demo</a>
+      )}
+    </>
+  ) : plugin.status === 'beta' ? (
+    <>
+      <div class="prices muted">
+        <span class="price-now">{fmtPrice(plugin.introPriceUsd)}</span>
+        <span class="price-tag">Launch price</span>
+      </div>
+      <a class="btn primary" href={`/store/${plugin.slug}#waitlist`}>
+        Join the beta waitlist
+      </a>
+      <p class="micro muted">Not on sale yet — beta builds going to waitlist first.</p>
+    </>
+  ) : (
+    <>
+      <a class="btn primary" href={`/store/${plugin.slug}#waitlist`}>
+        Notify me when {plugin.name} ships
+      </a>
+      <p class="micro muted">In development — target {plugin.releaseTarget}.</p>
+    </>
+  )}
+</div>
+
+<style>
+  .buy-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1.5rem;
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    margin: 2rem 0;
+  }
+
+  .buy-block.secondary {
+    background: transparent;
+    border: 1px dashed var(--border-bright);
+  }
+
+  .prices {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .prices.muted .price-now { color: var(--fg-dim); }
+
+  .price-now {
+    font-family: var(--font-display);
+    font-size: 2.25rem;
+    color: var(--brass-bright);
+    letter-spacing: 0.04em;
+  }
+
+  .price-was {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    color: var(--fg-faint);
+    text-decoration: line-through;
+  }
+
+  .price-tag {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--oxide);
+    border: 1px solid var(--oxide);
+    padding: 0.15rem 0.5rem;
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 0.875rem 1.5rem;
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-align: center;
+    border: 1px solid transparent;
+    transition: background 0.2s, border-color 0.2s;
+    cursor: pointer;
+  }
+
+  .btn.primary {
+    background: var(--brass);
+    color: var(--bg-0);
+  }
+  .btn.primary:hover { background: var(--brass-bright); color: var(--bg-0); }
+
+  .btn.ghost {
+    background: transparent;
+    color: var(--fg);
+    border-color: var(--border-bright);
+  }
+  .btn.ghost:hover { border-color: var(--brass); color: var(--brass-bright); }
+
+  .micro {
+    font-size: 0.8rem;
+    margin: 0;
+  }
+</style>

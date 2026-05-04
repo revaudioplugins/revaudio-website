@@ -2,6 +2,10 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PluginCard from '../components/PluginCard.astro';
 import EmailCapture from '../components/EmailCapture.astro';
+import { plugins } from '../data/plugins';
+
+const cardStatus = (s: string): 'live' | 'beta' | 'dev' =>
+  s === 'live' ? 'live' : s === 'beta' ? 'beta' : 'dev';
 ---
 
 <BaseLayout title="RevAudio">
@@ -10,6 +14,10 @@ import EmailCapture from '../components/EmailCapture.astro';
       <div class="tag">Boutique VST plugins</div>
       <h1>Plugins built like cars.</h1>
       <p class="lede">High quality. Simple controls. Built to feel.</p>
+      <div class="hero-cta">
+        <a href="/store" class="cta-primary">Browse the store</a>
+        <a href="/about" class="cta-ghost">Why RevAudio</a>
+      </div>
     </div>
   </section>
 
@@ -32,34 +40,15 @@ import EmailCapture from '../components/EmailCapture.astro';
     <div class="container">
       <h2 class="center">The lineup</h2>
       <div class="plugin-cards">
-        <PluginCard
-          name="RevLimiter"
-          href="/revlimiter"
-          status="beta"
-          statusLabel="Beta — Q3 2026"
-          oneLiner="Mastering limiter built around a car rev gauge. Multi-band, oversampled, true-peak ceiling. The redline is your threshold."
-        />
-        <PluginCard
-          name="The AC"
-          href="/the-ac"
-          status="dev"
-          statusLabel="In development"
-          oneLiner="Air-band exciter and tube saturator with a car AC dashboard. Cold air to warm shine — turn the dial and breathe into the mix."
-        />
-        <PluginCard
-          name="The Cooker"
-          href="/the-cooker"
-          status="dev"
-          statusLabel="In development"
-          oneLiner="Multi-band panner with autopilot. Pan, saturate, reverb, and tremolo per band — set it and let the stereo image cook itself."
-        />
-        <PluginCard
-          name="Maybach"
-          href="/maybach"
-          status="dev"
-          statusLabel="Coming"
-          oneLiner="Dynamic EQ with a Maybach suspension that bounces in time with your spectral moves. Auto-mode tames peaks before you hear them."
-        />
+        {plugins.map((p) => (
+          <PluginCard
+            name={p.name}
+            href={`/${p.slug}`}
+            status={cardStatus(p.status)}
+            statusLabel={p.statusLabel}
+            oneLiner={p.oneLiner}
+          />
+        ))}
       </div>
     </div>
   </section>
@@ -69,3 +58,41 @@ import EmailCapture from '../components/EmailCapture.astro';
     subhead="Beta builds, demo codes, and launch pricing land here first. One email per release. No spam, ever."
   />
 </BaseLayout>
+
+<style>
+  .hero-cta {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+  }
+
+  .cta-primary,
+  .cta-ghost {
+    display: inline-block;
+    padding: 0.875rem 1.75rem;
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    border: 1px solid transparent;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+  }
+
+  .cta-primary {
+    background: var(--brass);
+    color: var(--bg-0);
+  }
+  .cta-primary:hover { background: var(--brass-bright); color: var(--bg-0); }
+
+  .cta-ghost {
+    background: transparent;
+    color: var(--fg);
+    border-color: var(--border-bright);
+  }
+  .cta-ghost:hover {
+    border-color: var(--brass);
+    color: var(--brass-bright);
+  }
+</style>
