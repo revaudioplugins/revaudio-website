@@ -1,0 +1,48 @@
+---
+interface Props {
+  /** 0-5, can be fractional */
+  rating: number;
+  /** review count to display in parens */
+  count?: number;
+  /** size scale; 1 = default, 0.85 = compact for cards */
+  scale?: number;
+}
+
+const { rating, count, scale = 1 } = Astro.props;
+const full = Math.floor(rating);
+const half = rating - full >= 0.5;
+const empty = 5 - full - (half ? 1 : 0);
+
+// Hide entirely if no reviews — never fake.
+const hide = !rating && !count;
+---
+
+{!hide && (
+  <span class="stars" style={`--scale: ${scale}`}>
+    {Array.from({ length: full }).map(() => <span class="s on">&#9733;</span>)}
+    {half && <span class="s half">&#9733;</span>}
+    {Array.from({ length: empty }).map(() => <span class="s off">&#9734;</span>)}
+    {count != null && count > 0 && <span class="count">({count})</span>}
+  </span>
+)}
+
+<style>
+  .stars {
+    display: inline-flex;
+    align-items: center;
+    gap: 1px;
+    font-size: calc(0.95rem * var(--scale, 1));
+    line-height: 1;
+  }
+
+  .s.on { color: var(--brass-bright); }
+  .s.half { color: var(--brass); }
+  .s.off { color: var(--fg-faint); }
+
+  .count {
+    margin-left: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: calc(0.75rem * var(--scale, 1));
+    color: var(--fg-faint);
+  }
+</style>

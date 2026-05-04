@@ -1,0 +1,210 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import BuyButton from '../components/BuyButton.astro';
+import EmailCapture from '../components/EmailCapture.astro';
+import TestimonialBlock from '../components/TestimonialBlock.astro';
+import StarRating from '../components/StarRating.astro';
+import Gallery from '../components/Gallery.astro';
+import AudioDemo from '../components/AudioDemo.astro';
+import { plugins } from '../data/plugins';
+
+export function getStaticPaths() {
+  return plugins.map((p) => ({ params: { slug: p.slug }, props: { plugin: p } }));
+}
+
+const { plugin } = Astro.props;
+---
+
+<BaseLayout title={plugin.name} description={plugin.oneLiner}>
+  <section class="product-detail">
+    <div class="container">
+      <p class="breadcrumb"><a href="/store">&larr; Back to lineup</a></p>
+
+      <div class="product-head">
+        <div class="product-info">
+          <span class="status-pill">{plugin.statusLabel}</span>
+          <h1>{plugin.name}</h1>
+          <p class="tagline">{plugin.tagline}</p>
+          <StarRating rating={plugin.reviewsAvg} count={plugin.reviewsCount} scale={1.05} />
+          <p class="long">{plugin.longPitch}</p>
+
+          <Gallery hero={plugin.heroImage} images={plugin.galleryImages} alt={`${plugin.name} interface`} />
+        </div>
+
+        <aside class="product-aside">
+          <BuyButton plugin={plugin} />
+        </aside>
+      </div>
+
+      {plugin.features.length > 0 && (
+        <section class="features">
+          <h2>What's inside</h2>
+          <ul class="feature-list">
+            {plugin.features.map((f) => (
+              <li>
+                <span class="f-name">{f.name}</span>
+                <span class="f-sep">&mdash;</span>
+                <span class="f-desc">{f.desc}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {plugin.audioDemos.length > 0 && (
+        <section class="audio-demos">
+          <h2>Hear it</h2>
+          <p class="muted">Before / after on real source material. No staged transients, no cherry-picked frequency content.</p>
+          {plugin.audioDemos.map((d) => <AudioDemo demo={d} />)}
+        </section>
+      )}
+
+      <section class="specs-section">
+        <h2>System requirements</h2>
+        <div class="specs">
+          <div class="spec-row"><span class="key">Format</span><span class="val">{plugin.systemReq.formats}</span></div>
+          <div class="spec-row"><span class="key">OS</span><span class="val">{plugin.systemReq.os}</span></div>
+          <div class="spec-row"><span class="key">CPU</span><span class="val">{plugin.systemReq.cpu}</span></div>
+          <div class="spec-row"><span class="key">RAM</span><span class="val">{plugin.systemReq.ram}</span></div>
+          <div class="spec-row"><span class="key">Tested DAWs</span><span class="val">{plugin.systemReq.daws}</span></div>
+        </div>
+      </section>
+
+      <section class="install-section">
+        <h2>Install &amp; activate</h2>
+        <ol class="muted">
+          <li>Buy via Gumroad &mdash; serial delivered to your inbox in under 5 minutes.</li>
+          <li>Run the installer. {plugin.name} lands in <code>C:\Program Files\Common Files\VST3\</code>.</li>
+          <li>Open your DAW, scan VST3, paste your serial on first launch.</li>
+          <li>Up to 3 machines per licence. Lost serial? Email support and we resend within one business day.</li>
+        </ol>
+        <p class="muted">
+          Full install + troubleshooting on the <a href="/support">support page</a>.
+          Licence terms on the <a href="/eula">EULA page</a>.
+        </p>
+      </section>
+
+      <TestimonialBlock plugin={plugin.slug} heading={`What producers say about ${plugin.name}`} />
+
+      <section id="waitlist" class="waitlist-anchor">
+        <h2>Get notified</h2>
+        <p class="muted">First builds, demo codes, intro pricing &mdash; straight to your inbox the moment {plugin.name} ships.</p>
+      </section>
+    </div>
+  </section>
+
+  <EmailCapture
+    heading={`Reserve your ${plugin.name}`}
+    subhead="One email per release. No spam."
+  />
+</BaseLayout>
+
+<style>
+  .product-detail { padding: 3rem 0 5rem; }
+
+  .breadcrumb {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--fg-faint);
+    margin-bottom: 1.5rem;
+  }
+
+  .breadcrumb a { color: var(--fg-dim); }
+  .breadcrumb a:hover { color: var(--brass-bright); }
+
+  .product-head {
+    display: grid;
+    grid-template-columns: 1fr minmax(320px, 400px);
+    gap: 3rem;
+    align-items: start;
+    margin-bottom: 4rem;
+  }
+
+  @media (max-width: 900px) {
+    .product-head { grid-template-columns: 1fr; }
+  }
+
+  .status-pill {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--brass);
+    border: 1px solid var(--brass-dark);
+    padding: 0.25rem 0.6rem;
+    margin-bottom: 1rem;
+  }
+
+  .product-info h1 {
+    color: var(--brass-bright);
+    margin: 0 0 0.25rem;
+  }
+
+  .tagline {
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    color: var(--brass);
+    margin: 0 0 1rem;
+  }
+
+  .long { font-size: 1.05rem; color: var(--fg-dim); max-width: 60ch; margin-bottom: 2rem; }
+
+  .features { padding: 2rem 0 3rem; border-top: 1px solid var(--border); }
+
+  .feature-list {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .feature-list li {
+    padding: 1rem 1.25rem;
+    background: var(--bg-1);
+    border-left: 3px solid var(--brass-dark);
+    display: grid;
+    grid-template-columns: minmax(180px, 220px) auto 1fr;
+    gap: 0.75rem;
+    align-items: baseline;
+  }
+
+  @media (max-width: 720px) {
+    .feature-list li {
+      grid-template-columns: 1fr;
+      gap: 0.25rem;
+    }
+    .feature-list .f-sep { display: none; }
+  }
+
+  .f-name {
+    color: var(--brass-bright);
+    font-family: var(--font-display);
+    letter-spacing: 0.04em;
+    font-size: 1.1rem;
+  }
+
+  .f-sep { color: var(--fg-faint); }
+
+  .f-desc { color: var(--fg-dim); font-size: 0.95rem; }
+
+  .audio-demos { padding: 2rem 0 3rem; border-top: 1px solid var(--border); }
+
+  .specs-section { padding: 2rem 0 3rem; border-top: 1px solid var(--border); }
+
+  .install-section { padding: 2rem 0 3rem; border-top: 1px solid var(--border); }
+
+  .install-section ol {
+    margin: 1rem 0;
+    padding-left: 1.5rem;
+  }
+
+  .install-section ol li { margin: 0.5rem 0; }
+
+  .waitlist-anchor { padding: 3rem 0 0; scroll-margin-top: 80px; }
+</style>

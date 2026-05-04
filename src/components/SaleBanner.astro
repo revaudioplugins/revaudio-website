@@ -1,0 +1,98 @@
+---
+/**
+ * Pre-launch / sale banner. Honest by default — no fake countdown.
+ * Activate by passing `active`. Provide `endsAt` (ISO) only if a real countdown applies.
+ */
+interface Props {
+  active?: boolean;
+  message?: string;
+  ctaLabel?: string;
+  ctaHref?: string;
+  endsAt?: string;
+}
+
+const {
+  active = true,
+  message = 'Pre-launch — join the waitlist for 30% off the first plugin to ship.',
+  ctaLabel = 'Join waitlist',
+  ctaHref = '/#waitlist',
+  endsAt,
+} = Astro.props;
+
+if (!active) return null;
+---
+
+<aside class="sale-banner" data-banner data-ends-at={endsAt ?? ''}>
+  <div class="container">
+    <span class="msg">{message}</span>
+    {endsAt && <span class="countdown" data-countdown>--d : --h : --m : --s</span>}
+    <a class="cta" href={ctaHref}>{ctaLabel} &rarr;</a>
+  </div>
+</aside>
+
+<script>
+  const banners = document.querySelectorAll<HTMLElement>('[data-banner]');
+  banners.forEach((banner) => {
+    const target = banner.dataset.endsAt;
+    const out = banner.querySelector<HTMLElement>('[data-countdown]');
+    if (!target || !out) return;
+    const endsMs = Date.parse(target);
+    if (isNaN(endsMs)) {
+      // Hide rather than display garbage.
+      out.style.display = 'none';
+      return;
+    }
+    const tick = () => {
+      const remaining = Math.max(0, endsMs - Date.now());
+      const d = Math.floor(remaining / 86400000);
+      const h = Math.floor((remaining % 86400000) / 3600000);
+      const m = Math.floor((remaining % 3600000) / 60000);
+      const s = Math.floor((remaining % 60000) / 1000);
+      out.textContent = `${d}d : ${String(h).padStart(2, '0')}h : ${String(m).padStart(2, '0')}m : ${String(s).padStart(2, '0')}s`;
+      if (remaining === 0) banner.style.display = 'none';
+    };
+    tick();
+    setInterval(tick, 1000);
+  });
+</script>
+
+<style>
+  .sale-banner {
+    background: linear-gradient(90deg, var(--oxide-deep), var(--bg-1) 60%);
+    border-bottom: 1px solid var(--brass-dark);
+    color: var(--fg);
+    font-size: 0.9rem;
+    padding: 0.75rem 0;
+  }
+
+  .sale-banner .container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .msg {
+    color: var(--fg);
+    letter-spacing: 0.02em;
+  }
+
+  .countdown {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--brass-bright);
+    letter-spacing: 0.1em;
+  }
+
+  .cta {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 0.95rem;
+    color: var(--brass-bright);
+    border-bottom: 1px solid var(--brass);
+  }
+
+  .cta:hover { color: var(--chrome); border-color: var(--chrome); }
+</style>

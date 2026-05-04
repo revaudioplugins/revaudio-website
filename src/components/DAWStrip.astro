@@ -1,0 +1,86 @@
+---
+import { daws } from '../data/daws';
+
+interface Props {
+  heading?: string;
+}
+
+const { heading = 'Tested in your DAW' } = Astro.props;
+---
+
+<section class="daw-strip">
+  <div class="container">
+    <h3 class="center">{heading}</h3>
+    <ul class="daws">
+      {daws.map((d) => (
+        <li class={d.tested ? 'tested' : 'planned'}>
+          {d.logo ? (
+            <img src={d.logo} alt={d.name} />
+          ) : (
+            <span class="text">{d.name}</span>
+          )}
+        </li>
+      ))}
+    </ul>
+    <p class="muted center note">
+      Built and verified on the marked DAWs as of the current build. Logic + Pro Tools support
+      lands with the macOS release.
+    </p>
+  </div>
+</section>
+
+<style>
+  .daw-strip {
+    padding: 4rem 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .daw-strip h3 {
+    color: var(--fg-dim);
+    margin-bottom: 2rem;
+  }
+
+  .daws {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem 2rem;
+  }
+
+  .daws li {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border);
+    color: var(--fg-dim);
+    font-family: var(--font-display);
+    letter-spacing: 0.1em;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  .daws li.tested {
+    color: var(--fg);
+    border-color: var(--border-bright);
+  }
+
+  .daws li.planned {
+    color: var(--fg-faint);
+    border-style: dashed;
+  }
+
+  .daws li img {
+    height: 24px;
+    width: auto;
+    display: block;
+    filter: grayscale(1) brightness(1.2);
+    opacity: 0.8;
+  }
+
+  .note {
+    margin-top: 2rem;
+    font-size: 0.85rem;
+  }
+</style>

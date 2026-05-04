@@ -1,37 +1,41 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import BuyButton from '../../components/BuyButton.astro';
+import PluginCard from '../../components/PluginCard.astro';
 import EmailCapture from '../../components/EmailCapture.astro';
-import { plugins } from '../../data/plugins';
+import { plugins, fmtPrice } from '../../data/plugins';
+import { everythingBundle, bundleSavingsPct, bundleSavingsUsd } from '../../data/bundle';
 ---
 
 <BaseLayout
   title="Store"
   description="Buy RevAudio plugins. Boutique mixing and mastering tools, simple controls, built to feel."
 >
-  <section class="hero" style="padding: 6rem 0 3rem;">
+  <section class="hero" style="padding: 5rem 0 3rem;">
     <div class="container">
       <div class="tag">Store</div>
-      <h1>Buy a RevAudio plugin</h1>
-      <p class="lede">Single-purchase, lifetime updates within the major version, no subscription, no hassle.</p>
+      <h1>The lineup</h1>
+      <p class="lede">Single purchase. Lifetime updates within the major version. No subscription, no hassle.</p>
+    </div>
+  </section>
+
+  <section class="bundle-banner">
+    <div class="container">
+      <div class="bb-inner">
+        <div>
+          <p class="kicker">Save when you commit</p>
+          <h2 class="bb-title">{everythingBundle.name}</h2>
+          <p class="muted">All four plugins for {fmtPrice(everythingBundle.bundlePriceUsd)} &mdash; save {fmtPrice(bundleSavingsUsd(everythingBundle))} ({bundleSavingsPct(everythingBundle)}%) versus buying separately.</p>
+        </div>
+        <a href="/bundle" class="bb-cta">See the bundle &rarr;</a>
+      </div>
     </div>
   </section>
 
   <section class="store-grid">
     <div class="container">
-      {plugins.map((p) => (
-        <article class="product-row">
-          <div class="product-meta">
-            <h2>{p.name}</h2>
-            <p class="tagline">{p.tagline}</p>
-            <p class="muted">{p.longPitch}</p>
-            <a class="more" href={`/store/${p.slug}`}>Full details &rarr;</a>
-          </div>
-          <div class="product-buy">
-            <BuyButton plugin={p} />
-          </div>
-        </article>
-      ))}
+      <div class="cards">
+        {plugins.map((p) => <PluginCard plugin={p} />)}
+      </div>
     </div>
   </section>
 
@@ -41,15 +45,15 @@ import { plugins } from '../../data/plugins';
       <div class="faq-grid">
         <div>
           <h3>What do I get?</h3>
-          <p class="muted">A VST3 plugin (Windows 64-bit), free updates within the major version, and a license for one user across as many machines as they own.</p>
+          <p class="muted">A VST3 plugin (Windows 64-bit), free updates within the major version, and a licence for one user across up to three machines you own.</p>
         </div>
         <div>
           <h3>Can I try before I buy?</h3>
-          <p class="muted">Every plugin will ship with a demo build at launch. The demo runs identically to the full plugin but periodically interrupts audio so you can audition without committing.</p>
+          <p class="muted">Every plugin ships with a free demo build. The demo runs identically to the full plugin but periodically interrupts audio so you can audition without committing.</p>
         </div>
         <div>
           <h3>Mac version?</h3>
-          <p class="muted">macOS support is on the roadmap. Buying on Windows now will include the Mac build at no extra cost when it ships.</p>
+          <p class="muted">macOS support is on the roadmap. Buying on Windows now includes the Mac build at no extra cost when it ships.</p>
         </div>
         <div>
           <h3>Refund policy?</h3>
@@ -57,7 +61,7 @@ import { plugins } from '../../data/plugins';
         </div>
         <div>
           <h3>How does payment work?</h3>
-          <p class="muted">Checkout is handled by <a href="https://gumroad.com" target="_blank" rel="noopener">Gumroad</a>. They handle tax, VAT, and license delivery. RevAudio never sees your card details.</p>
+          <p class="muted">Checkout is handled by <a href="https://gumroad.com" target="_blank" rel="noopener">Gumroad</a>. They handle tax, VAT, and licence delivery. RevAudio never sees your card details.</p>
         </div>
         <div>
           <h3>Need help?</h3>
@@ -77,43 +81,62 @@ import { plugins } from '../../data/plugins';
 </BaseLayout>
 
 <style>
-  .store-grid { padding: 2rem 0 4rem; }
-
-  .product-row {
-    display: grid;
-    grid-template-columns: 1fr minmax(280px, 360px);
-    gap: 3rem;
-    padding: 2.5rem 0;
+  .bundle-banner {
+    border-top: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
-    align-items: start;
+    background: linear-gradient(90deg, rgba(139, 58, 31, 0.08), transparent 60%);
+    padding: 1.5rem 0;
   }
 
-  @media (max-width: 800px) {
-    .product-row {
-      grid-template-columns: 1fr;
-      gap: 1rem;
-    }
+  .bb-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    flex-wrap: wrap;
   }
 
-  .product-meta h2 {
+  .bb-title {
+    font-size: 1.5rem;
+    margin: 0.25rem 0;
     color: var(--brass-bright);
-    margin-bottom: 0.25rem;
   }
 
-  .product-meta .tagline {
+  .kicker {
     font-family: var(--font-mono);
-    font-size: 0.85rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
     color: var(--brass);
-    margin-bottom: 1rem;
+    margin: 0;
   }
 
-  .more {
-    font-size: 0.85rem;
+  .bb-cta {
+    font-family: var(--font-display);
+    font-size: 1rem;
     text-transform: uppercase;
     letter-spacing: 0.12em;
-    color: var(--fg);
+    color: var(--brass-bright);
+    border: 1px solid var(--brass-dark);
+    padding: 0.875rem 1.5rem;
+    transition: background 0.2s var(--ease), color 0.2s var(--ease);
+  }
+
+  .bb-cta:hover {
+    background: var(--brass);
+    color: var(--bg-0);
+  }
+
+  .store-grid { padding: 3rem 0 4rem; }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+
+  @media (max-width: 720px) {
+    .cards { grid-template-columns: 1fr; }
   }
 
   .faq-grid {

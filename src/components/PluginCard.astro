@@ -1,18 +1,158 @@
 ---
+import type { Plugin } from '../data/plugins';
+import { fmtPrice, discountPct, isBuyable } from '../data/plugins';
+import StarRating from './StarRating.astro';
+
 interface Props {
-  name: string;
-  href: string;
-  oneLiner: string;
-  status: 'live' | 'beta' | 'dev';
-  statusLabel: string;
+  plugin: Plugin;
 }
 
-const { name, href, oneLiner, status, statusLabel } = Astro.props;
+const { plugin } = Astro.props;
+const buyable = isBuyable(plugin);
+const pct = discountPct(plugin);
+const statusKlass = plugin.status === 'live' ? 'live' : plugin.status === 'beta' ? 'beta' : 'dev';
 ---
 
-<a class="plugin-card" href={href}>
-  <span class={`status ${status}`}>{statusLabel}</span>
-  <h3>{name}</h3>
-  <p class="one-liner">{oneLiner}</p>
-  <span class="more">Learn more &rarr;</span>
+<a class="plugin-card" href={`/${plugin.slug}`}>
+  <span class={`status ${statusKlass}`}>{plugin.statusLabel}</span>
+  <div class="card-thumb">
+    {plugin.heroImage ? (
+      <img src={plugin.heroImage} alt={plugin.name} loading="lazy" />
+    ) : (
+      <span class="thumb-placeholder">{plugin.name}</span>
+    )}
+  </div>
+  <h3>{plugin.name}</h3>
+  <p class="one-liner">{plugin.oneLiner}</p>
+  <StarRating rating={plugin.reviewsAvg} count={plugin.reviewsCount} scale={0.9} />
+  <div class="prices">
+    {buyable && pct != null ? (
+      <>
+        <span class="now">{fmtPrice(plugin.introPriceUsd)}</span>
+        <span class="was">{fmtPrice(plugin.regularPriceUsd)}</span>
+        <span class="pct">&minus;{pct}%</span>
+      </>
+    ) : plugin.status === 'beta' ? (
+      <>
+        <span class="now muted-now">{fmtPrice(plugin.introPriceUsd)}</span>
+        <span class="hint muted">Launch price &middot; waitlist only</span>
+      </>
+    ) : (
+      <span class="hint muted">Target {plugin.releaseTarget}</span>
+    )}
+  </div>
+  <span class="more">{buyable ? 'View &amp; buy' : plugin.status === 'beta' ? 'Reserve' : 'Learn more'} &rarr;</span>
 </a>
+
+<style>
+  .plugin-card {
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    padding: 1.5rem;
+    transition: border-color 0.2s var(--ease), transform 0.2s var(--ease);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    color: inherit;
+    position: relative;
+  }
+
+  .plugin-card:hover {
+    border-color: var(--brass-dark);
+    transform: translateY(-2px);
+  }
+
+  .status {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    color: var(--fg-faint);
+    text-transform: uppercase;
+  }
+  .status.live { color: var(--emerald); }
+  .status.beta { color: var(--brass); }
+  .status.dev { color: var(--oxide); }
+
+  .card-thumb {
+    aspect-ratio: 16 / 9;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .card-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .thumb-placeholder {
+    font-family: var(--font-display);
+    letter-spacing: 0.1em;
+    color: var(--fg-faint);
+    font-size: 1.4rem;
+  }
+
+  h3 {
+    font-size: 1.75rem;
+    margin: 0;
+    color: var(--brass-bright);
+  }
+
+  .one-liner {
+    font-size: 0.9rem;
+    color: var(--fg-dim);
+    margin: 0;
+  }
+
+  .prices {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-top: auto;
+  }
+
+  .now {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    color: var(--brass-bright);
+    letter-spacing: 0.04em;
+  }
+
+  .now.muted-now { color: var(--fg-dim); }
+
+  .was {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    color: var(--fg-faint);
+    text-decoration: line-through;
+  }
+
+  .pct {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--oxide);
+    border: 1px solid var(--oxide);
+    padding: 0.1rem 0.4rem;
+  }
+
+  .hint { font-size: 0.85rem; }
+
+  .more {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--fg);
+    margin-top: 0.5rem;
+  }
+</style>

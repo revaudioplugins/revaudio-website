@@ -1,0 +1,84 @@
+---
+import { testimonials } from '../data/testimonials';
+
+interface Props {
+  /** filter to a specific plugin slug; null shows all */
+  plugin?: string;
+  heading?: string;
+}
+
+const { plugin, heading = 'What producers say' } = Astro.props;
+const items = plugin
+  ? testimonials.filter((t) => t.plugin === plugin)
+  : testimonials;
+
+if (items.length === 0) return null;
+---
+
+<section class="testimonial-block">
+  <div class="container">
+    <h2 class="center">{heading}</h2>
+    <div class="quotes">
+      {items.map((t) => (
+        <figure class="quote">
+          <blockquote>
+            &ldquo;{t.quote}&rdquo;
+          </blockquote>
+          <figcaption>
+            <span class="who">{t.name}</span>
+            <span class="credits muted">{t.credits}</span>
+            {t.date && <span class="date muted">{t.date}</span>}
+          </figcaption>
+        </figure>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .testimonial-block {
+    padding: 5rem 0;
+    border-top: 1px solid var(--border);
+    background: var(--bg-1);
+  }
+
+  .quotes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-top: 2.5rem;
+  }
+
+  .quote {
+    margin: 0;
+    padding: 1.75rem;
+    background: var(--bg-0);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--brass);
+  }
+
+  blockquote {
+    margin: 0 0 1rem;
+    font-size: 1.05rem;
+    color: var(--fg);
+    line-height: 1.55;
+  }
+
+  figcaption {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    font-size: 0.85rem;
+  }
+
+  .who {
+    color: var(--brass-bright);
+    font-family: var(--font-display);
+    letter-spacing: 0.05em;
+    font-size: 1rem;
+  }
+
+  .credits, .date {
+    font-size: 0.8rem;
+  }
+</style>

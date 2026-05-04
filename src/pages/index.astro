@@ -2,21 +2,36 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PluginCard from '../components/PluginCard.astro';
 import EmailCapture from '../components/EmailCapture.astro';
-import { plugins } from '../data/plugins';
+import TestimonialBlock from '../components/TestimonialBlock.astro';
+import DAWStrip from '../components/DAWStrip.astro';
+import PressLogos from '../components/PressLogos.astro';
+import SaleBanner from '../components/SaleBanner.astro';
+import { plugins, fmtPrice, discountPct } from '../data/plugins';
+import { everythingBundle, bundleSavingsPct, bundleSavingsUsd } from '../data/bundle';
 
-const cardStatus = (s: string): 'live' | 'beta' | 'dev' =>
-  s === 'live' ? 'live' : s === 'beta' ? 'beta' : 'dev';
+const flagship = plugins[0];
+const flagshipPct = discountPct(flagship);
 ---
 
 <BaseLayout title="RevAudio">
-  <section class="hero">
-    <div class="container">
-      <div class="tag">Boutique VST plugins</div>
-      <h1>Plugins built like cars.</h1>
-      <p class="lede">High quality. Simple controls. Built to feel.</p>
-      <div class="hero-cta">
-        <a href="/store" class="cta-primary">Browse the store</a>
-        <a href="/about" class="cta-ghost">Why RevAudio</a>
+  <SaleBanner />
+
+  <section class="hero hero-feat">
+    <div class="container hero-grid">
+      <div class="hero-copy">
+        <div class="tag">Boutique VST plugins</div>
+        <h1>Plugins built<br/>like cars.</h1>
+        <p class="lede">High quality. Simple controls. Built to feel.<br/>Mechanical metaphors, musical results.</p>
+        <div class="hero-cta">
+          <a href={`/store/${flagship.slug}`} class="cta-primary">Reserve {flagship.name}</a>
+          <a href="/store" class="cta-ghost">See the lineup</a>
+        </div>
+        <p class="hero-meta muted">
+          {flagship.name} ships {flagship.releaseTarget} &middot; intro price {fmtPrice(flagship.introPriceUsd)}{flagshipPct ? ` (${flagshipPct}% off)` : ''}
+        </p>
+      </div>
+      <div class="hero-visual">
+        <img src="/brand/rev-gauge.png" alt="" class="gauge" loading="eager" />
       </div>
     </div>
   </section>
@@ -24,7 +39,7 @@ const cardStatus = (s: string): 'live' | 'beta' | 'dev' =>
   <section class="values">
     <div class="v">
       <h3>Quality</h3>
-      <p>Every DSP stage measured, null-tested, and audited. No corner cases left in the bin.</p>
+      <p>Every DSP stage measured, null-tested, and audited. Every release goes through a custom test bench before it ships.</p>
     </div>
     <div class="v">
       <h3>Simplicity</h3>
@@ -32,40 +47,107 @@ const cardStatus = (s: string): 'live' | 'beta' | 'dev' =>
     </div>
     <div class="v">
       <h3>Creativity</h3>
-      <p>Tools that move people emotionally. Mechanical metaphors, musical results.</p>
+      <p>Tools that move people emotionally. Mechanical metaphors that translate into musical outcomes.</p>
     </div>
   </section>
 
   <section class="plugin-grid">
     <div class="container">
-      <h2 class="center">The lineup</h2>
+      <div class="grid-head">
+        <div>
+          <h2>The lineup</h2>
+          <p class="muted">Four plugins, one philosophy.</p>
+        </div>
+        <a href="/store" class="head-link">Visit the store &rarr;</a>
+      </div>
       <div class="plugin-cards">
-        {plugins.map((p) => (
-          <PluginCard
-            name={p.name}
-            href={`/${p.slug}`}
-            status={cardStatus(p.status)}
-            statusLabel={p.statusLabel}
-            oneLiner={p.oneLiner}
-          />
-        ))}
+        {plugins.map((p) => <PluginCard plugin={p} />)}
       </div>
     </div>
   </section>
 
-  <EmailCapture
-    heading="First in line"
-    subhead="Beta builds, demo codes, and launch pricing land here first. One email per release. No spam, ever."
-  />
+  <section class="bundle-pitch">
+    <div class="container bundle-grid">
+      <div>
+        <p class="kicker">Save when you commit</p>
+        <h2>{everythingBundle.name}</h2>
+        <p class="lede">{everythingBundle.pitch}</p>
+        <ul class="bundle-include">
+          {plugins.map((p) => (
+            <li>
+              <span class="dot" />
+              <span class="name">{p.name}</span>
+              <span class="muted">&middot; {p.tagline}</span>
+            </li>
+          ))}
+        </ul>
+        <a href="/store/bundle" class="cta-primary">See bundle pricing</a>
+      </div>
+      <div class="bundle-stats">
+        <div class="stat">
+          <span class="stat-num">{fmtPrice(everythingBundle.bundlePriceUsd)}</span>
+          <span class="stat-lbl">Bundle price (target)</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num">&minus;{bundleSavingsPct(everythingBundle)}%</span>
+          <span class="stat-lbl">vs buying separately</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num">{fmtPrice(bundleSavingsUsd(everythingBundle))}</span>
+          <span class="stat-lbl">You save</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <DAWStrip />
+  <TestimonialBlock heading="Producers on RevAudio" />
+  <PressLogos />
+
+  <section id="waitlist">
+    <EmailCapture
+      heading="First in line"
+      subhead="Beta builds, demo codes, and intro pricing land here first. One email per release. No spam, ever."
+    />
+  </section>
 </BaseLayout>
 
 <style>
+  .hero-feat { padding: 5rem 0 4rem; }
+
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 4rem;
+    align-items: center;
+  }
+
+  @media (max-width: 900px) {
+    .hero-grid { grid-template-columns: 1fr; gap: 2rem; }
+    .hero-visual { order: -1; }
+  }
+
+  .hero-copy h1 {
+    text-align: left;
+    margin: 0 0 1rem;
+    line-height: 1;
+  }
+
+  .hero-copy .lede {
+    text-align: left;
+    max-width: 36ch;
+    margin: 0 0 2rem;
+  }
+
+  .hero-copy .tag {
+    text-align: left;
+    margin-bottom: 1.5rem;
+  }
+
   .hero-cta {
     display: flex;
     gap: 0.75rem;
-    justify-content: center;
     flex-wrap: wrap;
-    margin-top: 0.5rem;
   }
 
   .cta-primary,
@@ -80,19 +162,144 @@ const cardStatus = (s: string): 'live' | 'beta' | 'dev' =>
     transition: background 0.2s, border-color 0.2s, color 0.2s;
   }
 
-  .cta-primary {
-    background: var(--brass);
-    color: var(--bg-0);
-  }
-  .cta-primary:hover { background: var(--brass-bright); color: var(--bg-0); }
+  .cta-primary { background: var(--brass); color: var(--bg-0); }
+  .cta-primary:hover { background: var(--brass-bright); }
 
   .cta-ghost {
     background: transparent;
     color: var(--fg);
     border-color: var(--border-bright);
   }
-  .cta-ghost:hover {
-    border-color: var(--brass);
+  .cta-ghost:hover { border-color: var(--brass); color: var(--brass-bright); }
+
+  .hero-meta {
+    margin-top: 1.5rem;
+    font-size: 0.85rem;
+  }
+
+  .hero-visual {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .gauge {
+    width: 100%;
+    max-width: 480px;
+    height: auto;
+    filter: drop-shadow(0 16px 48px rgba(0, 0, 0, 0.6));
+  }
+
+  .grid-head {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 2rem;
+    margin-bottom: 2.5rem;
+    flex-wrap: wrap;
+  }
+
+  .grid-head h2 { margin: 0; }
+  .grid-head .muted { margin: 0.25rem 0 0; }
+
+  .head-link {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
     color: var(--brass-bright);
+    border-bottom: 1px solid var(--brass-dark);
+    padding-bottom: 0.2rem;
+  }
+
+  .head-link:hover { color: var(--chrome); border-color: var(--chrome); }
+
+  .bundle-pitch {
+    padding: 5rem 0;
+    border-top: 1px solid var(--border);
+    background:
+      linear-gradient(180deg, var(--bg-1), var(--bg-0));
+  }
+
+  .bundle-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 4rem;
+    align-items: center;
+  }
+
+  @media (max-width: 800px) {
+    .bundle-grid { grid-template-columns: 1fr; gap: 2rem; }
+  }
+
+  .kicker {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--brass);
+    margin: 0 0 0.5rem;
+  }
+
+  .bundle-include {
+    list-style: none;
+    padding: 0;
+    margin: 1.5rem 0 2rem;
+  }
+
+  .bundle-include li {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.4rem 0;
+    border-bottom: 1px dashed var(--border);
+    font-size: 0.95rem;
+  }
+
+  .bundle-include .dot {
+    width: 6px;
+    height: 6px;
+    background: var(--brass);
+    border-radius: 50%;
+  }
+
+  .bundle-include .name {
+    color: var(--brass-bright);
+    font-family: var(--font-display);
+    letter-spacing: 0.04em;
+  }
+
+  .bundle-stats {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 2rem;
+    background: var(--bg-0);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--brass);
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .stat:last-child { border-bottom: none; }
+
+  .stat-num {
+    font-family: var(--font-display);
+    font-size: 2.5rem;
+    color: var(--brass-bright);
+    letter-spacing: 0.04em;
+  }
+
+  .stat-lbl {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--fg-faint);
   }
 </style>

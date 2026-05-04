@@ -1,19 +1,19 @@
 ---
+import { plugins } from '../data/plugins';
+
 const path = Astro.url.pathname;
 const isActive = (p: string) => path === p || path === p + '/';
+const onProductPage = plugins.some((pl) => isActive(`/${pl.slug}`));
 ---
 
 <nav class="site-nav">
   <div class="nav-inner">
     <a href="/" class="logo">REV<span class="accent">AUDIO</span></a>
     <ul>
-      <li><a href="/" aria-current={isActive('/') ? 'page' : undefined}>Home</a></li>
-      <li><a href="/revlimiter">RevLimiter</a></li>
-      <li><a href="/the-ac">The AC</a></li>
-      <li><a href="/the-cooker">The Cooker</a></li>
-      <li><a href="/maybach">Maybach</a></li>
-      <li><a href="/store" aria-current={isActive('/store') ? 'page' : undefined}>Store</a></li>
-      <li><a href="/about">About</a></li>
+      <li><a href="/store" aria-current={isActive('/store') || onProductPage ? 'page' : undefined}>Store</a></li>
+      <li><a href="/bundle" aria-current={isActive('/bundle') ? 'page' : undefined}>Bundle</a></li>
+      <li><a href="/about" aria-current={isActive('/about') ? 'page' : undefined}>About</a></li>
+      <li><a href="/support" aria-current={isActive('/support') ? 'page' : undefined}>Support</a></li>
     </ul>
   </div>
 </nav>

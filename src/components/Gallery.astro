@@ -1,0 +1,121 @@
+---
+interface Props {
+  /** primary image (hero) — falls back to a placeholder block if null */
+  hero: string | null;
+  /** thumbnail strip; click to swap into hero. Same item appearing in hero is fine. */
+  images?: string[];
+  alt: string;
+}
+
+const { hero, images = [], alt } = Astro.props;
+const all = hero ? [hero, ...images.filter((i) => i !== hero)] : images;
+const hasAny = all.length > 0;
+---
+
+<div class="gallery">
+  {hasAny ? (
+    <>
+      <div class="hero-frame" data-gallery-hero>
+        <img src={all[0]} alt={alt} loading="eager" />
+      </div>
+      {all.length > 1 && (
+        <div class="thumbs">
+          {all.map((src, i) => (
+            <button
+              class={`thumb ${i === 0 ? 'active' : ''}`}
+              data-gallery-thumb
+              data-src={src}
+              type="button"
+              aria-label={`Show image ${i + 1}`}
+            >
+              <img src={src} alt="" loading="lazy" />
+            </button>
+          ))}
+        </div>
+      )}
+    </>
+  ) : (
+    <div class="hero-frame placeholder">
+      <span>[ Plugin screenshot &mdash; coming soon ]</span>
+    </div>
+  )}
+</div>
+
+<script>
+  document.querySelectorAll('[data-gallery-hero]').forEach((heroEl) => {
+    const root = heroEl.closest('.gallery');
+    if (!root) return;
+    const img = heroEl.querySelector('img');
+    const thumbs = root.querySelectorAll<HTMLButtonElement>('[data-gallery-thumb]');
+    thumbs.forEach((t) => {
+      t.addEventListener('click', () => {
+        const src = t.dataset.src;
+        if (img && src) img.src = src;
+        thumbs.forEach((other) => other.classList.toggle('active', other === t));
+      });
+    });
+  });
+</script>
+
+<style>
+  .gallery {
+    width: 100%;
+  }
+
+  .hero-frame {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .hero-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .hero-frame.placeholder {
+    color: var(--fg-faint);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    border-style: dashed;
+    border-color: var(--border-bright);
+  }
+
+  .thumbs {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
+  @media (max-width: 600px) {
+    .thumbs { grid-template-columns: repeat(4, 1fr); }
+  }
+
+  .thumb {
+    aspect-ratio: 16 / 10;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    padding: 0;
+    overflow: hidden;
+    transition: border-color 0.15s var(--ease);
+  }
+
+  .thumb:hover { border-color: var(--brass-dark); }
+  .thumb.active { border-color: var(--brass); }
+
+  .thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+</style>

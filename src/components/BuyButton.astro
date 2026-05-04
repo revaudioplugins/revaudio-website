@@ -1,56 +1,68 @@
 ---
 import type { Plugin } from '../data/plugins';
-import { isBuyable, fmtPrice } from '../data/plugins';
+import { isBuyable, fmtPrice, discountPct } from '../data/plugins';
 
 interface Props {
   plugin: Plugin;
-  variant?: 'primary' | 'secondary';
+  showBundleLink?: boolean;
 }
 
-const { plugin, variant = 'primary' } = Astro.props;
+const { plugin, showBundleLink = true } = Astro.props;
 const buyable = isBuyable(plugin);
+const pct = discountPct(plugin);
 ---
 
-<div class={`buy-block ${variant}`}>
+<div class="buy-block">
   {buyable && plugin.gumroadUrl ? (
     <>
       <div class="prices">
-        {plugin.introPriceUsd != null && plugin.regularPriceUsd != null && plugin.introPriceUsd < plugin.regularPriceUsd ? (
+        <span class="price-now">{fmtPrice(plugin.introPriceUsd)}</span>
+        {plugin.regularPriceUsd != null && pct != null && (
           <>
-            <span class="price-now">{fmtPrice(plugin.introPriceUsd)}</span>
             <span class="price-was">{fmtPrice(plugin.regularPriceUsd)}</span>
-            <span class="price-tag">Intro</span>
+            <span class="price-tag">&minus;{pct}% intro</span>
           </>
-        ) : (
-          <span class="price-now">{fmtPrice(plugin.introPriceUsd ?? plugin.regularPriceUsd)}</span>
         )}
       </div>
       <a class="btn primary" href={plugin.gumroadUrl} data-gumroad-product-id={plugin.slug}>
-        Buy {plugin.name}
+        Add to cart
       </a>
-      {plugin.demoUrl && (
-        <a class="btn ghost" href={plugin.demoUrl}>Download demo</a>
+      <a class="btn ghost" href={plugin.demoUrl ?? '#download-demo'}>
+        Download demo
+      </a>
+      {showBundleLink && (
+        <a class="btn link" href="/store/bundle">Or get the bundle &rarr;</a>
       )}
     </>
   ) : plugin.status === 'beta' ? (
     <>
       <div class="prices muted">
         <span class="price-now">{fmtPrice(plugin.introPriceUsd)}</span>
-        <span class="price-tag">Launch price</span>
+        <span class="price-tag waitlist">Waitlist price</span>
       </div>
       <a class="btn primary" href={`/store/${plugin.slug}#waitlist`}>
         Join the beta waitlist
       </a>
-      <p class="micro muted">Not on sale yet — beta builds going to waitlist first.</p>
+      <p class="micro muted">Beta builds go to the waitlist first. Launch in {plugin.releaseTarget}.</p>
     </>
   ) : (
     <>
+      <div class="prices muted">
+        <span class="hint muted">Launch target {plugin.releaseTarget}</span>
+      </div>
       <a class="btn primary" href={`/store/${plugin.slug}#waitlist`}>
         Notify me when {plugin.name} ships
       </a>
-      <p class="micro muted">In development — target {plugin.releaseTarget}.</p>
     </>
   )}
+
+  <ul class="includes">
+    <li>VST3 plugin (Windows 64-bit)</li>
+    <li>Free updates within v1.x</li>
+    <li>Mac build included when shipped</li>
+    <li>Up to 3 machines per licence</li>
+    <li>14-day refund</li>
+  </ul>
 </div>
 
 <style>
@@ -58,15 +70,10 @@ const buyable = isBuyable(plugin);
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-    padding: 1.5rem;
+    padding: 1.75rem;
     background: var(--bg-1);
     border: 1px solid var(--border);
-    margin: 2rem 0;
-  }
-
-  .buy-block.secondary {
-    background: transparent;
-    border: 1px dashed var(--border-bright);
+    border-top: 3px solid var(--brass);
   }
 
   .prices {
@@ -74,13 +81,14 @@ const buyable = isBuyable(plugin);
     align-items: baseline;
     gap: 0.75rem;
     flex-wrap: wrap;
+    margin-bottom: 0.5rem;
   }
 
   .prices.muted .price-now { color: var(--fg-dim); }
 
   .price-now {
     font-family: var(--font-display);
-    font-size: 2.25rem;
+    font-size: 2.5rem;
     color: var(--brass-bright);
     letter-spacing: 0.04em;
   }
@@ -102,6 +110,11 @@ const buyable = isBuyable(plugin);
     padding: 0.15rem 0.5rem;
   }
 
+  .price-tag.waitlist {
+    color: var(--brass);
+    border-color: var(--brass-dark);
+  }
+
   .btn {
     display: inline-block;
     padding: 0.875rem 1.5rem;
@@ -111,7 +124,7 @@ const buyable = isBuyable(plugin);
     text-transform: uppercase;
     text-align: center;
     border: 1px solid transparent;
-    transition: background 0.2s, border-color 0.2s;
+    transition: background 0.2s var(--ease), border-color 0.2s var(--ease), color 0.2s var(--ease);
     cursor: pointer;
   }
 
@@ -128,8 +141,34 @@ const buyable = isBuyable(plugin);
   }
   .btn.ghost:hover { border-color: var(--brass); color: var(--brass-bright); }
 
-  .micro {
-    font-size: 0.8rem;
-    margin: 0;
+  .btn.link {
+    background: transparent;
+    color: var(--fg-dim);
+    padding: 0.4rem 0;
+    text-align: left;
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+  }
+  .btn.link:hover { color: var(--brass-bright); }
+
+  .micro { font-size: 0.8rem; margin: 0; }
+
+  .includes {
+    list-style: none;
+    padding: 1rem 0 0;
+    margin: 0.5rem 0 0;
+    border-top: 1px solid var(--border);
+    font-size: 0.85rem;
+    color: var(--fg-dim);
+  }
+
+  .includes li {
+    padding: 0.4rem 0;
+  }
+
+  .includes li::before {
+    content: '+ ';
+    color: var(--brass);
+    font-weight: 600;
   }
 </style>

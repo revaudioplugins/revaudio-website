@@ -1,0 +1,69 @@
+---
+import { press } from '../data/press';
+
+interface Props {
+  heading?: string;
+}
+
+const { heading = 'As featured in' } = Astro.props;
+
+if (press.length === 0) return null;
+---
+
+<section class="press">
+  <div class="container">
+    <h3 class="center">{heading}</h3>
+    <ul>
+      {press.map((p) => (
+        <li>
+          <a href={p.url} target="_blank" rel="noopener" aria-label={p.name}>
+            {p.logo ? <img src={p.logo} alt={p.name} /> : <span>{p.name}</span>}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .press {
+    padding: 3rem 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .press h3 {
+    color: var(--fg-faint);
+    font-size: 0.85rem;
+    letter-spacing: 0.25em;
+    margin-bottom: 2rem;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2rem 3rem;
+    align-items: center;
+  }
+
+  ul li a {
+    color: var(--fg-dim);
+    font-family: var(--font-display);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-size: 1.1rem;
+    transition: color 0.2s var(--ease);
+  }
+
+  ul li a:hover { color: var(--brass-bright); }
+
+  ul li img {
+    height: 28px;
+    width: auto;
+    filter: grayscale(1) brightness(1.5);
+    opacity: 0.7;
+  }
+</style>
