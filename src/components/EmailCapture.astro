@@ -1,0 +1,31 @@
+---
+interface Props {
+  heading?: string;
+  subhead?: string;
+  buttonLabel?: string;
+}
+
+const {
+  heading = 'Get on the list',
+  subhead = 'First builds, demo codes, and launch pricing — straight to your inbox. No spam.',
+  buttonLabel = 'Notify me',
+} = Astro.props;
+---
+
+<section class="signup">
+  <div class="container">
+    <h2>{heading}</h2>
+    <p>{subhead}</p>
+    <!-- TODO: replace action with real MailerLite endpoint once account is set up -->
+    <form action="https://example.com/subscribe" method="POST" onsubmit="event.preventDefault(); alert('Email capture not yet wired. Add MailerLite endpoint in EmailCapture.astro.');">
+      <input
+        type="email"
+        name="email"
+        placeholder="you@studio.com"
+        required
+        aria-label="Email address"
+      />
+      <button type="submit">{buttonLabel}</button>
+    </form>
+  </div>
+</section>

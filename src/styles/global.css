@@ -1,0 +1,425 @@
+/* RevAudio brand tokens — muscle-car / mechanical aesthetic
+   Dark warm base, brass accents, oxide warnings, chrome highlights. */
+
+:root {
+  /* base */
+  --bg-0: #0b0a09;
+  --bg-1: #14110f;
+  --bg-2: #1d1916;
+  --bg-3: #2a2420;
+
+  /* type */
+  --fg: #efe9df;
+  --fg-dim: #8a8275;
+  --fg-faint: #5a544c;
+
+  /* metals */
+  --brass: #c9a35c;
+  --brass-bright: #e8c878;
+  --brass-dark: #8c6f3a;
+  --chrome: #d8d4cc;
+  --chrome-dark: #76726a;
+
+  /* warnings / accents */
+  --oxide: #8b3a1f;
+  --oxide-deep: #5a2410;
+  --redline: #c8331f;
+  --emerald: #2f6b4a;
+
+  /* surfaces */
+  --border: #2a2420;
+  --border-bright: #3d342c;
+  --shadow: 0 1px 0 0 #000, 0 8px 24px rgba(0, 0, 0, 0.5);
+
+  /* type stacks */
+  --font-display: 'Bebas Neue', 'Oswald', 'Arial Narrow', sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', Consolas, monospace;
+
+  /* motion */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg-0);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background:
+    radial-gradient(ellipse at top, rgba(201, 163, 92, 0.05), transparent 60%),
+    radial-gradient(ellipse at bottom, rgba(139, 58, 31, 0.04), transparent 60%),
+    var(--bg-0);
+  min-height: 100vh;
+}
+
+a { color: var(--brass-bright); text-decoration: none; transition: color 0.2s var(--ease); }
+a:hover { color: var(--chrome); }
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+  margin: 0 0 0.5em;
+  color: var(--fg);
+}
+
+h1 { font-size: clamp(2.5rem, 6vw, 5rem); }
+h2 { font-size: clamp(1.75rem, 4vw, 3rem); }
+h3 { font-size: clamp(1.25rem, 2.5vw, 1.75rem); letter-spacing: 0.04em; text-transform: uppercase; }
+
+p { margin: 0 0 1em; max-width: 64ch; }
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/* nav */
+nav.site-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(11, 10, 9, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.logo {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  letter-spacing: 0.08em;
+  color: var(--fg);
+  text-transform: uppercase;
+}
+
+.logo .accent { color: var(--brass-bright); }
+
+nav ul {
+  display: flex;
+  gap: 2rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+nav ul a {
+  color: var(--fg-dim);
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+nav ul a:hover { color: var(--brass-bright); }
+
+/* hero */
+.hero {
+  padding: 8rem 0 6rem;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+}
+
+.hero h1 {
+  margin-bottom: 1rem;
+}
+
+.hero .tag {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  letter-spacing: 0.3em;
+  color: var(--brass);
+  text-transform: uppercase;
+  margin-bottom: 1.5rem;
+}
+
+.hero .lede {
+  font-size: 1.25rem;
+  color: var(--fg-dim);
+  max-width: 36ch;
+  margin: 1.5rem auto 2.5rem;
+}
+
+/* values strip */
+.values {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.values .v {
+  background: var(--bg-1);
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+}
+
+.values .v h3 {
+  color: var(--brass-bright);
+  margin-bottom: 0.5rem;
+}
+
+.values .v p {
+  color: var(--fg-dim);
+  font-size: 0.95rem;
+  margin: 0 auto;
+  max-width: 30ch;
+}
+
+@media (max-width: 720px) {
+  .values { grid-template-columns: 1fr; }
+}
+
+/* plugin grid */
+.plugin-grid {
+  padding: 5rem 0;
+}
+
+.plugin-grid h2 {
+  text-align: center;
+  margin-bottom: 3rem;
+  color: var(--fg);
+}
+
+.plugin-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+@media (max-width: 720px) {
+  .plugin-cards { grid-template-columns: 1fr; }
+}
+
+.plugin-card {
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  padding: 2rem;
+  transition: border-color 0.2s var(--ease), transform 0.2s var(--ease);
+  display: block;
+  color: inherit;
+  position: relative;
+  overflow: hidden;
+}
+
+.plugin-card:hover {
+  border-color: var(--brass-dark);
+  transform: translateY(-2px);
+}
+
+.plugin-card .status {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  color: var(--fg-faint);
+  text-transform: uppercase;
+}
+
+.plugin-card .status.live { color: var(--emerald); }
+.plugin-card .status.beta { color: var(--brass); }
+.plugin-card .status.dev { color: var(--oxide); }
+
+.plugin-card h3 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  color: var(--brass-bright);
+}
+
+.plugin-card .one-liner {
+  font-size: 0.95rem;
+  color: var(--fg-dim);
+  margin-bottom: 1rem;
+}
+
+.plugin-card .more {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--fg);
+}
+
+/* email capture */
+.signup {
+  padding: 5rem 0;
+  text-align: center;
+  border-top: 1px solid var(--border);
+  background: var(--bg-1);
+}
+
+.signup h2 { color: var(--brass-bright); }
+
+.signup p { color: var(--fg-dim); margin: 0 auto 2rem; }
+
+.signup form {
+  display: flex;
+  gap: 0.5rem;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.signup input[type="email"] {
+  flex: 1;
+  background: var(--bg-0);
+  border: 1px solid var(--border-bright);
+  color: var(--fg);
+  padding: 0.875rem 1rem;
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+.signup input[type="email"]:focus {
+  outline: none;
+  border-color: var(--brass);
+}
+
+.signup button {
+  background: var(--brass);
+  color: var(--bg-0);
+  border: none;
+  padding: 0.875rem 1.5rem;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s var(--ease);
+}
+
+.signup button:hover { background: var(--brass-bright); }
+
+@media (max-width: 480px) {
+  .signup form { flex-direction: column; }
+}
+
+/* footer */
+footer.site-footer {
+  border-top: 1px solid var(--border);
+  padding: 3rem 0 2rem;
+  background: var(--bg-0);
+}
+
+footer .footer-inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.875rem;
+  color: var(--fg-faint);
+}
+
+footer ul {
+  display: flex;
+  gap: 1.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+footer a { color: var(--fg-dim); }
+footer a:hover { color: var(--brass-bright); }
+
+/* plugin detail page */
+.plugin-detail {
+  padding: 4rem 0;
+}
+
+.plugin-detail .hero-img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fg-faint);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  margin-bottom: 3rem;
+}
+
+.plugin-detail .pitch {
+  font-size: 1.25rem;
+  color: var(--fg-dim);
+  max-width: 50ch;
+}
+
+.plugin-detail h1 { color: var(--brass-bright); }
+
+.spec-row {
+  display: grid;
+  grid-template-columns: 12rem 1fr;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.95rem;
+}
+
+.spec-row .key {
+  color: var(--fg-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.8rem;
+}
+
+.spec-row .val { color: var(--fg); }
+
+.demo-block {
+  margin: 3rem 0;
+}
+
+.demo-block .ab {
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.demo-block .ab h4 {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--brass);
+  margin-bottom: 0.75rem;
+}
+
+.demo-block .ab .placeholder {
+  height: 60px;
+  background: var(--bg-2);
+  border: 1px dashed var(--border-bright);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fg-faint);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+}
+
+/* utility */
+.muted { color: var(--fg-dim); }
+.center { text-align: center; }
+.section { padding: 4rem 0; }

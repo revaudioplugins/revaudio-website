@@ -1,0 +1,18 @@
+---
+interface Props {
+  name: string;
+  href: string;
+  oneLiner: string;
+  status: 'live' | 'beta' | 'dev';
+  statusLabel: string;
+}
+
+const { name, href, oneLiner, status, statusLabel } = Astro.props;
+---
+
+<a class="plugin-card" href={href}>
+  <span class={`status ${status}`}>{statusLabel}</span>
+  <h3>{name}</h3>
+  <p class="one-liner">{oneLiner}</p>
+  <span class="more">Learn more &rarr;</span>
+</a>
