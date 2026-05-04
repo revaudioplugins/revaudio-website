@@ -112,7 +112,7 @@ export const plugins: Plugin[] = [
     longPitch:
       'A hybrid between an exciter and a saturator, focused on the air band where mixes either sparkle or sting. Cold mode opens a gentle high shelf. Hot mode brings asymmetric tube saturation. Mid is both. An intelligent dynamic EQ underneath suppresses resonances before they bite. The dashboard reads in degrees Fahrenheit and fan bars because mixing should feel like driving, not menu-diving.',
     status: 'in-development',
-    statusLabel: 'In development',
+    statusLabel: 'Coming',
     introPriceUsd: 39,
     regularPriceUsd: 59,
     gumroadUrl: null,
@@ -140,13 +140,13 @@ export const plugins: Plugin[] = [
     slug: 'the-cooker',
     name: 'The Cooker',
     category: 'panner',
-    tagline: 'Multi-band stereo panner with autopilot',
+    tagline: 'Stereo panner with autopilot',
     oneLiner:
       'Set the stereo image, hit autopilot, and let it cook itself.',
     longPitch:
-      'A creative stereo tool. Pan selected frequency bands left and right, sprinkle saturation, reverb, and tremolo per band, then engage Autopilot and let an LFO drive the movement. Auto Swerve adds drift so the path never feels mechanical. A static synth pad turns into a living, drifting stereo field.',
+      'A creative stereo tool. Dial in the target frequency range with HP and LP cutoffs, pan it left and right, sprinkle saturation, reverb, and tremolo into the mix, then engage Autopilot and let an LFO drive the movement. Auto Swerve adds drift so the path never feels mechanical. A static synth pad turns into a living, drifting stereo field.',
     status: 'in-development',
-    statusLabel: 'In development',
+    statusLabel: 'Coming',
     introPriceUsd: 39,
     regularPriceUsd: 59,
     gumroadUrl: null,
