@@ -1,4 +1,7 @@
 ---
+import { Image } from 'astro:assets';
+import notifyImg from '../assets/ui/btn-notify.png';
+
 interface Props {
   heading?: string;
   subhead?: string;
@@ -25,7 +28,24 @@ const {
         required
         aria-label="Email address"
       />
-      <button type="submit">{buttonLabel}</button>
+      <button type="submit" class="ctl-btn notify-btn" aria-label={buttonLabel}>
+        <Image src={notifyImg} alt="" width={520} height={347} format="webp" />
+      </button>
     </form>
   </div>
 </section>
+
+<style>
+  /* override the global .signup button skin — this submit is now an image control */
+  .signup form .notify-btn {
+    flex: none;
+    width: 172px;
+    height: 56px;
+    padding: 0;
+    border: 0;
+    background: none;
+  }
+  @media (max-width: 480px) {
+    .signup form .notify-btn { width: 100%; }
+  }
+</style>

@@ -473,3 +473,22 @@ footer a:hover { color: var(--brass-bright); }
   color: var(--chrome);
   border-bottom-color: var(--brass-bright);
 }
+
+/* Vintage image-control buttons: the rendered <img> is the visible button; the
+   real <a>/<button> underneath carries the accessible name + behaviour. Each
+   instance sets its own width/height; the image is cropped to fit. */
+.ctl-btn {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  line-height: 0;
+  overflow: hidden;
+  border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  transition: filter 0.2s var(--ease), transform 0.08s var(--ease);
+}
+.ctl-btn img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; }
+.ctl-btn:hover { filter: brightness(1.06) saturate(1.03); }
+.ctl-btn:active { transform: translateY(1px); }
