@@ -1,5 +1,7 @@
 ---
+import { Image } from 'astro:assets';
 import { plugins } from '../data/plugins';
+import logo from '../assets/brand/revaudio-plate.png';
 
 const path = Astro.url.pathname;
 const isActive = (p: string) => path === p || path === p + '/';
@@ -8,10 +10,11 @@ const onProductPage = plugins.some((pl) => isActive(`/${pl.slug}`));
 
 <nav class="site-nav">
   <div class="nav-inner">
-    <a href="/" class="logo">REV<span class="accent">AUDIO</span></a>
+    <a href="/" class="logo" aria-label="RevAudio — home">
+      <Image src={logo} alt="RevAudio" width={220} height={84} format="webp" loading="eager" />
+    </a>
     <ul>
       <li><a href="/store" aria-current={isActive('/store') || onProductPage ? 'page' : undefined}>Store</a></li>
-      <li><a href="/bundle" aria-current={isActive('/bundle') ? 'page' : undefined}>Bundle</a></li>
       <li><a href="/about" aria-current={isActive('/about') ? 'page' : undefined}>About</a></li>
       <li><a href="/support" aria-current={isActive('/support') ? 'page' : undefined}>Support</a></li>
     </ul>

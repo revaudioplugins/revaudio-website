@@ -4,10 +4,9 @@ import { isBuyable, fmtPrice, discountPct } from '../data/plugins';
 
 interface Props {
   plugin: Plugin;
-  showBundleLink?: boolean;
 }
 
-const { plugin, showBundleLink = true } = Astro.props;
+const { plugin } = Astro.props;
 const buyable = isBuyable(plugin);
 const pct = discountPct(plugin);
 ---
@@ -27,11 +26,10 @@ const pct = discountPct(plugin);
       <a class="btn primary" href={plugin.gumroadUrl} data-gumroad-product-id={plugin.slug}>
         Add to cart
       </a>
-      <a class="btn ghost" href={plugin.demoUrl ?? '#download-demo'}>
-        Download demo
-      </a>
-      {showBundleLink && (
-        <a class="btn link" href="/store/bundle">Or get the bundle &rarr;</a>
+      {plugin.demoUrl && (
+        <a class="btn ghost" href={plugin.demoUrl}>
+          Download demo
+        </a>
       )}
     </>
   ) : plugin.status === 'beta' ? (
@@ -40,7 +38,7 @@ const pct = discountPct(plugin);
         <span class="price-now">{fmtPrice(plugin.introPriceUsd)}</span>
         <span class="price-tag waitlist">Waitlist price</span>
       </div>
-      <a class="btn primary" href={`/store/${plugin.slug}#waitlist`}>
+      <a class="btn primary" href={`/${plugin.slug}#waitlist`}>
         Join the beta waitlist
       </a>
       <p class="micro muted">Beta builds go to the waitlist first. Launch in {plugin.releaseTarget}.</p>
@@ -50,7 +48,7 @@ const pct = discountPct(plugin);
       <div class="prices muted">
         <span class="hint muted">Launch target {plugin.releaseTarget}</span>
       </div>
-      <a class="btn primary" href={`/store/${plugin.slug}#waitlist`}>
+      <a class="btn primary" href={`/${plugin.slug}#waitlist`}>
         Notify me when {plugin.name} ships
       </a>
     </>

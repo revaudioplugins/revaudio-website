@@ -1,6 +1,8 @@
 ---
+import { Image } from 'astro:assets';
 import type { Plugin } from '../data/plugins';
 import { fmtPrice, discountPct, isBuyable } from '../data/plugins';
+import { pluginImage } from '../lib/images';
 import StarRating from './StarRating.astro';
 
 interface Props {
@@ -11,13 +13,14 @@ const { plugin } = Astro.props;
 const buyable = isBuyable(plugin);
 const pct = discountPct(plugin);
 const statusKlass = plugin.status === 'live' ? 'live' : plugin.status === 'beta' ? 'beta' : 'dev';
+const thumb = pluginImage(plugin.heroImage);
 ---
 
 <a class="plugin-card" href={`/${plugin.slug}`}>
   <span class={`status ${statusKlass}`}>{plugin.statusLabel}</span>
   <div class="card-thumb">
-    {plugin.heroImage ? (
-      <img src={plugin.heroImage} alt={plugin.name} loading="lazy" />
+    {thumb ? (
+      <Image src={thumb} alt={plugin.name} width={900} height={506} format="webp" loading="lazy" />
     ) : (
       <span class="thumb-placeholder">{plugin.name}</span>
     )}
@@ -26,12 +29,16 @@ const statusKlass = plugin.status === 'live' ? 'live' : plugin.status === 'beta'
   <p class="one-liner">{plugin.oneLiner}</p>
   <StarRating rating={plugin.reviewsAvg} count={plugin.reviewsCount} scale={0.9} />
   <div class="prices">
-    {buyable && pct != null ? (
-      <>
+    {buyable ? (
+      pct != null ? (
+        <>
+          <span class="now">{fmtPrice(plugin.introPriceUsd)}</span>
+          <span class="was">{fmtPrice(plugin.regularPriceUsd)}</span>
+          <span class="pct">&minus;{pct}%</span>
+        </>
+      ) : (
         <span class="now">{fmtPrice(plugin.introPriceUsd)}</span>
-        <span class="was">{fmtPrice(plugin.regularPriceUsd)}</span>
-        <span class="pct">&minus;{pct}%</span>
-      </>
+      )
     ) : plugin.status === 'beta' ? (
       <>
         <span class="now muted-now">{fmtPrice(plugin.introPriceUsd)}</span>
@@ -41,7 +48,7 @@ const statusKlass = plugin.status === 'live' ? 'live' : plugin.status === 'beta'
       <span class="hint muted">Target {plugin.releaseTarget}</span>
     )}
   </div>
-  <span class="more">{buyable ? 'View &amp; buy' : plugin.status === 'beta' ? 'Reserve' : 'Learn more'} &rarr;</span>
+  <span class="more">{buyable ? 'View & buy' : plugin.status === 'beta' ? 'Reserve' : 'Learn more'} &rarr;</span>
 </a>
 
 <style>

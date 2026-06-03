@@ -13,12 +13,16 @@ export function getStaticPaths() {
 }
 
 const { plugin } = Astro.props;
+
+// Only surface A/B demos that actually have audio. Until clips are bounced,
+// the "Hear it" section stays hidden rather than showing empty placeholders.
+const playableDemos = plugin.audioDemos.filter((d) => d.beforeUrl && d.afterUrl);
 ---
 
 <BaseLayout title={plugin.name} description={plugin.oneLiner}>
   <section class="product-detail">
     <div class="container">
-      <p class="breadcrumb"><a href="/store">&larr; Back to lineup</a></p>
+      <p class="breadcrumb"><a href="/store">&larr; Back to store</a></p>
 
       <div class="product-head">
         <div class="product-info">
@@ -51,11 +55,11 @@ const { plugin } = Astro.props;
         </section>
       )}
 
-      {plugin.audioDemos.length > 0 && (
+      {playableDemos.length > 0 && (
         <section class="audio-demos">
           <h2>Hear it</h2>
           <p class="muted">Before / after on real source material. No staged transients, no cherry-picked frequency content.</p>
-          {plugin.audioDemos.map((d) => <AudioDemo demo={d} />)}
+          {playableDemos.map((d) => <AudioDemo demo={d} />)}
         </section>
       )}
 
