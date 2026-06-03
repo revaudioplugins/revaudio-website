@@ -31,19 +31,20 @@ const checkoutUrl = plugin.gumroadUrl ? `${plugin.gumroadUrl}?wanted=true` : '';
           </>
         )}
       </div>
-      <button
-        type="button"
-        class="ctl-btn addcart-btn"
-        data-add-to-cart
-        data-slug={plugin.slug}
-        data-name={plugin.name}
-        data-price={plugin.introPriceUsd}
-        data-url={checkoutUrl}
-        data-img={cartThumb?.src}
-        aria-label="Add to cart"
-      >
+      <div class="addcart-btn panel">
         <Image src={addToCartImg} alt="" width={680} height={453} format="webp" />
-      </button>
+        <button
+          type="button"
+          class="panel-hit hit-pill hit-addcart"
+          data-add-to-cart
+          data-slug={plugin.slug}
+          data-name={plugin.name}
+          data-price={plugin.introPriceUsd}
+          data-url={checkoutUrl}
+          data-img={cartThumb?.src}
+          aria-label="Add to cart"
+        ></button>
+      </div>
       {plugin.demoUrl && (
         <a class="btn ghost" href={plugin.demoUrl}>
           Download demo

@@ -20,9 +20,10 @@ import checkoutImg from '../assets/ui/btn-checkout.png';
   <ul class="cd-items" data-cart-items></ul>
   <div class="cd-foot" data-cart-foot hidden>
     <div class="cd-sub"><span>Subtotal</span><span data-cart-subtotal>$0</span></div>
-    <button type="button" class="cd-checkout" data-checkout aria-label="Checkout">
+    <div class="cd-checkout panel">
       <Image src={checkoutImg} alt="" width={680} height={453} format="webp" />
-    </button>
+      <button type="button" class="panel-hit hit-round hit-checkout" data-checkout aria-label="Checkout"></button>
+    </div>
     <button type="button" class="cd-cont" data-cart-close>Continue browsing</button>
   </div>
 </dialog>
@@ -220,23 +221,8 @@ import checkoutImg from '../assets/ui/btn-checkout.png';
     font-family: var(--font-mono); font-size: 0.95rem; color: var(--fg);
   }
   .cd-sub span:last-child { color: var(--brass-bright); font-size: 1.15rem; }
-  /* Vintage-panel CHECKOUT button — the image is the button (real <button> underneath). */
-  .cd-checkout {
-    width: 100%;
-    padding: 0;
-    border: 0;
-    background: none;
-    cursor: pointer;
-    display: block;
-    line-height: 0;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
-    transition: filter 0.2s var(--ease), transform 0.08s var(--ease), box-shadow 0.2s var(--ease);
-  }
-  .cd-checkout img { width: 100%; height: auto; display: block; }
-  .cd-checkout:hover { filter: brightness(1.07) saturate(1.04); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55); }
-  .cd-checkout:active { transform: translateY(1px); }
+  /* CHECKOUT panel — plate is decorative; the .panel-hit over the red button clicks. */
+  .cd-checkout { width: 100%; }
   .cd-cont {
     background: none; border: 0; color: var(--fg-dim);
     font-size: 0.85rem; cursor: pointer; padding: 0.25rem;

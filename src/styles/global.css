@@ -492,3 +492,26 @@ footer a:hover { color: var(--brass-bright); }
 .ctl-btn img { display: block; width: 100%; height: auto; }
 .ctl-btn:hover { filter: brightness(1.06) saturate(1.03); }
 .ctl-btn:active { transform: translateY(1px); }
+
+/* Panel control: the plate image is decorative; only the hotspot over the red
+   button is clickable + presses. Hotspot rects are tuned per asset below. */
+.panel { position: relative; display: block; line-height: 0; border-radius: 10px; overflow: hidden; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4); }
+.panel > img { display: block; width: 100%; height: auto; }
+.panel-hit {
+  position: absolute;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: box-shadow 0.12s var(--ease), transform 0.08s var(--ease);
+}
+.panel-hit:hover { box-shadow: inset 0 0 0 999px rgba(255, 244, 208, 0.08); }
+.panel-hit:active { transform: scale(0.96); box-shadow: inset 0 0 0 999px rgba(0, 0, 0, 0.22); }
+.hit-round { border-radius: 50%; }
+.hit-pill { border-radius: 999px; }
+/* per-asset button regions (% of the plate image) */
+.hit-checkout { top: 13%; left: 28%; width: 45%; height: 74%; }
+.hit-addcart  { top: 29%; left: 13%; width: 74%; height: 42%; }
+.hit-buy      { top: 14%; left: 28%; width: 44%; height: 72%; }
+.hit-notify   { top: 28%; left: 12%; width: 76%; height: 44%; }
