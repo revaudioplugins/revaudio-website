@@ -32,11 +32,11 @@ Output goes to `dist/`. Vercel auto-deploys from `main`.
 
 ## TODO before launch
 
-- [ ] Buy `revaudio.com` domain (Cloudflare Registrar)
+- [x] Buy `revaudio.net` domain (GoDaddy)
 - [ ] Reserve `@revaudio` on Instagram, X, YouTube
 - [ ] Connect Vercel deploy
 - [ ] Set up MailerLite account, replace form `action` in `src/components/EmailCapture.astro`
-- [ ] Set up `hello@revaudio.com` (Cloudflare Email Routing or Google Workspace)
+- [ ] Set up `hello@revaudio.net` (GoDaddy email forwarding or Google Workspace)
 - [ ] Add Plausible or Cloudflare Web Analytics
 - [ ] Drop real plugin screenshots into `/public/screenshots/`
 - [ ] Bounce real audio A/B demos and wire them into plugin pages
