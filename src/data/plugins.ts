@@ -70,7 +70,7 @@ const baseSystemReq: SystemReq = {
  *   https://<subdomain>.gumroad.com/l/<product>
  * While it's null the site shows the waitlist CTA — no broken buy button ships.
  */
-const REVLIMITER_GUMROAD_URL: string | null = null;
+const REVLIMITER_GUMROAD_URL: string | null = 'https://hameatbach.gumroad.com/l/Revlimiter';
 
 export const plugins: Plugin[] = [
   {
