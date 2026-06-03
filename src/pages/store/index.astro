@@ -2,8 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PluginCard from '../../components/PluginCard.astro';
 import EmailCapture from '../../components/EmailCapture.astro';
-import { plugins, fmtPrice } from '../../data/plugins';
-import { everythingBundle, bundleSavingsPct, bundleSavingsUsd } from '../../data/bundle';
+import { plugins } from '../../data/plugins';
 ---
 
 <BaseLayout
@@ -13,21 +12,8 @@ import { everythingBundle, bundleSavingsPct, bundleSavingsUsd } from '../../data
   <section class="hero" style="padding: 5rem 0 3rem;">
     <div class="container">
       <div class="tag">Store</div>
-      <h1>The lineup</h1>
+      <h1>The plugin</h1>
       <p class="lede">Single purchase. Lifetime updates within the major version. No subscription, no hassle.</p>
-    </div>
-  </section>
-
-  <section class="bundle-banner">
-    <div class="container">
-      <div class="bb-inner">
-        <div>
-          <p class="kicker">Save when you commit</p>
-          <h2 class="bb-title">{everythingBundle.name}</h2>
-          <p class="muted">All four plugins for {fmtPrice(everythingBundle.bundlePriceUsd)} &mdash; save {fmtPrice(bundleSavingsUsd(everythingBundle))} ({bundleSavingsPct(everythingBundle)}%) versus buying separately.</p>
-        </div>
-        <a href="/bundle" class="bb-cta">See the bundle &rarr;</a>
-      </div>
     </div>
   </section>
 
@@ -81,62 +67,14 @@ import { everythingBundle, bundleSavingsPct, bundleSavingsUsd } from '../../data
 </BaseLayout>
 
 <style>
-  .bundle-banner {
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-    background: linear-gradient(90deg, rgba(139, 58, 31, 0.08), transparent 60%);
-    padding: 1.5rem 0;
-  }
-
-  .bb-inner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 2rem;
-    flex-wrap: wrap;
-  }
-
-  .bb-title {
-    font-size: 1.5rem;
-    margin: 0.25rem 0;
-    color: var(--brass-bright);
-  }
-
-  .kicker {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--brass);
-    margin: 0;
-  }
-
-  .bb-cta {
-    font-family: var(--font-display);
-    font-size: 1rem;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--brass-bright);
-    border: 1px solid var(--brass-dark);
-    padding: 0.875rem 1.5rem;
-    transition: background 0.2s var(--ease), color 0.2s var(--ease);
-  }
-
-  .bb-cta:hover {
-    background: var(--brass);
-    color: var(--bg-0);
-  }
-
   .store-grid { padding: 3rem 0 4rem; }
 
   .cards {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
     gap: 1.5rem;
-  }
-
-  @media (max-width: 720px) {
-    .cards { grid-template-columns: 1fr; }
+    max-width: 480px;
+    margin: 0 auto;
   }
 
   .faq-grid {
