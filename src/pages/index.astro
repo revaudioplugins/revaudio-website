@@ -10,6 +10,7 @@ import SaleBanner from '../components/SaleBanner.astro';
 import { plugins, fmtPrice, discountPct, isBuyable } from '../data/plugins';
 import heroImg from '../assets/plugins/revlimiter-hero.png';
 import buyImg from '../assets/ui/btn-buy.png';
+import buyPressed from '../assets/ui/btn-buy-pressed.png';
 
 const flagship = plugins[0];
 const flagshipPct = discountPct(flagship);
@@ -40,6 +41,7 @@ const bannerMsg = flagshipLive
             <div class="buy-btn panel">
               <Image src={buyImg} alt="" width={520} height={347} format="webp" />
               <a href={`/${flagship.slug}`} class="panel-hit hit-round hit-buy" aria-label={`Buy ${flagship.name}`}></a>
+              <Image src={buyPressed} alt="" width={520} height={347} format="webp" loading="eager" class="press" />
             </div>
           ) : (
             <a href={`/${flagship.slug}`} class="cta-primary">Reserve {flagship.name}</a>

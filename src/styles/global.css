@@ -507,14 +507,10 @@ footer a:hover { color: var(--brass-bright); }
   transition: box-shadow 0.12s var(--ease), transform 0.08s var(--ease);
 }
 .panel-hit:hover { box-shadow: inset 0 0 0 999px rgba(255, 244, 208, 0.08); }
-/* "really pressed": button sinks below the bezel rim — deep top shadow, scale + drop, overall darken */
-.panel-hit:active {
-  transform: scale(0.92) translateY(2px);
-  box-shadow:
-    inset 0 10px 16px -3px rgba(0, 0, 0, 0.62),
-    inset 0 -4px 9px rgba(0, 0, 0, 0.38),
-    inset 0 0 0 999px rgba(0, 0, 0, 0.15);
-}
+.panel-hit:active { transform: scale(0.99); }
+/* pressed-frame swap: the depressed button image crossfades in on press */
+.panel .press { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; pointer-events: none; transition: opacity 0.04s linear; }
+.panel-hit:active ~ .press { opacity: 1; }
 .hit-round { border-radius: 50%; }
 .hit-pill { border-radius: 999px; }
 /* per-asset button regions (% of the plate image) */
