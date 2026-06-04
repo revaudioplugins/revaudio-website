@@ -3,7 +3,7 @@
  * Global cart: a localStorage-backed mini-cart shared across every page.
  * - [data-add-to-cart] buttons (with data-slug/name/price/url/img) add items
  * - the header cart icon ([data-cart-toggle]) + badge ([data-cart-badge]) open the drawer
- * - Checkout opens the product's Gumroad checkout in an on-site iframe modal
+ * - Checkout opens the product's Lemon Squeezy overlay (lemon.js), no redirect
  * Rendered once in BaseLayout. No framework — vanilla JS, progressive.
  */
 ---
@@ -23,11 +23,8 @@
   </div>
 </dialog>
 
-<!-- Checkout modal: Gumroad checkout inside an on-site iframe (no redirect) -->
-<dialog class="checkout-modal" data-checkout-modal aria-label="Secure checkout">
-  <button type="button" class="checkout-x" data-checkout-close aria-label="Close checkout">&times;</button>
-  <iframe data-checkout-frame title="Secure checkout" allow="payment"></iframe>
-</dialog>
+<!-- Lemon Squeezy renders its own overlay (lemon.js) — no custom modal needed -->
+<script src="https://assets.lemonsqueezy.com/lemon.js" defer></script>
 
 <script is:inline>
   (function () {
@@ -38,8 +35,6 @@
     var emptyEl = drawer && drawer.querySelector('[data-cart-empty]');
     var footEl = drawer && drawer.querySelector('[data-cart-foot]');
     var subEl = drawer && drawer.querySelector('[data-cart-subtotal]');
-    var checkout = document.querySelector('[data-checkout-modal]');
-    var frame = checkout && checkout.querySelector('[data-checkout-frame]');
 
     function read() { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) { return []; } }
     function write(c) { try { localStorage.setItem(KEY, JSON.stringify(c)); } catch (e) {} }
@@ -50,7 +45,7 @@
       });
     }
 
-    function anyOpen() { return (drawer && drawer.open) || (checkout && checkout.open); }
+    function anyOpen() { return drawer && drawer.open; }
     function lock() { html.style.overflow = anyOpen() ? 'hidden' : ''; }
 
     function add(item) {
@@ -101,12 +96,30 @@
       if (typeof drawer.showModal === 'function') drawer.showModal(); else drawer.setAttribute('open', '');
       lock();
     }
+    // Lemon Squeezy overlay: init once, wire a success handler that empties the cart.
+    var lsReady = false;
+    function ensureLS() {
+      if (lsReady) return !!(window.LemonSqueezy && window.LemonSqueezy.Url);
+      if (typeof window.createLemonSqueezy === 'function') {
+        window.createLemonSqueezy();
+        if (window.LemonSqueezy) {
+          window.LemonSqueezy.Setup({
+            eventHandler: function (e) {
+              if (e && e.event === 'Checkout.Success') { write([]); sync(); }
+            }
+          });
+          lsReady = true;
+        }
+      }
+      return lsReady;
+    }
     function openCheckout(url) {
       if (!url) { var c = read(); url = c.length ? c[0].url : null; }
       if (!url) return;
-      if (!checkout || typeof checkout.showModal !== 'function') { window.open(url, '_blank', 'noopener'); return; }
       if (drawer && drawer.open) drawer.close();
-      frame.src = url; checkout.showModal(); lock();
+      // lemon.js overlay opens with ?embed=1 URLs. Fall back to a new tab if the script is blocked.
+      if (ensureLS() && window.LemonSqueezy.Url) { window.LemonSqueezy.Url.Open(url); return; }
+      window.open(url, '_blank', 'noopener');
     }
 
     document.addEventListener('click', function (e) {
@@ -128,17 +141,12 @@
       if (rm) { remove(rm.getAttribute('data-remove')); return; }
       if (t.closest('[data-checkout]')) { e.preventDefault(); openCheckout(); return; }
       if (t.closest('[data-cart-close]') && drawer && drawer.open) { drawer.close(); return; }
-      if (t.closest('[data-checkout-close]') && checkout && checkout.open) { checkout.close(); return; }
     });
 
-    [drawer, checkout].forEach(function (d) {
-      if (!d) return;
-      d.addEventListener('click', function (e) { if (e.target === d) d.close(); }); // backdrop
-      d.addEventListener('close', function () {
-        if (d === checkout && frame) frame.src = 'about:blank';
-        lock();
-      });
-    });
+    if (drawer) {
+      drawer.addEventListener('click', function (e) { if (e.target === drawer) drawer.close(); }); // backdrop
+      drawer.addEventListener('close', lock);
+    }
 
     sync();
   })();
@@ -176,14 +184,14 @@
   }
   .cd-head h2 { margin: 0; font-size: 1.5rem; color: var(--fg); }
 
-  .cd-x, .checkout-x {
+  .cd-x {
     width: 34px; height: 34px; border-radius: 50%;
     border: 1px solid var(--border-bright);
     background: var(--bg-0); color: var(--fg);
     font-size: 1.4rem; line-height: 1; cursor: pointer;
     transition: border-color 0.2s var(--ease), color 0.2s var(--ease);
   }
-  .cd-x:hover, .checkout-x:hover { border-color: var(--brass); color: var(--brass-bright); }
+  .cd-x:hover { border-color: var(--brass); color: var(--brass-bright); }
 
   .cd-empty { padding: 2rem 1.25rem; color: var(--fg-dim); }
 
@@ -244,20 +252,4 @@
   /* drawer is a flex column so cd-foot can pin to the bottom */
   .cart-drawer { display: flex; flex-direction: column; }
   .cart-drawer:not([open]) { display: none; }
-
-  /* ---- Checkout modal (Gumroad iframe) ---- */
-  .checkout-modal {
-    width: min(460px, 94vw);
-    height: min(760px, 88vh);
-    max-width: 94vw; max-height: 88vh;
-    padding: 0;
-    border: 1px solid var(--border-bright);
-    border-radius: 14px;
-    background: var(--bg-1); color: var(--fg);
-    overflow: hidden;
-    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.7);
-  }
-  .checkout-modal::backdrop { background: rgba(8, 7, 6, 0.66); backdrop-filter: blur(4px); }
-  .checkout-modal iframe { width: 100%; height: 100%; border: 0; display: block; background: #fff; }
-  .checkout-x { position: absolute; top: 10px; right: 12px; z-index: 2; }
 </style>

@@ -3,11 +3,11 @@
  *
  * Lifecycle:
  *   status: 'in-development' → no Buy CTA, only waitlist
- *   status: 'beta'           → Buy CTA shows but Gumroad URL = '#' until product live
- *   status: 'live'           → Buy CTA active, gumroadUrl set, demoUrl optional
+ *   status: 'beta'           → Buy CTA shows but checkoutUrl null until product live
+ *   status: 'live'           → Buy CTA active, checkoutUrl set, demoUrl optional
  *
  * Prices are intent — flip when commerce launches.
- * gumroadUrl format: https://yoursubdomain.gumroad.com/l/<product-slug>
+ * checkoutUrl format (Lemon Squeezy): https://<store>.lemonsqueezy.com/buy/<product-uuid>
  */
 
 export type PluginStatus = 'in-development' | 'beta' | 'live';
@@ -44,7 +44,8 @@ export interface Plugin {
   statusLabel: string;
   introPriceUsd: number | null;
   regularPriceUsd: number | null;
-  gumroadUrl: string | null;
+  checkoutUrl: string | null;
+  checkoutPaused?: boolean; // finished product, checkout temporarily offline (e.g. switching payment processor)
   demoUrl: string | null;
   releaseTarget: string;
   heroImage: string | null;
@@ -66,11 +67,13 @@ const baseSystemReq: SystemReq = {
 
 /**
  * COMMERCE SWITCH — RevLimiter goes on sale the instant this URL is set.
- * Paste the Gumroad checkout link here (nothing else needs to change):
- *   https://<subdomain>.gumroad.com/l/<product>
+ * Paste the Lemon Squeezy checkout link here (nothing else needs to change):
+ *   https://<store>.lemonsqueezy.com/buy/<product-uuid>
  * While it's null the site shows the waitlist CTA — no broken buy button ships.
  */
-const REVLIMITER_GUMROAD_URL: string | null = 'https://hameatbach.gumroad.com/l/Revlimiter';
+// Paste the LS *live* buy URL here once LS verifies the store (KYC) and test mode can be turned off.
+// The earlier revaudio.lemonsqueezy.com/checkout/buy/5115aed2-... link was a TEST-mode link — do not use.
+const REVLIMITER_CHECKOUT_URL: string | null = null;
 
 export const plugins: Plugin[] = [
   {
@@ -82,11 +85,12 @@ export const plugins: Plugin[] = [
       'The redline is your threshold. The needle is your gain reduction. Mastering loudness with the muscle of a tuned engine.',
     longPitch:
       'A mastering limiter that makes loudness, depth, and punch feel like flooring it on an open road. Multi-band compression, analog-modelled saturation, and an adaptive limiter chained the way a top-tier mastering engineer would chain them. Sits early on your master bus, glues the mix, and holds a true-peak ceiling at oversampled rate.',
-    status: REVLIMITER_GUMROAD_URL ? 'live' : 'beta',
-    statusLabel: REVLIMITER_GUMROAD_URL ? 'Available now' : 'Beta — Q3 2026',
+    status: 'live',
+    statusLabel: REVLIMITER_CHECKOUT_URL ? 'Available now' : 'Checkout reopening soon',
     introPriceUsd: 93,
     regularPriceUsd: null,
-    gumroadUrl: REVLIMITER_GUMROAD_URL,
+    checkoutUrl: REVLIMITER_CHECKOUT_URL,
+    checkoutPaused: !REVLIMITER_CHECKOUT_URL,
     demoUrl: null,
     releaseTarget: 'Q3 2026',
     heroImage: 'revlimiter-hero.png',
@@ -114,7 +118,7 @@ export const plugins: Plugin[] = [
 
 export const bySlug = (slug: string) => plugins.find((p) => p.slug === slug);
 
-export const isBuyable = (p: Plugin) => p.status === 'live' && !!p.gumroadUrl;
+export const isBuyable = (p: Plugin) => p.status === 'live' && !!p.checkoutUrl;
 
 export const fmtPrice = (usd: number | null) => (usd == null ? '—' : `$${usd}`);
 
