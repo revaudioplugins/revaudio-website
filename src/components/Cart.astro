@@ -1,9 +1,10 @@
 ---
+import { PADDLE } from '../data/plugins';
 /**
  * Global cart: a localStorage-backed mini-cart shared across every page.
- * - [data-add-to-cart] buttons (with data-slug/name/price/url/img) add items
+ * - [data-add-to-cart] buttons (with data-slug/name/price/price-id/img) add items
  * - the header cart icon ([data-cart-toggle]) + badge ([data-cart-badge]) open the drawer
- * - Checkout opens the product's Lemon Squeezy overlay (lemon.js), no redirect
+ * - Checkout opens a Paddle overlay (Paddle.js) with all cart items, no redirect
  * Rendered once in BaseLayout. No framework — vanilla JS, progressive.
  */
 ---
@@ -23,18 +24,22 @@
   </div>
 </dialog>
 
-<!-- Lemon Squeezy renders its own overlay (lemon.js) — no custom modal needed -->
-<script src="https://assets.lemonsqueezy.com/lemon.js" defer></script>
+<!-- Paddle.js renders its own overlay — no custom modal needed -->
+<script is:inline src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
+<div data-paddle-config data-token={PADDLE.token ?? ''} data-env={PADDLE.environment} hidden></div>
 
 <script is:inline>
   (function () {
-    var KEY = 'revaudio_cart_v1';
+    var KEY = 'revaudio_cart_v2';
     var html = document.documentElement;
     var drawer = document.querySelector('[data-cart-drawer]');
     var itemsEl = drawer && drawer.querySelector('[data-cart-items]');
     var emptyEl = drawer && drawer.querySelector('[data-cart-empty]');
     var footEl = drawer && drawer.querySelector('[data-cart-foot]');
     var subEl = drawer && drawer.querySelector('[data-cart-subtotal]');
+    var cfgEl = document.querySelector('[data-paddle-config]');
+    var PADDLE_TOKEN = cfgEl ? cfgEl.getAttribute('data-token') : '';
+    var PADDLE_ENV = cfgEl ? cfgEl.getAttribute('data-env') : 'sandbox';
 
     function read() { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) { return []; } }
     function write(c) { try { localStorage.setItem(KEY, JSON.stringify(c)); } catch (e) {} }
@@ -54,7 +59,7 @@
       // One licence per product — re-adding just reopens the cart, never stacks qty.
       var exists = c.some(function (i) { return i.slug === item.slug; });
       if (!exists) {
-        c.push({ slug: item.slug, name: item.name, price: +item.price || 0, url: item.url, img: item.img || '', qty: 1 });
+        c.push({ slug: item.slug, name: item.name, price: +item.price || 0, priceId: item.priceId, img: item.img || '', qty: 1 });
         write(c);
       }
       sync(); openDrawer();
@@ -96,30 +101,32 @@
       if (typeof drawer.showModal === 'function') drawer.showModal(); else drawer.setAttribute('open', '');
       lock();
     }
-    // Lemon Squeezy overlay: init once, wire a success handler that empties the cart.
-    var lsReady = false;
-    function ensureLS() {
-      if (lsReady) return !!(window.LemonSqueezy && window.LemonSqueezy.Url);
-      if (typeof window.createLemonSqueezy === 'function') {
-        window.createLemonSqueezy();
-        if (window.LemonSqueezy) {
-          window.LemonSqueezy.Setup({
-            eventHandler: function (e) {
-              if (e && e.event === 'Checkout.Success') { write([]); sync(); }
-            }
-          });
-          lsReady = true;
-        }
-      }
-      return lsReady;
+    // Paddle overlay: init once (token + environment from the config holder), clear cart on completion.
+    var paddleReady = false;
+    function ensurePaddle() {
+      if (paddleReady) return true;
+      if (!window.Paddle || !PADDLE_TOKEN) return false;
+      try {
+        if (PADDLE_ENV === 'sandbox') window.Paddle.Environment.set('sandbox');
+        window.Paddle.Initialize({
+          token: PADDLE_TOKEN,
+          eventCallback: function (e) {
+            if (e && e.name === 'checkout.completed') { write([]); sync(); }
+          }
+        });
+        paddleReady = true;
+      } catch (err) {}
+      return paddleReady;
     }
-    function openCheckout(url) {
-      if (!url) { var c = read(); url = c.length ? c[0].url : null; }
-      if (!url) return;
+    function openCheckout() {
+      var items = read()
+        .filter(function (i) { return i.priceId; })
+        .map(function (i) { return { priceId: i.priceId, quantity: i.qty || 1 }; });
+      if (!items.length) return;
       if (drawer && drawer.open) drawer.close();
-      // lemon.js overlay opens with ?embed=1 URLs. Fall back to a new tab if the script is blocked.
-      if (ensureLS() && window.LemonSqueezy.Url) { window.LemonSqueezy.Url.Open(url); return; }
-      window.open(url, '_blank', 'noopener');
+      // Paddle overlay takes ALL cart line items in one checkout.
+      if (ensurePaddle()) { window.Paddle.Checkout.open({ items: items }); return; }
+      console.warn('Paddle checkout unavailable (script blocked or token missing)');
     }
 
     document.addEventListener('click', function (e) {
@@ -131,7 +138,7 @@
           slug: addBtn.getAttribute('data-slug'),
           name: addBtn.getAttribute('data-name'),
           price: addBtn.getAttribute('data-price'),
-          url: addBtn.getAttribute('data-url'),
+          priceId: addBtn.getAttribute('data-price-id'),
           img: addBtn.getAttribute('data-img')
         });
         return;

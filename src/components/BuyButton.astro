@@ -12,14 +12,13 @@ const { plugin } = Astro.props;
 const buyable = isBuyable(plugin);
 const pct = discountPct(plugin);
 
-// Optimized thumbnail + checkout URL for the add-to-cart payload.
+// Optimized thumbnail for the add-to-cart payload. Checkout itself uses the Paddle price ID.
 const heroMeta = pluginImage(plugin.heroImage);
 const cartThumb = heroMeta ? await getImage({ src: heroMeta, width: 112, height: 64, format: 'webp' }) : null;
-const buyUrl = plugin.checkoutUrl ? `${plugin.checkoutUrl}?embed=1` : '';
 ---
 
 <div class="buy-block">
-  {buyable && plugin.checkoutUrl ? (
+  {buyable && plugin.paddlePriceId ? (
     <>
       <div class="prices">
         <span class="price-now">{fmtPrice(plugin.introPriceUsd)}</span>
@@ -37,7 +36,7 @@ const buyUrl = plugin.checkoutUrl ? `${plugin.checkoutUrl}?embed=1` : '';
         data-slug={plugin.slug}
         data-name={plugin.name}
         data-price={plugin.introPriceUsd}
-        data-url={buyUrl}
+        data-price-id={plugin.paddlePriceId}
         data-img={cartThumb?.src}
       >
         Add to cart
@@ -47,7 +46,7 @@ const buyUrl = plugin.checkoutUrl ? `${plugin.checkoutUrl}?embed=1` : '';
           Download demo
         </a>
       )}
-      <p class="micro muted">Secure checkout by Lemon Squeezy — without leaving the site.</p>
+      <p class="micro muted">Secure checkout by Paddle — without leaving the site.</p>
     </>
   ) : plugin.checkoutPaused ? (
     <>
