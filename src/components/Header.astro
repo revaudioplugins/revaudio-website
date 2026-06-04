@@ -8,13 +8,13 @@ const isActive = (p: string) => path === p || path === p + '/';
 const onProductPage = plugins.some((pl) => isActive(`/${pl.slug}`));
 ---
 
-<nav class="site-nav">
+<nav class="site-nav" data-site-nav>
   <div class="nav-inner">
     <a href="/" class="logo" aria-label="RevAudio — home">
       <Image src={logo} alt="RevAudio" width={220} height={84} format="webp" loading="eager" />
     </a>
     <div class="nav-right">
-      <ul>
+      <ul id="nav-menu" class="nav-links">
         <li><a href="/store" aria-current={isActive('/store') || onProductPage ? 'page' : undefined}>Store</a></li>
         <li><a href="/about" aria-current={isActive('/about') ? 'page' : undefined}>About</a></li>
         <li><a href="/support" aria-current={isActive('/support') ? 'page' : undefined}>Support</a></li>
@@ -27,9 +27,56 @@ const onProductPage = plugins.some((pl) => isActive(`/${pl.slug}`));
         </svg>
         <span class="cart-badge" data-cart-badge hidden>0</span>
       </button>
+      <button
+        type="button"
+        class="nav-burger"
+        data-nav-toggle
+        aria-controls="nav-menu"
+        aria-expanded="false"
+        aria-label="Menu"
+      >
+        <span class="burger-box"><span class="burger-line"></span></span>
+      </button>
     </div>
   </div>
 </nav>
+
+<script is:inline>
+  (function () {
+    var nav = document.querySelector('[data-site-nav]');
+    if (!nav) return;
+    var burger = nav.querySelector('[data-nav-toggle]');
+    var menu = nav.querySelector('#nav-menu');
+    if (!burger || !menu) return;
+
+    function setOpen(open) {
+      nav.classList.toggle('nav-open', open);
+      burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+    function isOpen() { return nav.classList.contains('nav-open'); }
+
+    burger.addEventListener('click', function (e) {
+      e.stopPropagation();
+      setOpen(!isOpen());
+    });
+    // Tapping a link navigates; collapse so it's tidy on back-nav.
+    menu.addEventListener('click', function (e) {
+      if (e.target.closest('a')) setOpen(false);
+    });
+    // Outside click / Escape close.
+    document.addEventListener('click', function (e) {
+      if (isOpen() && !nav.contains(e.target)) setOpen(false);
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && isOpen()) { setOpen(false); burger.focus(); }
+    });
+    // Re-show desktop nav if the viewport grows past the breakpoint.
+    var mq = window.matchMedia('(min-width: 701px)');
+    (mq.addEventListener ? mq.addEventListener.bind(mq, 'change') : mq.addListener.bind(mq))(function (ev) {
+      if (ev.matches) setOpen(false);
+    });
+  })();
+</script>
 
 <style>
   .nav-right { display: flex; align-items: center; gap: 1.75rem; }
@@ -67,7 +114,82 @@ const onProductPage = plugins.some((pl) => isActive(`/${pl.slug}`));
     text-align: center;
   }
 
-  @media (max-width: 560px) {
-    .nav-right { gap: 1rem; }
+  /* ---- Hamburger (mobile only) ---- */
+  .nav-burger {
+    display: none; /* shown ≤700px */
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    border: 1px solid var(--border-bright);
+    border-radius: 8px;
+    background: var(--bg-1);
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.2s var(--ease), background 0.2s var(--ease);
+  }
+  .nav-burger:hover { border-color: var(--brass-dark); }
+
+  /* 3 brass bars built from one element + its ::before/::after, so the middle
+     bar can fade and the outer two rotate into an X on open. */
+  .burger-box { position: relative; width: 20px; height: 14px; display: block; }
+  .burger-line,
+  .burger-line::before,
+  .burger-line::after {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--brass-bright);
+    transition: transform 0.25s var(--ease), opacity 0.2s var(--ease);
+  }
+  .burger-line { top: 6px; }
+  .burger-line::before { content: ''; top: -6px; }
+  .burger-line::after { content: ''; top: 6px; }
+
+  .nav-open .burger-line { background: transparent; }
+  .nav-open .burger-line::before { transform: translateY(6px) rotate(45deg); background: var(--brass-bright); }
+  .nav-open .burger-line::after { transform: translateY(-6px) rotate(-45deg); background: var(--brass-bright); }
+
+  @media (max-width: 700px) {
+    .nav-right { gap: 0.85rem; }
+    .nav-burger { display: inline-flex; }
+
+    /* Links collapse into a slide-down panel under the bar. */
+    .nav-links {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      flex-direction: column;
+      gap: 0;
+      padding: 0.5rem 0 0.75rem;
+      background: rgba(11, 10, 9, 0.97);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+      /* collapsed state */
+      opacity: 0;
+      transform: translateY(-8px);
+      pointer-events: none;
+      transition: opacity 0.22s var(--ease), transform 0.22s var(--ease);
+    }
+    .nav-open .nav-links {
+      opacity: 1;
+      transform: none;
+      pointer-events: auto;
+    }
+    .nav-links li { width: 100%; }
+    .nav-links a {
+      display: block;
+      padding: 0.95rem 1.5rem;
+      font-size: 1.05rem;
+      color: var(--fg);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-links li:last-child a { border-bottom: 0; }
+    .nav-links a[aria-current='page'] { color: var(--brass-bright); }
+    .nav-links a:hover { color: var(--brass-bright); }
   }
 </style>

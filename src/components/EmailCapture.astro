@@ -1,4 +1,8 @@
 ---
+import { Image } from 'astro:assets';
+import notifyImg from '../assets/ui/btn-notify.png';
+import notifyPressed from '../assets/ui/btn-notify-pressed.png';
+
 interface Props {
   heading?: string;
   subhead?: string;
@@ -25,7 +29,26 @@ const {
         required
         aria-label="Email address"
       />
-      <button type="submit">{buttonLabel}</button>
+      <div class="notify-btn panel">
+        <Image src={notifyImg} alt="" width={520} height={347} format="webp" />
+        <button type="submit" class="panel-hit hit-pill hit-notify" aria-label={buttonLabel}></button>
+        <Image src={notifyPressed} alt="" width={520} height={347} format="webp" loading="eager" class="press" />
+      </div>
     </form>
   </div>
 </section>
+
+<style>
+  /* stack the form so the full NOTIFY ME plate isn't cropped beside the input */
+  .signup form { flex-direction: column; align-items: stretch; gap: 0.85rem; }
+  .signup form .notify-btn {
+    width: 220px;
+    align-self: center;
+    padding: 0;
+    border: 0;
+    background: none;
+  }
+  @media (max-width: 480px) {
+    .signup form .notify-btn { width: 100%; max-width: 280px; }
+  }
+</style>

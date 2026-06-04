@@ -9,6 +9,8 @@ import PressLogos from '../components/PressLogos.astro';
 import SaleBanner from '../components/SaleBanner.astro';
 import { plugins, fmtPrice, discountPct, isBuyable } from '../data/plugins';
 import heroImg from '../assets/plugins/revlimiter-hero.png';
+import buyImg from '../assets/ui/btn-buy.png';
+import buyPressed from '../assets/ui/btn-buy-pressed.png';
 
 const flagship = plugins[0];
 const flagshipPct = discountPct(flagship);
@@ -35,8 +37,16 @@ const bannerMsg = flagshipLive
         <span class="redline" aria-hidden="true"></span>
         <p class="lede reveal" style="--d: .22s">High quality. Simple controls. Built to feel.<br/>Mechanical metaphors, musical results.</p>
         <div class="hero-cta reveal" style="--d: .32s">
-          <a href={`/${flagship.slug}`} class="cta-primary">{flagshipLive ? 'Buy' : 'Reserve'} {flagship.name}</a>
-          <a href="/store" class="cta-ghost">Visit the store</a>
+          {flagshipLive ? (
+            <div class="buy-btn panel">
+              <Image src={buyImg} alt="" width={520} height={347} format="webp" />
+              <a href={`/${flagship.slug}`} class="panel-hit hit-round hit-buy" aria-label={`Buy ${flagship.name}`}></a>
+              <Image src={buyPressed} alt="" width={520} height={347} format="webp" loading="eager" class="press" />
+            </div>
+          ) : (
+            <a href={`/${flagship.slug}`} class="cta-primary">Reserve {flagship.name}</a>
+          )}
+          <a href="/store" class="store-link">Visit the store &rarr;</a>
         </div>
         <p class="hero-meta muted reveal" style="--d: .4s">
           {flagshipLive
@@ -172,9 +182,24 @@ const bannerMsg = flagshipLive
 
   .hero-cta {
     display: flex;
-    gap: 0.75rem;
+    gap: 1rem;
     flex-wrap: wrap;
+    align-items: center;
   }
+
+  .buy-btn { width: 176px; }
+
+  .store-link {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 1.05rem;
+    color: var(--brass-bright);
+    border-bottom: 1px solid var(--brass-dark);
+    padding-bottom: 0.2rem;
+    transition: color 0.2s var(--ease), border-color 0.2s var(--ease);
+  }
+  .store-link:hover { color: var(--chrome); border-bottom-color: var(--chrome); }
 
   .cta-primary,
   .cta-ghost {
