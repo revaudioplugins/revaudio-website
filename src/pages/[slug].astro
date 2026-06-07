@@ -6,13 +6,16 @@ import TestimonialBlock from '../components/TestimonialBlock.astro';
 import StarRating from '../components/StarRating.astro';
 import Gallery from '../components/Gallery.astro';
 import AudioDemo from '../components/AudioDemo.astro';
-import { plugins } from '../data/plugins';
+import { plugins, isBuyable } from '../data/plugins';
 
 export function getStaticPaths() {
   return plugins.map((p) => ({ params: { slug: p.slug }, props: { plugin: p } }));
 }
 
 const { plugin } = Astro.props;
+// Pre-launch products show a "reserve / get notified" block. Once a product is
+// buyable, that block contradicts the Add-to-cart button, so it's hidden.
+const buyable = isBuyable(plugin);
 
 // Only surface A/B demos that actually have audio. Until clips are bounced,
 // the "Hear it" section stays hidden rather than showing empty placeholders.
@@ -90,17 +93,21 @@ const playableDemos = plugin.audioDemos.filter((d) => d.beforeUrl && d.afterUrl)
 
       <TestimonialBlock plugin={plugin.slug} heading={`What producers say about ${plugin.name}`} />
 
-      <section id="waitlist" class="waitlist-anchor">
-        <h2>Get notified</h2>
-        <p class="muted">First builds, demo codes, intro pricing &mdash; straight to your inbox the moment {plugin.name} ships.</p>
-      </section>
+      {!buyable && (
+        <section id="waitlist" class="waitlist-anchor">
+          <h2>Get notified</h2>
+          <p class="muted">First builds, demo codes, intro pricing &mdash; straight to your inbox the moment {plugin.name} ships.</p>
+        </section>
+      )}
     </div>
   </section>
 
-  <EmailCapture
-    heading={`Reserve your ${plugin.name}`}
-    subhead="One email per release. No spam."
-  />
+  {!buyable && (
+    <EmailCapture
+      heading={`Reserve your ${plugin.name}`}
+      subhead="One email per release. No spam."
+    />
+  )}
 </BaseLayout>
 
 <style>
