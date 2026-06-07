@@ -3,11 +3,11 @@
  *
  * Lifecycle:
  *   status: 'in-development' → no Buy CTA, only waitlist
- *   status: 'beta'           → Buy CTA shows but Gumroad URL = '#' until product live
- *   status: 'live'           → Buy CTA active, gumroadUrl set, demoUrl optional
+ *   status: 'beta'           → Buy CTA shows but no paddlePriceId until product live
+ *   status: 'live'           → Buy CTA active, paddlePriceId + PADDLE.token set, demoUrl optional
  *
  * Prices are intent — flip when commerce launches.
- * gumroadUrl format: https://yoursubdomain.gumroad.com/l/<product-slug>
+ * Checkout: Paddle (merchant of record). See PADDLE config + per-product paddlePriceId below.
  */
 
 export type PluginStatus = 'in-development' | 'beta' | 'live';
@@ -46,7 +46,10 @@ export interface Plugin {
   statusLabel: string;
   introPriceUsd: number | null;
   regularPriceUsd: number | null;
-  gumroadUrl: string | null;
+  /** Paddle price ID (pri_...). Null until wired → product shows the "checkout reopening" state. */
+  paddlePriceId: string | null;
+  /** True while a live product has no working checkout yet (Paddle price ID not set). */
+  checkoutPaused: boolean;
   demoUrl: string | null;
   releaseTarget: string;
   heroImage: string | null;
@@ -67,12 +70,21 @@ const baseSystemReq: SystemReq = {
 };
 
 /**
- * COMMERCE SWITCH — RevLimiter goes on sale the instant this URL is set.
- * Paste the Gumroad checkout link here (nothing else needs to change):
- *   https://<subdomain>.gumroad.com/l/<product>
- * While it's null the site shows the waitlist CTA — no broken buy button ships.
+ * COMMERCE — Paddle (merchant of record). Three pieces to go live:
+ *   1. PADDLE.token       — publishable client-side token (safe in the browser).
+ *                           Paddle dashboard → Developer Tools → Authentication → Client-side token.
+ *   2. PADDLE.environment — 'sandbox' while testing, 'production' once the seller account is approved.
+ *   3. per-product paddlePriceId (pri_...) — set on each plugin below.
+ * A plugin is buyable only when status==='live', PADDLE.token is set, AND it has a paddlePriceId.
+ * While a live plugin has no paddlePriceId it shows the honest "checkout reopening" CTA.
  */
-const REVLIMITER_GUMROAD_URL: string | null = 'https://hameatbach.gumroad.com/l/Revlimiter';
+export const PADDLE = {
+  token: null as string | null,                       // sandbox 'test_...' to test, swap to 'live_...' at cutover
+  environment: 'sandbox' as 'sandbox' | 'production',  // flip to 'production' when the live token is in
+};
+
+// RevLimiter Paddle price ID — paste the sandbox pri_... to test, swap to the live pri_... at cutover.
+const REVLIMITER_PADDLE_PRICE_ID: string | null = null;
 
 export const plugins: Plugin[] = [
   {
@@ -86,11 +98,12 @@ export const plugins: Plugin[] = [
       'In plain terms: RevLimiter is the last plugin on your master bus. It makes your track as loud as a commercial release while keeping it clean and punchy — not squashed, flat, or distorted.',
     longPitch:
       'A mastering limiter that makes loudness, depth, and punch feel like flooring it on an open road. Multi-band compression, analog-modelled saturation, and an adaptive limiter chained the way a top-tier mastering engineer would chain them. Sits last on your master bus, glues the mix, and holds a true-peak ceiling at oversampled rate.',
-    status: REVLIMITER_GUMROAD_URL ? 'live' : 'beta',
-    statusLabel: REVLIMITER_GUMROAD_URL ? 'Available now' : 'Beta — Q3 2026',
+    status: 'live',
+    statusLabel: REVLIMITER_PADDLE_PRICE_ID ? 'Available now' : 'Checkout reopening soon',
     introPriceUsd: 56, // launch: 40% off the $93 regular ($55.80, rounded to $56)
     regularPriceUsd: 93,
-    gumroadUrl: REVLIMITER_GUMROAD_URL,
+    paddlePriceId: REVLIMITER_PADDLE_PRICE_ID,
+    checkoutPaused: !REVLIMITER_PADDLE_PRICE_ID,
     demoUrl: null,
     releaseTarget: 'Q3 2026',
     heroImage: 'revlimiter-hero.png',

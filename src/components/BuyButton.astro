@@ -17,11 +17,10 @@ const pct = discountPct(plugin);
 // Optimized thumbnail + checkout URL for the add-to-cart payload.
 const heroMeta = pluginImage(plugin.heroImage);
 const cartThumb = heroMeta ? await getImage({ src: heroMeta, width: 112, height: 64, format: 'webp' }) : null;
-const checkoutUrl = plugin.gumroadUrl ? `${plugin.gumroadUrl}?wanted=true` : '';
 ---
 
 <div class="buy-block">
-  {buyable && plugin.gumroadUrl ? (
+  {buyable && plugin.paddlePriceId ? (
     <>
       <div class="prices">
         <span class="price-now">{fmtPrice(plugin.introPriceUsd)}</span>
@@ -44,7 +43,7 @@ const checkoutUrl = plugin.gumroadUrl ? `${plugin.gumroadUrl}?wanted=true` : '';
           data-slug={plugin.slug}
           data-name={plugin.name}
           data-price={plugin.introPriceUsd}
-          data-url={checkoutUrl}
+          data-price-id={plugin.paddlePriceId}
           data-img={cartThumb?.src}
           aria-label="Add to cart"
         ></button>
@@ -55,7 +54,19 @@ const checkoutUrl = plugin.gumroadUrl ? `${plugin.gumroadUrl}?wanted=true` : '';
           Download demo
         </a>
       )}
-      <p class="micro muted">Secure checkout by Gumroad — without leaving the site.</p>
+      <p class="micro muted">Secure checkout by Paddle — without leaving the site.</p>
+    </>
+  ) : plugin.checkoutPaused ? (
+    <>
+      <div class="prices">
+        <span class="price-now">{fmtPrice(plugin.introPriceUsd)}</span>
+        {plugin.regularPriceUsd != null && pct != null && (
+          <span class="price-tag">&minus;{pct}% launch</span>
+        )}
+      </div>
+      <p class="platform-note">Windows VST3 &middot; <span class="soon">macOS (AU) &amp; Pro Tools coming</span></p>
+      <a class="btn primary" href={`/${plugin.slug}#waitlist`}>Email me when checkout reopens</a>
+      <p class="micro muted">Checkout is moving to a new payment processor — back online shortly.</p>
     </>
   ) : plugin.status === 'beta' ? (
     <>
