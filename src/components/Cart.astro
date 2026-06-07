@@ -1,10 +1,12 @@
 ---
-import { PADDLE } from '../data/plugins';
+import { Image } from 'astro:assets';
+import checkoutImg from '../assets/ui/btn-checkout.png';
+import checkoutPressed from '../assets/ui/btn-checkout-pressed.png';
 /**
  * Global cart: a localStorage-backed mini-cart shared across every page.
- * - [data-add-to-cart] buttons (with data-slug/name/price/price-id/img) add items
+ * - [data-add-to-cart] buttons (with data-slug/name/price/url/img) add items
  * - the header cart icon ([data-cart-toggle]) + badge ([data-cart-badge]) open the drawer
- * - Checkout opens a Paddle overlay (Paddle.js) with all cart items, no redirect
+ * - Checkout opens the product's Gumroad checkout in an on-site iframe modal
  * Rendered once in BaseLayout. No framework — vanilla JS, progressive.
  */
 ---
@@ -19,27 +21,32 @@ import { PADDLE } from '../data/plugins';
   <ul class="cd-items" data-cart-items></ul>
   <div class="cd-foot" data-cart-foot hidden>
     <div class="cd-sub"><span>Subtotal</span><span data-cart-subtotal>$0</span></div>
-    <button type="button" class="cd-checkout" data-checkout>Checkout</button>
+    <div class="cd-checkout panel">
+      <Image src={checkoutImg} alt="" width={680} height={453} format="webp" />
+      <button type="button" class="panel-hit hit-round hit-checkout" data-checkout aria-label="Checkout"></button>
+      <Image src={checkoutPressed} alt="" width={680} height={453} format="webp" loading="eager" class="press" />
+    </div>
     <button type="button" class="cd-cont" data-cart-close>Continue browsing</button>
   </div>
 </dialog>
 
-<!-- Paddle.js renders its own overlay — no custom modal needed -->
-<script is:inline src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
-<div data-paddle-config data-token={PADDLE.token ?? ''} data-env={PADDLE.environment} hidden></div>
+<!-- Checkout modal: Gumroad checkout inside an on-site iframe (no redirect) -->
+<dialog class="checkout-modal" data-checkout-modal aria-label="Secure checkout">
+  <button type="button" class="checkout-x" data-checkout-close aria-label="Close checkout">&times;</button>
+  <iframe data-checkout-frame title="Secure checkout" allow="payment"></iframe>
+</dialog>
 
 <script is:inline>
   (function () {
-    var KEY = 'revaudio_cart_v2';
+    var KEY = 'revaudio_cart_v1';
     var html = document.documentElement;
     var drawer = document.querySelector('[data-cart-drawer]');
     var itemsEl = drawer && drawer.querySelector('[data-cart-items]');
     var emptyEl = drawer && drawer.querySelector('[data-cart-empty]');
     var footEl = drawer && drawer.querySelector('[data-cart-foot]');
     var subEl = drawer && drawer.querySelector('[data-cart-subtotal]');
-    var cfgEl = document.querySelector('[data-paddle-config]');
-    var PADDLE_TOKEN = cfgEl ? cfgEl.getAttribute('data-token') : '';
-    var PADDLE_ENV = cfgEl ? cfgEl.getAttribute('data-env') : 'sandbox';
+    var checkout = document.querySelector('[data-checkout-modal]');
+    var frame = checkout && checkout.querySelector('[data-checkout-frame]');
 
     function read() { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) { return []; } }
     function write(c) { try { localStorage.setItem(KEY, JSON.stringify(c)); } catch (e) {} }
@@ -50,7 +57,7 @@ import { PADDLE } from '../data/plugins';
       });
     }
 
-    function anyOpen() { return drawer && drawer.open; }
+    function anyOpen() { return (drawer && drawer.open) || (checkout && checkout.open); }
     function lock() { html.style.overflow = anyOpen() ? 'hidden' : ''; }
 
     function add(item) {
@@ -59,7 +66,7 @@ import { PADDLE } from '../data/plugins';
       // One licence per product — re-adding just reopens the cart, never stacks qty.
       var exists = c.some(function (i) { return i.slug === item.slug; });
       if (!exists) {
-        c.push({ slug: item.slug, name: item.name, price: +item.price || 0, priceId: item.priceId, img: item.img || '', qty: 1 });
+        c.push({ slug: item.slug, name: item.name, price: +item.price || 0, url: item.url, img: item.img || '', qty: 1 });
         write(c);
       }
       sync(); openDrawer();
@@ -101,32 +108,12 @@ import { PADDLE } from '../data/plugins';
       if (typeof drawer.showModal === 'function') drawer.showModal(); else drawer.setAttribute('open', '');
       lock();
     }
-    // Paddle overlay: init once (token + environment from the config holder), clear cart on completion.
-    var paddleReady = false;
-    function ensurePaddle() {
-      if (paddleReady) return true;
-      if (!window.Paddle || !PADDLE_TOKEN) return false;
-      try {
-        if (PADDLE_ENV === 'sandbox') window.Paddle.Environment.set('sandbox');
-        window.Paddle.Initialize({
-          token: PADDLE_TOKEN,
-          eventCallback: function (e) {
-            if (e && e.name === 'checkout.completed') { write([]); sync(); }
-          }
-        });
-        paddleReady = true;
-      } catch (err) {}
-      return paddleReady;
-    }
-    function openCheckout() {
-      var items = read()
-        .filter(function (i) { return i.priceId; })
-        .map(function (i) { return { priceId: i.priceId, quantity: i.qty || 1 }; });
-      if (!items.length) return;
+    function openCheckout(url) {
+      if (!url) { var c = read(); url = c.length ? c[0].url : null; }
+      if (!url) return;
+      if (!checkout || typeof checkout.showModal !== 'function') { window.open(url, '_blank', 'noopener'); return; }
       if (drawer && drawer.open) drawer.close();
-      // Paddle overlay takes ALL cart line items in one checkout.
-      if (ensurePaddle()) { window.Paddle.Checkout.open({ items: items }); return; }
-      console.warn('Paddle checkout unavailable (script blocked or token missing)');
+      frame.src = url; checkout.showModal(); lock();
     }
 
     document.addEventListener('click', function (e) {
@@ -138,7 +125,7 @@ import { PADDLE } from '../data/plugins';
           slug: addBtn.getAttribute('data-slug'),
           name: addBtn.getAttribute('data-name'),
           price: addBtn.getAttribute('data-price'),
-          priceId: addBtn.getAttribute('data-price-id'),
+          url: addBtn.getAttribute('data-url'),
           img: addBtn.getAttribute('data-img')
         });
         return;
@@ -148,12 +135,17 @@ import { PADDLE } from '../data/plugins';
       if (rm) { remove(rm.getAttribute('data-remove')); return; }
       if (t.closest('[data-checkout]')) { e.preventDefault(); openCheckout(); return; }
       if (t.closest('[data-cart-close]') && drawer && drawer.open) { drawer.close(); return; }
+      if (t.closest('[data-checkout-close]') && checkout && checkout.open) { checkout.close(); return; }
     });
 
-    if (drawer) {
-      drawer.addEventListener('click', function (e) { if (e.target === drawer) drawer.close(); }); // backdrop
-      drawer.addEventListener('close', lock);
-    }
+    [drawer, checkout].forEach(function (d) {
+      if (!d) return;
+      d.addEventListener('click', function (e) { if (e.target === d) d.close(); }); // backdrop
+      d.addEventListener('close', function () {
+        if (d === checkout && frame) frame.src = 'about:blank';
+        lock();
+      });
+    });
 
     sync();
   })();
@@ -191,14 +183,14 @@ import { PADDLE } from '../data/plugins';
   }
   .cd-head h2 { margin: 0; font-size: 1.5rem; color: var(--fg); }
 
-  .cd-x {
+  .cd-x, .checkout-x {
     width: 34px; height: 34px; border-radius: 50%;
     border: 1px solid var(--border-bright);
     background: var(--bg-0); color: var(--fg);
     font-size: 1.4rem; line-height: 1; cursor: pointer;
     transition: border-color 0.2s var(--ease), color 0.2s var(--ease);
   }
-  .cd-x:hover { border-color: var(--brass); color: var(--brass-bright); }
+  .cd-x:hover, .checkout-x:hover { border-color: var(--brass); color: var(--brass-bright); }
 
   .cd-empty { padding: 2rem 1.25rem; color: var(--fg-dim); }
 
@@ -231,25 +223,8 @@ import { PADDLE } from '../data/plugins';
     font-family: var(--font-mono); font-size: 0.95rem; color: var(--fg);
   }
   .cd-sub span:last-child { color: var(--brass-bright); font-size: 1.15rem; }
-  /* Big, brass→red, logo-lettering Checkout CTA (self-contained — .btn lives in another component's scope) */
-  .cd-checkout {
-    width: 100%;
-    border: 0;
-    border-radius: 9px;
-    padding: 1.15rem 1.5rem;
-    cursor: pointer;
-    text-align: center;
-    font-family: var(--font-display);
-    font-size: 1.7rem;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--bg-0);
-    background: linear-gradient(100deg, var(--brass-bright) 0%, var(--brass) 34%, var(--redline) 100%);
-    box-shadow: 0 8px 24px rgba(200, 51, 31, 0.3);
-    transition: filter 0.2s var(--ease), transform 0.08s var(--ease), box-shadow 0.2s var(--ease);
-  }
-  .cd-checkout:hover { filter: brightness(1.08) saturate(1.06); box-shadow: 0 10px 30px rgba(200, 51, 31, 0.42); }
-  .cd-checkout:active { transform: translateY(1px); }
+  /* CHECKOUT panel — plate is decorative; the .panel-hit over the red button clicks. */
+  .cd-checkout { width: 100%; }
   .cd-cont {
     background: none; border: 0; color: var(--fg-dim);
     font-size: 0.85rem; cursor: pointer; padding: 0.25rem;
@@ -259,4 +234,20 @@ import { PADDLE } from '../data/plugins';
   /* drawer is a flex column so cd-foot can pin to the bottom */
   .cart-drawer { display: flex; flex-direction: column; }
   .cart-drawer:not([open]) { display: none; }
+
+  /* ---- Checkout modal (Gumroad iframe) ---- */
+  .checkout-modal {
+    width: min(460px, 94vw);
+    height: min(760px, 88vh);
+    max-width: 94vw; max-height: 88vh;
+    padding: 0;
+    border: 1px solid var(--border-bright);
+    border-radius: 14px;
+    background: var(--bg-1); color: var(--fg);
+    overflow: hidden;
+    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.7);
+  }
+  .checkout-modal::backdrop { background: rgba(8, 7, 6, 0.66); backdrop-filter: blur(4px); }
+  .checkout-modal iframe { width: 100%; height: 100%; border: 0; display: block; background: #fff; }
+  .checkout-x { position: absolute; top: 10px; right: 12px; z-index: 2; }
 </style>

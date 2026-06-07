@@ -1,8 +1,10 @@
 ---
-import { getImage } from 'astro:assets';
+import { Image, getImage } from 'astro:assets';
 import type { Plugin } from '../data/plugins';
 import { isBuyable, fmtPrice, discountPct } from '../data/plugins';
 import { pluginImage } from '../lib/images';
+import addToCartImg from '../assets/ui/btn-add-to-cart.png';
+import addToCartPressed from '../assets/ui/btn-add-to-cart-pressed.png';
 
 interface Props {
   plugin: Plugin;
@@ -12,13 +14,14 @@ const { plugin } = Astro.props;
 const buyable = isBuyable(plugin);
 const pct = discountPct(plugin);
 
-// Optimized thumbnail for the add-to-cart payload. Checkout itself uses the Paddle price ID.
+// Optimized thumbnail + checkout URL for the add-to-cart payload.
 const heroMeta = pluginImage(plugin.heroImage);
 const cartThumb = heroMeta ? await getImage({ src: heroMeta, width: 112, height: 64, format: 'webp' }) : null;
+const checkoutUrl = plugin.gumroadUrl ? `${plugin.gumroadUrl}?wanted=true` : '';
 ---
 
 <div class="buy-block">
-  {buyable && plugin.paddlePriceId ? (
+  {buyable && plugin.gumroadUrl ? (
     <>
       <div class="prices">
         <span class="price-now">{fmtPrice(plugin.introPriceUsd)}</span>
@@ -29,34 +32,27 @@ const cartThumb = heroMeta ? await getImage({ src: heroMeta, width: 112, height:
           </>
         )}
       </div>
-      <button
-        type="button"
-        class="btn primary"
-        data-add-to-cart
-        data-slug={plugin.slug}
-        data-name={plugin.name}
-        data-price={plugin.introPriceUsd}
-        data-price-id={plugin.paddlePriceId}
-        data-img={cartThumb?.src}
-      >
-        Add to cart
-      </button>
+      <div class="addcart-btn panel">
+        <Image src={addToCartImg} alt="" width={680} height={453} format="webp" />
+        <button
+          type="button"
+          class="panel-hit hit-pill hit-addcart"
+          data-add-to-cart
+          data-slug={plugin.slug}
+          data-name={plugin.name}
+          data-price={plugin.introPriceUsd}
+          data-url={checkoutUrl}
+          data-img={cartThumb?.src}
+          aria-label="Add to cart"
+        ></button>
+        <Image src={addToCartPressed} alt="" width={680} height={453} format="webp" loading="eager" class="press" />
+      </div>
       {plugin.demoUrl && (
         <a class="btn ghost" href={plugin.demoUrl}>
           Download demo
         </a>
       )}
-      <p class="micro muted">Secure checkout by Paddle — without leaving the site.</p>
-    </>
-  ) : plugin.checkoutPaused ? (
-    <>
-      <div class="prices">
-        <span class="price-now">{fmtPrice(plugin.introPriceUsd)}</span>
-      </div>
-      <a class="btn primary" href={`/${plugin.slug}#waitlist`}>
-        Email me when checkout reopens
-      </a>
-      <p class="micro muted">Checkout is moving to a new payment processor — back online in a few days.</p>
+      <p class="micro muted">Secure checkout by Gumroad — without leaving the site.</p>
     </>
   ) : plugin.status === 'beta' ? (
     <>
@@ -176,6 +172,8 @@ const cartThumb = heroMeta ? await getImage({ src: heroMeta, width: 112, height:
   .btn.link:hover { color: var(--brass-bright); }
 
   .micro { font-size: 0.8rem; margin: 0; }
+
+  .addcart-btn { width: 100%; max-width: 360px; }
 
   .includes {
     list-style: none;

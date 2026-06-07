@@ -39,11 +39,6 @@ const thumb = pluginImage(plugin.heroImage);
       ) : (
         <span class="now">{fmtPrice(plugin.introPriceUsd)}</span>
       )
-    ) : plugin.checkoutPaused ? (
-      <>
-        <span class="now muted-now">{fmtPrice(plugin.introPriceUsd)}</span>
-        <span class="hint muted">Checkout reopening soon</span>
-      </>
     ) : plugin.status === 'beta' ? (
       <>
         <span class="now muted-now">{fmtPrice(plugin.introPriceUsd)}</span>
@@ -53,7 +48,7 @@ const thumb = pluginImage(plugin.heroImage);
       <span class="hint muted">Target {plugin.releaseTarget}</span>
     )}
   </div>
-  <span class="more">{buyable ? 'View & buy' : plugin.checkoutPaused ? 'Notify me' : plugin.status === 'beta' ? 'Reserve' : 'Learn more'} &rarr;</span>
+  <span class="more">{buyable ? 'View & buy' : plugin.status === 'beta' ? 'Reserve' : 'Learn more'} &rarr;</span>
 </a>
 
 <style>
