@@ -3,6 +3,10 @@ import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import Cart from '../components/Cart.astro';
+import { site } from '../data/site';
+
+// Privacy-friendly analytics: only in production, only once a beacon token is set.
+const analyticsOn = import.meta.env.PROD && !!site.cfBeaconToken;
 
 interface Props {
   title: string;
@@ -50,6 +54,17 @@ const fullTitle = title === 'RevAudio'
     />
 
     <title>{fullTitle}</title>
+
+    {/* Cloudflare Web Analytics. No SRI: CF rotates beacon.min.js and ships it
+        without a published hash, so a pinned integrity would break on update.
+        Token is a public beacon id, not a secret. */}
+    {analyticsOn && (
+      <script
+        defer
+        src="https://static.cloudflareinsights.com/beacon.min.js"
+        data-cf-beacon={`{"token": "${site.cfBeaconToken}"}`}
+      ></script>
+    )}
   </head>
   <body>
     <Header />
