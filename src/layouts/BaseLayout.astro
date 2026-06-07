@@ -12,7 +12,7 @@ interface Props {
   title: string;
   description?: string;
   ogImage?: string;
-  /** When true, allow search engines. Default false until launch-ready (Phase 2). */
+  /** When false, emit noindex. Default true now the store is live; pass index={false} to hide a single page. */
   index?: boolean;
 }
 
@@ -20,7 +20,7 @@ const {
   title,
   description = 'RevAudio builds boutique VST plugins for producers who want tools that sound expensive and play simple.',
   ogImage = '/og-default.png',
-  index = false,
+  index = true,
 } = Astro.props;
 
 const fullTitle = title === 'RevAudio'
