@@ -1,15 +1,11 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { Image } from 'astro:assets';
 import PluginCard from '../components/PluginCard.astro';
 import TestimonialBlock from '../components/TestimonialBlock.astro';
 import DAWStrip from '../components/DAWStrip.astro';
 import PressLogos from '../components/PressLogos.astro';
 import SaleBanner from '../components/SaleBanner.astro';
 import { plugins, fmtPrice, discountPct, isBuyable } from '../data/plugins';
-import heroImg from '../assets/plugins/revlimiter-hero.png';
-import buyImg from '../assets/ui/btn-buy.png';
-import buyPressed from '../assets/ui/btn-buy-pressed.png';
 
 const flagship = plugins[0];
 const flagshipPct = discountPct(flagship);
@@ -35,51 +31,12 @@ const bannerMsg = flagshipLive
         <h1 class="reveal" style="--d: .12s">Engineered,<br/>then tuned.</h1>
         <span class="redline" aria-hidden="true"></span>
         <p class="lede reveal" style="--d: .22s">Measured to spec, then voiced by ear.<br/>The precision of a machine, the feel of an instrument.</p>
-        <div class="hero-cta reveal" style="--d: .32s">
-          {flagshipLive ? (
-            <div class="buy-btn panel">
-              <Image src={buyImg} alt="" width={520} height={347} format="webp" />
-              <a href={`/${flagship.slug}`} class="panel-hit hit-round hit-buy" aria-label={`Buy ${flagship.name}`}></a>
-              <Image src={buyPressed} alt="" width={520} height={347} format="webp" loading="eager" class="press" />
-            </div>
-          ) : (
-            <a href={`/${flagship.slug}`} class="cta-primary">Reserve {flagship.name}</a>
-          )}
-          <a href="/store" class="store-link">Visit the store &rarr;</a>
-        </div>
         <p class="hero-meta muted reveal" style="--d: .4s">
           {flagshipLive
             ? `${flagship.name} · available now · ${fmtPrice(flagship.introPriceUsd)}`
             : `${flagship.name} ships ${flagship.releaseTarget} · intro price ${fmtPrice(flagship.introPriceUsd)}${flagshipPct ? ` (${flagshipPct}% off)` : ''}`}
         </p>
       </div>
-      <div class="hero-visual">
-        <Image
-          src={heroImg}
-          alt="RevLimiter mastering limiter — plugin interface"
-          class="plugin-shot"
-          widths={[620, 960, 1240]}
-          sizes="(max-width: 900px) 90vw, 620px"
-          format="webp"
-          loading="eager"
-          fetchpriority="high"
-        />
-      </div>
-    </div>
-  </section>
-
-  <section class="values">
-    <div class="v">
-      <h3>Quality</h3>
-      <p>Every DSP stage measured, null-tested, and audited. Every release goes through a custom test bench before it ships.</p>
-    </div>
-    <div class="v">
-      <h3>Simplicity</h3>
-      <p>One look at the panel and you know what it does. Fewer knobs, more decisions.</p>
-    </div>
-    <div class="v">
-      <h3>Creativity</h3>
-      <p>Tools that move people emotionally. Mechanical metaphors that translate into musical outcomes.</p>
     </div>
   </section>
 
@@ -112,10 +69,10 @@ const bannerMsg = flagshipLive
     display: block;
     height: 3px;
     width: min(260px, 60%);
-    margin: 0.5rem 0 0.75rem;
+    margin: 0.5rem auto 0.75rem;
     border-radius: 2px;
     background: linear-gradient(90deg, var(--brass-bright), var(--redline));
-    transform-origin: left center;
+    transform-origin: center;
   }
 
   @media (prefers-reduced-motion: no-preference) {
@@ -143,30 +100,27 @@ const bannerMsg = flagshipLive
 
   .hero-grid {
     display: grid;
-    grid-template-columns: 1.1fr 0.9fr;
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
     gap: 4rem;
     align-items: center;
   }
 
-  @media (max-width: 900px) {
-    .hero-grid { grid-template-columns: 1fr; gap: 2rem; }
-    .hero-visual { order: -1; }
-  }
-
   .hero-copy h1 {
-    text-align: left;
+    text-align: center;
     margin: 0 0 1rem;
     line-height: 1;
   }
 
   .hero-copy .lede {
-    text-align: left;
+    text-align: center;
     max-width: 36ch;
-    margin: 0 0 2rem;
+    margin: 0 auto 2rem;
   }
 
   .hero-copy .tag {
-    text-align: left;
+    text-align: center;
     margin-bottom: 1.5rem;
   }
 
@@ -175,6 +129,7 @@ const bannerMsg = flagshipLive
     gap: 1rem;
     flex-wrap: wrap;
     align-items: center;
+    justify-content: center;
   }
 
   .buy-btn { width: 176px; }
