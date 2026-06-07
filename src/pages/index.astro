@@ -25,18 +25,11 @@ const bannerMsg = flagshipLive
   />
 
   <section class="hero hero-feat">
-    <div class="container hero-grid">
-      <div class="hero-copy">
-        <div class="tag reveal" style="--d: .05s">Boutique VST plugins</div>
-        <h1 class="reveal" style="--d: .12s">Engineered,<br/>then tuned.</h1>
-        <span class="redline" aria-hidden="true"></span>
-        <p class="lede reveal" style="--d: .22s">Measured to spec, then voiced by ear.<br/>The precision of a machine, the feel of an instrument.</p>
-        <p class="hero-meta muted reveal" style="--d: .4s">
-          {flagshipLive
-            ? `${flagship.name} · available now · ${fmtPrice(flagship.introPriceUsd)}`
-            : `${flagship.name} ships ${flagship.releaseTarget} · intro price ${fmtPrice(flagship.introPriceUsd)}${flagshipPct ? ` (${flagshipPct}% off)` : ''}`}
-        </p>
-      </div>
+    <div class="hero-stage">
+      <div class="hs-tag reveal" style="--d: .05s">Boutique VST plugins</div>
+      <h1 class="hs-h1 reveal" style="--d: .12s">Engineered,<br/>then tuned.</h1>
+      <span class="hs-redline" aria-hidden="true"></span>
+      <p class="hs-lede reveal" style="--d: .22s">Measured to spec, then voiced by ear.<br/>The precision of a machine, the feel of an instrument.</p>
     </div>
   </section>
 
@@ -61,131 +54,97 @@ const bannerMsg = flagshipLive
 </BaseLayout>
 
 <style>
-  .hero-feat { padding: var(--space-10, 5rem) 0 var(--space-8, 4rem); }
+  /* ── Hero — laid out visually in /herolab as a 1200×600 "stage". Positions
+     baked as container-query units (cqw) so the whole composition scales as one
+     unit from the 1200px design width down, then reflows to a centered stack on
+     phones. Edit by re-running /herolab, not by hand. ── */
+  .hero-feat { padding: var(--space-6) 0; }
 
-  /* Signature moment: the hero "revs in". Concept-tied (tachometer redline
-     sweep + staggered copy). Pure CSS, no layout shift, motion-safe. */
-  .hero-copy .redline {
-    display: block;
-    height: 3px;
-    width: min(260px, 60%);
-    margin: 0.5rem auto 0.75rem;
-    border-radius: 2px;
+  .hero-stage {
+    position: relative;
+    width: 100%;
+    max-width: var(--maxw);          /* 1200px — the design width */
+    margin: 0 auto;
+    aspect-ratio: 1200 / 600;        /* reserves the stage height proportionally */
+    container-type: inline-size;     /* cqw children scale to stage width */
+    overflow: hidden;
+  }
+
+  .hero-stage > * {
+    position: absolute;
+    margin: 0;
+    max-width: none;
+  }
+
+  .hs-tag {
+    left: 34.583cqw; top: 5.75cqw; width: 37.083cqw;
+    font-family: var(--font-display);
+    font-size: max(0.85rem, 1.667cqw);
+    line-height: 1; letter-spacing: 0.3em;
+    text-align: center; text-transform: uppercase;
+    color: var(--brass);
+  }
+
+  .hs-h1 {
+    left: 1.75cqw; top: 9.25cqw; width: 103.667cqw;
+    font-family: var(--font-display);
+    font-size: max(2.75rem, 8.133cqw);
+    line-height: 1; letter-spacing: 0.02em;
+    text-align: center; color: var(--fg);
+  }
+
+  .hs-redline {
+    left: 42.25cqw; top: 26.583cqw; width: 21.667cqw;
+    height: max(2px, 0.25cqw);
     background: linear-gradient(90deg, var(--brass-bright), var(--redline));
+    border-radius: 2px;
     transform-origin: center;
   }
 
+  .hs-lede {
+    left: 31.417cqw; top: 28.75cqw; width: 43.333cqw;
+    font-family: var(--font-display);
+    font-size: max(0.95rem, 1.667cqw);
+    line-height: 1.6; letter-spacing: 0;
+    text-align: center; color: var(--fg-dim);
+  }
+
+  /* Signature "rev-in": staggered rise + redline sweep. Pure CSS, motion-safe. */
   @media (prefers-reduced-motion: no-preference) {
-    .hero-copy .reveal {
+    .hero-stage .reveal {
       opacity: 0;
       transform: translateY(14px);
       animation: heroRise 0.6s var(--ease) both;
       animation-delay: var(--d, 0s);
     }
-    .hero-copy .redline {
+    .hs-redline {
       transform: scaleX(0);
       animation: heroSweep 0.7s var(--ease) 0.45s both;
-    }
-    .hero-visual .plugin-shot {
-      animation: heroSettle 0.9s var(--ease) both;
     }
   }
 
   @keyframes heroRise { to { opacity: 1; transform: none; } }
   @keyframes heroSweep { to { transform: scaleX(1); } }
-  @keyframes heroSettle {
-    from { opacity: 0.6; transform: scale(1.04); }
-    to { opacity: 1; transform: none; }
-  }
 
-  .hero-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    justify-items: center;
-    text-align: center;
-    gap: 4rem;
-    align-items: center;
-  }
-
-  .hero-copy h1 {
-    text-align: center;
-    margin: 0 0 1rem;
-    line-height: 1;
-  }
-
-  .hero-copy .lede {
-    text-align: center;
-    max-width: 36ch;
-    margin: 0 auto 2rem;
-  }
-
-  .hero-copy .tag {
-    text-align: center;
-    margin-bottom: 1.5rem;
-  }
-
-  .hero-cta {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .buy-btn { width: 176px; }
-
-  .store-link {
-    font-family: var(--font-display);
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    font-size: 1.05rem;
-    color: var(--brass-bright);
-    border-bottom: 1px solid var(--brass-dark);
-    padding-bottom: 0.2rem;
-    transition: color 0.2s var(--ease), border-color 0.2s var(--ease);
-  }
-  .store-link:hover { color: var(--chrome); border-bottom-color: var(--chrome); }
-
-  .cta-primary,
-  .cta-ghost {
-    display: inline-block;
-    padding: 0.875rem 1.75rem;
-    font-family: var(--font-display);
-    font-size: 1.05rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    border: 1px solid transparent;
-    transition: background 0.2s, border-color 0.2s, color 0.2s;
-  }
-
-  .cta-primary { background: var(--brass); color: var(--bg-0); }
-  .cta-primary:hover { background: var(--brass-bright); }
-
-  .cta-ghost {
-    background: transparent;
-    color: var(--fg);
-    border-color: var(--border-bright);
-  }
-  .cta-ghost:hover { border-color: var(--brass); color: var(--brass-bright); }
-
-  .hero-meta {
-    margin-top: 1.5rem;
-    font-size: 0.85rem;
-  }
-
-  .hero-visual {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .plugin-shot {
-    width: 100%;
-    max-width: 620px;
-    height: auto;
-    border-radius: 10px;
-    border: 1px solid var(--border-bright);
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+  /* Phones: drop the absolute stage, stack centered with readable sizes. */
+  @media (max-width: 720px) {
+    .hero-stage {
+      aspect-ratio: auto;
+      overflow: visible;
+      container-type: normal;
+      padding: 3rem 1.5rem 2rem;
+      text-align: center;
+    }
+    .hero-stage > * { position: static; width: auto; }
+    .hs-tag { font-size: 0.85rem; margin-bottom: 1.25rem; }
+    .hs-h1 { font-size: clamp(2.75rem, 14vw, 4rem); margin-bottom: 0.75rem; }
+    .hs-redline {
+      display: block;
+      width: min(220px, 55%);
+      height: 3px;
+      margin: 0.5rem auto 1.25rem;
+    }
+    .hs-lede { font-size: 1.05rem; max-width: 34ch; margin: 0 auto; }
   }
 
   .grid-head {
