@@ -25,11 +25,13 @@ const checkoutUrl = plugin.gumroadUrl ? `${plugin.gumroadUrl}?wanted=true` : '';
     <>
       <div class="prices">
         <span class="price-now">{fmtPrice(plugin.introPriceUsd)}</span>
-        {plugin.regularPriceUsd != null && pct != null && (
+        {plugin.regularPriceUsd != null && pct != null ? (
           <>
             <span class="price-was">{fmtPrice(plugin.regularPriceUsd)}</span>
-            <span class="price-tag">&minus;{pct}% intro</span>
+            <span class="price-tag">&minus;{pct}% launch</span>
           </>
+        ) : (
+          <span class="price-tag">Launch price</span>
         )}
       </div>
       <p class="platform-note">Windows VST3 &middot; <span class="soon">macOS (AU) &amp; Pro Tools coming</span></p>
