@@ -131,7 +131,7 @@ export const plugins: Plugin[] = [
 
 export const bySlug = (slug: string) => plugins.find((p) => p.slug === slug);
 
-export const isBuyable = (p: Plugin) => p.status === 'live' && !!p.gumroadUrl;
+export const isBuyable = (p: Plugin) => p.status === 'live' && !!p.paddlePriceId && !!PADDLE.token;
 
 export const fmtPrice = (usd: number | null) => (usd == null ? '—' : `$${usd}`);
 
