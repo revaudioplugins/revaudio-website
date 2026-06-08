@@ -93,22 +93,11 @@ const playableDemos = plugin.audioDemos.filter((d) => d.beforeUrl && d.afterUrl)
       </section>
 
       <TestimonialBlock plugin={plugin.slug} heading={`What producers say about ${plugin.name}`} />
-
-      {!buyable && (
-        <section id="waitlist" class="waitlist-anchor">
-          <h2>Get notified</h2>
-          <p class="muted">First builds, demo codes, intro pricing &mdash; straight to your inbox the moment {plugin.name} ships.</p>
-        </section>
-      )}
     </div>
   </section>
 
-  {!buyable && (
-    <EmailCapture
-      heading={`Reserve your ${plugin.name}`}
-      subhead="One email per release. No spam."
-    />
-  )}
+  {/* id="waitlist" keeps BuyButton's /{slug}#waitlist links landing on the one capture form. */}
+  {!buyable && <EmailCapture id="waitlist" />}
 </BaseLayout>
 
 <style>
@@ -227,6 +216,4 @@ const playableDemos = plugin.audioDemos.filter((d) => d.beforeUrl && d.afterUrl)
   }
 
   .install-section ol li { margin: 0.5rem 0; }
-
-  .waitlist-anchor { padding: 3rem 0 0; scroll-margin-top: 80px; }
 </style>

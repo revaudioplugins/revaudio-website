@@ -30,6 +30,8 @@ BUY_PROMPT="Photorealistic product render of a single vintage muscle-car dashboa
 
 NOTIFY_PROMPT="Photorealistic product render of a single vintage muscle-car dashboard push-button, orthographic flat front view, centered, filling the frame. A WIDE horizontal rounded-rectangle long pill/lozenge push-button bolted into a brushed aged-brass dashboard plate with a polished chrome bezel and fine knurled edge; a thin race-red anodized accent line just inside the chrome. One small aged slotted brass screw at the far left and one at the far right, clocked differently. The pill face is deep race-red glossy enamel with a soft bright specular highlight top-left. The words 'NOTIFY ME' are engraved once across the centre of the red pill in clean bold capitals, cream off-white condensed industrial slab font, on a SINGLE line. $STYLE The button is a wide pill (about 3.2 times wider than tall) filling about 94% of the frame width. Strict: only ONE button; 'NOTIFY ME' appears once, only on the red pill, one line; no other text, numbers, logos or labels anywhere."
 
+SUBSCRIBE_PROMPT="Photorealistic product render of a single vintage muscle-car dashboard push-button, orthographic flat front view, centered, filling the frame. A WIDE horizontal rounded-rectangle long pill/lozenge push-button bolted into a brushed aged-brass dashboard plate with a polished chrome bezel and fine knurled edge; a thin race-red anodized accent line just inside the chrome. One small aged slotted brass screw at the far left and one at the far right, clocked differently. The pill face is deep race-red glossy enamel with a soft bright specular highlight top-left. The word 'SUBSCRIBE' is engraved once across the centre of the red pill in clean bold capitals, cream off-white condensed industrial slab font, on a SINGLE line. $STYLE The button is a wide pill (about 3.2 times wider than tall) filling about 94% of the frame width. Strict: only ONE button; 'SUBSCRIBE' appears once, only on the red pill, one line; no other text, numbers, logos or labels anywhere."
+
 CARTICON_PROMPT="Photorealistic product render of a small round aged-brass medallion badge, orthographic flat front view, perfectly centered, isolated. A circular brushed aged-brass disc with a thin polished chrome rim and fine knurled edge. Embossed in the centre is one simple BOLD chrome shopping-cart glyph (a minimal cart silhouette), high contrast, clean and legible, with a tiny race-red enamel dot accent. Minimal fine detail so it stays readable when shown very small. $STYLE The medallion fills about 90% of the frame. Strict: only ONE medallion and ONE simple cart glyph; no text, numbers, letters or other symbols anywhere."
 
 gen() {
@@ -48,6 +50,7 @@ run_one() {
     btn-add-to-cart) gen "$1" "1536x1024" "$ADDCART_PROMPT" ;;
     btn-buy)         gen "$1" "1536x1024" "$BUY_PROMPT" ;;
     btn-notify)      gen "$1" "1536x1024" "$NOTIFY_PROMPT" ;;
+    btn-subscribe)   gen "$1" "1536x1024" "$SUBSCRIBE_PROMPT" ;;
     icon-cart)       gen "$1" "1024x1024" "$CARTICON_PROMPT" ;;
     toggle-on)       gen "$1" "1024x1024" "$TOGGLE_ON_PROMPT" ;;
     toggle-off)      gen "$1" "1024x1024" "$TOGGLE_OFF_PROMPT" ;;

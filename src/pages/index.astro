@@ -5,6 +5,7 @@ import TestimonialBlock from '../components/TestimonialBlock.astro';
 import DAWStrip from '../components/DAWStrip.astro';
 import PressLogos from '../components/PressLogos.astro';
 import SaleBanner from '../components/SaleBanner.astro';
+import EmailCapture from '../components/EmailCapture.astro';
 import { plugins, fmtPrice, discountPct, isBuyable } from '../data/plugins';
 
 const flagship = plugins[0];
@@ -13,15 +14,15 @@ const flagshipLive = isBuyable(flagship);
 const bannerMsg = flagshipLive
   ? `${flagship.name} is available now — ${fmtPrice(flagship.introPriceUsd)}.`
   : flagshipPct
-    ? `Pre-launch — join the waitlist for ${flagshipPct}% off ${flagship.name}, the first plugin to ship.`
-    : `Pre-launch — join the waitlist for intro pricing on ${flagship.name}, the first plugin to ship.`;
+    ? `Pre-launch — subscribe for ${flagshipPct}% off ${flagship.name}, the first plugin to ship.`
+    : `Pre-launch — subscribe for intro pricing on ${flagship.name}, the first plugin to ship.`;
 ---
 
 <BaseLayout title="RevAudio">
   <SaleBanner
     message={bannerMsg}
-    ctaLabel={flagshipLive ? 'Get it' : 'Join waitlist'}
-    ctaHref={flagshipLive ? `/${flagship.slug}` : '/#waitlist'}
+    ctaLabel={flagshipLive ? 'Get it' : 'Subscribe'}
+    ctaHref={flagshipLive ? `/${flagship.slug}` : '#subscribe'}
   />
 
   <section class="hero hero-feat">
@@ -30,6 +31,7 @@ const bannerMsg = flagshipLive
       <h1 class="hs-h1 reveal" style="--d: .12s">Engineered,<br/>then tuned.</h1>
       <span class="hs-redline" aria-hidden="true"></span>
       <p class="hs-lede reveal" style="--d: .22s">Measured to spec, then voiced by ear.<br/>The precision of a machine, the feel of an instrument.</p>
+      <a class="hs-cta reveal" style="--d: .32s" href="#subscribe">Subscribe &rarr;</a>
     </div>
   </section>
 
@@ -51,6 +53,7 @@ const bannerMsg = flagshipLive
   <DAWStrip />
   <TestimonialBlock heading="Producers on RevAudio" />
   <PressLogos />
+  <EmailCapture id="subscribe" />
 </BaseLayout>
 
 <style>
@@ -111,6 +114,23 @@ const bannerMsg = flagshipLive
     text-align: center; color: var(--fg-dim);
   }
 
+  /* Primary hero CTA — hand-placed below the lede (not a /herolab element).
+     Keep the cqw top in sync if the lede position changes. */
+  .hs-cta {
+    top: 37.5cqw;
+    padding: 0.85rem 2rem;
+    font-family: var(--font-display);
+    font-size: max(0.9rem, 1.45cqw);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--bg-0);
+    background: var(--brass);
+    border-radius: 4px;
+    transition: background 0.2s var(--ease);
+  }
+  .hs-cta:hover { background: var(--brass-bright); color: var(--bg-0); }
+
   /* Signature "rev-in": staggered rise + redline sweep. Pure CSS, motion-safe. */
   @media (prefers-reduced-motion: no-preference) {
     .hero-stage .reveal {
@@ -147,6 +167,7 @@ const bannerMsg = flagshipLive
       margin: 0.5rem auto 1.25rem;
     }
     .hs-lede { font-size: 1.05rem; max-width: 34ch; margin: 0 auto; }
+    .hs-cta { font-size: 1rem; margin: 1.75rem auto 0; }
   }
 
   .grid-head {

@@ -61,6 +61,7 @@ run_one() {
     btn-add-to-cart) gen_pressed "$1" pill  13 29 74 42 ;;
     btn-buy)         gen_pressed "$1" round 28 14 44 72 ;;
     btn-notify)      gen_pressed "$1" pill  12 28 76 44 ;;
+    btn-subscribe)   gen_pressed "$1" pill  12 28 76 44 ;;
     *) echo "unknown: $1"; exit 1 ;;
   esac
 }

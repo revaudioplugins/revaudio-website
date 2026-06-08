@@ -1,27 +1,33 @@
 ---
 import { Image } from 'astro:assets';
-import notifyImg from '../assets/ui/btn-notify.png';
-import notifyPressed from '../assets/ui/btn-notify-pressed.png';
+import subscribeImg from '../assets/ui/btn-subscribe.png';
+import subscribePressed from '../assets/ui/btn-subscribe-pressed.png';
 
 interface Props {
   heading?: string;
   subhead?: string;
   buttonLabel?: string;
+  id?: string;
 }
 
 const {
-  heading = 'Get on the list',
+  heading = 'Subscribe to the newsletter',
   subhead = 'New plugins, demo codes, and intro pricing — straight to your inbox. No spam.',
-  buttonLabel = 'Notify me',
+  buttonLabel = 'Subscribe',
+  id,
 } = Astro.props;
+
+// GO LIVE: create a free form at https://formspree.io, then replace the
+// REPLACE_WITH_FORM_ID token below with your form id (e.g. .../f/abcdwxyz).
+// Until then the form won't pretend to capture — it shows an honest notice.
+const endpoint = 'https://formspree.io/f/REPLACE_WITH_FORM_ID';
 ---
 
-<section class="signup">
+<section class="signup" id={id}>
   <div class="container">
     <h2>{heading}</h2>
     <p>{subhead}</p>
-    <!-- TODO: replace action with real MailerLite endpoint once account is set up -->
-    <form action="https://example.com/subscribe" method="POST" onsubmit="event.preventDefault(); alert('Email capture not yet wired. Add MailerLite endpoint in EmailCapture.astro.');">
+    <form class="signup-form" action={endpoint} method="POST" data-newsletter>
       <input
         type="email"
         name="email"
@@ -29,17 +35,59 @@ const {
         required
         aria-label="Email address"
       />
+      <!-- honeypot: real users never fill this; bots do -->
+      <input type="text" name="_gotcha" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
       <div class="notify-btn panel">
-        <Image src={notifyImg} alt="" width={520} height={347} format="webp" />
-        <button type="submit" class="panel-hit hit-pill hit-notify" aria-label={buttonLabel}></button>
-        <Image src={notifyPressed} alt="" width={520} height={347} format="webp" loading="eager" class="press" />
+        <Image src={subscribeImg} alt="" width={520} height={347} format="webp" />
+        <button type="submit" class="panel-hit hit-pill hit-subscribe" aria-label={buttonLabel}></button>
+        <Image src={subscribePressed} alt="" width={520} height={347} format="webp" loading="eager" class="press" />
       </div>
     </form>
+    <p class="signup-status" role="status" aria-live="polite" hidden></p>
   </div>
 </section>
 
+<script>
+  document.querySelectorAll<HTMLFormElement>('form[data-newsletter]').forEach((form) => {
+    const status = form.parentElement?.querySelector<HTMLElement>('.signup-status');
+    // Build-time placeholder still in the action ⇒ not wired to a real backend yet.
+    const wired = !form.action.includes('REPLACE_WITH_FORM_ID');
+
+    const show = (msg: string, ok: boolean) => {
+      if (!status) return;
+      status.textContent = msg;
+      status.hidden = false;
+      status.classList.toggle('ok', ok);
+      status.classList.toggle('err', !ok);
+    };
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!wired) {
+        show('Almost there — newsletter signup goes live shortly. Your email wasn’t sent yet.', false);
+        return;
+      }
+      try {
+        const res = await fetch(form.action, {
+          method: 'POST',
+          body: new FormData(form),
+          headers: { Accept: 'application/json' },
+        });
+        if (res.ok) {
+          form.hidden = true;
+          show('You’re on the list — watch your inbox for the first build.', true);
+        } else {
+          show('Something went wrong. Try again, or email hello@revaudio.net.', false);
+        }
+      } catch {
+        show('Network hiccup — try again in a moment.', false);
+      }
+    });
+  });
+</script>
+
 <style>
-  /* stack the form so the full NOTIFY ME plate isn't cropped beside the input */
+  /* stack the form so the full SUBSCRIBE plate isn't cropped beside the input */
   .signup form { flex-direction: column; align-items: stretch; gap: 0.85rem; }
   .signup form .notify-btn {
     width: 220px;
@@ -48,6 +96,21 @@ const {
     border: 0;
     background: none;
   }
+  /* honeypot — visually and semantically hidden, still submittable by bots */
+  .signup form .hp {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+  .signup .signup-status {
+    margin: 1.25rem auto 0;
+    max-width: 480px;
+    font-size: 0.95rem;
+  }
+  .signup .signup-status.ok { color: var(--brass-bright); }
+  .signup .signup-status.err { color: var(--fg-dim); }
   @media (max-width: 480px) {
     .signup form .notify-btn { width: 100%; max-width: 280px; }
   }
