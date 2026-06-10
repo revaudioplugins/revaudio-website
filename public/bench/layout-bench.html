@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>RevAudio — Layout Bench</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #0b0a09; font-family: Consolas, monospace; }
+  iframe { display: block; width: 100%; height: 100%; border: 0; }
+  .panel {
+    position: fixed; top: 90px; left: 12px; z-index: 9999;
+    background: rgba(20, 17, 15, 0.95); border: 1px solid #c9a35c; border-radius: 10px;
+    padding: 14px 16px; color: #efe9df; width: 280px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.6); font-size: 13px;
+  }
+  .panel h3 { margin: 0 0 10px; font-size: 14px; color: #e8c878; letter-spacing: .08em; }
+  .row { margin-bottom: 12px; }
+  .row label { display: flex; justify-content: space-between; margin-bottom: 4px; }
+  .row .val { color: #e8c878; }
+  input[type=range] { width: 100%; accent-color: #c9a35c; }
+  button {
+    width: 100%; background: #c9a35c; border: 0; color: #0b0a09; font-family: inherit;
+    font-weight: bold; padding: 8px; border-radius: 6px; cursor: pointer; letter-spacing: .05em;
+  }
+  button:hover { background: #e8c878; }
+  .out { margin-top: 8px; color: #8a8275; word-break: break-all; min-height: 2.4em; }
+  .drag { cursor: move; user-select: none; float: right; color: #8a8275; }
+  .hint { color: #8a8275; font-size: 11px; margin-top: 6px; }
+</style>
+</head>
+<body>
+<div class="panel" id="panel">
+  <h3>LAYOUT BENCH <span class="drag" id="drag">✥ drag</span></h3>
+  <div class="row">
+    <label>Page width <span class="val" id="vPct">92vw</span></label>
+    <input type="range" id="pct" min="60" max="100" value="92" step="1">
+  </div>
+  <div class="row">
+    <label>Page max cap <span class="val" id="vCap">1560px</span></label>
+    <input type="range" id="cap" min="1000" max="2200" value="1560" step="20">
+  </div>
+  <div class="row">
+    <label>Gauge width <span class="val" id="vDvw">42vw</span></label>
+    <input type="range" id="dvw" min="25" max="60" value="42" step="1">
+  </div>
+  <div class="row">
+    <label>Gauge max cap <span class="val" id="vDmax">680px</span></label>
+    <input type="range" id="dmax" min="380" max="1000" value="680" step="10">
+  </div>
+  <button id="copy">COPY VALUES FOR CLAUDE</button>
+  <div class="out" id="out"></div>
+  <div class="hint">Resize the browser window too — values are live. When it looks right, hit COPY and paste to Claude.</div>
+</div>
+<iframe id="site" src="/"></iframe>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const site = $('site');
+
+  function apply() {
+    const doc = site.contentDocument;
+    if (!doc) return;
+    const pct = $('pct').value, cap = $('cap').value, dvw = $('dvw').value, dmax = $('dmax').value;
+    doc.documentElement.style.setProperty('--maxw', `min(${cap}px, ${pct}vw)`);
+    doc.documentElement.style.setProperty('--dial-vw', dvw + 'vw');
+    doc.documentElement.style.setProperty('--dial-max', dmax + 'px');
+    $('vPct').textContent = pct + 'vw';
+    $('vCap').textContent = cap + 'px';
+    $('vDvw').textContent = dvw + 'vw';
+    $('vDmax').textContent = dmax + 'px';
+  }
+
+  ['pct', 'cap', 'dvw', 'dmax'].forEach(id => $(id).addEventListener('input', apply));
+  site.addEventListener('load', apply);
+
+  $('copy').onclick = () => {
+    const txt = `page: min(${$('cap').value}px, ${$('pct').value}vw) | gauge: min(${$('dvw').value}vw, ${$('dmax').value}px) | window: ${innerWidth}x${innerHeight} dpr:${devicePixelRatio}`;
+    navigator.clipboard.writeText(txt);
+    $('out').textContent = 'copied: ' + txt;
+  };
+
+  // draggable panel
+  let dx, dy, dragging = false;
+  $('drag').addEventListener('mousedown', e => { dragging = true; const r = $('panel').getBoundingClientRect(); dx = e.clientX - r.left; dy = e.clientY - r.top; e.preventDefault(); });
+  addEventListener('mousemove', e => { if (!dragging) return; $('panel').style.left = (e.clientX - dx) + 'px'; $('panel').style.top = (e.clientY - dy) + 'px'; });
+  addEventListener('mouseup', () => dragging = false);
+</script>
+</body>
+</html>

@@ -12,12 +12,10 @@ interface Props {
 const { plugin } = Astro.props;
 const buyable = isBuyable(plugin);
 const pct = discountPct(plugin);
-const statusKlass = plugin.status === 'live' ? 'live' : plugin.status === 'beta' ? 'beta' : 'dev';
 const thumb = pluginImage(plugin.heroImage);
 ---
 
 <a class="plugin-card" href={`/${plugin.slug}`} data-reveal="card">
-  <span class={`status ${statusKlass}`} data-reveal-accent>{plugin.statusLabel}</span>
   <div class="card-thumb">
     {thumb ? (
       <Image src={thumb} alt={plugin.name} width={900} height={506} format="webp" loading="lazy" />

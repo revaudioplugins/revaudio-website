@@ -66,8 +66,8 @@
   --text-3xl: clamp(1.75rem, 4vw, 3rem);
   --text-4xl: clamp(2.5rem, 6vw, 5rem);
 
-  /* layout */
-  --maxw: 1200px;
+  /* layout — fluid; tuned on bench 2026-06-10 (user pick, 1280 CSS viewport) */
+  --maxw: min(1240px, 98vw);
 }
 
 * { box-sizing: border-box; }
@@ -100,13 +100,44 @@ html, body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* body background must stay transparent while the .page-bg test layer is in —
+   an opaque body paints over a negative-z fixed child. Gradients moved onto
+   .page-bg; html keeps var(--bg-0) as the canvas color. */
 body {
+  background: none;
+  min-height: 100vh;
+}
+
+/* TEST — fixed long-image background, scrubbed by src/lib/pagebg.ts. Sits
+   between the html canvas background and all content; sections with opaque
+   panels still cover it by design. */
+.page-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  /* Zoom control: image drawn at --bg-w wide (not full cover) so the art reads
+     relaxed, not blown up. Clamp keeps phones from getting a sliver. */
+  --bg-w: max(62vw, 520px);
   background:
     radial-gradient(ellipse at top, rgba(201, 163, 92, 0.05), transparent 60%),
     radial-gradient(ellipse at bottom, rgba(139, 58, 31, 0.04), transparent 60%),
-    var(--bg-0);
-  min-height: 100vh;
+    url('/bg/aurora-test.webp') 50% 0% / var(--bg-w) auto no-repeat var(--bg-0);
+  pointer-events: none;
 }
+
+/* soft side fade — blends the art column into the page base color */
+.page-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, var(--bg-0) 0%, transparent 22%, transparent 78%, var(--bg-0) 100%);
+}
+
+/* TEST overrides — translucent section panels so the long-image bg reads
+   through the whole page. Delete with the .page-bg experiment. */
+.values .v { background: rgba(20, 17, 15, 0.72); }
+.signup { background: rgba(20, 17, 15, 0.6); }
+footer.site-footer { background: rgba(11, 10, 9, 0.55); }
 
 a { color: var(--brass-bright); text-decoration: none; transition: color 0.2s var(--ease); }
 a:hover { color: var(--chrome); }
@@ -152,7 +183,7 @@ nav.site-nav {
   align-items: center;
   justify-content: space-between;
   padding: 1rem 1.5rem;
-  max-width: 1200px;
+  max-width: var(--maxw);
   margin: 0 auto;
 }
 

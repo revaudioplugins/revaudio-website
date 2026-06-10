@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>RevAudio — Hero Bench</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #0b0a09; font-family: Consolas, monospace; }
+  iframe { display: block; width: 100%; height: 100%; border: 0; }
+  .panel {
+    position: fixed; top: 90px; right: 12px; z-index: 9999;
+    background: rgba(20, 17, 15, 0.95); border: 1px solid #c9a35c; border-radius: 10px;
+    padding: 14px 16px; color: #efe9df; width: 290px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.6); font-size: 13px;
+  }
+  .panel h3 { margin: 0 0 10px; font-size: 14px; color: #e8c878; letter-spacing: .08em; }
+  .row { margin-bottom: 12px; }
+  .row label { display: flex; justify-content: space-between; margin-bottom: 4px; }
+  .row .val { color: #e8c878; }
+  input[type=range] { width: 100%; accent-color: #c9a35c; }
+  button {
+    width: 100%; background: #c9a35c; border: 0; color: #0b0a09; font-family: inherit;
+    font-weight: bold; padding: 8px; border-radius: 6px; cursor: pointer; letter-spacing: .05em;
+    margin-top: 4px;
+  }
+  button:hover { background: #e8c878; }
+  button.ghost { background: transparent; color: #c9a35c; border: 1px solid #c9a35c; }
+  .out { margin-top: 8px; color: #8a8275; word-break: break-all; min-height: 2.4em; }
+  .drag { cursor: move; user-select: none; float: right; color: #8a8275; }
+  .hint { color: #8a8275; font-size: 11px; margin-top: 6px; }
+</style>
+</head>
+<body>
+<div class="panel" id="panel">
+  <h3>HERO BENCH <span class="drag" id="drag">✥ drag</span></h3>
+  <div class="row">
+    <label>Red line &rarr; <span class="val" id="vLine">0px</span></label>
+    <input type="range" id="line" min="0" max="450" value="0" step="2">
+  </div>
+  <div class="row">
+    <label>"Measured to spec" text &rarr; <span class="val" id="vLede">0px</span></label>
+    <input type="range" id="lede" min="0" max="300" value="0" step="2">
+  </div>
+  <div class="row">
+    <label>Subscribe button &rarr; <span class="val" id="vCta">0px</span></label>
+    <input type="range" id="cta" min="0" max="500" value="0" step="2">
+  </div>
+  <button class="ghost" id="centerAll">CENTER ALL UNDER HEADLINE</button>
+  <button id="copy">COPY VALUES FOR CLAUDE</button>
+  <div class="out" id="out"></div>
+  <div class="hint">Sliders push each piece right from its current spot. CENTER ALL lines them up under the headline as a starting point. When happy, COPY + paste to Claude.</div>
+</div>
+<iframe id="site" src="/"></iframe>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const site = $('site');
+  const VARS = { line: '--redline-x', lede: '--lede-x', cta: '--cta-x' };
+
+  function apply() {
+    const doc = site.contentDocument;
+    if (!doc) return;
+    for (const k of Object.keys(VARS)) {
+      doc.documentElement.style.setProperty(VARS[k], $(k).value + 'px');
+    }
+    $('vLine').textContent = $('line').value + 'px';
+    $('vLede').textContent = $('lede').value + 'px';
+    $('vCta').textContent = $('cta').value + 'px';
+  }
+
+  ['line', 'lede', 'cta'].forEach(id => $(id).addEventListener('input', apply));
+  site.addEventListener('load', apply);
+
+  $('centerAll').onclick = () => {
+    const doc = site.contentDocument;
+    if (!doc) return;
+    const col = doc.querySelector('.hero-text').getBoundingClientRect();
+    const set = (sel, slider) => {
+      const w = doc.querySelector(sel).getBoundingClientRect().width;
+      const x = Math.max(0, Math.round((col.width - w) / 2));
+      $(slider).value = x;
+    };
+    set('.hh-redline', 'line');
+    set('.hh-lede', 'lede');
+    set('.hh-cta', 'cta');
+    apply();
+  };
+
+  $('copy').onclick = () => {
+    const txt = `redline-x: ${$('line').value}px | lede-x: ${$('lede').value}px | cta-x: ${$('cta').value}px | window: ${innerWidth}x${innerHeight} dpr:${devicePixelRatio}`;
+    navigator.clipboard.writeText(txt);
+    $('out').textContent = 'copied: ' + txt;
+  };
+
+  let dx, dy, dragging = false;
+  $('drag').addEventListener('mousedown', e => { dragging = true; const r = $('panel').getBoundingClientRect(); dx = e.clientX - r.left; dy = e.clientY - r.top; e.preventDefault(); });
+  addEventListener('mousemove', e => { if (!dragging) return; $('panel').style.left = (e.clientX - dx) + 'px'; $('panel').style.top = (e.clientY - dy) + 'px'; $('panel').style.right = 'auto'; });
+  addEventListener('mouseup', () => dragging = false);
+</script>
+</body>
+</html>

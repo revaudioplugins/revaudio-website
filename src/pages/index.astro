@@ -150,7 +150,7 @@ const bannerMsg = flagshipLive
     max-width: var(--maxw);
     margin: 0 auto;
     display: grid;
-    grid-template-columns: minmax(0, 1.1fr) minmax(300px, 460px);
+    grid-template-columns: minmax(0, 1.1fr) minmax(300px, min(var(--dial-vw, 35vw), var(--dial-max, 520px)));
     align-items: center;
     gap: 3rem;
     padding: 2rem 1.5rem 0;
@@ -183,6 +183,7 @@ const bannerMsg = flagshipLive
     background: linear-gradient(90deg, var(--brass-bright), var(--redline));
     transform-origin: left center;
     margin: 0 0 1.25rem;
+    margin-left: var(--redline-x, 206px);
   }
 
   .hh-lede {
@@ -192,11 +193,12 @@ const bannerMsg = flagshipLive
     color: var(--fg-dim);
     max-width: 44ch;
     margin: 0 0 1.75rem;
+    margin-left: var(--lede-x, 102px);
   }
 
   /* Vintage SUBSCRIBE plate (assets shared with EmailCapture); .panel
      mechanics from global.css. Opens the SubscribeModal. */
-  .hh-cta { width: 210px; }
+  .hh-cta { width: 210px; margin-left: var(--cta-x, 238px); }
 
   /* ── The gauge: face capture masked round; needle + hub overlay per the
      plugin's geometry. All children positioned in % so it scales as one. ── */
@@ -233,13 +235,14 @@ const bannerMsg = flagshipLive
     .hero-dial { max-width: 320px; margin: 0 auto; }
   }
 
+  /* centered stack above the card (user pick 2026-06-10) */
   .grid-head {
     display: flex;
-    align-items: end;
-    justify-content: space-between;
-    gap: 2rem;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.75rem;
     margin-bottom: 2.5rem;
-    flex-wrap: wrap;
   }
 
   .grid-head h2 { margin: 0; }
