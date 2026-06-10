@@ -100,8 +100,8 @@ export const plugins: Plugin[] = [
       'A mastering limiter that makes loudness, depth, and punch feel like flooring it on an open road. Multi-band compression, analog-modelled saturation, and an adaptive limiter chained the way a top-tier mastering engineer would chain them. Sits last on your master bus, glues the mix, and holds a true-peak ceiling at oversampled rate.',
     status: 'live',
     statusLabel: REVLIMITER_PADDLE_PRICE_ID ? 'Available now' : 'Checkout reopening soon',
-    introPriceUsd: 56, // launch: 40% off the $93 regular ($55.80, rounded to $56)
-    regularPriceUsd: 93,
+    introPriceUsd: 93, // flat price — no launch discount shown
+    regularPriceUsd: null,
     paddlePriceId: REVLIMITER_PADDLE_PRICE_ID,
     checkoutPaused: !REVLIMITER_PADDLE_PRICE_ID,
     demoUrl: null,
