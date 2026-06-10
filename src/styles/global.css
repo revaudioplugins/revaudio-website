@@ -166,11 +166,15 @@ p { margin: 0 0 1em; max-width: 64ch; }
 /* Rendered nav height: 42px logo + 2×1rem .nav-inner padding + 1px border.
    Sticky elements that must clear the header offset themselves by this token —
    update it if the logo size or nav padding changes. */
-:root { --nav-h: 75px; }
+:root { --nav-h: 75px; --sale-h: 0px; }
+
+/* Set by BaseLayout when site.launchSale.active — the sale marquee occupies
+   the top strip and the nav parks underneath it. */
+body.has-sale { --sale-h: 34px; }
 
 nav.site-nav {
   position: sticky;
-  top: 0;
+  top: var(--sale-h);
   z-index: 50;
   background: rgba(11, 10, 9, 0.85);
   backdrop-filter: blur(12px);

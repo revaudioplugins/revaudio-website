@@ -1,98 +1,110 @@
 ---
 /**
- * Pre-launch / sale banner. Honest by default — no fake countdown.
- * Activate by passing `active`. Provide `endsAt` (ISO) only if a real countdown applies.
+ * Site-wide launch-sale marquee. Mounted in BaseLayout above the Header;
+ * config lives in src/data/site.ts (site.launchSale) — flip `active` there
+ * to kill it everywhere. Honest by default: no countdown, real copy only.
+ *
+ * Sticky at top: 0 (z 60, one layer above the nav's 50). The nav parks
+ * underneath via `top: var(--sale-h)`; body.has-sale in BaseLayout sets
+ * that token, so with the sale off the nav returns to top: 0 with no gap.
+ *
+ * Marquee = two identical groups animated -50%; each group repeats the
+ * message 3× so the group outruns wide viewports and the loop is seamless.
+ * Pauses on hover; reduced-motion users get a single static centered line.
  */
-interface Props {
-  active?: boolean;
-  message?: string;
-  ctaLabel?: string;
-  ctaHref?: string;
-  endsAt?: string;
-}
+import { site } from '../data/site';
 
-const {
-  active = true,
-  message = 'The first RevAudio plugin is available now.',
-  ctaLabel = 'Visit the store',
-  ctaHref = '/store',
-  endsAt,
-} = Astro.props;
-
-if (!active) return null;
+const sale = site.launchSale;
+const REPEATS = 3;
 ---
 
-<aside class="sale-banner" data-banner data-ends-at={endsAt ?? ''}>
-  <div class="container">
-    <span class="msg">{message}</span>
-    {endsAt && <span class="countdown" data-countdown>--d : --h : --m : --s</span>}
-    <a class="cta" href={ctaHref}>{ctaLabel} &rarr;</a>
-  </div>
-</aside>
-
-<script>
-  const banners = document.querySelectorAll<HTMLElement>('[data-banner]');
-  banners.forEach((banner) => {
-    const target = banner.dataset.endsAt;
-    const out = banner.querySelector<HTMLElement>('[data-countdown]');
-    if (!target || !out) return;
-    const endsMs = Date.parse(target);
-    if (isNaN(endsMs)) {
-      // Hide rather than display garbage.
-      out.style.display = 'none';
-      return;
-    }
-    const tick = () => {
-      const remaining = Math.max(0, endsMs - Date.now());
-      const d = Math.floor(remaining / 86400000);
-      const h = Math.floor((remaining % 86400000) / 3600000);
-      const m = Math.floor((remaining % 3600000) / 60000);
-      const s = Math.floor((remaining % 60000) / 1000);
-      out.textContent = `${d}d : ${String(h).padStart(2, '0')}h : ${String(m).padStart(2, '0')}m : ${String(s).padStart(2, '0')}s`;
-      if (remaining === 0) banner.style.display = 'none';
-    };
-    tick();
-    setInterval(tick, 1000);
-  });
-</script>
+{
+  sale.active && (
+    <aside class="sale-banner" role="region" aria-label={`Launch sale: ${sale.pct}% off with code ${sale.code}`}>
+      <div class="track">
+        {[0, 1].map((group) => (
+          <div class="group" aria-hidden={group === 1 ? 'true' : undefined}>
+            {Array.from({ length: REPEATS }).map(() => (
+              <span class="seg">
+                LAUNCH SALE — <strong class="pct">{sale.pct}% OFF</strong> EVERYTHING — CODE{' '}
+                <strong class="code">{sale.code}</strong> AT CHECKOUT — LIMITED TIME
+                <span class="flag" aria-hidden="true">
+                  🏁
+                </span>
+              </span>
+            ))}
+          </div>
+        ))}
+      </div>
+    </aside>
+  )
+}
 
 <style>
   .sale-banner {
-    background: linear-gradient(90deg, var(--oxide-deep), var(--bg-1) 60%);
-    border-bottom: 1px solid var(--brass-dark);
-    color: var(--fg);
-    font-size: 0.9rem;
-    padding: 0.75rem 0;
-  }
-
-  .sale-banner .container {
+    position: sticky;
+    top: 0;
+    z-index: 60;
+    height: var(--sale-h, 34px);
+    overflow: hidden;
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 1.5rem;
-    flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--oxide-deep), var(--bg-1) 45%, var(--oxide-deep));
+    border-bottom: 1px solid var(--brass-dark);
   }
 
-  .msg {
-    color: var(--fg);
-    letter-spacing: 0.02em;
+  .track {
+    display: flex;
+    width: max-content;
+    animation: sale-scroll 45s linear infinite;
+    will-change: transform;
+  }
+  .sale-banner:hover .track { animation-play-state: paused; }
+
+  .group {
+    display: flex;
+    flex-shrink: 0;
   }
 
-  .countdown {
-    font-family: var(--font-mono);
-    font-size: 0.85rem;
-    color: var(--brass-bright);
-    letter-spacing: 0.1em;
-  }
-
-  .cta {
+  .seg {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    padding-right: 1.1rem;
     font-family: var(--font-display);
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    font-size: 0.95rem;
-    color: var(--brass-bright);
-    border-bottom: 1px solid var(--brass);
+    font-size: 0.92rem;
+    letter-spacing: 0.14em;
+    color: var(--fg);
   }
 
-  .cta:hover { color: var(--chrome); border-color: var(--chrome); }
+  .pct,
+  .code {
+    font-weight: inherit;
+    color: var(--brass-bright);
+    margin: 0 0.35em;
+  }
+  .code { color: var(--chrome, #e8e6e1); text-shadow: 0 0 8px rgba(232, 230, 225, 0.25); }
+
+  .flag {
+    font-size: 0.8rem;
+    margin-left: 1.1rem;
+    filter: saturate(0.6);
+  }
+
+  @keyframes sale-scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* Reduced motion: one static centered line, duplicates hidden. */
+  @media (prefers-reduced-motion: reduce) {
+    .track { animation: none; width: 100%; justify-content: center; }
+    .group[aria-hidden] { display: none; }
+    .group .seg:not(:first-child) { display: none; }
+    .flag { display: none; }
+  }
+
+  @media (max-width: 700px) {
+    .seg { font-size: 0.8rem; letter-spacing: 0.1em; }
+  }
 </style>

@@ -5,10 +5,9 @@ import PluginCard from '../components/PluginCard.astro';
 import TestimonialBlock from '../components/TestimonialBlock.astro';
 import DAWStrip from '../components/DAWStrip.astro';
 import PressLogos from '../components/PressLogos.astro';
-import SaleBanner from '../components/SaleBanner.astro';
 import EmailCapture from '../components/EmailCapture.astro';
 import SubscribeModal from '../components/SubscribeModal.astro';
-import { plugins, fmtPrice, discountPct, isBuyable } from '../data/plugins';
+import { plugins } from '../data/plugins';
 import faceImg from '../assets/hero/rev-gauge-face.png';
 import needleImg from '../assets/hero/needle-v2.png';
 import hubImg from '../assets/hero/hub-v2.png';
@@ -21,22 +20,9 @@ const N = { left: '30.049%', top: '16.672%', w: '40%', ox: '49.877%', oy: '83.32
 const H = { left: '44.468%', top: '44.601%', w: '11.207%' };
 
 const flagship = plugins[0];
-const flagshipPct = discountPct(flagship);
-const flagshipLive = isBuyable(flagship);
-const bannerMsg = flagshipLive
-  ? `${flagship.name} is available now — ${fmtPrice(flagship.introPriceUsd)}.`
-  : flagshipPct
-    ? `Pre-launch — subscribe for ${flagshipPct}% off ${flagship.name}, the first plugin to ship.`
-    : `Pre-launch — subscribe for intro pricing on ${flagship.name}, the first plugin to ship.`;
 ---
 
 <BaseLayout title="RevAudio">
-  <SaleBanner
-    message={bannerMsg}
-    ctaLabel={flagshipLive ? 'Get it' : 'Subscribe'}
-    ctaHref={flagshipLive ? `/${flagship.slug}` : '#subscribe'}
-  />
-
   {/* Hero — text stack + the REAL RevLimiter REV gauge (designed in /herolab).
       Face captured from the live plugin UI; needle + hub are the plugin's own
       PNG layers rotated around the plugin's (203,203) pivot, −135°…+135°.
