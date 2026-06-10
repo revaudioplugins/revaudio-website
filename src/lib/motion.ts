@@ -6,6 +6,10 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from 'lenis';
 
+// Register at module scope so any script importing from here can use
+// ScrollTrigger regardless of execution order relative to initMotion().
+gsap.registerPlugin(ScrollTrigger);
+
 /* Tokens (seconds — GSAP units). CSS mirrors live in global.css :root. */
 export const DUR_IN = 0.6;
 export const DUR_OUT = 0.3;
@@ -23,7 +27,6 @@ export let lenis: Lenis | null = null;
    registers GSAP (so later code can no-op cleanly) but starts no smoothing —
    native scroll only, and every effect must also check reducedMotion() itself. */
 export function initMotion(): void {
-  gsap.registerPlugin(ScrollTrigger);
   if (reducedMotion() || lenis) return;
 
   lenis = new Lenis({ anchors: true });

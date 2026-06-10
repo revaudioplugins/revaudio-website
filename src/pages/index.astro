@@ -1,4 +1,5 @@
 ---
+import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PluginCard from '../components/PluginCard.astro';
 import TestimonialBlock from '../components/TestimonialBlock.astro';
@@ -6,7 +7,18 @@ import DAWStrip from '../components/DAWStrip.astro';
 import PressLogos from '../components/PressLogos.astro';
 import SaleBanner from '../components/SaleBanner.astro';
 import EmailCapture from '../components/EmailCapture.astro';
+import SubscribeModal from '../components/SubscribeModal.astro';
 import { plugins, fmtPrice, discountPct, isBuyable } from '../data/plugins';
+import faceImg from '../assets/hero/rev-gauge-face.png';
+import needleImg from '../assets/hero/needle-v2.png';
+import hubImg from '../assets/hero/hub-v2.png';
+import subscribeImg from '../assets/ui/btn-subscribe.png';
+import subscribePressed from '../assets/ui/btn-subscribe-pressed.png';
+
+/* Gauge geometry — the plugin's 406-viewBox units as % of the square dial box:
+   needle <image> x122 y67.69 w162.4, pivot (203,203); hub x180.54 y181.08 w45.5 */
+const N = { left: '30.049%', top: '16.672%', w: '40%', ox: '49.877%', oy: '83.32%' };
+const H = { left: '44.468%', top: '44.601%', w: '11.207%' };
 
 const flagship = plugins[0];
 const flagshipPct = discountPct(flagship);
@@ -25,16 +37,35 @@ const bannerMsg = flagshipLive
     ctaHref={flagshipLive ? `/${flagship.slug}` : '#subscribe'}
   />
 
-  {/* Hero cascade: tag (CSS rise) → h1 words (data-split mask-rise, starts
-      after fonts) → redline sweep → lede → CTA. CSS delays tuned to land after
-      the split headline settles (~0.75s from load with cached fonts). */}
-  <section class="hero hero-feat">
-    <div class="hero-stage">
-      <div class="hs-tag reveal" style="--d: .05s">Boutique VST plugins</div>
-      <h1 class="hs-h1" data-split>Engineered,<br/>then tuned.</h1>
-      <span class="hs-redline" aria-hidden="true"></span>
-      <p class="hs-lede reveal" style="--d: .9s">Measured to spec, then voiced by ear.<br/>The precision of a machine, the feel of an instrument.</p>
-      <a class="hs-cta reveal" style="--d: 1.05s" href="#subscribe">Subscribe &rarr;</a>
+  {/* Hero — text stack + the REAL RevLimiter REV gauge (designed in /herolab).
+      Face captured from the live plugin UI; needle + hub are the plugin's own
+      PNG layers rotated around the plugin's (203,203) pivot, −135°…+135°.
+      Entrance: text cascade → dial settle → needle rev-blip → idle. Scroll
+      revs toward the redline; pointer micro-deflects (lerp). The SUBSCRIBE
+      plate opens the SubscribeModal. Reduced motion: static needle at idle. */}
+  <section class="hero hero-feat" data-hero>
+    <div class="hero-grid">
+      <div class="hero-text">
+        <div class="hh-tag" data-hero-in>Boutique VST plugins</div>
+        <h1 class="hh-h1" data-split>Engineered,<br />then tuned.</h1>
+        <span class="hh-redline" data-hero-sweep aria-hidden="true"></span>
+        <p class="hh-lede" data-hero-in>
+          Measured to spec, then voiced by ear.<br />The precision of a machine, the feel of an instrument.
+        </p>
+        <div class="hh-cta panel" data-hero-in>
+          <Image src={subscribeImg} alt="" width={520} height={347} format="webp" loading="eager" />
+          <button type="button" class="panel-hit hit-pill hit-subscribe" data-subscribe-open aria-label="Subscribe to the newsletter"></button>
+          <Image src={subscribePressed} alt="" width={520} height={347} format="webp" loading="eager" class="press" />
+        </div>
+      </div>
+
+      <div class="hero-dial" data-dial role="img" aria-label="RevLimiter rev gauge — needle at idle">
+        <Image class="g-face" src={faceImg} alt="" width={1100} format="webp" loading="eager" />
+        <div class="g-needle" data-needle style={`left:${N.left}; top:${N.top}; width:${N.w}; transform-origin:${N.ox} ${N.oy};`}>
+          <Image src={needleImg} alt="" width={500} format="webp" loading="eager" />
+        </div>
+        <Image class="g-hub" src={hubImg} alt="" width={200} format="webp" loading="eager" style={`left:${H.left}; top:${H.top}; width:${H.w};`} />
+      </div>
     </div>
   </section>
 
@@ -57,120 +88,149 @@ const bannerMsg = flagshipLive
   <TestimonialBlock heading="Producers on RevAudio" />
   <PressLogos />
   <EmailCapture id="subscribe" />
+  <SubscribeModal />
 </BaseLayout>
 
+<script>
+  import { gsap, ScrollTrigger, reducedMotion } from '../lib/motion';
+
+  // Plugin scale: dB −60…0 maps to −135°…+135°. Idle ≈ −50 dB, redline ≈ −10 dB.
+  const A_MIN = -135, A_IDLE = -90, A_RED = 90, A_MAX = 135;
+  const root = document.querySelector('[data-hero]');
+  const needle = root?.querySelector<HTMLElement>('[data-needle]');
+  const dial = root?.querySelector<HTMLElement>('[data-dial]');
+
+  if (root && needle && dial) {
+    if (reducedMotion()) {
+      gsap.set(needle, { rotation: A_IDLE });
+    } else {
+      /* One render path, three signals — base (load sweep → idle), scroll
+         deflection, pointer micro-deflection (lerped). No competing tweens. */
+      const state = { base: A_MIN, scroll: 0, pointer: 0, pointerTarget: 0 };
+      gsap.ticker.add(() => {
+        state.pointer += (state.pointerTarget - state.pointer) * 0.08;
+        gsap.set(needle, { rotation: Math.min(state.base + state.scroll + state.pointer, A_MAX) });
+      });
+
+      // ── Entrance: text cascade + dial settle + needle rev-blip ──
+      const tl = gsap.timeline({ defaults: { ease: 'expo.out' } });
+      tl.fromTo('[data-hero-in]', { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, stagger: 0.12 }, 0.05)
+        .fromTo('[data-hero-sweep]', { scaleX: 0 }, { scaleX: 1, duration: 0.7, ease: 'power3.out' }, 0.75)
+        .fromTo(dial, { y: 40, scale: 0.88, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 0.8 }, 0.35)
+        .to(state, { base: A_MAX, duration: 0.85, ease: 'power3.in' }, 0.9) // floor it
+        .to(state, { base: A_IDLE, duration: 1.1, ease: 'back.out(1.05)' }, '>'); // settle to idle
+
+      // ── Scroll: rev toward the redline as the hero leaves the viewport ──
+      ScrollTrigger.create({
+        trigger: root,
+        start: 'top top',
+        end: 'bottom 20%',
+        scrub: true,
+        onUpdate: (self) => { state.scroll = self.progress * (A_RED - A_IDLE); },
+      });
+
+      // ── Pointer: micro-deflection (desktop only) ──
+      if (matchMedia('(pointer: fine)').matches) {
+        root.addEventListener('pointermove', (e) => {
+          const r = dial.getBoundingClientRect();
+          state.pointerTarget = ((e.clientX - (r.left + r.width / 2)) / r.width) * 6; // ±3° feel
+        });
+        root.addEventListener('pointerleave', () => { state.pointerTarget = 0; });
+      }
+    }
+  }
+</script>
+
 <style>
-  /* ── Hero — laid out visually in /herolab as a 1200×600 "stage". Positions
-     baked as container-query units (cqw) so the whole composition scales as one
-     unit from the 1200px design width down, then reflows to a centered stack on
-     phones. Edit by re-running /herolab, not by hand. ── */
-  .hero-feat { padding: var(--space-6) 0; }
+  /* ── Hero — text stack + real REV gauge. Designed in /herolab (local bench);
+     edit there first, then port. ── */
+  .hero-feat { padding: var(--space-6) 0 var(--space-8); overflow-x: clip; }
 
-  .hero-stage {
-    position: relative;
-    width: 100%;
-    max-width: var(--maxw);          /* 1200px — the design width */
+  .hero-grid {
+    max-width: var(--maxw);
     margin: 0 auto;
-    aspect-ratio: 1200 / 600;        /* reserves the stage height proportionally */
-    container-type: inline-size;     /* cqw children scale to stage width */
-    overflow: hidden;
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(300px, 460px);
+    align-items: center;
+    gap: 3rem;
+    padding: 2rem 1.5rem 0;
+    min-height: clamp(420px, 52vh, 620px);
   }
 
-  .hero-stage > * {
-    position: absolute;
-    left: 50%;
-    translate: -50% 0;          /* true-centre at any width; composes with the reveal transform */
-    margin: 0;
-    max-width: none;
-  }
-
-  .hs-tag {
-    top: 5.75cqw; width: 37.083cqw;
+  .hh-tag {
     font-family: var(--font-display);
-    font-size: max(0.85rem, 1.667cqw);
-    line-height: 1; letter-spacing: 0.3em;
-    text-align: center; text-transform: uppercase;
-    color: var(--brass);
-  }
-
-  .hs-h1 {
-    top: 9.25cqw; width: 103.667cqw;
-    font-family: var(--font-display);
-    font-size: max(2.75rem, 8.133cqw);
-    line-height: 1; letter-spacing: 0.02em;
-    text-align: center; color: var(--fg);
-  }
-
-  .hs-redline {
-    top: 26.583cqw; width: 21.667cqw;
-    height: max(2px, 0.25cqw);
-    background: linear-gradient(90deg, var(--brass-bright), var(--redline));
-    border-radius: 2px;
-    transform-origin: center;
-  }
-
-  .hs-lede {
-    top: 28.75cqw; width: 43.333cqw;
-    font-family: var(--font-display);
-    font-size: max(0.95rem, 1.667cqw);
-    line-height: 1.6; letter-spacing: 0;
-    text-align: center; color: var(--fg-dim);
-  }
-
-  /* Primary hero CTA — hand-placed below the lede (not a /herolab element).
-     Keep the cqw top in sync if the lede position changes. */
-  .hs-cta {
-    top: 37.5cqw;
-    padding: 0.85rem 2rem;
-    font-family: var(--font-display);
-    font-size: max(0.9rem, 1.45cqw);
-    letter-spacing: 0.12em;
+    font-size: max(0.85rem, 1.05vw);
+    letter-spacing: 0.3em;
     text-transform: uppercase;
-    white-space: nowrap;
-    color: var(--bg-0);
-    background: var(--brass);
-    border-radius: 4px;
-    transition: background 0.2s var(--ease);
-  }
-  .hs-cta:hover { background: var(--brass-bright); color: var(--bg-0); }
-
-  /* Signature "rev-in": staggered rise + redline sweep. Pure CSS, motion-safe. */
-  @media (prefers-reduced-motion: no-preference) {
-    .hero-stage .reveal {
-      opacity: 0;
-      transform: translateY(14px);
-      animation: heroRise 0.6s var(--ease) both;
-      animation-delay: var(--d, 0s);
-    }
-    .hs-redline {
-      transform: scaleX(0);
-      animation: heroSweep 0.7s var(--ease) 0.75s both; /* sweeps as the split h1 settles */
-    }
+    color: var(--brass);
+    margin-bottom: 1rem;
   }
 
-  @keyframes heroRise { to { opacity: 1; transform: none; } }
-  @keyframes heroSweep { to { transform: scaleX(1); } }
+  .hh-h1 {
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 6.4vw, 6rem);
+    line-height: 0.98;
+    letter-spacing: 0.02em;
+    color: var(--fg);
+    margin: 0 0 1rem;
+  }
 
-  /* Phones: drop the absolute stage, stack centered with readable sizes. */
-  @media (max-width: 720px) {
-    .hero-stage {
-      aspect-ratio: auto;
-      overflow: visible;
-      container-type: normal;
-      padding: 3rem 1.5rem 2rem;
-      text-align: center;
-    }
-    .hero-stage > * { position: static; width: auto; translate: none; }
-    .hs-tag { font-size: 0.85rem; margin-bottom: 1.25rem; }
-    .hs-h1 { font-size: clamp(2.75rem, 14vw, 4rem); margin-bottom: 0.75rem; }
-    .hs-redline {
-      display: block;
-      width: min(220px, 55%);
-      height: 3px;
-      margin: 0.5rem auto 1.25rem;
-    }
-    .hs-lede { font-size: 1.05rem; max-width: 34ch; margin: 0 auto; }
-    .hs-cta { font-size: 1rem; margin: 1.75rem auto 0; }
+  .hh-redline {
+    display: block;
+    width: min(260px, 38%);
+    height: 3px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--brass-bright), var(--redline));
+    transform-origin: left center;
+    margin: 0 0 1.25rem;
+  }
+
+  .hh-lede {
+    font-family: var(--font-body);
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--fg-dim);
+    max-width: 44ch;
+    margin: 0 0 1.75rem;
+  }
+
+  /* Vintage SUBSCRIBE plate (assets shared with EmailCapture); .panel
+     mechanics from global.css. Opens the SubscribeModal. */
+  .hh-cta { width: 210px; }
+
+  /* ── The gauge: face capture masked round; needle + hub overlay per the
+     plugin's geometry. All children positioned in % so it scales as one. ── */
+  .hero-dial {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.65), 0 6px 18px rgba(0, 0, 0, 0.4);
+  }
+
+  .hero-dial :global(img.g-face) {
+    width: 100%;
+    height: 100%;
+    display: block;
+    border-radius: 50%; /* masks the panel-leather corners of the capture */
+  }
+
+  .g-needle {
+    position: absolute;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.5));
+  }
+  .g-needle :global(img) { width: 100%; height: auto; display: block; }
+
+  .hero-dial :global(img.g-hub) {
+    position: absolute;
+    height: auto;
+  }
+
+  @media (max-width: 860px) {
+    .hero-grid { grid-template-columns: 1fr; text-align: center; gap: 2rem; }
+    .hh-redline { margin-inline: auto; }
+    .hh-lede { margin-inline: auto; }
+    .hh-cta { margin-inline: auto; }
+    .hero-dial { max-width: 320px; margin: 0 auto; }
   }
 
   .grid-head {

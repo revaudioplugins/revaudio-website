@@ -15,7 +15,7 @@ OUT_DIR="src/assets/ui"
 TMP="$(mktemp -d)"
 W=1536; H=1024; SIZE="1536x1024"
 
-PRESS_PROMPT="Edit only the masked area. The red push-button is now pressed firmly DOWN into its chrome bezel: the red button face sits noticeably lower and recessed, the chrome bezel rim casts a soft dark shadow across the upper portion of the red face, the glossy highlight is dimmed and shifted lower, and the face reads slightly darker overall. Photorealistic, identical lighting, materials and shape. Do NOT change the brass plate, the chrome bezel, the corner screws, or the engraved lettering."
+PRESS_PROMPT="Edit only the masked area. The red push-button is now pressed firmly DOWN into its chrome bezel: the red button face sits noticeably lower and recessed, the chrome bezel rim casts a soft dark shadow across the upper portion of the red face, the glossy highlight is dimmed and shifted lower, and the face reads slightly darker overall. Photorealistic, identical lighting, materials and shape. Do NOT change the brass plate, the chrome bezel, or the corner screws."
 
 make_mask() {  # shape leftpct toppct wpct hpct out
   python3 - "$@" <<'PY'
@@ -37,8 +37,12 @@ img.save(out)
 PY
 }
 
-gen_pressed() {  # slug shape leftpct toppct wpct hpct
-  local slug="$1" shape="$2" l="$3" t="$4" w="$5" h="$6" resp b64
+gen_pressed() {  # slug shape leftpct toppct wpct hpct [label]
+  local slug="$1" shape="$2" l="$3" t="$4" w="$5" h="$6" label="${7:-}" resp b64 prompt
+  prompt="$PRESS_PROMPT"
+  # the mask covers the lettering, so the model must repaint it — name the word
+  # explicitly or it comes back blank (learned on btn-submit, 2026-06-10)
+  [ -n "$label" ] && prompt="$prompt The word '$label' MUST remain engraved once across the centre of the red face in the same cream off-white condensed industrial capitals, slightly dimmer under the press shadow."
   echo "[$slug] pressing..."
   sips -z "$H" "$W" "$OUT_DIR/$slug.png" --out "$TMP/$slug-src.png" >/dev/null
   make_mask "$shape" "$l" "$t" "$w" "$h" "$TMP/$slug-mask.png"
@@ -48,7 +52,7 @@ gen_pressed() {  # slug shape leftpct toppct wpct hpct
     -F "image=@$TMP/$slug-src.png" \
     -F "mask=@$TMP/$slug-mask.png" \
     -F size="$SIZE" -F quality=high \
-    -F "prompt=$PRESS_PROMPT")"
+    -F "prompt=$prompt")"
   b64="$(python3 -c 'import json,sys; d=json.load(sys.stdin); sys.stdout.write(d["data"][0]["b64_json"]) if d.get("data") else (sys.stderr.write(json.dumps(d)[:900]) or sys.exit(1))' <<<"$resp")"
   python3 -c 'import base64,sys; open(sys.argv[1],"wb").write(base64.b64decode(sys.stdin.read()))' "$TMP/$slug-raw.png" <<<"$b64"
   sips -Z 900 "$TMP/$slug-raw.png" --out "$OUT_DIR/$slug-pressed.png" >/dev/null
@@ -57,11 +61,12 @@ gen_pressed() {  # slug shape leftpct toppct wpct hpct
 
 run_one() {
   case "$1" in
-    btn-checkout)    gen_pressed "$1" round 28 13 45 74 ;;
-    btn-add-to-cart) gen_pressed "$1" pill  13 29 74 42 ;;
-    btn-buy)         gen_pressed "$1" round 28 14 44 72 ;;
-    btn-notify)      gen_pressed "$1" pill  12 28 76 44 ;;
-    btn-subscribe)   gen_pressed "$1" pill  12 28 76 44 ;;
+    btn-checkout)    gen_pressed "$1" round 28 13 45 74 "CHECKOUT" ;;
+    btn-add-to-cart) gen_pressed "$1" pill  13 29 74 42 "ADD TO CART" ;;
+    btn-buy)         gen_pressed "$1" round 28 14 44 72 "BUY" ;;
+    btn-notify)      gen_pressed "$1" pill  12 28 76 44 "NOTIFY ME" ;;
+    btn-subscribe)   gen_pressed "$1" pill  12 28 76 44 "SUBSCRIBE" ;;
+    btn-submit)      gen_pressed "$1" pill  12 28 76 44 "SUBMIT" ;;
     *) echo "unknown: $1"; exit 1 ;;
   esac
 }

@@ -14,4 +14,13 @@ export const site = {
    * also only loads in production builds, never in `astro dev`.
    */
   cfBeaconToken: '',
+
+  /**
+   * Formspree endpoint for newsletter capture (bottom EmailCapture section +
+   * the hero subscribe modal). GO-LIVE: create a free form at
+   * https://formspree.io and replace the REPLACE_WITH_FORM_ID token. While the
+   * token is in place, forms show an honest "goes live shortly" notice and
+   * never pretend to capture.
+   */
+  formspreeEndpoint: 'https://formspree.io/f/REPLACE_WITH_FORM_ID',
 };

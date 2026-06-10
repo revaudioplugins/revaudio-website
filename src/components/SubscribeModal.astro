@@ -1,0 +1,176 @@
+---
+import { Image } from 'astro:assets';
+import submitImg from '../assets/ui/btn-submit.png';
+import submitPressed from '../assets/ui/btn-submit-pressed.png';
+import { site } from '../data/site';
+/**
+ * Subscribe popup: name (optional) + email, submitted to the shared Formspree
+ * endpoint (src/data/site.ts — same GO-LIVE token as EmailCapture).
+ * Render once per page. Any element with [data-subscribe-open] opens it
+ * (event delegation, so triggers can live anywhere in the page).
+ * Close: × button, backdrop click, Escape. Page scroll locks while open
+ * (Cart.astro pattern). Entrance is motion-ok-gated CSS — reduced-motion and
+ * no-JS-pre-hide users get an instant, fully usable dialog.
+ */
+const endpoint = site.formspreeEndpoint;
+---
+
+<dialog class="sub-modal" data-sub-modal aria-label="Subscribe to the newsletter">
+  <button type="button" class="sm-x" data-sub-close aria-label="Close">&times;</button>
+  <h2>Subscribe to the newsletter</h2>
+  <p class="sm-sub">New plugins, demo codes, and intro pricing — straight to your inbox. No spam.</p>
+  <form class="sm-form" action={endpoint} method="POST" data-sub-form>
+    <label class="sm-field">
+      <span>Name <em class="muted">(optional)</em></span>
+      <input type="text" name="name" placeholder="Your name" autocomplete="name" />
+    </label>
+    <label class="sm-field">
+      <span>Email</span>
+      <input type="email" name="email" placeholder="you@studio.com" required autocomplete="email" />
+    </label>
+    <!-- honeypot: real users never fill this; bots do -->
+    <input type="text" name="_gotcha" class="sm-hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+    <div class="sm-btn panel">
+      <Image src={submitImg} alt="" width={520} height={347} format="webp" />
+      <button type="submit" class="panel-hit hit-pill hit-submit" aria-label="Submit"></button>
+      <Image src={submitPressed} alt="" width={520} height={347} format="webp" loading="eager" class="press" />
+    </div>
+  </form>
+  <p class="sm-status" role="status" aria-live="polite" hidden></p>
+</dialog>
+
+<script>
+  const modal = document.querySelector<HTMLDialogElement>('[data-sub-modal]');
+  if (modal) {
+    const html = document.documentElement;
+    const form = modal.querySelector<HTMLFormElement>('[data-sub-form]');
+    const status = modal.querySelector<HTMLElement>('.sm-status');
+    const wired = form ? !form.action.includes('REPLACE_WITH_FORM_ID') : false;
+
+    const open = () => {
+      modal.showModal();
+      html.style.overflow = 'hidden';
+      modal.querySelector<HTMLInputElement>('input[name="email"]')?.focus();
+    };
+    const close = () => {
+      modal.close();
+    };
+    modal.addEventListener('close', () => { html.style.overflow = ''; });
+
+    // Delegated trigger — any [data-subscribe-open] on the page.
+    document.addEventListener('click', (e) => {
+      if ((e.target as Element).closest?.('[data-subscribe-open]')) { e.preventDefault(); open(); }
+    });
+    modal.querySelector('[data-sub-close]')?.addEventListener('click', close);
+    // Backdrop click: a click landing on the dialog element itself (not children).
+    modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
+
+    const show = (msg: string, ok: boolean) => {
+      if (!status) return;
+      status.textContent = msg;
+      status.hidden = false;
+      status.classList.toggle('ok', ok);
+      status.classList.toggle('err', !ok);
+    };
+
+    form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!wired) {
+        show('Almost there — newsletter signup goes live shortly. Your details weren’t sent yet.', false);
+        return;
+      }
+      try {
+        const res = await fetch(form.action, {
+          method: 'POST',
+          body: new FormData(form),
+          headers: { Accept: 'application/json' },
+        });
+        if (res.ok) {
+          form.hidden = true;
+          show('You’re on the list — watch your inbox for the first build.', true);
+        } else {
+          show('Something went wrong. Try again, or email hello@revaudio.net.', false);
+        }
+      } catch {
+        show('Network hiccup — try again in a moment.', false);
+      }
+    });
+  }
+</script>
+
+<style>
+  .sub-modal {
+    margin: auto;
+    width: min(440px, calc(100vw - 2.5rem));
+    padding: 2rem 2rem 1.75rem;
+    background: var(--bg-1);
+    color: var(--fg);
+    border: 1px solid var(--border-bright);
+    border-radius: 12px;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7);
+  }
+  .sub-modal::backdrop { background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); }
+
+  /* Entrance/backdrop motion only when the motion system is live. */
+  :global(html.motion-ok) .sub-modal[open] {
+    animation: sm-in 0.45s var(--ease-settle) both;
+  }
+  :global(html.motion-ok) .sub-modal[open]::backdrop {
+    animation: sm-fade 0.3s var(--ease) both;
+  }
+  @keyframes sm-in { from { opacity: 0; transform: scale(0.94) translateY(10px); } to { opacity: 1; transform: none; } }
+  @keyframes sm-fade { from { opacity: 0; } to { opacity: 1; } }
+
+  .sm-x {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.75rem;
+    border: 0;
+    background: transparent;
+    color: var(--fg-dim);
+    font-size: 1.6rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0.25rem;
+  }
+  .sm-x:hover { color: var(--brass-bright); }
+
+  .sub-modal h2 {
+    font-family: var(--font-display);
+    letter-spacing: 0.04em;
+    color: var(--brass-bright);
+    margin: 0 0 0.4rem;
+    font-size: 1.6rem;
+  }
+  .sm-sub { color: var(--fg-dim); font-size: 0.95rem; margin: 0 0 1.5rem; }
+
+  .sm-form { display: flex; flex-direction: column; gap: 1rem; }
+
+  .sm-field { display: flex; flex-direction: column; gap: 0.35rem; }
+  .sm-field span {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--fg-dim);
+  }
+  .sm-field em { font-style: normal; color: var(--fg-faint); text-transform: none; letter-spacing: 0; }
+  .sm-field input {
+    background: var(--bg-0);
+    border: 1px solid var(--border-bright);
+    border-radius: 6px;
+    color: var(--fg);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    padding: 0.7rem 0.85rem;
+  }
+  .sm-field input:focus { outline: none; border-color: var(--brass-dark); }
+
+  .sm-hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+  .sm-btn { width: 200px; align-self: center; margin-top: 0.25rem; }
+
+  .sm-status { margin: 1rem 0 0; font-size: 0.95rem; text-align: center; }
+  .sm-status.ok { color: var(--brass-bright); }
+  .sm-status.err { color: var(--fg-dim); }
+</style>

@@ -17,10 +17,12 @@ const {
   id,
 } = Astro.props;
 
-// GO LIVE: create a free form at https://formspree.io, then replace the
-// REPLACE_WITH_FORM_ID token below with your form id (e.g. .../f/abcdwxyz).
-// Until then the form won't pretend to capture — it shows an honest notice.
-const endpoint = 'https://formspree.io/f/REPLACE_WITH_FORM_ID';
+// GO LIVE: paste the Formspree form id in src/data/site.ts (single source for
+// this form AND the hero subscribe modal). Until then the form won't pretend
+// to capture — it shows an honest notice.
+import { site } from '../data/site';
+
+const endpoint = site.formspreeEndpoint;
 ---
 
 <section class="signup" id={id}>
