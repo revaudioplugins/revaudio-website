@@ -232,11 +232,15 @@ const shots = [plugin.heroImage, ...plugin.galleryImages]
 
   .walk-stage {
     position: sticky;
-    top: clamp(1rem, 6vh, 4rem);
+    /* Clear the sticky site header (--nav-h) plus headroom for the ±12px
+       scrubbed drift — otherwise the unit's top tucks behind the nav blur. */
+    top: calc(var(--nav-h, 75px) + 1.5rem);
   }
 
   .stage-frame {
     position: relative;
+    width: fit-content; /* border hugs the image when height-limited */
+    margin-inline: auto;
     background: var(--bg-2);
     border: 1px solid var(--border-bright);
     border-radius: 10px;
@@ -245,6 +249,14 @@ const shots = [plugin.heroImage, ...plugin.galleryImages]
   }
 
   .walk-shot { width: 100%; height: auto; display: block; }
+
+  /* The whole unit must fit the viewport below the header, even on short
+     laptop windows — never pin a shot the viewer can't see in full. */
+  .stage-frame .walk-shot.base {
+    max-height: calc(100vh - var(--nav-h, 75px) - 6rem);
+    width: auto;
+    max-width: 100%;
+  }
 
   /* Overlay shots stack on the base; walkthrough.ts crossfades opacity. */
   .stage-frame .walk-shot:not(.base) {
