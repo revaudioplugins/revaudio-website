@@ -20,6 +20,9 @@ export async function initSplitHeadlines(): Promise<void> {
 
   els.forEach((el) => {
     const split = SplitText.create(el, { type: 'words', mask: 'words', aria: 'auto' });
+    // Words start below their masks (immediateRender), so the element can go
+    // visible now — releases the CSS pre-hide without anything flashing.
+    el.classList.add('split-ready');
     gsap.fromTo(
       split.words,
       { yPercent: 110 },

@@ -25,13 +25,16 @@ const bannerMsg = flagshipLive
     ctaHref={flagshipLive ? `/${flagship.slug}` : '#subscribe'}
   />
 
+  {/* Hero cascade: tag (CSS rise) → h1 words (data-split mask-rise, starts
+      after fonts) → redline sweep → lede → CTA. CSS delays tuned to land after
+      the split headline settles (~0.75s from load with cached fonts). */}
   <section class="hero hero-feat">
     <div class="hero-stage">
       <div class="hs-tag reveal" style="--d: .05s">Boutique VST plugins</div>
-      <h1 class="hs-h1 reveal" style="--d: .12s">Engineered,<br/>then tuned.</h1>
+      <h1 class="hs-h1" data-split>Engineered,<br/>then tuned.</h1>
       <span class="hs-redline" aria-hidden="true"></span>
-      <p class="hs-lede reveal" style="--d: .22s">Measured to spec, then voiced by ear.<br/>The precision of a machine, the feel of an instrument.</p>
-      <a class="hs-cta reveal" style="--d: .32s" href="#subscribe">Subscribe &rarr;</a>
+      <p class="hs-lede reveal" style="--d: .9s">Measured to spec, then voiced by ear.<br/>The precision of a machine, the feel of an instrument.</p>
+      <a class="hs-cta reveal" style="--d: 1.05s" href="#subscribe">Subscribe &rarr;</a>
     </div>
   </section>
 
@@ -141,7 +144,7 @@ const bannerMsg = flagshipLive
     }
     .hs-redline {
       transform: scaleX(0);
-      animation: heroSweep 0.7s var(--ease) 0.45s both;
+      animation: heroSweep 0.7s var(--ease) 0.75s both; /* sweeps as the split h1 settles */
     }
   }
 
