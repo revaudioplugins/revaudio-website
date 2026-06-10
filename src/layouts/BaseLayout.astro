@@ -55,6 +55,14 @@ const fullTitle = title === 'RevAudio'
 
     <title>{fullTitle}</title>
 
+    {/* Gate for reveal pre-hide (global.css html.motion-ok rules). Runs sync in
+        head so revealable elements are never visibly hidden-then-shown; without
+        JS or with reduced motion the class never lands and content is static. */}
+    <script is:inline>
+      if (!matchMedia('(prefers-reduced-motion: reduce)').matches)
+        document.documentElement.classList.add('motion-ok');
+    </script>
+
     {/* Cloudflare Web Analytics. No SRI: CF rotates beacon.min.js and ships it
         without a published hash, so a pinned integrity would break on update.
         Token is a public beacon id, not a secret. */}
@@ -73,5 +81,17 @@ const fullTitle = title === 'RevAudio'
     </main>
     <Footer />
     <Cart />
+    <script>
+      import { initMotion } from '../lib/motion';
+      import { initReveals } from '../lib/reveal';
+      import { initWalkthrough } from '../lib/walkthrough';
+      import { initSplitHeadlines } from '../lib/splittext';
+      import { initScrubs } from '../lib/scrub';
+      initMotion();
+      initReveals();
+      initWalkthrough();
+      initSplitHeadlines();
+      initScrubs();
+    </script>
   </body>
 </html>

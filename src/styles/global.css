@@ -36,8 +36,13 @@
   --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', Consolas, monospace;
 
-  /* motion */
+  /* motion — tokens mirror src/lib/motion.ts; spec in docs/motion-plan.md */
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-settle: cubic-bezier(0.22, 1, 0.36, 1); /* entries — heavy, damped */
+  --ease-exit: cubic-bezier(0.32, 0, 0.67, 0); /* exits — accelerate out */
+  --dur-in: 600ms;
+  --dur-out: 300ms;
+  --stagger: 90ms;
 
   /* spacing — 8pt rhythm (4 / 8 / 12 / 16 / 24 / 32 / 48 / 64 / 96 / 128) */
   --space-1: 0.25rem;
@@ -66,6 +71,18 @@
 }
 
 * { box-sizing: border-box; }
+
+/* Lenis smooth scroll (init in src/lib/motion.ts). Stock recommended rules,
+   minus the iframe pointer-events one — it would dead-zone embedded checkout. */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+.lenis.lenis-stopped { overflow: hidden; }
+
+/* Reveal pre-hide (src/lib/reveal.ts). Only under html.motion-ok — the inline
+   head gate in BaseLayout — so no-JS and reduced-motion get static content. */
+html.motion-ok [data-reveal]:not(.revealed),
+html.motion-ok [data-reveal-item]:not(.revealed) { opacity: 0; }
 
 html, body {
   margin: 0;

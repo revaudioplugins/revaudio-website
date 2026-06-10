@@ -11,7 +11,7 @@ const { heading = 'Tested in your DAW' } = Astro.props;
 <section class="daw-strip">
   <div class="container">
     <h3 class="center">{heading}</h3>
-    <ul class="daws">
+    <ul class="daws" data-drift="4">
       {daws.map((d) => (
         <li class={d.tested ? 'tested' : 'planned'}>
           {d.logo ? (
@@ -33,6 +33,7 @@ const { heading = 'Tested in your DAW' } = Astro.props;
   .daw-strip {
     padding: 4rem 0;
     border-top: 1px solid var(--border);
+    overflow-x: clip; /* the data-drift scrub pushes the strip past the edge by design */
   }
 
   .daw-strip h3 {

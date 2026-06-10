@@ -16,8 +16,8 @@ const statusKlass = plugin.status === 'live' ? 'live' : plugin.status === 'beta'
 const thumb = pluginImage(plugin.heroImage);
 ---
 
-<a class="plugin-card" href={`/${plugin.slug}`}>
-  <span class={`status ${statusKlass}`}>{plugin.statusLabel}</span>
+<a class="plugin-card" href={`/${plugin.slug}`} data-reveal="card">
+  <span class={`status ${statusKlass}`} data-reveal-accent>{plugin.statusLabel}</span>
   <div class="card-thumb">
     {thumb ? (
       <Image src={thumb} alt={plugin.name} width={900} height={506} format="webp" loading="lazy" />
@@ -28,7 +28,7 @@ const thumb = pluginImage(plugin.heroImage);
   <h3>{plugin.name}</h3>
   <p class="one-liner">{plugin.oneLiner}</p>
   <StarRating rating={plugin.reviewsAvg} count={plugin.reviewsCount} scale={0.9} />
-  <div class="prices">
+  <div class="prices" data-reveal-accent>
     {buyable ? (
       pct != null ? (
         <>

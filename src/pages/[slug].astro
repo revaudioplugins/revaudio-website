@@ -1,4 +1,5 @@
 ---
+import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import BuyButton from '../components/BuyButton.astro';
 import EmailCapture from '../components/EmailCapture.astro';
@@ -7,6 +8,7 @@ import StarRating from '../components/StarRating.astro';
 import Gallery from '../components/Gallery.astro';
 import AudioDemo from '../components/AudioDemo.astro';
 import { plugins, isBuyable } from '../data/plugins';
+import { pluginImage } from '../lib/images';
 
 export function getStaticPaths() {
   return plugins.map((p) => ({ params: { slug: p.slug }, props: { plugin: p } }));
@@ -20,6 +22,14 @@ const buyable = isBuyable(plugin);
 // Only surface A/B demos that actually have audio. Until clips are bounced,
 // the "Hear it" section stays hidden rather than showing empty placeholders.
 const playableDemos = plugin.audioDemos.filter((d) => d.beforeUrl && d.afterUrl);
+
+// Shots for the sticky feature walkthrough: hero + gallery, deduped. With a
+// single shot the stage just pins; per-step crossfade activates once
+// galleryImages gets real entries (each step maps to shot index, clamped).
+const seenShot = new Set<string>();
+const shots = [plugin.heroImage, ...plugin.galleryImages]
+  .map(pluginImage)
+  .filter((m): m is NonNullable<typeof m> => !!m && !seenShot.has(m.src) && !!seenShot.add(m.src));
 ---
 
 <BaseLayout title={plugin.name} description={plugin.oneLiner}>
@@ -44,32 +54,52 @@ const playableDemos = plugin.audioDemos.filter((d) => d.beforeUrl && d.afterUrl)
         </aside>
       </div>
 
+      {/* No data-reveal on the walkthrough section or .walk-grid: an animated
+          ancestor transform would break position:sticky on the stage. */}
       {plugin.features.length > 0 && (
-        <section class="features">
-          <h2>What's inside</h2>
-          <ul class="feature-list">
-            {plugin.features.map((f) => (
-              <li>
-                <span class="f-name">{f.name}</span>
-                <span class="f-sep">&mdash;</span>
-                <span class="f-desc">{f.desc}</span>
-              </li>
-            ))}
-          </ul>
+        <section class="features" data-walkthrough>
+          <h2 data-split>What's inside</h2>
+          <div class="walk-grid">
+            <div class="walk-copy">
+              {plugin.features.map((f, i) => (
+                <div class="walk-step" data-walk-step data-shot={shots.length ? Math.min(i, shots.length - 1) : 0}>
+                  <span class="f-name">{f.name}</span>
+                  <p class="f-desc">{f.desc}</p>
+                </div>
+              ))}
+            </div>
+            {shots.length > 0 && (
+              <div class="walk-stage">
+                <div class="stage-frame" data-walk-stage>
+                  {shots.map((s, i) => (
+                    <Image
+                      src={s}
+                      alt={i === 0 ? `${plugin.name} interface` : ''}
+                      width={1000}
+                      format="webp"
+                      loading="lazy"
+                      class={`walk-shot ${i === 0 ? 'base' : ''}`}
+                      data-walk-shot={i}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </section>
       )}
 
       {playableDemos.length > 0 && (
         <section class="audio-demos">
-          <h2>Hear it</h2>
-          <p class="muted">Before / after on real source material. No staged transients, no cherry-picked frequency content.</p>
+          <h2 data-split>Hear it</h2>
+          <p class="muted" data-reveal>Before / after on real source material. No staged transients, no cherry-picked frequency content.</p>
           {playableDemos.map((d) => <AudioDemo demo={d} />)}
         </section>
       )}
 
       <section class="specs-section">
-        <h2>System requirements</h2>
-        <div class="specs">
+        <h2 data-split>System requirements</h2>
+        <div class="specs" data-reveal>
           <div class="spec-row"><span class="key">Format</span><span class="val">{plugin.systemReq.formats}</span></div>
           <div class="spec-row"><span class="key">OS</span><span class="val">{plugin.systemReq.os}</span></div>
           <div class="spec-row"><span class="key">CPU</span><span class="val">{plugin.systemReq.cpu}</span></div>
@@ -79,14 +109,14 @@ const playableDemos = plugin.audioDemos.filter((d) => d.beforeUrl && d.afterUrl)
       </section>
 
       <section class="install-section">
-        <h2>Install &amp; activate</h2>
-        <ol class="muted">
+        <h2 data-split>Install &amp; activate</h2>
+        <ol class="muted" data-reveal>
           <li>Buy via Paddle &mdash; serial delivered to your inbox in under 5 minutes.</li>
           <li>Run the installer. {plugin.name} lands in <code>C:\Program Files\Common Files\VST3\</code>.</li>
           <li>Open your DAW, scan for plugins (VST3 / AU / AAX), paste your serial on first launch.</li>
           <li>Up to 2 machines per licence. Lost serial? Email support and we resend within one business day.</li>
         </ol>
-        <p class="muted">
+        <p class="muted" data-reveal>
           Full install + troubleshooting on the <a href="/support">support page</a>.
           Licence terms on the <a href="/eula">EULA page</a>.
         </p>
@@ -166,43 +196,82 @@ const playableDemos = plugin.audioDemos.filter((d) => d.beforeUrl && d.afterUrl)
 
   .features { padding: 2rem 0 3rem; border-top: 1px solid var(--border); }
 
-  .feature-list {
-    list-style: none;
-    padding: 0;
-    margin: 1rem 0 0;
+  /* ── Sticky feature walkthrough (motion plan step 3). Stage column pins via
+     native position:sticky while the copy steps scroll past; JS in
+     src/lib/walkthrough.ts toggles .active + crossfades shots. ── */
+  .walk-grid {
     display: grid;
-    grid-template-columns: 1fr;
-    gap: 0.75rem;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    gap: 3rem;
+    align-items: start;
+    margin-top: 1rem;
   }
 
-  .feature-list li {
-    padding: 1rem 1.25rem;
+  .walk-step {
+    min-height: 36vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 1.25rem;
     background: var(--bg-1);
-    border-left: 3px solid var(--brass-dark);
-    display: grid;
-    grid-template-columns: minmax(180px, 220px) auto 1fr;
-    gap: 0.75rem;
-    align-items: baseline;
+    border-left: 3px solid var(--border-bright);
+    margin-bottom: 0.75rem;
   }
 
-  @media (max-width: 720px) {
-    .feature-list li {
-      grid-template-columns: 1fr;
-      gap: 0.25rem;
-    }
-    .feature-list .f-sep { display: none; }
+  /* Dim inactive steps only when the motion system is live; static/no-JS
+     readers get every step at full strength. */
+  :global(html.motion-ok) .walk-step {
+    opacity: 0.35;
+    transition: opacity 0.45s var(--ease-settle), border-color 0.45s var(--ease-settle);
+  }
+
+  :global(html.motion-ok) .walk-step.active {
+    opacity: 1;
+    border-left-color: var(--brass);
+  }
+
+  .walk-stage {
+    position: sticky;
+    top: clamp(1rem, 6vh, 4rem);
+  }
+
+  .stage-frame {
+    position: relative;
+    background: var(--bg-2);
+    border: 1px solid var(--border-bright);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  }
+
+  .walk-shot { width: 100%; height: auto; display: block; }
+
+  /* Overlay shots stack on the base; walkthrough.ts crossfades opacity. */
+  .stage-frame .walk-shot:not(.base) {
+    position: absolute;
+    inset: 0;
+    height: 100%;
+    object-fit: contain;
+    opacity: 0;
+  }
+
+  @media (max-width: 900px) {
+    .walk-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+    .walk-stage { position: static; order: -1; }
+    .walk-step { min-height: 0; }
+    /* Stage sits above the steps here, not beside them — dimming reads as
+       broken rather than as focus. Keep the brass border as the active cue. */
+    :global(html.motion-ok) .walk-step { opacity: 1; }
   }
 
   .f-name {
     color: var(--brass-bright);
     font-family: var(--font-display);
     letter-spacing: 0.04em;
-    font-size: 1.1rem;
+    font-size: 1.35rem;
   }
 
-  .f-sep { color: var(--fg-faint); }
-
-  .f-desc { color: var(--fg-dim); font-size: 0.95rem; }
+  .f-desc { color: var(--fg-dim); font-size: 0.98rem; margin: 0.4rem 0 0; max-width: 44ch; }
 
   .audio-demos { padding: 2rem 0 3rem; border-top: 1px solid var(--border); }
 
