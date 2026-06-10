@@ -1,7 +1,7 @@
 ---
 import { Image } from 'astro:assets';
-import subscribeImg from '../assets/ui/btn-subscribe.png';
-import subscribePressed from '../assets/ui/btn-subscribe-pressed.png';
+import submitImg from '../assets/ui/btn-submit.png';
+import submitPressed from '../assets/ui/btn-submit-pressed.png';
 
 interface Props {
   heading?: string;
@@ -13,7 +13,7 @@ interface Props {
 const {
   heading = 'Subscribe to the newsletter',
   subhead = 'New plugins, demo codes, and intro pricing — straight to your inbox. No spam.',
-  buttonLabel = 'Subscribe',
+  buttonLabel = 'Submit',
   id,
 } = Astro.props;
 
@@ -40,9 +40,9 @@ const endpoint = site.formspreeEndpoint;
       <!-- honeypot: real users never fill this; bots do -->
       <input type="text" name="_gotcha" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
       <div class="notify-btn panel">
-        <Image src={subscribeImg} alt="" width={520} height={347} format="webp" />
-        <button type="submit" class="panel-hit hit-pill hit-subscribe" aria-label={buttonLabel}></button>
-        <Image src={subscribePressed} alt="" width={520} height={347} format="webp" loading="eager" class="press" />
+        <Image src={submitImg} alt="" width={520} height={347} format="webp" />
+        <button type="submit" class="panel-hit hit-pill hit-submit" aria-label={buttonLabel}></button>
+        <Image src={submitPressed} alt="" width={520} height={347} format="webp" loading="eager" class="press" />
       </div>
     </form>
     <p class="signup-status" role="status" aria-live="polite" hidden></p>
@@ -89,7 +89,7 @@ const endpoint = site.formspreeEndpoint;
 </script>
 
 <style>
-  /* stack the form so the full SUBSCRIBE plate isn't cropped beside the input */
+  /* stack the form so the full SUBMIT plate isn't cropped beside the input */
   .signup form { flex-direction: column; align-items: stretch; gap: 0.85rem; }
   .signup form .notify-btn {
     width: 150px;
