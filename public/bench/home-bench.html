@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>RevAudio — Homepage Bench</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #0b0a09; font-family: Consolas, monospace; }
+  iframe { display: block; width: 100%; height: 100%; border: 0; }
+  .panel {
+    position: fixed; top: 80px; right: 12px; z-index: 9999;
+    background: rgba(20, 17, 15, 0.96); border: 1px solid #c9a35c; border-radius: 10px;
+    padding: 12px 14px; color: #efe9df; width: 300px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.6); font-size: 12px;
+    max-height: calc(100vh - 110px); overflow-y: auto;
+  }
+  .panel h3 { margin: 0 0 8px; font-size: 14px; color: #e8c878; letter-spacing: .08em; }
+  details { border-top: 1px solid #3d342c; padding: 6px 0; }
+  summary { cursor: pointer; color: #c9a35c; font-weight: bold; letter-spacing: .06em; padding: 4px 0; }
+  .row { margin: 8px 0; }
+  .row label { display: flex; justify-content: space-between; margin-bottom: 3px; }
+  .row .val { color: #e8c878; }
+  input[type=range] { width: 100%; accent-color: #c9a35c; margin: 0; }
+  button {
+    width: 100%; background: #c9a35c; border: 0; color: #0b0a09; font-family: inherit;
+    font-weight: bold; padding: 8px; border-radius: 6px; cursor: pointer; letter-spacing: .05em;
+    margin-top: 8px;
+  }
+  button:hover { background: #e8c878; }
+  button.ghost { background: transparent; color: #c9a35c; border: 1px solid #c9a35c; }
+  .out { margin-top: 8px; color: #8a8275; word-break: break-all; min-height: 2em; }
+  .drag { cursor: move; user-select: none; float: right; color: #8a8275; font-weight: normal; }
+</style>
+</head>
+<body>
+<div class="panel" id="panel">
+  <h3>HOMEPAGE BENCH <span class="drag" id="drag">✥ drag</span></h3>
+  <div id="groups"></div>
+  <button class="ghost" id="reset">RESET ALL</button>
+  <button id="copy">COPY VALUES FOR CLAUDE</button>
+  <div class="out" id="out"></div>
+</div>
+<iframe id="site" src="/"></iframe>
+<script>
+  /* Each control is either kind:'var' (CSS custom property on the page root)
+     or kind:'css' (a rule injected as <style> with !important).
+     def = current production value, so RESET = ship state. */
+  const CONTROLS = [
+    // ── background art ──
+    { g: 'BACKGROUND', id: 'bgw',     label: 'Art width',          kind: 'css', sel: '.page-bg', prop: '--bg-w', unit: 'vw', min: 35, max: 100, step: 1,   def: 62 },
+
+    // ── hero ──
+    { g: 'HERO', id: 'dialvw',  label: 'Gauge size',          kind: 'var', name: '--dial-vw',   unit: 'vw',  min: 22, max: 60,  step: 1, def: 35 },
+    { g: 'HERO', id: 'dialmax', label: 'Gauge max cap',       kind: 'var', name: '--dial-max',  unit: 'px',  min: 380, max: 1000, step: 10, def: 520 },
+    { g: 'HERO', id: 'redline', label: 'Red line →',          kind: 'var', name: '--redline-x', unit: 'px',  min: 0,  max: 450, step: 2, def: 206 },
+    { g: 'HERO', id: 'lede',    label: '"Measured" text →',   kind: 'var', name: '--lede-x',    unit: 'px',  min: 0,  max: 300, step: 2, def: 102 },
+    { g: 'HERO', id: 'cta',     label: 'Subscribe button →',  kind: 'var', name: '--cta-x',     unit: 'px',  min: 0,  max: 500, step: 2, def: 238 },
+
+    // ── page frame ──
+    { g: 'PAGE FRAME', id: 'pagepct', label: 'Page width',    kind: 'maxw-pct', unit: 'vw', min: 60, max: 100,  step: 1,  def: 98 },
+    { g: 'PAGE FRAME', id: 'pagecap', label: 'Page max cap',  kind: 'maxw-cap', unit: 'px', min: 1000, max: 2200, step: 20, def: 1240 },
+
+    // ── plugin section ──
+    { g: 'PLUGIN SECTION', id: 'cardw',   label: 'Card width',          kind: 'css', sel: '.plugin-cards.single', prop: 'max-width',     unit: 'px',  min: 360, max: 760, step: 10,  def: 460 },
+    { g: 'PLUGIN SECTION', id: 'plugpad', label: 'Section height',      kind: 'css', sel: '.plugin-grid',         prop: 'padding-block', unit: 'rem', min: 1,   max: 9,   step: 0.5, def: 5 },
+    { g: 'PLUGIN SECTION', id: 'headgap', label: 'Title → card space',  kind: 'css', sel: '.grid-head',           prop: 'margin-bottom', unit: 'rem', min: 0.5, max: 6,   step: 0.25, def: 2.5 },
+
+    // ── DAW strip ──
+    { g: 'DAW STRIP', id: 'dawpad',  label: 'Section height', kind: 'css', sel: '.daw-strip', prop: 'padding-block', unit: 'rem', min: 1,   max: 8,   step: 0.5,  def: 4 },
+    { g: 'DAW STRIP', id: 'dawgap',  label: 'Chip spacing',   kind: 'css', sel: '.daws',      prop: 'column-gap',    unit: 'rem', min: 0.5, max: 4,   step: 0.25, def: 2 },
+    { g: 'DAW STRIP', id: 'dawsize', label: 'Chip text size', kind: 'css', sel: '.daws li',   prop: 'font-size',     unit: 'rem', min: 0.8, max: 1.6, step: 0.05, def: 1.1 },
+
+    // ── testimonials ──
+    { g: 'TESTIMONIALS', id: 'testpad', label: 'Section height', kind: 'css', sel: '.testimonial-block', prop: 'padding-block', unit: 'rem', min: 1, max: 9, step: 0.5, def: 5 },
+    { g: 'TESTIMONIALS', id: 'quotegap', label: 'Quote spacing', kind: 'css', sel: '.quotes',            prop: 'gap',           unit: 'rem', min: 0.5, max: 4, step: 0.25, def: 2 },
+
+    // ── press logos ──
+    { g: 'PRESS LOGOS', id: 'presspad', label: 'Section height', kind: 'css', sel: '.press',    prop: 'padding-block', unit: 'rem', min: 1,   max: 7, step: 0.5,  def: 3 },
+    { g: 'PRESS LOGOS', id: 'pressgap', label: 'Logo spacing',   kind: 'css', sel: '.press ul', prop: 'column-gap',    unit: 'rem', min: 1,   max: 6, step: 0.25, def: 3 },
+
+    // ── newsletter ──
+    { g: 'NEWSLETTER', id: 'signpad',  label: 'Section height',   kind: 'css', sel: '.signup',                   prop: 'padding-block', unit: 'rem', min: 1,   max: 9,   step: 0.5, def: 5 },
+    { g: 'NEWSLETTER', id: 'formw',    label: 'Email field width', kind: 'css', sel: '.signup form',             prop: 'max-width',     unit: 'px',  min: 320, max: 760, step: 10,  def: 480 },
+    { g: 'NEWSLETTER', id: 'btnw',     label: 'Button size',       kind: 'css', sel: '.signup form .notify-btn', prop: 'width',         unit: 'px',  min: 140, max: 380, step: 5,   def: 220 },
+
+    // ── footer ──
+    { g: 'FOOTER', id: 'footpad', label: 'Footer height', kind: 'css', sel: 'footer.site-footer', prop: 'padding-top', unit: 'rem', min: 1, max: 7, step: 0.5, def: 3 },
+  ];
+
+  const $ = (id) => document.getElementById(id);
+  const site = $('site');
+
+  // build UI grouped into <details>
+  const groupsEl = $('groups');
+  let curGroup = null, curBox = null;
+  for (const c of CONTROLS) {
+    if (c.g !== curGroup) {
+      curGroup = c.g;
+      const d = document.createElement('details');
+      d.open = c.g === 'HERO' || c.g === 'BACKGROUND';
+      d.innerHTML = `<summary>${c.g}</summary>`;
+      curBox = document.createElement('div');
+      d.appendChild(curBox);
+      groupsEl.appendChild(d);
+    }
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.innerHTML = `<label>${c.label} <span class="val" id="v_${c.id}"></span></label>
+      <input type="range" id="${c.id}" min="${c.min}" max="${c.max}" step="${c.step}" value="${c.def}">`;
+    curBox.appendChild(row);
+  }
+
+  function apply() {
+    const doc = site.contentDocument;
+    if (!doc) return;
+    let cssVars = '', cssRules = '';
+    let pct = 98, cap = 1240;
+    for (const c of CONTROLS) {
+      const v = $(c.id).value;
+      $('v_' + c.id).textContent = v + c.unit;
+      if (c.kind === 'var') doc.documentElement.style.setProperty(c.name, v + c.unit);
+      else if (c.kind === 'maxw-pct') pct = v;
+      else if (c.kind === 'maxw-cap') cap = v;
+      else if (c.kind === 'css') cssRules += `${c.sel} { ${c.prop}: ${v}${c.unit} !important; }\n`;
+    }
+    doc.documentElement.style.setProperty('--maxw', `min(${cap}px, ${pct}vw)`);
+    let styleEl = doc.getElementById('bench-style');
+    if (!styleEl) {
+      styleEl = doc.createElement('style');
+      styleEl.id = 'bench-style';
+      doc.head.appendChild(styleEl);
+    }
+    styleEl.textContent = cssRules;
+  }
+
+  CONTROLS.forEach(c => $(c.id).addEventListener('input', apply));
+  site.addEventListener('load', apply);
+
+  $('reset').onclick = () => { CONTROLS.forEach(c => $(c.id).value = c.def); apply(); };
+
+  $('copy').onclick = () => {
+    const changed = CONTROLS.filter(c => parseFloat($(c.id).value) !== c.def)
+      .map(c => `${c.id}: ${$(c.id).value}${c.unit}`);
+    const txt = (changed.length ? changed.join(' | ') : 'no changes') +
+      ` | window: ${innerWidth}x${innerHeight} dpr:${devicePixelRatio}`;
+    navigator.clipboard.writeText(txt);
+    $('out').textContent = 'copied: ' + txt;
+  };
+
+  let dx, dy, dragging = false;
+  $('drag').addEventListener('mousedown', e => { dragging = true; const r = $('panel').getBoundingClientRect(); dx = e.clientX - r.left; dy = e.clientY - r.top; e.preventDefault(); });
+  addEventListener('mousemove', e => { if (!dragging) return; $('panel').style.left = (e.clientX - dx) + 'px'; $('panel').style.top = (e.clientY - dy) + 'px'; $('panel').style.right = 'auto'; });
+  addEventListener('mouseup', () => dragging = false);
+</script>
+</body>
+</html>
