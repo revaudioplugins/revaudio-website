@@ -62,7 +62,7 @@ export interface Plugin {
 }
 
 const baseSystemReq: SystemReq = {
-  os: 'Windows 10/11 64-bit (macOS planned)',
+  os: 'Windows 10/11 64-bit, macOS 12+',
   cpu: '2 GHz dual-core (Intel/AMD)',
   ram: '8 GB minimum, 16 GB recommended',
   formats: 'VST3, AU, AAX',
