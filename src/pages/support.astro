@@ -1,59 +1,83 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { bySlug } from '../data/plugins';
+
+const revlimiter = bySlug('revlimiter');
 ---
 
 <BaseLayout
   title="Support"
-  description="Install help, troubleshooting, and contact for RevAudio plugins."
+  description="Install help, activation, troubleshooting, and contact for RevLimiter and RevAudio plugins."
 >
   <section class="plugin-detail">
     <div class="container" style="max-width: 760px;" data-reveal>
       <h1>Support &amp; install</h1>
-      <p class="pitch">Quick install, common fixes, and how to reach us when things go sideways.</p>
+      <p class="pitch">
+        Quick install, activation, common fixes, and how to reach us when things go sideways.
+        Everything here is for <strong>RevLimiter</strong> &mdash; the only plugin shipping today.
+      </p>
 
-      <h3>Install (Windows)</h3>
+      <p class="status-note">
+        <strong>Where things stand:</strong> RevLimiter runs as a <strong>Windows VST3</strong> plugin.
+        macOS (AU) and Pro Tools (AAX) are in development &mdash; see the roadmap below. Checkout is
+        reopening shortly; if you can&rsquo;t buy yet, <a href="/revlimiter#waitlist">join the waitlist</a>
+        and we&rsquo;ll email you the moment it&rsquo;s live.
+      </p>
+
+      <h3>What you need</h3>
+      <ul class="reqs">
+        <li><strong>OS:</strong> {revlimiter?.systemReq.os ?? 'Windows 10/11 64-bit (macOS planned)'}</li>
+        <li><strong>Format today:</strong> VST3 (64-bit) in any VST3 host</li>
+        <li><strong>CPU / RAM:</strong> {revlimiter?.systemReq.cpu} &middot; {revlimiter?.systemReq.ram}</li>
+      </ul>
+      <p class="micro muted">Full specs and tested DAWs on the <a href="/revlimiter">RevLimiter page</a>.</p>
+
+      <h3>Install (Windows VST3)</h3>
       <ol>
         <li>Download the installer from the confirmation email sent to you after checkout.</li>
         <li>Run the installer and accept the licence terms.</li>
-        <li>Plugins install to their standard locations:
-          <ul>
-            <li>VST3: <code>C:\Program Files\Common Files\VST3\</code></li>
-            <li>AAX: <code>C:\Program Files\Common Files\Avid\Audio\Plug-Ins\</code></li>
-          </ul>
-        </li>
-        <li>Open your DAW and rescan plugins. RevAudio plugins appear under the <strong>RevAudio</strong> manufacturer.</li>
-      </ol>
-
-      <h3>Install (macOS)</h3>
-      <ol>
-        <li>Download the macOS installer from the confirmation email sent to you after checkout.</li>
-        <li>Run the installer and accept the licence terms.</li>
-        <li>Plugins install to their standard locations:
-          <ul>
-            <li>VST3: <code>/Library/Audio/Plug-Ins/VST3/</code></li>
-            <li>AU: <code>/Library/Audio/Plug-Ins/Components/</code></li>
-            <li>AAX: <code>/Library/Application Support/Avid/Audio/Plug-Ins/</code></li>
-          </ul>
-        </li>
-        <li>Open your DAW and rescan plugins. RevAudio plugins appear under the <strong>RevAudio</strong> manufacturer.</li>
+        <li>The plugin installs to <code>C:\Program Files\Common Files\VST3\</code>.</li>
+        <li>Open your DAW and rescan VST3 plugins. RevLimiter appears under the <strong>RevAudio</strong> manufacturer.</li>
       </ol>
 
       <h3>Activate your licence</h3>
       <p>
-        On first launch, the plugin asks for your licence key. The key was emailed to you right after
-        checkout. Paste it in once &mdash; it is stored locally and reused on every subsequent launch.
+        On first launch, RevLimiter asks for your licence key (the serial emailed to you right after
+        checkout). Paste it in once &mdash; it&rsquo;s validated and stored locally, then reused on every
+        subsequent launch.
       </p>
       <p>
-        Lost your key? Email <a href="mailto:support@revaudio.net">support@revaudio.net</a> with the address you
-        purchased under and we&rsquo;ll resend.
+        One licence covers <strong>up to 2 machines</strong> &mdash; your studio desktop and a laptop, say.
+        Moving to a new machine or lost your key? Email
+        <a href="mailto:support@revaudio.net">support@revaudio.net</a> with the address you purchased under
+        and we&rsquo;ll sort it within one business day.
       </p>
+
+      <h3>Platform roadmap</h3>
+      <p>
+        RevLimiter ships today as a <strong>Windows VST3</strong>. Two builds are in active development:
+      </p>
+      <ul class="roadmap">
+        <li><strong>macOS (AU)</strong> &mdash; in development. If you bought on Windows, the Mac build is
+          included free when it ships; we&rsquo;ll email you a download link.</li>
+        <li><strong>Pro Tools (AAX)</strong> &mdash; planned. No date yet; it follows the Mac build.</li>
+      </ul>
 
       <h3>Troubleshooting</h3>
       <details>
         <summary>The DAW does not see the plugin after install</summary>
         <p>
-          Restart your DAW or trigger a manual plugin rescan. Confirm the plugin files exist at the
-          paths listed in the Install section above for your format (VST3, AU, or AAX).
+          Restart your DAW or rescan VST3 plugins. In Cubase, Studio One, Reaper, and others the rescan is
+          automatic on launch but a manual refresh is sometimes needed. Confirm the .vst3 file exists at
+          <code>C:\Program Files\Common Files\VST3\</code>.
+        </p>
+      </details>
+      <details>
+        <summary>The licence key won&rsquo;t activate</summary>
+        <p>
+          Copy the key straight from your purchase email &mdash; no spaces before or after. Activation needs a
+          live internet connection on first launch. If you&rsquo;ve already activated two machines, free one up
+          or email <a href="mailto:support@revaudio.net">support@revaudio.net</a> and we&rsquo;ll reset your seats.
         </p>
       </details>
       <details>
@@ -65,12 +89,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         </p>
       </details>
       <details>
-        <summary>The DAW does not see the plugin on macOS</summary>
+        <summary>Mac or Pro Tools version</summary>
         <p>
-          Restart your DAW or trigger a plugin rescan. In Logic Pro, open the plug-in manager under
-          Settings. In Ableton Live, go to Preferences → Plug-Ins. Confirm the files exist at the
-          paths listed in the Install (macOS) section above. On Apple Silicon Macs, make sure your
-          DAW is not running under Rosetta.
+          The macOS (AU) build is in development and Pro Tools (AAX) is planned &mdash; see the roadmap above.
+          Buy on Windows now and the Mac build is included free when it ships. Want a heads-up the day it lands?
+          <a href="/revlimiter#waitlist">Join the waitlist</a>.
         </p>
       </details>
 
@@ -85,6 +108,24 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 </BaseLayout>
 
 <style>
+  .status-note {
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--brass-bright);
+    background: var(--bg-1);
+    padding: 0.9rem 1.1rem;
+    margin: 1.25rem 0 1.75rem;
+    color: var(--fg-dim);
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  .reqs, .roadmap {
+    color: var(--fg-dim);
+    list-style: none;
+    padding: 0;
+  }
+  .reqs li, .roadmap li { margin: 0.4rem 0; }
+
   details {
     border: 1px solid var(--border);
     background: var(--bg-1);
