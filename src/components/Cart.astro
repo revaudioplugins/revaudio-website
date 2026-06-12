@@ -6,10 +6,14 @@ import checkoutPressed from '../assets/ui/btn-checkout-pressed.png';
  * Global cart: a localStorage-backed mini-cart shared across every page.
  * - [data-add-to-cart] buttons (with data-slug/name/price/price-id/img) add items
  * - the header cart icon ([data-cart-toggle]) + badge ([data-cart-badge]) open the drawer
- * - Checkout redirects to the Lemon Squeezy hosted checkout page
+ * - Checkout opens the Lemon Squeezy overlay (lemon.js + ?embed=1) ON the site,
+ *   no full redirect; falls back to a redirect if lemon.js is blocked
  * Rendered once in BaseLayout. No framework — vanilla JS, progressive.
  */
 ---
+
+<!-- Lemon Squeezy overlay checkout — renders the payment screen in a modal over the site. -->
+<script is:inline src="https://assets.lemonsqueezy.com/lemon.js" defer></script>
 
 <!-- Cart drawer -->
 <dialog class="cart-drawer" data-cart-drawer aria-label="Your cart">
@@ -100,12 +104,37 @@ import checkoutPressed from '../assets/ui/btn-checkout-pressed.png';
       lock();
     }
 
+    // ---- Lemon Squeezy overlay ----
+    // lemon.js loads deferred; init lazily on first checkout (it's loaded by the
+    // time a user can click). Clear the cart when the buyer completes payment.
+    var lemonReady = false;
+    function ensureLemon() {
+      if (lemonReady) return !!(window.LemonSqueezy && window.LemonSqueezy.Url);
+      if (typeof window.createLemonSqueezy !== 'function') return false;
+      try {
+        window.createLemonSqueezy();
+        window.LemonSqueezy.Setup({
+          eventHandler: function (ev) {
+            if (ev && ev.event === 'Checkout.Success') { write([]); sync(); }
+          }
+        });
+        lemonReady = true;
+      } catch (e) {}
+      return lemonReady;
+    }
+
     function openCheckout() {
       var items = read().filter(function (i) { return i.checkoutUrl; });
       if (!items.length) return;
+      // LS hosted checkout is one buy-link per overlay; we sell one licence per
+      // product, so open the first item. embed=1 renders the chrome-less modal.
+      var url = items[0].checkoutUrl;
+      url += (url.indexOf('?') === -1 ? '?' : '&') + 'embed=1';
       if (drawer && drawer.open) drawer.close();
-      // Single-product: go directly to the Lemon Squeezy hosted checkout.
-      if (items.length === 1) { window.location.href = items[0].checkoutUrl; return; }
+      // Overlay on-site (no redirect). Fall back to a full redirect if lemon.js
+      // is blocked / not yet loaded.
+      if (ensureLemon()) { window.LemonSqueezy.Url.Open(url); return; }
+      window.location.href = url;
     }
 
     document.addEventListener('click', function (e) {
