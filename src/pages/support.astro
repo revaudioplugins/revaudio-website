@@ -17,27 +17,37 @@ const revlimiter = bySlug('revlimiter');
         Everything here is for <strong>RevLimiter</strong> &mdash; the only plugin shipping today.
       </p>
 
-      <p class="status-note">
-        <strong>Where things stand:</strong> RevLimiter runs as a <strong>Windows VST3</strong> plugin.
-        macOS (AU) and Pro Tools (AAX) are in development &mdash; see the roadmap below. Checkout is
-        reopening shortly; if you can&rsquo;t buy yet, <a href="/revlimiter#waitlist">join the waitlist</a>
-        and we&rsquo;ll email you the moment it&rsquo;s live.
-      </p>
-
       <h3>What you need</h3>
       <ul class="reqs">
-        <li><strong>OS:</strong> {revlimiter?.systemReq.os ?? 'Windows 10/11 64-bit (macOS planned)'}</li>
-        <li><strong>Format today:</strong> VST3 (64-bit) in any VST3 host</li>
+        <li><strong>OS:</strong> {revlimiter?.systemReq.os ?? 'Windows 10/11 64-bit, macOS 12+'}</li>
+        <li><strong>Formats:</strong> VST3, AU (macOS), AAX (Pro Tools)</li>
         <li><strong>CPU / RAM:</strong> {revlimiter?.systemReq.cpu} &middot; {revlimiter?.systemReq.ram}</li>
       </ul>
       <p class="micro muted">Full specs and tested DAWs on the <a href="/revlimiter">RevLimiter page</a>.</p>
 
-      <h3>Install (Windows VST3)</h3>
+      <h3>Install (Windows)</h3>
       <ol>
         <li>Download the installer from the confirmation email sent to you after checkout.</li>
         <li>Run the installer and accept the licence terms.</li>
-        <li>The plugin installs to <code>C:\Program Files\Common Files\VST3\</code>.</li>
-        <li>Open your DAW and rescan VST3 plugins. RevLimiter appears under the <strong>RevAudio</strong> manufacturer.</li>
+        <li>
+          The installer places the plugin in the standard Windows locations:<br />
+          VST3: <code>C:\Program Files\Common Files\VST3\</code><br />
+          AAX: <code>C:\Program Files\Common Files\Avid\Audio\Plug-Ins\</code>
+        </li>
+        <li>Open your DAW and rescan for plugins. RevLimiter appears under the <strong>RevAudio</strong> manufacturer.</li>
+      </ol>
+
+      <h3>Install (macOS)</h3>
+      <ol>
+        <li>Download the macOS installer from the confirmation email sent to you after checkout.</li>
+        <li>Open the .pkg file and follow the installer steps.</li>
+        <li>
+          The installer places the plugin in the standard macOS locations:<br />
+          VST3: <code>/Library/Audio/Plug-Ins/VST3/</code><br />
+          AU: <code>/Library/Audio/Plug-Ins/Components/</code><br />
+          AAX: <code>/Library/Application Support/Avid/Audio/Plug-Ins/</code>
+        </li>
+        <li>Open your DAW and rescan for plugins. RevLimiter appears under the <strong>RevAudio</strong> manufacturer.</li>
       </ol>
 
       <h3>Activate your licence</h3>
@@ -53,24 +63,22 @@ const revlimiter = bySlug('revlimiter');
         and we&rsquo;ll sort it within one business day.
       </p>
 
-      <h3>Platform roadmap</h3>
-      <p>
-        RevLimiter ships today as a <strong>Windows VST3</strong>. Two builds are in active development:
-      </p>
-      <ul class="roadmap">
-        <li><strong>macOS (AU)</strong> &mdash; in development. If you bought on Windows, the Mac build is
-          included free when it ships; we&rsquo;ll email you a download link.</li>
-        <li><strong>Pro Tools (AAX)</strong> &mdash; planned. No date yet; it follows the Mac build.</li>
-      </ul>
-
       <h3>Troubleshooting</h3>
       <details>
         <summary>The DAW does not see the plugin after install</summary>
         <p>
-          Restart your DAW or rescan VST3 plugins. In Cubase, Studio One, Reaper, and others the rescan is
-          automatic on launch but a manual refresh is sometimes needed. Confirm the .vst3 file exists at
-          <code>C:\Program Files\Common Files\VST3\</code>.
+          Restart your DAW and trigger a plugin rescan &mdash; most DAWs do this automatically on launch but a
+          manual refresh is sometimes needed. Confirm the plugin file exists at the expected location for
+          your format and OS:
         </p>
+        <ul>
+          <li><strong>Windows VST3:</strong> <code>C:\Program Files\Common Files\VST3\</code></li>
+          <li><strong>Windows AAX:</strong> <code>C:\Program Files\Common Files\Avid\Audio\Plug-Ins\</code></li>
+          <li><strong>macOS VST3:</strong> <code>/Library/Audio/Plug-Ins/VST3/</code></li>
+          <li><strong>macOS AU:</strong> <code>/Library/Audio/Plug-Ins/Components/</code></li>
+          <li><strong>macOS AAX:</strong> <code>/Library/Application Support/Avid/Audio/Plug-Ins/</code></li>
+        </ul>
+        <p>If the file is there but your DAW still won&rsquo;t see it, try a full DAW restart after the rescan.</p>
       </details>
       <details>
         <summary>The licence key won&rsquo;t activate</summary>
@@ -88,14 +96,6 @@ const revlimiter = bySlug('revlimiter');
           We respond within one business day.
         </p>
       </details>
-      <details>
-        <summary>Mac or Pro Tools version</summary>
-        <p>
-          The macOS (AU) build is in development and Pro Tools (AAX) is planned &mdash; see the roadmap above.
-          Buy on Windows now and the Mac build is included free when it ships. Want a heads-up the day it lands?
-          <a href="/revlimiter#waitlist">Join the waitlist</a>.
-        </p>
-      </details>
 
       <h3>Contact</h3>
       <p>
@@ -108,23 +108,12 @@ const revlimiter = bySlug('revlimiter');
 </BaseLayout>
 
 <style>
-  .status-note {
-    border: 1px solid var(--border);
-    border-left: 3px solid var(--brass-bright);
-    background: var(--bg-1);
-    padding: 0.9rem 1.1rem;
-    margin: 1.25rem 0 1.75rem;
-    color: var(--fg-dim);
-    font-size: 0.95rem;
-    line-height: 1.6;
-  }
-
-  .reqs, .roadmap {
+  .reqs {
     color: var(--fg-dim);
     list-style: none;
     padding: 0;
   }
-  .reqs li, .roadmap li { margin: 0.4rem 0; }
+  .reqs li { margin: 0.4rem 0; }
 
   details {
     border: 1px solid var(--border);
@@ -142,6 +131,14 @@ const revlimiter = bySlug('revlimiter');
   }
 
   details[open] summary { margin-bottom: 0.75rem; }
+
+  details ul {
+    color: var(--fg-dim);
+    padding-left: 1.25rem;
+    margin: 0.5rem 0;
+  }
+
+  details ul li { margin: 0.4rem 0; }
 
   ol { color: var(--fg-dim); }
   ol li { margin: 0.5rem 0; }

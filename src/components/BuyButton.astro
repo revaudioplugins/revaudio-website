@@ -1,10 +1,7 @@
 ---
-import { Image, getImage } from 'astro:assets';
+import { Image } from 'astro:assets';
 import type { Plugin } from '../data/plugins';
 import { isBuyable, fmtPrice, discountPct } from '../data/plugins';
-import { pluginImage } from '../lib/images';
-import addToCartImg from '../assets/ui/btn-add-to-cart.png';
-import addToCartPressed from '../assets/ui/btn-add-to-cart-pressed.png';
 
 interface Props {
   plugin: Plugin;
@@ -13,14 +10,10 @@ interface Props {
 const { plugin } = Astro.props;
 const buyable = isBuyable(plugin);
 const pct = discountPct(plugin);
-
-// Optimized thumbnail + checkout URL for the add-to-cart payload.
-const heroMeta = pluginImage(plugin.heroImage);
-const cartThumb = heroMeta ? await getImage({ src: heroMeta, width: 112, height: 64, format: 'webp' }) : null;
 ---
 
 <div class="buy-block">
-  {buyable && plugin.paddlePriceId ? (
+  {buyable ? (
     <>
       <div class="prices">
         <span class="price-now">{fmtPrice(plugin.introPriceUsd)}</span>
@@ -34,27 +27,20 @@ const cartThumb = heroMeta ? await getImage({ src: heroMeta, width: 112, height:
         )}
       </div>
       <p class="platform-note">Windows &amp; macOS &middot; VST3 / AU / AAX</p>
-      <div class="addcart-btn panel">
-        <Image src={addToCartImg} alt="" width={680} height={453} format="webp" />
-        <button
-          type="button"
-          class="panel-hit hit-pill hit-addcart"
-          data-add-to-cart
-          data-slug={plugin.slug}
-          data-name={plugin.name}
-          data-price={plugin.introPriceUsd}
-          data-price-id={plugin.paddlePriceId}
-          data-img={cartThumb?.src}
-          aria-label="Add to cart"
-        ></button>
-        <Image src={addToCartPressed} alt="" width={680} height={453} format="webp" loading="eager" class="press" />
-      </div>
+      <a
+        class="btn primary buy-now"
+        href={plugin.checkoutUrl}
+        target="_blank"
+        rel="noopener"
+      >
+        Buy now — {fmtPrice(plugin.introPriceUsd)}
+      </a>
       {plugin.demoUrl && (
         <a class="btn ghost" href={plugin.demoUrl}>
           Download demo
         </a>
       )}
-      <p class="micro muted">Secure checkout by Paddle — without leaving the site.</p>
+      <p class="micro muted">Secure checkout by Lemon Squeezy.</p>
     </>
   ) : plugin.checkoutPaused ? (
     <>

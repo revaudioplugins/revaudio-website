@@ -2,12 +2,11 @@
 import { Image } from 'astro:assets';
 import checkoutImg from '../assets/ui/btn-checkout.png';
 import checkoutPressed from '../assets/ui/btn-checkout-pressed.png';
-import { PADDLE } from '../data/plugins';
 /**
  * Global cart: a localStorage-backed mini-cart shared across every page.
  * - [data-add-to-cart] buttons (with data-slug/name/price/price-id/img) add items
  * - the header cart icon ([data-cart-toggle]) + badge ([data-cart-badge]) open the drawer
- * - Checkout opens a Paddle overlay (Paddle.js) with all cart items, no redirect
+ * - Checkout redirects to the Lemon Squeezy hosted checkout page
  * Rendered once in BaseLayout. No framework — vanilla JS, progressive.
  */
 ---
@@ -31,10 +30,6 @@ import { PADDLE } from '../data/plugins';
   </div>
 </dialog>
 
-<!-- Paddle.js renders its own overlay — no custom modal needed -->
-<script is:inline src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
-<div data-paddle-config data-token={PADDLE.token ?? ''} data-env={PADDLE.environment} hidden></div>
-
 <script is:inline>
   (function () {
     var KEY = 'revaudio_cart_v2';
@@ -44,9 +39,6 @@ import { PADDLE } from '../data/plugins';
     var emptyEl = drawer && drawer.querySelector('[data-cart-empty]');
     var footEl = drawer && drawer.querySelector('[data-cart-foot]');
     var subEl = drawer && drawer.querySelector('[data-cart-subtotal]');
-    var cfgEl = document.querySelector('[data-paddle-config]');
-    var PADDLE_TOKEN = cfgEl ? cfgEl.getAttribute('data-token') : '';
-    var PADDLE_ENV = cfgEl ? cfgEl.getAttribute('data-env') : 'sandbox';
 
     function read() { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) { return []; } }
     function write(c) { try { localStorage.setItem(KEY, JSON.stringify(c)); } catch (e) {} }
@@ -108,32 +100,12 @@ import { PADDLE } from '../data/plugins';
       lock();
     }
 
-    // ---- Paddle overlay checkout ----
-    var paddleReady = false;
-    function ensurePaddle() {
-      if (paddleReady) return true;
-      if (!window.Paddle || !PADDLE_TOKEN) return false;
-      try {
-        if (PADDLE_ENV === 'sandbox') window.Paddle.Environment.set('sandbox');
-        window.Paddle.Initialize({
-          token: PADDLE_TOKEN,
-          eventCallback: function (e) {
-            if (e && e.name === 'checkout.completed') { write([]); sync(); }
-          }
-        });
-        paddleReady = true;
-      } catch (err) {}
-      return paddleReady;
-    }
     function openCheckout() {
-      var items = read()
-        .filter(function (i) { return i.priceId; })
-        .map(function (i) { return { priceId: i.priceId, quantity: i.qty || 1 }; });
+      var items = read().filter(function (i) { return i.checkoutUrl; });
       if (!items.length) return;
       if (drawer && drawer.open) drawer.close();
-      // Paddle overlay takes ALL cart line items in one checkout.
-      if (ensurePaddle()) { window.Paddle.Checkout.open({ items: items }); return; }
-      console.warn('Paddle checkout unavailable (script blocked or token missing)');
+      // Single-product: go directly to the Lemon Squeezy hosted checkout.
+      if (items.length === 1) { window.location.href = items[0].checkoutUrl; return; }
     }
 
     document.addEventListener('click', function (e) {

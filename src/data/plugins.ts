@@ -3,11 +3,11 @@
  *
  * Lifecycle:
  *   status: 'in-development' → no Buy CTA, only waitlist
- *   status: 'beta'           → Buy CTA shows but no paddlePriceId until product live
- *   status: 'live'           → Buy CTA active, paddlePriceId + PADDLE.token set, demoUrl optional
+ *   status: 'beta'           → Buy CTA shows but no checkoutUrl until product live
+ *   status: 'live'           → Buy CTA active, set checkoutUrl to the Lemon Squeezy buy link
  *
  * Prices are intent — flip when commerce launches.
- * Checkout: Paddle (merchant of record). See PADDLE config + per-product paddlePriceId below.
+ * Checkout: Lemon Squeezy (merchant of record). Set checkoutUrl per product below.
  */
 
 export type PluginStatus = 'in-development' | 'beta' | 'live';
@@ -46,9 +46,9 @@ export interface Plugin {
   statusLabel: string;
   introPriceUsd: number | null;
   regularPriceUsd: number | null;
-  /** Paddle price ID (pri_...). Null until wired → product shows the "checkout reopening" state. */
-  paddlePriceId: string | null;
-  /** True while a live product has no working checkout yet (Paddle price ID not set). */
+  /** Lemon Squeezy hosted checkout URL. Null until wired → product shows the "checkout reopening" state. */
+  checkoutUrl: string | null;
+  /** True while a live product has no working checkout yet (checkoutUrl not set). */
   checkoutPaused: boolean;
   demoUrl: string | null;
   releaseTarget: string;
@@ -69,22 +69,8 @@ const baseSystemReq: SystemReq = {
   daws: 'Cubase 12+, Studio One 6+, Reaper 7+, Ableton Live 11+, FL Studio 21+, Pro Tools 2023+',
 };
 
-/**
- * COMMERCE — Paddle (merchant of record). Three pieces to go live:
- *   1. PADDLE.token       — publishable client-side token (safe in the browser).
- *                           Paddle dashboard → Developer Tools → Authentication → Client-side token.
- *   2. PADDLE.environment — 'sandbox' while testing, 'production' once the seller account is approved.
- *   3. per-product paddlePriceId (pri_...) — set on each plugin below.
- * A plugin is buyable only when status==='live', PADDLE.token is set, AND it has a paddlePriceId.
- * While a live plugin has no paddlePriceId it shows the honest "checkout reopening" CTA.
- */
-export const PADDLE = {
-  token: null as string | null,                       // sandbox 'test_...' to test, swap to 'live_...' at cutover
-  environment: 'sandbox' as 'sandbox' | 'production',  // flip to 'production' when the live token is in
-};
-
-// RevLimiter Paddle price ID — paste the sandbox pri_... to test, swap to the live pri_... at cutover.
-const REVLIMITER_PADDLE_PRICE_ID: string | null = null;
+// RevLimiter — Lemon Squeezy hosted checkout URL.
+const REVLIMITER_CHECKOUT_URL: string | null = 'https://revaudiopg.lemonsqueezy.com/checkout/buy/2b5442a6-75f6-43f9-a5a5-e1c0611b1857';
 
 export const plugins: Plugin[] = [
   {
@@ -99,11 +85,11 @@ export const plugins: Plugin[] = [
     longPitch:
       'A mastering limiter that makes loudness, depth, and punch feel like flooring it on an open road. Multi-band compression, analog-modelled saturation, and an adaptive limiter chained the way a top-tier mastering engineer would chain them. Sits last on your master bus, glues the mix, and holds a true-peak ceiling at oversampled rate.',
     status: 'live',
-    statusLabel: REVLIMITER_PADDLE_PRICE_ID ? 'Available now' : 'Checkout reopening soon',
-    introPriceUsd: 93, // flat price — no launch discount shown
+    statusLabel: REVLIMITER_CHECKOUT_URL ? 'Available now' : 'Checkout reopening soon',
+    introPriceUsd: 93,
     regularPriceUsd: null,
-    paddlePriceId: REVLIMITER_PADDLE_PRICE_ID,
-    checkoutPaused: !REVLIMITER_PADDLE_PRICE_ID,
+    checkoutUrl: REVLIMITER_CHECKOUT_URL,
+    checkoutPaused: !REVLIMITER_CHECKOUT_URL,
     demoUrl: null,
     releaseTarget: 'Q3 2026',
     heroImage: 'revlimiter-hero.png',
@@ -131,7 +117,7 @@ export const plugins: Plugin[] = [
 
 export const bySlug = (slug: string) => plugins.find((p) => p.slug === slug);
 
-export const isBuyable = (p: Plugin) => p.status === 'live' && !!p.paddlePriceId && !!PADDLE.token;
+export const isBuyable = (p: Plugin) => p.status === 'live' && !!p.checkoutUrl;
 
 export const fmtPrice = (usd: number | null) => (usd == null ? '—' : `$${usd}`);
 
