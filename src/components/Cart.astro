@@ -57,7 +57,7 @@ import checkoutPressed from '../assets/ui/btn-checkout-pressed.png';
       // One licence per product — re-adding just reopens the cart, never stacks qty.
       var exists = c.some(function (i) { return i.slug === item.slug; });
       if (!exists) {
-        c.push({ slug: item.slug, name: item.name, price: +item.price || 0, priceId: item.priceId, img: item.img || '', qty: 1 });
+        c.push({ slug: item.slug, name: item.name, price: +item.price || 0, checkoutUrl: item.checkoutUrl || '', img: item.img || '', qty: 1 });
         write(c);
       }
       sync(); openDrawer();
@@ -117,7 +117,7 @@ import checkoutPressed from '../assets/ui/btn-checkout-pressed.png';
           slug: addBtn.getAttribute('data-slug'),
           name: addBtn.getAttribute('data-name'),
           price: addBtn.getAttribute('data-price'),
-          priceId: addBtn.getAttribute('data-price-id'),
+          checkoutUrl: addBtn.getAttribute('data-checkout-url'),
           img: addBtn.getAttribute('data-img')
         });
         return;

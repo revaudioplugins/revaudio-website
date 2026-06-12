@@ -27,14 +27,16 @@ const pct = discountPct(plugin);
         )}
       </div>
       <p class="platform-note">Windows &amp; macOS &middot; VST3 / AU / AAX</p>
-      <a
-        class="btn primary buy-now"
-        href={plugin.checkoutUrl}
-        target="_blank"
-        rel="noopener"
+      <button
+        class="btn primary"
+        data-add-to-cart
+        data-slug={plugin.slug}
+        data-name={plugin.name}
+        data-price={plugin.introPriceUsd}
+        data-checkout-url={plugin.checkoutUrl}
       >
-        Buy now — {fmtPrice(plugin.introPriceUsd)}
-      </a>
+        Add to cart — {fmtPrice(plugin.introPriceUsd)}
+      </button>
       {plugin.demoUrl && (
         <a class="btn ghost" href={plugin.demoUrl}>
           Download demo
