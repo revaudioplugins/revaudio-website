@@ -340,6 +340,23 @@ nav ul a:hover { color: var(--brass-bright); }
   background: url('/plate/btn-viewmore.png') center / contain no-repeat;
 }
 
+/* Mobile: the desktop card is fixed-pixel (drag-placed) and can't fit a phone,
+   so below 600px the card reverts to a fluid stacked flow. */
+@media (max-width: 600px) {
+  .plugin-grid-lead .plugin-cards.single .plugin-card {
+    width: 100%;
+    height: auto;
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.7rem;
+  }
+  .plugin-grid-lead .plugin-card .card-thumb { position: static; left: auto; top: auto; width: 100%; }
+  .plugin-grid-lead .plugin-card .one-liner { position: static; left: auto; top: auto; width: 100%; text-align: center; }
+  .plugin-grid-lead .plugin-card .more { position: static; left: auto; top: auto; width: 122px; margin: 0.2rem auto 0; }
+}
+
 .plugin-grid h2 {
   text-align: center;
   margin-bottom: 3rem;
