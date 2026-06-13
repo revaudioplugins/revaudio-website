@@ -22,7 +22,7 @@ export const site = {
    * token is in place, forms show an honest "goes live shortly" notice and
    * never pretend to capture.
    */
-  formspreeEndpoint: 'https://formspree.io/f/REPLACE_WITH_FORM_ID',
+  formspreeEndpoint: 'https://formspree.io/f/maqzlgwa',
 
   /**
    * Launch sale marquee (site-wide sticky banner, mounted in BaseLayout).
