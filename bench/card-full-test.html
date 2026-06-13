@@ -19,7 +19,7 @@
     --bolt-size:26px; --bolt-inset:7px;
     --ol-font:'Inter',system-ui,sans-serif; --ol-size:0.9rem; --ol-color:#8a8275;
     --price-font:'Bebas Neue',sans-serif; --price-size:1.5rem; --price-color:#e8c878;
-    --btn-font:'Inter',system-ui,sans-serif; --btn-size:0.8rem; --btn-color:#efe9df;
+    --btn-w:150px;
   }
   *{box-sizing:border-box;}
   body{margin:0;color:#efe9df;font-family:var(--font-body);-webkit-font-smoothing:antialiased;line-height:1.6;
@@ -55,7 +55,7 @@
   .thumb img{width:100%;height:100%;object-fit:contain;display:block;}
   .one-liner{font-family:var(--ol-font);font-size:var(--ol-size);color:var(--ol-color);margin:0.5rem 0 0;}
   .now{font-family:var(--price-font);font-size:var(--price-size);color:var(--price-color);letter-spacing:0.04em;margin-top:0.4rem;display:inline-block;}
-  .more{font-family:var(--btn-font);font-size:var(--btn-size);color:var(--btn-color);text-transform:uppercase;letter-spacing:0.15em;margin-top:0.4rem;}
+  .more{display:block;font-size:0;width:var(--btn-w);aspect-ratio:320/206;margin:0.5rem 0 0;background:url('/public/plate/btn-viewmore.png') center/contain no-repeat;}
 
   .panel{position:fixed;right:0;top:0;bottom:0;width:360px;background:#0e0d0c;border-left:1px solid #2a2520;padding:0.9rem 1rem 4rem;overflow-y:auto;font-size:12px;}
   .panel h2{font-family:'Bebas Neue',sans-serif;letter-spacing:0.08em;color:#e8c878;font-size:0.95rem;margin:0.9rem 0 0.3rem;border-bottom:1px solid #2a2520;padding-bottom:0.25rem;}
@@ -82,7 +82,7 @@
       <a class="card" id="card" href="#">
         <div class="thumb"><img src="/src/assets/plugins/revlimiter-hero.png" alt="RevLimiter" /></div>
         <p class="one-liner">The redline is your threshold. The needle is your gain reduction. Mastering loudness with the muscle of a tuned engine.</p>
-        <span class="more">View &amp; buy &rarr;</span>
+        <span class="more" aria-label="View more"></span>
       </a>
     </div>
     <div class="foldnote">&uarr; first screen ends near here &mdash; card should sit fully above this line (no scroll)</div>
@@ -128,10 +128,9 @@
     {k:'olsize',label:'Size',var:'--ol-size',type:'rem',min:60,max:200,val:90},
     {k:'olcol',label:'Color',var:'--ol-color',type:'color',val:'#8a8275'},
    ]],
-   ['Button (View & buy)',[
-    {k:'btfont',label:'Font',var:'--btn-font',type:'font',group:'B',val:'Inter'},
-    {k:'btsize',label:'Size',var:'--btn-size',type:'rem',min:60,max:160,val:80},
-    {k:'btcol',label:'Color',var:'--btn-color',type:'color',val:'#efe9df'},
+   ['VIEW MORE button',[
+    {k:'btnw',label:'Button width',var:'--btn-w',type:'pxraw',min:90,max:340,val:150},
+    {k:'btnalign',label:'Align',type:'sel',opts:['Left','Center'],val:'Left'},
    ]],
   ];
 
@@ -184,6 +183,8 @@
   }
   function v(k){return valOf(find(k));}
   function writeOut(){
+    const mg = state.btnalign==='Center' ? '0.5rem auto 0' : '0.5rem auto 0 0';
+    document.querySelector('.more').style.margin = mg;
     const bolts = state.showbolt==='No'
       ? `    url('/plate/card-plate.jpg') center / cover;`
       : `    url('/plate/card-bolt.png') left ${v('boltinset')} top ${v('boltinset')} / ${v('boltsize')} no-repeat,
@@ -206,7 +207,11 @@ ${bolts}
 .plugin-grid-lead .plugin-card h3 { display: none; }
 .plugin-grid-lead .plugin-card .one-liner { font-family: ${v('olfont')}; font-size: ${v('olsize')}; color: ${state.olcol}; }
 .plugin-grid-lead .plugin-card .prices { display: none; }
-.plugin-grid-lead .plugin-card .more { font-family: ${v('btfont')}; font-size: ${v('btsize')}; color: ${state.btcol}; }
+.plugin-grid-lead .plugin-card .more {
+  display: block; font-size: 0; width: ${v('btnw')}; aspect-ratio: 320 / 206;
+  margin: ${mg};
+  background: url('/plate/btn-viewmore.png') center / contain no-repeat;
+}
 
 /* ── index.astro <style> ── */
 .grid-head { margin-bottom: ${v('headmb')}; }
