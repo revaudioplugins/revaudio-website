@@ -24,7 +24,17 @@
   *{box-sizing:border-box;}
   body{margin:0;color:#efe9df;font-family:var(--font-body);-webkit-font-smoothing:antialiased;line-height:1.6;
     background:radial-gradient(120% 90% at 50% -10%,rgba(60,42,20,0.35),transparent 55%),var(--bg-0);}
-  .stage{margin-right:360px;padding-top:var(--sec-pt);padding-bottom:var(--sec-pb);display:flex;justify-content:center;}
+  /* real page chrome (banner + slim nav) so the above-the-fold fit is honest */
+  .chrome{position:sticky;top:0;z-index:5;margin-right:360px;}
+  .bnr{height:41px;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;letter-spacing:0.12em;font-size:0.85rem;color:#efe9df;background:linear-gradient(180deg,#1b1b1e,#27272b,#1b1b1e);border-bottom:1px solid #8c6f3a;}
+  .nav{height:44px;display:flex;align-items:center;gap:1.5rem;padding:0 1.5rem;background:rgba(11,10,9,0.92);border-bottom:1px solid #2a2420;}
+  .nav .logo{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:0.05em;color:#efe9df;}
+  .nav .logo b{color:#e8c878;}
+  .nav .sp{flex:1;}
+  .nav a{color:#8a8275;text-transform:uppercase;letter-spacing:0.1em;font-size:0.75rem;text-decoration:none;}
+  /* one real screen below the chrome: if the card spills past this, you'd have to scroll */
+  .stage{margin-right:360px;min-height:calc(100vh - 85px);padding-top:var(--sec-pt);padding-bottom:var(--sec-pb);display:flex;flex-direction:column;align-items:center;}
+  .foldnote{margin-top:auto;color:#5a544c;font-size:11px;border-top:1px dashed #2a2420;width:var(--card-maxw);max-width:100%;text-align:center;padding-top:6px;}
   .wrap{width:var(--card-maxw);max-width:100%;}
 
   h2.head{font-family:var(--h2-font);font-size:var(--h2-size);line-height:1.1;letter-spacing:0.02em;text-align:center;margin:0 0 var(--head-mb);}
@@ -61,6 +71,10 @@
 </style>
 </head>
 <body>
+  <div class="chrome">
+    <div class="bnr">LAUNCH SALE &mdash; 40% OFF RevLimiter &mdash; Insert coupon code "VROOM" at checkout</div>
+    <div class="nav"><span class="logo">REV<b>AUDIO</b></span><span class="sp"></span><a>Home</a><a>Store</a><a>About</a><a>Support</a></div>
+  </div>
   <div class="stage">
     <div class="wrap">
       <h2 class="head"><span class="rev-accent">Rev</span>Limiter</h2>
@@ -68,10 +82,10 @@
       <a class="card" id="card" href="#">
         <div class="thumb"><img src="/src/assets/plugins/revlimiter-hero.png" alt="RevLimiter" /></div>
         <p class="one-liner">The redline is your threshold. The needle is your gain reduction. Mastering loudness with the muscle of a tuned engine.</p>
-        <span class="now">$93</span>
         <span class="more">View &amp; buy &rarr;</span>
       </a>
     </div>
+    <div class="foldnote">&uarr; first screen ends near here &mdash; card should sit fully above this line (no scroll)</div>
   </div>
 
   <div class="panel" id="panel"></div>
@@ -113,11 +127,6 @@
     {k:'olfont',label:'Font',var:'--ol-font',type:'font',group:'B',val:'Inter'},
     {k:'olsize',label:'Size',var:'--ol-size',type:'rem',min:60,max:200,val:90},
     {k:'olcol',label:'Color',var:'--ol-color',type:'color',val:'#8a8275'},
-   ]],
-   ['Price',[
-    {k:'prfont',label:'Font',var:'--price-font',type:'font',group:'D',val:'Bebas Neue'},
-    {k:'prsize',label:'Size',var:'--price-size',type:'rem',min:80,max:400,val:150},
-    {k:'prcol',label:'Color',var:'--price-color',type:'color',val:'#e8c878'},
    ]],
    ['Button (View & buy)',[
     {k:'btfont',label:'Font',var:'--btn-font',type:'font',group:'B',val:'Inter'},
@@ -196,7 +205,7 @@ ${bolts}
 }
 .plugin-grid-lead .plugin-card h3 { display: none; }
 .plugin-grid-lead .plugin-card .one-liner { font-family: ${v('olfont')}; font-size: ${v('olsize')}; color: ${state.olcol}; }
-.plugin-grid-lead .plugin-card .now { font-family: ${v('prfont')}; font-size: ${v('prsize')}; color: ${state.prcol}; }
+.plugin-grid-lead .plugin-card .prices { display: none; }
 .plugin-grid-lead .plugin-card .more { font-family: ${v('btfont')}; font-size: ${v('btsize')}; color: ${state.btcol}; }
 
 /* ── index.astro <style> ── */
