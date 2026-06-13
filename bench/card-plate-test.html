@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Bench — bolted-plate card</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg-0:#0b0a09; --bg-1:#14110f; --bg-2:#1d1916;
+    --fg:#efe9df; --fg-dim:#8a8275; --brass-bright:#e8c878; --border:#2a2420;
+    --font-display:'Bebas Neue',sans-serif; --font-body:'Inter',system-ui,sans-serif;
+
+    /* tunable */
+    --frame:30px;        /* plate margin around content (where the plate shows) */
+    --bolt:26px;         /* bolt diameter */
+    --bolt-inset:7px;    /* bolt distance from corner */
+    --plate-dark:0.25;   /* darkening overlay on the plate */
+    --bevel:14px;        /* outer drop-shadow depth (proud of page) */
+    --radius:8px;
+    --gap:0.15rem;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:
+      radial-gradient(120% 90% at 50% -10%, rgba(60,42,20,0.35), transparent 55%),
+      var(--bg-0);
+    color:var(--fg); font-family:var(--font-body); -webkit-font-smoothing:antialiased; line-height:1.6; }
+  .stage { margin-right:340px; padding:3rem 2rem 8rem; display:flex; justify-content:center; }
+
+  .wrap { width:467px; max-width:100%; }
+  h2.head { font-family:var(--font-display); font-size:5.64rem; line-height:1.1; letter-spacing:0.02em; text-align:center; margin:0 0 1.13rem; }
+  h2.head .rev-accent { color:rgb(146,3,1); }
+
+  /* ── the bolted plate card ── */
+  .plugin-card {
+    position:relative;
+    display:flex; flex-direction:column; gap:var(--gap);
+    padding:var(--frame);
+    border-radius:var(--radius);
+    color:inherit; text-decoration:none;
+    background:
+      linear-gradient(rgba(0,0,0,var(--plate-dark)), rgba(0,0,0,var(--plate-dark))),
+      url('/plate/card-plate.jpg');
+    background-size:cover;
+    background-position:center;
+    border:1px solid #000;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.14),          /* top edge highlight */
+      inset 0 -2px 8px rgba(0,0,0,0.65),             /* inner bottom shade */
+      inset 0 0 0 1px rgba(0,0,0,0.5),
+      0 var(--bevel) calc(var(--bevel) * 2.2) rgba(0,0,0,0.7);  /* proud of page */
+  }
+  .card-thumb { aspect-ratio:1800/870; background:var(--bg-2); border:1px solid rgba(0,0,0,0.6); overflow:hidden; border-radius:3px; box-shadow:0 2px 6px rgba(0,0,0,0.5); }
+  .card-thumb img { width:100%; height:100%; object-fit:contain; display:block; }
+  .one-liner { font-size:0.9rem; color:var(--fg-dim); margin:0.5rem 0 0; }
+  .prices { display:flex; gap:0.6rem; margin-top:0.4rem; }
+  .now { font-family:var(--font-display); font-size:1.5rem; color:var(--brass-bright); letter-spacing:0.04em; }
+  .more { font-size:0.8rem; text-transform:uppercase; letter-spacing:0.15em; color:var(--fg); margin-top:0.4rem; }
+
+  .bolt {
+    position:absolute; width:var(--bolt); height:var(--bolt);
+    background:url('/plate/card-bolt.png') center/contain no-repeat;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.7));
+    pointer-events:none;
+  }
+  .bolt.tl{ top:var(--bolt-inset); left:var(--bolt-inset); }
+  .bolt.tr{ top:var(--bolt-inset); right:var(--bolt-inset); }
+  .bolt.bl{ bottom:var(--bolt-inset); left:var(--bolt-inset); }
+  .bolt.br{ bottom:var(--bolt-inset); right:var(--bolt-inset); }
+  .bolt.hide{ display:none; }
+
+  /* ── controls ── */
+  .panel { position:fixed; right:0; top:0; bottom:0; width:340px; background:#0e0d0c; border-left:1px solid #2a2520; padding:1rem 1.1rem 3rem; overflow-y:auto; font-size:12.5px; }
+  .panel h2 { font-family:var(--font-display); letter-spacing:0.08em; color:var(--brass-bright); font-size:1rem; margin:1rem 0 0.4rem; border-bottom:1px solid #2a2520; padding-bottom:0.3rem; }
+  .panel h2:first-child{ margin-top:0; }
+  .row { display:flex; align-items:center; gap:0.5rem; margin:0.4rem 0; }
+  .row label { flex:0 0 120px; color:var(--fg-dim); }
+  .row input[type=range], .row select { flex:1; min-width:0; }
+  .row output { flex:0 0 52px; text-align:right; color:var(--brass-bright); font-variant-numeric:tabular-nums; }
+  .hint { color:#5a544c; font-size:11px; }
+</style>
+</head>
+<body>
+  <div class="stage">
+    <div class="wrap">
+      <h2 class="head"><span class="rev-accent">Rev</span>Limiter</h2>
+      <a class="plugin-card" id="card" href="#">
+        <span class="bolt tl"></span><span class="bolt tr"></span><span class="bolt bl"></span><span class="bolt br"></span>
+        <div class="card-thumb"><img src="/src/assets/plugins/revlimiter-hero.png" alt="RevLimiter" /></div>
+        <p class="one-liner">The redline is your threshold. The needle is your gain reduction. Mastering loudness with the muscle of a tuned engine.</p>
+        <div class="prices"><span class="now">$93</span></div>
+        <span class="more">View &amp; buy &rarr;</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="panel">
+    <p class="hint" style="margin:0 0 0.6rem">Card backed by a brushed-metal plate with brass corner bolts, raised proud of the page.</p>
+    <h2>Plate</h2>
+    <div class="row"><label>Frame width</label><input type="range" id="frame" min="0" max="64" value="30"><output id="o-frame">30px</output></div>
+    <div class="row"><label>Plate darken</label><input type="range" id="dark" min="0" max="80" value="25"><output id="o-dark">0.25</output></div>
+    <div class="row"><label>Corner radius</label><input type="range" id="rad" min="0" max="24" value="8"><output id="o-rad">8px</output></div>
+    <div class="row"><label>Raised depth</label><input type="range" id="bevel" min="0" max="40" value="14"><output id="o-bevel">14px</output></div>
+
+    <h2>Bolts</h2>
+    <div class="row"><label>Show bolts</label><select id="show"><option value="1">Yes</option><option value="0">No</option></select></div>
+    <div class="row"><label>Bolt size</label><input type="range" id="bolt" min="14" max="56" value="26"><output id="o-bolt">26px</output></div>
+    <div class="row"><label>Bolt inset</label><input type="range" id="inset" min="0" max="40" value="7"><output id="o-inset">7px</output></div>
+
+    <h2>Notes</h2>
+    <p class="hint">If the look's right, tell me and I'll move the 2 assets into src/assets, wire the card (scoped to home + optionally store), and deploy. Plate texture can be re-generated warmer/brassier if too plain.</p>
+  </div>
+
+<script>
+  const $=id=>document.getElementById(id); const R=document.documentElement.style;
+  function up(){
+    const f=+$('frame').value, d=+$('dark').value/100, r=+$('rad').value, bv=+$('bevel').value, b=+$('bolt').value, ins=+$('inset').value, show=$('show').value==='1';
+    R.setProperty('--frame',f+'px'); $('o-frame').textContent=f+'px';
+    R.setProperty('--plate-dark',d.toFixed(2)); $('o-dark').textContent=d.toFixed(2);
+    R.setProperty('--radius',r+'px'); $('o-rad').textContent=r+'px';
+    R.setProperty('--bevel',bv+'px'); $('o-bevel').textContent=bv+'px';
+    R.setProperty('--bolt',b+'px'); $('o-bolt').textContent=b+'px';
+    R.setProperty('--bolt-inset',ins+'px'); $('o-inset').textContent=ins+'px';
+    document.querySelectorAll('.bolt').forEach(el=>el.classList.toggle('hide',!show));
+  }
+  document.querySelectorAll('input,select').forEach(el=>{el.addEventListener('input',up);el.addEventListener('change',up);});
+  up();
+</script>
+</body>
+</html>

@@ -293,7 +293,26 @@ nav ul a:hover { color: var(--brass-bright); }
    Card overrides scoped here so the Store card (shared PluginCard) is untouched. */
 .plugin-grid-lead { padding: 0.48rem 0 2.84rem; }
 .plugin-grid-lead .head-link { display: none; }
-.plugin-grid-lead .plugin-cards.single .plugin-card { padding: 0; gap: 0.15rem; }
+
+/* Bolted-plate card (bench-tuned 2026-06-13): brushed-metal plate background +
+   a brass hex bolt in each corner (4 CSS background layers — no DOM bolts),
+   raised proud of the page. Scoped to the home lead so the Store card is plain. */
+.plugin-grid-lead .plugin-cards.single .plugin-card {
+  padding: 31px;
+  gap: 0.15rem;
+  border-radius: 21px;
+  border: 1px solid #000;
+  background:
+    url('/plate/card-bolt.png') left 7px top 7px / 26px 26px no-repeat,
+    url('/plate/card-bolt.png') right 7px top 7px / 26px 26px no-repeat,
+    url('/plate/card-bolt.png') left 7px bottom 7px / 26px 26px no-repeat,
+    url('/plate/card-bolt.png') right 7px bottom 7px / 26px 26px no-repeat,
+    url('/plate/card-plate.jpg') center / cover;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 -2px 8px rgba(0, 0, 0, 0.65),
+    0 7px 16px rgba(0, 0, 0, 0.7);
+}
 /* Card name hidden here — it already shows as the section heading above the card.
    (Store card keeps its name — this is scoped to the home lead only.) */
 .plugin-grid-lead .plugin-cards.single .plugin-card h3 { display: none; }
