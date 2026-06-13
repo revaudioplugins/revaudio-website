@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Bench — card layout (drag to place)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{ --bg-0:#0b0a09; --bg-2:#1d1916; --fg:#efe9df; --fg-dim:#8a8275; --brass-bright:#e8c878;
+    --font-display:'Bebas Neue',sans-serif; --font-body:'Inter',system-ui,sans-serif;
+    --cardw:467px; --cardh:430px; }
+  *{box-sizing:border-box;}
+  body{margin:0;color:var(--fg);font-family:var(--font-body);-webkit-font-smoothing:antialiased;line-height:1.6;
+    background:radial-gradient(120% 90% at 50% -10%,rgba(60,42,20,0.35),transparent 55%),var(--bg-0);}
+  .stage{margin-right:340px;padding:2rem;display:flex;flex-direction:column;align-items:center;}
+
+  h2.head{font-family:var(--font-display);font-size:5.64rem;line-height:1.1;letter-spacing:0.02em;text-align:center;margin:0 0 1.13rem;}
+  h2.head .rev{color:#920301;}
+  .sub{font-family:var(--font-body);font-size:1.26rem;color:var(--fg-dim);text-align:center;margin:0 0 1.13rem;}
+
+  /* card canvas — plate + bolts + dark tint, matches production */
+  .card{position:relative;width:var(--cardw);height:var(--cardh);border-radius:21px;border:1px solid #000;overflow:hidden;
+    background:
+      url('/public/plate/card-bolt.png') left 3px top 3px / 26px no-repeat,
+      url('/public/plate/card-bolt.png') right 3px top 3px / 26px no-repeat,
+      url('/public/plate/card-bolt.png') left 3px bottom 3px / 26px no-repeat,
+      url('/public/plate/card-bolt.png') right 3px bottom 3px / 26px no-repeat,
+      linear-gradient(rgba(13,11,9,0.58),rgba(13,11,9,0.58)),
+      url('/public/plate/card-plate.jpg') center / cover;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.14),inset 0 -2px 8px rgba(0,0,0,0.65),0 25px 55px rgba(0,0,0,0.7);
+    touch-action:none;}
+
+  .drag{position:absolute;cursor:grab;}
+  .drag:hover{outline:1px dashed rgba(232,200,120,0.5);outline-offset:2px;}
+  .drag.grabbing{cursor:grabbing;outline:1px solid var(--brass-bright);}
+
+  .thumb{width:405px;aspect-ratio:1800/827;background:var(--bg-2);border:1px solid rgba(0,0,0,0.6);border-radius:12px;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,0.5);}
+  .thumb img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block;pointer-events:none;}
+  .one-liner{width:405px;font-family:var(--font-body);font-size:0.9rem;color:#dbcaad;margin:0;}
+  .more{width:97px;aspect-ratio:320/206;background:url('/public/plate/btn-viewmore.png') center/contain no-repeat;font-size:0;}
+
+  .panel{position:fixed;right:0;top:0;bottom:0;width:340px;background:#0e0d0c;border-left:1px solid #2a2520;padding:1rem 1.1rem 3rem;overflow-y:auto;font-size:12.5px;}
+  .panel h2{font-family:var(--font-display);letter-spacing:0.08em;color:var(--brass-bright);font-size:1rem;margin:1rem 0 0.4rem;border-bottom:1px solid #2a2520;padding-bottom:0.3rem;}
+  .panel h2:first-child{margin-top:0;}
+  .row{display:flex;align-items:center;gap:0.5rem;margin:0.35rem 0;}
+  .row label{flex:0 0 110px;color:var(--fg-dim);}
+  .row input[type=range]{flex:1;min-width:0;}
+  .row output{flex:0 0 52px;text-align:right;color:var(--brass-bright);font-variant-numeric:tabular-nums;}
+  .copy{background:#c9a35c;color:#0b0a09;border:0;padding:0.45rem 0.9rem;font-family:var(--font-display);letter-spacing:0.08em;cursor:pointer;font-size:14px;}
+  .hint{color:#6a6256;font-size:11px;line-height:1.5;}
+  pre{margin-right:340px;margin-top:0;background:#0e0d0c;color:#b9d6a8;padding:1rem 1.3rem;font-size:11px;line-height:1.5;white-space:pre-wrap;border-top:1px solid #2a2520;}
+</style>
+</head>
+<body>
+  <div class="stage">
+    <h2 class="head"><span class="rev">Rev</span>Limiter</h2>
+    <p class="sub">Maximum loudness. Zero engine damage.</p>
+    <div class="card" id="card">
+      <div class="thumb drag" data-el="thumb" style="left:31px;top:31px;"><img src="/src/assets/plugins/revlimiter-hero.png" alt="" /></div>
+      <p class="one-liner drag" data-el="oneliner" style="left:31px;top:250px;">The redline is your threshold. The needle is your gain reduction. Mastering loudness with the muscle of a tuned engine.</p>
+      <span class="more drag" data-el="more" style="left:185px;top:360px;" aria-label="View more"></span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <p class="hint" style="margin:0 0 0.7rem">Drag the <b style="color:#e8c878">image</b>, <b style="color:#e8c878">tagline</b> and <b style="color:#e8c878">button</b> anywhere on the card. Use the sliders for sizes. Copy CSS when happy.</p>
+    <h2>Card</h2>
+    <div class="row"><label>Card width</label><input type="range" id="cardw" min="320" max="760" value="467"><output id="o-cardw">467px</output></div>
+    <div class="row"><label>Card height</label><input type="range" id="cardh" min="240" max="700" value="430"><output id="o-cardh">430px</output></div>
+    <h2>Sizes</h2>
+    <div class="row"><label>Image width</label><input type="range" id="imgw" min="120" max="700" value="405"><output id="o-imgw">405px</output></div>
+    <div class="row"><label>Tagline width</label><input type="range" id="olw" min="120" max="700" value="405"><output id="o-olw">405px</output></div>
+    <div class="row"><label>Button width</label><input type="range" id="btnw" min="60" max="300" value="97"><output id="o-btnw">97px</output></div>
+    <h2>Export</h2>
+    <button class="copy" id="copy">Copy CSS</button> <span class="hint" id="copied"></span>
+  </div>
+
+  <pre id="out"></pre>
+
+<script>
+  const $=id=>document.getElementById(id);
+  const card=$('card'), root=document.documentElement.style;
+  const els={ thumb:document.querySelector('[data-el=thumb]'), oneliner:document.querySelector('[data-el=oneliner]'), more:document.querySelector('[data-el=more]') };
+
+  // drag
+  let active=null,ox=0,oy=0;
+  document.querySelectorAll('.drag').forEach(el=>{
+    el.addEventListener('pointerdown',e=>{
+      active=el; const r=el.getBoundingClientRect(); ox=e.clientX-r.left; oy=e.clientY-r.top;
+      el.classList.add('grabbing'); el.setPointerCapture(e.pointerId); e.preventDefault();
+    });
+  });
+  window.addEventListener('pointermove',e=>{
+    if(!active) return;
+    const cr=card.getBoundingClientRect();
+    let x=e.clientX-cr.left-ox, y=e.clientY-cr.top-oy;
+    x=Math.max(0,Math.min(x,cr.width-active.offsetWidth));
+    y=Math.max(0,Math.min(y,cr.height-active.offsetHeight));
+    active.style.left=Math.round(x)+'px'; active.style.top=Math.round(y)+'px';
+    writeOut();
+  });
+  window.addEventListener('pointerup',()=>{ if(active){active.classList.remove('grabbing');active=null;} });
+
+  // sliders
+  function syncSizes(){
+    const cw=+$('cardw').value, ch=+$('cardh').value, iw=+$('imgw').value, ow=+$('olw').value, bw=+$('btnw').value;
+    root.setProperty('--cardw',cw+'px'); $('o-cardw').textContent=cw+'px';
+    root.setProperty('--cardh',ch+'px'); $('o-cardh').textContent=ch+'px';
+    els.thumb.style.width=iw+'px'; $('o-imgw').textContent=iw+'px';
+    els.oneliner.style.width=ow+'px'; $('o-olw').textContent=ow+'px';
+    els.more.style.width=bw+'px'; $('o-btnw').textContent=bw+'px';
+    writeOut();
+  }
+  ['cardw','cardh','imgw','olw','btnw'].forEach(id=>$(id).addEventListener('input',syncSizes));
+
+  const px=el=>({l:parseInt(el.style.left)||0,t:parseInt(el.style.top)||0});
+  function writeOut(){
+    const cw=+$('cardw').value, ch=+$('cardh').value, iw=+$('imgw').value, ow=+$('olw').value, bw=+$('btnw').value;
+    const T=px(els.thumb), O=px(els.oneliner), M=px(els.more);
+    $('out').textContent=
+`/* ── global.css — absolute layout for the home card (drag-placed) ── */
+.plugin-grid-lead .plugin-cards.single .plugin-card {
+  position: relative; padding: 0;
+  width: ${cw}px; max-width: 100%;
+  height: ${ch}px;
+}
+.plugin-grid-lead .plugin-card .card-thumb { position: absolute; left: ${T.l}px; top: ${T.t}px; width: ${iw}px; aspect-ratio: auto; }
+.plugin-grid-lead .plugin-card .one-liner  { position: absolute; left: ${O.l}px; top: ${O.t}px; width: ${ow}px; margin: 0; }
+.plugin-grid-lead .plugin-card .more        { position: absolute; left: ${M.l}px; top: ${M.t}px; width: ${bw}px; margin: 0; }
+
+/* index.astro — match the card width */
+.plugin-cards.single { max-width: ${cw}px; }`;
+  }
+  $('copy').addEventListener('click',async()=>{try{await navigator.clipboard.writeText($('out').textContent);$('copied').textContent='copied ✓';}catch{$('copied').textContent='select+copy';}setTimeout(()=>$('copied').textContent='',1600);});
+  syncSizes();
+</script>
+</body>
+</html>
