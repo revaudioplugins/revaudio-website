@@ -33,6 +33,6 @@ export const site = {
     active: true,
     pct: 40,
     code: 'VROOM',
-    message: 'LAUNCH SALE — 40% OFF EVERYTHING — Insert coupon code "VROOM" at checkout — LIMITED TIME',
+    message: 'LAUNCH SALE — 40% OFF RevLimiter — Insert coupon code "VROOM" at checkout — LIMITED TIME',
   },
 };

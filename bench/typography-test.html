@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Bench — RevAudio typography</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;500;600;700&family=Anton&family=Teko:wght@400;500;600&family=Fjalla+One&family=Saira+Condensed:wght@500;600;700&family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Figtree:wght@400;500;600&family=Sofia+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg-0:#0b0a09; --bg-1:#14110f; --bg-2:#1d1916;
+    --fg:#efe9df; --fg-dim:#8a8275; --fg-faint:#5a544c;
+    --brass:#c9a35c; --brass-bright:#e8c878; --brass-dark:#8c6f3a; --chrome:#d8d4cc;
+    --font-display:'Bebas Neue','Oswald',sans-serif;
+    --font-body:'Inter',system-ui,sans-serif;
+    --font-mono:ui-monospace,Consolas,monospace;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg-0); color:var(--fg); font-family:var(--font-body); -webkit-font-smoothing:antialiased; }
+
+  /* ── live preview column ── */
+  .stage { margin-right:380px; padding:2rem 3rem 6rem; }
+  .stage .note { color:var(--fg-faint); font-size:12px; margin:0 0 2rem; }
+  .sample { padding:1.1rem 0; border-bottom:1px solid #211d18; }
+  .sample .tag-id { color:var(--fg-faint); font-family:var(--font-mono); font-size:11px; letter-spacing:0.1em; text-transform:uppercase; display:block; margin-bottom:0.35rem; }
+
+  /* defaults mirror production global.css — JS overrides inline as you drag */
+  .s-h1 { font-family:var(--font-display); font-size:5rem;    line-height:1.05; letter-spacing:0.02em; color:var(--fg); margin:0; }
+  .s-h2 { font-family:var(--font-display); font-size:3rem;    line-height:1.1;  letter-spacing:0.02em; color:var(--fg); margin:0; }
+  .s-h3 { font-family:var(--font-display); font-size:1.75rem; line-height:1.1;  letter-spacing:0.04em; text-transform:uppercase; color:var(--brass-bright); margin:0; }
+  .s-eyebrow { font-family:var(--font-display); font-size:1.25rem; letter-spacing:0.3em; text-transform:uppercase; color:var(--brass); margin:0; }
+  .s-lede { font-family:var(--font-body); font-size:1.25rem; line-height:1.6; color:var(--fg-dim); margin:0; max-width:40ch; }
+  .s-body { font-family:var(--font-body); font-size:1rem; line-height:1.6; color:var(--fg); margin:0; max-width:60ch; }
+  .s-nav { font-family:var(--font-body); font-size:0.875rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--fg-dim); margin:0; }
+  .s-tagline { font-family:var(--font-mono); font-size:0.85rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--brass); margin:0; }
+  .s-button { font-family:var(--font-display); font-size:1.3rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--brass-bright); margin:0; display:inline-block; border:1px solid var(--brass-dark); padding:0.5rem 1.4rem; border-radius:6px; background:linear-gradient(180deg,#2a2018,#181210); }
+  .s-caption { font-family:var(--font-body); font-size:0.95rem; line-height:1.5; color:var(--fg-dim); margin:0; }
+
+  /* ── control panel ── */
+  .panel { position:fixed; right:0; top:0; bottom:0; width:380px; background:#0e0d0c; border-left:1px solid #2a2520; padding:1rem 1.1rem 4rem; overflow-y:auto; z-index:10; font-size:12.5px; }
+  .panel h2 { font-family:var(--font-display); letter-spacing:0.08em; color:var(--brass-bright); font-size:1rem; margin:0 0 0.5rem; border-bottom:1px solid #2a2520; padding-bottom:0.3rem; }
+  .grp { border:1px solid #211d18; border-radius:6px; padding:0.55rem 0.7rem; margin:0 0 0.7rem; }
+  .grp .ttl { color:var(--brass); font-weight:600; margin-bottom:0.4rem; display:block; }
+  .row { display:flex; align-items:center; gap:0.5rem; margin:0.3rem 0; }
+  .row label { flex:0 0 84px; color:var(--fg-dim); }
+  .row select, .row input[type=range] { flex:1; min-width:0; }
+  .row output { flex:0 0 50px; text-align:right; color:var(--brass); font-variant-numeric:tabular-nums; }
+  .bar { display:flex; gap:0.4rem; margin:0.4rem 0 0.9rem; }
+  .bar button { flex:1; background:#1d1916; color:var(--fg-dim); border:1px solid #2a2520; padding:0.4rem; cursor:pointer; font-size:11px; }
+  .bar button:hover { color:var(--brass-bright); border-color:var(--brass-dark); }
+  button.copy { background:var(--brass); color:var(--bg-0); border:0; padding:0.45rem 0.9rem; font-family:var(--font-display); letter-spacing:0.08em; cursor:pointer; font-size:14px; }
+  pre { margin-right:380px; margin-top:0; background:#0e0d0c; color:#b9d6a8; padding:1rem 1.4rem; font-size:11px; line-height:1.5; white-space:pre-wrap; border-top:1px solid #2a2520; }
+  .hint { color:var(--fg-faint); font-size:11px; }
+</style>
+</head>
+<body>
+  <div class="stage">
+    <p class="note">Live preview on RevAudio's dark base. Each block is one section TYPE — the controls on the right apply site-wide to every instance of that type. Defaults match production global.css. Drag, then copy the CSS at the bottom.</p>
+
+    <div class="sample"><span class="tag-id">h1 — page headline (.hero h1, product h1)</span><div class="s-h1" data-t="h1">Engineered, then tuned.</div></div>
+    <div class="sample"><span class="tag-id">h2 — section heading (What's inside, Store)</span><div class="s-h2" data-t="h2">What's inside</div></div>
+    <div class="sample"><span class="tag-id">h3 — subheading (feature names, FAQ)</span><div class="s-h3" data-t="h3">True-peak limiting</div></div>
+    <div class="sample"><span class="tag-id">eyebrow — kicker label (.hero .tag, .hh-tag)</span><div class="s-eyebrow" data-t="eyebrow">Boutique VST plugins</div></div>
+    <div class="sample"><span class="tag-id">lede — intro paragraph (.lede, .hh-lede)</span><div class="s-lede" data-t="lede">Measured to spec, then voiced by ear. The precision of a machine, the feel of an instrument.</div></div>
+    <div class="sample"><span class="tag-id">body — standard paragraph (p)</span><div class="s-body" data-t="body">A mastering limiter that makes loudness, depth, and punch feel like flooring it on an open road. Sits last on your master bus and glues the mix.</div></div>
+    <div class="sample"><span class="tag-id">nav — menu links (nav ul a)</span><div class="s-nav" data-t="nav">Home&nbsp;&nbsp;&nbsp;Store&nbsp;&nbsp;&nbsp;About&nbsp;&nbsp;&nbsp;Support</div></div>
+    <div class="sample"><span class="tag-id">tagline — mono label (.tagline)</span><div class="s-tagline" data-t="tagline">A mastering limiter you read like a tachometer</div></div>
+    <div class="sample"><span class="tag-id">button — CTA label (.btn)</span><div><span class="s-button" data-t="button">SUBSCRIBE</span></div></div>
+    <div class="sample"><span class="tag-id">caption — small / muted text (.muted, .micro)</span><div class="s-caption" data-t="caption">Single purchase. Lifetime updates within the major version.</div></div>
+  </div>
+
+  <div class="panel" id="panel">
+    <h2>Typography</h2>
+    <div class="hint" style="margin-bottom:0.7rem">Per-type font + size. "Set all display / body fonts" sweeps every type sharing that stack.</div>
+    <div class="bar">
+      <button id="allDisplay">Set all display fonts →</button>
+      <button id="allBody">Set all body fonts →</button>
+    </div>
+    <div id="controls"></div>
+    <h2 style="margin-top:1.2rem">Export</h2>
+    <button class="copy" id="copy">Copy CSS</button> <span class="hint" id="copied"></span>
+  </div>
+
+  <pre id="out"></pre>
+
+<script>
+  const FONTS_DISPLAY = ['Bebas Neue','Oswald','Anton','Teko','Fjalla One','Saira Condensed','Rajdhani'];
+  const FONTS_BODY = ['Inter','Manrope','Work Sans','IBM Plex Sans','Figtree','Sofia Sans'];
+  const FONTS_MONO = ['ui-monospace (system)'];
+  const ALL = [...FONTS_DISPLAY, ...FONTS_BODY];
+
+  // type → {selector(s), default stack 'display|body|mono', defaults}
+  const TYPES = [
+    { k:'h1', label:'H1 headline', sel:'h1', stack:'display', font:'Bebas Neue', size:5.0,  ls:0.02, tf:'none' },
+    { k:'h2', label:'H2 section',  sel:'h2', stack:'display', font:'Bebas Neue', size:3.0,  ls:0.02, tf:'none' },
+    { k:'h3', label:'H3 subhead',  sel:'h3', stack:'display', font:'Bebas Neue', size:1.75, ls:0.04, tf:'uppercase' },
+    { k:'eyebrow', label:'Eyebrow', sel:'.hero .tag, .hh-tag', stack:'display', font:'Bebas Neue', size:1.25, ls:0.30, tf:'uppercase' },
+    { k:'lede', label:'Lede',      sel:'.lede, .hh-lede',     stack:'body', font:'Inter', size:1.25, ls:0.00, tf:'none' },
+    { k:'body', label:'Body',      sel:'body, p',             stack:'body', font:'Inter', size:1.00, ls:0.00, tf:'none' },
+    { k:'nav', label:'Nav link',   sel:'nav ul a',            stack:'body', font:'Inter', size:0.875, ls:0.10, tf:'uppercase' },
+    { k:'tagline', label:'Tagline', sel:'.tagline',           stack:'mono', font:'ui-monospace (system)', size:0.85, ls:0.10, tf:'uppercase' },
+    { k:'button', label:'Button',  sel:'.btn',                stack:'display', font:'Bebas Neue', size:1.30, ls:0.18, tf:'uppercase' },
+    { k:'caption', label:'Caption', sel:'.muted, .micro',     stack:'body', font:'Inter', size:0.95, ls:0.00, tf:'none' },
+  ];
+
+  const $ = s => document.querySelector(s);
+  const state = {};
+  TYPES.forEach(t => state[t.k] = { font:t.font, size:t.size, ls:t.ls, tf:t.tf });
+
+  function stackFor(fontName, stack){
+    if (stack === 'mono' && fontName.startsWith('ui-monospace')) return "ui-monospace, Consolas, monospace";
+    if (FONTS_DISPLAY.includes(fontName)) return `'${fontName}', 'Oswald', sans-serif`;
+    if (FONTS_BODY.includes(fontName)) return `'${fontName}', system-ui, sans-serif`;
+    return "ui-monospace, Consolas, monospace";
+  }
+
+  // build controls
+  const wrap = $('#controls');
+  TYPES.forEach(t => {
+    const opts = (t.stack==='mono' ? [...FONTS_MONO, ...ALL] : ALL)
+      .map(f => `<option ${f===t.font?'selected':''}>${f}</option>`).join('');
+    const g = document.createElement('div');
+    g.className = 'grp';
+    g.innerHTML =
+      `<span class="ttl">${t.label} <span class="hint">— ${t.sel}</span></span>
+       <div class="row"><label>Font</label><select data-k="${t.k}" data-p="font">${opts}</select></div>
+       <div class="row"><label>Size</label><input type="range" data-k="${t.k}" data-p="size" min="50" max="900" value="${Math.round(t.size*100)}"><output id="o-${t.k}-size">${t.size.toFixed(2)}rem</output></div>
+       <div class="row"><label>Tracking</label><input type="range" data-k="${t.k}" data-p="ls" min="0" max="40" value="${Math.round(t.ls*100)}"><output id="o-${t.k}-ls">${t.ls.toFixed(2)}em</output></div>
+       <div class="row"><label>Transform</label><select data-k="${t.k}" data-p="tf"><option value="none" ${t.tf==='none'?'selected':''}>none</option><option value="uppercase" ${t.tf==='uppercase'?'selected':''}>UPPERCASE</option></select></div>`;
+    wrap.appendChild(g);
+  });
+
+  function apply(k){
+    const t = TYPES.find(x=>x.k===k); const s = state[k];
+    const els = document.querySelectorAll(`[data-t="${k}"]`);
+    els.forEach(el => {
+      el.style.fontFamily = stackFor(s.font, t.stack);
+      el.style.fontSize = s.size.toFixed(2)+'rem';
+      el.style.letterSpacing = s.ls.toFixed(2)+'em';
+      el.style.textTransform = s.tf;
+    });
+    const so=$('#o-'+k+'-size'), lo=$('#o-'+k+'-ls');
+    if(so) so.textContent = s.size.toFixed(2)+'rem';
+    if(lo) lo.textContent = s.ls.toFixed(2)+'em';
+  }
+
+  function render(){ TYPES.forEach(t=>apply(t.k)); writeOut(); }
+
+  function writeOut(){
+    let css = `/* RevAudio typography — paste into src/styles/global.css\n   (headings shown as fixed rem; re-wrap in clamp() if you want fluid scaling) */\n\n`;
+    css += `:root {\n`;
+    // show the dominant display + body picks as the stack vars too
+    const disp = state['h1'].font, body = state['body'].font;
+    css += `  --font-display: ${stackFor(disp,'display')};\n`;
+    css += `  --font-body: ${stackFor(body,'body')};\n}\n\n`;
+    TYPES.forEach(t=>{
+      const s = state[t.k];
+      css += `${t.sel} {\n`;
+      css += `  font-family: ${stackFor(s.font, t.stack)};\n`;
+      css += `  font-size: ${s.size.toFixed(2)}rem;\n`;
+      css += `  letter-spacing: ${s.ls.toFixed(2)}em;\n`;
+      if (s.tf !== 'none') css += `  text-transform: ${s.tf};\n`;
+      css += `}\n`;
+    });
+    $('#out').textContent = css;
+  }
+
+  wrap.addEventListener('input', e=>{
+    const k=e.target.dataset.k, p=e.target.dataset.p; if(!k) return;
+    let v=e.target.value;
+    if(p==='size') v=+v/100; else if(p==='ls') v=+v/100;
+    state[k][p]=v; apply(k); writeOut();
+  });
+  wrap.addEventListener('change', e=>{ const k=e.target.dataset.k; if(k){apply(k);writeOut();} });
+
+  // sweep helpers — set every display-stack (or body-stack) type to one font
+  function sweep(stack, list){
+    const choice = prompt(`Set all ${stack} types to which font?\n\n${list.join(', ')}`, list[0]);
+    if(!choice || !list.includes(choice)) return;
+    TYPES.filter(t=>t.stack===stack).forEach(t=>{
+      state[t.k].font = choice;
+      const sel = wrap.querySelector(`select[data-k="${t.k}"][data-p="font"]`);
+      if(sel) sel.value = choice;
+      apply(t.k);
+    });
+    writeOut();
+  }
+  $('#allDisplay').addEventListener('click', ()=>sweep('display', FONTS_DISPLAY));
+  $('#allBody').addEventListener('click', ()=>sweep('body', FONTS_BODY));
+
+  $('#copy').addEventListener('click', async ()=>{
+    try{ await navigator.clipboard.writeText($('#out').textContent); $('#copied').textContent='copied ✓'; }
+    catch{ $('#copied').textContent='select + copy manually'; }
+    setTimeout(()=>$('#copied').textContent='',1800);
+  });
+
+  render();
+</script>
+</body>
+</html>
