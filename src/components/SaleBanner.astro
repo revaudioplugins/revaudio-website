@@ -26,11 +26,9 @@ const REPEATS = 3;
           <div class="group" aria-hidden={group === 1 ? 'true' : undefined}>
             {Array.from({ length: REPEATS }).map(() => (
               <span class="seg">
-                LAUNCH SALE — <strong class="pct">{sale.pct}% OFF</strong> EVERYTHING — CODE{' '}
-                <strong class="code">{sale.code}</strong> AT CHECKOUT — LIMITED TIME
-                <span class="flag" aria-hidden="true">
-                  🏁
-                </span>
+                LAUNCH SALE — <strong class="pct">{sale.pct}% OFF</strong> EVERYTHING — Insert coupon code{' '}
+                <strong class="code">"{sale.code}"</strong> at checkout — LIMITED TIME
+                <span class="sep" aria-hidden="true">|</span>
               </span>
             ))}
           </div>
@@ -41,17 +39,37 @@ const REPEATS = 3;
 }
 
 <style>
+  /* Race-track strip: asphalt slab + a dashed road centre-line the message
+     drives along, framed by checkered-flag rails top & bottom. */
   .sale-banner {
     position: sticky;
     top: 0;
     z-index: 60;
-    height: var(--sale-h, 34px);
+    height: var(--sale-h, 41px);
     overflow: hidden;
     display: flex;
     align-items: center;
-    background: linear-gradient(90deg, var(--oxide-deep), var(--bg-1) 45%, var(--oxide-deep));
-    border-bottom: 1px solid var(--brass-dark);
+    background:
+      /* dashed yellow lane line, centred band */
+      repeating-linear-gradient(90deg, transparent 0 17px, rgba(214, 178, 90, 0.8) 17px 34px) center / 100% 3px no-repeat,
+      /* asphalt */
+      linear-gradient(180deg, #1b1b1e 0%, #27272b 50%, #1b1b1e 100%);
   }
+
+  /* Checkered-flag rails. ::before = top, ::after = bottom. A tiled conic
+     checkerboard (light chrome vs near-black), one cell tall per rail. */
+  .sale-banner::before,
+  .sale-banner::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: repeating-conic-gradient(#f7f7f7 0 90deg, #000000 0 180deg) 0 0 / 5px 5px;
+    z-index: 1;
+  }
+  .sale-banner::before { top: 0; }
+  .sale-banner::after { bottom: 0; }
 
   .track {
     display: flex;
@@ -75,6 +93,13 @@ const REPEATS = 3;
     font-size: 0.92rem;
     letter-spacing: 0.14em;
     color: var(--fg);
+    /* Solid asphalt outline around every glyph so the bright lane line breaks
+       AT the text — letters read full-colour over the road, lane shows only in
+       the gaps between words. (text-shadow is inherited → .pct picks it up.) */
+    text-shadow:
+      -2px 0 #1b1b1e, 2px 0 #1b1b1e, 0 -2px #1b1b1e, 0 2px #1b1b1e,
+      -2px -2px #1b1b1e, 2px 2px #1b1b1e, 2px -2px #1b1b1e, -2px 2px #1b1b1e,
+      0 0 3px #1b1b1e;
   }
 
   .pct,
@@ -83,12 +108,24 @@ const REPEATS = 3;
     color: var(--brass-bright);
     margin: 0 0.35em;
   }
-  .code { color: var(--chrome, #e8e6e1); text-shadow: 0 0 8px rgba(232, 230, 225, 0.25); }
+  .code {
+    color: var(--chrome, #e8e6e1);
+    /* Same asphalt outline as .seg (override would otherwise drop it) + the
+       chrome glow on top. */
+    text-shadow:
+      -2px 0 #1b1b1e, 2px 0 #1b1b1e, 0 -2px #1b1b1e, 0 2px #1b1b1e,
+      -2px -2px #1b1b1e, 2px 2px #1b1b1e, 2px -2px #1b1b1e, -2px 2px #1b1b1e,
+      0 0 8px rgba(232, 230, 225, 0.25);
+  }
 
-  .flag {
-    font-size: 0.8rem;
+  .sep {
     margin-left: 1.1rem;
-    filter: saturate(0.6);
+    color: var(--brass);
+    opacity: 0.7;
+    /* the divider can sit on the lane line too — keep it readable */
+    text-shadow:
+      -2px 0 #1b1b1e, 2px 0 #1b1b1e, 0 -2px #1b1b1e, 0 2px #1b1b1e,
+      0 0 3px #1b1b1e;
   }
 
   @keyframes sale-scroll {
@@ -101,7 +138,7 @@ const REPEATS = 3;
     .track { animation: none; width: 100%; justify-content: center; }
     .group[aria-hidden] { display: none; }
     .group .seg:not(:first-child) { display: none; }
-    .flag { display: none; }
+    .sep { display: none; }
   }
 
   @media (max-width: 700px) {

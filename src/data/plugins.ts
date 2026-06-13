@@ -99,7 +99,7 @@ export const plugins: Plugin[] = [
       { name: 'Adaptive multi-band release', desc: 'Per-band envelope tracking. Bass holds, mids breathe, highs respond — no static release time fights your material.' },
       { name: 'Analog-modelled saturation', desc: 'Asymmetric soft-to-hard curve with DC-block. Adds density and weight before the brick wall.' },
       { name: 'Pro-tier metering', desc: 'Trust your eyes, not a guess — true peak, max peak, LUFS-M/S/I, LRA and per-band GR, RT-safe and audited against external mastering meters.' },
-      { name: '16× oversampling', desc: 'Catch the peaks between samples — optional, for the dense mixes that fight the ceiling and need surgical inter-sample control.' },
+      { name: 'Up to 32× oversampling', desc: 'Catch the peaks between samples — selectable up to 32×, for the dense mixes that fight the ceiling and need surgical inter-sample control.' },
       { name: 'Visual rev gauge', desc: 'Redline = threshold. Needle = gain reduction. You know what is happening at a glance.' },
       { name: 'A/B compare', desc: 'Two state slots. Switch instantly. Compare without leaving the plugin.' },
       { name: 'Lookahead with PDC', desc: 'The rest of your chain stays in time — lookahead delay is reported to the host, so nothing drifts on your master bus.' },

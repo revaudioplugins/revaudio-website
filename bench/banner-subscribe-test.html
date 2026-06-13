@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Bench — Race banner + subscribe title</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  /* ── Production brand tokens (from src/styles/global.css) ── */
+  :root {
+    --bg-0: #0b0a09;  --bg-1: #14110f;  --bg-2: #1d1916;
+    --fg: #efe9df;    --fg-dim: #8a8275; --fg-faint: #5a544c;
+    --brass: #c9a35c; --brass-bright: #e8c878; --brass-dark: #8c6f3a;
+    --chrome: #d8d4cc; --oxide: #8b3a1f; --oxide-deep: #5a2410; --redline: #c8331f;
+    --font-display: 'Bebas Neue', 'Arial Narrow', sans-serif;
+    --font-body: 'Inter', system-ui, sans-serif;
+
+    /* ── Live-tunable knobs (driven by the sliders) ── */
+    --sale-h: 42px;
+    --rail-h: 6px;       /* checkered rail thickness */
+    --tile: 6px;         /* checker square size  → rows ≈ rail-h / tile */
+    --checker-light: #d8d4cc;
+    --checker-dark: #0d0d0d;
+    --lane-dash: 26px;   /* yellow dash length */
+    --lane-gap: 20px;    /* gap between dashes */
+    --lane-thick: 2px;
+    --lane-op: 0.5;
+    --scroll-s: 45s;
+
+    /* subscribe title knobs */
+    --st-size: 0.92rem;
+    --st-maxw: 30ch;
+    --st-ls: 0em;
+    --st-lh: 1.4;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg-0); color: var(--fg);
+    font-family: var(--font-body); -webkit-font-smoothing: antialiased;
+  }
+
+  /* ════════════════ PRODUCTION-MIRROR: SaleBanner ════════════════ */
+  .sale-banner {
+    position: relative;
+    height: var(--sale-h);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    background:
+      repeating-linear-gradient(90deg,
+        transparent 0 var(--lane-gap),
+        rgba(214,178,90,var(--lane-op)) var(--lane-gap) calc(var(--lane-gap) + var(--lane-dash))
+      ) center / 100% var(--lane-thick) no-repeat,
+      linear-gradient(180deg, #1b1b1e 0%, #27272b 50%, #1b1b1e 100%);
+  }
+  .sale-banner.no-lane {
+    background: linear-gradient(180deg, #1b1b1e 0%, #27272b 50%, #1b1b1e 100%);
+  }
+  .sale-banner::before, .sale-banner::after {
+    content: ''; position: absolute; left: 0; right: 0;
+    height: var(--rail-h); z-index: 1;
+    background: repeating-conic-gradient(
+      var(--checker-light) 0 90deg, var(--checker-dark) 0 180deg
+    ) 0 0 / var(--tile) var(--tile);
+  }
+  .sale-banner::before { top: 0; }
+  .sale-banner::after  { bottom: 0; }
+
+  .track { display: flex; width: max-content; animation: sale-scroll var(--scroll-s) linear infinite; }
+  .track.paused { animation-play-state: paused; }
+  .group { display: flex; flex-shrink: 0; }
+  .seg {
+    display: inline-flex; align-items: center; white-space: nowrap;
+    padding-right: 1.1rem; font-family: var(--font-display);
+    font-size: 0.92rem; letter-spacing: 0.14em; color: var(--fg);
+  }
+  .pct, .code { color: var(--brass-bright); margin: 0 0.35em; }
+  .code { color: var(--chrome); text-shadow: 0 0 8px rgba(216,212,204,0.25); }
+  .flag { font-size: 0.8rem; margin-left: 1.1rem; filter: saturate(0.6); }
+  @keyframes sale-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  /* ════════════════ PRODUCTION-MIRROR: hero subscribe block ════════════════ */
+  .hero-demo {
+    padding: 3rem 2rem 4rem;
+    background:
+      radial-gradient(120% 80% at 30% 0%, rgba(40,30,18,0.6), transparent 60%),
+      var(--bg-0);
+  }
+  .hh-cta-label {
+    font-family: var(--font-body);
+    font-size: var(--st-size);
+    line-height: var(--st-lh);
+    color: var(--fg-dim);
+    max-width: var(--st-maxw);
+    letter-spacing: var(--st-ls);
+    margin: 0 0 0.6rem;
+  }
+  .hh-cta {
+    width: 210px; height: 64px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: 1px solid var(--brass-dark); border-radius: 6px;
+    background: linear-gradient(180deg, #2a2018, #181210);
+    color: var(--brass-bright); font-family: var(--font-display);
+    letter-spacing: 0.18em; font-size: 1.3rem;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 6px 16px rgba(0,0,0,0.5);
+  }
+
+  /* ════════════════ Control panel ════════════════ */
+  .panel {
+    position: fixed; right: 0; top: 0; bottom: 0; width: 340px;
+    background: #0e0d0c; border-left: 1px solid #2a2520;
+    padding: 1rem 1.1rem 3rem; overflow-y: auto; z-index: 10;
+    font-size: 13px;
+  }
+  .panel h2 {
+    font-family: var(--font-display); letter-spacing: 0.1em; color: var(--brass-bright);
+    margin: 1.2rem 0 0.4rem; font-size: 1.05rem; border-bottom: 1px solid #2a2520; padding-bottom: 0.3rem;
+  }
+  .panel h2:first-child { margin-top: 0; }
+  .row { display: flex; align-items: center; gap: 0.5rem; margin: 0.45rem 0; }
+  .row label { flex: 0 0 130px; color: var(--fg-dim); }
+  .row input[type=range] { flex: 1; }
+  .row output { flex: 0 0 54px; text-align: right; color: var(--brass); font-variant-numeric: tabular-nums; }
+  .row input[type=text], .row input[type=color] { flex: 1; }
+  .row.full { flex-direction: column; align-items: stretch; }
+  .row.full textarea { width: 100%; min-height: 48px; background: var(--bg-1); color: var(--fg); border: 1px solid #2a2520; font-family: inherit; padding: 0.4rem; }
+  .stage { margin-right: 340px; }
+  .hint { color: var(--fg-faint); font-size: 11px; margin: 0.2rem 0 0.6rem; }
+  pre {
+    margin-right: 340px; margin-top: 0; background: #0e0d0c; color: #b9d6a8;
+    padding: 1rem 1.2rem; font-size: 11px; line-height: 1.5; white-space: pre-wrap;
+    border-top: 1px solid #2a2520;
+  }
+  .rows-readout { color: var(--brass-bright); }
+  button.copy { background: var(--brass); color: var(--bg-0); border: 0; padding: 0.4rem 0.8rem; font-family: var(--font-display); letter-spacing: 0.08em; cursor: pointer; }
+</style>
+</head>
+<body>
+  <div class="stage">
+    <!-- Banner mirror -->
+    <aside class="sale-banner" id="banner">
+      <div class="track" id="track">
+        <div class="group">
+          <span class="seg">LAUNCH SALE — <strong class="pct">40% OFF</strong> EVERYTHING — Insert coupon code <strong class="code">"VROOM"</strong> at checkout — LIMITED TIME<span class="flag">🏁</span></span>
+          <span class="seg">LAUNCH SALE — <strong class="pct">40% OFF</strong> EVERYTHING — Insert coupon code <strong class="code">"VROOM"</strong> at checkout — LIMITED TIME<span class="flag">🏁</span></span>
+          <span class="seg">LAUNCH SALE — <strong class="pct">40% OFF</strong> EVERYTHING — Insert coupon code <strong class="code">"VROOM"</strong> at checkout — LIMITED TIME<span class="flag">🏁</span></span>
+        </div>
+        <div class="group" aria-hidden="true">
+          <span class="seg">LAUNCH SALE — <strong class="pct">40% OFF</strong> EVERYTHING — Insert coupon code <strong class="code">"VROOM"</strong> at checkout — LIMITED TIME<span class="flag">🏁</span></span>
+          <span class="seg">LAUNCH SALE — <strong class="pct">40% OFF</strong> EVERYTHING — Insert coupon code <strong class="code">"VROOM"</strong> at checkout — LIMITED TIME<span class="flag">🏁</span></span>
+          <span class="seg">LAUNCH SALE — <strong class="pct">40% OFF</strong> EVERYTHING — Insert coupon code <strong class="code">"VROOM"</strong> at checkout — LIMITED TIME<span class="flag">🏁</span></span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Subscribe block mirror -->
+    <section class="hero-demo">
+      <p class="hh-cta-label" id="stLabel">Subscribe to the RevAudio newsletter for updates and new releases</p>
+      <div class="hh-cta">SUBSCRIBE</div>
+    </section>
+  </div>
+
+  <!-- Controls -->
+  <div class="panel">
+    <h2>Checkered flags</h2>
+    <div class="row"><label>Banner height</label><input type="range" id="saleH" min="28" max="80" value="42"><output id="saleHo">42px</output></div>
+    <div class="row"><label>Rail thickness</label><input type="range" id="railH" min="2" max="24" value="6"><output id="railHo">6px</output></div>
+    <div class="row"><label>Flag tile size</label><input type="range" id="tile" min="2" max="24" value="6"><output id="tileo">6px</output></div>
+    <p class="hint">Rows of checker per rail ≈ rail ÷ tile = <span class="rows-readout" id="rows">1.0</span>. Equal = 1 row; rail = 2× tile = classic 2-row stagger.</p>
+    <div class="row"><label>Light square</label><input type="color" id="cl" value="#d8d4cc"></div>
+    <div class="row"><label>Dark square</label><input type="color" id="cd" value="#0d0d0d"></div>
+
+    <h2>Lane line</h2>
+    <div class="row"><label>Show lane line</label><input type="checkbox" id="laneOn" checked></div>
+    <div class="row"><label>Dash length</label><input type="range" id="dash" min="4" max="80" value="26"><output id="dasho">26px</output></div>
+    <div class="row"><label>Gap</label><input type="range" id="gap" min="4" max="80" value="20"><output id="gapo">20px</output></div>
+    <div class="row"><label>Thickness</label><input type="range" id="thick" min="1" max="8" value="2"><output id="thicko">2px</output></div>
+    <div class="row"><label>Opacity</label><input type="range" id="op" min="0" max="100" value="50"><output id="opo">0.50</output></div>
+
+    <h2>Motion</h2>
+    <div class="row"><label>Scroll time</label><input type="range" id="speed" min="15" max="90" value="45"><output id="speedo">45s</output></div>
+    <div class="row"><label>Pause</label><input type="checkbox" id="pause"></div>
+
+    <h2>Subscribe title</h2>
+    <div class="row full"><label>Text</label><textarea id="stText">Subscribe to the RevAudio newsletter for updates and new releases</textarea></div>
+    <div class="row"><label>Font size</label><input type="range" id="stSize" min="60" max="180" value="92"><output id="stSizeo">0.92rem</output></div>
+    <div class="row"><label>Max width</label><input type="range" id="stMaxw" min="16" max="60" value="30"><output id="stMaxwo">30ch</output></div>
+    <div class="row"><label>Letter-spacing</label><input type="range" id="stLs" min="0" max="30" value="0"><output id="stLso">0.00em</output></div>
+    <div class="row"><label>Line height</label><input type="range" id="stLh" min="100" max="200" value="140"><output id="stLho">1.40</output></div>
+    <div class="row"><label>Font</label>
+      <select id="stFont"><option value="var(--font-body)">Inter (body)</option><option value="var(--font-display)">Bebas (display)</option></select>
+    </div>
+    <div class="row"><label>Transform</label>
+      <select id="stTf"><option value="none">none</option><option value="uppercase">UPPERCASE</option></select>
+    </div>
+    <div class="row"><label>Color</label>
+      <select id="stColor">
+        <option value="var(--fg-dim)">fg-dim (default)</option>
+        <option value="var(--fg)">fg</option>
+        <option value="var(--brass)">brass</option>
+        <option value="var(--brass-bright)">brass-bright</option>
+        <option value="var(--chrome)">chrome</option>
+      </select>
+    </div>
+
+    <h2>Export</h2>
+    <button class="copy" id="copy">Copy CSS</button>
+    <span class="hint" id="copied"></span>
+  </div>
+
+  <pre id="out"></pre>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const root = document.documentElement.style;
+  const banner = $('banner'), track = $('track'), stLabel = $('stLabel');
+
+  function px(v){ return v + 'px'; }
+
+  function render() {
+    // checker
+    const saleH = +$('saleH').value, railH = +$('railH').value, tile = +$('tile').value;
+    root.setProperty('--sale-h', px(saleH));
+    root.setProperty('--rail-h', px(railH));
+    root.setProperty('--tile', px(tile));
+    root.setProperty('--checker-light', $('cl').value);
+    root.setProperty('--checker-dark', $('cd').value);
+    $('saleHo').textContent = px(saleH);
+    $('railHo').textContent = px(railH);
+    $('tileo').textContent = px(tile);
+    $('rows').textContent = (railH / tile).toFixed(1);
+
+    // lane
+    banner.classList.toggle('no-lane', !$('laneOn').checked);
+    const dash = +$('dash').value, gap = +$('gap').value, thick = +$('thick').value, op = +$('op').value/100;
+    root.setProperty('--lane-dash', px(dash));
+    root.setProperty('--lane-gap', px(gap));
+    root.setProperty('--lane-thick', px(thick));
+    root.setProperty('--lane-op', op.toFixed(2));
+    $('dasho').textContent = px(dash);
+    $('gapo').textContent = px(gap);
+    $('thicko').textContent = px(thick);
+    $('opo').textContent = op.toFixed(2);
+
+    // motion
+    const speed = +$('speed').value;
+    root.setProperty('--scroll-s', speed + 's');
+    $('speedo').textContent = speed + 's';
+    track.classList.toggle('paused', $('pause').checked);
+
+    // subscribe title
+    const size = (+$('stSize').value/100).toFixed(2)+'rem';
+    const maxw = $('stMaxw').value+'ch';
+    const ls = (+$('stLs').value/100).toFixed(2)+'em';
+    const lh = (+$('stLh').value/100).toFixed(2);
+    root.setProperty('--st-size', size);
+    root.setProperty('--st-maxw', maxw);
+    root.setProperty('--st-ls', ls);
+    root.setProperty('--st-lh', lh);
+    $('stSizeo').textContent = size;
+    $('stMaxwo').textContent = maxw;
+    $('stLso').textContent = ls;
+    $('stLho').textContent = lh;
+    stLabel.textContent = $('stText').value;
+    stLabel.style.fontFamily = $('stFont').value;
+    stLabel.style.textTransform = $('stTf').value;
+    stLabel.style.color = $('stColor').value;
+
+    writeOut({saleH, railH, tile, dash, gap, thick, op, laneOn:$('laneOn').checked, size, maxw, ls, lh,
+      cl:$('cl').value, cd:$('cd').value, font:$('stFont').value, tf:$('stTf').value, color:$('stColor').value});
+  }
+
+  function writeOut(v){
+    const lane = v.laneOn
+      ? `    background:\n      repeating-linear-gradient(90deg, transparent 0 ${v.gap}px, rgba(214,178,90,${v.op.toFixed(2)}) ${v.gap}px ${v.gap+v.dash}px) center / 100% ${v.thick}px no-repeat,\n      linear-gradient(180deg, #1b1b1e 0%, #27272b 50%, #1b1b1e 100%);`
+      : `    background: linear-gradient(180deg, #1b1b1e 0%, #27272b 50%, #1b1b1e 100%);`;
+    $('out').textContent =
+`/* ── global.css ── */
+body.has-sale { --sale-h: ${v.saleH}px; }
+
+/* ── SaleBanner.astro ── */
+.sale-banner {
+${lane}
+  }
+  .sale-banner::before,
+  .sale-banner::after {
+    content: ''; position: absolute; left: 0; right: 0;
+    height: ${v.railH}px; z-index: 1;
+    background: repeating-conic-gradient(${v.cl} 0 90deg, ${v.cd} 0 180deg) 0 0 / ${v.tile}px ${v.tile}px;
+  }
+
+/* ── index.astro : .hh-cta-label ── */
+.hh-cta-label {
+  font-family: ${v.font};
+  font-size: ${v.size};
+  line-height: ${v.lh};
+  letter-spacing: ${v.ls};
+  text-transform: ${v.tf};
+  color: ${v.color};
+  max-width: ${v.maxw};
+  margin: 0 0 0.6rem;
+  margin-left: var(--cta-x, 218px);
+}`;
+  }
+
+  document.querySelectorAll('input,select,textarea').forEach(el => {
+    el.addEventListener('input', render);
+    el.addEventListener('change', render);
+  });
+  $('copy').addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText($('out').textContent); $('copied').textContent = 'copied ✓'; }
+    catch { $('copied').textContent = 'select + copy manually'; }
+    setTimeout(()=>$('copied').textContent='', 1800);
+  });
+  render();
+</script>
+</body>
+</html>

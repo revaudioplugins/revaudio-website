@@ -32,7 +32,7 @@ export const site = {
   launchSale: {
     active: true,
     pct: 40,
-    code: 'VROOM!',
-    message: 'LAUNCH SALE — 40% OFF EVERYTHING — CODE VROOM! AT CHECKOUT — LIMITED TIME',
+    code: 'VROOM',
+    message: 'LAUNCH SALE — 40% OFF EVERYTHING — Insert coupon code "VROOM" at checkout — LIMITED TIME',
   },
 };
