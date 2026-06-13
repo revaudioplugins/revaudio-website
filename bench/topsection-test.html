@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Bench — home top section (RevLimiter)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg-0:#0b0a09; --bg-1:#14110f; --bg-2:#1d1916;
+    --fg:#efe9df; --fg-dim:#8a8275; --fg-faint:#5a544c;
+    --brass:#c9a35c; --brass-bright:#e8c878; --brass-dark:#8c6f3a; --chrome:#d8d4cc;
+    --border:#2a2420; --border-bright:#3d342c;
+    --font-display:'Bebas Neue','Oswald',sans-serif;
+    --font-body:'Inter',system-ui,sans-serif;
+    --maxw:min(1240px,98vw);
+
+    /* ── tunable knobs (sliders drive these) ── */
+    --pg-pt:5rem;        /* section padding top */
+    --pg-pb:5rem;        /* section padding bottom */
+    --gh-gap:0.75rem;    /* gap inside heading block (head ↔ store link) */
+    --gh-mb:1rem;        /* gap heading block ↔ card */
+    --hsub-gap:0.25rem;  /* gap heading ↔ subhead */
+    --h2-size:3rem;
+    --sub-size:1rem;
+    --card-maxw:730px;
+    --card-pad:1.5rem;
+    --card-gap:0.75rem;
+    --card-h3:1.75rem;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg-0); color:var(--fg); font-family:var(--font-body); -webkit-font-smoothing:antialiased; line-height:1.6; }
+  .stage { margin-right:360px; }
+
+  /* fake sticky nav + banner so the section sits in real context */
+  .fake-banner { height:41px; background:linear-gradient(180deg,#1b1b1e,#27272b,#1b1b1e); border-bottom:1px solid var(--brass-dark); display:flex; align-items:center; justify-content:center; font-family:var(--font-display); letter-spacing:0.14em; color:var(--fg); font-size:0.9rem; }
+  .fake-nav { height:74px; border-bottom:1px solid var(--border); display:flex; align-items:center; padding:0 2rem; gap:2rem; background:rgba(11,10,9,0.85); }
+  .fake-nav .logo { font-family:var(--font-display); letter-spacing:0.06em; font-size:1.4rem; color:var(--fg); }
+  .fake-nav .logo b { color:var(--brass-bright); }
+  .fake-nav .sp { flex:1; }
+  .fake-nav a { color:var(--fg-dim); text-transform:uppercase; letter-spacing:0.1em; font-size:0.8rem; text-decoration:none; }
+
+  /* ── MIRROR: home top section ── */
+  .plugin-grid { padding:var(--pg-pt) 0 var(--pg-pb); }
+  .container { max-width:var(--maxw); margin:0 auto; padding:0 1.5rem; }
+  .grid-head { display:flex; flex-direction:column; align-items:center; text-align:center; gap:var(--gh-gap); margin-bottom:var(--gh-mb); }
+  .grid-head.left { align-items:flex-start; text-align:left; }
+  .grid-head h2 { margin:0; font-family:var(--font-display); font-size:var(--h2-size); line-height:1.1; letter-spacing:0.02em; color:var(--fg); }
+  .grid-head .muted { margin:var(--hsub-gap) 0 0; font-size:var(--sub-size); color:var(--fg-dim); }
+  .head-link { font-family:var(--font-display); text-transform:uppercase; letter-spacing:0.12em; color:var(--brass-bright); border-bottom:1px solid var(--brass-dark); padding-bottom:0.2rem; text-decoration:none; font-size:1.1rem; }
+  .head-link.hide { display:none; }
+
+  .plugin-cards.single { max-width:var(--card-maxw); margin-inline:auto; }
+  .plugin-card { background:var(--bg-1); border:1px solid var(--border); padding:var(--card-pad); display:flex; flex-direction:column; gap:var(--card-gap); }
+  .card-thumb { aspect-ratio:1800/870; background:var(--bg-2); border:1px solid var(--border); overflow:hidden; display:flex; align-items:center; justify-content:center; }
+  .card-thumb img { width:100%; height:100%; object-fit:contain; display:block; }
+  .plugin-card h3 { font-size:var(--card-h3); margin:0; color:var(--brass-bright); font-family:var(--font-display); letter-spacing:0.02em; }
+  .one-liner { font-size:0.9rem; color:var(--fg-dim); margin:0; }
+  .prices { display:flex; align-items:baseline; gap:0.6rem; margin-top:auto; }
+  .now { font-family:var(--font-display); font-size:1.5rem; color:var(--brass-bright); letter-spacing:0.04em; }
+  .more { font-size:0.8rem; text-transform:uppercase; letter-spacing:0.15em; color:var(--fg); margin-top:0.5rem; }
+
+  /* ── control panel ── */
+  .panel { position:fixed; right:0; top:0; bottom:0; width:360px; background:#0e0d0c; border-left:1px solid #2a2520; padding:1rem 1.1rem 4rem; overflow-y:auto; z-index:10; font-size:12.5px; }
+  .panel h2 { font-family:var(--font-display); letter-spacing:0.08em; color:var(--brass-bright); font-size:1rem; margin:1rem 0 0.4rem; border-bottom:1px solid #2a2520; padding-bottom:0.3rem; }
+  .panel h2:first-child { margin-top:0; }
+  .row { display:flex; align-items:center; gap:0.5rem; margin:0.35rem 0; }
+  .row label { flex:0 0 120px; color:var(--fg-dim); }
+  .row input[type=range], .row select { flex:1; min-width:0; }
+  .row output { flex:0 0 56px; text-align:right; color:var(--brass); font-variant-numeric:tabular-nums; }
+  button.copy { background:var(--brass); color:var(--bg-0); border:0; padding:0.45rem 0.9rem; font-family:var(--font-display); letter-spacing:0.08em; cursor:pointer; font-size:14px; }
+  pre { margin-right:360px; margin-top:0; background:#0e0d0c; color:#b9d6a8; padding:1rem 1.4rem; font-size:11px; line-height:1.5; white-space:pre-wrap; border-top:1px solid #2a2520; }
+  .hint { color:var(--fg-faint); font-size:11px; }
+</style>
+</head>
+<body>
+  <div class="stage">
+    <div class="fake-banner">LAUNCH SALE — 40% OFF RevLimiter — coupon "VROOM"</div>
+    <div class="fake-nav"><span class="logo">REV<b>AUDIO</b></span><span class="sp"></span><a>Home</a><a>Store</a><a>About</a></div>
+
+    <section class="plugin-grid plugin-grid-lead">
+      <div class="container">
+        <div class="grid-head" id="gridHead">
+          <div>
+            <h2 id="h2">RevLimiter</h2>
+            <p class="muted">One tool, built like a car. The first of the line.</p>
+          </div>
+          <a href="#" class="head-link" id="headLink">Visit the store &rarr;</a>
+        </div>
+        <div class="plugin-cards single">
+          <a class="plugin-card" href="#">
+            <div class="card-thumb"><img src="/src/assets/plugins/revlimiter-hero.png" alt="RevLimiter" /></div>
+            <h3>RevLimiter</h3>
+            <p class="one-liner">The redline is your threshold. The needle is your gain reduction. Mastering loudness with the muscle of a tuned engine.</p>
+            <div class="prices"><span class="now">$93</span></div>
+            <span class="more">View &amp; buy &rarr;</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <div style="height:40vh; display:flex; align-items:center; justify-content:center; color:var(--fg-faint); border-top:1px solid var(--border);">↓ (hero / rest of page below)</div>
+  </div>
+
+  <div class="panel">
+    <h2>Section</h2>
+    <div class="row"><label>Padding top</label><input type="range" id="pgpt" min="0" max="160" value="80"><output id="o-pgpt">5.0rem</output></div>
+    <div class="row"><label>Padding bottom</label><input type="range" id="pgpb" min="0" max="160" value="80"><output id="o-pgpb">5.0rem</output></div>
+
+    <h2>Heading block</h2>
+    <div class="row"><label>Alignment</label><select id="align"><option value="center">Center</option><option value="left">Left</option></select></div>
+    <div class="row"><label>"RevLimiter" size</label><input type="range" id="h2s" min="120" max="640" value="300"><output id="o-h2s">3.00rem</output></div>
+    <div class="row"><label>Subhead size</label><input type="range" id="subs" min="60" max="200" value="100"><output id="o-subs">1.00rem</output></div>
+    <div class="row"><label>Head ↔ subhead</label><input type="range" id="hsub" min="0" max="40" value="25"><output id="o-hsub">0.25rem</output></div>
+    <div class="row"><label>Store link</label><select id="link"><option value="show">Show</option><option value="hide">Hide</option></select></div>
+    <div class="row"><label>Head ↔ link gap</label><input type="range" id="ghgap" min="0" max="40" value="75"><output id="o-ghgap">0.75rem</output></div>
+    <div class="row"><label>Head ↔ card gap</label><input type="range" id="ghmb" min="0" max="80" value="100"><output id="o-ghmb">1.00rem</output></div>
+
+    <h2>Card</h2>
+    <div class="row"><label>Max width</label><input type="range" id="cmw" min="360" max="1100" value="730"><output id="o-cmw">730px</output></div>
+    <div class="row"><label>Card padding</label><input type="range" id="cpad" min="0" max="320" value="150"><output id="o-cpad">1.50rem</output></div>
+    <div class="row"><label>Inner gap</label><input type="range" id="cgap" min="0" max="200" value="75"><output id="o-cgap">0.75rem</output></div>
+    <div class="row"><label>Card title size</label><input type="range" id="ch3" min="100" max="400" value="175"><output id="o-ch3">1.75rem</output></div>
+
+    <h2>Export</h2>
+    <button class="copy" id="copy">Copy CSS</button> <span class="hint" id="copied"></span>
+  </div>
+
+  <pre id="out"></pre>
+
+<script>
+  const $ = id => document.getElementById(id);
+  const R = document.documentElement.style;
+  const rem = v => (v/100).toFixed(2)+'rem';
+
+  function render(){
+    const v = {
+      pgpt:+$('pgpt').value, pgpb:+$('pgpb').value,
+      h2s:+$('h2s').value, subs:+$('subs').value, hsub:+$('hsub').value,
+      ghgap:+$('ghgap').value, ghmb:+$('ghmb').value,
+      cmw:+$('cmw').value, cpad:+$('cpad').value, cgap:+$('cgap').value, ch3:+$('ch3').value,
+      align:$('align').value, link:$('link').value,
+    };
+    R.setProperty('--pg-pt', rem(v.pgpt));   $('o-pgpt').textContent=rem(v.pgpt);
+    R.setProperty('--pg-pb', rem(v.pgpb));   $('o-pgpb').textContent=rem(v.pgpb);
+    R.setProperty('--h2-size', rem(v.h2s));  $('o-h2s').textContent=rem(v.h2s);
+    R.setProperty('--sub-size', rem(v.subs));$('o-subs').textContent=rem(v.subs);
+    R.setProperty('--hsub-gap', rem(v.hsub));$('o-hsub').textContent=rem(v.hsub);
+    R.setProperty('--gh-gap', rem(v.ghgap)); $('o-ghgap').textContent=rem(v.ghgap);
+    R.setProperty('--gh-mb', rem(v.ghmb));   $('o-ghmb').textContent=rem(v.ghmb);
+    R.setProperty('--card-maxw', v.cmw+'px');$('o-cmw').textContent=v.cmw+'px';
+    R.setProperty('--card-pad', rem(v.cpad));$('o-cpad').textContent=rem(v.cpad);
+    R.setProperty('--card-gap', rem(v.cgap));$('o-cgap').textContent=rem(v.cgap);
+    R.setProperty('--card-h3', rem(v.ch3));  $('o-ch3').textContent=rem(v.ch3);
+    $('gridHead').classList.toggle('left', v.align==='left');
+    $('headLink').classList.toggle('hide', v.link==='hide');
+    writeOut(v);
+  }
+
+  function writeOut(v){
+    $('out').textContent =
+`/* ── global.css — scope to the home lead section only ── */
+.plugin-grid-lead { padding: ${rem(v.pgpt)} 0 ${rem(v.pgpb)}; }
+
+/* ── index.astro <style> ── */
+.grid-head {
+  ${v.align==='left' ? 'align-items: flex-start;\n  text-align: left;' : 'align-items: center;\n  text-align: center;'}
+  gap: ${rem(v.ghgap)};
+  margin-bottom: ${rem(v.ghmb)};
+}
+.grid-head h2 { font-size: ${rem(v.h2s)}; }   /* currently clamp(1.75rem,4vw,3rem) — replace or re-wrap in clamp */
+.grid-head .muted { font-size: ${rem(v.subs)}; margin-top: ${rem(v.hsub)}; }
+${v.link==='hide' ? '.plugin-grid-lead .head-link { display: none; }\n' : ''}.plugin-cards.single { max-width: ${v.cmw}px; }
+
+/* ── PluginCard.astro <style> (NOTE: also affects the Store card) ── */
+.plugin-card { padding: ${rem(v.cpad)}; gap: ${rem(v.cgap)}; }
+.plugin-card h3 { font-size: ${rem(v.ch3)}; }`;
+  }
+
+  document.querySelectorAll('input,select').forEach(el=>{ el.addEventListener('input',render); el.addEventListener('change',render); });
+  $('copy').addEventListener('click', async ()=>{
+    try{ await navigator.clipboard.writeText($('out').textContent); $('copied').textContent='copied ✓'; }
+    catch{ $('copied').textContent='select + copy manually'; }
+    setTimeout(()=>$('copied').textContent='',1800);
+  });
+  render();
+</script>
+</body>
+</html>
