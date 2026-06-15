@@ -7,9 +7,10 @@ import StarRating from './StarRating.astro';
 
 interface Props {
   plugin: Plugin;
+  cta?: string;
 }
 
-const { plugin } = Astro.props;
+const { plugin, cta } = Astro.props;
 const buyable = isBuyable(plugin);
 const pct = discountPct(plugin);
 const thumb = pluginImage(plugin.heroImage);
@@ -46,7 +47,7 @@ const thumb = pluginImage(plugin.heroImage);
       <span class="hint muted">Target {plugin.releaseTarget}</span>
     )}
   </div>
-  <span class="more">{buyable ? 'View & buy' : plugin.status === 'in-development' ? 'Learn more' : 'Subscribe'} &rarr;</span>
+  <span class="more">{cta ?? (buyable ? 'View & buy' : plugin.status === 'in-development' ? 'Learn more' : 'Subscribe')} &rarr;</span>
 </a>
 
 <style>
