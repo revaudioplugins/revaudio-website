@@ -8,14 +8,17 @@ import StarRating from './StarRating.astro';
 interface Props {
   plugin: Plugin;
   cta?: string;
+  /** Store grid: show an inline "Add to cart" button beside the CTA (buyable only). */
+  showCart?: boolean;
 }
 
-const { plugin, cta } = Astro.props;
+const { plugin, cta, showCart = false } = Astro.props;
 const buyable = isBuyable(plugin);
 const pct = discountPct(plugin);
 const thumb = pluginImage(plugin.heroImage);
 ---
 
+<div class="plugin-card-wrap">
 <a class="plugin-card" href={`/${plugin.slug}`} data-reveal="card">
   <div class="card-thumb">
     {thumb ? (
@@ -49,8 +52,44 @@ const thumb = pluginImage(plugin.heroImage);
   </div>
   <span class="more">{cta ?? (buyable ? 'View & buy' : plugin.status === 'in-development' ? 'Learn more' : 'Subscribe')} &rarr;</span>
 </a>
+{showCart && buyable && (
+  <button
+    type="button"
+    class="card-add"
+    data-add-to-cart
+    data-slug={plugin.slug}
+    data-name={plugin.name}
+    data-price={plugin.introPriceUsd}
+    data-checkout-url={plugin.checkoutUrl}
+  >Add to cart</button>
+)}
+</div>
 
 <style>
+  .plugin-card-wrap { position: relative; }
+
+  /* Store grid: simple inline Add-to-cart button, sat in the footer row to the
+     right of the card CTA. A sibling of the card <a> (never nested in it). */
+  .card-add {
+    position: absolute;
+    right: 1.5rem;
+    bottom: 1.4rem;
+    z-index: 2;
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--bg-0);
+    background: var(--brass);
+    border: 1px solid var(--brass-dark);
+    border-radius: 4px;
+    padding: 0.45rem 0.8rem;
+    cursor: pointer;
+    transition: background 0.2s var(--ease), transform 0.15s var(--ease);
+  }
+  .card-add:hover { background: var(--brass-bright); }
+  .card-add:active { transform: scale(0.96); }
+
   .plugin-card {
     background: var(--bg-1);
     border: 1px solid var(--border);
@@ -83,11 +122,12 @@ const thumb = pluginImage(plugin.heroImage);
   .status.dev { color: var(--oxide); }
 
   .card-thumb {
-    /* Native ratio of the plugin shot (1800×870) — no cover-crop, so the
-       edge controls (LO/MID/HI, OUTPUT/CLIPPER) stay in frame. */
-    aspect-ratio: 1800 / 870;
+    /* Native ratio of the plugin shot (bottom edge cropped to 1800×836) — no
+       cover-crop, so the edge controls stay in frame. Lightly rounded. */
+    aspect-ratio: 1800 / 836;
     background: var(--bg-2);
     border: 1px solid var(--border);
+    border-radius: 10px;
     overflow: hidden;
     display: flex;
     align-items: center;

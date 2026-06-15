@@ -1,13 +1,12 @@
 ---
 import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import PluginCard from '../components/PluginCard.astro';
+import PluginShowcase from '../components/PluginShowcase.astro';
 import TestimonialBlock from '../components/TestimonialBlock.astro';
 import DAWStrip from '../components/DAWStrip.astro';
 import PressLogos from '../components/PressLogos.astro';
 import EmailCapture from '../components/EmailCapture.astro';
 import SubscribeModal from '../components/SubscribeModal.astro';
-import { plugins } from '../data/plugins';
 import faceImg from '../assets/hero/rev-gauge-face.png';
 import needleImg from '../assets/hero/needle-v2.png';
 import hubImg from '../assets/hero/hub-v2.png';
@@ -18,27 +17,12 @@ import storePressed from '../assets/ui/btn-store-pressed.png';
    needle <image> x122 y67.69 w162.4, pivot (203,203); hub x180.54 y181.08 w45.5 */
 const N = { left: '30.049%', top: '16.672%', w: '40%', ox: '49.877%', oy: '83.32%' };
 const H = { left: '44.468%', top: '44.601%', w: '11.207%' };
-
-const flagship = plugins[0];
 ---
 
 <BaseLayout title="RevAudio">
-  {/* Product-first: RevLimiter card leads the page; the brand hero ("Engineered,
-      then tuned." + REV gauge) now sits below it. (Reordered 2026-06-13 per user.) */}
-  <section class="plugin-grid plugin-grid-lead">
-    <div class="container">
-      <div class="grid-head">
-        <div>
-          <h2 data-split><span class="rev-accent">Rev</span>Limiter</h2>
-          <p class="muted" data-reveal="fade">Maximum loudness. Zero engine damage.</p>
-        </div>
-        <a href="/store" class="head-link" data-reveal="fade">Visit the store &rarr;</a>
-      </div>
-      <div class="plugin-cards single">
-        <PluginCard plugin={flagship} cta="More Details" />
-      </div>
-    </div>
-  </section>
+  {/* Product-first: a swipeable showcase (RevLimiter / DRIFT / THE AC) leads the
+      page; the brand hero ("Engineered, then tuned." + REV gauge) sits below. */}
+  <PluginShowcase />
 
   {/* Hero — text stack + the REAL RevLimiter REV gauge (designed in /herolab).
       Face captured from the live plugin UI; needle + hub are the plugin's own
@@ -55,11 +39,10 @@ const flagship = plugins[0];
         <p class="hh-lede" data-hero-in>
           Measured to spec, then voiced by ear.<br />The precision of a machine, the feel of an instrument.
         </p>
-        <p class="hh-cta-label" data-hero-in>Visit our store</p>
         <div class="hh-cta panel" data-hero-in>
-          <Image src={storeImg} alt="" width={520} height={347} format="webp" loading="eager" />
+          <Image src={storeImg} alt="" width={520} height={343} format="webp" loading="eager" />
           <a href="/store" class="panel-hit hit-pill hit-subscribe" aria-label="Visit the store"></a>
-          <Image src={storePressed} alt="" width={520} height={347} format="webp" loading="eager" class="press" />
+          <Image src={storePressed} alt="" width={520} height={343} format="webp" loading="eager" class="press" />
         </div>
       </div>
 
@@ -185,22 +168,12 @@ const flagship = plugins[0];
     margin-left: var(--lede-x, 92px);
   }
 
-  /* Vintage SUBSCRIBE plate (assets shared with EmailCapture); .panel
-     mechanics from global.css. Opens the SubscribeModal. */
-  .hh-cta-label {
-    /* Type matched 1:1 to .hh-lede; one line, bronze from the SUBSCRIBE plate,
-       centred on the button's centre axis (cta-x + half the 210px plate). */
-    font-family: var(--font-body);
-    font-size: 1.05rem;
-    line-height: 1.6;
-    color: #dfba7d;
-    white-space: nowrap;
-    width: max-content;
-    margin: 0 0 0.6rem;
-    margin-left: calc(var(--cta-x, 218px) + 105px);
-    transform: translateX(-50%);
-  }
-  .hh-cta { width: 210px; margin-left: var(--cta-x, 218px); }
+  /* Brass STORE plate (links to /store). Sized +30% (210 -> 273px), label
+     dropped, centered in the column. The plate PNG is now transparent, so the
+     global .panel box/shadow would draw a visible rectangle behind it — strip
+     them here so only the brass shows. */
+  .hh-cta { width: 273px; margin-inline: auto; }
+  .hh-cta.panel { background: transparent; box-shadow: none; border-radius: 0; overflow: visible; }
 
   /* ── The gauge: face capture masked round; needle + hub overlay per the
      plugin's geometry. All children positioned in % so it scales as one. ── */
@@ -233,42 +206,8 @@ const flagship = plugins[0];
     .hero-grid { grid-template-columns: 1fr; text-align: center; gap: 2rem; }
     .hh-redline { margin-inline: auto; }
     .hh-lede { margin-inline: auto; }
-    .hh-cta-label { margin-inline: auto; transform: none; }
     .hh-cta { margin-inline: auto; }
     .hero-dial { max-width: 320px; margin: 0 auto; }
   }
 
-  /* centered stack above the card (user pick 2026-06-10) */
-  .grid-head {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 0.67rem;
-    margin-bottom: 1.13rem;
-  }
-
-  /* bench-tuned 2026-06-13; clamp caps at the 5.64rem desktop pick but scales
-     down on phones so the wordmark never overflows. */
-  .grid-head h2 { margin: 0; font-size: clamp(2.75rem, 8vw, 5.64rem); }
-  .grid-head h2 .rev-accent { color: rgb(146, 3, 1); }
-  .grid-head .muted { margin: 0; font-size: 1.26rem; }
-
-  .head-link {
-    font-family: var(--font-display);
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--brass-bright);
-    border-bottom: 1px solid var(--brass-dark);
-    padding-bottom: 0.2rem;
-  }
-
-  .head-link:hover { color: var(--chrome); border-color: var(--chrome); }
-
-  /* single-product: center the lone card instead of the 2-up grid */
-  .plugin-cards.single {
-    grid-template-columns: 1fr;
-    max-width: 467px;
-    margin-inline: auto;
-  }
 </style>

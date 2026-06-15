@@ -1,0 +1,292 @@
+---
+/* Plugin showcase — page-leading carousel. The card is an ABSOLUTE stage that
+   is pixel-identical to the card-design bench (/_cardbench): same 520-wide
+   canvas, same section coordinates, same fonts. Whatever is dragged/tuned in
+   the bench is applied here verbatim via the STYLE maps below — no flow-layout
+   translation, so bench == production. Switching plays a sideways watch-date
+   roll. AI chrome/brass arrows + touch-swipe + keyboard drive it. */
+import { Image } from 'astro:assets';
+import { bySlug } from '../data/plugins';
+import driftCar from '../assets/showcase/drift-car.png';
+import acIcon from '../assets/showcase/ac-icon.png';
+import revGauge from '../assets/showcase/rev-gauge.png';
+import arrowBtn from '../assets/showcase/arrow-btn.png';
+import revlimiterShot from '../assets/plugins/revlimiter-hero.png';
+import driftShot from '../assets/plugins/drift-hero.png';
+import theacShot from '../assets/plugins/theac-hero.png';
+
+const STAGE_W = 520;
+const STAGE_H = 470;
+
+// Style maps = the approved card-bench exports, applied verbatim.
+const SLIDES = [
+  {
+    slug: 'revlimiter',
+    titleHtml: '<span class="rev">Rev</span>Limiter',
+    titleClass: '',
+    emblem: revGauge, emblemAlt: 'rev gauge in the redline',
+    shot: revlimiterShot, shotAlt: 'RevLimiter plugin',
+    catchphrase: 'Maximum loudness. Zero engine damage.',
+    oneliner: 'The redline is your threshold. The needle is your gain reduction.',
+    priceText: '$93',
+    style: {
+      title:    { left: 70, top: 20,  ff: "'Bebas Neue', sans-serif", fw: 400, fs: 86, ls: 0 },
+      sub:      { left: 73, top: 98,  ff: "'Bebas Neue', sans-serif", fw: 400, fs: 22, ls: 0 },
+      shot:     { left: 49, top: 148 },
+      oneliner: { left: 56, top: 358, ff: 'Rajdhani, sans-serif',     fw: 700, fs: 15, ls: 0 },
+      price:    { left: 55, top: 382, ff: "'Bebas Neue', sans-serif", fw: 400, fs: 30, ls: 0 },
+      more:     { left: 55, top: 422, ff: 'Oswald, sans-serif',       fw: 400, fs: 17, ls: 0 },
+    },
+  },
+  {
+    slug: 'drift',
+    titleHtml: 'DRIFT',
+    titleClass: 'drift',
+    emblem: driftCar, emblemAlt: 'drifting car',
+    shot: driftShot, shotAlt: 'Drift plugin',
+    catchphrase: 'Your sound, sliding. SKRRT!',
+    oneliner: 'Send your selected freq. band to a trip across the stereo field.',
+    priceText: 'Target 2026',
+    style: {
+      title:    { left: 132, top: 22,  ff: "'Bebas Neue', sans-serif", fw: 400, fs: 86, ls: 0 },
+      sub:      { left: 135, top: 104, ff: "'Bebas Neue', sans-serif", fw: 400, fs: 22, ls: 0 },
+      shot:     { left: 49,  top: 148 },
+      oneliner: { left: 55,  top: 355, ff: 'Rajdhani, sans-serif',     fw: 700, fs: 15, ls: 0 },
+      price:    { left: 54,  top: 384, ff: "'Bebas Neue', sans-serif", fw: 400, fs: 25, ls: 0 },
+      more:     { left: 55,  top: 422, ff: 'Oswald, sans-serif',       fw: 400, fs: 17, ls: 0 },
+    },
+  },
+  {
+    slug: 'the-ac',
+    titleHtml: '<span class="acthe">THE</span> <span class="acac">AC</span>',
+    titleClass: '',
+    emblem: acIcon, emblemAlt: 'cold air snowflake',
+    shot: theacShot, shotAlt: 'The AC plugin',
+    catchphrase: 'Cold air for the top end.',
+    oneliner: 'Add clean air and shine to your top end.',
+    priceText: 'Target 2026',
+    style: {
+      title:    { left: 126, top: 19,  ff: "'Bebas Neue', sans-serif", fw: 400, fs: 86, ls: 0 },
+      sub:      { left: 127, top: 102, ff: "'Bebas Neue', sans-serif", fw: 400, fs: 22, ls: 0 },
+      shot:     { left: 49,  top: 148 },
+      oneliner: { left: 57,  top: 356, ff: 'Rajdhani, sans-serif',     fw: 700, fs: 15, ls: 0 },
+      price:    { left: 57,  top: 383, ff: "'Bebas Neue', sans-serif", fw: 400, fs: 25, ls: 0 },
+      more:     { left: 56,  top: 419, ff: 'Oswald, sans-serif',       fw: 400, fs: 17, ls: 0 },
+    },
+  },
+].filter((s) => bySlug(s.slug));
+
+const pos = (st: { left: number; top: number }) => `left:${st.left}px;top:${st.top}px;`;
+const font = (st: any) => (st.ff ? `font-family:${st.ff};font-weight:${st.fw};font-size:${st.fs}px;letter-spacing:${st.ls}px;` : '');
+---
+
+<section class="showcase-wrap" data-showcase tabindex="0" role="group" aria-roledescription="carousel" aria-label="RevAudio plugins">
+  <div class="sc-scaler">
+    <div class="showcase">
+      <button type="button" class="sc-arrow sc-prev" aria-label="Previous plugin">
+        <Image src={arrowBtn} alt="" width={240} loading="eager" />
+      </button>
+
+      <div class="sc-viewport">
+        {SLIDES.map((s, i) => (
+          <a
+            class="sc-slide"
+            class:list={[{ 'is-current': i === 0, 'is-below': i !== 0 }]}
+            href={`/${s.slug}`}
+            data-slide
+            aria-label={`${s.slug} — ${i + 1} of ${SLIDES.length}`}
+          >
+            <div class="sec sc-titlewrap" style={pos(s.style.title)}>
+              <span class={`sc-title ${s.titleClass}`} style={font(s.style.title)} set:html={s.titleHtml} />
+              <Image class="sc-emblem" src={s.emblem} alt={s.emblemAlt} width={260} style={`height:${Math.round(s.style.title.fs * 0.8)}px`} loading="lazy" />
+            </div>
+            <p class="sec sc-sub" style={pos(s.style.sub) + font(s.style.sub)}>{s.catchphrase}</p>
+            <div class="sec sc-shot" style={pos(s.style.shot)}>
+              <Image src={s.shot} alt={s.shotAlt} width={1600} format="webp" quality={92} loading="lazy" />
+            </div>
+            <p class="sec sc-one" style={pos(s.style.oneliner) + font(s.style.oneliner)}>{s.oneliner}</p>
+            <span class="sec sc-price" style={pos(s.style.price) + font(s.style.price)}>{s.priceText}</span>
+            <span class="sec sc-more" style={pos(s.style.more) + font(s.style.more)}>More Details &rarr;</span>
+          </a>
+        ))}
+      </div>
+
+      <button type="button" class="sc-arrow sc-next" aria-label="Next plugin">
+        <Image src={arrowBtn} alt="" width={240} loading="eager" />
+      </button>
+    </div>
+  </div>
+
+  <div class="sc-dots" data-dots>
+    {SLIDES.map((_, i) => (
+      <button type="button" class="sc-dot" class:list={[{ active: i === 0 }]} data-dot={i} aria-label={`Go to slide ${i + 1}`}></button>
+    ))}
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-showcase]').forEach((sc) => {
+    const slides = Array.from(sc.querySelectorAll<HTMLElement>('[data-slide]'));
+    const dots = Array.from(sc.querySelectorAll<HTMLElement>('[data-dot]'));
+    const viewport = sc.querySelector<HTMLElement>('.sc-viewport');
+    const showcase = sc.querySelector<HTMLElement>('.showcase');
+    const scaler = sc.querySelector<HTMLElement>('.sc-scaler');
+    if (!viewport || !showcase || !scaler || slides.length === 0) return;
+    const n = slides.length;
+    let idx = 0;
+
+    // dir > 0 → roll left (next); dir < 0 → roll right (prev).
+    const go = (i: number, dir: number) => {
+      const next = (i + n) % n;
+      const old = idx;
+      if (next === old) return;
+      slides.forEach((s, k) => {
+        s.classList.remove('is-current', 'is-above', 'is-below');
+        if (k === next) s.classList.add('is-current');
+        else if (k === old) s.classList.add(dir > 0 ? 'is-above' : 'is-below');
+        else s.classList.add(dir > 0 ? 'is-below' : 'is-above');
+      });
+      dots.forEach((d, k) => d.classList.toggle('active', k === next));
+      idx = next;
+    };
+
+    sc.querySelector('.sc-prev')?.addEventListener('click', () => go(idx - 1, -1));
+    sc.querySelector('.sc-next')?.addEventListener('click', () => go(idx + 1, 1));
+    dots.forEach((d, k) => d.addEventListener('click', () => go(k, k > idx ? 1 : -1)));
+
+    sc.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') { go(idx - 1, -1); e.preventDefault(); }
+      if (e.key === 'ArrowRight') { go(idx + 1, 1); e.preventDefault(); }
+    });
+
+    // swipe; suppress the click after a real drag so it never navigates
+    let downX: number | null = null;
+    let moved = false;
+    viewport.addEventListener('pointerdown', (e) => { downX = e.clientX; moved = false; });
+    viewport.addEventListener('pointermove', (e) => { if (downX !== null && Math.abs(e.clientX - downX) > 10) moved = true; });
+    viewport.addEventListener('pointerup', (e) => {
+      if (downX !== null) {
+        const dx = e.clientX - downX;
+        if (Math.abs(dx) > 40) go(dx < 0 ? idx + 1 : idx - 1, dx < 0 ? 1 : -1);
+      }
+      downX = null;
+    });
+    viewport.addEventListener('click', (e) => { if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; } }, true);
+
+    // fit the fixed-size stage to narrow viewports (uniform scale, keeps parity)
+    const fit = () => {
+      showcase.style.transform = 'none';
+      const iw = showcase.offsetWidth;
+      const ih = showcase.offsetHeight;
+      const avail = sc.clientWidth;
+      const s = Math.min(1, avail / iw);
+      showcase.style.transform = `scale(${s})`;
+      showcase.style.transformOrigin = 'top center';
+      scaler.style.height = `${ih * s}px`;
+    };
+    window.addEventListener('resize', fit);
+    fit();
+    window.addEventListener('load', fit);
+  });
+</script>
+
+<style>
+  .showcase-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.2rem;
+    padding: 0.48rem 1rem 2.4rem;
+    overflow-x: clip;
+    outline: none;
+  }
+  .sc-scaler { display: flex; justify-content: center; width: 100%; }
+
+  .showcase {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(0.4rem, 2vw, 1.4rem);
+  }
+
+  /* ── fixed stage; sections absolutely placed (identical to the bench) ── */
+  .sc-viewport { position: relative; width: 520px; height: 470px; perspective: 1300px; flex: 0 0 auto; }
+
+  .sc-slide {
+    position: absolute;
+    inset: 0;
+    display: block;
+    color: inherit;
+    text-decoration: none;
+    transform-origin: center;
+    transition: transform 0.52s cubic-bezier(0.2, 0.72, 0.2, 1.06), opacity 0.42s ease, filter 0.42s ease;
+    will-change: transform, opacity;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateX(70px) rotateY(-26deg);
+    filter: blur(1.5px);
+  }
+  .sc-slide.is-current { opacity: 1; visibility: visible; pointer-events: auto; transform: none; filter: none; }
+  .sc-slide.is-above { visibility: visible; opacity: 0; transform: translateX(-70px) rotateY(26deg); filter: blur(1.5px); }
+  .sc-slide.is-below { visibility: visible; opacity: 0; transform: translateX(70px) rotateY(-26deg); filter: blur(1.5px); }
+
+  .sec { position: absolute; }
+
+  .sc-titlewrap { display: flex; align-items: center; gap: 10px; }
+  .sc-title { line-height: 1; white-space: nowrap; color: #f0e6d2; }
+  .sc-title .rev { color: rgb(146, 3, 1); }
+  .sc-title.drift {
+    background: linear-gradient(115deg, #c08bff, #8b3cff 42%, #e23bff 78%, #ff6ad5);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 0 22px rgba(150, 60, 255, 0.35));
+  }
+  .sc-title .acthe { color: #f4f6f8; }
+  .sc-title .acac {
+    background: linear-gradient(180deg, #aef0ff, #43c6ff 55%, #2aa4e6);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 0 18px rgba(67, 198, 255, 0.4));
+  }
+  .sc-emblem { width: auto; display: block; }
+
+  .sc-sub { margin: 0; color: #b9a884; }
+
+  .sc-shot { width: 420px; height: 195px; border-radius: 12px; overflow: hidden; background: var(--bg-2); border: 1px solid var(--border); }
+  .sc-shot :global(img) { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+  .sc-one { margin: 0; width: 420px; color: #dbcaad; }
+  .sc-price { color: var(--brass-bright); }
+  .sc-more { color: rgb(146, 3, 1); text-transform: uppercase; letter-spacing: 0.12em; }
+
+  /* ── AI chrome/brass arrows — greyed + dim at rest, full colour on hover ── */
+  .sc-arrow {
+    flex: 0 0 auto;
+    width: clamp(64px, 8.5vw, 116px);
+    background: none; border: 0; padding: 0; cursor: pointer; line-height: 0;
+  }
+  .sc-arrow :global(img) {
+    width: 100%; height: auto; display: block;
+    filter: grayscale(0.7) brightness(0.7);
+    opacity: 0.4;
+    transition: transform 0.15s var(--ease), filter 0.25s var(--ease), opacity 0.25s var(--ease);
+  }
+  .sc-prev :global(img) { transform: scaleX(-1); }
+  .sc-arrow:hover :global(img) { filter: grayscale(0) brightness(0.7) drop-shadow(0 0 9px rgba(255, 160, 60, 0.5)); opacity: 1; }
+  .sc-next:active :global(img) { transform: scale(0.92); }
+  .sc-prev:active :global(img) { transform: scaleX(-1) scale(0.92); }
+
+  /* ── dots ── */
+  .sc-dots { display: flex; gap: 0.6rem; }
+  .sc-dot {
+    width: 9px; height: 9px; border-radius: 50%;
+    border: 1px solid var(--brass-dark); background: transparent; cursor: pointer; padding: 0;
+    transition: background 0.2s var(--ease), border-color 0.2s var(--ease), transform 0.2s var(--ease);
+  }
+  .sc-dot:hover { border-color: var(--brass-bright); }
+  .sc-dot.active { background: var(--brass-bright); border-color: var(--brass-bright); transform: scale(1.15); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sc-slide { transition: opacity 0.2s ease; filter: none !important; }
+    .sc-slide:not(.is-current) { transform: none; }
+  }
+</style>

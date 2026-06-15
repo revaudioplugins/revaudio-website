@@ -113,6 +113,69 @@ export const plugins: Plugin[] = [
     reviewsCount: 0,
     reviewsAvg: 0,
   },
+  {
+    slug: 'drift',
+    name: 'Drift',
+    category: 'panner',
+    tagline: 'A multiband panner you steer like a drift car',
+    oneLiner:
+      'Send your selected freq. band to a trip across the stereo field.',
+    plainWhat:
+      'In plain terms: Drift moves chosen frequency ranges around the stereo image and adds per-band character, so your mix feels wide, alive, and in motion.',
+    longPitch:
+      'A multiband panner built for movement. Slice your mix into bands and send each one drifting across the stereo image, with saturation, reverb and tremolo per band. Flip on Autopilot and an LFO steers the motion for you — controlled slides that keep the mix wide and alive.',
+    status: 'in-development',
+    statusLabel: 'In development',
+    introPriceUsd: null,
+    regularPriceUsd: null,
+    checkoutUrl: null,
+    checkoutPaused: false,
+    demoUrl: null,
+    releaseTarget: '2026',
+    heroImage: 'drift-hero.png',
+    galleryImages: [],
+    features: [
+      { name: 'Multiband panning', desc: 'Split the spectrum and send each band sliding across the stereo field independently.' },
+      { name: 'Per-band character', desc: 'Saturation, reverb and tremolo dialled in per band — movement with tone, not just position.' },
+      { name: 'Autopilot', desc: 'LFO-driven motion that steers the pan or a chosen band for you — hands-off, living stereo.' },
+    ],
+    audioDemos: [],
+    systemReq: baseSystemReq,
+    reviewsCount: 0,
+    reviewsAvg: 0,
+  },
+  {
+    slug: 'the-ac',
+    name: 'The AC',
+    category: 'saturation',
+    tagline: 'An air-band exciter that brings the breeze',
+    oneLiner:
+      'Add clean air and shine to your top end.',
+    plainWhat:
+      'In plain terms: The AC brightens and opens the top of your mix, adding air and sparkle without the harshness.',
+    longPitch:
+      'An air-band specialist. The AC adds breeze and shine to the top of your mix with a harmonic exciter, tube saturation, and intelligent resonance taming — all set by a single car-AC temperature dial. Cold leans bright and airy, hot leans warm and saturated, the middle blends both.',
+    status: 'in-development',
+    statusLabel: 'In development',
+    introPriceUsd: null,
+    regularPriceUsd: null,
+    checkoutUrl: null,
+    checkoutPaused: false,
+    demoUrl: null,
+    releaseTarget: '2026',
+    heroImage: 'theac-hero.png',
+    galleryImages: [],
+    features: [
+      { name: 'Air-band excitement', desc: 'Harmonic exciter focused on the top octaves — openness and shine without harshness.' },
+      { name: 'Tube saturation', desc: 'Warm valve-style saturation on the air band for density and sheen.' },
+      { name: 'Smart resonance taming', desc: 'Dynamic EQ / resonance suppression keeps the boosted top smooth.' },
+      { name: 'Temperature dial', desc: 'One car-AC temperature control blends exciter (cold) to tube (hot) — mid is both.' },
+    ],
+    audioDemos: [],
+    systemReq: baseSystemReq,
+    reviewsCount: 0,
+    reviewsAvg: 0,
+  },
 ];
 
 export const bySlug = (slug: string) => plugins.find((p) => p.slug === slug);
