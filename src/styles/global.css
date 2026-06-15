@@ -293,69 +293,10 @@ nav ul a:hover { color: var(--brass-bright); }
    Card overrides scoped here so the Store card (shared PluginCard) is untouched. */
 .plugin-grid-lead { padding: 0.48rem 0 2.84rem; }
 .plugin-grid-lead .head-link { display: none; }
-
-/* Bolted bronze-plate card (bench-tuned 2026-06-13): bronze plate background +
-   an aged brass bolt in each corner (4 CSS background layers — no DOM bolts),
-   raised proud of the page. Scoped to the home lead so the Store card is plain. */
-.plugin-grid-lead .plugin-cards.single .plugin-card {
-  position: relative;
-  padding: 0;
-  width: 467px;
-  max-width: 100%;
-  height: 430px;
-  overflow: hidden;
-  border-radius: 21px;
-  border: 1px solid #000;
-  background:
-    url('/plate/card-bolt.png') left 3px top 3px / 26px no-repeat,
-    url('/plate/card-bolt.png') right 3px top 3px / 26px no-repeat,
-    url('/plate/card-bolt.png') left 3px bottom 3px / 26px no-repeat,
-    url('/plate/card-bolt.png') right 3px bottom 3px / 26px no-repeat,
-    /* dark warm tint to settle the plate into the site palette (less flashy) */
-    linear-gradient(rgba(13, 11, 9, 0.58), rgba(13, 11, 9, 0.58)),
-    url('/plate/card-plate.jpg') center / cover;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.14),
-    inset 0 -2px 8px rgba(0, 0, 0, 0.65),
-    0 25px 55px rgba(0, 0, 0, 0.7);
-}
-/* Card name hidden — it already shows as the section heading above the card.
+.plugin-grid-lead .plugin-cards.single .plugin-card { padding: 0; gap: 0.15rem; }
+/* Card name hidden here — it already shows as the section heading above the card.
    (Store card keeps its name — this is scoped to the home lead only.) */
 .plugin-grid-lead .plugin-cards.single .plugin-card h3 { display: none; }
-/* Round the plugin shot to sit native in the card + crop ~5% off the bottom to hide the edge line. */
-.plugin-grid-lead .plugin-card .card-thumb { position: absolute; left: 31px; top: 31px; width: 405px; border-radius: 12px; aspect-ratio: 1800 / 827; }
-.plugin-grid-lead .plugin-card .card-thumb img { object-fit: cover; object-position: top center; }
-.plugin-grid-lead .plugin-card .one-liner { position: absolute; left: 17px; top: 228px; width: 443px; margin: 0; font-family: 'Inter', system-ui, sans-serif; font-size: 0.9rem; color: #dbcaad; }
-.plugin-grid-lead .plugin-card .prices { display: none; } /* price removed from the home card */
-/* "View & buy" text becomes the VIEW MORE chrome-oval button (image); card stays the link. */
-.plugin-grid-lead .plugin-card .more {
-  position: absolute;
-  left: 179px;
-  top: 310px;
-  display: block;
-  font-size: 0;
-  width: 118px;
-  aspect-ratio: 320 / 206;
-  margin: 0;
-  background: url('/plate/btn-viewmore.png') center / contain no-repeat;
-}
-
-/* Mobile: the desktop card is fixed-pixel (drag-placed) and can't fit a phone,
-   so below 600px the card reverts to a fluid stacked flow. */
-@media (max-width: 600px) {
-  .plugin-grid-lead .plugin-cards.single .plugin-card {
-    width: 100%;
-    height: auto;
-    padding: 22px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.7rem;
-  }
-  .plugin-grid-lead .plugin-card .card-thumb { position: static; left: auto; top: auto; width: 100%; }
-  .plugin-grid-lead .plugin-card .one-liner { position: static; left: auto; top: auto; width: 100%; text-align: center; }
-  .plugin-grid-lead .plugin-card .more { position: static; left: auto; top: auto; width: 118px; margin: 0.2rem auto 0; }
-}
 
 .plugin-grid h2 {
   text-align: center;
