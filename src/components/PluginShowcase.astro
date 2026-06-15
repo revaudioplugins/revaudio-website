@@ -210,7 +210,7 @@ const font = (st: any) => (st.ff ? `font-family:${st.ff};font-weight:${st.fw};fo
   }
 
   /* ── fixed stage; sections absolutely placed (identical to the bench) ── */
-  .sc-viewport { position: relative; width: 520px; height: 470px; perspective: 1300px; flex: 0 0 auto; }
+  .sc-viewport { position: relative; width: 520px; height: 470px; perspective: 1300px; flex: 0 0 auto; touch-action: pan-y; }
 
   .sc-slide {
     position: absolute;
@@ -288,5 +288,22 @@ const font = (st: any) => (st.ff ? `font-family:${st.ff};font-weight:${st.fw};fo
   @media (prefers-reduced-motion: reduce) {
     .sc-slide { transition: opacity 0.2s ease; filter: none !important; }
     .sc-slide:not(.is-current) { transform: none; }
+  }
+
+  /* ── Mobile: overlay the arrows on the card edges so the (scaled) stage gets
+     the full width, and keep them visible since touch has no hover. ── */
+  @media (max-width: 640px) {
+    .showcase-wrap { padding: 0.3rem 0.5rem 1.6rem; gap: 0.9rem; }
+    .showcase { position: relative; gap: 0; }
+    .sc-arrow {
+      position: absolute;
+      top: 38%;
+      z-index: 5;
+      width: 46px;
+    }
+    .sc-prev { left: -4px; }
+    .sc-next { right: -4px; }
+    .sc-arrow :global(img) { filter: grayscale(0.25) brightness(0.85); opacity: 0.72; }
+    .sc-arrow:active :global(img) { opacity: 1; }
   }
 </style>
