@@ -132,7 +132,7 @@ export const plugins: Plugin[] = [
     checkoutPaused: false,
     demoUrl: null,
     releaseTarget: '2026',
-    heroImage: 'drift-hero.png',
+    heroImage: 'coming-soon-plate.png',
     galleryImages: [],
     features: [
       { name: 'Multiband panning', desc: 'Split the spectrum and send each band sliding across the stereo field independently.' },
@@ -163,7 +163,7 @@ export const plugins: Plugin[] = [
     checkoutPaused: false,
     demoUrl: null,
     releaseTarget: '2026',
-    heroImage: 'theac-hero.png',
+    heroImage: 'coming-soon-plate.png',
     galleryImages: [],
     features: [
       { name: 'Air-band excitement', desc: 'Harmonic exciter focused on the top octaves — openness and shine without harshness.' },
