@@ -12,8 +12,7 @@ import acIcon from '../assets/showcase/ac-icon.png';
 import revGauge from '../assets/showcase/rev-gauge.png';
 import arrowBtn from '../assets/showcase/arrow-btn.png';
 import revlimiterShot from '../assets/plugins/revlimiter-hero.png';
-import driftShot from '../assets/plugins/drift-hero.png';
-import theacShot from '../assets/plugins/theac-hero.png';
+import comingSoonPlate from '../assets/plugins/coming-soon-plate.png';
 
 const STAGE_W = 520;
 const STAGE_H = 470;
@@ -45,7 +44,7 @@ const SLIDES = [
     titleHtml: 'DRIFT',
     titleClass: 'drift',
     emblem: driftCar, emblemAlt: 'drifting car',
-    shot: driftShot, shotAlt: 'Drift plugin',
+    shot: comingSoonPlate, shotAlt: 'Drift — coming soon',
     catchphrase: 'Your sound, sliding. SKRRT!',
     oneliner: 'Send your selected freq. band to a trip across the stereo field.',
     priceText: 'Target 2026',
@@ -64,7 +63,7 @@ const SLIDES = [
     titleHtml: '<span class="acthe">THE</span> <span class="acac">AC</span>',
     titleClass: '',
     emblem: acIcon, emblemAlt: 'cold air snowflake',
-    shot: theacShot, shotAlt: 'The AC plugin',
+    shot: comingSoonPlate, shotAlt: 'The AC — coming soon',
     catchphrase: 'Cold air for the top end.',
     oneliner: 'Add clean air and shine to your top end.',
     priceText: 'Target 2026',
@@ -106,7 +105,7 @@ const font = (st: any) => (st.ff ? `font-family:${st.ff};font-weight:${st.fw};fo
               <Image class="sc-emblem" src={s.emblem} alt={s.emblemAlt} width={260} style={`height:${Math.round(s.style.title.fs * 0.8)}px`} loading="lazy" />
             </div>
             <p class="sec sc-sub" style={pos(s.style.sub) + font(s.style.sub)}>{s.catchphrase}</p>
-            <div class="sec sc-shot" style={pos(s.style.shot)}>
+            <div class:list={['sec', 'sc-shot', { 'is-plate': s.shot === comingSoonPlate }]} style={pos(s.style.shot)}>
               <Image src={s.shot} alt={s.shotAlt} width={1600} format="webp" quality={92} loading="lazy" />
             </div>
             <p class="sec sc-one" style={pos(s.style.oneliner) + font(s.style.oneliner)}>{s.oneliner}</p>
@@ -279,6 +278,11 @@ const font = (st: any) => (st.ff ? `font-family:${st.ff};font-weight:${st.fw};fo
 
   .sc-shot { width: 420px; height: 195px; border-radius: 12px; overflow: hidden; background: var(--bg-2); border: 1px solid var(--border); }
   .sc-shot :global(img) { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+  /* Coming-soon plate is a true-alpha asset, not a screenshot — drop the frame
+     so it floats on the card and the transparency reads. Subtle shadow grounds it. */
+  .sc-shot.is-plate { background: none; border: 0; border-radius: 0; overflow: visible; }
+  .sc-shot.is-plate :global(img) { filter: drop-shadow(0 7px 16px rgba(0, 0, 0, 0.55)); }
 
   .sc-one { margin: 0; width: 420px; color: #dbcaad; }
   .sc-price { color: var(--brass-bright); }
