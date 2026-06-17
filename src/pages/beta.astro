@@ -1,0 +1,526 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { Image } from 'astro:assets';
+import submitImg from '../assets/ui/btn-submit.png';
+import submitPressed from '../assets/ui/btn-submit-pressed.png';
+import { site } from '../data/site';
+import { sections, questions, surveyMeta } from '../data/beta-survey';
+
+const ui = surveyMeta.ui;
+
+// Client config: ui strings, worker endpoint + access code, and a compact
+// question schema for client-side validation, payload assembly, "other" reveals
+// and conditional follow-ups.
+const clientConfig = {
+  ui,
+  version: surveyMeta.version,
+  workerUrl: site.betaFeedback.workerUrl,
+  betaAccessCode: site.betaFeedback.betaAccessCode,
+  questions: questions.map((q) => ({
+    id: q.id,
+    type: q.type,
+    required: q.required,
+    hasOther: !!q.hasOther,
+    allowNa: !!q.allowNa,
+    reveal: q.reveal ? { whenIn: q.reveal.whenIn, fieldId: q.reveal.field.id } : null,
+  })),
+};
+---
+
+<BaseLayout title="RevLimiter Beta Feedback" description="RevLimiter beta tester feedback." index={false}>
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700&display=swap"
+  />
+
+  <div class="beta-wrap">
+    <div class="container">
+      <div id="survey-root" class="beta-card" dir="rtl" lang="he">
+        <div class="beta-top">
+          <h1 class="beta-title" data-he={ui.titleHe} data-en={ui.titleEn}>{ui.titleHe}</h1>
+          <button type="button" id="lang-toggle" class="lang-toggle" aria-label="Switch language">EN</button>
+        </div>
+        <p class="beta-intro" data-he={ui.introHe} data-en={ui.introEn}>{ui.introHe}</p>
+
+        <form id="beta-form" novalidate>
+          <!-- honeypot: real users never fill this; bots do -->
+          <input type="text" name="_gotcha" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
+          {sections.map((sec) => (
+            <section class="sec" data-sec={sec.id}>
+              <h2 class="sec-title">
+                <span data-he={sec.he} data-en={sec.en}>{sec.he}</span>
+              </h2>
+
+              {questions.filter((q) => q.section === sec.id).map((q) => (
+                <div class="q" id={`q-${q.id}`} data-qid={q.id}>
+                  <div class="q-head">
+                    <span class="q-label" data-he={q.he} data-en={q.en}>{q.he}</span>
+                    <span
+                      class={`tag ${q.required ? 'req' : 'opt'}`}
+                      data-he={q.required ? ui.requiredHe : ui.optionalHe}
+                      data-en={q.required ? ui.requiredEn : ui.optionalEn}
+                    >{q.required ? ui.requiredHe : ui.optionalHe}</span>
+                  </div>
+
+                  {(q.helpHe || q.helpEn) && (
+                    <p class="q-help" data-he={q.helpHe} data-en={q.helpEn}>{q.helpHe}</p>
+                  )}
+
+                  {/* ── choice groups ── */}
+                  {(q.type === 'single' || q.type === 'multi') && (
+                    <fieldset class="opts">
+                      {q.choices?.map((c) => (
+                        <label class="opt">
+                          <input
+                            class="vh"
+                            type={q.type === 'single' ? 'radio' : 'checkbox'}
+                            name={q.id}
+                            value={c.code}
+                          />
+                          <span class="opt-label" data-he={c.he} data-en={c.en}>{c.he}</span>
+                        </label>
+                      ))}
+                      {q.hasOther && (
+                        <label class="opt">
+                          <input
+                            class="vh"
+                            type={q.type === 'single' ? 'radio' : 'checkbox'}
+                            name={q.id}
+                            value="other"
+                          />
+                          <span class="opt-label" data-he={ui.otherHe} data-en={ui.otherEn}>{ui.otherHe}</span>
+                        </label>
+                      )}
+                    </fieldset>
+                  )}
+
+                  {/* ── likert 1..5 ── */}
+                  {q.type === 'likert5' && (
+                    <div class="likert">
+                      <div class="scale-row">
+                        <span class="end" data-he={q.scale?.lowHe} data-en={q.scale?.lowEn}>{q.scale?.lowHe}</span>
+                        <div class="scale" dir="ltr">
+                          {[1, 2, 3, 4, 5].map((n) => (
+                            <label class="seg">
+                              <input class="vh" type="radio" name={q.id} value={String(n)} />
+                              <span class="seg-num">{n}</span>
+                            </label>
+                          ))}
+                        </div>
+                        <span class="end" data-he={q.scale?.highHe} data-en={q.scale?.highEn}>{q.scale?.highHe}</span>
+                      </div>
+                      {q.allowNa && (
+                        <label class="opt na">
+                          <input class="vh" type="radio" name={q.id} value="na" />
+                          <span class="opt-label" data-he={ui.naHe} data-en={ui.naEn}>{ui.naHe}</span>
+                        </label>
+                      )}
+                    </div>
+                  )}
+
+                  {/* ── nps 0..10 ── */}
+                  {q.type === 'nps' && (
+                    <div class="likert">
+                      <div class="scale-row">
+                        <span class="end" data-he={q.scale?.lowHe} data-en={q.scale?.lowEn}>{q.scale?.lowHe}</span>
+                        <div class="scale nps" dir="ltr">
+                          {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+                            <label class="seg">
+                              <input class="vh" type="radio" name={q.id} value={String(n)} />
+                              <span class="seg-num">{n}</span>
+                            </label>
+                          ))}
+                        </div>
+                        <span class="end" data-he={q.scale?.highHe} data-en={q.scale?.highEn}>{q.scale?.highHe}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ── free text ── */}
+                  {q.type === 'text' && (
+                    <textarea class="text-in area" name={q.id} rows="3" maxlength={q.maxLen || 2000}></textarea>
+                  )}
+                  {q.type === 'shorttext' && (
+                    <input class="text-in" type="text" name={q.id} maxlength={q.maxLen || 200} />
+                  )}
+
+                  {/* ── "other" free text ── */}
+                  {q.hasOther && (
+                    <div class="sub-wrap" id={`other-${q.id}`} hidden>
+                      <input
+                        class="text-in"
+                        type="text"
+                        name={`${q.id}_other`}
+                        maxlength="200"
+                        data-ph-he={ui.otherPlaceholderHe}
+                        data-ph-en={ui.otherPlaceholderEn}
+                        placeholder={ui.otherPlaceholderHe}
+                      />
+                    </div>
+                  )}
+
+                  {/* ── conditional follow-up ── */}
+                  {q.reveal && (
+                    <div class="sub-wrap reveal" id={`reveal-${q.reveal.field.id}`} hidden>
+                      <label class="q-sub" data-he={q.reveal.field.he} data-en={q.reveal.field.en}>{q.reveal.field.he}</label>
+                      {q.reveal.field.type === 'text' ? (
+                        <textarea class="text-in area" name={q.reveal.field.id} rows="3" maxlength="2000"></textarea>
+                      ) : (
+                        <input class="text-in" type="text" name={q.reveal.field.id} maxlength="200" />
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </section>
+          ))}
+
+          <div class="notify-btn panel">
+            <Image src={submitImg} alt="" width={520} height={347} format="webp" />
+            <button type="submit" class="panel-hit hit-pill hit-submit" aria-label={ui.submitEn}></button>
+            <Image src={submitPressed} alt="" width={520} height={347} format="webp" loading="eager" class="press" />
+          </div>
+        </form>
+
+        <p class="beta-status" role="status" aria-live="polite" hidden></p>
+      </div>
+    </div>
+  </div>
+
+  <script define:vars={{ CFG: clientConfig }}>
+    const root = document.getElementById('survey-root');
+    const form = document.getElementById('beta-form');
+    const status = document.querySelector('.beta-status');
+    const toggle = document.getElementById('lang-toggle');
+    const ui = CFG.ui;
+
+    let lang = localStorage.getItem('beta_lang') === 'en' ? 'en' : 'he';
+    const wired = !!CFG.workerUrl;
+
+    // ── language ──────────────────────────────────────────────────────────
+    function applyLang(l) {
+      lang = l;
+      root.dir = l === 'he' ? 'rtl' : 'ltr';
+      root.lang = l === 'he' ? 'he' : 'en';
+      document.querySelectorAll('[data-he]').forEach((el) => {
+        const t = l === 'he' ? el.getAttribute('data-he') : el.getAttribute('data-en');
+        if (t != null) el.textContent = t;
+      });
+      document.querySelectorAll('[data-ph-he]').forEach((el) => {
+        el.placeholder = l === 'he' ? el.getAttribute('data-ph-he') : el.getAttribute('data-ph-en');
+      });
+      toggle.textContent = l === 'he' ? ui.langLabelHe : ui.langLabelEn;
+      localStorage.setItem('beta_lang', l);
+    }
+    toggle.addEventListener('click', () => applyLang(lang === 'he' ? 'en' : 'he'));
+
+    // ── helpers ───────────────────────────────────────────────────────────
+    const one = (id) => {
+      const el = form.querySelector(`input[name="${id}"]:checked`);
+      return el ? el.value : null;
+    };
+    const many = (id) => [...form.querySelectorAll(`input[name="${id}"]:checked`)].map((e) => e.value);
+    const txt = (id) => {
+      const el = form.querySelector(`[name="${id}"]`);
+      return el ? el.value.trim() : '';
+    };
+
+    // ── conditional reveals ("other" + follow-ups) ────────────────────────
+    CFG.questions.forEach((q) => {
+      if (q.hasOther) {
+        const wrap = document.getElementById('other-' + q.id);
+        const upd = () => {
+          const on = q.type === 'single' ? one(q.id) === 'other' : many(q.id).includes('other');
+          wrap.hidden = !on;
+        };
+        form.querySelectorAll(`input[name="${q.id}"]`).forEach((i) => i.addEventListener('change', upd));
+        upd();
+      }
+      if (q.reveal) {
+        const block = document.getElementById('reveal-' + q.reveal.fieldId);
+        const upd = () => {
+          const v = one(q.id);
+          block.hidden = !(v && q.reveal.whenIn.includes(v));
+        };
+        form.querySelectorAll(`input[name="${q.id}"]`).forEach((i) => i.addEventListener('change', upd));
+        upd();
+      }
+    });
+
+    // ── status ────────────────────────────────────────────────────────────
+    function show(msg, ok) {
+      status.textContent = msg;
+      status.hidden = false;
+      status.classList.toggle('ok', ok);
+      status.classList.toggle('err', !ok);
+      status.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    const tr = (he, en) => (lang === 'he' ? he : en);
+
+    // ── validation ────────────────────────────────────────────────────────
+    function answered(q) {
+      if (q.type === 'multi') return many(q.id).length > 0;
+      if (q.type === 'single' || q.type === 'likert5' || q.type === 'nps') return one(q.id) != null;
+      return txt(q.id) !== '';
+    }
+
+    // ── submit ────────────────────────────────────────────────────────────
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      form.querySelectorAll('.q.invalid').forEach((el) => el.classList.remove('invalid'));
+
+      // honeypot → pretend success, send nothing
+      if (form.querySelector('[name="_gotcha"]').value) {
+        form.hidden = true;
+        show(tr(ui.thanksHe, ui.thanksEn), true);
+        return;
+      }
+
+      if (!wired) {
+        show(tr(ui.softHe, ui.softEn), false);
+        return;
+      }
+
+      // beta access code
+      if (CFG.betaAccessCode) {
+        const entered = txt('beta_code').toUpperCase();
+        if (entered !== String(CFG.betaAccessCode).toUpperCase()) {
+          document.getElementById('q-beta_code')?.classList.add('invalid');
+          show(tr(ui.badCodeHe, ui.badCodeEn), false);
+          document.getElementById('q-beta_code')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          return;
+        }
+      }
+
+      // required questions
+      const missing = CFG.questions.filter((q) => q.required && !answered(q));
+      if (missing.length) {
+        missing.forEach((q) => document.getElementById('q-' + q.id)?.classList.add('invalid'));
+        show(tr(ui.requiredMissingHe, ui.requiredMissingEn), false);
+        document.getElementById('q-' + missing[0].id)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+
+      // assemble payload (omit empties → columns default null)
+      const payload = { survey_version: CFG.version, lang, user_agent: navigator.userAgent };
+      for (const q of CFG.questions) {
+        if (q.type === 'single') {
+          const v = one(q.id);
+          if (v) payload[q.id] = v;
+          if (v === 'other' && q.hasOther) {
+            const o = txt(q.id + '_other');
+            if (o) payload[q.id + '_other'] = o;
+          }
+        } else if (q.type === 'multi') {
+          const arr = many(q.id);
+          if (arr.length) payload[q.id] = arr;
+          if (arr.includes('other') && q.hasOther) {
+            const o = txt(q.id + '_other');
+            if (o) payload[q.id + '_other'] = o;
+          }
+        } else if (q.type === 'likert5') {
+          const v = one(q.id);
+          if (v && v !== 'na') payload[q.id] = parseInt(v, 10);
+        } else if (q.type === 'nps') {
+          const v = one(q.id);
+          if (v != null) payload[q.id] = parseInt(v, 10);
+        } else {
+          const t = txt(q.id);
+          if (t) payload[q.id] = t;
+        }
+        if (q.reveal) {
+          const t = txt(q.reveal.fieldId);
+          if (t) payload[q.reveal.fieldId] = t;
+        }
+      }
+
+      const submitBtn = form.querySelector('button[type="submit"]');
+      submitBtn?.setAttribute('aria-disabled', 'true');
+      try {
+        const res = await fetch(CFG.workerUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (res.ok) {
+          form.hidden = true;
+          show(tr(ui.thanksHe, ui.thanksEn), true);
+        } else {
+          show(tr(ui.errHe, ui.errEn), false);
+        }
+      } catch {
+        show(tr(ui.errHe, ui.errEn), false);
+      } finally {
+        submitBtn?.removeAttribute('aria-disabled');
+      }
+    });
+
+    applyLang(lang);
+  </script>
+
+  <style>
+    .beta-wrap {
+      padding-block: clamp(1.5rem, 4vw, 3rem) clamp(3rem, 8vw, 5rem);
+      padding-top: calc(var(--nav-h) + var(--sale-h) + clamp(1.5rem, 4vw, 3rem));
+    }
+    .beta-card {
+      max-width: 720px;
+      margin: 0 auto;
+      background: var(--bg-1);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: clamp(1.25rem, 4vw, 2.5rem);
+      box-shadow: var(--shadow);
+      font-family: 'Heebo', var(--font-body);
+    }
+
+    .beta-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    .beta-title {
+      font-family: var(--font-display);
+      color: var(--brass-bright);
+      letter-spacing: 0.01em;
+      font-size: var(--text-2xl);
+      margin: 0;
+    }
+    .lang-toggle {
+      flex: none;
+      font-family: var(--font-body);
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: var(--brass);
+      background: var(--bg-2);
+      border: 1px solid var(--border-bright);
+      border-radius: 999px;
+      padding: 0.35rem 0.85rem;
+      cursor: pointer;
+      transition: color 0.15s var(--ease), border-color 0.15s var(--ease);
+    }
+    .lang-toggle:hover { color: var(--brass-bright); border-color: var(--brass-dark); }
+
+    .beta-intro { color: var(--fg-dim); font-size: 0.95rem; margin: 0 0 1.5rem; line-height: 1.5; }
+
+    .sec { margin-top: 2.25rem; }
+    .sec-title {
+      font-family: var(--font-display);
+      font-size: var(--text-xl);
+      color: var(--brass);
+      letter-spacing: 0.01em;
+      margin: 0 0 1rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .q { margin-bottom: 1.6rem; }
+    .q-head { display: flex; align-items: baseline; gap: 0.6rem; flex-wrap: wrap; }
+    .q-label { font-weight: 600; color: var(--fg); line-height: 1.45; }
+    .tag {
+      flex: none;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+    }
+    .tag.req { color: var(--brass); border: 1px solid var(--brass-dark); }
+    .tag.opt { color: var(--fg-faint); border: 1px solid var(--border-bright); }
+    .q-help { color: var(--fg-dim); font-size: 0.85rem; margin: 0.3rem 0 0; }
+
+    /* choice pills */
+    .opts { border: 0; padding: 0; margin: 0.7rem 0 0; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .opt {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.45rem 0.8rem;
+      border: 1px solid var(--border-bright);
+      border-radius: 999px;
+      background: var(--bg-2);
+      color: var(--fg-dim);
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: border-color 0.12s var(--ease), color 0.12s var(--ease), background 0.12s var(--ease);
+      user-select: none;
+    }
+    .opt:hover { border-color: var(--brass-dark); color: var(--fg); }
+    .opt:has(:checked) {
+      border-color: var(--brass);
+      color: var(--bg-0);
+      background: var(--brass);
+      font-weight: 600;
+    }
+    .opt.na { margin-top: 0.6rem; }
+
+    /* likert / nps */
+    .likert { margin-top: 0.7rem; }
+    .scale-row { display: flex; align-items: center; gap: 0.7rem; flex-wrap: wrap; }
+    .scale-row .end { color: var(--fg-faint); font-size: 0.78rem; flex: 1 1 0; min-width: 60px; }
+    .scale-row .end:last-child { text-align: end; }
+    .scale { display: inline-flex; gap: 0.35rem; flex: none; }
+    .seg { cursor: pointer; }
+    .seg-num {
+      display: grid;
+      place-items: center;
+      width: 2.2rem;
+      height: 2.2rem;
+      border: 1px solid var(--border-bright);
+      border-radius: 8px;
+      background: var(--bg-2);
+      color: var(--fg-dim);
+      font-variant-numeric: tabular-nums;
+      font-size: 0.95rem;
+      transition: border-color 0.12s var(--ease), color 0.12s var(--ease), background 0.12s var(--ease);
+    }
+    .seg:hover .seg-num { border-color: var(--brass-dark); color: var(--fg); }
+    .seg:has(:checked) .seg-num { border-color: var(--brass); background: var(--brass); color: var(--bg-0); font-weight: 700; }
+    .scale.nps .seg-num { width: 1.85rem; height: 1.85rem; border-radius: 6px; font-size: 0.82rem; }
+
+    /* text inputs */
+    .text-in {
+      width: 100%;
+      margin-top: 0.6rem;
+      background: var(--bg-2);
+      border: 1px solid var(--border-bright);
+      border-radius: 8px;
+      padding: 0.6rem 0.75rem;
+      color: var(--fg);
+      font-family: inherit;
+      font-size: 0.92rem;
+    }
+    .text-in.area { resize: vertical; min-height: 3rem; line-height: 1.5; }
+    .text-in:focus { outline: none; border-color: var(--brass); }
+    .text-in::placeholder { color: var(--fg-faint); }
+
+    .sub-wrap { margin-top: 0.5rem; }
+    .q-sub { display: block; font-size: 0.85rem; color: var(--fg-dim); margin-top: 0.4rem; }
+
+    /* invalid */
+    .q.invalid .q-label { color: var(--redline); }
+    .q.invalid .opts, .q.invalid .likert { outline: 1px solid var(--redline); outline-offset: 6px; border-radius: 8px; }
+    .q.invalid .text-in { border-color: var(--redline); }
+
+    /* honeypot */
+    .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+    /* submit plate (mirrors EmailCapture) */
+    .notify-btn { width: 150px; margin: 2.5rem auto 0; padding: 0; border: 0; background: none; }
+
+    .beta-status { margin: 1.5rem auto 0; max-width: 540px; text-align: center; font-size: 0.95rem; }
+    .beta-status.ok { color: var(--brass-bright); }
+    .beta-status.err { color: var(--redline); }
+
+    @media (max-width: 480px) {
+      .seg-num { width: 1.9rem; height: 1.9rem; }
+      .scale.nps .seg-num { width: 1.55rem; height: 1.55rem; }
+      .scale-row .end { flex-basis: 100%; }
+      .notify-btn { width: 100%; max-width: 260px; }
+    }
+  </style>
+</BaseLayout>
