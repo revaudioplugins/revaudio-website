@@ -326,14 +326,21 @@ const font = (st: any) => (st.ff ? `font-family:${st.ff};font-weight:${st.fw};fo
   .sc-prev:active :global(img) { transform: scaleX(-1) scale(0.92); }
 
   /* ── dots ── */
-  .sc-dots { display: flex; gap: 0.6rem; }
+  /* The button is a 24×24 hit target (WCAG 2.2 SC 2.5.8 Target Size Minimum);
+     the visible 9px dot is drawn by ::before, so the control reads small but
+     stays comfortably tappable — important for the mobile dots especially. */
+  .sc-dots { display: flex; gap: 0.25rem; }
   .sc-dot {
-    width: 9px; height: 9px; border-radius: 50%;
-    border: 1px solid var(--brass-dark); background: transparent; cursor: pointer; padding: 0;
+    width: 24px; height: 24px; display: grid; place-items: center;
+    border: 0; background: transparent; cursor: pointer; padding: 0;
+  }
+  .sc-dot::before {
+    content: ""; width: 9px; height: 9px; border-radius: 50%;
+    border: 1px solid var(--brass-dark); background: transparent;
     transition: background 0.2s var(--ease), border-color 0.2s var(--ease), transform 0.2s var(--ease);
   }
-  .sc-dot:hover { border-color: var(--brass-bright); }
-  .sc-dot.active { background: var(--brass-bright); border-color: var(--brass-bright); transform: scale(1.15); }
+  .sc-dot:hover::before { border-color: var(--brass-bright); }
+  .sc-dot.active::before { background: var(--brass-bright); border-color: var(--brass-bright); transform: scale(1.15); }
 
   @media (prefers-reduced-motion: reduce) {
     .sc-slide { transition: opacity 0.2s ease; filter: none !important; }
@@ -373,6 +380,6 @@ const font = (st: any) => (st.ff ? `font-family:${st.ff};font-weight:${st.fw};fo
     .sc-sub, .sc-one { width: 100% !important; text-align: center; }
     .sc-sub { margin-top: 0; }
     .sc-shot { width: 100% !important; height: auto !important; aspect-ratio: 1800 / 836; }
-    .sc-dot { width: 11px; height: 11px; }
+    .sc-dot::before { width: 11px; height: 11px; } /* bigger visible dot on mobile; 24px hit target stays */
   }
 </style>

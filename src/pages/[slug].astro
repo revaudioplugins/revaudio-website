@@ -218,17 +218,23 @@ const shots = [plugin.heroImage, ...plugin.galleryImages]
     margin-bottom: 0.75rem;
   }
 
-  /* Dim inactive steps only when the motion system is live; static/no-JS
-     readers get every step at full strength. */
+  /* De-emphasise inactive steps only when the motion system is live; static/no-JS
+     readers get every step at full strength. Emphasis is COLOR-based, not opacity —
+     opacity:0.35 dropped the step text under 4.5:1 (WCAG 1.4.3 Contrast). Both the
+     dimmed (--fg-dim ≈5:1) and active states stay above AA. */
   :global(html.motion-ok) .walk-step {
-    opacity: 0.35;
-    transition: opacity 0.45s var(--ease-settle), border-color 0.45s var(--ease-settle);
+    transition: border-color 0.45s var(--ease-settle);
   }
+  :global(html.motion-ok) .walk-step .f-name { color: var(--fg-dim); }
+  :global(html.motion-ok) .walk-step .f-desc { color: var(--fg-dim); }
+  :global(html.motion-ok) .walk-step .f-name,
+  :global(html.motion-ok) .walk-step .f-desc { transition: color 0.45s var(--ease-settle); }
 
   :global(html.motion-ok) .walk-step.active {
-    opacity: 1;
     border-left-color: var(--brass);
   }
+  :global(html.motion-ok) .walk-step.active .f-name { color: var(--brass-bright); }
+  :global(html.motion-ok) .walk-step.active .f-desc { color: var(--fg); }
 
   .walk-stage {
     position: sticky;
@@ -271,9 +277,10 @@ const shots = [plugin.heroImage, ...plugin.galleryImages]
     .walk-grid { grid-template-columns: 1fr; gap: 1.5rem; }
     .walk-stage { position: static; order: -1; }
     .walk-step { min-height: 0; }
-    /* Stage sits above the steps here, not beside them — dimming reads as
-       broken rather than as focus. Keep the brass border as the active cue. */
-    :global(html.motion-ok) .walk-step { opacity: 1; }
+    /* Stage sits above the steps here, not beside them — de-emphasis reads as
+       broken rather than as focus. Full strength; brass border marks active. */
+    :global(html.motion-ok) .walk-step .f-name { color: var(--brass-bright); }
+    :global(html.motion-ok) .walk-step .f-desc { color: var(--fg-dim); }
   }
 
   .f-name {

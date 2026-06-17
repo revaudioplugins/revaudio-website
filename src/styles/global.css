@@ -189,8 +189,23 @@ footer.site-footer { background: rgba(11, 10, 9, 0.55); }
   border-radius: 2px;
 }
 
+/* Skip-link / programmatic focus target: receive focus without drawing a
+   full-width outline around the whole main region — the visible focus ring
+   stays on the actual interactive controls inside it. */
+#main-content:focus { outline: none; }
+
+/* Keep Tab-focused and anchor-targeted content clear of the sticky nav (and the
+   sale strip when present) so focus is never hidden behind it.
+   WCAG 2.2 SC 2.4.11 Focus Not Obscured (Minimum). */
+html { scroll-padding-top: calc(var(--nav-h) + 0.75rem); }
+html:has(body.has-sale) { scroll-padding-top: calc(var(--nav-h) + 41px + 0.75rem); } /* 41px = --sale-h */
+
 a { color: var(--brass-bright); text-decoration: none; transition: color 0.2s var(--ease); }
 a:hover { color: var(--chrome); }
+
+/* Links inside prose are set off by more than colour — WCAG 1.4.1 Use of Color.
+   Nav, footer, and button links live outside <p>, so they keep the clean look. */
+p a { text-decoration: underline; text-underline-offset: 2px; }
 
 h1, h2, h3, h4 {
   font-family: var(--font-display);
