@@ -8,14 +8,20 @@ import { sections, questions, surveyMeta } from '../data/beta-survey';
 
 const ui = surveyMeta.ui;
 
-// Client config: ui strings, worker endpoint + access code, and a compact
-// question schema for client-side validation, payload assembly, "other" reveals
-// and conditional follow-ups.
+// English-only beta feedback form. Client config: worker endpoint + access code,
+// English UI strings, and a compact question schema for client-side validation,
+// payload assembly, "other" reveals and conditional follow-ups.
 const clientConfig = {
-  ui,
   version: surveyMeta.version,
   workerUrl: site.betaFeedback.workerUrl,
   betaAccessCode: site.betaFeedback.betaAccessCode,
+  t: {
+    thanks: ui.thanksEn,
+    err: ui.errEn,
+    soft: ui.softEn,
+    badCode: ui.badCodeEn,
+    requiredMissing: ui.requiredMissingEn,
+  },
   questions: questions.map((q) => ({
     id: q.id,
     type: q.type,
@@ -28,19 +34,11 @@ const clientConfig = {
 ---
 
 <BaseLayout title="RevLimiter Beta Feedback" description="RevLimiter beta tester feedback." index={false}>
-  <link
-    rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700&display=swap"
-  />
-
   <div class="beta-wrap">
     <div class="container">
-      <div id="survey-root" class="beta-card" dir="rtl" lang="he">
-        <div class="beta-top">
-          <h1 class="beta-title" data-he={ui.titleHe} data-en={ui.titleEn}>{ui.titleHe}</h1>
-          <button type="button" id="lang-toggle" class="lang-toggle" aria-label="Switch language">EN</button>
-        </div>
-        <p class="beta-intro" data-he={ui.introHe} data-en={ui.introEn}>{ui.introHe}</p>
+      <div id="survey-root" class="beta-card">
+        <h1 class="beta-title">{ui.titleEn}</h1>
+        <p class="beta-intro">{ui.introEn}</p>
 
         <form id="beta-form" novalidate>
           <!-- honeypot: real users never fill this; bots do -->
@@ -48,24 +46,16 @@ const clientConfig = {
 
           {sections.map((sec) => (
             <section class="sec" data-sec={sec.id}>
-              <h2 class="sec-title">
-                <span data-he={sec.he} data-en={sec.en}>{sec.he}</span>
-              </h2>
+              <h2 class="sec-title">{sec.en}</h2>
 
               {questions.filter((q) => q.section === sec.id).map((q) => (
                 <div class="q" id={`q-${q.id}`} data-qid={q.id}>
                   <div class="q-head">
-                    <span class="q-label" data-he={q.he} data-en={q.en}>{q.he}</span>
-                    <span
-                      class={`tag ${q.required ? 'req' : 'opt'}`}
-                      data-he={q.required ? ui.requiredHe : ui.optionalHe}
-                      data-en={q.required ? ui.requiredEn : ui.optionalEn}
-                    >{q.required ? ui.requiredHe : ui.optionalHe}</span>
+                    <span class="q-label">{q.en}</span>
+                    <span class={`tag ${q.required ? 'req' : 'opt'}`}>{q.required ? ui.requiredEn : ui.optionalEn}</span>
                   </div>
 
-                  {(q.helpHe || q.helpEn) && (
-                    <p class="q-help" data-he={q.helpHe} data-en={q.helpEn}>{q.helpHe}</p>
-                  )}
+                  {q.helpEn && <p class="q-help">{q.helpEn}</p>}
 
                   {/* ── choice groups ── */}
                   {(q.type === 'single' || q.type === 'multi') && (
@@ -78,7 +68,7 @@ const clientConfig = {
                             name={q.id}
                             value={c.code}
                           />
-                          <span class="opt-label" data-he={c.he} data-en={c.en}>{c.he}</span>
+                          <span class="opt-label">{c.en}</span>
                         </label>
                       ))}
                       {q.hasOther && (
@@ -89,7 +79,7 @@ const clientConfig = {
                             name={q.id}
                             value="other"
                           />
-                          <span class="opt-label" data-he={ui.otherHe} data-en={ui.otherEn}>{ui.otherHe}</span>
+                          <span class="opt-label">{ui.otherEn}</span>
                         </label>
                       )}
                     </fieldset>
@@ -99,8 +89,8 @@ const clientConfig = {
                   {q.type === 'likert5' && (
                     <div class="likert">
                       <div class="scale-row">
-                        <span class="end" data-he={q.scale?.lowHe} data-en={q.scale?.lowEn}>{q.scale?.lowHe}</span>
-                        <div class="scale" dir="ltr">
+                        <span class="end">{q.scale?.lowEn}</span>
+                        <div class="scale">
                           {[1, 2, 3, 4, 5].map((n) => (
                             <label class="seg">
                               <input class="vh" type="radio" name={q.id} value={String(n)} />
@@ -108,12 +98,12 @@ const clientConfig = {
                             </label>
                           ))}
                         </div>
-                        <span class="end" data-he={q.scale?.highHe} data-en={q.scale?.highEn}>{q.scale?.highHe}</span>
+                        <span class="end">{q.scale?.highEn}</span>
                       </div>
                       {q.allowNa && (
                         <label class="opt na">
                           <input class="vh" type="radio" name={q.id} value="na" />
-                          <span class="opt-label" data-he={ui.naHe} data-en={ui.naEn}>{ui.naHe}</span>
+                          <span class="opt-label">{ui.naEn}</span>
                         </label>
                       )}
                     </div>
@@ -123,8 +113,8 @@ const clientConfig = {
                   {q.type === 'nps' && (
                     <div class="likert">
                       <div class="scale-row">
-                        <span class="end" data-he={q.scale?.lowHe} data-en={q.scale?.lowEn}>{q.scale?.lowHe}</span>
-                        <div class="scale nps" dir="ltr">
+                        <span class="end">{q.scale?.lowEn}</span>
+                        <div class="scale nps">
                           {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
                             <label class="seg">
                               <input class="vh" type="radio" name={q.id} value={String(n)} />
@@ -132,7 +122,7 @@ const clientConfig = {
                             </label>
                           ))}
                         </div>
-                        <span class="end" data-he={q.scale?.highHe} data-en={q.scale?.highEn}>{q.scale?.highHe}</span>
+                        <span class="end">{q.scale?.highEn}</span>
                       </div>
                     </div>
                   )}
@@ -148,22 +138,14 @@ const clientConfig = {
                   {/* ── "other" free text ── */}
                   {q.hasOther && (
                     <div class="sub-wrap" id={`other-${q.id}`} hidden>
-                      <input
-                        class="text-in"
-                        type="text"
-                        name={`${q.id}_other`}
-                        maxlength="200"
-                        data-ph-he={ui.otherPlaceholderHe}
-                        data-ph-en={ui.otherPlaceholderEn}
-                        placeholder={ui.otherPlaceholderHe}
-                      />
+                      <input class="text-in" type="text" name={`${q.id}_other`} maxlength="200" placeholder={ui.otherPlaceholderEn} />
                     </div>
                   )}
 
                   {/* ── conditional follow-up ── */}
                   {q.reveal && (
                     <div class="sub-wrap reveal" id={`reveal-${q.reveal.field.id}`} hidden>
-                      <label class="q-sub" data-he={q.reveal.field.he} data-en={q.reveal.field.en}>{q.reveal.field.he}</label>
+                      <label class="q-sub">{q.reveal.field.en}</label>
                       {q.reveal.field.type === 'text' ? (
                         <textarea class="text-in area" name={q.reveal.field.id} rows="3" maxlength="2000"></textarea>
                       ) : (
@@ -189,31 +171,10 @@ const clientConfig = {
   </div>
 
   <script define:vars={{ CFG: clientConfig }}>
-    const root = document.getElementById('survey-root');
     const form = document.getElementById('beta-form');
     const status = document.querySelector('.beta-status');
-    const toggle = document.getElementById('lang-toggle');
-    const ui = CFG.ui;
-
-    let lang = localStorage.getItem('beta_lang') === 'en' ? 'en' : 'he';
+    const t = CFG.t;
     const wired = !!CFG.workerUrl;
-
-    // ── language ──────────────────────────────────────────────────────────
-    function applyLang(l) {
-      lang = l;
-      root.dir = l === 'he' ? 'rtl' : 'ltr';
-      root.lang = l === 'he' ? 'he' : 'en';
-      document.querySelectorAll('[data-he]').forEach((el) => {
-        const t = l === 'he' ? el.getAttribute('data-he') : el.getAttribute('data-en');
-        if (t != null) el.textContent = t;
-      });
-      document.querySelectorAll('[data-ph-he]').forEach((el) => {
-        el.placeholder = l === 'he' ? el.getAttribute('data-ph-he') : el.getAttribute('data-ph-en');
-      });
-      toggle.textContent = l === 'he' ? ui.langLabelHe : ui.langLabelEn;
-      localStorage.setItem('beta_lang', l);
-    }
-    toggle.addEventListener('click', () => applyLang(lang === 'he' ? 'en' : 'he'));
 
     // ── helpers ───────────────────────────────────────────────────────────
     const one = (id) => {
@@ -256,7 +217,6 @@ const clientConfig = {
       status.classList.toggle('err', !ok);
       status.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-    const tr = (he, en) => (lang === 'he' ? he : en);
 
     // ── validation ────────────────────────────────────────────────────────
     function answered(q) {
@@ -273,12 +233,12 @@ const clientConfig = {
       // honeypot → pretend success, send nothing
       if (form.querySelector('[name="_gotcha"]').value) {
         form.hidden = true;
-        show(tr(ui.thanksHe, ui.thanksEn), true);
+        show(t.thanks, true);
         return;
       }
 
       if (!wired) {
-        show(tr(ui.softHe, ui.softEn), false);
+        show(t.soft, false);
         return;
       }
 
@@ -287,7 +247,7 @@ const clientConfig = {
         const entered = txt('beta_code').toUpperCase();
         if (entered !== String(CFG.betaAccessCode).toUpperCase()) {
           document.getElementById('q-beta_code')?.classList.add('invalid');
-          show(tr(ui.badCodeHe, ui.badCodeEn), false);
+          show(t.badCode, false);
           document.getElementById('q-beta_code')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
           return;
         }
@@ -297,13 +257,13 @@ const clientConfig = {
       const missing = CFG.questions.filter((q) => q.required && !answered(q));
       if (missing.length) {
         missing.forEach((q) => document.getElementById('q-' + q.id)?.classList.add('invalid'));
-        show(tr(ui.requiredMissingHe, ui.requiredMissingEn), false);
+        show(t.requiredMissing, false);
         document.getElementById('q-' + missing[0].id)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         return;
       }
 
       // assemble payload (omit empties → columns default null)
-      const payload = { survey_version: CFG.version, lang, user_agent: navigator.userAgent };
+      const payload = { survey_version: CFG.version, lang: 'en', user_agent: navigator.userAgent };
       for (const q of CFG.questions) {
         if (q.type === 'single') {
           const v = one(q.id);
@@ -326,12 +286,12 @@ const clientConfig = {
           const v = one(q.id);
           if (v != null) payload[q.id] = parseInt(v, 10);
         } else {
-          const t = txt(q.id);
-          if (t) payload[q.id] = t;
+          const tx = txt(q.id);
+          if (tx) payload[q.id] = tx;
         }
         if (q.reveal) {
-          const t = txt(q.reveal.fieldId);
-          if (t) payload[q.reveal.fieldId] = t;
+          const tx = txt(q.reveal.fieldId);
+          if (tx) payload[q.reveal.fieldId] = tx;
         }
       }
 
@@ -345,18 +305,16 @@ const clientConfig = {
         });
         if (res.ok) {
           form.hidden = true;
-          show(tr(ui.thanksHe, ui.thanksEn), true);
+          show(t.thanks, true);
         } else {
-          show(tr(ui.errHe, ui.errEn), false);
+          show(t.err, false);
         }
       } catch {
-        show(tr(ui.errHe, ui.errEn), false);
+        show(t.err, false);
       } finally {
         submitBtn?.removeAttribute('aria-disabled');
       }
     });
-
-    applyLang(lang);
   </script>
 
   <style>
@@ -372,39 +330,15 @@ const clientConfig = {
       border-radius: 14px;
       padding: clamp(1.25rem, 4vw, 2.5rem);
       box-shadow: var(--shadow);
-      font-family: 'Heebo', var(--font-body);
     }
 
-    .beta-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      margin-bottom: 0.5rem;
-    }
     .beta-title {
       font-family: var(--font-display);
       color: var(--brass-bright);
       letter-spacing: 0.01em;
       font-size: var(--text-2xl);
-      margin: 0;
+      margin: 0 0 0.5rem;
     }
-    .lang-toggle {
-      flex: none;
-      font-family: var(--font-body);
-      font-size: 0.8rem;
-      font-weight: 600;
-      letter-spacing: 0.04em;
-      color: var(--brass);
-      background: var(--bg-2);
-      border: 1px solid var(--border-bright);
-      border-radius: 999px;
-      padding: 0.35rem 0.85rem;
-      cursor: pointer;
-      transition: color 0.15s var(--ease), border-color 0.15s var(--ease);
-    }
-    .lang-toggle:hover { color: var(--brass-bright); border-color: var(--brass-dark); }
-
     .beta-intro { color: var(--fg-dim); font-size: 0.95rem; margin: 0 0 1.5rem; line-height: 1.5; }
 
     .sec { margin-top: 2.25rem; }
