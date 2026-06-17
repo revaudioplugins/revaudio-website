@@ -25,6 +25,26 @@ export const site = {
   formspreeEndpoint: 'https://formspree.io/f/maqzlgwa',
 
   /**
+   * RevLimiter Beta feedback form (src/pages/beta.astro). The form POSTs each
+   * response to a Cloudflare Worker (revlimiter-beta) that stores it in D1 — a
+   * separate worker from the license service. The URL is public by design (it
+   * ships in the page); the worker re-validates the beta code + survey version,
+   * and reads are gated behind a separate admin token the worker never exposes.
+   *
+   * GO-LIVE: deploy the worker (see ~/projects/revaudio/revbeta-dashboard/worker/),
+   * then paste its `/submit` URL below. While `workerUrl` is empty the form shows
+   * an honest "opens shortly" notice and never pretends to capture.
+   *
+   * `betaAccessCode`: shared code printed in the invite email; the form checks it
+   * client-side AND the worker re-checks it server-side. '' disables the gate
+   * (keep it in sync with the worker's BETA_CODE var).
+   */
+  betaFeedback: {
+    workerUrl: 'https://revlimiter-beta.revaudio.workers.dev/submit',
+    betaAccessCode: 'REVBETA',
+  },
+
+  /**
    * Launch sale marquee (site-wide sticky banner, mounted in BaseLayout).
    * Flip `active: false` to kill the banner everywhere in one move.
    * No countdown — honest "limited time" copy only.
