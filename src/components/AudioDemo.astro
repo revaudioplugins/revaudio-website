@@ -18,12 +18,12 @@ const hasAudio = !!(demo.beforeUrl && demo.afterUrl);
   {hasAudio ? (
     <div class="ab-players">
       <div class="player">
-        <span class="tag">Before</span>
-        <audio controls preload="none" src={demo.beforeUrl ?? undefined}></audio>
+        <span class="tag" aria-hidden="true">Before</span>
+        <audio controls preload="none" src={demo.beforeUrl ?? undefined} aria-label={`Before: ${demo.label}`}></audio>
       </div>
       <div class="player after">
-        <span class="tag">After</span>
-        <audio controls preload="none" src={demo.afterUrl ?? undefined}></audio>
+        <span class="tag" aria-hidden="true">After</span>
+        <audio controls preload="none" src={demo.afterUrl ?? undefined} aria-label={`After: ${demo.label}`}></audio>
       </div>
     </div>
   ) : (

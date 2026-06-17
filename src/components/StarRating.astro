@@ -18,11 +18,16 @@ const hide = !rating && !count;
 ---
 
 {!hide && (
-  <span class="stars" style={`--scale: ${scale}`}>
-    {Array.from({ length: full }).map(() => <span class="s on">&#9733;</span>)}
-    {half && <span class="s half">&#9733;</span>}
-    {Array.from({ length: empty }).map(() => <span class="s off">&#9734;</span>)}
-    {count != null && count > 0 && <span class="count">({count})</span>}
+  <span
+    class="stars"
+    style={`--scale: ${scale}`}
+    role="img"
+    aria-label={`${rating.toFixed(1)} out of 5 stars${count != null && count > 0 ? `, ${count} reviews` : ''}`}
+  >
+    {Array.from({ length: full }).map(() => <span class="s on" aria-hidden="true">&#9733;</span>)}
+    {half && <span class="s half" aria-hidden="true">&#9733;</span>}
+    {Array.from({ length: empty }).map(() => <span class="s off" aria-hidden="true">&#9734;</span>)}
+    {count != null && count > 0 && <span class="count" aria-hidden="true">({count})</span>}
   </span>
 )}
 

@@ -11,7 +11,7 @@
   /* type */
   --fg: #efe9df;
   --fg-dim: #8a8275;
-  --fg-faint: #5a544c;
+  --fg-faint: #827c74;   /* raised from #5a544c — passes 4.5:1 AA on bg-0 and bg-1 */
 
   /* metals */
   --brass: #c9a35c;
@@ -23,6 +23,7 @@
   /* warnings / accents */
   --oxide: #8b3a1f;
   --oxide-deep: #5a2410;
+  --oxide-text: #d4622a;   /* brighter oxide for text — passes 4.5:1 AA on bg-0/bg-1 */
   --redline: #c8331f;
   --emerald: #2f6b4a;
 
@@ -137,6 +138,56 @@ body {
    through the whole page. Delete with the .page-bg experiment. */
 .values .v { background: rgba(20, 17, 15, 0.72); }
 footer.site-footer { background: rgba(11, 10, 9, 0.55); }
+
+/* ── Utility: visually hidden but announced by screen readers ── */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── Skip-to-main link (screen readers and keyboard users) ── */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  z-index: 9999;
+}
+.skip-link:focus {
+  position: fixed;
+  top: 0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: auto;
+  height: auto;
+  padding: 0.6rem 1.25rem;
+  background: var(--bg-0);
+  color: var(--brass-bright);
+  border: 2px solid var(--brass-bright);
+  border-radius: 4px;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  z-index: 9999;
+  overflow: visible;
+}
+
+/* ── Global focus indicator — keyboard / switch access ── */
+:focus-visible {
+  outline: 2px solid var(--brass-bright);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
 
 a { color: var(--brass-bright); text-decoration: none; transition: color 0.2s var(--ease); }
 a:hover { color: var(--chrome); }
@@ -396,8 +447,9 @@ nav ul a:hover { color: var(--brass-bright); }
   font-size: 1rem;
 }
 
-.signup input[type="email"]:focus {
-  outline: none;
+.signup input[type="email"]:focus-visible {
+  outline: 2px solid var(--brass-bright);
+  outline-offset: 0;
   border-color: var(--brass);
 }
 

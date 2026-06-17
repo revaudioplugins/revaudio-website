@@ -22,6 +22,7 @@ const STAGE_H = 470;
 const SLIDES = [
   {
     slug: 'revlimiter',
+    name: 'RevLimiter',
     titleHtml: '<span class="rev">Rev</span>Limiter',
     titleClass: '',
     emblem: revGauge, emblemAlt: 'rev gauge in the redline',
@@ -40,6 +41,7 @@ const SLIDES = [
   },
   {
     slug: 'drift',
+    name: 'Drift',
     titleHtml: 'DRIFT',
     titleClass: 'drift',
     emblem: driftCar, emblemAlt: 'drifting car',
@@ -58,6 +60,7 @@ const SLIDES = [
   },
   {
     slug: 'the-ac',
+    name: 'The AC',
     titleHtml: '<span class="acthe">THE</span> <span class="acac">AC</span>',
     titleClass: '',
     emblem: acIcon, emblemAlt: 'cold air snowflake',
@@ -81,6 +84,7 @@ const font = (st: any) => (st.ff ? `font-family:${st.ff};font-weight:${st.fw};fo
 ---
 
 <section class="showcase-wrap" data-showcase tabindex="0" role="group" aria-roledescription="carousel" aria-label="RevAudio plugins">
+  <div class="sr-only" aria-live="polite" aria-atomic="true" data-carousel-announce></div>
   <div class="sc-scaler">
     <div class="showcase">
       <button type="button" class="sc-arrow sc-prev" aria-label="Previous plugin">
@@ -94,7 +98,8 @@ const font = (st: any) => (st.ff ? `font-family:${st.ff};font-weight:${st.fw};fo
             class:list={[{ 'is-current': i === 0, 'is-below': i !== 0 }]}
             href={`/${s.slug}`}
             data-slide
-            aria-label={`${s.slug} — ${i + 1} of ${SLIDES.length}`}
+            aria-roledescription="slide"
+            aria-label={`${s.name} — ${i + 1} of ${SLIDES.length}`}
           >
             <div class="sec sc-titlewrap" style={pos(s.style.title)}>
               <span class={`sc-title ${s.titleClass}`} style={font(s.style.title)} set:html={s.titleHtml} />
@@ -131,6 +136,7 @@ const font = (st: any) => (st.ff ? `font-family:${st.ff};font-weight:${st.fw};fo
     const viewport = sc.querySelector<HTMLElement>('.sc-viewport');
     const showcase = sc.querySelector<HTMLElement>('.showcase');
     const scaler = sc.querySelector<HTMLElement>('.sc-scaler');
+    const announce = sc.querySelector<HTMLElement>('[data-carousel-announce]');
     if (!viewport || !showcase || !scaler || slides.length === 0) return;
     const n = slides.length;
     let idx = 0;
@@ -148,6 +154,7 @@ const font = (st: any) => (st.ff ? `font-family:${st.ff};font-weight:${st.fw};fo
       });
       dots.forEach((d, k) => d.classList.toggle('active', k === next));
       idx = next;
+      if (announce) announce.textContent = slides[next].getAttribute('aria-label') ?? '';
     };
 
     sc.querySelector('.sc-prev')?.addEventListener('click', () => go(idx - 1, -1));
@@ -197,6 +204,19 @@ const font = (st: any) => (st.ff ? `font-family:${st.ff};font-weight:${st.fw};fo
 </script>
 
 <style>
+  /* Visually hidden but available to screen readers */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
   .showcase-wrap {
     display: flex;
     flex-direction: column;
