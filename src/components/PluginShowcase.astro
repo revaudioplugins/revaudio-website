@@ -79,6 +79,9 @@ const SLIDES = [
 ].filter((s) => bySlug(s.slug));
 
 const pos = (st: { left: number; top: number }) => `left:${st.left}px;top:${st.top}px;`;
+// Text rows ignore their per-slide left and span the full stage, centered — only
+// the vertical position is kept from the bench so the card reads as one centred stack.
+const topf = (st: { top: number }) => `top:${st.top}px;`;
 const font = (st: any) => (st.ff ? `font-family:${st.ff};font-weight:${st.fw};font-size:${st.fs}px;letter-spacing:${st.ls}px;` : '');
 ---
 
@@ -100,17 +103,16 @@ const font = (st: any) => (st.ff ? `font-family:${st.ff};font-weight:${st.fw};fo
             aria-roledescription="slide"
             aria-label={`${s.name} — ${i + 1} of ${SLIDES.length}`}
           >
-            <div class="sec sc-titlewrap" style={pos(s.style.title)}>
+            <div class="sec sc-titlewrap" style={`top:${s.style.title.top}px`}>
               <span class={`sc-title ${s.titleClass}`} style={font(s.style.title)} set:html={s.titleHtml} />
-              <Image class="sc-emblem" src={s.emblem} alt={s.emblemAlt} width={260} style={`height:${Math.round(s.style.title.fs * 0.8)}px`} loading="lazy" />
             </div>
-            <p class="sec sc-sub" style={pos(s.style.sub) + font(s.style.sub)}>{s.catchphrase}</p>
+            <p class="sec sc-sub" style={topf(s.style.sub) + font(s.style.sub)}>{s.catchphrase}</p>
             <div class:list={['sec', 'sc-shot', { 'is-plate': s.shot === comingSoonPlate }]} style={pos(s.style.shot)}>
               <Image src={s.shot} alt={s.shotAlt} width={1600} format="webp" quality={92} loading="lazy" />
             </div>
-            <p class="sec sc-one" style={pos(s.style.oneliner) + font(s.style.oneliner)}>{s.oneliner}</p>
-            <span class="sec sc-price" style={pos(s.style.price) + font(s.style.price)}>{s.priceText}</span>
-            <span class="sec sc-more" style={pos(s.style.more) + font(s.style.more)}>More Details &rarr;</span>
+            <p class="sec sc-one" style={topf(s.style.oneliner) + font(s.style.oneliner)}>{s.oneliner}</p>
+            <span class="sec sc-price" style={topf(s.style.price) + font(s.style.price)}>{s.priceText}</span>
+            <span class="sec sc-more" style={topf(s.style.more) + font(s.style.more)}>More Details &rarr;</span>
           </a>
         ))}
       </div>
@@ -263,21 +265,29 @@ const font = (st: any) => (st.ff ? `font-family:${st.ff};font-weight:${st.fw};fo
 
   .sec { position: absolute; }
 
-  .sc-titlewrap { display: flex; align-items: center; gap: 10px; }
+  /* Emblems removed — title sits centered across the full stage width. */
+  .sc-titlewrap { left: 0; width: 100%; display: flex; align-items: center; justify-content: center; }
   .sc-title { line-height: 1; white-space: nowrap; color: #f0e6d2; }
-  .sc-title .rev { color: rgb(146, 3, 1); }
+  /* :global — the .rev/.acthe/.acac spans are injected via set:html, so they
+     carry no Astro scope hash; scoped selectors would miss them. */
+  .sc-title :global(.rev) { color: rgb(146, 3, 1); }
   .sc-title.drift {
     background: linear-gradient(115deg, #c08bff, #8b3cff 42%, #e23bff 78%, #ff6ad5);
     -webkit-background-clip: text; background-clip: text; color: transparent;
     filter: drop-shadow(0 0 22px rgba(150, 60, 255, 0.35));
   }
-  .sc-title .acthe { color: #f4f6f8; }
-  .sc-title .acac {
+  .sc-title :global(.acthe) { color: #f4f6f8; }
+  .sc-title :global(.acac) {
     background: linear-gradient(180deg, #aef0ff, #43c6ff 55%, #2aa4e6);
     -webkit-background-clip: text; background-clip: text; color: transparent;
     filter: drop-shadow(0 0 18px rgba(67, 198, 255, 0.4));
   }
   .sc-emblem { width: auto; display: block; }
+
+  /* All text rows centred across the full stage (left:0 + width:100% overrides the
+     bench left coords; spans go block so text-align centres them). */
+  .sc-sub, .sc-one, .sc-price, .sc-more { left: 0; width: 100%; text-align: center; }
+  .sc-price, .sc-more { display: block; }
 
   .sc-sub { margin: 0; color: #b9a884; }
 
@@ -289,7 +299,7 @@ const font = (st: any) => (st.ff ? `font-family:${st.ff};font-weight:${st.fw};fo
   .sc-shot.is-plate { background: none; border: 0; border-radius: 0; overflow: visible; }
   .sc-shot.is-plate :global(img) { filter: drop-shadow(0 7px 16px rgba(0, 0, 0, 0.55)); }
 
-  .sc-one { margin: 0; width: 420px; color: #dbcaad; }
+  .sc-one { margin: 0; color: #dbcaad; }
   .sc-price { color: var(--brass-bright); }
   .sc-more {
     color: #f0e6d2;

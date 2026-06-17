@@ -123,7 +123,9 @@ const H = { left: '44.468%', top: '44.601%', w: '11.207%' };
     grid-template-columns: minmax(0, 1.1fr) minmax(300px, min(var(--dial-vw, 38vw), var(--dial-max, 520px)));
     align-items: center;
     gap: 3rem;
-    padding: 2rem 1.5rem 0;
+    /* Extra right padding pulls the round dial off the viewport edge so its dark
+       right bezel never reads as "cut" against the page edge / scrollbar. */
+    padding: 2rem clamp(1.5rem, 4vw, 4rem) 0 1.5rem;
     min-height: clamp(420px, 52vh, 620px);
   }
 

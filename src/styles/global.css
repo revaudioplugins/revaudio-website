@@ -119,9 +119,15 @@ body {
   /* Zoom control: image drawn at --bg-w wide (not full cover) so the art reads
      relaxed, not blown up. Clamp keeps phones from getting a sliver. */
   --bg-w: max(90vw, 520px);
+  /* Background-art dimmer: a flat dark veil sits ABOVE the aurora image (and
+     below the content), muting the graphics so foreground text reads stronger.
+     Tune via --bg-veil (0 = full art, 1 = fully hidden). Base stays solid via
+     the var(--bg-0) background-color, so nothing white bleeds through. */
+  --bg-veil: 0.4;
   background:
     radial-gradient(ellipse at top, rgba(201, 163, 92, 0.05), transparent 60%),
     radial-gradient(ellipse at bottom, rgba(139, 58, 31, 0.04), transparent 60%),
+    linear-gradient(rgba(11, 10, 9, var(--bg-veil)), rgba(11, 10, 9, var(--bg-veil))),
     url('/bg/aurora-test.webp') 50% 0% / var(--bg-w) auto no-repeat var(--bg-0);
   pointer-events: none;
 }

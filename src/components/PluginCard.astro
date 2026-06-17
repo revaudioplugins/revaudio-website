@@ -16,11 +16,15 @@ const { plugin, cta, showCart = false } = Astro.props;
 const buyable = isBuyable(plugin);
 const pct = discountPct(plugin);
 const thumb = pluginImage(plugin.heroImage);
+// The "coming soon" plate is a true-alpha graphic, not a screenshot — float it
+// frameless on the card instead of letterboxing it in the dark screenshot box
+// (which left black bars either side of the narrower plate).
+const isPlate = plugin.heroImage === 'coming-soon-plate.png';
 ---
 
 <div class="plugin-card-wrap">
 <a class="plugin-card" href={`/${plugin.slug}`} data-reveal="card">
-  <div class="card-thumb">
+  <div class:list={['card-thumb', { 'is-plate': isPlate }]}>
     {thumb ? (
       <Image src={thumb} alt={plugin.name} width={1600} format="webp" quality={92} loading="lazy" />
     ) : (
@@ -141,6 +145,20 @@ const thumb = pluginImage(plugin.heroImage);
     display: block;
   }
 
+  /* Coming-soon plate: drop the dark screenshot frame so the plate floats on the
+     card surface (no black side bars), and give the thumb the plate's OWN aspect
+     ratio so the whole plate shows — no side bars, no top/bottom crop. */
+  .card-thumb.is-plate {
+    aspect-ratio: 1555 / 1060;
+    background: none;
+    border: 0;
+    border-radius: 0;
+    overflow: visible;
+  }
+  .card-thumb.is-plate img {
+    filter: drop-shadow(0 7px 16px rgba(0, 0, 0, 0.55));
+  }
+
   .thumb-placeholder {
     font-family: var(--font-display);
     letter-spacing: 0.1em;
@@ -152,12 +170,14 @@ const thumb = pluginImage(plugin.heroImage);
     font-size: 1.75rem;
     margin: 0;
     color: var(--brass-bright);
+    text-align: center;
   }
 
   .one-liner {
     font-size: 0.9rem;
     color: var(--fg-dim);
     margin: 0;
+    text-align: center;
   }
 
   .prices {
