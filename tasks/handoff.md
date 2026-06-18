@@ -1,6 +1,14 @@
 # Website handoff
 
-Updated: 2026-06-10 (laptop 2 session close)
+Updated: 2026-06-18 (checkout-live session close)
+
+## 2026-06-18 — RevLimiter checkout LIVE on Lemon Squeezy
+- Back on Lemon Squeezy (Paddle plan dropped); store now activated, RevLimiter live.
+- `REVLIMITER_CHECKOUT_URL` in `src/data/plugins.ts` = LS LIVE variant `.../checkout/buy/78885904-8a19-4e23-9510-31b50775ada5` (commit e43bcbf). Single source of truth; Cart/BuyButton read it.
+- **Bug fixed (875e8d4):** Cart.astro was persisting `checkoutUrl` in localStorage, so a cart that added RevLimiter before the URL swap kept launching the OLD test link → LS orange TEST banner on-site while the direct link was clean. Now Cart bakes a `slug->checkoutUrl` catalog map (`[data-checkout-map]` JSON) and resolves fresh at checkout; never trusts stored URL. URL changes now take effect for everyone on deploy.
+- LS test vs live: same `revaudiopg` subdomain + (here) same variant URL — the TEST banner is store-activation-level, not a separate URL. Don't chase "live variant URLs".
+- STILL TO VERIFY (user): real test purchase delivers download + license key; LS-generated key must match plugin LicenseManager format `REVL.<b64>.<sig>` or fulfillment breaks despite checkout working. See memory project_revlimiter_lemonsqueezy_migration.
+
 
 ## Shipped today (all live on revaudio.net)
 - **Scroll-scrub background system**: fixed `.page-bg` layer behind everything, brass dashboard art
