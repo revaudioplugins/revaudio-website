@@ -2,6 +2,7 @@
 import { Image } from 'astro:assets';
 import checkoutImg from '../assets/ui/btn-checkout.png';
 import checkoutPressed from '../assets/ui/btn-checkout-pressed.png';
+import { plugins } from '../data/plugins';
 /**
  * Global cart: a localStorage-backed mini-cart shared across every page.
  * - [data-add-to-cart] buttons (with data-slug/name/price/price-id/img) add items
@@ -9,8 +10,17 @@ import checkoutPressed from '../assets/ui/btn-checkout-pressed.png';
  * - Checkout opens the Lemon Squeezy overlay (lemon.js + ?embed=1) ON the site,
  *   no full redirect; falls back to a redirect if lemon.js is blocked
  * Rendered once in BaseLayout. No framework — vanilla JS, progressive.
+ *
+ * Checkout URLs are resolved fresh from this catalog map by slug at checkout
+ * time — NEVER from the URL persisted in the cart. A buyer's localStorage can
+ * hold a stale URL (e.g. a test-mode link saved before a live swap); resolving
+ * by slug means a deployed URL change takes effect immediately for everyone.
  */
+const checkoutMap: Record<string, string> = {};
+for (const p of plugins) if (p.checkoutUrl) checkoutMap[p.slug] = p.checkoutUrl;
 ---
+
+<script is:inline type="application/json" data-checkout-map set:html={JSON.stringify(checkoutMap)}></script>
 
 <!-- Lemon Squeezy overlay checkout — renders the payment screen in a modal over the site. -->
 <script is:inline src="https://assets.lemonsqueezy.com/lemon.js" defer></script>
@@ -123,12 +133,23 @@ import checkoutPressed from '../assets/ui/btn-checkout-pressed.png';
       return lemonReady;
     }
 
+    // Catalog map (slug -> current checkout URL), baked at build time. Resolving
+    // here means the cart never serves a stale URL persisted in localStorage.
+    function checkoutMap() {
+      var el = document.querySelector('[data-checkout-map]');
+      try { return el ? JSON.parse(el.textContent || '{}') : {}; } catch (e) { return {}; }
+    }
+    function checkoutUrlFor(item) {
+      var map = checkoutMap();
+      return (item && map[item.slug]) || (item && item.checkoutUrl) || '';
+    }
+
     function openCheckout() {
-      var items = read().filter(function (i) { return i.checkoutUrl; });
+      var items = read().filter(function (i) { return checkoutUrlFor(i); });
       if (!items.length) return;
       // LS hosted checkout is one buy-link per overlay; we sell one licence per
       // product, so open the first item. embed=1 renders the chrome-less modal.
-      var url = items[0].checkoutUrl;
+      var url = checkoutUrlFor(items[0]);
       url += (url.indexOf('?') === -1 ? '?' : '&') + 'embed=1';
       if (drawer && drawer.open) drawer.close();
       // Overlay on-site (no redirect). Fall back to a full redirect if lemon.js
