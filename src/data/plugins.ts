@@ -70,7 +70,7 @@ const baseSystemReq: SystemReq = {
 };
 
 // RevLimiter — Lemon Squeezy hosted checkout URL.
-const REVLIMITER_CHECKOUT_URL: string | null = 'https://revaudiopg.lemonsqueezy.com/checkout/buy/2b5442a6-75f6-43f9-a5a5-e1c0611b1857';
+const REVLIMITER_CHECKOUT_URL: string | null = 'https://revaudiopg.lemonsqueezy.com/checkout/buy/78885904-8a19-4e23-9510-31b50775ada5';
 
 export const plugins: Plugin[] = [
   {
