@@ -1,7 +1,6 @@
 ---
 import { Image } from 'astro:assets';
 import { plugins } from '../data/plugins';
-import logo from '../assets/brand/revaudio-plate.png';
 import cartIcon from '../assets/ui/icon-cart.png';
 
 const path = Astro.url.pathname;
@@ -12,7 +11,20 @@ const onProductPage = plugins.some((pl) => isActive(`/${pl.slug}`));
 <nav class="site-nav" data-site-nav aria-label="Main navigation">
   <div class="nav-inner">
     <a href="/" class="logo" aria-label="RevAudio — home">
-      <Image src={logo} alt="RevAudio" width={220} height={84} format="webp" loading="eager" />
+      {/* Spinning 3D brand plate. Animated WebP (alpha) plays in Safari/Chrome/FF
+          and clicks pass through to the home link; reduced-motion gets a still. */}
+      <picture>
+        <source srcset="/brand/revaudio-plate-3d-static.webp" media="(prefers-reduced-motion: reduce)" />
+        <img
+          src="/brand/revaudio-plate-3d.webp"
+          alt="RevAudio"
+          width="660"
+          height="216"
+          class="logo-anim"
+          loading="eager"
+          decoding="async"
+        />
+      </picture>
     </a>
     <div class="nav-right">
       <ul id="nav-menu" class="nav-links">
