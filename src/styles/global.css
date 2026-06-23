@@ -200,6 +200,30 @@ footer.site-footer { background: rgba(11, 10, 9, 0.55); }
    stays on the actual interactive controls inside it. */
 #main-content:focus { outline: none; }
 
+/* ── Windows High Contrast / forced-colors ── WCAG 1.4.11 + 1.4.1.
+   In forced-colors the OS replaces our palette and drops CSS background
+   images/colours. Our CSS-painted affordances (burger bars, cart badge)
+   would vanish — repaint them with system keywords. Brand PNGs are real
+   <img> elements, which forced-colors preserves, so the CTAs stay visible. */
+@media (forced-colors: active) {
+  /* keyboard ring uses the OS highlight colour so it's always visible */
+  :focus-visible { outline-color: Highlight; }
+
+  /* hamburger bars: brand brass → system text colour */
+  .burger-line,
+  .burger-line::before,
+  .burger-line::after { background: CanvasText; }
+  .nav-open .burger-line { background: transparent; }
+  .nav-open .burger-line::before,
+  .nav-open .burger-line::after { background: CanvasText; }
+
+  /* cart count badge: keep it legible (filled chip) */
+  .cart-badge { background: CanvasText; color: Canvas; forced-color-adjust: none; }
+
+  /* skip link keeps a real border so it reads as a control on focus */
+  .skip-link:focus { border-color: Highlight; }
+}
+
 /* Keep Tab-focused and anchor-targeted content clear of the sticky nav (and the
    sale strip when present) so focus is never hidden behind it.
    WCAG 2.2 SC 2.4.11 Focus Not Obscured (Minimum). */
