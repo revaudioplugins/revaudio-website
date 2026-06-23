@@ -4,6 +4,7 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import Cart from '../components/Cart.astro';
 import SaleBanner from '../components/SaleBanner.astro';
+import A11yToggle from '../components/A11yToggle.astro';
 import { site } from '../data/site';
 
 const saleOn = site.launchSale.active;
@@ -66,6 +67,16 @@ const fullTitle = title === 'RevAudio'
         document.documentElement.classList.add('motion-ok');
     </script>
 
+    {/* High-contrast pre-paint gate — applies html.hc before first paint so the
+        user's saved choice never flashes the normal theme. Toggle UI is in
+        A11yToggle.astro; styles in global.css. */}
+    <script is:inline>
+      try {
+        if (localStorage.getItem('ra-hc') === '1')
+          document.documentElement.classList.add('hc');
+      } catch (e) {}
+    </script>
+
     {/* Cloudflare Web Analytics. No SRI: CF rotates beacon.min.js and ships it
         without a published hash, so a pinned integrity would break on update.
         Token is a public beacon id, not a secret. */}
@@ -88,6 +99,7 @@ const fullTitle = title === 'RevAudio'
     </main>
     <Footer />
     <Cart />
+    <A11yToggle />
     <script>
       import { initMotion } from '../lib/motion';
       import { initReveals } from '../lib/reveal';
