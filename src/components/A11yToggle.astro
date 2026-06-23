@@ -1,0 +1,63 @@
+---
+/* Always-visible floating high-contrast toggle, bottom-left.
+   Flips html.hc (styles in global.css), persists to localStorage under
+   'ra-hc'. The pre-paint apply lives in BaseLayout head so there is no
+   flash of the normal theme before this mounts. */
+---
+
+<button
+  id="a11y-hc-toggle"
+  type="button"
+  class="a11y-fab"
+  aria-pressed="false"
+  title="Toggle high contrast"
+>
+  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <!-- contrast glyph: outlined circle, half filled -->
+    <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2" />
+    <path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor" />
+  </svg>
+  <span class="sr-only">High contrast mode</span>
+</button>
+
+<script is:inline>
+  (function () {
+    var btn = document.getElementById('a11y-hc-toggle');
+    if (!btn) return;
+    var html = document.documentElement;
+    function sync() {
+      btn.setAttribute('aria-pressed', html.classList.contains('hc') ? 'true' : 'false');
+    }
+    sync();
+    btn.addEventListener('click', function () {
+      var on = html.classList.toggle('hc');
+      try { localStorage.setItem('ra-hc', on ? '1' : '0'); } catch (e) {}
+      sync();
+    });
+  })();
+</script>
+
+<style>
+  .a11y-fab {
+    position: fixed;
+    left: 16px;
+    bottom: 16px;
+    z-index: 60;
+    width: 48px;
+    height: 48px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--bg-2);
+    color: var(--brass-bright);
+    border: 2px solid var(--brass);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+    transition: transform 0.15s var(--ease), background 0.15s var(--ease);
+  }
+  .a11y-fab:hover { transform: translateY(-2px); background: var(--bg-3); }
+  .a11y-fab:focus-visible { outline: 3px solid var(--brass-bright); outline-offset: 3px; }
+  /* pressed = high-contrast active: fill the chip so state is obvious */
+  .a11y-fab[aria-pressed='true'] { background: var(--brass); color: var(--bg-0); }
+  .a11y-fab svg { width: 26px; height: 26px; }
+</style>
