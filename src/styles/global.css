@@ -224,6 +224,40 @@ footer.site-footer { background: rgba(11, 10, 9, 0.55); }
   .skip-link:focus { border-color: Highlight; }
 }
 
+/* ── User-driven high-contrast mode (html.hc) ──
+   Toggled by the always-visible A11yToggle FAB (bottom-left) and persisted to
+   localStorage 'ra-hc'; pre-applied in BaseLayout head so it never flashes.
+   Unlike forced-colors (OS-driven, above), this is an opt-in skin: pure-black
+   base, white text, brighter brass, solid borders, no busy background art, and
+   a strong always-on focus ring. Overriding the :root tokens cascades to the
+   whole site for free. */
+html.hc {
+  --bg-0: #000000;
+  --bg-1: #000000;
+  --bg-2: #0a0a0a;
+  --bg-3: #161616;
+  --fg: #ffffff;
+  --fg-dim: #e6e6e6;
+  --fg-faint: #d4d4d4;
+  --brass: #ffd479;
+  --brass-bright: #ffe9b0;
+  --brass-dark: #c9a35c;
+  --chrome: #ffffff;
+  --oxide-text: #ff9a5a;
+  --redline: #ff5436;
+  --border: #ffffff;
+  --border-bright: #ffffff;
+}
+/* drop the aurora/veil art so text sits on flat black, not a busy image */
+html.hc .page-bg { display: none; }
+/* translucent section panels go solid black so contrast is uniform */
+html.hc .values .v,
+html.hc footer.site-footer { background: #000000; }
+/* always-on, unmistakable keyboard ring */
+html.hc :focus-visible { outline: 3px solid var(--brass-bright); outline-offset: 2px; }
+/* underline inline body links so they read without relying on colour alone */
+html.hc main a:not(.btn):not([class*='card']):not([class*='nav']) { text-decoration: underline; }
+
 /* Keep Tab-focused and anchor-targeted content clear of the sticky nav (and the
    sale strip when present) so focus is never hidden behind it.
    WCAG 2.2 SC 2.4.11 Focus Not Obscured (Minimum). */
