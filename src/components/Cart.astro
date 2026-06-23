@@ -125,7 +125,10 @@ for (const p of plugins) if (p.checkoutUrl) checkoutMap[p.slug] = p.checkoutUrl;
         window.createLemonSqueezy();
         window.LemonSqueezy.Setup({
           eventHandler: function (ev) {
-            if (ev && ev.event === 'Checkout.Success') { write([]); sync(); }
+            if (ev && ev.event === 'Checkout.Success') {
+              write([]); sync();
+              window.location.href = '/thank-you';
+            }
           }
         });
         lemonReady = true;
