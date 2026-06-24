@@ -26,6 +26,11 @@ const pct = discountPct(plugin);
           <span class="price-tag">Launch price</span>
         )}
       </div>
+      {plugin.promoCode && (
+        <p class="promo-code-note">
+          Save {pct}% &middot; enter code <strong class="code-pill">{plugin.promoCode}</strong> at checkout
+        </p>
+      )}
       <p class="platform-note">Windows &amp; macOS &middot; VST3 / AU / AAX</p>
       <button
         class="btn primary"
@@ -171,6 +176,21 @@ const pct = discountPct(plugin);
     letter-spacing: 0.1em;
   }
   .btn.link:hover { color: var(--brass-bright); }
+
+  .promo-code-note {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--fg-dim);
+    margin: -0.25rem 0 0;
+  }
+
+  .code-pill {
+    color: var(--brass-bright);
+    font-weight: 700;
+    letter-spacing: 0.15em;
+  }
 
   .micro { font-size: 0.8rem; margin: 0; }
 

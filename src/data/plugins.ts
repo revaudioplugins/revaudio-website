@@ -50,6 +50,8 @@ export interface Plugin {
   checkoutUrl: string | null;
   /** True while a live product has no working checkout yet (checkoutUrl not set). */
   checkoutPaused: boolean;
+  /** Discount code the buyer must enter at checkout to get the intro price. */
+  promoCode?: string;
   demoUrl: string | null;
   releaseTarget: string;
   heroImage: string | null;
@@ -86,8 +88,9 @@ export const plugins: Plugin[] = [
       'A mastering limiter that makes loudness, depth, and punch feel like flooring it on an open road. Multi-band compression, analog-modelled saturation, and an adaptive limiter chained the way a top-tier mastering engineer would chain them. Sits last on your master bus, glues the mix, and holds a true-peak ceiling at oversampled rate.',
     status: 'live',
     statusLabel: REVLIMITER_CHECKOUT_URL ? 'Available now' : 'Checkout reopening soon',
-    introPriceUsd: 93,
-    regularPriceUsd: null,
+    introPriceUsd: 56,
+    regularPriceUsd: 93,
+    promoCode: 'VROOM',
     checkoutUrl: REVLIMITER_CHECKOUT_URL,
     checkoutPaused: !REVLIMITER_CHECKOUT_URL,
     demoUrl: null,

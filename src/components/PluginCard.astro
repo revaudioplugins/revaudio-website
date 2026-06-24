@@ -41,6 +41,7 @@ const isPlate = plugin.heroImage === 'coming-soon-plate.png';
           <span class="now">{fmtPrice(plugin.introPriceUsd)}</span>
           <span class="was">{fmtPrice(plugin.regularPriceUsd)}</span>
           <span class="pct">&minus;{pct}%</span>
+          {plugin.promoCode && <span class="promo-hint">code {plugin.promoCode}</span>}
         </>
       ) : (
         <span class="now">{fmtPrice(plugin.introPriceUsd)}</span>
@@ -212,6 +213,15 @@ const isPlate = plugin.heroImage === 'coming-soon-plate.png';
     color: var(--oxide-text);
     border: 1px solid var(--oxide);
     padding: 0.1rem 0.4rem;
+  }
+
+  .promo-hint {
+    width: 100%;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--brass);
   }
 
   .hint { font-size: 0.85rem; }

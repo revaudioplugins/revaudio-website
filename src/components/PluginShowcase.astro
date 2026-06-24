@@ -28,7 +28,7 @@ const SLIDES = [
     shot: revlimiterShot, shotAlt: 'RevLimiter plugin',
     catchphrase: 'Maximum loudness. Zero engine damage.',
     oneliner: 'The redline is your threshold. The needle is your gain reduction.',
-    priceText: '$93',
+    priceHtml: '<s>$93</s>&ensp;$56<span class="sc-code"> · VROOM</span>',
     style: {
       title:    { left: 70, top: 20,  ff: "'Bebas Neue', sans-serif", fw: 400, fs: 86, ls: 0 },
       sub:      { left: 73, top: 98,  ff: "'Bebas Neue', sans-serif", fw: 400, fs: 22, ls: 0 },
@@ -47,7 +47,7 @@ const SLIDES = [
     shot: comingSoonPlate, shotAlt: 'Drift — coming soon',
     catchphrase: 'Your sound, sliding. SKRRT!',
     oneliner: 'Send your selected freq. band to a trip across the stereo field.',
-    priceText: 'Target 2026',
+    priceHtml: 'Target 2026',
     style: {
       title:    { left: 132, top: 22,  ff: "'Bebas Neue', sans-serif", fw: 400, fs: 86, ls: 0 },
       sub:      { left: 135, top: 104, ff: "'Bebas Neue', sans-serif", fw: 400, fs: 22, ls: 0 },
@@ -66,7 +66,7 @@ const SLIDES = [
     shot: comingSoonPlate, shotAlt: 'The AC — coming soon',
     catchphrase: 'Cold air for the top end.',
     oneliner: 'Add clean air and shine to your top end.',
-    priceText: 'Target 2026',
+    priceHtml: 'Target 2026',
     style: {
       title:    { left: 126, top: 19,  ff: "'Bebas Neue', sans-serif", fw: 400, fs: 86, ls: 0 },
       sub:      { left: 127, top: 102, ff: "'Bebas Neue', sans-serif", fw: 400, fs: 22, ls: 0 },
@@ -111,7 +111,7 @@ const font = (st: any) => (st.ff ? `font-family:${st.ff};font-weight:${st.fw};fo
               <Image src={s.shot} alt={s.shotAlt} width={1600} format="webp" quality={92} loading="lazy" />
             </div>
             <p class="sec sc-one" style={topf(s.style.oneliner) + font(s.style.oneliner)}>{s.oneliner}</p>
-            <span class="sec sc-price" style={topf(s.style.price) + font(s.style.price)}>{s.priceText}</span>
+            <span class="sec sc-price" style={topf(s.style.price) + font(s.style.price)} set:html={s.priceHtml}></span>
             <span class="sec sc-more" style={topf(s.style.more) + font(s.style.more)}>More Details &rarr;</span>
           </a>
         ))}
@@ -301,6 +301,8 @@ const font = (st: any) => (st.ff ? `font-family:${st.ff};font-weight:${st.fw};fo
 
   .sc-one { margin: 0; color: #dbcaad; }
   .sc-price { color: var(--brass-bright); }
+  .sc-price :global(s) { color: var(--fg-faint); font-size: 0.7em; text-decoration: line-through; }
+  .sc-price :global(.sc-code) { font-family: var(--font-mono); font-size: 0.48em; letter-spacing: 0.12em; color: var(--brass); opacity: 0.85; }
   .sc-more {
     color: #f0e6d2;
     text-transform: uppercase;
