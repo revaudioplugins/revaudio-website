@@ -1,5 +1,21 @@
 ---
+/* /thank-you — post-PURCHASE confirmation. The buyer's download link +
+   licence key are emailed; these vintage-dashboard mail buttons jump them
+   straight to their provider's inbox to grab them. Plates are the house
+   btn-submit asset (blanked + recoloured red/blue/purple in flux_kontext,
+   true-alpha cut); the brand mark is engraved cream over the pill; press
+   feel + thumbnail placement match tools/mailbtn-bench.html. */
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { Image } from 'astro:assets';
+import gmailPlate from '../assets/ui/btn-mail-gmail.png';
+import outlookPlate from '../assets/ui/btn-mail-outlook.png';
+import yahooPlate from '../assets/ui/btn-mail-yahoo.png';
+
+const providers = [
+  { key: 'gmail', name: 'Gmail', url: 'https://mail.google.com/mail/u/0/#inbox', plate: gmailPlate },
+  { key: 'outlook', name: 'Outlook', url: 'https://outlook.live.com/mail/0/inbox', plate: outlookPlate },
+  { key: 'yahoo', name: 'Yahoo', url: 'https://mail.yahoo.com/', plate: yahooPlate },
+];
 ---
 
 <BaseLayout
@@ -7,22 +23,39 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   description="Your RevLimiter purchase is complete. Your download link and licence key are on the way to your email."
   index={false}
 >
-  <section class="plugin-detail thankyou">
-    <div class="container" style="max-width: 620px;" data-reveal>
-      <p class="tag">Purchase complete</p>
-      <h1>You&rsquo;re in.</h1>
-      <p class="pitch">
-        Your <strong>download link</strong> and <strong>licence key</strong> are on their way
-        to <strong>the inbox of the email you paid with</strong>. Open it to grab them:
-      </p>
-
-      <div class="quick-row">
-        <a class="btn primary" href="https://mail.google.com/mail/u/0/#inbox" target="_blank" rel="noopener">Gmail</a>
-        <a class="btn ghost" href="https://outlook.live.com/mail/0/inbox" target="_blank" rel="noopener">Outlook</a>
-        <a class="btn ghost" href="https://mail.yahoo.com/" target="_blank" rel="noopener">Yahoo</a>
+  <section class="inbox">
+    <div class="container">
+      <div class="copy-panel">
+        <p class="kicker">Purchase complete</p>
+        <h1>You&rsquo;re <span class="hot">in</span>.</h1>
+        <p class="lede">
+          Your <strong>download link</strong> and <strong>licence key</strong> are on their way
+          to <strong>the inbox of the email you paid with</strong>. Open it to grab them:
+        </p>
       </div>
 
-      <p class="micro muted">
+      <div class="units">
+        {providers.map((p) => (
+          <a class={`unit ${p.key}`} href={p.url} target="_blank" rel="noopener noreferrer" aria-label={`Open ${p.name}`}>
+            <span class="plate-photo">
+              <Image class="plate-img" src={p.plate} alt="" width={592} height={440} format="webp" loading="eager" />
+              <span class="cap">
+                {p.key === 'gmail' && (
+                  <span class="badge"><svg class="brand" viewBox="0 0 256 193" aria-hidden="true"><path d="M58.1818182,192.049515 L58.1818182,93.1404244 L27.5066233,65.0770089 L0,49.5040608 L0,174.59497 C0,184.253152 7.82545455,192.049515 17.4545455,192.049515 L58.1818182,192.049515 Z" fill="#4285F4"/><path d="M197.818182,192.049515 L238.545455,192.049515 C248.203636,192.049515 256,184.224061 256,174.59497 L256,49.5040608 L224.844415,67.3422767 L197.818182,93.1404244 L197.818182,192.049515 Z" fill="#34A853"/><polygon fill="#EA4335" points="58.1818182 93.1404244 54.0077618 54.4932827 58.1818182 17.5040608 128 69.8676972 197.818182 17.5040608 202.487488 52.4960089 197.818182 93.1404244 128 145.504061"/><path d="M197.818182,17.5040608 L197.818182,93.1404244 L256,49.5040608 L256,26.2313335 C256,4.64587897 231.36,-7.65957557 214.109091,5.28587897 L197.818182,17.5040608 Z" fill="#FBBC04"/><path d="M0,49.5040608 L26.7588051,69.5731646 L58.1818182,93.1404244 L58.1818182,17.5040608 L41.8909091,5.28587897 C24.6109091,-7.65957557 0,4.64587897 0,26.2313335 L0,49.5040608 Z" fill="#C5221F"/></svg></span>
+                )}
+                {p.key === 'outlook' && (
+                  <span class="badge"><svg class="brand" viewBox="60 90.4 570.02 539.67" aria-hidden="true"><path d="m463.984 140.145-344.347 218.27-29.614-46.72v-40.257a43.26 43.26 0 0 1 19.72-36.293L309.91 105.258c30.496-19.79 69.777-19.793 100.277-.008Zm0 0"/><path d="M407.102 103.34a91.293 91.293 0 0 1 3.082 1.914l156.214 101.332-387.336 245.52-59.437-93.77L403.895 177.8c26.925-17.102 28.105-55.57 3.207-74.461Zm0 0"/><path d="M333.602 498.988 179.066 452.11 507.63 243.836c27.672-17.54 27.601-57.938-.133-75.379l-1.48-.93 4.261 2.649 99.996 64.867a43.263 43.263 0 0 1 19.723 36.3v38.962Zm0 0"/><path d="M410.188 105.25c-30.5-19.785-69.782-19.781-100.282.008L109.742 235.145a43.26 43.26 0 0 0-19.719 36.292v1.97a44.479 44.479 0 0 0 20.735 36.16l248.887 156.91L609.16 309.805a44.468 44.468 0 0 0 20.824-37.664v38.168l.008-38.965c0-14.66-7.426-28.32-19.722-36.301Zm0 0"/><path d="M315.77 630.05h220.449c51.777 0 93.75-41.972 93.75-93.75V272.14c0 15.301-7.864 29.528-20.82 37.665l-327.907 205.89a60.712 60.712 0 0 0-28.422 51.414c.004 34.762 28.184 62.942 62.95 62.942Zm0 0"/><path d="M405.402 630.035H183.738c-51.777 0-93.75-41.972-93.75-93.75v-264.34a44.473 44.473 0 0 0 20.754 37.621l327.582 206.52a61.737 61.737 0 0 1 28.809 52.226c-.004 34.09-27.64 61.723-61.73 61.723Zm0 0"/><path d="M108.75 345h142.5c26.926 0 48.75 21.824 48.75 48.75v142.5c0 26.926-21.824 48.75-48.75 48.75h-142.5C81.824 585 60 563.176 60 536.25v-142.5C60 366.824 81.824 345 108.75 345Zm0 0"/><path d="M179.387 534c-19.848 0-36.137-6.21-48.875-18.625-12.739-12.414-19.11-28.617-19.11-48.605 0-21.11 6.465-38.18 19.395-51.22C143.73 402.517 160.66 396 181.594 396c19.781 0 35.879 6.238 48.297 18.715 12.484 12.476 18.726 28.93 18.726 49.351 0 20.985-6.469 37.899-19.398 50.75C216.352 527.606 199.742 534 179.387 534Zm.574-26.352c10.816 0 19.523-3.695 26.117-11.082 6.594-7.386 9.89-17.664 9.89-30.824 0-13.719-3.202-24.394-9.6-32.031-6.403-7.637-14.95-11.453-25.638-11.453-11.011 0-19.878 3.941-26.597 11.824-6.723 7.824-10.082 18.191-10.082 31.102 0 13.101 3.36 23.468 10.082 31.101 6.719 7.574 15.328 11.363 25.828 11.363Z" style="fill:#fff"/></svg></span>
+                )}
+                {p.key === 'yahoo' && (
+                  <span class="badge wide"><svg class="brand" viewBox="0 0 512 143" aria-hidden="true"><path fill="#5F01D1" fill-rule="nonzero" d="M0,34.6068096 L30.4746532,34.6068096 L48.1654477,79.9313997 L66.1145019,34.6068096 L95.8143758,34.6068096 L51.1354351,142.042875 L21.3064313,142.042875 L33.5737705,113.6343 L0,34.6068096 Z M126.676419,32.7989912 C103.820429,32.7989912 89.3578815,53.3306431 89.3578815,73.7331652 C89.3578815,96.718285 105.240858,114.925599 126.289029,114.925599 C142.042875,114.925599 147.98285,105.369987 147.98285,105.369987 L147.98285,112.859521 L174.583607,112.859521 L174.583607,34.6068096 L147.98285,34.6068096 L147.98285,41.7089533 C147.85372,41.7089533 141.268096,32.7989912 126.676419,32.7989912 Z M132.358134,57.979319 C142.946784,57.979319 148.37024,66.3727617 148.37024,73.8622951 C148.37024,81.9974779 142.559395,90.0035309 132.358134,90.0035309 C123.964691,90.0035309 116.346028,83.1596469 116.346028,74.2496847 C116.346028,65.2105927 122.415132,57.979319 132.358134,57.979319 Z M183.622699,112.859521 L183.622699,0 L211.385624,0 L211.385624,41.9672131 C211.385624,41.9672131 217.971248,32.7989912 231.788146,32.7989912 C248.704161,32.7989912 258.647163,45.4537201 258.647163,63.4027743 L258.647163,112.859521 L231.013367,112.859521 L231.013367,70.1175284 C231.013367,64.0484237 228.172509,58.1084489 221.586885,58.1084489 C214.872131,58.1084489 211.385624,64.0484237 211.385624,70.1175284 L211.385624,112.859521 L183.622699,112.859521 Z M306.037831,32.7989912 C279.824464,32.7989912 264.199748,52.6849937 264.199748,74.1205549 C264.199748,98.3969735 283.052711,115.054729 306.166961,115.054729 C328.506431,115.054729 348.005044,99.1717528 348.005044,74.5079445 C348.005044,47.5197982 327.473392,32.7989912 306.037831,32.7989912 Z M306.296091,58.1084489 C315.593443,58.1084489 321.920807,65.8562421 321.920807,73.991425 C321.920807,80.9644388 315.980832,89.6161412 306.296091,89.6161412 C297.386129,89.6161412 290.800504,82.5139975 290.800504,73.8622951 C290.800504,65.7271122 296.22396,58.1084489 306.296091,58.1084489 Z M394.233544,32.7989912 C368.020177,32.7989912 352.39546,52.6849937 352.39546,74.1205549 C352.39546,98.3969735 371.248424,115.054729 394.362673,115.054729 C416.702144,115.054729 436.200757,99.1717528 436.200757,74.5079445 C436.200757,47.5197982 415.798235,32.7989912 394.233544,32.7989912 Z M394.491803,58.1084489 C403.789155,58.1084489 410.11652,65.8562421 410.11652,73.991425 C410.11652,80.9644388 404.176545,89.6161412 394.491803,89.6161412 C385.581841,89.6161412 378.996217,82.5139975 378.996217,73.8622951 C378.996217,65.7271122 384.548802,58.1084489 394.491803,58.1084489 Z M458.152837,77.6070618 C468.354098,77.6070618 476.618411,85.8713745 476.618411,96.0726356 C476.618411,106.273897 468.354098,114.538209 458.152837,114.538209 C447.951576,114.538209 439.687264,106.273897 439.687264,96.0726356 C439.687264,85.8713745 447.951576,77.6070618 458.152837,77.6070618 Z M482.687516,70.8923077 L449.501135,70.8923077 L478.942749,7.10542736e-15 L512,7.10542736e-15 L482.687516,70.8923077 Z"/></svg></span>
+                )}
+              </span>
+            </span>
+          </a>
+        ))}
+      </div>
+
+      <p class="fineprint">
         Nothing yet? Check spam / promotions. Install help on the
         <a href="/support">support page</a>; problems &rarr;
         <a href="mailto:support@revaudio.net">support@revaudio.net</a>.
@@ -32,23 +65,191 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 </BaseLayout>
 
 <style>
-  .thankyou .tag {
-    font-family: var(--font-mono);
-    text-transform: uppercase;
-    letter-spacing: 0.18em;
-    font-size: 0.72rem;
-    color: var(--brass);
-    margin: 0 0 0.5rem;
+  .inbox {
+    /* locked feel values from tools/mailbtn-bench.html */
+    --travel: 7px;
+    --press-ms: 106;
+    --return-ms: 704;
+    --thumb-x: 0px;
+    --thumb-y: -3.57cqw;  /* bench: -10px on a 280px plate, kept proportional */
+    --thumb-scale: 1;
+    --cream: #fff4d0;
+
+    min-height: calc(100svh - var(--nav-h) - var(--sale-h) - 120px);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding-block: clamp(1.25rem, 4vh, 2.75rem) clamp(0.75rem, 2vh, 1.25rem);
+    text-align: center;
+  }
+  .inbox .container { max-width: 920px; }
+
+  /* frosted-glass panel behind the confirmation copy; floats gently */
+  .copy-panel {
+    max-width: 620px;
+    margin: 0 auto 1.75rem;
+    padding: clamp(1.1rem, 3vw, 1.8rem) clamp(1.5rem, 4vw, 2.5rem);
+    background:
+      linear-gradient(180deg, rgba(255, 248, 224, 0.10), rgba(255, 248, 224, 0) 42%),
+      linear-gradient(180deg, rgba(30, 26, 22, 0.46), rgba(13, 11, 10, 0.40));
+    border: 1px solid rgba(255, 244, 208, 0.16);
+    border-radius: 16px;
+    box-shadow:
+      0 30px 60px -12px rgba(0, 0, 0, 0.7),
+      0 12px 24px rgba(0, 0, 0, 0.45),
+      inset 0 1px 0 rgba(255, 255, 255, 0.18),
+      inset 0 0 22px rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(18px) saturate(1.5);
+    -webkit-backdrop-filter: blur(18px) saturate(1.5);
+    will-change: transform;
+  }
+  .copy-panel > :last-child { margin-bottom: 0; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .copy-panel { animation: panel-float 6.5s ease-in-out infinite; }
+  }
+  @keyframes panel-float {
+    0%, 100% {
+      transform: translateY(0);
+      box-shadow:
+        0 24px 48px -14px rgba(0, 0, 0, 0.65),
+        0 10px 20px rgba(0, 0, 0, 0.42),
+        inset 0 1px 0 rgba(255, 255, 255, 0.18),
+        inset 0 0 22px rgba(255, 255, 255, 0.04);
+    }
+    50% {
+      transform: translateY(-3px);
+      box-shadow:
+        0 30px 56px -13px rgba(0, 0, 0, 0.68),
+        0 13px 25px rgba(0, 0, 0, 0.45),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        inset 0 0 24px rgba(255, 255, 255, 0.05);
+    }
   }
 
-  .quick-row {
+  .kicker {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--brass-bright);
+    font-size: clamp(1.2rem, 2.6vw, 1.7rem);
+    line-height: 1;
+    margin: 0 auto 0.6rem;  /* center the block — global `p{max-width:64ch}` caps it, so auto-margins are required */
+    text-align: center;
+  }
+  .inbox h1 {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4.5vw, 3.2rem);
+    line-height: 1;
+    color: var(--fg);
+    margin: 0 0 0.75rem;
+  }
+  .inbox h1 .hot { color: var(--redline); }
+  .lede {
+    color: var(--fg);
+    font-size: clamp(1.05rem, 2vw, 1.25rem);
+    line-height: 1.5;
+    max-width: 40ch;
+    margin: 0 auto;
+  }
+  .lede strong { color: var(--brass-bright); font-weight: 700; }
+
+  .units {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.6rem;
-    margin-bottom: 1.5rem;
+    justify-content: center;
+    gap: clamp(0.75rem, 2.5vw, 1.75rem);
+    margin: 0 auto;
   }
-  .quick-row .btn {
-    padding: 0.55rem 1.1rem;
-    font-size: 0.85rem;
+
+  .unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .plate-photo { position: relative; width: 168px; max-width: 60vw; line-height: 0; container-type: inline-size; }
+  .plate-img {
+    width: 100%;
+    height: auto;
+    display: block;
+    filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.55));
+  }
+
+  /* the engraved mark sits over the pill and travels on press */
+  .cap {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* release = the tuned spring-back (return-ms + gentle overshoot ≈ 1.05) */
+    transition: transform calc(var(--return-ms) * 1ms) cubic-bezier(0.34, 1.1, 0.64, 1);
+  }
+  /* recession shadow over the pill on press (cap sinks into the well) */
+  .cap::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 52%;
+    height: 40%;
+    border-radius: 999px;
+    pointer-events: none;
+    background: radial-gradient(ellipse at 50% 16%, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0) 62%);
+    opacity: 0;
+    transition: opacity calc(var(--return-ms) * 1ms) ease;
+  }
+  /* press = quick sink (press-ms); the base rule above handles the slow release */
+  .unit:active .cap {
+    transform: translateY(var(--travel));
+    transition: transform calc(var(--press-ms) * 1ms) cubic-bezier(0.3, 0.7, 0.4, 1);
+  }
+  .unit:active .cap::after {
+    opacity: 1;
+    transition: opacity calc(var(--press-ms) * 1ms) ease;
+  }
+
+  /* brand mark engraved into the enamel: force monochrome cream + deboss */
+  .badge {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transform: translate(var(--thumb-x), var(--thumb-y)) scale(var(--thumb-scale));
+    transform-origin: center;
+  }
+  .badge .brand {
+    height: 9.29cqw;   /* bench: 26px on 280px plate */
+    width: auto;
+    display: block;
+    opacity: 0.9;
+    filter:
+      drop-shadow(0 -1px 1px rgba(0, 0, 0, 0.55))
+      drop-shadow(0 1px 0.5px rgba(255, 240, 200, 0.22));
+  }
+  .badge.wide .brand { height: 6.43cqw; }   /* bench: 18px on 280px plate */
+  .badge .brand path,
+  .badge .brand polygon { fill: var(--cream) !important; }
+
+  .fineprint {
+    color: var(--fg-faint);
+    font-size: 0.8rem;
+    max-width: 46ch;
+    margin: 1.5rem auto 0;
+  }
+  .fineprint a { color: var(--brass); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cap { transition: none; }
+  }
+  @media (max-width: 560px) {
+    .units { gap: 1.25rem; }
+    .plate-photo { width: 168px; }
   }
 </style>
