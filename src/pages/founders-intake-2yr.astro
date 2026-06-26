@@ -1,0 +1,453 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+// HIDDEN PAGE — not linked anywhere, noindex/nofollow. Internal founder intake
+// used to gather everything needed to write the 2-year investor business plan.
+// Share the URL privately: /founders-intake-2yr
+---
+
+<BaseLayout
+  title="Founders Intake"
+  description="Internal."
+  index={false}
+>
+  <section class="plugin-detail intake">
+    <div class="container" style="max-width: 880px;">
+      <h1>RevAudio — 2-Year Business Plan Intake</h1>
+      <p class="muted" id="intro">
+        Fill what you know; leave blanks where you're unsure — I'll flag those as assumptions in the plan.
+        Short bullets beat polished prose. <strong>Your answers auto-save in this browser</strong>, so you can
+        stop and come back any time. To continue on a different device, use
+        <em>Download progress</em> here and <em>Load progress</em> there.
+      </p>
+
+      <div class="intake-status">
+        <div class="bar-track"><div class="bar-fill" id="barFill"></div></div>
+        <div class="status-line">
+          <span id="progressTxt">0 / 0 answered</span>
+          <span id="savedTxt" class="saved">—</span>
+        </div>
+      </div>
+
+      <div id="intake-root"><!-- rendered by script --></div>
+
+      <div class="intake-actions">
+        <button type="button" id="exportBtn" class="btn-gold">Export for Claude (copy)</button>
+        <button type="button" id="dlBtn" class="btn-ghost">Download progress</button>
+        <label class="btn-ghost file-btn">
+          Load progress
+          <input type="file" id="loadInput" accept=".json,application/json" hidden />
+        </label>
+        <button type="button" id="clearBtn" class="btn-ghost danger">Clear all</button>
+      </div>
+      <p class="muted small" id="autosaveNote">
+        Nothing is uploaded — everything stays on this device until you export it.
+      </p>
+    </div>
+  </section>
+
+  <style is:global>
+    .intake { padding-bottom: 80px; }
+    .intake h1 { margin-bottom: 8px; }
+    .intake #intro { max-width: 680px; line-height: 1.6; }
+    .intake .small { font-size: 12.5px; }
+
+    .intake-status {
+      position: sticky; top: 0; z-index: 5;
+      background: rgba(8,10,14,.9); backdrop-filter: blur(8px);
+      padding: 12px 0 10px; margin: 18px 0 6px;
+    }
+    .intake .bar-track { height: 8px; border-radius: 99px; background: #1c2230; overflow: hidden; }
+    .intake .bar-fill { height: 100%; width: 0; border-radius: 99px;
+      background: linear-gradient(90deg,#e1342b,#c9a24b); transition: width .25s ease; }
+    .intake .status-line { display: flex; justify-content: space-between;
+      font-size: 12.5px; color: #8b95a5; margin-top: 6px; }
+    .intake .saved.ok { color: #6fcf97; }
+
+    .intake .sec {
+      border: 1px solid #252b36; border-radius: 12px;
+      background: linear-gradient(180deg,#12151c,#161a22);
+      padding: 18px 20px; margin: 16px 0;
+    }
+    .intake .sec > h2 { font-size: 17px; margin: 0 0 2px; display: flex; gap: 10px; align-items: baseline; }
+    .intake .sec .sec-num { color: #c9a24b; font-weight: 800; font-size: 13px; }
+    .intake .sec .sec-why { color: #8b95a5; font-size: 12.5px; margin: 0 0 14px; }
+
+    .intake .q { margin: 0 0 14px; }
+    .intake .q label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 14px; }
+    .intake .q label .opt { color: #8b95a5; font-weight: 400; font-size: 12px; }
+    .intake .q .hint { color: #8b95a5; font-size: 12px; margin: -2px 0 6px; }
+    .intake input[type=text], .intake textarea, .intake select {
+      width: 100%; background: #0c0f15; border: 1px solid #252b36; color: #e8ecf2;
+      border-radius: 8px; padding: 9px 11px; font: inherit; resize: vertical;
+    }
+    .intake textarea { min-height: 60px; }
+    .intake input:focus, .intake textarea:focus, .intake select:focus {
+      outline: none; border-color: #3a86ff; box-shadow: 0 0 0 2px rgba(58,134,255,.2);
+    }
+    .intake .q.done label::after { content: " ✓"; color: #6fcf97; font-weight: 700; }
+    .intake .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 620px) { .intake .row { grid-template-columns: 1fr; } }
+
+    .intake-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+    .intake .btn-gold {
+      background: linear-gradient(180deg,#d6a94f,#b8862f); color: #1a1305; border: none;
+      font-weight: 800; letter-spacing: .3px; padding: 11px 18px; border-radius: 9px; cursor: pointer;
+    }
+    .intake .btn-ghost {
+      background: transparent; color: #e8ecf2; border: 1px solid #252b36;
+      padding: 11px 18px; border-radius: 9px; cursor: pointer; font: inherit; display: inline-flex; align-items: center;
+    }
+    .intake .btn-ghost.danger { color: #e1342b; border-color: #5a2420; }
+    .intake .btn-gold:hover, .intake .btn-ghost:hover { filter: brightness(1.08); }
+    .intake .file-btn { gap: 6px; }
+    .intake ::placeholder { color: #4a5260; }
+  </style>
+
+  <script is:inline>
+    (function () {
+      const KEY = 'ra_bizplan_intake_v1';
+
+      // ---- SCHEMA: every question the 2-year investor plan needs ----
+      const SCHEMA = [
+        { n: '01', t: 'Company & Vision', why: 'Anchors the whole narrative — who you are and where this goes by end of 2028.', q: [
+          ['pitch', 'One-line pitch (the elevator line)', 'text', 'e.g. Car-inspired pro audio plugins that sound expensive and play simple.'],
+          ['mission', 'Mission — what RevAudio exists to do', 'textarea', 'The "why we build" in 1–2 sentences.'],
+          ['vision_2yr', 'The 2-year vision — where is RevAudio at end of 2028?', 'textarea', '# plugins shipped, brand position, revenue scale, team size.'],
+          ['values_proof', 'How do "high quality / simplicity / creativity" actually show in the products?', 'textarea', 'Concrete proof, not slogans.'],
+          ['whynow', 'Why now? What makes this the right moment?', 'textarea', 'Market shift, your edge, AI-leveraged dev speed, gap competitors leave.'],
+          ['legal_entity', 'Legal entity status', 'text', 'Registered company? Type (LLC/Ltd/sole)? Country?'],
+          ['incorp_date', 'When founded / incorporated', 'text', 'Date or "not yet registered".'],
+          ['hq_location', 'Location / where you operate from', 'text', 'Country, remote?'],
+          ['ip_ownership', 'Who owns the code, brand, and IP?', 'text', 'Founders personally? Company? Any licensing (JUCE) obligations?'],
+          ['bank_setup', 'Banking / payment infrastructure in place', 'text', 'Business bank, payment processor accounts.'],
+        ]},
+
+        { n: '02', t: 'Founders & Team', why: 'Investors bet on people first. Show who builds and who sells.', q: [
+          ['founders_overview', 'Founders — names, roles, equity split, one-line background each', 'textarea', 'Name — role — relevant experience — equity %.'],
+          ['founder1', 'Founder 1 — detail (skills, what they own, hours/week)', 'textarea', ''],
+          ['founder2', 'Founder 2 — detail (skills, what they own, hours/week)', 'textarea', ''],
+          ['commitment', 'Time commitment overall', 'text', 'Full-time / part-time / nights & weekends.'],
+          ['audio_cred', 'Audio-industry credibility of the team', 'textarea', 'Released music, mixing work, prior plugins, education — anything that earns trust.'],
+          ['skills_covered', 'Skills you cover well in-house', 'textarea', 'DSP, UI, brand, marketing, web, support…'],
+          ['skills_gaps', 'Skill gaps you need to fill', 'textarea', 'Honest list — investors expect gaps.'],
+          ['contractors_now', 'Contractors / freelancers used today', 'text', 'Design, video, DSP help — and rough cost.'],
+          ['hires_plan', 'Key hires planned over 24 months', 'textarea', 'Role, rough timing, why critical.'],
+          ['advisors', 'Advisors / mentors', 'text', 'Names or types of help you have or want.'],
+        ]},
+
+        { n: '03', t: 'Products — RevLimiter (live)', why: 'Your proof product. Real numbers here carry the deck.', q: [
+          ['rl_version', 'Current public version', 'text', 'e.g. 1.0.0'],
+          ['rl_price', 'Current price', 'text', 'Regular + any sale price.'],
+          ['rl_units', 'Units sold to date', 'text', 'Total since launch.'],
+          ['rl_revenue', 'Revenue to date from RevLimiter', 'text', '$'],
+          ['rl_refund', 'Refund / chargeback rate', 'text', '% or count.'],
+          ['rl_reviews', 'Reviews & user feedback', 'textarea', 'Ratings, quotes, recurring praise/complaints.'],
+          ['rl_remaining', 'What is still left to polish or fix?', 'textarea', 'Known issues, roadmap items.'],
+          ['rl_mac', 'Mac / other formats status for RevLimiter', 'text', 'Win-only now? Mac ETA? AU/AAX?'],
+        ]},
+
+        { n: '04', t: 'Products — Pipeline (Cooker / The AC / Maybach)', why: 'The portfolio thesis — what ships, in what order, why.', q: [
+          ['ck_status', 'The Cooker — stage, target ship quarter, price idea', 'textarea', 'Multiband panner + FX + Autopilot.'],
+          ['ck_diff', 'The Cooker — who it competes with & your angle', 'text', ''],
+          ['ac_status', 'The AC — stage, target ship quarter, price idea', 'textarea', 'Air-band exciter / tube saturator.'],
+          ['ac_diff', 'The AC — who it competes with & your angle', 'text', ''],
+          ['mb_status', 'Maybach — stage, target ship quarter, price idea', 'textarea', 'Dynamic EQ with suspension UI.'],
+          ['mb_diff', 'Maybach — who it competes with & your angle', 'text', ''],
+          ['future_products', 'Any other plugins / products planned in the 2-yr window', 'textarea', 'Beyond the core 4.'],
+          ['bundle_plan', 'Bundle strategy', 'textarea', 'Will plugins sell as a bundle? Suite name? Price?'],
+          ['addons', 'Preset packs / expansions / add-on revenue', 'text', ''],
+        ]},
+
+        { n: '05', t: 'Product Strategy & Moat', why: 'Why a competitor can\'t just copy this next month.', q: [
+          ['moat', 'What is the durable advantage / moat?', 'textarea', 'Brand identity, sound quality, UX, ecosystem, shipping speed, AI-assisted pipeline.'],
+          ['dev_pipeline', 'Your development pipeline & speed', 'textarea', 'JUCE + AI-assisted workflow — how fast can you ship vs. typical shops?'],
+          ['quality_proof', 'How do you prove pro-grade quality?', 'textarea', 'Null tests, pluginval, A/B vs FabFilter/Pro-L, measurements.'],
+          ['platform_roadmap', 'Platform & format roadmap', 'textarea', 'Mac port timing, AU/AAX, Apple notarization, future mobile/standalone.'],
+          ['brand_system', 'Brand / design system as an asset', 'textarea', 'The car metaphor, reusable UI kit, recognizable identity.'],
+        ]},
+
+        { n: '06', t: 'Market & Competition', why: 'Sizing + where you sit vs FabFilter, Soundtoys, Waves, iZotope.', q: [
+          ['target_segments', 'Target customer segments', 'textarea', 'Bedroom producers? Pro mixers? Genres? Skill level?'],
+          ['persona', 'Primary customer persona', 'textarea', 'A vivid description of the main buyer.'],
+          ['customer_pain', 'The pain you solve for them', 'textarea', 'Why they reach for your plugin.'],
+          ['tam', 'Market size data you already have', 'textarea', 'TAM/SAM/SOM figures (you have an investor-brief PDF to reuse).'],
+          ['market_growth', 'Market growth & trends', 'textarea', 'Plugin market CAGR, AI disruption, consolidation.'],
+          ['competitors', 'Main competitors per plugin & how you differ', 'textarea', 'Incumbent + your angle (price, UX, sound, identity).'],
+          ['edge', 'Why customers pick you over free plugins or discounted Waves', 'textarea', 'The honest answer.'],
+          ['price_position', 'Price positioning', 'select', '', ['', 'Premium / boutique', 'Mid-market', 'Budget / accessible', 'Mixed by product']],
+        ]},
+
+        { n: '07', t: 'Business Model & Pricing', why: 'How money is made and how it scales.', q: [
+          ['rev_streams', 'Revenue streams', 'textarea', 'One-time licenses, bundles, subscription, rent-to-own, edu, upgrades, presets.'],
+          ['pricing_each', 'Price per plugin', 'textarea', 'Each product\'s intended price.'],
+          ['bundle_price', 'Bundle price idea', 'text', ''],
+          ['subscription', 'Considering subscription / rent-to-own?', 'text', 'Stance + reasoning.'],
+          ['upgrade_policy', 'Upgrade & version policy', 'text', 'Free within major version? Paid major upgrades?'],
+          ['discounts', 'Discount strategy', 'textarea', 'Launch sales, education, loyalty, seasonal.'],
+          ['channels', 'Sales channels & revenue split each', 'textarea', 'Direct (Lemon Squeezy), Plugin Boutique, ADSR, Splice — and their cut.'],
+          ['seats', 'Licensing / seats policy', 'text', 'Seats per key, transfers, trial/demo.'],
+          ['ltv', 'Estimated customer lifetime value', 'text', 'How much does one buyer spend over time?'],
+          ['repeat', 'Repeat-purchase / cross-sell expectation', 'text', 'Do RevLimiter buyers buy the next plugin?'],
+        ]},
+
+        { n: '08', t: 'Traction & Current Metrics', why: 'Proof. Even small numbers matter — show the slope.', q: [
+          ['total_rev', 'Total revenue to date (all products)', 'text', '$ since first sale.'],
+          ['mrr', 'Current monthly revenue / run-rate', 'text', 'Last 1–3 months.'],
+          ['rev_trend', 'Monthly trend', 'text', 'Growing / flat / lumpy — give the shape.'],
+          ['units_total', 'Total customers / units', 'text', ''],
+          ['email_list', 'Email list size', 'text', ''],
+          ['social', 'Social following per platform', 'textarea', 'IG, YouTube, TikTok, etc. + counts.'],
+          ['community', 'Community (Discord/forum) size & activity', 'text', ''],
+          ['traffic', 'Website traffic', 'text', 'Monthly visitors if known.'],
+          ['conversion', 'Visitor → buyer conversion rate', 'text', 'If known.'],
+          ['cac', 'Current cost to acquire a customer', 'text', 'Even a rough estimate.'],
+          ['best_channel', 'What has actually driven sales so far', 'textarea', 'The single most effective thing.'],
+          ['validation', 'Testimonials / artist users / press', 'textarea', 'Anyone notable using it? Coverage?'],
+          ['demand_signal', 'Demand signal for unreleased plugins', 'text', 'Wishlist clicks, "notify me" sign-ups for DRIFT / The AC.'],
+        ]},
+
+        { n: '09', t: 'Go-To-Market & Marketing', why: 'The growth engine for the next 24 months.', q: [
+          ['gtm', 'Customer acquisition plan', 'textarea', 'Content, influencers, demos, free-plugin funnel, paid ads, reseller placement.'],
+          ['content_plan', 'Content & social cadence', 'textarea', 'What you post, how often, on which channels.'],
+          ['influencer', 'Influencer / creator strategy', 'textarea', 'YouTube reviewers, producer collabs.'],
+          ['paid_ads', 'Paid advertising plan', 'text', 'Channels, budget, expected CAC.'],
+          ['free_funnel', 'Free plugin / lead magnet as funnel?', 'text', 'AuxIn or a freebie to grow the list?'],
+          ['launch_play', 'Launch playbook per new plugin', 'textarea', 'Pre-orders, beta squad, launch-week discount, cross-sell.'],
+          ['resellers', 'Reseller / marketplace strategy', 'text', 'Plugin Boutique, Splice — applied yet?'],
+          ['partnerships', 'Partnerships / collaborations', 'text', 'Sample packs, schools, artists.'],
+          ['mkt_budget_now', 'Current monthly marketing spend', 'text', ''],
+          ['mkt_budget_funded', 'Where extra marketing money would go', 'textarea', 'If funded.'],
+        ]},
+
+        { n: '10', t: 'Operations & Tech', why: 'Shows the machine behind the product runs cleanly.', q: [
+          ['tooling', 'Dev & business tool stack', 'textarea', 'JUCE, CI, Lemon Squeezy, hosting, design, analytics.'],
+          ['licensing_tech', 'Licensing / key-delivery system', 'textarea', 'How keys are issued & validated (you have a worker + signed keys).'],
+          ['support', 'Support process & current load', 'text', 'Channel, response time, tickets/week.'],
+          ['piracy', 'Piracy / protection stance', 'text', 'Realistic approach.'],
+          ['qa', 'QA & release process', 'text', 'Null-test gate, pluginval, DAW testing.'],
+          ['infra_cost', 'Infrastructure / fixed monthly costs', 'text', 'Hosting, domains, subscriptions, APIs.'],
+        ]},
+
+        { n: '11', t: 'Financials', why: 'The numbers underpinning the projections. Rough is fine — I\'ll model it.', q: [
+          ['costs_breakdown', 'Current monthly costs (itemized)', 'textarea', 'Hosting, domains, processor fees, tools, AI/API, design, contractors, ads.'],
+          ['per_sale_cost', 'Per-sale costs', 'text', 'Processor fee %, reseller cut, refund rate.'],
+          ['gross_margin', 'Approx gross margin per sale', 'text', 'After payment + delivery costs.'],
+          ['cash', 'Cash on hand', 'text', '$ available to the business.'],
+          ['runway', 'Runway at current burn', 'text', 'Months.'],
+          ['debt', 'Debt / prior investment / owed equity', 'text', ''],
+          ['founder_salary', 'Founder salary / draw needs', 'text', 'What founders need to live, and when.'],
+          ['proj_assumptions', 'Projection assumptions (your gut estimates)', 'textarea', 'Units/mo per plugin post-launch, ASP, list growth, conversion. I build the model from these.'],
+          ['breakeven', 'Where is break-even?', 'text', 'Units/mo or $/mo to cover costs.'],
+          ['prior_financials', 'Any existing P&L / bookkeeping?', 'text', 'Can you share monthly numbers?'],
+        ]},
+
+        { n: '12', t: 'The Ask (Funding)', why: 'The single most important section for an investor — be concrete.', q: [
+          ['raising', 'Are you actually raising?', 'select', '', ['', 'Yes — actively', 'Testing interest', 'Strategic investor only', 'Not raising / for planning only']],
+          ['raise_amount', 'How much are you raising?', 'text', '$ target.'],
+          ['min_raise', 'Minimum viable raise', 'text', 'Smallest amount that still moves the plan.'],
+          ['valuation', 'Valuation expectation', 'text', 'Pre-money idea, or "open".'],
+          ['instrument', 'Instrument & terms preference', 'text', 'Equity / SAFE / convertible / revenue-share / loan.'],
+          ['equity_offered', 'Equity you\'d part with', 'text', '% range.'],
+          ['use_of_funds', 'Use of funds (rough % split)', 'textarea', 'e.g. 40% marketing, 25% contractors/DSP, 15% Mac port, 10% tools, 10% buffer.'],
+          ['fund_milestones', 'What the money buys in milestones', 'textarea', 'Ships X plugins, $Y revenue, Mac launch, N customers in 18mo.'],
+          ['investor_type', 'What kind of investor do you want?', 'text', 'Money-only vs strategic (industry connections, distribution).'],
+          ['roi_story', 'How does an investor make a return?', 'textarea', 'Growth + exit, or profit/dividends.'],
+        ]},
+
+        { n: '13', t: '24-Month Milestones', why: 'The timeline investors hold you to.', q: [
+          ['m3', 'Next 3 months — top goals', 'textarea', ''],
+          ['m6', '3–6 months', 'textarea', ''],
+          ['m12', '6–12 months', 'textarea', ''],
+          ['m18', '12–18 months', 'textarea', ''],
+          ['m24', '18–24 months', 'textarea', ''],
+          ['kpis', 'KPIs you track / will track', 'textarea', 'Revenue, units, list, CAC, conversion, refund rate.'],
+          ['success_24', 'Headline success metric at month 24', 'text', 'e.g. $X MRR / N plugins / M customers.'],
+        ]},
+
+        { n: '14', t: 'Risks & Honesty', why: 'Naming risks builds trust; pretending none exist kills it.', q: [
+          ['top_risks', 'Biggest risks to the plan', 'textarea', 'Market saturation, founder bandwidth, piracy, platform dependency, single-product reliance.'],
+          ['mitigations', 'How you mitigate each', 'textarea', ''],
+          ['failures', 'What has failed or under-delivered so far?', 'textarea', 'Honesty here makes the mitigations credible.'],
+          ['dependencies', 'Dependencies you don\'t control', 'text', 'JUCE licensing, Lemon Squeezy, Apple notarization, key partners.'],
+          ['key_person', 'Key-person risk', 'text', 'What happens if a founder steps back?'],
+          ['single_product', 'Single-product concentration risk', 'text', 'How much of revenue is RevLimiter today?'],
+        ]},
+
+        { n: '15', t: 'Vision & Exit', why: 'The upside story — how an investor ultimately wins.', q: [
+          ['longterm', 'Long-term ambition (beyond 2 yrs)', 'textarea', 'Plugin empire, hardware, acquisition target, profitable lifestyle business?'],
+          ['exit_paths', 'Realistic exit / liquidity paths', 'textarea', 'Acquisition (Waves / Plugin Alliance / Native Instruments / Soundwide), dividends, secondary.'],
+          ['acquirers', 'Plausible acquirers / strategic buyers', 'text', ''],
+          ['growth_vs_div', 'Growth-to-exit vs profit-and-dividends — which?', 'text', ''],
+          ['other', 'Anything else investors must know', 'textarea', 'Free space.'],
+        ]},
+
+        { n: '★', t: 'Plan Format Preferences', why: 'How you want the finished plan delivered.', q: [
+          ['fmt', 'Deliverable format', 'select', '', ['', 'Branded PDF (like the investor brief)', 'Pitch deck (slides)', 'Both PDF + deck', 'Plain doc / Markdown']],
+          ['length', 'Depth', 'select', '', ['', 'Lean / punchy (10–15 pages)', 'Detailed / thorough (20–30 pages)', 'Whatever fits best']],
+          ['tone', 'Tone', 'select', '', ['', 'Confident & visionary', 'Conservative & numbers-led', 'Balanced']],
+          ['audience', 'Specific investor(s) / audience this is for', 'text', 'Tailors the framing. Optional.'],
+          ['deadline', 'When do you need it?', 'text', 'Date or "no rush".'],
+        ]},
+      ];
+
+      // ---- render ----
+      const root = document.getElementById('intake-root');
+      const allKeys = [];
+      function esc(s){ return (s||'').replace(/"/g,'&quot;'); }
+
+      SCHEMA.forEach(sec => {
+        const secEl = document.createElement('div');
+        secEl.className = 'sec';
+        let html = `<h2><span class="sec-num">${sec.n}</span>${sec.t}</h2><p class="sec-why">${sec.why}</p>`;
+        sec.q.forEach(item => {
+          const [k, label, type, hint, opts] = item;
+          allKeys.push(k);
+          const hintHtml = hint ? `<p class="hint">${hint}</p>` : '';
+          let field;
+          if (type === 'textarea') {
+            field = `<textarea data-k="${k}" placeholder="${esc(hint)}"></textarea>`;
+          } else if (type === 'select') {
+            field = `<select data-k="${k}">` + (opts||[]).map(o =>
+              `<option value="${esc(o)}">${o || '— pick —'}</option>`).join('') + `</select>`;
+          } else {
+            field = `<input type="text" data-k="${k}" placeholder="${esc(hint)}">`;
+          }
+          html += `<div class="q" data-qk="${k}"><label>${label}</label>${hintHtml}${field}</div>`;
+        });
+        secEl.innerHTML = html;
+        root.appendChild(secEl);
+      });
+
+      const fields = [...root.querySelectorAll('[data-k]')];
+      const barFill = document.getElementById('barFill');
+      const progressTxt = document.getElementById('progressTxt');
+      const savedTxt = document.getElementById('savedTxt');
+
+      function nowStr(){ const d = new Date(); return d.toLocaleString(); }
+
+      function updateProgress(){
+        let done = 0;
+        fields.forEach(f => {
+          const filled = f.value.trim() !== '';
+          const q = f.closest('.q');
+          q.classList.toggle('done', filled);
+          if (filled) done++;
+        });
+        const pct = Math.round((done / fields.length) * 100);
+        barFill.style.width = pct + '%';
+        progressTxt.textContent = `${done} / ${fields.length} answered (${pct}%)`;
+      }
+
+      function collect(){
+        const d = {};
+        fields.forEach(f => d[f.dataset.k] = f.value);
+        return d;
+      }
+
+      let saveTimer = null;
+      function save(){
+        const payload = { savedAt: nowStr(), data: collect() };
+        try {
+          localStorage.setItem(KEY, JSON.stringify(payload));
+          savedTxt.textContent = 'Saved ✓ ' + payload.savedAt;
+          savedTxt.classList.add('ok');
+        } catch (e) {
+          savedTxt.textContent = 'Could not save locally';
+          savedTxt.classList.remove('ok');
+        }
+      }
+      function scheduleSave(){
+        updateProgress();
+        clearTimeout(saveTimer);
+        savedTxt.textContent = 'Saving…';
+        savedTxt.classList.remove('ok');
+        saveTimer = setTimeout(save, 500);
+      }
+
+      function apply(data){
+        fields.forEach(f => { if (data && data[f.dataset.k] != null) f.value = data[f.dataset.k]; });
+        updateProgress();
+      }
+
+      function load(){
+        try {
+          const raw = localStorage.getItem(KEY);
+          if (!raw) { updateProgress(); savedTxt.textContent = 'New form — nothing saved yet'; return; }
+          const p = JSON.parse(raw);
+          apply(p.data || p); // tolerate old flat format
+          savedTxt.textContent = 'Restored from ' + (p.savedAt || 'a previous session');
+          savedTxt.classList.add('ok');
+        } catch (e) { updateProgress(); }
+      }
+
+      fields.forEach(f => f.addEventListener('input', scheduleSave));
+
+      // export to clipboard as markdown for Claude
+      document.getElementById('exportBtn').addEventListener('click', () => {
+        const data = collect();
+        let out = '# RevAudio — 2-Year Business Plan Intake\n_Exported ' + nowStr() + '_\n';
+        SCHEMA.forEach(sec => {
+          out += `\n## ${sec.n === '★' ? '' : sec.n + '. '}${sec.t}\n`;
+          sec.q.forEach(item => {
+            const [k, label] = item;
+            const v = (data[k] || '').trim();
+            out += `\n**${label}**\n${v || '(blank)'}\n`;
+          });
+        });
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(out).then(
+            () => alert('Copied to clipboard. Paste it back to Claude to generate the plan.'),
+            () => openText(out)
+          );
+        } else { openText(out); }
+      });
+      function openText(t){
+        const w = window.open('', '_blank');
+        if (w) { w.document.write('<pre style="white-space:pre-wrap;font:14px/1.5 monospace;padding:20px">' +
+          t.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])) + '</pre>'); }
+        else { alert('Pop-up blocked. Use Download progress instead.'); }
+      }
+
+      // download progress JSON (for resuming on another device)
+      document.getElementById('dlBtn').addEventListener('click', () => {
+        const payload = { savedAt: nowStr(), data: collect() };
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'revaudio-bizplan-progress.json';
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+
+      // load progress JSON
+      document.getElementById('loadInput').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const p = JSON.parse(reader.result);
+            apply(p.data || p);
+            save();
+            alert('Progress loaded.');
+          } catch (err) { alert('Could not read that file.'); }
+        };
+        reader.readAsText(file);
+        e.target.value = '';
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', () => {
+        if (confirm('Clear all answers on this device? (Download a backup first if unsure.)')) {
+          localStorage.removeItem(KEY);
+          fields.forEach(f => f.value = '');
+          updateProgress();
+          savedTxt.textContent = 'Cleared';
+          savedTxt.classList.remove('ok');
+        }
+      });
+
+      load();
+    })();
+  </script>
+</BaseLayout>
