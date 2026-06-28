@@ -20,14 +20,13 @@ const REPEATS = 3;
 
 {
   sale.active && (
-    <aside class="sale-banner" role="region" aria-label={`Launch sale: ${sale.pct}% off with code ${sale.code}`}>
+    <aside class="sale-banner" role="region" aria-label={`Launch sale: ${sale.pct}% off RevLimiter`}>
       <div class="track">
         {[0, 1].map((group) => (
           <div class="group" aria-hidden={group === 1 ? 'true' : undefined}>
             {Array.from({ length: REPEATS }).map(() => (
               <span class="seg">
-                LAUNCH SALE — <strong class="pct">{sale.pct}% OFF</strong> RevLimiter — Insert coupon code{' '}
-                <strong class="code">"{sale.code}"</strong> at checkout — LIMITED TIME
+                LAUNCH SALE — <strong class="pct">{sale.pct}% OFF</strong> RevLimiter — LIMITED TIME
                 <span class="sep" aria-hidden="true">|</span>
               </span>
             ))}
@@ -102,20 +101,11 @@ const REPEATS = 3;
       0 0 3px #1b1b1e;
   }
 
-  .pct,
-  .code {
+  .pct {
     font-weight: inherit;
-    color: var(--brass-bright);
+    /* RevAudio brand red — the "Rev" / tachometer redline. */
+    color: var(--redline);
     margin: 0 0.35em;
-  }
-  .code {
-    color: var(--chrome, #e8e6e1);
-    /* Same asphalt outline as .seg (override would otherwise drop it) + the
-       chrome glow on top. */
-    text-shadow:
-      -2px 0 #1b1b1e, 2px 0 #1b1b1e, 0 -2px #1b1b1e, 0 2px #1b1b1e,
-      -2px -2px #1b1b1e, 2px 2px #1b1b1e, 2px -2px #1b1b1e, -2px 2px #1b1b1e,
-      0 0 8px rgba(232, 230, 225, 0.25);
   }
 
   .sep {
