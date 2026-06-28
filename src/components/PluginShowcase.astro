@@ -284,7 +284,9 @@ const font = (st: any) => (st.ff ? `font-family:${st.ff};font-weight:${st.fw};fo
   .sc-title { line-height: 1; white-space: nowrap; color: #f0e6d2; }
   /* :global — the .rev/.acthe/.acac spans are injected via set:html, so they
      carry no Astro scope hash; scoped selectors would miss them. */
-  .sc-title :global(.rev) { color: rgb(146, 3, 1); }
+  /* Deep brand red, lifted from rgb(146,3,1) (2:1 on the stage) to clear WCAG
+     1.4.3 large-text 3:1 on --bg-1 while staying in the oxide/blood-red family. */
+  .sc-title :global(.rev) { color: rgb(204, 26, 14); }
   .sc-title.drift {
     background: linear-gradient(115deg, #c08bff, #8b3cff 42%, #e23bff 78%, #ff6ad5);
     -webkit-background-clip: text; background-clip: text; color: transparent;

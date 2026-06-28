@@ -51,7 +51,7 @@ const clientConfig = {
               {questions.filter((q) => q.section === sec.id).map((q) => (
                 <div class="q" id={`q-${q.id}`} data-qid={q.id}>
                   <div class="q-head">
-                    <span class="q-label">{q.en}</span>
+                    <span class="q-label" id={`ql-${q.id}`}>{q.en}</span>
                     <span class={`tag ${q.required ? 'req' : 'opt'}`}>{q.required ? ui.requiredEn : ui.optionalEn}</span>
                   </div>
 
@@ -59,7 +59,7 @@ const clientConfig = {
 
                   {/* ── choice groups ── */}
                   {(q.type === 'single' || q.type === 'multi') && (
-                    <fieldset class="opts">
+                    <fieldset class="opts" aria-labelledby={`ql-${q.id}`}>
                       {q.choices?.map((c) => (
                         <label class="opt">
                           <input
@@ -90,7 +90,7 @@ const clientConfig = {
                     <div class="likert">
                       <div class="scale-row">
                         <span class="end">{q.scale?.lowEn}</span>
-                        <div class="scale">
+                        <div class="scale" role="radiogroup" aria-labelledby={`ql-${q.id}`}>
                           {[1, 2, 3, 4, 5].map((n) => (
                             <label class="seg">
                               <input class="vh" type="radio" name={q.id} value={String(n)} />
@@ -114,7 +114,7 @@ const clientConfig = {
                     <div class="likert">
                       <div class="scale-row">
                         <span class="end">{q.scale?.lowEn}</span>
-                        <div class="scale nps">
+                        <div class="scale nps" role="radiogroup" aria-labelledby={`ql-${q.id}`}>
                           {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
                             <label class="seg">
                               <input class="vh" type="radio" name={q.id} value={String(n)} />
@@ -129,27 +129,27 @@ const clientConfig = {
 
                   {/* ── free text ── */}
                   {q.type === 'text' && (
-                    <textarea class="text-in area" name={q.id} rows="3" maxlength={q.maxLen || 2000}></textarea>
+                    <textarea class="text-in area" name={q.id} rows="3" maxlength={q.maxLen || 2000} aria-labelledby={`ql-${q.id}`} aria-required={q.required ? 'true' : undefined}></textarea>
                   )}
                   {q.type === 'shorttext' && (
-                    <input class="text-in" type="text" name={q.id} maxlength={q.maxLen || 200} />
+                    <input class="text-in" type="text" name={q.id} maxlength={q.maxLen || 200} aria-labelledby={`ql-${q.id}`} aria-required={q.required ? 'true' : undefined} />
                   )}
 
                   {/* ── "other" free text ── */}
                   {q.hasOther && (
                     <div class="sub-wrap" id={`other-${q.id}`} hidden>
-                      <input class="text-in" type="text" name={`${q.id}_other`} maxlength="200" placeholder={ui.otherPlaceholderEn} />
+                      <input class="text-in" type="text" name={`${q.id}_other`} maxlength="200" placeholder={ui.otherPlaceholderEn} aria-label={`${q.en} — ${ui.otherEn}`} />
                     </div>
                   )}
 
                   {/* ── conditional follow-up ── */}
                   {q.reveal && (
                     <div class="sub-wrap reveal" id={`reveal-${q.reveal.field.id}`} hidden>
-                      <label class="q-sub">{q.reveal.field.en}</label>
+                      <label class="q-sub" for={q.reveal.field.id}>{q.reveal.field.en}</label>
                       {q.reveal.field.type === 'text' ? (
-                        <textarea class="text-in area" name={q.reveal.field.id} rows="3" maxlength="2000"></textarea>
+                        <textarea class="text-in area" id={q.reveal.field.id} name={q.reveal.field.id} rows="3" maxlength="2000"></textarea>
                       ) : (
-                        <input class="text-in" type="text" name={q.reveal.field.id} maxlength="200" />
+                        <input class="text-in" type="text" id={q.reveal.field.id} name={q.reveal.field.id} maxlength="200" />
                       )}
                     </div>
                   )}
@@ -364,7 +364,9 @@ const clientConfig = {
       border-radius: 4px;
     }
     .tag.req { color: var(--brass); border: 1px solid var(--brass-dark); }
-    .tag.opt { color: var(--fg-faint); border: 1px solid var(--border-bright); }
+    /* --fg-dim (not --fg-faint): the tag renders on --bg-2 inside the card, where
+       --fg-faint is 4.22:1 — just under AA. --fg-dim clears 4.5:1. */
+    .tag.opt { color: var(--fg-dim); border: 1px solid var(--border-bright); }
     .q-help { color: var(--fg-dim); font-size: 0.85rem; margin: 0.3rem 0 0; }
 
     /* choice pills */
