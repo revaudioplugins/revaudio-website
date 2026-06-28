@@ -258,11 +258,10 @@ html.hc :focus-visible { outline: 3px solid var(--brass-bright); outline-offset:
 /* underline inline body links so they read without relying on colour alone */
 html.hc main a:not(.btn):not([class*='card']):not([class*='nav']) { text-decoration: underline; }
 
-/* Keep Tab-focused and anchor-targeted content clear of the sticky nav (and the
-   sale strip when present) so focus is never hidden behind it.
+/* Keep Tab-focused and anchor-targeted content clear of the sticky nav so
+   focus is never hidden behind it.
    WCAG 2.2 SC 2.4.11 Focus Not Obscured (Minimum). */
 html { scroll-padding-top: calc(var(--nav-h) + 0.75rem); }
-html:has(body.has-sale) { scroll-padding-top: calc(var(--nav-h) + 41px + 0.75rem); } /* 41px = --sale-h */
 
 a { color: var(--brass-bright); text-decoration: none; transition: color 0.2s var(--ease); }
 a:hover { color: var(--chrome); }
@@ -296,11 +295,9 @@ p { margin: 0 0 1em; max-width: 64ch; }
 /* Rendered nav height: 30px logo + 2×0.4rem .nav-inner padding + 1px border ≈ 44px.
    Sticky elements that must clear the header offset themselves by this token —
    update it if the logo size or nav padding changes. */
+/* --sale-h kept at 0 — the sale banner was removed; some pages still reference
+   it in layout math, so it stays as a zero constant (nav sits flush at top). */
 :root { --nav-h: 44px; --sale-h: 0px; }
-
-/* Set by BaseLayout when site.launchSale.active — the sale marquee occupies
-   the top strip and the nav parks underneath it. */
-body.has-sale { --sale-h: 41px; }
 
 nav.site-nav {
   position: sticky;

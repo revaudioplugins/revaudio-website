@@ -43,16 +43,4 @@ export const site = {
     workerUrl: 'https://revlimiter-beta.revaudio.workers.dev/submit',
     betaAccessCode: 'REVBETA',
   },
-
-  /**
-   * Launch sale marquee (site-wide sticky banner, mounted in BaseLayout).
-   * Flip `active: false` to kill the banner everywhere in one move.
-   * No countdown — honest "limited time" copy only.
-   */
-  launchSale: {
-    active: true,
-    pct: 40,
-    code: 'VROOM',
-    message: 'LAUNCH SALE — 40% OFF RevLimiter — LIMITED TIME',
-  },
 };

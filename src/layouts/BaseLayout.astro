@@ -3,11 +3,8 @@ import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import Cart from '../components/Cart.astro';
-import SaleBanner from '../components/SaleBanner.astro';
 import A11yToggle from '../components/A11yToggle.astro';
 import { site } from '../data/site';
-
-const saleOn = site.launchSale.active;
 
 // Privacy-friendly analytics: only in production, only once a beacon token is set.
 const analyticsOn = import.meta.env.PROD && !!site.cfBeaconToken;
@@ -88,11 +85,10 @@ const fullTitle = title === 'RevAudio'
       ></script>
     )}
   </head>
-  <body class:list={[saleOn && 'has-sale']}>
+  <body>
     <a href="#main-content" class="skip-link">Skip to main content</a>
     {/* TEST background layer — long-image scroll scrub, see src/lib/pagebg.ts */}
     <div class="page-bg" aria-hidden="true"></div>
-    {saleOn && <SaleBanner />}
     <Header />
     <main id="main-content" tabindex="-1">
       <slot />
