@@ -3,6 +3,8 @@ import { Image } from 'astro:assets';
 import checkoutImg from '../assets/ui/btn-checkout.png';
 import checkoutPressed from '../assets/ui/btn-checkout-pressed.png';
 import { plugins } from '../data/plugins';
+import TermsContent from './legal/TermsContent.astro';
+import { TERMS_LAST_UPDATED } from '../data/legal';
 /**
  * Global cart: a localStorage-backed mini-cart shared across every page.
  * - [data-add-to-cart] buttons (with data-slug/name/price/price-id/img) add items
@@ -18,11 +20,6 @@ import { plugins } from '../data/plugins';
  */
 const checkoutMap: Record<string, string> = {};
 for (const p of plugins) if (p.checkoutUrl) checkoutMap[p.slug] = p.checkoutUrl;
-
-// Legal bundle version stamped onto each order as a consent record (LS custom
-// data). Bump this whenever /terms or /eula changes — the version live at
-// purchase time is the one that binds. Keep in sync with the /terms date.
-const TERMS_VERSION = '2026-06-10';
 ---
 
 <script is:inline type="application/json" data-checkout-map set:html={JSON.stringify(checkoutMap)}></script>
@@ -40,17 +37,33 @@ const TERMS_VERSION = '2026-06-10';
   <ul class="cd-items" data-cart-items data-lenis-prevent></ul>
   <div class="cd-foot" data-cart-foot hidden>
     <div class="cd-sub"><span>Subtotal</span><span data-cart-subtotal>$0</span></div>
-    <label class="cd-agree" data-agree-label>
-      <input type="checkbox" data-cart-agree data-terms-version={TERMS_VERSION} aria-describedby="cd-agree-hint" />
-      <span>I have read and agree to RevAudio's <a href="/terms" target="_blank" rel="noopener">Terms &amp; Conditions</a> and <a href="/eula" target="_blank" rel="noopener">Licence Agreement</a>.</span>
-    </label>
-    <p class="cd-agree-hint" id="cd-agree-hint" data-agree-hint hidden>Please agree to the terms to continue.</p>
     <div class="cd-checkout panel">
       <Image src={checkoutImg} alt="" width={680} height={453} format="webp" />
       <button type="button" class="panel-hit hit-round hit-checkout" data-checkout aria-label="Checkout"></button>
       <Image src={checkoutPressed} alt="" width={680} height={453} format="webp" loading="eager" class="press" />
     </div>
     <button type="button" class="cd-cont" data-cart-close>Continue browsing</button>
+  </div>
+</dialog>
+
+<!-- Terms & Conditions consent modal — the "I agree" box unlocks only after the
+     buyer scrolls to the end of the terms (scroll-wrap + clickwrap). -->
+<dialog class="terms-modal" data-terms-modal aria-labelledby="tm-title">
+  <div class="tm-head">
+    <h2 id="tm-title">Terms &amp; Conditions</h2>
+    <button type="button" class="cd-x" data-terms-close aria-label="Close">&times;</button>
+  </div>
+  <div class="tm-body" data-terms-scroll tabindex="0" data-lenis-prevent>
+    <TermsContent />
+    <div class="tm-end" data-terms-end aria-hidden="true"></div>
+  </div>
+  <div class="tm-foot">
+    <p class="tm-hint" data-terms-hint>↓&nbsp; Scroll to the end to accept</p>
+    <label class="tm-agree">
+      <input type="checkbox" data-terms-agree data-terms-version={TERMS_LAST_UPDATED} disabled />
+      <span>I have read and agree to the Terms &amp; Conditions and <a href="/eula" target="_blank" rel="noopener">Licence Agreement</a>.</span>
+    </label>
+    <button type="button" class="tm-proceed" data-terms-proceed disabled>Agree &amp; continue to checkout</button>
   </div>
 </dialog>
 
@@ -157,37 +170,73 @@ const TERMS_VERSION = '2026-06-10';
       return (item && map[item.slug]) || (item && item.checkoutUrl) || '';
     }
 
-    // Clickwrap gate: buyers must affirmatively assent to RevAudio's Terms + EULA
-    // before the LS overlay opens. The LS overlay can't host our checkbox (it only
-    // exposes its own terms text), so we gate on this side of the payment screen.
-    function agreeEl() { return drawer && drawer.querySelector('[data-cart-agree]'); }
-    function setAgreeError(on) {
-      var label = drawer && drawer.querySelector('[data-agree-label]');
-      var hint = drawer && drawer.querySelector('[data-agree-hint]');
-      if (label) label.classList.toggle('is-error', !!on);
-      if (hint) hint.hidden = !on;
+    // ---- Terms & Conditions consent modal (scroll-to-accept) ----
+    // Legally stronger than a bare checkbox: the buyer must scroll through the
+    // full T&C before the "I agree" box unlocks. The LS overlay can't host our
+    // consent (it only shows LS's own terms), so we gate on this side of payment.
+    var termsAccepted = false;
+    var tModal = document.querySelector('[data-terms-modal]');
+    var tScroll = tModal && tModal.querySelector('[data-terms-scroll]');
+    var tEnd = tModal && tModal.querySelector('[data-terms-end]');
+    var tAgree = tModal && tModal.querySelector('[data-terms-agree]');
+    var tProceed = tModal && tModal.querySelector('[data-terms-proceed]');
+    var tHint = tModal && tModal.querySelector('[data-terms-hint]');
+    var tObserver = null;
+
+    function enableTermsAgree() {
+      if (tAgree) tAgree.disabled = false;
+      if (tHint) tHint.hidden = true;
+    }
+    function termsCleanup() {
+      if (tObserver) { tObserver.disconnect(); tObserver = null; }
+      html.style.overflow = (drawer && drawer.open) ? 'hidden' : '';
+    }
+    function openTermsModal() {
+      if (!tModal) { launchCheckout(); return; } // fail-open only if markup is missing
+      if (tAgree) { tAgree.checked = false; tAgree.disabled = true; }
+      if (tProceed) tProceed.disabled = true;
+      if (tHint) tHint.hidden = false;
+      if (tScroll) tScroll.scrollTop = 0;
+      if (typeof tModal.showModal === 'function') tModal.showModal(); else tModal.setAttribute('open', '');
+      html.style.overflow = 'hidden';
+      // Unlock the checkbox once the end sentinel is reached — works for mouse,
+      // keyboard, and content shorter than the viewport (IO fires on observe if
+      // the sentinel is already visible, so short terms never trap the user).
+      if ('IntersectionObserver' in window && tEnd && tScroll) {
+        if (tObserver) tObserver.disconnect();
+        tObserver = new IntersectionObserver(function (entries) {
+          for (var i = 0; i < entries.length; i++) if (entries[i].isIntersecting) enableTermsAgree();
+        }, { root: tScroll, rootMargin: '0px 0px 48px 0px' });
+        tObserver.observe(tEnd);
+      } else {
+        enableTermsAgree();
+      }
+    }
+    function closeTermsModal() {
+      if (tModal && tModal.open && typeof tModal.close === 'function') tModal.close(); // 'close' event → termsCleanup
+      else { if (tModal) tModal.removeAttribute('open'); termsCleanup(); }
     }
 
-    function openCheckout() {
+    // Cart Checkout button: prompt the terms once per session, then go to payment.
+    function startCheckout() {
       var items = read().filter(function (i) { return checkoutUrlFor(i); });
       if (!items.length) return;
-      // Require agreement first — flag the checkbox and stop if unchecked.
-      var agree = agreeEl();
-      if (agree && !agree.checked) { setAgreeError(true); agree.focus(); return; }
-      setAgreeError(false);
-      // LS hosted checkout is one buy-link per overlay; we sell one licence per
-      // product, so open the first item. embed=1 renders the chrome-less modal.
+      if (termsAccepted) { launchCheckout(); return; }
+      if (drawer && drawer.open) drawer.close();
+      openTermsModal();
+    }
+    // Opens the LS overlay, stamping the accepted legal-bundle version onto the
+    // order via LS custom passthrough data (consent record; LS docs: Passing Custom Data).
+    function launchCheckout() {
+      var items = read().filter(function (i) { return checkoutUrlFor(i); });
+      if (!items.length) return;
       var url = checkoutUrlFor(items[0]);
       url += (url.indexOf('?') === -1 ? '?' : '&') + 'embed=1';
-      // Consent record: stamp the accepted legal-bundle version onto the order via
-      // LS custom passthrough data. Lands in the order metadata / webhook, tying
-      // the assent to the payment. (LS docs: Passing Custom Data.)
-      var ver = (agree && agree.getAttribute('data-terms-version')) || '';
       url += '&checkout[custom][terms_accepted]=true';
+      var ver = (tAgree && tAgree.getAttribute('data-terms-version')) || '';
       if (ver) url += '&checkout[custom][terms_version]=' + encodeURIComponent(ver);
       if (drawer && drawer.open) drawer.close();
-      // Overlay on-site (no redirect). Fall back to a full redirect if lemon.js
-      // is blocked / not yet loaded.
+      // Overlay on-site (no redirect). Fall back to a full redirect if lemon.js is blocked.
       if (ensureLemon()) { window.LemonSqueezy.Url.Open(url); return; }
       window.location.href = url;
     }
@@ -209,15 +258,26 @@ const TERMS_VERSION = '2026-06-10';
       if (t.closest('[data-cart-toggle]')) { e.preventDefault(); openDrawer(); return; }
       var rm = t.closest('[data-remove]');
       if (rm) { remove(rm.getAttribute('data-remove')); return; }
-      if (t.closest('[data-checkout]')) { e.preventDefault(); openCheckout(); return; }
+      if (t.closest('[data-checkout]')) { e.preventDefault(); startCheckout(); return; }
+      if (t.closest('[data-terms-close]')) { e.preventDefault(); closeTermsModal(); return; }
+      if (t.closest('[data-terms-proceed]')) {
+        e.preventDefault();
+        if (tAgree && tAgree.checked) { termsAccepted = true; closeTermsModal(); launchCheckout(); }
+        return;
+      }
       if (t.closest('[data-cart-close]') && drawer && drawer.open) { drawer.close(); return; }
     });
 
     if (drawer) {
       drawer.addEventListener('click', function (e) { if (e.target === drawer) drawer.close(); }); // backdrop
       drawer.addEventListener('close', lock);
-      drawer.addEventListener('change', function (e) {
-        if (e.target && e.target.matches('[data-cart-agree]') && e.target.checked) setAgreeError(false);
+    }
+
+    if (tModal) {
+      tModal.addEventListener('close', termsCleanup);                                  // Esc / close()
+      tModal.addEventListener('click', function (e) { if (e.target === tModal) closeTermsModal(); }); // backdrop
+      tModal.addEventListener('change', function (e) {
+        if (e.target && e.target.matches('[data-terms-agree]') && tProceed) tProceed.disabled = !e.target.checked;
       });
     }
 
@@ -298,21 +358,6 @@ const TERMS_VERSION = '2026-06-10';
   }
   .cd-sub span:last-child { color: var(--brass-bright); font-size: 1.15rem; }
 
-  /* Clickwrap consent — must be ticked before checkout opens. */
-  .cd-agree {
-    display: flex; align-items: flex-start; gap: 0.55rem;
-    font-size: 0.8rem; line-height: 1.4; color: var(--fg-dim); cursor: pointer;
-  }
-  .cd-agree input {
-    flex: none; width: 16px; height: 16px; margin-top: 0.1rem;
-    accent-color: var(--brass); cursor: pointer;
-  }
-  .cd-agree a { color: var(--brass-bright); text-decoration: underline; }
-  .cd-agree a:hover { color: var(--brass); }
-  .cd-agree.is-error { color: var(--redline); }
-  .cd-agree.is-error input { outline: 2px solid var(--redline); outline-offset: 1px; }
-  .cd-agree-hint { margin: -0.35rem 0 0; font-size: 0.75rem; color: var(--redline); }
-
   /* CHECKOUT panel — plate is decorative; the .panel-hit over the red button clicks. */
   .cd-checkout { width: 100%; }
   .cd-cont {
@@ -324,4 +369,62 @@ const TERMS_VERSION = '2026-06-10';
   /* drawer is a flex column so cd-foot can pin to the bottom */
   .cart-drawer { display: flex; flex-direction: column; }
   .cart-drawer:not([open]) { display: none; }
+
+  /* ---- Terms & Conditions consent modal (centered) ---- */
+  .terms-modal {
+    margin: auto;
+    width: min(680px, 94vw);
+    max-height: min(86dvh, 880px);
+    padding: 0;
+    border: 1px solid var(--border-bright);
+    border-radius: 14px;
+    background: var(--bg-1);
+    color: var(--fg);
+    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.65);
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .terms-modal[open] { display: flex; }
+  .terms-modal:not([open]) { display: none; }
+  .terms-modal::backdrop { background: rgba(8, 7, 6, 0); transition: background 0.28s ease; }
+  .terms-modal[open]::backdrop { background: rgba(8, 7, 6, 0.72); backdrop-filter: blur(4px); }
+  @starting-style { .terms-modal[open]::backdrop { background: rgba(8, 7, 6, 0); } }
+
+  .tm-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.15rem 1.35rem; border-bottom: 1px solid var(--border); flex: none;
+  }
+  .tm-head h2 { margin: 0; font-size: 1.5rem; color: var(--fg); }
+
+  .tm-body { flex: 1; overflow-y: auto; padding: 0.4rem 1.35rem 1rem; }
+  .tm-body:focus-visible { outline: 2px solid var(--brass); outline-offset: -3px; }
+  /* TermsContent is a separate component, so its elements need :global to style. */
+  .tm-body :global(.muted) { color: var(--fg-faint); font-size: 0.8rem; }
+  .tm-body :global(h2) { font-size: 1.1rem; color: var(--fg); margin: 1.5rem 0 0.4rem; }
+  .tm-body :global(p) { font-size: 0.88rem; line-height: 1.6; color: var(--fg-dim); margin: 0 0 0.6rem; }
+  .tm-body :global(a) { color: var(--brass-bright); text-decoration: underline; }
+  .tm-body :global(strong) { color: var(--fg); }
+  .tm-end { height: 1px; }
+
+  .tm-foot {
+    flex: none; border-top: 1px solid var(--border);
+    padding: 0.9rem 1.35rem 1.15rem; background: var(--bg-1);
+    display: flex; flex-direction: column; gap: 0.7rem;
+  }
+  .tm-hint {
+    margin: 0; font-family: var(--font-mono); font-size: 0.78rem;
+    color: var(--brass-bright); letter-spacing: 0.02em;
+  }
+  .tm-agree { display: flex; align-items: flex-start; gap: 0.6rem; font-size: 0.85rem; line-height: 1.45; color: var(--fg); }
+  .tm-agree input { flex: none; width: 17px; height: 17px; margin-top: 0.1rem; accent-color: var(--brass); cursor: pointer; }
+  .tm-agree input:disabled { cursor: not-allowed; opacity: 0.45; }
+  .tm-agree a { color: var(--brass-bright); text-decoration: underline; }
+  .tm-proceed {
+    align-self: stretch; padding: 0.75rem 1.4rem; border-radius: 9px;
+    border: 1px solid var(--brass); background: var(--brass); color: var(--bg-0);
+    font-family: var(--font-display); letter-spacing: 0.04em; font-size: 1rem;
+    cursor: pointer; transition: background 0.2s var(--ease), opacity 0.2s var(--ease);
+  }
+  .tm-proceed:disabled { opacity: 0.4; cursor: not-allowed; }
+  .tm-proceed:not(:disabled):hover { background: var(--brass-bright); }
 </style>
