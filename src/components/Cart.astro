@@ -3,18 +3,22 @@ import { Image } from 'astro:assets';
 import checkoutImg from '../assets/ui/btn-checkout.png';
 import checkoutPressed from '../assets/ui/btn-checkout-pressed.png';
 import { plugins } from '../data/plugins';
+import TermsContent from './legal/TermsContent.astro';
+import EulaContent from './legal/EulaContent.astro';
+import PrivacyContent from './legal/PrivacyContent.astro';
+import { TERMS_LAST_UPDATED } from '../data/legal';
 /**
  * Global cart: a localStorage-backed mini-cart shared across every page.
  * - [data-add-to-cart] buttons (with data-slug/name/price/price-id/img) add items
  * - the header cart icon ([data-cart-toggle]) + badge ([data-cart-badge]) open the drawer
+ * - A required consent checkbox gates Checkout; its links open the legal-reader
+ *   modal (Terms / Licence / Privacy) IN A POPUP — no page navigation.
  * - Checkout opens the Lemon Squeezy overlay (lemon.js + ?embed=1) ON the site,
- *   no full redirect; falls back to a redirect if lemon.js is blocked
+ *   stamping the accepted terms version onto the order as a consent record.
  * Rendered once in BaseLayout. No framework — vanilla JS, progressive.
  *
  * Checkout URLs are resolved fresh from this catalog map by slug at checkout
- * time — NEVER from the URL persisted in the cart. A buyer's localStorage can
- * hold a stale URL (e.g. a test-mode link saved before a live swap); resolving
- * by slug means a deployed URL change takes effect immediately for everyone.
+ * time — NEVER from the URL persisted in the cart.
  */
 const checkoutMap: Record<string, string> = {};
 for (const p of plugins) if (p.checkoutUrl) checkoutMap[p.slug] = p.checkoutUrl;
@@ -35,12 +39,37 @@ for (const p of plugins) if (p.checkoutUrl) checkoutMap[p.slug] = p.checkoutUrl;
   <ul class="cd-items" data-cart-items data-lenis-prevent></ul>
   <div class="cd-foot" data-cart-foot hidden>
     <div class="cd-sub"><span>Subtotal</span><span data-cart-subtotal>$0</span></div>
+    <label class="cd-agree" data-agree-label>
+      <input type="checkbox" data-cart-agree data-terms-version={TERMS_LAST_UPDATED} aria-describedby="cd-agree-hint" />
+      <span>I have read and agree to RevAudio's
+        <a href="/terms" data-open-legal="terms">Terms</a>,
+        <a href="/eula" data-open-legal="eula">Licence</a> &amp;
+        <a href="/privacy" data-open-legal="privacy">Privacy</a>.</span>
+    </label>
+    <p class="cd-agree-hint" id="cd-agree-hint" data-agree-hint hidden>Please agree to the terms to continue.</p>
     <div class="cd-checkout panel">
       <Image src={checkoutImg} alt="" width={680} height={453} format="webp" />
       <button type="button" class="panel-hit hit-round hit-checkout" data-checkout aria-label="Checkout"></button>
       <Image src={checkoutPressed} alt="" width={680} height={453} format="webp" loading="eager" class="press" />
     </div>
     <button type="button" class="cd-cont" data-cart-close>Continue browsing</button>
+  </div>
+</dialog>
+
+<!-- Legal reader modal — read-only popup for Terms / Licence / Privacy (no page nav). -->
+<dialog class="legal-modal" data-legal-modal aria-label="Legal documents">
+  <div class="lm-head">
+    <div class="lm-tabs" role="tablist" aria-label="Legal documents">
+      <button type="button" class="lm-tab is-active" data-legal-tab="terms" role="tab" aria-selected="true">Terms &amp; Conditions</button>
+      <button type="button" class="lm-tab" data-legal-tab="eula" role="tab" aria-selected="false">Licence</button>
+      <button type="button" class="lm-tab" data-legal-tab="privacy" role="tab" aria-selected="false">Privacy</button>
+    </div>
+    <button type="button" class="cd-x" data-legal-close aria-label="Close">&times;</button>
+  </div>
+  <div class="lm-body" data-legal-scroll tabindex="0" data-lenis-prevent>
+    <section data-legal-panel="terms"><TermsContent /></section>
+    <section data-legal-panel="eula" hidden><EulaContent /></section>
+    <section data-legal-panel="privacy" hidden><PrivacyContent /></section>
   </div>
 </dialog>
 
@@ -63,7 +92,10 @@ for (const p of plugins) if (p.checkoutUrl) checkoutMap[p.slug] = p.checkoutUrl;
       });
     }
 
-    function lock() { html.style.overflow = (drawer && drawer.open) ? 'hidden' : ''; }
+    function lock() { html.style.overflow = anyModalOpen() ? 'hidden' : ''; }
+    function anyModalOpen() {
+      return (drawer && drawer.open) || (lModal && lModal.open);
+    }
 
     function add(item) {
       if (!item || !item.slug) return;
@@ -115,8 +147,6 @@ for (const p of plugins) if (p.checkoutUrl) checkoutMap[p.slug] = p.checkoutUrl;
     }
 
     // ---- Lemon Squeezy overlay ----
-    // lemon.js loads deferred; init lazily on first checkout (it's loaded by the
-    // time a user can click). Clear the cart when the buyer completes payment.
     var lemonReady = false;
     function ensureLemon() {
       if (lemonReady) return !!(window.LemonSqueezy && window.LemonSqueezy.Url);
@@ -136,8 +166,6 @@ for (const p of plugins) if (p.checkoutUrl) checkoutMap[p.slug] = p.checkoutUrl;
       return lemonReady;
     }
 
-    // Catalog map (slug -> current checkout URL), baked at build time. Resolving
-    // here means the cart never serves a stale URL persisted in localStorage.
     function checkoutMap() {
       var el = document.querySelector('[data-checkout-map]');
       try { return el ? JSON.parse(el.textContent || '{}') : {}; } catch (e) { return {}; }
@@ -147,18 +175,59 @@ for (const p of plugins) if (p.checkoutUrl) checkoutMap[p.slug] = p.checkoutUrl;
       return (item && map[item.slug]) || (item && item.checkoutUrl) || '';
     }
 
+    // ---- Consent gate: a required checkbox in the cart, ticked before checkout ----
+    function agreeEl() { return drawer && drawer.querySelector('[data-cart-agree]'); }
+    function setAgreeError(on) {
+      var label = drawer && drawer.querySelector('[data-agree-label]');
+      var hint = drawer && drawer.querySelector('[data-agree-hint]');
+      if (label) label.classList.toggle('is-error', !!on);
+      if (hint) hint.hidden = !on;
+    }
     function openCheckout() {
       var items = read().filter(function (i) { return checkoutUrlFor(i); });
       if (!items.length) return;
-      // LS hosted checkout is one buy-link per overlay; we sell one licence per
-      // product, so open the first item. embed=1 renders the chrome-less modal.
+      // Require agreement first — flag the checkbox and stop if unchecked.
+      var agree = agreeEl();
+      if (agree && !agree.checked) { setAgreeError(true); agree.focus(); return; }
+      setAgreeError(false);
       var url = checkoutUrlFor(items[0]);
       url += (url.indexOf('?') === -1 ? '?' : '&') + 'embed=1';
+      // Consent record: stamp the accepted legal-bundle version onto the order via
+      // LS custom passthrough data. (LS docs: Passing Custom Data.)
+      url += '&checkout[custom][terms_accepted]=true';
+      var ver = (agree && agree.getAttribute('data-terms-version')) || '';
+      if (ver) url += '&checkout[custom][terms_version]=' + encodeURIComponent(ver);
       if (drawer && drawer.open) drawer.close();
-      // Overlay on-site (no redirect). Fall back to a full redirect if lemon.js
-      // is blocked / not yet loaded.
       if (ensureLemon()) { window.LemonSqueezy.Url.Open(url); return; }
       window.location.href = url;
+    }
+
+    // ---- Legal reader modal (read-only; Terms / Licence / Privacy tabs) ----
+    var lModal = document.querySelector('[data-legal-modal]');
+    var lScroll = lModal && lModal.querySelector('[data-legal-scroll]');
+    function setLegalTab(doc) {
+      if (!lModal) return;
+      var tabs = lModal.querySelectorAll('[data-legal-tab]');
+      for (var i = 0; i < tabs.length; i++) {
+        var on = tabs[i].getAttribute('data-legal-tab') === doc;
+        tabs[i].classList.toggle('is-active', on);
+        tabs[i].setAttribute('aria-selected', on ? 'true' : 'false');
+      }
+      var panels = lModal.querySelectorAll('[data-legal-panel]');
+      for (var j = 0; j < panels.length; j++) {
+        panels[j].hidden = panels[j].getAttribute('data-legal-panel') !== doc;
+      }
+      if (lScroll) lScroll.scrollTop = 0;
+    }
+    function openLegal(doc) {
+      if (!lModal) return;
+      setLegalTab(doc || 'terms');
+      if (typeof lModal.showModal === 'function') lModal.showModal(); else lModal.setAttribute('open', '');
+      lock();
+    }
+    function closeLegal() {
+      if (lModal && lModal.open && typeof lModal.close === 'function') lModal.close();
+      else if (lModal) { lModal.removeAttribute('open'); lock(); }
     }
 
     document.addEventListener('click', function (e) {
@@ -179,12 +248,37 @@ for (const p of plugins) if (p.checkoutUrl) checkoutMap[p.slug] = p.checkoutUrl;
       var rm = t.closest('[data-remove]');
       if (rm) { remove(rm.getAttribute('data-remove')); return; }
       if (t.closest('[data-checkout]')) { e.preventDefault(); openCheckout(); return; }
+
+      // Open the legal reader from the cart's consent links (popup, not a page).
+      var openL = t.closest('[data-open-legal]');
+      if (openL) { e.preventDefault(); openLegal(openL.getAttribute('data-open-legal')); return; }
+      // Tab switching inside the reader.
+      var tabBtn = t.closest('[data-legal-tab]');
+      if (tabBtn) { e.preventDefault(); setLegalTab(tabBtn.getAttribute('data-legal-tab')); return; }
+      if (t.closest('[data-legal-close]')) { e.preventDefault(); closeLegal(); return; }
+      // Internal legal cross-links inside the reader → switch tab, stay in the popup.
+      if (lModal && lModal.open && lModal.contains(t)) {
+        var xref = t.closest('a[href^="/terms"], a[href^="/eula"], a[href^="/privacy"]');
+        if (xref) {
+          var href = xref.getAttribute('href');
+          var doc = href.indexOf('/privacy') === 0 ? 'privacy' : href.indexOf('/eula') === 0 ? 'eula' : href.indexOf('/terms') === 0 ? 'terms' : '';
+          if (doc) { e.preventDefault(); setLegalTab(doc); return; }
+        }
+      }
+
       if (t.closest('[data-cart-close]') && drawer && drawer.open) { drawer.close(); return; }
     });
 
     if (drawer) {
       drawer.addEventListener('click', function (e) { if (e.target === drawer) drawer.close(); }); // backdrop
       drawer.addEventListener('close', lock);
+      drawer.addEventListener('change', function (e) {
+        if (e.target && e.target.matches('[data-cart-agree]') && e.target.checked) setAgreeError(false);
+      });
+    }
+    if (lModal) {
+      lModal.addEventListener('close', lock);
+      lModal.addEventListener('click', function (e) { if (e.target === lModal) closeLegal(); }); // backdrop
     }
 
     sync();
@@ -263,6 +357,22 @@ for (const p of plugins) if (p.checkoutUrl) checkoutMap[p.slug] = p.checkoutUrl;
     font-family: var(--font-mono); font-size: 0.95rem; color: var(--fg);
   }
   .cd-sub span:last-child { color: var(--brass-bright); font-size: 1.15rem; }
+
+  /* Consent checkbox — required before checkout; its links open the reader popup. */
+  .cd-agree {
+    display: flex; align-items: flex-start; gap: 0.55rem;
+    font-size: 0.8rem; line-height: 1.4; color: var(--fg-dim); cursor: pointer;
+  }
+  .cd-agree input {
+    flex: none; width: 16px; height: 16px; margin-top: 0.1rem;
+    accent-color: var(--brass); cursor: pointer;
+  }
+  .cd-agree a { color: var(--brass-bright); text-decoration: underline; cursor: pointer; }
+  .cd-agree a:hover { color: var(--brass); }
+  .cd-agree.is-error { color: var(--redline); }
+  .cd-agree.is-error input { outline: 2px solid var(--redline); outline-offset: 1px; }
+  .cd-agree-hint { margin: -0.35rem 0 0; font-size: 0.75rem; color: var(--redline); }
+
   /* CHECKOUT panel — plate is decorative; the .panel-hit over the red button clicks. */
   .cd-checkout { width: 100%; }
   .cd-cont {
@@ -274,4 +384,50 @@ for (const p of plugins) if (p.checkoutUrl) checkoutMap[p.slug] = p.checkoutUrl;
   /* drawer is a flex column so cd-foot can pin to the bottom */
   .cart-drawer { display: flex; flex-direction: column; }
   .cart-drawer:not([open]) { display: none; }
+
+  /* ---- Legal reader modal (centered, tabbed) ---- */
+  .legal-modal {
+    margin: auto;
+    width: min(720px, 94vw);
+    max-height: min(88dvh, 900px);
+    padding: 0;
+    border: 1px solid var(--border-bright);
+    border-radius: 14px;
+    background: var(--bg-1);
+    color: var(--fg);
+    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.65);
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .legal-modal[open] { display: flex; }
+  .legal-modal:not([open]) { display: none; }
+  .legal-modal::backdrop { background: rgba(8, 7, 6, 0); transition: background 0.28s ease; }
+  .legal-modal[open]::backdrop { background: rgba(8, 7, 6, 0.72); backdrop-filter: blur(4px); }
+  @starting-style { .legal-modal[open]::backdrop { background: rgba(8, 7, 6, 0); } }
+
+  .lm-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+    padding: 0.9rem 1.1rem; border-bottom: 1px solid var(--border); flex: none;
+  }
+  .lm-tabs { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+  .lm-tab {
+    padding: 0.4rem 0.8rem; border-radius: 7px; border: 1px solid var(--border);
+    background: transparent; color: var(--fg-dim);
+    font-family: var(--font-mono); font-size: 0.76rem; letter-spacing: 0.02em; cursor: pointer;
+    transition: color 0.2s, border-color 0.2s, background 0.2s;
+  }
+  .lm-tab:hover { color: var(--brass-bright); border-color: var(--border-bright); }
+  .lm-tab.is-active { color: var(--bg-0); background: var(--brass); border-color: var(--brass); }
+
+  .lm-body { flex: 1; overflow-y: auto; padding: 0.4rem 1.35rem 1.2rem; }
+  .lm-body:focus-visible { outline: 2px solid var(--brass); outline-offset: -3px; }
+  /* Content comes from separate components, so style via :global. */
+  .lm-body :global(.muted) { color: var(--fg-faint); font-size: 0.8rem; }
+  .lm-body :global(h2) { font-size: 1.1rem; color: var(--fg); margin: 1.5rem 0 0.4rem; }
+  .lm-body :global(p) { font-size: 0.88rem; line-height: 1.6; color: var(--fg-dim); margin: 0 0 0.6rem; }
+  .lm-body :global(ul) { margin: 0 0 0.7rem; padding-left: 1.2rem; }
+  .lm-body :global(li) { font-size: 0.88rem; line-height: 1.55; color: var(--fg-dim); margin: 0 0 0.3rem; }
+  .lm-body :global(a) { color: var(--brass-bright); text-decoration: underline; }
+  .lm-body :global(strong) { color: var(--fg); }
+  .lm-body :global(code) { font-family: var(--font-mono); font-size: 0.82em; color: var(--brass-bright); }
 </style>
