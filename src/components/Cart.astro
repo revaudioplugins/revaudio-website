@@ -18,6 +18,11 @@ import { plugins } from '../data/plugins';
  */
 const checkoutMap: Record<string, string> = {};
 for (const p of plugins) if (p.checkoutUrl) checkoutMap[p.slug] = p.checkoutUrl;
+
+// Legal bundle version stamped onto each order as a consent record (LS custom
+// data). Bump this whenever /terms or /eula changes — the version live at
+// purchase time is the one that binds. Keep in sync with the /terms date.
+const TERMS_VERSION = '2026-06-10';
 ---
 
 <script is:inline type="application/json" data-checkout-map set:html={JSON.stringify(checkoutMap)}></script>
@@ -35,6 +40,11 @@ for (const p of plugins) if (p.checkoutUrl) checkoutMap[p.slug] = p.checkoutUrl;
   <ul class="cd-items" data-cart-items data-lenis-prevent></ul>
   <div class="cd-foot" data-cart-foot hidden>
     <div class="cd-sub"><span>Subtotal</span><span data-cart-subtotal>$0</span></div>
+    <label class="cd-agree" data-agree-label>
+      <input type="checkbox" data-cart-agree data-terms-version={TERMS_VERSION} aria-describedby="cd-agree-hint" />
+      <span>I have read and agree to RevAudio's <a href="/terms" target="_blank" rel="noopener">Terms &amp; Conditions</a> and <a href="/eula" target="_blank" rel="noopener">Licence Agreement</a>.</span>
+    </label>
+    <p class="cd-agree-hint" id="cd-agree-hint" data-agree-hint hidden>Please agree to the terms to continue.</p>
     <div class="cd-checkout panel">
       <Image src={checkoutImg} alt="" width={680} height={453} format="webp" />
       <button type="button" class="panel-hit hit-round hit-checkout" data-checkout aria-label="Checkout"></button>
@@ -147,13 +157,34 @@ for (const p of plugins) if (p.checkoutUrl) checkoutMap[p.slug] = p.checkoutUrl;
       return (item && map[item.slug]) || (item && item.checkoutUrl) || '';
     }
 
+    // Clickwrap gate: buyers must affirmatively assent to RevAudio's Terms + EULA
+    // before the LS overlay opens. The LS overlay can't host our checkbox (it only
+    // exposes its own terms text), so we gate on this side of the payment screen.
+    function agreeEl() { return drawer && drawer.querySelector('[data-cart-agree]'); }
+    function setAgreeError(on) {
+      var label = drawer && drawer.querySelector('[data-agree-label]');
+      var hint = drawer && drawer.querySelector('[data-agree-hint]');
+      if (label) label.classList.toggle('is-error', !!on);
+      if (hint) hint.hidden = !on;
+    }
+
     function openCheckout() {
       var items = read().filter(function (i) { return checkoutUrlFor(i); });
       if (!items.length) return;
+      // Require agreement first — flag the checkbox and stop if unchecked.
+      var agree = agreeEl();
+      if (agree && !agree.checked) { setAgreeError(true); agree.focus(); return; }
+      setAgreeError(false);
       // LS hosted checkout is one buy-link per overlay; we sell one licence per
       // product, so open the first item. embed=1 renders the chrome-less modal.
       var url = checkoutUrlFor(items[0]);
       url += (url.indexOf('?') === -1 ? '?' : '&') + 'embed=1';
+      // Consent record: stamp the accepted legal-bundle version onto the order via
+      // LS custom passthrough data. Lands in the order metadata / webhook, tying
+      // the assent to the payment. (LS docs: Passing Custom Data.)
+      var ver = (agree && agree.getAttribute('data-terms-version')) || '';
+      url += '&checkout[custom][terms_accepted]=true';
+      if (ver) url += '&checkout[custom][terms_version]=' + encodeURIComponent(ver);
       if (drawer && drawer.open) drawer.close();
       // Overlay on-site (no redirect). Fall back to a full redirect if lemon.js
       // is blocked / not yet loaded.
@@ -185,6 +216,9 @@ for (const p of plugins) if (p.checkoutUrl) checkoutMap[p.slug] = p.checkoutUrl;
     if (drawer) {
       drawer.addEventListener('click', function (e) { if (e.target === drawer) drawer.close(); }); // backdrop
       drawer.addEventListener('close', lock);
+      drawer.addEventListener('change', function (e) {
+        if (e.target && e.target.matches('[data-cart-agree]') && e.target.checked) setAgreeError(false);
+      });
     }
 
     sync();
@@ -263,6 +297,22 @@ for (const p of plugins) if (p.checkoutUrl) checkoutMap[p.slug] = p.checkoutUrl;
     font-family: var(--font-mono); font-size: 0.95rem; color: var(--fg);
   }
   .cd-sub span:last-child { color: var(--brass-bright); font-size: 1.15rem; }
+
+  /* Clickwrap consent — must be ticked before checkout opens. */
+  .cd-agree {
+    display: flex; align-items: flex-start; gap: 0.55rem;
+    font-size: 0.8rem; line-height: 1.4; color: var(--fg-dim); cursor: pointer;
+  }
+  .cd-agree input {
+    flex: none; width: 16px; height: 16px; margin-top: 0.1rem;
+    accent-color: var(--brass); cursor: pointer;
+  }
+  .cd-agree a { color: var(--brass-bright); text-decoration: underline; }
+  .cd-agree a:hover { color: var(--brass); }
+  .cd-agree.is-error { color: var(--redline); }
+  .cd-agree.is-error input { outline: 2px solid var(--redline); outline-offset: 1px; }
+  .cd-agree-hint { margin: -0.35rem 0 0; font-size: 0.75rem; color: var(--redline); }
+
   /* CHECKOUT panel — plate is decorative; the .panel-hit over the red button clicks. */
   .cd-checkout { width: 100%; }
   .cd-cont {
