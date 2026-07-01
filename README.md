@@ -26,7 +26,6 @@ Output goes to `dist/`. Vercel auto-deploys from `main`.
 - `/revlimiter` — flagship limiter plugin
 - `/the-ac` — air-band exciter / saturator
 - `/the-cooker` — stereo panner with autopilot
-- `/maybach` — dynamic EQ (in development)
 - `/about` — RevAudio philosophy
 - `/contact` — email + social
 
