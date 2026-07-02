@@ -1,0 +1,238 @@
+---
+/* Cookie consent banner — shown once per browser, stored in localStorage.
+   Accepting also initialises Meta Pixel; declining skips all tracking cookies.
+   Cloudflare Web Analytics is cookieless and fires unconditionally. */
+---
+
+<div
+  class="cb"
+  id="cookie-banner"
+  role="region"
+  aria-label="Cookie consent"
+  aria-live="polite"
+  hidden
+>
+  <div class="cb-inner">
+    <div class="cb-text">
+      <p class="cb-body">
+        We use cookies and similar tracking technologies to understand how you interact with our site
+        and to improve our marketing. By clicking <em>Accept All</em> you consent to our use of
+        analytics and advertising cookies. You can also decline — the site works either way.
+        See our <a href="/terms" class="cb-link">Terms &amp; Conditions</a> for details.
+      </p>
+      <strong class="cb-title"><span class="cb-emoji" aria-hidden="true">🍪</span> We use cookies</strong>
+    </div>
+    <div class="cb-actions">
+      <button type="button" class="cb-btn cb-btn--decline" id="cookie-decline" aria-label="Decline cookies">
+        Decline
+      </button>
+      <button type="button" class="cb-btn cb-btn--accept" id="cookie-accept" aria-label="Accept all cookies">
+        Accept All
+      </button>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  (function () {
+    var KEY = 'ra-cookie-consent';
+    var banner = document.getElementById('cookie-banner');
+    if (!banner) return;
+
+    function initMetaPixel() {
+      if (window.fbq) return;
+      !function (f, b, e, v, n, t, s) {
+        if (f.fbq) return;
+        n = f.fbq = function () { n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments); };
+        if (!f._fbq) f._fbq = n;
+        n.push = n; n.loaded = !0; n.version = '2.0';
+        n.queue = []; t = b.createElement(e); t.async = !0;
+        t.src = v; s = b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t, s);
+      }(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
+      fbq('init', '27292580807031194');
+      fbq('track', 'PageView');
+    }
+
+    function showBanner() {
+      banner.hidden = false;
+      requestAnimationFrame(function () { banner.classList.add('cb--visible'); });
+      // Move focus to the banner for a11y
+      var acceptBtn = document.getElementById('cookie-accept');
+      if (acceptBtn) acceptBtn.focus();
+    }
+
+    function hideBanner() {
+      banner.classList.remove('cb--visible');
+      banner.addEventListener('transitionend', function hide() {
+        banner.hidden = true;
+        banner.removeEventListener('transitionend', hide);
+      });
+    }
+
+    var stored = '';
+    try { stored = localStorage.getItem(KEY) || ''; } catch (e) {}
+
+    if (stored === 'accepted') {
+      initMetaPixel();
+      return;
+    }
+    if (stored === 'declined') {
+      return;
+    }
+
+    // No decision yet — show the banner
+    // Small delay so the page settles before the banner slides up
+    setTimeout(showBanner, 800);
+
+    var acceptBtn = document.getElementById('cookie-accept');
+    var declineBtn = document.getElementById('cookie-decline');
+
+    if (acceptBtn) {
+      acceptBtn.addEventListener('click', function () {
+        try { localStorage.setItem(KEY, 'accepted'); } catch (e) {}
+        hideBanner();
+        initMetaPixel();
+      });
+    }
+
+    if (declineBtn) {
+      declineBtn.addEventListener('click', function () {
+        try { localStorage.setItem(KEY, 'declined'); } catch (e) {}
+        hideBanner();
+      });
+    }
+  })();
+</script>
+
+<style>
+  .cb {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 9000;
+    background: var(--bg-0);
+    border-top: 1px solid var(--brass);
+    box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.55);
+    transform: translateY(100%);
+    transition: transform 0.4s var(--ease);
+    will-change: transform;
+  }
+
+  .cb--visible {
+    transform: translateY(0);
+  }
+
+  .cb-inner {
+    padding: 1.1rem 2.5rem;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  .cb-text {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  .cb-title {
+    flex-shrink: 0;
+    font-family: var(--font-display);
+    font-size: 2rem;
+    letter-spacing: 0.08em;
+    color: var(--brass-bright);
+    margin-left: 200px;
+  }
+
+  .cb-emoji {
+    display: inline-block;
+    animation: cb-wobble 2.4s ease-in-out infinite;
+    transform-origin: center bottom;
+  }
+
+  @keyframes cb-wobble {
+    0%,  100% { transform: rotate(0deg) scale(1); }
+    15%        { transform: rotate(-12deg) scale(1.15); }
+    30%        { transform: rotate(10deg) scale(1.1); }
+    45%        { transform: rotate(-8deg) scale(1.05); }
+    60%        { transform: rotate(6deg) scale(1.02); }
+    75%        { transform: rotate(-3deg) scale(1); }
+  }
+
+  .cb-body {
+    flex: 1;
+    margin: 0;
+    font-size: 0.82rem;
+    line-height: 1.55;
+    color: var(--fg-dim);
+  }
+
+  .cb-link {
+    color: var(--brass);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .cb-link:hover { color: var(--brass-bright); }
+
+  .cb-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-shrink: 0;
+    align-items: center;
+  }
+
+  .cb-btn {
+    cursor: pointer;
+    border-radius: 4px;
+    font-family: var(--font-display);
+    letter-spacing: 0.06em;
+    font-size: 0.85rem;
+    padding: 0.55rem 1.3rem;
+    transition: background 0.2s var(--ease), color 0.2s var(--ease), border-color 0.2s var(--ease);
+    white-space: nowrap;
+  }
+
+  .cb-btn--decline {
+    background: transparent;
+    border: 1px solid var(--border-bright);
+    color: var(--fg-dim);
+  }
+  .cb-btn--decline:hover {
+    border-color: var(--fg-dim);
+    color: var(--fg);
+  }
+
+  .cb-btn--accept {
+    background: var(--brass);
+    border: 1px solid var(--brass);
+    color: #0a0908;
+  }
+  .cb-btn--accept:hover {
+    background: var(--brass-bright);
+    border-color: var(--brass-bright);
+  }
+
+  @media (max-width: 640px) {
+    .cb-inner {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      padding: 1rem 1.1rem 1.2rem;
+    }
+    .cb-text {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+    .cb-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+    .cb-btn {
+      text-align: center;
+    }
+  }
+</style>
