@@ -21,9 +21,11 @@
      swings over live page content, so still tamer than the bench.
    - Typography in cqw (door = container) so the painted copy scales with the
      door; bench px values were tuned at door width 480px (1cqw = 4.8px).
-   - Light peaks folded to constants (bench sliders: 0.72/0.60/0.78, glow .85);
-     the L1 room light spills past the door onto the page itself. No wash/
-     grain/vignette — those were the boxed-photograph treatment.
+   - Light peaks folded to constants (2026-07-03c: L1 core .37 / spill .91;
+     L2 tint .45 / glow .46 / box-light .43, glow frame-blur 30px). L1 room
+     light spills past the door onto the page. On hover L2 both frames the box
+     (blurred glow halo) AND lights it (.rc-buysq-lit screen wash on the patch
+     + BUY NOW ink). No wash/grain/vignette — boxed-photograph treatment.
    - Release choreography (page-bottom drop/pickup) NOT mounted — the card
      isn't pinned to document bottom here; the CSS vars it rides (--door-y/
      --door-rot/--crane-y) stay declared at 0 so it can bake in later.
@@ -33,7 +35,7 @@ import { fmtPrice, discountPct } from '../data/plugins';
 import masterImg from '../assets/plugins/revlimiter-crane-master.png';   // door only
 import hookImg from '../assets/plugins/revlimiter-crane-hook.png';       // chain strip + swivel + hook
 import ringImg from '../assets/plugins/revlimiter-door-ring.png';        // the door's lifting ring
-import buysqImg from '../assets/plugins/revlimiter-buy-square.png';      // BUY NOW square (the add-to-cart)
+import buysqImg from '../assets/plugins/revlimiter-buy-patch.png';       // BUY NOW patch (text-less) — live text renders in .rc-buysq-label
 import chainImg from '../assets/plugins/revlimiter-chain.png';
 import wearImg from '../assets/plugins/revlimiter-wear.png';
 
@@ -93,6 +95,9 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
             data-checkout-url={plugin.checkoutUrl}
             aria-label={`Add ${plugin.name} to cart — ${fmtPrice(cartPrice)}`}
           >
+            <span class="rc-buysq-paint"></span>
+            <span class="rc-buysq-label">BUY NOW</span>
+            <span class="rc-buysq-lit"></span>
             <span class="rc-buysq-tint"></span>
             <span class="rc-buysq-glow"></span>
           </button>
@@ -117,14 +122,18 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
          Safari failure mode is an UNFILTERED render — mask + imprint carry
          the worn read on their own. -->
     <svg class="rc-defs" width="0" height="0" aria-hidden="true">
+      <!-- One dedicated worn filter PER text element (bench /lightlab tuned each
+           element's erosion=displacement scale / blur=stdDeviation /
+           grain=baseFrequency independently). Values baked from the 2026-07-03c
+           COPY. price keeps the speckle-holes chain; plat is a no-op (scale 0). -->
       <defs>
-        <filter id="rc-worn-lg" x="-25%" y="-50%" width="150%" height="200%"
+        <filter id="rc-worn-price" x="-25%" y="-50%" width="150%" height="200%"
                 color-interpolation-filters="sRGB">
-          <feTurbulence type="fractalNoise" baseFrequency="0.015 0.025"
+          <feTurbulence type="fractalNoise" baseFrequency="0.005 0.005"
                         numOctaves="4" seed="7" result="warp"/>
-          <feDisplacementMap in="SourceGraphic" in2="warp" scale="5.5"
+          <feDisplacementMap in="SourceGraphic" in2="warp" scale="5.85"
                              xChannelSelector="R" yChannelSelector="G" result="disp"/>
-          <feGaussianBlur in="disp" stdDeviation="0.25" result="soft"/>
+          <feGaussianBlur in="disp" stdDeviation="0" result="soft"/>
           <feTurbulence type="fractalNoise" baseFrequency="0.55"
                         numOctaves="2" seed="3" result="spk"/>
           <feColorMatrix in="spk" type="matrix"
@@ -132,7 +141,31 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
                          result="holes"/>
           <feComposite in="soft" in2="holes" operator="out"/>
         </filter>
-        <filter id="rc-worn-sm" x="-25%" y="-50%" width="150%" height="200%"
+        <filter id="rc-worn-tag" x="-25%" y="-50%" width="150%" height="200%"
+                color-interpolation-filters="sRGB">
+          <feTurbulence type="fractalNoise" baseFrequency="0.02 0.02"
+                        numOctaves="2" seed="11" result="warp"/>
+          <feDisplacementMap in="SourceGraphic" in2="warp" scale="3.6"
+                             xChannelSelector="R" yChannelSelector="G" result="disp"/>
+          <feGaussianBlur in="disp" stdDeviation="0"/>
+        </filter>
+        <filter id="rc-worn-code" x="-25%" y="-50%" width="150%" height="200%"
+                color-interpolation-filters="sRGB">
+          <feTurbulence type="fractalNoise" baseFrequency="0.02 0.02"
+                        numOctaves="2" seed="11" result="warp"/>
+          <feDisplacementMap in="SourceGraphic" in2="warp" scale="3.15"
+                             xChannelSelector="R" yChannelSelector="G" result="disp"/>
+          <feGaussianBlur in="disp" stdDeviation="0"/>
+        </filter>
+        <filter id="rc-worn-plat" x="-25%" y="-50%" width="150%" height="200%"
+                color-interpolation-filters="sRGB">
+          <feTurbulence type="fractalNoise" baseFrequency="0.08 0.12"
+                        numOctaves="2" seed="11" result="warp"/>
+          <feDisplacementMap in="SourceGraphic" in2="warp" scale="0"
+                             xChannelSelector="R" yChannelSelector="G" result="disp"/>
+          <feGaussianBlur in="disp" stdDeviation="0"/>
+        </filter>
+        <filter id="rc-worn-buy" x="-25%" y="-50%" width="150%" height="200%"
                 color-interpolation-filters="sRGB">
           <feTurbulence type="fractalNoise" baseFrequency="0.08 0.12"
                         numOctaves="2" seed="11" result="warp"/>
@@ -197,7 +230,7 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
   .revcrane-grade {
     width: 100%;
     position: relative;
-    filter: saturate(0.94) brightness(1.02);
+    filter: saturate(0.92) brightness(0.97);    /* lightlab ref 2026-07-03b */
     will-change: transform;
   }
 
@@ -243,14 +276,14 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
      origin pushed to the door's floor point for the (future) release tip. */
   .rc-ring {
     position: absolute;
-    left: 49.505%;
-    top: 24.305%;
-    width: 4.95%;
+    left: 49.57%;
+    top: 24.61%;
+    width: 4.3%;                         /* lightlab ref 2026-07-03b */
     aspect-ratio: 40 / 140;
     background: var(--ring-url) center / 100% 100% no-repeat;
     z-index: 3;
     translate: 0 calc(var(--door-y) * 1px);
-    rotate: calc(var(--door-rot) * 1deg);
+    rotate: calc(var(--door-rot) * 1deg + 0.2deg);
     transform-origin: 10% 783%;
     pointer-events: none;
   }
@@ -340,85 +373,93 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
   .rc-defs { position: absolute; width: 0; height: 0; }  /* never display:none */
 
   .rc-tag {
-    left: 62.4%;
-    top: 60.6%;
-    rotate: 0.4deg;
+    left: 69.3%;
+    top: 68.3%;
+    rotate: -1.3deg;
     font-family: var(--font-mono);
-    font-size: 3.23cqw;                  /* bench 15.5px */
-    letter-spacing: 0.15em;
+    font-size: 4.17cqw;                  /* lightlab ref 2026-07-03c */
+    letter-spacing: 0.06em;
     font-weight: 700;
     text-transform: uppercase;
-    padding: 0.4cqw 1.67cqw;
-    color: var(--oxide-text);
-    border: 1px solid var(--oxide);
+    padding: 0.4cqw 1.65cqw;
+    color: #cab1a3;
+    border: 1px solid #58130b;
     border-radius: 3px;
-    filter: url(#rc-worn-sm);
+    -webkit-text-stroke: 0.35px currentColor;
+    filter: url(#rc-worn-tag);
   }
 
   .rc-price {
-    left: 29.3%;
-    top: 73.7%;
-    rotate: -4.3deg;
-    transform: translate(-50%, -50%) scale(1.56);
+    left: 30.9%;
+    top: 68%;
+    rotate: -2.7deg;
+    transform: translate(-50%, -50%) scale(1.23);    /* lightlab ref 2026-07-03c */
     display: flex;
     align-items: baseline;
-    gap: 1.67cqw;
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.45);
-    filter: url(#rc-worn-lg);
+    gap: 1.3cqw;
+    opacity: 0.97;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+    -webkit-text-stroke: 0px currentColor;
+    filter: url(#rc-worn-price);
   }
 
   .rc-now {
     font-family: var(--font-display);
-    font-size: 10cqw;                    /* bench 3rem */
-    line-height: 0.85;
-    letter-spacing: 0.04em;
-    color: var(--brass-bright);
+    font-size: 10.75cqw;                 /* lightlab ref 2026-07-03c */
+    line-height: 1.08;
+    letter-spacing: 0.08em;
+    color: #e8c878;
   }
 
   .rc-was {
     font-family: var(--font-display);
-    font-size: 5cqw;                     /* bench 1.5rem */
+    font-size: 7.25cqw;                  /* lightlab ref 2026-07-03c */
     text-decoration: line-through;
-    color: var(--fg-faint);
+    color: #919191;
   }
 
   .rc-code {
-    left: 49.5%;
-    top: 88%;
-    rotate: 1.5deg;
+    left: 49.1%;
+    top: 90.9%;
+    rotate: 0.9deg;
     font-family: var(--font-mono);
-    font-size: 3.125cqw;                 /* bench 15px */
+    font-size: 3.64cqw;                  /* lightlab ref 2026-07-03c */
     letter-spacing: 0.02em;
     text-transform: uppercase;
     color: #f4e8cf;
     text-shadow: 0 1px 1px rgba(0, 0, 0, 0.45);
-    filter: url(#rc-worn-sm);
+    -webkit-text-stroke: 0px currentColor;
+    filter: url(#rc-worn-code);
   }
 
   .rc-code b {
     letter-spacing: 0.15em;
-    color: var(--brass-bright);
+    color: #e32400;                      /* lightlab ref 2026-07-03b */
   }
 
   .rc-plat {
     left: 49%;
     top: 93.6%;
     font-family: var(--font-mono);
-    font-size: 1.25cqw;                  /* bench 6px — displacement would mush it */
+    font-size: 0.8cqw;                   /* lightlab ref 2026-07-03c */
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--brass);
+    color: #c9a35c;
     text-shadow: 0 1px 1px rgba(0, 0, 0, 0.45);
+    -webkit-text-stroke: 0px currentColor;
+    filter: url(#rc-worn-plat);          /* no-op (scale 0) — kept for bench parity */
   }
 
   /* ── BUY NOW square (the add-to-cart) + garage light ────────────────── */
   .rc-buysq {
     position: absolute;
-    left: 67%;
-    top: 78.7%;
-    width: 26%;
-    aspect-ratio: 400 / 400;
+    left: 50%;
+    top: 80.5%;
+    width: 67.8%;                        /* one-row stamp — lightlab ref 2026-07-03c (big, centred) */
+    aspect-ratio: 620 / 237;
     transform: translate(-50%, -50%);
+    rotate: 1deg;
+    opacity: 0.69;
     background: var(--buysq-url) center / 100% 100% no-repeat;
     background-color: transparent;
     border: 0;
@@ -427,6 +468,74 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
     -webkit-appearance: none;
     z-index: 5;
     cursor: pointer;
+    container-type: inline-size;         /* the live BUY NOW label sizes in cqw of the stamp */
+  }
+
+  /* LIVE "BUY NOW" — the patch asset is text-less; the text renders here so its
+     colour + letter/word-spacing stay tunable (bench /lightlab). Sized in cqw
+     of the stamp (the button is the container). Worn filter fakes the old
+     spray-eroded stencil; pe:none keeps the button the add-to-cart target. */
+  .rc-buysq-label {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: Impact, Haettenschweiler, 'Arial Narrow', sans-serif;
+    font-weight: 700;
+    font-size: 22cqw;
+    line-height: 1;
+    text-transform: uppercase;
+    white-space: nowrap;
+    letter-spacing: 0em;                 /* lightlab ref 2026-07-03c */
+    word-spacing: 0em;
+    color: #241310;
+    -webkit-text-stroke: 0px #241310;
+    filter: url(#rc-worn-buy);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* persistent PAINT of the patch around BUY NOW — multiply keeps the aged
+     grain, masked to the patch so it never spills into the transparent corners.
+     lightlab ref 2026-07-03c: maroon #4d0f0a at 0.35. */
+  .rc-buysq-paint {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    mix-blend-mode: multiply;
+    background: #4d0f0a;
+    opacity: 0.35;
+    -webkit-mask-image: var(--buysq-url);
+    -webkit-mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+            mask-image: var(--buysq-url);
+            mask-size: 100% 100%;
+            mask-repeat: no-repeat;
+    z-index: 0;
+  }
+
+  /* L2 box light — warm room-light wash ON the box (screen), masked to the
+     patch alpha, z2 = ABOVE the label so hover BRIGHTENS both the cream patch
+     AND the BUY NOW ink. Colour = the L2 warmth mix (midCol at warmth .16 =
+     rgb(255,241,217)), brightest near the top. Peak .43 (bench-locked). */
+  .rc-buysq-lit {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    mix-blend-mode: screen;
+    background: radial-gradient(125% 125% at 50% 18%,
+        rgba(255, 241, 217, 0.9) 0%,
+        rgba(255, 241, 217, 0.5) 55%,
+        rgba(255, 241, 217, 0.26) 100%);
+    -webkit-mask-image: var(--buysq-url);
+    -webkit-mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+            mask-image: var(--buysq-url);
+            mask-size: 100% 100%;
+            mask-repeat: no-repeat;
+    opacity: calc(var(--l2) * 0.43);
+    z-index: 2;
   }
 
   .rc-buysq:focus-visible {
@@ -435,31 +544,37 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
   }
 
   /* L2 tint: white paint × amber (multiply) = aged faded-yellow — can only
-     darken toward the tint, keeps the paint texture. Peak .78 (bench-locked). */
+     darken toward the tint, keeps the paint texture. Peak .45, centre 62%
+     (bench-locked 2026-07-03c — lowered from .79 so the box reads LIT, not
+     muddy, once the box light stacks on top). */
   .rc-buysq-tint {
     position: absolute;
     inset: 0;
     border-radius: inherit;
     pointer-events: none;
     mix-blend-mode: multiply;
-    background: radial-gradient(100% 100% at 50% 25%,
-        rgba(240, 206, 120, 0.92) 0%,
-        rgba(228, 190, 104, 0.8) 60%,
+    background: radial-gradient(100% 100% at 62% 25%,
+        rgba(248, 233, 192, 0.92) 0%,
+        rgba(229, 202, 141, 0.8) 60%,
         rgba(214, 172, 96, 0.72) 100%);
-    opacity: calc(var(--l2) * 0.78);
+    opacity: calc(var(--l2) * 0.45);
   }
 
-  /* L2 glow: focused warm halo bleeding OUTSIDE the square */
+  /* L2 glow: focused warm halo bleeding OUTSIDE the square. A real Gaussian
+     blur (bench --l2-glow-soft, baked 30px) softens the frame; the gradient
+     dies by ~90% radius inside inset:-35% + .rc-buysq has no overflow clip, so
+     the blurred halo never cuts. Peak .46 (bench-locked 2026-07-03c). */
   .rc-buysq-glow {
     position: absolute;
     inset: -35%;
     pointer-events: none;
     mix-blend-mode: screen;
-    background: radial-gradient(60% 60% at 50% 45%,
-        rgba(255, 214, 150, 0.55) 0%,
-        rgba(240, 180, 110, 0.28) 45%,
-        rgba(0, 0, 0, 0) 75%);
-    opacity: calc(var(--l2) * 0.85);
+    background: radial-gradient(80% 80% at 50% 45%,
+        rgba(255, 229, 187, 0.55) 0%,
+        rgba(237, 197, 148, 0.28) 55%,
+        rgba(0, 0, 0, 0) 90%);
+    opacity: calc(var(--l2) * 0.46);
+    filter: blur(30px);
   }
 
   /* door hover hitbox — the door's opaque rows only; above copy/imprint (z4)
@@ -476,25 +591,26 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
 
   /* L1 door light — amber pool masked to the door silhouette, screen-blended
      so it warms the red toward gold. LAST door child (z6) so the copy/imprint
-     get lit too. Peak .72 (bench-locked). */
+     get lit too. lightlab reference 2026-07-03: warmth .67 · dispersion .54 ·
+     angle 38° (light from upper-right) · core .37. Tune on /lightlab. */
   .rc-doorlight {
     position: absolute;
     inset: 0;
     z-index: 6;
     pointer-events: none;
     mix-blend-mode: screen;
-    background: radial-gradient(120% 90% at 50% 8%,
-        rgba(255, 209, 138, 0.95) 0%,
-        rgba(247, 178, 96, 0.55) 32%,
-        rgba(180, 110, 60, 0.18) 62%,
-        rgba(0, 0, 0, 0) 85%);
+    background: radial-gradient(156.2% 127.3% at 100.1% 16.2%,
+        rgba(255, 244, 225, 0.95) 0%,
+        rgba(255, 241, 217, 0.55) 38.24%,
+        rgba(200, 139, 82, 0.18) 71.58%,
+        rgba(0, 0, 0, 0) 94.02%);
     -webkit-mask-image: var(--master-url);
     -webkit-mask-size: 100% 100%;
     -webkit-mask-repeat: no-repeat;
             mask-image: var(--master-url);
             mask-size: 100% 100%;
             mask-repeat: no-repeat;
-    opacity: calc(var(--l1) * 0.72);
+    opacity: calc(var(--l1) * 0.37);
   }
 
   /* ── room-light spill ───────────────────────────────────────────────── */
@@ -511,12 +627,12 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
     position: absolute;
     inset: -30% -70%;
     mix-blend-mode: screen;
-    background: radial-gradient(50% 45% at 50% 52%,
-        rgba(255, 196, 120, 0.16) 0%,
-        rgba(224, 150, 80, 0.08) 35%,
-        rgba(120, 70, 40, 0.03) 60%,
-        rgba(0, 0, 0, 0) 80%);
-    opacity: calc(var(--l1) * 0.6);
+    background: radial-gradient(66.7% 57.36% at 71.5% 35.5%,
+        rgba(255, 241, 217, 0.16) 0%,
+        rgba(255, 241, 217, 0.08) 40.68%,
+        rgba(200, 139, 82, 0.03) 66.24%,
+        rgba(0, 0, 0, 0) 84.68%);
+    opacity: calc(var(--l1) * 0.91);
   }
 
   /* ── the practical strip under the door ─────────────────────────────── */
