@@ -8,12 +8,22 @@
    <button data-add-to-cart> handled by Cart.astro's delegated listener.
 
    Deltas vs the bench, on purpose:
+   - IN THE PAGE, not a diorama (Dan, 2026-07-03): no stage box — no border,
+     backdrop, or overflow clip. The chain runs from above the document top
+     (sliding under the sticky nav, so it reads as coming from the top of the
+     website) down to the hook, and the door hangs straight over the page bg.
+     Pre-reveal hiding = parking the whole rig ABOVE the document top (y<0 is
+     unreachable by scroll), not clipping.
    - Descent is a one-shot entrance timeline, not a 300vh scroll scrub — the
-     card lives in the product aside, it can't hijack page scroll.
-   - Sway amp tuned down (2.2° vs 8°) — motion scaled to the card frame.
+     card lives in the product aside, it can't hijack page scroll. Travel is
+     the full page-top→seat distance, so duration scales with it.
+   - Sway amp 4° (bench 8°) — no frame to clip against anymore, but the door
+     swings over live page content, so still tamer than the bench.
    - Typography in cqw (door = container) so the painted copy scales with the
      door; bench px values were tuned at door width 480px (1cqw = 4.8px).
-   - Light peaks folded to constants (bench sliders: 0.72/0.60/0.78, glow .85).
+   - Light peaks folded to constants (bench sliders: 0.72/0.60/0.78, glow .85);
+     the L1 room light spills past the door onto the page itself. No wash/
+     grain/vignette — those were the boxed-photograph treatment.
    - Release choreography (page-bottom drop/pickup) NOT mounted — the card
      isn't pinned to document bottom here; the CSS vars it rides (--door-y/
      --door-rot/--crane-y) stay declared at 0 so it can bake in later.
@@ -96,12 +106,10 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
       </div>
     </div>
 
-    <!-- capture layer: room light + wash + grain + vignette (NOT transformed) -->
+    <!-- room-light spill: when the door light strikes (L1), the warm pool
+         sheds past the door onto the page around it (NOT transformed) -->
     <div class="revcrane-fx">
       <div class="rc-roomlight"></div>
-      <div class="rc-wash"></div>
-      <div class="rc-grain"></div>
-      <div class="rc-vig"></div>
     </div>
 
     <!-- worn-paint glyph filters. Same-document inline, never display:none
@@ -153,20 +161,13 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
     margin-inline: auto;
   }
 
-  /* ── the diorama frame ──────────────────────────────────────────────── */
+  /* ── the hang point — a plain layout box, NOT a diorama. No border, no
+     backdrop, no overflow clip: the door hangs straight over the page bg and
+     the chain runs up out of this box toward the document top. Doubles as
+     the CSS-var host for the rig + light state. ── */
   .crane-stage {
     position: relative;
-    overflow: hidden;
-    aspect-ratio: 808 / 1330;          /* master 808/1448 at 80% width + head/foot room */
-    display: grid;
-    place-items: center;
-    border: 1px solid var(--border);
-    border-top: 3px solid var(--brass);
-    border-radius: 10px;
-    /* token-exact stage (--bg-2 → --bg-0) + faint upper-left key-light pool */
-    background:
-      radial-gradient(60% 45% at 32% 12%, rgba(232, 200, 120, 0.06), transparent 70%),
-      radial-gradient(120% 90% at 50% 28%, #1d1916 0%, #0b0a09 72%);
+    aspect-ratio: 808 / 1448;          /* the master's own box — the door IS the layout */
     /* rig state — JS drives these. Defaults = seated rest so no-JS renders
        the finished card. --door-y/--door-rot/--crane-y are the (unmounted)
        release choreography's channels — kept at 0 so the bench CSS ports
@@ -177,15 +178,16 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
     --door-y: 0;
     --door-rot: 0;
     --crane-y: 0;
-    /* garage light drivers — 0 at rest → every light layer is opacity:0 and
-       the vignette is full = pixel-identical to the unlit card. Written ONLY
-       by the hover/focus handlers (bench-locked peaks folded in below). */
+    /* garage light drivers — 0 at rest → every light layer is opacity:0 =
+       pixel-identical to the unlit card. Written ONLY by the hover/focus
+       handlers (bench-locked peaks folded in below). */
     --l1: 0;
     --l2: 0;
   }
 
-  /* Pre-hide until JS parks the rig above the frame (crane-ready) — only under
-     html.motion-ok, so no-JS and reduced-motion get the static seated card. */
+  /* Pre-hide until JS parks the rig above the document top (crane-ready) —
+     only under html.motion-ok, so no-JS and reduced-motion get the static
+     seated card. */
   :global(html.motion-ok) .crane-stage:not(.crane-ready) .revcrane-grade {
     opacity: 0;
   }
@@ -193,7 +195,7 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
   /* unified colour grade over the whole rig = one photograph; JS dollies
      scale .94→1 over the descent */
   .revcrane-grade {
-    width: 80%;
+    width: 100%;
     position: relative;
     filter: saturate(0.94) brightness(1.02);
     will-change: transform;
@@ -264,9 +266,12 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
     pointer-events: none;
   }
 
-  /* tile chain rising from the master's baked links out through the frame top.
-     Tucks BEHIND the master, hands off at --seam-y; --lag trails the sway,
-     --slack feeds the chain down as tension releases at the seat. */
+  /* tile chain rising from the master's baked links up PAST the document top —
+     it slides under the sticky nav (z50), so it reads as hung from the top of
+     the website. Tucks BEHIND the master, hands off at the 4% seam; --lag
+     trails the sway, --slack feeds the chain down as tension releases at the
+     seat. Solid to its top edge (no fade) — the page edge does the cutting.
+     JS stretches the height so it always clears the document top at rest. */
   .revcrane-chain {
     position: absolute;
     left: 51.8%;
@@ -274,10 +279,10 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
     transform-origin: 50% 100%;
     transform: translateX(-50%) translateY(calc(var(--slack) * 1px + var(--crane-y) * 1px)) rotate(calc(var(--lag) * 1deg));
     width: 7.18%;
-    height: 130vh;
+    height: 150vh;                     /* no-JS floor; JS overrides with the doc-top span */
     background: var(--chain-url) center top / 100% auto repeat-y;
-    -webkit-mask-image: linear-gradient(to top, transparent 0, #000 26px, #000 62%, transparent 100%);
-            mask-image: linear-gradient(to top, transparent 0, #000 26px, #000 62%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to top, transparent 0, #000 26px, #000 100%);
+            mask-image: linear-gradient(to top, transparent 0, #000 26px, #000 100%);
     filter: brightness(0.93) saturate(0.95) drop-shadow(3px 4px 4px rgba(0, 0, 0, 0.4));
     z-index: 1;
     will-change: transform;
@@ -492,55 +497,29 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
     opacity: calc(var(--l1) * 0.72);
   }
 
-  /* ── capture layer: room light, wash, grain, vignette ───────────────── */
+  /* ── room-light spill ───────────────────────────────────────────────── */
   .revcrane-fx {
     position: absolute;
     inset: 0;
     pointer-events: none;
   }
 
-  /* L1 room light — the door sheds a warm pool across the diorama; screen
-     lifts the near-black stage cleanly. Peak .60 (bench-locked). */
+  /* L1 room light — the lit door sheds a warm pool onto the PAGE around it
+     (the box that used to contain this is gone — nothing clips the spill);
+     screen lifts the dark page bg cleanly. Peak .60 (bench-locked). */
   .rc-roomlight {
     position: absolute;
-    inset: 0;
-    pointer-events: none;
+    inset: -30% -70%;
     mix-blend-mode: screen;
-    background: radial-gradient(140% 120% at 50% 60%,
+    background: radial-gradient(50% 45% at 50% 52%,
         rgba(255, 196, 120, 0.16) 0%,
-        rgba(224, 150, 80, 0.08) 30%,
-        rgba(120, 70, 40, 0.03) 55%,
-        rgba(0, 0, 0, 0) 78%);
+        rgba(224, 150, 80, 0.08) 35%,
+        rgba(120, 70, 40, 0.03) 60%,
+        rgba(0, 0, 0, 0) 80%);
     opacity: calc(var(--l1) * 0.6);
   }
 
-  /* warm-vs-warm wash (brass key → oxide fill) — the site has no blue */
-  .rc-wash {
-    position: absolute;
-    inset: 0;
-    mix-blend-mode: soft-light;
-    opacity: 0.5;
-    background: linear-gradient(150deg, rgba(232, 200, 120, 0.18), transparent 46%, rgba(90, 36, 16, 0.14) 100%);
-  }
-
-  /* dissolve into --bg-0, not black. L1 lifts the vignette 35%. */
-  .rc-vig {
-    position: absolute;
-    inset: 0;
-    mix-blend-mode: multiply;
-    background: radial-gradient(125% 100% at 50% 42%, transparent 50%, #0b0a09 130%);
-    opacity: calc(1 - var(--l1) * 0.35);
-  }
-
-  .rc-grain {
-    position: absolute;
-    inset: 0;
-    mix-blend-mode: soft-light;
-    opacity: 0.05;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
-  }
-
-  /* ── the practical strip under the diorama ──────────────────────────── */
+  /* ── the practical strip under the door ─────────────────────────────── */
   .crane-under {
     margin-top: 0.75rem;
     padding: 1rem 1.25rem;
@@ -581,7 +560,7 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
 
   if (root && stage && rig) {
     const grade = root.querySelector<HTMLElement>('.revcrane-grade');
-    const door = rig.querySelector<HTMLElement>('.revcrane-door');
+    const chain = rig.querySelector<HTMLElement>('.revcrane-chain');
 
     // ── GARAGE LIGHT (hover / keyboard focus) ───────────────────────────
     // L1 = door light + room light + vignette lift off --l1; L2 = the BUY NOW
@@ -667,13 +646,15 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
       kbLit = false; l1Leave(); sqOff();
     });
 
-    // ── ENTRANCE: the crane lowers the door into the card ───────────────
+    // ── ENTRANCE: the crane lowers the door down the page into its seat ──
     // The bench's scroll-scrubbed descent, replayed as a one-shot timeline on
     // first view — same render mapping (settle ease, pendulum sway, chain lag,
-    // seat dip, dolly), no page-scroll hijack. Reduced-motion / no-JS: the
-    // CSS defaults already ARE the seated card.
+    // seat dip, dolly), no page-scroll hijack. The rig parks ABOVE the
+    // document top (y<0 is unreachable by scroll — that's the hide, there is
+    // no overflow clip), so the descent is the literal page-top→seat drop.
+    // Reduced-motion / no-JS: the CSS defaults already ARE the seated card.
     if (!reducedMotion()) {
-      const SWAY_AMP = 2.2;    // deg — bench 8, scaled to the card frame
+      const SWAY_AMP = 4;      // deg — bench 8; door swings over live page content
       const SWAY_FREQ = 7;     // ~1.1 swings over the descent
       const LAG_DP = 0.035;    // chain trails the rig by this much progress
       const LAG_MAX = 1.4;     // chain lag clamp, degrees
@@ -693,8 +674,16 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
       const clamp = (v: number, lo: number, hi: number) => Math.min(Math.max(v, lo), hi);
 
       const computeGeo = () => {
-        const dh = door?.offsetHeight ?? 500;
-        startY = -(dh * 0.8);               // park above the frame, bottom edge peeking
+        // Layout-true document Y of the rig — the offsetTop chain ignores the
+        // rig's own animated transform (getBoundingClientRect wouldn't).
+        let el: HTMLElement | null = rig;
+        let docY = 0;
+        while (el) { docY += el.offsetTop; el = el.offsetParent as HTMLElement | null; }
+        const h = rig.offsetHeight;
+        startY = -(docY + h + 24);          // park: door bottom 24px above the document top
+        // The chain must span seat→document top AT REST; in flight it rides
+        // the rig upward, so rest is the tallest it ever needs to reach down.
+        if (chain) chain.style.height = `${Math.ceil(docY + h * 0.04) + 80}px`;
         dipPx = rig.offsetWidth * 0.0125;   // bench 6px / 480px
         slackPx = rig.offsetWidth * 0.0167; // bench 8px / 480px
       };
@@ -734,10 +723,15 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
           start: 'top 85%',
           once: true,
           onEnter: () => {
-            gsap.to(state, { p: 1, duration: 2.4, delay: 0.2, ease: 'none', onUpdate: render });
+            // Travel varies hugely (aside near the top on desktop, well down
+            // the page on mobile) — scale time with distance, within taste.
+            const dur = clamp(Math.abs(startY) / 450, 2.4, 4.2);
+            gsap.to(state, { p: 1, duration: dur, delay: 0.2, ease: 'none', onUpdate: render });
           },
         });
-        window.addEventListener('resize', computeGeo);
+        // Re-render too: while parked (pre-trigger) or seated, a resize moves
+        // the geometry out from under the frozen transform.
+        window.addEventListener('resize', () => { computeGeo(); render(); });
       }
     }
     stage.classList.add('crane-ready');
