@@ -186,6 +186,7 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
       <li>14-day refund</li>
     </ul>
   </div>
+
 </div>
 
 <style>
@@ -216,22 +217,29 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
        handlers (bench-locked peaks folded in below). */
     --l1: 0;
     --l2: 0;
+    /* unified colour grade over the whole rig = one photograph. MUST sit here
+       on the (untransformed) stage — never on .revcrane-grade, which takes a
+       per-frame GSAP scale dolly (.94→1): Safari rasterizes a filtered +
+       transformed layer BLANK. This intentionally also grades the room-light
+       spill (.revcrane-fx), a sibling inside the stage. */
+    filter: saturate(0.92) brightness(0.97);    /* lightlab ref 2026-07-03b */
   }
 
   /* Pre-hide until JS parks the rig above the document top (crane-ready) —
      only under html.motion-ok, so no-JS and reduced-motion get the static
-     seated card. */
+     seated card. Fallback animation only fires if JS never lifts the gate —
+     the normal path adds crane-ready in ~100ms, long before the 2.5s delay. */
   :global(html.motion-ok) .crane-stage:not(.crane-ready) .revcrane-grade {
     opacity: 0;
+    animation: rc-gate-fallback 0.6s ease 2.5s forwards;
   }
+  @keyframes rc-gate-fallback { to { opacity: 1; } }
 
-  /* unified colour grade over the whole rig = one photograph; JS dollies
-     scale .94→1 over the descent */
+  /* the dolly layer — JS scales .94→1 over the descent. Keep it filter-free
+     (grade lives on .crane-stage, see above). */
   .revcrane-grade {
     width: 100%;
     position: relative;
-    filter: saturate(0.92) brightness(0.97);    /* lightlab ref 2026-07-03b */
-    will-change: transform;
   }
 
   /* the moving body: chain + hook + door swing & descend as one.
@@ -665,191 +673,228 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
     color: var(--brass);
     font-weight: 600;
   }
+
 </style>
 
 <script>
-  import { gsap, ScrollTrigger, reducedMotion } from '../lib/motion';
+  import { gsap, reducedMotion } from '../lib/motion';
 
   const root = document.querySelector<HTMLElement>('[data-crane-buy]');
   const stage = root?.querySelector<HTMLElement>('[data-crane-stage]');
   const rig = root?.querySelector<HTMLElement>('[data-rig]');
 
   if (root && stage && rig) {
-    const grade = root.querySelector<HTMLElement>('.revcrane-grade');
-    const chain = rig.querySelector<HTMLElement>('.revcrane-chain');
+    // try/finally: crane-ready MUST land no matter what throws above it —
+    // the motion-ok pre-hide gate keeps .revcrane-grade at opacity:0 until
+    // this class arrives, so a stuck gate = invisible buy card (Safari
+    // blank-door incident, 2026-07-03). The CSS rc-gate-fallback animation
+    // covers the module-never-ran case; this covers the module-threw case.
+    try {
+      const grade = root.querySelector<HTMLElement>('.revcrane-grade');
+      const chain = rig.querySelector<HTMLElement>('.revcrane-chain');
 
-    // ── GARAGE LIGHT (hover / keyboard focus) ───────────────────────────
-    // L1 = door light + room light + vignette lift off --l1; L2 = the BUY NOW
-    // square's tint+glow off --l2. These vars are OURS: written only here,
-    // never by the entrance tween. One live tween ref per light, killed
-    // before a new one starts → enter/leave spam can't stack.
-    const OFF_FADE = 0.5;
-    const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-    const curVar = (n: string) => parseFloat(getComputedStyle(stage).getPropertyValue(n)) || 0;
-    const setL1 = (v: number) => stage.style.setProperty('--l1', String(v));
-    const setL2 = (v: number) => stage.style.setProperty('--l2', String(v));
-    let l1Anim: gsap.core.Tween | gsap.core.Timeline | null = null;
-    let l2Anim: gsap.core.Tween | null = null;
-    // L1 ON — garage-tube strike (≈0.30s); plain fade under reduced-motion
-    const doorOn = () => {
-      l1Anim?.kill();
-      const p = { v: curVar('--l1') };
-      if (reducedMotion()) {
-        l1Anim = gsap.to(p, { v: 1, duration: 0.3, ease: 'sine.out',
-          overwrite: 'auto', onUpdate: () => setL1(p.v) });
-        return;
-      }
-      l1Anim = gsap.timeline({ onUpdate: () => setL1(p.v) })
-        .to(p, { v: 0.90, duration: 0.05 })
-        .to(p, { v: 0.15, duration: 0.04 })
-        .to(p, { v: 1.00, duration: 0.05 })
-        .to(p, { v: 0.40, duration: 0.03 })
-        .to(p, { v: 0.85, duration: 0.04 })
-        .to(p, { v: 0.60, duration: 0.03 })
-        .to(p, { v: 1.00, duration: 0.06, ease: 'power1.out' });
-    };
-    const doorOff = () => {
-      l1Anim?.kill();
-      const p = { v: curVar('--l1') };
-      l1Anim = gsap.to(p, { v: 0, duration: OFF_FADE, ease: 'power2.out',
-        overwrite: 'auto', onUpdate: () => setL1(p.v) });
-    };
-    const sqOn = () => {
-      l2Anim?.kill();
-      const p = { v: curVar('--l2') };
-      l2Anim = gsap.to(p, { v: 1, duration: reducedMotion() ? 0.3 : 0.18,
-        ease: 'power2.out', overwrite: 'auto', onUpdate: () => setL2(p.v) });
-    };
-    const sqOff = () => {
-      l2Anim?.kill();
-      const p = { v: curVar('--l2') };
-      l2Anim = gsap.to(p, { v: 0, duration: 0.7, ease: 'power2.out',
-        overwrite: 'auto', onUpdate: () => setL2(p.v) });
-    };
-    // L1 lit-latch — .rc-hit and .rc-buysq are overlapping SIBLINGS, so a
-    // door→square transit fires leave-then-enter. A counter re-fires doorOn()
-    // on the enter side and restarts the flicker mid-hover; the latch keeps
-    // l1On true across the ~80ms grace, so transit neither dims nor re-strikes.
-    let l1On = false;
-    let l1OffTimer: number | null = null;
-    const l1Enter = () => {
-      if (l1OffTimer != null) { clearTimeout(l1OffTimer); l1OffTimer = null; }
-      if (!l1On) { l1On = true; doorOn(); }
-    };
-    const l1Leave = () => {
-      if (l1OffTimer != null) clearTimeout(l1OffTimer);
-      l1OffTimer = window.setTimeout(() => { l1OffTimer = null; l1On = false; doorOff(); }, 80);
-    };
-    const hit = root.querySelector<HTMLElement>('.rc-hit');
-    const buysq = root.querySelector<HTMLElement>('.rc-buysq');
-    if (canHover) {
-      hit?.addEventListener('pointerenter', l1Enter);
-      hit?.addEventListener('pointerleave', l1Leave);
-      buysq?.addEventListener('pointerenter', l1Enter);   // keep L1 lit over the square
-      buysq?.addEventListener('pointerleave', l1Leave);
-      buysq?.addEventListener('pointerenter', sqOn);       // L2 rides on top of L1
-      buysq?.addEventListener('pointerleave', sqOff);
-    }
-    // Keyboard focus lights the square like a hover (focus ≈ L2-on). Gated to
-    // :focus-visible so mouse clicks don't double-drive the pointer handlers.
-    let kbLit = false;
-    buysq?.addEventListener('focus', () => {
-      if (!buysq.matches(':focus-visible')) return;
-      kbLit = true; l1Enter(); sqOn();
-    });
-    buysq?.addEventListener('blur', () => {
-      if (!kbLit) return;
-      kbLit = false; l1Leave(); sqOff();
-    });
-
-    // ── ENTRANCE: the crane lowers the door down the page into its seat ──
-    // The bench's scroll-scrubbed descent, replayed as a one-shot timeline on
-    // first view — same render mapping (settle ease, pendulum sway, chain lag,
-    // seat dip, dolly), no page-scroll hijack. The rig parks ABOVE the
-    // document top (y<0 is unreachable by scroll — that's the hide, there is
-    // no overflow clip), so the descent is the literal page-top→seat drop.
-    // Reduced-motion / no-JS: the CSS defaults already ARE the seated card.
-    if (!reducedMotion()) {
-      const SWAY_AMP = 4;      // deg — bench 8; door swings over live page content
-      const SWAY_FREQ = 7;     // ~1.1 swings over the descent
-      const LAG_DP = 0.035;    // chain trails the rig by this much progress
-      const LAG_MAX = 1.4;     // chain lag clamp, degrees
-      const SEAT_START = 0.85; // landing window begins here
-      const settle = gsap.parseEase('sine.inOut');
-
-      const state = { p: 0 };
-      let startY = -700;
-      let dipPx = 4;           // seat micro-overshoot — bench 6px at 480px door
-      let slackPx = 8;
-
-      const setY = gsap.quickSetter(rig, 'y', 'px');
-      const setRot = gsap.quickSetter(rig, 'rotation', 'deg');
-      const setScale = grade ? gsap.quickSetter(grade, 'scale') : () => {};
-
-      const sway = (q: number) => SWAY_AMP * Math.sin(Math.PI * q) * Math.sin(q * SWAY_FREQ);
-      const clamp = (v: number, lo: number, hi: number) => Math.min(Math.max(v, lo), hi);
-
-      const computeGeo = () => {
-        // Layout-true document Y of the rig — the offsetTop chain ignores the
-        // rig's own animated transform (getBoundingClientRect wouldn't).
-        let el: HTMLElement | null = rig;
-        let docY = 0;
-        while (el) { docY += el.offsetTop; el = el.offsetParent as HTMLElement | null; }
-        const h = rig.offsetHeight;
-        startY = -(docY + h + 24);          // park: door bottom 24px above the document top
-        // The chain must span seat→document top AT REST; in flight it rides
-        // the rig upward, so rest is the tallest it ever needs to reach down.
-        if (chain) chain.style.height = `${Math.ceil(docY + h * 0.04) + 80}px`;
-        dipPx = rig.offsetWidth * 0.0125;   // bench 6px / 480px
-        slackPx = rig.offsetWidth * 0.0167; // bench 8px / 480px
-      };
-
-      const render = () => {
-        const p = state.p;
-        const eased = settle(p);
-        const u = clamp((p - SEAT_START) / (1 - SEAT_START), 0, 1);
-        setY(startY * (1 - eased) + dipPx * Math.sin(Math.PI * u));
-        setRot(sway(p));
-        setScale(0.94 + 0.06 * eased);
-        const lag = clamp(sway(Math.max(p - LAG_DP, 0)) - sway(p), -LAG_MAX, LAG_MAX);
-        stage.style.setProperty('--seat', p.toFixed(3));
-        stage.style.setProperty('--lag', lag.toFixed(2));
-        stage.style.setProperty('--slack', (slackPx * u * u).toFixed(1));
-      };
-
-      // DEBUG (headless verify): #cranep=<0..1> freezes the descent;
-      // #cranelight=1|2 freezes the lit states, seated.
-      const hashQ = new URLSearchParams(location.hash.slice(1));
-      const frozen = parseFloat(hashQ.get('cranep') ?? '');
-      const frozenLight = hashQ.get('cranelight');
-
-      computeGeo();
-      if (!Number.isNaN(frozen) || frozenLight) {
-        state.p = !Number.isNaN(frozen) ? clamp(frozen, 0, 1) : 1;
-        render();
-        if (frozenLight) {
-          setL1(1);
-          if (frozenLight === '2') setL2(1);
+      // ── GARAGE LIGHT (hover / keyboard focus) ───────────────────────────
+      // L1 = door light + room light + vignette lift off --l1; L2 = the BUY NOW
+      // square's tint+glow off --l2. These vars are OURS: written only here,
+      // never by the entrance tween. One live tween ref per light, killed
+      // before a new one starts → enter/leave spam can't stack.
+      const OFF_FADE = 0.5;
+      const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+      const curVar = (n: string) => parseFloat(getComputedStyle(stage).getPropertyValue(n)) || 0;
+      const setL1 = (v: number) => stage.style.setProperty('--l1', String(v));
+      const setL2 = (v: number) => stage.style.setProperty('--l2', String(v));
+      let l1Anim: gsap.core.Tween | gsap.core.Timeline | null = null;
+      let l2Anim: gsap.core.Tween | null = null;
+      // L1 ON — garage-tube strike (≈0.30s); plain fade under reduced-motion
+      const doorOn = () => {
+        l1Anim?.kill();
+        const p = { v: curVar('--l1') };
+        if (reducedMotion()) {
+          l1Anim = gsap.to(p, { v: 1, duration: 0.3, ease: 'sine.out',
+            overwrite: 'auto', onUpdate: () => setL1(p.v) });
+          return;
         }
-      } else {
-        state.p = 0;
-        render();                            // park before the reveal — no flash
-        ScrollTrigger.create({
-          trigger: stage,
-          start: 'top 85%',
-          once: true,
-          onEnter: () => {
+        l1Anim = gsap.timeline({ onUpdate: () => setL1(p.v) })
+          .to(p, { v: 0.90, duration: 0.05 })
+          .to(p, { v: 0.15, duration: 0.04 })
+          .to(p, { v: 1.00, duration: 0.05 })
+          .to(p, { v: 0.40, duration: 0.03 })
+          .to(p, { v: 0.85, duration: 0.04 })
+          .to(p, { v: 0.60, duration: 0.03 })
+          .to(p, { v: 1.00, duration: 0.06, ease: 'power1.out' });
+      };
+      const doorOff = () => {
+        l1Anim?.kill();
+        const p = { v: curVar('--l1') };
+        l1Anim = gsap.to(p, { v: 0, duration: OFF_FADE, ease: 'power2.out',
+          overwrite: 'auto', onUpdate: () => setL1(p.v) });
+      };
+      const sqOn = () => {
+        l2Anim?.kill();
+        const p = { v: curVar('--l2') };
+        l2Anim = gsap.to(p, { v: 1, duration: reducedMotion() ? 0.3 : 0.18,
+          ease: 'power2.out', overwrite: 'auto', onUpdate: () => setL2(p.v) });
+      };
+      const sqOff = () => {
+        l2Anim?.kill();
+        const p = { v: curVar('--l2') };
+        l2Anim = gsap.to(p, { v: 0, duration: 0.7, ease: 'power2.out',
+          overwrite: 'auto', onUpdate: () => setL2(p.v) });
+      };
+      // L1 lit-latch — .rc-hit and .rc-buysq are overlapping SIBLINGS, so a
+      // door→square transit fires leave-then-enter. A counter re-fires doorOn()
+      // on the enter side and restarts the flicker mid-hover; the latch keeps
+      // l1On true across the ~80ms grace, so transit neither dims nor re-strikes.
+      let l1On = false;
+      let l1OffTimer: number | null = null;
+      const l1Enter = () => {
+        if (l1OffTimer != null) { clearTimeout(l1OffTimer); l1OffTimer = null; }
+        if (!l1On) { l1On = true; doorOn(); }
+      };
+      const l1Leave = () => {
+        if (l1OffTimer != null) clearTimeout(l1OffTimer);
+        l1OffTimer = window.setTimeout(() => { l1OffTimer = null; l1On = false; doorOff(); }, 80);
+      };
+      const hit = root.querySelector<HTMLElement>('.rc-hit');
+      const buysq = root.querySelector<HTMLElement>('.rc-buysq');
+      if (canHover) {
+        hit?.addEventListener('pointerenter', l1Enter);
+        hit?.addEventListener('pointerleave', l1Leave);
+        buysq?.addEventListener('pointerenter', l1Enter);   // keep L1 lit over the square
+        buysq?.addEventListener('pointerleave', l1Leave);
+        buysq?.addEventListener('pointerenter', sqOn);       // L2 rides on top of L1
+        buysq?.addEventListener('pointerleave', sqOff);
+      }
+      // Keyboard focus lights the square like a hover (focus ≈ L2-on). Gated to
+      // :focus-visible so mouse clicks don't double-drive the pointer handlers.
+      let kbLit = false;
+      buysq?.addEventListener('focus', () => {
+        if (!buysq.matches(':focus-visible')) return;
+        kbLit = true; l1Enter(); sqOn();
+      });
+      buysq?.addEventListener('blur', () => {
+        if (!kbLit) return;
+        kbLit = false; l1Leave(); sqOff();
+      });
+
+      // ── ENTRANCE: the crane lowers the door down the page into its seat ──
+      // The bench's scroll-scrubbed descent, replayed as a one-shot timeline on
+      // first view — same render mapping (settle ease, pendulum sway, chain lag,
+      // seat dip, dolly), no page-scroll hijack. The rig parks ABOVE the
+      // document top (y<0 is unreachable by scroll — that's the hide, there is
+      // no overflow clip), so the descent is the literal page-top→seat drop.
+      // Reduced-motion / no-JS: the CSS defaults already ARE the seated card.
+      if (!reducedMotion()) {
+        const SWAY_AMP = 4;      // deg — bench 8; door swings over live page content
+        const SWAY_FREQ = 7;     // ~1.1 swings over the descent
+        const LAG_DP = 0.035;    // chain trails the rig by this much progress
+        const LAG_MAX = 1.4;     // chain lag clamp, degrees
+        const SEAT_START = 0.85; // landing window begins here
+        const settle = gsap.parseEase('sine.inOut');
+
+        const state = { p: 0 };
+        let startY = -700;
+        let dipPx = 4;           // seat micro-overshoot — bench 6px at 480px door
+        let slackPx = 8;
+
+        const setY = gsap.quickSetter(rig, 'y', 'px');
+        const setRot = gsap.quickSetter(rig, 'rotation', 'deg');
+        // NOT quickSetter(grade, 'scale'): gsap aliases 'scale' → "scaleX,scaleY"
+        // and Safari 26.5 rejects that as a qualified name (InvalidCharacterError)
+        // — the throw that kept crane-ready from ever landing. The grade only
+        // carries scale, so a direct transform write is equivalent.
+        const setScale = (v: number) => { if (grade) grade.style.transform = `scale(${v})`; };
+
+        const sway = (q: number) => SWAY_AMP * Math.sin(Math.PI * q) * Math.sin(q * SWAY_FREQ);
+        const clamp = (v: number, lo: number, hi: number) => Math.min(Math.max(v, lo), hi);
+
+        const computeGeo = () => {
+          // Layout-true document Y of the rig — the offsetTop chain ignores the
+          // rig's own animated transform (getBoundingClientRect wouldn't).
+          let el: HTMLElement | null = rig;
+          let docY = 0;
+          while (el) { docY += el.offsetTop; el = el.offsetParent as HTMLElement | null; }
+          const h = rig.offsetHeight;
+          startY = -(docY + h + 24);          // park: door bottom 24px above the document top
+          // The chain must span seat→document top AT REST; in flight it rides
+          // the rig upward, so rest is the tallest it ever needs to reach down.
+          if (chain) chain.style.height = `${Math.ceil(docY + h * 0.04) + 80}px`;
+          dipPx = rig.offsetWidth * 0.0125;   // bench 6px / 480px
+          slackPx = rig.offsetWidth * 0.0167; // bench 8px / 480px
+        };
+
+        const render = () => {
+          const p = state.p;
+          const eased = settle(p);
+          const u = clamp((p - SEAT_START) / (1 - SEAT_START), 0, 1);
+          setY(startY * (1 - eased) + dipPx * Math.sin(Math.PI * u));
+          setRot(sway(p));
+          setScale(0.94 + 0.06 * eased);
+          const lag = clamp(sway(Math.max(p - LAG_DP, 0)) - sway(p), -LAG_MAX, LAG_MAX);
+          stage.style.setProperty('--seat', p.toFixed(3));
+          stage.style.setProperty('--lag', lag.toFixed(2));
+          stage.style.setProperty('--slack', (slackPx * u * u).toFixed(1));
+        };
+
+        // DEBUG (headless verify): #cranep=<0..1> freezes the descent;
+        // #cranelight=1|2 freezes the lit states, seated.
+        const hashQ = new URLSearchParams(location.hash.slice(1));
+        const frozen = parseFloat(hashQ.get('cranep') ?? '');
+        const frozenLight = hashQ.get('cranelight');
+
+        computeGeo();
+        if (!Number.isNaN(frozen) || frozenLight) {
+          state.p = !Number.isNaN(frozen) ? clamp(frozen, 0, 1) : 1;
+          render();
+          if (frozenLight) {
+            setL1(1);
+            if (frozenLight === '2') setL2(1);
+          }
+        } else {
+          state.p = 0;
+          render();                            // park before the reveal — no flash
+          let played = false;
+          const playEntrance = () => {
+            if (played) return;
+            played = true;
             // Travel varies hugely (aside near the top on desktop, well down
             // the page on mobile) — scale time with distance, within taste.
             const dur = clamp(Math.abs(startY) / 450, 2.4, 4.2);
             gsap.to(state, { p: 1, duration: dur, delay: 0.2, ease: 'none', onUpdate: render });
-          },
-        });
-        // Re-render too: while parked (pre-trigger) or seated, a resize moves
-        // the geometry out from under the frozen transform.
-        window.addEventListener('resize', () => { computeGeo(); render(); });
+          };
+          // Lower the door the moment its card enters the viewport — at ANY width,
+          // scroll position, or post-layout shift. The rig parks at a NEGATIVE Y
+          // above the document top with no overflow clip, so a missed reveal =
+          // invisible forever, not merely late. An IntersectionObserver is immune
+          // to the traps a getBoundingClientRect()+ScrollTrigger combo hits on the
+          // ≤900px stacked layout (the aside sits far below the lazy gallery, so
+          // its 'top 85%' start is measured stale and onEnter may never fire). IO
+          // fires immediately when the stage is already on-screen, so desktop
+          // still drops on load, and it self-heals an HMR re-run / second setup.
+          const io = new IntersectionObserver((entries, obs) => {
+            if (entries.some((e) => e.isIntersecting)) { obs.disconnect(); playEntrance(); }
+          }, { rootMargin: '0px 0px -12% 0px' });
+          io.observe(stage);
+          // Backstop against any IO edge case: if the stage is within the viewport
+          // shortly after load and nothing played, seat it anyway (never leave the
+          // rig parked off-screen while its card is visible).
+          window.setTimeout(() => {
+            if (played) return;
+            const r = stage.getBoundingClientRect();
+            if (r.top < window.innerHeight && r.bottom > 0) playEntrance();
+          }, 1200);
+          // Re-render too: while parked (pre-reveal) or seated, a resize moves
+          // the geometry out from under the frozen transform.
+          window.addEventListener('resize', () => { computeGeo(); render(); });
+          // Safari's back/forward cache can restore the PARKED pre-entrance DOM
+          // without re-running this script — snap to seated when that happens.
+          window.addEventListener('pageshow', (e) => {
+            if (e.persisted) { state.p = 1; render(); }
+          });
+        }
       }
+    } finally {
+      stage.classList.add('crane-ready');
     }
-    stage.classList.add('crane-ready');
   }
 </script>
