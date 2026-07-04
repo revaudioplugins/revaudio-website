@@ -76,7 +76,7 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
               {plugin.regularPriceUsd != null && <span class="rc-was">{fmtPrice(plugin.regularPriceUsd)}</span>}
             </div>
             {plugin.promoCode && <div class="rc-ink rc-code">code <b>{plugin.promoCode}</b> at checkout</div>}
-            <div class="rc-ink rc-plat">VST3 &middot; AU &middot; AAX &mdash; Win / macOS</div>
+            {/* plat line removed from the door 2026-07-04 — formats still listed in .crane-under below. .rc-plat CSS kept for bench parity. */}
           </div>
           <div class="rc-imprint"></div>
           <!-- door hover hitbox: the door's OPAQUE bbox only (top 27%→100%) —
@@ -792,6 +792,7 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
         const settle = gsap.parseEase('sine.inOut');
 
         const state = { p: 0 };
+        let idleStarted = false;
         let startY = -700;
         let dipPx = 4;           // seat micro-overshoot — bench 6px at 480px door
         let slackPx = 8;
@@ -827,12 +828,30 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
           const eased = settle(p);
           const u = clamp((p - SEAT_START) / (1 - SEAT_START), 0, 1);
           setY(startY * (1 - eased) + dipPx * Math.sin(Math.PI * u));
-          setRot(sway(p));
+          if (!idleStarted) setRot(sway(p));   // idle sway owns rotation once seated
           setScale(0.94 + 0.06 * eased);
           const lag = clamp(sway(Math.max(p - LAG_DP, 0)) - sway(p), -LAG_MAX, LAG_MAX);
           stage.style.setProperty('--seat', p.toFixed(3));
           stage.style.setProperty('--lag', lag.toFixed(2));
           stage.style.setProperty('--slack', (slackPx * u * u).toFixed(1));
+        };
+
+        // Idle sway — once seated, the door keeps a faint pendulum so it reads
+        // as hanging from the chain, not bolted to the page. One eased lead-in
+        // from rest (0→+amp), then an endless symmetric yoyo (+amp↔−amp). This
+        // whole block is reduced-motion-gated, so the idle sway is too.
+        const IDLE_AMP = 1.4;    // deg — a "bit of swing" at rest
+        const IDLE_HALF = 3.2;   // s per half-swing (slow, breathing)
+        const startIdle = () => {
+          if (idleStarted) return;
+          idleStarted = true;
+          gsap.to(rig, {
+            rotation: IDLE_AMP, duration: IDLE_HALF, ease: 'sine.out',
+            onComplete: () => gsap.to(rig, {
+              rotation: -IDLE_AMP, duration: IDLE_HALF * 2,
+              ease: 'sine.inOut', repeat: -1, yoyo: true,
+            }),
+          });
         };
 
         // DEBUG (headless verify): #cranep=<0..1> freezes the descent;
@@ -859,7 +878,7 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
             // Travel varies hugely (aside near the top on desktop, well down
             // the page on mobile) — scale time with distance, within taste.
             const dur = clamp(Math.abs(startY) / 450, 2.4, 4.2);
-            gsap.to(state, { p: 1, duration: dur, delay: 0.2, ease: 'none', onUpdate: render });
+            gsap.to(state, { p: 1, duration: dur, delay: 0.2, ease: 'none', onUpdate: render, onComplete: startIdle });
           };
           // Lower the door the moment its card enters the viewport — at ANY width,
           // scroll position, or post-layout shift. The rig parks at a NEGATIVE Y
@@ -888,7 +907,7 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
           // Safari's back/forward cache can restore the PARKED pre-entrance DOM
           // without re-running this script — snap to seated when that happens.
           window.addEventListener('pageshow', (e) => {
-            if (e.persisted) { state.p = 1; render(); }
+            if (e.persisted) { state.p = 1; render(); startIdle(); }
           });
         }
       }
