@@ -1,0 +1,918 @@
+---
+/* BuyButtonCrane — RevLimiter's buy card as the crane-hung car door.
+   Baked from the /cranelab bench (Dan-approved 2026-07-02/03): a rusty door
+   with the offer painted on it hangs from a chain + hook; on first view the
+   crane LOWERS it into the card with a damped pendulum sway; hovering the
+   door strikes a garage tube-light (L1) and hovering the BUY NOW square lamps
+   it faded-yellow (L2). The square IS the add-to-cart control — a real
+   <button data-add-to-cart> handled by Cart.astro's delegated listener.
+
+   Deltas vs the bench, on purpose:
+   - IN THE PAGE, not a diorama (Dan, 2026-07-03): no stage box — no border,
+     backdrop, or overflow clip. The chain runs from above the document top
+     (sliding under the sticky nav, so it reads as coming from the top of the
+     website) down to the hook, and the door hangs straight over the page bg.
+     Pre-reveal hiding = parking the whole rig ABOVE the document top (y<0 is
+     unreachable by scroll), not clipping.
+   - Descent is a one-shot entrance timeline, not a 300vh scroll scrub — the
+     card lives in the product aside, it can't hijack page scroll. Travel is
+     the full page-top→seat distance, so duration scales with it.
+   - Sway amp 4° (bench 8°) — no frame to clip against anymore, but the door
+     swings over live page content, so still tamer than the bench.
+   - Typography in cqw (door = container) so the painted copy scales with the
+     door; bench px values were tuned at door width 480px (1cqw = 4.8px).
+   - Light peaks folded to constants (2026-07-03c: L1 core .37 / spill .91;
+     L2 tint .45 / glow .46 / box-light .43, glow frame-blur 30px). L1 room
+     light spills past the door onto the page. On hover L2 both frames the box
+     (blurred glow halo) AND lights it (.rc-buysq-lit screen wash on the patch
+     + BUY NOW ink). No wash/grain/vignette — boxed-photograph treatment.
+   - Release choreography (page-bottom drop/pickup) NOT mounted — the card
+     isn't pinned to document bottom here; the CSS vars it rides (--door-y/
+     --door-rot/--crane-y) stay declared at 0 so it can bake in later.
+   Tuning still happens on /cranelab (?edit=1); paste values back here. */
+import type { Plugin } from '../data/plugins';
+import { fmtPrice, discountPct } from '../data/plugins';
+import masterImg from '../assets/plugins/revlimiter-crane-master.png';   // door only
+import hookImg from '../assets/plugins/revlimiter-crane-hook.png';       // chain strip + swivel + hook
+import ringImg from '../assets/plugins/revlimiter-door-ring.png';        // the door's lifting ring
+import buysqImg from '../assets/plugins/revlimiter-buy-patch.png';       // BUY NOW patch (text-less) — live text renders in .rc-buysq-label
+import chainImg from '../assets/plugins/revlimiter-chain.png';
+import wearImg from '../assets/plugins/revlimiter-wear.png';
+
+interface Props {
+  plugin: Plugin;
+}
+
+const { plugin } = Astro.props;
+const pct = discountPct(plugin);
+const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
+---
+
+<div
+  class="crane-buy"
+  data-crane-buy
+  style={`--master-url:url(${masterImg.src}); --hook-url:url(${hookImg.src}); --ring-url:url(${ringImg.src}); --buysq-url:url(${buysqImg.src}); --chain-url:url(${chainImg.src}); --wear-url:url(${wearImg.src});`}
+>
+  <div class="crane-stage" data-crane-stage>
+    <div class="revcrane-grade">
+      <div class="revcrane-rig" data-rig>
+        <div class="revcrane-chain"></div>
+        <!-- static baked shadow of the door silhouette — rasterizes once;
+             only opacity/translate ride --seat (compositor-cheap) -->
+        <div class="revcrane-doorshadow"></div>
+        <!-- crane end (baked chain strip + swivel + hook) — registers
+             pixel-perfect over its old baked position in the master -->
+        <div class="revcrane-hookpart"></div>
+
+        <div class="revcrane-door">
+          <!-- Worn painted lettering: wrapper masked by the door-derived wear
+               alpha, glyphs warped by the #rc-worn-* filters, imprint sibling
+               soft-lights the door's scratches through the paint. Positions
+               are % of the door box — bench (?edit=1) output pastes back. -->
+          <div class="rc-copy">
+            {pct != null && <div class="rc-ink rc-tag">&minus;{pct}% launch sale</div>}
+            <div class="rc-ink rc-price">
+              <span class="rc-now">{fmtPrice(plugin.introPriceUsd)}</span>
+              {plugin.regularPriceUsd != null && <span class="rc-was">{fmtPrice(plugin.regularPriceUsd)}</span>}
+            </div>
+            {plugin.promoCode && <div class="rc-ink rc-code">code <b>{plugin.promoCode}</b> at checkout</div>}
+            {/* plat line removed from the door 2026-07-04 — formats still listed in .crane-under below. .rc-plat CSS kept for bench parity. */}
+          </div>
+          <div class="rc-imprint"></div>
+          <!-- door hover hitbox: the door's OPAQUE bbox only (top 27%→100%) —
+               the element box includes the transparent chain region up top -->
+          <div class="rc-hit"></div>
+          <!-- BUY NOW square — THE add-to-cart. Cart.astro's document-level
+               click listener handles [data-add-to-cart]; keyboard focus gets
+               the L2 treatment via JS (+ visible outline). -->
+          <button
+            type="button"
+            class="rc-buysq"
+            data-add-to-cart
+            data-slug={plugin.slug}
+            data-name={plugin.name}
+            data-price={cartPrice}
+            data-checkout-url={plugin.checkoutUrl}
+            aria-label={`Add ${plugin.name} to cart — ${fmtPrice(cartPrice)}`}
+          >
+            <span class="rc-buysq-paint"></span>
+            <span class="rc-buysq-label">BUY NOW</span>
+            <span class="rc-buysq-lit"></span>
+            <span class="rc-buysq-tint"></span>
+            <span class="rc-buysq-glow"></span>
+          </button>
+          <!-- L1 door light — LAST door child so it lifts the copy/imprint too;
+               masked to the door silhouette so the amber pool stays on metal -->
+          <div class="rc-doorlight"></div>
+        </div>
+        <!-- lifting ring: own layer for the door < hook < ring occlusion sandwich -->
+        <div class="rc-ring"></div>
+        <div class="revcrane-ao"></div>
+      </div>
+    </div>
+
+    <!-- room-light spill: when the door light strikes (L1), the warm pool
+         sheds past the door onto the page around it (NOT transformed) -->
+    <div class="revcrane-fx">
+      <div class="rc-roomlight"></div>
+    </div>
+
+    <!-- worn-paint glyph filters. Same-document inline, never display:none
+         (WebKit), explicit region (default -10% pad clips displaced edges).
+         Safari failure mode is an UNFILTERED render — mask + imprint carry
+         the worn read on their own. -->
+    <svg class="rc-defs" width="0" height="0" aria-hidden="true">
+      <!-- One dedicated worn filter PER text element (bench /lightlab tuned each
+           element's erosion=displacement scale / blur=stdDeviation /
+           grain=baseFrequency independently). Values baked from the 2026-07-03c
+           COPY. price keeps the speckle-holes chain; plat is a no-op (scale 0). -->
+      <defs>
+        <filter id="rc-worn-price" x="-25%" y="-50%" width="150%" height="200%"
+                color-interpolation-filters="sRGB">
+          <feTurbulence type="fractalNoise" baseFrequency="0.005 0.005"
+                        numOctaves="4" seed="7" result="warp"/>
+          <feDisplacementMap in="SourceGraphic" in2="warp" scale="5.85"
+                             xChannelSelector="R" yChannelSelector="G" result="disp"/>
+          <feGaussianBlur in="disp" stdDeviation="0" result="soft"/>
+          <feTurbulence type="fractalNoise" baseFrequency="0.55"
+                        numOctaves="2" seed="3" result="spk"/>
+          <feColorMatrix in="spk" type="matrix"
+                         values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  8 0 0 0 -5.2"
+                         result="holes"/>
+          <feComposite in="soft" in2="holes" operator="out"/>
+        </filter>
+        <filter id="rc-worn-tag" x="-25%" y="-50%" width="150%" height="200%"
+                color-interpolation-filters="sRGB">
+          <feTurbulence type="fractalNoise" baseFrequency="0.02 0.02"
+                        numOctaves="2" seed="11" result="warp"/>
+          <feDisplacementMap in="SourceGraphic" in2="warp" scale="3.6"
+                             xChannelSelector="R" yChannelSelector="G" result="disp"/>
+          <feGaussianBlur in="disp" stdDeviation="0"/>
+        </filter>
+        <filter id="rc-worn-code" x="-25%" y="-50%" width="150%" height="200%"
+                color-interpolation-filters="sRGB">
+          <feTurbulence type="fractalNoise" baseFrequency="0.02 0.02"
+                        numOctaves="2" seed="11" result="warp"/>
+          <feDisplacementMap in="SourceGraphic" in2="warp" scale="3.15"
+                             xChannelSelector="R" yChannelSelector="G" result="disp"/>
+          <feGaussianBlur in="disp" stdDeviation="0"/>
+        </filter>
+        <filter id="rc-worn-plat" x="-25%" y="-50%" width="150%" height="200%"
+                color-interpolation-filters="sRGB">
+          <feTurbulence type="fractalNoise" baseFrequency="0.08 0.12"
+                        numOctaves="2" seed="11" result="warp"/>
+          <feDisplacementMap in="SourceGraphic" in2="warp" scale="0"
+                             xChannelSelector="R" yChannelSelector="G" result="disp"/>
+          <feGaussianBlur in="disp" stdDeviation="0"/>
+        </filter>
+        <filter id="rc-worn-buy" x="-25%" y="-50%" width="150%" height="200%"
+                color-interpolation-filters="sRGB">
+          <feTurbulence type="fractalNoise" baseFrequency="0.08 0.12"
+                        numOctaves="2" seed="11" result="warp"/>
+          <feDisplacementMap in="SourceGraphic" in2="warp" scale="2.75"
+                             xChannelSelector="R" yChannelSelector="G" result="disp"/>
+          <feGaussianBlur in="disp" stdDeviation="0.15"/>
+        </filter>
+      </defs>
+    </svg>
+  </div>
+
+  <div class="crane-under">
+    <p class="micro">Secure checkout &middot; instant delivery.</p>
+    <ul class="includes">
+      <li>VST3 / AU / AAX (Windows &amp; macOS)</li>
+      <li>Free updates within v1.x</li>
+      <li>Up to 2 machines per licence</li>
+      <li>14-day refund</li>
+    </ul>
+  </div>
+
+</div>
+
+<style>
+  .crane-buy {
+    max-width: 400px;
+    margin-inline: auto;
+  }
+
+  /* ── the hang point — a plain layout box, NOT a diorama. No border, no
+     backdrop, no overflow clip: the door hangs straight over the page bg and
+     the chain runs up out of this box toward the document top. Doubles as
+     the CSS-var host for the rig + light state. ── */
+  .crane-stage {
+    position: relative;
+    aspect-ratio: 808 / 1448;          /* the master's own box — the door IS the layout */
+    /* rig state — JS drives these. Defaults = seated rest so no-JS renders
+       the finished card. --door-y/--door-rot/--crane-y are the (unmounted)
+       release choreography's channels — kept at 0 so the bench CSS ports
+       verbatim and the drop can bake in later without touching styles. */
+    --seat: 1;
+    --lag: 0;
+    --slack: 8;
+    --door-y: 0;
+    --door-rot: 0;
+    --crane-y: 0;
+    /* garage light drivers — 0 at rest → every light layer is opacity:0 =
+       pixel-identical to the unlit card. Written ONLY by the hover/focus
+       handlers (bench-locked peaks folded in below). */
+    --l1: 0;
+    --l2: 0;
+    /* unified colour grade over the whole rig = one photograph. MUST sit here
+       on the (untransformed) stage — never on .revcrane-grade, which takes a
+       per-frame GSAP scale dolly (.94→1): Safari rasterizes a filtered +
+       transformed layer BLANK. This intentionally also grades the room-light
+       spill (.revcrane-fx), a sibling inside the stage. */
+    filter: saturate(0.92) brightness(0.97);    /* lightlab ref 2026-07-03b */
+  }
+
+  /* Pre-hide until JS parks the rig above the document top (crane-ready) —
+     only under html.motion-ok, so no-JS and reduced-motion get the static
+     seated card. Fallback animation only fires if JS never lifts the gate —
+     the normal path adds crane-ready in ~100ms, long before the 2.5s delay. */
+  :global(html.motion-ok) .crane-stage:not(.crane-ready) .revcrane-grade {
+    opacity: 0;
+    animation: rc-gate-fallback 0.6s ease 2.5s forwards;
+  }
+  @keyframes rc-gate-fallback { to { opacity: 1; } }
+
+  /* the dolly layer — JS scales .94→1 over the descent. Keep it filter-free
+     (grade lives on .crane-stage, see above). */
+  .revcrane-grade {
+    width: 100%;
+    position: relative;
+  }
+
+  /* the moving body: chain + hook + door swing & descend as one.
+     Pivot 700px above a 480px-wide door on the bench = -81% of door height —
+     % keeps the pendulum geometry proportional at card size. */
+  .revcrane-rig {
+    position: relative;
+    width: 100%;
+    transform-origin: 50% -81%;
+    will-change: transform;
+  }
+
+  .revcrane-door {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 808 / 1448;
+    background: var(--master-url) center / contain no-repeat;
+    z-index: 2;
+    container-type: inline-size;        /* painted copy sizes in cqw of the door */
+    translate: 0 calc(var(--door-y) * 1px);
+    rotate: calc(var(--door-rot) * 1deg);
+    transform-origin: 50% 100%;
+    /* NO animated filter here — the contact shadow lives on .revcrane-doorshadow
+       so the door subtree (mask + SVG filters + imprint blend) rasterizes once */
+  }
+
+  .revcrane-hookpart {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    aspect-ratio: 808 / 456;
+    background: var(--hook-url) center / 100% 100% no-repeat;
+    z-index: 1;
+    translate: 0 calc(var(--crane-y) * 1px);
+    filter: drop-shadow(3px 4px 4px rgba(0, 0, 0, 0.35));
+    pointer-events: none;
+  }
+
+  /* the door's lifting ring — own layer so it occludes the hook while the
+     rail stays behind it (door < hook < ring). Centre baked into left/top,
+     origin pushed to the door's floor point for the (future) release tip. */
+  .rc-ring {
+    position: absolute;
+    left: 49.57%;
+    top: 24.61%;
+    width: 4.3%;                         /* lightlab ref 2026-07-03b */
+    aspect-ratio: 40 / 140;
+    background: var(--ring-url) center / 100% 100% no-repeat;
+    z-index: 3;
+    translate: 0 calc(var(--door-y) * 1px);
+    rotate: calc(var(--door-rot) * 1deg + 0.2deg);
+    transform-origin: 10% 783%;
+    pointer-events: none;
+  }
+
+  .revcrane-doorshadow {
+    position: absolute;
+    inset: 0;
+    background: var(--master-url) center / 100% 100% no-repeat;
+    filter: brightness(0) blur(18px);
+    translate: calc(var(--seat) * 7px) calc(var(--seat) * 20px + var(--door-y) * 1px);
+    opacity: calc(var(--seat) * 0.55);
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  /* tile chain rising from the master's baked links up PAST the document top —
+     it slides under the sticky nav (z50), so it reads as hung from the top of
+     the website. Tucks BEHIND the master, hands off at the 4% seam; --lag
+     trails the sway, --slack feeds the chain down as tension releases at the
+     seat. Solid to its top edge (no fade) — the page edge does the cutting.
+     JS stretches the height so it always clears the document top at rest. */
+  .revcrane-chain {
+    position: absolute;
+    left: 51.8%;
+    bottom: calc(100% - 4%);
+    transform-origin: 50% 100%;
+    transform: translateX(-50%) translateY(calc(var(--slack) * 1px + var(--crane-y) * 1px)) rotate(calc(var(--lag) * 1deg));
+    width: 7.18%;
+    height: 150vh;                     /* no-JS floor; JS overrides with the doc-top span */
+    background: var(--chain-url) center top / 100% auto repeat-y;
+    -webkit-mask-image: linear-gradient(to top, transparent 0, #000 26px, #000 100%);
+            mask-image: linear-gradient(to top, transparent 0, #000 26px, #000 100%);
+    filter: brightness(0.93) saturate(0.95) drop-shadow(3px 4px 4px rgba(0, 0, 0, 0.4));
+    z-index: 1;
+    will-change: transform;
+  }
+
+  /* landing shadow under the door's bottom edge — swells as the door seats */
+  .revcrane-ao {
+    position: absolute;
+    left: 50%;
+    bottom: -2.5%;
+    transform: translateX(-50%);
+    width: 86%;
+    height: 7%;
+    background: radial-gradient(50% 62% at 50% 50%, rgba(0, 0, 0, 0.6) 0%, transparent 74%);
+    opacity: calc(var(--seat) * var(--seat) * 0.9);
+    pointer-events: none;
+    z-index: 1;
+    filter: blur(3px);
+  }
+
+  /* ── worn painted copy (bench-locked placement, 2026-07-02) ─────────────
+     Typography converted px→cqw at the bench's 480px door (1cqw = 4.8px). */
+  .rc-copy {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    opacity: 1;
+    -webkit-mask-image: var(--wear-url);
+    -webkit-mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+            mask-image: var(--wear-url);
+            mask-size: 100% 100%;
+            mask-repeat: no-repeat;
+  }
+
+  .rc-ink {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    z-index: 3;
+    white-space: nowrap;
+  }
+
+  /* door scratches/shading print through the paint. MUST stay a SIBLING of
+     .rc-copy — inside the masked wrapper it isolates and paints at .55 normal. */
+  .rc-imprint {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    background: var(--master-url) center / 100% 100% no-repeat;
+    mix-blend-mode: soft-light;
+    opacity: 0.55;
+    pointer-events: none;
+  }
+
+  .rc-defs { position: absolute; width: 0; height: 0; }  /* never display:none */
+
+  .rc-tag {
+    left: 69.3%;
+    top: 68.3%;
+    rotate: -1.3deg;
+    font-family: var(--font-mono);
+    font-size: 4.17cqw;                  /* lightlab ref 2026-07-03c */
+    letter-spacing: 0.06em;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 0.4cqw 1.65cqw;
+    color: #cab1a3;
+    border: 1px solid #58130b;
+    border-radius: 3px;
+    -webkit-text-stroke: 0.35px currentColor;
+    filter: url(#rc-worn-tag);
+  }
+
+  .rc-price {
+    left: 30.9%;
+    top: 68%;
+    rotate: -2.7deg;
+    transform: translate(-50%, -50%) scale(1.23);    /* lightlab ref 2026-07-03c */
+    display: flex;
+    align-items: baseline;
+    gap: 1.3cqw;
+    opacity: 0.97;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.58);
+    -webkit-text-stroke: 0px currentColor;
+    filter: url(#rc-worn-price);
+  }
+
+  .rc-now {
+    font-family: var(--font-display);
+    font-size: 10.75cqw;                 /* lightlab ref 2026-07-03c */
+    line-height: 1.21;
+    letter-spacing: 0.07em;
+    color: #e8c878;
+  }
+
+  .rc-was {
+    font-family: var(--font-display);
+    font-size: 7.6cqw;                   /* lightlab ref 2026-07-04 */
+    text-decoration: line-through;
+    color: #919191;
+  }
+
+  .rc-code {
+    left: 50.4%;
+    top: 91.1%;
+    rotate: 0.9deg;
+    font-family: var(--font-mono);
+    font-size: 4.36cqw;                  /* lightlab ref 2026-07-04 (rot kept .9°) */
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: #f4e8cf;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.45);
+    -webkit-text-stroke: 0px currentColor;
+    filter: url(#rc-worn-code);
+  }
+
+  .rc-code b {
+    letter-spacing: 0.15em;
+    color: #e32400;                      /* lightlab ref 2026-07-03b */
+  }
+
+  .rc-plat {
+    left: 67.6%;
+    top: 98.8%;
+    font-family: var(--font-mono);
+    font-size: 0.8cqw;                   /* lightlab ref 2026-07-03c */
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #000000;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.45);
+    -webkit-text-stroke: 0px currentColor;
+    filter: url(#rc-worn-plat);          /* no-op (scale 0) — kept for bench parity */
+  }
+
+  /* ── BUY NOW square (the add-to-cart) + garage light ────────────────── */
+  .rc-buysq {
+    position: absolute;
+    left: 50%;
+    top: 79.8%;
+    width: 67.8%;                        /* one-row stamp — lightlab ref 2026-07-04 (big, centred) */
+    aspect-ratio: 620 / 237;
+    transform: translate(-50%, -50%);
+    rotate: 1deg;
+    opacity: 0.69;
+    background: var(--buysq-url) center / 100% 100% no-repeat;
+    background-color: transparent;
+    border: 0;
+    padding: 0;
+    appearance: none;
+    -webkit-appearance: none;
+    z-index: 5;
+    cursor: pointer;
+    container-type: inline-size;         /* the live BUY NOW label sizes in cqw of the stamp */
+  }
+
+  /* LIVE "BUY NOW" — the patch asset is text-less; the text renders here so its
+     colour + letter/word-spacing stay tunable (bench /lightlab). Sized in cqw
+     of the stamp (the button is the container). Worn filter fakes the old
+     spray-eroded stencil; pe:none keeps the button the add-to-cart target. */
+  .rc-buysq-label {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: Impact, Haettenschweiler, 'Arial Narrow', sans-serif;
+    font-weight: 700;
+    font-size: 22cqw;
+    line-height: 1;
+    text-transform: uppercase;
+    white-space: nowrap;
+    letter-spacing: 0em;                 /* lightlab ref 2026-07-03c */
+    word-spacing: 0em;
+    color: #241310;
+    -webkit-text-stroke: 0px #241310;
+    filter: url(#rc-worn-buy);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* persistent PAINT of the patch around BUY NOW — multiply keeps the aged
+     grain, masked to the patch so it never spills into the transparent corners.
+     lightlab ref 2026-07-03c: maroon #4d0f0a at 0.35. */
+  .rc-buysq-paint {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    mix-blend-mode: multiply;
+    background: #4d0f0a;
+    opacity: 0.35;
+    -webkit-mask-image: var(--buysq-url);
+    -webkit-mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+            mask-image: var(--buysq-url);
+            mask-size: 100% 100%;
+            mask-repeat: no-repeat;
+    z-index: 0;
+  }
+
+  /* L2 box light — warm room-light wash ON the box (screen), masked to the
+     patch alpha, z2 = ABOVE the label so hover BRIGHTENS both the cream patch
+     AND the BUY NOW ink. Colour = the L2 warmth mix (midCol at warmth .05 =
+     rgb(255,247,236) — near-white), brightest near the top. Peak .29 (bench-locked 2026-07-04). */
+  .rc-buysq-lit {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    mix-blend-mode: screen;
+    background: radial-gradient(125% 125% at 50% 18%,
+        rgba(255, 247, 236, 0.9) 0%,
+        rgba(255, 247, 236, 0.5) 55%,
+        rgba(255, 247, 236, 0.26) 100%);
+    -webkit-mask-image: var(--buysq-url);
+    -webkit-mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+            mask-image: var(--buysq-url);
+            mask-size: 100% 100%;
+            mask-repeat: no-repeat;
+    opacity: calc(var(--l2) * 0.29);
+    z-index: 2;
+  }
+
+  .rc-buysq:focus-visible {
+    outline: 2px solid var(--brass-bright);
+    outline-offset: 3px;
+  }
+
+  /* L2 tint: white paint × amber (multiply) = aged faded-yellow — can only
+     darken toward the tint, keeps the paint texture. Faint again (peak .07,
+     2026-07-04b) — a whisper of warmth under the box light + glow. Centre 50%,25%. */
+  .rc-buysq-tint {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    mix-blend-mode: multiply;
+    background: radial-gradient(100% 100% at 50% 25%,
+        rgba(249, 238, 204, 0.92) 0%,
+        rgba(230, 204, 147, 0.8) 60%,
+        rgba(214, 172, 96, 0.72) 100%);
+    opacity: calc(var(--l2) * 0.07);
+  }
+
+  /* L2 glow: focused warm halo bleeding OUTSIDE the square. A real Gaussian
+     blur (bench --l2-glow-soft, baked 25.5px) softens the frame; the gradient
+     dies by ~90% radius inside inset:-35% + .rc-buysq has no overflow clip, so
+     the blurred halo never cuts. Peak .44 (bench-locked 2026-07-04). */
+  .rc-buysq-glow {
+    position: absolute;
+    inset: -35%;
+    pointer-events: none;
+    mix-blend-mode: screen;
+    background: radial-gradient(72% 72% at 50% 45%,
+        rgba(255, 232, 196, 0.55) 0%,
+        rgba(237, 199, 154, 0.28) 45.6%,
+        rgba(0, 0, 0, 0) 75.9%);
+    opacity: calc(var(--l2) * 0.44);
+    filter: blur(25.5px);
+  }
+
+  /* door hover hitbox — the door's opaque rows only; above copy/imprint (z4)
+     to catch the hover, below the square (z5) */
+  .rc-hit {
+    position: absolute;
+    left: 0;
+    top: 27%;
+    width: 100%;
+    height: 73%;
+    z-index: 4;
+    pointer-events: auto;
+  }
+
+  /* L1 door light — amber pool masked to the door silhouette, screen-blended
+     so it warms the red toward gold. LAST door child (z6) so the copy/imprint
+     get lit too. lightlab reference 2026-07-04: warmth .04 · dispersion .89 ·
+     angle 64° (light from upper-right) · reach 67 · core .24. Tune on /lightlab. */
+  .rc-doorlight {
+    position: absolute;
+    inset: 0;
+    z-index: 6;
+    pointer-events: none;
+    mix-blend-mode: screen;
+    background: radial-gradient(156.2% 127.3% at 110% 20.2%,
+        rgba(255, 248, 239, 0.95) 0%,
+        rgba(255, 248, 237, 0.55) 38.24%,
+        rgba(208, 147, 88, 0.18) 71.58%,
+        rgba(0, 0, 0, 0) 94.02%);
+    -webkit-mask-image: var(--master-url);
+    -webkit-mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+            mask-image: var(--master-url);
+            mask-size: 100% 100%;
+            mask-repeat: no-repeat;
+    opacity: calc(var(--l1) * 0.24);
+  }
+
+  /* ── room-light spill ───────────────────────────────────────────────── */
+  .revcrane-fx {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  /* L1 room light — the lit door sheds a warm pool onto the PAGE around it
+     (the box that used to contain this is gone — nothing clips the spill);
+     screen lifts the dark page bg cleanly. Peak .87 (bench-locked 2026-07-04). */
+  .rc-roomlight {
+    position: absolute;
+    inset: -30% -70%;
+    mix-blend-mode: screen;
+    background: radial-gradient(66.7% 57.36% at 75.7% 37.2%,
+        rgba(255, 248, 237, 0.16) 0%,
+        rgba(255, 248, 237, 0.08) 40.68%,
+        rgba(208, 147, 88, 0.03) 66.24%,
+        rgba(0, 0, 0, 0) 84.68%);
+    opacity: calc(var(--l1) * 0.87);
+  }
+
+  /* ── the practical strip under the door ─────────────────────────────── */
+  .crane-under {
+    margin-top: 0.75rem;
+    padding: 1rem 1.25rem;
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+  }
+
+  .micro {
+    font-size: 0.8rem;
+    color: var(--fg-dim);
+    margin: 0;
+  }
+
+  .includes {
+    list-style: none;
+    padding: 0.75rem 0 0;
+    margin: 0.5rem 0 0;
+    border-top: 1px solid var(--border);
+    font-size: 0.85rem;
+    color: var(--fg-dim);
+  }
+
+  .includes li { padding: 0.3rem 0; }
+
+  .includes li::before {
+    content: '+ ';
+    color: var(--brass);
+    font-weight: 600;
+  }
+
+</style>
+
+<script>
+  import { gsap, reducedMotion } from '../lib/motion';
+
+  const root = document.querySelector<HTMLElement>('[data-crane-buy]');
+  const stage = root?.querySelector<HTMLElement>('[data-crane-stage]');
+  const rig = root?.querySelector<HTMLElement>('[data-rig]');
+
+  if (root && stage && rig) {
+    // try/finally: crane-ready MUST land no matter what throws above it —
+    // the motion-ok pre-hide gate keeps .revcrane-grade at opacity:0 until
+    // this class arrives, so a stuck gate = invisible buy card (Safari
+    // blank-door incident, 2026-07-03). The CSS rc-gate-fallback animation
+    // covers the module-never-ran case; this covers the module-threw case.
+    try {
+      const grade = root.querySelector<HTMLElement>('.revcrane-grade');
+      const chain = rig.querySelector<HTMLElement>('.revcrane-chain');
+
+      // ── GARAGE LIGHT (hover / keyboard focus) ───────────────────────────
+      // L1 = door light + room light + vignette lift off --l1; L2 = the BUY NOW
+      // square's tint+glow off --l2. These vars are OURS: written only here,
+      // never by the entrance tween. One live tween ref per light, killed
+      // before a new one starts → enter/leave spam can't stack.
+      const OFF_FADE = 0.5;
+      const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+      const curVar = (n: string) => parseFloat(getComputedStyle(stage).getPropertyValue(n)) || 0;
+      const setL1 = (v: number) => stage.style.setProperty('--l1', String(v));
+      const setL2 = (v: number) => stage.style.setProperty('--l2', String(v));
+      let l1Anim: gsap.core.Tween | gsap.core.Timeline | null = null;
+      let l2Anim: gsap.core.Tween | null = null;
+      // L1 ON — garage-tube strike (≈0.30s); plain fade under reduced-motion
+      const doorOn = () => {
+        l1Anim?.kill();
+        const p = { v: curVar('--l1') };
+        if (reducedMotion()) {
+          l1Anim = gsap.to(p, { v: 1, duration: 0.3, ease: 'sine.out',
+            overwrite: 'auto', onUpdate: () => setL1(p.v) });
+          return;
+        }
+        l1Anim = gsap.timeline({ onUpdate: () => setL1(p.v) })
+          .to(p, { v: 0.90, duration: 0.05 })
+          .to(p, { v: 0.15, duration: 0.04 })
+          .to(p, { v: 1.00, duration: 0.05 })
+          .to(p, { v: 0.40, duration: 0.03 })
+          .to(p, { v: 0.85, duration: 0.04 })
+          .to(p, { v: 0.60, duration: 0.03 })
+          .to(p, { v: 1.00, duration: 0.06, ease: 'power1.out' });
+      };
+      const doorOff = () => {
+        l1Anim?.kill();
+        const p = { v: curVar('--l1') };
+        l1Anim = gsap.to(p, { v: 0, duration: OFF_FADE, ease: 'power2.out',
+          overwrite: 'auto', onUpdate: () => setL1(p.v) });
+      };
+      const sqOn = () => {
+        l2Anim?.kill();
+        const p = { v: curVar('--l2') };
+        l2Anim = gsap.to(p, { v: 1, duration: reducedMotion() ? 0.3 : 0.18,
+          ease: 'power2.out', overwrite: 'auto', onUpdate: () => setL2(p.v) });
+      };
+      const sqOff = () => {
+        l2Anim?.kill();
+        const p = { v: curVar('--l2') };
+        l2Anim = gsap.to(p, { v: 0, duration: 0.7, ease: 'power2.out',
+          overwrite: 'auto', onUpdate: () => setL2(p.v) });
+      };
+      // L1 lit-latch — .rc-hit and .rc-buysq are overlapping SIBLINGS, so a
+      // door→square transit fires leave-then-enter. A counter re-fires doorOn()
+      // on the enter side and restarts the flicker mid-hover; the latch keeps
+      // l1On true across the ~80ms grace, so transit neither dims nor re-strikes.
+      let l1On = false;
+      let l1OffTimer: number | null = null;
+      const l1Enter = () => {
+        if (l1OffTimer != null) { clearTimeout(l1OffTimer); l1OffTimer = null; }
+        if (!l1On) { l1On = true; doorOn(); }
+      };
+      const l1Leave = () => {
+        if (l1OffTimer != null) clearTimeout(l1OffTimer);
+        l1OffTimer = window.setTimeout(() => { l1OffTimer = null; l1On = false; doorOff(); }, 80);
+      };
+      const hit = root.querySelector<HTMLElement>('.rc-hit');
+      const buysq = root.querySelector<HTMLElement>('.rc-buysq');
+      if (canHover) {
+        hit?.addEventListener('pointerenter', l1Enter);
+        hit?.addEventListener('pointerleave', l1Leave);
+        buysq?.addEventListener('pointerenter', l1Enter);   // keep L1 lit over the square
+        buysq?.addEventListener('pointerleave', l1Leave);
+        buysq?.addEventListener('pointerenter', sqOn);       // L2 rides on top of L1
+        buysq?.addEventListener('pointerleave', sqOff);
+      }
+      // Keyboard focus lights the square like a hover (focus ≈ L2-on). Gated to
+      // :focus-visible so mouse clicks don't double-drive the pointer handlers.
+      let kbLit = false;
+      buysq?.addEventListener('focus', () => {
+        if (!buysq.matches(':focus-visible')) return;
+        kbLit = true; l1Enter(); sqOn();
+      });
+      buysq?.addEventListener('blur', () => {
+        if (!kbLit) return;
+        kbLit = false; l1Leave(); sqOff();
+      });
+
+      // ── ENTRANCE: the crane lowers the door down the page into its seat ──
+      // The bench's scroll-scrubbed descent, replayed as a one-shot timeline on
+      // first view — same render mapping (settle ease, pendulum sway, chain lag,
+      // seat dip, dolly), no page-scroll hijack. The rig parks ABOVE the
+      // document top (y<0 is unreachable by scroll — that's the hide, there is
+      // no overflow clip), so the descent is the literal page-top→seat drop.
+      // Reduced-motion / no-JS: the CSS defaults already ARE the seated card.
+      if (!reducedMotion()) {
+        const SWAY_AMP = 4;      // deg — bench 8; door swings over live page content
+        const SWAY_FREQ = 7;     // ~1.1 swings over the descent
+        const LAG_DP = 0.035;    // chain trails the rig by this much progress
+        const LAG_MAX = 1.4;     // chain lag clamp, degrees
+        const SEAT_START = 0.85; // landing window begins here
+        const settle = gsap.parseEase('sine.inOut');
+
+        const state = { p: 0 };
+        let idleStarted = false;
+        let startY = -700;
+        let dipPx = 4;           // seat micro-overshoot — bench 6px at 480px door
+        let slackPx = 8;
+
+        const setY = gsap.quickSetter(rig, 'y', 'px');
+        const setRot = gsap.quickSetter(rig, 'rotation', 'deg');
+        // NOT quickSetter(grade, 'scale'): gsap aliases 'scale' → "scaleX,scaleY"
+        // and Safari 26.5 rejects that as a qualified name (InvalidCharacterError)
+        // — the throw that kept crane-ready from ever landing. The grade only
+        // carries scale, so a direct transform write is equivalent.
+        const setScale = (v: number) => { if (grade) grade.style.transform = `scale(${v})`; };
+
+        const sway = (q: number) => SWAY_AMP * Math.sin(Math.PI * q) * Math.sin(q * SWAY_FREQ);
+        const clamp = (v: number, lo: number, hi: number) => Math.min(Math.max(v, lo), hi);
+
+        const computeGeo = () => {
+          // Layout-true document Y of the rig — the offsetTop chain ignores the
+          // rig's own animated transform (getBoundingClientRect wouldn't).
+          let el: HTMLElement | null = rig;
+          let docY = 0;
+          while (el) { docY += el.offsetTop; el = el.offsetParent as HTMLElement | null; }
+          const h = rig.offsetHeight;
+          startY = -(docY + h + 24);          // park: door bottom 24px above the document top
+          // The chain must span seat→document top AT REST; in flight it rides
+          // the rig upward, so rest is the tallest it ever needs to reach down.
+          if (chain) chain.style.height = `${Math.ceil(docY + h * 0.04) + 80}px`;
+          dipPx = rig.offsetWidth * 0.0125;   // bench 6px / 480px
+          slackPx = rig.offsetWidth * 0.0167; // bench 8px / 480px
+        };
+
+        const render = () => {
+          const p = state.p;
+          const eased = settle(p);
+          const u = clamp((p - SEAT_START) / (1 - SEAT_START), 0, 1);
+          setY(startY * (1 - eased) + dipPx * Math.sin(Math.PI * u));
+          if (!idleStarted) setRot(sway(p));   // idle sway owns rotation once seated
+          setScale(0.94 + 0.06 * eased);
+          const lag = clamp(sway(Math.max(p - LAG_DP, 0)) - sway(p), -LAG_MAX, LAG_MAX);
+          stage.style.setProperty('--seat', p.toFixed(3));
+          stage.style.setProperty('--lag', lag.toFixed(2));
+          stage.style.setProperty('--slack', (slackPx * u * u).toFixed(1));
+        };
+
+        // Idle sway — once seated, the door keeps a faint pendulum so it reads
+        // as hanging from the chain, not bolted to the page. One eased lead-in
+        // from rest (0→+amp), then an endless symmetric yoyo (+amp↔−amp). This
+        // whole block is reduced-motion-gated, so the idle sway is too.
+        const IDLE_AMP = 1.4;    // deg — a "bit of swing" at rest
+        const IDLE_HALF = 3.2;   // s per half-swing (slow, breathing)
+        const startIdle = () => {
+          if (idleStarted) return;
+          idleStarted = true;
+          gsap.to(rig, {
+            rotation: IDLE_AMP, duration: IDLE_HALF, ease: 'sine.out',
+            onComplete: () => gsap.to(rig, {
+              rotation: -IDLE_AMP, duration: IDLE_HALF * 2,
+              ease: 'sine.inOut', repeat: -1, yoyo: true,
+            }),
+          });
+        };
+
+        // DEBUG (headless verify): #cranep=<0..1> freezes the descent;
+        // #cranelight=1|2 freezes the lit states, seated.
+        const hashQ = new URLSearchParams(location.hash.slice(1));
+        const frozen = parseFloat(hashQ.get('cranep') ?? '');
+        const frozenLight = hashQ.get('cranelight');
+
+        computeGeo();
+        if (!Number.isNaN(frozen) || frozenLight) {
+          state.p = !Number.isNaN(frozen) ? clamp(frozen, 0, 1) : 1;
+          render();
+          if (frozenLight) {
+            setL1(1);
+            if (frozenLight === '2') setL2(1);
+          }
+        } else {
+          state.p = 0;
+          render();                            // park before the reveal — no flash
+          let played = false;
+          const playEntrance = () => {
+            if (played) return;
+            played = true;
+            // Travel varies hugely (aside near the top on desktop, well down
+            // the page on mobile) — scale time with distance, within taste.
+            const dur = clamp(Math.abs(startY) / 450, 2.4, 4.2);
+            gsap.to(state, { p: 1, duration: dur, delay: 0.2, ease: 'none', onUpdate: render, onComplete: startIdle });
+          };
+          // Lower the door the moment its card enters the viewport — at ANY width,
+          // scroll position, or post-layout shift. The rig parks at a NEGATIVE Y
+          // above the document top with no overflow clip, so a missed reveal =
+          // invisible forever, not merely late. An IntersectionObserver is immune
+          // to the traps a getBoundingClientRect()+ScrollTrigger combo hits on the
+          // ≤900px stacked layout (the aside sits far below the lazy gallery, so
+          // its 'top 85%' start is measured stale and onEnter may never fire). IO
+          // fires immediately when the stage is already on-screen, so desktop
+          // still drops on load, and it self-heals an HMR re-run / second setup.
+          const io = new IntersectionObserver((entries, obs) => {
+            if (entries.some((e) => e.isIntersecting)) { obs.disconnect(); playEntrance(); }
+          }, { rootMargin: '0px 0px -12% 0px' });
+          io.observe(stage);
+          // Backstop against any IO edge case: if the stage is within the viewport
+          // shortly after load and nothing played, seat it anyway (never leave the
+          // rig parked off-screen while its card is visible).
+          window.setTimeout(() => {
+            if (played) return;
+            const r = stage.getBoundingClientRect();
+            if (r.top < window.innerHeight && r.bottom > 0) playEntrance();
+          }, 1200);
+          // Re-render too: while parked (pre-reveal) or seated, a resize moves
+          // the geometry out from under the frozen transform.
+          window.addEventListener('resize', () => { computeGeo(); render(); });
+          // Safari's back/forward cache can restore the PARKED pre-entrance DOM
+          // without re-running this script — snap to seated when that happens.
+          window.addEventListener('pageshow', (e) => {
+            if (e.persisted) { state.p = 1; render(); startIdle(); }
+          });
+        }
+      }
+    } finally {
+      stage.classList.add('crane-ready');
+    }
+  }
+</script>
