@@ -73,16 +73,9 @@ for _ in range(5):
 ghost = ImageChops.multiply(ghost, mask).filter(ImageFilter.GaussianBlur(14))
 body = ImageChops.subtract(body, ghost)
 
-chip = Image.new("L", (W, H), 0)
-cd = ImageDraw.Draw(chip)
-for cx, cy, cr in [(int(0.13 * W), int(0.62 * H), int(0.06 * H)),
-                   (int(0.87 * W), int(0.4 * H), int(0.05 * H))]:
-    for _ in range(9):
-        ox, oy = random.randint(-cr, cr), random.randint(-cr, cr)
-        pr = random.randint(cr // 2, cr)
-        cd.ellipse([cx + ox - pr, cy + oy - pr, cx + ox + pr, cy + oy + pr], fill=255)
-chip = chip.filter(ImageFilter.GaussianBlur(1.2))
-body = ImageChops.subtract(body, chip)
+# chip bleach-blobs removed 2026-07-04 — the two clusters (0.13,0.62 & 0.87,0.4)
+# punched white "dots" that landed on the live B (BUY) and W (NOW). Every other
+# layer uses a locally-seeded RNG, so dropping this changes nothing else.
 
 drip = Image.new("L", (W, H), 0)
 dd = ImageDraw.Draw(drip)
