@@ -406,7 +406,7 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
     align-items: baseline;
     gap: 1.3cqw;
     opacity: 0.97;
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.58);
     -webkit-text-stroke: 0px currentColor;
     filter: url(#rc-worn-price);
   }
@@ -414,24 +414,24 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
   .rc-now {
     font-family: var(--font-display);
     font-size: 10.75cqw;                 /* lightlab ref 2026-07-03c */
-    line-height: 1.08;
-    letter-spacing: 0.08em;
+    line-height: 1.21;
+    letter-spacing: 0.07em;
     color: #e8c878;
   }
 
   .rc-was {
     font-family: var(--font-display);
-    font-size: 7.25cqw;                  /* lightlab ref 2026-07-03c */
+    font-size: 7.6cqw;                   /* lightlab ref 2026-07-04 */
     text-decoration: line-through;
     color: #919191;
   }
 
   .rc-code {
-    left: 49.6%;
-    top: 90.8%;
+    left: 50.4%;
+    top: 91.1%;
     rotate: 0.9deg;
     font-family: var(--font-mono);
-    font-size: 3.64cqw;                  /* lightlab ref 2026-07-03c */
+    font-size: 4.36cqw;                  /* lightlab ref 2026-07-04 (rot kept .9°) */
     letter-spacing: 0.02em;
     text-transform: uppercase;
     color: #f4e8cf;
@@ -446,8 +446,8 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
   }
 
   .rc-plat {
-    left: 69.8%;
-    top: 98.7%;
+    left: 67.6%;
+    top: 98.8%;
     font-family: var(--font-mono);
     font-size: 0.8cqw;                   /* lightlab ref 2026-07-03c */
     letter-spacing: 0.12em;
@@ -462,8 +462,8 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
   .rc-buysq {
     position: absolute;
     left: 50%;
-    top: 80.5%;
-    width: 67.8%;                        /* one-row stamp — lightlab ref 2026-07-03c (big, centred) */
+    top: 79.8%;
+    width: 67.8%;                        /* one-row stamp — lightlab ref 2026-07-04 (big, centred) */
     aspect-ratio: 620 / 237;
     transform: translate(-50%, -50%);
     rotate: 1deg;
@@ -525,24 +525,24 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
 
   /* L2 box light — warm room-light wash ON the box (screen), masked to the
      patch alpha, z2 = ABOVE the label so hover BRIGHTENS both the cream patch
-     AND the BUY NOW ink. Colour = the L2 warmth mix (midCol at warmth .8 =
-     rgb(255,207,108) — deep gold), brightest near the top. Peak .46 (bench-locked 2026-07-04). */
+     AND the BUY NOW ink. Colour = the L2 warmth mix (midCol at warmth .05 =
+     rgb(255,247,236) — near-white), brightest near the top. Peak .29 (bench-locked 2026-07-04). */
   .rc-buysq-lit {
     position: absolute;
     inset: 0;
     pointer-events: none;
     mix-blend-mode: screen;
     background: radial-gradient(125% 125% at 50% 18%,
-        rgba(255, 207, 108, 0.9) 0%,
-        rgba(255, 207, 108, 0.5) 55%,
-        rgba(255, 207, 108, 0.26) 100%);
+        rgba(255, 247, 236, 0.9) 0%,
+        rgba(255, 247, 236, 0.5) 55%,
+        rgba(255, 247, 236, 0.26) 100%);
     -webkit-mask-image: var(--buysq-url);
     -webkit-mask-size: 100% 100%;
     -webkit-mask-repeat: no-repeat;
             mask-image: var(--buysq-url);
             mask-size: 100% 100%;
             mask-repeat: no-repeat;
-    opacity: calc(var(--l2) * 0.46);
+    opacity: calc(var(--l2) * 0.29);
     z-index: 2;
   }
 
@@ -552,37 +552,36 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
   }
 
   /* L2 tint: white paint × amber (multiply) = aged faded-yellow — can only
-     darken toward the tint, keeps the paint texture. DISABLED (peak 0) as of
-     2026-07-04 — the box light + glow carry the lit read; any tint muddied it.
-     Geometry kept (centre 50%,19.5%) so re-enabling is a one-number change. */
+     darken toward the tint, keeps the paint texture. Faint again (peak .07,
+     2026-07-04b) — a whisper of warmth under the box light + glow. Centre 50%,25%. */
   .rc-buysq-tint {
     position: absolute;
     inset: 0;
     border-radius: inherit;
     pointer-events: none;
     mix-blend-mode: multiply;
-    background: radial-gradient(100% 100% at 50% 19.5%,
-        rgba(239, 205, 119, 0.92) 0%,
-        rgba(225, 188, 105, 0.8) 60%,
+    background: radial-gradient(100% 100% at 50% 25%,
+        rgba(249, 238, 204, 0.92) 0%,
+        rgba(230, 204, 147, 0.8) 60%,
         rgba(214, 172, 96, 0.72) 100%);
-    opacity: calc(var(--l2) * 0);
+    opacity: calc(var(--l2) * 0.07);
   }
 
   /* L2 glow: focused warm halo bleeding OUTSIDE the square. A real Gaussian
-     blur (bench --l2-glow-soft, baked 22.5px) softens the frame; the gradient
+     blur (bench --l2-glow-soft, baked 25.5px) softens the frame; the gradient
      dies by ~90% radius inside inset:-35% + .rc-buysq has no overflow clip, so
-     the blurred halo never cuts. Peak .85 (bench-locked 2026-07-04). */
+     the blurred halo never cuts. Peak .44 (bench-locked 2026-07-04). */
   .rc-buysq-glow {
     position: absolute;
     inset: -35%;
     pointer-events: none;
     mix-blend-mode: screen;
-    background: radial-gradient(60% 60% at 50% 45%,
-        rgba(255, 207, 136, 0.55) 0%,
-        rgba(237, 184, 118, 0.28) 51%,
-        rgba(0, 0, 0, 0) 84%);
-    opacity: calc(var(--l2) * 0.85);
-    filter: blur(22.5px);
+    background: radial-gradient(72% 72% at 50% 45%,
+        rgba(255, 232, 196, 0.55) 0%,
+        rgba(237, 199, 154, 0.28) 45.6%,
+        rgba(0, 0, 0, 0) 75.9%);
+    opacity: calc(var(--l2) * 0.44);
+    filter: blur(25.5px);
   }
 
   /* door hover hitbox — the door's opaque rows only; above copy/imprint (z4)
@@ -600,14 +599,14 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
   /* L1 door light — amber pool masked to the door silhouette, screen-blended
      so it warms the red toward gold. LAST door child (z6) so the copy/imprint
      get lit too. lightlab reference 2026-07-04: warmth .04 · dispersion .89 ·
-     angle 56° (light from upper-right) · reach 60.41 · core .37. Tune on /lightlab. */
+     angle 64° (light from upper-right) · reach 67 · core .24. Tune on /lightlab. */
   .rc-doorlight {
     position: absolute;
     inset: 0;
     z-index: 6;
     pointer-events: none;
     mix-blend-mode: screen;
-    background: radial-gradient(156.2% 127.3% at 100.1% 16.2%,
+    background: radial-gradient(156.2% 127.3% at 110% 20.2%,
         rgba(255, 248, 239, 0.95) 0%,
         rgba(255, 248, 237, 0.55) 38.24%,
         rgba(208, 147, 88, 0.18) 71.58%,
@@ -618,7 +617,7 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
             mask-image: var(--master-url);
             mask-size: 100% 100%;
             mask-repeat: no-repeat;
-    opacity: calc(var(--l1) * 0.37);
+    opacity: calc(var(--l1) * 0.24);
   }
 
   /* ── room-light spill ───────────────────────────────────────────────── */
@@ -630,17 +629,17 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
 
   /* L1 room light — the lit door sheds a warm pool onto the PAGE around it
      (the box that used to contain this is gone — nothing clips the spill);
-     screen lifts the dark page bg cleanly. Peak .91 (bench-locked 2026-07-04). */
+     screen lifts the dark page bg cleanly. Peak .87 (bench-locked 2026-07-04). */
   .rc-roomlight {
     position: absolute;
     inset: -30% -70%;
     mix-blend-mode: screen;
-    background: radial-gradient(66.7% 57.36% at 71.5% 35.5%,
+    background: radial-gradient(66.7% 57.36% at 75.7% 37.2%,
         rgba(255, 248, 237, 0.16) 0%,
         rgba(255, 248, 237, 0.08) 40.68%,
         rgba(208, 147, 88, 0.03) 66.24%,
         rgba(0, 0, 0, 0) 84.68%);
-    opacity: calc(var(--l1) * 0.91);
+    opacity: calc(var(--l1) * 0.87);
   }
 
   /* ── the practical strip under the door ─────────────────────────────── */
