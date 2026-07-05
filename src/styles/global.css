@@ -636,7 +636,21 @@ footer ul a { display: inline-block; padding: 0.7rem 0.45rem; }
   font-size: 0.8rem;
 }
 
-.spec-row .val { color: var(--fg); }
+.spec-row .val {
+  color: var(--fg);
+  min-width: 0;
+  overflow-wrap: anywhere; /* long unbroken values (emails, paths) must never force sideways scroll */
+}
+
+/* Phones: the 12rem key column starves the value (info@revaudio.net overflowed
+   the viewport at 390px) — stack key above value instead. */
+@media (max-width: 600px) {
+  .spec-row {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+    padding: 0.85rem 0;
+  }
+}
 
 .demo-block {
   margin: 3rem 0;

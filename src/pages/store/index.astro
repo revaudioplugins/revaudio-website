@@ -72,12 +72,25 @@ import { plugins } from '../../data/plugins';
 <style>
   .store-grid { padding: 3rem 0 4rem; }
 
+  /* Showroom row: all three plugins side by side on desktop so the range
+     reads at a glance; equal-height cards with aligned price footers. Stacks
+     back to the single centred column below 1020px. */
   .cards {
     display: grid;
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-    max-width: 480px;
-    margin: 0 auto;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2rem;
+  }
+
+  .cards > :global(.plugin-card-wrap) { display: flex; }
+  .cards :global(.plugin-card) { flex: 1; }
+
+  @media (max-width: 1020px) {
+    .cards {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      max-width: 480px;
+      margin: 0 auto;
+    }
   }
 
   .faq-grid {
