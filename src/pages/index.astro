@@ -12,6 +12,9 @@ import needleImg from '../assets/hero/needle-v2.png';
 import hubImg from '../assets/hero/hub-v2.png';
 import storeImg from '../assets/ui/btn-store.png';
 import storePressed from '../assets/ui/btn-store-pressed.png';
+import { bySlug, isBuyable, fmtPrice } from '../data/plugins';
+
+const rl = bySlug('revlimiter');
 
 /* Gauge geometry — the plugin's 406-viewBox units as % of the square dial box:
    needle <image> x122 y67.69 w162.4, pivot (203,203); hub x180.54 y181.08 w45.5 */
@@ -40,6 +43,12 @@ const H = { left: '44.468%', top: '44.601%', w: '11.207%' };
           <a href="/store" class="panel-hit hit-pill hit-subscribe" aria-label="Visit the store"></a>
           <Image src={storePressed} alt="" width={520} height={343} format="webp" loading="eager" class="press" />
         </div>
+        {rl && isBuyable(rl) && (
+          <p class="hh-fastbuy" data-hero-in>
+            <a href="/revlimiter">RevLimiter — <strong>{fmtPrice(rl.introPriceUsd)}</strong>
+              <s>{fmtPrice(rl.regularPriceUsd)}</s> · Buy now &rarr;</a>
+          </p>
+        )}
       </div>
 
       <div class="hero-dial" data-dial role="img" aria-label="RevLimiter rev gauge — needle at idle">
@@ -174,6 +183,24 @@ const H = { left: '44.468%', top: '44.601%', w: '11.207%' };
      them here so only the brass shows. */
   .hh-cta { width: 273px; margin-inline: auto; }
   .hh-cta.panel { background: transparent; box-shadow: none; border-radius: 0; overflow: visible; }
+
+  /* One quiet direct-to-product line under the STORE plate — additive, all widths. */
+  .hh-fastbuy {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    text-align: center;
+    margin: 0.9rem 0 0;
+  }
+  .hh-fastbuy a {
+    color: var(--brass);
+    text-decoration: underline;
+    text-decoration-style: dashed;
+    text-decoration-color: var(--brass-dark);
+    text-underline-offset: 3px;
+  }
+  .hh-fastbuy a:hover { color: var(--brass-bright); }
+  .hh-fastbuy strong { color: var(--brass-bright); font-weight: 400; }
+  .hh-fastbuy s { color: var(--fg-faint); }
 
   /* ── The gauge: face capture masked round; needle + hub overlay per the
      plugin's geometry. All children positioned in % so it scales as one. ── */
