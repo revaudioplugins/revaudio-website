@@ -130,7 +130,6 @@ export const plugins: Plugin[] = [
       { name: 'Up to 32× oversampling', desc: 'Catch the peaks between samples — selectable up to 32×, for the dense mixes that fight the ceiling and need surgical inter-sample control.', part: 'oversampling' },
       { name: 'Visual rev gauge', desc: 'Redline = threshold. Needle = gain reduction. You know what is happening at a glance.', part: 'gauge' },
       { name: 'A/B compare', desc: 'Two state slots. Switch instantly. Compare without leaving the plugin.', part: 'ab' },
-      { name: 'Lookahead with PDC', desc: 'The rest of your chain stays in time — lookahead delay is reported to the host, so nothing drifts on your master bus.', part: 'lookahead' },
     ],
     audioDemos: [
       { label: 'Vocal lead — A/B', description: 'Pop vocal pushed 3 dB into RevLimiter on a mastering chain.', beforeUrl: null, afterUrl: null },
@@ -153,8 +152,6 @@ export const plugins: Plugin[] = [
         oversampling: { x: 76.5, y: 6, w: 7.5, h: 7 },
         gauge: { x: 36, y: 0.5, w: 29.5, h: 61 },
         ab: { x: 29.5, y: 5.5, w: 6.5, h: 12 },
-        // Orphan (no discrete control) — whole unit.
-        lookahead: { x: 1, y: 1, w: 98, h: 98 },
       },
     },
   },
