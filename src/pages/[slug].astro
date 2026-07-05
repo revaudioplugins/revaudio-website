@@ -8,6 +8,7 @@ import TestimonialBlock from '../components/TestimonialBlock.astro';
 import StarRating from '../components/StarRating.astro';
 import Gallery from '../components/Gallery.astro';
 import AudioDemo from '../components/AudioDemo.astro';
+import MobileBuyBar from '../components/MobileBuyBar.astro';
 import { plugins, isBuyable } from '../data/plugins';
 import { pluginImage } from '../lib/images';
 
@@ -50,7 +51,7 @@ const shots = [plugin.heroImage, ...plugin.galleryImages]
           <Gallery hero={plugin.heroImage} images={plugin.galleryImages} alt={`${plugin.name} interface`} />
         </div>
 
-        <aside class="product-aside">
+        <aside class="product-aside" data-buy-aside>
           {/* RevLimiter's buy card is the crane-hung door (bench: /cranelab).
               Falls back to the classic block if checkout ever pauses. */}
           {plugin.slug === 'revlimiter' && buyable ? (
@@ -132,6 +133,8 @@ const shots = [plugin.heroImage, ...plugin.galleryImages]
       <TestimonialBlock plugin={plugin.slug} heading={`What producers say about ${plugin.name}`} />
     </div>
   </section>
+
+  {buyable && <MobileBuyBar plugin={plugin} />}
 
   {/* id="waitlist" keeps BuyButton's /{slug}#waitlist links landing on the one capture form. */}
   {!buyable && <EmailCapture id="waitlist" />}
