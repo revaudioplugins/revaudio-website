@@ -50,7 +50,7 @@ const hasStage = !!(
 // mobile part-thumbnail — mobile disables the connector/zoom/pin entirely
 // (see Mobile section in the handoff), so each step gets its own static,
 // no-JS-required cropped preview of the part it describes instead.
-const stageOptimized = hasStage ? await getImage({ src: stageShot!, width: 700, format: 'webp' }) : undefined;
+const stageOptimized = hasStage ? await getImage({ src: stageShot!, width: 1600, format: 'webp' }) : undefined;
 
 // Parts that swap the stage to their own screenshot (a control living in a
 // separate window / modal, not on the base panel). Each renders a hidden
@@ -64,7 +64,25 @@ const altShots = hasStage
     })
   : [];
 
+// The sticky stage only earns its column when there's something to pin: a real
+// `stage` (part-highlighter) OR more than one distinct shot (crossfade). A lone
+// hero (e.g. the shared coming-soon plate on in-dev plugins) is already the
+// Gallery hero above, so pinning it again just renders it twice — guard it out
+// and let the copy run full-width instead.
+const showStage = hasStage || shots.length > 1;
+
 type PartRect = { x: number; y: number; w: number; h: number };
+
+// Expand a tight highlight rect for thumbnail use — the plugins.ts rects are
+// tuned for the desktop brass box (edge-hugging), so cropping them raw clips
+// controls. Pad ≥18% (min 1.5% of the shot) each side, clamped to the panel.
+// Used for BOTH the crop geometry AND the aspect-ratio so they stay in sync.
+function padRect(p: PartRect): PartRect {
+  const padW = Math.max(p.w * 0.18, 1.5);
+  const padH = Math.max(p.h * 0.18, 1.5);
+  const x = Math.max(0, p.x - padW), y = Math.max(0, p.y - padH);
+  return { x, y, w: Math.min(100 - x, p.w + 2 * padW), h: Math.min(100 - y, p.h + 2 * padH) };
+}
 
 function partCropStyle(part: PartRect): string {
   const bgW = (10000 / part.w).toFixed(2);
@@ -79,6 +97,15 @@ function partAspect(part: PartRect, img: ImageMetadata): string {
   const h = (part.h / 100) * img.height;
   return `${w.toFixed(0)} / ${h.toFixed(0)}`;
 }
+
+// Cap a crop thumb's display width so its bounded height lands in a ~50–180px
+// band: height follows the padded aspect, so a tall-narrow part (mb, ar≈0.48)
+// renders ~87px wide instead of stretching full-width into an ~8× upscale mush.
+function thumbWidth(part: PartRect, img: ImageMetadata): string {
+  const p = padRect(part);
+  const ar = ((p.w / 100) * img.width) / ((p.h / 100) * img.height);
+  return `min(100%, ${(180 * ar).toFixed(0)}px)`;
+}
 ---
 
 <BaseLayout title={plugin.name} description={plugin.oneLiner}>
@@ -86,16 +113,17 @@ function partAspect(part: PartRect, img: ImageMetadata): string {
     <div class="container">
       <p class="breadcrumb"><a href="/store">&larr; Back to store</a></p>
 
-      <div class="product-head">
+      <div class:list={["product-head", { "product-head--soon": !buyable }]}>
         <div class="product-info">
           <span class="status-pill">{plugin.statusLabel}</span>
           <h1>{plugin.name}</h1>
           <p class="tagline">{plugin.tagline}</p>
           <p class="plain-what">{plugin.plainWhat}</p>
           <StarRating rating={plugin.reviewsAvg} count={plugin.reviewsCount} scale={1.05} />
-          <p class="long">{plugin.longPitch}</p>
 
           <Gallery hero={plugin.heroImage} images={plugin.galleryImages} alt={`${plugin.name} interface`} />
+
+          <p class="long">{plugin.longPitch}</p>
         </div>
 
         <aside class="product-aside" data-buy-aside>
@@ -118,7 +146,7 @@ function partAspect(part: PartRect, img: ImageMetadata): string {
       {plugin.features.length > 0 && (
         <section class="features" data-walkthrough data-walk-mode={hasStage ? 'stage' : 'crossfade'}>
           <h2 data-split>What's inside</h2>
-          <div class="walk-grid" data-stage-parts={hasStage ? JSON.stringify(plugin.stage!.parts) : undefined}>
+          <div class:list={["walk-grid", { "walk-grid--nostage": !showStage }]} data-stage-parts={hasStage ? JSON.stringify(plugin.stage!.parts) : undefined}>
             <div class="walk-copy">
               {plugin.features.map((f, i) => {
                 const part = hasStage && f.part ? plugin.stage!.parts[f.part] : undefined;
@@ -139,7 +167,7 @@ function partAspect(part: PartRect, img: ImageMetadata): string {
                       <div
                         class="walk-step-thumb"
                         role="presentation"
-                        style={`background-image:url(${stageOptimized.src}); ${partCropStyle(part)} aspect-ratio:${partAspect(part, stageShot!)};`}
+                        style={`background-image:url(${stageOptimized.src}); ${partCropStyle(padRect(part))} aspect-ratio:${partAspect(padRect(part), stageShot!)}; width:${thumbWidth(part, stageShot!)};`}
                       />
                     )}
                     {/* Alt-shot part (own window): no crop possible, show the
@@ -150,10 +178,11 @@ function partAspect(part: PartRect, img: ImageMetadata): string {
                         <Image
                           src={alt.img}
                           alt=""
-                          width={700}
+                          width={1200}
                           format="webp"
                           loading="lazy"
                           class="walk-step-thumb walk-step-thumb--shot"
+                          style={`width:min(100%, ${(180 * alt.img.width / alt.img.height).toFixed(0)}px);`}
                         />
                       ) : null;
                     })()}
@@ -162,7 +191,7 @@ function partAspect(part: PartRect, img: ImageMetadata): string {
               })}
             </div>
 
-            {hasStage ? (
+            {showStage && (hasStage ? (
               <div class="walk-stage">
                 <div class="stage-frame" data-walk-stage>
                   <div class="stage-zoom">
@@ -196,8 +225,7 @@ function partAspect(part: PartRect, img: ImageMetadata): string {
                 </div>
               </div>
             ) : (
-              shots.length > 0 && (
-                <div class="walk-stage">
+              <div class="walk-stage">
                   <div class="stage-frame" data-walk-stage>
                     {shots.map((s, i) => (
                       <Image
@@ -282,8 +310,12 @@ function partAspect(part: PartRect, img: ImageMetadata): string {
     grid-template-columns: 1fr minmax(320px, 400px);
     gap: 3rem;
     align-items: start;
-    margin-bottom: 4rem;
+    margin-bottom: var(--space-7);
   }
+
+  /* Pre-launch pages have a short "get notified" aside beside a tall info
+     column — top-align leaves it stranded high; centre it against the column. */
+  .product-head--soon { align-items: center; }
 
   @media (max-width: 900px) {
     .product-head { grid-template-columns: 1fr; }
@@ -313,6 +345,7 @@ function partAspect(part: PartRect, img: ImageMetadata): string {
     letter-spacing: 0.1em;
     color: var(--brass);
     margin: 0 0 1rem;
+    max-width: 60ch;
   }
 
   .plain-what {
@@ -327,7 +360,7 @@ function partAspect(part: PartRect, img: ImageMetadata): string {
 
   .long { font-size: 1.05rem; color: var(--fg-dim); max-width: 60ch; margin-bottom: 2rem; }
 
-  .features { padding: 2rem 0 3rem; border-top: 1px solid var(--border); }
+  .features { padding: var(--space-7) 0; border-top: 1px solid var(--border); }
 
   /* ── Sticky feature walkthrough (motion plan step 3). Stage column pins via
      native position:sticky while the copy steps scroll past; JS in
@@ -340,8 +373,15 @@ function partAspect(part: PartRect, img: ImageMetadata): string {
     margin-top: 1rem;
   }
 
+  /* No stage to pin (in-dev plugins: no `stage`, single shot) — drop the empty
+     second column and let the feature copy run in one centred measure. */
+  .walk-grid--nostage {
+    grid-template-columns: minmax(0, 640px);
+    justify-content: center;
+  }
+
   .walk-step {
-    min-height: 36vh;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -350,6 +390,11 @@ function partAspect(part: PartRect, img: ImageMetadata): string {
     border-left: 3px solid var(--border-bright);
     margin-bottom: 0.75rem;
   }
+
+  /* Steps need scroll room to drive the pinned stage — but ONLY when there is
+     one. Without a stage (nostage) the tall min-height just makes empty boxes.
+     The mobile block below re-zeroes this (same selector, later source). */
+  .walk-grid:not(.walk-grid--nostage) .walk-step { min-height: 36vh; }
 
   /* De-emphasise inactive steps only when the motion system is live; static/no-JS
      readers get every step at full strength. Emphasis is COLOR-based, not opacity —
@@ -373,7 +418,7 @@ function partAspect(part: PartRect, img: ImageMetadata): string {
     position: sticky;
     /* Clear the sticky site header (--nav-h) plus headroom for the ±12px
        scrubbed drift — otherwise the unit's top tucks behind the nav blur. */
-    top: calc(var(--sale-h, 0px) + var(--nav-h, 75px) + 1.5rem);
+    top: calc(var(--sale-h, 0px) + var(--nav-h, 44px) + 1.5rem);
   }
 
   .stage-frame {
@@ -392,7 +437,7 @@ function partAspect(part: PartRect, img: ImageMetadata): string {
   /* The whole unit must fit the viewport below the header, even on short
      laptop windows — never pin a shot the viewer can't see in full. */
   .stage-frame .walk-shot.base {
-    max-height: calc(100vh - var(--sale-h, 0px) - var(--nav-h, 75px) - 6rem);
+    max-height: calc(100vh - var(--sale-h, 0px) - var(--nav-h, 44px) - 6rem);
     width: auto;
     max-width: 100%;
   }
@@ -441,25 +486,31 @@ function partAspect(part: PartRect, img: ImageMetadata): string {
 
   /* Mobile-only static part crop — hidden on desktop, where the sticky stage +
      box carry the same information interactively. */
+  /* Width is set inline per-thumb (thumbWidth) so the bounded height lands in a
+     ~50–180px band — no CSS width/max-width here or it would strangle wide
+     parts or stretch small ones into upscale mush. */
   .walk-step-thumb {
     display: none;
     margin-top: 0.75rem;
-    width: 100%;
-    max-width: 220px;
     border-radius: 6px;
     border: 1px solid var(--border-bright);
     background-repeat: no-repeat;
     background-color: var(--bg-2);
   }
 
-  /* Alt-shot preview is a whole panel, not a small crop — let it run full
-     width so the window content stays readable. */
-  .walk-step-thumb--shot { max-width: 100%; height: auto; }
+  /* Alt-shot preview is a real <img> (own-window panel) — inline width caps it;
+     height:auto keeps its aspect. */
+  .walk-step-thumb--shot { height: auto; }
 
   @media (max-width: 900px) {
     .walk-grid { grid-template-columns: 1fr; gap: 1.5rem; }
     .walk-stage { position: static; order: -1; }
-    .walk-step { min-height: 0; }
+    /* Same selector/specificity as the desktop 36vh rule, later in source →
+       wins. The stage un-pins here, so steps need no scroll runway. */
+    .walk-grid:not(.walk-grid--nostage) .walk-step { min-height: 0; }
+    /* Cap the un-pinned stage so the overview screenshot doesn't dominate the
+       fold before the reader reaches the per-step thumbs. */
+    .stage-frame .walk-shot.base { max-height: 42vh; }
     /* Stage sits above the steps here, not beside them — de-emphasis reads as
        broken rather than as focus. Full strength; brass border marks active. */
     :global(html.motion-ok) .walk-step .f-name { color: var(--brass-bright); }
@@ -479,11 +530,11 @@ function partAspect(part: PartRect, img: ImageMetadata): string {
 
   .f-desc { color: var(--fg-dim); font-size: 0.98rem; margin: 0.4rem 0 0; max-width: 44ch; }
 
-  .audio-demos { padding: 2rem 0 3rem; border-top: 1px solid var(--border); }
+  .audio-demos { padding: var(--space-7) 0; border-top: 1px solid var(--border); }
 
-  .specs-section { padding: 2rem 0 3rem; border-top: 1px solid var(--border); }
+  .specs-section { padding: var(--space-7) 0; border-top: 1px solid var(--border); }
 
-  .install-section { padding: 2rem 0 3rem; border-top: 1px solid var(--border); }
+  .install-section { padding: var(--space-7) 0; border-top: 1px solid var(--border); }
 
   .install-section ol {
     margin: 1rem 0;
