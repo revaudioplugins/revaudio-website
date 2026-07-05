@@ -164,24 +164,24 @@ const H = { left: '44.468%', top: '44.601%', w: '11.207%' };
     background: linear-gradient(90deg, var(--brass-bright), var(--redline));
     transform-origin: left center;
     margin: 0 0 1.25rem;
-    margin-left: var(--redline-x, 198px);
+    margin-left: 0;
   }
 
   .hh-lede {
     font-family: var(--font-body);
-    font-size: 1.05rem;
+    font-size: 1.15rem;
     line-height: 1.6;
     color: var(--fg-dim);
     max-width: 44ch;
     margin: 0 0 1.75rem;
-    margin-left: var(--lede-x, 92px);
+    margin-left: 0;
   }
 
   /* Brass STORE plate (links to /store). Sized +30% (210 -> 273px), label
      dropped, centered in the column. The plate PNG is now transparent, so the
      global .panel box/shadow would draw a visible rectangle behind it — strip
      them here so only the brass shows. */
-  .hh-cta { width: 273px; margin-inline: auto; }
+  .hh-cta { width: 273px; }
   .hh-cta.panel { background: transparent; box-shadow: none; border-radius: 0; overflow: visible; }
 
   /* One quiet direct-to-product line under the STORE plate — additive, all widths. */
@@ -234,7 +234,8 @@ const H = { left: '44.468%', top: '44.601%', w: '11.207%' };
     .hh-redline { margin-inline: auto; }
     .hh-lede { margin-inline: auto; }
     .hh-cta { margin-inline: auto; }
-    .hero-dial { max-width: 320px; margin: 0 auto; }
+    /* Lead with the product's face, not the CTA: gauge → text → STORE plate. */
+    .hero-dial { order: -1; max-width: 320px; margin: 0 auto; }
   }
 
 </style>

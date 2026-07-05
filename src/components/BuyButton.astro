@@ -10,9 +10,12 @@ interface Props {
 const { plugin } = Astro.props;
 const buyable = isBuyable(plugin);
 const pct = discountPct(plugin);
+// The pre-launch "notify me" branch is sparse (one hint + one button), so the
+// full 1.75rem card padding leaves it top-heavy — tighten it for that case.
+const inDev = !buyable && !plugin.checkoutPaused && plugin.status !== 'beta';
 ---
 
-<div class="buy-block">
+<div class:list={["buy-block", { "buy-block--soon": inDev }]}>
   {buyable ? (
     <>
       <div class="prices">
@@ -101,6 +104,8 @@ const pct = discountPct(plugin);
     border: 1px solid var(--border);
     border-top: 3px solid var(--brass);
   }
+
+  .buy-block--soon { padding: 1.25rem 1.5rem; }
 
   .prices {
     display: flex;

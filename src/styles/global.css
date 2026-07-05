@@ -52,6 +52,7 @@
   --space-4: 1rem;
   --space-5: 1.5rem;
   --space-6: 2rem;
+  --space-7: 2.5rem;
   --space-8: 3rem;
   --space-10: 4rem;
   --space-12: 6rem;
@@ -379,7 +380,7 @@ nav ul a:hover { color: var(--brass-bright); }
 }
 
 .hero .lede {
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   color: var(--fg-dim);
   max-width: 36ch;
   margin: 1.5rem auto 2.5rem;
@@ -501,7 +502,7 @@ nav ul a:hover { color: var(--brass-bright); }
 
 /* email capture */
 .signup {
-  padding: 6rem 0;
+  padding: 4rem 0;
   text-align: center;
   border-top: 1px solid var(--border);
   background: none; /* sits directly on the page background art */
@@ -598,6 +599,23 @@ footer ul a { display: inline-block; padding: 0.7rem 0.45rem; }
   padding: 4rem 0;
 }
 
+/* Section-heading rhythm on prose pages (about/support/legal): global h2 has no
+   top margin, so a heading sat closer to the PREVIOUS section than its own body.
+   Add top margin so each break groups with the content it introduces. Scoped to
+   .plugin-detail — never leaks into the checkout modal (Cart.astro). */
+.plugin-detail h2 { margin-top: 2.5rem; }
+
+/* Lists inherited browser defaults (full-width ~90ch, no inter-item gap, deep
+   40px indent). Bring them to the paragraph reading measure and give items air. */
+.plugin-detail ul,
+.plugin-detail ol { max-width: 64ch; }
+.plugin-detail li { margin-bottom: 0.4em; }
+
+@media (max-width: 640px) {
+  .plugin-detail ul,
+  .plugin-detail ol { padding-left: 1.25rem; }
+}
+
 .plugin-detail .hero-img {
   width: 100%;
   aspect-ratio: 16 / 9;
@@ -638,6 +656,13 @@ footer ul a { display: inline-block; padding: 0.7rem 0.45rem; }
 
 .spec-row .val { color: var(--fg); }
 
+/* Below ~560px the 12rem key column starves the value (email clipped off the
+   right on contact). Stack key over value instead. */
+@media (max-width: 560px) {
+  .spec-row { grid-template-columns: 1fr; gap: 0.25rem; padding: 0.6rem 0; }
+  .spec-row .key { font-size: 0.72rem; }
+}
+
 .demo-block {
   margin: 3rem 0;
 }
@@ -672,6 +697,7 @@ footer ul a { display: inline-block; padding: 0.7rem 0.45rem; }
 
 /* utility */
 .muted { color: var(--fg-dim); }
+.micro { font-size: 0.8rem; }
 .center { text-align: center; }
 .section { padding: 4rem 0; }
 

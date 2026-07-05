@@ -379,6 +379,9 @@ const font = (st: any) => (st.ff ? `font-family:${st.ff};font-weight:${st.fw};fo
      (stacked, full-width, centered). Hide side arrows — swipe + dots drive it. ── */
   @media (max-width: 640px) {
     .showcase-wrap { padding: 0.4rem 0.8rem 1.8rem; gap: 1rem; }
+    /* Tighter clamp floor + tracking so the heading doesn't clip on ~320px
+       phones (wrap is overflow-x: clip). */
+    .sc-heading { font-size: clamp(2.4rem, 9vw, 3.4rem); letter-spacing: 0.1em; }
     .sc-scaler { height: auto !important; }
     .showcase { transform: none !important; gap: 0; width: 100%; }
     .sc-arrow { display: none; }
