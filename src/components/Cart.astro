@@ -341,10 +341,11 @@ for (const p of plugins) if (p.checkoutUrl) checkoutMap[p.slug] = p.checkoutUrl;
   .cd-head h2 { margin: 0; font-size: 1.5rem; color: var(--fg); }
 
   .cd-x {
-    width: 34px; height: 34px; border-radius: 50%;
+    width: 44px; height: 44px; border-radius: 50%;
     border: 1px solid var(--border-bright);
     background: var(--bg-0); color: var(--fg);
     font-size: 1.4rem; line-height: 1; cursor: pointer;
+    display: grid; place-items: center;
     transition: border-color 0.2s var(--ease), color 0.2s var(--ease);
   }
   .cd-x:hover { border-color: var(--brass); color: var(--brass-bright); }
@@ -362,7 +363,8 @@ for (const p of plugins) if (p.checkoutUrl) checkoutMap[p.slug] = p.checkoutUrl;
   .cd-items :global(.ci-name) { font-family: var(--font-display); letter-spacing: 0.03em; color: var(--brass-bright); font-size: 1.1rem; }
   .cd-items :global(.ci-meta) { font-family: var(--font-mono); font-size: 0.8rem; color: var(--fg-dim); }
   .cd-items :global(.ci-x) {
-    flex: none; width: 26px; height: 26px; border-radius: 50%;
+    flex: none; width: 40px; height: 40px; border-radius: 50%;
+    display: grid; place-items: center;
     border: 1px solid var(--border); background: transparent; color: var(--fg-faint);
     font-size: 1rem; line-height: 1; cursor: pointer;
     transition: color 0.2s, border-color 0.2s;
@@ -384,10 +386,11 @@ for (const p of plugins) if (p.checkoutUrl) checkoutMap[p.slug] = p.checkoutUrl;
   /* Consent checkbox — required before checkout; its links open the reader popup. */
   .cd-agree {
     display: flex; align-items: flex-start; gap: 0.55rem;
+    min-height: 44px; /* whole label is the tap target */
     font-size: 0.8rem; line-height: 1.4; color: var(--fg-dim); cursor: pointer;
   }
   .cd-agree input {
-    flex: none; width: 16px; height: 16px; margin-top: 0.1rem;
+    flex: none; width: 20px; height: 20px; margin-top: 0.1rem;
     accent-color: var(--brass); cursor: pointer;
   }
   .cd-agree a { color: var(--brass-bright); text-decoration: underline; cursor: pointer; }
@@ -401,6 +404,7 @@ for (const p of plugins) if (p.checkoutUrl) checkoutMap[p.slug] = p.checkoutUrl;
   .cd-cont {
     background: none; border: 0; color: var(--fg-dim);
     font-size: 0.85rem; cursor: pointer; padding: 0.25rem;
+    min-height: 44px; /* tap-target floor */
   }
   .cd-cont:hover { color: var(--brass-bright); }
 

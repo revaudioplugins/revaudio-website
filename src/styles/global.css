@@ -323,6 +323,12 @@ nav.site-nav {
   line-height: 0;
 }
 
+/* Touch tap-target: give the header brand link a ≥44px hit box (image stays
+   36px, centered). Mobile-scoped so the desktop nav height is pixel-identical. */
+@media (max-width: 700px) {
+  a.logo { min-height: 44px; }
+}
+
 .logo img {
   height: 36px;
   width: auto;
@@ -579,6 +585,8 @@ footer ul {
 
 footer a { color: var(--fg-dim); }
 footer a:hover { color: var(--brass-bright); }
+/* Tap target: pad each footer link to a ≥44px hit box; ul gaps preserved. */
+footer ul a { display: inline-block; padding: 0.7rem 0.45rem; }
 
 @media (max-width: 560px) {
   footer .footer-inner { flex-direction: column; align-items: flex-start; gap: 1.25rem; }
@@ -675,7 +683,7 @@ footer a:hover { color: var(--brass-bright); }
   text-transform: uppercase;
   color: var(--brass-bright);
   border-bottom: 1px solid var(--brass-dark);
-  padding: 0.25rem 0;
+  padding: 0.6rem 0;
   transition: color 0.2s var(--ease), border-color 0.2s var(--ease);
 }
 

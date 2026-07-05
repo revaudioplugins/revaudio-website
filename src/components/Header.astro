@@ -128,8 +128,8 @@ const onProductPage = plugins.some((pl) => isActive(`/${pl.slug}`));
   /* ---- Hamburger (mobile only) ---- */
   .nav-burger {
     display: none; /* shown ≤700px */
-    width: 42px;
-    height: 42px;
+    width: 44px;
+    height: 44px;
     padding: 0;
     border: 1px solid var(--border-bright);
     border-radius: 8px;
@@ -166,6 +166,11 @@ const onProductPage = plugins.some((pl) => isActive(`/${pl.slug}`));
   @media (max-width: 700px) {
     .nav-right { gap: 0.85rem; }
     .nav-burger { display: inline-flex; }
+
+    /* Touch tap-target: pad the box to 44px (icon stays 30px). Mobile-scoped so
+       the desktop nav + absolutely-positioned badge stay pixel-identical. */
+    .cart-toggle { padding: 7px; }
+    .cart-badge { top: 4px; right: 4px; }
 
     /* Links collapse into a slide-down panel under the bar. */
     .nav-links {
