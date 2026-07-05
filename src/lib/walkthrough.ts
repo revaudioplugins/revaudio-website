@@ -13,6 +13,10 @@
 import { gsap, ScrollTrigger, reducedMotion } from './motion';
 
 type PartRect = { x: number; y: number; w: number; h: number };
+/** A part either boxes a region of the base shot, or swaps the stage to its
+ *  own screenshot (a control that lives in a separate window / modal). */
+type StagePart = PartRect | { shot: string };
+const isRect = (p: StagePart): p is PartRect => 'w' in p;
 
 export function initWalkthrough(): void {
   if (reducedMotion()) return;
@@ -24,10 +28,23 @@ export function initWalkthrough(): void {
 
     const isStageMode = root.dataset.walkMode === 'stage';
     const grid = root.querySelector<HTMLElement>('.walk-grid');
-    const parts: Record<string, PartRect> | null =
+    const parts: Record<string, StagePart> | null =
       isStageMode && grid?.dataset.stageParts ? JSON.parse(grid.dataset.stageParts) : null;
 
     const boxEl = root.querySelector<HTMLElement>('[data-walk-box]');
+
+    // Alternate full-panel shots (one per `{ shot }` part), keyed by part slug.
+    const altEls = new Map<string, HTMLElement>();
+    root.querySelectorAll<HTMLElement>('[data-walk-alt]').forEach((el) => {
+      if (el.dataset.walkAlt) altEls.set(el.dataset.walkAlt, el);
+    });
+
+    // Crossfade: the alt shot for `show` (if any) to opacity 1, all others to 0.
+    const setAltShot = (show?: string): void => {
+      altEls.forEach((el, slug) => {
+        gsap.to(el, { opacity: slug === show ? 1 : 0, duration: 0.45, ease: 'power2.out', overwrite: 'auto' });
+      });
+    };
 
     const hideStageOverlay = (): void => {
       if (boxEl) gsap.to(boxEl, { autoAlpha: 0, duration: 0.3, ease: 'power2.out', overwrite: 'auto' });
@@ -54,10 +71,20 @@ export function initWalkthrough(): void {
 
       if (isStageMode && parts) {
         const slug = steps[idx].dataset.part;
-        const rect = slug ? parts[slug] : undefined;
+        const part = slug ? parts[slug] : undefined;
         const isDesktop = window.matchMedia('(min-width: 901px)').matches;
-        if (rect && isDesktop) showStagePart(rect);
-        else hideStageOverlay();
+        if (part && isDesktop) {
+          if (isRect(part)) {
+            setAltShot();          // back to the base panel
+            showStagePart(part);
+          } else {
+            hideStageOverlay();    // no box on an alt shot — the shot IS the focus
+            setAltShot(slug);      // crossfade in this part's own window
+          }
+        } else {
+          hideStageOverlay();
+          setAltShot();
+        }
         return;
       }
 
@@ -107,7 +134,7 @@ export function initWalkthrough(): void {
     // information instead; re-evaluate on breakpoint crossing.
     const mq = window.matchMedia('(min-width: 901px)');
     const onBreakpoint = () => {
-      if (!mq.matches) hideStageOverlay();
+      if (!mq.matches) { hideStageOverlay(); setAltShot(); }
       else setActive(activeIdx);
     };
     mq.addEventListener('change', onBreakpoint);

@@ -22,15 +22,14 @@ export interface Feature {
   part?: string;
 }
 
-/** A region on `stage.shot`, in PERCENT of the image (0-100). The screenshot
- *  itself never transforms (no zoom/pan) — only the highlight box animates
- *  to this rect. */
-export interface StagePart {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-}
+/** A part is EITHER a region on `stage.shot` (percent rect, 0-100) that the
+ *  highlight box animates onto, OR an alternate full-panel screenshot the stage
+ *  crossfades to (for a control that lives in its own window — e.g. a modal not
+ *  present on the base shot). The base screenshot itself never transforms
+ *  (no zoom/pan). */
+export type StagePart =
+  | { x: number; y: number; w: number; h: number }
+  | { shot: string };
 
 /** Data-driven config for the "What's inside" part-highlighter. Add this to
  *  a plugin + `part` slugs on its features to get the interactive overlay;
@@ -125,8 +124,12 @@ export const plugins: Plugin[] = [
     features: [
       { name: 'True-peak limiting', desc: 'Hit the ceiling, never cross it — inter-sample peak control at oversampled rate, with a base-rate hard-clip as the safety net.', part: 'ceiling' },
       { name: 'Adaptive multi-band release', desc: 'Per-band envelope tracking. Bass holds, mids breathe, highs respond — no static release time fights your material.', part: 'bands' },
+      { name: 'Multiband glue — or EQ', desc: 'One switch flips the multiband stage between transparent glue compression and a live multiband EQ — shape each band’s tone, not just its level.', part: 'mb' },
+      { name: 'Visual crossover', desc: 'Open the digital crossover: a live spectrum with two draggable split points that set exactly where Low, Mid and High divide.', part: 'crossover' },
       { name: 'Analog-modelled saturation', desc: 'Asymmetric soft-to-hard curve with DC-block. Adds density and weight before the brick wall.', part: 'saturation' },
+      { name: 'Three engine modes', desc: 'One switch, three drive characters: Cruise for gentle, transparent glue; Sport for punchy, snappy grip; NOS for loud, aggressive hard-clip muscle.', part: 'modes' },
       { name: 'Pro-tier metering', desc: 'Trust your eyes, not a guess — true peak, max peak, LUFS-M/S/I, LRA and per-band GR, RT-safe and audited against external mastering meters.', part: 'meters' },
+      { name: 'Live spectrum analyser', desc: 'An always-on spectrum across the bottom deck — watch your master’s balance in real time as it hits the wall.', part: 'spectrum' },
       { name: 'Up to 32× oversampling', desc: 'Catch the peaks between samples — selectable up to 32×, for the dense mixes that fight the ceiling and need surgical inter-sample control.', part: 'oversampling' },
       { name: 'Visual rev gauge', desc: 'Redline = threshold. Needle = gain reduction. You know what is happening at a glance.', part: 'gauge' },
       { name: 'A/B compare', desc: 'Two state slots. Switch instantly. Compare without leaving the plugin.', part: 'ab' },
@@ -146,9 +149,16 @@ export const plugins: Plugin[] = [
       parts: {
         ceiling: { x: 66.5, y: 16.5, w: 18, h: 28 },
         bands: { x: 2.5, y: 16.5, w: 18, h: 51 },
+        mb: { x: 22.5, y: 18, w: 6, h: 28.5 },
+        // Alternate shot — the X·OVER control opens its own modal window that
+        // isn't on the base panel, so this part swaps the whole stage image.
+        crossover: { shot: 'revlimiter-xover.png' },
         // Orphan (no discrete control) — whole drive/HEAT cluster.
         saturation: { x: 0.8, y: 44, w: 40, h: 54 },
+        // Cruise / Sport / NOS bat-lever triplet (box all three).
+        modes: { x: 62.5, y: 52.5, w: 21, h: 22 },
         meters: { x: 83.5, y: 25, w: 15, h: 27 },
+        spectrum: { x: 19.5, y: 75, w: 44, h: 22 },
         oversampling: { x: 76.5, y: 6, w: 7.5, h: 7 },
         gauge: { x: 36, y: 0.5, w: 29.5, h: 61 },
         ab: { x: 29.5, y: 5.5, w: 6.5, h: 12 },
