@@ -92,6 +92,15 @@ for (const p of plugins) if (p.checkoutUrl) checkoutMap[p.slug] = p.checkoutUrl;
       });
     }
 
+    // ---- Funnel analytics (Meta Pixel) ----
+    // No-ops until CookieBanner consent creates window.fbq (declines never track).
+    function track(ev, params) {
+      try { if (window.fbq) window.fbq('track', ev, params || {}); } catch (e) {}
+    }
+    // Cart total captured at checkout start, replayed onto Purchase after the
+    // LS redirect has cleared the cart.
+    var lastCheckoutValue = 0;
+
     function lock() { html.style.overflow = anyModalOpen() ? 'hidden' : ''; }
     function anyModalOpen() {
       return (drawer && drawer.open) || (lModal && lModal.open);
@@ -157,6 +166,11 @@ for (const p of plugins) if (p.checkoutUrl) checkoutMap[p.slug] = p.checkoutUrl;
           eventHandler: function (ev) {
             if (ev && ev.event === 'Checkout.Success') {
               write([]); sync();
+              // Client-side Purchase is best-effort: it undercounts consent-declines
+              // and races the redirect. If an LS-webhook → CAPI Purchase is added
+              // later it MUST carry the LS order id as eventID and this call must be
+              // deduped or removed. Not fired on /thank-you load (would re-fire on refresh).
+              track('Purchase', { value: lastCheckoutValue, currency: 'USD' });
               window.location.href = '/thank-you';
             }
           }
@@ -190,6 +204,11 @@ for (const p of plugins) if (p.checkoutUrl) checkoutMap[p.slug] = p.checkoutUrl;
       var agree = agreeEl();
       if (agree && !agree.checked) { setAgreeError(true); agree.focus(); return; }
       setAgreeError(false);
+      // Funnel: InitiateCheckout once consent is given; stash the total so the
+      // post-redirect Purchase event can report it.
+      var cart = read();
+      lastCheckoutValue = cart.reduce(function (s, i) { return s + (i.price || 0) * (i.qty || 1); }, 0);
+      track('InitiateCheckout', { value: lastCheckoutValue, currency: 'USD', num_items: count(cart) });
       var url = checkoutUrlFor(items[0]);
       url += (url.indexOf('?') === -1 ? '?' : '&') + 'embed=1';
       // Consent record: stamp the accepted legal-bundle version onto the order via
@@ -235,13 +254,17 @@ for (const p of plugins) if (p.checkoutUrl) checkoutMap[p.slug] = p.checkoutUrl;
       var addBtn = t.closest('[data-add-to-cart]');
       if (addBtn) {
         e.preventDefault();
+        var addSlug = addBtn.getAttribute('data-slug');
+        var addPrice = addBtn.getAttribute('data-price');
         add({
-          slug: addBtn.getAttribute('data-slug'),
+          slug: addSlug,
           name: addBtn.getAttribute('data-name'),
-          price: addBtn.getAttribute('data-price'),
+          price: addPrice,
           checkoutUrl: addBtn.getAttribute('data-checkout-url'),
           img: addBtn.getAttribute('data-img')
         });
+        // One call site covers the crane, the store card, and the mobile buy bar.
+        track('AddToCart', { content_ids: [addSlug], content_type: 'product', value: +addPrice || 0, currency: 'USD' });
         return;
       }
       if (t.closest('[data-cart-toggle]')) { e.preventDefault(); openDrawer(); return; }
