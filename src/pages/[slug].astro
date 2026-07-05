@@ -1,5 +1,6 @@
 ---
-import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import { Image, getImage } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import BuyButton from '../components/BuyButton.astro';
 import BuyButtonCrane from '../components/BuyButtonCrane.astro';
@@ -32,6 +33,52 @@ const seenShot = new Set<string>();
 const shots = [plugin.heroImage, ...plugin.galleryImages]
   .map(pluginImage)
   .filter((m): m is NonNullable<typeof m> => !!m && !seenShot.has(m.src) && !!seenShot.add(m.src));
+
+// Scroll-linked part-highlighter (docs/revlimiter-whats-inside-handoff.md).
+// Active only when the plugin has a `stage` AND every feature carries a
+// `part` slug that resolves in it — otherwise the plain crossfade above
+// stays untouched. Reusable: a future plugin needs only its own `stage` +
+// `part` slugs in plugins.ts, no template changes.
+const stageShot = plugin.stage ? pluginImage(plugin.stage.shot) : undefined;
+const hasStage = !!(
+  plugin.stage &&
+  stageShot &&
+  plugin.features.length > 0 &&
+  plugin.features.every((f) => f.part && plugin.stage!.parts[f.part])
+);
+// Single small crop source reused (via CSS background-position/size) for every
+// mobile part-thumbnail — mobile disables the connector/zoom/pin entirely
+// (see Mobile section in the handoff), so each step gets its own static,
+// no-JS-required cropped preview of the part it describes instead.
+const stageOptimized = hasStage ? await getImage({ src: stageShot!, width: 700, format: 'webp' }) : undefined;
+
+// Parts that swap the stage to their own screenshot (a control living in a
+// separate window / modal, not on the base panel). Each renders a hidden
+// overlay <img> that walkthrough.ts crossfades in; on mobile it doubles as
+// that step's static preview. Keyed by part slug via data-walk-alt.
+const altShots = hasStage
+  ? Object.entries(plugin.stage!.parts).flatMap(([slug, p]) => {
+      if (!('shot' in p)) return [];
+      const img = pluginImage(p.shot);
+      return img ? [{ slug, img }] : [];
+    })
+  : [];
+
+type PartRect = { x: number; y: number; w: number; h: number };
+
+function partCropStyle(part: PartRect): string {
+  const bgW = (10000 / part.w).toFixed(2);
+  const bgH = (10000 / part.h).toFixed(2);
+  const posX = part.w >= 100 ? '50' : (((100 * part.x) / (100 - part.w)).toFixed(2));
+  const posY = part.h >= 100 ? '50' : (((100 * part.y) / (100 - part.h)).toFixed(2));
+  return `background-position:${posX}% ${posY}%; background-size:${bgW}% ${bgH}%;`;
+}
+
+function partAspect(part: PartRect, img: ImageMetadata): string {
+  const w = (part.w / 100) * img.width;
+  const h = (part.h / 100) * img.height;
+  return `${w.toFixed(0)} / ${h.toFixed(0)}`;
+}
 ---
 
 <BaseLayout title={plugin.name} description={plugin.oneLiner}>
@@ -63,37 +110,111 @@ const shots = [plugin.heroImage, ...plugin.galleryImages]
       </div>
 
       {/* No data-reveal on the walkthrough section or .walk-grid: an animated
-          ancestor transform would break position:sticky on the stage. */}
+          ancestor transform would break position:sticky on the stage. Same
+          rule extends to the highlight box: it lives INSIDE .stage-frame,
+          never on .walk-stage or any shared ancestor. The screenshot itself
+          is never transformed — no zoom/pan, ever, on .stage-zoom or its
+          children — only the box animates. */}
       {plugin.features.length > 0 && (
-        <section class="features" data-walkthrough>
+        <section class="features" data-walkthrough data-walk-mode={hasStage ? 'stage' : 'crossfade'}>
           <h2 data-split>What's inside</h2>
-          <div class="walk-grid">
+          <div class="walk-grid" data-stage-parts={hasStage ? JSON.stringify(plugin.stage!.parts) : undefined}>
             <div class="walk-copy">
-              {plugin.features.map((f, i) => (
-                <div class="walk-step" data-walk-step data-shot={shots.length ? Math.min(i, shots.length - 1) : 0}>
-                  <span class="f-name">{f.name}</span>
-                  <p class="f-desc">{f.desc}</p>
-                </div>
-              ))}
+              {plugin.features.map((f, i) => {
+                const part = hasStage && f.part ? plugin.stage!.parts[f.part] : undefined;
+                return (
+                  <div
+                    class="walk-step"
+                    data-walk-step
+                    data-shot={shots.length ? Math.min(i, shots.length - 1) : 0}
+                    data-part={hasStage ? f.part : undefined}
+                  >
+                    <span class="f-name">{f.name}</span>
+                    <p class="f-desc">{f.desc}</p>
+                    {/* Mobile-only static crop (route (a) of the Mobile section):
+                        the box is JS-disabled under 900px because the stage
+                        un-pins and scrolls away before the reader reaches
+                        later steps, so each step carries its own no-JS preview. */}
+                    {part && 'w' in part && stageOptimized && (
+                      <div
+                        class="walk-step-thumb"
+                        role="presentation"
+                        style={`background-image:url(${stageOptimized.src}); ${partCropStyle(part)} aspect-ratio:${partAspect(part, stageShot!)};`}
+                      />
+                    )}
+                    {/* Alt-shot part (own window): no crop possible, show the
+                        window screenshot itself as the mobile preview. */}
+                    {part && 'shot' in part && f.part && (() => {
+                      const alt = altShots.find((a) => a.slug === f.part);
+                      return alt ? (
+                        <Image
+                          src={alt.img}
+                          alt=""
+                          width={700}
+                          format="webp"
+                          loading="lazy"
+                          class="walk-step-thumb walk-step-thumb--shot"
+                        />
+                      ) : null;
+                    })()}
+                  </div>
+                );
+              })}
             </div>
-            {shots.length > 0 && (
+
+            {hasStage ? (
               <div class="walk-stage">
                 <div class="stage-frame" data-walk-stage>
-                  {shots.map((s, i) => (
+                  <div class="stage-zoom">
                     <Image
-                      src={s}
-                      alt={i === 0 ? `${plugin.name} interface` : ''}
-                      width={1000}
-                      widths={[480, 800, 1000]}
+                      src={stageShot!}
+                      alt={`${plugin.name} interface`}
+                      width={1200}
+                      widths={[600, 900, 1200]}
                       sizes="(max-width: 900px) 100vw, 560px"
                       format="webp"
                       loading="lazy"
-                      class={`walk-shot ${i === 0 ? 'base' : ''}`}
-                      data-walk-shot={i}
+                      class="walk-shot base"
                     />
-                  ))}
+                    {/* Alt panels (own-window controls) — stacked, hidden;
+                        walkthrough.ts crossfades the active one in. */}
+                    {altShots.map((a) => (
+                      <Image
+                        src={a.img}
+                        alt=""
+                        width={1200}
+                        widths={[600, 900, 1200]}
+                        sizes="(max-width: 900px) 100vw, 560px"
+                        format="webp"
+                        loading="lazy"
+                        class="walk-shot alt"
+                        data-walk-alt={a.slug}
+                      />
+                    ))}
+                    <div class="stage-box" data-walk-box aria-hidden="true"></div>
+                  </div>
                 </div>
               </div>
+            ) : (
+              shots.length > 0 && (
+                <div class="walk-stage">
+                  <div class="stage-frame" data-walk-stage>
+                    {shots.map((s, i) => (
+                      <Image
+                        src={s}
+                        alt={i === 0 ? `${plugin.name} interface` : ''}
+                        width={1000}
+                        widths={[480, 800, 1000]}
+                        sizes="(max-width: 900px) 100vw, 560px"
+                        format="webp"
+                        loading="lazy"
+                        class={`walk-shot ${i === 0 ? 'base' : ''}`}
+                        data-walk-shot={i}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )
             )}
           </div>
         </section>
@@ -285,6 +406,56 @@ const shots = [plugin.heroImage, ...plugin.galleryImages]
     opacity: 0;
   }
 
+  /* ── Part-highlighter overlay (stage mode only — see plugins.ts `stage`).
+     CSS default = full/undimmed/no box; walkthrough.ts is the only thing that
+     ever animates the box, so no-JS + reduced-motion readers see the whole
+     screenshot at rest, exactly like the crossfade fallback. This block must
+     stay ABOVE the `@media (max-width: 900px)` rule below: the mobile
+     override for `.walk-step-thumb` needs to win the cascade. ── */
+  .stage-zoom {
+    /* Plain wrapper — never transformed. The screenshot sits static; only
+       .stage-box (below) ever animates, so nothing here jitters. */
+    position: relative;
+    display: inline-block;
+  }
+
+  .stage-box {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 0;
+    height: 0;
+    opacity: 0;
+    pointer-events: none;
+    border-radius: 6px;
+    z-index: 2;
+    /* Ring + glow around the active part, plus a giant spread that (clipped by
+       .stage-frame's overflow:hidden) reads as a dim mask over everything
+       outside the box — one element does both jobs, no separate mask layer
+       to keep in sync while the box moves/resizes. */
+    box-shadow:
+      0 0 0 2px var(--brass-bright),
+      0 0 22px 4px rgba(232, 200, 120, 0.35),
+      0 0 0 9999px rgba(6, 8, 10, 0.55);
+  }
+
+  /* Mobile-only static part crop — hidden on desktop, where the sticky stage +
+     box carry the same information interactively. */
+  .walk-step-thumb {
+    display: none;
+    margin-top: 0.75rem;
+    width: 100%;
+    max-width: 220px;
+    border-radius: 6px;
+    border: 1px solid var(--border-bright);
+    background-repeat: no-repeat;
+    background-color: var(--bg-2);
+  }
+
+  /* Alt-shot preview is a whole panel, not a small crop — let it run full
+     width so the window content stays readable. */
+  .walk-step-thumb--shot { max-width: 100%; height: auto; }
+
   @media (max-width: 900px) {
     .walk-grid { grid-template-columns: 1fr; gap: 1.5rem; }
     .walk-stage { position: static; order: -1; }
@@ -293,6 +464,10 @@ const shots = [plugin.heroImage, ...plugin.galleryImages]
        broken rather than as focus. Full strength; brass border marks active. */
     :global(html.motion-ok) .walk-step .f-name { color: var(--brass-bright); }
     :global(html.motion-ok) .walk-step .f-desc { color: var(--fg-dim); }
+    /* Mobile part-thumbnail route: the stage un-pins and scrolls past before
+       later steps are read, so the box is JS-disabled (walkthrough.ts) and
+       each step instead carries its own static crop of the part it names. */
+    .walk-step-thumb { display: block; }
   }
 
   .f-name {
