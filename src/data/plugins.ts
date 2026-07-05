@@ -128,10 +128,12 @@ export const plugins: Plugin[] = [
       { name: 'Visual crossover', desc: 'Open the digital crossover: a live spectrum with two draggable split points that set exactly where Low, Mid and High divide.', part: 'crossover' },
       { name: 'Analog-modelled saturation', desc: 'Asymmetric soft-to-hard curve with DC-block. Adds density and weight before the brick wall.', part: 'saturation' },
       { name: 'Three engine modes', desc: 'One switch, three drive characters: Cruise for gentle, transparent glue; Sport for punchy, snappy grip; NOS for loud, aggressive hard-clip muscle.', part: 'modes' },
+      { name: 'Clipper ceiling', desc: 'The hard ceiling nothing gets past — set the absolute peak limit. Pull it down for safe true-peak headroom, push it up for raw loudness.', part: 'clipper' },
       { name: 'Pro-tier metering', desc: 'Trust your eyes, not a guess — true peak, max peak, LUFS-M/S/I, LRA and per-band GR, RT-safe and audited against external mastering meters.', part: 'meters' },
       { name: 'Live spectrum analyser', desc: 'An always-on spectrum across the bottom deck — watch your master’s balance in real time as it hits the wall.', part: 'spectrum' },
       { name: 'Up to 32× oversampling', desc: 'Catch the peaks between samples — selectable up to 32×, for the dense mixes that fight the ceiling and need surgical inter-sample control.', part: 'oversampling' },
       { name: 'Visual rev gauge', desc: 'Redline = threshold. Needle = gain reduction. You know what is happening at a glance.', part: 'gauge' },
+      { name: 'Output trim', desc: 'Final volume out the tailpipe — trim the master level after limiting. It does not change the squeeze, just how loud it leaves.', part: 'output' },
       { name: 'A/B compare', desc: 'Two state slots. Switch instantly. Compare without leaving the plugin.', part: 'ab' },
     ],
     audioDemos: [
@@ -159,6 +161,9 @@ export const plugins: Plugin[] = [
         modes: { x: 62.5, y: 52.5, w: 21, h: 22 },
         meters: { x: 83.5, y: 25, w: 15, h: 27 },
         spectrum: { x: 19.5, y: 75, w: 69, h: 22 },
+        // Far-right column knobs (own the CLIPPER + OUTPUT labels).
+        clipper: { x: 88, y: 55, w: 11, h: 18 },
+        output: { x: 88, y: 75.5, w: 11, h: 23 },
         oversampling: { x: 76.5, y: 6, w: 7.5, h: 7 },
         gauge: { x: 36, y: 0.5, w: 29.5, h: 61 },
         ab: { x: 29.5, y: 5.5, w: 6.5, h: 12 },
