@@ -158,7 +158,7 @@ export const plugins: Plugin[] = [
         // Cruise / Sport / NOS bat-lever triplet (box all three).
         modes: { x: 62.5, y: 52.5, w: 21, h: 22 },
         meters: { x: 83.5, y: 25, w: 15, h: 27 },
-        spectrum: { x: 19.5, y: 75, w: 44, h: 22 },
+        spectrum: { x: 19.5, y: 75, w: 69, h: 22 },
         oversampling: { x: 76.5, y: 6, w: 7.5, h: 7 },
         gauge: { x: 36, y: 0.5, w: 29.5, h: 61 },
         ab: { x: 29.5, y: 5.5, w: 6.5, h: 12 },
