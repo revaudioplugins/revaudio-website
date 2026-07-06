@@ -514,19 +514,33 @@ const altShots = hasStage
       left: 0;
       right: 0;
       margin-inline: auto;
-      /* Door sized 30% down from the original 47vw/230px. */
-      width: 32.9vw;
-      max-width: 161px;
+      /* Door doubled from the prior 32.9vw/161px → 65.8vw/322px. */
+      width: 65.8vw;
+      max-width: 322px;
       z-index: 2;
     }
 
-    /* h1 clears the door instead of running under it: door height =
-       width × 1448/808 ≈ min(58.96vw, 288px); minus the 3rem (48px) the door is
-       pulled above the head (status pill now hidden, so nothing sits above the
-       h1), plus 12px breathing room → doorH − 36px. Keeps REVLIMITER full-width
-       and readable below the door at any ≤900px width. */
-    .product-head--crane .product-info h1 {
-      margin-top: max(0px, calc(min(58.96vw, 288px) - 36px));
+    /* Stack under the door: product-info becomes a flex column so the RevLimiter
+       screenshot (.gallery) jumps ahead of the reading. The gallery sits right
+       under the door and carries the door clearance; the reading (h1 → tagline →
+       plain-what → long) follows it in DOM order. */
+    .product-head--crane .product-info {
+      display: flex;
+      flex-direction: column;
+    }
+    .product-head--crane .product-info h1 { margin-top: 0; }
+
+    /* The gallery clears the door instead of running under it: door height =
+       width × 1448/808 ≈ min(117.9vw, 577px); minus the 3rem (48px) the door is
+       pulled above the head, plus 12px breathing room → doorH − 36px. order:-1
+       lifts it above the reading (DOM order keeps it last, for desktop).
+       :global — .gallery is the Gallery child component's root, so it doesn't
+       carry this page's scope hash. */
+    .product-head--crane .product-info :global(.gallery) {
+      order: -1;
+      margin-top: max(0px, calc(min(117.9vw, 577px) - 36px));
+      /* breathing room between the screenshot and the reading below it */
+      margin-bottom: 1.75rem;
     }
 
     /* Centre the header reading: the door floats top-right above this column,
