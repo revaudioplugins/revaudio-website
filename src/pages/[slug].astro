@@ -392,7 +392,11 @@ const altShots = hasStage
 
   @media (max-width: 900px) {
     .walk-grid { grid-template-columns: 1fr; gap: 1.5rem; }
-    .walk-stage { position: static; order: -1; }
+    /* The stage screenshot is dropped on phones — it duplicates the RevLimiter
+       shot already shown up the page, and the swipe carousel below carries the
+       walkthrough on its own. Kept in the DOM (walkthrough.ts still queries it)
+       but not rendered. Desktop is unchanged (stage still pins beside steps). */
+    .walk-stage { display: none; }
     /* Stage sits above the steps here, not beside them — de-emphasis reads as
        broken rather than as focus. Full strength; brass border marks active. */
     :global(html.motion-ok) .walk-step .f-name { color: var(--brass-bright); }
