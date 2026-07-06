@@ -67,8 +67,16 @@
   --text-3xl: clamp(1.75rem, 4vw, 3rem);
   --text-4xl: clamp(2.5rem, 6vw, 5rem);
 
-  /* layout — fluid; tuned on bench 2026-06-10 (user pick, 1280 CSS viewport) */
-  --maxw: min(1240px, 98vw);
+  /* layout — fluid; tuned on bench 2026-06-10 (user pick, 1280 CSS viewport).
+     Widened 1240->1440 / 98->95vw so wide desktops stretch to the sides
+     instead of reading boxed. Mobile pinned below (guard) so phones unchanged. */
+  --maxw: min(1440px, 95vw);
+}
+
+/* Keep phones at the original content width — the wider desktop value must
+   not shave mobile margins. */
+@media (max-width: 900px) {
+  :root { --maxw: min(1240px, 98vw); }
 }
 
 * { box-sizing: border-box; }
