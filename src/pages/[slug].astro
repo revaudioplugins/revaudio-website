@@ -386,9 +386,11 @@ const altShots = hasStage
       0 0 0 9999px rgba(6, 8, 10, 0.55);
   }
 
-  /* Dot indicator for the mobile carousel — injected by walkthrough.ts, so
-     no-JS readers never see an inert row. Hidden on desktop. */
-  .walk-grid :global(.walk-dots) { display: none; }
+  /* Odometer counter for the mobile carousel ("04 / 13") — injected by
+     walkthrough.ts, so no-JS readers never see an inert element. Hidden on
+     desktop. Replaces the old 13-dot row: at 13 items 6px dots were sub-3:1
+     wayfinding; a tachometer page counts its progress on a readout. */
+  .walk-grid :global(.walk-count) { display: none; }
 
   @media (max-width: 900px) {
     .walk-grid { grid-template-columns: 1fr; gap: 1.5rem; }
@@ -397,10 +399,22 @@ const altShots = hasStage
        walkthrough on its own. Kept in the DOM (walkthrough.ts still queries it)
        but not rendered. Desktop is unchanged (stage still pins beside steps). */
     .walk-stage { display: none; }
-    /* Stage sits above the steps here, not beside them — de-emphasis reads as
-       broken rather than as focus. Full strength; brass border marks active. */
+    /* No stage on phones, so no focus target to de-emphasise against — every
+       card reads at full strength; the active card is marked by its border
+       (below) and the counter. */
     :global(html.motion-ok) .walk-step .f-name { color: var(--brass-bright); }
     :global(html.motion-ok) .walk-step .f-desc { color: var(--fg-dim); }
+
+    /* Active state: full 1px brass frame + a bg step, replacing the desktop
+       3px border-left stripe (on a card carousel the stripe read as skewed
+       furniture, and at --border-bright it measured 1.55:1 — invisible). The
+       `border` shorthand also resets the 3px left edge from the base rule. */
+    .walk-step { border: 1px solid var(--border-bright); }
+    :global(html.motion-ok) .walk-step { transition: border-color 0.45s var(--ease-settle), background-color 0.45s var(--ease-settle); }
+    :global(html.motion-ok) .walk-step.active {
+      border-color: var(--brass);
+      background: var(--bg-2);
+    }
 
     /* ── Swipe carousel: 13 stacked step boxes ran 5-6 screens tall on phones,
        so under 900px the copy column becomes a horizontal scroll-snap row of
@@ -434,20 +448,17 @@ const altShots = hasStage
       justify-content: flex-start;
     }
 
-    .walk-grid :global(.walk-dots) {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 6px;
+    .walk-grid :global(.walk-count) {
+      display: block;
+      text-align: center;
       margin-top: 0.75rem;
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums; /* odometer digits don't jiggle */
+      font-size: 0.85rem;
+      letter-spacing: 0.14em;
+      color: var(--fg-dim);
     }
-    .walk-grid :global(.walk-dots span) {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--border-bright);
-    }
-    .walk-grid :global(.walk-dots span.on) { background: var(--brass-bright); }
+    .walk-grid :global(.walk-count .wc-cur) { color: var(--brass-bright); }
   }
 
   .f-name {
