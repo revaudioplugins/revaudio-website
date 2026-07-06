@@ -673,34 +673,30 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
     font-weight: 600;
   }
 
-  /* ── Mobile (single-column product layout — the grid collapses at 900px in
-     [slug].astro) ──────────────────────────────────────────────────────────
-     The crane's "door lowered from the top of the website" conceit needs empty
-     space above the card for the chain + descent to rise through. In the stacked
-     mobile layout that space is the title + gallery, so the doc-top chain
-     overflowed across them. Below 900px the crane is a SELF-CONTAINED card: the
-     JS seats the door (no page-top drop) and clears the inline chain height, so
-     these rules own a short chain that fades out just above the door, inside room
-     made by padding-top — nothing reaches the content above. */
+  /* ── Mobile (≤900px): the aside FLOATS top-right over the hero — see
+     [slug].astro's .product-aside--crane (sketch 2026-07-06). The door now has
+     clear air above it, so the desktop conceit RUNS on mobile too: the JS
+     doc-top chain span + page-top descent apply unchanged. Only three local
+     adjustments remain: */
   @media (max-width: 900px) {
-    .crane-buy {
-      padding-top: 5rem;              /* room for the short hanging chain above the door */
-    }
-    .revcrane-chain {
-      height: 5.5rem;                 /* short local hang (desktop's JS doc-span is cleared) */
-      /* Fade BOTH ends: bottom into the door seam (as on desktop), top into
-         nothing — on mobile there's no page edge to cut the chain, so it must
-         self-dissolve well inside the padding above the door. */
-      -webkit-mask-image: linear-gradient(to top, transparent 0, #000 26px, #000 60%, transparent 100%);
-              mask-image: linear-gradient(to top, transparent 0, #000 26px, #000 60%, transparent 100%);
-    }
+    /* micro + includes strip: MobileBuyBar + the specs section cover these —
+       under a floating door the strip read as orphaned furniture. */
+    .crane-under { display: none; }
     /* The light-spill layers use big negative insets to pool light onto the page
-       around the door (inset:-30% -70% / -35%). Off a narrow single column that
-       bleed runs past the viewport and creates a horizontal scrollbar. Rein them
-       to the card on mobile — the lights are hover-gated, so dormant on touch. */
+       around the door (inset:-30% -70% / -35%). Off a narrow viewport that bleed
+       runs past the edge and creates a horizontal scrollbar. Rein them to the
+       card — the lights are hover-gated, so dormant on touch. */
     .rc-roomlight,
     .rc-buysq-glow {
       inset: 0;
+    }
+    /* BUY NOW at a ~180px-wide door paints ≈122×47px — keep a fat thumb target
+       by extending the button's hit area past the painted patch (invisible,
+       still the same <button data-add-to-cart>). */
+    .rc-buysq::after {
+      content: '';
+      position: absolute;
+      inset: -12px;
     }
   }
 
@@ -815,7 +811,14 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
       // no overflow clip), so the descent is the literal page-top→seat drop.
       // Reduced-motion / no-JS: the CSS defaults already ARE the seated card.
       if (!reducedMotion()) {
-        const SWAY_AMP = 4;      // deg — bench 8; door swings over live page content
+        // Mobile = the floating top-right door ([slug].astro collapses the grid
+        // at 900px and absolutely positions the aside). Same doc-top chain +
+        // descent as desktop; only the sway is tamer — at ±4° the door's bottom
+        // corner swings ~40px past its box, which off a right-edge-pinned door
+        // exceeds the ~24px container gutter = transient horizontal scroll.
+        // ±2° peaks ~20px, safely inside the gutter.
+        const isMobile = window.matchMedia('(max-width: 900px)').matches;
+        const SWAY_AMP = isMobile ? 2 : 4;  // deg — bench 8; swings over live page content
         const SWAY_FREQ = 7;     // ~1.1 swings over the descent
         const LAG_DP = 0.035;    // chain trails the rig by this much progress
         const LAG_MAX = 1.4;     // chain lag clamp, degrees
@@ -839,32 +842,20 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
         const sway = (q: number) => SWAY_AMP * Math.sin(Math.PI * q) * Math.sin(q * SWAY_FREQ);
         const clamp = (v: number, lo: number, hi: number) => Math.min(Math.max(v, lo), hi);
 
-        // Mobile = the single-column product layout (the grid collapses at 900px
-        // in [slug].astro). Read live per call so a resize across the breakpoint
-        // re-evaluates it.
-        const isMobile = () => window.matchMedia('(max-width: 900px)').matches;
-
         const computeGeo = () => {
           // Layout-true document Y of the rig — the offsetTop chain ignores the
           // rig's own animated transform (getBoundingClientRect wouldn't).
+          // Same math on mobile: the floating top-right aside gives the chain
+          // clear air up to the document top (that overlap-the-gallery problem
+          // belonged to the old stacked layout).
           let el: HTMLElement | null = rig;
           let docY = 0;
           while (el) { docY += el.offsetTop; el = el.offsetParent as HTMLElement | null; }
           const h = rig.offsetHeight;
-          if (isMobile()) {
-            // Mobile (single-column stack): there's no clear space above the card
-            // for a document-top chain/drop — it overlapped the title + gallery.
-            // Keep both channels LOCAL: a short park (used only by a #cranep debug
-            // freeze; the live mobile path seats without dropping) and no inline
-            // chain height, so the mobile @media rule owns a short, fading chain.
-            startY = -(h + 24);
-            if (chain) chain.style.height = '';
-          } else {
-            startY = -(docY + h + 24);          // park: door bottom 24px above the document top
-            // The chain must span seat→document top AT REST; in flight it rides
-            // the rig upward, so rest is the tallest it ever needs to reach down.
-            if (chain) chain.style.height = `${Math.ceil(docY + h * 0.04) + 80}px`;
-          }
+          startY = -(docY + h + 24);          // park: door bottom 24px above the document top
+          // The chain must span seat→document top AT REST; in flight it rides
+          // the rig upward, so rest is the tallest it ever needs to reach down.
+          if (chain) chain.style.height = `${Math.ceil(docY + h * 0.04) + 80}px`;
           dipPx = rig.offsetWidth * 0.0125;   // bench 6px / 480px
           slackPx = rig.offsetWidth * 0.0167; // bench 8px / 480px
         };
@@ -914,19 +905,6 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
             setL1(1);
             if (frozenLight === '2') setL2(1);
           }
-        } else if (isMobile()) {
-          // Mobile: the single-column stack has no clear space above the card for
-          // the page-top descent, so skip it — seat the door and start the idle
-          // sway (computeGeo already kept the chain short + local). Same seated
-          // render the no-JS / reduced-motion paths use.
-          state.p = 1;
-          render();
-          startIdle();
-          // Keep geometry correct across a resize up to the desktop layout / bfcache.
-          window.addEventListener('resize', () => { computeGeo(); render(); });
-          window.addEventListener('pageshow', (e) => {
-            if (e.persisted) { state.p = 1; render(); startIdle(); }
-          });
         } else {
           state.p = 0;
           render();                            // park before the reveal — no flash
