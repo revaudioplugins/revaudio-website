@@ -521,5 +521,21 @@ const altShots = hasStage
     .product-head--crane .product-info h1 {
       margin-top: max(0px, calc(min(84.23vw, 412px) - 36px));
     }
+
+    /* Centre the header reading: the door floats top-right above this column,
+       so a centred stack reads as a composed hero rather than ragged-left
+       under the door. The .plain-what brass stripe is a left-edge accent —
+       incoherent under centred text — so it drops here (kept on desktop). The
+       capped-width blocks (plain-what 54ch, long 60ch) also need auto side
+       margins to sit centred once the viewport clears their max-width. */
+    .product-head--crane .product-info :is(h1, .tagline, .plain-what, .long) {
+      text-align: center;
+    }
+    .product-head--crane .product-info .plain-what {
+      border-left: 0;
+      padding-left: 0;
+      margin-inline: auto;
+    }
+    .product-head--crane .product-info .long { margin-inline: auto; }
   }
 </style>
