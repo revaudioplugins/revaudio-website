@@ -165,9 +165,8 @@ export function initWalkthrough(): void {
 
     // Disable the box under 900px: the stage un-pins and stacks above the
     // copy there, so a glowing part scrolls off-screen before the reader
-    // reaches later steps (see Mobile section of the handoff). The per-step
-    // static crop thumbnail (rendered server-side, CSS-only) carries that
-    // information instead; re-evaluate on breakpoint crossing.
+    // reaches later steps. Mobile shows the stage screenshot once above the
+    // text-only card carousel instead; re-evaluate on breakpoint crossing.
     const onBreakpoint = () => {
       if (!mq.matches) { hideStageOverlay(); setAltShot(); }
       else setActive(activeIdx);
