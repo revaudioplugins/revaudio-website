@@ -386,17 +386,35 @@ const altShots = hasStage
       0 0 0 9999px rgba(6, 8, 10, 0.55);
   }
 
-  /* Dot indicator for the mobile carousel — injected by walkthrough.ts, so
-     no-JS readers never see an inert row. Hidden on desktop. */
-  .walk-grid :global(.walk-dots) { display: none; }
+  /* Odometer counter for the mobile carousel ("04 / 13") — injected by
+     walkthrough.ts, so no-JS readers never see an inert element. Hidden on
+     desktop. Replaces the old 13-dot row: at 13 items 6px dots were sub-3:1
+     wayfinding; a tachometer page counts its progress on a readout. */
+  .walk-grid :global(.walk-count) { display: none; }
 
   @media (max-width: 900px) {
     .walk-grid { grid-template-columns: 1fr; gap: 1.5rem; }
-    .walk-stage { position: static; order: -1; }
-    /* Stage sits above the steps here, not beside them — de-emphasis reads as
-       broken rather than as focus. Full strength; brass border marks active. */
+    /* The stage screenshot is dropped on phones — it duplicates the RevLimiter
+       shot already shown up the page, and the swipe carousel below carries the
+       walkthrough on its own. Kept in the DOM (walkthrough.ts still queries it)
+       but not rendered. Desktop is unchanged (stage still pins beside steps). */
+    .walk-stage { display: none; }
+    /* No stage on phones, so no focus target to de-emphasise against — every
+       card reads at full strength; the active card is marked by its border
+       (below) and the counter. */
     :global(html.motion-ok) .walk-step .f-name { color: var(--brass-bright); }
     :global(html.motion-ok) .walk-step .f-desc { color: var(--fg-dim); }
+
+    /* Active state: full 1px brass frame + a bg step, replacing the desktop
+       3px border-left stripe (on a card carousel the stripe read as skewed
+       furniture, and at --border-bright it measured 1.55:1 — invisible). The
+       `border` shorthand also resets the 3px left edge from the base rule. */
+    .walk-step { border: 1px solid var(--border-bright); }
+    :global(html.motion-ok) .walk-step { transition: border-color 0.45s var(--ease-settle), background-color 0.45s var(--ease-settle); }
+    :global(html.motion-ok) .walk-step.active {
+      border-color: var(--brass);
+      background: var(--bg-2);
+    }
 
     /* ── Swipe carousel: 13 stacked step boxes ran 5-6 screens tall on phones,
        so under 900px the copy column becomes a horizontal scroll-snap row of
@@ -430,20 +448,17 @@ const altShots = hasStage
       justify-content: flex-start;
     }
 
-    .walk-grid :global(.walk-dots) {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 6px;
+    .walk-grid :global(.walk-count) {
+      display: block;
+      text-align: center;
       margin-top: 0.75rem;
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums; /* odometer digits don't jiggle */
+      font-size: 0.85rem;
+      letter-spacing: 0.14em;
+      color: var(--fg-dim);
     }
-    .walk-grid :global(.walk-dots span) {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--border-bright);
-    }
-    .walk-grid :global(.walk-dots span.on) { background: var(--brass-bright); }
+    .walk-grid :global(.walk-count .wc-cur) { color: var(--brass-bright); }
   }
 
   .f-name {
@@ -478,26 +493,56 @@ const altShots = hasStage
   @media (max-width: 900px) {
     .product-head--crane { position: relative; }
 
+    /* Declutter the top strip on the crane (RevLimiter) page: the door already
+       carries availability ("$56 LAUNCH SALE / BUY NOW") and the store is one
+       nav tap away, so the breadcrumb + status pill read as orphaned furniture
+       under the floating door. Scoped to the crane page only — other product
+       pages keep both. */
+    .product-detail:has(.product-head--crane) .breadcrumb { display: none; }
+    .product-head--crane .status-pill { display: none; }
+
     .product-aside--crane {
       position: absolute;
-      /* Pull up over the breadcrumb zone: 3rem section padding + the
-         breadcrumb line (~19px) + its 1.5rem margin ≈ 5.7rem. The chain
-         continues past it to the document top, sliding under the sticky
-         nav (z50 beats our z2). */
-      top: -5.7rem;
+      /* Hang from the document top: with the breadcrumb hidden the head starts
+         at the 3rem section padding, so a 3rem pull lands the door at the top;
+         the chain continues under the sticky nav (z50 beats our z2). */
+      top: -3rem;
+      /* Centre the door over the (now centred) header column. left+right+auto
+         margins centre the fixed-width box without a transform — the gsap
+         descent drives transforms on the crane's inner layers, so the wrapper
+         stays transform-free to avoid stacking it against them. */
+      left: 0;
       right: 0;
-      width: 47vw;
-      max-width: 230px;
+      margin-inline: auto;
+      /* Door sized 30% down from the original 47vw/230px. */
+      width: 32.9vw;
+      max-width: 161px;
       z-index: 2;
     }
 
     /* h1 clears the door instead of running under it: door height =
-       width × 1448/808 ≈ min(84.23vw, 412px); minus the 5.7rem (91px) the
-       door is pulled above the head, minus the ~44px status-pill row already
-       above the h1, plus 12px breathing room → doorH − 123px. Keeps
-       REVLIMITER full-width and readable below the door at any ≤900px width. */
+       width × 1448/808 ≈ min(58.96vw, 288px); minus the 3rem (48px) the door is
+       pulled above the head (status pill now hidden, so nothing sits above the
+       h1), plus 12px breathing room → doorH − 36px. Keeps REVLIMITER full-width
+       and readable below the door at any ≤900px width. */
     .product-head--crane .product-info h1 {
-      margin-top: max(0px, calc(min(84.23vw, 412px) - 123px));
+      margin-top: max(0px, calc(min(58.96vw, 288px) - 36px));
     }
+
+    /* Centre the header reading: the door floats top-right above this column,
+       so a centred stack reads as a composed hero rather than ragged-left
+       under the door. The .plain-what brass stripe is a left-edge accent —
+       incoherent under centred text — so it drops here (kept on desktop). The
+       capped-width blocks (plain-what 54ch, long 60ch) also need auto side
+       margins to sit centred once the viewport clears their max-width. */
+    .product-head--crane .product-info :is(h1, .tagline, .plain-what, .long) {
+      text-align: center;
+    }
+    .product-head--crane .product-info .plain-what {
+      border-left: 0;
+      padding-left: 0;
+      margin-inline: auto;
+    }
+    .product-head--crane .product-info .long { margin-inline: auto; }
   }
 </style>
