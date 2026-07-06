@@ -755,6 +755,15 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
         l1Anim = gsap.to(p, { v: 0, duration: OFF_FADE, ease: 'power2.out',
           overwrite: 'auto', onUpdate: () => setL1(p.v) });
       };
+      // First-load greeting for touch (no hover to strike the light): once the door
+      // seats, run the L1 tube-strike flicker and LEAVE it lit — touch has no hover
+      // to turn it back off, so the lit door becomes the resting state on mobile.
+      // Fired from the entrance onComplete (inside !reducedMotion()), so it's
+      // reduced-motion-safe by construction; gated to !canHover so desktop is
+      // untouched (it lights on hover instead).
+      const firstLoadDoorFlicker = () => {
+        doorOn();   // flicker up to full and stay lit (timeline ends at --l1:1, no doorOff)
+      };
       const sqOn = () => {
         l2Anim?.kill();
         const p = { v: curVar('--l2') };
@@ -913,7 +922,8 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
             if (played) return;
             played = true;
             const dur = clamp(Math.abs(startY) / 450, 2.4, 4.2);   // scale time with drop distance
-            gsap.to(state, { p: 1, duration: dur, delay: 0.2, ease: 'none', onUpdate: render, onComplete: startIdle });
+            gsap.to(state, { p: 1, duration: dur, delay: 0.2, ease: 'none', onUpdate: render,
+              onComplete: () => { startIdle(); if (!canHover) firstLoadDoorFlicker(); } });
           };
           // Lower the door the moment its card enters the viewport — at ANY scroll
           // position or post-layout shift. The rig parks at a NEGATIVE Y above the
