@@ -140,6 +140,16 @@ body {
   background: linear-gradient(90deg, var(--bg-0) 0%, transparent 22%, transparent 78%, var(--bg-0) 100%);
 }
 
+/* Mobile: the background art fills the full phone width. The centered-column
+   sizing (90vw) + side-fade read as dark bars on a narrow screen, so widen the
+   art to the viewport and drop the side fade. The veil also lightens (0.4 →
+   0.25): under the full-strength veil the edge-to-edge art still read as plain
+   black, defeating the point. Desktop keeps its centred column. */
+@media (max-width: 900px) {
+  .page-bg { --bg-w: 100vw; --bg-veil: 0.25; }
+  .page-bg::after { display: none; }
+}
+
 /* TEST overrides — translucent section panels so the long-image bg reads
    through the whole page. Delete with the .page-bg experiment. */
 .values .v { background: rgba(20, 17, 15, 0.72); }
