@@ -475,18 +475,74 @@ function partAspect(part: PartRect, img: ImageMetadata): string {
   /* Wide strips (spectrum) would be unreadable at 220px — run full width. */
   .walk-step-thumb--wide { max-width: 100% !important; }
 
+  /* Dot indicator for the mobile carousel — injected by walkthrough.ts, so
+     no-JS readers never see an inert row. Hidden on desktop. */
+  .walk-grid :global(.walk-dots) { display: none; }
+
   @media (max-width: 900px) {
     .walk-grid { grid-template-columns: 1fr; gap: 1.5rem; }
     .walk-stage { position: static; order: -1; }
-    .walk-step { min-height: 0; }
     /* Stage sits above the steps here, not beside them — de-emphasis reads as
        broken rather than as focus. Full strength; brass border marks active. */
     :global(html.motion-ok) .walk-step .f-name { color: var(--brass-bright); }
     :global(html.motion-ok) .walk-step .f-desc { color: var(--fg-dim); }
+
+    /* ── Swipe carousel: 13 stacked step boxes ran 5-6 screens tall on phones,
+       so under 900px the copy column becomes a horizontal scroll-snap row of
+       cards instead. Pure CSS — works without JS; walkthrough.ts only adds
+       the dot indicator + active tracking on top. ── */
+    .walk-copy {
+      display: flex;
+      gap: 0.75rem;
+      min-width: 0;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      /* Bleed to the screen edges so the next card peeks from the edge —
+         the peek is the swipe affordance. Gutter = .container padding. */
+      margin-inline: calc(-1 * var(--space-5));
+      padding-inline: var(--space-5);
+      scroll-padding-inline: var(--space-5);
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .walk-copy::-webkit-scrollbar { display: none; }
+
+    .walk-step {
+      flex: 0 0 78%; /* next card peeks ~15% at the right edge */
+      max-width: 320px;
+      scroll-snap-align: start;
+      min-height: 0;
+      margin-bottom: 0;
+      justify-content: flex-start;
+    }
+
     /* Mobile part-thumbnail route: the stage un-pins and scrolls past before
        later steps are read, so the box is JS-disabled (walkthrough.ts) and
-       each step instead carries its own static crop of the part it names. */
-    .walk-step-thumb { display: block; }
+       each card instead carries its own preview of the part it names.
+       Image leads the card; height capped so cards don't balloon. */
+    .walk-step-thumb {
+      display: block;
+      order: -1;
+      margin: 0 0 0.75rem;
+      align-self: center;
+      max-height: 160px;
+      object-fit: contain;
+    }
+
+    .walk-grid :global(.walk-dots) {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 0.75rem;
+    }
+    .walk-grid :global(.walk-dots span) {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--border-bright);
+    }
+    .walk-grid :global(.walk-dots span.on) { background: var(--brass-bright); }
   }
 
   .f-name {

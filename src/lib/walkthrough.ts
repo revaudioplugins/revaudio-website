@@ -64,6 +64,10 @@ export function initWalkthrough(): void {
       });
     };
 
+    // Shared breakpoint: ≥901px = sticky-stage mode; below, the copy column
+    // renders as a horizontal scroll-snap carousel (CSS in [slug].astro).
+    const mq = window.matchMedia('(min-width: 901px)');
+
     let activeIdx = 0;
     const setActive = (idx: number): void => {
       activeIdx = idx;
@@ -72,8 +76,7 @@ export function initWalkthrough(): void {
       if (isStageMode && parts) {
         const slug = steps[idx].dataset.part;
         const part = slug ? parts[slug] : undefined;
-        const isDesktop = window.matchMedia('(min-width: 901px)').matches;
-        if (part && isDesktop) {
+        if (part && mq.matches) {
           if (isRect(part)) {
             setAltShot();          // back to the base panel
             showStagePart(part);
@@ -105,10 +108,43 @@ export function initWalkthrough(): void {
         start: 'top 55%',
         end: 'bottom 55%',
         onToggle: (self) => {
-          if (self.isActive) setActive(i);
+          // Desktop only: on mobile the steps scroll HORIZONTALLY (carousel),
+          // so vertical viewport triggers would fire nonsense toggles — the
+          // carousel scroll listener below owns .active there.
+          if (self.isActive && mq.matches) setActive(i);
         },
       });
     });
+
+    /* Mobile carousel: dot indicator + active tracking. The carousel itself is
+       pure CSS (scroll-snap); dots are injected here so no-JS readers never
+       see an inert row. Listener is passive and cheap; it stays attached on
+       desktop where the CSS carousel (and its scrollLeft) doesn't exist. */
+    const copy = root.querySelector<HTMLElement>('.walk-copy');
+    if (copy && steps.length > 1) {
+      const dots = document.createElement('div');
+      dots.className = 'walk-dots';
+      dots.setAttribute('aria-hidden', 'true');
+      const spans = steps.map((_, i) => {
+        const s = document.createElement('span');
+        if (i === 0) s.classList.add('on');
+        dots.appendChild(s);
+        return s;
+      });
+      copy.after(dots);
+
+      copy.addEventListener(
+        'scroll',
+        () => {
+          if (mq.matches) return;
+          const stride = steps[1].offsetLeft - steps[0].offsetLeft; // card + gap
+          const idx = Math.max(0, Math.min(steps.length - 1, Math.round(copy.scrollLeft / stride)));
+          spans.forEach((s, i) => s.classList.toggle('on', i === idx));
+          steps.forEach((s, i) => s.classList.toggle('active', i === idx));
+        },
+        { passive: true },
+      );
+    }
 
     /* Gentle scrubbed drift on the pinned frame — breath, not parallax-show.
        Transform lives on the frame (child), never the sticky element. */
@@ -132,7 +168,6 @@ export function initWalkthrough(): void {
     // reaches later steps (see Mobile section of the handoff). The per-step
     // static crop thumbnail (rendered server-side, CSS-only) carries that
     // information instead; re-evaluate on breakpoint crossing.
-    const mq = window.matchMedia('(min-width: 901px)');
     const onBreakpoint = () => {
       if (!mq.matches) { hideStageOverlay(); setAltShot(); }
       else setActive(activeIdx);
