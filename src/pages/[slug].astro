@@ -493,13 +493,20 @@ const altShots = hasStage
   @media (max-width: 900px) {
     .product-head--crane { position: relative; }
 
+    /* Declutter the top strip on the crane (RevLimiter) page: the door already
+       carries availability ("$56 LAUNCH SALE / BUY NOW") and the store is one
+       nav tap away, so the breadcrumb + status pill read as orphaned furniture
+       under the floating door. Scoped to the crane page only — other product
+       pages keep both. */
+    .product-detail:has(.product-head--crane) .breadcrumb { display: none; }
+    .product-head--crane .status-pill { display: none; }
+
     .product-aside--crane {
       position: absolute;
-      /* Pull up over the breadcrumb zone: 3rem section padding + the
-         breadcrumb line (~19px) + its 1.5rem margin ≈ 5.7rem. The chain
-         continues past it to the document top, sliding under the sticky
-         nav (z50 beats our z2). */
-      top: -5.7rem;
+      /* Hang from the document top: with the breadcrumb hidden the head starts
+         at the 3rem section padding, so a 3rem pull lands the door at the top;
+         the chain continues under the sticky nav (z50 beats our z2). */
+      top: -3rem;
       right: 0;
       width: 47vw;
       max-width: 230px;
@@ -507,12 +514,12 @@ const altShots = hasStage
     }
 
     /* h1 clears the door instead of running under it: door height =
-       width × 1448/808 ≈ min(84.23vw, 412px); minus the 5.7rem (91px) the
-       door is pulled above the head, minus the ~44px status-pill row already
-       above the h1, plus 12px breathing room → doorH − 123px. Keeps
-       REVLIMITER full-width and readable below the door at any ≤900px width. */
+       width × 1448/808 ≈ min(84.23vw, 412px); minus the 3rem (48px) the door is
+       pulled above the head (status pill now hidden, so nothing sits above the
+       h1), plus 12px breathing room → doorH − 36px. Keeps REVLIMITER full-width
+       and readable below the door at any ≤900px width. */
     .product-head--crane .product-info h1 {
-      margin-top: max(0px, calc(min(84.23vw, 412px) - 123px));
+      margin-top: max(0px, calc(min(84.23vw, 412px) - 36px));
     }
   }
 </style>
