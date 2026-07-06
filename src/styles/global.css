@@ -67,8 +67,15 @@
   --text-3xl: clamp(1.75rem, 4vw, 3rem);
   --text-4xl: clamp(2.5rem, 6vw, 5rem);
 
-  /* layout — fluid; tuned on bench 2026-06-10 (user pick, 1280 CSS viewport) */
-  --maxw: min(1240px, 98vw);
+  /* layout — fluid; widened 2026-07-06 (composition pass, FabFilter ref —
+     1240 read boxed-in on wide screens; content now breathes to the edges) */
+  --maxw: min(1400px, 94vw);
+}
+
+/* Phones keep the pre-widening gutter — the desktop composition pass must not
+   shave mobile content width (mobile gets its own pass). */
+@media (max-width: 900px) {
+  :root { --maxw: 98vw; }
 }
 
 * { box-sizing: border-box; }
