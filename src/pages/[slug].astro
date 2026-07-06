@@ -507,7 +507,13 @@ const altShots = hasStage
          at the 3rem section padding, so a 3rem pull lands the door at the top;
          the chain continues under the sticky nav (z50 beats our z2). */
       top: -3rem;
+      /* Centre the door over the (now centred) header column. left+right+auto
+         margins centre the fixed-width box without a transform — the gsap
+         descent drives transforms on the crane's inner layers, so the wrapper
+         stays transform-free to avoid stacking it against them. */
+      left: 0;
       right: 0;
+      margin-inline: auto;
       width: 47vw;
       max-width: 230px;
       z-index: 2;
