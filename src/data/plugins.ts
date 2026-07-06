@@ -26,9 +26,12 @@ export interface Feature {
  *  highlight box animates onto, OR an alternate full-panel screenshot the stage
  *  crossfades to (for a control that lives in its own window — e.g. a modal not
  *  present on the base shot). The base screenshot itself never transforms
- *  (no zoom/pan). */
+ *  (no zoom/pan).
+ *  `thumb`: optional native-resolution close-up (src/assets/plugins/) used as
+ *  the mobile step preview instead of a CSS crop of the base shot — crops of
+ *  the 700px stage image upscale badly on small screens. */
 export type StagePart =
-  | { x: number; y: number; w: number; h: number }
+  | { x: number; y: number; w: number; h: number; thumb?: string }
   | { shot: string };
 
 /** Data-driven config for the "What's inside" part-highlighter. Add this to
@@ -149,24 +152,24 @@ export const plugins: Plugin[] = [
     stage: {
       shot: 'revlimiter-hero.png',
       parts: {
-        ceiling: { x: 66.5, y: 16.5, w: 18, h: 28 },
-        bands: { x: 2.5, y: 16.5, w: 18, h: 51 },
-        mb: { x: 22.5, y: 18, w: 6, h: 28.5 },
+        ceiling: { x: 66.5, y: 16.5, w: 18, h: 28, thumb: 'revlimiter-part-ceiling.png' },
+        bands: { x: 2.5, y: 16.5, w: 18, h: 51, thumb: 'revlimiter-part-bands.png' },
+        mb: { x: 22.5, y: 18, w: 6, h: 28.5, thumb: 'revlimiter-part-mb.png' },
         // Alternate shot — the X·OVER control opens its own modal window that
         // isn't on the base panel, so this part swaps the whole stage image.
         crossover: { shot: 'revlimiter-xover.png' },
         // Orphan (no discrete control) — whole drive/HEAT cluster.
-        saturation: { x: 0.8, y: 44, w: 40, h: 54 },
+        saturation: { x: 0.8, y: 44, w: 40, h: 54, thumb: 'revlimiter-part-saturation.png' },
         // Cruise / Sport / NOS bat-lever triplet (box all three).
-        modes: { x: 62.5, y: 52.5, w: 21, h: 22 },
-        meters: { x: 83.5, y: 25, w: 15, h: 27 },
-        spectrum: { x: 19.5, y: 75, w: 69, h: 22 },
+        modes: { x: 62.5, y: 52.5, w: 21, h: 22, thumb: 'revlimiter-part-modes.png' },
+        meters: { x: 83.5, y: 25, w: 15, h: 27, thumb: 'revlimiter-part-meters.png' },
+        spectrum: { x: 19.5, y: 75, w: 69, h: 22, thumb: 'revlimiter-part-spectrum.png' },
         // Far-right column knobs (own the CLIPPER + OUTPUT labels).
-        clipper: { x: 88, y: 55, w: 11, h: 18 },
+        clipper: { x: 88, y: 55, w: 11, h: 18, thumb: 'revlimiter-part-clipper.png' },
         output: { x: 88, y: 75.5, w: 11, h: 23 },
-        oversampling: { x: 76.5, y: 6, w: 7.5, h: 7 },
+        oversampling: { x: 76.5, y: 6, w: 7.5, h: 7, thumb: 'revlimiter-part-oversampling.png' },
         gauge: { x: 36, y: 0.5, w: 29.5, h: 61 },
-        ab: { x: 29.5, y: 5.5, w: 6.5, h: 12 },
+        ab: { x: 29.5, y: 5.5, w: 6.5, h: 12, thumb: 'revlimiter-part-ab.png' },
       },
     },
   },

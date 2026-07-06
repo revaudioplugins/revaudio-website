@@ -64,7 +64,7 @@ const altShots = hasStage
     })
   : [];
 
-type PartRect = { x: number; y: number; w: number; h: number };
+type PartRect = { x: number; y: number; w: number; h: number; thumb?: string };
 
 function partCropStyle(part: PartRect): string {
   const bgW = (10000 / part.w).toFixed(2);
@@ -131,11 +131,24 @@ function partAspect(part: PartRect, img: ImageMetadata): string {
                   >
                     <span class="f-name">{f.name}</span>
                     <p class="f-desc">{f.desc}</p>
-                    {/* Mobile-only static crop (route (a) of the Mobile section):
+                    {/* Mobile-only preview (route (a) of the Mobile section):
                         the box is JS-disabled under 900px because the stage
                         un-pins and scrolls away before the reader reaches
-                        later steps, so each step carries its own no-JS preview. */}
-                    {part && 'w' in part && stageOptimized && (
+                        later steps, so each step carries its own no-JS preview.
+                        Native close-up (`thumb`) when the part has one — a CSS
+                        crop of the 700px stage shot upscales soft/pixelated on
+                        phones; the crop stays only as fallback. */}
+                    {part && 'w' in part && part.thumb && pluginImage(part.thumb) ? (
+                      <Image
+                        src={pluginImage(part.thumb)!}
+                        alt=""
+                        width={pluginImage(part.thumb)!.width}
+                        format="webp"
+                        loading="lazy"
+                        class={`walk-step-thumb walk-step-thumb--photo${pluginImage(part.thumb)!.width / pluginImage(part.thumb)!.height > 2.5 ? ' walk-step-thumb--wide' : ''}`}
+                        style={`max-width:min(220px, ${pluginImage(part.thumb)!.width}px);`}
+                      />
+                    ) : part && 'w' in part && stageOptimized && (
                       <div
                         class="walk-step-thumb"
                         role="presentation"
@@ -455,6 +468,12 @@ function partAspect(part: PartRect, img: ImageMetadata): string {
   /* Alt-shot preview is a whole panel, not a small crop — let it run full
      width so the window content stays readable. */
   .walk-step-thumb--shot { max-width: 100%; height: auto; }
+
+  /* Native close-up thumbs render at intrinsic size or below — never upscaled
+     (the max-width cap is inline, min(220px, natural)). */
+  .walk-step-thumb--photo { height: auto; }
+  /* Wide strips (spectrum) would be unreadable at 220px — run full width. */
+  .walk-step-thumb--wide { max-width: 100% !important; }
 
   @media (max-width: 900px) {
     .walk-grid { grid-template-columns: 1fr; gap: 1.5rem; }
