@@ -20,6 +20,11 @@ const { plugin } = Astro.props;
 // Pre-launch products show a "reserve / get notified" block. Once a product is
 // buyable, that block contradicts the Add-to-cart button, so it's hidden.
 const buyable = isBuyable(plugin);
+// RevLimiter's buy card is the crane-hung door (bench: /cranelab). The flag
+// also drives the --crane layout modifiers: on mobile the door FLOATS top-right
+// over the hero instead of stacking below the gallery (sketch 2026-07-06),
+// while the classic BuyButton aside keeps the plain stacked flow.
+const crane = plugin.slug === 'revlimiter' && buyable;
 
 // Only surface A/B demos that actually have audio. Until clips are bounced,
 // the "Hear it" section stays hidden rather than showing empty placeholders.
@@ -64,7 +69,7 @@ const altShots = hasStage
     <div class="container">
       <p class="breadcrumb"><a href="/store">&larr; Back to store</a></p>
 
-      <div class="product-head">
+      <div class:list={['product-head', crane && 'product-head--crane']}>
         <div class="product-info">
           <span class="status-pill">{plugin.statusLabel}</span>
           <h1>{plugin.name}</h1>
@@ -76,14 +81,9 @@ const altShots = hasStage
           <Gallery hero={plugin.heroImage} images={plugin.galleryImages} alt={`${plugin.name} interface`} />
         </div>
 
-        <aside class="product-aside" data-buy-aside>
-          {/* RevLimiter's buy card is the crane-hung door (bench: /cranelab).
-              Falls back to the classic block if checkout ever pauses. */}
-          {plugin.slug === 'revlimiter' && buyable ? (
-            <BuyButtonCrane plugin={plugin} />
-          ) : (
-            <BuyButton plugin={plugin} />
-          )}
+        <aside class:list={['product-aside', crane && 'product-aside--crane']} data-buy-aside>
+          {/* Crane door falls back to the classic block if checkout ever pauses. */}
+          {crane ? <BuyButtonCrane plugin={plugin} /> : <BuyButton plugin={plugin} />}
         </aside>
       </div>
 
@@ -467,4 +467,37 @@ const altShots = hasStage
   }
 
   .install-section ol li { margin: 0.5rem 0; }
+
+  /* ── Mobile crane layout (RevLimiter only — .product-head--crane): the door
+     buy card floats top-right OVER the hero instead of stacking below the
+     gallery, mimicking the desktop "lowered from the top of the website"
+     conceit (user phone sketch 2026-07-06). Scoped to the --crane modifiers so
+     the classic BuyButton aside keeps its plain stacked flow on other plugins.
+     Kept LAST in this style block on purpose: later same-specificity base
+     rules would silently beat an earlier media override. ── */
+  @media (max-width: 900px) {
+    .product-head--crane { position: relative; }
+
+    .product-aside--crane {
+      position: absolute;
+      /* Pull up over the breadcrumb zone: 3rem section padding + the
+         breadcrumb line (~19px) + its 1.5rem margin ≈ 5.7rem. The chain
+         continues past it to the document top, sliding under the sticky
+         nav (z50 beats our z2). */
+      top: -5.7rem;
+      right: 0;
+      width: 47vw;
+      max-width: 230px;
+      z-index: 2;
+    }
+
+    /* h1 clears the door instead of running under it: door height =
+       width × 1448/808 ≈ min(84.23vw, 412px); minus the 5.7rem (91px) the
+       door is pulled above the head, minus the ~44px status-pill row already
+       above the h1, plus 12px breathing room → doorH − 123px. Keeps
+       REVLIMITER full-width and readable below the door at any ≤900px width. */
+    .product-head--crane .product-info h1 {
+      margin-top: max(0px, calc(min(84.23vw, 412px) - 123px));
+    }
+  }
 </style>
