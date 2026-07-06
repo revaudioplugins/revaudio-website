@@ -1,6 +1,5 @@
 ---
-import type { ImageMetadata } from 'astro';
-import { Image, getImage } from 'astro:assets';
+import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import BuyButton from '../components/BuyButton.astro';
 import BuyButtonCrane from '../components/BuyButtonCrane.astro';
@@ -46,12 +45,6 @@ const hasStage = !!(
   plugin.features.length > 0 &&
   plugin.features.every((f) => f.part && plugin.stage!.parts[f.part])
 );
-// Single small crop source reused (via CSS background-position/size) for every
-// mobile part-thumbnail — mobile disables the connector/zoom/pin entirely
-// (see Mobile section in the handoff), so each step gets its own static,
-// no-JS-required cropped preview of the part it describes instead.
-const stageOptimized = hasStage ? await getImage({ src: stageShot!, width: 700, format: 'webp' }) : undefined;
-
 // Parts that swap the stage to their own screenshot (a control living in a
 // separate window / modal, not on the base panel). Each renders a hidden
 // overlay <img> that walkthrough.ts crossfades in; on mobile it doubles as
@@ -64,21 +57,6 @@ const altShots = hasStage
     })
   : [];
 
-type PartRect = { x: number; y: number; w: number; h: number; thumb?: string };
-
-function partCropStyle(part: PartRect): string {
-  const bgW = (10000 / part.w).toFixed(2);
-  const bgH = (10000 / part.h).toFixed(2);
-  const posX = part.w >= 100 ? '50' : (((100 * part.x) / (100 - part.w)).toFixed(2));
-  const posY = part.h >= 100 ? '50' : (((100 * part.y) / (100 - part.h)).toFixed(2));
-  return `background-position:${posX}% ${posY}%; background-size:${bgW}% ${bgH}%;`;
-}
-
-function partAspect(part: PartRect, img: ImageMetadata): string {
-  const w = (part.w / 100) * img.width;
-  const h = (part.h / 100) * img.height;
-  return `${w.toFixed(0)} / ${h.toFixed(0)}`;
-}
 ---
 
 <BaseLayout title={plugin.name} description={plugin.oneLiner}>
@@ -120,59 +98,17 @@ function partAspect(part: PartRect, img: ImageMetadata): string {
           <h2 data-split>What's inside</h2>
           <div class="walk-grid" data-stage-parts={hasStage ? JSON.stringify(plugin.stage!.parts) : undefined}>
             <div class="walk-copy">
-              {plugin.features.map((f, i) => {
-                const part = hasStage && f.part ? plugin.stage!.parts[f.part] : undefined;
-                return (
-                  <div
-                    class="walk-step"
-                    data-walk-step
-                    data-shot={shots.length ? Math.min(i, shots.length - 1) : 0}
-                    data-part={hasStage ? f.part : undefined}
-                  >
-                    <span class="f-name">{f.name}</span>
-                    <p class="f-desc">{f.desc}</p>
-                    {/* Mobile-only preview (route (a) of the Mobile section):
-                        the box is JS-disabled under 900px because the stage
-                        un-pins and scrolls away before the reader reaches
-                        later steps, so each step carries its own no-JS preview.
-                        Native close-up (`thumb`) when the part has one — a CSS
-                        crop of the 700px stage shot upscales soft/pixelated on
-                        phones; the crop stays only as fallback. */}
-                    {part && 'w' in part && part.thumb && pluginImage(part.thumb) ? (
-                      <Image
-                        src={pluginImage(part.thumb)!}
-                        alt=""
-                        width={pluginImage(part.thumb)!.width}
-                        format="webp"
-                        loading="lazy"
-                        class={`walk-step-thumb walk-step-thumb--photo${pluginImage(part.thumb)!.width / pluginImage(part.thumb)!.height > 2.5 ? ' walk-step-thumb--wide' : ''}`}
-                        style={`max-width:min(220px, ${pluginImage(part.thumb)!.width}px);`}
-                      />
-                    ) : part && 'w' in part && stageOptimized && (
-                      <div
-                        class="walk-step-thumb"
-                        role="presentation"
-                        style={`background-image:url(${stageOptimized.src}); ${partCropStyle(part)} aspect-ratio:${partAspect(part, stageShot!)};`}
-                      />
-                    )}
-                    {/* Alt-shot part (own window): no crop possible, show the
-                        window screenshot itself as the mobile preview. */}
-                    {part && 'shot' in part && f.part && (() => {
-                      const alt = altShots.find((a) => a.slug === f.part);
-                      return alt ? (
-                        <Image
-                          src={alt.img}
-                          alt=""
-                          width={700}
-                          format="webp"
-                          loading="lazy"
-                          class="walk-step-thumb walk-step-thumb--shot"
-                        />
-                      ) : null;
-                    })()}
-                  </div>
-                );
-              })}
+              {plugin.features.map((f, i) => (
+                <div
+                  class="walk-step"
+                  data-walk-step
+                  data-shot={shots.length ? Math.min(i, shots.length - 1) : 0}
+                  data-part={hasStage ? f.part : undefined}
+                >
+                  <span class="f-name">{f.name}</span>
+                  <p class="f-desc">{f.desc}</p>
+                </div>
+              ))}
             </div>
 
             {hasStage ? (
@@ -422,9 +358,7 @@ function partAspect(part: PartRect, img: ImageMetadata): string {
   /* ── Part-highlighter overlay (stage mode only — see plugins.ts `stage`).
      CSS default = full/undimmed/no box; walkthrough.ts is the only thing that
      ever animates the box, so no-JS + reduced-motion readers see the whole
-     screenshot at rest, exactly like the crossfade fallback. This block must
-     stay ABOVE the `@media (max-width: 900px)` rule below: the mobile
-     override for `.walk-step-thumb` needs to win the cascade. ── */
+     screenshot at rest, exactly like the crossfade fallback. ── */
   .stage-zoom {
     /* Plain wrapper — never transformed. The screenshot sits static; only
        .stage-box (below) ever animates, so nothing here jitters. */
@@ -451,29 +385,6 @@ function partAspect(part: PartRect, img: ImageMetadata): string {
       0 0 22px 4px rgba(232, 200, 120, 0.35),
       0 0 0 9999px rgba(6, 8, 10, 0.55);
   }
-
-  /* Mobile-only static part crop — hidden on desktop, where the sticky stage +
-     box carry the same information interactively. */
-  .walk-step-thumb {
-    display: none;
-    margin-top: 0.75rem;
-    width: 100%;
-    max-width: 220px;
-    border-radius: 6px;
-    border: 1px solid var(--border-bright);
-    background-repeat: no-repeat;
-    background-color: var(--bg-2);
-  }
-
-  /* Alt-shot preview is a whole panel, not a small crop — let it run full
-     width so the window content stays readable. */
-  .walk-step-thumb--shot { max-width: 100%; height: auto; }
-
-  /* Native close-up thumbs render at intrinsic size or below — never upscaled
-     (the max-width cap is inline, min(220px, natural)). */
-  .walk-step-thumb--photo { height: auto; }
-  /* Wide strips (spectrum) would be unreadable at 220px — run full width. */
-  .walk-step-thumb--wide { max-width: 100% !important; }
 
   /* Dot indicator for the mobile carousel — injected by walkthrough.ts, so
      no-JS readers never see an inert row. Hidden on desktop. */
@@ -507,6 +418,9 @@ function partAspect(part: PartRect, img: ImageMetadata): string {
     }
     .walk-copy::-webkit-scrollbar { display: none; }
 
+    /* Text-only cards: flex row default `align-items: stretch` gives every
+       card the height of the tallest, so titles/descriptions align cleanly
+       across the swipe regardless of copy length. */
     .walk-step {
       flex: 0 0 78%; /* next card peeks ~15% at the right edge */
       max-width: 320px;
@@ -514,19 +428,6 @@ function partAspect(part: PartRect, img: ImageMetadata): string {
       min-height: 0;
       margin-bottom: 0;
       justify-content: flex-start;
-    }
-
-    /* Mobile part-thumbnail route: the stage un-pins and scrolls past before
-       later steps are read, so the box is JS-disabled (walkthrough.ts) and
-       each card instead carries its own preview of the part it names.
-       Image leads the card; height capped so cards don't balloon. */
-    .walk-step-thumb {
-      display: block;
-      order: -1;
-      margin: 0 0 0.75rem;
-      align-self: center;
-      max-height: 160px;
-      object-fit: contain;
     }
 
     .walk-grid :global(.walk-dots) {
