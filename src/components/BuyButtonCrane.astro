@@ -684,12 +684,24 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
     .crane-under { display: none; }
     /* The light-spill layers use big negative insets to pool light onto the page
        around the door (inset:-30% -70% / -35%). Off a narrow viewport that bleed
-       runs past the edge and creates a horizontal scrollbar. Rein them to the
-       card — the lights are hover-gated, so dormant on touch. */
-    .rc-roomlight,
-    .rc-buysq-glow {
-      inset: 0;
+       runs past the edge and creates a horizontal scrollbar.
+       L1 room light: the first-load flicker keeps this LIT on touch (no hover to
+       gate it), so it can't just be reined to the card — the door flares warm
+       while the strip to its RIGHT stayed pure black and read as a hard "cut".
+       Give it a symmetric pool centred behind the door that reaches to the
+       viewport edges: −16.5vw clamps just inside 100vw so it lifts both sides of
+       the door without ever overscrolling. */
+    .rc-roomlight {
+      inset: -25% -16.5vw;
+      background: radial-gradient(72% 58% at 50% 38%,
+          rgba(255, 248, 237, 0.22) 0%,
+          rgba(255, 244, 225, 0.13) 42%,
+          rgba(208, 147, 88, 0.05) 70%,
+          rgba(0, 0, 0, 0) 88%);
+      opacity: calc(var(--l1) * 0.95);
     }
+    /* L2 box glow: hover-only (L2 never fires on touch), so keep it card-bound. */
+    .rc-buysq-glow { inset: 0; }
     /* BUY NOW at a ~180px-wide door paints ≈122×47px — keep a fat thumb target
        by extending the button's hit area past the painted patch (invisible,
        still the same <button data-add-to-cart>). */
