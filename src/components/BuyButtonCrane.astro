@@ -684,12 +684,31 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
     .crane-under { display: none; }
     /* The light-spill layers use big negative insets to pool light onto the page
        around the door (inset:-30% -70% / -35%). Off a narrow viewport that bleed
-       runs past the edge and creates a horizontal scrollbar. Rein them to the
-       card — the lights are hover-gated, so dormant on touch. */
-    .rc-roomlight,
-    .rc-buysq-glow {
-      inset: 0;
+       runs past the edge and creates a horizontal scrollbar.
+       L1 room light: the first-load flicker keeps this LIT on touch (no hover to
+       gate it), so it can't just be reined to the card — the door flares warm
+       while the strip to its RIGHT stayed pure black and read as a hard "cut".
+       Give it a symmetric pool centred behind the door that reaches to the
+       viewport edges: −16.5vw clamps just inside 100vw so it lifts both sides of
+       the door without ever overscrolling. */
+    .rc-roomlight {
+      inset: -25% -16.5vw;
+      background: radial-gradient(72% 58% at 50% 38%,
+          rgba(255, 248, 237, 0.22) 0%,
+          rgba(255, 244, 225, 0.13) 42%,
+          rgba(208, 147, 88, 0.05) 70%,
+          rgba(0, 0, 0, 0) 88%);
+      /* The auto-flicker holds this lit on touch with no hover to dismiss it, so
+         it stayed on-screen too hot. Pull the standing pool right down on mobile
+         (base 0.95 → 0.24) — a faint warm ambience, not a flood. Still lifts the
+         strip beside the door well clear of pure black, so no "cut" returns. */
+      opacity: calc(var(--l1) * 0.24);
     }
+    /* On-door amber wash pulled to a whisper so the held-lit door sits just above
+       its resting look (measured door-face ~64 vs ~61 unlit, ~85 at full). */
+    .rc-doorlight { opacity: calc(var(--l1) * 0.06); }
+    /* L2 box glow: hover-only (L2 never fires on touch), so keep it card-bound. */
+    .rc-buysq-glow { inset: 0; }
     /* BUY NOW at a ~180px-wide door paints ≈122×47px — keep a fat thumb target
        by extending the button's hit area past the painted patch (invisible,
        still the same <button data-add-to-cart>). */
@@ -754,6 +773,15 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
         const p = { v: curVar('--l1') };
         l1Anim = gsap.to(p, { v: 0, duration: OFF_FADE, ease: 'power2.out',
           overwrite: 'auto', onUpdate: () => setL1(p.v) });
+      };
+      // First-load greeting for touch (no hover to strike the light): once the door
+      // seats, run the L1 tube-strike flicker and LEAVE it lit — touch has no hover
+      // to turn it back off, so the lit door becomes the resting state on mobile.
+      // Fired from the entrance onComplete (inside !reducedMotion()), so it's
+      // reduced-motion-safe by construction; gated to !canHover so desktop is
+      // untouched (it lights on hover instead).
+      const firstLoadDoorFlicker = () => {
+        doorOn();   // flicker up to full and stay lit (timeline ends at --l1:1, no doorOff)
       };
       const sqOn = () => {
         l2Anim?.kill();
@@ -913,7 +941,8 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
             if (played) return;
             played = true;
             const dur = clamp(Math.abs(startY) / 450, 2.4, 4.2);   // scale time with drop distance
-            gsap.to(state, { p: 1, duration: dur, delay: 0.2, ease: 'none', onUpdate: render, onComplete: startIdle });
+            gsap.to(state, { p: 1, duration: dur, delay: 0.2, ease: 'none', onUpdate: render,
+              onComplete: () => { startIdle(); if (!canHover) firstLoadDoorFlicker(); } });
           };
           // Lower the door the moment its card enters the viewport — at ANY scroll
           // position or post-layout shift. The rig parks at a NEGATIVE Y above the
