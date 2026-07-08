@@ -313,7 +313,10 @@ const font = (st: any) => (st.ff ? `font-family:${st.ff};font-weight:${st.fw};fo
   /* Coming-soon plate is a true-alpha asset, not a screenshot — drop the frame
      so it floats on the card and the transparency reads. Subtle shadow grounds it. */
   .sc-shot.is-plate { background: none; border: 0; border-radius: 0; overflow: visible; }
-  .sc-shot.is-plate :global(img) { filter: drop-shadow(0 7px 16px rgba(0, 0, 0, 0.55)); }
+  /* The plate is a full graphic (license-plate shape, ~1.47:1) — never crop it.
+     `contain` shows it whole within the shot footprint; the frameless box means
+     the leftover width just reads as transparent, so the plate stays centred. */
+  .sc-shot.is-plate :global(img) { object-fit: contain; filter: drop-shadow(0 7px 16px rgba(0, 0, 0, 0.55)); }
 
   .sc-one { margin: 0; color: #dbcaad; }
   .sc-price { color: var(--brass-bright); }
@@ -408,6 +411,9 @@ const font = (st: any) => (st.ff ? `font-family:${st.ff};font-weight:${st.fw};fo
     .sc-sub, .sc-one { width: 100% !important; text-align: center; }
     .sc-sub { margin-top: 0; }
     .sc-shot { width: 100% !important; height: auto !important; aspect-ratio: 2542 / 1226; }
+    /* Plate keeps its own shape so it fills the card width complete (not cropped
+       into the wide screenshot ratio, which was clipping "COMING SOON" top/bottom). */
+    .sc-shot.is-plate { aspect-ratio: 1555 / 1060; }
     .sc-dot::before { width: 11px; height: 11px; } /* bigger visible dot on mobile; 24px hit target stays */
   }
 </style>
