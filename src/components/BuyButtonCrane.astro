@@ -63,6 +63,8 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
         <!-- crane end (baked chain strip + swivel + hook) — registers
              pixel-perfect over its old baked position in the master -->
         <div class="revcrane-hookpart"></div>
+        <!-- hook glint: the door light catches the hook metal too (rides --l1) -->
+        <div class="rc-hookglint"></div>
 
         <div class="revcrane-door">
           <!-- Worn painted lettering: wrapper masked by the door-derived wear
@@ -102,8 +104,14 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
             <span class="rc-buysq-glow"></span>
           </button>
           <!-- L1 door light — LAST door child so it lifts the copy/imprint too;
-               masked to the door silhouette so the amber pool stays on metal -->
+               masked to the door silhouette so the amber pool stays on metal.
+               Realism pass 2026-07-08 adds three siblings on top: cold strike
+               flash (--l1c), lit surface detail (overlay of the master art),
+               and the specular streak — see each rule below. -->
           <div class="rc-doorlight"></div>
+          <div class="rc-doorlight-cold"></div>
+          <div class="rc-doorlit-detail"></div>
+          <div class="rc-doorlight-spec"></div>
         </div>
         <!-- lifting ring: own layer for the door < hook < ring occlusion sandwich -->
         <div class="rc-ring"></div>
@@ -217,6 +225,9 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
        handlers (bench-locked peaks folded in below). */
     --l1: 0;
     --l2: 0;
+    /* cold-strike driver — spiked by the strike timeline while the tube fires
+       bluish, decays to 0 as the warm light settles. 0 at rest and once lit. */
+    --l1c: 0;
     /* unified colour grade over the whole rig = one photograph. MUST sit here
        on the (untransformed) stage — never on .revcrane-grade, which takes a
        per-frame GSAP scale dolly (.94→1): Safari rasterizes a filtered +
@@ -279,6 +290,32 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
     pointer-events: none;
   }
 
+  /* hook glint — the strike catches the hook/swivel metal too; a small rim
+     highlight masked to the hook art, riding --l1. Grounds the light in the
+     scene beyond the door itself. */
+  .rc-hookglint {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    aspect-ratio: 808 / 456;
+    z-index: 1;
+    pointer-events: none;
+    mix-blend-mode: screen;
+    background: radial-gradient(30% 40% at 62% 46%,
+        rgba(255, 244, 224, 0.85) 0%,
+        rgba(255, 220, 160, 0.3) 55%,
+        rgba(0, 0, 0, 0) 80%);
+    -webkit-mask-image: var(--hook-url);
+    -webkit-mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+            mask-image: var(--hook-url);
+            mask-size: 100% 100%;
+            mask-repeat: no-repeat;
+    translate: 0 calc(var(--crane-y) * 1px);
+    opacity: calc(var(--l1) * 0.35);
+  }
+
   /* the door's lifting ring — own layer so it occludes the hook while the
      rail stays behind it (door < hook < ring). Centre baked into left/top,
      origin pushed to the door's floor point for the (future) release tip. */
@@ -301,8 +338,11 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
     inset: 0;
     background: var(--master-url) center / 100% 100% no-repeat;
     filter: brightness(0) blur(18px);
-    translate: calc(var(--seat) * 7px) calc(var(--seat) * 20px + var(--door-y) * 1px);
-    opacity: calc(var(--seat) * 0.55);
+    /* --l1 terms: light without shadow response reads fake — when the tube
+       strikes (upper-right), the contact shadow deepens slightly and shifts
+       away from the light (down-left). Felt, not seen. */
+    translate: calc(var(--seat) * 7px - var(--l1) * 6px) calc(var(--seat) * 20px + var(--door-y) * 1px + var(--l1) * 4px);
+    opacity: calc(var(--seat) * (0.55 + var(--l1) * 0.18));
     z-index: 1;
     pointer-events: none;
   }
@@ -606,7 +646,13 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
     z-index: 6;
     pointer-events: none;
     mix-blend-mode: screen;
-    background: radial-gradient(156.2% 127.3% at 110% 20.2%,
+    /* first layer = grain: translucent-black turbulence speckle painted over
+       the gradient INSIDE the element (black is identity under screen, so it
+       only eats light where light exists) — dirty light, not a clean wash.
+       Static SVG data-URI raster, no live filter on the blended element. */
+    background:
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='g' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' seed='5' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.4 0'/></filter><rect width='160' height='160' filter='url(%23g)'/></svg>") 0 0 / 160px 160px repeat,
+      radial-gradient(156.2% 127.3% at 110% 20.2%,
         rgba(255, 248, 239, 0.95) 0%,
         rgba(255, 248, 237, 0.55) 38.24%,
         rgba(208, 147, 88, 0.18) 71.58%,
@@ -618,6 +664,65 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
             mask-size: 100% 100%;
             mask-repeat: no-repeat;
     opacity: calc(var(--l1) * 0.24);
+  }
+
+  /* L1 cold strike — a fluorescent tube fires bluish before it warms up. Same
+     geometry as .rc-doorlight with cold stops, riding --l1c: the strike
+     timeline spikes it on the first flashes and decays it to 0 as the warm
+     light settles, so a settled/lit door renders it at opacity 0. */
+  .rc-doorlight-cold {
+    position: absolute;
+    inset: 0;
+    z-index: 6;
+    pointer-events: none;
+    mix-blend-mode: screen;
+    background: radial-gradient(156.2% 127.3% at 110% 20.2%,
+        rgba(238, 246, 255, 0.95) 0%,
+        rgba(222, 236, 255, 0.55) 38.24%,
+        rgba(150, 180, 230, 0.18) 71.58%,
+        rgba(0, 0, 0, 0) 94.02%);
+    -webkit-mask-image: var(--master-url);
+    -webkit-mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+            mask-image: var(--master-url);
+            mask-size: 100% 100%;
+            mask-repeat: no-repeat;
+    opacity: calc(var(--l1c) * 0.35);
+  }
+
+  /* lit surface detail — the light REVEALS the door's ridges and grime instead
+     of ironing them flat: the master art overlaid on itself pumps local
+     contrast only while lit. The PNG's own alpha bounds it — no mask needed. */
+  .rc-doorlit-detail {
+    position: absolute;
+    inset: 0;
+    z-index: 7;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+    background: var(--master-url) center / contain no-repeat;
+    opacity: calc(var(--l1) * 0.3);
+  }
+
+  /* specular streak — tight hot band where the tube reflects off the metal
+     (upper-right, matching the pool's 64° angle). The diffuse pool alone reads
+     as paint; this is what says "metal". Tune position/size on /lightlab. */
+  .rc-doorlight-spec {
+    position: absolute;
+    inset: 0;
+    z-index: 8;
+    pointer-events: none;
+    mix-blend-mode: screen;
+    background: radial-gradient(17% 36% at 79% 28%,
+        rgba(255, 252, 244, 0.85) 0%,
+        rgba(255, 240, 214, 0.35) 45%,
+        rgba(0, 0, 0, 0) 78%);
+    -webkit-mask-image: var(--master-url);
+    -webkit-mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+            mask-image: var(--master-url);
+            mask-size: 100% 100%;
+            mask-repeat: no-repeat;
+    opacity: calc(var(--l1) * 0.45);
   }
 
   /* ── room-light spill ───────────────────────────────────────────────── */
@@ -634,7 +739,12 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
     position: absolute;
     inset: -30% -70%;
     mix-blend-mode: screen;
-    background: radial-gradient(66.7% 57.36% at 75.7% 37.2%,
+    /* first layer = dirt: low-frequency blotches break the perfect spill
+       ellipse — light through a grimy fixture lands unevenly. Same
+       translucent-black-over-gradient trick as the doorlight grain. */
+    background:
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='420' height='420'><filter id='d' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='0.011' numOctaves='3' seed='11' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.55 -0.1'/></filter><rect width='420' height='420' filter='url(%23d)'/></svg>") 0 0 / 480px 480px repeat,
+      radial-gradient(66.7% 57.36% at 75.7% 37.2%,
         rgba(255, 248, 237, 0.16) 0%,
         rgba(255, 248, 237, 0.08) 40.68%,
         rgba(208, 147, 88, 0.03) 66.24%,
@@ -693,7 +803,10 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
        the door without ever overscrolling. */
     .rc-roomlight {
       inset: -25% -16.5vw;
-      background: radial-gradient(72% 58% at 50% 38%,
+      /* same dirt layer as desktop — the override replaces the whole shorthand */
+      background:
+        url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='420' height='420'><filter id='d' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='0.011' numOctaves='3' seed='11' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.55 -0.1'/></filter><rect width='420' height='420' filter='url(%23d)'/></svg>") 0 0 / 480px 480px repeat,
+        radial-gradient(72% 58% at 50% 38%,
           rgba(255, 248, 237, 0.22) 0%,
           rgba(255, 244, 225, 0.13) 42%,
           rgba(208, 147, 88, 0.05) 70%,
@@ -705,8 +818,14 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
          lifted clear of pure black so no "cut" returns. */
       opacity: calc(var(--l1) * 0.48);
     }
-    /* On-door amber wash at half strength to match (base 0.24 → 0.12). */
+    /* On-door amber wash at half strength to match (base 0.24 → 0.12), and the
+       realism layers halved with it — the resting-lit mobile door stays a
+       whisper, not a showroom. Cold only flashes during the first-load strike. */
     .rc-doorlight { opacity: calc(var(--l1) * 0.12); }
+    .rc-doorlight-cold { opacity: calc(var(--l1c) * 0.18); }
+    .rc-doorlit-detail { opacity: calc(var(--l1) * 0.15); }
+    .rc-doorlight-spec { opacity: calc(var(--l1) * 0.22); }
+    .rc-hookglint { opacity: calc(var(--l1) * 0.18); }
     /* L2 box glow: hover-only (L2 never fires on touch), so keep it card-bound. */
     .rc-buysq-glow { inset: 0; }
     /* BUY NOW at a ~180px-wide door paints ≈122×47px — keep a fat thumb target
@@ -748,31 +867,62 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
       const curVar = (n: string) => parseFloat(getComputedStyle(stage).getPropertyValue(n)) || 0;
       const setL1 = (v: number) => stage.style.setProperty('--l1', String(v));
       const setL2 = (v: number) => stage.style.setProperty('--l2', String(v));
+      const setL1c = (v: number) => stage.style.setProperty('--l1c', String(v));
+      // freeze-hash guard: under #cranelight the lit state is a screenshot
+      // fixture — the idle flicker must stay off so pixels are deterministic
+      const lightIsFrozen = new URLSearchParams(location.hash.slice(1)).has('cranelight');
       let l1Anim: gsap.core.Tween | gsap.core.Timeline | null = null;
       let l2Anim: gsap.core.Tween | null = null;
-      // L1 ON — garage-tube strike (≈0.30s); plain fade under reduced-motion
+      let idleAnim: gsap.core.Timeline | null = null;
+      // Aging-tube idle — a struck tube never holds rock-steady: a low-amp
+      // (~4%) irregular shimmer with a rare deeper sag, looping while lit.
+      // Desktop-only (canHover): the mobile resting-lit door stays static —
+      // a permanently flickering light on every scroll-by reads as a bug.
+      // Segment shapes are jittered once at loop build; the repeat replays them.
+      const startIdleFlicker = () => {
+        if (!canHover || reducedMotion() || lightIsFrozen) return;
+        idleAnim?.kill();
+        const p = { v: 1 };
+        const tl = gsap.timeline({ repeat: -1, onUpdate: () => setL1(p.v) });
+        for (let i = 0; i < 6; i++) {
+          const sag = Math.random() < 0.2 ? 0.86 : 0.95 - Math.random() * 0.03;
+          tl.to(p, { v: 1, duration: 0.4 + Math.random() * 1.6 })
+            .to(p, { v: sag, duration: 0.05 + Math.random() * 0.08 })
+            .to(p, { v: 1, duration: 0.09 + Math.random() * 0.2 });
+        }
+        idleAnim = tl;
+      };
+      const stopIdleFlicker = () => { idleAnim?.kill(); idleAnim = null; };
+      // L1 ON — garage-tube strike (≈0.55s): the tube fires COLD (--l1c spikes
+      // bluish on the flashes) then warms up — cold decays to 0 as the warm
+      // pool settles over the last step. Plain warm fade under reduced-motion.
       const doorOn = () => {
         l1Anim?.kill();
-        const p = { v: curVar('--l1') };
+        stopIdleFlicker();
+        const p = { v: curVar('--l1'), c: curVar('--l1c') };
         if (reducedMotion()) {
+          setL1c(0);
           l1Anim = gsap.to(p, { v: 1, duration: 0.3, ease: 'sine.out',
             overwrite: 'auto', onUpdate: () => setL1(p.v) });
           return;
         }
-        l1Anim = gsap.timeline({ onUpdate: () => setL1(p.v) })
-          .to(p, { v: 0.90, duration: 0.05 })
-          .to(p, { v: 0.15, duration: 0.04 })
-          .to(p, { v: 1.00, duration: 0.05 })
-          .to(p, { v: 0.40, duration: 0.03 })
-          .to(p, { v: 0.85, duration: 0.04 })
-          .to(p, { v: 0.60, duration: 0.03 })
-          .to(p, { v: 1.00, duration: 0.06, ease: 'power1.out' });
+        const apply = () => { setL1(p.v); setL1c(p.c); };
+        l1Anim = gsap.timeline({ onUpdate: apply,
+          onComplete: () => { if (l1On) startIdleFlicker(); } })
+          .to(p, { v: 0.90, c: 0.85, duration: 0.05 })
+          .to(p, { v: 0.15, c: 0.10, duration: 0.04 })
+          .to(p, { v: 1.00, c: 0.70, duration: 0.05 })
+          .to(p, { v: 0.40, c: 0.12, duration: 0.03 })
+          .to(p, { v: 0.85, c: 0.30, duration: 0.04 })
+          .to(p, { v: 0.60, c: 0.08, duration: 0.03 })
+          .to(p, { v: 1.00, c: 0, duration: 0.30, ease: 'power1.out' });
       };
       const doorOff = () => {
         l1Anim?.kill();
-        const p = { v: curVar('--l1') };
-        l1Anim = gsap.to(p, { v: 0, duration: OFF_FADE, ease: 'power2.out',
-          overwrite: 'auto', onUpdate: () => setL1(p.v) });
+        stopIdleFlicker();
+        const p = { v: curVar('--l1'), c: curVar('--l1c') };
+        l1Anim = gsap.to(p, { v: 0, c: 0, duration: OFF_FADE, ease: 'power2.out',
+          overwrite: 'auto', onUpdate: () => { setL1(p.v); setL1c(p.c); } });
       };
       // First-load greeting for touch (no hover to strike the light): once the door
       // seats, run the L1 tube-strike flicker and LEAVE it lit — touch has no hover
