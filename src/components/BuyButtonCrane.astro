@@ -699,14 +699,14 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
           rgba(208, 147, 88, 0.05) 70%,
           rgba(0, 0, 0, 0) 88%);
       /* The auto-flicker holds this lit on touch with no hover to dismiss it, so
-         it stayed on-screen too hot. Pull the standing pool right down on mobile
-         (base 0.95 → 0.24) — a faint warm ambience, not a flood. Still lifts the
-         strip beside the door well clear of pure black, so no "cut" returns. */
-      opacity: calc(var(--l1) * 0.24);
+         full strength stayed on-screen too hot — but the whisper (0.24/0.06)
+         proved invisible on a real phone. Settled at half strength (base
+         0.95 → 0.48): clearly lit, calm, and the strip beside the door stays
+         lifted clear of pure black so no "cut" returns. */
+      opacity: calc(var(--l1) * 0.48);
     }
-    /* On-door amber wash pulled to a whisper so the held-lit door sits just above
-       its resting look (measured door-face ~64 vs ~61 unlit, ~85 at full). */
-    .rc-doorlight { opacity: calc(var(--l1) * 0.06); }
+    /* On-door amber wash at half strength to match (base 0.24 → 0.12). */
+    .rc-doorlight { opacity: calc(var(--l1) * 0.12); }
     /* L2 box glow: hover-only (L2 never fires on touch), so keep it card-bound. */
     .rc-buysq-glow { inset: 0; }
     /* BUY NOW at a ~180px-wide door paints ≈122×47px — keep a fat thumb target
