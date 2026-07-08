@@ -739,16 +739,22 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
     position: absolute;
     inset: -30% -70%;
     mix-blend-mode: screen;
-    /* first layer = dirt: low-frequency blotches break the perfect spill
-       ellipse — light through a grimy fixture lands unevenly. Same
-       translucent-black-over-gradient trick as the doorlight grain. */
-    background:
-      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='420' height='420'><filter id='d' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='0.011' numOctaves='3' seed='11' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.55 -0.1'/></filter><rect width='420' height='420' filter='url(%23d)'/></svg>") 0 0 / 480px 480px repeat,
-      radial-gradient(66.7% 57.36% at 75.7% 37.2%,
+    background: radial-gradient(66.7% 57.36% at 75.7% 37.2%,
         rgba(255, 248, 237, 0.16) 0%,
         rgba(255, 248, 237, 0.08) 40.68%,
         rgba(208, 147, 88, 0.03) 66.24%,
         rgba(0, 0, 0, 0) 84.68%);
+    /* dirt as a MASK (alpha = 1 − 0.55·noise), NOT a black background layer:
+       a mask can only REMOVE light where the gradient has it, so the blotches
+       live strictly inside the pool and the element is a true alpha-0 outside
+       it — no edges, nothing dark ever composites onto the page. (The black
+       bg-layer version darkened the whole spill rect: the stage's filter
+       isolates blending, so screen couldn't cancel the black against the
+       page — Dan's 2026-07-08 "black box mid-page" report.) */
+    -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='420' height='420'><filter id='d' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='0.011' numOctaves='3' seed='11' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.55 1'/></filter><rect width='420' height='420' filter='url(%23d)'/></svg>");
+    -webkit-mask-size: 480px 480px;
+            mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='420' height='420'><filter id='d' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='0.011' numOctaves='3' seed='11' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.55 1'/></filter><rect width='420' height='420' filter='url(%23d)'/></svg>");
+            mask-size: 480px 480px;
     opacity: calc(var(--l1) * 0.87);
   }
 
@@ -803,10 +809,8 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
        the door without ever overscrolling. */
     .rc-roomlight {
       inset: -25% -16.5vw;
-      /* same dirt layer as desktop — the override replaces the whole shorthand */
-      background:
-        url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='420' height='420'><filter id='d' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='0.011' numOctaves='3' seed='11' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.55 -0.1'/></filter><rect width='420' height='420' filter='url(%23d)'/></svg>") 0 0 / 480px 480px repeat,
-        radial-gradient(72% 58% at 50% 38%,
+      /* dirt mask inherits from the base rule — only the pool changes here */
+      background: radial-gradient(72% 58% at 50% 38%,
           rgba(255, 248, 237, 0.22) 0%,
           rgba(255, 244, 225, 0.13) 42%,
           rgba(208, 147, 88, 0.05) 70%,
