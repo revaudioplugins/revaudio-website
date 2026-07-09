@@ -3,6 +3,7 @@ import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import BuyButton from '../components/BuyButton.astro';
 import BuyButtonCrane from '../components/BuyButtonCrane.astro';
+import CraneDropZone from '../components/CraneDropZone.astro';
 import EmailCapture from '../components/EmailCapture.astro';
 import TestimonialBlock from '../components/TestimonialBlock.astro';
 import StarRating from '../components/StarRating.astro';
@@ -200,6 +201,12 @@ const altShots = hasStage
           Full install + troubleshooting on the <a href="/support">support page</a>.
           Licence terms on the <a href="/eula">EULA page</a>.
         </p>
+
+        {/* page-bottom landing site for the crane door: absolute overlay in
+            this section's empty right half, straight under the aside door's
+            hang point (runtime-measured x). Zero layout footprint; silent
+            until drop() — see CraneDropZone's surprise contract. */}
+        {crane && <CraneDropZone plugin={plugin} />}
       </section>
 
       <TestimonialBlock plugin={plugin.slug} heading={`What producers say about ${plugin.name}`} />
@@ -474,7 +481,9 @@ const altShots = hasStage
 
   .specs-section { padding: 2rem 0 3rem; border-top: 1px solid var(--border); }
 
-  .install-section { padding: 2rem 0 3rem; border-top: 1px solid var(--border); }
+  /* position:relative = the anchor box for the crane drop-zone overlay
+     (CraneDropZone.astro sits absolute in the empty right half). */
+  .install-section { padding: 2rem 0 3rem; border-top: 1px solid var(--border); position: relative; }
 
   .install-section ol {
     margin: 1rem 0;

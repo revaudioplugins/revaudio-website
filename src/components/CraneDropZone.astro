@@ -1,0 +1,833 @@
+---
+/* CraneDropZone — the page-bottom landing site for the crane door (attempt #4,
+   plan 2026-07-08). The top-aside BuyButtonCrane keeps its behavior; when the
+   user reaches the page bottom this zone's OWN door slams in from above the
+   viewport, cracks the ground, and waits. Scrolling back up, a hook descends
+   on a cable that runs from the TOP OF THE WEBSITE (round 8 — Dan: "as long
+   as the page"), latches the ring, and hauls the door at one locked rate ALL
+   the way back to its seat in the top card, where the clone/real-door swap
+   happens pixel-aligned (the dock). No fades, no early finishes, no free
+   chain ends — nothing can dangle or pop mid-view at any scroll speed.
+
+   SURPRISE CONTRACT (Dan, explicit): before drop() fires this zone must read
+   as ordinary page-end whitespace — every visual child hidden, background =
+   the page itself, compact height, nothing telegraphing a landing site.
+
+   SAFARI CONTRACT (3 dead attempts — see plan): all motion is small local
+   CSS-var translates on this zone's elements. NO CSS/SVG filters on anything
+   that moves, NO position:fixed, NO scale animation, NO quickSetter('scale').
+   The real top door is never moved or restructured — only .crane-released
+   (visibility) toggles on its stage.
+
+   Debug freezes (same pattern as #cranep/#cranelight):
+     #cranedrop=1 → landed statics (door down + crack, top released)
+     #cranedrop=2 → mid-pickup statics (hook latched, door lifted 220px). */
+import type { Plugin } from '../data/plugins';
+import { fmtPrice, discountPct } from '../data/plugins';
+import masterImg from '../assets/plugins/revlimiter-crane-master.png';
+import hookImg from '../assets/plugins/revlimiter-crane-hook.png';
+import ringImg from '../assets/plugins/revlimiter-door-ring.png';
+import buysqImg from '../assets/plugins/revlimiter-buy-patch.png';
+import chainImg from '../assets/plugins/revlimiter-chain.png';
+import wearImg from '../assets/plugins/revlimiter-wear.png';
+
+interface Props {
+  plugin: Plugin;
+}
+
+const { plugin } = Astro.props;
+const pct = discountPct(plugin);
+const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
+---
+
+<section
+  class="crane-dropzone"
+  data-crane-dropzone
+  style={`--master-url:url(${masterImg.src}); --hook-url:url(${hookImg.src}); --ring-url:url(${ringImg.src}); --buysq-url:url(${buysqImg.src}); --chain-url:url(${chainImg.src}); --wear-url:url(${wearImg.src});`}
+>
+  <div class="dz-stage" data-dz-stage>
+    <div class="dz-shake" data-dz-shake>
+      <!-- pickup rig: hook + chain descending from above the viewport.
+           Parked far above (--dz-crane-y). NO filters — it translates. -->
+      <div class="dz-hookrig" data-dz-hookrig aria-hidden="true">
+        <div class="dz-chain"></div>
+        <div class="dz-hookpart"></div>
+      </div>
+
+      <!-- the fallen door — flattened clone of the top card's stack: same
+           master art + wear-masked painted copy + imprint, but WITHOUT the
+           #rc-worn-* live SVG filters (mask + imprint carry the worn read;
+           no filters may ride a translating element in Safari) and without
+           the L1/L2 light system. -->
+      <div class="dz-rig" data-dz-rig>
+        <div class="dz-door">
+          <div class="dz-copy" aria-hidden="true">
+            {pct != null && <div class="dz-ink dz-tag">&minus;{pct}% launch sale</div>}
+            <div class="dz-ink dz-price">
+              <span class="dz-now">{fmtPrice(plugin.introPriceUsd)}</span>
+              {plugin.regularPriceUsd != null && <span class="dz-was">{fmtPrice(plugin.regularPriceUsd)}</span>}
+            </div>
+            {plugin.promoCode && <div class="dz-ink dz-code">code <b>{plugin.promoCode}</b> at checkout</div>}
+          </div>
+          <div class="dz-imprint"></div>
+          <!-- the landed door still sells — real add-to-cart, handled by
+               Cart.astro's document-level [data-add-to-cart] listener. -->
+          <button
+            type="button"
+            class="dz-buysq"
+            data-add-to-cart
+            data-slug={plugin.slug}
+            data-name={plugin.name}
+            data-price={cartPrice}
+            data-checkout-url={plugin.checkoutUrl}
+            aria-label={`Add ${plugin.name} to cart — ${fmtPrice(cartPrice)}`}
+          >
+            <span class="dz-buysq-paint"></span>
+            <span class="dz-buysq-label">BUY NOW</span>
+          </button>
+        </div>
+        <div class="dz-ring"></div>
+      </div>
+
+      <!-- ground furniture — ALL invisible until impact (surprise contract) -->
+      <div class="dz-shadow" aria-hidden="true"></div>
+      <div class="dz-dust" aria-hidden="true"></div>
+      <svg class="dz-crack" viewBox="0 0 640 90" preserveAspectRatio="none" aria-hidden="true">
+        <!-- the border line crosses ~y38 of this box. Warm rim highlights
+             under, dark fissures over, knocked-loose border fragments +
+             debris chips around the break. -->
+        <g class="dz-crack-lite" fill="none" stroke-linecap="round">
+          <path d="M321 40 L262 45 L204 55 L131 51 L64 60" />
+          <path d="M323 41 L378 48 L442 46 L502 58 L575 55" />
+          <path d="M300 42 L282 60 L268 72 L258 84" />
+          <path d="M352 43 L366 62 L389 74 L398 85" />
+          <path d="M331 42 L336 64 L330 80" />
+        </g>
+        <g class="dz-crack-dark" fill="none" stroke-linecap="round">
+          <path d="M320 38 L260 43 L202 53 L129 49 L62 58 L18 55" />
+          <path d="M322 39 L376 46 L440 44 L500 56 L573 53 L622 60" />
+          <path d="M298 40 L280 58 L266 70 L256 82" />
+          <path d="M350 41 L364 60 L387 72 L396 84" />
+          <path d="M329 40 L334 62 L328 78" />
+          <path d="M231 49 L219 62 L206 70" />
+          <path d="M420 45 L438 58 L452 68" />
+          <path d="M310 38 L296 26 L288 14" />
+          <path d="M345 38 L360 24 L354 12" />
+          <path d="M270 41 L258 30" />
+          <path d="M390 42 L404 32" />
+          <path d="M150 50 L138 60" />
+          <path d="M490 52 L505 62" />
+        </g>
+        <!-- pieces of the snapped border line, knocked askew -->
+        <g class="dz-crack-frag" fill="none" stroke-linecap="round">
+          <path d="M96 42 L172 47" />
+          <path d="M198 51 L252 49" />
+          <path d="M400 46 L468 42" />
+          <path d="M492 47 L556 51" />
+        </g>
+        <!-- debris chips scattered by the impact -->
+        <g class="dz-crack-debris">
+          <circle cx="268" cy="55" r="2.2" />
+          <circle cx="382" cy="60" r="1.8" />
+          <circle cx="330" cy="48" r="1.5" />
+          <circle cx="222" cy="44" r="1.4" />
+          <circle cx="452" cy="50" r="1.9" />
+          <circle cx="300" cy="68" r="1.3" />
+        </g>
+      </svg>
+      <div class="dz-floorpool" aria-hidden="true"></div>
+      <div class="dz-groundline" aria-hidden="true"></div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* ── the zone: an invisible absolute overlay in install-section's empty
+     right half — ZERO layout footprint (surprise contract: nothing on the
+     page telegraphs the drop). Hidden entirely on mobile / reduced-motion /
+     no-JS. LANDING RULE (Dan): the fall is straight down — JS measures the
+     top aside's [data-crane-stage] box and pins this zone to that exact
+     x/width via --dz-left/--dz-w (.dz-aligned), so the door lands right
+     under where it hung. The CSS fallback (right:0, aside-column width)
+     only covers the instant before the script runs. ── */
+  .crane-dropzone {
+    display: none;
+  }
+
+  @media (min-width: 901px) {
+    :global(html.motion-ok) .crane-dropzone {
+      display: block;
+      position: absolute;
+      right: 0;
+      /* the ground = the FOOTER's top border (the bottom of the website),
+         not the install section's own end — JS measures the gap between
+         install-section's bottom and the footer border (--dz-ext) and the
+         zone extends down by exactly that much, so the door's bottom slams
+         onto the border line itself. */
+      bottom: calc(var(--dz-ext, 0) * -1px);
+      width: clamp(320px, 28vw, 400px);  /* mirrors the aside column minmax(320px,400px) */
+      height: calc(clamp(320px, 28vw, 400px) * 1.31);
+      z-index: 1;                      /* falling door paints over the sections it crosses */
+      pointer-events: none;            /* never block install links; the BUY button re-enables */
+      /* motion + reveal channels — JS drives these (GSAP or freeze hashes) */
+      --dzy: -1600;                    /* door rig y (px) — parked above, hidden anyway */
+      --dzrot: 0;                      /* door rig lean (deg) */
+      --dz-crane-y: -2600;             /* pickup rig y (px) — parked above the viewport */
+      --dz-shadow: 0;                  /* contact-shadow opacity */
+      --dz-crack: 0;                   /* crack opacity */
+      --dz-ground: 0;                  /* ground line + floor pool opacity */
+    }
+
+    :global(html.motion-ok) .crane-dropzone.dz-aligned {
+      left: calc(var(--dz-left) * 1px);
+      right: auto;
+      width: calc(var(--dz-w) * 1px);
+      height: calc(var(--dz-w) * 1.31px);
+    }
+  }
+
+  /* the landing stage — fills the zone; bottom edge = ground = the install
+     section's end. Height fits the door's METAL rows (lower ~73% of the
+     808/1448 box); the box's transparent top overflows upward, unclipped. */
+  .dz-stage {
+    position: absolute;
+    inset: 0;
+  }
+
+  /* impact-shake wrapper — GSAP nudges y ±2.5px at impact. Plain translate
+     on an unfiltered wrapper: compositor-cheap, Safari-safe. */
+  .dz-shake {
+    position: absolute;
+    inset: 0;
+  }
+
+  /* ── the fallen door rig ── */
+  .dz-rig {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    aspect-ratio: 808 / 1448;
+    translate: 0 calc(var(--dzy) * 1px);
+    rotate: calc(var(--dzrot) * 1deg);
+    transform-origin: 50% 100%;
+    visibility: hidden;                /* revealed by .dz-live (drop) / freezes */
+    will-change: transform;
+    z-index: 3;
+  }
+
+  .dz-door {
+    position: absolute;
+    inset: 0;
+    background: var(--master-url) center / contain no-repeat;
+    container-type: inline-size;       /* painted copy sizes in cqw of the door */
+  }
+
+  /* worn painted copy — wear-mask + imprint only (NO #rc-worn-* filters here:
+     nothing filtered may translate in Safari; the mask carries the read). */
+  .dz-copy {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    -webkit-mask-image: var(--wear-url);
+    -webkit-mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+            mask-image: var(--wear-url);
+            mask-size: 100% 100%;
+            mask-repeat: no-repeat;
+  }
+
+  .dz-ink {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
+  }
+
+  .dz-tag {
+    left: 69.3%;
+    top: 68.3%;
+    rotate: -1.3deg;
+    font-family: var(--font-mono);
+    font-size: 4.17cqw;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 0.4cqw 1.65cqw;
+    color: #cab1a3;
+    border: 1px solid #58130b;
+    border-radius: 3px;
+    -webkit-text-stroke: 0.35px currentColor;
+  }
+
+  .dz-price {
+    left: 30.9%;
+    top: 68%;
+    rotate: -2.7deg;
+    transform: translate(-50%, -50%) scale(1.23);
+    display: flex;
+    align-items: baseline;
+    gap: 1.3cqw;
+    opacity: 0.97;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.58);
+  }
+
+  .dz-now {
+    font-family: var(--font-display);
+    font-size: 10.75cqw;
+    line-height: 1.21;
+    letter-spacing: 0.07em;
+    color: #e8c878;
+  }
+
+  .dz-was {
+    font-family: var(--font-display);
+    font-size: 7.6cqw;
+    text-decoration: line-through;
+    color: #919191;
+  }
+
+  .dz-code {
+    left: 50.4%;
+    top: 91.1%;
+    rotate: 0.9deg;
+    font-family: var(--font-mono);
+    font-size: 4.36cqw;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: #f4e8cf;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.45);
+  }
+
+  .dz-code b {
+    letter-spacing: 0.15em;
+    color: #e32400;
+  }
+
+  /* door scratches print through the paint — sibling of the masked wrapper */
+  .dz-imprint {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    background: var(--master-url) center / 100% 100% no-repeat;
+    mix-blend-mode: soft-light;
+    opacity: 0.55;
+    pointer-events: none;
+  }
+
+  /* BUY NOW square — same geometry as the top card, no light layers */
+  .dz-buysq {
+    position: absolute;
+    left: 50%;
+    top: 79.8%;
+    width: 67.8%;
+    aspect-ratio: 620 / 237;
+    transform: translate(-50%, -50%);
+    rotate: 1deg;
+    opacity: 0.69;
+    background: var(--buysq-url) center / 100% 100% no-repeat;
+    background-color: transparent;
+    border: 0;
+    padding: 0;
+    appearance: none;
+    -webkit-appearance: none;
+    z-index: 5;
+    cursor: pointer;
+    container-type: inline-size;
+    pointer-events: auto;              /* the zone itself is pointer-events:none */
+  }
+
+  .dz-buysq:focus-visible {
+    outline: 2px solid var(--brass-bright);
+    outline-offset: 3px;
+  }
+
+  .dz-buysq-paint {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    mix-blend-mode: multiply;
+    background: #4d0f0a;
+    opacity: 0.35;
+    -webkit-mask-image: var(--buysq-url);
+    -webkit-mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+            mask-image: var(--buysq-url);
+            mask-size: 100% 100%;
+            mask-repeat: no-repeat;
+    z-index: 0;
+  }
+
+  .dz-buysq-label {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: Impact, Haettenschweiler, 'Arial Narrow', sans-serif;
+    font-weight: 700;
+    font-size: 22cqw;
+    line-height: 1;
+    text-transform: uppercase;
+    white-space: nowrap;
+    letter-spacing: 0em;
+    word-spacing: 0em;
+    color: #241310;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* the door's lifting ring — rides the door so the hook has something to
+     latch; same occlusion order as the top card (door < hook < ring). */
+  .dz-ring {
+    position: absolute;
+    left: 49.57%;
+    top: 24.61%;
+    width: 4.3%;
+    aspect-ratio: 40 / 140;
+    background: var(--ring-url) center / 100% 100% no-repeat;
+    z-index: 6;
+    pointer-events: none;
+  }
+
+  /* ── pickup rig: hook + chain, same registration box as the door ── */
+  .dz-hookrig {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    aspect-ratio: 808 / 1448;
+    translate: 0 calc(var(--dz-crane-y) * 1px);
+    visibility: hidden;
+    will-change: transform;
+    z-index: 4;
+    pointer-events: none;
+  }
+
+  /* NO drop-shadow/brightness filters on these (they translate) — the top
+     card's chain filters are compensated by the darker page-bottom setting. */
+  .dz-hookpart {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    aspect-ratio: 808 / 456;
+    background: var(--hook-url) center / 100% 100% no-repeat;
+  }
+
+  .dz-chain {
+    position: absolute;
+    left: 51.8%;
+    bottom: calc(100% - 4%);
+    transform: translateX(-50%);
+    width: 7.18%;
+    /* The cable runs from the TOP OF THE WEBSITE down to the hook (Dan,
+       round 8): --dz-chainh is measured by JS = the zone's document offset,
+       so wherever the hook is, the chain reaches page top — same physical
+       read as the top card's own chain. No mask, no dissolve (rejected):
+       the chain has no free end, so nothing ever dangles or pops. */
+    height: calc(var(--dz-chainh, 2600) * 1px);
+    background: var(--chain-url) center top / 100% auto repeat-y;
+  }
+
+  /* ── ground furniture — all opacity 0 until impact ── */
+  .dz-shadow {
+    position: absolute;
+    left: 50%;
+    bottom: -1%;
+    transform: translateX(-50%);
+    width: 86%;
+    height: 5%;
+    background: radial-gradient(50% 62% at 50% 50%, rgba(0, 0, 0, 0.6) 0%, transparent 74%);
+    opacity: var(--dz-shadow);
+    pointer-events: none;
+    z-index: 2;
+    filter: blur(3px);                 /* static element — never translates */
+  }
+
+  /* dust puff at the impact point — GSAP owns opacity/scale (ported /cranelab) */
+  .dz-dust {
+    position: absolute;
+    left: 50%;
+    bottom: -2%;
+    width: 74%;
+    height: 9%;
+    transform: translateX(-50%);
+    background:
+      radial-gradient(35% 55% at 30% 62%, rgba(180, 150, 110, 0.5), transparent 70%),
+      radial-gradient(30% 50% at 70% 58%, rgba(160, 130, 95, 0.4), transparent 70%),
+      radial-gradient(45% 60% at 50% 70%, rgba(140, 110, 80, 0.35), transparent 72%);
+    /* cranelab had blur(2px) here — dropped: GSAP scales this at impact and
+       filtered+transformed is the exact Safari blank-raster class. The
+       radial gradients are soft enough on their own. */
+    opacity: 0;
+    pointer-events: none;
+    z-index: 5;
+  }
+
+  /* cracks radiating from the impact point — dark fissures + warm rims so
+     they read on the near-black page. Persist at 0.6 after pickup. */
+  /* right-side extents stay ≤ ~8% (≈32px at 400px) — the zone sits at the
+     container's right edge; bigger overhangs would widen the scroll area */
+  .dz-crack {
+    position: absolute;
+    left: 50%;
+    bottom: -27px;                     /* border line crosses ~y38 of the viewBox; forks bite ~25px down into the footer */
+    transform: translateX(-50%);
+    width: 116%;
+    height: 8.5%;
+    opacity: var(--dz-crack);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .dz-crack-dark path {
+    stroke: rgba(0, 0, 0, 0.8);
+    stroke-width: 2.6;
+  }
+
+  .dz-crack-lite path {
+    stroke: rgba(214, 184, 140, 0.22);
+    stroke-width: 1.2;
+  }
+
+  /* snapped-off pieces of the footer border, knocked askew */
+  .dz-crack-frag path {
+    stroke: var(--border-bright);
+    stroke-width: 1.4;
+  }
+
+  .dz-crack-debris circle {
+    fill: rgba(0, 0, 0, 0.6);
+  }
+
+  .dz-crack-debris circle:nth-child(odd) {
+    fill: rgba(214, 184, 140, 0.24);
+  }
+
+  /* the SNAP in the footer border — the door "cracked the bottom of the
+     website" (Dan): a bg-toned cover erases the border-top line under the
+     door so it reads broken where the door hit, edges fading back into the
+     intact line; the crack SVG radiates from the same point. */
+  .dz-groundline {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -2px;
+    height: 5px;
+    background: var(--bg-0);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 10%, #000 90%, transparent 100%);
+            mask-image: linear-gradient(90deg, transparent 0%, #000 10%, #000 90%, transparent 100%);
+    opacity: var(--dz-ground);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .dz-floorpool {
+    position: absolute;
+    left: -40%;
+    right: -8%;
+    bottom: -18px;
+    height: 34%;
+    background: radial-gradient(60% 85% at 50% 100%, rgba(196, 164, 122, 0.09) 0%, rgba(196, 164, 122, 0.04) 45%, transparent 75%);
+    opacity: var(--dz-ground);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* reveal states (JS toggles these). SPLIT on purpose — round-1 lesson:
+     .dz-live must NOT reveal the hookrig, or its parked chain hangs over
+     mid-page content. The hookrig shows only while a pickup is in flight
+     (.dz-pickup) and hides at the dock swap, which happens with the hook
+     at the top card's seat — never mid-view. No fades (rejected round 7). */
+  .crane-dropzone.dz-live .dz-rig {
+    visibility: visible;
+  }
+
+  .crane-dropzone.dz-pickup .dz-hookrig {
+    visibility: visible;
+  }
+</style>
+
+<script>
+  import { gsap, ScrollTrigger } from '../lib/motion';
+
+  const zone = document.querySelector<HTMLElement>('[data-crane-dropzone]');
+
+  if (zone && getComputedStyle(zone).display !== 'none') {
+    const topStage = document.querySelector<HTMLElement>('[data-crane-stage]');
+    const shake = zone.querySelector<HTMLElement>('[data-dz-shake]');
+    const dust = zone.querySelector<HTMLElement>('.dz-dust');
+    const crackEl = zone.querySelector<SVGElement>('.dz-crack');
+
+    /* LANDING RULE (Dan): the door lands at the SAME x/width as the hanging
+       door above — measured, not mirrored in CSS. [data-crane-stage] is the
+       door's untransformed layout box (the rig inside it sways/translates,
+       the stage never does), so its rect is stable at any moment. x is
+       resolved against the zone's offsetParent (.install-section). */
+    const align = () => {
+      if (!topStage) return;
+      const host = zone.offsetParent as HTMLElement | null;
+      if (!host) return;
+      const s = topStage.getBoundingClientRect();
+      const h = host.getBoundingClientRect();
+      zone.style.setProperty('--dz-left', (s.left - h.left).toFixed(1));
+      zone.style.setProperty('--dz-w', s.width.toFixed(1));
+      // ground = the footer's top border (the bottom of the website): extend
+      // the zone past install-section's end by the measured gap so the door's
+      // bottom lands exactly ON the border line.
+      const footer = document.querySelector('footer.site-footer');
+      if (footer) {
+        const gap = footer.getBoundingClientRect().top - h.bottom;
+        zone.style.setProperty('--dz-ext', Math.max(0, gap).toFixed(1));
+      }
+      zone.classList.add('dz-aligned');
+      // the cable spans from the TOP OF THE WEBSITE to the hook: chain
+      // length = the zone bottom's document offset (+margin), so the chain
+      // never has a free upper end no matter where the hook is.
+      const zb = zone.getBoundingClientRect().bottom + window.scrollY;
+      zone.style.setProperty('--dz-chainh', Math.ceil(zb + 300).toString());
+    };
+    align();
+    window.addEventListener('resize', align);
+
+    const setVars = (vars: Record<string, string>) => {
+      for (const [k, v] of Object.entries(vars)) zone.style.setProperty(k, v);
+    };
+    const LANDED = { '--dzy': '0', '--dzrot': '1.3', '--dz-shadow': '0.55', '--dz-crack': '1', '--dz-ground': '1' };
+    const PARKED = { '--dzy': '-1600', '--dzrot': '0', '--dz-crane-y': '-2600', '--dz-shadow': '0' };
+
+    const hashQ = new URLSearchParams(location.hash.slice(1));
+    const frozenDrop = hashQ.get('cranedrop');
+
+    if (frozenDrop === '1' || frozenDrop === '2') {
+      /* DEBUG freezes (#cranedrop=1 landed · =2 mid-pickup) — statics only,
+         no trigger, same pattern as the top card's #cranep/#cranelight. */
+      zone.classList.add('dz-live');
+      if (frozenDrop === '1') {
+        topStage?.classList.add('crane-released');
+        setVars(LANDED);
+      } else {
+        // mid-pickup: the top door comes back only at the DOCK swap
+        // (round 8) — so mid-haul the top card is still released, and its
+        // own hook is away fetching (round 9).
+        topStage?.classList.add('crane-released', 'crane-fetching');
+        zone.classList.add('dz-pickup');
+        setVars({ '--dzy': '-220', '--dz-crane-y': '-220', '--dzrot': '0', '--dz-shadow': '0', '--dz-crack': '0.6', '--dz-ground': '1' });
+      }
+    } else {
+      /* ── the live release: page bottom = the crane lets go ─────────────
+         One-shot timelines own the zone's CSS vars (the exact cranelab
+         mechanism — GSAP tweens vars on the zone root; nothing filtered
+         ever translates). Idempotence: released/releasing flags + kill. */
+      const REL = { fall: 0.6, tip: 1.3, bounce: 7, dust: 0.5 };
+      const WINCH = 850;                 // px/s, page space — the LOCKED winch rate (Dan, round 4)
+      let released = false;              // door on the ground, waiting
+      let releasing = false;             // a timeline is in flight
+      let landed = false;                // an impact actually happened (gates crack persistence)
+      let mode: 'drop' | 'pickup' | null = null;
+      let relTL: gsap.core.Timeline | null = null;
+
+      /* the door's SEAT — the top card's stage box (visibility:hidden under
+         crane-released still keeps its rect). The haul's destination in the
+         zone's translate space: delta from the dz rig's rest position
+         (--dzy:0, bottom-anchored to the zone) up to the seat. Computed from
+         the zone's own rect (never transformed) so a tipped door (--dzrot)
+         can't skew the measurement. */
+      const dockY = () => {
+        const zr = zone.getBoundingClientRect();
+        if (!topStage) return -(zr.bottom + 80);
+        const restTop = zr.bottom - zr.width * (1448 / 808);
+        return topStage.getBoundingClientRect().top - restTop;
+      };
+
+      /* crash sound (Dan, checkpoint 2): tools/gen-door-crash.py bakes the
+         impact + the 0.18s bounce re-contact into one file, so playing it at
+         the `impact` label keeps every hit in sync. Browsers block audio
+         until the page has a user gesture — a one-time muted play/pause on
+         the first pointer/key unlocks the element (Safari included); if the
+         user never interacted, play() rejects and the slam stays silent. */
+      const crash = new Audio('/audio/door-crash.wav');
+      crash.preload = 'auto';
+      crash.volume = 0.55;
+      const unlock = () => {
+        crash.muted = true;
+        crash.play().then(() => {
+          crash.pause();
+          crash.currentTime = 0;
+          crash.muted = false;
+        }).catch(() => { crash.muted = false; });
+      };
+      window.addEventListener('pointerdown', unlock, { once: true });
+      window.addEventListener('keydown', unlock, { once: true });
+
+      const drop = () => {
+        if (released || (releasing && mode === 'drop')) return;
+        const interrupting = releasing && mode === 'pickup';   // crane changes its mind mid-lift
+        relTL?.kill();
+        mode = 'drop';
+        releasing = true;
+        // the swap up top — thousands of px off-screen, never witnessed
+        topStage?.classList.add('crane-released');
+        zone.classList.add('dz-live');
+        const zr = zone.getBoundingClientRect();
+        const cur = parseFloat(getComputedStyle(zone).getPropertyValue('--dzy')) || 0;
+        const tl = gsap.timeline({
+          onComplete: () => { released = true; releasing = false; mode = null; },
+        });
+        relTL = tl;
+
+        if (interrupting) {
+          // NO teleports, NO snap-hides: the cable is page-long now, so a
+          // vanishing hook would pop off mid-view. The hook lets the door
+          // go and winches back home at the same locked rate — the user at
+          // the bottom watches the empty cable retract up the page.
+          const curCrane = parseFloat(getComputedStyle(zone).getPropertyValue('--dz-crane-y')) || 0;
+          const home = dockY() + 26;     // +26 = the released chain's slack — the empty hook parks where the top card's slack hook hangs
+          const retractDur = Math.max(0.3, Math.abs(home - curCrane) / WINCH);
+          tl.to(zone, { '--dz-crane-y': home, duration: retractDur, ease: 'none' }, 0);
+          tl.call(() => {
+            // hook is home: swap the dz hook for the top card's slack hook
+            // in the same frame (ONE crane, ONE hook — round 9).
+            topStage?.classList.remove('crane-fetching');
+            zone.classList.remove('dz-pickup');
+            gsap.set(zone, { '--dz-crane-y': -2600 });
+          }, [], retractDur + 0.02);
+          if (cur > -20) {
+            // door never left the ground — settle back and stay landed
+            tl.to(zone, { '--dzy': 0, '--dzrot': REL.tip, duration: 0.3, ease: 'power2.out' }, 0);
+            return;
+          }
+        } else {
+          // fresh drop: park fully above the viewport (off-screen, unseen)
+          zone.classList.remove('dz-pickup');
+          gsap.set(zone, { '--dzy': -(zr.bottom + 40), '--dzrot': -0.8, '--dz-crane-y': -2600 });
+        }
+        const startY = interrupting ? cur : -(zr.bottom + 40);
+        // gravity read: fall time scales with √height — an interrupt can now
+        // let go from viewports up, so the cap is looser than the old 0.7s
+        const fallDur = Math.min(1.4, Math.max(0.25,
+          REL.fall * Math.sqrt(Math.abs(startY) / (zr.bottom + 40))));
+        tl.to(zone, { '--dzy': 0, '--dzrot': 0.3, duration: fallDur, ease: 'power3.in' }, 0);
+        tl.to(zone, { '--dz-shadow': 0.55, duration: 0.1 }, Math.max(0, fallDur - 0.1));
+        tl.addLabel('impact', fallDur);
+        tl.call(() => {
+          landed = true;
+          crash.currentTime = 0;
+          crash.play().catch(() => {});   // still gesture-locked → the slam stays silent
+        }, [], 'impact');
+        tl.to(zone, { '--dzrot': REL.tip, duration: 0.14, ease: 'power1.out' }, 'impact');
+        tl.to(zone, { '--dzy': -REL.bounce, duration: 0.13, ease: 'power2.out' }, 'impact');
+        tl.to(zone, { '--dzy': 0, duration: 0.18, ease: 'power2.in' }, 'impact+=.13');
+        tl.to(zone, { '--dz-ground': 1, duration: 0.12, ease: 'power1.out' }, 'impact');
+        tl.to(zone, { '--dz-crack': 1, duration: 0.18, ease: 'power1.out' }, 'impact');
+        if (crackEl) tl.fromTo(crackEl, { scaleX: 0.9 }, { scaleX: 1, duration: 0.18, ease: 'power2.out' }, 'impact');
+        if (shake) tl.fromTo(shake, { y: 0 }, { y: 2.5, duration: 0.05, yoyo: true, repeat: 3 }, 'impact');
+        if (dust) {
+          tl.fromTo(dust, { opacity: 0, scale: 0.6 },
+                    { opacity: REL.dust, scale: 1.25, duration: 0.12, ease: 'power1.out' }, 'impact');
+          tl.to(dust, { opacity: 0, scale: 1.8, duration: 0.55, ease: 'power2.out' }, 'impact+=.12');
+        }
+      };
+
+      const pickup = () => {
+        if ((!released && !releasing) || (releasing && mode === 'pickup')) return;
+        const resuming = zone.classList.contains('dz-pickup');  // hook already out (mid-retract interrupt)
+        relTL?.kill();                   // may interrupt a mid-flight drop
+        mode = 'pickup';
+        releasing = true;
+        released = false;
+        // ONE crane, ONE hook (round 9): while the hook is down the page
+        // fetching the door, the top card's own empty hook must be gone —
+        // flipped here with the aside provably off-screen.
+        topStage?.classList.add('crane-fetching');
+        zone.classList.add('dz-pickup');
+        const zr = zone.getBoundingClientRect();
+        if (!resuming) gsap.set(zone, { '--dz-crane-y': -(zr.bottom + 100) });
+        const curCrane = parseFloat(getComputedStyle(zone).getPropertyValue('--dz-crane-y')) || 0;
+        const dock = dockY();
+        const tl = gsap.timeline({
+          onComplete: () => {
+            releasing = false;
+            mode = null;
+            // THE DOCK SWAP (round 8): the haul carries the door ALL the way
+            // back to its seat in the top card — the restore is no longer a
+            // below-the-fold class flip a flick can outrun (round-5 teleport)
+            // but a same-frame swap with the clone sitting pixel-aligned ON
+            // the seat. What a fast scroller passes mid-page is the crane
+            // hauling the door home on a cable that runs to the site top.
+            topStage?.classList.remove('crane-released', 'crane-fetching');
+            zone.classList.remove('dz-live', 'dz-pickup');
+            setVars(PARKED);
+            // crack + broken border persist — but only if the door actually
+            // struck the ground (review fix: a pickup that interrupts a
+            // mid-fall drop must not paint phantom damage).
+            if (landed) gsap.set(zone, { '--dz-crack': 0.6 });
+            // haul finished while the user drifted back below the trigger
+            // (no line-crossing → no onEnter): the crane lets it go again.
+            if (zone.getBoundingClientRect().bottom <= window.innerHeight * 1.1) drop();
+          },
+        });
+        relTL = tl;
+        // ONE continuous mechanical action (checkpoint-2 note: no dead beats,
+        // nothing moves before the cable makes it move):
+        // hook lowers onto the ring → cable takes the weight (pluck) and THAT
+        // rights the tipped door → constant-rate haul, door+hook as one body.
+        // Rescue tween for a mid-fall interrupt is a landed no-op.
+        const payOut = Math.max(0.4, Math.abs(curCrane) / 1400); // steady cable pay-out from wherever the hook is
+        tl.to(zone, { '--dzy': 0, duration: 0.25, ease: 'power2.out' }, 0);
+        tl.to(zone, { '--dz-crane-y': 0, duration: payOut, ease: 'power1.inOut' }, 0); // soft stop on the ring
+        tl.addLabel('latch', payOut + 0.03);
+        tl.to(zone, { '--dzy': -4, duration: 0.12, ease: 'power2.out' }, 'latch');   // cable takes the weight…
+        tl.to(zone, { '--dzrot': 0, duration: 0.3, ease: 'power2.inOut' }, 'latch'); // …and the tension rights the door
+        tl.to(zone, { '--dzy': -1, duration: 0.14, ease: 'power2.inOut' }, 'latch+=0.12');
+        // LOCKED mechanism (Dan, round 4): the winch runs at ONE rigid
+        // page-space rate and never reacts to scrolling. The haul goes the
+        // whole way — ground to seat (round 8): no early finish, no fade,
+        // no hide; the cable spans to the site top, so nothing ever dangles
+        // or pops. A fast scroller simply overtakes the crane and it passes
+        // them later, carrying the door home.
+        tl.addLabel('lift', 'latch+=0.3');
+        tl.to(zone, {
+          '--dzy': dock,
+          '--dz-crane-y': dock,
+          duration: Math.abs(dock) / WINCH,
+          ease: 'none',
+        }, 'lift');
+        tl.to(zone, { '--dz-shadow': 0, duration: 0.25, ease: 'power1.out' }, 'lift');
+        // crack settles to 0.6 only if an impact actually made one — this
+        // tween would otherwise RAISE it from 0 on a never-landed interrupt
+        tl.to(zone, { '--dz-crack': landed ? 0.6 : 0, duration: 0.8, ease: 'sine.out' }, 'lift');
+      };
+
+      ScrollTrigger.create({
+        trigger: zone,
+        start: () => `bottom bottom+=${Math.round(window.innerHeight * 0.1)}`,
+        invalidateOnRefresh: true,
+        onEnter: drop,
+        onLeaveBack: pickup,
+      });
+
+      // bfcache restore: snap to the state the scroll position implies —
+      // no replayed animation, no stuck released-top-with-no-door.
+      window.addEventListener('pageshow', (e) => {
+        if (!e.persisted) return;
+        relTL?.kill();
+        const past = zone.getBoundingClientRect().bottom <= window.innerHeight * 1.1;
+        releasing = false;
+        released = past;
+        landed = past;
+        mode = null;
+        zone.classList.toggle('dz-live', past);
+        zone.classList.remove('dz-pickup');
+        topStage?.classList.remove('crane-fetching');
+        if (past) {
+          topStage?.classList.add('crane-released');
+          setVars(LANDED);
+        } else {
+          topStage?.classList.remove('crane-released');
+          setVars(PARKED);
+        }
+      });
+    }
+  }
+</script>
