@@ -220,6 +220,11 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
     --door-y: 0;
     --door-rot: 0;
     --crane-y: 0;
+    /* released state — 1 while the drop zone owns the door (page bottom).
+       Toggled via .crane-released by CraneDropZone while the aside is
+       off-screen; the JS driver never reads it. Extra slack term is separate
+       from --slack because the render loop writes --slack inline. */
+    --released: 0;
     /* garage light drivers — 0 at rest → every light layer is opacity:0 =
        pixel-identical to the unlit card. Written ONLY by the hover/focus
        handlers (bench-locked peaks folded in below). */
@@ -245,6 +250,22 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
     animation: rc-gate-fallback 0.6s ease 2.5s forwards;
   }
   @keyframes rc-gate-fallback { to { opacity: 1; } }
+
+  /* released: the drop zone owns the door — hide it (plus its ring/shadows)
+     so the empty hook hangs on a slightly slackened chain. visibility (not
+     display) keeps layout identical; the idle sway keeps running harmlessly
+     on the rig. Toggled only while the aside is off-screen — never seen. */
+  .crane-stage.crane-released :is(.revcrane-door, .rc-ring, .revcrane-doorshadow, .revcrane-ao) {
+    visibility: hidden;
+  }
+
+  /* fetching: the crane's ONE hook is down the page hauling the door
+     (CraneDropZone's pickup), so the top card's own chain + hook must be
+     gone too — otherwise two hooks coexist when the haul reaches the seat
+     (Dan, round 9). Removed at the dock swap together with .crane-released. */
+  .crane-stage.crane-fetching :is(.revcrane-chain, .revcrane-hookpart, .rc-hookglint) {
+    visibility: hidden;
+  }
 
   /* the dolly layer — JS scales .94→1 over the descent. Keep it filter-free
      (grade lives on .crane-stage, see above). */
@@ -285,7 +306,7 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
     aspect-ratio: 808 / 456;
     background: var(--hook-url) center / 100% 100% no-repeat;
     z-index: 1;
-    translate: 0 calc(var(--crane-y) * 1px);
+    translate: 0 calc(var(--crane-y) * 1px + var(--released) * 26px);
     filter: drop-shadow(3px 4px 4px rgba(0, 0, 0, 0.35));
     pointer-events: none;
   }
@@ -312,7 +333,7 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
             mask-image: var(--hook-url);
             mask-size: 100% 100%;
             mask-repeat: no-repeat;
-    translate: 0 calc(var(--crane-y) * 1px);
+    translate: 0 calc(var(--crane-y) * 1px + var(--released) * 26px);
     opacity: calc(var(--l1) * 0.35);
   }
 
@@ -358,7 +379,7 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
     left: 51.8%;
     bottom: calc(100% - 4%);
     transform-origin: 50% 100%;
-    transform: translateX(-50%) translateY(calc(var(--slack) * 1px + var(--crane-y) * 1px)) rotate(calc(var(--lag) * 1deg));
+    transform: translateX(-50%) translateY(calc(var(--slack) * 1px + var(--crane-y) * 1px + var(--released) * 26px)) rotate(calc(var(--lag) * 1deg));
     width: 7.18%;
     height: 150vh;                     /* no-JS floor; JS overrides with the doc-top span */
     background: var(--chain-url) center top / 100% auto repeat-y;
