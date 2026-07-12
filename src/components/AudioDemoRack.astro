@@ -15,7 +15,7 @@ const { demos } = Astro.props;
   <div class="screw tr" aria-hidden="true"></div>
   <div class="screw bl" aria-hidden="true"></div>
   <div class="screw br" aria-hidden="true"></div>
-  <span class="dash-label" aria-hidden="true">HEAR IT</span>
+  <span class="dash-label" aria-hidden="true">RA-56 MONITOR</span>
 
   <div class="monitor">
     <div class="glass">
@@ -33,13 +33,14 @@ const { demos } = Astro.props;
           <span class="name">{demo.label}</span>
           <span class="bar-wrap">
             <span class="bar" aria-hidden="true" data-bar>{Array.from({ length: 18 }).map(() => <i></i>)}</span>
-            <input class="seek" type="range" min="0" max="100" step="0.1" value="0" disabled data-seek aria-label={`Seek ${demo.label}`} />
+            <input class="seek" type="range" min="0" max="100" step="2" value="0" disabled data-seek aria-label={`Seek ${demo.label}`} />
           </span>
           <span class="time" data-time aria-hidden="true">-:--</span>
-          <audio preload="none" src={demo.beforeUrl ?? undefined} data-before></audio>
+          <audio preload="metadata" src={demo.beforeUrl ?? undefined} data-before></audio>
           <audio preload="none" src={demo.afterUrl ?? undefined} data-after></audio>
         </div>
       ))}
+      <a class="cta" href="#buy" data-cta>THAT'S REVLIMITER → GET IT</a>
     </div>
   </div>
 
@@ -52,8 +53,8 @@ const { demos } = Astro.props;
         data-arm
         role="switch"
         aria-checked="false"
-        aria-label="RevLimiter processing"
-      ></button>
+        aria-label="ARM — RevLimiter processing"
+      ><span class="arm-word" aria-hidden="true">ARM</span></button>
       <div class="nos-light"></div>
       <!-- label always reads ON (plugin behavior) — the .armed glow shows state -->
       <div class="nos-state">ON</div>
@@ -152,6 +153,7 @@ const { demos } = Astro.props;
         });
         current = t;
         applyArm(t);
+        if (srcLabel) srcLabel.textContent = armed ? 'SRC: MASTER BUS' : 'SRC: RAW BUS';
         t.root.classList.add('loading');
         // Both play() calls stay synchronous inside the click gesture (iOS).
         Promise.all([t.before.play(), t.after.play()])
@@ -160,10 +162,13 @@ const { demos } = Astro.props;
           .finally(() => t.root.classList.remove('loading'));
       });
 
-      t.before.addEventListener('loadedmetadata', () => {
+      const onMeta = () => {
         t.seek.disabled = false;
         paintTime(t);
-      });
+      };
+      t.before.addEventListener('loadedmetadata', onMeta);
+      // preload="metadata" can beat this module script (HAVE_METADATA already)
+      if (t.before.readyState >= 1) onMeta();
       t.before.addEventListener('timeupdate', () => paintTime(t));
       t.before.addEventListener('ended', () => {
         t.after.pause();
@@ -196,7 +201,18 @@ const { demos } = Astro.props;
       rack.classList.toggle('is-armed', armed);
       armBtn.setAttribute('aria-checked', String(armed));
       if (armLive) armLive.textContent = armed ? 'RevLimiter on' : 'RevLimiter off';
-      if (srcLabel) srcLabel.textContent = armed ? 'SRC: MASTER BUS' : 'SRC: RAW BUS';
+      if (srcLabel) {
+        const idle = !current || current.before.paused;
+        srcLabel.textContent = armed
+          ? (idle ? 'SRC: MASTER BUS — PRESS PLAY' : 'SRC: MASTER BUS')
+          : 'SRC: RAW BUS';
+        if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          srcLabel.classList.remove('blink');
+          void srcLabel.offsetWidth;
+          srcLabel.classList.add('blink');
+        }
+      }
+      if (armed) rack.classList.add('was-armed'); // reveals the CTA, stays on
     });
   });
 </script>
@@ -240,6 +256,11 @@ const { demos } = Astro.props;
     background: #181008;
     transform: rotate(38deg);
   }
+
+  /* real panels never have four aligned slots */
+  .screw.tr::after { transform: rotate(102deg); }
+  .screw.bl::after { transform: rotate(-24deg); }
+  .screw.br::after { transform: rotate(61deg); }
 
   .screw.tl { left: 10px; top: 10px; }
   .screw.tr { right: 10px; top: 10px; }
@@ -311,7 +332,7 @@ const { demos } = Astro.props;
 
   .trk {
     display: grid;
-    grid-template-columns: 30px 52px 190px minmax(0, 1fr) 110px;
+    grid-template-columns: 30px 52px minmax(90px, 190px) minmax(120px, 1fr) 110px;
     align-items: center;
     gap: 14px;
     padding: 9px 6px;
@@ -388,9 +409,11 @@ const { demos } = Astro.props;
      (free pointer drag + keyboard + AT semantics) */
   .bar-wrap { position: relative; min-width: 0; z-index: 1; }
 
+  /* segments fill the column so the drag surface and the painted bar agree */
   .bar { display: flex; gap: 3px; min-width: 0; }
-  .bar i { flex: 1 1 0; min-width: 0; max-width: 14px; height: 16px; background: rgba(255, 170, 60, 0.14); }
+  .bar i { flex: 1 1 0; min-width: 0; height: 16px; background: rgba(255, 170, 60, 0.14); }
   .bar :global(i.on) { background: #ffb340; box-shadow: 0 0 6px rgba(255, 160, 40, 0.7); }
+  .is-armed .bar :global(i.on) { background: #ffd070; box-shadow: 0 0 9px rgba(255, 190, 60, 0.95); }
 
   .seek {
     position: absolute;
@@ -408,6 +431,37 @@ const { demos } = Astro.props;
     text-align: right;
     font-size: 22px;
     color: #ffcf70;
+  }
+
+  @keyframes src-blink {
+    0%, 100% { opacity: 1; }
+    20%, 60% { opacity: 0.25; }
+    40%, 80% { opacity: 1; }
+  }
+
+  .mon-head :global(.blink) { animation: src-blink 0.6s steps(1) 1; }
+
+  /* CTA — revealed the first time the visitor arms it */
+  .cta {
+    display: none;
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1px dashed rgba(255, 170, 60, 0.18);
+    font-size: 20px;
+    letter-spacing: 0.12em;
+    color: #ffcf70;
+    text-decoration: none;
+    text-shadow: 0 0 8px rgba(255, 160, 40, 0.55);
+    position: relative;
+    z-index: 1;
+  }
+
+  .was-armed .cta { display: block; animation: src-blink 0.6s steps(1) 1; }
+  .cta:hover { color: #ffe6a6; }
+  .cta:focus-visible { outline: 2px solid #ffd070; outline-offset: 3px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mon-head :global(.blink), .was-armed .cta { animation: none; }
   }
 
   /* ── ARM bay ── */
@@ -437,8 +491,14 @@ const { demos } = Astro.props;
     transition: filter 0.25s ease;
   }
 
+  .nos-mount:hover { filter: brightness(1.06); }
+
   .nos-mount.armed {
     filter: drop-shadow(0 0 6cqh rgba(255, 170, 32, 0.55));
+  }
+
+  .nos-mount.armed:hover {
+    filter: drop-shadow(0 0 6cqh rgba(255, 170, 32, 0.55)) brightness(1.06);
   }
 
   .nos-pressed {
@@ -452,13 +512,10 @@ const { demos } = Astro.props;
 
   .nos-mount.armed .nos-pressed { opacity: 1; }
 
+  /* the whole plate is the switch — it all looks pressable, so it all is */
   .nos-button {
     position: absolute;
-    left: 50%;
-    top: 52%;
-    transform: translate(-50%, -50%);
-    width: 46%;
-    height: 32%;
+    inset: 0;
     background: transparent;
     border: none;
     padding: 0;
@@ -466,9 +523,10 @@ const { demos } = Astro.props;
     cursor: pointer;
   }
 
-  .nos-button:active {
-    transform: translate(-50%, -50%) scale(0.97);
-  }
+  .nos-button:active { transform: scale(0.985); }
+  .nos-button:focus-visible { outline: 2px solid #ffd070; outline-offset: 4px; }
+
+  .arm-word { display: none; }
 
   .nos-light {
     position: absolute;
@@ -507,9 +565,10 @@ const { demos } = Astro.props;
     text-shadow: 0 0 4.7cqh rgba(255, 200, 80, 0.7);
   }
 
-  /* ── responsive ── */
-  @media (max-width: 760px) {
+  /* ── responsive (900 = the site-wide breakpoint) ── */
+  @media (max-width: 900px) {
     .dash { grid-template-columns: 1fr; padding: 22px 16px; }
+    .armbay { min-height: 260px; }
     .trk { grid-template-columns: 44px minmax(0, 1fr) 90px; grid-template-rows: auto auto; row-gap: 8px; }
     .trk .no { display: none; }
     .trk .name { grid-column: 2; }
@@ -518,6 +577,11 @@ const { demos } = Astro.props;
     .glass { padding: 16px 14px 12px; }
     .mon-head { font-size: 14px; }
     .trk { font-size: 20px; }
+    .cta { font-size: 17px; }
+  }
+
+  @media (max-width: 420px) {
+    .mon-head { font-size: 12px; letter-spacing: 0.06em; }
   }
 
   /* ── high contrast (html.hc): drop textures, keep function ── */
@@ -549,6 +613,15 @@ const { demos } = Astro.props;
   :global(html.hc) .nos-button {
     background: var(--bg-2);
     border: 2px solid var(--border-bright);
+  }
+
+  /* the PNG's baked "ARM" disappears in hc — show a real label instead */
+  :global(html.hc) .arm-word {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 28px;
+    letter-spacing: 0.1em;
+    color: var(--fg);
   }
 
   :global(html.hc) .nos-state { color: var(--fg-faint); }
