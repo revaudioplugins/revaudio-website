@@ -1,0 +1,459 @@
+---
+import type { AudioDemo as Demo } from '../data/plugins';
+
+interface Props {
+  demos: Demo[];
+}
+
+const { demos } = Astro.props;
+---
+
+<div class="ab-rack" data-abrack>
+  <div class="tracks">
+    {demos.map((demo) => (
+      <div class="track" data-track>
+        <button class="play" type="button" data-play aria-label={`Play ${demo.label}`}>
+          <svg class="ic-play" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11l9-5.5z" fill="currentColor" /></svg>
+          <svg class="ic-pause" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5h3v11H4zm5 0h3v11H9z" fill="currentColor" /></svg>
+          <span class="spinner" aria-hidden="true"></span>
+        </button>
+        <div class="track-main">
+          <div class="track-head">
+            <h4>{demo.label}</h4>
+            {demo.description && <p class="muted">{demo.description}</p>}
+          </div>
+          <div class="transport">
+            <input class="seek" type="range" min="0" max="100" step="0.1" value="0" disabled data-seek aria-label={`Seek ${demo.label}`} />
+            <span class="time" data-time aria-hidden="true">0:00 / 0:00</span>
+          </div>
+        </div>
+        <audio preload="none" src={demo.beforeUrl ?? undefined} data-before></audio>
+        <audio preload="none" src={demo.afterUrl ?? undefined} data-after></audio>
+      </div>
+    ))}
+  </div>
+
+  <!-- ARM module — 1:1 replica of the plugin's #nosArm (Source/ui/public/index.html).
+       Armed = RevLimiter processing audible; un-armed = dry signal. -->
+  <div class="arm-col">
+    <div class="nos-mount" data-arm-mount>
+      <div class="nos-pressed"></div>
+      <button
+        type="button"
+        class="nos-button"
+        data-arm
+        role="switch"
+        aria-checked="false"
+        aria-label="RevLimiter processing"
+      ></button>
+      <div class="nos-light"></div>
+      <div class="nos-state" data-arm-state>OFF</div>
+    </div>
+    <span class="arm-caption" aria-hidden="true">Arm = RevLimiter on</span>
+    <span class="sr-only" aria-live="polite" data-arm-live></span>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-abrack]').forEach((rack) => {
+    const mount = rack.querySelector<HTMLElement>('[data-arm-mount]');
+    const armBtn = rack.querySelector<HTMLButtonElement>('[data-arm]');
+    const armState = rack.querySelector<HTMLElement>('[data-arm-state]');
+    const armLive = rack.querySelector<HTMLElement>('[data-arm-live]');
+    if (!mount || !armBtn) return;
+
+    let armed = false;
+
+    interface Track {
+      root: HTMLElement;
+      before: HTMLAudioElement;
+      after: HTMLAudioElement;
+      playBtn: HTMLButtonElement;
+      seek: HTMLInputElement;
+      timeEl: HTMLElement | null;
+    }
+
+    const tracks: Track[] = [];
+    rack.querySelectorAll<HTMLElement>('[data-track]').forEach((root) => {
+      const before = root.querySelector<HTMLAudioElement>('[data-before]');
+      const after = root.querySelector<HTMLAudioElement>('[data-after]');
+      const playBtn = root.querySelector<HTMLButtonElement>('[data-play]');
+      const seek = root.querySelector<HTMLInputElement>('[data-seek]');
+      if (!before || !after || !playBtn || !seek) return;
+      tracks.push({ root, before, after, playBtn, seek, timeEl: root.querySelector('[data-time]') });
+    });
+
+    let current: Track | null = null;
+
+    const fmt = (s: number) =>
+      Number.isFinite(s) ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` : '0:00';
+
+    // Which element is audible. Both always play together; ARM only swaps mute.
+    const applyArm = (t: Track) => {
+      t.before.muted = armed;
+      t.after.muted = !armed;
+    };
+
+    const paintTime = (t: Track) => {
+      const d = t.before.duration;
+      const c = t.before.currentTime;
+      if (t.timeEl) t.timeEl.textContent = `${fmt(c)} / ${fmt(d)}`;
+      if (Number.isFinite(d) && d > 0) {
+        t.seek.value = String((c / d) * 100);
+        t.seek.setAttribute('aria-valuetext', `${fmt(c)} of ${fmt(d)}`);
+      }
+    };
+
+    const setPlaying = (t: Track, playing: boolean) => {
+      t.root.classList.toggle('playing', playing);
+      t.playBtn.setAttribute('aria-label', `${playing ? 'Pause' : 'Play'} ${t.playBtn.dataset.label ?? ''}`.trim());
+    };
+
+    const stop = (t: Track) => {
+      t.before.pause();
+      t.after.pause();
+      t.before.currentTime = 0;
+      t.after.currentTime = 0;
+      setPlaying(t, false);
+      paintTime(t);
+    };
+
+    tracks.forEach((t) => {
+      t.playBtn.dataset.label = t.playBtn.getAttribute('aria-label')?.replace(/^Play /, '') ?? '';
+      applyArm(t);
+
+      t.playBtn.addEventListener('click', () => {
+        if (current === t && !t.before.paused) {
+          t.before.pause();
+          t.after.pause();
+          setPlaying(t, false);
+          return;
+        }
+        tracks.forEach((o) => {
+          if (o !== t) stop(o);
+        });
+        current = t;
+        applyArm(t);
+        t.root.classList.add('loading');
+        // Both play() calls stay synchronous inside the click gesture (iOS).
+        Promise.all([t.before.play(), t.after.play()])
+          .then(() => setPlaying(t, true))
+          .catch(() => setPlaying(t, false))
+          .finally(() => t.root.classList.remove('loading'));
+      });
+
+      t.before.addEventListener('loadedmetadata', () => {
+        t.seek.disabled = false;
+        paintTime(t);
+      });
+      t.before.addEventListener('timeupdate', () => paintTime(t));
+      t.before.addEventListener('ended', () => {
+        t.after.pause();
+        t.before.currentTime = 0;
+        t.after.currentTime = 0;
+        setPlaying(t, false);
+        paintTime(t);
+      });
+
+      t.seek.addEventListener('input', () => {
+        const d = t.before.duration;
+        if (!Number.isFinite(d) || d <= 0) return;
+        const time = (Number(t.seek.value) / 100) * d;
+        t.before.currentTime = time;
+        t.after.currentTime = time;
+        paintTime(t);
+      });
+    });
+
+    armBtn.addEventListener('click', () => {
+      armed = !armed;
+      if (current) {
+        // Resync off the element that was audible — its position is the truth.
+        const from = armed ? current.before : current.after;
+        const to = armed ? current.after : current.before;
+        if (Math.abs(to.currentTime - from.currentTime) > 0.05) to.currentTime = from.currentTime;
+      }
+      tracks.forEach(applyArm);
+      mount.classList.toggle('armed', armed);
+      armBtn.setAttribute('aria-checked', String(armed));
+      if (armState) armState.textContent = armed ? 'ON' : 'OFF';
+      if (armLive) armLive.textContent = armed ? 'RevLimiter on' : 'RevLimiter off';
+    });
+  });
+</script>
+
+<style>
+  .ab-rack {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 1.5rem;
+    align-items: center;
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    padding: 1.25rem 1.5rem;
+  }
+
+  @media (max-width: 600px) {
+    .ab-rack { grid-template-columns: 1fr; }
+    .arm-col { order: -1; }
+  }
+
+  .tracks {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-width: 0;
+  }
+
+  .track {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    background: var(--bg-0);
+    border: 1px solid var(--border);
+  }
+
+  audio { display: none; }
+
+  .track-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .track-head h4 {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--brass);
+    margin: 0;
+  }
+
+  .track-head p {
+    font-size: 0.8rem;
+    margin: 0.25rem 0 0;
+  }
+
+  /* ── Transport ── */
+
+  .play {
+    flex: none;
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    background: var(--bg-1);
+    border: 1px solid var(--border-bright);
+    color: var(--brass);
+    cursor: pointer;
+    padding: 0;
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+
+  .play:hover {
+    border-color: var(--brass-dark);
+    color: var(--brass-bright);
+  }
+
+  .play svg { width: 16px; height: 16px; }
+  .ic-pause, .spinner { display: none; }
+  .track.playing .ic-play { display: none; }
+  .track.playing .ic-pause { display: block; }
+  .track.loading .ic-play, .track.loading .ic-pause { display: none; }
+  .track.loading .spinner { display: block; }
+
+  .spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--border-bright);
+    border-top-color: var(--brass);
+    border-radius: 50%;
+    animation: ab-spin 0.7s linear infinite;
+  }
+
+  @keyframes ab-spin { to { transform: rotate(360deg); } }
+
+  .transport {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .time {
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    color: var(--fg-faint);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .seek {
+    flex: 1;
+    min-width: 0;
+    appearance: none;
+    -webkit-appearance: none;
+    height: 4px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    cursor: pointer;
+  }
+
+  .seek:disabled { cursor: default; opacity: 0.4; }
+
+  .seek::-webkit-slider-thumb {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 12px;
+    height: 18px;
+    background: var(--brass);
+    border: 1px solid var(--brass-dark);
+    cursor: pointer;
+  }
+
+  .seek::-moz-range-thumb {
+    width: 12px;
+    height: 18px;
+    background: var(--brass);
+    border: 1px solid var(--brass-dark);
+    border-radius: 0;
+    cursor: pointer;
+  }
+
+  .seek:hover::-webkit-slider-thumb { background: var(--brass-bright); }
+  .seek:hover::-moz-range-thumb { background: var(--brass-bright); }
+
+  /* ── ARM module — verbatim port of the plugin's #nosArm CSS ──
+     (Revlimiter Source/ui/public/index.html lines 3803-3876; box kept at the
+     native 100x150 and scaled like the plugin canvas does.) */
+
+  .arm-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    /* reserve room for the scaled mount so the glow never clips */
+    padding: 2rem 2.5rem 1rem;
+  }
+
+  .nos-mount {
+    position: relative;
+    width: 100px;
+    height: 150px;
+    background: url('/plate/arm-mount-v3.png') no-repeat center / 100% 100%;
+    transition: filter 0.25s ease;
+    /* classic transform, not standalone scale/rotate — individual transform
+       properties have burned this site in real Safari before (quickSetter bug) */
+    transform: scale(1.4) rotate(2.1deg);
+  }
+
+  .nos-mount.armed {
+    filter: drop-shadow(0 0 9px rgba(255, 170, 32, 0.55));
+  }
+
+  .nos-pressed {
+    position: absolute;
+    inset: 0;
+    background: url('/plate/arm-mount-v3-pressed.png') no-repeat center / 100% 100%;
+    opacity: 0;
+    transition: opacity 0.11s ease;
+    pointer-events: none;
+  }
+
+  .nos-mount.armed .nos-pressed { opacity: 1; }
+
+  .nos-button {
+    position: absolute;
+    left: 50%;
+    top: 52%;
+    transform: translate(-50%, -50%);
+    width: 46%;
+    height: 32%;
+    background: transparent;
+    border: none;
+    padding: 0;
+    font-size: 0;
+    cursor: pointer;
+  }
+
+  .nos-button:active {
+    transform: translate(-50%, -50%) scale(0.97);
+  }
+
+  .nos-light {
+    position: absolute;
+    left: 50%;
+    top: 22.5%;
+    width: 9%;
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: radial-gradient(circle at 38% 34%,
+      #fff2c0 0%, #ffe858 30%, #ffaa20 58%, #7a3c00 100%);
+    box-shadow: 0 0 8px 2px rgba(255, 180, 40, 0.8);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+  }
+
+  .nos-mount.armed .nos-light { opacity: 1; }
+
+  .nos-state {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 16%;
+    text-align: center;
+    font-family: 'Special Elite', monospace;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    color: #7a6a4a;
+    transition: color 0.2s ease, text-shadow 0.2s ease;
+    pointer-events: none;
+  }
+
+  .nos-mount.armed .nos-state {
+    color: #ffe858;
+    text-shadow: 0 0 7px rgba(255, 200, 80, 0.7);
+  }
+
+  .arm-caption {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--fg-faint);
+  }
+
+  /* High-contrast mode: PNG plate away, plain legible switch */
+  :global(html.hc) .nos-mount,
+  :global(html.hc) .nos-pressed {
+    background: none;
+  }
+
+  :global(html.hc) .nos-mount {
+    background: var(--bg-2);
+    border: 2px solid var(--border-bright);
+    rotate: 0deg;
+  }
+
+  :global(html.hc) .nos-mount.armed {
+    filter: none;
+    border-color: var(--brass-bright);
+  }
+
+  :global(html.hc) .nos-button {
+    background: var(--bg-1);
+    border: 2px solid var(--border-bright);
+  }
+
+  :global(html.hc) .nos-state { color: var(--fg-faint); }
+  :global(html.hc) .nos-mount.armed .nos-state {
+    color: var(--brass-bright);
+    text-shadow: none;
+  }
+</style>
