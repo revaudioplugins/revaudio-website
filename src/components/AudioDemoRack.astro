@@ -42,6 +42,32 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
           <audio preload="none" src={demo.afterUrl ?? undefined} data-after></audio>
         </div>
       ))}
+      {/* channel 04 — the visitor's own file, processed live through the
+          plugin's first factory preset (Idle Mix) via Web Audio. Decode and
+          processing are entirely local; the file never leaves the browser. */}
+      <div class="trk trk-user" data-user-track>
+        <span class="no" aria-hidden="true">04</span>
+        <button class="lcdplay" type="button" data-uplay aria-label="Play your track" hidden>
+          <span class="glyph" aria-hidden="true"></span>
+          <span class="spinner" aria-hidden="true"></span>
+        </button>
+        <button class="lcdplay" type="button" data-uload aria-label="Load your own track — processed locally, never uploaded">
+          <span class="glyph eject" aria-hidden="true"></span>
+          <span class="spinner" aria-hidden="true"></span>
+        </button>
+        <span class="name uname">
+          <span data-uname>YOUR TRACK — LOAD A FILE</span>
+          <button class="swap" type="button" data-uswap hidden aria-label="Change file">⏏ SWAP</button>
+        </span>
+        <span class="bar-wrap">
+          <span class="bar" aria-hidden="true" data-bar>{Array.from({ length: 18 }).map(() => <i></i>)}</span>
+          <input class="seek" type="range" min="0" max="100" step="2" value="0" disabled data-seek aria-label="Seek your track" />
+        </span>
+        <span class="time" data-time aria-hidden="true">-:--</span>
+        <input type="file" accept="audio/*" hidden data-ufile />
+        <span class="sr-only" aria-live="polite" data-user-live></span>
+      </div>
+      <p class="local-note">CH 04 RUNS IDLE MIX — THE DEFAULT PRESET — IN YOUR BROWSER. NOTHING UPLOADS.</p>
       <button
         type="button"
         class="cta"
@@ -76,6 +102,108 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
 </div>
 
 <script>
+  // ── Idle Mix (factory preset f:0) as a Web Audio chain ──
+  // Values are the plugin's own, denormalised from its preset table and
+  // Cruise-mode DSP constants (applyModeSettings): threshold −3 dB,
+  // ceiling −0.3 dB, mid +0.5 dB, heat 12%, limiter release 80 ms,
+  // MB-comp crossovers 120 / 2500 Hz.
+  const IDLE_MIX = {
+    midGainDb: 0.5,
+    heat: 0.12,
+    limThresholdDb: -3,
+    limReleaseS: 0.08,
+    ceilingDb: -0.3,
+    xoverLow: 120,
+    xoverHigh: 2500,
+    bands: [
+      { thr: -13, ratio: 1.6, att: 0.02, rel: 0.3 },   // low
+      { thr: -14, ratio: 1.5, att: 0.015, rel: 0.2 },  // mid
+      { thr: -12, ratio: 1.3, att: 0.008, rel: 0.12 }, // high
+    ],
+  };
+
+  function buildIdleMix(ctx: AudioContext) {
+    const input = ctx.createGain();
+
+    // 3-band LR4 split (two cascaded Butterworth biquads per leg)
+    const lr4 = (type: BiquadFilterType, f: number) => {
+      const a = ctx.createBiquadFilter();
+      const b = ctx.createBiquadFilter();
+      a.type = b.type = type;
+      a.frequency.value = b.frequency.value = f;
+      a.Q.value = b.Q.value = Math.SQRT1_2;
+      a.connect(b);
+      return { in: a, out: b };
+    };
+    const lowLP = lr4('lowpass', IDLE_MIX.xoverLow);
+    const lowHP = lr4('highpass', IDLE_MIX.xoverLow);
+    const midLP = lr4('lowpass', IDLE_MIX.xoverHigh);
+    const highHP = lr4('highpass', IDLE_MIX.xoverHigh);
+
+    const comps = IDLE_MIX.bands.map((b) => {
+      const c = ctx.createDynamicsCompressor();
+      c.threshold.value = b.thr;
+      c.ratio.value = b.ratio;
+      c.attack.value = b.att;
+      c.release.value = b.rel;
+      c.knee.value = 6;
+      return c;
+    });
+    const sum = ctx.createGain();
+    input.connect(lowLP.in);
+    lowLP.out.connect(comps[0]).connect(sum);
+    input.connect(lowHP.in);
+    lowHP.out.connect(midLP.in);
+    midLP.out.connect(comps[1]).connect(sum);
+    input.connect(highHP.in);
+    highHP.out.connect(comps[2]).connect(sum);
+
+    // mid +0.5 dB — wide bell at the geometric mean of the crossovers
+    const eq = ctx.createBiquadFilter();
+    eq.type = 'peaking';
+    eq.frequency.value = 548;
+    eq.Q.value = 0.7;
+    eq.gain.value = IDLE_MIX.midGainDb;
+
+    // Engine Heat — gentle soft saturation
+    const heat = ctx.createWaveShaper();
+    const k = 1 + IDLE_MIX.heat * 4;
+    const curve = new Float32Array(1024);
+    for (let i = 0; i < 1024; i++) {
+      const x = i / 511.5 - 1;
+      curve[i] = Math.tanh(k * x) / Math.tanh(k);
+    }
+    heat.curve = curve;
+    heat.oversample = '4x';
+
+    // limiter: thr −3 dB / 80 ms release, then makeup into the −0.3 dB ceiling
+    const lim = ctx.createDynamicsCompressor();
+    lim.threshold.value = IDLE_MIX.limThresholdDb;
+    lim.ratio.value = 20;
+    lim.knee.value = 1;
+    lim.attack.value = 0.001;
+    lim.release.value = IDLE_MIX.limReleaseS;
+    const makeup = ctx.createGain();
+    makeup.gain.value = Math.pow(10, (-IDLE_MIX.limThresholdDb + IDLE_MIX.ceilingDb) / 20);
+
+    // hard ceiling guard (the plugin has a clipper stage after the limiter;
+    // DynamicsCompressor alone lets small overs through on transients)
+    const ceil = Math.pow(10, IDLE_MIX.ceilingDb / 20);
+    const guard = ctx.createWaveShaper();
+    const gcurve = new Float32Array(1024);
+    for (let i = 0; i < 1024; i++) {
+      const x = (i / 511.5 - 1) * 2;
+      gcurve[i] = Math.max(-ceil, Math.min(ceil, x));
+    }
+    guard.curve = gcurve;
+    // no oversampling here: the resampler rings past the clip corner and
+    // overshoots the ceiling; 'none' clips exactly at −0.3 dB
+    guard.oversample = 'none';
+
+    sum.connect(eq).connect(heat).connect(lim).connect(makeup).connect(guard);
+    return { input, output: guard };
+  }
+
   document.querySelectorAll<HTMLElement>('[data-abrack]').forEach((rack) => {
     const mount = rack.querySelector<HTMLElement>('[data-arm-mount]');
     const armBtn = rack.querySelector<HTMLButtonElement>('[data-arm]');
@@ -111,6 +239,11 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
 
     let current: Track | null = null;
 
+    // channel 04 hooks — assigned when the user track initialises below
+    let stopUser: () => void = () => {};
+    let applyUserArm: () => void = () => {};
+    let userPlaying: () => boolean = () => false;
+
     const fmt = (s: number) =>
       Number.isFinite(s) ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` : '-:--';
 
@@ -120,20 +253,59 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
       t.after.muted = !armed;
     };
 
-    const paintTime = (t: Track) => {
-      const d = t.before.duration;
-      const c = t.before.currentTime;
+    // A seek lands late: by the time it completes, the reference clock has
+    // moved on, so a plain `silent.currentTime = audible.currentTime` leaves
+    // the silent element trailing by the seek latency forever. Measure that
+    // latency per element and lead the target by it so lockstep converges.
+    const seekLag = new WeakMap<HTMLMediaElement, number>();
+    const seekIssued = new WeakMap<HTMLMediaElement, number>();
+    const syncSeek = (el: HTMLMediaElement, target: number) => {
+      const led = target + (seekLag.get(el) ?? 0);
+      const d = el.duration;
+      seekIssued.set(el, performance.now());
+      // never lead a muted element past its end — it would fire `ended`,
+      // pause, and a later ARM would flip to a dead element
+      el.currentTime = Number.isFinite(d) ? Math.min(led, Math.max(0, d - 0.1)) : led;
+    };
+
+    // Keep the silent element in lockstep while playing, so an ARM flip is a
+    // pure muted swap with no seek at flip time (a seek = decoder flush =
+    // audible gap). The audible element's position is the truth; only ever
+    // seek the muted one, and only once it has data (no seek-thrash while
+    // it's still fetching its first bytes).
+    const resync = (t: Track) => {
+      if (t.before.paused) return;
+      const audible = armed ? t.after : t.before;
+      const silent = armed ? t.before : t.after;
+      if (silent.seeking || silent.readyState < 3) return;
+      // Tighter than the 0.05s arm threshold, so drift never grows big
+      // enough for the arm handler's safety seek to fire.
+      if (Math.abs(silent.currentTime - audible.currentTime) > 0.03) {
+        syncSeek(silent, audible.currentTime);
+      }
+    };
+
+    const paintProgress = (
+      c: number,
+      d: number,
+      bar: HTMLElement | null,
+      timeEl: HTMLElement | null,
+      seek: HTMLInputElement,
+    ) => {
       const p = Number.isFinite(d) && d > 0 ? c / d : 0;
-      if (t.timeEl) t.timeEl.textContent = Number.isFinite(d) ? `${fmt(c)}/${fmt(d)}` : '-:--';
-      if (t.bar) {
-        const segs = t.bar.children;
+      if (timeEl) timeEl.textContent = Number.isFinite(d) ? `${fmt(c)}/${fmt(d)}` : '-:--';
+      if (bar) {
+        const segs = bar.children;
         for (let i = 0; i < segs.length; i++) segs[i].classList.toggle('on', p > 0 && i / segs.length < p);
       }
       if (Number.isFinite(d) && d > 0) {
-        t.seek.value = String(p * 100);
-        t.seek.setAttribute('aria-valuetext', `${fmt(c)} of ${fmt(d)}`);
+        seek.value = String(p * 100);
+        seek.setAttribute('aria-valuetext', `${fmt(c)} of ${fmt(d)}`);
       }
     };
+
+    const paintTime = (t: Track) =>
+      paintProgress(t.before.currentTime, t.before.duration, t.bar, t.timeEl, t.seek);
 
     const setPlaying = (t: Track, playing: boolean) => {
       t.root.classList.toggle('playing', playing);
@@ -163,10 +335,14 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
         tracks.forEach((o) => {
           if (o !== t) stop(o);
         });
+        stopUser();
         current = t;
         applyArm(t);
         if (srcLabel) srcLabel.textContent = armed ? 'SRC: MASTER BUS' : 'SRC: RAW BUS';
         t.root.classList.add('loading');
+        // The after ships preload="none"; from first play on, let it buffer
+        // ahead like the before so an ARM never lands on an empty buffer.
+        t.after.preload = 'auto';
         // Both play() calls stay synchronous inside the click gesture (iOS).
         Promise.all([t.before.play(), t.after.play()])
           .then(() => setPlaying(t, true))
@@ -181,7 +357,20 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
       t.before.addEventListener('loadedmetadata', onMeta);
       // preload="metadata" can beat this module script (HAVE_METADATA already)
       if (t.before.readyState >= 1) onMeta();
-      t.before.addEventListener('timeupdate', () => paintTime(t));
+      t.before.addEventListener('timeupdate', () => {
+        paintTime(t);
+        resync(t);
+      });
+      // Both fire ~4Hz out of phase — doubles the lockstep check cadence.
+      t.after.addEventListener('timeupdate', () => resync(t));
+      for (const el of [t.before, t.after]) {
+        el.addEventListener('seeked', () => {
+          const issued = seekIssued.get(el);
+          if (issued === undefined) return; // user seek, not a resync
+          seekIssued.delete(el);
+          seekLag.set(el, Math.min((performance.now() - issued) / 1000, 0.25));
+        });
+      }
       t.before.addEventListener('ended', () => {
         t.after.pause();
         t.before.currentTime = 0;
@@ -200,21 +389,195 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
       });
     });
 
+    // ── channel 04: the visitor's own file through Idle Mix ──
+    // One decoded buffer feeds a dry tap and the processing chain; ARM is a
+    // 5 ms equal crossfade between the two gain taps — gapless by construction.
+    const userRoot = rack.querySelector<HTMLElement>('[data-user-track]');
+    if (userRoot) {
+      const uPlay = userRoot.querySelector<HTMLButtonElement>('[data-uplay]');
+      const uLoad = userRoot.querySelector<HTMLButtonElement>('[data-uload]');
+      const uSwap = userRoot.querySelector<HTMLButtonElement>('[data-uswap]');
+      const uName = userRoot.querySelector<HTMLElement>('[data-uname]');
+      const uFile = userRoot.querySelector<HTMLInputElement>('[data-ufile]');
+      const uSeek = userRoot.querySelector<HTMLInputElement>('[data-seek]');
+      const uBar = userRoot.querySelector<HTMLElement>('[data-bar]');
+      const uTime = userRoot.querySelector<HTMLElement>('[data-time]');
+      const uLive = userRoot.querySelector<HTMLElement>('[data-user-live]');
+
+      if (uPlay && uLoad && uName && uFile && uSeek) {
+        let ctx: AudioContext | null = null;
+        let tap: GainNode;
+        let dryGain: GainNode;
+        let wetGain: GainNode;
+        let buffer: AudioBuffer | null = null;
+        let srcNode: AudioBufferSourceNode | null = null;
+        let startedAt = 0;
+        let offset = 0;
+        let playing = false;
+        let raf = 0;
+
+        const ensureCtx = () => {
+          if (ctx) return ctx;
+          ctx = new AudioContext();
+          tap = ctx.createGain();
+          dryGain = ctx.createGain();
+          wetGain = ctx.createGain();
+          dryGain.gain.value = armed ? 0 : 1;
+          wetGain.gain.value = armed ? 1 : 0;
+          const chain = buildIdleMix(ctx);
+          tap.connect(dryGain).connect(ctx.destination);
+          tap.connect(chain.input);
+          chain.output.connect(wetGain).connect(ctx.destination);
+          return ctx;
+        };
+
+        const pos = () => {
+          if (!buffer) return 0;
+          const c = playing && ctx ? offset + ctx.currentTime - startedAt : offset;
+          return Math.min(c, buffer.duration);
+        };
+
+        const paint = () => paintProgress(pos(), buffer?.duration ?? NaN, uBar, uTime, uSeek);
+
+        const setUPlaying = (p: boolean) => {
+          userRoot.classList.toggle('playing', p);
+          uPlay.setAttribute('aria-label', `${p ? 'Pause' : 'Play'} your track`);
+        };
+
+        const startSource = (at: number) => {
+          const c = ensureCtx();
+          const node = c.createBufferSource();
+          node.buffer = buffer;
+          node.connect(tap);
+          node.onended = () => {
+            if (node !== srcNode) return; // superseded by pause/seek/swap
+            playing = false;
+            offset = 0;
+            srcNode = null;
+            setUPlaying(false);
+            cancelAnimationFrame(raf);
+            paint();
+          };
+          srcNode = node;
+          node.start(0, at);
+          startedAt = c.currentTime;
+          offset = at;
+          playing = true;
+        };
+
+        const pauseUser = () => {
+          if (!playing) return;
+          offset = pos();
+          if (srcNode) {
+            srcNode.onended = null;
+            srcNode.stop();
+            srcNode = null;
+          }
+          playing = false;
+          setUPlaying(false);
+          cancelAnimationFrame(raf);
+          paint();
+        };
+
+        stopUser = () => {
+          pauseUser();
+          offset = 0;
+          paint();
+        };
+
+        applyUserArm = () => {
+          if (!ctx) return;
+          const t0 = ctx.currentTime;
+          dryGain.gain.setTargetAtTime(armed ? 0 : 1, t0, 0.005);
+          wetGain.gain.setTargetAtTime(armed ? 1 : 0, t0, 0.005);
+        };
+
+        userPlaying = () => playing;
+
+        uPlay.addEventListener('click', () => {
+          if (!buffer) return;
+          if (playing) {
+            pauseUser();
+            return;
+          }
+          tracks.forEach(stop);
+          current = null;
+          const c = ensureCtx();
+          if (c.state === 'suspended') c.resume();
+          if (offset >= buffer.duration - 0.05) offset = 0;
+          startSource(offset);
+          setUPlaying(true);
+          if (srcLabel) srcLabel.textContent = armed ? 'SRC: MASTER BUS' : 'SRC: RAW BUS';
+          const tick = () => {
+            paint();
+            if (playing) raf = requestAnimationFrame(tick);
+          };
+          raf = requestAnimationFrame(tick);
+        });
+
+        const loadFile = async (file: File) => {
+          userRoot.classList.add('loading');
+          try {
+            const data = await file.arrayBuffer();
+            const buf = await ensureCtx().decodeAudioData(data);
+            stopUser();
+            buffer = buf;
+            uName.textContent = file.name.replace(/\.[^.]+$/, '').toUpperCase();
+            uPlay.hidden = false;
+            uLoad.hidden = true;
+            if (uSwap) uSwap.hidden = false;
+            uSeek.disabled = false;
+            paint();
+            if (uLive) uLive.textContent = `Loaded ${file.name}. Press play, then ARM for the Idle Mix master.`;
+          } catch {
+            uName.textContent = "COULDN'T READ THAT FILE — TRY ANOTHER";
+            if (uLive) uLive.textContent = 'Could not read that file. Try another.';
+          } finally {
+            userRoot.classList.remove('loading');
+          }
+        };
+
+        uLoad.addEventListener('click', () => uFile.click());
+        uSwap?.addEventListener('click', () => uFile.click());
+        uFile.addEventListener('change', () => {
+          const f = uFile.files?.[0];
+          if (f) loadFile(f);
+          uFile.value = '';
+        });
+
+        uSeek.addEventListener('input', () => {
+          if (!buffer) return;
+          const t = (Number(uSeek.value) / 100) * buffer.duration;
+          if (playing && srcNode) {
+            srcNode.onended = null;
+            srcNode.stop();
+            startSource(Math.min(t, Math.max(0, buffer.duration - 0.05)));
+          } else {
+            offset = t;
+          }
+          paint();
+        });
+      }
+    }
+
     armBtn.addEventListener('click', () => {
       armed = !armed;
       if (current) {
-        // Resync off the element that was audible — its position is the truth.
+        // Safety only — the timeupdate resync keeps both in lockstep, so the
+        // element about to be unmuted should already be in position. Seek it
+        // (while it's still muted) only if it's genuinely off.
         const from = armed ? current.before : current.after;
         const to = armed ? current.after : current.before;
-        if (Math.abs(to.currentTime - from.currentTime) > 0.05) to.currentTime = from.currentTime;
+        if (!to.seeking && Math.abs(to.currentTime - from.currentTime) > 0.05) syncSeek(to, from.currentTime);
       }
       tracks.forEach(applyArm);
+      applyUserArm();
       mount.classList.toggle('armed', armed);
       rack.classList.toggle('is-armed', armed);
       armBtn.setAttribute('aria-checked', String(armed));
       if (armLive) armLive.textContent = armed ? 'RevLimiter on' : 'RevLimiter off';
       if (srcLabel) {
-        const idle = !current || current.before.paused;
+        const idle = (!current || current.before.paused) && !userPlaying();
         srcLabel.textContent = armed
           ? (idle ? 'SRC: MASTER BUS — PRESS PLAY' : 'SRC: MASTER BUS')
           : 'SRC: RAW BUS';
@@ -445,6 +808,41 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
     color: #ffcf70;
   }
 
+  /* ── channel 04 — the visitor's own track ── */
+  .lcdplay .glyph.eject::before { content: '⏏'; }
+
+  .uname {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .uname [data-uname] {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .swap {
+    all: unset;
+    cursor: pointer;
+    flex: none;
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    color: #8a5a18;
+  }
+
+  .swap:hover { color: #ffcf70; }
+  .swap:focus-visible { outline: 2px solid #ffd070; outline-offset: 2px; }
+
+  .local-note {
+    margin: 2px 6px 0;
+    font-size: 15px;
+    letter-spacing: 0.1em;
+    color: #8a5a18;
+  }
+
   @keyframes src-blink {
     0%, 100% { opacity: 1; }
     20%, 60% { opacity: 0.25; }
@@ -644,6 +1042,9 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
     letter-spacing: 0.1em;
     color: var(--fg);
   }
+
+  :global(html.hc) .swap,
+  :global(html.hc) .local-note { color: var(--fg-faint); }
 
   :global(html.hc) .nos-state { color: var(--fg-faint); }
   :global(html.hc) .nos-mount.armed .nos-state {
