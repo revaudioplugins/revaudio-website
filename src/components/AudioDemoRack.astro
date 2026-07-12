@@ -115,10 +115,14 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
     ceilingDb: -0.3,
     xoverLow: 120,
     xoverHigh: 2500,
+    // thresholds sit 3 dB above the plugin's Cruise constants (−13/−14/−12):
+    // DynamicsCompressorNode's peak-style detector reads dense material ~3 dB
+    // hotter than the plugin's envelope followers, and over-reduces without
+    // this calibration (measured: armed came out quieter than raw)
     bands: [
-      { thr: -13, ratio: 1.6, att: 0.02, rel: 0.3 },   // low
-      { thr: -14, ratio: 1.5, att: 0.015, rel: 0.2 },  // mid
-      { thr: -12, ratio: 1.3, att: 0.008, rel: 0.12 }, // high
+      { thr: -10, ratio: 1.6, att: 0.02, rel: 0.3 },   // low
+      { thr: -11, ratio: 1.5, att: 0.015, rel: 0.2 },  // mid
+      { thr: -9, ratio: 1.3, att: 0.008, rel: 0.12 },  // high
     ],
   };
 
@@ -140,6 +144,16 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
     const midLP = lr4('lowpass', IDLE_MIX.xoverHigh);
     const highHP = lr4('highpass', IDLE_MIX.xoverHigh);
 
+    // DynamicsCompressorNode applies spec-mandated automatic makeup gain
+    // (0 dBFS in → 0 dBFS out). Left uncompensated, the three band comps +
+    // limiter stack ~10 dB of hidden gain into the ceiling — audible clipping
+    // on loaded masters. Cancel it per node; makeup stays explicit below.
+    const autoMakeupTrim = (thr: number, ratio: number) => {
+      const g = ctx.createGain();
+      g.gain.value = Math.pow(10, (thr * (1 - 1 / ratio)) / 20);
+      return g;
+    };
+
     const comps = IDLE_MIX.bands.map((b) => {
       const c = ctx.createDynamicsCompressor();
       c.threshold.value = b.thr;
@@ -151,12 +165,12 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
     });
     const sum = ctx.createGain();
     input.connect(lowLP.in);
-    lowLP.out.connect(comps[0]).connect(sum);
+    lowLP.out.connect(comps[0]).connect(autoMakeupTrim(IDLE_MIX.bands[0].thr, IDLE_MIX.bands[0].ratio)).connect(sum);
     input.connect(lowHP.in);
     lowHP.out.connect(midLP.in);
-    midLP.out.connect(comps[1]).connect(sum);
+    midLP.out.connect(comps[1]).connect(autoMakeupTrim(IDLE_MIX.bands[1].thr, IDLE_MIX.bands[1].ratio)).connect(sum);
     input.connect(highHP.in);
-    highHP.out.connect(comps[2]).connect(sum);
+    highHP.out.connect(comps[2]).connect(autoMakeupTrim(IDLE_MIX.bands[2].thr, IDLE_MIX.bands[2].ratio)).connect(sum);
 
     // mid +0.5 dB — wide bell at the geometric mean of the crossovers
     const eq = ctx.createBiquadFilter();
@@ -165,13 +179,18 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
     eq.Q.value = 0.7;
     eq.gain.value = IDLE_MIX.midGainDb;
 
-    // Engine Heat — gentle soft saturation
+    // Engine Heat — parallel soft saturation, blended at the preset's 12%.
+    // Unity slope at zero (tanh(kx)/k, not /tanh(k)) so the stage adds NO
+    // hidden gain — at heat 12% it's near-transparent warmth, like the plugin.
     const heat = ctx.createWaveShaper();
-    const k = 1 + IDLE_MIX.heat * 4;
+    const k = 2;
+    const h = IDLE_MIX.heat;
+    // WaveShaper curves map input −1..+1 across the array — index i is
+    // input x = i/511.5 − 1, no wider domain (a ×2 domain = a +6 dB boost).
     const curve = new Float32Array(1024);
     for (let i = 0; i < 1024; i++) {
       const x = i / 511.5 - 1;
-      curve[i] = Math.tanh(k * x) / Math.tanh(k);
+      curve[i] = (1 - h) * x + h * (Math.tanh(k * x) / k);
     }
     heat.curve = curve;
     heat.oversample = '4x';
@@ -186,21 +205,26 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
     const makeup = ctx.createGain();
     makeup.gain.value = Math.pow(10, (-IDLE_MIX.limThresholdDb + IDLE_MIX.ceilingDb) / 20);
 
-    // hard ceiling guard (the plugin has a clipper stage after the limiter;
-    // DynamicsCompressor alone lets small overs through on transients)
+    // soft-knee ceiling guard: linear until 3 dB below the ceiling, then a
+    // smooth tanh round-off into it. With gain staging honest (auto-makeup
+    // cancelled above) this only shaves rare transient overshoots — no more
+    // hard-clip crunch. 'none' so the resampler can't ring past the ceiling;
+    // inputs beyond ±1 land on the curve endpoints (≈ the ceiling).
     const ceil = Math.pow(10, IDLE_MIX.ceilingDb / 20);
+    const knee = ceil * Math.pow(10, -3 / 20);
     const guard = ctx.createWaveShaper();
     const gcurve = new Float32Array(1024);
     for (let i = 0; i < 1024; i++) {
-      const x = (i / 511.5 - 1) * 2;
-      gcurve[i] = Math.max(-ceil, Math.min(ceil, x));
+      const x = i / 511.5 - 1;
+      const a = Math.abs(x);
+      gcurve[i] = a <= knee
+        ? x
+        : Math.sign(x) * (knee + (ceil - knee) * Math.tanh((a - knee) / (ceil - knee)));
     }
     guard.curve = gcurve;
-    // no oversampling here: the resampler rings past the clip corner and
-    // overshoots the ceiling; 'none' clips exactly at −0.3 dB
     guard.oversample = 'none';
 
-    sum.connect(eq).connect(heat).connect(lim).connect(makeup).connect(guard);
+    sum.connect(eq).connect(heat).connect(lim).connect(autoMakeupTrim(IDLE_MIX.limThresholdDb, 20)).connect(makeup).connect(guard);
     return { input, output: guard };
   }
 
