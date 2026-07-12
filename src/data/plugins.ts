@@ -140,9 +140,9 @@ export const plugins: Plugin[] = [
       { name: 'A/B compare', desc: 'Two state slots. Switch instantly. Compare without leaving the plugin.', part: 'ab' },
     ],
     audioDemos: [
-      { label: 'Vocal lead', description: 'Pop vocal pushed 3 dB into RevLimiter on a mastering chain.', beforeUrl: '/audio/revlimiter/vocal-before.m4a', afterUrl: '/audio/revlimiter/vocal-after.m4a' },
-      { label: 'Drum bus', description: 'Acoustic kit summed bus, RevLimiter glueing the transients without choking the snare.', beforeUrl: '/audio/revlimiter/drums-before.m4a', afterUrl: '/audio/revlimiter/drums-after.m4a' },
-      { label: 'Full mix master', description: 'Indie-rock master, target -10 LUFS-I, RevLimiter as final stage.', beforeUrl: '/audio/revlimiter/master-before.m4a', afterUrl: '/audio/revlimiter/master-after.m4a' },
+      { label: "God's Test", beforeUrl: '/audio/revlimiter/gods-test-before.m4a', afterUrl: '/audio/revlimiter/gods-test-after.m4a' },
+      { label: 'Light the Way', beforeUrl: '/audio/revlimiter/light-the-way-before.m4a', afterUrl: '/audio/revlimiter/light-the-way-after.m4a' },
+      { label: 'RevLimiter', beforeUrl: '/audio/revlimiter/revlimiter-before.m4a', afterUrl: '/audio/revlimiter/revlimiter-after.m4a' },
     ],
     systemReq: baseSystemReq,
     reviewsCount: 0,
