@@ -8,34 +8,42 @@ interface Props {
 const { demos } = Astro.props;
 ---
 
-<div class="ab-rack" data-abrack>
-  <div class="tracks">
-    {demos.map((demo) => (
-      <div class="track" data-track>
-        <button class="play" type="button" data-play aria-label={`Play ${demo.label}`}>
-          <svg class="ic-play" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11l9-5.5z" fill="currentColor" /></svg>
-          <svg class="ic-pause" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5h3v11H4zm5 0h3v11H9z" fill="currentColor" /></svg>
-          <span class="spinner" aria-hidden="true"></span>
-        </button>
-        <div class="track-main">
-          <div class="track-head">
-            <h4>{demo.label}</h4>
-            {demo.description && <p class="muted">{demo.description}</p>}
-          </div>
-          <div class="transport">
-            <input class="seek" type="range" min="0" max="100" step="0.1" value="0" disabled data-seek aria-label={`Seek ${demo.label}`} />
-            <span class="time" data-time aria-hidden="true">0:00 / 0:00</span>
-          </div>
-        </div>
-        <audio preload="none" src={demo.beforeUrl ?? undefined} data-before></audio>
-        <audio preload="none" src={demo.afterUrl ?? undefined} data-after></audio>
+<!-- Dashboard cluster: LCD track monitor + ARM bay (design tuned on /hearlab).
+     ARM = the plugin's #nosArm replica; armed = mastered render audible. -->
+<div class="dash" data-abrack>
+  <div class="screw tl" aria-hidden="true"></div>
+  <div class="screw tr" aria-hidden="true"></div>
+  <div class="screw bl" aria-hidden="true"></div>
+  <div class="screw br" aria-hidden="true"></div>
+  <span class="dash-label" aria-hidden="true">HEAR IT</span>
+
+  <div class="monitor">
+    <div class="glass">
+      <div class="mon-head" aria-hidden="true">
+        <span>REVAUDIO · AUX MONITOR</span>
+        <span data-src-label>SRC: RAW BUS</span>
       </div>
-    ))}
+      {demos.map((demo, i) => (
+        <div class="trk" data-track>
+          <span class="no" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+          <button class="lcdplay" type="button" data-play aria-label={`Play ${demo.label}`}>
+            <span class="glyph" aria-hidden="true"></span>
+            <span class="spinner" aria-hidden="true"></span>
+          </button>
+          <span class="name">{demo.label}</span>
+          <span class="bar-wrap">
+            <span class="bar" aria-hidden="true" data-bar>{Array.from({ length: 18 }).map(() => <i></i>)}</span>
+            <input class="seek" type="range" min="0" max="100" step="0.1" value="0" disabled data-seek aria-label={`Seek ${demo.label}`} />
+          </span>
+          <span class="time" data-time aria-hidden="true">-:--</span>
+          <audio preload="none" src={demo.beforeUrl ?? undefined} data-before></audio>
+          <audio preload="none" src={demo.afterUrl ?? undefined} data-after></audio>
+        </div>
+      ))}
+    </div>
   </div>
 
-  <!-- ARM module — 1:1 replica of the plugin's #nosArm (Source/ui/public/index.html).
-       Armed = RevLimiter processing audible; un-armed = dry signal. -->
-  <div class="arm-col">
+  <div class="armbay">
     <div class="nos-mount" data-arm-mount>
       <div class="nos-pressed"></div>
       <button
@@ -49,7 +57,7 @@ const { demos } = Astro.props;
       <div class="nos-light"></div>
       <div class="nos-state" data-arm-state>OFF</div>
     </div>
-    <span class="arm-caption" aria-hidden="true">Arm = RevLimiter on</span>
+    <span class="cap" aria-hidden="true">MASTER ARM</span>
     <span class="sr-only" aria-live="polite" data-arm-live></span>
   </div>
 </div>
@@ -60,6 +68,7 @@ const { demos } = Astro.props;
     const armBtn = rack.querySelector<HTMLButtonElement>('[data-arm]');
     const armState = rack.querySelector<HTMLElement>('[data-arm-state]');
     const armLive = rack.querySelector<HTMLElement>('[data-arm-live]');
+    const srcLabel = rack.querySelector<HTMLElement>('[data-src-label]');
     if (!mount || !armBtn) return;
 
     let armed = false;
@@ -70,6 +79,7 @@ const { demos } = Astro.props;
       after: HTMLAudioElement;
       playBtn: HTMLButtonElement;
       seek: HTMLInputElement;
+      bar: HTMLElement | null;
       timeEl: HTMLElement | null;
     }
 
@@ -80,13 +90,17 @@ const { demos } = Astro.props;
       const playBtn = root.querySelector<HTMLButtonElement>('[data-play]');
       const seek = root.querySelector<HTMLInputElement>('[data-seek]');
       if (!before || !after || !playBtn || !seek) return;
-      tracks.push({ root, before, after, playBtn, seek, timeEl: root.querySelector('[data-time]') });
+      tracks.push({
+        root, before, after, playBtn, seek,
+        bar: root.querySelector('[data-bar]'),
+        timeEl: root.querySelector('[data-time]'),
+      });
     });
 
     let current: Track | null = null;
 
     const fmt = (s: number) =>
-      Number.isFinite(s) ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` : '0:00';
+      Number.isFinite(s) ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` : '-:--';
 
     // Which element is audible. Both always play together; ARM only swaps mute.
     const applyArm = (t: Track) => {
@@ -97,9 +111,14 @@ const { demos } = Astro.props;
     const paintTime = (t: Track) => {
       const d = t.before.duration;
       const c = t.before.currentTime;
-      if (t.timeEl) t.timeEl.textContent = `${fmt(c)} / ${fmt(d)}`;
+      const p = Number.isFinite(d) && d > 0 ? c / d : 0;
+      if (t.timeEl) t.timeEl.textContent = Number.isFinite(d) ? `${fmt(c)}/${fmt(d)}` : '-:--';
+      if (t.bar) {
+        const segs = t.bar.children;
+        for (let i = 0; i < segs.length; i++) segs[i].classList.toggle('on', p > 0 && i / segs.length < p);
+      }
       if (Number.isFinite(d) && d > 0) {
-        t.seek.value = String((c / d) * 100);
+        t.seek.value = String(p * 100);
         t.seek.setAttribute('aria-valuetext', `${fmt(c)} of ${fmt(d)}`);
       }
     };
@@ -175,171 +194,249 @@ const { demos } = Astro.props;
       }
       tracks.forEach(applyArm);
       mount.classList.toggle('armed', armed);
+      rack.classList.toggle('is-armed', armed);
       armBtn.setAttribute('aria-checked', String(armed));
       if (armState) armState.textContent = armed ? 'ON' : 'OFF';
       if (armLive) armLive.textContent = armed ? 'RevLimiter on' : 'RevLimiter off';
+      if (srcLabel) srcLabel.textContent = armed ? 'SRC: MASTER BUS' : 'SRC: RAW BUS';
     });
   });
 </script>
 
 <style>
-  .ab-rack {
+  /* ── dashboard housing ── */
+  .dash {
+    position: relative;
+    width: 100%;
+    padding: 26px 30px;
     display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 1.5rem;
-    align-items: center;
-    background: var(--bg-1);
-    border: 1px solid var(--border);
-    padding: 1.25rem 1.5rem;
+    grid-template-columns: minmax(0, 1fr) 240px;
+    gap: 24px;
+    border-radius: 14px;
+    background:
+      repeating-linear-gradient(92deg, rgba(255, 255, 255, 0.015) 0 2px, transparent 2px 4px),
+      linear-gradient(180deg, #33291f 0%, #241c14 30%, #1a140e 70%, #120d09 100%);
+    border: 1px solid #0a0705;
+    box-shadow:
+      inset 0 2px 2px rgba(255, 225, 170, 0.13),
+      inset 0 -3px 6px rgba(0, 0, 0, 0.6),
+      0 18px 40px rgba(0, 0, 0, 0.65);
   }
 
-  @media (max-width: 600px) {
-    .ab-rack { grid-template-columns: 1fr; }
-    .arm-col { order: -1; }
+  .screw {
+    position: absolute;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #8a7a5c, #4a3d2a 55%, #241c12);
+    box-shadow: inset 0 -1px 2px rgba(0, 0, 0, 0.8), 0 1px 1px rgba(255, 220, 160, 0.15);
   }
 
-  .tracks {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
+  .screw::after {
+    content: '';
+    position: absolute;
+    left: 15%;
+    top: 46%;
+    width: 70%;
+    height: 1.5px;
+    background: #181008;
+    transform: rotate(38deg);
+  }
+
+  .screw.tl { left: 10px; top: 10px; }
+  .screw.tr { right: 10px; top: 10px; }
+  .screw.bl { left: 10px; bottom: 10px; }
+  .screw.br { right: 10px; bottom: 10px; }
+
+  .dash-label {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Special Elite', monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: #7a6a4a;
+  }
+
+  /* ── the LCD monitor ── */
+  .monitor {
+    position: relative;
     min-width: 0;
+    border-radius: 8px;
+    padding: 8px;
+    background: linear-gradient(180deg, #0d0b08, #060504);
+    box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.9), inset 0 -1px 1px rgba(255, 215, 150, 0.08);
   }
 
-  .track {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 0.75rem;
-    background: var(--bg-0);
-    border: 1px solid var(--border);
+  .glass {
+    position: relative;
+    border-radius: 5px;
+    padding: 20px 24px 16px;
+    overflow: hidden;
+    background:
+      radial-gradient(120% 90% at 50% 0%, rgba(255, 170, 50, 0.07), transparent 60%),
+      linear-gradient(180deg, #100c04, #0a0703);
+    font-family: 'VT323', monospace;
+    color: #ffb340;
+    transition: filter 0.3s ease;
   }
+
+  .is-armed .glass { filter: brightness(1.18); }
+
+  .glass::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.35) 0 1px, transparent 1px 3px);
+  }
+
+  .glass::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(115deg, transparent 42%, rgba(255, 240, 210, 0.05) 47%, transparent 55%);
+  }
+
+  .mon-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 17px;
+    color: #c07a20;
+    letter-spacing: 0.14em;
+    margin-bottom: 14px;
+    text-shadow: 0 0 6px rgba(255, 150, 30, 0.4);
+  }
+
+  .trk {
+    display: grid;
+    grid-template-columns: 30px 52px 190px minmax(0, 1fr) 110px;
+    align-items: center;
+    gap: 14px;
+    padding: 9px 6px;
+    font-size: 24px;
+    text-shadow: 0 0 8px rgba(255, 160, 40, 0.55);
+  }
+
+  .trk + .trk { border-top: 1px dashed rgba(255, 170, 60, 0.18); }
+
+  .trk .no { color: #8a5a18; font-size: 20px; }
 
   audio { display: none; }
 
-  .track-main {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .track-head h4 {
-    font-family: var(--font-mono);
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--brass);
-    margin: 0;
-  }
-
-  .track-head p {
-    font-size: 0.8rem;
-    margin: 0.25rem 0 0;
-  }
-
-  /* ── Transport ── */
-
-  .play {
-    flex: none;
-    width: 44px;
-    height: 44px;
+  .lcdplay {
+    all: unset;
+    cursor: pointer;
+    position: relative;
+    z-index: 1;
+    width: 48px;
+    height: 34px;
     display: grid;
     place-items: center;
-    background: var(--bg-1);
-    border: 1px solid var(--border-bright);
-    color: var(--brass);
-    cursor: pointer;
-    padding: 0;
-    transition: border-color 0.15s ease, color 0.15s ease;
+    border: 2px solid rgba(255, 170, 60, 0.55);
+    border-radius: 3px;
+    background: rgba(255, 160, 40, 0.08);
+    box-shadow: 0 0 8px rgba(255, 160, 40, 0.18), inset 0 0 6px rgba(255, 160, 40, 0.1);
+    transition: background 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
   }
 
-  .play:hover {
-    border-color: var(--brass-dark);
-    color: var(--brass-bright);
+  .lcdplay .glyph {
+    font-size: 17px;
+    line-height: 1;
+    color: #ffb340;
+    text-shadow: 0 0 8px rgba(255, 160, 40, 0.8);
   }
 
-  .play svg { width: 16px; height: 16px; }
-  .ic-pause, .spinner { display: none; }
-  .track.playing .ic-play { display: none; }
-  .track.playing .ic-pause { display: block; }
-  .track.loading .ic-play, .track.loading .ic-pause { display: none; }
-  .track.loading .spinner { display: block; }
+  .lcdplay .glyph::before { content: '▶'; }
+  .trk.playing .lcdplay .glyph::before { content: '❚❚'; letter-spacing: -2px; }
 
-  .spinner {
-    width: 14px;
-    height: 14px;
-    border: 2px solid var(--border-bright);
-    border-top-color: var(--brass);
-    border-radius: 50%;
-    animation: ab-spin 0.7s linear infinite;
+  .lcdplay:hover {
+    border-color: #ffcf70;
+    background: rgba(255, 160, 40, 0.16);
+    box-shadow: 0 0 14px rgba(255, 160, 40, 0.35), inset 0 0 8px rgba(255, 160, 40, 0.18);
   }
 
-  @keyframes ab-spin { to { transform: rotate(360deg); } }
+  .lcdplay:focus-visible { outline: 2px solid #ffd070; outline-offset: 3px; }
 
-  .transport {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
+  .trk.playing { background: rgba(255, 160, 40, 0.07); }
+
+  .trk.playing .lcdplay {
+    border-color: #ffd070;
+    background: rgba(255, 170, 60, 0.22);
+    box-shadow: 0 0 16px rgba(255, 160, 40, 0.5), inset 0 0 10px rgba(255, 160, 40, 0.25);
   }
 
-  .time {
-    flex: none;
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    letter-spacing: 0.05em;
-    color: var(--fg-faint);
-    font-variant-numeric: tabular-nums;
+  .trk.playing .lcdplay .glyph { color: #ffe6a6; }
+
+  .lcdplay .spinner { display: none; position: absolute; width: 14px; height: 14px;
+    border: 2px solid rgba(255, 170, 60, 0.3); border-top-color: #ffb340;
+    border-radius: 50%; animation: rack-spin 0.7s linear infinite; }
+  .trk.loading .lcdplay .glyph { visibility: hidden; }
+  .trk.loading .lcdplay .spinner { display: block; }
+
+  @keyframes rack-spin { to { transform: rotate(360deg); } }
+
+  .trk .name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-transform: uppercase;
   }
+
+  /* segmented LED progress with an invisible native range on top
+     (free pointer drag + keyboard + AT semantics) */
+  .bar-wrap { position: relative; min-width: 0; z-index: 1; }
+
+  .bar { display: flex; gap: 3px; min-width: 0; }
+  .bar i { flex: 1 1 0; min-width: 0; max-width: 14px; height: 16px; background: rgba(255, 170, 60, 0.14); }
+  .bar :global(i.on) { background: #ffb340; box-shadow: 0 0 6px rgba(255, 160, 40, 0.7); }
 
   .seek {
-    flex: 1;
-    min-width: 0;
-    appearance: none;
-    -webkit-appearance: none;
-    height: 4px;
-    background: var(--bg-2);
-    border: 1px solid var(--border);
+    position: absolute;
+    inset: -6px 0;
+    width: 100%;
+    margin: 0;
+    opacity: 0;
     cursor: pointer;
   }
 
-  .seek:disabled { cursor: default; opacity: 0.4; }
+  .seek:disabled { cursor: default; }
+  .bar-wrap:focus-within { outline: 2px solid #ffd070; outline-offset: 4px; }
 
-  .seek::-webkit-slider-thumb {
-    appearance: none;
-    -webkit-appearance: none;
-    width: 12px;
-    height: 18px;
-    background: var(--brass);
-    border: 1px solid var(--brass-dark);
-    cursor: pointer;
+  .time {
+    text-align: right;
+    font-size: 22px;
+    color: #ffcf70;
   }
 
-  .seek::-moz-range-thumb {
-    width: 12px;
-    height: 18px;
-    background: var(--brass);
-    border: 1px solid var(--brass-dark);
-    border-radius: 0;
-    cursor: pointer;
-  }
-
-  .seek:hover::-webkit-slider-thumb { background: var(--brass-bright); }
-  .seek:hover::-moz-range-thumb { background: var(--brass-bright); }
-
-  /* ── ARM module — verbatim port of the plugin's #nosArm CSS ──
-     (Revlimiter Source/ui/public/index.html lines 3803-3876; box kept at the
-     native 100x150 and scaled like the plugin canvas does.) */
-
-  .arm-col {
+  /* ── ARM bay ── */
+  .armbay {
+    position: relative;
+    border-radius: 8px;
+    padding: 18px 12px 10px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
-    /* reserve room for the scaled mount so the glow never clips */
-    padding: 2rem 2.5rem 1rem;
+    justify-content: center;
+    gap: 4px;
+    background:
+      repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.012) 0 2px, transparent 2px 4px),
+      linear-gradient(180deg, #1c150e, #100b07);
+    box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.85), inset 0 -1px 1px rgba(255, 215, 150, 0.06);
   }
 
+  .armbay .cap {
+    font-family: 'Special Elite', monospace;
+    font-size: 10px;
+    letter-spacing: 0.26em;
+    color: #7a6a4a;
+    margin-top: 2px;
+  }
+
+  /* ── ARM module — verbatim port of the plugin's #nosArm ── */
   .nos-mount {
     position: relative;
     width: 100px;
@@ -348,7 +445,7 @@ const { demos } = Astro.props;
     transition: filter 0.25s ease;
     /* classic transform, not standalone scale/rotate — individual transform
        properties have burned this site in real Safari before (quickSetter bug) */
-    transform: scale(1.4) rotate(2.1deg);
+    transform: scale(1.15) rotate(2.1deg);
   }
 
   .nos-mount.armed {
@@ -421,24 +518,39 @@ const { demos } = Astro.props;
     text-shadow: 0 0 7px rgba(255, 200, 80, 0.7);
   }
 
-  .arm-caption {
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--fg-faint);
+  /* ── responsive ── */
+  @media (max-width: 760px) {
+    .dash { grid-template-columns: 1fr; padding: 22px 16px; }
+    .trk { grid-template-columns: 44px minmax(0, 1fr) 90px; grid-template-rows: auto auto; row-gap: 8px; }
+    .trk .no { display: none; }
+    .trk .name { grid-column: 2; }
+    .trk .time { grid-column: 3; font-size: 18px; }
+    .trk .bar-wrap { grid-column: 1 / -1; }
+    .glass { padding: 16px 14px 12px; }
+    .mon-head { font-size: 14px; }
+    .trk { font-size: 20px; }
   }
 
-  /* High-contrast mode: PNG plate away, plain legible switch */
-  :global(html.hc) .nos-mount,
-  :global(html.hc) .nos-pressed {
-    background: none;
+  /* ── high contrast (html.hc): drop textures, keep function ── */
+  :global(html.hc) .dash,
+  :global(html.hc) .armbay,
+  :global(html.hc) .monitor {
+    background: var(--bg-2);
+    box-shadow: none;
   }
+
+  :global(html.hc) .dash { border: 2px solid var(--border-bright); }
+  :global(html.hc) .glass { background: #000; }
+  :global(html.hc) .glass::before,
+  :global(html.hc) .glass::after { display: none; }
+
+  :global(html.hc) .nos-mount,
+  :global(html.hc) .nos-pressed { background: none; }
 
   :global(html.hc) .nos-mount {
-    background: var(--bg-2);
+    background: var(--bg-1);
     border: 2px solid var(--border-bright);
-    rotate: 0deg;
+    transform: none;
   }
 
   :global(html.hc) .nos-mount.armed {
@@ -447,7 +559,7 @@ const { demos } = Astro.props;
   }
 
   :global(html.hc) .nos-button {
-    background: var(--bg-1);
+    background: var(--bg-2);
     border: 2px solid var(--border-bright);
   }
 
