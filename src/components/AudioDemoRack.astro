@@ -56,7 +56,15 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
     </div>
   </div>
 
+  <!-- static sentinel: reserves the bay's grid row + anchors the mobile
+       float IntersectionObserver (the bay itself moves, this never does) -->
+  <div class="arm-anchor" aria-hidden="true" data-arm-anchor></div>
+
   <div class="armbay">
+    <div class="bay-hint" aria-hidden="true">
+      <span class="bh-name">REVLIMITER</span>
+      <span class="bh-cue">TAP TO A/B</span>
+    </div>
     <div class="nos-mount" data-arm-mount>
       <div class="nos-pressed"></div>
       <button
@@ -110,6 +118,31 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
     });
 
     let current: Track | null = null;
+
+    // ── mobile-only: while a track plays with the ARM bay off-screen, the bay
+    // floats into the thumb zone (position:fixed via .arm-afloat — pure
+    // presentation; the audio engine below is untouched). The IO watches the
+    // static anchor, not the bay itself, so floating can't feed back into it.
+    const bayAnchor = rack.querySelector<HTMLElement>('[data-arm-anchor]');
+    const mobileMq = window.matchMedia('(max-width: 900px)');
+    let bayInView = true;
+    const isPlaying = () => current !== null && !current.before.paused;
+    const updateArmFloat = () => {
+      rack.classList.toggle('arm-afloat', mobileMq.matches && isPlaying() && !bayInView);
+    };
+    if (bayAnchor) {
+      const io = new IntersectionObserver(
+        (entries) => {
+          bayInView = entries[entries.length - 1].isIntersecting;
+          updateArmFloat();
+        },
+        // bottom inset ≈ the sticky buy bar: the bay only counts as "in view"
+        // once a solid slice of it is visible above that bar
+        { rootMargin: '0px 0px -72px 0px', threshold: 0.4 },
+      );
+      io.observe(bayAnchor);
+      mobileMq.addEventListener('change', updateArmFloat);
+    }
 
     const fmt = (s: number) =>
       Number.isFinite(s) ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` : '-:--';
@@ -179,6 +212,7 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
       t.after.currentTime = 0;
       setPlaying(t, false);
       paintTime(t);
+      updateArmFloat();
     };
 
     tracks.forEach((t) => {
@@ -190,6 +224,7 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
           t.before.pause();
           t.after.pause();
           setPlaying(t, false);
+          updateArmFloat();
           return;
         }
         tracks.forEach((o) => {
@@ -206,7 +241,10 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
         Promise.all([t.before.play(), t.after.play()])
           .then(() => setPlaying(t, true))
           .catch(() => setPlaying(t, false))
-          .finally(() => t.root.classList.remove('loading'));
+          .finally(() => {
+            t.root.classList.remove('loading');
+            updateArmFloat();
+          });
       });
 
       const onMeta = () => {
@@ -236,6 +274,7 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
         t.after.currentTime = 0;
         setPlaying(t, false);
         paintTime(t);
+        updateArmFloat();
       });
 
       t.seek.addEventListener('input', () => {
@@ -536,6 +575,11 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
   }
 
   /* ── ARM bay ── */
+  /* desktop: the sentinel and the dock hint don't exist (display:none keeps
+     them out of the grid, so desktop placement is byte-identical) */
+  .arm-anchor { display: none; }
+  .bay-hint { display: none; }
+
   .armbay {
     position: relative;
     border-radius: 8px;
@@ -639,20 +683,87 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
   /* ── responsive (900 = the site-wide breakpoint) ── */
   @media (max-width: 900px) {
     .dash { grid-template-columns: 1fr; padding: 22px 16px; }
-    .armbay { min-height: 260px; }
-    .trk { grid-template-columns: 44px minmax(0, 1fr) 90px; grid-template-rows: auto auto; row-gap: 8px; }
+
+    /* anchor + bay share the same cell; the anchor keeps the row at full
+       height when the bay floats, so floating never shifts the layout */
+    .arm-anchor { display: block; grid-row: 2; grid-column: 1; min-height: 260px; }
+    .armbay { grid-row: 2; grid-column: 1; min-height: 260px; }
+
+    /* track = [play | name] / [LED bar] / [time] — the old fixed 90px time
+       column reserved row-1 width it never occupied (auto-placement pushed
+       .time to its own row) and crushed the name to ~14px at 320 */
+    .trk {
+      grid-template-columns: 52px minmax(0, 1fr);
+      grid-template-rows: auto auto auto;
+      row-gap: 8px;
+      column-gap: 12px;
+      padding: 12px 6px;
+      font-size: 20px;
+    }
     .trk .no { display: none; }
-    .trk .name { grid-column: 2; }
-    .trk .time { grid-column: 3; font-size: 18px; }
-    .trk .bar-wrap { grid-column: 1 / -1; }
+    .lcdplay { height: 40px; } /* 40 + 2×2px border = 44px tap height */
+    .trk .name { grid-column: 2; grid-row: 1; align-self: center; }
+    .trk .bar-wrap { grid-column: 1 / -1; grid-row: 2; }
+    .trk .time { grid-column: 1 / -1; grid-row: 3; font-size: 18px; }
+    .seek { inset: -14px 0; } /* 16px bar + 2×14px slop = 44px hit strip */
     .glass { padding: 16px 14px 12px; }
     .mon-head { font-size: 14px; }
-    .trk { font-size: 20px; }
-    .cta { font-size: 17px; }
+    .cta { font-size: 17px; min-height: 44px; padding: 12px 0 4px; }
+
+    /* ── floating ARM dock: the punch stays in the thumb zone while music
+       plays (.arm-afloat = playing + bay off-screen, set in JS). Bottom-right
+       above MobileBuyBar (--mbb-h, z40), clear of the bottom-LEFT a11y fab
+       (z60); dock sits between at z39. Same element, same role=switch. ── */
+    .arm-afloat .armbay {
+      position: fixed;
+      left: auto;
+      right: max(10px, env(safe-area-inset-right));
+      bottom: calc(var(--mbb-h, 64px) + env(safe-area-inset-bottom, 0px) + 10px);
+      z-index: 39;
+      min-height: 0;
+      width: max-content;
+      max-width: calc(100vw - 90px); /* never reaches the a11y fab column */
+      flex-direction: row;
+      gap: 14px;
+      padding: 10px 14px;
+      border: 1px solid #0a0705;
+      border-radius: 10px;
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.75), inset 0 2px 2px rgba(255, 225, 170, 0.08);
+      animation: arm-dock-in 0.28s var(--ease-settle, ease-out) backwards;
+    }
+    .arm-afloat .nos-mount { flex: 0 0 auto; min-height: 0; height: 104px; }
+    .arm-afloat .bay-hint { display: flex; flex-direction: column; gap: 4px; }
+    .bay-hint .bh-name {
+      font-family: 'Special Elite', monospace;
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      color: #7a6a4a;
+    }
+    .bay-hint .bh-cue {
+      font-family: 'VT323', monospace;
+      font-size: 20px;
+      letter-spacing: 0.08em;
+      color: #ffb340;
+      text-shadow: 0 0 8px rgba(255, 160, 40, 0.55);
+    }
+    /* cookie banner (z9000) owns the bottom edge — no dock underneath it */
+    :global(body:has(#cookie-banner.cb--visible)) .arm-afloat .armbay { display: none; }
+  }
+
+  @keyframes arm-dock-in {
+    from { transform: translateY(14px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .arm-afloat .armbay { animation: none; }
   }
 
   @media (max-width: 420px) {
-    .mon-head { font-size: 12px; letter-spacing: 0.06em; }
+    /* stacking the two head lines buys the SRC readout real size at 320 */
+    .mon-head { flex-direction: column; gap: 2px; font-size: 13px; letter-spacing: 0.08em; }
+    .bar { gap: 2px; }
+    .bay-hint .bh-cue { font-size: 17px; }
   }
 
   /* ── high contrast (html.hc): drop textures, keep function ── */
@@ -700,4 +811,9 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
     color: var(--brass-bright);
     text-shadow: none;
   }
+
+  /* hc: the floating dock keeps a visible edge, the hint uses tokens */
+  :global(html.hc) .arm-afloat .armbay { border: 2px solid var(--border-bright); }
+  :global(html.hc) .bay-hint .bh-name { color: var(--fg-faint); }
+  :global(html.hc) .bay-hint .bh-cue { color: var(--fg); text-shadow: none; }
 </style>
