@@ -1,0 +1,653 @@
+---
+import type { AudioDemo as Demo, Plugin } from '../data/plugins';
+
+interface Props {
+  demos: Demo[];
+  plugin: Plugin;
+}
+
+const { demos, plugin } = Astro.props;
+const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
+---
+
+<!-- Dashboard cluster: LCD track monitor + ARM bay (design tuned on /hearlab).
+     ARM = the plugin's #nosArm replica; armed = mastered render audible. -->
+<div class="dash" data-abrack>
+  <div class="screw tl" aria-hidden="true"></div>
+  <div class="screw tr" aria-hidden="true"></div>
+  <div class="screw bl" aria-hidden="true"></div>
+  <div class="screw br" aria-hidden="true"></div>
+  <span class="dash-label" aria-hidden="true">RA-56 MONITOR</span>
+
+  <div class="monitor">
+    <div class="glass">
+      <div class="mon-head" aria-hidden="true">
+        <span>REVAUDIO · AUX MONITOR</span>
+        <span data-src-label>SRC: RAW BUS</span>
+      </div>
+      {demos.map((demo, i) => (
+        <div class="trk" data-track>
+          <span class="no" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+          <button class="lcdplay" type="button" data-play aria-label={`Play ${demo.label}`}>
+            <span class="glyph" aria-hidden="true"></span>
+            <span class="spinner" aria-hidden="true"></span>
+          </button>
+          <span class="name">{demo.label}</span>
+          <span class="bar-wrap">
+            <span class="bar" aria-hidden="true" data-bar>{Array.from({ length: 18 }).map(() => <i></i>)}</span>
+            <input class="seek" type="range" min="0" max="100" step="2" value="0" disabled data-seek aria-label={`Seek ${demo.label}`} />
+          </span>
+          <span class="time" data-time aria-hidden="true">-:--</span>
+          <audio preload="metadata" src={demo.beforeUrl ?? undefined} data-before></audio>
+          <audio preload="none" src={demo.afterUrl ?? undefined} data-after></audio>
+        </div>
+      ))}
+      <button
+        type="button"
+        class="cta"
+        data-cta
+        data-add-to-cart
+        data-slug={plugin.slug}
+        data-name={plugin.name}
+        data-price={cartPrice}
+        data-checkout-url={plugin.checkoutUrl}
+        aria-label={`That's ${plugin.name} — add to cart`}
+      >THAT'S {plugin.name.toUpperCase()} → GET IT</button>
+    </div>
+  </div>
+
+  <div class="armbay">
+    <div class="nos-mount" data-arm-mount>
+      <div class="nos-pressed"></div>
+      <button
+        type="button"
+        class="nos-button"
+        data-arm
+        role="switch"
+        aria-checked="false"
+        aria-label="ARM — RevLimiter processing"
+      ><span class="arm-word" aria-hidden="true">ARM</span></button>
+      <div class="nos-light"></div>
+      <!-- label always reads ON (plugin behavior) — the .armed glow shows state -->
+      <div class="nos-state">ON</div>
+    </div>
+    <span class="sr-only" aria-live="polite" data-arm-live></span>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-abrack]').forEach((rack) => {
+    const mount = rack.querySelector<HTMLElement>('[data-arm-mount]');
+    const armBtn = rack.querySelector<HTMLButtonElement>('[data-arm]');
+    const armLive = rack.querySelector<HTMLElement>('[data-arm-live]');
+    const srcLabel = rack.querySelector<HTMLElement>('[data-src-label]');
+    if (!mount || !armBtn) return;
+
+    let armed = false;
+
+    interface Track {
+      root: HTMLElement;
+      before: HTMLAudioElement;
+      after: HTMLAudioElement;
+      playBtn: HTMLButtonElement;
+      seek: HTMLInputElement;
+      bar: HTMLElement | null;
+      timeEl: HTMLElement | null;
+    }
+
+    const tracks: Track[] = [];
+    rack.querySelectorAll<HTMLElement>('[data-track]').forEach((root) => {
+      const before = root.querySelector<HTMLAudioElement>('[data-before]');
+      const after = root.querySelector<HTMLAudioElement>('[data-after]');
+      const playBtn = root.querySelector<HTMLButtonElement>('[data-play]');
+      const seek = root.querySelector<HTMLInputElement>('[data-seek]');
+      if (!before || !after || !playBtn || !seek) return;
+      tracks.push({
+        root, before, after, playBtn, seek,
+        bar: root.querySelector('[data-bar]'),
+        timeEl: root.querySelector('[data-time]'),
+      });
+    });
+
+    let current: Track | null = null;
+
+    const fmt = (s: number) =>
+      Number.isFinite(s) ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` : '-:--';
+
+    // Which element is audible. Both always play together; ARM only swaps mute.
+    const applyArm = (t: Track) => {
+      t.before.muted = armed;
+      t.after.muted = !armed;
+    };
+
+    const paintTime = (t: Track) => {
+      const d = t.before.duration;
+      const c = t.before.currentTime;
+      const p = Number.isFinite(d) && d > 0 ? c / d : 0;
+      if (t.timeEl) t.timeEl.textContent = Number.isFinite(d) ? `${fmt(c)}/${fmt(d)}` : '-:--';
+      if (t.bar) {
+        const segs = t.bar.children;
+        for (let i = 0; i < segs.length; i++) segs[i].classList.toggle('on', p > 0 && i / segs.length < p);
+      }
+      if (Number.isFinite(d) && d > 0) {
+        t.seek.value = String(p * 100);
+        t.seek.setAttribute('aria-valuetext', `${fmt(c)} of ${fmt(d)}`);
+      }
+    };
+
+    const setPlaying = (t: Track, playing: boolean) => {
+      t.root.classList.toggle('playing', playing);
+      t.playBtn.setAttribute('aria-label', `${playing ? 'Pause' : 'Play'} ${t.playBtn.dataset.label ?? ''}`.trim());
+    };
+
+    const stop = (t: Track) => {
+      t.before.pause();
+      t.after.pause();
+      t.before.currentTime = 0;
+      t.after.currentTime = 0;
+      setPlaying(t, false);
+      paintTime(t);
+    };
+
+    tracks.forEach((t) => {
+      t.playBtn.dataset.label = t.playBtn.getAttribute('aria-label')?.replace(/^Play /, '') ?? '';
+      applyArm(t);
+
+      t.playBtn.addEventListener('click', () => {
+        if (current === t && !t.before.paused) {
+          t.before.pause();
+          t.after.pause();
+          setPlaying(t, false);
+          return;
+        }
+        tracks.forEach((o) => {
+          if (o !== t) stop(o);
+        });
+        current = t;
+        applyArm(t);
+        if (srcLabel) srcLabel.textContent = armed ? 'SRC: MASTER BUS' : 'SRC: RAW BUS';
+        t.root.classList.add('loading');
+        // Both play() calls stay synchronous inside the click gesture (iOS).
+        Promise.all([t.before.play(), t.after.play()])
+          .then(() => setPlaying(t, true))
+          .catch(() => setPlaying(t, false))
+          .finally(() => t.root.classList.remove('loading'));
+      });
+
+      const onMeta = () => {
+        t.seek.disabled = false;
+        paintTime(t);
+      };
+      t.before.addEventListener('loadedmetadata', onMeta);
+      // preload="metadata" can beat this module script (HAVE_METADATA already)
+      if (t.before.readyState >= 1) onMeta();
+      t.before.addEventListener('timeupdate', () => paintTime(t));
+      t.before.addEventListener('ended', () => {
+        t.after.pause();
+        t.before.currentTime = 0;
+        t.after.currentTime = 0;
+        setPlaying(t, false);
+        paintTime(t);
+      });
+
+      t.seek.addEventListener('input', () => {
+        const d = t.before.duration;
+        if (!Number.isFinite(d) || d <= 0) return;
+        const time = (Number(t.seek.value) / 100) * d;
+        t.before.currentTime = time;
+        t.after.currentTime = time;
+        paintTime(t);
+      });
+    });
+
+    armBtn.addEventListener('click', () => {
+      armed = !armed;
+      if (current) {
+        // Resync off the element that was audible — its position is the truth.
+        const from = armed ? current.before : current.after;
+        const to = armed ? current.after : current.before;
+        if (Math.abs(to.currentTime - from.currentTime) > 0.05) to.currentTime = from.currentTime;
+      }
+      tracks.forEach(applyArm);
+      mount.classList.toggle('armed', armed);
+      rack.classList.toggle('is-armed', armed);
+      armBtn.setAttribute('aria-checked', String(armed));
+      if (armLive) armLive.textContent = armed ? 'RevLimiter on' : 'RevLimiter off';
+      if (srcLabel) {
+        const idle = !current || current.before.paused;
+        srcLabel.textContent = armed
+          ? (idle ? 'SRC: MASTER BUS — PRESS PLAY' : 'SRC: MASTER BUS')
+          : 'SRC: RAW BUS';
+        if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          srcLabel.classList.remove('blink');
+          void srcLabel.offsetWidth;
+          srcLabel.classList.add('blink');
+        }
+      }
+      if (armed) rack.classList.add('was-armed'); // reveals the CTA, stays on
+    });
+  });
+</script>
+
+<style>
+  /* ── dashboard housing ── */
+  .dash {
+    position: relative;
+    width: 100%;
+    padding: 26px 30px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 240px;
+    gap: 24px;
+    border-radius: 14px;
+    background:
+      repeating-linear-gradient(92deg, rgba(255, 255, 255, 0.015) 0 2px, transparent 2px 4px),
+      linear-gradient(180deg, #33291f 0%, #241c14 30%, #1a140e 70%, #120d09 100%);
+    border: 1px solid #0a0705;
+    box-shadow:
+      inset 0 2px 2px rgba(255, 225, 170, 0.13),
+      inset 0 -3px 6px rgba(0, 0, 0, 0.6),
+      0 18px 40px rgba(0, 0, 0, 0.65);
+  }
+
+  .screw {
+    position: absolute;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #8a7a5c, #4a3d2a 55%, #241c12);
+    box-shadow: inset 0 -1px 2px rgba(0, 0, 0, 0.8), 0 1px 1px rgba(255, 220, 160, 0.15);
+  }
+
+  .screw::after {
+    content: '';
+    position: absolute;
+    left: 15%;
+    top: 46%;
+    width: 70%;
+    height: 1.5px;
+    background: #181008;
+    transform: rotate(38deg);
+  }
+
+  /* real panels never have four aligned slots */
+  .screw.tr::after { transform: rotate(102deg); }
+  .screw.bl::after { transform: rotate(-24deg); }
+  .screw.br::after { transform: rotate(61deg); }
+
+  .screw.tl { left: 10px; top: 10px; }
+  .screw.tr { right: 10px; top: 10px; }
+  .screw.bl { left: 10px; bottom: 10px; }
+  .screw.br { right: 10px; bottom: 10px; }
+
+  .dash-label {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Special Elite', monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: #7a6a4a;
+  }
+
+  /* ── the LCD monitor ── */
+  .monitor {
+    position: relative;
+    min-width: 0;
+    border-radius: 8px;
+    padding: 8px;
+    background: linear-gradient(180deg, #0d0b08, #060504);
+    box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.9), inset 0 -1px 1px rgba(255, 215, 150, 0.08);
+  }
+
+  .glass {
+    position: relative;
+    border-radius: 5px;
+    padding: 20px 24px 16px;
+    overflow: hidden;
+    background:
+      radial-gradient(120% 90% at 50% 0%, rgba(255, 170, 50, 0.07), transparent 60%),
+      linear-gradient(180deg, #100c04, #0a0703);
+    font-family: 'VT323', monospace;
+    color: #ffb340;
+    transition: filter 0.3s ease;
+  }
+
+  .is-armed .glass { filter: brightness(1.18); }
+
+  .glass::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.35) 0 1px, transparent 1px 3px);
+  }
+
+  .glass::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(115deg, transparent 42%, rgba(255, 240, 210, 0.05) 47%, transparent 55%);
+  }
+
+  .mon-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 17px;
+    color: #c07a20;
+    letter-spacing: 0.14em;
+    margin-bottom: 14px;
+    text-shadow: 0 0 6px rgba(255, 150, 30, 0.4);
+  }
+
+  .trk {
+    display: grid;
+    grid-template-columns: 30px 52px minmax(90px, 190px) minmax(120px, 1fr) 110px;
+    align-items: center;
+    gap: 14px;
+    padding: 9px 6px;
+    font-size: 24px;
+    text-shadow: 0 0 8px rgba(255, 160, 40, 0.55);
+  }
+
+  .trk + .trk { border-top: 1px dashed rgba(255, 170, 60, 0.18); }
+
+  .trk .no { color: #8a5a18; font-size: 20px; }
+
+  audio { display: none; }
+
+  .lcdplay {
+    all: unset;
+    cursor: pointer;
+    position: relative;
+    z-index: 1;
+    width: 48px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    border: 2px solid rgba(255, 170, 60, 0.55);
+    border-radius: 3px;
+    background: rgba(255, 160, 40, 0.08);
+    box-shadow: 0 0 8px rgba(255, 160, 40, 0.18), inset 0 0 6px rgba(255, 160, 40, 0.1);
+    transition: background 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+  }
+
+  .lcdplay .glyph {
+    font-size: 17px;
+    line-height: 1;
+    color: #ffb340;
+    text-shadow: 0 0 8px rgba(255, 160, 40, 0.8);
+  }
+
+  .lcdplay .glyph::before { content: '▶'; }
+  .trk.playing .lcdplay .glyph::before { content: '❚❚'; letter-spacing: -2px; }
+
+  .lcdplay:hover {
+    border-color: #ffcf70;
+    background: rgba(255, 160, 40, 0.16);
+    box-shadow: 0 0 14px rgba(255, 160, 40, 0.35), inset 0 0 8px rgba(255, 160, 40, 0.18);
+  }
+
+  .lcdplay:focus-visible { outline: 2px solid #ffd070; outline-offset: 3px; }
+
+  .trk.playing { background: rgba(255, 160, 40, 0.07); }
+
+  .trk.playing .lcdplay {
+    border-color: #ffd070;
+    background: rgba(255, 170, 60, 0.22);
+    box-shadow: 0 0 16px rgba(255, 160, 40, 0.5), inset 0 0 10px rgba(255, 160, 40, 0.25);
+  }
+
+  .trk.playing .lcdplay .glyph { color: #ffe6a6; }
+
+  .lcdplay .spinner { display: none; position: absolute; width: 14px; height: 14px;
+    border: 2px solid rgba(255, 170, 60, 0.3); border-top-color: #ffb340;
+    border-radius: 50%; animation: rack-spin 0.7s linear infinite; }
+  .trk.loading .lcdplay .glyph { visibility: hidden; }
+  .trk.loading .lcdplay .spinner { display: block; }
+
+  @keyframes rack-spin { to { transform: rotate(360deg); } }
+
+  .trk .name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-transform: uppercase;
+  }
+
+  /* segmented LED progress with an invisible native range on top
+     (free pointer drag + keyboard + AT semantics) */
+  .bar-wrap { position: relative; min-width: 0; z-index: 1; }
+
+  /* segments fill the column so the drag surface and the painted bar agree */
+  .bar { display: flex; gap: 3px; min-width: 0; }
+  .bar i { flex: 1 1 0; min-width: 0; height: 16px; background: rgba(255, 170, 60, 0.14); }
+  .bar :global(i.on) { background: #ffb340; box-shadow: 0 0 6px rgba(255, 160, 40, 0.7); }
+  .is-armed .bar :global(i.on) { background: #ffd070; box-shadow: 0 0 9px rgba(255, 190, 60, 0.95); }
+
+  .seek {
+    position: absolute;
+    inset: -6px 0;
+    width: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .seek:disabled { cursor: default; }
+  .bar-wrap:focus-within { outline: 2px solid #ffd070; outline-offset: 4px; }
+
+  .time {
+    text-align: right;
+    font-size: 22px;
+    color: #ffcf70;
+  }
+
+  @keyframes src-blink {
+    0%, 100% { opacity: 1; }
+    20%, 60% { opacity: 0.25; }
+    40%, 80% { opacity: 1; }
+  }
+
+  .mon-head :global(.blink) { animation: src-blink 0.6s steps(1) 1; }
+
+  /* CTA — revealed the first time the visitor arms it */
+  .cta {
+    /* space is reserved from the start (visibility, not display) so the
+       first arm doesn't grow the monitor and resize the whole cluster */
+    display: block;
+    visibility: hidden;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    padding: 10px 0 0;
+    cursor: pointer;
+    font-family: inherit;
+    margin-top: 14px;
+    border-top: 1px dashed rgba(255, 170, 60, 0.18);
+    font-size: 20px;
+    letter-spacing: 0.12em;
+    color: #ffcf70;
+    text-decoration: none;
+    text-shadow: 0 0 8px rgba(255, 160, 40, 0.55);
+    position: relative;
+    z-index: 1;
+  }
+
+  .was-armed .cta { visibility: visible; animation: src-blink 0.6s steps(1) 1; }
+  .cta:hover { color: #ffe6a6; }
+  .cta:focus-visible { outline: 2px solid #ffd070; outline-offset: 3px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mon-head :global(.blink), .was-armed .cta { animation: none; }
+  }
+
+  /* ── ARM bay ── */
+  .armbay {
+    position: relative;
+    border-radius: 8px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background:
+      repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.012) 0 2px, transparent 2px 4px),
+      linear-gradient(180deg, #1c150e, #100b07);
+    box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.85), inset 0 -1px 1px rgba(255, 215, 150, 0.06);
+  }
+
+  /* ── ARM module — verbatim port of the plugin's #nosArm ── */
+  .nos-mount {
+    position: relative;
+    /* fill the bay top-to-bottom; width follows the plate's 2:3 aspect */
+    flex: 1 1 auto;
+    min-height: 170px;
+    aspect-ratio: 2 / 3;
+    container-type: size;
+    background: url('/plate/arm-mount-v3.png') no-repeat center / 100% 100%;
+    transition: filter 0.25s ease;
+  }
+
+  .nos-mount:hover { filter: brightness(1.06); }
+
+  .nos-mount.armed {
+    filter: drop-shadow(0 0 6cqh rgba(255, 170, 32, 0.55));
+  }
+
+  .nos-mount.armed:hover {
+    filter: drop-shadow(0 0 6cqh rgba(255, 170, 32, 0.55)) brightness(1.06);
+  }
+
+  .nos-pressed {
+    position: absolute;
+    inset: 0;
+    background: url('/plate/arm-mount-v3-pressed.png') no-repeat center / 100% 100%;
+    opacity: 0;
+    transition: opacity 0.11s ease;
+    pointer-events: none;
+  }
+
+  .nos-mount.armed .nos-pressed { opacity: 1; }
+
+  /* the whole plate is the switch — it all looks pressable, so it all is */
+  .nos-button {
+    position: absolute;
+    inset: 0;
+    background: transparent;
+    border: none;
+    padding: 0;
+    font-size: 0;
+    cursor: pointer;
+  }
+
+  .nos-button:active { transform: scale(0.985); }
+  .nos-button:focus-visible { outline: 2px solid #ffd070; outline-offset: 4px; }
+
+  .arm-word { display: none; }
+
+  .nos-light {
+    position: absolute;
+    left: 50%;
+    top: 22.5%;
+    width: 9%;
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: radial-gradient(circle at 38% 34%,
+      #fff2c0 0%, #ffe858 30%, #ffaa20 58%, #7a3c00 100%);
+    box-shadow: 0 0 5.4cqh 1.4cqh rgba(255, 180, 40, 0.8);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+  }
+
+  .nos-mount.armed .nos-light { opacity: 1; }
+
+  .nos-state {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 16%;
+    text-align: center;
+    font-family: 'Special Elite', monospace;
+    font-size: 7.3cqh; /* 11px at the plugin's native 150px height */
+    letter-spacing: 0.22em;
+    color: #7a6a4a;
+    transition: color 0.2s ease, text-shadow 0.2s ease;
+    pointer-events: none;
+  }
+
+  .nos-mount.armed .nos-state {
+    color: #ffe858;
+    text-shadow: 0 0 4.7cqh rgba(255, 200, 80, 0.7);
+  }
+
+  /* ── responsive (900 = the site-wide breakpoint) ── */
+  @media (max-width: 900px) {
+    .dash { grid-template-columns: 1fr; padding: 22px 16px; }
+    .armbay { min-height: 260px; }
+    .trk { grid-template-columns: 44px minmax(0, 1fr) 90px; grid-template-rows: auto auto; row-gap: 8px; }
+    .trk .no { display: none; }
+    .trk .name { grid-column: 2; }
+    .trk .time { grid-column: 3; font-size: 18px; }
+    .trk .bar-wrap { grid-column: 1 / -1; }
+    .glass { padding: 16px 14px 12px; }
+    .mon-head { font-size: 14px; }
+    .trk { font-size: 20px; }
+    .cta { font-size: 17px; }
+  }
+
+  @media (max-width: 420px) {
+    .mon-head { font-size: 12px; letter-spacing: 0.06em; }
+  }
+
+  /* ── high contrast (html.hc): drop textures, keep function ── */
+  :global(html.hc) .dash,
+  :global(html.hc) .armbay,
+  :global(html.hc) .monitor {
+    background: var(--bg-2);
+    box-shadow: none;
+  }
+
+  :global(html.hc) .dash { border: 2px solid var(--border-bright); }
+  :global(html.hc) .glass { background: #000; }
+  :global(html.hc) .glass::before,
+  :global(html.hc) .glass::after { display: none; }
+
+  :global(html.hc) .nos-mount,
+  :global(html.hc) .nos-pressed { background: none; }
+
+  :global(html.hc) .nos-mount {
+    background: var(--bg-1);
+    border: 2px solid var(--border-bright);
+  }
+
+  :global(html.hc) .nos-mount.armed {
+    filter: none;
+    border-color: var(--brass-bright);
+  }
+
+  :global(html.hc) .nos-button {
+    background: var(--bg-2);
+    border: 2px solid var(--border-bright);
+  }
+
+  /* the PNG's baked "ARM" disappears in hc — show a real label instead */
+  :global(html.hc) .arm-word {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 28px;
+    letter-spacing: 0.1em;
+    color: var(--fg);
+  }
+
+  :global(html.hc) .nos-state { color: var(--fg-faint); }
+  :global(html.hc) .nos-mount.armed .nos-state {
+    color: var(--brass-bright);
+    text-shadow: none;
+  }
+</style>
