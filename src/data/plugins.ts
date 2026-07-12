@@ -140,9 +140,9 @@ export const plugins: Plugin[] = [
       { name: 'A/B compare', desc: 'Two state slots. Switch instantly. Compare without leaving the plugin.', part: 'ab' },
     ],
     audioDemos: [
-      { label: "God's Test", beforeUrl: '/audio/revlimiter/gods-test-before.m4a', afterUrl: '/audio/revlimiter/gods-test-after.m4a' },
-      { label: 'Light the Way', beforeUrl: '/audio/revlimiter/light-the-way-before.m4a', afterUrl: '/audio/revlimiter/light-the-way-after.m4a' },
       { label: 'RevLimiter', beforeUrl: '/audio/revlimiter/revlimiter-before.m4a', afterUrl: '/audio/revlimiter/revlimiter-after.m4a' },
+      { label: 'Crash Test', beforeUrl: '/audio/revlimiter/gods-test-before.m4a', afterUrl: '/audio/revlimiter/gods-test-after.m4a' },
+      { label: 'High Beams', beforeUrl: '/audio/revlimiter/light-the-way-before.m4a', afterUrl: '/audio/revlimiter/light-the-way-after.m4a' },
     ],
     systemReq: baseSystemReq,
     reviewsCount: 0,
