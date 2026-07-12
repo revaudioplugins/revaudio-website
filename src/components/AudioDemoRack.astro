@@ -55,7 +55,8 @@ const { demos } = Astro.props;
         aria-label="RevLimiter processing"
       ></button>
       <div class="nos-light"></div>
-      <div class="nos-state" data-arm-state>OFF</div>
+      <!-- label always reads ON (plugin behavior) — the .armed glow shows state -->
+      <div class="nos-state">ON</div>
     </div>
     <span class="sr-only" aria-live="polite" data-arm-live></span>
   </div>
@@ -65,7 +66,6 @@ const { demos } = Astro.props;
   document.querySelectorAll<HTMLElement>('[data-abrack]').forEach((rack) => {
     const mount = rack.querySelector<HTMLElement>('[data-arm-mount]');
     const armBtn = rack.querySelector<HTMLButtonElement>('[data-arm]');
-    const armState = rack.querySelector<HTMLElement>('[data-arm-state]');
     const armLive = rack.querySelector<HTMLElement>('[data-arm-live]');
     const srcLabel = rack.querySelector<HTMLElement>('[data-src-label]');
     if (!mount || !armBtn) return;
@@ -195,7 +195,6 @@ const { demos } = Astro.props;
       mount.classList.toggle('armed', armed);
       rack.classList.toggle('is-armed', armed);
       armBtn.setAttribute('aria-checked', String(armed));
-      if (armState) armState.textContent = armed ? 'ON' : 'OFF';
       if (armLive) armLive.textContent = armed ? 'RevLimiter on' : 'RevLimiter off';
       if (srcLabel) srcLabel.textContent = armed ? 'SRC: MASTER BUS' : 'SRC: RAW BUS';
     });
