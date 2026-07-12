@@ -443,7 +443,10 @@ const { demos } = Astro.props;
 
   /* CTA — revealed the first time the visitor arms it */
   .cta {
-    display: none;
+    /* space is reserved from the start (visibility, not display) so the
+       first arm doesn't grow the monitor and resize the whole cluster */
+    display: block;
+    visibility: hidden;
     margin-top: 14px;
     padding-top: 10px;
     border-top: 1px dashed rgba(255, 170, 60, 0.18);
@@ -456,7 +459,7 @@ const { demos } = Astro.props;
     z-index: 1;
   }
 
-  .was-armed .cta { display: block; animation: src-blink 0.6s steps(1) 1; }
+  .was-armed .cta { visibility: visible; animation: src-blink 0.6s steps(1) 1; }
   .cta:hover { color: #ffe6a6; }
   .cta:focus-visible { outline: 2px solid #ffd070; outline-offset: 3px; }
 
