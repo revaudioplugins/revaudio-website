@@ -1,11 +1,13 @@
 ---
-import type { AudioDemo as Demo } from '../data/plugins';
+import type { AudioDemo as Demo, Plugin } from '../data/plugins';
 
 interface Props {
   demos: Demo[];
+  plugin: Plugin;
 }
 
-const { demos } = Astro.props;
+const { demos, plugin } = Astro.props;
+const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
 ---
 
 <!-- Dashboard cluster: LCD track monitor + ARM bay (design tuned on /hearlab).
@@ -40,7 +42,17 @@ const { demos } = Astro.props;
           <audio preload="none" src={demo.afterUrl ?? undefined} data-after></audio>
         </div>
       ))}
-      <a class="cta" href="#buy" data-cta>THAT'S REVLIMITER → GET IT</a>
+      <button
+        type="button"
+        class="cta"
+        data-cta
+        data-add-to-cart
+        data-slug={plugin.slug}
+        data-name={plugin.name}
+        data-price={cartPrice}
+        data-checkout-url={plugin.checkoutUrl}
+        aria-label={`That's ${plugin.name} — add to cart`}
+      >THAT'S {plugin.name.toUpperCase()} → GET IT</button>
     </div>
   </div>
 
@@ -447,8 +459,14 @@ const { demos } = Astro.props;
        first arm doesn't grow the monitor and resize the whole cluster */
     display: block;
     visibility: hidden;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    padding: 10px 0 0;
+    cursor: pointer;
+    font-family: inherit;
     margin-top: 14px;
-    padding-top: 10px;
     border-top: 1px dashed rgba(255, 170, 60, 0.18);
     font-size: 20px;
     letter-spacing: 0.12em;
