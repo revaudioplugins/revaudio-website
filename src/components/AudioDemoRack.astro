@@ -42,6 +42,12 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
           <audio preload="none" src={demo.afterUrl ?? undefined} data-after></audio>
         </div>
       ))}
+      <!-- mobile-only A/B: the ARM plate doesn't come along under 900px —
+           processing toggles on this in-glass segmented switch instead -->
+      <div class="abswitch" data-ab-switch role="group" aria-label={`${plugin.name} processing`}>
+        <button type="button" class="abseg" data-ab="raw" aria-pressed="true">RAW</button>
+        <button type="button" class="abseg" data-ab="master" aria-pressed="false">{plugin.name.toUpperCase()}</button>
+      </div>
       <button
         type="button"
         class="cta"
@@ -56,15 +62,7 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
     </div>
   </div>
 
-  <!-- static sentinel: reserves the bay's grid row + anchors the mobile
-       float IntersectionObserver (the bay itself moves, this never does) -->
-  <div class="arm-anchor" aria-hidden="true" data-arm-anchor></div>
-
   <div class="armbay">
-    <div class="bay-hint" aria-hidden="true">
-      <span class="bh-name">REVLIMITER</span>
-      <span class="bh-cue">TAP TO A/B</span>
-    </div>
     <div class="nos-mount" data-arm-mount>
       <div class="nos-pressed"></div>
       <button
@@ -80,6 +78,18 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
       <div class="nos-state">ON</div>
     </div>
     <span class="sr-only" aria-live="polite" data-arm-live></span>
+  </div>
+
+  <!-- mobile-only floating dock: while a track plays with the in-glass switch
+       off-screen, this fixed twin keeps A/B in the thumb zone. Lives outside
+       .monitor — an ancestor with `filter` (.is-armed .glass) would trap
+       position:fixed. Same [data-ab] wiring as the in-glass switch. -->
+  <div class="ab-dock" data-ab-dock>
+    <span class="dock-cue" aria-hidden="true">TAP TO A/B</span>
+    <div class="abswitch" role="group" aria-label={`${plugin.name} processing`}>
+      <button type="button" class="abseg" data-ab="raw" aria-pressed="true">RAW</button>
+      <button type="button" class="abseg" data-ab="master" aria-pressed="false">{plugin.name.toUpperCase()}</button>
+    </div>
   </div>
 </div>
 
@@ -119,28 +129,29 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
 
     let current: Track | null = null;
 
-    // ── mobile-only: while a track plays with the ARM bay off-screen, the bay
-    // floats into the thumb zone (position:fixed via .arm-afloat — pure
-    // presentation; the audio engine below is untouched). The IO watches the
-    // static anchor, not the bay itself, so floating can't feed back into it.
-    const bayAnchor = rack.querySelector<HTMLElement>('[data-arm-anchor]');
+    // ── mobile-only: while a track plays with the in-glass A/B switch
+    // off-screen, the fixed .ab-dock twin shows in the thumb zone (via
+    // .arm-afloat — pure presentation; the audio engine below is untouched).
+    // The IO watches the in-glass switch, which never moves, so showing the
+    // dock can't feed back into the observation.
+    const glassSwitch = rack.querySelector<HTMLElement>('.glass [data-ab-switch]');
     const mobileMq = window.matchMedia('(max-width: 900px)');
-    let bayInView = true;
+    let switchInView = true;
     const isPlaying = () => current !== null && !current.before.paused;
     const updateArmFloat = () => {
-      rack.classList.toggle('arm-afloat', mobileMq.matches && isPlaying() && !bayInView);
+      rack.classList.toggle('arm-afloat', mobileMq.matches && isPlaying() && !switchInView);
     };
-    if (bayAnchor) {
+    if (glassSwitch) {
       const io = new IntersectionObserver(
         (entries) => {
-          bayInView = entries[entries.length - 1].isIntersecting;
+          switchInView = entries[entries.length - 1].isIntersecting;
           updateArmFloat();
         },
-        // bottom inset ≈ the sticky buy bar: the bay only counts as "in view"
-        // once a solid slice of it is visible above that bar
+        // bottom inset ≈ the sticky buy bar: the switch only counts as "in
+        // view" once a solid slice of it is visible above that bar
         { rootMargin: '0px 0px -72px 0px', threshold: 0.4 },
       );
-      io.observe(bayAnchor);
+      io.observe(glassSwitch);
       mobileMq.addEventListener('change', updateArmFloat);
     }
 
@@ -287,8 +298,11 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
       });
     });
 
-    armBtn.addEventListener('click', () => {
-      armed = !armed;
+    // Shared by the desktop ARM plate and the mobile A/B segments.
+    const abSegs = Array.from(rack.querySelectorAll<HTMLButtonElement>('[data-ab]'));
+    const setArmed = (next: boolean) => {
+      if (next === armed) return;
+      armed = next;
       if (current) {
         // Safety only — the timeupdate resync keeps both in lockstep, so the
         // element about to be unmuted should already be in position. Seek it
@@ -301,6 +315,7 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
       mount.classList.toggle('armed', armed);
       rack.classList.toggle('is-armed', armed);
       armBtn.setAttribute('aria-checked', String(armed));
+      abSegs.forEach((s) => s.setAttribute('aria-pressed', String((s.dataset.ab === 'master') === armed)));
       if (armLive) armLive.textContent = armed ? 'RevLimiter on' : 'RevLimiter off';
       if (srcLabel) {
         const idle = !current || current.before.paused;
@@ -314,7 +329,10 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
         }
       }
       if (armed) rack.classList.add('was-armed'); // reveals the CTA, stays on
-    });
+    };
+
+    armBtn.addEventListener('click', () => setArmed(!armed));
+    abSegs.forEach((s) => s.addEventListener('click', () => setArmed(s.dataset.ab === 'master')));
   });
 </script>
 
@@ -575,10 +593,10 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
   }
 
   /* ── ARM bay ── */
-  /* desktop: the sentinel and the dock hint don't exist (display:none keeps
-     them out of the grid, so desktop placement is byte-identical) */
-  .arm-anchor { display: none; }
-  .bay-hint { display: none; }
+  /* desktop: the mobile A/B switch and its floating dock don't exist
+     (display:none keeps them out of the grid — desktop stays byte-identical) */
+  .abswitch { display: none; }
+  .ab-dock { display: none; }
 
   .armbay {
     position: relative;
@@ -684,70 +702,105 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
   @media (max-width: 900px) {
     .dash { grid-template-columns: 1fr; padding: 22px 16px; }
 
-    /* anchor + bay share the same cell; the anchor keeps the row at full
-       height when the bay floats, so floating never shifts the layout */
-    .arm-anchor { display: block; grid-row: 2; grid-column: 1; min-height: 260px; }
-    .armbay { grid-row: 2; grid-column: 1; min-height: 260px; }
+    /* the photoreal ARM plate stays desktop-only — mobile A/B lives on the
+       in-glass switch below, so the whole section fits one phone screen */
+    .armbay { display: none; }
 
-    /* track = [play | name] / [LED bar] / [time] — the old fixed 90px time
-       column reserved row-1 width it never occupied (auto-placement pushed
-       .time to its own row) and crushed the name to ~14px at 320 */
+    /* track = [play | name | time] / [LED bar] — two rows, one screen */
     .trk {
-      grid-template-columns: 52px minmax(0, 1fr);
-      grid-template-rows: auto auto auto;
-      row-gap: 8px;
-      column-gap: 12px;
-      padding: 12px 6px;
-      font-size: 20px;
+      grid-template-columns: 52px minmax(0, 1fr) auto;
+      grid-template-rows: auto auto;
+      row-gap: 6px;
+      column-gap: 10px;
+      padding: 8px 4px;
+      font-size: 19px;
     }
     .trk .no { display: none; }
     .lcdplay { height: 40px; } /* 40 + 2×2px border = 44px tap height */
     .trk .name { grid-column: 2; grid-row: 1; align-self: center; }
+    .trk .time { grid-column: 3; grid-row: 1; align-self: center; font-size: 16px; }
     .trk .bar-wrap { grid-column: 1 / -1; grid-row: 2; }
-    .trk .time { grid-column: 1 / -1; grid-row: 3; font-size: 18px; }
     .seek { inset: -14px 0; } /* 16px bar + 2×14px slop = 44px hit strip */
     .glass { padding: 16px 14px 12px; }
-    .mon-head { font-size: 14px; }
+    /* stacked head = constant two lines: the SRC readout grows on arm
+       ("MASTER BUS — PRESS PLAY") and a flex-row head would wrap it to a
+       new line, resizing the whole glass on every A/B flip */
+    .mon-head { flex-direction: column; gap: 2px; font-size: 14px; }
+    .mon-head span { white-space: nowrap; }
     .cta { font-size: 17px; min-height: 44px; padding: 12px 0 4px; }
 
-    /* ── floating ARM dock: the punch stays in the thumb zone while music
-       plays (.arm-afloat = playing + bay off-screen, set in JS). Bottom-right
-       above MobileBuyBar (--mbb-h, z40), clear of the bottom-LEFT a11y fab
-       (z60); dock sits between at z39. Same element, same role=switch. ── */
-    .arm-afloat .armbay {
+    /* ── in-glass A/B switch: segmented [RAW | REVLIMITER], same amber
+       vocabulary as the LED bar (idle segment = dim outline, active =
+       lit + glow). Replaces the ARM plate on mobile. ── */
+    .abswitch {
+      display: grid;
+      grid-template-columns: 1fr 1.5fr;
+      gap: 8px;
+      position: relative;
+      z-index: 1;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px dashed rgba(255, 170, 60, 0.18);
+    }
+    .abseg {
+      all: unset;
+      box-sizing: border-box;
+      cursor: pointer;
+      min-height: 46px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      font-family: 'VT323', monospace;
+      font-size: 20px;
+      letter-spacing: 0.12em;
+      color: #c07a20;
+      border: 2px solid rgba(255, 170, 60, 0.35);
+      border-radius: 4px;
+      background: rgba(255, 160, 40, 0.05);
+      transition: background 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+    }
+    .abseg[aria-pressed='true'] {
+      color: #ffe6a6;
+      border-color: #ffd070;
+      background: rgba(255, 170, 60, 0.22);
+      box-shadow: 0 0 16px rgba(255, 160, 40, 0.5), inset 0 0 10px rgba(255, 160, 40, 0.25);
+      text-shadow: 0 0 8px rgba(255, 160, 40, 0.8);
+    }
+    .abseg:focus-visible { outline: 2px solid #ffd070; outline-offset: 3px; }
+
+    /* ── floating A/B dock: the switch stays in the thumb zone while music
+       plays (.arm-afloat = playing + in-glass switch off-screen, set in JS).
+       Bottom-right above MobileBuyBar (--mbb-h, z40), clear of the
+       bottom-LEFT a11y fab (z60); dock sits between at z39. ── */
+    .arm-afloat .ab-dock {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
       position: fixed;
-      left: auto;
       right: max(10px, env(safe-area-inset-right));
       bottom: calc(var(--mbb-h, 64px) + env(safe-area-inset-bottom, 0px) + 10px);
       z-index: 39;
-      min-height: 0;
-      width: max-content;
-      max-width: calc(100vw - 90px); /* never reaches the a11y fab column */
-      flex-direction: row;
-      gap: 14px;
-      padding: 10px 14px;
+      width: min(250px, calc(100vw - 90px)); /* never reaches the a11y fab column */
+      padding: 10px 12px;
       border: 1px solid #0a0705;
       border-radius: 10px;
+      background:
+        repeating-linear-gradient(92deg, rgba(255, 255, 255, 0.015) 0 2px, transparent 2px 4px),
+        linear-gradient(180deg, #241c14 0%, #160f0a 100%);
       box-shadow: 0 14px 34px rgba(0, 0, 0, 0.75), inset 0 2px 2px rgba(255, 225, 170, 0.08);
       animation: arm-dock-in 0.28s var(--ease-settle, ease-out) backwards;
     }
-    .arm-afloat .nos-mount { flex: 0 0 auto; min-height: 0; height: 104px; }
-    .arm-afloat .bay-hint { display: flex; flex-direction: column; gap: 4px; }
-    .bay-hint .bh-name {
+    .ab-dock .dock-cue {
       font-family: 'Special Elite', monospace;
       font-size: 11px;
       letter-spacing: 0.22em;
+      text-align: center;
       color: #7a6a4a;
     }
-    .bay-hint .bh-cue {
-      font-family: 'VT323', monospace;
-      font-size: 20px;
-      letter-spacing: 0.08em;
-      color: #ffb340;
-      text-shadow: 0 0 8px rgba(255, 160, 40, 0.55);
-    }
+    .ab-dock .abswitch { margin-top: 0; padding-top: 0; border-top: none; gap: 6px; }
+    .ab-dock .abseg { min-height: 44px; font-size: 18px; }
     /* cookie banner (z9000) owns the bottom edge — no dock underneath it */
-    :global(body:has(#cookie-banner.cb--visible)) .arm-afloat .armbay { display: none; }
+    :global(body:has(#cookie-banner.cb--visible)) .arm-afloat .ab-dock { display: none; }
   }
 
   @keyframes arm-dock-in {
@@ -756,14 +809,13 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .arm-afloat .armbay { animation: none; }
+    .arm-afloat .ab-dock { animation: none; }
   }
 
   @media (max-width: 420px) {
-    /* stacking the two head lines buys the SRC readout real size at 320 */
-    .mon-head { flex-direction: column; gap: 2px; font-size: 13px; letter-spacing: 0.08em; }
+    .mon-head { font-size: 13px; letter-spacing: 0.08em; }
     .bar { gap: 2px; }
-    .bay-hint .bh-cue { font-size: 17px; }
+    .abseg { font-size: 17px; letter-spacing: 0.08em; }
   }
 
   /* ── high contrast (html.hc): drop textures, keep function ── */
@@ -812,8 +864,22 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
     text-shadow: none;
   }
 
-  /* hc: the floating dock keeps a visible edge, the hint uses tokens */
-  :global(html.hc) .arm-afloat .armbay { border: 2px solid var(--border-bright); }
-  :global(html.hc) .bay-hint .bh-name { color: var(--fg-faint); }
-  :global(html.hc) .bay-hint .bh-cue { color: var(--fg); text-shadow: none; }
+  /* hc: A/B switch + floating dock drop the glow, keep the state readable */
+  :global(html.hc) .abseg {
+    background: var(--bg-2);
+    border: 2px solid var(--border-bright);
+    color: var(--fg-faint);
+    box-shadow: none;
+    text-shadow: none;
+  }
+  :global(html.hc) .abseg[aria-pressed='true'] {
+    color: var(--fg);
+    border-color: var(--brass-bright);
+    background: var(--bg-1);
+  }
+  :global(html.hc) .arm-afloat .ab-dock {
+    background: var(--bg-2);
+    border: 2px solid var(--border-bright);
+  }
+  :global(html.hc) .ab-dock .dock-cue { color: var(--fg-faint); }
 </style>

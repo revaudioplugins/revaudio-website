@@ -173,7 +173,7 @@ const altShots = hasStage
       {playableDemos.length > 0 && (
         <section class="audio-demos" id="hear-it">
           <h2 data-split>Hear it</h2>
-          <p class="muted" data-reveal>Before / after on real source material. No staged transients, no cherry-picked frequency content. Hit play, then punch <strong>ARM</strong> to drop RevLimiter onto the bus.</p>
+          <p class="muted" data-reveal>Before / after on real source material. No staged transients, no cherry-picked frequency content. Hit play, then <span class="hear-desk">punch <strong>ARM</strong></span><span class="hear-mob">flip <strong>the switch</strong></span> to drop RevLimiter onto the bus.</p>
           <AudioDemoRack demos={playableDemos} plugin={plugin} />
         </section>
       )}
@@ -478,6 +478,14 @@ const altShots = hasStage
   .f-desc { color: var(--fg-dim); font-size: 0.98rem; margin: 0.4rem 0 0; max-width: 44ch; }
 
   .audio-demos { padding: 2rem 0 3rem; border-top: 1px solid var(--border); }
+
+  /* the intro names the control: desktop has the ARM plate, mobile has the
+     in-glass A/B switch (AudioDemoRack's 900px layout) */
+  .audio-demos .hear-mob { display: none; }
+  @media (max-width: 900px) {
+    .audio-demos .hear-desk { display: none; }
+    .audio-demos .hear-mob { display: inline; }
+  }
 
   .specs-section { padding: 2rem 0 3rem; border-top: 1px solid var(--border); }
 
