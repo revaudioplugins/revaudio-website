@@ -266,8 +266,9 @@ const altShots = hasStage
         document.body.appendChild(out);
         let dx = 0, dy = 0;
         const apply = () => {
-          slot.style.transform = `translate(${dx}px, ${dy}px)`;
-          out.textContent = `.trial-slot {\n  transform: translate(${dx}px, ${dy}px);\n}\ndrag stamp · arrows nudge · shift=10px`;
+          // keep the CSS -50% vertical anchor; the bench only adds a delta
+          slot.style.transform = `translate(${dx}px, calc(-50% + ${dy}px))`;
+          out.textContent = `.trial-slot {\n  margin-left: calc(clamp(1rem,2vw,2.25rem) + ${dx}px);\n  transform: translateY(calc(-50% + ${dy}px));\n}\ndrag stamp · arrows nudge · shift=10px`;
         };
         apply();
         let drag = null;
@@ -600,20 +601,34 @@ const altShots = hasStage
      coordinates — so the pair composes the same for any plugin name. ── */
   .product-head { position: relative; }
 
-  .title-row {
-    display: flex;
-    align-items: flex-start;
-    flex-wrap: wrap;          /* a long plugin name pushes the stamp below, never clips */
-    column-gap: clamp(1.25rem, 2.5vw, 2.25rem);
-  }
-
-  .title-row h1 { flex: 0 0 auto; }
+  /* inline-block = the row hugs the wordmark, so the stamp can anchor to the
+     title's RIGHT EDGE (left:100%) and float out into the empty gap between
+     the text column and the door — not confined to the text column's width
+     (which would wrap it below the title). Absolute = out of flow, so it never
+     pushes the tagline down. */
+  .title-row { position: relative; display: inline-block; }
 
   .trial-slot {
-    flex: 0 0 auto;
+    position: absolute;
+    left: 100%;               /* right edge of the title */
+    top: 50%;
+    transform: translateY(-50%);
+    margin-left: clamp(1rem, 2vw, 2.25rem);
     width: min(300px, 26vw);
-    margin-top: -18px;        /* rides above the title cap line */
     z-index: 3;
+  }
+
+  /* Tight desktop band (901–1100px): the door is close enough that there's no
+     real gap beside the title, so beside-placement collides with the BUY card.
+     Drop the stamp below the title, left-aligned — still clear of the door. */
+  @media (min-width: 901px) and (max-width: 1100px) {
+    .title-row { display: block; }
+    .trial-slot {
+      position: static;
+      transform: none;
+      width: min(280px, 30vw);
+      margin: 0.6rem 0 0.4rem;
+    }
   }
 
   @media (max-width: 900px) {
@@ -621,6 +636,8 @@ const altShots = hasStage
        flows in the reading instead — centered between the title and tagline. */
     .title-row { display: block; }
     .trial-slot {
+      position: static;
+      transform: none;
       width: min(260px, 72vw);
       margin: 0.75rem auto 1rem;
     }
