@@ -1,6 +1,14 @@
 # Website handoff
 
-Updated: 2026-06-18 (checkout-live session close)
+Updated: 2026-07-14 (trial stamp + Driver's Manual session close)
+
+## 2026-07-14 — RevLimiter free-trial stamp + Driver's Manual video (2c6e166, live)
+- New `TrialStamp.astro`: "GET YOUR FREE 14 DAYS TRIAL" on the door's buy-patch asset (B3 night-plate take), L2 hover lamp, press-in → navigates to the license worker `/download`. Mounted in `[slug].astro` between title and door (`.trial-slot` top 25px / left 48.4%, user-placed).
+- Position bench ON the real page: open `/revlimiter/#cranep=1&stampedit=1` → drag stamp / arrow-nudge, readout prints paste-ready CSS. Conditional Astro scripts ship VERBATIM — keep that block plain JS (no TS).
+- New "Driver's Manual" section between Hear-it and System requirements — data-driven via `plugins.ts` `tutorialVideo` (+ `trialUrl`); youtube-nocookie embed.
+- **BLOCKER: the edge Cloudflare CSP (Transform Rules → Modify Response Header) frame-src only allows lemonsqueezy → the video shows a grey broken frame on live. Fix in CF dashboard: add `https://www.youtube-nocookie.com` to frame-src. Wrangler token is zone:read — CLI can't do it.**
+- Pre-existing, FYI Gil: `connect.facebook.net/fbevents.js` (Meta pixel) is also CSP-blocked by script-src.
+- Design bench kept at `bench/trial-stamp-test.html`.
 
 ## 2026-06-18 — RevLimiter checkout LIVE on Lemon Squeezy
 - Back on Lemon Squeezy (Paddle plan dropped); store now activated, RevLimiter live.
