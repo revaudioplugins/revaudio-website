@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>bench — FREE 14-day trial stamp (RevLimiter product page)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  /* ── site tokens (mirrors src/styles/global.css) ── */
+  :root {
+    --bg-0: #0b0a09;
+    --bg-1: #14110f;
+    --brass: #c9a35c;
+    --brass-bright: #e8c878;
+    --brass-dark: #7a6236;
+    --fg: #e8e2d8;
+    --fg-dim: #a89f92;
+    --fg-faint: #6f6a60;
+    --border: #262019;
+    --border-bright: #3a3128;
+    --font-display: 'Bebas Neue', 'Oswald', 'Arial Narrow', sans-serif;
+    --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', Consolas, monospace;
+    /* production assets — no local copies */
+    --patch-url: url('../src/assets/plugins/revlimiter-buy-patch.png');
+    --master-url: url('../src/assets/plugins/revlimiter-crane-master.png');
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg-0);
+    color: var(--fg);
+    font-family: 'Inter', sans-serif;
+    padding: 2rem 3rem 5rem;
+  }
+  h1, h2 { font-family: var(--font-display); letter-spacing: 0.04em; color: var(--brass-bright); font-weight: 400; }
+  h2 { border-top: 1px solid var(--border); padding-top: 1.5rem; margin-top: 3rem; }
+  .note { color: var(--fg-dim); font-size: 0.9rem; max-width: 70ch; }
+
+  /* ═══════════ THE TRIAL STAMP (shared core) ═══════════
+     Language copied from the door's BUY NOW square (BuyButtonCrane.astro):
+     textless worn cream patch PNG + live stencil ink + maroon paint multiply
+     + worn SVG displacement filter. Sized by width; aspect = patch 620/237. */
+  .trial-stamp {
+    position: relative;
+    display: inline-block;
+    width: 300px;
+    aspect-ratio: 620 / 237;
+    background: var(--patch-url) center / 100% 100% no-repeat;
+    border: 0;
+    padding: 0;
+    appearance: none;
+    cursor: pointer;
+    container-type: inline-size;
+    opacity: 0.9;
+    filter: drop-shadow(0 6px 14px rgba(0,0,0,0.55));
+    transition: transform 0.12s ease, filter 0.12s ease;
+  }
+  /* maroon aged paint over the patch, masked to patch alpha (same recipe as .rc-buysq-paint) */
+  .trial-stamp .paint {
+    position: absolute; inset: 0; pointer-events: none;
+    mix-blend-mode: multiply;
+    background: #4d0f0a;
+    opacity: 0.35;
+    -webkit-mask-image: var(--patch-url);
+    -webkit-mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+            mask-image: var(--patch-url);
+            mask-size: 100% 100%;
+            mask-repeat: no-repeat;
+    z-index: 0;
+  }
+  .trial-stamp .ink {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 0.5cqw;
+    pointer-events: none;
+    z-index: 1;
+    filter: url(#ts-worn);
+  }
+  .trial-stamp .l1 {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 7.4cqw;
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+    color: #3a2018;
+    line-height: 1;
+  }
+  .trial-stamp .l2 {
+    font-family: Impact, Haettenschweiler, 'Arial Narrow', sans-serif;
+    font-weight: 700;
+    font-size: 12.6cqw;
+    line-height: 1;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: #241310;
+  }
+  .trial-stamp .l2 em { font-style: normal; color: #b81f00; }
+
+  /* L2-style warm lamp on hover (recipe of .rc-buysq-lit, masked to patch) */
+  .trial-stamp .lit {
+    position: absolute; inset: 0; pointer-events: none;
+    mix-blend-mode: screen;
+    background: radial-gradient(125% 125% at 50% 18%,
+        rgba(255,247,236,0.9) 0%, rgba(255,247,236,0.5) 55%, rgba(255,247,236,0.26) 100%);
+    -webkit-mask-image: var(--patch-url);
+    -webkit-mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+            mask-image: var(--patch-url);
+            mask-size: 100% 100%;
+            mask-repeat: no-repeat;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+    z-index: 2;
+  }
+  .trial-stamp .glow {
+    position: absolute; inset: -35%; pointer-events: none;
+    mix-blend-mode: screen;
+    background: radial-gradient(72% 72% at 50% 45%,
+        rgba(255,232,196,0.55) 0%, rgba(237,199,154,0.28) 45.6%, rgba(0,0,0,0) 75.9%);
+    opacity: 0;
+    filter: blur(22px);
+    transition: opacity 0.18s ease;
+  }
+  .trial-stamp:hover .lit { opacity: 0.3; }
+  .trial-stamp:hover .glow { opacity: 0.44; }
+  .trial-stamp:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 3px; }
+
+  /* ── THE PRESS: stamp sinks into the page + shadow collapses; the ink
+     darkens like fresh pressure. Rotation preserved via --rot. ── */
+  .trial-stamp { transform: rotate(var(--rot, 0deg)); }
+  .trial-stamp.pressed,
+  .trial-stamp:active {
+    transform: rotate(var(--rot, 0deg)) translateY(4px) scale(0.965);
+    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.8));
+  }
+  .trial-stamp.pressed .paint, .trial-stamp:active .paint { opacity: 0.5; }
+
+  /* ═══════════ variant modifiers ═══════════ */
+  .v-a { --rot: -3.5deg; }
+  .v-b { --rot: 2deg; width: 340px; opacity: 1; }
+  .v-b .l1 { display: none; }
+  .v-b .ink { flex-direction: column; gap: 0; filter: url(#ts-worn-lite); }
+  .v-b .big { font-family: Impact, Haettenschweiler, 'Arial Narrow', sans-serif; font-weight: 700; text-transform: uppercase; line-height: 0.98; color: #241310; }
+  .v-b .big.top { font-size: 11.5cqw; letter-spacing: 0.06em; }
+  .v-b .big.bot { font-size: 14.5cqw; }
+  .v-b .big em { font-style: normal; color: #b81f00; }
+  .v-c { --rot: -2deg; }
+  .v-c::after {
+    /* rc-tag-style stamped border ring, slightly misregistered = rubber stamp */
+    content: '';
+    position: absolute; inset: 4% 3%;
+    border: 2px solid rgba(184, 31, 0, 0.55);
+    border-radius: 6px;
+    transform: rotate(-0.8deg);
+    pointer-events: none;
+    z-index: 1;
+    filter: url(#ts-worn);
+  }
+
+  /* ── B color takes (all on the crisp lite filter) ── */
+  /* B1: door-original — espresso ink, signal-red FREE (crisped) */
+  .b1 .big { color: #241310; }
+  .b1 .big em { color: #b81f00; }
+  /* B2: site brass — dark bronze ink, brass FREE (global.css --brass family) */
+  .b2 .big { color: #2a1f10; }
+  .b2 .big em { color: #96660f; }
+  /* B3: night plate — patch dimmed to the site's dark metal, cream ink, brass-bright FREE */
+  .b3 .plate {
+    position: absolute; inset: 0; pointer-events: none;
+    mix-blend-mode: multiply;
+    background: #241d15;
+    opacity: 0.88;
+    -webkit-mask-image: var(--patch-url);
+    -webkit-mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+            mask-image: var(--patch-url);
+            mask-size: 100% 100%;
+            mask-repeat: no-repeat;
+    z-index: 0;
+  }
+  .b3 .paint { display: none; }
+  .b3 .big { color: #e8e2d8; text-shadow: 0 1px 1px rgba(0,0,0,0.5); }
+  .b3 .big em { color: #e8c878; }
+
+  /* ═══════════ bench layout ═══════════ */
+  .row { display: flex; gap: 3.5rem; align-items: center; flex-wrap: wrap; padding: 2rem 0; }
+  .cell { text-align: center; }
+  .cell .tag { font-family: var(--font-mono); font-size: 0.75rem; color: var(--fg-faint); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 1.2rem; }
+
+  /* in-context mock of [slug].astro's .product-head (desktop grid) */
+  .ctx {
+    display: grid;
+    grid-template-columns: 1fr minmax(320px, 400px);
+    gap: 3rem;
+    align-items: start;
+    max-width: 1100px;
+    border: 1px dashed var(--border-bright);
+    padding: 2.5rem;
+    position: relative;
+  }
+  .ctx .pill {
+    display: inline-block; font-family: var(--font-mono); font-size: 0.7rem;
+    text-transform: uppercase; letter-spacing: 0.15em; color: var(--brass);
+    border: 1px solid var(--brass-dark); padding: 0.25rem 0.6rem; margin-bottom: 1rem;
+  }
+  .ctx h1 { font-size: 3.4rem; margin: 0 0 0.25rem; }
+  .ctx .tagline { font-family: var(--font-mono); text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.1em; color: var(--brass); margin: 0 0 1rem; }
+  .ctx .pw { font-size: 1.15rem; line-height: 1.45; color: var(--fg); max-width: 54ch; margin: 0 0 1.5rem; padding-left: 0.9rem; border-left: 3px solid var(--brass); }
+  .ctx .door {
+    width: 100%; max-width: 320px; aspect-ratio: 808 / 1448;
+    background: var(--master-url) center / contain no-repeat;
+    justify-self: center;
+    margin-top: -1rem;
+  }
+  /* placement: title row is flex; stamp sits right of the name, tilted,
+     hanging into the gap toward the door — "slapped over the page top" */
+  .ctx .titlerow { display: flex; align-items: center; gap: 2.2rem; flex-wrap: wrap; }
+  /* round 3: absolute in the head — centered exactly in the gap between the
+     title's right edge and the door's left edge, at title height */
+  .ctx .titlerow .trial-stamp { position: absolute; top: 2.6rem; left: 29.7%; width: 300px; margin: 0; }
+
+  /* click log */
+  #log { font-family: var(--font-mono); font-size: 0.8rem; color: var(--brass-bright); min-height: 1.4em; margin-top: 1rem; }
+  .diag { font-family: var(--font-mono); font-size: 0.75rem; color: var(--fg-faint); margin-top: 3rem; border-top: 1px solid var(--border); padding-top: 1rem; }
+</style>
+</head>
+<body>
+
+<h1>bench — trial stamp</h1>
+<p class="note">Language cloned from the door's BUY NOW square: worn cream patch (production asset <code>revlimiter-buy-patch.png</code>) + live stencil ink + maroon multiply paint + worn SVG filter + L2 warm lamp on hover. Click = press-in + redirect to the Downloads portal (bench logs instead of navigating).</p>
+
+<h2>Variant B — color takes (crisped ink)</h2>
+<div class="row">
+  <div class="cell">
+    <button type="button" class="trial-stamp v-b b1" data-trial>
+      <span class="paint"></span>
+      <span class="ink">
+        <span class="big top">Get your <em>FREE</em></span>
+        <span class="big bot">14 days trial</span>
+      </span>
+      <span class="lit"></span>
+      <span class="glow"></span>
+    </button>
+    <div class="tag">B1 — door original, crisp</div>
+  </div>
+
+  <div class="cell">
+    <button type="button" class="trial-stamp v-b b2" data-trial>
+      <span class="paint"></span>
+      <span class="ink">
+        <span class="big top">Get your <em>FREE</em></span>
+        <span class="big bot">14 days trial</span>
+      </span>
+      <span class="lit"></span>
+      <span class="glow"></span>
+    </button>
+    <div class="tag">B2 — site brass ink</div>
+  </div>
+
+  <div class="cell">
+    <button type="button" class="trial-stamp v-b b3" data-trial>
+      <span class="plate"></span>
+      <span class="paint"></span>
+      <span class="ink">
+        <span class="big top">Get your <em>FREE</em></span>
+        <span class="big bot">14 days trial</span>
+      </span>
+      <span class="lit"></span>
+      <span class="glow"></span>
+    </button>
+    <div class="tag">B3 — night plate, brass FREE</div>
+  </div>
+</div>
+<div id="log"></div>
+
+<h2>In context — between the title and the door</h2>
+<p class="note">Mock of the product-head grid. Stamp rides the title row, tilted into the gap toward the hanging door.</p>
+<div class="ctx">
+  <div>
+    <span class="pill">Out now</span>
+    <div class="titlerow">
+      <h1>RevLimiter</h1>
+      <button type="button" class="trial-stamp v-b b3 ctx-stamp" data-trial>
+        <span class="plate"></span>
+        <span class="paint"></span>
+        <span class="ink">
+          <span class="big top">Get your <em>FREE</em></span>
+          <span class="big bot">14 days trial</span>
+        </span>
+        <span class="lit"></span>
+        <span class="glow"></span>
+      </button>
+    </div>
+    <p class="tagline">Push the mix to the redline.</p>
+    <p class="pw">A limiter built like a rev gauge — commercial loudness, depth and punch with analog glue, first in the master chain.</p>
+  </div>
+  <div class="door"></div>
+</div>
+
+<h2>Driver's Manual — video section (between "Hear it" and "System requirements")</h2>
+<p class="note">Embedded YouTube tutorial (privacy-enhanced nocookie embed, lazy). Section header matches the page's other <code>h2</code> sections; player sits in a brass-bordered frame like the walkthrough stage.</p>
+<div class="video-mock">
+  <section class="dm-section">
+    <h2 class="dm-h2">Driver's Manual</h2>
+    <p class="dm-sub">Everything under the hood — the full RevLimiter tutorial, from first insert to redline.</p>
+    <div class="dm-frame">
+      <iframe
+        src="https://www.youtube-nocookie.com/embed/Og4PRlBFco8"
+        title="RevLimiter — Driver's Manual (tutorial)"
+        loading="lazy"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        referrerpolicy="strict-origin-when-cross-origin"
+        allowfullscreen></iframe>
+    </div>
+  </section>
+</div>
+<style>
+  .video-mock { max-width: 1100px; border: 1px dashed var(--border-bright); padding: 0 2.5rem; }
+  .dm-section { padding: 2rem 0 3rem; }
+  .dm-h2 { border: 0; padding-top: 0; margin-top: 0.5rem; font-size: 2rem; }
+  .dm-sub { color: var(--fg-dim); font-size: 0.95rem; margin: 0 0 1.5rem; }
+  .dm-frame {
+    position: relative;
+    max-width: 860px;
+    aspect-ratio: 16 / 9;
+    background: var(--bg-1);
+    border: 1px solid var(--border-bright);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  }
+  .dm-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+</style>
+
+<div class="diag" id="diag">diag: loading…</div>
+
+<!-- worn-glyph filter — same recipe as #rc-worn-buy in BuyButtonCrane.astro -->
+<svg width="0" height="0" aria-hidden="true" style="position:absolute">
+  <defs>
+    <filter id="ts-worn" x="-25%" y="-50%" width="150%" height="200%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.08 0.12" numOctaves="2" seed="11" result="warp"/>
+      <feDisplacementMap in="SourceGraphic" in2="warp" scale="2.75" xChannelSelector="R" yChannelSelector="G" result="disp"/>
+      <feGaussianBlur in="disp" stdDeviation="0.15"/>
+    </filter>
+    <!-- lite worn: a whisper of erosion, no blur — crisp at product-page sizes -->
+    <filter id="ts-worn-lite" x="-25%" y="-50%" width="150%" height="200%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.09 0.13" numOctaves="2" seed="11" result="warp"/>
+      <feDisplacementMap in="SourceGraphic" in2="warp" scale="1.2" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+</svg>
+
+<script>
+  // press choreography + (logged) redirect — production will navigate to the
+  // Downloads portal: https://revlimiter-license.revaudio.workers.dev/download
+  const DOWNLOADS = 'https://revlimiter-license.revaudio.workers.dev/download';
+  const log = document.getElementById('log');
+  document.querySelectorAll('[data-trial]').forEach((b) => {
+    b.addEventListener('click', () => {
+      b.classList.add('pressed');
+      setTimeout(() => b.classList.remove('pressed'), 160);
+      log.textContent = '→ would redirect: ' + DOWNLOADS;
+    });
+  });
+
+  // diag: verify production assets resolve (no local copies allowed)
+  const assets = [
+    '../src/assets/plugins/revlimiter-buy-patch.png',
+    '../src/assets/plugins/revlimiter-crane-master.png',
+  ];
+  Promise.all(assets.map((u) => new Promise((res) => {
+    const i = new Image();
+    i.onload = () => res(u.split('/').pop() + ' OK ' + i.naturalWidth + 'x' + i.naturalHeight);
+    i.onerror = () => res(u.split('/').pop() + ' MISSING');
+    i.src = u;
+  }))).then((r) => document.getElementById('diag').textContent = 'diag: ' + r.join(' · '));
+</script>
+</body>
+</html>

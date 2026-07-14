@@ -1,0 +1,183 @@
+---
+/* TrialStamp — "GET YOUR FREE 14 DAYS TRIAL" stamp on the product head.
+   Language cloned from the crane door's BUY NOW square (BuyButtonCrane.astro):
+   the same textless worn patch PNG carries live ink, here in the B3 "night
+   plate" take (bench: bench/trial-stamp-test.html, picked 2026-07-14) — patch
+   multiplied down to the site's dark metal, cream Impact ink, brass FREE.
+   A whisper-strength worn filter keeps glyph edges crisp at page size.
+
+   Interaction: hover = the door's L2 warm-lamp treatment; click = press-in
+   sink (140ms) then navigate to plugin.trialUrl (the Downloads portal).
+   It's a real <a> — no-JS and keyboard get plain navigation.
+
+   Placement is the CALLER's job ([slug].astro positions it between the title
+   and the door); this component only owns the stamp box + its tilt. */
+import type { Plugin } from '../data/plugins';
+import patchImg from '../assets/plugins/revlimiter-buy-patch.png';
+
+interface Props {
+  plugin: Plugin;
+}
+
+const { plugin } = Astro.props;
+---
+
+<a
+  class="trial-stamp"
+  href={plugin.trialUrl}
+  data-trial-stamp
+  style={`--patch-url:url(${patchImg.src});`}
+  aria-label={`Get your free 14 days trial of ${plugin.name} — go to downloads`}
+>
+  <span class="ts-plate"></span>
+  <span class="ts-ink">
+    <span class="ts-top">Get your <em>FREE</em></span>
+    <span class="ts-bot">14 days trial</span>
+  </span>
+  <span class="ts-lit"></span>
+  <span class="ts-glow"></span>
+
+  {/* whisper-strength worn-glyph filter — same recipe family as the door's
+      #rc-worn-buy but scale 1.2 / no blur, so ink stays crisp at ~300px.
+      Same-document inline, never display:none (WebKit). */}
+  <svg class="ts-defs" width="0" height="0" aria-hidden="true">
+    <defs>
+      <filter id="ts-worn-lite" x="-25%" y="-50%" width="150%" height="200%" color-interpolation-filters="sRGB">
+        <feTurbulence type="fractalNoise" baseFrequency="0.09 0.13" numOctaves="2" seed="11" result="warp"/>
+        <feDisplacementMap in="SourceGraphic" in2="warp" scale="1.2" xChannelSelector="R" yChannelSelector="G"/>
+      </filter>
+    </defs>
+  </svg>
+</a>
+
+<style>
+  .trial-stamp {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    aspect-ratio: 620 / 237;             /* the patch asset's own box */
+    background: var(--patch-url) center / 100% 100% no-repeat;
+    cursor: pointer;
+    container-type: inline-size;         /* ink sizes in cqw of the stamp */
+    filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.55));
+    transform: rotate(2deg);
+    transition: transform 0.12s ease, filter 0.12s ease;
+    text-decoration: none;
+  }
+
+  /* B3 night plate: patch multiplied down to the site's dark metal, masked to
+     the patch alpha so the ragged edges keep their bite. */
+  .ts-plate {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    mix-blend-mode: multiply;
+    background: #241d15;
+    opacity: 0.88;
+    -webkit-mask-image: var(--patch-url);
+    -webkit-mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+            mask-image: var(--patch-url);
+            mask-size: 100% 100%;
+            mask-repeat: no-repeat;
+    z-index: 0;
+  }
+
+  .ts-ink {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 1;
+    filter: url(#ts-worn-lite);
+  }
+
+  .ts-top,
+  .ts-bot {
+    font-family: Impact, Haettenschweiler, 'Arial Narrow', sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    line-height: 0.98;
+    white-space: nowrap;
+    color: #e8e2d8;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+  }
+
+  .ts-top { font-size: 11.5cqw; letter-spacing: 0.06em; }
+  .ts-bot { font-size: 14.5cqw; }
+  .ts-top em { font-style: normal; color: #e8c878; }
+
+  /* hover lamp — the door's L2 recipe (warm screen wash masked to the patch
+     + blurred halo past the edges) */
+  .ts-lit {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    mix-blend-mode: screen;
+    background: radial-gradient(125% 125% at 50% 18%,
+        rgba(255, 247, 236, 0.9) 0%,
+        rgba(255, 247, 236, 0.5) 55%,
+        rgba(255, 247, 236, 0.26) 100%);
+    -webkit-mask-image: var(--patch-url);
+    -webkit-mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+            mask-image: var(--patch-url);
+            mask-size: 100% 100%;
+            mask-repeat: no-repeat;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+    z-index: 2;
+  }
+
+  .ts-glow {
+    position: absolute;
+    inset: -35%;
+    pointer-events: none;
+    mix-blend-mode: screen;
+    background: radial-gradient(72% 72% at 50% 45%,
+        rgba(255, 232, 196, 0.55) 0%,
+        rgba(237, 199, 154, 0.28) 45.6%,
+        rgba(0, 0, 0, 0) 75.9%);
+    opacity: 0;
+    filter: blur(22px);
+    transition: opacity 0.18s ease;
+  }
+
+  .trial-stamp:hover .ts-lit { opacity: 0.3; }
+  .trial-stamp:hover .ts-glow { opacity: 0.44; }
+  .trial-stamp:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 3px; }
+
+  /* THE PRESS — stamp sinks into the page, shadow collapses. :active covers
+     no-JS; the script below holds .pressed through the 140ms pre-nav beat. */
+  .trial-stamp:active,
+  .trial-stamp.pressed {
+    transform: rotate(2deg) translateY(4px) scale(0.965);
+    filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.8));
+  }
+
+  .ts-defs { position: absolute; width: 0; height: 0; }  /* never display:none */
+
+  /* hover-only halo (no hover on touch) — its -35% inset was the page's only
+     horizontal overflow on phones, so keep it card-bound there (same fix as
+     the crane's .rc-buysq-glow). */
+  @media (max-width: 900px) {
+    .ts-glow { inset: 0; }
+  }
+</style>
+
+<script>
+  // Let the press be SEEN before leaving: swallow the instant nav, hold the
+  // pressed frame for a beat, then go. Modified clicks (new-tab etc.) pass
+  // through untouched.
+  document.querySelectorAll<HTMLAnchorElement>('[data-trial-stamp]').forEach((a) => {
+    a.addEventListener('click', (e) => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+      e.preventDefault();
+      a.classList.add('pressed');
+      window.setTimeout(() => { window.location.href = a.href; }, 140);
+    });
+  });
+</script>

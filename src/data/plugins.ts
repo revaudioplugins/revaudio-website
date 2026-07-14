@@ -88,6 +88,12 @@ export interface Plugin {
   reviewsAvg: number;
   /** Optional part-highlighter stage config — see `Stage`. */
   stage?: Stage;
+  /** Free-trial CTA target (the Downloads portal). When set, the product page
+   *  mounts the trial stamp between the title and the buy card. */
+  trialUrl?: string;
+  /** Embedded YouTube tutorial — when set, a video section renders between
+   *  "Hear it" and "System requirements" on the product page. */
+  tutorialVideo?: { title: string; youtubeId: string; blurb?: string };
 }
 
 const baseSystemReq: SystemReq = {
@@ -147,6 +153,12 @@ export const plugins: Plugin[] = [
     systemReq: baseSystemReq,
     reviewsCount: 0,
     reviewsAvg: 0,
+    trialUrl: 'https://revlimiter-license.revaudio.workers.dev/download',
+    tutorialVideo: {
+      title: "Driver's Manual",
+      youtubeId: 'Og4PRlBFco8',
+      blurb: 'Everything under the hood — the full RevLimiter tutorial, from first insert to redline.',
+    },
     // Part rects measured against src/assets/plugins/revlimiter-hero.png
     // (2542x1226 source). Percent of image, top-left origin.
     stage: {
