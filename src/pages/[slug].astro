@@ -74,15 +74,20 @@ const altShots = hasStage
       <div class:list={['product-head', crane && 'product-head--crane']}>
         <div class="product-info">
           <span class="status-pill">{plugin.statusLabel}</span>
-          <h1>{plugin.name}</h1>
-          {/* Free-trial stamp — desktop: absolute in the head, centered in the
-              gap between the title's right edge and the door; mobile: static
-              between the title and the tagline. Bench: bench/trial-stamp-test.html. */}
-          {plugin.trialUrl && (
-            <div class="trial-slot">
-              <TrialStamp plugin={plugin} />
-            </div>
-          )}
+          {/* Title row — the trial stamp composes WITH the h1 (flex sibling),
+              riding just above its cap line like a sticker slapped next to the
+              wordmark. Anchored to the title, not to pixel coordinates, so the
+              composition reuses on any plugin page regardless of name length
+              (wraps below the title if it can't fit). Mobile: static between
+              the title and the tagline. Bench: bench/trial-stamp-test.html. */}
+          <div class="title-row">
+            <h1>{plugin.name}</h1>
+            {plugin.trialUrl && (
+              <div class="trial-slot">
+                <TrialStamp plugin={plugin} />
+              </div>
+            )}
+          </div>
           <p class="tagline">{plugin.tagline}</p>
           <p class="plain-what">{plugin.plainWhat}</p>
           <StarRating rating={plugin.reviewsAvg} count={plugin.reviewsCount} scale={1.05} />
@@ -242,15 +247,16 @@ const altShots = hasStage
 
   {/* DEBUG (position bench): #stampedit drags the trial stamp live on the real
       page and prints the CSS to paste into .trial-slot — same hash-gate family
-      as the crane's #cranep/#cranelight. No-op without the hash. */}
+      as the crane's #cranep/#cranelight. No-op without the hash. The slot sits
+      in the title-row flex now, so the bench nudges via transform:translate
+      (a delta on the flex position), not left/top. */}
   {plugin.trialUrl && (
     <script>
       // NOTE: conditionally-rendered scripts are inlined VERBATIM (no TS
       // compile) — keep this block plain JS.
       const q = new URLSearchParams(location.hash.slice(1));
       const slot = document.querySelector('.trial-slot');
-      const head = document.querySelector('.product-head');
-      if (q.has('stampedit') && slot && head) {
+      if (q.has('stampedit') && slot) {
         // editing: the stamp must not navigate
         slot.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); }, true);
         slot.style.cursor = 'move';
@@ -258,42 +264,32 @@ const altShots = hasStage
         // top-right, clear of the cookie banner (bottom strip)
         out.style.cssText = 'position:fixed;top:90px;right:12px;z-index:9999;background:#000c;color:#e8c878;font:12px/1.6 monospace;padding:10px 14px;border:1px solid #3a3128;border-radius:6px;white-space:pre';
         document.body.appendChild(out);
-        const report = () => {
-          const hr = head.getBoundingClientRect();
-          const sr = slot.getBoundingClientRect();
-          const leftPct = (((sr.left - hr.left) / hr.width) * 100).toFixed(1);
-          const topPx = Math.round(sr.top - hr.top);
-          out.textContent = `.trial-slot {\n  top: ${topPx}px;\n  left: ${leftPct}%;\n  width: ${Math.round(sr.width)}px;\n}\ndrag stamp · arrows nudge · shift=10px`;
-          return { leftPct, topPx };
+        let dx = 0, dy = 0;
+        const apply = () => {
+          slot.style.transform = `translate(${dx}px, ${dy}px)`;
+          out.textContent = `.trial-slot {\n  transform: translate(${dx}px, ${dy}px);\n}\ndrag stamp · arrows nudge · shift=10px`;
         };
-        report();
+        apply();
         let drag = null;
         slot.addEventListener('pointerdown', (e) => {
-          const hr = head.getBoundingClientRect();
-          const sr = slot.getBoundingClientRect();
-          drag = { x: e.clientX, y: e.clientY, l: sr.left - hr.left, t: sr.top - hr.top };
+          drag = { x: e.clientX - dx, y: e.clientY - dy };
           slot.setPointerCapture(e.pointerId);
           e.preventDefault();
         });
         slot.addEventListener('pointermove', (e) => {
           if (!drag) return;
-          const hr = head.getBoundingClientRect();
-          slot.style.left = `${(((drag.l + e.clientX - drag.x) / hr.width) * 100).toFixed(2)}%`;
-          slot.style.top = `${Math.round(drag.t + e.clientY - drag.y)}px`;
-          report();
+          dx = Math.round(e.clientX - drag.x);
+          dy = Math.round(e.clientY - drag.y);
+          apply();
         });
-        slot.addEventListener('pointerup', () => { drag = null; report(); });
+        slot.addEventListener('pointerup', () => { drag = null; apply(); });
         window.addEventListener('keydown', (e) => {
           if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) return;
           e.preventDefault();
-          const hr = head.getBoundingClientRect();
-          const sr = slot.getBoundingClientRect();
           const step = e.shiftKey ? 10 : 1;
-          const dx = e.key === 'ArrowLeft' ? -step : e.key === 'ArrowRight' ? step : 0;
-          const dy = e.key === 'ArrowUp' ? -step : e.key === 'ArrowDown' ? step : 0;
-          slot.style.left = `${((((sr.left - hr.left) + dx) / hr.width) * 100).toFixed(2)}%`;
-          slot.style.top = `${Math.round(sr.top - hr.top + dy)}px`;
-          report();
+          dx += e.key === 'ArrowLeft' ? -step : e.key === 'ArrowRight' ? step : 0;
+          dy += e.key === 'ArrowUp' ? -step : e.key === 'ArrowDown' ? step : 0;
+          apply();
         });
       }
     </script>
@@ -598,25 +594,33 @@ const altShots = hasStage
   }
 
   /* ── Trial stamp slot — the stamp itself lives in TrialStamp.astro; this
-     slot owns WHERE it sits. Desktop: absolute over the head, centered in the
-     gap between the title's right edge and the door's left edge, at title
-     height (bench-measured at 1280w; % of the head tracks the grid as it
-     flexes). The head is the anchor box. ── */
+     slot owns WHERE it sits. Desktop: flex sibling of the h1 in .title-row,
+     lifted above the cap line (negative margin) so it reads as a sticker
+     slapped beside the wordmark. The title is the anchor — no head-relative
+     coordinates — so the pair composes the same for any plugin name. ── */
   .product-head { position: relative; }
 
+  .title-row {
+    display: flex;
+    align-items: flex-start;
+    flex-wrap: wrap;          /* a long plugin name pushes the stamp below, never clips */
+    column-gap: clamp(1.25rem, 2.5vw, 2.25rem);
+  }
+
+  .title-row h1 { flex: 0 0 auto; }
+
   .trial-slot {
-    position: absolute;
-    top: 285px;               /* stampedit bench, user re-placed 2026-07-14b */
-    left: 47.8%;
+    flex: 0 0 auto;
     width: min(300px, 26vw);
+    margin-top: -18px;        /* rides above the title cap line */
     z-index: 3;
   }
 
   @media (max-width: 900px) {
-    /* Static on phones: the door floats over the head up top, so the stamp
+    /* Stacked on phones: the door floats over the head up top, so the stamp
        flows in the reading instead — centered between the title and tagline. */
+    .title-row { display: block; }
     .trial-slot {
-      position: static;
       width: min(260px, 72vw);
       margin: 0.75rem auto 1rem;
     }
