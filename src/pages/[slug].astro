@@ -73,7 +73,7 @@ const altShots = hasStage
 
       <div class:list={['product-head', crane && 'product-head--crane']}>
         <div class="product-info">
-          <span class="status-pill">{plugin.statusLabel}</span>
+          {!buyable && <span class="status-pill">{plugin.statusLabel}</span>}
           {/* Title row — the trial stamp composes WITH the h1 (flex sibling),
               riding just above its cap line like a sticker slapped next to the
               wordmark. Anchored to the title, not to pixel coordinates, so the
@@ -90,7 +90,9 @@ const altShots = hasStage
           </div>
           <p class="tagline">{plugin.tagline}</p>
           <p class="plain-what">{plugin.plainWhat}</p>
-          <StarRating rating={plugin.reviewsAvg} count={plugin.reviewsCount} scale={1.05} />
+          <div class="stars-wrap">
+            <StarRating rating={plugin.reviewsAvg} count={plugin.reviewsCount} scale={1.05} />
+          </div>
           <p class="long">{plugin.longPitch}</p>
 
           <Gallery hero={plugin.heroImage} images={plugin.galleryImages} alt={`${plugin.name} interface`} />
@@ -612,7 +614,7 @@ const altShots = hasStage
     position: absolute;
     left: 100%;               /* right edge of the title */
     top: 50%;
-    transform: translateY(-50%);
+    transform: translateY(calc(-50% - 10px));
     margin-left: clamp(1rem, 2vw, 2.25rem);
     width: min(300px, 26vw);
     z-index: 3;
@@ -701,20 +703,23 @@ const altShots = hasStage
       display: flex;
       flex-direction: column;
     }
-    .product-head--crane .product-info h1 { margin-top: 0; }
 
-    /* The gallery clears the door instead of running under it: door height =
-       width × 1448/808 ≈ min(117.9vw, 577px); minus the 3rem (48px) the door is
-       pulled above the head, plus 12px breathing room → doorH − 36px. order:-1
-       lifts it above the reading (DOM order keeps it last, for desktop).
-       :global — .gallery is the Gallery child component's root, so it doesn't
-       carry this page's scope hash. */
-    .product-head--crane .product-info :global(.gallery) {
-      order: -1;
+    /* Explicit order: title-row first, gallery second, then the reading.
+       Door-clearing margin moves to title-row (door height ≈ min(117.9vw,577px);
+       pulled 3rem above the head; 36px breathing room).
+       :global — .gallery is the Gallery component's root, no page scope hash. */
+    .product-head--crane .product-info .title-row {
+      order: 1;
       margin-top: max(0px, calc(min(117.9vw, 577px) - 36px));
-      /* breathing room between the screenshot and the reading below it */
+    }
+    .product-head--crane .product-info :global(.gallery) {
+      order: 2;
       margin-bottom: 1.75rem;
     }
+    .product-head--crane .product-info .tagline   { order: 3; }
+    .product-head--crane .product-info .plain-what { order: 4; }
+    .product-head--crane .product-info .stars-wrap { order: 5; }
+    .product-head--crane .product-info .long      { order: 6; }
 
     /* Centre the header reading: the door floats top-right above this column,
        so a centred stack reads as a composed hero rather than ragged-left
