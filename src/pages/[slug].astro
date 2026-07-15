@@ -704,19 +704,19 @@ const altShots = hasStage
       flex-direction: column;
     }
 
-    /* Explicit order: title-row first, gallery second, then the reading.
-       Door-clearing margin moves to title-row (door height ≈ min(117.9vw,577px);
+    /* Order: title → tagline → gallery → rest of reading.
+       Door-clearing margin on title-row (door height ≈ min(117.9vw,577px);
        pulled 3rem above the head; 36px breathing room).
        :global — .gallery is the Gallery component's root, no page scope hash. */
     .product-head--crane .product-info .title-row {
       order: 1;
       margin-top: max(0px, calc(min(117.9vw, 577px) - 36px));
     }
+    .product-head--crane .product-info .tagline   { order: 2; }
     .product-head--crane .product-info :global(.gallery) {
-      order: 2;
+      order: 3;
       margin-bottom: 1.75rem;
     }
-    .product-head--crane .product-info .tagline   { order: 3; }
     .product-head--crane .product-info .plain-what { order: 4; }
     .product-head--crane .product-info .stars-wrap { order: 5; }
     .product-head--crane .product-info .long      { order: 6; }
