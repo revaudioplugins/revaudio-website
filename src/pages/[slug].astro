@@ -704,11 +704,12 @@ const altShots = hasStage
       flex-direction: column;
     }
 
-    /* Order: title → tagline → gallery → rest of reading.
-       Door-clearing margin on title-row (door height ≈ min(117.9vw,577px);
-       pulled 3rem above the head; 36px breathing room).
+    /* Flatten title-row so h1 and .trial-slot become independent flex children,
+       letting the trial stamp order AFTER the gallery. Door-clearing margin
+       moves to h1 (display:contents has no box, so margins on it are inert).
        :global — .gallery is the Gallery component's root, no page scope hash. */
-    .product-head--crane .product-info .title-row {
+    .product-head--crane .product-info .title-row { display: contents; }
+    .product-head--crane .product-info h1 {
       order: 1;
       margin-top: max(0px, calc(min(117.9vw, 577px) - 36px));
     }
@@ -717,9 +718,10 @@ const altShots = hasStage
       order: 3;
       margin-bottom: 1.75rem;
     }
-    .product-head--crane .product-info .plain-what { order: 4; }
-    .product-head--crane .product-info .stars-wrap { order: 5; }
-    .product-head--crane .product-info .long      { order: 6; }
+    .product-head--crane .product-info .trial-slot { order: 4; }
+    .product-head--crane .product-info .plain-what { order: 5; }
+    .product-head--crane .product-info .stars-wrap { order: 6; }
+    .product-head--crane .product-info .long      { order: 7; }
 
     /* Centre the header reading: the door floats top-right above this column,
        so a centred stack reads as a composed hero rather than ragged-left
