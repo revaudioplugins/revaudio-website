@@ -43,4 +43,16 @@ export const site = {
     workerUrl: 'https://revlimiter-beta.revaudio.workers.dev/submit',
     betaAccessCode: 'REVBETA',
   },
+
+  /**
+   * Affiliate Program application form (src/pages/affiliate.astro). Separate
+   * Formspree form from the newsletter one — different data, different
+   * destination. GO-LIVE: create a free form at https://formspree.io (log in
+   * with / add info@revaudio.net as a notification recipient, since that's
+   * where applications need manual review), then replace the
+   * REPLACE_WITH_FORM_ID token below. While the token is in place, the form
+   * shows an honest "applications open shortly" notice and never pretends to
+   * capture.
+   */
+  affiliateFormEndpoint: 'https://formspree.io/f/REPLACE_WITH_FORM_ID',
 };

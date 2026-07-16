@@ -1,0 +1,207 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { site } from '../data/site';
+
+const endpoint = site.affiliateFormEndpoint;
+---
+
+<BaseLayout
+  title="Affiliate Program"
+  description="Promote RevAudio plugins to your audience and earn a commission on every sale. Apply below — applications are reviewed by hand."
+>
+  <section class="plugin-detail affiliate">
+    <div class="container" style="max-width: 760px;" data-reveal>
+      <h1>Affiliate Program</h1>
+      <p class="pitch">
+        If you make content for producers and mixers, we'd like to work with you.
+        Share RevAudio plugins with your audience and earn a commission on every sale
+        that comes through your link.
+      </p>
+
+      <h2>How it works</h2>
+      <p>
+        Fill in the form below. We review every application by hand — there's no
+        instant auto-approval — to make sure it's a good fit for both sides. If
+        approved, you'll get a unique referral link and commission details by email.
+      </p>
+
+      <h2>Apply</h2>
+      <form class="affiliate-form" action={endpoint} method="POST" data-affiliate-form>
+        <div class="field">
+          <label for="aff-name">Name</label>
+          <input id="aff-name" type="text" name="name" autocomplete="name" required />
+        </div>
+
+        <div class="field">
+          <label for="aff-email">Email</label>
+          <input id="aff-email" type="email" name="email" autocomplete="email" required />
+        </div>
+
+        <div class="field">
+          <label for="aff-channel">Website / main channel URL</label>
+          <input
+            id="aff-channel"
+            type="url"
+            name="channel_url"
+            placeholder="https://youtube.com/@yourname"
+            required
+          />
+        </div>
+
+        <div class="field">
+          <label for="aff-platform">Primary platform</label>
+          <select id="aff-platform" name="platform" required>
+            <option value="">— pick —</option>
+            <option>YouTube</option>
+            <option>Instagram</option>
+            <option>TikTok</option>
+            <option>Blog / website</option>
+            <option>Newsletter</option>
+            <option>Discord / community</option>
+            <option>Other</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="aff-audience">Audience size (rough)</label>
+          <input id="aff-audience" type="text" name="audience_size" placeholder="e.g. 12k YouTube subs" />
+        </div>
+
+        <div class="field">
+          <label for="aff-why">Why do you want to promote RevAudio?</label>
+          <textarea
+            id="aff-why"
+            name="message"
+            rows="4"
+            placeholder="A bit about your audience and how you'd feature the plugins."
+            required
+          ></textarea>
+        </div>
+
+        <!-- honeypot: real users never fill this; bots do -->
+        <input type="text" name="_gotcha" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
+        <button type="submit" class="btn-apply">Submit application</button>
+      </form>
+      <p class="affiliate-status" role="status" aria-live="polite" hidden></p>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  document.querySelectorAll<HTMLFormElement>('form[data-affiliate-form]').forEach((form) => {
+    const status = form.parentElement?.querySelector<HTMLElement>('.affiliate-status');
+    // Build-time placeholder still in the action ⇒ not wired to a real backend yet.
+    const wired = !form.action.includes('REPLACE_WITH_FORM_ID');
+
+    const show = (msg: string, ok: boolean) => {
+      if (!status) return;
+      status.textContent = msg;
+      status.hidden = false;
+      status.classList.toggle('ok', ok);
+      status.classList.toggle('err', !ok);
+    };
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!wired) {
+        show('Applications open shortly — this form isn’t live yet, nothing was sent.', false);
+        return;
+      }
+      const submitBtn = form.querySelector<HTMLButtonElement>('button[type="submit"]');
+      if (submitBtn) submitBtn.disabled = true;
+      try {
+        const res = await fetch(form.action, {
+          method: 'POST',
+          body: new FormData(form),
+          headers: { Accept: 'application/json' },
+        });
+        if (res.ok) {
+          form.hidden = true;
+          show('Thanks — we review every application by hand and will email you either way.', true);
+        } else {
+          show('Something went wrong. Try again, or email info@revaudio.net.', false);
+          if (submitBtn) submitBtn.disabled = false;
+        }
+      } catch {
+        show('Network hiccup — try again in a moment.', false);
+        if (submitBtn) submitBtn.disabled = false;
+      }
+    });
+  });
+</script>
+
+<style>
+  .affiliate .pitch { max-width: 60ch; }
+
+  .affiliate-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    margin-top: 1.5rem;
+    max-width: 480px;
+  }
+
+  .affiliate-form .field { display: flex; flex-direction: column; gap: 0.4rem; }
+
+  .affiliate-form label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--fg-faint);
+  }
+
+  .affiliate-form input,
+  .affiliate-form select,
+  .affiliate-form textarea {
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    color: var(--fg);
+    border-radius: 8px;
+    padding: 0.65rem 0.75rem;
+    font: inherit;
+    font-size: 0.95rem;
+    resize: vertical;
+  }
+
+  .affiliate-form input:focus,
+  .affiliate-form select:focus,
+  .affiliate-form textarea:focus {
+    outline: none;
+    border-color: var(--brass);
+    box-shadow: 0 0 0 2px rgba(201, 162, 75, 0.2);
+  }
+
+  /* honeypot — visually and semantically hidden, still submittable by bots */
+  .affiliate-form .hp {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  .btn-apply {
+    align-self: flex-start;
+    margin-top: 0.5rem;
+    background: linear-gradient(180deg, var(--brass-bright), var(--brass));
+    color: var(--bg-0);
+    border: none;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.95rem;
+  }
+  .btn-apply:hover { filter: brightness(1.08); }
+  .btn-apply:disabled { opacity: 0.6; cursor: default; }
+
+  .affiliate-status {
+    margin-top: 1.25rem;
+    max-width: 480px;
+    font-size: 0.95rem;
+  }
+  .affiliate-status.ok { color: var(--brass-bright); }
+  .affiliate-status.err { color: var(--fg-dim); }
+</style>
