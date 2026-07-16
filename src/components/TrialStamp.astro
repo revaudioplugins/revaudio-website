@@ -173,10 +173,19 @@ const { plugin } = Astro.props;
   // pressed frame for a beat, then go. Modified clicks (new-tab etc.) pass
   // through untouched.
   document.querySelectorAll<HTMLAnchorElement>('[data-trial-stamp]').forEach((a) => {
+    // Per-element flag: prevents double-fire if the stamp is somehow clicked
+    // twice before the page navigates away (e.g. rapid tap on touch devices).
+    let trialEventFired = false;
     a.addEventListener('click', (e) => {
       if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
       e.preventDefault();
       a.classList.add('pressed');
+      // Fire StartTrial once per stamp click. Guarded by window.fbq so it only
+      // runs when the user has accepted cookies and the pixel is initialised.
+      if (!trialEventFired) {
+        trialEventFired = true;
+        try { if (window.fbq) window.fbq('track', 'StartTrial'); } catch (_) {}
+      }
       window.setTimeout(() => { window.location.href = a.href; }, 140);
     });
   });
