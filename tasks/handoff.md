@@ -1,6 +1,22 @@
 # Website handoff
 
-Updated: 2026-07-14 (trial stamp + Driver's Manual session close)
+Updated: 2026-07-16 (Affiliate Program page)
+
+## 2026-07-16 — Affiliate Program page (693e2f3, live)
+- New `/affiliate` page (nav label "Affiliates" — full "Affiliate Program" kept as page title/H1;
+  "Affiliate Program" alone was the widest nav item by 60px+, so shortened to avoid worsening the
+  existing 700px-to-~1074px dead zone where the desktop nav has no burger fallback and can overflow —
+  that gap pre-dates this change, not fixed here, just not made worse).
+- Application form (name, email, channel URL, platform select, audience size, why) POSTs to
+  `site.affiliateFormEndpoint` in `src/data/site.ts` — currently a `REPLACE_WITH_FORM_ID` placeholder,
+  same honesty-gated pattern as the newsletter form (shows an honest "not live yet" notice, never
+  pretends to capture).
+- **STILL TO DO (manual, needs Formspree dashboard access):** create a new Formspree form (separate
+  from the newsletter one — different data/destination) and make sure its notification recipient is
+  info@revaudio.net, since applications need manual review (no auto-approve). Paste the real form ID
+  into `affiliateFormEndpoint` once created.
+- Approval flow is manual-review-only by design (matches how Waves/iZotope-style plugin affiliate
+  programs work) — no auto-accept path was built.
 
 ## 2026-07-14 — RevLimiter free-trial stamp + Driver's Manual video (2c6e166, live)
 - New `TrialStamp.astro`: "GET YOUR FREE 14 DAYS TRIAL" on the door's buy-patch asset (B3 night-plate take), L2 hover lamp, press-in → navigates to the license worker `/download`. Mounted in `[slug].astro` between title and door (`.trial-slot` top 25px / left 48.4%, user-placed).
