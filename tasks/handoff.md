@@ -1,6 +1,17 @@
 # Website handoff
 
-Updated: 2026-07-16 (Affiliate Program page)
+Updated: 2026-07-19 (Affiliate Program form wired live)
+
+## 2026-07-19 — Affiliate Program Formspree endpoint wired (e0f8160, live)
+- `site.affiliateFormEndpoint` now points at the real form: `https://formspree.io/f/mykrwolg`
+  ("RevAudio Affiliate Applications" form, created by Gil). No longer a placeholder — the form
+  will actually submit.
+- Also added (a34dbb4): H1 splits "Affiliate" / "Program" across two lines; an optional
+  "Other platforms" textarea lets applicants list more than one channel (one per line) instead
+  of being limited to a single URL + platform pick.
+- Notification recipient confirmed set to info@revaudio.net in Formspree Settings (2026-07-19).
+- **STILL TO DO:** one real test submission on the live site (not localhost — Formspree may restrict
+  by origin) to confirm the email actually lands in the info@revaudio.net inbox end-to-end.
 
 ## 2026-07-16 — Affiliate Program page (693e2f3, live)
 - New `/affiliate` page (nav label "Affiliates" — full "Affiliate Program" kept as page title/H1;
@@ -8,13 +19,7 @@ Updated: 2026-07-16 (Affiliate Program page)
   existing 700px-to-~1074px dead zone where the desktop nav has no burger fallback and can overflow —
   that gap pre-dates this change, not fixed here, just not made worse).
 - Application form (name, email, channel URL, platform select, audience size, why) POSTs to
-  `site.affiliateFormEndpoint` in `src/data/site.ts` — currently a `REPLACE_WITH_FORM_ID` placeholder,
-  same honesty-gated pattern as the newsletter form (shows an honest "not live yet" notice, never
-  pretends to capture).
-- **STILL TO DO (manual, needs Formspree dashboard access):** create a new Formspree form (separate
-  from the newsletter one — different data/destination) and make sure its notification recipient is
-  info@revaudio.net, since applications need manual review (no auto-approve). Paste the real form ID
-  into `affiliateFormEndpoint` once created.
+  `site.affiliateFormEndpoint` in `src/data/site.ts`.
 - Approval flow is manual-review-only by design (matches how Waves/iZotope-style plugin affiliate
   programs work) — no auto-accept path was built.
 
