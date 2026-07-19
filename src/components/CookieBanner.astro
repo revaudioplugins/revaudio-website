@@ -1,7 +1,8 @@
 ---
 /* Cookie consent banner — shown once per browser, stored in localStorage.
-   Accepting also initialises Meta Pixel; declining skips all tracking cookies.
-   Cloudflare Web Analytics is cookieless and fires unconditionally. */
+   Accepting also initialises Meta Pixel and the Google Ads tag (gtag.js);
+   declining skips all tracking cookies. Cloudflare Web Analytics is
+   cookieless and fires unconditionally. */
 ---
 
 <div
@@ -54,6 +55,18 @@
       fbq('track', 'PageView');
     }
 
+    function initGoogleAds() {
+      if (window.gtag) return;
+      window.dataLayer = window.dataLayer || [];
+      window.gtag = function () { window.dataLayer.push(arguments); };
+      var t = document.createElement('script');
+      t.async = true;
+      t.src = 'https://www.googletagmanager.com/gtag/js?id=AW-18334323184';
+      document.head.appendChild(t);
+      gtag('js', new Date());
+      gtag('config', 'AW-18334323184');
+    }
+
     function showBanner() {
       banner.hidden = false;
       requestAnimationFrame(function () { banner.classList.add('cb--visible'); });
@@ -75,6 +88,7 @@
 
     if (stored === 'accepted') {
       initMetaPixel();
+      initGoogleAds();
       return;
     }
     if (stored === 'declined') {
@@ -93,6 +107,7 @@
         try { localStorage.setItem(KEY, 'accepted'); } catch (e) {}
         hideBanner();
         initMetaPixel();
+        initGoogleAds();
       });
     }
 

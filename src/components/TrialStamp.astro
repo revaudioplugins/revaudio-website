@@ -180,11 +180,19 @@ const { plugin } = Astro.props;
       if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
       e.preventDefault();
       a.classList.add('pressed');
-      // Fire StartTrial once per stamp click. Guarded by window.fbq so it only
-      // runs when the user has accepted cookies and the pixel is initialised.
+      // Fire StartTrial / Google Ads conversion once per stamp click. Each is
+      // guarded by its own global so it only runs once cookie consent has
+      // initialised that vendor's tag (see CookieBanner.astro).
       if (!trialEventFired) {
         trialEventFired = true;
         try { if (window.fbq) window.fbq('track', 'StartTrial'); } catch (_) {}
+        try {
+          if (window.gtag) window.gtag('event', 'conversion', {
+            send_to: 'AW-18334323184/KDtwCLHa4dIcEPCjvqZE',
+            value: 1.0,
+            currency: 'ILS',
+          });
+        } catch (_) {}
       }
       window.setTimeout(() => { window.location.href = a.href; }, 140);
     });
