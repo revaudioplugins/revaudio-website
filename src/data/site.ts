@@ -54,5 +54,5 @@ export const site = {
    * shows an honest "applications open shortly" notice and never pretends to
    * capture.
    */
-  affiliateFormEndpoint: 'https://formspree.io/f/REPLACE_WITH_FORM_ID',
+  affiliateFormEndpoint: 'https://formspree.io/f/mykrwolg',
 };
