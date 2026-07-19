@@ -10,8 +10,18 @@ Updated: 2026-07-19 (Affiliate Program form wired live)
   "Other platforms" textarea lets applicants list more than one channel (one per line) instead
   of being limited to a single URL + platform pick.
 - Notification recipient confirmed set to info@revaudio.net in Formspree Settings (2026-07-19).
-- **STILL TO DO:** one real test submission on the live site (not localhost — Formspree may restrict
-  by origin) to confirm the email actually lands in the info@revaudio.net inbox end-to-end.
+- **BLOCKER found 2026-07-19: real submissions fail with "Failed to fetch"/"Network hiccup" on the
+  LIVE site.** Root cause is the edge Cloudflare CSP (Rules → Transform Rules → Modify Response
+  Header) — its `connect-src` is `'self' https://api.paddle.com https://*.lemonsqueezy.com
+  https://www.facebook.com` and does NOT include `https://formspree.io`, so the browser blocks the
+  fetch() before it reaches Formspree at all. Confirmed via `curl -sI https://revaudio.net/affiliate/`
+  and reproducing the fetch directly in-page (TypeError: Failed to fetch). Same class of bug as the
+  earlier webfonts/YouTube-frame CSP gaps — dashboard-only fix, Wrangler token is zone:read so CLI
+  can't touch Transform Rules. **Fix: add `https://formspree.io` to connect-src.**
+  **This almost certainly also breaks the newsletter form** (same fetch-to-formspree.io pattern) —
+  re-test both once the CSP is fixed.
+- STILL TO DO once CSP is fixed: one real test submission on the live site to confirm the email
+  actually lands in the info@revaudio.net inbox end-to-end.
 
 ## 2026-07-16 — Affiliate Program page (693e2f3, live)
 - New `/affiliate` page (nav label "Affiliates" — full "Affiliate Program" kept as page title/H1;
