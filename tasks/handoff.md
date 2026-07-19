@@ -1,6 +1,28 @@
 # Website handoff
 
-Updated: 2026-07-19 (Affiliate Program form wired live)
+Updated: 2026-07-19 (CSP fixed + forms POST successfully — email delivery not yet confirmed)
+
+## 2026-07-19 — CSP connect-src fixed, forms POST successfully; email delivery still unconfirmed
+Gil added `https://formspree.io` to the `connect-src` directive in the Cloudflare Transform Rule
+("Security Headers", Rules → Transform Rules → Modify Response Header). Verified via curl
+(cache-busted) that the edge now serves the updated CSP, then re-tested both forms end-to-end in
+a real browser tab (had to cache-bust the tab's own load once — the first retry still hit a
+pre-fix cached document even though the edge was already updated):
+- **Affiliate form**: real UI submission → success message rendered, POST returned `ok:true`.
+- **Newsletter form** (`f/maqzlgwa`): same fix covers it (same connect-src rule) — confirmed with
+  a direct POST, `ok:true`.
+- **BUT: Gil reports no email received yet at info@revaudio.net.** `ok:true` from Formspree's API
+  only means the submission was accepted, not that a notification email actually sent. Likely
+  cause: Formspree requires a one-time "confirm this form" click (sent to the notification email)
+  on a newly created form's first submission before ANY notifications deliver — same behavior
+  noted for the newsletter form back on 2026-06-13 ("Formspree sends owner a one-time confirm
+  email on the FIRST submission to activate the form"). **Next step: check info@revaudio.net inbox
+  + spam for that confirmation email, click it, then re-test.**
+- **Cleanup needed regardless:** several test submissions (names like "CSP Fix Verification...")
+  landed in both Formspree forms' Submissions tabs during this diagnosis — clear those out so they
+  aren't mistaken for real applicants/subscribers.
+- New CSP connect-src for reference: `'self' https://api.paddle.com https://*.lemonsqueezy.com
+  https://www.facebook.com https://formspree.io`.
 
 ## 2026-07-19 — Affiliate Program Formspree endpoint wired (e0f8160, live)
 - `site.affiliateFormEndpoint` now points at the real form: `https://formspree.io/f/mykrwolg`
