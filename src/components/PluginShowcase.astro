@@ -362,10 +362,29 @@ const peekClass = (i: number) => {
        jump, so it just fades/grows into place rather than sliding from a
        specific side. */
     transform: scale(0.55);
-    /* card frame — matches PluginCard store aesthetic */
-    background: var(--bg-1);
-    border: 1px solid var(--border-bright);
+    /* card frame — machined-brass edge + faint textured face. Two-layer
+       background: face gradient clipped to padding-box, brass gradient clipped
+       to border-box showing through the transparent 1px border. Brighter at
+       the top (light catch), darkening down. No extra DOM — bench coordinate
+       space untouched. */
+    border: 1px solid transparent;
+    background:
+      repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.012) 0 2px, transparent 2px 6px) padding-box,
+      linear-gradient(180deg, #17130d 0%, var(--bg-1) 42%, #0d0b08 100%) padding-box,
+      linear-gradient(180deg, #d9b36a 0%, #8a6a33 28%, #453518 62%, #6e5527 100%) border-box;
     box-shadow: 0 12px 48px rgba(0, 0, 0, 0.55);
+  }
+  /* Soft radial glow grounding the shot region (shot box sits at ~148–343px
+     on the 470px stage). First in the tree → paints under every .sec. */
+  .sc-slide::before {
+    content: "";
+    position: absolute;
+    left: 30px;
+    right: 30px;
+    top: 130px;
+    height: 240px;
+    background: radial-gradient(ellipse 60% 55% at 50% 50%, rgba(255, 170, 60, 0.07), transparent 70%);
+    pointer-events: none;
   }
   .sc-slide.is-current { opacity: 1; visibility: visible; pointer-events: auto; transform: none; filter: none; z-index: 3; }
   /* Endless coverflow: the immediate neighbors rest permanently visible,
@@ -388,7 +407,8 @@ const peekClass = (i: number) => {
   .sc-slide.is-peek-next { transform: translateX(58%) scale(0.8) rotateY(-14deg); }
   .sc-slide.is-peek-prev:hover,
   .sc-slide.is-peek-next:hover { opacity: 0.85; filter: saturate(0.9) brightness(0.9); }
-  .sc-slide:hover { border-color: var(--brass-dark); }
+  /* border-color can't show through the border-box gradient — glow instead */
+  .sc-slide.is-current:hover { box-shadow: 0 12px 48px rgba(0, 0, 0, 0.55), 0 0 20px rgba(255, 170, 60, 0.14); }
 
   .sec { position: absolute; }
 
