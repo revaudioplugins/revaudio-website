@@ -11,6 +11,7 @@ import StarRating from '../components/StarRating.astro';
 import Gallery from '../components/Gallery.astro';
 import AudioDemoRack from '../components/AudioDemoRack.astro';
 import MobileBuyBar from '../components/MobileBuyBar.astro';
+import HotspotTour from '../components/HotspotTour.astro';
 import { plugins, isBuyable } from '../data/plugins';
 import { pluginImage } from '../lib/images';
 import arrowBtn from '../assets/showcase/arrow-btn.png';
@@ -235,6 +236,11 @@ const anchorLinks = [
           </div>
         </section>
       )}
+
+      {/* C1 — mobile-only annotated dashboard (hidden >900px; desktop has the
+          interactive walkthrough above). Self-hides unless the plugin has a
+          `stage` + ≥5 part-tagged features. */}
+      {hasStage && <HotspotTour plugin={plugin} />}
 
       {playableDemos.length > 0 && (
         <section class="audio-demos" id="hear-it">
