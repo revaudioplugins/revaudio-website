@@ -317,17 +317,30 @@ const peekClass = (i: number) => {
         scaler.style.height = 'auto';
         return;
       }
+      // Reset BOTH the transform and the scaler's pinned height before
+      // measuring — .sc-scaler is a flex parent, so a stale fixed height from
+      // the previous fit() stretches .showcase and feeds back into ih.
       showcase.style.transform = 'none';
+      scaler.style.height = 'auto';
       const iw = showcase.offsetWidth;
       const ih = showcase.offsetHeight;
       const availW = sc.clientWidth;
       // Height cap: full card + dots should fit the viewport under the sticky
-      // header (measured) with a fixed allowance for the dots row + breathing
-      // room. Floored at 0.7 — below that legibility loses to just scrolling.
-      // The floor applies to the HEIGHT cap only; the width cap stays exact so
-      // narrow-but-tall windows never overflow horizontally.
-      const headerH = document.querySelector('header')?.getBoundingClientRect().height ?? 64;
-      const availH = window.innerHeight - headerH - 110;
+      // nav — all measured live (nav, section heading, dots row) so viewport-
+      // scaled type stays accounted for. Floored at 0.7 — below that
+      // legibility loses to just scrolling. The floor applies to the HEIGHT
+      // cap only; the width cap stays exact so narrow-but-tall windows never
+      // overflow horizontally.
+      const headerH = (document.querySelector('.site-nav') as HTMLElement | null)?.getBoundingClientRect().height ?? 64;
+      const headingEl = sc.querySelector<HTMLElement>('.sc-heading');
+      const headingH = headingEl
+        ? headingEl.getBoundingClientRect().height + parseFloat(getComputedStyle(headingEl).marginTop || '0')
+        : 0;
+      const dotsH = (sc.querySelector('.sc-dots') as HTMLElement | null)?.getBoundingClientRect().height ?? 24;
+      // Two flex gaps in the section column (heading→stage, stage→dots),
+      // measured; 12 = breathing room.
+      const gapH = (parseFloat(getComputedStyle(sc).rowGap) || 20) * 2;
+      const availH = window.innerHeight - headerH - headingH - dotsH - gapH - 12;
       const s = Math.min(1, availW / iw, Math.max(0.7, availH / ih));
       showcase.style.transform = `scale(${s})`;
       showcase.style.transformOrigin = 'top center';
