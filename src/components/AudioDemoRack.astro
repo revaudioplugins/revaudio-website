@@ -10,6 +10,19 @@ const { demos, plugin } = Astro.props;
 const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
 ---
 
+<!-- C4 — Headphone nudge (mobile-only). Dismissible chip directly above the
+     demo rack; the demos are the only place it renders (it lives in this
+     component). Dismissal persists in localStorage and collapses with a height
+     transition (instant under reduced motion), so there's no layout jump. -->
+<div class="hp-nudge" data-hp-nudge hidden>
+  <div class="hp-nudge-inner">
+    <span class="hp-nudge-text">🎧 Best with headphones — before/after detail lives in the stereo field.</span>
+    <button type="button" class="hp-nudge-x" data-hp-dismiss aria-label="Dismiss headphones tip">
+      <span aria-hidden="true">✕</span>
+    </button>
+  </div>
+</div>
+
 <!-- Dashboard cluster: LCD track monitor + ARM bay (design tuned on /hearlab).
      ARM = the plugin's #nosArm replica; armed = mastered render audible. -->
 <div class="dash" data-abrack>
@@ -897,4 +910,100 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
     border: 2px solid var(--border-bright);
   }
   :global(html.hc) .ab-dock .dock-cue { color: var(--fg-faint); }
+
+  /* ── C4 — Headphone nudge (mobile-only chip above the rack) ──
+     Collapses via max-height/opacity so dismissal causes no layout jump. The
+     `hidden` attr is cleared by JS only when it isn't already dismissed, so
+     there's never a show-then-collapse flash on load. */
+  .hp-nudge { display: none; }
+
+  @media (max-width: 900px) {
+    .hp-nudge:not([hidden]) {
+      display: block;
+      max-height: 140px;
+      overflow: hidden;
+      margin-bottom: 0.85rem;
+      transition: max-height 0.32s var(--ease), opacity 0.32s var(--ease),
+                  margin-bottom 0.32s var(--ease);
+    }
+    .hp-nudge.is-collapsing {
+      max-height: 0;
+      opacity: 0;
+      margin-bottom: 0;
+    }
+  }
+
+  .hp-nudge-inner {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.5rem 0.5rem 0.9rem;
+    background: var(--bg-1);
+    border: 1px solid var(--brass-dark);
+    border-left: 3px solid #e83a3a;
+    border-radius: 6px;
+  }
+
+  .hp-nudge-text {
+    flex: 1 1 auto;
+    font-family: 'VT323', var(--font-mono);
+    font-size: 1.2rem;
+    line-height: 1.15;
+    letter-spacing: 0.03em;
+    color: var(--brass-bright);
+  }
+
+  .hp-nudge-x {
+    flex: 0 0 auto;
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    cursor: pointer;
+    background: none;
+    border: 0;
+    border-radius: 6px;
+    color: var(--fg-dim);
+    font-size: 1.1rem;
+    line-height: 1;
+    transition: color 0.2s var(--ease), background 0.2s var(--ease);
+  }
+
+  .hp-nudge-x:focus-visible {
+    outline: 2px solid var(--brass-bright);
+    outline-offset: 2px;
+  }
+
+  @media (hover: hover) {
+    .hp-nudge-x:hover { color: var(--brass-bright); background: var(--bg-2); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hp-nudge:not([hidden]) { transition: none; }
+  }
+
+  :global(html.hc) .hp-nudge-inner { border-color: var(--border-bright); }
+  :global(html.hc) .hp-nudge-text { color: var(--fg); }
 </style>
+
+<script>
+  // C4 — Headphone nudge: reveal unless previously dismissed; collapse + persist
+  // on dismiss. Reduced motion skips the transition (instant hide).
+  const KEY = 'ra-hp-nudge-dismissed';
+  document.querySelectorAll<HTMLElement>('[data-hp-nudge]').forEach((nudge) => {
+    let dismissed = false;
+    try { dismissed = localStorage.getItem(KEY) === '1'; } catch {}
+    if (dismissed) return; // stays hidden
+    nudge.hidden = false;
+
+    const btn = nudge.querySelector<HTMLButtonElement>('[data-hp-dismiss]');
+    btn?.addEventListener('click', () => {
+      try { localStorage.setItem(KEY, '1'); } catch {}
+      const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduce) { nudge.hidden = true; return; }
+      nudge.classList.add('is-collapsing');
+      nudge.addEventListener('transitionend', () => { nudge.hidden = true; }, { once: true });
+    });
+  });
+</script>
