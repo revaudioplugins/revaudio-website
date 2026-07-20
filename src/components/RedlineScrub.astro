@@ -1,0 +1,101 @@
+---
+/* C3 — Redline scrub moment (mobile-only, ≤900px). The real RevLimiter rev
+   gauge: as this interstitial scrolls through the viewport the needle sweeps
+   from idle toward the redline. Pure CSS scroll-driven animation
+   (animation-timeline: view()) — no JS, no ScrollTrigger. Where scroll-driven
+   timelines aren't supported, or under prefers-reduced-motion, the needle
+   renders static AT the redline (the payoff still reads). Geometry matches the
+   hero bench (/herolab): needle pivot (203,203) in the plugin's 406 viewBox,
+   idle −90°, redline +90°. Desktop hides it (the desktop hero owns this beat). */
+import { Image } from 'astro:assets';
+import faceImg from '../assets/hero/rev-gauge-face.png';
+import needleImg from '../assets/hero/needle-v2.png';
+import hubImg from '../assets/hero/hub-v2.png';
+
+// 406-viewBox units → % of the square gauge box (same as /herolab).
+const N = { left: '30.049%', top: '16.672%', w: '40%', ox: '49.877%', oy: '83.32%' };
+const H = { left: '44.468%', top: '44.601%', w: '11.207%' };
+---
+
+<section class="redline-scrub" data-redline-scrub aria-hidden="true">
+  <div class="rs-dial">
+    <Image class="rs-face" src={faceImg} alt="" width={900} format="webp" loading="lazy" />
+    <div class="rs-needle" style={`left:${N.left}; top:${N.top}; width:${N.w}; transform-origin:${N.ox} ${N.oy};`}>
+      <Image src={needleImg} alt="" width={500} format="webp" loading="lazy" />
+    </div>
+    <Image class="rs-hub" src={hubImg} alt="" width={200} format="webp" loading="lazy" style={`left:${H.left}; top:${H.top}; width:${H.w};`} />
+  </div>
+  <p class="rs-caption">Push it to the redline.</p>
+</section>
+
+<style>
+  /* Mobile-only: the desktop hero already runs the needle on scroll. */
+  .redline-scrub { display: none; }
+
+  @media (max-width: 900px) {
+    .redline-scrub {
+      display: block;
+      padding: 3rem 0 3.5rem;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      overflow: clip; /* the needle sweep never pushes the page wide */
+    }
+  }
+
+  .rs-dial {
+    position: relative;
+    aspect-ratio: 1;
+    width: min(300px, 72vw);
+    margin: 0 auto 1.5rem;
+    border-radius: 50%;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6), 0 6px 18px rgba(0, 0, 0, 0.4);
+  }
+
+  .rs-dial :global(img.rs-face) {
+    width: 100%;
+    height: 100%;
+    display: block;
+    border-radius: 50%; /* mask the leather corners of the capture */
+  }
+
+  .rs-needle {
+    position: absolute;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.5));
+    /* Fallback / reduced-motion / no-scroll-timeline: needle rests at redline. */
+    rotate: 90deg;
+  }
+  .rs-needle :global(img) { width: 100%; height: auto; display: block; }
+
+  .rs-dial :global(img.rs-hub) {
+    position: absolute;
+    height: auto;
+    z-index: 2;
+  }
+
+  .rs-caption {
+    font-family: 'VT323', var(--font-mono);
+    font-size: 1.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #e83a3a;
+    margin: 0;
+  }
+
+  /* Scroll-driven sweep: idle → redline as the section crosses the viewport.
+     Only where view() timelines exist AND motion is allowed; otherwise the
+     static rotate:90deg above stands. */
+  @keyframes rs-sweep {
+    from { rotate: -90deg; }
+    to { rotate: 90deg; }
+  }
+
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) and (max-width: 900px) {
+      .rs-needle {
+        animation: rs-sweep linear both;
+        animation-timeline: view();
+        animation-range: cover 25% cover 70%;
+      }
+    }
+  }
+</style>

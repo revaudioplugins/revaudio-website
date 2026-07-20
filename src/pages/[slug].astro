@@ -12,6 +12,7 @@ import Gallery from '../components/Gallery.astro';
 import AudioDemoRack from '../components/AudioDemoRack.astro';
 import MobileBuyBar from '../components/MobileBuyBar.astro';
 import HotspotTour from '../components/HotspotTour.astro';
+import RedlineScrub from '../components/RedlineScrub.astro';
 import { plugins, isBuyable } from '../data/plugins';
 import { pluginImage } from '../lib/images';
 import arrowBtn from '../assets/showcase/arrow-btn.png';
@@ -241,6 +242,10 @@ const anchorLinks = [
           interactive walkthrough above). Self-hides unless the plugin has a
           `stage` + ≥5 part-tagged features. */}
       {hasStage && <HotspotTour plugin={plugin} />}
+
+      {/* C3 — mobile-only redline scrub interstitial. RevLimiter owns the rev
+          gauge; other plugins skip it. Pure CSS scroll-driven, no JS. */}
+      {plugin.slug === 'revlimiter' && <RedlineScrub />}
 
       {playableDemos.length > 0 && (
         <section class="audio-demos" id="hear-it">
