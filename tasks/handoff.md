@@ -1,6 +1,16 @@
 # Website handoff
 
-Updated: 2026-07-20 (checkout-bundle review delivered — see tasks/checkout-bundle-review.md)
+Updated: 2026-07-20 (carousel showroom polish LIVE + checkout-bundle review delivered)
+
+## 2026-07-20 — Plugin carousel "showroom polish" (pushed, live)
+Six upgrades to `PluginShowcase.astro` only (spec + plan in `docs/superpowers/`):
+- Peeks: blur killed → `saturate(0.55) brightness(0.7)`, legible side cards; hover brightens.
+- Brass-trimmed frame: border-box gradient edge + CSS texture + `::before` glow — NO new DOM/assets; bench coords untouched, `/_cardbench` parity holds.
+- Switch: 0.4s overshoot spring (`cubic-bezier(0.34,1.3,0.35,1)`).
+- Arrows: brighter at rest + one-time glint via IntersectionObserver (skipped reduced-motion).
+- Auto-advance: 6s, in-view only, hover pause, dies PERMANENTLY on first interaction, aria-live silent on auto (`go(target, announceChange)`).
+- Height-aware `fit()`: measures `.site-nav`/`.sc-heading`/`.sc-dots` (site has NO `<header>` tag — don't `querySelector('header')`); also resets `scaler.style.height='auto'` before measuring — REQUIRED, removing it re-triggers a flex feedback loop that shrinks the stage across refits.
+- Emblems (`.sc-emblem` + drift/ac/rev icon imports) removed as dead code.
 
 ## 2026-07-20 — Checkout/bundle review done (response to checkout-bundle-handoff.md)
 Full verified review + ranked recommendation in **`tasks/checkout-bundle-review.md`**. TL;DR:
