@@ -316,6 +316,23 @@ a:hover { color: var(--chrome); }
    Nav, footer, and button links live outside <p>, so they keep the clean look. */
 p a { text-decoration: underline; text-underline-offset: 2px; }
 
+/* Phone tap targets for inline prose links (support@revaudio.net, "licence
+   terms", "support & install", etc.): a transparent ::after extends the hit
+   box to ≥44px tall over the link's own width, without changing the visible
+   text size or line layout. Desktop stays pixel-identical. WCAG 2.5.5. */
+@media (max-width: 900px) {
+  p a { position: relative; }
+  p a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 44px;
+    transform: translateY(-50%);
+  }
+}
+
 h1, h2, h3, h4 {
   font-family: var(--font-display);
   font-weight: 400;
