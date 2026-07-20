@@ -153,6 +153,39 @@ industry-default answer to exactly this problem.
 6. Minor: GAS at $5 sits in LS's sub-$10 "contact sales" fee bucket (~15% effective on
    standalone sales) — acceptable, given standalone GAS sales are expected to be rare?
 
+## 5b. Answers received (Dan, 2026-07-20) + revised plan
+
+1. **Paddle**: dropped because website approval dragged on and Paddle support never answered
+   emails. Soft blocker, but confirms deprioritizing Paddle — same slow-onboarding risk applies
+   to a re-application.
+2. **GAS**: needs a license key like RevLimiter → Worker mints GAS keys (GAS-side keygen/format
+   needed, mirror RevLimiter's).
+3. **Bundle semantics**: GAS free with EVERY plugin purchase automatically (option b) — no cart
+   flag needed; grant on every paid `order_created`.
+4. **Grant mechanics**: (a) Worker grant in the key email — with the guard that nobody PAYS $5
+   for GAS when they're entitled to it free: cart/product UI must zero-out or remove GAS
+   whenever a paid plugin is in the cart, and the GAS product page should say "free with any
+   plugin".
+5. **Radio Roulette goes PAID TOMORROW (2026-07-21)** → two paid products immediately; the
+   `items[0]` bug becomes real NOW. Revised immediate plan below.
+6. FastSpring pricing is sales-quoted only (historically 8.9% flat or 5.9% + $0.95) → start the
+   conversation immediately given (5).
+7. $5-bucket fee question: only matters for the LS interim; standalone GAS sales will be rare
+   since GAS is free with every purchase.
+8. No push yet.
+
+### Revised IMMEDIATE plan (LS interim, ships with RR launch)
+- Create LS products: **Radio Roulette** ($20) and a static **"RevLimiter + Radio Roulette"
+  bundle SKU** at the combined price (LS supports manual bundle products). With 2 paid products
+  there is exactly one combo — combinatorial explosion isn't a problem yet.
+- `Cart.astro` checkout mapping: one paid item → its URL; both paid items → the bundle SKU URL
+  (one checkout, one total — solves multi-item for the current catalog); GAS never charged when
+  any paid item is present.
+- Worker: recognize RR + bundle variant IDs → mint the right key(s) (RR keygen exists in
+  BrokenDisc `tools/BDLicenseKeygen`); mint + attach GAS on EVERY paid order.
+- In parallel: Gil opens the FastSpring pricing conversation — the bundle-SKU approach stops
+  scaling at ~3 paid products, so FastSpring remains the destination.
+
 ## 6. Open verification items (cheap, before implementing A′)
 - Test-mode check: does a 100%-off LS checkout still ask for a card? (Only matters for the
   fallback variant.)
