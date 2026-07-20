@@ -206,14 +206,31 @@ const altShots = hasStage
         <section class="video-section" id="drivers-manual">
           <h2 data-split>{plugin.tutorialVideo.title}</h2>
           {plugin.tutorialVideo.blurb && <p class="muted" data-reveal>{plugin.tutorialVideo.blurb}</p>}
+          {/* Click-to-load facade: no ~900KB YouTube player JS (and no
+              youtube.com request) until the visitor taps. Poster is YouTube's
+              own thumbnail on a brand brown-black plate; a tap swaps in the
+              autoplay iframe (script below). Aspect-ratio 16/9 is reserved on
+              .video-frame, so the swap causes no layout shift. */}
           <div class="video-frame" data-reveal>
-            <iframe
-              src={`https://www.youtube-nocookie.com/embed/${plugin.tutorialVideo.youtubeId}`}
-              title={`${plugin.name} — ${plugin.tutorialVideo.title}`}
-              loading="lazy"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              referrerpolicy="strict-origin-when-cross-origin"
-              allowfullscreen></iframe>
+            <button
+              type="button"
+              class="video-facade"
+              data-yt-facade
+              data-yt-id={plugin.tutorialVideo.youtubeId}
+              data-yt-title={`${plugin.name} — ${plugin.tutorialVideo.title}`}
+              aria-label={`Play video: ${plugin.name} — ${plugin.tutorialVideo.title}`}
+            >
+              <img
+                class="video-poster"
+                src={`https://i.ytimg.com/vi/${plugin.tutorialVideo.youtubeId}/hqdefault.jpg`}
+                alt=""
+                loading="lazy"
+                decoding="async"
+                width="480"
+                height="360"
+              />
+              <span class="video-play" aria-hidden="true"></span>
+            </button>
           </div>
         </section>
       )}
@@ -316,6 +333,26 @@ const altShots = hasStage
 
   {/* id="waitlist" keeps BuyButton's /{slug}#waitlist links landing on the one capture form. */}
   {!buyable && <EmailCapture id="waitlist" />}
+
+  {/* YouTube facade → real player. Injects the autoplay iframe only on tap, so
+      the player JS (and the first youtube.com hit) is deferred until intent. */}
+  <script>
+    document.querySelectorAll<HTMLButtonElement>('[data-yt-facade]').forEach((facade) => {
+      facade.addEventListener('click', () => {
+        const id = facade.dataset.ytId;
+        if (!id) return;
+        const iframe = document.createElement('iframe');
+        iframe.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`;
+        iframe.title = facade.dataset.ytTitle ?? '';
+        iframe.allow =
+          'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+        iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+        iframe.allowFullscreen = true;
+        facade.replaceWith(iframe);
+        iframe.focus();
+      });
+    });
+  </script>
 </BaseLayout>
 
 <style>
@@ -622,6 +659,84 @@ const altShots = hasStage
     height: 100%;
     border: 0;
   }
+
+  /* ── Click-to-load facade (race-red #e83a3a play badge on brown-black
+     #120804). The whole frame is the button, so the tap target is far larger
+     than the 44px minimum; the badge is 72px. ── */
+  .video-facade {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    display: block;
+    cursor: pointer;
+    background: #120804;
+    overflow: hidden;
+  }
+
+  .video-poster {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    /* hqdefault is 4:3 — cover crops its letterbox bars to the 16:9 frame */
+    object-fit: cover;
+    opacity: 0.82;
+    transition: opacity 0.25s var(--ease), transform 0.4s var(--ease);
+  }
+
+  .video-facade:hover .video-poster,
+  .video-facade:focus-visible .video-poster {
+    opacity: 1;
+    transform: scale(1.03);
+  }
+
+  .video-play {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: #e83a3a;
+    border: 3px solid #120804;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.55), 0 0 0 6px rgba(232, 58, 58, 0.18);
+    transition: transform 0.15s var(--ease), background 0.2s var(--ease);
+  }
+
+  .video-play::before {
+    content: '';
+    position: absolute;
+    left: 54%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    border-style: solid;
+    border-width: 13px 0 13px 22px;
+    border-color: transparent transparent transparent #120804;
+  }
+
+  .video-facade:hover .video-play,
+  .video-facade:focus-visible .video-play {
+    transform: translate(-50%, -50%) scale(1.08);
+    background: #ff4a4a;
+  }
+
+  .video-facade:focus-visible {
+    outline: 2px solid var(--brass-bright);
+    outline-offset: 3px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .video-poster, .video-play { transition: none; }
+  }
+
+  /* high contrast: drop the poster tint, keep the badge legible */
+  :global(html.hc) .video-facade { background: var(--bg-2); }
+  :global(html.hc) .video-poster { opacity: 1; }
+  :global(html.hc) .video-play { border-color: var(--fg); }
 
   /* ── Trial stamp slot — the stamp itself lives in TrialStamp.astro; this
      slot owns WHERE it sits. Desktop: flex sibling of the h1 in .title-row,
