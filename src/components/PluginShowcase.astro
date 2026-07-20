@@ -3,13 +3,11 @@
    is pixel-identical to the card-design bench (/_cardbench): same 520-wide
    canvas, same section coordinates, same fonts. Whatever is dragged/tuned in
    the bench is applied here verbatim via the STYLE maps below — no flow-layout
-   translation, so bench == production. Switching plays a sideways watch-date
-   roll. AI chrome/brass arrows + touch-swipe + keyboard drive it. */
+   translation, so bench == production. Switching plays a gear-shift overshoot
+   spring. Arrows + touch-swipe + keyboard + dots + a 6s auto-advance (in-view
+   only, dies on first interaction) drive it. */
 import { Image } from 'astro:assets';
 import { bySlug } from '../data/plugins';
-import driftCar from '../assets/showcase/drift-car.png';
-import acIcon from '../assets/showcase/ac-icon.png';
-import revGauge from '../assets/showcase/rev-gauge.png';
 import arrowBtn from '../assets/showcase/arrow-btn.png';
 import revlimiterShot from '../assets/plugins/revlimiter-hero.png';
 import comingSoonPlate from '../assets/plugins/coming-soon-plate.png';
@@ -26,7 +24,6 @@ const SLIDES = [
     name: 'RevLimiter',
     titleHtml: '<span class="rev">Rev</span>Limiter',
     titleClass: '',
-    emblem: revGauge, emblemAlt: 'rev gauge in the redline',
     shot: revlimiterShot, shotAlt: 'RevLimiter plugin',
     catchphrase: 'Maximum loudness. Zero engine damage.',
     oneliner: 'The redline is your threshold. The needle is your gain reduction.',
@@ -45,7 +42,6 @@ const SLIDES = [
     name: 'Drift',
     titleHtml: 'DRIFT',
     titleClass: 'drift',
-    emblem: driftCar, emblemAlt: 'drifting car',
     shot: comingSoonPlate, shotAlt: 'Drift — coming soon',
     catchphrase: 'Your sound, sliding. SKRRT!',
     oneliner: 'Send your selected freq. band to a trip across the stereo field.',
@@ -64,7 +60,6 @@ const SLIDES = [
     name: 'The AC',
     titleHtml: '<span class="acthe">THE</span> <span class="acac">AC</span>',
     titleClass: '',
-    emblem: acIcon, emblemAlt: 'cold air snowflake',
     shot: comingSoonPlate, shotAlt: 'The AC — coming soon',
     catchphrase: 'Cold air for the top end.',
     oneliner: 'Add clean air and shine to your top end.',
@@ -497,8 +492,6 @@ const peekClass = (i: number) => {
     -webkit-background-clip: text; background-clip: text; color: transparent;
     filter: drop-shadow(0 0 18px rgba(67, 198, 255, 0.4));
   }
-  .sc-emblem { width: auto; display: block; }
-
   /* All text rows centred across the full stage (left:0 + width:100% overrides the
      bench left coords; spans go block so text-align centres them). */
   .sc-sub, .sc-one, .sc-price, .sc-more { left: 0; width: 100%; text-align: center; }
@@ -508,7 +501,7 @@ const peekClass = (i: number) => {
 
   /* Corner ribbon (e.g. GAS's bundle freebie) — pinned to the card, not the
      left/top style-map grid (that system centers text across the full card
-     width, which a small corner tag shouldn't do). rotate(+40deg): CSS
+     width, which a small corner tag shouldn't do). rotate(20deg): CSS
      rotation is clockwise for positive angles, which lifts the badge's own
      left edge and drops its right edge — the "\" slant this was asked for. */
   .sc-badge {
@@ -542,12 +535,15 @@ const peekClass = (i: number) => {
      whole image (never crop it, unlike the wide default `cover` shots). */
   .sc-shot--fit :global(img) { object-fit: contain; }
 
-  /* Coming-soon plate is a true-alpha asset, not a screenshot — drop the frame
-     so it floats on the card and the transparency reads. Subtle shadow grounds it. */
+  /* Coming-soon plates are a true-alpha asset — drop the frame so they float on
+     the card and the transparency reads. Radio Roulette's shot is an opaque
+     screenshot that deliberately shares this class to get the same frameless
+     look; its drop shadow grounds it instead of a background box. */
   .sc-shot.is-plate { background: none; border: 0; border-radius: 0; overflow: visible; }
   /* The plate is a full graphic (license-plate shape, ~1.47:1) — never crop it.
      `contain` shows it whole within the shot footprint; the frameless box means
-     the leftover width just reads as transparent, so the plate stays centred. */
+     the leftover width just reads as transparent, so the plate stays centred.
+     (Radio Roulette's screenshot fills its own frame under the same rule.) */
   .sc-shot.is-plate :global(img) { object-fit: contain; filter: drop-shadow(0 7px 16px rgba(0, 0, 0, 0.55)); }
 
   .sc-one { margin: 0; color: #dbcaad; }
@@ -659,7 +655,6 @@ const peekClass = (i: number) => {
     .sec { position: static !important; left: auto !important; top: auto !important; }
     .sc-titlewrap { justify-content: center; width: 100%; margin-top: 0; }
     .sc-title { font-size: clamp(46px, 13vw, 80px) !important; }
-    .sc-emblem { height: clamp(40px, 9vw, 62px) !important; }
     .sc-sub, .sc-one { width: 100% !important; text-align: center; }
     .sc-sub { margin-top: 0; }
     .sc-shot { width: 100% !important; height: auto !important; aspect-ratio: 2542 / 1226; }
