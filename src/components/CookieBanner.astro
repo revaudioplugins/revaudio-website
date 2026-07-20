@@ -16,10 +16,12 @@
   <div class="cb-inner">
     <div class="cb-text">
       <p class="cb-body">
-        We use cookies and similar tracking technologies to understand how you interact with our site
+        <span class="cb-full">We use cookies and similar tracking technologies to understand how you interact with our site
         and to improve our marketing. By clicking <em>Accept All</em> you consent to our use of
         analytics and advertising cookies. You can also decline — the site works either way.
-        See our <a href="/terms" class="cb-link">Terms &amp; Conditions</a> for details.
+        See our <a href="/terms" class="cb-link">Terms &amp; Conditions</a> for details.</span>
+        <span class="cb-short">We use cookies to improve your experience and our marketing.
+        <a href="/terms" class="cb-link">Terms</a>.</span>
       </p>
       <strong class="cb-title"><span class="cb-emoji" aria-hidden="true">🍪</span> We use cookies</strong>
     </div>
@@ -232,6 +234,10 @@
     border-color: var(--brass-bright);
   }
 
+  /* Desktop shows the full copy; the short line is phone-only. */
+  .cb-short { display: none; }
+
+  /* Original small-screen stack (601–640px unchanged from before Phase B). */
   @media (max-width: 640px) {
     .cb-inner {
       grid-template-columns: 1fr;
@@ -252,6 +258,41 @@
     }
     .cb-title {
       margin-left: 0;
+    }
+  }
+
+  /* ── Phones (≤600px): slim bottom sheet. Tighter padding + condensed copy so
+     it never buries the hero on first paint; buttons padded to ≥44px. ── */
+  @media (max-width: 600px) {
+    .cb-inner {
+      grid-template-columns: 1fr;
+      gap: 0.6rem;
+      padding: 0.75rem 1rem 0.85rem;
+    }
+    .cb-text {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.2rem;
+    }
+    /* Title first, then the short line — reads as a compact sheet header. */
+    .cb-title {
+      order: -1;
+      margin-left: 0;
+      font-size: 1.15rem;
+      letter-spacing: 0.06em;
+    }
+    .cb-full { display: none; }
+    .cb-short { display: inline; }
+    .cb-body { font-size: 0.78rem; line-height: 1.4; }
+    .cb-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.6rem;
+    }
+    .cb-btn {
+      text-align: center;
+      min-height: 44px;
+      padding: 0.5rem 1rem;
     }
   }
 </style>
