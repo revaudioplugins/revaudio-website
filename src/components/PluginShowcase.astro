@@ -320,8 +320,15 @@ const peekClass = (i: number) => {
       showcase.style.transform = 'none';
       const iw = showcase.offsetWidth;
       const ih = showcase.offsetHeight;
-      const avail = sc.clientWidth;
-      const s = Math.min(1, avail / iw);
+      const availW = sc.clientWidth;
+      // Height cap: full card + dots should fit the viewport under the sticky
+      // header (measured) with a fixed allowance for the dots row + breathing
+      // room. Floored at 0.7 — below that legibility loses to just scrolling.
+      // The floor applies to the HEIGHT cap only; the width cap stays exact so
+      // narrow-but-tall windows never overflow horizontally.
+      const headerH = document.querySelector('header')?.getBoundingClientRect().height ?? 64;
+      const availH = window.innerHeight - headerH - 110;
+      const s = Math.min(1, availW / iw, Math.max(0.7, availH / ih));
       showcase.style.transform = `scale(${s})`;
       showcase.style.transformOrigin = 'top center';
       scaler.style.height = `${ih * s}px`;
