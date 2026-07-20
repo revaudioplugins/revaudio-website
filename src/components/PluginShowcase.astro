@@ -362,7 +362,6 @@ const peekClass = (i: number) => {
        jump, so it just fades/grows into place rather than sliding from a
        specific side. */
     transform: scale(0.55);
-    filter: blur(2px);
     /* card frame — matches PluginCard store aesthetic */
     background: var(--bg-1);
     border: 1px solid var(--border-bright);
@@ -377,16 +376,18 @@ const peekClass = (i: number) => {
   .sc-slide.is-peek-prev,
   .sc-slide.is-peek-next {
     visibility: visible;
-    opacity: 0.42;
+    opacity: 0.55;
     pointer-events: auto;
     z-index: 2;
-    filter: blur(3px);
+    /* Dim + desaturate instead of blur — the neighbors read as real, legible
+       cards waiting in the wings, not out-of-focus smudges. */
+    filter: saturate(0.55) brightness(0.7);
     cursor: pointer;
   }
   .sc-slide.is-peek-prev { transform: translateX(-58%) scale(0.8) rotateY(14deg); }
   .sc-slide.is-peek-next { transform: translateX(58%) scale(0.8) rotateY(-14deg); }
   .sc-slide.is-peek-prev:hover,
-  .sc-slide.is-peek-next:hover { opacity: 0.65; filter: blur(2px); }
+  .sc-slide.is-peek-next:hover { opacity: 0.85; filter: saturate(0.9) brightness(0.9); }
   .sc-slide:hover { border-color: var(--brass-dark); }
 
   .sec { position: absolute; }
@@ -536,8 +537,9 @@ const peekClass = (i: number) => {
 
   @media (prefers-reduced-motion: reduce) {
     /* Static positions stay (peeks are a layout, not a motion effect) — only
-       the animated slide/fade BETWEEN states is removed; states snap instantly. */
-    .sc-slide { transition: none; filter: none !important; }
+       the animated slide/fade BETWEEN states is removed; states snap instantly.
+       The saturate/brightness peek dim is a STATE, not motion — it stays. */
+    .sc-slide { transition: none; }
   }
 
   /* ── Mobile: drop the fixed absolute stage; let the card flow naturally
