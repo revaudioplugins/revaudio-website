@@ -38,8 +38,11 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
             <input class="seek" type="range" min="0" max="100" step="2" value="0" disabled data-seek aria-label={`Seek ${demo.label}`} />
           </span>
           <span class="time" data-time aria-hidden="true">-:--</span>
-          <audio preload="metadata" src={demo.beforeUrl ?? undefined} data-before></audio>
-          <audio preload="none" src={demo.afterUrl ?? undefined} data-after></audio>
+          {/* No bytes fetched on page load: preload="none" and the URL parked in
+              data-src (not src) so the browser has nothing to request until the
+              first play interaction wires src in (see the play handler). */}
+          <audio preload="none" data-src={demo.beforeUrl ?? undefined} data-before></audio>
+          <audio preload="none" data-src={demo.afterUrl ?? undefined} data-after></audio>
         </div>
       ))}
       <!-- mobile-only A/B: the ARM plate doesn't come along under 900px —
@@ -155,6 +158,16 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
       mobileMq.addEventListener('change', updateArmFloat);
     }
 
+    // Lazy source wiring: the <audio> ships preload="none" and src-less (URL in
+    // data-src) so zero audio bytes are fetched until the visitor presses play.
+    // On first play we set src (kicks the fetch) and preload="auto" (buffer ahead).
+    const wireSrc = (el: HTMLAudioElement) => {
+      if (!el.getAttribute('src') && el.dataset.src) {
+        el.preload = 'auto';
+        el.src = el.dataset.src;
+      }
+    };
+
     const fmt = (s: number) =>
       Number.isFinite(s) ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` : '-:--';
 
@@ -245,9 +258,11 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
         applyArm(t);
         if (srcLabel) srcLabel.textContent = armed ? 'SRC: MASTER BUS' : 'SRC: RAW BUS';
         t.root.classList.add('loading');
-        // The after ships preload="none"; from first play on, let it buffer
-        // ahead like the before so an ARM never lands on an empty buffer.
-        t.after.preload = 'auto';
+        // First play: wire the parked URLs in (both ship src-less so nothing is
+        // fetched on page load) and let them buffer ahead so an ARM never lands
+        // on an empty buffer. Idempotent — re-plays skip the assignment.
+        wireSrc(t.before);
+        wireSrc(t.after);
         // Both play() calls stay synchronous inside the click gesture (iOS).
         Promise.all([t.before.play(), t.after.play()])
           .then(() => setPlaying(t, true))
