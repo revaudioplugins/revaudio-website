@@ -1,6 +1,20 @@
 # Website handoff
 
-Updated: 2026-07-19 (CSP fixed + forms POST successfully — email delivery not yet confirmed)
+Updated: 2026-07-20 (checkout-bundle review delivered — see tasks/checkout-bundle-review.md)
+
+## 2026-07-20 — Checkout/bundle review done (response to checkout-bundle-handoff.md)
+Full verified review + ranked recommendation in **`tasks/checkout-bundle-review.md`**. TL;DR:
+- **Now:** stay on Lemon Squeezy; implement GAS-free-bundle via the EXISTING `revlimiter-license`
+  Worker (the brief's "no backend exists" premise was wrong) — cart passes
+  `checkout[custom][gas_bundle]=1`, webhook grants GAS in the same branded key email. No second
+  checkout, no new infra.
+- **Later (trigger = second paid plugin live, or LS hard-sunset date):** migrate to **FastSpring**
+  (only MoR with confirmed cart + bundles + built-in license fulfillment incl. remote-keygen URL
+  + audio-plugin industry base: oeksound, Baby Audio, AudioThing).
+- LS is in soft-sunset (Stripe acquisition → Stripe Managed Payments); LS will never ship a cart.
+- Open questions for Gil listed in §5 of the review (starts with: why was Paddle dropped —
+  evidence says LS just cleared KYC first, not a hard blocker).
+Nothing implemented yet — review-only per the brief.
 
 ## 2026-07-19 — CSP connect-src fixed, forms POST successfully; email delivery still unconfirmed
 Gil added `https://formspree.io` to the `connect-src` directive in the Cloudflare Transform Rule
