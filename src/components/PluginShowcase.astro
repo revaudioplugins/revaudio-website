@@ -222,7 +222,9 @@ const peekClass = (i: number) => {
       return d;
     };
 
-    const go = (target: number) => {
+    // announceChange=false for auto-advance — the aria-live region must not
+    // narrate every 6 seconds at a screen-reader user.
+    const go = (target: number, announceChange = true) => {
       const next = ((target % n) + n) % n;
       if (next === idx) return;
       idx = next;
@@ -234,12 +236,12 @@ const peekClass = (i: number) => {
         else if (d === -1) s.classList.add('is-peek-prev');
       });
       dots.forEach((d, k) => d.classList.toggle('active', k === idx));
-      if (announce) announce.textContent = slides[idx].getAttribute('aria-label') ?? '';
+      if (announceChange && announce) announce.textContent = slides[idx].getAttribute('aria-label') ?? '';
     };
 
-    sc.querySelector('.sc-prev')?.addEventListener('click', () => go(idx - 1));
-    sc.querySelector('.sc-next')?.addEventListener('click', () => go(idx + 1));
-    dots.forEach((d, k) => d.addEventListener('click', () => go(k)));
+    sc.querySelector('.sc-prev')?.addEventListener('click', () => { killAuto(); go(idx - 1); });
+    sc.querySelector('.sc-next')?.addEventListener('click', () => { killAuto(); go(idx + 1); });
+    dots.forEach((d, k) => d.addEventListener('click', () => { killAuto(); go(k); }));
 
     // Peeking neighbors are clickable shortcuts to bring them to center —
     // the current slide keeps its plain navigate-to-product-page behavior.
@@ -247,14 +249,15 @@ const peekClass = (i: number) => {
       s.addEventListener('click', (e) => {
         if (s.classList.contains('is-peek-prev') || s.classList.contains('is-peek-next')) {
           e.preventDefault();
+          killAuto();
           go(k);
         }
       });
     });
 
     sc.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowLeft') { go(idx - 1); e.preventDefault(); }
-      if (e.key === 'ArrowRight') { go(idx + 1); e.preventDefault(); }
+      if (e.key === 'ArrowLeft') { killAuto(); go(idx - 1); e.preventDefault(); }
+      if (e.key === 'ArrowRight') { killAuto(); go(idx + 1); e.preventDefault(); }
     });
 
     // swipe; suppress the click after a real drag so it never navigates
@@ -265,7 +268,7 @@ const peekClass = (i: number) => {
     viewport.addEventListener('pointerup', (e) => {
       if (downX !== null) {
         const dx = e.clientX - downX;
-        if (Math.abs(dx) > 40) go(dx < 0 ? idx + 1 : idx - 1);
+        if (Math.abs(dx) > 40) { killAuto(); go(dx < 0 ? idx + 1 : idx - 1); }
       }
       downX = null;
     });
@@ -287,6 +290,24 @@ const peekClass = (i: number) => {
       onInView.forEach((f) => f());
     }, { threshold: 0.35 });
     io.observe(sc);
+
+    // ── auto-advance: 6s while in view; pause on hover; die permanently on
+    //    first user interaction; never under reduced motion. ──
+    let autoTimer: number | null = null;
+    let autoDead = reduced;
+    let hovering = false;
+    const stopAuto = () => { if (autoTimer !== null) { clearInterval(autoTimer); autoTimer = null; } };
+    const startAuto = () => {
+      if (autoDead || !inView || hovering || autoTimer !== null) return;
+      autoTimer = window.setInterval(() => {
+        if (!inView || hovering) { stopAuto(); return; }
+        go(idx + 1, false);
+      }, 6000);
+    };
+    const killAuto = () => { autoDead = true; stopAuto(); };
+    onInView.push(startAuto);
+    sc.addEventListener('mouseenter', () => { hovering = true; stopAuto(); });
+    sc.addEventListener('mouseleave', () => { hovering = false; startAuto(); });
 
     // Desktop: uniformly scale the fixed bench-exact stage to fit width.
     // Mobile (<=640): bail — CSS switches the card to natural flow layout.
