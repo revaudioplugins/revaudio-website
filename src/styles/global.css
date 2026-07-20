@@ -109,57 +109,85 @@ html, body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* body background must stay transparent while the .page-bg test layer is in —
-   an opaque body paints over a negative-z fixed child. Gradients moved onto
-   .page-bg; html keeps var(--bg-0) as the canvas color. */
+/* body background must stay transparent while the .ebg layer is in — an opaque
+   body paints over a negative-z fixed child. html keeps var(--bg-0) as the
+   canvas color. */
 body {
   background: none;
   min-height: 100vh;
 }
 
-/* TEST — fixed long-image background, scrubbed by src/lib/pagebg.ts. Sits
-   between the html canvas background and all content; sections with opaque
-   panels still cover it by design. */
-.page-bg {
+/* ── enginebg — "Idle → Redline" ambient background (src/lib/enginebg.ts).
+   Higgsfield texture plates on pure black, screen-blended so the black
+   vanishes; JS drives --heat (scroll depth) and --blip (scroll velocity).
+   Sections with opaque panels still cover it by design. ── */
+.ebg {
   position: fixed;
   inset: 0;
   z-index: -1;
-  /* Zoom control: image drawn at --bg-w wide (not full cover) so the art reads
-     relaxed, not blown up. Clamp keeps phones from getting a sliver. */
-  --bg-w: max(90vw, 520px);
-  /* Background-art dimmer: a flat dark veil sits ABOVE the aurora image (and
-     below the content), muting the graphics so foreground text reads stronger.
-     Tune via --bg-veil (0 = full art, 1 = fully hidden). Base stays solid via
-     the var(--bg-0) background-color, so nothing white bleeds through. */
-  --bg-veil: 0.4;
-  background:
-    radial-gradient(ellipse at top, rgba(201, 163, 92, 0.05), transparent 60%),
-    radial-gradient(ellipse at bottom, rgba(139, 58, 31, 0.04), transparent 60%),
-    linear-gradient(rgba(11, 10, 9, var(--bg-veil)), rgba(11, 10, 9, var(--bg-veil))),
-    url('/bg/aurora-test.webp') 50% 0% / var(--bg-w) auto no-repeat var(--bg-0);
+  background: var(--bg-0);
+  overflow: hidden;
   pointer-events: none;
+  --heat: 0;
+  --blip: 0;
+  /* Legibility veil above the art, below content (0 = full art, 1 = hidden). */
+  --veil: 0.4;
 }
 
-/* soft side fade — blends the art column into the page base color */
-.page-bg::after {
-  content: '';
+/* Haze plates — oversized so drift/parallax never shows an edge. */
+.ebg-haze {
+  position: absolute;
+  inset: -20%;
+  background-size: cover;
+  background-position: center;
+  mix-blend-mode: screen;
+  will-change: transform;
+}
+.ebg-haze.h1 {
+  background-image: url('/bg/enginebg-haze1.webp');
+  opacity: 0.16;
+}
+.ebg-haze.h2 {
+  background-image: url('/bg/enginebg-haze2.webp');
+  opacity: 0.1;
+}
+
+/* Tach arc — brass arc still (ticks + glow). Heat hue-rotates brass (~38°)
+   toward the redline (~7°) and saturates; blip adds a flare of opacity. */
+.ebg-arc {
+  position: absolute;
+  top: 50%;
+  right: -60vmin;
+  width: 165vmin;
+  height: 165vmin;
+  transform: translateY(-50%);
+  background: url('/bg/enginebg-arc.webp') center / contain no-repeat;
+  mix-blend-mode: screen;
+  opacity: calc(0.2 + var(--heat) * 0.55 + var(--blip) * 0.15);
+  filter: hue-rotate(calc(var(--heat) * -31deg)) saturate(calc(1 + var(--heat) * 1.4));
+  will-change: opacity, filter;
+}
+
+.ebg-canvas {
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, var(--bg-0) 0%, transparent 22%, transparent 78%, var(--bg-0) 100%);
+  width: 100%;
+  height: 100%;
 }
 
-/* Mobile: the background art fills the full phone width. The centered-column
-   sizing (90vw) + side-fade read as dark bars on a narrow screen, so widen the
-   art to the viewport and drop the side fade. The veil also lightens (0.4 →
-   0.25): under the full-strength veil the edge-to-edge art still read as plain
-   black, defeating the point. Desktop keeps its centred column. */
+.ebg-veil {
+  position: absolute;
+  inset: 0;
+  background: rgba(11, 10, 9, var(--veil));
+}
+
+/* Mobile: lighter veil (full-strength read as plain black on small screens);
+   enginebg.ts already drops canvas + pointer work under 900px. */
 @media (max-width: 900px) {
-  .page-bg { --bg-w: 100vw; --bg-veil: 0.25; }
-  .page-bg::after { display: none; }
+  .ebg { --veil: 0.25; }
 }
 
-/* TEST overrides — translucent section panels so the long-image bg reads
-   through the whole page. Delete with the .page-bg experiment. */
+/* Translucent section panels so the ambient bg reads through the whole page. */
 .values .v { background: rgba(20, 17, 15, 0.72); }
 footer.site-footer { background: rgba(11, 10, 9, 0.55); }
 
