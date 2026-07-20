@@ -271,6 +271,23 @@ const peekClass = (i: number) => {
     });
     viewport.addEventListener('click', (e) => { if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; } }, true);
 
+    // ── shared in-view observer: one-time arrow glint now; auto-advance
+    //    (Task 5) registers via onInView. ──
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let inView = false;
+    const onInView: Array<() => void> = [];
+    let glinted = false;
+    const io = new IntersectionObserver((entries) => {
+      inView = entries[0].isIntersecting;
+      if (!inView) return;
+      if (!glinted && !reduced) {
+        glinted = true;
+        sc.querySelectorAll('.sc-arrow').forEach((a) => a.classList.add('is-glint'));
+      }
+      onInView.forEach((f) => f());
+    }, { threshold: 0.35 });
+    io.observe(sc);
+
     // Desktop: uniformly scale the fixed bench-exact stage to fit width.
     // Mobile (<=640): bail — CSS switches the card to natural flow layout.
     const fit = () => {
@@ -531,9 +548,17 @@ const peekClass = (i: number) => {
   }
   .sc-arrow :global(img) {
     width: 100%; height: auto; display: block;
-    filter: grayscale(0.7) brightness(0.7);
-    opacity: 0.4;
+    filter: grayscale(0.3) brightness(0.7);
+    opacity: 0.75;
     transition: transform 0.15s var(--ease), filter 0.25s var(--ease), opacity 0.25s var(--ease);
+  }
+  /* One glint sweep when the section first scrolls into view (class added by
+     the observer in the script; animates filter/opacity only, so .sc-prev's
+     scaleX(-1) base transform is unaffected). */
+  .sc-arrow.is-glint :global(img) { animation: arrow-glint 0.9s ease 1; }
+  @keyframes arrow-glint {
+    0%, 100% { filter: grayscale(0.3) brightness(0.7); opacity: 0.75; }
+    45% { filter: grayscale(0) brightness(0.85) drop-shadow(0 0 12px rgba(255, 160, 60, 0.55)); opacity: 1; }
   }
   .sc-prev :global(img) { transform: scaleX(-1); }
   .sc-arrow:hover :global(img) { filter: grayscale(0) brightness(0.7) drop-shadow(0 0 9px rgba(255, 160, 60, 0.5)); opacity: 1; }
