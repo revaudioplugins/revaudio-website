@@ -13,6 +13,7 @@ import AudioDemoRack from '../components/AudioDemoRack.astro';
 import MobileBuyBar from '../components/MobileBuyBar.astro';
 import HotspotTour from '../components/HotspotTour.astro';
 import RedlineScrub from '../components/RedlineScrub.astro';
+import DawBridge from '../components/DawBridge.astro';
 import { plugins, isBuyable } from '../data/plugins';
 import { pluginImage } from '../lib/images';
 import arrowBtn from '../assets/showcase/arrow-btn.png';
@@ -298,6 +299,11 @@ const anchorLinks = [
           <div class="spec-row"><span class="key">Tested DAWs</span><span class="val">{plugin.systemReq.daws}</span></div>
         </div>
       </section>
+
+      {/* C2 — mobile-only "try in your DAW" bridge (hidden >900px). Sits just
+          above install/activate, near the trial context. Self-hides without a
+          trialUrl. */}
+      {plugin.trialUrl && <DawBridge plugin={plugin} />}
 
       <section class="install-section" id="install">
         <h2 data-split>{plugin.isFree ? 'Install' : 'Install & activate'}</h2>
