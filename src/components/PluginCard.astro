@@ -34,7 +34,19 @@ const thumbStyle = [
     style={thumbStyle}
   >
     {thumb ? (
-      <Image src={thumb} alt={plugin.name} width={1600} format="webp" quality={92} loading="lazy" />
+      // Responsive variants so phones fetch a card-sized file, not the full
+      // 1600px master. Card is ~1 column on phones (≤1020px) and ~1/3 of the
+      // grid on desktop; at DPR2 the 800px variant covers the phone card.
+      <Image
+        src={thumb}
+        alt={plugin.name}
+        width={1600}
+        widths={[400, 800, 1600]}
+        sizes="(max-width: 1020px) 92vw, 30vw"
+        format="webp"
+        quality={92}
+        loading="lazy"
+      />
     ) : (
       <span class="thumb-placeholder">{plugin.name}</span>
     )}
