@@ -15,6 +15,10 @@ const onProductPage = plugins.some((pl) => isActive(`/${pl.slug}`));
           and clicks pass through to the home link; reduced-motion gets a still. */}
       <picture>
         <source srcset="/brand/revaudio-plate-3d-static.webp" media="(prefers-reduced-motion: reduce)" />
+        {/* Mobile (≤900px) serves the 13KB static plate — <source media> is
+            picked at parse time so the 264KB animated webp is never fetched on
+            phones. Wider screens fall through to the animated <img> below. */}
+        <source srcset="/brand/revaudio-plate-3d-static.webp" media="(max-width: 900px)" />
         <img
           src="/brand/revaudio-plate-3d.webp"
           alt="RevAudio"
