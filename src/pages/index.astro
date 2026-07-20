@@ -51,6 +51,29 @@ const rl = bySlug('revlimiter');
                 <s>{fmtPrice(rl.regularPriceUsd)}</s> · Buy now &rarr;</a>
             </p>
           )}
+          {/* Mobile-only conversion pair (Phase B). Desktop keeps the quiet
+              dashed fast-buy line above; phones get two co-equal ≥48px buttons.
+              BUY reuses the site-wide data-add-to-cart flow (same contract as
+              MobileBuyBar: cart holds the regular price, VROOM applies −$37 at
+              checkout, so the plate reads the $56 intro price). TRY FREE points
+              at the same trial download the nav "Downloads" link uses. */}
+          {rl && isBuyable(rl) && (
+            <div class="hh-cta-mobile">
+              <button
+                type="button"
+                class="hero-btn hero-btn--buy"
+                data-add-to-cart
+                data-slug={rl.slug}
+                data-name={rl.name}
+                data-price={rl.regularPriceUsd ?? rl.introPriceUsd}
+                data-checkout-url={rl.checkoutUrl}
+                aria-label={`Add ${rl.name} to cart — ${fmtPrice(rl.introPriceUsd)}`}
+              >BUY — {fmtPrice(rl.introPriceUsd)}</button>
+              {rl.trialUrl && (
+                <a class="hero-btn hero-btn--try" href={rl.trialUrl} target="_blank" rel="noopener noreferrer">TRY FREE</a>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -195,6 +218,36 @@ const rl = bySlug('revlimiter');
   .hh-fastbuy strong { color: var(--brass-bright); font-weight: 400; }
   .hh-fastbuy s { color: var(--fg-faint); }
 
+  /* Mobile hero CTA — hidden on desktop; two real buttons on phones (see the
+     ≤860px block below). Race-red primary + outlined secondary. */
+  .hh-cta-mobile { display: none; }
+  .hero-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 52px;
+    padding: 0 1rem;
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-align: center;
+    border: 2px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s var(--ease), border-color 0.2s var(--ease), color 0.2s var(--ease), transform 0.1s var(--ease);
+  }
+  .hero-btn--buy { background: #e83a3a; color: #fff; border-color: #e83a3a; }
+  .hero-btn--try { background: transparent; color: var(--brass-bright); border-color: var(--brass); }
+  .hero-btn:active { transform: scale(0.97); }
+  @media (hover: hover) {
+    .hero-btn--buy:hover { background: #ff4a4a; border-color: #ff4a4a; }
+    .hero-btn--try:hover { border-color: var(--brass-bright); color: var(--fg); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-btn { transition: none; }
+  }
+
   /* ── Hanging STORE sign — left edge, bottom-anchored so the plank rests
      just above the plugin showcase. All px derive from the source render at
      scale 0.1816 (plank = 264 css px): mount 436×243, beam 436×45 at 0,0,
@@ -280,6 +333,15 @@ const rl = bySlug('revlimiter');
     .hh-h1 { white-space: normal; font-size: clamp(2.4rem, 9vw, 3.4rem); }
     .hero-grid { gap: 2rem; padding-bottom: 0; } /* undo the sign reserve */
     .hero-show { gap: 2rem; }
+    /* Swap the quiet dashed line for the two co-equal buttons. */
+    .hh-fastbuy { display: none; }
+    .hh-cta-mobile {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      width: min(420px, 100%);
+      margin: 0.5rem auto 0;
+    }
     /* No sign on mobile — desktop-only flourish; nav STORE covers the path. */
     .sign-mount { display: none; }
   }
