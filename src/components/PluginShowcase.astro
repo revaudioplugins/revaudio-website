@@ -13,6 +13,8 @@ import revGauge from '../assets/showcase/rev-gauge.png';
 import arrowBtn from '../assets/showcase/arrow-btn.png';
 import revlimiterShot from '../assets/plugins/revlimiter-hero.png';
 import comingSoonPlate from '../assets/plugins/coming-soon-plate.png';
+import gasShot from '../assets/plugins/gas-hero.png';
+import radioRouletteShot from '../assets/plugins/radioroulette-hero.png';
 
 const STAGE_W = 520;
 const STAGE_H = 470;
@@ -76,13 +78,71 @@ const SLIDES = [
       more:     { left: 56,  top: 419, ff: 'Oswald, sans-serif',       fw: 400, fs: 17, ls: 0 },
     },
   },
+  {
+    slug: 'gas',
+    name: 'GAS',
+    titleHtml: 'GAS',
+    titleClass: 'gas',
+    shot: gasShot, shotAlt: 'GAS plugin',
+    shotFit: 'contain',
+    catchphrase: 'One-knob saturation. Floor it.',
+    oneliner: 'One DRIVE knob, three voices — Tube, Tape, Fuzz.',
+    priceHtml: '$5',
+    // Corner ribbon, not a price sub-line — see .sc-badge below.
+    badge: ['FREE', 'W/ ANY PURCHASE'],
+    style: {
+      title:    { left: 0, top: 20,  ff: "'Bebas Neue', sans-serif", fw: 400, fs: 86, ls: 0 },
+      sub:      { left: 0, top: 98,  ff: "'Bebas Neue', sans-serif", fw: 400, fs: 22, ls: 0 },
+      // GAS's shot is a narrow portrait knob, not a wide desktop panel — sized
+      // to its own 800:1190 aspect and centered, rather than the shared
+      // 420×195 landscape box (which left huge dark flanks either side).
+      shot:     { left: 191, top: 148, w: 138, h: 205 },
+      oneliner: { left: 0, top: 358, ff: 'Rajdhani, sans-serif',     fw: 700, fs: 15, ls: 0 },
+      price:    { left: 0, top: 382, ff: "'Bebas Neue', sans-serif", fw: 400, fs: 30, ls: 0 },
+      more:     { left: 0, top: 422, ff: 'Oswald, sans-serif',       fw: 400, fs: 17, ls: 0 },
+    },
+  },
+  {
+    slug: 'radio-roulette',
+    name: 'Radio Roulette',
+    titleHtml: 'RADIO ROULETTE',
+    titleClass: '',
+    shot: radioRouletteShot, shotAlt: 'Radio Roulette plugin',
+    catchphrase: 'Every press, a new station of chaos.',
+    oneliner: 'One seed deterministically reconfigures 10 effects at once.',
+    priceHtml: '$20',
+    style: {
+      title:    { left: 0, top: 30,  ff: "'Bebas Neue', sans-serif", fw: 400, fs: 52, ls: 0 },
+      sub:      { left: 0, top: 92,  ff: "'Bebas Neue', sans-serif", fw: 400, fs: 22, ls: 0 },
+      shot:     { left: 49, top: 148 },
+      oneliner: { left: 0, top: 358, ff: 'Rajdhani, sans-serif',     fw: 700, fs: 15, ls: 0 },
+      price:    { left: 0, top: 382, ff: "'Bebas Neue', sans-serif", fw: 400, fs: 30, ls: 0 },
+      more:     { left: 0, top: 422, ff: 'Oswald, sans-serif',       fw: 400, fs: 17, ls: 0 },
+    },
+  },
 ].filter((s) => bySlug(s.slug));
 
-const pos = (st: { left: number; top: number }) => `left:${st.left}px;top:${st.top}px;`;
+const pos = (st: { left: number; top: number; w?: number; h?: number }) =>
+  `left:${st.left}px;top:${st.top}px;` + (st.w ? `width:${st.w}px;` : '') + (st.h ? `height:${st.h}px;` : '');
 // Text rows ignore their per-slide left and span the full stage, centered — only
 // the vertical position is kept from the bench so the card reads as one centred stack.
 const topf = (st: { top: number }) => `top:${st.top}px;`;
 const font = (st: any) => (st.ff ? `font-family:${st.ff};font-weight:${st.fw};font-size:${st.fs}px;letter-spacing:${st.ls}px;` : '');
+
+// Endless coverflow: every slide is classed by its SIGNED circular distance from
+// the current one (0/±1 shown, everything else hidden) — see the matching go()
+// logic in the script below. Computed here too so slide 0's neighbors already
+// peek on first paint, no-JS included.
+const n = SLIDES.length;
+const peekClass = (i: number) => {
+  let d = i % n;
+  if (d > n / 2) d -= n;
+  if (d < -n / 2) d += n;
+  if (d === 0) return 'is-current';
+  if (d === 1) return 'is-peek-next';
+  if (d === -1) return 'is-peek-prev';
+  return '';
+};
 ---
 
 <section class="showcase-wrap" data-showcase tabindex="0" role="group" aria-roledescription="carousel" aria-label="RevAudio plugins">
@@ -98,7 +158,7 @@ const font = (st: any) => (st.ff ? `font-family:${st.ff};font-weight:${st.fw};fo
         {SLIDES.map((s, i) => (
           <a
             class="sc-slide"
-            class:list={[{ 'is-current': i === 0, 'is-below': i !== 0 }]}
+            class:list={[peekClass(i)]}
             href={`/${s.slug}`}
             data-slide
             aria-roledescription="slide"
@@ -108,12 +168,20 @@ const font = (st: any) => (st.ff ? `font-family:${st.ff};font-weight:${st.fw};fo
               <span class={`sc-title ${s.titleClass}`} style={font(s.style.title)} set:html={s.titleHtml} />
             </div>
             <p class="sec sc-sub" style={topf(s.style.sub) + font(s.style.sub)}>{s.catchphrase}</p>
-            <div class:list={['sec', 'sc-shot', { 'is-plate': s.shot === comingSoonPlate }]} style={pos(s.style.shot)}>
+            <div class:list={['sec', 'sc-shot', { 'is-plate': [comingSoonPlate, radioRouletteShot].includes(s.shot), 'sc-shot--fit': s.shotFit === 'contain' }]} style={pos(s.style.shot)}>
               <Image src={s.shot} alt={s.shotAlt} width={1600} widths={[480, 800, 1200, 1600]} sizes="(max-width: 640px) 92vw, 440px" format="webp" quality={92} loading="lazy" />
             </div>
             <p class="sec sc-one" style={topf(s.style.oneliner) + font(s.style.oneliner)}>{s.oneliner}</p>
             <span class="sec sc-price" style={topf(s.style.price) + font(s.style.price)} set:html={s.priceHtml}></span>
             <span class="sec sc-more" style={topf(s.style.more) + font(s.style.more)}>More Details &rarr;</span>
+            {/* Rotated corner ribbon (e.g. GAS's bundle freebie) — top-right,
+                tilted so the left edge reads higher than the right (a "\"
+                slant), independent of the left/top style-map grid above. */}
+            {s.badge && (
+              <div class="sc-badge">
+                {s.badge.map((line) => <span>{line}</span>)}
+              </div>
+            )}
           </a>
         ))}
       </div>
@@ -143,29 +211,50 @@ const font = (st: any) => (st.ff ? `font-family:${st.ff};font-weight:${st.fw};fo
     const n = slides.length;
     let idx = 0;
 
-    // dir > 0 → roll left (next); dir < 0 → roll right (prev).
-    const go = (i: number, dir: number) => {
-      const next = (i + n) % n;
-      const old = idx;
-      if (next === old) return;
-      slides.forEach((s, k) => {
-        s.classList.remove('is-current', 'is-above', 'is-below');
-        if (k === next) s.classList.add('is-current');
-        else if (k === old) s.classList.add(dir > 0 ? 'is-above' : 'is-below');
-        else s.classList.add(dir > 0 ? 'is-below' : 'is-above');
-      });
-      dots.forEach((d, k) => d.classList.toggle('active', k === next));
-      idx = next;
-      if (announce) announce.textContent = slides[next].getAttribute('aria-label') ?? '';
+    // Endless coverflow: every slide is classed by its SIGNED circular distance
+    // from idx (0 = current, ±1 = peeking neighbor, everything else hidden).
+    // No "direction" bookkeeping needed — wrapping from last→first (or back)
+    // is just distance -1/+1 like any other neighbor, so the loop is seamless.
+    const signedDist = (k: number) => {
+      let d = (k - idx) % n;
+      if (d > n / 2) d -= n;
+      if (d < -n / 2) d += n;
+      return d;
     };
 
-    sc.querySelector('.sc-prev')?.addEventListener('click', () => go(idx - 1, -1));
-    sc.querySelector('.sc-next')?.addEventListener('click', () => go(idx + 1, 1));
-    dots.forEach((d, k) => d.addEventListener('click', () => go(k, k > idx ? 1 : -1)));
+    const go = (target: number) => {
+      const next = ((target % n) + n) % n;
+      if (next === idx) return;
+      idx = next;
+      slides.forEach((s, k) => {
+        s.classList.remove('is-current', 'is-peek-prev', 'is-peek-next');
+        const d = signedDist(k);
+        if (d === 0) s.classList.add('is-current');
+        else if (d === 1) s.classList.add('is-peek-next');
+        else if (d === -1) s.classList.add('is-peek-prev');
+      });
+      dots.forEach((d, k) => d.classList.toggle('active', k === idx));
+      if (announce) announce.textContent = slides[idx].getAttribute('aria-label') ?? '';
+    };
+
+    sc.querySelector('.sc-prev')?.addEventListener('click', () => go(idx - 1));
+    sc.querySelector('.sc-next')?.addEventListener('click', () => go(idx + 1));
+    dots.forEach((d, k) => d.addEventListener('click', () => go(k)));
+
+    // Peeking neighbors are clickable shortcuts to bring them to center —
+    // the current slide keeps its plain navigate-to-product-page behavior.
+    slides.forEach((s, k) => {
+      s.addEventListener('click', (e) => {
+        if (s.classList.contains('is-peek-prev') || s.classList.contains('is-peek-next')) {
+          e.preventDefault();
+          go(k);
+        }
+      });
+    });
 
     sc.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowLeft') { go(idx - 1, -1); e.preventDefault(); }
-      if (e.key === 'ArrowRight') { go(idx + 1, 1); e.preventDefault(); }
+      if (e.key === 'ArrowLeft') { go(idx - 1); e.preventDefault(); }
+      if (e.key === 'ArrowRight') { go(idx + 1); e.preventDefault(); }
     });
 
     // swipe; suppress the click after a real drag so it never navigates
@@ -176,7 +265,7 @@ const font = (st: any) => (st.ff ? `font-family:${st.ff};font-weight:${st.fw};fo
     viewport.addEventListener('pointerup', (e) => {
       if (downX !== null) {
         const dx = e.clientX - downX;
-        if (Math.abs(dx) > 40) go(dx < 0 ? idx + 1 : idx - 1, dx < 0 ? 1 : -1);
+        if (Math.abs(dx) > 40) go(dx < 0 ? idx + 1 : idx - 1);
       }
       downX = null;
     });
@@ -247,7 +336,9 @@ const font = (st: any) => (st.ff ? `font-family:${st.ff};font-weight:${st.fw};fo
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: clamp(0.4rem, 2vw, 1.4rem);
+    /* Arrows sit well clear of the peeking neighbor cards, out toward the
+       edges of the section rather than hugging the current card. */
+    gap: clamp(2rem, 11vw, 9rem);
   }
 
   /* ── fixed stage; sections absolutely placed (identical to the bench) ── */
@@ -265,16 +356,37 @@ const font = (st: any) => (st.ff ? `font-family:${st.ff};font-weight:${st.fw};fo
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
-    transform: translateX(70px) rotateY(-26deg);
-    filter: blur(1.5px);
+    z-index: 1;
+    /* Resting "hidden" position for anything past the peeking neighbors —
+       parked small/centered/invisible; only reachable via a multi-step dot
+       jump, so it just fades/grows into place rather than sliding from a
+       specific side. */
+    transform: scale(0.55);
+    filter: blur(2px);
     /* card frame — matches PluginCard store aesthetic */
     background: var(--bg-1);
     border: 1px solid var(--border-bright);
     box-shadow: 0 12px 48px rgba(0, 0, 0, 0.55);
   }
-  .sc-slide.is-current { opacity: 1; visibility: visible; pointer-events: auto; transform: none; filter: none; }
-  .sc-slide.is-above { visibility: visible; opacity: 0; transform: translateX(-70px) rotateY(26deg); filter: blur(1.5px); }
-  .sc-slide.is-below { visibility: visible; opacity: 0; transform: translateX(70px) rotateY(-26deg); filter: blur(1.5px); }
+  .sc-slide.is-current { opacity: 1; visibility: visible; pointer-events: auto; transform: none; filter: none; z-index: 3; }
+  /* Endless coverflow: the immediate neighbors rest permanently visible,
+     scaled down and blurred, peeking in from either side — not just mid-
+     transition. Clicking one brings it to center (see script above); the
+     wrap from last→first is just distance -1/+1 like any other pair, so
+     the loop reads as one continuous ring. */
+  .sc-slide.is-peek-prev,
+  .sc-slide.is-peek-next {
+    visibility: visible;
+    opacity: 0.42;
+    pointer-events: auto;
+    z-index: 2;
+    filter: blur(3px);
+    cursor: pointer;
+  }
+  .sc-slide.is-peek-prev { transform: translateX(-58%) scale(0.8) rotateY(14deg); }
+  .sc-slide.is-peek-next { transform: translateX(58%) scale(0.8) rotateY(-14deg); }
+  .sc-slide.is-peek-prev:hover,
+  .sc-slide.is-peek-next:hover { opacity: 0.65; filter: blur(2px); }
   .sc-slide:hover { border-color: var(--brass-dark); }
 
   .sec { position: absolute; }
@@ -292,6 +404,12 @@ const font = (st: any) => (st.ff ? `font-family:${st.ff};font-weight:${st.fw};fo
     -webkit-background-clip: text; background-clip: text; color: transparent;
     filter: drop-shadow(0 0 22px rgba(150, 60, 255, 0.35));
   }
+  /* Smoky gray gradient — grey base, wisps of lighter/darker smoke through it. */
+  .sc-title.gas {
+    background: linear-gradient(120deg, #e8e8e8 0%, #9a9a9a 22%, #5c5c5c 42%, #c4c4c4 60%, #767676 80%, #d8d8d8 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 0 20px rgba(170, 170, 170, 0.35));
+  }
   .sc-title :global(.acthe) { color: #f4f6f8; }
   .sc-title :global(.acac) {
     background: linear-gradient(180deg, #aef0ff, #43c6ff 55%, #2aa4e6);
@@ -307,8 +425,41 @@ const font = (st: any) => (st.ff ? `font-family:${st.ff};font-weight:${st.fw};fo
 
   .sc-sub { margin: 0; color: #b9a884; }
 
+  /* Corner ribbon (e.g. GAS's bundle freebie) — pinned to the card, not the
+     left/top style-map grid (that system centers text across the full card
+     width, which a small corner tag shouldn't do). rotate(+40deg): CSS
+     rotation is clockwise for positive angles, which lifts the badge's own
+     left edge and drops its right edge — the "\" slant this was asked for. */
+  .sc-badge {
+    position: absolute;
+    top: 42px;
+    right: 27px;
+    z-index: 4;
+    transform: rotate(20deg) scale(1.05);
+    transform-origin: center;
+    background: var(--brass);
+    color: var(--bg-0);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-align: center;
+    line-height: 1.35;
+    padding: 5px 14px;
+    border-radius: 3px;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+  }
+  .sc-badge span { display: block; }
+
   .sc-shot { width: 420px; height: 195px; border-radius: 12px; overflow: hidden; background: #080808; border: 1px solid var(--border); }
   .sc-shot :global(img) { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  /* A slide whose shot is sized to its OWN aspect (e.g. GAS's narrow portrait
+     knob, via inline w/h in the style map above) — keep the framed box so the
+     surrounding card background never reads as a bare dark void, but show the
+     whole image (never crop it, unlike the wide default `cover` shots). */
+  .sc-shot--fit :global(img) { object-fit: contain; }
 
   /* Coming-soon plate is a true-alpha asset, not a screenshot — drop the frame
      so it floats on the card and the transparency reads. Subtle shadow grounds it. */
@@ -321,7 +472,11 @@ const font = (st: any) => (st.ff ? `font-family:${st.ff};font-weight:${st.fw};fo
   .sc-one { margin: 0; color: #dbcaad; }
   .sc-price { color: var(--brass-bright); }
   .sc-price :global(s) { color: var(--fg-faint); font-size: 0.945em; text-decoration: line-through; }
-  .sc-price :global(.sc-code) { font-family: var(--font-mono); font-size: 0.48em; letter-spacing: 0.12em; color: var(--brass); opacity: 0.85; }
+  /* line-height:1 — without it this inherits .sc-price's big-digit line-height
+     (1.6× the 30px price = 48px), which is fine on the same line as the price
+     but massively over-tall when it wraps to its own line (e.g. GAS's
+     `$5<br><.sc-code>` two-line price). */
+  .sc-price :global(.sc-code) { font-family: var(--font-mono); font-size: 0.48em; letter-spacing: 0.12em; color: var(--brass); opacity: 0.85; line-height: 1.3; }
   .sc-more {
     color: #f0e6d2;
     text-transform: uppercase;
@@ -344,6 +499,12 @@ const font = (st: any) => (st.ff ? `font-family:${st.ff};font-weight:${st.fw};fo
     flex: 0 0 auto;
     width: clamp(64px, 8.5vw, 116px);
     background: none; border: 0; padding: 0; cursor: pointer; line-height: 0;
+    /* Above the peeking neighbor cards — those can visually extend into the
+       arrow's screen position now that the gap is wider, and without this
+       the earlier-in-DOM .sc-prev would paint underneath (and swallow clicks
+       to) .sc-viewport's absolutely-positioned children. */
+    position: relative;
+    z-index: 10;
   }
   .sc-arrow :global(img) {
     width: 100%; height: auto; display: block;
@@ -374,8 +535,9 @@ const font = (st: any) => (st.ff ? `font-family:${st.ff};font-weight:${st.fw};fo
   .sc-dot.active::before { background: var(--brass-bright); border-color: var(--brass-bright); transform: scale(1.15); }
 
   @media (prefers-reduced-motion: reduce) {
-    .sc-slide { transition: opacity 0.2s ease; filter: none !important; }
-    .sc-slide:not(.is-current) { transform: none; }
+    /* Static positions stay (peeks are a layout, not a motion effect) — only
+       the animated slide/fade BETWEEN states is removed; states snap instantly. */
+    .sc-slide { transition: none; filter: none !important; }
   }
 
   /* ── Mobile: drop the fixed absolute stage; let the card flow naturally

@@ -13,7 +13,20 @@ const pct = discountPct(plugin);
 ---
 
 <div class="buy-block">
-  {buyable ? (
+  {plugin.isFree ? (
+    <>
+      <div class="prices">
+        <span class="price-now">Free</span>
+      </div>
+      <p class="platform-note">Windows &amp; macOS &middot; VST3 / AU / AAX</p>
+      {plugin.downloadUrl ? (
+        <a class="btn primary" href={plugin.downloadUrl}>Download</a>
+      ) : (
+        <a class="btn primary" href={`/${plugin.slug}#waitlist`}>Email me when the download is ready</a>
+      )}
+      <p class="micro muted">No account, no licence key &mdash; just download and go.</p>
+    </>
+  ) : buyable ? (
     <>
       <div class="prices">
         <span class="price-now">{fmtPrice(plugin.introPriceUsd)}</span>
@@ -58,8 +71,8 @@ const pct = discountPct(plugin);
         )}
       </div>
       <p class="platform-note">Windows &amp; macOS &middot; VST3 / AU / AAX</p>
-      <a class="btn primary" href={`/${plugin.slug}#waitlist`}>Email me when checkout reopens</a>
-      <p class="micro muted">Checkout is moving to a new payment processor — back online shortly.</p>
+      <a class="btn primary" href={`/${plugin.slug}#waitlist`}>Notify me when checkout opens</a>
+      <p class="micro muted">We&rsquo;ll email you the moment checkout goes live.</p>
     </>
   ) : plugin.status === 'beta' ? (
     <>
@@ -83,11 +96,23 @@ const pct = discountPct(plugin);
     </>
   )}
 
+  {plugin.bundleNote && <p class="bundle-note">{plugin.bundleNote}</p>}
+
   <ul class="includes">
-    <li>VST3 / AU / AAX (Windows &amp; macOS)</li>
-    <li>Free updates within v1.x</li>
-    <li>Up to 2 machines per licence</li>
-    <li>14-day refund</li>
+    {plugin.isFree ? (
+      <>
+        <li>VST3 / AU / AAX (Windows &amp; macOS)</li>
+        <li>Free forever &mdash; no licence key</li>
+        <li>Free updates</li>
+      </>
+    ) : (
+      <>
+        <li>VST3 / AU / AAX (Windows &amp; macOS)</li>
+        <li>Free updates within v1.x</li>
+        <li>Up to 2 machines per licence</li>
+        <li>14-day refund</li>
+      </>
+    )}
   </ul>
 </div>
 
@@ -185,6 +210,16 @@ const pct = discountPct(plugin);
     letter-spacing: 0.1em;
     color: var(--fg-dim);
     margin: -0.25rem 0 0;
+  }
+
+  .bundle-note {
+    font-size: 0.82rem;
+    color: var(--brass);
+    background: var(--bg-2);
+    border: 1px solid var(--brass-dark);
+    border-radius: 4px;
+    padding: 0.6rem 0.75rem;
+    margin: 0;
   }
 
   .code-pill {

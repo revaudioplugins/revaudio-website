@@ -27,6 +27,9 @@ const buyable = isBuyable(plugin);
 // over the hero instead of stacking below the gallery (sketch 2026-07-06),
 // while the classic BuyButton aside keeps the plain stacked flow.
 const crane = plugin.slug === 'revlimiter' && buyable;
+// GAS's hero is a compact portrait knob shot, not a wide desktop panel — at the
+// gallery's default 100%-of-column width it dwarfs the copy. Shrink it down.
+const narrowHero = plugin.slug === 'gas';
 
 // Only surface A/B demos that actually have audio. Until clips are bounced,
 // the "Hear it" section stays hidden rather than showing empty placeholders.
@@ -73,7 +76,7 @@ const altShots = hasStage
 
       <div class:list={['product-head', crane && 'product-head--crane']}>
         <div class="product-info">
-          {!buyable && <span class="status-pill">{plugin.statusLabel}</span>}
+          {!buyable && !plugin.hideStatusPill && <span class="status-pill">{plugin.statusLabel}</span>}
           {/* Title row — the trial stamp composes WITH the h1 (flex sibling),
               riding just above its cap line like a sticker slapped next to the
               wordmark. Anchored to the title, not to pixel coordinates, so the
@@ -95,7 +98,9 @@ const altShots = hasStage
           </div>
           <p class="long">{plugin.longPitch}</p>
 
-          <Gallery hero={plugin.heroImage} images={plugin.galleryImages} alt={`${plugin.name} interface`} />
+          <div class:list={['gallery-wrap', narrowHero && 'gallery-wrap--narrow']}>
+            <Gallery hero={plugin.heroImage} images={plugin.galleryImages} alt={`${plugin.name} interface`} />
+          </div>
         </div>
 
         <aside id="buy" class:list={['product-aside', crane && 'product-aside--crane']} data-buy-aside>
@@ -222,13 +227,21 @@ const altShots = hasStage
       </section>
 
       <section class="install-section">
-        <h2 data-split>Install &amp; activate</h2>
-        <ol class="muted" data-reveal>
-          <li>Buy securely &mdash; serial delivered to your inbox in under 5 minutes.</li>
-          <li>Run the installer. {plugin.name} installs to the standard VST3, AU, and AAX folders for your OS.</li>
-          <li>Open your DAW, scan for plugins (VST3 / AU / AAX), paste your serial on first launch.</li>
-          <li>Up to 2 machines per licence. Lost serial? Email support and we resend within one business day.</li>
-        </ol>
+        <h2 data-split>{plugin.isFree ? 'Install' : 'Install & activate'}</h2>
+        {plugin.isFree ? (
+          <ol class="muted" data-reveal>
+            <li>Download the installer &mdash; free, no account required.</li>
+            <li>Run the installer. {plugin.name} installs to the standard VST3, AU, and AAX folders for your OS.</li>
+            <li>Open your DAW and scan for plugins (VST3 / AU / AAX). No serial, no activation.</li>
+          </ol>
+        ) : (
+          <ol class="muted" data-reveal>
+            <li>Buy securely &mdash; serial delivered to your inbox in under 5 minutes.</li>
+            <li>Run the installer. {plugin.name} installs to the standard VST3, AU, and AAX folders for your OS.</li>
+            <li>Open your DAW, scan for plugins (VST3 / AU / AAX), paste your serial on first launch.</li>
+            <li>Up to 2 machines per licence. Lost serial? Email support and we resend within one business day.</li>
+          </ol>
+        )}
         <p class="muted" data-reveal>
           Full install + troubleshooting on the <a href="/support">support page</a>.
           Licence terms on the <a href="/eula">EULA page</a>.
@@ -365,6 +378,14 @@ const altShots = hasStage
   }
 
   .long { font-size: 1.05rem; color: var(--fg-dim); max-width: 60ch; margin-bottom: 2rem; }
+
+  /* GAS's hero is a compact portrait knob shot, not a wide desktop panel —
+     at the gallery's default 100%-of-column width it dwarfs the copy. ~40% of
+     that width reads as a proper product photo instead of a poster. */
+  .gallery-wrap--narrow { max-width: 40%; }
+  @media (max-width: 900px) {
+    .gallery-wrap--narrow { max-width: 60%; margin-inline: auto; }
+  }
 
   .features { padding: 2rem 0 3rem; border-top: 1px solid var(--border); }
 

@@ -11,7 +11,7 @@
  */
 
 export type PluginStatus = 'in-development' | 'beta' | 'live';
-export type PluginCategory = 'limiter' | 'saturation' | 'panner' | 'eq';
+export type PluginCategory = 'limiter' | 'saturation' | 'panner' | 'eq' | 'multi-fx';
 
 export interface Feature {
   name: string;
@@ -69,6 +69,28 @@ export interface Plugin {
   longPitch: string;
   status: PluginStatus;
   statusLabel: string;
+  /** Suppress the status-pill badge next to the product-page title (e.g. while
+   *  the label reads awkwardly next to a fresh launch — kept per-plugin so the
+   *  default badge still shows for everything else). */
+  hideStatusPill?: boolean;
+  /** Store-card thumbnail floats frameless at its own aspect ratio, no dark
+   *  letterbox box — for hero shots that aren't the wide RevLimiter-style
+   *  desktop panel (e.g. a portrait or narrower screenshot). */
+  cardThumbBare?: boolean;
+  /** Caps the bare thumbnail's width within the card (percent). A tall
+   *  portrait shot at 100% width reads oversized next to the wide panels —
+   *  this shrinks it back down to a proportionate product photo. */
+  cardThumbMaxWidthPct?: number;
+  /** Overrides the card-thumb frame's aspect-ratio (e.g. '800/1190') to match
+   *  a hero shot that isn't the wide RevLimiter-style panel — a narrow/portrait
+   *  shot in the default wide box left huge dark flanks either side (the
+   *  surrounding card background reading as a big empty void). Keeps the
+   *  bordered frame (unlike cardThumbBare), just reshaped to fit. */
+  cardThumbAspect?: string;
+  /** Promo disclaimer shown next to price everywhere the plugin appears
+   *  (product page buy card, store card, homepage carousel) — e.g. a
+   *  bundle-in freebie tied to buying a different plugin. */
+  bundleNote?: string;
   introPriceUsd: number | null;
   regularPriceUsd: number | null;
   /** Lemon Squeezy hosted checkout URL. Null until wired → product shows the "checkout reopening" state. */
@@ -77,6 +99,13 @@ export interface Plugin {
   checkoutPaused: boolean;
   /** Discount code the buyer must enter at checkout to get the intro price. */
   promoCode?: string;
+  /** True for no-cost plugins — product page shows FREE + a Download CTA
+   *  instead of pricing/checkout, and skips serial/licence-key copy. */
+  isFree?: boolean;
+  /** Hosted installer URL for free plugins. Null until the build is packaged
+   *  and uploaded — product page shows a "download coming soon" waitlist
+   *  state instead (mirrors checkoutUrl's null-state convention above). */
+  downloadUrl?: string | null;
   demoUrl: string | null;
   releaseTarget: string;
   heroImage: string | null;
@@ -106,6 +135,14 @@ const baseSystemReq: SystemReq = {
 
 // RevLimiter — Lemon Squeezy hosted checkout URL.
 const REVLIMITER_CHECKOUT_URL: string | null = 'https://revaudiopg.lemonsqueezy.com/checkout/buy/78885904-8a19-4e23-9510-31b50775ada5';
+
+// Radio Roulette — Lemon Squeezy hosted checkout URL. Not created yet; price
+// is intent ($20) until the product exists, then set this like RevLimiter's.
+const RADIOROULETTE_CHECKOUT_URL: string | null = null;
+
+// GAS — Lemon Squeezy hosted checkout URL. $5 standalone, but bundled free
+// with any other RevAudio purchase (see bundleNote below). Not created yet.
+const GAS_CHECKOUT_URL: string | null = null;
 
 export const plugins: Plugin[] = [
   {
@@ -242,6 +279,84 @@ export const plugins: Plugin[] = [
       { name: 'Tube saturation', desc: 'Warm valve-style saturation on the air band for density and sheen.' },
       { name: 'Smart resonance taming', desc: 'Dynamic EQ / resonance suppression keeps the boosted top smooth.' },
       { name: 'Temperature dial', desc: 'One car-AC temperature control blends exciter (cold) to tube (hot) — mid is both.' },
+    ],
+    audioDemos: [],
+    systemReq: baseSystemReq,
+    reviewsCount: 0,
+    reviewsAvg: 0,
+  },
+  {
+    slug: 'gas',
+    name: 'GAS',
+    category: 'saturation',
+    tagline: 'A one-knob saturator you drive like a gas pedal',
+    oneLiner:
+      'One DRIVE knob, three voices — Tube, Tape, Fuzz. Floor it for character, not just loudness.',
+    plainWhat:
+      'In plain terms: GAS is a saturator — it adds harmonic drive and warmth to any track. Turn the knob for more grit, pick Tube, Tape or Fuzz for the flavor.',
+    longPitch:
+      'One knob does the work of five. GAS stages drive gain, tone shaping, and calibrated loudness compensation together, so turning DRIVE changes character — never just volume. Three voices: Tube for even-harmonic warmth, Tape for symmetric saturation with programme-dependent squash, Fuzz for a dying-battery snarl that cleans up under sustain. A check-engine lamp lights up when you’re really flooring it.',
+    status: 'live',
+    statusLabel: GAS_CHECKOUT_URL ? 'Available now' : 'Checkout opening soon',
+    hideStatusPill: true,
+    cardThumbAspect: '800/1190',
+    cardThumbMaxWidthPct: 40,
+    introPriceUsd: 5,
+    regularPriceUsd: null,
+    checkoutUrl: GAS_CHECKOUT_URL,
+    checkoutPaused: !GAS_CHECKOUT_URL,
+    bundleNote: 'Free when you buy any other RevAudio plugin — no separate purchase needed.',
+    demoUrl: null,
+    releaseTarget: 'Available now',
+    heroImage: 'gas-hero.png',
+    galleryImages: [],
+    features: [
+      { name: 'One-knob DRIVE macro', desc: 'A single control stages drive gain, pre/post EQ, dynamics, and calibrated loudness compensation together — turning the knob changes character, never volume.' },
+      { name: 'Three voices: Tube, Tape, Fuzz', desc: 'Tube: even-harmonic asymmetric warmth. Tape: symmetric saturation with programme-dependent squash. Fuzz: biased arctan/hard-clip blend with battery-sag sputter.' },
+      { name: 'Calibrated loudness compensation', desc: 'A static calibrated gain match, not a live auto-gain loop — deterministic, null-test friendly, no pumping, no cheating the sweep.' },
+      { name: 'Check-engine heat lamp', desc: 'Lights up when you’re really flooring it — reads real DSP heat, not just knob position.' },
+      { name: 'Up to 8× oversampling', desc: 'Antiderivative anti-aliasing on every shaper, oversampled per voice, for drive that stays clean instead of aliasing.' },
+    ],
+    audioDemos: [],
+    systemReq: baseSystemReq,
+    reviewsCount: 0,
+    reviewsAvg: 0,
+  },
+  {
+    slug: 'radio-roulette',
+    name: 'Radio Roulette',
+    category: 'multi-fx',
+    tagline: 'A chaos multi-effect you tune like a broken car radio',
+    oneLiner:
+      'Hit RANDOMIZE — one seed deterministically reconfigures 10 effects at once. Every press is a fresh, reproducible destruction of your signal.',
+    plainWhat:
+      'In plain terms: Radio Roulette is a glitch/chaos effect. Press one button and it reshapes your sound through up to ten effects at once — filter, EQ, fuzz, pitch, chorus, delay, reverb, gate, stereo width, and pan. The same seed always gives you back the same result.',
+    longPitch:
+      'A chaos/glitch multi-effect built around a single seed. RANDOMIZE rolls a new seed and instantly reconfigures a ten-stage chain — filter, EQ, fuzz, pitch-shift, chorus, delay, reverb, trance gate, stereo width, and pan — all deterministically, all level-matched and safety-limited so it never goes silent or blows up. Save a seed in your DAW to recall the exact sound later, or step through station presets like tuning an old dashboard radio.',
+    status: 'live',
+    statusLabel: RADIOROULETTE_CHECKOUT_URL ? 'Available now' : 'Checkout opening soon',
+    hideStatusPill: true,
+    cardThumbBare: true,
+    introPriceUsd: 20,
+    regularPriceUsd: null,
+    checkoutUrl: RADIOROULETTE_CHECKOUT_URL,
+    checkoutPaused: !RADIOROULETTE_CHECKOUT_URL,
+    demoUrl: null,
+    releaseTarget: '2026',
+    heroImage: 'radioroulette-hero.png',
+    galleryImages: [],
+    features: [
+      { name: 'One-seed chaos engine', desc: 'One seed (1–1,000,000) deterministically configures all ten effect stages at once — the same seed always reproduces the exact same sound.' },
+      { name: 'RANDOMIZE', desc: 'Rolls a new seed and re-randomizes everything instantly. Every result is level-matched and safety-limited — it can’t go silent or blow up.' },
+      { name: '10-stage chain', desc: 'Filter → EQ → Fuzz → Pitch → Chorus → Delay → Reverb → Gate → Stereo → Pan, independently enabled per seed.' },
+      { name: 'Filter', desc: 'State-variable low-pass, high-pass, or band-pass, with randomized cutoff and resonance.' },
+      { name: 'Fuzz', desc: 'Drive into tanh, hard-clip, or foldback distortion.' },
+      { name: 'Pitch shift', desc: 'Discrete semitone steps (±3, ±5, ±7, ±12) via a crossfaded ring buffer.' },
+      { name: 'Chorus, delay & reverb', desc: 'Rate, depth, feedback, room size, damping, and width all randomized per seed.' },
+      { name: 'Trance gate', desc: 'Square or sawtooth LFO gate, 1–12 Hz.' },
+      { name: 'Stereo width & pan', desc: 'Mid/side width from narrow to wide, static pan or auto-pan LFO.' },
+      { name: 'Station presets', desc: 'Five save slots — press to recall, shift-click to store your favorite seeds.' },
+      { name: 'Seed recall', desc: 'Every seed is DAW-automatable and saved with your session — dial in chaos once, keep it forever.' },
     ],
     audioDemos: [],
     systemReq: baseSystemReq,
