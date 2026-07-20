@@ -68,6 +68,19 @@ export function initWalkthrough(): void {
         },
         { passive: true },
       );
+
+      /* Prev/next arrows (mobile only, ≤900px — CSS hides them on desktop).
+         They just scrollBy one card stride; the scroll listener above keeps the
+         counter + .active in sync. Runs OUTSIDE the reduced-motion gate below —
+         navigation must work either way; only the scroll animation is gated. */
+      const prevBtn = root.querySelector<HTMLButtonElement>('[data-walk-prev]');
+      const nextBtn = root.querySelector<HTMLButtonElement>('[data-walk-next]');
+      if (prevBtn && nextBtn) {
+        const behavior: ScrollBehavior = motionOK ? 'smooth' : 'auto';
+        const stride = () => steps[1].offsetLeft - steps[0].offsetLeft;
+        prevBtn.addEventListener('click', () => copy.scrollBy({ left: -stride(), behavior }));
+        nextBtn.addEventListener('click', () => copy.scrollBy({ left: stride(), behavior }));
+      }
     }
 
     if (!motionOK) return; // everything below animates
