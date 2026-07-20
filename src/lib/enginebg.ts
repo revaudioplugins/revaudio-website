@@ -33,6 +33,19 @@ export function initEngineBg(): void {
 
   const state = { heat: 0, blip: 0, px: 0.5, py: 0.5, lastY: window.scrollY };
 
+  /* Haze drift phases — integrated incrementally (phase += dt·rate·drift) so a
+     blip changes drift SPEED smoothly. Multiplying t by a varying rate inside
+     sin() rescales all accumulated time and teleports the smoke on fast
+     scroll. Random offsets desync the two plates. */
+  const ph = {
+    x1: rand(0, Math.PI * 2),
+    y1: rand(0, Math.PI * 2),
+    x2: rand(0, Math.PI * 2),
+    y2: rand(0, Math.PI * 2),
+  };
+  let lastHeatOut = -1;
+  let lastBlipOut = -1;
+
   const embers: Ember[] = Array.from({ length: mobile ? 0 : EMBER_COUNT }, () => ({
     x: Math.random(),
     y: Math.random(),
@@ -131,19 +144,26 @@ export function initEngineBg(): void {
       ? (targetBlip - state.blip) * 0.35
       : (targetBlip - state.blip) * 0.04;
 
-    // outputs
-    root.style.setProperty('--heat', state.heat.toFixed(3));
-    root.style.setProperty('--blip', state.blip.toFixed(3));
+    // outputs — CSS vars drive the arc's filter on a huge element, so only
+    // write when the value moved enough to matter (cuts style-recalc churn)
+    const heatOut = Math.round(state.heat * 200) / 200;
+    if (heatOut !== lastHeatOut) { root.style.setProperty('--heat', String(heatOut)); lastHeatOut = heatOut; }
+    const blipOut = Math.round(state.blip * 100) / 100;
+    if (blipOut !== lastBlipOut) { root.style.setProperty('--blip', String(blipOut)); lastBlipOut = blipOut; }
 
     const drift = 1 + state.blip * 2.5;
+    ph.x1 += dt * 0.05 * drift;
+    ph.y1 += dt * 0.04 * drift;
+    ph.x2 += dt * 0.035 * drift;
+    ph.y2 += dt * 0.045 * drift;
     const par = mobile ? { x: 0, y: 0 } : { x: (state.px - 0.5) * 14, y: (state.py - 0.5) * 10 };
     gsap.set(haze1, {
-      x: Math.sin(t * 0.05 * drift) * 40 + par.x,
-      y: Math.cos(t * 0.04 * drift) * 25 + par.y * 0.6,
+      x: Math.sin(ph.x1) * 40 + par.x,
+      y: Math.cos(ph.y1) * 25 + par.y * 0.6,
     });
     gsap.set(haze2, {
-      x: Math.cos(t * 0.035 * drift) * 55 - par.x * 0.5,
-      y: Math.sin(t * 0.045 * drift) * 30 - par.y * 0.4,
+      x: Math.cos(ph.x2) * 55 - par.x * 0.5,
+      y: Math.sin(ph.y2) * 30 - par.y * 0.4,
     });
 
     drawFrame(t, dt);
