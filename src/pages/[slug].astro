@@ -98,9 +98,12 @@ const altShots = hasStage
           </div>
           <p class="long">{plugin.longPitch}</p>
 
-          <div class:list={['gallery-wrap', narrowHero && 'gallery-wrap--narrow']}>
-            <Gallery hero={plugin.heroImage} images={plugin.galleryImages} alt={`${plugin.name} interface`} />
-          </div>
+          <Gallery
+            hero={plugin.heroImage}
+            images={plugin.galleryImages}
+            alt={`${plugin.name} interface`}
+            class={narrowHero ? 'gallery--narrow' : undefined}
+          />
         </div>
 
         <aside id="buy" class:list={['product-aside', crane && 'product-aside--crane']} data-buy-aside>
@@ -381,10 +384,13 @@ const altShots = hasStage
 
   /* GAS's hero is a compact portrait knob shot, not a wide desktop panel —
      at the gallery's default 100%-of-column width it dwarfs the copy. ~40% of
-     that width reads as a proper product photo instead of a poster. */
-  .gallery-wrap--narrow { max-width: 40%; }
+     that width reads as a proper product photo instead of a poster. Applied
+     as a class on Gallery's own root (not a wrapper div): the crane's mobile
+     layout reorders .gallery via flex `order`, which requires it stay a
+     DIRECT child of .product-info. */
+  :global(.gallery--narrow) { max-width: 40%; }
   @media (max-width: 900px) {
-    .gallery-wrap--narrow { max-width: 60%; margin-inline: auto; }
+    :global(.gallery--narrow) { max-width: 60%; margin-inline: auto; }
   }
 
   .features { padding: 2rem 0 3rem; border-top: 1px solid var(--border); }

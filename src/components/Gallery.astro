@@ -8,9 +8,14 @@ interface Props {
   /** thumbnail strip; click to swap into hero. Same item appearing in hero is fine. */
   images?: string[];
   alt: string;
+  /** Extra class on the root .gallery element (e.g. a narrower max-width for
+   *  a portrait hero) — never an extra wrapper div: the crane mobile layout
+   *  reorders .gallery via flex `order`, which only works on a DIRECT flex
+   *  child of .product-info. Wrapping it breaks that reorder silently. */
+  class?: string;
 }
 
-const { hero, images = [], alt } = Astro.props;
+const { hero, images = [], alt, class: className } = Astro.props;
 const seen = new Set<string>();
 const all = [hero, ...images]
   .map(pluginImage)
@@ -18,7 +23,7 @@ const all = [hero, ...images]
 const hasAny = all.length > 0;
 ---
 
-<div class="gallery">
+<div class:list={['gallery', className]}>
   {hasAny ? (
     <>
       <div class="hero-frame" data-gallery-hero>
