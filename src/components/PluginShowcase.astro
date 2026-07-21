@@ -304,21 +304,23 @@ const peekClass = (i: number) => {
     sc.addEventListener('mouseenter', () => { hovering = true; stopAuto(); });
     sc.addEventListener('mouseleave', () => { hovering = false; startAuto(); });
 
-    // Desktop: uniformly scale the fixed bench-exact stage to fit width.
-    // Mobile (<=640): bail — CSS switches the card to natural flow layout.
+    // Uniformly scale the fixed bench-exact stage to fit width — all
+    // viewports. On phones this shrinks the whole coverflow (card + peeking
+    // neighbors) instead of switching to a single static full-width card,
+    // so the carousel reads as a carousel (Dan, 2026-07-21 design review).
     const fit = () => {
-      if (window.innerWidth <= 640) {
-        showcase.style.transform = 'none';
-        scaler.style.height = 'auto';
-        return;
-      }
       // Reset BOTH the transform and the scaler's pinned height before
       // measuring — .sc-scaler is a flex parent, so a stale fixed height from
       // the previous fit() stretches .showcase and feeds back into ih.
       showcase.style.transform = 'none';
+      showcase.style.height = 'auto';
       scaler.style.height = 'auto';
       const iw = showcase.offsetWidth;
       const ih = showcase.offsetHeight;
+      // Pin the stage to its measured height BEFORE scaling — otherwise the
+      // scaler's fixed height stretches .showcase shorter (flex), and the
+      // fixed-470px viewport centers itself above the stage top.
+      showcase.style.height = `${ih}px`;
       const availW = sc.clientWidth;
       // Height cap: full card + dots should fit the viewport under the sticky
       // nav — all measured live (nav, section heading, dots row) so viewport-
@@ -336,7 +338,10 @@ const peekClass = (i: number) => {
       // measured; 12 = breathing room.
       const gapH = (parseFloat(getComputedStyle(sc).rowGap) || 20) * 2;
       const availH = window.innerHeight - headerH - headingH - dotsH - gapH - 12;
-      const s = Math.min(1, availW / iw, Math.max(0.7, availH / ih));
+      // Phones: cap the card to ~76% of the row so the coverflow neighbors
+      // actually peek inside the screen — the visible cue that this swipes.
+      const widthCap = window.innerWidth <= 640 ? (availW * 0.76) / iw : availW / iw;
+      const s = Math.min(1, widthCap, Math.max(0.7, availH / ih));
       showcase.style.transform = `scale(${s})`;
       showcase.style.transformOrigin = 'top center';
       scaler.style.height = `${ih * s}px`;
@@ -632,47 +637,16 @@ const peekClass = (i: number) => {
     .sc-slide { transition: none; }
   }
 
-  /* ── Mobile: drop the fixed absolute stage; let the card flow naturally
-     (stacked, full-width, centered). Hide side arrows — swipe + dots drive it. ── */
+  /* ── Mobile: keep the bench-exact coverflow stage — fit() scales the whole
+     thing (card + peeking neighbors) to the phone width so it reads as a real
+     carousel, smaller (Dan, 2026-07-21 design review). Arrows hidden — swipe,
+     peek-taps and dots drive it. ── */
   @media (max-width: 640px) {
     .showcase-wrap { padding: 0.4rem 0.8rem 1.8rem; gap: 1rem; }
-    .sc-scaler { height: auto !important; }
-    .showcase { transform: none !important; gap: 0; width: 100%; }
     .sc-arrow { display: none; }
-
-    .sc-viewport { width: 100%; max-width: 440px; height: auto; perspective: none; }
-    .sc-slide {
-      position: static;
-      inset: auto;
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.85rem;
-      transform: none !important;
-      opacity: 1;
-      visibility: visible;
-      filter: none !important;
-      transition: none;
-      padding: 1.25rem 1.25rem 1.5rem;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
-    }
-    .sc-slide.is-current { display: flex; }
-
-    .sec { position: static !important; left: auto !important; top: auto !important; }
-    .sc-titlewrap { justify-content: center; width: 100%; margin-top: 0; }
-    .sc-title { font-size: clamp(46px, 13vw, 80px) !important; }
-    .sc-sub, .sc-one { width: 100% !important; text-align: center; }
-    .sc-sub { margin-top: 0; }
-    .sc-shot { width: 100% !important; height: auto !important; aspect-ratio: 2542 / 1226; }
-    /* Plate keeps its own shape so it fills the card width complete (not cropped
-       into the wide screenshot ratio, which was clipping "COMING SOON" top/bottom). */
-    .sc-shot.is-plate { aspect-ratio: 1555 / 1060; }
-    /* GAS keeps its own portrait shape and a capped width (matches the
-       /store card's cardThumbMaxWidthPct: 40) instead of stretching into
-       the shared landscape aspect-ratio box above. */
-    .sc-shot.is-bare { width: 40% !important; aspect-ratio: 800 / 1190; margin: 0 auto; }
     .sc-dot { width: 44px; height: 44px; } /* Phase B: ≥44px touch target (AAA 2.5.5) */
     .sc-dot::before { width: 11px; height: 11px; } /* bigger visible dot on mobile */
-    .sc-badge { font-size: 0.75rem; } /* Phase B: raise 10.9px ribbon to ≥12px on phones */
+    /* Ribbon bumped so it stays ≥12px effective after the ~0.7 stage scale. */
+    .sc-badge { font-size: 1.05rem; }
   }
 </style>
