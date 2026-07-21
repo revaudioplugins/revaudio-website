@@ -469,16 +469,12 @@ const H = { left: '44.468%', top: '44.601%', w: '11.207%' };
        centered at every width, so only the column direction/width changes. */
     .hero-grid { flex-direction: column; gap: 2rem; padding-bottom: 0; }
     .hero-head { max-width: 62ch; transform: none; } /* desktop's -50px lift doesn't apply here */
-    .hh-h1-line { white-space: normal; }
+    /* Restore the pre-rework mobile hero (Dan, 2026-07-21): original type
+       scale, headline flowing as one wrapped line, no in-hero gauge. The
+       race-red CTA pair stays. Desktop keeps the reworked hero untouched. */
+    .hh-h1-line { white-space: normal; display: inline; }
+    .hh-h1 { font-size: clamp(2.4rem, 9vw, 3.4rem); }
 
-    /* Tag + headline sized up 50%, then another 10% (×1.65 total); gauge
-       sized up 25%; mobile only. Headline also lifted 10px. */
-    .hh-tag { font-size: 1.4025rem; } /* 0.85rem × 1.5 × 1.1 */
-    .hh-h1 { font-size: 4.29rem; margin-top: -10px; } /* 2.6rem × 1.5 × 1.1; lifted 10px */
-    .hero-dial-mobile { width: min(200px, 50vw); margin-top: calc(0.5rem - 10px); } /* 160px / 40vw × 1.25; nudged up 10px */
-
-    /* Lede stays at its original size — the desktop-only +10% above (base
-       rules) would otherwise leak in here too. */
     .hh-lede { font-size: 1.08rem; }
 
     /* Phase B conversion pair: swap the quiet dashed fast-buy line for the
@@ -495,9 +491,10 @@ const H = { left: '44.468%', top: '44.601%', w: '11.207%' };
     /* The absolute corner overlay has no positioned ancestor to anchor to
        on mobile (it's the in-flow .sign-mount-mobile-wrap below instead). */
     .sign-mount:not(.sign-mount-mobile) { display: none; }
-    /* Mobile keeps only its own small under-headline dial. */
+    /* No gauge inside the mobile hero — reverted to the pre-rework stack. */
     .hero-dial-desktop { display: none; }
-    .hero-dial-mobile { display: block; }
+    .hero-dial-mobile { display: none; }
+    .hero-divider { display: none; }
   }
 
   /* Mobile-only duplicate of the sign, in-flow instead of the absolute
