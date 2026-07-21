@@ -48,6 +48,8 @@ const H = { left: '44.468%', top: '44.601%', w: '11.207%' };
           <span class="hh-h1-line">Then Tuned.</span>
         </h1>
 
+        <span class="hh-redline" data-hero-sweep aria-hidden="true"></span>
+
         {/* Mobile-only: small gauge under the headline (desktop uses the
             original full-size gauge, to the right of this text column). */}
         <div class="hero-dial hero-dial-mobile" data-dial data-hero-in role="img" aria-label="RevLimiter rev gauge — needle at idle">
@@ -58,7 +60,6 @@ const H = { left: '44.468%', top: '44.601%', w: '11.207%' };
           <Image class="g-hub" src={hubImg} alt="" width={60} format="webp" loading="eager" style={`left:${H.left}; top:${H.top}; width:${H.w};`} />
         </div>
 
-        <span class="hh-redline" data-hero-sweep aria-hidden="true"></span>
         <p class="hh-lede" data-hero-in>
           Measured to spec, then voiced by ear.<br />The precision of a machine, the feel of an instrument.
         </p>
@@ -225,13 +226,18 @@ const H = { left: '44.468%', top: '44.601%', w: '11.207%' };
     display: flex;
     flex-direction: column;
     align-items: center;
-    max-width: 46ch;
+    max-width: 58ch; /* was 46ch, then 52ch — widened again to keep the lede at 2 lines */
     flex: 0 1 auto;
+    /* Net 10px above the original position after several rounds of nudges —
+       desktop only, reset to none on mobile below. */
+    transform: translateY(-10px);
   }
 
+  /* Desktop hero text sized up another 10% (tag/headline/lede/fastbuy) —
+     mobile pins its own sizes back in the media query below, unaffected. */
   .hh-tag {
     font-family: var(--font-display);
-    font-size: max(0.85rem, 1.05vw);
+    font-size: max(1.0285rem, 1.2705vw); /* was max(0.935rem, 1.155vw) */
     letter-spacing: 0.3em;
     text-transform: uppercase;
     color: var(--brass);
@@ -242,7 +248,7 @@ const H = { left: '44.468%', top: '44.601%', w: '11.207%' };
      block so it stacks regardless of container width. */
   .hh-h1 {
     font-family: var(--font-display);
-    font-size: clamp(2.6rem, 5.6vw, 5.4rem);
+    font-size: clamp(3.146rem, 6.776vw, 6.534rem); /* was clamp(2.86rem, 6.16vw, 5.94rem) */
     line-height: 1.05;
     letter-spacing: 0.02em;
     color: var(--fg);
@@ -262,10 +268,10 @@ const H = { left: '44.468%', top: '44.601%', w: '11.207%' };
 
   .hh-lede {
     font-family: var(--font-body);
-    font-size: 1.08rem;
+    font-size: 1.3068rem; /* was 1.188rem */
     line-height: 1.6;
     color: var(--fg-dim);
-    max-width: 52ch;
+    max-width: 58ch;
     margin: 0 auto;
   }
 
@@ -306,7 +312,7 @@ const H = { left: '44.468%', top: '44.601%', w: '11.207%' };
   /* Direct-to-product line under the lede — additive, all widths. */
   .hh-fastbuy {
     font-family: var(--font-mono);
-    font-size: 0.8rem;
+    font-size: 0.968rem; /* was 0.88rem — desktop +10% again */
     text-align: center;
     margin: 0.9rem 0 0;
   }
@@ -408,13 +414,19 @@ const H = { left: '44.468%', top: '44.601%', w: '11.207%' };
        >1100px sign reserve, which doesn't apply here). Text is already
        centered at every width, so only the column direction/width changes. */
     .hero-grid { flex-direction: column; gap: 2rem; padding-bottom: 0; }
-    .hero-head { max-width: 62ch; }
+    .hero-head { max-width: 62ch; transform: none; } /* desktop's -50px lift doesn't apply here */
     .hh-h1-line { white-space: normal; }
 
-    /* Tag + headline sized up 50%, gauge sized up 25%, mobile only. */
-    .hh-tag { font-size: 1.275rem; } /* 0.85rem × 1.5 */
-    .hh-h1 { font-size: 3.9rem; } /* 2.6rem × 1.5 */
+    /* Tag + headline sized up 50%, then another 10% (×1.65 total); gauge
+       sized up 25%; mobile only. Headline also lifted 10px. */
+    .hh-tag { font-size: 1.4025rem; } /* 0.85rem × 1.5 × 1.1 */
+    .hh-h1 { font-size: 4.29rem; margin-top: -10px; } /* 2.6rem × 1.5 × 1.1; lifted 10px */
     .hero-dial-mobile { width: min(200px, 50vw); margin-top: calc(0.5rem - 10px); } /* 160px / 40vw × 1.25; nudged up 10px */
+
+    /* Lede + fastbuy stay at their original size — the desktop-only +10%
+       above (base rules) would otherwise leak in here too. */
+    .hh-lede { font-size: 1.08rem; }
+    .hh-fastbuy { font-size: 0.8rem; }
 
     /* The absolute corner overlay has no positioned ancestor to anchor to
        on mobile (it's the in-flow .sign-mount-mobile-wrap below instead). */
