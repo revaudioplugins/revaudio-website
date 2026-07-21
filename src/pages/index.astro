@@ -10,23 +10,30 @@ import SubscribeModal from '../components/SubscribeModal.astro';
 import { bySlug, isBuyable, fmtPrice } from '../data/plugins';
 import signBeam from '../assets/hero/sign-beam.png';
 import signHanger from '../assets/hero/sign-hanger.png';
+import faceImg from '../assets/hero/rev-gauge-face.png';
+import needleImg from '../assets/hero/needle-v2.png';
+import hubImg from '../assets/hero/hub-v2.png';
 
 const rl = bySlug('revlimiter');
+
+/* Gauge geometry — the plugin's 406-viewBox units as % of the square dial box:
+   needle <image> x122 y67.69 w162.4, pivot (203,203); hub x180.54 y181.08 w45.5.
+   Reused at both dial sizes below — all child positioning is %-based, so it
+   scales as one regardless of the dial's own width. */
+const N = { left: '30.049%', top: '16.672%', w: '40%', ox: '49.877%', oy: '83.32%' };
+const H = { left: '44.468%', top: '44.601%', w: '11.207%' };
 ---
 
 <BaseLayout title="RevAudio">
-  {/* Hero — text stack + a hanging wooden STORE sign off the left edge,
-      bottom-anchored so it sits just above the plugin showcase. Designed in
-      /signlab (local bench); edit there first, then port. Entrance: text
-      cascade + redline sweep. Sign: idle sway, click = kick swing, whole sign
-      links to /store. Reduced motion: everything static. */}
+  {/* Hero — desktop: left-aligned text column (two-line headline) with the
+      original full-size REV gauge to its right. The brass STORE button is
+      gone — the hanging wooden STORE sign (corner overlay, lifted 80px off
+      its earlier drop) is the only "go to store" CTA now. Mobile keeps its
+      own stacked layout: centered text, small gauge under the headline,
+      sign hidden. Entrance: text cascade → dial settle → needle rev-blip →
+      idle. Scroll revs toward the redline; pointer micro-deflects (lerp).
+      Reduced motion: static needle at idle. */}
   <section class="hero hero-feat" data-hero>
-    {/* True-alpha Higgsfield asset (nano_banana_pro 2k → bg removed), sliced
-        into a static beam + a swinging hanger. Slice geometry derives from the
-        source 2752×1536 render (beam rows 70–318, hanger crop 600,240–2140,1410,
-        rope pivot x≈1379, beam center y≈210) at scale 264/1454 ≈ 0.1816. The
-        hanger's top 78px band is alpha-masked to the rope columns and hides
-        behind the beam, so the seam stays covered while swinging. */}
     <div class="sign-mount" data-hero-in>
       <Image class="sign-beam" src={signBeam} alt="" width={872} format="webp" loading="eager" />
       <a class="hanger" data-sign href="/store" aria-label="Visit the store">
@@ -36,48 +43,90 @@ const rl = bySlug('revlimiter');
     <div class="hero-grid">
       <div class="hero-head">
         <div class="hh-tag" data-hero-in>Boutique VST plugins</div>
-        <h1 class="hh-h1" data-split>Engineered, then tuned.</h1>
+        <h1 class="hh-h1" data-split>
+          <span class="hh-h1-line">Engineered,</span>
+          <span class="hh-h1-line">Then Tuned.</span>
+        </h1>
+
         <span class="hh-redline" data-hero-sweep aria-hidden="true"></span>
+
+        {/* Mobile-only: small gauge under the headline (desktop uses the
+            original full-size gauge, to the right of this text column). */}
+        <div class="hero-dial hero-dial-mobile" data-dial data-hero-in role="img" aria-label="RevLimiter rev gauge — needle at idle">
+          <Image class="g-face" src={faceImg} alt="" width={360} format="webp" loading="eager" />
+          <div class="g-needle" data-needle style={`left:${N.left}; top:${N.top}; width:${N.w}; transform-origin:${N.ox} ${N.oy};`}>
+            <Image src={needleImg} alt="" width={170} format="webp" loading="eager" />
+          </div>
+          <Image class="g-hub" src={hubImg} alt="" width={60} format="webp" loading="eager" style={`left:${H.left}; top:${H.top}; width:${H.w};`} />
+        </div>
+
         <p class="hh-lede" data-hero-in>
           Measured to spec, then voiced by ear.<br />The precision of a machine, the feel of an instrument.
         </p>
+
+        {rl && isBuyable(rl) && (
+          <p class="hh-fastbuy" data-hero-in>
+            <a href="/revlimiter">RevLimiter — <strong>{fmtPrice(rl.introPriceUsd)}</strong>
+              <s>{fmtPrice(rl.regularPriceUsd)}</s> · Buy now &rarr;</a>
+          </p>
+        )}
+
+        {/* Mobile-only conversion pair (Phase B). Desktop keeps the quiet
+            dashed fast-buy line above; phones get two co-equal ≥48px buttons.
+            BUY reuses the site-wide data-add-to-cart flow (same contract as
+            MobileBuyBar: cart holds the regular price, VROOM applies −$37 at
+            checkout, so the plate reads the $56 intro price). TRY FREE points
+            at the same trial download the nav "Downloads" link uses. */}
+        {rl && isBuyable(rl) && (
+          <div class="hh-cta-mobile" data-hero-in>
+            <button
+              type="button"
+              class="hero-btn hero-btn--buy"
+              data-add-to-cart
+              data-slug={rl.slug}
+              data-name={rl.name}
+              data-price={rl.regularPriceUsd ?? rl.introPriceUsd}
+              data-checkout-url={rl.checkoutUrl}
+              aria-label={`Add ${rl.name} to cart — ${fmtPrice(rl.introPriceUsd)}`}
+            >BUY — {fmtPrice(rl.introPriceUsd)}</button>
+            {rl.trialUrl && (
+              <a class="hero-btn hero-btn--try" href={rl.trialUrl} target="_blank" rel="noopener noreferrer">TRY FREE</a>
+            )}
+          </div>
+        )}
       </div>
 
-      <div class="hero-show">
-        <div class="hero-buy" data-hero-in>
-          {rl && isBuyable(rl) && (
-            <p class="hh-fastbuy">
-              <a href="/revlimiter">RevLimiter — <strong>{fmtPrice(rl.introPriceUsd)}</strong>
-                <s>{fmtPrice(rl.regularPriceUsd)}</s> · Buy now &rarr;</a>
-            </p>
-          )}
-          {/* Mobile-only conversion pair (Phase B). Desktop keeps the quiet
-              dashed fast-buy line above; phones get two co-equal ≥48px buttons.
-              BUY reuses the site-wide data-add-to-cart flow (same contract as
-              MobileBuyBar: cart holds the regular price, VROOM applies −$37 at
-              checkout, so the plate reads the $56 intro price). TRY FREE points
-              at the same trial download the nav "Downloads" link uses. */}
-          {rl && isBuyable(rl) && (
-            <div class="hh-cta-mobile">
-              <button
-                type="button"
-                class="hero-btn hero-btn--buy"
-                data-add-to-cart
-                data-slug={rl.slug}
-                data-name={rl.name}
-                data-price={rl.regularPriceUsd ?? rl.introPriceUsd}
-                data-checkout-url={rl.checkoutUrl}
-                aria-label={`Add ${rl.name} to cart — ${fmtPrice(rl.introPriceUsd)}`}
-              >BUY — {fmtPrice(rl.introPriceUsd)}</button>
-              {rl.trialUrl && (
-                <a class="hero-btn hero-btn--try" href={rl.trialUrl} target="_blank" rel="noopener noreferrer">TRY FREE</a>
-              )}
-            </div>
-          )}
+      {/* Desktop-only: original full-size gauge, to the right of the text. */}
+      <div class="hero-dial hero-dial-desktop" data-dial role="img" aria-label="RevLimiter rev gauge — needle at idle">
+        <Image class="g-face" src={faceImg} alt="" width={1100} widths={[360, 640, 1100]} sizes="(max-width: 860px) 300px, 30vw" format="webp" loading="eager" />
+        <div class="g-needle" data-needle style={`left:${N.left}; top:${N.top}; width:${N.w}; transform-origin:${N.ox} ${N.oy};`}>
+          <Image src={needleImg} alt="" width={500} format="webp" loading="eager" />
         </div>
+        <Image class="g-hub" src={hubImg} alt="" width={200} format="webp" loading="eager" style={`left:${H.left}; top:${H.top}; width:${H.w};`} />
       </div>
     </div>
+
+    {/* Same seam style as every other section boundary on the page (e.g.
+        DAWStrip's border-top below the carousel) — sits right under the
+        headline/gauge content, above the hanging sign either version of it
+        (desktop's absolute overlay hangs further down; mobile's in-flow
+        copy starts right after this). */}
+    <div class="hero-divider" aria-hidden="true"></div>
   </section>
+
+  {/* Mobile-only: the same hanging STORE sign, in-flow and centered right
+      above "Our Plugins" (desktop keeps the absolute corner overlay above,
+      hidden here). Its own small positioned wrapper reserves exactly the
+      scaled footprint, since once it's outside .hero-feat there's no
+      positioned ancestor left for an absolute .sign-mount to anchor to. */}
+  <div class="sign-mount-mobile-wrap">
+    <div class="sign-mount sign-mount-mobile" data-hero-in>
+      <Image class="sign-beam" src={signBeam} alt="" width={872} format="webp" loading="eager" />
+      <a class="hanger" data-sign href="/store" aria-label="Visit the store">
+        <Image src={signHanger} alt="" width={560} format="webp" loading="eager" />
+      </a>
+    </div>
+  </div>
 
   <PluginShowcase />
 
@@ -89,18 +138,68 @@ const rl = bySlug('revlimiter');
 </BaseLayout>
 
 <script>
-  import { gsap, reducedMotion } from '../lib/motion';
+  import { gsap, ScrollTrigger, reducedMotion } from '../lib/motion';
 
-  if (document.querySelector('[data-hero]') && !reducedMotion()) {
-    // ── Entrance: text cascade + redline sweep ──
-    const tl = gsap.timeline({ defaults: { ease: 'expo.out' } });
-    tl.fromTo('[data-hero-in]', { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, stagger: 0.12 }, 0.05)
-      .fromTo('[data-hero-sweep]', { scaleX: 0 }, { scaleX: 1, duration: 0.7, ease: 'power3.out' }, 0.75);
+  // Plugin scale: dB −60…0 maps to −135°…+135°. Idle ≈ −50 dB, redline ≈ −10 dB.
+  const A_MIN = -135, A_IDLE = -90, A_RED = 90, A_MAX = 135;
+  const root = document.querySelector<HTMLElement>('[data-hero]');
+  const dials = root ? Array.from(root.querySelectorAll<HTMLElement>('[data-dial]')) : [];
+
+  if (root) {
+    if (reducedMotion()) {
+      dials.forEach((dial) => {
+        const needle = dial.querySelector<HTMLElement>('[data-needle]');
+        if (needle) gsap.set(needle, { rotation: A_IDLE });
+      });
+    } else {
+      // ── Entrance: text cascade + redline sweep + dial settle ──
+      const tl = gsap.timeline({ defaults: { ease: 'expo.out' } });
+      tl.fromTo('[data-hero-in]', { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, stagger: 0.12 }, 0.05)
+        .fromTo('[data-hero-sweep]', { scaleX: 0 }, { scaleX: 1, duration: 0.7, ease: 'power3.out' }, 0.75);
+
+      // One render path per dial, three signals each — base (load sweep →
+      // idle), scroll deflection, pointer micro-deflection (lerped). Only
+      // one of the two dials is ever visible at a time (desktop vs mobile
+      // breakpoint), but both animate the same way regardless.
+      dials.forEach((dial) => {
+        const needle = dial.querySelector<HTMLElement>('[data-needle]');
+        if (!needle) return;
+
+        const state = { base: A_MIN, scroll: 0, pointer: 0, pointerTarget: 0 };
+        gsap.ticker.add(() => {
+          state.pointer += (state.pointerTarget - state.pointer) * 0.08;
+          gsap.set(needle, { rotation: Math.min(state.base + state.scroll + state.pointer, A_MAX) });
+        });
+
+        tl.fromTo(dial, { y: 40, scale: 0.88, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 0.8 }, 0.35)
+          .to(state, { base: A_MAX, duration: 0.85, ease: 'power3.in' }, 0.9) // floor it
+          .to(state, { base: A_IDLE, duration: 1.1, ease: 'back.out(1.05)' }, '>'); // settle to idle
+
+        // ── Scroll: rev toward the redline as the hero leaves the viewport ──
+        ScrollTrigger.create({
+          trigger: root,
+          start: 'top top',
+          end: 'bottom 20%',
+          scrub: true,
+          onUpdate: (self) => { state.scroll = self.progress * (A_RED - A_IDLE); },
+        });
+
+        // ── Pointer: micro-deflection (desktop only) ──
+        if (matchMedia('(pointer: fine)').matches) {
+          root.addEventListener('pointermove', (e) => {
+            const r = dial.getBoundingClientRect();
+            state.pointerTarget = ((e.clientX - (r.left + r.width / 2)) / r.width) * 6; // ±3° feel
+          });
+          root.addEventListener('pointerleave', () => { state.pointerTarget = 0; });
+        }
+      });
+    }
   }
 
-  // ── Hanging STORE sign: click = kick swing, then back to idle sway ──
-  const sign = document.querySelector<HTMLElement>('[data-sign]');
-  if (sign) {
+  // ── Hanging STORE sign(s): click = kick swing, then back to idle sway ──
+  // Two instances exist (desktop corner overlay + mobile in-flow); only one
+  // is ever visible at a time, but both get the interaction wired up.
+  document.querySelectorAll<HTMLElement>('[data-sign]').forEach((sign) => {
     if (reducedMotion()) {
       sign.classList.add('static');
     } else {
@@ -113,27 +212,37 @@ const rl = bySlug('revlimiter');
         if (e.animationName.startsWith('kick')) sign.classList.remove('kick');
       });
     }
-  }
+  });
 </script>
 
 <style>
-  /* ── Hero — text stack + hanging STORE sign (designed in /signlab). ── */
+  /* ── Hero — left text column + real REV gauge on the right (desktop), plus
+     the hanging STORE sign overlay. ── */
   /* border-bottom: none overrides the global .hero divider — the hero should
      flow straight into the plugin showcase. */
-  .hero-feat { position: relative; padding: var(--space-6) 0 var(--space-8); overflow-x: clip; border-bottom: none; }
+  /* Bottom padding +100px pushes everything below the headline/gauge row —
+     the hanging sign (bottom-anchored within this section) and every
+     section after it (carousel, DAW strip, ...) — down 100px as one unit,
+     per Gil's request. The headline/gauge content itself is unaffected
+     (top-anchored at the top of the row). */
+  .hero-feat { position: relative; padding: var(--space-6) 0 calc(var(--space-8) + 100px); overflow-x: clip; border-bottom: none; }
 
-  /* Centered composition (FabFilter-style): a centered headline block on top,
-     then the gauge + buy plate sitting together as a centered pair below — so
-     nothing is pushed to the extreme edges (no left-jammed / right-floating
-     "barbell"). Everything shares one center axis, so it all lines up. */
+  /* Reintroduces a seam here (same style as every other section boundary,
+     e.g. DAWStrip's border-top) — full width, sitting right under the
+     headline/gauge content and above the hanging sign. */
+  .hero-divider { border-top: 1px solid var(--border); margin-top: clamp(2rem, 5vh, 3rem); }
+
+  /* Desktop: centered text column with the gauge to its right, as one
+     centered row. Mobile (below) collapses this back to a centered stack. */
   .hero-grid {
     max-width: var(--maxw);
     margin: 0 auto;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
+    justify-content: center;
     text-align: center;
-    gap: clamp(1.75rem, 4vh, 3rem);
+    gap: clamp(2.5rem, 6vw, 5rem);
     padding: clamp(1.5rem, 4vh, 3rem) clamp(1.5rem, 4vw, 4rem) 0;
   }
 
@@ -141,30 +250,35 @@ const rl = bySlug('revlimiter');
     display: flex;
     flex-direction: column;
     align-items: center;
-    max-width: 62ch;
+    max-width: 58ch; /* was 46ch, then 52ch — widened again to keep the lede at 2 lines */
+    flex: 0 1 auto;
+    /* Net 10px above the original position after several rounds of nudges —
+       desktop only, reset to none on mobile below. */
+    transform: translateY(-10px);
   }
 
+  /* Desktop hero text sized up another 10% (tag/headline/lede/fastbuy) —
+     mobile pins its own sizes back in the media query below, unaffected. */
   .hh-tag {
     font-family: var(--font-display);
-    font-size: max(0.85rem, 1.05vw);
+    font-size: max(1.0285rem, 1.2705vw); /* was max(0.935rem, 1.155vw) */
     letter-spacing: 0.3em;
     text-transform: uppercase;
     color: var(--brass);
     margin-bottom: 1.1rem;
   }
 
-  /* One line at every desktop width — "Engineered, then tuned." holds a single
-     line; white-space:nowrap guarantees it never wraps until the mobile block
-     releases it. */
+  /* Two-line headline: "Engineered," / "Then Tuned." — each line its own
+     block so it stacks regardless of container width. */
   .hh-h1 {
     font-family: var(--font-display);
-    font-size: clamp(2.6rem, 5.6vw, 5.4rem);
-    line-height: 1.0;
+    font-size: clamp(3.146rem, 6.776vw, 6.534rem); /* was clamp(2.86rem, 6.16vw, 5.94rem) */
+    line-height: 1.05;
     letter-spacing: 0.02em;
     color: var(--fg);
     margin: 0 0 1.15rem;
-    white-space: nowrap;
   }
+  .hh-h1-line { display: block; white-space: nowrap; }
 
   .hh-redline {
     display: block;
@@ -178,32 +292,51 @@ const rl = bySlug('revlimiter');
 
   .hh-lede {
     font-family: var(--font-body);
-    font-size: 1.08rem;
+    font-size: 1.3068rem; /* was 1.188rem */
     line-height: 1.6;
     color: var(--fg-dim);
-    max-width: 52ch;
+    max-width: 58ch;
     margin: 0 auto;
   }
 
-  /* Buy plate + fast-buy line, centered under the headline. */
-  .hero-show {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: clamp(2rem, 5vw, 4.5rem);
-    flex-wrap: wrap;
+  /* ── The gauge: face capture masked round; needle + hub overlay per the
+     plugin's geometry (see N/H above). All children positioned in % so each
+     size below scales as one. Desktop dial = original full size
+     (clamp(280px,30vw,400px)); mobile dial = 1/2 of it, under the headline. ── */
+  .hero-dial {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.65), 0 6px 18px rgba(0, 0, 0, 0.4);
+    flex: 0 0 auto;
   }
 
-  .hero-buy {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  .hero-dial-desktop { width: clamp(280px, 30vw, 400px); }
+
+  .hero-dial-mobile { display: none; width: min(160px, 40vw); margin: 0.5rem 0 0; }
+
+  .hero-dial :global(img.g-face) {
+    width: 100%;
+    height: 100%;
+    display: block;
+    border-radius: 50%; /* masks the panel-leather corners of the capture */
   }
 
-  /* One quiet direct-to-product line — additive, all widths. */
+  .g-needle {
+    position: absolute;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.5));
+  }
+  .g-needle :global(img) { width: 100%; height: auto; display: block; }
+
+  .hero-dial :global(img.g-hub) {
+    position: absolute;
+    height: auto;
+  }
+
+  /* Direct-to-product line under the lede — additive, all widths. */
   .hh-fastbuy {
     font-family: var(--font-mono);
-    font-size: 0.8rem;
+    font-size: 0.968rem; /* was 0.88rem — desktop +10% again */
     text-align: center;
     margin: 0.9rem 0 0;
   }
@@ -254,11 +387,13 @@ const rl = bySlug('revlimiter');
      hanger 280×212 at 109,31; pivot x = (1379−600)·s ≈ 50.5% of the hanger,
      y = (210−240)·s ≈ −5px (the beam's centerline, above the crop's top). ── */
   /* scale(0.82) keeps the rig clear of the headline on short viewports while
-     preserving the interlocked slice geometry (origin = bottom-left anchor). */
+     preserving the interlocked slice geometry (origin = bottom-left anchor).
+     bottom was dropped 200px from the original 0.75rem (12px, → -188px),
+     then lifted back 80px per Gil's request (→ -108px net). */
   .sign-mount {
     position: absolute;
     left: 0;
-    bottom: 0.75rem;
+    bottom: -108px;
     width: 436px;
     height: 243px;
     z-index: 4;
@@ -322,18 +457,32 @@ const rl = bySlug('revlimiter');
   }
   .hanger:focus-visible { outline: 3px solid var(--brass-bright); outline-offset: 6px; }
 
-  /* Below ~1100px the centered text column reaches into the sign's corner —
-     reserve the rig's height under the content so nothing hides behind it. */
+  /* Below ~1100px the text column reaches into the sign's corner — reserve
+     the rig's height under the content so nothing hides behind it. */
   @media (max-width: 1100px) {
     .hero-grid { padding-bottom: 225px; }
   }
 
   @media (max-width: 860px) {
-    /* Release the one-line lock so the headline can wrap on narrow screens. */
-    .hh-h1 { white-space: normal; font-size: clamp(2.4rem, 9vw, 3.4rem); }
-    .hero-grid { gap: 2rem; padding-bottom: 0; } /* undo the sign reserve */
-    .hero-show { gap: 2rem; }
-    /* Swap the quiet dashed line for the two co-equal buttons. */
+    /* Collapse the row back to a stack (padding-bottom: 0 also undoes the
+       >1100px sign reserve, which doesn't apply here). Text is already
+       centered at every width, so only the column direction/width changes. */
+    .hero-grid { flex-direction: column; gap: 2rem; padding-bottom: 0; }
+    .hero-head { max-width: 62ch; transform: none; } /* desktop's -50px lift doesn't apply here */
+    .hh-h1-line { white-space: normal; }
+
+    /* Tag + headline sized up 50%, then another 10% (×1.65 total); gauge
+       sized up 25%; mobile only. Headline also lifted 10px. */
+    .hh-tag { font-size: 1.4025rem; } /* 0.85rem × 1.5 × 1.1 */
+    .hh-h1 { font-size: 4.29rem; margin-top: -10px; } /* 2.6rem × 1.5 × 1.1; lifted 10px */
+    .hero-dial-mobile { width: min(200px, 50vw); margin-top: calc(0.5rem - 10px); } /* 160px / 40vw × 1.25; nudged up 10px */
+
+    /* Lede stays at its original size — the desktop-only +10% above (base
+       rules) would otherwise leak in here too. */
+    .hh-lede { font-size: 1.08rem; }
+
+    /* Phase B conversion pair: swap the quiet dashed fast-buy line for the
+       two co-equal ≥48px buttons on phones (desktop keeps the dashed line). */
     .hh-fastbuy { display: none; }
     .hh-cta-mobile {
       display: grid;
@@ -342,8 +491,44 @@ const rl = bySlug('revlimiter');
       width: min(420px, 100%);
       margin: 0.5rem auto 0;
     }
-    /* No sign on mobile — desktop-only flourish; nav STORE covers the path. */
-    .sign-mount { display: none; }
+
+    /* The absolute corner overlay has no positioned ancestor to anchor to
+       on mobile (it's the in-flow .sign-mount-mobile-wrap below instead). */
+    .sign-mount:not(.sign-mount-mobile) { display: none; }
+    /* Mobile keeps only its own small under-headline dial. */
+    .hero-dial-desktop { display: none; }
+    .hero-dial-mobile { display: block; }
+  }
+
+  /* Mobile-only duplicate of the sign, in-flow instead of the absolute
+     corner overlay — this small wrapper reserves exactly the scaled
+     footprint (436×243 at scale 0.6 = 261.6×145.8) so normal page flow
+     places it right above "Our Plugins". Hidden above the breakpoint. */
+  .sign-mount-mobile-wrap { display: none; }
+
+  @media (max-width: 860px) {
+    .sign-mount-mobile-wrap {
+      display: block;
+      position: relative;
+      width: 261.6px;
+      height: 145.8px;
+      /* Top margin pulled up 65px, then another 100px — carries the sign and
+         everything after it (carousel, DAW strip, ...) up with it, since
+         it's the first thing in that part of the flow. */
+      margin: calc(0.5rem - 165px) auto 1.5rem;
+      /* Sign's own visual nudge (down 30 / left 50, then another 60 left =
+         110 total) — position offsets don't affect layout flow, so this
+         doesn't move anything below it. */
+      top: 30px;
+      left: -110px;
+    }
+    .sign-mount.sign-mount-mobile {
+      left: 0;
+      top: 0;
+      bottom: auto;
+      transform: scale(0.6);
+      transform-origin: 0 0;
+    }
   }
 
 </style>
