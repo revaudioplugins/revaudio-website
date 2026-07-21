@@ -80,6 +80,13 @@ const H = { left: '44.468%', top: '44.601%', w: '11.207%' };
         <Image class="g-hub" src={hubImg} alt="" width={200} format="webp" loading="eager" style={`left:${H.left}; top:${H.top}; width:${H.w};`} />
       </div>
     </div>
+
+    {/* Same seam style as every other section boundary on the page (e.g.
+        DAWStrip's border-top below the carousel) — sits right under the
+        headline/gauge content, above the hanging sign either version of it
+        (desktop's absolute overlay hangs further down; mobile's in-flow
+        copy starts right after this). */}
+    <div class="hero-divider" aria-hidden="true"></div>
   </section>
 
   {/* Mobile-only: the same hanging STORE sign, in-flow and centered right
@@ -194,6 +201,11 @@ const H = { left: '44.468%', top: '44.601%', w: '11.207%' };
      per Gil's request. The headline/gauge content itself is unaffected
      (top-anchored at the top of the row). */
   .hero-feat { position: relative; padding: var(--space-6) 0 calc(var(--space-8) + 100px); overflow-x: clip; border-bottom: none; }
+
+  /* Reintroduces a seam here (same style as every other section boundary,
+     e.g. DAWStrip's border-top) — full width, sitting right under the
+     headline/gauge content and above the hanging sign. */
+  .hero-divider { border-top: 1px solid var(--border); margin-top: clamp(2rem, 5vh, 3rem); }
 
   /* Desktop: centered text column with the gauge to its right, as one
      centered row. Mobile (below) collapses this back to a centered stack. */
@@ -424,14 +436,15 @@ const H = { left: '44.468%', top: '44.601%', w: '11.207%' };
       position: relative;
       width: 261.6px;
       height: 145.8px;
-      /* Top margin pulled up 65px — carries the sign and everything after it
-         (carousel, DAW strip, ...) up with it, since it's the first thing in
-         that part of the flow. */
-      margin: calc(0.5rem - 65px) auto 1.5rem;
-      /* Sign's own visual nudge (down 30 / left 50) — position offsets don't
-         affect layout flow, so this doesn't move anything below it. */
+      /* Top margin pulled up 65px, then another 100px — carries the sign and
+         everything after it (carousel, DAW strip, ...) up with it, since
+         it's the first thing in that part of the flow. */
+      margin: calc(0.5rem - 165px) auto 1.5rem;
+      /* Sign's own visual nudge (down 30 / left 50, then another 60 left =
+         110 total) — position offsets don't affect layout flow, so this
+         doesn't move anything below it. */
       top: 30px;
-      left: -50px;
+      left: -110px;
     }
     .sign-mount.sign-mount-mobile {
       left: 0;
