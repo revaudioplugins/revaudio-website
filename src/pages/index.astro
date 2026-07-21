@@ -402,7 +402,7 @@ const H = { left: '44.468%', top: '44.601%', w: '11.207%' };
     /* Tag + headline sized up 50%, gauge sized up 25%, mobile only. */
     .hh-tag { font-size: 1.275rem; } /* 0.85rem × 1.5 */
     .hh-h1 { font-size: 3.9rem; } /* 2.6rem × 1.5 */
-    .hero-dial-mobile { width: min(200px, 50vw); } /* 160px / 40vw × 1.25 */
+    .hero-dial-mobile { width: min(200px, 50vw); margin-top: calc(0.5rem - 10px); } /* 160px / 40vw × 1.25; nudged up 10px */
 
     /* The absolute corner overlay has no positioned ancestor to anchor to
        on mobile (it's the in-flow .sign-mount-mobile-wrap below instead). */
@@ -424,7 +424,14 @@ const H = { left: '44.468%', top: '44.601%', w: '11.207%' };
       position: relative;
       width: 261.6px;
       height: 145.8px;
-      margin: 0.5rem auto 1.5rem;
+      /* Top margin pulled up 65px — carries the sign and everything after it
+         (carousel, DAW strip, ...) up with it, since it's the first thing in
+         that part of the flow. */
+      margin: calc(0.5rem - 65px) auto 1.5rem;
+      /* Sign's own visual nudge (down 30 / left 50) — position offsets don't
+         affect layout flow, so this doesn't move anything below it. */
+      top: 30px;
+      left: -50px;
     }
     .sign-mount.sign-mount-mobile {
       left: 0;
