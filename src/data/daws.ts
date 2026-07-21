@@ -19,5 +19,5 @@ export const daws: DAW[] = [
   { slug: 'ableton',    name: 'Ableton Live', tested: true,  logo: null },
   { slug: 'fl-studio',  name: 'FL Studio',    tested: true,  logo: null },
   { slug: 'pro-tools',  name: 'Pro Tools',    tested: true,  logo: null },
-  { slug: 'logic',      name: 'Logic Pro',    tested: false, logo: null },
+  { slug: 'logic',      name: 'Logic Pro',    tested: true,  logo: null },
 ];
