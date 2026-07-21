@@ -163,7 +163,7 @@ const peekClass = (i: number) => {
               <span class={`sc-title ${s.titleClass}`} style={font(s.style.title)} set:html={s.titleHtml} />
             </div>
             <p class="sec sc-sub" style={topf(s.style.sub) + font(s.style.sub)}>{s.catchphrase}</p>
-            <div class:list={['sec', 'sc-shot', { 'is-plate': [comingSoonPlate, radioRouletteShot].includes(s.shot), 'sc-shot--fit': s.shotFit === 'contain' }]} style={pos(s.style.shot)}>
+            <div class:list={['sec', 'sc-shot', { 'is-plate': [comingSoonPlate, radioRouletteShot].includes(s.shot), 'is-bare': s.shot === gasShot, 'sc-shot--fit': s.shotFit === 'contain' }]} style={pos(s.style.shot)}>
               <Image src={s.shot} alt={s.shotAlt} width={1600} widths={[480, 800, 1200, 1600]} sizes="(max-width: 640px) 92vw, 440px" format="webp" quality={92} loading="lazy" />
             </div>
             <p class="sec sc-one" style={topf(s.style.oneliner) + font(s.style.oneliner)}>{s.oneliner}</p>
@@ -545,6 +545,13 @@ const peekClass = (i: number) => {
      (Radio Roulette's screenshot fills its own frame under the same rule.) */
   .sc-shot.is-plate :global(img) { object-fit: contain; filter: drop-shadow(0 7px 16px rgba(0, 0, 0, 0.55)); }
 
+  /* GAS's shot is a bare knob PNG (transparent background) at its own
+     portrait aspect, already sized via inline w/h in the style map above —
+     drop the frame here too, the same way the product-page hero and the
+     /store card (cardThumbBare) already show it with no background box. */
+  .sc-shot.is-bare { background: none; border: 0; border-radius: 0; overflow: visible; }
+  .sc-shot.is-bare :global(img) { object-fit: contain; filter: drop-shadow(0 7px 16px rgba(0, 0, 0, 0.55)); }
+
   .sc-one { margin: 0; color: #dbcaad; }
   .sc-price { color: var(--brass-bright); }
   .sc-price :global(s) { color: var(--fg-faint); font-size: 0.945em; text-decoration: line-through; }
@@ -660,6 +667,10 @@ const peekClass = (i: number) => {
     /* Plate keeps its own shape so it fills the card width complete (not cropped
        into the wide screenshot ratio, which was clipping "COMING SOON" top/bottom). */
     .sc-shot.is-plate { aspect-ratio: 1555 / 1060; }
+    /* GAS keeps its own portrait shape and a capped width (matches the
+       /store card's cardThumbMaxWidthPct: 40) instead of stretching into
+       the shared landscape aspect-ratio box above. */
+    .sc-shot.is-bare { width: 40% !important; aspect-ratio: 800 / 1190; margin: 0 auto; }
     .sc-dot::before { width: 11px; height: 11px; } /* bigger visible dot on mobile; 24px hit target stays */
   }
 </style>
