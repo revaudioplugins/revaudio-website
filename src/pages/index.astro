@@ -82,6 +82,20 @@ const H = { left: '44.468%', top: '44.601%', w: '11.207%' };
     </div>
   </section>
 
+  {/* Mobile-only: the same hanging STORE sign, in-flow and centered right
+      above "Our Plugins" (desktop keeps the absolute corner overlay above,
+      hidden here). Its own small positioned wrapper reserves exactly the
+      scaled footprint, since once it's outside .hero-feat there's no
+      positioned ancestor left for an absolute .sign-mount to anchor to. */}
+  <div class="sign-mount-mobile-wrap">
+    <div class="sign-mount sign-mount-mobile" data-hero-in>
+      <Image class="sign-beam" src={signBeam} alt="" width={872} format="webp" loading="eager" />
+      <a class="hanger" data-sign href="/store" aria-label="Visit the store">
+        <Image src={signHanger} alt="" width={560} format="webp" loading="eager" />
+      </a>
+    </div>
+  </div>
+
   <PluginShowcase />
 
   <DAWStrip />
@@ -150,9 +164,10 @@ const H = { left: '44.468%', top: '44.601%', w: '11.207%' };
     }
   }
 
-  // ── Hanging STORE sign: click = kick swing, then back to idle sway ──
-  const sign = document.querySelector<HTMLElement>('[data-sign]');
-  if (sign) {
+  // ── Hanging STORE sign(s): click = kick swing, then back to idle sway ──
+  // Two instances exist (desktop corner overlay + mobile in-flow); only one
+  // is ever visible at a time, but both get the interaction wired up.
+  document.querySelectorAll<HTMLElement>('[data-sign]').forEach((sign) => {
     if (reducedMotion()) {
       sign.classList.add('static');
     } else {
@@ -165,7 +180,7 @@ const H = { left: '44.468%', top: '44.601%', w: '11.207%' };
         if (e.animationName.startsWith('kick')) sign.classList.remove('kick');
       });
     }
-  }
+  });
 </script>
 
 <style>
@@ -383,11 +398,41 @@ const H = { left: '44.468%', top: '44.601%', w: '11.207%' };
     .hero-grid { flex-direction: column; gap: 2rem; padding-bottom: 0; }
     .hero-head { max-width: 62ch; }
     .hh-h1-line { white-space: normal; }
-    /* No sign on mobile — desktop-only flourish; nav STORE covers the path. */
-    .sign-mount { display: none; }
+
+    /* Tag + headline sized up 50%, gauge sized up 25%, mobile only. */
+    .hh-tag { font-size: 1.275rem; } /* 0.85rem × 1.5 */
+    .hh-h1 { font-size: 3.9rem; } /* 2.6rem × 1.5 */
+    .hero-dial-mobile { width: min(200px, 50vw); } /* 160px / 40vw × 1.25 */
+
+    /* The absolute corner overlay has no positioned ancestor to anchor to
+       on mobile (it's the in-flow .sign-mount-mobile-wrap below instead). */
+    .sign-mount:not(.sign-mount-mobile) { display: none; }
     /* Mobile keeps only its own small under-headline dial. */
     .hero-dial-desktop { display: none; }
     .hero-dial-mobile { display: block; }
+  }
+
+  /* Mobile-only duplicate of the sign, in-flow instead of the absolute
+     corner overlay — this small wrapper reserves exactly the scaled
+     footprint (436×243 at scale 0.6 = 261.6×145.8) so normal page flow
+     places it right above "Our Plugins". Hidden above the breakpoint. */
+  .sign-mount-mobile-wrap { display: none; }
+
+  @media (max-width: 860px) {
+    .sign-mount-mobile-wrap {
+      display: block;
+      position: relative;
+      width: 261.6px;
+      height: 145.8px;
+      margin: 0.5rem auto 1.5rem;
+    }
+    .sign-mount.sign-mount-mobile {
+      left: 0;
+      top: 0;
+      bottom: auto;
+      transform: scale(0.6);
+      transform-origin: 0 0;
+    }
   }
 
 </style>
