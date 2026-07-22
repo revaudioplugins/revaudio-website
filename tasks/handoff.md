@@ -1,6 +1,18 @@
 # Website handoff
 
-Updated: 2026-07-20 (carousel showroom polish LIVE + checkout-bundle review delivered)
+Updated: 2026-07-20 (hero STORE sign live + carousel polish + checkout review)
+
+## 2026-07-20 (evening) — Hero: hanging STORE sign SHIPPED & LIVE (4e281b8 + 78196fc)
+- Gauge removed from hero. Replaced by a hanging wooden STORE sign off the LEFT edge:
+  Higgsfield nano_banana_pro 2k true-alpha asset (bg-removed, green-despilled), sliced into
+  `src/assets/hero/sign-beam.png` (static) + `sign-hanger.png` (swings: sway/click-kick/hover,
+  links /store). Slice geometry + pivot documented in index.astro comments. Kick must stay ≤6°
+  (seam overlap limit). Desktop/tablet only — hidden ≤860px per Dan. Hero↔showcase divider
+  removed (scoped; global .hero border untouched elsewhere). Live bundle verified on revaudio.net.
+- Local mockup bench `/signlab` (git-excluded) holds the approved CSS mockup lineage.
+- NOTE: this session pushed around ANOTHER session's uncommitted enginebg WIP in this same
+  worktree (BaseLayout/global.css/src/lib/enginebg.ts/public/bg/*) — those files untouched.
+
 
 ## 2026-07-20 — Plugin carousel "showroom polish" (pushed, live)
 Six upgrades to `PluginShowcase.astro` only (spec + plan in `docs/superpowers/`):
@@ -123,3 +135,18 @@ and syncs bench defaults. Also: `layout-bench.html`, `hero-bench.html` (supersed
 
 ## Don't touch
 - DSP/plugin repos unaffected. Partner's motion system (lib/motion, reveal, scrub, splittext, walkthrough) untouched except pagebg addition.
+
+## 2026-07-22 — Mobile high-end rebuild on `feat/mobile-high-end` (NOT pushed)
+Branch = full mobile-only rework (~30 commits), reviewed section-by-section with Dan. Desktop
+verified pixel-identical throughout. Highlights: lazy demo audio + YouTube facade (product page
+~10.5MB → ~1.5MB), hero BUY/TRY buttons, slim cookie sheet, 44px targets, anchor sub-nav,
+showcase→coverflow on phones, DAW strip brass logo marks + CSS 3D floor, crane door 322→242px.
+- Dan KILLED (components deleted): HotspotTour, RedlineScrub, DawBridge — don't resurrect.
+- Content: AAX claims removed from ALL buyer-facing copy (specs/buy/install/support/store/about)
+  — AAX is deferred, and Pro Tools dropped from tested DAWs. NOTE: daws.ts still has
+  pro-tools tested:true → homepage strip shows a PRO TOOLS chip; Gil to decide.
+- Gil's main commits (checkout wiring + GAS badge nudges) cherry-picked in; badge values ported
+  to the new coverflow (top:27px right:12px rotate(10deg) scale(.945) + 1.05rem inside stage).
+- Touched partner motion files (mobile-scoped, Dan-directed): lib/reveal.ts (force-reveal
+  2.5s failsafe), lib/walkthrough.ts (carousel arrow wiring). Desktop paths unchanged.
+- Merge to main = live deploy → waits for Dan's explicit OK after a real-iPhone pass.
