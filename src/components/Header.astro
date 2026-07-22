@@ -19,8 +19,11 @@ const onProductPage = plugins.some((pl) => isActive(`/${pl.slug}`));
             picked at parse time so the 264KB animated webp is never fetched on
             phones. Wider screens fall through to the animated <img> below. */}
         <source srcset="/brand/revaudio-plate-3d-static.webp" media="(max-width: 900px)" />
+        {/* Desktop ships the 13KB static plate in the critical path and swaps
+            in the 264KB animated file on idle (script below). */}
         <img
-          src="/brand/revaudio-plate-3d.webp"
+          src="/brand/revaudio-plate-3d-static.webp"
+          data-logo-anim="/brand/revaudio-plate-3d.webp"
           alt="RevAudio"
           width="660"
           height="216"
@@ -92,6 +95,20 @@ const onProductPage = plugins.some((pl) => isActive(`/${pl.slug}`));
     (mq.addEventListener ? mq.addEventListener.bind(mq, 'change') : mq.addListener.bind(mq))(function (ev) {
       if (ev.matches) setOpen(false);
     });
+
+    // Idle-swap the animated brand plate on desktop: keeps 264KB off the
+    // critical path. <source media> already keeps phones/reduced-motion on
+    // the static file, so the swap only ever takes effect on wide screens.
+    var logo = nav.querySelector('[data-logo-anim]');
+    if (logo && window.matchMedia('(min-width: 901px)').matches
+        && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      var swap = function () {
+        var pre = new Image();
+        pre.onload = function () { logo.src = logo.dataset.logoAnim; };
+        pre.src = logo.dataset.logoAnim;
+      };
+      ('requestIdleCallback' in window) ? requestIdleCallback(swap, { timeout: 4000 }) : setTimeout(swap, 1500);
+    }
   })();
 </script>
 
