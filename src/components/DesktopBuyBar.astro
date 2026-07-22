@@ -1,0 +1,122 @@
+---
+/**
+ * DesktopBuyBar — slim sticky top bar for product pages (>900px only).
+ *
+ * Apple-style persistent buy affordance: NAME · $56 $93 −40% · BUY NOW,
+ * sliding in under the site nav once BOTH crane-door homes (the head aside
+ * and the page-bottom drop zone) are off screen, so it never competes with
+ * the door itself. Same cart contract as MobileBuyBar / the crane plate:
+ * data-price is the REGULAR price, VROOM applies the discount at checkout.
+ */
+import type { Plugin } from '../data/plugins';
+import { fmtPrice, discountPct } from '../data/plugins';
+
+interface Props {
+  plugin: Plugin;
+}
+
+const { plugin } = Astro.props;
+const pct = discountPct(plugin);
+const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
+---
+
+<div class="dbb is-away" data-desktop-buybar>
+  <span class="dbb-name">{plugin.name}</span>
+  <span class="dbb-price">
+    <span class="dbb-now">{fmtPrice(plugin.introPriceUsd)}</span>
+    {plugin.regularPriceUsd != null && <s class="dbb-was">{fmtPrice(plugin.regularPriceUsd)}</s>}
+    {pct != null && <span class="dbb-pct">&minus;{pct}%</span>}
+    {plugin.promoCode && <span class="dbb-code">code {plugin.promoCode}</span>}
+  </span>
+  <button type="button" class="dbb-buy" data-add-to-cart
+    data-slug={plugin.slug} data-name={plugin.name} data-price={cartPrice}
+    data-checkout-url={plugin.checkoutUrl}
+    aria-label={`Add ${plugin.name} to cart — ${fmtPrice(cartPrice)}`}>BUY NOW</button>
+</div>
+
+<style>
+  .dbb {
+    position: fixed;
+    top: var(--nav-h, 64px);
+    left: 0;
+    right: 0;
+    z-index: 39; /* under the nav (50), over content */
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 1.25rem;
+    min-height: 52px;
+    padding: 0.4rem 1.5rem;
+    background: rgba(11, 10, 9, 0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--brass-dark);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    transition: transform 0.28s var(--ease-settle), visibility 0s 0s;
+    will-change: transform;
+  }
+  .dbb.is-away {
+    transform: translateY(-130%);
+    visibility: hidden;
+    transition: transform 0.24s var(--ease-exit), visibility 0s 0.24s;
+  }
+  @media (prefers-reduced-motion: reduce) { .dbb, .dbb.is-away { transition: none; } }
+  @media (min-width: 901px) {
+    .dbb { display: flex; }
+  }
+
+  .dbb-name {
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--fg);
+  }
+  .dbb-price { display: flex; align-items: baseline; gap: 0.6rem; }
+  .dbb-now { font-family: var(--font-display); font-size: 1.45rem; line-height: 1; color: var(--brass-bright); }
+  .dbb-was { font-size: 0.9rem; color: var(--fg-faint); }
+  .dbb-pct, .dbb-code { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.05em; }
+  .dbb-pct { color: var(--brass); }
+  .dbb-code { color: var(--fg-faint); }
+  .dbb-buy {
+    min-height: 40px;
+    padding: 0 1.6rem;
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    letter-spacing: 0.08em;
+    color: #0a0908;
+    background: var(--brass);
+    border: 1px solid var(--brass-bright);
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .dbb-buy:active { transform: scale(0.97); }
+  @media (hover: hover) {
+    .dbb-buy:hover { background: var(--brass-bright); }
+  }
+</style>
+
+<script>
+  const bar = document.querySelector('[data-desktop-buybar]');
+  const homes = ['[data-buy-aside]', '[data-crane-dropzone]']
+    .map((s) => document.querySelector(s))
+    .filter((el): el is Element => !!el);
+  if (bar && homes.length) {
+    const visible = new Set<Element>();
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => (e.isIntersecting ? visible.add(e.target) : visible.delete(e.target)));
+        bar.classList.toggle('is-away', visible.size > 0);
+      },
+      { threshold: 0 }
+    );
+    homes.forEach((el) => io.observe(el));
+    window.addEventListener('pageshow', (e) => {   // Safari bfcache backstop (house pattern)
+      if (!e.persisted) return;
+      const any = homes.some((el) => {
+        const r = el.getBoundingClientRect();
+        return r.top < window.innerHeight && r.bottom > 0;
+      });
+      bar.classList.toggle('is-away', any);
+    });
+  }
+</script>
