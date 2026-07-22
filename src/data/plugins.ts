@@ -334,7 +334,7 @@ export const plugins: Plugin[] = [
     slug: 'radio-roulette',
     name: 'Radio Roulette',
     category: 'multi-fx',
-    tagline: 'You never know what’s next',
+    tagline: 'You’ll never know what’s next',
     oneLiner: 'The station that never plays the same song twice.',
     plainWhat:
       'In plain terms: Radio Roulette is a glitch/chaos effect. Press one button and it reshapes your sound through up to ten effects at once — filter, EQ, fuzz, pitch, chorus, delay, reverb, gate, stereo width, and pan. The same seed always gives you back the same result.',
