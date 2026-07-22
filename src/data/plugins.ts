@@ -139,12 +139,18 @@ const REVLIMITER_CHECKOUT_URL: string | null = 'https://revaudiopg.lemonsqueezy.
 // Radio Roulette — Lemon Squeezy hosted checkout URL. Interim: we're
 // migrating the whole payment system to FastSpring, but this LS variant
 // covers checkout in the meantime until that account is approved.
-const RADIOROULETTE_CHECKOUT_URL: string | null = 'https://revaudiopg.lemonsqueezy.com/checkout/buy/884e8eb9-903e-497d-a9ec-41153a6b1738';
+// TEMPORARILY PAUSED 2026-07-22 — plugin's back in dev for fixes, don't want
+// purchases mid-fix. Set back to the URL below to reopen checkout:
+// 'https://revaudiopg.lemonsqueezy.com/checkout/buy/884e8eb9-903e-497d-a9ec-41153a6b1738'
+const RADIOROULETTE_CHECKOUT_URL: string | null = null;
 
 // GAS — Lemon Squeezy hosted checkout URL. $5 standalone, but bundled free
 // with any other RevAudio purchase (see bundleNote below). Interim LS
 // variant — see Radio Roulette's comment above re: the FastSpring migration.
-const GAS_CHECKOUT_URL: string | null = 'https://revaudiopg.lemonsqueezy.com/checkout/buy/53dc53b1-ac43-47b7-bbe9-6b09f4cfa321';
+// TEMPORARILY PAUSED 2026-07-22 — same reason as Radio Roulette above. Set
+// back to the URL below to reopen checkout:
+// 'https://revaudiopg.lemonsqueezy.com/checkout/buy/53dc53b1-ac43-47b7-bbe9-6b09f4cfa321'
+const GAS_CHECKOUT_URL: string | null = null;
 
 export const plugins: Plugin[] = [
   {
@@ -299,7 +305,7 @@ export const plugins: Plugin[] = [
     longPitch:
       'One knob does the work of five. GAS stages drive gain, tone shaping, and calibrated loudness compensation together, so turning DRIVE changes character — never just volume. Three voices: Tube for even-harmonic warmth, Tape for symmetric saturation with programme-dependent squash, Fuzz for a dying-battery snarl that cleans up under sustain. A check-engine lamp lights up when you’re really flooring it.',
     status: 'live',
-    statusLabel: GAS_CHECKOUT_URL ? 'Available now' : 'Checkout opening soon',
+    statusLabel: GAS_CHECKOUT_URL ? 'Available now' : 'Available soon',
     hideStatusPill: true,
     cardThumbAspect: '800/1190',
     cardThumbMaxWidthPct: 40,
@@ -328,15 +334,14 @@ export const plugins: Plugin[] = [
     slug: 'radio-roulette',
     name: 'Radio Roulette',
     category: 'multi-fx',
-    tagline: 'A chaos multi-effect you tune like a broken car radio',
-    oneLiner:
-      'Hit RANDOMIZE — one seed deterministically reconfigures 10 effects at once. Every press is a fresh, reproducible destruction of your signal.',
+    tagline: 'You’ll never know what’s next',
+    oneLiner: 'The station that never plays the same song twice.',
     plainWhat:
       'In plain terms: Radio Roulette is a glitch/chaos effect. Press one button and it reshapes your sound through up to ten effects at once — filter, EQ, fuzz, pitch, chorus, delay, reverb, gate, stereo width, and pan. The same seed always gives you back the same result.',
     longPitch:
       'A chaos/glitch multi-effect built around a single seed. RANDOMIZE rolls a new seed and instantly reconfigures a ten-stage chain — filter, EQ, fuzz, pitch-shift, chorus, delay, reverb, trance gate, stereo width, and pan — all deterministically, all level-matched and safety-limited so it never goes silent or blows up. Save a seed in your DAW to recall the exact sound later, or step through station presets like tuning an old dashboard radio.',
     status: 'live',
-    statusLabel: RADIOROULETTE_CHECKOUT_URL ? 'Available now' : 'Checkout opening soon',
+    statusLabel: RADIOROULETTE_CHECKOUT_URL ? 'Available now' : 'Available soon',
     hideStatusPill: true,
     cardThumbBare: true,
     introPriceUsd: 20,

@@ -31,7 +31,7 @@ const TITLE_FX: Record<string, { html: string; cls: string }> = {
   gas: { html: 'GAS', cls: 'gas' },
   'radio-roulette': {
     html: 'RADIO <span class="rr-red">ROUL</span><span class="rr-blk">ETTE</span>',
-    cls: 'roulette',
+    cls: '',
   },
 };
 const titleFx = TITLE_FX[plugin.slug];
@@ -89,7 +89,7 @@ const thumbStyle = [
     ) : plugin.checkoutPaused ? (
       <>
         <span class="now">{fmtPrice(plugin.introPriceUsd)}</span>
-        <span class="hint muted">Checkout opening soon</span>
+        <span class="hint muted">Available soon</span>
       </>
     ) : plugin.status === 'beta' ? (
       <>
@@ -292,18 +292,15 @@ const thumbStyle = [
     -webkit-text-stroke: 0.8px rgba(212, 236, 248, 0.38);
     filter: drop-shadow(0 0 8px rgba(255, 150, 30, 0.45));
   }
-  .title-fx.roulette {
-    filter: drop-shadow(0 2px 7px rgba(10, 110, 55, 0.45)) drop-shadow(0 0 12px rgba(16, 138, 62, 0.25));
-  }
   .title-fx :global(.rr-red) {
     background: linear-gradient(180deg, #ff6157 0%, #d6232c 45%, #7e0d13 100%);
     -webkit-background-clip: text; background-clip: text; color: transparent;
     -webkit-text-stroke: 0.5px rgba(245, 235, 215, 0.3);
   }
   .title-fx :global(.rr-blk) {
-    background: linear-gradient(180deg, #7b828c 0%, #2a2d33 48%, #101216 100%);
+    background: linear-gradient(180deg, #ffffff 0%, #c9ced6 10%, #565b63 34%, #1a1c20 62%, #0c0d10 84%, #31343a 100%);
     -webkit-background-clip: text; background-clip: text; color: transparent;
-    -webkit-text-stroke: 0.5px rgba(245, 235, 215, 0.3);
+    -webkit-text-stroke: 0.5px rgba(255, 255, 255, 0.38);
   }
 
   .one-liner {
