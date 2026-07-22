@@ -64,21 +64,14 @@ const H = { left: '44.468%', top: '44.601%', w: '11.207%' };
           Measured to spec, then voiced by ear.<br />The precision of a machine, the feel of an instrument.
         </p>
 
+        {/* Conversion pair, ALL widths (born mobile Phase B; replaced the
+            dashed fast-buy line on desktop too, 07-22 review). BUY reuses the
+            site-wide data-add-to-cart flow (same contract as MobileBuyBar:
+            cart holds the regular price, VROOM applies −$37 at checkout, so
+            the plate reads the $56 intro price). TRY FREE points at the same
+            trial download the nav "Downloads" link uses. */}
         {rl && isBuyable(rl) && (
-          <p class="hh-fastbuy" data-hero-in>
-            <a href="/revlimiter">RevLimiter — <strong>{fmtPrice(rl.introPriceUsd)}</strong>
-              <s>{fmtPrice(rl.regularPriceUsd)}</s> · Buy now &rarr;</a>
-          </p>
-        )}
-
-        {/* Mobile-only conversion pair (Phase B). Desktop keeps the quiet
-            dashed fast-buy line above; phones get two co-equal ≥48px buttons.
-            BUY reuses the site-wide data-add-to-cart flow (same contract as
-            MobileBuyBar: cart holds the regular price, VROOM applies −$37 at
-            checkout, so the plate reads the $56 intro price). TRY FREE points
-            at the same trial download the nav "Downloads" link uses. */}
-        {rl && isBuyable(rl) && (
-          <div class="hh-cta-mobile" data-hero-in>
+          <div class="hh-cta" data-hero-in>
             <button
               type="button"
               class="hero-btn hero-btn--buy"
@@ -333,27 +326,15 @@ const H = { left: '44.468%', top: '44.601%', w: '11.207%' };
     height: auto;
   }
 
-  /* Direct-to-product line under the lede — additive, all widths. */
-  .hh-fastbuy {
-    font-family: var(--font-mono);
-    font-size: 0.968rem; /* was 0.88rem — desktop +10% again */
-    text-align: center;
-    margin: 0.9rem 0 0;
+  /* Hero CTA pair — race-red primary + outlined secondary, all widths.
+     Desktop: centered inline row under the lede. Phones: 2-up grid (below). */
+  .hh-cta {
+    display: flex;
+    justify-content: center;
+    gap: 0.85rem;
+    margin: 1.1rem 0 0;
   }
-  .hh-fastbuy a {
-    color: var(--brass);
-    text-decoration: underline;
-    text-decoration-style: dashed;
-    text-decoration-color: var(--brass-dark);
-    text-underline-offset: 3px;
-  }
-  .hh-fastbuy a:hover { color: var(--brass-bright); }
-  .hh-fastbuy strong { color: var(--brass-bright); font-weight: 400; }
-  .hh-fastbuy s { color: var(--fg-faint); }
-
-  /* Mobile hero CTA — hidden on desktop; two real buttons on phones (see the
-     ≤860px block below). Race-red primary + outlined secondary. */
-  .hh-cta-mobile { display: none; }
+  .hh-cta .hero-btn { min-width: 172px; }
   .hero-btn {
     display: flex;
     align-items: center;
@@ -477,16 +458,15 @@ const H = { left: '44.468%', top: '44.601%', w: '11.207%' };
 
     .hh-lede { font-size: 1.08rem; }
 
-    /* Phase B conversion pair: swap the quiet dashed fast-buy line for the
-       two co-equal ≥48px buttons on phones (desktop keeps the dashed line). */
-    .hh-fastbuy { display: none; }
-    .hh-cta-mobile {
+    /* Phones: the CTA pair goes 2-up full-width (min-width released). */
+    .hh-cta {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 0.75rem;
       width: min(420px, 100%);
       margin: 0.5rem auto 0;
     }
+    .hh-cta .hero-btn { min-width: 0; }
 
     /* The absolute corner overlay has no positioned ancestor to anchor to
        on mobile (it's the in-flow .sign-mount-mobile-wrap below instead). */
