@@ -100,15 +100,17 @@ const SLIDES = [
   {
     slug: 'radio-roulette',
     name: 'Radio Roulette',
-    titleHtml: 'RADIO ROULETTE',
-    titleClass: '',
+    // Roulette colorway: RADIO = plain cream (same as RevLimiter's "Limiter");
+    // ROUL = pocket red, ETTE = pocket black (thin ivory stroke = the frets).
+    titleHtml: 'RADIO <span class="rr-red">ROUL</span><span class="rr-blk">ETTE</span>',
+    titleClass: 'roulette',
     shot: radioRouletteShot, shotAlt: 'Radio Roulette plugin',
     catchphrase: 'Every press, a new station of chaos.',
     oneliner: 'One seed deterministically reconfigures 10 effects at once.',
     priceHtml: '$20',
     style: {
-      title:    { left: 0, top: 30,  ff: "'Bebas Neue', sans-serif", fw: 400, fs: 52, ls: 0 },
-      sub:      { left: 0, top: 92,  ff: "'Bebas Neue', sans-serif", fw: 400, fs: 22, ls: 0 },
+      title:    { left: 0, top: 20,  ff: "'Bebas Neue', sans-serif", fw: 400, fs: 86, ls: 0 },
+      sub:      { left: 0, top: 98,  ff: "'Bebas Neue', sans-serif", fw: 400, fs: 22, ls: 0 },
       shot:     { left: 49, top: 148 },
       oneliner: { left: 0, top: 358, ff: 'Rajdhani, sans-serif',     fw: 700, fs: 15, ls: 0 },
       price:    { left: 0, top: 382, ff: "'Bebas Neue', sans-serif", fw: 400, fs: 30, ls: 0 },
@@ -232,6 +234,16 @@ const peekClass = (i: number) => {
       });
       dots.forEach((d, k) => d.classList.toggle('active', k === idx));
       if (announceChange && announce) announce.textContent = slides[idx].getAttribute('aria-label') ?? '';
+      // GAS fuel slosh: every carousel move rocks the liquid in the letters.
+      // Remove + reflow + re-add so the one-shot animation restarts even on
+      // rapid consecutive moves. (reduced-motion users: no slosh.)
+      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        sc.querySelectorAll<HTMLElement>('.sc-title.gas').forEach((t) => {
+          t.classList.remove('is-slosh');
+          void t.offsetWidth;
+          t.classList.add('is-slosh');
+        });
+      }
     };
 
     sc.querySelector('.sc-prev')?.addEventListener('click', () => { killAuto(); go(idx - 1); });
@@ -484,11 +496,77 @@ const peekClass = (i: number) => {
     -webkit-background-clip: text; background-clip: text; color: transparent;
     filter: drop-shadow(0 0 22px rgba(150, 60, 255, 0.35));
   }
-  /* Smoky gray gradient — grey base, wisps of lighter/darker smoke through it. */
+  /* Registered so gas-slosh below can INTERPOLATE the gradient angle —
+     unregistered custom properties snap between keyframes instead. */
+  @property --fuel-tilt {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 180deg;
+  }
+  /* Fuel-filled glass tube — letters read as glass with liquid fuel inside:
+     pale glassy tint in the top third (the empty part of the tube), a bright
+     meniscus line, then amber fuel darkening toward the bottom. Bubble dots
+     float in the fuel; a glass-wall stroke outlines the tube; an animated
+     sheen sweeps across (layer 1, oversized + offset so it's parked off-glyph
+     between passes). All layers clip to the glyphs. */
   .sc-title.gas {
-    background: linear-gradient(120deg, #e8e8e8 0%, #9a9a9a 22%, #5c5c5c 42%, #c4c4c4 60%, #767676 80%, #d8d8d8 100%);
+    background:
+      linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.55) 42%, rgba(255, 255, 255, 0.08) 50%, transparent 60%),
+      radial-gradient(circle 4px at 18% 72%, rgba(255, 236, 170, 0.85), transparent 70%),
+      radial-gradient(circle 3px at 43% 85%, rgba(255, 236, 170, 0.7), transparent 70%),
+      radial-gradient(circle 2.5px at 66% 64%, rgba(255, 236, 170, 0.75), transparent 70%),
+      radial-gradient(circle 3.5px at 86% 78%, rgba(255, 236, 170, 0.6), transparent 70%),
+      linear-gradient(var(--fuel-tilt, 180deg),
+        rgba(206, 224, 234, 0.22) 0%,
+        rgba(216, 232, 242, 0.32) 26%,
+        rgba(255, 255, 255, 0.85) 31%,
+        #ffd24a 35%,
+        #ffa41f 52%,
+        #f07000 74%,
+        #a33f00 100%);
+    background-size: 250% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+    background-position: -180% 0, 0 0, 0 0, 0 0, 0 0, 0 0;
     -webkit-background-clip: text; background-clip: text; color: transparent;
-    filter: drop-shadow(0 0 20px rgba(170, 170, 170, 0.35));
+    -webkit-text-stroke: 1.5px rgba(212, 236, 248, 0.38);
+    filter: drop-shadow(0 0 16px rgba(255, 150, 30, 0.45));
+    animation: gas-sheen 5.5s ease-in-out infinite;
+  }
+  @keyframes gas-sheen {
+    0%, 55% { background-position: -180% 0, 0 0, 0 0, 0 0, 0 0, 0 0; }
+    100% { background-position: 280% 0, 0 0, 0 0, 0 0, 0 0, 0 0; }
+  }
+  /* Liquid slosh on carousel moves — the fuel gradient's ANGLE swings with a
+     damped oscillation (tilts one way, overshoots back, settles level), like
+     liquid rocking after the card clunks into place. Driven by the registered
+     --fuel-tilt custom property so it composes with the background-position
+     sheen animation above; the class is re-added by go() in the script (with
+     a reflow between) to restart it on every move. Browsers without @property
+     just don't interpolate — the fuel stays level, nothing breaks. */
+  .sc-title.gas.is-slosh {
+    animation: gas-sheen 5.5s ease-in-out infinite, gas-slosh 1.5s ease-out 1;
+  }
+  @keyframes gas-slosh {
+    0%   { --fuel-tilt: 180deg; }
+    16%  { --fuel-tilt: 167deg; }
+    42%  { --fuel-tilt: 189deg; }
+    68%  { --fuel-tilt: 175deg; }
+    86%  { --fuel-tilt: 182deg; }
+    100% { --fuel-tilt: 180deg; }
+  }
+  /* Roulette colorway — green felt glow under the whole title; per-letter
+     spans injected via set:html (so :global, like .rev above). */
+  .sc-title.roulette {
+    filter: drop-shadow(0 4px 14px rgba(10, 110, 55, 0.45)) drop-shadow(0 0 24px rgba(16, 138, 62, 0.25));
+  }
+  .sc-title :global(.rr-red) {
+    background: linear-gradient(180deg, #ff6157 0%, #d6232c 45%, #7e0d13 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    -webkit-text-stroke: 1px rgba(245, 235, 215, 0.3);
+  }
+  .sc-title :global(.rr-blk) {
+    background: linear-gradient(180deg, #7b828c 0%, #2a2d33 48%, #101216 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    -webkit-text-stroke: 1px rgba(245, 235, 215, 0.3);
   }
   .sc-title :global(.acthe) { color: #f4f6f8; }
   .sc-title :global(.acac) {
@@ -635,6 +713,7 @@ const peekClass = (i: number) => {
        the animated slide/fade BETWEEN states is removed; states snap instantly.
        The saturate/brightness peek dim is a STATE, not motion — it stays. */
     .sc-slide { transition: none; }
+    .sc-title.gas { animation: none; }
   }
 
   /* ── Mobile: keep the bench-exact coverflow stage — fit() scales the whole

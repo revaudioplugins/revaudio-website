@@ -21,6 +21,20 @@ const thumb = pluginImage(plugin.heroImage);
 // (which left black bars either side of the narrower plate).
 const isPlate = plugin.heroImage === 'coming-soon-plate.png';
 const isBare = !!plugin.cardThumbBare;
+// Per-plugin styled titles — same colorways as the homepage carousel
+// (PluginShowcase): Rev red, DRIFT gradient, AC ice, GAS fuel-glass,
+// Radio Roulette felt/red/black. Unknown slugs fall back to the plain name.
+const TITLE_FX: Record<string, { html: string; cls: string }> = {
+  revlimiter: { html: '<span class="rev">Rev</span>Limiter', cls: '' },
+  drift: { html: 'DRIFT', cls: 'drift' },
+  'the-ac': { html: '<span class="acthe">THE</span> <span class="acac">AC</span>', cls: '' },
+  gas: { html: 'GAS', cls: 'gas' },
+  'radio-roulette': {
+    html: 'RADIO <span class="rr-red">ROUL</span><span class="rr-blk">ETTE</span>',
+    cls: 'roulette',
+  },
+};
+const titleFx = TITLE_FX[plugin.slug];
 const thumbStyle = [
   plugin.cardThumbAspect ? `aspect-ratio:${plugin.cardThumbAspect};` : '',
   plugin.cardThumbMaxWidthPct ? `max-width:${plugin.cardThumbMaxWidthPct}%; margin-inline:auto;` : '',
@@ -51,7 +65,11 @@ const thumbStyle = [
       <span class="thumb-placeholder">{plugin.name}</span>
     )}
   </div>
-  <h3>{plugin.name}</h3>
+  {titleFx ? (
+    <h3 class={`title-fx ${titleFx.cls}`} set:html={titleFx.html} />
+  ) : (
+    <h3>{plugin.name}</h3>
+  )}
   <p class="one-liner">{plugin.oneLiner}</p>
   <StarRating rating={plugin.reviewsAvg} count={plugin.reviewsCount} scale={0.9} />
   <div class="prices" data-reveal-accent>
@@ -236,6 +254,56 @@ const thumbStyle = [
     margin: 0;
     color: var(--brass-bright);
     text-align: center;
+  }
+
+  /* ── Per-plugin title colorways — mirrors PluginShowcase's carousel titles
+     (same gradients, scaled-down strokes for the smaller card size). Spans are
+     injected via set:html so they need :global. ── */
+  .title-fx { color: #f0e6d2; font-family: var(--font-display); font-weight: 400; }
+  .title-fx :global(.rev) { color: rgb(204, 26, 14); }
+  .title-fx.drift {
+    background: linear-gradient(115deg, #c08bff, #8b3cff 42%, #e23bff 78%, #ff6ad5);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 0 10px rgba(150, 60, 255, 0.35));
+  }
+  .title-fx :global(.acthe) { color: #f4f6f8; }
+  .title-fx :global(.acac) {
+    background: linear-gradient(180deg, #aef0ff, #43c6ff 55%, #2aa4e6);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 0 9px rgba(67, 198, 255, 0.4));
+  }
+  /* Fuel-filled glass tube (see PluginShowcase for the layer walkthrough) —
+     static here, no sheen sweep: it's a grid of cards, five shimmering
+     titles at once would read as noise. */
+  .title-fx.gas {
+    background:
+      radial-gradient(circle 2px at 18% 72%, rgba(255, 236, 170, 0.85), transparent 70%),
+      radial-gradient(circle 1.5px at 43% 85%, rgba(255, 236, 170, 0.7), transparent 70%),
+      radial-gradient(circle 1.5px at 66% 64%, rgba(255, 236, 170, 0.75), transparent 70%),
+      linear-gradient(180deg,
+        rgba(206, 224, 234, 0.22) 0%,
+        rgba(216, 232, 242, 0.32) 26%,
+        rgba(255, 255, 255, 0.85) 31%,
+        #ffd24a 35%,
+        #ffa41f 52%,
+        #f07000 74%,
+        #a33f00 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    -webkit-text-stroke: 0.8px rgba(212, 236, 248, 0.38);
+    filter: drop-shadow(0 0 8px rgba(255, 150, 30, 0.45));
+  }
+  .title-fx.roulette {
+    filter: drop-shadow(0 2px 7px rgba(10, 110, 55, 0.45)) drop-shadow(0 0 12px rgba(16, 138, 62, 0.25));
+  }
+  .title-fx :global(.rr-red) {
+    background: linear-gradient(180deg, #ff6157 0%, #d6232c 45%, #7e0d13 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    -webkit-text-stroke: 0.5px rgba(245, 235, 215, 0.3);
+  }
+  .title-fx :global(.rr-blk) {
+    background: linear-gradient(180deg, #7b828c 0%, #2a2d33 48%, #101216 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    -webkit-text-stroke: 0.5px rgba(245, 235, 215, 0.3);
   }
 
   .one-liner {
