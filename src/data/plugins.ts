@@ -136,13 +136,15 @@ const baseSystemReq: SystemReq = {
 // RevLimiter — Lemon Squeezy hosted checkout URL.
 const REVLIMITER_CHECKOUT_URL: string | null = 'https://revaudiopg.lemonsqueezy.com/checkout/buy/78885904-8a19-4e23-9510-31b50775ada5';
 
-// Radio Roulette — Lemon Squeezy hosted checkout URL. Not created yet; price
-// is intent ($20) until the product exists, then set this like RevLimiter's.
-const RADIOROULETTE_CHECKOUT_URL: string | null = null;
+// Radio Roulette — Lemon Squeezy hosted checkout URL. Interim: we're
+// migrating the whole payment system to FastSpring, but this LS variant
+// covers checkout in the meantime until that account is approved.
+const RADIOROULETTE_CHECKOUT_URL: string | null = 'https://revaudiopg.lemonsqueezy.com/checkout/buy/884e8eb9-903e-497d-a9ec-41153a6b1738';
 
 // GAS — Lemon Squeezy hosted checkout URL. $5 standalone, but bundled free
-// with any other RevAudio purchase (see bundleNote below). Not created yet.
-const GAS_CHECKOUT_URL: string | null = null;
+// with any other RevAudio purchase (see bundleNote below). Interim LS
+// variant — see Radio Roulette's comment above re: the FastSpring migration.
+const GAS_CHECKOUT_URL: string | null = 'https://revaudiopg.lemonsqueezy.com/checkout/buy/53dc53b1-ac43-47b7-bbe9-6b09f4cfa321';
 
 export const plugins: Plugin[] = [
   {
