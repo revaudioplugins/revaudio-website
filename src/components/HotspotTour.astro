@@ -112,8 +112,10 @@ const show = !!shot && hotspots.length >= 5;
 
   .ht-shot { width: 100%; height: auto; display: block; }
 
-  /* Circular numbered badge — race-red, VT323 numeral, ≥44px tap target,
-     centred on its control via a translate(-50%,-50%). */
+  /* Numbered pin — small machined disc (dark face, brass ring) so the panel
+     art stays visible; the button box itself is the invisible ≥44px hit area.
+     Selected pin flips to race-red with a warm glow. (Reworked from the big
+     flat red discs — Dan, 2026-07-22 design review.) */
   .ht-badge {
     position: absolute;
     transform: translate(-50%, -50%);
@@ -124,22 +126,43 @@ const show = !!shot && hotspots.length >= 5;
     place-items: center;
     padding: 0;
     cursor: pointer;
+    background: transparent;
+    border: 0;
     font-family: 'VT323', var(--font-mono);
-    font-size: 1.5rem;
+    font-size: 1.05rem;
     line-height: 1;
-    color: #f4ead6;
-    background: #e83a3a;
-    border: 2px solid #120804;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5), 0 0 0 4px rgba(232, 58, 58, 0.18);
-    transition: transform 0.15s var(--ease), box-shadow 0.2s var(--ease), background 0.2s var(--ease);
+    color: var(--brass-bright);
+    transition: transform 0.15s var(--ease);
+  }
+
+  /* The visible disc, behind the numeral. */
+  .ht-badge::before {
+    content: '';
+    position: absolute;
+    inset: 50%;
+    width: 26px;
+    height: 26px;
+    translate: -50% -50%;
+    border-radius: 50%;
+    background: rgba(18, 8, 4, 0.82);
+    border: 1.5px solid var(--brass);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.55);
+    transition: background 0.2s var(--ease), border-color 0.2s var(--ease), box-shadow 0.2s var(--ease);
+    /* Behind the numeral text (button's transform makes a stacking context). */
+    z-index: -1;
   }
 
   .ht-badge:active { transform: translate(-50%, -50%) scale(0.92); }
 
   .ht-badge[aria-pressed='true'] {
-    background: #ff4a4a;
-    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.55), 0 0 0 5px rgba(232, 200, 120, 0.55);
+    color: #f4ead6;
     z-index: 2;
+  }
+
+  .ht-badge[aria-pressed='true']::before {
+    background: #e83a3a;
+    border-color: #120804;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.6), 0 0 14px rgba(232, 58, 58, 0.55);
   }
 
   .ht-badge:focus-visible {
@@ -148,7 +171,7 @@ const show = !!shot && hotspots.length >= 5;
   }
 
   @media (hover: hover) {
-    .ht-badge:hover { background: #ff4a4a; }
+    .ht-badge:hover::before { border-color: var(--brass-bright); background: rgba(18, 8, 4, 0.95); }
   }
 
   @media (prefers-reduced-motion: reduce) {
