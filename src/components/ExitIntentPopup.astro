@@ -1,5 +1,4 @@
 ---
-import { plugins } from '../data/plugins';
 /**
  * Exit-intent popup pitching GAS (the free plugin) with a straight link to
  * the Downloads portal. Render once per page (BaseLayout).
@@ -23,8 +22,9 @@ import { plugins } from '../data/plugins';
  * while open (SubscribeModal pattern). Entrance is motion-ok-gated CSS —
  * reduced-motion users get an instant dialog.
  */
-const gasUrl = plugins.find((p) => p.slug === 'gas')?.downloadUrl
-  ?? 'https://revlimiter-license.revaudio.workers.dev/download';
+// Ungated direct-from-R2 GAS routes on the license worker (serveGas) — no
+// email gate, no portal detour. GAS only; paid builds stay token-gated.
+const GAS_DIRECT_BASE = 'https://revlimiter-license.revaudio.workers.dev/gas';
 const path = Astro.url.pathname.replace(/\/$/, '');
 const excluded = path === '/gas' || path === '/thank-you';
 ---
@@ -37,7 +37,16 @@ const excluded = path === '/gas' || path === '/thank-you';
   <p class="eg-sub">
     GAS &mdash; our one-knob saturator. Actually free. No email, no trial clock, no catch.
   </p>
-  <a class="eg-cta" href={gasUrl} data-eg-cta>Just get it here</a>
+  <div class="eg-dl">
+    <a class="eg-cta" href={`${GAS_DIRECT_BASE}/mac`} data-eg-cta download>
+      Download for Mac
+      <span class="eg-spec">AU / VST3 &middot; .pkg</span>
+    </a>
+    <a class="eg-cta" href={`${GAS_DIRECT_BASE}/win`} data-eg-cta download>
+      Download for Windows
+      <span class="eg-spec">VST3 &middot; .exe</span>
+    </a>
+  </div>
   <button type="button" class="eg-walk" data-eg-close>I&rsquo;ll walk, thanks</button>
 </dialog>
 )}
@@ -130,10 +139,14 @@ const excluded = path === '/gas' || path === '/thank-you';
       html.style.overflow = '';
       try { localStorage.setItem(KEY, converted ? 'got' : String(Date.now())); } catch (e) {}
     });
-    modal.querySelector('[data-eg-cta]')?.addEventListener('click', () => {
-      converted = true;
-      try { localStorage.setItem(KEY, 'got'); } catch (e) {}
-    });
+    modal.querySelectorAll('[data-eg-cta]').forEach((a) =>
+      a.addEventListener('click', () => {
+        converted = true;
+        try { localStorage.setItem(KEY, 'got'); } catch (e) {}
+        // The download streams in the background — close after a beat.
+        setTimeout(() => modal.close(), 400);
+      })
+    );
     modal.querySelectorAll('[data-eg-close]').forEach((b) =>
       b.addEventListener('click', () => modal.close())
     );
@@ -208,13 +221,15 @@ const excluded = path === '/gas' || path === '/thank-you';
     margin: 0 0 1.5rem;
   }
 
+  .eg-dl { display: flex; flex-direction: column; gap: 0.6rem; }
+
   /* Mirrors .btn.primary (BuyButton.astro) — scoped there, so restated here. */
   .eg-cta {
     display: block;
     width: 100%;
-    padding: 1rem 1.5rem;
+    padding: 0.85rem 1.5rem;
     font-family: var(--font-display);
-    font-size: 1.35rem;
+    font-size: 1.25rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
     text-decoration: none;
@@ -226,6 +241,15 @@ const excluded = path === '/gas' || path === '/thank-you';
   .eg-cta:hover { background: var(--brass-bright); color: var(--bg-0); }
   :global(html.motion-ok) .eg-cta:hover { box-shadow: 0 0 24px rgba(232, 200, 120, 0.35); }
   .eg-cta:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 2px; }
+
+  .eg-spec {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.14em;
+    margin-top: 0.15rem;
+    opacity: 0.75;
+  }
 
   .eg-walk {
     border: 0;
