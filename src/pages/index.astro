@@ -7,14 +7,11 @@ import DAWStrip from '../components/DAWStrip.astro';
 import PressLogos from '../components/PressLogos.astro';
 import EmailCapture from '../components/EmailCapture.astro';
 import SubscribeModal from '../components/SubscribeModal.astro';
-import { bySlug, isBuyable, fmtPrice } from '../data/plugins';
 import signBeam from '../assets/hero/sign-beam.png';
 import signHanger from '../assets/hero/sign-hanger.png';
 import faceImg from '../assets/hero/rev-gauge-face.png';
 import needleImg from '../assets/hero/needle-v2.png';
 import hubImg from '../assets/hero/hub-v2.png';
-
-const rl = bySlug('revlimiter');
 
 /* Gauge geometry — the plugin's 406-viewBox units as % of the square dial box:
    needle <image> x122 y67.69 w162.4, pivot (203,203); hub x180.54 y181.08 w45.5.
@@ -64,12 +61,6 @@ const H = { left: '44.468%', top: '44.601%', w: '11.207%' };
           Measured to spec, then voiced by ear.<br />The precision of a machine, the feel of an instrument.
         </p>
 
-        {rl && isBuyable(rl) && (
-          <p class="hh-fastbuy" data-hero-in>
-            <a href="/revlimiter">RevLimiter — <strong>{fmtPrice(rl.introPriceUsd)}</strong>
-              <s>{fmtPrice(rl.regularPriceUsd)}</s> · Buy now &rarr;</a>
-          </p>
-        )}
       </div>
 
       {/* Desktop-only: original full-size gauge, to the right of the text. */}
@@ -309,24 +300,6 @@ const H = { left: '44.468%', top: '44.601%', w: '11.207%' };
     height: auto;
   }
 
-  /* Direct-to-product line under the lede — additive, all widths. */
-  .hh-fastbuy {
-    font-family: var(--font-mono);
-    font-size: 0.968rem; /* was 0.88rem — desktop +10% again */
-    text-align: center;
-    margin: 0.9rem 0 0;
-  }
-  .hh-fastbuy a {
-    color: var(--brass);
-    text-decoration: underline;
-    text-decoration-style: dashed;
-    text-decoration-color: var(--brass-dark);
-    text-underline-offset: 3px;
-  }
-  .hh-fastbuy a:hover { color: var(--brass-bright); }
-  .hh-fastbuy strong { color: var(--brass-bright); font-weight: 400; }
-  .hh-fastbuy s { color: var(--fg-faint); }
-
   /* ── Hanging STORE sign — left edge, bottom-anchored so the plank rests
      just above the plugin showcase. All px derive from the source render at
      scale 0.1816 (plank = 264 css px): mount 436×243, beam 436×45 at 0,0,
@@ -423,10 +396,9 @@ const H = { left: '44.468%', top: '44.601%', w: '11.207%' };
     .hh-h1 { font-size: 4.29rem; margin-top: -10px; } /* 2.6rem × 1.5 × 1.1; lifted 10px */
     .hero-dial-mobile { width: min(200px, 50vw); margin-top: calc(0.5rem - 10px); } /* 160px / 40vw × 1.25; nudged up 10px */
 
-    /* Lede + fastbuy stay at their original size — the desktop-only +10%
-       above (base rules) would otherwise leak in here too. */
+    /* Lede stays at its original size — the desktop-only +10% above (base
+       rules) would otherwise leak in here too. */
     .hh-lede { font-size: 1.08rem; }
-    .hh-fastbuy { font-size: 0.8rem; }
 
     /* The absolute corner overlay has no positioned ancestor to anchor to
        on mobile (it's the in-flow .sign-mount-mobile-wrap below instead). */
