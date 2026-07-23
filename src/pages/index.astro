@@ -451,7 +451,11 @@ const H = { left: '44.468%', top: '44.601%', w: '11.207%' };
       /* Top margin pulled up 65px, then another 100px — carries the sign and
          everything after it (carousel, DAW strip, ...) up with it, since
          it's the first thing in that part of the flow. */
-      margin: calc(0.5rem - 165px) auto 1.5rem;
+      /* Bottom margin carries +30px to pay back the `top: 30px` visual nudge
+         below — the relative offset moves the sign down without moving the
+         flow, which left ~7px between the plank and "OUR PLUGINS" and
+         overlapped at zoomed/odd viewports (Dan, 2026-07-23). */
+      margin: calc(0.5rem - 165px) auto calc(1.5rem + 30px);
       /* Sign's own visual nudge (down 30 / left 50, then another 60 left =
          110 total) — position offsets don't affect layout flow, so this
          doesn't move anything below it. */
