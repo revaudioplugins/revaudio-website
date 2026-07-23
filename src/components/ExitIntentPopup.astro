@@ -1,0 +1,243 @@
+---
+import { plugins } from '../data/plugins';
+/**
+ * Exit-intent popup pitching GAS (the free plugin) with a straight link to
+ * the Downloads portal. Render once per page (BaseLayout).
+ *
+ * Trigger (research-tuned, desktop only):
+ * - Carrier event is `mouseleave` on <html> — fires only on a real viewport
+ *   exit, so no reliance on mouseout's bubbling + relatedTarget guesswork.
+ * - Velocity/direction filter separates a genuine throw-to-the-edge from the
+ *   two big macOS false positives: a slow glide onto a LEFT second monitor,
+ *   and a slow hover up to the menu bar. Top exit needs upward motion or
+ *   speed; left exit needs a fast up-left throw (traffic-light corner).
+ * - Armed 15s after load; coarse-pointer (touch) devices never arm.
+ * - Never fires over an open <dialog> or while the user is typing.
+ *
+ * Frequency: once per session (sessionStorage), 7-day cooldown after a
+ * dismiss, permanently off after the CTA click (localStorage 'ra-exit-gas' =
+ * 'got' | dismiss epoch-ms). Not rendered on the GAS page or /thank-you —
+ * pitching the offer on the offer's own page is noise.
+ *
+ * Close: × button, backdrop click, Escape, "I'll walk" link. Scroll locks
+ * while open (SubscribeModal pattern). Entrance is motion-ok-gated CSS —
+ * reduced-motion users get an instant dialog.
+ */
+const gasUrl = plugins.find((p) => p.slug === 'gas')?.downloadUrl
+  ?? 'https://revlimiter-license.revaudio.workers.dev/download';
+const path = Astro.url.pathname.replace(/\/$/, '');
+const excluded = path === '/gas' || path === '/thank-you';
+---
+
+{!excluded && (
+<dialog class="exit-gas" data-exit-gas aria-label="Free plugin — GAS" tabindex="-1">
+  <button type="button" class="eg-x" data-eg-close aria-label="Close">&times;</button>
+  <p class="eg-kicker">Before you pull out of the lot&hellip;</p>
+  <h2>We got some <span class="eg-red">free gas</span></h2>
+  <p class="eg-sub">
+    GAS &mdash; our one-knob saturator. Actually free. No email, no trial clock, no catch.
+  </p>
+  <a class="eg-cta" href={gasUrl} data-eg-cta>Just get it here</a>
+  <button type="button" class="eg-walk" data-eg-close>I&rsquo;ll walk, thanks</button>
+</dialog>
+)}
+
+<script>
+  const modal = document.querySelector<HTMLDialogElement>('[data-exit-gas]');
+  if (modal && !window.matchMedia('(pointer: coarse)').matches) {
+    const KEY = 'ra-exit-gas';
+    const SESSION_KEY = 'ra-exit-gas-s';
+    const COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000;
+    const EDGE = 20; // px tolerance — fast exits report the crossing inside the page
+    const html = document.documentElement;
+
+    let fired = false; // in-memory backstop in case storage writes throw
+    let converted = false;
+
+    const suppressed = () => {
+      try {
+        if (sessionStorage.getItem(SESSION_KEY) === '1') return true;
+        const v = localStorage.getItem(KEY);
+        if (v === 'got') return true; // already took the offer
+        if (v && Date.now() - Number(v) < COOLDOWN_MS) return true; // recent dismiss
+      } catch (e) {}
+      return false;
+    };
+
+    let armed = false;
+    setTimeout(() => { armed = true; }, 15000);
+
+    // Wheel-scroll lockout: the browser delivers mouseleave fired during a
+    // scroll late and with stale coordinates (Bounceback's scrollDelay fix).
+    let lastScroll = 0;
+    window.addEventListener('scroll', () => { lastScroll = performance.now(); }, { passive: true });
+
+    // Pointer velocity in px/ms, from the last two rAF-sampled positions.
+    let px = 0, py = 0, pt = 0, lx = 0, ly = 0, lt = 0, pending = false;
+    const onMove = (e: MouseEvent) => {
+      if (pending) return;
+      pending = true;
+      requestAnimationFrame(() => {
+        pending = false;
+        px = lx; py = ly; pt = lt;
+        lx = e.clientX; ly = e.clientY; lt = performance.now();
+      });
+    };
+    document.addEventListener('mousemove', onMove, { passive: true });
+
+    const onLeave = (e: MouseEvent) => {
+      if (fired || !armed || suppressed()) return;
+      if (performance.now() - lastScroll < 500) return; // stale post-scroll event
+      if (document.querySelector('dialog[open]')) return; // never stack dialogs
+      const ae = document.activeElement;
+      if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || (ae as HTMLElement).isContentEditable)) return;
+
+      // Stale samples (pointer parked, then gone) read as zero velocity.
+      const dt = lt - pt;
+      const stale = !dt || performance.now() - lt > 150;
+      const vx = stale ? 0 : (lx - px) / dt;
+      const vy = stale ? 0 : (ly - py) / dt;
+      const speed = Math.hypot(vx, vy);
+
+      const nearTop = e.clientY <= EDGE;
+      const nearLeft = e.clientX <= EDGE;
+      // Top: real exits move up or move fast; slow menu-bar hovers don't fire.
+      const topIntent = nearTop && (vy < -0.2 || speed > 0.35);
+      // Left: only a fast up-left throw (macOS close button). A steady
+      // horizontal glide is a second monitor — ignore it.
+      const leftIntent = !nearTop && nearLeft && speed > 0.35 && vx < -0.25 && vy <= 0;
+      if (!topIntent && !leftIntent) return;
+
+      // Grace delay: an accidental graze of the edge re-enters within 100ms
+      // and cancels (Ouibounce's delay + mouseenter-cancel pattern).
+      graceTimer = window.setTimeout(() => {
+        fired = true;
+        html.removeEventListener('mouseleave', onLeave);
+        html.removeEventListener('mouseenter', onEnter);
+        document.removeEventListener('mousemove', onMove);
+        try { sessionStorage.setItem(SESSION_KEY, '1'); } catch (err) {}
+        modal.showModal();
+        html.style.overflow = 'hidden';
+        modal.focus(); // focus the dialog, not the CTA — no aggressive focus grab
+      }, 100);
+    };
+    let graceTimer = 0;
+    const onEnter = () => { clearTimeout(graceTimer); };
+    html.addEventListener('mouseleave', onLeave);
+    html.addEventListener('mouseenter', onEnter);
+
+    modal.addEventListener('close', () => {
+      html.style.overflow = '';
+      try { localStorage.setItem(KEY, converted ? 'got' : String(Date.now())); } catch (e) {}
+    });
+    modal.querySelector('[data-eg-cta]')?.addEventListener('click', () => {
+      converted = true;
+      try { localStorage.setItem(KEY, 'got'); } catch (e) {}
+    });
+    modal.querySelectorAll('[data-eg-close]').forEach((b) =>
+      b.addEventListener('click', () => modal.close())
+    );
+    // Backdrop click: a click landing on the dialog element itself (not children).
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.close(); });
+  }
+</script>
+
+<style>
+  .exit-gas {
+    margin: auto;
+    width: min(460px, calc(100vw - 2.5rem));
+    padding: 2.25rem 2rem 1.5rem;
+    text-align: center;
+    background: var(--bg-1);
+    color: var(--fg);
+    border: 1px solid var(--border-bright);
+    border-top: 3px solid var(--brass);
+    border-radius: 12px;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7);
+  }
+  .exit-gas::backdrop { background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); }
+  .exit-gas:focus-visible { outline: 2px solid var(--brass-bright); }
+
+  /* Entrance/backdrop motion only when the motion system is live. */
+  :global(html.motion-ok) .exit-gas[open] {
+    animation: eg-in 0.55s var(--ease-settle) both;
+  }
+  :global(html.motion-ok) .exit-gas[open]::backdrop {
+    animation: eg-fade 0.3s var(--ease) both;
+  }
+  @keyframes eg-in { from { opacity: 0; transform: scale(0.94) translateY(12px); } to { opacity: 1; transform: none; } }
+  @keyframes eg-fade { from { opacity: 0; } to { opacity: 1; } }
+
+  .eg-x {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.75rem;
+    border: 0;
+    background: transparent;
+    color: var(--fg-dim);
+    font-size: 1.6rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0.25rem;
+  }
+  .eg-x:hover { color: var(--brass-bright); }
+
+  .eg-kicker {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--brass);
+    margin: 0 0 0.75rem;
+  }
+
+  .exit-gas h2 {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--brass-bright);
+    font-size: 2.4rem;
+    line-height: 1.05;
+    margin: 0 0 0.6rem;
+  }
+  .eg-red { color: var(--redline); }
+
+  .eg-sub {
+    color: var(--fg-dim);
+    font-size: 0.95rem;
+    margin: 0 0 1.5rem;
+  }
+
+  /* Mirrors .btn.primary (BuyButton.astro) — scoped there, so restated here. */
+  .eg-cta {
+    display: block;
+    width: 100%;
+    padding: 1rem 1.5rem;
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: none;
+    background: var(--brass);
+    color: var(--bg-0);
+    border: 1px solid transparent;
+    transition: background 0.2s var(--ease), box-shadow 0.2s var(--ease);
+  }
+  .eg-cta:hover { background: var(--brass-bright); color: var(--bg-0); }
+  :global(html.motion-ok) .eg-cta:hover { box-shadow: 0 0 24px rgba(232, 200, 120, 0.35); }
+  .eg-cta:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 2px; }
+
+  .eg-walk {
+    border: 0;
+    background: transparent;
+    color: var(--fg-dim);
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    padding: 0.6rem 0.5rem 0;
+    margin-top: 0.35rem;
+  }
+  .eg-walk:hover { color: var(--brass-bright); }
+</style>
