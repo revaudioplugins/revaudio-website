@@ -1,0 +1,62 @@
+---
+/* Mobile-only cart button, docked bottom-left next to the high-contrast
+   toggle (A11yToggle: left 16px, 48px wide). Lives outside the nav because
+   the nav's backdrop-filter traps position:fixed descendants. Cart.astro
+   binds [data-cart-toggle] by delegation and syncs every [data-cart-badge],
+   so this needs no script of its own. Hidden >700px — the header cart
+   returns there. */
+---
+
+<button type="button" class="cart-fab" data-cart-toggle aria-label="Open cart">
+  {/* Inline glyph in currentColor (not the header's PNG) so the cart reads
+      brass-bright like the a11y toggle's glyph and stays crisp from afar. */}
+  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M2.5 3h2.2l2 12.2h11.6l2.2-8.7H6.1" />
+    <circle cx="8.6" cy="20" r="1.7" fill="currentColor" stroke="none" />
+    <circle cx="17.2" cy="20" r="1.7" fill="currentColor" stroke="none" />
+  </svg>
+  <span class="cart-fab-badge" data-cart-badge hidden>0</span>
+</button>
+
+<style>
+  .cart-fab { display: none; }
+
+  @media (max-width: 700px) {
+    .cart-fab {
+      position: fixed;
+      left: calc(max(16px, env(safe-area-inset-left)) + 48px + 12px);
+      bottom: 16px;
+      z-index: 60;
+      width: 48px;
+      height: 48px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      border-radius: 50%;
+      background: var(--bg-2);
+      color: var(--brass-bright);
+      border: 2px solid var(--brass);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+      cursor: pointer;
+    }
+    .cart-fab svg { width: 28px; height: 28px; display: block; }
+    .cart-fab:focus-visible { outline: 3px solid var(--brass-bright); outline-offset: 3px; }
+
+    .cart-fab-badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      border-radius: 9px;
+      background: var(--brass);
+      color: var(--bg-0);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+      line-height: 18px;
+      text-align: center;
+    }
+  }
+</style>
