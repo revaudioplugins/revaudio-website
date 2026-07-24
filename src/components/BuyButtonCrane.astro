@@ -103,6 +103,17 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
             <span class="rc-buysq-tint"></span>
             <span class="rc-buysq-glow"></span>
           </button>
+          <!-- Soft exit under BUY NOW (trial-first funnel, Dan 2026-07-24):
+               buyers buy, everyone else gets a painted escape hatch to the
+               trial. Desktop-only — on phones this row paints ~10px tall,
+               and the mobile funnel is served by the relocated TrialStamp. -->
+          {plugin.trialUrl && (
+            <a
+              class="rc-trial"
+              href={plugin.trialUrl}
+              aria-label={`Or download the free 14 days trial of ${plugin.name}`}
+            >or try it <b>free</b> for 14 days</a>
+          )}
           <!-- L1 door light — LAST door child so it lifts the copy/imprint too;
                masked to the door silhouette so the amber pool stays on metal.
                Realism pass 2026-07-08 adds three siblings on top: cold strike
@@ -519,6 +530,47 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
     filter: url(#rc-worn-plat);          /* no-op (scale 0) — kept for bench parity */
   }
 
+  /* ── trial escape hatch — painted mono line in the gap between the BUY NOW
+     square (bottom ≈87%) and the code line (top ≈90%). Same worn-code filter
+     family as its neighbours; dotted brass underline = "this one's a link".
+     ::after fattens the pointer target without covering the square above. */
+  .rc-trial {
+    position: absolute;
+    left: 50%;
+    top: 88.1%;
+    transform: translate(-50%, -50%);
+    rotate: 0.9deg;
+    z-index: 5;
+    white-space: nowrap;
+    font-family: var(--font-mono);
+    font-size: 3cqw;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: #e9dcbf;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.45);
+    text-decoration: underline dotted rgba(232, 200, 120, 0.7);
+    text-underline-offset: 0.35em;
+    filter: url(#rc-worn-code);
+  }
+
+  .rc-trial b { font-weight: 700; color: #e8c878; }
+
+  .rc-trial:hover {
+    color: #fff3d9;
+    text-decoration-color: #e8c878;
+  }
+
+  .rc-trial:focus-visible {
+    outline: 2px solid var(--brass-bright);
+    outline-offset: 3px;
+  }
+
+  .rc-trial::after {
+    content: '';
+    position: absolute;
+    inset: -7px;
+  }
+
   /* ── BUY NOW square (the add-to-cart) + garage light ────────────────── */
   .rc-buysq {
     position: absolute;
@@ -853,6 +905,10 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
     .rc-hookglint { opacity: calc(var(--l1) * 0.18); }
     /* L2 box glow: hover-only (L2 never fires on touch), so keep it card-bound. */
     .rc-buysq-glow { inset: 0; }
+    /* Trial escape hatch: at a ~242px door this paints ~8px tall — unreadable
+       and an accessibility miss. The mobile funnel is served by the TrialStamp
+       relocated above the gallery instead. */
+    .rc-trial { display: none; }
     /* BUY NOW at a ~180px-wide door paints ≈122×47px — keep a fat thumb target
        by extending the button's hit area past the painted patch (invisible,
        still the same <button data-add-to-cart>). */
@@ -986,6 +1042,7 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
       };
       const hit = root.querySelector<HTMLElement>('.rc-hit');
       const buysq = root.querySelector<HTMLElement>('.rc-buysq');
+      const trialLink = root.querySelector<HTMLElement>('.rc-trial');
       if (canHover) {
         hit?.addEventListener('pointerenter', l1Enter);
         hit?.addEventListener('pointerleave', l1Leave);
@@ -993,6 +1050,8 @@ const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
         buysq?.addEventListener('pointerleave', l1Leave);
         buysq?.addEventListener('pointerenter', sqOn);       // L2 rides on top of L1
         buysq?.addEventListener('pointerleave', sqOff);
+        trialLink?.addEventListener('pointerenter', l1Enter); // trial link is on the door too
+        trialLink?.addEventListener('pointerleave', l1Leave);
       }
       // Keyboard focus lights the square like a hover (focus ≈ L2-on). Gated to
       // :focus-visible so mouse clicks don't double-drive the pointer handlers.

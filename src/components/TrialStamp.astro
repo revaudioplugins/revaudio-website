@@ -27,15 +27,22 @@ const { plugin } = Astro.props;
   href={plugin.trialUrl}
   data-trial-stamp
   style={`--patch-url:url(${patchImg.src});`}
-  aria-label={`Get your free 14 days trial of ${plugin.name} — go to downloads`}
+  aria-label={`Download the free 14 days trial of ${plugin.name} — full version, no credit card`}
 >
-  <span class="ts-plate"></span>
-  <span class="ts-ink">
-    <span class="ts-top">Get your <em>FREE</em></span>
-    <span class="ts-bot">14 days trial</span>
+  <span class="ts-patchbox">
+    <span class="ts-plate"></span>
+    <span class="ts-ink">
+      <span class="ts-top">Get your <em>FREE</em></span>
+      <span class="ts-bot">14 days trial</span>
+    </span>
+    <span class="ts-lit"></span>
+    <span class="ts-glow"></span>
   </span>
-  <span class="ts-lit"></span>
-  <span class="ts-glow"></span>
+  {/* Affordance strip (trial-first funnel, Dan 2026-07-24): the patch alone
+      read as decoration on phones — the verb row + fear-killer line make it
+      a button. .ts-cta is mobile-only (desktop has cursor + hover lamp). */}
+  <span class="ts-cta">Tap to download <span class="ts-arrow">&#9656;</span></span>
+  <span class="ts-micro">Full version &middot; no credit card</span>
 
   {/* whisper-strength worn-glyph filter — same recipe family as the door's
       #rc-worn-buy but scale 1.2 / no blur, so ink stays crisp at ~300px.
@@ -55,14 +62,54 @@ const { plugin } = Astro.props;
     position: relative;
     display: inline-block;
     width: 100%;
+    cursor: pointer;
+    transform: rotate(2deg);
+    transition: transform 0.12s ease;
+    text-decoration: none;
+  }
+
+  /* The patch visual, split out of the anchor so the CTA/micro lines can sit
+     BELOW it inside the same tap target. Carries everything the anchor used
+     to: the asset box, the ink container, the tilt's drop shadow. */
+  .ts-patchbox {
+    position: relative;
+    display: block;
+    width: 100%;
     aspect-ratio: 620 / 237;             /* the patch asset's own box */
     background: var(--patch-url) center / 100% 100% no-repeat;
-    cursor: pointer;
     container-type: inline-size;         /* ink sizes in cqw of the stamp */
     filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.55));
-    transform: rotate(2deg);
-    transition: transform 0.12s ease, filter 0.12s ease;
-    text-decoration: none;
+    transition: filter 0.12s ease;
+  }
+
+  /* ── affordance strip under the patch ─────────────────────────────────
+     .ts-cta: the verb row — mobile-only (desktop gets cursor + hover lamp).
+     .ts-micro: the fear-killer, on every viewport. */
+  .ts-cta {
+    display: none;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    text-align: center;
+    color: var(--brass-bright);
+    margin-top: 0.55rem;
+  }
+
+  .ts-arrow { color: var(--brass); }
+
+  .ts-micro {
+    display: none;                       /* mobile-only: desktop's beside-the-title
+                                            composition is benched — extra lines
+                                            collide with the tagline there */
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    text-align: center;
+    color: var(--fg-dim);
+    margin-top: 0.45rem;
   }
 
   /* B3 night plate: patch multiplied down to the site's dark metal, masked to
@@ -155,16 +202,59 @@ const { plugin } = Astro.props;
   .trial-stamp:active,
   .trial-stamp.pressed {
     transform: rotate(2deg) translateY(4px) scale(0.965);
+  }
+
+  .trial-stamp:active .ts-patchbox,
+  .trial-stamp.pressed .ts-patchbox {
     filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.8));
   }
 
   .ts-defs { position: absolute; width: 0; height: 0; }  /* never display:none */
 
-  /* hover-only halo (no hover on touch) — its -35% inset was the page's only
-     horizontal overflow on phones, so keep it card-bound there (same fix as
-     the crane's .rc-buysq-glow). */
+  /* ── Mobile (≤900px): the stamp must READ as a control (Dan, 2026-07-24 —
+     "from the phone it's not clear it's a button"). Raised dark plate with a
+     bevel + the tap-verb row; the patch keeps its 2° tilt INSIDE the plate,
+     the plate itself sits straight like a button. */
   @media (max-width: 900px) {
+    /* hover-only halo (no hover on touch) — its -35% inset was the page's only
+       horizontal overflow on phones, so keep it card-bound (same fix as the
+       crane's .rc-buysq-glow). */
     .ts-glow { inset: 0; }
+
+    .trial-stamp {
+      display: block;
+      transform: none;
+      background: linear-gradient(180deg, #1d1712 0%, #120e09 100%);
+      border: 1px solid var(--brass-dark);
+      border-radius: 8px;
+      padding: 0.85rem 0.9rem 0.7rem;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.07),
+        0 5px 16px rgba(0, 0, 0, 0.55);
+    }
+
+    .ts-patchbox { transform: rotate(2deg); }
+    .ts-cta { display: block; }
+    .ts-micro { display: block; }
+
+    .trial-stamp:active,
+    .trial-stamp.pressed {
+      transform: translateY(3px) scale(0.98);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.04),
+        0 1px 4px rgba(0, 0, 0, 0.7);
+    }
+
+    /* idle breath — the glow inhales every few seconds so the eye reads
+       "interactive" without a hover to discover it. */
+    @media (prefers-reduced-motion: no-preference) {
+      .ts-glow { animation: ts-breathe 4.2s ease-in-out infinite; }
+    }
+  }
+
+  @keyframes ts-breathe {
+    0%, 55%, 100% { opacity: 0; }
+    75% { opacity: 0.3; }
   }
 </style>
 
