@@ -94,10 +94,11 @@
   }
 
   /* idle sway — the tag hangs loose until the screws go in, then sits dead
-     still (mounted). Lives on the WRAP so it never fights the plate's own
-     shake/mount transforms. */
+     still (mounted). Lives on a dedicated .sway layer so it fights neither
+     the plate's shake/mount transforms nor the GET IT button below (the
+     paper dangles; the control does not). */
   @media (prefers-reduced-motion: no-preference) {
-    .plate-wrap:not(.issued) { animation: plate-sway 7s ease-in-out infinite; transform-origin: 50% -30%; }
+    .plate-wrap:not(.issued) .sway { animation: plate-sway 7s ease-in-out infinite; transform-origin: 50% -30%; }
   }
   @keyframes plate-sway {
     0%, 100% { transform: rotate(0.35deg); }
@@ -223,39 +224,56 @@
     transition: transform 0.28s cubic-bezier(0.2, 1.8, 0.4, 1) 0.35s, opacity 0.12s ease 0.35s;
   }
 
-  /* ── GET IT — a big red simple button under the plate (Dan, 2026-07-24:
-     no asset, no paper tricks — an unmissable red control). Stamp-red
-     family, cream ink, honest press-in. Fades out once plates are issued. ── */
+  /* ── GET IT — big red 3D button, playbook take (Dan, 2026-07-24).
+     Style-bible rules applied: soft-plastic material (top-lit gradient,
+     1px top highlight), real extrusion (face rides 7px above a darker
+     base, press travels down onto it), shadow tightens as it lands,
+     release springs back with a ~5% overshoot bezier. No asset. ── */
   .get-btn {
     display: block;
     width: 100%;
-    margin: 1.25rem 0 0;
+    margin: 1.4rem 0 0;
     border: 0;
-    padding: 0.8rem 1rem 0.85rem;
+    padding: 0;
     cursor: pointer;
-    border-radius: 10px;
-    background: linear-gradient(180deg, #c53420 0%, #a02414 55%, #8c1c10 100%);
+    border-radius: 12px;
+    /* the extruded base — the darker red "side" the face lands on */
+    background: linear-gradient(180deg, #7a1409 0%, #5c0e05 100%);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.55), 0 4px 10px rgba(140, 28, 16, 0.35);
+    transition: box-shadow 0.12s ease, opacity 0.25s ease;
+    font: inherit;
+  }
+  .get-btn .face {
+    display: block;
+    padding: 0.8rem 1rem 0.85rem;
+    border-radius: 12px;
+    background: linear-gradient(180deg, #d04028 0%, #b42a18 55%, #9c2012 100%);
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.22),
-      inset 0 -3px 6px rgba(0, 0, 0, 0.35),
-      0 6px 18px rgba(140, 28, 16, 0.45),
-      0 3px 8px rgba(0, 0, 0, 0.5);
+      inset 0 1px 0 rgba(255, 255, 255, 0.28),
+      inset 0 -2px 4px rgba(0, 0, 0, 0.22);
     font-family: var(--font-display);
     font-size: clamp(1.5rem, 6cqw, 2.1rem);
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: #f6ecd9;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
-    transition: transform 0.1s ease, filter 0.12s ease, box-shadow 0.1s ease, opacity 0.25s ease;
+    transform: translateY(-7px);
+    /* release = spring back with a small overshoot (playbook: 3–8%) */
+    transition: transform 0.32s cubic-bezier(0.2, 1.7, 0.4, 1), filter 0.12s ease;
   }
-  .get-btn:hover { filter: brightness(1.08); }
+  .get-btn:hover .face { filter: brightness(1.07); transform: translateY(-8px); }
   .get-btn:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 4px; }
-  .get-btn:active {
-    transform: translateY(3px);
+  .get-btn:active .face {
+    transform: translateY(-1px);
+    /* press-in is FAST (exit-speed rule); the springy bezier is release-only */
+    transition: transform 0.07s ease-out, filter 0.12s ease;
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.1),
-      inset 0 -2px 4px rgba(0, 0, 0, 0.4),
-      0 1px 5px rgba(0, 0, 0, 0.55);
+      inset 0 1px 0 rgba(255, 255, 255, 0.12),
+      inset 0 -1px 3px rgba(0, 0, 0, 0.3);
+  }
+  .get-btn:active {
+    /* the whole thing sits down — ground shadow tightens as it lands */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6), 0 2px 5px rgba(140, 28, 16, 0.3);
   }
   .get-btn .arr { color: #ffd9a8; }
   .issued .get-btn { opacity: 0; pointer-events: none; }
@@ -304,6 +322,7 @@
   <p class="sub after">Plates issued. <b>Check your inbox</b> — your download link is on its way.</p>
 
   <div class="plate-wrap" id="platewrap">
+    <div class="sway">
     <div class="plate" id="plate">
       <div class="plate-strip plate-strip--top">Temporary &nbsp;·&nbsp; RevLimiter &nbsp;·&nbsp; trial</div>
       <input
@@ -322,8 +341,9 @@
       <span class="screw screw--r"></span>
       <div class="stamp-issued">Plates issued</div>
     </div>
+    </div>
     <button class="get-btn" id="mount" type="button" aria-label="Get it — send my download link">
-      Get it <span class="arr">&#9656;</span>
+      <span class="face">Get it <span class="arr">&#9656;</span></span>
     </button>
   </div>
 
