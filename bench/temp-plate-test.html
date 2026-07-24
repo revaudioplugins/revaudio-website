@@ -209,32 +209,76 @@
     transition: transform 0.28s cubic-bezier(0.2, 1.8, 0.4, 1) 0.35s, opacity 0.12s ease 0.35s;
   }
 
-  /* ── MOUNT IT — the real dashboard button art with a hit overlay ── */
-  .mount-row { margin-top: 2rem; }
-  .btn-mount {
-    position: relative;
-    display: inline-block;
-    width: min(240px, 58vw);
+  /* ── MOUNT stub — a perforated tear-off tab printed on the plate itself
+     (parking-ticket stub). Tap = it tears off and the plate mounts. No
+     separate button chrome — the paper is the control (Dan, 2026-07-24). ── */
+  .mount-stub {
+    position: absolute;
+    right: 5.4%;
+    bottom: -5.4%;
+    width: 26%;
+    aspect-ratio: 3.1;
     border: 0;
     padding: 0;
-    background: none;
     cursor: pointer;
+    background: linear-gradient(172deg, #ddcda6 0%, #cfbd92 100%);
+    border-radius: 0 0 6px 6px;
+    box-shadow:
+      inset 0 0 0 1px rgba(60,45,20,0.28),
+      inset 0 -6px 10px rgba(120,90,40,0.25),
+      0 8px 16px rgba(0,0,0,0.5);
+    transform: rotate(0.6deg);
+    transform-origin: 15% 0%;
+    transition: transform 0.12s ease, filter 0.12s ease;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: clamp(0.6rem, 2.4cqw, 0.9rem);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #2a2314;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4em;
   }
-  .btn-mount img {
-    display: block;
-    width: 100%;
-    height: auto;
-    filter: drop-shadow(0 10px 22px rgba(0,0,0,0.6));
-    transition: transform 0.1s ease, filter 0.15s ease;
+  /* perforation — the dashed tear line across the stub's top */
+  .mount-stub::before {
+    content: '';
+    position: absolute;
+    left: 4%; right: 4%; top: 0;
+    border-top: 2px dashed rgba(42, 35, 20, 0.45);
   }
-  .btn-mount:hover img { filter: drop-shadow(0 10px 22px rgba(0,0,0,0.6)) brightness(1.1); }
-  .btn-mount:active img, .btn-mount.pressed img {
-    transform: translateY(3px) scale(0.985);
-    filter: drop-shadow(0 3px 8px rgba(0,0,0,0.7)) brightness(0.94);
+  /* paper grain continues onto the stub */
+  .mount-stub::after {
+    content: '';
+    position: absolute; inset: 0;
+    border-radius: inherit;
+    background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='3'/><feColorMatrix type='matrix' values='0 0 0 0 0.2 0 0 0 0 0.15 0 0 0 0 0.05 0 0 0 0.07 0'/></filter><rect width='120' height='120' filter='url(%23g)'/></svg>") 0 0 / 120px 120px repeat;
+    mix-blend-mode: multiply;
+    pointer-events: none;
   }
-  .btn-mount:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 6px; }
-  .btn-mount[disabled] { cursor: default; }
-  .btn-mount[disabled] img { filter: drop-shadow(0 10px 22px rgba(0,0,0,0.6)) saturate(0.55) brightness(0.82); }
+  .mount-stub:hover { filter: brightness(1.06); transform: rotate(1.4deg) translateY(1px); }
+  .mount-stub:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 4px; }
+  .mount-stub b { font-weight: 600; }
+  .mount-stub .arr { color: #8c2014; }
+
+  /* the tear — stub rips off along the perforation and falls away */
+  @keyframes stub-tear {
+    0%   { transform: rotate(0.6deg); opacity: 1; }
+    30%  { transform: rotate(9deg) translate(2%, 6%); opacity: 1; }
+    100% { transform: rotate(38deg) translate(14%, 190%); opacity: 0; }
+  }
+  .issued .mount-stub {
+    animation: stub-tear 0.55s cubic-bezier(0.35, 0, 0.7, 0.4) forwards;
+    pointer-events: none;
+  }
+
+  /* fat tap target beyond the printed stub (mobile thumbs) */
+  .mount-stub .hit {
+    content: '';
+    position: absolute;
+    inset: -14px;
+  }
 
   .micro {
     font-family: var(--font-mono);
@@ -288,6 +332,7 @@
         type="email"
         inputmode="email"
         autocomplete="email"
+        enterkeyhint="go"
         spellcheck="false"
         placeholder="your@email.com"
         aria-label="Your email — we send the download link here"
@@ -296,14 +341,13 @@
       <span class="screw screw--l"></span>
       <span class="screw screw--r"></span>
       <div class="stamp-issued">Plates issued</div>
+      <button class="mount-stub" id="mount" type="button" aria-label="Mount it — send my download link">
+        <span class="hit" aria-hidden="true"></span>
+        <b>Mount it</b> <span class="arr">&#9656;</span>
+      </button>
     </div>
   </div>
 
-  <div class="mount-row">
-    <button class="btn-mount" id="mount" type="button" aria-label="Mount it — send my download link">
-      <img src="../src/assets/ui/btn-mount-it.png" alt="">
-    </button>
-  </div>
   <p class="err" id="err"></p>
   <p class="micro before">No credit card · the download link lands in your inbox</p>
   <p class="micro after">Sent to <b id="sentto"></b> · the link is good for 24 hours</p>
@@ -340,8 +384,7 @@
       email.focus();
       return;
     }
-    mount.classList.add('pressed');
-    setTimeout(() => { mount.classList.remove('pressed'); issue(); }, 160);
+    issue();   // the tear animation IS the press feedback
   });
 
   email.addEventListener('keydown', (e) => { if (e.key === 'Enter') mount.click(); });
