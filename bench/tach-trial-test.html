@@ -1,0 +1,496 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>bench — TACH trial capture (14 days on the clock)</title>
+<!-- ──────────────────────────────────────────────────────────────────────
+  TACH TRIAL — the trial email capture presented as a RevLimiter rev gauge
+  (Dan picked over TEMP PLATES stub, 2026-07-24). The email lives in the
+  ODOMETER window; GET IT is a red starter button; on submit the needle
+  sweeps to the redline and holds there — "14 days on the clock".
+  CSS/SVG gauge styled after the plugin's tach; production can swap in a
+  photoreal asset with the same geometry. Submit MOCKED; production wires:
+    POST https://revlimiter-license.revaudio.workers.dev/download/register
+         {email, plugin:'revlimiter'}   ← needs CORS added on the worker.
+─────────────────────────────────────────────────────────────────────── -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-0: #0b0a09;
+    --bg-1: #14110f;
+    --brass: #c9a35c;
+    --brass-bright: #e8c878;
+    --brass-dark: #7a6236;
+    --fg: #e8e2d8;
+    --fg-dim: #a89f92;
+    --fg-faint: #6f6a60;
+    --border: #262019;
+    --border-bright: #3a3128;
+    --redline: #c8331f;
+    --font-display: 'Bebas Neue', 'Oswald', 'Arial Narrow', sans-serif;
+    --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', Consolas, monospace;
+    /* needle geometry: rest = 0 rpm, redline sweep */
+    --needle-rest: -122deg;
+    --needle-red: 116deg;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg-0);
+    color: var(--fg);
+    font-family: 'Inter', system-ui, sans-serif;
+    min-height: 100vh;
+  }
+
+  .bench-bar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+    display: flex; gap: 0.75rem; align-items: center;
+    padding: 0.5rem 1rem;
+    background: rgba(11,10,9,0.92);
+    border-bottom: 1px solid var(--border);
+    font-family: var(--font-mono); font-size: 11px; color: var(--fg-faint);
+  }
+  .bench-bar button {
+    font-family: var(--font-mono); font-size: 11px;
+    background: var(--bg-1); color: var(--brass);
+    border: 1px solid var(--border-bright); padding: 0.25rem 0.6rem; cursor: pointer;
+  }
+
+  .trial-section {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 5.5rem 1.25rem 5rem;
+    text-align: center;
+  }
+
+  .kicker {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--fg-faint);
+    margin: 0 0 0.8rem;
+  }
+
+  .trial-section h2 {
+    font-family: var(--font-display);
+    font-size: clamp(2.1rem, 6vw, 3.2rem);
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    color: var(--brass-bright);
+    margin: 0 0 0.5rem;
+    text-transform: uppercase;
+  }
+
+  .sub { color: var(--fg-dim); font-size: 1rem; margin: 0 0 2.6rem; }
+  .sub b { color: var(--fg); font-weight: 600; }
+
+  /* ── THE GAUGE ─────────────────────────────────────────────────────── */
+  .tach-wrap {
+    position: relative;
+    display: inline-block;
+    width: min(440px, 92vw);
+    container-type: inline-size;
+  }
+
+  .tach {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    /* brass bezel → chrome lip → black face */
+    background:
+      radial-gradient(circle at 34% 26%, rgba(255,244,212,0.5), transparent 42%),
+      radial-gradient(circle, #14100c 0%, #14100c 74.5%, #2c241a 75%, #58472c 78%, #d8b878 81.5%, #8a6a34 85%, #5a451f 88%, #3a2c12 100%);
+    box-shadow:
+      0 24px 60px rgba(0,0,0,0.7),
+      inset 0 2px 8px rgba(255,255,255,0.12);
+  }
+
+  /* glass glare */
+  .tach::after {
+    content: '';
+    position: absolute; inset: 7%;
+    border-radius: 50%;
+    background: linear-gradient(154deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.03) 28%, transparent 46%);
+    pointer-events: none;
+    z-index: 6;
+  }
+
+  .dial { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; }
+
+  /* needle — rotates from the hub; rest at --needle-rest */
+  .needle {
+    position: absolute;
+    left: 50%; top: 50%;
+    width: 2.6%;
+    height: 40%;
+    transform-origin: 50% 100%;
+    transform: translate(-50%, -100%) rotate(var(--needle-rest));
+    z-index: 4;
+    pointer-events: none;
+    transition: transform 1.15s cubic-bezier(0.34, 1.28, 0.42, 1);
+  }
+  .needle i {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, #ff5a3c 0%, #e0301c 55%, #8c1408 100%);
+    clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
+  }
+  .redlined .needle {
+    transform: translate(-50%, -100%) rotate(var(--needle-red));
+  }
+  /* held at redline: the needle trembles against the limiter */
+  @keyframes needle-hold {
+    0%, 100% { transform: translate(-50%, -100%) rotate(var(--needle-red)); }
+    50% { transform: translate(-50%, -100%) rotate(calc(var(--needle-red) - 1.6deg)); }
+  }
+  .redlined.holding .needle { animation: needle-hold 0.42s ease-in-out infinite; }
+
+  /* invalid email: the needle coughs — two short kicks off rest */
+  @keyframes needle-cough {
+    0%, 100% { transform: translate(-50%, -100%) rotate(var(--needle-rest)); }
+    25% { transform: translate(-50%, -100%) rotate(calc(var(--needle-rest) + 26deg)); }
+    50% { transform: translate(-50%, -100%) rotate(var(--needle-rest)); }
+    72% { transform: translate(-50%, -100%) rotate(calc(var(--needle-rest) + 14deg)); }
+  }
+  .cough .needle { animation: needle-cough 0.55s ease-out; }
+
+  /* hub cap */
+  .hub {
+    position: absolute;
+    left: 50%; top: 50%;
+    width: 11%;
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: radial-gradient(circle at 36% 30%, #f4e0aa 0%, #c89a48 45%, #6d5626 100%);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.7), inset 0 -2px 4px rgba(0,0,0,0.4);
+    z-index: 5;
+  }
+
+  /* ── ODOMETER — the email field ── */
+  .odo {
+    position: absolute;
+    left: 50%;
+    top: 68.5%;
+    transform: translateX(-50%);
+    width: 52%;
+    z-index: 5;
+  }
+  .odo-frame {
+    position: relative;
+    background: linear-gradient(180deg, #4a3d26 0%, #7a6236 8%, #2a2114 16%, #0a0806 30%, #060504 100%);
+    border-radius: 6px;
+    padding: 5.5% 4.5%;
+    box-shadow:
+      0 1px 0 rgba(232, 200, 120, 0.25),
+      inset 0 3px 8px rgba(0,0,0,0.9),
+      inset 0 0 0 1px rgba(0,0,0,0.8);
+  }
+  .odo-label {
+    position: absolute;
+    left: 50%; top: -1.55em;
+    transform: translateX(-50%);
+    font-family: var(--font-mono);
+    font-size: clamp(0.42rem, 2.1cqw, 0.62rem);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--brass);
+    opacity: 0.75;
+    white-space: nowrap;
+  }
+  /* rolling window: input + the success line stacked; success rolls in */
+  .odo-roll { position: relative; overflow: hidden; }
+  .odo-email {
+    display: block;
+    width: 100%;
+    background: transparent;
+    border: 0;
+    outline: none;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: clamp(0.8rem, 4.6cqw, 1.25rem);
+    letter-spacing: 0.1em;
+    text-align: center;
+    color: #f3e3b8;
+    text-shadow: 0 0 8px rgba(243, 227, 184, 0.28);
+    text-transform: lowercase;
+    transition: transform 0.45s cubic-bezier(0.5, 0, 0.3, 1), opacity 0.3s ease;
+  }
+  .odo-email::placeholder { color: rgba(243, 227, 184, 0.3); }
+  .odo-sent {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: clamp(0.58rem, 2.9cqw, 0.82rem);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: #ffb86c;
+    text-shadow: 0 0 10px rgba(255, 184, 108, 0.4);
+    transform: translateY(130%);
+    transition: transform 0.45s cubic-bezier(0.5, 0, 0.3, 1) 0.12s;
+  }
+  .redlined .odo-email { transform: translateY(-130%); opacity: 0.2; }
+  .redlined .odo-sent { transform: translateY(0); }
+
+  /* ── 14 DAYS flag in the red zone — lights when redlined ── */
+  .days-flag {
+    position: absolute;
+    right: 10%;
+    top: 21.5%;
+    z-index: 5;
+    font-family: var(--font-display);
+    font-size: clamp(0.9rem, 5cqw, 1.35rem);
+    letter-spacing: 0.1em;
+    color: #ff6a4a;
+    text-shadow: 0 0 14px rgba(255, 90, 60, 0.55);
+    transform: rotate(14deg) scale(0.6);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.3s cubic-bezier(0.2, 1.7, 0.4, 1) 0.85s, opacity 0.2s ease 0.85s;
+  }
+  .redlined .days-flag { opacity: 1; transform: rotate(14deg) scale(1); }
+
+  /* ── GET IT — red starter button, bottom of the dial ── */
+  .getit {
+    position: absolute;
+    left: 50%;
+    bottom: -9%;
+    transform: translateX(-50%);
+    width: 24%;
+    aspect-ratio: 1;
+    border: 0;
+    padding: 0;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 7;
+    /* knurled chrome collar */
+    background:
+      radial-gradient(circle at 35% 28%, rgba(255,255,255,0.65), transparent 42%),
+      repeating-conic-gradient(#9aa3ad 0deg 4deg, #545a63 4deg 8deg);
+    box-shadow:
+      0 10px 24px rgba(0,0,0,0.65),
+      0 0 0 2px #3a2c12,
+      inset 0 2px 4px rgba(255,255,255,0.3);
+  }
+  .getit .cap {
+    position: absolute;
+    inset: 12%;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 34% 26%, rgba(255,255,255,0.5), transparent 46%),
+      radial-gradient(circle, #e83a3a 0%, #b32020 62%, #7e1212 100%);
+    box-shadow: inset 0 -5px 10px rgba(80,0,0,0.6), inset 0 3px 5px rgba(255,255,255,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-size: clamp(0.85rem, 4.6cqw, 1.3rem);
+    letter-spacing: 0.1em;
+    color: #ffefd2;
+    text-shadow: 0 -1px 0 rgba(60,0,0,0.7);
+    transition: transform 0.09s ease, box-shadow 0.09s ease;
+  }
+  .getit:hover .cap { filter: brightness(1.1); }
+  .getit:active .cap, .getit.pressed .cap {
+    transform: scale(0.95) translateY(2px);
+    box-shadow: inset 0 -2px 6px rgba(80,0,0,0.7), inset 0 4px 8px rgba(60,0,0,0.5);
+  }
+  .getit:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 5px; }
+  .getit[disabled] { cursor: default; filter: saturate(0.55) brightness(0.8); }
+
+  .micro {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--fg-dim);
+    margin: 4.2rem 0 0;
+  }
+  .micro b { color: var(--brass); font-weight: 600; }
+
+  .err {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: #e05a42;
+    margin: 0.9rem 0 0;
+    min-height: 1em;
+  }
+
+  .after { display: none; }
+  .issued-copy .after { display: block; }
+  .issued-copy .before { display: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .needle, .odo-email, .odo-sent, .days-flag { transition: none; }
+    .redlined.holding .needle, .cough .needle { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bench-bar">
+  <span>bench · TACH trial capture · email in the odometer, needle to redline</span>
+  <button id="reset">reset</button>
+  <button id="force">force success</button>
+</div>
+
+<section class="trial-section" id="section">
+  <p class="kicker">Fresh off the lot</p>
+  <h2>Take it for a 14-day drive</h2>
+  <p class="sub before">Full version, nothing locked. Drop your email in the meter —
+    we send the <b>download link</b>, no credit card.</p>
+  <p class="sub after">14 days on the clock. <b>Check your inbox</b> — your download link is on its way.</p>
+
+  <div class="tach-wrap" id="tach">
+    <div class="tach">
+      <!-- dial art: ticks, numerals 0–8, red zone 6.5–8, brand line -->
+      <svg class="dial" viewBox="0 0 200 200" aria-hidden="true">
+        <defs>
+          <path id="redarc" d="" />
+        </defs>
+        <g id="ticks"></g>
+        <g id="nums"></g>
+        <path id="redzone" fill="none" stroke="#c8331f" stroke-width="5" stroke-linecap="butt" />
+        <text x="100" y="64" text-anchor="middle" fill="#c9a35c" font-size="9.5"
+              style="font-family:'Bebas Neue',sans-serif;letter-spacing:2px">REVLIMITER</text>
+        <text x="100" y="72" text-anchor="middle" fill="#8a8275" font-size="5"
+              style="font-family:ui-monospace,monospace;letter-spacing:1.4px">FREE TRIAL METER</text>
+      </svg>
+
+      <span class="days-flag">14 DAYS</span>
+
+      <div class="needle"><i></i></div>
+      <div class="hub"></div>
+
+      <div class="odo">
+        <span class="odo-label">Registered keeper</span>
+        <div class="odo-frame">
+          <div class="odo-roll">
+            <input
+              class="odo-email"
+              id="email"
+              type="email"
+              inputmode="email"
+              autocomplete="email"
+              enterkeyhint="go"
+              spellcheck="false"
+              placeholder="your@email.com"
+              aria-label="Your email — we send the download link here"
+            >
+            <div class="odo-sent">Check your inbox</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button class="getit" id="getit" type="button" aria-label="Get it — send my download link">
+      <span class="cap">Get it</span>
+    </button>
+  </div>
+
+  <p class="err" id="err"></p>
+  <p class="micro before">No credit card · full version · 14 days from first start</p>
+  <p class="micro after">Sent to <b id="sentto"></b> · the link is good for 24 hours</p>
+</section>
+
+<script>
+  // ── dial generation: ticks + numerals 0–8 over a 238° sweep ──
+  // 0 rpm at -119° (from 12 o'clock), 8 at +119; redline from 6.5.
+  (function buildDial() {
+    const ticksG = document.getElementById('ticks');
+    const numsG = document.getElementById('nums');
+    const cx = 100, cy = 100;
+    const a0 = -119, a1 = 119, MAX = 8, RED = 6.5;
+    const angleFor = (v) => (a0 + (a1 - a0) * (v / MAX)) * Math.PI / 180;
+    const pt = (ang, r) => [cx + Math.sin(ang) * r, cy - Math.cos(ang) * r];
+    let t = '';
+    for (let v = 0; v <= MAX * 4; v++) {          // quarter-steps
+      const val = v / 4;
+      const ang = angleFor(val);
+      const major = v % 4 === 0;
+      const half = v % 2 === 0;
+      const rOut = 88, rIn = major ? 76 : half ? 80.5 : 83.5;
+      const [x1, y1] = pt(ang, rOut), [x2, y2] = pt(ang, rIn);
+      const red = val >= RED;
+      t += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"
+             stroke="${red ? '#e05038' : '#e8e2d8'}" stroke-width="${major ? 2.4 : 1.1}" />`;
+    }
+    ticksG.innerHTML = t;
+    let n = '';
+    for (let v = 0; v <= MAX; v++) {
+      const ang = angleFor(v);
+      const [x, y] = pt(ang, 65);
+      const red = v >= RED;
+      n += `<text x="${x.toFixed(1)}" y="${(y + 4.5).toFixed(1)}" text-anchor="middle"
+            fill="${red ? '#ff6a4a' : '#e8e2d8'}" font-size="13"
+            style="font-family:'Bebas Neue',sans-serif">${v}</text>`;
+    }
+    numsG.innerHTML = n;
+    // red zone arc
+    const rz = document.getElementById('redzone');
+    const rA = angleFor(RED), rB = angleFor(MAX);
+    const [sx, sy] = pt(rA, 91.5), [ex, ey] = pt(rB, 91.5);
+    rz.setAttribute('d', `M ${sx.toFixed(1)} ${sy.toFixed(1)} A 91.5 91.5 0 0 1 ${ex.toFixed(1)} ${ey.toFixed(1)}`);
+  })();
+
+  // ── behaviour ──
+  const section = document.getElementById('section');
+  const tach = document.getElementById('tach');
+  const email = document.getElementById('email');
+  const getit = document.getElementById('getit');
+  const err = document.getElementById('err');
+  const sentto = document.getElementById('sentto');
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+  function redline() {
+    // production: POST /download/register {email, plugin:'revlimiter'} here,
+    // redline on {ok:true}. Bench mocks it.
+    sentto.textContent = email.value.trim();
+    email.disabled = true;
+    getit.disabled = true;
+    tach.classList.add('redlined');
+    section.classList.add('issued-copy');
+    err.textContent = '';
+    // needle reaches the limiter → hold-tremble takes over
+    setTimeout(() => tach.classList.add('holding'), 1200);
+  }
+
+  getit.addEventListener('click', () => {
+    const v = email.value.trim();
+    if (!EMAIL_RE.test(v)) {
+      err.textContent = 'The meter needs a real email to start.';
+      tach.classList.remove('cough');
+      void tach.offsetWidth;
+      tach.classList.add('cough');
+      email.focus();
+      return;
+    }
+    getit.classList.add('pressed');
+    setTimeout(() => { getit.classList.remove('pressed'); redline(); }, 120);
+  });
+
+  email.addEventListener('keydown', (e) => { if (e.key === 'Enter') getit.click(); });
+
+  document.getElementById('reset').addEventListener('click', () => {
+    email.disabled = false; getit.disabled = false; email.value = '';
+    tach.classList.remove('redlined', 'holding', 'cough');
+    section.classList.remove('issued-copy');
+    err.textContent = '';
+  });
+  document.getElementById('force').addEventListener('click', () => {
+    if (!email.value) email.value = 'dan@revaudio.net';
+    redline();
+  });
+</script>
+
+</body>
+</html>
