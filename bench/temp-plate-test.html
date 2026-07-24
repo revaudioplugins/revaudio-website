@@ -93,6 +93,17 @@
     container-type: inline-size;
   }
 
+  /* idle sway — the tag hangs loose until the screws go in, then sits dead
+     still (mounted). Lives on the WRAP so it never fights the plate's own
+     shake/mount transforms. */
+  @media (prefers-reduced-motion: no-preference) {
+    .plate-wrap:not(.issued) { animation: plate-sway 7s ease-in-out infinite; transform-origin: 50% -30%; }
+  }
+  @keyframes plate-sway {
+    0%, 100% { transform: rotate(0.35deg); }
+    50% { transform: rotate(-0.35deg); }
+  }
+
   .plate {
     position: relative;
     width: 100%;
@@ -131,7 +142,8 @@
     letter-spacing: 0.2em;
     text-transform: uppercase;
     color: #2a2314;
-    font-size: clamp(0.45rem, 1.75cqw, 0.72rem);
+    font-size: clamp(0.32rem, 1.75cqw, 0.72rem);  /* min low enough to clear
+                                                     the eyelets on phones */
     opacity: 0.82;
   }
   .plate-strip--top { top: 9.8%; }
@@ -154,8 +166,10 @@
     text-shadow: 0 1px 0 rgba(255,255,255,0.4);
     padding: 0 0 0.1em;
     outline: none;
+    caret-color: #8c2014;   /* the clerk's red pen */
   }
-  .plate-email::placeholder { color: rgba(42,35,20,0.32); }
+  /* ghost graphite, not embossed chrome — the ink shadow is for TYPED text */
+  .plate-email::placeholder { color: rgba(42,35,20,0.3); text-shadow: none; }
   .plate-email:focus { border-bottom-color: rgba(160, 40, 20, 0.55); }
 
   /* mounting screws — the real brass screw art, spun into the baked eyelets */
@@ -187,10 +201,10 @@
   /* PLATES ISSUED stamp */
   .stamp-issued {
     position: absolute;
-    left: 50%; top: 60%;
+    left: 50%; top: 66%;
     transform: translate(-50%, -50%) rotate(-9deg) scale(3);
     font-family: var(--font-display);
-    font-size: clamp(1.6rem, 8cqw, 3rem);
+    font-size: clamp(1.3rem, 6.4cqw, 2.4rem);
     letter-spacing: 0.12em;
     color: #b02818;
     border: 4px solid #b02818;
@@ -248,12 +262,15 @@
     left: 4%; right: 4%; top: 0;
     border-top: 2px dashed rgba(42, 35, 20, 0.45);
   }
-  /* paper grain continues onto the stub */
+  /* paper grain + the SAME night-multiply the plate wears — without the tint
+     the stub glows brighter than the tag and reads pasted-on, not torn-from */
   .mount-stub::after {
     content: '';
     position: absolute; inset: 0;
     border-radius: inherit;
-    background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='3'/><feColorMatrix type='matrix' values='0 0 0 0 0.2 0 0 0 0 0.15 0 0 0 0 0.05 0 0 0 0.07 0'/></filter><rect width='120' height='120' filter='url(%23g)'/></svg>") 0 0 / 120px 120px repeat;
+    background:
+      linear-gradient(rgba(42, 35, 24, 0.42), rgba(42, 35, 24, 0.42)),
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='3'/><feColorMatrix type='matrix' values='0 0 0 0 0.2 0 0 0 0 0.15 0 0 0 0 0.05 0 0 0 0.07 0'/></filter><rect width='120' height='120' filter='url(%23g)'/></svg>") 0 0 / 120px 120px repeat;
     mix-blend-mode: multiply;
     pointer-events: none;
   }
