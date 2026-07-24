@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>RevAudio — Studio Bench (Canva × Figma)</title>
+<style>
+  :root { --gold: #c9a35c; --gold-hi: #e8c878; --bg: #0b0a09; --panel: rgba(20,17,15,.97);
+          --line: #3d342c; --txt: #efe9df; --dim: #8a8275; --snap: #ff4fd8; }
+  html, body { margin: 0; height: 100%; background: var(--bg); font-family: Consolas, monospace; overflow: hidden; }
+
+  /* ── toolbar (Canva-style top bar) ── */
+  #bar { position: fixed; top: 0; left: 0; right: 0; height: 44px; z-index: 10000;
+         background: var(--panel); border-bottom: 1px solid var(--gold);
+         display: flex; align-items: center; gap: 8px; padding: 0 12px; color: var(--txt); }
+  #bar .title { color: var(--gold-hi); font-weight: bold; letter-spacing: .1em; font-size: 13px; margin-right: 8px; }
+  #bar button { background: transparent; color: var(--gold); border: 1px solid var(--gold);
+                font-family: inherit; font-size: 11px; font-weight: bold; letter-spacing: .05em;
+                padding: 5px 12px; border-radius: 6px; cursor: pointer; }
+  #bar button:hover { background: var(--gold); color: var(--bg); }
+  #bar button.primary { background: var(--gold); color: var(--bg); }
+  #bar button.primary:hover { background: var(--gold-hi); }
+  #bar .flag { font-size: 10px; padding: 2px 8px; border-radius: 10px; }
+  #bar .flag.on { background: #7bbf6a; color: var(--bg); }
+  #bar .flag.off { background: var(--line); color: var(--dim); }
+  #bar .spacer { flex: 1; }
+  #bar .hint { color: var(--dim); font-size: 10px; }
+  #out { color: var(--dim); font-size: 10px; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  #stage { position: absolute; top: 44px; left: 0; right: 0; bottom: 0; }
+  #site { display: block; width: 100%; height: 100%; border: 0; }
+  #overlay { position: absolute; inset: 0; pointer-events: none; z-index: 10; }
+
+  /* ── layers panel (Figma-style, left) ── */
+  #layers { position: fixed; top: 56px; left: 12px; z-index: 9999; width: 210px;
+            background: var(--panel); border: 1px solid var(--gold); border-radius: 10px;
+            color: var(--txt); font-size: 11px; max-height: calc(100vh - 76px);
+            display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,.6); }
+  #layers h3 { margin: 0; padding: 9px 12px 7px; font-size: 12px; color: var(--gold-hi); letter-spacing: .08em;
+               border-bottom: 1px solid var(--line); cursor: pointer; user-select: none; }
+  #layers h3 .min { float: right; color: var(--dim); }
+  #ltree { overflow-y: auto; padding: 4px 0 8px; }
+  .lrow { padding: 4px 12px; cursor: pointer; color: #b7ad9c; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lrow:hover { background: rgba(201,163,92,.12); color: var(--txt); }
+  .lrow.active { background: rgba(201,163,92,.22); color: var(--gold-hi); }
+  .lrow.child { padding-left: 26px; }
+  .lrow .badge { color: var(--snap); margin-left: 5px; }
+  .lrow .hid { color: #d06a5a; margin-left: 5px; }
+
+  /* ── properties panel (Figma-style, right) ── */
+  #props { position: fixed; top: 56px; right: 12px; z-index: 9999; width: 250px;
+           background: var(--panel); border: 1px solid var(--gold); border-radius: 10px;
+           padding: 12px 14px; color: var(--txt); font-size: 11px;
+           max-height: calc(100vh - 76px); overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,.6); }
+  #props h3 { margin: 0 0 8px; font-size: 12px; color: var(--gold-hi); letter-spacing: .08em; }
+  .selpath { color: var(--gold-hi); font-weight: bold; word-break: break-all; line-height: 1.5; }
+  .lvl { color: var(--dim); font-size: 10px; margin: 2px 0 8px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px; }
+  .field { display: flex; align-items: center; background: #17130f; border: 1px solid var(--line);
+           border-radius: 5px; padding: 3px 6px; }
+  .field b { color: var(--dim); font-size: 10px; width: 14px; }
+  .field input { flex: 1; width: 100%; background: transparent; border: 0; color: var(--gold-hi);
+                 font-family: inherit; font-size: 11px; outline: none; text-align: right; }
+  .empty { color: #6b6459; font-style: italic; }
+  .sect { border-top: 1px solid var(--line); margin-top: 10px; padding-top: 8px; }
+  .sect h4 { margin: 0 0 6px; color: var(--gold); font-size: 11px; letter-spacing: .06em; }
+  .item { color: #b7ad9c; padding: 4px 0; border-bottom: 1px dotted #2a241e; line-height: 1.5; word-break: break-all; }
+  .item .k { color: var(--gold-hi); }
+  .kbds { color: var(--dim); font-size: 10px; line-height: 1.8; margin-top: 8px; }
+  kbd { background: var(--line); border-radius: 3px; padding: 0 4px; color: var(--gold-hi); font-size: 10px; }
+
+  /* ── canvas chrome ── */
+  .hl  { position: absolute; border: 1px dashed rgba(201,163,92,.6); pointer-events: none; box-sizing: border-box; }
+  .sel { position: absolute; border: 1.5px solid var(--gold-hi); box-sizing: border-box; pointer-events: none;
+         box-shadow: 0 0 0 1px rgba(0,0,0,.5), 0 0 18px rgba(232,200,120,.3); }
+  .sel .tag { position: absolute; top: -20px; left: -1.5px; background: var(--gold-hi); color: var(--bg);
+              font: 11px/16px Consolas, monospace; padding: 1px 6px; border-radius: 3px 3px 0 0; white-space: nowrap; }
+  .movepad { position: absolute; inset: 0; cursor: move; pointer-events: auto; z-index: 11; }
+  .h { position: absolute; width: 11px; height: 11px; background: var(--gold-hi); border: 1px solid var(--bg);
+       border-radius: 2px; pointer-events: auto; z-index: 12; }
+  .h.nw{cursor:nwse-resize}.h.ne{cursor:nesw-resize}.h.sw{cursor:nesw-resize}.h.se{cursor:nwse-resize}
+  .h.n{cursor:ns-resize}.h.s{cursor:ns-resize}.h.e{cursor:ew-resize}.h.w{cursor:ew-resize}
+  .guide { position: absolute; background: var(--snap); pointer-events: none; z-index: 13; }
+  .guide.v { width: 1px; top: 0; bottom: 0; }
+  .guide.h { height: 1px; left: 0; right: 0; }
+</style>
+</head>
+<body>
+<div id="bar">
+  <span class="title">REV STUDIO</span>
+  <button id="toggle">PAUSE</button>
+  <span class="flag on" id="modeflag">EDIT</span>
+  <button id="undo">UNDO</button>
+  <button id="reset-sel">RESET SEL</button>
+  <button id="reset-all">RESET ALL</button>
+  <span class="spacer"></span>
+  <span id="out"></span>
+  <button class="primary" id="copy">COPY FOR CLAUDE</button>
+</div>
+
+<div id="stage">
+  <iframe id="site" src="/"></iframe>
+  <div id="overlay"></div>
+</div>
+
+<div id="layers">
+  <h3 id="lhead">LAYERS <span class="min" id="lmin">—</span></h3>
+  <div id="ltree"></div>
+</div>
+
+<div id="props">
+  <h3>PROPERTIES</h3>
+  <div id="pbody"><div class="empty">Click anything — you get the whole component as one group.</div></div>
+  <div class="sect">
+    <h4>CHANGES</h4>
+    <div id="loglist"><div class="empty">No changes yet.</div></div>
+  </div>
+  <div class="kbds">
+    <kbd>click</kbd> select group · <kbd>dbl-click</kbd> enter group<br>
+    <kbd>Esc</kbd> up a level · <kbd>←↑↓→</kbd> nudge (<kbd>⇧</kbd>=10px)<br>
+    <kbd>Del</kbd> hide · <kbd>⌘Z</kbd> undo
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const site = $('site'), overlay = $('overlay');
+let doc = null, win = null;
+
+let editMode = true;
+let selected = null;
+let hoverBox = null, selBox = null;
+const edits = new Map();      // el -> {dx,dy,dw,dh,sizedOnce,hidden,baseRect}
+const undoStack = [];
+const SNAP = 6;
+
+/* ── what counts as "one element" (a group) ── */
+const GROUP_SEL = [
+  'header','footer','nav','section','main > *','aside','figure','picture','form','ul','table',
+  '[id]','[class*="hero"]','[class*="gauge"]','[class*="dial"]','[class*="card"]','[class*="sign"]',
+  '[class*="strip"]','[class*="press"]','[class*="quote"]','[class*="testimonial"]','[class*="signup"]',
+  '[class*="logo"]','[class*="cta"]','[class*="badge"]','[class*="grid"]','[class*="head"]','[class*="popup"]'
+].join(',');
+
+function isGroup(el) { try { return el.matches(GROUP_SEL); } catch { return false; } }
+
+/* chain of groups from outermost → click target */
+function groupChain(target) {
+  const anc = []; let n = target;
+  while (n && n !== doc.body && n !== doc.documentElement) { anc.unshift(n); n = n.parentElement; }
+  const groups = anc.filter(isGroup);
+  if (!groups.length || groups[groups.length - 1] !== target) groups.push(target);
+  return groups;
+}
+/* what a click at this target should select, honoring drill depth */
+function pickForClick(target) {
+  const chain = groupChain(target);
+  if (selected && selected.contains(target) && chain.includes(selected)) return selected;
+  return chain[0];
+}
+function drillInto(target) {
+  const chain = groupChain(target);
+  if (!selected) return chain[0];
+  const i = chain.indexOf(selected);
+  if (i === -1) return chain[0];               // unrelated subtree: start at its top group
+  return i < chain.length - 1 ? chain[i + 1] : chain[chain.length - 1];
+}
+function levelUp() {
+  if (!selected) return null;
+  let n = selected.parentElement;
+  while (n && n !== doc.body && !isGroup(n)) n = n.parentElement;
+  return (n && n !== doc.body) ? n : null;
+}
+
+/* ── naming ── */
+function label(el) {
+  if (!el || el.nodeType !== 1) return '';
+  if (el.id) return '#' + el.id;
+  const cls = (typeof el.className === 'string')
+    ? el.className.trim().split(/\s+/).filter(c => !c.startsWith('astro-')).slice(0, 2) : [];
+  return el.tagName.toLowerCase() + (cls.length ? '.' + cls.join('.') : '');
+}
+function cssPath(el) {
+  const parts = []; let n = el;
+  while (n && n !== doc.body && parts.length < 4) {
+    let seg = label(n);
+    if (n.parentElement && !n.id) {
+      const sibs = [...n.parentElement.children].filter(c => c.tagName === n.tagName);
+      if (sibs.length > 1) seg += `:nth-of-type(${sibs.indexOf(n) + 1})`;
+    }
+    parts.unshift(seg);
+    if (n.id) break;
+    n = n.parentElement;
+  }
+  return parts.join(' > ');
+}
+
+/* ── edits ── */
+function ensureEdit(el) {
+  if (!edits.has(el)) {
+    const r = el.getBoundingClientRect();
+    edits.set(el, { dx: 0, dy: 0, dw: 0, dh: 0, sizedOnce: false, hidden: false,
+                    baseRect: { width: r.width, height: r.height } });
+  }
+  return edits.get(el);
+}
+function applyEdit(el) {
+  const e = edits.get(el); if (!e) return;
+  if (e.hidden) { el.style.setProperty('display', 'none', 'important'); return; }
+  el.style.removeProperty('display');
+  el.style.setProperty('transform', `translate(${e.dx}px, ${e.dy}px)`, 'important');
+  if (e.sizedOnce) {
+    el.style.setProperty('width',  Math.round(e.baseRect.width  + e.dw) + 'px', 'important');
+    el.style.setProperty('height', Math.round(e.baseRect.height + e.dh) + 'px', 'important');
+    el.style.setProperty('box-sizing', 'border-box', 'important');
+  }
+}
+function clearElStyles(el) {
+  ['transform','width','height','display','box-sizing'].forEach(p => el.style.removeProperty(p));
+}
+function isReal(e) { return e.hidden || e.dx || e.dy || (e.sizedOnce && (e.dw || e.dh)); }
+
+/* ── undo ── */
+function pushUndo() {
+  const snap = [...edits.entries()].map(([el, e]) => [el, { ...e, baseRect: { ...e.baseRect } }]);
+  undoStack.push(snap);
+  if (undoStack.length > 40) undoStack.shift();
+}
+function doUndo() {
+  if (!undoStack.length) return;
+  const snap = undoStack.pop();
+  edits.forEach((_, el) => clearElStyles(el));
+  edits.clear();
+  for (const [el, e] of snap) { edits.set(el, e); applyEdit(el); }
+  refresh(); renderAll();
+}
+
+/* ── overlay drawing ── */
+function rectOf(el) { const r = el.getBoundingClientRect(); return { left: r.left, top: r.top, width: r.width, height: r.height }; }
+function clearOverlay() { overlay.innerHTML = ''; hoverBox = null; selBox = null; }
+function drawHover(el) {
+  if (!editMode) return;
+  if (!hoverBox) { hoverBox = document.createElement('div'); hoverBox.className = 'hl'; overlay.appendChild(hoverBox); }
+  const r = rectOf(el);
+  Object.assign(hoverBox.style, { left: r.left+'px', top: r.top+'px', width: r.width+'px', height: r.height+'px', display: 'block' });
+}
+function hideHover() { if (hoverBox) hoverBox.style.display = 'none'; }
+function drawSelection() {
+  if (!selected) return;
+  const r = rectOf(selected);
+  if (!selBox) {
+    selBox = document.createElement('div'); selBox.className = 'sel';
+    selBox.innerHTML = '<div class="tag"></div><div class="movepad"></div>' +
+      ['nw','n','ne','e','se','s','sw','w'].map(p => `<div class="h ${p}" data-pos="${p}"></div>`).join('');
+    overlay.appendChild(selBox);
+    attachDragHandlers();
+  }
+  Object.assign(selBox.style, { left: r.left+'px', top: r.top+'px', width: r.width+'px', height: r.height+'px', display: editMode ? '' : 'none' });
+  selBox.querySelector('.tag').textContent = label(selected);
+  const map = { nw:[0,0], n:[.5,0], ne:[1,0], e:[1,.5], se:[1,1], s:[.5,1], sw:[0,1], w:[0,.5] };
+  selBox.querySelectorAll('.h').forEach(h => {
+    const [fx,fy] = map[h.dataset.pos];
+    h.style.left = `calc(${fx*100}% - 5.5px)`; h.style.top = `calc(${fy*100}% - 5.5px)`;
+  });
+}
+function refresh() { if (selected) drawSelection(); }
+
+/* ── snap guides (Canva-style magenta lines) ── */
+let guides = [];
+function clearGuides() { guides.forEach(g => g.remove()); guides = []; }
+function drawGuide(axis, pos) {
+  const g = document.createElement('div');
+  g.className = 'guide ' + axis;
+  if (axis === 'v') g.style.left = pos + 'px'; else g.style.top = pos + 'px';
+  overlay.appendChild(g); guides.push(g);
+}
+let snapTargets = null;
+function collectSnapTargets() {
+  const vw = win.innerWidth, vh = win.innerHeight;
+  const xs = [vw / 2], ys = [vh / 2];
+  const parent = selected.parentElement;
+  if (parent && parent !== doc.body) {
+    const pr = parent.getBoundingClientRect();
+    xs.push(pr.left, pr.left + pr.width / 2, pr.right);
+    ys.push(pr.top, pr.top + pr.height / 2, pr.bottom);
+    [...parent.children].forEach(sib => {
+      if (sib === selected) return;
+      const sr = sib.getBoundingClientRect();
+      if (!sr.width && !sr.height) return;
+      xs.push(sr.left, sr.left + sr.width / 2, sr.right);
+      ys.push(sr.top, sr.top + sr.height / 2, sr.bottom);
+    });
+  }
+  snapTargets = { xs, ys };
+}
+function applySnap(e) {
+  clearGuides();
+  if (!snapTargets) return;
+  const r = selected.getBoundingClientRect();
+  const candX = [r.left, r.left + r.width / 2, r.right];
+  const candY = [r.top, r.top + r.height / 2, r.bottom];
+  let bestX = null, bestY = null;
+  for (const t of snapTargets.xs) for (const c of candX) {
+    const d = t - c; if (Math.abs(d) <= SNAP && (!bestX || Math.abs(d) < Math.abs(bestX.d))) bestX = { d, t };
+  }
+  for (const t of snapTargets.ys) for (const c of candY) {
+    const d = t - c; if (Math.abs(d) <= SNAP && (!bestY || Math.abs(d) < Math.abs(bestY.d))) bestY = { d, t };
+  }
+  if (bestX) { e.dx += bestX.d; drawGuide('v', bestX.t); }
+  if (bestY) { e.dy += bestY.d; drawGuide('h', bestY.t); }
+}
+
+/* ── selection & interaction ── */
+function select(el) {
+  if (!el || el === doc.body || el === doc.documentElement) return;
+  selected = el;
+  if (selBox) { selBox.remove(); selBox = null; }
+  drawSelection(); renderAll();
+}
+function deselect() { selected = null; if (selBox) { selBox.remove(); selBox = null; } renderAll(); }
+
+let interact = null;
+function attachDragHandlers() {
+  const pad = selBox.querySelector('.movepad');
+  pad.addEventListener('pointerdown', ev => startInteract(ev, 'move'));
+  pad.addEventListener('dblclick', ev => {
+    ev.preventDefault();
+    const fr = site.getBoundingClientRect();
+    const el = doc.elementFromPoint(ev.clientX - fr.left, ev.clientY - fr.top);
+    if (el) select(drillInto(el));
+  });
+  selBox.querySelectorAll('.h').forEach(h =>
+    h.addEventListener('pointerdown', ev => startInteract(ev, 'resize', h.dataset.pos)));
+}
+function startInteract(ev, kind, pos) {
+  ev.preventDefault(); ev.stopPropagation();
+  if (!selected) return;
+  try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch {}
+  pushUndo();
+  const e = ensureEdit(selected);
+  interact = { kind, pos, startX: ev.clientX, startY: ev.clientY, moved: false,
+               dx0: e.dx, dy0: e.dy, dw0: e.dw, dh0: e.dh };
+  if (kind === 'move') collectSnapTargets();
+  document.body.style.cursor = kind === 'move' ? 'move' : 'grabbing';
+}
+window.addEventListener('pointermove', ev => {
+  if (!interact || !selected) return;
+  const e = ensureEdit(selected);
+  const mdx = ev.clientX - interact.startX, mdy = ev.clientY - interact.startY;
+  if (Math.abs(mdx) + Math.abs(mdy) > 2) interact.moved = true;
+  if (interact.kind === 'move') {
+    e.dx = interact.dx0 + (ev.shiftKey && Math.abs(mdx) < Math.abs(mdy) ? 0 : mdx);
+    e.dy = interact.dy0 + (ev.shiftKey && Math.abs(mdy) <= Math.abs(mdx) ? 0 : mdy);
+    applyEdit(selected); applySnap(e); applyEdit(selected);
+  } else {
+    e.sizedOnce = true;
+    const p = interact.pos;
+    if (p.includes('e')) e.dw = interact.dw0 + mdx;
+    if (p.includes('w')) { e.dw = interact.dw0 - mdx; e.dx = interact.dx0 + mdx; }
+    if (p.includes('s')) e.dh = interact.dh0 + mdy;
+    if (p.includes('n')) { e.dh = interact.dh0 - mdy; e.dy = interact.dy0 + mdy; }
+    if (e.baseRect.width + e.dw < 20) e.dw = 20 - e.baseRect.width;
+    if (e.baseRect.height + e.dh < 20) e.dh = 20 - e.baseRect.height;
+    applyEdit(selected);
+  }
+  drawSelection(); renderProps();
+});
+window.addEventListener('pointerup', () => {
+  if (!interact) return;
+  const wasClick = !interact.moved && interact.kind === 'move';
+  interact = null; document.body.style.cursor = ''; clearGuides();
+  if (wasClick) undoStack.pop();          // pure click, nothing changed
+  renderAll();
+});
+
+/* ── iframe wiring ── */
+function wireIframe() {
+  doc = site.contentDocument; win = site.contentWindow;
+  clearOverlay(); selected = null; edits.clear(); undoStack.length = 0;
+  if (!doc) return;
+  win.addEventListener('scroll', refresh, { passive: true });
+  win.addEventListener('resize', refresh);
+  doc.addEventListener('mousemove', ev => {
+    if (!editMode || interact) return;
+    const t = ev.target;
+    if (t && t !== doc.body && t !== doc.documentElement) drawHover(pickForClick(t)); else hideHover();
+  }, true);
+  doc.addEventListener('click', ev => {
+    if (!editMode) return;
+    ev.preventDefault(); ev.stopPropagation();
+    select(pickForClick(ev.target));
+  }, true);
+  doc.addEventListener('dblclick', ev => {
+    if (!editMode) return;
+    ev.preventDefault(); ev.stopPropagation();
+    select(drillInto(ev.target));
+  }, true);
+  doc.addEventListener('submit', ev => { if (editMode) ev.preventDefault(); }, true);
+  doc.addEventListener('keydown', keys, true);
+  renderAll();
+  setTimeout(buildLayers, 400);           // let the page settle, then map layers
+}
+site.addEventListener('load', wireIframe);
+
+/* ── layers tree ── */
+function buildLayers() {
+  const tree = $('ltree'); tree.innerHTML = '';
+  if (!doc || !doc.body) return;
+  const tops = [];
+  [...doc.body.children].forEach(el => {
+    if (/^(SCRIPT|STYLE|LINK|TEMPLATE)$/.test(el.tagName)) return;
+    if (el.tagName === 'MAIN' || (el.tagName === 'DIV' && !label(el).includes('.'))) {
+      [...el.children].forEach(c => { if (!/^(SCRIPT|STYLE)$/.test(c.tagName)) tops.push(c); });
+    } else tops.push(el);
+  });
+  for (const top of tops) {
+    addLayerRow(tree, top, false);
+    [...top.children].filter(c => isGroup(c) || (typeof c.className === 'string' && c.className.trim()))
+      .slice(0, 12).forEach(c => addLayerRow(tree, c, true));
+  }
+}
+function addLayerRow(tree, el, child) {
+  const row = document.createElement('div');
+  row.className = 'lrow' + (child ? ' child' : '');
+  row.textContent = label(el);
+  row._el = el;
+  row.onclick = () => {
+    select(el);
+    const y = el.getBoundingClientRect().top + win.scrollY - 80;
+    win.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+  };
+  tree.appendChild(row);
+}
+function paintLayers() {
+  [...$('ltree').children].forEach(row => {
+    row.classList.toggle('active', row._el === selected);
+    const e = edits.get(row._el);
+    row.querySelectorAll('.badge,.hid').forEach(b => b.remove());
+    if (e && isReal(e)) {
+      const b = document.createElement('span');
+      b.className = e.hidden ? 'hid' : 'badge';
+      b.textContent = e.hidden ? '✕' : '●';
+      row.appendChild(b);
+    }
+  });
+}
+$('lhead').onclick = () => {
+  const t = $('ltree');
+  const hidden = t.style.display === 'none';
+  t.style.display = hidden ? '' : 'none';
+  $('lmin').textContent = hidden ? '—' : '+';
+};
+
+/* ── properties panel (Figma numbers) ── */
+function renderProps() {
+  const box = $('pbody');
+  if (!selected) { box.innerHTML = '<div class="empty">Click anything — you get the whole component as one group.</div>'; return; }
+  const r = selected.getBoundingClientRect();
+  const X = Math.round(r.left + win.scrollX), Y = Math.round(r.top + win.scrollY);
+  const W = Math.round(r.width), H = Math.round(r.height);
+  // live-update existing fields instead of rebuilding while dragging or typing
+  const focusedId = document.activeElement && document.activeElement.id;
+  if ($('fX') && (interact || /^f[XYWH]$/.test(focusedId || ''))) {
+    const vals = { fX: X, fY: Y, fW: W, fH: H };
+    for (const id of ['fX','fY','fW','fH']) if (id !== focusedId) $(id).value = vals[id];
+    return;
+  }
+  const chain = groupChain(selected);
+  const depth = chain.indexOf(selected);
+  box.innerHTML =
+    `<div class="selpath">${cssPath(selected)}</div>` +
+    `<div class="lvl">group level ${depth + 1}/${chain.length} — dbl-click to go deeper, Esc to go up</div>` +
+    `<div class="grid2">
+       <div class="field"><b>X</b><input id="fX" value="${X}"></div>
+       <div class="field"><b>Y</b><input id="fY" value="${Y}"></div>
+       <div class="field"><b>W</b><input id="fW" value="${W}"></div>
+       <div class="field"><b>H</b><input id="fH" value="${H}"></div>
+     </div>`;
+  const commit = () => {
+    const nx = parseFloat($('fX').value), ny = parseFloat($('fY').value);
+    const nw = parseFloat($('fW').value), nh = parseFloat($('fH').value);
+    if ([nx,ny,nw,nh].some(isNaN)) return;
+    pushUndo();
+    const e = ensureEdit(selected);
+    const cur = selected.getBoundingClientRect();
+    e.dx += nx - Math.round(cur.left + win.scrollX);
+    e.dy += ny - Math.round(cur.top + win.scrollY);
+    if (nw !== Math.round(cur.width) || nh !== Math.round(cur.height)) {
+      e.sizedOnce = true;
+      e.dw = nw - e.baseRect.width;
+      e.dh = nh - e.baseRect.height;
+    }
+    applyEdit(selected); drawSelection(); renderAll();
+  };
+  ['fX','fY','fW','fH'].forEach(id => {
+    $(id).addEventListener('keydown', ev => { if (ev.key === 'Enter') commit(); ev.stopPropagation(); });
+    $(id).addEventListener('blur', commit);
+  });
+}
+
+/* ── changes log + copy ── */
+function editSummary(el, e) {
+  if (e.hidden) return 'hidden (display:none)';
+  const parts = [];
+  if (e.dx || e.dy) parts.push(`moved Δx ${Math.round(e.dx)}px, Δy ${Math.round(e.dy)}px`);
+  if (e.sizedOnce && (e.dw || e.dh))
+    parts.push(`resized to ${Math.round(e.baseRect.width + e.dw)}×${Math.round(e.baseRect.height + e.dh)}px (was ${Math.round(e.baseRect.width)}×${Math.round(e.baseRect.height)})`);
+  return parts.join(' · ') || 'no change';
+}
+function renderLog() {
+  const list = $('loglist');
+  const real = [...edits.entries()].filter(([, e]) => isReal(e));
+  list.innerHTML = real.length
+    ? real.map(([el, e]) => `<div class="item"><span class="k">${cssPath(el)}</span><br>${editSummary(el, e)}</div>`).join('')
+    : '<div class="empty">No changes yet.</div>';
+}
+function renderAll() { renderProps(); renderLog(); paintLayers(); }
+
+$('copy').onclick = () => {
+  const real = [...edits.entries()].filter(([, e]) => isReal(e));
+  if (!real.length) { $('out').textContent = 'no changes to copy'; return; }
+  const lines = real.map(([el, e]) => {
+    const r = el.getBoundingClientRect();
+    return `- ${cssPath(el)}: ${editSummary(el, e)} [final: x ${Math.round(r.left + win.scrollX)}, y ${Math.round(r.top + win.scrollY)}, ${Math.round(r.width)}×${Math.round(r.height)}px]`;
+  });
+  const txt = `STUDIO-BENCH CHANGES (viewport ${win.innerWidth}×${win.innerHeight}, dpr ${devicePixelRatio}):\n` + lines.join('\n');
+  navigator.clipboard.writeText(txt);
+  $('out').textContent = `copied ${real.length} change(s) — paste to Claude`;
+};
+
+/* ── toolbar ── */
+function setMode(on) {
+  editMode = on;
+  $('modeflag').textContent = on ? 'EDIT' : 'BROWSE';
+  $('modeflag').className = 'flag ' + (on ? 'on' : 'off');
+  $('toggle').textContent = on ? 'PAUSE' : 'EDIT';
+  if (!on) { hideHover(); if (selBox) selBox.style.display = 'none'; }
+  else refresh();
+}
+$('toggle').onclick = () => setMode(!editMode);
+$('undo').onclick = doUndo;
+$('reset-sel').onclick = () => {
+  if (!selected) return;
+  pushUndo(); clearElStyles(selected); edits.delete(selected);
+  drawSelection(); renderAll();
+};
+$('reset-all').onclick = () => {
+  pushUndo();
+  edits.forEach((_, el) => clearElStyles(el));
+  edits.clear(); deselect();
+};
+
+/* ── keyboard (bench window + iframe) ── */
+function keys(ev) {
+  if (ev.target && /INPUT|TEXTAREA/.test(ev.target.tagName)) return;
+  if ((ev.metaKey || ev.ctrlKey) && ev.key.toLowerCase() === 'z') { ev.preventDefault(); doUndo(); return; }
+  if (ev.key === 'Escape') {
+    const up = levelUp();
+    up ? select(up) : deselect();
+    return;
+  }
+  if (!selected) return;
+  if (ev.key === 'Delete' || ev.key === 'Backspace') {
+    ev.preventDefault(); pushUndo();
+    ensureEdit(selected).hidden = true; applyEdit(selected);
+    deselect(); return;
+  }
+  const step = ev.shiftKey ? 10 : 1;
+  const arrows = { ArrowLeft: [-step,0], ArrowRight: [step,0], ArrowUp: [0,-step], ArrowDown: [0,step] };
+  if (arrows[ev.key]) {
+    ev.preventDefault();
+    const e = ensureEdit(selected);
+    e.dx += arrows[ev.key][0]; e.dy += arrows[ev.key][1];
+    applyEdit(selected); drawSelection(); renderAll();
+  }
+}
+window.addEventListener('keydown', keys);
+
+setMode(true);
+</script>
+</body>
+</html>

@@ -1,0 +1,526 @@
+---
+/* TrialPlates — the on-page trial email capture, styled as a temporary
+   license plate (bench: bench/temp-plate-test.html, picked 2026-07-24).
+   The visitor writes their email ON the paper tag (the registration line),
+   hits the big red 3D GET IT button, and the plate gets stamped + screwed
+   to the page while the verification email rides out.
+
+   Backend: POST {origin of plugin.trialUrl}/download/register
+   {email, plugin} — the same email-gate the download portal uses, so the
+   verify link in the inbox unlocks the portal exactly as before. The worker
+   must serve CORS on that route for revaudio.net (see gumroad-worker
+   src/worker.js, DLREG_CORS). If the request can't get through, the error
+   line offers the portal link as a fallback — nobody dead-ends.
+
+   Art: true-alpha photoreal assets (nano_banana_pro + bg removal,
+   2026-07-24) with LIVE text over blank paper — house recipe, no baked
+   type. The tag dangles on an idle sway until the screws go in, then sits
+   dead still (mounted). GET IT is a pure-CSS 3D button per the style
+   bible: soft-plastic face riding an extruded base, fast press-in,
+   spring-back release.
+
+   Conversion events (fbq StartTrial + Google Ads) fire HERE on a
+   successful register — not on the stamp click — so the count means
+   "left an email", not "scrolled to the form". */
+import type { Plugin } from '../data/plugins';
+import plateImg from '../assets/ui/plate-temp-tag.png';
+import screwImg from '../assets/ui/screw-brass.png';
+
+interface Props {
+  plugin: Plugin;
+}
+
+const { plugin } = Astro.props;
+const registerUrl = new URL(plugin.trialUrl!).origin + '/download/register';
+---
+
+<section
+  class="trial-plates"
+  id="trial"
+  data-trial-plates
+  data-register-url={registerUrl}
+  data-plugin-id={plugin.slug}
+  data-portal-url={plugin.trialUrl}
+  style={`--plate-url:url(${plateImg.src});`}
+>
+  <p class="kicker">Fresh off the lot</p>
+  <h2 data-split>Take it for a 14-day drive</h2>
+  <p class="sub" data-tp-before>
+    <b>Full version.</b> Every control live. Nothing locked.
+  </p>
+  <p class="sub" data-tp-after hidden>
+    Plates issued. <b>Check your inbox</b> — your download link is on its way.
+  </p>
+
+  <form class="plate-wrap" data-tp-wrap novalidate>
+    <div class="sway">
+      <div class="plate" data-tp-plate>
+        <div class="plate-strip plate-strip--top">
+          <span class="s-full">Temporary &nbsp;&middot;&nbsp; {plugin.name} &nbsp;&middot;&nbsp; trial</span><span class="s-short">Temporary &middot; trial</span>
+        </div>
+        <input
+          class="plate-email"
+          data-tp-email
+          type="email"
+          inputmode="email"
+          autocomplete="email"
+          enterkeyhint="go"
+          spellcheck="false"
+          placeholder="your@email.com"
+          aria-label="Your email — we send the download link here"
+        >
+        <div class="plate-fields" aria-hidden="true">Issued by: Revaudio garage &middot; Model: {plugin.name} &middot; Term: 14 days</div>
+        <div class="plate-strip plate-strip--bot">
+          <span class="s-full">Valid 14 days from first start &middot; full version</span><span class="s-short">14 days &middot; full version</span>
+        </div>
+        <span class="screw screw--l" style={`background-image:url(${screwImg.src});`}></span>
+        <span class="screw screw--r" style={`background-image:url(${screwImg.src});`}></span>
+        <div class="stamp-issued">Plates issued</div>
+      </div>
+    </div>
+    <span class="nail" style={`background-image:url(${screwImg.src});`} aria-hidden="true"></span>
+    <p class="err" data-tp-err role="alert" aria-live="polite"></p>
+    <button class="get-btn" data-tp-submit type="submit" aria-label="Get it — send my download link">
+      <span class="face" data-tp-face>Get it <span class="arr">&#9656;</span></span>
+    </button>
+    <p class="after-note" data-tp-after hidden>Plates on file &mdash; check your inbox</p>
+  </form>
+
+  <p class="micro" data-tp-before>No credit card &middot; the download link lands in your inbox</p>
+  <p class="micro" data-tp-after hidden>Sent to <b data-tp-sentto></b> &middot; the link is good for 24 hours</p>
+  <p class="micro" data-tp-after hidden>Wrong address or nothing landed? <a href={plugin.trialUrl}>Open the download page</a></p>
+  <span class="sr-status" role="status" data-tp-status></span>
+</section>
+
+<style>
+  .trial-plates {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: clamp(3.5rem, 8vw, 6rem) 1.25rem clamp(3rem, 7vw, 5rem);
+    text-align: center;
+  }
+
+  /* global.css caps p at 64ch flush-left — inside this centered column that
+     knocks every text line ~100px off the plate's axis. One axis, everything. */
+  .trial-plates p { max-width: none; }
+
+  .kicker {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--fg-faint);
+    margin: 0 0 0.8rem;
+  }
+
+  .trial-plates h2 {
+    font-family: var(--font-display);
+    font-size: clamp(2.1rem, 6vw, 3.2rem);
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    color: var(--brass-bright);
+    margin: 0 0 0.5rem;
+    text-transform: uppercase;
+  }
+
+  .sub { color: var(--fg-dim); font-size: 1rem; margin: 0 0 2.75rem; }
+  .sub b { color: var(--fg); font-weight: 600; }
+
+  /* ── THE PLATE — the real paper tag art; live ink over blank regions ── */
+  .plate-wrap {
+    position: relative;
+    display: inline-block;
+    width: min(560px, 100%);
+    margin: 0;
+    padding: 1.1rem 0 0;   /* headroom for the hang nail */
+    border: 0;
+    container-type: inline-size;
+  }
+
+  /* the hang nail — what the paper dangles FROM until the screws mount it.
+     Same brass hardware as the screws; head renders over the paper's top
+     edge so the tag reads as punched onto it. */
+  .nail {
+    position: absolute;
+    left: 50%;
+    top: 0.35rem;
+    width: clamp(20px, 5cqw, 28px);
+    aspect-ratio: 1;
+    transform: translateX(-50%);
+    background-position: center;
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55));
+    pointer-events: none;
+  }
+
+  /* idle sway — the tag hangs loose until the screws go in, then sits dead
+     still (mounted). Pivot = the nail (top-center), amplitude high enough to
+     actually read as dangling paper. Lives on a dedicated .sway layer so it
+     fights neither the plate's shake/mount transforms nor the GET IT button
+     below (the paper dangles; the control does not). */
+  @media (prefers-reduced-motion: no-preference) {
+    .plate-wrap:not(.issued) .sway { animation: plate-sway 5.5s ease-in-out infinite; transform-origin: 50% 0; }
+  }
+  @keyframes plate-sway {
+    0%, 100% { transform: rotate(1deg); }
+    50% { transform: rotate(-1deg); }
+  }
+
+  .plate {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 2176 / 1373;
+    background: var(--plate-url) center / 100% 100% no-repeat;
+    filter: drop-shadow(0 18px 34px rgba(0, 0, 0, 0.62));
+    transform: rotate(-1.4deg);
+  }
+
+  /* night-plate multiply — the raw scan is bright daylight paper; pull it
+     down toward the page's dark metal like the trial stamp's B3 take,
+     masked to the art's alpha so the ragged edges keep their bite. */
+  .plate::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: #2a2318;
+    mix-blend-mode: multiply;
+    opacity: 0.42;
+    -webkit-mask-image: var(--plate-url);
+    -webkit-mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+            mask-image: var(--plate-url);
+            mask-size: 100% 100%;
+            mask-repeat: no-repeat;
+    pointer-events: none;
+  }
+
+  /* printed strips — letterpress ink on the paper bands */
+  .plate-strip {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #2a2314;
+    font-size: clamp(0.32rem, 1.75cqw, 0.72rem);  /* min low enough to clear
+                                                     the eyelets on phones */
+    opacity: 0.82;
+  }
+  .plate-strip--top { top: 9.8%; }
+  .plate-strip--bot { bottom: 11.6%; opacity: 0.6; letter-spacing: 0.14em; }
+  .s-short { display: none; }
+
+  /* faux document fields — print the dead paper below the registration line
+     so the tag reads as a real record (and the ISSUED stamp lands on
+     paperwork, not on a void). */
+  .plate-fields {
+    position: absolute;
+    left: 12%; right: 12%;
+    top: 63%;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #2a2314;
+    font-size: clamp(0.3rem, 1.5cqw, 0.62rem);
+    opacity: 0.38;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  /* the registration line = the email field — visual center of the paper */
+  .plate-email {
+    position: absolute;
+    left: 11%; right: 11%;
+    top: 44%;
+    padding-block: 0.18em;   /* tap target beyond the glyph height */
+    background: transparent;
+    border: 0;
+    border-bottom: 3px dashed rgba(42, 35, 20, 0.32);
+    border-radius: 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 7.4cqw, 2.8rem);
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    text-align: center;
+    color: #241f12;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+    outline: none;
+    caret-color: #8c2014;   /* the clerk's red pen */
+  }
+  /* ghost graphite, not embossed chrome — the ink shadow is for TYPED text */
+  .plate-email::placeholder { color: rgba(42, 35, 20, 0.3); text-shadow: none; }
+  .plate-email:focus { border-bottom-color: rgba(160, 40, 20, 0.55); }
+
+  /* mounting screws — the real brass screw art, spun into the baked eyelets */
+  .screw {
+    position: absolute;
+    width: 5.4%;
+    aspect-ratio: 1;
+    background-position: center;
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55));
+    opacity: 0;
+    transform: scale(0.2) rotate(-540deg);
+    pointer-events: none;
+  }
+  .screw--l { left: 18.6%; top: 8%; }
+  .screw--r { right: 18.6%; top: 7.6%; }
+  .issued .screw {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+    transition: transform 0.55s cubic-bezier(0.2, 1.6, 0.4, 1), opacity 0.15s ease;
+  }
+  .issued .screw--r { transition-delay: 0.12s; }
+
+  @keyframes plate-no { 0%, 100% { transform: rotate(-1.4deg) translateX(0); } 25% { transform: rotate(-1.6deg) translateX(-7px); } 75% { transform: rotate(-1.2deg) translateX(7px); } }
+  .plate.shake { animation: plate-no 0.28s ease 2; }
+
+  @keyframes plate-mount { 0% { transform: rotate(-1.4deg) scale(1); } 35% { transform: rotate(-0.4deg) scale(1.025); } 70% { transform: rotate(-1.7deg) scale(0.995); } 100% { transform: rotate(-1.4deg) scale(1); } }
+  .issued .plate { animation: plate-mount 0.6s cubic-bezier(0.3, 1.4, 0.4, 1); }
+
+  /* PLATES ISSUED stamp */
+  .stamp-issued {
+    position: absolute;
+    left: 50%; top: 66%;
+    transform: translate(-50%, -50%) rotate(-9deg) scale(3);
+    font-family: var(--font-display);
+    font-size: clamp(1.3rem, 6.4cqw, 2.4rem);
+    letter-spacing: 0.12em;
+    color: #b02818;
+    border: 4px solid #b02818;
+    border-radius: 6px;
+    padding: 0.05em 0.45em;
+    opacity: 0;
+    pointer-events: none;
+    -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='s'><feTurbulence type='fractalNoise' baseFrequency='0.5' numOctaves='2' seed='9'/><feColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1.6 -0.35'/></filter><rect width='220' height='220' filter='url(%23s)'/></svg>");
+    -webkit-mask-size: 220px 220px;
+            mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='s'><feTurbulence type='fractalNoise' baseFrequency='0.5' numOctaves='2' seed='9'/><feColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1.6 -0.35'/></filter><rect width='220' height='220' filter='url(%23s)'/></svg>");
+            mask-size: 220px 220px;
+  }
+  .issued .stamp-issued {
+    opacity: 0.92;
+    transform: translate(-50%, -50%) rotate(-9deg) scale(1);
+    transition: transform 0.28s cubic-bezier(0.2, 1.8, 0.4, 1) 0.35s, opacity 0.12s ease 0.35s;
+  }
+
+  /* ── GET IT — big red 3D button, style-bible take: soft-plastic face
+     (top-lit gradient, 1px top highlight) riding 7px above a darker base,
+     press travels down fast, release springs back with ~5% overshoot,
+     ground shadow tightens as it lands. Pure CSS, no asset. ── */
+  .get-btn {
+    display: block;
+    width: 78%;   /* the plate stays the hero; this is its control */
+    margin: 1.4rem auto 0;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    border-radius: 12px;
+    background: linear-gradient(180deg, #6e1509 0%, #4e0e05 100%);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.55), 0 4px 10px rgba(140, 28, 16, 0.35);
+    transition: box-shadow 0.12s ease, opacity 0.25s ease;
+    font: inherit;
+  }
+  /* face reds built from the site's --redline (#c8331f) family, not the
+     warmer tomato ramp — same catalog as the door's BUY NOW. */
+  .get-btn .face {
+    display: block;
+    padding: 0.8rem 1rem 0.85rem;
+    border-radius: 12px;
+    background: linear-gradient(180deg, #c8331f 0%, #a02617 55%, #7c1c10 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.28),
+      inset 0 -2px 4px rgba(0, 0, 0, 0.22);
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 6cqw, 2.1rem);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #f6ecd9;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+    transform: translateY(-7px);
+    transition: transform 0.32s cubic-bezier(0.2, 1.7, 0.4, 1), filter 0.12s ease;
+  }
+  .get-btn:hover .face { filter: brightness(1.07); transform: translateY(-8px); }
+  .get-btn:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 4px; }
+  .get-btn:active .face {
+    transform: translateY(-1px);
+    transition: transform 0.07s ease-out, filter 0.12s ease;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.12),
+      inset 0 -1px 3px rgba(0, 0, 0, 0.3);
+  }
+  .get-btn:active {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6), 0 2px 5px rgba(140, 28, 16, 0.3);
+  }
+  .get-btn .arr { color: #ffd9a8; }
+  .get-btn[disabled] { cursor: default; }
+  .get-btn.sending .face { filter: saturate(0.7) brightness(0.92); }
+  .issued .get-btn { opacity: 0; pointer-events: none; }
+
+  .micro {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--fg-dim);
+    margin: 1.1rem 0 0;
+  }
+  .micro b { color: var(--brass); font-weight: 600; }
+  /* the address they must verify — show it verbatim, not uppercased */
+  .micro [data-tp-sentto] { text-transform: none; }
+
+  /* the clerk's red pen — sits between plate and button, right where the
+     shake happens, so the retry read is one glance. min-height keeps the
+     form from shifting when a message appears. */
+  .err {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--oxide-text);
+    margin: 0.7rem 0 0;
+    min-height: 1em;
+  }
+  .err a { color: var(--brass); }
+
+  /* success: the button fades out and this line takes its space, so the
+     form doesn't end in a button-shaped hole. */
+  .after-note {
+    position: absolute;
+    left: 0; right: 0;
+    bottom: 1.1rem;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--brass);
+  }
+
+  /* success copy arrives as its own beat — after the screws + stamp land */
+  .trial-plates [data-tp-after]:not([hidden]) { animation: tp-fade-up 0.4s ease-out both; }
+  @keyframes tp-fade-up {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .sr-status {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  @media (max-width: 480px) {
+    .trial-plates { padding-inline: 0.75rem; }   /* paper nearly in the hand */
+    .plate-strip { font-size: 0.5rem; }          /* legibility floor... */
+    .s-full { display: none; }
+    .s-short { display: inline; }                /* ...paired with shorter copy */
+    .plate-fields { display: none; }
+    .get-btn { width: 88%; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .plate.shake, .issued .plate { animation: none; }
+    .issued .screw, .issued .stamp-issued { transition: none; }
+    .trial-plates [data-tp-after]:not([hidden]) { animation: none; }
+  }
+</style>
+
+<script>
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+  document.querySelectorAll<HTMLElement>('[data-trial-plates]').forEach((section) => {
+    const form = section.querySelector<HTMLFormElement>('[data-tp-wrap]')!;
+    const plate = section.querySelector<HTMLElement>('[data-tp-plate]')!;
+    const email = section.querySelector<HTMLInputElement>('[data-tp-email]')!;
+    const submit = section.querySelector<HTMLButtonElement>('[data-tp-submit]')!;
+    const face = section.querySelector<HTMLElement>('[data-tp-face]')!;
+    const err = section.querySelector<HTMLElement>('[data-tp-err]')!;
+    const sentto = section.querySelector<HTMLElement>('[data-tp-sentto]')!;
+    const status = section.querySelector<HTMLElement>('[data-tp-status]')!;
+    const registerUrl = section.dataset.registerUrl!;
+    const portalUrl = section.dataset.portalUrl!;
+    const faceIdle = face.innerHTML;
+    let inFlight = false;
+
+    function shake() {
+      plate.classList.remove('shake');
+      void plate.offsetWidth;
+      plate.classList.add('shake');
+    }
+
+    function issued() {
+      sentto.textContent = email.value.trim();
+      email.disabled = true;
+      submit.disabled = true;
+      err.textContent = '';
+      // One sentence, not three at once: screws spin in (0–0.4s), the stamp
+      // slams (~0.55s), THEN the copy flips as its own beat. Reduced motion
+      // collapses the wait — nothing to choreograph.
+      form.classList.add('issued');
+      section.classList.add('issued');
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.setTimeout(() => {
+        section.querySelectorAll<HTMLElement>('[data-tp-before]').forEach((el) => { el.hidden = true; });
+        section.querySelectorAll<HTMLElement>('[data-tp-after]').forEach((el) => { el.hidden = false; });
+        status.textContent = 'Plates issued. Check your inbox — the download link is on its way to ' + email.value.trim() + '.';
+      }, reduced ? 0 : 900);
+      // The conversion = an email actually registered (verification sent).
+      // Each guarded try/catch: the tags only exist after cookie consent.
+      try { if (window.fbq) window.fbq('track', 'StartTrial'); } catch (_) {}
+      try {
+        if (window.gtag) window.gtag('event', 'conversion', {
+          send_to: 'AW-18334323184/KDtwCLHa4dIcEPCjvqZE',
+          value: 1.0,
+          currency: 'ILS',
+        });
+      } catch (_) {}
+    }
+
+    async function register() {
+      if (inFlight) return;
+      const v = email.value.trim();
+      if (!EMAIL_RE.test(v)) {
+        err.textContent = 'That plate number doesn’t look like an email.';
+        shake();
+        email.focus();
+        return;
+      }
+      inFlight = true;
+      submit.disabled = true;
+      submit.classList.add('sending');
+      face.textContent = 'Stamping…';
+      err.textContent = '';
+      try {
+        const res = await fetch(registerUrl, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ email: v, plugin: section.dataset.pluginId }),
+        });
+        const data = await res.json();
+        if (data && data.ok) {
+          issued();
+        } else {
+          err.textContent = (data && data.error) || 'Something went wrong. Please try again.';
+          shake();
+        }
+      } catch (_) {
+        // Network/CORS failure — hand them the portal so nobody dead-ends.
+        err.innerHTML = 'Couldn’t reach the garage. <a href="' + portalUrl + '">Open the download page instead</a>.';
+      } finally {
+        inFlight = false;
+        submit.classList.remove('sending');
+        if (!section.classList.contains('issued')) {
+          submit.disabled = false;
+          face.innerHTML = faceIdle;
+        }
+      }
+    }
+
+    form.addEventListener('submit', (e) => { e.preventDefault(); register(); });
+  });
+</script>

@@ -7,8 +7,9 @@
    A whisper-strength worn filter keeps glyph edges crisp at page size.
 
    Interaction: hover = the door's L2 warm-lamp treatment; click = press-in
-   sink (140ms) then navigate to plugin.trialUrl (the Downloads portal).
-   It's a real <a> — no-JS and keyboard get plain navigation.
+   sink (140ms) then scroll to the on-page #trial section (TrialPlates),
+   where the email goes down and the conversion events fire. It's a real
+   <a href="#trial"> — no-JS and keyboard get plain anchor navigation.
 
    Placement is the CALLER's job ([slug].astro positions it between the title
    and the door); this component only owns the stamp box + its tilt. */
@@ -24,10 +25,10 @@ const { plugin } = Astro.props;
 
 <a
   class="trial-stamp"
-  href={plugin.trialUrl}
+  href="#trial"
   data-trial-stamp
   style={`--patch-url:url(${patchImg.src});`}
-  aria-label={`Download the free 14 days trial of ${plugin.name} — full version, no credit card`}
+  aria-label={`Get the free 14 days trial of ${plugin.name} — full version, no credit card`}
 >
   <span class="ts-patchbox">
     <span class="ts-plate"></span>
@@ -259,32 +260,22 @@ const { plugin } = Astro.props;
 </style>
 
 <script>
-  // Let the press be SEEN before leaving: swallow the instant nav, hold the
-  // pressed frame for a beat, then go. Modified clicks (new-tab etc.) pass
-  // through untouched.
+  // Let the press be SEEN before moving: hold the pressed frame for a beat,
+  // then scroll to the on-page trial section and hand focus to its email
+  // field. Conversion events moved to TrialPlates (they fire on a successful
+  // register, not on this click). Modified clicks (new-tab etc.) pass through.
   document.querySelectorAll<HTMLAnchorElement>('[data-trial-stamp]').forEach((a) => {
-    // Per-element flag: prevents double-fire if the stamp is somehow clicked
-    // twice before the page navigates away (e.g. rapid tap on touch devices).
-    let trialEventFired = false;
     a.addEventListener('click', (e) => {
       if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+      const target = document.querySelector<HTMLElement>('#trial');
+      if (!target) return;                       // section missing → plain anchor nav
       e.preventDefault();
       a.classList.add('pressed');
-      // Fire StartTrial / Google Ads conversion once per stamp click. Each is
-      // guarded by its own global so it only runs once cookie consent has
-      // initialised that vendor's tag (see CookieBanner.astro).
-      if (!trialEventFired) {
-        trialEventFired = true;
-        try { if (window.fbq) window.fbq('track', 'StartTrial'); } catch (_) {}
-        try {
-          if (window.gtag) window.gtag('event', 'conversion', {
-            send_to: 'AW-18334323184/KDtwCLHa4dIcEPCjvqZE',
-            value: 1.0,
-            currency: 'ILS',
-          });
-        } catch (_) {}
-      }
-      window.setTimeout(() => { window.location.href = a.href; }, 140);
+      window.setTimeout(() => {
+        a.classList.remove('pressed');
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        target.querySelector<HTMLInputElement>('[data-tp-email]')?.focus({ preventScroll: true });
+      }, 140);
     });
   });
 </script>

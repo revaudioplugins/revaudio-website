@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>RevAudio — Drag & Size Bench</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #0b0a09; font-family: Consolas, monospace; overflow: hidden; }
+  #stage { position: absolute; inset: 0; }
+  #site { display: block; width: 100%; height: 100%; border: 0; }
+
+  /* overlay sits on top of the iframe and captures interaction */
+  #overlay { position: absolute; inset: 0; pointer-events: none; z-index: 10; }
+  .hl { position: absolute; border: 1px dashed rgba(201,163,92,.55); pointer-events: none; box-sizing: border-box; }
+  .sel { position: absolute; border: 1.5px solid #e8c878; box-sizing: border-box; pointer-events: none;
+         box-shadow: 0 0 0 1px rgba(0,0,0,.5), 0 0 18px rgba(232,200,120,.35); }
+  .sel .tag { position: absolute; top: -20px; left: -1.5px; background: #e8c878; color: #0b0a09;
+              font: 11px/16px Consolas, monospace; padding: 1px 6px; border-radius: 3px 3px 0 0; white-space: nowrap; }
+  /* resize handles */
+  .h { position: absolute; width: 12px; height: 12px; background: #e8c878; border: 1px solid #0b0a09;
+       border-radius: 2px; pointer-events: auto; z-index: 12; }
+  .h.nw { cursor: nwse-resize; } .h.ne { cursor: nesw-resize; }
+  .h.sw { cursor: nesw-resize; } .h.se { cursor: nwse-resize; }
+  .h.n  { cursor: ns-resize; }   .h.s  { cursor: ns-resize; }
+  .h.e  { cursor: ew-resize; }   .h.w  { cursor: ew-resize; }
+  /* move handle = whole selection body captured via a transparent pad */
+  .movepad { position: absolute; inset: 0; cursor: move; pointer-events: auto; z-index: 11; }
+
+  .panel {
+    position: fixed; top: 12px; right: 12px; z-index: 9999;
+    background: rgba(20, 17, 15, 0.97); border: 1px solid #c9a35c; border-radius: 10px;
+    padding: 12px 14px; color: #efe9df; width: 300px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.6); font-size: 12px;
+    max-height: calc(100vh - 24px); overflow-y: auto;
+  }
+  .panel h3 { margin: 0 0 4px; font-size: 14px; color: #e8c878; letter-spacing: .08em; }
+  .sub { color: #8a8275; font-size: 11px; margin: 0 0 10px; line-height: 1.4; }
+  .drag { cursor: move; user-select: none; float: right; color: #8a8275; font-weight: normal; }
+  .curr { border-top: 1px solid #3d342c; padding-top: 8px; margin-top: 8px; min-height: 40px; }
+  .curr .sel-name { color: #e8c878; font-weight: bold; word-break: break-all; }
+  .curr .metrics { color: #b7ad9c; margin-top: 4px; line-height: 1.6; }
+  .curr .metrics b { color: #efe9df; }
+  button {
+    width: 100%; background: #c9a35c; border: 0; color: #0b0a09; font-family: inherit;
+    font-weight: bold; padding: 8px; border-radius: 6px; cursor: pointer; letter-spacing: .05em;
+    margin-top: 8px;
+  }
+  button:hover { background: #e8c878; }
+  button.ghost { background: transparent; color: #c9a35c; border: 1px solid #c9a35c; }
+  button.sm { width: auto; padding: 5px 10px; margin: 0 6px 0 0; font-size: 11px; }
+  .rowbtns { margin-top: 8px; }
+  .log { border-top: 1px solid #3d342c; margin-top: 10px; padding-top: 8px; }
+  .log h4 { margin: 0 0 6px; color: #c9a35c; font-size: 12px; letter-spacing: .06em; }
+  .log .item { color: #b7ad9c; padding: 4px 0; border-bottom: 1px dotted #2a241e; line-height: 1.5; }
+  .log .item .k { color: #e8c878; }
+  .log .empty { color: #6b6459; font-style: italic; }
+  .out { margin-top: 8px; color: #8a8275; word-break: break-all; }
+  .modeflag { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10px; margin-left: 6px; }
+  .modeflag.on { background: #7bbf6a; color: #0b0a09; }
+  .modeflag.off { background: #3d342c; color: #8a8275; }
+  kbd { background: #3d342c; border-radius: 3px; padding: 0 4px; color: #e8c878; font-size: 10px; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <iframe id="site" src="/"></iframe>
+  <div id="overlay"></div>
+</div>
+
+<div class="panel" id="panel">
+  <h3>DRAG &amp; SIZE BENCH <span class="drag" id="drag">✥</span></h3>
+  <p class="sub">
+    <b>Click</b> any element to select. <b>Drag</b> its body to move, drag the <b>gold handles</b> to resize.
+    <kbd>Esc</kbd> deselect · <kbd>Del</kbd> hide element.<br>
+    Edit mode <span class="modeflag on" id="modeflag">ON</span> — click <b>PAUSE</b> to use the page normally (scroll/links).
+  </p>
+
+  <button class="ghost" id="toggle">PAUSE EDIT MODE</button>
+
+  <div class="curr" id="curr">
+    <div class="empty" style="color:#6b6459;font-style:italic">Nothing selected — click an element.</div>
+  </div>
+
+  <div class="rowbtns">
+    <button class="sm ghost" id="reset-sel">RESET THIS</button>
+    <button class="sm ghost" id="reset-all">RESET ALL</button>
+  </div>
+
+  <div class="log">
+    <h4>CHANGES</h4>
+    <div id="loglist"><div class="empty">No changes yet.</div></div>
+  </div>
+
+  <button id="copy">COPY CHANGES FOR CLAUDE</button>
+  <div class="out" id="out"></div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const site = $('site');
+const overlay = $('overlay');
+let doc = null, win = null;
+
+let editMode = true;
+let selected = null;          // selected element in the iframe doc
+let hoverBox = null;          // highlight box element (in overlay)
+let selBox = null;            // selection box element (in overlay)
+const edits = new Map();      // element -> {dx,dy,dw,dh, baseRect, hidden}
+
+// ---- selector path for reporting ----
+function cssPath(el) {
+  if (!el || el.nodeType !== 1) return '';
+  if (el.id) return '#' + el.id;
+  const parts = [];
+  let node = el;
+  while (node && node.nodeType === 1 && parts.length < 4 && node !== doc.body) {
+    let seg = node.tagName.toLowerCase();
+    const cls = (node.className && typeof node.className === 'string')
+      ? node.className.trim().split(/\s+/).filter(c => !c.startsWith('astro-')).slice(0,2)
+      : [];
+    if (cls.length) seg += '.' + cls.join('.');
+    // nth-of-type disambiguation among siblings of same tag
+    if (node.parentElement) {
+      const sibs = [...node.parentElement.children].filter(c => c.tagName === node.tagName);
+      if (sibs.length > 1) seg += `:nth-of-type(${sibs.indexOf(node)+1})`;
+    }
+    parts.unshift(seg);
+    if (node.id) { parts[0] = '#' + node.id; break; }
+    node = node.parentElement;
+  }
+  return parts.join(' > ');
+}
+
+// ---- geometry: map iframe-doc rect to overlay coords ----
+function rectInOverlay(el) {
+  const r = el.getBoundingClientRect();       // relative to iframe viewport
+  return { left: r.left, top: r.top, width: r.width, height: r.height };
+}
+
+// ---- build/refresh selection UI ----
+function clearOverlay() { overlay.innerHTML = ''; hoverBox = null; selBox = null; }
+
+function drawHover(el) {
+  if (!hoverBox) { hoverBox = document.createElement('div'); hoverBox.className = 'hl'; overlay.appendChild(hoverBox); }
+  const r = rectInOverlay(el);
+  Object.assign(hoverBox.style, { left: r.left+'px', top: r.top+'px', width: r.width+'px', height: r.height+'px', display: 'block' });
+}
+function hideHover() { if (hoverBox) hoverBox.style.display = 'none'; }
+
+function drawSelection() {
+  if (!selected) return;
+  const r = rectInOverlay(selected);
+  if (!selBox) {
+    selBox = document.createElement('div'); selBox.className = 'sel';
+    const tag = document.createElement('div'); tag.className = 'tag'; selBox.appendChild(tag);
+    const movepad = document.createElement('div'); movepad.className = 'movepad'; selBox.appendChild(movepad);
+    ['nw','n','ne','e','se','s','sw','w'].forEach(pos => {
+      const h = document.createElement('div'); h.className = 'h ' + pos; h.dataset.pos = pos; selBox.appendChild(h);
+    });
+    overlay.appendChild(selBox);
+    attachDragHandlers();
+  }
+  Object.assign(selBox.style, { left: r.left+'px', top: r.top+'px', width: r.width+'px', height: r.height+'px' });
+  selBox.querySelector('.tag').textContent = cssPath(selected);
+  // position handles
+  const H = selBox.querySelectorAll('.h');
+  const map = { nw:[0,0], n:[.5,0], ne:[1,0], e:[1,.5], se:[1,1], s:[.5,1], sw:[0,1], w:[0,.5] };
+  H.forEach(h => {
+    const [fx,fy] = map[h.dataset.pos];
+    h.style.left = `calc(${fx*100}% - 6px)`;
+    h.style.top  = `calc(${fy*100}% - 6px)`;
+  });
+}
+
+function refresh() { if (selected) drawSelection(); }
+
+// ---- apply an edit's transform+size to the real element ----
+function applyEdit(el) {
+  const e = edits.get(el);
+  if (!e) return;
+  if (e.hidden) { el.style.setProperty('display', 'none', 'important'); return; }
+  el.style.setProperty('transform', `translate(${e.dx}px, ${e.dy}px)`, 'important');
+  el.style.setProperty('position', getComputedStyle(el).position === 'static' ? 'relative' : getComputedStyle(el).position);
+  if (e.dw || e.dh || e.sizedOnce) {
+    el.style.setProperty('width',  (e.baseRect.width  + e.dw) + 'px', 'important');
+    el.style.setProperty('height', (e.baseRect.height + e.dh) + 'px', 'important');
+    el.style.setProperty('box-sizing', 'border-box', 'important');
+  }
+}
+
+function ensureEdit(el) {
+  if (!edits.has(el)) {
+    const r = el.getBoundingClientRect();
+    edits.set(el, { dx:0, dy:0, dw:0, dh:0, sizedOnce:false, hidden:false,
+      baseRect: { width: r.width, height: r.height } });
+  }
+  return edits.get(el);
+}
+
+// ---- selection ----
+function select(el) {
+  if (!el || el === doc.body || el === doc.documentElement) return;
+  selected = el;
+  if (selBox) { selBox.remove(); selBox = null; }
+  drawSelection();
+  renderCurrent();
+}
+function deselect() { selected = null; if (selBox) { selBox.remove(); selBox = null; } renderCurrent(); }
+
+// ---- drag/resize interaction (handlers live in overlay coords) ----
+function attachDragHandlers() {
+  const movepad = selBox.querySelector('.movepad');
+  movepad.addEventListener('mousedown', (ev) => startInteract(ev, 'move'));
+  selBox.querySelectorAll('.h').forEach(h => {
+    h.addEventListener('mousedown', (ev) => startInteract(ev, 'resize', h.dataset.pos));
+  });
+}
+
+let interact = null;
+function startInteract(ev, kind, pos) {
+  ev.preventDefault(); ev.stopPropagation();
+  if (!selected) return;
+  const e = ensureEdit(selected);
+  interact = { kind, pos, startX: ev.clientX, startY: ev.clientY,
+    dx0: e.dx, dy0: e.dy, dw0: e.dw, dh0: e.dh };
+  document.body.style.cursor = kind === 'move' ? 'move' : 'grabbing';
+}
+
+window.addEventListener('mousemove', (ev) => {
+  if (!interact || !selected) return;
+  const e = ensureEdit(selected);
+  const mdx = ev.clientX - interact.startX;
+  const mdy = ev.clientY - interact.startY;
+  if (interact.kind === 'move') {
+    e.dx = interact.dx0 + mdx;
+    e.dy = interact.dy0 + mdy;
+  } else {
+    e.sizedOnce = true;
+    const p = interact.pos;
+    if (p.includes('e')) e.dw = interact.dw0 + mdx;
+    if (p.includes('w')) { e.dw = interact.dw0 - mdx; e.dx = interact.dx0 + mdx; }
+    if (p.includes('s')) e.dh = interact.dh0 + mdy;
+    if (p.includes('n')) { e.dh = interact.dh0 - mdy; e.dy = interact.dy0 + mdy; }
+    if (e.baseRect.width + e.dw < 20) e.dw = 20 - e.baseRect.width;
+    if (e.baseRect.height + e.dh < 20) e.dh = 20 - e.baseRect.height;
+  }
+  applyEdit(selected);
+  drawSelection();
+  renderCurrent();
+});
+window.addEventListener('mouseup', () => {
+  if (interact) { interact = null; document.body.style.cursor = ''; renderLog(); }
+});
+
+// ---- iframe pointer wiring (edit mode overlays clicks) ----
+function wireIframe() {
+  doc = site.contentDocument; win = site.contentWindow;
+  clearOverlay(); deselect(); edits.clear(); renderLog();
+  if (!doc) return;
+
+  // re-apply nothing (fresh load). track scroll/resize to keep boxes glued.
+  win.addEventListener('scroll', refresh, { passive: true });
+  win.addEventListener('resize', refresh);
+
+  // capture-phase listeners on the iframe doc for edit interactions
+  doc.addEventListener('mousemove', (ev) => {
+    if (!editMode || interact) return;
+    const el = ev.target;
+    if (el && el !== doc.body && el !== doc.documentElement) drawHover(el);
+    else hideHover();
+  }, true);
+
+  doc.addEventListener('click', (ev) => {
+    if (!editMode) return;
+    ev.preventDefault(); ev.stopPropagation();
+    select(ev.target);
+  }, true);
+
+  // block navigation while editing
+  doc.addEventListener('submit', (ev) => { if (editMode) ev.preventDefault(); }, true);
+}
+site.addEventListener('load', wireIframe);
+
+// ---- edit mode toggle ----
+function setMode(on) {
+  editMode = on;
+  overlay.style.pointerEvents = 'none'; // overlay never eats page scroll; only handles do
+  // when OFF, hide hover + selection chrome so the page is usable
+  $('modeflag').textContent = on ? 'ON' : 'OFF';
+  $('modeflag').className = 'modeflag ' + (on ? 'on' : 'off');
+  $('toggle').textContent = on ? 'PAUSE EDIT MODE' : 'RESUME EDIT MODE';
+  if (!on) { hideHover(); if (selBox) selBox.style.display = 'none'; }
+  else { if (selBox) selBox.style.display = ''; refresh(); }
+}
+$('toggle').onclick = () => setMode(!editMode);
+
+// ---- keyboard ----
+window.addEventListener('keydown', (ev) => {
+  if (ev.key === 'Escape') deselect();
+  if ((ev.key === 'Delete' || ev.key === 'Backspace') && selected) {
+    const e = ensureEdit(selected); e.hidden = true; applyEdit(selected);
+    deselect(); renderLog();
+  }
+});
+
+// ---- reset ----
+function clearElStyles(el) {
+  ['transform','width','height','display','box-sizing'].forEach(p => el.style.removeProperty(p));
+}
+$('reset-sel').onclick = () => {
+  if (!selected) return;
+  clearElStyles(selected); edits.delete(selected);
+  drawSelection(); renderCurrent(); renderLog();
+};
+$('reset-all').onclick = () => {
+  edits.forEach((_, el) => clearElStyles(el));
+  edits.clear(); deselect(); renderLog();
+};
+
+// ---- reporting ----
+function editSummary(el, e) {
+  const parts = [];
+  if (e.hidden) return 'hidden (display:none)';
+  if (e.dx || e.dy) parts.push(`move Δx ${Math.round(e.dx)}px, Δy ${Math.round(e.dy)}px`);
+  if (e.sizedOnce && (e.dw || e.dh)) {
+    parts.push(`size ${Math.round(e.baseRect.width+e.dw)}×${Math.round(e.baseRect.height+e.dh)}px (Δw ${Math.round(e.dw)}, Δh ${Math.round(e.dh)})`);
+  }
+  return parts.join(' · ') || 'no change';
+}
+
+function renderCurrent() {
+  const box = $('curr');
+  if (!selected) { box.innerHTML = '<div style="color:#6b6459;font-style:italic">Nothing selected — click an element.</div>'; return; }
+  const e = edits.get(selected);
+  const r = selected.getBoundingClientRect();
+  box.innerHTML =
+    `<div class="sel-name">${cssPath(selected)}</div>` +
+    `<div class="metrics">pos <b>${Math.round(r.left)}, ${Math.round(r.top)}</b> · ` +
+    `size <b>${Math.round(r.width)}×${Math.round(r.height)}</b>` +
+    (e ? `<br>${editSummary(selected, e)}` : '') + `</div>`;
+}
+
+function renderLog() {
+  const list = $('loglist');
+  const real = [...edits.entries()].filter(([el,e]) => e.hidden || e.dx || e.dy || (e.sizedOnce && (e.dw||e.dh)));
+  if (!real.length) { list.innerHTML = '<div class="empty">No changes yet.</div>'; return; }
+  list.innerHTML = real.map(([el,e]) =>
+    `<div class="item"><span class="k">${cssPath(el)}</span><br>${editSummary(el,e)}</div>`).join('');
+  if (selected) renderCurrent();
+}
+
+$('copy').onclick = () => {
+  const real = [...edits.entries()].filter(([el,e]) => e.hidden || e.dx || e.dy || (e.sizedOnce && (e.dw||e.dh)));
+  if (!real.length) { $('out').textContent = 'no changes to copy'; return; }
+  const lines = real.map(([el,e]) => {
+    const r = el.getBoundingClientRect();
+    return `- ${cssPath(el)}: ${editSummary(el,e)} [now at ${Math.round(r.left)},${Math.round(r.top)} · ${Math.round(r.width)}×${Math.round(r.height)}]`;
+  });
+  const txt = `DRAG-BENCH CHANGES (viewport ${innerWidth}×${innerHeight}, dpr ${devicePixelRatio}):\n` + lines.join('\n');
+  navigator.clipboard.writeText(txt);
+  $('out').textContent = 'copied ' + real.length + ' change(s) — paste to Claude';
+};
+
+// ---- panel drag ----
+let pdx, pdy, pdrag = false;
+$('drag').addEventListener('mousedown', e => { pdrag = true; const r = $('panel').getBoundingClientRect(); pdx = e.clientX - r.left; pdy = e.clientY - r.top; e.preventDefault(); });
+window.addEventListener('mousemove', e => { if (!pdrag) return; $('panel').style.left = (e.clientX - pdx) + 'px'; $('panel').style.top = (e.clientY - pdy) + 'px'; $('panel').style.right = 'auto'; });
+window.addEventListener('mouseup', () => pdrag = false);
+
+setMode(true);
+</script>
+</body>
+</html>
