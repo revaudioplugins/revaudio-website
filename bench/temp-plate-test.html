@@ -223,79 +223,42 @@
     transition: transform 0.28s cubic-bezier(0.2, 1.8, 0.4, 1) 0.35s, opacity 0.12s ease 0.35s;
   }
 
-  /* ── MOUNT stub — a perforated tear-off tab printed on the plate itself
-     (parking-ticket stub). Tap = it tears off and the plate mounts. No
-     separate button chrome — the paper is the control (Dan, 2026-07-24). ── */
-  .mount-stub {
-    position: absolute;
-    right: 5.4%;
-    bottom: -5.4%;
-    width: 26%;
-    aspect-ratio: 3.1;
+  /* ── GET IT — a big red simple button under the plate (Dan, 2026-07-24:
+     no asset, no paper tricks — an unmissable red control). Stamp-red
+     family, cream ink, honest press-in. Fades out once plates are issued. ── */
+  .get-btn {
+    display: block;
+    width: 100%;
+    margin: 1.25rem 0 0;
     border: 0;
-    padding: 0;
+    padding: 0.8rem 1rem 0.85rem;
     cursor: pointer;
-    background: linear-gradient(172deg, #ddcda6 0%, #cfbd92 100%);
-    border-radius: 0 0 6px 6px;
+    border-radius: 10px;
+    background: linear-gradient(180deg, #c53420 0%, #a02414 55%, #8c1c10 100%);
     box-shadow:
-      inset 0 0 0 1px rgba(60,45,20,0.28),
-      inset 0 -6px 10px rgba(120,90,40,0.25),
-      0 8px 16px rgba(0,0,0,0.5);
-    transform: rotate(0.6deg);
-    transform-origin: 15% 0%;
-    transition: transform 0.12s ease, filter 0.12s ease;
-    font-family: var(--font-mono);
-    font-weight: 600;
-    font-size: clamp(0.6rem, 2.4cqw, 0.9rem);
-    letter-spacing: 0.22em;
+      inset 0 1px 0 rgba(255, 255, 255, 0.22),
+      inset 0 -3px 6px rgba(0, 0, 0, 0.35),
+      0 6px 18px rgba(140, 28, 16, 0.45),
+      0 3px 8px rgba(0, 0, 0, 0.5);
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 6cqw, 2.1rem);
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: #2a2314;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.4em;
+    color: #f6ecd9;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+    transition: transform 0.1s ease, filter 0.12s ease, box-shadow 0.1s ease, opacity 0.25s ease;
   }
-  /* perforation — the dashed tear line across the stub's top */
-  .mount-stub::before {
-    content: '';
-    position: absolute;
-    left: 4%; right: 4%; top: 0;
-    border-top: 2px dashed rgba(42, 35, 20, 0.45);
+  .get-btn:hover { filter: brightness(1.08); }
+  .get-btn:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 4px; }
+  .get-btn:active {
+    transform: translateY(3px);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.1),
+      inset 0 -2px 4px rgba(0, 0, 0, 0.4),
+      0 1px 5px rgba(0, 0, 0, 0.55);
   }
-  /* paper grain + the SAME night-multiply the plate wears — without the tint
-     the stub glows brighter than the tag and reads pasted-on, not torn-from */
-  .mount-stub::after {
-    content: '';
-    position: absolute; inset: 0;
-    border-radius: inherit;
-    background:
-      linear-gradient(rgba(42, 35, 24, 0.42), rgba(42, 35, 24, 0.42)),
-      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='3'/><feColorMatrix type='matrix' values='0 0 0 0 0.2 0 0 0 0 0.15 0 0 0 0 0.05 0 0 0 0.07 0'/></filter><rect width='120' height='120' filter='url(%23g)'/></svg>") 0 0 / 120px 120px repeat;
-    mix-blend-mode: multiply;
-    pointer-events: none;
-  }
-  .mount-stub:hover { filter: brightness(1.06); transform: rotate(1.4deg) translateY(1px); }
-  .mount-stub:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 4px; }
-  .mount-stub b { font-weight: 600; }
-  .mount-stub .arr { color: #8c2014; }
-
-  /* the tear — stub rips off along the perforation and falls away */
-  @keyframes stub-tear {
-    0%   { transform: rotate(0.6deg); opacity: 1; }
-    30%  { transform: rotate(9deg) translate(2%, 6%); opacity: 1; }
-    100% { transform: rotate(38deg) translate(14%, 190%); opacity: 0; }
-  }
-  .issued .mount-stub {
-    animation: stub-tear 0.55s cubic-bezier(0.35, 0, 0.7, 0.4) forwards;
-    pointer-events: none;
-  }
-
-  /* fat tap target beyond the printed stub (mobile thumbs) */
-  .mount-stub .hit {
-    content: '';
-    position: absolute;
-    inset: -14px;
-  }
+  .get-btn .arr { color: #ffd9a8; }
+  .issued .get-btn { opacity: 0; pointer-events: none; }
 
   .micro {
     font-family: var(--font-mono);
@@ -358,11 +321,10 @@
       <span class="screw screw--l"></span>
       <span class="screw screw--r"></span>
       <div class="stamp-issued">Plates issued</div>
-      <button class="mount-stub" id="mount" type="button" aria-label="Get it — send my download link">
-        <span class="hit" aria-hidden="true"></span>
-        <b>Get it</b> <span class="arr">&#9656;</span>
-      </button>
     </div>
+    <button class="get-btn" id="mount" type="button" aria-label="Get it — send my download link">
+      Get it <span class="arr">&#9656;</span>
+    </button>
   </div>
 
   <p class="err" id="err"></p>
