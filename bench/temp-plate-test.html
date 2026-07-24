@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>bench — TEMP PLATES trial section (real assets)</title>
+<!-- ──────────────────────────────────────────────────────────────────────
+  TEMP PLATES — on-page trial email capture (Dan picked 2026-07-24).
+  Round 2: TRUE-ALPHA PNG assets (nano_banana_pro + bg-removal, 2026-07-24)
+  in the door/crane photoreal language:
+    ../src/assets/ui/plate-temp-tag.png  2176×1373 (1.585)
+    ../src/assets/ui/btn-mount-it.png    1151×696  (1.654)
+    ../src/assets/ui/screw-brass.png     830×829
+  Live text over blank art, same recipe as the buy patch / door copy.
+  Submit is MOCKED; production wires:
+    POST https://revlimiter-license.revaudio.workers.dev/download/register
+         {email, plugin:'revlimiter'}   ← needs CORS added on the worker.
+─────────────────────────────────────────────────────────────────────── -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-0: #0b0a09;
+    --bg-1: #14110f;
+    --brass: #c9a35c;
+    --brass-bright: #e8c878;
+    --brass-dark: #7a6236;
+    --fg: #e8e2d8;
+    --fg-dim: #a89f92;
+    --fg-faint: #6f6a60;
+    --border: #262019;
+    --border-bright: #3a3128;
+    --font-display: 'Bebas Neue', 'Oswald', 'Arial Narrow', sans-serif;
+    --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg-0);
+    color: var(--fg);
+    font-family: 'Inter', system-ui, sans-serif;
+    min-height: 100vh;
+  }
+
+  .bench-bar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+    display: flex; gap: 0.75rem; align-items: center;
+    padding: 0.5rem 1rem;
+    background: rgba(11,10,9,0.92);
+    border-bottom: 1px solid var(--border);
+    font-family: var(--font-mono); font-size: 11px; color: var(--fg-faint);
+  }
+  .bench-bar button {
+    font-family: var(--font-mono); font-size: 11px;
+    background: var(--bg-1); color: var(--brass);
+    border: 1px solid var(--border-bright); padding: 0.25rem 0.6rem; cursor: pointer;
+  }
+
+  .trial-section {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 6rem 1.25rem 5rem;
+    text-align: center;
+  }
+
+  .kicker {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--fg-faint);
+    margin: 0 0 0.8rem;
+  }
+
+  .trial-section h2 {
+    font-family: var(--font-display);
+    font-size: clamp(2.1rem, 6vw, 3.2rem);
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    color: var(--brass-bright);
+    margin: 0 0 0.5rem;
+    text-transform: uppercase;
+  }
+
+  .sub { color: var(--fg-dim); font-size: 1rem; margin: 0 0 2.75rem; }
+  .sub b { color: var(--fg); font-weight: 600; }
+
+  /* ── THE PLATE — the real paper tag art; live ink over blank regions ── */
+  .plate-wrap {
+    position: relative;
+    display: inline-block;
+    width: min(560px, 100%);
+    container-type: inline-size;
+  }
+
+  .plate {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 2176 / 1373;
+    background: url('../src/assets/ui/plate-temp-tag.png') center / 100% 100% no-repeat;
+    filter: drop-shadow(0 18px 34px rgba(0, 0, 0, 0.62));
+    transform: rotate(-1.4deg);
+  }
+
+  /* night-plate multiply — the raw scan is bright daylight paper; pull it
+     down toward the page's dark metal like the trial stamp's B3 take,
+     masked to the art's alpha so the ragged edges keep their bite. */
+  .plate::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: #2a2318;
+    mix-blend-mode: multiply;
+    opacity: 0.42;
+    -webkit-mask-image: url('../src/assets/ui/plate-temp-tag.png');
+    -webkit-mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+            mask-image: url('../src/assets/ui/plate-temp-tag.png');
+            mask-size: 100% 100%;
+            mask-repeat: no-repeat;
+    pointer-events: none;
+  }
+
+  /* printed strips — letterpress ink on the paper bands */
+  .plate-strip {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #2a2314;
+    font-size: clamp(0.45rem, 1.75cqw, 0.72rem);
+    opacity: 0.82;
+  }
+  .plate-strip--top { top: 9.8%; }
+  .plate-strip--bot { bottom: 11.6%; opacity: 0.6; letter-spacing: 0.14em; }
+
+  /* the registration line = the email field */
+  .plate-email {
+    position: absolute;
+    left: 11%; right: 11%;
+    top: 39%;
+    background: transparent;
+    border: 0;
+    border-bottom: 3px dashed rgba(42, 35, 20, 0.32);
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 7.4cqw, 2.8rem);
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    text-align: center;
+    color: #241f12;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+    padding: 0 0 0.1em;
+    outline: none;
+  }
+  .plate-email::placeholder { color: rgba(42,35,20,0.32); }
+  .plate-email:focus { border-bottom-color: rgba(160, 40, 20, 0.55); }
+
+  /* mounting screws — the real brass screw art, spun into the baked eyelets */
+  .screw {
+    position: absolute;
+    width: 5.4%;
+    aspect-ratio: 1;
+    background: url('../src/assets/ui/screw-brass.png') center / 100% 100% no-repeat;
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.55));
+    opacity: 0;
+    transform: scale(0.2) rotate(-540deg);
+    pointer-events: none;
+  }
+  .screw--l { left: 18.6%; top: 8%; }
+  .screw--r { right: 18.6%; top: 7.6%; }
+  .issued .screw {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+    transition: transform 0.55s cubic-bezier(0.2, 1.6, 0.4, 1), opacity 0.15s ease;
+  }
+  .issued .screw--r { transition-delay: 0.12s; }
+
+  @keyframes plate-no { 0%,100% { transform: rotate(-1.4deg) translateX(0); } 25% { transform: rotate(-1.6deg) translateX(-7px); } 75% { transform: rotate(-1.2deg) translateX(7px); } }
+  .plate.shake { animation: plate-no 0.28s ease 2; }
+
+  @keyframes plate-mount { 0% { transform: rotate(-1.4deg) scale(1); } 35% { transform: rotate(-0.4deg) scale(1.025); } 70% { transform: rotate(-1.7deg) scale(0.995); } 100% { transform: rotate(-1.4deg) scale(1); } }
+  .issued .plate { animation: plate-mount 0.6s cubic-bezier(0.3, 1.4, 0.4, 1); }
+
+  /* PLATES ISSUED stamp */
+  .stamp-issued {
+    position: absolute;
+    left: 50%; top: 60%;
+    transform: translate(-50%, -50%) rotate(-9deg) scale(3);
+    font-family: var(--font-display);
+    font-size: clamp(1.6rem, 8cqw, 3rem);
+    letter-spacing: 0.12em;
+    color: #b02818;
+    border: 4px solid #b02818;
+    border-radius: 6px;
+    padding: 0.05em 0.45em;
+    opacity: 0;
+    pointer-events: none;
+    -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='s'><feTurbulence type='fractalNoise' baseFrequency='0.5' numOctaves='2' seed='9'/><feColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1.6 -0.35'/></filter><rect width='220' height='220' filter='url(%23s)'/></svg>");
+    -webkit-mask-size: 220px 220px;
+            mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='s'><feTurbulence type='fractalNoise' baseFrequency='0.5' numOctaves='2' seed='9'/><feColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1.6 -0.35'/></filter><rect width='220' height='220' filter='url(%23s)'/></svg>");
+            mask-size: 220px 220px;
+  }
+  .issued .stamp-issued {
+    opacity: 0.92;
+    transform: translate(-50%, -50%) rotate(-9deg) scale(1);
+    transition: transform 0.28s cubic-bezier(0.2, 1.8, 0.4, 1) 0.35s, opacity 0.12s ease 0.35s;
+  }
+
+  /* ── MOUNT IT — the real dashboard button art with a hit overlay ── */
+  .mount-row { margin-top: 2rem; }
+  .btn-mount {
+    position: relative;
+    display: inline-block;
+    width: min(240px, 58vw);
+    border: 0;
+    padding: 0;
+    background: none;
+    cursor: pointer;
+  }
+  .btn-mount img {
+    display: block;
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 10px 22px rgba(0,0,0,0.6));
+    transition: transform 0.1s ease, filter 0.15s ease;
+  }
+  .btn-mount:hover img { filter: drop-shadow(0 10px 22px rgba(0,0,0,0.6)) brightness(1.1); }
+  .btn-mount:active img, .btn-mount.pressed img {
+    transform: translateY(3px) scale(0.985);
+    filter: drop-shadow(0 3px 8px rgba(0,0,0,0.7)) brightness(0.94);
+  }
+  .btn-mount:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 6px; }
+  .btn-mount[disabled] { cursor: default; }
+  .btn-mount[disabled] img { filter: drop-shadow(0 10px 22px rgba(0,0,0,0.6)) saturate(0.55) brightness(0.82); }
+
+  .micro {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--fg-dim);
+    margin: 1.1rem 0 0;
+  }
+  .micro b { color: var(--brass); font-weight: 600; }
+
+  .err {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: #e05a42;
+    margin: 0.9rem 0 0;
+    min-height: 1em;
+  }
+
+  .after { display: none; }
+  .issued-copy .after { display: block; }
+  .issued-copy .before { display: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .plate.shake, .issued .plate { animation: none; }
+    .issued .screw, .issued .stamp-issued { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bench-bar">
+  <span>bench · TEMP PLATES · real true-alpha assets (nano_banana_pro 2026-07-24)</span>
+  <button id="reset">reset</button>
+  <button id="force">force success</button>
+</div>
+
+<section class="trial-section" id="section">
+  <p class="kicker">Fresh off the lot</p>
+  <h2>Take it for a 14-day drive</h2>
+  <p class="sub before">Every new ride leaves on temp plates. Yours are <b>free</b> —
+    full version, nothing locked.</p>
+  <p class="sub after">Plates issued. <b>Check your inbox</b> — your download link is on its way.</p>
+
+  <div class="plate-wrap" id="platewrap">
+    <div class="plate" id="plate">
+      <div class="plate-strip plate-strip--top">Temporary &nbsp;·&nbsp; RevLimiter &nbsp;·&nbsp; trial</div>
+      <input
+        class="plate-email"
+        id="email"
+        type="email"
+        inputmode="email"
+        autocomplete="email"
+        spellcheck="false"
+        placeholder="your@email.com"
+        aria-label="Your email — we send the download link here"
+      >
+      <div class="plate-strip plate-strip--bot">Valid 14 days from first start · full version</div>
+      <span class="screw screw--l"></span>
+      <span class="screw screw--r"></span>
+      <div class="stamp-issued">Plates issued</div>
+    </div>
+  </div>
+
+  <div class="mount-row">
+    <button class="btn-mount" id="mount" type="button" aria-label="Mount it — send my download link">
+      <img src="../src/assets/ui/btn-mount-it.png" alt="">
+    </button>
+  </div>
+  <p class="err" id="err"></p>
+  <p class="micro before">No credit card · the download link lands in your inbox</p>
+  <p class="micro after">Sent to <b id="sentto"></b> · the link is good for 24 hours</p>
+</section>
+
+<script>
+  const section = document.getElementById('section');
+  const wrap = document.getElementById('platewrap');
+  const plate = document.getElementById('plate');
+  const email = document.getElementById('email');
+  const mount = document.getElementById('mount');
+  const err = document.getElementById('err');
+  const sentto = document.getElementById('sentto');
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+  function issue() {
+    // production: POST /download/register {email, plugin:'revlimiter'} here,
+    // flip to issued on {ok:true}. Bench mocks it.
+    sentto.textContent = email.value.trim();
+    email.disabled = true;
+    mount.disabled = true;
+    wrap.classList.add('issued');
+    section.classList.add('issued', 'issued-copy');
+    err.textContent = '';
+  }
+
+  mount.addEventListener('click', () => {
+    const v = email.value.trim();
+    if (!EMAIL_RE.test(v)) {
+      err.textContent = 'That plate number doesn’t look like an email.';
+      plate.classList.remove('shake');
+      void plate.offsetWidth;
+      plate.classList.add('shake');
+      email.focus();
+      return;
+    }
+    mount.classList.add('pressed');
+    setTimeout(() => { mount.classList.remove('pressed'); issue(); }, 160);
+  });
+
+  email.addEventListener('keydown', (e) => { if (e.key === 'Enter') mount.click(); });
+
+  document.getElementById('reset').addEventListener('click', () => {
+    email.disabled = false; mount.disabled = false; email.value = '';
+    wrap.classList.remove('issued');
+    section.classList.remove('issued', 'issued-copy');
+    err.textContent = '';
+  });
+  document.getElementById('force').addEventListener('click', () => {
+    if (!email.value) email.value = 'dan@revaudio.net';
+    issue();
+  });
+</script>
+
+</body>
+</html>
