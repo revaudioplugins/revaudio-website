@@ -17,12 +17,19 @@ Updated: 2026-09-06 (session close. Everything PUSHED and LIVE as `eadf56f`. Her
 State: branch `main`, PUSHED and LIVE at `eadf56f`. Do NOT trust any ahead-count written here -
 two writers push this branch. Run `git fetch origin && git rev-list --count origin/main..HEAD`.
 This file was committed after the push, so expect at least 1 ahead until someone pushes again.
-All 12 local commits reached the remote at 2026-09-06 17:40 local. Claude Code did NOT run that push
-and never had Dan word for it - his standing rule was "never push until i say to push clearly".
-Commit identity is the shared `shlik` for both assistants, so git cannot say who ran it. Most likely
-reading: Dan told Codex to push, the same way he steered its CTA reverts ("revert 2 times") in the
-block above. Not treated as a rule break by anyone, just recorded. NOT undone either: reversing a
-live deploy is Dan call alone.
+All 12 local commits reached the remote at 2026-09-06 17:40 local.
+
+CORRECTED AT CLOSE - an earlier draft of this block got the push wrong twice, both fixed here from
+the root `HANDOFF.md` that the other writer left at 17:47:
+  1. THE PUSH WAS AUTHORISED. Dan typed "commit and push this" in the other session immediately
+     before it. His standing rule ("never push until i say to push clearly") was NOT broken. This
+     session simply could not see that word, because it was said in a different chat.
+  2. THE OTHER WRITER WAS A SECOND CLAUDE CODE SESSION, not Codex. Both sessions commit as the
+     shared `shlik` identity, so git could not tell them apart and the first draft guessed wrong.
+     Read every "Codex" below as "Claude session B (the /gas thread)".
+The lesson that outlives this: on a shared branch, an authorisation given in one chat is invisible
+to the other. Local-commit-and-wait is NOT a safe hold - a collaborator's authorised push ships
+your committed work with it. That is exactly how the placeholder hero art below reached production.
 
 CONSEQUENCE, the part that matters: the hero patina plate shipped to production wearing the
 PROCEDURAL STAND-IN art, not Dan Higgsfield plates. revaudio.net now serves
@@ -34,22 +41,33 @@ change. How it actually reads, verified not assumed (headless Edge shot of the l
 kicker, red sweep and gauge medallion are all legible and on-brand; nothing looks broken. What is
 MISSING is every prop from prompt A - no trouble lamp, no headphones, no walnut shelf, no VU
 meters, no dust beam. So this is a swap-when-ready, NOT an emergency revert.
-Six are Claude Code (`4c65acc` `0be6bf5` `481560c` `8e675ca` `8c6932a` `c551052`), six are Codex
-(`de69bad` `d6d10a3` `f6a3612` `9e930b2` `d027c31` `eadf56f`). `481560c` and `8e675ca` are the hero
+Six are this session (`4c65acc` `0be6bf5` `481560c` `8e675ca` `8c6932a` `c551052`), six are
+Claude session B (`de69bad` `d6d10a3` `f6a3612` `9e930b2` `d027c31` `eadf56f`). `481560c` and `8e675ca` are the hero
 tuning bench: still in history as commits, but their content is undone by `8c6932a`.
 
-Working tree: clean (this file is committed). CODEX WAS STILL COMMITTING AND THEN PUSHED WHILE THIS WAS
-BEING WRITTEN (`d027c31`, `eadf56f`, then the push), so re-check `git ls-remote origin refs/heads/main`
-before trusting anything above. Codex tried a true-alpha photo-plate CTA on /gas in `d027c31` and reverted
-it in `eadf56f`; `src/pages/gas.astro` is back to its `f6a3612` state, byte-identical. Codex owns
-that file - do not stage, commit or revert it.
+Working tree: clean (this file is committed). CLAUDE SESSION B WAS STILL COMMITTING AND THEN PUSHED
+WHILE THIS WAS BEING WRITTEN (`d027c31`, `eadf56f`, then the push), so re-check
+`git ls-remote origin refs/heads/main` before trusting anything above. It tried a true-alpha
+photo-plate CTA on /gas in `d027c31` and reverted it in `eadf56f`; `src/pages/gas.astro` is back to
+its `f6a3612` state, byte-identical (`git diff f6a3612 eadf56f -- src/pages/gas.astro DESIGN.md` is
+empty, checked here). Session B owns that file - do not stage, commit or revert it.
+
+Session B left its own close notes in an UNTRACKED root `HANDOFF.md` (5.8 KB, 17:47) so the two
+sessions would not write this file at once. Everything useful from it is folded in here and its two
+factual claims were re-verified independently. It is safe to delete or move to `.handoff-archive/`;
+left in place because this session does not delete files.
 
 Background process left running: `astro preview` node pid 52112, 0.0.0.0:4321, serving `dist/`,
 LAN `http://10.0.0.102:4321/`. Stop it BY PID only: `taskkill /PID 52112 /F`. Never broad-kill node.
 
 Unverified at close:
-- `dist/` predates Codex commits `9e930b2` / `d027c31` / `eadf56f`, so the built /gas is stale.
-  The hero in `dist/` is current and was checked. Rebuild before judging /gas from `dist/`.
+- `dist/` IS CURRENT, correcting an earlier line here that called it stale: `dist/gas/index.html`
+  and `dist/index.html` are both stamped 17:40:31, the same second as `eadf56f`. Build was green,
+  19 pages.
+- The /gas red chunky button has NOT been re-screenshotted since the revert build - the scratchpad
+  shots `gas-v5-*` / `gas-v6-*` show the true-alpha plate that was reverted away. Ignore them.
+- Dan never PICKED a /gas CTA look. "revert 2 times" lands on the red chunky button by elimination,
+  not by approval.
 - Hero scrim contrast has NOT been re-measured against a real photo plate; the shipping numbers
   (1.18 / 120% / 43% / 61% = 5.16:1) were measured against the procedural stand-in.
 
@@ -61,9 +79,13 @@ Next session decides:
 2. Owed the moment real plates land, all still open: re-measure scrim contrast (4.5:1 on kicker and
    lede - the shipping 1.18 / 120% / 43% / 61% = 5.16:1 was measured against the stand-in), plate
    opacity against the smoke, plate under 250 KB at 1920, and the `DESIGN.md` ride-along (0/4/5/7/10).
-3. The /gas CTA look. Codex has now tried three: the red chunky button (`f6a3612`), the garage
+3. OPENAI IMAGE CREDITS ARE EMPTY. `image.ps1` returned
+   `{"error":{"code":"credit_balance_exhausted"}}` this session. No new AI asset can be generated
+   until Dan tops up, so every asset need until then comes from existing house art - which is part
+   of why the hero plates are still procedural stand-ins.
+4. The /gas CTA look. Session B has now tried three: the red chunky button (`f6a3612`), the garage
    anodized pushbutton (`9e930b2`), the true-alpha photo plate (`d027c31`), and landed back on the
-   red chunky one (`eadf56f`). Dan has not picked. Codex owns the file.
+   red chunky one (`eadf56f`). Dan has not picked. Session B owns the file.
 
 No commit splits proposed by Claude Code: all of its work is committed and the tree is clean.
 
@@ -101,7 +123,7 @@ Dan's Higgsfield plates replace the two jpgs 1:1 (same paths, same names), no co
   `src/assets/hero/hero-wall-m.jpg`; a 16:9 desktop plate is still needed (prompt A).
 - Still owed once real plates land: contrast re-measure (4.5:1 on kicker/lede), plate opacity vs smoke,
   `DESIGN.md` §0 / §4 / §5 / §7 / §10, plate size ≤250 KB check.
-- Note: `tasks/todo.md` was rewritten in the working tree by Codex (/gas plan, uncommitted); Step 3
+- Note: `tasks/todo.md` was rewritten by Claude session B (/gas plan, now committed); Step 3
   hero plan text lives in commit `4c65acc`. Not staged by Claude.
 Dan, with a screenshot of the live hero: patina / garage vibe on the first screen, keep the gauge and
 its readings where they are, show "we are a music plugin company", assets from Higgsfield, creative,
