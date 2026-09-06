@@ -10,7 +10,62 @@
 
 # Website handoff
 
-Updated: 2026-09-06 (/gas conversion pass committed locally, NOT pushed; hero patina pass wired with stand-in plates, local only)
+Updated: 2026-09-06 (session close. Everything PUSHED and LIVE as `eadf56f`. Hero plate is live wearing PLACEHOLDER art - real Higgsfield plates still owed. Hero bench reverted and verified clean.)
+
+## SESSION CLOSE 2026-09-06 (Claude Code) - read this first
+
+State: branch `main`, PUSHED and LIVE at `eadf56f`. Do NOT trust any ahead-count written here -
+two writers push this branch. Run `git fetch origin && git rev-list --count origin/main..HEAD`.
+This file was committed after the push, so expect at least 1 ahead until someone pushes again.
+All 12 local commits reached the remote at 2026-09-06 17:40 local. Claude Code did NOT run that push
+and never had Dan word for it - his standing rule was "never push until i say to push clearly".
+Commit identity is the shared `shlik` for both assistants, so git cannot say who ran it. Most likely
+reading: Dan told Codex to push, the same way he steered its CTA reverts ("revert 2 times") in the
+block above. Not treated as a rule break by anyone, just recorded. NOT undone either: reversing a
+live deploy is Dan call alone.
+
+CONSEQUENCE, the part that matters: the hero patina plate shipped to production wearing the
+PROCEDURAL STAND-IN art, not Dan Higgsfield plates. revaudio.net now serves
+`--plate-d:url(/_astro/hero-wall.CPIqxQSZ_1jT112.webp)`, a 43 KB PIL-generated gunmetal placeholder,
+plus the 27 KB portrait one on phones. Pages deploy run `34039918954` succeeded, smoke test
+`34039919110` passed. Dropping the real plates at the same two paths corrects it with no code
+change. How it actually reads, verified not assumed (headless Edge shot of the live URL at
+1280x800): the stand-in reads as a dark warm panelled wall with faint rivets and seams. Headline,
+kicker, red sweep and gauge medallion are all legible and on-brand; nothing looks broken. What is
+MISSING is every prop from prompt A - no trouble lamp, no headphones, no walnut shelf, no VU
+meters, no dust beam. So this is a swap-when-ready, NOT an emergency revert.
+Six are Claude Code (`4c65acc` `0be6bf5` `481560c` `8e675ca` `8c6932a` `c551052`), six are Codex
+(`de69bad` `d6d10a3` `f6a3612` `9e930b2` `d027c31` `eadf56f`). `481560c` and `8e675ca` are the hero
+tuning bench: still in history as commits, but their content is undone by `8c6932a`.
+
+Working tree: clean (this file is committed). CODEX WAS STILL COMMITTING AND THEN PUSHED WHILE THIS WAS
+BEING WRITTEN (`d027c31`, `eadf56f`, then the push), so re-check `git ls-remote origin refs/heads/main`
+before trusting anything above. Codex tried a true-alpha photo-plate CTA on /gas in `d027c31` and reverted
+it in `eadf56f`; `src/pages/gas.astro` is back to its `f6a3612` state, byte-identical. Codex owns
+that file - do not stage, commit or revert it.
+
+Background process left running: `astro preview` node pid 52112, 0.0.0.0:4321, serving `dist/`,
+LAN `http://10.0.0.102:4321/`. Stop it BY PID only: `taskkill /PID 52112 /F`. Never broad-kill node.
+
+Unverified at close:
+- `dist/` predates Codex commits `9e930b2` / `d027c31` / `eadf56f`, so the built /gas is stale.
+  The hero in `dist/` is current and was checked. Rebuild before judging /gas from `dist/`.
+- Hero scrim contrast has NOT been re-measured against a real photo plate; the shipping numbers
+  (1.18 / 120% / 43% / 61% = 5.16:1) were measured against the procedural stand-in.
+
+Next session decides:
+1. FIRST, because placeholder art is live right now: get the two Higgsfield plates onto disk.
+   Portrait 9:16 -> `src/assets/hero/hero-wall-m.jpg`, desktop 16:9 -> `src/assets/hero/hero-wall.jpg`.
+   Prompts in `tasks/hero-higgsfield-prompts.md`. Dan sent a 1600x2400 portrait in chat on 2026-09-06
+   that never reached disk - ask him for the FILE, not the image.
+2. Owed the moment real plates land, all still open: re-measure scrim contrast (4.5:1 on kicker and
+   lede - the shipping 1.18 / 120% / 43% / 61% = 5.16:1 was measured against the stand-in), plate
+   opacity against the smoke, plate under 250 KB at 1920, and the `DESIGN.md` ride-along (0/4/5/7/10).
+3. The /gas CTA look. Codex has now tried three: the red chunky button (`f6a3612`), the garage
+   anodized pushbutton (`9e930b2`), the true-alpha photo plate (`d027c31`), and landed back on the
+   red chunky one (`eadf56f`). Dan has not picked. Codex owns the file.
+
+No commit splits proposed by Claude Code: all of its work is committed and the tree is clean.
 
 ## 2026-09-06 (latest) - /gas sells more: DONE, committed locally, NOT pushed
 Owner: Claude Code. Repo `revaudio-website`, branch `main` (local, ahead of `origin/main`).
@@ -64,6 +119,20 @@ on brand.
   knobs, commits `481560c` + `8e675ca`). Dan: "delete this bench, stick with what we already
   committed and live". Reverted by file in `8c6932a`; the hero is exactly `0be6bf5` again.
 - Rule still in force: no push without Dan's word "push".
+- VERIFIED CLEAN after the revert (Dan: "so you are sure we clean ?"). Eight checks: working tree
+  clean; zero diff vs `0be6bf5` on `src/pages/index.astro` and `tools/revedit/revedit.manifest.json`;
+  no `--plate-*` / `--lamp-*` / `--scrim-d*` / `hero.plate` string anywhere in `src/` or `tools/`;
+  no plate `data-edit` hook (only the pre-existing `hero.text` + subs + `hero.gauge`); port 4430 dead;
+  `origin/main` still `18afe01`; `dist/` carries no knob and still ships the plate.
+- Clean confirmed IN PRODUCTION too, not only in the working tree: `curl https://revaudio.net/`
+  ships exactly two `data-edit` hooks (`hero.text`, `hero.gauge`, both pre-existing) and neither
+  live CSS bundle (`index.BzKgap4_.css`, `_slug_.CgmTf5oC.css`) contains `--plate-*`, `--lamp-*`
+  or `--scrim-d*`. No bench knob reached the live site.
+- One leftover found and cleared: the gitignored `revedit.overrides.json` still held an orphan
+  `hero.plate` entry plus its slot in the desktop `order` list, created by the bench discovery pass.
+  Removed. The pre-existing `hero.gauge` values (x -12, y 1, needle -135) were preserved. Local-only
+  file, so it never reached a build or the live site - but a `git checkout` revert does NOT clean it,
+  which is why it was missed on the first pass.
 
 ## 2026-09-06 — garage homepage pass: word wall + smoke (pushed as `18afe01`)
 Owner: Claude Code. Repo `revaudio-website`, branch `main` (local, ahead of `origin/main`).
