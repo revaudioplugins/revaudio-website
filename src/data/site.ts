@@ -110,6 +110,16 @@ export const site = {
     portalUrl: 'https://revlimiter-license.revaudio.workers.dev/download',
   },
 
+  /**
+   * Support chat (SupportChat.astro, mounted on /support only). Free-text
+   * messages POST {message, src, page} to `workerUrl` and expect
+   * {reply: string, handoff?: boolean}. Empty = tiles answer locally, free
+   * text is pointed at the tiles / a human. Yoni owns the worker.
+   */
+  supportChat: {
+    workerUrl: '',
+  },
+
   // Same `downloadGate.workerUrl` above also serves WelcomeDiscountPopup.astro's
   // POST `${workerUrl}/popup-signup` (the scroll-triggered "10% off your first
   // order" popup) — no separate config needed, it's the same license Worker.
