@@ -15,58 +15,178 @@
    reveal lib animates the item's opacity to 1 and would erase the fade. */
 import { Image } from 'astro:assets';
 import GarageWall from './GarageWall.astro';
-import uiImg from '../assets/plugins/revlimiter-hero.png';
+import rlImg from '../assets/plugins/revlimiter-hero.png';
+import gasImg from '../assets/plugins/gas-hero.png';
+import rrImg from '../assets/plugins/radioroulette-hero.png';
 
-const words = [
-  { w: 'Loud',   o: 0.5 },
-  { w: 'Warm',   o: 0.72 },
-  { w: 'Punchy', o: 1, hot: true },
-  { w: 'Glued',  o: 0.72 },
-  { w: 'Deep',   o: 0.5 },
+/* One panel per plugin in the carousel rotation. The panel whose slug matches
+   the centred slide is the visible one; PluginShowcase dispatches
+   `showcase:change` {slug} on every move and the script below swaps panels.
+   First panel = the carousel's first slide (RevLimiter), visible at load with
+   the scroll-reveal stagger; the others enter with a CSS stagger on swap.
+   Keep the order in sync with SLIDES in PluginShowcase.astro. */
+type Word = { w: string; o: number; hot?: boolean };
+type Panel = {
+  slug: string;
+  name: string;
+  words: Word[];
+  img: ImageMetadata;
+  alt: string;
+  portrait?: boolean;
+  blurb: string;
+};
+const panels: Panel[] = [
+  {
+    slug: 'revlimiter',
+    name: 'RevLimiter',
+    words: [
+      { w: 'Loud',   o: 0.5 },
+      { w: 'Warm',   o: 0.72 },
+      { w: 'Punchy', o: 1, hot: true },
+      { w: 'Glued',  o: 0.72 },
+      { w: 'Deep',   o: 0.5 },
+    ],
+    img: rlImg,
+    alt: 'RevLimiter plugin window: the rev gauge with its redline, the band controls and the meters',
+    blurb:
+      'Multiband compression, saturation and an adaptive limiter in one chain, built to sit early in your master chain. The redline is the ceiling.',
+  },
+  {
+    slug: 'gas',
+    name: 'GAS',
+    words: [
+      { w: 'Gritty', o: 0.5 },
+      { w: 'Warm',   o: 0.72 },
+      { w: 'Driven', o: 1, hot: true },
+      { w: 'Thick',  o: 0.72 },
+      { w: 'Raw',    o: 0.5 },
+    ],
+    img: gasImg,
+    alt: 'GAS plugin window: one DRIVE knob with the Tube, Tape and Fuzz selector and the heat lamp',
+    portrait: true,
+    blurb:
+      'One DRIVE knob, three voices: Tube, Tape, Fuzz. Turn it and the character changes, never the volume. Free, and it stays free.',
+  },
+  {
+    slug: 'radio-roulette',
+    name: 'Radio Roulette',
+    words: [
+      { w: 'Random',  o: 0.5 },
+      { w: 'Twisted', o: 0.72 },
+      { w: 'Lucky',   o: 1, hot: true },
+      { w: 'Weird',   o: 0.72 },
+      { w: 'Alive',   o: 0.5 },
+    ],
+    img: rrImg,
+    alt: 'Radio Roulette plugin window: the tuning dial, the lit effect names on the glass, five station keys and the VU',
+    blurb:
+      'Ten effects on one dial, set by a single station number. Tune it, or let it scan and land somewhere you would never have picked yourself.',
+  },
 ];
 ---
 
-<GarageWall id="sound" ariaLabel="What RevLimiter does">
-  <div class="ww">
-    <div class="ww-words">
-      <p class="ww-tag">What it does</p>
-      <ul class="ww-list" role="list" data-reveal-group data-stagger="0.07">
-        {words.map((x) => (
-          <li data-reveal-item>
-            <span class:list={['ww-word', { 'is-hot': x.hot }]} style={`--o:${x.o}`}>{x.w}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
+<GarageWall id="sound" ariaLabel="What the plugin does">
+  <div class="ww" data-wordwall>
+    {panels.map((p, i) => (
+      <div
+        class:list={['ww-panel', { 'is-active': i === 0, 'is-portrait': p.portrait }]}
+        data-ww-panel={p.slug}
+        aria-hidden={i === 0 ? 'false' : 'true'}
+      >
+        <div class="ww-words">
+          <p class="ww-tag">What it does</p>
+          <ul
+            class="ww-list"
+            role="list"
+            {...(i === 0 ? { 'data-reveal-group': true, 'data-stagger': '0.07' } : {})}
+          >
+            {p.words.map((x, k) => (
+              <li {...(i === 0 ? { 'data-reveal-item': true } : {})} style={`--i:${k}`}>
+                <span class:list={['ww-word', { 'is-hot': x.hot }]} style={`--o:${x.o}`}>{x.w}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
 
-    <figure class="ww-ui" data-reveal="card">
-      <Image
-        src={uiImg}
-        alt="RevLimiter plugin window: the rev gauge with its redline, the band controls and the meters"
-        width={1400}
-        widths={[640, 960, 1400]}
-        sizes="(max-width: 860px) 92vw, 50vw"
-        format="webp"
-        quality={86}
-        loading="lazy"
-      />
-      <figcaption>
-        <strong>RevLimiter.</strong> Multiband compression, saturation and an adaptive limiter in
-        one chain, built to sit early in your master chain. The redline is the ceiling.
-      </figcaption>
-    </figure>
+        <figure class="ww-ui" {...(i === 0 ? { 'data-reveal': 'card' } : {})}>
+          <Image
+            src={p.img}
+            alt={p.alt}
+            width={1400}
+            widths={[640, 960, 1400]}
+            sizes="(max-width: 860px) 92vw, 50vw"
+            format="webp"
+            quality={86}
+            loading="lazy"
+          />
+          <figcaption>
+            <strong>{p.name}.</strong> {p.blurb}
+          </figcaption>
+        </figure>
+      </div>
+    ))}
   </div>
 </GarageWall>
+
+<script>
+  /* Follow the carousel: PluginShowcase fires showcase:change {slug} on every
+     move. Swap the matching panel in; the CSS below crossfades and re-runs
+     the word stagger. Unknown slug (a slide with no panel) = keep the current
+     panel rather than blank the wall. */
+  const wall = document.querySelector<HTMLElement>('[data-wordwall]');
+  if (wall) {
+    const panels = Array.from(wall.querySelectorAll<HTMLElement>('[data-ww-panel]'));
+    const section = wall.closest<HTMLElement>('section');
+    document.addEventListener('showcase:change', (e) => {
+      const slug = (e as CustomEvent<{ slug?: string }>).detail?.slug;
+      const next = panels.find((p) => p.dataset.wwPanel === slug);
+      if (!next || next.classList.contains('is-active')) return;
+      panels.forEach((p) => {
+        const on = p === next;
+        p.classList.toggle('is-active', on);
+        p.setAttribute('aria-hidden', on ? 'false' : 'true');
+      });
+      const name = next.querySelector('figcaption strong')?.textContent?.replace(/\.$/, '') ?? 'the plugin';
+      section?.setAttribute('aria-label', `What ${name} does`);
+    });
+  }
+</script>
 
 <style>
   .ww {
     max-width: var(--maxw);
     margin: 0 auto;
     padding: clamp(2.5rem, 6vw, 5rem) clamp(1rem, 4vw, 2.5rem);
+    /* all panels stacked in one cell: the wall keeps the tallest panel's
+       height so swapping never shifts the sections below */
+    display: grid;
+  }
+  .ww-panel {
+    grid-area: 1 / 1;
     display: grid;
     grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
     gap: clamp(1.5rem, 5vw, 5rem);
     align-items: center;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 320ms ease, visibility 0s linear 320ms;
+  }
+  .ww-panel.is-active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity 320ms ease 60ms, visibility 0s;
+  }
+  /* swap-in stagger for the non-first panels (the first one rides the
+     scroll-reveal lib instead); one word after another, top to bottom */
+  .ww-panel:not(:first-child).is-active .ww-list li {
+    animation: ww-strike 420ms cubic-bezier(0.2, 0.9, 0.25, 1.1) both;
+    animation-delay: calc(60ms + var(--i, 0) * 70ms);
+  }
+  @keyframes ww-strike {
+    from { opacity: 0; transform: translateY(18px) scale(0.97); }
+    to   { opacity: 1; transform: none; }
   }
 
   .ww-tag {
@@ -128,6 +248,20 @@ const words = [
       0 1px 0 0 #000,
       0 24px 48px rgba(0, 0, 0, 0.55);
   }
+  /* GAS's window is a tall single-knob panel: cap it and centre it so it
+     hangs like the others instead of towering over the words */
+  .ww-panel.is-portrait .ww-ui img {
+    width: auto;
+    max-width: 100%;
+    max-height: clamp(22rem, 46vw, 34rem);
+    margin: 0 auto;
+  }
+  .ww-panel.is-portrait .ww-ui figcaption {
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+  }
+
   .ww-ui figcaption {
     margin-top: 1.1rem;
     max-width: 36rem;
@@ -147,7 +281,7 @@ const words = [
   }
 
   @media (max-width: 860px) {
-    .ww {
+    .ww-panel {
       grid-template-columns: 1fr;
       gap: 2rem;
     }
@@ -156,6 +290,8 @@ const words = [
 
   @media (prefers-reduced-motion: reduce) {
     .ww-word { transition: none; }
+    .ww-panel { transition: none; }
+    .ww-panel:not(:first-child).is-active .ww-list li { animation: none; }
   }
 
   :global(html.hc) .ww-word {
