@@ -310,8 +310,27 @@ const wallM = await getImage({ src: wallMImg, width: 1080, format: 'webp', quali
 
           // No y/scale/opacity arrival for the dial — it is already there. The
           // needle still revs: floor it to the stop, then settle back to idle.
-          tl.to(state, { base: A_MAX, duration: 0.85, ease: 'power3.in' }, 0.9) // floor it
-            .to(state, { base: A_IDLE, duration: 1.1, ease: 'back.out(1.05)' }, '>'); // settle to idle
+          // The rev leads the headline now (Dan, 2026-09-07). It used to be
+          // scheduled at 0.9s, but on power3.in the needle had travelled 3deg
+          // by 1.09s and 24deg by 1.28s — so the eye saw it start at ~1.3s,
+          // exactly when the headline landed. Measured lead was 0.10s: the two
+          // read as one event. The ease was the real culprit, not the beat —
+          // power3.in hides the first half of the travel wherever it starts.
+          // At power2.in from 0.1s the needle moves at 0.87s, peaks at 1.34s
+          // and is settled at 1.79s, with the headline at 1.93s: a 1.06s lead,
+          // so the gauge introduces the page and the words are the payoff.
+          // Free bonus of being this early — --circles has not darkened the
+          // glass yet, so the needle is at its most visible while it moves
+          // (measured effective opacity >= 0.95 across the whole rev).
+          // Desktop only, deliberately: on mobile the headline lands at 0.15s
+          // by design (a late headline on the only first-screen content reads
+          // as a hang), so the measured lead there is -0.11s — needle and
+          // headline are simultaneous. Buying a lead on mobile would mean
+          // delaying that headline, which is a rule this file already made the
+          // other way. Mobile also stacks the dial BELOW the headline, so the
+          // reading order is vertical there, not chronological.
+          tl.to(state, { base: A_MAX, duration: 0.65, ease: 'power2.in' }, 0.1) // floor it
+            .to(state, { base: A_IDLE, duration: 0.9, ease: 'back.out(1.05)' }, '>'); // settle to idle
 
           // ── Scroll: rev toward the redline as the hero leaves the viewport ──
           ScrollTrigger.create({
