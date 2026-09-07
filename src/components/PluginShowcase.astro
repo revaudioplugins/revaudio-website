@@ -160,6 +160,9 @@ const CART: CartCta[] = SLIDES.map((s) => {
       href: null,
       attrs: {
         'data-add-to-cart': true,
+        // Opt in to Cart.astro's label swap: once it's in the cart this chip
+        // reads "In your cart" and a second press opens the drawer.
+        'data-cart-label': true,
         'data-slug': p.slug,
         'data-name': p.name,
         'data-price': p.regularPriceUsd ?? p.introPriceUsd,
@@ -752,6 +755,15 @@ const peekClass = (i: number) => {
   }
   .sc-cart:hover { background: var(--brass-bright); }
   .sc-cart:active { transform: scale(0.96); }
+  /* Already in the cart: the chip steps down from filled brass to an outline,
+     so the card stops shouting "buy me" at something already bought. It stays
+     a live control — pressing it opens the drawer. */
+  .sc-cart.is-in-cart {
+    background: transparent;
+    color: var(--brass-bright);
+    border-color: var(--brass);
+  }
+  .sc-cart.is-in-cart:hover { background: rgba(201, 163, 92, 0.14); }
   /* Hovering the chip is not hovering the card CTA — keep "More Details" at
      rest so the two controls never light up together. */
   .sc-slide:has(.sc-cart:hover) .sc-more {
