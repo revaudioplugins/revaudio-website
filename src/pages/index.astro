@@ -10,7 +10,7 @@ import EmailCapture from '../components/EmailCapture.astro';
 import SubscribeModal from '../components/SubscribeModal.astro';
 import faceImg from '../assets/hero/rev-gauge-face.png';
 import needleImg from '../assets/hero/needle-v2.png';
-import hubImg from '../assets/hero/hub-v2.png';
+import hubImg from '../assets/hero/hub-v3.png';
 import wallImg from '../assets/hero/hero-wall.jpg';
 import wallMImg from '../assets/hero/hero-wall-m.jpg';
 import { plugins, dlGateId } from '../data/plugins';
@@ -25,17 +25,24 @@ const trialGateId = dlGateId(revlimiter);
 const trialRegisterUrl = site.downloadGate.workerUrl + '/download/register';
 
 /* Gauge geometry — the plugin's 406-viewBox units as % of the square dial box:
-   needle <image> x122 y67.69 w162.4 (pivot at 49.877%/83.32% of its own box);
-   hub w45.5. Both hang off ONE pivot: the hub centre measured on the plate
-   (design-assets/instagram/revaudio-gauge/cut-hub.py prints it). The
-   Higgsfield plate drifts the hub ~1.5% left of the bezel centre, so the
-   pivot is NOT 50/50 — a needle spun about the geometric centre would orbit
-   the hub visibly. Re-measure and update PIVOT whenever the plate changes.
-   Reused at both dial sizes below — all child positioning is %-based, so it
-   scales as one regardless of the dial's own width. */
-const PIVOT = { x: 48.525, y: 49.822 };
+   needle <image> x122 y67.69 w162.4 (pivot at 49.877%/83.32% of its own box).
+   Needle and hub hang off ONE pivot: the centre of the cap's RIM CIRCLE on
+   the plate, least-squares fitted by design-assets/instagram/revaudio-gauge/
+   cut-hub.py, which prints both constants below. The Higgsfield plate puts
+   the cap off the bezel centre, so the pivot is NOT 50/50 — a needle spun
+   about the geometric centre would orbit the hub visibly.
+   Why the rim and not the bright-pixel centroid (the first cut, 48.525/49.822):
+   a lit dome is brightest toward the lamp, so its centroid sits ~1/4 radius
+   up-left of the cap's machined centre-mark — 9 css px at 640, enough that
+   the needle visibly pivoted beside the cap instead of under it. HW is the
+   cut's own box (rim + 3px feather), not the plugin's 45.5/406 hub box, which
+   was a third wider than the cap and laid opaque face pixels over the needle
+   root on one side. Re-run cut-hub.py and paste both whenever the plate
+   changes. Reused at both dial sizes below — all child positioning is
+   %-based, so it scales as one regardless of the dial's own width. */
+const PIVOT = { x: 49.900, y: 51.055 };
 const NW = 40, NOX = 0.49877, NOY = 0.8332;
-const HW = 11.207;
+const HW = 9.974;
 const N = {
   left: `${(PIVOT.x - NW * NOX).toFixed(3)}%`,
   top: `${(PIVOT.y - NW * NOY).toFixed(3)}%`,
@@ -186,17 +193,19 @@ const wallM = await getImage({ src: wallMImg, width: 1080, format: 'webp', quali
         if (needle) gsap.set(needle, { rotation: A_IDLE });
       });
     } else {
-      // ── Entrance: text cascade + redline sweep + dial settle ──
-      // Desktop arrives slowly (tuned in RevEdit against the backdrop
-      // medallion, where a long fade reads as the disc lighting up). Mobile
-      // keeps the original snap: there the hero IS the whole first screen and
-      // a ~3.6s arrival reads as the page hanging, not as atmosphere.
-      // Matched once at load — the entrance is a one-shot, so resizing across
-      // the breakpoint afterwards has nothing left to re-time. Breakpoint is
-      // the same 860px the layout switches on, below.
+      // ── Entrance: text cascade + redline sweep + the dial darkening ──
+      // The dial itself no longer arrives — it is already hanging on the wall
+      // (Dan, 2026-09-07). What was the disc's fade is now the darkening's:
+      // the two circles come up from clear glass, which reads as the gauge
+      // going under shade rather than as a picture loading in.
+      // Desktop arrives slowly. Mobile keeps the original snap: there the hero
+      // IS the whole first screen and a ~3.6s arrival reads as the page
+      // hanging, not as atmosphere. Matched once at load — the entrance is a
+      // one-shot, so resizing across the breakpoint afterwards has nothing
+      // left to re-time. Breakpoint is the same 860px the layout switches on.
       const slowIn = !matchMedia('(max-width: 860px)').matches;
       const textDur = slowIn ? 3 : 0.6;
-      const dialDur = slowIn ? 2.65 : 0.8;
+      const circleDur = slowIn ? 1.8 : 0.7;
 
       const startEntrance = () => {
         const tl = gsap.timeline({ defaults: { ease: 'expo.out' } });
@@ -261,6 +270,17 @@ const wallM = await getImage({ src: wallMImg, width: 1080, format: 'webp', quali
           }
         }
 
+        // The darkening, arriving. Starts a beat before the headline (1.3s on
+        // desktop) and is essentially home by ~1.6s, so the copy never lands
+        // on glass that has not dimmed yet — the measured contrast in the CSS
+        // above is the end state, and this makes sure the end state is what
+        // the first readable frame shows. GSAP tweens the custom property, so
+        // both pseudo-elements follow without either being a target.
+        const medallion = root.querySelector<HTMLElement>('.hero-medallion');
+        if (medallion) {
+          tl.fromTo(medallion, { '--circles': 0 }, { '--circles': 1, duration: circleDur, ease: 'power2.out' }, 0.2);
+        }
+
         // One render path per dial, three signals each — base (load sweep →
         // idle), scroll deflection, pointer micro-deflection (lerped). Only
         // one of the two dials is ever visible at a time (desktop vs mobile
@@ -276,8 +296,9 @@ const wallM = await getImage({ src: wallMImg, width: 1080, format: 'webp', quali
             gsap.set(needle, { rotation: Math.min(state.base + state.scroll + state.pointer, A_MAX) });
           });
 
-          tl.fromTo(dial, { y: 40, scale: 0.88, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: dialDur }, 0.35)
-            .to(state, { base: A_MAX, duration: 0.85, ease: 'power3.in' }, 0.9) // floor it
+          // No y/scale/opacity arrival for the dial — it is already there. The
+          // needle still revs: floor it to the stop, then settle back to idle.
+          tl.to(state, { base: A_MAX, duration: 0.85, ease: 'power3.in' }, 0.9) // floor it
             .to(state, { base: A_IDLE, duration: 1.1, ease: 'back.out(1.05)' }, '>'); // settle to idle
 
           // ── Scroll: rev toward the redline as the hero leaves the viewport ──
@@ -338,9 +359,15 @@ const wallM = await getImage({ src: wallMImg, width: 1080, format: 'webp', quali
      transforms, so a transform-based pre-hide would swallow the element the
      moment the editor re-applies after the entrance. */
   :global(html.motion-ok) [data-hero-in],
-  :global(html.motion-ok) [data-dial],
   :global(html.motion-ok) .hh-h1,
   :global(html.motion-ok) [data-hero-sweep] { opacity: 0; }
+  /* The desktop dial is deliberately NOT pre-hidden: it hangs on the patina
+     wall before anything moves, the way an object in the room does. What
+     arrives instead is the darkening — --circles takes both gradients from
+     clear glass to their tuned alphas, so the gauge is lit brass at first
+     paint and dims as the copy lands on it. The mobile dial is unaffected: it
+     carries data-hero-in and still rides the text cascade above. */
+  :global(html.motion-ok) .hero-medallion { --circles: 0; }
   /* border-bottom: none overrides the global .hero divider — the hero should
      flow straight into the plugin showcase. */
   /* Bottom padding is the whole hero→showcase gap: the seam below the gauge
@@ -487,6 +514,10 @@ const wallM = await getImage({ src: wallMImg, width: 1080, format: 'webp', quali
      so moving core or edge stretches the whole falloff instead of moving one
      stop and kinking the curve. */
   .hero-medallion {
+    /* Entrance multiplier on BOTH circles: 0 = clear glass, 1 = the tuned
+       values below. The hero timeline tweens it; everything else leaves it
+       alone, so the bench's numbers stay the numbers that were measured. */
+    --circles: 1;
     --tint: 0.94;      /* peak alpha at the centre */
     --tint-core: 0%;  /* first falloff stop */
     --tint-edge: 78%;  /* where it reaches zero */
@@ -522,14 +553,14 @@ const wallM = await getImage({ src: wallMImg, width: 1080, format: 'webp', quali
     pointer-events: none;
     background: radial-gradient(
       circle at var(--tint-cx) var(--tint-cy),
-      rgba(var(--tint-r), var(--tint-g), var(--tint-b), var(--tint)) 0%,
-      rgba(var(--tint-r), var(--tint-g), var(--tint-b), calc(var(--tint) * var(--tint-a2)))
+      rgba(var(--tint-r), var(--tint-g), var(--tint-b), calc(var(--tint) * var(--circles))) 0%,
+      rgba(var(--tint-r), var(--tint-g), var(--tint-b), calc(var(--tint) * var(--tint-a2) * var(--circles)))
         var(--tint-core),
-      rgba(var(--tint-r), var(--tint-g), var(--tint-b), calc(var(--tint) * var(--tint-a3)))
+      rgba(var(--tint-r), var(--tint-g), var(--tint-b), calc(var(--tint) * var(--tint-a3) * var(--circles)))
         calc(var(--tint-core) + (var(--tint-edge) - var(--tint-core)) * 0.34),
-      rgba(var(--tint-r), var(--tint-g), var(--tint-b), calc(var(--tint) * var(--tint-a4)))
+      rgba(var(--tint-r), var(--tint-g), var(--tint-b), calc(var(--tint) * var(--tint-a4) * var(--circles)))
         calc(var(--tint-core) + (var(--tint-edge) - var(--tint-core)) * 0.63),
-      rgba(var(--tint-r), var(--tint-g), var(--tint-b), calc(var(--tint) * var(--tint-a5)))
+      rgba(var(--tint-r), var(--tint-g), var(--tint-b), calc(var(--tint) * var(--tint-a5) * var(--circles)))
         calc(var(--tint-core) + (var(--tint-edge) - var(--tint-core)) * 0.87),
       rgba(var(--tint-r), var(--tint-g), var(--tint-b), 0) var(--tint-edge)
     );
@@ -548,14 +579,14 @@ const wallM = await getImage({ src: wallMImg, width: 1080, format: 'webp', quali
     pointer-events: none;
     background: radial-gradient(
       circle at var(--veil-cx) var(--veil-cy),
-      rgba(var(--veil-r), var(--veil-g), var(--veil-b), var(--veil)) 0%,
-      rgba(var(--veil-r), var(--veil-g), var(--veil-b), calc(var(--veil) * var(--veil-a2)))
+      rgba(var(--veil-r), var(--veil-g), var(--veil-b), calc(var(--veil) * var(--circles))) 0%,
+      rgba(var(--veil-r), var(--veil-g), var(--veil-b), calc(var(--veil) * var(--veil-a2) * var(--circles)))
         var(--veil-core),
-      rgba(var(--veil-r), var(--veil-g), var(--veil-b), calc(var(--veil) * var(--veil-a3)))
+      rgba(var(--veil-r), var(--veil-g), var(--veil-b), calc(var(--veil) * var(--veil-a3) * var(--circles)))
         calc(var(--veil-core) + (var(--veil-edge) - var(--veil-core)) * 0.34),
-      rgba(var(--veil-r), var(--veil-g), var(--veil-b), calc(var(--veil) * var(--veil-a4)))
+      rgba(var(--veil-r), var(--veil-g), var(--veil-b), calc(var(--veil) * var(--veil-a4) * var(--circles)))
         calc(var(--veil-core) + (var(--veil-edge) - var(--veil-core)) * 0.63),
-      rgba(var(--veil-r), var(--veil-g), var(--veil-b), calc(var(--veil) * var(--veil-a5)))
+      rgba(var(--veil-r), var(--veil-g), var(--veil-b), calc(var(--veil) * var(--veil-a5) * var(--circles)))
         calc(var(--veil-core) + (var(--veil-edge) - var(--veil-core)) * 0.87),
       rgba(var(--veil-r), var(--veil-g), var(--veil-b), 0) var(--veil-edge)
     );
@@ -722,15 +753,28 @@ const wallM = await getImage({ src: wallMImg, width: 1080, format: 'webp', quali
     border-radius: 50%; /* masks the panel-leather corners of the capture */
   }
 
+  /* One lamp, top-left (the trouble light on the wall): both shadows fall
+     down-right. The cap's is tight — it sits a couple of mm over the needle,
+     so its shadow lands ON the needle root and is what makes the two read
+     as one assembly rather than a blade laid next to a button. */
   .g-needle {
     position: absolute;
-    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.5));
+    filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.5));
+    /* First-paint angle. The dial is visible before any script runs now, so
+       an un-rotated needle (0° = straight up) showed for a frame and then
+       snapped to the sweep's start — the glitch Dan saw on reload. Static
+       visitors (no JS, reduced motion) get idle; the motion path starts the
+       needle exactly where the GSAP ticker's first frame puts it (A_MIN), so
+       there is nothing to snap. GSAP's inline transform takes over from here. */
+    transform: rotate(-90deg);
   }
+  :global(html.motion-ok) .g-needle { transform: rotate(-135deg); }
   .g-needle :global(img) { width: 100%; height: auto; display: block; }
 
   .hero-dial :global(img.g-hub) {
     position: absolute;
     height: auto;
+    filter: drop-shadow(1.5px 2.5px 3px rgba(0, 0, 0, 0.6));
   }
 
   /* Glass: one soft highlight matching the plate's baked upper-left
