@@ -25,11 +25,25 @@ const trialGateId = dlGateId(revlimiter);
 const trialRegisterUrl = site.downloadGate.workerUrl + '/download/register';
 
 /* Gauge geometry — the plugin's 406-viewBox units as % of the square dial box:
-   needle <image> x122 y67.69 w162.4, pivot (203,203); hub x180.54 y181.08 w45.5.
+   needle <image> x122 y67.69 w162.4 (pivot at 49.877%/83.32% of its own box);
+   hub w45.5. Both hang off ONE pivot: the hub centre measured on the plate
+   (design-assets/instagram/revaudio-gauge/cut-hub.py prints it). The
+   Higgsfield plate drifts the hub ~1.5% left of the bezel centre, so the
+   pivot is NOT 50/50 — a needle spun about the geometric centre would orbit
+   the hub visibly. Re-measure and update PIVOT whenever the plate changes.
    Reused at both dial sizes below — all child positioning is %-based, so it
    scales as one regardless of the dial's own width. */
-const N = { left: '30.049%', top: '16.672%', w: '40%', ox: '49.877%', oy: '83.32%' };
-const H = { left: '44.468%', top: '44.601%', w: '11.207%' };
+const PIVOT = { x: 48.525, y: 49.822 };
+const NW = 40, NOX = 0.49877, NOY = 0.8332;
+const HW = 11.207;
+const N = {
+  left: `${(PIVOT.x - NW * NOX).toFixed(3)}%`,
+  top: `${(PIVOT.y - NW * NOY).toFixed(3)}%`,
+  w: `${NW}%`,
+  ox: `${(NOX * 100).toFixed(3)}%`,
+  oy: `${(NOY * 100).toFixed(2)}%`,
+};
+const H = { left: `${(PIVOT.x - HW / 2).toFixed(3)}%`, top: `${(PIVOT.y - HW / 2).toFixed(3)}%`, w: `${HW}%` };
 
 /* The back wall behind the hero (hero patina pass, tasks/todo.md Step 3).
    Two photo plates, landscape for desktop and portrait for phones, applied
@@ -71,12 +85,13 @@ const wallM = await getImage({ src: wallMImg, width: 1080, format: 'webp', quali
 
         {/* Mobile-only: small gauge under the headline (desktop uses the
             original full-size gauge, to the right of this text column). */}
-        <div class="hero-dial hero-dial-mobile" data-dial data-hero-in role="img" aria-label="RevLimiter rev gauge, needle at idle">
+        <div class="hero-dial hero-dial-mobile" data-dial data-hero-in role="img" aria-label="RevAudio rev gauge, needle at idle">
           <Image class="g-face" src={faceImg} alt="" width={360} format="webp" loading="eager" />
           <div class="g-needle" data-needle style={`left:${N.left}; top:${N.top}; width:${N.w}; transform-origin:${N.ox} ${N.oy};`}>
             <Image src={needleImg} alt="" width={170} format="webp" loading="eager" />
           </div>
           <Image class="g-hub" src={hubImg} alt="" width={60} format="webp" loading="eager" style={`left:${H.left}; top:${H.top}; width:${H.w};`} />
+          <div class="g-glass" aria-hidden="true"></div>
         </div>
 
         <p class="hh-lede" data-hero-in data-edit-sub="lede">
@@ -99,12 +114,13 @@ const wallM = await getImage({ src: wallMImg, width: 1080, format: 'webp', quali
           concerns apart (wrapper = where + how dim, dial = how it animates)
           and means the motion script needs no changes at all. */}
       <div class="hero-medallion" data-edit="hero.gauge">
-        <div class="hero-dial hero-dial-desktop" data-dial role="img" aria-label="RevLimiter rev gauge, needle at idle">
+        <div class="hero-dial hero-dial-desktop" data-dial role="img" aria-label="RevAudio rev gauge, needle at idle">
           <Image class="g-face" src={faceImg} alt="" width={1173} widths={[400, 640, 900, 1173]} sizes="(max-width: 860px) 300px, (min-width: 1392px) 640px, 46vw" format="webp" loading="eager" />
           <div class="g-needle" data-needle style={`left:${N.left}; top:${N.top}; width:${N.w}; transform-origin:${N.ox} ${N.oy};`}>
             <Image src={needleImg} alt="" width={500} format="webp" loading="eager" />
           </div>
           <Image class="g-hub" src={hubImg} alt="" width={200} format="webp" loading="eager" style={`left:${H.left}; top:${H.top}; width:${H.w};`} />
+          <div class="g-glass" aria-hidden="true"></div>
         </div>
       </div>
     </div>
@@ -602,8 +618,11 @@ const wallM = await getImage({ src: wallMImg, width: 1080, format: 'webp', quali
   }
   .cc-alt:hover { color: var(--brass-bright); }
 
-  /* ── The gauge: face capture masked round; needle + hub overlay per the
-     plugin's geometry (see N/H above). All children positioned in % so each
+  /* ── The gauge: photoreal plate (Higgsfield nano_banana_pro pass over the
+     plugin capture, needle removed — design-assets/instagram/revaudio-gauge)
+     masked round; needle + hub overlay per the plugin's geometry (see N/H
+     above), then a glass sheen over everything so the needle sits UNDER the
+     glass, not on top of the baked reflection. All children positioned in % so each
      size below scales as one. Desktop dial = original full size
      (clamp(280px,30vw,400px)); mobile dial = 1/2 of it, under the headline. ── */
   .hero-dial {
@@ -636,6 +655,24 @@ const wallM = await getImage({ src: wallMImg, width: 1080, format: 'webp', quali
   .hero-dial :global(img.g-hub) {
     position: absolute;
     height: auto;
+  }
+
+  /* Glass: one soft highlight matching the plate's baked upper-left
+     reflection, screened over needle + hub. Kept faint — the plate already
+     carries the real reflection; this only stops the needle reading as a
+     sticker laid over the glass. */
+  .g-glass {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    pointer-events: none;
+    mix-blend-mode: screen;
+    background: radial-gradient(
+      ellipse 58% 42% at 34% 24%,
+      rgba(255, 250, 235, 0.11) 0%,
+      rgba(255, 250, 235, 0.035) 45%,
+      transparent 70%
+    );
   }
 
   @media (max-width: 860px) {
