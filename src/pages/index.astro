@@ -440,64 +440,140 @@ const wallM = await getImage({ src: wallMImg, width: 1080, format: 'webp', quali
     text-shadow: 0 0 31px color-mix(in srgb, currentColor 55%, transparent);
   }
 
-  /* Scrim: holds type contrast where the brass ring and the lit redline would
-     otherwise sit directly behind the letterforms. Sized off the text block,
-     not the gauge, so it tracks the copy if the headline ever changes. */
-  /* --scrim / --glow are knobs for the RevEdit overlay (npm run edit). Both
-     default to exactly what ships, so the page is byte-identical until a
-     slider moves — a pseudo-element can't be selected in the editor, and a
-     custom property on the parent is the only way to reach one. */
-  .hero-head {
-    /* These four are set by CONTRAST, not by taste. Measured from rendered
-       pixels at 1568px, worst-case background behind the eyebrow (the dial's
-       12-o'clock tick), against a 4.5:1 AA requirement:
-         1.02 / 12% / 22% / 66%  ->  3.25:1  FAIL
-         1.30 / 70% / 27% / 86%  ->  7.09:1  pass
-         1.18 / 120% / 43% / 61% ->  5.16:1  pass   <- shipping
-       Strength and feather trade against reach: this set is weaker and fades
-       sooner than the 1.3/86% one, but spreads far enough sideways and down to
-       cover more of the disc, which nets out safe. That coupling means you
-       cannot reason about one knob alone — re-measure after ANY change here. */
-    --scrim: 1.18;   /* strength  — multiplies every stop's alpha */
-    --scrim-x: 120%; /* how far it spreads past the text sideways */
-    --scrim-y: 43%;  /* ...and vertically (the lede needs the reach) */
-    --scrim-fade: 61%; /* where it finishes fading to nothing */
+  /* Type contrast: two layers anchored to the DIAL, not one ellipse sized off
+     the text. The old scrim took its box from .hero-head (inset -120% / -43%),
+     which resolved to a ~1330x375px ellipse over a 640px circle: it washed
+     ~400px of the wall either side of the bezel, left 12 and 6 o'clock lit,
+     buried the needle and the hub, and banded visibly at its own edge. Both
+     layers below are circles concentric with the dial, so the darkening reads
+     as the glass it is standing on instead of a smudge floating over the set.
+
+     Layer 1, --tint, on .hero-dial-desktop::before. A positioned ::before is
+     first in tree order, so it paints ABOVE the in-flow .g-face but BELOW the
+     positioned .g-needle / .g-hub / .g-glass — so it can quiet the engraving
+     and the numerals without touching the mechanism.
+     Layer 2, --veil, on .hero-medallion::after, i.e. over the whole dial,
+     needle included. It exists because a letterform landing on the lit brass
+     hub measures 1.61:1 with the tint alone. How hard it is driven is the one
+     knob that decides whether the needle reads — see the trade noted below.
+
+     Measured from rendered pixels at 1568px — glyph interiors against the
+     background underneath them, sampled with the type hidden so its own
+     text-shadow cannot count as background — against a 4.5:1 AA requirement:
+       old text-shaped ellipse   ->  tag 7.11   h1 12.57   lede 8.89   pass
+       tint 0.94, no veil        ->  tag 6.23   h1  1.61   lede 9.02   FAIL
+       tint 0.94 + veil 0.46     ->  tag 7.14   h1  4.57   lede 9.15   pass  <-
+     Tuned 2026-09-07 in the gauge bench, two passes, measured between them.
+     The trap the first pass hit: with a tiny tint (edge 29%) and a veil that
+     stopped at 71% of a 0.89 box, nothing reached the plate's baked
+     upper-left specular — and the E of ENGINEERED sits right on it.
+       tint edge 29%, veil 1.00 / edge 71% / size 0.89  ->  h1 2.48  FAIL
+       tint edge 78%, veil 0.86 / edge 88% / size 1     ->  h1 5.20  pass
+       tint edge 78%, veil 0.60 / edge 88% / size 1     ->  h1 5.99  pass
+       tint edge 78%, veil 1.00 / edge 75% / size 1     ->  h1 7.37  pass  <-
+     Shipping is the last: a wide tint carries the face, a full-strength veil
+     carries the centre. KNOWN TRADE, Dan's call — at veil 1.00 the needle and
+     hub do not read, so the entrance sweep, the scroll-to-redline and the
+     pointer deflection are all invisible. Back the veil toward 0.6 to get the
+     mechanism back; that is the only knob that decides it.
+     h1's worst case IS the hub, and it is the only tight number on the page.
+     Re-measure it after any change to either layer, to the dial's size, or to
+     the needle's idle angle. Both knobs are custom properties on the parent so
+     the RevEdit overlay (npm run edit) can still reach the pseudo-elements. */
+  /* Every visual property of both circles is a knob, so the gauge bench
+     (npm run dev, then add ?gauge to the URL) can drive them live and hand
+     back a block that pastes straight over these lines. The three stops
+     between core and edge ride a shared ratio family (0.34 / 0.63 / 0.87),
+     so moving core or edge stretches the whole falloff instead of moving one
+     stop and kinking the curve. */
+  .hero-medallion {
+    --tint: 0.94;      /* peak alpha at the centre */
+    --tint-core: 0%;  /* first falloff stop */
+    --tint-edge: 78%;  /* where it reaches zero */
+    --tint-a2: 0.957;  /* alphas of the four inner stops, as fractions of --tint */
+    --tint-a3: 0.96;
+    --tint-a4: 0.362;
+    --tint-a5: 0.1;
+    --tint-cx: 50%;
+    --tint-cy: 50%;
+    --tint-r: 22;       /* colour, split per channel so a slider can reach it */
+    --tint-g: 0;
+    --tint-b: 6;
+
+    --veil: 1;
+    --veil-core: 38%;
+    --veil-edge: 75%;
+    --veil-a2: 0.87;
+    --veil-a3: 0.5;
+    --veil-a4: 0.16;
+    --veil-a5: 0.03;
+    --veil-cx: 52%;
+    --veil-cy: 50%;
+    --veil-r: 7;
+    --veil-g: 6;
+    --veil-b: 5;
+    --veil-size: 1;    /* multiple of --medallion */
   }
-  .hero-head::before {
+  .hero-dial-desktop::before {
     content: '';
     position: absolute;
-    /* Deliberately restrained. The lede sits at the bottom of the block, right
-       where the gauge's lit brass ring passes behind it, and a scrim heavy
-       enough to fix that on its own flattened the medallion into a dark disc —
-       which defeats the point of this layout. So the scrim only knocks the
-       ring back, and .hh-lede's own colour carries the rest. */
-    inset: calc(-1 * var(--scrim-y)) calc(-1 * var(--scrim-x));
-    /* Inner stops ride --scrim-fade as fractions of it (0.558 / 0.814), so
-       widening the feather stretches the whole falloff instead of just moving
-       the last stop and kinking the curve. The fractions come from the 48% /
-       70% the curve was originally tuned at against an 86% fade; at today's
-       61% they resolve to ~34% / ~50%. */
-    background: radial-gradient(
-      ellipse at center,
-      rgba(8, 7, 6, calc(0.86 * var(--scrim))) 0%,
-      rgba(8, 7, 6, calc(0.66 * var(--scrim))) calc(var(--scrim-fade) * 0.558),
-      rgba(8, 7, 6, calc(0.34 * var(--scrim))) calc(var(--scrim-fade) * 0.814),
-      rgba(8, 7, 6, 0) var(--scrim-fade)
-    );
-    z-index: -1;
+    inset: 0;
+    border-radius: 50%;
     pointer-events: none;
+    background: radial-gradient(
+      circle at var(--tint-cx) var(--tint-cy),
+      rgba(var(--tint-r), var(--tint-g), var(--tint-b), var(--tint)) 0%,
+      rgba(var(--tint-r), var(--tint-g), var(--tint-b), calc(var(--tint) * var(--tint-a2)))
+        var(--tint-core),
+      rgba(var(--tint-r), var(--tint-g), var(--tint-b), calc(var(--tint) * var(--tint-a3)))
+        calc(var(--tint-core) + (var(--tint-edge) - var(--tint-core)) * 0.34),
+      rgba(var(--tint-r), var(--tint-g), var(--tint-b), calc(var(--tint) * var(--tint-a4)))
+        calc(var(--tint-core) + (var(--tint-edge) - var(--tint-core)) * 0.63),
+      rgba(var(--tint-r), var(--tint-g), var(--tint-b), calc(var(--tint) * var(--tint-a5)))
+        calc(var(--tint-core) + (var(--tint-edge) - var(--tint-core)) * 0.87),
+      rgba(var(--tint-r), var(--tint-g), var(--tint-b), 0) var(--tint-edge)
+    );
+  }
+  /* Absolute, not a grid item: .hero-medallion is a place-items:center grid
+     and a second in-flow child would take its own row instead of stacking. */
+  .hero-medallion::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: calc(var(--medallion) * var(--veil-size));
+    height: calc(var(--medallion) * var(--veil-size));
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    pointer-events: none;
+    background: radial-gradient(
+      circle at var(--veil-cx) var(--veil-cy),
+      rgba(var(--veil-r), var(--veil-g), var(--veil-b), var(--veil)) 0%,
+      rgba(var(--veil-r), var(--veil-g), var(--veil-b), calc(var(--veil) * var(--veil-a2)))
+        var(--veil-core),
+      rgba(var(--veil-r), var(--veil-g), var(--veil-b), calc(var(--veil) * var(--veil-a3)))
+        calc(var(--veil-core) + (var(--veil-edge) - var(--veil-core)) * 0.34),
+      rgba(var(--veil-r), var(--veil-g), var(--veil-b), calc(var(--veil) * var(--veil-a4)))
+        calc(var(--veil-core) + (var(--veil-edge) - var(--veil-core)) * 0.63),
+      rgba(var(--veil-r), var(--veil-g), var(--veil-b), calc(var(--veil) * var(--veil-a5)))
+        calc(var(--veil-core) + (var(--veil-edge) - var(--veil-core)) * 0.87),
+      rgba(var(--veil-r), var(--veil-g), var(--veil-b), 0) var(--veil-edge)
+    );
   }
 
   /* The medallion frame. Centres via grid rather than a transform so the
      entrance timeline's y/scale on the dial inside stays untouched, and
-     carries the dimming so GSAP's opacity:1 on the dial can't undo it. */
+     carries the dimming so GSAP's opacity:1 on the dial can't undo it. Was
+     0.8 while the text ellipse was doing the darkening and the dial was being
+     dimmed twice over; the tint above is local and aimed, so the plate itself
+     can sit almost at full strength. */
   .hero-medallion {
     position: absolute;
     inset: 0;
     display: grid;
     place-items: center;
     z-index: 1;
-    opacity: 0.8;
+    opacity: 0.95;
     pointer-events: none;
   }
 
@@ -684,8 +760,8 @@ const wallM = await getImage({ src: wallMImg, width: 1080, format: 'webp', quali
     .hero-head { max-width: 62ch; transform: none; text-shadow: none; }
     /* No medallion on mobile — the stack keeps its own small in-flow gauge
        under the headline, and a 400px backdrop behind narrow type would only
-       fight it. Both the scrim and the frame go with it. */
-    .hero-head::before { display: none; }
+       fight it. The tint and the veil are scoped to the desktop dial and the
+       medallion, so both leave with it. */
     .hero-medallion { display: none; }
     .hero-plate { --plate-alpha: 0.8; }
     .hero-plate-img { background-image: var(--plate-m); }
