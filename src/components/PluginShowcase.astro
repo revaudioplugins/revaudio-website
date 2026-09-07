@@ -211,6 +211,7 @@ const peekClass = (i: number) => {
             class="sc-slide"
             class:list={[peekClass(i)]}
             data-slide
+            data-slug={s.slug}
             role="group"
             aria-roledescription="slide"
             aria-label={`${s.name}, ${i + 1} of ${SLIDES.length}`}
@@ -300,6 +301,9 @@ const peekClass = (i: number) => {
         else if (d === -1) s.classList.add('is-peek-prev');
       });
       dots.forEach((d, k) => d.classList.toggle('active', k === idx));
+      // Tell the word wall below which plugin is centred now — it swaps its
+      // adjective stack + window to match (WordWall.astro listens on document).
+      document.dispatchEvent(new CustomEvent('showcase:change', { detail: { slug: slides[idx].dataset.slug } }));
       if (announceChange && announce) announce.textContent = slides[idx].getAttribute('aria-label') ?? '';
       // GAS fuel slosh: every carousel move rocks the liquid in the letters.
       // Remove + reflow + re-add so the one-shot animation restarts even on
