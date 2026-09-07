@@ -7,7 +7,8 @@
    spring. Arrows + touch-swipe + keyboard + dots + a 6s auto-advance (in-view
    only, dies on first interaction) drive it. */
 import { Image } from 'astro:assets';
-import { bySlug } from '../data/plugins';
+import { bySlug, isBuyable, dlGateId } from '../data/plugins';
+import { site } from '../data/site';
 import arrowBtn from '../assets/showcase/arrow-btn.png';
 import revlimiterShot from '../assets/plugins/revlimiter-hero.png';
 import comingSoonPlate from '../assets/plugins/coming-soon-plate.png';
@@ -125,6 +126,52 @@ const SLIDES = [
   return p && p.status !== 'in-development';
 });
 
+// Add-to-cart chip, one per slide — the SAME three branches as the /store card
+// (PluginCard): a gated plugin opens the trial-gate modal, a buyable one feeds
+// the global cart's [data-add-to-cart] delegate, a free ungated one is a plain
+// download link. Resolved from the catalog by slug, never from the slide's
+// display copy above, so price/gate/checkout changes land here for free.
+const registerUrl = site.downloadGate.workerUrl + '/download/register';
+type CartCta = { label: string; href: string | null; attrs: Record<string, unknown> } | null;
+const CART: CartCta[] = SLIDES.map((s) => {
+  const p = bySlug(s.slug);
+  if (!p) return null;
+  const buyable = isBuyable(p);
+  const freeDl = !!(p.isFree && p.downloadUrl);
+  if (!buyable && !freeDl) return null;
+  const label = p.isFree ? 'Download' : 'Add to cart';
+  if (p.trialGateActive)
+    return {
+      label,
+      href: null,
+      attrs: {
+        'data-trial-gate-open': true,
+        'data-plugin-name': p.name,
+        // dlGateId, never the slug — the worker silently falls back to
+        // revlimiter on unknown ids (same gotcha as index.astro's hero CTA).
+        'data-plugin-slug': dlGateId(p),
+        'data-register-url': registerUrl,
+        ...(p.isFree ? { 'data-gate-free': true } : {}),
+      },
+    };
+  if (buyable)
+    return {
+      label,
+      href: null,
+      attrs: {
+        'data-add-to-cart': true,
+        // Opt in to Cart.astro's label swap: once it's in the cart this chip
+        // reads "In your cart" and a second press opens the drawer.
+        'data-cart-label': true,
+        'data-slug': p.slug,
+        'data-name': p.name,
+        'data-price': p.regularPriceUsd ?? p.introPriceUsd,
+        'data-checkout-url': p.checkoutUrl,
+      },
+    };
+  return { label, href: p.downloadUrl!, attrs: {} };
+});
+
 const pos = (st: { left: number; top: number; w?: number; h?: number }) =>
   `left:${st.left}px;top:${st.top}px;` + (st.w ? `width:${st.w}px;` : '') + (st.h ? `height:${st.h}px;` : '');
 // Text rows ignore their per-slide left and span the full stage, centered — only
@@ -160,14 +207,20 @@ const peekClass = (i: number) => {
 
       <div class="sc-viewport">
         {SLIDES.map((s, i) => (
-          <a
+          <div
             class="sc-slide"
             class:list={[peekClass(i)]}
-            href={`/${s.slug}`}
             data-slide
+            role="group"
             aria-roledescription="slide"
             aria-label={`${s.name}, ${i + 1} of ${SLIDES.length}`}
           >
+            {/* Whole-card link, stretched over the stage. The card used to BE
+                the <a>; it can't stay one now that it carries its own
+                Add-to-cart control (a button nested inside a link is invalid
+                HTML and unreadable to assistive tech), so the link became a
+                sibling overlay sitting under the chip in z-order instead. */}
+            <a class="sc-hit" href={`/${s.slug}`} aria-label={`${s.name} — more details`}></a>
             <div class="sec sc-titlewrap" style={`top:${s.style.title.top}px`}>
               <span class={`sc-title ${s.titleClass}`} style={font(s.style.title)} set:html={s.titleHtml} />
             </div>
@@ -186,7 +239,14 @@ const peekClass = (i: number) => {
                 {s.badge.map((line) => <span>{line}</span>)}
               </div>
             )}
-          </a>
+            {/* Add to cart / Download — pinned to the card's bottom-right,
+                clear of the centred price + "More Details" stack. Above the
+                stretched card link, so the chip acts instead of navigating. */}
+            {CART[i] && (CART[i]!.href
+              ? <a class="sc-cart" href={CART[i]!.href!}>{CART[i]!.label}</a>
+              : <button type="button" class="sc-cart" {...CART[i]!.attrs}>{CART[i]!.label}</button>
+            )}
+          </div>
         ))}
       </div>
 
@@ -263,6 +323,12 @@ const peekClass = (i: number) => {
       s.addEventListener('click', (e) => {
         if (s.classList.contains('is-peek-prev') || s.classList.contains('is-peek-next')) {
           e.preventDefault();
+          // stopPropagation, not just preventDefault: a peek card carries its
+          // own Add-to-cart chip, and Cart.astro's [data-add-to-cart] listener
+          // is delegated on document. Without this, tapping the chip on a
+          // half-visible neighbour would silently add it to the cart — the
+          // only job of a click on a peek card is to bring it to centre.
+          e.stopPropagation();
           killAuto();
           go(k);
         }
@@ -652,6 +718,56 @@ const peekClass = (i: number) => {
   }
   .sc-slide:active .sc-more {
     color: var(--brass);
+    text-shadow: none;
+    letter-spacing: 0.12em;
+  }
+
+  /* Whole-card link, stretched over the stage under the Add-to-cart chip.
+     Above the .sec rows (which are absolutely positioned and would otherwise
+     paint over it and swallow their own clicks), below .sc-cart. */
+  .sc-hit { position: absolute; inset: 0; z-index: 5; }
+
+  /* Add to cart / Download chip — bottom-right of the 520×470 stage, so it
+     never collides with the centred price/CTA stack. Same brass chip as the
+     /store card's .card-add, sized for the stage's own coordinate space
+     (fit() scales the whole card down on narrow viewports, so 44px here is
+     ~25px on a phone — still clear of WCAG 2.2 SC 2.5.8's 24px floor). */
+  .sc-cart {
+    position: absolute;
+    right: 18px;
+    bottom: 20px;
+    z-index: 6;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 16px;
+    font-family: Oswald, sans-serif;
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    text-decoration: none;
+    color: var(--bg-0);
+    background: var(--brass);
+    border: 1px solid var(--brass-dark);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s var(--ease), transform 0.15s var(--ease);
+  }
+  .sc-cart:hover { background: var(--brass-bright); }
+  .sc-cart:active { transform: scale(0.96); }
+  /* Already in the cart: the chip steps down from filled brass to an outline,
+     so the card stops shouting "buy me" at something already bought. It stays
+     a live control — pressing it opens the drawer. */
+  .sc-cart.is-in-cart {
+    background: transparent;
+    color: var(--brass-bright);
+    border-color: var(--brass);
+  }
+  .sc-cart.is-in-cart:hover { background: rgba(201, 163, 92, 0.14); }
+  /* Hovering the chip is not hovering the card CTA — keep "More Details" at
+     rest so the two controls never light up together. */
+  .sc-slide:has(.sc-cart:hover) .sc-more {
+    color: #f0e6d2;
     text-shadow: none;
     letter-spacing: 0.12em;
   }

@@ -9,7 +9,12 @@ import PrivacyContent from './legal/PrivacyContent.astro';
 import { TERMS_LAST_UPDATED } from '../data/legal';
 /**
  * Global cart: a localStorage-backed mini-cart shared across every page.
- * - [data-add-to-cart] buttons (with data-slug/name/price/price-id/img) add items
+ * - [data-add-to-cart] buttons (with data-slug/name/price/price-id/img) add items.
+ *   Adding does NOT open the drawer (Dan, 2026-09-07): a modal thrown over the
+ *   page on every add interrupts browsing and buries the rest of the catalog.
+ *   Confirmation is ambient instead — the red header badge pops with the new
+ *   count, and the button itself flips to "In your cart". Pressing it again in
+ *   that state opens the drawer, so the cart is always one click away.
  * - the header cart icon ([data-cart-toggle]) + badge ([data-cart-badge]) open the drawer
  * - A required consent checkbox gates Checkout; its links open the legal-reader
  *   modal (Terms / Licence / Privacy) IN A POPUP — no page navigation.
@@ -237,17 +242,47 @@ for (const p of plugins) {
     function add(item) {
       if (!item || !item.slug) return;
       var c = read();
-      // One licence per product — re-adding just reopens the cart, never stacks qty.
+      // One licence per product — a repeat add is a no-op, never stacks qty.
       var exists = c.some(function (i) { return i.slug === item.slug; });
       if (!exists) {
         c.push({ slug: item.slug, name: item.name, price: +item.price || 0, checkoutUrl: item.checkoutUrl || '', img: item.img || '', qty: 1 });
         write(c);
       }
-      sync(); openDrawer();
+      sync();
     }
     function remove(slug) {
       write(read().filter(function (i) { return i.slug !== slug; }));
       sync();
+    }
+
+    var IN_CART_LABEL = 'In your cart';
+    var lastCount = null;
+
+    /* Mirror the cart onto every [data-add-to-cart] on the page. The class is
+       set on all of them (graphic buttons can style themselves off it); the
+       LABEL is only swapped on buttons that opt in with [data-cart-label] —
+       the crane's BUY NOW square is an image with empty text content, so
+       writing into it would drop stray glyphs on top of the artwork. The idle
+       label/aria are stashed on first pass so removing the item restores the
+       button's own copy rather than a hardcoded guess. */
+    function syncAddButtons(c) {
+      var inCart = {};
+      for (var i = 0; i < c.length; i++) inCart[c[i].slug] = 1;
+      var btns = document.querySelectorAll('[data-add-to-cart]');
+      for (var b = 0; b < btns.length; b++) {
+        var btn = btns[b];
+        var on = !!inCart[btn.getAttribute('data-slug')];
+        btn.classList.toggle('is-in-cart', on);
+        if (!btn.hasAttribute('data-cart-label')) continue;
+        if (!btn.hasAttribute('data-label-idle')) {
+          btn.setAttribute('data-label-idle', (btn.textContent || '').trim());
+          if (btn.hasAttribute('aria-label')) btn.setAttribute('data-aria-idle', btn.getAttribute('aria-label'));
+        }
+        btn.textContent = on ? IN_CART_LABEL : btn.getAttribute('data-label-idle');
+        if (on) btn.setAttribute('aria-label', IN_CART_LABEL + ' \u2014 open cart');
+        else if (btn.hasAttribute('data-aria-idle')) btn.setAttribute('aria-label', btn.getAttribute('data-aria-idle'));
+        else btn.removeAttribute('aria-label');
+      }
     }
 
     function sync() {
@@ -255,6 +290,20 @@ for (const p of plugins) {
       var n = count(c);
       var badges = document.querySelectorAll('[data-cart-badge]');
       for (var b = 0; b < badges.length; b++) { badges[b].textContent = n; badges[b].hidden = n === 0; }
+      // The drawer no longer throws itself open on add, so this pop IS the
+      // confirmation that something landed. Remove + reflow + re-add restarts
+      // the one-shot animation on consecutive adds. Growth only — a removal
+      // already has its own on-screen feedback inside the drawer.
+      if (lastCount !== null && n > lastCount &&
+          !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        for (var q = 0; q < badges.length; q++) {
+          badges[q].classList.remove('is-bump');
+          void badges[q].offsetWidth;
+          badges[q].classList.add('is-bump');
+        }
+      }
+      lastCount = n;
+      syncAddButtons(c);
       if (!itemsEl) return;
       if (!c.length) {
         itemsEl.innerHTML = '';
@@ -420,6 +469,9 @@ for (const p of plugins) {
       var addBtn = t.closest('[data-add-to-cart]');
       if (addBtn) {
         e.preventDefault();
+        // Already in the cart: this button is showing "In your cart", so a
+        // second press should SHOW the cart rather than silently no-op.
+        if (addBtn.classList.contains('is-in-cart')) { openDrawer(); return; }
         var addSlug = addBtn.getAttribute('data-slug');
         var addPrice = addBtn.getAttribute('data-price');
         add({

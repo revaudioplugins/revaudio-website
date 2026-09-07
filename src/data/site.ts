@@ -110,6 +110,23 @@ export const site = {
     portalUrl: 'https://revlimiter-license.revaudio.workers.dev/download',
   },
 
+  /**
+   * Support chat (SupportChat.astro, mounted on /support only). Free-text
+   * messages POST {message, src, page, conv_id?} to `workerUrl` and expect
+   * {reply: string, handoff?: boolean, conv_id: string}. The widget echoes
+   * conv_id back so the bot keeps the thread (the worker stores history in
+   * D1). Empty = tiles answer locally, free text is pointed at the tiles / a
+   * human. The bot itself is Apps/RevSupport (revaudioplugins/revaudio-support,
+   * the same bot that answers Instagram DMs), reached THROUGH the licence
+   * worker's /support-chat route: the site's CSP connect-src (Cloudflare
+   * transform rule) allows only revlimiter-license.revaudio.workers.dev, so
+   * the licence worker proxies to the bot over a service binding. Live since
+   * 2026-09-07.
+   */
+  supportChat: {
+    workerUrl: 'https://revlimiter-license.revaudio.workers.dev/support-chat',
+  },
+
   // Same `downloadGate.workerUrl` above also serves WelcomeDiscountPopup.astro's
   // POST `${workerUrl}/popup-signup` (the scroll-triggered "10% off your first
   // order" popup) — no separate config needed, it's the same license Worker.
