@@ -1,7 +1,5 @@
 ---
-import { Image } from 'astro:assets';
 import { plugins } from '../data/plugins';
-import cartIcon from '../assets/ui/icon-cart.png';
 
 const path = Astro.url.pathname;
 const isActive = (p: string) => path === p || path === p + '/';
@@ -30,7 +28,15 @@ const onProductPage = plugins.some((pl) => isActive(`/${pl.slug}`));
         <li><a href="/affiliate" aria-current={isActive('/affiliate') ? 'page' : undefined}>Affiliates</a></li>
       </ul>
       <button type="button" class="cart-toggle" data-cart-toggle aria-label="Open cart">
-        <Image src={cartIcon} alt="" width={88} height={88} format="webp" class="cart-ico" />
+        {/* Plain line cart in currentColor — the same glyph as the mobile
+            CartFab, so header and FAB read as one control. Replaced the 900px
+            brass-render PNG (Dan, 2026-09-07): at 30px it was a muddy blob,
+            and the badge now has to pop off it. */}
+        <svg class="cart-ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2.5 3h2.2l2 12.2h11.6l2.2-8.7H6.1" />
+          <circle cx="8.6" cy="20" r="1.7" fill="currentColor" stroke="none" />
+          <circle cx="17.2" cy="20" r="1.7" fill="currentColor" stroke="none" />
+        </svg>
         <span class="cart-badge" data-cart-badge hidden>0</span>
       </button>
       <button
@@ -133,25 +139,45 @@ const onProductPage = plugins.some((pl) => isActive(`/${pl.slug}`));
     cursor: pointer;
     line-height: 0;
   }
-  .cart-ico { width: 30px; height: 30px; display: block; transition: filter 0.2s var(--ease), transform 0.12s var(--ease); }
-  .cart-toggle:hover .cart-ico { filter: brightness(1.12); transform: translateY(-1px); }
+  .cart-toggle { color: var(--brass-bright); }
+  .cart-ico { width: 27px; height: 27px; display: block; transition: color 0.2s var(--ease), transform 0.12s var(--ease); }
+  .cart-toggle:hover { color: #f4dda2; }
+  .cart-toggle:hover .cart-ico { transform: translateY(-1px); }
 
+  /* Red count circle. Adding no longer opens the drawer, so this badge is the
+     whole confirmation — it has to catch the eye against a page that is brass
+     on brown everywhere else. --redline on white is the one high-alarm colour
+     in the palette (5.3:1, clears WCAG AA for this bold small text); the dark
+     ring separates it from the cart glyph it overlaps. */
   .cart-badge {
     position: absolute;
+    /* Kept inside the nav's own height: the bar is flush to the top of the
+       viewport, so a badge hung above the icon gets sliced off by the window
+       edge, not just the bar. */
     top: -3px;
-    right: -3px;
-    min-width: 18px;
-    height: 18px;
+    right: -8px;
+    min-width: 20px;
+    height: 20px;
     padding: 0 5px;
-    border-radius: 9px;
-    background: var(--brass);
-    color: var(--bg-0);
+    border-radius: 10px;
+    background: var(--redline);
+    color: #fff;
+    border: 2px solid var(--bg-0);
+    box-shadow: 0 0 10px rgba(200, 51, 31, 0.55);
     font-family: var(--font-mono);
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     font-weight: 700;
-    line-height: 18px;
+    line-height: 16px;
     text-align: center;
   }
+  /* One-shot pop, restarted by Cart.astro's sync() on every count increase. */
+  .cart-badge.is-bump { animation: cart-pop 0.42s var(--ease-settle) 1; }
+  @keyframes cart-pop {
+    0% { transform: scale(1); }
+    35% { transform: scale(1.55); box-shadow: 0 0 18px rgba(200, 51, 31, 0.95); }
+    100% { transform: scale(1); }
+  }
+  @media (prefers-reduced-motion: reduce) { .cart-badge.is-bump { animation: none; } }
 
   /* ---- Hamburger (mobile only) ---- */
   .nav-burger {

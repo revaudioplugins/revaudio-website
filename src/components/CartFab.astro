@@ -45,21 +45,32 @@
     .cart-fab svg { width: 28px; height: 28px; display: block; }
     .cart-fab:focus-visible { outline: 3px solid var(--brass-bright); outline-offset: 3px; }
 
+    /* Red count circle, matching the header badge — adding an item no longer
+       opens the drawer, so the badge carries the confirmation on its own. */
     .cart-fab-badge {
       position: absolute;
-      top: -4px;
-      right: -4px;
-      min-width: 18px;
-      height: 18px;
+      top: -5px;
+      right: -5px;
+      min-width: 22px;
+      height: 22px;
       padding: 0 5px;
-      border-radius: 9px;
-      background: var(--brass);
-      color: var(--bg-0);
+      border-radius: 11px;
+      background: var(--redline);
+      color: #fff;
+      border: 2px solid var(--bg-0);
+      box-shadow: 0 0 10px rgba(200, 51, 31, 0.55);
       font-family: var(--font-mono);
-      font-size: 0.75rem;
+      font-size: 0.78rem;
       font-weight: 700;
       line-height: 18px;
       text-align: center;
     }
+    .cart-fab-badge.is-bump { animation: cart-pop 0.42s var(--ease-settle) 1; }
+    @keyframes cart-pop {
+      0% { transform: scale(1); }
+      35% { transform: scale(1.55); box-shadow: 0 0 18px rgba(200, 51, 31, 0.95); }
+      100% { transform: scale(1); }
+    }
+    @media (prefers-reduced-motion: reduce) { .cart-fab-badge.is-bump { animation: none; } }
   }
 </style>

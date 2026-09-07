@@ -1,0 +1,542 @@
+---
+/**
+ * SupportChat — the support bot's front end. Mounted on /support ONLY
+ * (Dan, 2026-09-07: not site-wide for v1, so product pages stay quiet).
+ *
+ * Two parts: a launcher docked bottom-right (bordered pill on desktop, 48px
+ * FAB on phones — the cart FAB's twin, bottom-left) and the panel: a rounded
+ * "dashboard cluster" popover on desktop, a bottom sheet on phones. Six
+ * gauge tiles map to the sections of /support and answer locally from the
+ * same copy; free text goes to `site.supportChat.workerUrl` (Yoni's backend,
+ * POST {message, src, page} → {reply}). While that URL is empty the panel
+ * answers tiles only and points free text at the tiles or a human — never a
+ * fake "typing…" that leads nowhere.
+ *
+ * Doors: the launcher, any [data-support-open] element on the page (the
+ * "Still stuck?" strip), and `?chat=open` in the URL (Instagram bio link /
+ * ManyChat button / purchase email; `src=` rides along to the backend).
+ *
+ * Honesty: the status LED is amber "Bot on duty" until the backend exposes a
+ * real human-presence flag — no green "online" nobody is behind.
+ */
+import { site } from '../data/site';
+
+const endpoint = site.supportChat?.workerUrl ?? '';
+const SUPPORT_EMAIL = 'support@revaudio.net';
+---
+
+<button type="button" class="sc-launch" data-support-launch aria-controls="support-chat" aria-expanded="false" aria-label="Open support chat">
+  <span class="sc-led" aria-hidden="true"></span>
+  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 13a8 8 0 0 1 16 0v4a2 2 0 0 1-2 2h-1v-6h3M4 13v4a2 2 0 0 0 2 2h1v-6H4" /><path d="M12 21h4" />
+  </svg>
+  <span class="sc-launch-label">Support</span>
+</button>
+
+<section id="support-chat" class="sc" data-support-chat data-endpoint={endpoint} role="dialog" aria-label="Support chat" hidden>
+  <div class="sc-grip" aria-hidden="true"></div>
+  <header class="sc-head">
+    <span class="sc-avatar" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 13a8 8 0 0 1 16 0v4a2 2 0 0 1-2 2h-1v-6h3M4 13v4a2 2 0 0 0 2 2h1v-6H4" /><path d="M12 21h4" />
+      </svg>
+    </span>
+    <div class="sc-title">
+      <h2>Support</h2>
+      <p class="sc-status"><span class="sc-led" aria-hidden="true"></span>Bot on duty &middot; a human within 1 business day</p>
+    </div>
+    <button type="button" class="sc-x" data-support-close aria-label="Close support chat">&times;</button>
+  </header>
+
+  {/* data-lenis-prevent: the site's Lenis smooth scroll otherwise eats the
+      wheel inside the log (same fix as the cart drawer's item list). */}
+  <div class="sc-log" data-support-log data-lenis-prevent tabindex="0" aria-live="polite">
+    <p class="sc-msg sc-msg--bot">Hey. Pick what&rsquo;s up, or just type it.</p>
+    <div class="sc-gauges" role="group" aria-label="Common questions">
+      <button type="button" class="sc-gauge" data-support-topic="install">
+        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M4 20h16" /></svg>
+        <span>Install</span>
+      </button>
+      <button type="button" class="sc-gauge" data-support-topic="licence">
+        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4" /><path d="M10.8 12.2 20 3l1 1-2 2 1 1-2 2 1 1-1.5 1.5" /></svg>
+        <span>Licence</span>
+      </button>
+      <button type="button" class="sc-gauge" data-support-topic="trial">
+        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
+        <span>Trial</span>
+      </button>
+      <button type="button" class="sc-gauge" data-support-topic="daw">
+        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="12" rx="2" /><path d="M8 21h8M12 17v4" /></svg>
+        <span>DAW</span>
+      </button>
+      <button type="button" class="sc-gauge" data-support-topic="order">
+        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 18 0v3a3 3 0 0 1-3 3h-2v-6h5M3 12v3a3 3 0 0 0 3 3h2v-6H3" /></svg>
+        <span>Order</span>
+      </button>
+      <button type="button" class="sc-gauge" data-support-topic="human">
+        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></svg>
+        <span>Human</span>
+      </button>
+    </div>
+  </div>
+
+  <form class="sc-foot" data-support-form>
+    <label class="sr-only" for="support-chat-input">Your message</label>
+    <input id="support-chat-input" class="sc-in" type="text" name="message" autocomplete="off" maxlength="600" placeholder="Type your message…" />
+    <button type="submit" class="sc-send" aria-label="Send">
+      <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+    </button>
+  </form>
+  <p class="sc-micro">Or email <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a></p>
+</section>
+
+<script>
+  /* Answers mirror the sections of /support above — keep both in step when
+     the install paths, seat count or trial length change. */
+  const SUPPORT_EMAIL = 'support@revaudio.net';
+  const ANSWERS: Record<string, { label: string; text: string; mail?: boolean }> = {
+    install: {
+      label: 'Install',
+      text:
+        'Mac: open the .pkg and follow the steps. It lands in /Library/Audio/Plug-Ins/VST3/ and /Library/Audio/Plug-Ins/Components/ (AU).\n' +
+        'Windows: run the installer. VST3 goes to C:\\Program Files\\Common Files\\VST3\\.\n' +
+        'Then rescan plugins in your DAW and look under the RevAudio manufacturer.',
+    },
+    licence: {
+      label: 'Licence',
+      text:
+        'On first launch, paste the key from your purchase email — no spaces around it. Each plugin has its own key, and one licence covers 2 machines.\n' +
+        `Lost the key or moving to a new machine? Email ${SUPPORT_EMAIL} with the address you bought under. Reissue within one business day.`,
+      mail: true,
+    },
+    trial: {
+      label: 'Trial',
+      text:
+        'A trial runs the full version for 30 days, no key, no audio interruptions. When it ends, buying and pasting the key unlocks the same install — nothing to reinstall.\n' +
+        'Trial email missing? Check spam and promotions, then request it again from the Downloads portal.',
+    },
+    daw: {
+      label: 'DAW',
+      text:
+        'Restart the DAW and trigger a plugin rescan. Then check the file is where it should be:\n' +
+        'Windows VST3: C:\\Program Files\\Common Files\\VST3\\\nMac VST3: /Library/Audio/Plug-Ins/VST3/\nMac AU: /Library/Audio/Plug-Ins/Components/\n' +
+        'File is there and the DAW still won’t see it? Do a full DAW restart after the rescan.',
+    },
+    order: {
+      label: 'Order',
+      text:
+        'Your installer link and licence key are in the confirmation email sent right after checkout. Not there? Check spam and the promotions tab.\n' +
+        `Still nothing after 10 minutes: email ${SUPPORT_EMAIL} with the purchase email and we send it by hand.`,
+      mail: true,
+    },
+    human: {
+      label: 'Human',
+      text:
+        `Email ${SUPPORT_EMAIL} and a person answers within one business day. Include the plugin and version, your DAW, your OS, and what happened.`,
+      mail: true,
+    },
+  };
+  const FALLBACK =
+    'I can help with install, licence keys, trials, DAW rescans and orders — tap one above. Anything else, tap Human and a person picks it up.';
+
+  const root = document.querySelector<HTMLElement>('[data-support-chat]');
+  const launch = document.querySelector<HTMLButtonElement>('[data-support-launch]');
+  if (root && launch) {
+    const log = root.querySelector<HTMLElement>('[data-support-log]')!;
+    const form = root.querySelector<HTMLFormElement>('[data-support-form]')!;
+    const input = form.querySelector<HTMLInputElement>('input')!;
+    const endpoint = root.dataset.endpoint || '';
+    const src = new URLSearchParams(location.search).get('src') || '';
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let lastFocus: HTMLElement | null = null;
+
+    function isOpen() { return !root!.hidden; }
+
+    function open(from?: HTMLElement) {
+      if (isOpen()) return;
+      lastFocus = from || (document.activeElement as HTMLElement);
+      root!.hidden = false;
+      launch!.setAttribute('aria-expanded', 'true');
+      document.body.classList.add('sc-open');
+      requestAnimationFrame(() => root!.classList.add('is-open'));
+      (root!.querySelector<HTMLElement>('[data-support-topic]') || input).focus();
+    }
+
+    function close() {
+      if (!isOpen()) return;
+      root!.classList.remove('is-open');
+      launch!.setAttribute('aria-expanded', 'false');
+      document.body.classList.remove('sc-open');
+      const done = () => { root!.hidden = true; };
+      reduced ? done() : setTimeout(done, 260);
+      (lastFocus && lastFocus.isConnected ? lastFocus : launch!).focus();
+    }
+
+    function say(text: string, who: 'bot' | 'me') {
+      const p = document.createElement('p');
+      p.className = `sc-msg sc-msg--${who}`;
+      text.split('\n').forEach((line, i) => {
+        if (i) p.appendChild(document.createElement('br'));
+        p.appendChild(document.createTextNode(line));
+      });
+      log.appendChild(p);
+      return p;
+    }
+
+    function followups(mail: boolean) {
+      const row = document.createElement('div');
+      row.className = 'sc-chips';
+      if (mail) {
+        const a = document.createElement('a');
+        a.className = 'sc-chip sc-chip--solid';
+        a.href = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent('Support: ' + (document.title.split(' · ')[0] || 'RevAudio'))}`;
+        a.textContent = `Email ${SUPPORT_EMAIL}`;
+        row.appendChild(a);
+      } else {
+        const ok = document.createElement('button');
+        ok.type = 'button';
+        ok.className = 'sc-chip sc-chip--solid';
+        ok.textContent = 'That fixed it';
+        ok.addEventListener('click', () => { row.remove(); say('Good. Go make noise.', 'bot'); scroll(); });
+        row.appendChild(ok);
+        const human = document.createElement('button');
+        human.type = 'button';
+        human.className = 'sc-chip';
+        human.textContent = 'Talk to a human';
+        human.addEventListener('click', () => { row.remove(); answer('human'); });
+        row.appendChild(human);
+      }
+      log.appendChild(row);
+    }
+
+    function scroll() { log.scrollTop = log.scrollHeight; }
+
+    function answer(topic: string) {
+      const a = ANSWERS[topic];
+      if (!a) return;
+      say(a.label, 'me');
+      say(a.text, 'bot');
+      followups(!!a.mail);
+      scroll();
+    }
+
+    async function ask(text: string) {
+      say(text, 'me');
+      scroll();
+      if (!endpoint) {
+        say(FALLBACK, 'bot');
+        scroll();
+        return;
+      }
+      const pending = say('…', 'bot');
+      pending.classList.add('sc-msg--pending');
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text, src, page: location.pathname }),
+        });
+        const data = await res.json().catch(() => ({}));
+        pending.remove();
+        say(typeof data.reply === 'string' && data.reply ? data.reply : FALLBACK, 'bot');
+        if (data.handoff) followups(true);
+      } catch {
+        pending.remove();
+        say(`The bot is off the air right now. Email ${SUPPORT_EMAIL} and a person picks it up within one business day.`, 'bot');
+        followups(true);
+      }
+      scroll();
+    }
+
+    launch.addEventListener('click', () => open(launch));
+    root.addEventListener('click', (e) => {
+      const t = e.target as HTMLElement;
+      if (t.closest('[data-support-close]')) close();
+      const g = t.closest<HTMLElement>('[data-support-topic]');
+      if (g) answer(g.dataset.supportTopic!);
+    });
+    document.addEventListener('click', (e) => {
+      const t = e.target as HTMLElement;
+      const door = t.closest<HTMLElement>('[data-support-open]');
+      if (door) { e.preventDefault(); open(door); }
+    });
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+      ask(text);
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && isOpen()) close();
+    });
+    // One drawer at a time: opening the cart closes the chat.
+    document.addEventListener('click', (e) => {
+      if ((e.target as HTMLElement).closest('[data-cart-toggle]')) close();
+    });
+
+    if (new URLSearchParams(location.search).get('chat') === 'open') open(launch);
+  }
+</script>
+
+<style>
+  /* ---- Launcher ---- */
+  .sc-launch {
+    position: fixed;
+    right: max(22px, env(safe-area-inset-right));
+    bottom: 22px;
+    z-index: 60;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 1rem 0.6rem 0.8rem;
+    border-radius: 999px;
+    background: var(--bg-2);
+    color: var(--brass-bright);
+    border: 2px solid var(--brass);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    letter-spacing: 0.1em;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.2s var(--ease), color 0.2s var(--ease), bottom 0.28s var(--ease-settle);
+  }
+  .sc-launch:hover { background: var(--brass); color: var(--bg-0); }
+  .sc-launch:hover .sc-led { background: var(--bg-0); box-shadow: none; }
+  .sc-launch:focus-visible { outline: 3px solid var(--brass-bright); outline-offset: 3px; }
+  .sc-launch svg { width: 22px; height: 22px; }
+  :global(body.sc-open) .sc-launch { visibility: hidden; }
+
+  .sc-led {
+    width: 9px; height: 9px; border-radius: 50%; flex: none;
+    background: var(--brass-bright);
+    box-shadow: 0 0 8px var(--brass-bright);
+  }
+
+  /* ---- Panel: desktop popover ---- */
+  .sc {
+    position: fixed;
+    right: 22px;
+    bottom: 22px;
+    z-index: 150;
+    width: min(380px, calc(100vw - 44px));
+    height: min(600px, calc(100dvh - 44px));
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-1);
+    color: var(--fg);
+    border: 1px solid var(--brass-dark);
+    border-radius: 14px;
+    box-shadow: 0 1px 0 0 #000, 0 14px 40px rgba(0, 0, 0, 0.6);
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 0.26s var(--ease-settle), transform 0.26s var(--ease-settle);
+  }
+  .sc[hidden] { display: none; }
+  .sc.is-open { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .sc { transition: none; transform: none; }
+    .sc-launch { transition: none; }
+  }
+
+  .sc-grip { display: none; }
+
+  .sc-head {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.9rem 1rem;
+    border-bottom: 1px solid var(--border);
+    background: radial-gradient(120% 140% at 50% 0%, var(--bg-3) 0%, var(--bg-1) 70%);
+  }
+  .sc-avatar {
+    width: 38px; height: 38px; border-radius: 50%; flex: none;
+    display: grid; place-items: center;
+    background: var(--bg-2); color: var(--brass-bright);
+    border: 2px solid var(--brass);
+  }
+  .sc-avatar svg { width: 20px; height: 20px; }
+  .sc-title { min-width: 0; }
+  .sc-title h2 { margin: 0; font-size: 1.4rem; letter-spacing: 0.08em; color: var(--fg); }
+  .sc-status {
+    margin: 0.1rem 0 0;
+    display: flex; align-items: center; gap: 0.4rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem; letter-spacing: 0.04em;
+    color: var(--fg-dim);
+  }
+  .sc-x {
+    margin-left: auto;
+    width: 36px; height: 36px; border-radius: 50%; flex: none;
+    border: 1px solid var(--border-bright);
+    background: var(--bg-0); color: var(--fg);
+    font-size: 1.3rem; line-height: 1; cursor: pointer;
+    display: grid; place-items: center;
+    transition: border-color 0.2s var(--ease), color 0.2s var(--ease);
+  }
+  .sc-x:hover { border-color: var(--brass); color: var(--brass-bright); }
+  .sc-x:focus-visible { outline: 3px solid var(--brass-bright); outline-offset: 2px; }
+
+  /* ---- Log ---- */
+  .sc-head, .sc-foot, .sc-micro { flex: none; }
+  .sc-log {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    /* Brass scrollbar: thin standard props first, WebKit pseudo-elements for
+       Safari/Chrome (same dark trough, brass thumb, brighter on hover). */
+    scrollbar-width: thin;
+    scrollbar-color: var(--brass) var(--bg-0);
+    padding: 1rem 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    overscroll-behavior: contain;
+  }
+  .sc-log::-webkit-scrollbar { width: 8px; }
+  .sc-log::-webkit-scrollbar-track { background: var(--bg-0); }
+  .sc-log::-webkit-scrollbar-thumb { background: var(--brass); border-radius: 4px; border: 2px solid var(--bg-0); }
+  .sc-log::-webkit-scrollbar-thumb:hover { background: var(--brass-bright); }
+  .sc-log:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: -2px; }
+  .sc-msg {
+    margin: 0;
+    max-width: 88%;
+    padding: 0.6rem 0.8rem;
+    border-radius: 14px;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+  }
+  .sc-msg--bot {
+    align-self: flex-start;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-top-left-radius: 4px;
+  }
+  .sc-msg--me {
+    align-self: flex-end;
+    background: var(--brass);
+    color: var(--bg-0);
+    font-weight: 500;
+    border-top-right-radius: 4px;
+  }
+  .sc-msg--pending { color: var(--fg-dim); letter-spacing: 0.2em; }
+
+  .sc-gauges {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+  }
+  .sc-gauge {
+    display: grid; gap: 0.25rem; justify-items: center;
+    padding: 0.65rem 0.4rem 0.5rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border-bright);
+    border-radius: 10px;
+    color: var(--brass-bright);
+    cursor: pointer;
+    transition: border-color 0.2s var(--ease), background 0.2s var(--ease);
+  }
+  .sc-gauge:hover { border-color: var(--brass); background: var(--bg-3); }
+  .sc-gauge:focus-visible { outline: 3px solid var(--brass-bright); outline-offset: 2px; }
+  .sc-gauge svg { width: 26px; height: 26px; }
+  .sc-gauge span {
+    font-family: var(--font-display);
+    font-size: 0.95rem; letter-spacing: 0.08em;
+    color: var(--fg);
+  }
+
+  .sc-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .sc-chip {
+    font: 500 0.8rem/1 var(--font-body);
+    padding: 0.5rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid var(--brass-dark);
+    background: transparent;
+    color: var(--brass-bright);
+    text-decoration: none;
+    cursor: pointer;
+    transition: border-color 0.2s var(--ease);
+  }
+  .sc-chip:hover { border-color: var(--brass); }
+  .sc-chip:focus-visible { outline: 3px solid var(--brass-bright); outline-offset: 2px; }
+  .sc-chip--solid { background: var(--brass); border-color: var(--brass); color: var(--bg-0); font-weight: 600; }
+  .sc-chip--solid:hover { background: var(--brass-bright); border-color: var(--brass-bright); }
+
+  /* ---- Composer ---- */
+  .sc-foot {
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 0.65rem 0.75rem 0.5rem;
+    border-top: 1px solid var(--border);
+    background: var(--bg-0);
+  }
+  .sc-in {
+    flex: 1; min-width: 0;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid var(--border-bright);
+    border-radius: 8px;
+    background: var(--bg-1);
+    color: var(--fg);
+    font: 0.9rem/1.3 var(--font-body);
+  }
+  .sc-in::placeholder { color: var(--fg-faint); }
+  .sc-in:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 1px; border-color: var(--brass); }
+  .sc-send {
+    width: 40px; height: 40px; flex: none;
+    border-radius: 8px; border: 0;
+    background: var(--brass); color: var(--bg-0);
+    display: grid; place-items: center; cursor: pointer;
+    transition: background 0.2s var(--ease);
+  }
+  .sc-send:hover { background: var(--brass-bright); }
+  .sc-send:focus-visible { outline: 3px solid var(--brass-bright); outline-offset: 2px; }
+  .sc-send svg { width: 18px; height: 18px; }
+  .sc-micro {
+    margin: 0;
+    padding: 0 0.9rem 0.6rem;
+    background: var(--bg-0);
+    font-family: var(--font-mono);
+    font-size: 0.72rem; letter-spacing: 0.04em;
+    color: var(--fg-faint);
+  }
+
+  /* ---- Phone: FAB launcher + bottom sheet ---- */
+  @media (max-width: 700px) {
+    .sc-launch {
+      right: max(16px, env(safe-area-inset-right));
+      bottom: 16px;
+      width: 48px; height: 48px;
+      padding: 0;
+      justify-content: center;
+      gap: 0;
+    }
+    .sc-launch-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    .sc-launch .sc-led { position: absolute; top: -3px; right: -3px; width: 12px; height: 12px; border: 2px solid var(--bg-0); }
+    .sc-launch svg { width: 26px; height: 26px; }
+
+    .sc {
+      right: 0; left: 0; bottom: 0;
+      width: auto;
+      height: 85dvh;
+      border-radius: 14px 14px 0 0;
+      border-left: 0; border-right: 0; border-bottom: 0;
+      border-top: 1px solid var(--brass-dark); /* same edge as the mobile buy bar */
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      transform: translateY(100%);
+    }
+    .sc.is-open { transform: none; }
+    .sc-grip {
+      display: block;
+      width: 44px; height: 4px; border-radius: 2px;
+      background: var(--border-bright);
+      margin: 0.6rem auto 0;
+    }
+    .sc-head { background: transparent; }
+    /* The cart FAB (bottom-left) keeps its corner; while the sheet is up it
+       sits behind the sheet's backdrop-less body, so hide it too. */
+    :global(body.sc-open .cart-fab) { visibility: hidden; }
+  }
+</style>

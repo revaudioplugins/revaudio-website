@@ -5,6 +5,7 @@
    the moment Radio Roulette and GAS shipped. Names, links and the paid/free
    split now come from the catalog, so a new plugin appears here by itself. */
 import BaseLayout from '../layouts/BaseLayout.astro';
+import SupportChat from '../components/SupportChat.astro';
 import { plugins } from '../data/plugins';
 import type { Plugin } from '../data/plugins';
 
@@ -156,13 +157,21 @@ const DOWNLOADS_URL = 'https://revlimiter-license.revaudio.workers.dev/download'
         </p>
       </details>
 
-      <h2>Contact</h2>
+      {/* Door into the support chat (SupportChat.astro, bottom-right on this
+          page). Plain anchor to the contact section without JS. */}
+      <a class="stuck" href="#contact" data-support-open>
+        <span class="stuck-q">Still stuck?</span>
+        <span class="stuck-a">Ask support &rarr;</span>
+      </a>
+
+      <h2 id="contact">Contact</h2>
       <p>
         General: <a href="mailto:info@revaudio.net">info@revaudio.net</a><br/>
         Support: <a href="mailto:support@revaudio.net">support@revaudio.net</a>
       </p>
     </div>
   </section>
+  <SupportChat />
 </BaseLayout>
 
 <style>
@@ -200,4 +209,19 @@ const DOWNLOADS_URL = 'https://revlimiter-license.revaudio.workers.dev/download'
 
   ol { color: var(--fg-dim); }
   ol li { margin: 0.5rem 0; }
+
+  .stuck {
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    margin: 1.5rem 0 2.5rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--brass-dark);
+    border-radius: 10px;
+    background: var(--bg-1);
+    text-decoration: none;
+    transition: border-color 0.2s var(--ease), background 0.2s var(--ease);
+  }
+  .stuck:hover { border-color: var(--brass); background: var(--bg-2); }
+  .stuck:focus-visible { outline: 3px solid var(--brass-bright); outline-offset: 3px; }
+  .stuck-q { font-family: var(--font-display); font-size: 1.25rem; letter-spacing: 0.06em; color: var(--fg); }
+  .stuck-a { color: var(--brass-bright); font-weight: 600; white-space: nowrap; }
 </style>
