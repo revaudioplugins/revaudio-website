@@ -147,6 +147,10 @@ const SUPPORT_EMAIL = 'support@revaudio.net';
     const input = form.querySelector<HTMLInputElement>('input')!;
     const endpoint = root.dataset.endpoint || '';
     const src = new URLSearchParams(location.search).get('src') || '';
+    // Thread id from the worker; echoed back so the bot keeps the conversation
+    // ("Windows or Mac?" -> "mac"). Session-scoped, nothing personal in it.
+    let convId = '';
+    try { convId = sessionStorage.getItem('sc-conv') || ''; } catch {}
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
     let lastFocus: HTMLElement | null = null;
 
@@ -234,9 +238,13 @@ const SUPPORT_EMAIL = 'support@revaudio.net';
         const res = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: text, src, page: location.pathname }),
+          body: JSON.stringify({ message: text, src, page: location.pathname, conv_id: convId || undefined }),
         });
         const data = await res.json().catch(() => ({}));
+        if (typeof data.conv_id === 'string' && data.conv_id) {
+          convId = data.conv_id;
+          try { sessionStorage.setItem('sc-conv', convId); } catch {}
+        }
         pending.remove();
         say(typeof data.reply === 'string' && data.reply ? data.reply : FALLBACK, 'bot');
         if (data.handoff) followups(true);
