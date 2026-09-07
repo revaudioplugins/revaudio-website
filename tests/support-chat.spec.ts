@@ -5,7 +5,7 @@ import { test, expect, type Page } from '@playwright/test';
    what it checks is the widget's side of the contract:
      POST {message, src, page, conv_id?}  ->  {reply, handoff?, conv_id} */
 
-const WORKER = /revaudio-support\.revaudio\.workers\.dev\/reply/;
+const WORKER = /revlimiter-license\.revaudio\.workers\.dev\/support-chat/;
 
 async function stubWorker(page: Page, calls: unknown[]) {
   await page.route(WORKER, async (route) => {
