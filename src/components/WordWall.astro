@@ -256,6 +256,18 @@ const panels: Panel[] = [
     max-height: clamp(22rem, 46vw, 34rem);
     margin: 0 auto;
   }
+  /* Both plates are baked on a black/near-black ground with rounded bezels,
+     so the raw <img> rectangle shows dark corners against the wood. Clip to
+     the bezel's own arc (radii measured off the PNGs: GAS ≈170px of 1600×2380,
+     Radio Roulette ≈220px top / ≈260px bottom of 2546×1415), nudged a hair
+     larger so the 1–2px black rim goes with them. Percent radii = x/w, y/h,
+     so the arc stays circular at every rendered size. The shadow follows. */
+  .ww-panel[data-ww-panel='gas'] .ww-ui img {
+    border-radius: 11% / 7.4%;
+  }
+  .ww-panel[data-ww-panel='radio-roulette'] .ww-ui img {
+    border-radius: 9% 9% 10.6% 10.6% / 16.2% 16.2% 19% 19%;
+  }
   .ww-panel.is-portrait .ww-ui figcaption {
     margin-left: auto;
     margin-right: auto;
