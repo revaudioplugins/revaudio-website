@@ -601,30 +601,33 @@ footer.site-footer {
   background: rgba(11, 10, 9, 0.55); /* translucent: the smoke reads through */
 }
 
-/* Site map in two labelled clusters (2026-09-04): Products+Support anchored
-   left, Company+Legal right, pushed to the container edges so the empty middle
-   reads as the divider. space-between is what creates that gap; the
-   --space-10 column-gap is only the FLOOR, so the two never touch on the
-   narrow widths where the clusters have already shrunk to their content. */
+/* Site map as one four-track grid (2026-09-07, Dan). It used to be two
+   clusters pinned to the container edges by space-between, which on a wide
+   screen opened a ~670px hole in the middle — wider than all four columns
+   together, so the footer read as two unrelated blocks instead of one site
+   map. Even tracks put every heading on the same rhythm and spread the air
+   between the columns rather than pooling it in the centre.
+   The .footer-group wrappers stay in the markup (they still do the work on a
+   phone) but drop out of the box tree here, so their columns become direct
+   children of this grid. */
 footer .footer-cols {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  /* Content-sized tracks with space-between, not four equal fr: equal tracks
+     left the last column's text ending ~100px short of the rule, so the block
+     read as unanchored against the bottom bar, whose wordmark and socials do
+     sit on the container edges. This way the first heading and the last link
+     land on those same two edges. */
+  grid-template-columns: repeat(4, max-content);
   justify-content: space-between;
-  gap: var(--space-6) var(--space-10);
+  gap: var(--space-6) var(--space-8);
 }
 
-/* Each cluster is its own 2-up row. min-width on the column (not the group)
-   keeps the two headings inside a cluster aligned to the same rhythm as
-   before, and lets a cluster wrap to 1-up on its own when the phone is too
-   narrow to hold both. */
 footer .footer-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-5) var(--space-6);
+  display: contents;
 }
 
 footer .footer-col {
-  min-width: 150px;
+  min-width: 0;
 }
 
 /* Headings outrank their links by size and colour — brass is the same token as
@@ -709,6 +712,14 @@ footer .footer-social svg { width: 20px; height: 20px; display: block; }
    bottom clearance for it. */
 @media (max-width: 900px) {
   footer.site-footer { padding-bottom: calc(84px + env(safe-area-inset-bottom)); }
+  /* Four tracks here would be narrower than the high-contrast switch, so fold
+     the site map to 2x2 and keep the reading order. Equal tracks rather than
+     space-between, which across only two columns would reopen the same hole
+     in the middle. */
+  footer .footer-cols {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    justify-content: start;
+  }
 }
 
 @media (max-width: 560px) {
@@ -724,18 +735,20 @@ footer .footer-social svg { width: 20px; height: 20px; display: block; }
   /* Below this the two clusters can't sit side by side without one of their
      columns wrapping, so stack them flush left instead of leaving
      space-between to strand them at opposite edges. */
-  footer .footer-cols { justify-content: flex-start; }
-  /* Phone (2026-09-07, Dan): the clusters stack here, and the second one used
-     to run as a single left column with the whole right half of the footer
-     empty. Lay every cluster out as a fixed 2-up grid, then flip the second
-     one so Legal takes the left slot Company held and Company moves right,
-     under Support. */
+  /* Phone (2026-09-07, Dan): the clusters go back to being real boxes so each
+     one owns a row, laid out 2-up. The second row is flipped so Legal takes
+     the left slot Company held and Company moves right, under Support. */
+  footer .footer-cols {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
   footer .footer-group {
     display: grid;
     grid-template-columns: 1fr 1fr;
     width: 100%;
+    gap: var(--space-5) var(--space-6);
   }
-  footer .footer-col { min-width: 0; }
   footer .footer-group:last-child .footer-col:first-child { order: 2; }
   /* The high-contrast switch is wider than half the container; its own phone
      layout lives in A11yToggle.astro, where the scoped rules can reach it. */
