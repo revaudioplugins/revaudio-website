@@ -48,7 +48,9 @@ const SUPPORT_EMAIL = 'support@revaudio.net';
     <button type="button" class="sc-x" data-support-close aria-label="Close support chat">&times;</button>
   </header>
 
-  <div class="sc-log" data-support-log aria-live="polite">
+  {/* data-lenis-prevent: the site's Lenis smooth scroll otherwise eats the
+      wheel inside the log (same fix as the cart drawer's item list). */}
+  <div class="sc-log" data-support-log data-lenis-prevent tabindex="0" aria-live="polite">
     <p class="sc-msg sc-msg--bot">Hey. Pick what&rsquo;s up, or just type it.</p>
     <div class="sc-gauges" role="group" aria-label="Common questions">
       <button type="button" class="sc-gauge" data-support-topic="install">
@@ -319,7 +321,7 @@ const SUPPORT_EMAIL = 'support@revaudio.net';
     bottom: 22px;
     z-index: 150;
     width: min(380px, calc(100vw - 44px));
-    max-height: min(600px, calc(100dvh - 44px));
+    height: min(600px, calc(100dvh - 44px));
     display: flex;
     flex-direction: column;
     background: var(--bg-1);
@@ -378,16 +380,19 @@ const SUPPORT_EMAIL = 'support@revaudio.net';
   .sc-x:focus-visible { outline: 3px solid var(--brass-bright); outline-offset: 2px; }
 
   /* ---- Log ---- */
+  .sc-head, .sc-foot, .sc-micro { flex: none; }
   .sc-log {
-    flex: 1 1 auto;
-    min-height: 220px;
+    flex: 1 1 0;
+    min-height: 0;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     padding: 1rem 0.9rem;
     display: flex;
     flex-direction: column;
     gap: 0.7rem;
     overscroll-behavior: contain;
   }
+  .sc-log:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: -2px; }
   .sc-msg {
     margin: 0;
     max-width: 88%;
@@ -507,7 +512,7 @@ const SUPPORT_EMAIL = 'support@revaudio.net';
     .sc {
       right: 0; left: 0; bottom: 0;
       width: auto;
-      max-height: 85dvh;
+      height: 85dvh;
       border-radius: 14px 14px 0 0;
       border-left: 0; border-right: 0; border-bottom: 0;
       border-top: 3px solid var(--brass);
