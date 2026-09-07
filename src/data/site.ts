@@ -112,12 +112,15 @@ export const site = {
 
   /**
    * Support chat (SupportChat.astro, mounted on /support only). Free-text
-   * messages POST {message, src, page} to `workerUrl` and expect
-   * {reply: string, handoff?: boolean}. Empty = tiles answer locally, free
-   * text is pointed at the tiles / a human. Yoni owns the worker.
+   * messages POST {message, src, page, conv_id?} to `workerUrl` and expect
+   * {reply: string, handoff?: boolean, conv_id: string}. The widget echoes
+   * conv_id back so the bot keeps the thread (the worker stores history in
+   * D1). Empty = tiles answer locally, free text is pointed at the tiles / a
+   * human. Worker: Apps/RevSupport (revaudioplugins/revaudio-support), the
+   * same bot that answers Instagram DMs. Live since 2026-09-07.
    */
   supportChat: {
-    workerUrl: '',
+    workerUrl: 'https://revaudio-support.revaudio.workers.dev/reply',
   },
 
   // Same `downloadGate.workerUrl` above also serves WelcomeDiscountPopup.astro's
