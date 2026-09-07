@@ -99,13 +99,20 @@ const excluded = path === '/thank-you';
       return scrollable > 0 ? doc.scrollTop / scrollable : 0;
     };
 
-    let ticking = false;
+    // Fire only once the scroll has SETTLED past the threshold, never
+    // mid-gesture. showModal() (top layer + backdrop + entrance animation) is
+    // a one-off ~90ms frame in WebKit at Retina scale — measured 2026-09-07
+    // on the homepage at ~35% depth in both dev and prod, gone with the popup
+    // suppressed — and under Lenis that frame is a visible scroll hitch (the
+    // page position is driven from rAF). Debounce on the scroll events
+    // themselves: Lenis keeps emitting them until its lerp converges, so the
+    // timer runs out only after the page has truly come to rest.
+    const SETTLE_MS = 350;
+    let settle = 0;
     const onScroll = () => {
       if (fired || !armed || suppressed()) return;
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(() => {
-        ticking = false;
+      window.clearTimeout(settle);
+      settle = window.setTimeout(() => {
         if (fired || suppressed()) return;
         if (document.querySelector('dialog[open]')) return; // never stack dialogs
         if (scrollProgress() < SCROLL_THRESHOLD) return;
@@ -118,7 +125,7 @@ const excluded = path === '/thank-you';
         modal.showModal();
         html.style.overflow = 'hidden';
         modal.focus();
-      });
+      }, SETTLE_MS);
     };
     window.addEventListener('scroll', onScroll, { passive: true });
 
