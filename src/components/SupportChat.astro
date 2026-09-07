@@ -386,12 +386,20 @@ const SUPPORT_EMAIL = 'support@revaudio.net';
     min-height: 0;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+    /* Brass scrollbar: thin standard props first, WebKit pseudo-elements for
+       Safari/Chrome (same dark trough, brass thumb, brighter on hover). */
+    scrollbar-width: thin;
+    scrollbar-color: var(--brass) var(--bg-0);
     padding: 1rem 0.9rem;
     display: flex;
     flex-direction: column;
     gap: 0.7rem;
     overscroll-behavior: contain;
   }
+  .sc-log::-webkit-scrollbar { width: 8px; }
+  .sc-log::-webkit-scrollbar-track { background: var(--bg-0); }
+  .sc-log::-webkit-scrollbar-thumb { background: var(--brass); border-radius: 4px; border: 2px solid var(--bg-0); }
+  .sc-log::-webkit-scrollbar-thumb:hover { background: var(--brass-bright); }
   .sc-log:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: -2px; }
   .sc-msg {
     margin: 0;
