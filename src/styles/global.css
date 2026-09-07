@@ -725,7 +725,20 @@ footer .footer-social svg { width: 20px; height: 20px; display: block; }
      columns wrapping, so stack them flush left instead of leaving
      space-between to strand them at opposite edges. */
   footer .footer-cols { justify-content: flex-start; }
-  footer .footer-col { min-width: 130px; }
+  /* Phone (2026-09-07, Dan): the clusters stack here, and the second one used
+     to run as a single left column with the whole right half of the footer
+     empty. Lay every cluster out as a fixed 2-up grid, then flip the second
+     one so Legal takes the left slot Company held and Company moves right,
+     under Support. */
+  footer .footer-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+  }
+  footer .footer-col { min-width: 0; }
+  footer .footer-group:last-child .footer-col:first-child { order: 2; }
+  /* The high-contrast switch is wider than half the container; its own phone
+     layout lives in A11yToggle.astro, where the scoped rules can reach it. */
 }
 
 /* plugin detail page */

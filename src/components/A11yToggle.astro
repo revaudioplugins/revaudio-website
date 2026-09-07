@@ -76,4 +76,24 @@
   .hc-switch[aria-pressed='true'] .hc-state { color: var(--brass-bright); }
   /* Same tap target the footer links get on touch. */
   @media (pointer: coarse) { .hc-switch { min-height: 44px; padding: 0.5rem 0; } }
+
+  /* Phone (2026-09-07): the footer's Legal column is now half the container
+     wide, which is narrower than this row. As a flex line it broke into a
+     ragged four-line block, so switch to a small grid — glyph beside the
+     label, ON/OFF tag on a second line under it. */
+  @media (max-width: 560px) {
+    .hc-switch {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: center;
+      column-gap: 0.5rem;
+      row-gap: 2px;
+      text-align: left;
+      /* 0.1em tracking pushes the label onto a second line inside a half-width
+         column; 0.04em keeps HIGH CONTRAST on one line with room to spare. */
+      letter-spacing: 0.04em;
+    }
+    .hc-label { grid-area: 1 / 2; }
+    .hc-state { grid-area: 2 / 2; }
+  }
 </style>
