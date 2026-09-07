@@ -206,14 +206,26 @@ const wallM = await getImage({ src: wallMImg, width: 1080, format: 'webp', quali
       const slowIn = !matchMedia('(max-width: 860px)').matches;
       const textDur = slowIn ? 3 : 0.6;
       const circleDur = slowIn ? 1.8 : 0.7;
+      // The kicker lands LAST (Dan, 2026-09-07) — it used to open the cascade
+      // at 0.05s, which spent the eye's first fixation on the smallest, least
+      // important line. Now everything else arrives, and the label settles on
+      // top of a finished picture. Beat is set off the headline: h1 ends at
+      // h1At + h1Dur (3.1s desktop, 0.85s mobile), so this starts just under
+      // that and overlaps the tail by a hair rather than leaving a dead gap.
+      const tagAt = slowIn ? 2.9 : 0.8;
+      const tagDur = slowIn ? 0.9 : 0.45;
 
       const startEntrance = () => {
         const tl = gsap.timeline({ defaults: { ease: 'expo.out' } });
         // Dev-only handle for the RevEdit overlay (entrance scrubber + needle
         // controls). Tree-shaken out of prod builds.
         if (import.meta.env.DEV) (window as any).__reveditHero = { tl, dials: [] as object[] };
-        tl.fromTo('[data-hero-in]', { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: textDur, stagger: 0.12 }, 0.05)
-          .fromTo('[data-hero-sweep]', { scaleX: 0, opacity: 0 }, { scaleX: 1, opacity: 1, duration: 0.7, ease: 'power3.out' }, 0.75);
+        // :not(.hh-tag) — the kicker leaves the group cascade and gets its own
+        // beat at the end (tagAt below). The lede and the mobile dial still
+        // carry data-hero-in and still ride this one.
+        tl.fromTo('[data-hero-in]:not(.hh-tag)', { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: textDur, stagger: 0.12 }, 0.05)
+          .fromTo('[data-hero-sweep]', { scaleX: 0, opacity: 0 }, { scaleX: 1, opacity: 1, duration: 0.7, ease: 'power3.out' }, 0.75)
+          .fromTo('.hh-tag', { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: tagDur }, tagAt);
 
         // ── Headline: rides the rev, lands with the settle ──
         // Desktop beat (Dan's call): enter at 1.3s — a touch before the
@@ -612,7 +624,20 @@ const wallM = await getImage({ src: wallMImg, width: 1080, format: 'webp', quali
      mobile pins its own sizes back in the media query below, unaffected. */
   .hh-tag {
     font-family: var(--font-display);
-    font-size: max(1.0285rem, 1.2705vw); /* was max(0.935rem, 1.155vw) */
+    /* The ceiling is a CONTRAST bound, not a taste one. Both darkening circles
+       are sized off the dial, and --medallion clamps at 640px — so past a
+       point the kicker outgrows the dark disc it is supposed to sit on and its
+       outer glyphs land on the lit brass bezel. The old text-shaped scrim grew
+       with the type and could not fail this way; dial-concentric circles
+       structurally cannot follow text sized off the viewport, so the text has
+       to stop instead. Swept at a 3440px viewport, glyph interiors against the
+       background under them:
+         26px -> 5.79   28px -> 5.16   30px -> 4.65   <- last passing
+         32px -> 3.64 (4.1% of glyph px fail)   44px -> 1.76 (14.7% fail)
+       1.75rem = 28px keeps a real margin rather than sitting on the 4.5 line,
+       and is reached at a ~2200px viewport, so every laptop still gets the
+       full 1.2705vw ramp. Re-sweep if the dial's size or either circle moves. */
+    font-size: clamp(1.0285rem, 1.2705vw, 1.75rem); /* was max(1.0285rem, 1.2705vw) */
     letter-spacing: 0.3em;
     text-transform: uppercase;
     color: var(--brass);
