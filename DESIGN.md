@@ -77,6 +77,14 @@ neon or glow without a lamp; the retired tach arc that hue-shifted toward the re
   The RevLimiter window hangs beside it with the shadow stack and one caption line.
 - Trial CTA / buy: flat brass-bright button at the page end on `/`; the crane door on product pages.
 - Coverflow showcase, DAW strip, EmailCapture, SubscribeModal, TrialGateModal: unchanged house parts.
+- Support chat (`SupportChat.astro`, `/support` only): chat-app thread grammar in house materials —
+  visitor right in 3-stop brass, Support left on dark steel with avatar + curved tail on a group's
+  last bubble, time stamp inside the bubble, bakelite wallpaper with a brushed diagonal. Answers use
+  a fixed grammar (also the worker's reply contract): key words **bold `--oxide-text`**, no wash
+  behind them (Dan, 2026-09-08 — highlight was tried and cut); one step per line with a stamped
+  badge; paths on engraved mono plates with a copy rivet; `[mac]`/`[win]` blocks shown for the
+  visitor's OS with a flip chip; `!` hazard-stripe callout (oxide) and `+` pilot-lamp callout
+  (emerald). Key words lamp once as the bubble lands, then settle. Bench: `bench/support-answers-bench.html`.
 
 ## 5. Depth & lighting
 

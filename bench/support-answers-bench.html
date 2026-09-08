@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Support answers bench — highlight grammar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  /* House tokens, verbatim from src/styles/global.css */
+  :root {
+    --bg-0: #0b0a09; --bg-1: #14110f; --bg-2: #1d1916; --bg-3: #2a2420;
+    --fg: #efe9df; --fg-dim: #8a8275; --fg-faint: #827c74;
+    --brass: #c9a35c; --brass-bright: #e8c878; --brass-dark: #8c6f3a;
+    --oxide: #8b3a1f; --oxide-deep: #5a2410; --oxide-text: #d4622a; --emerald: #2f6b4a;
+    --border: #2a2420; --border-bright: #3d342c;
+    --font-display: 'Bebas Neue', 'Oswald', 'Arial Narrow', sans-serif;
+    --font-body: 'Inter', system-ui, sans-serif;
+    --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', Consolas, monospace;
+    --ease: cubic-bezier(0.4, 0, 0.2, 1); --ease-settle: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg-0); color: var(--fg); font-family: var(--font-body); min-height: 100vh; }
+
+  /* ---- Bench chrome ---- */
+  .bench { max-width: 1100px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+  .bench h1 { font-family: var(--font-display); font-size: 2rem; letter-spacing: .08em; margin: 0 0 .25rem; color: var(--brass-bright); }
+  .bench p.lead { margin: 0 0 1rem; color: var(--fg-dim); font-size: .9rem; }
+  .bar { display: flex; flex-wrap: wrap; gap: .5rem 1rem; align-items: center; padding: .75rem 1rem; background: var(--bg-1); border: 1px solid var(--border-bright); border-radius: 10px; margin-bottom: 1.25rem; font-size: .82rem; }
+  .bar label { display: inline-flex; align-items: center; gap: .35rem; cursor: pointer; }
+  .bar .grp { display: inline-flex; gap: .35rem; margin-left: auto; }
+  .bar .grp b { color: var(--fg-dim); font-weight: 500; margin-right: .2rem; }
+  .bar button { font: 600 .78rem/1 var(--font-body); padding: .45rem .7rem; border-radius: 999px; border: 1px solid var(--brass-dark); background: transparent; color: var(--brass-bright); cursor: pointer; }
+  .bar button.on, .bar button:hover { background: var(--brass); color: var(--bg-0); border-color: var(--brass); }
+  .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 1.5rem; justify-items: center; }
+  .cap { font-family: var(--font-mono); font-size: .7rem; letter-spacing: .18em; text-transform: uppercase; color: var(--fg-dim); margin: 0 0 .5rem; text-align: center; }
+
+  /* ---- Panel (copied from SupportChat.astro, trimmed) ---- */
+  .sc { width: 380px; height: 600px; display: flex; flex-direction: column; background: var(--bg-1); border: 1px solid var(--brass-dark); border-radius: 14px; box-shadow: 0 1px 0 0 #000, 0 14px 40px rgba(0,0,0,.6); overflow: hidden; }
+  .sc-head { display: flex; align-items: center; gap: .75rem; padding: .9rem 1rem; border-bottom: 1px solid var(--border); background: radial-gradient(120% 140% at 50% 0%, var(--bg-3) 0%, var(--bg-1) 70%); flex: none; }
+  .sc-avatar { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; background: var(--bg-2); color: var(--brass-bright); border: 2px solid var(--brass); }
+  .sc-avatar svg { width: 20px; height: 20px; }
+  .sc-title h2 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 1.4rem; letter-spacing: .08em; }
+  .sc-status { margin: .1rem 0 0; display: flex; align-items: center; gap: .4rem; font-family: var(--font-mono); font-size: .72rem; color: var(--fg-dim); }
+  .sc-led { width: 9px; height: 9px; border-radius: 50%; background: var(--brass-bright); box-shadow: 0 0 8px var(--brass-bright); }
+  .sc-log { flex: 1 1 0; min-height: 0; overflow-y: auto; padding: .9rem .8rem 1rem; display: flex; flex-direction: column; gap: .55rem; scrollbar-width: thin; scrollbar-color: var(--brass) var(--bg-0);
+    background: linear-gradient(180deg, rgba(255,214,150,.05) 0%, rgba(255,214,150,0) 32%), repeating-linear-gradient(-45deg, rgba(201,163,92,.04) 0 1px, transparent 1px 7px), var(--bg-0); }
+  .sc-day { align-self: center; margin: 0 0 .2rem; padding: .24rem .65rem; border-radius: 999px; background: var(--bg-2); border: 1px solid var(--border); font-family: var(--font-mono); font-size: .62rem; letter-spacing: .18em; text-transform: uppercase; color: var(--fg-dim); }
+  .sc-msg { display: flex; align-items: flex-end; gap: .45rem; max-width: 86%; animation: sc-in .26s var(--ease-settle) both; }
+  .sc-msg--bot { align-self: flex-start; } .sc-msg--me { align-self: flex-end; }
+  @keyframes sc-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .sc-ava { width: 26px; height: 26px; flex: none; border-radius: 50%; display: grid; place-items: center; background: radial-gradient(120% 120% at 35% 25%, var(--bg-3), var(--bg-1)); border: 1px solid var(--brass-dark); color: var(--brass-bright); }
+  .sc-ava svg { width: 14px; height: 14px; }
+  .sc-bubble { position: relative; min-width: 0; padding: .55rem .75rem .5rem; border-radius: 16px; font-size: .9rem; line-height: 1.45; overflow-wrap: anywhere; }
+  .sc-msg--bot .sc-bubble { color: var(--fg); background: linear-gradient(180deg, var(--bg-3) 0%, var(--bg-2) 58%, #181410 100%); border: 1px solid var(--border-bright); box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 1px 0 rgba(0,0,0,.7), 0 4px 10px rgba(0,0,0,.35); border-bottom-left-radius: 4px; }
+  .sc-msg--me .sc-bubble { color: var(--bg-0); font-weight: 500; background: linear-gradient(180deg, var(--brass-bright) 0%, var(--brass) 48%, #a8853f 100%); border: 1px solid #a8853f; box-shadow: inset 0 1px 0 rgba(255,244,214,.45), 0 1px 0 rgba(0,0,0,.7), 0 4px 10px rgba(0,0,0,.35); border-bottom-right-radius: 4px; }
+  .sc-text { margin: 0; }
+  .sc-meta { float: right; margin: .55em 0 0 .7em; font-family: var(--font-mono); font-size: .6rem; letter-spacing: .06em; line-height: 1; font-weight: 400; }
+  .sc-msg--bot .sc-meta { color: var(--fg-dim); } .sc-msg--me .sc-meta { color: rgba(11,10,9,.62); }
+  .sc-chips { display: flex; flex-wrap: wrap; gap: .4rem; margin-left: calc(26px + .45rem); }
+  .sc-chip { font: 500 .8rem/1 var(--font-body); padding: .5rem .75rem; border-radius: 999px; border: 1px solid var(--brass-dark); background: transparent; color: var(--brass-bright); cursor: pointer; }
+  .sc-chip--solid { background: var(--brass); border-color: var(--brass); color: var(--bg-0); font-weight: 600; }
+  .sc-foot { display: flex; align-items: center; gap: .5rem; padding: .65rem .75rem .5rem; border-top: 1px solid var(--border); background: var(--bg-0); flex: none; }
+  .sc-in { flex: 1; padding: .65rem 1rem; border: 1px solid var(--border-bright); border-radius: 999px; background: var(--bg-1); color: var(--fg); font: .9rem/1.3 var(--font-body); box-shadow: inset 0 1px 2px rgba(0,0,0,.5); }
+  .sc-send { width: 40px; height: 40px; border-radius: 50%; border: 1px solid #a8853f; background: linear-gradient(180deg, var(--brass-bright) 0%, var(--brass) 48%, #a8853f 100%); color: var(--bg-0); display: grid; place-items: center; }
+  .sc-send svg { width: 18px; height: 18px; }
+
+  /* ================================================================
+     THE PROPOSAL — answer grammar rendered inside a Support bubble
+     ================================================================ */
+  .ans { display: flex; flex-direction: column; gap: .42rem; }
+  .ans p { margin: 0; }
+
+  /* Tier 1a — red-marker highlight: oxide paint marker on steel. Oxide-text
+     (AA on the bubble), not race-red — race-red stays the one hero per page. */
+  .hl { color: var(--oxide-text); font-weight: 700; }
+  body.no-hl .hl { color: inherit; font-weight: inherit; }
+  /* landing lamp — key words glow as the bubble lands, then settle */
+  body.lamp .fresh .hl { animation: hl-lamp 1.1s var(--ease-settle) both; }
+  @keyframes hl-lamp { 0% { text-shadow: 0 0 0 rgba(212,98,42,0); } 25% { text-shadow: 0 0 10px rgba(212,98,42,.9), 0 0 2px rgba(212,98,42,.9); } 100% { text-shadow: 0 0 0 rgba(212,98,42,0); } }
+
+  /* Tier 1b — one step per line, stamped badge. */
+  .step { display: grid; grid-template-columns: 20px 1fr; gap: .5rem; align-items: start; }
+  .step i { font-style: normal; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; margin-top: .1rem;
+            font-family: var(--font-mono); font-size: .62rem; font-weight: 700; color: var(--brass-bright);
+            background: radial-gradient(120% 120% at 35% 25%, var(--bg-3), var(--bg-0)); border: 1px solid var(--brass-dark); box-shadow: inset 0 1px 0 rgba(255,255,255,.06); }
+  body.no-steps .step { display: block; } body.no-steps .step i { display: none; }
+
+  /* Tier 1c — path plate with a copy rivet. */
+  .plate { display: inline-flex; align-items: center; gap: .4rem; max-width: 100%; margin: .1rem 0; padding: .18rem .3rem .18rem .55rem; border-radius: 6px;
+           font-family: var(--font-mono); font-size: .78rem; color: var(--fg); background: var(--bg-0); border: 1px solid var(--border-bright);
+           box-shadow: inset 0 1px 3px rgba(0,0,0,.6), 0 1px 0 rgba(255,255,255,.04); overflow-wrap: anywhere; }
+  .plate button { flex: none; width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--brass-dark); background: var(--bg-2); color: var(--brass-bright); display: grid; place-items: center; cursor: pointer; padding: 0; }
+  .plate button svg { width: 12px; height: 12px; }
+  .plate button:hover { background: var(--brass); color: var(--bg-0); }
+  .plate.copied { border-color: var(--emerald); }
+  .plate.copied button { background: var(--emerald); border-color: var(--emerald); color: var(--fg); }
+  body.no-plates .plate { display: inline; padding: 0; background: none; border: 0; box-shadow: none; }
+  body.no-plates .plate button { display: none; }
+
+  /* Tier 1d — OS auto-pick with a flip chip. */
+  .os { display: flex; align-items: center; gap: .4rem; font-family: var(--font-mono); font-size: .66rem; letter-spacing: .1em; text-transform: uppercase; color: var(--fg-dim); margin-bottom: .1rem; }
+  .os b { color: var(--brass-bright); font-weight: 600; }
+  .os button { font: 500 .68rem/1 var(--font-body); letter-spacing: 0; text-transform: none; padding: .22rem .5rem; border-radius: 999px; border: 1px solid var(--border-bright); background: transparent; color: var(--fg-dim); cursor: pointer; }
+  .os button:hover { border-color: var(--brass-dark); color: var(--brass-bright); }
+  .ans[data-os="mac"] .win, .ans[data-os="win"] .mac { display: none; }
+  body.no-os .os { display: none; } body.no-os .ans[data-os] .win, body.no-os .ans[data-os] .mac { display: grid; }
+
+  /* Tier 2 — callouts: hazard stripe (oxide) / pilot lamp (emerald). */
+  .warn { position: relative; padding: .4rem .6rem .4rem .9rem; border-radius: 6px; background: rgba(139,58,31,.16); border: 1px solid rgba(139,58,31,.5); font-size: .85rem; }
+  .warn::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; border-radius: 6px 0 0 6px;
+                  background: repeating-linear-gradient(-45deg, var(--oxide-text) 0 4px, var(--oxide-deep) 4px 8px); }
+  .ok { display: flex; align-items: flex-start; gap: .5rem; font-size: .85rem; color: var(--fg); padding: .3rem .1rem 0; }
+  .ok::before { content: ''; flex: none; width: 9px; height: 9px; border-radius: 50%; margin-top: .35rem; background: #4c9c6c; box-shadow: 0 0 8px #4c9c6c; }
+  body.no-callouts .warn { padding: 0; background: none; border: 0; } body.no-callouts .warn::before, body.no-callouts .ok::before { display: none; } body.no-callouts .ok { padding: 0; }
+
+  .before-note { font-family: var(--font-mono); font-size: .68rem; color: var(--fg-faint); text-align: center; margin: .5rem 0 0; }
+</style>
+</head>
+<body class="lamp">
+<div class="bench">
+  <h1>Support answers — highlight grammar</h1>
+  <p class="lead">Left: today's answer as shipped. Right: the same answer in the proposed grammar. Toggle each idea off to feel what it earns.</p>
+
+  <div class="bar">
+    <label><input type="checkbox" data-t="hl" checked /> Red bold key words</label>
+    <label><input type="checkbox" data-t="steps" checked /> Numbered steps</label>
+    <label><input type="checkbox" data-t="plates" checked /> Path plates + copy</label>
+    <label><input type="checkbox" data-t="os" checked /> Auto Mac / Windows</label>
+    <label><input type="checkbox" data-t="callouts" checked /> Hazard / pilot callouts</label>
+    <label><input type="checkbox" data-t="lamp" checked /> Landing lamp</label>
+    <span class="grp"><b>Topic</b>
+      <button data-topic="install" class="on">Install</button>
+      <button data-topic="daw">DAW</button>
+      <button data-topic="licence">Licence</button>
+      <button data-replay title="Re-land the answer">↻ Replay</button>
+    </span>
+  </div>
+
+  <div class="row">
+    <div>
+      <p class="cap">Before — as shipped</p>
+      <section class="sc" id="before"></section>
+    </div>
+    <div>
+      <p class="cap">After — proposed grammar</p>
+      <section class="sc" id="after"></section>
+      <p class="before-note">Bot markup: **red** · `path` · "1. " step · "! " hazard · "+ " pilot · [mac]/[win]</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  const HEADSET = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13a8 8 0 0 1 16 0v4a2 2 0 0 1-2 2h-1v-6h3M4 13v4a2 2 0 0 0 2 2h1v-6H4"/><path d="M12 21h4"/></svg>';
+  const COPY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>';
+  const TICK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>';
+
+  /* ---- Today's copy, verbatim from SupportChat.astro ---- */
+  const BEFORE = {
+    install: { label: 'Install', text: 'Mac: open the .pkg and follow the steps. It lands in /Library/Audio/Plug-Ins/VST3/ and /Library/Audio/Plug-Ins/Components/ (AU).\nWindows: run the installer. VST3 goes to C:\\Program Files\\Common Files\\VST3\\.\nThen rescan plugins in your DAW and look under the RevAudio manufacturer.' },
+    daw: { label: 'DAW', text: 'Restart the DAW and trigger a plugin rescan. Then check the file is where it should be:\nWindows VST3: C:\\Program Files\\Common Files\\VST3\\\nMac VST3: /Library/Audio/Plug-Ins/VST3/\nMac AU: /Library/Audio/Plug-Ins/Components/\nFile is there and the DAW still won’t see it? Do a full DAW restart after the rescan.' },
+    licence: { label: 'Licence', text: 'On first launch, paste the key from your purchase email — no spaces around it. Each plugin has its own key, and one licence covers 2 machines.\nLost the key or moving to a new machine? Email support@revaudio.net with the address you bought under. Reissue within one business day.', mail: true },
+  };
+
+  /* ---- The same answers in the proposed grammar ---- */
+  const AFTER = {
+    install: { label: 'Install', mail: false, text: [
+      '[mac]',
+      '1. Open the **.pkg** and click through.',
+      '2. It lands here: `/Library/Audio/Plug-Ins/VST3/` and `/Library/Audio/Plug-Ins/Components/`',
+      '[/mac]',
+      '[win]',
+      '1. Run the **installer**.',
+      '2. It lands here: `C:\\Program Files\\Common Files\\VST3\\`',
+      '[/win]',
+      '3. **Quit and reopen your DAW**, then rescan plugins.',
+      '+ You should see **RevAudio** in the plugin list.',
+    ].join('\n') },
+    daw: { label: 'DAW', mail: false, text: [
+      '1. **Quit the DAW fully** — not just the project.',
+      '2. Open it again and **rescan plugins**.',
+      '3. Check the file is here:',
+      '[mac]',
+      '`/Library/Audio/Plug-Ins/VST3/` · AU: `/Library/Audio/Plug-Ins/Components/`',
+      '[/mac]',
+      '[win]',
+      '`C:\\Program Files\\Common Files\\VST3\\`',
+      '[/win]',
+      '! Rescan alone is not enough. The DAW must be **fully restarted** after it.',
+      '+ You should see **RevAudio** in the plugin list.',
+    ].join('\n') },
+    licence: { label: 'Licence', mail: true, text: [
+      '1. Open the plugin.',
+      '2. Paste the key from your **purchase email**.',
+      '! **No spaces** before or after the key.',
+      '+ Each plugin has its own key. One licence = **2 machines**.',
+      'Lost the key, or moving to a new machine? Email us from the address you bought under — reissue within **one business day**.',
+    ].join('\n') },
+  };
+
+  const OS = navigator.platform.startsWith('Win') ? 'win' : 'mac';
+
+  function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+  function inline(s) {
+    return esc(s)
+      .replace(/\*\*(.+?)\*\*/g, '<span class="hl">$1</span>')
+      .replace(/`([^`]+)`/g, (m, p) => `<span class="plate"><span>${p}</span><button type="button" aria-label="Copy" data-copy="${p}">${COPY}</button></span>`);
+  }
+  // Renders the grammar into an .ans block.
+  function render(text, os) {
+    const out = []; let sect = '';
+    text.split('\n').forEach(line => {
+      let m;
+      if ((m = line.match(/^\[(mac|win)\]$/))) { sect = m[1]; return; }
+      if (/^\[\/(mac|win)\]$/.test(line)) { sect = ''; return; }
+      const cls = sect ? ` ${sect}` : '';
+      if ((m = line.match(/^(\d+)\.\s+(.*)$/))) out.push(`<div class="step${cls}"><i>${m[1]}</i><span>${inline(m[2])}</span></div>`);
+      else if ((m = line.match(/^!\s+(.*)$/))) out.push(`<div class="warn${cls}">${inline(m[1])}</div>`);
+      else if ((m = line.match(/^\+\s+(.*)$/))) out.push(`<div class="ok${cls}"><span>${inline(m[1])}</span></div>`);
+      else out.push(`<p class="${sect}">${inline(line)}</p>`);
+    });
+    const hasOS = /\[(mac|win)\]/.test(text);
+    const osBar = hasOS ? `<div class="os">Showing <b>${os === 'mac' ? 'macOS' : 'Windows'}</b><button type="button" data-flip>${os === 'mac' ? 'on Windows?' : 'on a Mac?'}</button></div>` : '';
+    return `<div class="ans" data-os="${os}">${osBar}${out.join('')}</div>`;
+  }
+
+  function stamp() { return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
+  function bubble(html, who, fresh) {
+    return `<div class="sc-msg sc-msg--${who}${fresh ? ' fresh' : ''}">${who === 'bot' ? `<span class="sc-ava">${HEADSET}</span>` : ''}<div class="sc-bubble"><div class="sc-text">${html}<span class="sc-meta">${stamp()}</span></div></div></div>`;
+  }
+  function chips(mail) {
+    return `<div class="sc-chips">${mail ? '<a class="sc-chip sc-chip--solid" href="#">Email support@revaudio.net</a>' : '<button class="sc-chip sc-chip--solid">That fixed it</button>'}<button class="sc-chip">Talk to a human</button></div>`;
+  }
+  function panel(el, a, html) {
+    el.innerHTML = `
+      <header class="sc-head"><span class="sc-avatar">${HEADSET}</span><div class="sc-title"><h2>Support</h2><p class="sc-status"><span class="sc-led"></span>Bot on duty · a human within 1 business day</p></div></header>
+      <div class="sc-log">
+        <p class="sc-day">Today</p>
+        ${bubble('Hey. Pick what’s up, or just type it.', 'bot')}
+        ${bubble(a.label, 'me')}
+        ${bubble(html, 'bot', true)}
+        ${chips(a.mail)}
+      </div>
+      <form class="sc-foot" onsubmit="return false"><input class="sc-in" placeholder="Type your message…" /><button class="sc-send" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></form>`;
+    const log = el.querySelector('.sc-log'); log.scrollTop = log.scrollHeight;
+  }
+
+  let topic = 'install', os = OS;
+  function draw() {
+    const b = BEFORE[topic];
+    panel(document.getElementById('before'), b, esc(b.text).replace(/\n/g, '<br>'));
+    panel(document.getElementById('after'), AFTER[topic], render(AFTER[topic].text, os));
+  }
+  draw();
+
+  document.addEventListener('click', e => {
+    const t = e.target.closest('[data-topic],[data-replay],[data-flip],[data-copy]');
+    if (!t) return;
+    if (t.dataset.topic) { topic = t.dataset.topic; document.querySelectorAll('[data-topic]').forEach(x => x.classList.toggle('on', x === t)); draw(); }
+    else if ('replay' in t.dataset) draw();
+    else if ('flip' in t.dataset) { os = os === 'mac' ? 'win' : 'mac'; draw(); }
+    else if (t.dataset.copy) {
+      navigator.clipboard && navigator.clipboard.writeText(t.dataset.copy).catch(() => {});
+      const plate = t.closest('.plate'); plate.classList.add('copied'); t.innerHTML = TICK;
+      setTimeout(() => { plate.classList.remove('copied'); t.innerHTML = COPY; }, 1400);
+    }
+  });
+  document.querySelectorAll('.bar input').forEach(cb => cb.addEventListener('change', () => {
+    const k = cb.dataset.t;
+    if (k === 'lamp') document.body.classList.toggle('lamp', cb.checked);
+    else document.body.classList.toggle('no-' + k, !cb.checked);
+  }));
+</script>
+</body>
+</html>
