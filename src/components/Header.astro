@@ -226,25 +226,34 @@ const onProductPage = plugins.some((pl) => isActive(`/${pl.slug}`));
     .nav-burger { display: inline-flex; }
 
     /* Cart leaves the bar on mobile — CartFab (BaseLayout) takes over,
-       docked bottom-left. The nav's backdrop-filter would trap a fixed FAB
-       here, hence the separate component outside the nav. */
+       docked bottom-left. It lives outside the nav for layering (FAB z:60 over
+       nav z:50). It used to be for filter reasons too — a backdrop-filter
+       ancestor traps fixed descendants — but the bar's filter now sits on
+       nav.site-nav::before, so the nav itself no longer traps anything. */
     .cart-toggle { display: none; }
 
     /* Links collapse into a slide-down panel under the bar. */
     .nav-links {
+      /* .nav-inner is the containing block now — it had to become positioned
+         so it paints above the bar's ::before pane — and it is --maxw wide,
+         i.e. 98vw with a 1vw gutter each side on phones. These two lines pull
+         the panel back out to the viewport edges from any centered containing
+         block, so it stays full-bleed whatever --maxw becomes. The +1px clears
+         the nav's own hairline, which .nav-inner's height excludes.
+         (Not position:fixed: --nav-h is 44px, the *desktop* bar height, while
+         the mobile bar is taller — a fixed top offset would leave a gap.) */
       position: absolute;
-      top: 100%;
-      left: 0;
-      right: 0;
+      top: calc(100% + 1px);
+      left: calc(50% - 50vw);
+      right: calc(50% - 50vw);
       flex-direction: column;
       gap: 0;
       padding: 0.5rem 0 0.75rem;
-      /* Same frosted pane as the bar it drops out of — one glass, two
-         surfaces. Slightly denser tint than the bar because full-width rows
-         of text need more backing than a single line of nav items. */
-      background: var(--nav-glass-face), rgba(11, 10, 9, 0.66);
-      -webkit-backdrop-filter: var(--nav-glass-blur);
-      backdrop-filter: var(--nav-glass-blur);
+      /* Its own pane of the same glass — a sibling of the bar's pane in
+         backdrop-root terms, so this blur actually samples the page. */
+      background: var(--nav-glass-face), var(--nav-glass-panel);
+      -webkit-backdrop-filter: var(--nav-glass-panel-blur);
+      backdrop-filter: var(--nav-glass-panel-blur);
       border-bottom: 1px solid var(--nav-glass-line);
       box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
       /* collapsed state */
@@ -259,14 +268,17 @@ const onProductPage = plugins.some((pl) => isActive(`/${pl.slug}`));
       pointer-events: auto;
     }
     .nav-links li { width: 100%; }
+    /* A light hairline between rows, not --border under each link. #2a2420 is
+       a dark line meant for dark solid panels; on glass it disappears. White
+       at low alpha reads as a groove etched into the pane. Drawing it as
+       li + li also retires the last-child special case. */
+    .nav-links li + li { border-top: 1px solid var(--nav-glass-rule); }
     .nav-links a {
       display: block;
-      padding: 0.95rem 1.5rem;
+      padding: 1rem 1.5rem;
       font-size: 1.05rem;
       color: var(--fg);
-      border-bottom: 1px solid var(--border);
     }
-    .nav-links li:last-child a { border-bottom: 0; }
     .nav-links a[aria-current='page'] { color: var(--brass-bright); }
     .nav-links a:hover { color: var(--brass-bright); }
   }

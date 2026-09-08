@@ -276,12 +276,15 @@ html.hc .haze-plate { display: none; }
    busy background this skin exists to remove. */
 html.hc nav.site-nav {
   --nav-glass: #000000;
+  --nav-glass-panel: #000000;
   --nav-glass-blur: none;
+  --nav-glass-panel-blur: none;
   --nav-glass-line: #ffffff;
+  --nav-glass-rule: #ffffff;
   --nav-glass-sheen: transparent;
   --nav-glass-face: none;
-  box-shadow: none;
 }
+html.hc nav.site-nav { box-shadow: none; }
 html.hc nav.site-nav .logo-word,
 html.hc nav.site-nav ul a,
 html.hc nav.site-nav .cart-toggle { text-shadow: none; }
@@ -372,6 +375,18 @@ p { margin: 0 0 1em; max-width: 64ch; }
   --nav-glass-blur: saturate(200%) blur(30px);
   --nav-glass-line: rgba(232, 200, 120, 0.22);
   --nav-glass-sheen: rgba(255, 255, 255, 0.10);
+  /* The drop-down menu is its own pane of the same glass, seated deeper: it
+     covers five rows of text instead of one, over whatever artwork the page
+     happens to be showing. The dimming is brightness() *inside* the filter
+     rather than more tint alpha — alpha is a flat film, and piling it on
+     kills the luminance variation that is the whole visual signal of glass.
+     Order matters: blur first (cheapest on the most data), saturate to keep
+     the brass from washing grey, brightness last to seat the text.
+     Tokens rather than literals so the html.hc / no-blur overrides can reach
+     the panel by inheritance instead of fighting Astro scoped specificity. */
+  --nav-glass-panel: rgba(11, 10, 9, 0.40);
+  --nav-glass-panel-blur: blur(26px) saturate(180%) brightness(0.58);
+  --nav-glass-rule: rgba(255, 255, 255, 0.10);
   /* The lit face of the pane. Glass is *lighter* than what's behind it —
      dropping tint alpha alone just makes a thinner dark veil, so the pane
      needs its own faint white gradient, brightest at the top edge where a
@@ -385,10 +400,34 @@ p { margin: 0 0 1em; max-width: 64ch; }
   );
 }
 
+/* The bar carries no glass of its own — see ::before. An element with
+   backdrop-filter becomes a *backdrop root* for everything inside it, so its
+   descendants can only ever blur the ancestor's own filtered output, which is
+   empty outside the ancestor's box. With the filter on nav.site-nav itself,
+   the mobile drop-down's blur was a silent no-op and the menu was a 34%
+   tint over sharp page content. Holding the filter on a pseudo-element keeps
+   the drop-down out of its root, so both panes sample the real page. */
 nav.site-nav {
   position: sticky;
   top: var(--sale-h);
   z-index: 50;
+  /* A transparent border reserves the hairline's row so the bar's rendered
+     height is unchanged — --nav-h and PluginShowcase.astro's live
+     getBoundingClientRect read both depend on it. The visible hairline is
+     drawn by the pane below, because it needs the glass behind it: a
+     semi-transparent brass line with nothing under it goes dark. */
+  border-bottom: 1px solid transparent;
+  /* The outer lift stays on the element — it falls outside the pane. */
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.34);
+}
+
+/* The bar's pane. inset stretches 1px past the padding box to cover the
+   border row too, so the glass runs under the hairline exactly as it did when
+   the background lived on the element. */
+nav.site-nav::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 -1px;
   /* Two layers in one declaration: the lit face on top, the darkening tint
      under it. background-image always paints over background-color, so the
      shorthand ordering here is the stack. */
@@ -396,13 +435,10 @@ nav.site-nav {
   -webkit-backdrop-filter: var(--nav-glass-blur);
   backdrop-filter: var(--nav-glass-blur);
   /* Hairline bottom edge + a 1px sheen along the top, the pair of highlights
-     that make a translucent pane read as glass rather than as low opacity.
-     The outer shadow lifts the pane off the page so the edge reads as an
-     edge, not as where one flat colour stops. */
+     that make a translucent pane read as glass rather than as low opacity. */
   border-bottom: 1px solid var(--nav-glass-line);
-  box-shadow:
-    inset 0 1px 0 var(--nav-glass-sheen),
-    0 8px 24px rgba(0, 0, 0, 0.34);
+  box-shadow: inset 0 1px 0 var(--nav-glass-sheen);
+  pointer-events: none;
 }
 
 /* At this tint the backdrop can be anything the page scrolls under, so the
@@ -415,13 +451,38 @@ nav.site-nav .cart-toggle {
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75);
 }
 
-/* No blur support (or blur disabled): fall back to a near-opaque bar so the
-   nav text never sits on raw hero art. */
+/* No blur support: fall back to near-opaque panes so nav text never sits on
+   raw hero art. Set on nav.site-nav and inherited down, which is how these
+   reach the drop-down too — a global.css rule aimed straight at .nav-links
+   would lose to Header.astro's scoped style. */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  nav.site-nav { background: rgba(11, 10, 9, 0.94); }
+  nav.site-nav {
+    --nav-glass: rgba(11, 10, 9, 0.94);
+    --nav-glass-panel: rgba(11, 10, 9, 0.97);
+  }
+}
+
+/* Blur *supported but declined*. @supports cannot see this case: Safari still
+   supports backdrop-filter under iOS "Reduce Transparency", it simply does not
+   render it — which leaves a low-alpha tint sitting on live content, the exact
+   failure this whole block exists to prevent. */
+@media (prefers-reduced-transparency: reduce) {
+  nav.site-nav {
+    --nav-glass: rgba(11, 10, 9, 0.96);
+    --nav-glass-panel: rgba(11, 10, 9, 0.98);
+    --nav-glass-blur: none;
+    --nav-glass-panel-blur: none;
+    --nav-glass-face: none;
+  }
 }
 
 .nav-inner {
+  /* Positioned so it paints above nav.site-nav::before. Deliberately no
+     z-index: two positioned siblings at z-index:auto paint in tree order and
+     .nav-inner comes second, which avoids a negative-z pane — this codebase
+     has a recorded WebKit trap where a z-index:-1 veil paints *over* content
+     under a composited scroller. */
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
