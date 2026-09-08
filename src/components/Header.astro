@@ -115,7 +115,11 @@ const onProductPage = plugins.some((pl) => isActive(`/${pl.slug}`));
       border: 1px solid var(--brass-dark);
       border-radius: 3px;
       padding: 0.3rem 0.8rem;
-      background: var(--bg-1);
+      /* Translucent, not --bg-1: an opaque chip on a frosted bar reads as a
+         sticker sitting on the glass instead of a part of it. Denser than the
+         pane on purpose — brass text needs its own darker backing to clear AA
+         where the plain white links get by on the pane alone. */
+      background: rgba(11, 10, 9, 0.55);
       transition: background 0.2s var(--ease), color 0.2s var(--ease), border-color 0.2s var(--ease);
     }
     .nav-links a.nav-store:hover {
@@ -235,9 +239,13 @@ const onProductPage = plugins.some((pl) => isActive(`/${pl.slug}`));
       flex-direction: column;
       gap: 0;
       padding: 0.5rem 0 0.75rem;
-      background: rgba(11, 10, 9, 0.97);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
+      /* Same frosted pane as the bar it drops out of — one glass, two
+         surfaces. Slightly denser tint than the bar because full-width rows
+         of text need more backing than a single line of nav items. */
+      background: var(--nav-glass-face), rgba(11, 10, 9, 0.66);
+      -webkit-backdrop-filter: var(--nav-glass-blur);
+      backdrop-filter: var(--nav-glass-blur);
+      border-bottom: 1px solid var(--nav-glass-line);
       box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
       /* collapsed state */
       opacity: 0;

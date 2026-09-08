@@ -272,6 +272,19 @@ html.hc {
    go; .haze itself stays because it is what paints --bg-0 behind a
    transparent body. */
 html.hc .haze-plate { display: none; }
+/* High-contrast wants a flat, opaque bar — a see-through pane is exactly the
+   busy background this skin exists to remove. */
+html.hc nav.site-nav {
+  --nav-glass: #000000;
+  --nav-glass-blur: none;
+  --nav-glass-line: #ffffff;
+  --nav-glass-sheen: transparent;
+  --nav-glass-face: none;
+  box-shadow: none;
+}
+html.hc nav.site-nav .logo-word,
+html.hc nav.site-nav ul a,
+html.hc nav.site-nav .cart-toggle { text-shadow: none; }
 /* garage wall art off in high-contrast; the borders on the pseudo carry the
    dividers, so keep the pseudo but strip its gradients — and hide the wood
    layer entirely (it holds the actual texture since the parallax split) */
@@ -346,15 +359,66 @@ p { margin: 0 0 1em; max-width: 64ch; }
    update it if the logo size or nav padding changes. */
 /* --sale-h kept at 0 — the sale banner was removed; some pages still reference
    it in layout math, so it stays as a zero constant (nav sits flush at top). */
-:root { --nav-h: 44px; --sale-h: 0px; }
+:root {
+  --nav-h: 44px;
+  --sale-h: 0px;
+  /* ---- Glass header (Apple-style) ----
+     The bar is a frosted pane, not a black slab: a low-alpha tint over a
+     saturating blur, so the brass gauge and the smoke plates read *through*
+     it while the nav text stays legible. saturate() is what stops the blur
+     from washing the brass to grey. Tokens, not literals, so html.hc can
+     turn the pane opaque in one place. */
+  --nav-glass: rgba(11, 10, 9, 0.52);
+  --nav-glass-blur: saturate(200%) blur(30px);
+  --nav-glass-line: rgba(232, 200, 120, 0.22);
+  --nav-glass-sheen: rgba(255, 255, 255, 0.10);
+  /* The lit face of the pane. Glass is *lighter* than what's behind it —
+     dropping tint alpha alone just makes a thinner dark veil, so the pane
+     needs its own faint white gradient, brightest at the top edge where a
+     real sheet catches the light. This is what separates "glass" from
+     "low opacity". */
+  --nav-glass-face: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.09) 0%,
+    rgba(255, 255, 255, 0.035) 45%,
+    rgba(255, 255, 255, 0.015) 100%
+  );
+}
 
 nav.site-nav {
   position: sticky;
   top: var(--sale-h);
   z-index: 50;
-  background: rgba(11, 10, 9, 0.85);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border);
+  /* Two layers in one declaration: the lit face on top, the darkening tint
+     under it. background-image always paints over background-color, so the
+     shorthand ordering here is the stack. */
+  background: var(--nav-glass-face), var(--nav-glass);
+  -webkit-backdrop-filter: var(--nav-glass-blur);
+  backdrop-filter: var(--nav-glass-blur);
+  /* Hairline bottom edge + a 1px sheen along the top, the pair of highlights
+     that make a translucent pane read as glass rather than as low opacity.
+     The outer shadow lifts the pane off the page so the edge reads as an
+     edge, not as where one flat colour stops. */
+  border-bottom: 1px solid var(--nav-glass-line);
+  box-shadow:
+    inset 0 1px 0 var(--nav-glass-sheen),
+    0 8px 24px rgba(0, 0, 0, 0.34);
+}
+
+/* At this tint the backdrop can be anything the page scrolls under, so the
+   nav text carries its own contrast instead of borrowing the bar's. A tight
+   dark halo costs nothing on a dark pane and keeps the links legible over a
+   bright plugin render. */
+nav.site-nav .logo-word,
+nav.site-nav ul a,
+nav.site-nav .cart-toggle {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75);
+}
+
+/* No blur support (or blur disabled): fall back to a near-opaque bar so the
+   nav text never sits on raw hero art. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  nav.site-nav { background: rgba(11, 10, 9, 0.94); }
 }
 
 .nav-inner {
@@ -387,7 +451,13 @@ nav ul {
 }
 
 nav ul a {
-  color: var(--fg-dim);
+  /* --fg, not --fg-dim. The bar is glass now: whatever the page scrolls under
+     it becomes the text's background, and dim grey measured 1.8:1 over the
+     brightest plugin renders. Near-white holds ~5:1 against the worst backdrop
+     the site can put behind it (measured across /, /store, /revlimiter,
+     /support at every scroll stop). It is also what Apple does — the frosted
+     bar carries white links, and STORE stays the lit one by colour. */
+  color: var(--fg);
   font-size: 0.875rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
