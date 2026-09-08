@@ -292,12 +292,39 @@ const panels: Panel[] = [
     color: var(--brass-bright);
   }
 
+  /* Phone: the "stencil stack over the window" beat from the reference
+     (kaelalden.com/products/vibe-rewind, 2026-09-08). One column, words
+     start at the top and the window hangs right under them. align-content
+     start matters: the panels share one grid cell and the tallest (GAS,
+     portrait) sets the cell height, so the default stretch + align-items
+     center opened a ~400px hole between the words and the plugin. The
+     kicker goes, the words grow to the wall's width, the caption shrinks. */
   @media (max-width: 860px) {
+    .ww { padding-top: 2rem; padding-bottom: 2.5rem; }
     .ww-panel {
       grid-template-columns: 1fr;
-      gap: 2rem;
+      align-content: start;
+      align-items: start;
+      gap: 2.25rem;
     }
-    .ww-word { font-size: clamp(3.2rem, 15vw, 5.6rem); }
+    .ww-tag { display: none; }
+    /* on the phone the inactive panels leave the flow entirely: the shared
+       cell would otherwise keep the tallest panel's height and leave a run
+       of empty wall under the caption. The swap becomes a cut + the word
+       stagger (no crossfade); nothing below the section shifts noticeably. */
+    .ww-panel:not(.is-active) { display: none; }
+    .ww-word {
+      font-size: clamp(4rem, 19vw, 6.4rem);
+      line-height: 0.9;
+      letter-spacing: 0.03em;
+      -webkit-text-stroke-width: 1.5px;
+    }
+    .ww-panel.is-portrait .ww-ui img { max-height: 24rem; }
+    .ww-ui figcaption {
+      margin-top: 0.9rem;
+      font-size: var(--text-sm);
+      line-height: 1.5;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
