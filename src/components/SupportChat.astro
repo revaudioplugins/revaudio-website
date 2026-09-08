@@ -5,7 +5,8 @@
  *
  * Two parts: a launcher docked bottom-right (bordered pill on desktop, 48px
  * FAB on phones — the cart FAB's twin, bottom-left) and the panel: a rounded
- * "dashboard cluster" popover on desktop, a bottom sheet on phones. Six
+ * "dashboard cluster" popover on desktop, a full-screen conversation pushed
+ * in from the right on phones (a text app, not a popup). Six
  * gauge tiles map to the sections of /support and answer locally from the
  * same copy; free text goes to `site.supportChat.workerUrl` (Yoni's backend,
  * POST {message, src, page} → {reply}). While that URL is empty the panel
@@ -34,7 +35,6 @@ const SUPPORT_EMAIL = 'support@revaudio.net';
 </button>
 
 <section id="support-chat" class="sc" data-support-chat data-endpoint={endpoint} role="dialog" aria-label="Support chat" hidden>
-  <div class="sc-grip" aria-hidden="true"></div>
   <header class="sc-head">
     <span class="sc-avatar" aria-hidden="true">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -45,7 +45,10 @@ const SUPPORT_EMAIL = 'support@revaudio.net';
       <h2>Support</h2>
       <p class="sc-status"><span class="sc-led" aria-hidden="true"></span>Bot on duty &middot; a human within 1 business day</p>
     </div>
-    <button type="button" class="sc-x" data-support-close aria-label="Close support chat">&times;</button>
+    <button type="button" class="sc-x" data-support-close aria-label="Close support chat">
+      <span class="sc-x-close" aria-hidden="true">&times;</span>
+      <svg class="sc-x-back" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7" /></svg>
+    </button>
   </header>
 
   {/* data-lenis-prevent: the site's Lenis smooth scroll otherwise eats the
@@ -849,7 +852,6 @@ const SUPPORT_EMAIL = 'support@revaudio.net';
     .sc-launch { transition: none; }
   }
 
-  .sc-grip { display: none; }
 
   .sc-head {
     display: flex;
@@ -884,6 +886,7 @@ const SUPPORT_EMAIL = 'support@revaudio.net';
     display: grid; place-items: center;
     transition: border-color 0.2s var(--ease), color 0.2s var(--ease);
   }
+  .sc-x-back { display: none; width: 24px; height: 24px; }
   .sc-x:hover { border-color: var(--brass); color: var(--brass-bright); }
   .sc-x:focus-visible { outline: 3px solid var(--brass-bright); outline-offset: 2px; }
 
@@ -927,7 +930,7 @@ const SUPPORT_EMAIL = 'support@revaudio.net';
     color: var(--fg-faint);
   }
 
-  /* ---- Phone: FAB launcher + bottom sheet ---- */
+  /* ---- Phone: FAB launcher + full-screen conversation ---- */
   @media (max-width: 700px) {
     .sc-launch {
       right: max(16px, env(safe-area-inset-right));
@@ -941,27 +944,35 @@ const SUPPORT_EMAIL = 'support@revaudio.net';
     .sc-launch .sc-led { position: absolute; top: -3px; right: -3px; width: 12px; height: 12px; border: 2px solid var(--bg-0); }
     .sc-launch svg { width: 26px; height: 26px; }
 
+    /* Full-screen conversation, pushed in from the right like opening a chat
+       in a messaging app (Dan, 2026-09-08: on phones it must feel like a text
+       app, not a popup). The page is locked underneath. */
     .sc {
-      right: 0; left: 0; bottom: 0;
+      inset: 0;
       width: auto;
-      height: 85dvh;
-      border-radius: 14px 14px 0 0;
-      border-left: 0; border-right: 0; border-bottom: 0;
-      border-top: 1px solid var(--brass-dark); /* same edge as the mobile buy bar */
+      height: 100dvh;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+      padding-top: env(safe-area-inset-top, 0px);
       padding-bottom: env(safe-area-inset-bottom, 0px);
-      transform: translateY(100%);
+      transform: translateX(100%);
+      transition: transform 0.32s var(--ease-settle);
     }
     .sc.is-open { transform: none; }
-    .sc-grip {
-      display: block;
-      width: 44px; height: 4px; border-radius: 2px;
-      background: var(--border-bright);
-      margin: 0.6rem auto 0;
+    :global(body.sc-open) { overflow: hidden; }
+    .sc-head {
+      padding: 0.6rem 0.9rem 0.6rem 0.4rem;
+      background: radial-gradient(120% 140% at 50% 0%, var(--bg-3) 0%, var(--bg-1) 70%);
     }
-    .sc-head { background: transparent; }
+    /* Back chevron leads the header, the way every chat app does it. */
+    .sc-x { order: -1; margin-left: 0; width: 40px; height: 40px; border: 0; background: transparent; color: var(--brass-bright); }
+    .sc-x-close { display: none; }
+    .sc-x-back { display: block; }
+    .sc-log { padding: 1rem 0.9rem 1.2rem; }
+    .sc-foot { padding: 0.6rem 0.75rem; }
     .sc-msg { max-width: 82%; }
-    /* The cart FAB (bottom-left) keeps its corner; while the sheet is up it
-       sits behind the sheet's backdrop-less body, so hide it too. */
+    /* The cart FAB would sit under the full-screen chat; hide it too. */
     :global(body.sc-open .cart-fab) { visibility: hidden; }
   }
 </style>
