@@ -14,6 +14,7 @@ import hubImg from '../assets/hero/hub-v3.png';
 import wallImg from '../assets/hero/hero-wall.jpg';
 import wallMImg from '../assets/hero/hero-wall-m.jpg';
 import { plugins, dlGateId } from '../data/plugins';
+import { N, H } from '../lib/gauge-geometry';
 import { site } from '../data/site';
 
 // Hero + closing trial CTAs open the TrialGateModal (mounted in BaseLayout)
@@ -24,33 +25,12 @@ const revlimiter = plugins.find((p) => p.slug === 'revlimiter')!;
 const trialGateId = dlGateId(revlimiter);
 const trialRegisterUrl = site.downloadGate.workerUrl + '/download/register';
 
-/* Gauge geometry — the plugin's 406-viewBox units as % of the square dial box:
-   needle <image> x122 y67.69 w162.4 (pivot at 49.877%/83.32% of its own box).
-   Needle and hub hang off ONE pivot: the centre of the cap's RIM CIRCLE on
-   the plate, least-squares fitted by design-assets/instagram/revaudio-gauge/
-   cut-hub.py, which prints both constants below. The Higgsfield plate puts
-   the cap off the bezel centre, so the pivot is NOT 50/50 — a needle spun
-   about the geometric centre would orbit the hub visibly.
-   Why the rim and not the bright-pixel centroid (the first cut, 48.525/49.822):
-   a lit dome is brightest toward the lamp, so its centroid sits ~1/4 radius
-   up-left of the cap's machined centre-mark — 9 css px at 640, enough that
-   the needle visibly pivoted beside the cap instead of under it. HW is the
-   cut's own box (rim + 3px feather), not the plugin's 45.5/406 hub box, which
-   was a third wider than the cap and laid opaque face pixels over the needle
-   root on one side. Re-run cut-hub.py and paste both whenever the plate
-   changes. Reused at both dial sizes below — all child positioning is
-   %-based, so it scales as one regardless of the dial's own width. */
-const PIVOT = { x: 49.900, y: 51.055 };
-const NW = 40, NOX = 0.49877, NOY = 0.8332;
-const HW = 9.974;
-const N = {
-  left: `${(PIVOT.x - NW * NOX).toFixed(3)}%`,
-  top: `${(PIVOT.y - NW * NOY).toFixed(3)}%`,
-  w: `${NW}%`,
-  ox: `${(NOX * 100).toFixed(3)}%`,
-  oy: `${(NOY * 100).toFixed(2)}%`,
-};
-const H = { left: `${(PIVOT.x - HW / 2).toFixed(3)}%`, top: `${(PIVOT.y - HW / 2).toFixed(3)}%`, w: `${HW}%` };
+/* Gauge geometry — needle and hub, both hung off ONE measured pivot. The
+   numbers and the reasoning behind them live in ../lib/gauge-geometry.ts,
+   imported above, because this page and the two local benches all draw the
+   same dial and copy-pasting the constants is exactly how those benches ended
+   up two generations stale. Re-run cut-hub.py and update that module — one
+   place — whenever the plate changes. */
 
 /* The back wall behind the hero (hero patina pass, tasks/todo.md Step 3).
    Two photo plates, landscape for desktop and portrait for phones, applied
