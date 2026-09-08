@@ -3,7 +3,12 @@
    Data-driven off plugins.ts on purpose: this page used to say "everything
    here is for RevLimiter, the only plugin shipping today", which went stale
    the moment Radio Roulette and GAS shipped. Names, links and the paid/free
-   split now come from the catalog, so a new plugin appears here by itself. */
+   split now come from the catalog, so a new plugin appears here by itself.
+
+   Layout: the reading column is LEFT-aligned to the site gutter (same line as
+   the header wordmark) rather than floated in the middle of the viewport — a
+   manual is scanned, not admired. The freed right side carries a sticky
+   section rail so the page is navigable without scrolling blind. */
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SupportChat from '../components/SupportChat.astro';
 import { plugins } from '../data/plugins';
@@ -24,6 +29,18 @@ const names = (list: Plugin[]) =>
     .reduce((acc, n, i) => (i === 0 ? n : i === list.length - 1 ? `${acc} and ${n}` : `${acc}, ${n}`), '');
 
 const DOWNLOADS_URL = 'https://revlimiter-license.revaudio.workers.dev/download';
+
+// One source of truth for the section headings and the rail that indexes them.
+const sections = [
+  { id: 'requirements', label: 'What you need' },
+  { id: 'download', label: 'Where your download comes from' },
+  { id: 'install-windows', label: 'Install (Windows)' },
+  { id: 'install-macos', label: 'Install (macOS)' },
+  { id: 'updating', label: 'Updating to a new version' },
+  { id: 'activate', label: 'Activate your licence' },
+  { id: 'troubleshooting', label: 'Troubleshooting' },
+  { id: 'contact', label: 'Contact' },
+];
 ---
 
 <BaseLayout
@@ -31,150 +48,298 @@ const DOWNLOADS_URL = 'https://revlimiter-license.revaudio.workers.dev/download'
   description="Install help, activation, troubleshooting, and contact for every RevAudio plugin."
 >
   <section class="plugin-detail">
-    <div class="container" style="max-width: 760px;" data-reveal>
-      <h1>Support &amp; install</h1>
-      <p class="pitch">
-        Quick install, activation, common fixes, and how to reach us when things go sideways.
-        Everything here applies to <strong>every RevAudio plugin</strong> &mdash; {names(shipping)}.
-        The steps are the same for all of them.
-      </p>
+    <div class="container">
+      <div class="doc" data-reveal>
+        <div class="doc-body">
+          <h1>Support &amp; install</h1>
+          <p class="pitch">
+            Quick install, activation, common fixes, and how to reach us when things go sideways.
+            Everything here applies to <strong>every RevAudio plugin</strong> &mdash; {names(shipping)}.
+            The steps are the same for all of them.
+          </p>
 
-      <h2>What you need</h2>
-      <ul class="reqs">
-        <li><strong>OS:</strong> {req?.os ?? 'Windows 10/11 64-bit, macOS 12+'}</li>
-        <li><strong>Formats:</strong> {req?.formats ?? 'VST3, AU, AAX'} &mdash; Windows and macOS, every plugin</li>
-        <li><strong>CPU / RAM:</strong> {req?.cpu} &middot; {req?.ram}</li>
-      </ul>
-      <p class="micro muted">
-        Full specs and tested DAWs on each product page:
-        {shipping.map((p, i) => (
-          <>
-            {i > 0 && <span> &middot; </span>}
-            <a href={p.slug === 'gas' ? '/gas' : `/${p.slug}`}>{p.name}</a>
-          </>
-        ))}
-      </p>
+          <h2 id="requirements">What you need</h2>
+          <ul class="reqs">
+            <li><strong>OS:</strong> {req?.os ?? 'Windows 10/11 64-bit, macOS 12+'}</li>
+            <li><strong>Formats:</strong> {req?.formats ?? 'VST3, AU, AAX'} &mdash; Windows and macOS, every plugin</li>
+            <li><strong>CPU / RAM:</strong> {req?.cpu} &middot; {req?.ram}</li>
+          </ul>
+          <p class="micro muted">
+            Full specs and tested DAWs on each product page:
+            {shipping.map((p, i) => (
+              <>
+                {i > 0 && <span> &middot; </span>}
+                <a href={p.slug === 'gas' ? '/gas' : `/${p.slug}`}>{p.name}</a>
+              </>
+            ))}
+          </p>
 
-      <h2>Where your download comes from</h2>
-      <ul class="reqs">
-        <li><strong>Bought it:</strong> the installer link is in the confirmation email sent right after checkout.</li>
-        <li><strong>Trial or free plugin:</strong> grab it from the <a href={DOWNLOADS_URL} target="_blank" rel="noopener noreferrer">Downloads portal</a> &mdash; drop your email and the link lands in your inbox.</li>
-      </ul>
+          <h2 id="download">Where your download comes from</h2>
+          <ul class="reqs">
+            <li><strong>Bought it:</strong> the installer link is in the confirmation email sent right after checkout.</li>
+            <li><strong>Trial or free plugin:</strong> grab it from the <a href={DOWNLOADS_URL} target="_blank" rel="noopener noreferrer">Downloads portal</a> &mdash; drop your email and the link lands in your inbox.</li>
+          </ul>
 
-      <h2>Install (Windows)</h2>
-      <ol>
-        <li>Download the Windows installer (confirmation email, or the Downloads portal).</li>
-        <li>Run the installer and accept the licence terms.</li>
-        <li>
-          The installer places the plugin in the standard Windows locations:<br />
-          VST3: <code>C:\Program Files\Common Files\VST3\</code>
-        </li>
-        <li>Open your DAW and rescan for plugins. Every RevAudio plugin appears under the <strong>RevAudio</strong> manufacturer.</li>
-      </ol>
+          <h2 id="install-windows">Install (Windows)</h2>
+          <ol>
+            <li>Download the Windows installer (confirmation email, or the Downloads portal).</li>
+            <li>Run the installer and accept the licence terms.</li>
+            <li>
+              The installer places the plugin in the standard Windows locations:<br />
+              VST3: <code>C:\Program Files\Common Files\VST3\</code>
+            </li>
+            <li>Open your DAW and rescan for plugins. Every RevAudio plugin appears under the <strong>RevAudio</strong> manufacturer.</li>
+          </ol>
 
-      <h2>Install (macOS)</h2>
-      <ol>
-        <li>Download the macOS installer (confirmation email, or the Downloads portal).</li>
-        <li>Open the .pkg file and follow the installer steps.</li>
-        <li>
-          The installer places the plugin in the standard macOS locations:<br />
-          VST3: <code>/Library/Audio/Plug-Ins/VST3/</code><br />
-          AU: <code>/Library/Audio/Plug-Ins/Components/</code>
-        </li>
-        <li>Open your DAW and rescan for plugins. Every RevAudio plugin appears under the <strong>RevAudio</strong> manufacturer.</li>
-      </ol>
+          <h2 id="install-macos">Install (macOS)</h2>
+          <ol>
+            <li>Download the macOS installer (confirmation email, or the Downloads portal).</li>
+            <li>Open the .pkg file and follow the installer steps.</li>
+            <li>
+              The installer places the plugin in the standard macOS locations:<br />
+              VST3: <code>/Library/Audio/Plug-Ins/VST3/</code><br />
+              AU: <code>/Library/Audio/Plug-Ins/Components/</code>
+            </li>
+            <li>Open your DAW and rescan for plugins. Every RevAudio plugin appears under the <strong>RevAudio</strong> manufacturer.</li>
+          </ol>
 
-      <h2>Updating to a new version</h2>
-      <p>
-        Run the new installer over the old one &mdash; it replaces the plugin in place, and your licence stays
-        activated. If your DAW still loads the old build, restart it and trigger a plugin rescan so it drops the
-        cached copy.
-      </p>
+          <h2 id="updating">Updating to a new version</h2>
+          <p>
+            Run the new installer over the old one &mdash; it replaces the plugin in place, and your licence stays
+            activated. If your DAW still loads the old build, restart it and trigger a plugin rescan so it drops the
+            cached copy.
+          </p>
 
-      <h2>Activate your licence</h2>
-      <p>
-        On first launch, a paid plugin ({names(paid)}) asks for your licence key &mdash; the serial emailed to you
-        right after checkout. Paste it in once: it&rsquo;s validated and stored locally, then reused on every
-        subsequent launch. <strong>Each plugin has its own key</strong>, so use the serial from that plugin&rsquo;s
-        purchase email.
-      </p>
-      {free.length > 0 && (
-        <p>
-          {names(free)} {free.length === 1 ? 'is' : 'are'} <strong>free</strong> &mdash; no licence key, no
-          activation. Download, install, play.
-        </p>
-      )}
-      <p>
-        A trial runs the <strong>full version for 30 days</strong> with no key and no audio interruptions. When it
-        ends, buying and pasting the key unlocks the same install &mdash; nothing to reinstall.
-      </p>
-      <p>
-        One licence covers <strong>up to 2 machines</strong> &mdash; your studio desktop and a laptop, say.
-        Moving to a new machine or lost your key? Email
-        <a href="mailto:support@revaudio.net">support@revaudio.net</a> with the address you purchased under
-        and we&rsquo;ll sort it within one business day.
-      </p>
+          <h2 id="activate">Activate your licence</h2>
+          <p>
+            On first launch, a paid plugin ({names(paid)}) asks for your licence key &mdash; the serial emailed to you
+            right after checkout. Paste it in once: it&rsquo;s validated and stored locally, then reused on every
+            subsequent launch. <strong>Each plugin has its own key</strong>, so use the serial from that plugin&rsquo;s
+            purchase email.
+          </p>
+          {free.length > 0 && (
+            <p>
+              {names(free)} {free.length === 1 ? 'is' : 'are'} <strong>free</strong> &mdash; no licence key, no
+              activation. Download, install, play.
+            </p>
+          )}
+          <p>
+            A trial runs the <strong>full version for 30 days</strong> with no key and no audio interruptions. When it
+            ends, buying and pasting the key unlocks the same install &mdash; nothing to reinstall.
+          </p>
+          <p>
+            One licence covers <strong>up to 2 machines</strong> &mdash; your studio desktop and a laptop, say.
+            Moving to a new machine or lost your key? Email
+            <a href="mailto:support@revaudio.net">support@revaudio.net</a> with the address you purchased under
+            and we&rsquo;ll sort it within one business day.
+          </p>
 
-      <h2>Troubleshooting</h2>
-      <details>
-        <summary>The DAW does not see the plugin after install</summary>
-        <p>
-          Restart your DAW and trigger a plugin rescan &mdash; most DAWs do this automatically on launch but a
-          manual refresh is sometimes needed. Confirm the plugin file exists at the expected location for
-          your format and OS:
-        </p>
-        <ul>
-          <li><strong>Windows VST3:</strong> <code>C:\Program Files\Common Files\VST3\</code></li>
-          <li><strong>macOS VST3:</strong> <code>/Library/Audio/Plug-Ins/VST3/</code></li>
-          <li><strong>macOS AU:</strong> <code>/Library/Audio/Plug-Ins/Components/</code></li>
-        </ul>
-        <p>If the file is there but your DAW still won&rsquo;t see it, try a full DAW restart after the rescan.</p>
-      </details>
-      <details>
-        <summary>The licence key won&rsquo;t activate</summary>
-        <p>
-          Copy the key straight from your purchase email &mdash; no spaces before or after, and make sure it is the
-          key for <em>that</em> plugin. Activation needs a live internet connection on first launch. If you&rsquo;ve
-          already activated two machines, free one up or email
-          <a href="mailto:support@revaudio.net">support@revaudio.net</a> and we&rsquo;ll reset your seats.
-        </p>
-      </details>
-      <details>
-        <summary>My download link or trial email never arrived</summary>
-        <p>
-          Check spam and the promotions tab first. Still nothing? Request it again from the
-          <a href={DOWNLOADS_URL} target="_blank" rel="noopener noreferrer">Downloads portal</a>, or email
-          <a href="mailto:support@revaudio.net">support@revaudio.net</a> with the address you used and we&rsquo;ll
-          send it by hand.
-        </p>
-      </details>
-      <details>
-        <summary>Crash or audio dropout</summary>
-        <p>
-          Send a brief email to <a href="mailto:support@revaudio.net">support@revaudio.net</a> with: which plugin
-          and version, DAW + version, OS version, sample rate + buffer size, and a description of what you were
-          doing when it happened. We respond within one business day.
-        </p>
-      </details>
+          <h2 id="troubleshooting">Troubleshooting</h2>
+          <details>
+            <summary>The DAW does not see the plugin after install</summary>
+            <p>
+              Restart your DAW and trigger a plugin rescan &mdash; most DAWs do this automatically on launch but a
+              manual refresh is sometimes needed. Confirm the plugin file exists at the expected location for
+              your format and OS:
+            </p>
+            <ul>
+              <li><strong>Windows VST3:</strong> <code>C:\Program Files\Common Files\VST3\</code></li>
+              <li><strong>macOS VST3:</strong> <code>/Library/Audio/Plug-Ins/VST3/</code></li>
+              <li><strong>macOS AU:</strong> <code>/Library/Audio/Plug-Ins/Components/</code></li>
+            </ul>
+            <p>If the file is there but your DAW still won&rsquo;t see it, try a full DAW restart after the rescan.</p>
+          </details>
+          <details>
+            <summary>The licence key won&rsquo;t activate</summary>
+            <p>
+              Copy the key straight from your purchase email &mdash; no spaces before or after, and make sure it is the
+              key for <em>that</em> plugin. Activation needs a live internet connection on first launch. If you&rsquo;ve
+              already activated two machines, free one up or email
+              <a href="mailto:support@revaudio.net">support@revaudio.net</a> and we&rsquo;ll reset your seats.
+            </p>
+          </details>
+          <details>
+            <summary>My download link or trial email never arrived</summary>
+            <p>
+              Check spam and the promotions tab first. Still nothing? Request it again from the
+              <a href={DOWNLOADS_URL} target="_blank" rel="noopener noreferrer">Downloads portal</a>, or email
+              <a href="mailto:support@revaudio.net">support@revaudio.net</a> with the address you used and we&rsquo;ll
+              send it by hand.
+            </p>
+          </details>
+          <details>
+            <summary>Crash or audio dropout</summary>
+            <p>
+              Send a brief email to <a href="mailto:support@revaudio.net">support@revaudio.net</a> with: which plugin
+              and version, DAW + version, OS version, sample rate + buffer size, and a description of what you were
+              doing when it happened. We respond within one business day.
+            </p>
+          </details>
 
-      {/* Door into the support chat (SupportChat.astro, bottom-right on this
-          page). Plain anchor to the contact section without JS. */}
-      <a class="stuck" href="#contact" data-support-open>
-        <span class="stuck-q">Still stuck?</span>
-        <span class="stuck-a">Ask support &rarr;</span>
-      </a>
+          {/* Door into the support chat (SupportChat.astro, bottom-right on this
+              page). Plain anchor to the contact section without JS. */}
+          <a class="stuck" href="#contact" data-support-open>
+            <span class="stuck-q">Still stuck?</span>
+            <span class="stuck-a">Ask support &rarr;</span>
+          </a>
 
-      <h2 id="contact">Contact</h2>
-      <p>
-        General: <a href="mailto:info@revaudio.net">info@revaudio.net</a><br/>
-        Support: <a href="mailto:support@revaudio.net">support@revaudio.net</a>
-      </p>
+          <h2 id="contact">Contact</h2>
+          <p>
+            General: <a href="mailto:info@revaudio.net">info@revaudio.net</a><br/>
+            Support: <a href="mailto:support@revaudio.net">support@revaudio.net</a>
+          </p>
+        </div>
+
+        <aside class="doc-rail" aria-label="On this page">
+          <nav class="rail-inner">
+            <p class="rail-label">On this page</p>
+            <ul>
+              {sections.map((s) => (
+                <li><a href={`#${s.id}`} data-rail-link={s.id}>{s.label}</a></li>
+              ))}
+            </ul>
+          </nav>
+        </aside>
+      </div>
     </div>
   </section>
   <SupportChat />
 </BaseLayout>
 
+<script>
+  /* Rail scroll-spy. Deliberately NOT an IntersectionObserver over the
+     headings: the sections are a flat h2 sequence with no wrapper elements, so
+     "is the heading on screen" answers the wrong question — it goes blank in
+     the middle of a long section and can never light the tail of the page.
+     The section you are reading is simply the last heading that has passed
+     under the header, which is one rect read per heading. */
+  const links = Array.from(document.querySelectorAll('[data-rail-link]'));
+  const heads = links
+    .map((a) => ({ link: a, el: document.getElementById(a.dataset.railLink) }))
+    .filter((h) => h.el);
+
+  if (heads.length) {
+    // Must match where the browser actually parks an anchored heading, or a
+    // freshly-clicked link marks the section ABOVE the one you jumped to. That
+    // landing spot is html's scroll-padding-top (global.css, driven by --nav-h),
+    // so read it rather than restating it here and letting the two drift.
+    const anchorLine = () => {
+      const pad = parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop);
+      return (Number.isFinite(pad) ? pad : 56) + 8; // +8: land ON the line, not past it
+    };
+    let current = null;
+    let queued = false;
+
+    const paint = () => {
+      queued = false;
+      const atBottom =
+        window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
+
+      let next = null;
+      if (atBottom) {
+        // The closing sections are too short to ever reach the header line.
+        next = heads[heads.length - 1].link;
+      } else {
+        const line = anchorLine();
+        for (const h of heads) {
+          if (h.el.getBoundingClientRect().top <= line) next = h.link;
+          else break;
+        }
+      }
+
+      if (next === current) return;
+      current = next;
+      links.forEach((a) => a.classList.toggle('is-current', a === current));
+    };
+
+    const onScroll = () => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(paint);
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    paint();
+  }
+</script>
+
 <style>
+  /* Two columns: the manual on the left at the site gutter, a section rail in
+     the space that leaves. Rail width is fixed so the reading measure never
+     moves between viewports. */
+  .doc {
+    display: grid;
+    grid-template-columns: minmax(0, 760px) 260px;
+    gap: 4rem;
+    align-items: start;
+  }
+
+  .doc-body { min-width: 0; }
+
+  .doc-body h1 { text-wrap: balance; }
+
+  .doc-rail {
+    position: sticky;
+    top: 6rem;
+    border-left: 1px solid var(--border);
+    padding-left: 1.5rem;
+  }
+
+  .rail-label {
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--fg-faint);
+    margin: 0 0 0.75rem;
+  }
+
+  /* global.css styles bare `nav ul` as the site menu bar (flex row, uppercase
+     links). This is a table of contents inside a <nav>, so it opts back out. */
+  .doc-rail ul {
+    display: block;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .doc-rail li { margin: 0; }
+
+  .doc-rail a {
+    display: block;
+    padding: 0.35rem 0;
+    font-size: 0.9rem;
+    line-height: 1.35;
+    letter-spacing: 0.02em;
+    text-transform: none;
+    color: var(--fg-dim);
+    text-decoration: none;
+    border-left: 2px solid transparent;
+    margin-left: -1.5rem;
+    padding-left: 1.5rem;
+    transition: color 0.2s var(--ease), border-color 0.2s var(--ease);
+  }
+
+  .doc-rail a:hover { color: var(--brass-bright); }
+  .doc-rail a:focus-visible { outline: 3px solid var(--brass-bright); outline-offset: 2px; }
+
+  .doc-rail a.is-current {
+    color: var(--brass-bright);
+    border-left-color: var(--brass);
+  }
+
+  /* The open chat panel is fixed over the right of the viewport — the same
+     strip the rail sits in, and it clips rail lines mid-word on short screens.
+     Yield to it, the way the launcher and the cart FAB already do. */
+  :global(body.sc-open) .doc-rail { visibility: hidden; }
+
+  /* Not enough room for two columns: drop the rail, keep the manual left. */
+  @media (max-width: 1120px) {
+    .doc { grid-template-columns: minmax(0, 760px); gap: 0; }
+    .doc-rail { display: none; }
+  }
+
   .reqs {
     color: var(--fg-dim);
     list-style: none;
