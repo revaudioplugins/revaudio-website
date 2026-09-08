@@ -9,7 +9,9 @@
  * in from the right on phones (a text app, not a popup). Six
  * gauge tiles map to the sections of /support and answer locally from the
  * same copy; free text goes to `site.supportChat.workerUrl` (Yoni's backend,
- * POST {message, src, page} → {reply}). While that URL is empty the panel
+ * POST {message, src, page, conv_id?} → {reply, handoff?, conv_id?}). A human
+ * request is gated on an email; once given it is POSTed as
+ * {type:'handoff', email, message, src, page, conv_id?} (fire and forget). While that URL is empty the panel
  * answers tiles only and points free text at the tiles or a human — never a
  * fake "typing…" that leads nowhere.
  *
@@ -179,9 +181,10 @@ const SUPPORT_EMAIL = 'support@revaudio.net';
     },
     human: {
       label: 'Human',
+      // {email} is the address from the gate below.
       text: [
-        `Email **${SUPPORT_EMAIL}** and a person answers within **one business day**.`,
-        '+ Include the **plugin and version**, your **DAW**, your **OS**, and what happened.',
+        'Got it — a person picks this up and replies to **{email}** within **one business day**.',
+        '+ Fastest: hit the button below (the email is pre-filled) and add the **plugin and version**, your **DAW**, your **OS**, and what happened.',
       ].join('\n'),
       mail: true,
     },
@@ -399,7 +402,8 @@ const SUPPORT_EMAIL = 'support@revaudio.net';
       if (mail) {
         const a = document.createElement('a');
         a.className = 'sc-chip sc-chip--solid';
-        a.href = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent('Support: ' + (document.title.split(' · ')[0] || 'RevAudio'))}`;
+        const body = `Reply to: ${email || ''}\nThread: ${convId || 'n/a'}\nPage: ${location.pathname}\n\nPlugin + version:\nDAW:\nOS:\nWhat happened:\n`;
+        a.href = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent('Support: ' + (document.title.split(' · ')[0] || 'RevAudio'))}&body=${encodeURIComponent(body)}`;
         a.textContent = `Email ${SUPPORT_EMAIL}`;
         row.appendChild(a);
       } else {
@@ -421,7 +425,79 @@ const SUPPORT_EMAIL = 'support@revaudio.net';
 
     function scroll() { log.scrollTop = log.scrollHeight; }
 
+    // ---- Human gate (Dan, 2026-09-08): nobody reaches a person without
+    // leaving an email. Tile, "Talk to a human" chip and a worker handoff all
+    // land here; once an address is given it is kept for the session. ----
+    let email = '';
+    try { email = sessionStorage.getItem('sc-email') || ''; } catch {}
+    const EMAIL_OK = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+    function gate(echoLabel: boolean) {
+      if (echoLabel) say(ANSWERS.human.label, 'me');
+      const { el, bubble } = row('bot');
+      const text = document.createElement('div');
+      text.className = 'sc-text';
+      const p = document.createElement('p');
+      inlineInto(p, 'Sure. Where should a person reply? Leave your **email** and I hand you over.');
+      text.appendChild(p);
+      const form = document.createElement('form');
+      form.className = 'sc-gate';
+      form.noValidate = true;
+      const input = document.createElement('input');
+      input.type = 'email';
+      input.name = 'email';
+      input.autocomplete = 'email';
+      input.inputMode = 'email';
+      input.placeholder = 'you@studio.com';
+      input.setAttribute('aria-label', 'Your email');
+      input.maxLength = 120;
+      const go = document.createElement('button');
+      go.type = 'submit';
+      go.textContent = 'Hand me over';
+      const err = document.createElement('span');
+      err.className = 'sc-gate-err';
+      err.setAttribute('role', 'alert');
+      form.append(input, go, err);
+      text.appendChild(form);
+      bubble.appendChild(text);
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const v = input.value.trim();
+        if (!EMAIL_OK.test(v)) {
+          err.textContent = 'That doesn’t look like an email.';
+          form.classList.add('is-bad');
+          input.focus();
+          return;
+        }
+        email = v;
+        try { sessionStorage.setItem('sc-email', email); } catch {}
+        // The gate bubble becomes plain text; the address shows as their message.
+        form.remove();
+        say(email, 'me');
+        human();
+      });
+      scroll();
+      input.focus();
+      return el;
+    }
+
+    function human() {
+      say(ANSWERS.human.text.replace('{email}', email), 'bot');
+      followups(true);
+      scroll();
+      // Tell the worker a person is wanted, with the address. Fire and forget;
+      // the mailto chip is the path that always works.
+      if (endpoint) {
+        fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'handoff', email, message: 'Human requested', src, page: location.pathname, conv_id: convId || undefined }),
+        }).catch(() => {});
+      }
+    }
+
     function answer(topic: string) {
+      if (topic === 'human') { email ? (say(ANSWERS.human.label, 'me'), human()) : gate(true); return; }
       const a = ANSWERS[topic];
       if (!a) return;
       say(a.label, 'me');
@@ -452,7 +528,7 @@ const SUPPORT_EMAIL = 'support@revaudio.net';
         }
         pending.remove();
         say(typeof data.reply === 'string' && data.reply ? data.reply : FALLBACK, 'bot');
-        if (data.handoff) followups(true);
+        if (data.handoff) email ? followups(true) : gate(false);
       } catch {
         pending.remove();
         say(`The bot is off the air right now. Email ${SUPPORT_EMAIL} and a person picks it up within one business day.`, 'bot');
@@ -725,6 +801,31 @@ const SUPPORT_EMAIL = 'support@revaudio.net';
     content: ''; flex: none; width: 9px; height: 9px; border-radius: 50%; margin-top: 0.35rem;
     background: #4c9c6c; box-shadow: 0 0 8px #4c9c6c; /* lit pilot lamp, house emerald family */
   }
+
+  /* Human gate: email field + hand-over button inside the bubble. */
+  .sc-gate { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; }
+  .sc-gate input {
+    flex: 1 1 140px; min-width: 0;
+    padding: 0.5rem 0.8rem;
+    border: 1px solid var(--border-bright); border-radius: 999px;
+    background: var(--bg-0); color: var(--fg);
+    font: 0.88rem/1.3 var(--font-body);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+  }
+  .sc-gate input::placeholder { color: var(--fg-faint); }
+  .sc-gate input:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 1px; border-color: var(--brass); }
+  .sc-gate button {
+    flex: none;
+    font: 600 0.8rem/1 var(--font-body);
+    padding: 0.55rem 0.85rem; border-radius: 999px;
+    border: 1px solid #a8853f; color: var(--bg-0); cursor: pointer;
+    background: linear-gradient(180deg, var(--brass-bright) 0%, var(--brass) 48%, #a8853f 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 244, 214, 0.45), 0 1px 0 rgba(0, 0, 0, 0.7);
+  }
+  .sc-gate button:hover { background: linear-gradient(180deg, var(--brass-bright) 0%, var(--brass-bright) 48%, var(--brass) 100%); }
+  .sc-gate button:focus-visible { outline: 3px solid var(--brass-bright); outline-offset: 2px; }
+  .sc-gate-err { flex-basis: 100%; font-size: 0.78rem; color: var(--oxide-text); }
+  .sc-gate.is-bad input { border-color: var(--oxide-text); }
 
   /* Typing: three amber lamps breathing in turn. */
   .sc-msg--pending .sc-bubble { padding: 0.7rem 0.85rem; }
