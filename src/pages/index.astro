@@ -313,13 +313,47 @@ const wallM = await getImage({ src: wallMImg, width: 1080, format: 'webp', quali
             .to(state, { base: A_IDLE, duration: 0.9, ease: 'back.out(1.05)' }, '>'); // settle to idle
 
           // ── Scroll: rev toward the redline as the hero leaves the viewport ──
-          ScrollTrigger.create({
+          // A scrolled reload (scrollRestoration is 'auto') hands the trigger a
+          // progress > 0 the moment it is created: the needle painted at A_MIN
+          // by the CSS below, then jumped straight to A_MIN + progress * 180 —
+          // 45deg at scrollY 200, 104deg at 400 (post-deploy review,
+          // 2026-09-07). The restored value does not arrive on the first
+          // onUpdate (that one reports 0, before the trigger's own refresh),
+          // so the tell is the first NON-zero update inside a short window
+          // after creation. Ease that one in over the rev's beat; the moment
+          // a real scroll moves the target, the tween is dropped and the scrub
+          // writes the value directly again.
+          const createdAt = performance.now();
+          let scrollPrimed = false;
+          let primeTarget = 0;
+          let primeTween: gsap.core.Tween | null = null;
+          const prime = (target: number) => {
+            scrollPrimed = true;
+            primeTarget = target;
+            primeTween = gsap.fromTo(state, { scroll: 0 }, {
+              scroll: target, duration: 0.65, ease: 'power2.out',
+              onComplete: () => { primeTween = null; },
+            });
+          };
+          const st = ScrollTrigger.create({
             trigger: root,
             start: 'top top',
             end: 'bottom 20%',
             scrub: true,
-            onUpdate: (self) => { state.scroll = self.progress * (A_RED - A_IDLE); },
+            onUpdate: (self) => {
+              const target = self.progress * (A_RED - A_IDLE);
+              if (primeTween) {
+                if (Math.abs(target - primeTarget) < 0.5) return; // still the restored spot — let the tween land it
+                primeTween.kill(); primeTween = null;
+              } else if (!scrollPrimed && target > 0 && performance.now() - createdAt < 500) {
+                prime(target);
+                return;
+              }
+              if (target > 0) scrollPrimed = true;
+              state.scroll = target;
+            },
           });
+          if (!scrollPrimed && st.progress > 0) prime(st.progress * (A_RED - A_IDLE));
 
           // ── Pointer: micro-deflection (desktop only) ──
           if (matchMedia('(pointer: fine)').matches) {
@@ -564,14 +598,14 @@ const wallM = await getImage({ src: wallMImg, width: 1080, format: 'webp', quali
     pointer-events: none;
     background: radial-gradient(
       circle at var(--tint-cx) var(--tint-cy),
-      rgba(var(--tint-r), var(--tint-g), var(--tint-b), calc(var(--tint) * var(--circles))) 0%,
-      rgba(var(--tint-r), var(--tint-g), var(--tint-b), calc(var(--tint) * var(--tint-a2) * var(--circles)))
+      rgba(var(--tint-r), var(--tint-g), var(--tint-b), calc(var(--tint) * var(--circles, 1))) 0%,
+      rgba(var(--tint-r), var(--tint-g), var(--tint-b), calc(var(--tint) * var(--tint-a2) * var(--circles, 1)))
         var(--tint-core),
-      rgba(var(--tint-r), var(--tint-g), var(--tint-b), calc(var(--tint) * var(--tint-a3) * var(--circles)))
+      rgba(var(--tint-r), var(--tint-g), var(--tint-b), calc(var(--tint) * var(--tint-a3) * var(--circles, 1)))
         calc(var(--tint-core) + (var(--tint-edge) - var(--tint-core)) * 0.34),
-      rgba(var(--tint-r), var(--tint-g), var(--tint-b), calc(var(--tint) * var(--tint-a4) * var(--circles)))
+      rgba(var(--tint-r), var(--tint-g), var(--tint-b), calc(var(--tint) * var(--tint-a4) * var(--circles, 1)))
         calc(var(--tint-core) + (var(--tint-edge) - var(--tint-core)) * 0.63),
-      rgba(var(--tint-r), var(--tint-g), var(--tint-b), calc(var(--tint) * var(--tint-a5) * var(--circles)))
+      rgba(var(--tint-r), var(--tint-g), var(--tint-b), calc(var(--tint) * var(--tint-a5) * var(--circles, 1)))
         calc(var(--tint-core) + (var(--tint-edge) - var(--tint-core)) * 0.87),
       rgba(var(--tint-r), var(--tint-g), var(--tint-b), 0) var(--tint-edge)
     );
@@ -590,14 +624,14 @@ const wallM = await getImage({ src: wallMImg, width: 1080, format: 'webp', quali
     pointer-events: none;
     background: radial-gradient(
       circle at var(--veil-cx) var(--veil-cy),
-      rgba(var(--veil-r), var(--veil-g), var(--veil-b), calc(var(--veil) * var(--circles))) 0%,
-      rgba(var(--veil-r), var(--veil-g), var(--veil-b), calc(var(--veil) * var(--veil-a2) * var(--circles)))
+      rgba(var(--veil-r), var(--veil-g), var(--veil-b), calc(var(--veil) * var(--circles, 1))) 0%,
+      rgba(var(--veil-r), var(--veil-g), var(--veil-b), calc(var(--veil) * var(--veil-a2) * var(--circles, 1)))
         var(--veil-core),
-      rgba(var(--veil-r), var(--veil-g), var(--veil-b), calc(var(--veil) * var(--veil-a3) * var(--circles)))
+      rgba(var(--veil-r), var(--veil-g), var(--veil-b), calc(var(--veil) * var(--veil-a3) * var(--circles, 1)))
         calc(var(--veil-core) + (var(--veil-edge) - var(--veil-core)) * 0.34),
-      rgba(var(--veil-r), var(--veil-g), var(--veil-b), calc(var(--veil) * var(--veil-a4) * var(--circles)))
+      rgba(var(--veil-r), var(--veil-g), var(--veil-b), calc(var(--veil) * var(--veil-a4) * var(--circles, 1)))
         calc(var(--veil-core) + (var(--veil-edge) - var(--veil-core)) * 0.63),
-      rgba(var(--veil-r), var(--veil-g), var(--veil-b), calc(var(--veil) * var(--veil-a5) * var(--circles)))
+      rgba(var(--veil-r), var(--veil-g), var(--veil-b), calc(var(--veil) * var(--veil-a5) * var(--circles, 1)))
         calc(var(--veil-core) + (var(--veil-edge) - var(--veil-core)) * 0.87),
       rgba(var(--veil-r), var(--veil-g), var(--veil-b), 0) var(--veil-edge)
     );
@@ -789,7 +823,9 @@ const wallM = await getImage({ src: wallMImg, width: 1080, format: 'webp', quali
        snapped to the sweep's start — the glitch Dan saw on reload. Static
        visitors (no JS, reduced motion) get idle; the motion path starts the
        needle exactly where the GSAP ticker's first frame puts it (A_MIN), so
-       there is nothing to snap. GSAP's inline transform takes over from here. */
+       there is nothing to snap on a top-of-page load. A scrolled reload adds
+       the scroll deflection on top — the ScrollTrigger above eases that in
+       rather than jumping. GSAP's inline transform takes over from here. */
     transform: rotate(-90deg);
   }
   :global(html.motion-ok) .g-needle { transform: rotate(-135deg); }

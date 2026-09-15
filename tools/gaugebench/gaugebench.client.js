@@ -362,7 +362,10 @@
     const lines = KNOBS.filter((k) => !k.style && k.p !== '--medallion')
       .map((k) => `    ${k.p}: ${fmt(k)};`);
     const op = val['--medallion-op'];
-    const css = `  .hero-medallion {\n${lines.join('\n')}\n  }\n` +
+    /* --circles is not a knob (the hero timeline owns it) but the source
+       block declares it, and both gradients multiply by it — a paste-over
+       without this line used to erase every bit of darkening. */
+    const css = `  .hero-medallion {\n    --circles: 1;\n${lines.join('\n')}\n  }\n` +
       (op !== DEF['--medallion-op'] ? `  /* .hero-medallion opacity: ${op}; */\n` : '') +
       (val['--medallion'] !== DEF['--medallion'] ? `  /* --medallion: ${Math.round(val['--medallion'])}px on .hero-feat */\n` : '');
     const ta = document.createElement('textarea');
