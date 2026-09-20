@@ -4,6 +4,12 @@
 
 export const site = {
   /**
+   * Postal address. The one string every surface prints — Terms §1, the EULA,
+   * the Privacy notice, and the AddressMap tile on /about and /contact.
+   */
+  address: 'Yehudit Boulevard 8, Tel Aviv 67016, Israel',
+
+  /**
    * Which engine the cart's Checkout button drives.
    * 'ls'         — Lemon Squeezy hosted-overlay checkout (plugins.ts checkoutUrl).
    *                Dormant since the 2026-08-31 Paddle cutover; kept as an

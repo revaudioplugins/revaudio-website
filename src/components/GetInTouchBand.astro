@@ -1,0 +1,76 @@
+---
+/* Get-in-touch band (Dan, 2026-09-20): a headline-size link the visitor
+   cannot scroll past. Built for the home page, then moved to /about only
+   (Dan, same day), sitting between the contact block and the newsletter
+   capture. The whole band is the hit
+   area and the h2 lives inside the link on purpose. */
+---
+<section class="touch" aria-labelledby="touch-head">
+  <a class="touch-link" href="/contact" data-reveal>
+    <span class="touch-kicker">Press &middot; partnership &middot; hello</span>
+    <h2 class="touch-head" id="touch-head">Get in touch<span class="touch-arrow" aria-hidden="true">&rarr;</span></h2>
+  </a>
+</section>
+
+<style>
+  /* ── Get-in-touch band. Type at hero-h1 scale so it cannot be missed; brass
+     at rest, brass-bright + arrow slide + underline sweep on hover (180ms,
+     the bible's standard-entry timing). ── */
+  .touch {
+    border-top: 1px solid var(--border);
+  }
+  .touch-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.9rem;
+    padding: clamp(3rem, 8vh, 5rem) 1.5rem clamp(3.5rem, 9vh, 5.5rem);
+    text-align: center;
+    text-decoration: none;
+    color: var(--brass);
+    transition: color 0.18s var(--ease);
+  }
+  .touch-link:hover,
+  .touch-link:focus-visible { color: var(--brass-bright); }
+  .touch-kicker {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    letter-spacing: 0.16em;
+    color: var(--fg-dim);
+  }
+  .touch-head {
+    position: relative;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.18em;
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(3.146rem, 6.776vw, 6.534rem); /* = .hh-h1 */
+    line-height: 1.05;
+    letter-spacing: 0.02em;
+    color: inherit;
+  }
+  .touch-head::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -0.06em;
+    height: 0.06em;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.22s var(--ease);
+  }
+  .touch-link:hover .touch-head::after,
+  .touch-link:focus-visible .touch-head::after { transform: scaleX(1); }
+  .touch-arrow {
+    display: inline-block;
+    transition: transform 0.18s var(--ease);
+  }
+  .touch-link:hover .touch-arrow,
+  .touch-link:focus-visible .touch-arrow { transform: translateX(0.18em); }
+  @media (prefers-reduced-motion: reduce) {
+    .touch-arrow, .touch-head::after { transition: none; }
+  }
+</style>
