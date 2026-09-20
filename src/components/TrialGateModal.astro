@@ -93,7 +93,7 @@ const gateNames = Object.fromEntries(plugins.map((p) => [dlGateId(p), p.name]));
     <p class="tg-dl-note" data-tg-dl-note role="status" aria-live="polite" hidden></p>
     <button type="button" class="tg-dl-again" data-tg-dl-again hidden>Didn&rsquo;t start? Try again</button>
     <p class="tg-mobile-note" data-tg-mobile hidden>
-      These are desktop installers. Save one here and move it to your Mac or PC, or open the link from your email there &mdash; it&rsquo;s good for 24 hours.
+      These are desktop installers. Save one here and move it to your Mac or PC, or open the link from your email there. It&rsquo;s good for 24 hours.
     </p>
     <p class="tg-err" data-tg-dl-err role="alert" aria-live="polite"></p>
   </div>
@@ -172,7 +172,7 @@ const gateNames = Object.fromEntries(plugins.map((p) => [dlGateId(p), p.name]));
       // again; this modal is now purely the trial/free-download email gate.
       kicker.textContent = 'Free 30-day trial';
       title.textContent = free
-        ? name + ' is free — grab it'
+        ? name + ' is free. Grab it'
         : 'Take the free ' + name + ' trial';
       sub.textContent = free
         ? 'Free forever. Full version, no trial clock, no credit card. Verify your email and the download link lands in your inbox.'
@@ -210,7 +210,7 @@ const gateNames = Object.fromEntries(plugins.map((p) => [dlGateId(p), p.name]));
       // the emailed link also works on their computer for 24h.
       var coarse = false;
       try { coarse = window.matchMedia('(pointer: coarse)').matches; } catch (e) {}
-      sub.textContent = 'Full version, no key needed. Pick your platform — the installer lands in your browser’s Downloads folder. Grab both if you work on two machines.';
+      sub.textContent = 'Full version, no key needed. Pick your platform. The installer lands in your browser’s Downloads folder. Grab both if you work on two machines.';
       dlRow.hidden = false;
       mobileNote.hidden = !coarse;
       show();
@@ -255,7 +255,7 @@ const gateNames = Object.fromEntries(plugins.map((p) => [dlGateId(p), p.name]));
       if (!registerUrl) {
         err.textContent = '';
         form.hidden = true;
-        status.textContent = 'Almost there — the trial download goes live shortly. Your email wasn’t sent yet.';
+        status.textContent = 'Almost there. The trial download goes live shortly. Your email wasn’t sent yet.';
         status.hidden = false;
         return;
       }
@@ -272,7 +272,7 @@ const gateNames = Object.fromEntries(plugins.map((p) => [dlGateId(p), p.name]));
         .then(function (data) {
           if (data && data.ok) {
             form.hidden = true;
-            status.textContent = 'Check your inbox — we sent the download link to ' + v + '.';
+            status.textContent = 'Check your inbox. We sent the download link to ' + v + '.';
             status.hidden = false;
             // Registration really happened — lets listeners (the exit popup's
             // "already got it" suppression) key off the true success moment
@@ -309,7 +309,7 @@ const gateNames = Object.fromEntries(plugins.map((p) => [dlGateId(p), p.name]));
       btn.disabled = true;
       os.textContent = 'Downloading…';
       fmt.textContent = 'check your Downloads folder';
-      dlNote.textContent = 'Download started — check your browser’s Downloads folder.';
+      dlNote.textContent = 'Download started. Check your browser’s Downloads folder.';
       dlNote.hidden = false;
       // One shared re-arm link, 8s after the LAST click; it restores every
       // locked button (grab-both clicks share it).
