@@ -846,7 +846,11 @@ const wallM = await getImage({ src: wallMImg, width: 1080, format: 'webp', quali
        reset here: this text sits over the ambient engine glow, where plain
        --fg-dim measures 3.62:1 (AA fail, 11% of glyph pixels under threshold
        at 390×844) and degrades further as --heat rises on scroll. */
-    .hh-lede { font-size: 1.08rem; max-width: 58ch; }
+    .hh-lede { font-size: 1.08rem; max-width: 58ch; margin-top: clamp(1rem, 2.5vh, 1.5rem); }
+    /* Lede sits centred between the gauge and the seam: the divider's
+       clamp(2rem, 5vh, 3rem) is split in half, one half moved above the lede
+       (measured 0px above / 44px below at 402×874 before this). */
+    .hero-divider { margin-top: clamp(1rem, 2.5vh, 1.5rem); }
 
     /* Mobile keeps only its own small under-headline dial. */
     .hero-dial-desktop { display: none; }
