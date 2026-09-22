@@ -67,6 +67,7 @@ neon or glow without a lamp; the retired tach arc that hue-shifted toward the re
 
 ## 4. Components
 
+- Cart drawer (2026-09-22 local review): the parts counter, warm dark steel with cream text and brass details. Real catalog thumbnail, readable product name, one-licence/digital-download metadata, formats and aligned price. Subtotal explicitly says USD, with tax deferred to payment. One compact brass key says “Continue to payment”; live text and a full-surface hit target replace the large red image panel. Header and support stay visible while the body scrolls on short screens. Native dialog, consent reader and existing provider handoff remain. Empty state returns to the store. No new licence/update/refund promises.
 - Hero gauge medallion: face PNG (static, lit), needle (rotates; the light never rotates), hub (static).
   Needle: -135° min, -90° idle, +90° redline, +135° max; scroll revs it; pointer micro-deflects.
 - Garage wall (`GarageWall.astro`): `wall-wood.png` tile 512px, brass rail `wall-rail.png` top +

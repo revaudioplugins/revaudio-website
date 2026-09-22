@@ -1,3 +1,12 @@
+## 2026-09-22 — cart drawer redesign (Codex)
+Owner: Codex. Scope: `src/components/Cart.astro`, cart plan and this handoff, DESIGN.md cart notes.
+User approved the design plan with “go”, then explicitly authorized “push to main make it live”. First step (cart drawer) implemented and verified in the existing localhost:4321 dev preview. Release target: `origin/main`; unrelated untracked GAS assets/files preserved.
+- New catalog-based thumbnails/name/price/formats, explicit USD subtotal/tax note, compact brass CTA, clearer empty state, focus restoration, consent feedback and missing-SDK/synchronous-open error guidance. Existing checkout completion, consent metadata and analytics contracts retained.
+- Verified: npm run build PASS (31 pages; existing background-asset/chunk warnings); design detector [] and git diff --check clean; browser at default 319px, desktop 1280×665 and short mobile 320×480. Both images load, $49+$19=$68, removal updates total/focus, empty state hides checkout, legal reader + Escape work, consent validation focuses checkbox, short-screen CTA reachable by scrolling, no console errors on final store preview.
+- VM checks using production function source PASS: old $93/name/image -> catalog $49/current image, dedupe/qty1, malformed storage, slug-only persistence, USD, missing SDK/synchronous error retains cart, mocked Paddle handoff preserves ID + consent version. No payment network request or real purchase in this change's verification.
+- Dedicated inline payment page remains next phase after visual review. Paddle's pre-existing asynchronous error on localhost was not fixed/tested. Legal pages still name Lemon Squeezy while active engine is Paddle (pre-existing; requires content review). Old already-open tabs running previous cart code should be refreshed after slug-only storage writes.
+- Browser left on /store with RevLimiter in the redesigned cart; viewport override reset.
+
 ## 2026-09-06 (late) — /gas CTA iterations, committed locally, NOT pushed
 - d6d10a3 original plugins.ts copy restored (Dan: "copywrite is not good"), new layout kept.
 - f6a3612 red chunky CTA. 9e930b2 garage CSS pushbutton (brass bezel + screws + race-red body).

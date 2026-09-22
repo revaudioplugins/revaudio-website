@@ -1,7 +1,6 @@
 ---
-import { Image } from 'astro:assets';
-import checkoutImg from '../assets/ui/btn-checkout.png';
-import checkoutPressed from '../assets/ui/btn-checkout-pressed.png';
+import { getImage } from 'astro:assets';
+import { pluginImage } from '../lib/images';
 import { plugins } from '../data/plugins';
 import TermsContent from './legal/TermsContent.astro';
 import EulaContent from './legal/EulaContent.astro';
@@ -34,11 +33,19 @@ import { TERMS_LAST_UPDATED } from '../data/legal';
 import { site } from '../data/site';
 const engine = site.checkoutEngine;
 const checkoutMap: Record<string, string> = {};
+const cartCatalog: Record<string, { name: string; price: number; img: string; formats: string }> = {};
 for (const p of plugins) {
   const target = engine === 'ls' ? p.checkoutUrl : engine === 'fastspring' ? p.fastspringPath : p.paddlePriceId;
-  if (target) checkoutMap[p.slug] = target;
+  if (target) {
+    checkoutMap[p.slug] = target;
+    const source = pluginImage(p.heroImage);
+    const thumbnail = source ? await getImage({ src: source, width: 288, format: 'webp' }) : null;
+    cartCatalog[p.slug] = { name: p.name, price: p.introPriceUsd ?? p.regularPriceUsd ?? 0, img: thumbnail?.src ?? '', formats: p.systemReq.formats };
+  }
 }
 ---
+
+<script is:inline type="application/json" data-cart-catalog set:html={JSON.stringify(cartCatalog).replace(/</g, '\\u003c')}></script>
 
 <script
   is:inline
@@ -72,13 +79,22 @@ for (const p of plugins) {
 <!-- Cart drawer -->
 <dialog class="cart-drawer" data-cart-drawer aria-label="Your cart">
   <div class="cd-head">
-    <h2>Your cart</h2>
+    <div><span class="cd-kicker">REVAUDIO / PARTS COUNTER</span><h2>Your cart <span class="cd-count" data-cart-count></span></h2></div>
     <button type="button" class="cd-x" data-cart-close aria-label="Close cart">&times;</button>
   </div>
-  <p class="cd-empty" data-cart-empty>Your cart is empty.</p>
-  <ul class="cd-items" data-cart-items data-lenis-prevent></ul>
+  <div class="cd-body" data-lenis-prevent>
+  <div class="cd-empty" data-cart-empty>
+    <h3>Your next sound starts here.</h3>
+    <p>Your cart is empty. Explore the plugins and find your next addition.</p>
+    <a href="/store" class="cd-browse">Explore the plugins <span aria-hidden="true">→</span></a>
+  </div>
+  <ul class="cd-items" data-cart-items aria-label="Plugins in your cart"></ul>
   <div class="cd-foot" data-cart-foot hidden>
-    <div class="cd-sub"><span>Subtotal</span><span data-cart-subtotal>$0</span></div>
+    <div class="cd-summary">
+      <div class="cd-sub"><span>Subtotal <small>USD</small></span><span data-cart-subtotal>$0</span></div>
+      <p class="cd-tax">Any applicable tax is calculated at payment.</p>
+    </div>
+    <p class="cd-next">Next, enter your details and choose a payment method.</p>
     <label class="cd-agree" data-agree-label>
       <input type="checkbox" data-cart-agree data-terms-version={TERMS_LAST_UPDATED} aria-describedby="cd-agree-hint" />
       <span>I have read and agree to RevAudio's
@@ -86,14 +102,15 @@ for (const p of plugins) {
         <a href="/eula" data-open-legal="eula">Licence</a> &amp;
         <a href="/privacy" data-open-legal="privacy">Privacy</a>.</span>
     </label>
-    <p class="cd-agree-hint" id="cd-agree-hint" data-agree-hint hidden>Please agree to the terms to continue.</p>
-    <div class="cd-checkout panel">
-      <Image src={checkoutImg} alt="" width={680} height={453} format="webp" />
-      <button type="button" class="panel-hit hit-round hit-checkout" data-checkout aria-label="Checkout"></button>
-      <Image src={checkoutPressed} alt="" width={680} height={453} format="webp" loading="eager" class="press" />
-    </div>
+    <p class="cd-agree-hint" id="cd-agree-hint" data-agree-hint role="alert" hidden>Please agree to the terms to continue.</p>
+    <button type="button" class="cd-checkout" data-checkout>Continue to payment <span aria-hidden="true">→</span></button>
+    <p class="cd-payment">{engine === 'paddle' ? 'Payment handled securely by Paddle' : 'Continue to secure payment'}</p>
+    <p class="cd-payment-error" data-payment-error role="alert" hidden></p>
     <button type="button" class="cd-cont" data-cart-close>Continue browsing</button>
   </div>
+  </div>
+  <div class="cd-help"><span>Need a hand?</span> <a href="/support">Talk to RevAudio <span aria-hidden="true">↗</span></a></div>
+  <span class="cd-announcement" data-cart-announcement role="status" aria-live="polite"></span>
 </dialog>
 
 <!-- Legal reader modal — read-only popup for Terms / Licence / Privacy (no page nav). -->
@@ -123,8 +140,27 @@ for (const p of plugins) {
     var footEl = drawer && drawer.querySelector('[data-cart-foot]');
     var subEl = drawer && drawer.querySelector('[data-cart-subtotal]');
 
-    function read() { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) { return []; } }
-    function write(c) { try { localStorage.setItem(KEY, JSON.stringify(c)); } catch (e) {} }
+    var catalogEl = document.querySelector('[data-cart-catalog]');
+    var catalog = {};
+    try { catalog = JSON.parse(catalogEl.textContent || '{}'); } catch (e) {}
+    // Legacy entries may contain old names/prices. Only their slug is identity;
+    // every display field comes from the current catalog, including thumbnails.
+    function read() {
+      try {
+        var saved = JSON.parse(localStorage.getItem(KEY)) || [];
+        if (!Array.isArray(saved)) return [];
+        var seen = {};
+        return saved.reduce(function (items, item) {
+          var slug = item && item.slug;
+          if (!Object.prototype.hasOwnProperty.call(catalog, slug) || seen[slug]) return items;
+          seen[slug] = true;
+          items.push(Object.assign({ slug: slug, qty: 1 }, catalog[slug]));
+          return items;
+        }, []);
+      } catch (e) { return []; }
+    }
+    function write(c) { try { localStorage.setItem(KEY, JSON.stringify(c.map(function (i) { return { slug: i.slug }; }))); } catch (e) {} }
+    function money(value) { return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(value); }
     function count(c) { return c.reduce(function (n, i) { return n + (i.qty || 1); }, 0); }
     function esc(s) {
       return String(s == null ? '' : s).replace(/[&<>"']/g, function (m) {
@@ -251,8 +287,15 @@ for (const p of plugins) {
       sync();
     }
     function remove(slug) {
+      var oldItems = read();
+      var removedIndex = oldItems.findIndex(function (i) { return i.slug === slug; });
       write(read().filter(function (i) { return i.slug !== slug; }));
       sync();
+      var remaining = itemsEl.querySelectorAll('[data-remove]');
+      var next = remaining[Math.min(Math.max(removedIndex, 0), remaining.length - 1)] || drawer.querySelector('.cd-browse');
+      if (next) next.focus();
+      var announcement = drawer.querySelector('[data-cart-announcement]');
+      if (announcement) announcement.textContent = (catalog[slug] ? catalog[slug].name : 'Plugin') + ' removed from your cart.';
     }
 
     var IN_CART_LABEL = 'In your cart';
@@ -288,6 +331,8 @@ for (const p of plugins) {
     function sync() {
       var c = read();
       var n = count(c);
+      var countEl = drawer && drawer.querySelector('[data-cart-count]');
+      if (countEl) countEl.textContent = String(n).padStart(2, '0');
       var badges = document.querySelectorAll('[data-cart-badge]');
       for (var b = 0; b < badges.length; b++) { badges[b].textContent = n; badges[b].hidden = n === 0; }
       // The drawer no longer throws itself open on add, so this pop IS the
@@ -317,13 +362,15 @@ for (const p of plugins) {
       itemsEl.innerHTML = c.map(function (i) {
         sub += (i.price || 0) * (i.qty || 1);
         return '<li class="ci">' +
-          (i.img ? '<img class="ci-img" src="' + esc(i.img) + '" alt="" width="56" height="32" loading="lazy">' : '') +
+          (i.img ? '<div class="ci-picture"><img class="ci-img" src="' + esc(i.img) + '" alt="" width="144" height="84"></div>' : '') +
           '<div class="ci-main"><span class="ci-name">' + esc(i.name) + '</span>' +
-          '<span class="ci-meta">' + ((i.qty || 1) > 1 ? (i.qty + ' &times; ') : '') + '$' + (i.price || 0) + '</span></div>' +
-          '<button type="button" class="ci-x" data-remove="' + esc(i.slug) + '" aria-label="Remove ' + esc(i.name) + '">&times;</button>' +
+          '<span class="ci-meta">1 licence · Digital download</span>' +
+          '<span class="ci-formats">' + esc(i.formats) + '</span></div>' +
+          '<div class="ci-actions"><span class="ci-price">' + money(i.price) + '</span>' +
+          '<button type="button" class="ci-x" data-remove="' + esc(i.slug) + '" aria-label="Remove ' + esc(i.name) + '">Remove</button></div>' +
           '</li>';
       }).join('');
-      if (subEl) subEl.textContent = '$' + sub;
+      if (subEl) subEl.textContent = money(sub);
     }
 
     function openDrawer() {
@@ -348,8 +395,14 @@ for (const p of plugins) {
       var hint = drawer && drawer.querySelector('[data-agree-hint]');
       if (label) label.classList.toggle('is-error', !!on);
       if (hint) hint.hidden = !on;
+      if (agreeEl()) agreeEl().setAttribute('aria-invalid', on ? 'true' : 'false');
+    }
+    function paymentError(message) {
+      var error = drawer && drawer.querySelector('[data-payment-error]');
+      if (error) { error.textContent = message || ''; error.hidden = !message; }
     }
     function openCheckout() {
+      paymentError('');
       var items = read().filter(function (i) { return checkoutUrlFor(i); });
       if (!items.length) return;
       // Require agreement first — flag the checkbox and stop if unchecked.
@@ -378,21 +431,19 @@ for (const p of plugins) {
         window.location.href = url;
         return;
       }
-      // Engine 'paddle' — live. Fail closed: if paddle.js hasn't loaded/init'd
-      // (e.g. the CSP transform rule doesn't yet allow cdn.paddle.com), do
-      // nothing rather than send the buyer somewhere half-configured.
+      // Keep the cart visible with recovery guidance if Paddle's SDK is
+      // unavailable or opening payment throws synchronously.
       if (engineName() === 'paddle') {
-        if (!ensurePaddle()) return;
-        if (drawer && drawer.open) drawer.close();
-        window.Paddle.Checkout.open({
-          // Full cart, not just the first item — Paddle sums multiple line
-          // items natively (unlike LS's single hosted-checkout URL).
-          items: items.map(function (i) { return { priceId: checkoutUrlFor(i), quantity: i.qty || 1 }; }),
-          // Consent record: stamp the accepted legal-bundle version onto the
-          // transaction via Paddle's custom_data passthrough (mirrors the LS
-          // custom[] fields / FastSpring tags above).
-          customData: { terms_accepted: 'true', terms_version: ver }
-        });
+        if (!ensurePaddle()) { paymentError('Payment could not load. Please try again, or contact RevAudio support below.'); return; }
+        try {
+          window.Paddle.Checkout.open({
+            // Paddle sums the full cart natively.
+            items: items.map(function (i) { return { priceId: checkoutUrlFor(i), quantity: i.qty || 1 }; }),
+            // Preserve the accepted legal-bundle version on the transaction.
+            customData: { terms_accepted: 'true', terms_version: ver }
+          });
+          if (drawer && drawer.open) drawer.close();
+        } catch (e) { paymentError('Payment could not open. Please try again, or contact RevAudio support below.'); }
         return;
       }
       // Engine 'fastspring' — dormant, kept only as a rollback option
@@ -511,7 +562,11 @@ for (const p of plugins) {
     });
 
     if (drawer) {
-      drawer.addEventListener('click', function (e) { if (e.target === drawer) drawer.close(); }); // backdrop
+      drawer.addEventListener('click', function (e) {
+        if (e.target !== drawer) return;
+        var r = drawer.getBoundingClientRect();
+        if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) drawer.close();
+      });
       drawer.addEventListener('close', lock);
       drawer.addEventListener('change', function (e) {
         if (e.target && e.target.matches('[data-cart-agree]') && e.target.checked) setAgreeError(false);
@@ -566,11 +621,12 @@ for (const p of plugins) {
     margin: 0 0 0 auto;
     height: 100dvh;
     max-height: 100dvh;
-    width: min(380px, 92vw);
+    width: min(480px, 100vw);
+    max-width: 100vw;
     padding: 0;
     border: 0;
     border-left: 1px solid var(--border-bright);
-    background: var(--bg-1);
+    background: radial-gradient(ellipse at 0 0, #30271e 0, #191612 42%, #14110f 100%);
     color: var(--fg);
     box-shadow: -24px 0 80px rgba(0, 0, 0, 0.6);
     transform: translateX(100%);
@@ -580,17 +636,20 @@ for (const p of plugins) {
   @starting-style { .cart-drawer[open] { transform: translateX(100%); } }
 
   .cart-drawer::backdrop { background: rgba(8, 7, 6, 0); transition: background 0.28s ease; }
-  .cart-drawer[open]::backdrop { background: rgba(8, 7, 6, 0.6); backdrop-filter: blur(4px); }
+  .cart-drawer[open]::backdrop { background: rgba(8, 7, 6, 0.76); }
   @starting-style { .cart-drawer[open]::backdrop { background: rgba(8, 7, 6, 0); } }
 
   .cd-head {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1.25rem 1.25rem 1rem;
-    border-bottom: 1px solid var(--border);
+    padding: 1.5rem 1.5rem 1.25rem;
+    border-bottom: 1px solid var(--border-bright);
+    flex: none;
   }
-  .cd-head h2 { margin: 0; font-size: 1.5rem; color: var(--fg); }
+  .cd-kicker { display: block; font-size: 0.625rem; letter-spacing: 0.14em; color: var(--brass); margin-bottom: 0.6rem; }
+  .cd-head h2 { display: flex; align-items: center; gap: 0.65rem; margin: 0; font-size: 2.3rem; line-height: 1; color: var(--fg); }
+  .cd-count { font-family: var(--font-body); font-size: 0.85rem; font-weight: 500; color: var(--brass); }
 
   .cd-x {
     width: 44px; height: 44px; border-radius: 50%;
@@ -602,44 +661,52 @@ for (const p of plugins) {
   }
   .cd-x:hover { border-color: var(--brass); color: var(--brass-bright); }
 
-  .cd-empty { padding: 2rem 1.25rem; color: var(--fg-dim); }
+  .cd-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 1.5rem; }
+  .cd-empty { padding: 2rem 0; color: #b9b0a2; }
+  .cd-empty h3 { color: var(--fg); font-size: 1.65rem; margin: 0 0 0.5rem; }
+  .cd-empty p { font-size: 0.95rem; line-height: 1.6; }
+  .cd-browse { display: flex; align-items: center; justify-content: space-between; min-height: 48px; color: var(--brass-bright); text-decoration: underline; text-underline-offset: 4px; }
+  .cd-empty[hidden], .cd-foot[hidden], .cd-payment-error[hidden], .cd-agree-hint[hidden] { display: none; }
 
-  .cd-items { list-style: none; margin: 0; padding: 0.5rem 0.75rem; overflow-y: auto; }
+  .cd-items { list-style: none; margin: 0; padding: 0; }
   /* Cart items are injected at runtime, so they need :global to escape Astro scoping. */
   .cd-items :global(.ci) {
-    display: flex; align-items: center; gap: 0.85rem;
-    padding: 0.85rem 0.5rem; border-bottom: 1px solid var(--border);
+    display: grid; grid-template-columns: 96px 1fr auto; align-items: center; gap: 1rem;
+    padding: 1.5rem 0; border-bottom: 1px solid var(--border-bright);
   }
-  .cd-items :global(.ci-img) { border-radius: 6px; border: 1px solid var(--border); object-fit: cover; flex: none; }
-  .cd-items :global(.ci-main) { display: flex; flex-direction: column; gap: 0.15rem; flex: 1; min-width: 0; }
-  .cd-items :global(.ci-name) { font-family: var(--font-display); letter-spacing: 0.03em; color: var(--brass-bright); font-size: 1.1rem; }
-  .cd-items :global(.ci-meta) { font-family: var(--font-mono); font-size: 0.8rem; color: var(--fg-dim); }
+  .cd-items :global(.ci-picture) { display: grid; place-items: center; min-height: 76px; }
+  .cd-items :global(.ci-img) { display: block; width: 100%; height: 76px; object-fit: contain; filter: drop-shadow(0 5px 5px rgba(0,0,0,.4)); }
+  .cd-items :global(.ci-main) { display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; }
+  .cd-items :global(.ci-name) { font-family: var(--font-display); letter-spacing: 0.015em; color: var(--fg); font-size: 1.4rem; line-height: 1.2; }
+  .cd-items :global(.ci-meta), .cd-items :global(.ci-formats) { font-size: 0.75rem; line-height: 1.5; color: #b9b0a2; }
+  .cd-items :global(.ci-formats) { color: var(--brass); font-size: 0.6875rem; }
+  .cd-items :global(.ci-actions) { display: flex; flex-direction: column; align-items: flex-end; }
+  .cd-items :global(.ci-price) { font-size: 0.9375rem; font-variant-numeric: tabular-nums; font-weight: 600; }
   .cd-items :global(.ci-x) {
-    flex: none; width: 40px; height: 40px; border-radius: 50%;
-    display: grid; place-items: center;
-    border: 1px solid var(--border); background: transparent; color: var(--fg-faint);
-    font-size: 1rem; line-height: 1; cursor: pointer;
-    transition: color 0.2s, border-color 0.2s;
+    min-width: 44px; min-height: 44px; padding: 0; border: 0;
+    background: transparent; color: #b9b0a2;
+    font-size: 0.75rem; text-decoration: underline; text-underline-offset: 3px; cursor: pointer;
   }
-  .cd-items :global(.ci-x:hover) { color: var(--redline); border-color: var(--redline); }
+  .cd-items :global(.ci-x:hover) { color: var(--fg); }
 
   .cd-foot {
-    margin-top: auto;
-    padding: 1.1rem 1.25rem calc(1.4rem + env(safe-area-inset-bottom, 0px));
-    border-top: 1px solid var(--border);
-    display: flex; flex-direction: column; gap: 0.75rem;
+    padding: 1.5rem 0 1rem;
+    display: flex; flex-direction: column; gap: 1rem;
   }
   .cd-sub {
     display: flex; justify-content: space-between; align-items: baseline;
-    font-family: var(--font-mono); font-size: 0.95rem; color: var(--fg);
+    font-size: 1rem; color: var(--fg); font-weight: 500;
   }
-  .cd-sub span:last-child { color: var(--brass-bright); font-size: 1.15rem; }
+  .cd-sub small { color: #b9b0a2; font-size: 0.6875rem; margin-left: 0.35rem; }
+  .cd-sub span:last-child { color: var(--fg); font-size: 1.65rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .cd-tax { font-size: 0.75rem; line-height: 1.5; color: #b9b0a2; margin: 0.45rem 0 0; }
+  .cd-next { font-size: 0.8125rem; color: #b9b0a2; line-height: 1.6; margin: 0; padding-top: 0.4rem; }
 
   /* Consent checkbox — required before checkout; its links open the reader popup. */
   .cd-agree {
     display: flex; align-items: flex-start; gap: 0.55rem;
     min-height: 44px; /* whole label is the tap target */
-    font-size: 0.8rem; line-height: 1.4; color: var(--fg-dim); cursor: pointer;
+    font-size: 0.8125rem; line-height: 1.65; color: #b9b0a2; cursor: pointer;
   }
   .cd-agree input {
     flex: none; width: 20px; height: 20px; margin-top: 0.1rem;
@@ -647,18 +714,46 @@ for (const p of plugins) {
   }
   .cd-agree a { color: var(--brass-bright); text-decoration: underline; cursor: pointer; }
   .cd-agree a:hover { color: var(--brass); }
-  .cd-agree.is-error { color: var(--redline); }
-  .cd-agree.is-error input { outline: 2px solid var(--redline); outline-offset: 1px; }
-  .cd-agree-hint { margin: -0.35rem 0 0; font-size: 0.75rem; color: var(--redline); }
+  .cd-agree.is-error { color: #efaf91; }
+  .cd-agree.is-error input { outline: 2px solid #efaf91; outline-offset: 2px; }
+  .cd-agree-hint, .cd-payment-error { margin: -0.35rem 0 0; font-size: 0.8125rem; line-height: 1.5; color: #efaf91; }
 
-  /* CHECKOUT panel — plate is decorative; the .panel-hit over the red button clicks. */
-  .cd-checkout { width: 100%; }
+  /* One physical brass key, with a live label and the entire surface clickable. */
+  .cd-checkout {
+    display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+    width: 100%; min-height: 56px; padding: 0.9rem 1.15rem; border-radius: 5px;
+    border: 1px solid #e8c878; background: linear-gradient(165deg, #ebd29d 0%, #c9a35c 52%, #b18b49 100%);
+    color: #20180d; font-family: var(--font-body); font-size: 0.9375rem; font-weight: 650;
+    box-shadow: inset 0 1px 0 #f3dfb6, 0 3px 0 #70562d, 0 7px 15px rgba(0,0,0,.3);
+    cursor: pointer; transition: transform 120ms ease, filter 120ms ease, box-shadow 120ms ease;
+  }
+  .cd-checkout span { font-size: 1.3rem; }
+  .cd-checkout:hover { filter: brightness(1.06); transform: translateY(-1px); }
+  .cd-checkout:active { transform: translateY(2px); box-shadow: inset 0 1px 0 #f3dfb6, 0 1px 0 #70562d; }
+  .cd-payment { font-size: 0.6875rem; color: #b9b0a2; line-height: 1.5; text-align: center; margin: 0; }
   .cd-cont {
-    background: none; border: 0; color: var(--fg-dim);
-    font-size: 0.85rem; cursor: pointer; padding: 0.25rem;
+    background: none; border: 0; color: #b9b0a2;
+    font-size: 0.8125rem; cursor: pointer; padding: 0.25rem;
     min-height: 44px; /* tap-target floor */
   }
   .cd-cont:hover { color: var(--brass-bright); }
+  .cd-help { flex: none; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; margin: 0 1.5rem; padding: 0.5rem 0 calc(0.5rem + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--border-bright); font-size: 0.75rem; color: #b9b0a2; }
+  .cd-help a { display: inline-flex; align-items: center; gap: 0.4rem; min-height: 44px; color: var(--brass-bright); }
+  .cart-drawer :global(:focus-visible) { outline: 2px solid var(--brass-bright); outline-offset: 3px; }
+  .cd-announcement { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  @media (max-width: 380px) {
+    .cd-head { padding: 1.1rem; }
+    .cd-body { padding: 0 1.1rem; }
+    .cd-help { margin: 0 1.1rem; }
+    .cd-items :global(.ci) { grid-template-columns: 64px 1fr auto; gap: 0.65rem; padding: 1.2rem 0; }
+    .cd-items :global(.ci-name) { font-size: 1.2rem; }
+    .cd-items :global(.ci-meta) { font-size: 0.6875rem; }
+    .cd-head h2 { font-size: 2rem; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cart-drawer, .cart-drawer::backdrop, .cd-checkout { transition: none; }
+  }
+  :global(html.hc) .cart-drawer { background: var(--bg-0); }
 
   /* drawer is a flex column so cd-foot can pin to the bottom */
   .cart-drawer { display: flex; flex-direction: column; }
