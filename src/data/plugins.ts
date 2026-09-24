@@ -123,11 +123,6 @@ export interface Plugin {
   checkoutPaused: boolean;
   /** Discount code the buyer must enter at checkout to get the intro price. */
   promoCode?: string;
-  /** Forever-price posture. Line-wide rule (ratified 2026-08-04): every plugin
-   *  launches at its forever price — $49/$69/$99 tiers. The painted door line
-   *  was removed 2026-08-05 (Dan); the string now only flags the posture, which
-   *  renders as the .anchor-note under the crane. */
-  pricePolicy?: string;
   /** True for no-cost plugins — product page shows FREE + a Download CTA
    *  instead of pricing/checkout, and skips serial/licence-key copy. */
   isFree?: boolean;
@@ -178,9 +173,9 @@ const baseSystemReq: SystemReq = {
   daws: 'Cubase 12+, Studio One 6+, Reaper 7+, Ableton Live 11+, FL Studio 21+, Pro Tools 2023+, Logic Pro 11+',
 };
 
-// RevLimiter — Lemon Squeezy hosted checkout URL. Forever-price posture
-// (partner call 2026-08-04): flat $49, we don't do sales — no discount code
-// rides the URL, no visible coupon field anywhere on the site.
+// RevLimiter — Lemon Squeezy hosted checkout URL. List price $49 (partner call
+// 2026-08-04). The "no sales" posture was dropped 2026-09-24 (Dan); no discount
+// code rides this URL today, but one may.
 // VERIFY on the next test purchase: LS list price must show $49 (the LS-side
 // variant price change is Yoni/Gil's lane).
 const REVLIMITER_CHECKOUT_URL: string | null = 'https://revaudiopg.lemonsqueezy.com/checkout/buy/78885904-8a19-4e23-9510-31b50775ada5';
@@ -210,12 +205,12 @@ export const plugins: Plugin[] = [
       'Multi-band compression, analog-modelled saturation, and an adaptive limiter, chained the way a top-tier mastering engineer would chain them, under a true-peak ceiling at oversampled rate.',
     status: 'live',
     statusLabel: REVLIMITER_CHECKOUT_URL ? 'Available now' : 'Checkout reopening soon',
-    // Forever price (partner call 2026-08-04): flat $49, never on sale —
-    // no was-price anchor, no promo code. discountPct() returns null, which
-    // retires every "launch sale" tag and code hint site-wide on its own.
+    // $49 list price (partner call 2026-08-04). No was-price anchor or promo
+    // code today, so discountPct() returns null and no "launch sale" tag renders.
+    // The "no sales" posture was dropped 2026-09-24 (Dan): a real regularPriceUsd
+    // anchor is allowed again once RevLimiter has actually sold at it.
     introPriceUsd: 49,
     regularPriceUsd: null,
-    pricePolicy: "We don't do sales. This is the price.",
     checkoutUrl: REVLIMITER_CHECKOUT_URL,
     fastspringPath: 'revlimiter',
     paddlePriceId: 'pri_01m18vcv5f42cdbv5bzxhm94n1',

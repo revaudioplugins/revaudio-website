@@ -88,10 +88,10 @@ const registerUrl = site.downloadGate.workerUrl + '/download/register';
               {plugin.regularPriceUsd != null && <span class="rc-was">{fmtPrice(plugin.regularPriceUsd)}</span>}
             </div>
             {plugin.promoCode && <div class="rc-ink rc-code">code <b>{plugin.promoCode}</b> applied at checkout</div>}
-            {/* Painted forever-price posture line removed from the door
-                (Dan 2026-08-05) — the price stands on its own. .rc-policy CSS
-                and its .dz-policy twin in CraneDropZone are kept for bench
-                parity; the posture now lives only in .anchor-note below. */}
+            {/* Painted forever-price line removed from the door (Dan 2026-08-05);
+                the no-sales posture itself was dropped 2026-09-24 (Dan), so
+                nothing replaces it. .rc-policy CSS and its .dz-policy twin in
+                CraneDropZone are kept for bench parity. */}
             {/* plat line removed from the door 2026-07-04 — formats still listed in .crane-under below. .rc-plat CSS kept for bench parity. */}
           </div>
           <div class="rc-imprint"></div>
@@ -233,11 +233,6 @@ const registerUrl = site.downloadGate.workerUrl + '/download/register';
 
   <div class="crane-under">
     <p class="micro">Secure checkout &middot; instant delivery.</p>
-    {/* External anchor for the forever-price posture (2026-08-04) — spec
-        register, plain text, never VT323/display type for a claim. */}
-    {plugin.pricePolicy && (
-      <p class="micro anchor-note">Forever price. No coupons, no countdowns. FabFilter&rsquo;s Pro-L&nbsp;2 is $169.</p>
-    )}
     <ul class="includes">
       <li>VST3 / AU / AAX (Windows &amp; macOS)</li>
       <li>No iLok, no launcher app, just a key in your inbox</li>
@@ -983,8 +978,6 @@ const registerUrl = site.downloadGate.workerUrl + '/download/register';
     color: var(--fg-dim);
     margin: 0;
   }
-
-  .anchor-note { margin-top: 0.35rem; }
 
   .includes {
     list-style: none;
