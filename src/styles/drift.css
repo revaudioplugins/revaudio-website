@@ -1,0 +1,745 @@
+/* ==========================================================================
+   /drift — the DRIFT season page (Dan, 2026-09-26: "all the style of DRIFT
+   in the page: the assets, the purple, the panels, the neon. Fresh — not the
+   RevLimiter or Radio Roulette pages").
+
+   Scope: imported by src/pages/drift.astro ONLY, and every rule hangs off
+   .drift-page, so the house shell (header, footer, cart, legal) keeps the
+   garage look and no --drift token can collide with global.css (review H14).
+
+   Source of every value: Drift/Source/ui/public/index.html (:root tokens, the
+   v4.7 arcade block, the 2026-09-24 sunk-readout law) and Drift/DESIGN.md.
+   Pixel study 2026-09-26: the cockpit is 60% near-black and only ~5% vivid
+   neon, 81% of it at hue 270-300deg. Neon here is ALWAYS a lamp (tube, LED,
+   CRT phosphor, lit screen) — that is how /drift keeps the site law "no glow
+   without a lamp" while wearing DRIFT's purple.
+   ========================================================================== */
+
+@font-face {
+  font-family: 'Drift Orbitron';
+  src: url('/fonts/drift/Orbitron-SemiBold.ttf') format('truetype');
+  font-weight: 400 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Drift Press';
+  src: url('/fonts/drift/PressStart2P-Regular.ttf') format('truetype');
+  font-display: swap;
+}
+
+.drift-page {
+  /* --- palette: plugin :root + arcade block, verbatim ---------------------- */
+  --d-ink: #07050b;          /* --arc-well */
+  --d-steel: #0e0515;        /* --arc-steel */
+  --d-glass: #0f0418;        /* --arc-glass */
+  --d-plate: #0a0810;
+  --d-neon: #b46bff;         /* --neon-purple */
+  --d-neon-rgb: 180, 107, 255;
+  --d-violet: #8a2be2;
+  --d-mag: #e040c8;
+  --d-hot: #f769e0;          /* --arc-neon */
+  --d-lcd: #f24cf0;          /* --arc-lcd (magenta dot-matrix ink) */
+  --d-lcd-hdr: #c73fc4;
+  --d-crt: #d98bff;          /* --arc-crt (violet phosphor) */
+  --d-crt-glow: rgba(190, 90, 255, .75);
+  --d-pink-ink: #ffd1f8;
+  --d-white-ink: #fff0ff;
+  --d-cyan: #5ee7ff;         /* SIMPLE tracks */
+  --d-cyan-ink: #c8f6ff;
+  --d-red: #ff6b63;          /* --trk-red */
+  --d-red-rgb: 255, 107, 99;
+  --d-amber-rgb: 255, 150, 40;
+  --d-fg: #e8e0d0;
+  --d-fg-dim: #b3aa98;       /* plugin --fg-dim #9a927f lifted for 4.5:1 on --d-steel */
+  --d-fg-neon: #dcc7ff;
+  --d-dim-violet: #a58bd0;   /* plugin #9b7cc6 lifted for AA body-size text */
+  --d-jp: #8b62b8;
+
+  --d-f-pix: 'Drift Press', 'Press Start 2P', ui-monospace, monospace;
+  --d-f-badge: 'Drift Orbitron', 'Orbitron', var(--font-display);
+  --d-f-lcd: 'VT323', ui-monospace, monospace;
+  --d-f-ja: 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Yu Gothic UI', Meiryo, sans-serif;
+
+  /* live state, written by src/lib/drift/bus.ts */
+  --pan: 0;
+  --lit-l: .3;
+  --lit-r: .3;
+
+  --d-gutter: clamp(16px, 4vw, 40px);
+
+  position: relative;
+  isolation: isolate;
+  color: var(--d-fg);
+  /* the plate: DRIFT's own steel (plate-tile = mirror-tiled crop of plate.png),
+     under a violet cabin wash and the wheel's purple underglow at the top */
+  background-color: #09030e;
+  background-image:
+    radial-gradient(900px 560px at 50% 340px, rgba(138, 43, 226, .16), transparent 72%),
+    linear-gradient(180deg, rgba(9, 3, 14, .35), rgba(9, 3, 14, .7)),
+    var(--d-img-tile);
+  background-size: auto, auto, 400px 280px;
+  padding-bottom: 72px;
+}
+@media (min-width: 1100px) {
+  .drift-page { --d-gutter: 96px; }   /* clears the neon rails */
+}
+
+.drift-page h1,
+.drift-page h2,
+.drift-page h3 {
+  font-family: var(--d-f-pix);
+  font-weight: 400;
+  letter-spacing: .08em;
+  line-height: 1.25;
+  text-transform: uppercase;
+  color: var(--d-pink-ink);
+  margin: 0;
+}
+.drift-page p { max-width: none; margin: 0; }
+.drift-page :focus-visible { outline: 3px solid var(--d-pink-ink); outline-offset: 4px; border-radius: 6px; }
+
+.d-wrap { width: min(1180px, 100% - 2 * var(--d-gutter)); margin-inline: auto; }
+.d-ja { font-family: var(--d-f-ja); font-weight: 700; }
+.d-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---------- section head: the TRAKS attract-menu head (▶ EN  カナ ------) --- */
+.d-sec { padding-top: clamp(56px, 7vw, 92px); }
+.d-sechead { display: flex; align-items: baseline; gap: 16px; margin: 0 0 28px; }
+.d-sechead h2 {
+  font-size: clamp(15px, 1.6vw, 20px);
+  letter-spacing: .14em;
+  color: var(--d-lcd);
+  text-shadow: 0 0 8px rgba(242, 76, 240, .7);
+  white-space: nowrap;
+}
+.d-sechead h2::before { content: '\25B6\00A0'; color: var(--d-hot); }
+.d-sechead .d-ja { font-size: 13px; letter-spacing: .34em; color: var(--d-jp); font-weight: 500; }
+.d-sechead .d-rule {
+  flex: 1; height: 2px; align-self: center;
+  background: repeating-linear-gradient(90deg, rgba(190, 90, 255, .5) 0 6px, transparent 6px 12px);
+}
+.d-lede { font-size: clamp(17px, 1.35vw, 19px); line-height: 1.6; color: var(--d-fg); max-width: 58ch; }
+.d-lede + .d-lede { margin-top: .8em; }
+.d-small { font-size: 14px; color: var(--d-fg-dim); }
+
+/* ==========================================================================
+   MATERIALS
+   ========================================================================== */
+
+/* --- panel: DRIFT steel face (crop of left_panel.png) sunk into the dash ----
+   Arcade2/Law 4 embed: a photo plate needs a WELL (dark groove + lip
+   catchlight), an INSET SHADE (darkest top/left, light is upper-left) and real
+   screws each turned a different few degrees, or it reads as a pasted picture. */
+.d-panel {
+  position: relative;
+  border-radius: 12px;
+  background: linear-gradient(rgba(12, 5, 18, .4), rgba(12, 5, 18, .4)), var(--d-img-panel) center / cover, #150a1f;
+  box-shadow:
+    0 0 0 1px rgba(4, 2, 8, .95),
+    0 0 0 6px #08040d,
+    0 1px 0 6px rgba(255, 240, 255, .06),
+    inset 0 20px 30px -14px rgba(0, 0, 0, .6),
+    inset 16px 0 28px -16px rgba(0, 0, 0, .5),
+    inset 0 -1px 0 rgba(255, 240, 255, .07);
+  padding: clamp(40px, 4.2vw, 56px) clamp(22px, 3.2vw, 44px) clamp(28px, 3.2vw, 40px);
+}
+.d-screw {
+  position: absolute; width: 24px; height: 24px; pointer-events: none;
+  background: var(--d-img-screw) center / contain no-repeat;
+  filter: drop-shadow(1px 1px 1px rgba(0, 0, 0, .7));
+}
+.d-screw.tl { left: 11px; top: 11px; transform: rotate(13deg); }
+.d-screw.tr { right: 11px; top: 11px; transform: rotate(-7deg); }
+.d-screw.bl { left: 11px; bottom: 11px; transform: rotate(19deg); }
+.d-screw.br { right: 11px; bottom: 11px; transform: rotate(-23deg); }
+.d-checker {
+  position: absolute; left: 44px; top: 12px; height: 22px; width: auto;
+  pointer-events: none; opacity: .92;
+}
+.d-sticker {
+  position: absolute; right: 46px; top: 10px;
+  padding: 2px 8px 3px;
+  font: 700 15px/1.2 var(--d-f-ja);
+  letter-spacing: .08em;
+  color: #e44ce6;
+  background: rgba(40, 6, 48, .72);
+  border-radius: 2px;
+  text-shadow: 0 0 6px rgba(242, 76, 240, .45);
+  pointer-events: none;
+}
+
+/* --- sunk glass readout: ONE material on every value window ---------------
+   2026-09-24 embed law, verbatim: seam + faint lower lip + inner wall. NO outer
+   rim light, NO drop shadow, NO under-glow — anything cast outside the window
+   reads as a panel hovering above the plate. */
+.d-lcd {
+  position: relative;
+  isolation: isolate;
+  border-radius: 5px;
+  box-shadow: 0 0 0 1px rgba(4, 2, 8, .9), 0 1px 0 1px rgba(255, 240, 255, .07);
+}
+.d-lcd::before {
+  content: ''; position: absolute; inset: 0; z-index: -1; border-radius: inherit;
+  background: var(--d-img-lcd) center / 100% 100% no-repeat, var(--d-glass);
+  box-shadow:
+    inset 0 5px 8px rgba(0, 0, 0, .7),
+    inset 0 -1px 0 rgba(255, 240, 255, .16),
+    inset 0 -4px 7px rgba(0, 0, 0, .45);
+}
+.d-lcd::after {
+  content: ''; position: absolute; inset: 2px 3px; z-index: 2; border-radius: 3px; pointer-events: none;
+  background:
+    radial-gradient(60% 50% at 50% 40%, rgba(255, 235, 250, .07), transparent 70%),
+    linear-gradient(180deg, rgba(255, 255, 255, .13), rgba(255, 255, 255, 0) 55%),
+    var(--d-img-glass) center / 100% 100%;
+  mix-blend-mode: screen;
+}
+/* large windows keep the glass but not the stretched bezel PNG */
+.d-lcd--big::before {
+  background: radial-gradient(120% 100% at 50% 40%, #14061f 0%, #0b0314 70%);
+}
+.d-lcd-ink {
+  font-family: var(--d-f-lcd);
+  color: var(--d-white-ink);
+  text-shadow: 0 0 6px rgba(242, 76, 240, .75);
+  letter-spacing: .05em;
+}
+
+/* --- CRT window (TRAKS attract glass) --------------------------------------- */
+.d-crt {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  background: radial-gradient(1400px 900px at 50% 45%, #170a24 0%, #0d0516 55%, var(--d-ink) 100%);
+  box-shadow:
+    0 0 0 1px rgba(4, 2, 8, .95),
+    0 0 0 7px #120818,
+    0 0 0 8px rgba(190, 90, 255, .3),
+    inset 0 12px 26px rgba(0, 0, 0, .65);
+  color: #e7d6ff;
+  font-family: var(--d-f-lcd);
+}
+.d-crt::before,
+.d-crt::after { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 5; }
+.d-crt::before { background: repeating-linear-gradient(0deg, rgba(0, 0, 0, .22) 0 1px, transparent 1px 3px); }
+.d-crt::after { background: radial-gradient(120% 90% at 50% 50%, transparent 55%, rgba(0, 0, 0, .55) 100%); }
+
+/* --- the one red: DRIFT's brushed TRACKS pill, lettering removed, label live --
+   cta-pill.png = cap_bar_tracks_s.png with the middle rebuilt from its own
+   brushed metal; 3-slice: 160px ends of a 243px-tall cap = 0.658 x height. */
+.d-cta {
+  --h: 56px;
+  display: inline-flex; align-items: center; justify-content: center;
+  height: var(--h); min-width: 0;
+  padding: 0 4px;
+  border-style: solid; border-color: transparent;
+  border-width: 0 calc(var(--h) * .658);
+  border-image-source: var(--d-img-pill);
+  border-image-slice: 0 160 fill;
+  border-image-width: 0 calc(var(--h) * .658);
+  border-image-repeat: stretch;
+  font: 600 calc(var(--h) * .3) / 1 var(--d-f-badge);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #ffe6df;
+  text-shadow: 0 -1px 0 rgba(80, 0, 0, .9), 0 1px 0 rgba(255, 190, 180, .3);
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, .65));
+  cursor: pointer;
+  background: none;
+  transition: transform 90ms cubic-bezier(0.2, 0.9, 0.25, 1.25), filter 120ms ease;
+}
+.d-cta:hover {
+  color: #fff2ee;
+  transform: translateY(-1px);
+  filter: brightness(1.08) drop-shadow(0 5px 7px rgba(0, 0, 0, .65)) drop-shadow(0 0 16px rgba(var(--d-red-rgb), .38));
+}
+.d-cta:active { transform: translateY(3px); filter: brightness(.9) drop-shadow(0 1px 2px rgba(0, 0, 0, .8)); }
+
+/* --- neon rails = the stereo field ---------------------------------------
+   Two neon tubes on the page edges, 左 L and 右 R. The wheel's pan lights the
+   tube on its side (bus.ts writes --lit-l/--lit-r: .3 idle -> 1.0 hard pan).
+   Sticky overlay: sticks under the header while the DRIFT body scrolls, then
+   leaves with it, so the house footer never gets DRIFT neon. */
+.d-rails {
+  position: sticky;
+  top: calc(var(--sale-h, 0px) + var(--nav-h, 44px));
+  height: calc(100vh - var(--sale-h, 0px) - var(--nav-h, 44px));
+  margin-bottom: calc(-100vh + var(--sale-h, 0px) + var(--nav-h, 44px));
+  pointer-events: none;
+  z-index: 30;
+  display: none;
+  overflow: clip;              /* the light spill leaks onto the plate, never past the viewport */
+}
+@media (min-width: 1100px) { .d-rails { display: block; } }
+.d-rail {
+  --lit: .3;
+  position: absolute; top: 26px;
+  width: 46px; height: min(44vh, 360px);
+  border-radius: 23px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  border: 2px solid rgba(var(--d-neon-rgb), calc(.4 + .6 * var(--lit)));
+  background: linear-gradient(90deg, rgba(22, 6, 32, .85), rgba(44, 12, 66, .55) 50%, rgba(22, 6, 32, .85));
+  box-shadow:
+    0 0 calc(4px + 16px * var(--lit)) rgba(var(--d-neon-rgb), calc(.3 + .55 * var(--lit))),
+    inset 0 0 calc(6px + 12px * var(--lit)) rgba(var(--d-neon-rgb), calc(.2 + .5 * var(--lit)));
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+.d-rail--l { left: 18px; --lit: var(--lit-l); }
+.d-rail--r { right: 18px; --lit: var(--lit-r); }
+.d-rail b {
+  font: 700 26px/1.1 var(--d-f-ja);
+  color: rgba(236, 206, 255, calc(.5 + .5 * var(--lit)));
+  text-shadow: 0 0 calc(3px + 10px * var(--lit)) rgba(190, 90, 255, .95);
+}
+.d-rail i {
+  font: 400 11px/1 var(--d-f-pix); font-style: normal;
+  color: rgba(255, 209, 248, calc(.45 + .55 * var(--lit)));
+}
+/* the light leaks: a spill from each tube onto the plate beside it */
+.d-rail::after {
+  content: ''; position: absolute; top: -20%; bottom: -20%; width: 260px;
+  background: radial-gradient(closest-side, rgba(var(--d-neon-rgb), calc(.22 * var(--lit))), transparent);
+  transition: opacity 120ms ease;
+}
+.d-rail--l::after { left: -40px; }
+.d-rail--r::after { right: -40px; }
+.d-stickers {
+  position: absolute; top: calc(26px + min(44vh, 360px) + 22px);
+  width: 58px; height: auto; opacity: .7;
+  -webkit-mask-image: linear-gradient(180deg, #000 70%, transparent);
+  mask-image: linear-gradient(180deg, #000 70%, transparent);
+}
+.d-stickers--l { left: 12px; }
+.d-stickers--r { right: 12px; }
+
+/* --- car-stereo BALANCE SCREEN (4.22.8 pan meter): 24 stepped bars ---------
+   Bar i: height .42 + .58 * t, t = |i + .5 - 12| / 12. Lit from the centre
+   toward the pan side, the tip bar white, dim ghosts = the rest. */
+.d-balance {
+  display: flex; align-items: flex-end; gap: 3px; height: 48px;
+  filter: drop-shadow(0 0 2.5px rgba(242, 76, 240, .85));
+}
+.d-balance i {
+  flex: 1; border-radius: 1px;
+  background: rgba(242, 76, 240, .09);
+  transition: background-color 60ms linear;
+}
+.d-balance i.on { background: rgb(255, 112, 247); }
+.d-balance i.tip { background: rgb(255, 240, 255); }
+.d-balance-read {
+  font: 400 30px/1 var(--d-f-lcd); letter-spacing: .14em;
+  color: var(--d-white-ink); text-shadow: 0 0 8px rgba(242, 76, 240, .8);
+}
+
+/* ==========================================================================
+   SECTION 1 — HERO, "driver's seat" (Dan's pick A)
+   ========================================================================== */
+.d-hero {
+  --wd: clamp(400px, 38vw, 520px);        /* wheel: 1000px source -> never above 540 CSS px */
+  position: relative;
+  overflow: hidden;
+  padding-top: 18px;
+}
+.d-dashbar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 18px;
+  padding: 12px 18px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #17121f, #0d0a12 60%, #0b0810);
+  box-shadow:
+    0 0 0 1px rgba(4, 2, 8, .95),
+    inset 0 1px 0 rgba(255, 240, 255, .06),
+    inset 0 -2px 0 rgba(180, 107, 255, .16),
+    0 8px 18px rgba(0, 0, 0, .45);
+}
+.d-sock {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 38px; padding: 0 16px;
+  font: 400 10px/1.3 var(--d-f-pix); letter-spacing: .12em;
+  color: var(--d-pink-ink);
+  text-shadow: 0 0 6px rgba(247, 105, 224, .6), 2px 2px 0 #4a1042;
+}
+.d-dashbar .d-sock:first-child { justify-self: start; }
+.d-dashbar .d-sock:last-child { justify-self: end; }
+.d-sock--pan { min-width: 180px; }
+.d-sock--pan output { font: 400 30px/1 var(--d-f-lcd); letter-spacing: .1em; color: var(--d-fg-neon); text-shadow: 0 0 10px rgba(180, 107, 255, .8); }
+
+.d-hero-body {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--wd) minmax(0, 1fr);
+  align-items: start;
+  gap: 0;
+  margin-top: 28px;
+  /* the wheel sinks below the section edge: the driver's-seat crop */
+  margin-bottom: calc(var(--wd) * -0.2);
+}
+.d-hero-left, .d-hero-right { position: relative; z-index: 1; margin-top: 36px; }   /* the wheel sits IN FRONT of the panels (plugin z7) */
+.d-hero-left { margin-right: calc(var(--wd) * -0.06); }
+.d-hero-right { margin-left: calc(var(--wd) * -0.06); }
+.d-hero-left .d-panel { padding-right: calc(var(--wd) * 0.1); }
+.d-hero-right .d-panel { padding-left: calc(var(--wd) * 0.1); }
+
+.d-title { display: flex; flex-direction: column; gap: 10px; }
+.d-title-en {
+  font: 400 clamp(32px, 3.3vw, 50px) / 1 var(--d-f-pix);
+  letter-spacing: .04em;
+  color: var(--d-pink-ink);
+  text-shadow: 0 0 6px var(--d-hot), 0 0 18px var(--d-hot), 0 0 34px rgba(247, 105, 224, .55), 3px 3px 0 #7a1f6b;
+}
+.d-title-ja {
+  font: 700 clamp(13px, 1.1vw, 16px) / 1 var(--d-f-ja);
+  letter-spacing: .5em;
+  color: var(--d-crt);
+  text-shadow: 0 0 8px var(--d-crt-glow);
+}
+.d-kicker {
+  font: 400 10px/1.6 var(--d-f-pix); letter-spacing: .1em; text-transform: uppercase;
+  color: var(--d-dim-violet); margin-bottom: 14px;
+}
+.d-plain { margin-top: 20px; font-size: clamp(17px, 1.35vw, 19px); line-height: 1.5; color: var(--d-fg); }
+.d-plain strong { color: var(--d-white-ink); font-weight: 600; }
+
+.d-cta-block { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
+.d-cta-sub { font: 400 20px/1.3 var(--d-f-lcd); letter-spacing: .06em; color: var(--d-crt); text-shadow: 0 0 6px rgba(190, 90, 255, .5); }
+.d-cta-fine { font-size: 14px; color: var(--d-fg-dim); line-height: 1.5; }
+.d-hearlink {
+  display: inline-flex; align-items: center; gap: 10px; margin-top: 6px;
+  font: 400 11px/1 var(--d-f-pix); letter-spacing: .12em; color: var(--d-lcd);
+  text-shadow: 0 0 8px rgba(242, 76, 240, .6);
+}
+.d-hearlink:hover { color: var(--d-pink-ink); }
+
+/* cockpit: purple underglow + gauge cluster (real render, wheel hidden) + wheel */
+.d-cockpit { position: relative; width: var(--wd); aspect-ratio: 1; z-index: 3; }
+.d-underglow {
+  position: absolute; inset: 12%; border-radius: 50%;
+  background: radial-gradient(circle, rgba(138, 43, 226, .30) 0%, rgba(138, 43, 226, .12) 42%, transparent 65%);
+  transform: scale(1.6);
+}
+.d-cluster {
+  position: absolute;
+  left: var(--cl-l); top: var(--cl-t); width: var(--cl-w); height: auto;
+  -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 62%, transparent 100%);
+  mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 62%, transparent 100%);
+}
+.d-needle {
+  position: absolute; pointer-events: none;
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+
+.d-wheel {
+  position: absolute; inset: 0;
+  border-radius: 50%;
+  clip-path: circle(50%);
+  cursor: grab;
+  touch-action: pan-y;         /* vertical swipes still scroll the page on phones */
+  outline-offset: -8px;
+}
+.d-wheel:active { cursor: grabbing; }
+.d-wheel-ind { position: absolute; inset: 0; will-change: transform; }
+.d-wheel-img { width: 100%; height: 100%; display: block; pointer-events: none; filter: drop-shadow(0 14px 30px rgba(0, 0, 0, .8)); }
+/* v4.12 fixed light: masked by the wheel's own alpha, rides the art; .d-wlfix
+   counter-rotates so the key (upper-left) never moves. Light never rotates. */
+.d-wlight {
+  --wl-hi: .55; --wl-sh: .55;
+  position: absolute; inset: 0; pointer-events: none; will-change: transform;
+  -webkit-mask-image: var(--wheel-mask); mask-image: var(--wheel-mask);
+  -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
+  mix-blend-mode: overlay;
+}
+.d-wlfix {
+  position: absolute; inset: 0; will-change: transform;
+  background:
+    radial-gradient(circle at 33% 24%, rgba(255, 246, 228, var(--wl-hi)) 0, rgba(255, 246, 228, calc(var(--wl-hi) * .35)) 22%, rgba(128, 128, 128, 0) 48%),
+    radial-gradient(circle at 70% 82%, rgba(0, 0, 0, var(--wl-sh)) 0, rgba(0, 0, 0, calc(var(--wl-sh) * .4)) 26%, rgba(128, 128, 128, 0) 55%),
+    linear-gradient(160deg, rgba(255, 255, 255, calc(var(--wl-hi) * .25)) 0%, rgba(128, 128, 128, 0) 45%, rgba(0, 0, 0, calc(var(--wl-sh) * .3)) 100%);
+}
+/* hub cap mark: live text INSIDE the rotating layer (turns with the bolt circle) */
+.d-wheel-mark {
+  position: absolute; left: 50%; top: 50%;
+  transform: translate(-50%, calc(-50% + var(--wd) * 19 / 790));
+  display: flex; flex-direction: column; align-items: center; gap: calc(var(--wd) * 5 / 790);
+  pointer-events: none;
+}
+.d-wheel-mark .dm {
+  font: 800 calc(var(--wd) * 22 / 790) / 1 var(--d-f-badge);
+  letter-spacing: .14em; text-indent: .14em; white-space: nowrap;
+  color: var(--d-fg);
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, .9), 0 1px 0 rgba(255, 255, 255, .16), 0 0 10px rgba(180, 107, 255, .79);
+}
+.d-wheel-mark .kana {
+  font: 700 calc(var(--wd) * 12 / 790) / 1 var(--d-f-ja);
+  letter-spacing: .3em; text-indent: .3em; white-space: nowrap;
+  color: #cf9dff; opacity: .72;
+  text-shadow: 0 0 8px rgba(180, 107, 255, .55);
+}
+.d-wheel-hint {
+  position: absolute; left: 50%; bottom: calc(var(--wd) * 0.24); transform: translateX(-50%);
+  z-index: 4; pointer-events: none; white-space: nowrap;
+  font: 400 9px/1 var(--d-f-pix); letter-spacing: .14em;
+  color: rgba(255, 209, 248, .75);
+  text-shadow: 0 0 6px rgba(247, 105, 224, .6), 1px 1px 0 #2a0826;
+}
+
+/* phones + small tablets: stack title → wheel → CTA; the wheel stays whole */
+@media (max-width: 1099px) {
+  .d-hero { --wd: min(420px, 86vw); }
+  .d-dashbar { grid-template-columns: 1fr; justify-items: center; text-align: center; gap: 6px; }
+  .d-dashbar .d-sock:first-child, .d-dashbar .d-sock:last-child { justify-self: center; }
+  .d-hero-body { grid-template-columns: 1fr; justify-items: center; margin-bottom: 0; }
+  .d-hero-left, .d-hero-right { margin: 0; width: 100%; }
+  .d-hero-left .d-panel, .d-hero-right .d-panel { padding-left: clamp(22px, 5vw, 44px); padding-right: clamp(22px, 5vw, 44px); }
+  .d-cockpit { order: 2; margin: 26px 0 18px; }
+  .d-hero-right { order: 3; }
+  .d-wheel-hint { bottom: -6px; }
+}
+
+/* ==========================================================================
+   SECTION 2 — HEAD UNIT: hear it + what it does
+   ========================================================================== */
+.d-headunit { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: clamp(22px, 3vw, 40px); align-items: stretch; }
+.d-screen { padding: 18px 20px 16px; min-height: 176px; display: flex; flex-direction: column; gap: 10px; }
+.d-screen-hdr { display: flex; justify-content: space-between; font: 400 17px/1 var(--d-f-lcd); letter-spacing: .12em; color: var(--d-lcd-hdr); text-shadow: 0 0 3px rgba(240, 70, 235, .6); }
+.d-screen-title { font: 400 34px/1 var(--d-f-lcd); letter-spacing: .04em; color: var(--d-lcd); text-shadow: 0 0 5px rgba(242, 76, 240, .7); }
+.d-screen-title::before { content: '\25B6\00A0'; font-size: .7em; }
+.d-screen-rule { height: 1px; background: var(--d-lcd); box-shadow: 0 0 3px rgba(242, 76, 240, .6); }
+.d-screen-row { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; }
+.d-screen-t { font: 400 22px/1 var(--d-f-lcd); color: var(--d-lcd); text-shadow: 0 0 4px rgba(242, 76, 240, .6); }
+.d-testtag { font: 400 9px/1.4 var(--d-f-pix); letter-spacing: .1em; color: #1a0620; background: var(--d-lcd); padding: 1px 6px; border-radius: 2px; }
+
+.d-transport { display: flex; align-items: center; gap: 18px; margin-top: 18px; flex-wrap: wrap; }
+.d-cap {
+  width: 58px; height: 58px; border: 0; padding: 0; border-radius: 50%;
+  background: center / 100% 100% no-repeat;
+  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, .7));
+  cursor: pointer;
+  transition: transform 90ms cubic-bezier(0.2, 0.9, 0.25, 1.25), filter 120ms ease;
+}
+.d-cap:hover { filter: brightness(1.1) drop-shadow(0 3px 4px rgba(0, 0, 0, .7)); transform: translateY(-1px); }
+.d-cap:active { transform: translateY(4px); filter: brightness(.9); }   /* arcade cap: the 4px exception */
+.d-cap[aria-pressed='true'] { filter: brightness(1.15) drop-shadow(0 0 10px rgba(255, 255, 255, .25)); }
+.d-slots, .d-ab { display: inline-flex; gap: 6px; }
+.d-slot, .d-ab button {
+  font: 400 10px/1 var(--d-f-pix); letter-spacing: .08em;
+  min-height: 44px; padding: 0 14px;
+  border: 0; border-radius: 5px; cursor: pointer;
+  color: #8f7aa8;
+  background: linear-gradient(180deg, #1a1024, #0e0816);
+  box-shadow: 0 0 0 1px rgba(4, 2, 8, .9), inset 0 1px 0 rgba(255, 240, 255, .06), inset 0 -3px 6px rgba(0, 0, 0, .5);
+}
+.d-slot[aria-pressed='true'], .d-ab button[aria-pressed='true'] {
+  color: var(--d-white-ink);
+  text-shadow: 0 0 6px rgba(242, 76, 240, .85);
+  box-shadow: 0 0 0 1px rgba(4, 2, 8, .9), inset 0 0 0 1px rgba(242, 76, 240, .55), inset 0 0 14px rgba(242, 76, 240, .22);
+}
+.d-steps { display: grid; gap: 12px; align-content: start; list-style: none; margin: 0; padding: 0; }
+.d-step { position: relative; padding: 16px 18px 16px 60px; }
+.d-step::marker { content: none; }
+.d-step-n {
+  position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+  font: 400 18px/1 var(--d-f-pix); color: var(--d-lcd); text-shadow: 0 0 8px rgba(242, 76, 240, .75);
+}
+.d-step h3 { font: 400 12px/1.3 var(--d-f-pix); letter-spacing: .1em; color: var(--d-pink-ink); margin-bottom: 6px; }
+.d-step p { font-size: 16px; line-height: 1.5; color: var(--d-fg); }
+.d-balance-box { margin-top: 18px; padding: 14px 16px 12px; display: grid; gap: 10px; }
+.d-balance-lr { display: flex; justify-content: space-between; align-items: center; font: 400 11px/1 var(--d-f-pix); color: var(--d-dim-violet); }
+@media (max-width: 900px) { .d-headunit { grid-template-columns: 1fr; } }
+
+/* ==========================================================================
+   SECTION 3 — BAND SELECT + STEREO IMAGER cabinet
+   ========================================================================== */
+.d-band { display: grid; grid-template-columns: minmax(280px, 440px) minmax(0, 1fr); gap: clamp(28px, 5vw, 72px); align-items: center; }
+.d-cabinet { position: relative; width: 100%; aspect-ratio: 1024 / 1417; }
+.d-cabinet > img { position: absolute; inset: 0; width: 100%; height: 100%; }
+.d-cab-eq { position: absolute; left: 13.7%; top: 15.2%; width: 74.7%; height: 22.2%; }
+.d-cab-img { position: absolute; left: 13.9%; top: 48.3%; width: 71.1%; height: 43.2%; }
+.d-cab-corr { position: absolute; left: 91%; top: 63.9%; width: 2.9%; height: 20.5%; }
+.d-cab-eq svg, .d-cab-img canvas { width: 100%; height: 100%; display: block; }
+/* CORR: Ozone-style phase-correlation bar in the baked slot, +1 up / -1 down from centre */
+.d-cab-corr { --corr: 1; overflow: hidden; border-radius: 3px; }
+.d-cab-corr::after {
+  content: ''; position: absolute; left: 15%; right: 15%;
+  top: calc(50% - max(0, var(--corr)) * 50%); bottom: calc(50% + min(0, var(--corr)) * 50%);
+  background: #b46bff; box-shadow: 0 0 6px rgba(180, 107, 255, .9);
+  transition: top 60ms linear, bottom 60ms linear;
+}
+.d-cutlabel { font: 400 13px/1 var(--d-f-lcd); fill: var(--d-crt); }
+.d-band-copy { display: grid; gap: 28px; }
+.d-band-copy h3 { font-size: 13px; letter-spacing: .12em; color: var(--d-pink-ink); margin-bottom: 10px; }
+.d-route { display: inline-flex; gap: 6px; margin-top: 14px; }
+@media (max-width: 900px) { .d-band { grid-template-columns: 1fr; } .d-cabinet { max-width: 420px; margin-inline: auto; } }
+
+/* ==========================================================================
+   SECTION 4 — TRACKS attract screen + mini GPS
+   ========================================================================== */
+.d-tracks { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: clamp(22px, 3vw, 40px); align-items: start; }
+.d-attract { padding: 22px 24px 26px; }
+.d-attract-hdr { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-bottom: 14px; margin-bottom: 18px; position: relative; }
+.d-attract-hdr::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: repeating-linear-gradient(90deg, var(--d-hot) 0 14px, rgba(247, 105, 224, .12) 14px 28px); box-shadow: 0 0 10px rgba(247, 105, 224, .45); }
+.d-attract-title { font: 400 clamp(12px, 1.2vw, 15px)/1.2 var(--d-f-pix); letter-spacing: .18em; color: var(--d-crt); text-shadow: 0 0 8px var(--d-crt-glow), 0 0 22px rgba(190, 90, 255, .35); }
+.d-attract-title::after { content: '\25AE'; margin-left: .4em; animation: d-blink 1s steps(2, end) infinite; }
+.d-attract-hint { font: 400 18px/1.3 var(--d-f-lcd); letter-spacing: .1em; color: #9b7cc6; text-align: right; }
+.d-attract-hint b { color: var(--d-lcd); font-weight: 400; text-shadow: 0 0 8px var(--d-lcd); }
+@keyframes d-blink { 50% { opacity: 0; } }
+.d-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; list-style: none; margin: 0; padding: 0; }
+.d-card {
+  position: relative; width: 100%; text-align: left; cursor: pointer;
+  padding: 8px 10px 9px; border-radius: 4px;
+  font: inherit; color: inherit;
+  background: linear-gradient(180deg, rgba(190, 90, 255, .06), rgba(190, 90, 255, .015) 60%, rgba(0, 0, 0, .18));
+  border: 1px solid rgba(190, 90, 255, .32);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .35), inset 0 0 18px rgba(190, 90, 255, .08);
+  transition: transform .14s ease, border-color .14s ease, box-shadow .14s ease;
+}
+.d-card::before { content: ''; position: absolute; right: 0; top: 0; width: 22px; height: 22px; background: linear-gradient(225deg, rgba(247, 105, 224, .55) 0%, transparent 50%); }
+.d-card:hover, .d-card[aria-pressed='true'] {
+  transform: translateY(-2px); border-color: var(--d-hot);
+  box-shadow: 0 0 22px rgba(247, 105, 224, .22), inset 0 0 0 1px rgba(247, 105, 224, .5), inset 0 0 22px rgba(247, 105, 224, .1);
+}
+.d-card svg { display: block; width: 100%; height: 64px; }
+.d-card svg path { fill: none; stroke: var(--d-cyan); stroke-width: 2.2; filter: drop-shadow(0 0 3px rgba(94, 231, 255, .8)); }
+.d-card-row { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; margin-top: 6px; }
+.d-badge { font: 400 13px/1.15 var(--d-f-lcd); letter-spacing: .06em; padding: 0 5px; border-radius: 2px; color: var(--d-cyan-ink); border: 1px solid rgba(94, 231, 255, .55); background: rgba(94, 231, 255, .12); }
+.d-card-name { font: 400 21px/1 var(--d-f-lcd); letter-spacing: .04em; color: #f0e2ff; text-shadow: 0 0 8px var(--d-crt-glow); white-space: nowrap; }
+.d-card-sub { display: block; font: 400 15px/1.1 var(--d-f-lcd); color: #a88cd0; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.d-gps { position: relative; width: 100%; aspect-ratio: 1188 / 1324; }
+.d-gps > img { position: absolute; inset: 0; width: 100%; height: 100%; }
+.d-gps-glass { position: absolute; left: 15.5%; top: 44%; width: 69%; height: 44%; }
+.d-gps-glass svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.d-gps-glass path.trk { fill: none; stroke: #b46bff; stroke-width: 2.4; filter: drop-shadow(0 0 4px rgba(180, 107, 255, .8)); }
+.d-gps-glass circle.car { fill: #fff0ff; filter: drop-shadow(0 0 6px rgba(242, 76, 240, .95)); }
+.d-gps-lcd { position: absolute; left: 62%; top: 9.6%; width: 30%; height: 10%; display: flex; flex-direction: column; justify-content: center; padding: 0 8px; }
+.d-gps-lcd span { font: 400 clamp(11px, 1vw, 14px)/1.1 var(--d-f-lcd); color: var(--d-lcd); text-shadow: 0 0 4px rgba(242, 76, 240, .7); white-space: nowrap; }
+.d-gps-caps { position: absolute; left: 7.4%; top: 6.4%; width: 49%; height: 13%; }
+.d-gps-caps .d-cap { position: absolute; top: 0; width: 26%; height: auto; aspect-ratio: 1; }
+.d-sync { display: inline-flex; gap: 6px; margin-top: 18px; }
+@media (max-width: 1000px) { .d-tracks { grid-template-columns: 1fr; } .d-gps { max-width: 440px; margin-inline: auto; } }
+@media (max-width: 560px) { .d-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* ==========================================================================
+   SECTION 5 — AUTO DRIFT (PUSH START)
+   ========================================================================== */
+.d-auto { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: clamp(20px, 4vw, 56px); align-items: center; }
+.d-start-wrap { position: relative; width: 132px; height: 132px; }
+.d-start {
+  position: absolute; inset: 0; border: 0; padding: 0; border-radius: 50%; cursor: pointer;
+  background: var(--d-img-start-off) center / 100% 100% no-repeat;
+  box-shadow: 1.5px 2.5px 2.5px rgba(2, 1, 5, .92), 0 0 0 1.5px rgba(6, 4, 10, .8);
+  transition: transform 90ms cubic-bezier(0.2, 0.9, 0.25, 1.25), filter 120ms ease, box-shadow 120ms ease;
+}
+.d-start::after {
+  content: ''; position: absolute; inset: 0; border-radius: 50%; pointer-events: none;
+  background: var(--d-img-start-on) center / 100% 100% no-repeat;
+  opacity: 0; transition: opacity 120ms ease;       /* the lamp warms, it does not blink on */
+}
+.d-start:hover { transform: translateY(-1px); filter: brightness(1.14); }
+.d-start:not([aria-pressed='true']):hover::after { opacity: .22; }
+.d-start:active { transform: translateY(2.5px) scale(.975); filter: brightness(.9); }
+.d-start[aria-pressed='true']::after { opacity: 1; }
+.d-start[aria-pressed='true'] {
+  box-shadow: 1.5px 2.5px 2.5px rgba(2, 1, 5, .9), 0 0 0 1px rgba(110, 52, 8, .9),
+    0 0 3px 2px rgba(var(--d-amber-rgb), .75), 0 0 7px 3px rgba(var(--d-amber-rgb), .45);
+}
+.d-start-led {
+  position: absolute; right: -8px; top: -2px; width: 22px; height: 22px; pointer-events: none;
+  background: var(--d-img-led) center / 100% 100% no-repeat;
+  filter: brightness(.45) saturate(.7);
+  transition: filter 120ms ease;
+}
+.d-start[aria-pressed='true'] + .d-start-led { filter: brightness(1.35) saturate(1.2) drop-shadow(0 0 5px rgba(var(--d-amber-rgb), .95)) drop-shadow(0 0 13px rgba(var(--d-amber-rgb), .55)); }
+.d-start-label { margin-top: 12px; text-align: center; font: 400 10px/1 var(--d-f-pix); letter-spacing: .04em; color: var(--d-fg-neon); text-shadow: 0 0 6px rgba(190, 90, 255, .7); }
+.d-graf { display: grid; gap: 8px; justify-items: center; }
+.d-graf img { width: 132px; height: auto; }
+.d-graf .t { width: 120px; }
+.d-knobrow { display: flex; gap: 12px; margin-top: 18px; flex-wrap: wrap; }
+.d-knobrow .d-lcd { min-width: 96px; padding: 8px 10px; text-align: center; font: 400 20px/1 var(--d-f-lcd); color: var(--d-white-ink); text-shadow: 0 0 6px rgba(242, 76, 240, .75); }
+@media (max-width: 860px) {
+  .d-auto { grid-template-columns: minmax(0, 1fr); justify-items: center; }
+  .d-auto .d-graf { grid-template-columns: repeat(2, auto); align-items: end; column-gap: 20px; }
+  .d-auto .d-graf img { width: 96px; }
+  .d-auto .d-graf .t { width: 92px; }
+}
+
+/* ==========================================================================
+   SECTION 6 — SATURATE
+   ========================================================================== */
+.d-sat { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(22px, 4vw, 56px); align-items: center; }
+.d-sat-bay { width: 100%; height: auto; border-radius: 10px; box-shadow: 0 0 0 1px rgba(4, 2, 8, .95), 0 0 0 6px #08040d, 0 1px 0 6px rgba(255, 240, 255, .06); }
+.d-sattypes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 18px; }
+.d-sattype {
+  min-height: 48px; border: 0; border-radius: 5px; cursor: pointer;
+  font: 400 22px/1 var(--d-f-lcd); letter-spacing: .08em;
+  color: #8f7aa8; background: var(--d-glass);
+  box-shadow: 0 0 0 1px rgba(4, 2, 8, .9), 0 1px 0 1px rgba(255, 240, 255, .07), inset 0 5px 8px rgba(0, 0, 0, .7), inset 0 -1px 0 rgba(255, 240, 255, .16);
+}
+.d-sattype[aria-pressed='true'] { color: #e2b8ff; text-shadow: 0 0 8px rgba(190, 90, 255, .9), 0 0 18px rgba(190, 90, 255, .5); }
+.d-satdesc { margin-top: 14px; min-height: 3.2em; }
+@media (max-width: 900px) { .d-sat { grid-template-columns: 1fr; } }
+
+/* ==========================================================================
+   SECTION 7 — FX RACK エフェクト
+   ========================================================================== */
+.d-rack {
+  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px;
+  padding: 16px; border-radius: 12px;
+  background: linear-gradient(180deg, #120a18, #0a0610);
+  box-shadow: 0 0 0 1px rgba(4, 2, 8, .95), 0 0 0 6px #08040d, inset 0 12px 24px rgba(0, 0, 0, .55);
+}
+.d-strip { position: relative; margin: 0; }
+.d-strip img { width: 100%; height: auto; display: block; border-radius: 6px; transition: filter 120ms ease; filter: brightness(.86); }
+.d-strip:hover img, .d-strip:focus-within img { filter: brightness(1.06); }
+.d-strip figcaption { margin-top: 12px; }
+.d-strip h3 { font-size: 11px; letter-spacing: .1em; margin-bottom: 6px; }
+.d-strip p { font-size: 14.5px; line-height: 1.45; color: var(--d-fg-dim); }
+.d-strip.s-at h3 { color: #ffd23b; }
+.d-strip.s-pitch h3 { color: #d7dde8; }
+.d-strip.s-echo h3 { color: #ff5fd9; }
+.d-strip.s-verb h3 { color: #c79bff; }
+.d-strip.s-trem h3 { color: #6dff9a; }
+@media (max-width: 1000px) {
+  .d-rack { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 12px; }
+  .d-strip { flex: 0 0 min(260px, 72vw); scroll-snap-align: start; }
+}
+
+/* ==========================================================================
+   SECTION 8 — GET IN THE CAR (beta CTA)
+   ========================================================================== */
+.d-getin { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: clamp(22px, 4vw, 48px); align-items: center; }
+.d-getin h2 { font-size: clamp(20px, 2.4vw, 30px); line-height: 1.35; text-shadow: 0 0 10px rgba(247, 105, 224, .5); margin-bottom: 18px; }
+.d-facts { display: grid; gap: 8px; }
+.d-fact { display: flex; justify-content: space-between; align-items: center; gap: 18px; padding: 10px 14px; }
+.d-fact dt { font: 400 10px/1.6 var(--d-f-pix); letter-spacing: .1em; color: var(--d-dim-violet); }
+.d-fact dd { margin: 0; font: 400 22px/1 var(--d-f-lcd); color: var(--d-white-ink); text-shadow: 0 0 6px rgba(242, 76, 240, .6); text-align: right; }
+@media (max-width: 900px) { .d-getin { grid-template-columns: 1fr; } }
+
+/* ==========================================================================
+   SECTION 9 — SPECS + FAQ
+   ========================================================================== */
+.d-specs { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.d-spec { padding: 12px 16px 14px; }
+.d-spec dt { font: 400 9px/1.6 var(--d-f-pix); letter-spacing: .12em; color: var(--d-dim-violet); margin-bottom: 6px; }
+.d-spec dd { margin: 0; font: 400 22px/1.15 var(--d-f-lcd); color: var(--d-white-ink); }
+.d-faq { margin-top: 36px; display: grid; gap: 10px; }
+.d-faq details { padding: 14px 18px; border-radius: 8px; background: rgba(20, 8, 30, .7); box-shadow: 0 0 0 1px rgba(190, 90, 255, .22); }
+.d-faq summary { cursor: pointer; font: 400 11px/1.6 var(--d-f-pix); letter-spacing: .08em; text-transform: uppercase; color: var(--d-pink-ink); list-style: none; }
+.d-faq summary::before { content: '\25B6\00A0'; color: var(--d-hot); display: inline-block; transition: transform 120ms ease; }
+.d-faq details[open] summary::before { transform: rotate(90deg); }
+.d-faq details p { margin-top: 10px; font-size: 16px; color: var(--d-fg); line-height: 1.55; }
+
+/* test-structure marker: visible on purpose, never shipped as a real demo */
+.d-todo { outline: 1px dashed rgba(94, 231, 255, .6); outline-offset: 4px; }
+
+/* ==========================================================================
+   Reduced motion + high contrast
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .drift-page *, .drift-page *::before, .drift-page *::after { transition: none !important; animation: none !important; }
+}
+html.hc .drift-page { background: #000000; }
+html.hc .drift-page .d-rails, html.hc .drift-page .d-underglow, html.hc .drift-page .d-stickers { display: none; }
+html.hc .drift-page .d-title-en, html.hc .drift-page .d-sechead h2 { text-shadow: none; }

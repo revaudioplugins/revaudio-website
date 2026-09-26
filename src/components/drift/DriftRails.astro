@@ -1,0 +1,23 @@
+---
+/**
+ * The stereo field, drawn as DRIFT's two neon side tubes (plate.png rails):
+ * 左 L on the left edge, 右 R on the right. The pan lights the tube on its
+ * side (bus.ts writes --lit-l / --lit-r), and the light leaks onto the plate
+ * beside it. Below each tube, the plugin's own JDM sticker column.
+ * Sticky overlay (drift.css .d-rails): it rides the DRIFT body only and
+ * leaves with it before the house footer. Decorative: the same pan is
+ * announced by the wheel slider and printed in the dash PAN socket.
+ */
+import { getImage } from 'astro:assets';
+import stickL from '../../assets/seasons/drift/stickers-left.png';
+import stickR from '../../assets/seasons/drift/stickers-right.png';
+
+const sl = await getImage({ src: stickL, width: 116, format: 'webp', quality: 72 });
+const sr = await getImage({ src: stickR, width: 116, format: 'webp', quality: 72 });
+---
+<div class="d-rails" aria-hidden="true">
+  <div class="d-rail d-rail--l"><b lang="ja">左</b><i>L</i></div>
+  <img class="d-stickers d-stickers--l" src={sl.src} width="58" alt="" loading="lazy" decoding="async" />
+  <div class="d-rail d-rail--r"><b lang="ja">右</b><i>R</i></div>
+  <img class="d-stickers d-stickers--r" src={sr.src} width="58" alt="" loading="lazy" decoding="async" />
+</div>

@@ -1,0 +1,47 @@
+---
+/**
+ * Section 9 — specs + FAQ. Every value checked against Drift v4.23.0 source
+ * (fact sheet 2026-09-26): macOS floor 10.13 universal (CMakeLists.txt:5-6),
+ * VST3 + AU on Mac, VST3 on Windows (WebView2), AAX only when the build has
+ * the SDK — NOT claimed until it ships (drift.ts aaxReady). 61 factory
+ * presets = Default + 6 categories x 10. Oversampling 2x-32x on the
+ * saturator. Host latency reported. No preset names here: most are circuit
+ * names (Decision 19).
+ */
+import { drift } from '../../data/drift';
+
+const specs = [
+  { k: 'FORMATS', v: drift.aaxReady ? 'VST3 · AU · AAX' : 'VST3 · AU' },
+  { k: 'MAC', v: 'macOS 10.13+ · Apple silicon & Intel' },
+  { k: 'WINDOWS', v: '64-bit · needs WebView2' },
+  { k: 'PRESETS', v: '60 in 6 banks + your own' },
+  { k: 'BANKS', v: 'Vocal · Keys · Guitar · Drums · Bass · Mix bus' },
+  { k: 'OVERSAMPLING', v: 'Saturator 2x to 32x' },
+  { k: 'LATENCY', v: 'Reported to your DAW' },
+  { k: 'UNDO', v: 'Undo / redo, Ctrl+Z' },
+];
+const faq = [
+  { q: 'Does DRIFT pan my whole mix?', a: 'Only the band between LOW CUT and HIGH CUT. Everything below and above it stays exactly where it was. Open the window all the way (20 Hz to 20 kHz) and the whole signal moves.' },
+  { q: 'What does the beta cost?', a: `Nothing. Beta drivers who finish the feedback can buy DRIFT for $${drift.driverPriceUsd}; the release price is $${drift.listPriceUsd}.` },
+  { q: 'Which DAWs?', a: 'Any host that loads VST3 or AU plugins on a Mac, or VST3 on Windows.' },
+];
+---
+<section class="d-sec" aria-labelledby="d-spec-h">
+  <div class="d-wrap">
+    <div class="d-sechead">
+      <h2 id="d-spec-h">Specs</h2>
+      <span class="d-ja" lang="ja" aria-hidden="true">仕様</span>
+      <span class="d-rule" aria-hidden="true"></span>
+    </div>
+    <dl class="d-specs">
+      {specs.map((s) => (
+        <div class="d-lcd d-lcd--big d-spec"><dt>{s.k}</dt><dd>{s.v}</dd></div>
+      ))}
+    </dl>
+    <div class="d-faq">
+      {faq.map((f) => (
+        <details><summary>{f.q}</summary><p>{f.a}</p></details>
+      ))}
+    </div>
+  </div>
+</section>

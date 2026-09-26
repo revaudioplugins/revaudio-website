@@ -1,0 +1,45 @@
+---
+/**
+ * Section 7 — the FX rack. Five real strips cut from the plugin's FX window
+ * rendered at DPR 2 (website rule: product images come from the real UI).
+ * Order = the rendered default chain, left to right. Hover lamps a strip.
+ * Captions = the plugin's own tooltips, condensed.
+ */
+import { getImage } from 'astro:assets';
+import at from '../../assets/seasons/drift/fx-autotune.png';
+import pitch from '../../assets/seasons/drift/fx-pitch.png';
+import echo from '../../assets/seasons/drift/fx-echo.png';
+import verb from '../../assets/seasons/drift/fx-reverb.png';
+import trem from '../../assets/seasons/drift/fx-tremolo.png';
+
+const strips = [
+  { cls: 's-at', src: at, name: 'Autotune', desc: 'Snaps the band to your key and scale. RETUNE sets how hard it snaps; HUMANIZE lets vibrato ride through.' },
+  { cls: 's-pitch', src: pitch, name: 'Pitch', desc: 'Moves the band up or down by up to an octave. FORMANT shifts the voice character without touching the pitch.' },
+  { cls: 's-echo', src: echo, name: 'Echo', desc: 'Tempo-synced or free repeats, from dark tape to clean digital, with ping-pong, wobble and duck.' },
+  { cls: 's-verb', src: verb, name: 'Reverb', desc: 'Room, plate or hall. SHIMMER adds a pitched halo, DUCK keeps the tail out of the way while you sing.' },
+  { cls: 's-trem', src: trem, name: 'Tremolo', desc: 'Chops the band in time with your song: sine, triangle, saw, square or random steps.' },
+];
+const imgs = await Promise.all(strips.map((s) => getImage({ src: s.src, width: 512, format: 'webp', quality: 80 })));
+---
+<section class="d-sec" aria-labelledby="d-fx-h">
+  <div class="d-wrap">
+    <div class="d-sechead">
+      <h2 id="d-fx-h">FX rack</h2>
+      <span class="d-ja" lang="ja" aria-hidden="true">エフェクト</span>
+      <span class="d-rule" aria-hidden="true"></span>
+    </div>
+    <p class="d-lede" style="margin-bottom:24px">Five effects ride the band you picked, each with its own mix. The FX button on the dash opens the rack; one master FX MIX blends the whole section.</p>
+
+    <div class="d-rack">
+      {strips.map((s, i) => (
+        <figure class:list={['d-strip', s.cls]} tabindex="0">
+          <img src={imgs[i].src} width="256" alt={`DRIFT ${s.name} strip`} loading="lazy" decoding="async" />
+          <figcaption>
+            <h3>{s.name}</h3>
+            <p>{s.desc}</p>
+          </figcaption>
+        </figure>
+      ))}
+    </div>
+  </div>
+</section>

@@ -1,0 +1,49 @@
+---
+/**
+ * Section 8 — join the beta. Facts on sunk glass, the one red CTA on a DRIFT
+ * panel. Everything reads from src/data/drift.ts (phase, dates, prices), so the
+ * Oct 10 flip is one line. The button does NOT open TrialGateModal until the
+ * licence worker knows `drift` (drift.gateWired) — see the note in drift.ts.
+ */
+import DriftPanel from './DriftPanel.astro';
+import { drift, ctaFor } from '../../data/drift';
+
+const cta = ctaFor();
+const facts = [
+  { k: 'BETA OPENS', v: drift.betaOpensLabel },
+  { k: 'FEEDBACK CLOSES', v: drift.betaClosesLabel },
+  { k: 'RELEASE', v: drift.releaseLabel },
+  { k: 'PRICE AT RELEASE', v: `$${drift.listPriceUsd}` },
+  { k: 'BETA DRIVERS', v: `$${drift.driverPriceUsd}` },
+];
+const devNote = import.meta.env.DEV && !drift.gateWired;
+---
+<section class="d-sec" id="beta" aria-labelledby="d-beta-h">
+  <div class="d-wrap">
+    <div class="d-sechead">
+      <h2 id="d-beta-h">Join the beta</h2>
+      <span class="d-ja" lang="ja" aria-hidden="true">ベータ</span>
+      <span class="d-rule" aria-hidden="true"></span>
+    </div>
+
+    <div class="d-getin">
+      <div>
+        <p class="d-lede">Drive DRIFT for two weeks on your own mixes. Tell us what broke and what you loved. Beta drivers who finish the feedback can buy DRIFT for ${drift.driverPriceUsd}. The release price is ${drift.listPriceUsd}.</p>
+        <dl class="d-facts" style="margin-top:22px">
+          {facts.map((f) => (
+            <div class="d-lcd d-fact"><dt>{f.k}</dt><dd>{f.v}</dd></div>
+          ))}
+        </dl>
+      </div>
+
+      <DriftPanel sticker="ベータ">
+        <div class="d-cta-block">
+          <a class:list={['d-cta', { 'd-todo': devNote }]} href="#beta" data-drift-cta data-gate-id={drift.gateId}>{cta.label}</a>
+          <p class="d-cta-sub">{cta.sub}</p>
+          <p class="d-cta-fine">DRIFT runs on Mac and Windows, so the download goes to your computer. On a phone? Sign up there and we'll email you the link.</p>
+          {devNote && <p class="d-small d-todo">DEV ONLY: the button is not wired yet. It opens the email gate once the licence worker has the `drift` product (Yoni).</p>}
+        </div>
+      </DriftPanel>
+    </div>
+  </div>
+</section>

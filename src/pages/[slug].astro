@@ -18,12 +18,15 @@ import arrowBtn from '../assets/showcase/arrow-btn.png';
 import wallImg from '../assets/bg/wall-wood.png';
 import railImg from '../assets/bg/wall-rail.png';
 
-/* GAS is excluded on purpose: it owns its route with a bespoke one-screen page
-   at src/pages/gas.astro (Dan, 2026-07-30). Without this filter both files
-   would emit /gas. Any other plugin still gets this long-form layout. */
+/* GAS and DRIFT are excluded on purpose: each owns its route with a bespoke
+   page — src/pages/gas.astro (Dan, 2026-07-30) and src/pages/drift.astro, the
+   DRIFT season page (Dan, 2026-09-26). Without this filter both files would
+   emit the same URL. Any other plugin still gets this long-form layout. */
 export function getStaticPaths() {
+  // inside the function: Astro runs getStaticPaths in its own scope (imports only)
+  const OWN_ROUTE = new Set(['gas', 'drift']);
   return plugins
-    .filter((p) => p.slug !== 'gas')
+    .filter((p) => !OWN_ROUTE.has(p.slug))
     .map((p) => ({ params: { slug: p.slug }, props: { plugin: p } }));
 }
 

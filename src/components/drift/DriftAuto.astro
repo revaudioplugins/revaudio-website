@@ -1,0 +1,61 @@
+---
+/**
+ * Section 5 — AUTO DRIFT. The driver panel's PUSH START button (4.22.9, Dan's
+ * pick B, amber lamp) with the graffiti INTENSITY / SPEED art beside it.
+ * Button art = btn_start_off/on.png, the lit frame fades in over 120 ms (the
+ * lamp warms, Law 4), the amber LED is the state cue, no text on the switch.
+ * On this page it arms AUTO DRIFT in the test deck: the deck's pan speed
+ * follows the signal level and parks at silence (demo.ts), like the plugin.
+ */
+import { getImage } from 'astro:assets';
+import DriftPanel from './DriftPanel.astro';
+import picInt from '../../assets/seasons/drift/graf_pic_int.png';
+import picSpd from '../../assets/seasons/drift/graf_pic_spd.png';
+import titInt from '../../assets/seasons/drift/graf_title_int.png';
+import titSpd from '../../assets/seasons/drift/graf_title_spd.png';
+
+const [pi, ps, ti, ts] = await Promise.all([
+  getImage({ src: picInt, width: 224, format: 'webp', quality: 80 }),
+  getImage({ src: picSpd, width: 173, format: 'webp', quality: 80 }),
+  getImage({ src: titInt, width: 220, format: 'webp', quality: 80 }),
+  getImage({ src: titSpd, width: 145, format: 'webp', quality: 80 }),
+]);
+---
+<section class="d-sec" aria-labelledby="d-auto-h">
+  <div class="d-wrap">
+    <div class="d-sechead">
+      <h2 id="d-auto-h">Auto drift</h2>
+      <span class="d-ja" lang="ja" aria-hidden="true">自動</span>
+      <span class="d-rule" aria-hidden="true"></span>
+    </div>
+
+    <DriftPanel sticker="自動">
+      <div class="d-auto">
+        <div>
+          <div class="d-start-wrap">
+            <button class="d-start" type="button" data-autodrift aria-pressed="false" aria-label="Auto Drift"></button>
+            <span class="d-start-led" aria-hidden="true"></span>
+          </div>
+          <p class="d-start-label" aria-hidden="true">PUSH START</p>
+        </div>
+
+        <div>
+          <p class="d-lede">Hit PUSH START and your playing takes the wheel. The harder the track hits, the faster the car drives. When the music stops, the car parks and the pan eases back to centre.</p>
+          <div class="d-knobrow" aria-label="Auto Drift controls">
+            <span class="d-lcd">THRESH</span>
+            <span class="d-lcd">ATTACK</span>
+            <span class="d-lcd">RELEASE</span>
+          </div>
+          <p class="d-small" style="margin-top:12px">THRESH sets how loud the music must be before the car moves. ATTACK and RELEASE set how fast it reacts.</p>
+        </div>
+
+        <div class="d-graf" aria-hidden="true">
+          <img src={pi.src} width="112" height="107" alt="" loading="lazy" decoding="async" />
+          <img class="t" src={ti.src} width="110" height="33" alt="" loading="lazy" decoding="async" />
+          <img src={ps.src} width="86" height="88" alt="" loading="lazy" decoding="async" />
+          <img class="t" src={ts.src} width="72" height="29" alt="" loading="lazy" decoding="async" />
+        </div>
+      </div>
+    </DriftPanel>
+  </div>
+</section>

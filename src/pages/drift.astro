@@ -1,0 +1,81 @@
+---
+/**
+ * /drift — the DRIFT season page. Its own route (like /gas), NOT the shared
+ * [slug].astro product layout: Dan 2026-09-26, "all the style of DRIFT in
+ * the page ... don't take RevLimiter and Radio Roulette as a reference, fresh".
+ * Plan: ~/workspace/revaudio/stages/04_website/output/2026-09-26-drift-page.md
+ *
+ * House shell stays (header, footer, cart — decision 1). Everything between is
+ * DRIFT: its plate, panels, neon, glass and parts, cut from the plugin's own
+ * assets (src/assets/seasons/drift/, MANIFEST.md there). One pan bus
+ * (src/lib/drift/bus.ts) ties the wheel, the rails, the head unit, the band
+ * cabinet and the TRACKS car together. Copy is checked against Drift v4.23.0
+ * source; no F1 names or circuits anywhere (Decision 19).
+ */
+import { getImage } from 'astro:assets';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import DriftRails from '../components/drift/DriftRails.astro';
+import DriftHero from '../components/drift/DriftHero.astro';
+import DriftHeadUnit from '../components/drift/DriftHeadUnit.astro';
+import DriftBand from '../components/drift/DriftBand.astro';
+import DriftTracks from '../components/drift/DriftTracks.astro';
+import DriftAuto from '../components/drift/DriftAuto.astro';
+import DriftSat from '../components/drift/DriftSat.astro';
+import DriftFx from '../components/drift/DriftFx.astro';
+import DriftGetIn from '../components/drift/DriftGetIn.astro';
+import DriftSpecs from '../components/drift/DriftSpecs.astro';
+import '../styles/drift.css';
+
+import tileSrc from '../assets/seasons/drift/plate-tile.png';
+import panelSrc from '../assets/seasons/drift/panel-face.png';
+import screwSrc from '../assets/seasons/drift/panel-screw.png';
+import lcdSrc from '../assets/seasons/drift/val_lcd.png';
+import glassSrc from '../assets/seasons/drift/val_glass.png';
+import pillSrc from '../assets/seasons/drift/cta-pill.png';
+import startOffSrc from '../assets/seasons/drift/btn_start_off.png';
+import startOnSrc from '../assets/seasons/drift/btn_start_on.png';
+import ledSrc from '../assets/seasons/drift/led_amber_s.png';
+
+// Textures the stylesheet paints with: getImage() -> WebP -> CSS custom
+// properties on .drift-page (the TrialPlates / [slug] pattern), so no raw PNG
+// ever ships from a url() in drift.css.
+const [tile, panel, screw, lcd, glass, pill, startOff, startOn, led] = await Promise.all([
+  getImage({ src: tileSrc, width: 800, format: 'webp', quality: 62 }),
+  getImage({ src: panelSrc, width: 720, format: 'webp', quality: 70 }),
+  getImage({ src: screwSrc, width: 76, format: 'webp', quality: 85 }),
+  getImage({ src: lcdSrc, width: 498, format: 'webp', quality: 80 }),
+  getImage({ src: glassSrc, width: 410, format: 'webp', quality: 80 }),
+  getImage({ src: pillSrc, width: 1443, format: 'webp', quality: 82 }),
+  getImage({ src: startOffSrc, width: 256, format: 'webp', quality: 85 }),
+  getImage({ src: startOnSrc, width: 256, format: 'webp', quality: 85 }),
+  getImage({ src: ledSrc, width: 48, format: 'webp', quality: 90 }),
+]);
+const u = (i: { src: string }) => `url(${i.src})`;
+const imgVars = [
+  `--d-img-tile:${u(tile)}`, `--d-img-panel:${u(panel)}`, `--d-img-screw:${u(screw)}`,
+  `--d-img-lcd:${u(lcd)}`, `--d-img-glass:${u(glass)}`, `--d-img-pill:${u(pill)}`,
+  `--d-img-start-off:${u(startOff)}`, `--d-img-start-on:${u(startOn)}`, `--d-img-led:${u(led)}`,
+].join(';');
+---
+<BaseLayout
+  title="DRIFT: steer a frequency band across the stereo field"
+  description="DRIFT carves out one frequency band of your mix and steers it across the stereo field: by hand, on a race line, or by how hard you play. VST3 and AU for Mac and Windows. Beta opens Sat Oct 10."
+>
+  <div class="drift-page" data-drift-page style={imgVars}>
+    <DriftRails />
+    <DriftHero />
+    <DriftHeadUnit />
+    <DriftBand />
+    <DriftTracks />
+    <DriftAuto />
+    <DriftSat />
+    <DriftFx />
+    <DriftGetIn />
+    <DriftSpecs />
+  </div>
+</BaseLayout>
+
+<script>
+  import { initDrift } from '../lib/drift/init';
+  initDrift();
+</script>

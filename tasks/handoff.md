@@ -1,3 +1,24 @@
+## 2026-09-26 — /drift season page, STRUCTURE TEST (Claude Code) — COMMITTED on feat/drift-page (local only), preview on :4327
+Owner: Claude Code. Branch `feat/drift-page` in worktree `.claude/worktrees/drift-page` (off origin/main 1776b45).
+Dan: "all the style of DRIFT in the page — assets, purple, panels, neon; fresh, not the RevLimiter/RR pages". Plan:
+`~/workspace/revaudio/stages/04_website/output/2026-09-26-drift-page.md` (decisions: house shell stays, hero A "driver's
+seat", no F1 names/circuits on site, one full build, demo = test structure).
+Files (one writer — don't touch): `src/pages/drift.astro`, `src/components/drift/*`, `src/lib/drift/*`,
+`src/styles/drift.css`, `src/data/drift.ts`, `src/assets/seasons/drift/*`, `public/fonts/drift/*`; small edits in
+`src/pages/[slug].astro` (skip 'drift'), `WelcomeDiscountPopup.astro` + `ExitIntentPopup.astro` (not on /drift),
+`src/data/plugins.ts` (DRIFT copy + systemReq corrected against v4.23.0 source).
+Committed locally on `feat/drift-page` (Dan: "commit, don't push to main"); NOT pushed anywhere. Push/merge to main = live; only on Dan's explicit "push".
+- Verified 2026-09-26: `npm run build` clean; smoke + welcome-popup suites 60/60 (chromium + mobile-safari) against
+  `astro preview --port 4327` (4321 belongs to another session — don't trust a run that reuses it); WebKit shots at
+  390 / 1280 / 1600, no horizontal overflow; scripted interactions OK (wheel keys/drag/coast/dblclick, TRACKS car +
+  STOP-to-centre, test deck play/stop, LOW CUT keys, SAT type, PUSH START). DRIFT JS 7 KB gz; DRIFT images ~860 KB
+  desktop / ~690 KB phone.
+- TRAP found: `data-drift` is owned by src/lib/scrub.ts (scroll conveyor translateX) — the page root is
+  `data-drift-page`; never put a bare `data-drift` on anything that isn't a conveyor.
+- Open: CTA not wired (`drift.gateWired=false` until the licence worker has `drift`); demo deck = browser TEST SIGNAL
+  until Dan's 3 bounces land (`demoMode`); fonts ship as TTF (no fonttools here for woff2); AAX not claimed
+  (`aaxReady=false`); page ~9 laptop screens (target 5-6) — trim after Dan's look.
+
 ## 2026-09-22 — cart drawer redesign (Codex)
 Owner: Codex. Scope: `src/components/Cart.astro`, cart plan and this handoff, DESIGN.md cart notes.
 User approved the design plan with “go”, then explicitly authorized “push to main make it live”. First step (cart drawer) implemented and verified in the existing localhost:4321 dev preview. Release target: `origin/main`; unrelated untracked GAS assets/files preserved.

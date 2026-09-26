@@ -1,0 +1,97 @@
+---
+/**
+ * Section 2 — the head unit. DRIFT's mini-panel parts doing their real jobs:
+ * the magenta dot-matrix NOW PLAYING screen, the green/yellow/red arcade caps
+ * as PLAY / PAUSE / STOP (the plugin's own transport caps, mm_cap_*.png),
+ * three preset slots (VOCAL / KEYS / DRUMS) and a BEFORE / AFTER switch.
+ * Playing AFTER drives the page's pan bus, so the wheel, the rails and the
+ * balance screen all move with what you hear.
+ *
+ * demoMode 'test' (Dan 2026-09-26: "lay down the structure just to see"):
+ * the sound is synthesised in the browser by src/lib/drift/demo.ts and the
+ * screen says TEST SIGNAL. Dan's real before/after bounces replace it
+ * (demoMode 'real') — never ship the test synth as a demo of DRIFT.
+ */
+import { getImage } from 'astro:assets';
+import DriftPanel from './DriftPanel.astro';
+import capGreen from '../../assets/seasons/drift/mm_cap_green.png';
+import capYellow from '../../assets/seasons/drift/mm_cap_yellow.png';
+import capRed from '../../assets/seasons/drift/mm_cap_red.png';
+import { drift } from '../../data/drift';
+
+const [g, y, r] = await Promise.all(
+  [capGreen, capYellow, capRed].map((src) => getImage({ src, width: 136, format: 'webp', quality: 82 })),
+);
+const isTest = drift.demoMode === 'test';
+---
+<section class="d-sec" id="hear" aria-labelledby="d-hear-h">
+  <div class="d-wrap">
+    <div class="d-sechead">
+      <h2 id="d-hear-h">Hear it move</h2>
+      <span class="d-ja" lang="ja" aria-hidden="true">サウンド</span>
+      <span class="d-rule" aria-hidden="true"></span>
+    </div>
+
+    <div class="d-headunit">
+      <DriftPanel sticker="サウンド" class="d-deck" >
+        <div class="d-lcd d-lcd--big d-screen" data-demo-screen>
+          <div class="d-screen-hdr">
+            <span>NOW PLAYING</span>
+            {isTest && <span class="d-testtag">TEST SIGNAL</span>}
+          </div>
+          <div class="d-screen-title" data-demo-title aria-live="polite">KEYS · AFTER</div>
+          <div class="d-screen-rule" aria-hidden="true"></div>
+          <div class="d-screen-row">
+            <span class="d-screen-t" data-demo-mode>STOPPED</span>
+            <span class="d-screen-t" data-demo-time>00:00</span>
+          </div>
+        </div>
+
+        <div class="d-transport">
+          <button class="d-cap" type="button" data-demo="play" aria-pressed="false" aria-label="Play" style={`background-image:url(${g.src})`}></button>
+          <button class="d-cap" type="button" data-demo="pause" aria-label="Pause" style={`background-image:url(${y.src})`}></button>
+          <button class="d-cap" type="button" data-demo="stop" aria-label="Stop" style={`background-image:url(${r.src})`}></button>
+        </div>
+        <div class="d-transport">
+          <div class="d-slots" role="group" aria-label="Demo">
+            <button class="d-slot" type="button" data-slot="vocal" aria-pressed="false">1 VOCAL</button>
+            <button class="d-slot" type="button" data-slot="keys" aria-pressed="true">2 KEYS</button>
+            <button class="d-slot" type="button" data-slot="drums" aria-pressed="false">3 DRUMS</button>
+          </div>
+          <div class="d-ab" role="group" aria-label="Before or after DRIFT">
+            <button type="button" data-ab="before" aria-pressed="false">BEFORE</button>
+            <button type="button" data-ab="after" aria-pressed="true">AFTER</button>
+          </div>
+        </div>
+
+        <div class="d-lcd d-lcd--big d-balance-box">
+          <div class="d-balance-lr" aria-hidden="true"><span>L</span><span class="d-balance-read" data-pan-readout="bare">C</span><span>R</span></div>
+          <div class="d-balance" data-balance aria-hidden="true"></div>
+        </div>
+        {isTest && (
+          <p class="d-small" style="margin-top:14px">
+            Test signal, made in your browser to check the deck. The real before/after recordings go here.
+          </p>
+        )}
+      </DriftPanel>
+
+      <ol class="d-steps">
+        <li class="d-lcd d-lcd--big d-step">
+          <span class="d-step-n" aria-hidden="true">1</span>
+          <h3>Pick the band</h3>
+          <p>LOW CUT and HIGH CUT window one slice of your mix: the hats, the vocal air, the low synth.</p>
+        </li>
+        <li class="d-lcd d-lcd--big d-step">
+          <span class="d-step-n" aria-hidden="true">2</span>
+          <h3>Steer it</h3>
+          <p>The wheel sends that band left or right, down the STEREO, MID or SIDE lane.</p>
+        </li>
+        <li class="d-lcd d-lcd--big d-step">
+          <span class="d-step-n" aria-hidden="true">3</span>
+          <h3>Let something drive</h3>
+          <p>A race line, your song's tempo, or how hard you play can take the wheel for you.</p>
+        </li>
+      </ol>
+    </div>
+  </div>
+</section>

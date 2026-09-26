@@ -1,0 +1,93 @@
+---
+/**
+ * Section 4 — TRACKS. Left: the TRAKS attract-mode menu (the plugin's v4.7
+ * arcade select screen: PressStart2P head + blinking cursor, VT323 phosphor
+ * cards) with the 8 SIMPLE tracks only. Every card outline is computed at
+ * BUILD time from the plugin's own shape math (tracks.ts) — pure SVG.
+ * The 32 race circuits stay plugin-only: they are real F1 circuits
+ * (Decision 19, Dan 2026-09-26). Right: the mini GPS cabinet (mm_plate.png)
+ * with the real green/yellow/red caps UNDER the plate's punched wells (the
+ * plate is the bezel), the track + car drawn on the glass.
+ * Geometry = Drift bench/assets/minitrack/layout_ref.json (panel 402x448):
+ * caps at 58.8/123.7/186.9 x 63.9, r 22.2 · glass 53.1,154 - 348.2,382.4 ·
+ * LCD 231.5,44.7 - 382.7,93.4.
+ */
+import { getImage } from 'astro:assets';
+import DriftPanel from './DriftPanel.astro';
+import plateSrc from '../../assets/seasons/drift/mm_plate.png';
+import capGreen from '../../assets/seasons/drift/mm_cap_green.png';
+import capYellow from '../../assets/seasons/drift/mm_cap_yellow.png';
+import capRed from '../../assets/seasons/drift/mm_cap_red.png';
+import { SIMPLE, outlinePath } from '../../lib/drift/tracks';
+
+const plate = await getImage({ src: plateSrc, width: 900, format: 'webp', quality: 76 });
+const [g, y, r] = await Promise.all([capGreen, capYellow, capRed].map((src) => getImage({ src, width: 136, format: 'webp', quality: 82 })));
+const DEFAULT = 41; // SWAY
+const GW = 295, GH = 228;   // glass aspect in panel px
+const caps = [
+  { id: 'play', label: 'Play the car', img: g, left: 8.91 },
+  { id: 'pause', label: 'Pause the car', img: y, left: 25.04 },
+  { id: 'stop', label: 'Stop the car', img: r, left: 40.78 },
+];
+---
+<section class="d-sec" aria-labelledby="d-trk-h" data-tracks>
+  <div class="d-wrap">
+    <div class="d-sechead">
+      <h2 id="d-trk-h">Drive a line</h2>
+      <span class="d-ja" lang="ja" aria-hidden="true">トラック</span>
+      <span class="d-rule" aria-hidden="true"></span>
+    </div>
+    <p class="d-lede" style="margin-bottom:26px">Pick a line and the car drives it. Where the car is on the track is where your band sits in the stereo field. DRIFT ships race circuits and eight simple shapes; INTENSITY sets how far it swings, SPEED how fast it laps.</p>
+
+    <div class="d-tracks">
+      <div class="d-crt d-attract">
+        <div class="d-attract-hdr">
+          <span class="d-attract-title">SELECT TRACKS</span>
+          <span class="d-attract-hint">CLICK A TRACK TO <b>RACE</b></span>
+        </div>
+        <ul class="d-cards">
+          {SIMPLE.map((t) => (
+            <li>
+              <button class="d-card" type="button" data-track={t.id} data-name={t.name} aria-pressed={t.id === DEFAULT ? 'true' : 'false'}>
+                <svg viewBox="0 0 120 64" aria-hidden="true"><path d={outlinePath(t.id, 120, 64, 192)} /></svg>
+                <span class="d-card-row"><span class="d-badge">SIMPLE</span><span class="d-card-name">{t.name}</span></span>
+                <span class="d-card-sub">{t.desc}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+        <div class="d-sync" role="group" aria-label="Clock">
+          <button class="d-slot" type="button" data-sync="free" aria-pressed="true">FREE</button>
+          <button class="d-slot" type="button" data-sync="sync" aria-pressed="false">SYNC</button>
+          <span class="d-lcd d-lcd-ink" style="padding:10px 14px;font-size:22px" aria-live="polite">SPEED <span data-speed-read>2.1 s</span></span>
+        </div>
+        <p class="d-small" style="margin-top:12px">FREE laps in seconds. SYNC locks one lap to 1 to 32 bars of your song's tempo.</p>
+      </div>
+
+      <DriftPanel sticker="速度" checker={false} class="d-gps-panel">
+        <div class="d-gps">
+          {caps.map((c) => (
+            <button class="d-cap" type="button" data-gps={c.id} aria-label={c.label}
+              aria-pressed={c.id === 'play' ? 'false' : undefined}
+              style={`position:absolute;left:${c.left}%;top:9.12%;width:11.44%;height:auto;aspect-ratio:1;z-index:1;background-image:url(${c.img.src})`}></button>
+          ))}
+          <img src={plate.src} width="402" height="448" alt="" aria-hidden="true" loading="lazy" decoding="async" style="z-index:2;pointer-events:none" />
+          <div class="d-gps-lcd" style="z-index:3;left:57.59%;top:9.98%;width:37.61%;height:10.87%" aria-live="polite">
+            <span data-gps-name>SWAY</span>
+            <span data-gps-time>LAP 00.0s</span>
+          </div>
+          <div class="d-gps-glass" style="z-index:3;left:13.21%;top:34.38%;width:73.41%;height:50.98%;padding:9% 10%">
+            <svg viewBox={`0 0 ${GW} ${GH}`} aria-hidden="true">
+              <path class="trk" data-gps-path d={outlinePath(DEFAULT, GW, GH, 256)} />
+              <circle class="car" data-gps-car r="7" cx={GW / 2} cy={GH / 2} />
+            </svg>
+          </div>
+        </div>
+        <div class="d-lcd d-balance-box">
+          <div class="d-balance-lr" aria-hidden="true"><span>L</span><span class="d-balance-read" data-pan-readout="bare">C</span><span>R</span></div>
+          <div class="d-balance" data-balance aria-hidden="true"></div>
+        </div>
+      </DriftPanel>
+    </div>
+  </div>
+</section>
