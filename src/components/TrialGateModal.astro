@@ -69,12 +69,17 @@ const gateNames = Object.fromEntries(plugins.map((p) => [dlGateId(p), p.name]));
     <input type="text" name="_gotcha" class="tg-hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
     <!-- Marketing consent: UNCHECKED by default (Soundtoys pattern) — the
          download never depends on it; ticking it is a real, separate yes.
-         Posted as {marketing} — the worker may ignore it until the list side
-         is wired, the signal is captured either way. -->
-    <label class="tg-consent">
-      <input type="checkbox" data-tg-consent />
-      <span>Also send me new-plugin drops and demo codes (optional)</span>
-    </label>
+         Posted as {marketing}; the license worker stores it with this exact
+         wording (MARKETING_CONSENT_TEXT in worker.js), so change both together.
+         The notice under it tells people about the service emails before the
+         address is taken (UK soft opt-in and Israel §30A(ג) both need that). -->
+    <div class="tg-consent-block">
+      <label class="tg-consent">
+        <input type="checkbox" data-tg-consent />
+        <span>Also send me new-plugin drops and demo codes (optional)</span>
+      </label>
+      <p class="tg-notice">We'll send a few short emails about getting started, and a heads-up before a trial ends. Unsubscribe anytime.</p>
+    </div>
     <button type="submit" class="tg-submit" data-tg-submit>Send my link</button>
     <p class="tg-err" data-tg-err role="alert" aria-live="polite"></p>
   </form>
@@ -508,6 +513,8 @@ const gateNames = Object.fromEntries(plugins.map((p) => [dlGateId(p), p.name]));
     flex: none;
   }
   .tg-consent input:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 2px; }
+  .tg-consent-block { display: flex; flex-direction: column; gap: 0.4rem; }
+  .tg-notice { margin: 0; font-size: 0.74rem; line-height: 1.45; color: var(--fg-dim); }
 
   .tg-submit {
     display: block;
