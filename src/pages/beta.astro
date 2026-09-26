@@ -20,6 +20,7 @@ const clientConfig = {
     err: ui.errEn,
     soft: ui.softEn,
     badCode: ui.badCodeEn,
+    already: ui.alreadyEn,
     requiredMissing: ui.requiredMissingEn,
   },
   questions: questions.map((q) => ({
@@ -307,7 +308,8 @@ const clientConfig = {
           form.hidden = true;
           show(t.thanks, true);
         } else {
-          show(t.err, false);
+          const j = await res.json().catch(() => null);
+          show(j && j.already ? t.already : t.err, false);
         }
       } catch {
         show(t.err, false);

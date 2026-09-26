@@ -13,13 +13,15 @@ import { site } from '../data/site';
  * no-JS-pre-hide users get an instant, fully usable dialog.
  */
 const endpoint = site.formspreeEndpoint;
+// JS submits go through the license worker's one-per-email relay (see EmailCapture).
+const onceUrl = site.downloadGate.workerUrl + '/form-once';
 ---
 
 <dialog class="sub-modal" data-sub-modal aria-label="Subscribe to the newsletter">
   <button type="button" class="sm-x" data-sub-close aria-label="Close">&times;</button>
   <h2>Subscribe to the newsletter</h2>
   <p class="sm-sub">New plugins, demo codes, and intro pricing, straight to your inbox. Unsubscribe anytime.</p>
-  <form class="sm-form" action={endpoint} method="POST" data-sub-form>
+  <form class="sm-form" action={endpoint} method="POST" data-sub-form data-once-url={onceUrl}>
     <label class="sm-field">
       <span>Name <em class="muted">(optional)</em></span>
       <input type="text" name="name" placeholder="Your name" autocomplete="name" />
@@ -79,21 +81,25 @@ const endpoint = site.formspreeEndpoint;
         show('Almost there. Newsletter signup goes live shortly. Your details weren’t sent yet.', false);
         return;
       }
+      const submitBtn = form.querySelector<HTMLButtonElement>('button[type="submit"]');
+      if (submitBtn) submitBtn.disabled = true;
       try {
-        const res = await fetch(form.action, {
+        const res = await fetch(form.dataset.onceUrl!, {
           method: 'POST',
-          body: new FormData(form),
-          headers: { Accept: 'application/json' },
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ form: 'newsletter', ...Object.fromEntries(new FormData(form)) }),
         });
-        if (res.ok) {
+        const j = await res.json().catch(() => null);
+        if (j && j.ok) {
           form.hidden = true;
-          show('You’re on the list. Watch your inbox for the first build.', true);
+          show(j.already ? 'You’re already on the list.' : 'You’re on the list. Watch your inbox for the first build.', true);
         } else {
-          show('Something went wrong. Try again, or email info@revaudio.net.', false);
+          show((j && j.error) || 'Something went wrong. Try again, or email info@revaudio.net.', false);
         }
       } catch {
         show('Network hiccup. Try again in a moment.', false);
       }
+      if (submitBtn) submitBtn.disabled = false;
     });
   }
 </script>

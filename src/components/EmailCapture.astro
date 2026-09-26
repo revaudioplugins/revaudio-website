@@ -22,13 +22,16 @@ const {
 import { site } from '../data/site';
 
 const endpoint = site.formspreeEndpoint;
+// JS submits go through the license worker's one-per-email relay (it forwards
+// to the same Formspree form); `action` stays the no-JS fallback.
+const onceUrl = site.downloadGate.workerUrl + '/form-once';
 ---
 
 <section class="signup" id={id}>
   <div class="container" data-reveal>
     <h2>{heading}</h2>
     <p>{subhead}</p>
-    <form class="signup-form" action={endpoint} method="POST" data-newsletter>
+    <form class="signup-form" action={endpoint} method="POST" data-newsletter data-once-url={onceUrl}>
       <label for="newsletter-email" class="sr-only">Email address</label>
       <input
         id="newsletter-email"
@@ -68,21 +71,25 @@ const endpoint = site.formspreeEndpoint;
         show('Almost there. Newsletter signup goes live shortly. Your email wasn’t sent yet.', false);
         return;
       }
+      const submitBtn = form.querySelector<HTMLButtonElement>('button[type="submit"]');
+      if (submitBtn) submitBtn.disabled = true;
       try {
-        const res = await fetch(form.action, {
+        const res = await fetch(form.dataset.onceUrl!, {
           method: 'POST',
-          body: new FormData(form),
-          headers: { Accept: 'application/json' },
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ form: 'newsletter', ...Object.fromEntries(new FormData(form)) }),
         });
-        if (res.ok) {
+        const j = await res.json().catch(() => null);
+        if (j && j.ok) {
           form.hidden = true;
-          show('You’re on the list. Watch your inbox for the first build.', true);
+          show(j.already ? 'You’re already on the list.' : 'You’re on the list. Watch your inbox for the first build.', true);
         } else {
-          show('Something went wrong. Try again, or email info@revaudio.net.', false);
+          show((j && j.error) || 'Something went wrong. Try again, or email info@revaudio.net.', false);
         }
       } catch {
         show('Network hiccup. Try again in a moment.', false);
       }
+      if (submitBtn) submitBtn.disabled = false;
     });
   });
 </script>

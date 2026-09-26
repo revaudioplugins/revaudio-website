@@ -67,6 +67,9 @@ export const site = {
    * https://formspree.io and replace the REPLACE_WITH_FORM_ID token. While the
    * token is in place, forms show an honest "goes live shortly" notice and
    * never pretend to capture.
+   * One submission per email: JS submits go through the license worker's
+   * /form-once relay, which forwards to this form. Changing the id? Update
+   * FORM_ONCE in the license worker too.
    */
   formspreeEndpoint: 'https://formspree.io/f/maqzlgwa',
 
@@ -99,6 +102,8 @@ export const site = {
    * REPLACE_WITH_FORM_ID token below. While the token is in place, the form
    * shows an honest "applications open shortly" notice and never pretends to
    * capture.
+   * One application per email: same /form-once relay as formspreeEndpoint
+   * (keep FORM_ONCE in the license worker in sync).
    */
   affiliateFormEndpoint: 'https://formspree.io/f/mykrwolg',
 

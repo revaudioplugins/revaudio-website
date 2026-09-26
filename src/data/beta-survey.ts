@@ -95,6 +95,8 @@ export const surveyMeta = {
     softEn: "The feedback form opens shortly. Your answers weren't sent yet.",
     badCodeHe: 'קוד הגישה שגוי. בדוק/בדקי את מייל ההזמנה.',
     badCodeEn: 'That beta access code is incorrect. Check your invite email.',
+    alreadyHe: 'כבר קיבלנו משוב מהמייל הזה. תודה!',
+    alreadyEn: "We already have feedback from this email. Thank you!",
     requiredMissingHe: 'יש שאלות חובה שטרם נענו (מסומנות).',
     requiredMissingEn: 'Some required questions are unanswered (highlighted).',
     langLabelHe: 'EN',

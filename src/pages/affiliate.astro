@@ -3,6 +3,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { site } from '../data/site';
 
 const endpoint = site.affiliateFormEndpoint;
+// JS submits go through the license worker's one-per-email relay (it forwards
+// to the same Formspree form); `action` stays the no-JS fallback.
+const onceUrl = site.downloadGate.workerUrl + '/form-once';
 ---
 
 <BaseLayout
@@ -26,7 +29,7 @@ const endpoint = site.affiliateFormEndpoint;
       </p>
 
       <h2>Apply</h2>
-      <form class="affiliate-form" action={endpoint} method="POST" data-affiliate-form>
+      <form class="affiliate-form" action={endpoint} method="POST" data-affiliate-form data-once-url={onceUrl}>
         <div class="field">
           <label for="aff-name">Name</label>
           <input id="aff-name" type="text" name="name" autocomplete="name" required />
@@ -122,16 +125,19 @@ const endpoint = site.affiliateFormEndpoint;
       const submitBtn = form.querySelector<HTMLButtonElement>('button[type="submit"]');
       if (submitBtn) submitBtn.disabled = true;
       try {
-        const res = await fetch(form.action, {
+        const res = await fetch(form.dataset.onceUrl!, {
           method: 'POST',
-          body: new FormData(form),
-          headers: { Accept: 'application/json' },
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ form: 'affiliate', ...Object.fromEntries(new FormData(form)) }),
         });
-        if (res.ok) {
+        const j = await res.json().catch(() => null);
+        if (j && j.ok) {
           form.hidden = true;
-          show('Thanks. We review every application by hand and will email you either way.', true);
+          show(j.already
+            ? 'We already have your application. We’ll email you either way.'
+            : 'Thanks. We review every application by hand and will email you either way.', true);
         } else {
-          show('Something went wrong. Try again, or email info@revaudio.net.', false);
+          show((j && j.error) || 'Something went wrong. Try again, or email info@revaudio.net.', false);
           if (submitBtn) submitBtn.disabled = false;
         }
       } catch {
