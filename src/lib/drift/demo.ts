@@ -2,8 +2,13 @@ import { onPan, setPan } from './bus';
 import { PanSpring, shapeAt, swingWidth } from './tracks';
 
 /**
- * The head-unit deck — STRUCTURE TEST (drift.demoMode 'test', Dan 2026-09-26:
- * "lay down the structure just to see for test").
+ * The head-unit deck — STRUCTURE TEST from 2026-09-26 (Dan: "lay down the
+ * structure just to see for test"). NOT loaded at go-live: init.ts imports it
+ * only when #hear renders (drift.demoMode 'real'), and the 'test' mode is gone.
+ * Before demoMode 'real' this file MUST pan the WHOLE signal (C1 / Dan's D2/H1,
+ * 2026-09-30: the band only hosts echo, reverb, tremolo and pitch) and play
+ * Dan's <audio> bounces from public/audio/drift/. The routing below is the
+ * old band-only graph and is left untouched until that rewrite.
  *
  * The sound is synthesised here, in the browser, and the screen says TEST
  * SIGNAL. What IS real is the routing, built like DRIFT's own (fact sheet §1):

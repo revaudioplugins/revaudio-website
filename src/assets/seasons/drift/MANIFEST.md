@@ -1,3 +1,13 @@
+> **Unreferenced 2026-10-01 (conversion architecture, D2/H1 whole-sound rebuild):** the page no longer imports
+> `arcade2_left_plate.png` (BAND SELECT cabinet, DriftBand.astro deleted), `btn_start_off.png` / `btn_start_on.png` /
+> `led_amber_s.png` (PUSH START, DriftAuto.astro deleted), `graf_pic_int.png` / `graf_pic_spd.png` /
+> `graf_title_int.png` / `graf_title_spd.png` (AUTO DRIFT graffiti) and `fx-autotune.png` (shows the BAND|ALL bank
+> removed in 4.26.0; returns only when re-shot from the Oct 10 build). They stay in the folder, unreferenced, so
+> they don't ship. `cta-pill.png` stays as the keycap fallback.
+> Added: `cta-key-rest.png` / `cta-key-press.png` (1190x270, copied from Drift `Source/ui/public/assets/jdm/trk_key_rest.png`
+> and `trk_key_press.png`): the race-red CTA keycap, 3-sliced in drift.css `.d-cta` (key face 36..1154 x 19..234).
+> `mm_cap_*.png` stay: the GPS transport caps sit under mm_plate.png's alpha-0 wells.
+
 > **Pruned 2026-09-26 (Claude Code, main session):** the page uses 30 of the exported files. These 17 were
 > moved OUT of the repo (not committed; kept in the session scratchpad `drift-export-unused/`, all re-derivable
 > from `Drift/Source/ui/public/assets/` or a fresh render): right_panel, left_panel, gauge_speed, gauge_temp,
@@ -105,7 +115,13 @@ verify-before-report instruction.
 
 All five strips share the same y-range (native y30-532) and width (256), cut
 on the dark gaps between plates; each includes its neon rim glow and the small
-drag-handle tab straddling its own top border. Boundaries confirmed against a
+drag-handle tab straddling its own top border.
+
+Known crop artefact (brand review 2026-10-01): fx-tremolo.png rows 0-1,
+x 485-511 carry a red sliver of the neighbouring UI. drift.css lifts every
+strip 2 px (`object-position: 50% -2px`) and frames all four at source row
+~798 (the gap under the second knob-row labels), so it never renders. A
+re-shoot from the Oct 10 build should start the crop at y31. Boundaries confirmed against a
 rendered grid overlay (plate edges landed within 2-4px of the brief's suggested
 x-starts 16/284/552/820/1088).
 
@@ -155,7 +171,11 @@ ndlTmp = -90° (all needles start pinned at their zero end).
 | sat-bay.png | 1150, 90, 530, 191 | 1060×382 | 600943 |
 
 Contains the power LED, 4-way TAPE selector, DRIVE flame knob, and both LCD
-labels, plus the checkered "スピード" header graphic. Bottom trimmed from the
+labels, plus the checkered "スピード" header graphic. Loose on two edges (brand
+review 2026-10-01): the top 58 px are a dark band with a purple scribble from
+the UI above, the left 55 px a slice of the next round part. The page's
+`.d-bay` well shows x 55-1060 / y 58-382 only; a re-shoot should crop to
+native 1177, 119, 503, 162. Bottom trimmed from the
 brief's suggested y290 to y281 to land just above the row divider — y290 was
 cutting into the next control row below (two more knob domes peeking in).
 

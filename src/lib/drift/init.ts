@@ -1,8 +1,8 @@
 import { initPanDisplays } from './bus';
 import { initWheel } from './wheel';
-import { initBand } from './band';
 import { initTracks } from './trackui';
-import { deck, elapsedSec, levelBars, onDeck, pause, play, setAfter, setAuto, setSlot, slotLabel, stop, type Slot } from './demo';
+import { lenis } from '../motion';    // the house scroller (null under reduced motion)
+import type { Slot } from './demo';   // type-only: erased, demo.ts stays out of the bundle
 
 /** /drift page entry: one pan bus, then every section that reads or writes it. */
 export function initDrift(): void {
@@ -10,14 +10,63 @@ export function initDrift(): void {
   if (!root) return;
   initPanDisplays(root);
   initWheel(root);
-  initBand(root);
   initTracks(root);
-  initDeckUi(root);
-  initAutoDrift(root);
-  initSat(root);
+  initJump();
+  initDeferredImages(root);
+  // #hear renders only when drift.demoMode === 'real'; demo.ts never loads otherwise
+  if (root.querySelector('[data-demo-screen]')) void initDeckUi(root);
 }
 
-function initDeckUi(root: HTMLElement): void {
+/**
+ * Every [data-drift-jump] CTA (hero keycap, phone sticky bar): scroll the
+ * target's TOP into view, so #try's compat line is read first, then focus the
+ * email field without a second scroll. No JS = a native anchor jump.
+ * With Lenis up, its own window click handler already animates the same hash
+ * (it ignores preventDefault and honours scroll-padding-top), so only the
+ * reduced-motion path scrolls here: one engine per click, never two.
+ */
+function initJump(): void {
+  document.querySelectorAll<HTMLAnchorElement>('a[data-drift-jump]').forEach((a) => {
+    a.addEventListener('click', (e) => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const t = a.hash ? document.querySelector<HTMLElement>(a.hash) : null;
+      if (!t) return;
+      e.preventDefault();
+      if (!lenis) t.scrollIntoView({ behavior: 'auto', block: 'start' });
+      t.querySelector<HTMLInputElement>('input[type=email]')?.focus({ preventScroll: true });
+      history.replaceState(null, '', a.hash);
+    });
+  });
+}
+
+/**
+ * img[data-src] (the #fx photos and the GPS plate, 1-3 screens down) and
+ * [data-bg] (the GPS caps, background sprites): native loading="lazy" fetched
+ * them before any scroll on a fast connection, so they wait here for a 500 px
+ * approach instead. srcset goes on before src so the pick is right the first
+ * time. No IntersectionObserver = load them all.
+ */
+function initDeferredImages(root: HTMLElement): void {
+  const els = Array.from(root.querySelectorAll<HTMLElement>('img[data-src], [data-bg]'));
+  const load = (el: HTMLElement) => {
+    if (el instanceof HTMLImageElement) {
+      if (el.dataset.srcset) el.srcset = el.dataset.srcset;
+      el.src = el.dataset.src!;
+      delete el.dataset.src; delete el.dataset.srcset;
+    } else {
+      el.style.backgroundImage = `url(${el.dataset.bg})`;
+      delete el.dataset.bg;
+    }
+  };
+  if (!('IntersectionObserver' in window)) { els.forEach(load); return; }
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) if (e.isIntersecting) { load(e.target as HTMLElement); io.unobserve(e.target); }
+  }, { rootMargin: '500px 0px' });
+  els.forEach((el) => io.observe(el));
+}
+
+async function initDeckUi(root: HTMLElement): Promise<void> {
+  const { deck, elapsedSec, levelBars, onDeck, pause, play, setAfter, setSlot, slotLabel, stop } = await import('./demo');
   const title = root.querySelector<HTMLElement>('[data-demo-title]');
   const mode = root.querySelector<HTMLElement>('[data-demo-mode]');
   const time = root.querySelector<HTMLElement>('[data-demo-time]');
@@ -54,22 +103,4 @@ function initDeckUi(root: HTMLElement): void {
   };
   onDeck(paint);
   paint();
-}
-
-function initAutoDrift(root: HTMLElement): void {
-  const btn = root.querySelector<HTMLButtonElement>('[data-autodrift]');
-  btn?.addEventListener('click', () => {
-    const on = btn.getAttribute('aria-pressed') !== 'true';
-    btn.setAttribute('aria-pressed', String(on));
-    setAuto(on);
-  });
-}
-
-function initSat(root: HTMLElement): void {
-  const btns = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-sattype]'));
-  const desc = root.querySelector<HTMLElement>('[data-satdesc]');
-  btns.forEach((b) => b.addEventListener('click', () => {
-    btns.forEach((o) => o.setAttribute('aria-pressed', String(o === b)));
-    if (desc) desc.textContent = b.dataset.desc ?? '';
-  }));
 }

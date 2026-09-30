@@ -1,3 +1,26 @@
+## 2026-10-01 — /drift CONVERSION REBUILD (Claude Code) — COMMITTED on feat/drift-page (local only), preview on :4327
+Owner: Claude Code. Same branch/worktree/files as the 09-26 entry below (one writer), plus new `DriftCapture.astro`,
+`DriftCreators.astro`, `DriftStickyBar.astro`, `public/og/drift.png`, woff2 subsets in `public/fonts/drift/`.
+Why: Dan's conversion review brief (2026-09-30) + his decisions the same day: D2/H1 the car pans the WHOLE sound (the
+LOW/HIGH CUT band is only where echo/reverb/tremolo/pitch play); offer = 14-day free trial, keep it free with a video
+(creator deal via /affiliate, "DRIFT BETA"), $39 with the feedback form, $69 at release Sun Nov 1; no buy button,
+checkout, coupon wording or download link before release. Review + architecture (21-agent workflow):
+`~/workspace/revaudio/stages/04_website/output/2026-10-01-drift-page-conversion-architecture.md`.
+- Page: 10 blocks → hero · #drive · #fx · #get (email capture #try) · #creators + phone sticky bar; #hear slot renders
+  only when `drift.demoMode === 'real'` (the browser test synth can no longer ship). Deleted DriftBand/Auto/Sat/Specs
+  + band.ts. `assertDriftConfig()` fails the build for phase 'open' without the feedback form (tested), 'released'
+  without checkoutUrl or real audio/trial-after-release.
+- Capture posts {form:'newsletter', source:'drift-trial'} to the licence worker /form-once (relays every field to
+  Formspree); an existing subscriber gets `already` and is told to email info@ (not relayed).
+- Verified (build workflow, 26 agents, 2 fix rounds): build clean; copy/honesty, visitors A/B/C, streamer, brand,
+  code review, iPhone 17 Pro simulator + mocked capture flow all pass; axe clean; ≤1 red CTA per viewport; phone
+  hero CTA bottom 340 px. Desktop 7.2 → ~5.0 screens, phone 11.7 → ~7.8. Phone first load (WebKit) 454 KB, of which
+  ~220 KB is site-wide chrome (JS, Inter, haze bgs, Paddle, CF beacon): the 350 KB budget can't be met from /drift alone.
+- Open: `src/data/plugins.ts` DRIFT entry corrected to D2/H1 in its OWN commit (drop it if Dan wants the store card
+  untouched). Owed outside this page: plugin must pan the whole sound + 14-day trial (Dan working on it), feedback
+  form ($39 route), who emails the trial on Oct 10, /affiliate doesn't prefill DRIFT BETA, AAX flag when built.
+Push/merge to main = live: only on Dan's explicit "push" (pull first).
+
 ## 2026-09-26 — /drift season page, STRUCTURE TEST (Claude Code) — COMMITTED on feat/drift-page (local only), preview on :4327
 Owner: Claude Code. Branch `feat/drift-page` in worktree `.claude/worktrees/drift-page` (off origin/main 1776b45).
 Dan: "all the style of DRIFT in the page — assets, purple, panels, neon; fresh, not the RevLimiter/RR pages". Plan:

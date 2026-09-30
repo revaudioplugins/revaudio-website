@@ -1,12 +1,18 @@
 ---
 /**
- * Section 1 — the driver's seat (Dan's pick A, 2026-09-26). The dash top bar
- * with its sockets (label · live PAN readout · formats), the title panel on
- * the left, the CTA panel on the right, and the cockpit between them: the
- * plugin's real gauge cluster (rendered with the wheel and needles hidden),
- * live needles over it, and the real steering wheel — which IS the pan, and
- * really steers (wheel.ts, the plugin's SPORTS physics). The wheel sinks
- * below the section edge: you are sitting behind it.
+ * Section 1 — the driver's seat (Dan's pick A, 2026-09-26; recomposed for the
+ * 2026-10-01 conversion architecture). A one-line glass dash (formats · live
+ * PAN · 'PRO TOOLS: NOT YET' on desktop), the title panel on the left, the CTA
+ * panel on the right, and the cockpit between them: the plugin's real gauge
+ * cluster (rendered with the wheel and needles hidden), live needles over it,
+ * and the real steering wheel — which IS the pan of the whole sound (D2/H1),
+ * and really steers (wheel.ts, the plugin's SPORTS physics).
+ *
+ * The CTA panel says what keeping DRIFT costs in screen 1: 3 condition-first
+ * rows on desktop, one sentence on phone (≤1099), only the FREE route links.
+ * Phone order (drift.css): dash, title + CTA as one merged panel, wheel,
+ * meter, plain line. .d-wheel-grip = the top 38% of the rim takes the touch
+ * drag (touch-action:none); the rest of the wheel keeps pan-y page scroll.
  *
  * Geometry is the plugin's own, in native px of its 1725x912 design box, and
  * lands as % of the wheel box so it scales with --wd:
@@ -20,7 +26,7 @@ import DriftPanel from './DriftPanel.astro';
 import wheelSrc from '../../assets/seasons/drift/wheel.png';
 import clusterSrc from '../../assets/seasons/drift/cluster.png';
 import needleSrc from '../../assets/seasons/drift/needle.png';
-import { drift, ctaFor } from '../../data/drift';
+import { drift, ctaFor, routesFor, formatsShort } from '../../data/drift';
 
 const WHEEL = { x: 466, y: 108, d: 790 };
 // crop box of cluster.png (1396x1050 @DPR2) in native px = (518,125)-(1216,650), MANIFEST.md
@@ -32,37 +38,52 @@ const NEEDLES = [
 ];
 const pct = (v: number) => `${((v / WHEEL.d) * 100).toFixed(3)}%`;
 
-const [w540, w1000, cluster, needle] = await Promise.all([
-  getImage({ src: wheelSrc, width: 540, format: 'webp', quality: 82 }),
+// Sizes follow the rendered box (phone DPR2 = 335 css px x 2 = 670), and the
+// cluster (88% of --wd) gets 640/920 instead of a 1200 it never showed. The
+// light mask gets its own 256w copy: a CSS mask-image is fetched in CORS mode,
+// so WebKit never reuses the wheel picture's fetch for it (measured: 2 x 58 KB).
+const [w700, w1000, wMask, cl640, cl920, needle] = await Promise.all([
+  getImage({ src: wheelSrc, width: 700, format: 'webp', quality: 82 }),
   getImage({ src: wheelSrc, width: 1000, format: 'webp', quality: 80 }),
-  getImage({ src: clusterSrc, width: 1200, format: 'webp', quality: 78 }),
+  getImage({ src: wheelSrc, width: 256, format: 'webp', quality: 40 }),
+  getImage({ src: clusterSrc, width: 640, format: 'webp', quality: 78 }),
+  getImage({ src: clusterSrc, width: 920, format: 'webp', quality: 78 }),
   getImage({ src: needleSrc, width: 320, format: 'webp', quality: 85 }),
 ]);
 const cta = ctaFor();
-const formats = drift.aaxReady ? 'VST3 · AU · AAX' : 'VST3 · AU';
+const routes = routesFor();
+const plain = 'Pan your whole sound by hand with the wheel, or send it around a shape in time with your song.';
+// phone: the ladder as one sentence ('free with a video ›' is the only link)
+const lineParts = routes.map((r) =>
+  r.id === 'video' ? null
+  : r.id === 'feedback' ? (r.value ? `for ${r.value} with the feedback form` : 'with the feedback form')
+  : (r.value ? `for ${r.value} from ${drift.releaseLabel}` : `at release, ${drift.releaseLabel}`));
+const hasVideo = routes.some((r) => r.id === 'video');
+const rest = lineParts.filter((x): x is string => !!x);
+const restText = rest.length ? (hasVideo ? (rest.length > 1 ? `, ${rest.slice(0, -1).join(', ')}, or ${rest[rest.length - 1]}.` : `, or ${rest[0]}.`) : `${rest.join(', or ')}.`) : '.';
+const lead = drift.phase === 'closed' ? 'Keep it ' : 'After that, keep it ';
 ---
 <section class="d-hero d-wrap" aria-labelledby="d-hero-title">
   <div class="d-dashbar">
-    <span class="d-sock">FREQUENCY-BAND PANNER</span>
-    <span class="d-sock d-sock--pan"><output data-pan-readout aria-hidden="true">PAN C</output></span>
-    <span class="d-sock">{formats} · MAC &amp; WIN</span>
+    <span class="d-sock d-lcd">{formatsShort()}</span>
+    <span class="d-sock d-sock--pan d-lcd"><output data-pan-readout aria-hidden="true">PAN C</output></span>
+    {!drift.aaxReady && <span class="d-sock d-sock--aax d-lcd">PRO TOOLS: NOT YET</span>}
   </div>
 
   <div class="d-hero-body">
     <div class="d-hero-left">
-      <DriftPanel sticker="ドリフト">
-        <p class="d-kicker">RevAudio · plugin</p>
-        <h1 id="d-hero-title" class="d-title">
-          <span class="d-title-en">DRIFT</span>
-          <span class="d-title-ja" lang="ja" aria-hidden="true">ドリフト</span>
-        </h1>
-        <p class="d-plain">Carve out one frequency band. <strong>Steer it across the stereo field.</strong> By hand, on a race line, or by how hard you play.</p>
+      <DriftPanel>
+        <h1 id="d-hero-title" class="d-title">DRIFT</h1>
+        <p class="d-tagline">A panner you steer like a drift car.</p>
+        <p class="d-plain d-plain--desk">{plain}</p>
+        <p class="d-hook">Controlled slides. No spinouts.</p>
       </DriftPanel>
     </div>
 
-    <div class="d-cockpit" style={`--wheel-mask:url(${w540.src})`}>
+    <div class="d-cockpit" style={`--wheel-mask:url(${wMask.src})`}>
       <div class="d-underglow" aria-hidden="true"></div>
-      <img class="d-cluster" src={cluster.src} alt="" aria-hidden="true" decoding="async"
+      <img class="d-cluster" src={cl920.src} srcset={`${cl640.src} 640w, ${cl920.src} 920w`} sizes="(max-width: 1099px) 76vw, 460px"
+        alt="" aria-hidden="true" decoding="async"
         style={`--cl-l:${pct(CLUSTER.x - WHEEL.x)};--cl-t:${pct(CLUSTER.y - WHEEL.y)};--cl-w:${pct(CLUSTER.w)}`} />
       {NEEDLES.map((n) => (
         <img class="d-needle" src={needle.src} alt="" aria-hidden="true" decoding="async"
@@ -71,22 +92,52 @@ const formats = drift.aaxReady ? 'VST3 · AU · AAX' : 'VST3 · AU';
       ))}
       <div class="d-wheel" data-drift-wheel role="slider" tabindex="0"
         aria-label="Steering wheel: pan" aria-valuemin="-100" aria-valuemax="100" aria-valuenow="0" aria-valuetext="Center">
+        <span class="d-wheel-grip" aria-hidden="true"></span>
         <div class="d-wheel-ind">
-          <img class="d-wheel-img" src={w540.src} srcset={`${w540.src} 540w, ${w1000.src} 1000w`} sizes="(max-width: 1099px) 86vw, 540px"
+          <img class="d-wheel-img" src={w700.src} srcset={`${w700.src} 700w, ${w1000.src} 1000w`} sizes="(max-width: 1099px) 86vw, 540px"
             width="540" height="540" alt="" fetchpriority="high" decoding="async" />
           <div class="d-wheel-mark" aria-hidden="true"><span class="dm">DRIFT</span><span class="kana" lang="ja">ドリフト</span></div>
         </div>
         <div class="d-wlight" aria-hidden="true"><div class="d-wlfix"></div></div>
       </div>
-      <p class="d-wheel-hint" aria-hidden="true">GRAB THE WHEEL · ← → KEYS</p>
+      <p class="d-wheel-hint" aria-hidden="true"><span class="d-hint-fine">GRAB THE WHEEL · ← → KEYS</span><span class="d-hint-coarse">DRAG THE TOP OF THE WHEEL</span></p>
     </div>
 
-    <div class="d-hero-right">
-      <DriftPanel sticker="ベータ">
+    <div class="d-lcd d-balance-box d-hero-meter" aria-hidden="true">
+      <div class="d-balance-lr"><span>L</span><span class="d-balance-read" data-pan-readout="bare">C</span><span>R</span></div>
+      <div class="d-balance" data-balance></div>
+    </div>
+    <p class="d-plain d-plain--phone">{plain}</p>
+
+    <div class="d-hero-right" data-drift-cta-zone>
+      <DriftPanel sticker="試乗" checker={false} class="d-cta-panel">
         <div class="d-cta-block">
-          <a class="d-cta" href="#beta">{cta.label}</a>
+          <a class="d-cta d-cta--edge" href={cta.action === 'cart' ? '#get' : '#try'} data-drift-jump>{cta.label}</a>
           <p class="d-cta-sub">{cta.sub}</p>
-          <a class="d-hearlink" href="#hear">▶ HEAR IT MOVE</a>
+          {routes.length > 0 && (
+            <Fragment>
+              <p class="d-ladder-label">{drift.phase === 'closed' ? 'Keep it:' : `After ${drift.trialDays} days, keep it:`}</p>
+              <ul class="d-ladder d-ladder--hero" role="list">
+                {routes.map((r) => (
+                  <li class:list={['d-route', `d-route--${r.id}`]}>
+                    {r.href ? (
+                      <a class="d-route-link" href={r.href}>
+                        <span class="d-route-cond">{r.heroCond} ›</span>
+                        {r.value && <span class="d-lcd d-route-val">{r.value}</span>}
+                      </a>
+                    ) : (
+                      <Fragment>
+                        <span class="d-route-cond">{r.heroCond}</span>
+                        {r.value && <span class="d-lcd d-route-val">{r.value}</span>}
+                      </Fragment>
+                    )}
+                  </li>
+                ))}
+              </ul>
+              <p class="d-ladder-line">{lead}{hasVideo && <a href="#creators">free with a video ›</a>}{restText}</p>
+            </Fragment>
+          )}
+          {cta.action !== 'cart' && <p class="d-cta-fine">Nothing to pay today.</p>}
         </div>
       </DriftPanel>
     </div>
