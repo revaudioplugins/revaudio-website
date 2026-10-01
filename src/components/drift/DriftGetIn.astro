@@ -29,7 +29,7 @@ const registerUrl = site.downloadGate.workerUrl + '/download/register';
       <span class="d-ja" lang="ja" aria-hidden="true">試乗</span>
       <span class="d-rule" aria-hidden="true"></span>
     </div>
-    <h2 id="d-get-h" class="d-headline">Test drive DRIFT free for {drift.trialDays} days.</h2>
+    <h2 id="d-get-h" class="d-headline"><span class="l1">Test drive DRIFT</span> <span class="l2">free for {drift.trialDays} days.</span></h2>
 
     <div class="d-getin" data-drift-fab-watch>
       <div>
@@ -81,7 +81,9 @@ const registerUrl = site.downloadGate.workerUrl + '/download/register';
       </details>
       <details>
         <summary>Which DAWs?</summary>
-        <p>Any host that loads VST3 or AU on a Mac, or VST3 on Windows.{!drift.aaxReady && ' Not Pro Tools yet.'}</p>
+        <p>{drift.aaxReady
+          ? 'Any host that loads VST3, AU or AAX on a Mac, or VST3 or AAX on Windows, Pro Tools included.'
+          : 'Any host that loads VST3 or AU on a Mac, or VST3 on Windows. Not Pro Tools yet.'}</p>
       </details>
       {drift.afterTrialAnswer && (
         <details>

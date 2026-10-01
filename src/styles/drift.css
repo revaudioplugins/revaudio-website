@@ -13,6 +13,14 @@
    neon, 81% of it at hue 270-300deg. Neon here is ALWAYS a lamp (tube, LED,
    CRT phosphor, lit screen) — that is how /drift keeps the site law "no glow
    without a lamp" while wearing DRIFT's purple.
+
+   2026-10-01 (Dan): the page wears the DRIFT Instagram post language on top
+   (revaudio-shared marketing/drift-instagram/drift-design-language.json, Ilay):
+   Oswald two-line headlines (line 2 purple), pink Press Start kickers, vertical
+   Japanese, Share Tech Mono specs, Bangers chips. Split rule: the plugin's own
+   parts (wheel, gauges, LCD glass, GPS, the red key) stay plugin pixels; the
+   type and colour around them follow the posts. A headline glows as neon
+   lettering (a sign is a lamp), held to line 2 so the page stays mostly dark.
    ========================================================================== */
 
 @font-face {
@@ -20,6 +28,29 @@
   src: url('/fonts/drift/Orbitron-SemiBold.subset.woff2') format('woff2'),
        url('/fonts/drift/Orbitron-SemiBold.ttf') format('truetype');
   font-weight: 400 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Drift Oswald';
+  src: url('/fonts/drift/Oswald-var.latin.woff2') format('woff2');
+  font-weight: 300 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Drift Mono';
+  src: url('/fonts/drift/ShareTechMono.latin.woff2') format('woff2');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Drift Bangers';
+  src: url('/fonts/drift/Bangers.latin.woff2') format('woff2');
+  font-display: swap;
+}
+/* subset to the page's own Japanese (Google Fonts text= kit): add a word = refetch */
+@font-face {
+  font-family: 'Drift JP';
+  src: url('/fonts/drift/NotoSansJP-var.subset.woff2') format('woff2');
+  font-weight: 700 900;
   font-display: swap;
 }
 @font-face {
@@ -35,32 +66,39 @@
   --d-steel: #0e0515;        /* --arc-steel */
   --d-glass: #0f0418;        /* --arc-glass */
   --d-plate: #0a0810;
-  --d-neon: #b46bff;         /* --neon-purple */
-  --d-neon-rgb: 180, 107, 255;
+  --d-neon: #d23cff;         /* post accent.purple (was plugin --neon-purple #b46bff) */
+  --d-neon-rgb: 210, 60, 255;
   --d-violet: #8a2be2;
   --d-mag: #e040c8;
-  --d-hot: #f769e0;          /* --arc-neon */
+  --d-hot: #ff4fd8;          /* post accent.pink (was --arc-neon #f769e0) */
   --d-lcd: #f24cf0;          /* --arc-lcd (magenta dot-matrix ink) */
   --d-lcd-hdr: #c73fc4;
   --d-crt: #d98bff;          /* --arc-crt (violet phosphor) */
   --d-crt-glow: rgba(190, 90, 255, .75);
   --d-pink-ink: #ffd1f8;
-  --d-white-ink: #fff0ff;
+  --d-white-ink: #f6e8ff;    /* post text.primary */
   --d-cyan: #5ee7ff;         /* SIMPLE tracks */
   --d-cyan-ink: #c8f6ff;
   --d-red: #ff6b63;          /* --trk-red */
   --d-red-rgb: 255, 107, 99;
   --d-amber-rgb: 255, 150, 40;
-  --d-fg: #e8e0d0;
-  --d-fg-dim: #b3aa98;       /* plugin --fg-dim #9a927f lifted for 4.5:1 on --d-steel */
+  --d-fg: #d9c6ef;           /* post text.body (was the house cream #e8e0d0) */
+  --d-fg-dim: #a58cc4;       /* post text.muted, 6.8:1 on --d-steel */
   --d-fg-neon: #dcc7ff;
-  --d-dim-violet: #a58bd0;   /* plugin #9b7cc6 lifted for AA body-size text */
+  --d-dim-violet: #a58cc4;   /* post text.muted */
   --d-jp: #8b62b8;
+  /* post headline glows: line 1 a soft white-hot core, line 2 the purple sign */
+  --d-glow-1: 0 0 3px rgba(255, 255, 255, .5), 0 0 22px rgba(210, 60, 255, .4);
+  --d-glow-2: 0 0 26px rgba(210, 60, 255, .75);
+  --d-glow-pink: 0 0 12px rgba(255, 79, 216, .65);
 
   --d-f-pix: 'Drift Press', 'Press Start 2P', ui-monospace, monospace;
   --d-f-badge: 'Drift Orbitron', 'Orbitron', var(--font-display);
   --d-f-lcd: 'VT323', ui-monospace, monospace;
-  --d-f-ja: 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Yu Gothic UI', Meiryo, sans-serif;
+  --d-f-ja: 'Drift JP', 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Yu Gothic UI', Meiryo, sans-serif;
+  --d-f-head: 'Drift Oswald', 'Oswald', Impact, sans-serif;
+  --d-f-spec: 'Drift Mono', 'Share Tech Mono', ui-monospace, monospace;
+  --d-f-chip: 'Drift Bangers', 'Bangers', var(--d-f-head);
 
   /* live state, written by src/lib/drift/bus.ts */
   --pan: 0;
@@ -104,33 +142,48 @@
 .d-ja { font-family: var(--d-f-ja); font-weight: 700; }
 .d-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-/* ---------- section head: the TRAKS attract-menu head (▶ EN  カナ ------) ---
-   The pixel face is a MARQUEE label only (≤12 chars: it overflowed every
-   sentence H2 at 390 px); the real <h2> is an Inter sentence under it. */
+/* ---------- section head: the post kicker (▶ EN ------), the post's vertical
+   Japanese word on the right edge, then the real <h2> as the post headline:
+   two Oswald lines, line 2 purple (.l1 / .l2 spans; uppercase is CSS only, so
+   a screen reader reads the sentence). The pixel face stays a short label
+   (≤12 chars: it overflowed every sentence H2 at 390 px). */
 .d-sec { padding-top: clamp(48px, 6vw, 72px); }   /* tightened 10-01: the page ran 20-26% over its screen budget */
 @media (max-width: 600px) { .d-sec { padding-top: 40px; } .drift-page .d-lede--sec { margin-bottom: 18px; } }
+.d-sec > .d-wrap { position: relative; }
 .d-sechead { display: flex; align-items: baseline; gap: 16px; margin: 0 0 18px; }
+.d-sechead:has(.d-ja) { padding-right: clamp(44px, 4.4vw, 60px); }
 .d-marquee {
-  font: 400 clamp(15px, 1.6vw, 20px) / 1.25 var(--d-f-pix);
-  letter-spacing: .14em;
+  font: 400 clamp(13px, 1.3vw, 16px) / 1.25 var(--d-f-pix);
+  letter-spacing: .1em;
   text-transform: uppercase;
-  color: var(--d-lcd);
+  color: var(--d-hot);
+  text-shadow: var(--d-glow-pink);
   white-space: nowrap;
 }
-.d-marquee::before { content: '\25B6\00A0'; color: var(--d-hot); }
-.d-sechead .d-ja { font-size: 13px; letter-spacing: .34em; color: var(--d-jp); font-weight: 500; }
+.d-marquee::before { content: '\25B6\00A0'; }
+.d-sechead .d-ja {
+  position: absolute; top: 0; right: 0;
+  writing-mode: vertical-rl; text-orientation: upright;
+  font: 900 clamp(26px, 2.8vw, 40px) / 1.04 var(--d-f-ja); letter-spacing: 0;
+  color: var(--d-neon); opacity: .85;
+  text-shadow: 0 0 18px rgba(210, 60, 255, .8);
+}
 .d-sechead .d-rule {
   flex: 1; height: 2px; align-self: center;
   background: repeating-linear-gradient(90deg, rgba(190, 90, 255, .5) 0 6px, transparent 6px 12px);
 }
 .drift-page h2.d-headline {
-  font: 700 clamp(24px, 2.6vw, 34px) / 1.2 Inter, var(--font-body);
-  text-transform: none;
-  letter-spacing: 0;
+  font: 700 clamp(36px, 4.6vw, 64px) / .92 var(--d-f-head);
+  text-transform: uppercase;
+  letter-spacing: .005em;
   color: var(--d-white-ink);
   text-wrap: balance;
-  margin: 0 0 14px;
+  margin: 0 0 18px;
 }
+.d-sechead:has(.d-ja) + h2.d-headline { padding-right: clamp(44px, 4.4vw, 60px); }
+.d-headline .l1, .d-headline .l2 { display: block; }
+.d-headline .l1 { text-shadow: var(--d-glow-1); }
+.d-headline .l2 { color: var(--d-neon); text-shadow: var(--d-glow-2); }
 /* .drift-page p resets margin + max-width at (0,1,1), so every p rule that
    sets either one carries the .drift-page prefix */
 .drift-page .d-lede { font-size: clamp(17px, 1.35vw, 19px); line-height: 1.6; color: var(--d-fg); max-width: 62ch; }
@@ -360,37 +413,10 @@
   --wd: clamp(400px, 38vw, 520px);        /* wheel: 1000px source -> never above 540 CSS px */
   position: relative;
   /* clip, not hidden: a hidden box is still a scroll container, so focusing
-     the wheel scrolled the hero internally and lost the dash bar (10-01) */
+     the wheel scrolled the hero internally (10-01) */
   overflow: clip;
   padding-top: 18px;
 }
-.d-dashbar {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  gap: 18px;
-  padding: 12px 18px;
-  border-radius: 10px;
-  background: linear-gradient(180deg, #17121f, #0d0a12 60%, #0b0810);
-  box-shadow:
-    0 0 0 1px rgba(4, 2, 8, .95),
-    inset 0 1px 0 rgba(255, 240, 255, .06),
-    inset 0 -2px 0 rgba(180, 107, 255, .16),
-    0 8px 18px rgba(0, 0, 0, .45);
-}
-/* each socket is a sunk glass window with a lit screen in it */
-.d-sock {
-  display: inline-flex; align-items: center; justify-content: center;
-  min-height: 38px; padding: 0 16px;
-  font: 400 20px/1.2 var(--d-f-lcd); letter-spacing: .06em;
-  color: var(--d-lcd);
-  text-shadow: 0 0 4px rgba(242, 76, 240, .5);
-  white-space: nowrap;
-}
-.d-dashbar .d-sock:first-child { justify-self: start; }
-.d-dashbar .d-sock:last-child { justify-self: end; }
-.d-sock--pan { min-width: 180px; }
-.d-sock--pan output { font: 400 30px/1 var(--d-f-lcd); letter-spacing: .1em; color: var(--d-fg-neon); text-shadow: 0 0 10px rgba(180, 107, 255, .8); }
 
 .d-hero-body {
   position: relative;
@@ -398,27 +424,116 @@
   grid-template-columns: minmax(0, 1fr) var(--wd) minmax(0, 1fr);
   align-items: start;
   gap: 0;
-  margin-top: 28px;
 }
 .d-hero-left, .d-hero-right { position: relative; z-index: 1; margin-top: 36px; }   /* the wheel sits IN FRONT of the panels (plugin z7) */
 .d-hero-left { margin-right: calc(var(--wd) * -0.06); }
 .d-hero-right { margin-left: calc(var(--wd) * -0.06); }
 .d-hero-left .d-panel { padding-right: calc(var(--wd) * 0.1); }
-.d-hero-right .d-panel { padding-left: calc(var(--wd) * 0.1); }
-
-/* DRIFT in the hub-cap face, a hard offset shadow and no bloom (not a lamp) */
-.drift-page .d-title {
-  font: 600 clamp(40px, 4.2vw, 64px) / 1 var(--d-f-badge);
-  letter-spacing: .06em;
-  color: var(--d-pink-ink);
-  text-shadow: 3px 3px 0 #7a1f6b;
+/* desktop: the CTA column's text clears the rim by ~11% of the wheel at every
+   width (Dan 10-01: the rim covered words, worst at 1100-1199), = the 6% tuck
+   under the wheel + the gap. The key fills the content box, face on the text
+   edge, and scales a little with the room left (label fits down to 46 px). */
+@media (min-width: 1100px) {
+  .d-hero-right .d-panel { padding: clamp(28px, 2.8vw, 40px) calc(var(--wd) * 0.058) clamp(28px, 3.2vw, 40px) calc(var(--wd) * 0.137); }   /* Dan 10-01: the reading a little left and up */
+  .d-hero-right .d-cta { --h: clamp(46px, 3.9vw, 56px); min-width: 0; width: calc(100% + var(--h) * .167); }
 }
-.drift-page .d-tagline { margin-top: 12px; font: 700 clamp(20px, 1.8vw, 24px) / 1.3 Inter, var(--font-body); color: var(--d-white-ink); text-wrap: balance; }
-.drift-page .d-plain { margin-top: 16px; font-size: 17px; line-height: 1.5; color: var(--d-fg); }
-.drift-page .d-hook { margin-top: 14px; font: 600 14px/1.4 Inter, var(--font-body); letter-spacing: .12em; text-transform: uppercase; color: var(--d-dim-violet); text-wrap: balance; }
-.d-hero .d-plain--phone, .d-hero .d-hero-meter { display: none; }   /* ≤1099 only (below) */
 
-.d-cta-block { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
+/* hero = the post's split headline (headlineSplit): DRIFT in the hub-cap face
+   as line 1, lit like the posts' line 1, then the tagline as the purple line 2.
+   PLACEHOLDER for the drift-neon.png wordmark (not delivered yet, 10-01). */
+.drift-page .d-title {
+  font: 600 clamp(44px, 4.6vw, 68px) / 1 var(--d-f-badge);
+  letter-spacing: .06em;
+  color: var(--d-white-ink);
+  text-shadow: var(--d-glow-1);
+}
+.drift-page .d-tagline {
+  margin-top: 14px;
+  font: 700 clamp(26px, 2.35vw, 34px) / .95 var(--d-f-head);   /* 2 lines in the desktop panel */
+  text-transform: uppercase; letter-spacing: .005em;
+  color: var(--d-neon); text-shadow: var(--d-glow-2);
+}
+.d-tagline span { display: block; }
+.d-hero .d-hero-meter { display: none; }   /* ≤1099 only (below) */
+
+.d-cta-block { display: flex; flex-direction: column; align-items: flex-start; gap: 18px; }
+/* hero price: the real price only, post style (spec label over a lit Oswald figure, no strike) */
+.d-price { display: flex; flex-direction: column; gap: 6px; }
+.d-price-label { font: 400 14px/1 var(--d-f-spec); letter-spacing: .14em; text-transform: uppercase; color: var(--d-fg-dim); }
+.d-price-val {
+  font: 700 clamp(52px, 4.6vw, 68px) / .9 var(--d-f-head);
+  color: var(--d-white-ink);
+  text-shadow: 0 0 4px rgba(255, 255, 255, .5), 0 0 22px rgba(255, 79, 216, .55);
+}
+
+/* hero trial stamp (DriftTrialStamp): RevLimiter's label · email · GET IT ▸
+   row, in DRIFT dress. Lives in .d-hero-trial (below): a row on desktop,
+   stacked on phones. */
+.d-stamp { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; width: 100%; }
+.d-stamp [hidden] { display: none; }   /* the grid display must not un-hide the sent form */
+.d-stamp-label {
+  font: 700 clamp(22px, 2.1vw, 30px) / .95 var(--d-f-head);
+  text-transform: uppercase; letter-spacing: .005em;
+  color: var(--d-white-ink); text-shadow: var(--d-glow-1);
+}
+.d-stamp-label em { font-style: normal; color: var(--d-neon); text-shadow: var(--d-glow-2); }
+.d-stamp-label span { display: block; white-space: nowrap; }
+.d-stamp-form { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+.d-stamp .d-stamp-key { --h: 48px; min-width: 0; }   /* the key's 4.6h floor pushed the column past a 320 px phone */
+.d-stamp-field {
+  font: 400 17px/1 var(--d-f-spec); letter-spacing: .06em;
+  caret-color: var(--d-hot);
+  transition: box-shadow 160ms ease;
+}
+.d-stamp-field:focus {
+  box-shadow:
+    0 0 0 1px rgba(4, 2, 8, .9), inset 0 5px 8px rgba(0, 0, 0, .7),
+    inset 0 0 0 1px var(--d-neon), 0 0 0 3px rgba(210, 60, 255, .22), 0 0 22px rgba(210, 60, 255, .4);
+}
+.d-stamp-arrow { display: inline-block; margin-left: .35em; transition: transform 160ms ease; }
+.d-stamp-key:hover .d-stamp-arrow, .d-stamp-key:focus-visible .d-stamp-arrow { transform: translateX(3px); }
+.d-stamp-fine { margin-top: -4px; font: 400 11px/1.35 Inter, var(--font-body); color: var(--d-fg-dim); text-wrap: balance; }   /* fine print, Dan: smaller */
+/* sent: the answer lights up like a readout */
+.d-stamp .d-capture-status.ok { font: 400 22px/1.15 var(--d-f-lcd); letter-spacing: .03em; color: var(--d-white-ink); text-shadow: 0 0 8px rgba(242, 76, 240, .6); }
+
+/* the trial console under the wheel (Dan 10-01: "fill in the blank space
+   under the wheel ... don't make more space"). A dash-glass strip laid across
+   the wheel's cut edge: it starts 10% of the wheel up into the crop band the
+   hero already had, so the page is no taller than with the stamp in the
+   panel. Desktop = RevLimiter's row: label | email + key, list line under. */
+.d-hero-trial { position: relative; z-index: 4; }
+.d-hero-trial .d-stamp {
+  padding: 12px 18px 10px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(25, 17, 35, .97), rgba(13, 9, 19, .98) 60%, rgba(10, 7, 15, .98));
+  box-shadow:
+    0 0 0 1px rgba(4, 2, 8, .95),
+    inset 0 1px 0 rgba(255, 240, 255, .07),
+    inset 0 -2px 0 rgba(210, 60, 255, .3),
+    0 -12px 26px rgba(0, 0, 0, .5),
+    0 0 38px rgba(210, 60, 255, .16);
+}
+@media (min-width: 1100px) {
+  .d-hero-trial {
+    grid-column: 1 / -1; grid-row: 2; justify-self: center;
+    width: min(100%, 760px);
+    margin-top: calc(var(--wd) * -0.04);   /* Dan 10-01: lower (was -0.1, over the spoke) */
+  }
+  .d-hero-trial .d-stamp {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas: "label form" "label fine" ". status";
+    align-items: center; column-gap: 22px; row-gap: 5px;
+  }
+  .d-hero-trial .d-stamp-label { grid-area: label; font-size: clamp(20px, 1.75vw, 25px); }
+  .d-hero-trial .d-stamp-form { grid-area: form; grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+  .d-hero-trial .d-stamp-field { min-height: 48px; }
+  .d-hero-trial .d-stamp-fine { grid-area: fine; margin-top: 0; }
+  .d-hero-trial .d-capture-status { grid-area: status; }
+  .d-hero-trial .d-stamp:has(.d-stamp-form[hidden]) .d-capture-status { grid-area: form; }   /* sent: the answer takes the form's place */
+}
+/* ≥1366 the wheel is full size and the console ends under the old panel
+   bottom: #drive gives most of it back (lowered 10-01: +14 px net) */
+@media (min-width: 1366px) { #drive.d-sec { padding-top: 30px; } }
 .d-cta-sub { font: 500 15px/1.45 Inter, var(--font-body); color: var(--d-fg-neon); }
 .d-cta-fine { font-size: 14px; color: var(--d-fg-dim); line-height: 1.5; }
 .d-cta-block .d-cta-fine { font-weight: 600; color: var(--d-fg); }
@@ -453,8 +568,19 @@
 .d-ladder--hero .d-route-link { text-decoration: none; }
 .d-ladder--hero .d-route-link .d-route-cond { color: var(--d-fg-neon); text-decoration: underline; text-underline-offset: 3px; }
 .d-ladder--hero .d-route-link:hover .d-route-cond { color: var(--d-white-ink); }
-.d-ladder-line { display: none; font-size: 15px; line-height: 1.5; color: var(--d-fg); }
-.d-ladder-line a { color: var(--d-fg-neon); text-decoration: underline; text-underline-offset: 3px; }
+
+/* the keep-it menu under the tracks (DriftKeep): three routes across on desktop */
+.d-keep { margin-top: clamp(32px, 4vw, 52px); }
+.d-keep .d-panel { padding-top: clamp(28px, 3vw, 40px); }
+.d-keep .d-ladder-label { margin-top: 16px; font-size: 15px; }
+.d-keep .d-ladder { margin-top: 10px; }
+.d-keep .d-ladder--hero .d-route-cond { font-size: 16px; }
+.d-keep .d-ladder--hero .d-route-val { min-width: 64px; font-size: 24px; }
+.d-keep .d-cta-fine { margin-top: 16px; font-weight: 600; color: var(--d-fg); }
+@media (min-width: 900px) {
+  .d-keep .d-ladder--hero { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 32px; }
+  .d-keep .d-ladder--hero .d-route { padding-top: 12px; }
+}
 
 /* cockpit: purple underglow + gauge cluster (real render, wheel hidden) + wheel.
    The driver's-seat crop is the cockpit's own negative margin: the grid row
@@ -536,39 +662,19 @@
   letter-spacing: .3em; text-indent: .3em; white-space: nowrap;
   color: #cf9dff; opacity: .72;
 }
-.d-wheel-hint {
-  position: absolute; left: 50%; bottom: calc(var(--wd) * 0.24); transform: translateX(-50%);
-  z-index: 4; pointer-events: none; white-space: nowrap;
-  font: 400 18px/1 var(--d-f-lcd); letter-spacing: .08em;
-  color: rgba(255, 209, 248, .85);
-}
-@media (pointer: coarse) { .d-hint-fine { display: none; } }
-@media not all and (pointer: coarse) { .d-hint-coarse { display: none; } }
 
-/* 1100-1199 (rails on, three columns): the CTA panel's content box drops
-   under the key's 258 px minimum, so the key ran past the panel. A smaller key
-   that fills the content box, over a slimmer wheel-side pad, fits. */
-@media (min-width: 1100px) and (max-width: 1199px) {
-  .d-hero-right .d-panel { padding-left: calc(var(--wd) * 0.05); }
-  .d-hero-right .d-cta { --h: 48px; min-width: 0; width: 100%; margin-left: 0; }
-}
-
-/* phones + small tablets: dash, title + CTA as ONE merged panel, wheel,
-   meter, plain line. Gate at 390x844: keycap bottom ≤450, wheel top ≤560. */
+/* phones + small tablets: title + CTA as ONE merged panel, wheel, meter.
+   Gate at 390x844: keycap bottom ≤450, wheel top ≤560. */
 @media (max-width: 1099px) {
   .d-hero { --wd: min(420px, 86vw); padding-top: 10px; }
-  .d-dashbar { grid-template-columns: 1fr; justify-items: center; text-align: center; padding: 4px 10px; }
-  .d-dashbar .d-sock:first-child, .d-dashbar .d-sock:last-child { justify-self: center; }
-  .d-sock--pan, .d-sock--aax { display: none; }
-  .d-hero-body { grid-template-columns: minmax(0, 1fr); justify-items: center; margin-top: 12px; margin-bottom: 0; }
+  .d-hero-body { grid-template-columns: minmax(0, 1fr); justify-items: center; margin-top: 4px; margin-bottom: 0; }
   .d-hero-left, .d-hero-right { margin: 0; width: 100%; }
   .d-hero-left { order: 1; }
   .d-hero-right { order: 2; margin-top: -2px; }
   .d-cockpit { order: 3; margin: 8px 0 8px; }
-  .d-hero .d-hero-meter { order: 4; display: grid; width: min(420px, 100%); margin-top: 22px; }
-  .d-hero .d-plain--phone { order: 5; display: block; width: 100%; }
-  .d-plain--desk, .d-hook, .d-ladder--hero, .d-cta-block .d-ladder-label { display: none; }
-  .d-ladder-line { display: block; }
+  .d-hero-trial { order: 4; width: min(420px, 100%); margin-top: 6px; }
+  .d-hero-trial .d-stamp-key { align-self: stretch; width: 100%; }
+  .d-hero .d-hero-meter { order: 5; display: grid; width: min(420px, 100%); margin-top: 22px; }
   .d-hero-left .d-panel, .d-hero-right .d-panel { padding-left: clamp(22px, 5vw, 44px); padding-right: clamp(22px, 5vw, 44px); }
   /* merged panel: the title half and the CTA half share one plate. Each half
      clips its own well ring and lip along the join (the ring of the lower half
@@ -592,7 +698,6 @@
   .d-hero-right .d-screw.tl, .d-hero-right .d-screw.tr, .d-hero-right .d-sticker { display: none; }
   .d-hero-right .d-cta-block { gap: 10px; }
   .d-hero-right .d-cta { align-self: stretch; margin-left: 0; }
-  .d-wheel-hint { bottom: -6px; }
 }
 /* tablets and small laptops: a stretched key became a 630-856 px red banner;
    cap it so it stays a key, on the text's left edge (a centred key between
@@ -945,4 +1050,5 @@
 }
 html.hc .drift-page { background: #000000; }
 html.hc .drift-page .d-rails, html.hc .drift-page .d-underglow, html.hc .drift-page .d-stickers { display: none; }
-html.hc .drift-page .d-title, html.hc .drift-page .d-marquee { text-shadow: none; }
+html.hc .drift-page .d-title, html.hc .drift-page .d-marquee, html.hc .drift-page .d-tagline,
+html.hc .drift-page .d-headline span, html.hc .drift-page .d-sechead .d-ja { text-shadow: none; }

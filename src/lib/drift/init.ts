@@ -1,6 +1,7 @@
 import { initPanDisplays } from './bus';
 import { initWheel } from './wheel';
 import { initTracks } from './trackui';
+import { initCaptures } from './capture';
 import { lenis } from '../motion';    // the house scroller (null under reduced motion)
 import type { Slot } from './demo';   // type-only: erased, demo.ts stays out of the bundle
 
@@ -12,6 +13,7 @@ export function initDrift(): void {
   initWheel(root);
   initTracks(root);
   initJump();
+  initCaptures();
   initDeferredImages(root);
   // #hear renders only when drift.demoMode === 'real'; demo.ts never loads otherwise
   if (root.querySelector('[data-demo-screen]')) void initDeckUi(root);

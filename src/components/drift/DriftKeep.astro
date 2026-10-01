@@ -1,0 +1,40 @@
+---
+/**
+ * The keep-it menu, under the tracks (Dan 10-01: "not relevant for what the
+ * first thing user see" — it left the hero CTA panel, which kept the price
+ * and the key). What the 14 days are, then the routes condition-first with
+ * the value on sunk glass, only the FREE route links. Three across on
+ * desktop, stacked on phone. Renders only while routes exist (not 'released').
+ */
+import DriftPanel from './DriftPanel.astro';
+import { drift, ctaFor, routesFor } from '../../data/drift';
+
+const cta = ctaFor();
+const routes = routesFor();
+---
+{routes.length > 0 && (
+  <div class="d-keep d-wrap">
+    <DriftPanel checker={false} class="d-keep-panel">
+      <p class="d-cta-sub">{cta.sub}</p>
+      <p class="d-ladder-label">{drift.phase === 'closed' ? 'Keep it:' : `After ${drift.trialDays} days, keep it:`}</p>
+      <ul class="d-ladder d-ladder--hero" role="list">
+        {routes.map((r) => (
+          <li class:list={['d-route', `d-route--${r.id}`]}>
+            {r.href ? (
+              <a class="d-route-link" href={r.href}>
+                <span class="d-route-cond">{r.heroCond} ›</span>
+                {r.value && <span class="d-lcd d-route-val">{r.value}</span>}
+              </a>
+            ) : (
+              <Fragment>
+                <span class="d-route-cond">{r.heroCond}</span>
+                {r.value && <span class="d-lcd d-route-val">{r.value}</span>}
+              </Fragment>
+            )}
+          </li>
+        ))}
+      </ul>
+      {cta.action !== 'cart' && <p class="d-cta-fine">Nothing to pay today.</p>}
+    </DriftPanel>
+  </div>
+)}

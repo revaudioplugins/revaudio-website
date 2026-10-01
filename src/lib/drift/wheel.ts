@@ -1,4 +1,4 @@
-import { getPan, onPan, panWords, setPan } from './bus';
+import { getPan, onPan, panWords, setHand, setPan } from './bus';
 
 /**
  * The hero steering wheel = PAN. Ported from Drift/Source/ui/public/index.html
@@ -89,7 +89,7 @@ export function initWheel(root: HTMLElement): void {
     if (deg > 135) { deg = 135; omega = Math.abs(omega) > 60 ? -omega * BOUNCE : 0; }
     else if (deg < -135) { deg = -135; omega = Math.abs(omega) > 60 ? -omega * BOUNCE : 0; }
     commit(deg / 270 + 0.5);
-    if (Math.abs(omega) < 6) { omega = 0; raf = 0; coasting = false; }
+    if (Math.abs(omega) < 6) { omega = 0; raf = 0; coasting = false; setHand(false); }
     else raf = requestAnimationFrame(coastStep);
   };
 
@@ -128,6 +128,7 @@ export function initWheel(root: HTMLElement): void {
       }
     }
     if (!reduce && Math.abs(omega) >= 30) { coasting = true; coastT = performance.now(); raf = requestAnimationFrame(coastStep); }
+    else setHand(false);
   };
   w.addEventListener('pointerdown', (e) => {
     if (e.button !== 0 || !onArt(e)) return;
@@ -135,6 +136,7 @@ export function initWheel(root: HTMLElement): void {
     trail.length = 0;
     lastAng = angOf(e);
     dragging = true;
+    setHand(true);
     w.classList.add('is-held');
     w.setPointerCapture(e.pointerId);
   });
@@ -157,7 +159,8 @@ export function initWheel(root: HTMLElement): void {
     commit(n);
   });
 
-  // other writers (demo deck, TRACKS) turn the art; the hand always wins
+  // other writers (demo deck, TRACKS) turn the art; the hand always wins, and
+  // the TRACKS car waits while it holds (bus.setHand)
   onPan((p, source) => { if (source === 'wheel' || dragging || coasting) return; draw((p + 1) / 2); });
   draw((getPan() + 1) / 2);
 

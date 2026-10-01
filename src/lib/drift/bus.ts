@@ -4,7 +4,8 @@
  * socket, each car-stereo balance screen and the steering wheel itself.
  *
  * Writers: the wheel (drag / keys), the demo deck (its pan curve), the TRACKS
- * mini GPS (the car's position). The last writer wins. Displays only: nothing
+ * mini GPS (the car's position). The last writer wins, except that the car
+ * yields to a hand on the wheel (setHand). Displays only: nothing
  * here makes a sound (demo.ts owns the audio and follows the same value).
  */
 export type PanSource = 'wheel' | 'demo' | 'tracks' | 'reset';
@@ -15,10 +16,19 @@ const listeners = new Set<Listener>();
 
 export const getPan = () => pan;
 
+/** A hand on the wheel (held, or its flick still coasting) and the time it
+ *  last moved or let go: the TRACKS car waits while handBusy(hold) is true,
+ *  then takes the pan back. */
+let hand = false;
+let handT = -Infinity;
+export const setHand = (on: boolean) => { hand = on; handT = performance.now(); };
+export const handBusy = (holdMs: number) => hand || performance.now() - handT < holdMs;
+
 export function setPan(value: number, source: PanSource): void {
   const next = Math.max(-1, Math.min(1, value));
   if (next === pan && source !== 'reset') return;
   pan = next;
+  if (source === 'wheel') handT = performance.now();
   for (const l of listeners) l(pan, source);
 }
 

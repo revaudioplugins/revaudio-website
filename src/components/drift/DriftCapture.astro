@@ -7,7 +7,7 @@
  * codes and intro pricing.
  *
  * Order is the conversion fix (Visitor C): the compat line comes FIRST, so
- * 'No Pro Tools (AAX) yet' is read before anyone types an email; the hero
+ * the formats are read before anyone types an email; the hero
  * keycap's data-drift-jump lands #try's top edge, then focuses the field.
  * The download is never linked here: it goes out by email. What the form
  * promises, and the source it files under, come from captureCopyFor() per
@@ -47,48 +47,4 @@ const onceUrl = site.downloadGate.workerUrl + '/form-once';
   {drift.creatorDealOpen && <a class="d-capture-next" href="#creators" hidden>Want to keep DRIFT free? See how ↓</a>}
 </div>
 
-<script>
-  document.querySelectorAll<HTMLFormElement>('form[data-drift-capture]').forEach((form) => {
-    const box = form.parentElement;
-    const status = box?.querySelector<HTMLElement>('.d-capture-status');
-    const next = box?.querySelector<HTMLElement>('.d-capture-next');
-    // Build-time placeholder still in the action = not wired to a real backend yet.
-    const wired = !form.action.includes('REPLACE_WITH_FORM_ID');
-
-    const show = (msg: string, ok: boolean) => {
-      if (!status) return;
-      status.textContent = msg;
-      status.classList.toggle('ok', ok);
-      status.classList.toggle('err', !ok);
-    };
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!wired) {
-        show('Almost there. Sign-up goes live shortly. Your email wasn’t sent yet.', false);
-        return;
-      }
-      const submitBtn = form.querySelector<HTMLButtonElement>('button[type="submit"]');
-      if (submitBtn) submitBtn.disabled = true;
-      try {
-        const res = await fetch(form.dataset.onceUrl!, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ form: 'newsletter', ...Object.fromEntries(new FormData(form)) }),
-        });
-        const j = await res.json().catch(() => null);
-        if (j && j.ok) {
-          form.hidden = true;
-          show(j.already ? form.dataset.msgAlready! : form.dataset.msgOk!, true);
-          if (!j.already && next) next.hidden = false;
-          status?.focus({ preventScroll: true });   // the focused submit button just went with the form
-        } else {
-          show((j && j.error) || 'Something went wrong. Try again, or email info@revaudio.net.', false);
-        }
-      } catch {
-        show('Network hiccup. Try again in a moment.', false);
-      }
-      if (submitBtn) submitBtn.disabled = false;
-    });
-  });
-</script>
+<!-- submit handling: src/lib/drift/capture.ts, started by init.ts (shared with the hero stamp) -->

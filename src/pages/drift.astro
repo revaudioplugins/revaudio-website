@@ -14,8 +14,8 @@
  * sound; LOW/HIGH CUT only set where echo, reverb, tremolo and pitch play.
  * No F1 names or circuits anywhere (Decision 19).
  *
- * Order: hero · [#hear only when demoMode 'real'] · #drive · #fx · #get ·
- * #creators, plus the phone sticky bar. The rails ride .d-drivezone (hero +
+ * Order: hero · [#hear only when demoMode 'real'] · #drive · keep-it menu ·
+ * #fx · #get · #creators, plus the phone sticky bar. The rails ride .d-drivezone (hero +
  * #drive) only, so they leave before the form and never reach the footer.
  */
 import { existsSync } from 'node:fs';
@@ -25,6 +25,7 @@ import DriftRails from '../components/drift/DriftRails.astro';
 import DriftHero from '../components/drift/DriftHero.astro';
 import DriftHeadUnit from '../components/drift/DriftHeadUnit.astro';
 import DriftTracks from '../components/drift/DriftTracks.astro';
+import DriftKeep from '../components/drift/DriftKeep.astro';
 import DriftFx from '../components/drift/DriftFx.astro';
 import DriftGetIn from '../components/drift/DriftGetIn.astro';
 import DriftCreators from '../components/drift/DriftCreators.astro';
@@ -70,8 +71,8 @@ const imgVars = [
 ].join(';');
 ---
 <BaseLayout
-  title="DRIFT: a panner you steer like a drift car"
-  description="DRIFT pans your whole sound across the stereo field: by hand with the wheel, or around a shape in time with your song. Echo, reverb, tremolo and pitch play on a band you pick. 14-day free trial from Sat Oct 10. VST3 and AU on Mac, VST3 on Windows."
+  title="DRIFT: let your sound take the wheel"
+  description="DRIFT pans your whole sound across the stereo field: by hand with the wheel, or around a shape in time with your song. Echo, reverb, tremolo and pitch play on a band you pick. 14-day free trial from Sat Oct 10. VST3, AU and AAX on Mac, VST3 and AAX on Windows."
   ogImage={ogImage}
 >
   <div class="drift-page" data-drift-page style={imgVars}>
@@ -81,6 +82,7 @@ const imgVars = [
       {drift.demoMode === 'real' && <DriftHeadUnit />}
       <DriftTracks />
     </div>
+    <DriftKeep />
     <DriftFx />
     <DriftGetIn />
     {drift.creatorDealOpen && <DriftCreators />}

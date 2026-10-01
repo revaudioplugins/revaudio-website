@@ -51,8 +51,9 @@ export const drift = {
   gateId: 'drift',
   /** false until the worker has DL_PLUGINS.drift; then the open phase uses TrialGateModal. */
   gateWired: false,
-  /** AAX only once an .aaxplugin exists; every format string reads this. */
-  aaxReady: false,
+  /** AAX ships in the beta (Dan 2026-10-01, Decision 7; PACE signing = Gil).
+   *  Every format string reads this: false takes AAX off the whole page. */
+  aaxReady: true,
 
   /** 'real' = Dan's level-matched before/after bounces in public/audio/drift/
    *  on the whole-sound build. There is no 'test' value: the browser synth never ships. */
@@ -75,14 +76,16 @@ export const compatLine = () =>
   `Mac: ${formatsMac()}, macOS 10.13+, native on Apple silicon and Intel. Windows: ${formatsWin()}, 64\u2011bit, needs WebView2.` +
   (drift.aaxReady ? '' : ' No Pro Tools (AAX) yet.');
 
-/** 'Sat Oct 24' -> 'Oct 24' (the hero row is tighter than #get). */
-const noDay = (label: string) => label.replace(/^[A-Z][a-z]{2} /, '');
+/** 'Sat Oct 24' -> 'Oct 24' (the short rows are tighter than #get). */
+export const noDay = (label: string) => label.replace(/^[A-Z][a-z]{2} /, '');
+/** A date that never breaks across lines ('Oct\u00a024'). */
+const nb = (label: string) => label.replace(/ /g, '\u00a0');
 
 export interface Route {
   id: 'video' | 'feedback' | 'release';
   /** #get row condition */
   cond: string;
-  /** hero row condition (desktop) */
+  /** short row condition (the keep-it menu under the tracks) */
   heroCond: string;
   /** #get row note */
   note: string;
@@ -106,14 +109,14 @@ export function routesFor(phase: DriftPhase = drift.phase): Route[] {
   const feedback: Route = {
     id: 'feedback',
     cond: 'Keep it with the feedback form',
-    heroCond: `With the feedback form, by ${noDay(drift.feedbackClosesLabel)}`,
+    heroCond: `With the feedback form, by ${nb(noDay(drift.feedbackClosesLabel))}`,
     note: `Fill it in by ${drift.feedbackClosesLabel} and we email you how to keep DRIFT${p ? ` for $${drift.driverPriceUsd}` : ''}.`,
     value: p ? `$${drift.driverPriceUsd}` : undefined,
   };
   const release: Route = {
     id: 'release',
     cond: 'Buy it at release',
-    heroCond: `At release, ${drift.releaseLabel}`,
+    heroCond: `At release, ${nb(drift.releaseLabel)}`,
     note: `DRIFT goes on sale ${drift.releaseLabel}.`,
     value: p ? `$${drift.listPriceUsd}` : undefined,
   };

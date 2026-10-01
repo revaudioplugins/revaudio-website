@@ -1,22 +1,26 @@
-import { setPan } from './bus';
+import { getPan, handBusy, setPan } from './bus';
 import { PanSpring, outlineAt, outlinePath, shapeAt, simplePeriod, swingWidth } from './tracks';
 
 /**
  * #drive (LET IT DRIVE): the car laps the selected SIMPLE shape on the mini
- * GPS by itself while the GPS is in view (motion = the product's own engine
- * looping, silently). The dot is the car; its position is the pan (the plugin
+ * GPS by itself while the GPS OR the hero wheel is in view (motion = the
+ * product's own engine looping, silently), so the hero wheel steers whatever
+ * track is picked (Dan 10-01: "connect the wheel to what is on the track"). The dot is the car; its position is the pan (the plugin
  * tooltip: "the dot is the car driving your pan"), run through the same
  * spring as the DSP. It writes the page's pan bus, so the wheel, the rails and
  * the meters follow: the WHOLE sound moves (D2/H1).
  * Caps: PLAY runs, PAUSE holds and latches (WCAG 2.2.2: the loop can be
- * stopped and stays stopped), STOP eases the pan back to centre. Leaving the
- * view takes the STOP path, so the hero wheel is centred again on the way back.
+ * stopped and stays stopped), STOP eases the pan back to centre. Leaving both
+ * views takes the STOP path. A hand on the wheel overrides the car: the car
+ * waits while the wheel is held or coasting, plus HAND_HOLD, then the spring
+ * glides the pan from where the hand left it back onto the line.
  * A parked car sits at the shape's rest point (where its pan crosses 0), so
  * the car and the C readout agree. Reduced motion: no autoplay, PAUSE starts
  * latched, the car sits parked; an explicit PLAY still runs (user-initiated).
  */
 const INTENSITY = 0.6;          // TRK_WIDTH default
 const LAP_DEFAULT = 0.488084;   // TRK_LAP default
+const HAND_HOLD = 1500;         // ms the car keeps waiting after the hand lets go (or its last key)
 
 export function initTracks(root: HTMLElement): void {
   const sec = root.querySelector<HTMLElement>('[data-tracks]');
@@ -68,6 +72,12 @@ export function initTracks(root: HTMLElement): void {
   const frame = (now: number) => {
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
+    if (handBusy(HAND_HOLD)) {
+      // the hand has the wheel: the car holds its place and the pan is the hand's
+      spring.pan = getPan(); spring.vel = 0;
+      raf = running && !paused ? requestAnimationFrame(frame) : 0;
+      return;
+    }
     if (running && !paused) { phase += dt / period(); lapT = (lapT + dt) % period(); }
     const target = running ? shapeAt(track, phase) * swingWidth(INTENSITY) : 0;
     const p = spring.step(target, dt, INTENSITY, period());
@@ -79,17 +89,19 @@ export function initTracks(root: HTMLElement): void {
   };
   const kick = () => { if (!raf) { last = performance.now(); raf = requestAnimationFrame(frame); } readouts(); };
 
-  // autoplay only while the cabinet is really on screen
-  if (gps && 'IntersectionObserver' in window) {
-    new IntersectionObserver((entries) => {
-      for (const e of entries) {
-        if (e.isIntersecting) {
-          if (!userPaused && !reduce) { running = true; paused = false; spring.reset(); kick(); }
-        } else if (running) {
-          running = false; paused = false; park(); kick();   // the STOP path: the spring parks the pan at C
-        }
+  // autoplay only while the cabinet or the hero wheel is really on screen
+  const watched = [gps, root.querySelector<HTMLElement>('.d-cockpit')].filter((el): el is HTMLElement => !!el);
+  if (watched.length && 'IntersectionObserver' in window) {
+    const seen = new Set<Element>();
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) e.isIntersecting ? seen.add(e.target) : seen.delete(e.target);
+      if (seen.size) {
+        if (!running && !userPaused && !reduce) { running = true; paused = false; spring.pan = getPan(); spring.vel = 0; kick(); }
+      } else if (running) {
+        running = false; paused = false; park(); kick();   // the STOP path: the spring parks the pan at C
       }
-    }, { threshold: 0.35 }).observe(gps);
+    }, { threshold: 0.35 });
+    watched.forEach((el) => io.observe(el));
   }
 
   const play = () => { userPaused = false; latched = false; running = true; paused = false; kick(); };
