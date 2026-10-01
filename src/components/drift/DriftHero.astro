@@ -55,7 +55,8 @@ const [w700, w1000, wMask, cl640, cl920, needle] = await Promise.all([
 ]);
 const cta = ctaFor();
 // the real price, and when it applies (nothing is on sale before release)
-const priceLabel = drift.phase === 'released' ? 'Price' : `At release · ${noDay(drift.releaseLabel)}`;
+// two set lines under the price: 'ETA' / 'Nov 1' (Dan 10-01, was 'At release')
+const priceLabel = drift.phase === 'released' ? ['Price'] : ['ETA', noDay(drift.releaseLabel)];
 ---
 <section class="d-hero d-wrap" aria-labelledby="d-hero-title">
   <div class="d-hero-body">
@@ -98,8 +99,8 @@ const priceLabel = drift.phase === 'released' ? 'Price' : `At release · ${noDay
         <div class="d-cta-block">
           {drift.showPrices && (
             <p class="d-price">
-              <span class="d-price-label">{priceLabel}</span>
               <span class="d-price-val">${drift.listPriceUsd}</span>
+              <span class="d-price-label">{priceLabel.map((l, i) => <Fragment>{i > 0 && ' '}<span>{l}</span></Fragment>)}</span>
             </p>
           )}
           {cta.action !== 'capture' && <a class="d-cta d-cta--edge" href={cta.action === 'cart' ? '#get' : '#try'} data-drift-jump>{cta.label}</a>}
@@ -107,6 +108,10 @@ const priceLabel = drift.phase === 'released' ? 'Price' : `At release · ${noDay
       </DriftPanel>
     </div>
 
-    {cta.action === 'capture' && <div class="d-hero-trial"><DriftTrialStamp /></div>}
+    {cta.action === 'capture' && (
+      <div class="d-hero-trial">
+        <DriftPanel checker={false} class="d-trial-panel"><DriftTrialStamp /></DriftPanel>
+      </div>
+    )}
   </div>
 </section>

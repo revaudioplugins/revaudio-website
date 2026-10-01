@@ -434,7 +434,10 @@
    under the wheel + the gap. The key fills the content box, face on the text
    edge, and scales a little with the room left (label fits down to 46 px). */
 @media (min-width: 1100px) {
-  .d-hero-right .d-panel { padding: clamp(28px, 2.8vw, 40px) calc(var(--wd) * 0.058) clamp(28px, 3.2vw, 40px) calc(var(--wd) * 0.137); }   /* Dan 10-01: the reading a little left and up */
+  /* the reading sits a little left (Dan 10-01); top and bottom pads = the
+     title panel's, so the two panels mirror and come out the same height */
+  .d-hero-right .d-panel { padding: clamp(40px, 4.2vw, 56px) calc(var(--wd) * 0.058) clamp(28px, 3.2vw, 40px) calc(var(--wd) * 0.137); }
+  .d-hero-right { margin-top: 76px; }   /* Dan 10-01: the price panel sits 40 px lower than the title panel */
   .d-hero-right .d-cta { --h: clamp(46px, 3.9vw, 56px); min-width: 0; width: calc(100% + var(--h) * .167); }
 }
 
@@ -457,11 +460,20 @@
 .d-hero .d-hero-meter { display: none; }   /* ≤1099 only (below) */
 
 .d-cta-block { display: flex; flex-direction: column; align-items: flex-start; gap: 18px; }
-/* hero price: the real price only, post style (spec label over a lit Oswald figure, no strike) */
-.d-price { display: flex; flex-direction: column; gap: 6px; }
-.d-price-label { font: 400 14px/1 var(--d-f-spec); letter-spacing: .14em; text-transform: uppercase; color: var(--d-fg-dim); }
+/* hero price: the real price only, post style (a lit Oswald figure, its spec
+   line under it, bigger: Dan 10-01; no strike) */
+.d-price { display: flex; flex-direction: column; gap: 14px; }   /* = the tagline's 14 px under DRIFT */
+/* the ETA line wears the tagline's type (Oswald 700, same size), white:
+   Dan 10-01 "same size same font, different color"; the graphite try was
+   reverted the same day, the 'ETA' word kept */
+.d-price-label {
+  font: 700 clamp(26px, 2.35vw, 34px) / .95 var(--d-f-head);
+  text-transform: uppercase; letter-spacing: .005em;
+  color: var(--d-white-ink); text-shadow: var(--d-glow-1);
+}
+.d-price-label span { display: block; white-space: nowrap; }
 .d-price-val {
-  font: 700 clamp(52px, 4.6vw, 68px) / .9 var(--d-f-head);
+  font: 700 clamp(44px, 4.6vw, 68px) / 1 var(--d-f-head);   /* = .d-title's size and line box: $69 mirrors DRIFT */
   color: var(--d-white-ink);
   text-shadow: 0 0 4px rgba(255, 255, 255, .5), 0 0 22px rgba(255, 79, 216, .55);
 }
@@ -480,7 +492,7 @@
 .d-stamp-label span { display: block; white-space: nowrap; }
 .d-stamp-form { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
 .d-stamp .d-stamp-key { --h: 48px; min-width: 0; }   /* the key's 4.6h floor pushed the column past a 320 px phone */
-.d-stamp-field {
+.d-stamp .d-stamp-field {   /* .d-stamp prefix: .d-field (later in the file) set VT323 over it */
   font: 400 17px/1 var(--d-f-spec); letter-spacing: .06em;
   caret-color: var(--d-hot);
   transition: box-shadow 160ms ease;
@@ -502,38 +514,45 @@
    hero already had, so the page is no taller than with the stamp in the
    panel. Desktop = RevLimiter's row: label | email + key, list line under. */
 .d-hero-trial { position: relative; z-index: 4; }
-.d-hero-trial .d-stamp {
-  padding: 12px 18px 10px;
-  border-radius: 12px;
-  background: linear-gradient(180deg, rgba(25, 17, 35, .97), rgba(13, 9, 19, .98) 60%, rgba(10, 7, 15, .98));
-  box-shadow:
-    0 0 0 1px rgba(4, 2, 8, .95),
-    inset 0 1px 0 rgba(255, 240, 255, .07),
-    inset 0 -2px 0 rgba(210, 60, 255, .3),
-    0 -12px 26px rgba(0, 0, 0, .5),
-    0 0 38px rgba(210, 60, 255, .16);
-}
+/* the console is a third DRIFT panel (Dan 10-01: "same texture of the right
+   and left panel"): the same steel face, sunk well and four screws */
+.d-trial-panel { display: grid; align-content: center; padding: 42px 22px 46px; }   /* phone: clears the corner screws */
 @media (min-width: 1100px) {
   .d-hero-trial {
     grid-column: 1 / -1; grid-row: 2; justify-self: center;
-    width: min(100%, 760px);
-    margin-top: calc(var(--wd) * -0.04);   /* Dan 10-01: lower (was -0.1, over the spoke) */
+    width: min(100%, 1040px);
+    margin-top: calc(var(--wd) * -0.16 + 30px);   /* Dan 10-01: bigger x2, then hand-placed 30 px lower (bench) */
   }
+  .d-trial-panel { padding: 22px 50px 18px; min-height: 169px; }   /* bench 2026-10-01 (Dan, by hand): 169 tall, content centred; 50 px sides clear the screws */
+  /* the plate itself: Dan's pick D (A's clean black steel + C's checker, gpt-image-1,
+     tools/gen-drift-trial-panel.sh). Height fits the panel; it is 3-sliced so the
+     left cap (checker + screws, source x 0-320) and right cap (screws, last 120 px)
+     keep their shape and only the plain brushed middle stretches. 169 / 487 = .347,
+     so the caps show 111 px and 42 px. The plate brings its own screws and edge. */
+  .d-trial-panel {
+    background: none; box-shadow: none;
+    border: 0 solid transparent;
+    border-image: var(--d-img-trial) 0 120 0 320 fill / 0 42px 0 111px stretch;
+    padding-left: 128px;   /* the label clears the checker cap */
+    filter: drop-shadow(0 12px 22px rgba(0, 0, 0, .55));
+  }
+  .d-trial-panel .d-screw { display: none; }
   .d-hero-trial .d-stamp {
     grid-template-columns: auto minmax(0, 1fr);
     grid-template-areas: "label form" "label fine" ". status";
-    align-items: center; column-gap: 22px; row-gap: 5px;
+    align-items: center; column-gap: 32px; row-gap: 9px;
   }
-  .d-hero-trial .d-stamp-label { grid-area: label; font-size: clamp(20px, 1.75vw, 25px); }
-  .d-hero-trial .d-stamp-form { grid-area: form; grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
-  .d-hero-trial .d-stamp-field { min-height: 48px; }
-  .d-hero-trial .d-stamp-fine { grid-area: fine; margin-top: 0; }
+  .d-hero-trial .d-stamp-label { grid-area: label; font-size: clamp(28px, 2.8vw, 40px); }
+  .d-hero-trial .d-stamp-form { grid-area: form; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 16px; }
+  .d-hero-trial .d-stamp-field { min-height: 68px; padding: 0 22px; font-size: 24px; }
+  .d-hero-trial .d-stamp-key { --h: 68px; }
+  .d-hero-trial .d-stamp-fine { grid-area: fine; margin-top: 0; font-size: 13px; }
   .d-hero-trial .d-capture-status { grid-area: status; }
   .d-hero-trial .d-stamp:has(.d-stamp-form[hidden]) .d-capture-status { grid-area: form; }   /* sent: the answer takes the form's place */
 }
 /* ≥1366 the wheel is full size and the console ends under the old panel
    bottom: #drive gives most of it back (lowered 10-01: +14 px net) */
-@media (min-width: 1366px) { #drive.d-sec { padding-top: 30px; } }
+@media (min-width: 1366px) { #drive.d-sec { padding-top: 26px; } }
 .d-cta-sub { font: 500 15px/1.45 Inter, var(--font-body); color: var(--d-fg-neon); }
 .d-cta-fine { font-size: 14px; color: var(--d-fg-dim); line-height: 1.5; }
 .d-cta-block .d-cta-fine { font-weight: 600; color: var(--d-fg); }
@@ -673,7 +692,11 @@
   .d-hero-right { order: 2; margin-top: -2px; }
   .d-cockpit { order: 3; margin: 8px 0 8px; }
   .d-hero-trial { order: 4; width: min(420px, 100%); margin-top: 6px; }
-  .d-hero-trial .d-stamp-key { align-self: stretch; width: 100%; }
+  .d-hero-trial .d-stamp { gap: 14px; }
+  .d-hero-trial .d-stamp-label { font-size: 32px; }
+  .d-hero-trial .d-stamp-field { min-height: 62px; font-size: 21px; }
+  .d-hero-trial .d-stamp-key { --h: 62px; align-self: stretch; width: 100%; }
+  .d-hero-trial .d-stamp-fine { font-size: 13px; }
   .d-hero .d-hero-meter { order: 5; display: grid; width: min(420px, 100%); margin-top: 22px; }
   .d-hero-left .d-panel, .d-hero-right .d-panel { padding-left: clamp(22px, 5vw, 44px); padding-right: clamp(22px, 5vw, 44px); }
   /* merged panel: the title half and the CTA half share one plate. Each half
@@ -1052,3 +1075,4 @@ html.hc .drift-page { background: #000000; }
 html.hc .drift-page .d-rails, html.hc .drift-page .d-underglow, html.hc .drift-page .d-stickers { display: none; }
 html.hc .drift-page .d-title, html.hc .drift-page .d-marquee, html.hc .drift-page .d-tagline,
 html.hc .drift-page .d-headline span, html.hc .drift-page .d-sechead .d-ja { text-shadow: none; }
+html.hc .drift-page .d-price-label { text-shadow: none; }

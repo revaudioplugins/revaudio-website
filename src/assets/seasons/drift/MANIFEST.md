@@ -1,3 +1,8 @@
+> **Added 2026-10-01 (Dan's pick "D"):** `trial-plate.png` (1393x487, RGBA) — the hero trial panel's plate,
+> generated with OpenAI gpt-image-1 from a TEXT-ONLY prompt (no RevAudio art uploaded): `tools/gen-drift-trial-panel.sh D`
+> ("A and C combined": A's clean black steel + C's magenta checker), cropped to its alpha bbox. drift.css 3-slices it
+> on desktop (caps: source x 0-320 and the last 120 px). Phones keep the CSS panel. Rejected runs A/B/C/D2 stay out of the repo.
+
 > **Unreferenced 2026-10-01 (conversion architecture, D2/H1 whole-sound rebuild):** the page no longer imports
 > `arcade2_left_plate.png` (BAND SELECT cabinet, DriftBand.astro deleted), `btn_start_off.png` / `btn_start_on.png` /
 > `led_amber_s.png` (PUSH START, DriftAuto.astro deleted), `graf_pic_int.png` / `graf_pic_spd.png` /
