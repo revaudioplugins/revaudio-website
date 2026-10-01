@@ -75,6 +75,12 @@ export const compatLine = () =>
   // U+2011 non-breaking hyphen: at 390 px the line broke as '64-' / 'bit'
   `Mac: ${formatsMac()}, macOS 10.13+, native on Apple silicon and Intel. Windows: ${formatsWin()}, 64\u2011bit, needs WebView2.` +
   (drift.aaxReady ? '' : ' No Pro Tools (AAX) yet.');
+/** #get's compat rows (dl): the formats are read before the email. ASCII hyphen in 64-bit (Oswald/mono subsets). */
+export const compatRows = () => [
+  { k: 'MAC', v: `${formatsMac()} · macOS 10.13+ · Apple silicon + Intel` },
+  { k: 'WIN', v: `${formatsWin()} · 64-bit · needs WebView2` },
+  ...(drift.aaxReady ? [] : [{ k: 'PRO TOOLS', v: 'not yet' }]),
+];
 
 /** 'Sat Oct 24' -> 'Oct 24' (the short rows are tighter than #get). */
 export const noDay = (label: string) => label.replace(/^[A-Z][a-z]{2} /, '');
@@ -101,7 +107,7 @@ export function routesFor(phase: DriftPhase = drift.phase): Route[] {
   const video: Route = {
     id: 'video',
     cond: 'Keep it with a video',
-    heroCond: 'With a video',
+    heroCond: 'Post a video',
     note: 'Post a DRIFT video on your channel.',
     value: p ? 'FREE' : undefined,
     href: '#creators',
@@ -109,14 +115,14 @@ export function routesFor(phase: DriftPhase = drift.phase): Route[] {
   const feedback: Route = {
     id: 'feedback',
     cond: 'Keep it with the feedback form',
-    heroCond: `With the feedback form, by ${nb(noDay(drift.feedbackClosesLabel))}`,
+    heroCond: `Feedback form · by ${nb(noDay(drift.feedbackClosesLabel))}`,
     note: `Fill it in by ${drift.feedbackClosesLabel} and we email you how to keep DRIFT${p ? ` for $${drift.driverPriceUsd}` : ''}.`,
     value: p ? `$${drift.driverPriceUsd}` : undefined,
   };
   const release: Route = {
     id: 'release',
     cond: 'Buy it at release',
-    heroCond: `At release, ${nb(drift.releaseLabel)}`,
+    heroCond: `Release · ${nb(noDay(drift.releaseLabel))}`,
     note: `DRIFT goes on sale ${drift.releaseLabel}.`,
     value: p ? `$${drift.listPriceUsd}` : undefined,
   };
@@ -143,22 +149,22 @@ export function ctaFor(phase: DriftPhase = drift.phase): DriftCta {
   switch (phase) {
     case 'preopen':
       return {
-        label: 'Try it free',
-        sub: `${drift.trialDays} days free on your own mixes · by email ${drift.trialOpensLabel}`,
+        label: 'Get it',
+        sub: `By email · ${drift.trialOpensLabel}`,
         sticky: `${drift.trialDays} DAYS FREE · BY EMAIL ${drift.trialOpensDay.toUpperCase()}`,
         action: 'capture',
       };
     case 'open':
       return {
-        label: 'Try it free',
-        sub: `${drift.trialDays} days free on your own mixes · the download comes by email`,
+        label: 'Get it',
+        sub: `Download by email`,
         sticky: `${drift.trialDays} DAYS FREE · BY EMAIL`,
         action: drift.gateWired ? 'gate' : 'capture',
       };
     case 'closed':
       return {
         label: 'Get notified',
-        sub: `The trial is closed. DRIFT goes on sale ${drift.releaseLabel}.`,
+        sub: `Trial closed. On sale ${drift.releaseLabel}.`,
         sticky: `ON SALE ${drift.releaseLabel.toUpperCase()}`,
         action: 'capture',
       };
@@ -189,31 +195,31 @@ export interface CaptureCopy {
   fine: string;
 }
 export function captureCopyFor(phase: DriftPhase = drift.phase): CaptureCopy | null {
-  const list = 'You also join the RevAudio list; unsubscribe anytime. Nothing to pay today.';
-  const askUs = "You're already on our list. Email info@revaudio.net with DRIFT TRIAL in the subject and we'll add you to the trial.";
+  const list = 'You join our list · unsubscribe anytime. Nothing to pay today.';
+  const askUs = "Already on our list. Email info@revaudio.net, subject DRIFT TRIAL. We add you to the trial.";
   switch (phase) {
     case 'preopen':
       return {
         source: 'drift-trial',
         ok: `You're in. Watch your inbox on ${drift.trialOpensDay}.`,
         already: drift.trialMailToWholeList
-          ? `You're already on the RevAudio list, so the trial reaches you on ${drift.trialOpensDay}.`
+          ? `Already on our list. The trial reaches you ${drift.trialOpensDay}.`
           : askUs,
-        fine: `We email the Mac and Windows download on ${drift.trialOpensDay}: open it on your computer. ${list}`,
+        fine: `Download by email, ${drift.trialOpensDay}. Open it on a computer. You join our list · unsubscribe anytime.`,
       };
     case 'open':
       return {
         source: 'drift-trial',
-        ok: "You're in. The download is on its way by email.",
+        ok: "You're in. Download on its way by email.",
         already: askUs,
-        fine: `We email the Mac and Windows download: open it on your computer. ${list}`,
+        fine: `Download by email. Open it on a computer. You join our list · unsubscribe anytime.`,
       };
     case 'closed':
       return {
         source: 'drift-notify',
-        ok: `You're on the list. We email you when DRIFT goes on sale ${drift.releaseLabel}.`,
-        already: `You're already on our list, so you'll hear from us when DRIFT goes on sale ${drift.releaseLabel}.`,
-        fine: `We email you when DRIFT goes on sale ${drift.releaseLabel}. ${list}`,
+        ok: `You're on the list. We email you at release, ${drift.releaseLabel}.`,
+        already: `Already on our list. You hear from us at release, ${drift.releaseLabel}.`,
+        fine: `We email you at release, ${drift.releaseLabel}. ${list}`,
       };
     default:
       return null;

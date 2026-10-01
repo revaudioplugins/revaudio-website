@@ -17,7 +17,7 @@
  * /form-once; without JS the form posts to Formspree.
  */
 import { site } from '../../data/site';
-import { drift, ctaFor, compatLine, captureCopyFor } from '../../data/drift';
+import { drift, ctaFor, compatRows, captureCopyFor } from '../../data/drift';
 
 interface Props {
   id?: string;
@@ -29,22 +29,22 @@ const { id = 'try', source = copy.source } = Astro.props;
 const onceUrl = site.downloadGate.workerUrl + '/form-once';
 ---
 <div class="d-capture" id={id}>
-  <p class="d-compat">{compatLine()}</p>
+  <dl class="d-compat">{compatRows().map((r) => <div><dt>{r.k}</dt><dd>{r.v.split(' · ').map((s, i) => <Fragment>{i ? ' · ' : ''}<span class="d-nw">{s}</span></Fragment>)}</dd></div>)}</dl>
   <form class="d-capture-form" action={site.formspreeEndpoint} method="POST"
     data-drift-capture data-once-url={onceUrl} data-msg-ok={copy.ok} data-msg-already={copy.already}>
     <label for={`${id}-email`} class="d-field-label">Your email</label>
     <div class="d-field-row">
-      <input id={`${id}-email`} class="d-field" type="email" name="email" required autocomplete="email" placeholder="you@studio.com" />
+      <input id={`${id}-email`} class="d-field" type="email" name="email" required autocomplete="email" placeholder="your@email.com" />
       <input type="hidden" name="source" value={source} />
       <!-- honeypot: real users never fill this; bots do -->
       <input type="text" name="_gotcha" class="d-hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
-      <button type="submit" class="d-cta d-cta--edge">{ctaFor().label}</button>
+      <button type="submit" class="d-cta d-stamp-key"><span data-face>{ctaFor().label} <span class="d-stamp-arrow" aria-hidden="true">&#9656;</span></span></button>
     </div>
   </form>
-  <p class="d-cta-fine">{copy.fine}</p>
+  <p class="d-cta-fine d-fine">{copy.fine}</p>
   <!-- the live region is always in the tree (drift.css hides it while empty), so the first message is announced -->
   <p class="d-capture-status" role="status" aria-live="polite" tabindex="-1"></p>
-  {drift.creatorDealOpen && <a class="d-capture-next" href="#creators" hidden>Want to keep DRIFT free? See how ↓</a>}
+  {drift.creatorDealOpen && <a class="d-capture-next" href="#creators" hidden>Keep it free with a video ›</a>}
 </div>
 
 <!-- submit handling: src/lib/drift/capture.ts, started by init.ts (shared with the hero stamp) -->

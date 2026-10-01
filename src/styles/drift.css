@@ -173,7 +173,7 @@
   background: repeating-linear-gradient(90deg, rgba(190, 90, 255, .5) 0 6px, transparent 6px 12px);
 }
 .drift-page h2.d-headline {
-  font: 700 clamp(36px, 4.6vw, 64px) / .92 var(--d-f-head);
+  font: 700 clamp(36px, 3.6vw, 52px) / .92 var(--d-f-head);
   text-transform: uppercase;
   letter-spacing: .005em;
   color: var(--d-white-ink);
@@ -574,7 +574,8 @@
 @media (max-width: 1099px) { .drift-page .d-hero-catch { order: 6; margin-top: 22px; width: min(420px, 100%); } }
 /* ≥1366 the wheel is full size and the console ends under the old panel
    bottom: #drive gives most of it back (lowered 10-01: +14 px net) */
-@media (min-width: 1366px) { #drive.d-sec { padding-top: 26px; } }
+@media (min-width: 601px) { #drive.d-sec { padding-top: 26px; } }    /* the hero-baseline value: ~39 px from the catch line's box to the kicker at every desktop width (fixer r1 10-02) */
+@media (max-width: 600px) { #drive.d-sec { padding-top: 18px; } }     /* 40 - 22, same reason, phone */
 .d-cta-sub { font: 500 15px/1.45 Inter, var(--font-body); color: var(--d-fg-neon); }
 .d-cta-fine { font-size: 14px; color: var(--d-fg-dim); line-height: 1.5; }
 .d-cta-block .d-cta-fine { font-weight: 600; color: var(--d-fg); }
@@ -612,14 +613,22 @@
 
 /* the keep-it menu under the tracks (DriftKeep): three routes across on desktop */
 .d-keep { margin-top: clamp(32px, 4vw, 52px); }
-.d-keep .d-panel { padding-top: clamp(28px, 3vw, 40px); }
-.d-keep .d-ladder-label { margin-top: 16px; font-size: 15px; }
-.d-keep .d-ladder { margin-top: 10px; }
-.d-keep .d-ladder--hero .d-route-cond { font-size: 16px; }
+.d-keep .d-panel { padding-top: clamp(48px, 4.2vw, 56px); padding-bottom: clamp(44px, 3.4vw, 48px); }   /* clears the 29-31 px screws on phones (verify-ui 10-01) */
+.drift-page .d-keep-head { font: 700 clamp(22px, 2.1vw, 30px)/.95 var(--d-f-head); text-transform: uppercase; letter-spacing: .005em; }
+.d-keep-head span { display: block; }
+.d-keep-head .l1 { color: var(--d-white-ink); text-shadow: var(--d-glow-1); }
+.d-keep-head .l2 { color: var(--d-neon); text-shadow: var(--d-glow-2); }
+.drift-page .d-keep-sub { margin-top: 12px; }
+@media (max-width: 900px) { .drift-page .d-keep-sub { display: none; } }   /* the phone bar says 14 DAYS FREE · BY EMAIL SAT OCT 10 in the same viewport (copy r2 10-02) */
+.drift-page .d-keep-fine { margin-top: 16px; }
+.d-keep .d-ladder { margin-top: 16px; }
+.d-keep .d-ladder--hero .d-route-cond { font: 700 clamp(17px, 1.5vw, 20px)/1.1 var(--d-f-head); text-transform: uppercase; letter-spacing: .02em; color: var(--d-white-ink); }
+.d-keep .d-ladder--hero .d-route-link { min-height: 44px; }
+.d-keep .d-ladder--hero .d-route-link .d-route-cond { color: var(--d-fg-neon); text-decoration: none; }
+.d-keep .d-ladder--hero .d-route-link:hover .d-route-cond { color: var(--d-white-ink); }
 .d-keep .d-ladder--hero .d-route-val { min-width: 64px; font-size: 24px; }
-.d-keep .d-cta-fine { margin-top: 16px; font-weight: 600; color: var(--d-fg); }
 @media (min-width: 900px) {
-  .d-keep .d-ladder--hero { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 32px; }
+  .d-keep .d-ladder--hero { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 32px; align-items: stretch; }
   .d-keep .d-ladder--hero .d-route { padding-top: 12px; }
 }
 
@@ -769,6 +778,10 @@
 /* STOP is desaturated at rest: the CTA stays the one race-red per viewport */
 .d-cap--stop:not(:active) { filter: saturate(.3) brightness(.65) drop-shadow(0 3px 4px rgba(0, 0, 0, .7)); }
 .d-cap--stop:not(:active):hover { filter: saturate(.3) brightness(.8) drop-shadow(0 3px 4px rgba(0, 0, 0, .7)); }
+/* GPS focus ring: the plate image hides the outline, so the ring is drawn inside the cap */
+.drift-page .d-cap:focus-visible { outline: none; box-shadow: inset 0 0 0 3px var(--d-pink-ink), inset 0 0 0 5px rgba(7, 5, 11, .8); }
+.d-cap[aria-pressed='true'] { box-shadow: inset 0 0 0 2px rgba(255, 240, 255, .45), inset 0 0 14px rgba(255, 240, 255, .35); }
+.drift-page .d-cap[aria-pressed='true']:focus-visible { box-shadow: inset 0 0 0 3px var(--d-pink-ink), inset 0 0 14px rgba(255, 240, 255, .35); }
 .d-balance-box { margin-top: 18px; padding: 14px 16px 12px; display: grid; gap: 10px; }
 .d-balance-lr { display: flex; justify-content: space-between; align-items: center; font: 400 11px/1 var(--d-f-pix); color: var(--d-dim-violet); }
 
@@ -799,14 +812,55 @@
 }
 
 /* ==========================================================================
+   BELOW-HERO TYPE HELPERS: the hero's hand for every line the page says
+   ========================================================================== */
+.drift-page .d-catch {
+  font: 700 clamp(16px, 1.35vw, 19px) / 1.3 var(--d-f-head);
+  text-transform: uppercase;
+  letter-spacing: .02em;
+  color: var(--d-fg);
+  max-width: 60ch;
+  margin: 0 0 22px;
+  text-wrap: balance;
+}
+.d-catch em { font-style: normal; color: var(--d-neon); text-shadow: var(--d-glow-2); }
+.d-catch strong { font-weight: 700; color: var(--d-white-ink); }
+.drift-page .d-fine {
+  font: 500 12px / 1.4 var(--d-f-head);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--d-fg-dim);
+  text-wrap: balance;
+}
+.drift-page .d-readout {
+  font: 400 16px / 1.25 var(--d-f-spec);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--d-lcd);
+  text-shadow: 0 0 4px rgba(242, 76, 240, .6);
+}
+@media (max-width: 600px) {
+  .drift-page .d-catch { margin-bottom: 18px; }
+  .drift-page .d-readout { font-size: 14px; }
+}
+
+/* ==========================================================================
    SECTION 2 — LET IT DRIVE (#drive): TRACKS attract screen + mini GPS
    ========================================================================== */
-.d-tracks { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: clamp(22px, 3vw, 40px); align-items: start; }
+.d-tracks { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: clamp(22px, 3vw, 40px); align-items: stretch; }
 .d-attract { padding: 22px 24px 26px; }
-/* the CRT is ~340 px shorter than the GPS column: it rides beside the cabinet
-   instead of leaving a hole under itself (two columns only, ≥1001) */
+/* the CRT sits in its own steel panel, level with the GPS cabinet: 2x4 chips fill it (two columns only, ≥1001) */
 @media (min-width: 1001px) {
-  .d-attract { position: sticky; top: calc(var(--sale-h, 0px) + var(--nav-h, 44px) + 24px); }
+  .d-attract-panel { display: flex; flex-direction: column; }
+  .d-attract-panel > .d-attract { flex: 1; display: flex; flex-direction: column; }
+  .d-attract .d-cards { flex: 1; grid-auto-rows: 1fr; }
+  .d-attract .d-chip { justify-content: center; }
+}
+/* 2x4 chips once the GPS cabinet is tall enough (>=1280); below that the 4-column grid stays so the CRT never
+   outgrows the cabinet. 48px, not 64-80: anything taller makes the CRT taller than the GPS panel at 1440 */
+@media (min-width: 1280px) {
+  .d-attract .d-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .d-attract .d-chip svg { height: 48px; }
 }
 .d-attract-hdr { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-bottom: 14px; margin-bottom: 18px; position: relative; }
 .d-attract-hdr::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: repeating-linear-gradient(90deg, var(--d-hot) 0 14px, rgba(247, 105, 224, .12) 14px 28px); box-shadow: 0 0 10px rgba(247, 105, 224, .45); }
@@ -822,16 +876,16 @@
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .35), inset 0 0 18px rgba(190, 90, 255, .08);
   transition: transform .14s ease, border-color .14s ease, box-shadow .14s ease;
 }
-.d-chip:hover, .d-chip[aria-pressed='true'] {
-  transform: translateY(-2px); border-color: var(--d-hot);
-  box-shadow: 0 0 22px rgba(247, 105, 224, .22), inset 0 0 0 1px rgba(247, 105, 224, .5), inset 0 0 22px rgba(247, 105, 224, .1);
-}
+.d-chip:hover { border-color: rgba(247, 105, 224, .7); }
+.d-chip[aria-pressed='true'] { border-color: var(--d-hot); box-shadow: 0 0 22px rgba(247, 105, 224, .22), inset 0 0 0 1px rgba(247, 105, 224, .5), inset 0 0 22px rgba(247, 105, 224, .1); }
+.d-chip:active { transform: translateY(2px); transition-duration: 40ms; }
+#drive .d-chip:not([aria-pressed='true']):hover { border-color: rgba(190, 90, 255, .7); }   /* a purple lift: pink is the selected chip's alone */
 .d-chip svg { display: block; width: 100%; height: 56px; }
 .d-chip svg path { fill: none; stroke: var(--d-cyan); stroke-width: 2.2; filter: drop-shadow(0 0 3px rgba(94, 231, 255, .8)); }
 .d-chip-name { font: 400 19px/1 var(--d-f-lcd); letter-spacing: .04em; color: #f0e2ff; white-space: nowrap; }
 .d-chip[aria-pressed='true'] .d-chip-name { color: var(--d-white-ink); text-shadow: 0 0 8px var(--d-crt-glow); }   /* the selected chip lights */
-.drift-page .d-chips-note { margin-top: 14px; font-size: 17px; color: #a88cd0; }
-.d-gps-col { display: grid; gap: 16px; width: 100%; max-width: 440px; justify-self: end; }
+.drift-page .d-chips-note { margin-top: 14px; }
+.d-gps-col { display: grid; gap: 16px; width: 100%; max-width: 440px; justify-self: end; align-content: stretch; }
 .d-gps { position: relative; width: 100%; aspect-ratio: 1188 / 1324; }
 .d-gps > img, .d-gps > noscript > img { position: absolute; inset: 0; width: 100%; height: 100%; }
 .d-gps-glass { position: absolute; left: 15.5%; top: 44%; width: 69%; height: 44%; }
@@ -840,7 +894,12 @@
 .d-gps-glass circle.car { fill: #fff0ff; filter: drop-shadow(0 0 6px rgba(242, 76, 240, .95)); }
 .d-gps-lcd { position: absolute; left: 62%; top: 9.6%; width: 30%; height: 10%; display: flex; flex-direction: column; justify-content: center; padding: 0 8px; }
 .d-gps-lcd span { font: 400 clamp(11px, 1vw, 14px)/1.1 var(--d-f-lcd); color: var(--d-lcd); text-shadow: 0 0 4px rgba(242, 76, 240, .7); white-space: nowrap; }
-.drift-page .d-auto-line { font-size: 16px; max-width: none; }
+.drift-page .d-auto-line { margin: 20px 0 0; max-width: none; }
+.drift-page .d-drive-lede { margin-bottom: 8px; }
+.drift-page .d-tempo-read { margin: 0 0 22px; }
+.d-tempo-read .d-nw { white-space: nowrap; }   /* the bar list never splits on a phone */
+@media (max-width: 600px) { #drive .d-panel { padding-bottom: 44px; } }   /* clears the 31 px bottom screws, as .d-keep does */
+@media (max-width: 600px) { #drive .d-gps-panel .d-balance-box { display: none; } }   /* the hero's own L/R meter sits 1.5 screens up; the hooks stay in the DOM (fixer r2 10-02) */
 @media (max-width: 1000px) { .d-tracks { grid-template-columns: minmax(0, 1fr); } .d-gps-col { justify-self: center; } }
 @media (max-width: 560px) {
   .d-attract { padding: 16px 12px 18px; }
@@ -858,7 +917,7 @@
 .d-shot figcaption { margin-top: 10px; }
 /* the band strip: static, annotated, a lit window between the two cuts, on
    the sunk-glass screen material so the lit slice reads as a lamp in a window */
-.d-bandfig { margin: 0 0 24px; max-width: 900px; }
+.d-bandfig { margin: 0 0 24px; max-width: none; }
 .d-bandglass { padding: 14px 16px 10px; }
 .d-band-cuts { display: grid; gap: 2px; margin-bottom: 4px; }
 .d-band-cut {
@@ -915,12 +974,13 @@
 }
 .d-strip:hover img { filter: brightness(1.06); }
 .d-strip figcaption { margin-top: 10px; }
-.d-strip h3 { font-size: 11px; letter-spacing: .1em; margin-bottom: 6px; }
-.d-strip p { font-size: 14.5px; line-height: 1.45; color: var(--d-fg-dim); }
+.d-strip h3 { font: 700 20px/1 var(--d-f-head); letter-spacing: .03em; margin-bottom: 4px; }
+.d-strip p { font: 500 12px/1.35 var(--d-f-head); text-transform: uppercase; letter-spacing: .05em; color: var(--d-fg-dim); }
 .d-strip.s-pitch h3 { color: #d7dde8; }
 .d-strip.s-echo h3 { color: #ff5fd9; }
 .d-strip.s-verb h3 { color: #c79bff; }
 .d-strip.s-trem h3 { color: #6dff9a; }
+#fx .d-strip .d-nw { white-space: nowrap; }   /* 'Tape-dark' never breaks at its hyphen on a phone */
 @media (max-width: 1000px) {
   .d-rack { grid-template-columns: 1fr 1fr; gap: 12px; overflow: visible; padding: 12px; }
 }
@@ -931,27 +991,46 @@
 .d-alsoin { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(20px, 4vw, 48px); align-items: center; margin-top: 24px; }
 .d-bay { overflow: hidden; aspect-ratio: 1005 / 324; border-radius: 10px; box-shadow: 0 0 0 1px rgba(4, 2, 8, .95), 0 0 0 6px #08040d, 0 1px 0 6px rgba(255, 240, 255, .06); }
 .d-bay img { display: block; width: calc(100% * 1060 / 1005); max-width: none; height: auto; margin: calc(-100% * 58 / 1005) 0 0 calc(-100% * 55 / 1005); }
-.d-alsoin h3 { font-size: 12px; letter-spacing: .12em; margin-bottom: 10px; }
-.d-alsoin p { font-size: 17px; line-height: 1.6; color: var(--d-fg); max-width: 46ch; }
-.d-alsoin strong { color: var(--d-white-ink); font-weight: 600; }
-.drift-page .d-fx-line { margin-top: 24px; }
+.d-alsoin h3 { font: 700 22px/1 var(--d-f-head); letter-spacing: .02em; color: var(--d-white-ink); text-shadow: var(--d-glow-1); margin-bottom: 12px; }
+/* 'Also in DRIFT' as a spec plate: Oswald key | value rows, dashed rules */
+.d-spec-plate { margin: 0; display: grid; }
+.d-spec-plate > div { display: grid; grid-template-columns: 7.2em minmax(0, 1fr); column-gap: 14px; align-items: baseline; padding: 9px 0; border-top: 1px dashed rgba(180, 107, 255, .22); }
+.d-spec-plate dt { font: 700 17px/1.2 var(--d-f-head); letter-spacing: .04em; color: var(--d-white-ink); }
+.d-spec-plate dd { margin: 0; font: 500 16px/1.3 var(--d-f-head); text-transform: uppercase; letter-spacing: .03em; color: var(--d-fg); }
 @media (max-width: 900px) { .d-alsoin { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 600px) { #fx .d-bay { display: none; } #fx .d-spec-plate > div { grid-template-columns: 6.2em minmax(0, 1fr); padding: 7px 0; } #fx .d-spec-plate dd { font-size: 14px; } }   /* the bay photo repeats the SATURATE row; the dd lines stay on one line */
+/* the <noscript> twins hold raw markup as text while JS runs; give them the
+   head face so no #fx node reports the site's Inter (no visual change) */
+#fx noscript { font-family: var(--d-f-head); }
 
 /* ==========================================================================
-   SECTION 4 — TEST DRIVE (#get): ladder + sign-up + folded specs
+   SECTION 4 — TEST DRIVE (#get): one sign-up panel in the hero console's dress + folded specs
+   (the keep-it ladder renders once, in .d-keep under the tracks)
    ========================================================================== */
 /* html already carries scroll-padding-top: nav + .75rem (global.css), so only a
-   sale bar, if one is up, adds here; a nav-sized margin too would land 112 px down */
-.drift-page #get, .drift-page #try, .drift-page .d-creators { scroll-margin-top: var(--sale-h, 0px); }
-.d-getin { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(22px, 4vw, 48px); align-items: start; margin-top: 10px; }
-.d-getin > div > .d-ladder-label { margin-bottom: 14px; font-size: 15px; }
-.d-getin .d-ladder { gap: 16px; }
-.d-getin .d-route { padding-bottom: 14px; border-bottom: 1px dashed rgba(180, 107, 255, .22); }
+   sale bar, if one is up, adds here; a nav-sized margin too would land 112 px down.
+   #try adds 44 px so the panel's top screws stay below the header on a jump. */
+.drift-page #get, .drift-page .d-creators { scroll-margin-top: var(--sale-h, 0px); }
+.drift-page #try { scroll-margin-top: calc(var(--sale-h, 0px) + 44px); }
+.d-getin { display: grid; grid-template-columns: minmax(0, 1fr); margin-top: 10px; }   /* full width, flush with the Specs and DAWs bars (fixer r2 10-02) */
 .d-capture { display: grid; gap: 12px; padding-bottom: 8px; }   /* the last line clears the bottom screws */
 .d-capture [hidden] { display: none; }   /* the grid display must not un-hide the sent form */
-.d-compat { font-size: 15px; line-height: 1.55; color: var(--d-fg); padding-bottom: 12px; border-bottom: 1px dashed rgba(180, 107, 255, .22); }
+.d-capture .d-capture-next { order: 1; }
+.d-capture .d-cta-fine { order: 2; }   /* the answer (or the error) and the creators nudge sit right under the key; the fine print drops last, as in the hero stamp (ux r2 10-02) */
+/* #try is the hero console's twin from 901 px: the compat label on the left, the field, key and fine print on the right */
+@media (min-width: 901px) {
+  #try.d-capture { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); column-gap: 40px; align-items: center; }
+  #try .d-compat { grid-column: 1; grid-row: 1 / span 3; padding: 0 32px 0 0; border-bottom: 0; border-right: 1px dashed rgba(180, 107, 255, .22); }
+  #try .d-capture-form, #try > .d-fine, #try .d-capture-status, #try .d-capture-next { grid-column: 2; }
+}
+/* compat rows: MAC / WIN keys in Oswald, the formats in the spec mono */
+.d-compat { margin: 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 12px; align-items: baseline; padding-bottom: 12px; border-bottom: 1px dashed rgba(180, 107, 255, .22); }
+.d-compat > div { display: contents; }
+.d-compat dt { font: 700 15px/1.2 var(--d-f-head); letter-spacing: .06em; color: var(--d-white-ink); }
+.d-compat dd { margin: 0; font: 400 15px/1.35 var(--d-f-spec); letter-spacing: .03em; color: var(--d-fg); }
+#try .d-compat .d-nw { white-space: nowrap; }   /* 'needs WebView2', 'Apple silicon + Intel' stay whole */
 .d-capture-form { display: grid; gap: 8px; }
-.d-field-label { font: 600 15px/1.3 Inter, var(--font-body); color: var(--d-white-ink); }
+.d-field-label { font: 600 14px/1.3 var(--d-f-head); text-transform: uppercase; letter-spacing: .06em; color: var(--d-fg); }   /* DriftCapture only; the hero uses .d-sr */
 .d-field-row { display: grid; gap: 14px; justify-items: start; }
 /* the email field is a sunk glass window, same material as every readout */
 .d-field {
@@ -965,23 +1044,34 @@
 }
 .d-field::placeholder { color: #8f7aa8; }
 .d-field:focus { box-shadow: 0 0 0 1px rgba(4, 2, 8, .9), inset 0 5px 8px rgba(0, 0, 0, .7), inset 0 0 0 1px var(--d-neon); }
+/* #try's field and key wear the hero stamp's dress (scoped: the hero field carries .d-field too) */
+.d-capture .d-field { min-height: 56px; padding: 0 18px; font: 400 20px/1 var(--d-f-spec); letter-spacing: .06em; caret-color: var(--d-hot); }
+.d-capture .d-stamp-key { --h: 56px; min-width: 0; }
+@media (min-width: 901px) { .d-capture .d-field-row { grid-template-columns: minmax(0, 1fr) auto; align-items: center; } }
 .d-hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 .d-capture-status { font-size: 16px; line-height: 1.5; }
 .d-capture-status:empty { display: none; }   /* the live region stays in the tree; only its text changes */
 .d-capture-status.ok { color: var(--d-white-ink); }
 .d-capture-status.err { color: var(--d-fg-dim); }
-.d-capture-next { justify-self: start; color: var(--d-fg-neon); text-decoration: underline; text-underline-offset: 3px; font-weight: 600; }
+/* #try's answer lights up like the hero stamp's readout; errors are Oswald fine print */
+.d-capture .d-capture-status.ok { font: 400 22px/1.15 var(--d-f-lcd); letter-spacing: .03em; color: var(--d-white-ink); text-shadow: 0 0 8px rgba(242, 76, 240, .6); }
+.d-capture .d-capture-status.err { font: 500 13px/1.4 var(--d-f-head); text-transform: none; letter-spacing: .05em; color: var(--d-pink-ink); }   /* none: the message carries info@revaudio.net, which must read as typed */
+.drift-page .d-capture .d-capture-status:focus-visible { outline: none; }
+.d-capture-next { justify-self: start; display: inline-flex; align-items: center; min-height: 44px; font: 700 15px/1 var(--d-f-head); text-transform: uppercase; letter-spacing: .04em; color: var(--d-fg-neon); text-decoration: none; }
 .d-buyslot { display: grid; gap: 12px; justify-items: start; }
 .d-more { margin-top: 24px; display: grid; gap: 10px; }   /* full width: a 760 px cap ended mid-way under the capture panel */
-.d-more details { padding: 0 18px; border-radius: 8px; background: rgba(20, 8, 30, .7); box-shadow: 0 0 0 1px rgba(190, 90, 255, .22); }
+/* folded specs on sunk glass (the .d-field recipe) */
+.d-more details { padding: 0 18px; border-radius: 5px; background: radial-gradient(120% 100% at 50% 40%, #14061f 0%, #0b0314 70%); box-shadow: 0 0 0 1px rgba(4, 2, 8, .9), 0 1px 0 1px rgba(255, 240, 255, .07), inset 0 5px 8px rgba(0, 0, 0, .7); }
 .d-more summary {
   display: flex; align-items: center; min-height: 48px; cursor: pointer; list-style: none;
-  font: 600 16px/1.3 Inter, var(--font-body); color: var(--d-white-ink);
+  font: 700 18px/1.2 var(--d-f-head); text-transform: uppercase; letter-spacing: .02em; color: var(--d-white-ink);
 }
 .d-more summary::-webkit-details-marker { display: none; }
-.d-more summary::before { content: '\25B6'; margin-right: 12px; font-size: 12px; color: var(--d-hot); display: inline-block; transition: transform 120ms ease; }
+.d-more summary:hover { text-shadow: var(--d-glow-1); }   /* a press target answers the pointer (ux r2 10-02) */
+.d-more summary::before { content: '\25B6'; margin-right: 12px; font-family: var(--d-f-pix); font-size: 10px; color: var(--d-hot); display: inline-block; transition: transform 120ms ease; }   /* the kicker's ▶, Press subset */
 .d-more details[open] summary::before { transform: rotate(90deg); }
-.d-more details > p, .d-more-dl { margin: 0 0 16px; font-size: 16px; color: var(--d-fg); line-height: 1.55; }
+.d-more details > p { margin: 0 0 16px; font: 500 15px/1.4 var(--d-f-head); text-transform: uppercase; letter-spacing: .04em; color: var(--d-fg); }
+.d-more-dl { margin: 0 0 16px; font: 400 16px/1.4 var(--d-f-spec); color: var(--d-fg); }
 .d-more-dl { display: grid; gap: 6px; }
 .d-more-dl div { display: flex; gap: 8px; }
 .d-more-dl dt::after { content: ':'; }
@@ -991,7 +1081,6 @@
   .d-getin { grid-template-columns: minmax(0, 1fr); }
   .d-field-row { justify-items: stretch; }
   .d-field-row .d-cta { margin-left: 0; }
-  .d-get-panel .d-checker { display: none; }   /* the 試乗 sticker needs the top edge on a narrow panel */
   .d-get-panel { padding-left: clamp(20px, 5vw, 44px); padding-right: clamp(20px, 5vw, 44px); }
 }
 @media (min-width: 600px) and (max-width: 900px) {
@@ -1020,15 +1109,15 @@
    as LCD rows with lit LEDs) keeps DRIFT chrome in the reel's landing spot at
    every width: ≥1000 a column beside the steps; below, a compact strip
    between step 4 and the button, its rows flowing two or three to a line. */
-.d-cr-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px clamp(28px, 4vw, 56px); align-items: start; }
+.d-cr-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px clamp(28px, 4vw, 56px); align-items: stretch; }
 .d-cr-checks { display: grid; gap: 8px; padding: 12px 16px 12px; }
 @media (min-width: 1000px) {
   .d-cr-grid { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); }
-  .d-steps-cr, .d-cr-cta { grid-column: 1; }
-  .d-cr-checks { grid-column: 2; grid-row: 1 / span 2; gap: 12px; padding: 18px 22px 20px; margin-top: 6px; }
+  .d-cr-panel, .d-cr-cta { grid-column: 1; }
+  .d-cr-checks { grid-column: 2; grid-row: 1; gap: 12px; padding: 18px 22px 20px; margin-top: 0; }
 }
 .d-cr-checks-hdr { font: 400 17px/1 var(--d-f-lcd); letter-spacing: .12em; color: var(--d-lcd-hdr); text-shadow: 0 0 3px rgba(240, 70, 235, .6); }
-.d-cr-checks ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 22px; }
+.d-cr-checks ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 @media (min-width: 1000px) { .d-cr-checks ul { display: grid; gap: 8px; } }
 .d-cr-checks li {
   display: flex; align-items: center; gap: 10px;
@@ -1043,9 +1132,9 @@
   background: radial-gradient(circle at 40% 35%, #fff0ff, var(--d-hot) 55%, #8a1f7a);
   box-shadow: 0 0 6px rgba(247, 105, 224, .8), 0 0 0 1px rgba(4, 2, 8, .9);
 }
-.d-cr-checks-foot { font: 400 16px/1.3 var(--d-f-lcd); letter-spacing: .06em; color: var(--d-dim-violet); }
 .d-steps-cr { list-style: none; counter-reset: cr; margin: 0; padding: 0; display: grid; gap: 16px; max-width: 64ch; }
-.d-steps-cr li { counter-increment: cr; position: relative; padding-left: 52px; font-size: 17px; line-height: 1.55; color: var(--d-fg); }
+.d-steps-cr li { counter-increment: cr; position: relative; min-height: 32px; padding-left: 52px; font: 500 17px/1.4 var(--d-f-head); text-transform: uppercase; letter-spacing: .03em; color: var(--d-fg); }
+@media (max-width: 600px) { .d-steps-cr li { font-size: 15px; padding-left: 44px; } }
 .d-steps-cr li::before {
   content: counter(cr); position: absolute; left: 0; top: -2px;
   font: 600 32px/1 var(--d-f-badge); color: var(--d-fg-neon);
@@ -1058,7 +1147,7 @@
   display: inline-flex; align-items: center; justify-content: center;
   min-height: 52px; padding: 0 30px 3px;
   border-radius: 9px;
-  font: 600 15px/1 var(--d-f-badge); letter-spacing: .12em; text-transform: uppercase;
+  font: 700 22px/1 var(--d-f-head); letter-spacing: .03em; text-transform: uppercase;
   color: var(--d-white-ink); text-decoration: none; white-space: nowrap;
   text-shadow: 0 -1px 0 rgba(30, 0, 60, .8);
   background: linear-gradient(180deg, #9640ee 0%, #8a2be2 45%, #6a1dbd 100%);
@@ -1071,6 +1160,7 @@
   transition: transform 90ms ease, box-shadow 90ms ease, filter 120ms ease;
 }
 .d-btn-violet:hover { filter: brightness(1.08); }
+.d-btn-violet:hover .d-stamp-arrow, .d-btn-violet:focus-visible .d-stamp-arrow { transform: translateX(3px); }
 .d-btn-violet:active {
   transform: translateY(3px);
   box-shadow:
@@ -1080,11 +1170,17 @@
     0 1px 0 #3b0f6b,
     0 2px 6px rgba(0, 0, 0, .5);
 }
-.d-btn-note { font-size: 15px; line-height: 1.5; color: var(--d-fg); }
-.d-creators .d-small a { color: var(--d-fg-neon); text-decoration: underline; }
+.drift-page .d-btn-note { font: 500 14px/1.4 var(--d-f-head); text-transform: uppercase; letter-spacing: .04em; color: var(--d-fg); }
+/* the address, the path and the quoted box label read as typed (Oswald, no caps transform: /affiliate is case-sensitive);
+   the links pad to a 44 px tap target */
+.drift-page .d-cr-mail { text-transform: none; }
+#creators .d-catch .d-nw { white-space: nowrap; }   /* 'Post it.' stays on one line on a phone */
+.d-creators .d-cr-typed { text-transform: none; }
+.d-creators .d-btn-note { text-transform: none; }
+.d-creators .d-steps-cr a { color: var(--d-fg-neon); text-decoration: underline; text-underline-offset: 3px; display: inline-block; padding: 12px 0; margin: -12px 0; }
+.d-creators .d-cr-mail a { color: var(--d-fg-neon); text-decoration: underline; text-underline-offset: 3px; display: inline-block; padding: 14px 0; margin: -14px 0; }
 @media (max-width: 900px) {
   .d-cr-cta { justify-items: stretch; }
-  .d-btn-note, .d-creators .d-small { font-size: 14px; }
 }
 
 /* ==========================================================================
@@ -1092,6 +1188,7 @@
    ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
   .drift-page *, .drift-page *::before, .drift-page *::after { transition: none !important; animation: none !important; }
+  .drift-page ::placeholder { animation: none !important; }   /* the hero's own override (0,2,1) loses to the blink rule (0,3,1) */
 }
 html.hc .drift-page { background: #000000; }
 html.hc .drift-page .d-rails, html.hc .drift-page .d-underglow, html.hc .drift-page .d-stickers { display: none; }

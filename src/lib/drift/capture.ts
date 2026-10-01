@@ -3,7 +3,7 @@
  * and #try's capture. One contract: POST {form:'newsletter', email, source,
  * _gotcha} to the worker's /form-once (one-per-email relay); the status line
  * (.d-capture-status) and the creators nudge (.d-capture-next) are the form's
- * siblings. A [data-face] inside the submit button reads "Sending…" in flight.
+ * siblings. A [data-face] inside the submit button reads "Sending" in flight (no ellipsis: it must not be wider than the rest face).
  */
 export function initCaptures(): void {
   document.querySelectorAll<HTMLFormElement>('form[data-drift-capture]:not([data-bound])').forEach((form) => {
@@ -24,14 +24,15 @@ export function initCaptures(): void {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!wired) {
-        show('Almost there. Sign-up goes live shortly. Your email wasn’t sent yet.', false);
+        show('Not live yet. Your email was not sent.', false);
         return;
       }
       const submitBtn = form.querySelector<HTMLButtonElement>('button[type="submit"]');
       const face = submitBtn?.querySelector<HTMLElement>('[data-face]');
       const idle = face?.innerHTML;
-      if (submitBtn) submitBtn.disabled = true;
-      if (face) face.textContent = 'Sending…';
+      const hadFocus = !!submitBtn && document.activeElement === submitBtn;   // a disabled key drops focus to body; the error path gives it back
+      if (submitBtn) { submitBtn.style.minWidth = submitBtn.offsetWidth + 'px'; submitBtn.disabled = true; }   // the key keeps its rest width: 'Sending' is narrower than 'Get it ▸' (measured 10-02)
+      if (face) face.textContent = 'Sending';
       try {
         const res = await fetch(form.dataset.onceUrl!, {
           method: 'POST',
@@ -51,7 +52,8 @@ export function initCaptures(): void {
         show('Network hiccup. Try again in a moment.', false);
       }
       if (face && idle !== undefined) face.innerHTML = idle;
-      if (submitBtn) submitBtn.disabled = false;
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.style.minWidth = ''; }
+      if (hadFocus && submitBtn && !form.hidden) submitBtn.focus({ preventScroll: true });
     });
   });
 }

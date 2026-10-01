@@ -49,25 +49,28 @@ const caps = [
       <span class="d-rule" aria-hidden="true"></span>
     </div>
     <h2 id="d-trk-h" class="d-headline"><span class="l1">Let a shape</span> <span class="l2">do the driving.</span></h2>
-    <p class="d-lede d-lede--sec">Pick a line and DRIFT drives your whole sound around it, from a gentle sway to a hard ping-pong, free in seconds or locked to 1, 2, 4, 8, 16 or 32 bars. You never draw pan automation by hand.</p>
+    <p class="d-catch d-drive-lede">Pick one. DRIFT drives your <em>whole sound</em> around it.</p>
+    <p class="d-readout d-tempo-read">Tempo · unsynced or locked to <span class="d-nw">1 · 2 · 4 · 8 · 16 · 32 bars</span></p>
 
     <div class="d-tracks">
-      <div class="d-crt d-attract" data-drift-fab-watch>
-        <div class="d-attract-hdr">
-          <span class="d-attract-title">SELECT TRACKS</span>
+      <DriftPanel checker={false} class="d-attract-panel">
+        <div class="d-crt d-attract" data-drift-fab-watch>
+          <div class="d-attract-hdr">
+            <span class="d-attract-title">SELECT TRACKS</span>
+          </div>
+          <ul class="d-cards">
+            {SIMPLE.map((t) => (
+              <li>
+                <button class="d-chip" type="button" data-track={t.id} data-name={t.name} aria-pressed={t.id === DEFAULT ? 'true' : 'false'} aria-label={`${t.name} track`}>
+                  <svg viewBox="0 0 120 64" aria-hidden="true"><path d={outlinePath(t.id, 120, 64, 192)} /></svg>
+                  <span class="d-chip-name">{t.name}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+          <p class="d-fine d-chips-note">8 shapes here. Race circuits in the plugin.</p>
         </div>
-        <ul class="d-cards">
-          {SIMPLE.map((t) => (
-            <li>
-              <button class="d-chip" type="button" data-track={t.id} data-name={t.name} aria-pressed={t.id === DEFAULT ? 'true' : 'false'} aria-label={`${t.name} track`}>
-                <svg viewBox="0 0 120 64" aria-hidden="true"><path d={outlinePath(t.id, 120, 64, 192)} /></svg>
-                <span class="d-chip-name">{t.name}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-        <p class="d-small d-chips-note">Eight shapes here, plus race circuits in the plugin.</p>
-      </div>
+      </DriftPanel>
 
       <div class="d-gps-col">
         <DriftPanel checker={false} class="d-gps-panel">
@@ -98,8 +101,8 @@ const caps = [
             <div class="d-balance" data-balance aria-hidden="true"></div>
           </div>
         </DriftPanel>
-        <p class="d-lede d-auto-line">Turn on AUTO DRIFT and the car speeds up when the music hits harder, then parks at centre when it goes quiet.</p>
       </div>
     </div>
+    <p class="d-catch d-auto-line"><strong>AUTO DRIFT:</strong> harder hits, faster car. Quiet, it parks at centre.</p>
   </div>
 </section>

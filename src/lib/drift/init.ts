@@ -35,7 +35,8 @@ function initJump(): void {
       if (!t) return;
       e.preventDefault();
       if (!lenis) t.scrollIntoView({ behavior: 'auto', block: 'start' });
-      t.querySelector<HTMLInputElement>('input[type=email]')?.focus({ preventScroll: true });
+      // pointer: fine only: on touch the visitor reads the compat rows first, then taps the field (no keyboard pop)
+      if (matchMedia('(pointer: fine)').matches) t.querySelector<HTMLInputElement>('input[type=email]')?.focus({ preventScroll: true });
       history.replaceState(null, '', a.hash);
     });
   });

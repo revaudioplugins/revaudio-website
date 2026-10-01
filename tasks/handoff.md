@@ -1,3 +1,39 @@
+## 2026-10-02 — /drift: THE HERO'S LAW BELOW THE HERO (Claude Code, Fable orchestrator) — COMMITTED on feat/drift-page (local), dev :4328
+Owner: Claude Code (Dan's session). Same branch/worktree as the entries below (one writer).
+Why: Dan on 10-01, after the hero pass (3d37174): "fonts and layout, minimize with the catch phrases, really this is what I
+love" → apply the hero's principles to the whole page. The law: Orbitron = names + numbers only; Oswald 700 caps = every line
+the page says (fine print 500, dim); Press Start = kickers; mono = readouts + inputs; kana = decoration (subset font);
+two-line heads white/purple; steel panels with screws, level; one red per viewport; copy = catch phrases, facts exact.
+Then Dan's own idea: the page's first catch phrase in the band between the trial console and LET IT DRIVE; copywriter
+proposed ten, Dan picked "LEFT. RIGHT. NO HANDS." (own commit, DriftHero.astro + .d-hero-catch).
+How: 3 workflows (37 agents): 4 reviewers → merger (spec: scratchpad drift-law/merged-spec.json, session-local) →
+helpers + 2 builder lanes → 4 verifiers → Fable fixer ×2 → full re-verify ×3 → orchestrator fix pass.
+- #drive: lede → "Pick one. DRIFT drives your whole sound around it." + mono tempo readout; CRT wrapped in a DriftPanel
+  level with the GPS panel (2x4 chips ≥1280); AUTO DRIFT line under both; cap focus rings; hover ≠ selected.
+- Keep panel: two-line head "After 14 days. / Keep it, three ways."; routes "Post a video ›" FREE · "Feedback form · by
+  Oct 24" $39 · "Release · Nov 1" $69 (drift.ts heroCond); sub line hidden ≤900 (the phone bar says it).
+- #fx: head "Whole sound pans. / FX on one slice."; strip captions Oswald; prose → dl.d-spec-plate (SATURATE / AUTOTUNE /
+  PRESETS); band strip full width; phone hides the sat bay.
+- #get: duplicate ladder DELETED (the Keep panel is the one ladder); one panel: MAC/WIN compat rows (compatRows()),
+  email, GET IT key in the hero's Oswald (ctaFor().label 'Try it free' → 'Get it' page-wide); fine print
+  "Download by email, Sat Oct 10. Open it on a computer. You join our list · unsubscribe anytime."; error lands under
+  the key; key keeps its width while sending ('Sending', capture.ts).
+- #creators: catch "Film a session with DRIFT. Post it. Anyone on the trial can."; steps on a steel panel (Orbitron
+  numerals, min-height 32), VIDEO CHECK glass level with it (one lamp per row on phones); step 3 "It must pass the
+  video check."; Apply key Oswald; mail line keeps its case.
+- Phone sticky bar: the hero console + footer are CTA zones (never two reds); key 'Get it ▸' Oswald; micro line Oswald;
+  panel-steel strip; the cart FAB slides off over the hero key, heads, catch lines, Keep, VIDEO CHECK and the footer;
+  bar tap lands #try without focusing the field (init.ts).
+- h2.d-headline 64 → 52px at desktop. New helpers .d-catch / .d-fine / .d-readout (drift.css, above SECTION 2).
+Verified: build clean; Chromium 1440 + WebKit iPhone 13; hero parity probe = only #drive moved; font-fallback = only the
+▸ arrow; console clean; phone scrollWidth 390; ≤1 red per viewport while scrolling; forms mocked (ok / err / already);
+page 5.25 screens desktop, 9.4 phone. Probes: node_modules/.cache/drift-qa/{hero-parity,font-fallback,orch-gates}.mjs.
+Open (low, for Dan): the Reverb strip image shows a 'FREE' tempo dropdown (plugin screenshot; re-shoot with 1/4 or
+accept); phone compat rows leave a '·' at a line end; step 1's lowercase URL inside a caps line; the rails still
+leave with #drive (option: run them down the page = move the .d-drivezone close tag); real /form-once POST + a real
+phone are still unverified. Dan's verbatim lines untouched.
+Push/merge to main = live: only on Dan's explicit "push" (pull first).
+
 ## 2026-10-01 — /drift CONVERSION REBUILD (Claude Code) — COMMITTED on feat/drift-page (local only), preview on :4327
 Owner: Claude Code. Same branch/worktree/files as the 09-26 entry below (one writer), plus new `DriftCapture.astro`,
 `DriftCreators.astro`, `DriftStickyBar.astro`, `public/og/drift.png`, woff2 subsets in `public/fonts/drift/`.

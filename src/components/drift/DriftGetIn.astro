@@ -1,10 +1,10 @@
 ---
 /**
- * Section 4 — TEST DRIVE (#get), the main close. Left: the keep-it ladder
- * (condition first, value on sunk glass, only the FREE route links). Right,
- * on DRIFT panel chrome: the one working sign-up (DriftCapture #try, compat
- * line first). Below: the specs that are left, folded into <details>, and a
- * plain maker line (no exits at the conversion point).
+ * Section 4 — TEST DRIVE (#get), the main close. One panel in the hero
+ * console's dress: the one working sign-up (DriftCapture #try, compat rows
+ * first). The keep-it ladder renders once, in DriftKeep under the tracks, so
+ * it is not repeated here. Below: the specs that are left, folded into
+ * <details>, and a plain maker line (no exits at the conversion point).
  * Everything reads from src/data/drift.ts, so each flip is one line + flags:
  * 'open' with gateWired swaps the capture for TrialGateModal (still email
  * delivery, no download link on the page); 'released' swaps it for the
@@ -13,12 +13,11 @@
  */
 import DriftPanel from './DriftPanel.astro';
 import DriftCapture from './DriftCapture.astro';
-import { drift, ctaFor, routesFor, formatsShort, compatLine } from '../../data/drift';
+import { drift, ctaFor, formatsShort, compatRows } from '../../data/drift';
 import { plugins } from '../../data/plugins';
 import { site } from '../../data/site';
 
 const cta = ctaFor();
-const routes = routesFor();
 const checkoutUrl = plugins.find((p) => p.slug === 'drift')?.checkoutUrl ?? undefined;
 const registerUrl = site.downloadGate.workerUrl + '/download/register';
 ---
@@ -32,26 +31,7 @@ const registerUrl = site.downloadGate.workerUrl + '/download/register';
     <h2 id="d-get-h" class="d-headline"><span class="l1">Test drive DRIFT</span> <span class="l2">free for {drift.trialDays} days.</span></h2>
 
     <div class="d-getin" data-drift-fab-watch>
-      <div>
-        {routes.length > 0 && (
-          <Fragment>
-            <p class="d-ladder-label">
-              {routes.length === 3 ? `After your ${drift.trialDays} days, keep it one of three ways:` : 'Keep it:'}
-            </p>
-            <ol class="d-ladder" role="list">
-              {routes.map((r) => (
-                <li class:list={['d-route', `d-route--${r.id}`]}>
-                  <span class="d-route-cond">{r.cond}</span>
-                  <span class="d-route-note">{r.note}{r.href && <Fragment> <a href={r.href}>How it works ›</a></Fragment>}</span>
-                  {r.value && <span class="d-lcd d-route-val">{r.value}</span>}
-                </li>
-              ))}
-            </ol>
-          </Fragment>
-        )}
-      </div>
-
-      <DriftPanel sticker="試乗" class="d-get-panel">
+      <DriftPanel class="d-get-panel">
         {cta.action === 'cart' ? (
           <div class="d-buyslot">
             <button type="button" class="d-cta" data-add-to-cart data-cart-label data-slug="drift" data-name="Drift"
@@ -60,10 +40,10 @@ const registerUrl = site.downloadGate.workerUrl + '/download/register';
           </div>
         ) : cta.action === 'gate' ? (
           <div class="d-capture" id="try">
-            <p class="d-compat">{compatLine()}</p>
-            <button type="button" class="d-cta" data-trial-gate-open data-plugin-name="DRIFT"
-              data-plugin-slug={drift.gateId} data-register-url={registerUrl}>{cta.label}</button>
-            <p class="d-cta-fine">The download comes by email: open it on your computer. Nothing to pay today.</p>
+            <dl class="d-compat">{compatRows().map((r) => <div><dt>{r.k}</dt><dd>{r.v}</dd></div>)}</dl>
+            <button type="button" class="d-cta d-stamp-key" data-trial-gate-open data-plugin-name="DRIFT"
+              data-plugin-slug={drift.gateId} data-register-url={registerUrl}><span data-face>{cta.label} <span class="d-stamp-arrow" aria-hidden="true">&#9656;</span></span></button>
+            <p class="d-cta-fine d-fine">Download by email. Open it on your computer. Nothing to pay today.</p>
           </div>
         ) : (
           <DriftCapture />
@@ -80,18 +60,18 @@ const registerUrl = site.downloadGate.workerUrl + '/download/register';
         </dl>
       </details>
       <details>
-        <summary>Which DAWs?</summary>
+        <summary>DAWs</summary>
         <p>{drift.aaxReady
-          ? 'Any host that loads VST3, AU or AAX on a Mac, or VST3 or AAX on Windows, Pro Tools included.'
-          : 'Any host that loads VST3 or AU on a Mac, or VST3 on Windows. Not Pro Tools yet.'}</p>
+          ? 'Any VST3 or AAX host, plus AU on Mac. Pro Tools included.'
+          : 'Any VST3 host, plus AU on Mac. Not Pro Tools yet.'}</p>
       </details>
       {drift.afterTrialAnswer && (
         <details>
-          <summary>What happens after {drift.trialDays} days?</summary>
+          <summary>After {drift.trialDays} days?</summary>
           <p>{drift.afterTrialAnswer}</p>
         </details>
       )}
     </div>
-    <p class="d-small d-maker">From RevAudio, the makers of RevLimiter.</p>
+    <p class="d-fine d-maker">From RevAudio, makers of RevLimiter.</p>
   </div>
 </section>

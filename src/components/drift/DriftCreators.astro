@@ -10,7 +10,7 @@
  * @revaudioplugins, marked as an ad; then a free licence + a 20% affiliate
  * link. The button is violet, never race-red (one red per viewport), and the
  * DRIFT BETA reminder sits right under it: the last line read before leaving.
- * The steps get a VIDEO CHECK dash readout (step 3's checks as LCD rows on
+ * The steps get a VIDEO CHECK dash readout (the video's checks as LCD rows on
  * sunk glass with lit LEDs): beside them from 1000 px, a compact two-column
  * strip between step 4 and the button below that, so the reel's phone
  * landing spot shows DRIFT chrome too, not four numerals and an outlined
@@ -18,6 +18,7 @@
  * keycap (.d-btn-violet): DRIFT's key chrome in the violet family.
  */
 import { drift } from '../../data/drift';
+import DriftPanel from './DriftPanel.astro';
 ---
 <section class="d-sec d-creators" id="creators" data-drift-cta-zone aria-labelledby="d-cr-h">
   <div class="d-wrap">
@@ -27,35 +28,37 @@ import { drift } from '../../data/drift';
       <span class="d-rule" aria-hidden="true"></span>
     </div>
     <h2 id="d-cr-h" class="d-headline"><span class="l1">Stream it.</span> <span class="l2">Get DRIFT free.</span></h2>
-    <p class="d-lede d-lede--sec">Make music on stream or on YouTube? Take the DRIFT beta for a drive before launch. Film a session with DRIFT, live or recorded, and post it on your channel. Anyone on the trial can do this.</p>
+    <p class="d-catch">Film a session with DRIFT. <span class="d-nw">Post it.</span> <em>Anyone on the trial</em> can.</p>
 
     <div class="d-cr-grid">
-      <ol class="d-steps-cr" role="list">
-        <li>Apply at revaudio.net/affiliate. In the box “Why do you want to promote RevAudio?”, write <strong>DRIFT BETA</strong>.</li>
-        <li>We email you the DRIFT beta download.</li>
-        <li>Post a video of DRIFT on your channel: public, at least 2 minutes, up for at least 30 days, tagged <strong>@revaudioplugins</strong>, marked as an ad or affiliate post{drift.videoDeadlineLabel && `, posted by ${drift.videoDeadlineLabel}`}.</li>
-        <li>Once we see the tag, we send your free DRIFT licence and your own affiliate link. It pays 20% of every sale it brings.</li>
-      </ol>
+      <DriftPanel checker={false} class="d-cr-panel">
+        <ol class="d-steps-cr" role="list">
+          <li>Apply at <a class="d-cr-typed" href="/affiliate">revaudio.net/affiliate</a>.</li>
+          <li>We email you the beta download.</li>
+          <li>Post your DRIFT video{drift.videoDeadlineLabel && `, posted by ${drift.videoDeadlineLabel}`}. It must pass the video check.</li>
+          <li>Tag seen: your free licence, plus your own affiliate link paying 20% of every sale.</li>
+        </ol>
+      </DriftPanel>
 
-      <!-- VIDEO CHECK: step 3's rules as a dash readout. It repeats the step,
-           so it is hidden from AT; the LEDs are lit lamps. Grid-placed: right
-           column from 1000 px, between the steps and the button below. -->
-      <div class="d-lcd d-lcd--big d-cr-checks" aria-hidden="true">
+      <!-- VIDEO CHECK: the video's rules as a dash readout, the one place they
+           are listed (step 3 points here), so it is read by AT too; the LEDs are
+           lit lamps. Grid-placed: right column from 1000 px, between the steps
+           and the button below. -->
+      <div class="d-lcd d-lcd--big d-cr-checks">
         <span class="d-cr-checks-hdr">▶ VIDEO CHECK</span>
         <ul>
           <li>PUBLIC</li>
           <li>2 MIN OR MORE</li>
           <li>UP 30 DAYS OR MORE</li>
           <li>TAGGED @REVAUDIOPLUGINS</li>
-          <li>MARKED AS AD</li>
+          <li>MARKED AD / AFFILIATE</li>
         </ul>
-        <span class="d-cr-checks-foot">TAG SEEN: FREE LICENCE + 20% LINK</span>
       </div>
 
       <div class="d-cr-cta" data-drift-fab-watch>
-        <a class="d-btn-violet" href="/affiliate">Apply as a creator</a>
-        <p class="d-btn-note">In the form, write <strong>DRIFT BETA</strong> in the “Why do you want to promote RevAudio?” box.</p>
-        <p class="d-small">Already a RevAudio affiliate? Email <a href="mailto:info@revaudio.net?subject=DRIFT%20BETA">info@revaudio.net</a> with DRIFT BETA in the subject.</p>
+        <a class="d-btn-violet" href="/affiliate">Apply as a creator <span class="d-stamp-arrow" aria-hidden="true">&#9656;</span></a>
+        <p class="d-btn-note">Write <strong>DRIFT BETA</strong> in the “Why do you want to promote RevAudio?” box.</p>
+        <p class="d-fine d-cr-mail">Already an affiliate? Email <a href="mailto:info@revaudio.net?subject=DRIFT%20BETA">info@revaudio.net</a>, subject DRIFT BETA.</p>
       </div>
     </div>
   </div>

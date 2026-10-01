@@ -29,10 +29,10 @@ import baySrc from '../../assets/seasons/drift/sat-bay.png';
 import { drift } from '../../data/drift';
 
 const strips = [
-  { cls: 's-pitch', src: pitch, name: 'Pitch', desc: 'Shift it up or down, up to an octave.' },
-  { cls: 's-echo', src: echo, name: 'Echo', desc: 'Repeats in time or free, tape-dark to clean.' },
-  { cls: 's-verb', src: verb, name: 'Reverb', desc: 'Room, plate or hall, with a shimmer.' },
-  { cls: 's-trem', src: trem, name: 'Tremolo', desc: 'Chops it in time with your song.' },
+  { cls: 's-pitch', src: pitch, name: 'Pitch', desc: 'Up or down, up to an octave.' },
+  { cls: 's-echo', src: echo, name: 'Echo', desc: 'Synced or unsynced. Tape-dark to clean.' },
+  { cls: 's-verb', src: verb, name: 'Reverb', desc: 'Room, plate, hall. Plus shimmer.' },
+  { cls: 's-trem', src: trem, name: 'Tremolo', desc: 'Chops in time with your song.' },
 ];
 // a strip renders at 280 css px on desktop and ~161 on a phone (2x2): 512w is
 // the source's full width, 340w serves phone DPR2 at ~40% of the bytes. The
@@ -75,13 +75,13 @@ const baySrcset = `${bay600.src} 600w, ${bay.src} 1060w`;
       <span class="d-ja" lang="ja" aria-hidden="true">周波数</span>
       <span class="d-rule" aria-hidden="true"></span>
     </div>
-    <h2 id="d-fx-h" class="d-headline"><span class="l1">The whole sound moves.</span> <span class="l2">The effects stay on one slice.</span></h2>
-    <p class="d-lede d-lede--sec">Set LOW CUT and HIGH CUT around one slice, like the hats or the air on a vocal. Echo, reverb, tremolo and pitch play only there.</p>
+    <h2 id="d-fx-h" class="d-headline"><span class="l1">Whole sound pans.</span> <span class="l2">FX on one slice.</span></h2>
+    <p class="d-catch">LOW CUT and HIGH CUT pick <em>one slice</em>. Echo, reverb, tremolo and pitch play only there.</p>
 
     {shot && (
       <figure class="d-shot">
         <img src={shot.src} width={shot.attributes.width ?? 1200} alt="The whole DRIFT plugin window" loading="lazy" decoding="async" />
-        <figcaption class="d-small">The whole DRIFT window, as it opens in your DAW.</figcaption>
+        <figcaption class="d-fine">The DRIFT window, as it opens in your DAW.</figcaption>
       </figure>
     )}
 
@@ -119,7 +119,7 @@ const baySrcset = `${bay600.src} 600w, ${bay.src} 1060w`;
           </div>
           <figcaption>
             <h3>{s.name}</h3>
-            <p>{s.desc}</p>
+            <p set:html={s.desc.replace('Tape-dark', '<span class="d-nw">Tape-dark</span>')} />
           </figcaption>
         </figure>
       ))}
@@ -132,11 +132,14 @@ const baySrcset = `${bay600.src} 600w, ${bay.src} 1060w`;
       </div>
       <div>
         <h3>Also in DRIFT</h3>
-        <p><strong>SATURATE:</strong> tape, tube, transformer or digital drive. <strong>AUTOTUNE:</strong> snaps your whole sound to your key and scale.</p>
+        <dl class="d-spec-plate">
+          <div><dt>SATURATE</dt><dd>Tape, tube, transformer, digital</dd></div>
+          <div><dt>AUTOTUNE</dt><dd>Your key and scale</dd></div>
+          <div><dt>PRESETS</dt><dd>60 · vocal, keys, guitar, drums, bass, mix bus</dd></div>
+          {drift.randomizeInBuild && <div><dt>RANDOMIZE</dt><dd>One roll, new effects. One undo, back.</dd></div>}
+        </dl>
       </div>
     </div>
 
-    {drift.randomizeInBuild && <p class="d-lede d-fx-line">One dice button rolls a new echo, reverb, tremolo and pitch setup. One undo takes it back.</p>}
-    <p class="d-lede d-fx-line">Or start from 60 presets for vocal, keys, guitar, drums, bass and mix bus.</p>
   </div>
 </section>

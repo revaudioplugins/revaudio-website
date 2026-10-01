@@ -15,8 +15,10 @@ const routes = routesFor();
 {routes.length > 0 && (
   <div class="d-keep d-wrap">
     <DriftPanel checker={false} class="d-keep-panel">
-      <p class="d-cta-sub">{cta.sub}</p>
-      <p class="d-ladder-label">{drift.phase === 'closed' ? 'Keep it:' : `After ${drift.trialDays} days, keep it:`}</p>
+      <p class="d-keep-head">{drift.phase === 'closed'
+        ? <span class="l2">Keep it:</span>
+        : <Fragment><span class="l1">After {drift.trialDays} days.</span>{' '}<span class="l2">Keep it{routes.length === 3 ? ', three ways.' : '.'}</span></Fragment>}</p>
+      <p class="d-fine d-keep-sub">{cta.sub}</p>
       <ul class="d-ladder d-ladder--hero" role="list">
         {routes.map((r) => (
           <li class:list={['d-route', `d-route--${r.id}`]}>
@@ -34,7 +36,7 @@ const routes = routesFor();
           </li>
         ))}
       </ul>
-      {cta.action !== 'cart' && <p class="d-cta-fine">Nothing to pay today.</p>}
+      {cta.action !== 'cart' && <p class="d-fine d-keep-fine">Nothing to pay today.</p>}
     </DriftPanel>
   </div>
 )}
