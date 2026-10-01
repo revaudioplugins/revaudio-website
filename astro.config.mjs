@@ -10,7 +10,9 @@ export default defineConfig({
   // Bench and gaugebench need no flag: both self-disable outside `dev` and
   // stay inert until a URL asks for them with ?bench / ?gauge — so plain
   // `npm run dev` is unaffected.
-  integrations: [sitemap(), bench(), gaugebench(), ...(process.env.EDIT ? [revedit()] : [])],
+  // /buy/<slug>/ are noindex checkout shortcuts for email links (src/pages/buy),
+  // so they stay out of the sitemap too.
+  integrations: [sitemap({ filter: (page) => !page.includes('/buy/') }), bench(), gaugebench(), ...(process.env.EDIT ? [revedit()] : [])],
   build: {
     inlineStylesheets: 'auto',
   },

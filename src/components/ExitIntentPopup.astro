@@ -34,7 +34,8 @@ const registerUrl = site.downloadGate.workerUrl + '/download/register';
 const portalUrl = site.downloadGate.portalUrl;
 const path = Astro.url.pathname.replace(/\/$/, '');
 // /drift: the season page has ONE ask, the beta (review Decision 17).
-const excluded = path === '/gas' || path === '/thank-you' || path === '/drift';
+// /buy/<slug>: an email buy link lands with the cart open; its one ask is checkout.
+const excluded = path === '/gas' || path === '/thank-you' || path === '/drift' || path.startsWith('/buy/');
 ---
 
 {!excluded && (

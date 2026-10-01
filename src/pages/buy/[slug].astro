@@ -1,0 +1,136 @@
+---
+/* /buy/<slug>/: direct buy link for emails (Phase 0, 2026-10-01).
+   Loads the normal site shell; Cart.astro sees the hidden [data-cart-autoadd]
+   marker below, adds this plugin (one licence, never a duplicate) and opens
+   the cart drawer, so the buyer only ticks the terms box and continues to
+   payment. A ?ref=<token> on the link is remembered for the session and
+   rides the checkout as customData.ref (also Cart.astro).
+
+   One route per PAID plugin with a Paddle price id that is actually on sale
+   (isBuyable) — free plugins have no checkout, and a link to a plugin that
+   isn't buyable would open a cart that can't transact. noindex: it's a
+   checkout shortcut, not a landing page (also filtered out of the sitemap in
+   astro.config.mjs). Static like every other route: GitHub Pages serves
+   /buy/<slug>/index.html and 301s /buy/<slug> to the slash form, query
+   string kept, so email links should use the trailing slash and skip the hop. */
+import { Image } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { plugins, isBuyable } from '../../data/plugins';
+import { pluginImage } from '../../lib/images';
+
+export function getStaticPaths() {
+  return plugins
+    .filter((p) => isBuyable(p) && !p.isFree && !!p.paddlePriceId)
+    .map((p) => ({ params: { slug: p.slug }, props: { plugin: p } }));
+}
+
+const { plugin } = Astro.props;
+const hero = pluginImage(plugin.heroImage);
+---
+
+<BaseLayout title={`Buy ${plugin.name}`} description={plugin.oneLiner} index={false}>
+  <section class="buy-link">
+    <div class="container">
+      {/* Read by Cart.astro on load: add this slug, open the drawer. */}
+      <div data-cart-autoadd data-slug={plugin.slug} hidden></div>
+
+      {hero && (
+        <Image class="bl-hero" src={hero} alt={`${plugin.name} plugin interface`} width={720} format="webp" loading="eager" />
+      )}
+      <p class="bl-kicker">Parts counter</p>
+      <h1>{plugin.name} is in your cart</h1>
+      <p class="bl-lede">
+        Tick the terms box in the cart, then continue to payment. Paddle handles the payment
+        securely, and your licence key lands in your inbox right after.
+      </p>
+      <div class="bl-actions">
+        <button type="button" class="bl-open" data-cart-toggle>Open cart <span aria-hidden="true">&rarr;</span></button>
+        <a class="bl-more" href={`/${plugin.slug}`}>Read about {plugin.name}</a>
+      </div>
+      <noscript>
+        <p class="bl-lede">The cart needs JavaScript. Please turn it on and reload this page.</p>
+      </noscript>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .buy-link {
+    min-height: calc(100svh - var(--nav-h) - 120px);
+    display: flex;
+    align-items: center;
+    padding-block: clamp(2rem, 8vh, 5rem);
+    text-align: center;
+  }
+  .buy-link .container { max-width: 720px; }
+  .bl-hero {
+    display: block;
+    width: min(100%, 560px);
+    height: auto;
+    margin: 0 auto 1.75rem;
+    filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.55));
+  }
+  .bl-kicker {
+    margin: 0 0 0.6rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--brass);
+  }
+  .buy-link h1 {
+    margin: 0 0 0.9rem;
+    font-size: clamp(2.2rem, 6vw, 3.4rem);
+    line-height: 1.05;
+    color: var(--fg);
+  }
+  .bl-lede {
+    max-width: 52ch;
+    margin: 0 auto 1.6rem;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #b9b0a2;
+  }
+  .bl-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem 1.5rem;
+  }
+  /* Same brass key as the drawer's Continue to payment (Cart.astro .cd-checkout). */
+  .bl-open {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 52px;
+    padding: 0.8rem 1.4rem;
+    border-radius: 5px;
+    border: 1px solid #e8c878;
+    background: linear-gradient(165deg, #ebd29d 0%, #c9a35c 52%, #b18b49 100%);
+    color: #20180d;
+    font-family: var(--font-body);
+    font-size: 0.9375rem;
+    font-weight: 650;
+    box-shadow: inset 0 1px 0 #f3dfb6, 0 3px 0 #70562d, 0 7px 15px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    transition: transform 120ms ease, filter 120ms ease, box-shadow 120ms ease;
+  }
+  .bl-open span { font-size: 1.2rem; }
+  .bl-open:hover { filter: brightness(1.06); transform: translateY(-1px); }
+  .bl-open:active { transform: translateY(2px); box-shadow: inset 0 1px 0 #f3dfb6, 0 1px 0 #70562d; }
+  .bl-open:focus-visible, .bl-more:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 3px; }
+  .bl-more {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--brass-bright);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+  .bl-more:hover { color: var(--brass); }
+  @media (prefers-reduced-motion: reduce) {
+    .bl-open { transition: none; }
+  }
+  :global(html.hc) .bl-open { background: var(--brass); }
+</style>

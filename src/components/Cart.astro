@@ -14,6 +14,19 @@ import { TERMS_LAST_UPDATED } from '../data/legal';
  *   Confirmation is ambient instead — the red header badge pops with the new
  *   count, and the button itself flips to "In your cart". Pressing it again in
  *   that state opens the drawer, so the cart is always one click away.
+ *   EXCEPTION, BUY NOW buttons ([data-cart-open]: the crane door's square, the
+ *   landed door in CraneDropZone, MobileBuyBar's BUY NOW) DO open the drawer
+ *   on add (Phase 0, 2026-10-01). Dan's reason above is about browsing the
+ *   catalog; BUY NOW is a buy, not a browse, and the crane square has no label
+ *   to flip, so a badge pop alone read as "BUY NOW does nothing" (zero sales
+ *   since 2026-09-04). Catalog chips (carousel, /store cards, demo rack) keep
+ *   the ambient behaviour.
+ * - Buy links: a page carrying [data-cart-autoadd data-slug] (src/pages/buy/
+ *   [slug].astro, the /buy/<slug>/ route for emails) adds that plugin once on
+ *   load (never a duplicate) and opens the drawer.
+ * - Attribution: a valid ?ref=<token> on ANY page ([A-Za-z0-9._-]{1,40}) is
+ *   kept in sessionStorage ('ra-ref', last one wins) and rides the checkout as
+ *   customData.ref next to terms_accepted / terms_version.
  * - the header cart icon ([data-cart-toggle]) + badge ([data-cart-badge]) open the drawer
  * - A required consent checkbox gates Checkout; its links open the legal-reader
  *   modal (Terms / Licence / Privacy) IN A POPUP — no page navigation.
@@ -143,6 +156,26 @@ for (const p of plugins) {
     var catalogEl = document.querySelector('[data-cart-catalog]');
     var catalog = {};
     try { catalog = JSON.parse(catalogEl.textContent || '{}'); } catch (e) {}
+
+    // ---- Attribution (?ref=) ----
+    // Any page can carry ?ref=<token> (email links, affiliates). A valid token
+    // is remembered for the tab's session (last one wins) and stamped onto the
+    // checkout's customData. Anything outside the allow-list is ignored, never
+    // stored, so it can't smuggle junk onto a Paddle transaction. Storage can
+    // throw (private mode, blocked site data): attribution is best-effort and
+    // never blocks checkout.
+    var REF_KEY = 'ra-ref';
+    var REF_RE = /^[A-Za-z0-9._-]{1,40}$/;
+    try {
+      var refParam = new URLSearchParams(window.location.search).get('ref');
+      if (refParam && REF_RE.test(refParam)) sessionStorage.setItem(REF_KEY, refParam);
+    } catch (e) {}
+    function currentRef() {
+      try {
+        var r = sessionStorage.getItem(REF_KEY) || '';
+        return REF_RE.test(r) ? r : '';
+      } catch (e) { return ''; }
+    }
     // Legacy entries may contain old names/prices. Only their slug is identity;
     // every display field comes from the current catalog, including thumbnails.
     function read() {
@@ -415,6 +448,7 @@ for (const p of plugins) {
       lastCheckoutValue = cart.reduce(function (s, i) { return s + (i.price || 0) * (i.qty || 1); }, 0);
       track('InitiateCheckout', { value: lastCheckoutValue, currency: 'USD', num_items: count(cart) });
       var ver = (agree && agree.getAttribute('data-terms-version')) || '';
+      var ref = currentRef();
       // Engine 'ls' — LS hosted-overlay checkout. One hosted URL per order (LS
       // can't sum a multi-item cart — first item wins, same as the original LS
       // era). Overlay when lemon.js is up, plain redirect otherwise — the LS
@@ -426,6 +460,7 @@ for (const p of plugins) {
         // order via LS custom passthrough data. (LS docs: Passing Custom Data.)
         url += '&checkout[custom][terms_accepted]=true';
         if (ver) url += '&checkout[custom][terms_version]=' + encodeURIComponent(ver);
+        if (ref) url += '&checkout[custom][ref]=' + encodeURIComponent(ref);
         if (drawer && drawer.open) drawer.close();
         if (ensureLemon()) { window.LemonSqueezy.Url.Open(url); return; }
         window.location.href = url;
@@ -436,11 +471,14 @@ for (const p of plugins) {
       if (engineName() === 'paddle') {
         if (!ensurePaddle()) { paymentError('Payment could not load. Please try again, or contact RevAudio support below.'); return; }
         try {
+          // Preserve the accepted legal-bundle version on the transaction,
+          // plus the session's ?ref= attribution token when there is one.
+          var customData = { terms_accepted: 'true', terms_version: ver };
+          if (ref) customData.ref = ref;
           window.Paddle.Checkout.open({
             // Paddle sums the full cart natively.
             items: items.map(function (i) { return { priceId: checkoutUrlFor(i), quantity: i.qty || 1 }; }),
-            // Preserve the accepted legal-bundle version on the transaction.
-            customData: { terms_accepted: 'true', terms_version: ver }
+            customData: customData
           });
           if (drawer && drawer.open) drawer.close();
         } catch (e) { paymentError('Payment could not open. Please try again, or contact RevAudio support below.'); }
@@ -450,14 +488,16 @@ for (const p of plugins) {
       // alongside 'ls' (see the file-header comment). Fail closed: no
       // plain-URL fallback exists for SBL.
       if (!(window.fastspring && window.fastspring.builder)) return;
+      // Consent record: stamp the accepted legal-bundle version onto the
+      // order via FastSpring's custom-tags passthrough (FastSpring docs: tags).
+      var fsTags = { terms_accepted: 'true', terms_version: ver };
+      if (ref) fsTags.ref = ref;
       window.fastspring.builder.push({
         reset: true,
         // Full cart, not just the first item — FastSpring's session natively
         // sums multiple line items (unlike LS's single hosted-checkout URL).
         products: items.map(function (i) { return { path: checkoutUrlFor(i), quantity: i.qty || 1 }; }),
-        // Consent record: stamp the accepted legal-bundle version onto the
-        // order via FastSpring's custom-tags passthrough (FastSpring docs: tags).
-        tags: { terms_accepted: 'true', terms_version: ver }
+        tags: fsTags
       });
       if (drawer && drawer.open) drawer.close();
       window.fastspring.builder.checkout();
@@ -534,6 +574,9 @@ for (const p of plugins) {
         });
         // One call site covers the crane BUY NOW square, the store card, and the mobile buy bar.
         track('AddToCart', { content_ids: [addSlug], content_type: 'product', value: +addPrice || 0, currency: 'USD' });
+        // BUY NOW buttons opt in to showing the cart straight away (see the
+        // file header): the buyer lands on the terms box + Continue to payment.
+        if (addBtn.hasAttribute('data-cart-open')) openDrawer();
         return;
       }
       if (t.closest('[data-cart-toggle]')) { e.preventDefault(); openDrawer(); return; }
@@ -588,6 +631,24 @@ for (const p of plugins) {
     document.addEventListener('focusin', maybeShowEmptyTip);
 
     sync();
+
+    // ---- Buy link (/buy/<slug>/) ----
+    // The page carries a hidden [data-cart-autoadd data-slug] marker. Add that
+    // plugin (add() never duplicates: one licence per product) and open the
+    // drawer, so the buyer only ticks the terms box and continues. Runs after
+    // the first sync() so the badge pops like a normal add. A slug missing
+    // from the catalog (no checkout target on this engine) adds nothing; the
+    // drawer still opens and shows whatever the cart already holds.
+    var autoAdd = document.querySelector('[data-cart-autoadd]');
+    if (autoAdd) {
+      var autoSlug = autoAdd.getAttribute('data-slug');
+      if (autoSlug && Object.prototype.hasOwnProperty.call(catalog, autoSlug)) {
+        var already = read().some(function (i) { return i.slug === autoSlug; });
+        add({ slug: autoSlug, name: catalog[autoSlug].name, price: catalog[autoSlug].price });
+        if (!already) track('AddToCart', { content_ids: [autoSlug], content_type: 'product', value: +catalog[autoSlug].price || 0, currency: 'USD' });
+      }
+      openDrawer();
+    }
   })();
 </script>
 
