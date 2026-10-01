@@ -436,9 +436,7 @@
 @media (min-width: 1100px) {
   /* the reading sits a little left (Dan 10-01); top and bottom pads = the
      title panel's, so the two panels mirror and come out the same height */
-  .d-hero-right .d-panel { padding: clamp(40px, 4.2vw, 56px) calc(var(--wd) * 0.058) clamp(28px, 3.2vw, 40px) calc(var(--wd) * 0.137); }
-  .d-hero-right { margin-top: 76px; }   /* Dan 10-01: the price panel sits 40 px lower than the title panel */
-  .d-hero-right .d-cta { --h: clamp(46px, 3.9vw, 56px); min-width: 0; width: calc(100% + var(--h) * .167); }
+  .d-hero-right .d-panel { padding: clamp(40px, 4.2vw, 56px) calc(var(--wd) * 0.058) clamp(28px, 3.2vw, 40px) calc(var(--wd) * 0.137); }  .d-hero-right .d-cta { --h: clamp(46px, 3.9vw, 56px); min-width: 0; width: calc(100% + var(--h) * .167); }
 }
 
 /* hero = the post's split headline (headlineSplit): DRIFT in the hub-cap face
@@ -473,9 +471,8 @@
 }
 .d-price-label span { display: block; white-space: nowrap; }
 .d-price-val {
-  font: 700 clamp(44px, 4.6vw, 68px) / 1 var(--d-f-head);   /* = .d-title's size and line box: $69 mirrors DRIFT */
-  color: var(--d-white-ink);
-  text-shadow: 0 0 4px rgba(255, 255, 255, .5), 0 0 22px rgba(255, 79, 216, .55);
+  font: 600 clamp(44px, 4.6vw, 68px) / 1 var(--d-f-badge); letter-spacing: .06em;   /* = .d-title's face, size and line box: $69 mirrors DRIFT (Dan 10-01) */
+  color: var(--d-neon); text-shadow: var(--d-glow-2);   /* the tagline's purple (Dan 10-01) */
 }
 
 /* hero trial stamp (DriftTrialStamp): RevLimiter's label · email · GET IT ▸
@@ -492,6 +489,7 @@
 .d-stamp-label span { display: block; white-space: nowrap; }
 .d-stamp-form { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
 .d-stamp .d-stamp-key { --h: 48px; min-width: 0; }   /* the key's 4.6h floor pushed the column past a 320 px phone */
+.d-stamp-key { font: 700 calc(var(--h) * .42) / 1 var(--d-f-head); letter-spacing: .03em; }   /* the label's Oswald, not the badge face (Dan 10-01) */
 .d-stamp .d-stamp-field {   /* .d-stamp prefix: .d-field (later in the file) set VT323 over it */
   font: 400 17px/1 var(--d-f-spec); letter-spacing: .06em;
   caret-color: var(--d-hot);
@@ -502,9 +500,17 @@
     0 0 0 1px rgba(4, 2, 8, .9), inset 0 5px 8px rgba(0, 0, 0, .7),
     inset 0 0 0 1px var(--d-neon), 0 0 0 3px rgba(210, 60, 255, .22), 0 0 22px rgba(210, 60, 255, .4);
 }
+/* the placeholder text breathes a soft purple until the field is used
+   (Dan 10-01: "make the email blink, a purple vibe, very subtle, the text not the box") */
+.d-stamp .d-stamp-field:not(:focus)::placeholder { animation: d-ph-blink 2.8s ease-in-out infinite; }
+@keyframes d-ph-blink {
+  0%, 100% { color: #8f7aa8; text-shadow: 0 0 0 rgba(210, 60, 255, 0); }
+  50% { color: #c48ae8; text-shadow: 0 0 10px rgba(210, 60, 255, .45); }
+}
+@media (prefers-reduced-motion: reduce) { .d-stamp .d-stamp-field::placeholder { animation: none; } }
 .d-stamp-arrow { display: inline-block; margin-left: .35em; transition: transform 160ms ease; }
 .d-stamp-key:hover .d-stamp-arrow, .d-stamp-key:focus-visible .d-stamp-arrow { transform: translateX(3px); }
-.d-stamp-fine { margin-top: -4px; font: 400 11px/1.35 Inter, var(--font-body); color: var(--d-fg-dim); text-wrap: balance; }   /* fine print, Dan: smaller */
+.d-stamp-fine { margin-top: -4px; font: 500 11px/1.35 var(--d-f-head); text-transform: uppercase; letter-spacing: .05em; color: var(--d-fg-dim); text-wrap: balance; }   /* fine print, Dan: smaller; the label's Oswald (Dan 10-01) */
 /* sent: the answer lights up like a readout */
 .d-stamp .d-capture-status.ok { font: 400 22px/1.15 var(--d-f-lcd); letter-spacing: .03em; color: var(--d-white-ink); text-shadow: 0 0 8px rgba(242, 76, 240, .6); }
 
@@ -521,8 +527,11 @@
   .d-hero-trial {
     grid-column: 1 / -1; grid-row: 2; justify-self: center;
     width: min(100%, 1040px);
-    margin-top: calc(var(--wd) * -0.16 + 30px);   /* Dan 10-01: bigger x2, then hand-placed 30 px lower (bench) */
+    margin-top: calc(var(--wd) * -0.16 + 30px - 30px);   /* Dan 10-01: bigger x2, then hand-placed 30 px lower (bench); -30 holds it in place while row 1 drops */
   }
+  /* Dan 10-01: wheel + both side panels 30 px lower; the console stays put */
+  .d-cockpit { margin-top: 30px; }
+  .d-hero-left, .d-hero-right { margin-top: 66px; }
   .d-trial-panel { padding: 22px 50px 18px; min-height: 169px; }   /* bench 2026-10-01 (Dan, by hand): 169 tall, content centred; 50 px sides clear the screws */
   /* the plate itself: Dan's pick D (A's clean black steel + C's checker, gpt-image-1,
      tools/gen-drift-trial-panel.sh). Height fits the panel; it is 3-sliced so the
