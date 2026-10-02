@@ -1195,3 +1195,137 @@ html.hc .drift-page .d-rails, html.hc .drift-page .d-underglow, html.hc .drift-p
 html.hc .drift-page .d-title, html.hc .drift-page .d-marquee, html.hc .drift-page .d-tagline,
 html.hc .drift-page .d-headline span, html.hc .drift-page .d-sechead .d-ja { text-shadow: none; }
 html.hc .drift-page .d-price-label { text-shadow: none; }
+
+/* ==========================================================================
+   PHONE PASS 2026-10-02 (feat/drift-mobile)
+   Dan's picks (build-spec 10-02): screen 1 = DRIFT + tagline + the trial as
+   ONE merged plate, the wheel under it, the price as a plate-less row. Every
+   rule here is ≤600 only; the ≤1099 / ≤900 blocks above keep 601-1099 as it
+   was. IDs = the proposal's (2026-10-02-drift-mobile-proposal.md).
+   ========================================================================== */
+@media (max-width: 600px) {
+  /* --- HERO ------------------------------------------------------------- */
+  /* H3: the wheel 346 -> 330 at 402 */
+  .d-hero { --wd: min(330px, 82vw); }
+  /* F1: title, trial, wheel, price, (meter), catch line */
+  .d-hero-left { order: 1; }
+  .d-hero-trial { order: 2; margin-top: -2px; width: 100%; }
+  .d-cockpit { order: 3; }
+  .d-hero-right { order: 4; margin-top: 14px; }
+  /* H2: no meter under the wheel (the hooks stay in the DOM for bus.ts) */
+  .d-hero .d-hero-meter { order: 5; display: none; }
+  /* F1: the title half keeps the ≤1099 upper-half recipe; its bottom pad
+     pays for the kicker on the seam */
+  .d-hero-left .d-panel { padding-bottom: 4px; }
+  /* F1: the lower-half recipe moves from the price panel to the trial panel */
+  .d-hero-trial .d-trial-panel {
+    border-top-left-radius: 0; border-top-right-radius: 0;
+    padding: 4px 18px 36px;   /* top: the kicker IS the seam; bottom: clears the bottom screws */
+    clip-path: inset(0 -12px -12px -12px);
+    box-shadow:
+      0 0 0 1px rgba(4, 2, 8, .95), 0 0 0 6px #08040d, 0 1px 0 6px rgba(255, 240, 255, .06),
+      inset 16px 0 28px -16px rgba(0, 0, 0, .5), inset 0 -1px 0 rgba(255, 240, 255, .07);
+  }
+  .d-hero-trial .d-screw.tl, .d-hero-trial .d-screw.tr { display: none; }
+  /* the kicker (#3): the seam between the two halves, a dashed rule either
+     side of a Press Start line; it runs to the plate edges */
+  .drift-page .d-stamp-kicker {
+    display: flex; align-items: center; gap: 6px;
+    margin: 0 -18px;
+    font: 400 clamp(8px, 2.3vw, 9px) / 1 var(--d-f-pix);
+    letter-spacing: .04em; text-transform: uppercase; white-space: nowrap;
+    color: var(--d-dim-violet);
+  }
+  .d-stamp-kicker::before, .d-stamp-kicker::after { content: ''; flex: 1; min-width: 6px; border-top: 1px dashed rgba(180, 107, 255, .22); }
+  /* F2: the compact console */
+  .drift-page .d-tagline { font-size: clamp(26px, 7.4vw, 30px); }
+  .d-hero-trial .d-stamp { gap: 10px; position: relative; }
+  .d-hero-trial .d-stamp-form { gap: 10px; }
+  .d-hero-trial .d-stamp-label { font-size: 26px; }
+  .d-hero-trial .d-stamp-field { min-height: 52px; font-size: 18px; }   /* never <16: iOS zooms */
+  .d-hero-trial .d-stamp-key { --h: 52px; align-self: stretch; width: 100%; }
+  /* F3: the full fine line (captureCopyFor().fine) replaces the list line */
+  .d-hero-trial .d-stamp-fine { display: none; }
+  .d-hero-trial .d-stamp-fine.d-stamp-fine--ph {
+    display: block; margin: -2px -12px 0;   /* the line borrows 12 px of each side pad: two lines at 350, not three */
+    font: 500 13px / 1.3 var(--d-f-head); letter-spacing: 0; text-align: center;
+    color: var(--d-fg); text-wrap: balance;
+  }
+  /* H4: the creators nudge under the answer, a full tap row once revealed */
+  .d-hero-trial .d-capture-next { min-height: 44px; }
+  /* F4: the price, plate-less: one centred row under the wheel */
+  .d-hero-right .d-panel { background: none; box-shadow: none; clip-path: none; padding: 0; border-radius: 0; }
+  .d-hero-right .d-screw, .d-hero-right .d-sticker { display: none; }
+  .d-hero-right .d-cta-block { align-items: center; }
+  .d-price { flex-direction: row; align-items: baseline; justify-content: center; gap: 12px; }
+  .d-price-val { font: 600 30px / 1 var(--d-f-badge); color: var(--d-white-ink); text-shadow: var(--d-glow-1); }
+  .d-price-label { font: 700 20px / 1 var(--d-f-head); color: var(--d-fg); text-shadow: none; }
+  .d-price-label span { display: inline; }
+  /* H1 (CSS half): the grip band scrolls the page; wheel.ts ends a cancelled drag */
+  .d-wheel-grip { touch-action: pan-y; }
+
+  /* --- SIGN-UP STATE (G3 / P4) ------------------------------------------ */
+  html[data-drift-joined] .d-stamp-form, html[data-drift-joined] #try .d-capture-form { display: none; }
+  /* the live region stays rendered while empty (visually hidden), so the
+     first message is announced */
+  .d-capture { position: relative; }
+  .d-capture-status:empty {
+    display: block; position: absolute; width: 1px; height: 1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+  }
+
+  /* --- #drive (D1, D2) --------------------------------------------------- */
+  .d-tracks .d-gps-col { order: -1; }
+  #drive .d-attract-panel { background: none; box-shadow: none; padding: 0; }
+  .d-attract-panel > .d-screw { display: none; }
+  #drive .d-attract-hdr { display: none; }
+  .d-cap::before { inset: -6.5px; }   /* D2: 50 px hit boxes at 402, no overlap */
+
+  /* --- #fx (X1, X2, X3) -------------------------------------------------- */
+  .d-strip img { aspect-ratio: 512 / 470; }
+  .d-rack { gap: 10px; padding: 10px; }
+  .d-bandglass { padding: 10px 12px 6px; }
+  .d-bandstrip { height: 40px; }
+  #fx .d-alsoin { display: none; }
+  .drift-page .d-alsoin-ph { margin-top: 16px; }
+
+  /* --- #get (G1, G4) ----------------------------------------------------- */
+  #get .d-sechead { display: none; }
+  .d-capture .d-compat {
+    order: 4; border-bottom: 0; border-top: 1px dashed rgba(180, 107, 255, .22);
+    padding: 10px 0 0; margin-top: 2px;
+  }
+  .d-capture .d-compat dd { font-size: 14px; }
+  .drift-page .d-capture .d-cta-fine { font-size: 13px; color: var(--d-fg); }
+
+  /* --- #creators (C1) ---------------------------------------------------- */
+  .d-cr-grid { row-gap: 16px; }   /* 22 -> 16: Apply's bottom 601 -> 595 on /drift/#creators at 350x621 (gate ≤600) */
+  .d-cr-panel { order: 1; }
+  .d-cr-cta { order: 2; }
+  .d-cr-checks { order: 3; padding: 10px 12px; }
+  .d-cr-grid .d-cr-panel { padding-top: 30px; padding-bottom: 30px; }
+  .d-steps-cr { gap: 10px; }
+  .d-cr-checks ul { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+  .d-cr-checks li { font-size: 17px; }
+
+  /* --- page-wide (P2, P3, P5, K1) ---------------------------------------- */
+  /* P2: small glass windows lose the stretched bezel PNG; the glass texture drops */
+  .d-lcd:not(.d-lcd--big)::before { background: radial-gradient(120% 100% at 50% 40%, #14061f 0%, #0b0314 70%); }
+  .d-lcd::after { opacity: .2; }
+  .d-lcd--big::after { opacity: .25; }
+  /* P3: rhythm */
+  .drift-page h2.d-headline { font-size: 30px; }
+  .d-sechead .d-ja { text-shadow: none; opacity: .5; }
+  .d-sec { padding-top: 36px; }   /* #drive keeps its own 18 px (id rule above) */
+  .drift-page .d-fine, .drift-page .d-strip p, .drift-page .d-chips-note { font-size: 13px; }
+  /* K1 */
+  .drift-page .d-keep-fine { font-size: 14px; color: var(--d-fg); }
+  /* P5: the house haze plates off (both: display:none alone keeps the fetch) */
+  body:has([data-drift-page]) .haze-plate { background-image: none; display: none; }
+}
+/* D2 at 350: the caps sit 43.1 px apart there, so the inset holds the hit box at 44 px with a 1 px overlap */
+@media (max-width: 355px) { .d-cap::before { inset: -6.35px; } }
+/* the phone pass's new markup, hidden from 601 up (desktop pixel-identical) */
+@media (min-width: 601px) {
+  .d-stamp-kicker, .d-stamp-fine--ph, .d-alsoin-ph, .d-stamp .d-capture-next { display: none; }
+}

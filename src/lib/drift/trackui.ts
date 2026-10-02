@@ -51,12 +51,19 @@ export function initTracks(root: HTMLElement): void {
     car.setAttribute('cx', pt.x.toFixed(4));
     car.setAttribute('cy', pt.y.toFixed(4));
   };
+  // write on change only (D3, 10-02): this runs every frame while the car laps,
+  // and the LCD strings / cap states change a few times a second at most
+  let lastName: string | null = null, lastTime: string | null = null, lastPlay: string | null = null, lastPause: string | null = null;
   const readouts = () => {
     const name = chips.find((c) => Number(c.dataset.track) === track)?.dataset.name ?? '';
-    if (lcdName) lcdName.textContent = running && !paused ? `▶ ${name}` : name;
-    if (lcdTime) lcdTime.textContent = `LAP ${lapT.toFixed(1).padStart(4, '0')}s`;
-    playBtn?.setAttribute('aria-pressed', String(running && !paused));
-    pauseBtn?.setAttribute('aria-pressed', String(paused || (latched && !running)));
+    const n = running && !paused ? `▶ ${name}` : name;
+    const t = `LAP ${lapT.toFixed(1).padStart(4, '0')}s`;
+    const pl = String(running && !paused);
+    const pa = String(paused || (latched && !running));
+    if (lcdName && n !== lastName) { lcdName.textContent = n; lastName = n; }
+    if (lcdTime && t !== lastTime) { lcdTime.textContent = t; lastTime = t; }
+    if (playBtn && pl !== lastPlay) { playBtn.setAttribute('aria-pressed', pl); lastPlay = pl; }
+    if (pauseBtn && pa !== lastPause) { pauseBtn.setAttribute('aria-pressed', pa); lastPause = pa; }
   };
   // the GPS glass shows the chip's own outline (same point space, its own viewBox)
   const select = (id: number) => {

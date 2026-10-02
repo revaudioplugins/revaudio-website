@@ -81,18 +81,40 @@ function paintBalance(bars: HTMLElement[], p: number): void {
 /** Wire every display under `root` to the bus. Paints at most once per frame. */
 export function initPanDisplays(root: HTMLElement): void {
   const readouts = Array.from(root.querySelectorAll<HTMLElement>('[data-pan-readout]'));
-  const balances = Array.from(root.querySelectorAll<HTMLElement>('[data-balance]')).map(buildBalance);
+  const readTxt = readouts.map(() => '');
+  const meters = Array.from(root.querySelectorAll<HTMLElement>('[data-balance]'));
+  const balances = meters.map(buildBalance);
+  const lastP = balances.map(() => NaN);
+  // the rails (the only --pan / --lit-* readers) are display:none below 1100 px (P1, 10-02)
+  const rails = matchMedia('(min-width: 1100px)');
   let raf = 0;
   const paint = () => {
     raf = 0;
     const p = pan;
-    root.style.setProperty('--pan', p.toFixed(3));
-    root.style.setProperty('--lit-l', (0.3 + 0.7 * Math.max(0, -p)).toFixed(3));
-    root.style.setProperty('--lit-r', (0.3 + 0.7 * Math.max(0, p)).toFixed(3));
+    if (rails.matches) {
+      root.style.setProperty('--pan', p.toFixed(3));
+      root.style.setProperty('--lit-l', (0.3 + 0.7 * Math.max(0, -p)).toFixed(3));
+      root.style.setProperty('--lit-r', (0.3 + 0.7 * Math.max(0, p)).toFixed(3));
+    }
+    // write on change only, and skip a meter that is not rendered (D3, 10-02);
+    // a skipped meter stays dirty and catches up on the next paint it is shown for
     const txt = panShort(p);
-    for (const r of readouts) r.textContent = r.dataset.panReadout === 'bare' ? txt : `PAN ${txt}`;
-    for (const bars of balances) paintBalance(bars, p);
+    readouts.forEach((r, i) => {
+      const t = r.dataset.panReadout === 'bare' ? txt : `PAN ${txt}`;
+      if (t !== readTxt[i]) { r.textContent = t; readTxt[i] = t; }
+    });
+    balances.forEach((bars, i) => {
+      if (lastP[i] === p) return;
+      const el = meters[i];
+      if (el.offsetParent === null || !el.offsetWidth) { lastP[i] = NaN; return; }
+      paintBalance(bars, p);
+      lastP[i] = p;
+    });
   };
-  onPan(() => { if (!raf) raf = requestAnimationFrame(paint); });
+  const ask = () => { if (!raf) raf = requestAnimationFrame(paint); };
+  onPan(ask);
+  // crossing 1100 shows / hides the rails; a resize can show a meter that was skipped
+  rails.addEventListener('change', ask);
+  window.addEventListener('resize', ask);
   paint();
 }
