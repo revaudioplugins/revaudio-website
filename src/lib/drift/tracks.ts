@@ -1,13 +1,12 @@
 /**
  * DRIFT's 8 SIMPLE tracks (TRK_ID 40-47), verbatim from the plugin's own JS
  * mirror of SimpleTrackEngine::rawShape (Drift/Source/ui/public/index.html
- * 2460-2481, fact sheet 2026-09-26 §2.5). Used twice: at build time for the
- * card outlines (pure SVG, zero JS) and in the browser to drive the car.
+ * 2460-2481, fact sheet 2026-09-26 §2.5). The demo deck pans with them;
+ * the #drive chips show circuits instead (circuits.ts, Dan 2026-10-02).
  *
  * fx(ph) = the pan shape (peak-normalised = the DSP's shapeAt), fy(ph) = the
- * outline's vertical companion (drawing only, never part of the pan).
- * The race circuits are deliberately NOT here: all 40 are real F1 circuit
- * identities (review Decision 19, Dan 2026-09-26: plugin-only, never on site).
+ * plugin's outline companion (drawing only, never part of the pan).
+ * PanSpring and swingWidth are shared with the circuits.
  */
 const TAU = Math.PI * 2;
 
@@ -27,35 +26,17 @@ export const SIMPLE: SimpleTrack[] = [
 
 // peak-normalise each shape over a 1024-sample scan, like SimpleTrackEngine::buildNorm()
 const NORM = SIMPLE.map((t) => {
-  let pk = 1e-6, pky = 1e-6;
-  for (let i = 0; i < 1024; i++) { pk = Math.max(pk, Math.abs(t.fx(i / 1024))); pky = Math.max(pky, Math.abs(t.fy(i / 1024))); }
-  return { pk, pky };
+  let pk = 1e-6;
+  for (let i = 0; i < 1024; i++) pk = Math.max(pk, Math.abs(t.fx(i / 1024)));
+  return { pk };
 });
 
 const idx = (id: number) => Math.max(0, SIMPLE.findIndex((t) => t.id === id));
 
 /** The DSP's shapeAt(shape, phase): where the pan is headed, -1..1. */
 export const shapeAt = (id: number, ph: number) => { const i = idx(id); return SIMPLE[i].fx(ph - Math.floor(ph)) / NORM[i].pk; };
-/** Outline point (x = pan, y = drawing companion), both -0.9..0.9 like the card canvas. */
-export const outlineAt = (id: number, ph: number): [number, number] => {
-  const i = idx(id), p = ph - Math.floor(ph);
-  return [(SIMPLE[i].fx(p) / NORM[i].pk) * 0.9, (SIMPLE[i].fy(p) / NORM[i].pky) * 0.9];
-};
-
-/** SVG path of the outline in a w x h box (build time, and the GPS glass). */
-export function outlinePath(id: number, w: number, h: number, n = 256): string {
-  let d = '';
-  for (let k = 0; k <= n; k++) {
-    const [x, y] = outlineAt(id, k / n);
-    d += `${k ? 'L' : 'M'}${((x * 0.5 + 0.5) * w).toFixed(1)} ${((y * 0.5 + 0.5) * h).toFixed(1)}`;
-  }
-  return d + 'Z';
-}
-
 /** INTENSITY (TRK_WIDTH, default .60) -> swing width. */
 export const swingWidth = (intensity: number) => 0.12 + 0.8 * intensity;
-/** SPEED (TRK_LAP, default .488084) -> FREE period of a SIMPLE track, 16 s .. 0.25 s. */
-export const simplePeriod = (lap01: number) => 16 * Math.pow(64, -lap01);
 
 /**
  * The per-sample pan spring both track engines use (SimpleTrackEngine.h

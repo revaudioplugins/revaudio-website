@@ -1,8 +1,9 @@
 import { getPan, handBusy, setPan } from './bus';
-import { PanSpring, outlineAt, outlinePath, shapeAt, simplePeriod, swingWidth } from './tracks';
+import { PanSpring, swingWidth } from './tracks';
+import { carR, circuitPeriod, lapOf, lapPos, lapTarget, restPhase } from './circuits';
 
 /**
- * #drive (LET IT DRIVE): the car laps the selected SIMPLE shape on the mini
+ * #drive (LET IT DRIVE): the car laps the selected circuit on the mini
  * GPS by itself while the GPS OR the hero wheel is in view (motion = the
  * product's own engine looping, silently), so the hero wheel steers whatever
  * track is picked (Dan 10-01: "connect the wheel to what is on the track"). The dot is the car; its position is the pan (the plugin
@@ -14,8 +15,9 @@ import { PanSpring, outlineAt, outlinePath, shapeAt, simplePeriod, swingWidth } 
  * views takes the STOP path. A hand on the wheel overrides the car: the car
  * waits while the wheel is held or coasting, plus HAND_HOLD, then the spring
  * glides the pan from where the hand left it back onto the line.
- * A parked car sits at the shape's rest point (where its pan crosses 0), so
- * the car and the C readout agree. Reduced motion: no autoplay, PAUSE starts
+ * The car rides the plugin's own lap (circuits.ts): it brakes into corners,
+ * the pan follows each corner (right-hander = right) with the flick and the
+ * spring. A parked car sits on a straight, so the car and the C readout agree. Reduced motion: no autoplay, PAUSE starts
  * latched, the car sits parked; an explicit PLAY still runs (user-initiated).
  */
 const INTENSITY = 0.6;          // TRK_WIDTH default
@@ -33,26 +35,21 @@ export function initTracks(root: HTMLElement): void {
   const playBtn = sec.querySelector<HTMLButtonElement>('[data-gps="play"]');
   const pauseBtn = sec.querySelector<HTMLButtonElement>('[data-gps="pause"]');
   const gps = sec.querySelector<HTMLElement>('.d-gps');
-  const vb = path.ownerSVGElement!.viewBox.baseVal;
+  const glass = path.ownerSVGElement!;
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  let track = Number(chips.find((c) => c.getAttribute('aria-pressed') === 'true')?.dataset.track ?? 41);
+  let track = Number(chips.find((c) => c.getAttribute('aria-pressed') === 'true')?.dataset.track ?? chips[0]?.dataset.track);
+  let lap = lapOf(track), len = 1;
   // latched = PAUSE is the cap that stopped the car (it stays lit through a scroll-away STOP)
   let running = false, paused = false, userPaused = reduce, latched = reduce, phase = 0, lapT = 0, raf = 0, last = 0;
   const spring = new PanSpring();
-  const period = () => simplePeriod(LAP_DEFAULT);
-  // the rest point: the first phase where the shape's pan is (closest to) 0
-  const restPhase = (id: number) => {
-    let best = 0, bv = Infinity;
-    for (let k = 0; k < 256; k++) { const v = Math.abs(shapeAt(id, k / 256)); if (v < bv) { bv = v; best = k / 256; } }
-    return best;
-  };
-  const park = () => { phase = restPhase(track); lapT = 0; };
+  const period = () => circuitPeriod(LAP_DEFAULT);
+  const park = () => { phase = restPhase(lap); lapT = 0; };
 
   const placeCar = () => {
-    const [x, y] = outlineAt(track, phase);
-    car.setAttribute('cx', ((x * 0.5 + 0.5) * vb.width).toFixed(1));
-    car.setAttribute('cy', ((y * 0.5 + 0.5) * vb.height).toFixed(1));
+    const pt = path.getPointAtLength(lapPos(lap, phase) * len);
+    car.setAttribute('cx', pt.x.toFixed(4));
+    car.setAttribute('cy', pt.y.toFixed(4));
   };
   const readouts = () => {
     const name = chips.find((c) => Number(c.dataset.track) === track)?.dataset.name ?? '';
@@ -61,10 +58,18 @@ export function initTracks(root: HTMLElement): void {
     playBtn?.setAttribute('aria-pressed', String(running && !paused));
     pauseBtn?.setAttribute('aria-pressed', String(paused || (latched && !running)));
   };
+  // the GPS glass shows the chip's own outline (same point space, its own viewBox)
   const select = (id: number) => {
-    track = id;
+    track = id; lap = lapOf(id);
     chips.forEach((c) => c.setAttribute('aria-pressed', String(Number(c.dataset.track) === id)));
-    path.setAttribute('d', outlinePath(id, vb.width, vb.height, 256));
+    const src = chips.find((c) => Number(c.dataset.track) === id)?.querySelector('svg');
+    const vb = src?.getAttribute('viewBox');
+    if (src && vb) {
+      glass.setAttribute('viewBox', vb);
+      path.setAttribute('d', src.querySelector('path')!.getAttribute('d')!);
+      car.setAttribute('r', carR(vb));
+    }
+    len = path.getTotalLength();
     park();
     placeCar(); readouts();
   };
@@ -79,7 +84,7 @@ export function initTracks(root: HTMLElement): void {
       return;
     }
     if (running && !paused) { phase += dt / period(); lapT = (lapT + dt) % period(); }
-    const target = running ? shapeAt(track, phase) * swingWidth(INTENSITY) : 0;
+    const target = running ? lapTarget(lap, phase, swingWidth(INTENSITY), INTENSITY, period()) : 0;
     const p = spring.step(target, dt, INTENSITY, period());
     setPan(p, 'tracks');
     placeCar(); readouts();

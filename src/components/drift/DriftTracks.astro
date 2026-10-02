@@ -2,10 +2,10 @@
 /**
  * Section 2 — LET IT DRIVE (#drive). Left: the TRAKS attract-mode menu (the
  * plugin's v4.7 arcade select screen: PressStart2P head, VT323 phosphor chips)
- * with the 8 SIMPLE tracks only, names always printed. Every chip outline is
- * computed at BUILD time from the plugin's own shape math (tracks.ts) — pure
- * SVG. The 40 race circuits stay plugin-only: they are real F1 circuits
- * (Decision 19, Dan 2026-09-26). Right: the mini GPS cabinet (mm_plate.png)
+ * with 8 of the plugin's 40 circuits (Dan 2026-10-02: iconic circuits, real
+ * shapes, COUNTRY names only: no circuit or F1 names on the site; this replaces
+ * the 09-26 shapes-only call). Outlines are the plugin's own points, built into
+ * pure SVG at build time (circuits.data.ts). Right: the mini GPS cabinet (mm_plate.png)
  * with the real green/yellow/red caps UNDER the plate's punched wells (the
  * plate is the bezel, the wells are alpha 0, so the caps must stay), the
  * track + car drawn on the glass. The car laps silently while the GPS is in
@@ -25,13 +25,13 @@ import plateSrc from '../../assets/seasons/drift/mm_plate.png';
 import capGreen from '../../assets/seasons/drift/mm_cap_green.png';
 import capYellow from '../../assets/seasons/drift/mm_cap_yellow.png';
 import capRed from '../../assets/seasons/drift/mm_cap_red.png';
-import { SIMPLE, outlinePath } from '../../lib/drift/tracks';
+import { CIRCUIT_SHAPES } from '../../lib/drift/circuits.data';
+import { carR } from '../../lib/drift/circuits';
 
 // the plate renders at ≤352 css px (440 col minus the panel pads): 720w covers DPR2, 900w DPR3
 const [plate720, plate] = await Promise.all([720, 900].map((width) => getImage({ src: plateSrc, width, format: 'webp', quality: 76 })));
 const [g, y, r] = await Promise.all([capGreen, capYellow, capRed].map((src) => getImage({ src, width: 136, format: 'webp', quality: 82 })));
-const DEFAULT = 41; // SWAY
-const GW = 295, GH = 228;   // glass aspect in panel px
+const first = CIRCUIT_SHAPES[0];   // JAPAN: the default pick
 // transparent placeholder with the plate's own aspect, so the cabinet never jumps (CSP img-src allows data:)
 const blank = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 402 448'/%3E`;
 const plateSizes = '(max-width: 1000px) calc(100vw - 76px), 352px';
@@ -48,7 +48,7 @@ const caps = [
       <span class="d-ja" lang="ja" aria-hidden="true">速度</span>
       <span class="d-rule" aria-hidden="true"></span>
     </div>
-    <h2 id="d-trk-h" class="d-headline"><span class="l1">Let a shape</span> <span class="l2">do the driving.</span></h2>
+    <h2 id="d-trk-h" class="d-headline"><span class="l1">Let a track</span> <span class="l2">do the driving.</span></h2>
     <p class="d-catch d-drive-lede">Pick one. DRIFT drives your <em>whole sound</em> around it.</p>
     <p class="d-readout d-tempo-read">Tempo · unsynced or locked to <span class="d-nw">1 · 2 · 4 · 8 · 16 · 32 bars</span></p>
 
@@ -59,16 +59,16 @@ const caps = [
             <span class="d-attract-title">SELECT TRACKS</span>
           </div>
           <ul class="d-cards">
-            {SIMPLE.map((t) => (
+            {CIRCUIT_SHAPES.map((t) => (
               <li>
-                <button class="d-chip" type="button" data-track={t.id} data-name={t.name} aria-pressed={t.id === DEFAULT ? 'true' : 'false'} aria-label={`${t.name} track`}>
-                  <svg viewBox="0 0 120 64" aria-hidden="true"><path d={outlinePath(t.id, 120, 64, 192)} /></svg>
-                  <span class="d-chip-name">{t.name}</span>
+                <button class="d-chip" type="button" data-track={t.id} data-name={t.label} aria-pressed={t === first ? 'true' : 'false'} aria-label={`${t.label} circuit`}>
+                  <svg viewBox={t.vb} aria-hidden="true"><path d={t.d} /></svg>
+                  <span class="d-chip-name">{t.label}</span>
                 </button>
               </li>
             ))}
           </ul>
-          <p class="d-fine d-chips-note">8 shapes here. Race circuits in the plugin.</p>
+          <p class="d-fine d-chips-note">8 of DRIFT's 40 circuits. Plus 8 shapes in the plugin.</p>
         </div>
       </DriftPanel>
 
@@ -86,13 +86,13 @@ const caps = [
             <noscript><img src={plate.src} srcset={`${plate720.src} 720w, ${plate.src} 900w`} sizes={plateSizes}
               width="402" height="448" alt="" aria-hidden="true" loading="lazy" decoding="async" style="z-index:2;pointer-events:none" /></noscript>
             <div class="d-gps-lcd" style="z-index:3;left:57.59%;top:9.98%;width:37.61%;height:10.87%" aria-live="off">
-              <span data-gps-name>SWAY</span>
+              <span data-gps-name>{first.label}</span>
               <span data-gps-time>LAP 00.0s</span>
             </div>
             <div class="d-gps-glass" style="z-index:3;left:13.21%;top:34.38%;width:73.41%;height:50.98%;padding:9% 10%">
-              <svg viewBox={`0 0 ${GW} ${GH}`} aria-hidden="true">
-                <path class="trk" data-gps-path d={outlinePath(DEFAULT, GW, GH, 256)} />
-                <circle class="car" data-gps-car r="7" cx={GW / 2} cy={GH / 2} />
+              <svg viewBox={first.vb} aria-hidden="true">
+                <path class="trk" data-gps-path d={first.d} />
+                <circle class="car" data-gps-car r={carR(first.vb)} cx="0" cy="0" />
               </svg>
             </div>
           </div>
