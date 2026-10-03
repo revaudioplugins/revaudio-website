@@ -9,22 +9,57 @@
  * the three routes as menu boxes (condition, then the value big), only the FREE
  * route links. Dan 10-03 "more understandable": the head says the order (try free, then keep
  * it), each box reads action -> price -> what/when (drift.ts heroCond / value / keepNote).
+ * Dan 10-03 "put inside an option to free trial it, with an email gate and everything": a PLAYER 1
+ * START bar tops the screen while the trial is the offer: the head + the download date on the left,
+ * an arcade name-entry email field + a digital GET IT key that stutter-blinks like PRESS START (capture.ts: the hero stamp's
+ * /form-once contract, honeypot, status line, consent), then THEN KEEP IT 3 WAYS over the boxes.
  * Renders only while routes exist (not 'released').
  */
-import { drift, ctaFor, routesFor } from '../../data/drift';
-
+import { site } from '../../data/site';
+import { drift, ctaFor, routesFor, captureCopyFor } from '../../data/drift';
 const cta = ctaFor();
 const routes = routesFor();
+// the trial gate lives on the screen while the trial is the offer (preopen / open); same contract as the hero
+// stamp (capture.ts: /form-once, this phase's source and status lines)
+const gate = drift.phase === 'preopen' || drift.phase === 'open' ? captureCopyFor() : null;
+const onceUrl = site.downloadGate.workerUrl + '/form-once';
 ---
 {routes.length > 0 && (
   <div class="d-keep d-wrap">
     <div class="d-crt d-keep-screen">
-      <div class="d-attract-hdr d-keep-hdr">
-        <p class="d-keep-head">{drift.phase === 'closed'
-          ? <span class="l2">Keep it:</span>
-          : <Fragment><span class="l1">Try it free for {drift.trialDays} days.</span>{' '}<span class="l2">Then keep it {routes.length} ways:</span></Fragment>}</p>
-        <p class="d-keep-sub">{cta.sub}</p>
-      </div>
+      {gate ? (
+        <Fragment>
+          <!-- PLAYER 1 START: the free trial, an email gate on the screen (Dan 10-03) -->
+          <div class="d-attract-hdr d-keep-start">
+            <p class="d-keep-head" id="d-keep-start-h"><span class="l1">Try it free for {drift.trialDays} days.</span></p>
+            <p class="d-keep-sub">{cta.sub}</p>
+            <div class="d-keep-gate">
+              <form class="d-keep-form" action={site.formspreeEndpoint} method="POST" aria-labelledby="d-keep-start-h"
+                data-drift-capture data-once-url={onceUrl} data-msg-ok={gate.ok} data-msg-already={gate.already}>
+                <label for="d-keep-email" class="d-sr">Your email: we send the DRIFT download here</label>
+                <span class="d-keep-input">
+                  <input id="d-keep-email" class="d-field d-keep-field" type="email" name="email" required
+                    autocomplete="email" inputmode="email" enterkeyhint="go" spellcheck="false" placeholder="ENTER YOUR EMAIL" />
+                </span>
+                <input type="hidden" name="source" value={gate.source} />
+                <!-- honeypot: real users never fill this; bots do -->
+                <input type="text" name="_gotcha" class="d-hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+                <button type="submit" class="d-keep-key"><span data-face>Get it <span class="d-keep-arrow" aria-hidden="true">&#9654;</span></span></button>
+              </form>
+              <p class="d-capture-status" role="status" aria-live="polite" tabindex="-1"></p>
+              <p class="d-keep-consent">Open it on a computer · You join our list · unsubscribe anytime</p>
+            </div>
+          </div>
+          <p class="d-keep-head d-keep-then"><span class="l2">Then keep it {routes.length} ways:</span></p>
+        </Fragment>
+      ) : (
+        <div class="d-attract-hdr d-keep-hdr">
+          <p class="d-keep-head">{drift.phase === 'closed'
+            ? <span class="l2">Keep it:</span>
+            : <Fragment><span class="l1">Try it free for {drift.trialDays} days.</span>{' '}<span class="l2">Then keep it {routes.length} ways:</span></Fragment>}</p>
+          <p class="d-keep-sub">{cta.sub}</p>
+        </div>
+      )}
       <ul class="d-keep-routes" role="list">
         {routes.map((r) => (
           <li class:list={['d-keep-route', `d-route--${r.id}`]}>

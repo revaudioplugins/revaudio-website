@@ -644,6 +644,69 @@
 .drift-page .d-keep-box--link:focus-visible { outline: none; border-color: var(--d-hot); box-shadow: 0 0 0 3px var(--d-pink-ink), inset 0 0 18px rgba(247, 105, 224, .12); }
 .d-keep-box--link .d-keep-cond { color: var(--d-crt); }
 .drift-page .d-keep-fine { margin: 16px 0 0; text-align: center; font: 400 17px/1 var(--d-f-lcd); letter-spacing: .1em; text-transform: uppercase; color: var(--d-crt); opacity: .8; }
+/* PLAYER 1 START (Dan 10-03): the trial's email gate on the TV. Head + date left, an arcade name-entry
+   field + a digital GET IT key right, the consent under the key; the pink
+   dashed rule (.d-attract-hdr::after) then splits START from KEEP. */
+.d-attract-hdr.d-keep-start { display: grid; gap: 6px 36px; align-items: center; }   /* .d-attract-hdr (flex) sits later in the file */
+@media (min-width: 900px) {
+  .d-attract-hdr.d-keep-start { grid-template-columns: minmax(0, 1fr) minmax(0, 540px); grid-template-areas: "head gate" "sub gate"; }
+  .d-keep-start > .d-keep-head { grid-area: head; align-self: end; }
+  .d-keep-start > .d-keep-sub { grid-area: sub; align-self: start; }
+  .d-keep-start > .d-keep-gate { grid-area: gate; }
+}
+.drift-page .d-keep-start .d-keep-head { font-size: clamp(13px, 1.25vw, 16px); white-space: nowrap; }   /* one line: "…14 / DAYS." broke at 19 px */
+.d-keep-gate { display: grid; gap: 8px; }
+.d-keep-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; }
+.d-keep-form[hidden] { display: none; }   /* sent: the answer takes the form's place (author display beats the UA [hidden]) */
+.d-keep-input { position: relative; display: block; }
+.d-keep-input::before {   /* the arcade prompt arrow */
+  content: '\25B6'; position: absolute; left: 14px; top: 50%; translate: 0 -52%; z-index: 1; pointer-events: none;
+  font: 400 12px/1 var(--d-f-pix); color: var(--d-hot); text-shadow: 0 0 8px rgba(255, 79, 216, .7);
+}
+.drift-page .d-keep-field {
+  min-height: 56px; padding: 0 16px 0 38px;
+  font: 400 24px/1 var(--d-f-lcd); letter-spacing: .06em; caret-color: var(--d-hot);
+  color: #ffe9ff; text-shadow: 0 0 8px rgba(242, 76, 240, .55);
+  background: radial-gradient(120% 140% at 50% 30%, #1d0a2c 0%, #0c0415 75%);
+  box-shadow: 0 0 0 1px rgba(4, 2, 8, .9), inset 0 4px 8px rgba(0, 0, 0, .7), inset 0 0 0 1px rgba(247, 105, 224, .45), 0 0 14px rgba(247, 105, 224, .12);
+  transition: box-shadow 160ms ease;
+}
+.drift-page .d-keep-field::placeholder { color: #b98ad8; letter-spacing: .1em; }
+.drift-page .d-keep-field:not(:focus)::placeholder { animation: d-ph-blink 2.8s ease-in-out infinite; }   /* the hero's breathing prompt */
+@media (prefers-reduced-motion: reduce) { .drift-page .d-keep-field::placeholder { animation: none; } }
+.drift-page .d-keep-field:focus { box-shadow: 0 0 0 1px rgba(4, 2, 8, .9), inset 0 4px 8px rgba(0, 0, 0, .7), inset 0 0 0 1px var(--d-hot), 0 0 0 3px rgba(247, 105, 224, .22), 0 0 22px rgba(247, 105, 224, .35); }
+/* Dan 10-03: GET IT is a digital button on the screen (not the plugin's red key) and it stutter-blinks
+   like an arcade PRESS START: the label flickers, the box holds (the house rule: blink the text, not the box).
+   Hover / focus = inverse video and the blink stops; sending stops it too; reduced motion = no blink. */
+.d-keep-key {
+  min-height: 56px; padding: 0 24px; display: inline-flex; align-items: center; justify-content: center;
+  font: 400 15px/1 var(--d-f-pix); letter-spacing: .12em; text-transform: uppercase; white-space: nowrap;
+  color: var(--d-hot); text-shadow: 0 0 8px rgba(255, 79, 216, .85), 0 0 18px rgba(255, 79, 216, .35);
+  background: radial-gradient(120% 140% at 50% 30%, #2c0d38 0%, #13051d 75%);
+  border: 2px solid var(--d-hot); border-radius: 3px;
+  box-shadow: 0 0 0 1px rgba(4, 2, 8, .9), 0 0 16px rgba(255, 79, 216, .35), inset 0 0 16px rgba(255, 79, 216, .2);
+  cursor: pointer; transition: background-color 120ms ease, color 120ms ease, transform 60ms ease;
+}
+.d-keep-key [data-face] { display: inline-flex; align-items: center; gap: .7em; animation: d-stutter 2.6s steps(1, end) infinite; }
+.d-keep-arrow { font-size: .8em; }
+@keyframes d-stutter {
+  0%, 62% { opacity: 1; }
+  64% { opacity: .12; }  66% { opacity: 1; }  68% { opacity: .12; }  71% { opacity: 1; }
+  88% { opacity: 1; }  89.5% { opacity: .35; }  91% { opacity: 1; }
+}
+.d-keep-key:hover, .drift-page .d-keep-key:focus-visible {
+  outline: none; background: var(--d-hot); color: #14051d; text-shadow: none;
+  box-shadow: 0 0 0 1px rgba(4, 2, 8, .9), 0 0 0 4px rgba(255, 209, 248, .35), 0 0 24px rgba(255, 79, 216, .6);
+}
+.d-keep-key:hover [data-face], .d-keep-key:focus-visible [data-face], .d-keep-key:disabled [data-face] { animation: none; }
+.d-keep-key:active { transform: translateY(2px); }
+.d-keep-key:disabled { cursor: progress; opacity: .75; }
+@media (prefers-reduced-motion: reduce) { .d-keep-key [data-face] { animation: none; } }
+.drift-page .d-keep-consent { margin: 0; font: 400 15px/1.2 var(--d-f-lcd); letter-spacing: .06em; text-transform: uppercase; color: var(--d-crt); opacity: .75; }
+.d-keep-gate .d-capture-status.ok { font: 400 24px/1.15 var(--d-f-lcd); letter-spacing: .04em; color: var(--d-white-ink); text-shadow: 0 0 10px rgba(242, 76, 240, .7); }
+.d-keep-gate .d-capture-status.err { font: 400 17px/1.3 var(--d-f-lcd); letter-spacing: .03em; color: var(--d-pink-ink); }
+.drift-page .d-keep-gate .d-capture-status:focus-visible { outline: none; }
+.drift-page .d-keep-then { margin: 0 0 14px; font-size: clamp(12px, 1.2vw, 15px); }
 
 /* cockpit: purple underglow + gauge cluster (real render, wheel hidden) + wheel.
    The driver's-seat crop is the cockpit's own negative margin: the grid row
