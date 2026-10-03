@@ -91,8 +91,10 @@ export interface Route {
   id: 'video' | 'feedback' | 'release';
   /** #get row condition */
   cond: string;
-  /** short row condition (the keep-it menu under the tracks) */
+  /** the keep-it screen's top line: the action, a verb first (Dan 10-03 "more understandable") */
   heroCond: string;
+  /** the keep-it screen's small line under the value: what it is and when */
+  keepNote: string;
   /** #get row note */
   note: string;
   /** glass value; omitted when !showPrices */
@@ -108,6 +110,7 @@ export function routesFor(phase: DriftPhase = drift.phase): Route[] {
     id: 'video',
     cond: 'Keep it with a video',
     heroCond: 'Post a video',
+    keepNote: 'Stream it, keep it. See how below',
     note: 'Post a DRIFT video on your channel.',
     value: p ? 'FREE' : undefined,
     href: '#creators',
@@ -115,14 +118,16 @@ export function routesFor(phase: DriftPhase = drift.phase): Route[] {
   const feedback: Route = {
     id: 'feedback',
     cond: 'Keep it with the feedback form',
-    heroCond: `Feedback form · by ${nb(noDay(drift.feedbackClosesLabel))}`,
+    heroCond: 'Send your feedback',
+    keepNote: `Beta price · until ${nb(noDay(drift.feedbackClosesLabel))}`,
     note: `Fill it in by ${drift.feedbackClosesLabel} and we email you how to keep DRIFT${p ? ` for $${drift.driverPriceUsd}` : ''}.`,
     value: p ? `$${drift.driverPriceUsd}` : undefined,
   };
   const release: Route = {
     id: 'release',
     cond: 'Buy it at release',
-    heroCond: `Release · ${nb(noDay(drift.releaseLabel))}`,
+    heroCond: 'Just buy it',
+    keepNote: `Full price · from ${nb(noDay(drift.releaseLabel))}`,
     note: `DRIFT goes on sale ${drift.releaseLabel}.`,
     value: p ? `$${drift.listPriceUsd}` : undefined,
   };
@@ -150,14 +155,14 @@ export function ctaFor(phase: DriftPhase = drift.phase): DriftCta {
     case 'preopen':
       return {
         label: 'Get it',
-        sub: `By email · ${drift.trialOpensLabel}`,
+        sub: `Download link by email · ${drift.trialOpensDay}`,
         sticky: `${drift.trialDays} DAYS FREE · BY EMAIL ${drift.trialOpensDay.toUpperCase()}`,
         action: 'capture',
       };
     case 'open':
       return {
         label: 'Get it',
-        sub: `Download by email`,
+        sub: `Download link by email`,
         sticky: `${drift.trialDays} DAYS FREE · BY EMAIL`,
         action: drift.gateWired ? 'gate' : 'capture',
       };

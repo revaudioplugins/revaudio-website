@@ -2,11 +2,15 @@
 /**
  * The keep-it menu, under the tracks (Dan 10-01: "not relevant for what the
  * first thing user see" — it left the hero CTA panel, which kept the price
- * and the key). What the 14 days are, then the routes condition-first with
- * the value on sunk glass, only the FREE route links. Three across on
- * desktop, stacked on phone. Renders only while routes exist (not 'released').
+ * and the key). Dan 10-03: "put inside a pixel screen, like on the plugin" —
+ * it is the plugin's arcade select screen now, the same CRT as SELECT TRACKS
+ * (.d-crt glass + scanlines, Press Start head over the pink dashed rule, VT323
+ * phosphor): the head on the left, the trial date as a readout on the right,
+ * the three routes as menu boxes (condition, then the value big), only the FREE
+ * route links. Dan 10-03 "more understandable": the head says the order (try free, then keep
+ * it), each box reads action -> price -> what/when (drift.ts heroCond / value / keepNote).
+ * Renders only while routes exist (not 'released').
  */
-import DriftPanel from './DriftPanel.astro';
 import { drift, ctaFor, routesFor } from '../../data/drift';
 
 const cta = ctaFor();
@@ -14,29 +18,33 @@ const routes = routesFor();
 ---
 {routes.length > 0 && (
   <div class="d-keep d-wrap">
-    <DriftPanel checker={false} class="d-keep-panel">
-      <p class="d-keep-head">{drift.phase === 'closed'
-        ? <span class="l2">Keep it:</span>
-        : <Fragment><span class="l1">After {drift.trialDays} days.</span>{' '}<span class="l2">Keep it{routes.length === 3 ? ', three ways.' : '.'}</span></Fragment>}</p>
-      <p class="d-fine d-keep-sub">{cta.sub}</p>
-      <ul class="d-ladder d-ladder--hero" role="list">
+    <div class="d-crt d-keep-screen">
+      <div class="d-attract-hdr d-keep-hdr">
+        <p class="d-keep-head">{drift.phase === 'closed'
+          ? <span class="l2">Keep it:</span>
+          : <Fragment><span class="l1">Try it free for {drift.trialDays} days.</span>{' '}<span class="l2">Then keep it {routes.length} ways:</span></Fragment>}</p>
+        <p class="d-keep-sub">{cta.sub}</p>
+      </div>
+      <ul class="d-keep-routes" role="list">
         {routes.map((r) => (
-          <li class:list={['d-route', `d-route--${r.id}`]}>
+          <li class:list={['d-keep-route', `d-route--${r.id}`]}>
             {r.href ? (
-              <a class="d-route-link" href={r.href}>
-                <span class="d-route-cond">{r.heroCond} ›</span>
-                {r.value && <span class="d-lcd d-route-val">{r.value}</span>}
+              <a class="d-keep-box d-keep-box--link" href={r.href}>
+                <span class="d-keep-cond">{r.heroCond} ›</span>
+                {r.value && <span class="d-keep-val">{r.value}</span>}
+                <span class="d-keep-note">{r.keepNote}</span>
               </a>
             ) : (
-              <Fragment>
-                <span class="d-route-cond">{r.heroCond}</span>
-                {r.value && <span class="d-lcd d-route-val">{r.value}</span>}
-              </Fragment>
+              <div class="d-keep-box">
+                <span class="d-keep-cond">{r.heroCond}</span>
+                {r.value && <span class="d-keep-val">{r.value}</span>}
+                <span class="d-keep-note">{r.keepNote}</span>
+              </div>
             )}
           </li>
         ))}
       </ul>
-      {cta.action !== 'cart' && <p class="d-fine d-keep-fine">Nothing to pay today.</p>}
-    </DriftPanel>
+      {cta.action !== 'cart' && <p class="d-keep-fine">Nothing to pay today.</p>}
+    </div>
   </div>
 )}
