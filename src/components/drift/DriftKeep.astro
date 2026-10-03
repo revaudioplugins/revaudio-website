@@ -26,13 +26,13 @@ const onceUrl = site.downloadGate.workerUrl + '/form-once';
 ---
 {routes.length > 0 && (
   <div class="d-keep d-wrap">
+    <div class="d-keep-tv">
     <div class="d-crt d-keep-screen">
       {gate ? (
         <Fragment>
           <!-- PLAYER 1 START: the free trial, an email gate on the screen (Dan 10-03) -->
           <div class="d-attract-hdr d-keep-start">
-            <p class="d-keep-head" id="d-keep-start-h"><span class="l1">Try it free for {drift.trialDays} days.</span></p>
-            <p class="d-keep-sub">{cta.sub}</p>
+            <p class="d-keep-head d-keep-try" id="d-keep-start-h"><span>Try it free</span> <span>for {drift.trialDays} days.</span></p>
             <div class="d-keep-gate">
               <form class="d-keep-form" action={site.formspreeEndpoint} method="POST" aria-labelledby="d-keep-start-h"
                 data-drift-capture data-once-url={onceUrl} data-msg-ok={gate.ok} data-msg-already={gate.already}>
@@ -80,6 +80,14 @@ const onceUrl = site.downloadGate.workerUrl + '/form-once';
         ))}
       </ul>
       {cta.action !== 'cart' && <p class="d-keep-fine">Nothing to pay today.</p>}
+    </div>
+    <!-- the plugin's CRT cabinet livery, printed on the TV bezel (Dan 10-03, direction A): live type, never baked -->
+    <span class="d-tv-ink d-tv-tl" aria-hidden="true"><i class="d-tv-checker"></i><b>Speed sounds better</b></span>
+    <span class="d-tv-ink d-tv-tr" aria-hidden="true"><i class="d-tv-stripes"></i><b lang="ja">スピード</b></span>
+    <span class="d-tv-ink d-tv-r" lang="ja" aria-hidden="true">走り続ける</span>
+    <span class="d-tv-ink d-tv-l" aria-hidden="true">Racing music for a higher state</span>
+    <span class="d-tv-ink d-tv-bl" aria-hidden="true"><b class="d-tv-badge">R</b>Fuel ideas not cars</span>
+    <span class="d-tv-ink d-tv-br" aria-hidden="true">A faster mind</span>
     </div>
   </div>
 )}

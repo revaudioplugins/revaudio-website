@@ -46,10 +46,11 @@
   src: url('/fonts/drift/Bangers.latin.woff2') format('woff2');
   font-display: swap;
 }
-/* subset to the page's own Japanese (Google Fonts text= kit): add a word = refetch */
+/* subset to the page's own Japanese (Google Fonts text= kit): add a word = refetch, and bump the file name (-v2:
+   10-03 + スピード 走り続ける for the TV livery; the old set kept) so no browser keeps a stale subset */
 @font-face {
   font-family: 'Drift JP';
-  src: url('/fonts/drift/NotoSansJP-var.subset.woff2') format('woff2');
+  src: url('/fonts/drift/NotoSansJP-var.subset-v2.woff2') format('woff2');
   font-weight: 700 900;
   font-display: swap;
 }
@@ -590,6 +591,58 @@
    route links (it gets the chips' hover and focus); the $39 / $69 boxes are plain (no hover, no pointer). */
 .d-keep { margin-top: clamp(32px, 4vw, 52px); }
 .d-keep-screen { padding: 30px 40px 26px; }   /* clears the rounder tube corners */
+/* Dan 10-03 "the frame is not there yet", direction A: the TV wears the plugin's CRT cabinet. The bezel is an
+   AI plate (tools/gen-drift-tv-frame.sh roll 3, picked on a page bench over 1/2; blank: no type in the image;
+   2x Lanczos + unsharp, bezel runs smoothed along their length), 9-sliced around the screen; the livery
+   is printed on it as live type in the cabinet's own words: checker + SPEED SOUNDS BETTER top left, stripes
+   + スピード top right, 走り続ける down the right, RACING MUSIC FOR A HIGHER STATE up the left, the R badge +
+   FUEL IDEAS NOT CARS bottom left, A FASTER MIND bottom right. Printed ink, matte: no glow (a sticker is not a
+   lamp). --tv-t/r/b/l = the bezel per side (css px), set with the chosen frame. */
+.d-keep-tv {
+  --tv-t: 39px; --tv-r: 59px; --tv-b: 52px; --tv-l: 59px;   /* frame 3's opening at .45 css per model px */
+  position: relative; border: 0 solid transparent; border-radius: 30px;
+  border-image: var(--d-img-tv) 384 fill / 86px stretch;   /* Dan's pick: roll 3, the curved-tube bezel (2x file, slice 384 = screw + the opening's corner curve) */
+  padding: calc(var(--tv-t) - 2px) calc(var(--tv-r) - 2px) calc(var(--tv-b) - 2px) calc(var(--tv-l) - 2px);   /* the tube overlaps the opening's lip by 2 px */
+  box-shadow: 0 0 60px 18px rgba(190, 90, 255, .12), 0 24px 40px rgba(0, 0, 0, .65);   /* the set is on + sits on the page */
+}
+.d-keep-tv .d-crt.d-keep-screen {   /* inside the cabinet: the tube only, the bezel is the plate's */
+  border-radius: 30px / 36px;
+  box-shadow: inset 0 0 0 1px rgba(190, 90, 255, .22), inset 0 0 90px 30px rgba(0, 0, 0, .85);
+}
+/* Dan 10-03 "give the TV the vibe like in the plugin, that bent vibe": the plugin's CRT tube bulges. The screen's
+   silhouette is a bent tube (every edge bows outward, the corners roll), cut with a mask stretched to the screen;
+   the glass gets the bulge's light: a curved highlight across the top left, a dark rim that follows the curve. */
+.d-keep-tv .d-crt.d-keep-screen {
+  border-radius: 0;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 1000' preserveAspectRatio='none'%3E%3Cpath d='M70 24 Q500 -6 930 24 Q984 30 988 80 Q1006 500 988 920 Q984 970 930 976 Q500 1006 70 976 Q16 970 12 920 Q-6 500 12 80 Q16 30 70 24 Z' fill='black'/%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 1000' preserveAspectRatio='none'%3E%3Cpath d='M70 24 Q500 -6 930 24 Q984 30 988 80 Q1006 500 988 920 Q984 970 930 976 Q500 1006 70 976 Q16 970 12 920 Q-6 500 12 80 Q16 30 70 24 Z' fill='black'/%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
+  box-shadow: inset 0 0 0 1px rgba(190, 90, 255, .25), inset 0 0 60px 26px rgba(0, 0, 0, .8), inset 0 0 160px 40px rgba(0, 0, 0, .35);
+}
+.d-keep-tv .d-crt.d-keep-screen::after {
+  border-radius: 0;
+  background:
+    radial-gradient(ellipse 58% 36% at 26% 4%, rgba(255, 255, 255, .10), rgba(255, 255, 255, .03) 55%, transparent 72%),   /* the bulge's highlight */
+    linear-gradient(158deg, rgba(255, 255, 255, .06) 0%, transparent 30%),                                                 /* glass reflection */
+    radial-gradient(ellipse 72% 88% at 50% 50%, transparent 58%, rgba(0, 0, 0, .55) 86%, rgba(0, 0, 0, .8) 100%);          /* the curve falls away to the rim */
+}
+.d-tv-ink { position: absolute; z-index: 2; pointer-events: none; display: flex; align-items: center; gap: 8px;
+  font: 700 11px/1 var(--d-f-head); letter-spacing: .14em; text-transform: uppercase; color: #b46bff; white-space: nowrap; }
+.d-tv-ink b { font-weight: 700; }
+.d-tv-tl { left: 70px; top: calc(var(--tv-t) / 2); translate: 0 -50%; color: #c98bff; }
+.d-tv-checker { width: 74px; height: 12px; transform: skewX(-24deg);
+  background: repeating-conic-gradient(#e040c8 0 25%, #6c22b8 0 50%) 0 0 / 12px 12px; opacity: .9; }
+.d-tv-tr { right: 72px; top: calc(var(--tv-t) / 2); translate: 0 -50%; }
+.d-tv-tr b { font: 900 20px/1 var(--d-f-ja); letter-spacing: .02em; color: #e040c8; }
+.d-tv-stripes { width: 70px; height: 10px; transform: skewX(-30deg);
+  background: repeating-linear-gradient(90deg, #8a2be2 0 6px, transparent 6px 11px); opacity: .85; }
+.d-tv-r { right: calc(var(--tv-r) / 2); top: 50%; translate: 50% -50%; writing-mode: vertical-rl; text-orientation: upright;
+  font: 900 17px/1 var(--d-f-ja); letter-spacing: .14em; color: #e040c8; }
+.d-tv-l { left: calc(var(--tv-l) / 2); top: 50%; translate: -50% -50%; writing-mode: vertical-rl; rotate: 180deg;
+  font-size: 9px; letter-spacing: .22em; color: #9b6fd0; }
+.d-tv-bl { left: 70px; bottom: calc(var(--tv-b) / 2); translate: 0 50%; font-size: 10px; color: #9b6fd0; }
+.d-tv-badge { font: italic 900 22px/1 var(--d-f-badge); letter-spacing: 0; color: #e040c8; }
+.d-tv-br { right: 72px; bottom: calc(var(--tv-b) / 2); translate: 0 50%; font-size: 10px; color: #9b6fd0; }
+@media (max-width: 900px) { .d-tv-ink { display: none; } }   /* phones: the bezel stays, the small print goes (not verified this session, Dan: laptop only) */
 /* Dan 10-03 "make the background more like a TV": the tube, not a flat glass. A dark plastic bezel with a
    highlight edge, rounder tube corners, the picture lit from the centre (phosphor glow), a deep curved
    vignette so the glass reads bulged, fine scanlines over a faint RGB aperture grille, and a diagonal
@@ -649,12 +702,15 @@
    dashed rule (.d-attract-hdr::after) then splits START from KEEP. */
 .d-attract-hdr.d-keep-start { display: grid; gap: 6px 36px; align-items: center; }   /* .d-attract-hdr (flex) sits later in the file */
 @media (min-width: 900px) {
-  .d-attract-hdr.d-keep-start { grid-template-columns: minmax(0, 1fr) minmax(0, 540px); grid-template-areas: "head gate" "sub gate"; }
-  .d-keep-start > .d-keep-head { grid-area: head; align-self: end; }
-  .d-keep-start > .d-keep-sub { grid-area: sub; align-self: start; }
+  .d-attract-hdr.d-keep-start { grid-template-columns: minmax(0, 1fr) minmax(0, 470px); grid-template-areas: "head gate"; }   /* 470: the TV bezel narrowed the screen (10-03) */
+  .d-keep-start > .d-keep-head { grid-area: head; align-self: start; }   /* its two lines share the field + consent block's height (Dan 10-03) */
   .d-keep-start > .d-keep-gate { grid-area: gate; }
 }
-.drift-page .d-keep-start .d-keep-head { font-size: clamp(13px, 1.25vw, 16px); white-space: nowrap; }   /* one line: "…14 / DAYS." broke at 19 px */
+/* Dan 10-03 "make it bigger and red": the screen's one red line, in the plugin's track red with a red phosphor
+   glow, on two lines so it can grow beside the field (the GET IT key is pink, so this is the viewport's red) */
+.drift-page .d-keep-start .d-keep-try { font-size: clamp(16px, 1.75vw, 23px); line-height: 1.3; letter-spacing: .08em; white-space: nowrap;
+  color: var(--d-red); text-shadow: 0 0 8px rgba(var(--d-red-rgb), .85), 0 0 22px rgba(var(--d-red-rgb), .4); }
+.d-keep-try span { display: block; }
 .d-keep-gate { display: grid; gap: 8px; }
 .d-keep-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; }
 .d-keep-form[hidden] { display: none; }   /* sent: the answer takes the form's place (author display beats the UA [hidden]) */

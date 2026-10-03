@@ -44,6 +44,7 @@ import ctaRestSrc from '../assets/seasons/drift/cta-key-rest.png';
 import ctaPressSrc from '../assets/seasons/drift/cta-key-press.png';
 import trialPlateSrc from '../assets/seasons/drift/trial-plate.png';
 import sectionPlateSrc from '../assets/seasons/drift/section-plate-s1.png';   // renamed per plate: the dev image URL has no content hash, so a new name = no stale cache
+import tvFrameSrc from '../assets/seasons/drift/tv-frame-3.png';   // the keep-it TV bezel (tools/gen-drift-tv-frame.sh roll 3, Dan 10-03)
 
 // A phase the page can't honour (open without the feedback form, released
 // without checkout or audio) fails the build here, never quietly on the page.
@@ -55,7 +56,7 @@ const ogImage = existsSync('public/og/drift.png') ? '/og/drift.png' : undefined;
 // properties on .drift-page (the TrialPlates / [slug] pattern), so no raw PNG
 // ever ships from a url() in drift.css. --d-img-cta/-press = the plugin's
 // current red key (trk_key_rest/press.png); --d-img-pill stays the fallback.
-const [tile, panel, screw, lcd, glass, pill, ctaRest, ctaPress, trialPlate, sectionPlate] = await Promise.all([
+const [tile, panel, screw, lcd, glass, pill, ctaRest, ctaPress, trialPlate, sectionPlate, tvFrame] = await Promise.all([
   getImage({ src: tileSrc, width: 800, format: 'webp', quality: 62 }),
   getImage({ src: panelSrc, width: 720, format: 'webp', quality: 70 }),
   getImage({ src: screwSrc, width: 76, format: 'webp', quality: 85 }),
@@ -69,13 +70,15 @@ const [tile, panel, screw, lcd, glass, pill, ctaRest, ctaPress, trialPlate, sect
   // the #drive section plate (AI, tools/gen-drift-section-panel.sh S roll 1, Dan 10-03): full width, the slices are in
   // source px; q88: the bezel only, its middle is flat (the drawn carbon sits on top)
   getImage({ src: sectionPlateSrc, width: 2308, format: 'webp', quality: 88 }),
+  // the keep-it TV bezel: full width (2x of the model's 1318), its screen opening flat under the tube
+  getImage({ src: tvFrameSrc, width: 2636, format: 'webp', quality: 86 }),
 ]);
 const u = (i: { src: string }) => `url(${i.src})`;
 const imgVars = [
   `--d-img-tile:${u(tile)}`, `--d-img-panel:${u(panel)}`, `--d-img-screw:${u(screw)}`,
   `--d-img-lcd:${u(lcd)}`, `--d-img-glass:${u(glass)}`, `--d-img-pill:${u(pill)}`,
   `--d-img-cta:${u(ctaRest)}`, `--d-img-cta-press:${u(ctaPress)}`, `--d-img-trial:${u(trialPlate)}`,
-  `--d-img-section:${u(sectionPlate)}`,
+  `--d-img-section:${u(sectionPlate)}`, `--d-img-tv:${u(tvFrame)}`,
 ].join(';');
 ---
 <BaseLayout
