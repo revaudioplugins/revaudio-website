@@ -110,7 +110,7 @@ export function routesFor(phase: DriftPhase = drift.phase): Route[] {
     id: 'video',
     cond: 'Keep it with a video',
     heroCond: 'Post a video',
-    keepNote: 'Stream it, keep it. See how below',
+    keepNote: 'We check the video first · how ↓',
     note: 'Post a DRIFT video on your channel.',
     value: p ? 'FREE' : undefined,
     href: '#creators',
@@ -118,16 +118,16 @@ export function routesFor(phase: DriftPhase = drift.phase): Route[] {
   const feedback: Route = {
     id: 'feedback',
     cond: 'Keep it with the feedback form',
-    heroCond: 'Send your feedback',
-    keepNote: `Beta price · until ${nb(noDay(drift.feedbackClosesLabel))}`,
+    heroCond: 'Fill the feedback form',
+    keepNote: `Form closes ${nb(noDay(drift.feedbackClosesLabel))}`,
     note: `Fill it in by ${drift.feedbackClosesLabel} and we email you how to keep DRIFT${p ? ` for $${drift.driverPriceUsd}` : ''}.`,
     value: p ? `$${drift.driverPriceUsd}` : undefined,
   };
   const release: Route = {
     id: 'release',
     cond: 'Buy it at release',
-    heroCond: 'Just buy it',
-    keepNote: `Full price · from ${nb(noDay(drift.releaseLabel))}`,
+    heroCond: 'Wait for release',
+    keepNote: `Full price · ${nb(noDay(drift.releaseLabel))}`,
     note: `DRIFT goes on sale ${drift.releaseLabel}.`,
     value: p ? `$${drift.listPriceUsd}` : undefined,
   };

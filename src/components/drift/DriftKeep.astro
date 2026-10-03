@@ -7,8 +7,9 @@
  * (.d-crt glass + scanlines, Press Start head over the pink dashed rule, VT323
  * phosphor): the head on the left, the trial date as a readout on the right,
  * the three routes as menu boxes (condition, then the value big), only the FREE
- * route links. Dan 10-03 "more understandable": the head says the order (try free, then keep
- * it), each box reads action -> price -> what/when (drift.ts heroCond / value / keepNote).
+ * route links. Dan 10-03 "more understandable" (twice): the head says the order (try free, then
+ * keep it), each box reads do this -> KEEP IT FOR -> price -> the catch (drift.ts heroCond / value /
+ * keepNote), with OR chips between the boxes: one choice, not steps or tiers.
  * Dan 10-03 "put inside an option to free trial it, with an email gate and everything": a PLAYER 1
  * START bar tops the screen while the trial is the offer: the head + the download date on the left,
  * an arcade name-entry email field + a digital GET IT key that stutter-blinks like PRESS START (capture.ts: the hero stamp's
@@ -32,7 +33,7 @@ const onceUrl = site.downloadGate.workerUrl + '/form-once';
         <Fragment>
           <!-- PLAYER 1 START: the free trial, an email gate on the screen (Dan 10-03) -->
           <div class="d-attract-hdr d-keep-start">
-            <p class="d-keep-head d-keep-try" id="d-keep-start-h"><span>Try it free</span> <span>for {drift.trialDays} days.</span></p>
+            <p class="d-keep-head d-keep-try" id="d-keep-start-h"><span>Try it free</span>{' '}<span>for {drift.trialDays} days.</span></p>
             <div class="d-keep-gate">
               <form class="d-keep-form" action={site.formspreeEndpoint} method="POST" aria-labelledby="d-keep-start-h"
                 data-drift-capture data-once-url={onceUrl} data-msg-ok={gate.ok} data-msg-already={gate.already}>
@@ -66,12 +67,14 @@ const onceUrl = site.downloadGate.workerUrl + '/form-once';
             {r.href ? (
               <a class="d-keep-box d-keep-box--link" href={r.href}>
                 <span class="d-keep-cond">{r.heroCond} ›</span>
+                {r.value && <span class="d-keep-for">Keep it for</span>}
                 {r.value && <span class="d-keep-val">{r.value}</span>}
                 <span class="d-keep-note">{r.keepNote}</span>
               </a>
             ) : (
               <div class="d-keep-box">
                 <span class="d-keep-cond">{r.heroCond}</span>
+                {r.value && <span class="d-keep-for">Keep it for</span>}
                 {r.value && <span class="d-keep-val">{r.value}</span>}
                 <span class="d-keep-note">{r.keepNote}</span>
               </div>
