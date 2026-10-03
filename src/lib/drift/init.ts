@@ -15,6 +15,7 @@ export function initDrift(): void {
   initJump();
   initCaptures();
   initDeferredImages(root);
+  initLap(root);
   // #hear renders only when drift.demoMode === 'real'; demo.ts never loads otherwise
   if (root.querySelector('[data-demo-screen]')) void initDeckUi(root);
 }
@@ -66,6 +67,20 @@ function initDeferredImages(root: HTMLElement): void {
     for (const e of entries) if (e.isIntersecting) { load(e.target as HTMLElement); io.unobserve(e.target); }
   }, { rootMargin: '500px 0px' });
   els.forEach((el) => io.observe(el));
+}
+
+/**
+ * The keep-it TV's lap (Dan 10-03, A3): the car drives and the dates light only while the lap is on
+ * screen, like the #drive GPS car. CSS holds the animations paused; [data-run] lets them go.
+ */
+function initLap(root: HTMLElement): void {
+  const lap = root.querySelector<HTMLElement>('[data-lap]');
+  if (!lap) return;
+  if (!('IntersectionObserver' in window)) { lap.dataset.run = ''; return; }
+  new IntersectionObserver(([e]) => {
+    if (e.isIntersecting) lap.dataset.run = '';
+    else delete lap.dataset.run;
+  }).observe(lap);
 }
 
 async function initDeckUi(root: HTMLElement): Promise<void> {

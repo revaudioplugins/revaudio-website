@@ -773,6 +773,80 @@
 .d-keep-gate .d-capture-status.err { font: 400 17px/1.3 var(--d-f-lcd); letter-spacing: .03em; color: var(--d-pink-ink); }
 .drift-page .d-keep-gate .d-capture-status:focus-visible { outline: none; }
 .drift-page .d-keep-then { margin: 0 0 14px; font-size: clamp(12px, 1.2vw, 15px); text-align: center; }   /* centred, like the start block above it (Dan 10-03) */
+/* THE ROAD TO NOV 1 (Dan 10-03 "this doesn't add up" → bench → A3): the trial's dates in order on one line.
+   Three stops (node, flag, date, what, a price chip), the free days a lit solid line, the wait after the
+   checkpoint a dim dashed one; the video is a SHORTCUT lane that leaves START, arcs over the lap and lands
+   on FINISH (it skips the checkpoint and the wait). The #drive GPS car (same white dot, pink glow) drives
+   the lap on a 9 s loop while it's on screen (init.ts sets [data-run]); each date lights as the car
+   arrives (the text, not the box). Reduced motion: the car stays parked at START. --y = the line. */
+.d-lap-track { position: relative; max-width: 940px; margin: 6px auto 0; --y: 8px; }
+.d-lap-track--bypass { --y: 62px; padding-top: 54px; margin-top: 2px; }
+.d-lap-seg { position: absolute; top: var(--y); height: 0; translate: 0 -1px; width: 33.333%; }
+.d-lap-seg--trial { left: 16.667%; border-top: 2px solid var(--d-hot); box-shadow: 0 0 6px rgba(255, 79, 216, .55); }
+.d-lap-seg--wait { left: 50%; border-top: 2px dashed rgba(190, 90, 255, .45); }
+.d-lap-bypass { position: absolute; left: 16.667%; right: 16.667%; top: 18px; height: calc(var(--y) - 18px);
+  border: 2px dashed rgba(255, 79, 216, .6); border-bottom: 0; border-radius: 18px 18px 0 0; }
+.d-lap-stops { position: relative; list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.d-lap-stop { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.d-lap-node { position: relative; z-index: 1; width: 16px; height: 16px; margin-bottom: 6px; border-radius: 50%; box-sizing: border-box;
+  background: #12061b; border: 2px solid var(--d-hot); }
+.d-lap-stop--start .d-lap-node { background: var(--d-hot); }
+.d-lap-stop--finish .d-lap-node { border-radius: 2px; border-color: var(--d-white-ink);
+  background: repeating-conic-gradient(var(--d-white-ink) 0 25%, #12061b 0 50%) 0 0 / 6px 6px; }   /* the chequered flag */
+.d-lap-flag { margin-bottom: 8px; font: 400 9px/16px var(--d-f-pix); letter-spacing: .12em; text-transform: uppercase; color: var(--d-crt); }
+.d-lap-date { font: 400 40px/.9 var(--d-f-lcd); letter-spacing: .04em; text-transform: uppercase; color: var(--d-white-ink); text-shadow: 0 0 10px rgba(242, 76, 240, .6); }
+.d-lap-what { margin-top: 8px; font: 400 17px/1.15 var(--d-f-lcd); letter-spacing: .05em; text-transform: uppercase; color: var(--d-crt); }
+.d-lap-chip { margin-top: 12px; min-width: 150px; display: inline-flex; align-items: baseline; justify-content: center; gap: 8px; padding: 2px 12px 6px;
+  border: 1px solid rgba(190, 90, 255, .45); border-radius: 3px; font: 400 17px/1 var(--d-f-lcd); letter-spacing: .05em; text-transform: uppercase; color: var(--d-crt); }
+.d-lap-stop--start .d-lap-chip { border-color: rgba(255, 79, 216, .55); }
+.d-lap-chip b { font: 400 30px/.9 var(--d-f-lcd); color: var(--d-white-ink); }
+.d-lap-span { position: absolute; z-index: 1; left: 33.333%; top: var(--y); translate: -50% -50%; padding: 4px 8px 3px; white-space: nowrap;
+  background: #1d0b2c; border: 1px solid rgba(255, 79, 216, .55); border-radius: 2px;
+  font: 400 9px/1 var(--d-f-pix); letter-spacing: .1em; text-transform: uppercase; color: var(--d-hot); }
+.d-lap-sign { position: absolute; z-index: 2; left: 50%; top: 18px; translate: -50% -50%; display: flex; align-items: center; gap: 12px; white-space: nowrap;
+  padding: 7px 16px 5px; border: 1px solid rgba(255, 79, 216, .6); border-radius: 4px; background: #1d0b2c; text-decoration: none;
+  font: 400 19px/1 var(--d-f-lcd); letter-spacing: .05em; text-transform: uppercase; color: #f0e2ff; transition: border-color .14s ease, background-color .14s ease; }
+.d-lap-sign:hover { border-color: var(--d-hot); background: #26103a; }
+.d-lap-sign:active { translate: -50% calc(-50% + 2px); transition-duration: 40ms; }
+.drift-page .d-lap-sign:focus-visible { outline: none; border-color: var(--d-hot); box-shadow: 0 0 0 3px var(--d-pink-ink); }
+.d-lap-sign b { font: 400 30px/.9 var(--d-f-lcd); color: var(--d-white-ink); text-shadow: 0 0 10px rgba(242, 76, 240, .6); }
+.d-lap-tag { font: 400 9px/1 var(--d-f-pix); letter-spacing: .1em; text-transform: uppercase; color: var(--d-hot); }
+.d-lap-chev { color: var(--d-crt); }
+.drift-page .d-lap-note { margin: 20px 0 0; text-align: center; font: 400 15px/1 var(--d-f-lcd); letter-spacing: .1em; text-transform: uppercase; color: var(--d-crt); opacity: .7; }
+/* the car: a lane from START to FINISH (a size container, so the car's translate is a share of the lap) */
+.d-lap-lane { position: absolute; z-index: 3; left: 16.667%; width: 66.667%; top: var(--y); height: 0; container-type: inline-size; pointer-events: none; }
+.d-lap-car { position: absolute; left: -5px; top: -5px; width: 10px; height: 10px; border-radius: 50%;
+  background: #fff0ff; box-shadow: 0 0 6px 1px rgba(242, 76, 240, .95), 0 0 14px rgba(242, 76, 240, .5);
+  animation: d-lap-drive 9s ease-in-out infinite paused; }
+@keyframes d-lap-drive {
+  0%, 12% { translate: 0 0; opacity: 1; }
+  34%, 50% { translate: 50cqw 0; opacity: 1; }
+  72%, 90% { translate: 100cqw 0; opacity: 1; }
+  94% { translate: 100cqw 0; opacity: 0; }
+  95% { translate: 0 0; opacity: 0; }
+  100% { translate: 0 0; opacity: 1; }
+}
+.d-lap-date { animation: 9s linear infinite paused; }
+.d-lap-stop--start .d-lap-date { animation-name: d-lap-lit-start; }
+.d-lap-stop--check .d-lap-date { animation-name: d-lap-lit-check; }
+.d-lap-stop--finish .d-lap-date { animation-name: d-lap-lit-finish; }
+.d-lap[data-run] :is(.d-lap-car, .d-lap-date) { animation-play-state: running; }
+@keyframes d-lap-lit-start {
+  0%, 13% { color: #fff; text-shadow: 0 0 14px rgba(255, 79, 216, .95), 0 0 2px #fff; }
+  17%, 96% { color: var(--d-white-ink); text-shadow: 0 0 10px rgba(242, 76, 240, .6); }
+  100% { color: #fff; text-shadow: 0 0 14px rgba(255, 79, 216, .95), 0 0 2px #fff; }
+}
+@keyframes d-lap-lit-check {
+  0%, 32% { color: var(--d-white-ink); text-shadow: 0 0 10px rgba(242, 76, 240, .6); }
+  35%, 51% { color: #fff; text-shadow: 0 0 14px rgba(255, 79, 216, .95), 0 0 2px #fff; }
+  55%, 100% { color: var(--d-white-ink); text-shadow: 0 0 10px rgba(242, 76, 240, .6); }
+}
+@keyframes d-lap-lit-finish {
+  0%, 70% { color: var(--d-white-ink); text-shadow: 0 0 10px rgba(242, 76, 240, .6); }
+  73%, 91% { color: #fff; text-shadow: 0 0 14px rgba(255, 79, 216, .95), 0 0 2px #fff; }
+  95%, 100% { color: var(--d-white-ink); text-shadow: 0 0 10px rgba(242, 76, 240, .6); }
+}
+@media (prefers-reduced-motion: reduce) { .d-lap-car, .d-lap-date { animation: none; } }
 
 /* cockpit: purple underglow + gauge cluster (real render, wheel hidden) + wheel.
    The driver's-seat crop is the cockpit's own negative margin: the grid row

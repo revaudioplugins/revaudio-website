@@ -142,6 +142,36 @@ export function routesFor(phase: DriftPhase = drift.phase): Route[] {
   }
 }
 
+/**
+ * The keep-it TV's lap (Dan 10-03 "this doesn't add up" → bench → A3): the trial's dates in order on one
+ * line, START (the Oct 10 mail) → CHECKPOINT (the feedback form closes) → FINISH (on sale), a price at
+ * each stop, the video as a SHORTCUT lane over the lap (it skips the checkpoint and the wait). Trial
+ * phases only (the email gate is on the same screen); null otherwise, and the TV keeps the route boxes.
+ * 'open': later sign-ups get their 14 days from the day they join, so the checkpoint is only the form.
+ */
+export interface LapStop { id: 'start' | 'check' | 'finish'; flag: string; date: string; what: string; chip?: { label: string; value: string } }
+export interface Lap { head: string; span: string; stops: LapStop[]; shortcut?: { label: string; value: string; note: string; href: string } }
+
+export function lapFor(phase: DriftPhase = drift.phase): Lap | null {
+  if (phase !== 'preopen' && phase !== 'open') return null;
+  const p = drift.showPrices;
+  const pre = phase === 'preopen';
+  const video = routesFor(phase).find((r) => r.id === 'video');
+  return {
+    head: `The road to ${nb(noDay(drift.releaseLabel))}:`,
+    span: `${drift.trialDays} days free`,
+    stops: [
+      { id: 'start', flag: 'Start', date: nb(noDay(drift.trialOpensDay)), what: pre ? 'Trial starts · by email' : 'Trial open · by email',
+        chip: p ? { label: 'Today', value: '$0' } : undefined },
+      { id: 'check', flag: 'Checkpoint', date: nb(noDay(drift.feedbackClosesLabel)), what: pre ? 'Trial ends · form closes' : 'Feedback form closes',
+        chip: p ? { label: 'Filled the form', value: `$${drift.driverPriceUsd}` } : undefined },
+      { id: 'finish', flag: 'Finish', date: nb(noDay(drift.releaseLabel)), what: 'On sale',
+        chip: p ? { label: 'Everyone else', value: `$${drift.listPriceUsd}` } : undefined },
+    ],
+    shortcut: video?.href ? { label: 'Post a DRIFT video', value: video.value ?? 'Keep it', note: 'Video shortcut: we check it first', href: video.href } : undefined,
+  };
+}
+
 export interface DriftCta {
   label: string;
   sub: string;
