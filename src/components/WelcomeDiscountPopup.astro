@@ -26,9 +26,8 @@
 import { site } from '../data/site';
 const signupUrl = site.downloadGate.workerUrl + '/popup-signup';
 const path = Astro.url.pathname.replace(/\/$/, '');
-// /drift: the season page has ONE ask, the beta (review Decision 17).
 // /buy/<slug>: an email buy link lands with the cart open; its one ask is checkout.
-const excluded = path === '/thank-you' || path === '/drift' || path.startsWith('/buy/');
+const excluded = path === '/thank-you' || path.startsWith('/buy/');
 ---
 
 {!excluded && (
