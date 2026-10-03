@@ -1,6 +1,7 @@
 import { getPan, handBusy, setPan } from './bus';
 import { PanSpring, swingWidth } from './tracks';
 import { carR, circuitPeriod, lapOf, lapPos, lapTarget, restPhase } from './circuits';
+import { initFader } from './faders';
 
 /**
  * #drive (LET IT DRIVE): the car laps the selected circuit on the mini
@@ -19,8 +20,12 @@ import { carR, circuitPeriod, lapOf, lapPos, lapTarget, restPhase } from './circ
  * the pan follows each corner (right-hander = right) with the flick and the
  * spring. A parked car sits on a straight, so the car and the C readout agree. Reduced motion: no autoplay, PAUSE starts
  * latched, the car sits parked; an explicit PLAY still runs (user-initiated).
+ * INTENSITY / SPEED faders (Dan 10-02, layout B) set the car page-wide, live:
+ * INTENSITY = swing width + braking (calm<->rally) + spring looseness + flick,
+ * SPEED = lap time 45 s .. 3 s. Moving one starts the car like a chip does
+ * (under reduced motion only the readouts change).
  */
-const INTENSITY = 0.6;          // TRK_WIDTH default
+const INT_DEFAULT = 0.6;        // TRK_WIDTH default
 const LAP_DEFAULT = 0.488084;   // TRK_LAP default
 const HAND_HOLD = 1500;         // ms the car keeps waiting after the hand lets go (or its last key)
 
@@ -39,15 +44,15 @@ export function initTracks(root: HTMLElement): void {
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   let track = Number(chips.find((c) => c.getAttribute('aria-pressed') === 'true')?.dataset.track ?? chips[0]?.dataset.track);
-  let lap = lapOf(track), len = 1;
+  let lap = lapOf(track), len = 1, inten = INT_DEFAULT, lap01 = LAP_DEFAULT;
   // latched = PAUSE is the cap that stopped the car (it stays lit through a scroll-away STOP)
   let running = false, paused = false, userPaused = reduce, latched = reduce, phase = 0, lapT = 0, raf = 0, last = 0;
   const spring = new PanSpring();
-  const period = () => circuitPeriod(LAP_DEFAULT);
-  const park = () => { phase = restPhase(lap); lapT = 0; };
+  const period = () => circuitPeriod(lap01);
+  const park = () => { phase = restPhase(lap, inten); lapT = 0; };
 
   const placeCar = () => {
-    const pt = path.getPointAtLength(lapPos(lap, phase) * len);
+    const pt = path.getPointAtLength(lapPos(lap, phase, inten) * len);
     car.setAttribute('cx', pt.x.toFixed(4));
     car.setAttribute('cy', pt.y.toFixed(4));
   };
@@ -84,8 +89,8 @@ export function initTracks(root: HTMLElement): void {
       return;
     }
     if (running && !paused) { phase += dt / period(); lapT = (lapT + dt) % period(); }
-    const target = running ? lapTarget(lap, phase, swingWidth(INTENSITY), INTENSITY, period()) : 0;
-    const p = spring.step(target, dt, INTENSITY, period());
+    const target = running ? lapTarget(lap, phase, swingWidth(inten), inten, period()) : 0;
+    const p = spring.step(target, dt, inten, period());
     setPan(p, 'tracks');
     placeCar(); readouts();
     // a held (PAUSE) or parked (STOP) car rests the loop once the spring settles
@@ -119,5 +124,21 @@ export function initTracks(root: HTMLElement): void {
   sec.querySelector('[data-gps="stop"]')?.addEventListener('click', () => {
     userPaused = true; latched = false; running = false; paused = false; park(); kick();
   });
+
+  // INTENSITY / SPEED: the value screens mirror the plugin's (big value, INTENSITY's 12-bar meter)
+  const intVal = sec.querySelector<HTMLElement>('[data-vs="int"] [data-vs-val]');
+  const intBars = Array.from(sec.querySelectorAll<HTMLElement>('[data-vs="int"] [data-vs-bars] i'));
+  const spdVal = sec.querySelector<HTMLElement>('[data-vs="spd"] [data-vs-val]');
+  const showInt = () => {
+    if (intVal) intVal.textContent = String(Math.round(inten * 100));
+    intBars.forEach((b, i) => b.classList.toggle('on', i < Math.round(inten * intBars.length)));
+  };
+  const showSpd = () => { if (spdVal) spdVal.textContent = period().toFixed(1); };
+  const moved = () => (reduce ? kick() : play());
+  const intSlot = sec.querySelector<HTMLElement>('[data-fader="int"]');
+  const spdSlot = sec.querySelector<HTMLElement>('[data-fader="spd"]');
+  if (intSlot) initFader(intSlot, INT_DEFAULT, (v) => `${Math.round(v * 100)} percent`, (v) => { inten = v; showInt(); moved(); });
+  if (spdSlot) initFader(spdSlot, LAP_DEFAULT, (v) => `${circuitPeriod(v).toFixed(1)} seconds a lap`, (v) => { lap01 = v; showSpd(); moved(); });
+  showInt(); showSpd();
   select(track);
 }

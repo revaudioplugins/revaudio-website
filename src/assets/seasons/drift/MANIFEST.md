@@ -9,6 +9,7 @@
 > `graf_title_int.png` / `graf_title_spd.png` (AUTO DRIFT graffiti) and `fx-autotune.png` (shows the BAND|ALL bank
 > removed in 4.26.0; returns only when re-shot from the Oct 10 build). They stay in the folder, unreferenced, so
 > they don't ship. `cta-pill.png` stays as the keycap fallback.
+> **Back in use 2026-10-02:** the four `graf_*_int/spd` files = the INTENSITY / SPEED faders on #drive (DriftFader.astro).
 > Added: `cta-key-rest.png` / `cta-key-press.png` (1190x270, copied from Drift `Source/ui/public/assets/jdm/trk_key_rest.png`
 > and `trk_key_press.png`): the race-red CTA keycap, 3-sliced in drift.css `.d-cta` (key face 36..1154 x 19..234).
 > `mm_cap_*.png` stay: the GPS transport caps sit under mm_plate.png's alpha-0 wells.

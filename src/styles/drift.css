@@ -848,9 +848,9 @@
   .d-attract .d-cards { flex: 1; grid-auto-rows: 1fr; }
   .d-attract .d-chip { justify-content: center; }
 }
-/* 2x4 chips once the GPS cabinet is tall enough (>=1280); below that the 4-column grid stays so the CRT never
-   outgrows the cabinet. 48px, not 64-80: anything taller makes the CRT taller than the GPS panel at 1440 */
-@media (min-width: 1280px) {
+/* 2x4 chips: layout B (10-02) narrowed the tracks panel, so two columns from 1001 up.
+   48px, not 64-80: anything taller makes the CRT taller than the GPS panel */
+@media (min-width: 1001px) {
   .d-attract .d-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .d-attract .d-chip svg { height: 48px; }
 }
@@ -877,7 +877,7 @@
 .d-chip-name { font: 400 19px/1 var(--d-f-lcd); letter-spacing: .04em; color: #f0e2ff; white-space: nowrap; }
 .d-chip[aria-pressed='true'] .d-chip-name { color: var(--d-white-ink); text-shadow: 0 0 8px var(--d-crt-glow); }   /* the selected chip lights */
 .drift-page .d-chips-note { margin-top: 14px; }
-.d-gps-col { display: grid; gap: 16px; width: 100%; max-width: 440px; justify-self: end; align-content: stretch; }
+.d-gps-col { display: grid; gap: 16px; width: 100%; max-width: 624px; justify-self: end; align-content: stretch; }
 .d-gps { position: relative; width: 100%; aspect-ratio: 1188 / 1324; }
 .d-gps > img, .d-gps > noscript > img { position: absolute; inset: 0; width: 100%; height: 100%; }
 .d-gps-glass { position: absolute; left: 15.5%; top: 44%; width: 69%; height: 44%; }
@@ -886,7 +886,49 @@
 .d-gps-glass circle.car { fill: #fff0ff; filter: drop-shadow(0 0 6px rgba(242, 76, 240, .95)); }
 .d-gps-lcd { position: absolute; left: 62%; top: 9.6%; width: 30%; height: 10%; display: flex; flex-direction: column; justify-content: center; padding: 0 8px; }
 .d-gps-lcd span { font: 400 clamp(11px, 1vw, 14px)/1.1 var(--d-f-lcd); color: var(--d-lcd); text-shadow: 0 0 4px rgba(242, 76, 240, .7); white-space: nowrap; }
-.drift-page .d-auto-line { margin: 20px 0 0; max-width: none; }
+.drift-page .d-int-line { margin: 20px 0 0; max-width: none; }
+.drift-page .d-auto-line { margin: 8px 0 0; max-width: none; }
+
+/* --- layout B (Dan 10-02): INTENSITY | GPS | SPEED, value screens under ------ */
+@media (min-width: 1001px) {
+  .d-tracks { grid-template-columns: minmax(0, 457fr) minmax(0, 624fr); }
+  .d-gps-panel { display: flex; flex-direction: column; justify-content: center; }   /* when the tracks panel is the taller one (<1280), the rig sits centred */
+}
+.d-rig { display: grid; grid-template-columns: 80px minmax(0, 1fr) 80px; column-gap: 12px; align-items: stretch; }
+.d-rig .d-gps { align-self: start; }
+.d-fad { display: flex; flex-direction: column; align-items: center; gap: 6px; min-height: 0; }
+.d-fad--int { --fad: #b46bff; --fad-rgb: 180, 107, 255; }   /* the plugin's fader fills: violet / magenta, never red */
+.d-fad--spd { --fad: #f24cf0; --fad-rgb: 242, 76, 240; }
+.d-fad-pic { width: 70px; height: auto; filter: drop-shadow(0 1px 0 rgba(0, 0, 0, .55)) drop-shadow(0 0 5px rgba(var(--fad-rgb), .45)); }
+.d-fad-title { height: 22px; width: auto; max-width: 92px; filter: drop-shadow(0 1px 0 rgba(0, 0, 0, .55)) drop-shadow(0 0 5px rgba(var(--fad-rgb), .45)); }
+.d-fad-end { font: 400 9px/1 var(--d-f-pix); letter-spacing: .04em; color: var(--d-fg-neon); white-space: nowrap; }
+/* the slider is the wide hit box; ::before is the groove, the fill and cap ride its centre line */
+.d-fad-slot { position: relative; flex: 1; width: 56px; min-height: 120px; margin: 14px 0; cursor: ns-resize; touch-action: none; border-radius: 8px; }
+.d-fad-slot::before { content: ''; position: absolute; top: 0; bottom: 0; left: 50%; width: 14px; translate: -50% 0; border-radius: 7px; background: #05020a; box-shadow: inset 0 0 0 1px rgba(190, 90, 255, .28), inset 0 2px 6px rgba(0, 0, 0, .9); }
+.d-fad-fill { position: absolute; bottom: 0; left: 50%; width: 14px; translate: -50% 0; border-radius: 7px; background: var(--fad); box-shadow: 0 0 10px rgba(var(--fad-rgb), .55); pointer-events: none; }
+.d-fad-thumb { position: absolute; left: 50%; width: 48px; height: 24px; translate: -50% 50%; border-radius: 5px; pointer-events: none;
+  background: linear-gradient(180deg, #d8d2de, #6f6878 55%, #3b3442); box-shadow: 0 3px 6px rgba(0, 0, 0, .7), inset 0 1px 0 rgba(255, 255, 255, .5); }
+.d-fad-thumb::after { content: ''; position: absolute; left: 8px; right: 8px; top: 50%; height: 2px; translate: 0 -50%; background: #1a1220; }
+.drift-page .d-fad-slot:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--d-pink-ink), 0 0 0 5px rgba(7, 5, 11, .8); }
+.d-rig-base { display: grid; grid-template-columns: 104px minmax(0, 1fr) 104px; column-gap: 12px; align-items: start; margin-top: 18px; }
+.d-rig-base .d-balance-box { margin-top: 0; }
+.d-vs { height: 96px; display: flex; flex-direction: column; align-items: center; justify-content: space-evenly; padding: 6px 4px; }
+.d-vs-lab { font: 400 8px/1 var(--d-f-pix); letter-spacing: .06em; color: var(--d-lcd); text-shadow: 0 0 6px rgba(242, 76, 240, .7); }
+.d-vs-val { font: 400 38px/.9 var(--d-f-lcd); color: var(--d-white-ink); text-shadow: 0 0 8px rgba(242, 76, 240, .8); }
+.d-vs-val b { font-weight: 400; }
+.d-vs-val small { font-size: 20px; margin-left: 2px; }
+.d-vs-unit { font: 400 16px/1 var(--d-f-lcd); color: var(--d-lcd); }
+.d-vs-bars { display: flex; gap: 2px; }
+.d-vs-bars i { width: 5px; height: 9px; border-radius: 1px; background: rgba(242, 76, 240, .12); }
+.d-vs-bars i.on { background: rgb(255, 112, 247); box-shadow: 0 0 4px rgba(242, 76, 240, .8); }
+.drift-page .d-spd-note { margin: 6px 0 0; text-align: center; }
+/* below 1001 the panels stack; phones put the faders in a row under the GPS (not verified this session, Dan: laptop only) */
+@media (max-width: 600px) {
+  .d-rig { grid-template-columns: 1fr 1fr; row-gap: 14px; }
+  .d-rig .d-gps { grid-column: 1 / -1; grid-row: 1; }
+  .d-fad-slot { min-height: 150px; }
+  .d-rig-base { grid-template-columns: 1fr 1fr; }   /* the balance box is already hidden here (above) */
+}
 .drift-page .d-drive-lede { margin-bottom: 22px; }   /* the tempo line under it is gone (Dan 10-02): its gap to the panels moves here */
 @media (max-width: 600px) { #drive .d-panel { padding-bottom: 44px; } }   /* clears the 31 px bottom screws, as .d-keep does */
 @media (max-width: 600px) { #drive .d-gps-panel .d-balance-box { display: none; } }   /* the hero's own L/R meter sits 1.5 screens up; the hooks stay in the DOM (fixer r2 10-02) */

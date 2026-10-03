@@ -13,13 +13,17 @@
  *  - SHAPES (build time only, DriftTracks.astro): the outline as an SVG path in
  *    the plugin's own point space (y down, the plugin draws it the right way
  *    up), simplified with Ramer-Douglas-Peucker, plus a padded viewBox.
- *  - LAPS (shipped to the browser, trackui.ts): S time-uniform samples of the
- *    plugin's lap at the default INTENSITY (.60): `ds` = arc-length steps (x1e4,
- *    first = absolute start) so the car can ride the path with
- *    getPointAtLength, `c` = corner curvature (x100) = the pan before width,
- *    flick and spring. The time warp is TrackEngine.h verbatim: calm LUT from
- *    the shipping spd[] profile, rally LUT from the quasi-static lap solver,
- *    morphed by INTENSITY.
+ *  - LAPS (shipped to the browser, circuits.ts): everything the page needs to
+ *    run the plugin's lap at ANY INTENSITY (Dan 2026-10-02: the INTENSITY
+ *    fader brakes live). Per circuit, all delta-coded integers:
+ *      c   = corner curvature x100 at G evenly spaced points (= the pan before
+ *            width, flick and spring; right-hand corner > 0)
+ *      a   = arc-length steps x1e4 between those points (lap position for
+ *            getPointAtLength)
+ *      fc / fr = S time-uniform samples of the point index (x4, in G units) on
+ *            the calm lap (shipping spd[] profile) and the rally lap (the
+ *            quasi-static lap solver). TrackEngine.h morphs them by INTENSITY:
+ *            index = fc + (fr - fc) * I.
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
@@ -36,8 +40,8 @@ const PICK = [
   ['circuit-of-the-americas', 'USA'],
   ['marina-bay-street-circuit', 'SINGAPORE'],
 ];
-const INTENSITY = 0.6;   // TRK_WIDTH default
 const S = 256;           // time samples per lap shipped to the browser
+const G = 256;           // geometry samples per lap (every 2nd plugin point)
 const RDP_EPS = 0.0025;  // outline simplification, plugin point units (the long side spans 2.0)
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -119,20 +123,16 @@ for (const [slug, label] of PICK) {
   // arc length along the 512 plugin points (closed), as a lap fraction per point index
   const cum = new Float64Array(kN + 1);
   for (let i = 0; i < kN; i++) { const [ax, ay] = t.pts[i], [bx, by] = t.pts[(i + 1) % kN]; cum[i + 1] = cum[i] + Math.hypot(bx - ax, by - ay); }
-  const arcAt = (fi) => { const ff = Math.floor(fi); const i0 = ((ff % kN) + kN) % kN; return (cum[i0] + (cum[i0 + 1] - cum[i0]) * (fi - ff)) / cum[kN]; };
+  const step = kN / G;
+  const delta = (vals) => { let p = 0; return vals.map((v) => { const d = v - p; p = v; return d; }); };
+  const c = [], arc = [];
+  for (let g = 0; g < G; g++) { c.push(Math.round(t.crv[g * step] * 100)); arc.push(Math.round((cum[g * step] / cum[kN]) * 1e4)); }
 
-  // time-uniform lap at INTENSITY: morphed index = lerp(calm, rally)
+  // the two time warps, as point indices in G units (x4) at S uniform times
   const inv = makeLut(t.spd), invR = makeLut(solveLap(t.crv));
-  const ds = [], c = [];
-  let prev = 0;
-  for (let k = 0; k < S; k++) {
-    const u = k / S;
-    const fiC = idxAt(inv, u), fi = fiC + (idxAt(invR, u) - fiC) * INTENSITY;
-    const s = Math.round(arcAt(fi) * 1e4);
-    ds.push(s - prev); prev = s;
-    c.push(Math.round(sampleWrapped(t.crv, fi) * 100));
-  }
-  laps.push({ id, ds, c });
+  const fc = [], fr = [];
+  for (let k = 0; k < S; k++) { fc.push(Math.round((idxAt(inv, k / S) / step) * 4)); fr.push(Math.round((idxAt(invR, k / S) / step) * 4)); }
+  laps.push({ id, c: delta(c), a: delta(arc), fc: delta(fc), fr: delta(fr) });
 }
 
 const body = `/*! Circuit traces: bacinger/f1-circuits, MIT License, (c) 2019-2025 Tomislav Bacinger */
@@ -142,8 +142,8 @@ const body = `/*! Circuit traces: bacinger/f1-circuits, MIT License, (c) 2019-20
 /** id = the plugin's TRK_ID · vb/d = outline in plugin point space (y down). */
 export const CIRCUIT_SHAPES: { id: number; label: string; vb: string; d: string }[] = ${JSON.stringify(shapes, null, 1)};
 
-/** ${S} time-uniform samples per lap at INTENSITY ${INTENSITY}: ds = arc-length steps x1e4 (sum = lap position), c = curvature x100. */
-export const CIRCUIT_LAPS: { id: number; ds: number[]; c: number[] }[] = ${JSON.stringify(laps)};
+/** Delta-coded. c = curvature x100 and a = arc steps x1e4 at ${G} points; fc / fr = calm / rally point index x4 at ${S} uniform times. */
+export const CIRCUIT_LAPS: { id: number; c: number[]; a: number[]; fc: number[]; fr: number[] }[] = ${JSON.stringify(laps)};
 `;
 writeFileSync(out, body);
 console.log(`wrote ${out} (${(body.length / 1024).toFixed(1)} KB)`);
