@@ -43,7 +43,7 @@ import pillSrc from '../assets/seasons/drift/cta-pill.png';
 import ctaRestSrc from '../assets/seasons/drift/cta-key-rest.png';
 import ctaPressSrc from '../assets/seasons/drift/cta-key-press.png';
 import trialPlateSrc from '../assets/seasons/drift/trial-plate.png';
-import sectionPlateSrc from '../assets/seasons/drift/section-plate.png';
+import sectionPlateSrc from '../assets/seasons/drift/section-plate-s1.png';   // renamed per plate: the dev image URL has no content hash, so a new name = no stale cache
 
 // A phase the page can't honour (open without the feedback form, released
 // without checkout or audio) fails the build here, never quietly on the page.
@@ -66,8 +66,9 @@ const [tile, panel, screw, lcd, glass, pill, ctaRest, ctaPress, trialPlate, sect
   getImage({ src: ctaPressSrc, width: 720, format: 'webp', quality: 82 }),
   // the hero trial plate (AI, tools/gen-drift-trial-panel.sh D): full source width, it shows ~1040 css px wide
   getImage({ src: trialPlateSrc, width: 1393, format: 'webp', quality: 82 }),
-  // the #drive section plate (AI, tools/gen-drift-section-panel.sh E, Dan 10-03): full width, the slices are in source px
-  getImage({ src: sectionPlateSrc, width: 1232, format: 'webp', quality: 80 }),
+  // the #drive section plate (AI, tools/gen-drift-section-panel.sh S roll 1, Dan 10-03): full width, the slices are in
+  // source px; q88: the bezel only, its middle is flat (the drawn carbon sits on top)
+  getImage({ src: sectionPlateSrc, width: 2308, format: 'webp', quality: 88 }),
 ]);
 const u = (i: { src: string }) => `url(${i.src})`;
 const imgVars = [

@@ -842,22 +842,52 @@
 /* ==========================================================================
    SECTION 2 — LET IT DRIVE (#drive): TRACKS attract screen + mini GPS
    ========================================================================== */
-/* one panel for the whole section (Dan 10-03). Desktop: plate E, carbon fibre in a black steel bezel
-   (gpt-image-1, tools/gen-drift-section-panel.sh E, picked on the page bench over D/F/G/H), cropped to its
-   edges (1232 x 761) and 9-sliced at half scale: slice 167 source px (22 % of the short side) keeps the
-   screwed corners and the bezel's inner curve round, only the bezel runs and the carbon middle stretch.
-   The plate brings its own screws. box-shadow, not a drop-shadow filter: a filter on a panel this size
-   repaints with the live car. */
+/* one panel for the whole section (Dan 10-03). Desktop: plate S1, "E's style made for this section,
+   polished" (gpt-image-1, tools/gen-drift-section-panel.sh S, roll 1 of 3, picked on the page bench over
+   E/S2/S3): cropped 1154 x 788, 2x Lanczos + unsharp (2308 x 1576), 9-sliced at .3 css per file px
+   (= .6 per model px, ~1:1 device px on retina, so bezel + screws stay crisp): slice 430 (215 model px)
+   holds the screw AND the whole recess curve (lip 74-85 + radius ~132 model px) inside each corner, so the
+   curve is never stretched. The plate brings its own screws. Its four bezel runs are smoothed along their own
+   length in the file (1-D box blur, 90 px blend into the corners) so the 9-slice stretch shows clean straight
+   brushing instead of smeared grain (Dan 10-03 "still something not polished in the edges").
+   box-shadow, not a drop-shadow filter: a filter on a panel this size repaints with the live car. */
 .drift-page .d-drive-panel { padding: clamp(40px, 4.2vw, 52px) clamp(18px, 2vw, 26px) clamp(24px, 2.4vw, 32px); }
 @media (min-width: 1001px) {
   .drift-page .d-drive-panel {
-    background: none; border-radius: 16px;
+    background: none; border-radius: 58px;   /* = the plate's outer corner (~198 file px at .3), so the drop shadow follows the metal */
     box-shadow: 0 12px 22px rgba(0, 0, 0, .55);
     border: 0 solid transparent;
-    border-image: var(--d-img-section) 167 fill / 84px stretch;
-    padding: 66px 64px 60px;
+    border-image: var(--d-img-section) 430 fill / 129px stretch;
+    padding: 70px 80px 82px;   /* polish 10-03: the inner panels (+ their 6 px ring) sit ~26 px inside the lip, like the head above; the last line ~28 px off the bottom lip */
+    isolation: isolate;   /* the carbon ::before (z -1) paints over the plate, under the content */
   }
   .d-drive-panel > .d-screw { display: none; }
+  .d-drive-panel > .d-sticker { right: 84px; top: 8px; }   /* polish 10-03: on the bezel, clear of the top-right screw and the violet lip (37 px) */
+  .drift-page .d-drive-panel h2.d-headline--row { margin-bottom: 26px; }   /* same air below the head as above it */
+  /* polish 10-03: the two catch lines share the head's centre axis (they were left-aligned and crowding the
+     bottom-left corner curve) */
+  .drift-page .d-drive-panel .d-int-line, .drift-page .d-drive-panel .d-auto-line { text-align: center; margin-left: auto; margin-right: auto; }
+  .drift-page .d-drive-panel .d-int-line { margin-top: 24px; }
+  /* Dan 10-03 "it feels pixelated": no image model covers this panel's ~2240 device px, so the carbon face is
+     a vector 2x2 twill tile (crisp at any DPR). Dan 10-03 "the edges": the AI recess (wall + lip) is not a true
+     rounded rect, so a drawn face inside it left a dark band, thin on the straights and fat in the corners.
+     The face now covers the whole recess out to the bezel's inner edge (measured, model px: top 62, right 70,
+     bottom 69, left 69, corner radius ~148 -> css at .6) and draws its own edge: dark wall, violet lip, dark
+     line, then the recess depth (light from the upper left). The plate keeps only the bezel and screws. */
+  .d-drive-panel::before {
+    content: ''; position: absolute; inset: 37px 42px 41px 41px; z-index: -1; border-radius: 89px; pointer-events: none;
+    background:
+      radial-gradient(120% 90% at 18% 10%, rgba(200, 160, 255, .08), transparent 62%),   /* the key light, upper left */
+      linear-gradient(180deg, rgba(255, 255, 255, .035), transparent 30%),               /* clear-coat sheen */
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Cdefs%3E%3ClinearGradient id='v'%3E%3Cstop offset='0' stop-color='%23231e30'/%3E%3Cstop offset='.45' stop-color='%23171420'/%3E%3Cstop offset='1' stop-color='%230b0a11'/%3E%3C/linearGradient%3E%3ClinearGradient id='h' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%231c1826'/%3E%3Cstop offset='.45' stop-color='%2312101a'/%3E%3Cstop offset='1' stop-color='%2308070d'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='0' y='0' width='5' height='5' fill='url(%23v)'/%3E%3Crect x='5' y='0' width='5' height='5' fill='url(%23v)'/%3E%3Crect x='10' y='0' width='5' height='5' fill='url(%23h)'/%3E%3Crect x='15' y='0' width='5' height='5' fill='url(%23h)'/%3E%3Crect x='0' y='5' width='5' height='5' fill='url(%23h)'/%3E%3Crect x='5' y='5' width='5' height='5' fill='url(%23v)'/%3E%3Crect x='10' y='5' width='5' height='5' fill='url(%23v)'/%3E%3Crect x='15' y='5' width='5' height='5' fill='url(%23h)'/%3E%3Crect x='0' y='10' width='5' height='5' fill='url(%23h)'/%3E%3Crect x='5' y='10' width='5' height='5' fill='url(%23h)'/%3E%3Crect x='10' y='10' width='5' height='5' fill='url(%23v)'/%3E%3Crect x='15' y='10' width='5' height='5' fill='url(%23v)'/%3E%3Crect x='0' y='15' width='5' height='5' fill='url(%23v)'/%3E%3Crect x='5' y='15' width='5' height='5' fill='url(%23h)'/%3E%3Crect x='10' y='15' width='5' height='5' fill='url(%23h)'/%3E%3Crect x='15' y='15' width='5' height='5' fill='url(%23v)'/%3E%3C/svg%3E") 0 0 / 20px 20px,   /* 2x2 twill, vector: crisp at any DPR */
+      #100e17;
+    box-shadow:
+      inset 0 0 0 3px #050308,                       /* the recess wall */
+      inset 0 0 0 4.5px rgba(150, 70, 235, .9),      /* the violet lip */
+      inset 0 0 0 6px #07050b,                       /* its inner shadow line */
+      inset 0 12px 16px -6px rgba(0, 0, 0, .75),     /* recess depth: deepest under the top edge */
+      inset 8px 0 14px -8px rgba(0, 0, 0, .5);       /* and the left (key light upper left) */
+  }
 }
 .d-tracks { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: clamp(22px, 3vw, 40px); align-items: stretch; }
 .d-attract { padding: 22px 24px 26px; }
@@ -932,8 +962,8 @@
 .drift-page .d-fad-slot:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--d-pink-ink), 0 0 0 5px rgba(7, 5, 11, .8); }
 .d-rig-base { display: grid; grid-template-columns: 104px minmax(0, 1fr) 104px; column-gap: 12px; align-items: start; margin-top: 18px; }
 .d-rig-base .d-balance-box { margin-top: 0; }
-.d-vs { height: 96px; display: flex; flex-direction: column; align-items: center; justify-content: space-evenly; padding: 6px 4px; }
-.d-vs-lab { font: 400 8px/1 var(--d-f-pix); letter-spacing: .06em; color: var(--d-lcd); text-shadow: 0 0 6px rgba(242, 76, 240, .7); }
+.d-vs { height: 114px; display: flex; flex-direction: column; align-items: center; justify-content: space-evenly; padding: 6px 4px; }
+.d-vs-lab { font: 400 9px/1 var(--d-f-pix); letter-spacing: .06em; color: var(--d-lcd); text-shadow: 0 0 6px rgba(242, 76, 240, .7); }
 .d-vs-val { font: 400 38px/.9 var(--d-f-lcd); color: var(--d-white-ink); text-shadow: 0 0 8px rgba(242, 76, 240, .8); }
 .d-vs-val b { font-weight: 400; }
 .d-vs-val small { font-size: 20px; margin-left: 2px; }

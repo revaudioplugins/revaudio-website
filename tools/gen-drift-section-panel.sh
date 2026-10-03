@@ -4,7 +4,7 @@
 # gen-drift-trial-panel.sh: text-only prompt (never upload RevAudio art to an external
 # service), the plate is a dumb background, everything on it is live HTML. Details sit
 # in the corners only, so the page can 9-slice it to any section size.
-# Usage: tools/gen-drift-section-panel.sh <variant E|F|G|H> <out.png>
+# Usage: tools/gen-drift-section-panel.sh <variant E|F|G|H|S> <out.png>
 set -euo pipefail
 VAR="${1:?variant}"; OUT="${2:?out.png}"
 : "${OPENAI_API_KEY:?OPENAI_API_KEY not set}"
@@ -27,7 +27,12 @@ case "$VAR" in
   F) EXTRA="Face: matte black anodized steel with a fine even brushed grain. One thin recessed groove runs all around the face about 4% in from the edge, with a violet neon tube (#d23cff, low intensity) glowing softly inside the groove, like underglow lighting set into the metal; the glow stays inside the groove. Four small dark gunmetal Phillips-head screws, one near each corner outside the groove, each turned to a different angle. Crisp machined chamfer on the outer edge." ;;
   G) EXTRA="Face: deep black suede (alcantara) like a racing steering wheel rim, soft and matte with a very fine nap. A single line of violet contrast stitching (#8a2be2 thread, small even stitches) runs all around the face about 4% in from the edge. The suede is wrapped over a thin dark steel edge with a subtle chamfer highlight. Four small dark gunmetal hex-socket bolts, one at each corner, each turned to a different angle." ;;
   H) EXTRA="Face: machined gunmetal aluminium, dark grey with a violet tint (#1a1622 to #2a2433), with a very fine even circular-brushed (spun) grain like a premium aftermarket JDM part. A deep crisp machined chamfer runs around the edge with a bright cool highlight on the top and left and a dark shade on the bottom and right, so it reads as a thick billet plate. Four polished steel hex-socket bolts, one at each corner, each turned to a different angle." ;;
-  *) echo "variant E|F|G|H"; exit 1 ;;
+  # S = Dan 10-03 "a new panel specific for this section, same style (E), just polished": E at the section's own
+  # proportion (~1.3:1, not stretched from 1.6:1), sharper material language. Re-rolled for a pick.
+  S) BASE="${BASE/about one and a half times as wide as it is tall and fills about 90% of the
+frame width/about 1.3 times as wide as it is tall and fills about 92% of the frame height}"
+     EXTRA="Face: dark violet-black carbon fibre, a very fine, crisp, perfectly even 2x2 twill weave with sharp tow edges, under a deep glossy clear coat with a faint purple sheen; the weave is clearly resolved, never blurry or noisy. The carbon face is recessed a few millimetres below the frame, with a thin violet (#8a2be2) anodized lip line where the frame meets the carbon. Frame: a narrow brushed black steel bezel (about 4% of the panel width) with a crisp machined chamfer: a thin cool highlight on the top and left edges, a soft shade on the bottom and right. Four small dark gunmetal Phillips-head screws, one in the bezel at each corner, each turned to a different angle. Premium product photography, ultra sharp, high detail, clean, no grain, no blur." ;;
+  *) echo "variant E|F|G|H|S"; exit 1 ;;
 esac
 
 BODY="$(python3 -c 'import json,sys; print(json.dumps({"model":"gpt-image-1","prompt":sys.argv[1]+"\n"+sys.argv[2],"size":"1536x1024","quality":"high","background":"transparent","n":1}))' "$BASE" "$EXTRA")"
