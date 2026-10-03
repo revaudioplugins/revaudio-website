@@ -43,6 +43,7 @@ import pillSrc from '../assets/seasons/drift/cta-pill.png';
 import ctaRestSrc from '../assets/seasons/drift/cta-key-rest.png';
 import ctaPressSrc from '../assets/seasons/drift/cta-key-press.png';
 import trialPlateSrc from '../assets/seasons/drift/trial-plate.png';
+import sectionPlateSrc from '../assets/seasons/drift/section-plate.png';
 
 // A phase the page can't honour (open without the feedback form, released
 // without checkout or audio) fails the build here, never quietly on the page.
@@ -54,7 +55,7 @@ const ogImage = existsSync('public/og/drift.png') ? '/og/drift.png' : undefined;
 // properties on .drift-page (the TrialPlates / [slug] pattern), so no raw PNG
 // ever ships from a url() in drift.css. --d-img-cta/-press = the plugin's
 // current red key (trk_key_rest/press.png); --d-img-pill stays the fallback.
-const [tile, panel, screw, lcd, glass, pill, ctaRest, ctaPress, trialPlate] = await Promise.all([
+const [tile, panel, screw, lcd, glass, pill, ctaRest, ctaPress, trialPlate, sectionPlate] = await Promise.all([
   getImage({ src: tileSrc, width: 800, format: 'webp', quality: 62 }),
   getImage({ src: panelSrc, width: 720, format: 'webp', quality: 70 }),
   getImage({ src: screwSrc, width: 76, format: 'webp', quality: 85 }),
@@ -65,12 +66,15 @@ const [tile, panel, screw, lcd, glass, pill, ctaRest, ctaPress, trialPlate] = aw
   getImage({ src: ctaPressSrc, width: 720, format: 'webp', quality: 82 }),
   // the hero trial plate (AI, tools/gen-drift-trial-panel.sh D): full source width, it shows ~1040 css px wide
   getImage({ src: trialPlateSrc, width: 1393, format: 'webp', quality: 82 }),
+  // the #drive section plate (AI, tools/gen-drift-section-panel.sh E, Dan 10-03): full width, the slices are in source px
+  getImage({ src: sectionPlateSrc, width: 1232, format: 'webp', quality: 80 }),
 ]);
 const u = (i: { src: string }) => `url(${i.src})`;
 const imgVars = [
   `--d-img-tile:${u(tile)}`, `--d-img-panel:${u(panel)}`, `--d-img-screw:${u(screw)}`,
   `--d-img-lcd:${u(lcd)}`, `--d-img-glass:${u(glass)}`, `--d-img-pill:${u(pill)}`,
   `--d-img-cta:${u(ctaRest)}`, `--d-img-cta-press:${u(ctaPress)}`, `--d-img-trial:${u(trialPlate)}`,
+  `--d-img-section:${u(sectionPlate)}`,
 ].join(';');
 ---
 <BaseLayout

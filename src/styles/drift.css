@@ -182,6 +182,9 @@
 }
 .d-sechead:has(.d-ja) + h2.d-headline { padding-right: clamp(44px, 4.4vw, 60px); }
 .d-headline .l1, .d-headline .l2 { display: block; }
+.d-headline--row .l1, .d-headline--row .l2 { display: inline; }   /* #drive: white + purple on ONE row (Dan 10-03) */
+.drift-page h2.d-headline--row { text-align: center; }   /* centred (Dan 10-03); the kana pad is mirrored left so the centre is the page's */
+.d-sechead:has(.d-ja) + h2.d-headline--row { padding-left: clamp(44px, 4.4vw, 60px); }
 .d-headline .l1 { text-shadow: var(--d-glow-1); }
 .d-headline .l2 { color: var(--d-neon); text-shadow: var(--d-glow-2); }
 /* .drift-page p resets margin + max-width at (0,1,1), so every p rule that
@@ -839,6 +842,23 @@
 /* ==========================================================================
    SECTION 2 — LET IT DRIVE (#drive): TRACKS attract screen + mini GPS
    ========================================================================== */
+/* one panel for the whole section (Dan 10-03). Desktop: plate E, carbon fibre in a black steel bezel
+   (gpt-image-1, tools/gen-drift-section-panel.sh E, picked on the page bench over D/F/G/H), cropped to its
+   edges (1232 x 761) and 9-sliced at half scale: slice 167 source px (22 % of the short side) keeps the
+   screwed corners and the bezel's inner curve round, only the bezel runs and the carbon middle stretch.
+   The plate brings its own screws. box-shadow, not a drop-shadow filter: a filter on a panel this size
+   repaints with the live car. */
+.drift-page .d-drive-panel { padding: clamp(40px, 4.2vw, 52px) clamp(18px, 2vw, 26px) clamp(24px, 2.4vw, 32px); }
+@media (min-width: 1001px) {
+  .drift-page .d-drive-panel {
+    background: none; border-radius: 16px;
+    box-shadow: 0 12px 22px rgba(0, 0, 0, .55);
+    border: 0 solid transparent;
+    border-image: var(--d-img-section) 167 fill / 84px stretch;
+    padding: 66px 64px 60px;
+  }
+  .d-drive-panel > .d-screw { display: none; }
+}
 .d-tracks { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: clamp(22px, 3vw, 40px); align-items: stretch; }
 .d-attract { padding: 22px 24px 26px; }
 /* the CRT sits in its own steel panel, level with the GPS cabinet: 2x4 chips fill it (two columns only, ≥1001) */
@@ -929,7 +949,6 @@
   .d-fad-slot { min-height: 150px; }
   .d-rig-base { grid-template-columns: 1fr 1fr; }   /* the balance box is already hidden here (above) */
 }
-.drift-page .d-drive-lede { margin-bottom: 22px; }   /* the tempo line under it is gone (Dan 10-02): its gap to the panels moves here */
 @media (max-width: 600px) { #drive .d-panel { padding-bottom: 44px; } }   /* clears the 31 px bottom screws, as .d-keep does */
 @media (max-width: 600px) { #drive .d-gps-panel .d-balance-box { display: none; } }   /* the hero's own L/R meter sits 1.5 screens up; the hooks stay in the DOM (fixer r2 10-02) */
 @media (max-width: 1000px) { .d-tracks { grid-template-columns: minmax(0, 1fr); } .d-gps-col { justify-self: center; } }
