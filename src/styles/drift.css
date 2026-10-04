@@ -786,7 +786,7 @@
 .d-keep-key:hover [data-face], .d-keep-key:focus-visible [data-face], .d-keep-key:disabled [data-face] { animation: none; }
 .d-keep-key:active { transform: translateY(2px); }
 .d-keep-key:disabled { cursor: progress; opacity: .75; }
-@media (prefers-reduced-motion: reduce) { .d-keep-key [data-face], .d-hero-trial .d-stamp-key [data-face] { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .d-keep-key [data-face], :is(.d-hero-trial, #get) .d-stamp-key [data-face] { animation: none; } }
 .drift-page .d-keep-consent { margin: 0; font: 400 15px/1.2 var(--d-f-lcd); letter-spacing: .06em; text-transform: uppercase; color: var(--d-crt); opacity: .75; }
 .d-keep-gate .d-capture-status.ok { font: 400 24px/1.15 var(--d-f-lcd); letter-spacing: .04em; color: var(--d-white-ink); text-shadow: 0 0 10px rgba(242, 76, 240, .7); }
 .d-keep-gate .d-capture-status.err { font: 400 17px/1.3 var(--d-f-lcd); letter-spacing: .03em; color: var(--d-pink-ink); }
@@ -1628,6 +1628,39 @@ html.hc #get .d-get-head span { text-shadow: none; }
 @media (min-width: 600px) and (max-width: 1000px) {
   #get .d-field-row .d-cta { justify-self: center; width: min(100%, 420px); }   /* a key, not a banner */
 }
+/* phones (Dan 10-04, pick A "match the system"): #get wears #drive's trial plate (no checker, no 試乗), the head
+   centred, the compat rows and folds centred, and the capture is the hero's offer: the TV's arcade field + the red
+   digital GET IT on ONE row (the key's dress is shared with the hero, above), the fine line in phosphor. */
+@media (max-width: 600px) {
+  .drift-page #get .d-get-panel {
+    background: none; border: 0 solid transparent; border-radius: 14px;
+    border-image: var(--d-img-trial) 120 120 120 320 fill / 26px 26px 26px 70px stretch;
+    box-shadow: 0 10px 18px rgba(0, 0, 0, .55); padding: 36px 18px 40px;
+  }
+  #get .d-get-panel > .d-screw, #get .d-get-panel > .d-checker, #get .d-get-panel > .d-sticker { display: none; }
+  .drift-page #get .d-get-head { text-align: center; margin-bottom: 14px; }
+  #get .d-get-head span { display: block; }
+  #get .d-compat, #get .d-get-folds { display: none; }   /* Dan 10-04 "remove this section": no MAC/WIN rows, no folds on phones */
+  .drift-page #get .d-get-head { margin-bottom: 4px; }
+  #get .d-get-right { margin-top: 6px; }
+  #get .d-capture .d-field-row { grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: stretch; justify-items: stretch; }
+  .drift-page #get .d-capture .d-field {   /* the TV's arcade name-entry field (as the hero's) */
+    min-height: 52px; padding: 0 10px; border: 0;
+    font: 400 20px / 1 var(--d-f-lcd); letter-spacing: .03em; caret-color: var(--d-hot);   /* never <16: iOS zooms */
+    color: #ffe9ff; text-shadow: 0 0 8px rgba(242, 76, 240, .55);
+    background: radial-gradient(120% 140% at 50% 30%, #1d0a2c 0%, #0c0415 75%);
+    box-shadow: 0 0 0 1px rgba(4, 2, 8, .9), inset 0 4px 8px rgba(0, 0, 0, .7), inset 0 0 0 1px rgba(247, 105, 224, .45), 0 0 14px rgba(247, 105, 224, .12);
+  }
+  .drift-page #get .d-capture .d-field::placeholder { color: #b98ad8; letter-spacing: .03em; }
+  .drift-page #get .d-capture .d-field:focus { outline: none; box-shadow: 0 0 0 1px rgba(4, 2, 8, .9), inset 0 4px 8px rgba(0, 0, 0, .7), inset 0 0 0 1px var(--d-hot), 0 0 0 3px rgba(247, 105, 224, .22), 0 0 22px rgba(247, 105, 224, .35); }
+  #get .d-capture .d-stamp-key { min-height: 52px; }
+  .drift-page #get .d-capture .d-cta-fine {   /* the hero's phosphor fine print */
+    margin: 4px 0 0; text-align: center; text-wrap: balance;
+    font: 400 15px / 1.12 var(--d-f-lcd); letter-spacing: .06em; text-transform: uppercase;
+    color: var(--d-crt); text-shadow: 0 0 6px rgba(190, 90, 255, .45);
+  }
+  #get .d-get-chip { color: var(--d-pink-ink); }
+}
 
 /* ==========================================================================
    SECTION 5 — ON AIR (#creators): the free route, the page's last CTA
@@ -1899,7 +1932,7 @@ html.hc .drift-page .d-price-label { text-shadow: none; }
      stutter-blinks, the box holds; hover/focus = inverse video and the blink stops (as .d-keep-key) */
   /* the TV's PLAYER 1 START bar: field + key on one row (one row of height back for the hub) */
   .d-hero-trial .d-stamp-form { grid-template-columns: minmax(0, 1fr) auto; align-items: stretch; }
-  .d-hero-trial .d-stamp-key {
+  :is(.d-hero-trial, #get) .d-stamp-key {
     --h: 48px; align-self: stretch; width: auto; min-width: 0; height: auto; min-height: 48px; padding: 0 12px;
     border: 2px solid #ff3346; border-image: none; border-radius: 3px;
     background: radial-gradient(120% 140% at 50% 30%, #3a0a10 0%, #16040a 75%);
@@ -1908,14 +1941,14 @@ html.hc .drift-page .d-price-label { text-shadow: none; }
     text-shadow: 0 0 8px rgba(255, 51, 70, .9), 0 0 18px rgba(255, 51, 70, .4);
     transition: background-color 120ms ease, color 120ms ease, transform 60ms ease;
   }
-  .d-hero-trial .d-stamp-key [data-face] { display: inline-flex; align-items: center; gap: .7em; animation: d-stutter 2.6s steps(1, end) infinite; }
-  .d-hero-trial .d-stamp-key:hover, .drift-page .d-hero-trial .d-stamp-key:focus-visible {
+  :is(.d-hero-trial, #get) .d-stamp-key [data-face] { display: inline-flex; align-items: center; gap: .7em; animation: d-stutter 2.6s steps(1, end) infinite; }
+  :is(.d-hero-trial, #get) .d-stamp-key:hover, .drift-page :is(.d-hero-trial, #get) .d-stamp-key:focus-visible {
     outline: none; filter: none; background: #ff3346; color: #1a0306; text-shadow: none;
     box-shadow: 0 0 0 1px rgba(4, 2, 8, .9), 0 0 0 4px rgba(255, 190, 196, .35), 0 0 24px rgba(255, 51, 70, .6);
   }
-  .d-hero-trial .d-stamp-key:hover [data-face], .d-hero-trial .d-stamp-key:focus-visible [data-face],
-  .d-hero-trial .d-stamp-key:disabled [data-face] { animation: none; }
-  .d-hero-trial .d-stamp-key:active { border-image: none; padding-top: 0; filter: none; transform: translateY(2px); }
+  :is(.d-hero-trial, #get) .d-stamp-key:hover [data-face], :is(.d-hero-trial, #get) .d-stamp-key:focus-visible [data-face],
+  :is(.d-hero-trial, #get) .d-stamp-key:disabled [data-face] { animation: none; }
+  :is(.d-hero-trial, #get) .d-stamp-key:active { border-image: none; padding-top: 0; filter: none; transform: translateY(2px); }
 
   /* --- SIGN-UP STATE (G3 / P4) ------------------------------------------ */
   html[data-drift-joined] .d-stamp-form, html[data-drift-joined] #try .d-capture-form { display: none; }
@@ -1985,6 +2018,8 @@ html.hc .drift-page .d-price-label { text-shadow: none; }
   .drift-page .d-hero-trial .d-stamp-label { font-size: 11.5px; letter-spacing: .02em; margin-top: 15px; }
   .drift-page .d-hero-trial .d-stamp-field { min-height: 46px; padding: 0 8px; font-size: 18px; }
   .d-hero-trial .d-stamp-key { padding: 0 9px; font-size: 12px; }
+  .drift-page #get .d-capture .d-field { padding: 0 8px; font-size: 18px; }   /* #get's row too: the placeholder fits at 320 */
+  #get .d-stamp-key { padding: 0 9px; font-size: 12px; }
   .d-hero-trial .d-stamp-fine.d-stamp-fine--ph { font-size: 14px; line-height: 1.08; }
 }
 /* the phone pass's new markup, hidden from 601 up (desktop pixel-identical) */
