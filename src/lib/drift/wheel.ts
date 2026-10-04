@@ -26,7 +26,14 @@ export function initWheel(root: HTMLElement): void {
   const wlf = wl?.firstElementChild as HTMLElement | null;
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  // Phone (A5, Dan 10-04): the wheel is 2.15x the screen with the offer in its window. It is display
+  // only (no drag, the page always scrolls) and the art sways at 20/135 of the angle, so the car still
+  // drives it but the spokes never sweep the form. The value (pan, ARIA) is unchanged.
+  const phoneMq = matchMedia('(max-width: 600px)');   // one list, .matches read at event time (this runs every frame)
+  const phone = () => phoneMq.matches;
+  const SWAY = 20 / 135;
   const spin = (deg: number) => {
+    if (phone()) deg *= SWAY;
     ind.style.transform = `rotate(${deg}deg)`;
     if (wl && wlf) {
       wl.style.transform = `rotate(${deg}deg)`;
@@ -43,8 +50,6 @@ export function initWheel(root: HTMLElement): void {
   // Phone (H6, 10-02): the TRACKS car turns the wheel every frame; VoiceOver
   // only needs its value about twice a second (plus once on focus). The art
   // still turns every frame; a hand or a key writes the value at once.
-  const phoneMq = matchMedia('(max-width: 600px)');   // one list, .matches read at event time (this runs every frame)
-  const phone = () => phoneMq.matches;
   const ARIA_EVERY = 500;
   let ariaT = -Infinity, ariaTimer = 0;
   const ariaSoon = () => {
@@ -147,7 +152,7 @@ export function initWheel(root: HTMLElement): void {
     else setHand(false);
   };
   w.addEventListener('pointerdown', (e) => {
-    if (e.button !== 0 || !onArt(e)) return;
+    if (e.button !== 0 || phone() || !onArt(e)) return;
     stopCoast();
     trail.length = 0;
     lastAng = angOf(e);
@@ -162,7 +167,7 @@ export function initWheel(root: HTMLElement): void {
   // scroll (touch-action pan-y), not a flick: drop the trail so end() finds
   // omega 0, no coast, and lets go of the hand. pointerup is unchanged.
   w.addEventListener('pointercancel', () => { if (phone()) trail.length = 0; end(); });
-  w.addEventListener('dblclick', (e) => { if (!onArt(e)) return; stopCoast(); commit(0.5); });
+  w.addEventListener('dblclick', (e) => { if (phone() || !onArt(e)) return; stopCoast(); commit(0.5); });
   w.addEventListener('keydown', (e) => {
     const step = (e.shiftKey ? 0.01 : 0.05) / 2;   // pan units -> normalised
     let n: number | null = null;
@@ -200,7 +205,7 @@ function initNeedles(root: HTMLElement): void {
     val: Number(el.dataset.rest ?? 0.1),
     rest: Number(el.dataset.rest ?? 0.1),
   }));
-  if (!needles.length) return;
+  if (!needles.length || matchMedia('(max-width: 600px)').matches) return;   // phone (A5): no gauges
   const put = (n: (typeof needles)[number]) => { n.el.style.transform = `rotate(${n.a0 + (n.a1 - n.a0) * n.val}deg)`; };
   needles.forEach(put);
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;

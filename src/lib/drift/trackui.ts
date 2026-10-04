@@ -110,14 +110,17 @@ export function initTracks(root: HTMLElement): void {
   const watched = [gps, root.querySelector<HTMLElement>('.d-cockpit')].filter((el): el is HTMLElement => !!el);
   if (watched.length && 'IntersectionObserver' in window) {
     const seen = new Set<Element>();
+    // phone (A5, 10-04): the hero wheel is 2.15x the screen, so a full screen of it is only ~30% of its box
+    const phoneMq = matchMedia('(max-width: 600px)');
+    const need = (el: Element) => (phoneMq.matches && el.classList.contains('d-cockpit') ? 0.2 : 0.35);
     const io = new IntersectionObserver((entries) => {
-      for (const e of entries) e.isIntersecting ? seen.add(e.target) : seen.delete(e.target);
+      for (const e of entries) e.intersectionRatio >= need(e.target) ? seen.add(e.target) : seen.delete(e.target);
       if (seen.size) {
         if (!running && !userPaused && !reduce) { running = true; paused = false; spring.pan = getPan(); spring.vel = 0; kick(); }
       } else if (running) {
         running = false; paused = false; park(); kick();   // the STOP path: the spring parks the pan at C
       }
-    }, { threshold: 0.35 });
+    }, { threshold: [0.2, 0.35] });
     watched.forEach((el) => io.observe(el));
   }
 

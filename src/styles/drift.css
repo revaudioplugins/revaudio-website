@@ -767,7 +767,7 @@
 .d-keep-key:hover [data-face], .d-keep-key:focus-visible [data-face], .d-keep-key:disabled [data-face] { animation: none; }
 .d-keep-key:active { transform: translateY(2px); }
 .d-keep-key:disabled { cursor: progress; opacity: .75; }
-@media (prefers-reduced-motion: reduce) { .d-keep-key [data-face] { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .d-keep-key [data-face], .d-hero-trial .d-stamp-key [data-face] { animation: none; } }
 .drift-page .d-keep-consent { margin: 0; font: 400 15px/1.2 var(--d-f-lcd); letter-spacing: .06em; text-transform: uppercase; color: var(--d-crt); opacity: .75; }
 .d-keep-gate .d-capture-status.ok { font: 400 24px/1.15 var(--d-f-lcd); letter-spacing: .04em; color: var(--d-white-ink); text-shadow: 0 0 10px rgba(242, 76, 240, .7); }
 .d-keep-gate .d-capture-status.err { font: 400 17px/1.3 var(--d-f-lcd); letter-spacing: .03em; color: var(--d-pink-ink); }
@@ -1639,65 +1639,122 @@ html.hc .drift-page .d-price-label { text-shadow: none; }
    was. IDs = the proposal's (2026-10-02-drift-mobile-proposal.md).
    ========================================================================== */
 @media (max-width: 600px) {
-  /* --- HERO ------------------------------------------------------------- */
-  /* H3: the wheel 346 -> 330 at 402 */
-  .d-hero { --wd: min(330px, 82vw); }
-  /* F1: title, trial, wheel, price, (meter), catch line */
-  .d-hero-left { order: 1; }
-  .d-hero-trial { order: 2; margin-top: -2px; width: 100%; }
-  .d-cockpit { order: 3; }
-  .d-hero-right { order: 4; margin-top: 14px; }
-  /* H2: no meter under the wheel (the hooks stay in the DOM for bus.ts) */
-  .d-hero .d-hero-meter { order: 5; display: none; }
-  /* F1: the title half keeps the ≤1099 upper-half recipe; its bottom pad
-     pays for the kicker on the seam */
-  .d-hero-left .d-panel { padding-bottom: 4px; }
-  /* F1: the lower-half recipe moves from the price panel to the trial panel */
-  .d-hero-trial .d-trial-panel {
-    border-top-left-radius: 0; border-top-right-radius: 0;
-    padding: 4px 18px 36px;   /* top: the kicker IS the seam; bottom: clears the bottom screws */
-    clip-path: inset(0 -12px -12px -12px);
-    box-shadow:
-      0 0 0 1px rgba(4, 2, 8, .95), 0 0 0 6px #08040d, 0 1px 0 6px rgba(255, 240, 255, .06),
-      inset 16px 0 28px -16px rgba(0, 0, 0, .5), inset 0 -1px 0 rgba(255, 240, 255, .07);
+  /* --- HERO "A5" (Dan 2026-10-04, spec: workspace 04_website/output/2026-10-04-drift-phone-wheel-hero.md)
+     Replaces the 10-02 hero (F1-F4, H2-H4, the kicker). The wheel is 2.15x the screen and runs off both
+     edges; no gauges, no plates. Three planes in ONE grid cell, back to front:
+       the tagline (.d-hero-left, z1, its feet tucked behind the rim)
+       -> the wheel (.d-cockpit, z3: DRIFT on the hub, sways ±20°, wheel.ts)
+       -> the price over the rim (.d-hero-right, z4) + the offer as type in the window (.d-hero-trial, z5).
+     Offsets are fractions of --wd, measured from the wheel's alpha: rim inner top .095, hub top .381. --- */
+  .d-hero.d-wrap { width: 100%; padding-top: 10px; }    /* bleed: .d-hero's overflow clip now sits on the screen edge */
+  .d-hero {
+    --wd: 215vw;                                         /* 864 at 402 */
+    --tg: clamp(36px, 13.4vw, 72px);                     /* the tagline; 54 at 402 */
+    --ck: calc(var(--tg) * 1.52);                        /* the rim's top, under the tagline's last line */
   }
-  .d-hero-trial .d-screw.tl, .d-hero-trial .d-screw.tr { display: none; }
-  /* the kicker (#3): the seam between the two halves, a dashed rule either
-     side of a Press Start line; it runs to the plate edges */
-  .drift-page .d-stamp-kicker {
-    display: flex; align-items: center; gap: 6px;
-    margin: 0 -18px;
-    font: 400 clamp(8px, 2.3vw, 9px) / 1 var(--d-f-pix);
-    letter-spacing: .04em; text-transform: uppercase; white-space: nowrap;
-    color: var(--d-dim-violet);
-  }
-  .d-stamp-kicker::before, .d-stamp-kicker::after { content: ''; flex: 1; min-width: 6px; border-top: 1px dashed rgba(180, 107, 255, .22); }
-  /* F2: the compact console */
-  .drift-page .d-tagline { font-size: clamp(26px, 7.4vw, 30px); }
-  .d-hero-trial .d-stamp { gap: 10px; position: relative; }
-  .d-hero-trial .d-stamp-form { gap: 10px; }
-  .d-hero-trial .d-stamp-label { font-size: 26px; }
-  .d-hero-trial .d-stamp-field { min-height: 52px; font-size: 18px; }   /* never <16: iOS zooms */
-  .d-hero-trial .d-stamp-key { --h: 52px; align-self: stretch; width: 100%; }
-  /* F3: the full fine line (captureCopyFor().fine) replaces the list line */
-  .d-hero-trial .d-stamp-fine { display: none; }
-  .d-hero-trial .d-stamp-fine.d-stamp-fine--ph {
-    display: block; margin: -2px -12px 0;   /* the line borrows 12 px of each side pad: two lines at 350, not three */
-    font: 500 13px / 1.3 var(--d-f-head); letter-spacing: 0; text-align: center;
-    color: var(--d-fg); text-wrap: balance;
-  }
-  /* H4: the creators nudge under the answer, a full tap row once revealed */
-  .d-hero-trial .d-capture-next { min-height: 44px; }
-  /* F4: the price, plate-less: one centred row under the wheel */
+  .d-hero-body { grid-template-columns: minmax(0, 1fr); margin-top: 0; }
+  .d-hero-left, .d-cockpit, .d-hero-right, .d-hero-trial { grid-area: 1 / 1; align-self: start; }
+  .drift-page .d-hero-catch { grid-area: 2 / 1; margin-top: 4px; }
+  .d-hero .d-hero-meter { display: none; }
+  /* back plane: the tagline. The title plate goes; DRIFT stays in the markup (the h1) but shows on the hub */
+  .d-hero-left { z-index: 1; margin: 0; width: 100%; }
+  .d-hero-left .d-panel { background: none; box-shadow: none; clip-path: none; border-radius: 0; padding: 0; }
+  .d-hero-left .d-screw, .d-hero-left .d-checker, .d-hero-left .d-sticker { display: none; }
+  .d-hero-left .d-title { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .drift-page .d-hero-left .d-tagline { margin: 0; text-align: center; font-size: var(--tg); line-height: .9; }
+  .d-hero-left .d-tagline span { white-space: nowrap; }
+  /* middle plane: the wheel, centred on the screen (over-wide: left 50% + translate, not justify) */
+  .d-cockpit { justify-self: start; left: 50%; translate: -50% 0; margin: var(--ck) 0 calc(var(--wd) * -0.24); }
+  .d-cluster, .d-needle { display: none; }
+  .d-wheel { -webkit-mask-image: linear-gradient(#000 68%, transparent 78%); mask-image: linear-gradient(#000 68%, transparent 78%); cursor: default; }
+  .d-wheel-grip { display: none; }                       /* no drag on phones (wheel.ts): the page always scrolls */
+  .d-cockpit, .d-cockpit * { pointer-events: none; }    /* display-only: taps fall through to the offer behind it */
+  .d-underglow { display: none; }                        /* the purple, faded (B1): a dim cabin glow on .d-hero instead */
+  .d-hero { background: radial-gradient(ellipse 70% 34% at 50% calc(10px + var(--ck) + var(--wd) * .3), rgba(138, 43, 226, .16), rgba(138, 43, 226, .05) 55%, transparent 80%); }
+  .d-wheel-img { filter: drop-shadow(0 0 1.5px rgba(200, 150, 255, .5)) drop-shadow(0 12px 14px rgba(0, 0, 0, .9)) drop-shadow(0 4px 6px rgba(0, 0, 0, .85)); }
+  /* front plane: the price rides over the rim */
+  .d-hero-right { z-index: 4; margin: calc(var(--ck) + var(--wd) * .039) 0 0; width: 100%; pointer-events: none; }
   .d-hero-right .d-panel { background: none; box-shadow: none; clip-path: none; padding: 0; border-radius: 0; }
   .d-hero-right .d-screw, .d-hero-right .d-sticker { display: none; }
   .d-hero-right .d-cta-block { align-items: center; }
   .d-price { flex-direction: row; align-items: baseline; justify-content: center; gap: 12px; }
-  .d-price-val { font: 600 30px / 1 var(--d-f-badge); color: var(--d-white-ink); text-shadow: var(--d-glow-1); }
-  .d-price-label { font: 700 20px / 1 var(--d-f-head); color: var(--d-fg); text-shadow: none; }
+  .d-price-val { font: 600 clamp(34px, 10.9vw, 56px) / 1 var(--d-f-badge); color: var(--d-white-ink);
+    text-shadow: 0 2px 2px rgba(0, 0, 0, .95), 0 0 16px rgba(0, 0, 0, .8), var(--d-glow-1); }
+  .d-price-label { font: 700 clamp(19px, 6vw, 30px) / 1 var(--d-f-head); color: var(--d-fg);
+    text-shadow: 0 2px 2px rgba(0, 0, 0, .95), 0 0 18px rgba(0, 0, 0, .85); }
   .d-price-label span { display: inline; }
-  /* H1 (CSS half): the grip band scrolls the page; wheel.ts ends a cancelled drag */
-  .d-wheel-grip { touch-action: pan-y; }
+  /* the offer, BEHIND the wheel (B1, Dan 10-04): the gauges are gone and the offer is the car's dash screen,
+     seen through the window. The screen is wider than the window, so the rim cuts its lit top edge in an
+     arc and the hub + spokes hide its foot. z2 < the cockpit's z3; the cockpit takes no taps. */
+  .d-hero-trial { position: relative; z-index: 2; isolation: isolate; justify-self: center; width: min(100% - 32px, max(288px, 79vw)); margin: calc(var(--ck) + var(--wd) * .144) 0 0; }
+  /* the dash screen IS the keep-it TV's tube (Dan 10-04 "a digital screen like the TV, behind the wheel"):
+     the same phosphor-lit CRT, plastic bezel rings and violet spill (::before), scanlines + aperture grille +
+     glass reflection + curved falloff over the picture (::after, like .d-crt.d-keep-screen) */
+  .d-hero-trial::before, .d-hero-trial::after {
+    content: ''; position: absolute; left: -32vw; right: -32vw; pointer-events: none;
+    top: calc(var(--wd) * -.016); height: calc(var(--wd) * .35); border-radius: 30px / 36px;
+  }
+  .d-hero-trial::before {
+    z-index: -1;
+    background: radial-gradient(ellipse 52% 70% at 50% 40%, #2e1347 0%, #1a0b2c 40%, #0b0414 76%, #040107 100%);
+    box-shadow:
+      0 0 0 3px #040206, 0 0 0 14px #19131f, 0 0 0 15px rgba(255, 240, 255, .10), 0 0 0 17px #0a070d,   /* tube seat, plastic bezel, its highlight, the seam */
+      0 0 60px 18px rgba(190, 90, 255, .14),                                                              /* the set is on */
+      inset 0 0 0 1px rgba(190, 90, 255, .25), inset 0 0 70px 24px rgba(0, 0, 0, .8);
+  }
+  .d-hero-trial::after {
+    z-index: 3;
+    background:
+      repeating-linear-gradient(0deg, rgba(0, 0, 0, .34) 0 1px, transparent 1px 3px),
+      repeating-linear-gradient(90deg, rgba(255, 40, 90, .05) 0 1px, rgba(40, 255, 140, .035) 1px 2px, rgba(70, 90, 255, .05) 2px 3px),
+      linear-gradient(158deg, rgba(255, 255, 255, .10) 0%, rgba(255, 255, 255, .03) 18%, transparent 34%),
+      radial-gradient(ellipse 70% 26% at 50% 3%, rgba(255, 255, 255, .07), transparent 70%);
+  }
+  .d-hero-trial .d-trial-panel { background: none; box-shadow: none; clip-path: none; border-radius: 0; padding: 0; }
+  .d-hero-trial .d-screw { display: none; }
+  .drift-page .d-hero-trial .d-stamp-kicker { display: none; }   /* dropped in A5 (Dan 10-04) */
+  .d-hero-trial .d-stamp, .d-hero-trial .d-stamp-form { gap: 8px; }
+  .drift-page .d-hero-trial .d-stamp-label { margin: 9px 0 0; font: 400 clamp(12px, 3.5vw, 17px) / 1.4 var(--d-f-pix); letter-spacing: .06em;
+    text-transform: uppercase; text-align: center; color: var(--d-crt); text-shadow: 0 0 8px var(--d-crt-glow), 0 0 22px rgba(190, 90, 255, .35); }
+  .d-hero-trial .d-stamp-label span { display: block; }
+  .drift-page .d-hero-trial .d-stamp-label em { color: var(--d-hot); text-shadow: 0 0 8px rgba(255, 79, 216, .7), 0 0 20px rgba(255, 79, 216, .3); }
+  .drift-page .d-hero-trial .d-stamp-field {   /* the TV's arcade name-entry field (.d-keep-field) */
+    min-height: 48px; padding: 0 10px; border: 0;
+    font: 400 20px / 1 var(--d-f-lcd); letter-spacing: .03em; caret-color: var(--d-hot);   /* never <16: iOS zooms */
+    color: #ffe9ff; text-shadow: 0 0 8px rgba(242, 76, 240, .55);
+    background: radial-gradient(120% 140% at 50% 30%, #1d0a2c 0%, #0c0415 75%);
+    box-shadow: 0 0 0 1px rgba(4, 2, 8, .9), inset 0 4px 8px rgba(0, 0, 0, .7), inset 0 0 0 1px rgba(247, 105, 224, .45), 0 0 14px rgba(247, 105, 224, .12);
+  }
+  .drift-page .d-hero-trial .d-stamp-field::placeholder { color: #b98ad8; letter-spacing: .03em; }
+  .drift-page .d-hero-trial .d-stamp-field:focus { outline: none; box-shadow: 0 0 0 1px rgba(4, 2, 8, .9), inset 0 4px 8px rgba(0, 0, 0, .7), inset 0 0 0 1px var(--d-hot), 0 0 0 3px rgba(247, 105, 224, .22), 0 0 22px rgba(247, 105, 224, .35); }
+  .d-hero-trial .d-stamp-fine { display: none; }
+  .d-hero-trial .d-stamp-fine.d-stamp-fine--ph {   /* the TV's phosphor fine print (.d-keep-fine) */
+    display: block; margin: 0 -8px;
+    font: 400 15px / 1.12 var(--d-f-lcd); letter-spacing: .06em; text-transform: uppercase; text-align: center;
+    color: var(--d-crt); text-wrap: balance; text-shadow: 0 0 6px rgba(190, 90, 255, .45);
+  }
+  .d-hero-trial .d-capture-next { min-height: 44px; }
+  /* GET IT = the keep-it TV's digital key, in red (D1): pixel label, neon outline, dark screen; the label
+     stutter-blinks, the box holds; hover/focus = inverse video and the blink stops (as .d-keep-key) */
+  /* the TV's PLAYER 1 START bar: field + key on one row (one row of height back for the hub) */
+  .d-hero-trial .d-stamp-form { grid-template-columns: minmax(0, 1fr) auto; align-items: stretch; }
+  .d-hero-trial .d-stamp-key {
+    --h: 48px; align-self: stretch; width: auto; min-width: 0; height: auto; min-height: 48px; padding: 0 12px;
+    border: 2px solid #ff3346; border-image: none; border-radius: 3px;
+    background: radial-gradient(120% 140% at 50% 30%, #3a0a10 0%, #16040a 75%);
+    box-shadow: 0 0 0 1px rgba(4, 2, 8, .9), 0 0 16px rgba(255, 51, 70, .45), inset 0 0 16px rgba(255, 51, 70, .22);
+    font: 400 clamp(12px, 3.4vw, 14px) / 1 var(--d-f-pix); letter-spacing: .06em; color: #ff4a5a;
+    text-shadow: 0 0 8px rgba(255, 51, 70, .9), 0 0 18px rgba(255, 51, 70, .4);
+    transition: background-color 120ms ease, color 120ms ease, transform 60ms ease;
+  }
+  .d-hero-trial .d-stamp-key [data-face] { display: inline-flex; align-items: center; gap: .7em; animation: d-stutter 2.6s steps(1, end) infinite; }
+  .d-hero-trial .d-stamp-key:hover, .drift-page .d-hero-trial .d-stamp-key:focus-visible {
+    outline: none; filter: none; background: #ff3346; color: #1a0306; text-shadow: none;
+    box-shadow: 0 0 0 1px rgba(4, 2, 8, .9), 0 0 0 4px rgba(255, 190, 196, .35), 0 0 24px rgba(255, 51, 70, .6);
+  }
+  .d-hero-trial .d-stamp-key:hover [data-face], .d-hero-trial .d-stamp-key:focus-visible [data-face],
+  .d-hero-trial .d-stamp-key:disabled [data-face] { animation: none; }
+  .d-hero-trial .d-stamp-key:active { border-image: none; padding-top: 0; filter: none; transform: translateY(2px); }
 
   /* --- SIGN-UP STATE (G3 / P4) ------------------------------------------ */
   html[data-drift-joined] .d-stamp-form, html[data-drift-joined] #try .d-capture-form { display: none; }
@@ -1760,6 +1817,15 @@ html.hc .drift-page .d-price-label { text-shadow: none; }
 }
 /* D2 at 350: the caps sit 43.1 px apart there, so the inset holds the hit box at 44 px with a 1 px overlap */
 @media (max-width: 355px) { .d-cap::before { inset: -6.35px; } }
+/* A5/B1 at the smallest phones (320): the window is 266 px wide at the offer's top and the hub starts 15 px
+   too high for the 10-04 stack, so the offer tightens (occlusion-gate.mjs: nothing behind wheel pixels at ±20°) */
+@media (max-width: 340px) {
+  .d-hero-trial .d-stamp, .d-hero-trial .d-stamp-form { gap: 6px; }
+  .drift-page .d-hero-trial .d-stamp-label { font-size: 11.5px; letter-spacing: .02em; margin-top: 15px; }
+  .drift-page .d-hero-trial .d-stamp-field { min-height: 46px; padding: 0 8px; font-size: 18px; }
+  .d-hero-trial .d-stamp-key { padding: 0 9px; font-size: 12px; }
+  .d-hero-trial .d-stamp-fine.d-stamp-fine--ph { font-size: 14px; line-height: 1.08; }
+}
 /* the phone pass's new markup, hidden from 601 up (desktop pixel-identical) */
 @media (min-width: 601px) {
   .d-stamp-kicker, .d-stamp-fine--ph, .d-alsoin-ph, .d-stamp .d-capture-next { display: none; }
