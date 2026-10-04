@@ -1,14 +1,18 @@
 ---
 /**
- * DRIFT trial sign-up (#try). A drift-local twin of EmailCapture.astro's
+ * DRIFT trial sign-up (#get-capture, the #get console's right column). A drift-local twin of EmailCapture.astro's
  * contract (same endpoints, same one-per-email relay, same honest 'not wired'
  * guard), NOT a reuse: that component hard-codes id="newsletter-email", wraps
  * its own <section>/<h2>, has a brass button, and its subhead promises demo
  * codes and intro pricing.
  *
- * Order is the conversion fix (Visitor C): the compat line comes FIRST, so
- * the formats are read before anyone types an email; the hero
- * keycap's data-drift-jump lands #try's top edge, then focuses the field.
+ * The compat rows render beside it, in DriftGetIn's left column (the console's
+ * label side), so the formats are read before anyone types an email; the jump
+ * CTAs (data-drift-jump) land #try = the whole #get console (DriftGetIn's
+ * .d-getin wrapper), then focus this field on pointer: fine. The id prop keeps
+ * the label/input pair unique (`${id}-email`).
+ * The visible label is sr-only (the placeholder + the head say it); the fine
+ * line leads with "Nothing to pay today." in the capture phases.
  * The download is never linked here: it goes out by email. What the form
  * promises, and the source it files under, come from captureCopyFor() per
  * phase (preopen: the Oct 10 mail; open: the download by email; closed: a
@@ -17,7 +21,7 @@
  * /form-once; without JS the form posts to Formspree.
  */
 import { site } from '../../data/site';
-import { drift, ctaFor, compatRows, captureCopyFor } from '../../data/drift';
+import { drift, ctaFor, captureCopyFor } from '../../data/drift';
 
 interface Props {
   id?: string;
@@ -25,14 +29,13 @@ interface Props {
 }
 const copy = captureCopyFor();
 if (!copy) throw new Error(`[DriftCapture] phase '${drift.phase}' has no capture copy (captureCopyFor).`);
-const { id = 'try', source = copy.source } = Astro.props;
+const { id = 'get-capture', source = copy.source } = Astro.props;
 const onceUrl = site.downloadGate.workerUrl + '/form-once';
 ---
 <div class="d-capture" id={id}>
-  <dl class="d-compat">{compatRows().map((r) => <div><dt>{r.k}</dt><dd>{r.v.split(' · ').map((s, i) => <Fragment>{i ? ' · ' : ''}<span class="d-nw">{s}</span></Fragment>)}</dd></div>)}</dl>
   <form class="d-capture-form" action={site.formspreeEndpoint} method="POST"
     data-drift-capture data-once-url={onceUrl} data-msg-ok={copy.ok} data-msg-already={copy.already}>
-    <label for={`${id}-email`} class="d-field-label">Your email</label>
+    <label for={`${id}-email`} class="d-sr">Your email</label>
     <div class="d-field-row">
       <input id={`${id}-email`} class="d-field" type="email" name="email" required autocomplete="email" placeholder="your@email.com" />
       <input type="hidden" name="source" value={source} />
@@ -41,7 +44,7 @@ const onceUrl = site.downloadGate.workerUrl + '/form-once';
       <button type="submit" class="d-cta d-stamp-key"><span data-face>{ctaFor().label} <span class="d-stamp-arrow" aria-hidden="true">&#9656;</span></span></button>
     </div>
   </form>
-  <p class="d-cta-fine d-fine">{copy.fine}</p>
+  <p class="d-cta-fine d-fine">{ctaFor().action === 'capture' && <span class="d-get-chip">Nothing to pay today.</span>} {copy.fine}</p>
   <!-- the live region is always in the tree (drift.css hides it while empty), so the first message is announced -->
   <p class="d-capture-status" role="status" aria-live="polite" tabindex="-1"></p>
   {drift.creatorDealOpen && <a class="d-capture-next" href="#creators" hidden>Keep it free with a video ›</a>}

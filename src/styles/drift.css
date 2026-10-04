@@ -1357,28 +1357,80 @@ html.hc #fx .d-fx-slice, html.hc #fx .d-headline span { text-shadow: none; }
    ========================================================================== */
 /* html already carries scroll-padding-top: nav + .75rem (global.css), so only a
    sale bar, if one is up, adds here; a nav-sized margin too would land 112 px down.
-   #try adds 44 px so the panel's top screws stay below the header on a jump. */
+   #try = the WHOLE #get console (.d-getin, the jump CTAs' target; fix2 10-03: the capture box as the
+   target left the head + MAC/WIN rows under the header on a phone): it adds 44 px so the panel's top
+   screws + well stay below the header on a jump, and the head is read before the email field. */
 .drift-page #get, .drift-page .d-creators { scroll-margin-top: var(--sale-h, 0px); }
 .drift-page #try { scroll-margin-top: calc(var(--sale-h, 0px) + 44px); }
-.d-getin { display: grid; grid-template-columns: minmax(0, 1fr); margin-top: 10px; }   /* full width, flush with the Specs and DAWs bars (fixer r2 10-02) */
+/* 2026-10-03 finish: #get is the hero's trial console again, the page's bookend. Desktop = trial-plate.png
+   3-sliced with the caps tied to the height (216 / 487: 142 + 53 px), the plate bakes its own checker + screws,
+   so the CSS ones hide; phones = the CSS console (checker + screws + 試乗). Left: the head + MAC/WIN rows +
+   the folds (inside the console); right: the capture, #get-capture (field + the red key on one row, the fine line under). */
+#get .d-getin { display: grid; justify-items: center; margin: 0; }
+#get, #creators { font-family: var(--d-f-head); }   /* no node in the closers inherits the site's Inter */
 .d-capture { display: grid; gap: 12px; padding-bottom: 8px; }   /* the last line clears the bottom screws */
 .d-capture [hidden] { display: none; }   /* the grid display must not un-hide the sent form */
 .d-capture .d-capture-next { order: 1; }
 .d-capture .d-cta-fine { order: 2; }   /* the answer (or the error) and the creators nudge sit right under the key; the fine print drops last, as in the hero stamp (ux r2 10-02) */
-/* #try is the hero console's twin from 901 px: the compat label on the left, the field, key and fine print on the right */
-@media (min-width: 901px) {
-  #try.d-capture { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); column-gap: 40px; align-items: center; }
-  #try .d-compat { grid-column: 1; grid-row: 1 / span 3; padding: 0 32px 0 0; border-bottom: 0; border-right: 1px dashed rgba(180, 107, 255, .22); }
-  #try .d-capture-form, #try > .d-fine, #try .d-capture-status, #try .d-capture-next { grid-column: 2; }
+#get .d-get-grid { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: 14px; }
+#get .d-get-left, #get .d-get-right { min-width: 0; }
+.drift-page #get .d-get-head { margin: 0 0 10px; text-align: left; }
+html.hc #get .d-get-head span { text-shadow: none; }
+/* compat rows: MAC / WIN keys in Oswald, the formats in the spec mono; no rule under them inside the console */
+#get .d-compat { margin: 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 12px; align-items: baseline; }
+#get .d-compat > div { display: contents; }
+#get .d-compat dt { font: 700 15px/1.2 var(--d-f-head); letter-spacing: .06em; color: var(--d-white-ink); }
+#get .d-compat dd { margin: 0; font: 400 15px/1.35 var(--d-f-spec); letter-spacing: .03em; color: var(--d-fg); }
+#get .d-compat .d-nw { white-space: nowrap; }   /* 'needs WebView2', 'Apple silicon + Intel' stay whole */
+/* the folds: slim printed rows inside the console (no box, no glass), ▶ turns when open */
+#get .d-get-folds { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 4px 24px; }   /* one row of printed tabs (keeps the console at 216); an open fold takes its own row */
+#get .d-fold[open] { flex-basis: 100%; }
+#get .d-fold summary {
+  display: flex; align-items: center; min-height: 20px; cursor: pointer; list-style: none;
+  font: 700 13px/1.2 var(--d-f-head); text-transform: uppercase; letter-spacing: .04em; color: var(--d-fg-dim);
 }
-/* compat rows: MAC / WIN keys in Oswald, the formats in the spec mono */
-.d-compat { margin: 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 12px; align-items: baseline; padding-bottom: 12px; border-bottom: 1px dashed rgba(180, 107, 255, .22); }
-.d-compat > div { display: contents; }
-.d-compat dt { font: 700 15px/1.2 var(--d-f-head); letter-spacing: .06em; color: var(--d-white-ink); }
-.d-compat dd { margin: 0; font: 400 15px/1.35 var(--d-f-spec); letter-spacing: .03em; color: var(--d-fg); }
-#try .d-compat .d-nw { white-space: nowrap; }   /* 'needs WebView2', 'Apple silicon + Intel' stay whole */
+#get .d-fold summary::-webkit-details-marker { display: none; }
+#get .d-fold summary:hover { color: var(--d-white-ink); }
+#get .d-fold summary::before { content: '\25B6'; margin-right: 10px; font: 400 9px/1 var(--d-f-pix); color: var(--d-hot); display: inline-block; transition: transform 120ms ease; }
+#get .d-fold[open] summary::before { transform: rotate(90deg); }
+#get .d-fold > p, #get .d-fold .d-more-dl { margin: 6px 0 8px; font: 500 14px/1.4 var(--d-f-head); text-transform: uppercase; letter-spacing: .04em; color: var(--d-fg); }
+#get .d-fold .d-more-dl { display: grid; gap: 4px; }
+#get .d-fold .d-more-dl div { display: flex; gap: 8px; }
+#get .d-fold .d-more-dl dt::after { content: ':'; }
+#get .d-fold .d-more-dl dd { margin: 0; }
+/* the right column: field + key, then the fine line; the status takes the form's row once sent and the
+   fine line's row on an error, so the console keeps its height */
+#get .d-capture { gap: 8px; padding-bottom: 0; }
+#get .d-capture .d-cta-fine { font-size: 12px; }
+#get .d-get-chip { color: var(--d-fg-neon); }
+#get .d-capture:has(.d-capture-form[hidden]) .d-capture-status { grid-row: 1; }
+#get .d-capture:has(.d-capture-status.err) .d-cta-fine { display: none; }
+#get .d-field:not(:focus)::placeholder { animation: d-ph-blink 2.8s ease-in-out infinite; }   /* the hero's breathing placeholder: the text, not the box */
+@media (prefers-reduced-motion: reduce) { #get .d-field::placeholder { animation: none; } }
+#get .d-cta-sub { font: 500 14px/1.4 var(--d-f-head); text-transform: uppercase; letter-spacing: .04em; }   /* no Inter (the base .d-cta-sub is Inter) */
+@media (min-width: 1001px) {
+  .drift-page #get .d-get-panel {
+    width: min(100%, 1040px); min-height: 216px; box-sizing: border-box;
+    padding: 24px 50px 22px 136px;
+    background: none; box-shadow: none;
+    border: 0 solid transparent;
+    border-image: var(--d-img-trial) 0 120 0 320 fill / 0 53px 0 142px stretch;
+    filter: drop-shadow(0 12px 22px rgba(0, 0, 0, .55));   /* a small box, as the hero console does */
+    display: grid; align-content: center;
+  }
+  #get .d-get-panel > .d-screw, #get .d-get-panel > .d-checker, #get .d-get-panel > .d-sticker { display: none; }
+  /* even halves: the WIN row fits one line at 15 px (5fr left wrapped both rows: 262 px tall). The right half never
+     goes under its 1312 width, 407 = (1040 - 136 - 50 - 40) / 2: the field needs 204 px (18 + "your@email.com" 168
+     + 18) beside the 181 px key, and the halves alone gave it 164 at 1024 / 146 at 1100 (fix2 10-03) */
+  #get .d-get-grid { grid-template-columns: minmax(0, 1fr) minmax(407px, 1fr); column-gap: 40px; align-items: center; }
+  #get .d-get-left { padding-right: 32px; border-right: 1px dashed rgba(180, 107, 255, .22); container-type: inline-size; }
+  /* the head follows its column (cqw = the column's content box, the 32 px padding out): "RUNS ON YOUR SETUP." is 296 px
+     at 32 px, so 32 px whenever the column has 302+ (every width from 1153, and 1041-1099 under the 40 px gutter),
+     and it scales down to one line where the 407 px right half squeezes the column (243 px at 1100 -> 25.8 px) */
+  .drift-page #get .d-get-head { font: 700 clamp(24px, 10.6cqw, 32px)/.95 var(--d-f-head); }
+  #get .d-capture .d-field-row { grid-template-columns: minmax(0, 1fr) auto; gap: 14px; align-items: center; }
+}
 .d-capture-form { display: grid; gap: 8px; }
-.d-field-label { font: 600 14px/1.3 var(--d-f-head); text-transform: uppercase; letter-spacing: .06em; color: var(--d-fg); }   /* DriftCapture only; the hero uses .d-sr */
 .d-field-row { display: grid; gap: 14px; justify-items: start; }
 /* the email field is a sunk glass window, same material as every readout */
 .d-field {
@@ -1392,7 +1444,7 @@ html.hc #fx .d-fx-slice, html.hc #fx .d-headline span { text-shadow: none; }
 }
 .d-field::placeholder { color: #8f7aa8; }
 .d-field:focus { box-shadow: 0 0 0 1px rgba(4, 2, 8, .9), inset 0 5px 8px rgba(0, 0, 0, .7), inset 0 0 0 1px var(--d-neon); }
-/* #try's field and key wear the hero stamp's dress (scoped: the hero field carries .d-field too) */
+/* the capture's field and key wear the hero stamp's dress (scoped: the hero field carries .d-field too) */
 .d-capture .d-field { min-height: 56px; padding: 0 18px; font: 400 20px/1 var(--d-f-spec); letter-spacing: .06em; caret-color: var(--d-hot); }
 .d-capture .d-stamp-key { --h: 56px; min-width: 0; }
 @media (min-width: 901px) { .d-capture .d-field-row { grid-template-columns: minmax(0, 1fr) auto; align-items: center; } }
@@ -1401,38 +1453,22 @@ html.hc #fx .d-fx-slice, html.hc #fx .d-headline span { text-shadow: none; }
 .d-capture-status:empty { display: none; }   /* the live region stays in the tree; only its text changes */
 .d-capture-status.ok { color: var(--d-white-ink); }
 .d-capture-status.err { color: var(--d-fg-dim); }
-/* #try's answer lights up like the hero stamp's readout; errors are Oswald fine print */
+/* the capture's answer lights up like the hero stamp's readout; errors are Oswald fine print */
 .d-capture .d-capture-status.ok { font: 400 22px/1.15 var(--d-f-lcd); letter-spacing: .03em; color: var(--d-white-ink); text-shadow: 0 0 8px rgba(242, 76, 240, .6); }
 .d-capture .d-capture-status.err { font: 500 13px/1.4 var(--d-f-head); text-transform: none; letter-spacing: .05em; color: var(--d-pink-ink); }   /* none: the message carries info@revaudio.net, which must read as typed */
 .drift-page .d-capture .d-capture-status:focus-visible { outline: none; }
 .d-capture-next { justify-self: start; display: inline-flex; align-items: center; min-height: 44px; font: 700 15px/1 var(--d-f-head); text-transform: uppercase; letter-spacing: .04em; color: var(--d-fg-neon); text-decoration: none; }
 .d-buyslot { display: grid; gap: 12px; justify-items: start; }
-.d-more { margin-top: 24px; display: grid; gap: 10px; }   /* full width: a 760 px cap ended mid-way under the capture panel */
-/* folded specs on sunk glass (the .d-field recipe) */
-.d-more details { padding: 0 18px; border-radius: 5px; background: radial-gradient(120% 100% at 50% 40%, #14061f 0%, #0b0314 70%); box-shadow: 0 0 0 1px rgba(4, 2, 8, .9), 0 1px 0 1px rgba(255, 240, 255, .07), inset 0 5px 8px rgba(0, 0, 0, .7); }
-.d-more summary {
-  display: flex; align-items: center; min-height: 48px; cursor: pointer; list-style: none;
-  font: 700 18px/1.2 var(--d-f-head); text-transform: uppercase; letter-spacing: .02em; color: var(--d-white-ink);
+/* phones + tablets: the CSS console (DriftPanel: checker, screws, 試乗), one column, the key spans it */
+@media (max-width: 1000px) {
+  .drift-page #get .d-get-panel { padding: 42px 20px 44px; }   /* clears the corner screws + the checker row */
+  .drift-page #get .d-get-head { font: 700 26px/.95 var(--d-f-head); }
+  #get .d-get-left { padding: 0; border: 0; }
+  #get .d-field-row { justify-items: stretch; }
+  #get .d-field-row .d-cta { margin-left: 0; }
 }
-.d-more summary::-webkit-details-marker { display: none; }
-.d-more summary:hover { text-shadow: var(--d-glow-1); }   /* a press target answers the pointer (ux r2 10-02) */
-.d-more summary::before { content: '\25B6'; margin-right: 12px; font-family: var(--d-f-pix); font-size: 10px; color: var(--d-hot); display: inline-block; transition: transform 120ms ease; }   /* the kicker's ▶, Press subset */
-.d-more details[open] summary::before { transform: rotate(90deg); }
-.d-more details > p { margin: 0 0 16px; font: 500 15px/1.4 var(--d-f-head); text-transform: uppercase; letter-spacing: .04em; color: var(--d-fg); }
-.d-more-dl { margin: 0 0 16px; font: 400 16px/1.4 var(--d-f-spec); color: var(--d-fg); }
-.d-more-dl { display: grid; gap: 6px; }
-.d-more-dl div { display: flex; gap: 8px; }
-.d-more-dl dt::after { content: ':'; }
-.d-more-dl dd { margin: 0; }
-.drift-page .d-maker { margin-top: 22px; }
-@media (max-width: 900px) {
-  .d-getin { grid-template-columns: minmax(0, 1fr); }
-  .d-field-row { justify-items: stretch; }
-  .d-field-row .d-cta { margin-left: 0; }
-  .d-get-panel { padding-left: clamp(20px, 5vw, 44px); padding-right: clamp(20px, 5vw, 44px); }
-}
-@media (min-width: 600px) and (max-width: 900px) {
-  .d-field-row .d-cta { justify-self: center; width: min(100%, 420px); }   /* a key, not a banner */
+@media (min-width: 600px) and (max-width: 1000px) {
+  #get .d-field-row .d-cta { justify-self: center; width: min(100%, 420px); }   /* a key, not a banner */
 }
 
 /* ==========================================================================

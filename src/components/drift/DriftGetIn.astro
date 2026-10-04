@@ -1,10 +1,17 @@
 ---
 /**
- * Section 4 — TEST DRIVE (#get), the main close. One panel in the hero
- * console's dress: the one working sign-up (DriftCapture #try, compat rows
- * first). The keep-it ladder renders once, in DriftKeep under the tracks, so
- * it is not repeated here. Below: the specs that are left, folded into
- * <details>, and a plain maker line (no exits at the conversion point).
+ * Section 4 — TEST DRIVE (#get), the slim closer: the hero's trial console
+ * again, so the page closes on the object it opened with (2026-10-03 finish).
+ * Desktop = trial-plate.png 3-sliced like the hero (it bakes its own checker +
+ * screws); phones = the CSS DriftPanel with checker, screws and the 試乗 sticker.
+ * Left: the head (white "Runs on your setup." labels the MAC / WIN rows under
+ * it, neon the offer) + the compat rows (the page's only "does it run on my
+ * setup?" answer) + the folded specs. Right: the one working sign-up
+ * (DriftCapture #get-capture). The console wrapper (.d-getin) carries id="try",
+ * the jump CTAs' target (phone sticky bar, hero keycap in the gate phase): a jump
+ * lands the WHOLE console, so the head + MAC/WIN rows are read before the email
+ * (init.ts), then the field is focused. The keep-it TV above carries the ladder and the dates:
+ * not repeated here. The maker line moved to the page end (#creators).
  * Everything reads from src/data/drift.ts, so each flip is one line + flags:
  * 'open' with gateWired swaps the capture for TrialGateModal (still email
  * delivery, no download link on the page); 'released' swaps it for the
@@ -13,65 +20,67 @@
  */
 import DriftPanel from './DriftPanel.astro';
 import DriftCapture from './DriftCapture.astro';
-import { drift, ctaFor, formatsShort, compatRows } from '../../data/drift';
+import { drift, ctaFor, formatsShort, compatRows, noDay } from '../../data/drift';
 import { plugins } from '../../data/plugins';
 import { site } from '../../data/site';
 
 const cta = ctaFor();
 const checkoutUrl = plugins.find((p) => p.slug === 'drift')?.checkoutUrl ?? undefined;
 const registerUrl = site.downloadGate.workerUrl + '/download/register';
+const [l1, l2] =
+  drift.phase === 'released' ? ['DRIFT.', `$${drift.listPriceUsd}.`]
+  : drift.phase === 'closed' ? ['Runs on your setup.', `On sale ${noDay(drift.releaseLabel)}.`]
+  : ['Runs on your setup.', `${drift.trialDays} days free.`];
 ---
 <section class="d-sec" id="get" data-drift-cta-zone aria-labelledby="d-get-h">
   <div class="d-wrap">
-    <div class="d-sechead">
-      <span class="d-marquee" aria-hidden="true">TEST DRIVE</span>
-      <span class="d-ja" lang="ja" aria-hidden="true">試乗</span>
-      <span class="d-rule" aria-hidden="true"></span>
-    </div>
-    <h2 id="d-get-h" class="d-headline"><span class="l1">Test drive DRIFT</span> <span class="l2">free for {drift.trialDays} days.</span></h2>
-
-    <div class="d-getin" data-drift-fab-watch>
-      <DriftPanel class="d-get-panel">
-        {cta.action === 'cart' ? (
-          <div class="d-buyslot">
-            <button type="button" class="d-cta" data-add-to-cart data-cart-label data-slug="drift" data-name="Drift"
-              data-price={drift.listPriceUsd} data-checkout-url={checkoutUrl}>Buy DRIFT · ${drift.listPriceUsd}</button>
-            <p class="d-cta-sub">{formatsShort()}</p>
+    <div class="d-getin" id="try" data-drift-fab-watch>
+      <DriftPanel class="d-get-panel" sticker="試乗">
+        <div class="d-get-grid">
+          <div class="d-get-left">
+            <h2 id="d-get-h" class="d-headline d-get-head"><span class="l1">{l1}</span> <span class="l2">{l2}</span></h2>
+            <dl class="d-compat">{compatRows().map((r) => <div><dt>{r.k}</dt><dd>{r.v.split(' · ').map((s, i) => <Fragment>{i ? ' · ' : ''}<span class="d-nw">{s}</span></Fragment>)}</dd></div>)}</dl>
+            <div class="d-get-folds">
+              <details class="d-fold">
+                <summary>Specs</summary>
+                <dl class="d-more-dl">
+                  <div><dt>Window</dt><dd>resizable</dd></div>
+                  <div><dt>Saturation oversampling</dt><dd>2x to 32x</dd></div>
+                </dl>
+              </details>
+              <details class="d-fold">
+                <summary>DAWs</summary>
+                <p>{drift.aaxReady
+                  ? 'Any VST3 or AAX host, plus AU on Mac. Pro Tools included.'
+                  : 'Any VST3 host, plus AU on Mac. Not Pro Tools yet.'}</p>
+              </details>
+              {drift.afterTrialAnswer && (
+                <details class="d-fold">
+                  <summary>After {drift.trialDays} days?</summary>
+                  <p>{drift.afterTrialAnswer}</p>
+                </details>
+              )}
+            </div>
           </div>
-        ) : cta.action === 'gate' ? (
-          <div class="d-capture" id="try">
-            <dl class="d-compat">{compatRows().map((r) => <div><dt>{r.k}</dt><dd>{r.v}</dd></div>)}</dl>
-            <button type="button" class="d-cta d-stamp-key" data-trial-gate-open data-plugin-name="DRIFT"
-              data-plugin-slug={drift.gateId} data-register-url={registerUrl}><span data-face>{cta.label} <span class="d-stamp-arrow" aria-hidden="true">&#9656;</span></span></button>
-            <p class="d-cta-fine d-fine">Download by email. Open it on your computer. Nothing to pay today.</p>
+          <div class="d-get-right">
+            {cta.action === 'cart' ? (
+              <div class="d-buyslot">
+                <button type="button" class="d-cta" data-add-to-cart data-cart-label data-slug="drift" data-name="Drift"
+                  data-price={drift.listPriceUsd} data-checkout-url={checkoutUrl}>Buy DRIFT · ${drift.listPriceUsd}</button>
+                <p class="d-cta-sub">{formatsShort()}</p>
+              </div>
+            ) : cta.action === 'gate' ? (
+              <div class="d-capture">
+                <button type="button" class="d-cta d-stamp-key" data-trial-gate-open data-plugin-name="DRIFT"
+                  data-plugin-slug={drift.gateId} data-register-url={registerUrl}><span data-face>{cta.label} <span class="d-stamp-arrow" aria-hidden="true">&#9656;</span></span></button>
+                <p class="d-cta-fine d-fine">Download by email. Open it on your computer. Nothing to pay today.</p>
+              </div>
+            ) : (
+              <DriftCapture id="get-capture" />
+            )}
           </div>
-        ) : (
-          <DriftCapture />
-        )}
+        </div>
       </DriftPanel>
     </div>
-
-    <div class="d-more" data-drift-fab-watch>
-      <details>
-        <summary>Specs</summary>
-        <dl class="d-more-dl">
-          <div><dt>Window</dt><dd>resizable</dd></div>
-          <div><dt>Saturation oversampling</dt><dd>2x to 32x</dd></div>
-        </dl>
-      </details>
-      <details>
-        <summary>DAWs</summary>
-        <p>{drift.aaxReady
-          ? 'Any VST3 or AAX host, plus AU on Mac. Pro Tools included.'
-          : 'Any VST3 host, plus AU on Mac. Not Pro Tools yet.'}</p>
-      </details>
-      {drift.afterTrialAnswer && (
-        <details>
-          <summary>After {drift.trialDays} days?</summary>
-          <p>{drift.afterTrialAnswer}</p>
-        </details>
-      )}
-    </div>
-    <p class="d-fine d-maker">From RevAudio, makers of RevLimiter.</p>
   </div>
 </section>
