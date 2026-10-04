@@ -1441,6 +1441,69 @@
 .d-spec-plate dt { font: 700 17px/1.2 var(--d-f-head); letter-spacing: .04em; color: var(--d-white-ink); }
 .d-spec-plate dd { margin: 0; font: 500 16px/1.3 var(--d-f-head); text-transform: uppercase; letter-spacing: .03em; color: var(--d-fg); }
 @media (max-width: 1000px) { #fx .d-fx-foot { grid-template-columns: minmax(0, 1fr); gap: 20px; } }
+/* #creators on phones (Dan 10-04, bench pick C on GLASS): the steps as coverflow cards (the #fx engine), the
+   DRIFT BETA note in sight, the video rules + the affiliate line in one fold, all on a piece of car-window glass.
+   Every part below is phone-only markup (DriftCreators.astro), hidden from 601 up. */
+.d-cr-ph, .d-cr-etch { display: none; }
+@media (max-width: 600px) {
+  #creators :is(.d-steps-cr, .d-cr-checks, .d-btn-note, .d-cr-mail) { display: none; }
+  #creators .d-cam-ink .d-ja { display: none; }                      /* no 配信; the ON AIR lamp stays */
+  #creators .d-cam-ink.d-cam-tl { position: absolute; left: auto; right: 26px; top: 16px; }
+  /* the glass: tinted side glass, the swept front corner of door glass, the rubber seal, the ceramic frit (the
+     dotted black band every car window has), long reflection streaks, the etched maker's mark */
+  .drift-page #creators .d-cam-panel {
+    background: linear-gradient(170deg, rgba(64, 38, 92, .5) 0%, rgba(22, 12, 36, .62) 45%, rgba(10, 6, 18, .78) 100%);
+    -webkit-backdrop-filter: blur(6px) saturate(1.3); backdrop-filter: blur(6px) saturate(1.3);
+    border: 0; isolation: isolate; padding: 46px 22px 50px;
+    border-radius: 120px 22px 22px 22px / 150px 22px 22px 22px;
+    box-shadow:
+      0 0 0 3px #050308, 0 0 0 5px #19121f, 0 0 0 6px rgba(255, 240, 255, .07),
+      inset 0 1px 0 rgba(255, 255, 255, .22), inset 0 0 0 1px rgba(200, 170, 255, .14),
+      0 18px 36px rgba(0, 0, 0, .6);
+  }
+  #creators .d-cam-panel > .d-screw, #creators .d-cam-panel > .d-checker { display: none; }
+  #creators .d-cam-panel::before {   /* the frit: a dot screen in a band along the edge, solid at the seal */
+    content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: inherit; padding: 16px;
+    background: radial-gradient(circle, #050308 0 1.6px, transparent 2px) 0 0 / 6px 6px;
+    box-shadow: inset 0 0 0 6px #050308, inset 0 0 0 7px rgba(5, 3, 8, .6);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  }
+  #creators .d-cam-panel::after {   /* reflections over the content (pointer-free) */
+    content: ''; position: absolute; inset: 0; z-index: 4; pointer-events: none; border-radius: inherit;
+    background:
+      linear-gradient(118deg, transparent 0 18%, rgba(255, 255, 255, .09) 19%, rgba(255, 255, 255, .03) 27%, transparent 28%),
+      linear-gradient(118deg, transparent 0 33%, rgba(255, 255, 255, .05) 34%, transparent 37%),
+      linear-gradient(180deg, rgba(255, 255, 255, .07), transparent 22%);
+  }
+  .d-cr-etch { display: block; position: absolute; right: 22px; bottom: 16px; z-index: 3; pointer-events: none;
+    font: 600 7px/1.25 var(--d-f-spec); letter-spacing: .14em; text-transform: uppercase; text-align: right;
+    color: rgba(235, 225, 250, .32); text-shadow: 0 1px 0 rgba(0, 0, 0, .5); }
+  .d-cr-etch b { display: block; font: italic 900 13px/1 var(--d-f-badge); letter-spacing: 0; color: rgba(235, 225, 250, .38); }
+  /* the step cards: the #fx coverflow, number-led, no image */
+  #creators .d-fxc--steps { margin: 0 -22px; }
+  #creators .d-fxc--steps .d-fxc-vp { height: 190px; }
+  #creators .d-fxc--steps .d-fxc-slide { justify-content: center; gap: 4px; }
+  .d-fxc-num { font: 400 54px/1 var(--d-f-lcd); color: var(--d-white-ink); text-shadow: 0 0 12px rgba(242, 76, 240, .7); }
+  #creators .d-fxc--steps .d-fxc-desc { min-height: 0; }
+  .d-nocase { text-transform: none; }
+  /* under APPLY (.d-cr-cta is order 2 on phones): the note, then the fold */
+  #creators .d-cr-ph { display: block; order: 3; margin-top: 2px; text-align: center; }
+  .drift-page .d-cr-ph-note { margin: 0; font: 500 13px/1.35 var(--d-f-head); text-transform: uppercase; letter-spacing: .04em; color: var(--d-fg); text-wrap: balance; }
+  .d-cr-ph-note strong { color: var(--d-white-ink); }
+  .d-cr-fold { margin-top: 8px; }
+  .d-cr-fold summary { list-style: none; cursor: pointer; min-height: 44px; display: inline-flex; align-items: center; gap: 10px;
+    font: 400 10px/1 var(--d-f-pix); letter-spacing: .1em; text-transform: uppercase; color: var(--d-lcd-hdr); }
+  .d-cr-fold summary::-webkit-details-marker { display: none; }
+  .d-cr-fold summary::before { content: '\25B6'; color: var(--d-hot); transition: transform 120ms ease; }
+  .d-cr-fold[open] summary::before { transform: rotate(90deg); }
+  .d-cr-fold ul { list-style: none; margin: 2px 0 8px; padding: 0; display: grid; gap: 4px; font: 400 17px/1.2 var(--d-f-lcd);
+    letter-spacing: .05em; text-transform: uppercase; color: var(--d-lcd); text-shadow: 0 0 5px rgba(242, 76, 240, .6); }
+  .drift-page .d-cr-fold p { margin: 0; font: 500 12px/1.4 var(--d-f-head); text-transform: uppercase; letter-spacing: .04em; color: var(--d-fg-dim); }
+  .d-cr-fold a { text-transform: none; color: var(--d-fg-neon); text-decoration: underline; text-underline-offset: 3px; }
+  html.hc #creators .d-cam-panel { -webkit-backdrop-filter: none; backdrop-filter: none; background: #0a0612; }
+  html.hc #creators .d-cam-panel::after { display: none; }
+}
 /* the phone #fx carousel (Dan 10-04, DriftFx.astro): hidden from 601 up; on phones it replaces the 2x2 rack.
    PluginShowcase's coverflow in DRIFT's dress: the current card centred, the neighbours at ±58% / 0.8 / ±14°
    rotateY dimmed, the gear-shift overshoot spring. The frame = a gradient border in the pedal's own hue. */

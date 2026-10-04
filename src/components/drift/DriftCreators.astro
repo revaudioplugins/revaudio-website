@@ -25,6 +25,14 @@ import DriftPanel from './DriftPanel.astro';
 import bezelSrc from '../../assets/seasons/drift/dashcam-bezel-2.png';
 
 const bezel = await getImage({ src: bezelSrc, width: 2088, format: 'webp', quality: 86 });
+// PHONE step cards (Dan 10-04, bench pick C on car-window glass): the four steps, short; same facts as the list
+const steps = [
+  { t: 'Apply', l: 'at <span class="d-nocase">revaudio.net/affiliate</span>' },
+  { t: 'Get the beta', l: 'we email it to you' },
+  { t: 'Post your video', l: drift.videoDeadlineLabel ? `by ${drift.videoDeadlineLabel} · it must pass the check` : 'it must pass the video check' },
+  { t: 'Keep DRIFT free', l: 'your licence + 20% of every sale' },
+];
+const rules = ['Public', '2 min or more', 'Up 30 days or more', 'Tagged @revaudioplugins', 'Marked ad / affiliate'];
 ---
 <section class="d-sec d-creators" id="creators" data-drift-cta-zone aria-labelledby="d-cr-h" style={`--d-img-dashcam:url(${bezel.src})`}>
   <div class="d-wrap">
@@ -34,6 +42,22 @@ const bezel = await getImage({ src: bezelSrc, width: 2088, format: 'webp', quali
       <span class="d-cam-vf d-cam-vf--a" aria-hidden="true"></span><span class="d-cam-vf d-cam-vf--b" aria-hidden="true"></span>
       <h2 id="d-cr-h" class="d-headline d-headline--row"><span class="l1">Stream it.</span> <span class="l2">Get DRIFT free.</span></h2>
       <div class="d-cr-grid">
+        {/* PHONE ONLY (drift.css: hidden ≥601; the list, the VIDEO CHECK and the two notes hide ≤600): the steps as
+            coverflow cards (lib/drift/coverflow.ts, the #fx engine) */}
+        <div class="d-fxc d-fxc--steps" data-fxc tabindex="0" role="group" aria-roledescription="carousel" aria-label="How it works">
+          <p class="d-sr" aria-live="polite" aria-atomic="true" data-fxc-say></p>
+          <div class="d-fxc-vp">
+            {steps.map((st, i) => (
+              <figure class:list={['d-fxc-slide', 's-verb', i === 0 ? 'is-current' : i === 1 ? 'is-peek-next' : i === steps.length - 1 ? 'is-peek-prev' : '']}
+                data-fxc-slide role="group" aria-roledescription="slide" aria-label={`Step ${i + 1} of ${steps.length}: ${st.t}`}>
+                <span class="d-fxc-num" aria-hidden="true">{i + 1}</span>
+                <h3 class="d-fxc-name">{st.t}</h3>
+                <p class="d-fxc-desc" set:html={st.l} />
+              </figure>
+            ))}
+          </div>
+          <div class="d-fxc-dots">{steps.map((st, i) => <button type="button" class:list={['d-fxc-dot', { active: i === 0 }]} data-fxc-dot={i} aria-label={`Step ${i + 1}: ${st.t}`}></button>)}</div>
+        </div>
         <ol class="d-steps-cr" role="list">
           <li>Apply at <a class="d-cr-typed" href="/affiliate">revaudio.net/affiliate</a>.</li>
           <li>We email you the beta.</li>
@@ -57,7 +81,16 @@ const bezel = await getImage({ src: bezelSrc, width: 2088, format: 'webp', quali
           <p class="d-btn-note">Write <strong>DRIFT BETA</strong> in the “Why do you want to promote RevAudio?” box.</p>
           <p class="d-fine d-cr-mail">Already an affiliate? Email <a href="mailto:info@revaudio.net?subject=DRIFT%20BETA">info@revaudio.net</a>, subject DRIFT BETA.</p>
         </div>
+        {/* PHONE ONLY: the DRIFT BETA note stays in sight; the video rules + the affiliate line fold */}
+        <div class="d-cr-ph">
+          <p class="d-cr-ph-note">Write <strong>DRIFT BETA</strong> in the “Why do you want to promote RevAudio?” box.</p>
+          <details class="d-cr-fold"><summary>How the video check works</summary>
+            <ul>{rules.map((r) => <li>{r}</li>)}</ul>
+            <p>Already an affiliate? Email <a href="mailto:info@revaudio.net?subject=DRIFT%20BETA">info@revaudio.net</a>, subject DRIFT BETA.</p>
+          </details>
+        </div>
       </div>
+      <span class="d-cr-etch" aria-hidden="true"><b>R</b>RevAudio · DRIFT<br />AS2 · Tempered · M-10<br />43R-001026 · DOT 1004</span>
     </DriftPanel>
     <div class="d-finish" aria-hidden="true"></div>
     <p class="d-fine d-maker">From RevAudio, makers of RevLimiter.</p>
@@ -77,4 +110,7 @@ const bezel = await getImage({ src: bezelSrc, width: 2088, format: 'webp', quali
     }, { threshold: 0.4 });
     io.observe(checks);
   }
+  // the phone step cards: the shared coverflow engine (lib/drift/coverflow.ts)
+  import { initCoverflow } from '../../lib/drift/coverflow';
+  document.querySelectorAll<HTMLElement>('#creators [data-fxc]').forEach(initCoverflow);
 </script>
