@@ -1,0 +1,70 @@
+---
+// A drum hit through a lookahead limiter, simulated at build time: the gain
+// starts falling before the peak arrives, so the output never crosses the
+// ceiling, then eases back over the release.
+import { linePath, scale, dB, num, type Pt } from './svg';
+
+const DT = 0.25;          // ms per step
+const T = 120;            // ms shown
+const L = 3;              // lookahead half-window, ms (ramp starts 2L before the peak)
+const RELEASE = 30;       // ms time constant
+const CEIL = 1;
+
+const n = Math.round(T / DT) + 1;
+const t = Array.from({ length: n }, (_, i) => i * DT);
+const hit = (ms: number, at: number, peak: number, rise: number, decay: number) =>
+  ms < at ? 0 : ms < at + rise ? (peak * (ms - at)) / rise : peak * Math.exp(-(ms - at - rise) / decay);
+const env = t.map((ms) => 0.5 + hit(ms, 48, 0.95, 1.5, 12) + hit(ms, 92, 0.38, 1.5, 10));
+const need = env.map((e) => Math.min(1, CEIL / e));
+const w = Math.round(L / DT);
+// min-hold looking ahead, then a moving average looking back: a smooth ramp
+// that reaches the needed gain exactly when the peak arrives.
+const hold = need.map((_, i) => Math.min(...need.slice(i, i + w + 1)));
+const smooth = hold.map((_, i) => {
+  const s = hold.slice(Math.max(0, i - w), i + 1);
+  return s.reduce((a, b) => a + b, 0) / s.length;
+});
+const k = 1 - Math.exp(-DT / RELEASE);
+const gain: number[] = [];
+smooth.forEach((s, i) => {
+  const prev = i ? gain[i - 1] : 1;
+  gain.push(Math.min(s, prev + (1 - prev) * k));
+});
+const out = env.map((e, i) => e * gain[i]);
+
+const W = 640, X0 = 44, X1 = 624;
+const x = scale(0, T, X0, X1);
+const yLev = scale(0, 1.6, 196, 24);
+const yGr = scale(0, -4, 232, 300);
+
+const inArea = linePath(t.map((ms, i): Pt => [x(ms), yLev(env[i])])) + ` L${X1} ${yLev(0)} L${X0} ${yLev(0)} Z`;
+const outPath = linePath(t.map((ms, i): Pt => [x(ms), yLev(out[i])]));
+const grPath = linePath(t.map((ms, i): Pt => [x(ms), yGr(dB(gain[i]))]));
+
+const peakI = env.indexOf(Math.max(...env));
+const rampI = gain.findIndex((g) => g < 0.999);
+const peakDb = dB(gain[peakI]);
+---
+<figure class="fig">
+  <svg viewBox={`0 0 ${W} 330`} role="img" aria-labelledby="fig-anatomy-cap">
+    <line class="ax" x1={X0} x2={X1} y1={yLev(0)} y2={yLev(0)} />
+    <path class="area-in" d={inArea} />
+    <path class="w-out" d={outPath} />
+    <line class="ceil" x1={X0} x2={X1} y1={yLev(CEIL)} y2={yLev(CEIL)} />
+    <text class="lbl lbl-hot" x={X1} y={yLev(CEIL) - 8} text-anchor="end">ceiling</text>
+    <text class="lbl" x={x(t[peakI]) + 10} y={yLev(env[peakI]) + 4}>input peak, +{num(dB(env[peakI]))} dB over</text>
+    <text class="lbl lbl-chrome" x={x(64)} y={yLev(0.28)}>output stays under</text>
+
+    <rect class="la-band" x={x(t[rampI])} y={yGr(0) - 6} width={x(t[peakI]) - x(t[rampI])} height={yGr(-4) - yGr(0) + 12} />
+    <line class="ax" x1={X0} x2={X1} y1={yGr(0)} y2={yGr(0)} />
+    <path class="gr" d={grPath} />
+    <text class="lbl" x={X0 - 6} y={yGr(0) + 5} text-anchor="end">0</text>
+    <text class="lbl" x={X0 - 6} y={yGr(-4) + 5} text-anchor="end">−4</text>
+    <text class="lbl lbl-brass" x={x(t[rampI]) - 8} y={yGr(-2.6)} text-anchor="end">lookahead</text>
+    <text class="lbl lbl-brass" x={x(t[peakI]) + 30} y={yGr(peakDb) + 4}>{num(peakDb)} dB at the peak</text>
+    <text class="lbl lbl-brass" x={x(88)} y={yGr(-2.4)}>release eases back</text>
+    <text class="lbl" x={X0} y="326">gain reduction (dB)</text>
+    <text class="lbl" x={X1} y="326" text-anchor="end">{T} ms</text>
+  </svg>
+  <figcaption id="fig-anatomy-cap">A simulated drum hit through a lookahead limiter. Top: the input (shaded) pokes over the ceiling, the output (line) doesn't. Bottom: the gain starts dropping a few milliseconds before the peak arrives, then eases back over the release.</figcaption>
+</figure>

@@ -1,0 +1,54 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const fmt = (date: Date) => date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+---
+<BaseLayout
+  title="Blog"
+  description="Mixing and mastering, explained from the garage: how limiters, loudness and saturation actually work, with the science and the numbers."
+>
+  <section class="blog-index container">
+    <header class="blog-head">
+      <p class="blog-kicker">From the garage</p>
+      <h1>Blog</h1>
+      <p class="blog-dek">How mixing and mastering tools actually work, with the science, the numbers, and none of the forum myths.</p>
+    </header>
+
+    <ol class="blog-list">
+      {posts.map((post) => (
+        <li>
+          <a class="blog-card" href={`/blog/${post.slug}/`}>
+            <span class="blog-card-kicker">{post.data.kicker}</span>
+            <span class="blog-card-title">{post.data.title}</span>
+            <span class="blog-card-dek">{post.data.description}</span>
+            <span class="blog-card-meta">
+              <time datetime={post.data.pubDate.toISOString().slice(0, 10)}>{fmt(post.data.pubDate)}</time> · {post.data.readMinutes} min read
+            </span>
+          </a>
+        </li>
+      ))}
+    </ol>
+  </section>
+</BaseLayout>
+
+<style>
+  .blog-index { padding-block: 3.5rem 5rem; max-width: 980px; }
+  .blog-head { display: grid; gap: 0.8rem; margin-bottom: 2.5rem; }
+  .blog-kicker { margin: 0; font: 600 0.8rem/1 'Rajdhani', var(--font-body); letter-spacing: 0.16em; text-transform: uppercase; color: var(--brass-bright); }
+  .blog-head h1 { margin: 0; }
+  .blog-dek { margin: 0; font-size: 1.15rem; color: var(--fg-dim); max-width: 56ch; }
+  .blog-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; }
+  .blog-card {
+    display: grid; gap: 0.55rem; padding: 1.5rem 1.6rem; border: 1px solid var(--border-bright);
+    border-radius: 12px; background: var(--bg-1); color: var(--fg); transition: border-color 0.2s var(--ease);
+  }
+  .blog-card:hover { border-color: var(--brass-dark); color: var(--fg); }
+  .blog-card-kicker { font: 600 0.75rem/1 'Rajdhani', var(--font-body); letter-spacing: 0.16em; text-transform: uppercase; color: var(--redline); }
+  .blog-card-title { font: 400 clamp(1.7rem, 3.4vw, 2.4rem)/1.05 var(--font-display); letter-spacing: 0.02em; text-wrap: balance; }
+  .blog-card:hover .blog-card-title { color: var(--brass-bright); }
+  .blog-card-dek { color: var(--fg-dim); line-height: 1.55; max-width: 64ch; }
+  .blog-card-meta { font-size: 0.85rem; color: var(--fg-faint); }
+</style>

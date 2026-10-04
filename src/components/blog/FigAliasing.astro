@@ -1,0 +1,55 @@
+---
+// Aliasing, drawn to scale: a 7 kHz tone pushed into a limiter at 44.1 kHz.
+// Odd harmonics land at 21, 35 and 49 kHz; the two above Nyquist fold back to
+// 44.1 - 35 = 9.1 kHz and 49 - 44.1 = 4.9 kHz.
+import { scale } from './svg';
+
+const FS = 44.1, NYQ = FS / 2, F0 = 7;
+const bars = [1, 3, 5, 7].map((h) => {
+  const f = F0 * h;
+  const above = f > NYQ;
+  return { f, h, amp: 1 / h, above, alias: above ? Math.abs(FS - f) : null };
+});
+
+const W = 640, X0 = 30, X1 = 620, BASE = 220;
+const xs = scale(0, 52, X0, X1);
+const ys = scale(0, 1, BASE, 46);
+const BW = 12;
+const ticks = [0, 10, 20, 30, 40, 50];
+---
+<figure class="fig">
+  <svg viewBox={`0 0 ${W} 262`} role="img" aria-labelledby="fig-alias-cap">
+    <defs>
+      <marker id="alias-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path class="arrowhead" d="M0 0 L10 5 L0 10 Z" />
+      </marker>
+    </defs>
+    <rect class="beyond" x={xs(NYQ)} y="30" width={X1 - xs(NYQ)} height={BASE - 30} />
+    <line class="ceil" x1={xs(NYQ)} x2={xs(NYQ)} y1="30" y2={BASE} />
+    <text class="lbl lbl-hot" x={xs(NYQ) + 8} y="48">Nyquist 22.05 kHz</text>
+    <text class="lbl" x={xs(NYQ) + 8} y="68">no room up here at 44.1 kHz</text>
+    <line class="ax" x1={X0} x2={X1} y1={BASE} y2={BASE} />
+    {ticks.map((k) => (
+      <g>
+        <line class="ax" x1={xs(k)} x2={xs(k)} y1={BASE} y2={BASE + 6} />
+        <text class="lbl" x={xs(k)} y={BASE + 22} text-anchor="middle">{k}</text>
+      </g>
+    ))}
+    <text class="lbl" x={X1} y={BASE + 40} text-anchor="end">kHz</text>
+    {bars.map((b) => (
+      <g>
+        <rect class={b.above ? 'bar-ghost' : 'bar'} x={xs(b.f) - BW / 2} y={ys(b.amp)} width={BW} height={BASE - ys(b.amp)} />
+        <text class="lbl" x={xs(b.f)} y={ys(b.amp) - 8} text-anchor="middle">{b.h === 1 ? '7k note' : `${b.f}k`}</text>
+        {b.alias !== null && (
+          <g>
+            <rect class="bar-hot" x={xs(b.alias) - BW / 2} y={ys(b.amp)} width={BW} height={BASE - ys(b.amp)} />
+            <path class="fold" marker-end="url(#alias-arrow)"
+              d={`M${xs(b.f)} ${ys(b.amp) - 28} Q${(xs(b.f) + xs(b.alias)) / 2} ${ys(b.amp) - 100 - b.h * 6} ${xs(b.alias)} ${ys(b.amp) - 30}`} />
+            <text class="lbl lbl-hot" x={xs(b.alias)} y={ys(b.amp) - 8} text-anchor="middle">{b.alias.toFixed(1)}k</text>
+          </g>
+        )}
+      </g>
+    ))}
+  </svg>
+  <figcaption id="fig-alias-cap">A 7 kHz note pushed into a limiter in a 44.1 kHz session. The new harmonics at 35 and 49 kHz don't fit under the Nyquist limit, so they fold back down to 9.1 and 4.9 kHz (red), where they have no musical relation to the note. Oversampling gives them room, so they get filtered out before the audio comes back to 44.1 kHz. Bar heights are illustrative.</figcaption>
+</figure>

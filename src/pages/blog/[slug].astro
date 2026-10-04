@@ -1,0 +1,147 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog', ({ data }) => !data.draft);
+  return posts.map((post) => ({ params: { slug: post.slug }, props: { post } }));
+}
+
+interface Props { post: CollectionEntry<'blog'> }
+const { post } = Astro.props;
+const { Content, headings } = await post.render();
+const d = post.data;
+const url = new URL(`/blog/${post.slug}/`, Astro.site).href;
+const fmt = (date: Date) => date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+const iso = (date: Date) => date.toISOString().slice(0, 10);
+const toc = headings.filter((h) => h.depth === 2);
+
+// Article structured data: who wrote it and when, so search engines and AI
+// answers can attribute it. Author is the brand, per the team-voice rule.
+const org = { '@type': 'Organization', name: 'RevAudio', url: 'https://revaudio.net/' };
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: d.title,
+  description: d.description,
+  datePublished: iso(d.pubDate),
+  dateModified: iso(d.updatedDate ?? d.pubDate),
+  author: org,
+  publisher: { ...org, logo: { '@type': 'ImageObject', url: 'https://revaudio.net/favicon.png' } },
+  mainEntityOfPage: url,
+  image: new URL('/og-default.png', Astro.site).href,
+};
+---
+<BaseLayout title={d.seoTitle ?? d.title} description={d.description} ogType="article">
+  <script is:inline type="application/ld+json" slot="head" set:html={JSON.stringify(jsonLd)} />
+
+  <article class="post">
+    <header class="post-head container">
+      <nav class="post-crumbs" aria-label="Breadcrumb"><a href="/blog/">Blog</a> <span aria-hidden="true">/</span> {d.kicker}</nav>
+      <h1>{d.title}</h1>
+      <p class="post-dek">{d.description}</p>
+      <p class="post-meta">
+        By the RevAudio team
+        <span aria-hidden="true">·</span>
+        <time datetime={iso(d.pubDate)}>{fmt(d.pubDate)}</time>
+        <span aria-hidden="true">·</span>
+        {d.readMinutes} min read
+      </p>
+    </header>
+
+    <div class="post-layout container">
+      {toc.length > 2 && (
+        <nav class="post-toc" aria-label="In this article">
+          <p class="post-toc-title">In this article</p>
+          <ol>
+            {toc.map((h) => <li><a href={`#${h.slug}`}>{h.text}</a></li>)}
+          </ol>
+        </nav>
+      )}
+      <div class="prose">
+        <Content />
+      </div>
+    </div>
+  </article>
+</BaseLayout>
+
+<style is:global>
+  /* Blog post. Global (not scoped) because the MDX body renders outside this
+     component; every rule is prefixed with .post so nothing leaks. */
+  .post { padding-block: 3.5rem 5rem; }
+  .post-head { max-width: 980px; display: grid; gap: 0.9rem; }
+  .post-crumbs { font: 600 0.8rem/1 'Rajdhani', var(--font-body); letter-spacing: 0.14em; text-transform: uppercase; color: var(--fg-dim); }
+  .post-crumbs a { color: var(--brass-bright); }
+  .post-head h1 { margin: 0; font-size: clamp(2.6rem, 6.2vw, 4.8rem); line-height: 0.98; text-wrap: balance; max-width: 18ch; }
+  .post-dek { margin: 0; font-size: 1.2rem; line-height: 1.55; color: var(--fg-dim); max-width: 58ch; }
+  .post-meta { margin: 0; font-size: 0.9rem; color: var(--fg-faint); display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+  .post-layout { max-width: 980px; margin-top: 2.5rem; display: grid; gap: 2rem; }
+  @media (min-width: 1100px) {
+    .post-layout { max-width: 1180px; grid-template-columns: 220px minmax(0, 720px); justify-content: center; gap: 3.5rem; }
+    .post-head { max-width: 1180px; padding-left: calc(var(--space-5) + 220px + 3.5rem); }
+    .post-toc { position: sticky; top: calc(var(--nav-h) + 1.5rem); align-self: start; }
+  }
+
+  .post-toc { border-top: 2px solid var(--brass-dark); padding-top: 0.9rem; }
+  .post-toc-title { margin: 0 0 0.6rem; font: 600 0.78rem/1 'Rajdhani', var(--font-body); letter-spacing: 0.16em; text-transform: uppercase; color: var(--brass); }
+  .post-toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.55rem; }
+  .post-toc a { color: var(--fg-dim); font-size: 0.9rem; line-height: 1.35; }
+  .post-toc a:hover { color: var(--brass-bright); }
+  @media (max-width: 1099px) { .post-toc { max-width: 720px; } }
+
+  .post .prose { max-width: 720px; min-width: 0; font-size: 1.08rem; line-height: 1.75; color: var(--fg); }
+  .post .prose > p, .post .prose li { max-width: 68ch; }
+  .post .prose p { margin: 0 0 1.15em; }
+  .post .prose h2 {
+    margin: 2.8em 0 0.6em; font-size: clamp(1.9rem, 3.6vw, 2.6rem); line-height: 1.05;
+    text-wrap: balance; padding-top: 0.9rem; border-top: 1px solid var(--border-bright); position: relative;
+  }
+  .post .prose h2::before { content: ''; position: absolute; top: -1px; left: 0; width: 56px; height: 2px; background: var(--redline); }
+  .post .prose strong { color: var(--chrome); font-weight: 600; }
+  .post .prose em { color: var(--fg); }
+  .post .prose ol, .post .prose > ul { padding-left: 1.3em; margin: 0 0 1.2em; display: grid; gap: 0.45em; }
+  .post .prose ol li::marker { color: var(--brass); font-weight: 600; }
+  .post .prose > ul li::marker { color: var(--redline); }
+
+  .post .readout {
+    margin: 2rem 0 0.5rem; padding: 1.2rem 1.4rem 1.1rem; border: 1px solid var(--brass-dark);
+    border-radius: 10px; background: linear-gradient(180deg, var(--bg-2), var(--bg-1));
+  }
+  .post .readout-title { margin: 0 0 0.7rem; font: 600 0.8rem/1 'Rajdhani', var(--font-body); letter-spacing: 0.16em; text-transform: uppercase; color: var(--brass-bright); }
+  .post .readout ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.5rem; }
+  .post .readout li { position: relative; padding-left: 1.3rem; font-size: 1rem; line-height: 1.5; }
+  .post .readout li::before { content: ''; position: absolute; left: 0; top: 0.62em; width: 0.7rem; height: 2px; background: var(--brass); }
+
+  .post .garage-note { margin: 2.5rem 0 1.5rem; padding: 1.2rem 1.4rem; border-left: 3px solid var(--brass); background: var(--bg-2); border-radius: 0 10px 10px 0; }
+  .post .garage-note p { margin: 0; }
+  .post .sources { margin-top: 2.5rem; font-size: 0.88rem; color: var(--fg-dim); }
+  .post .sources-title { margin: 0 0 0.4rem; font: 600 0.78rem/1 'Rajdhani', var(--font-body); letter-spacing: 0.16em; text-transform: uppercase; color: var(--fg-faint); }
+  .post .sources ul { margin: 0; padding-left: 1.1em; display: grid; gap: 0.3rem; }
+
+  /* Figures: build-time SVGs from src/components/blog. */
+  .post .fig { margin: 2.2rem 0; padding: 1.1rem 1.1rem 0.9rem; background: var(--bg-1); border: 1px solid var(--border-bright); border-radius: 10px; }
+  .post .fig svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .post .fig figcaption { margin-top: 0.7rem; font-size: 0.86rem; line-height: 1.55; color: var(--fg-dim); }
+  .post .fig .lbl { font: 600 15px 'Rajdhani', var(--font-body); fill: var(--fg-dim); letter-spacing: 0.02em; }
+  .post .fig .lbl-strong { fill: var(--fg); font-size: 16px; }
+  .post .fig .lbl-hot { fill: var(--oxide-text); }
+  .post .fig .lbl-brass { fill: var(--brass-bright); }
+  .post .fig .lbl-chrome { fill: var(--chrome); }
+  .post .fig .ax { stroke: var(--border-bright); stroke-width: 1; }
+  .post .fig .ceil { stroke: var(--redline); stroke-width: 1.5; stroke-dasharray: 6 5; }
+  .post .fig .area-in { fill: var(--bg-3); stroke: var(--chrome-dark); stroke-width: 1; }
+  .post .fig .w-in { fill: none; stroke: var(--chrome-dark); stroke-width: 1.5; stroke-dasharray: 4 4; }
+  .post .fig .w-out { fill: none; stroke: var(--chrome); stroke-width: 2.2; stroke-linejoin: round; }
+  .post .fig .w-hot { fill: none; stroke: var(--redline); stroke-width: 3; }
+  .post .fig .gr { fill: none; stroke: var(--brass-bright); stroke-width: 2.2; stroke-linejoin: round; }
+  .post .fig .la-band { fill: var(--brass); opacity: 0.14; }
+  .post .fig .stem { stroke: var(--brass-dark); stroke-width: 1.5; }
+  .post .fig .dot { fill: var(--brass-bright); }
+  .post .fig .bar { fill: var(--chrome); }
+  .post .fig .bar-ghost { fill: none; stroke: var(--chrome-dark); stroke-width: 1.5; stroke-dasharray: 4 3; }
+  .post .fig .bar-hot { fill: var(--redline); }
+  .post .fig .beyond { fill: var(--redline); opacity: 0.06; }
+  .post .fig .fold { fill: none; stroke: var(--oxide-text); stroke-width: 1.5; stroke-dasharray: 5 4; }
+  .post .fig .arrowhead { fill: var(--oxide-text); }
+</style>

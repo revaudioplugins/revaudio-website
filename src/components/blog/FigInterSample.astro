@@ -1,0 +1,47 @@
+---
+// The textbook inter-sample peak: a tone at a quarter of the sample rate,
+// sampled 45 degrees off its crest. Every sample reads -0.3 dBFS, the wave the
+// converter rebuilds between them peaks about 3 dB higher.
+import { linePath, scale, dB, num, type Pt } from './svg';
+
+const SAMPLE = 0.97;                  // every sample's level (-0.26 dBFS)
+const A = SAMPLE / Math.SQRT1_2;      // true amplitude of the tone
+const N = 12;                         // samples shown (three cycles)
+const wave = (s: number) => A * Math.sin((Math.PI / 2) * s + Math.PI / 4);
+
+const W = 640, X0 = 36, X1 = 620;
+const xs = scale(-0.5, N - 0.5, X0, X1);
+const y = scale(-1.6, 1.6, 236, 24);
+
+const curve: Pt[] = [];
+for (let s = -0.5; s <= N - 0.5 + 1e-9; s += 0.02) curve.push([xs(s), y(wave(s))]);
+const samples = Array.from({ length: N }, (_, i) => ({ cx: xs(i), cy: y(wave(i)) }));
+const truePeakDb = dB(A);
+const sampleDb = dB(SAMPLE);
+---
+<figure class="fig">
+  <svg viewBox={`0 0 ${W} 270`} role="img" aria-labelledby="fig-isp-cap">
+    <defs>
+      <clipPath id="isp-over">
+        <rect x="0" y="0" width={W} height={y(1)} />
+        <rect x="0" y={y(-1)} width={W} height={270 - y(-1)} />
+      </clipPath>
+    </defs>
+    <line class="ax" x1={X0} x2={X1} y1={y(0)} y2={y(0)} />
+    <line class="ceil" x1={X0} x2={X1} y1={y(1)} y2={y(1)} />
+    <line class="ceil" x1={X0} x2={X1} y1={y(-1)} y2={y(-1)} />
+    <text class="lbl lbl-hot" x={X0 - 6} y={y(1) + 5} text-anchor="end">0</text>
+    <text class="lbl lbl-hot" x={X0 - 6} y={y(-1) + 5} text-anchor="end">0</text>
+    <path class="w-out" d={linePath(curve)} />
+    <path class="w-hot" d={linePath(curve)} clip-path="url(#isp-over)" />
+    {samples.map((s) => (
+      <g>
+        <line class="stem" x1={s.cx} x2={s.cx} y1={y(0)} y2={s.cy} />
+        <circle class="dot" cx={s.cx} cy={s.cy} r="5" />
+      </g>
+    ))}
+    <text class="lbl lbl-brass" x={xs(4.5)} y={y(-1.45)} text-anchor="middle">every sample: {num(sampleDb)} dBFS</text>
+    <text class="lbl lbl-hot" x={xs(7.5)} y={y(1.52)} text-anchor="middle">the real wave: +{num(truePeakDb)} dBTP</text>
+  </svg>
+  <figcaption id="fig-isp-cap">The worst case, a tone at a quarter of the sample rate. A sample-peak meter reads {num(sampleDb)} dBFS and calls it safe; the curve your converter draws between the dots goes {num(truePeakDb - sampleDb)} dB higher. Real masters overshoot less than this, but often enough to clip.</figcaption>
+</figure>

@@ -1,0 +1,69 @@
+---
+// The same 40 Hz bass note through a limiter twice, simulated at build time:
+// a slow release settles on one gain and keeps the sine a sine; a 1 ms release
+// recovers between every peak and flattens the tops, which is distortion.
+import { linePath, scale, type Pt } from './svg';
+
+const DT = 0.05;           // ms per step
+const T = 75;              // three cycles of 40 Hz
+const F = 40;              // Hz
+const AMP = 1.6;           // the note is 4 dB over the ceiling
+const CEIL = 1;
+
+const WARM = 400;          // ms simulated before the window, so both panels show steady state
+const n = Math.round((T + WARM) / DT) + 1;
+const tAll = Array.from({ length: n }, (_, i) => i * DT - WARM);
+const xAll = tAll.map((ms) => AMP * Math.sin((2 * Math.PI * F * ms) / 1000));
+const first = tAll.findIndex((ms) => ms >= -1e-9);
+const t = tAll.slice(first);
+const x = xAll.slice(first);
+
+function limit(releaseMs: number) {
+  const k = 1 - Math.exp(-DT / releaseMs);
+  let g = 1;
+  const gainAll = xAll.map((v) => {
+    const need = Math.min(1, CEIL / Math.max(Math.abs(v), 1e-9));
+    g = Math.min(need, g + (1 - g) * k); // instant attack, exponential release
+    return g;
+  });
+  const gain = gainAll.slice(first);
+  return { gain, out: x.map((v, i) => v * gain[i]) };
+}
+
+const W = 640, X0 = 20, X1 = 620;
+const xs = scale(0, T, X0, X1);
+const panels = [
+  { label: 'Release 200 ms: one steady gain, the wave keeps its shape', ...limit(200), top: 34 },
+  { label: 'Release 1 ms: the gain chases every cycle and flattens the tops', ...limit(1), top: 214 },
+].map((p) => {
+  const yW = scale(-1.7, 1.7, p.top + 110, p.top);
+  const yG = scale(0, 1, p.top + 150, p.top + 122);
+  return {
+    ...p,
+    yW,
+    inPath: linePath(t.map((ms, i): Pt => [xs(ms), yW(x[i])])),
+    outPath: linePath(t.map((ms, i): Pt => [xs(ms), yW(p.out[i])])),
+    gPath: linePath(t.map((ms, i): Pt => [xs(ms), yG(p.gain[i])])),
+    gTop: yG(1),
+    gBot: yG(0),
+  };
+});
+---
+<figure class="fig">
+  <svg viewBox={`0 0 ${W} 380`} role="img" aria-labelledby="fig-release-cap">
+    {panels.map((p) => (
+      <g>
+        <text class="lbl lbl-strong" x={X0} y={p.top - 12}>{p.label}</text>
+        <line class="ceil" x1={X0} x2={X1} y1={p.yW(CEIL)} y2={p.yW(CEIL)} />
+        <line class="ceil" x1={X0} x2={X1} y1={p.yW(-CEIL)} y2={p.yW(-CEIL)} />
+        <path class="w-in" d={p.inPath} />
+        <path class="w-out" d={p.outPath} />
+        <line class="ax" x1={X0} x2={X1} y1={p.gBot} y2={p.gBot} />
+        <path class="gr" d={p.gPath} />
+        <text class="lbl lbl-brass" x={X1} y={p.gTop - 4} text-anchor="end">gain</text>
+      </g>
+    ))}
+    <text class="lbl" x={X1} y="376" text-anchor="end">75 ms = three cycles of a 40 Hz note</text>
+  </svg>
+  <figcaption id="fig-release-cap">A 40 Hz note, 4 dB too hot, through the same limiter with two release times. Dashed: the input. Solid: the output. The red lines are the ceiling. One cycle of 40 Hz lasts 25 ms, so a 1 ms release has time to recover and clamp again inside every cycle.</figcaption>
+</figure>
