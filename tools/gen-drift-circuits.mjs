@@ -7,7 +7,9 @@
  *   node tools/gen-drift-circuits.mjs [path/to/f1-tracks-data.js]
  *
  * Dan 2026-10-02: iconic circuits on /drift, real shapes, COUNTRY names only
- * (no circuit or F1 names on the site). The 8 picks + labels live in PICK below.
+ * (no circuit or F1 names on the site). Dan 2026-10-04 reversed that: the chips
+ * carry the circuits' own iconic names (each a word of the plugin's circuit
+ * name; still no F1 / series names). The 8 picks + labels live in PICK below.
  *
  * Per circuit it emits
  *  - SHAPES (build time only, DriftTracks.astro): the outline as an SVG path in
@@ -31,14 +33,14 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const PICK = [
-  ['suzuka-international-racing-course', 'JAPAN'],
+  ['suzuka-international-racing-course', 'SUZUKA'],
   ['circuit-de-monaco', 'MONACO'],
-  ['circuit-de-spa-francorchamps', 'BELGIUM'],
-  ['autodromo-nazionale-monza', 'ITALY'],
-  ['silverstone-circuit', 'BRITAIN'],
-  ['aut-dromo-jos-carlos-pace-interlagos', 'BRAZIL'],
-  ['circuit-of-the-americas', 'USA'],
-  ['marina-bay-street-circuit', 'SINGAPORE'],
+  ['circuit-de-spa-francorchamps', 'SPA'],
+  ['autodromo-nazionale-monza', 'MONZA'],
+  ['silverstone-circuit', 'SILVERSTONE'],
+  ['aut-dromo-jos-carlos-pace-interlagos', 'INTERLAGOS'],
+  ['circuit-of-the-americas', 'COTA'],
+  ['marina-bay-street-circuit', 'MARINA BAY'],
 ];
 const S = 256;           // time samples per lap shipped to the browser
 const G = 256;           // geometry samples per lap (every 2nd plugin point)

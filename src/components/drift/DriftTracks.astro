@@ -42,7 +42,7 @@ import { carR } from '../../lib/drift/circuits';
 // the plate renders at ≤352 css px (440 col minus the panel pads): 720w covers DPR2, 900w DPR3
 const [plate720, plate] = await Promise.all([720, 900].map((width) => getImage({ src: plateSrc, width, format: 'webp', quality: 76 })));
 const [g, y, r] = await Promise.all([capGreen, capYellow, capRed].map((src) => getImage({ src, width: 136, format: 'webp', quality: 82 })));
-const first = CIRCUIT_SHAPES[0];   // JAPAN: the default pick
+const first = CIRCUIT_SHAPES[0];   // SUZUKA: the default pick
 // the plugin's graffiti art at 2x its shown size (pictures 70 px wide, titles 22 px tall)
 const [picInt, picSpd, titleInt, titleSpd] = await Promise.all([
   getImage({ src: picIntSrc, width: 140, format: 'webp', quality: 82 }),
@@ -80,7 +80,7 @@ const caps = [
                 <li>
                   <button class="d-chip" type="button" data-track={t.id} data-name={t.label} aria-pressed={t === first ? 'true' : 'false'} aria-label={`${t.label} circuit`}>
                     <svg viewBox={t.vb} aria-hidden="true"><path d={t.d} /></svg>
-                    <span class="d-chip-name">{t.label}</span>
+                    <span class="d-chip-name" style={`--n:${Math.max(...t.label.split(' ').map((w) => w.length))}`}>{t.label}</span>
                   </button>
                 </li>
               ))}
@@ -136,6 +136,9 @@ const caps = [
                 <p class="d-fine d-spd-note">Seconds, or locked to bars.</p>
               </div>
             </div>
+            {/* phone only (drift.css shows it ≤600): the picker is gone there, one circuit laps, and this says the rest
+                (Dan 10-04). True: the plugin has 40 circuits and SPEED locks a lap to bars. */}
+            <p class="d-gps-catch"><span class="l1">40 tracks.</span> <span class="l2">Synced to your BPM.</span></p>
           </div>
         </div>
       </div>
