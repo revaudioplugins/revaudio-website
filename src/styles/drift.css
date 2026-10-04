@@ -586,7 +586,19 @@
 /* ≥1366 the wheel is full size and the console ends under the old panel
    bottom: #drive gives most of it back (lowered 10-01: +14 px net) */
 @media (min-width: 601px) { #drive.d-sec { padding-top: 26px; } }    /* the hero-baseline value: ~39 px from the catch line's box to the kicker at every desktop width (fixer r1 10-02) */
-@media (max-width: 600px) { #drive.d-sec { padding-top: 18px; } }     /* 40 - 22, same reason, phone */
+@media (max-width: 600px) { #drive.d-sec { padding-top: 4px; } }   /* 18 -> 4: the hero's catch line sits right on the panel (Dan 10-04 "close that gap") */     /* 40 - 22, same reason, phone */
+@media (max-width: 600px) { #drive .d-sticker { display: none; } }   /* the 速度 tag off the #drive plate on phones (Dan 10-04) */
+/* phones: the #drive plate wears the laptop's trial plate (Dan 10-04, panel bench pick B: black steel, pink
+   checker top left), 9-sliced so a tall panel keeps its corner screws and checker while the steel stretches.
+   Its own screws replace DriftPanel's CSS ones. Laptop keeps the S1 chassis (≥1001), 601-1000 the CSS plate. */
+@media (max-width: 600px) {
+  #drive .d-drive-panel {
+    background: none; border: 0 solid transparent; border-radius: 14px;
+    border-image: var(--d-img-trial) 120 120 120 320 fill / 26px 26px 26px 70px stretch;
+    box-shadow: 0 10px 18px rgba(0, 0, 0, .55); padding: 40px 20px 44px;
+  }
+  #drive .d-drive-panel > .d-screw { display: none; }
+}
 .d-cta-sub { font: 500 15px/1.45 Inter, var(--font-body); color: var(--d-fg-neon); }
 .d-cta-fine { font-size: 14px; color: var(--d-fg-dim); line-height: 1.5; }
 .d-cta-block .d-cta-fine { font-weight: 600; color: var(--d-fg); }
@@ -1732,7 +1744,11 @@ html.hc .drift-page .d-price-label { text-shadow: none; }
   }
   .d-hero-body { grid-template-columns: minmax(0, 1fr); margin-top: 0; }
   .d-hero-left, .d-cockpit, .d-hero-right, .d-hero-trial { grid-area: 1 / 1; align-self: start; }
-  .drift-page .d-hero-catch { grid-area: 2 / 1; margin-top: 4px; }
+  .drift-page .d-hero-catch { grid-area: 2 / 1; margin-top: 4px; padding-bottom: 6px; }
+  /* Dan 10-04 "close that gap between sections": the catch line sits right on #drive (40 -> ~10 px). The hero
+     clips sideways only now, so the line's purple glow isn't cut where the hero ends (the wheel under the hub is
+     masked transparent and takes no taps, so nothing else shows below). */
+  .d-hero { overflow: clip visible; }
   .d-hero .d-hero-meter { display: none; }
   /* back plane: the tagline. The title plate goes; DRIFT stays in the markup (the h1) but shows on the hub */
   .d-hero-left { z-index: 1; margin: 0; width: 100%; }
