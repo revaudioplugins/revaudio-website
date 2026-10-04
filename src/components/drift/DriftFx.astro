@@ -30,19 +30,30 @@ import echo from '../../assets/seasons/drift/fx-echo.png';
 import verb from '../../assets/seasons/drift/fx-reverb.png';
 import trem from '../../assets/seasons/drift/fx-tremolo.png';
 import baySrc from '../../assets/seasons/drift/sat-bay.png';
+// the phone carousel's pedals: TRUE-ALPHA shots of the plugin's own FX strips (tools/shoot-drift-fx-pedals.mjs, Dan 10-04)
+import pedPitch from '../../assets/seasons/drift/pedal-pitch.png';
+import pedEcho from '../../assets/seasons/drift/pedal-echo.png';
+import pedVerb from '../../assets/seasons/drift/pedal-reverb.png';
+import pedTrem from '../../assets/seasons/drift/pedal-tremolo.png';
 import { drift } from '../../data/drift';
 
 const strips = [
-  { cls: 's-pitch', src: pitch, name: 'Pitch', desc: 'Up or down. Up to an octave.' },
-  { cls: 's-echo', src: echo, name: 'Echo', desc: 'Synced or not. Tape-dark to clean.' },
-  { cls: 's-verb', src: verb, name: 'Reverb', desc: 'Room, plate, hall. Plus shimmer.' },
-  { cls: 's-trem', src: trem, name: 'Tremolo', desc: 'Chops in time with your song.' },
+  { cls: 's-pitch', src: pitch, ped: pedPitch, name: 'Pitch', desc: 'Up or down. Up to an octave.' },
+  { cls: 's-echo', src: echo, ped: pedEcho, name: 'Echo', desc: 'Synced or not. Tape-dark to clean.' },
+  { cls: 's-verb', src: verb, ped: pedVerb, name: 'Reverb', desc: 'Room, plate, hall. Plus shimmer.' },
+  { cls: 's-trem', src: trem, ped: pedTrem, name: 'Tremolo', desc: 'Chops in time with your song.' },
 ];
 // a strip renders at ~228 css px on desktop (4 across the plate) and ~151 on
 // a phone (2x2): 512w is the source's full width, 340w serves phone DPR2 at
 // ~40% of the bytes. The bay renders at 340 css px on desktop and up to ~900
 // on a tablet (hidden on phones): 1060w (the source's full width) covers DPR2,
 // 600w the rest.
+// phone carousel: a pedal renders ~150-230 css px wide (3x = ~690): 400w + 700w, alpha kept (webp)
+const [peds400, peds700] = await Promise.all([
+  Promise.all(strips.map((s) => getImage({ src: s.ped, width: 400, format: 'webp', quality: 84 }))),
+  Promise.all(strips.map((s) => getImage({ src: s.ped, width: 700, format: 'webp', quality: 82 }))),
+]);
+const pedSizes = '(max-width: 600px) 56vw, 1px';
 const [imgs, imgs340, bay, bay600] = await Promise.all([
   Promise.all(strips.map((s) => getImage({ src: s.src, width: 512, format: 'webp', quality: 80 }))),
   Promise.all(strips.map((s) => getImage({ src: s.src, width: 340, format: 'webp', quality: 80 }))),
@@ -129,6 +140,28 @@ const baySrcset = `${bay600.src} 600w, ${bay.src} 1060w`;
         ))}
       </div>
 
+      {/* PHONE ONLY (drift.css: hidden ≥601, the rack hidden ≤600). Dan 10-04: the four effects as a coverflow carousel
+          like the home page's plugin showcase (PluginShowcase.astro): the pedal centred in a framed card, its neighbours
+          peeking tilted and dimmed, the gear-shift snap, swipe / peek-tap / dots / arrow keys. Each frame wears its
+          pedal's hue (the plugin's FX VIBE law). Pedals = true-alpha shots of the plugin's own strips. */}
+      <div class="d-fxc" data-fxc tabindex="0" role="group" aria-roledescription="carousel" aria-label="DRIFT effects">
+        <p class="d-sr" aria-live="polite" aria-atomic="true" data-fxc-say></p>
+        <div class="d-fxc-vp">
+          {strips.map((s, i) => (
+            <figure class:list={['d-fxc-slide', s.cls, i === 0 ? 'is-current' : i === 1 ? 'is-peek-next' : i === strips.length - 1 ? 'is-peek-prev' : '']}
+              data-fxc-slide role="group" aria-roledescription="slide" aria-label={`${s.name}, ${i + 1} of ${strips.length}`}>
+              <h3 class="d-fxc-name">{s.name}</h3>
+              <p class="d-fxc-desc" set:html={s.desc.replace('Tape-dark', '<span class="d-nw">Tape-dark</span>')} />
+              <img class="d-fxc-ped" src={blank(1056, 1908)} data-src={peds700[i].src} data-srcset={`${peds400[i].src} 400w, ${peds700[i].src} 700w`}
+                sizes={pedSizes} width="528" height="954" alt={`DRIFT ${s.name} pedal`} decoding="async" />
+            </figure>
+          ))}
+        </div>
+        <div class="d-fxc-dots">
+          {strips.map((s, i) => <button type="button" class:list={['d-fxc-dot', { active: i === 0 }]} data-fxc-dot={i} aria-label={`Show ${s.name}`}></button>)}
+        </div>
+      </div>
+
       <div class="d-fx-foot">
         <div class="d-bay">
           <img src={blank(1060, 382)} data-src={bay.src} data-srcset={baySrcset} sizes={baySizes} width="530" height="191" alt="DRIFT's saturation bay" decoding="async" />
@@ -163,4 +196,42 @@ const baySrcset = `${bay600.src} 600w, ${bay.src} 1060w`;
     }, { threshold: 0.5 });
     io.observe(glass);
   }
+</script>
+
+<script>
+  /* the phone #fx carousel (Dan 10-04): PluginShowcase's coverflow logic, trimmed to four slides */
+  document.querySelectorAll<HTMLElement>('[data-fxc]').forEach((fc) => {
+    const slides = Array.from(fc.querySelectorAll<HTMLElement>('[data-fxc-slide]'));
+    const dots = Array.from(fc.querySelectorAll<HTMLElement>('[data-fxc-dot]'));
+    const say = fc.querySelector<HTMLElement>('[data-fxc-say]');
+    const vp = fc.querySelector<HTMLElement>('.d-fxc-vp');
+    const n = slides.length;
+    if (!vp || n < 2) return;
+    let idx = 0;
+    const dist = (k: number) => { let d = (k - idx) % n; if (d > n / 2) d -= n; if (d < -n / 2) d += n; return d; };
+    const go = (t: number) => {
+      const next = ((t % n) + n) % n;
+      if (next === idx) return;
+      idx = next;
+      slides.forEach((s, k) => {
+        s.classList.remove('is-current', 'is-peek-prev', 'is-peek-next');
+        const d = dist(k);
+        if (d === 0) s.classList.add('is-current'); else if (d === 1) s.classList.add('is-peek-next'); else if (d === -1) s.classList.add('is-peek-prev');
+      });
+      dots.forEach((d, k) => d.classList.toggle('active', k === idx));
+      if (say) say.textContent = slides[idx].getAttribute('aria-label') ?? '';
+    };
+    dots.forEach((d, k) => d.addEventListener('click', () => go(k)));
+    slides.forEach((s, k) => s.addEventListener('click', () => { if (!s.classList.contains('is-current')) go(k); }));
+    fc.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') { go(idx - 1); e.preventDefault(); }
+      if (e.key === 'ArrowRight') { go(idx + 1); e.preventDefault(); }
+    });
+    let x0: number | null = null, moved = false;
+    vp.addEventListener('pointerdown', (e) => { x0 = e.clientX; moved = false; });
+    vp.addEventListener('pointermove', (e) => { if (x0 !== null && Math.abs(e.clientX - x0) > 10) moved = true; });
+    vp.addEventListener('pointerup', (e) => { if (x0 !== null) { const dx = e.clientX - x0; if (Math.abs(dx) > 40) go(dx < 0 ? idx + 1 : idx - 1); } x0 = null; });
+    vp.addEventListener('pointercancel', () => { x0 = null; });
+    vp.addEventListener('click', (e) => { if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; } }, true);
+  });
 </script>

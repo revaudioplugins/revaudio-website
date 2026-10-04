@@ -1441,6 +1441,51 @@
 .d-spec-plate dt { font: 700 17px/1.2 var(--d-f-head); letter-spacing: .04em; color: var(--d-white-ink); }
 .d-spec-plate dd { margin: 0; font: 500 16px/1.3 var(--d-f-head); text-transform: uppercase; letter-spacing: .03em; color: var(--d-fg); }
 @media (max-width: 1000px) { #fx .d-fx-foot { grid-template-columns: minmax(0, 1fr); gap: 20px; } }
+/* the phone #fx carousel (Dan 10-04, DriftFx.astro): hidden from 601 up; on phones it replaces the 2x2 rack.
+   PluginShowcase's coverflow in DRIFT's dress: the current card centred, the neighbours at ±58% / 0.8 / ±14°
+   rotateY dimmed, the gear-shift overshoot spring. The frame = a gradient border in the pedal's own hue. */
+.d-fxc { display: none; }
+@media (max-width: 600px) {
+  #fx .d-rack { display: none; }
+  .d-fxc { --ph: clamp(250px, 74vw, 340px); display: block; position: relative; margin: 18px -16px 0; overflow: clip; outline: none; }
+  .d-fxc-vp { position: relative; height: calc(var(--ph) + 118px); perspective: 1300px; touch-action: pan-y; }
+  .d-fxc-slide {
+    --acc: #b46bff; --acc-hi: #e6c8ff;
+    position: absolute; top: 4px; bottom: 4px; left: 19%; width: 62%; margin: 0; padding: 16px 10px 12px;
+    display: flex; flex-direction: column; align-items: center; text-align: center; border-radius: 10px;
+    border: 1px solid transparent;
+    background:
+      radial-gradient(70% 45% at 50% 62%, color-mix(in srgb, var(--acc) 16%, transparent), transparent 75%) padding-box,
+      linear-gradient(180deg, #1a0d24 0%, #0d0614 55%, #08040c 100%) padding-box,
+      linear-gradient(180deg, var(--acc-hi) 0%, var(--acc) 26%, color-mix(in srgb, var(--acc) 30%, #000) 62%, var(--acc) 100%) border-box;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, .6);
+    transform-origin: center; transform: scale(.55); opacity: 0; visibility: hidden; pointer-events: none; z-index: 1;
+    transition: transform .4s cubic-bezier(.34, 1.3, .35, 1), opacity .3s ease, filter .3s ease;
+    will-change: transform, opacity;
+  }
+  .d-fxc-slide.s-pitch { --acc: #c9d2e0; --acc-hi: #ffffff; }
+  .d-fxc-slide.s-echo { --acc: #e040c8; --acc-hi: #ffd1f8; }
+  .d-fxc-slide.s-verb { --acc: #b46bff; --acc-hi: #f2c8ff; }
+  .d-fxc-slide.s-trem { --acc: #46e678; --acc-hi: #d8ffe0; }
+  .d-fxc-slide.is-current { opacity: 1; visibility: visible; pointer-events: auto; transform: none; filter: none; z-index: 3;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, .6), 0 0 22px color-mix(in srgb, var(--acc) 22%, transparent); }
+  .d-fxc-slide.is-peek-prev, .d-fxc-slide.is-peek-next { visibility: visible; opacity: .55; pointer-events: auto; z-index: 2;
+    filter: saturate(.55) brightness(.7); cursor: pointer; }
+  .d-fxc-slide.is-peek-prev { transform: translateX(-58%) scale(.8) rotateY(14deg); }
+  .d-fxc-slide.is-peek-next { transform: translateX(58%) scale(.8) rotateY(-14deg); }
+  .drift-page .d-fxc-name { margin: 0; font: 700 30px / 1 var(--d-f-head); letter-spacing: .02em; text-transform: uppercase;
+    color: var(--acc); text-shadow: 0 0 14px color-mix(in srgb, var(--acc) 55%, transparent); }
+  .drift-page .d-fxc-desc { margin: 6px 0 0; min-height: 2.5em; font: 500 13px / 1.25 var(--d-f-head); letter-spacing: .04em;
+    text-transform: uppercase; color: var(--d-fg); text-wrap: balance; }
+  .d-fxc-ped { display: block; height: var(--ph); width: auto; margin-top: auto; filter: drop-shadow(0 10px 14px rgba(0, 0, 0, .7)); pointer-events: none; }
+  .d-fxc-dots { display: flex; justify-content: center; gap: 2px; margin-top: 2px; }
+  .d-fxc-dot { width: 44px; height: 44px; display: grid; place-items: center; padding: 0; border: 0; background: none; cursor: pointer; }
+  .d-fxc-dot::before { content: ''; width: 11px; height: 11px; border-radius: 50%; border: 1px solid rgba(255, 79, 216, .55);
+    transition: background-color .2s ease, transform .2s ease; }
+  .d-fxc-dot.active::before { background: var(--d-hot); border-color: var(--d-hot); transform: scale(1.15); box-shadow: 0 0 8px rgba(255, 79, 216, .7); }
+  .drift-page .d-fxc:focus-visible .d-fxc-slide.is-current { outline: 2px solid var(--d-pink-ink); outline-offset: 3px; }
+}
+@media (max-width: 600px) and (prefers-reduced-motion: reduce) { .d-fxc-slide { transition: none; } }
 @media (max-width: 600px) { #fx .d-bay { display: none; } #fx .d-spec-plate > div { grid-template-columns: 5.2em minmax(0, 1fr); padding: 6px 0; } #fx .d-spec-plate dd { font-size: 14px; } }   /* the bay photo repeats the SATURATE row; 5.2em = AUTOTUNE + air, so SATURATE's line fits the 314 px panel */
 /* phone: the CSS panel's inner column is 314 px (390) / 244 (320): tighter glass, captions 16 + 11 px */
 @media (max-width: 600px) {
