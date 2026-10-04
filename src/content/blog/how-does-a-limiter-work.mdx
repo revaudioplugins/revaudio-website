@@ -1,0 +1,136 @@
+---
+title: "How does a limiter work? The science of hitting the redline"
+seoTitle: "How Does a Limiter Work? The Science of the Redline"
+description: "A limiter is a rev limiter for your master. What actually happens inside one: lookahead, release, true peaks, oversampling, and why louder isn't better."
+kicker: "Mastering science"
+pubDate: 2026-10-04
+readMinutes: 9
+---
+import FigLimitAnatomy from '../../components/blog/FigLimitAnatomy.astro';
+import FigRelease from '../../components/blog/FigRelease.astro';
+import FigInterSample from '../../components/blog/FigInterSample.astro';
+import FigAliasing from '../../components/blog/FigAliasing.astro';
+
+Every performance engine has a rev limiter. When the needle hits redline, the ECU cuts fuel or spark for a split second so the engine can't spin itself apart. You can floor it all day and the motor survives.
+
+A limiter on your master bus does the same job for level. It lets you push the track hard and guarantees nothing goes past the ceiling. Simple job. Doing it without wrecking the music is where the science gets interesting, and it's also where most "my master sounds worse" problems come from.
+
+<aside class="readout" aria-label="Short version">
+  <p class="readout-title">The short version</p>
+  <ul>
+    <li>A limiter turns the volume down just enough, just in time, so nothing crosses the ceiling.</li>
+    <li>Lookahead lets it start before the peak arrives. That's why it adds a few milliseconds of latency.</li>
+    <li>Release too slow and the mix pumps. Too fast and the bass distorts.</li>
+    <li>Set the ceiling in true peak, around −1 dBTP for streaming.</li>
+    <li>Oversampling cuts aliasing and catches the peaks hiding between samples.</li>
+    <li>Compare at matched loudness, or the louder version wins every time.</li>
+  </ul>
+</aside>
+
+## How does a limiter work?
+
+Inside every limiter is a loop of three parts.
+
+1. **A detector** measures how loud the signal is right now.
+2. **A gain computer** compares that to your ceiling. If a peak would land 3 dB over, it asks for 3 dB of gain reduction. If the signal is under the ceiling, it asks for nothing.
+3. **A gain stage** turns the volume down by that amount and back up again when the peak has passed.
+
+That's why people call a limiter "a compressor with an infinite ratio." Above the threshold, the output simply stops rising. The description is right, but it skips the hard part: timing. Turning the volume down is easy. Turning it down at exactly the right moment, by exactly the right amount, and back up without anyone noticing is the whole craft.
+
+Notice what a limiter doesn't do: it doesn't change the shape of the wave. It changes the volume over time. That's the difference from a clipper, which we'll get to in the pit stop at the end.
+
+<FigLimitAnatomy />
+
+## Attack and lookahead: braking before the corner
+
+A drum transient goes from quiet to full level in a tiny fraction of a millisecond. If the limiter only reacts once the peak is already there, it's too late: the first part of the hit sails over the ceiling. And if it slams the gain down instantly to catch it, that sudden jump in volume is itself a distortion, heard as a click or a crunch.
+
+The fix is **lookahead**. The limiter delays the audio by a few milliseconds and lets the detector read the signal before you hear it. Now it knows a peak is coming and can ease the gain down smoothly, so it reaches exactly the right amount of reduction at exactly the moment the peak arrives. That's the ramp you can see in the figure above.
+
+It's the difference between a driver who brakes before the corner and one who brakes in it.
+
+The cost is latency. A limiter with 5 ms of lookahead holds your audio back by 5 ms. Your DAW's delay compensation lines everything up on playback, which is why you never notice it in a mix, and why playing an instrument live through a mastering chain can feel slightly late.
+
+## Release: why your master pumps, or crackles in the bass
+
+Release is how fast the volume comes back up after a peak. It's the setting that decides whether a limiter sounds invisible or obvious, and it can fail in two opposite directions.
+
+**Too slow, and the mix pumps.** The kick hits, the limiter ducks everything by 3 dB, and the volume is still creeping back up when the next kick lands. The whole track breathes in time with the drums. On some dance music that's a style choice. On most masters it's the vocal dipping every time the kick hits.
+
+**Too fast, and the bass distorts.** This one is pure physics. One cycle of a 40 Hz bass note lasts 25 ms (one second divided by 40). If the release is only a millisecond or two, the gain has time to recover and clamp down again *inside a single cycle* of the wave. The limiter is no longer turning a note down; it's reshaping the waveform, flattening its tops, and that adds harmonics that weren't there. That's the crackle people hear when they put a limiter on an 808.
+
+<FigRelease />
+
+The way out is a release that's long enough for the lowest notes and short enough not to pump, which is a hard compromise for one number to make. That's why many modern limiters use program-dependent release (fast for brief spikes, slower for sustained loudness) or split the decision by frequency so the bass recovers slowly while the highs recover quickly.
+
+## How much gain reduction is too much?
+
+There's no magic number, but the gain reduction meter tells you a lot. A common rule of thumb is to keep it to a few dB on the loudest hits. Past that, transients start to flatten: the kick loses its punch, the snare gets smaller, and the master starts sounding squashed even though it measures louder.
+
+If you need 8 dB of reduction to get the loudness you want, the limiter is doing a job that belongs earlier in the chain. Compression, saturation, or a little clipping on the drums can take care of the sharpest peaks so the limiter only has to catch what's left. A limiter is the last line of defense, not the loudness machine.
+
+## Why does my master crackle after the limiter?
+
+You set the ceiling to −0.1 dB, the meter never goes over, and the bounce still crackles in places, or distorts once it's on Spotify. The usual suspect is the **inter-sample peak**.
+
+Digital audio is a list of samples, points measured 44,100 or 48,000 times a second. Your converter doesn't play dots, though. It draws a smooth curve through them, and that curve can rise *between* two samples, higher than either sample on its own. A meter that only reads the samples never sees it.
+
+<FigInterSample />
+
+Meters that catch it measure **true peak**. The broadcast loudness standard, ITU-R BS.1770, does this by oversampling the signal (4× at 48 kHz) and reading the peaks of the rebuilt waveform. Their unit is dBTP, decibels true peak. A sample-peak limiter set to −0.1 dB can quite happily put out +1 dBTP.
+
+So if your master crackles after the limiter, check three things: is the limiter detecting true peak, is the ceiling set in dBTP, and is anything after the limiter (a meter plugin with gain, a dither stage, a bounce setting) pushing the level back up.
+
+## Why set the ceiling to −1 dB, not 0?
+
+Even a master with clean true peaks gets one more round of processing before anyone hears it: lossy encoding. Spotify streams Ogg/Vorbis and AAC, YouTube and SoundCloud re-encode too, and plenty of people still make MP3s.
+
+A lossy encoder throws away parts of the signal it thinks you won't miss, and the wave rebuilt from what's left doesn't match the original sample for sample. Its peaks can land higher than the ones you mastered. A ceiling of exactly 0 dBTP leaves no room for that.
+
+Spotify's own guidance is direct about it: keep true peak below −1 dBTP, and if your master is louder than −14 LUFS integrated, keep it below −2 dBTP to avoid extra distortion. That's why −1 dBTP has become the safe default for streaming masters.
+
+## Does oversampling matter for limiting?
+
+Every time a limiter changes the gain quickly, it creates new frequencies. That's what distortion is, even the subtle kind. In a 44.1 kHz session, nothing above 22.05 kHz (half the sample rate, the Nyquist limit) can exist. New frequencies that would land up there don't disappear. They fold back down into the audible range as **aliasing**: tones that have no musical relation to the note that caused them, heard as a grainy, fizzy top end.
+
+<FigAliasing />
+
+Oversampling runs the limiter at a multiple of the session rate. At 8× a 44.1 kHz session becomes 352.8 kHz; at 32× it's over 1.4 MHz. Those new frequencies now have room to exist, the plugin filters them out, and the audio comes back down to 44.1 kHz clean. Oversampling also helps the detector see the curve between the original samples, so it catches true peaks instead of guessing.
+
+Does it always matter? No. At a dB or two of gentle limiting, aliasing is usually buried. It earns its keep when you push hard: loud genres, bright material, heavy gain reduction. The cost is CPU and a little extra latency, which is why most limiters let you choose.
+
+## Louder sounds better. That's the trap.
+
+Play the same master twice, one copy 1 dB louder, and most people pick the louder one as "fuller," "punchier," "more expensive." It isn't. Human hearing is less sensitive to low and high frequencies at quieter levels (the equal-loudness curves first measured by Fletcher and Munson), so turning anything up makes it sound bigger.
+
+That's the trap behind "my master sounds worse after limiting." The limited version sounds better in the A/B only because it's louder. Then it goes to a streaming service and gets turned down. Spotify normalizes to −14 LUFS by default, so a master smashed to −8 LUFS is played 6 dB quieter than it left your studio, now with flatter transients and nothing to show for it.
+
+The fix is to compare at matched loudness. Bypass the limiter and match the levels, or use a plugin that compensates the gain for you, and switch that compensation off when you want to hear what the limiter really costs. If the limited version still wins at the same loudness, you've done it right.
+
+## Pit stop: limiter vs clipper
+
+A **clipper** doesn't turn anything down. It chops off whatever pokes above the ceiling, instantly, with no attack and no release. On very short peaks that can be surprisingly transparent, because the chopped part is over too fast to hear. On longer peaks it's audible distortion, sometimes the kind you want.
+
+A **limiter** turns the volume down over time and keeps the waveform's shape.
+
+They work well as a team. Many engineers shave the sharpest few transients with a clipper first, so the limiter after it has less to do and can use a gentler release. Clip a little, then limit a little, beats limiting a lot.
+
+## The checklist
+
+- Set the ceiling in true peak: −1 dBTP for streaming, lower if the master is very loud.
+- Give the release enough time for your lowest notes. If the bass crackles, slow it down.
+- Watch the gain reduction meter on the loudest section. A few dB is a limiter; ten is a different problem.
+- Oversample when you push hard.
+- A/B at matched loudness, every time.
+
+<aside class="garage-note">
+  <p><strong>From the garage.</strong> We built <a href="/revlimiter/">RevLimiter</a> around this exact dashboard. The redline is your threshold, the needle is your gain reduction. Detection runs true peak at an oversampled rate (up to 32×), the release adapts per band so the bass holds while the highs recover, and auto gain clicks off when you want the honest level. There's a free trial on the <a href="/revlimiter/">RevLimiter page</a> if you want to feel it on your own mix.</p>
+</aside>
+
+<section class="sources" aria-label="Sources">
+  <p class="sources-title">Sources</p>
+  <ul>
+    <li><a href="https://support.spotify.com/us/artists/article/loudness-normalization/" rel="noopener" target="_blank">Spotify for Artists: Loudness normalization</a> (−14 LUFS default, true peak guidance)</li>
+    <li><a href="https://www.itu.int/rec/R-REC-BS.1770" rel="noopener" target="_blank">ITU-R BS.1770: Algorithms to measure audio programme loudness and true-peak audio level</a></li>
+  </ul>
+</section>

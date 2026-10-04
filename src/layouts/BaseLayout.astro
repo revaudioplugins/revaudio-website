@@ -19,6 +19,8 @@ interface Props {
   ogImage?: string;
   /** When false, emit noindex. Default true now the store is live; pass index={false} to hide a single page. */
   index?: boolean;
+  /** og:type — 'article' for blog posts. */
+  ogType?: 'website' | 'article';
 }
 
 const {
@@ -26,11 +28,16 @@ const {
   description = 'RevAudio builds boutique VST plugins for producers who want tools that sound expensive and play simple.',
   ogImage = '/og-default.png',
   index = true,
+  ogType = 'website',
 } = Astro.props;
 
 const fullTitle = title === 'RevAudio'
   ? 'RevAudio: Plugins built like cars'
   : `${title} · RevAudio`;
+
+// Every page names its own URL as canonical, so Google never has to guess
+// between /page and /page/ or a tracking-tagged copy.
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
 ---
 
 <!doctype html>
@@ -41,11 +48,13 @@ const fullTitle = title === 'RevAudio'
     <meta name="description" content={description} />
     <meta name="generator" content={Astro.generator} />
     {!index && <meta name="robots" content="noindex, nofollow" />}
+    {index && <link rel="canonical" href={canonical} />}
 
     <!-- OG / social -->
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:url" content={canonical} />
     <meta property="og:image" content={new URL(ogImage, Astro.site).href} />
     <meta property="og:site_name" content="RevAudio" />
     <meta name="twitter:card" content="summary_large_image" />
@@ -92,6 +101,9 @@ const fullTitle = title === 'RevAudio'
         data-cf-beacon={`{"token": "${site.cfBeaconToken}"}`}
       ></script>
     )}
+
+    {/* Page-specific head tags (blog posts put their Article JSON-LD here). */}
+    <slot name="head" />
   </head>
   <body>
     <a href="#main-content" class="skip-link">Skip to main content</a>
