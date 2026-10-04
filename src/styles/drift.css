@@ -1392,6 +1392,52 @@
 @media (prefers-reduced-motion: reduce) { #fx .d-band-cut, #fx .d-fx-slice { animation: none; } }
 html.hc #fx .d-fx-slice, html.hc #fx .d-headline span { text-shadow: none; }
 
+/* fit (Dan 10-04): "lets do the same" as #drive - the whole #fx panel shows under the nav at every laptop size.
+   #drive's knob and values (--t: 0 at <=636 px tall .. 1 at >=936; padding + head identical), so the two panels scale as siblings.
+   Three full-width rows: band display (both cut flags on one row) / rack (4 strips, one-line captions) / foot (bay | kicker | spec rows, the rack's width).
+   The panel is a container: cqw caps every width-bearing size at its 10-03 size. */
+@media (min-width: 1001px) {
+  #fx .d-fx-panel {
+    --t: calc(clamp(0px, 100vh - 636px, 300px) / 300);
+    --fx-gap: calc(12px + 4 * var(--t));                                     /* rack column gap: 12 at t0 (the captions get the cell), 16 at t1 (10-03) */
+    --fx-cell: calc((100cqw - 3 * var(--fx-gap)) / 4);
+    --fx-strip: min(calc(168px + 100 * var(--t)), var(--fx-cell));           /* height fit | the 10-03 width (4 cells): 168 at 1141x636, 243 from ~900 tall */
+    --fx-inset: calc((var(--fx-cell) - var(--fx-strip)) / 2);               /* each photo is centred in its cell: the band display steps in by the same amount so its edges meet PITCH's left + TREMOLO's right */
+    --fx-bay: min(calc(190px + 150 * var(--t)), 34cqw);                      /* 190x61 at t0 (= the three spec rows) .. 340x110 at t1 (10-03); 34cqw keeps the rows their width on a 1001-1040 px window */
+    container-type: inline-size;
+    padding: calc(56px + 14 * var(--t)) 80px calc(68px + 12 * var(--t));   /* = #drive; the sides stay 80 (the bay's 6 px ring clears the face's rounded corner by ~9 px at 1141 with the foot lift below, 10.6 at t1) */
+  }
+  #fx.d-sec { scroll-margin-top: calc(-6px - clamp(48px, 6vw, 72px)); }   /* landing on /drift/#fx: html's scroll-padding (nav + .75rem) minus this section's own pad puts the panel ~9 px under the nav, as #drive */
+  .drift-page #fx .d-fx-panel h2.d-headline--row { font-size: min(calc(36px + 16 * var(--t)), 4.9cqw); margin-bottom: calc(18px + 8 * var(--t)); }   /* = #drive: one row, 27% spare at 1141 */
+  /* band display: one flag row (LOW CUT ends on its 6k line, HIGH CUT sits between the lines, 12 px clear at 1141); the strip 30..56 */
+  #fx .d-bandfig { margin: 0 var(--fx-inset) calc(10px + 14 * var(--t)); }
+  #fx .d-bandglass { padding: calc(7px + 7 * var(--t)) 16px calc(5px + 5 * var(--t)); }
+  #fx .d-band-cuts { grid-template-areas: 'cut'; gap: 0; margin-bottom: calc(3px + 1 * var(--t)); }
+  #fx .d-band-cut { grid-area: cut; font-size: min(calc(15px + 2 * var(--t)), 2.04cqw); line-height: 1.1; }   /* VT323 >= 15; 2.04cqw keeps HIGH CUT >= 8 px clear of the 6k line on a 1001-1040 px window */
+  #fx .d-band-cut::after, #fx .d-band-cut:first-child::after { height: calc(3px + 1 * var(--t)); }        /* each flag line runs the gap down to the strip */
+  #fx .d-bandstrip { height: calc(30px + 26 * var(--t)); }                 /* never a bar under 30 px; "FX PLAY HERE" keeps its 15 px in the lit rect */
+  #fx .d-band-ticks { height: calc(15px + 7 * var(--t)); margin-top: calc(2px + 2 * var(--t)); }
+  #fx .d-band-ticks span { font-size: calc(14px + 2 * var(--t)); line-height: 1.1; }
+  /* rack: 4 equal cells, the 512:588 photo centred in each, the caption centred under it on one line */
+  #fx .d-rack { margin-top: 0; column-gap: var(--fx-gap); }
+  #fx .d-strip-well { width: var(--fx-strip); margin-inline: auto; }
+  #fx .d-strip figcaption { margin-top: calc(6px + 4 * var(--t)); text-align: center; }
+  #fx .d-strip h3 { font-size: calc(17px + 1 * var(--t)); margin-bottom: calc(2px + 2 * var(--t)); }
+  #fx .d-strip p { font-size: calc(11px + 1 * var(--t)); line-height: 1.25; letter-spacing: .01em; }   /* one line: ECHO's (the longest) has 10% spare at 1141, ~4% in Safari's wider Oswald (nowrap from 1101, below) */
+  /* foot: bay | kicker | spec rows across the rack's width (the bay level with PITCH's left edge, the rules end at TREMOLO's right).
+     Fixed columns, never sized from the text: WebKit keeps a grid column's text width as measured in the fallback (Impact) before
+     the Oswald webfont swaps in, so a content-sized, centred foot came out ~7 px short and PRESETS wrapped in WebKit only (builder 10-04) */
+  #fx .d-fx-foot { margin: calc(13px + 11 * var(--t)) var(--fx-inset) calc(3px - 3 * var(--t)); grid-template-columns: var(--fx-bay) minmax(0, 1fr); column-gap: calc(24px + 16 * var(--t)); }   /* at t0 the foot sits 3 px higher (13 above / 3 below, 16 in all, the panel's height unchanged): the bay's ring then clears the face's rounded corner by ~9 px, as #drive's box does; at t1 24 / 0 as 10-03 */
+  #fx .d-fx-spec { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: calc(20px + 8 * var(--t)); align-items: start; }
+  #fx .d-fx-kicker { margin: 4px 0 0; max-width: 12em; line-height: 1.5; }   /* two lines, ALSO UNDER / THE HOOD, level with SATURATE */
+  #fx .d-spec-plate > div { padding: calc(2px + 7 * var(--t)) 0; grid-template-columns: 5.6em minmax(0, 1fr); }
+  #fx .d-spec-plate dt { font-size: calc(15px + 2 * var(--t)); line-height: 1; }
+  #fx .d-spec-plate dd { font-size: calc(13px + 3 * var(--t)); line-height: 1.15; }
+}
+/* the panel has 5 px spare at 1141x636: a caption that wrapped in real Safari (Oswald ~4% wider than WebKit) would break the fit.
+   From 1101 wide the cell (>= 177 px) holds ECHO's caption (~170) even a few px wider; below that the cells shrink and the captions may wrap as before */
+@media (min-width: 1101px) { #fx .d-strip p { white-space: nowrap; } }
+
 /* ==========================================================================
    SECTION 4 — TEST DRIVE (#get): one sign-up panel in the hero console's dress + folded specs
    (the keep-it ladder renders once, in .d-keep under the tracks)
