@@ -5,7 +5,27 @@
  * (.d-capture-status) and the creators nudge (.d-capture-next) are the form's
  * siblings. A [data-face] inside the submit button reads "Sending" in flight (no ellipsis: it must not be wider than the rest face).
  */
+const phone = () => matchMedia('(max-width: 600px)').matches;
+const JOINED_KEY = 'drift-joined';
+
+/** Phone (G3, 10-02): signed up once = signed up on the whole page. <html>
+ *  gets data-drift-joined (drift.css hides both forms, the sticky bar
+ *  retires) and every status line says so; the live regions stay rendered. */
+function markJoined(msg: string): void {
+  document.documentElement.dataset.driftJoined = '1';
+  document.querySelectorAll<HTMLElement>('.d-capture-status').forEach((s) => {
+    if (s.textContent !== msg) s.textContent = msg;
+    s.classList.add('ok');
+    s.classList.remove('err');
+  });
+}
+
 export function initCaptures(): void {
+  if (phone()) {
+    let saved: string | null = null;
+    try { saved = sessionStorage.getItem(JOINED_KEY); } catch { /* storage blocked: no restore */ }
+    if (saved) markJoined(saved);
+  }
   document.querySelectorAll<HTMLFormElement>('form[data-drift-capture]:not([data-bound])').forEach((form) => {
     form.dataset.bound = '';
     const box = form.parentElement;
@@ -20,11 +40,14 @@ export function initCaptures(): void {
       status.classList.toggle('ok', ok);
       status.classList.toggle('err', !ok);
     };
+    // errors land one frame later (P4, 10-02): the region is rendered first
+    // (visually hidden while empty), so VoiceOver announces the change
+    const showErr = (msg: string) => requestAnimationFrame(() => show(msg, false));
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!wired) {
-        show('Not live yet. Your email was not sent.', false);
+        showErr('Not live yet. Your email was not sent.');
         return;
       }
       const submitBtn = form.querySelector<HTMLButtonElement>('button[type="submit"]');
@@ -42,14 +65,19 @@ export function initCaptures(): void {
         const j = await res.json().catch(() => null);
         if (j && j.ok) {
           form.hidden = true;
-          show(j.already ? form.dataset.msgAlready! : form.dataset.msgOk!, true);
+          const msg = j.already ? form.dataset.msgAlready! : form.dataset.msgOk!;
+          show(msg, true);
+          if (phone()) {
+            markJoined(msg);
+            try { sessionStorage.setItem(JOINED_KEY, msg); } catch { /* storage blocked: this visit only */ }
+          }
           if (!j.already && next) next.hidden = false;
           status?.focus({ preventScroll: true });   // the focused submit button just went with the form
         } else {
-          show((j && j.error) || 'Something went wrong. Try again, or email info@revaudio.net.', false);
+          showErr((j && j.error) || 'Something went wrong. Try again, or email info@revaudio.net.');
         }
       } catch {
-        show('Network hiccup. Try again in a moment.', false);
+        showErr('Network hiccup. Try again in a moment.');
       }
       if (face && idle !== undefined) face.innerHTML = idle;
       if (submitBtn) { submitBtn.disabled = false; submitBtn.style.minWidth = ''; }

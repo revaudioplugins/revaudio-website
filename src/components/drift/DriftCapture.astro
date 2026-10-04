@@ -31,17 +31,23 @@ const copy = captureCopyFor();
 if (!copy) throw new Error(`[DriftCapture] phase '${drift.phase}' has no capture copy (captureCopyFor).`);
 const { id = 'get-capture', source = copy.source } = Astro.props;
 const onceUrl = site.downloadGate.workerUrl + '/form-once';
+const cta = ctaFor();
+// H5 (10-02): the key's accessible name says what the press does, but only while the face reads "Get it"
+// and a trial is on offer (preopen / open); the closed phase's face is "Get notified", so no label (WCAG 2.5.3)
+const keyLabel = (drift.phase === 'preopen' || drift.phase === 'open') && cta.label === 'Get it'
+  ? `Get it: free ${drift.trialDays}-day trial by email` : undefined;
 ---
 <div class="d-capture" id={id}>
   <form class="d-capture-form" action={site.formspreeEndpoint} method="POST"
     data-drift-capture data-once-url={onceUrl} data-msg-ok={copy.ok} data-msg-already={copy.already}>
     <label for={`${id}-email`} class="d-sr">Your email</label>
     <div class="d-field-row">
-      <input id={`${id}-email`} class="d-field" type="email" name="email" required autocomplete="email" placeholder="your@email.com" />
+      <input id={`${id}-email`} class="d-field" type="email" name="email" required autocomplete="email"
+        inputmode="email" enterkeyhint="go" spellcheck="false" autocapitalize="off" placeholder="your@email.com" />
       <input type="hidden" name="source" value={source} />
       <!-- honeypot: real users never fill this; bots do -->
       <input type="text" name="_gotcha" class="d-hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
-      <button type="submit" class="d-cta d-stamp-key"><span data-face>{ctaFor().label} <span class="d-stamp-arrow" aria-hidden="true">&#9656;</span></span></button>
+      <button type="submit" class="d-cta d-stamp-key" aria-label={keyLabel}><span data-face>{cta.label} <span class="d-stamp-arrow" aria-hidden="true">&#9656;</span></span></button>
     </div>
   </form>
   <p class="d-cta-fine d-fine">{ctaFor().action === 'capture' && <span class="d-get-chip">Nothing to pay today.</span>} {copy.fine}</p>

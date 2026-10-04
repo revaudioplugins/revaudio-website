@@ -23,7 +23,8 @@ import { ctaFor } from '../../data/drift';
 const cta = ctaFor();
 ---
 <div class="d-stickybar is-away" data-drift-sticky>
-  <a class="d-cta d-cta--bar d-stamp-key" href={cta.action === 'cart' ? '#get' : '#try'} data-drift-jump>{cta.label} <span class="d-stamp-arrow" aria-hidden="true">&#9656;</span></a>
+  <a class="d-cta d-cta--bar d-stamp-key" href={cta.action === 'cart' ? '#get' : '#try'} data-drift-jump
+    aria-label={cta.action !== 'cart' && cta.label === 'Get it' ? 'Get it: go to the trial form' : undefined}>{cta.label} <span class="d-stamp-arrow" aria-hidden="true">&#9656;</span></a>
   <span class="d-stickybar-micro">{cta.sticky}</span>
 </div>
 
@@ -77,13 +78,25 @@ const cta = ctaFor();
     font: 500 12px/1 var(--d-f-head); letter-spacing: .05em; text-transform: uppercase;
     text-align: center; color: var(--d-fg-dim);
   }
+  /* PHONE PASS 2026-10-02 (S4): the page's most important fine print, at the 13+ floor and bright */
+  @media (max-width: 600px) {
+    .d-stickybar-micro { font-size: 14px; color: var(--d-fg); }
+  }
 </style>
 
 <script>
   const bar = document.querySelector<HTMLElement>('[data-drift-sticky]');
-  // the hero's red GET IT key lives in .d-hero-trial (not a CTA zone): hide the bar beside it too,
+  const phoneMq = matchMedia('(max-width: 600px)');
+  // 601-900 (today's logic): the hero's red GET IT key lives in .d-hero-trial (not a CTA zone): hide the bar beside it too,
   // and beside the house footer, so the bar never slides up over it at the page end
-  const zones = Array.from(document.querySelectorAll<HTMLElement>('[data-drift-cta-zone], .d-hero-trial, .site-footer'));
+  const wideZones = Array.from(document.querySelectorAll<HTMLElement>('[data-drift-cta-zone], .d-hero-trial, .site-footer'));
+  // ≤600 (S1, 10-02): the real asks only, edge to edge (no -25%): the red key of the hero form and of #try's form,
+  // #creators and the footer. So there is no red-less band between #fx and #try (the key, not the form: #try's
+  // field enters first and sits under the bar for ~100 px of scroll) and none beside the price line, which has no key
+  const tryAsk = document.querySelector<HTMLElement>('#try .d-capture-form .d-stamp-key') ?? document.querySelector<HTMLElement>('#try, #get .d-buyslot');
+  const phoneZones = [document.querySelector<HTMLElement>('.d-stamp-form .d-stamp-key'), tryAsk,
+    document.querySelector<HTMLElement>('#creators'), document.querySelector<HTMLElement>('.site-footer')]
+    .filter((z): z is HTMLElement => !!z);
   if (bar) {
     // publish the real height so the FAB/footer/scroll offsets that read
     // --d-sb-h stay exact (display:none above 900px -> 0, inert there).
@@ -91,20 +104,39 @@ const cta = ctaFor();
     syncH();
     window.addEventListener('resize', syncH);
   }
-  if (bar && zones.length) {
+  if (bar && (wideZones.length || phoneZones.length)) {
     const hits = new Set<Element>();
-    const set = () => bar.classList.toggle('is-away', hits.size > 0);
-    const io = new IntersectionObserver((entries) => {
-      for (const e of entries) { if (e.isIntersecting) hits.add(e.target); else hits.delete(e.target); }
-      set();
-    }, { rootMargin: '0px 0px -25% 0px', threshold: 0 });
-    zones.forEach((z) => io.observe(z));
+    let zones: HTMLElement[] = [];
+    // phone only: also away while a DRIFT email field has focus (the keyboard is up) and after a sign-up (G3)
+    let typing = false;
+    const html = document.documentElement;
+    const set = () => bar.classList.toggle('is-away',
+      hits.size > 0 || (phoneMq.matches && (typing || html.hasAttribute('data-drift-joined'))));
+    let io: IntersectionObserver | null = null;
+    const observe = () => {
+      io?.disconnect();
+      hits.clear();
+      const phone = phoneMq.matches;
+      zones = phone ? phoneZones : wideZones;
+      io = new IntersectionObserver((entries) => {
+        for (const e of entries) { if (e.isIntersecting) hits.add(e.target); else hits.delete(e.target); }
+        set();
+      }, { rootMargin: phone ? '0px' : '0px 0px -25% 0px', threshold: 0 });
+      zones.forEach((z) => io!.observe(z));
+    };
+    observe();
+    phoneMq.addEventListener('change', observe);   // crossing 600: the other zone set and margin
+    const field = (t: EventTarget | null) => t instanceof HTMLInputElement && t.type === 'email' && !!t.closest('.drift-page');
+    document.addEventListener('focusin', (e) => { typing = field(e.target); set(); });
+    document.addEventListener('focusout', () => { typing = false; set(); });
+    new MutationObserver(set).observe(html, { attributes: true, attributeFilter: ['data-drift-joined'] });
     window.addEventListener('pageshow', (e) => {   // Safari bfcache backstop (house pattern)
       if (!e.persisted) return;
       hits.clear();
+      const edge = window.innerHeight * (phoneMq.matches ? 1 : 0.75);
       for (const z of zones) {
         const r = z.getBoundingClientRect();
-        if (r.top < window.innerHeight * 0.75 && r.bottom > 0) hits.add(z);
+        if (r.top < edge && r.bottom > 0) hits.add(z);
       }
       set();
     });

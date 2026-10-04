@@ -40,6 +40,30 @@ the TV unchecked on phones; feat/drift-mobile (phone pass off 10cb0e8) not merge
 #get). Plugin should ship the bacinger/f1-circuits MIT notice (Yoni/Gil). Next in the walk: #fx, #get, #creators.
 Push/merge to main = live: only on Dan's explicit word (pull first).
 
+## 2026-10-02 — /drift PHONE PASS (Claude Code, Opus orchestrator) — PUSHED to origin/feat/drift-mobile 2026-10-03 (Dan: "commit and push to branch"; main untouched, nothing live), dev :4335
+Owner: Claude Code (Dan's session). Own branch + worktree `.claude/worktrees/drift-mobile`, off feat/drift-page 10cb0e8
+(the drift-page worktree belongs to another session: it had uncommitted drift.css + DriftTracks.astro edits, not in here).
+Why: Dan's mobile-only brief: on a phone the page has ONE job, the trial email (creators second); desktop frozen.
+How: inventory → 6-agent debate (designer · touch · editor · CRO · IG buyer · perf, 2 rounds, Fable merge) → Dan's picks →
+2 Opus builders (CSS+markup ∥ scripts) → main review → Fable fix pass. Docs: ~/workspace/revaudio/stages/04_website/output/
+2026-10-02-drift-mobile-inventory.md + -proposal.md (IDs F1… below are that file's).
+Dan's picks: ≈6.3 screens (cockpit kept), JS allowed (phone-gated), nothing under the wheel, kicker "The pan plugin that
+drives itself", no linear steer, haze off on phones, car keeps lapping, key stays "Get it ▸", all DO-NOW + H5/H6/D3/G4.
+Files: drift.css (ONE block at the end: `PHONE PASS 2026-10-02`, ≤600 only + a ≤355 cap rule + a ≥601 hide block for the
+new markup) · DriftTrialStamp (kicker, phone fine line = captureCopyFor().fine, creators nudge, aria) · DriftCapture (input
+attrs, aria) · DriftFx (X3 line) · DriftStickyBar (≤600 zones = the hero key, #try's key, #creators, footer, rootMargin 0;
+away on email focus + after sign-up; 601-900 keep the old zones) · init.ts (bar → nearest form, Lenis-safe; photo hold
+during a jump; key-press sprite prefetch) · capture.ts (joined state on phones: data-drift-joined + sessionStorage) ·
+wheel.ts (cancel = no coast; aria ≤2 Hz from the car) · bus.ts (--pan/--lit writes only ≥1100; write-on-change) · trackui.ts.
+Verified: build clean; full-page ZERO pixel diff vs 10cb0e8 at 1280/1600 (Chromium + WebKit) and 601/768/900; iPhone 17 Pro
+Simulator shots of every changed section (402 default + 350 at 115% zoom, cookie banner up and down); WebKit 350/390/402/430:
+no horizontal scroll, ≤1 red per viewport, hero GET IT bottom 417-425 px (was 952-1021) above the first-visit cookie banner;
+both forms POST {form:'newsletter', source:'drift-trial'} to /form-once (mocked). Phone DRIFT body 7.7 → 6.45 screens (402),
+first load 556 → 489 KB @3x.
+Open: real phone + IG in-app check (Dan); on a FIRST visit to /drift#creators the cookie banner covers Apply (402: bottom
+28 px, 350: all): Dan's call; Simulator can't tap, so the bar's nearest-form jump + keyboard are probe-verified only.
+Push/merge = Dan's word only (merge to main = live). The probes live in the session scratchpad, not the repo.
+
 ## 2026-10-02 — /drift: THE HERO'S LAW BELOW THE HERO (Claude Code, Fable orchestrator) — COMMITTED on feat/drift-page (local), dev :4328
 Owner: Claude Code (Dan's session). Same branch/worktree as the entries below (one writer).
 Why: Dan on 10-01, after the hero pass (3d37174): "fonts and layout, minimize with the catch phrases, really this is what I

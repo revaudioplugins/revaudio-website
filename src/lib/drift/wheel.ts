@@ -35,13 +35,29 @@ export function initWheel(root: HTMLElement): void {
   };
 
   let v = 0.5; // normalised 0..1, like the plugin's slider state
-  const draw = (n: number) => {
-    v = Math.max(0, Math.min(1, n));
-    spin(-135 + 270 * v);
+  const aria = () => {
     const p = v * 2 - 1;
     w.setAttribute('aria-valuenow', String(Math.round(p * 100)));
     w.setAttribute('aria-valuetext', panWords(p));
   };
+  // Phone (H6, 10-02): the TRACKS car turns the wheel every frame; VoiceOver
+  // only needs its value about twice a second (plus once on focus). The art
+  // still turns every frame; a hand or a key writes the value at once.
+  const phoneMq = matchMedia('(max-width: 600px)');   // one list, .matches read at event time (this runs every frame)
+  const phone = () => phoneMq.matches;
+  const ARIA_EVERY = 500;
+  let ariaT = -Infinity, ariaTimer = 0;
+  const ariaSoon = () => {
+    const now = performance.now();
+    if (now - ariaT >= ARIA_EVERY) { ariaT = now; aria(); return; }
+    if (!ariaTimer) ariaTimer = window.setTimeout(() => { ariaTimer = 0; ariaT = performance.now(); aria(); }, ARIA_EVERY - (now - ariaT));
+  };
+  const draw = (n: number, throttled = false) => {
+    v = Math.max(0, Math.min(1, n));
+    spin(-135 + 270 * v);
+    if (throttled) ariaSoon(); else aria();
+  };
+  w.addEventListener('focus', aria);
   const commit = (n: number) => { draw(n); setPan(v * 2 - 1, 'wheel'); };
 
   // --- alpha-aware hit test (the sprite is round with big transparent gaps) --
@@ -142,7 +158,10 @@ export function initWheel(root: HTMLElement): void {
   });
   w.addEventListener('pointermove', move);
   w.addEventListener('pointerup', end);
-  w.addEventListener('pointercancel', end);
+  // Phone (H1, 10-02): a cancel is the browser taking the gesture for a page
+  // scroll (touch-action pan-y), not a flick: drop the trail so end() finds
+  // omega 0, no coast, and lets go of the hand. pointerup is unchanged.
+  w.addEventListener('pointercancel', () => { if (phone()) trail.length = 0; end(); });
   w.addEventListener('dblclick', (e) => { if (!onArt(e)) return; stopCoast(); commit(0.5); });
   w.addEventListener('keydown', (e) => {
     const step = (e.shiftKey ? 0.01 : 0.05) / 2;   // pan units -> normalised
@@ -161,7 +180,7 @@ export function initWheel(root: HTMLElement): void {
 
   // other writers (demo deck, TRACKS) turn the art; the hand always wins, and
   // the TRACKS car waits while it holds (bus.setHand)
-  onPan((p, source) => { if (source === 'wheel' || dragging || coasting) return; draw((p + 1) / 2); });
+  onPan((p, source) => { if (source === 'wheel' || dragging || coasting) return; draw((p + 1) / 2, phone()); });
   draw((getPan() + 1) / 2);
 
   initNeedles(root);
