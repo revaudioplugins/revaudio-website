@@ -1187,12 +1187,12 @@
 .d-vs-bars i { width: 5px; height: 9px; border-radius: 1px; background: rgba(242, 76, 240, .12); }
 .d-vs-bars i.on { background: rgb(255, 112, 247); box-shadow: 0 0 4px rgba(242, 76, 240, .8); }
 .drift-page .d-spd-note { margin: 6px 0 0; text-align: center; }
-/* below 1001 the panels stack; phones put the faders in a row under the GPS (not verified this session, Dan: laptop only) */
+/* phones (Dan 10-04 "remove this area"): no faders, no value screens, no "Seconds, or locked to bars." The GPS
+   alone, straight into the track picker; the car laps on the plugin's defaults (INTENSITY 60 %, 12.0 s a lap).
+   Hidden, not removed: desktop keeps the whole rig. */
 @media (max-width: 600px) {
-  .d-rig { grid-template-columns: 1fr 1fr; row-gap: 14px; }
-  .d-rig .d-gps { grid-column: 1 / -1; grid-row: 1; }
-  .d-fad-slot { min-height: 150px; }
-  .d-rig-base { grid-template-columns: 1fr 1fr; }   /* the balance box is already hidden here (above) */
+  .d-rig { grid-template-columns: minmax(0, 1fr); }
+  .d-rig .d-fad, .d-rig-base { display: none; }
 }
 @media (max-width: 600px) { #drive .d-panel { padding-bottom: 44px; } }   /* clears the 31 px bottom screws, as .d-keep does */
 @media (max-width: 600px) { #drive .d-gps-panel .d-balance-box { display: none; } }   /* the hero's own L/R meter sits 1.5 screens up; the hooks stay in the DOM (fixer r2 10-02) */
