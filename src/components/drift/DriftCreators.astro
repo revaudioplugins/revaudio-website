@@ -1,0 +1,62 @@
+---
+/**
+ * Section 5 — ON AIR (#creators), route 1 of the offer in full and the
+ * landing spot for the streamer reel (/drift#creators). The page ends on this
+ * CTA. The 配信 lamp is the block's one lamp and one kana: lit while
+ * drift.creatorDealOpen, so it reports the deal's state, not decoration.
+ * Deal facts (Dan, 2026-09-30): apply at /affiliate and write DRIFT BETA in
+ * the "Why do you want to promote RevAudio?" box (affiliate.astro's textarea
+ * label); a public video, at least 2 minutes, up at least 30 days, tagged
+ * @revaudioplugins, marked as an ad; then a free licence + a 20% affiliate
+ * link. The button is violet, never race-red (one red per viewport), and the
+ * DRIFT BETA reminder sits right under it: the last line read before leaving.
+ * The steps get a VIDEO CHECK dash readout (step 3's checks as LCD rows on
+ * sunk glass with lit LEDs): beside them from 1000 px, a compact two-column
+ * strip between step 4 and the button below that, so the reel's phone
+ * landing spot shows DRIFT chrome too, not four numerals and an outlined
+ * button (brand review 10-01, rounds 1 and 2). The Apply link is a violet
+ * keycap (.d-btn-violet): DRIFT's key chrome in the violet family.
+ */
+import { drift } from '../../data/drift';
+---
+<section class="d-sec d-creators" id="creators" data-drift-cta-zone aria-labelledby="d-cr-h">
+  <div class="d-wrap">
+    <div class="d-sechead">
+      <span class="d-marquee" aria-hidden="true">ON AIR</span>
+      <span class:list={['d-onair', { on: drift.creatorDealOpen }]} lang="ja" aria-hidden="true">配信</span>
+      <span class="d-rule" aria-hidden="true"></span>
+    </div>
+    <h2 id="d-cr-h" class="d-headline">Stream it. Get DRIFT free.</h2>
+    <p class="d-lede d-lede--sec">Make music on stream or on YouTube? Take the DRIFT beta for a drive before launch. Film a session with DRIFT, live or recorded, and post it on your channel. Anyone on the trial can do this.</p>
+
+    <div class="d-cr-grid">
+      <ol class="d-steps-cr" role="list">
+        <li>Apply at revaudio.net/affiliate. In the box “Why do you want to promote RevAudio?”, write <strong>DRIFT BETA</strong>.</li>
+        <li>We email you the DRIFT beta download.</li>
+        <li>Post a video of DRIFT on your channel: public, at least 2 minutes, up for at least 30 days, tagged <strong>@revaudioplugins</strong>, marked as an ad or affiliate post{drift.videoDeadlineLabel && `, posted by ${drift.videoDeadlineLabel}`}.</li>
+        <li>Once we see the tag, we send your free DRIFT licence and your own affiliate link. It pays 20% of every sale it brings.</li>
+      </ol>
+
+      <!-- VIDEO CHECK: step 3's rules as a dash readout. It repeats the step,
+           so it is hidden from AT; the LEDs are lit lamps. Grid-placed: right
+           column from 1000 px, between the steps and the button below. -->
+      <div class="d-lcd d-lcd--big d-cr-checks" aria-hidden="true">
+        <span class="d-cr-checks-hdr">▶ VIDEO CHECK</span>
+        <ul>
+          <li>PUBLIC</li>
+          <li>2 MIN OR MORE</li>
+          <li>UP 30 DAYS OR MORE</li>
+          <li>TAGGED @REVAUDIOPLUGINS</li>
+          <li>MARKED AS AD</li>
+        </ul>
+        <span class="d-cr-checks-foot">TAG SEEN: FREE LICENCE + 20% LINK</span>
+      </div>
+
+      <div class="d-cr-cta" data-drift-fab-watch>
+        <a class="d-btn-violet" href="/affiliate">Apply as a creator</a>
+        <p class="d-btn-note">In the form, write <strong>DRIFT BETA</strong> in the “Why do you want to promote RevAudio?” box.</p>
+        <p class="d-small">Already a RevAudio affiliate? Email <a href="mailto:info@revaudio.net?subject=DRIFT%20BETA">info@revaudio.net</a> with DRIFT BETA in the subject.</p>
+      </div>
+    </div>
+  </div>
+</section>

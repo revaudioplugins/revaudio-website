@@ -1,0 +1,30 @@
+---
+/**
+ * One DRIFT dash panel: the violet-black steel face cut from the plugin's
+ * left_panel.png, sunk into the dash (well + inset shade, drift.css .d-panel),
+ * four real screws each turned a different few degrees (Law 2), the magenta
+ * checker sticker from the same plate, and an optional katakana sticker.
+ * The katakana must NAME the panel's job (Law 1: no orphan decoration) —
+ * e.g. 周波数 frequency on the band panel, 速度 speed on the tracks panel.
+ */
+import { getImage } from 'astro:assets';
+import checkerSrc from '../../assets/seasons/drift/panel-checker.png';
+
+interface Props {
+  sticker?: string;
+  checker?: boolean;
+  class?: string;
+  id?: string;
+}
+const { sticker, checker = true, class: cls = '', id } = Astro.props;
+const checkerImg = checker ? await getImage({ src: checkerSrc, width: 576, format: 'webp', quality: 80 }) : null;
+---
+<div class:list={['d-panel', cls]} id={id}>
+  <span class="d-screw tl" aria-hidden="true"></span>
+  <span class="d-screw tr" aria-hidden="true"></span>
+  <span class="d-screw bl" aria-hidden="true"></span>
+  <span class="d-screw br" aria-hidden="true"></span>
+  {checkerImg && <img class="d-checker" src={checkerImg.src} width="253" height="22" alt="" aria-hidden="true" loading="lazy" decoding="async" />}
+  {sticker && <span class="d-sticker" lang="ja" aria-hidden="true">{sticker}</span>}
+  <slot />
+</div>

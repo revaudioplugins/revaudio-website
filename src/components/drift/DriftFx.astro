@@ -1,0 +1,142 @@
+---
+/**
+ * Section 3 — EFFECTS (#fx). The one honest place for the band under D2/H1:
+ * the whole sound moves; LOW CUT / HIGH CUT only set the slice where echo,
+ * reverb, tremolo and pitch play. A static annotated strip explains it (log
+ * axis placed at BUILD time, the old band.ts mapping; no drag, nothing to
+ * hear yet), then four real strips cut from the plugin's FX window rendered
+ * at DPR 2 (website rule: product images come from the real UI), then the
+ * SATURATE bay + AUTOTUNE as text, with no band claim for either.
+ * fx-autotune.png is off the page: it shows the BAND|ALL bank removed in
+ * 4.26.0 (DESIGN.md:1290) until it's re-shot from the Oct 10 build.
+ * Hover lamps a strip (no tab stop: a strip has no action). The strips are
+ * cropped to their heads (screen, selectors, first knob row: the dark gap
+ * under that row's labels is the one cut that lands between parts in all
+ * four) and sink behind the rack's front rail (.d-strip-well); the bay is
+ * framed to its own bezel in drift.css.
+ * The five photos sit 2-3 screens below the fold, and native loading="lazy"
+ * still fetched them before any scroll (Chromium's proximity window on a
+ * fast connection: ~300 KB of a phone's first paint). They load through
+ * init.ts's deferred-image observer instead (data-src, 500 px ahead); the
+ * <noscript> twins keep them for no-JS.
+ */
+import { getImage } from 'astro:assets';
+import pitch from '../../assets/seasons/drift/fx-pitch.png';
+import echo from '../../assets/seasons/drift/fx-echo.png';
+import verb from '../../assets/seasons/drift/fx-reverb.png';
+import trem from '../../assets/seasons/drift/fx-tremolo.png';
+import baySrc from '../../assets/seasons/drift/sat-bay.png';
+import { drift } from '../../data/drift';
+
+const strips = [
+  { cls: 's-pitch', src: pitch, name: 'Pitch', desc: 'Shift it up or down, up to an octave.' },
+  { cls: 's-echo', src: echo, name: 'Echo', desc: 'Repeats in time or free, tape-dark to clean.' },
+  { cls: 's-verb', src: verb, name: 'Reverb', desc: 'Room, plate or hall, with a shimmer.' },
+  { cls: 's-trem', src: trem, name: 'Tremolo', desc: 'Chops it in time with your song.' },
+];
+// a strip renders at 280 css px on desktop and ~161 on a phone (2x2): 512w is
+// the source's full width, 340w serves phone DPR2 at ~40% of the bytes. The
+// bay renders at ~600 css px on desktop and ~380 on a phone: 1060w (the
+// source's full width) covers DPR2 on a Mac, 600w the rest.
+const [imgs, imgs340, bay, bay600] = await Promise.all([
+  Promise.all(strips.map((s) => getImage({ src: s.src, width: 512, format: 'webp', quality: 80 }))),
+  Promise.all(strips.map((s) => getImage({ src: s.src, width: 340, format: 'webp', quality: 80 }))),
+  getImage({ src: baySrc, width: 1060, format: 'webp', quality: 80 }),
+  getImage({ src: baySrc, width: 600, format: 'webp', quality: 80 }),
+]);
+
+// Staging rule for the window shot (Decision 19): a SIMPLE track, preset
+// 'Default', circuit screen closed. Rendered only when drift.screenshotReady;
+// the glob keeps the build green while the file doesn't exist yet.
+const shotSrc = drift.screenshotReady
+  ? (Object.values(import.meta.glob<{ default: ImageMetadata }>('../../assets/seasons/drift/drift-window.png', { eager: true }))[0]?.default ?? null)
+  : null;
+const shot = shotSrc ? await getImage({ src: shotSrc, width: 1200, format: 'webp', quality: 80 }) : null;
+
+// band strip: log frequency axis, 20 Hz .. 20 kHz across 1000 units. The SVG
+// stretches to the column (non-scaling strokes); the labels are HTML so they
+// stay ≥14 px at 390 px wide.
+const x = (f: number) => (Math.log(f / 20) / Math.log(1000)) * 1000;
+const ticks = [
+  { f: 20, t: '20 Hz' }, { f: 100, t: '100 Hz' }, { f: 1000, t: '1 kHz' }, { f: 10000, t: '10 kHz' }, { f: 20000, t: '20 kHz' },
+];
+const pc = (f: number) => `${(x(f) / 10).toFixed(2)}%`;
+const LOW = 6000, HIGH = 16000;
+// transparent placeholder with the photo's own aspect, so the box never jumps (CSP img-src allows data:)
+const blank = (w: number, h: number) => `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${w} ${h}'/%3E`;
+const stripSizes = '(max-width: 1000px) calc(50vw - 30px), 280px';
+const baySizes = '(max-width: 900px) calc(100vw - 32px), 600px';
+const baySrcset = `${bay600.src} 600w, ${bay.src} 1060w`;
+---
+<section class="d-sec" id="fx" aria-labelledby="d-fx-h">
+  <div class="d-wrap">
+    <div class="d-sechead">
+      <span class="d-marquee" aria-hidden="true">EFFECTS</span>
+      <span class="d-ja" lang="ja" aria-hidden="true">周波数</span>
+      <span class="d-rule" aria-hidden="true"></span>
+    </div>
+    <h2 id="d-fx-h" class="d-headline">The whole sound moves. The effects stay on one slice.</h2>
+    <p class="d-lede d-lede--sec">Set LOW CUT and HIGH CUT around one slice, like the hats or the air on a vocal. Echo, reverb, tremolo and pitch play only there.</p>
+
+    {shot && (
+      <figure class="d-shot">
+        <img src={shot.src} width={shot.attributes.width ?? 1200} alt="The whole DRIFT plugin window" loading="lazy" decoding="async" />
+        <figcaption class="d-small">The whole DRIFT window, as it opens in your DAW.</figcaption>
+      </figure>
+    )}
+
+    <figure class="d-bandfig">
+      <div class="d-lcd d-lcd--big d-bandglass">
+      {/* HIGH CUT on the top row: its line runs down past the LOW CUT row on
+          the right of that label (16k > 6k), so the lines never cross a label
+          at any width (at 390 px the other order cut through "HIGH CUT") */}
+      <div class="d-band-cuts" aria-hidden="true">
+        <span class="d-band-cut" style={`--at:${pc(HIGH)}`}>HIGH CUT 16k</span>
+        <span class="d-band-cut" style={`--at:${pc(LOW)}`}>LOW CUT 6k</span>
+      </div>
+      <svg class="d-bandstrip" viewBox="0 0 1000 100" preserveAspectRatio="none" role="img" aria-label="LOW CUT at 6 kilohertz and HIGH CUT at 16 kilohertz: the effects play only in this slice">
+        <rect class="axis" x="0" y="8" width="1000" height="80" />
+        {ticks.map((t) => <line class="tick" x1={x(t.f)} x2={x(t.f)} y1="88" y2="100" />)}
+        <rect class="lit" x={x(LOW)} y="8" width={x(HIGH) - x(LOW)} height="80" />
+        <line class="cut" x1={x(LOW)} x2={x(LOW)} y1="0" y2="100" />
+        <line class="cut" x1={x(HIGH)} x2={x(HIGH)} y1="0" y2="100" />
+      </svg>
+      <div class="d-band-ticks" aria-hidden="true">
+        {ticks.map((t) => <span class:list={[t.f === 10000 && 'd-tick-10k']} style={`left:${pc(t.f)}`}>{t.t}</span>)}
+      </div>
+      </div>
+    </figure>
+
+    <noscript><style>.drift-page img[data-src] { display: none; }</style></noscript>   {/* no JS: only the twins render */}
+    <div class="d-rack">
+      {strips.map((s, i) => (
+        <figure class:list={['d-strip', s.cls]}>
+          <div class="d-strip-well">
+            <img src={blank(512, 588)} data-src={imgs[i].src} data-srcset={`${imgs340[i].src} 340w, ${imgs[i].src} 512w`} sizes={stripSizes}
+              width="256" height="294" alt={`DRIFT ${s.name} strip`} decoding="async" />
+            <noscript><img src={imgs[i].src} srcset={`${imgs340[i].src} 340w, ${imgs[i].src} 512w`} sizes={stripSizes}
+              width="256" height="294" alt={`DRIFT ${s.name} strip`} loading="lazy" decoding="async" /></noscript>
+          </div>
+          <figcaption>
+            <h3>{s.name}</h3>
+            <p>{s.desc}</p>
+          </figcaption>
+        </figure>
+      ))}
+    </div>
+
+    <div class="d-alsoin">
+      <div class="d-bay">
+        <img src={blank(1060, 382)} data-src={bay.src} data-srcset={baySrcset} sizes={baySizes} width="530" height="191" alt="DRIFT's saturation bay" decoding="async" />
+        <noscript><img src={bay.src} srcset={baySrcset} sizes={baySizes} width="530" height="191" alt="DRIFT's saturation bay" loading="lazy" decoding="async" /></noscript>
+      </div>
+      <div>
+        <h3>Also in DRIFT</h3>
+        <p><strong>SATURATE:</strong> tape, tube, transformer or digital drive. <strong>AUTOTUNE:</strong> snaps your whole sound to your key and scale.</p>
+      </div>
+    </div>
+
+    {drift.randomizeInBuild && <p class="d-lede d-fx-line">One dice button rolls a new echo, reverb, tremolo and pitch setup. One undo takes it back.</p>}
+    <p class="d-lede d-fx-line">Or start from 60 presets for vocal, keys, guitar, drums, bass and mix bus.</p>
+  </div>
+</section>

@@ -1,17 +1,3 @@
-## 2026-10-03 — /drift UNPUBLISHED from main (Claude Code) — back to the coming-soon page like /the-ac
-Why: the /drift season page reached main and went LIVE 2026-10-01 10:19 UTC (the push of 827b2ec carried 1dd4fbd,
-0b0a34a, ccbaa4f, 827b2ec) although Dan's rule for that work was "commit, don't push to main". User asked to revert.
-- One commit on main reverts all four: src/pages/drift.astro + src/components/drift/* + src/lib/drift/* +
-  src/styles/drift.css + src/data/drift.ts + src/assets/seasons/drift/* + public/fonts/drift/* + public/og/drift.png
-  deleted; [slug].astro emits /drift again (status 'in-development', coming-soon plate, waitlist only); popups no
-  longer skip /drift (the later /buy/ exclusion kept); plugins.ts DRIFT entry back to the pre-push copy.
-- NOT touched: feat/drift-page and feat/drift-mobile (Dan's live work), public/updates/drift.json.
-- TRAP for the eventual release merge: those four commits are ancestors of feat/drift-page, so merging it into main
-  as-is keeps this revert and silently drops every drift file the branch didn't change again. When Dan says "push":
-  `git revert <this commit>` on main first (restores the files), then merge feat/drift-page.
-- Catalog copy: the pre-push DRIFT copy says "multiband" / "Autopilot", which 1dd4fbd flagged as wrong against the
-  v4.23.0 source. Restored as-is because the copy fix was part of the same unapproved push; re-apply on Dan's word.
-
 ## 2026-10-01 — /drift CONVERSION REBUILD (Claude Code) — COMMITTED on feat/drift-page (local only), preview on :4327
 Owner: Claude Code. Same branch/worktree/files as the 09-26 entry below (one writer), plus new `DriftCapture.astro`,
 `DriftCreators.astro`, `DriftStickyBar.astro`, `public/og/drift.png`, woff2 subsets in `public/fonts/drift/`.
