@@ -28,12 +28,13 @@ export function initWheel(root: HTMLElement): void {
 
   // Phone (A5, Dan 10-04): the wheel is 2.15x the screen with the offer in its window. It is display
   // only (no drag, the page always scrolls) and the art sways at 20/135 of the angle, so the car still
-  // drives it but the spokes never sweep the form. The value (pan, ARIA) is unchanged.
+  // drives it but the spokes never sweep the form; capped at ±10° so the price printed on the rim
+  // never leaves the screen (the car's usual sway is ~±8°, untouched). The value (pan, ARIA) is unchanged.
   const phoneMq = matchMedia('(max-width: 600px)');   // one list, .matches read at event time (this runs every frame)
   const phone = () => phoneMq.matches;
-  const SWAY = 20 / 135;
+  const SWAY = 20 / 135, SWAY_MAX = 10;
   const spin = (deg: number) => {
-    if (phone()) deg *= SWAY;
+    if (phone()) deg = Math.max(-SWAY_MAX, Math.min(SWAY_MAX, deg * SWAY));
     ind.style.transform = `rotate(${deg}deg)`;
     if (wl && wlf) {
       wl.style.transform = `rotate(${deg}deg)`;

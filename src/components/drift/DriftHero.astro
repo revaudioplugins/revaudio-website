@@ -57,6 +57,17 @@ const cta = ctaFor();
 // the real price, and when it applies (nothing is on sale before release)
 // two set lines under the price: 'ETA' / 'Nov 1' (Dan 10-01, was 'At release')
 const priceLabel = drift.phase === 'released' ? ['Price'] : ['ETA', noDay(drift.releaseLabel)];
+// the rim's marker writing: a hand never sets two letters at the same angle or height. Deterministic jitter per
+// glyph (a tiny seeded LCG), so the page looks the same on every visit and the build stays reproducible.
+const hand = (txt: string, seed: number) => {
+  let x = seed * 9301 + 49297;
+  const rnd = () => ((x = (x * 9301 + 49297) % 233280) / 233280) * 2 - 1;
+  const n = [...txt].length;
+  return {
+    r: Array.from({ length: n }, () => (rnd() * 5).toFixed(1)).join(' '),
+    dy: Array.from({ length: n }, (_, i) => (i ? rnd() * 3 : 0).toFixed(1)).join(' '),
+  };
+};
 ---
 <section class="d-hero d-wrap" aria-labelledby="d-hero-title">
   <div class="d-hero-body">
@@ -84,6 +95,36 @@ const priceLabel = drift.phase === 'released' ? ['Price'] : ['ETA', noDay(drift.
           <img class="d-wheel-img" src={w700.src} srcset={`${w700.src} 700w, ${w1000.src} 1000w`} sizes="(max-width: 1099px) 86vw, 540px"
             width="540" height="540" alt="" fetchpriority="high" decoding="async" />
           <div class="d-wheel-mark" aria-hidden="true"><span class="dm">DRIFT</span><span class="kana" lang="ja">ドリフト</span></div>
+          {/* phone only (drift.css shows it ≤600): the price written on the rim in white paint marker (Dan 10-04),
+              either side of the 12 o'clock stripe, turning with the wheel: $69 left; ETA over NOV 1 right (one line
+              would leave the screen when the wheel sways right). Arcs on the rim's band (r 405..500 of 1000); the
+              real price stays in .d-hero-right (visually hidden on phones, read by screen readers). */}
+          {drift.showPrices && (
+            <svg class="d-wheel-print" viewBox="0 0 1000 1000" aria-hidden="true" focusable="false">
+              <defs>
+                <path id="d-print-l" d="M 66 500 A 434 434 0 0 1 934 500" />
+                <path id="d-print-r1" d="M 45 500 A 455 455 0 0 1 955 500" />
+                <path id="d-print-r2" d="M 85 500 A 415 415 0 0 1 915 500" />
+                {/* paint marker on suede, by hand and worn (Dan 10-04 "rough and faded, more human"): the edge wobbles,
+                    the pile eats specks of paint, and big soft patches fade where the marker ran dry or hands rubbed it */}
+                <filter id="d-marker" x="-10%" y="-30%" width="120%" height="160%">
+                  <feTurbulence type="fractalNoise" baseFrequency=".55" numOctaves="2" seed="7" result="n" />
+                  <feDisplacementMap in="SourceGraphic" in2="n" scale="3.6" xChannelSelector="R" yChannelSelector="G" result="d" />
+                  <feTurbulence type="fractalNoise" baseFrequency="1.6" numOctaves="2" seed="3" result="g" />
+                  <feColorMatrix in="g" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 -3 2.8" result="specks" />
+                  <feTurbulence type="fractalNoise" baseFrequency=".03" numOctaves="2" seed="11" result="f" />
+                  <feColorMatrix in="f" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1.1 .34" result="fade" />
+                  <feComposite in="specks" in2="fade" operator="arithmetic" k1="1" k2="0" k3="0" k4="0" result="wear" />
+                  <feComposite in="d" in2="wear" operator="in" />
+                </filter>
+              </defs>
+              <g filter="url(#d-marker)">
+                <text class="pv"><textPath href="#d-print-l" startOffset="47%" text-anchor="end"><tspan rotate={hand(`$${drift.listPriceUsd}`, 1).r} dy={hand(`$${drift.listPriceUsd}`, 1).dy}>${drift.listPriceUsd}</tspan></textPath></text>
+                <text class="pl1"><textPath href="#d-print-r1" startOffset="52.6%" text-anchor="start"><tspan rotate={hand(priceLabel[0], 2).r} dy={hand(priceLabel[0], 2).dy}>{priceLabel[0].toUpperCase()}</tspan></textPath></text>
+                {priceLabel[1] && <text class="pl2"><textPath href="#d-print-r2" startOffset="52.6%" text-anchor="start"><tspan rotate={hand(priceLabel[1], 3).r} dy={hand(priceLabel[1], 3).dy}>{priceLabel[1].toUpperCase()}</tspan></textPath></text>}
+              </g>
+            </svg>
+          )}
         </div>
         <div class="d-wlight" aria-hidden="true"><div class="d-wlfix"></div></div>
       </div>
