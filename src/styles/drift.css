@@ -1196,6 +1196,47 @@
   .d-chip svg { height: 40px; }
   .d-chip-name { font-size: 17px; letter-spacing: 0; }
 }
+/* fit (Dan 10-04): "make it in the size of a laptop page" - the whole panel shows under the nav at every laptop size.
+   One height knob --t: 0px at <=636 px tall (Dan's MacBook in Safari at 115%) .. 1px at >=936 px tall (the 10-03 look);
+   every height-bearing size is compact + delta * --t, so the panel follows the window HEIGHT with no jumps.
+   The panel is a container: cqw = its content box, so the GPS and the head never grow past today's width-driven size. */
+@media (min-width: 1001px) {
+  #drive .d-drive-panel {
+    --t: calc(clamp(0px, 100vh - 636px, 300px) / 300);
+    --gps: min(calc(239px + 165 * var(--t)), calc((100cqw - clamp(22px, 3vw, 40px)) * .5772 - 184px));   /* height fit | the 10-03 width formula (457:624 split, minus 2x(80+12) for the faders) */
+    container-type: inline-size;
+    padding: calc(56px + 14 * var(--t)) 80px calc(68px + 12 * var(--t));   /* air top < bottom, as 10-03; the sides keep the 10-03 80 px: the CRT's 8 px steel ring sits outside its box, at 72 it touched the face's rounded corner (fixer 10-04); the 129 px bezel + the carbon face insets never change */
+  }
+  #drive.d-sec { scroll-margin-top: -32px; }   /* landing on /drift/#drive: html's scroll-padding (nav + .75rem) + the frozen 26 px section pad put the panel 41 px under the nav, 14 px off the bottom at 1141x636; -32 lands the whole panel 9 px under the nav at every laptop size (verifier 10-04; -33 gave < 8) */
+  #drive .d-drive-panel h2.d-headline--row { font-size: min(calc(36px + 16 * var(--t)), 4.9cqw); margin-bottom: calc(18px + 8 * var(--t)); }   /* one row with >= 12% spare even in Dan's Safari (Oswald ~4% wider): 36 px at 1141 (15.7% spare in WebKit, +1.9 px panel height), 52 from 936 tall up = the 10-03 size */
+  /* the rig's width comes from the GPS; the tracks screen takes the rest and stretches to the rig's height */
+  #drive .d-tracks { grid-template-columns: minmax(0, 1fr) auto; }
+  #drive .d-gps-col { width: auto; max-width: none; }
+  #drive .d-gps { width: var(--gps); }   /* the 402:448 aspect-ratio + the %-placed caps, LCD and glass follow */
+  #drive .d-gps-lcd span { font-size: clamp(11px, calc(var(--gps) * .046), 14px); }   /* the LCD text follows its plate, never the window width */
+  #drive .d-cap::before { inset: 50% auto auto 50%; width: max(calc(100% + 8px), 38px); aspect-ratio: 1; translate: -50% -50%; }   /* the 10-03 hit area (cap + 4 px a side), never under 38 px on a smaller plate */
+  /* faders: the graffiti art scales with the GPS (one part); both pictures one height so the slots sit level */
+  #drive .d-fad { gap: calc(4px + 2 * var(--t)); }
+  #drive .d-fad-pic { width: auto; height: calc(64px + 4 * var(--t)); }
+  #drive .d-fad-title { height: calc(20px + 2 * var(--t)); }
+  #drive .d-fad-slot { margin: calc(12px + 2 * var(--t)) 0; min-height: 90px; }   /* >= half the thumb clear of the end words */
+  /* readouts: three screens, one height, level under the rig */
+  #drive .d-rig-base { margin-top: calc(12px + 6 * var(--t)); }
+  #drive .d-vs, #drive .d-rig-base .d-balance-box { height: calc(80px + 34 * var(--t)); }
+  #drive .d-rig-base .d-balance-box { grid-template-rows: auto minmax(0, 1fr); padding: calc(8px + 6 * var(--t)) 16px calc(8px + 4 * var(--t)); gap: calc(6px + 4 * var(--t)); }
+  #drive .d-balance { height: auto; min-height: 20px; }
+  #drive .d-balance-read { font-size: calc(24px + 6 * var(--t)); }
+  #drive .d-spd-note { font-size: calc(11px + 1 * var(--t)); }
+  /* the tracks screen: 2x4 chips fill their rows (even air, no dead band under each chip) */
+  #drive .d-attract { padding: calc(14px + 8 * var(--t)) calc(16px + 8 * var(--t)) calc(16px + 10 * var(--t)); }   /* inner sides 16 at t=0: with the 80 px panel sides the chips fine print keeps one line in Safari's wider Oswald (10 px spare at 1141); 24 at t=1 */
+  #drive .d-attract-panel { margin-bottom: calc(8px - 8 * var(--t)); }   /* the CRT ends 8 px higher at small heights: its steel ring level with the bottom of LOCKED TO BARS and ~10 px clear of the face's rounded corner (it touched at 1141); 0 at t=1 = the 10-03 look */
+  #drive .d-attract-hdr { padding-bottom: calc(9px + 5 * var(--t)); margin-bottom: calc(11px + 7 * var(--t)); }
+  #drive .d-attract .d-cards { gap: calc(8px + 2 * var(--t)); }
+  #drive .d-attract .d-cards > li { display: flex; }
+  #drive .d-attract .d-chip { flex: 1; padding: calc(5px + 3 * var(--t)) 8px calc(6px + 3 * var(--t)); gap: calc(2px + 2 * var(--t)); }
+  #drive .d-attract .d-chip svg { flex: 1 1 0; height: auto; min-height: 32px; max-height: 56px; }   /* under 32 px the 2 px outlines stop reading as circuits */
+  #drive .d-chips-note { margin-top: calc(8px + 6 * var(--t)); font-size: calc(11px + 1 * var(--t)); }   /* 11 px keeps it one line at 1141 even in Safari's wider Oswald */
+}
 
 /* ==========================================================================
    SECTION 3 — EFFECTS (#fx)
