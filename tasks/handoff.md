@@ -1,3 +1,45 @@
+## 2026-10-04 — /drift FINISHED from #fx down (Claude Code team) — COMMITTED LOCAL on feat/drift-page (9061a74, 9d5617c, 4d203bf), NOT pushed, dev :4328
+Owner: Claude Code (Dan's session). Same branch/worktree as the entries below (one writer). Main untouched, nothing live.
+Why: Dan 10-03 "make a team of ui/ux, sales copywriter, brand to finish the page with the same style we made so far. end it"
++ "the work is only from EFFECTS downward, nothing else gets touched". #get = slim closer (orchestrator's pick, Dan didn't object).
+How: Workflow wf_e1a29e29-065 (designer + copywriter Opus, brand Sonnet -> Fable art director spec -> 2 Opus builder lanes ->
+Sonnet verifier -> Fable fixer) + one Fable polish pass after the orchestrator's review.
+- #fx (9061a74): plate S1 chassis like #drive (vector twill face, 周波数 sticker, no new asset); one-row head "WHOLE SOUND PANS.
+  FX ON ONE SLICE."; band glass lights "FX PLAY HERE" between the cuts (one phosphor flicker on first view, off under reduced
+  motion); 4 real strips; bay + "Also under the hood" spec rows. Old ▶EFFECTS kicker head, catch line and strip hover removed.
+- #get (9d5617c): the hero's trial console twin (trial-plate.png 3-sliced >=1001; CSS panel + 試乗 below). Left: "Runs on your
+  setup. / 14 days free." (phase-aware) + MAC/WIN compat + Specs/DAWs folds as tabs; right: DriftCapture (id now get-capture).
+  #try = the whole console (.d-getin), so the phone sticky bar's jump shows head + compat + field. Field fits its placeholder >=1001.
+- #creators (4d203bf): NEW dashcam bezel dashcam-bezel-2.png (tools/gen-drift-dashcam-bezel.sh, gpt-image-1 text-only, roll 2
+  of 2, ~$0.50) + live livery (配信 lamp, ON AIR, SPEED SOUNDS BETTER, viewfinder brackets). Dan's head one row (phones: STREAM
+  IT. / GET DRIFT FREE.), steps + VIDEO CHECK readout, violet Apply + DRIFT BETA note in caps (address lowercase). The maker line
+  moved here under a finish-flag checker strip: the page ends on it.
+Verified: scope gate + upper gate PASS (node_modules/.cache/drift-qa/scope-gate.mjs, upper-gate.mjs: hero + #drive + TV
+pixel-identical to dc20ae7 under reduced motion at 1312 + 390); astro build clean; no overflow 360-1728; mocked /form-once POST
+{form:newsletter, source:drift-trial} + status + nudge; phone jump lands head at 142 px.
+Trap: drift.css SECTION 4 (#get) also holds the FORM BASE rules the hero + TV forms use (.d-field*, .d-hp, .d-capture-status*,
+.d-capture-next): never rewrite them as #get-only.
+Open: Dan's walk of the three sections; dashcam roll 1 vs 2 (roll-1 shot only in the session scratchpad); real phone + WebKit
+desktop unchecked; design hook flags .d-band-cut border-right (the cut marker line, intentional, left); feat/drift-mobile unmerged.
+Push/merge to main = live: only on Dan's explicit word (pull first).
+
+## 2026-10-03 — /drift section walk, laptop only (Claude Code, Dan leads) — PUSHED to origin/feat/drift-page (dc20ae7), dev :4328
+Owner: Claude Code (Dan's session). Same branch/worktree as the entries below (one writer). Main untouched, nothing live.
+Why: Dan walks /drift section by section and leads each change; laptop only (1312x740), phones NOT checked.
+- #drive (b12f776..cae94e0): 8 iconic circuits, real plugin outlines, COUNTRY names only (never circuit/F1 names);
+  head one row "PICK A TRACK. DRIVE YOUR SOUND AROUND."; INTENSITY + SPEED plugin faders either side of the GPS (layout B,
+  live braking: DriftFader.astro, lib/drift/faders.ts, circuits.ts); whole section on AI plate S1 (vector twill face);
+  inner panels + catch lines removed (AUTO DRIFT now only on the store card).
+- Keep-it (c7ebadc..dc20ae7): a TV in the plugin's CRT cabinet (tv-frame-3.png, livery as live type, bent tube); the
+  free-trial email gate on the screen (same /form-once contract as the hero, mock-tested only); "TRY IT FREE FOR 14 DAYS."
+  red; then THE ROAD TO NOV 1 (drift.ts lapFor): START Oct 10 / CHECKPOINT Oct 24 / FINISH Nov 1 with $0 / $39 / $69
+  chips, the video as a SHORTCUT lane over the lap, the GPS car driving it in view (init.ts initLap). 'closed' keeps the boxes.
+Verified: production build clean; 1312 DPR2 screenshots; car on the nodes; lap pauses off screen.
+Open: PHONE — the lap's SHORTCUT sign is 388 px inside a 244 px screen at 390 (no <900 layout yet); #drive faders/plate and
+the TV unchecked on phones; feat/drift-mobile (phone pass off 10cb0e8) not merged in. Page has 3 trial forms (Dan's call on
+#get). Plugin should ship the bacinger/f1-circuits MIT notice (Yoni/Gil). Next in the walk: #fx, #get, #creators.
+Push/merge to main = live: only on Dan's explicit word (pull first).
+
 ## 2026-10-02 — /drift: THE HERO'S LAW BELOW THE HERO (Claude Code, Fable orchestrator) — COMMITTED on feat/drift-page (local), dev :4328
 Owner: Claude Code (Dan's session). Same branch/worktree as the entries below (one writer).
 Why: Dan on 10-01, after the hero pass (3d37174): "fonts and layout, minimize with the catch phrases, really this is what I
