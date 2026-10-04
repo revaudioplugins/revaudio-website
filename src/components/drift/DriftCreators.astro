@@ -1,65 +1,80 @@
 ---
 /**
  * Section 5 — ON AIR (#creators), route 1 of the offer in full and the
- * landing spot for the streamer reel (/drift#creators). The page ends on this
- * CTA. The 配信 lamp is the block's one lamp and one kana: lit while
- * drift.creatorDealOpen, so it reports the deal's state, not decoration.
+ * landing spot for the streamer reel (/drift#creators). The page ends here.
+ * The object (2026-10-03 finish): the car's dashcam monitor, ON AIR. A blank AI
+ * bezel (dashcam-bezel-2.png, tools/gen-drift-dashcam-bezel.sh roll 2 of 2)
+ * 9-sliced around a flat near-black LCD face (no scanlines: never a second TV),
+ * viewfinder L-brackets in the screen corners; the livery is live type on the
+ * bezel: the 配信 tally lamp + ON AIR top left (lit while drift.creatorDealOpen,
+ * so it reports the deal's state; it holds steady), stripes + SPEED SOUNDS
+ * BETTER top right. Head, steps, VIDEO CHECK, Apply and the fine print all sit
+ * on the glass. Phones: the CSS DriftPanel (screws, no checker), the lamp group
+ * in the checker's slot. After the plate: the finish line + the maker line.
  * Deal facts (Dan, 2026-09-30): apply at /affiliate and write DRIFT BETA in
  * the "Why do you want to promote RevAudio?" box (affiliate.astro's textarea
  * label); a public video, at least 2 minutes, up at least 30 days, tagged
  * @revaudioplugins, marked as an ad; then a free licence + a 20% affiliate
  * link. The button is violet, never race-red (one red per viewport), and the
- * DRIFT BETA reminder sits right under it: the last line read before leaving.
- * The steps get a VIDEO CHECK dash readout (the video's checks as LCD rows on
- * sunk glass with lit LEDs): beside them from 1000 px, a compact two-column
- * strip between step 4 and the button below that, so the reel's phone
- * landing spot shows DRIFT chrome too, not four numerals and an outlined
- * button (brand review 10-01, rounds 1 and 2). The Apply link is a violet
- * keycap (.d-btn-violet): DRIFT's key chrome in the violet family.
+ * DRIFT BETA reminder sits right beside it: the last line read before leaving.
+ * Motion, one cue: the VIDEO CHECK rows light top to bottom once on first view.
  */
+import { getImage } from 'astro:assets';
 import { drift } from '../../data/drift';
 import DriftPanel from './DriftPanel.astro';
----
-<section class="d-sec d-creators" id="creators" data-drift-cta-zone aria-labelledby="d-cr-h">
-  <div class="d-wrap">
-    <div class="d-sechead">
-      <span class="d-marquee" aria-hidden="true">ON AIR</span>
-      <span class:list={['d-onair', { on: drift.creatorDealOpen }]} lang="ja" aria-hidden="true">配信</span>
-      <span class="d-rule" aria-hidden="true"></span>
-    </div>
-    <h2 id="d-cr-h" class="d-headline"><span class="l1">Stream it.</span> <span class="l2">Get DRIFT free.</span></h2>
-    <p class="d-catch">Film a session with DRIFT. <span class="d-nw">Post it.</span> <em>Anyone on the trial</em> can.</p>
+import bezelSrc from '../../assets/seasons/drift/dashcam-bezel-2.png';
 
-    <div class="d-cr-grid">
-      <DriftPanel checker={false} class="d-cr-panel">
+const bezel = await getImage({ src: bezelSrc, width: 2088, format: 'webp', quality: 86 });
+---
+<section class="d-sec d-creators" id="creators" data-drift-cta-zone aria-labelledby="d-cr-h" style={`--d-img-dashcam:url(${bezel.src})`}>
+  <div class="d-wrap">
+    <DriftPanel checker={false} class="d-cam-panel">
+      <span class="d-cam-ink d-cam-tl" aria-hidden="true"><i class:list={['d-onair', { on: drift.creatorDealOpen }]}></i><b class="d-ja" lang="ja">配信</b><span class="d-cam-pix">On air</span></span>
+      <span class="d-cam-ink d-cam-tr" aria-hidden="true"><i class="d-cam-stripes"></i>Speed sounds better</span>
+      <span class="d-cam-vf d-cam-vf--a" aria-hidden="true"></span><span class="d-cam-vf d-cam-vf--b" aria-hidden="true"></span>
+      <h2 id="d-cr-h" class="d-headline d-headline--row"><span class="l1">Stream it.</span> <span class="l2">Get DRIFT free.</span></h2>
+      <div class="d-cr-grid">
         <ol class="d-steps-cr" role="list">
           <li>Apply at <a class="d-cr-typed" href="/affiliate">revaudio.net/affiliate</a>.</li>
-          <li>We email you the beta download.</li>
-          <li>Post your DRIFT video{drift.videoDeadlineLabel && `, posted by ${drift.videoDeadlineLabel}`}. It must pass the video check.</li>
-          <li>Tag seen: your free licence, plus your own affiliate link paying 20% of every sale.</li>
+          <li>We email you the beta.</li>
+          <li>Post your DRIFT video{drift.videoDeadlineLabel && ` by ${drift.videoDeadlineLabel}`}. It must pass the video check.</li>
+          <li>Check passed: your free licence. Plus your own affiliate link, 20% of every sale.</li>
         </ol>
-      </DriftPanel>
-
-      <!-- VIDEO CHECK: the video's rules as a dash readout, the one place they
-           are listed (step 3 points here), so it is read by AT too; the LEDs are
-           lit lamps. Grid-placed: right column from 1000 px, between the steps
-           and the button below. -->
-      <div class="d-lcd d-lcd--big d-cr-checks">
-        <span class="d-cr-checks-hdr">▶ VIDEO CHECK</span>
-        <ul>
-          <li>PUBLIC</li>
-          <li>2 MIN OR MORE</li>
-          <li>UP 30 DAYS OR MORE</li>
-          <li>TAGGED @REVAUDIOPLUGINS</li>
-          <li>MARKED AD / AFFILIATE</li>
-        </ul>
+        <!-- VIDEO CHECK: the video's rules as the screen's readout, the one place they
+             are listed (step 3 points here), so it is read by AT too; the LEDs are lit lamps -->
+        <div class="d-cr-checks">
+          <span class="d-cr-checks-hdr">▶ VIDEO CHECK</span>
+          <ul>
+            <li style="--i:0">PUBLIC</li>
+            <li style="--i:1">2 MIN OR MORE</li>
+            <li style="--i:2">UP 30 DAYS OR MORE</li>
+            <li style="--i:3">TAGGED @REVAUDIOPLUGINS</li>
+            <li style="--i:4">MARKED AD / AFFILIATE</li>
+          </ul>
+        </div>
+        <div class="d-cr-cta" data-drift-fab-watch>
+          <a class="d-btn-violet" href="/affiliate">Apply as a creator <span class="d-stamp-arrow" aria-hidden="true">&#9656;</span></a>
+          <p class="d-btn-note">Write <strong>DRIFT BETA</strong> in the “Why do you want to promote RevAudio?” box.</p>
+          <p class="d-fine d-cr-mail">Already an affiliate? Email <a href="mailto:info@revaudio.net?subject=DRIFT%20BETA">info@revaudio.net</a>, subject DRIFT BETA.</p>
+        </div>
       </div>
-
-      <div class="d-cr-cta" data-drift-fab-watch>
-        <a class="d-btn-violet" href="/affiliate">Apply as a creator <span class="d-stamp-arrow" aria-hidden="true">&#9656;</span></a>
-        <p class="d-btn-note">Write <strong>DRIFT BETA</strong> in the “Why do you want to promote RevAudio?” box.</p>
-        <p class="d-fine d-cr-mail">Already an affiliate? Email <a href="mailto:info@revaudio.net?subject=DRIFT%20BETA">info@revaudio.net</a>, subject DRIFT BETA.</p>
-      </div>
-    </div>
+    </DriftPanel>
+    <div class="d-finish" aria-hidden="true"></div>
+    <p class="d-fine d-maker">From RevAudio, makers of RevLimiter.</p>
   </div>
 </section>
+
+<script>
+  // the VIDEO CHECK rows light top to bottom once, on first view (rest = lit; no IO -> nothing happens)
+  const checks = document.querySelector<HTMLElement>('#creators .d-cr-checks');
+  if (checks && 'IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (!e.isIntersecting) continue;
+        (e.target as HTMLElement).dataset.lit = '';
+        io.unobserve(e.target);
+      }
+    }, { threshold: 0.4 });
+    io.observe(checks);
+  }
+</script>

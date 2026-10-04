@@ -1474,57 +1474,109 @@ html.hc #get .d-get-head span { text-shadow: none; }
 /* ==========================================================================
    SECTION 5 — ON AIR (#creators): the free route, the page's last CTA
    ========================================================================== */
-/* 配信 = the block's one lamp: off = a dark tube, .on = lit while the deal is open */
-.d-onair {
-  align-self: center;
-  padding: 3px 10px 4px; border-radius: 999px;
-  font: 700 13px/1.2 var(--d-f-ja); letter-spacing: .2em;
-  color: rgba(180, 107, 255, .55);
-  border: 1px solid rgba(180, 107, 255, .25);
+/* 2026-10-03 finish: the car's dashcam monitor, ON AIR. A blank AI bezel (dashcam-bezel-2.png,
+   tools/gen-drift-dashcam-bezel.sh roll 2 of 2: cropped 1044 x 680, 2x Lanczos + unsharp = 2088 x 1360, bezel
+   runs smoothed along their length, screen flattened), 9-sliced at .2 css per file px: slice 330 holds the
+   screw AND the trim's corner curve. Measured glass edge (file px): top 236, right 308, bottom 240, left 312
+   -> css 47 / 62 / 48 / 62 (--cam-t/r/b/l). Over it: a flat near-black LCD face (::before, NO scanlines:
+   never a second TV), viewfinder L-brackets in the screen corners, and the livery as live type on the
+   bezel: the 配信 tally lamp + ON AIR top left, stripes + SPEED SOUNDS BETTER top right (printed ink, matte).
+   No filter on the plate (a box-shadow follows its corner). Phones: the CSS DriftPanel (screws, no checker)
+   with the lamp group in the checker's slot. */
+.d-cam-panel { --cam-t: 47px; --cam-r: 62px; --cam-b: 48px; --cam-l: 62px; }
+.drift-page .d-cam-panel { padding: 48px 22px 40px; }
+#creators .d-cam-panel > .d-sticker { display: none; }
+.d-cam-ink {
+  position: absolute; z-index: 2; pointer-events: none; display: flex; align-items: center; gap: 8px;
+  font: 700 11px/1 var(--d-f-head); letter-spacing: .14em; text-transform: uppercase; color: #9b6fd0; white-space: nowrap;
 }
+.d-cam-tl { left: 44px; top: 12px; }
+.d-cam-tl .d-ja { font: 700 13px/1 var(--d-f-ja); letter-spacing: .2em; color: rgba(180, 107, 255, .55); }
+.d-cam-pix { font: 400 9px/1 var(--d-f-pix); letter-spacing: .1em; color: #c98bff; }
+.d-cam-stripes { width: 70px; height: 10px; transform: skewX(-30deg); background: repeating-linear-gradient(90deg, #8a2be2 0 6px, transparent 6px 11px); opacity: .85; }
+.d-cam-tr, .d-cam-vf { display: none; }
+/* 配信 = the camera's tally lamp: off = a dark bulb, .on = lit while the deal is open (steady, no blink) */
+.d-onair { flex: none; width: 10px; height: 10px; border-radius: 50%; background: #2a1636; box-shadow: inset 0 0 0 1px rgba(180, 107, 255, .3); }
 .d-onair.on {
-  color: var(--d-white-ink);
-  border-color: var(--d-hot);
-  background: rgba(224, 64, 200, .22);
-  box-shadow: 0 0 10px rgba(247, 105, 224, .6), inset 0 0 8px rgba(247, 105, 224, .4);
-  text-shadow: 0 0 6px rgba(247, 105, 224, .9);
+  background: radial-gradient(circle at 40% 35%, #fff0ff, var(--d-hot) 55%, #8a1f7a);
+  box-shadow: 0 0 8px rgba(247, 105, 224, .8), 0 0 0 1px rgba(4, 2, 8, .9);
 }
-/* The VIDEO CHECK readout (a sunk-glass dash screen listing step 3's checks
-   as LCD rows with lit LEDs) keeps DRIFT chrome in the reel's landing spot at
-   every width: ≥1000 a column beside the steps; below, a compact strip
-   between step 4 and the button, its rows flowing two or three to a line. */
-.d-cr-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px clamp(28px, 4vw, 56px); align-items: stretch; }
-.d-cr-checks { display: grid; gap: 8px; padding: 12px 16px 12px; }
-@media (min-width: 1000px) {
-  .d-cr-grid { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); }
-  .d-cr-panel, .d-cr-cta { grid-column: 1; }
-  .d-cr-checks { grid-column: 2; grid-row: 1; gap: 12px; padding: 18px 22px 20px; margin-top: 0; }
+.d-onair.on ~ .d-ja { color: var(--d-white-ink); text-shadow: 0 0 6px rgba(247, 105, 224, .9); }
+@media (min-width: 1001px) {
+  .drift-page .d-cam-panel {
+    background: none; border: 0 solid transparent;
+    border-image: var(--d-img-dashcam) 330 fill / 66px stretch;
+    border-radius: 28px;   /* = the housing's outer corner (~140 file px at .2), so the shadow follows the plastic */
+    box-shadow: 0 12px 22px rgba(0, 0, 0, .55), 0 0 40px 10px rgba(190, 90, 255, .08);
+    isolation: isolate;   /* the LCD ::before (z -1) paints over the plate, under the content */
+    padding: calc(var(--cam-t) + 20px) calc(var(--cam-r) + 22px) calc(var(--cam-b) + 22px) calc(var(--cam-l) + 22px);
+  }
+  .d-cam-panel > .d-screw { display: none; }   /* the plate bakes its own */
+  .d-cam-panel::before {
+    content: ''; position: absolute; inset: var(--cam-t) var(--cam-r) var(--cam-b) var(--cam-l); z-index: -1;
+    border-radius: 10px; pointer-events: none;
+    background: linear-gradient(158deg, rgba(255, 255, 255, .06) 0%, rgba(255, 255, 255, .015) 22%, transparent 42%), #08060c;
+    box-shadow: inset 0 0 0 1px #000, inset 0 0 0 2px rgba(255, 240, 255, .05), inset 0 10px 24px rgba(0, 0, 0, .6);
+  }
+  .d-cam-vf { display: block; position: absolute; inset: calc(var(--cam-t) + 12px) calc(var(--cam-r) + 12px) calc(var(--cam-b) + 12px) calc(var(--cam-l) + 12px); pointer-events: none; }
+  .d-cam-vf::before, .d-cam-vf::after { content: ''; position: absolute; width: 22px; height: 22px; border: 0 solid rgba(210, 60, 255, .5); }
+  .d-cam-vf--a::before { left: 0; top: 0; border-width: 2px 0 0 2px; }
+  .d-cam-vf--a::after { right: 0; bottom: 0; border-width: 0 2px 2px 0; }
+  .d-cam-vf--b::before { right: 0; top: 0; border-width: 2px 2px 0 0; }
+  .d-cam-vf--b::after { left: 0; bottom: 0; border-width: 0 0 2px 2px; }
+  .d-cam-tl { left: 64px; top: calc(var(--cam-t) / 2); translate: 0 -50%; }
+  .d-cam-tr { display: flex; right: 64px; top: calc(var(--cam-t) / 2); translate: 0 -50%; }
 }
-.d-cr-checks-hdr { font: 400 17px/1 var(--d-f-lcd); letter-spacing: .12em; color: var(--d-lcd-hdr); text-shadow: 0 0 3px rgba(240, 70, 235, .6); }
+/* the head: Dan's words, one row on the glass from 1001 (52 px at 1312), 2 lines centred on phones */
+#creators h2.d-headline--row { font-size: clamp(36px, 4vw, 52px); margin: 0 0 16px; }
+@media (min-width: 1001px) { #creators h2.d-headline--row { margin-bottom: 26px; } }
+/* phones: STREAM IT. / GET DRIFT FREE., one phrase per line (the inline flow stranded the neon GET on line 1 at 390; fix2 10-03) */
+@media (max-width: 600px) { #creators h2.d-headline--row .l1, #creators h2.d-headline--row .l2 { display: block; } }
+html.hc #creators .d-headline span, html.hc #creators .d-cr-checks li, html.hc #creators .d-onair ~ .d-ja { text-shadow: none; }
+/* steps | VIDEO CHECK on one row, the Apply row under both; one column on phones (steps, checks, Apply) */
+.d-cr-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; }
+.d-cr-checks { display: grid; gap: 8px; align-content: start; background: none; box-shadow: none; padding: 0; }
+@media (min-width: 1001px) {
+  .d-cr-grid { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 24px 40px; }
+  .d-steps-cr { grid-column: 1; grid-row: 1; }
+  .d-cr-checks { grid-column: 2; grid-row: 1; gap: 10px; }
+}
+/* the VIDEO CHECK readout: lit print straight on the LCD (no glass box): Press Start kicker, VT323 rows + LEDs */
+.d-cr-checks-hdr { font: 400 10px/1.4 var(--d-f-pix); letter-spacing: .12em; color: var(--d-lcd-hdr); text-shadow: 0 0 3px rgba(240, 70, 235, .6); }
 .d-cr-checks ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
-@media (min-width: 1000px) { .d-cr-checks ul { display: grid; gap: 8px; } }
 .d-cr-checks li {
   display: flex; align-items: center; gap: 10px;
-  font: 400 19px/1.1 var(--d-f-lcd); letter-spacing: .05em; color: var(--d-lcd);
+  font: 400 17px/1.1 var(--d-f-lcd); letter-spacing: .05em; color: var(--d-lcd);
   text-shadow: 0 0 5px rgba(242, 76, 240, .7);
   white-space: nowrap;
 }
-@media (min-width: 1000px) { .d-cr-checks li { font-size: 24px; gap: 14px; } }
-/* the LED: a lit lamp, the block's only glow besides the ON AIR tube */
+@media (min-width: 1001px) { .d-cr-checks ul { gap: 10px; } .d-cr-checks li { font-size: 22px; } }
+/* the LED: a lit lamp, the block's only glow besides the tally lamp */
 .d-cr-checks li::before {
-  content: ''; flex: none; width: 10px; height: 10px; border-radius: 50%;
+  content: ''; flex: none; width: 9px; height: 9px; border-radius: 50%;
   background: radial-gradient(circle at 40% 35%, #fff0ff, var(--d-hot) 55%, #8a1f7a);
   box-shadow: 0 0 6px rgba(247, 105, 224, .8), 0 0 0 1px rgba(4, 2, 8, .9);
 }
-.d-steps-cr { list-style: none; counter-reset: cr; margin: 0; padding: 0; display: grid; gap: 16px; max-width: 64ch; }
-.d-steps-cr li { counter-increment: cr; position: relative; min-height: 32px; padding-left: 52px; font: 500 17px/1.4 var(--d-f-head); text-transform: uppercase; letter-spacing: .03em; color: var(--d-fg); }
-@media (max-width: 600px) { .d-steps-cr li { font-size: 15px; padding-left: 44px; } }
+/* motion, one cue: on first view the rows + LEDs light top to bottom once (rest = lit: no pre-dim) */
+.d-cr-checks[data-lit] li { animation: d-cr-light 260ms steps(2, end) backwards; animation-delay: calc(var(--i) * 90ms); }
+@keyframes d-cr-light { from { opacity: .12; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { #creators .d-cr-checks li { animation: none; } }
+.d-steps-cr { list-style: none; counter-reset: cr; margin: 0; padding: 0; display: grid; gap: 12px; align-content: start; }
+@media (min-width: 1001px) { .d-steps-cr { gap: 14px; } }
+.d-steps-cr li { counter-increment: cr; position: relative; min-height: 28px; padding-left: 44px; font: 500 15px/1.35 var(--d-f-head); text-transform: uppercase; letter-spacing: .03em; color: var(--d-fg); }
+@media (min-width: 1001px) { .d-steps-cr li { padding-left: 48px; font-size: 16px; } }
 .d-steps-cr li::before {
   content: counter(cr); position: absolute; left: 0; top: -2px;
-  font: 600 32px/1 var(--d-f-badge); color: var(--d-fg-neon);
+  font: 600 28px/1 var(--d-f-badge); color: var(--d-fg-neon);
 }
 .d-steps-cr strong, .d-btn-note strong { color: var(--d-white-ink); font-weight: 700; }
-.d-cr-cta { display: grid; gap: 10px; justify-items: start; }
+.d-cr-cta { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; justify-items: stretch; }
+@media (min-width: 1001px) {
+  .d-cr-cta { grid-column: 1 / -1; grid-row: 2; grid-template-columns: auto minmax(0, 1fr); gap: 6px 22px; align-items: center; justify-items: start; }
+  .d-cr-cta .d-btn-violet { grid-column: 1; grid-row: 1; }   /* the note reads level with the key; the mail line tucks under the note */
+  .drift-page .d-cr-cta .d-btn-note { grid-column: 2; grid-row: 1; }
+  .drift-page .d-cr-cta .d-cr-mail { grid-column: 2; grid-row: 2; }
+}
 /* the Apply key: a violet keycap (DRIFT's key chrome, never race-red): a lit
    face over a dark skirt, and :active presses it 3 px into the panel */
 .d-btn-violet {
@@ -1555,17 +1607,16 @@ html.hc #get .d-get-head span { text-shadow: none; }
     0 2px 6px rgba(0, 0, 0, .5);
 }
 .drift-page .d-btn-note { font: 500 14px/1.4 var(--d-f-head); text-transform: uppercase; letter-spacing: .04em; color: var(--d-fg); }
-/* the address, the path and the quoted box label read as typed (Oswald, no caps transform: /affiliate is case-sensitive);
-   the links pad to a 44 px tap target */
-.drift-page .d-cr-mail { text-transform: none; }
-#creators .d-catch .d-nw { white-space: nowrap; }   /* 'Post it.' stays on one line on a phone */
+/* the page law: Oswald caps for every spoken line, fine print included (the DRIFT BETA note + the mail line inherit
+   .d-btn-note's / .d-fine's uppercase; fix2 10-03). Only the address and the path read as typed: info@revaudio.net
+   must look like an address, /affiliate is case-sensitive. The links pad to a 44 px tap target */
 .d-creators .d-cr-typed { text-transform: none; }
-.d-creators .d-btn-note { text-transform: none; }
 .d-creators .d-steps-cr a { color: var(--d-fg-neon); text-decoration: underline; text-underline-offset: 3px; display: inline-block; padding: 12px 0; margin: -12px 0; }
-.d-creators .d-cr-mail a { color: var(--d-fg-neon); text-decoration: underline; text-underline-offset: 3px; display: inline-block; padding: 14px 0; margin: -14px 0; }
-@media (max-width: 900px) {
-  .d-cr-cta { justify-items: stretch; }
-}
+.d-creators .d-cr-mail a { text-transform: none; color: var(--d-fg-neon); text-decoration: underline; text-underline-offset: 3px; display: inline-block; padding: 14px 0; margin: -14px 0; }
+/* THE PAGE END: a finish-flag strip (the TV lap's pattern in the TV checker's violet) + the maker line;
+   .drift-page's bottom padding then hands off to the house footer */
+.d-finish { height: 10px; margin-top: 40px; opacity: .5; background: repeating-conic-gradient(#6c22b8 0 25%, #0b0612 0 50%) 0 0 / 20px 20px; }
+.drift-page #creators .d-maker { margin: 12px 0 0; max-width: none; text-align: center; font: 500 11px/1.4 var(--d-f-head); text-transform: uppercase; letter-spacing: .08em; color: var(--d-fg-dim); }
 
 /* ==========================================================================
    Reduced motion + high contrast
