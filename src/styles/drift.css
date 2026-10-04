@@ -1501,6 +1501,33 @@
     letter-spacing: .05em; text-transform: uppercase; color: var(--d-lcd); text-shadow: 0 0 5px rgba(242, 76, 240, .6); }
   .drift-page .d-cr-fold p { margin: 0; font: 500 12px/1.4 var(--d-f-head); text-transform: uppercase; letter-spacing: .04em; color: var(--d-fg-dim); }
   .d-cr-fold a { text-transform: none; color: var(--d-fg-neon); text-decoration: underline; text-underline-offset: 3px; }
+  /* APPLY is part of the glass (Dan 10-04): a frosted, etched band in the pane, not a key on top of it. Sandblasted
+     glass (a light violet haze + fine grain), a thin bright cut edge, the words etched white with a violet glow.
+     It still behaves as a button: the frost brightens on hover/focus, sinks 1 px on press; 52 px tall. */
+  #creators .d-btn-violet {
+    position: relative; overflow: hidden; isolation: isolate;
+    border-radius: 10px; padding: 0 24px; min-height: 54px;
+    background:
+      radial-gradient(circle, rgba(255, 255, 255, .07) 0 .6px, transparent 1px) 0 0 / 3px 3px,   /* the sandblast grain */
+      linear-gradient(180deg, rgba(214, 170, 255, .26) 0%, rgba(160, 90, 240, .16) 55%, rgba(120, 60, 200, .2) 100%);
+    -webkit-backdrop-filter: blur(10px) saturate(1.4); backdrop-filter: blur(10px) saturate(1.4);
+    box-shadow:
+      inset 0 0 0 1px rgba(236, 214, 255, .55),                  /* the cut edge */
+      inset 0 1px 0 rgba(255, 255, 255, .5),
+      inset 0 -8px 16px rgba(80, 20, 150, .28),
+      0 0 18px rgba(170, 90, 255, .28);
+    color: #fff; text-shadow: 0 0 10px rgba(200, 140, 255, .9), 0 1px 1px rgba(30, 0, 60, .9);
+  }
+  #creators .d-btn-violet::after {   /* the glass's own streak crosses the etched band too */
+    content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+    background: linear-gradient(118deg, transparent 0 30%, rgba(255, 255, 255, .12) 31%, rgba(255, 255, 255, .03) 42%, transparent 43%);
+  }
+  #creators .d-btn-violet:hover, .drift-page #creators .d-btn-violet:focus-visible { filter: none;
+    box-shadow: inset 0 0 0 1px rgba(246, 230, 255, .8), inset 0 1px 0 rgba(255, 255, 255, .6), inset 0 -8px 16px rgba(80, 20, 150, .2), 0 0 26px rgba(190, 110, 255, .5); }
+  .drift-page #creators .d-btn-violet:focus-visible { outline: 2px solid var(--d-pink-ink); outline-offset: 3px; }
+  #creators .d-btn-violet:active { transform: translateY(1px);
+    box-shadow: inset 0 0 0 1px rgba(236, 214, 255, .5), inset 0 2px 6px rgba(40, 6, 80, .5), 0 0 12px rgba(170, 90, 255, .25); }
+  html.hc #creators .d-btn-violet { -webkit-backdrop-filter: none; backdrop-filter: none; background: #6a1dbd; text-shadow: none; }
   html.hc #creators .d-cam-panel { -webkit-backdrop-filter: none; backdrop-filter: none; background: #0a0612; }
   html.hc #creators .d-cam-panel::after { display: none; }
 }
