@@ -855,6 +855,76 @@
 }
 @media (prefers-reduced-motion: reduce) { .d-lap-car, .d-lap-date { animation: none; } }
 
+/* THE KEEP-IT TV ON PHONES (Dan 10-04: "make a plan so it fits on the phone"; picked: the road turns vertical,
+   no email box on the TV). The cabinet bezel + the screen's padding ate ~200 of the 370 px; both halve. The head
+   takes two lines; the PLAYER 1 START gate stays off (the hero has the trial on screen 1 and the sticky bar has
+   GET IT; jumpNearest never targets this form). THE ROAD TO NOV 1 turns 90°: ONE grid on .d-lap-track, the <ol>
+   is display:contents so the stops are its rows. Cols: the shortcut lane | the road | the stop. Rows: START 84 /
+   the 14 DAYS FREE tag 30 / CHECKPOINT 84 / FINISH / the SHORTCUT sign. Fixed rows so the car's stops line up:
+   its lane runs node to node, START 0 → CHECKPOINT (84 + 30) / 198 = 57.6% → FINISH 100%. */
+@media (max-width: 600px) {
+  .d-keep-tv { --tv-t: 20px; --tv-r: 30px; --tv-b: 26px; --tv-l: 30px; border-image: var(--d-img-tv) 384 fill / 43px stretch; border-radius: 16px; }
+  .d-keep-tv .d-crt.d-keep-screen { padding: 20px 12px 18px; }
+  .drift-page .d-keep-start .d-keep-try { font-size: clamp(14px, 4.2vw, 18px); line-height: 1.45; white-space: normal; }
+  .d-keep-start .d-keep-try span { display: block; }
+  .d-keep-start > .d-keep-gate { display: none; }
+  .drift-page .d-keep-then { margin-bottom: 14px; font-size: 13px; }
+
+  .d-lap-track, .d-lap-track--bypass {
+    --y: 0; display: grid; grid-template-columns: 16px 26px minmax(0, 1fr); grid-template-rows: 84px 30px 84px auto auto;
+    max-width: none; margin: 0; padding: 0;
+  }
+  .d-lap-stops { display: contents; }
+  .d-lap-stop { grid-column: 2 / 4; display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; grid-template-rows: auto auto auto;
+    column-gap: 8px; align-items: start; text-align: left; }
+  .d-lap-stop--start { grid-row: 1; }
+  .d-lap-stop--check { grid-row: 3; }
+  .d-lap-stop--finish { grid-row: 4; }
+  .d-lap-node { grid-column: 1; grid-row: 1; justify-self: center; margin: 2px 0 0; }
+  .d-lap-flag { grid-column: 2; grid-row: 1; margin: 0; line-height: 20px; }
+  .d-lap-date { grid-column: 2; grid-row: 2; font-size: 34px; }
+  .d-lap-what { grid-column: 2 / 4; grid-row: 3; margin-top: 4px; font-size: 16px; }
+  .d-lap-chip { grid-column: 3; grid-row: 1 / 3; align-self: center; justify-self: end; margin: 0; min-width: 0;
+    flex-direction: column; align-items: flex-end; gap: 2px; padding: 4px 8px 5px; font-size: 13px; text-align: right; }
+  .d-lap-chip b { font-size: 26px; }
+  /* the road: the free days a lit solid line START → CHECKPOINT, the wait a dim dashed one CHECKPOINT → FINISH,
+     node centre to node centre (each node's centre sits 10 px under its row top) */
+  .d-lap-seg { position: relative; top: auto; left: auto; translate: none; width: 0; height: auto; grid-column: 2; justify-self: center; margin: 10px 0 -10px; }
+  .d-lap-seg--trial { grid-row: 1 / 3; border-top: 0; border-left: 2px solid var(--d-hot); }
+  .d-lap-seg--wait { grid-row: 3 / 4; border-top: 0; border-left: 2px dashed rgba(190, 90, 255, .45); }
+  .d-lap-span { position: relative; left: auto; top: auto; translate: none; grid-column: 3; grid-row: 2; align-self: center; justify-self: start; margin-left: 8px; }
+  /* the shortcut: a dashed lane that leaves START, runs down the left and lands on FINISH (it skips the checkpoint) */
+  .d-lap-bypass { position: relative; left: auto; right: auto; top: auto; height: auto; grid-column: 1 / 3; grid-row: 1 / 4;
+    margin: 10px 13px -10px 3px; border: 2px dashed rgba(255, 79, 216, .6); border-right: 0; border-radius: 10px 0 0 10px; }
+  .d-lap-sign { position: relative; left: auto; top: auto; translate: none; grid-column: 1 / 4; grid-row: 5; margin-top: 16px;
+    flex-wrap: wrap; justify-content: center; gap: 4px 8px; white-space: normal; padding: 7px 10px 6px; font-size: 16px; }
+  .d-lap-sign:active { translate: 0 2px; }
+  .d-lap-sign b { font-size: 24px; }
+  .drift-page .d-lap-note { margin-top: 12px; font-size: 14px; }
+  /* the car drives DOWN the road */
+  .d-lap-lane { position: relative; left: auto; top: auto; width: 0; height: auto; grid-column: 2; grid-row: 1 / 4; justify-self: center;
+    margin: 10px 0 -10px; container-type: size; }
+  .d-lap-car { animation-name: d-lap-drive-v; }
+}
+/* narrow phones (≤390: the stop gets 160-220 px): tighter flag tracking, the chip's label on two lines, the
+   "what" line untracked, so CHECKPOINT + its chip share the row and every "what" stays one line */
+@media (max-width: 390px) {
+  .d-lap-flag { font-size: 8px; letter-spacing: .04em; }
+  .d-lap-date { font-size: 28px; }
+  .d-lap-what { font-size: 14px; letter-spacing: 0; }
+  .d-lap-chip { max-width: 76px; padding: 3px 6px 4px; font-size: 11px; line-height: 1.05; }
+  .d-lap-chip b { font-size: 22px; }
+  .d-lap-span { margin-left: 4px; }
+}
+@keyframes d-lap-drive-v {
+  0%, 12% { translate: 0 0; opacity: 1; }
+  34%, 50% { translate: 0 57.6cqh; opacity: 1; }
+  72%, 90% { translate: 0 100cqh; opacity: 1; }
+  94% { translate: 0 100cqh; opacity: 0; }
+  95% { translate: 0 0; opacity: 0; }
+  100% { translate: 0 0; opacity: 1; }
+}
+
 /* cockpit: purple underglow + gauge cluster (real render, wheel hidden) + wheel.
    The driver's-seat crop is the cockpit's own negative margin: the grid row
    only counts 80% of the wheel, and the hero's overflow clip cuts the rest at
