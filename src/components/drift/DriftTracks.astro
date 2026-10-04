@@ -1,11 +1,13 @@
 ---
 /**
- * Section 2 — LET IT DRIVE (#drive). Left: the TRAKS attract-mode menu (the
+ * Section 2 — #drive. Dan 10-03: no kicker, no dashed rule; the whole section sits on ONE steel
+ * panel (速度 = its sticker); the tracks CRT and the GPS rig sit straight on it (Dan 10-03: the two inner
+ * steel panels removed). Left: the TRAKS attract-mode menu (the
  * plugin's v4.7 arcade select screen: PressStart2P head, VT323 phosphor chips)
- * with the 8 SIMPLE tracks only, names always printed. Every chip outline is
- * computed at BUILD time from the plugin's own shape math (tracks.ts) — pure
- * SVG. The 40 race circuits stay plugin-only: they are real F1 circuits
- * (Decision 19, Dan 2026-09-26). Right: the mini GPS cabinet (mm_plate.png)
+ * with 8 of the plugin's 40 circuits (Dan 2026-10-02: iconic circuits, real
+ * shapes, COUNTRY names only: no circuit or F1 names on the site; this replaces
+ * the 09-26 shapes-only call). Outlines are the plugin's own points, built into
+ * pure SVG at build time (circuits.data.ts). Right: the mini GPS cabinet (mm_plate.png)
  * with the real green/yellow/red caps UNDER the plate's punched wells (the
  * plate is the bezel, the wells are alpha 0, so the caps must stay), the
  * track + car drawn on the glass. The car laps silently while the GPS is in
@@ -14,6 +16,10 @@
  * Geometry = Drift bench/assets/minitrack/layout_ref.json (panel 402x448):
  * caps at 58.8/123.7/186.9 x 63.9, r 22.2 · glass 53.1,154 - 348.2,382.4 ·
  * LCD 231.5,44.7 - 382.7,93.4.
+ * Layout B (Dan 2026-10-02): the plugin's INTENSITY / SPEED faders stand either
+ * side of the GPS (graffiti picture + title from the plugin, GRIP/DRIFT and
+ * 45 S/3 S end words), value screens under them flank the balance meter;
+ * trackui.ts + faders.ts drive them live (circuits.ts brakes at any INTENSITY).
  * The plate and caps sit a screen below the phone fold, and native
  * loading="lazy" still fetched them before any scroll (70 KB of the first
  * paint): they load through init.ts's deferred observer (data-src / data-bg,
@@ -21,17 +27,34 @@
  */
 import { getImage } from 'astro:assets';
 import DriftPanel from './DriftPanel.astro';
+import DriftFader from './DriftFader.astro';
 import plateSrc from '../../assets/seasons/drift/mm_plate.png';
 import capGreen from '../../assets/seasons/drift/mm_cap_green.png';
 import capYellow from '../../assets/seasons/drift/mm_cap_yellow.png';
 import capRed from '../../assets/seasons/drift/mm_cap_red.png';
-import { SIMPLE, outlinePath } from '../../lib/drift/tracks';
+import picIntSrc from '../../assets/seasons/drift/graf_pic_int.png';
+import picSpdSrc from '../../assets/seasons/drift/graf_pic_spd.png';
+import titleIntSrc from '../../assets/seasons/drift/graf_title_int.png';
+import titleSpdSrc from '../../assets/seasons/drift/graf_title_spd.png';
+import { CIRCUIT_SHAPES } from '../../lib/drift/circuits.data';
+import { carR } from '../../lib/drift/circuits';
 
 // the plate renders at ≤352 css px (440 col minus the panel pads): 720w covers DPR2, 900w DPR3
 const [plate720, plate] = await Promise.all([720, 900].map((width) => getImage({ src: plateSrc, width, format: 'webp', quality: 76 })));
 const [g, y, r] = await Promise.all([capGreen, capYellow, capRed].map((src) => getImage({ src, width: 136, format: 'webp', quality: 82 })));
-const DEFAULT = 41; // SWAY
-const GW = 295, GH = 228;   // glass aspect in panel px
+const first = CIRCUIT_SHAPES[0];   // SUZUKA: the default pick
+// the plugin's graffiti art at 2x its shown size (pictures 70 px wide, titles 22 px tall)
+const [picInt, picSpd, titleInt, titleSpd] = await Promise.all([
+  getImage({ src: picIntSrc, width: 140, format: 'webp', quality: 82 }),
+  getImage({ src: picSpdSrc, width: 140, format: 'webp', quality: 82 }),
+  getImage({ src: titleIntSrc, height: 44, format: 'webp', quality: 82 }),
+  getImage({ src: titleSpdSrc, height: 44, format: 'webp', quality: 82 }),
+]);
+const LAP_DEFAULT = 0.488084;   // TRK_LAP default = 12.0 s a lap (circuits.ts circuitPeriod)
+const faders = [
+  { id: 'int', label: 'Intensity', pic: picInt, picWH: [224, 213], title: titleInt, titleWH: [220, 65], top: 'DRIFT', bottom: 'GRIP', v: 0.6, text: '60 percent' },
+  { id: 'spd', label: 'Speed', pic: picSpd, picWH: [173, 176], title: titleSpd, titleWH: [145, 59], top: '3 S', bottom: '45 S', v: LAP_DEFAULT, text: '12.0 seconds a lap' },
+];
 // transparent placeholder with the plate's own aspect, so the cabinet never jumps (CSP img-src allows data:)
 const blank = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 402 448'/%3E`;
 const plateSizes = '(max-width: 1000px) calc(100vw - 76px), 352px';
@@ -43,63 +66,82 @@ const caps = [
 ---
 <section class="d-sec" id="drive" aria-labelledby="d-trk-h" data-tracks>
   <div class="d-wrap">
-    <div class="d-sechead">
-      <span class="d-marquee" aria-hidden="true">LET IT DRIVE</span>
-      <span class="d-ja" lang="ja" aria-hidden="true">速度</span>
-      <span class="d-rule" aria-hidden="true"></span>
-    </div>
-    <h2 id="d-trk-h" class="d-headline">Let a shape do the driving.</h2>
-    <p class="d-lede d-lede--sec">Pick a line and DRIFT drives your whole sound around it, from a gentle sway to a hard ping-pong, free in seconds or locked to 1, 2, 4, 8, 16 or 32 bars. You never draw pan automation by hand.</p>
+    <DriftPanel sticker="速度" checker={false} class="d-drive-panel">
+      <h2 id="d-trk-h" class="d-headline d-headline--row"><span class="l1">Pick a track.</span> <span class="l2">Drive your sound around.</span></h2>
 
-    <div class="d-tracks">
-      <div class="d-crt d-attract" data-drift-fab-watch>
-        <div class="d-attract-hdr">
-          <span class="d-attract-title">SELECT TRACKS</span>
+      <div class="d-tracks">
+        <div class="d-attract-panel">
+          <div class="d-crt d-attract" data-drift-fab-watch>
+            <div class="d-attract-hdr">
+              <span class="d-attract-title">SELECT TRACKS</span>
+            </div>
+            <ul class="d-cards">
+              {CIRCUIT_SHAPES.map((t) => (
+                <li>
+                  <button class="d-chip" type="button" data-track={t.id} data-name={t.label} aria-pressed={t === first ? 'true' : 'false'} aria-label={`${t.label} circuit`}>
+                    <svg viewBox={t.vb} aria-hidden="true"><path d={t.d} /></svg>
+                    <span class="d-chip-name" style={`--n:${Math.max(...t.label.split(' ').map((w) => w.length))}`}>{t.label}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <p class="d-fine d-chips-note">8 of DRIFT's 40 circuits. Plus 8 shapes in the plugin.</p>
+          </div>
         </div>
-        <ul class="d-cards">
-          {SIMPLE.map((t) => (
-            <li>
-              <button class="d-chip" type="button" data-track={t.id} data-name={t.name} aria-pressed={t.id === DEFAULT ? 'true' : 'false'} aria-label={`${t.name} track`}>
-                <svg viewBox="0 0 120 64" aria-hidden="true"><path d={outlinePath(t.id, 120, 64, 192)} /></svg>
-                <span class="d-chip-name">{t.name}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-        <p class="d-small d-chips-note">Eight shapes here, plus race circuits in the plugin.</p>
-      </div>
 
-      <div class="d-gps-col">
-        <DriftPanel checker={false} class="d-gps-panel">
-          <div class="d-gps">
-            {caps.map((c) => (
-              <button class:list={['d-cap', c.id === 'stop' && 'd-cap--stop']} type="button" data-gps={c.id} aria-label={c.label}
-                aria-pressed={c.id === 'stop' ? undefined : 'false'}
-                data-bg={c.img.src}
-                style={`position:absolute;left:${c.left}%;top:9.12%;width:11.44%;height:auto;aspect-ratio:1;z-index:1`}></button>
-            ))}
-            <img src={blank} data-src={plate.src} data-srcset={`${plate720.src} 720w, ${plate.src} 900w`} sizes={plateSizes}
-              width="402" height="448" alt="" aria-hidden="true" decoding="async" style="z-index:2;pointer-events:none" />
-            <noscript><img src={plate.src} srcset={`${plate720.src} 720w, ${plate.src} 900w`} sizes={plateSizes}
-              width="402" height="448" alt="" aria-hidden="true" loading="lazy" decoding="async" style="z-index:2;pointer-events:none" /></noscript>
-            <div class="d-gps-lcd" style="z-index:3;left:57.59%;top:9.98%;width:37.61%;height:10.87%" aria-live="off">
-              <span data-gps-name>SWAY</span>
-              <span data-gps-time>LAP 00.0s</span>
+        <div class="d-gps-col">
+          <div class="d-gps-panel">
+            <div class="d-rig">
+              <DriftFader {...faders[0]} />
+              <div class="d-gps">
+                {caps.map((c) => (
+                  <button class:list={['d-cap', c.id === 'stop' && 'd-cap--stop']} type="button" data-gps={c.id} aria-label={c.label}
+                    aria-pressed={c.id === 'stop' ? undefined : 'false'}
+                    data-bg={c.img.src}
+                    style={`position:absolute;left:${c.left}%;top:9.12%;width:11.44%;height:auto;aspect-ratio:1;z-index:1`}></button>
+                ))}
+                <img src={blank} data-src={plate.src} data-srcset={`${plate720.src} 720w, ${plate.src} 900w`} sizes={plateSizes}
+                  width="402" height="448" alt="" aria-hidden="true" decoding="async" style="z-index:2;pointer-events:none" />
+                <noscript><img src={plate.src} srcset={`${plate720.src} 720w, ${plate.src} 900w`} sizes={plateSizes}
+                  width="402" height="448" alt="" aria-hidden="true" loading="lazy" decoding="async" style="z-index:2;pointer-events:none" /></noscript>
+                <div class="d-gps-lcd" style="z-index:3;left:57.59%;top:9.98%;width:37.61%;height:10.87%" aria-live="off">
+                  <span data-gps-name>{first.label}</span>
+                  <span data-gps-time>LAP 00.0s</span>
+                </div>
+                <div class="d-gps-glass" style="z-index:3;left:13.21%;top:34.38%;width:73.41%;height:50.98%;padding:9% 10%">
+                  <svg viewBox={first.vb} aria-hidden="true">
+                    <path class="trk" data-gps-path d={first.d} />
+                    <circle class="car" data-gps-car r={carR(first.vb)} cx="0" cy="0" />
+                  </svg>
+                </div>
+              </div>
+              <DriftFader {...faders[1]} />
             </div>
-            <div class="d-gps-glass" style="z-index:3;left:13.21%;top:34.38%;width:73.41%;height:50.98%;padding:9% 10%">
-              <svg viewBox={`0 0 ${GW} ${GH}`} aria-hidden="true">
-                <path class="trk" data-gps-path d={outlinePath(DEFAULT, GW, GH, 256)} />
-                <circle class="car" data-gps-car r="7" cx={GW / 2} cy={GH / 2} />
-              </svg>
+            <div class="d-rig-base">
+              <div class="d-lcd d-vs" data-vs="int" aria-hidden="true">
+                <span class="d-vs-lab">INTENSITY</span>
+                <span class="d-vs-val"><b data-vs-val>60</b><small>%</small></span>
+                <span class="d-vs-bars" data-vs-bars>{Array.from({ length: 12 }, (_, i) => <i class={i < 7 ? 'on' : undefined}></i>)}</span>
+              </div>
+              <div class="d-lcd d-balance-box">
+                <div class="d-balance-lr" aria-hidden="true"><span>L</span><span class="d-balance-read" data-pan-readout="bare">C</span><span>R</span></div>
+                <div class="d-balance" data-balance aria-hidden="true"></div>
+              </div>
+              <div class="d-vs-col">
+                <div class="d-lcd d-vs" data-vs="spd" aria-hidden="true">
+                  <span class="d-vs-lab">SPEED</span>
+                  <span class="d-vs-val"><b data-vs-val>12.0</b></span>
+                  <span class="d-vs-unit">S/LAP</span>
+                </div>
+                <p class="d-fine d-spd-note">Seconds, or locked to bars.</p>
+              </div>
             </div>
+            {/* phone only (drift.css shows it ≤600): the picker is gone there, one circuit laps, and this says the rest
+                (Dan 10-04). True: the plugin has 40 circuits and SPEED locks a lap to bars. */}
+            <p class="d-gps-catch"><span class="l1">40 tracks.</span> <span class="l2">Synced to your BPM.</span></p>
           </div>
-          <div class="d-lcd d-balance-box">
-            <div class="d-balance-lr" aria-hidden="true"><span>L</span><span class="d-balance-read" data-pan-readout="bare">C</span><span>R</span></div>
-            <div class="d-balance" data-balance aria-hidden="true"></div>
-          </div>
-        </DriftPanel>
-        <p class="d-lede d-auto-line">Turn on AUTO DRIFT and the car speeds up when the music hits harder, then parks at centre when it goes quiet.</p>
+        </div>
       </div>
-    </div>
+    </DriftPanel>
   </div>
 </section>

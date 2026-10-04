@@ -1,0 +1,52 @@
+---
+/**
+ * Hero trial stamp: RevLimiter's TrialStamp format (label · email + GET IT ▸),
+ * worn in DRIFT's materials (Dan 10-01: "copy the revlimiter
+ * format ... put it on the design of drift and ditch the try it free").
+ * Post-language label (Oswald, FREE in the purple line-2 glow), the email
+ * well is the sunk readout glass, the key is the plugin's red key.
+ *
+ * Backend: NOT RevLimiter's /download/register (the worker has no DRIFT gate
+ * yet, drift.gateWired) but DriftCapture's contract, shared through
+ * src/lib/drift/capture.ts: /form-once with this phase's source, and the
+ * phase's honest status lines (preopen: the download mail on Oct 10).
+ * Dan 10-01 cut the micro lines under the key; the list line came back as one
+ * tiny consent line (the sign-up joins the newsletter list).
+ */
+import { site } from '../../data/site';
+import { drift, captureCopyFor } from '../../data/drift';
+
+const copy = captureCopyFor();
+if (!copy) throw new Error(`[DriftTrialStamp] phase '${drift.phase}' has no capture copy (captureCopyFor).`);
+const onceUrl = site.downloadGate.workerUrl + '/form-once';
+const closed = drift.phase === 'closed';
+// H5 (10-02): the key's accessible name says what the press does, but only while the face reads "Get it"
+// and a trial is on offer (preopen / open); the closed phase is a notify-me, so no label (WCAG 2.5.3)
+const keyLabel = drift.phase === 'preopen' || drift.phase === 'open' ? `Get it: free ${drift.trialDays}-day trial by email` : undefined;
+---
+<div class="d-stamp">
+  <!-- phone only (drift.css hides it ≥601): the "what is it" kicker, laid on the seam of the merged plate (Dan 10-02, #3) -->
+  <p class="d-stamp-kicker">The pan plugin that drives itself</p>
+  <p class="d-stamp-label" id="d-stamp-label">
+    {closed
+      ? <Fragment>Get <em>notified</em></Fragment>
+      : <Fragment><span>Get your <em>free</em></span> <span>{drift.trialDays}&#8209;day trial</span></Fragment>}
+  </p>
+  <form class="d-stamp-form" action={site.formspreeEndpoint} method="POST" aria-labelledby="d-stamp-label"
+    data-drift-capture data-once-url={onceUrl} data-msg-ok={copy.ok} data-msg-already={copy.already}>
+    <label for="d-stamp-email" class="d-sr">Your email: we send the DRIFT download here</label>
+    <input id="d-stamp-email" class="d-field d-stamp-field" type="email" name="email" required
+      autocomplete="email" inputmode="email" enterkeyhint="go" spellcheck="false" placeholder="your@email.com" />
+    <input type="hidden" name="source" value={copy.source} />
+    <!-- honeypot: real users never fill this; bots do -->
+    <input type="text" name="_gotcha" class="d-hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+    <button type="submit" class="d-cta d-stamp-key" aria-label={keyLabel}><span data-face>Get it <span class="d-stamp-arrow" aria-hidden="true">&#9656;</span></span></button>
+  </form>
+  <p class="d-capture-status" role="status" aria-live="polite" tabindex="-1"></p>
+  <!-- phone only (hidden ≥601): capture.ts reveals it after a first sign-up, as in #try -->
+  {drift.creatorDealOpen && <a class="d-capture-next" href="#creators" hidden>Keep it free with a video ›</a>}
+  <!-- consent: the sign-up joins the newsletter list, so it is said at the point of capture (Dan 10-01, option a) -->
+  <p class="d-stamp-fine">You join our list · unsubscribe anytime</p>
+  <!-- phone only (drift.css swaps it in ≤600): the full fine line, verbatim captureCopyFor().fine (Dan 10-02, F3) -->
+  <p class="d-stamp-fine d-stamp-fine--ph">{copy.fine}</p>
+</div>
