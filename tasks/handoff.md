@@ -1,3 +1,20 @@
+## 2026-10-05 — /drift SCROLL PERF (Claude Code, Dan: "check the smoothness of the scroll ... make it seamless") — on feat/drift-page (Dan: "commit") + merged into qa/drift-page-1005, both PUSHED (Dan: "push"); main untouched, nothing live
+Owner: Claude Code (Dan's session). Branch fix/drift-scroll off feat/drift-page 963672e, worktree .claude/worktrees/drift-scroll
+(node_modules symlinked). Files: DriftTracks.astro, trackui.ts, bus.ts, drift.css. No visual change: full-page pixel gate
+(node_modules/.cache/drift-qa/scroll/same.mjs, reduced motion) IDENTICAL at 320/402/768/1001/1141/1312/1600 in Chrome + WebKit.
+- #drive GPS car: the lapping circle re-rastered the glow-filtered track/plate tiles every frame (Chrome 37 fps on hero + #drive).
+  Now a twin svg over the track; while lapping it is a layer moved by a transform delta, at rest no layer (exact old paint).
+  pointer-events none (moving, its box swept over the INTENSITY fader / caps: reviewer catch, car-interact.mjs).
+- WebKit: the breathing placeholder inside the drop-shadow consoles re-ran the filter every frame (16-21 fps page-wide):
+  will-change on both consoles, WebKit only (@supports (font: -apple-system-body)); Blink untouched.
+- bus.ts: rails' --pan/--lit-* on .d-rails, not the page root; pan readout text at most 10x a second (iOS WebKit: each new
+  string costs a frame). Bars + rails still every frame.
+Results (headless, 1141x636 @2, wheel scroll): Chrome dropped frames 13.6% -> 0%; WebKit 46% -> 6%; phone Chrome 0% (same),
+phone WebKit 3.5% -> 2%. Gates: crane-gate PASS, car-interact PASS (both engines). Toolkit + traps: node_modules/.cache/drift-qa/scroll/.
+Open: WebKit hero zone ~24 ms/frame while scrolling even with all motion paused (content raster, not code); real Safari +
+real iPhone check owed (bench page: python3 node_modules/.cache/drift-qa/scroll/real/serve.py <port> <dist> <label>,
+open /drift-bench/). Merge to main = live deploy = Dan's word.
+
 ## 2026-10-04/05 — /drift PHONE REDESIGN, all six sections (Claude Code, Dan leads) — PUSHED: feat/drift-page 221517a + QA branch qa/drift-page-1005; main untouched, /drift still coming-soon live
 Owner: Claude Code (Dan's session). Scope: PHONES ONLY (@media max-width 600px); every width 601-1600 stayed pixel-identical
 (gate: node_modules/.cache/drift-qa/nonphone-gate.mjs, baseline np-base-head). Walked on the iOS Simulator (iPhone 17 Pro, 402).
