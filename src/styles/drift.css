@@ -1438,6 +1438,27 @@ html.hc #fx .d-fx-slice, html.hc #fx .d-headline span { text-shadow: none; }
    From 1101 wide the cell (>= 177 px) holds ECHO's caption (~170) even a few px wider; below that the cells shrink and the captions may wrap as before */
 @media (min-width: 1101px) { #fx .d-strip p { white-space: nowrap; } }
 
+/* the FX crane (Dan 10-04, pick A: "when you scroll it pulls down the fx panel exactly like drift, same sizes and
+   everything"). Laptop only: crane.ts wraps #drive + #fx in .d-crane > .d-crane-stage (phones never get the wrappers;
+   reduced motion gets none either, #fx just follows #drive). The stage sticks for --crane-pin of scroll at
+   --crane-top (crane.ts: the panel centred under the nav, >= 8 px air); both sections share its ONE grid cell and both
+   panels stretch to it, so the taller sets the box and the FX panel lands exactly on the #drive panel. #drive's
+   26 px top pad moves to the wrapper: the hero -> #drive spacing is unchanged. The descent, the sway and the
+   inert swap are crane.ts's (inline transform only while moving; landed = none). */
+@media (min-width: 1001px) {
+  .d-crane { padding-top: 26px; }
+  .d-crane::after { content: ''; display: block; height: var(--crane-pin, 100vh); }   /* the pin: the stage stays put while this scrolls */
+  .d-crane-stage {
+    position: sticky; top: var(--crane-top, 50px); display: grid;
+    /* a bound for the pinned layer, cutting nothing that shows: a screen above (the drop) and 40 px below (the plates'
+       34 px drop shadow). Unbounded, Chrome re-rasters the GPS car + track glows (drop-shadow filters) far wider every
+       frame the car laps: idle ~25 fps pinned vs ~39 with it (headless Chrome, M1 Max). WebKit is unaffected. */
+    clip-path: inset(-100vh 0 -40px 0);
+  }
+  .d-crane-stage > #drive.d-sec, .d-crane-stage > #fx.d-sec { grid-area: 1 / 1; padding-top: 0; display: grid; }
+  .d-crane-stage > .d-sec > .d-wrap { display: grid; }   /* the panel fills the cell: one box for both */
+}
+
 /* ==========================================================================
    SECTION 4 — TEST DRIVE (#get): one sign-up panel in the hero console's dress + folded specs
    (the keep-it ladder renders once, in .d-keep under the tracks)

@@ -2,6 +2,7 @@ import { initPanDisplays } from './bus';
 import { initWheel } from './wheel';
 import { initTracks } from './trackui';
 import { initCaptures } from './capture';
+import { initCrane } from './crane';
 import { lenis } from '../motion';    // the house scroller (null under reduced motion)
 import type { Slot } from './demo';   // type-only: erased, demo.ts stays out of the bundle
 
@@ -12,6 +13,7 @@ export function initDrift(): void {
   initPanDisplays(root);
   initWheel(root);
   initTracks(root);
+  initCrane(root);   // laptop: the FX panel comes down on #drive (after initTracks: the car listens for drift:covered)
   initJump();
   initCaptures();
   initDeferredImages(root);
