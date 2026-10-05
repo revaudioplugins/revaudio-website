@@ -35,6 +35,7 @@ export function initTracks(root: HTMLElement): void {
   const chips = Array.from(sec.querySelectorAll<HTMLButtonElement>('[data-track]'));
   const path = sec.querySelector<SVGPathElement>('[data-gps-path]')!;
   const car = sec.querySelector<SVGCircleElement>('[data-gps-car]')!;
+  const carSvg = car.ownerSVGElement!;   // the track svg's twin, laid over it (DriftTracks.astro)
   const lcdName = sec.querySelector<HTMLElement>('[data-gps-name]');
   const lcdTime = sec.querySelector<HTMLElement>('[data-gps-time]');
   const playBtn = sec.querySelector<HTMLButtonElement>('[data-gps="play"]');
@@ -51,11 +52,32 @@ export function initTracks(root: HTMLElement): void {
   const period = () => circuitPeriod(lap01);
   const park = () => { phase = restPhase(lap, inten); lapT = 0; };
 
+  // While the car laps, its svg is a layer moved by a transform from the point it set off from: a lap frame is compositor
+  // work, never a repaint of the glowing track, the plate and the panel under it (scroll bench 10-05: Chrome #drive
+  // 37 -> 60 fps; a repainting layer only got 46). At rest the circle sits on its point with no transform or layer,
+  // painting exactly as it did inside the track svg (crane.ts's rule).
+  let moving = false, x0 = 0, y0 = 0, lx = 0, ly = 0, s = 1, tf0 = '';
+  // the svg's css box (fractional), kept by a ResizeObserver on its HTML wrapper (.d-gps-trk, same box): Safari before 17
+  // reports an observed <svg>'s bbox, not its box
+  const trk = carSvg.parentElement!;
+  let box: { width: number; height: number } = trk.getBoundingClientRect();
+  const scale = () => { const vb = carSvg.viewBox.baseVal; s = vb.width && vb.height ? Math.min(box.width / vb.width, box.height / vb.height) : 1; };
   const placeCar = () => {
     const pt = path.getPointAtLength(lapPos(lap, phase, inten) * len);
-    car.setAttribute('cx', pt.x.toFixed(4));
-    car.setAttribute('cy', pt.y.toFixed(4));
+    lx = pt.x; ly = pt.y;
+    if (!moving) { car.setAttribute('cx', lx.toFixed(4)); car.setAttribute('cy', ly.toFixed(4)); return; }
+    const tf = `translate(${((lx - x0) * s).toFixed(2)}px, ${((ly - y0) * s).toFixed(2)}px)`;   // meet scale: no offset in a delta
+    if (tf !== tf0) { carSvg.style.transform = tf; tf0 = tf; }
   };
+  // landing puts the circle where the layer last drew it, so the dot never jumps
+  const carLayer = (on: boolean) => {
+    if (on === moving) return;
+    moving = on;
+    if (on) { x0 = car.cx.baseVal.value; y0 = car.cy.baseVal.value; scale(); carSvg.style.willChange = 'transform'; return; }
+    carSvg.style.transform = carSvg.style.willChange = ''; tf0 = '';
+    car.setAttribute('cx', lx.toFixed(4)); car.setAttribute('cy', ly.toFixed(4));
+  };
+  if ('ResizeObserver' in window) new ResizeObserver(([e]) => { box = e.contentRect; scale(); placeCar(); }).observe(trk);
   // write on change only (D3, 10-02): this runs every frame while the car laps,
   // and the LCD strings / cap states change a few times a second at most
   let lastName: string | null = null, lastTime: string | null = null, lastPlay: string | null = null, lastPause: string | null = null;
@@ -72,12 +94,14 @@ export function initTracks(root: HTMLElement): void {
   };
   // the GPS glass shows the chip's own outline (same point space, its own viewBox)
   const select = (id: number) => {
+    carLayer(false);   // back on its point before the viewBox changes under it; the next lap frame lifts it again
     track = id; lap = lapOf(id);
     chips.forEach((c) => c.setAttribute('aria-pressed', String(Number(c.dataset.track) === id)));
     const src = chips.find((c) => Number(c.dataset.track) === id)?.querySelector('svg');
     const vb = src?.getAttribute('viewBox');
     if (src && vb) {
       glass.setAttribute('viewBox', vb);
+      carSvg.setAttribute('viewBox', vb);
       path.setAttribute('d', src.querySelector('path')!.getAttribute('d')!);
       car.setAttribute('r', carR(vb));
     }
@@ -93,6 +117,7 @@ export function initTracks(root: HTMLElement): void {
       // the hand has the wheel: the car holds its place and the pan is the hand's
       spring.pan = getPan(); spring.vel = 0;
       raf = running && !paused ? requestAnimationFrame(frame) : 0;
+      if (!raf) carLayer(false);   // PAUSE / STOP while the hand holds: the loop ends here, so the layer goes too
       return;
     }
     if (running && !paused) { phase += dt / period(); lapT = (lapT + dt) % period(); }
@@ -103,6 +128,7 @@ export function initTracks(root: HTMLElement): void {
     // a held (PAUSE) or parked (STOP) car rests the loop once the spring settles
     const settled = Math.abs(target - p) < 0.002 && Math.abs(spring.vel) < 0.002;
     raf = (running && !paused) || !settled ? requestAnimationFrame(frame) : 0;
+    carLayer(running && !paused);
   };
   const kick = () => { if (!raf) { last = performance.now(); raf = requestAnimationFrame(frame); } readouts(); };
 

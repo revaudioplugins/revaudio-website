@@ -108,11 +108,18 @@ const caps = [
                   <span data-gps-name>{first.label}</span>
                   <span data-gps-time>LAP 00.0s</span>
                 </div>
+                {/* the car rides its own svg laid exactly over the track's (same box, same viewBox), on its own layer while
+                    it laps (trackui.ts), so a lap never repaints the track's glow, the plate or the panel around it
+                    (scroll bench 10-05) */}
                 <div class="d-gps-glass" style="z-index:3;left:13.21%;top:34.38%;width:73.41%;height:50.98%;padding:9% 10%">
-                  <svg viewBox={first.vb} aria-hidden="true">
-                    <path class="trk" data-gps-path d={first.d} />
-                    <circle class="car" data-gps-car r={carR(first.vb)} cx="0" cy="0" />
-                  </svg>
+                  <div class="d-gps-trk">
+                    <svg viewBox={first.vb} aria-hidden="true">
+                      <path class="trk" data-gps-path d={first.d} />
+                    </svg>
+                    <svg class="d-gps-car" viewBox={first.vb} aria-hidden="true">
+                      <circle class="car" data-gps-car r={carR(first.vb)} cx="0" cy="0" />
+                    </svg>
+                  </div>
                 </div>
               </div>
               <DriftFader {...faders[1]} />

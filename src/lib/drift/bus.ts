@@ -85,24 +85,37 @@ export function initPanDisplays(root: HTMLElement): void {
   const meters = Array.from(root.querySelectorAll<HTMLElement>('[data-balance]'));
   const balances = meters.map(buildBalance);
   const lastP = balances.map(() => NaN);
-  // the rails (the only --pan / --lit-* readers) are display:none below 1100 px (P1, 10-02)
+  // the rails (the only --pan / --lit-* readers) are display:none below 1100 px (P1, 10-02). Written on the rails
+  // box, not the page root: a custom property changed on the root restyles the whole page every frame the car laps
   const rails = matchMedia('(min-width: 1100px)');
+  const railBox = root.querySelector<HTMLElement>('.d-rails') ?? root;
+  // the number changes ten times a second at most and the newest value always lands (a trailing write): while the car
+  // laps it would change nearly every frame, and in iOS WebKit each new string costs a frame (scroll bench 10-05,
+  // iPad Simulator Safari: 15 fps -> 29 at the #drive panel). The bars and the rails still follow every frame.
+  const READ_EVERY = 100;
+  let readT = -Infinity, readTimer = 0;
+  const writeReadouts = () => {
+    readTimer = 0; readT = performance.now();
+    const txt = panShort(pan);
+    // write on change only (D3, 10-02)
+    readouts.forEach((r, i) => {
+      const t = r.dataset.panReadout === 'bare' ? txt : `PAN ${txt}`;
+      if (t !== readTxt[i]) { r.textContent = t; readTxt[i] = t; }
+    });
+  };
   let raf = 0;
   const paint = () => {
     raf = 0;
     const p = pan;
     if (rails.matches) {
-      root.style.setProperty('--pan', p.toFixed(3));
-      root.style.setProperty('--lit-l', (0.3 + 0.7 * Math.max(0, -p)).toFixed(3));
-      root.style.setProperty('--lit-r', (0.3 + 0.7 * Math.max(0, p)).toFixed(3));
+      railBox.style.setProperty('--pan', p.toFixed(3));
+      railBox.style.setProperty('--lit-l', (0.3 + 0.7 * Math.max(0, -p)).toFixed(3));
+      railBox.style.setProperty('--lit-r', (0.3 + 0.7 * Math.max(0, p)).toFixed(3));
     }
-    // write on change only, and skip a meter that is not rendered (D3, 10-02);
-    // a skipped meter stays dirty and catches up on the next paint it is shown for
-    const txt = panShort(p);
-    readouts.forEach((r, i) => {
-      const t = r.dataset.panReadout === 'bare' ? txt : `PAN ${txt}`;
-      if (t !== readTxt[i]) { r.textContent = t; readTxt[i] = t; }
-    });
+    const wait = READ_EVERY - (performance.now() - readT);
+    if (wait <= 0) writeReadouts();
+    else if (!readTimer) readTimer = window.setTimeout(writeReadouts, wait);
+    // skip a meter that is not rendered (D3, 10-02); a skipped meter stays dirty and catches up on the next paint it is shown for
     balances.forEach((bars, i) => {
       if (lastP[i] === p) return;
       const el = meters[i];
