@@ -1,19 +1,21 @@
 # Handoff → Gil: checkout bundle plan (DECIDED — ready to execute)
 
+> ⚠ History (note added 2026-10-05): superseded. The store this plan is built on is retired; Paddle Billing is the only store since 2026-08-31 (wiki `store`, `shared/wiki/pages/store-paddle.md`). FastSpring never went live (NOT USED). Any GAS-bundle work has to be re-planned on Paddle. Retired store names below are replaced by "old store" wording.
+
 **From:** Dan's Fable session, 2026-07-20. **Responds to your** `tasks/checkout-bundle-handoff.md`.
 Full research + option ranking: `tasks/checkout-bundle-review.md` (read §1 corrections + §5b).
 This file is the execution brief — self-contained, no prior conversation needed.
 
 ## Decisions made (Dan, 2026-07-20)
 
-- **Stay on Lemon Squeezy for now.** No provider migration before the Radio Roulette launch.
+- **Stay on the old store for now.** No provider migration before the Radio Roulette launch.
 - **GAS is free with EVERY plugin purchase automatically** (not only when carted together), and
   it **requires a license key** like RevLimiter.
 - **Nobody may pay $5 for GAS while entitled to it free** — the cart must zero-out/remove GAS
   whenever a paid plugin is in it.
 - **Multi-item paid checkout (RevLimiter + Radio Roulette in one total): solved with a static LS
   bundle SKU**, not with the generic-SKU/custom_price API workaround (rejected — see review §4).
-- **Future direction: FastSpring** (only MoR with confirmed cart + bundles + built-in license
+- **Future direction: FastSpring** (NOT USED: it never went live) (only MoR with confirmed cart + bundles + built-in license
   fulfillment + audio-plugin base: oeksound, Baby Audio, AudioThing). LS is in soft-sunset under
   Stripe (Stripe Managed Payments is the successor; LS will never ship a cart). Trigger to
   migrate: catalog reaches ~3 paid products or LS announces a sunset date.
@@ -24,7 +26,7 @@ This file is the execution brief — self-contained, no prior conversation neede
 ## Why this is cheap: the backend already exists
 
 Your brief assumed "no webhooks, no server-side fulfillment anywhere." Not true at venture
-level: the **`revlimiter-license` Worker** (`RevLimiter/tools/RevLicenseKeygen/gumroad-worker/`)
+level: the **`revlimiter-license` Worker** (the license worker folder under `RevLimiter/tools/RevLicenseKeygen/`)
 already receives the LS `order_created` webhook (HMAC via `LS_SIGNING_SECRET`), mints the signed
 `REVL.*` key, and sends the branded key email via Resend (KV seats, `/activate`, `/download`,
 `/admin-mint`). Everything below extends that Worker — no new infrastructure.
@@ -53,7 +55,7 @@ already receives the LS `order_created` webhook (HMAC via `LS_SIGNING_SECRET`), 
 - [ ] Keep resolving URLs by slug from the checkout-map (do NOT trust localStorage-cached URLs —
       see `feedback_cart_stale_checkout_url_localstorage` in shared memory).
 
-### 3. Worker (`gumroad-worker/src/worker.js`)
+### 3. Worker (the license worker's `src/worker.js`)
 - [ ] Map variant IDs → entitlements: RL variant → REVL key; RR variant → RR key; bundle
       variant → both keys.
 - [ ] RR key minting: RR's keygen already exists at BrokenDisc `tools/BDLicenseKeygen` — port

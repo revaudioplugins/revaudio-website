@@ -1,5 +1,7 @@
 # Review: multi-item checkout + GAS-free-bundle — verified findings & ranked recommendation
 
+> ⚠ History (note added 2026-10-05): this July 2026 review is superseded. Paddle Billing is the only store, live since 2026-08-31 (wiki `store`, `shared/wiki/pages/store-paddle.md`). FastSpring was evaluated and never went live (NOT USED). Retired store names below are replaced by "old store" wording.
+
 **Response to:** `tasks/checkout-bundle-handoff.md` · **By:** Fable (Dan's Mac session) · **Date:** 2026-07-20
 Verification = code/git inspection of this repo + shared memory + 4 parallel web-research passes
 against live docs (July 2026). Sources cited inline.
@@ -10,8 +12,8 @@ against live docs (July 2026). Sources cited inline.
 
 1. **"No backend/webhook/fulfillment exists anywhere" is FALSE at the venture level.**
    The `revlimiter-license` Cloudflare Worker (`revlimiter-license.revaudio.workers.dev`, source
-   `RevLimiter/tools/RevLicenseKeygen/gumroad-worker/`) already:
-   - receives the Lemon Squeezy `order_created` webhook (HMAC-verified, `LS_SIGNING_SECRET`),
+   `RevLimiter/tools/RevLicenseKeygen/`, the license worker folder) already:
+   - receives the old store's `order_created` webhook (HMAC-verified, `LS_SIGNING_SECRET`),
    - mints the signed `REVL.*` license key, emails it via Resend (branded `/key` copy page),
    - runs the KV seat ledger, `/activate`, `/download`, and token-guarded `/admin-mint`.
    LS's built-in delivery is NOT what delivers RevLimiter keys today — the Worker is. This
@@ -20,7 +22,7 @@ against live docs (July 2026). Sources cited inline.
    `checkout[custom][terms_accepted]` / `terms_version` — the exact passthrough channel needed to
    tell the webhook "this purchase also claimed GAS". Confirmed LS carries it into
    `meta.custom_data` on `order_created`.
-3. **Provider-history correction:** actual sequence is Gumroad → **Lemon Squeezy (06-04,
+3. **Provider-history correction:** actual sequence is the first old store → **the second old store (06-04,
    `65a0d3d`)** → Paddle (same day, `cf5a21c`…`db9f8bf`) → back to LS (06-12, `238be13`). The
    Paddle stint lasted ~8 days and `b50fe76` says *"pause until token + price ID wired"* — plus
    shared memory records a **live** Paddle token + price ID and "Paddle plan ABANDONED (was:
@@ -38,15 +40,15 @@ against live docs (July 2026). Sources cited inline.
    only purchasable product today, so the `items[0]` latent bug is currently unreachable. It
    becomes real the day a second paid product goes live.
 
-## 2. Lemon Squeezy status (the incumbent) — verified July 2026
+## 2. The old store's ("LS") status (the incumbent then) — verified July 2026
 
 - **No multi-product cart, and it will never ship.** Create Checkout API still takes exactly one
   variant (no `line_items`); the "Cart (multiple products)" request is open since Jan 2023
-  (261 votes, filed by an LS co-founder, unshipped). [docs.lemonsqueezy.com/api/checkouts/create-checkout · lemonsqueezy.nolt.io/4]
+  (261 votes, filed by an LS co-founder, unshipped). [the old store's create-checkout API docs and its public feature board]
 - **LS is in soft-sunset.** Stripe acquired LS (Jul 2024); **Stripe Managed Payments (SMP)** is
   the successor MoR (public preview Feb 2026; LS "continues operating normally", self-serve
   migration tools "later this year" per LS's Apr 2026 blog). No shutdown date, but no feature
-  roadmap either. Don't build heavy custom plumbing on LS. [lemonsqueezy.com/blog/2026-update]
+  roadmap either. Don't build heavy custom plumbing on LS. [the old store's 2026 update blog post]
 - **What LS CAN do (confirmed):** `custom_price` (cents override), `checkout_data.custom` →
   `meta.custom_data` in webhooks, and a Discount API supporting **100%-off codes locked to a
   specific product, max_redemptions=1, expiring, prefillable via
@@ -65,13 +67,13 @@ against live docs (July 2026). Sources cited inline.
 | **Stripe Checkout (direct)** | **No** | Yes (100 line items) | Yes — 100% coupon with `applies_to` product restriction | Fully DIY (small Worker job) | 2.9% + $0.30 + Tax 0.5% | **Self-MoR: EU (non-Union OSS) + UK VAT registration are ZERO-threshold for a non-EU/UK digital seller — mandatory from sale #1.** Disproportionate at current volume |
 | **Stripe Managed Payments** | Yes | Rides Stripe Checkout (line items) | Coupon parity unconfirmed | Not included (no LS-style keys/files) | +3.5% on top of processing (~6.4% + $0.30) | Public preview; **likely US-entities-only so far**; the strategic endpoint LS merchants will be migrated toward |
 | **Polar.sh** | Yes | **No** (open issue #7773, Nov 2025) | No bundle rules found | Built-in keys/files | 5% + 50¢ (plans change economics) | Young, pricing model still settling |
-| **Gumroad** | Yes (since 2025) | Marketplace cart; bundles as SKUs | No rule-based free-gift | Built-in | **10% + $0.50 + processing (~13%+)** | Org instability (Antiwork/DOGE/AI-moderation drama); account previously deleted |
+| **The first old store** | Yes (since 2025) | Marketplace cart; bundles as SKUs | No rule-based free-gift | Built-in | **10% + $0.50 + processing (~13%+)** | Org instability (Antiwork/DOGE/AI-moderation drama); account previously deleted |
 | **Shopify + license app** | **No** | Yes (best cart/bundle tooling) | Yes via apps | Via SendOwl / Sky Pilot apps | $ monthly + processing | Same self-MoR VAT burden as Stripe + app glue |
 | Creem / Dodo | Yes | Not evidenced | No | Keys yes | 3.9–4% + 40¢ | Very young; no cart anyway |
 
 ## 4. Ranked recommendation
 
-### Build NOW — Option A′: stay on Lemon Squeezy, grant GAS via the existing license Worker
+### Build NOW — Option A′: stay on the old store, grant GAS via the existing license Worker
 (An upgrade of the brief's Option A — the Waves pattern, minus the friction, because the
 backend it assumes we'd have to build already exists.)
 
@@ -103,7 +105,7 @@ exactly the migration trigger below. Interim if needed: sequential checkouts wit
 Also fix regardless (tiny): `openCheckout()` should refuse/queue rather than silently drop
 `items[1..n]` once a second paid product exists.
 
-### Where it's headed — FastSpring, triggered by the second paid product
+### Where it's headed — FastSpring, triggered by the second paid product (NOT USED: FastSpring never went live; Paddle Billing since 2026-08-31)
 FastSpring is the only surveyed MoR with ALL of: confirmed shipped multi-item cart, native bundle
 SKUs, built-in license fulfillment including a **remote key-generator URL** (which plugs straight
 into our existing Worker — we keep the signed `REVL.*` key format and seat ledger), and a
@@ -135,7 +137,7 @@ industry-default answer to exactly this problem.
    tax. Not proportionate.
 6. **Shopify (D)** — same self-MoR burden as Stripe plus app glue; FastSpring dominates it for
    this use case.
-7. **Gumroad** — 13%+ effective fees and organizational chaos; also the old account was deleted.
+7. **The first old store** — 13%+ effective fees and organizational chaos; also the old account was deleted.
 
 ## 5. Questions for Gil (in order)
 

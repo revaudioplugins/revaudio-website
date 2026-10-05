@@ -8,7 +8,7 @@ brand
 Global music producers and audio engineers (English-speaking, not Israeli market). They arrive from IG/social funnels or search, skeptical of plugin hype, often mid-session in a DAW. Job to be done: decide fast whether RevLimiter (and the wider plugin line) sounds good and is worth trying — then get the trial or buy with zero friction.
 
 ## Product Purpose
-Marketing site for Revaudio, a boutique VST plugin venture ("plugins built like cars"). Flagship: RevLimiter, a mastering limiter in paid founding-tester beta ($93 launch via Lemon Squeezy). The site's job: sell a sound and a feeling on top, prove technical credibility underneath, and route visitors to the demo/trial funnel. Success = trial registrations and checkouts.
+Marketing site for Revaudio, a boutique VST plugin venture ("plugins built like cars"). Flagship: RevLimiter, a mastering limiter, live and sold through Paddle Billing (the only store since 2026-08-31; price in `src/data/plugins.ts`). The site's job: sell a sound and a feeling on top, prove technical credibility underneath, and route visitors to the demo/trial funnel. Success = trial registrations and checkouts.
 
 ## Brand Personality
 Honest-nerdy, tactile, mechanical. Voice: Valhalla-style honesty + the car/garage metaphor as character + FabFilter-grade technical proof. Emotions: the confidence of a well-built machine; delight in physical props (gauges, doors, cranes, license plates) that actually communicate state.

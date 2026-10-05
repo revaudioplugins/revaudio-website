@@ -6,7 +6,7 @@
 
 | Repo | Commit | What |
 |---|---|---|
-| `revaudioplugins/Revlimiter` | `2ddc63a` | license worker — `+66 / -19` in `tools/RevLicenseKeygen/gumroad-worker/src/worker.js` |
+| `revaudioplugins/Revlimiter` | `2ddc63a` | license worker — `+66 / -19` in its `src/worker.js` (under `tools/RevLicenseKeygen/`) |
 | `revaudioplugins/revaudio-website` | `feefa83` | `src/components/TrialGateModal.astro` — `+178 / -3` |
 | `revaudioplugins/revaudio-shared` | `c0e5046` | `wiki/pages/distribute-release.md` |
 
@@ -157,7 +157,7 @@ Mirror rebuilt and deployed to wiki.revaudio.net.
 
 - `revaudio-website/src/components/TrialGateModal.astro` — whole component; the new script block is
   states 2–3, the URL read is at the bottom of the IIFE.
-- `Revlimiter/tools/RevLicenseKeygen/gumroad-worker/src/worker.js` — `DL_PLUGINS` (+ `sitePath`,
+- the license worker's `src/worker.js` (under `Revlimiter/tools/RevLicenseKeygen/`) — `DL_PLUGINS` (+ `sitePath`,
   `DL_SITE_ORIGIN`, `DL_RETURN_TTL`), `handleDownloadVerify`, `handleDownloadRequest`, and the
   router's `/download` CORS block.
 

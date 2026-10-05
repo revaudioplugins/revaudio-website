@@ -12,7 +12,7 @@ Why: the /drift season page reached main and went LIVE 2026-10-01 10:19 UTC (the
 - Catalog copy: the pre-push DRIFT copy says "multiband" / "Autopilot", which 1dd4fbd flagged as wrong against the
   v4.23.0 source. Restored as-is because the copy fix was part of the same unapproved push; re-apply on Dan's word.
 
-## 2026-10-01 — /drift CONVERSION REBUILD (Claude Code) — COMMITTED on feat/drift-page (local only), preview on :4327
+## 2026-10-01 — /drift CONVERSION REBUILD (Claude Code) — ~~COMMITTED on feat/drift-page (local only)~~ ended 2026-10-01 (pushed: `ccbaa4f` reached main 2026-10-01 and was reverted 2026-10-03, see the entry above; `feat/drift-page` is on origin too), preview on :4327
 Owner: Claude Code. Same branch/worktree/files as the 09-26 entry below (one writer), plus new `DriftCapture.astro`,
 `DriftCreators.astro`, `DriftStickyBar.astro`, `public/og/drift.png`, woff2 subsets in `public/fonts/drift/`.
 Why: Dan's conversion review brief (2026-09-30) + his decisions the same day: D2/H1 the car pans the WHOLE sound (the
@@ -35,7 +35,7 @@ checkout, coupon wording or download link before release. Review + architecture 
   form ($39 route), who emails the trial on Oct 10, /affiliate doesn't prefill DRIFT BETA, AAX flag when built.
 Push/merge to main = live: only on Dan's explicit "push" (pull first).
 
-## 2026-09-26 — /drift season page, STRUCTURE TEST (Claude Code) — COMMITTED on feat/drift-page (local only), preview on :4327
+## 2026-09-26 — /drift season page, STRUCTURE TEST (Claude Code) — ~~COMMITTED on feat/drift-page (local only)~~ ended 2026-10-01 (`0b0a34a` reached main with the 2026-10-01 push and was reverted 2026-10-03; `feat/drift-page` is on origin), preview on :4327
 Owner: Claude Code. Branch `feat/drift-page` in worktree `.claude/worktrees/drift-page` (off origin/main 1776b45).
 Dan: "all the style of DRIFT in the page — assets, purple, panels, neon; fresh, not the RevLimiter/RR pages". Plan:
 `~/workspace/revaudio/stages/04_website/output/2026-09-26-drift-page.md` (decisions: house shell stays, hero A "driver's
@@ -44,7 +44,7 @@ Files (one writer — don't touch): `src/pages/drift.astro`, `src/components/dri
 `src/styles/drift.css`, `src/data/drift.ts`, `src/assets/seasons/drift/*`, `public/fonts/drift/*`; small edits in
 `src/pages/[slug].astro` (skip 'drift'), `WelcomeDiscountPopup.astro` + `ExitIntentPopup.astro` (not on /drift),
 `src/data/plugins.ts` (DRIFT copy + systemReq corrected against v4.23.0 source).
-Committed locally on `feat/drift-page` (Dan: "commit, don't push to main"); NOT pushed anywhere. Push/merge to main = live; only on Dan's explicit "push".
+~~Committed locally on `feat/drift-page` (Dan: "commit, don't push to main"); NOT pushed anywhere.~~ ended 2026-10-01 (see the heading). Push/merge to main = live; only on Dan's explicit "push".
 - Verified 2026-09-26: `npm run build` clean; smoke + welcome-popup suites 60/60 (chromium + mobile-safari) against
   `astro preview --port 4327` (4321 belongs to another session — don't trust a run that reuses it); WebKit shots at
   390 / 1280 / 1600, no horizontal overflow; scripted interactions OK (wheel keys/drag/coast/dblclick, TRACKS car +
@@ -62,7 +62,7 @@ User approved the design plan with “go”, then explicitly authorized “push 
 - New catalog-based thumbnails/name/price/formats, explicit USD subtotal/tax note, compact brass CTA, clearer empty state, focus restoration, consent feedback and missing-SDK/synchronous-open error guidance. Existing checkout completion, consent metadata and analytics contracts retained.
 - Verified: npm run build PASS (31 pages; existing background-asset/chunk warnings); design detector [] and git diff --check clean; browser at default 319px, desktop 1280×665 and short mobile 320×480. Both images load, $49+$19=$68, removal updates total/focus, empty state hides checkout, legal reader + Escape work, consent validation focuses checkbox, short-screen CTA reachable by scrolling, no console errors on final store preview.
 - VM checks using production function source PASS: old $93/name/image -> catalog $49/current image, dedupe/qty1, malformed storage, slug-only persistence, USD, missing SDK/synchronous error retains cart, mocked Paddle handoff preserves ID + consent version. No payment network request or real purchase in this change's verification.
-- Dedicated inline payment page remains next phase after visual review. Paddle's pre-existing asynchronous error on localhost was not fixed/tested. Legal pages still name Lemon Squeezy while active engine is Paddle (pre-existing; requires content review). Old already-open tabs running previous cart code should be refreshed after slug-only storage writes.
+- Dedicated inline payment page remains next phase after visual review. Paddle's pre-existing asynchronous error on localhost was not fixed/tested. Legal pages still name the old store while active engine is Paddle (pre-existing; requires content review; done since: `683b934` "legal: name no payment vendor in Terms, EULA and Privacy"). Old already-open tabs running previous cart code should be refreshed after slug-only storage writes.
 - Browser left on /store with RevLimiter in the redesigned cart; viewport override reset.
 
 ## 2026-10-06 — Growth plan Phase 1 (measurement), step 1: committed locally `de2ef94`, NOT pushed
@@ -85,7 +85,7 @@ Owner: Claude Code. Repo `revaudio-website`, branch `main`. Plan: `tasks/growth-
   profiles: no click / decline = 0 Google requests; accept = gtag + hits. Keep the gateway off.
 - Next: Paddle webhook (licence worker) → Ads + Meta server-side, privacy text, Ads conversion-action settings.
 
-## 2026-09-06 (late) — /gas CTA iterations, committed locally, NOT pushed
+## 2026-09-06 (late) — /gas CTA iterations, ~~committed locally, NOT pushed~~ pushed 2026-09-06 (all four commits are on origin/main, live as `eadf56f`; see SESSION CLOSE below)
 - d6d10a3 original plugins.ts copy restored (Dan: "copywrite is not good"), new layout kept.
 - f6a3612 red chunky CTA. 9e930b2 garage CSS pushbutton (brass bezel + screws + race-red body).
 - d027c31 true-alpha CTA (house photo plate). Dan: "revert 2 times" -> gas.astro + DESIGN.md back
@@ -176,7 +176,7 @@ Next session decides:
 
 No commit splits proposed by Claude Code: all of its work is committed and the tree is clean.
 
-## 2026-09-06 (latest) - /gas sells more: DONE, committed locally, NOT pushed
+## 2026-09-06 (latest) - /gas sells more: DONE, ~~committed locally, NOT pushed~~ pushed 2026-09-06 (live as `eadf56f`; see SESSION CLOSE above)
 Owner: Claude Code. Repo `revaudio-website`, branch `main` (local, ahead of `origin/main`).
 Dan: "lets work on the gas page, lets make it sell more" + "work with psychologic and make it simple".
 GAS is free, so "sell" = more email-gated downloads. One screen on desktop kept (Dan 2026-07-30).
@@ -195,7 +195,7 @@ GAS is free, so "sell" = more email-gated downloads. One screen on desktop kept 
 - Plan + review: `tasks/todo.md`. Not done on purpose: no audio A/B rack, no RevLimiter cross-sell.
 - Next: Dan reviews the shots and says "push". Until then: local only.
 
-## 2026-09-06 (later) — hero patina pass "the bench at night": WIRED, stand-in plates, NOT pushed
+## 2026-09-06 (later) — hero patina pass "the bench at night": WIRED, stand-in plates, ~~NOT pushed~~ pushed 2026-09-06 with the stand-in plates (live as `eadf56f`; see SESSION CLOSE above)
 Owner: Claude Code. Repo `revaudio-website`, branch `main` (local, ahead of `origin/main`).
 Dan: "lets see it !" so the wiring is built now with procedural stand-in plates (PIL: gunmetal
 panels, seams, rivets, oxide patches, amber lamp top-left, dark centre). They are placeholders only;
@@ -421,12 +421,13 @@ Six upgrades to `PluginShowcase.astro` only (spec + plan in `docs/superpowers/`)
 - Emblems (`.sc-emblem` + drift/ac/rev icon imports) removed as dead code.
 
 ## 2026-07-20 — Checkout/bundle review done (response to checkout-bundle-handoff.md)
+> Superseded 2026-08-31: Paddle Billing is the only store (wiki `store`). FastSpring was evaluated and never went live (NOT USED). History only.
 Full verified review + ranked recommendation in **`tasks/checkout-bundle-review.md`**. TL;DR:
-- **Now:** stay on Lemon Squeezy; implement GAS-free-bundle via the EXISTING `revlimiter-license`
+- **Now:** stay on the old store; implement GAS-free-bundle via the EXISTING `revlimiter-license`
   Worker (the brief's "no backend exists" premise was wrong) — cart passes
   `checkout[custom][gas_bundle]=1`, webhook grants GAS in the same branded key email. No second
   checkout, no new infra.
-- **Later (trigger = second paid plugin live, or LS hard-sunset date):** migrate to **FastSpring**
+- **Later (trigger = second paid plugin live, or LS hard-sunset date):** migrate to **FastSpring** (NOT USED: it never went live)
   (only MoR with confirmed cart + bundles + built-in license fulfillment incl. remote-keygen URL
   + audio-plugin industry base: oeksound, Baby Audio, AudioThing).
 - LS is in soft-sunset (Stripe acquisition → Stripe Managed Payments); LS will never ship a cart.
@@ -453,7 +454,7 @@ pre-fix cached document even though the edge was already updated):
 - **Cleanup needed regardless:** several test submissions (names like "CSP Fix Verification...")
   landed in both Formspree forms' Submissions tabs during this diagnosis — clear those out so they
   aren't mistaken for real applicants/subscribers.
-- New CSP connect-src for reference: `'self' https://api.paddle.com https://*.lemonsqueezy.com
+- New CSP connect-src for reference: `'self' https://api.paddle.com https://*.<old-store-domain>
   https://www.facebook.com https://formspree.io`.
 
 ## 2026-07-19 — Affiliate Program Formspree endpoint wired (e0f8160, live)
@@ -466,7 +467,7 @@ pre-fix cached document even though the edge was already updated):
 - Notification recipient confirmed set to info@revaudio.net in Formspree Settings (2026-07-19).
 - **BLOCKER found 2026-07-19: real submissions fail with "Failed to fetch"/"Network hiccup" on the
   LIVE site.** Root cause is the edge Cloudflare CSP (Rules → Transform Rules → Modify Response
-  Header) — its `connect-src` is `'self' https://api.paddle.com https://*.lemonsqueezy.com
+  Header) — its `connect-src` is `'self' https://api.paddle.com https://*.<old-store-domain>
   https://www.facebook.com` and does NOT include `https://formspree.io`, so the browser blocks the
   fetch() before it reaches Formspree at all. Confirmed via `curl -sI https://revaudio.net/affiliate/`
   and reproducing the fetch directly in-page (TypeError: Failed to fetch). Same class of bug as the
@@ -491,16 +492,16 @@ pre-fix cached document even though the edge was already updated):
 - New `TrialStamp.astro`: "GET YOUR FREE 14 DAYS TRIAL" on the door's buy-patch asset (B3 night-plate take), L2 hover lamp, press-in → navigates to the license worker `/download`. Mounted in `[slug].astro` between title and door (`.trial-slot` top 25px / left 48.4%, user-placed).
 - Position bench ON the real page: open `/revlimiter/#cranep=1&stampedit=1` → drag stamp / arrow-nudge, readout prints paste-ready CSS. Conditional Astro scripts ship VERBATIM — keep that block plain JS (no TS).
 - New "Driver's Manual" section between Hear-it and System requirements — data-driven via `plugins.ts` `tutorialVideo` (+ `trialUrl`); youtube-nocookie embed.
-- **BLOCKER: the edge Cloudflare CSP (Transform Rules → Modify Response Header) frame-src only allows lemonsqueezy → the video shows a grey broken frame on live. Fix in CF dashboard: add `https://www.youtube-nocookie.com` to frame-src. Wrangler token is zone:read — CLI can't do it.**
+- **BLOCKER: the edge Cloudflare CSP (Transform Rules → Modify Response Header) frame-src only allows the old store's domain → the video shows a grey broken frame on live. Fix in CF dashboard: add `https://www.youtube-nocookie.com` to frame-src. Wrangler token is zone:read — CLI can't do it.**
 - Pre-existing, FYI Gil: `connect.facebook.net/fbevents.js` (Meta pixel) is also CSP-blocked by script-src.
 - Design bench kept at `bench/trial-stamp-test.html`.
 
-## 2026-06-18 — RevLimiter checkout LIVE on Lemon Squeezy
-- Back on Lemon Squeezy (Paddle plan dropped); store now activated, RevLimiter live.
+## 2026-06-18 — RevLimiter checkout LIVE on the old store (history: retired 2026-08-31, Paddle Billing since; wiki `store`)
+- Back on the old store (the Paddle plan was dropped then); store now activated, RevLimiter live.
 - `REVLIMITER_CHECKOUT_URL` in `src/data/plugins.ts` = LS LIVE variant `.../checkout/buy/78885904-8a19-4e23-9510-31b50775ada5` (commit e43bcbf). Single source of truth; Cart/BuyButton read it.
 - **Bug fixed (875e8d4):** Cart.astro was persisting `checkoutUrl` in localStorage, so a cart that added RevLimiter before the URL swap kept launching the OLD test link → LS orange TEST banner on-site while the direct link was clean. Now Cart bakes a `slug->checkoutUrl` catalog map (`[data-checkout-map]` JSON) and resolves fresh at checkout; never trusts stored URL. URL changes now take effect for everyone on deploy.
 - LS test vs live: same `revaudiopg` subdomain + (here) same variant URL — the TEST banner is store-activation-level, not a separate URL. Don't chase "live variant URLs".
-- STILL TO VERIFY (user): real test purchase delivers download + license key; LS-generated key must match plugin LicenseManager format `REVL.<b64>.<sig>` or fulfillment breaks despite checkout working. See memory project_revlimiter_lemonsqueezy_migration.
+- STILL TO VERIFY (user): real test purchase delivers download + license key; LS-generated key must match plugin LicenseManager format `REVL.<b64>.<sig>` or fulfillment breaks despite checkout working. See the old RevLimiter store-migration note in `shared/memory/` (history).
 
 
 ## Shipped today (all live on revaudio.net)
@@ -525,14 +526,14 @@ and syncs bench defaults. Also: `layout-bench.html`, `hero-bench.html` (supersed
 
 ## Open threads
 - `aurora-test.webp` is the FINAL art for now but still has the test name — rename when user locks art direction.
-- Newsletter/Formspree + Paddle checkout still on placeholder tokens (site.ts / plugins.ts).
+- ~~Newsletter/Formspree + Paddle checkout still on placeholder tokens (site.ts / plugins.ts).~~ ended (Formspree forms POST since 2026-07-19, see that entry; Paddle Billing live since 2026-08-31 with a live client token in `src/data/site.ts`).
 - Background asset pipeline: ChatGPT art -> Real-ESRGAN 4x (C:\RevAudio\shared\tools\realesrgan) -> sharp resize 2048w -> webp q84.
 - User laptop renders at 1280x665 CSS (sometimes dpr 2) — Playwright-test at 1280x665 FIRST.
 
 ## Don't touch
 - DSP/plugin repos unaffected. Partner's motion system (lib/motion, reveal, scrub, splittext, walkthrough) untouched except pagebg addition.
 
-## 2026-07-22 — Mobile high-end rebuild on `feat/mobile-high-end` (NOT pushed)
+## 2026-07-22 — Mobile high-end rebuild on `feat/mobile-high-end` (~~NOT pushed~~ merged: the branch's commits, e.g. `2483b83`, are on origin/main since 2026-07-22; the branch no longer exists)
 Branch = full mobile-only rework (~30 commits), reviewed section-by-section with Dan. Desktop
 verified pixel-identical throughout. Highlights: lazy demo audio + YouTube facade (product page
 ~10.5MB → ~1.5MB), hero BUY/TRY buttons, slim cookie sheet, 44px targets, anchor sub-nav,

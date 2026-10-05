@@ -75,7 +75,7 @@ Viewport reveals on cards/sections only (same tokens). Nothing scrubbed. Low-tra
 - No scroll-jacking; Lenis smooths, never hijacks. Native anchor/keyboard scroll must keep working.
 - No parallax on text, no rotation as primary motion, no animation on legal/checkout flows.
 - No re-animating on every viewport entry — reveals fire `once`.
-- Cart/Gumroad iframe area: zero motion (don't animate around payment).
+- Cart/checkout overlay area (Paddle): zero motion (don't animate around payment).
 
 ## Build order
 
