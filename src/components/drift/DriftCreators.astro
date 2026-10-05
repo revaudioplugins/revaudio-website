@@ -90,6 +90,26 @@ const rules = ['Public', '2 min or more', 'Up 30 days or more', 'Tagged @revaudi
           </details>
         </div>
       </div>
+      {drift.creatorsVideo && (
+        <Fragment>
+          <!-- the player (laptop, Dan 10-05): the ▶ control at the screen's foot plays the how-to inside the monitor; at the end
+               the APPLY pill is the end screen. JS unhides the button (no JS / phones: the text screen only) -->
+          <button class="d-cr-play" type="button" data-cr-play aria-controls="d-cr-video" hidden>
+            <span class="d-cr-play-i" aria-hidden="true">&#9654;</span>Watch how it works<span class="d-cr-play-t">{drift.creatorsVideoLength}</span>
+          </button>
+          <div class="d-cr-video" id="d-cr-video" data-cr-video hidden>
+            <video preload="none" playsinline controls aria-label="How to get DRIFT free, step by step" src={`${drift.creatorsVideo}.mp4`}>
+              <track kind="captions" src={`${drift.creatorsVideo}.vtt`} srclang="en" label="English" />
+            </video>
+            <div class="d-cr-end" data-cr-end hidden>
+              <a class="d-btn-violet" href="/affiliate">Apply as a creator <span class="d-stamp-arrow" aria-hidden="true">&#9656;</span></a>
+              <p class="d-btn-note">Write <strong>DRIFT BETA</strong> in the “why” box.</p>
+              <button type="button" class="d-cr-again" data-cr-again>&#8635; Watch again</button>
+            </div>
+            <button type="button" class="d-cr-close" data-cr-close><span aria-hidden="true">&#10005;</span>Close video</button>
+          </div>
+        </Fragment>
+      )}
     </DriftPanel>
     <div class="d-finish" aria-hidden="true"></div>
     <p class="d-fine d-maker">From RevAudio, makers of RevLimiter.</p>
@@ -112,4 +132,35 @@ const rules = ['Public', '2 min or more', 'Up 30 days or more', 'Tagged @revaudi
   // the phone step cards: the shared coverflow engine (lib/drift/coverflow.ts)
   import { initCoverflow } from '../../lib/drift/coverflow';
   document.querySelectorAll<HTMLElement>('#creators [data-fxc]').forEach(initCoverflow);
+
+  // the how-to player (laptop only: the button shows from 1001 px, drift.css): ▶ opens the video over the screen and plays
+  // it; at the end the APPLY pill + Watch again; ✕ or Esc closes it back to the text screen
+  const wrap = document.querySelector<HTMLElement>('#creators [data-cr-video]');
+  const play = document.querySelector<HTMLButtonElement>('#creators [data-cr-play]');
+  const video = wrap?.querySelector('video');
+  const end = wrap?.querySelector<HTMLElement>('[data-cr-end]');
+  if (wrap && play && video && end) {
+    play.hidden = false;
+    const start = () => { end.hidden = true; video.currentTime = 0; void video.play().catch(() => {}); };
+    const close = () => { video.pause(); wrap.hidden = true; play.focus(); };
+    // the glitch into the video (drift.css): restart both classes on every open; reduced motion = a plain cut
+    const panel = wrap.closest<HTMLElement>('.d-cam-panel');
+    const calm = matchMedia('(prefers-reduced-motion: reduce)');
+    let glitchT = 0;
+    play.addEventListener('click', () => {
+      wrap.hidden = false;
+      if (panel && !calm.matches) {
+        panel.classList.remove('is-glitching'); wrap.classList.remove('is-in');
+        void wrap.offsetWidth;
+        panel.classList.add('is-glitching'); wrap.classList.add('is-in');
+        clearTimeout(glitchT);
+        glitchT = window.setTimeout(() => panel.classList.remove('is-glitching'), 700);   // the text is back under the video
+      }
+      start(); video.focus();
+    });
+    wrap.querySelector('[data-cr-close]')?.addEventListener('click', close);
+    wrap.querySelector('[data-cr-again]')?.addEventListener('click', start);
+    video.addEventListener('ended', () => { end.hidden = false; end.querySelector('a')?.focus(); });
+    wrap.addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.stopPropagation(); close(); } });
+  }
 </script>
