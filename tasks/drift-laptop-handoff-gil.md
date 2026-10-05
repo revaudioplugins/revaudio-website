@@ -27,7 +27,7 @@ Laptop only (≥ 1001 px). Phones, tablets and the 1000 px view are pixel-identi
    - put both in `public/drift/`, point `drift.creatorsVideo` in `src/data/drift.ts` at them (path without extension) and update `creatorsVideoLength`;
    - delete the sample files.
    Or set `creatorsVideo: null` to ship without the player.
-2. **Merge into `feat/drift-page`.** Expect conflicts in `src/styles/drift.css`, `src/lib/drift/trackui.ts` and `src/components/drift/DriftCreators.astro` (the phone pass changed them). ⚠️ feat/drift-page's latest phone work (~17 commits) is still only on Dan's Mac: ask Dan to push it first.
+2. **Merge into `feat/drift-page`** (pushed, `a5a4231`: the phone redesign). A trial merge (`git merge-tree`, 10-05) conflicts in two files only: `src/lib/drift/trackui.ts` and `src/components/drift/DriftCreators.astro`. `drift.css` and `drift.ts` merge cleanly. Keep both sides: the phone pass's changes + this branch's `drift:covered` gate (trackui) and the player markup/script (DriftCreators, laptop-only, hidden on phones).
 3. Team QA on the preview. Fixes go on this branch, then rebuild and redeploy the preview (recipe below).
 4. Merge to main: Dan's word.
 5. After QA: delete the preview project.
