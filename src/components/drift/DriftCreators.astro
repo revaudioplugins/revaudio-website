@@ -158,6 +158,31 @@ const rules = ['Public', '2 min or more', 'Up 30 days or more', 'Tagged @revaudi
       }
       start(); video.focus();
     });
+    // Dan 10-05: ▶ comes up in a glitch once it's in view, then twitches every few seconds until the first play
+    // (drift.css d-cr-play-in / -twitch). Focus reveals it at once; reduced motion / no IO = it's just there.
+    if (!calm.matches && 'IntersectionObserver' in window) {
+      play.dataset.crIn = 'wait';
+      let inView = false, twitchT = 0;
+      const reveal = () => { if (play.dataset.crIn === 'wait') play.dataset.crIn = 'in'; };
+      const twitch = () => {
+        if (!wrap.hidden || play.dataset.crIn !== 'done' || play.matches(':hover')) return;
+        play.removeAttribute('data-cr-twitch'); void play.offsetWidth; play.dataset.crTwitch = '';
+      };
+      play.addEventListener('animationend', (e) => {
+        if (e.animationName === 'd-cr-play-in') play.dataset.crIn = 'done';
+        else if (e.animationName === 'd-cr-play-twitch') play.removeAttribute('data-cr-twitch');
+      });
+      play.addEventListener('focus', reveal);
+      const seen = new IntersectionObserver(([e]) => {
+        inView = e.isIntersecting;
+        clearInterval(twitchT);
+        if (!inView) return;
+        window.setTimeout(() => { if (inView) reveal(); }, 350);   // a beat after the screen lands
+        twitchT = window.setInterval(twitch, 4200);
+      }, { threshold: 1, rootMargin: '0px 0px -10% 0px' });
+      seen.observe(play);
+      play.addEventListener('click', () => { clearInterval(twitchT); seen.disconnect(); }, { once: true });
+    }
     wrap.querySelector('[data-cr-close]')?.addEventListener('click', close);
     wrap.querySelector('[data-cr-again]')?.addEventListener('click', start);
     video.addEventListener('ended', () => { end.hidden = false; end.querySelector('a')?.focus(); });

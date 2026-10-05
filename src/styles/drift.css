@@ -1942,14 +1942,42 @@ html.hc #get .d-get-head span { text-shadow: none; }
   }
   /* ▶ WATCH HOW IT WORKS 0:24 = the player's control row; the video covers the screen inside the bezel, ✕ top right,
      the APPLY pill + Watch again as the end screen. Shown only from here up (phones: the text screen) */
+  /* Dan 10-05 "make it red and bolder so we can see it": the player red, lit (a red glow off the LCD), Oswald's top
+     weight; the length a step lighter. */
   .d-cr-play:not([hidden]) {
     display: inline-flex; align-items: center; gap: 12px; position: absolute; z-index: 2;
     left: calc(var(--cam-l) + 16px); bottom: calc(var(--cam-b) + 8px); padding: 7px 12px; border: 0; border-radius: 6px;
-    background: none; color: var(--cr-ink); font: 600 15px/1 var(--d-f-head); letter-spacing: .06em; text-transform: uppercase; cursor: pointer;
+    background: none; color: var(--cr-red); font: 700 17px/1 var(--d-f-head); letter-spacing: .06em; text-transform: uppercase; cursor: pointer;
+    text-shadow: 0 0 10px rgba(255, 0, 51, .55);
   }
-  .d-cr-play:hover { background: rgba(255, 255, 255, .1); }
-  .d-cr-play-i { font-size: 15px; }
-  .d-cr-play-t { color: var(--cr-ink-2); font-weight: 500; }
+  .d-cr-play:hover { background: rgba(255, 0, 51, .14); }
+  .d-cr-play-i { font-size: 17px; }
+  .d-cr-play-t { font-weight: 500; }
+  /* Dan 10-05 "it should come up in a glitch ... so the user notices": dark until the screen is in view, then it tears
+     in (slices, RGB split, jitter, ~700 ms) and twitches every few seconds until the first play (DriftCreators.astro).
+     Opacity pre-hide only; at rest no clip / transform / filter. Reduced motion / no JS: it's just there. */
+  .d-cr-play[data-cr-in='wait'] { opacity: 0; pointer-events: none; }
+  .d-cr-play[data-cr-in='in'] { animation: d-cr-play-in 700ms steps(1, end); }
+  .d-cr-play[data-cr-twitch] { animation: d-cr-play-twitch 320ms steps(1, end); }
+  @keyframes d-cr-play-in {
+    0% { opacity: 0; }
+    10% { opacity: 1; clip-path: inset(0 0 58% 0); transform: translateX(-10px) skewX(-8deg); text-shadow: -3px 0 #ff0033, 3px 0 #00e5ff; }
+    20% { opacity: 0; }
+    30% { opacity: 1; clip-path: inset(52% 0 0 0); transform: translateX(8px); text-shadow: 4px 0 #ff0033, -4px 0 #00e5ff; }
+    40% { clip-path: inset(18% 0 30% 0); transform: translateX(-5px); filter: brightness(1.8); }
+    48% { opacity: .3; clip-path: none; transform: none; filter: none; }
+    56% { opacity: 1; transform: translateX(4px) skewX(5deg); text-shadow: -2px 0 #ff0033, 2px 0 #00e5ff; }
+    68% { transform: translateX(-2px); }
+    80% { transform: translateX(1px); text-shadow: 1px 0 #00e5ff, 0 0 10px rgba(255, 0, 51, .55); }
+    100% { transform: none; }
+  }
+  @keyframes d-cr-play-twitch {
+    0% { clip-path: inset(0 0 50% 0); transform: translateX(-5px); text-shadow: -3px 0 #ff0033, 3px 0 #00e5ff; }
+    25% { clip-path: inset(46% 0 0 0); transform: translateX(4px); }
+    50% { clip-path: none; transform: none; opacity: .45; }
+    75% { opacity: 1; transform: translateX(-1px); text-shadow: 1px 0 #00e5ff, 0 0 10px rgba(255, 0, 51, .55); }
+    100% { transform: none; }
+  }
   .d-cr-video:not([hidden]) {
     display: block; position: absolute; z-index: 3; inset: var(--cam-t) var(--cam-r) var(--cam-b) var(--cam-l);
     border-radius: 10px;   /* no fill: the video element is the black, so the cover shows through its first glitch frames */
@@ -2058,7 +2086,7 @@ html.hc #creators .d-headline span, html.hc #creators .d-cr-checks li, html.hc #
 /* motion, one cue: on first view the rows + LEDs light top to bottom once (rest = lit: no pre-dim) */
 .d-cr-checks[data-lit] li { animation: d-cr-light 260ms steps(2, end) backwards; animation-delay: calc(var(--i) * 90ms); }
 @keyframes d-cr-light { from { opacity: .12; } to { opacity: 1; } }
-@media (prefers-reduced-motion: reduce) { #creators .d-cr-checks li, #creators .d-cam-panel.is-glitching :is(h2, .d-cr-grid, .d-cr-play), #creators .d-cr-video.is-in video, #creators .d-cr-video.is-in::after { animation: none; } }
+@media (prefers-reduced-motion: reduce) { #creators .d-cr-checks li, #creators .d-cam-panel.is-glitching :is(h2, .d-cr-grid, .d-cr-play), #creators .d-cr-play:is([data-cr-in], [data-cr-twitch]), #creators .d-cr-video.is-in video, #creators .d-cr-video.is-in::after { animation: none; } }
 .d-steps-cr { list-style: none; counter-reset: cr; margin: 0; padding: 0; display: grid; gap: 12px; align-content: start; }
 @media (min-width: 1001px) { .d-steps-cr { gap: 14px; } }
 .d-steps-cr li { counter-increment: cr; position: relative; min-height: 28px; padding-left: 44px; font: 500 15px/1.35 var(--d-f-head); text-transform: uppercase; letter-spacing: .03em; color: var(--d-fg); }
