@@ -1592,12 +1592,13 @@ html.hc #get .d-get-head span { text-shadow: none; }
    tools/gen-drift-dashcam-bezel.sh roll 2 of 2: cropped 1044 x 680, 2x Lanczos + unsharp = 2088 x 1360, bezel
    runs smoothed along their length, screen flattened), 9-sliced at .2 css per file px: slice 330 holds the
    screw AND the trim's corner curve. Measured glass edge (file px): top 236, right 308, bottom 240, left 312
-   -> css 47 / 62 / 48 / 62 (--cam-t/r/b/l). Over it: a flat near-black LCD face (::before, NO scanlines:
+   -> css 47 / 62 / 48 / 62 (--cam-t/r/b/l). Over it: the dot-matrix LCD face (::before, 10-05; NO scanlines:
    never a second TV), viewfinder L-brackets in the screen corners, and the livery as live type on the
    bezel: the 配信 tally lamp + ON AIR top left, stripes + SPEED SOUNDS BETTER top right (printed ink, matte).
    No filter on the plate (a box-shadow follows its corner). Phones: the CSS DriftPanel (screws, no checker)
    with the lamp group in the checker's slot. */
 .d-cam-panel { --cam-t: 47px; --cam-r: 62px; --cam-b: 48px; --cam-l: 62px; }
+.d-cr-play, .d-cr-video { display: none; }   /* the how-to player is laptop only (the 1001+ block shows it) */
 .drift-page .d-cam-panel { padding: 48px 22px 40px; }
 #creators .d-cam-panel > .d-sticker { display: none; }
 .d-cam-ink {
@@ -1626,14 +1627,110 @@ html.hc #get .d-get-head span { text-shadow: none; }
     padding: calc(var(--cam-t) + 20px) calc(var(--cam-r) + 22px) calc(var(--cam-b) + 22px) calc(var(--cam-l) + 22px);
   }
   .d-cam-panel > .d-screw { display: none; }   /* the plate bakes its own */
+  /* Dan 10-05: LCD -> not purple -> another colour -> "maybe give it a vibe of youtube": the monitor plays a video
+     player. The dark player face, white + grey type, the VIDEO CHECK rows as the player's grey chips, the ▶ control
+     row along the bottom (no timeline line: Dan 10-05 "remove it"), APPLY as a red subscribe-style pill (the
+     screen's one red = the action). The vibe only: no YouTube logo, name or icon (their marks: like the F1
+     names, never on the site). The faint 3 px pixel grid stays: a screen, never a second TV. The palette = these vars. */
+  .drift-page .d-cam-panel { padding-bottom: calc(var(--cam-b) + 50px); }   /* room for the ▶ control row */
+  .d-cam-panel {
+    --cr-face: #0f0f0f; --cr-face-hi: #1d1d1d; --cr-grid: rgba(255, 255, 255, .022);
+    --cr-ink: #f1f1f1; --cr-ink-2: #aaaaaa; --cr-chip: #272727; --cr-red: #ff0033; --cr-red-hover: #d9002b;
+  }
   .d-cam-panel::before {
     content: ''; position: absolute; inset: var(--cam-t) var(--cam-r) var(--cam-b) var(--cam-l); z-index: -1;
     border-radius: 10px; pointer-events: none;
-    background: linear-gradient(158deg, rgba(255, 255, 255, .06) 0%, rgba(255, 255, 255, .015) 22%, transparent 42%), #08060c;
-    box-shadow: inset 0 0 0 1px #000, inset 0 0 0 2px rgba(255, 240, 255, .05), inset 0 10px 24px rgba(0, 0, 0, .6);
+    background:
+      linear-gradient(158deg, rgba(255, 255, 255, .06) 0%, rgba(255, 255, 255, .015) 22%, transparent 42%),
+      repeating-linear-gradient(0deg, var(--cr-grid) 0 1px, transparent 1px 3px),
+      repeating-linear-gradient(90deg, var(--cr-grid) 0 1px, transparent 1px 3px),
+      radial-gradient(120% 110% at 50% 40%, var(--cr-face-hi) 0%, var(--cr-face) 70%);
+    box-shadow: inset 0 0 0 1px #000, inset 0 0 0 3px rgba(0, 0, 0, .6), inset 0 10px 22px rgba(0, 0, 0, .5);
   }
-  .d-cam-vf { display: block; position: absolute; inset: calc(var(--cam-t) + 12px) calc(var(--cam-r) + 12px) calc(var(--cam-b) + 12px) calc(var(--cam-l) + 12px); pointer-events: none; }
-  .d-cam-vf::before, .d-cam-vf::after { content: ''; position: absolute; width: 22px; height: 22px; border: 0 solid rgba(210, 60, 255, .5); }
+  .d-cam-vf { display: none; }   /* a player, not a viewfinder (the red timeline under the text went too, Dan 10-05) */
+  /* Dan 10-05 "make the reading on the panel get the effect of the pixeled lcd behind it but not too much": the same
+     3 px pixel mesh laid OVER the screen's content (dark gaps between the pixels, so the type reads as lit pixels; on the
+     black face it's invisible). Under the video (z 3): the player picture stays clean. */
+  .d-cam-panel::after {
+    content: ''; position: absolute; z-index: 2; inset: var(--cam-t) var(--cam-r) var(--cam-b) var(--cam-l); border-radius: 10px; pointer-events: none;
+    background:
+      repeating-linear-gradient(0deg, rgba(0, 0, 0, .2) 0 1px, transparent 1px 3px),
+      repeating-linear-gradient(90deg, rgba(0, 0, 0, .2) 0 1px, transparent 1px 3px);
+  }
+  /* ▶ WATCH HOW IT WORKS 0:24 = the player's control row; the video covers the screen inside the bezel, ✕ top right,
+     the APPLY pill + Watch again as the end screen. Shown only from here up (phones: the text screen) */
+  .d-cr-play:not([hidden]) {
+    display: inline-flex; align-items: center; gap: 12px; position: absolute; z-index: 2;
+    left: calc(var(--cam-l) + 16px); bottom: calc(var(--cam-b) + 8px); padding: 7px 12px; border: 0; border-radius: 6px;
+    background: none; color: var(--cr-ink); font: 600 15px/1 var(--d-f-head); letter-spacing: .06em; text-transform: uppercase; cursor: pointer;
+  }
+  .d-cr-play:hover { background: rgba(255, 255, 255, .1); }
+  .d-cr-play-i { font-size: 15px; }
+  .d-cr-play-t { color: var(--cr-ink-2); font-weight: 500; }
+  .d-cr-video:not([hidden]) {
+    display: block; position: absolute; z-index: 3; inset: var(--cam-t) var(--cam-r) var(--cam-b) var(--cam-l);
+    border-radius: 10px;   /* no fill: the video element is the black, so the cover shows through its first glitch frames */
+  }
+  .d-cr-video video { display: block; width: 100%; height: 100%; object-fit: contain; border-radius: 10px; background: #000; }
+  /* Dan 10-05 "the transition should be a glitch": ▶ tears the text screen (RGB split, slices, jitter, ~160 ms), then
+     the video stutters in through jumping bands with colour-shifted frames; a scanline + colour-band layer flickers
+     over it (::after). Stepped keyframes = digital jumps. No fill after the end: at rest no clip / transform / filter.
+     The video starts on the click (inside it, so the sound isn't blocked); reduced motion = a plain cut. */
+  .d-cam-panel.is-glitching :is(h2, .d-cr-grid, .d-cr-play) { animation: d-cr-glitch-out 170ms steps(1, end) forwards; }
+  .d-cr-video.is-in video { animation: d-cr-glitch-in 540ms steps(1, end); }
+  .d-cr-video::after {
+    content: ''; position: absolute; inset: 0; z-index: 2; border-radius: 10px; pointer-events: none; opacity: 0; mix-blend-mode: screen;
+    background:
+      linear-gradient(transparent 28%, rgba(255, 0, 51, .45) 28% 31%, transparent 31% 62%, rgba(0, 229, 255, .38) 62% 64.5%, transparent 64.5%),
+      repeating-linear-gradient(0deg, rgba(255, 255, 255, .09) 0 1px, transparent 1px 3px);
+  }
+  .d-cr-video.is-in::after { animation: d-cr-noise 540ms steps(1, end); }
+  @keyframes d-cr-glitch-out {
+    0% { transform: none; }
+    20% { transform: translateX(-7px) skewX(-6deg); text-shadow: 4px 0 #ff0033, -4px 0 #00e5ff; }
+    40% { transform: translateX(9px); clip-path: inset(8% 0 44% 0); text-shadow: -5px 0 #ff0033, 5px 0 #00e5ff; }
+    60% { transform: translateX(-4px); clip-path: inset(48% 0 6% 0); opacity: .6; }
+    80% { opacity: .2; }
+    100% { opacity: 0; }
+  }
+  @keyframes d-cr-glitch-in {
+    0% { opacity: 0; }
+    28% { opacity: 1; clip-path: inset(42% 0 46% 0); transform: translateX(-16px); filter: hue-rotate(90deg) saturate(3) contrast(1.8); }
+    36% { clip-path: inset(6% 0 80% 0); transform: translateX(12px); }
+    44% { clip-path: inset(64% 0 14% 0); transform: translateX(-8px); filter: hue-rotate(-70deg) saturate(2.2) contrast(1.5); }
+    52% { clip-path: inset(0 0 55% 0); transform: translateX(9px); }
+    60% { clip-path: inset(22% 0 24% 0); transform: translateX(-4px); filter: contrast(1.4); }
+    70% { clip-path: inset(0); transform: translateX(5px); filter: brightness(1.6) contrast(1.3); }
+    80% { transform: translateX(-2px); filter: none; }
+    90% { transform: translateX(1px); }
+    100% { transform: none; }
+  }
+  @keyframes d-cr-noise {
+    0% { opacity: 0; }
+    28% { opacity: 1; background-position: 0 0, 0 0; }
+    40% { background-position: 0 -90px, 0 1px; }
+    52% { opacity: .8; background-position: 0 70px, 0 0; }
+    64% { opacity: .5; background-position: 0 -30px, 0 2px; }
+    76% { opacity: .2; }
+    88% { opacity: 0; }
+  }
+  .d-cr-end:not([hidden]) {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+    position: absolute; inset: 0; border-radius: 10px; background: var(--cr-face);
+  }
+  .d-cr-end .d-btn-note { margin: 0; }
+  .d-cr-again, .d-cr-close { border: 0; cursor: pointer; color: var(--cr-ink); font-family: var(--d-f-head); }
+  .d-cr-again { padding: 10px 16px; border-radius: 6px; background: none; font-weight: 500; font-size: 16px; letter-spacing: .06em; text-transform: uppercase; }
+  /* ✕ on the bezel, where SPEED SOUNDS BETTER sits (hidden while the video is open): clear of every browser's own
+     video controls (Safari puts its volume at the top right of the picture) */
+  .d-cr-close {
+    position: absolute; right: 0; top: calc(var(--cam-t) / -2); translate: 0 -50%;
+    display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px; border-radius: 15px;
+    background: rgba(255, 255, 255, .08); font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+  }
+  .d-cam-panel:has(.d-cr-video:not([hidden])) .d-cam-tr { visibility: hidden; }
+  .d-cr-again:hover, .d-cr-close:hover { background: rgba(255, 255, 255, .16); }
+  .drift-page .d-cr-play:focus-visible, .drift-page .d-cr-again:focus-visible, .drift-page .d-cr-close:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
   .d-cam-vf--a::before { left: 0; top: 0; border-width: 2px 0 0 2px; }
   .d-cam-vf--a::after { right: 0; bottom: 0; border-width: 0 2px 2px 0; }
   .d-cam-vf--b::before { right: 0; top: 0; border-width: 2px 2px 0 0; }
@@ -1678,7 +1775,7 @@ html.hc #creators .d-headline span, html.hc #creators .d-cr-checks li, html.hc #
 /* motion, one cue: on first view the rows + LEDs light top to bottom once (rest = lit: no pre-dim) */
 .d-cr-checks[data-lit] li { animation: d-cr-light 260ms steps(2, end) backwards; animation-delay: calc(var(--i) * 90ms); }
 @keyframes d-cr-light { from { opacity: .12; } to { opacity: 1; } }
-@media (prefers-reduced-motion: reduce) { #creators .d-cr-checks li { animation: none; } }
+@media (prefers-reduced-motion: reduce) { #creators .d-cr-checks li, #creators .d-cam-panel.is-glitching :is(h2, .d-cr-grid, .d-cr-play), #creators .d-cr-video.is-in video, #creators .d-cr-video.is-in::after { animation: none; } }
 .d-steps-cr { list-style: none; counter-reset: cr; margin: 0; padding: 0; display: grid; gap: 12px; align-content: start; }
 @media (min-width: 1001px) { .d-steps-cr { gap: 14px; } }
 .d-steps-cr li { counter-increment: cr; position: relative; min-height: 28px; padding-left: 44px; font: 500 15px/1.35 var(--d-f-head); text-transform: uppercase; letter-spacing: .03em; color: var(--d-fg); }
@@ -1723,6 +1820,35 @@ html.hc #creators .d-headline span, html.hc #creators .d-cr-checks li, html.hc #
     inset 0 -2px 0 rgba(40, 6, 80, .8),
     0 1px 0 #3b0f6b,
     0 2px 6px rgba(0, 0, 0, .5);
+}
+/* Dan 10-05, the player screen (laptop): flat UI type, no glow. The head in the player's two greys (STREAM IT.
+   secondary, GET DRIFT FREE. primary); the steps read as a playlist (grey index numbers); links in the player's link
+   blue (underlined: colour alone isn't a cue); the VIDEO CHECK rows are the player's chips, each with a check (their
+   first-view light-up stays). "the creator button needs to be a part of the panel": APPLY is the player's red
+   subscribe-style pill, drawn on the screen; hover = the darker red, a press dims it, focus = a white ring. */
+@media (min-width: 1001px) {
+  #creators .d-headline .l1 { color: var(--cr-ink-2); text-shadow: none; }
+  #creators .d-headline .l2 { color: var(--cr-ink); text-shadow: none; }
+  #creators .d-steps-cr li, #creators .d-steps-cr strong, #creators .d-btn-note strong { color: var(--cr-ink); text-shadow: none; }
+  #creators .d-steps-cr li::before { color: var(--cr-ink-2); }
+  #creators .d-steps-cr a, #creators .d-cr-mail a { color: #3ea6ff; text-decoration-color: currentColor; }
+  #creators .d-btn-note, #creators .d-cr-mail { color: var(--cr-ink-2); text-shadow: none; }
+  #creators .d-cr-checks-hdr { font: 600 15px/1.2 var(--d-f-head); letter-spacing: .06em; text-transform: uppercase; color: var(--cr-ink); text-shadow: none; }
+  #creators .d-cr-checks ul { justify-items: start; gap: 8px; }
+  #creators .d-cr-checks li {
+    gap: 8px; padding: 7px 14px 7px 11px; border-radius: 8px; background: var(--cr-chip);
+    font: 500 15px/1.2 var(--d-f-head); letter-spacing: .04em; color: var(--cr-ink); text-shadow: none;
+  }
+  #creators .d-cr-checks li::before { content: '\2713'; width: auto; height: auto; border-radius: 0; background: none; box-shadow: none; font: 700 14px/1 var(--d-f-head); color: var(--cr-ink-2); }
+  #creators .d-btn-violet {
+    min-height: 52px; padding: 0 30px; border-radius: 999px;
+    font: 600 21px/1 var(--d-f-head); letter-spacing: .04em; color: #fff; text-shadow: none;
+    background: var(--cr-red); box-shadow: none;
+    transition: background-color 120ms ease, filter 120ms ease;
+  }
+  #creators .d-btn-violet:hover { background: var(--cr-red-hover); filter: none; }
+  #creators .d-btn-violet:active { transform: none; filter: brightness(.88); box-shadow: none; }
+  .drift-page #creators .d-btn-violet:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
 }
 .drift-page .d-btn-note { font: 500 14px/1.4 var(--d-f-head); text-transform: uppercase; letter-spacing: .04em; color: var(--d-fg); }
 /* the page law: Oswald caps for every spoken line, fine print included (the DRIFT BETA note + the mail line inherit
