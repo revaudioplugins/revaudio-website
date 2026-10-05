@@ -228,6 +228,8 @@ export interface CaptureCopy {
   already: string;
   /** the fine print under the form */
   fine: string;
+  /** phones (Dan 10-05 "minimize the text"): the same facts, short: when, desktop only, the list consent */
+  fineShort: string;
 }
 export function captureCopyFor(phase: DriftPhase = drift.phase): CaptureCopy | null {
   const list = 'You join our list · unsubscribe anytime. Nothing to pay today.';
@@ -241,6 +243,7 @@ export function captureCopyFor(phase: DriftPhase = drift.phase): CaptureCopy | n
           ? `Already on our list. The trial reaches you ${drift.trialOpensDay}.`
           : askUs,
         fine: `Download by email, ${drift.trialOpensDay}. Open it on a computer. You join our list · unsubscribe anytime.`,
+        fineShort: `By email ${drift.trialOpensDay} · Mac / PC. You join our list · unsubscribe anytime.`,
       };
     case 'open':
       return {
@@ -248,6 +251,7 @@ export function captureCopyFor(phase: DriftPhase = drift.phase): CaptureCopy | n
         ok: "You're in. Download on its way by email.",
         already: askUs,
         fine: `Download by email. Open it on a computer. You join our list · unsubscribe anytime.`,
+        fineShort: `By email · Mac / PC. You join our list · unsubscribe anytime.`,
       };
     case 'closed':
       return {
@@ -255,6 +259,7 @@ export function captureCopyFor(phase: DriftPhase = drift.phase): CaptureCopy | n
         ok: `You're on the list. We email you at release, ${drift.releaseLabel}.`,
         already: `Already on our list. You hear from us at release, ${drift.releaseLabel}.`,
         fine: `We email you at release, ${drift.releaseLabel}. ${list}`,
+        fineShort: `We email you at release, ${drift.releaseLabel}. You join our list · unsubscribe anytime.`,
       };
     default:
       return null;
