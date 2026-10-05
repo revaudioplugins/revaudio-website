@@ -1651,7 +1651,11 @@ html.hc #creators .d-headline span, html.hc #creators .d-cr-checks li, html.hc #
 .d-cr-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; }
 .d-cr-checks { display: grid; gap: 8px; align-content: start; background: none; box-shadow: none; padding: 0; }
 @media (min-width: 1001px) {
-  .d-cr-grid { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 24px 40px; }
+  /* Dan 10-05 "center the reading": the columns are sized to the content (steps up to 540, VIDEO CHECK = its
+     246.7 px rows, one line each) and sit as one block on the head's centre axis. Fixed tracks, not max-content:
+     the APPLY row spans both and would otherwise inflate the second one */
+  .d-cr-grid { grid-template-columns: minmax(0, 540px) 250px; justify-content: center; gap: 24px 64px; }
+  .d-cr-checks li { white-space: nowrap; }
   .d-steps-cr { grid-column: 1; grid-row: 1; }
   .d-cr-checks { grid-column: 2; grid-row: 1; gap: 10px; }
 }
