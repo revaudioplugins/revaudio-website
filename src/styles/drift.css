@@ -547,7 +547,7 @@
     border: 0 solid transparent;
     border-image: var(--d-img-trial) 0 120 0 320 fill / 0 42px 0 111px stretch;
     padding-left: 128px;   /* the label clears the checker cap */
-    filter: drop-shadow(0 12px 22px rgba(0, 0, 0, .55));
+    filter: drop-shadow(0 12px 22px rgba(0, 0, 0, .55));   /* WebKit: its own layer, SECTION 4 (#get) */
   }
   .d-trial-panel .d-screw { display: none; }
   .d-hero-trial .d-stamp {
@@ -1225,6 +1225,10 @@
 .d-gps > img, .d-gps > noscript > img { position: absolute; inset: 0; width: 100%; height: 100%; }
 .d-gps-glass { position: absolute; left: 15.5%; top: 44%; width: 69%; height: 44%; }
 .d-gps-glass svg { width: 100%; height: 100%; display: block; overflow: visible; }
+/* the car's own svg, the track's twin laid over it (scroll bench 10-05): on its own layer while it laps (trackui.ts),
+   a lap repaints only that layer, never the glowing track and the plate under it */
+.d-gps-trk { position: relative; width: 100%; height: 100%; }
+.d-gps-glass svg.d-gps-car { position: absolute; inset: 0; pointer-events: none; }   /* moving, its box sweeps over the caps and faders */
 .d-gps-glass path.trk { fill: none; stroke: #b46bff; stroke-width: 2px; vector-effect: non-scaling-stroke; stroke-linejoin: round; filter: drop-shadow(0 0 4px rgba(180, 107, 255, .8)); }
 .d-gps-glass circle.car { fill: #fff0ff; filter: drop-shadow(0 0 6px rgba(242, 76, 240, .95)); }
 .d-gps-lcd { position: absolute; left: 62%; top: 9.6%; width: 30%; height: 10%; display: flex; flex-direction: column; justify-content: center; padding: 0 8px; }
@@ -1779,6 +1783,14 @@ html.hc #get .d-get-head span { text-shadow: none; }
      and it scales down to one line where the 407 px right half squeezes the column (243 px at 1100 -> 25.8 px) */
   .drift-page #get .d-get-head { font: 700 clamp(24px, 10.6cqw, 32px)/.95 var(--d-f-head); }
   #get .d-capture .d-field-row { grid-template-columns: minmax(0, 1fr) auto; gap: 14px; align-items: center; }
+}
+/* WebKit only (Safari, every iOS browser): a repaint inside a box with a filter re-runs that box's whole drop-shadow,
+   and the breathing placeholder repaints every frame, so both consoles held the page near 20 fps (scroll bench 10-05).
+   Their own layer keeps the shadow out of the repaint. Blink rasters by tile and needs nothing; a layer there would
+   move the console text by a device pixel. */
+@supports (font: -apple-system-body) {
+  @media (min-width: 1100px) { .d-trial-panel { will-change: transform; } }
+  @media (min-width: 1001px) { .drift-page #get .d-get-panel { will-change: transform; } }
 }
 .d-capture-form { display: grid; gap: 8px; }
 .d-field-row { display: grid; gap: 14px; justify-items: start; }
