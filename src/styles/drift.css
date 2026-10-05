@@ -1215,6 +1215,12 @@
   #drive .d-gps { width: var(--gps); }   /* the 402:448 aspect-ratio + the %-placed caps, LCD and glass follow */
   #drive .d-gps-lcd span { font-size: clamp(11px, calc(var(--gps) * .046), 14px); }   /* the LCD text follows its plate, never the window width */
   #drive .d-cap::before { inset: 50% auto auto 50%; width: max(calc(100% + 8px), 38px); aspect-ratio: 1; translate: -50% -50%; }   /* the 10-03 hit area (cap + 4 px a side), never under 38 px on a smaller plate */
+  /* Dan 10-05 "add color": all three caps in their own colour, as lit as PLAY (STOP's grey-out for "one red per
+     viewport" is lifted here: the pinned #drive panel is the whole screen); the pressed cap keeps its glow ring */
+  #drive .d-cap, #drive .d-cap--stop:not(:active) { filter: brightness(1.15) drop-shadow(0 3px 4px rgba(0, 0, 0, .7)); }
+  #drive .d-cap:hover, #drive .d-cap--stop:not(:active):hover { filter: brightness(1.28) drop-shadow(0 3px 4px rgba(0, 0, 0, .7)); }
+  #drive .d-cap:active { filter: brightness(1); }
+  #drive .d-cap[aria-pressed='true'] { filter: brightness(1.15) drop-shadow(0 0 10px rgba(255, 255, 255, .25)); }
   /* faders: the graffiti art scales with the GPS (one part); both pictures one height so the slots sit level */
   #drive .d-fad { gap: calc(4px + 2 * var(--t)); }
   #drive .d-fad-pic { width: auto; height: calc(64px + 4 * var(--t)); }
