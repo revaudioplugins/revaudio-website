@@ -1,3 +1,24 @@
+## 2026-10-04/05 — /drift PHONE REDESIGN, all six sections (Claude Code, Dan leads) — PUSHED: feat/drift-page 221517a + QA branch qa/drift-page-1005; main untouched, /drift still coming-soon live
+Owner: Claude Code (Dan's session). Scope: PHONES ONLY (@media max-width 600px); every width 601-1600 stayed pixel-identical
+(gate: node_modules/.cache/drift-qa/nonphone-gate.mjs, baseline np-base-head). Walked on the iOS Simulator (iPhone 17 Pro, 402).
+- f9f4117 merged feat/drift-mobile (the 10-02 phone pass) in; kept the 10-04 #fx.
+- HERO (e04ecaa, 1bcae1a, 221517a): wheel 215vw off both edges, no gauges, sways ±10° (display only, no drag); tagline behind
+  the rim (LET YOUR SOUND white); the offer on the keep-it TV's CRT BEHIND the wheel (Press Start head, VT323 field + red
+  digital GET IT on one row); $69 / ETA NOV 1 engraved + paint-filled on the rim in Oswald (#d-engrave), pair centred on $69;
+  no ドリフト on the phone hub. Gate: drift-qa/occlusion-gate.mjs (no offer glyph under wheel pixels at ±20°).
+- #drive (eba387e, bb910b7, 76e9081): trial-plate 9-slice, no 速度, no faders/value screens, no picker (ONE circuit laps),
+  GPS 76% + live pan meter, "40 TRACKS. / SYNCED TO YOUR BPM."; chips renamed to circuit names on ALL screens (gen PICK).
+- keep-it TV (77b49b2): the road to Nov 1 runs down the screen; no email box on the TV.
+- #fx (a9dc0b2): coverflow carousel of TRUE-ALPHA pedals (tools/shoot-drift-fx-pedals.mjs shoots them from the plugin UI).
+- #get (5244f5a, de62eda): the hero's offer on the trial plate; no compat rows/folds; fine print -> fineShort (2 lines).
+- #creators (8e022a2, 40971db, fd1c2ea): step-card carousel on car-window GLASS (frit, seal, reflections), APPLY etched into
+  the glass, no ON AIR / etch mark. Shared engine src/lib/drift/coverflow.ts (#fx + #creators).
+RELEASE: qa/drift-page-1005 = origin/main 09e6465 + REVERT of ebdd081 (the 10-03 unpublish; its own note says revert it before
+release) + feat/drift-page. Merges clean, builds clean, smoke PASS. Going live = push that branch's HEAD to main (Dan's word;
+auto mode blocks the agent). Rejected this session: page-long CRT, wheel overlapping #drive, B/C variants on every bench.
+Open: wheel art is 1000 px (soft at 3x; upscale = paid, Dan's call); phones still fetch the hidden gauge PNGs; dead 10-02
+rules + the kicker markup to delete; team QA on qa/drift-page-1005.
+
 ## 2026-10-04 — /drift FINISHED from #fx down (Claude Code team) — COMMITTED LOCAL on feat/drift-page (9061a74, 9d5617c, 4d203bf), NOT pushed, dev :4328
 Owner: Claude Code (Dan's session). Same branch/worktree as the entries below (one writer). Main untouched, nothing live.
 Why: Dan 10-03 "make a team of ui/ux, sales copywriter, brand to finish the page with the same style we made so far. end it"
