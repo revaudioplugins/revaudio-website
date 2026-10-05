@@ -39,6 +39,11 @@ export const drift = {
   creatorDealOpen: true,
   /** e.g. 'Sat Oct 24'; appended to creator step 3 when set. */
   videoDeadlineLabel: null as string | null,
+  /** The creators how-to video in the ON AIR player (laptop): public/ path without extension (.mp4 + .vtt captions);
+   *  null = no player button. NOW A SAMPLE (Dan 10-05 "a fake video just to see the change", marked SAMPLE on
+   *  screen): swap for Dan's real screen recording before this goes live. */
+  creatorsVideo: '/drift/creators-howto-sample' as string | null,
+  creatorsVideoLength: '0:24',
   /** true = the Oct 10 trial mail goes to the whole newsletter list, so an
    *  already-subscribed sign-up still gets it (worker.js /form-once swallows repeats). */
   trialMailToWholeList: false,

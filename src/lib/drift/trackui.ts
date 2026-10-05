@@ -106,20 +106,26 @@ export function initTracks(root: HTMLElement): void {
   };
   const kick = () => { if (!raf) { last = performance.now(); raf = requestAnimationFrame(frame); } readouts(); };
 
-  // autoplay only while the cabinet or the hero wheel is really on screen
+  // autoplay only while the cabinet or the hero wheel is really on screen, and the FX crane (crane.ts, laptop)
+  // hasn't landed the FX panel over this one: the dash rests under the FX view, as in the plugin
   const watched = [gps, root.querySelector<HTMLElement>('.d-cockpit')].filter((el): el is HTMLElement => !!el);
+  const seen = new Set<Element>();
+  let covered = false;
+  const autoplay = () => {
+    if (seen.size && !covered) {
+      if (!running && !userPaused && !reduce) { running = true; paused = false; spring.pan = getPan(); spring.vel = 0; kick(); }
+    } else if (running) {
+      running = false; paused = false; park(); kick();   // the STOP path: the spring parks the pan at C
+    }
+  };
+  sec.addEventListener('drift:covered', (e) => { covered = (e as CustomEvent<boolean>).detail; autoplay(); });
   if (watched.length && 'IntersectionObserver' in window) {
-    const seen = new Set<Element>();
     // phone (A5, 10-04): the hero wheel is 2.15x the screen, so a full screen of it is only ~30% of its box
     const phoneMq = matchMedia('(max-width: 600px)');
     const need = (el: Element) => (phoneMq.matches && el.classList.contains('d-cockpit') ? 0.2 : 0.35);
     const io = new IntersectionObserver((entries) => {
       for (const e of entries) e.intersectionRatio >= need(e.target) ? seen.add(e.target) : seen.delete(e.target);
-      if (seen.size) {
-        if (!running && !userPaused && !reduce) { running = true; paused = false; spring.pan = getPan(); spring.vel = 0; kick(); }
-      } else if (running) {
-        running = false; paused = false; park(); kick();   // the STOP path: the spring parks the pan at C
-      }
+      autoplay();
     }, { threshold: [0.2, 0.35] });
     watched.forEach((el) => io.observe(el));
   }
