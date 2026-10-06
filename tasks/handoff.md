@@ -1,3 +1,11 @@
+## 2026-10-06 — /drift FOOTER END on phones (Claude Code, Dan's iPhone shot: "the black part underneath the footer") — PUSHED feat/drift-page + qa/drift-page-1005; main untouched
+DriftStickyBar.astro only (its CSS ships with /drift alone). The house footer's 84 px cart-FAB clearance (global.css, <=900)
+is cut here: on /drift the FAB slides off at the footer (or is off with an empty cart). Phones (<=600): the footer fills the
+screen under the header at the page end (min-height 100lvh - --d-nav-h, the nav's real height published by the bar script),
+links bottom-aligned, so the header sits on the footer's head with nothing under the icons. Checked: iOS Simulator Safari
+before/after; 402x760 / 430x830 exact fit (footer top = nav bottom); 1001/1141/1600 pixel-identical (Chrome + WebKit);
+768 only 60 px shorter (the band). Other pages keep the band: their cart FAB stays put over the footer.
+
 ## 2026-10-05 — /drift SCROLL PERF (Claude Code, Dan: "check the smoothness of the scroll ... make it seamless") — on feat/drift-page (Dan: "commit") + merged into qa/drift-page-1005, both PUSHED (Dan: "push"); main untouched, nothing live
 Owner: Claude Code (Dan's session). Branch fix/drift-scroll off feat/drift-page 963672e, worktree .claude/worktrees/drift-scroll
 (node_modules symlinked). Files: DriftTracks.astro, trackui.ts, bus.ts, drift.css. No visual change: full-page pixel gate
