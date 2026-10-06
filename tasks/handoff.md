@@ -80,8 +80,10 @@ Owner: Claude Code. Repo `revaudio-website`, branch `main`. Plan: `tasks/growth-
   Paddle was stubbed, no real order placed. ~3 test Meta pixel hits from localhost reached the live pixel.
 - Repo repair this session: 286 `desktop.ini` in `.git` + missing objects → `git fetch --refetch`, then
   deleted refs pointing at missing objects (`ci/actions-node24-bump` tracking ref, 2 archive tags), refetched tags.
-- Next: Dan says "push" → push → re-test live in a fresh profile after the CF toggle. Then the Paddle webhook
-  (licence worker), privacy text, Ads conversion-action settings.
+- UPDATE same day: pushed (`ad80681`), then `61b0117` = gtag from googletagmanager.com (the gateway has ONE switch,
+  no way to keep `/nojr/` without the injection). Yoni turned the CF Google tag gateway OFF. Verified live in fresh
+  profiles: no click / decline = 0 Google requests; accept = gtag + hits. Keep the gateway off.
+- Next: Paddle webhook (licence worker) → Ads + Meta server-side, privacy text, Ads conversion-action settings.
 
 ## 2026-09-06 (late) — /gas CTA iterations, committed locally, NOT pushed
 - d6d10a3 original plugins.ts copy restored (Dan: "copywrite is not good"), new layout kept.
