@@ -206,10 +206,34 @@ for (const p of plugins) {
     function track(ev, params) {
       try { if (window.fbq) window.fbq('track', ev, params || {}); } catch (e) {}
     }
-    // Cart total captured at checkout start, replayed onto the Google Ads
-    // conversion after the LS redirect has cleared the cart. (Meta's Purchase
-    // is server-side and reads the real total off the LS webhook, not this.)
+    // Cart total captured at checkout start. Only a fallback for the Google Ads
+    // conversion, used when the checkout's completion event carries no
+    // usable order total (the cart has already been cleared by then).
     var lastCheckoutValue = 0;
+
+    // ---- Google Ads purchase conversion ----
+    // One hit per order. transaction_id lets Google drop a repeat of the same
+    // order (reload, replayed event). Value = what the buyer paid net of tax,
+    // in the checkout's own currency; if the engine gave no usable total, the
+    // pre-payment cart sum in USD stands in. No-op until site.ts sets
+    // gadsPurchaseSendTo. The redirect waits for the hit (or 500 ms, the
+    // documented gtag event_callback pattern) so it isn't lost mid-nav.
+    function sendPurchaseConversion(order, go) {
+      var mapEl = document.querySelector('[data-checkout-map]');
+      var sendTo = (mapEl && mapEl.getAttribute('data-gads-purchase')) || '';
+      if (!sendTo || !window.gtag) { go(); return; }
+      var paid = typeof order.value === 'number' && isFinite(order.value) && order.value >= 0 &&
+        /^[A-Z]{3}$/.test(order.currency || '');
+      var params = {
+        send_to: sendTo,
+        value: paid ? Math.round(order.value * 100) / 100 : lastCheckoutValue,
+        currency: paid ? order.currency : 'USD',
+        event_callback: go
+      };
+      if (order.id) params.transaction_id = String(order.id);
+      try { window.gtag('event', 'conversion', params); } catch (e) { go(); }
+      setTimeout(go, 500);
+    }
 
     // ---- Lemon Squeezy overlay (engine 'ls') ----
     // lemon.js is included above only when the engine is 'ls'. Setup() wires
@@ -231,21 +255,16 @@ for (const p of plugins) {
               // real order regardless of cookie consent or redirect races. A
               // client replay here would carry no order id, so Meta could not
               // dedupe the pair and every sale would count twice. Don't re-add it.
-              // Google Ads purchase conversion — no-op until site.ts sets
-              // gadsPurchaseSendTo. Redirect waits for the hit (or 500 ms, the
-              // documented gtag event_callback pattern) so it isn't lost mid-nav.
-              var mapEl = document.querySelector('[data-checkout-map]');
-              var gadsSendTo = (mapEl && mapEl.getAttribute('data-gads-purchase')) || '';
+              // LS order amounts are integer cents.
               var redirected = false;
               var go = function () { if (!redirected) { redirected = true; window.location.href = '/thank-you'; } };
-              if (gadsSendTo && window.gtag) {
-                try {
-                  window.gtag('event', 'conversion', {
-                    send_to: gadsSendTo, value: lastCheckoutValue, currency: 'USD', event_callback: go
-                  });
-                } catch (e) { go(); }
-                setTimeout(go, 500);
-              } else { go(); }
+              var lsOrder = (ev.data && ev.data.order && ev.data.order.data) || {};
+              var lsAttr = lsOrder.attributes || {};
+              sendPurchaseConversion({
+                id: lsOrder.id,
+                value: (lsAttr.total - (lsAttr.tax || 0)) / 100,
+                currency: lsAttr.currency
+              }, go);
             }
           }
         });
@@ -280,21 +299,19 @@ for (const p of plugins) {
             if (ev && ev.name === 'checkout.completed') {
               write([]); sync();
               var txnId = ev.data && ev.data.transaction_id;
-              var gadsSendTo = (mapEl && mapEl.getAttribute('data-gads-purchase')) || '';
               var redirected = false;
               var go = function () {
                 if (redirected) return;
                 redirected = true;
                 window.location.href = txnId ? (purchaseUrl + '?_ptxn=' + encodeURIComponent(txnId)) : '/thank-you';
               };
-              if (gadsSendTo && window.gtag) {
-                try {
-                  window.gtag('event', 'conversion', {
-                    send_to: gadsSendTo, value: lastCheckoutValue, currency: 'USD', event_callback: go
-                  });
-                } catch (e) { go(); }
-                setTimeout(go, 500);
-              } else { go(); }
+              // Paddle.js totals are major-unit numbers (total 32.66, tax 2.66).
+              var totals = (ev.data && ev.data.totals) || {};
+              sendPurchaseConversion({
+                id: txnId,
+                value: totals.total - (totals.tax || 0),
+                currency: ev.data && ev.data.currency_code
+              }, go);
             }
           }
         });

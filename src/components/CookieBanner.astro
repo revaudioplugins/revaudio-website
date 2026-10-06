@@ -1,8 +1,8 @@
 ---
 /* Cookie consent banner — shown once per browser, stored in localStorage.
-   Accepting also initialises Meta Pixel and the Google Ads tag (gtag.js);
-   declining skips all tracking cookies. Cloudflare Web Analytics is
-   cookieless and fires unconditionally. */
+   Accepting also initialises Meta Pixel and the Google Ads tag (gtag.js,
+   with Consent Mode v2 signals); declining skips all tracking cookies.
+   Cloudflare Web Analytics is cookieless and fires unconditionally. */
 ---
 
 <div
@@ -57,16 +57,38 @@
       fbq('track', 'PageView');
     }
 
+    // Google Consent Mode v2, basic: gtag.js loads only after Accept. Default
+    // denied, then the update to granted, both queued ahead of the library so
+    // its first hit already carries the visitor's choice.
+    function consent(value) {
+      return { ad_storage: value, analytics_storage: value, ad_user_data: value, ad_personalization: value };
+    }
+    // A gtag that exists before this script ran was put there by the edge
+    // (Cloudflare Google tag gateway, "add tag to pages"). That tag loads and
+    // configures itself, so here it only gets the visitor's consent signal.
+    var edgeGtag = typeof window.gtag === 'function';
+    var googleStarted = false;
+
     function initGoogleAds() {
-      if (window.gtag) return;
+      if (googleStarted) return;
+      googleStarted = true;
+      if (edgeGtag) { window.gtag('consent', 'update', consent('granted')); return; }
       window.dataLayer = window.dataLayer || [];
       window.gtag = function () { window.dataLayer.push(arguments); };
+      gtag('consent', 'default', consent('denied'));
+      gtag('consent', 'update', consent('granted'));
       var t = document.createElement('script');
       t.async = true;
       t.src = '/nojr/gtag/js?id=AW-18334323184';
       document.head.appendChild(t);
       gtag('js', new Date());
       gtag('config', 'AW-18334323184');
+    }
+
+    // Undecided or declined: our own loader never runs, so this only matters
+    // while an edge-injected tag is present.
+    function denyGoogle() {
+      if (edgeGtag) window.gtag('consent', 'update', consent('denied'));
     }
 
     function showBanner() {
@@ -93,6 +115,7 @@
       initGoogleAds();
       return;
     }
+    denyGoogle();
     if (stored === 'declined') {
       return;
     }
