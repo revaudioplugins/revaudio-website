@@ -11,9 +11,6 @@ export const site = {
 
   /**
    * Which engine the cart's Checkout button drives.
-   * 'ls'         — Lemon Squeezy hosted-overlay checkout (plugins.ts checkoutUrl).
-   *                Dormant since the 2026-08-31 Paddle cutover; kept as an
-   *                instant rollback (flip this value back, nothing else to undo).
    * 'fastspring' — FastSpring SBL popup (plugins.ts fastspringPath). Dormant —
    *                superseded by the Paddle migration before this ever went live.
    * 'paddle'     — Paddle Billing overlay checkout (plugins.ts paddlePriceId,
@@ -24,7 +21,7 @@ export const site = {
    *                license keys via its own webhook, entirely separate from
    *                this redirect).
    */
-  checkoutEngine: 'paddle' as 'ls' | 'fastspring' | 'paddle',
+  checkoutEngine: 'paddle' as 'fastspring' | 'paddle',
 
   /**
    * Paddle Billing (see checkoutEngine above).
@@ -39,7 +36,7 @@ export const site = {
   },
 
   /**
-   * Google Ads PURCHASE conversion (fired by Cart.astro on Checkout.Success).
+   * Google Ads PURCHASE conversion (fired by Cart.astro on Paddle's checkout.completed).
    * GO-LIVE: Google Ads → Tools → Conversions → New conversion action →
    * Website → category "Purchase", then paste the full send_to value here,
    * e.g. 'AW-18334323184/AbCdEfGhIjK'. While empty, no purchase conversion

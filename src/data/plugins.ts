@@ -4,19 +4,18 @@
  * Lifecycle:
  *   status: 'in-development' → no Buy CTA, only waitlist
  *   status: 'beta'           → Buy CTA shows but no checkoutUrl until product live
- *   status: 'live'           → Buy CTA active, set checkoutUrl to the Lemon Squeezy buy link
+ *   status: 'live'           → Buy CTA active (isBuyable: checkoutUrl set; the
+ *                              Paddle cart item is paddlePriceId)
  *
  * ARRAY ORDER IS THE STORE ORDER: /store renders this list as-is, so shipping
  * plugins lead and in-development ones trail. Nothing else depends on order
  * (Header/Cart/TrialGateModal look plugins up by slug).
  *
  * Prices are intent — flip when commerce launches.
- * Checkout: engine-switched in src/data/site.ts (checkoutEngine). 2026-08-03:
- * 'ls' — Lemon Squeezy re-activated as the interim engine (checkoutUrl) while
- * FastSpring onboarding finishes (fastspringPath, ready to flip to). The
- * site-wide trial gate is LIFTED for the paid plugins; GAS keeps
- * `trialGateActive` on purpose — its email-gate IS the free download's
- * delivery mechanism, not a checkout pause.
+ * Checkout: engine-switched in src/data/site.ts (checkoutEngine); Paddle
+ * Billing since 2026-08-31 (paddlePriceId). The site-wide trial gate is
+ * LIFTED for the paid plugins; GAS keeps `trialGateActive` on purpose — its
+ * email-gate IS the free download's delivery mechanism, not a checkout pause.
  */
 
 export type PluginStatus = 'in-development' | 'beta' | 'live';
@@ -108,12 +107,14 @@ export interface Plugin {
   bundleNote?: string;
   introPriceUsd: number | null;
   regularPriceUsd: number | null;
-  /** Lemon Squeezy hosted checkout URL. Null until wired → product shows the "checkout reopening" state. */
+  /** Legacy hosted checkout link from the old store. Never opened under the
+   *  Paddle engine; kept only because isBuyable(), checkoutPaused and the buy
+   *  buttons' data-checkout-url still read it. Null → product shows the
+   *  "checkout reopening" state. */
   checkoutUrl: string | null;
   /** FastSpring product path (Store Builder Library) — the catalog SKU/path
-   *  configured in the FastSpring storefront admin, NOT a URL. Kept alongside
-   *  checkoutUrl (LS) so the checkout engine can roll back by just switching
-   *  which one Cart.astro reads. */
+   *  configured in the FastSpring storefront admin, NOT a URL. Read by
+   *  Cart.astro only when site.checkoutEngine is 'fastspring' (dormant). */
   fastspringPath?: string | null;
   /** Paddle Billing price id (pri_...) for this plugin's checkout item.
    *  Read by Cart.astro when site.checkoutEngine is 'paddle'. Null/absent for
@@ -173,17 +174,12 @@ const baseSystemReq: SystemReq = {
   daws: 'Cubase 12+, Studio One 6+, Reaper 7+, Ableton Live 11+, FL Studio 21+, Pro Tools 2023+, Logic Pro 11+',
 };
 
-// RevLimiter — Lemon Squeezy hosted checkout URL. List price $49 (partner call
-// 2026-08-04). The "no sales" posture was dropped 2026-09-24 (Dan); no discount
-// code rides this URL today, but one may.
-// VERIFY on the next test purchase: LS list price must show $49 (the LS-side
-// variant price change is Yoni/Gil's lane).
+// RevLimiter + Radio Roulette — legacy hosted checkout links from the old
+// store. Checkout is Paddle (paddlePriceId below); these links are never
+// opened. They stay only because isBuyable(), checkoutPaused and RevLimiter's
+// statusLabel still key off checkoutUrl being set; drop them once those read
+// paddlePriceId instead.
 const REVLIMITER_CHECKOUT_URL: string | null = 'https://revaudiopg.lemonsqueezy.com/checkout/buy/78885904-8a19-4e23-9510-31b50775ada5';
-
-// Radio Roulette — Lemon Squeezy hosted checkout URL. Interim: we're
-// migrating the whole payment system to FastSpring, but this LS variant
-// covers checkout in the meantime until that account is approved.
-// Reopened 2026-07-23 — fixes are in, checkout is back on.
 const RADIOROULETTE_CHECKOUT_URL: string | null = 'https://revaudiopg.lemonsqueezy.com/checkout/buy/884e8eb9-903e-497d-a9ec-41153a6b1738';
 
 // GAS — always free, no checkout. Ships via the same download portal as
@@ -215,8 +211,8 @@ export const plugins: Plugin[] = [
     fastspringPath: 'revlimiter',
     paddlePriceId: 'pri_01m18vcv5f42cdbv5bzxhm94n1',
     checkoutPaused: !REVLIMITER_CHECKOUT_URL,
-    // Gate lifted 2026-08-03: checkout re-opened on the LS interim engine
-    // (site.checkoutEngine) — BUY is a real add-to-cart again and the door's
+    // Gate lifted 2026-08-03: checkout re-opened (site.checkoutEngine, Paddle
+    // since 2026-08-31) — BUY is a real add-to-cart again and the door's
     // painted trial line carries the trial offer. Re-set to true only if
     // checkout pauses again.
     trialGateActive: false,

@@ -31,13 +31,13 @@ import { TERMS_LAST_UPDATED } from '../data/legal';
  * - A required consent checkbox gates Checkout; its links open the legal-reader
  *   modal (Terms / Licence / Privacy) IN A POPUP — no page navigation.
  * - Checkout runs on site.checkoutEngine (2026-08-31: 'paddle' — Paddle
- *   Billing overlay checkout, live). 'ls' and 'fastspring' are dormant
- *   (kept only as an instant rollback — flip the value in src/data/site.ts,
- *   nothing else to undo). 'paddle' opens the Paddle.js overlay
- *   (paddle.js + Paddle.Checkout.open), summing the full cart natively; on
- *   checkout.completed it redirects to site.paddle.purchaseUrl with
- *   ?_ptxn=<transaction id> instead of /thank-you — the revlimiter-license
- *   worker's own webhook (not this page) does the actual key minting/emailing.
+ *   Billing overlay checkout, live). 'fastspring' is dormant (superseded by
+ *   Paddle before it ever went live, see src/data/site.ts). 'paddle' opens
+ *   the Paddle.js overlay (paddle.js + Paddle.Checkout.open), summing the
+ *   full cart natively; on checkout.completed it redirects to
+ *   site.paddle.purchaseUrl with ?_ptxn=<transaction id> instead of
+ *   /thank-you — the revlimiter-license worker's own webhook (not this page)
+ *   does the actual key minting/emailing.
  * Rendered once in BaseLayout. No framework — vanilla JS, progressive.
  *
  * Checkout URLs are resolved fresh from this catalog map by slug at checkout
@@ -48,7 +48,7 @@ const engine = site.checkoutEngine;
 const checkoutMap: Record<string, string> = {};
 const cartCatalog: Record<string, { name: string; price: number; img: string; formats: string }> = {};
 for (const p of plugins) {
-  const target = engine === 'ls' ? p.checkoutUrl : engine === 'fastspring' ? p.fastspringPath : p.paddlePriceId;
+  const target = engine === 'fastspring' ? p.fastspringPath : p.paddlePriceId;
   if (target) {
     checkoutMap[p.slug] = target;
     const source = pluginImage(p.heroImage);
@@ -71,19 +71,14 @@ for (const p of plugins) {
   set:html={JSON.stringify(checkoutMap)}
 ></script>
 
-{/* Lemon Squeezy overlay checkout — renders the payment screen in a modal over
-    the site. No SRI: LS rotates lemon.js and ships it unversioned, so an
-    integrity pin would hard-break checkout on their next deploy (same call as
-    the CF beacon in BaseLayout). The CSP transform rule scopes what can load. */}
-{engine === 'ls' && <script is:inline src="https://assets.lemonsqueezy.com/lemon.js" defer></script>}
-
-{/* Paddle.js overlay checkout. Same no-SRI reasoning as lemon.js above — Paddle
-    serves this unversioned from their own CDN, so pinning integrity would
-    hard-break checkout on their next release. Requires https://cdn.paddle.com
-    on the Cloudflare CSP transform rule's script-src (dashboard-only edit —
-    see revaudio-edge-csp-transform-rule reference); the overlay itself may
-    need its own frame-src/connect-src entries too, discoverable via the
-    browser console's CSP violation messages if checkout doesn't fully open. */}
+{/* Paddle.js overlay checkout. No SRI: Paddle serves this unversioned from
+    their own CDN, so pinning integrity would hard-break checkout on their
+    next release (same call as the CF beacon in BaseLayout). Requires
+    https://cdn.paddle.com on the Cloudflare CSP transform rule's script-src
+    (dashboard-only edit — see revaudio-edge-csp-transform-rule reference);
+    the overlay itself may need its own frame-src/connect-src entries too,
+    discoverable via the browser console's CSP violation messages if checkout
+    doesn't fully open. */}
 {engine === 'paddle' && <script is:inline src="https://cdn.paddle.com/paddle/v2/paddle.js" defer></script>}
 
 <!-- Empty-cart tooltip: shown on hover of the cart icon when there's nothing in it yet. -->
@@ -246,43 +241,6 @@ for (const p of plugins) {
       setTimeout(go, 500);
     }
 
-    // ---- Lemon Squeezy overlay (engine 'ls') ----
-    // lemon.js is included above only when the engine is 'ls'. Setup() wires
-    // the overlay's event stream; Checkout.Success clears the cart and lands
-    // on /thank-you — the same contract fsCheckoutClosed keeps for FastSpring.
-    var lemonReady = false;
-    function ensureLemon() {
-      if (lemonReady) return !!(window.LemonSqueezy && window.LemonSqueezy.Url);
-      if (typeof window.createLemonSqueezy !== 'function') return false;
-      try {
-        window.createLemonSqueezy();
-        window.LemonSqueezy.Setup({
-          eventHandler: function (ev) {
-            if (ev && ev.event === 'Checkout.Success') {
-              write([]); sync();
-              // NO client-side Purchase here, deliberately. Meta Purchase is
-              // server-side only: the LS webhook fires it from the worker
-              // (fireMetaPurchase, event_id "ls-<order id>"), which catches every
-              // real order regardless of cookie consent or redirect races. A
-              // client replay here would carry no order id, so Meta could not
-              // dedupe the pair and every sale would count twice. Don't re-add it.
-              // LS order amounts are integer cents.
-              var redirected = false;
-              var go = function () { if (!redirected) { redirected = true; window.location.href = '/thank-you'; } };
-              var lsOrder = (ev.data && ev.data.order && ev.data.order.data) || {};
-              var lsAttr = lsOrder.attributes || {};
-              sendPurchaseConversion({
-                id: lsOrder.id,
-                value: (lsAttr.total - (lsAttr.tax || 0)) / 100,
-                currency: lsAttr.currency
-              }, go);
-            }
-          }
-        });
-        lemonReady = true;
-      } catch (e) {}
-      return lemonReady;
-    }
     function engineName() {
       var el = document.querySelector('[data-checkout-map]');
       return (el && el.getAttribute('data-engine')) || 'fastspring';
@@ -290,11 +248,11 @@ for (const p of plugins) {
 
     // ---- Paddle overlay (engine 'paddle') ----
     // paddle.js is included above only when the engine is 'paddle'. Paddle's
-    // eventCallback is set once at Initialize() time (unlike LS's per-call
-    // Setup handler) — checkout.completed both clears the cart and redirects
-    // to the license worker's /purchase page with the transaction id, instead
-    // of /thank-you. No client-side Purchase pixel here either, same reasoning
-    // as the LS block below: server-side only, fired from the worker's webhook.
+    // eventCallback is set once at Initialize() time — checkout.completed both
+    // clears the cart and redirects to the license worker's /purchase page
+    // with the transaction id, instead of /thank-you. No client-side Purchase
+    // pixel here, deliberately: server-side only, fired from the worker's
+    // webhook. Don't add one.
     var paddleReady = false;
     function ensurePaddle() {
       if (paddleReady) return !!(window.Paddle && window.Paddle.Checkout);
@@ -477,23 +435,6 @@ for (const p of plugins) {
       track('InitiateCheckout', { value: lastCheckoutValue, currency: 'USD', num_items: count(cart) });
       var ver = (agree && agree.getAttribute('data-terms-version')) || '';
       var ref = currentRef();
-      // Engine 'ls' — LS hosted-overlay checkout. One hosted URL per order (LS
-      // can't sum a multi-item cart — first item wins, same as the original LS
-      // era). Overlay when lemon.js is up, plain redirect otherwise — the LS
-      // path never fails closed.
-      if (engineName() === 'ls') {
-        var url = checkoutUrlFor(items[0]);
-        url += (url.indexOf('?') === -1 ? '?' : '&') + 'embed=1';
-        // Consent record: stamp the accepted legal-bundle version onto the
-        // order via LS custom passthrough data. (LS docs: Passing Custom Data.)
-        url += '&checkout[custom][terms_accepted]=true';
-        if (ver) url += '&checkout[custom][terms_version]=' + encodeURIComponent(ver);
-        if (ref) url += '&checkout[custom][ref]=' + encodeURIComponent(ref);
-        if (drawer && drawer.open) drawer.close();
-        if (ensureLemon()) { window.LemonSqueezy.Url.Open(url); return; }
-        window.location.href = url;
-        return;
-      }
       // Keep the cart visible with recovery guidance if Paddle's SDK is
       // unavailable or opening payment throws synchronously.
       if (engineName() === 'paddle') {
@@ -514,9 +455,8 @@ for (const p of plugins) {
         } catch (e) { paymentError('Payment could not open. Please try again, or contact RevAudio support below.'); }
         return;
       }
-      // Engine 'fastspring' — dormant, kept only as a rollback option
-      // alongside 'ls' (see the file-header comment). Fail closed: no
-      // plain-URL fallback exists for SBL.
+      // Engine 'fastspring' — dormant, never went live (see the file-header
+      // comment). Fail closed: no plain-URL fallback exists for SBL.
       if (!(window.fastspring && window.fastspring.builder)) return;
       // Consent record: stamp the accepted legal-bundle version onto the
       // order via FastSpring's custom-tags passthrough (FastSpring docs: tags).
@@ -525,7 +465,7 @@ for (const p of plugins) {
       window.fastspring.builder.push({
         reset: true,
         // Full cart, not just the first item — FastSpring's session natively
-        // sums multiple line items (unlike LS's single hosted-checkout URL).
+        // sums multiple line items.
         products: items.map(function (i) { return { path: checkoutUrlFor(i), quantity: i.qty || 1 }; }),
         tags: fsTags
       });
