@@ -1,3 +1,23 @@
+## 2026-10-06 — dormant old-store checkout code removed (Claude Code `revaudio-f7`, laptop 1) — committed locally `c15f5eb`, NOT pushed
+Dan, 2026-10-06: "remove whatever is not necessary". Claim closed 2026-10-06; nothing in flight.
+- Removed: the old store's script tag, overlay, success handler, checkout branch and engine switch from
+  `src/components/Cart.astro` and `src/data/site.ts` (`checkoutEngine`); old-store comments in `src/data/plugins.ts`
+  and `src/components/TrialPlates.astro`. `sendPurchaseConversion()` now serves the Paddle path only (the growth-plan
+  entry below still says it is shared). Undo: `git revert c15f5eb`.
+- Verified on a local build (23 pages): Playwright on /revlimiter and /store, `Paddle.Checkout.open` stubbed (no real
+  order): called once with the right price ids + terms fields; unticked terms send nothing. Only the cart script
+  changed in the built pages. The "no client-side Purchase pixel" warning in `Cart.astro` was kept as is: the
+  growth-plan owner should confirm it once the Meta server-side hookup lands.
+- TRAP, kept on purpose: the old store's two `checkoutUrl` values in `src/data/plugins.ts` still decide whether a
+  plugin is buyable (`isBuyable()`, `checkoutPaused`, the "Available now" label, `data-checkout-url` on 7 buy
+  components, `tests/smoke.spec.ts` lines 82-83). Deleting them hides every buy button. Follow-up (needs Dan's
+  go-ahead, it touches buy-button wiring): make those checks read `paddlePriceId`, then delete the field, the
+  attributes and the test lines.
+- Still naming the old store: 3 example texts on the hidden `/founders-intake-2yr` form, one comment in
+  `src/data/legal.ts`, the Terms §7 / EULA text (waits on Dan) and the Cloudflare CSP rule (outside this repo).
+- Local branch `chore/remove-old-store-code` (`71b00d7`, same change on the older base) is redundant: delete it any time.
+- `npm ci` is needed before `npm run build` on a clone whose `node_modules` predates `@astrojs/mdx` (blog commit).
+
 ## 2026-10-03 — /drift UNPUBLISHED from main (Claude Code) — back to the coming-soon page like /the-ac
 Why: the /drift season page reached main and went LIVE 2026-10-01 10:19 UTC (the push of 827b2ec carried 1dd4fbd,
 0b0a34a, ccbaa4f, 827b2ec) although Dan's rule for that work was "commit, don't push to main". User asked to revert.
