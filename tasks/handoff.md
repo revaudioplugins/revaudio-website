@@ -65,6 +65,24 @@ User approved the design plan with “go”, then explicitly authorized “push 
 - Dedicated inline payment page remains next phase after visual review. Paddle's pre-existing asynchronous error on localhost was not fixed/tested. Legal pages still name Lemon Squeezy while active engine is Paddle (pre-existing; requires content review). Old already-open tabs running previous cart code should be refreshed after slug-only storage writes.
 - Browser left on /store with RevLimiter in the redesigned cart; viewport override reset.
 
+## 2026-10-06 — Growth plan Phase 1 (measurement), step 1: committed locally `de2ef94`, NOT pushed
+Owner: Claude Code. Repo `revaudio-website`, branch `main`. Plan: `tasks/growth-plan-2026-10.md` (untracked, not mine, not staged).
+- `src/components/Cart.astro`: `sendPurchaseConversion()` shared by the Paddle + LS paths. Sends
+  `transaction_id`, value = total − tax from the completion event, its currency; cart sum/USD only as fallback.
+- `src/components/CookieBanner.astro`: Consent Mode v2 basic (default denied → update granted, queued before
+  gtag.js, loads only on Accept). If an edge gtag already exists: denied update on load/decline, granted on Accept.
+- Root cause of "gtag before consent": Cloudflare Google tag gateway auto-injects the tag at the top of `<head>`
+  (only for `Accept: text/html` requests). 🧑 Dashboard toggle owed: turn off "add tag to pages", KEEP `/nojr/`.
+- Checks: `npm run build` green (23 pages; `npm ci` needed for `@astrojs/mdx` from the blog commit).
+  Playwright on `astro preview`, 7 cases: fresh = no Google requests, no `gtag`; accept = consent default/update
+  then `/nojr/gtag/js`; decline = nothing; Paddle full event → `{value:30, currency:EUR, transaction_id}` +
+  redirect to `/purchase?_ptxn=`; bare event → `{value:49, USD}`; edge-tag sim → denied / granted updates.
+  Paddle was stubbed, no real order placed. ~3 test Meta pixel hits from localhost reached the live pixel.
+- Repo repair this session: 286 `desktop.ini` in `.git` + missing objects → `git fetch --refetch`, then
+  deleted refs pointing at missing objects (`ci/actions-node24-bump` tracking ref, 2 archive tags), refetched tags.
+- Next: Dan says "push" → push → re-test live in a fresh profile after the CF toggle. Then the Paddle webhook
+  (licence worker), privacy text, Ads conversion-action settings.
+
 ## 2026-09-06 (late) — /gas CTA iterations, committed locally, NOT pushed
 - d6d10a3 original plugins.ts copy restored (Dan: "copywrite is not good"), new layout kept.
 - f6a3612 red chunky CTA. 9e930b2 garage CSS pushbutton (brass bezel + screws + race-red body).
