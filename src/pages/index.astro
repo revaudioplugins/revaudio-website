@@ -41,6 +41,14 @@ const wallM = await getImage({ src: wallMImg, width: 1080, format: 'webp', quali
 ---
 
 <BaseLayout title="RevAudio">
+  {/* The hero wall is the page's LCP element (PageSpeed 2026-10-06), but as a
+      CSS background the browser only finds it after the CSS is parsed.
+      Preload it from the head; media mirrors the 860px swap in the styles
+      below, so each viewport still fetches only its own plate. */}
+  <Fragment slot="head">
+    <link rel="preload" as="image" href={wallD.src} media="(min-width: 861px)" fetchpriority="high" />
+    <link rel="preload" as="image" href={wallM.src} media="(max-width: 860px)" fetchpriority="high" />
+  </Fragment>
   {/* Hero — desktop: centered text column over the REV gauge medallion. No
       store CTA lives here any more (the brass STORE button, then the hanging
       wooden STORE sign, were both removed) — the header nav carries it.
