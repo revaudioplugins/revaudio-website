@@ -45,6 +45,12 @@ const thumbStyle = [
   plugin.cardThumbAspect ? `aspect-ratio:${plugin.cardThumbAspect};` : '',
   plugin.cardThumbMaxWidthPct ? `max-width:${plugin.cardThumbMaxWidthPct}%; margin-inline:auto;` : '',
 ].join('') || undefined;
+// The card is ~1 column on phones (≤1020px) and ~1/3 of the grid on desktop;
+// a thumb capped by cardThumbMaxWidthPct (GAS: 40%) is that much narrower, so
+// the srcset hint shrinks with it (PageSpeed 2026-10-06: GAS fetched 1600px
+// for a ~100px slot).
+const thumbK = (plugin.cardThumbMaxWidthPct ?? 100) / 100;
+const thumbSizes = `(max-width: 1020px) ${Math.ceil(92 * thumbK)}vw, ${Math.ceil(30 * thumbK)}vw`;
 ---
 
 <div class="plugin-card-wrap">
@@ -55,14 +61,13 @@ const thumbStyle = [
   >
     {thumb ? (
       // Responsive variants so phones fetch a card-sized file, not the full
-      // 1600px master. Card is ~1 column on phones (≤1020px) and ~1/3 of the
-      // grid on desktop; at DPR2 the 800px variant covers the phone card.
+      // 1600px master (sizes: thumbSizes, above).
       <Image
         src={thumb}
         alt={plugin.name}
         width={1600}
-        widths={[400, 800, 1600]}
-        sizes="(max-width: 1020px) 92vw, 30vw"
+        widths={[400, 600, 800, 1200, 1600]}
+        sizes={thumbSizes}
         format="webp"
         quality={92}
         loading="lazy"

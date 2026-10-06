@@ -227,7 +227,10 @@ const peekClass = (i: number) => {
             </div>
             <p class="sec sc-sub" style={topf(s.style.sub) + font(s.style.sub)}>{s.catchphrase}</p>
             <div class:list={['sec', 'sc-shot', { 'is-plate': [comingSoonPlate, radioRouletteShot].includes(s.shot), 'is-bare': s.shot === gasShot, 'sc-shot--fit': s.shotFit === 'contain' }]} style={pos(s.style.shot)}>
-              <Image src={s.shot} alt={s.shotAlt} width={1600} widths={[480, 800, 1200, 1600]} sizes="(max-width: 640px) 92vw, 440px" format="webp" quality={92} loading="lazy" />
+              {/* sizes = the shot's real width on the 520px stage (never scaled
+                  above 1): wide panels ≤ ~440px (≈61% of a phone), the GAS
+                  portrait ≤ 138px. Measured 2026-10-06 at 360–1920px. */}
+              <Image src={s.shot} alt={s.shotAlt} width={1600} widths={[320, 480, 640, 800, 1200, 1600]} sizes={s.shot === gasShot ? '140px' : '(max-width: 640px) 70vw, 440px'} format="webp" quality={92} loading="lazy" />
             </div>
             <p class="sec sc-one" style={topf(s.style.oneliner) + font(s.style.oneliner)}>{s.oneliner}</p>
             <span class="sec sc-price" style={topf(s.style.price) + font(s.style.price)} set:html={s.priceHtml}></span>

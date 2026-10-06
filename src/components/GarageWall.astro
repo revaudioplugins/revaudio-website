@@ -16,6 +16,7 @@
 
    Full-bleed via the 100vw/translateX(-50%) trick — safe because html+body
    carry overflow-x: clip. Nothing here is pixel-positioned. */
+import { getImage } from 'astro:assets';
 import wallImg from '../assets/bg/wall-wood.png';
 import railImg from '../assets/bg/wall-rail.png';
 
@@ -24,13 +25,19 @@ interface Props {
   ariaLabel?: string;
 }
 const { id, ariaLabel } = Astro.props;
+
+/* CSS backgrounds never pass through <Image>, so wallImg.src alone ships the
+   raw PNG masters (1.5 MB + 373 KB, PageSpeed 2026-10-06). Same getImage()
+   settings as the product page's wall in [slug].astro, already live there. */
+const wall = await getImage({ src: wallImg, width: 1024, format: 'webp', quality: 55 });
+const rail = await getImage({ src: railImg, width: 1024, format: 'webp', quality: 70 });
 ---
 
 <section
   class="garage-wall"
   id={id}
   aria-label={ariaLabel}
-  style={`--wall-url:url(${wallImg.src});--rail-url:url(${railImg.src});`}
+  style={`--wall-url:url(${wall.src});--rail-url:url(${rail.src});`}
 >
   <div class="wall-art" aria-hidden="true">
     <div class="wall-wood" data-drift-y="24"></div>

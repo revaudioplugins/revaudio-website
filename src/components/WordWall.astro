@@ -113,8 +113,11 @@ const panels: Panel[] = [
             src={p.img}
             alt={p.alt}
             width={1400}
-            widths={[640, 960, 1400]}
-            sizes="(max-width: 860px) 92vw, 50vw"
+            widths={[400, 640, 960, 1400]}
+            sizes={p.portrait
+              /* height-capped (24rem phone / 34rem desktop) at 1600:2380 → ≤258 / ≤366px wide */
+              ? '(max-width: 860px) 280px, 400px'
+              : '(max-width: 860px) 92vw, 50vw'}
             format="webp"
             quality={86}
             loading="lazy"
