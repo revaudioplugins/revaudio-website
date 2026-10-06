@@ -67,7 +67,22 @@ const cta = ctaFor();
     /* the footer clears the bar only while the bar is up; at the page end
        #creators is in view, the bar is away, and the margin showed as a strip */
     :global(body:has(.d-stickybar:not(.is-away)) .site-footer) { margin-bottom: calc(var(--d-sb-h) + env(safe-area-inset-bottom, 0px)); }
+    /* the house footer's 84 px cart-FAB clearance (global.css, <=900): here the FAB slides off at the footer (or is off
+       with an empty cart), so the footer keeps its own bottom pad; the 84 px was an empty black band under the social
+       row (Dan 10-05, iPhone) */
+    :global(body footer.site-footer.site-footer) { padding-bottom: calc(var(--space-5) + env(safe-area-inset-bottom, 0px)); }
     :global(html) { scroll-padding-bottom: calc(var(--d-sb-h) + 16px); }
+  }
+  /* phones: at the page end the footer fills the screen under the header (its head right under the nav, Dan 10-05);
+     the links sit at the bottom and any spare height stays inside the footer, above them. lvh = the screen with
+     Safari's bars tucked away: with them out, the footer's empty top just runs on under the header */
+  @media (max-width: 600px) {
+    :global(body footer.site-footer.site-footer) {
+      min-height: calc(100vh - var(--d-nav-h, 44px));
+      min-height: calc(100lvh - var(--d-nav-h, 44px));
+      display: flex; flex-direction: column; justify-content: flex-end;
+    }
+    :global(body footer.site-footer.site-footer > .container) { width: 100%; }   /* a flex item: keep the block width */
   }
   .d-stickybar .d-cta--bar { --h: 48px; width: 100%; }
   @media (min-width: 600px) {
@@ -100,7 +115,12 @@ const cta = ctaFor();
   if (bar) {
     // publish the real height so the FAB/footer/scroll offsets that read
     // --d-sb-h stay exact (display:none above 900px -> 0, inert there).
-    const syncH = () => document.documentElement.style.setProperty('--d-sb-h', bar.offsetHeight + 'px');
+    // --d-nav-h: the header as it renders here (taller than the house --nav-h on phones), for the footer fill below
+    const nav = document.querySelector<HTMLElement>('[data-site-nav]');
+    const syncH = () => {
+      document.documentElement.style.setProperty('--d-sb-h', bar.offsetHeight + 'px');
+      if (nav) document.documentElement.style.setProperty('--d-nav-h', nav.offsetHeight + 'px');
+    };
     syncH();
     window.addEventListener('resize', syncH);
   }
