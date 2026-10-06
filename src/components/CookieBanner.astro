@@ -64,8 +64,8 @@
       return { ad_storage: value, analytics_storage: value, ad_user_data: value, ad_personalization: value };
     }
     // A gtag that exists before this script ran was put there by the edge
-    // (Cloudflare Google tag gateway, "add tag to pages"). That tag loads and
-    // configures itself, so here it only gets the visitor's consent signal.
+    // (Cloudflare Google tag gateway, if it is ever switched back on). That
+    // tag loads and configures itself, so here it only gets consent signals.
     var edgeGtag = typeof window.gtag === 'function';
     var googleStarted = false;
 
@@ -79,7 +79,10 @@
       gtag('consent', 'update', consent('granted'));
       var t = document.createElement('script');
       t.async = true;
-      t.src = '/nojr/gtag/js?id=AW-18334323184';
+      // Straight from Google, not the Cloudflare tag gateway's /nojr/ path:
+      // the gateway also injects its own tag on every page before consent,
+      // and it has no switch to keep the path while dropping the injection.
+      t.src = 'https://www.googletagmanager.com/gtag/js?id=AW-18334323184';
       document.head.appendChild(t);
       gtag('js', new Date());
       gtag('config', 'AW-18334323184');
