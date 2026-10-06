@@ -39,8 +39,11 @@
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
       cursor: pointer;
       /* `bottom` glides when the mobile buy bar rises/falls (MobileBuyBar lift). */
-      transition: bottom 0.28s var(--ease-settle);
+      transition: bottom 0.28s var(--ease-settle), transform 0.24s var(--ease-exit);
     }
+    /* Off the left edge while the footer is in its corner: the footer has no
+       FAB clearance any more, so the page ends on it (Dan 2026-10-06). */
+    .cart-fab.is-off-footer { transform: translateX(calc(-100% - 32px)); }
     @media (prefers-reduced-motion: reduce) { .cart-fab { transition: none; } }
     .cart-fab svg { width: 28px; height: 28px; display: block; }
     .cart-fab:focus-visible { outline: 3px solid var(--brass-bright); outline-offset: 3px; }
@@ -74,3 +77,22 @@
     @media (prefers-reduced-motion: reduce) { .cart-fab-badge.is-bump { animation: none; } }
   }
 </style>
+
+<script>
+  // Slide the FAB off while the footer reaches the bottom band it docks in.
+  const fab = document.querySelector<HTMLElement>('.cart-fab');
+  const footer = document.querySelector('.site-footer');
+  if (fab && footer) {
+    let io: IntersectionObserver | null = null;
+    const watch = () => {
+      io?.disconnect();
+      // the band = the FAB's own rect (it rides above a buy bar), plus a little air
+      const top = Math.max(0, fab.getBoundingClientRect().top - 12);
+      io = new IntersectionObserver(([e]) => fab.classList.toggle('is-off-footer', e.isIntersecting),
+        { rootMargin: `-${Math.round(top)}px 0px 0px 0px`, threshold: 0 });
+      io.observe(footer);
+    };
+    watch();
+    window.addEventListener('resize', watch);
+  }
+</script>

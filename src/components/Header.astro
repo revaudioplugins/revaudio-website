@@ -58,6 +58,10 @@ const onProductPage = plugins.some((pl) => isActive(`/${pl.slug}`));
   (function () {
     var nav = document.querySelector('[data-site-nav]');
     if (!nav) return;
+    // The nav's real height, for the phone footer fill in global.css.
+    function syncH() { document.documentElement.style.setProperty('--site-nav-h', nav.offsetHeight + 'px'); }
+    syncH();
+    window.addEventListener('resize', syncH);
     var burger = nav.querySelector('[data-nav-toggle]');
     var menu = nav.querySelector('#nav-menu');
     if (!burger || !menu) return;
