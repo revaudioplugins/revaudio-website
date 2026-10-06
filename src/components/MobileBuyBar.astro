@@ -105,7 +105,9 @@ const registerUrl = site.downloadGate.workerUrl + '/download/register';
        the `bottom` transition in CartFab.astro. */
     :global(body:has(.mbb.is-away) .cart-fab.cart-fab),
     :global(body:has(#cookie-banner.cb--visible) .cart-fab.cart-fab) { bottom: 16px; }
-    :global(.site-footer) { margin-bottom: calc(var(--mbb-h) + env(safe-area-inset-bottom, 0px)); }
+    /* the footer clears the bar only while the bar is up; beside the footer
+       the bar is away, so the margin would show as a black band under it */
+    :global(body:has(.mbb:not(.is-away)) .site-footer) { margin-bottom: calc(var(--mbb-h) + env(safe-area-inset-bottom, 0px)); }
     :global(html) { scroll-padding-bottom: calc(var(--mbb-h) + 16px); }
   }
 
@@ -150,15 +152,24 @@ const registerUrl = site.downloadGate.workerUrl + '/download/register';
     window.addEventListener('resize', syncH);
   }
   if (bar && target) {
-    const set = (away: boolean) => bar.classList.toggle('is-away', away);
-    const io = new IntersectionObserver(
-      (entries) => set(entries.some((e) => e.isIntersecting)),
-      { rootMargin: '0px 0px -25% 0px', threshold: 0 });
-    io.observe(target);
+    // away beside the buy card AND beside the footer, so the bar never sits
+    // over the page end (Dan 2026-10-06)
+    const zones = [target, document.querySelector('.site-footer')].filter((z): z is Element => !!z);
+    const hits = new Set<Element>();
+    const set = () => bar.classList.toggle('is-away', hits.size > 0);
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) { if (e.isIntersecting) hits.add(e.target); else hits.delete(e.target); }
+      set();
+    }, { rootMargin: '0px 0px -25% 0px', threshold: 0 });
+    zones.forEach((z) => io.observe(z));
     window.addEventListener('pageshow', (e) => {   // Safari bfcache backstop (house pattern)
       if (!e.persisted) return;
-      const r = target.getBoundingClientRect();
-      set(r.top < window.innerHeight * 0.75 && r.bottom > 0);
+      hits.clear();
+      for (const z of zones) {
+        const r = z.getBoundingClientRect();
+        if (r.top < window.innerHeight * 0.75 && r.bottom > 0) hits.add(z);
+      }
+      set();
     });
   }
 </script>

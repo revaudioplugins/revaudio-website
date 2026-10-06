@@ -839,10 +839,12 @@ footer .footer-social a {
 
 footer .footer-social svg { width: 20px; height: 20px; display: block; }
 
-/* The cart FAB docks bottom-left on small screens, so the whole footer gets
-   bottom clearance for it. */
+/* The page ends on the footer (Dan 2026-10-06, after /drift 10-05): no
+   black band under the social row. The footer used to carry 84px of cart-FAB
+   clearance here; the FAB now slides off while the footer is in view
+   (CartFab.astro), so the footer keeps its own bottom pad. */
 @media (max-width: 900px) {
-  footer.site-footer { padding-bottom: calc(84px + env(safe-area-inset-bottom)); }
+  footer.site-footer { padding-bottom: calc(var(--space-5) + env(safe-area-inset-bottom)); }
   /* Four tracks here would be narrower than the high-contrast switch, so fold
      the site map to 2x2 and keep the reading order. Equal tracks rather than
      space-between, which across only two columns would reopen the same hole
@@ -1044,3 +1046,17 @@ footer .footer-social svg { width: 20px; height: 20px; display: block; }
 .hit-notify   { top: 28%; left: 12%; width: 76%; height: 44%; }
 .hit-subscribe { top: 28%; left: 12%; width: 76%; height: 44%; }
 .hit-submit    { top: 27%; left: 14%; width: 72%; height: 46%; }
+
+/* Phones: at the page end the footer fills the screen under the header, its
+   head right under the nav (Dan 2026-10-06, same as /drift). Links sit at the
+   bottom; any spare height stays inside the footer, above them. lvh = the
+   screen with Safari's bars tucked away. --site-nav-h is the nav's real
+   height, published by Header.astro. */
+@media (max-width: 600px) {
+  footer.site-footer {
+    min-height: calc(100vh - var(--site-nav-h, var(--nav-h)));
+    min-height: calc(100lvh - var(--site-nav-h, var(--nav-h)));
+    display: flex; flex-direction: column; justify-content: flex-end;
+  }
+  footer.site-footer > .container { width: 100%; }   /* a flex item: keep the block width */
+}
