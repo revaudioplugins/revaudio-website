@@ -22,19 +22,26 @@ Goal: mobile LCP <= 2.5 s, INP <= 200 ms, CLS stays <= 0.10, checkout still work
 
 ## Steps
 
+## SAFETY: reference kept (Yoni 2026-10-06: "keep current as ref ... I want the fixes to be SAFE")
+- Git tag `ref/pre-pagespeed-2026-10-06` (47210f1 = live site before any change). All work on branch `perf/pagespeed-2026-10`, one commit per fix.
+- `C:\RevAudio\Website\pagespeed-ref-2026-10-06\` (outside the repo): full reference build `dist-ref/`, reference screenshots (6 pages × phone + desktop),
+  reference Lighthouse runs, and the check tools (`capture.mjs` + `compare.py` screenshots, `measure-imgs.mjs` + `imgdiff.py` image sharpness,
+  `inp.mjs` tap timing, `lhsum.py`). README there = rollback steps.
+- Every fix passes: screenshots 0.00% changed vs reference, no image smaller than its slot, Lighthouse A/B same server.
+
 ### Phase 0 — baseline 🤖
-- [ ] Run PageSpeed mobile ×3 on `/` and `/revlimiter/` today, save the median numbers here (after today's gateway change, so the baseline is honest).
+- [x] PageSpeed API quota was exhausted → local Lighthouse 12.8 mobile ×3 on live `/`: median score 68, LCP 4.5 s, CLS 0.153, 2,812 KiB.
 
 ### Phase 1 — bytes (small, safe) 🤖
-- [ ] Wall wood + rail → WebP via `getImage()` in `GarageWall.astro` and `[slug].astro`.
-- [ ] Fix `sizes`/`widths` on WordWall, PluginCard, PluginShowcase images.
-- [ ] Build, Playwright compare before/after at 390 px + 1280 px (texture must look the same).
+- [x] Wall wood + rail → WebP via `getImage()` in `GarageWall.astro` (`[slug].astro` already did it, same settings reused).
+- [x] Fix `sizes`/`widths` on WordWall, PluginCard, PluginShowcase images (GAS portrait was the waste; first try broke Radio Roulette's store card, caught by the check, fixed via `cardThumbMaxWidthPct`).
+- [x] Checked: screenshots 0.00% changed, 199 image checks no regression. Home on phone 3,073 → 1,008 KiB. Commit `0a2ad61`.
 
 ### Phase 2 — first screen 🤖
-- [ ] Preload the hero plate (media-split, `fetchpriority="high"`).
-- [ ] Self-host fonts, preload the 2 hero fonts, drop unused weights.
-- [ ] `inlineStylesheets: 'auto'`, measure.
-- [ ] Check CSP still fine (fonts become `'self'`; no new origins).
+- [x] Preload the hero plate (media-split, `fetchpriority="high"`). Hero load delay 257 → 7 ms.
+- [x] Self-host fonts (same Google files, all subsets kept → zero visual change), preload Bebas Neue + Inter latin. Weights NOT dropped (all in use; safety).
+- [x] `inlineStylesheets: 'auto'` was already on. Splitting the 2 big CSS files skipped: risky, ~1 s lab gain at best.
+- [x] CSP fine (fonts now `'self'`). A/B Lighthouse: score 65 → 74, FCP 3.9 → 3.0 s, LCP 6.6 → 5.6 s, CLS 0.092 → 0. Commit `9bd1d2c`.
 
 ### Phase 3 — Cloudflare (dashboard) 🧑
 - [ ] Cache Rule A: `/_astro/*` → 1 year browser + edge.
@@ -43,8 +50,8 @@ Goal: mobile LCP <= 2.5 s, INP <= 200 ms, CLS stays <= 0.10, checkout still work
 - [ ] 🤖 verify with `curl -sI`: `cf-cache-status: HIT`, `Cache-Control: max-age=31536000` on `/_astro/`.
 
 ### Phase 4 — INP trace 🤖 (start in parallel with Phase 1)
-- [ ] Playwright + CPU throttle 4× on a phone viewport: tap menu, carousel arrows, audio demo play, Add to cart, Buy (crane), cookie banner. Record event timings (`PerformanceObserver` `event` entries).
-- [ ] Fix the slowest handler(s) found. Likely candidates: scroll scrub doing layout reads per frame, Lenis on touch (could disable on touch devices).
+- [x] Probed (inp.mjs) at 4× and 10× CPU slowdown: cookie accept/decline, menu, demo play/A-B/stop, add to cart. All < 200 ms (worst 176 ms at 10×). Handlers ~0 ms; cost = ~45 ms busy main thread (constant animation) + paint.
+- [ ] NOT fixed: lab cannot reproduce 379 ms. Field number is 28-day, site-wide, and includes the pre-consent CF-gateway gtag removed today. Next: 🧑 Cloudflare → Web Analytics → Core Web Vitals → INP debug view (shows the slow element), re-check after ~2026-11-03. Touching the approved motion only with evidence.
 - [ ] Checkout regression: Paddle overlay opens; real test purchase only if Cart/checkout code is touched (wiki rule).
 
 ### Phase 5 — ship + verify 🤖
