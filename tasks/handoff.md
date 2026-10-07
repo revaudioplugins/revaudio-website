@@ -1,4 +1,4 @@
-## 2026-10-07 — buy state keyed on the Paddle price, old store's checkout links removed (Claude Code `revaudio-f7`, laptop 1) — committed locally `652df7a`, NOT pushed
+## 2026-10-07 — buy state keyed on the Paddle price, old store's checkout links removed (Claude Code `revaudio-f7`, laptop 1) — `5d4b01b` (was `652df7a`), pushed 2026-10-07 on Dan's "push"
 Dan, 2026-10-07: "8. OK" (the TRAP follow-up in the 10-06 entry below). Claim closed 2026-10-07; nothing in flight.
 - `isBuyable()` = `status === 'live' && paddlePriceId`. RevLimiter's `statusLabel` ('Available now') and both
   `checkoutPaused` (false) are plain values. `checkoutUrl` is gone from the type, the 5 entries and the 2 constants;
@@ -14,11 +14,12 @@ Dan, 2026-10-07: "8. OK" (the TRAP follow-up in the 10-06 entry below). Claim cl
   /buy links and a 2-item cart give the same labels, page text and Paddle items before and after; unticked terms
   send nothing.
 - The 10-06 commits were rebased onto origin `1d2aced` on 2026-10-07: c44d11e -> 7037a62, c15f5eb -> 130492a,
-  5b96827 -> eb9e1fc. The push of main carries all four commits.
+  5b96827 -> eb9e1fc; and again onto `ec74182` before the push: 7037a62 -> 997794e, 130492a -> 6d7ec55,
+  eb9e1fc -> 1e3c917, 652df7a -> 5d4b01b, aa57d61 -> b8cdbd7. All five went out in the 2026-10-07 push.
 - Still naming the old store (untouched, each needs Dan): 3 placeholders on hidden /founders-intake-2yr, one
   `legal.ts` comment, Terms §7 / EULA, the Cloudflare CSP rule.
 
-## 2026-10-06 — dormant old-store checkout code removed (Claude Code `revaudio-f7`, laptop 1) — committed locally `c15f5eb`, NOT pushed
+## 2026-10-06 — dormant old-store checkout code removed (Claude Code `revaudio-f7`, laptop 1) — `6d7ec55` (was `c15f5eb`), pushed 2026-10-07
 Dan, 2026-10-06: "remove whatever is not necessary". Claim closed 2026-10-06; nothing in flight.
 - Removed: the old store's script tag, overlay, success handler, checkout branch and engine switch from
   `src/components/Cart.astro` and `src/data/site.ts` (`checkoutEngine`); old-store comments in `src/data/plugins.ts`
@@ -28,7 +29,7 @@ Dan, 2026-10-06: "remove whatever is not necessary". Claim closed 2026-10-06; no
   order): called once with the right price ids + terms fields; unticked terms send nothing. Only the cart script
   changed in the built pages. The "no client-side Purchase pixel" warning in `Cart.astro` was kept as is: the
   growth-plan owner should confirm it once the Meta server-side hookup lands.
-- TRAP (resolved 2026-10-07 in `652df7a`, entry above), kept on purpose: the old store's two `checkoutUrl` values in `src/data/plugins.ts` still decide whether a
+- TRAP (resolved 2026-10-07 in `5d4b01b`, entry above), kept on purpose: the old store's two `checkoutUrl` values in `src/data/plugins.ts` still decide whether a
   plugin is buyable (`isBuyable()`, `checkoutPaused`, the "Available now" label, `data-checkout-url` on 7 buy
   components, `tests/smoke.spec.ts` lines 82-83). Deleting them hides every buy button. Follow-up (needs Dan's
   go-ahead, it touches buy-button wiring): make those checks read `paddlePriceId`, then delete the field, the
