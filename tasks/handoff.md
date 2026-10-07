@@ -13,7 +13,7 @@ Yoni's session shipped the same privacy/cookie work first (live `1c34cac`, `7122
 - Verified: build green; Playwright suite 68/68; screenshots 1440x900, 1366x768, 820 tablet, 390 + 360 phones, Radio Roulette desk/phone; no horizontal overflow; Hear-it link lands the section under the nav. Hear it top: desktop 6031 -> 1207, phone 1622 -> 1196.
 - Not changed: shared CLAUDE.md still says RevLimiter is "ideally used early in the master chain" (shared repo git is damaged; flagged to Yoni).
 - Note: feat/drift-page / qa/drift-page-1005 branches touch `[slug].astro`; the block move may conflict if they merge later.
-## 2026-10-07 — Terms + EULA name Paddle as merchant of record; last old-store mentions gone (Claude Code `revaudio-96`, laptop 1) — committed locally, NOT pushed
+## 2026-10-07 — Terms + EULA name Paddle as merchant of record; last old-store mentions gone (Claude Code `revaudio-96`, laptop 1) — pushed 2026-10-07 (Dan: "push")
 Dan, 2026-10-07: "we are now with paddel" (the legal text must say Paddle). Claim closed 2026-10-07; nothing in flight.
 - Correction to the 10-06 / 10-07 `revaudio-f7` entries further down: Terms §7 and the EULA did NOT name the old
   store. `683b934` (2026-10-01) had already made them say "our merchant of record" with no vendor name. This change
@@ -31,11 +31,13 @@ Dan, 2026-10-07: "we are now with paddel" (the legal text must say Paddle). Clai
   worker's Paddle path doesn't read `terms_version` (read-only check). The `legal.ts` comment now says
   "Paddle customData terms_version" (no abbreviation).
 - 3 placeholder examples on hidden /founders-intake-2yr now say Paddle.
-- Checks (rebased onto `a27714e`): `npm run build` green, 23 pages, ~3 s. Old-store name (both retired stores,
-  char-code grep): 0 in src/tests/public and in the built site (origin's own build: 3). Dist diff against a build
-  of origin/main: 205/227 files identical; the 22 others differ only by Paddle in Terms/EULA, the Terms/EULA date,
-  `data-terms-version` and the founders placeholders; /privacy identical to origin. Playwright suite 68/68.
-  Rendered /terms, /eula, /privacy from both builds (Playwright script).
+- Checks (rebased onto `a27714e`): `npm run build` green, 23 pages, ~3 s. First retired store's name (char-code
+  grep): 0 in src/tests/public and in the built site (origin's own build: 3). Correction: the SECOND retired store's
+  name still prints in every built page through the dormant engine below (an agent reported 0; a re-grep found it).
+  Dist diff against a build of origin/main: 205/227 files identical; the 22 others differ only by Paddle in
+  Terms/EULA, the Terms/EULA date, `data-terms-version` and the founders placeholders. Playwright suite 68/68.
+  Rendered /terms, /eula, /privacy from both builds (Playwright script). After `b31bc53` (Privacy names Paddle on
+  Yoni's text): build green, Playwright 68/68 (33 s).
 - Still open (needs Dan): the second dormant checkout engine code (`site.ts` engine union + `Cart.astro` branch).
   Done elsewhere: the live CSP header has no old-store host (checked 2026-10-07; Yoni's PageSpeed edit). The
   untracked root `HANDOFF.md` is another session's.
