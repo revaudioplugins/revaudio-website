@@ -237,6 +237,10 @@ for (const p of plugins) {
         event_callback: go
       };
       if (order.id) params.transaction_id = String(order.id);
+      // Enhanced conversions: the buyer's email rides the hit (gtag normalises
+      // and SHA-256 hashes it before sending). window.gtag only exists after
+      // cookie consent, so declined visitors never reach this line.
+      try { if (order.email) window.gtag('set', 'user_data', { email: String(order.email) }); } catch (e) {}
       try { window.gtag('event', 'conversion', params); } catch (e) { go(); }
       setTimeout(go, 500);
     }
@@ -279,7 +283,8 @@ for (const p of plugins) {
               sendPurchaseConversion({
                 id: txnId,
                 value: totals.total - (totals.tax || 0),
-                currency: ev.data && ev.data.currency_code
+                currency: ev.data && ev.data.currency_code,
+                email: ev.data && ev.data.customer && ev.data.customer.email
               }, go);
             }
           }
