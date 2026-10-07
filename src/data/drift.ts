@@ -35,6 +35,8 @@ export const drift = {
 
   /** The $39 route's form. The build refuses phase 'open' until it exists. */
   feedbackFormLive: false,
+  /** The beta feedback form (src/pages/drift/feedback.astro); the BETA FEEDBACK key over Apply in #creators. */
+  feedbackUrl: '/drift/feedback',
   /** Creator deal (keep DRIFT free with a video). Lights the ON AIR lamp. */
   creatorDealOpen: true,
   /** e.g. 'Sat Oct 24'; appended to creator step 3 when set. */
