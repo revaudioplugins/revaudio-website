@@ -38,7 +38,7 @@ Order: measure → pages → traffic → content/trust → scale. No spend incre
 
 ## Phase 2 — Pages that sell
 - [ ] Homepage hero: category line ("Mixing & Mastering Plugins"), outcome headline, per-product Listen / Try / Buy CTAs. Keep gauge.
-- [ ] RevLimiter: resolve chain-position contradiction (homepage early vs product page end); one meaning for "redline"; before/after audio + trial CTA above fold; price/trial/licence/refund beside buy button.
+- [x] RevLimiter (2026-10-07, local, Yoni reviews before push): chain position = LAST on the master bus (Yoni), homepage word wall fixed; redline = threshold everywhere (plugin DESIGN.md); "Hear it" + trial plates moved up under the hero on every product page (desktop 6031px -> 1207px, phone 1622 -> 1196); new HeroFacts line under the tagline, every viewport: Hear before/after + Free 30-day trial links, $49 / 2 machines / 14-day refund / No iLok.
 - [ ] Radio Roulette: on-page audio player (one loop → 4–5 labelled results); manual video lower.
 - [ ] Trust: makers on About; Production Expert coverage link (ask them to fix 14→30-day trial); permissioned quotes; tested-only compat matrix (OS × Apple Silicon/Intel × VST3/AU/AAX × DAWs).
 - [ ] Drift / The AC: remove purchase/refund boilerplate. RevBeta link out of footer.

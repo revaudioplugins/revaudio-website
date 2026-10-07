@@ -12,6 +12,7 @@ import StarRating from '../components/StarRating.astro';
 import Gallery from '../components/Gallery.astro';
 import AudioDemoRack from '../components/AudioDemoRack.astro';
 import MobileBuyBar from '../components/MobileBuyBar.astro';
+import HeroFacts from '../components/HeroFacts.astro';
 import { plugins, isBuyable } from '../data/plugins';
 import { pluginImage } from '../lib/images';
 import arrowBtn from '../assets/showcase/arrow-btn.png';
@@ -115,6 +116,7 @@ const altShots = hasStage
             <h1>{plugin.name}</h1>
           </div>
           <p class="tagline">{plugin.tagline}</p>
+          <HeroFacts plugin={plugin} hasDemos={playableDemos.length > 0} buyable={buyable} />
           <p class="plain-what">
             {plugin.plainHook && <strong class="plain-hook">{plugin.plainHook}</strong>}
             {plugin.plainWhat}
@@ -142,6 +144,43 @@ const altShots = hasStage
           {crane ? <BuyButtonCrane plugin={plugin} /> : <BuyButton plugin={plugin} />}
         </aside>
       </div>
+
+      {/* Moved up from below the walkthrough (growth plan Phase 2, Yoni
+          2026-10-07): the before/after audio and the trial capture come
+          straight after the hero instead of ~6000px down the page. */}
+      {/* The garage wall — the "Hear it" -> trial span reads as ONE surface
+          everything hangs on: the rack (already screwed down), the paper tag
+          (already on its nail), the CTA. The wall art is a ::before on this
+          WRAPPER, never on .trial-plates (its >=901px grid would adopt a
+          pseudo as a grid item) — and the wrapper is what lets the two
+          sections share one surface despite different content widths
+          (1320 vs 1180 at 1440). Degrades cleanly: one section absent -> the
+          wall spans the other; both absent -> no wrapper at all. */}
+      {hasWall && (
+        <div class="garage-wall garage-wall--bleed" style={`--wall-url:url(${wall!.src});--rail-url:url(${rail!.src});`}>
+          {/* The wood rides its own layer so it can parallax-drift (data-drift-y,
+              scrub.ts) while the dividers and the top light stay nailed to the
+              page on ::before. .wall-art clips; .wall-wood overscans ±32px so
+              the ±24px drift never reveals an edge. Reduced motion: initScrubs
+              bails, the overscanned layer just sits still. */}
+          <div class="wall-art" aria-hidden="true">
+            <div class="wall-wood" data-drift-y="24"></div>
+          </div>
+          {playableDemos.length > 0 && (
+            <section class="audio-demos" id="hear-it">
+              <h2 data-split>Hear it</h2>
+              <p class="muted" data-reveal>Real tracks, no tricks. Hit play for the before, <span class="hear-desk">punch <strong>ARM</strong></span><span class="hear-mob">flip <strong>the switch</strong></span> for the after.</p>
+              <AudioDemoRack demos={playableDemos} plugin={plugin} />
+            </section>
+          )}
+
+          {/* On-page trial capture (TEMP PLATES, 2026-07-24) — the visitor leaves
+              an email right here instead of detouring through the download portal.
+              The trial stamp up top and the door's painted trial link both scroll
+              to this section. */}
+          {plugin.trialUrl && <TrialPlates plugin={plugin} />}
+        </div>
+      )}
 
       {/* No data-reveal on the walkthrough section or .walk-grid: an animated
           ancestor transform would break position:sticky on the stage. Same
@@ -237,40 +276,6 @@ const altShots = hasStage
             </button>
           </div>
         </section>
-      )}
-
-      {/* The garage wall — the "Hear it" -> trial span reads as ONE surface
-          everything hangs on: the rack (already screwed down), the paper tag
-          (already on its nail), the CTA. The wall art is a ::before on this
-          WRAPPER, never on .trial-plates (its >=901px grid would adopt a
-          pseudo as a grid item) — and the wrapper is what lets the two
-          sections share one surface despite different content widths
-          (1320 vs 1180 at 1440). Degrades cleanly: one section absent -> the
-          wall spans the other; both absent -> no wrapper at all. */}
-      {hasWall && (
-        <div class="garage-wall garage-wall--bleed" style={`--wall-url:url(${wall!.src});--rail-url:url(${rail!.src});`}>
-          {/* The wood rides its own layer so it can parallax-drift (data-drift-y,
-              scrub.ts) while the dividers and the top light stay nailed to the
-              page on ::before. .wall-art clips; .wall-wood overscans ±32px so
-              the ±24px drift never reveals an edge. Reduced motion: initScrubs
-              bails, the overscanned layer just sits still. */}
-          <div class="wall-art" aria-hidden="true">
-            <div class="wall-wood" data-drift-y="24"></div>
-          </div>
-          {playableDemos.length > 0 && (
-            <section class="audio-demos" id="hear-it">
-              <h2 data-split>Hear it</h2>
-              <p class="muted" data-reveal>Real tracks, no tricks. Hit play for the before, <span class="hear-desk">punch <strong>ARM</strong></span><span class="hear-mob">flip <strong>the switch</strong></span> for the after.</p>
-              <AudioDemoRack demos={playableDemos} plugin={plugin} />
-            </section>
-          )}
-
-          {/* On-page trial capture (TEMP PLATES, 2026-07-24) — the visitor leaves
-              an email right here instead of detouring through the download portal.
-              The trial stamp up top and the door's painted trial link both scroll
-              to this section. */}
-          {plugin.trialUrl && <TrialPlates plugin={plugin} />}
-        </div>
       )}
 
       {plugin.tutorialVideo && (
@@ -1082,6 +1087,7 @@ const altShots = hasStage
       margin-top: max(0px, calc(min(88.5vw, 434px) - 36px));
     }
     .product-head--crane .product-info .tagline   { order: 2; }
+    .product-head--crane .product-info :global(.hero-facts) { order: 2; }
     .product-head--crane .product-info :global(.gallery) {
       order: 3;
       margin-bottom: 1.75rem;

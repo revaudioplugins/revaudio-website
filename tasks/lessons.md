@@ -24,3 +24,7 @@ The "rv close" ritual is an explicit push instruction and still counts.
 - `npx playwright install` (needed after `npm ci` bumps @playwright/test) deletes every browser revision no
   remaining install links to, including ones other tools pinned by path. Rule: point scripts at the newest
   `ms-playwright` folder, never at a fixed revision.
+
+## 2026-10-07 — scripted edits can eat CSS escapes
+- A Python heredoc edit turned `content: '\00b7'` into a NUL byte (`' b7'` on screen); the build stayed green and the dot just vanished.
+- Rule: after any scripted edit that writes a backslash escape, check that exact line with `od -c` (or grep the escape) before building. For anything with backslashes, write the script to a file in the scratchpad, or use Edit.

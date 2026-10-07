@@ -1,3 +1,11 @@
+## 2026-10-07 — Growth plan Phase 2, RevLimiter page (Claude Code, Yoni's laptop) — committed locally, NOT pushed (Yoni reviews on localhost first)
+
+- Yoni's decisions: RevLimiter goes LAST on the master bus; redline = threshold.
+- Files: `src/components/WordWall.astro` (homepage blurb: "early in your master chain" -> "last on your master bus", "redline is the ceiling" -> "threshold"), `src/pages/[slug].astro` (garage wall = Hear it + TrialPlates moved from below the walkthrough to right under the hero; HeroFacts import + phone flex order), new `src/components/HeroFacts.astro` (links to #hear-it / #trial + price, 2 machines, 14-day refund, No iLok; claims mirror BuyButtonCrane's list, change together).
+- Verified: build green; Playwright suite 68/68; screenshots 1440x900, 1366x768, 820 tablet, 390 + 360 phones, Radio Roulette desk/phone; no horizontal overflow; Hear-it link lands the section under the nav. Hear it top: desktop 6031 -> 1207, phone 1622 -> 1196.
+- Not changed: shared CLAUDE.md still says RevLimiter is "ideally used early in the master chain" (shared repo git is damaged; flagged to Yoni).
+- Note: feat/drift-page / qa/drift-page-1005 branches touch `[slug].astro`; the block move may conflict if they merge later.
+
 ## 2026-10-07 — PageSpeed pass (Claude Code, PageSpeed session, Yoni's laptop) — DONE, pushed, claim closed
 
 ### State at session end

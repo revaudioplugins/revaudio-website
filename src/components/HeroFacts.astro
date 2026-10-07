@@ -1,0 +1,92 @@
+---
+/* HeroFacts — one line of buying facts under the product tagline, every
+   viewport (growth plan Phase 2, Yoni 2026-10-07). The door's terms list
+   (BuyButtonCrane) starts just under the fold on a 1440x900 or 1366x768
+   screen and is hidden on phones, so the facts a buyer checks first (can I
+   hear it, can I try it, what does it cost, what if it's wrong) ride the
+   hero instead. Every claim here is one the site already makes: the 30-day
+   trial (TrialStamp / TrialPlates), the price on the door, and the door's
+   terms list (machines, refund, no iLok). Change them together. */
+import { fmtPrice, type Plugin } from '../data/plugins';
+
+interface Props {
+  plugin: Plugin;
+  hasDemos: boolean;
+  buyable: boolean;
+}
+
+const { plugin, hasDemos, buyable } = Astro.props;
+---
+
+<div class="hero-facts" aria-label={`${plugin.name} at a glance`} role="group">
+  {(hasDemos || plugin.trialUrl) && (
+    <ul class="hf-group">
+      {hasDemos && (
+        <li><a href="#hear-it" class="hf-link"><span class="hf-play" aria-hidden="true">&#9654;</span> Hear before/after</a></li>
+      )}
+      {plugin.trialUrl && <li><a href="#trial" class="hf-link">Free 30-day trial</a></li>}
+    </ul>
+  )}
+  {buyable && (
+    <ul class="hf-group">
+      {plugin.introPriceUsd != null && <li>{fmtPrice(plugin.introPriceUsd)}</li>}
+      <li>2 machines</li>
+      <li>14-day refund</li>
+      <li>No iLok</li>
+    </ul>
+  )}
+</div>
+
+<style>
+  /* Same type as the tagline above it (mono, uppercase, tracked) one step
+     quieter; the two links carry the brass, the plain facts stay dim. */
+  .hero-facts {
+    margin: 0 0 1.1rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    row-gap: 0.35rem;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--fg-dim);
+  }
+  /* Two groups (the links, then the plain facts) so a wrap only ever happens
+     BETWEEN groups: a separator dot never starts a line. */
+  .hf-group {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: baseline;
+    white-space: nowrap;
+  }
+  .hf-group + .hf-group::before,
+  .hf-group li + li::before {
+    content: '\00b7';
+    margin: 0 0.6em;
+    color: var(--fg-faint);
+  }
+  .hf-link {
+    color: var(--brass-bright);
+    text-decoration: underline;
+    text-decoration-color: rgba(232, 200, 120, 0.4);
+    text-underline-offset: 3px;
+  }
+  .hf-link:hover { text-decoration-color: currentColor; }
+  .hf-link:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 2px; }
+  .hf-play { font-size: 0.85em; }
+
+  /* Phones: the hero stack is centred under the door ([slug].astro); one
+     group per line, a touch smaller so the facts group fits a 360px row. */
+  @media (max-width: 900px) {
+    .hero-facts {
+      flex-direction: column;
+      align-items: center;
+      font-size: 0.7rem;
+      letter-spacing: 0.05em;
+    }
+    .hf-group + .hf-group::before { content: none; }
+  }
+</style>
