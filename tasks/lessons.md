@@ -15,3 +15,12 @@ The "rv close" ritual is an explicit push instruction and still counts.
 ## 2026-10-07 — Don't call the user "Dan"
 - On the `C:\Users\Yoni` laptop the user is Yoni. I asked for "push from Dan" a third time because the push-rule memory was titled "until Dan says push". The memory now says "the user".
 - Rule: when asking for go-ahead, write "say push". Before sending, every "Dan" that means "you" gets changed to "you".
+
+## 2026-10-07 — removing a catalog field: prove it with the built pages, not the build
+- Astro does not type-check `.astro` templates at build time, so a leftover `plugin.someField` just renders as
+  nothing and `npm run build` stays green. Rule: after deleting a field from `src/data/*.ts`, grep `src/` and
+  `tests/` for it, then diff the built pages before and after (strip only the attribute you meant to remove) and
+  expect nothing else to change.
+- `npx playwright install` (needed after `npm ci` bumps @playwright/test) deletes every browser revision no
+  remaining install links to, including ones other tools pinned by path. Rule: point scripts at the newest
+  `ms-playwright` folder, never at a fixed revision.
