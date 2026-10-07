@@ -1,4 +1,4 @@
-## 2026-10-07 — Dormant second old-store checkout engine removed (Claude Code `revaudio-96`, laptop 1) — committed, NOT pushed (waits for Dan's "push")
+## 2026-10-07 — Dormant second old-store checkout engine removed (Claude Code `revaudio-96`, laptop 1) — pushed 2026-10-07 (Dan: "push", double-checked)
 
 Dan, 2026-10-07: "למחוק" (delete it). Claim closed 2026-10-07; nothing in flight.
 - Paddle is the cart's only checkout now in code too: `site.checkoutEngine` (and its two-engine union type) is gone,
