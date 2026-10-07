@@ -47,7 +47,7 @@ Branch `main`. All PageSpeed work is pushed (last own commit `af59e16`). The Pag
 - Privacy now states: Google Ads tag + Meta Pixel only after Accept (gclid on order, hashed email at checkout); server-side hashed sale report to Meta on every sale; trial-request emails; Resend, Formspree, YouTube (nocookie, on play); hosting = GitHub Pages (was "Vercel").
 - Banner links Privacy (opens the legal modal). Footer "Cookie settings" reopens the banner; Decline after Accept clears `_gcl*`/`_fbp`/`_fbc`/`_ga*` and reloads.
 - Verified on local preview (fresh browser context): 0 Google/Meta requests before choice; 10 after Accept; reopen works; Decline clears ad cookies (others kept), reload has 0 hits, gtag/fbq undefined; Privacy link opens modal above banner. `npm run build` green (23 pages).
-- Open for Yoni: Meta CAPI fires without cookie consent (disclosed as legitimate interest + objection by email). Gate it on consent if he wants stricter.
+- Meta CAPI consent-gated (Yoni: "meta only if user accepts, 100% transparent"): `Cart.astro` sends Paddle `customData.ad_consent='granted'` only after Accept; licence worker (RevLimiter repo) stores `sale.adConsent` and `fireMetaPurchase` returns without it. Privacy text updated to match. Worker tests: test_ads 3 new checks fail on old code, all suites pass. Deploy order: worker first (deploy.ps1, Yoni), then site push.
 - Test order PASSED (same day, Yoni, 100% code): CSV row for `txn_01m4bnz1t86vxhrkcpw09ska7n` with gclid `TESTabc123456`. Google will reject that fake click in the daily import for 90 days (until ~2027-01-05); Yoni: leave it, ignore the error. **Phase 1 complete** pending the push.
 
 ## 2026-10-07 — trial Sign-up conversion value per product (Claude Code, Yoni's laptop) — DONE, claim closed

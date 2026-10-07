@@ -171,13 +171,19 @@ for (const p of plugins) {
         return REF_RE.test(r) ? r : '';
       } catch (e) { return ''; }
     }
+    // The cookie-banner choice. Sent to Paddle as customData.ad_consent so the
+    // licence worker reports the sale to Meta (CAPI) only for buyers who
+    // accepted, the same rule as the browser tags.
+    function adsConsent() {
+      try { return localStorage.getItem('ra-cookie-consent') === 'accepted'; } catch (e) { return false; }
+    }
     // Google click id for the licence worker's server-side Ads import: gtag's
     // own _gcl_aw cookie ("GCL.<time>.<gclid>"), which only exists once the
     // visitor accepted cookies. The stored choice is checked too, so a
     // leftover cookie from before a Decline is never sent.
     function adsClickId() {
       try {
-        if (localStorage.getItem('ra-cookie-consent') !== 'accepted') return '';
+        if (!adsConsent()) return '';
         var m = document.cookie.match(/(?:^|;\s*)_gcl_aw=GCL\.\d+\.([A-Za-z0-9_-]{10,200})/);
         return m ? m[1] : '';
       } catch (e) { return ''; }
@@ -449,6 +455,7 @@ for (const p of plugins) {
           // plus the session's ?ref= attribution token when there is one.
           var customData = { terms_accepted: 'true', terms_version: ver };
           if (ref) customData.ref = ref;
+          if (adsConsent()) customData.ad_consent = 'granted';
           var gclid = adsClickId();
           if (gclid) customData.gclid = gclid;
           window.Paddle.Checkout.open({
