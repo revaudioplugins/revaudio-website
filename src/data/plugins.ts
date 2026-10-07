@@ -12,8 +12,8 @@
  * (Header/Cart/TrialGateModal look plugins up by slug).
  *
  * Prices are intent — flip when commerce launches.
- * Checkout: engine-switched in src/data/site.ts (checkoutEngine); Paddle
- * Billing since 2026-08-31 (paddlePriceId). The site-wide trial gate is
+ * Checkout: Paddle Billing since 2026-08-31 (paddlePriceId; config in
+ * src/data/site.ts site.paddle). The site-wide trial gate is
  * LIFTED for the paid plugins; GAS keeps `trialGateActive` on purpose — its
  * email-gate IS the free download's delivery mechanism, not a checkout pause.
  */
@@ -107,12 +107,8 @@ export interface Plugin {
   bundleNote?: string;
   introPriceUsd: number | null;
   regularPriceUsd: number | null;
-  /** FastSpring product path (Store Builder Library) — the catalog SKU/path
-   *  configured in the FastSpring storefront admin, NOT a URL. Read by
-   *  Cart.astro only when site.checkoutEngine is 'fastspring' (dormant). */
-  fastspringPath?: string | null;
   /** Paddle Billing price id (pri_...) for this plugin's checkout item.
-   *  Read by Cart.astro when site.checkoutEngine is 'paddle'. Null/absent for
+   *  Read by Cart.astro (the checkout map). Null/absent for
    *  free plugins (no checkout at all). Also the buyable flag: isBuyable()
    *  is true only for a live plugin that has one. */
   paddlePriceId?: string | null;
@@ -197,11 +193,9 @@ export const plugins: Plugin[] = [
     // anchor is allowed again once RevLimiter has actually sold at it.
     introPriceUsd: 49,
     regularPriceUsd: null,
-    fastspringPath: 'revlimiter',
     paddlePriceId: 'pri_01m18vcv5f42cdbv5bzxhm94n1',
     checkoutPaused: false,
-    // Gate lifted 2026-08-03: checkout re-opened (site.checkoutEngine, Paddle
-    // since 2026-08-31) — BUY is a real add-to-cart again and the door's
+    // Gate lifted 2026-08-03: checkout re-opened (Paddle since 2026-08-31) — BUY is a real add-to-cart again and the door's
     // painted trial line carries the trial offer. Re-set to true only if
     // checkout pauses again.
     trialGateActive: false,
@@ -287,7 +281,6 @@ export const plugins: Plugin[] = [
     cardThumbBare: true,
     introPriceUsd: 19,
     regularPriceUsd: null,
-    fastspringPath: 'radio-roulette',
     paddlePriceId: 'pri_01m18vmkdae9kqqcrxc02ka753',
     checkoutPaused: false,
     // Gate lifted 2026-08-03 with RevLimiter's — see that entry. Re-set to

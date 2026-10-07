@@ -30,11 +30,9 @@ import { TERMS_LAST_UPDATED } from '../data/legal';
  * - the header cart icon ([data-cart-toggle]) + badge ([data-cart-badge]) open the drawer
  * - A required consent checkbox gates Checkout; its links open the legal-reader
  *   modal (Terms / Licence / Privacy) IN A POPUP — no page navigation.
- * - Checkout runs on site.checkoutEngine (2026-08-31: 'paddle' — Paddle
- *   Billing overlay checkout, live). 'fastspring' is dormant (superseded by
- *   Paddle before it ever went live, see src/data/site.ts). 'paddle' opens
- *   the Paddle.js overlay (paddle.js + Paddle.Checkout.open), summing the
- *   full cart natively; on checkout.completed it redirects to
+ * - Checkout is Paddle Billing's overlay (live since 2026-08-31, the only
+ *   store; config in src/data/site.ts site.paddle). It opens the Paddle.js
+ *   overlay (paddle.js + Paddle.Checkout.open), summing the full cart natively; on checkout.completed it redirects to
  *   site.paddle.purchaseUrl with ?_ptxn=<transaction id> instead of
  *   /thank-you — the revlimiter-license worker's own webhook (not this page)
  *   does the actual key minting/emailing.
@@ -44,11 +42,10 @@ import { TERMS_LAST_UPDATED } from '../data/legal';
  * map by slug at checkout time. The cart persists slugs only.
  */
 import { site } from '../data/site';
-const engine = site.checkoutEngine;
 const checkoutMap: Record<string, string> = {};
 const cartCatalog: Record<string, { name: string; price: number; img: string; formats: string }> = {};
 for (const p of plugins) {
-  const target = engine === 'fastspring' ? p.fastspringPath : p.paddlePriceId;
+  const target = p.paddlePriceId;
   if (target) {
     checkoutMap[p.slug] = target;
     const source = pluginImage(p.heroImage);
@@ -64,7 +61,6 @@ for (const p of plugins) {
   is:inline
   type="application/json"
   data-checkout-map
-  data-engine={engine}
   data-gads-purchase={site.gadsPurchaseSendTo}
   data-paddle-token={site.paddle.clientToken}
   data-paddle-purchase-url={site.paddle.purchaseUrl}
@@ -79,7 +75,7 @@ for (const p of plugins) {
     the overlay itself may need its own frame-src/connect-src entries too,
     discoverable via the browser console's CSP violation messages if checkout
     doesn't fully open. */}
-{engine === 'paddle' && <script is:inline src="https://cdn.paddle.com/paddle/v2/paddle.js" defer></script>}
+<script is:inline src="https://cdn.paddle.com/paddle/v2/paddle.js" defer></script>
 
 <!-- Empty-cart tooltip: shown on hover of the cart icon when there's nothing in it yet. -->
 <div class="cart-tip" data-cart-tip role="status" aria-live="polite" hidden>No items to show right now. Your cart's empty.</div>
@@ -112,7 +108,7 @@ for (const p of plugins) {
     </label>
     <p class="cd-agree-hint" id="cd-agree-hint" data-agree-hint role="alert" hidden>Please agree to the terms to continue.</p>
     <button type="button" class="cd-checkout" data-checkout>Continue to payment <span aria-hidden="true">→</span></button>
-    <p class="cd-payment">{engine === 'paddle' ? 'Payment handled securely by Paddle' : 'Continue to secure payment'}</p>
+    <p class="cd-payment">Payment handled securely by Paddle</p>
     <p class="cd-payment-error" data-payment-error role="alert" hidden></p>
     <button type="button" class="cd-cont" data-cart-close>Continue browsing</button>
   </div>
@@ -226,7 +222,7 @@ for (const p of plugins) {
     // ---- Google Ads purchase conversion ----
     // One hit per order. transaction_id lets Google drop a repeat of the same
     // order (reload, replayed event). Value = what the buyer paid net of tax,
-    // in the checkout's own currency; if the engine gave no usable total, the
+    // in the checkout's own currency; if Paddle gave no usable total, the
     // pre-payment cart sum in USD stands in. No-op until site.ts sets
     // gadsPurchaseSendTo. The redirect waits for the hit (or 500 ms, the
     // documented gtag event_callback pattern) so it isn't lost mid-nav.
@@ -251,15 +247,9 @@ for (const p of plugins) {
       setTimeout(go, 500);
     }
 
-    function engineName() {
-      var el = document.querySelector('[data-checkout-map]');
-      return (el && el.getAttribute('data-engine')) || 'fastspring';
-    }
-
-    // ---- Paddle overlay (engine 'paddle') ----
-    // paddle.js is included above only when the engine is 'paddle'. Paddle's
-    // eventCallback is set once at Initialize() time — checkout.completed both
-    // clears the cart and redirects to the license worker's /purchase page
+    // ---- Paddle overlay ----
+    // paddle.js is included above. Paddle's eventCallback is set once at
+    // Initialize() time — checkout.completed both clears the cart and redirects to the license worker's /purchase page
     // with the transaction id, instead of /thank-you. No client-side Purchase
     // pixel here, deliberately: server-side only, fired from the worker's
     // webhook. Don't add one.
@@ -448,41 +438,22 @@ for (const p of plugins) {
       var ref = currentRef();
       // Keep the cart visible with recovery guidance if Paddle's SDK is
       // unavailable or opening payment throws synchronously.
-      if (engineName() === 'paddle') {
-        if (!ensurePaddle()) { paymentError('Payment could not load. Please try again, or contact RevAudio support below.'); return; }
-        try {
-          // Preserve the accepted legal-bundle version on the transaction,
-          // plus the session's ?ref= attribution token when there is one.
-          var customData = { terms_accepted: 'true', terms_version: ver };
-          if (ref) customData.ref = ref;
-          if (adsConsent()) customData.ad_consent = 'granted';
-          var gclid = adsClickId();
-          if (gclid) customData.gclid = gclid;
-          window.Paddle.Checkout.open({
-            // Paddle sums the full cart natively.
-            items: items.map(function (i) { return { priceId: checkoutTargetFor(i), quantity: i.qty || 1 }; }),
-            customData: customData
-          });
-          if (drawer && drawer.open) drawer.close();
-        } catch (e) { paymentError('Payment could not open. Please try again, or contact RevAudio support below.'); }
-        return;
-      }
-      // Engine 'fastspring' — dormant, never went live (see the file-header
-      // comment). Fail closed: no plain-URL fallback exists for SBL.
-      if (!(window.fastspring && window.fastspring.builder)) return;
-      // Consent record: stamp the accepted legal-bundle version onto the
-      // order via FastSpring's custom-tags passthrough (FastSpring docs: tags).
-      var fsTags = { terms_accepted: 'true', terms_version: ver };
-      if (ref) fsTags.ref = ref;
-      window.fastspring.builder.push({
-        reset: true,
-        // Full cart, not just the first item — FastSpring's session natively
-        // sums multiple line items.
-        products: items.map(function (i) { return { path: checkoutTargetFor(i), quantity: i.qty || 1 }; }),
-        tags: fsTags
-      });
-      if (drawer && drawer.open) drawer.close();
-      window.fastspring.builder.checkout();
+      if (!ensurePaddle()) { paymentError('Payment could not load. Please try again, or contact RevAudio support below.'); return; }
+      try {
+        // Preserve the accepted legal-bundle version on the transaction,
+        // plus the session's ?ref= attribution token when there is one.
+        var customData = { terms_accepted: 'true', terms_version: ver };
+        if (ref) customData.ref = ref;
+        if (adsConsent()) customData.ad_consent = 'granted';
+        var gclid = adsClickId();
+        if (gclid) customData.gclid = gclid;
+        window.Paddle.Checkout.open({
+          // Paddle sums the full cart natively.
+          items: items.map(function (i) { return { priceId: checkoutTargetFor(i), quantity: i.qty || 1 }; }),
+          customData: customData
+        });
+        if (drawer && drawer.open) drawer.close();
+      } catch (e) { paymentError('Payment could not open. Please try again, or contact RevAudio support below.'); }
     }
 
     // ---- Legal reader modal (read-only; Terms / Licence / Privacy tabs) ----
@@ -618,7 +589,7 @@ for (const p of plugins) {
     // plugin (add() never duplicates: one licence per product) and open the
     // drawer, so the buyer only ticks the terms box and continues. Runs after
     // the first sync() so the badge pops like a normal add. A slug missing
-    // from the catalog (no checkout target on this engine) adds nothing; the
+    // from the catalog (no Paddle price id) adds nothing; the
     // drawer still opens and shows whatever the cart already holds.
     var autoAdd = document.querySelector('[data-cart-autoadd]');
     if (autoAdd) {

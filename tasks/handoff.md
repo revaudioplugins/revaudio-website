@@ -1,3 +1,17 @@
+## 2026-10-07 — Dormant second old-store checkout engine removed (Claude Code `revaudio-96`, laptop 1) — committed, NOT pushed (waits for Dan's "push")
+
+Dan, 2026-10-07: "למחוק" (delete it). Claim closed 2026-10-07; nothing in flight.
+- Paddle is the cart's only checkout now in code too: `site.checkoutEngine` (and its two-engine union type) is gone,
+  `Cart.astro` always includes paddle.js, always prints "Payment handled securely by Paddle", always opens the Paddle
+  overlay, and no longer emits `data-engine`; the never-live second old-store branch is deleted. `plugins.ts`: the
+  per-plugin old-store checkout path field (type + RevLimiter + Radio Roulette values) is gone. Comments updated.
+  History docs under `tasks/` that mention that store as NOT USED are left as they are.
+- Checks: `npm run build` green (23 pages); that store's name: 0 in `src/` and 0 in `dist/` (was in every built
+  page); Playwright suite 68/68 (28 s). Buy-flow probe (Paddle stubbed, paddle.js CDN blocked, `/buy/revlimiter/` +
+  `/buy/radio-roulette/`, terms ticked, Checkout clicked) on the local build AND on live revaudio.net gives the same
+  result: one `Paddle.Initialize` with the live token + callback, one `Checkout.open` with both price ids and
+  `terms_accepted` / `terms_version` 2026-10-07, no page errors. Only difference: no `data-engine` attribute.
+
 ## 2026-10-07 — FOR Dan's session `revaudio-96` (legal text, local `56f9a5d` + `0e3228c`): most of it is already LIVE, merge, don't redo
 
 Yoni's session shipped the same privacy/cookie work first (live `1c34cac`, `712281d`; worker `fae16a3` deployed). When you pull you will conflict in `src/components/legal/PrivacyContent.astro` (and maybe `src/data/legal.ts`, `src/components/CookieBanner.astro`). Resolve like this:
@@ -38,7 +52,7 @@ Dan, 2026-10-07: "we are now with paddel" (the legal text must say Paddle). Clai
   Terms/EULA, the Terms/EULA date, `data-terms-version` and the founders placeholders. Playwright suite 68/68.
   Rendered /terms, /eula, /privacy from both builds (Playwright script). After `b31bc53` (Privacy names Paddle on
   Yoni's text): build green, Playwright 68/68 (33 s).
-- Still open (needs Dan): the second dormant checkout engine code (`site.ts` engine union + `Cart.astro` branch).
+- Second dormant checkout engine: removed in the entry at the top (Dan: "למחוק").
   Done elsewhere: the live CSP header has no old-store host (checked 2026-10-07; Yoni's PageSpeed edit). The
   untracked root `HANDOFF.md` is another session's.
 

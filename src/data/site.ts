@@ -10,21 +10,12 @@ export const site = {
   address: 'Yehudit Boulevard 8, Tel Aviv 67016, Israel',
 
   /**
-   * Which engine the cart's Checkout button drives.
-   * 'fastspring' — FastSpring SBL popup (plugins.ts fastspringPath). Dormant —
-   *                superseded by the Paddle migration before this ever went live.
-   * 'paddle'     — Paddle Billing overlay checkout (plugins.ts paddlePriceId,
-   *                site.paddle below). LIVE as of 2026-08-31. On
-   *                checkout.completed, redirects to site.paddle.purchaseUrl
-   *                with ?_ptxn=<transaction id> — the revlimiter-license
-   *                worker's /purchase page picks up from there (mints/emails
-   *                license keys via its own webhook, entirely separate from
-   *                this redirect).
-   */
-  checkoutEngine: 'paddle' as 'fastspring' | 'paddle',
-
-  /**
-   * Paddle Billing (see checkoutEngine above).
+   * Paddle Billing: the cart's only checkout (live since 2026-08-31; the one
+   * store, wiki `store`). The Checkout button opens the Paddle overlay with
+   * each plugin's plugins.ts paddlePriceId. On checkout.completed it redirects
+   * to purchaseUrl with ?_ptxn=<transaction id>: the revlimiter-license
+   * worker's /purchase page picks up from there (it mints/emails license keys
+   * via its own webhook, entirely separate from this redirect).
    * `clientToken` is the PUBLIC client-side token (Paddle → Developer tools →
    * Authentication → Client-side tokens) — safe to ship in browser JS, that's
    * its whole purpose, unlike the secret API key the license worker uses.
