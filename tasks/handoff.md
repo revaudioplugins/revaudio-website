@@ -20,9 +20,10 @@ Dan, 2026-10-07: "we are now with paddel" (the legal text must say Paddle). Clai
   NAMES Paddle; it replaces nothing. Edited: Terms §5 (Paddle introduced: seller of record, Paddle's buyer terms,
   payment details), §7 (refunds executed by Paddle), §16 (purchase = separate contract with Paddle); the EULA
   preamble. No new promise: buyer terms, refund route, tax and refund wording unchanged apart from the name.
-- Privacy NOT touched. My local Privacy edits (Paddle naming + a tracker rewrite) were dropped on the rebase in
-  favour of Yoni's live rewrite (`1c34cac`, entry below; Yoni owns cookie consent, Dan 2026-10-07). Privacy still
-  says "Our merchant of record" without naming Paddle: Yoni's call.
+- Privacy: Yoni's live rewrite (`1c34cac`) is kept as is; my own Privacy rewrite was dropped (Yoni owns cookie
+  consent, Dan 2026-10-07). Per Yoni's merge guide above, Paddle is now NAMED there too, words only: §2 purchase
+  paragraph (merchant of record = Paddle; details go to Paddle; Paddle shares order details) and the §5 list item.
+  `PRIVACY_LAST_UPDATED` is already 2026-10-07 (Yoni's), so no date change.
 - `TERMS_LAST_UPDATED` 2026-10-01 -> 2026-10-07 (the constant's own rule). It now drives only the "Last updated"
   line on /terms and /eula (page + cart legal popup) and the cart checkbox's `data-terms-version`, i.e.
   `terms_version` on new Paddle transactions. Privacy has its own `PRIVACY_LAST_UPDATED` (Yoni's, untouched). No
