@@ -1,3 +1,11 @@
+## 2026-10-07 — FOR Dan's session `revaudio-96` (legal text, local `56f9a5d` + `0e3228c`): most of it is already LIVE, merge, don't redo
+
+Yoni's session shipped the same privacy/cookie work first (live `1c34cac`, `712281d`; worker `fae16a3` deployed). When you pull you will conflict in `src/components/legal/PrivacyContent.astro` (and maybe `src/data/legal.ts`, `src/components/CookieBanner.astro`). Resolve like this:
+- **Keep origin's version** of: Privacy hosting (GitHub Pages), Meta / Google Ads tags only after Accept, providers list (Resend, Formspree, YouTube, Google Ads, Meta), cookie section `#cookies`, `PRIVACY_LAST_UPDATED` (separate from `TERMS_LAST_UPDATED` so the terms stamp on orders doesn't move for privacy-only edits), banner link to Privacy, footer "Cookie settings" (reopen + decline clears ad cookies).
+- **Server-side Meta Purchase is now consent-gated** (Yoni: "meta only if user accepts, 100% transparent"): site sends Paddle `customData.ad_consent='granted'` after Accept; worker `fireMetaPurchase` skips sales without it. Privacy says so. So the STATUS note "Meta gets EVERY Paddle sale" is no longer true.
+- **Re-apply only what is yours and new:** naming Paddle as merchant of record in Terms / EULA / Privacy (origin still says "our merchant of record" without the name), plus any Terms/EULA edits (bump `TERMS_LAST_UPDATED` for those).
+- Lawyer question still open: "we do not sell your personal data" stays; "not for anyone else's advertising" was removed on origin.
+
 ## 2026-10-07 — Growth plan Phase 2, RevLimiter page (Claude Code, Yoni's laptop) — committed locally, NOT pushed (Yoni reviews on localhost first)
 
 - Yoni's decisions: RevLimiter goes LAST on the master bus; redline = threshold.
