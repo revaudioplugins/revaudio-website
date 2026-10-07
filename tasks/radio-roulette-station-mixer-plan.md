@@ -65,6 +65,30 @@ audio: `audioDemos: []` today, so the page has no "Hear it" at all. The Station 
 - **Open:** Yoni's look and sound review; the mixer name; the phone layout (step 7: the 1100 px stage only scales
   down today).
 
+## Bench round 2 (2026-10-08)
+
+Yoni's bug list and calls:
+1. **No stations on the master;** stations live only in the loops. Arming RevLimiter no longer touches any loop setting.
+2. **RevLimiter = a browser PREVIEW chain** (Yoni chose this over rendering all 1,296 combinations). Web Audio:
+   drive, glue compressor, tanh saturation, limiter, -1 dBFS clipper. Calibrated so the all-DRY mix lands at the real
+   RevLimiter 3.2.1 render's loudness (-7.2 vs -7.2, K-weighted ungated; peaks -0.93 vs -1.1 dBFS),
+   `window.calibrateRL()` in the bench. It is not RevLimiter's DSP, so the copy says "preview" / "a taste of" and
+   never "this is RevLimiter's sound". The glass shows the preview's live GR.
+3. **PLAY = cassette transport:** a deck module with ▶ (latches down) and ■ (pops it up), plus a play lamp.
+   Its tape window (Yoni: "more realistic and moving") has:
+   - a smoked shell with a centre window and hub holes
+   - sprocket hubs turning at real cassette speed (~0.7 rev/s on an empty hub)
+   - pack radius following the tape area
+   - the tape running past the head opening
+   - a 4-minute side with AUTO REVERSE (A then B)
+4. **Tighter layout:**
+   - column heads engraved once
+   - brass stamped name plates
+   - chrome-bezel SOLO/MUTE lenses
+   - one master bar: RADIO lever, master VU, ARM plate, RevLimiter copy and link, trial CTA
+   - the station readout flickers on a change
+   - VU faces lamp-lit while playing
+
 ## Yoni's export spec
 
 - 4 loops: drums, bass, keys, guitar. Same key and BPM, 4 bars, dry (no baked reverb/delay), all exactly the same
