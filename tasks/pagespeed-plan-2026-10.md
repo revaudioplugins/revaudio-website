@@ -45,20 +45,28 @@ Goal: mobile LCP <= 2.5 s, INP <= 200 ms, CLS stays <= 0.10, checkout still work
 
 ### Phase 3 — Cloudflare (dashboard) 🧑
 - [x] Cache Rule A: `/_astro/*` → 1 year browser + edge. Live 2026-10-07 (`max-age=31536000`, HTML + other files unchanged). Gotcha: Field must be **URI Path**; "URI Full" is the whole https://… address and never matches `/_astro/`.
-- [ ] Cache Rule B: HTML edge cache, short browser TTL.
-- [ ] Add "Purge everything" after deploy: either by hand, or a step in `deploy.yml` (needs a CF API token with Cache Purge — new secret; Dan's call).
-- [ ] 🤖 verify with `curl -sI`: `cf-cache-status: HIT`, `Cache-Control: max-age=31536000` on `/_astro/`.
+- [x] Cache Rule B "Cache pages at the edge": `(http.host eq "revaudio.net" and not starts_with(http.request.uri.path, "/_astro/"))`, edge 2 h, browser 10 min (= origin 600). Live 2026-10-07: pages HIT, TTFB ~1.3 s -> ~0.25 s from here.
+- [x] `deploy.yml` step "Clear Cloudflare cache" (purge_everything) after each deploy, secret `CLOUDFLARE_PURGE_TOKEN` (account token, Cache Purge on revaudio.net only; cannot read DNS). Commit `1d2aced`, first run `"success":true`; purge -> MISS proven. Token was pasted in chat once: roll it later.
+- [x] 🤖 verified with curl: `/_astro/` max-age=31536000, pages HIT max-age=600.
 
 ### Phase 4 — INP trace 🤖 (start in parallel with Phase 1)
 - [x] Probed (inp.mjs) at 4× and 10× CPU slowdown: cookie accept/decline, menu, demo play/A-B/stop, add to cart. All < 200 ms (worst 176 ms at 10×). Handlers ~0 ms; cost = ~45 ms busy main thread (constant animation) + paint.
 - [ ] NOT fixed: lab cannot reproduce 379 ms. Field number is 28-day, site-wide, and includes the pre-consent CF-gateway gtag removed today. Next: 🧑 Cloudflare → Web Analytics → Core Web Vitals → INP debug view (shows the slow element), re-check after ~2026-11-03. Touching the approved motion only with evidence.
-- [ ] Checkout regression: Paddle overlay opens; real test purchase only if Cart/checkout code is touched (wiki rule).
+- [x] Checkout regression (live, 2026-10-07): add to cart -> tick terms -> Paddle overlay opens, RevLimiter $49. Cart code untouched, so no test purchase. Pre-existing CSP warnings seen (not from this work): `style-src` lacks `https://cdn.paddle.com` (paddle.css) and `script-src` lacks `https://public.profitwell.com`; overlay works anyway. Separate small CSP fix.
 
 ### Phase 5 — ship + verify 🤖
-- [ ] Commit per phase, push only when the user says push.
-- [ ] Re-run PageSpeed ×3, record median vs Phase 0.
+- [x] Pushed 2026-10-07 on Yoni's "push" (main e683fb3). Live smoke: 0 errors / 0 failed requests, live screenshots = tested build (0.00%), home on phone 537 KiB transferred.
+- [x] PageSpeed API quota exhausted again; Lighthouse 12.8 mobile ×3. Live from this laptop: median 68 -> 74 (best 84), CLS 0.153 -> 0, server response 220 -> 80 ms; LCP noisy (3.9-5.5 s) from home connection. Fair A/B, same compressed local server: OLD 72 / LCP 4.2 s / FCP 3.4 s vs NOW 93 / LCP 3.2 s / FCP 1.5 s / CLS 0. Font preloads tested: removing them is worse (87-88, CLS back), so kept. Official PageSpeed re-run: 🧑 run pagespeed.web.dev once the quota resets.
 - [ ] Field data (CWV pass/fail) needs ~28 days to roll over — re-check ~2026-11-03.
-- [ ] Wiki `website-update.md`: add the cache rules + image/font rules (ride-along).
+- [ ] Wiki `website-update.md`: BLOCKED 2026-10-07, the shared repo's git is damaged (`fatal: unable to read tree 24872f10...`, fsck: missing blobs, bad reflog; stash `v0.37.2 shared docs` from another session). Not repaired here. Paste this section into the page once the repo is fixed:
+
+  > ## Speed + caching (PageSpeed pass 2026-10-07)
+  > - **Fonts are self-hosted**: `src/styles/fonts.css` + `src/styles/fonts/*.woff2` (hashed into `/_astro/`). No Google Fonts link. New font = add the woff2 there + an `@font-face`; preload only first-screen faces (BaseLayout).
+  > - **CSS-background images must go through `getImage()`**: `import x from '...png'` + `x.src` ships the raw master (that cost 1.9 MB on the home page).
+  > - **srcset `sizes` must match the real slot**: portrait or capped images (GAS) get their own sizes. Check with `pagespeed-ref-2026-10-06/measure-imgs.mjs` (+ `imgdiff.py`): no image may get fewer pixels than its slot.
+  > - **Cloudflare Cache Rules** (Caching → Cache Rules): A `Long cache for _astro files` = URI **Path** starts with `/_astro/` → edge + browser 1 year. B `Cache pages at the edge` = `(http.host eq "revaudio.net" and not starts_with(http.request.uri.path, "/_astro/"))` → edge 2 h, browser 10 min. Gotcha: "URI Full" is the whole https:// address and never matches a path.
+  > - **Deploy clears the Cloudflare cache**: `deploy.yml` step "Clear Cloudflare cache" (purge_everything) with secret `CLOUDFLARE_PURGE_TOKEN` (account token, Cache Purge on revaudio.net only). If that step goes red, visitors see old pages for up to 2 h: fix the token, or purge by hand (Caching → Configuration → Purge Everything).
+  > - CSP: `fonts.googleapis.com` / `fonts.gstatic.com` are no longer needed. Missing today: `https://cdn.paddle.com` in style-src (paddle.css) and `https://public.profitwell.com` in script-src.
 
 ## Not doing
 - Changing host (TTFB fix is edge caching first; re-measure before any move).
