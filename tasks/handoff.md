@@ -1,3 +1,15 @@
+## 2026-10-07 — trial Sign-up conversion value per product (Claude Code, Yoni's laptop) — DONE, claim closed
+Owner: Claude Code. `src/data/plugins.ts` gains `trialConversionValueUsd()` (price × 0.12, assumed trial-to-sale rate);
+`TrialPlates.astro` + `TrialStamp.astro` put it on `data-trial-value` and the Google Ads "Sign-up" conversion sends
+it in USD (was a flat ₪1 for every product). Checks: build green (23 pages); Playwright on `astro preview` with
+consent accepted, `/download/register` stubbed: /revlimiter 2 forms → value 6 USD each, /radio-roulette 2 forms →
+value 2 USD each; `npx playwright test` 68/68.
+Same day, Google Ads account (Ads master plan Week 0, Yoni present): every conversion action except
+"Purchase (server)" set to Secondary (Sign-up count One); Data manager HTTPS connection to the licence worker's
+`/ads/conversions.csv` linked to "Purchase (server)", daily 18:00–19:00 IL; auto-tagging on, auto-apply off (already);
+my Keyword Planner plan removed; "Free desktop software" certification requested (case 4-6073000041684: RevLimiter +
+Radio Roulette, 10 countries). Draft "Radio Roulette videos" (Demand Gen) left alone: needs Yoni's call.
+
 ## 2026-10-07 — buy state keyed on the Paddle price, old store's checkout links removed (Claude Code `revaudio-f7`, laptop 1) — `5d4b01b` (was `652df7a`), pushed 2026-10-07 on Dan's "push"
 Dan, 2026-10-07: "8. OK" (the TRAP follow-up in the 10-06 entry below). Claim closed 2026-10-07; nothing in flight.
 - `isBuyable()` = `status === 'live' && paddlePriceId`. RevLimiter's `statusLabel` ('Available now') and both

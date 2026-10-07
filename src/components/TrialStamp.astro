@@ -15,7 +15,7 @@
    Mobile: hidden — the door's own "or try it free for 30 days" link
    (BuyButtonCrane's .rc-trial) and MobileBuyBar already carry the trial
    funnel on phones. */
-import { dlGateId, type Plugin } from '../data/plugins';
+import { dlGateId, trialConversionValueUsd, type Plugin } from '../data/plugins';
 
 interface Props {
   plugin: Plugin;
@@ -30,6 +30,7 @@ const registerUrl = new URL(plugin.trialUrl!).origin + '/download/register';
   data-trial-cta
   data-register-url={registerUrl}
   data-plugin-id={dlGateId(plugin)}
+  data-trial-value={trialConversionValueUsd(plugin)}
   data-portal-url={plugin.trialUrl}
 >
   <p class="tc-label">Get your <em>free</em> 30-day trial</p>
@@ -206,8 +207,8 @@ const registerUrl = new URL(plugin.trialUrl!).origin + '/download/register';
           try {
             if (window.gtag) window.gtag('event', 'conversion', {
               send_to: 'AW-18334323184/KDtwCLHa4dIcEPCjvqZE',
-              value: 1.0,
-              currency: 'ILS',
+              value: Number(section.dataset.trialValue) || 0,
+              currency: 'USD',
             });
           } catch (_) {}
         } else {

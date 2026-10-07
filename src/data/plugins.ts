@@ -470,6 +470,14 @@ export const dlGateId = (p: Plugin) => p.slug.replace(/-/g, '');
 
 export const isBuyable = (p: Plugin) => p.status === 'live' && !!p.paddlePriceId;
 
+/** Value (USD) the Google Ads "Sign-up" conversion reports for one trial start:
+ *  price × the assumed trial-to-sale rate, so a RevLimiter trial ($49 → $6)
+ *  weighs more than a Radio Roulette one ($19 → $2). An assumption until the
+ *  first trial cohorts are measured (Ads master plan, Oct 2026); free plugins → 0. */
+const TRIAL_TO_SALE_RATE = 0.12;
+export const trialConversionValueUsd = (p: Plugin) =>
+  Math.round((p.introPriceUsd ?? 0) * TRIAL_TO_SALE_RATE);
+
 export const fmtPrice = (usd: number | null) => (usd == null ? '—' : `$${usd}`);
 
 export const discountPct = (p: Plugin): number | null => {

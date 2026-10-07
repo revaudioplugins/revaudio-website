@@ -24,7 +24,7 @@
    successful register — not on the stamp click — so the count means
    "left an email", not "scrolled to the form". */
 import { getImage } from 'astro:assets';
-import { dlGateId, type Plugin } from '../data/plugins';
+import { dlGateId, trialConversionValueUsd, type Plugin } from '../data/plugins';
 import plateImg from '../assets/ui/plate-temp-tag.png';
 import screwImg from '../assets/ui/screw-brass.png';
 
@@ -54,6 +54,7 @@ const screw = await getImage({ src: screwImg, width: 96, format: 'webp' });
       quietly register the wrong product's trial. Every other CTA already goes
       through dlGateId; this was the last one still sending the raw slug. */}
   data-plugin-id={dlGateId(plugin)}
+  data-trial-value={trialConversionValueUsd(plugin)}
   data-portal-url={plugin.trialUrl}
   style={`--plate-url:url(${plate.src});`}
 >
@@ -710,8 +711,8 @@ const screw = await getImage({ src: screwImg, width: 96, format: 'webp' });
       try {
         if (window.gtag) window.gtag('event', 'conversion', {
           send_to: 'AW-18334323184/KDtwCLHa4dIcEPCjvqZE',
-          value: 1.0,
-          currency: 'ILS',
+          value: Number(section.dataset.trialValue) || 0,
+          currency: 'USD',
         });
       } catch (_) {}
     }
