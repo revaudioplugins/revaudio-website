@@ -16,17 +16,24 @@ audio: `audioDemos: []` today, so the page has no "Hear it" at all. The Station 
 - **Same level rules as the plugin.** One gain per stem for all its versions; no extra loudness on the wet versions.
 - **Consent rules unchanged.** No new tracking.
 
-## Decisions for Yoni (morning)
+## Decisions (Yoni, 2026-10-07)
 
-1. 🧑 **Loops: who makes them?**
-   - Recommended: our own loops (Yoni / Dan / Ilay). Rights are clean.
-   - Fallback: a licensed royalty-free pack, but only if its licence allows playback in a web player. Many packs forbid
-     "redistributing loops as-is"; a web player is downloadable.
-   - Spec: 4 stems (drums, bass, keys, guitar), same key and BPM, 4 bars (example: 95 BPM = 10.1 s). WAV 48 kHz /
-     24-bit, dry (no reverb or delay tails baked in), each starts exactly on beat 1, peaks under -6 dBFS.
-2. 🧑 **How many stations per loop:** recommended 6 plus DRY, picked by ear. I render ~20 candidates per stem; Yoni picks
-   on a listening bench.
-3. 🧑 **Name** for the section (examples: "Station Mixer", "Garage Radio", "Jam Room"). `name-the-thing` skill if wanted.
+1. **Loops: Yoni makes them.** Export spec: 4 stems (drums, bass, keys, guitar), same key and BPM, 4 bars (example:
+   95 BPM = 10.1 s). WAV 48 kHz / 24-bit, dry (no reverb or delay tails baked in), each starts exactly on beat 1, all
+   exactly the same length, peaks under -6 dBFS. Name them `drums.wav`, `bass.wav`, `keys.wav`, `guitar.wav`.
+2. **10 stations per loop plus DRY,** on a lighter dial: a simplified TUNE knob with 11 click-stops (DRY + 10), not
+   the plugin's full 0 to 1,000,000 sweep. Picked by ear from ~25 rendered candidates per stem.
+3. **Name:** still open (examples: "Station Mixer", "Garage Radio", "Jam Room").
+4. **Added from the review (Claude's recommendations):**
+   - **One-tap default:** one big PLAY; the full beat starts DRY, and after 2 bars it flips to RADIO ON by itself (or
+     the RADIO ON button pulses to ask). Solo and tuning are the bonus for the curious.
+   - **CTA inside the mixer:** "Like station 456149? Same number in the plugin. Try it free for 30 days", next to
+     the channels, linking to `#trial`.
+   - **Lit effect names per channel:** each channel shows which of the 10 stages its station runs, like the names on
+     the plugin's dial glass. Computed with the real `deriveSettings` port (mt19937) already used for the hero shot
+     (`scratchpad/rr-shoot-true.mjs`); checked against the plugin for a few stations.
+   - **Copy says the truth about the set:** "a few of our favourite stations"; SPIN rotates among them.
+   - **Scope cap:** per channel TUNE, SOLO, MUTE; master PLAY, RADIO ON, SPIN. No faders, tempo, key or saving.
 
 ## Build steps
 
@@ -34,11 +41,11 @@ audio: `audioDemos: []` today, so the page has no "Hear it" at all. The Station 
 |---|---|---|---|
 | 1 | 🤖 | **Render tool** `tools/rr-station-render/` (pedalboard): load `Radio Roulette.vst3`, set `seed`, MIX 100 %, OS 2x. Feed each loop 3x back to back and keep the middle pass, so delay and reverb tails wrap into the start and the loop is seamless. | Script renders a stem at a given station |
 | 2 | 🤖 | **Prove render = plugin.** One station rendered by the script vs the same station bounced in a DAW: null test. | Null passes (or the gap is explained) |
-| 3 | 🤖 | **Candidates.** ~20 stations per stem plus DRY, LUFS logged per file. | WAVs plus a list of the station numbers |
-| 4 | 🧑 | **Listening bench** (local page): pick 6 stations per stem, and check they sound good together. | Picks saved to `stations.json` |
-| 5 | 🤖 | **Encode.** AAC `.m4a` ~160 kbps, like the RevLimiter demos. Each file is the loop plus half a bar of padding on both sides. | 28 files, ~8 MB total, ~1.2 MB on first play |
+| 3 | 🤖 | **Candidates.** ~25 stations per stem plus DRY, LUFS logged per file. | WAVs plus a list of the station numbers |
+| 4 | 🧑 | **Listening bench** (local page): pick 10 stations per stem, and check they sound good together. | Picks saved to `stations.json` |
+| 5 | 🤖 | **Encode.** AAC `.m4a` ~160 kbps, like the RevLimiter demos. Each file is the loop plus half a bar of padding on both sides. | 44 files (4 x 11), ~13 MB total, ~1.2 MB on first play |
 | 6 | 🤖 | **Player engine** (Web Audio, one AudioContext). All stems start at the same context time, looping the exact loop-length window inside the padded file. The content repeats every loop length, so any encoder start offset can't break the loop; all files share the encoder, so the stems stay in sync. Station change = 30 ms crossfade into the new version at the same position. | Seamless loop on Chrome, Firefox, Safari, iPhone |
-| 7 | 🤖 | **Mixer UI** `StationMixer.astro`, bench first. Four channels; each has a TUNE knob, a station read-out, SOLO and MUTE buttons, and a level light. Master section: PLAY/STOP; RADIO ON (all stems back to DRY = the before/after); SPIN (a random pick per stem from the chosen set). Look follows wiki `design-language.md` and Radio Roulette's `docs/DESIGN.md` (its TUNE knob and dial glass), not RevLimiter's monitor rack. | Yoni approves the bench look |
+| 7 | 🤖 | **Mixer UI** `StationMixer.astro`, bench first. Four channels; each has a lighter TUNE knob (11 click-stops), a station read-out, the lit effect names, SOLO and MUTE buttons, and a level light. The CTA sits inside the mixer. Master section: PLAY/STOP; RADIO ON (all stems back to DRY = the before/after); SPIN (a random pick per stem from the chosen set). Look follows wiki `design-language.md` and Radio Roulette's `docs/DESIGN.md` (its TUNE knob and dial glass), not RevLimiter's monitor rack. | Yoni approves the bench look |
 | 8 | 🤖 | **Wire into the page.** New `stationMixer` field in `plugins.ts` (stems, stations, files). `[slug].astro` shows it in the garage wall in place of `AudioDemoRack`. The "Hear before/after" facts link then appears on Radio Roulette too. | Build green |
 | 9 | 🤖 | **Phones.** iOS audio unlocks on the first tap. Decode lazily, at most 2 decoded versions per stem (~30 MB, not ~110 MB). Channels stack 2x2. Keyboard: arrow keys turn knobs, buttons use `aria-pressed`. | Works on iPhone WebKit plus a 360 px screen |
 | 10 | 🤖 | **Tests.** Unit test for solo/mute logic (any solo means only soloed stems play; mute beats solo). Offline seam check: decode a file and compare the samples across the loop point. Playwright: mixer renders, play starts, solo works, RADIO ON swaps to DRY. Visual parity screenshots with RevLimiter's page. | Suite green, screenshots reviewed |
