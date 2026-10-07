@@ -1,3 +1,46 @@
+## 2026-10-07 — PageSpeed pass (Claude Code, PageSpeed session, Yoni's laptop) — DONE, pushed, claim closed
+
+### State at session end
+
+Branch `main`. All PageSpeed work is pushed (last own commit `af59e16`). The PageSpeed result Yoni reported after the work: **mobile 83** (report 2026-10-06: 70, CWV failed). Plan + results + rollback values: `tasks/pagespeed-plan-2026-10.md`.
+
+- **Code (pushed):**
+  - `GarageWall.astro`: wall textures through `getImage()` WebP.
+  - `PluginShowcase`, `WordWall`, `PluginCard`: srcset sizes match the real slot (GAS portrait).
+  - `index.astro`: hero plate preload.
+  - `BaseLayout` + `src/styles/fonts.css` + `fonts/*.woff2`: self-hosted fonts, Bebas + Inter preloaded.
+  - `.github/workflows/deploy.yml`: "Clear Cloudflare cache" step (secret `CLOUDFLARE_PURGE_TOKEN`).
+- **Cloudflare (dashboard, Yoni):**
+  - Cache Rule A: `/_astro/` 1 year.
+  - Cache Rule B: pages edge 2 h, browser 10 min.
+  - CSP "Security Headers" edited: + Paddle css, + profitwell, + `revlimiter-beta` worker; - Google Fonts, - old-store hosts.
+- **Safety net:** tag `ref/pre-pagespeed-2026-10-06` (on origin) + `C:\RevAudio\Website\pagespeed-ref-2026-10-06\`.
+  - That folder holds the reference build, screenshots and the check tools: `capture`/`compare`, `measure-imgs`/`imgdiff`, `inp`, `cspcheck`, `livecheck`, `lhsum`.
+- **Verified live:** 0 errors / 0 failed requests; screenshots = tested build; checkout overlay opens (cart untouched, so no test purchase); pages `HIT` with TTFB ~0.25 s; deploy purge `"success":true`.
+- **NOT mine, in this clone:**
+  - `main` is 1 ahead with `1c34cac` (privacy/cookie, "committed locally, NOT pushed" entry below). Any push from this clone ships it.
+  - Untracked `HANDOFF.md`, `.handoff-archive/`: another session's.
+
+### Unverified
+
+- Real-visitor Core Web Vitals (28-day window): re-check ~2026-11-03 to see whether mobile now passes.
+- INP 379 ms (field) never reproduced in the lab (all taps < 200 ms at 10x CPU slowdown). No code changed for it.
+
+### Things the next session needs to decide
+
+1. **Roll the Cloudflare purge token.** It was pasted in chat once. Options: roll now vs leave (it can only purge). To act: CF → API Tokens → Roll, then paste into GitHub secret `CLOUDFLARE_PURGE_TOKEN` directly.
+2. **INP:** 🧑 check CF Web Analytics → Core Web Vitals → INP debug view for the slow element before touching the approved motion.
+
+### Cleanup TODOs
+
+- `C:\RevAudio\_backup\` holds the broken shared `.git` (two copies) + rescued stash files. Delete once nothing is found missing (see shared STATUS).
+
+### Memory written this session
+
+- `reference_revaudio_cloudflare_cache_rules.md`: the two cache rules, purge secret, red-step meaning.
+- `feedback_keep_reference_before_risky_changes.md`: tag + ref build + prove every fix (Yoni: "keep current as ref").
+- `user_yoni_not_dan.md` + `feedback_no_push_without_explicit_ok.md` reworded: "say push", the user here is Yoni.
+
 ## 2026-10-07 — Growth plan Phase 1: privacy + cookie choice match real tracking (Claude Code, Yoni's laptop) — committed locally, NOT pushed
 
 - Files: `src/components/legal/PrivacyContent.astro`, `src/data/legal.ts` (new `PRIVACY_LAST_UPDATED`, terms stamp untouched), `src/components/CookieBanner.astro`, `src/components/Footer.astro`, `tasks/growth-plan-2026-10.md` (now tracked).
@@ -5,7 +48,7 @@
 - Banner links Privacy (opens the legal modal). Footer "Cookie settings" reopens the banner; Decline after Accept clears `_gcl*`/`_fbp`/`_fbc`/`_ga*` and reloads.
 - Verified on local preview (fresh browser context): 0 Google/Meta requests before choice; 10 after Accept; reopen works; Decline clears ad cookies (others kept), reload has 0 hits, gtag/fbq undefined; Privacy link opens modal above banner. `npm run build` green (23 pages).
 - Open for Yoni: Meta CAPI fires without cookie consent (disclosed as legitimate interest + objection by email). Gate it on consent if he wants stricter.
-- Phase 1 left: 🧑 test order only.
+- Test order PASSED (same day, Yoni, 100% code): CSV row for `txn_01m4bnz1t86vxhrkcpw09ska7n` with gclid `TESTabc123456`. Google will reject that fake click in the daily import for 90 days (until ~2027-01-05); Yoni: leave it, ignore the error. **Phase 1 complete** pending the push.
 
 ## 2026-10-07 — trial Sign-up conversion value per product (Claude Code, Yoni's laptop) — DONE, claim closed
 Owner: Claude Code. `src/data/plugins.ts` gains `trialConversionValueUsd()` (price × 0.12, assumed trial-to-sale rate);
