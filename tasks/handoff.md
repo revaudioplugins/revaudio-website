@@ -41,7 +41,7 @@ Branch `main`. All PageSpeed work is pushed (last own commit `af59e16`). The Pag
 - `feedback_keep_reference_before_risky_changes.md`: tag + ref build + prove every fix (Yoni: "keep current as ref").
 - `user_yoni_not_dan.md` + `feedback_no_push_without_explicit_ok.md` reworded: "say push", the user here is Yoni.
 
-## 2026-10-07 — Growth plan Phase 1: privacy + cookie choice match real tracking (Claude Code, Yoni's laptop) — committed locally, NOT pushed
+## 2026-10-07 — Growth plan Phase 1: privacy + cookie choice match real tracking (Claude Code, Yoni's laptop) — pushed 2026-10-07 (site `712281d` live; worker `fae16a3` deployed, stamp `605299d`)
 
 - Files: `src/components/legal/PrivacyContent.astro`, `src/data/legal.ts` (new `PRIVACY_LAST_UPDATED`, terms stamp untouched), `src/components/CookieBanner.astro`, `src/components/Footer.astro`, `tasks/growth-plan-2026-10.md` (now tracked).
 - Privacy now states: Google Ads tag + Meta Pixel only after Accept (gclid on order, hashed email at checkout); server-side hashed sale report to Meta on every sale; trial-request emails; Resend, Formspree, YouTube (nocookie, on play); hosting = GitHub Pages (was "Vercel").
