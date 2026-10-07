@@ -72,3 +72,10 @@ Goal: mobile LCP <= 2.5 s, INP <= 200 ms, CLS stays <= 0.10, checkout still work
 - Changing host (TTFB fix is edge caching first; re-measure before any move).
 - Removing the texture/wall look — compress it, keep it.
 - Re-adding `display=swap` (already there; self-hosting replaces the link anyway).
+
+## CSP edit 2026-10-07 (rollback value)
+Before (live until the 2026-10-07 edit), paste back into Rules → Transform Rules → Security Headers → Content-Security-Policy to undo:
+```
+default-src 'self'; script-src 'self' 'unsafe-inline' https://assets.lemonsqueezy.com https://static.cloudflareinsights.com https://connect.facebook.net https://www.googletagmanager.com https://cdn.paddle.com https://googleads.g.doubleclick.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.paddle.com https://*.lemonsqueezy.com https://www.facebook.com https://formspree.io https://revlimiter-license.revaudio.workers.dev https://www.google-analytics.com https://googleads.g.doubleclick.net https://www.googleadservices.com https://cloudflareinsights.com https://www.google.com https://ad.doubleclick.net; frame-src https://*.lemonsqueezy.com https://*.paddle.com https://www.youtube-nocookie.com https://www.google.com
+```
+DONE 2026-10-07, live-verified (pagespeed-ref-2026-10-06/cspcheck.mjs): fonts load, gtag+fbq after Accept, Paddle overlay opens, beta worker reachable (204), 0 console errors. Change: + cdn.paddle.com (style-src), + public.profitwell.com (script-src), + revlimiter-beta worker (connect-src; /beta form fetch was blocked live); - Google Fonts hosts (self-hosted now), - retired store hosts.
