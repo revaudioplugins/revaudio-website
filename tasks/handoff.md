@@ -13,6 +13,26 @@ Yoni's session shipped the same privacy/cookie work first (live `1c34cac`, `7122
 - Verified: build green; Playwright suite 68/68; screenshots 1440x900, 1366x768, 820 tablet, 390 + 360 phones, Radio Roulette desk/phone; no horizontal overflow; Hear-it link lands the section under the nav. Hear it top: desktop 6031 -> 1207, phone 1622 -> 1196.
 - Not changed: shared CLAUDE.md still says RevLimiter is "ideally used early in the master chain" (shared repo git is damaged; flagged to Yoni).
 - Note: feat/drift-page / qa/drift-page-1005 branches touch `[slug].astro`; the block move may conflict if they merge later.
+## 2026-10-07 — Terms + EULA name Paddle as merchant of record; last old-store mentions gone (Claude Code `revaudio-96`, laptop 1) — committed locally, NOT pushed
+Dan, 2026-10-07: "we are now with paddel" (the legal text must say Paddle). Claim closed 2026-10-07; nothing in flight.
+- Correction to the 10-06 / 10-07 `revaudio-f7` entries further down: Terms §7 and the EULA did NOT name the old
+  store. `683b934` (2026-10-01) had already made them say "our merchant of record" with no vendor name. This change
+  NAMES Paddle; it replaces nothing. Edited: Terms §5 (Paddle introduced: seller of record, Paddle's buyer terms,
+  payment details), §7 (refunds executed by Paddle), §16 (purchase = separate contract with Paddle); the EULA
+  preamble. No new promise: buyer terms, refund route, tax and refund wording unchanged apart from the name.
+- Privacy NOT touched. My local Privacy edits (Paddle naming + a tracker rewrite) were dropped on the rebase in
+  favour of Yoni's live rewrite (`1c34cac`, entry below; Yoni owns cookie consent, Dan 2026-10-07). Privacy still
+  says "Our merchant of record" without naming Paddle: Yoni's call.
+- `TERMS_LAST_UPDATED` 2026-10-01 -> 2026-10-07 (the constant's own rule). It now drives only the "Last updated"
+  line on /terms and /eula (page + cart legal popup) and the cart checkbox's `data-terms-version`, i.e.
+  `terms_version` on new Paddle transactions. Privacy has its own `PRIVACY_LAST_UPDATED` (Yoni's, untouched). No
+  re-accept prompt exists: the cart stores slugs only and the box starts unticked on every checkout. The licence
+  worker's Paddle path doesn't read `terms_version` (read-only check). The `legal.ts` comment now says
+  "Paddle customData terms_version" (no abbreviation).
+- 3 placeholder examples on hidden /founders-intake-2yr now say Paddle.
+- Checks: recorded in the follow-up commit's bullet below.
+- Still open (each needs Dan): the second dormant checkout engine code (`site.ts` engine union + `Cart.astro`
+  branch). The untracked root `HANDOFF.md` is another session's.
 
 ## 2026-10-07 — PageSpeed pass (Claude Code, PageSpeed session, Yoni's laptop) — DONE, pushed, claim closed
 

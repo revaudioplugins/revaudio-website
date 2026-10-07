@@ -28,3 +28,12 @@ The "rv close" ritual is an explicit push instruction and still counts.
 ## 2026-10-07 — scripted edits can eat CSS escapes
 - A Python heredoc edit turned `content: '\00b7'` into a NUL byte (`' b7'` on screen); the build stayed green and the dot just vanished.
 - Rule: after any scripted edit that writes a backslash escape, check that exact line with `od -c` (or grep the escape) before building. For anything with backslashes, write the script to a file in the scratchpad, or use Edit.
+## 2026-10-07 — a "still open" list in the handoff can already be done: re-grep each item first
+- The 10-06/10-07 handoffs said Terms §7 and the EULA still named the old store. They had been vendor-neutral since
+  `683b934` (2026-10-01); the item was copied forward without a fresh grep. Rule: before planning from a handoff's
+  open-items list, grep each item in the current tree and say which ones are already done.
+- Terms and the EULA share one date constant (`TERMS_LAST_UPDATED`; Privacy has its own `PRIVACY_LAST_UPDATED`
+  since `1c34cac`): a Terms/EULA edit re-dates both and changes `data-terms-version` in the cart. The cart's legal
+  popup sits on every page, so expect ~22 built pages to differ. Verify with a word-level dist diff, not a page count.
+- The Playwright MCP browser can be held by another session ("Browser is already in use"). Render with a node
+  script that requires the repo's `node_modules/@playwright/test` instead; don't run `npx playwright install`.
