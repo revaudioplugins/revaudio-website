@@ -195,9 +195,9 @@ export const plugins: Plugin[] = [
     regularPriceUsd: null,
     paddlePriceId: 'pri_01m18vcv5f42cdbv5bzxhm94n1',
     checkoutPaused: false,
-    // Gate lifted 2026-08-03: checkout re-opened (Paddle since 2026-08-31) — BUY is a real add-to-cart again and the door's
-    // painted trial line carries the trial offer. Re-set to true only if
-    // checkout pauses again.
+    // Gate lifted 2026-08-03: checkout re-opened (Paddle since 2026-08-31) —
+    // BUY is a real add-to-cart again and the door's painted trial line
+    // carries the trial offer. Re-set to true only if checkout pauses again.
     trialGateActive: false,
     demoUrl: null,
     releaseTarget: 'Q3 2026',

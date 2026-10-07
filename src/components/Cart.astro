@@ -32,10 +32,11 @@ import { TERMS_LAST_UPDATED } from '../data/legal';
  *   modal (Terms / Licence / Privacy) IN A POPUP — no page navigation.
  * - Checkout is Paddle Billing's overlay (live since 2026-08-31, the only
  *   store; config in src/data/site.ts site.paddle). It opens the Paddle.js
- *   overlay (paddle.js + Paddle.Checkout.open), summing the full cart natively; on checkout.completed it redirects to
- *   site.paddle.purchaseUrl with ?_ptxn=<transaction id> instead of
- *   /thank-you — the revlimiter-license worker's own webhook (not this page)
- *   does the actual key minting/emailing.
+ *   overlay (paddle.js + Paddle.Checkout.open), summing the full cart
+ *   natively; on checkout.completed it redirects to site.paddle.purchaseUrl
+ *   with ?_ptxn=<transaction id> instead of /thank-you — the
+ *   revlimiter-license worker's own webhook (not this page) does the actual
+ *   key minting/emailing.
  * Rendered once in BaseLayout. No framework — vanilla JS, progressive.
  *
  * Checkout targets (the Paddle price id) are resolved fresh from this catalog
@@ -249,10 +250,11 @@ for (const p of plugins) {
 
     // ---- Paddle overlay ----
     // paddle.js is included above. Paddle's eventCallback is set once at
-    // Initialize() time — checkout.completed both clears the cart and redirects to the license worker's /purchase page
-    // with the transaction id, instead of /thank-you. No client-side Purchase
-    // pixel here, deliberately: server-side only, fired from the worker's
-    // webhook. Don't add one.
+    // Initialize() time — checkout.completed both clears the cart and
+    // redirects to the license worker's /purchase page with the transaction
+    // id, instead of /thank-you. No client-side Purchase pixel here,
+    // deliberately: server-side only, fired from the worker's webhook. Don't
+    // add one.
     var paddleReady = false;
     function ensurePaddle() {
       if (paddleReady) return !!(window.Paddle && window.Paddle.Checkout);

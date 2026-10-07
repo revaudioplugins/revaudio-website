@@ -49,4 +49,4 @@ Defined in `src/styles/global.css` under `:root`. Muscle-car / mechanical aesthe
 
 A push to `main` is a live deploy, so it follows the team push rule: commit only your own files (`git add -- <paths>`, never `git add .`), and push only when Dan says "push" in the chat. Right before that push: `git pull --rebase`, then `git log origin/main..HEAD`.
 
-Checkout = Paddle Billing, the only store (`checkoutEngine: 'paddle'` in `src/data/site.ts`). See wiki `store` (`shared/wiki/pages/store-paddle.md`).
+Checkout = Paddle Billing, the only store (`site.paddle` in `src/data/site.ts`, price ids in `src/data/plugins.ts`). See wiki `store` (`shared/wiki/pages/store-paddle.md`).
