@@ -75,11 +75,15 @@ test('plugin detail page renders its buy CTA', async ({ page }) => {
   await expect(page.locator('.buy-block, .crane-buy').first()).toBeVisible();
 });
 
-test('buyable plugin exposes a checkout URL, not a dead button', async ({ page }) => {
+test('every add-to-cart button resolves to a Paddle price, not a dead button', async ({ page }) => {
+  // The cart checks out whatever the [data-checkout-map] catalog holds for a
+  // button's slug (Paddle price id), so a button whose slug is missing there
+  // would add to the cart and then do nothing at Continue to payment.
   await page.goto('/store');
-  const addToCart = page.locator('[data-add-to-cart]').first();
-  if (await addToCart.count()) {
-    const checkoutUrl = await addToCart.getAttribute('data-checkout-url');
-    expect(checkoutUrl, 'add-to-cart button is missing a checkout URL').toBeTruthy();
+  const buttons = page.locator('[data-add-to-cart]');
+  expect(await buttons.count(), '/store shows no add-to-cart button').toBeGreaterThan(0);
+  const map = JSON.parse((await page.locator('[data-checkout-map]').textContent()) || '{}');
+  for (const slug of await buttons.evaluateAll((els) => els.map((el) => el.getAttribute('data-slug')))) {
+    expect(map[slug ?? ''] ?? '', `add-to-cart for ${slug} has no Paddle price id`).toMatch(/^pri_/);
   }
 });

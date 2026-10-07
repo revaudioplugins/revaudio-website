@@ -3,9 +3,9 @@
  *
  * Lifecycle:
  *   status: 'in-development' → no Buy CTA, only waitlist
- *   status: 'beta'           → Buy CTA shows but no checkoutUrl until product live
- *   status: 'live'           → Buy CTA active (isBuyable: checkoutUrl set; the
- *                              Paddle cart item is paddlePriceId)
+ *   status: 'beta'           → Buy CTA shows but no paddlePriceId until product live
+ *   status: 'live'           → Buy CTA active (isBuyable: paddlePriceId set; it
+ *                              is also the Paddle cart item)
  *
  * ARRAY ORDER IS THE STORE ORDER: /store renders this list as-is, so shipping
  * plugins lead and in-development ones trail. Nothing else depends on order
@@ -107,20 +107,18 @@ export interface Plugin {
   bundleNote?: string;
   introPriceUsd: number | null;
   regularPriceUsd: number | null;
-  /** Legacy hosted checkout link from the old store. Never opened under the
-   *  Paddle engine; kept only because isBuyable(), checkoutPaused and the buy
-   *  buttons' data-checkout-url still read it. Null → product shows the
-   *  "checkout reopening" state. */
-  checkoutUrl: string | null;
   /** FastSpring product path (Store Builder Library) — the catalog SKU/path
    *  configured in the FastSpring storefront admin, NOT a URL. Read by
    *  Cart.astro only when site.checkoutEngine is 'fastspring' (dormant). */
   fastspringPath?: string | null;
   /** Paddle Billing price id (pri_...) for this plugin's checkout item.
    *  Read by Cart.astro when site.checkoutEngine is 'paddle'. Null/absent for
-   *  free plugins (no checkout at all). */
+   *  free plugins (no checkout at all). Also the buyable flag: isBuyable()
+   *  is true only for a live plugin that has one. */
   paddlePriceId?: string | null;
-  /** True while a live product has no working checkout yet (checkoutUrl not set). */
+  /** Set true by hand while a live paid plugin has no Paddle price yet: its
+   *  buy CTAs then show the "notify me when checkout opens" state. Only read
+   *  when the plugin is not buyable. */
   checkoutPaused: boolean;
   /** Discount code the buyer must enter at checkout to get the intro price. */
   promoCode?: string;
@@ -129,7 +127,7 @@ export interface Plugin {
   isFree?: boolean;
   /** Hosted installer URL for free plugins. Null until the build is packaged
    *  and uploaded — product page shows a "download coming soon" waitlist
-   *  state instead (mirrors checkoutUrl's null-state convention above). */
+   *  state instead. */
   downloadUrl?: string | null;
   demoUrl: string | null;
   releaseTarget: string;
@@ -174,14 +172,6 @@ const baseSystemReq: SystemReq = {
   daws: 'Cubase 12+, Studio One 6+, Reaper 7+, Ableton Live 11+, FL Studio 21+, Pro Tools 2023+, Logic Pro 11+',
 };
 
-// RevLimiter + Radio Roulette — legacy hosted checkout links from the old
-// store. Checkout is Paddle (paddlePriceId below); these links are never
-// opened. They stay only because isBuyable(), checkoutPaused and RevLimiter's
-// statusLabel still key off checkoutUrl being set; drop them once those read
-// paddlePriceId instead.
-const REVLIMITER_CHECKOUT_URL: string | null = 'https://revaudiopg.lemonsqueezy.com/checkout/buy/78885904-8a19-4e23-9510-31b50775ada5';
-const RADIOROULETTE_CHECKOUT_URL: string | null = 'https://revaudiopg.lemonsqueezy.com/checkout/buy/884e8eb9-903e-497d-a9ec-41153a6b1738';
-
 // GAS — always free, no checkout. Ships via the same download portal as
 // RevLimiter's trial (also linked from the header "Downloads" nav).
 const GAS_DOWNLOAD_URL: string | null = 'https://revlimiter-license.revaudio.workers.dev/download';
@@ -200,17 +190,16 @@ export const plugins: Plugin[] = [
     longPitch:
       'Multi-band compression, analog-modelled saturation, and an adaptive limiter, chained the way a top-tier mastering engineer would chain them, under a true-peak ceiling at oversampled rate.',
     status: 'live',
-    statusLabel: REVLIMITER_CHECKOUT_URL ? 'Available now' : 'Checkout reopening soon',
+    statusLabel: 'Available now',
     // $49 list price (partner call 2026-08-04). No was-price anchor or promo
     // code today, so discountPct() returns null and no "launch sale" tag renders.
     // The "no sales" posture was dropped 2026-09-24 (Dan): a real regularPriceUsd
     // anchor is allowed again once RevLimiter has actually sold at it.
     introPriceUsd: 49,
     regularPriceUsd: null,
-    checkoutUrl: REVLIMITER_CHECKOUT_URL,
     fastspringPath: 'revlimiter',
     paddlePriceId: 'pri_01m18vcv5f42cdbv5bzxhm94n1',
-    checkoutPaused: !REVLIMITER_CHECKOUT_URL,
+    checkoutPaused: false,
     // Gate lifted 2026-08-03: checkout re-opened (site.checkoutEngine, Paddle
     // since 2026-08-31) — BUY is a real add-to-cart again and the door's
     // painted trial line carries the trial offer. Re-set to true only if
@@ -298,10 +287,9 @@ export const plugins: Plugin[] = [
     cardThumbBare: true,
     introPriceUsd: 19,
     regularPriceUsd: null,
-    checkoutUrl: RADIOROULETTE_CHECKOUT_URL,
     fastspringPath: 'radio-roulette',
     paddlePriceId: 'pri_01m18vmkdae9kqqcrxc02ka753',
-    checkoutPaused: !RADIOROULETTE_CHECKOUT_URL,
+    checkoutPaused: false,
     // Gate lifted 2026-08-03 with RevLimiter's — see that entry. Re-set to
     // true only if checkout pauses again.
     trialGateActive: false,
@@ -374,7 +362,6 @@ export const plugins: Plugin[] = [
     cardThumbMaxWidthPct: 40,
     introPriceUsd: null,
     regularPriceUsd: null,
-    checkoutUrl: null,
     checkoutPaused: false,
     isFree: true,
     downloadUrl: GAS_DOWNLOAD_URL,
@@ -425,7 +412,6 @@ export const plugins: Plugin[] = [
     statusLabel: 'In development',
     introPriceUsd: null,
     regularPriceUsd: null,
-    checkoutUrl: null,
     checkoutPaused: false,
     demoUrl: null,
     releaseTarget: '2026',
@@ -457,7 +443,6 @@ export const plugins: Plugin[] = [
     statusLabel: 'In development',
     introPriceUsd: null,
     regularPriceUsd: null,
-    checkoutUrl: null,
     checkoutPaused: false,
     demoUrl: null,
     releaseTarget: '2026',
@@ -483,7 +468,7 @@ export const bySlug = (slug: string) => plugins.find((p) => p.slug === slug);
  *  'radioroulette'); the flatten covers all current and conventional names. */
 export const dlGateId = (p: Plugin) => p.slug.replace(/-/g, '');
 
-export const isBuyable = (p: Plugin) => p.status === 'live' && !!p.checkoutUrl;
+export const isBuyable = (p: Plugin) => p.status === 'live' && !!p.paddlePriceId;
 
 export const fmtPrice = (usd: number | null) => (usd == null ? '—' : `$${usd}`);
 

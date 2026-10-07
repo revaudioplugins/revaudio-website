@@ -8,7 +8,7 @@ import PrivacyContent from './legal/PrivacyContent.astro';
 import { TERMS_LAST_UPDATED } from '../data/legal';
 /**
  * Global cart: a localStorage-backed mini-cart shared across every page.
- * - [data-add-to-cart] buttons (with data-slug/name/price/price-id/img) add items.
+ * - [data-add-to-cart] buttons (with data-slug/name/price/img) add items.
  *   Adding does NOT open the drawer (Dan, 2026-09-07): a modal thrown over the
  *   page on every add interrupts browsing and buries the rest of the catalog.
  *   Confirmation is ambient instead — the red header badge pops with the new
@@ -40,8 +40,8 @@ import { TERMS_LAST_UPDATED } from '../data/legal';
  *   does the actual key minting/emailing.
  * Rendered once in BaseLayout. No framework — vanilla JS, progressive.
  *
- * Checkout URLs are resolved fresh from this catalog map by slug at checkout
- * time — NEVER from the URL persisted in the cart.
+ * Checkout targets (the Paddle price id) are resolved fresh from this catalog
+ * map by slug at checkout time. The cart persists slugs only.
  */
 import { site } from '../data/site';
 const engine = site.checkoutEngine;
@@ -300,7 +300,7 @@ for (const p of plugins) {
       // One licence per product — a repeat add is a no-op, never stacks qty.
       var exists = c.some(function (i) { return i.slug === item.slug; });
       if (!exists) {
-        c.push({ slug: item.slug, name: item.name, price: +item.price || 0, checkoutUrl: item.checkoutUrl || '', img: item.img || '', qty: 1 });
+        c.push({ slug: item.slug, name: item.name, price: +item.price || 0, img: item.img || '', qty: 1 });
         write(c);
       }
       sync();
@@ -402,9 +402,9 @@ for (const p of plugins) {
       var el = document.querySelector('[data-checkout-map]');
       try { return el ? JSON.parse(el.textContent || '{}') : {}; } catch (e) { return {}; }
     }
-    function checkoutUrlFor(item) {
+    function checkoutTargetFor(item) {
       var map = checkoutMap();
-      return (item && map[item.slug]) || (item && item.checkoutUrl) || '';
+      return (item && map[item.slug]) || '';
     }
 
     // ---- Consent gate: a required checkbox in the cart, ticked before checkout ----
@@ -422,7 +422,7 @@ for (const p of plugins) {
     }
     function openCheckout() {
       paymentError('');
-      var items = read().filter(function (i) { return checkoutUrlFor(i); });
+      var items = read().filter(function (i) { return checkoutTargetFor(i); });
       if (!items.length) return;
       // Require agreement first — flag the checkbox and stop if unchecked.
       var agree = agreeEl();
@@ -448,7 +448,7 @@ for (const p of plugins) {
           if (gclid) customData.gclid = gclid;
           window.Paddle.Checkout.open({
             // Paddle sums the full cart natively.
-            items: items.map(function (i) { return { priceId: checkoutUrlFor(i), quantity: i.qty || 1 }; }),
+            items: items.map(function (i) { return { priceId: checkoutTargetFor(i), quantity: i.qty || 1 }; }),
             customData: customData
           });
           if (drawer && drawer.open) drawer.close();
@@ -466,7 +466,7 @@ for (const p of plugins) {
         reset: true,
         // Full cart, not just the first item — FastSpring's session natively
         // sums multiple line items.
-        products: items.map(function (i) { return { path: checkoutUrlFor(i), quantity: i.qty || 1 }; }),
+        products: items.map(function (i) { return { path: checkoutTargetFor(i), quantity: i.qty || 1 }; }),
         tags: fsTags
       });
       if (drawer && drawer.open) drawer.close();
@@ -539,7 +539,6 @@ for (const p of plugins) {
           slug: addSlug,
           name: addBtn.getAttribute('data-name'),
           price: addPrice,
-          checkoutUrl: addBtn.getAttribute('data-checkout-url'),
           img: addBtn.getAttribute('data-img')
         });
         // One call site covers the crane BUY NOW square, the store card, and the mobile buy bar.
