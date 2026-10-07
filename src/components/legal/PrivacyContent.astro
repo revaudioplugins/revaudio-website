@@ -3,16 +3,18 @@
  * The Privacy Policy body — single source of truth, rendered by BOTH the
  * /privacy page and the checkout legal-reader modal (Cart.astro). No <style>.
  */
-import { TERMS_LAST_UPDATED } from '../../data/legal';
+import { PRIVACY_LAST_UPDATED } from '../../data/legal';
 ---
 
-<p class="muted">Last updated: {TERMS_LAST_UPDATED}</p>
+<p class="muted">Last updated: {PRIVACY_LAST_UPDATED}</p>
 
 <h2>The short version</h2>
 <p>
   We collect the minimum needed to sell and support our plugins: your email when you ask us for
-  something, your order and licence details, and anonymous, cookieless analytics. We don&rsquo;t sell your
-  data, we don&rsquo;t run advertising trackers, and you can have your data deleted any time by emailing
+  something (such as a free trial download), your order and licence details, and anonymous, cookieless
+  analytics. If you click <em>Accept All</em> on our cookie banner, we also use Google and Meta advertising
+  tags to measure which of our ads bring visitors and sales; if you decline, they don&rsquo;t load. We
+  don&rsquo;t sell your data, and you can have it deleted any time by emailing
   <a href="mailto:support@revaudio.net">support@revaudio.net</a>. The rest of this is the detail.
 </p>
 
@@ -29,8 +31,12 @@ import { TERMS_LAST_UPDATED } from '../../data/legal';
 <p><strong>Information you give us.</strong></p>
 <ul>
   <li>
-    <strong>Your email address</strong>, when you join our list, sign up for the founding-tester beta, or
-    contact us.
+    <strong>Your email address</strong>, when you request a free trial download, join our list, sign up for
+    the founding-tester beta, or contact us. A trial request also means we send you the download link and a
+    few emails about the trial, which you can stop at any time.
+  </li>
+  <li>
+    <strong>What you write in our contact or affiliate forms</strong>, such as your name, email, and message.
   </li>
   <li>
     <strong>Beta-survey responses</strong>, if you choose to take part: your answers to the survey
@@ -63,16 +69,38 @@ import { TERMS_LAST_UPDATED } from '../../data/legal';
     fingerprint you, and does not track you across other sites.
   </li>
   <li>
+    <strong>Advertising tags, only if you accept cookies.</strong> If you click <em>Accept All</em>, we load
+    the Google Ads tag and the Meta Pixel. They set cookies and tell Google and Meta which of our pages you
+    viewed and whether you requested a trial or made a purchase, so we can see which ads work. If you arrived
+    from a Google ad, we attach that ad click&rsquo;s identifier to your order so Google can count the sale,
+    and at checkout the Google tag sends your email address in hashed (scrambled) form to match the sale to
+    the ad. If you decline, none of these tags load and no ad-click identifier is attached to your order.
+  </li>
+  <li>
+    <strong>Sale reports to Meta.</strong> When you buy, our server reports the sale to Meta: the order
+    value, currency, product, order number, and your email address in hashed form. This lets us measure our
+    Meta ads; it uses no cookies. To object, email
+    <a href="mailto:support@revaudio.net">support@revaudio.net</a>.
+  </li>
+  <li>
     <strong>Server and security logs.</strong> Our hosting and edge providers process standard technical
     data (such as IP address and browser type) to serve the site, keep it secure, and prevent abuse.
   </li>
 </ul>
 
-<h2>3. Cookies &amp; local storage</h2>
+<h2 id="cookies">3. Cookies &amp; local storage</h2>
 <p>
-  We do not use advertising or cross-site tracking cookies. Your shopping cart is stored locally in your
-  own browser (in <code>localStorage</code>) so it survives page navigation; that information stays
-  on your device and is not sent to us until you check out. Our analytics is cookieless (see above).
+  We ask before setting any advertising cookie. Only if you click <em>Accept All</em> on our cookie banner do
+  the Google Ads tag and the Meta Pixel load and set their cookies (see above). Until you choose, or if you
+  decline, we tell Google that consent is denied and set no advertising cookies. You can change your choice
+  at any time with the <em>Cookie settings</em> link at the bottom of every page; declining after accepting
+  also removes those cookies from our site.
+</p>
+<p>
+  Your cookie choice and your shopping cart are stored locally in your own browser (in
+  <code>localStorage</code>); that information stays on your device and the cart is not sent to us until you
+  check out. Our analytics is cookieless (see above). Product videos load from YouTube&rsquo;s
+  privacy-enhanced mode (youtube-nocookie.com) only when you press play.
 </p>
 
 <h2>4. Why we use your data (and our legal bases)</h2>
@@ -80,19 +108,24 @@ import { TERMS_LAST_UPDATED } from '../../data/legal';
   <li><strong>To deliver your purchase</strong>: download, licence key, and order support (to perform our contract with you).</li>
   <li><strong>To send you the emails you asked for</strong>: list updates or beta communications (with your consent, which you can withdraw at any time).</li>
   <li><strong>To improve the product</strong>: understanding beta-survey feedback and aggregate, cookieless traffic (our legitimate interest in improving our software and site).</li>
+  <li><strong>To measure our advertising</strong>: advertising cookies and tags (with your consent, which you can withdraw at any time); hashed sale reports to Meta (our legitimate interest in knowing which ads work, which you can object to).</li>
   <li><strong>To keep the service secure and lawful</strong>: preventing abuse and meeting tax and legal obligations (legitimate interest and legal obligation).</li>
 </ul>
 
 <h2>5. Who we share it with</h2>
 <p>
-  We do <strong>not</strong> sell your personal data and we do not share it for anyone else&rsquo;s
-  advertising. We use a small number of trusted service providers who process data on our behalf:
+  We do <strong>not</strong> sell your personal data. We use a small number of trusted service providers
+  who process data on our behalf:
 </p>
 <ul>
   <li><strong>Our merchant of record</strong> (and its payment partners): checkout, payments, tax, and order management.</li>
-  <li><strong>Cloudflare</strong>: DNS and edge delivery, cookieless web analytics, and the workers that store beta-survey submissions and manage licences.</li>
-  <li><strong>Vercel</strong>: hosting for this website.</li>
+  <li><strong>Cloudflare</strong>: DNS and edge delivery, cookieless web analytics, and the workers that store beta-survey submissions, handle trial requests, and manage licences.</li>
+  <li><strong>GitHub Pages</strong>: hosting for this website.</li>
+  <li><strong>Resend</strong>: sending our emails (download links, licence keys, trial and support emails).</li>
+  <li><strong>Formspree</strong>: receiving messages from our contact and affiliate forms.</li>
+  <li><strong>Google (Google Ads)</strong> and <strong>Meta</strong>: advertising measurement, as described in section 2. Advertising cookies and tags only with your consent. Their use of the data is also covered by their own privacy policies.</li>
   <li><strong>Google Maps</strong>: the embedded map on our About and Contact pages loads from Google and is covered by Google&rsquo;s privacy policy.</li>
+  <li><strong>YouTube</strong>: product videos, loaded only when you press play.</li>
 </ul>
 <p>
   We may also disclose data if required by law, or to protect our rights, safety, or property.

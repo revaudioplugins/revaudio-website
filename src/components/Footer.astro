@@ -48,6 +48,9 @@ const rightColumns = [
       { label: 'T&C', href: '/terms', legal: 'terms' },
       { label: 'Licence', href: '/eula', legal: 'eula' },
       { label: 'Privacy', href: '/privacy', legal: 'privacy' },
+      // Reopens the cookie banner (CookieBanner.astro); without JS it lands
+      // on the policy's cookie section.
+      { label: 'Cookie settings', href: '/privacy#cookies', cookieSettings: true },
       { label: 'Accessibility', href: '/accessibility' },
     ],
   },
@@ -98,6 +101,7 @@ const socials = [
                     <a
                       href={link.href}
                       data-open-legal={link.legal}
+                      data-cookie-settings={link.cookieSettings ? '' : undefined}
                       target={link.external ? '_blank' : undefined}
                       rel={link.external ? 'noopener noreferrer' : undefined}
                     >{link.label}</a>

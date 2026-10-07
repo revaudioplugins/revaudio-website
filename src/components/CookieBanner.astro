@@ -2,7 +2,9 @@
 /* Cookie consent banner — shown once per browser, stored in localStorage.
    Accepting also initialises Meta Pixel and the Google Ads tag (gtag.js,
    with Consent Mode v2 signals); declining skips all tracking cookies.
-   Cloudflare Web Analytics is cookieless and fires unconditionally. */
+   The footer's "Cookie settings" link reopens it; declining after accepting
+   clears the ad cookies and reloads. Cloudflare Web Analytics is cookieless
+   and fires unconditionally. */
 ---
 
 <div
@@ -19,9 +21,9 @@
         <span class="cb-full">We use cookies and similar tracking technologies to understand how you interact with our site
         and to improve our marketing. By clicking <em>Accept All</em> you consent to our use of
         analytics and advertising cookies. You can also decline; the site works either way.
-        See our <a href="/terms" class="cb-link">Terms &amp; Conditions</a> for details.</span>
+        See our <a href="/privacy" class="cb-link" data-open-legal="privacy">Privacy Policy</a> for details.</span>
         <span class="cb-short">We use cookies to improve your experience and our marketing.
-        <a href="/terms" class="cb-link">Terms</a>.</span>
+        <a href="/privacy" class="cb-link" data-open-legal="privacy">Privacy</a>.</span>
       </p>
       <strong class="cb-title"><span class="cb-emoji" aria-hidden="true">🍪</span> We use cookies</strong>
     </div>
@@ -110,22 +112,30 @@
       });
     }
 
+    // Withdrawing consent: drop the Google / Meta first-party cookies on every
+    // domain form they may have been set with.
+    function clearAdCookies() {
+      var host = location.hostname.replace(/^www\./, '');
+      document.cookie.split(';').forEach(function (c) {
+        var name = c.split('=')[0].trim();
+        if (!/^(_gcl|_fbp|_fbc|_ga)/.test(name)) return;
+        ['', '; domain=' + host, '; domain=.' + host].forEach(function (d) {
+          document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/' + d;
+        });
+      });
+    }
+
     var stored = '';
     try { stored = localStorage.getItem(KEY) || ''; } catch (e) {}
 
     if (stored === 'accepted') {
       initMetaPixel();
       initGoogleAds();
-      return;
+    } else {
+      denyGoogle();
+      // No decision yet: show the banner once the page settles.
+      if (stored !== 'declined') setTimeout(showBanner, 800);
     }
-    denyGoogle();
-    if (stored === 'declined') {
-      return;
-    }
-
-    // No decision yet — show the banner
-    // Small delay so the page settles before the banner slides up
-    setTimeout(showBanner, 800);
 
     var acceptBtn = document.getElementById('cookie-accept');
     var declineBtn = document.getElementById('cookie-decline');
@@ -133,6 +143,7 @@
     if (acceptBtn) {
       acceptBtn.addEventListener('click', function () {
         try { localStorage.setItem(KEY, 'accepted'); } catch (e) {}
+        stored = 'accepted';
         hideBanner();
         initMetaPixel();
         initGoogleAds();
@@ -142,9 +153,22 @@
     if (declineBtn) {
       declineBtn.addEventListener('click', function () {
         try { localStorage.setItem(KEY, 'declined'); } catch (e) {}
+        var wasAccepted = stored === 'accepted';
+        stored = 'declined';
         hideBanner();
+        // Tags already running on this page can't be unloaded: clear their
+        // cookies and reload so the page comes back without them.
+        if (wasAccepted) { clearAdCookies(); location.reload(); }
       });
     }
+
+    // Footer "Cookie settings" link: reopen the banner to change the choice.
+    document.addEventListener('click', function (e) {
+      var link = e.target && e.target.closest && e.target.closest('[data-cookie-settings]');
+      if (!link) return;
+      e.preventDefault();
+      showBanner();
+    });
   })();
 </script>
 

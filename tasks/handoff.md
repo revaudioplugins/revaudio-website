@@ -1,3 +1,12 @@
+## 2026-10-07 — Growth plan Phase 1: privacy + cookie choice match real tracking (Claude Code, Yoni's laptop) — committed locally, NOT pushed
+
+- Files: `src/components/legal/PrivacyContent.astro`, `src/data/legal.ts` (new `PRIVACY_LAST_UPDATED`, terms stamp untouched), `src/components/CookieBanner.astro`, `src/components/Footer.astro`, `tasks/growth-plan-2026-10.md` (now tracked).
+- Privacy now states: Google Ads tag + Meta Pixel only after Accept (gclid on order, hashed email at checkout); server-side hashed sale report to Meta on every sale; trial-request emails; Resend, Formspree, YouTube (nocookie, on play); hosting = GitHub Pages (was "Vercel").
+- Banner links Privacy (opens the legal modal). Footer "Cookie settings" reopens the banner; Decline after Accept clears `_gcl*`/`_fbp`/`_fbc`/`_ga*` and reloads.
+- Verified on local preview (fresh browser context): 0 Google/Meta requests before choice; 10 after Accept; reopen works; Decline clears ad cookies (others kept), reload has 0 hits, gtag/fbq undefined; Privacy link opens modal above banner. `npm run build` green (23 pages).
+- Open for Yoni: Meta CAPI fires without cookie consent (disclosed as legitimate interest + objection by email). Gate it on consent if he wants stricter.
+- Phase 1 left: 🧑 test order only.
+
 ## 2026-10-07 — trial Sign-up conversion value per product (Claude Code, Yoni's laptop) — DONE, claim closed
 Owner: Claude Code. `src/data/plugins.ts` gains `trialConversionValueUsd()` (price × 0.12, assumed trial-to-sale rate);
 `TrialPlates.astro` + `TrialStamp.astro` put it on `data-trial-value` and the Google Ads "Sign-up" conversion sends
