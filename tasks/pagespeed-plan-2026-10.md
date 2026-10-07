@@ -44,7 +44,7 @@ Goal: mobile LCP <= 2.5 s, INP <= 200 ms, CLS stays <= 0.10, checkout still work
 - [x] CSP fine (fonts now `'self'`). A/B Lighthouse: score 65 → 74, FCP 3.9 → 3.0 s, LCP 6.6 → 5.6 s, CLS 0.092 → 0. Commit `9bd1d2c`.
 
 ### Phase 3 — Cloudflare (dashboard) 🧑
-- [ ] Cache Rule A: `/_astro/*` → 1 year browser + edge.
+- [x] Cache Rule A: `/_astro/*` → 1 year browser + edge. Live 2026-10-07 (`max-age=31536000`, HTML + other files unchanged). Gotcha: Field must be **URI Path**; "URI Full" is the whole https://… address and never matches `/_astro/`.
 - [ ] Cache Rule B: HTML edge cache, short browser TTL.
 - [ ] Add "Purge everything" after deploy: either by hand, or a step in `deploy.yml` (needs a CF API token with Cache Purge — new secret; Dan's call).
 - [ ] 🤖 verify with `curl -sI`: `cf-cache-status: HIT`, `Cache-Control: max-age=31536000` on `/_astro/`.
