@@ -30,9 +30,14 @@ Dan, 2026-10-07: "we are now with paddel" (the legal text must say Paddle). Clai
   worker's Paddle path doesn't read `terms_version` (read-only check). The `legal.ts` comment now says
   "Paddle customData terms_version" (no abbreviation).
 - 3 placeholder examples on hidden /founders-intake-2yr now say Paddle.
-- Checks: recorded in the follow-up commit's bullet below.
-- Still open (each needs Dan): the second dormant checkout engine code (`site.ts` engine union + `Cart.astro`
-  branch). The untracked root `HANDOFF.md` is another session's.
+- Checks (rebased onto `a27714e`): `npm run build` green, 23 pages, ~3 s. Old-store name (both retired stores,
+  char-code grep): 0 in src/tests/public and in the built site (origin's own build: 3). Dist diff against a build
+  of origin/main: 205/227 files identical; the 22 others differ only by Paddle in Terms/EULA, the Terms/EULA date,
+  `data-terms-version` and the founders placeholders; /privacy identical to origin. Playwright suite 68/68.
+  Rendered /terms, /eula, /privacy from both builds (Playwright script).
+- Still open (needs Dan): the second dormant checkout engine code (`site.ts` engine union + `Cart.astro` branch).
+  Done elsewhere: the live CSP header has no old-store host (checked 2026-10-07; Yoni's PageSpeed edit). The
+  untracked root `HANDOFF.md` is another session's.
 
 ## 2026-10-07 — PageSpeed pass (Claude Code, PageSpeed session, Yoni's laptop) — DONE, pushed, claim closed
 

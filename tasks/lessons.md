@@ -37,3 +37,12 @@ The "rv close" ritual is an explicit push instruction and still counts.
   popup sits on every page, so expect ~22 built pages to differ. Verify with a word-level dist diff, not a page count.
 - The Playwright MCP browser can be held by another session ("Browser is already in use"). Render with a node
   script that requires the repo's `node_modules/@playwright/test` instead; don't run `npx playwright install`.
+
+## 2026-10-07 — privacy text: check the server side, the live site, and who owns consent
+- The site's ad tags were consent-gated, but until Yoni's worker change (RevLimiter `fae16a3`) the licence worker
+  sent Meta a server-side Purchase for every sale whatever the cookie choice. Rule: before writing or reviewing
+  tracker text, read the browser code (CookieBanner, Cart, trial components) AND the worker's webhook path, check
+  which secrets are set (names only), and load the live site in a fresh browser with ad hosts recorded and aborted.
+- Two sessions rewrote the Privacy page in parallel on 2026-10-07; Yoni's (`1c34cac`) went live first and won.
+  Yoni owns cookie consent (Dan, 2026-10-07). Rule: before touching Privacy or cookie text, fetch origin and read
+  the newest handoff entries for an owner.
