@@ -32,6 +32,39 @@ audio: `audioDemos: []` today, so the page has no "Hear it" at all. The Station 
 6. **Scope cap:** per channel DRY/1-5, SOLO, MUTE; master PLAY, RADIO ON, 1-5, SPIN. No faders, tempo, key or saving.
 7. **Name:** still open (examples: "Station Mixer", "Garage Radio", "Jam Room").
 
+## Bench round 1 (2026-10-08)
+
+- **Yoni's renders arrived** as 24 MP3s (320 kbps, 48 kHz) in `C:\shirimmmmmm\`: `<loop>_dry` + `<loop>_station1..5`,
+  90 BPM, 8 bars, 21.333 s, all 1,024,000 samples, time-aligned to DRY within 25 samples. One pass each (not the 3-pass
+  render), so the loop seams were fixed in processing instead.
+- **Yoni: "normalize them, make them tight and volume matching".** This replaces the "no extra loudness on the wet
+  versions" rule: every station is now loudness-matched (integrated LUFS) to its own loop's DRY, so before/after is
+  a fair comparison. 5 ms seam ramp on every file (wrap step 0). One global trim: loudest file -1 dBTP.
+  The player plays the master 3.5 dB down (4 stems summed peak about +2 dBTP) with a safety limiter.
+  Tool: `tools/station-mixer/process_stems.py`.
+- **Yoni: volume per track** (a photoreal knob per channel, -40 to +6 dB) and **RevLimiter on the master**, linked to
+  `/revlimiter` ("Liked the master? That's RevLimiter. Check it out").
+  - Honest: 6 real RevLimiter 3.2.1 renders (release build, default program "1. Master Glue"): all DRY and all on
+    station N. `tools/station-mixer/render_revlimiter.py`.
+  - RevLimiter's output is about 316 samples late; the renders are realigned to the stems.
+  - With RevLimiter on, the channels follow the master: channel controls lock, volumes reset, solo and mute are cleared.
+  - Played at the same master level, so its +5 LU is audible (it is the point of a limiter).
+- **Bench:** `bench/station-mixer-bench.html`, served with `python -m http.server 8794` from `bench/`. Audio and
+  image cuts live in `bench/assets/station-mixer/` (gitignored). Every part is cut from the real Radio Roulette plate:
+  - power lever = DRY / RADIO
+  - keys 1-5 = stations
+  - VU = level
+  - PLAY and SPIN knobs, plus the dial glass with an 8-bar playhead needle
+  - RevLimiter's ARM plate
+- **Verified in Chromium:**
+  - loads, plays, flips to RADIO ON after 2 bars
+  - VUs move
+  - RevLimiter locks the channels; its master keys switch the 6 masters
+  - solo, mixed stations and SPIN work
+  - no console errors
+- **Open:** Yoni's look and sound review; the mixer name; the phone layout (step 7: the 1100 px stage only scales
+  down today).
+
 ## Yoni's export spec
 
 - 4 loops: drums, bass, keys, guitar. Same key and BPM, 4 bars, dry (no baked reverb/delay), all exactly the same

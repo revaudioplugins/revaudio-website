@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Station Mixer Bench</title>
+<!--
+  Radio Roulette page: Station Mixer bench (2026-10-08). Plan:
+  tasks/radio-roulette-station-mixer-plan.md. Serve over http from bench/
+  (python -m http.server), audio + images live in bench/assets/station-mixer/
+  (gitignored, rebuilt by the scratch scripts listed in the plan).
+
+  Every part is cut from the REAL Radio Roulette plate (radio-face-v3-float.png,
+  1376x768, same pixel map as the plugin's index.html header):
+    display  = plate x160..1218, y356..562  (PLAY knob socket, dial glass, SPIN knob socket)
+    strip    = plate x160..1218, y588..694  (power lever, 5 preset keys, VU)
+  Power lever = DRY / RADIO ON (in the plugin it is true bypass), keys 1-5 = stations,
+  VU = the channel level. RevLimiter ARM plate is cut from revlimiter-hero.png.
+
+  Audio: 24 stems (4 x DRY + 5 stations), loudness-matched per stem to DRY (LUFS),
+  seam-fixed, one global trim (loudest file -1 dBTP). 6 RevLimiter 3.2.1 masters
+  (default program "1. Master Glue") rendered from the same stems: all DRY and all
+  on station N. RevLimiter on = channels follow the master (only those 6 mixes exist).
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=VT323&family=Inter:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bakelite:#1A1410; --brass:#c89a48; --brass-hi:#e6c078; --oxide:#8a2818; --oxide-hi:#a8321c;
+  --amber:#d9a03c; --parchment:#ebdcb6; --nickel-hi:#E8E8EA; --nickel-mid:#A8B0B6; --nickel-shade:#3A4046;
+  --ink:#d8c7a2; --page:#0f0c0a;
+  --script:'Segoe Script','Brush Script MT',cursive;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{background:var(--page);color:var(--ink);font-family:Inter,'Segoe UI',Arial,sans-serif}
+body{min-height:100vh;padding:28px 16px 60px}
+.benchhead{max-width:1100px;margin:0 auto 18px;font-size:13px;line-height:1.5;color:#a8977a}
+.benchhead b{color:var(--parchment);font-weight:600}
+
+/* stage: fixed design size, scaled to the column (transform, never zoom) */
+#fit{max-width:1100px;margin:0 auto;position:relative}
+#stage{position:absolute;left:0;top:0;width:1100px;transform-origin:0 0}
+
+/* chrome bezel: 3-stop chrome + cool sky top / warm dash bottom */
+.bezel{border-radius:34px;padding:14px;
+  background:linear-gradient(180deg,#f1f2f4 0%,#b9c0c6 9%,#5b6268 30%,#2f3438 52%,#7d858b 74%,#d9cdb6 93%,#f0e6d2 100%);
+  box-shadow:0 30px 60px -18px rgba(8,5,3,.85),0 6px 14px rgba(8,5,3,.6),inset 0 1px 0 rgba(255,255,255,.55)}
+.panel{border-radius:22px;overflow:hidden;background:#120d0a;
+  box-shadow:inset 0 2px 6px rgba(8,5,3,.9),inset 0 -1px 0 rgba(255,240,215,.08)}
+.crop{position:relative;width:1072px;background:url("assets/station-mixer/img/radio-face-v3-float.png") no-repeat;
+  background-size:1376px 768px}
+/* the plate's lower band starts at x~70; crops are 1058 wide, pad 7px each side with the same leather */
+.display{height:206px;background-position:-153px -356px}
+.strip{height:106px;background-position:-153px -588px}
+.divider{height:4px;background:linear-gradient(180deg,#c9ced2,#6c7378 45%,#2a2e31 55%,#9aa1a6)}
+
+/* knobs: PHOTOREAL stack from the plugin. Body + ring light never rotate;
+   only the flat ring and the pointer carrier turn. */
+.knob{position:absolute;width:116px;height:116px;border-radius:50%;cursor:ns-resize;touch-action:none;isolation:isolate;transform-origin:0 0}
+.knob .photo,.knob .ringflat,.knob .ringlight{position:absolute;left:-10px;top:-11px;width:136px;height:136px;pointer-events:none}
+.knob .photo{border-radius:50%;background:url("assets/station-mixer/img/knob-body-photo-v1-1k.png") center/contain no-repeat}
+.knob .ringflat{will-change:transform;background:url("assets/station-mixer/img/knob-ring-flat-v1-1k.png") center/contain no-repeat}
+.knob .ringlight{mix-blend-mode:multiply;background:url("assets/station-mixer/img/knob-ring-light-v1-1k.png") center/contain no-repeat}
+.knob .rot{position:absolute;left:1px;top:0;width:114px;height:114px;border-radius:50%;will-change:transform;pointer-events:none}
+.knob .ptr{position:absolute;left:50%;top:14px;width:9px;height:9px;margin-left:-4.5px;border-radius:50%;
+  background:#e8dcc0;box-shadow:0 0 5px rgba(255,220,150,.85),0 1px 1px rgba(28,18,10,.9)}
+.knob .spec{position:absolute;left:1px;top:0;width:114px;height:114px;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle at 29% 19%,rgba(255,242,208,.30),rgba(255,236,200,.08) 24%,rgba(255,255,255,0) 48%)}
+.knob .kshadow{position:absolute;left:-6%;top:40%;width:112%;height:80%;border-radius:50%;pointer-events:none;
+  background:radial-gradient(closest-side,rgba(8,5,3,.85),rgba(8,5,3,.35) 55%,rgba(8,5,3,0) 78%);filter:blur(9px)}
+.knob:focus-visible{outline:2px solid var(--amber);outline-offset:6px}
+
+.klabel{position:absolute;text-align:center;font-family:var(--script);font-size:21px;font-weight:700;
+  color:rgba(228,206,164,.88);text-shadow:0 1px 1px rgba(10,6,3,.85),0 0 6px rgba(255,220,160,.18);pointer-events:none;white-space:nowrap}
+.engr{position:absolute;font:600 9.5px/1 Inter,sans-serif;letter-spacing:.14em;text-transform:uppercase;
+  color:rgba(214,196,160,.62);text-shadow:0 -1px 0 rgba(8,5,3,.9),0 1px 0 rgba(255,235,200,.10);pointer-events:none;white-space:nowrap}
+
+/* dial glass */
+#glassInk{position:absolute;left:227px;top:48px;width:583px;height:138px;pointer-events:none;color:rgba(58,30,8,.86)}
+#shade{position:absolute;left:214px;top:34px;width:641px;height:160px;border-radius:16px;
+  background:rgba(12,7,2,.78);transition:opacity .35s;pointer-events:none}
+body.playing #shade{opacity:0}
+.ruler{position:absolute;left:16px;right:16px;top:8px;height:22px}
+.ruler span{position:absolute;top:0;transform:translateX(-50%);font:600 13px/1 Oswald,sans-serif}
+.ruler i{position:absolute;top:16px;width:1.5px;height:7px;background:currentColor;opacity:.7}
+#needle{position:absolute;top:4px;bottom:6px;width:3px;margin-left:-1.5px;border-radius:2px;left:16px;
+  background:linear-gradient(180deg,#e8483a,#a8231a);box-shadow:0 0 6px rgba(200,40,20,.45)}
+#needle::after{content:"";position:absolute;left:-3px;top:-1px;width:9px;height:9px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#ffd9c8,#c22318 55%,#7e1410)}
+.readouts{position:absolute;left:16px;right:16px;top:40px;display:grid;grid-template-columns:repeat(4,1fr);text-align:center}
+.readouts .nm{font:600 11px/1 Oswald,sans-serif;letter-spacing:.18em}
+.readouts .vl{font:400 46px/1 VT323,monospace;margin-top:2px}
+.readouts .vl.dry{opacity:.55}
+.readouts .vl.off{opacity:.25}
+#glassMsg{position:absolute;left:0;right:0;bottom:8px;text-align:center;font:400 19px/1 VT323,monospace;letter-spacing:.06em}
+#loadMsg{position:absolute;left:214px;top:34px;width:641px;height:160px;display:flex;align-items:center;justify-content:center;
+  font:400 26px/1 VT323,monospace;color:var(--amber);letter-spacing:.08em;pointer-events:none;
+  text-shadow:0 0 8px rgba(217,160,60,.5)}
+body.playing #loadMsg{display:none}
+
+/* power lever = DRY / RADIO ON (photo clip flips; baked lever points DOWN, so up = scaleY(-1)) */
+.lever{position:absolute;left:226px;top:5px;width:52px;height:96px;cursor:pointer}
+.lever .lv{position:absolute;left:10px;top:10px;width:26px;height:73px;
+  background:url("assets/station-mixer/img/radio-face-v3-float.png") no-repeat;background-size:1376px 768px;
+  background-position:-389px -603px;transition:transform 120ms cubic-bezier(.2,.9,.25,1.25)}
+.lever.on .lv{transform:scaleY(-1)}
+.lever .lvshade{position:absolute;left:10px;top:10px;width:26px;height:73px;pointer-events:none;border-radius:6px;
+  background:linear-gradient(180deg,rgba(8,5,3,.26),rgba(8,5,3,0) 30%,rgba(8,5,3,0) 72%,rgba(255,240,215,.07))}
+.lever:focus-visible,.key:focus-visible,.pbtn:focus-visible,.arm:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+
+/* preset keys = photo clips that sink + darken while latched */
+.key{position:absolute;top:10px;width:69px;height:87px;overflow:hidden;cursor:pointer}
+.key .face{position:absolute;inset:0;background:url("assets/station-mixer/img/radio-face-v3-float.png") no-repeat;
+  background-size:1376px 768px;transition:transform .06s ease,filter .06s ease}
+.key .num{position:absolute;left:0;right:0;top:34px;text-align:center;font:700 15px/1 Georgia,serif;
+  color:rgba(88,66,40,.62);pointer-events:none;transition:transform .06s ease}
+.key.active .face,.key:active .face{transform:translateY(4px);filter:brightness(.84)}
+.key.active .num,.key:active .num{transform:translateY(4px)}
+.key::after{content:"";position:absolute;left:16%;right:16%;top:2px;height:3px;border-radius:2px;
+  background:rgba(255,150,50,0);transition:background .2s,box-shadow .2s}
+.key.active::after{background:rgba(255,150,50,.95);box-shadow:0 0 9px 2px rgba(255,130,30,.6)}
+.key.selected:not(.active)::after{background:rgba(255,150,50,.32);box-shadow:0 0 4px 1px rgba(255,130,30,.18)}
+
+/* VU: cream face over the baked one (covers the baked needle) */
+.vu{position:absolute;left:763px;top:20px;width:116px;height:66px;border-radius:4px;overflow:hidden;pointer-events:none;
+  background:radial-gradient(120% 140% at 50% 110%,#f0e3c2 0%,#e2d2aa 55%,#c9b78c 100%);
+  box-shadow:inset 0 2px 5px rgba(40,26,10,.55),inset 0 -1px 0 rgba(255,245,220,.4)}
+.vu svg{position:absolute;inset:0}
+.vu .vn{transform-origin:58px 74px;transition:none}
+body:not(.playing) .vu{filter:brightness(.72)}
+
+/* solo / mute: small chrome pushbuttons with lamp caps */
+.pbtn{position:absolute;top:22px;width:34px;height:34px;border-radius:50%;cursor:pointer;
+  background:radial-gradient(circle at 34% 28%,#f4f5f6 0%,#aab1b7 32%,#4a5156 70%,#c8cdd1 100%);
+  box-shadow:0 3px 5px rgba(8,5,3,.7),inset 0 1px 0 rgba(255,255,255,.6);transition:transform .12s cubic-bezier(.2,.9,.25,1.25)}
+.pbtn::before{content:"";position:absolute;inset:6px;border-radius:50%;
+  background:radial-gradient(circle at 40% 32%,#6b5a44,#2e231a 70%);box-shadow:inset 0 2px 3px rgba(8,5,3,.8)}
+.pbtn:hover{transform:translateY(-1px)}
+.pbtn.on{transform:translateY(1px)}
+.pbtn.solo.on::before{background:radial-gradient(circle at 40% 32%,#ffe2a8,#e09a34 45%,#8a5414 90%);
+  box-shadow:0 0 12px 3px rgba(255,170,60,.55),inset 0 -2px 3px rgba(120,60,10,.5)}
+.pbtn.mute.on::before{background:radial-gradient(circle at 40% 32%,#ffb39a,#c23a22 45%,#6e170c 90%);
+  box-shadow:0 0 12px 3px rgba(220,70,40,.5),inset 0 -2px 3px rgba(90,20,8,.5)}
+
+/* RevLimiter ARM plate (cut from the RevLimiter faceplate; lit state baked, unlit = overlay) */
+.arm{position:absolute;left:905px;top:4px;width:64px;height:98px;cursor:pointer;border-radius:6px;
+  background:url("assets/station-mixer/img/rl-arm-plate.png") center/100% 100% no-repeat;
+  box-shadow:0 3px 6px rgba(8,5,3,.7)}
+.arm::before{content:"";position:absolute;left:41%;top:9%;width:18%;height:12%;border-radius:50%;
+  background:radial-gradient(circle,#4a3a22 0%,#2a2014 70%);transition:opacity .2s}
+.arm::after{content:"";position:absolute;left:28%;top:83%;width:40%;height:9%;background:#2b2a26;border-radius:2px;transition:opacity .2s}
+.arm.on::before,.arm.on::after{opacity:0}
+.arm.on{box-shadow:0 3px 6px rgba(8,5,3,.7),0 -6px 18px rgba(255,200,80,.18)}
+.arm:active{transform:translateY(1px)}
+
+.locked .lever,.locked .key,.locked .knob,.locked .pbtn{pointer-events:none}
+.locked{filter:brightness(.62) saturate(.8);transition:filter .3s}
+
+/* footer row: trial CTA + RevLimiter link */
+.foot{display:flex;gap:16px;align-items:center;justify-content:space-between;padding:16px 22px 18px;
+  background:linear-gradient(180deg,#17110d,#110c09)}
+.cta{display:inline-block;padding:12px 22px;border-radius:8px;text-decoration:none;
+  font:600 14px/1 Inter,sans-serif;letter-spacing:.04em;color:#2a1a08;
+  background:linear-gradient(180deg,#f0d08a,#c89a48 55%,#a37a30);box-shadow:0 2px 0 #6e5020,0 6px 14px rgba(8,5,3,.5)}
+.cta:hover{filter:brightness(1.06)}
+.rlink{font:500 14px/1.4 Inter,sans-serif;color:#b7a37f;text-decoration:none;transition:color .3s}
+.rlink b{color:var(--brass-hi);font-weight:600}
+body.rl .rlink{color:var(--parchment)}
+body.rl .rlink b{text-shadow:0 0 10px rgba(230,192,120,.45)}
+.note{max-width:1100px;margin:16px auto 0;font-size:12.5px;line-height:1.55;color:#8f8068}
+</style>
+</head>
+<body>
+<div class="benchhead"><b>Station Mixer · bench</b> (local only). Real Radio Roulette renders: 4 loops x (DRY + 5 stations), loudness-matched per loop. RevLimiter 3.2.1 masters rendered from the same stems.</div>
+
+<div id="fit"><div id="stage">
+<div class="bezel"><div class="panel">
+
+  <!-- display: PLAY knob, dial glass (playhead + stations), SPIN knob -->
+  <div class="crop display" id="display">
+    <div class="klabel" style="left:38px;top:14px;width:120px">Play</div>
+    <div class="klabel" style="left:913px;top:14px;width:120px">Spin</div>
+    <div class="knob" id="playKnob" role="switch" aria-checked="false" aria-label="Play" tabindex="0" style="left:40px;top:56px">
+      <div class="kshadow"></div><div class="photo"></div><div class="ringflat"></div><div class="ringlight"></div><div class="rot"><div class="ptr"></div></div><div class="spec"></div></div>
+    <div class="knob" id="spinKnob" role="button" aria-label="Spin: random stations" tabindex="0" style="left:915px;top:56px">
+      <div class="kshadow"></div><div class="photo"></div><div class="ringflat"></div><div class="ringlight"></div><div class="rot"><div class="ptr"></div></div><div class="spec"></div></div>
+    <div id="glassInk">
+      <div class="ruler" id="ruler"></div>
+      <div id="needle"></div>
+      <div class="readouts" id="readouts"></div>
+      <div id="glassMsg"></div>
+    </div>
+    <div id="shade"></div>
+    <div id="loadMsg">TURN PLAY</div>
+  </div>
+  <div class="divider"></div>
+
+  <!-- master strip -->
+  <div class="crop strip" id="master">
+    <div class="klabel" style="left:22px;top:38px;width:120px">Master</div>
+    <div class="engr" style="left:145px;top:30px">all</div>
+    <div class="engr" style="left:145px;top:44px">loops</div>
+    <div class="lever" id="mLever" role="switch" aria-checked="false" aria-label="Radio on, all loops" tabindex="0"><div class="lv"></div><div class="lvshade"></div></div>
+    <div class="engr" style="left:284px;top:16px">radio</div>
+    <div class="engr" style="left:284px;top:80px">dry</div>
+    <div class="keys"></div>
+    <div class="vu"></div>
+    <div class="arm" id="arm" role="switch" aria-checked="false" aria-label="RevLimiter on the master" tabindex="0"></div>
+    <div class="klabel" style="left:976px;top:28px;width:92px;font-size:15px;text-align:left">RevLimiter</div>
+    <div class="engr" style="left:980px;top:62px">on the</div>
+    <div class="engr" style="left:980px;top:75px">master</div>
+  </div>
+  <div class="divider"></div>
+  <div id="channels"></div>
+
+  <div class="foot">
+    <a class="cta" href="/radio-roulette#trial">Try Radio Roulette free for 30 days</a>
+    <a class="rlink" href="/revlimiter">Liked the master? That's <b>RevLimiter</b>. Check it out &rarr;</a>
+  </div>
+</div></div>
+</div></div>
+
+<p class="note" id="note"></p>
+
+<script>
+(() => {
+const SR = 48000, LOOP_SAMPLES = 1024000, LOOP = LOOP_SAMPLES / SR, BARS = 8, BAR = LOOP / BARS;
+const STEMS = [{id:'drums',name:'Drums'},{id:'bass',name:'Bass'},{id:'keys',name:'Keys'},{id:'guitar',name:'Guitar'}];
+const VERS = ['dry','s1','s2','s3','s4','s5'];
+const MASTER_DB = -3.5;            // sum of 4 loudness-matched stems peaks ~+2 dBTP; this brings it under -1
+const AUD = 'assets/station-mixer/audio/';
+const KEY_X = [511,582,654,725,796]; // plate x of the 5 preset keys
+const CROP_X = 153;                // strip crop starts at plate x 153
+const $ = s => document.querySelector(s);
+
+/* ---------- state ---------- */
+const st = {
+  playing:false, rl:false, touched:false, masterStation:1,
+  stems: STEMS.map(() => ({ station:1, on:false, volDb:0, solo:false, mute:false }))
+};
+
+/* ---------- build strips ---------- */
+function keysInto(host, onPick){
+  KEY_X.forEach((x,i) => {
+    const k = document.createElement('div');
+    k.className = 'key'; k.tabIndex = 0; k.setAttribute('role','button'); k.setAttribute('aria-pressed','false');
+    k.setAttribute('aria-label', 'Station ' + (i+1));
+    k.style.left = (x - CROP_X) + 'px';
+    k.innerHTML = `<div class="face" style="background-position:-${x}px -598px"></div><div class="num">${i+1}</div>`;
+    const go = () => onPick(i+1);
+    k.addEventListener('click', go);
+    k.addEventListener('keydown', e => { if (e.key==='Enter'||e.key===' ') { e.preventDefault(); go(); } });
+    host.appendChild(k);
+  });
+}
+function vuSvg(){
+  let ticks = '';
+  for (let i=0;i<=10;i++){ const a=(-48+i*9.6)*Math.PI/180, r1=52, r2=i%5?47:44;
+    ticks += `<line x1="${58+Math.sin(a)*r1}" y1="${74-Math.cos(a)*r1}" x2="${58+Math.sin(a)*r2}" y2="${74-Math.cos(a)*r2}" stroke="${i>7?'#9e2a18':'#3a2a18'}" stroke-width="${i%5?1:1.6}"/>`; }
+  return `<svg viewBox="0 0 116 66" width="116" height="66">${ticks}
+    <text x="58" y="44" text-anchor="middle" font-family="Oswald" font-size="9" fill="#3a2a18" letter-spacing="1.5">VU</text>
+    <g class="vn" style="transform:rotate(-48deg)"><line x1="58" y1="74" x2="58" y2="20" stroke="#8a2818" stroke-width="1.6"/></g>
+    <circle cx="58" cy="74" r="7" fill="#2a1f14"/></svg>`;
+}
+document.querySelector('#master .vu').innerHTML = vuSvg();
+keysInto(document.querySelector('#master .keys'), n => masterStation(n));
+
+const chHost = $('#channels');
+STEMS.forEach((s,i) => {
+  const el = document.createElement('div');
+  el.className = 'crop strip'; el.id = 'ch-' + s.id;
+  el.innerHTML = `
+    <div class="klabel" style="left:16px;top:38px;width:110px">${s.name}</div>
+    <div class="knob vol" role="slider" aria-label="${s.name} volume" aria-valuemin="-40" aria-valuemax="6" aria-valuenow="0" tabindex="0"
+      style="left:128px;top:24px;scale:.5"><div class="kshadow"></div><div class="photo"></div><div class="ringflat"></div><div class="ringlight"></div><div class="rot"><div class="ptr"></div></div><div class="spec"></div></div>
+    <div class="engr" style="left:136px;top:88px">volume</div>
+    <div class="lever" role="switch" aria-checked="false" aria-label="${s.name}: radio on" tabindex="0"><div class="lv"></div><div class="lvshade"></div></div>
+    <div class="engr" style="left:284px;top:16px">radio</div>
+    <div class="engr" style="left:284px;top:80px">dry</div>
+    <div class="keys"></div>
+    <div class="vu">${vuSvg()}</div>
+    <div class="pbtn solo" role="button" aria-pressed="false" aria-label="Solo ${s.name}" tabindex="0" style="left:908px"></div>
+    <div class="pbtn mute" role="button" aria-pressed="false" aria-label="Mute ${s.name}" tabindex="0" style="left:966px"></div>
+    <div class="engr" style="left:910px;top:66px">solo</div>
+    <div class="engr" style="left:966px;top:66px">mute</div>`;
+  chHost.appendChild(el);
+  if (i < STEMS.length-1) { const d=document.createElement('div'); d.className='divider'; chHost.appendChild(d); }
+  keysInto(el.querySelector('.keys'), n => { touch(); const c=st.stems[i]; c.station=n; c.on=true; render(); });
+  const lever = el.querySelector('.lever');
+  const flip = () => { touch(); st.stems[i].on = !st.stems[i].on; render(); };
+  lever.addEventListener('click', flip);
+  lever.addEventListener('keydown', e => { if (e.key==='Enter'||e.key===' ') { e.preventDefault(); flip(); } });
+  const solo = el.querySelector('.solo'), mute = el.querySelector('.mute');
+  const tg = (k) => () => { touch(); st.stems[i][k] = !st.stems[i][k]; render(); };
+  [[solo,'solo'],[mute,'mute']].forEach(([b,k]) => { b.addEventListener('click', tg(k));
+    b.addEventListener('keydown', e => { if (e.key==='Enter'||e.key===' ') { e.preventDefault(); tg(k)(); } }); });
+  wireKnob(el.querySelector('.vol'), {min:-40,max:6,get:()=>st.stems[i].volDb,set:v=>{st.stems[i].volDb=v;render();},def:0,step:0.5});
+});
+
+/* glass ruler: 8 bars */
+(() => { const r=$('#ruler'); for (let b=0;b<=BARS;b++){ const x=b/BARS*100;
+  r.insertAdjacentHTML('beforeend', `<i style="left:${x}%"></i>` + (b<BARS?`<span style="left:${(b+.5)/BARS*100}%">${b+1}</span>`:'')); } })();
+$('#readouts').innerHTML = STEMS.map(s=>`<div><div class="nm">${s.name.toUpperCase()}</div><div class="vl" id="ro-${s.id}">DRY</div></div>`).join('');
+
+/* ---------- knobs: vertical drag, Shift fine, wheel, dbl-click default, arrows ---------- */
+function setKnobAngle(el, deg){ el.querySelector('.ringflat').style.rotate = deg+'deg'; el.querySelector('.rot').style.rotate = deg+'deg'; }
+function wireKnob(el, o){
+  const toDeg = v => -135 + (v-o.min)/(o.max-o.min)*270;
+  el._sync = () => { setKnobAngle(el, toDeg(o.get())); el.setAttribute('aria-valuenow', o.get().toFixed(1)); el.title = o.get().toFixed(1)+' dB'; };
+  let y0=null, v0=0;
+  el.addEventListener('pointerdown', e => { el.setPointerCapture(e.pointerId); y0=e.clientY; v0=o.get(); touch(); });
+  el.addEventListener('pointermove', e => { if (y0===null) return;
+    const k=(o.max-o.min)/200*(e.shiftKey?0.1:1); o.set(Math.max(o.min,Math.min(o.max, v0+(y0-e.clientY)*k))); });
+  el.addEventListener('pointerup', () => y0=null);
+  el.addEventListener('dblclick', () => o.set(o.def));
+  el.addEventListener('wheel', e => { e.preventDefault(); o.set(Math.max(o.min,Math.min(o.max,o.get()+(e.deltaY<0?1:-1)*o.step*2))); }, {passive:false});
+  el.addEventListener('keydown', e => { const d={ArrowUp:1,ArrowRight:1,ArrowDown:-1,ArrowLeft:-1}[e.key];
+    if (d){ e.preventDefault(); o.set(Math.max(o.min,Math.min(o.max,o.get()+d*o.step))); } });
+}
+
+/* ---------- audio ---------- */
+let ctx=null, buffers=null, nodes=null, t0=0, autoTimer=null;
+async function loadAll(){
+  const names = []; STEMS.forEach(s=>VERS.forEach(v=>names.push(`${s.id}_${v}`))); VERS.forEach(v=>names.push(`rl_${v}`));
+  let done=0; const out={};
+  await Promise.all(names.map(async n => {
+    const ab = await (await fetch(AUD+n+'.flac')).arrayBuffer();
+    out[n] = await ctx.decodeAudioData(ab);
+    done++; $('#loadMsg').textContent = `TUNING IN ${Math.round(done/names.length*100)}%`;
+  }));
+  return out;
+}
+function buildGraph(){
+  const master = ctx.createGain(); master.gain.value = Math.pow(10, MASTER_DB/20);
+  const lim = ctx.createDynamicsCompressor();       // safety only: threshold above the matched mix
+  lim.threshold.value=-1.5; lim.knee.value=0; lim.ratio.value=20; lim.attack.value=0.001; lim.release.value=0.12;
+  const mAn = ctx.createAnalyser(); mAn.fftSize=2048;
+  master.connect(lim).connect(mAn).connect(ctx.destination);
+  const stemBus = ctx.createGain(); stemBus.connect(master);
+  const rlBus = ctx.createGain(); rlBus.gain.value = 0; rlBus.connect(master);
+  const g = { master, mAn, stemBus, rlBus, stems:[], rl:{} };
+  STEMS.forEach(s => {
+    const vol = ctx.createGain(), sm = ctx.createGain(), an = ctx.createAnalyser(); an.fftSize=2048;
+    vol.connect(sm).connect(an).connect(stemBus);
+    const vers = {}; VERS.forEach(v => { const gn=ctx.createGain(); gn.gain.value=0; gn.connect(vol); vers[v]=gn; });
+    g.stems.push({ vol, sm, an, vers });
+  });
+  VERS.forEach(v => { const gn=ctx.createGain(); gn.gain.value=0; gn.connect(rlBus); g.rl[v]=gn; });
+  return g;
+}
+function startSources(){
+  t0 = ctx.currentTime + 0.08; nodes.srcs = [];
+  const mk = (buf, dest) => { const s=ctx.createBufferSource(); s.buffer=buf; s.loop=true; s.loopStart=0; s.loopEnd=LOOP;
+    s.connect(dest); s.start(t0); nodes.srcs.push(s); };
+  STEMS.forEach((s,i) => VERS.forEach(v => mk(buffers[`${s.id}_${v}`], nodes.stems[i].vers[v])));
+  VERS.forEach(v => mk(buffers[`rl_${v}`], nodes.rl[v]));
+}
+function stopSources(){ (nodes?.srcs||[]).forEach(s=>{ try{s.stop();}catch(e){} }); nodes.srcs=[]; }
+const ramp = (param, val) => param.setTargetAtTime(val, ctx.currentTime, 0.01); // ~30 ms to settle
+
+function ver(c){ return c.on ? 's'+c.station : 'dry'; }
+function rlVer(){ const on = st.stems.every(c=>c.on); return on ? 's'+st.masterStation : 'dry'; }
+
+function applyAudio(){
+  if (!nodes) return;
+  const anySolo = st.stems.some(c=>c.solo);
+  st.stems.forEach((c,i) => {
+    const n = nodes.stems[i], v = ver(c);
+    VERS.forEach(x => ramp(n.vers[x].gain, x===v ? 1 : 0));
+    ramp(n.vol.gain, Math.pow(10, c.volDb/20));
+    ramp(n.sm.gain, c.mute ? 0 : (anySolo && !c.solo ? 0 : 1));
+  });
+  ramp(nodes.stemBus.gain, st.rl ? 0 : 1);
+  ramp(nodes.rlBus.gain, st.rl ? 1 : 0);
+  const rv = rlVer(); VERS.forEach(x => ramp(nodes.rl[x].gain, x===rv ? 1 : 0));
+}
+
+/* ---------- actions ---------- */
+function touch(){ st.touched = true; }
+function masterStation(n){ touch(); st.masterStation=n; st.stems.forEach(c=>{c.station=n; c.on=true;}); render(); }
+function masterLever(){
+  touch(); const anyOn = st.stems.some(c=>c.on);
+  st.stems.forEach(c => { c.on = !anyOn; if (!anyOn && st.rl) c.station = st.masterStation; }); render();
+}
+function setRL(on){
+  touch(); st.rl = on;
+  if (on) { // only the 6 rendered masters exist: channels follow the master
+    const allOn = st.stems.some(c=>c.on);
+    st.stems.forEach(c => { c.station = st.masterStation; c.on = allOn; c.volDb = 0; c.solo = false; c.mute = false; });
+  }
+  render();
+}
+let spinDeg = 0;
+function spin(){
+  touch(); spinDeg += 360 + Math.random()*180;
+  const k = $('#spinKnob'); [k.querySelector('.ringflat'), k.querySelector('.rot')].forEach(e => {
+    e.style.transition='rotate 450ms cubic-bezier(.15,.85,.25,1)'; e.style.rotate = spinDeg+'deg'; });
+  if (st.rl) { st.masterStation = 1 + Math.floor(Math.random()*5); st.stems.forEach(c=>{c.station=st.masterStation;c.on=true;}); }
+  else st.stems.forEach(c => { c.station = 1 + Math.floor(Math.random()*5); c.on = true; });
+  render();
+}
+async function togglePlay(){
+  if (!ctx) {
+    ctx = new (window.AudioContext||window.webkitAudioContext)({ sampleRate: SR });
+    document.body.classList.add('loading');
+    try { buffers = await loadAll(); } catch (e) { $('#loadMsg').textContent = 'NO SIGNAL (serve over http)'; return; }
+    nodes = buildGraph();
+  }
+  if (ctx.state === 'suspended') await ctx.resume();
+  st.playing = !st.playing;
+  if (st.playing) {
+    startSources(); applyAudio();
+    if (!st.touched) autoTimer = setTimeout(() => {      // one-tap default: DRY for 2 bars, then the radio comes on
+      if (!st.touched && st.playing) { st.stems.forEach(c=>c.on=true); render(); flashMsg('RADIO ON'); } }, (2*BAR+0.08)*1000);
+  } else { stopSources(); clearTimeout(autoTimer); }
+  render();
+}
+let msgT=null; function flashMsg(t){ const m=$('#glassMsg'); m.textContent=t; clearTimeout(msgT); msgT=setTimeout(()=>{m.textContent=statusLine();},1600); }
+function statusLine(){ return st.rl ? 'REVLIMITER ON THE MASTER' : (st.stems.some(c=>c.on) ? '' : 'DRY'); }
+
+/* ---------- render ---------- */
+function setPressed(el, on, attr='aria-pressed'){ el.classList.toggle('active', on); el.setAttribute(attr, String(on)); }
+function render(){
+  document.body.classList.toggle('playing', st.playing);
+  document.body.classList.toggle('rl', st.rl);
+  const pk = $('#playKnob'); setKnobAngle(pk, st.playing ? 40 : -40); pk.setAttribute('aria-checked', String(st.playing));
+  const anyOn = st.stems.some(c=>c.on), allSame = st.stems.every(c=>c.on && c.station===st.stems[0].station);
+  $('#mLever').classList.toggle('on', anyOn); $('#mLever').setAttribute('aria-checked', String(anyOn));
+  document.querySelectorAll('#master .key').forEach((k,i) => {
+    setPressed(k, allSame && st.stems[0].station===i+1); });
+  const arm=$('#arm'); arm.classList.toggle('on', st.rl); arm.setAttribute('aria-checked', String(st.rl));
+  const anySolo = st.stems.some(c=>c.solo);
+  STEMS.forEach((s,i) => {
+    const c = st.stems[i], el = $('#ch-'+s.id);
+    el.classList.toggle('locked', st.rl);
+    const lv = el.querySelector('.lever'); lv.classList.toggle('on', c.on); lv.setAttribute('aria-checked', String(c.on));
+    el.querySelectorAll('.key').forEach((k,j) => { setPressed(k, c.on && c.station===j+1); k.classList.toggle('selected', !c.on && c.station===j+1); });
+    setPressed(el.querySelector('.solo'), c.solo); el.querySelector('.solo').classList.toggle('on', c.solo);
+    setPressed(el.querySelector('.mute'), c.mute); el.querySelector('.mute').classList.toggle('on', c.mute);
+    el.querySelector('.vol')._sync();
+    const ro = $('#ro-'+s.id), silent = c.mute || (anySolo && !c.solo);
+    ro.textContent = c.on ? c.station : 'DRY'; ro.className = 'vl' + (c.on ? '' : ' dry') + (silent ? ' off' : '');
+  });
+  if (!st.playing && ctx) $('#loadMsg').textContent = 'TURN PLAY';
+  $('#glassMsg').textContent = statusLine();
+  applyAudio();
+}
+
+/* ---------- animation: playhead needle + VU ballistics (300 ms) ---------- */
+const vuEls = [document.querySelector('#master .vu .vn'), ...STEMS.map(s=>document.querySelector('#ch-'+s.id+' .vu .vn'))];
+const vuAng = vuEls.map(()=>-48); const tbuf = new Float32Array(2048); let last = performance.now();
+function rms(an){ an.getFloatTimeDomainData(tbuf); let a=0; for (let i=0;i<tbuf.length;i++) a+=tbuf[i]*tbuf[i]; return Math.sqrt(a/tbuf.length); }
+function frame(now){
+  const dt = Math.min(0.1,(now-last)/1000); last = now;
+  if (st.playing && ctx) {
+    const pos = (((ctx.currentTime - t0) % LOOP) + LOOP) % LOOP / LOOP;
+    $('#needle').style.left = `calc(16px + ${pos} * (100% - 32px))`;
+  }
+  const ans = nodes && st.playing ? [nodes.mAn, ...nodes.stems.map(n=>n.an)] : null;
+  vuEls.forEach((el,i) => {
+    let target = -48;
+    if (ans) { const db = 20*Math.log10(rms(ans[i])+1e-9) + (i===0?0:MASTER_DB); target = Math.max(-48, Math.min(48, (db+20)*2.4)); /* 0 VU = -20 dBFS rms, 20 dB to each end stop */ }
+    vuAng[i] += (target - vuAng[i]) * (1 - Math.exp(-dt/0.1));
+    el.style.transform = `rotate(${vuAng[i]}deg)`;
+  });
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+/* ---------- wiring ---------- */
+const act = (el, fn) => { el.addEventListener('click', fn); el.addEventListener('keydown', e => { if (e.key==='Enter'||e.key===' ') { e.preventDefault(); fn(); } }); };
+act($('#playKnob'), togglePlay);
+act($('#spinKnob'), spin);
+act($('#mLever'), masterLever);
+act($('#arm'), () => setRL(!st.rl));
+
+/* ---------- fit: transform scale to the column ---------- */
+const fit = $('#fit'), stage = $('#stage');
+function doFit(){ const s = Math.min(1, fit.clientWidth/1100); stage.style.transform = `scale(${s})`; fit.style.height = (stage.offsetHeight*s)+'px'; }
+new ResizeObserver(doFit).observe(fit); window.addEventListener('load', doFit);
+
+fetch(AUD+'manifest.json').then(r=>r.json()).then(m => {
+  const f = m.files, rl = m.revlimiter?.renders || {};
+  $('#note').textContent = `Levels: each loop's 5 stations matched to its DRY (drums ${f.drums_dry.lufs_out}, bass ${f.bass_dry.lufs_out}, keys ${f.keys_dry.lufs_out}, guitar ${f.guitar_dry.lufs_out} LUFS); `
+    + `full mix ${m.mix.dry.lufs} LUFS before the ${MASTER_DB} dB master. RevLimiter masters: ${rl.dry?.out_lufs} LUFS (played at the same master level, so you hear what it really adds).`;
+}).catch(()=>{});
+render();
+})();
+</script>
+</body></html>
