@@ -55,7 +55,7 @@ Goal: mobile LCP <= 2.5 s, INP <= 200 ms, CLS stays <= 0.10, checkout still work
 - [ ] Checkout regression: Paddle overlay opens; real test purchase only if Cart/checkout code is touched (wiki rule).
 
 ### Phase 5 — ship + verify 🤖
-- [ ] Commit per phase, push only when Dan says push.
+- [ ] Commit per phase, push only when the user says push.
 - [ ] Re-run PageSpeed ×3, record median vs Phase 0.
 - [ ] Field data (CWV pass/fail) needs ~28 days to roll over — re-check ~2026-11-03.
 - [ ] Wiki `website-update.md`: add the cache rules + image/font rules (ride-along).

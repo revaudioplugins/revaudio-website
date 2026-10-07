@@ -7,7 +7,11 @@ Patterns from user corrections. Read at session start before website work.
 The garage homepage pass went to origin/main as a noindex /garage preview before Dan had
 reviewed it. Dan: "never push until i say to push clearly."
 
-Rule: commit locally after each verified step; do NOT `git push` until Dan writes "push" in
-plain words. Report "committed locally, not pushed". A preview route still deploys on push
+Rule: commit locally after each verified step; do NOT `git push` until the user in this session writes "push" in
+plain words (rule set by Dan; on the Yoni laptop the user is Yoni). Report "committed locally, not pushed". A preview route still deploys on push
 (GitHub Pages) and lands on partner clones, so "noindex" is not a reason to push early.
-The "rv close" ritual is Dan's explicit push instruction and still counts.
+The "rv close" ritual is an explicit push instruction and still counts.
+
+## 2026-10-07 — Don't call the user "Dan"
+- On the `C:\Users\Yoni` laptop the user is Yoni. I asked for "push from Dan" a third time because the push-rule memory was titled "until Dan says push". The memory now says "the user".
+- Rule: when asking for go-ahead, write "say push". Before sending, every "Dan" that means "you" gets changed to "you".
