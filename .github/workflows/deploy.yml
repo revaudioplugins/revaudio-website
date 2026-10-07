@@ -33,3 +33,19 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+      # Cloudflare keeps a copy of every page at the edge (Cache Rule
+      # "Cache pages at the edge", PageSpeed 2026-10-07: TTFB 1.5 s). Clear it
+      # after each deploy, or visitors keep getting the old pages until the
+      # rule's edge TTL runs out. Token = Cloudflare account token with only
+      # Cache Purge on revaudio.net. Fails loudly when missing.
+      - name: Clear Cloudflare cache
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_PURGE_TOKEN }}
+          CF_ZONE: dc2f58ea7504226eedf01bc251577391 # revaudio.net zone id (not a secret)
+        run: |
+          if [ -z "$CF_TOKEN" ]; then echo "::error::Secret CLOUDFLARE_PURGE_TOKEN is missing - Cloudflare may serve old pages"; exit 1; fi
+          sleep 20 # let GitHub's own CDN pick up the new files first
+          curl --fail-with-body -sS -X POST \
+            "https://api.cloudflare.com/client/v4/zones/$CF_ZONE/purge_cache" \
+            -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: application/json" \
+            --data '{"purge_everything":true}'
