@@ -94,6 +94,27 @@ mixer. Each track gets only solo, mute, volume and the GAS knob; no three full G
   - GAS bypass works
   - 0 console errors
 
+## On the GAS page, local (2026-10-08)
+
+Yoni: "lets embedd it in the gas page locally".
+- `tools/gas-mixer/export_component.py` turns the bench into a `<gas-mixer>` web component in `public/gas-mixer/`.
+  It follows the Station Mixer exporter: shadow DOM, built only near the viewport, audio only on PLAY, no iframe
+  (live X-Frame-Options DENY), self-hosted fonts (live `font-src 'self'`).
+  - It also resizes the GAS art to 2x its display size as WebP: 13 MB of PNGs become 192 KB.
+  - Audio: 15 AAC 160k loops with half a bar of padding each side, 10 MB, fetched on PLAY. `peaks.json` is 53 KB.
+- `src/pages/gas.astro`: a "Hear it" section under the one-screen hero (the hero is unchanged).
+- On the GAS page, START ("Get GAS free") clicks the page's own `.gas-cta`, so it opens the email-gate download
+  modal instead of reloading `/gas`.
+- Verified in headless Chromium:
+  - **dev server** (`127.0.0.1:4321/gas`): builds on scroll, plays, turns to 6 after 2 bars, solo works, START opens
+    `tg-modal`, no horizontal scroll, 0 errors
+  - **production build with the live CSP + X-Frame-Options**: `astro build` into the scratchpad (not `dist/`, which
+    another session serves), the same play test at 1440x900 and 390x844. The only failed request is the Cloudflare
+    RUM beacon (no CORS on localhost); 0 CSP refusals.
+- Open:
+  - phones: the 1600 px stage only scales down (unreadable at 390 px); step 6
+  - not pushed: a push to main is a live deploy
+
 ## Build steps
 
 | # | Owner | Step | Done when |
@@ -101,7 +122,7 @@ mixer. Each track gets only solo, mute, volume and the GAS knob; no three full G
 | 1 | 🧑 | **Loops + renders** per the export spec. | 15 files delivered |
 | 2 | 🤖 | **Check + trim** (`tools/gas-mixer/process_stems.py`): same rate/length, alignment to DRY (sample offset), middle pass, seam check, LUFS + true peak per file logged, one global trim. | Report; 15 loop-length FLACs + manifest |
 | 3 | 🤖 | **Bench** `bench/gas-mixer-bench.html`: 3 channels (the GAS plugin's knob, 5 steps 0-8, voice tag, SOLO, MUTE, volume, VU), master (PLAY, DRY/GAS lever, RevLimiter preview, trial/download CTA), tutorial notes. Starts DRY, flips to GAS after 2 bars. | Yoni approves look + sound |
-| 4 | 🤖 | **Encode** AAC with padding (as Station Mixer step 3). | ~4.5 MB total |
+| 4 | 🤖 | **Encode** AAC with padding (as Station Mixer step 3). ✅ done 2026-10-08 (export_component.py) | 10 MB |
 | 5 | 🤖 | **Wire into `/gas`** (`src/pages/gas.astro`, one-screen page) + `plugins.ts`. | Build green |
 | 6 | 🤖 | **Phones + tests** (as Station Mixer steps 7-8). | Works on iPhone WebKit + 360 px; suite green |
 | 7 | 🧑 | **Review on localhost**, then "push". | Live |

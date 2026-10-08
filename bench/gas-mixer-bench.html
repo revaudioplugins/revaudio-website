@@ -669,6 +669,9 @@ act($('#playKey'), play);
 act($('#stopKey'), stop);
 act($('#gasBtn'), gasToggle);
 act($('#arm'), () => { touch(); st.rl = !st.rl; render(); });
+// on the GAS page itself, START opens the page's own download step (the email gate) instead of reloading /gas
+const page = document;
+$('.start').addEventListener('click', e => { const cta = page.querySelector('.gas-cta'); if (cta) { e.preventDefault(); cta.click(); } });
 
 /* ---------- fit + notes (Station Mixer round 3; side "b" = the arrow leaves the note's bottom) ---------- */
 const fit=$('#fit'), stage=$('#stage');

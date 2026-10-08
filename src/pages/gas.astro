@@ -137,6 +137,19 @@ const highlights = plugin.features.slice(0, 3);
     </div>
   </section>
 
+  {/* Hear it: the GAS Mixer (Yoni, 2026-10-08), below the one-screen hero so the hero stays as it is. Three
+      tracks, each with its own GAS knob on real GAS renders. <gas-mixer> is a web component generated from
+      bench/gas-mixer-bench.html by tools/gas-mixer/export_component.py: shadow DOM keeps its CSS and the page's
+      apart, it builds itself only when it nears the viewport and loads audio only on PLAY. Not an iframe: the
+      live CSP / X-Frame-Options block framing (same route as Radio Roulette's <station-mixer>). */}
+  <section class="gas-hear" id="hear-it">
+    <h2>Hear it</h2>
+    <p class="gas-hear-sub">Real GAS renders on a real beat, no tricks. Press <strong>play</strong> on the tape deck, then turn each track's GAS knob.</p>
+    <link rel="stylesheet" href="/gas-mixer/fonts.css" />
+    <gas-mixer class="gas-mixer-el"></gas-mixer>
+    <script is:inline src="/gas-mixer/gas-mixer.js" defer></script>
+  </section>
+
   {/* Driver's Manual lightbox — the badge next to the title opens this instead
       of an inline 16:9 section, so the one-screen promise above holds. No
       player JS/youtube.com request until the visitor actually clicks play. */}
@@ -527,6 +540,30 @@ const highlights = plugin.features.slice(0, 3);
     letter-spacing: 0.08em;
     color: var(--fg-faint);
   }
+
+  /* ── Hear it: the GAS Mixer ── */
+  .gas-hear {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: var(--space-6) var(--space-5) var(--space-8);
+    text-align: center;
+  }
+  .gas-hear h2 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(2.2rem, 4vw, 3.2rem);
+    letter-spacing: 0.06em;
+    color: var(--fg);
+  }
+  .gas-hear-sub {
+    margin: var(--space-2) auto var(--space-5);
+    max-width: 56ch;
+    color: var(--fg-dim);
+  }
+  .gas-hear-sub strong { color: var(--brass-bright); font-weight: 600; }
+  /* reserve the mixer's shape before it builds (no layout shift), then it sizes itself */
+  .gas-mixer-el { display: block; aspect-ratio: 1600 / 1150; text-align: left; }
+  .gas-mixer-el.ready { aspect-ratio: auto; }
 
   /* Phones: stack, plate first but smaller. One screen is a desktop promise —
      here the promise is "the button and its fine print sit above the fold".
