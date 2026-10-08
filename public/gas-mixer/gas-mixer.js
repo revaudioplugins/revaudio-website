@@ -43,13 +43,10 @@ function chanPath(v0,v1,roff=0){
     const ux=Math.sin(th*Math.PI/180), uy=-Math.cos(th*Math.PI/180); d+=(i?'L':'M')+(170+t*ux).toFixed(2)+' '+(170+t*uy).toFixed(2)+' '; }
   return d;
 }
-// brass band of ring-tank.png, measured: outer rim = circle (170,170) r 167.6; the tube's outer wall = COUT.
-// numPos = the middle of that band along the ray from the knob axis (the mount centre, 168.9,163).
-const AXIS = {x:168.9, y:163}, RIM = {x:170, y:170, r:165};
-function rayHit(th, c){ const ux=Math.sin(th*Math.PI/180), uy=-Math.cos(th*Math.PI/180), dx=AXIS.x-c.x, dy=AXIS.y-c.y;
-  const b=dx*ux+dy*uy, q=dx*dx+dy*dy-c.r*c.r; return -b+Math.sqrt(Math.max(0,b*b-q)); }
-function numPos(th){ const t=(rayHit(th,COUT)+3+rayHit(th,RIM))/2, ux=Math.sin(th*Math.PI/180), uy=-Math.cos(th*Math.PI/180);
-  return [AXIS.x+t*ux, AXIS.y+t*uy]; }
+// The numbers sit exactly where the plugin puts them (GAS index.html buildDial): on a circle of radius RNUM about the
+// dial centre (170,170), which is also the centre of ring-tank.png's round brass rim. The eye reads them against that
+// round rim, so they must be concentric with IT, not with the knob axis (that looked off: Yoni 2026-10-08, twice).
+const numPos = th => pol(CX, CY, RNUM, th);
 const PAL = { tube:{deep:'#8a5210',body:'#d9a03c',core:'#ffdf8e',glow:'#e8b054'},
   tape:{deep:'#0d6b40',body:'#3fd98a',core:'#b4ffd8',glow:'#4fe89a'}, fuzz:{deep:'#7a1408',body:'#ff3b28',core:'#ffb49c',glow:'#ff5a3a'} };
 const HOT = {deep:'#8a1a06',body:'#ff5a30',core:'#ffcf9e',glow:'#ff6a3a'};
