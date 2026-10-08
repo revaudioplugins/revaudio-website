@@ -80,12 +80,10 @@ s = sub(s, "const $ = s => document.querySelector(s);", "const $ = s => root.que
 s = s.replace('document.querySelectorAll(', 'root.querySelectorAll(').replace('document.querySelector(', 'root.querySelector(')
 s = s.replace('document.body.classList', 'host.classList')
 s = s.replace('document.addEventListener(', 'root.addEventListener(')
-s = sub(s, "const IMG = 'assets/gas-mixer/img/', AUD = 'assets/gas-mixer/audio/';",
-        f"const IMG = '{URL}img/', AUD = '{URL}audio/', PADS = {PAD}/{SR};   // loop window inside the padded file")
+s = sub(s, "const IMG = 'assets/gas-mixer/img/';", f"const IMG = '{URL}img/';")
+s = sub(s, "const AUD = 'assets/gas-mixer/audio/', EXT = '.flac', PADS = 0;",
+        f"const AUD = '{URL}audio/', EXT = '.m4a', PADS = {PAD}/{SR};")   # loop window inside the padded AAC file
 s = reimg(s)
-s = sub(s, "const r=await fetch(AUD+n+'.flac');", "const r=await fetch(AUD+n+'.m4a');")
-s = sub(s, "src.loop=true; src.loopStart=0; src.loopEnd=LOOP; src.connect(nodes.stems[i].vers[v]); src.start(t0);",
-        "src.loop=true; src.loopStart=PADS; src.loopEnd=PADS+LOOP; src.connect(nodes.stems[i].vers[v]); src.start(t0, PADS);")
 # image names built at runtime in the track template
 for a, (b, _) in IMGS.items():
     s = s.replace('${IMG}' + a, '${IMG}' + b)
