@@ -113,7 +113,7 @@ Yoni: "lets embedd it in the gas page locally".
     RUM beacon (no CORS on localhost); 0 CSP refusals.
 - Open:
   - phones: the 1600 px stage only scales down (unreadable at 390 px); step 6
-  - not pushed: a push to main is a live deploy
+  - pushed live 2026-10-08 (see the phone section below)
 
 ## Bench round 3 (2026-10-08): knob numbers, tightness pass, new art
 
@@ -137,6 +137,33 @@ tightness check and maybe create some new assets just to make it more tight and 
     meter: E = quiet, F = loud. The needle is code: it pivots on the printed brass cap (50.76 % / 77.03 %) and swings
     +/-45 deg to the printed arc ends (measured on the render).
 - Re-exported to `public/gas-mixer/` (18 images, 232 KB). Verified on the dev server GAS page: plays, 0 errors.
+
+## Phone player + iPhone memory fix, pushed live (2026-10-08)
+
+Yoni: "lets deploy and push with the mobile fix like rr as well". Pattern and lessons from the Station Mixer session
+(revaudio-4a), which shipped the same on /radio-roulette and Yoni confirmed on his iPhone.
+- **Memory.** Only each track's DRY + its current knob step is decoded and running (at most 6 buffers, ~60 MB PCM,
+  instead of 15). A new step decodes when the knob reaches it; the old sound keeps playing until it takes over at the
+  same loop position, then it is released (`fetchRaw` / `getBuf` / `wanted` / `prune` / `startAt`;
+  `window.__gmxDebug()` lists decoded / running). The RevLimiter preview's input is wired only while ARM is on.
+- **Phone player** below 760 px of width (`#phone`, `renderPhone`, `doFit`), 380 px design scaled to the column:
+  - a taped "How to play" note
+  - an amber display (bar ruler, playhead, DRY / GAS n / MIXED)
+  - ONE big GAS knob for the whole beat (0 2 4 6 8, drag or tap a number)
+  - the deck, the GAS jewel and the fuel gauge
+  - "The full 3-track mixer lives on a computer."
+  - Get GAS free
+  The deck, GAS jewel, fuel gauge and START are moved in, not copied. No per-track controls and no RevLimiter on
+  phones.
+- **Deploy:** from a worktree (`../revaudio-website-gmx`, branch `gas-mixer-deploy` = origin/main + the 5 GAS
+  commits cherry-picked), because local `main` had drifted from origin (Station Mixer commits re-landed under other
+  SHAs). Same route as the Station Mixer.
+- **Verified on that build** (`astro build`, served with the live CSP + X-Frame-Options), headless Chromium:
+  - desktop 1440x900: plays, turns to 6 after 2 bars, START opens the download gate, no horizontal scroll
+  - phone 390x844 (touch): phone player shown, plays DRY then GAS 6, tap 8 -> GAS 8, GAS jewel -> DRY, page width
+    390, decoded never above 6
+  - 0 CSP refusals and 0 page errors (only the Cloudflare RUM beacon fails on localhost)
+- **Not checked:** a real iPhone, Safari and Firefox. Yoni to check on his phone.
 
 ## Build steps
 
