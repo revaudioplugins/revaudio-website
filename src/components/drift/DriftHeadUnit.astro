@@ -1,0 +1,71 @@
+---
+/**
+ * [Hidden slot] #hear — the head unit. Rendered ONLY when drift.demoMode is
+ * 'real' (drift.astro), directly under the hero: DRIFT's mini-panel parts
+ * doing their real jobs (the magenta NOW PLAYING screen, the green/yellow/red
+ * arcade caps as PLAY / PAUSE / STOP, VOCAL / KEYS / DRUMS slots, BEFORE /
+ * AFTER). Playing AFTER drives the page's pan bus, so the wheel, the rails
+ * and the balance screen move with what you hear.
+ *
+ * There is no test mode any more: the browser synth never ships as a demo of
+ * DRIFT. 'real' needs Dan's level-matched bounces in public/audio/drift/ on
+ * the whole-sound build AND demo.ts rewritten to pan the WHOLE signal (D2/H1);
+ * assertDriftConfig() refuses 'real' without the audio folder.
+ */
+import { getImage } from 'astro:assets';
+import DriftPanel from './DriftPanel.astro';
+import capGreen from '../../assets/seasons/drift/mm_cap_green.png';
+import capYellow from '../../assets/seasons/drift/mm_cap_yellow.png';
+import capRed from '../../assets/seasons/drift/mm_cap_red.png';
+
+const [g, y, r] = await Promise.all(
+  [capGreen, capYellow, capRed].map((src) => getImage({ src, width: 136, format: 'webp', quality: 82 })),
+);
+---
+<section class="d-sec" id="hear" aria-labelledby="d-hear-h">
+  <div class="d-wrap">
+    <div class="d-sechead">
+      <span class="d-marquee" aria-hidden="true">HEAR IT</span>
+      <span class="d-ja" lang="ja" aria-hidden="true">サウンド</span>
+      <span class="d-rule" aria-hidden="true"></span>
+    </div>
+    <h2 id="d-hear-h" class="d-headline">Same clip, before and after.</h2>
+    <p class="d-lede d-lede--sec">Grab the wheel while it plays.</p>
+
+    <DriftPanel checker={false} class="d-deck">
+      <div class="d-lcd d-lcd--big d-screen" data-demo-screen>
+        <div class="d-screen-hdr">
+          <span>NOW PLAYING</span>
+        </div>
+        <div class="d-screen-title" data-demo-title aria-live="polite">KEYS · AFTER</div>
+        <div class="d-screen-rule" aria-hidden="true"></div>
+        <div class="d-screen-row">
+          <span class="d-screen-t" data-demo-mode>STOPPED</span>
+          <span class="d-screen-t" data-demo-time>00:00</span>
+        </div>
+      </div>
+
+      <div class="d-transport">
+        <button class="d-cap" type="button" data-demo="play" aria-pressed="false" aria-label="Play" style={`background-image:url(${g.src})`}></button>
+        <button class="d-cap" type="button" data-demo="pause" aria-label="Pause" style={`background-image:url(${y.src})`}></button>
+        <button class="d-cap d-cap--stop" type="button" data-demo="stop" aria-label="Stop" style={`background-image:url(${r.src})`}></button>
+      </div>
+      <div class="d-transport">
+        <div class="d-slots" role="group" aria-label="Demo">
+          <button class="d-slot" type="button" data-slot="vocal" aria-pressed="false">VOCAL</button>
+          <button class="d-slot" type="button" data-slot="keys" aria-pressed="true">KEYS</button>
+          <button class="d-slot" type="button" data-slot="drums" aria-pressed="false">DRUMS</button>
+        </div>
+        <div class="d-ab" role="group" aria-label="Before or after DRIFT">
+          <button type="button" data-ab="before" aria-pressed="false">BEFORE</button>
+          <button type="button" data-ab="after" aria-pressed="true">AFTER</button>
+        </div>
+      </div>
+
+      <div class="d-lcd d-lcd--big d-balance-box">
+        <div class="d-balance-lr" aria-hidden="true"><span>L</span><span class="d-balance-read" data-pan-readout="bare">C</span><span>R</span></div>
+        <div class="d-balance" data-balance aria-hidden="true"></div>
+      </div>
+    </DriftPanel>
+  </div>
+</section>

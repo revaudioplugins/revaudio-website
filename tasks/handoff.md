@@ -1,3 +1,12 @@
+## 2026-10-08 — /drift RE-PUBLISHED to main + /drift/feedback (Claude Code, Gil's session) — Gil: "push and commit to main all we have done here including Dan's commits"
+- `git revert ebdd081` on main (the 10-03 unpublish, as its TRAP note says), then merged `feat/drift-feedback` =
+  Dan's `feat/drift-page` @ `13d79cb` + the beta feedback form (`/drift/feedback`, one response per email through the
+  license worker's `/form-once` `drift_feedback`, worker `a10bfd4` deployed 10-08) + the BETA FEEDBACK key over Apply.
+- `drift.creatorsVideo: null`: the SAMPLE how-to player does not ship (Dan's handoff item 1, his documented switch).
+- OPEN for Dan, shipped as-is: `tasks/drift-handoff-dan-2026-10-07.md` — "Whole sound pans" (#fx headline + meta
+  description) and the AUTOTUNE spec row are untrue for Drift 5.0.1; the 30-day vs 14-day trial question for Yoni.
+- OPEN: the $30-off DRIFT-only code on a qualifying feedback form waits for the DRIFT product in Paddle (Gil to send `pro_…`).
+
 ## 2026-10-07 — Dormant second old-store checkout engine removed (Claude Code `revaudio-96`, laptop 1) — pushed 2026-10-07 (Dan: "push", double-checked)
 
 Dan, 2026-10-07: "למחוק" (delete it). Claim closed 2026-10-07; nothing in flight.

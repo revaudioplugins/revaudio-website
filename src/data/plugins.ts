@@ -393,14 +393,18 @@ export const plugins: Plugin[] = [
     slug: 'drift',
     name: 'Drift',
     category: 'panner',
-    tagline: 'A multiband panner you steer like a drift car',
+    // Copy re-checked against Drift v4.28.0 + Dan's D2/H1 decision (2026-09-30): the wheel,
+    // TRACKS and Auto Drift pan the WHOLE sound; LOW/HIGH CUT only set the band where echo,
+    // reverb, tremolo and pitch play. Never "multiband" / "each band independently" /
+    // "frequency-band panner" (Autopilot has had no UI since v3). Must match /drift.
+    tagline: 'A panner you steer like a drift car',
     oneLiner:
-      'Send your selected freq. band to a trip across the stereo field.',
+      'Steer your whole sound across the stereo field.',
     plainHook: 'Controlled slides. No spinouts.',
     plainWhat:
-      'It moves chosen frequency bands across the stereo image, with saturation, reverb and tremolo per band. Wide and alive, never seasick.',
+      'It pans your whole sound across the stereo image: by hand with the wheel, or around a shape in time with your song. Echo, reverb, tremolo and pitch play on a band you choose.',
     longPitch:
-      'A multiband panner built for movement. Slice your mix into bands and send each one drifting across the stereo image, with saturation, reverb and tremolo per band. Flip on Autopilot and an LFO steers the motion for you, controlled slides that keep the mix wide and alive.',
+      'A panner built for movement. Steer your whole sound across the stereo image by hand with the wheel, or hand it to a track shape locked to your tempo. Turn on Auto Drift and the car speeds up when the music hits harder. Set LOW CUT and HIGH CUT around one slice and echo, reverb, tremolo and pitch play only there. Saturation and autotune on board too. Controlled slides. No spinouts.',
     status: 'in-development',
     statusLabel: 'In development',
     introPriceUsd: null,
@@ -411,12 +415,13 @@ export const plugins: Plugin[] = [
     heroImage: 'coming-soon-plate.png',
     galleryImages: [],
     features: [
-      { name: 'Multiband panning', desc: 'Split the spectrum and send each band sliding across the stereo field independently.' },
-      { name: 'Per-band character', desc: 'Saturation, reverb and tremolo dialled in per band. Movement with tone, not just position.' },
-      { name: 'Autopilot', desc: 'LFO-driven motion that steers the pan or a chosen band for you. Hands-off, living stereo.' },
+      { name: 'Your whole sound, steered', desc: 'Grab the wheel and the whole signal slides across the stereo field.' },
+      { name: 'Tracks and Auto Drift', desc: 'A track shape drives the pan, free or locked to your tempo. Auto Drift speeds the car up when the music hits harder.' },
+      { name: 'Effects on a band', desc: 'Echo, reverb, tremolo and pitch play on a slice you set with LOW CUT and HIGH CUT. Saturation and autotune on board too.' },
     ],
     audioDemos: [],
-    systemReq: baseSystemReq,
+    // DRIFT-true: macOS floor is 10.13 universal (CMakeLists.txt:5-6); AAX only once it is built.
+    systemReq: { ...baseSystemReq, os: 'Windows 64-bit, macOS 10.13+', formats: 'VST3 + AU on Mac, VST3 on Windows' },
     reviewsCount: 0,
     reviewsAvg: 0,
   },
