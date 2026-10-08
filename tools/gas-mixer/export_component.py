@@ -53,6 +53,8 @@ IMGS = {
     'sl-paper.png':                      ('sl-paper.webp', 472),
     'tag-blank.png':                     ('tag-blank.webp', 320),
     'fuel-gauge.png':                    ('fuel-gauge.webp', 340),
+    'tkey-chrome.png':                   ('tkey-chrome.webp', 192),
+    'brass-patina.jpg':                  ('brass-patina.webp', 512),
 }
 def reimg(t):
     t = t.replace('assets/gas-mixer/img/', URL + 'img/')
@@ -136,7 +138,7 @@ for a, (b, w) in IMGS.items():
     im = Image.open(os.path.join(SRC, 'img', a)).convert('RGBA')
     if im.width > w:
         im = im.resize((w, round(im.height * w / im.width)), Image.LANCZOS)
-    if a == 'dash-walnut.png':
+    if a in ('dash-walnut.png', 'brass-patina.jpg'):
         im.convert('RGB').save(os.path.join(OUT, 'img', b), 'WEBP', quality=82, method=6)
     else:
         im.save(os.path.join(OUT, 'img', b), 'WEBP', quality=88, method=6)

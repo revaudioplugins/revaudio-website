@@ -156,7 +156,7 @@ body.playing .vu::after{content:"";position:absolute;inset:0;background:radial-g
 .lens.on b{color:rgba(50,26,8,.85)}
 
 /* ---- cassette deck module (covers the plate's PLAY socket) ---- */
-.deck{position:absolute;left:14px;top:18px;width:176px;height:172px;border-radius:12px;
+.deck{position:absolute;left:14px;top:18px;width:236px;height:206px;transform-origin:0 0;scale:.82;border-radius:12px;
   background:linear-gradient(180deg,#f0f1f3,#9aa2a8 30%,#3d4448 60%,#b8bec2 88%,#e3d8c2);
   box-shadow:0 10px 18px -4px rgba(12,9,6,.85),0 2px 4px rgba(12,9,6,.6)}
 .deck .body{position:absolute;inset:2px;border-radius:10px;
@@ -164,25 +164,12 @@ body.playing .vu::after{content:"";position:absolute;inset:0;background:radial-g
   box-shadow:inset 0 1px 0 rgba(255,236,210,.12),inset 0 -2px 4px rgba(12,9,6,.8)}
 .screw{position:absolute;width:9px;height:9px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#f4f5f6,#9aa1a6 50%,#3d4246)}
 .screw::after{content:"";position:absolute;left:1px;right:1px;top:3.75px;height:1.5px;background:rgba(20,16,12,.7);transform:rotate(var(--r))}
-.window{position:absolute;left:12px;top:14px;width:148px;height:74px;border-radius:7px;overflow:hidden;
+.window{position:absolute;left:14px;top:14px;width:148px;height:74px;border-radius:7px;overflow:hidden;
   background:linear-gradient(180deg,#0d0a08,#1a1410);
   box-shadow:inset 0 0 0 1.5px rgba(160,168,174,.55),inset 0 3px 8px rgba(12,9,6,.95)}
 .window svg{position:absolute;inset:0}
 .window::after{content:"";position:absolute;inset:0;pointer-events:none;
   background:linear-gradient(160deg,rgba(220,232,245,.16) 0%,rgba(220,232,245,.04) 28%,rgba(0,0,0,0) 42%,rgba(255,220,170,.05) 100%)}
-.deck .tag{position:absolute;left:14px;top:93px;font:600 8.5px/1 Inter,sans-serif;letter-spacing:.2em;color:rgba(214,196,160,.5)}
-.deck .lamp{left:150px;top:92px}
-.tkeys{position:absolute;left:12px;top:108px;width:148px;height:52px;border-radius:6px;padding:4px;display:flex;gap:4px;
-  background:linear-gradient(180deg,#070504,#1a1410);box-shadow:inset 0 2px 4px rgba(12,9,6,.95),0 1px 0 rgba(255,236,210,.08)}
-.tkey{position:relative;flex:1;border-radius:4px;cursor:pointer;
-  background:linear-gradient(180deg,#f3f4f5 0%,#cdd2d6 22%,#9aa2a8 62%,#6d757b 86%,#3f464b 100%);
-  box-shadow:0 5px 0 #2c3135,0 6px 6px rgba(12,9,6,.7),inset 0 1px 0 rgba(255,255,255,.8);
-  transform:translateY(-3px);transition:transform 90ms cubic-bezier(.2,.9,.25,1.25),box-shadow 90ms}
-.tkey::before{content:"";position:absolute;left:5px;right:5px;top:5px;bottom:7px;border-radius:2px;
-  background:repeating-linear-gradient(90deg,rgba(255,255,255,.06) 0 1px,rgba(0,0,0,.04) 1px 2px)}
-.tkey svg{position:absolute;left:50%;top:50%;transform:translate(-50%,-58%)}
-.tkey:active,.tkey.down{transform:translateY(2px);box-shadow:0 0 0 #2c3135,0 1px 2px rgba(12,9,6,.7),inset 0 1px 0 rgba(255,255,255,.5);
-  background:linear-gradient(180deg,#d9dde0 0%,#b4bbc0 25%,#868e94 65%,#5c646a 100%)}
 
 /* dial glass */
 #glassInk{position:absolute;left:227px;top:48px;width:583px;height:138px;pointer-events:none;color:rgba(58,30,8,.86)}
@@ -318,7 +305,7 @@ body.phone #fit{display:none} body.phone #phone{display:block}
 body.playing .pg-shade{opacity:0}
 .prow{width:352px;display:flex;align-items:center;justify-content:space-between}
 .pslot{position:relative}
-#pDeckSlot{width:136px;height:133px} #pDeckSlot .deck{left:0;top:0;transform-origin:0 0;scale:.77}
+#pDeckSlot{width:137px;height:120px} #pDeckSlot .deck{left:0;top:0;transform-origin:0 0;scale:.58}
 .plever{display:flex;flex-direction:column;align-items:center;gap:4px} .plever .engr{position:static}
 .plever .lever{position:relative;left:auto;top:auto}
 .pspin{display:flex;flex-direction:column;align-items:center} .pspin .klabel{position:static;width:auto;font-size:19px}
@@ -335,6 +322,28 @@ body.playing .pg-shade{opacity:0}
 @keyframes invite{0%,100%{box-shadow:0 0 0 0 rgba(255,160,50,0);background:radial-gradient(circle at 40% 35%,#8a6a40,#3a2a18)}50%{box-shadow:0 0 10px 3px rgba(255,160,50,.6);background:radial-gradient(circle at 40% 35%,#fff0c8,#ffad3c 50%,#b8620e)}}
 body:not(.started) #playLamp{animation:invite 1.4s ease-in-out infinite}
 
+/* PLAY / STOP = XL chrome piano keys (Yoni picked "A" on bench/transport-bench.html, 2026-10-08: the old keys
+   "dont get the attention they need"). The key art (gpt-image-1 tkey-chrome) goes through border-image, so the chrome
+   corners keep their shape at any key size. PLAY latches down and an amber lamp glows through its ribbed face; STOP is
+   momentary. A mechanical tape counter rolls while the tape runs. */
+.counter{position:absolute;left:172px;top:20px;width:50px;height:26px;border-radius:4px;overflow:hidden;display:flex;gap:2px;padding:3px 4px;
+  background:linear-gradient(180deg,#0b0806,#1d1611);box-shadow:inset 0 2px 4px rgba(12,9,6,.95),0 1px 0 rgba(255,236,210,.1)}
+.counter span{flex:1;position:relative;overflow:hidden;border-radius:2px;background:linear-gradient(180deg,#d8d2c4,#f4efe2 45%,#cfc7b6)}
+.counter i{position:absolute;left:0;right:0;top:0;font:600 14px/20px Oswald,sans-serif;text-align:center;color:#2a2018;font-style:normal}
+.deck .tag{position:absolute;left:174px;top:52px;font:600 8.5px/1 Inter,sans-serif;letter-spacing:.2em;color:rgba(214,196,160,.5)}
+.deck .lamp{left:197px;top:66px}
+.tkeys{position:absolute;left:14px;top:100px;width:208px;height:92px;border-radius:8px;padding:6px;display:flex;gap:6px;
+  background:linear-gradient(180deg,#070504,#1a1410);box-shadow:inset 0 3px 6px rgba(12,9,6,.95),0 1px 0 rgba(255,236,210,.08)}
+.tkey{position:relative;flex:1;cursor:pointer;border:14px solid transparent;border-image:url("assets/station-mixer/img/tkey-chrome.png") 30 fill / 14px;
+  transform:translateY(-4px);filter:drop-shadow(0 6px 2px rgba(8,5,3,.85)) drop-shadow(0 2px 1px rgba(8,5,3,.6));
+  transition:transform 90ms cubic-bezier(.2,.9,.25,1.25),filter 90ms}
+.tkey:active,.tkey.down{transform:translateY(2px);filter:drop-shadow(0 1px 1px rgba(8,5,3,.85)) brightness(.9)}
+.tkey .lit{position:absolute;inset:-6px;border-radius:4px;background:radial-gradient(70% 70% at 50% 55%,rgba(255,170,60,.55),rgba(255,140,40,0));
+  opacity:0;transition:opacity .15s;mix-blend-mode:screen;pointer-events:none}
+.tkey.down .lit{opacity:1}
+.tkey svg{position:absolute;left:50%;top:50%;overflow:visible}
+.tkey .sym{fill:rgba(232,220,192,.72);filter:drop-shadow(0 -1px 0 rgba(12,9,6,.9))}
+.tkey.down .sym{fill:#ffe3a8;filter:drop-shadow(0 0 4px rgba(255,170,60,.95))}
 </style>
 </head>
 <body>
@@ -388,13 +397,14 @@ body:not(.started) #playLamp{animation:invite 1.4s ease-in-out infinite}
         <text x="136" y="14.6" text-anchor="end" font-family="Oswald" font-size="5" letter-spacing=".6" fill="#6a5030">TYPE II</text>
         <circle cx="74" cy="54" r="1.6" fill="#8d877d"/><circle cx="8" cy="66" r="1.6" fill="#8d877d"/><circle cx="140" cy="66" r="1.6" fill="#8d877d"/>
       </svg></div>
-      <div class="tag">AUTO REVERSE</div>
+      <div class="counter" aria-hidden="true"><span><i>0</i></span><span><i>0</i></span><span><i>0</i></span></div>
+      <div class="tag">COUNTER</div>
       <span class="lamp" id="playLamp"></span>
       <div class="tkeys">
-        <div class="tkey" id="playKey" role="button" aria-pressed="false" aria-label="Play" tabindex="0">
-          <svg width="16" height="16" viewBox="0 0 16 16"><path d="M4 2.5 L13 8 L4 13.5 Z" fill="#2a2420"/></svg></div>
+        <div class="tkey" id="playKey" role="button" aria-pressed="false" aria-label="Play" tabindex="0"><span class="lit"></span>
+          <svg width="1" height="1" aria-hidden="true"><path class="sym" d="M-9 -12.5 L13.5 0 L-9 12.5 Z"/></svg></div>
         <div class="tkey" id="stopKey" role="button" aria-label="Stop" tabindex="0">
-          <svg width="14" height="14" viewBox="0 0 14 14"><rect x="2" y="2" width="10" height="10" rx="1" fill="#2a2420"/></svg></div>
+          <svg width="1" height="1" aria-hidden="true"><rect class="sym" x="-10" y="-10" width="20" height="20" rx="1.5"/></svg></div>
       </div>
     </div></div>
     <div class="klabel" style="left:913px;top:14px;width:120px">Spin</div>
@@ -766,8 +776,10 @@ let last = performance.now(), reelA = 0, reelB = 0, played = 0, dashOff = 0, sid
 /* cassette: a 4-minute side, then AUTO REVERSE. Pack radius follows the tape AREA on each reel;
    constant tape speed, so hub speed = speed / radius (the full reel turns slowly, the empty one fast). */
 const SIDE_SEC = 240, R_MIN = 10, R_MAX = 23, TAPE_V = 44;      // px/s in the 148x74 window = ~0.7 rev/s on an empty hub
+const ctrEls = [...document.querySelectorAll('.counter i')];
+function counterStep(){ const d = String(Math.floor(played * 1.6) % 1000).padStart(3, '0'); ctrEls.forEach((e, i) => { if (e.textContent !== d[i]) e.textContent = d[i]; }); }
 function tapeStep(dt){
-  played += dt;
+  played += dt; counterStep();
   const seg = Math.floor(played / SIDE_SEC), dir = seg % 2 ? -1 : 1, frac = (played % SIDE_SEC) / SIDE_SEC;
   if (seg !== side) { side = seg; $('#sideTxt').textContent = dir > 0 ? 'A' : 'B'; }
   const onRight = dir > 0 ? frac : 1 - frac;
