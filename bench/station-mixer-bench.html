@@ -22,7 +22,7 @@
   loudness-calibrated against a real RevLimiter 3.2.1 render. Copy says "preview".
 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=VT323&family=Inter:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=VT323&family=Inter:wght@500;600&family=Permanent+Marker&family=Gochi+Hand&display=swap" rel="stylesheet">
 <style>
 :root{
   --bakelite:#1A1410; --brass:#c89a48; --brass-hi:#e6c078; --oxide:#8a2818; --oxide-hi:#a8321c;
@@ -34,11 +34,12 @@
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{background:var(--page);color:var(--ink);font-family:Inter,'Segoe UI',Arial,sans-serif}
 body{min-height:100vh;padding:28px 16px 60px}
-.benchhead{max-width:1100px;margin:0 auto 18px;font-size:13px;line-height:1.5;color:#a8977a}
+.benchhead{max-width:1540px;margin:0 auto 18px;font-size:13px;line-height:1.5;color:#a8977a}
 .benchhead b{color:var(--parchment);font-weight:600}
 
-#fit{max-width:1100px;margin:0 auto;position:relative}
-#stage{position:absolute;left:0;top:0;width:1100px;transform-origin:0 0}
+#fit{max-width:1540px;margin:0 auto;position:relative}
+#stage{position:absolute;left:0;top:0;width:1540px;transform-origin:0 0}
+.rig{position:absolute;left:220px;top:64px;width:1100px}
 
 /* chrome bezel: cool sky top, warm dash bottom */
 .bezel{border-radius:34px;padding:14px;
@@ -209,13 +210,44 @@ body.rl .rl-copy a{text-shadow:0 0 10px rgba(230,192,120,.45)}
   background:linear-gradient(180deg,#f0d08a,#c89a48 55%,#a37a30);box-shadow:0 2px 0 #6e5020,0 8px 16px rgba(12,9,6,.55)}
 .cta:hover{filter:brightness(1.06)}
 .cta small{display:block;margin-top:4px;font:500 10.5px/1 Inter,sans-serif;letter-spacing:.04em;color:rgba(42,26,8,.7)}
-.note{max-width:1100px;margin:16px auto 0;font-size:12.5px;line-height:1.55;color:#8f8068}
+.note{max-width:1540px;margin:16px auto 0;font-size:12.5px;line-height:1.55;color:#8f8068}
+/* ---- tutorial notes: RevAmp paper family (PRESETS / INFO / welcome note): beaten paper, masking tape,
+   red Permanent Marker titles, Gochi Hand body. Each note ticks itself off when the step is done. ---- */
+.tnote{position:absolute;width:196px;box-sizing:border-box;padding:15px 16px 14px;rotate:var(--rot);z-index:5;
+  font:17px/1.2 'Gochi Hand',cursive;color:rgb(32,27,24);
+  background:url("assets/station-mixer/img/sl-paper.png") left top/472px 680px no-repeat,linear-gradient(172deg,#f2ecda,#e2d8bb);
+  box-shadow:5px 7px 9px rgba(12,9,6,.55),1px 1px 1px rgba(12,9,6,.35);
+  transition:translate .42s cubic-bezier(.5,0,.8,.4),rotate .42s,opacity .42s}
+.tnote h4{margin:0 0 6px;font:400 19px/1.1 'Permanent Marker',cursive;letter-spacing:.3px;color:rgb(176,48,34);padding-right:22px}
+.tnote b{font-weight:400;font-family:'Permanent Marker',cursive;font-size:14.5px;color:rgb(40,34,30)}
+.tnote .tp{position:absolute;width:62px;height:20px;background:linear-gradient(180deg,rgba(232,222,190,.86),rgba(212,200,166,.86));
+  box-shadow:0 1px 1px rgba(12,9,6,.3);-webkit-mask:linear-gradient(90deg,transparent 0,#000 3px,#000 calc(100% - 3px),transparent);mask:linear-gradient(90deg,transparent 0,#000 3px,#000 calc(100% - 3px),transparent)}
+.tnote .tp.a{left:-16px;top:6px;rotate:-36deg} .tnote .tp.b{right:-16px;top:8px;rotate:33deg} .tnote .tp.c{left:50%;top:-10px;margin-left:-31px;rotate:-3deg}
+.tnote .tick{position:absolute;right:12px;top:8px;font:400 26px/1 'Permanent Marker',cursive;color:rgb(176,48,34);
+  opacity:0;scale:2.2;rotate:-12deg;transition:opacity .18s,scale .25s cubic-bezier(.2,.9,.25,1.25)}
+.tnote.done .tick{opacity:1;scale:1}
+.tnote.done h4{text-decoration:line-through;text-decoration-thickness:2px;text-decoration-color:rgba(176,48,34,.55)}
+.tnote.coffee::after{content:"";position:absolute;right:-14px;bottom:-16px;width:74px;height:74px;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,transparent 58%,rgba(120,78,36,.20) 61%,rgba(120,78,36,.07) 66%,transparent 70%)}
+#arrows{position:absolute;left:0;top:0;pointer-events:none;z-index:4;overflow:visible;transition:opacity .3s}
+#arrows path{fill:none;stroke:rgba(176,48,34,.88);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+body.nonotes .tnote{translate:40px 240px;rotate:24deg;opacity:0;pointer-events:none}
+body.nonotes #arrows{opacity:0}
+.notetag{position:absolute;padding:5px 14px 4px;cursor:pointer;rotate:-2deg;z-index:6;
+  font:400 14px/1 'Permanent Marker',cursive;color:rgb(40,34,30);
+  background:linear-gradient(180deg,rgba(232,222,190,.95),rgba(212,200,166,.95));box-shadow:0 2px 3px rgba(12,9,6,.45)}
+.notetag:hover{translate:0 -1px}
+/* before the first PLAY the deck lamp breathes: the one thing to press */
+@keyframes invite{0%,100%{box-shadow:0 0 0 0 rgba(255,160,50,0);background:radial-gradient(circle at 40% 35%,#8a6a40,#3a2a18)}50%{box-shadow:0 0 10px 3px rgba(255,160,50,.6);background:radial-gradient(circle at 40% 35%,#fff0c8,#ffad3c 50%,#b8620e)}}
+body:not(.started) #playLamp{animation:invite 1.4s ease-in-out infinite}
+
 </style>
 </head>
 <body>
-<div class="benchhead"><b>Station Mixer · bench round 2</b> (local only). Loops: real Radio Roulette renders, loudness-matched. RevLimiter on the master: browser preview, loudness-matched to a real RevLimiter render.</div>
+<div class="benchhead"><b>Station Mixer · bench round 3</b> (local only). Loops: real Radio Roulette renders, loudness-matched. RevLimiter on the master: browser preview, loudness-matched to a real RevLimiter render.</div>
 
 <div id="fit"><div id="stage">
+<div class="rig" id="rig">
 <div class="bezel"><div class="panel">
 
   <!-- display: cassette deck, dial glass, SPIN -->
@@ -314,6 +346,24 @@ body.rl .rl-copy a{text-shadow:0 0 10px rgba(230,192,120,.45)}
     <a class="cta" href="/radio-roulette#trial">Try Radio Roulette free<small>30 days, full plugin</small></a>
   </div>
 </div></div>
+</div><!-- /rig -->
+
+<!-- tutorial notes (left column = the basics, right column + below = the extras) -->
+<svg id="arrows" aria-hidden="true"><defs><filter id="marker" x="-5%" y="-5%" width="110%" height="110%">
+  <feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="2" seed="7"/><feDisplacementMap in="SourceGraphic" scale="2.4"/></filter></defs><g filter="url(#marker)"></g></svg>
+<div class="tnote" data-step="1" data-to="#playKey" data-side="r" style="left:14px;top:58px;--rot:-2.2deg"><i class="tp a"></i><i class="tp b"></i><span class="tick">&#10003;</span>
+  <h4>1. Press play</h4>Hit <b>&#9654;</b> on the tape deck. The beat starts <b>dry</b>, then the radio comes on.</div>
+<div class="tnote" data-step="2" data-to="#ch-drums .lever" data-rail="#ch-drums" data-side="r" style="left:10px;top:318px;--rot:1.5deg"><i class="tp c"></i><span class="tick">&#10003;</span>
+  <h4>2. Before / after</h4>Lever <b>down</b> = the dry loop.<br>Lever <b>up</b> = through Radio Roulette. Flip it and compare.</div>
+<div class="tnote coffee" data-step="3" data-to="#ch-keys .key" data-rail="#ch-keys" data-side="r" style="left:16px;top:560px;--rot:-1.3deg"><i class="tp a"></i><i class="tp b"></i><span class="tick">&#10003;</span>
+  <h4>3. Pick a station</h4>Every loop has <b>5 stations</b>. Push a button to change how that loop sounds.</div>
+<div class="tnote" data-step="5" data-to="#spinKnob" data-side="l" style="left:1334px;top:58px;--rot:1.9deg"><i class="tp a"></i><i class="tp b"></i><span class="tick">&#10003;</span>
+  <h4>Feeling lucky?</h4>Click <b>Spin</b> and every loop jumps to a random station.</div>
+<div class="tnote" data-step="4" data-to="#ch-bass .mute" data-side="l" style="left:1338px;top:330px;--rot:-1.6deg"><i class="tp c"></i><span class="tick">&#10003;</span>
+  <h4>4. Your mix</h4><b>S</b> = hear only this loop.<br><b>M</b> = mute it.<br>The little knob on the left = <b>volume</b> (drag it).</div>
+<div class="tnote" data-step="6" data-to="#arm" data-side="t" style="left:590px;top:0;--rot:1.2deg;width:250px"><i class="tp a"></i><i class="tp b"></i><span class="tick">&#10003;</span>
+  <h4>Finish it on the master</h4>Press <b>ARM</b> for a taste of RevLimiter: louder, glued, finished. Press again to hear the difference.</div>
+<div class="notetag" id="notetag" role="button" tabindex="0">hide the notes</div>
 </div></div>
 
 <p class="note" id="note"></p>
@@ -414,11 +464,15 @@ function makeRL(c, p){
 let ctx=null, buffers=null, nodes=null, t0=0, autoTimer=null;
 async function loadAll(){
   const names=[]; STEMS.forEach(s=>VERS.forEach(v=>names.push(`${s.id}_${v}`)));
-  let done=0; const out={};
-  await Promise.all(names.map(async n => {
-    out[n] = await ctx.decodeAudioData(await (await fetch(AUD+n+'.flac')).arrayBuffer());
-    done++; $('#loadMsg').textContent = `TUNING IN ${Math.round(done/names.length*100)}%`;
-  }));
+  let done=0; const out={}, queue=names.slice();
+  const get = async (n, tries=3) => {   // a burst of 24 requests overflows a small server's queue: retry
+    for (let i=1;;i++) { try { const r=await fetch(AUD+n+'.flac'); if (!r.ok) throw new Error(r.status); return await r.arrayBuffer(); }
+      catch (e) { if (i>=tries) throw e; await new Promise(res=>setTimeout(res, 250*i)); } }
+  };
+  const worker = async () => { while (queue.length) { const n=queue.shift();
+    out[n] = await ctx.decodeAudioData(await get(n));
+    done++; $('#loadMsg').textContent = `TUNING IN ${Math.round(done/names.length*100)}%`; } };
+  await Promise.all([1,2,3,4].map(worker));   // 4 at a time
   return out;
 }
 function buildGraph(){
@@ -469,11 +523,15 @@ function spin(){
   render();
 }
 async function play(){
-  if (st.playing) return;                       // a latched PLAY key does nothing; STOP pops it
+  if (st.playing || play.loading) return;       // a latched PLAY key does nothing; STOP pops it
   if (!ctx) {
     ctx = new (window.AudioContext||window.webkitAudioContext)({ sampleRate: SR });
-    $('#playKey').classList.add('down');
-    try { buffers = await loadAll(); } catch (e) { $('#loadMsg').textContent = 'NO SIGNAL (serve over http)'; return; }
+    $('#playKey').classList.add('down'); play.loading = true;
+    try { buffers = await loadAll(); }
+    catch (e) {                                  // pop the key back up; the next PLAY starts over
+      $('#loadMsg').textContent = 'NO SIGNAL, PRESS PLAY AGAIN'; ctx.close(); ctx = null; play.loading = false;
+      $('#playKey').classList.remove('down'); return; }
+    play.loading = false;
     nodes = buildGraph();
   }
   if (ctx.state === 'suspended') await ctx.resume();
@@ -585,7 +643,58 @@ window.calibrateRL = async (params = RL) => {
 
 /* ---------- fit ---------- */
 const fit=$('#fit'), stage=$('#stage');
-function doFit(){ const s=Math.min(1, fit.clientWidth/1100); stage.style.transform=`scale(${s})`; fit.style.height=(stage.offsetHeight*s)+'px'; }
+function doFit(){
+  const rig=$('#rig'), n6=document.querySelector('.tnote[data-step="6"]'), tag=$('#notetag');
+  const rigBottom = rig.offsetTop + rig.offsetHeight;
+  n6.style.top = (rigBottom + 26) + 'px';                     // the master note sits under the ARM plate
+  tag.style.left = (rig.offsetLeft + 1100 - 140) + 'px'; tag.style.top = (rigBottom + 18) + 'px';
+  const H = rigBottom + 26 + n6.offsetHeight + 30;
+  stage.style.height = H + 'px';
+  const s=Math.min(1, fit.clientWidth/1540); stage.style.transform=`scale(${s})`; fit.style.height=(H*s)+'px';
+  drawArrows();
+}
+/* hand-drawn marker arrows from each note to its control (stage coordinates, so the scale never matters) */
+function drawArrows(){
+  const svg=$('#arrows'), g=svg.querySelector('g'), sr=stage.getBoundingClientRect(), k=sr.width/stage.offsetWidth;
+  svg.setAttribute('width', stage.offsetWidth); svg.setAttribute('height', stage.offsetHeight);
+  const box = el => { const r=el.getBoundingClientRect(); return {l:(r.left-sr.left)/k, t:(r.top-sr.top)/k, r:(r.right-sr.left)/k, b:(r.bottom-sr.top)/k}; };
+  let d='';
+  document.querySelectorAll('.tnote').forEach(n => {
+    const t=document.querySelector(n.dataset.to); if (!t) return;
+    const nb=box(n), tb=box(t), side=n.dataset.side;
+    if (n.dataset.rail) {   // ride the chrome divider under that row, then hook up into the control's left side
+      const railY = box(document.querySelector(n.dataset.rail)).b + 2;
+      const z={x:tb.l-5, y:(tb.t+tb.b)/2}, ax=nb.r-4, ay=Math.max(nb.t+14, Math.min(nb.b-14, railY));
+      d += `M${ax.toFixed(1)} ${ay.toFixed(1)} Q${(ax+24).toFixed(1)} ${railY.toFixed(1)} ${(ax+48).toFixed(1)} ${railY.toFixed(1)} `
+         + `L${(z.x-36).toFixed(1)} ${railY.toFixed(1)} Q${(z.x-6).toFixed(1)} ${railY.toFixed(1)} ${z.x.toFixed(1)} ${z.y.toFixed(1)} `;
+      const ang=Math.atan2(z.y-railY, 6), L=14;
+      [-0.5,0.5].forEach(o => d += `M${z.x.toFixed(1)} ${z.y.toFixed(1)} L${(z.x-L*Math.cos(ang+o)).toFixed(1)} ${(z.y-L*Math.sin(ang+o)).toFixed(1)} `);
+      return;
+    }
+    let a, z;
+    if (side==='r') { a={x:nb.r-6, y:nb.t+(nb.b-nb.t)*.45}; z={x:tb.l-6, y:(tb.t+tb.b)/2}; }
+    else if (side==='l') { a={x:nb.l+6, y:nb.t+(nb.b-nb.t)*.45}; z={x:tb.r+6, y:(tb.t+tb.b)/2}; }
+    else { a={x:(nb.l+nb.r)/2-40, y:nb.t+4}; z={x:(tb.l+tb.r)/2, y:tb.b+6}; }
+    const dx=z.x-a.x, dy=z.y-a.y, len=Math.hypot(dx,dy), bend=Math.min(60,len*.18)*(side==='l'?-1:1);
+    const c={x:(a.x+z.x)/2 - dy/len*bend, y:(a.y+z.y)/2 + dx/len*bend};
+    d += `M${a.x.toFixed(1)} ${a.y.toFixed(1)} Q${c.x.toFixed(1)} ${c.y.toFixed(1)} ${z.x.toFixed(1)} ${z.y.toFixed(1)} `;
+    const ang=Math.atan2(z.y-c.y, z.x-c.x), L=14;
+    [-0.5,0.5].forEach(o => d += `M${z.x.toFixed(1)} ${z.y.toFixed(1)} L${(z.x-L*Math.cos(ang+o)).toFixed(1)} ${(z.y-L*Math.sin(ang+o)).toFixed(1)} `);
+  });
+  g.innerHTML = `<path d="${d}"/>`;
+}
+/* steps tick themselves off */
+const STEP_OF = [['#playKey',1],['.lever',2],['.key',3],['.lens',4],['.vol',4],['#spinKnob',5],['#arm',6]];
+function stepFrom(target){ if (!target.closest) return 0; for (const [sel,n] of STEP_OF) if (target.closest(sel)) return n; return 0; }
+function markStep(n){ const el=document.querySelector(`.tnote[data-step="${n}"]`); if (el) el.classList.add('done'); if (n===1) document.body.classList.add('started'); }
+['click','pointerdown','wheel'].forEach(ev => document.addEventListener(ev, e => { const n=stepFrom(e.target); if (n) markStep(n); }, true));
+document.addEventListener('keydown', e => { if (e.key==='Enter'||e.key===' ') { const n=stepFrom(e.target); if (n) markStep(n); } }, true);
+const NOTES_KEY='stationMixer.notes';
+function setNotes(on){ document.body.classList.toggle('nonotes', !on); $('#notetag').textContent = on ? 'hide the notes' : 'show the notes';
+  try { localStorage.setItem(NOTES_KEY, on ? '1' : '0'); } catch(e){} }
+act($('#notetag'), () => setNotes(document.body.classList.contains('nonotes')));
+try { if (localStorage.getItem(NOTES_KEY)==='0') setNotes(false); } catch(e){}
+if (document.fonts) document.fonts.ready.then(doFit);
 new ResizeObserver(doFit).observe(fit); window.addEventListener('load', doFit);
 
 fetch(AUD+'manifest.json').then(r=>r.json()).then(m => {

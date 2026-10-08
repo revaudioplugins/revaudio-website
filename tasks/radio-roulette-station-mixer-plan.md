@@ -89,6 +89,22 @@ Yoni's bug list and calls:
    - the station readout flickers on a change
    - VU faces lamp-lit while playing
 
+## Bench round 3 (2026-10-08): tutorial notes
+
+Yoni: "the design to be more easy to understand, with some notes in the style of revamp papers ... like a tutorial".
+- 6 paper notes in the RevAmp paper family (beaten `sl-paper.png`, masking tape, red Permanent Marker titles,
+  Gochi Hand body, a coffee ring on one). Hand-drawn marker arrows run from each note to its control.
+  - Left = the basics: 1 Press play, 2 Before / after (the lever), 3 Pick a station.
+  - Right and below = the extras: Feeling lucky? (SPIN), 4 Your mix (S / M / volume), Finish it on the master (ARM).
+  - Arrows 2 and 3 ride the chrome dividers so they never cross the name plates.
+- Each note ticks itself off (red check, title struck through) when that step is done.
+- A "hide the notes" tag peels them off; the choice is remembered in localStorage.
+- Before the first PLAY the deck lamp breathes: the one thing to press.
+- The stage is now 1540 wide (mixer 1100 + note margins). The phone layout (notes stacked above the mixer) is still
+  step 7.
+- Fixes: the loader fetches 4 at a time with retries (24 parallel requests overflowed the bench server); a second
+  PLAY while loading no longer crashes; a failed load pops PLAY back up for a retry.
+
 ## Yoni's export spec
 
 - 4 loops: drums, bass, keys, guitar. Same key and BPM, 4 bars, dry (no baked reverb/delay), all exactly the same
