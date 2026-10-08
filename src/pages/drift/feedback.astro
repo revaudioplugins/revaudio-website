@@ -23,6 +23,7 @@ import { getImage } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import DriftPanel from '../../components/drift/DriftPanel.astro';
 import { site } from '../../data/site';
+import { drift } from '../../data/drift';
 import { driftSections as sections, driftQuestions as questions, driftSurveyMeta as surveyMeta } from '../../data/beta-survey';
 import '../../styles/drift.css';
 
@@ -52,6 +53,10 @@ const imgVars = [
 ].join(';');
 
 const pad2 = (n: number) => String(n).padStart(2, '0');
+
+// The creator route, for testers who answered "Yes, send me the guidelines": the same facts as /drift #creators
+// (DriftCreators.astro), minus "we email you the beta" (a tester has it). Change the deal there -> change it here.
+const crRules = ['Public', '2 min or more', 'Up 30 days or more', 'Tagged @revaudioplugins', 'Marked ad / affiliate'];
 
 // Free-text boxes stop here (the worker keeps 2000 chars an answer).
 const TEXT_MAX = 2000;
@@ -249,6 +254,34 @@ const clientConfig = {
         </div>
         <p class="d-fine">One use · DRIFT only · $69 at release on Sun Nov 1, $39 with this code · also emailed to you from keys@revaudio.net</p>
       </div>
+
+      <!-- the creator route: shown with the result when "Want to submit a video for the creator route?" = yes -->
+      <div class="df-creator" data-df-creator hidden>
+        <DriftPanel checker={false} class="df-panel">
+          <section aria-labelledby="df-cr-h">
+            <div class="df-sechdr">
+              <span class="df-secnum" lang="ja" aria-hidden="true">配信</span>
+              <h2 class="df-sectitle" id="df-cr-h">The creator route</h2>
+            </div>
+            <p class="df-cr-head"><span class="l1">Stream it.</span> <span class="l2">Get DRIFT free.</span></p>
+            <div class="df-cr-grid">
+              <ol class="df-cr-steps">
+                <li>Apply at <a href="/affiliate">revaudio.net/affiliate</a>. Write <strong>DRIFT BETA</strong> in the “Why do you want to promote RevAudio?” box.</li>
+                <li>Post your DRIFT video{drift.videoDeadlineLabel && ` by ${drift.videoDeadlineLabel}`}. It must pass the video check.</li>
+                <li>Check passed: your free licence. Plus your own affiliate link, 20% of every sale.</li>
+              </ol>
+              <div class="d-cr-checks">
+                <span class="d-cr-checks-hdr">▶ VIDEO CHECK</span>
+                <ul>{crRules.map((r) => <li>{r.toUpperCase()}</li>)}</ul>
+              </div>
+            </div>
+            <div class="df-cr-cta">
+              <a class="d-btn-violet" href="/affiliate">Apply as a creator <span class="d-stamp-arrow" aria-hidden="true">&#9656;</span></a>
+              <p class="d-fine">Already an affiliate? Email <a href="mailto:info@revaudio.net?subject=DRIFT%20BETA">info@revaudio.net</a>, subject DRIFT BETA.</p>
+            </div>
+          </section>
+        </DriftPanel>
+      </div>
     </div>
   </div>
 
@@ -303,6 +336,9 @@ const clientConfig = {
 
     // ── the code box + highlighting ───────────────────────────────────────
     const codeBox = document.querySelector('[data-df-code]');
+    const creatorBox = document.querySelector('[data-df-creator]');
+    // "Yes, send me the guidelines" -> the creator route shows under the result
+    const showCreator = () => { if (one('creator_video_interest') === 'yes') creatorBox.hidden = false; };
     const codeVal = document.querySelector('[data-df-code-val]');
     document.querySelector('[data-df-copy]').addEventListener('click', async (ev) => {
       try { await navigator.clipboard.writeText(codeVal.textContent); ev.currentTarget.textContent = 'Copied'; } catch {}
@@ -398,10 +434,12 @@ const clientConfig = {
           status.hidden = true;
           codeVal.textContent = j.code;
           codeBox.hidden = false;
+          showCreator();
           codeBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
         } else if (j && j.ok) {
           form.hidden = true;
           show(j.already ? t.already : t.pending, true);
+          showCreator();
         } else if (j && j.error === 'incomplete') {
           const miss = j.missing || [], weak = j.weak || [];
           flag(miss, weak);
@@ -622,6 +660,23 @@ const clientConfig = {
       background: #1d0b2c; border: 1px solid rgba(255, 79, 216, .6);
     }
     .df-code-copy:hover { border-color: var(--d-hot); background: #26103a; }
+
+    /* the creator route under the result */
+    .df-creator { margin-top: 28px; }
+    .df-creator[hidden] { display: none; }
+    .drift-page .df-cr-head { margin: 0 0 18px; font: 700 clamp(28px, 3.4vw, 40px) / .95 var(--d-f-head); text-transform: uppercase; color: var(--d-white-ink); }
+    .df-cr-head .l1 { text-shadow: var(--d-glow-1); }
+    .df-cr-head .l2 { color: var(--d-neon); text-shadow: var(--d-glow-2); }
+    .df-cr-grid { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 22px 32px; align-items: start; }
+    .df-cr-steps { margin: 0; padding-left: 1.4em; display: grid; gap: 10px; font-size: 16px; line-height: 1.5; color: var(--d-fg); }
+    .df-cr-steps li::marker { font: 400 18px var(--d-f-lcd); color: var(--d-lcd); }
+    .df-cr-steps strong { color: var(--d-white-ink); }
+    .df-cr-steps a, .df-cr-cta a:not(.d-btn-violet) { color: var(--d-fg-neon); text-decoration: underline; text-underline-offset: 3px; }
+    .df-cr-cta { display: grid; justify-items: start; gap: 12px; margin-top: 24px; }
+    @media (max-width: 700px) {
+      .df-cr-grid { grid-template-columns: minmax(0, 1fr); }
+      .df-cr-cta { justify-items: stretch; }
+    }
 
     @media (max-width: 600px) {
       .df-panel { padding-left: clamp(18px, 5vw, 44px); padding-right: clamp(18px, 5vw, 44px); }
