@@ -53,8 +53,11 @@ export interface Question {
   /** Conditional follow-up shown when the parent value is in `whenIn`. */
   reveal?: { whenIn: string[]; field: RevealField };
   maxLen?: number;
-  /** text/shorttext only: client-side minimum length (e.g. the DRIFT bar's "≥40 chars"). */
+  /** text/shorttext only: client-side minimum length (e.g. the DRIFT bar's "≥30 chars"). */
   minLen?: number;
+  /** text only: a "nothing to report" checkbox under the box; ticked = the text is not required. */
+  noneHe?: string;
+  noneEn?: string;
 }
 
 export interface Section {
@@ -722,10 +725,10 @@ export const driftQuestions: Question[] = [
     required: true,
     he: 'רגע אחד שבו DRIFT הרשים אותך',
     en: 'One moment where DRIFT impressed you',
-    helpHe: 'לפחות 40 תווים.',
-    helpEn: 'At least 40 characters.',
+    helpHe: 'לפחות 30 תווים.',
+    helpEn: 'At least 30 characters.',
     maxLen: 2000,
-    minLen: 40,
+    minLen: 30,
   },
   {
     id: 'got_in_way_moment',
@@ -734,10 +737,12 @@ export const driftQuestions: Question[] = [
     required: true,
     he: 'רגע אחד שבו DRIFT הפריע',
     en: 'One moment where it got in the way',
-    helpHe: 'לפחות 40 תווים.',
-    helpEn: 'At least 40 characters.',
+    helpHe: 'לפחות 30 תווים, או סמנו "שום דבר לא הפריע".',
+    helpEn: 'At least 30 characters, or tick "Nothing got in the way".',
     maxLen: 2000,
-    minLen: 40,
+    minLen: 30,
+    noneHe: 'שום דבר לא הפריע',
+    noneEn: 'Nothing got in the way',
   },
   {
     id: 'presets_used',

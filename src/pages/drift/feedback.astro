@@ -79,6 +79,7 @@ const clientConfig = {
     hasOther: !!q.hasOther,
     allowNa: !!q.allowNa,
     minLen: q.minLen || 0,
+    hasNone: !!q.noneEn,
     reveal: q.reveal ? { whenIn: q.reveal.whenIn, fieldId: q.reveal.field.id, label: q.reveal.field.en } : null,
   })),
 };
@@ -174,6 +175,12 @@ const clientConfig = {
                   {q.type === 'text' && (
                     <textarea class="d-field text-in area" name={q.id} rows="4" maxlength={Math.min(q.maxLen || 2000, TEXT_MAX)} aria-labelledby={`ql-${q.id}`} aria-required={q.required ? 'true' : undefined}></textarea>
                   )}
+                  {q.noneEn && (
+                    <label class="opt df-none">
+                      <input class="vh" type="checkbox" name={`${q.id}_none`} value="1" />
+                      <span class="opt-label">{q.noneEn}</span>
+                    </label>
+                  )}
                   {q.type === 'shorttext' && (
                     <input class="d-field text-in" type="text" name={q.id} maxlength={q.maxLen || 200} aria-labelledby={`ql-${q.id}`} aria-required={q.required ? 'true' : undefined} />
                   )}
@@ -240,7 +247,7 @@ const clientConfig = {
           <output class="df-code-val" data-df-code-val></output>
           <button type="button" class="df-code-copy" data-df-copy>Copy</button>
         </div>
-        <p class="d-fine">One use · DRIFT only · $69 at release on Sun Nov 1, $39 with this code · also sent to your email</p>
+        <p class="d-fine">One use · DRIFT only · $69 at release on Sun Nov 1, $39 with this code · also emailed to you from keys@revaudio.net</p>
       </div>
     </div>
   </div>
@@ -267,6 +274,13 @@ const clientConfig = {
 
     // ── conditional reveals ("other" + follow-ups) ────────────────────────
     CFG.questions.forEach((q) => {
+      if (q.hasNone) {
+        const box = form.querySelector(`[name="${q.id}"]`);
+        const tick = form.querySelector(`input[name="${q.id}_none"]`);
+        const upd = () => { box.disabled = tick.checked; box.classList.toggle('is-off', tick.checked); };
+        tick.addEventListener('change', upd);
+        upd();
+      }
       if (q.hasOther) {
         const wrap = document.getElementById('other-' + q.id);
         const upd = () => {
@@ -307,7 +321,10 @@ const clientConfig = {
     }
 
     // ── validation ────────────────────────────────────────────────────────
+    // a ticked "Nothing got in the way" answers its text question
+    const noneOn = (q) => q.hasNone && !!form.querySelector(`input[name="${q.id}_none"]:checked`);
     function answered(q) {
+      if (noneOn(q)) return true;
       if (q.type === 'multi') return many(q.id).length > 0;
       if (q.type === 'single' || q.type === 'likert5' || q.type === 'nps') return one(q.id) != null;
       return q.minLen ? txt(q.id).length >= q.minLen : txt(q.id) !== '';
@@ -335,7 +352,7 @@ const clientConfig = {
         return;
       }
 
-      // the quick check here (required, "Other" text, opened follow-ups, the ≥40-char answers, name, country,
+      // the quick check here (required, "Other" text, opened follow-ups, the ≥30-char answers, name, country,
       // email); the worker re-checks all of it AND whether the text reads like a real answer
       const missing = [];
       for (const q of CFG.questions) {
@@ -358,6 +375,7 @@ const clientConfig = {
       // the raw answers by question id; the worker checks them, mints the code and writes the team's copy
       const answers = {};
       for (const q of CFG.questions) {
+        if (noneOn(q)) { answers[q.id + '_none'] = true; continue; }
         const v = q.type === 'multi' ? many(q.id) : q.type === 'text' || q.type === 'shorttext' ? txt(q.id) : one(q.id);
         if (Array.isArray(v) ? v.length : v) answers[q.id] = v;
         if (otherOpen(q)) answers[q.id + '_other'] = txt(q.id + '_other');
@@ -500,6 +518,8 @@ const clientConfig = {
     }
     .opt:has(:focus-visible), .seg:has(:focus-visible) .seg-num { outline: 3px solid var(--d-pink-ink); outline-offset: 3px; }
     .opt.na { margin-top: 12px; }
+    .df-none { margin-top: 12px; }
+    .text-in.is-off { opacity: .4; }
 
     /* likert / nps: the BALANCE SCREEN meter on sunk glass. Picking a value
        lights every step up to it; the picked step is the white tip. */
