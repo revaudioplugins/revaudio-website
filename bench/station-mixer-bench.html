@@ -22,13 +22,15 @@
   loudness-calibrated against a real RevLimiter 3.2.1 render. Copy says "preview".
 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=VT323&family=Inter:wght@500;600&family=Permanent+Marker&family=Gochi+Hand&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=VT323&family=Inter:wght@500;600&family=Permanent+Marker&family=Gochi+Hand&family=Yellowtail&family=Cinzel:wght@700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bakelite:#1A1410; --brass:#c89a48; --brass-hi:#e6c078; --oxide:#8a2818; --oxide-hi:#a8321c;
   --amber:#d9a03c; --parchment:#ebdcb6; --nickel-hi:#E8E8EA; --nickel-mid:#A8B0B6; --nickel-shade:#3A4046;
   --ink:#d8c7a2; --page:#0f0c0a;
   --script:'Segoe Script','Brush Script MT',cursive;
+  --rust:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='460' height='460'><filter id='r'><feTurbulence type='fractalNoise' baseFrequency='.045' numOctaves='4' seed='11' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .64  0 0 0 0 .38  0 0 0 0 .2  3.4 0 0 0 -2.05'/></filter><rect width='100%' height='100%' filter='url(%23r)'/></svg>");
+  --pits:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='p'><feTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='2' seed='4' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .16  0 0 0 0 .11  0 0 0 0 .07  7 0 0 0 -4.85'/></filter><rect width='100%' height='100%' filter='url(%23p)'/></svg>");
   --grain:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .55  0 0 0 0 .45  0 0 0 0 .34  0 0 0 .5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 }
 *{margin:0;padding:0;box-sizing:border-box}
@@ -42,14 +44,26 @@ body{min-height:100vh;padding:28px 16px 60px}
 .rig{position:absolute;left:220px;top:64px;width:1100px}
 
 /* chrome bezel: cool sky top, warm dash bottom */
-.bezel{border-radius:34px;padding:14px;
-  background:linear-gradient(180deg,#f1f2f4 0%,#b9c0c6 9%,#5b6268 30%,#2f3438 52%,#7d858b 74%,#d9cdb6 93%,#f0e6d2 100%);
-  box-shadow:0 34px 60px -20px rgba(12,9,6,.9),0 6px 14px rgba(12,9,6,.6),inset 0 1px 0 rgba(255,255,255,.55)}
-.panel{border-radius:22px;overflow:hidden;background:#120d0a;box-shadow:inset 0 2px 6px rgba(12,9,6,.9)}
+/* worn chrome bezel, set INTO a dark dash recess (gap ring + recess lip), with rust and pitting on the chrome only */
+.bezel{position:relative;border-radius:34px;padding:14px;
+  /* gpt-image-1 worn chrome + rust tile, lit by the chrome gradient through an overlay blend */
+  background:linear-gradient(180deg,#ffffff 0%,#d9dee2 8%,#6a7279 27%,#1d2124 50%,#5e666c 72%,#e2cfac 90%,#f4e6c8 100%),
+    url("assets/station-mixer/img/chrome-rust.jpg") 0 0/380px 380px;background-blend-mode:overlay,normal;
+  box-shadow:0 0 0 2px #0a0706,0 0 0 3px rgba(150,126,96,.28),0 0 0 11px #150f0b,0 0 0 12px rgba(255,236,210,.07),
+    0 0 0 13px rgba(8,6,4,.9),0 40px 64px -18px rgba(12,9,6,.95),0 10px 18px rgba(12,9,6,.7),
+    inset 0 1px 0 rgba(255,255,255,.35),inset 0 -1px 0 rgba(12,9,6,.65)}
+.bezel::before,.bezel::after{content:"";position:absolute;inset:0;border-radius:34px;padding:14px;pointer-events:none;
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
+  mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
+.bezel::before{display:none}   /* procedural rust: replaced by the chrome-rust texture */
+.bezel::after{background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,0) 30%,rgba(12,9,6,0) 70%,rgba(12,9,6,.25));
+  box-shadow:inset 0 0 0 1px rgba(255,240,220,.08)}
+.panel{position:relative;z-index:1;border-radius:22px;overflow:hidden;background:#120d0a;
+  box-shadow:inset 0 3px 7px rgba(8,6,4,.95),inset 0 0 0 1.5px rgba(8,6,4,.9)}
 .crop{position:relative;width:1072px;background:url("assets/station-mixer/img/radio-face-v3-float.png") no-repeat;background-size:1376px 768px}
 .display{height:206px;background-position:-153px -356px}
 .strip{height:106px;background-position:-153px -588px}
-.divider{height:4px;background:linear-gradient(180deg,#c9ced2,#6c7378 45%,#2a2e31 55%,#9aa1a6)}
+.divider{height:4px;background:linear-gradient(180deg,#f2f4f5,#5e666c 45%,#15181a 55%,#c8bca4),url("assets/station-mixer/img/chrome-rust.jpg") 0 0/300px 300px;background-blend-mode:overlay,normal}
 .leather{position:relative;background:var(--grain),linear-gradient(180deg,#1d1612,#15100c 55%,#110c09);background-size:180px 180px,auto}
 
 /* column heads: engraved once */
@@ -76,6 +90,11 @@ body{min-height:100vh;padding:28px 16px 60px}
 :focus-visible{outline:2px solid var(--amber);outline-offset:3px}
 
 /* brass name plates (stamped, worn, screws each turned differently) */
+.emb{position:absolute;left:6px;top:16px;width:120px;height:74px;pointer-events:none}
+.emb img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;rotate:-3deg;
+  filter:drop-shadow(2px 3px 2px rgba(12,9,6,.85)) drop-shadow(0 0 1px rgba(12,9,6,.6))}
+.emb .emblem{position:absolute;inset:0;width:100%;height:100%;overflow:visible;display:none}
+.emb.noimg img{display:none} .emb.noimg .emblem{display:block}
 .plate{position:absolute;left:18px;top:37px;width:100px;height:32px;border-radius:4px;
   background:radial-gradient(60% 90% at 30% 20%,rgba(255,240,200,.35),rgba(255,240,200,0) 60%),
     radial-gradient(30% 50% at 82% 70%,rgba(60,36,10,.28),rgba(60,36,10,0)),
@@ -199,12 +218,46 @@ body.playing #loadMsg{display:none}
 .masterbar{height:112px}
 .mvu{position:absolute;left:300px;top:14px;width:140px;height:84px;background:url("assets/station-mixer/img/radio-face-v3-float.png") no-repeat;background-size:1376px 768px;background-position:-905px -600px}
 .mvu .vu{left:11px;top:8px}
-.rl-copy{position:absolute;left:556px;top:27px;width:290px}
-.rl-copy .t{white-space:nowrap;font-family:var(--script);font-size:17px;font-weight:700;color:rgba(228,206,164,.9);text-shadow:0 1px 1px rgba(12,9,6,.85)}
+.rl-copy{position:absolute;left:552px;top:24px;width:214px}
+.rl-copy .t{white-space:nowrap;font:700 17px/1 Cinzel,serif;letter-spacing:.14em;color:#ebdcb6;text-shadow:0 -1px 0 rgba(12,9,6,.9),0 1px 0 rgba(255,236,200,.12)}
+.rl-copy .t span{display:block;margin-top:5px;font:600 9.5px/1 Oswald,sans-serif;letter-spacing:.34em;color:var(--brass)}
 .rl-copy .s{margin-top:6px;font:500 12px/1.45 Inter,sans-serif;color:#a9977a}
 .rl-copy a{color:var(--brass-hi);text-decoration:none;font-weight:600;border-bottom:1px solid rgba(230,192,120,.35)}
 .rl-copy a:hover{border-bottom-color:var(--brass-hi)}
 body.rl .rl-copy a{text-shadow:0 0 10px rgba(230,192,120,.45)}
+/* ENGINE START: knurled chrome bezel on a brass collar, red domed lamp-button; the lamp breathes once you've played,
+   flares on hover (light leaks onto the leather), sinks on press */
+.start{position:absolute;right:16px;top:12px;display:flex;align-items:center;gap:12px;text-decoration:none;cursor:pointer}
+.start::before{content:"";position:absolute;left:-26px;top:-24px;width:140px;height:140px;border-radius:50%;pointer-events:none;
+  background:radial-gradient(closest-side,rgba(255,70,40,.32),rgba(255,70,40,0));opacity:0;transition:opacity .25s}
+.start:hover::before{opacity:1}
+.sbtn{position:relative;flex:none;width:88px;height:88px;border-radius:50%;
+  background:radial-gradient(circle at 34% 26%,rgba(255,255,255,.5),rgba(255,255,255,0) 42%),repeating-conic-gradient(#d3d9dd 0 2.4deg,#4a5257 2.4deg 4.8deg);
+  box-shadow:0 0 0 2px #2a2018,0 0 0 5px #b08a4a,0 0 0 6px #5d4320,0 8px 14px rgba(12,9,6,.8)}
+.sbtn::before{content:"";position:absolute;inset:7px;border-radius:50%;
+  background:linear-gradient(180deg,#f2f4f5 0%,#a4acb2 30%,#3b4246 55%,#7e868c 75%,#d8ccb3 100%);box-shadow:inset 0 1px 1px rgba(255,255,255,.7)}
+.dome{position:absolute;inset:14px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 38% 30%,#ffd8ca 0,#ff5c46 13%,#c3221a 40%,#7e100c 76%,#4a0806 100%);
+  box-shadow:inset 0 -6px 10px rgba(40,0,0,.65),inset 0 3px 4px rgba(255,220,200,.5),0 2px 3px rgba(12,9,6,.7);
+  transition:transform .1s cubic-bezier(.2,.9,.25,1.25),filter .2s}
+.dome b{font:600 13px/1 Oswald,sans-serif;letter-spacing:.18em;text-indent:.18em;color:rgba(255,236,214,.94);text-shadow:0 -1px 0 rgba(80,0,0,.85)}
+@keyframes idle{0%,100%{filter:brightness(1)}50%{filter:brightness(1.22)}}
+body.started .dome{animation:idle 2.6s ease-in-out infinite}
+.start:hover .dome{animation:none;filter:brightness(1.3) saturate(1.1);box-shadow:inset 0 -6px 10px rgba(40,0,0,.5),inset 0 3px 4px rgba(255,220,200,.6),0 0 20px 6px rgba(255,60,30,.55)}
+.start:active .dome{transform:translateY(2px) scale(.95);filter:brightness(1.5)}
+/* photo button (gpt-image-1) over the CSS one; the CSS bezel/dome stay as the fallback */
+.sbtn:has(.simg){background:none;box-shadow:none} .sbtn:has(.simg)::before{display:none}
+.simg{position:absolute;left:-7px;top:-7px;width:102px;height:102px;transition:transform .1s cubic-bezier(.2,.9,.25,1.25),filter .2s;
+  filter:drop-shadow(0 6px 7px rgba(12,9,6,.85))}
+@keyframes idle2{0%,100%{filter:drop-shadow(0 6px 7px rgba(12,9,6,.85)) brightness(1)}50%{filter:drop-shadow(0 6px 7px rgba(12,9,6,.85)) drop-shadow(0 0 10px rgba(255,50,20,.35)) brightness(1.1)}}
+body.started .simg{animation:idle2 2.6s ease-in-out infinite}
+.start:hover .simg{animation:none;filter:drop-shadow(0 6px 7px rgba(12,9,6,.85)) drop-shadow(0 0 16px rgba(255,50,20,.75)) brightness(1.15)}
+.start:active .simg{transform:translateY(2px) scale(.95);filter:drop-shadow(0 3px 4px rgba(12,9,6,.85)) drop-shadow(0 0 22px rgba(255,60,30,.9)) brightness(1.3)}
+.stxt{display:flex;flex-direction:column;gap:3px;white-space:nowrap}
+.stxt em{font:400 22px/1 Yellowtail,cursive;font-style:normal;color:#e6d4ae;text-shadow:0 1px 1px rgba(12,9,6,.9)}
+.stxt strong{font:600 17px/1 Oswald,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#ff8a6a;text-shadow:0 0 10px rgba(255,80,40,.35)}
+.stxt small{font:500 10.5px/1 Inter,sans-serif;letter-spacing:.06em;color:#9c8b70}
+.start:hover .stxt strong{color:#ffb39a}
 .cta{position:absolute;right:22px;top:33px;padding:13px 20px;border-radius:8px;text-decoration:none;
   font:600 13.5px/1 Inter,sans-serif;letter-spacing:.03em;color:#2a1a08;
   background:linear-gradient(180deg,#f0d08a,#c89a48 55%,#a37a30);box-shadow:0 2px 0 #6e5020,0 8px 16px rgba(12,9,6,.55)}
@@ -230,7 +283,9 @@ body.rl .rl-copy a{text-shadow:0 0 10px rgba(230,192,120,.45)}
 .tnote.coffee::after{content:"";position:absolute;right:-14px;bottom:-16px;width:74px;height:74px;border-radius:50%;pointer-events:none;
   background:radial-gradient(circle,transparent 58%,rgba(120,78,36,.20) 61%,rgba(120,78,36,.07) 66%,transparent 70%)}
 #arrows{position:absolute;left:0;top:0;pointer-events:none;z-index:4;overflow:visible;transition:opacity .3s}
-#arrows path{fill:none;stroke:rgba(176,48,34,.88);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+#arrows .ab{fill:rgba(176,48,34,.94)}
+#arrows .ring{fill:none;stroke:rgba(176,48,34,.9);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+@keyframes ink{to{stroke-dashoffset:0}}
 body.nonotes .tnote{translate:40px 240px;rotate:24deg;opacity:0;pointer-events:none}
 body.nonotes #arrows{opacity:0}
 .notetag{position:absolute;padding:5px 14px 4px;cursor:pointer;rotate:-2deg;z-index:6;
@@ -244,7 +299,7 @@ body:not(.started) #playLamp{animation:invite 1.4s ease-in-out infinite}
 </style>
 </head>
 <body>
-<div class="benchhead"><b>Station Mixer · bench round 3</b> (local only). Loops: real Radio Roulette renders, loudness-matched. RevLimiter on the master: browser preview, loudness-matched to a real RevLimiter render.</div>
+<div class="benchhead"><b>Station Mixer · bench round 4</b> (local only). Loops: real Radio Roulette renders, loudness-matched. RevLimiter on the master: browser preview, loudness-matched to a real RevLimiter render.</div>
 
 <div id="fit"><div id="stage">
 <div class="rig" id="rig">
@@ -332,7 +387,7 @@ body:not(.started) #playLamp{animation:invite 1.4s ease-in-out infinite}
 
   <!-- master bar -->
   <div class="leather masterbar">
-    <div class="plate" style="top:40px"><i style="--r:13deg"></i>MASTER<i style="--r:-21deg"></i></div>
+    <div id="masterEmblem"></div>
     <div class="lever framed" id="mLever" role="switch" aria-checked="false" aria-label="Radio on, all loops" tabindex="0" style="left:150px;top:8px"><div class="lv"></div><div class="lvshade"></div></div>
     <span class="engr" style="left:210px;top:22px">radio</span>
     <span class="engr" style="left:210px;top:46px">all loops</span>
@@ -340,26 +395,28 @@ body:not(.started) #playLamp{animation:invite 1.4s ease-in-out infinite}
     <div class="mvu"><div class="vu" id="masterVu"></div></div>
     <div class="arm" id="arm" role="switch" aria-checked="false" aria-label="RevLimiter preview on the master" tabindex="0" style="left:476px;top:8px"></div>
     <div class="rl-copy">
-      <div class="t">RevLimiter on the master</div>
-      <div class="s">Arm it for a taste of the glue and loudness. Liked it? <a href="/revlimiter">Meet RevLimiter &rarr;</a></div>
+      <div class="t">REVLIMITER<span>ON THE MASTER</span></div>
+      <div class="s">Arm it for a taste of the glue and loudness. Liked it? <a href="/revlimiter">Meet RevLimiter&nbsp;&rarr;</a></div>
     </div>
-    <a class="cta" href="/radio-roulette#trial">Try Radio Roulette free<small>30 days, full plugin</small></a>
+    <a class="start" href="/radio-roulette#trial" aria-label="Start your free 30-day Radio Roulette trial">
+      <span class="sbtn"><span class="dome"><b>START</b></span><img class="simg" src="assets/station-mixer/img/start-button.png" alt="" onerror="this.remove()"></span>
+      <span class="stxt"><em>Radio Roulette</em><strong>Free for 30 days</strong><small>Full plugin &middot; Windows &amp; Mac</small></span>
+    </a>
   </div>
 </div></div>
 </div><!-- /rig -->
 
 <!-- tutorial notes (left column = the basics, right column + below = the extras) -->
-<svg id="arrows" aria-hidden="true"><defs><filter id="marker" x="-5%" y="-5%" width="110%" height="110%">
-  <feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="2" seed="7"/><feDisplacementMap in="SourceGraphic" scale="2.4"/></filter></defs><g filter="url(#marker)"></g></svg>
+<svg id="arrows" aria-hidden="true"></svg>
 <div class="tnote" data-step="1" data-to="#playKey" data-side="r" style="left:14px;top:58px;--rot:-2.2deg"><i class="tp a"></i><i class="tp b"></i><span class="tick">&#10003;</span>
   <h4>1. Press play</h4>Hit <b>&#9654;</b> on the tape deck. The beat starts <b>dry</b>, then the radio comes on.</div>
 <div class="tnote" data-step="2" data-to="#ch-drums .lever" data-rail="#ch-drums" data-side="r" style="left:10px;top:318px;--rot:1.5deg"><i class="tp c"></i><span class="tick">&#10003;</span>
   <h4>2. Before / after</h4>Lever <b>down</b> = the dry loop.<br>Lever <b>up</b> = through Radio Roulette. Flip it and compare.</div>
-<div class="tnote coffee" data-step="3" data-to="#ch-keys .key" data-rail="#ch-keys" data-side="r" style="left:16px;top:560px;--rot:-1.3deg"><i class="tp a"></i><i class="tp b"></i><span class="tick">&#10003;</span>
+<div class="tnote coffee" data-step="3" data-to="#ch-keys .key" data-all data-rail="#ch-keys" data-side="r" style="left:16px;top:560px;--rot:-1.3deg"><i class="tp a"></i><i class="tp b"></i><span class="tick">&#10003;</span>
   <h4>3. Pick a station</h4>Every loop has <b>5 stations</b>. Push a button to change how that loop sounds.</div>
 <div class="tnote" data-step="5" data-to="#spinKnob" data-side="l" style="left:1334px;top:58px;--rot:1.9deg"><i class="tp a"></i><i class="tp b"></i><span class="tick">&#10003;</span>
   <h4>Feeling lucky?</h4>Click <b>Spin</b> and every loop jumps to a random station.</div>
-<div class="tnote" data-step="4" data-to="#ch-bass .mute" data-side="l" style="left:1338px;top:330px;--rot:-1.6deg"><i class="tp c"></i><span class="tick">&#10003;</span>
+<div class="tnote" data-step="4" data-to="#ch-bass .lens" data-all data-side="l" style="left:1338px;top:330px;--rot:-1.6deg"><i class="tp c"></i><span class="tick">&#10003;</span>
   <h4>4. Your mix</h4><b>S</b> = hear only this loop.<br><b>M</b> = mute it.<br>The little knob on the left = <b>volume</b> (drag it).</div>
 <div class="tnote" data-step="6" data-to="#arm" data-side="t" style="left:590px;top:0;--rot:1.2deg;width:250px"><i class="tp a"></i><i class="tp b"></i><span class="tick">&#10003;</span>
   <h4>Finish it on the master</h4>Press <b>ARM</b> for a taste of RevLimiter: louder, glued, finished. Press again to hear the difference.</div>
@@ -393,6 +450,41 @@ function vuSvg(){
     <g class="vn" style="transform:rotate(-48deg)"><line x1="58" y1="74" x2="58" y2="20" stroke="#8a2818" stroke-width="1.6"/></g><circle cx="58" cy="74" r="7" fill="#2a1f14"/></svg>`;
 }
 $('#masterVu').innerHTML = vuSvg();
+$('#masterEmblem').outerHTML = emblemMarkup('Master', 9, 'top:24px');
+/* chrome trunk-lid script emblem: chrome gradient (cool sky top, dark horizon, warm dash below), bevel lit from the
+   house lamp (upper-left), cast shadow on the leather, red-enamel inlay on the swash. Swash + viewBox fit after fonts. */
+function emblemMarkup(word, i, style=''){
+  return `<span class="emb" style="${style}"><img src="assets/station-mixer/img/emblem-${word.toLowerCase()}.png" alt="${word}" onerror="this.parentNode.classList.add('noimg');buildEmblems()">${emblemSvg(word, i)}</span>`;
+}
+function emblemSvg(word, i){
+  return `<svg class="emblem" data-i="${i}" viewBox="0 0 300 120" preserveAspectRatio="xMidYMid meet" aria-label="${word}" role="img">
+    <defs><linearGradient id="chr${i}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fbfcfd"/><stop offset=".2" stop-color="#d3d9de"/><stop offset=".42" stop-color="#7a838a"/>
+      <stop offset=".5" stop-color="#2a3035"/><stop offset=".6" stop-color="#6c747a"/><stop offset=".82" stop-color="#e6d8be"/><stop offset="1" stop-color="#9c8a6e"/></linearGradient>
+    <filter id="bev${i}" x="-15%" y="-30%" width="130%" height="170%" color-interpolation-filters="sRGB">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="1.5" result="b"/>
+      <feSpecularLighting in="b" surfaceScale="4" specularConstant="1.05" specularExponent="22" lighting-color="#fff3e0" result="s"><feDistantLight azimuth="225" elevation="48"/></feSpecularLighting>
+      <feComposite in="s" in2="SourceAlpha" operator="in" result="s2"/>
+      <feComposite in="SourceGraphic" in2="s2" operator="arithmetic" k1="0" k2="1" k3=".85" k4="0" result="lit"/>
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2.2" result="sb"/><feOffset in="sb" dx="2.5" dy="3.5" result="so"/>
+      <feFlood flood-color="#0c0906" flood-opacity=".85"/><feComposite in2="so" operator="in" result="sh"/>
+      <feMerge><feMergeNode in="sh"/><feMergeNode in="lit"/></feMerge></filter></defs>
+    <g filter="url(#bev${i})"><g class="em" transform="rotate(-6 150 60)">
+      <path class="sw" fill="none" stroke="url(#chr${i})" stroke-width="7" stroke-linecap="round"/>
+      <path class="sw2" fill="none" stroke="#8a1f14" stroke-width="2.2" stroke-linecap="round"/>
+      <text x="20" y="76" font-family="Yellowtail, cursive" font-size="74" fill="url(#chr${i})" stroke="#2e2924" stroke-width="1.1" paint-order="stroke">${word}</text>
+    </g></g></svg>`;
+}
+function buildEmblems(){
+  document.querySelectorAll('.emb.noimg .emblem').forEach(svg => {
+    const t = svg.querySelector('text').getBBox(), i = +svg.dataset.i;
+    const x1 = t.x + t.width - 6, y1 = t.y + t.height * .74, bx = t.y + t.height;
+    const d = `M${x1} ${y1} C${x1+26} ${y1+20} ${t.x+t.width*.58} ${bx+14+(i%3)*3} ${t.x+10+(i%2)*8} ${bx+2}`;
+    svg.querySelector('.sw').setAttribute('d', d); svg.querySelector('.sw2').setAttribute('d', d);
+    const g = svg.querySelector('g').getBBox();
+    svg.setAttribute('viewBox', `${g.x-8} ${g.y-8} ${g.width+20} ${g.height+22}`);
+  });
+}
 const act = (el, fn) => { el.addEventListener('click', fn); el.addEventListener('keydown', e => { if (e.key==='Enter'||e.key===' ') { e.preventDefault(); fn(); } }); };
 const screwR = [13,-7,19,-24,8,-15,27,-3];
 
@@ -400,7 +492,7 @@ STEMS.forEach((s,i) => {
   const el = document.createElement('div');
   el.className = 'crop strip'; el.id = 'ch-' + s.id;
   el.innerHTML = `
-    <div class="plate"><i style="--r:${screwR[i*2]}deg"></i>${s.name.toUpperCase()}<i style="--r:${screwR[i*2+1]}deg"></i></div>
+    ${emblemMarkup(s.name, i)}
     <div class="knob vol" role="slider" aria-label="${s.name} volume" aria-valuemin="-40" aria-valuemax="6" aria-valuenow="0" tabindex="0"
       style="left:128px;top:24px;scale:.5"><div class="kshadow"></div><div class="photo"></div><div class="ringflat"></div><div class="ringlight"></div><div class="rot"><div class="ptr"></div></div><div class="spec"></div></div>
     <div class="lever" role="switch" aria-checked="false" aria-label="${s.name}: radio on" tabindex="0"><div class="lv"></div><div class="lvshade"></div></div>
@@ -605,8 +697,7 @@ function frame(now){
     vuAng[i] += (target - vuAng[i]) * (1 - Math.exp(-dt/0.1));
     el.style.transform = `rotate(${vuAng[i]}deg)`;
   });
-  if (!msgT) $('#glassMsg').textContent = st.rl && nodes ? `REVLIMITER PREVIEW  GR ${(nodes.rl.glue.reduction + nodes.rl.lim.reduction).toFixed(1)} dB`
-    : (st.playing && !st.stems.some(c=>c.on) ? 'DRY' : '');
+  if (!msgT) $('#glassMsg').textContent = st.playing && !st.stems.some(c=>c.on) ? 'DRY' : '';
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
@@ -651,37 +742,72 @@ function doFit(){
   const H = rigBottom + 26 + n6.offsetHeight + 30;
   stage.style.height = H + 'px';
   const s=Math.min(1, fit.clientWidth/1540); stage.style.transform=`scale(${s})`; fit.style.height=(H*s)+'px';
-  drawArrows();
+  drawArrows(false);
 }
-/* hand-drawn marker arrows from each note to its control (stage coordinates, so the scale never matters) */
-function drawArrows(){
-  const svg=$('#arrows'), g=svg.querySelector('g'), sr=stage.getBoundingClientRect(), k=sr.width/stage.offsetWidth;
-  svg.setAttribute('width', stage.offsetWidth); svg.setAttribute('height', stage.offsetHeight);
+/* hand-drawn marker arrows: each one ends at a marker ring drawn around its exact control(s); pen-pressure taper,
+   swept head aimed along the stroke, draw-on when the notes appear. Stage coordinates, so the scale never matters. */
+function drawArrows(animate){
+  if (!animate && !drawArrows.ready) return;
+  drawArrows.ready = true;
+  const svg=$('#arrows'), sr=stage.getBoundingClientRect(), k=sr.width/stage.offsetWidth, W=stage.offsetWidth, H=stage.offsetHeight;
+  svg.setAttribute('width', W); svg.setAttribute('height', H); svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
   const box = el => { const r=el.getBoundingClientRect(); return {l:(r.left-sr.left)/k, t:(r.top-sr.top)/k, r:(r.right-sr.left)/k, b:(r.bottom-sr.top)/k}; };
-  let d='';
-  document.querySelectorAll('.tnote').forEach(n => {
-    const t=document.querySelector(n.dataset.to); if (!t) return;
-    const nb=box(n), tb=box(t), side=n.dataset.side;
-    if (n.dataset.rail) {   // ride the chrome divider under that row, then hook up into the control's left side
+  const union = bs => bs.reduce((u,b)=>({l:Math.min(u.l,b.l), t:Math.min(u.t,b.t), r:Math.max(u.r,b.r), b:Math.max(u.b,b.b)}));
+  const P = (x,y) => ({x,y}), f = v => v.toFixed(1), pt = p => `${f(p.x)} ${f(p.y)}`;
+  const spline = (pts, seg=20) => {      // Catmull-Rom through the waypoints
+    const p=[pts[0], ...pts, pts[pts.length-1]], out=[];
+    for (let i=1;i<p.length-2;i++) for (let s=0;s<seg;s++){ const t=s/seg, t2=t*t, t3=t2*t;
+      const q=(a,b,c,d)=>0.5*(2*b+(-a+c)*t+(2*a-5*b+4*c-d)*t2+(-a+3*b-3*c+d)*t3);
+      out.push(P(q(p[i-1].x,p[i].x,p[i+1].x,p[i+2].x), q(p[i-1].y,p[i].y,p[i+1].y,p[i+2].y))); }
+    out.push(pts[pts.length-1]); return out; };
+  let defs='', ink='';
+  [...document.querySelectorAll('.tnote')].forEach((n,i) => {
+    const els = n.hasAttribute('data-all') ? [...document.querySelectorAll(n.dataset.to)] : [document.querySelector(n.dataset.to)].filter(Boolean);
+    if (!els.length) return;
+    const tb=union(els.map(box)), nb=box(n), side=n.dataset.side, seed=i*1.913+.37;
+    const pad=8, cx=(tb.l+tb.r)/2, cy=(tb.t+tb.b)/2, rx=(tb.r-tb.l)/2+pad, ry=(tb.b-tb.t)/2+pad;
+    const onRing = (p, gap=6) => { const th=Math.atan2((p.y-cy)/ry, (p.x-cx)/rx); return P(cx+(rx+gap)*Math.cos(th), cy+(ry+gap)*Math.sin(th)); };
+    let pts;
+    if (n.dataset.rail) {               // along the chrome divider under that row, then up into the ring
       const railY = box(document.querySelector(n.dataset.rail)).b + 2;
-      const z={x:tb.l-5, y:(tb.t+tb.b)/2}, ax=nb.r-4, ay=Math.max(nb.t+14, Math.min(nb.b-14, railY));
-      d += `M${ax.toFixed(1)} ${ay.toFixed(1)} Q${(ax+24).toFixed(1)} ${railY.toFixed(1)} ${(ax+48).toFixed(1)} ${railY.toFixed(1)} `
-         + `L${(z.x-36).toFixed(1)} ${railY.toFixed(1)} Q${(z.x-6).toFixed(1)} ${railY.toFixed(1)} ${z.x.toFixed(1)} ${z.y.toFixed(1)} `;
-      const ang=Math.atan2(z.y-railY, 6), L=14;
-      [-0.5,0.5].forEach(o => d += `M${z.x.toFixed(1)} ${z.y.toFixed(1)} L${(z.x-L*Math.cos(ang+o)).toFixed(1)} ${(z.y-L*Math.sin(ang+o)).toFixed(1)} `);
-      return;
+      const a = P(nb.r+3, Math.max(nb.t+16, Math.min(nb.b-16, railY)));
+      const pre = P(tb.l - pad - 40, railY);
+      pts = [a, P(a.x+30, railY), pre, onRing(P(pre.x, railY+12))];
+    } else {
+      const a = side==='r' ? P(nb.r+3, nb.t+(nb.b-nb.t)*.36) : side==='l' ? P(nb.l-3, nb.t+(nb.b-nb.t)*.36) : P(nb.l+(nb.r-nb.l)*.3, nb.t-3);
+      const e = onRing(a), dx=e.x-a.x, dy=e.y-a.y, len=Math.hypot(dx,dy);
+      const bend = Math.max(12, Math.min(55, len*.16)) * (side==='l' ? -1 : 1);
+      pts = [a, P((a.x+e.x)/2 - dy/len*bend, (a.y+e.y)/2 + dx/len*bend), e];
     }
-    let a, z;
-    if (side==='r') { a={x:nb.r-6, y:nb.t+(nb.b-nb.t)*.45}; z={x:tb.l-6, y:(tb.t+tb.b)/2}; }
-    else if (side==='l') { a={x:nb.l+6, y:nb.t+(nb.b-nb.t)*.45}; z={x:tb.r+6, y:(tb.t+tb.b)/2}; }
-    else { a={x:(nb.l+nb.r)/2-40, y:nb.t+4}; z={x:(tb.l+tb.r)/2, y:tb.b+6}; }
-    const dx=z.x-a.x, dy=z.y-a.y, len=Math.hypot(dx,dy), bend=Math.min(60,len*.18)*(side==='l'?-1:1);
-    const c={x:(a.x+z.x)/2 - dy/len*bend, y:(a.y+z.y)/2 + dx/len*bend};
-    d += `M${a.x.toFixed(1)} ${a.y.toFixed(1)} Q${c.x.toFixed(1)} ${c.y.toFixed(1)} ${z.x.toFixed(1)} ${z.y.toFixed(1)} `;
-    const ang=Math.atan2(z.y-c.y, z.x-c.x), L=14;
-    [-0.5,0.5].forEach(o => d += `M${z.x.toFixed(1)} ${z.y.toFixed(1)} L${(z.x-L*Math.cos(ang+o)).toFixed(1)} ${(z.y-L*Math.sin(ang+o)).toFixed(1)} `);
+    const sm = spline(pts), cum=[0];
+    for (let j=1;j<sm.length;j++) cum.push(cum[j-1] + Math.hypot(sm[j].x-sm[j-1].x, sm[j].y-sm[j-1].y));
+    const L = cum[cum.length-1], at = d => { let j=cum.findIndex(c=>c>=d); if (j<1) j=1; const u=(d-cum[j-1])/((cum[j]-cum[j-1])||1);
+      return P(sm[j-1].x+(sm[j].x-sm[j-1].x)*u, sm[j-1].y+(sm[j].y-sm[j-1].y)*u); };
+    // body: tapered like a marker leaving the paper (thick start, thinner toward the head)
+    const left=[], right=[], N=Math.max(24, Math.round(L/6)), bodyEnd=L-11;
+    for (let j=0;j<=N;j++){ const d=bodyEnd*j/N, p=at(d), q=at(Math.min(L, d+1.5)), r0=at(Math.max(0, d-1.5));
+      let ux=q.x-r0.x, uy=q.y-r0.y; const ul=Math.hypot(ux,uy)||1; ux/=ul; uy/=ul;
+      const t=d/L, w=(3.7-1.7*t+.35*Math.sin(t*11+seed))/2;
+      left.push(P(p.x-uy*w, p.y+ux*w)); right.push(P(p.x+uy*w, p.y-ux*w)); }
+    const body = 'M'+left.map(pt).join(' L')+' L'+right.reverse().map(pt).join(' L')+' Z';
+    // head: swept, a touch uneven, aimed along the last stretch of the stroke
+    const tip=sm[sm.length-1], back=at(L-15); let ux=tip.x-back.x, uy=tip.y-back.y; const ul=Math.hypot(ux,uy)||1; ux/=ul; uy/=ul;
+    const c1=P(tip.x-ux*18-uy*8.5, tip.y-uy*18+ux*8.5), c2=P(tip.x-ux*16.5+uy*7.2, tip.y-uy*16.5-ux*7.2), nt=P(tip.x-ux*11, tip.y-uy*11);
+    const head = `M${pt(tip)} L${pt(c1)} Q${pt(P((c1.x+nt.x)/2-ux*1.5,(c1.y+nt.y)/2-uy*1.5))} ${pt(nt)} Q${pt(P((c2.x+nt.x)/2-ux*1.5,(c2.y+nt.y)/2-uy*1.5))} ${pt(c2)} Z`;
+    // ring: one loose marker loop that starts where the arrow lands and overshoots its start
+    const th0=Math.atan2((tip.y-cy)/ry, (tip.x-cx)/rx)+.5, rot=Math.sin(seed*3)*.07, ring=[];
+    for (let j=0;j<=80;j++){ const u=j/80, th=th0+u*Math.PI*2*1.12, grow=1+.05*u, wob=1+.028*Math.sin(3*th+seed)+.016*Math.sin(5*th+2*seed);
+      const x=rx*grow*wob*Math.cos(th), y=ry*grow*wob*Math.sin(th);
+      ring.push(P(cx+x*Math.cos(rot)-y*Math.sin(rot), cy+x*Math.sin(rot)+y*Math.cos(rot))); }
+    const ringD = 'M'+ring.map(pt).join(' L');
+    const delay = (.25 + i*.28).toFixed(2);
+    if (animate) {
+      defs += `<mask id="ink${i}" maskUnits="userSpaceOnUse" x="0" y="0" width="${W}" height="${H}"><path d="M${sm.map(pt).join(' L')}" fill="none" stroke="#fff" stroke-width="30" stroke-linecap="round" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" style="animation:ink .55s ${delay}s cubic-bezier(.45,0,.25,1) forwards"/></mask>`;
+      ink += `<g mask="url(#ink${i})"><path class="ab" d="${body}"/><path class="ab" d="${head}"/></g>`
+           + `<path class="ring" d="${ringD}" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" style="animation:ink .5s ${(+delay+.5).toFixed(2)}s cubic-bezier(.45,0,.25,1) forwards"/>`;
+    } else ink += `<path class="ab" d="${body}"/><path class="ab" d="${head}"/><path class="ring" d="${ringD}"/>`;
   });
-  g.innerHTML = `<path d="${d}"/>`;
+  svg.innerHTML = `<defs><filter id="marker" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency=".05" numOctaves="2" seed="7"/><feDisplacementMap in="SourceGraphic" scale="1.4"/></filter>${defs}</defs><g filter="url(#marker)">${ink}</g>`;
 }
 /* steps tick themselves off */
 const STEP_OF = [['#playKey',1],['.lever',2],['.key',3],['.lens',4],['.vol',4],['#spinKnob',5],['#arm',6]];
@@ -690,11 +816,11 @@ function markStep(n){ const el=document.querySelector(`.tnote[data-step="${n}"]`
 ['click','pointerdown','wheel'].forEach(ev => document.addEventListener(ev, e => { const n=stepFrom(e.target); if (n) markStep(n); }, true));
 document.addEventListener('keydown', e => { if (e.key==='Enter'||e.key===' ') { const n=stepFrom(e.target); if (n) markStep(n); } }, true);
 const NOTES_KEY='stationMixer.notes';
-function setNotes(on){ document.body.classList.toggle('nonotes', !on); $('#notetag').textContent = on ? 'hide the notes' : 'show the notes';
+function setNotes(on){ document.body.classList.toggle('nonotes', !on); if (on && drawArrows.ready) drawArrows(true); $('#notetag').textContent = on ? 'hide the notes' : 'show the notes';
   try { localStorage.setItem(NOTES_KEY, on ? '1' : '0'); } catch(e){} }
 act($('#notetag'), () => setNotes(document.body.classList.contains('nonotes')));
 try { if (localStorage.getItem(NOTES_KEY)==='0') setNotes(false); } catch(e){}
-if (document.fonts) document.fonts.ready.then(doFit);
+(document.fonts ? document.fonts.ready : Promise.resolve()).then(() => { buildEmblems(); doFit(); drawArrows(true); });
 new ResizeObserver(doFit).observe(fit); window.addEventListener('load', doFit);
 
 fetch(AUD+'manifest.json').then(r=>r.json()).then(m => {

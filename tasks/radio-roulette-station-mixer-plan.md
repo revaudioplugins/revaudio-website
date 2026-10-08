@@ -105,6 +105,26 @@ Yoni: "the design to be more easy to understand, with some notes in the style of
 - Fixes: the loader fetches 4 at a time with retries (24 parallel requests overflowed the bench server); a second
   PLAY while loading no longer crashes; a failed load pops PLAY back up for a retry.
 
+## Bench round 4 (2026-10-08): assets, type, CTA, bezel, arrows
+
+Yoni's fixes:
+1. **Badges** are chrome trunk-lid script emblems (gpt-image-1): Drums / Bass / Keys / Guitar / Master, chrome with
+   oxblood enamel and a swash. The SVG chrome-script emblems stay as the fallback if a PNG is missing.
+2. **RevLimiter** copy is set in Cinzel 700 caps (the faceplate wordmark) with an Oswald "ON THE MASTER" kicker.
+3. **Trial CTA** is an ENGINE START button (gpt-image-1: red domed lamp-button, knurled chrome, brass collar) with
+   "Radio Roulette / FREE FOR 30 DAYS / Full plugin · Windows & Mac". The trial is really 30 days
+   (`LicenseManager.cpp`). It breathes once you have played, flares red on hover (light leaks onto the leather) and
+   sinks on press.
+4. The radio glass no longer shows any RevLimiter text or gain reduction.
+5. **Bezel:** worn chrome with rust and pitting (a gpt-image-1 tile lit through an overlay blend), set into a dark
+   dash recess; the dividers use the same metal.
+- **Arrows** (Yoni: "not pointing precisely ... make them great"):
+  - each ends at a hand-drawn marker ring around its exact control(s): ▶, the drums lever, the 5 keys, SPIN, S + M, ARM
+  - pen-pressure taper and a swept, slightly uneven head aimed along the stroke
+  - they draw themselves on when the notes appear
+- **Assets:** `python tools/station-mixer/gen_assets.py [slug] [--force]` (7 images, sequential, retries on 429;
+  ~$1.75), then `python tools/station-mixer/process_gen.py` (trim and size into `bench/assets/station-mixer/img/`).
+
 ## Yoni's export spec
 
 - 4 loops: drums, bass, keys, guitar. Same key and BPM, 4 bars, dry (no baked reverb/delay), all exactly the same
