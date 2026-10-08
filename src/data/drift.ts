@@ -4,9 +4,10 @@
  * Phases (beta review H21/H23): the page never guesses the phase from the
  * clock; flipping `phase` is a one-line commit by the push owner, plus flags.
  *
- * The offer (Dan, 2026-09-30): the trial is 14 days free for anyone who signs
+ * The offer (Dan, 2026-09-30): the trial is free for anyone who signs
  * up, the download goes out BY EMAIL on Sat Oct 10 17:00 UTC (never linked on
- * the page). After the 14 days you keep DRIFT one of three ways: free with a
+ * the page). 30 days (Dan 2026-10-08 "its 30 days free" = the plugin's
+ * LicenseManager kTrialDays; was 14). After the trial you keep DRIFT one of three ways: free with a
  * qualifying video (creator deal via /affiliate), $39 by filling in the
  * feedback form by Sat Oct 24, or $69 at release on Sun Nov 1. Prices show;
  * nothing is on sale before Nov 1 (no buy button, no checkout, no coupon or
@@ -28,7 +29,7 @@ export const drift = {
   trialOpensDay: 'Sat Oct 10',
   feedbackClosesLabel: 'Sat Oct 24',
   releaseLabel: 'Sun Nov 1',
-  trialDays: 14,
+  trialDays: 30,
   listPriceUsd: 69,
   driverPriceUsd: 39,
   showPrices: true,
@@ -50,7 +51,7 @@ export const drift = {
   /** true = the Oct 10 trial mail goes to the whole newsletter list, so an
    *  already-subscribed sign-up still gets it (worker.js /form-once swallows repeats). */
   trialMailToWholeList: false,
-  /** The 'What happens after 14 days?' answer; the FAQ row renders only when set. */
+  /** The 'What happens after the trial?' answer; the FAQ row renders only when set. */
   afterTrialAnswer: null as string | null,
   /** Released-phase gate: a post-release trial instead of real before/after audio. */
   trialAfterRelease: null as boolean | null,
@@ -155,7 +156,8 @@ export function routesFor(phase: DriftPhase = drift.phase): Route[] {
  * line, START (the Oct 10 mail) → CHECKPOINT (the feedback form closes) → FINISH (on sale), a price at
  * each stop, the video as a SHORTCUT lane over the lap (it skips the checkpoint and the wait). Trial
  * phases only (the email gate is on the same screen); null otherwise, and the TV keeps the route boxes.
- * 'open': later sign-ups get their 14 days from the day they join, so the checkpoint is only the form.
+ * The checkpoint is only the form: the 30-day trial runs past it (and past release), and later sign-ups
+ * get their days from the day they join.
  */
 export interface LapStop { id: 'start' | 'check' | 'finish'; flag: string; date: string; what: string; chip?: { label: string; value: string } }
 export interface Lap { head: string; span: string; stops: LapStop[]; shortcut?: { label: string; value: string; note: string; href: string } }
@@ -171,7 +173,7 @@ export function lapFor(phase: DriftPhase = drift.phase): Lap | null {
     stops: [
       { id: 'start', flag: 'Start', date: nb(noDay(drift.trialOpensDay)), what: pre ? 'Trial starts · by email' : 'Trial open · by email',
         chip: p ? { label: 'Today', value: '$0' } : undefined },
-      { id: 'check', flag: 'Checkpoint', date: nb(noDay(drift.feedbackClosesLabel)), what: pre ? 'Trial ends · form closes' : 'Feedback form closes',
+      { id: 'check', flag: 'Checkpoint', date: nb(noDay(drift.feedbackClosesLabel)), what: 'Feedback form closes',
         chip: p ? { label: 'Filled the form', value: `$${drift.driverPriceUsd}` } : undefined },
       { id: 'finish', flag: 'Finish', date: nb(noDay(drift.releaseLabel)), what: 'On sale',
         chip: p ? { label: 'Everyone else', value: `$${drift.listPriceUsd}` } : undefined },
