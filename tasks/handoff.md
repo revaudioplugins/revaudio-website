@@ -5,7 +5,13 @@
 - `drift.creatorsVideo: null`: the SAMPLE how-to player does not ship (Dan's handoff item 1, his documented switch).
 - OPEN for Dan, shipped as-is: `tasks/drift-handoff-dan-2026-10-07.md` — "Whole sound pans" (#fx headline + meta
   description) and the AUTOTUNE spec row are untrue for Drift 5.0.1; the 30-day vs 14-day trial question for Yoni.
-- OPEN: the $30-off DRIFT-only code on a qualifying feedback form waits for the DRIFT product in Paddle (Gil to send `pro_…`).
+- LIVE 10-08 (`8533bf8` + worker `5a7c7c5`): the form posts to the license worker's POST /drift-feedback, which re-checks
+  every answer (required, choices, Other text, follow-ups, filler/mash text), allows one form per email, and on a complete
+  form mints a one-use $30-off Paddle code restricted to DRIFT (`pro_01m43610g1qfztcfmb0050zqs7`): shown on the page,
+  emailed, team copy + code to Formspree. Worker tests: `test/test_drift_feedback.mjs` (34 checks). The worker's question
+  list DRIFT_FB_Q is generated from `src/data/beta-survey.ts`: change a question -> regenerate it there.
+- OWED: one real submission to confirm the Paddle mint end to end (only tested against a stub). Gil closes the form Oct 25.
+- Handed to Dan (Gil, 10-08: "Dan will deal with the rest"): the 5.0.1 copy items above + the real how-to video.
 
 ## 2026-10-07 — Dormant second old-store checkout engine removed (Claude Code `revaudio-96`, laptop 1) — pushed 2026-10-07 (Dan: "push", double-checked)
 
