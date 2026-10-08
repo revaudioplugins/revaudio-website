@@ -148,6 +148,25 @@ Yoni's fixes:
 - **Still open:** the phone layout (at 390 px the whole thing scales to ~237 px tall) and lazy per-stem decode
   (plan step 7).
 
+## Phones (2026-10-08, after the first live day)
+
+Yoni: "on the desktop its perfect. on phone audio works but crashing the site. also the mobile display is too small".
+- **Crash = memory.**
+  - Before: all 24 versions were decoded (~220 MB of PCM) with 24 sources running, and iPhone Safari killed the tab.
+  - Now only what can be heard is decoded and running: each loop's DRY + its current station (8 buffers, ~75 MB).
+  - A newly picked station decodes on demand; the old sound plays until the new one takes over at the same spot. The
+    replaced one is released.
+  - The compressed files (~11 MB) are fetched once.
+  - The RevLimiter preview chain is connected only while ARM is on.
+  - Verified with `window.__smxDebug()`: 8 decoded / 8 running after rapid switching; rlOn only while armed.
+- **Phone layout = "Simple phone player"** (Yoni picked it from 4 options), below 760 px:
+  - parts: the "How to play" paper, the dial glass (STATION n / MIXED / DRY + playhead), the same cassette deck, the
+    RADIO lever, SPIN, one row of 5 photo station keys for the whole beat (59x75 px on an iPhone), "The full 4-loop
+    mixer lives on a computer.", the START trial button
+  - no RevLimiter on phones
+  - the deck, SPIN and START are moved, not copied: one set of listeners
+  - verified with touch taps at 390 and 360 px; desktop unchanged.
+
 ## Yoni's export spec
 
 - 4 loops: drums, bass, keys, guitar. Same key and BPM, 4 bars, dry (no baked reverb/delay), all exactly the same

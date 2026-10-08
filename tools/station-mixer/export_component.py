@@ -52,10 +52,8 @@ s = s.replace('document.querySelectorAll(', 'root.querySelectorAll(').replace('d
 s = s.replace('document.body.classList', 'host.classList')
 s = s.replace('document.addEventListener(', 'root.addEventListener(')
 s = s.replace('assets/station-mixer/img/', URL + 'img/')
-s = sub(s, "const AUD = 'assets/station-mixer/audio/';", f"const AUD = '{URL}audio/', PADS = {PAD}/{SR};   // loop window inside the padded file")
-s = sub(s, "const r=await fetch(AUD+n+'.flac');", "const r=await fetch(AUD+n+'.m4a');")
-s = sub(s, "src.loop=true; src.loopStart=0; src.loopEnd=LOOP; src.connect(nodes.stems[i].vers[v]); src.start(t0);",
-        "src.loop=true; src.loopStart=PADS; src.loopEnd=PADS+LOOP; src.connect(nodes.stems[i].vers[v]); src.start(t0, PADS);")
+s = sub(s, "const AUD = 'assets/station-mixer/audio/', EXT = '.flac', PADS = 0;",
+        f"const AUD = '{URL}audio/', EXT = '.m4a', PADS = {PAD}/{SR};")   # loop window inside the padded AAC file
 s = sub(s, "onerror=\"this.parentNode.classList.add('noimg');buildEmblems()\"", "onerror=\"this.parentNode.classList.add('noimg')\"")
 # fonts load lazily inside the component: wait for the ones the notes / emblems / glass measure with
 s = sub(s, "(document.fonts ? document.fonts.ready : Promise.resolve())",
