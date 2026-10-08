@@ -167,6 +167,13 @@ Yoni: "on the desktop its perfect. on phone audio works but crashing the site. a
   - the deck, SPIN and START are moved, not copied: one set of listeners
   - verified with touch taps at 390 and 360 px; desktop unchanged.
 
+## Closed (Yoni, 2026-10-08)
+
+- **No name:** it is just the "Hear it" section. Supersedes the open "Name" decision above.
+- **Phones:** "loading perfectly on phone" and "it works well!" after the `acc1b26` push (simple phone player +
+  memory fix). The phone item is closed.
+- The GAS mixer (session `revaudio-7f`) will use the same phone pattern; told it the full recipe on 2026-10-08.
+
 ## Yoni's export spec
 
 - 4 loops: drums, bass, keys, guitar. Same key and BPM, 4 bars, dry (no baked reverb/delay), all exactly the same
