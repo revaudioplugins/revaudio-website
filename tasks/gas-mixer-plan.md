@@ -183,3 +183,22 @@ Step 3 can start before step 1 lands, on placeholder loops.
 
 - Shared code: if both mixers ship, pull the player engine into one shared module instead of two copies.
 - Mixer name.
+
+## New PLAY / STOP: XL chrome piano keys, live on both players (2026-10-08, Claude Code revaudio-7f)
+
+- **Request.** Yoni: "the play and stop button doesn't get the attention they need ... way cooler and a bit bigger ...
+  for both gas and rr players".
+- **Pick.** `bench/transport-bench.html` showed three candidates on walnut, leather and phone: A chrome piano keys,
+  B dash jewels, C one big starter. Yoni: "a piano keys".
+- **What shipped.** The deck keeps its cassette window. Two big chrome keys with ribbed bakelite faces (art: gpt-image-1
+  `tkey-chrome`, drawn through CSS `border-image` so the chrome corners keep their shape at any size). PLAY latches
+  down with an amber lamp glowing through; STOP is momentary. A 3-digit mechanical tape counter rolls while playing.
+  The deck grew from 176x172 to 236x206.
+  - GAS: full size, with the master row raised to 230 px.
+  - Radio Roulette: beside the dial glass at scale .82.
+  - Phones: GAS .55, Radio Roulette .58.
+- **Same push, GAS only:** the console's brass frame and row rules are worn brass (gpt-image-1 `brass-patina` tile under
+  the house light gradient, Radio Roulette's chrome-rust bezel recipe). Yoni: "the gas edges ... same like rr - patina
+  wear vibes".
+- **Verified.** On the deploy build under the live CSP, then on revaudio.net, desktop 1440 and phone 390, for both
+  /gas and /radio-roulette: plays, PLAY latches, the counter rolls, no horizontal scroll, 0 errors.
