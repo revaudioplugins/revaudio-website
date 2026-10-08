@@ -1,3 +1,7 @@
+> **Added 2026-10-08 (Dan: "in phone ONLY change the fx that was replaced: glue compressor, HALO"):** `pedal-halo.png`
+> (1056x1908, RGBA, true alpha) — DRIFT 5.1.0's HALO strip (Drift branch `feat/space`, not merged yet), shot by
+> `tools/shoot-drift-fx-pedals.mjs <feat/space UI> halo` with the screen held at the default MODE 2. It replaces
+> `pedal-tremolo.png` in the phone carousel; `pedal-tremolo.png` stays in the folder, unreferenced.
 > **Added 2026-10-08 (Dan: "looks like the plugin itself, just smaller, inside a digital screen"):** `fx-window.png`
 > (2588x1368, RGB) — the whole DRIFT 5.0.1 window with its FX rack open (GLUE COMP · PITCH · ECHO · REVERB · TREMOLO,
 > preset Init), shot from the plugin's own UI at its native 1725x912 stage, DPR 1.5, by `tools/shoot-drift-fx-window.mjs`.

@@ -12,7 +12,8 @@
  * motion = on. Re-shoot it whenever the rack changes (5.1.0: HALO).
  * Phones (<= 600 px) keep the 10-04 page, untouched: the band strip, the
  * coverflow carousel of TRUE-ALPHA pedals and the spec rows (the rack + the
- * bay photo were already hidden there and are gone).
+ * bay photo were already hidden there and are gone). Dan 10-08 ("in phone ONLY
+ * change the fx that was replaced"): HALO for TREMOLO, GLUE COMP for AUTOTUNE.
  * The photos sit 2-3 screens below the fold, and native loading="lazy" still
  * fetched them before any scroll (Chromium's proximity window on a fast
  * connection: ~300 KB of a phone's first paint). They load through init.ts's
@@ -26,14 +27,14 @@ import fxWindow from '../../assets/seasons/drift/fx-window.png';
 import pedPitch from '../../assets/seasons/drift/pedal-pitch.png';
 import pedEcho from '../../assets/seasons/drift/pedal-echo.png';
 import pedVerb from '../../assets/seasons/drift/pedal-reverb.png';
-import pedTrem from '../../assets/seasons/drift/pedal-tremolo.png';
+import pedHalo from '../../assets/seasons/drift/pedal-halo.png';   // DRIFT 5.1.0: HALO replaces TREMOLO (Dan 10-08)
 import { drift } from '../../data/drift';
 
 const strips = [
   { cls: 's-pitch', ped: pedPitch, name: 'Pitch', desc: 'Up or down. Up to an octave.' },
   { cls: 's-echo', ped: pedEcho, name: 'Echo', desc: 'Synced or not. Tape-dark to clean.' },
   { cls: 's-verb', ped: pedVerb, name: 'Reverb', desc: 'Room, plate, hall. Plus shimmer.' },
-  { cls: 's-trem', ped: pedTrem, name: 'Tremolo', desc: 'Chops in time with your song.' },
+  { cls: 's-halo', ped: pedHalo, name: 'Halo', desc: 'Wide, airy glow. No tails.' },
 ];
 // phone carousel: a pedal renders ~150-230 css px wide (3x = ~690): 400w + 700w, alpha kept (webp)
 const [peds400, peds700] = await Promise.all([
@@ -135,7 +136,7 @@ const blank = (w: number, h: number) => `data:image/svg+xml,%3Csvg xmlns='http:/
           <span class="d-fx-kicker" aria-hidden="true">Also under the hood</span>
           <dl class="d-spec-plate">
             <div><dt>SATURATE</dt><dd>Tape, tube, transformer, digital</dd></div>
-            <div><dt>AUTOTUNE</dt><dd>Your key and scale</dd></div>
+            <div><dt>GLUE COMP</dt><dd>Console bus glue</dd></div>   {/* DRIFT 5.0.0: GLUE COMP replaces AUTOTUNE (Dan 10-08) */}
             <div><dt>PRESETS</dt><dd>60 · vocal, keys, guitar, drums, bass, mix bus</dd></div>
             {drift.randomizeInBuild && <div><dt>RANDOMIZE</dt><dd>One roll, new effects. One undo, back.</dd></div>}
           </dl>

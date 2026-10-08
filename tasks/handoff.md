@@ -8,8 +8,12 @@ Dan: "replace everything in this area, redesign so it looks like the plugin itse
 - Fit + crane held: the screen takes the old stack's height at t0/t1 (panel 574 px at 1141x636, as before; never taller).
 - Phones (<= 600) untouched: full-page pixel gate vs main IDENTICAL at 320/375/390/402/430/600. Laptop 1141x636 diff
   confined to the #fx content box. `npm run build` green.
+- Phones, Dan's 2nd ask ("in phone ONLY change the fx that was replaced: glue compressor, HALO"): carousel TREMOLO ->
+  HALO (`pedal-halo.png`, shot from Drift `feat/space` 5.1.0, NOT merged there yet), spec row AUTOTUNE -> GLUE COMP
+  "Console bus glue". Gate vs dd1183e: 1141/1600/900/601 IDENTICAL; phones 320-600 same height, diff = the HALO peek +
+  that row only.
 - 🔴 STILL OPEN for Dan: the head "Whole sound pans. / FX on one slice." is untrue for 5.0.1 (Gil's
-  `drift-handoff-dan-2026-10-07.md`); phones still show the AUTOTUNE spec row + 4 pedals (no GLUE COMP).
+  `drift-handoff-dan-2026-10-07.md`). ⚠️ The laptop screen still shows TREMOLO (5.0.1 shot): re-shoot from 5.1.0 if HALO ships.
 
 ## 2026-10-08 — /drift RE-PUBLISHED to main + /drift/feedback (Claude Code, Gil's session) — Gil: "push and commit to main all we have done here including Dan's commits"
 - `git revert ebdd081` on main (the 10-03 unpublish, as its TRAP note says), then merged `feat/drift-feedback` =
