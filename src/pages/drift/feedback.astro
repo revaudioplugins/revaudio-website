@@ -1,8 +1,9 @@
 ---
 /**
  * /drift/feedback — the DRIFT beta feedback form, in the /drift page's dress
- * (drift.css: plate, sunk steel panels with screws, sunk-glass fields, the
- * pink kicker + two-line Oswald headline, the red key). Every rule here hangs
+ * (drift.css: plate, one #drive/#fx plate per section with a white + purple
+ * headline row, sunk-glass fields, the pink kicker + two-line Oswald
+ * headline, the red key). Every rule here hangs
  * off .drift-page tokens, so the house shell keeps the garage look.
  *
  * Same question engine as beta.astro (src/data/beta-survey.ts), English only.
@@ -21,7 +22,6 @@
  */
 import { getImage } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import DriftPanel from '../../components/drift/DriftPanel.astro';
 import { site } from '../../data/site';
 import { drift } from '../../data/drift';
 import { driftSections as sections, driftQuestions as questions, driftSurveyMeta as surveyMeta } from '../../data/beta-survey';
@@ -33,23 +33,27 @@ import screwSrc from '../../assets/seasons/drift/panel-screw.png';
 import pillSrc from '../../assets/seasons/drift/cta-pill.png';
 import ctaRestSrc from '../../assets/seasons/drift/cta-key-rest.png';
 import ctaPressSrc from '../../assets/seasons/drift/cta-key-press.png';
+import sectionPlateSrc from '../../assets/seasons/drift/section-plate-s1.png';
 
 const ui = surveyMeta.ui;
 
 // The textures drift.css paints with, as CSS custom properties on .drift-page
 // (the drift.astro pattern: getImage() -> WebP, no raw PNG from a url()).
-const [tile, panel, screw, pill, ctaRest, ctaPress] = await Promise.all([
+const [tile, panel, screw, pill, ctaRest, ctaPress, sectionPlate] = await Promise.all([
   getImage({ src: tileSrc, width: 800, format: 'webp', quality: 62 }),
   getImage({ src: panelSrc, width: 720, format: 'webp', quality: 70 }),
   getImage({ src: screwSrc, width: 76, format: 'webp', quality: 85 }),
   getImage({ src: pillSrc, width: 1443, format: 'webp', quality: 82 }),
   getImage({ src: ctaRestSrc, width: 720, format: 'webp', quality: 82 }),
   getImage({ src: ctaPressSrc, width: 720, format: 'webp', quality: 82 }),
+  // /drift's #drive + #fx plate (S1): one per form section, the same file and slices as drift.astro
+  getImage({ src: sectionPlateSrc, width: 2308, format: 'webp', quality: 88 }),
 ]);
 const u = (i: { src: string }) => `url(${i.src})`;
 const imgVars = [
   `--d-img-tile:${u(tile)}`, `--d-img-panel:${u(panel)}`, `--d-img-screw:${u(screw)}`,
   `--d-img-pill:${u(pill)}`, `--d-img-cta:${u(ctaRest)}`, `--d-img-cta-press:${u(ctaPress)}`,
+  `--d-img-section:${u(sectionPlate)}`,
 ].join(';');
 
 const pad2 = (n: number) => String(n).padStart(2, '0');
@@ -108,12 +112,9 @@ const clientConfig = {
         <input type="text" name="_gotcha" class="d-hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
 
         {sections.map((sec, si) => (
-          <DriftPanel class="df-panel">
+          <div class="df-plate">
             <section class="sec" data-sec={sec.id} aria-labelledby={`sec-${sec.id}`}>
-              <div class="df-sechdr">
-                <span class="df-secnum" aria-hidden="true">{pad2(si + 1)}/{pad2(sections.length)}</span>
-                <h2 class="df-sectitle" id={`sec-${sec.id}`}>{sec.en}</h2>
-              </div>
+              <h2 class="d-headline d-headline--row df-plate-head" id={`sec-${sec.id}`}><span class="l1">{pad2(si + 1)}/{pad2(sections.length)}</span> <span class="l2">{sec.en}</span></h2>
 
               {questions.filter((q) => q.section === sec.id).map((q) => (
                 <div class="q" id={`q-${q.id}`} data-qid={q.id}>
@@ -211,10 +212,10 @@ const clientConfig = {
                 </div>
               ))}
             </section>
-          </DriftPanel>
+          </div>
         ))}
 
-        <div class="df-send">
+        <div class="df-plate df-send">
           <div class="df-you">
             <div class="q df-id" id="q-name">
               <div class="q-head">
@@ -257,7 +258,7 @@ const clientConfig = {
 
       <!-- the creator route: shown with the result when "Want to submit a video for the creator route?" = yes -->
       <div class="df-creator" data-df-creator hidden>
-        <DriftPanel checker={false} class="df-panel">
+        <div class="df-plate">
           <section aria-labelledby="df-cr-h">
             <div class="df-sechdr">
               <span class="df-secnum" lang="ja" aria-hidden="true">配信</span>
@@ -280,7 +281,7 @@ const clientConfig = {
               <p class="d-fine">Already an affiliate? Email <a href="mailto:info@revaudio.net?subject=DRIFT%20BETA">info@revaudio.net</a>, subject DRIFT BETA.</p>
             </div>
           </section>
-        </DriftPanel>
+        </div>
       </div>
     </div>
   </div>
@@ -461,9 +462,9 @@ const clientConfig = {
     });
   </script>
   <style>
-    /* layout: a form column, narrower than the /drift sections */
+    /* layout: one column as wide as the /drift plates (#drive, #fx: ~940 at 1141) */
     .df-page { padding-top: clamp(28px, 5vw, 56px); padding-bottom: clamp(56px, 8vw, 96px); }
-    .df-wrap { width: min(820px, 100% - 2 * var(--d-gutter)); }
+    .df-wrap { width: min(960px, 100% - 2 * var(--d-gutter)); }
     .df-head { position: relative; margin-bottom: clamp(28px, 4vw, 40px); }
 
     /* the post headline, as the page's h1 (drift.css styles it on h2.d-headline only) */
@@ -480,10 +481,35 @@ const clientConfig = {
     .df-headline .l1 { text-shadow: var(--d-glow-1); }
     .df-headline .l2 { color: var(--d-neon); text-shadow: var(--d-glow-2); }
 
-    /* one steel panel per section */
-    #beta-form { display: grid; gap: 28px; }
+    /* one plate per section: /drift's #drive / #fx chassis (plate S1 9-sliced, drift.css SECTION 2 + 3): the
+       brushed bezel brings its own screws; the face is the vector carbon twill in a violet-lipped recess.
+       Copied, not shared: drift.css's .d-drive-panel / .d-fx-panel rules belong to the signed-off /drift. */
+    #beta-form { display: grid; gap: 36px; }
     #beta-form[hidden] { display: none; }
-    .df-panel { padding-bottom: 48px; }   /* the last line clears the bottom screws */
+    .df-plate {
+      position: relative; isolation: isolate;
+      border-radius: 58px;
+      box-shadow: 0 12px 22px rgba(0, 0, 0, .55);
+      border: 0 solid transparent;
+      border-image: var(--d-img-section) 430 fill / 129px stretch;
+      padding: 64px 80px 76px;
+    }
+    .df-plate::before {
+      content: ''; position: absolute; inset: 37px 42px 41px 41px; z-index: -1; border-radius: 89px; pointer-events: none;
+      background:
+        radial-gradient(120% 90% at 18% 10%, rgba(200, 160, 255, .08), transparent 62%),
+        linear-gradient(180deg, rgba(255, 255, 255, .035), transparent 30%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Cdefs%3E%3ClinearGradient id='v'%3E%3Cstop offset='0' stop-color='%23231e30'/%3E%3Cstop offset='.45' stop-color='%23171420'/%3E%3Cstop offset='1' stop-color='%230b0a11'/%3E%3C/linearGradient%3E%3ClinearGradient id='h' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%231c1826'/%3E%3Cstop offset='.45' stop-color='%2312101a'/%3E%3Cstop offset='1' stop-color='%2308070d'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='0' y='0' width='5' height='5' fill='url(%23v)'/%3E%3Crect x='5' y='0' width='5' height='5' fill='url(%23v)'/%3E%3Crect x='10' y='0' width='5' height='5' fill='url(%23h)'/%3E%3Crect x='15' y='0' width='5' height='5' fill='url(%23h)'/%3E%3Crect x='0' y='5' width='5' height='5' fill='url(%23h)'/%3E%3Crect x='5' y='5' width='5' height='5' fill='url(%23v)'/%3E%3Crect x='10' y='5' width='5' height='5' fill='url(%23v)'/%3E%3Crect x='15' y='5' width='5' height='5' fill='url(%23h)'/%3E%3Crect x='0' y='10' width='5' height='5' fill='url(%23h)'/%3E%3Crect x='5' y='10' width='5' height='5' fill='url(%23h)'/%3E%3Crect x='10' y='10' width='5' height='5' fill='url(%23v)'/%3E%3Crect x='15' y='10' width='5' height='5' fill='url(%23v)'/%3E%3Crect x='0' y='15' width='5' height='5' fill='url(%23v)'/%3E%3Crect x='5' y='15' width='5' height='5' fill='url(%23h)'/%3E%3Crect x='10' y='15' width='5' height='5' fill='url(%23h)'/%3E%3Crect x='15' y='15' width='5' height='5' fill='url(%23v)'/%3E%3C/svg%3E") 0 0 / 20px 20px,
+        #100e17;
+      box-shadow:
+        inset 0 0 0 3px #050308,
+        inset 0 0 0 4.5px rgba(150, 70, 235, .9),
+        inset 0 0 0 6px #07050b,
+        inset 0 12px 16px -6px rgba(0, 0, 0, .75),
+        inset 8px 0 14px -8px rgba(0, 0, 0, .5);
+    }
+    /* the section head: the #drive row (white count + purple name, centred), a size down */
+    .df-page h2.df-plate-head { font-size: clamp(28px, 3.2vw, 40px); margin: 0 0 30px; }
 
     /* the section strip: LCD counter + pixel title over the pink dashed tape (#drive's attract header) */
     .df-sechdr {
@@ -507,19 +533,19 @@ const clientConfig = {
     }
 
     /* questions, split by the dashed violet rule (.d-compat) */
-    .q { padding-block: 22px; border-top: 1px dashed rgba(180, 107, 255, .22); }
-    .df-sechdr + .q { border-top: 0; padding-top: 0; }
+    .q { padding-block: 26px; border-top: 1px dashed rgba(180, 107, 255, .26); }
+    .df-sechdr + .q, .df-plate-head + .q { border-top: 0; padding-top: 0; }
     .q:last-child { padding-bottom: 0; }
     .q-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
-    .q-label { font: 600 19px/1.3 var(--d-f-head); letter-spacing: .01em; color: var(--d-white-ink); }
+    .q-label { font: 600 21px/1.3 var(--d-f-head); letter-spacing: .01em; color: var(--d-white-ink); }
     .tag {
       flex: none;
-      font: 400 8px/1 var(--d-f-pix); letter-spacing: .08em; text-transform: uppercase;
-      padding: 4px 6px 3px; border-radius: 2px;
+      font: 600 11px/1 var(--d-f-head); letter-spacing: .1em; text-transform: uppercase;
+      padding: 4px 7px; border-radius: 3px;
     }
-    .tag--req { color: var(--d-hot); border: 1px solid rgba(255, 79, 216, .5); text-shadow: var(--d-glow-pink); }
-    .tag--opt { color: var(--d-fg-dim); border: 1px solid rgba(180, 107, 255, .3); }
-    .q-help { margin: 6px 0 0; font-size: 15px; line-height: 1.5; color: var(--d-fg-dim); }
+    .tag--req { color: var(--d-pink-ink); background: #3a1438; border: 1px solid #a3368f; }
+    .tag--opt { color: var(--d-fg-dim); background: #1f1430; border: 1px solid #553482; }
+    .q-help { margin: 6px 0 0; font-size: 15px; line-height: 1.5; color: var(--d-fg); }
 
     /* the real radios/checkboxes stay in the tree for keyboards and screen readers */
     .vh { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; padding: 0; }
@@ -529,26 +555,27 @@ const clientConfig = {
     .opt {
       position: relative;
       display: inline-flex; align-items: center; gap: 10px;
-      min-height: 42px; padding: 8px 14px 8px 12px;
-      border-radius: 4px; cursor: pointer; user-select: none;
-      font: 400 16px/1.2 var(--d-f-spec); letter-spacing: .04em; color: var(--d-fg);
-      background: linear-gradient(180deg, rgba(190, 90, 255, .06), rgba(190, 90, 255, .015) 60%, rgba(0, 0, 0, .18));
-      border: 1px solid rgba(190, 90, 255, .32);
-      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .35), inset 0 0 18px rgba(190, 90, 255, .08);
+      min-height: 46px; padding: 9px 16px 9px 14px;
+      border-radius: 5px; cursor: pointer; user-select: none;
+      font: 400 17px/1.2 var(--d-f-spec); letter-spacing: .04em; color: var(--d-white-ink);
+      background: linear-gradient(180deg, #2e1c44, #23142f);   /* solid keys: the carbon never shows through (Dan 10-08) */
+      border: 1px solid #6e3fa3;
+      box-shadow: inset 0 1px 0 rgba(255, 240, 255, .08), 0 2px 4px rgba(0, 0, 0, .35);
       transition: transform .14s ease, border-color .14s ease, box-shadow .14s ease, color .14s ease;
     }
     .opt::before {
       content: ''; flex: none; width: 8px; height: 8px; border-radius: 50%;
-      background: rgba(190, 90, 255, .18);
+      background: rgba(190, 90, 255, .3);
       box-shadow: inset 0 1px 1px rgba(0, 0, 0, .6);
       transition: background .14s ease, box-shadow .14s ease;
     }
-    .opt:hover { border-color: rgba(190, 90, 255, .7); }
+    .opt:hover { border-color: #b98ae8; background: linear-gradient(180deg, #382352, #2a1839); }
     .opt:active { transform: translateY(2px); transition-duration: 40ms; }
     .opt:has(:checked) {
-      color: var(--d-white-ink);
+      color: #fff;
       border-color: var(--d-hot);
-      box-shadow: 0 0 22px rgba(247, 105, 224, .22), inset 0 0 0 1px rgba(247, 105, 224, .5), inset 0 0 22px rgba(247, 105, 224, .1);
+      background: linear-gradient(180deg, #6e2068, #511650);
+      box-shadow: 0 0 18px rgba(247, 105, 224, .3), inset 0 0 0 1px rgba(247, 105, 224, .6);
     }
     .opt:has(:checked)::before {
       background: radial-gradient(circle at 40% 35%, #fff0ff, var(--d-hot) 55%, #8a1f7a);
@@ -561,7 +588,7 @@ const clientConfig = {
 
     /* likert / nps: the BALANCE SCREEN meter on sunk glass. Picking a value
        lights every step up to it; the picked step is the white tip. */
-    .likert { margin-top: 14px; max-width: 440px; }
+    .likert { margin-top: 14px; max-width: 520px; }
     .likert.is-nps { max-width: none; }
     .meter {
       display: flex; gap: 4px; padding: 8px;
@@ -573,13 +600,13 @@ const clientConfig = {
     }
     .seg { position: relative; flex: 1 1 0; min-width: 0; cursor: pointer; }
     .seg-num {
-      display: grid; place-items: center; height: 42px; border-radius: 2px;
-      font: 400 24px/1 var(--d-f-lcd); font-variant-numeric: tabular-nums;
-      color: rgba(242, 76, 240, .6);
-      background: rgba(242, 76, 240, .08);
+      display: grid; place-items: center; height: 46px; border-radius: 3px;
+      font: 400 26px/1 var(--d-f-lcd); font-variant-numeric: tabular-nums;
+      color: #f3b8f1;
+      background: rgba(242, 76, 240, .16);
       transition: background-color 60ms linear, color 60ms linear;
     }
-    .seg:hover .seg-num { background: rgba(242, 76, 240, .2); color: var(--d-pink-ink); }
+    .seg:hover .seg-num { background: rgba(242, 76, 240, .3); color: #fff; }
     .seg:has(~ .seg :checked) .seg-num {
       background: rgb(255, 112, 247); color: #2a0630;
       box-shadow: 0 0 6px rgba(242, 76, 240, .7);
@@ -590,7 +617,7 @@ const clientConfig = {
     }
     .ends {
       display: flex; justify-content: space-between; gap: 16px; margin-top: 8px;
-      font: 400 13px/1.3 var(--d-f-spec); letter-spacing: .05em; text-transform: uppercase; color: var(--d-fg-dim);
+      font: 400 14px/1.3 var(--d-f-spec); letter-spacing: .05em; text-transform: uppercase; color: var(--d-fg);
     }
     .ends span:last-child { text-align: right; }
 
@@ -617,7 +644,7 @@ const clientConfig = {
     .q.invalid .text-in { box-shadow: 0 0 0 1px rgba(4, 2, 8, .9), inset 0 5px 8px rgba(0, 0, 0, .7), inset 0 0 0 1px var(--d-red); }
 
     /* send: the red key, centred under the last panel */
-    .df-send { display: grid; justify-items: center; gap: 22px; margin-top: 12px; }
+    .df-send { display: grid; justify-items: center; gap: 26px; }
     /* the tester: first name + country side by side, the email full width under them */
     .df-you { justify-self: stretch; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 22px; }
     .df-you .q { padding: 0; border-top: 0; }
@@ -678,8 +705,17 @@ const clientConfig = {
       .df-cr-cta { justify-items: stretch; }
     }
 
+    /* smaller screens: the same plate at ~.56 / ~.43 scale (bezel, screws, face inset, radius), the content ~14 px inside the lip */
+    @media (max-width: 760px) {
+      .df-plate { border-radius: 33px; border-image-width: 72px; padding: 48px 44px 52px; }
+      .df-plate::before { inset: 21px 24px 23px 23px; border-radius: 50px; }
+    }
+    @media (max-width: 480px) {
+      .df-plate { border-radius: 26px; border-image-width: 56px; padding: 40px 36px 44px; }
+      .df-plate::before { inset: 16px 18px 18px 18px; border-radius: 39px; }
+    }
     @media (max-width: 600px) {
-      .df-panel { padding-left: clamp(18px, 5vw, 44px); padding-right: clamp(18px, 5vw, 44px); }
+      .df-page h2.df-plate-head { font-size: 26px; margin-bottom: 22px; }
       .q-label { font-size: 18px; }
       .opt { font-size: 15px; }
       .meter { gap: 3px; padding: 6px; }
