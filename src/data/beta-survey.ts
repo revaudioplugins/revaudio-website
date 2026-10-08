@@ -53,6 +53,8 @@ export interface Question {
   /** Conditional follow-up shown when the parent value is in `whenIn`. */
   reveal?: { whenIn: string[]; field: RevealField };
   maxLen?: number;
+  /** text/shorttext only: client-side minimum length (e.g. the DRIFT bar's "≥40 chars"). */
+  minLen?: number;
 }
 
 export interface Section {
@@ -531,4 +533,350 @@ export const openTextFields = [
   'fix_before_launch',
   'loved_most',
   'missing_feature',
+] as const;
+
+/**
+ * DRIFT Beta — feedback survey question bank (2026-09-24, plan:
+ * revaudio-shared/plans/2026-09-24-drift-beta-feedback-form-plan.md).
+ *
+ * Same engine and id rules as the RevLimiter bank above (stable snake_case
+ * ids == DB columns). Unlike RevLimiter's shared `beta_code`, DRIFT testers
+ * get a personal signed link (no gate question here — the token travels as
+ * `?t=` in the URL and the client includes it in the submit payload; the
+ * server derives identity from it).
+ */
+export const driftSurveyMeta = {
+  version: 2,
+  productName: 'DRIFT',
+  introPriceUsd: 69,
+  betaPriceUsd: 39,
+  ui: {
+    titleHe: 'משוב בטא: DRIFT',
+    titleEn: 'DRIFT Beta Feedback',
+    introHe:
+      'תודה שבדקת את DRIFT. המשוב הזה קובע אם DRIFT מוכן לשיגור ב-1 בנובמבר, ופותח את קוד ה-$39. כל שאלה עוזרת. ~7 דקות.',
+    introEn:
+      "Thanks for testing DRIFT. This feedback decides if DRIFT is release-ready on Nov 1, and unlocks your $39 code. Every answer helps. ~7 minutes.",
+    requiredHe: 'חובה',
+    requiredEn: 'required',
+    optionalHe: 'רשות',
+    optionalEn: 'optional',
+    otherHe: 'אחר',
+    otherEn: 'Other',
+    otherPlaceholderHe: 'פרט/י…',
+    otherPlaceholderEn: 'please specify…',
+    naHe: 'לא רלוונטי',
+    naEn: 'N/A',
+    submitHe: 'שליחה',
+    submitEn: 'Submit',
+    sendingHe: 'שולח…',
+    sendingEn: 'Sending…',
+    thanksHe: 'תודה! המשוב שלך נקלט. נבדוק אותו ונחזור עם קוד ה-$39.',
+    thanksEn: "Thank you. Your feedback came through. We'll review it and follow up with your $39 code.",
+    errHe: 'משהו השתבש. נסה/י שוב, או כתוב/כתבי ל-info@revaudio.net.',
+    errEn: 'Something went wrong. Try again, or email info@revaudio.net.',
+    softHe: 'טופס המשוב ייפתח בקרוב. התשובות שלך עדיין לא נשלחו.',
+    softEn: "The feedback form opens shortly. Your answers weren't sent yet.",
+    badCodeHe: 'הקישור הזה לא תקין. בדוק/בדקי את מייל ה-D5 ששלחנו לך.',
+    badCodeEn: "This link isn't valid. Check the D5 email we sent you.",
+    alreadyHe: 'כבר קיבלנו משוב מהמייל הזה. אפשר לשלוח טופס אחד לכל מייל. תודה!',
+    alreadyEn: 'We already have feedback from this email. One form per email. Thank you!',
+    requiredMissingHe: 'יש שאלות חובה שטרם נענו (מסומנות).',
+    requiredMissingEn: 'Some required questions are unanswered (highlighted).',
+    langLabelHe: 'EN',
+    langLabelEn: 'עברית',
+  },
+} as const;
+
+export const driftSections: Section[] = [
+  { id: 'setup', he: 'התקנה', en: 'Setup' },
+  { id: 'first_drive', he: 'ההרצה הראשונה', en: 'First drive' },
+  { id: 'sound_use', he: 'סאונד ושימוש', en: 'Sound & use' },
+  { id: 'stability', he: 'יציבות', en: 'Stability' },
+  { id: 'value_drift', he: 'ערך', en: 'Value' },
+  { id: 'permissions', he: 'הרשאות', en: 'Permissions' },
+];
+
+export const driftQuestions: Question[] = [
+  // ── A. Setup ──────────────────────────────────────────────────────────────
+  {
+    id: 'daw',
+    section: 'setup',
+    type: 'multi',
+    required: true,
+    he: 'באיזה DAW השתמשת?',
+    en: 'Which DAW(s) did you use?',
+    choices: [
+      { code: 'ableton', he: 'Ableton Live', en: 'Ableton Live' },
+      { code: 'logic', he: 'Logic Pro', en: 'Logic Pro' },
+      { code: 'pro_tools', he: 'Pro Tools', en: 'Pro Tools' },
+      { code: 'fl_studio', he: 'FL Studio', en: 'FL Studio' },
+      { code: 'cubase', he: 'Cubase', en: 'Cubase' },
+      { code: 'studio_one', he: 'Studio One', en: 'Studio One' },
+      { code: 'reaper', he: 'Reaper', en: 'Reaper' },
+      { code: 'bitwig', he: 'Bitwig', en: 'Bitwig' },
+    ],
+    hasOther: true,
+  },
+  {
+    id: 'os_format',
+    section: 'setup',
+    type: 'single',
+    required: true,
+    he: 'מערכת הפעלה ופורמט',
+    en: 'OS + format',
+    choices: [
+      { code: 'win_vst3', he: 'Windows VST3', en: 'Windows VST3' },
+      { code: 'mac_vst3', he: 'Mac VST3', en: 'Mac VST3' },
+      { code: 'mac_au', he: 'Mac AU', en: 'Mac AU' },
+      { code: 'aax_win', he: 'AAX Windows', en: 'AAX Windows' },
+      { code: 'aax_mac', he: 'AAX Mac', en: 'AAX Mac' },
+    ],
+  },
+  {
+    id: 'sessions_count',
+    section: 'setup',
+    type: 'single',
+    required: true,
+    he: 'בכמה סשנים השתמשת ב-DRIFT?',
+    en: 'How many sessions did you use DRIFT in?',
+    choices: [
+      { code: '1', he: '1', en: '1' },
+      { code: '2_3', he: '2–3', en: '2–3' },
+      { code: '4_plus', he: '4+', en: '4+' },
+    ],
+  },
+
+  // ── B. First drive ────────────────────────────────────────────────────────
+  {
+    id: 'install_result',
+    section: 'first_drive',
+    type: 'single',
+    required: true,
+    he: 'ההתקנה והפתיחה הראשונה עברו בלי בעיות?',
+    en: 'Did it install and open first time?',
+    choices: [
+      { code: 'yes', he: 'כן', en: 'Yes' },
+      { code: 'retry', he: 'היה צריך ניסיון חוזר', en: 'Needed a retry' },
+      { code: 'no', he: 'לא', en: 'No' },
+    ],
+    reveal: {
+      whenIn: ['retry', 'no'],
+      field: {
+        id: 'install_detail',
+        type: 'text',
+        he: 'מה קרה?',
+        en: 'What happened?',
+      },
+    },
+  },
+  {
+    id: 'musical_no_docs',
+    section: 'first_drive',
+    type: 'likert5',
+    required: true,
+    he: 'הצלחתי להגיע לתוצאה מוזיקלית בלי לקרוא שום דבר.',
+    en: 'I could get a musical result without reading anything.',
+    scale: AGREE_SCALE,
+  },
+  {
+    id: 'unclear_part',
+    section: 'first_drive',
+    type: 'multi',
+    required: false,
+    he: 'איזה חלק לא היה ברור? (השאר/י ריק אם הכול היה ברור)',
+    en: 'Which part was unclear? (leave empty if all was clear)',
+    choices: [
+      { code: 'wheel', he: 'הגלגל', en: 'Wheel' },
+      { code: 'track_picker', he: 'בורר הטראקים', en: 'Track picker' },
+      { code: 'fx_rack', he: 'מתלה ה-FX', en: 'FX rack' },
+      { code: 'auto_drift', he: 'AUTO DRIFT', en: 'AUTO DRIFT' },
+      { code: 'band_split', he: 'חלוקת הבנדים', en: 'Band split' },
+      { code: 'presets', he: 'פריסטים', en: 'Presets' },
+      { code: 'nothing', he: 'הכול היה ברור', en: 'Nothing' },
+    ],
+  },
+
+  // ── C. Sound + use ────────────────────────────────────────────────────────
+  {
+    id: 'used_on',
+    section: 'sound_use',
+    type: 'multi',
+    required: true,
+    he: 'על מה הפעלת את DRIFT?',
+    en: 'What did you put it on?',
+    choices: [
+      { code: 'vocals', he: 'ווקאלים', en: 'Vocals' },
+      { code: 'keys_synths', he: 'קלידים / סינתים', en: 'Keys / synths' },
+      { code: 'drums', he: 'תופים', en: 'Drums' },
+      { code: 'guitars', he: 'גיטרות', en: 'Guitars' },
+      { code: 'bus_master', he: 'באס / מאסטר', en: 'Bus / master' },
+      { code: 'fx_returns', he: 'החזרי FX', en: 'FX returns' },
+    ],
+    hasOther: true,
+  },
+  {
+    id: 'impressed_moment',
+    section: 'sound_use',
+    type: 'text',
+    required: true,
+    he: 'רגע אחד שבו DRIFT הרשים אותך',
+    en: 'One moment where DRIFT impressed you',
+    helpHe: 'לפחות 40 תווים.',
+    helpEn: 'At least 40 characters.',
+    maxLen: 2000,
+    minLen: 40,
+  },
+  {
+    id: 'got_in_way_moment',
+    section: 'sound_use',
+    type: 'text',
+    required: true,
+    he: 'רגע אחד שבו DRIFT הפריע',
+    en: 'One moment where it got in the way',
+    helpHe: 'לפחות 40 תווים.',
+    helpEn: 'At least 40 characters.',
+    maxLen: 2000,
+    minLen: 40,
+  },
+  {
+    id: 'presets_used',
+    section: 'sound_use',
+    type: 'shorttext',
+    required: false,
+    he: 'טראקים / פריסטים שהשתמשת בהם הכי הרבה',
+    en: 'Tracks / presets you used most',
+    maxLen: 200,
+  },
+  {
+    id: 'auto_drift_expected',
+    section: 'sound_use',
+    type: 'single',
+    required: true,
+    he: 'AUTO DRIFT עשה את מה שציפית?',
+    en: 'Did AUTO DRIFT do what you expected?',
+    choices: [
+      { code: 'yes', he: 'כן', en: 'Yes' },
+      { code: 'partly', he: 'בחלקו', en: 'Partly' },
+      { code: 'no', he: 'לא', en: 'No' },
+      { code: 'didnt_try', he: 'לא ניסיתי', en: "Didn't try" },
+    ],
+  },
+
+  // ── D. Stability ──────────────────────────────────────────────────────────
+  {
+    id: 'cpu_perf_drift',
+    section: 'stability',
+    type: 'likert5',
+    required: true,
+    he: 'צריכת ה-CPU / הביצועים',
+    en: 'CPU / performance',
+    scale: { lowHe: 'חלשה', lowEn: 'Poor', highHe: 'מעולה', highEn: 'Excellent' },
+  },
+  {
+    id: 'stability_issues',
+    section: 'stability',
+    type: 'multi',
+    required: true,
+    he: 'נתקלת בקריסה, הקפאה, נפילת אודיו או בעיית state-recall?',
+    en: 'Any crash, freeze, audio dropout or state-recall problem?',
+    helpHe: 'באגים ידווחו גם דרך "Report a bug" בתוך הפלאגין.',
+    helpEn: 'Bugs also go through "Report a bug" in the plugin.',
+    choices: [
+      { code: 'crash', he: 'קריסה', en: 'Crash' },
+      { code: 'freeze', he: 'הקפאה', en: 'Freeze' },
+      { code: 'audio_dropout', he: 'נפילת אודיו', en: 'Audio dropout' },
+      { code: 'state_recall', he: 'בעיית state-recall', en: 'State-recall problem' },
+      { code: 'none', he: 'לא נתקלתי בכלום', en: 'None' },
+    ],
+    reveal: {
+      whenIn: ['crash', 'freeze', 'audio_dropout', 'state_recall'],
+      field: {
+        id: 'stability_detail',
+        type: 'text',
+        he: 'תאר/י, כולל DAW ומערכת הפעלה.',
+        en: 'Describe it, including your DAW + OS.',
+      },
+    },
+  },
+
+  // ── E. Value ──────────────────────────────────────────────────────────────
+  {
+    id: 'price_perception',
+    section: 'value_drift',
+    type: 'single',
+    required: true,
+    he: 'DRIFT ישוקלל ב-$69 בהשקה. במחיר הזה הוא…',
+    en: 'DRIFT lists at $69 at release. At that price it is…',
+    choices: [
+      { code: 'easy_yes', he: 'כן בבירור', en: 'An easy yes' },
+      { code: 'fair', he: 'הוגן', en: 'Fair' },
+      { code: 'a_stretch', he: 'קצת יקר', en: 'A stretch' },
+      { code: 'no', he: 'לא', en: 'No' },
+    ],
+  },
+  {
+    id: 'what_would_help_price',
+    section: 'value_drift',
+    type: 'text',
+    required: false,
+    he: 'מה היה גורם לזה להיות "כן"?',
+    en: 'What would make it a yes?',
+    maxLen: 2000,
+  },
+  {
+    id: 'recommend_nps',
+    section: 'value_drift',
+    type: 'nps',
+    required: true,
+    he: 'מה הסיכוי שתמליץ/י על DRIFT למפיק/ה חבר/ה?',
+    en: 'Would you recommend DRIFT to a producer friend?',
+    scale: { lowHe: 'כלל לא סביר', lowEn: 'Not at all likely', highHe: 'סביר מאוד', highEn: 'Extremely likely' },
+  },
+
+  // ── F. Permissions ────────────────────────────────────────────────────────
+  {
+    id: 'quote_permission',
+    section: 'permissions',
+    type: 'single',
+    required: true,
+    he: 'אפשר לצטט אותך באתר, עם שם פרטי ומדינה?',
+    en: 'May we quote you on the site, with first name and country?',
+    choices: [
+      { code: 'yes', he: 'כן', en: 'Yes' },
+      { code: 'yes_anon', he: 'כן, אנונימית', en: 'Yes, anonymous' },
+      { code: 'no', he: 'לא', en: 'No' },
+    ],
+  },
+  {
+    id: 'creator_video_interest',
+    section: 'permissions',
+    type: 'single',
+    required: true,
+    he: 'רוצה להגיש וידאו למסלול היוצרים?',
+    en: 'Want to submit a video for the creator route?',
+    choices: [
+      { code: 'yes', he: 'כן, שלחו לי את ההנחיות', en: 'Yes, send me the guidelines' },
+      { code: 'no', he: 'לא', en: 'No' },
+    ],
+  },
+  {
+    id: 'anything_else_drift',
+    section: 'permissions',
+    type: 'text',
+    required: false,
+    he: 'עוד משהו?',
+    en: 'Anything else',
+    maxLen: 2000,
+  },
+];
+
+/** Open-text columns for DRIFT the dashboard's AI synthesis treats as the feedback corpus. */
+export const driftOpenTextFields = [
+  'install_detail',
+  'impressed_moment',
+  'got_in_way_moment',
+  'stability_detail',
+  'what_would_help_price',
+  'anything_else_drift',
 ] as const;

@@ -1,17 +1,19 @@
 ---
 /**
  * Section 1 — the driver's seat (Dan's pick A, 2026-09-26; recomposed for the
- * 2026-10-01 conversion architecture). A one-line glass dash (formats · live
- * PAN · 'PRO TOOLS: NOT YET' on desktop), the title panel on the left, the CTA
- * panel on the right, and the cockpit between them: the plugin's real gauge
+ * 2026-10-01 conversion architecture; the glass dash strip above it went
+ * 10-01, Dan: "remove all the upper section and push the page up"). The title
+ * panel on the left, the CTA panel on the right, and the cockpit between them: the plugin's real gauge
  * cluster (rendered with the wheel and needles hidden), live needles over it,
  * and the real steering wheel — which IS the pan of the whole sound (D2/H1),
  * and really steers (wheel.ts, the plugin's SPORTS physics).
  *
- * The CTA panel says what keeping DRIFT costs in screen 1: 3 condition-first
- * rows on desktop, one sentence on phone (≤1099), only the FREE route links.
- * Phone order (drift.css): dash, title + CTA as one merged panel, wheel,
- * meter, plain line. .d-wheel-grip = the top 38% of the rim takes the touch
+ * The CTA panel is the price, nothing else (Dan 10-01: the keep-it menu moved
+ * under the tracks, DriftKeep.astro). The trial (RevLimiter's email row in
+ * DRIFT dress, DriftTrialStamp) is a console across the wheel's cut edge,
+ * in the space the crop already had (.d-hero-trial). Gate / buy phases keep a
+ * key in the panel instead. Phone order (drift.css): dash, title + CTA as one merged
+ * panel, wheel, meter. .d-wheel-grip = the top 38% of the rim takes the touch
  * drag (touch-action:none); the rest of the wheel keeps pan-y page scroll.
  *
  * Geometry is the plugin's own, in native px of its 1725x912 design box, and
@@ -23,10 +25,11 @@
  */
 import { getImage } from 'astro:assets';
 import DriftPanel from './DriftPanel.astro';
+import DriftTrialStamp from './DriftTrialStamp.astro';
 import wheelSrc from '../../assets/seasons/drift/wheel.png';
 import clusterSrc from '../../assets/seasons/drift/cluster.png';
 import needleSrc from '../../assets/seasons/drift/needle.png';
-import { drift, ctaFor, routesFor, formatsShort } from '../../data/drift';
+import { drift, ctaFor, noDay } from '../../data/drift';
 
 const WHEEL = { x: 466, y: 108, d: 790 };
 // crop box of cluster.png (1396x1050 @DPR2) in native px = (518,125)-(1216,650), MANIFEST.md
@@ -51,32 +54,16 @@ const [w700, w1000, wMask, cl640, cl920, needle] = await Promise.all([
   getImage({ src: needleSrc, width: 320, format: 'webp', quality: 85 }),
 ]);
 const cta = ctaFor();
-const routes = routesFor();
-const plain = 'Pan your whole sound by hand with the wheel, or send it around a shape in time with your song.';
-// phone: the ladder as one sentence ('free with a video ›' is the only link)
-const lineParts = routes.map((r) =>
-  r.id === 'video' ? null
-  : r.id === 'feedback' ? (r.value ? `for ${r.value} with the feedback form` : 'with the feedback form')
-  : (r.value ? `for ${r.value} from ${drift.releaseLabel}` : `at release, ${drift.releaseLabel}`));
-const hasVideo = routes.some((r) => r.id === 'video');
-const rest = lineParts.filter((x): x is string => !!x);
-const restText = rest.length ? (hasVideo ? (rest.length > 1 ? `, ${rest.slice(0, -1).join(', ')}, or ${rest[rest.length - 1]}.` : `, or ${rest[0]}.`) : `${rest.join(', or ')}.`) : '.';
-const lead = drift.phase === 'closed' ? 'Keep it ' : 'After that, keep it ';
+// the real price, and when it applies (nothing is on sale before release)
+// two set lines under the price: 'ETA' / 'Nov 1' (Dan 10-01, was 'At release')
+const priceLabel = drift.phase === 'released' ? ['Price'] : ['ETA', noDay(drift.releaseLabel)];
 ---
 <section class="d-hero d-wrap" aria-labelledby="d-hero-title">
-  <div class="d-dashbar">
-    <span class="d-sock d-lcd">{formatsShort()}</span>
-    <span class="d-sock d-sock--pan d-lcd"><output data-pan-readout aria-hidden="true">PAN C</output></span>
-    {!drift.aaxReady && <span class="d-sock d-sock--aax d-lcd">PRO TOOLS: NOT YET</span>}
-  </div>
-
   <div class="d-hero-body">
     <div class="d-hero-left">
       <DriftPanel>
         <h1 id="d-hero-title" class="d-title">DRIFT</h1>
-        <p class="d-tagline">A panner you steer like a drift car.</p>
-        <p class="d-plain d-plain--desk">{plain}</p>
-        <p class="d-hook">Controlled slides. No spinouts.</p>
+        <p class="d-tagline"><span>Let your sound</span> <span>take the wheel.</span></p>
       </DriftPanel>
     </div>
 
@@ -97,49 +84,73 @@ const lead = drift.phase === 'closed' ? 'Keep it ' : 'After that, keep it ';
           <img class="d-wheel-img" src={w700.src} srcset={`${w700.src} 700w, ${w1000.src} 1000w`} sizes="(max-width: 1099px) 86vw, 540px"
             width="540" height="540" alt="" fetchpriority="high" decoding="async" />
           <div class="d-wheel-mark" aria-hidden="true"><span class="dm">DRIFT</span><span class="kana" lang="ja">ドリフト</span></div>
+          {/* phone only (drift.css shows it ≤600): the price on the rim, ENGRAVED + PAINT-FILLED (Dan 10-05, bench E4:
+              pressed into the suede, worn white paint in the recess), in the headline's Oswald, either side of the
+              12 o'clock stripe, turning with the wheel: $69 left; ETA over NOV 1 right, the pair centred on $69's
+              height (Dan: "centre it on the y"; radii from the glyph boxes: $69 ~428-483, the pair ~429-488, +3 for the arc). Arcs on
+              the rim's band (r 405..500 of 1000); the real price stays in .d-hero-right (screen readers). */}
+          {drift.showPrices && (
+            <svg class="d-wheel-print" viewBox="0 0 1000 1000" aria-hidden="true" focusable="false">
+              <defs>
+                <path id="d-print-l" d="M 66 500 A 434 434 0 0 1 934 500" />
+                <path id="d-print-r1" d="M 33 500 A 467 467 0 0 1 967 500" />
+                <path id="d-print-r2" d="M 71 500 A 429 429 0 0 1 929 500" />
+                {/* engraved + paint-filled: the letter is a dark pit in the suede, worn white paint inside it (specks
+                    + soft faded patches), a shadow along the pit's top edge, the bottom lip catching the light */}
+                <filter id="d-engrave" x="-10%" y="-30%" width="120%" height="160%">
+                  <feTurbulence type="fractalNoise" baseFrequency="1.6" numOctaves="2" seed="5" result="g" />
+                  <feColorMatrix in="g" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 -3 2.7" result="specks" />
+                  <feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="2" seed="9" result="f" />
+                  <feColorMatrix in="f" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1.2 .35" result="fade" />
+                  <feComposite in="specks" in2="fade" operator="arithmetic" k1="1" result="wear" />
+                  <feComposite in="SourceGraphic" in2="wear" operator="in" result="inked" />
+                  <feFlood flood-color="#120e15" /><feComposite in2="SourceAlpha" operator="in" result="pit" />
+                  <feOffset in="SourceAlpha" dy="2.4" result="off" /><feComposite in="SourceAlpha" in2="off" operator="out" result="band" />
+                  <feGaussianBlur in="band" stdDeviation=".6" result="bandb" /><feFlood flood-color="#000" flood-opacity=".85" /><feComposite in2="bandb" operator="in" result="ish" />
+                  <feOffset in="SourceAlpha" dy="1.4" result="off2" /><feComposite in="off2" in2="SourceAlpha" operator="out" result="lipa" />
+                  <feFlood flood-color="#fff" flood-opacity=".22" /><feComposite in2="lipa" operator="in" result="lip" />
+                  <feMerge><feMergeNode in="lip" /><feMergeNode in="pit" /><feMergeNode in="inked" /><feMergeNode in="ish" /></feMerge>
+                </filter>
+              </defs>
+              <g filter="url(#d-engrave)">
+                <text class="pv"><textPath href="#d-print-l" startOffset="47.7%" text-anchor="end">${drift.listPriceUsd}</textPath></text>
+                <text class="pl1"><textPath href="#d-print-r1" startOffset="52.3%" text-anchor="start">{priceLabel[0].toUpperCase()}</textPath></text>
+                {priceLabel[1] && <text class="pl2"><textPath href="#d-print-r2" startOffset="52.3%" text-anchor="start">{priceLabel[1].toUpperCase()}</textPath></text>}
+              </g>
+            </svg>
+          )}
         </div>
         <div class="d-wlight" aria-hidden="true"><div class="d-wlfix"></div></div>
       </div>
-      <p class="d-wheel-hint" aria-hidden="true"><span class="d-hint-fine">GRAB THE WHEEL · ← → KEYS</span><span class="d-hint-coarse">DRAG THE TOP OF THE WHEEL</span></p>
     </div>
 
     <div class="d-lcd d-balance-box d-hero-meter" aria-hidden="true">
       <div class="d-balance-lr"><span>L</span><span class="d-balance-read" data-pan-readout="bare">C</span><span>R</span></div>
       <div class="d-balance" data-balance></div>
     </div>
-    <p class="d-plain d-plain--phone">{plain}</p>
 
     <div class="d-hero-right" data-drift-cta-zone>
       <DriftPanel sticker="試乗" checker={false} class="d-cta-panel">
         <div class="d-cta-block">
-          <a class="d-cta d-cta--edge" href={cta.action === 'cart' ? '#get' : '#try'} data-drift-jump>{cta.label}</a>
-          <p class="d-cta-sub">{cta.sub}</p>
-          {routes.length > 0 && (
-            <Fragment>
-              <p class="d-ladder-label">{drift.phase === 'closed' ? 'Keep it:' : `After ${drift.trialDays} days, keep it:`}</p>
-              <ul class="d-ladder d-ladder--hero" role="list">
-                {routes.map((r) => (
-                  <li class:list={['d-route', `d-route--${r.id}`]}>
-                    {r.href ? (
-                      <a class="d-route-link" href={r.href}>
-                        <span class="d-route-cond">{r.heroCond} ›</span>
-                        {r.value && <span class="d-lcd d-route-val">{r.value}</span>}
-                      </a>
-                    ) : (
-                      <Fragment>
-                        <span class="d-route-cond">{r.heroCond}</span>
-                        {r.value && <span class="d-lcd d-route-val">{r.value}</span>}
-                      </Fragment>
-                    )}
-                  </li>
-                ))}
-              </ul>
-              <p class="d-ladder-line">{lead}{hasVideo && <a href="#creators">free with a video ›</a>}{restText}</p>
-            </Fragment>
+          {drift.showPrices && (
+            <p class="d-price">
+              <span class="d-price-val">${drift.listPriceUsd}</span>
+              <span class="d-price-label">{priceLabel.map((l, i) => <Fragment>{i > 0 && ' '}<span>{l}</span></Fragment>)}</span>
+            </p>
           )}
-          {cta.action !== 'cart' && <p class="d-cta-fine">Nothing to pay today.</p>}
+          {cta.action !== 'capture' && <a class="d-cta d-cta--edge" href={cta.action === 'cart' ? '#get' : '#try'} data-drift-jump>{cta.label}</a>}
         </div>
       </DriftPanel>
     </div>
+
+    {cta.action === 'capture' && (
+      <div class="d-hero-trial">
+        <DriftPanel checker={false} class="d-trial-panel"><DriftTrialStamp /></DriftPanel>
+      </div>
+    )}
+
+    <!-- the hero's exit line (Dan 2026-10-01, the copywriter's pick): the page's
+         first catch phrase, in the band between the console and LET IT DRIVE -->
+    <p class="d-hero-catch"><span class="l1">Left. Right.</span> <span class="l2">No hands.</span></p>
   </div>
 </section>

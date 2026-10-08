@@ -420,8 +420,8 @@ export const plugins: Plugin[] = [
       { name: 'Effects on a band', desc: 'Echo, reverb, tremolo and pitch play on a slice you set with LOW CUT and HIGH CUT. Saturation and autotune on board too.' },
     ],
     audioDemos: [],
-    // DRIFT-true: macOS floor is 10.13 universal (CMakeLists.txt:5-6); AAX only once it is built.
-    systemReq: { ...baseSystemReq, os: 'Windows 64-bit, macOS 10.13+', formats: 'VST3 + AU on Mac, VST3 on Windows' },
+    // DRIFT-true: macOS floor is 10.13 universal (CMakeLists.txt:5-6); AAX ships in the beta (Dan 2026-10-01).
+    systemReq: { ...baseSystemReq, os: 'Windows 64-bit, macOS 10.13+', formats: 'VST3 + AU + AAX on Mac, VST3 + AAX on Windows' },
     reviewsCount: 0,
     reviewsAvg: 0,
   },

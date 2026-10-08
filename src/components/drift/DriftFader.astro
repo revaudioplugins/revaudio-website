@@ -1,0 +1,32 @@
+---
+/**
+ * One #drive fader (INTENSITY or SPEED, Dan 2026-10-02 layout B), the plugin's
+ * column: graffiti picture, graffiti title, top end word, the vertical slot
+ * (role="slider", driven by faders.ts), bottom end word. The graffiti art is
+ * decoration (the slider carries the name), deferred like the GPS plate.
+ * v = the 0..1 position the server paints, so there's no jump when JS lands.
+ */
+interface Art { src: string }
+interface Props {
+  id: 'int' | 'spd';
+  label: string;
+  pic: Art; picWH: number[];
+  title: Art; titleWH: number[];
+  top: string; bottom: string;
+  v: number; text: string;
+}
+const { id, label, pic, picWH, title, titleWH, top, bottom, v, text } = Astro.props;
+const box = (w: number, h: number) => `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${w} ${h}'/%3E`;
+const pct = `${(v * 100).toFixed(2)}%`;
+---
+<div class={`d-fad d-fad--${id}`}>
+  <img class="d-fad-pic" src={box(picWH[0], picWH[1])} data-src={pic.src} width={picWH[0]} height={picWH[1]} alt="" aria-hidden="true" decoding="async" />
+  <img class="d-fad-title" src={box(titleWH[0], titleWH[1])} data-src={title.src} width={titleWH[0]} height={titleWH[1]} alt="" aria-hidden="true" decoding="async" />
+  <span class="d-fad-end" aria-hidden="true">{top}</span>
+  <div class="d-fad-slot" role="slider" tabindex="0" data-fader={id} aria-label={label} aria-orientation="vertical"
+    aria-valuemin="0" aria-valuemax="100" aria-valuenow={Math.round(v * 100)} aria-valuetext={text}>
+    <span class="d-fad-fill" style={`height:${pct}`}></span>
+    <span class="d-fad-thumb" style={`bottom:${pct}`}></span>
+  </div>
+  <span class="d-fad-end" aria-hidden="true">{bottom}</span>
+</div>

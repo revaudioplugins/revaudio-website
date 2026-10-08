@@ -1,19 +1,22 @@
 ---
 /**
- * Section 3 — EFFECTS (#fx). The one honest place for the band under D2/H1:
- * the whole sound moves; LOW CUT / HIGH CUT only set the slice where echo,
- * reverb, tremolo and pitch play. A static annotated strip explains it (log
- * axis placed at BUILD time, the old band.ts mapping; no drag, nothing to
- * hear yet), then four real strips cut from the plugin's FX window rendered
- * at DPR 2 (website rule: product images come from the real UI), then the
- * SATURATE bay + AUTOTUNE as text, with no band claim for either.
+ * Section 3 — EFFECTS (#fx): the FX RACK. The plugin's FX view, so it wears
+ * #drive's chassis (plate S1 9-sliced + the vector twill face, drift.css
+ * SECTION 3) with the 周波数 sticker; phones get the CSS DriftPanel. The one
+ * honest place for the band: the whole sound moves; LOW CUT / HIGH CUT only
+ * set the slice where echo, reverb, tremolo and pitch play. A static
+ * annotated strip explains it (log axis placed at BUILD time, the old band.ts
+ * mapping; no drag, nothing to hear yet) with "FX PLAY HERE" lit in the
+ * slice, then four real strips cut from the plugin's FX window rendered at
+ * DPR 2 (website rule: product images come from the real UI), then the
+ * SATURATE bay + the spec rows, with no band claim for SATURATE/AUTOTUNE.
  * fx-autotune.png is off the page: it shows the BAND|ALL bank removed in
  * 4.26.0 (DESIGN.md:1290) until it's re-shot from the Oct 10 build.
- * Hover lamps a strip (no tab stop: a strip has no action). The strips are
- * cropped to their heads (screen, selectors, first knob row: the dark gap
- * under that row's labels is the one cut that lands between parts in all
- * four) and sink behind the rack's front rail (.d-strip-well); the bay is
- * framed to its own bezel in drift.css.
+ * No hover on a strip (law: attention motion is the text, never the box).
+ * The strips are cropped to their heads (screen, selectors, first knob row:
+ * the dark gap under that row's labels is the one cut that lands between
+ * parts in all four) and sink behind the rack's front rail (.d-strip-well);
+ * the bay is framed to its own bezel in drift.css.
  * The five photos sit 2-3 screens below the fold, and native loading="lazy"
  * still fetched them before any scroll (Chromium's proximity window on a
  * fast connection: ~300 KB of a phone's first paint). They load through
@@ -21,23 +24,36 @@
  * <noscript> twins keep them for no-JS.
  */
 import { getImage } from 'astro:assets';
+import DriftPanel from './DriftPanel.astro';
 import pitch from '../../assets/seasons/drift/fx-pitch.png';
 import echo from '../../assets/seasons/drift/fx-echo.png';
 import verb from '../../assets/seasons/drift/fx-reverb.png';
 import trem from '../../assets/seasons/drift/fx-tremolo.png';
 import baySrc from '../../assets/seasons/drift/sat-bay.png';
+// the phone carousel's pedals: TRUE-ALPHA shots of the plugin's own FX strips (tools/shoot-drift-fx-pedals.mjs, Dan 10-04)
+import pedPitch from '../../assets/seasons/drift/pedal-pitch.png';
+import pedEcho from '../../assets/seasons/drift/pedal-echo.png';
+import pedVerb from '../../assets/seasons/drift/pedal-reverb.png';
+import pedTrem from '../../assets/seasons/drift/pedal-tremolo.png';
 import { drift } from '../../data/drift';
 
 const strips = [
-  { cls: 's-pitch', src: pitch, name: 'Pitch', desc: 'Shift it up or down, up to an octave.' },
-  { cls: 's-echo', src: echo, name: 'Echo', desc: 'Repeats in time or free, tape-dark to clean.' },
-  { cls: 's-verb', src: verb, name: 'Reverb', desc: 'Room, plate or hall, with a shimmer.' },
-  { cls: 's-trem', src: trem, name: 'Tremolo', desc: 'Chops it in time with your song.' },
+  { cls: 's-pitch', src: pitch, ped: pedPitch, name: 'Pitch', desc: 'Up or down. Up to an octave.' },
+  { cls: 's-echo', src: echo, ped: pedEcho, name: 'Echo', desc: 'Synced or not. Tape-dark to clean.' },
+  { cls: 's-verb', src: verb, ped: pedVerb, name: 'Reverb', desc: 'Room, plate, hall. Plus shimmer.' },
+  { cls: 's-trem', src: trem, ped: pedTrem, name: 'Tremolo', desc: 'Chops in time with your song.' },
 ];
-// a strip renders at 280 css px on desktop and ~161 on a phone (2x2): 512w is
-// the source's full width, 340w serves phone DPR2 at ~40% of the bytes. The
-// bay renders at ~600 css px on desktop and ~380 on a phone: 1060w (the
-// source's full width) covers DPR2 on a Mac, 600w the rest.
+// a strip renders at ~228 css px on desktop (4 across the plate) and ~151 on
+// a phone (2x2): 512w is the source's full width, 340w serves phone DPR2 at
+// ~40% of the bytes. The bay renders at 340 css px on desktop and up to ~900
+// on a tablet (hidden on phones): 1060w (the source's full width) covers DPR2,
+// 600w the rest.
+// phone carousel: a pedal renders ~150-230 css px wide (3x = ~690): 400w + 700w, alpha kept (webp)
+const [peds400, peds700] = await Promise.all([
+  Promise.all(strips.map((s) => getImage({ src: s.ped, width: 400, format: 'webp', quality: 84 }))),
+  Promise.all(strips.map((s) => getImage({ src: s.ped, width: 700, format: 'webp', quality: 82 }))),
+]);
+const pedSizes = '(max-width: 600px) 56vw, 1px';
 const [imgs, imgs340, bay, bay600] = await Promise.all([
   Promise.all(strips.map((s) => getImage({ src: s.src, width: 512, format: 'webp', quality: 80 }))),
   Promise.all(strips.map((s) => getImage({ src: s.src, width: 340, format: 'webp', quality: 80 }))),
@@ -64,79 +80,126 @@ const pc = (f: number) => `${(x(f) / 10).toFixed(2)}%`;
 const LOW = 6000, HIGH = 16000;
 // transparent placeholder with the photo's own aspect, so the box never jumps (CSP img-src allows data:)
 const blank = (w: number, h: number) => `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${w} ${h}'/%3E`;
-const stripSizes = '(max-width: 1000px) calc(50vw - 30px), 280px';
-const baySizes = '(max-width: 900px) calc(100vw - 32px), 600px';
+const stripSizes = '(max-width: 1000px) calc(50vw - 40px), 228px';
+const baySizes = '(max-width: 1000px) calc(100vw - 80px), 340px';
 const baySrcset = `${bay600.src} 600w, ${bay.src} 1060w`;
 ---
 <section class="d-sec" id="fx" aria-labelledby="d-fx-h">
   <div class="d-wrap">
-    <div class="d-sechead">
-      <span class="d-marquee" aria-hidden="true">EFFECTS</span>
-      <span class="d-ja" lang="ja" aria-hidden="true">周波数</span>
-      <span class="d-rule" aria-hidden="true"></span>
-    </div>
-    <h2 id="d-fx-h" class="d-headline">The whole sound moves. The effects stay on one slice.</h2>
-    <p class="d-lede d-lede--sec">Set LOW CUT and HIGH CUT around one slice, like the hats or the air on a vocal. Echo, reverb, tremolo and pitch play only there.</p>
+    <DriftPanel sticker="周波数" checker={false} class="d-fx-panel">
+      <h2 id="d-fx-h" class="d-headline d-headline--row"><span class="l1">Whole sound pans.</span> <span class="l2">FX on one slice.</span></h2>
 
-    {shot && (
-      <figure class="d-shot">
-        <img src={shot.src} width={shot.attributes.width ?? 1200} alt="The whole DRIFT plugin window" loading="lazy" decoding="async" />
-        <figcaption class="d-small">The whole DRIFT window, as it opens in your DAW.</figcaption>
-      </figure>
-    )}
-
-    <figure class="d-bandfig">
-      <div class="d-lcd d-lcd--big d-bandglass">
-      {/* HIGH CUT on the top row: its line runs down past the LOW CUT row on
-          the right of that label (16k > 6k), so the lines never cross a label
-          at any width (at 390 px the other order cut through "HIGH CUT") */}
-      <div class="d-band-cuts" aria-hidden="true">
-        <span class="d-band-cut" style={`--at:${pc(HIGH)}`}>HIGH CUT 16k</span>
-        <span class="d-band-cut" style={`--at:${pc(LOW)}`}>LOW CUT 6k</span>
-      </div>
-      <svg class="d-bandstrip" viewBox="0 0 1000 100" preserveAspectRatio="none" role="img" aria-label="LOW CUT at 6 kilohertz and HIGH CUT at 16 kilohertz: the effects play only in this slice">
-        <rect class="axis" x="0" y="8" width="1000" height="80" />
-        {ticks.map((t) => <line class="tick" x1={x(t.f)} x2={x(t.f)} y1="88" y2="100" />)}
-        <rect class="lit" x={x(LOW)} y="8" width={x(HIGH) - x(LOW)} height="80" />
-        <line class="cut" x1={x(LOW)} x2={x(LOW)} y1="0" y2="100" />
-        <line class="cut" x1={x(HIGH)} x2={x(HIGH)} y1="0" y2="100" />
-      </svg>
-      <div class="d-band-ticks" aria-hidden="true">
-        {ticks.map((t) => <span class:list={[t.f === 10000 && 'd-tick-10k']} style={`left:${pc(t.f)}`}>{t.t}</span>)}
-      </div>
-      </div>
-    </figure>
-
-    <noscript><style>.drift-page img[data-src] { display: none; }</style></noscript>   {/* no JS: only the twins render */}
-    <div class="d-rack">
-      {strips.map((s, i) => (
-        <figure class:list={['d-strip', s.cls]}>
-          <div class="d-strip-well">
-            <img src={blank(512, 588)} data-src={imgs[i].src} data-srcset={`${imgs340[i].src} 340w, ${imgs[i].src} 512w`} sizes={stripSizes}
-              width="256" height="294" alt={`DRIFT ${s.name} strip`} decoding="async" />
-            <noscript><img src={imgs[i].src} srcset={`${imgs340[i].src} 340w, ${imgs[i].src} 512w`} sizes={stripSizes}
-              width="256" height="294" alt={`DRIFT ${s.name} strip`} loading="lazy" decoding="async" /></noscript>
-          </div>
-          <figcaption>
-            <h3>{s.name}</h3>
-            <p>{s.desc}</p>
-          </figcaption>
+      {shot && (
+        <figure class="d-shot">
+          <img src={shot.src} width={shot.attributes.width ?? 1200} alt="The whole DRIFT plugin window" loading="lazy" decoding="async" />
+          <figcaption class="d-fine">The DRIFT window, as it opens in your DAW.</figcaption>
         </figure>
-      ))}
-    </div>
+      )}
 
-    <div class="d-alsoin">
-      <div class="d-bay">
-        <img src={blank(1060, 382)} data-src={bay.src} data-srcset={baySrcset} sizes={baySizes} width="530" height="191" alt="DRIFT's saturation bay" decoding="async" />
-        <noscript><img src={bay.src} srcset={baySrcset} sizes={baySizes} width="530" height="191" alt="DRIFT's saturation bay" loading="lazy" decoding="async" /></noscript>
-      </div>
-      <div>
-        <h3>Also in DRIFT</h3>
-        <p><strong>SATURATE:</strong> tape, tube, transformer or digital drive. <strong>AUTOTUNE:</strong> snaps your whole sound to your key and scale.</p>
-      </div>
-    </div>
+      <figure class="d-bandfig">
+        <div class="d-lcd d-lcd--big d-bandglass">
+        {/* HIGH CUT on the top row: its line runs down past the LOW CUT row on
+            the right of that label (16k > 6k), so the lines never cross a label
+            at any width (at 390 px the other order cut through "HIGH CUT") */}
+        <div class="d-band-cuts" aria-hidden="true">
+          <span class="d-band-cut" style={`--at:${pc(HIGH)}`}>HIGH CUT 16k</span>
+          <span class="d-band-cut" style={`--at:${pc(LOW)}`}>LOW CUT 6k</span>
+        </div>
+        <div class="d-band-win">
+          <svg class="d-bandstrip" viewBox="0 0 1000 100" preserveAspectRatio="none" role="img" aria-label="LOW CUT at 6 kilohertz and HIGH CUT at 16 kilohertz: the effects play only in this slice">
+            <rect class="axis" x="0" y="8" width="1000" height="80" />
+            {ticks.map((t) => <line class="tick" x1={x(t.f)} x2={x(t.f)} y1="88" y2="100" />)}
+            <rect class="lit" x={x(LOW)} y="8" width={x(HIGH) - x(LOW)} height="80" />
+            <line class="cut" x1={x(LOW)} x2={x(LOW)} y1="0" y2="100" />
+            <line class="cut" x1={x(HIGH)} x2={x(HIGH)} y1="0" y2="100" />
+          </svg>
+          {/* the lit slice is a lamp: its label glows; ≤600 px only "FX" fits the slice */}
+          <span class="d-fx-slice" aria-hidden="true" style={`--l:${pc(LOW)};--r:${pc(HIGH)}`}>FX<span class="d-fx-slice-w"> PLAY HERE</span></span>
+        </div>
+        <div class="d-band-ticks" aria-hidden="true">
+          {ticks.map((t) => <span class:list={[t.f === 10000 && 'd-tick-10k']} style={`left:${pc(t.f)}`}>{t.t}</span>)}
+        </div>
+        </div>
+      </figure>
 
-    {drift.randomizeInBuild && <p class="d-lede d-fx-line">One dice button rolls a new echo, reverb, tremolo and pitch setup. One undo takes it back.</p>}
-    <p class="d-lede d-fx-line">Or start from 60 presets for vocal, keys, guitar, drums, bass and mix bus.</p>
+      <noscript><style>.drift-page img[data-src] { display: none; }</style></noscript>   {/* no JS: only the twins render */}
+      <div class="d-rack">
+        {strips.map((s, i) => (
+          <figure class:list={['d-strip', s.cls]}>
+            <div class="d-strip-well">
+              <img src={blank(512, 588)} data-src={imgs[i].src} data-srcset={`${imgs340[i].src} 340w, ${imgs[i].src} 512w`} sizes={stripSizes}
+                width="256" height="294" alt={`DRIFT ${s.name} strip`} decoding="async" />
+              <noscript><img src={imgs[i].src} srcset={`${imgs340[i].src} 340w, ${imgs[i].src} 512w`} sizes={stripSizes}
+                width="256" height="294" alt={`DRIFT ${s.name} strip`} loading="lazy" decoding="async" /></noscript>
+            </div>
+            <figcaption>
+              <h3>{s.name}</h3>
+              <p set:html={s.desc.replace('Tape-dark', '<span class="d-nw">Tape-dark</span>')} />
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+
+      {/* PHONE ONLY (drift.css: hidden ≥601, the rack hidden ≤600). Dan 10-04: the four effects as a coverflow carousel
+          like the home page's plugin showcase (PluginShowcase.astro): the pedal centred in a framed card, its neighbours
+          peeking tilted and dimmed, the gear-shift snap, swipe / peek-tap / dots / arrow keys. Each frame wears its
+          pedal's hue (the plugin's FX VIBE law). Pedals = true-alpha shots of the plugin's own strips. */}
+      <div class="d-fxc" data-fxc tabindex="0" role="group" aria-roledescription="carousel" aria-label="DRIFT effects">
+        <p class="d-sr" aria-live="polite" aria-atomic="true" data-fxc-say></p>
+        <div class="d-fxc-vp">
+          {strips.map((s, i) => (
+            <figure class:list={['d-fxc-slide', s.cls, i === 0 ? 'is-current' : i === 1 ? 'is-peek-next' : i === strips.length - 1 ? 'is-peek-prev' : '']}
+              data-fxc-slide role="group" aria-roledescription="slide" aria-label={`${s.name}, ${i + 1} of ${strips.length}`}>
+              <h3 class="d-fxc-name">{s.name}</h3>
+              <p class="d-fxc-desc" set:html={s.desc.replace('Tape-dark', '<span class="d-nw">Tape-dark</span>')} />
+              <img class="d-fxc-ped" src={blank(1056, 1908)} data-src={peds700[i].src} data-srcset={`${peds400[i].src} 400w, ${peds700[i].src} 700w`}
+                sizes={pedSizes} width="528" height="954" alt={`DRIFT ${s.name} pedal`} decoding="async" />
+            </figure>
+          ))}
+        </div>
+        <div class="d-fxc-dots">
+          {strips.map((s, i) => <button type="button" class:list={['d-fxc-dot', { active: i === 0 }]} data-fxc-dot={i} aria-label={`Show ${s.name}`}></button>)}
+        </div>
+      </div>
+
+      <div class="d-fx-foot">
+        <div class="d-bay">
+          <img src={blank(1060, 382)} data-src={bay.src} data-srcset={baySrcset} sizes={baySizes} width="530" height="191" alt="DRIFT's saturation bay" decoding="async" />
+          <noscript><img src={bay.src} srcset={baySrcset} sizes={baySizes} width="530" height="191" alt="DRIFT's saturation bay" loading="lazy" decoding="async" /></noscript>
+        </div>
+        <div class="d-fx-spec">
+          <span class="d-fx-kicker" aria-hidden="true">Also under the hood</span>
+          <dl class="d-spec-plate">
+            <div><dt>SATURATE</dt><dd>Tape, tube, transformer, digital</dd></div>
+            <div><dt>AUTOTUNE</dt><dd>Your key and scale</dd></div>
+            <div><dt>PRESETS</dt><dd>60 · vocal, keys, guitar, drums, bass, mix bus</dd></div>
+            {drift.randomizeInBuild && <div><dt>RANDOMIZE</dt><dd>One roll, new effects. One undo, back.</dd></div>}
+          </dl>
+        </div>
+      </div>
+    </DriftPanel>
   </div>
 </section>
+
+<script>
+  // one cue: the cut flags + the lit slice flicker on once like phosphor when
+  // the band display comes into view (drift.css SECTION 3). Rest = lit, so no
+  // JS / no IO / reduced motion all show the labels on.
+  const glass = document.querySelector<HTMLElement>('#fx .d-bandglass');
+  if (glass && 'IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (!e.isIntersecting) continue;
+        (e.target as HTMLElement).dataset.lit = '';
+        io.unobserve(e.target);
+      }
+    }, { threshold: 0.5 });
+    io.observe(glass);
+  }
+</script>
+
+<script>
+  /* the phone #fx carousel (Dan 10-04): the shared coverflow engine */
+  import { initCoverflow } from '../../lib/drift/coverflow';
+  document.querySelectorAll<HTMLElement>('#fx [data-fxc]').forEach(initCoverflow);
+</script>

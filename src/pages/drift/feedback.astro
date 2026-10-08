@@ -1,0 +1,570 @@
+---
+/**
+ * /drift/feedback — the DRIFT beta feedback form, in the /drift page's dress
+ * (drift.css: plate, sunk steel panels with screws, sunk-glass fields, the
+ * pink kicker + two-line Oswald headline, the red key). Every rule here hangs
+ * off .drift-page tokens, so the house shell keeps the garage look.
+ *
+ * Same question engine as beta.astro (src/data/beta-survey.ts), English only.
+ * The tester types their first name, country and email (required, above the
+ * key). ONE response per email: the page posts to the license worker's
+ * /form-once relay (form 'drift_feedback'), which forwards to Formspree
+ * (site.driftFeedbackFormEndpoint) and answers {already:true} to a repeat.
+ * Every answer is keyed by its question text with the choice labels as values,
+ * so the notification email reads as the form did. The relay keeps at most
+ * 30 string fields, keys up to 64 chars, 16 KB a body: "Other" text rides in
+ * its answer and the text boxes stop at 1500 chars, so a full form fits.
+ * No no-JS fallback on purpose: a straight Formspree post would skip the
+ * one-per-email check.
+ */
+import { getImage } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import DriftPanel from '../../components/drift/DriftPanel.astro';
+import { site } from '../../data/site';
+import { driftSections as sections, driftQuestions as questions, driftSurveyMeta as surveyMeta } from '../../data/beta-survey';
+import '../../styles/drift.css';
+
+import tileSrc from '../../assets/seasons/drift/plate-tile.png';
+import panelSrc from '../../assets/seasons/drift/panel-face.png';
+import screwSrc from '../../assets/seasons/drift/panel-screw.png';
+import pillSrc from '../../assets/seasons/drift/cta-pill.png';
+import ctaRestSrc from '../../assets/seasons/drift/cta-key-rest.png';
+import ctaPressSrc from '../../assets/seasons/drift/cta-key-press.png';
+
+const ui = surveyMeta.ui;
+
+// The textures drift.css paints with, as CSS custom properties on .drift-page
+// (the drift.astro pattern: getImage() -> WebP, no raw PNG from a url()).
+const [tile, panel, screw, pill, ctaRest, ctaPress] = await Promise.all([
+  getImage({ src: tileSrc, width: 800, format: 'webp', quality: 62 }),
+  getImage({ src: panelSrc, width: 720, format: 'webp', quality: 70 }),
+  getImage({ src: screwSrc, width: 76, format: 'webp', quality: 85 }),
+  getImage({ src: pillSrc, width: 1443, format: 'webp', quality: 82 }),
+  getImage({ src: ctaRestSrc, width: 720, format: 'webp', quality: 82 }),
+  getImage({ src: ctaPressSrc, width: 720, format: 'webp', quality: 82 }),
+]);
+const u = (i: { src: string }) => `url(${i.src})`;
+const imgVars = [
+  `--d-img-tile:${u(tile)}`, `--d-img-panel:${u(panel)}`, `--d-img-screw:${u(screw)}`,
+  `--d-img-pill:${u(pill)}`, `--d-img-cta:${u(ctaRest)}`, `--d-img-cta-press:${u(ctaPress)}`,
+].join(';');
+
+const pad2 = (n: number) => String(n).padStart(2, '0');
+
+// Free-text boxes stop here so a full form stays inside the relay's 16 KB body.
+const TEXT_MAX = 1500;
+
+const clientConfig = {
+  onceUrl: site.downloadGate.workerUrl + '/form-once',
+  // Build-time placeholder still in the Formspree id ⇒ not wired yet.
+  wired: !site.driftFeedbackFormEndpoint.includes('REPLACE_WITH_FORM_ID'),
+  t: {
+    thanks: ui.thanksEn,
+    err: ui.errEn,
+    soft: ui.softEn,
+    already: ui.alreadyEn,
+    requiredMissing: ui.requiredMissingEn,
+    badEmail: 'Please enter a valid email address.',
+  },
+  questions: questions.map((q) => ({
+    id: q.id,
+    type: q.type,
+    required: q.required,
+    label: q.en,
+    choices: Object.fromEntries((q.choices ?? []).map((c) => [c.code, c.en])),
+    hasOther: !!q.hasOther,
+    allowNa: !!q.allowNa,
+    minLen: q.minLen || 0,
+    reveal: q.reveal ? { whenIn: q.reveal.whenIn, fieldId: q.reveal.field.id, label: q.reveal.field.en } : null,
+  })),
+};
+---
+
+<BaseLayout title={ui.titleEn} description="DRIFT beta tester feedback." index={false}>
+  <div class="drift-page df-page" style={imgVars}>
+    <div class="d-wrap df-wrap">
+      <header class="df-head">
+        <div class="d-sechead">
+          <span class="d-marquee" aria-hidden="true">BETA FEEDBACK</span>
+          <span class="d-ja" lang="ja" aria-hidden="true">ドリフト</span>
+          <span class="d-rule" aria-hidden="true"></span>
+        </div>
+        <h1 class="df-headline"><span class="l1">DRIFT beta</span> <span class="l2">feedback.</span></h1>
+        <p class="d-lede">{ui.introEn}</p>
+      </header>
+
+      <form id="beta-form" novalidate>
+        <!-- honeypot: real users never fill this; bots do -->
+        <input type="text" name="_gotcha" class="d-hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
+        {sections.map((sec, si) => (
+          <DriftPanel class="df-panel">
+            <section class="sec" data-sec={sec.id} aria-labelledby={`sec-${sec.id}`}>
+              <div class="df-sechdr">
+                <span class="df-secnum" aria-hidden="true">{pad2(si + 1)}/{pad2(sections.length)}</span>
+                <h2 class="df-sectitle" id={`sec-${sec.id}`}>{sec.en}</h2>
+              </div>
+
+              {questions.filter((q) => q.section === sec.id).map((q) => (
+                <div class="q" id={`q-${q.id}`} data-qid={q.id}>
+                  <div class="q-head">
+                    <span class="q-label" id={`ql-${q.id}`}>{q.en}</span>
+                    <span class={`tag ${q.required ? 'tag--req' : 'tag--opt'}`}>{q.required ? ui.requiredEn : ui.optionalEn}</span>
+                  </div>
+
+                  {q.helpEn && <p class="q-help">{q.helpEn}</p>}
+
+                  {/* ── choice groups ── */}
+                  {(q.type === 'single' || q.type === 'multi') && (
+                    <fieldset class="opts" aria-labelledby={`ql-${q.id}`}>
+                      {q.choices?.map((c) => (
+                        <label class="opt">
+                          <input
+                            class="vh"
+                            type={q.type === 'single' ? 'radio' : 'checkbox'}
+                            name={q.id}
+                            value={c.code}
+                          />
+                          <span class="opt-label">{c.en}</span>
+                        </label>
+                      ))}
+                      {q.hasOther && (
+                        <label class="opt">
+                          <input
+                            class="vh"
+                            type={q.type === 'single' ? 'radio' : 'checkbox'}
+                            name={q.id}
+                            value="other"
+                          />
+                          <span class="opt-label">{ui.otherEn}</span>
+                        </label>
+                      )}
+                    </fieldset>
+                  )}
+
+                  {/* ── likert 1..5 / nps 0..10: a lit meter on sunk glass ── */}
+                  {(q.type === 'likert5' || q.type === 'nps') && (
+                    <div class:list={['likert', { 'is-nps': q.type === 'nps' }]}>
+                      <div class="meter" role="radiogroup" aria-labelledby={`ql-${q.id}`}>
+                        {(q.type === 'nps' ? [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] : [1, 2, 3, 4, 5]).map((n) => (
+                          <label class="seg">
+                            <input class="vh" type="radio" name={q.id} value={String(n)} />
+                            <span class="seg-num">{n}</span>
+                          </label>
+                        ))}
+                      </div>
+                      <div class="ends" aria-hidden="true">
+                        <span>{q.scale?.lowEn}</span>
+                        <span>{q.scale?.highEn}</span>
+                      </div>
+                      {q.allowNa && (
+                        <label class="opt na">
+                          <input class="vh" type="radio" name={q.id} value="na" />
+                          <span class="opt-label">{ui.naEn}</span>
+                        </label>
+                      )}
+                    </div>
+                  )}
+
+                  {/* ── free text ── */}
+                  {q.type === 'text' && (
+                    <textarea class="d-field text-in area" name={q.id} rows="4" maxlength={Math.min(q.maxLen || 2000, TEXT_MAX)} aria-labelledby={`ql-${q.id}`} aria-required={q.required ? 'true' : undefined}></textarea>
+                  )}
+                  {q.type === 'shorttext' && (
+                    <input class="d-field text-in" type="text" name={q.id} maxlength={q.maxLen || 200} aria-labelledby={`ql-${q.id}`} aria-required={q.required ? 'true' : undefined} />
+                  )}
+
+                  {/* ── "other" free text ── */}
+                  {q.hasOther && (
+                    <div class="sub-wrap" id={`other-${q.id}`} hidden>
+                      <input class="d-field text-in" type="text" name={`${q.id}_other`} maxlength="200" placeholder={ui.otherPlaceholderEn} aria-label={`${q.en}: ${ui.otherEn}`} />
+                    </div>
+                  )}
+
+                  {/* ── conditional follow-up ── */}
+                  {q.reveal && (
+                    <div class="sub-wrap reveal" id={`reveal-${q.reveal.field.id}`} hidden>
+                      <label class="q-sub" for={q.reveal.field.id}>{q.reveal.field.en}</label>
+                      {q.reveal.field.type === 'text' ? (
+                        <textarea class="d-field text-in area" id={q.reveal.field.id} name={q.reveal.field.id} rows="3" maxlength={TEXT_MAX}></textarea>
+                      ) : (
+                        <input class="d-field text-in" type="text" id={q.reveal.field.id} name={q.reveal.field.id} maxlength="200" />
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </section>
+          </DriftPanel>
+        ))}
+
+        <div class="df-send">
+          <div class="df-you">
+            <div class="q df-id" id="q-name">
+              <div class="q-head">
+                <label class="q-label" for="df-name">First name</label>
+                <span class="tag tag--req">{ui.requiredEn}</span>
+              </div>
+              <input id="df-name" class="d-field text-in" type="text" name="name" required autocomplete="given-name" maxlength="60" />
+            </div>
+            <div class="q df-id" id="q-country">
+              <div class="q-head">
+                <label class="q-label" for="df-country">Country</label>
+                <span class="tag tag--req">{ui.requiredEn}</span>
+              </div>
+              <input id="df-country" class="d-field text-in" type="text" name="country" required autocomplete="country-name" maxlength="60" />
+            </div>
+            <div class="q df-id df-email" id="q-email">
+              <div class="q-head">
+                <label class="q-label" for="df-email">Your email</label>
+                <span class="tag tag--req">{ui.requiredEn}</span>
+              </div>
+              <p class="q-help">So we can follow up with your $39 code. One form per email.</p>
+              <input id="df-email" class="d-field text-in" type="email" name="email" required autocomplete="email" maxlength="254" placeholder="your@email.com" />
+            </div>
+          </div>
+          <button type="submit" class="d-cta d-stamp-key"><span data-face>{ui.submitEn} feedback <span class="d-stamp-arrow" aria-hidden="true">&#9656;</span></span></button>
+        </div>
+      </form>
+
+      <p class="beta-status df-status" role="status" aria-live="polite" hidden></p>
+    </div>
+  </div>
+
+  <script define:vars={{ CFG: clientConfig }}>
+    const form = document.getElementById('beta-form');
+    const status = document.querySelector('.beta-status');
+    const t = CFG.t;
+    const emailIn = document.getElementById('df-email');
+    const nameIn = document.getElementById('df-name');
+    const countryIn = document.getElementById('df-country');
+    const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    // ── helpers ───────────────────────────────────────────────────────────
+    const one = (id) => {
+      const el = form.querySelector(`input[name="${id}"]:checked`);
+      return el ? el.value : null;
+    };
+    const many = (id) => [...form.querySelectorAll(`input[name="${id}"]:checked`)].map((e) => e.value);
+    const txt = (id) => {
+      const el = form.querySelector(`[name="${id}"]`);
+      return el ? el.value.trim() : '';
+    };
+
+    // ── conditional reveals ("other" + follow-ups) ────────────────────────
+    CFG.questions.forEach((q) => {
+      if (q.hasOther) {
+        const wrap = document.getElementById('other-' + q.id);
+        const upd = () => {
+          const on = q.type === 'single' ? one(q.id) === 'other' : many(q.id).includes('other');
+          wrap.hidden = !on;
+        };
+        form.querySelectorAll(`input[name="${q.id}"]`).forEach((i) => i.addEventListener('change', upd));
+        upd();
+      }
+      if (q.reveal) {
+        const block = document.getElementById('reveal-' + q.reveal.fieldId);
+        const upd = () => {
+          const v = one(q.id);
+          block.hidden = !(v && q.reveal.whenIn.includes(v));
+        };
+        form.querySelectorAll(`input[name="${q.id}"]`).forEach((i) => i.addEventListener('change', upd));
+        upd();
+      }
+    });
+
+    // ── status ────────────────────────────────────────────────────────────
+    function show(msg, ok) {
+      status.textContent = msg;
+      status.hidden = false;
+      status.classList.toggle('ok', ok);
+      status.classList.toggle('err', !ok);
+      status.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // ── validation ────────────────────────────────────────────────────────
+    function answered(q) {
+      if (q.type === 'multi') return many(q.id).length > 0;
+      if (q.type === 'single' || q.type === 'likert5' || q.type === 'nps') return one(q.id) != null;
+      return q.minLen ? txt(q.id).length >= q.minLen : txt(q.id) !== '';
+    }
+
+    // ── submit ────────────────────────────────────────────────────────────
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      form.querySelectorAll('.q.invalid').forEach((el) => el.classList.remove('invalid'));
+
+      // honeypot → pretend success, send nothing
+      if (form.querySelector('[name="_gotcha"]').value) {
+        form.hidden = true;
+        show(t.thanks, true);
+        return;
+      }
+
+      if (!CFG.wired) {
+        show(t.soft, false);
+        return;
+      }
+
+      // required questions (incl. the DRIFT bar's "≥40 chars" open answers), then name, country, email
+      const missing = CFG.questions.filter((q) => q.required && !answered(q)).map((q) => 'q-' + q.id);
+      const name = nameIn.value.trim();
+      const country = countryIn.value.trim();
+      const email = emailIn.value.trim();
+      if (!name) missing.push('q-name');
+      if (!country) missing.push('q-country');
+      if (!EMAIL_RE.test(email)) missing.push('q-email');
+      if (missing.length) {
+        missing.forEach((id) => document.getElementById(id)?.classList.add('invalid'));
+        show(missing.length === 1 && missing[0] === 'q-email' ? t.badEmail : t.requiredMissing, false);
+        document.getElementById(missing[0])?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+
+      // relay payload (form + email are the relay's; the rest goes to Formspree): the tester first, then each
+      // answer under its question text, choice codes swapped for their labels, "Other" text inside its answer
+      // (empties left out, so a full form is ~26 fields, under the relay's 30)
+      const label = (q, v) => (v === 'other' ? 'Other' : q.choices[v] || v);
+      const payload = {
+        form: 'drift_feedback',
+        email,
+        'First name': name,
+        Country: country,
+        _subject: 'DRIFT beta feedback: ' + name + ' (' + country + ')',
+      };
+      for (const q of CFG.questions) {
+        let v = '';
+        if (q.type === 'single') v = one(q.id) ? label(q, one(q.id)) : '';
+        else if (q.type === 'multi') v = many(q.id).map((c) => label(q, c)).join(', ');
+        else if (q.type === 'likert5') v = one(q.id) === 'na' ? 'N/A' : one(q.id) ? one(q.id) + ' / 5' : '';
+        else if (q.type === 'nps') v = one(q.id) != null ? one(q.id) + ' / 10' : '';
+        else v = txt(q.id);
+        if (q.hasOther && v) {
+          const o = txt(q.id + '_other');
+          if (o) v = v.replace('Other', 'Other: ' + o);
+        }
+        if (v) payload[q.label] = v;
+        if (q.reveal) {
+          const tx = txt(q.reveal.fieldId);
+          if (tx && !document.getElementById('reveal-' + q.reveal.fieldId).hidden) payload[q.reveal.label] = tx;
+        }
+      }
+
+      const submitBtn = form.querySelector('button[type="submit"]');
+      if (submitBtn?.getAttribute('aria-disabled') === 'true') return;
+      submitBtn?.setAttribute('aria-disabled', 'true');
+      try {
+        const res = await fetch(CFG.onceUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const j = await res.json().catch(() => null);
+        if (j && j.ok) {
+          form.hidden = true;
+          show(j.already ? t.already : t.thanks, true);
+        } else if (j && j.error === t.badEmail) {
+          document.getElementById('q-email').classList.add('invalid');
+          show(t.badEmail, false);
+        } else {
+          show(t.err, false);
+        }
+      } catch {
+        show(t.err, false);
+      } finally {
+        submitBtn?.removeAttribute('aria-disabled');
+      }
+    });
+  </script>
+  <style>
+    /* layout: a form column, narrower than the /drift sections */
+    .df-page { padding-top: clamp(28px, 5vw, 56px); padding-bottom: clamp(56px, 8vw, 96px); }
+    .df-wrap { width: min(820px, 100% - 2 * var(--d-gutter)); }
+    .df-head { position: relative; margin-bottom: clamp(28px, 4vw, 40px); }
+
+    /* the post headline, as the page's h1 (drift.css styles it on h2.d-headline only) */
+    .df-headline {
+      font: 700 clamp(40px, 5vw, 64px) / .92 var(--d-f-head);
+      text-transform: uppercase;
+      letter-spacing: .005em;
+      color: var(--d-white-ink);
+      text-wrap: balance;
+      padding-right: clamp(44px, 4.4vw, 60px);   /* clears the vertical kana */
+      margin: 0 0 18px;
+    }
+    .df-headline .l1, .df-headline .l2 { display: block; }
+    .df-headline .l1 { text-shadow: var(--d-glow-1); }
+    .df-headline .l2 { color: var(--d-neon); text-shadow: var(--d-glow-2); }
+
+    /* one steel panel per section */
+    #beta-form { display: grid; gap: 28px; }
+    #beta-form[hidden] { display: none; }
+    .df-panel { padding-bottom: 48px; }   /* the last line clears the bottom screws */
+
+    /* the section strip: LCD counter + pixel title over the pink dashed tape (#drive's attract header) */
+    .df-sechdr {
+      position: relative;
+      display: flex; align-items: baseline; gap: 16px;
+      padding-bottom: 14px; margin-bottom: 26px;
+    }
+    .df-sechdr::after {
+      content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 3px;
+      background: repeating-linear-gradient(90deg, var(--d-hot) 0 14px, rgba(247, 105, 224, .12) 14px 28px);
+      box-shadow: 0 0 10px rgba(247, 105, 224, .45);
+    }
+    .df-secnum {
+      font: 400 24px/1 var(--d-f-lcd); letter-spacing: .08em;
+      color: var(--d-lcd); text-shadow: 0 0 5px rgba(242, 76, 240, .7);
+    }
+    .df-sectitle {
+      font: 400 clamp(13px, 1.4vw, 16px) / 1.2 var(--d-f-pix);
+      letter-spacing: .14em; text-transform: uppercase;
+      color: var(--d-crt); text-shadow: 0 0 8px var(--d-crt-glow), 0 0 22px rgba(190, 90, 255, .35);
+    }
+
+    /* questions, split by the dashed violet rule (.d-compat) */
+    .q { padding-block: 22px; border-top: 1px dashed rgba(180, 107, 255, .22); }
+    .df-sechdr + .q { border-top: 0; padding-top: 0; }
+    .q:last-child { padding-bottom: 0; }
+    .q-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+    .q-label { font: 600 19px/1.3 var(--d-f-head); letter-spacing: .01em; color: var(--d-white-ink); }
+    .tag {
+      flex: none;
+      font: 400 8px/1 var(--d-f-pix); letter-spacing: .08em; text-transform: uppercase;
+      padding: 4px 6px 3px; border-radius: 2px;
+    }
+    .tag--req { color: var(--d-hot); border: 1px solid rgba(255, 79, 216, .5); text-shadow: var(--d-glow-pink); }
+    .tag--opt { color: var(--d-fg-dim); border: 1px solid rgba(180, 107, 255, .3); }
+    .q-help { margin: 6px 0 0; font-size: 15px; line-height: 1.5; color: var(--d-fg-dim); }
+
+    /* the real radios/checkboxes stay in the tree for keyboards and screen readers */
+    .vh { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; padding: 0; }
+
+    /* choice chips: the #drive track chip, with an LED that lights when picked */
+    .opts { border: 0; padding: 0; margin: 14px 0 0; min-width: 0; display: flex; flex-wrap: wrap; gap: 10px; }
+    .opt {
+      position: relative;
+      display: inline-flex; align-items: center; gap: 10px;
+      min-height: 42px; padding: 8px 14px 8px 12px;
+      border-radius: 4px; cursor: pointer; user-select: none;
+      font: 400 16px/1.2 var(--d-f-spec); letter-spacing: .04em; color: var(--d-fg);
+      background: linear-gradient(180deg, rgba(190, 90, 255, .06), rgba(190, 90, 255, .015) 60%, rgba(0, 0, 0, .18));
+      border: 1px solid rgba(190, 90, 255, .32);
+      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .35), inset 0 0 18px rgba(190, 90, 255, .08);
+      transition: transform .14s ease, border-color .14s ease, box-shadow .14s ease, color .14s ease;
+    }
+    .opt::before {
+      content: ''; flex: none; width: 8px; height: 8px; border-radius: 50%;
+      background: rgba(190, 90, 255, .18);
+      box-shadow: inset 0 1px 1px rgba(0, 0, 0, .6);
+      transition: background .14s ease, box-shadow .14s ease;
+    }
+    .opt:hover { border-color: rgba(190, 90, 255, .7); }
+    .opt:active { transform: translateY(2px); transition-duration: 40ms; }
+    .opt:has(:checked) {
+      color: var(--d-white-ink);
+      border-color: var(--d-hot);
+      box-shadow: 0 0 22px rgba(247, 105, 224, .22), inset 0 0 0 1px rgba(247, 105, 224, .5), inset 0 0 22px rgba(247, 105, 224, .1);
+    }
+    .opt:has(:checked)::before {
+      background: radial-gradient(circle at 40% 35%, #fff0ff, var(--d-hot) 55%, #8a1f7a);
+      box-shadow: 0 0 8px rgba(255, 79, 216, .9);
+    }
+    .opt:has(:focus-visible), .seg:has(:focus-visible) .seg-num { outline: 3px solid var(--d-pink-ink); outline-offset: 3px; }
+    .opt.na { margin-top: 12px; }
+
+    /* likert / nps: the BALANCE SCREEN meter on sunk glass. Picking a value
+       lights every step up to it; the picked step is the white tip. */
+    .likert { margin-top: 14px; max-width: 440px; }
+    .likert.is-nps { max-width: none; }
+    .meter {
+      display: flex; gap: 4px; padding: 8px;
+      border-radius: 5px;
+      background: radial-gradient(120% 100% at 50% 40%, #14061f 0%, #0b0314 70%);
+      box-shadow:
+        0 0 0 1px rgba(4, 2, 8, .9), 0 1px 0 1px rgba(255, 240, 255, .07),
+        inset 0 5px 8px rgba(0, 0, 0, .7), inset 0 -1px 0 rgba(255, 240, 255, .16), inset 0 0 0 1px rgba(180, 107, 255, .28);
+    }
+    .seg { position: relative; flex: 1 1 0; min-width: 0; cursor: pointer; }
+    .seg-num {
+      display: grid; place-items: center; height: 42px; border-radius: 2px;
+      font: 400 24px/1 var(--d-f-lcd); font-variant-numeric: tabular-nums;
+      color: rgba(242, 76, 240, .6);
+      background: rgba(242, 76, 240, .08);
+      transition: background-color 60ms linear, color 60ms linear;
+    }
+    .seg:hover .seg-num { background: rgba(242, 76, 240, .2); color: var(--d-pink-ink); }
+    .seg:has(~ .seg :checked) .seg-num {
+      background: rgb(255, 112, 247); color: #2a0630;
+      box-shadow: 0 0 6px rgba(242, 76, 240, .7);
+    }
+    .seg:has(:checked) .seg-num {
+      background: rgb(255, 240, 255); color: #2a0630;
+      box-shadow: 0 0 10px rgba(255, 112, 247, .95), 0 0 2px #fff;
+    }
+    .ends {
+      display: flex; justify-content: space-between; gap: 16px; margin-top: 8px;
+      font: 400 13px/1.3 var(--d-f-spec); letter-spacing: .05em; text-transform: uppercase; color: var(--d-fg-dim);
+    }
+    .ends span:last-child { text-align: right; }
+
+    /* text: the sunk-glass .d-field, set in the spec face */
+    .text-in {
+      display: block; margin-top: 14px; padding: 12px 14px; min-height: 48px;
+      font: 400 17px/1.45 var(--d-f-spec); letter-spacing: .03em;
+      caret-color: var(--d-hot);
+      transition: box-shadow 160ms ease;
+    }
+    .text-in.area { resize: vertical; min-height: 110px; }
+    .text-in:focus {
+      outline: none;
+      box-shadow:
+        0 0 0 1px rgba(4, 2, 8, .9), inset 0 5px 8px rgba(0, 0, 0, .7),
+        inset 0 0 0 1px var(--d-neon), 0 0 0 3px rgba(210, 60, 255, .22), 0 0 22px rgba(210, 60, 255, .4);
+    }
+    .sub-wrap .text-in { margin-top: 10px; }
+    .q-sub { display: block; margin-top: 14px; font: 600 14px/1.3 var(--d-f-head); text-transform: uppercase; letter-spacing: .06em; color: var(--d-fg); }
+
+    /* invalid: the race red, as a dashed tape, never a glow */
+    .q.invalid .q-label { color: var(--d-red); }
+    .q.invalid .opts, .q.invalid .meter { outline: 1px dashed rgba(var(--d-red-rgb), .85); outline-offset: 6px; border-radius: 5px; }
+    .q.invalid .text-in { box-shadow: 0 0 0 1px rgba(4, 2, 8, .9), inset 0 5px 8px rgba(0, 0, 0, .7), inset 0 0 0 1px var(--d-red); }
+
+    /* send: the red key, centred under the last panel */
+    .df-send { display: grid; justify-items: center; gap: 22px; margin-top: 12px; }
+    /* the tester: first name + country side by side, the email full width under them */
+    .df-you { justify-self: stretch; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 22px; }
+    .df-you .q { padding: 0; border-top: 0; }
+    .df-email { grid-column: 1 / -1; }
+    .df-id .text-in { font-size: 19px; letter-spacing: .05em; min-height: 56px; }
+    .df-id .text-in::placeholder { color: #8f7aa8; }
+    .df-send .d-stamp-key { --h: 60px; }
+    .df-send .d-cta[aria-disabled='true'] { cursor: progress; filter: saturate(.6) brightness(.8); }
+
+    /* the answer lights up like a readout */
+    .df-status {
+      margin: 28px auto 0; max-width: 620px; padding: 18px 22px;
+      text-align: center; border-radius: 5px;
+      background: radial-gradient(120% 100% at 50% 40%, #14061f 0%, #0b0314 70%);
+      box-shadow: 0 0 0 1px rgba(4, 2, 8, .9), 0 1px 0 1px rgba(255, 240, 255, .07), inset 0 5px 8px rgba(0, 0, 0, .7);
+    }
+    .df-status[hidden] { display: none; }
+    .df-status.ok { font: 400 26px/1.2 var(--d-f-lcd); letter-spacing: .03em; color: var(--d-white-ink); text-shadow: 0 0 8px rgba(242, 76, 240, .6); }
+    .df-status.err { font: 500 15px/1.45 var(--d-f-head); letter-spacing: .04em; color: var(--d-pink-ink); }
+    #beta-form[hidden] + .df-status { margin-top: 0; }
+
+    @media (max-width: 600px) {
+      .df-panel { padding-left: clamp(18px, 5vw, 44px); padding-right: clamp(18px, 5vw, 44px); }
+      .q-label { font-size: 18px; }
+      .opt { font-size: 15px; }
+      .meter { gap: 3px; padding: 6px; }
+      .is-nps .meter { gap: 2px; padding: 5px; }
+      .is-nps .seg-num { height: 38px; font-size: 20px; }
+      .df-send .d-stamp-key { --h: 56px; width: 100%; max-width: 420px; }
+      .df-you { grid-template-columns: minmax(0, 1fr); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .opt, .opt::before, .seg-num, .text-in { transition: none; }
+    }
+  </style>
+</BaseLayout>

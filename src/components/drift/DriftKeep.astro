@@ -1,0 +1,132 @@
+---
+/**
+ * The keep-it menu, under the tracks (Dan 10-01: "not relevant for what the
+ * first thing user see" — it left the hero CTA panel, which kept the price
+ * and the key). Dan 10-03: "put inside a pixel screen, like on the plugin" —
+ * it is the plugin's arcade select screen now, the same CRT as SELECT TRACKS
+ * (.d-crt glass + scanlines, Press Start head over the pink dashed rule, VT323
+ * phosphor): the head on the left, the trial date as a readout on the right,
+ * the three routes as menu boxes (condition, then the value big), only the FREE
+ * route links. Dan 10-03 "more understandable" (twice): the head says the order (try free, then
+ * keep it), each box reads do this -> KEEP IT FOR -> price -> the catch (drift.ts heroCond / value /
+ * keepNote), with OR chips between the boxes: one choice, not steps or tiers.
+ * Dan 10-03 "put inside an option to free trial it, with an email gate and everything": a PLAYER 1
+ * START bar tops the screen while the trial is the offer: the head + the download date on the left,
+ * an arcade name-entry email field + a digital GET IT key that stutter-blinks like PRESS START (capture.ts: the hero stamp's
+ * /form-once contract, honeypot, status line, consent), then THEN KEEP IT 3 WAYS over the boxes.
+ * Dan 10-03 "this doesn't add up" (bench A/B/C, then A1-A3, picked A3): in the trial phases the boxes give way
+ * to THE ROAD TO NOV 1 (drift.ts lapFor): START / CHECKPOINT / FINISH on one line with a price at each stop, the
+ * free days lit and the wait dim, the video as a SHORTCUT lane over the lap, the #drive GPS car driving it
+ * while it's on screen (init.ts initLap). 'closed' keeps the route boxes.
+ * Renders only while routes exist (not 'released').
+ */
+import { site } from '../../data/site';
+import { drift, ctaFor, routesFor, lapFor, captureCopyFor } from '../../data/drift';
+const cta = ctaFor();
+const routes = routesFor();
+const lap = lapFor();   // the trial phases: the lap replaces the route boxes (Dan 10-03, A3)
+// the trial gate lives on the screen while the trial is the offer (preopen / open); same contract as the hero
+// stamp (capture.ts: /form-once, this phase's source and status lines)
+const gate = drift.phase === 'preopen' || drift.phase === 'open' ? captureCopyFor() : null;
+const onceUrl = site.downloadGate.workerUrl + '/form-once';
+---
+{routes.length > 0 && (
+  <div class="d-keep d-wrap">
+    <div class="d-keep-tv">
+    <div class="d-crt d-keep-screen">
+      {gate ? (
+        <Fragment>
+          <!-- PLAYER 1 START: the free trial, an email gate on the screen (Dan 10-03) -->
+          <div class="d-attract-hdr d-keep-start">
+            <p class="d-keep-head d-keep-try" id="d-keep-start-h"><span>Try it free</span>{' '}<span>for {drift.trialDays} days.</span></p>
+            <div class="d-keep-gate">
+              <form class="d-keep-form" action={site.formspreeEndpoint} method="POST" aria-labelledby="d-keep-start-h"
+                data-drift-capture data-once-url={onceUrl} data-msg-ok={gate.ok} data-msg-already={gate.already}>
+                <label for="d-keep-email" class="d-sr">Your email: we send the DRIFT download here</label>
+                <span class="d-keep-input">
+                  <input id="d-keep-email" class="d-field d-keep-field" type="email" name="email" required
+                    autocomplete="email" inputmode="email" enterkeyhint="go" spellcheck="false" placeholder="ENTER YOUR EMAIL" />
+                </span>
+                <input type="hidden" name="source" value={gate.source} />
+                <!-- honeypot: real users never fill this; bots do -->
+                <input type="text" name="_gotcha" class="d-hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+                <button type="submit" class="d-keep-key"><span data-face>Get it <span class="d-keep-arrow" aria-hidden="true">&#9654;</span></span></button>
+              </form>
+              <p class="d-capture-status" role="status" aria-live="polite" tabindex="-1"></p>
+              <p class="d-keep-consent">Open it on a computer · You join our list · unsubscribe anytime</p>
+            </div>
+          </div>
+        </Fragment>
+      ) : (
+        <div class="d-attract-hdr d-keep-hdr">
+          <p class="d-keep-head">{drift.phase === 'closed'
+            ? <span class="l2">Keep it:</span>
+            : <Fragment><span class="l1">Try it free for {drift.trialDays} days.</span>{' '}<span class="l2">Then keep it {routes.length} ways:</span></Fragment>}</p>
+          <p class="d-keep-sub">{cta.sub}</p>
+        </div>
+      )}
+      {lap ? (
+        <div class="d-lap" data-lap>
+          <!-- THE ROAD TO NOV 1 (Dan 10-03, bench A3): the dates in order on one line, a price at each stop, the
+               video as a SHORTCUT lane over the lap, the GPS car driving it while it's on screen (init.ts) -->
+          <p class="d-keep-head d-keep-then"><span class="l2">{lap.head}</span></p>
+          <div class:list={['d-lap-track', lap.shortcut && 'd-lap-track--bypass']}>
+            <i class="d-lap-seg d-lap-seg--trial" aria-hidden="true"></i>
+            <i class="d-lap-seg d-lap-seg--wait" aria-hidden="true"></i>
+            {lap.shortcut && <i class="d-lap-bypass" aria-hidden="true"></i>}
+            <ol class="d-lap-stops" role="list">
+              {lap.stops.map((s) => (
+                <li class={`d-lap-stop d-lap-stop--${s.id}`}>
+                  <i class="d-lap-node" aria-hidden="true"></i>
+                  <span class="d-lap-flag">{s.flag}</span>
+                  <span class="d-lap-date">{s.date}</span>
+                  <span class="d-lap-what">{s.what}</span>
+                  {s.chip && <span class="d-lap-chip">{s.chip.label} <b>{s.chip.value}</b></span>}
+                </li>
+              ))}
+            </ol>
+            {lap.shortcut && (
+              <a class="d-lap-sign" href={lap.shortcut.href}><span class="d-lap-tag">Shortcut</span> {lap.shortcut.label} <span aria-hidden="true">→</span> <b>{lap.shortcut.value}</b> <span class="d-lap-chev" aria-hidden="true">›</span></a>
+            )}
+            <span class="d-lap-span" aria-hidden="true">{lap.span}</span>
+            <span class="d-lap-lane" aria-hidden="true"><i class="d-lap-car"></i></span>
+          </div>
+          {lap.shortcut && <p class="d-lap-note">{lap.shortcut.note}</p>}
+        </div>
+      ) : (
+        <Fragment>
+          <ul class="d-keep-routes" role="list">
+            {routes.map((r) => (
+              <li class:list={['d-keep-route', `d-route--${r.id}`]}>
+                {r.href ? (
+                  <a class="d-keep-box d-keep-box--link" href={r.href}>
+                    <span class="d-keep-cond">{r.heroCond} ›</span>
+                    {r.value && <span class="d-keep-for">Keep it for</span>}
+                    {r.value && <span class="d-keep-val">{r.value}</span>}
+                    <span class="d-keep-note">{r.keepNote}</span>
+                  </a>
+                ) : (
+                  <div class="d-keep-box">
+                    <span class="d-keep-cond">{r.heroCond}</span>
+                    {r.value && <span class="d-keep-for">Keep it for</span>}
+                    {r.value && <span class="d-keep-val">{r.value}</span>}
+                    <span class="d-keep-note">{r.keepNote}</span>
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+          {cta.action !== 'cart' && <p class="d-keep-fine">Nothing to pay today.</p>}
+        </Fragment>
+      )}
+    </div>
+    <!-- the plugin's CRT cabinet livery, printed on the TV bezel (Dan 10-03, direction A): live type, never baked -->
+    <span class="d-tv-ink d-tv-tl" aria-hidden="true"><i class="d-tv-checker"></i><b>Speed sounds better</b></span>
+    <span class="d-tv-ink d-tv-tr" aria-hidden="true"><i class="d-tv-stripes"></i><b lang="ja">スピード</b></span>
+    <span class="d-tv-ink d-tv-r" lang="ja" aria-hidden="true">走り続ける</span>
+    <span class="d-tv-ink d-tv-l" aria-hidden="true">Racing music for a higher state</span>
+    <span class="d-tv-ink d-tv-bl" aria-hidden="true"><b class="d-tv-badge">R</b>Fuel ideas not cars</span>
+    <span class="d-tv-ink d-tv-br" aria-hidden="true">A faster mind</span>
+    </div>
+  </div>
+)}

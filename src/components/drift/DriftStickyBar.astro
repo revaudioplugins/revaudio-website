@@ -1,7 +1,7 @@
 ---
 /**
  * Phone-only (≤900 px) DRIFT sticky bar: a full-width red keycap with the
- * phase label over one VT323 micro line, on the dash-glass strip. Measured
+ * phase label (the hero key's Oswald face) over one Oswald fine-print line, on a strip of panel steel. Measured
  * 2026-09-30: the CTA was in view on only 15.4% of phone scroll positions.
  * No desktop sticky (Dan built and deleted one on 07-22).
  *
@@ -23,7 +23,8 @@ import { ctaFor } from '../../data/drift';
 const cta = ctaFor();
 ---
 <div class="d-stickybar is-away" data-drift-sticky>
-  <a class="d-cta d-cta--bar" href={cta.action === 'cart' ? '#get' : '#try'} data-drift-jump>{cta.label}</a>
+  <a class="d-cta d-cta--bar d-stamp-key" href={cta.action === 'cart' ? '#get' : '#try'} data-drift-jump
+    aria-label={cta.action !== 'cart' && cta.label === 'Get it' ? 'Get it: go to the trial form' : undefined}>{cta.label} <span class="d-stamp-arrow" aria-hidden="true">&#9656;</span></a>
   <span class="d-stickybar-micro">{cta.sticky}</span>
 </div>
 
@@ -35,8 +36,8 @@ const cta = ctaFor();
     min-height: var(--d-sb-h);
     padding: 0.5rem max(1rem, env(safe-area-inset-right))
              calc(0.45rem + env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
-    /* the dash-glass strip (drift.css .d-dashbar) */
-    background: linear-gradient(180deg, #17121f, #0d0a12 60%, #0b0810);
+    /* a strip of panel steel (the panels' face, already loaded), dimmed */
+    background: linear-gradient(rgba(12, 5, 18, .55), rgba(12, 5, 18, .55)), var(--d-img-panel) center / cover, #150a1f;
     border-top: 1px solid rgba(180, 107, 255, .3);
     box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.5);
     transition: transform 0.28s var(--ease-settle), visibility 0s 0s; will-change: transform;
@@ -54,12 +55,34 @@ const cta = ctaFor();
     :global(body:has(#cookie-banner.cb--visible) .cart-fab.cart-fab) { bottom: 16px; }
     /* a watched block under the FAB: slide it off the left edge until it has passed */
     :global(body .cart-fab.cart-fab) { transition: bottom 0.28s var(--ease-settle), transform 0.24s var(--ease-exit); }
-    :global(body:has([data-drift-fab-watch].is-underfab) .cart-fab.cart-fab) { transform: translateX(calc(-100% - 24px)); pointer-events: none; }
+    :global(body:has([data-drift-fab-watch].is-underfab) .cart-fab.cart-fab),
+    :global(body:has(.drift-page .is-underfab) .cart-fab.cart-fab),
+    :global(body:has(.d-hero-trial.is-underfab) .cart-fab.cart-fab),
+    :global(body:has(.site-footer.is-underfab) .cart-fab.cart-fab) { transform: translateX(calc(-100% - 24px)); pointer-events: none; }
+    /* while the red bar is up the FAB stays off the edge: its red count badge was a second red beside GET IT, on the text (ux r2 10-02) */
+    :global(body:has(.d-stickybar:not(.is-away)) .cart-fab.cart-fab) { transform: translateX(calc(-100% - 24px)); pointer-events: none; }
+    /* an empty cart has nothing to open: off the edge until the badge shows a count (it sat on the heads and the plates, ux r1 10-02) */
+    :global(body:has(.cart-fab-badge[hidden]) .cart-fab.cart-fab) { transform: translateX(calc(-100% - 24px)); pointer-events: none; }
     @media (prefers-reduced-motion: reduce) { :global(body .cart-fab.cart-fab) { transition: none; } }
     /* the footer clears the bar only while the bar is up; at the page end
        #creators is in view, the bar is away, and the margin showed as a strip */
     :global(body:has(.d-stickybar:not(.is-away)) .site-footer) { margin-bottom: calc(var(--d-sb-h) + env(safe-area-inset-bottom, 0px)); }
+    /* the house footer's 84 px cart-FAB clearance (global.css, <=900): here the FAB slides off at the footer (or is off
+       with an empty cart), so the footer keeps its own bottom pad; the 84 px was an empty black band under the social
+       row (Dan 10-05, iPhone) */
+    :global(body footer.site-footer.site-footer) { padding-bottom: calc(var(--space-5) + env(safe-area-inset-bottom, 0px)); }
     :global(html) { scroll-padding-bottom: calc(var(--d-sb-h) + 16px); }
+  }
+  /* phones: at the page end the footer fills the screen under the header (its head right under the nav, Dan 10-05);
+     the links sit at the bottom and any spare height stays inside the footer, above them. lvh = the screen with
+     Safari's bars tucked away: with them out, the footer's empty top just runs on under the header */
+  @media (max-width: 600px) {
+    :global(body footer.site-footer.site-footer) {
+      min-height: calc(100vh - var(--d-nav-h, 44px));
+      min-height: calc(100lvh - var(--d-nav-h, 44px));
+      display: flex; flex-direction: column; justify-content: flex-end;
+    }
+    :global(body footer.site-footer.site-footer > .container) { width: 100%; }   /* a flex item: keep the block width */
   }
   .d-stickybar .d-cta--bar { --h: 48px; width: 100%; }
   @media (min-width: 600px) {
@@ -67,35 +90,73 @@ const cta = ctaFor();
     .d-stickybar .d-cta--bar { width: min(100%, 420px); }   /* a key, not a 716 px banner */
   }
   .d-stickybar-micro {
-    font: 400 16px/1 var(--d-f-lcd); letter-spacing: 0.08em;
-    text-align: center; color: var(--d-fg-neon);
+    font: 500 12px/1 var(--d-f-head); letter-spacing: .05em; text-transform: uppercase;
+    text-align: center; color: var(--d-fg-dim);
+  }
+  /* PHONE PASS 2026-10-02 (S4): the page's most important fine print, at the 13+ floor and bright */
+  @media (max-width: 600px) {
+    .d-stickybar-micro { font-size: 14px; color: var(--d-fg); }
   }
 </style>
 
 <script>
   const bar = document.querySelector<HTMLElement>('[data-drift-sticky]');
-  const zones = Array.from(document.querySelectorAll<HTMLElement>('[data-drift-cta-zone]'));
+  const phoneMq = matchMedia('(max-width: 600px)');
+  // 601-900 (today's logic): the hero's red GET IT key lives in .d-hero-trial (not a CTA zone): hide the bar beside it too,
+  // and beside the house footer, so the bar never slides up over it at the page end
+  const wideZones = Array.from(document.querySelectorAll<HTMLElement>('[data-drift-cta-zone], .d-hero-trial, .site-footer'));
+  // ≤600 (S1, 10-02): the real asks only, edge to edge (no -25%): the red key of the hero form and of #try's form,
+  // #creators and the footer. So there is no red-less band between #fx and #try (the key, not the form: #try's
+  // field enters first and sits under the bar for ~100 px of scroll) and none beside the price line, which has no key
+  const tryAsk = document.querySelector<HTMLElement>('#try .d-capture-form .d-stamp-key') ?? document.querySelector<HTMLElement>('#try, #get .d-buyslot');
+  const phoneZones = [document.querySelector<HTMLElement>('.d-stamp-form .d-stamp-key'), tryAsk,
+    document.querySelector<HTMLElement>('#creators'), document.querySelector<HTMLElement>('.site-footer')]
+    .filter((z): z is HTMLElement => !!z);
   if (bar) {
     // publish the real height so the FAB/footer/scroll offsets that read
     // --d-sb-h stay exact (display:none above 900px -> 0, inert there).
-    const syncH = () => document.documentElement.style.setProperty('--d-sb-h', bar.offsetHeight + 'px');
+    // --d-nav-h: the header as it renders here (taller than the house --nav-h on phones), for the footer fill below
+    const nav = document.querySelector<HTMLElement>('[data-site-nav]');
+    const syncH = () => {
+      document.documentElement.style.setProperty('--d-sb-h', bar.offsetHeight + 'px');
+      if (nav) document.documentElement.style.setProperty('--d-nav-h', nav.offsetHeight + 'px');
+    };
     syncH();
     window.addEventListener('resize', syncH);
   }
-  if (bar && zones.length) {
+  if (bar && (wideZones.length || phoneZones.length)) {
     const hits = new Set<Element>();
-    const set = () => bar.classList.toggle('is-away', hits.size > 0);
-    const io = new IntersectionObserver((entries) => {
-      for (const e of entries) { if (e.isIntersecting) hits.add(e.target); else hits.delete(e.target); }
-      set();
-    }, { rootMargin: '0px 0px -25% 0px', threshold: 0 });
-    zones.forEach((z) => io.observe(z));
+    let zones: HTMLElement[] = [];
+    // phone only: also away while a DRIFT email field has focus (the keyboard is up) and after a sign-up (G3)
+    let typing = false;
+    const html = document.documentElement;
+    const set = () => bar.classList.toggle('is-away',
+      hits.size > 0 || (phoneMq.matches && (typing || html.hasAttribute('data-drift-joined'))));
+    let io: IntersectionObserver | null = null;
+    const observe = () => {
+      io?.disconnect();
+      hits.clear();
+      const phone = phoneMq.matches;
+      zones = phone ? phoneZones : wideZones;
+      io = new IntersectionObserver((entries) => {
+        for (const e of entries) { if (e.isIntersecting) hits.add(e.target); else hits.delete(e.target); }
+        set();
+      }, { rootMargin: phone ? '0px' : '0px 0px -25% 0px', threshold: 0 });
+      zones.forEach((z) => io!.observe(z));
+    };
+    observe();
+    phoneMq.addEventListener('change', observe);   // crossing 600: the other zone set and margin
+    const field = (t: EventTarget | null) => t instanceof HTMLInputElement && t.type === 'email' && !!t.closest('.drift-page');
+    document.addEventListener('focusin', (e) => { typing = field(e.target); set(); });
+    document.addEventListener('focusout', () => { typing = false; set(); });
+    new MutationObserver(set).observe(html, { attributes: true, attributeFilter: ['data-drift-joined'] });
     window.addEventListener('pageshow', (e) => {   // Safari bfcache backstop (house pattern)
       if (!e.persisted) return;
       hits.clear();
+      const edge = window.innerHeight * (phoneMq.matches ? 1 : 0.75);
       for (const z of zones) {
         const r = z.getBoundingClientRect();
-        if (r.top < window.innerHeight * 0.75 && r.bottom > 0) hits.add(z);
+        if (r.top < edge && r.bottom > 0) hits.add(z);
       }
       set();
     });
@@ -105,7 +166,8 @@ const cta = ctaFor();
   // that bottom band only (a root shrunk to it: the bar's height counts even
   // while it is away, so the band is the same at #get and #creators), and
   // slide the FAB off while any of them overlaps it.
-  const watched = Array.from(document.querySelectorAll<HTMLElement>('[data-drift-fab-watch]'));
+  // plus every head, catch line, the keep panel and the VIDEO CHECK glass: the FAB leaves wherever a line passes under it (ux r2 10-02)
+  const watched = Array.from(document.querySelectorAll<HTMLElement>('[data-drift-fab-watch], .d-hero-trial, .drift-page h2.d-headline, .drift-page .d-catch, .d-keep, .d-cr-checks, .site-footer'));
   if (watched.length && matchMedia('(max-width: 700px)').matches) {
     let fabIo: IntersectionObserver | null = null;
     const watch = () => {

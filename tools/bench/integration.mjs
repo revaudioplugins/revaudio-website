@@ -14,7 +14,7 @@
    Then:   click = select · drag = move · corner = resize · dbl-click = edit
            text · E = try the UI live · Ctrl+Z = undo · ⬇ EXPORT when happy.
 
-   Deltas autosave to localStorage under `bench:<last path segment>`, so each
+   Deltas autosave to localStorage under `bench:<last non-empty path segment>`, so each
    page keeps its own work and none of it collides with the standalone
    bench-trial-plates.html (which keys off its filename). */
 import { readFile } from 'node:fs/promises';
@@ -27,6 +27,9 @@ import { fileURLToPath } from 'node:url';
 const CANDIDATES = [
   new URL('../../../revaudio-shared/tools/bench/bench.js', import.meta.url), // mac: sibling of the site repo
   new URL('../../../../shared/tools/bench/bench.js', import.meta.url),       // win: C:\RevAudio\shared
+  // a git worktree (<site>/.claude/worktrees/<name>/) sits three levels deeper
+  new URL('../../../../../../revaudio-shared/tools/bench/bench.js', import.meta.url),
+  new URL('../../../../../../../shared/tools/bench/bench.js', import.meta.url),
 ].map(fileURLToPath);
 
 export default function bench() {
@@ -80,10 +83,10 @@ export default function bench() {
 
   /* ?bench=reset — wipe this page's saved deltas BEFORE the harness reads
      them, so the bench opens mirroring committed source exactly. Same key
-     the harness uses (bench.js: 'bench:' + last path segment). Then strip
+     the harness uses (bench.js: 'bench:' + last non-empty path segment). Then strip
      the value from the URL so a refresh doesn't wipe fresh work. */
   if (new URLSearchParams(location.search).get('bench') === 'reset') {
-    try { localStorage.removeItem('bench:' + location.pathname.split('/').pop()); } catch (e) {}
+    try { localStorage.removeItem('bench:' + (location.pathname.split('/').filter(Boolean).pop() || 'index')); } catch (e) {}
     var u = new URL(location.href);
     u.searchParams.set('bench', '');
     history.replaceState(null, '', u.toString().replace('bench=', 'bench'));

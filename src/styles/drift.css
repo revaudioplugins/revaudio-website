@@ -13,6 +13,14 @@
    neon, 81% of it at hue 270-300deg. Neon here is ALWAYS a lamp (tube, LED,
    CRT phosphor, lit screen) — that is how /drift keeps the site law "no glow
    without a lamp" while wearing DRIFT's purple.
+
+   2026-10-01 (Dan): the page wears the DRIFT Instagram post language on top
+   (revaudio-shared marketing/drift-instagram/drift-design-language.json, Ilay):
+   Oswald two-line headlines (line 2 purple), pink Press Start kickers, vertical
+   Japanese, Share Tech Mono specs, Bangers chips. Split rule: the plugin's own
+   parts (wheel, gauges, LCD glass, GPS, the red key) stay plugin pixels; the
+   type and colour around them follow the posts. A headline glows as neon
+   lettering (a sign is a lamp), held to line 2 so the page stays mostly dark.
    ========================================================================== */
 
 @font-face {
@@ -20,6 +28,30 @@
   src: url('/fonts/drift/Orbitron-SemiBold.subset.woff2') format('woff2'),
        url('/fonts/drift/Orbitron-SemiBold.ttf') format('truetype');
   font-weight: 400 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Drift Oswald';
+  src: url('/fonts/drift/Oswald-var.latin.woff2') format('woff2');
+  font-weight: 300 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Drift Mono';
+  src: url('/fonts/drift/ShareTechMono.latin.woff2') format('woff2');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Drift Bangers';
+  src: url('/fonts/drift/Bangers.latin.woff2') format('woff2');
+  font-display: swap;
+}
+/* subset to the page's own Japanese (Google Fonts text= kit): add a word = refetch, and bump the file name (-v2:
+   10-03 + スピード 走り続ける for the TV livery; the old set kept) so no browser keeps a stale subset */
+@font-face {
+  font-family: 'Drift JP';
+  src: url('/fonts/drift/NotoSansJP-var.subset-v2.woff2') format('woff2');
+  font-weight: 700 900;
   font-display: swap;
 }
 @font-face {
@@ -35,32 +67,39 @@
   --d-steel: #0e0515;        /* --arc-steel */
   --d-glass: #0f0418;        /* --arc-glass */
   --d-plate: #0a0810;
-  --d-neon: #b46bff;         /* --neon-purple */
-  --d-neon-rgb: 180, 107, 255;
+  --d-neon: #d23cff;         /* post accent.purple (was plugin --neon-purple #b46bff) */
+  --d-neon-rgb: 210, 60, 255;
   --d-violet: #8a2be2;
   --d-mag: #e040c8;
-  --d-hot: #f769e0;          /* --arc-neon */
+  --d-hot: #ff4fd8;          /* post accent.pink (was --arc-neon #f769e0) */
   --d-lcd: #f24cf0;          /* --arc-lcd (magenta dot-matrix ink) */
   --d-lcd-hdr: #c73fc4;
   --d-crt: #d98bff;          /* --arc-crt (violet phosphor) */
   --d-crt-glow: rgba(190, 90, 255, .75);
   --d-pink-ink: #ffd1f8;
-  --d-white-ink: #fff0ff;
+  --d-white-ink: #f6e8ff;    /* post text.primary */
   --d-cyan: #5ee7ff;         /* SIMPLE tracks */
   --d-cyan-ink: #c8f6ff;
   --d-red: #ff6b63;          /* --trk-red */
   --d-red-rgb: 255, 107, 99;
   --d-amber-rgb: 255, 150, 40;
-  --d-fg: #e8e0d0;
-  --d-fg-dim: #b3aa98;       /* plugin --fg-dim #9a927f lifted for 4.5:1 on --d-steel */
+  --d-fg: #d9c6ef;           /* post text.body (was the house cream #e8e0d0) */
+  --d-fg-dim: #a58cc4;       /* post text.muted, 6.8:1 on --d-steel */
   --d-fg-neon: #dcc7ff;
-  --d-dim-violet: #a58bd0;   /* plugin #9b7cc6 lifted for AA body-size text */
+  --d-dim-violet: #a58cc4;   /* post text.muted */
   --d-jp: #8b62b8;
+  /* post headline glows: line 1 a soft white-hot core, line 2 the purple sign */
+  --d-glow-1: 0 0 3px rgba(255, 255, 255, .5), 0 0 22px rgba(210, 60, 255, .4);
+  --d-glow-2: 0 0 26px rgba(210, 60, 255, .75);
+  --d-glow-pink: 0 0 12px rgba(255, 79, 216, .65);
 
   --d-f-pix: 'Drift Press', 'Press Start 2P', ui-monospace, monospace;
   --d-f-badge: 'Drift Orbitron', 'Orbitron', var(--font-display);
   --d-f-lcd: 'VT323', ui-monospace, monospace;
-  --d-f-ja: 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Yu Gothic UI', Meiryo, sans-serif;
+  --d-f-ja: 'Drift JP', 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Yu Gothic UI', Meiryo, sans-serif;
+  --d-f-head: 'Drift Oswald', 'Oswald', Impact, sans-serif;
+  --d-f-spec: 'Drift Mono', 'Share Tech Mono', ui-monospace, monospace;
+  --d-f-chip: 'Drift Bangers', 'Bangers', var(--d-f-head);
 
   /* live state, written by src/lib/drift/bus.ts */
   --pan: 0;
@@ -104,33 +143,51 @@
 .d-ja { font-family: var(--d-f-ja); font-weight: 700; }
 .d-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-/* ---------- section head: the TRAKS attract-menu head (▶ EN  カナ ------) ---
-   The pixel face is a MARQUEE label only (≤12 chars: it overflowed every
-   sentence H2 at 390 px); the real <h2> is an Inter sentence under it. */
+/* ---------- section head: the post kicker (▶ EN ------), the post's vertical
+   Japanese word on the right edge, then the real <h2> as the post headline:
+   two Oswald lines, line 2 purple (.l1 / .l2 spans; uppercase is CSS only, so
+   a screen reader reads the sentence). The pixel face stays a short label
+   (≤12 chars: it overflowed every sentence H2 at 390 px). */
 .d-sec { padding-top: clamp(48px, 6vw, 72px); }   /* tightened 10-01: the page ran 20-26% over its screen budget */
 @media (max-width: 600px) { .d-sec { padding-top: 40px; } .drift-page .d-lede--sec { margin-bottom: 18px; } }
+.d-sec > .d-wrap { position: relative; }
 .d-sechead { display: flex; align-items: baseline; gap: 16px; margin: 0 0 18px; }
+.d-sechead:has(.d-ja) { padding-right: clamp(44px, 4.4vw, 60px); }
 .d-marquee {
-  font: 400 clamp(15px, 1.6vw, 20px) / 1.25 var(--d-f-pix);
-  letter-spacing: .14em;
+  font: 400 clamp(13px, 1.3vw, 16px) / 1.25 var(--d-f-pix);
+  letter-spacing: .1em;
   text-transform: uppercase;
-  color: var(--d-lcd);
+  color: var(--d-hot);
+  text-shadow: var(--d-glow-pink);
   white-space: nowrap;
 }
-.d-marquee::before { content: '\25B6\00A0'; color: var(--d-hot); }
-.d-sechead .d-ja { font-size: 13px; letter-spacing: .34em; color: var(--d-jp); font-weight: 500; }
+.d-marquee::before { content: '\25B6\00A0'; }
+.d-sechead .d-ja {
+  position: absolute; top: 0; right: 0;
+  writing-mode: vertical-rl; text-orientation: upright;
+  font: 900 clamp(26px, 2.8vw, 40px) / 1.04 var(--d-f-ja); letter-spacing: 0;
+  color: var(--d-neon); opacity: .85;
+  text-shadow: 0 0 18px rgba(210, 60, 255, .8);
+}
 .d-sechead .d-rule {
   flex: 1; height: 2px; align-self: center;
   background: repeating-linear-gradient(90deg, rgba(190, 90, 255, .5) 0 6px, transparent 6px 12px);
 }
 .drift-page h2.d-headline {
-  font: 700 clamp(24px, 2.6vw, 34px) / 1.2 Inter, var(--font-body);
-  text-transform: none;
-  letter-spacing: 0;
+  font: 700 clamp(36px, 3.6vw, 52px) / .92 var(--d-f-head);
+  text-transform: uppercase;
+  letter-spacing: .005em;
   color: var(--d-white-ink);
   text-wrap: balance;
-  margin: 0 0 14px;
+  margin: 0 0 18px;
 }
+.d-sechead:has(.d-ja) + h2.d-headline { padding-right: clamp(44px, 4.4vw, 60px); }
+.d-headline .l1, .d-headline .l2 { display: block; }
+.d-headline--row .l1, .d-headline--row .l2 { display: inline; }   /* #drive: white + purple on ONE row (Dan 10-03) */
+.drift-page h2.d-headline--row { text-align: center; }   /* centred (Dan 10-03); the kana pad is mirrored left so the centre is the page's */
+.d-sechead:has(.d-ja) + h2.d-headline--row { padding-left: clamp(44px, 4.4vw, 60px); }
+.d-headline .l1 { text-shadow: var(--d-glow-1); }
+.d-headline .l2 { color: var(--d-neon); text-shadow: var(--d-glow-2); }
 /* .drift-page p resets margin + max-width at (0,1,1), so every p rule that
    sets either one carries the .drift-page prefix */
 .drift-page .d-lede { font-size: clamp(17px, 1.35vw, 19px); line-height: 1.6; color: var(--d-fg); max-width: 62ch; }
@@ -360,37 +417,10 @@
   --wd: clamp(400px, 38vw, 520px);        /* wheel: 1000px source -> never above 540 CSS px */
   position: relative;
   /* clip, not hidden: a hidden box is still a scroll container, so focusing
-     the wheel scrolled the hero internally and lost the dash bar (10-01) */
+     the wheel scrolled the hero internally (10-01) */
   overflow: clip;
   padding-top: 18px;
 }
-.d-dashbar {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  gap: 18px;
-  padding: 12px 18px;
-  border-radius: 10px;
-  background: linear-gradient(180deg, #17121f, #0d0a12 60%, #0b0810);
-  box-shadow:
-    0 0 0 1px rgba(4, 2, 8, .95),
-    inset 0 1px 0 rgba(255, 240, 255, .06),
-    inset 0 -2px 0 rgba(180, 107, 255, .16),
-    0 8px 18px rgba(0, 0, 0, .45);
-}
-/* each socket is a sunk glass window with a lit screen in it */
-.d-sock {
-  display: inline-flex; align-items: center; justify-content: center;
-  min-height: 38px; padding: 0 16px;
-  font: 400 20px/1.2 var(--d-f-lcd); letter-spacing: .06em;
-  color: var(--d-lcd);
-  text-shadow: 0 0 4px rgba(242, 76, 240, .5);
-  white-space: nowrap;
-}
-.d-dashbar .d-sock:first-child { justify-self: start; }
-.d-dashbar .d-sock:last-child { justify-self: end; }
-.d-sock--pan { min-width: 180px; }
-.d-sock--pan output { font: 400 30px/1 var(--d-f-lcd); letter-spacing: .1em; color: var(--d-fg-neon); text-shadow: 0 0 10px rgba(180, 107, 255, .8); }
 
 .d-hero-body {
   position: relative;
@@ -398,63 +428,507 @@
   grid-template-columns: minmax(0, 1fr) var(--wd) minmax(0, 1fr);
   align-items: start;
   gap: 0;
-  margin-top: 28px;
 }
 .d-hero-left, .d-hero-right { position: relative; z-index: 1; margin-top: 36px; }   /* the wheel sits IN FRONT of the panels (plugin z7) */
 .d-hero-left { margin-right: calc(var(--wd) * -0.06); }
 .d-hero-right { margin-left: calc(var(--wd) * -0.06); }
 .d-hero-left .d-panel { padding-right: calc(var(--wd) * 0.1); }
-.d-hero-right .d-panel { padding-left: calc(var(--wd) * 0.1); }
-
-/* DRIFT in the hub-cap face, a hard offset shadow and no bloom (not a lamp) */
-.drift-page .d-title {
-  font: 600 clamp(40px, 4.2vw, 64px) / 1 var(--d-f-badge);
-  letter-spacing: .06em;
-  color: var(--d-pink-ink);
-  text-shadow: 3px 3px 0 #7a1f6b;
+/* desktop: the CTA column's text clears the rim by ~11% of the wheel at every
+   width (Dan 10-01: the rim covered words, worst at 1100-1199), = the 6% tuck
+   under the wheel + the gap. The key fills the content box, face on the text
+   edge, and scales a little with the room left (label fits down to 46 px). */
+@media (min-width: 1100px) {
+  /* the reading sits a little left (Dan 10-01); top and bottom pads = the
+     title panel's, so the two panels mirror and come out the same height */
+  .d-hero-right .d-panel { padding: clamp(40px, 4.2vw, 56px) calc(var(--wd) * 0.058) clamp(28px, 3.2vw, 40px) calc(var(--wd) * 0.137); }  .d-hero-right .d-cta { --h: clamp(46px, 3.9vw, 56px); min-width: 0; width: calc(100% + var(--h) * .167); }
 }
-.drift-page .d-tagline { margin-top: 12px; font: 700 clamp(20px, 1.8vw, 24px) / 1.3 Inter, var(--font-body); color: var(--d-white-ink); text-wrap: balance; }
-.drift-page .d-plain { margin-top: 16px; font-size: 17px; line-height: 1.5; color: var(--d-fg); }
-.drift-page .d-hook { margin-top: 14px; font: 600 14px/1.4 Inter, var(--font-body); letter-spacing: .12em; text-transform: uppercase; color: var(--d-dim-violet); text-wrap: balance; }
-.d-hero .d-plain--phone, .d-hero .d-hero-meter { display: none; }   /* ≤1099 only (below) */
 
-.d-cta-block { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
+/* hero = the post's split headline (headlineSplit): DRIFT in the hub-cap face
+   as line 1, lit like the posts' line 1, then the tagline as the purple line 2.
+   PLACEHOLDER for the drift-neon.png wordmark (not delivered yet, 10-01). */
+.drift-page .d-title {
+  font: 600 clamp(44px, 4.6vw, 68px) / 1 var(--d-f-badge);
+  letter-spacing: .06em;
+  color: var(--d-white-ink);
+  text-shadow: var(--d-glow-1);
+}
+.drift-page .d-tagline {
+  margin-top: 14px;
+  font: 700 clamp(26px, 2.35vw, 34px) / .95 var(--d-f-head);   /* 2 lines in the desktop panel */
+  text-transform: uppercase; letter-spacing: .005em;
+  color: var(--d-neon); text-shadow: var(--d-glow-2);
+}
+.d-tagline span { display: block; }
+.d-hero .d-hero-meter { display: none; }   /* ≤1099 only (below) */
+
+.d-cta-block { display: flex; flex-direction: column; align-items: flex-start; gap: 18px; }
+/* hero price: the real price only, post style (a lit Oswald figure, its spec
+   line under it, bigger: Dan 10-01; no strike) */
+.d-price { display: flex; flex-direction: column; gap: 14px; }   /* = the tagline's 14 px under DRIFT */
+/* the ETA line wears the tagline's type (Oswald 700, same size), white:
+   Dan 10-01 "same size same font, different color"; the graphite try was
+   reverted the same day, the 'ETA' word kept */
+.d-price-label {
+  font: 700 clamp(26px, 2.35vw, 34px) / .95 var(--d-f-head);
+  text-transform: uppercase; letter-spacing: .005em;
+  color: var(--d-white-ink); text-shadow: var(--d-glow-1);
+}
+.d-price-label span { display: block; white-space: nowrap; }
+.d-price-val {
+  font: 600 clamp(44px, 4.6vw, 68px) / 1 var(--d-f-badge); letter-spacing: .06em;   /* = .d-title's face, size and line box: $69 mirrors DRIFT (Dan 10-01) */
+  color: var(--d-neon); text-shadow: var(--d-glow-2);   /* the tagline's purple (Dan 10-01) */
+}
+
+/* hero trial stamp (DriftTrialStamp): RevLimiter's label · email · GET IT ▸
+   row, in DRIFT dress. Lives in .d-hero-trial (below): a row on desktop,
+   stacked on phones. */
+.d-stamp { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; width: 100%; }
+.d-stamp [hidden] { display: none; }   /* the grid display must not un-hide the sent form */
+.d-stamp-label {
+  font: 700 clamp(22px, 2.1vw, 30px) / .95 var(--d-f-head);
+  text-transform: uppercase; letter-spacing: .005em;
+  color: var(--d-white-ink); text-shadow: var(--d-glow-1);
+}
+.d-stamp-label em { font-style: normal; color: var(--d-neon); text-shadow: var(--d-glow-2); }
+.d-stamp-label span { display: block; white-space: nowrap; }
+.d-stamp-form { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+.d-stamp .d-stamp-key { --h: 48px; min-width: 0; }   /* the key's 4.6h floor pushed the column past a 320 px phone */
+.d-stamp-key { font: 700 calc(var(--h) * .42) / 1 var(--d-f-head); letter-spacing: .03em; }   /* the label's Oswald, not the badge face (Dan 10-01) */
+.d-stamp .d-stamp-field {   /* .d-stamp prefix: .d-field (later in the file) set VT323 over it */
+  font: 400 17px/1 var(--d-f-spec); letter-spacing: .06em;
+  caret-color: var(--d-hot);
+  transition: box-shadow 160ms ease;
+}
+.d-stamp-field:focus {
+  box-shadow:
+    0 0 0 1px rgba(4, 2, 8, .9), inset 0 5px 8px rgba(0, 0, 0, .7),
+    inset 0 0 0 1px var(--d-neon), 0 0 0 3px rgba(210, 60, 255, .22), 0 0 22px rgba(210, 60, 255, .4);
+}
+/* the placeholder text breathes a soft purple until the field is used
+   (Dan 10-01: "make the email blink, a purple vibe, very subtle, the text not the box") */
+.d-stamp .d-stamp-field:not(:focus)::placeholder { animation: d-ph-blink 2.8s ease-in-out infinite; }
+@keyframes d-ph-blink {
+  0%, 100% { color: #8f7aa8; text-shadow: 0 0 0 rgba(210, 60, 255, 0); }
+  50% { color: #c48ae8; text-shadow: 0 0 10px rgba(210, 60, 255, .45); }
+}
+@media (prefers-reduced-motion: reduce) { .d-stamp .d-stamp-field::placeholder { animation: none; } }
+.d-stamp-arrow { display: inline-block; margin-left: .35em; transition: transform 160ms ease; }
+.d-stamp-key:hover .d-stamp-arrow, .d-stamp-key:focus-visible .d-stamp-arrow { transform: translateX(3px); }
+.d-stamp-fine { margin-top: -4px; font: 500 11px/1.35 var(--d-f-head); text-transform: uppercase; letter-spacing: .05em; color: var(--d-fg-dim); text-wrap: balance; }   /* fine print, Dan: smaller; the label's Oswald (Dan 10-01) */
+/* sent: the answer lights up like a readout */
+.d-stamp .d-capture-status.ok { font: 400 22px/1.15 var(--d-f-lcd); letter-spacing: .03em; color: var(--d-white-ink); text-shadow: 0 0 8px rgba(242, 76, 240, .6); }
+
+/* the trial console under the wheel (Dan 10-01: "fill in the blank space
+   under the wheel ... don't make more space"). A dash-glass strip laid across
+   the wheel's cut edge: it starts 10% of the wheel up into the crop band the
+   hero already had, so the page is no taller than with the stamp in the
+   panel. Desktop = RevLimiter's row: label | email + key, list line under. */
+.d-hero-trial { position: relative; z-index: 4; }
+/* the console is a third DRIFT panel (Dan 10-01: "same texture of the right
+   and left panel"): the same steel face, sunk well and four screws */
+.d-trial-panel { display: grid; align-content: center; padding: 42px 22px 46px; }   /* phone: clears the corner screws */
+@media (min-width: 1100px) {
+  .d-hero-trial {
+    grid-column: 1 / -1; grid-row: 2; justify-self: center;
+    width: min(100%, 1040px);
+    margin-top: calc(var(--wd) * -0.16 + 30px - 30px);   /* Dan 10-01: bigger x2, then hand-placed 30 px lower (bench); -30 holds it in place while row 1 drops */
+  }
+  /* Dan 10-01: wheel + both side panels 30 px lower; the console stays put */
+  .d-cockpit { margin-top: 30px; }
+  .d-hero-left, .d-hero-right { margin-top: 66px; }
+  .d-trial-panel { padding: 22px 50px 18px; min-height: 169px; }   /* bench 2026-10-01 (Dan, by hand): 169 tall, content centred; 50 px sides clear the screws */
+  /* the plate itself: Dan's pick D (A's clean black steel + C's checker, gpt-image-1,
+     tools/gen-drift-trial-panel.sh). Height fits the panel; it is 3-sliced so the
+     left cap (checker + screws, source x 0-320) and right cap (screws, last 120 px)
+     keep their shape and only the plain brushed middle stretches. 169 / 487 = .347,
+     so the caps show 111 px and 42 px. The plate brings its own screws and edge. */
+  .d-trial-panel {
+    background: none; box-shadow: none;
+    border: 0 solid transparent;
+    border-image: var(--d-img-trial) 0 120 0 320 fill / 0 42px 0 111px stretch;
+    padding-left: 128px;   /* the label clears the checker cap */
+    filter: drop-shadow(0 12px 22px rgba(0, 0, 0, .55));   /* WebKit: its own layer, SECTION 4 (#get) */
+  }
+  .d-trial-panel .d-screw { display: none; }
+  .d-hero-trial .d-stamp {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas: "label form" "label fine" ". status";
+    align-items: center; column-gap: 32px; row-gap: 9px;
+  }
+  .d-hero-trial .d-stamp-label { grid-area: label; font-size: clamp(28px, 2.8vw, 40px); }
+  .d-hero-trial .d-stamp-form { grid-area: form; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 16px; }
+  .d-hero-trial .d-stamp-field { min-height: 68px; padding: 0 22px; font-size: 24px; }
+  .d-hero-trial .d-stamp-key { --h: 68px; }
+  .d-hero-trial .d-stamp-fine { grid-area: fine; margin-top: 0; font-size: 13px; }
+  .d-hero-trial .d-capture-status { grid-area: status; }
+  .d-hero-trial .d-stamp:has(.d-stamp-form[hidden]) .d-capture-status { grid-area: form; }   /* sent: the answer takes the form's place */
+}
+/* --- the hero's exit line (Dan 10-01, the copywriter's pick): the page's first
+   catch phrase, in the band between the console and LET IT DRIVE. One line,
+   centred under the console: a white beat, then the purple payoff. --- */
+.drift-page .d-hero-catch {   /* .drift-page: outranks the page's bare p reset */
+  margin: 28px 0 0; padding-bottom: 22px;   /* room for the .l2 glow inside .d-hero's overflow clip (fixer 10-02) */
+  text-align: center;
+  font: 700 clamp(30px, 5.4vw, 80px) / 1 var(--d-f-head);   /* Dan 10-02: "make it bigger" x2 (was 26-38, then 30-56) */
+  text-transform: uppercase; letter-spacing: .005em;
+}
+.d-hero-catch .l1 { color: var(--d-white-ink); text-shadow: var(--d-glow-1); }
+.d-hero-catch .l2 { color: var(--d-neon); text-shadow: var(--d-glow-2); }
+@media (min-width: 1100px) { .d-hero-catch { grid-column: 1 / -1; grid-row: 3; justify-self: center; } }
+@media (max-width: 1099px) { .drift-page .d-hero-catch { order: 6; margin-top: 22px; width: min(420px, 100%); } }
+/* ≥1366 the wheel is full size and the console ends under the old panel
+   bottom: #drive gives most of it back (lowered 10-01: +14 px net) */
+@media (min-width: 601px) { #drive.d-sec { padding-top: 26px; } }    /* the hero-baseline value: ~39 px from the catch line's box to the kicker at every desktop width (fixer r1 10-02) */
+@media (max-width: 600px) { #drive.d-sec { padding-top: 4px; } }   /* 18 -> 4: the hero's catch line sits right on the panel (Dan 10-04 "close that gap") */     /* 40 - 22, same reason, phone */
+@media (max-width: 600px) { #drive .d-sticker { display: none; } }   /* the 速度 tag off the #drive plate on phones (Dan 10-04) */
+/* phones: the #drive plate wears the laptop's trial plate (Dan 10-04, panel bench pick B: black steel, pink
+   checker top left), 9-sliced so a tall panel keeps its corner screws and checker while the steel stretches.
+   Its own screws replace DriftPanel's CSS ones. Laptop keeps the S1 chassis (≥1001), 601-1000 the CSS plate. */
+@media (max-width: 600px) {
+  #drive .d-drive-panel {
+    background: none; border: 0 solid transparent; border-radius: 14px;
+    border-image: var(--d-img-trial) 120 120 120 320 fill / 26px 26px 26px 70px stretch;
+    box-shadow: 0 10px 18px rgba(0, 0, 0, .55); padding: 40px 20px 44px;
+  }
+  #drive .d-drive-panel > .d-screw { display: none; }
+}
 .d-cta-sub { font: 500 15px/1.45 Inter, var(--font-body); color: var(--d-fg-neon); }
 .d-cta-fine { font-size: 14px; color: var(--d-fg-dim); line-height: 1.5; }
 .d-cta-block .d-cta-fine { font-weight: 600; color: var(--d-fg); }
 
-/* --- the keep-it ladder: condition first, value right on sunk glass --------
-   Rows read as three routes, not three tiers. Only the FREE route links;
-   the $39 / $69 rows are plain text (no hover, no pointer, no dead tap). */
-.d-ladder-label { font: 600 14px/1.4 Inter, var(--font-body); color: var(--d-dim-violet); }
-.d-ladder { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; width: 100%; }
-.d-route {
-  display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 14px; row-gap: 2px;
-  align-items: center;
+/* --- the keep-it menu (DriftKeep), Dan 10-03: "inside a pixel screen, like on the plugin" ------------
+   The plugin's arcade select screen, the same CRT as SELECT TRACKS: .d-crt glass + scanlines, the Press
+   Start head over the pink dashed rule (.d-attract-hdr), the trial date as a phosphor readout on the
+   right, three menu boxes like the track chips (the action, the value big in VT323, what/when). Only the FREE
+   route links (it gets the chips' hover and focus); the $39 / $69 boxes are plain (no hover, no pointer). */
+.d-keep { margin-top: clamp(32px, 4vw, 52px); }
+.d-keep-screen { padding: 30px 40px 26px; }   /* clears the rounder tube corners */
+/* Dan 10-03 "the frame is not there yet", direction A: the TV wears the plugin's CRT cabinet. The bezel is an
+   AI plate (tools/gen-drift-tv-frame.sh roll 3, picked on a page bench over 1/2; blank: no type in the image;
+   2x Lanczos + unsharp, bezel runs smoothed along their length), 9-sliced around the screen; the livery
+   is printed on it as live type in the cabinet's own words: checker + SPEED SOUNDS BETTER top left, stripes
+   + スピード top right, 走り続ける down the right, RACING MUSIC FOR A HIGHER STATE up the left, the R badge +
+   FUEL IDEAS NOT CARS bottom left, A FASTER MIND bottom right. Printed ink, matte: no glow (a sticker is not a
+   lamp). --tv-t/r/b/l = the bezel per side (css px), set with the chosen frame. */
+.d-keep-tv {
+  --tv-t: 39px; --tv-r: 59px; --tv-b: 52px; --tv-l: 59px;   /* frame 3's opening at .45 css per model px */
+  position: relative; border: 0 solid transparent; border-radius: 30px;
+  border-image: var(--d-img-tv) 384 fill / 86px stretch;   /* Dan's pick: roll 3, the curved-tube bezel (2x file, slice 384 = screw + the opening's corner curve) */
+  padding: calc(var(--tv-t) - 2px) calc(var(--tv-r) - 2px) calc(var(--tv-b) - 2px) calc(var(--tv-l) - 2px);   /* the tube overlaps the opening's lip by 2 px */
+  box-shadow: 0 0 60px 18px rgba(190, 90, 255, .12), 0 24px 40px rgba(0, 0, 0, .65);   /* the set is on + sits on the page */
 }
-.d-route-cond { grid-column: 1; font: 600 17px/1.35 Inter, var(--font-body); color: var(--d-white-ink); }
-.d-route-note { grid-column: 1; font-size: 15px; line-height: 1.5; color: var(--d-fg-dim); }
-.d-route-val {
-  grid-column: 2; grid-row: 1 / span 2;
-  min-width: 72px; padding: 6px 10px; text-align: center;
-  font: 400 26px/1 var(--d-f-lcd); letter-spacing: .04em;
-  color: var(--d-white-ink); text-shadow: 0 0 6px rgba(242, 76, 240, .6);
+.d-keep-tv .d-crt.d-keep-screen {   /* inside the cabinet: the tube only, the bezel is the plate's */
+  border-radius: 30px / 36px;
+  box-shadow: inset 0 0 0 1px rgba(190, 90, 255, .22), inset 0 0 90px 30px rgba(0, 0, 0, .85);
 }
-.d-route a { color: var(--d-fg-neon); text-decoration: underline; text-underline-offset: 3px; }
-.d-route a:hover { color: var(--d-white-ink); }
-.d-ladder--hero { gap: 6px; }
-.d-ladder--hero .d-route { padding: 6px 0 0; border-top: 1px dashed rgba(180, 107, 255, .22); }
-.d-ladder--hero .d-route-cond { font: 600 14px/1.35 Inter, var(--font-body); color: var(--d-fg); }
-.d-ladder--hero .d-route-val { grid-row: 1; min-width: 58px; padding: 4px 8px; font-size: 22px; }
-.d-route-link {
-  grid-column: 1 / -1;
-  display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 14px; align-items: center;
+/* Dan 10-03 "give the TV the vibe like in the plugin, that bent vibe": the plugin's CRT tube bulges. The screen's
+   silhouette is a bent tube (every edge bows outward, the corners roll), cut with a mask stretched to the screen;
+   the glass gets the bulge's light: a curved highlight across the top left, a dark rim that follows the curve. */
+.d-keep-tv .d-crt.d-keep-screen {
+  border-radius: 0;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 1000' preserveAspectRatio='none'%3E%3Cpath d='M70 24 Q500 -6 930 24 Q984 30 988 80 Q1006 500 988 920 Q984 970 930 976 Q500 1006 70 976 Q16 970 12 920 Q-6 500 12 80 Q16 30 70 24 Z' fill='black'/%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 1000' preserveAspectRatio='none'%3E%3Cpath d='M70 24 Q500 -6 930 24 Q984 30 988 80 Q1006 500 988 920 Q984 970 930 976 Q500 1006 70 976 Q16 970 12 920 Q-6 500 12 80 Q16 30 70 24 Z' fill='black'/%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
+  box-shadow: inset 0 0 0 1px rgba(190, 90, 255, .25), inset 0 0 60px 26px rgba(0, 0, 0, .8), inset 0 0 160px 40px rgba(0, 0, 0, .35);
 }
-.d-ladder--hero .d-route-link { text-decoration: none; }
-.d-ladder--hero .d-route-link .d-route-cond { color: var(--d-fg-neon); text-decoration: underline; text-underline-offset: 3px; }
-.d-ladder--hero .d-route-link:hover .d-route-cond { color: var(--d-white-ink); }
-.d-ladder-line { display: none; font-size: 15px; line-height: 1.5; color: var(--d-fg); }
-.d-ladder-line a { color: var(--d-fg-neon); text-decoration: underline; text-underline-offset: 3px; }
+.d-keep-tv .d-crt.d-keep-screen::after {
+  border-radius: 0;
+  background:
+    radial-gradient(ellipse 58% 36% at 26% 4%, rgba(255, 255, 255, .10), rgba(255, 255, 255, .03) 55%, transparent 72%),   /* the bulge's highlight */
+    linear-gradient(158deg, rgba(255, 255, 255, .06) 0%, transparent 30%),                                                 /* glass reflection */
+    radial-gradient(ellipse 72% 88% at 50% 50%, transparent 58%, rgba(0, 0, 0, .55) 86%, rgba(0, 0, 0, .8) 100%);          /* the curve falls away to the rim */
+}
+.d-tv-ink { position: absolute; z-index: 2; pointer-events: none; display: flex; align-items: center; gap: 8px;
+  font: 700 11px/1 var(--d-f-head); letter-spacing: .14em; text-transform: uppercase; color: #b46bff; white-space: nowrap; }
+.d-tv-ink b { font-weight: 700; }
+.d-tv-tl { left: 70px; top: calc(var(--tv-t) / 2); translate: 0 -50%; color: #c98bff; }
+.d-tv-checker { width: 74px; height: 12px; transform: skewX(-24deg);
+  background: repeating-conic-gradient(#e040c8 0 25%, #6c22b8 0 50%) 0 0 / 12px 12px; opacity: .9; }
+.d-tv-tr { right: 72px; top: calc(var(--tv-t) / 2); translate: 0 -50%; }
+.d-tv-tr b { font: 900 20px/1 var(--d-f-ja); letter-spacing: .02em; color: #e040c8; }
+.d-tv-stripes { width: 70px; height: 10px; transform: skewX(-30deg);
+  background: repeating-linear-gradient(90deg, #8a2be2 0 6px, transparent 6px 11px); opacity: .85; }
+.d-tv-r { right: calc(var(--tv-r) / 2); top: 50%; translate: 50% -50%; writing-mode: vertical-rl; text-orientation: upright;
+  font: 900 17px/1 var(--d-f-ja); letter-spacing: .14em; color: #e040c8; }
+.d-tv-l { left: calc(var(--tv-l) / 2); top: 50%; translate: -50% -50%; writing-mode: vertical-rl; rotate: 180deg;
+  font-size: 9px; letter-spacing: .22em; color: #9b6fd0; }
+.d-tv-bl { left: 70px; bottom: calc(var(--tv-b) / 2); translate: 0 50%; font-size: 10px; color: #9b6fd0; }
+.d-tv-badge { font: italic 900 22px/1 var(--d-f-badge); letter-spacing: 0; color: #e040c8; }
+.d-tv-br { right: 72px; bottom: calc(var(--tv-b) / 2); translate: 0 50%; font-size: 10px; color: #9b6fd0; }
+@media (max-width: 900px) { .d-tv-ink { display: none; } }   /* phones: the bezel stays, the small print goes (not verified this session, Dan: laptop only) */
+/* Dan 10-03 "make the background more like a TV": the tube, not a flat glass. A dark plastic bezel with a
+   highlight edge, rounder tube corners, the picture lit from the centre (phosphor glow), a deep curved
+   vignette so the glass reads bulged, fine scanlines over a faint RGB aperture grille, and a diagonal
+   reflection on the glass. This screen only; SELECT TRACKS keeps the flat CRT. */
+.d-crt.d-keep-screen {
+  border-radius: 44px / 54px;
+  background: radial-gradient(ellipse 66% 82% at 50% 46%, #2e1347 0%, #1a0b2c 40%, #0b0414 76%, #040107 100%);
+  box-shadow:
+    0 0 0 3px #040206,                              /* the tube's seat */
+    0 0 0 18px #19131f,                             /* plastic bezel */
+    0 0 0 19px rgba(255, 240, 255, .09),            /* bezel highlight edge */
+    0 0 0 21px #0a070d,                             /* the cabinet seam */
+    0 0 60px 18px rgba(190, 90, 255, .12),          /* the set is on: violet light spill */
+    0 24px 40px rgba(0, 0, 0, .65),                 /* the set sits on the page */
+    inset 0 0 0 1px rgba(190, 90, 255, .25),
+    inset 0 0 90px 30px rgba(0, 0, 0, .85);         /* curved-glass falloff into the corners */
+}
+.d-crt.d-keep-screen::before {
+  border-radius: inherit;
+  background:
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, .38) 0 1px, transparent 1px 3px),                               /* scanlines */
+    repeating-linear-gradient(90deg, rgba(255, 40, 90, .05) 0 1px, rgba(40, 255, 140, .035) 1px 2px, rgba(70, 90, 255, .05) 2px 3px);   /* aperture grille */
+}
+.d-crt.d-keep-screen::after {
+  border-radius: inherit;
+  background:
+    linear-gradient(158deg, rgba(255, 255, 255, .11) 0%, rgba(255, 255, 255, .03) 18%, transparent 34%),        /* glass reflection */
+    radial-gradient(ellipse 70% 26% at 50% 3%, rgba(255, 255, 255, .07), transparent 70%),                     /* the bulge catching the room light */
+    radial-gradient(120% 115% at 50% 50%, transparent 52%, rgba(0, 0, 0, .72) 100%);                             /* tube curvature */
+}
+.d-keep-hdr { align-items: flex-end; flex-wrap: wrap; row-gap: 8px; }
+.drift-page .d-keep-head { margin: 0; font: 400 clamp(12px, 1.2vw, 15px)/1.5 var(--d-f-pix); letter-spacing: .14em; text-transform: uppercase; }
+.d-keep-head .l1 { color: var(--d-crt); text-shadow: 0 0 8px var(--d-crt-glow), 0 0 22px rgba(190, 90, 255, .35); }
+.d-keep-head .l2 { color: var(--d-hot); text-shadow: 0 0 8px rgba(255, 79, 216, .7), 0 0 20px rgba(255, 79, 216, .3); }
+.drift-page .d-keep-sub { margin: 0; font: 400 18px/1 var(--d-f-lcd); letter-spacing: .08em; text-transform: uppercase; color: var(--d-lcd); text-shadow: 0 0 6px rgba(242, 76, 240, .6); }
+@media (max-width: 900px) { .drift-page .d-keep-sub { display: none; } }   /* the phone bar says 14 DAYS FREE · BY EMAIL SAT OCT 10 in the same viewport (copy r2 10-02) */
+.d-keep-routes { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+@media (min-width: 900px) {
+  .d-keep-routes { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 34px; }
+  /* OR chips between the boxes: three choices, pick one (hidden from screen readers: the list already says it) */
+  .d-keep-route { position: relative; }
+  .d-keep-route + .d-keep-route::before {
+    content: 'OR' / ''; position: absolute; left: -17px; top: 50%; translate: -50% -50%; z-index: 1;
+    padding: 4px 5px 3px; border-radius: 3px; border: 1px solid rgba(190, 90, 255, .45); background: #12061b;
+    font: 400 9px/1 var(--d-f-pix); letter-spacing: .08em; color: var(--d-crt);
+  }
+}
+.d-keep-box {
+  height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  padding: 14px 10px 12px; border-radius: 4px; text-align: center;
+  background: linear-gradient(180deg, rgba(190, 90, 255, .06), rgba(190, 90, 255, .015) 60%, rgba(0, 0, 0, .18));
+  border: 1px solid rgba(190, 90, 255, .32);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .35), inset 0 0 18px rgba(190, 90, 255, .08);
+}
+.d-keep-cond { font: 400 19px/1.1 var(--d-f-lcd); letter-spacing: .05em; text-transform: uppercase; color: #f0e2ff; }
+.d-keep-val { font: 400 46px/.9 var(--d-f-lcd); letter-spacing: .04em; color: var(--d-white-ink); text-shadow: 0 0 10px rgba(242, 76, 240, .75); }
+.d-keep-for { margin-top: 4px; font: 400 14px/1 var(--d-f-lcd); letter-spacing: .14em; text-transform: uppercase; color: var(--d-crt); opacity: .8; }
+.d-keep-note { font: 400 16px/1.1 var(--d-f-lcd); letter-spacing: .05em; text-transform: uppercase; color: var(--d-crt); opacity: .85; }
+.d-keep-box--link { min-height: 44px; text-decoration: none; transition: border-color .14s ease, box-shadow .14s ease, transform .14s ease; }
+.d-keep-box--link:hover { border-color: rgba(247, 105, 224, .7); }
+.d-keep-box--link:active { transform: translateY(2px); transition-duration: 40ms; }
+.drift-page .d-keep-box--link:focus-visible { outline: none; border-color: var(--d-hot); box-shadow: 0 0 0 3px var(--d-pink-ink), inset 0 0 18px rgba(247, 105, 224, .12); }
+.d-keep-box--link .d-keep-cond { color: var(--d-crt); }
+.drift-page .d-keep-fine { margin: 16px 0 0; text-align: center; font: 400 17px/1 var(--d-f-lcd); letter-spacing: .1em; text-transform: uppercase; color: var(--d-crt); opacity: .8; }
+/* PLAYER 1 START (Dan 10-03): the trial's email gate on the TV. Head + date left, an arcade name-entry
+   field + a digital GET IT key right, the consent under the key; the pink
+   dashed rule (.d-attract-hdr::after) then splits START from KEEP. */
+.d-attract-hdr.d-keep-start { display: grid; gap: 6px 36px; align-items: center; }   /* .d-attract-hdr (flex) sits later in the file */
+/* Dan 10-03 "the email bar should be centered": the start block is one centred stack, red head over the bar
+   (field + key) over the consent */
+.d-attract-hdr.d-keep-start { grid-template-columns: minmax(0, 1fr); justify-content: stretch; justify-items: center; text-align: center; row-gap: 14px; }   /* the shared header's space-between would park the track left */
+.d-keep-start > .d-keep-gate { width: min(100%, 560px); justify-items: center; }
+.d-keep-start .d-keep-form { width: 100%; }
+/* Dan 10-03 "make it bigger and red": the screen's one red line, in the plugin's track red with a red phosphor
+   glow, on two lines so it can grow beside the field (the GET IT key is pink, so this is the viewport's red) */
+.drift-page .d-keep-start .d-keep-try { font-size: clamp(16px, 1.75vw, 23px); line-height: 1.3; letter-spacing: .08em; white-space: nowrap; margin: 0;
+  color: var(--d-red); text-shadow: 0 0 8px rgba(var(--d-red-rgb), .85), 0 0 22px rgba(var(--d-red-rgb), .4); }
+.d-keep-try span { display: inline; }   /* centred above the bar it fits one line again */
+.d-keep-gate { display: grid; gap: 8px; }
+.d-keep-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; }
+.d-keep-form[hidden] { display: none; }   /* sent: the answer takes the form's place (author display beats the UA [hidden]) */
+.d-keep-input { position: relative; display: block; }
+.d-keep-input::before {   /* the arcade prompt arrow */
+  content: '\25B6'; position: absolute; left: 14px; top: 50%; translate: 0 -52%; z-index: 1; pointer-events: none;
+  font: 400 12px/1 var(--d-f-pix); color: var(--d-hot); text-shadow: 0 0 8px rgba(255, 79, 216, .7);
+}
+.drift-page .d-keep-field {
+  min-height: 56px; padding: 0 16px 0 38px;
+  font: 400 24px/1 var(--d-f-lcd); letter-spacing: .06em; caret-color: var(--d-hot);
+  color: #ffe9ff; text-shadow: 0 0 8px rgba(242, 76, 240, .55);
+  background: radial-gradient(120% 140% at 50% 30%, #1d0a2c 0%, #0c0415 75%);
+  box-shadow: 0 0 0 1px rgba(4, 2, 8, .9), inset 0 4px 8px rgba(0, 0, 0, .7), inset 0 0 0 1px rgba(247, 105, 224, .45), 0 0 14px rgba(247, 105, 224, .12);
+  transition: box-shadow 160ms ease;
+}
+.drift-page .d-keep-field::placeholder { color: #b98ad8; letter-spacing: .1em; }
+.drift-page .d-keep-field:not(:focus)::placeholder { animation: d-ph-blink 2.8s ease-in-out infinite; }   /* the hero's breathing prompt */
+@media (prefers-reduced-motion: reduce) { .drift-page .d-keep-field::placeholder { animation: none; } }
+.drift-page .d-keep-field:focus { box-shadow: 0 0 0 1px rgba(4, 2, 8, .9), inset 0 4px 8px rgba(0, 0, 0, .7), inset 0 0 0 1px var(--d-hot), 0 0 0 3px rgba(247, 105, 224, .22), 0 0 22px rgba(247, 105, 224, .35); }
+/* Dan 10-03: GET IT is a digital button on the screen (not the plugin's red key) and it stutter-blinks
+   like an arcade PRESS START: the label flickers, the box holds (the house rule: blink the text, not the box).
+   Hover / focus = inverse video and the blink stops; sending stops it too; reduced motion = no blink. */
+.d-keep-key {
+  min-height: 56px; padding: 0 24px; display: inline-flex; align-items: center; justify-content: center;
+  font: 400 15px/1 var(--d-f-pix); letter-spacing: .12em; text-transform: uppercase; white-space: nowrap;
+  color: var(--d-hot); text-shadow: 0 0 8px rgba(255, 79, 216, .85), 0 0 18px rgba(255, 79, 216, .35);
+  background: radial-gradient(120% 140% at 50% 30%, #2c0d38 0%, #13051d 75%);
+  border: 2px solid var(--d-hot); border-radius: 3px;
+  box-shadow: 0 0 0 1px rgba(4, 2, 8, .9), 0 0 16px rgba(255, 79, 216, .35), inset 0 0 16px rgba(255, 79, 216, .2);
+  cursor: pointer; transition: background-color 120ms ease, color 120ms ease, transform 60ms ease;
+}
+.d-keep-key [data-face] { display: inline-flex; align-items: center; gap: .7em; animation: d-stutter 2.6s steps(1, end) infinite; }
+.d-keep-arrow { font-size: .8em; }
+@keyframes d-stutter {
+  0%, 62% { opacity: 1; }
+  64% { opacity: .12; }  66% { opacity: 1; }  68% { opacity: .12; }  71% { opacity: 1; }
+  88% { opacity: 1; }  89.5% { opacity: .35; }  91% { opacity: 1; }
+}
+.d-keep-key:hover, .drift-page .d-keep-key:focus-visible {
+  outline: none; background: var(--d-hot); color: #14051d; text-shadow: none;
+  box-shadow: 0 0 0 1px rgba(4, 2, 8, .9), 0 0 0 4px rgba(255, 209, 248, .35), 0 0 24px rgba(255, 79, 216, .6);
+}
+.d-keep-key:hover [data-face], .d-keep-key:focus-visible [data-face], .d-keep-key:disabled [data-face] { animation: none; }
+.d-keep-key:active { transform: translateY(2px); }
+.d-keep-key:disabled { cursor: progress; opacity: .75; }
+@media (prefers-reduced-motion: reduce) { .d-keep-key [data-face], :is(.d-hero-trial, #get) .d-stamp-key [data-face] { animation: none; } }
+.drift-page .d-keep-consent { margin: 0; font: 400 15px/1.2 var(--d-f-lcd); letter-spacing: .06em; text-transform: uppercase; color: var(--d-crt); opacity: .75; }
+.d-keep-gate .d-capture-status.ok { font: 400 24px/1.15 var(--d-f-lcd); letter-spacing: .04em; color: var(--d-white-ink); text-shadow: 0 0 10px rgba(242, 76, 240, .7); }
+.d-keep-gate .d-capture-status.err { font: 400 17px/1.3 var(--d-f-lcd); letter-spacing: .03em; color: var(--d-pink-ink); }
+.drift-page .d-keep-gate .d-capture-status:focus-visible { outline: none; }
+.drift-page .d-keep-then { margin: 0 0 14px; font-size: clamp(12px, 1.2vw, 15px); text-align: center; }   /* centred, like the start block above it (Dan 10-03) */
+/* THE ROAD TO NOV 1 (Dan 10-03 "this doesn't add up" → bench → A3): the trial's dates in order on one line.
+   Three stops (node, flag, date, what, a price chip), the free days a lit solid line, the wait after the
+   checkpoint a dim dashed one; the video is a SHORTCUT lane that leaves START, arcs over the lap and lands
+   on FINISH (it skips the checkpoint and the wait). The #drive GPS car (same white dot, pink glow) drives
+   the lap on a 9 s loop while it's on screen (init.ts sets [data-run]); each date lights as the car
+   arrives (the text, not the box). Reduced motion: the car stays parked at START. --y = the line. */
+.d-lap-track { position: relative; max-width: 940px; margin: 6px auto 0; --y: 8px; }
+.d-lap-track--bypass { --y: 62px; padding-top: 54px; margin-top: 2px; }
+.d-lap-seg { position: absolute; top: var(--y); height: 0; translate: 0 -1px; width: 33.333%; }
+.d-lap-seg--trial { left: 16.667%; border-top: 2px solid var(--d-hot); box-shadow: 0 0 6px rgba(255, 79, 216, .55); }
+.d-lap-seg--wait { left: 50%; border-top: 2px dashed rgba(190, 90, 255, .45); }
+.d-lap-bypass { position: absolute; left: 16.667%; right: 16.667%; top: 18px; height: calc(var(--y) - 18px);
+  border: 2px dashed rgba(255, 79, 216, .6); border-bottom: 0; border-radius: 18px 18px 0 0; }
+.d-lap-stops { position: relative; list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.d-lap-stop { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.d-lap-node { position: relative; z-index: 1; width: 16px; height: 16px; margin-bottom: 6px; border-radius: 50%; box-sizing: border-box;
+  background: #12061b; border: 2px solid var(--d-hot); }
+.d-lap-stop--start .d-lap-node { background: var(--d-hot); }
+.d-lap-stop--finish .d-lap-node { border-radius: 2px; border-color: var(--d-white-ink);
+  background: repeating-conic-gradient(var(--d-white-ink) 0 25%, #12061b 0 50%) 0 0 / 6px 6px; }   /* the chequered flag */
+.d-lap-flag { margin-bottom: 8px; font: 400 9px/16px var(--d-f-pix); letter-spacing: .12em; text-transform: uppercase; color: var(--d-crt); }
+.d-lap-date { font: 400 40px/.9 var(--d-f-lcd); letter-spacing: .04em; text-transform: uppercase; color: var(--d-white-ink); text-shadow: 0 0 10px rgba(242, 76, 240, .6); }
+.d-lap-what { margin-top: 8px; font: 400 17px/1.15 var(--d-f-lcd); letter-spacing: .05em; text-transform: uppercase; color: var(--d-crt); }
+.d-lap-chip { margin-top: 12px; min-width: 150px; display: inline-flex; align-items: baseline; justify-content: center; gap: 8px; padding: 2px 12px 6px;
+  border: 1px solid rgba(190, 90, 255, .45); border-radius: 3px; font: 400 17px/1 var(--d-f-lcd); letter-spacing: .05em; text-transform: uppercase; color: var(--d-crt); }
+.d-lap-stop--start .d-lap-chip { border-color: rgba(255, 79, 216, .55); }
+.d-lap-chip b { font: 400 30px/.9 var(--d-f-lcd); color: var(--d-white-ink); }
+.d-lap-span { position: absolute; z-index: 1; left: 33.333%; top: var(--y); translate: -50% -50%; padding: 4px 8px 3px; white-space: nowrap;
+  background: #1d0b2c; border: 1px solid rgba(255, 79, 216, .55); border-radius: 2px;
+  font: 400 9px/1 var(--d-f-pix); letter-spacing: .1em; text-transform: uppercase; color: var(--d-hot); }
+.d-lap-sign { position: absolute; z-index: 2; left: 50%; top: 18px; translate: -50% -50%; display: flex; align-items: center; gap: 12px; white-space: nowrap;
+  padding: 7px 16px 5px; border: 1px solid rgba(255, 79, 216, .6); border-radius: 4px; background: #1d0b2c; text-decoration: none;
+  font: 400 19px/1 var(--d-f-lcd); letter-spacing: .05em; text-transform: uppercase; color: #f0e2ff; transition: border-color .14s ease, background-color .14s ease; }
+.d-lap-sign:hover { border-color: var(--d-hot); background: #26103a; }
+.d-lap-sign:active { translate: -50% calc(-50% + 2px); transition-duration: 40ms; }
+.drift-page .d-lap-sign:focus-visible { outline: none; border-color: var(--d-hot); box-shadow: 0 0 0 3px var(--d-pink-ink); }
+.d-lap-sign b { font: 400 30px/.9 var(--d-f-lcd); color: var(--d-white-ink); text-shadow: 0 0 10px rgba(242, 76, 240, .6); }
+.d-lap-tag { font: 400 9px/1 var(--d-f-pix); letter-spacing: .1em; text-transform: uppercase; color: var(--d-hot); }
+.d-lap-chev { color: var(--d-crt); }
+.drift-page .d-lap-note { margin: 20px 0 0; text-align: center; font: 400 15px/1 var(--d-f-lcd); letter-spacing: .1em; text-transform: uppercase; color: var(--d-crt); opacity: .7; }
+/* the car: a lane from START to FINISH (a size container, so the car's translate is a share of the lap) */
+.d-lap-lane { position: absolute; z-index: 3; left: 16.667%; width: 66.667%; top: var(--y); height: 0; container-type: inline-size; pointer-events: none; }
+.d-lap-car { position: absolute; left: -5px; top: -5px; width: 10px; height: 10px; border-radius: 50%;
+  background: #fff0ff; box-shadow: 0 0 6px 1px rgba(242, 76, 240, .95), 0 0 14px rgba(242, 76, 240, .5);
+  animation: d-lap-drive 9s ease-in-out infinite paused; }
+@keyframes d-lap-drive {
+  0%, 12% { translate: 0 0; opacity: 1; }
+  34%, 50% { translate: 50cqw 0; opacity: 1; }
+  72%, 90% { translate: 100cqw 0; opacity: 1; }
+  94% { translate: 100cqw 0; opacity: 0; }
+  95% { translate: 0 0; opacity: 0; }
+  100% { translate: 0 0; opacity: 1; }
+}
+.d-lap-date { animation: 9s linear infinite paused; }
+.d-lap-stop--start .d-lap-date { animation-name: d-lap-lit-start; }
+.d-lap-stop--check .d-lap-date { animation-name: d-lap-lit-check; }
+.d-lap-stop--finish .d-lap-date { animation-name: d-lap-lit-finish; }
+.d-lap[data-run] :is(.d-lap-car, .d-lap-date) { animation-play-state: running; }
+@keyframes d-lap-lit-start {
+  0%, 13% { color: #fff; text-shadow: 0 0 14px rgba(255, 79, 216, .95), 0 0 2px #fff; }
+  17%, 96% { color: var(--d-white-ink); text-shadow: 0 0 10px rgba(242, 76, 240, .6); }
+  100% { color: #fff; text-shadow: 0 0 14px rgba(255, 79, 216, .95), 0 0 2px #fff; }
+}
+@keyframes d-lap-lit-check {
+  0%, 32% { color: var(--d-white-ink); text-shadow: 0 0 10px rgba(242, 76, 240, .6); }
+  35%, 51% { color: #fff; text-shadow: 0 0 14px rgba(255, 79, 216, .95), 0 0 2px #fff; }
+  55%, 100% { color: var(--d-white-ink); text-shadow: 0 0 10px rgba(242, 76, 240, .6); }
+}
+@keyframes d-lap-lit-finish {
+  0%, 70% { color: var(--d-white-ink); text-shadow: 0 0 10px rgba(242, 76, 240, .6); }
+  73%, 91% { color: #fff; text-shadow: 0 0 14px rgba(255, 79, 216, .95), 0 0 2px #fff; }
+  95%, 100% { color: var(--d-white-ink); text-shadow: 0 0 10px rgba(242, 76, 240, .6); }
+}
+@media (prefers-reduced-motion: reduce) { .d-lap-car, .d-lap-date { animation: none; } }
+
+/* THE KEEP-IT TV ON PHONES (Dan 10-04: "make a plan so it fits on the phone"; picked: the road turns vertical,
+   no email box on the TV). The cabinet bezel + the screen's padding ate ~200 of the 370 px; both halve. The head
+   takes two lines; the PLAYER 1 START gate stays off (the hero has the trial on screen 1 and the sticky bar has
+   GET IT; jumpNearest never targets this form). THE ROAD TO NOV 1 turns 90°: ONE grid on .d-lap-track, the <ol>
+   is display:contents so the stops are its rows. Cols: the shortcut lane | the road | the stop. Rows: START 84 /
+   the 14 DAYS FREE tag 30 / CHECKPOINT 84 / FINISH / the SHORTCUT sign. Fixed rows so the car's stops line up:
+   its lane runs node to node, START 0 → CHECKPOINT (84 + 30) / 198 = 57.6% → FINISH 100%. */
+@media (max-width: 600px) {
+  .d-keep-tv { --tv-t: 20px; --tv-r: 30px; --tv-b: 26px; --tv-l: 30px; border-image: var(--d-img-tv) 384 fill / 43px stretch; border-radius: 16px; }
+  .d-keep-tv .d-crt.d-keep-screen { padding: 20px 12px 18px; }
+  .drift-page .d-keep-start .d-keep-try { font-size: clamp(14px, 4.2vw, 18px); line-height: 1.45; white-space: normal; }
+  .d-keep-start .d-keep-try span { display: block; }
+  .d-keep-start > .d-keep-gate { display: none; }
+  .drift-page .d-keep-then { margin-bottom: 14px; font-size: 13px; }
+
+  .d-lap-track, .d-lap-track--bypass {
+    --y: 0; display: grid; grid-template-columns: 16px 26px minmax(0, 1fr); grid-template-rows: 84px 30px 84px auto auto;
+    max-width: none; margin: 0; padding: 0;
+  }
+  .d-lap-stops { display: contents; }
+  .d-lap-stop { grid-column: 2 / 4; display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; grid-template-rows: auto auto auto;
+    column-gap: 8px; align-items: start; text-align: left; }
+  .d-lap-stop--start { grid-row: 1; }
+  .d-lap-stop--check { grid-row: 3; }
+  .d-lap-stop--finish { grid-row: 4; }
+  .d-lap-node { grid-column: 1; grid-row: 1; justify-self: center; margin: 2px 0 0; }
+  .d-lap-flag { grid-column: 2; grid-row: 1; margin: 0; line-height: 20px; }
+  .d-lap-date { grid-column: 2; grid-row: 2; font-size: 34px; }
+  .d-lap-what { grid-column: 2 / 4; grid-row: 3; margin-top: 4px; font-size: 16px; }
+  .d-lap-chip { grid-column: 3; grid-row: 1 / 3; align-self: center; justify-self: end; margin: 0; min-width: 0;
+    flex-direction: column; align-items: flex-end; gap: 2px; padding: 4px 8px 5px; font-size: 13px; text-align: right; }
+  .d-lap-chip b { font-size: 26px; }
+  /* the road: the free days a lit solid line START → CHECKPOINT, the wait a dim dashed one CHECKPOINT → FINISH,
+     node centre to node centre (each node's centre sits 10 px under its row top) */
+  .d-lap-seg { position: relative; top: auto; left: auto; translate: none; width: 0; height: auto; grid-column: 2; justify-self: center; margin: 10px 0 -10px; }
+  .d-lap-seg--trial { grid-row: 1 / 3; border-top: 0; border-left: 2px solid var(--d-hot); }
+  .d-lap-seg--wait { grid-row: 3 / 4; border-top: 0; border-left: 2px dashed rgba(190, 90, 255, .45); }
+  .d-lap-span { position: relative; left: auto; top: auto; translate: none; grid-column: 3; grid-row: 2; align-self: center; justify-self: start; margin-left: 8px; }
+  /* the shortcut: a dashed lane that leaves START, runs down the left and lands on FINISH (it skips the checkpoint) */
+  .d-lap-bypass { position: relative; left: auto; right: auto; top: auto; height: auto; grid-column: 1 / 3; grid-row: 1 / 4;
+    margin: 10px 13px -10px 3px; border: 2px dashed rgba(255, 79, 216, .6); border-right: 0; border-radius: 10px 0 0 10px; }
+  .d-lap-sign { position: relative; left: auto; top: auto; translate: none; grid-column: 1 / 4; grid-row: 5; margin-top: 16px;
+    flex-wrap: wrap; justify-content: center; gap: 4px 8px; white-space: normal; padding: 7px 10px 6px; font-size: 16px; }
+  .d-lap-sign:active { translate: 0 2px; }
+  .d-lap-sign b { font-size: 24px; }
+  .drift-page .d-lap-note { margin-top: 12px; font-size: 14px; }
+  /* the car drives DOWN the road */
+  .d-lap-lane { position: relative; left: auto; top: auto; width: 0; height: auto; grid-column: 2; grid-row: 1 / 4; justify-self: center;
+    margin: 10px 0 -10px; container-type: size; }
+  .d-lap-car { animation-name: d-lap-drive-v; }
+}
+/* narrow phones (≤390: the stop gets 160-220 px): tighter flag tracking, the chip's label on two lines, the
+   "what" line untracked, so CHECKPOINT + its chip share the row and every "what" stays one line */
+@media (max-width: 390px) {
+  .d-lap-flag { font-size: 8px; letter-spacing: .04em; }
+  .d-lap-date { font-size: 28px; }
+  .d-lap-what { font-size: 14px; letter-spacing: 0; }
+  .d-lap-chip { max-width: 76px; padding: 3px 6px 4px; font-size: 11px; line-height: 1.05; }
+  .d-lap-chip b { font-size: 22px; }
+  .d-lap-span { margin-left: 4px; }
+}
+@keyframes d-lap-drive-v {
+  0%, 12% { translate: 0 0; opacity: 1; }
+  34%, 50% { translate: 0 57.6cqh; opacity: 1; }
+  72%, 90% { translate: 0 100cqh; opacity: 1; }
+  94% { translate: 0 100cqh; opacity: 0; }
+  95% { translate: 0 0; opacity: 0; }
+  100% { translate: 0 0; opacity: 1; }
+}
 
 /* cockpit: purple underglow + gauge cluster (real render, wheel hidden) + wheel.
    The driver's-seat crop is the cockpit's own negative margin: the grid row
@@ -531,44 +1005,29 @@
   color: var(--d-fg);
   text-shadow: 0 -1px 0 rgba(0, 0, 0, .9), 0 1px 0 rgba(255, 255, 255, .16);   /* engraved: emboss only, no bloom */
 }
+.d-wheel-print { display: none; }   /* phone only (A5 print, below) */
 .d-wheel-mark .kana {
   font: 700 calc(var(--wd) * 12 / 790) / 1 var(--d-f-ja);
   letter-spacing: .3em; text-indent: .3em; white-space: nowrap;
   color: #cf9dff; opacity: .72;
 }
-.d-wheel-hint {
-  position: absolute; left: 50%; bottom: calc(var(--wd) * 0.24); transform: translateX(-50%);
-  z-index: 4; pointer-events: none; white-space: nowrap;
-  font: 400 18px/1 var(--d-f-lcd); letter-spacing: .08em;
-  color: rgba(255, 209, 248, .85);
-}
-@media (pointer: coarse) { .d-hint-fine { display: none; } }
-@media not all and (pointer: coarse) { .d-hint-coarse { display: none; } }
 
-/* 1100-1199 (rails on, three columns): the CTA panel's content box drops
-   under the key's 258 px minimum, so the key ran past the panel. A smaller key
-   that fills the content box, over a slimmer wheel-side pad, fits. */
-@media (min-width: 1100px) and (max-width: 1199px) {
-  .d-hero-right .d-panel { padding-left: calc(var(--wd) * 0.05); }
-  .d-hero-right .d-cta { --h: 48px; min-width: 0; width: 100%; margin-left: 0; }
-}
-
-/* phones + small tablets: dash, title + CTA as ONE merged panel, wheel,
-   meter, plain line. Gate at 390x844: keycap bottom ≤450, wheel top ≤560. */
+/* phones + small tablets: title + CTA as ONE merged panel, wheel, meter.
+   Gate at 390x844: keycap bottom ≤450, wheel top ≤560. */
 @media (max-width: 1099px) {
   .d-hero { --wd: min(420px, 86vw); padding-top: 10px; }
-  .d-dashbar { grid-template-columns: 1fr; justify-items: center; text-align: center; padding: 4px 10px; }
-  .d-dashbar .d-sock:first-child, .d-dashbar .d-sock:last-child { justify-self: center; }
-  .d-sock--pan, .d-sock--aax { display: none; }
-  .d-hero-body { grid-template-columns: minmax(0, 1fr); justify-items: center; margin-top: 12px; margin-bottom: 0; }
+  .d-hero-body { grid-template-columns: minmax(0, 1fr); justify-items: center; margin-top: 4px; margin-bottom: 0; }
   .d-hero-left, .d-hero-right { margin: 0; width: 100%; }
   .d-hero-left { order: 1; }
   .d-hero-right { order: 2; margin-top: -2px; }
   .d-cockpit { order: 3; margin: 8px 0 8px; }
-  .d-hero .d-hero-meter { order: 4; display: grid; width: min(420px, 100%); margin-top: 22px; }
-  .d-hero .d-plain--phone { order: 5; display: block; width: 100%; }
-  .d-plain--desk, .d-hook, .d-ladder--hero, .d-cta-block .d-ladder-label { display: none; }
-  .d-ladder-line { display: block; }
+  .d-hero-trial { order: 4; width: min(420px, 100%); margin-top: 6px; }
+  .d-hero-trial .d-stamp { gap: 14px; }
+  .d-hero-trial .d-stamp-label { font-size: 32px; }
+  .d-hero-trial .d-stamp-field { min-height: 62px; font-size: 21px; }
+  .d-hero-trial .d-stamp-key { --h: 62px; align-self: stretch; width: 100%; }
+  .d-hero-trial .d-stamp-fine { font-size: 13px; }
+  .d-hero .d-hero-meter { order: 5; display: grid; width: min(420px, 100%); margin-top: 22px; }
   .d-hero-left .d-panel, .d-hero-right .d-panel { padding-left: clamp(22px, 5vw, 44px); padding-right: clamp(22px, 5vw, 44px); }
   /* merged panel: the title half and the CTA half share one plate. Each half
      clips its own well ring and lip along the join (the ring of the lower half
@@ -592,7 +1051,6 @@
   .d-hero-right .d-screw.tl, .d-hero-right .d-screw.tr, .d-hero-right .d-sticker { display: none; }
   .d-hero-right .d-cta-block { gap: 10px; }
   .d-hero-right .d-cta { align-self: stretch; margin-left: 0; }
-  .d-wheel-hint { bottom: -6px; }
 }
 /* tablets and small laptops: a stretched key became a 630-856 px red banner;
    cap it so it stays a key, on the text's left edge (a centred key between
@@ -619,6 +1077,10 @@
 /* STOP is desaturated at rest: the CTA stays the one race-red per viewport */
 .d-cap--stop:not(:active) { filter: saturate(.3) brightness(.65) drop-shadow(0 3px 4px rgba(0, 0, 0, .7)); }
 .d-cap--stop:not(:active):hover { filter: saturate(.3) brightness(.8) drop-shadow(0 3px 4px rgba(0, 0, 0, .7)); }
+/* GPS focus ring: the plate image hides the outline, so the ring is drawn inside the cap */
+.drift-page .d-cap:focus-visible { outline: none; box-shadow: inset 0 0 0 3px var(--d-pink-ink), inset 0 0 0 5px rgba(7, 5, 11, .8); }
+.d-cap[aria-pressed='true'] { box-shadow: inset 0 0 0 2px rgba(255, 240, 255, .45), inset 0 0 14px rgba(255, 240, 255, .35); }
+.drift-page .d-cap[aria-pressed='true']:focus-visible { box-shadow: inset 0 0 0 3px var(--d-pink-ink), inset 0 0 14px rgba(255, 240, 255, .35); }
 .d-balance-box { margin-top: 18px; padding: 14px 16px 12px; display: grid; gap: 10px; }
 .d-balance-lr { display: flex; justify-content: space-between; align-items: center; font: 400 11px/1 var(--d-f-pix); color: var(--d-dim-violet); }
 
@@ -649,14 +1111,90 @@
 }
 
 /* ==========================================================================
+   BELOW-HERO TYPE HELPERS: the hero's hand for every line the page says
+   ========================================================================== */
+.drift-page .d-catch {
+  font: 700 clamp(16px, 1.35vw, 19px) / 1.3 var(--d-f-head);
+  text-transform: uppercase;
+  letter-spacing: .02em;
+  color: var(--d-fg);
+  max-width: 60ch;
+  margin: 0 0 22px;
+  text-wrap: balance;
+}
+.d-catch em { font-style: normal; color: var(--d-neon); text-shadow: var(--d-glow-2); }
+.d-catch strong { font-weight: 700; color: var(--d-white-ink); }
+.drift-page .d-fine {
+  font: 500 12px / 1.4 var(--d-f-head);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--d-fg-dim);
+  text-wrap: balance;
+}
+@media (max-width: 600px) {
+  .drift-page .d-catch { margin-bottom: 18px; }
+}
+
+/* ==========================================================================
    SECTION 2 — LET IT DRIVE (#drive): TRACKS attract screen + mini GPS
    ========================================================================== */
-.d-tracks { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: clamp(22px, 3vw, 40px); align-items: start; }
-.d-attract { padding: 22px 24px 26px; }
-/* the CRT is ~340 px shorter than the GPS column: it rides beside the cabinet
-   instead of leaving a hole under itself (two columns only, ≥1001) */
+/* one panel for the whole section (Dan 10-03). Desktop: plate S1, "E's style made for this section,
+   polished" (gpt-image-1, tools/gen-drift-section-panel.sh S, roll 1 of 3, picked on the page bench over
+   E/S2/S3): cropped 1154 x 788, 2x Lanczos + unsharp (2308 x 1576), 9-sliced at .3 css per file px
+   (= .6 per model px, ~1:1 device px on retina, so bezel + screws stay crisp): slice 430 (215 model px)
+   holds the screw AND the whole recess curve (lip 74-85 + radius ~132 model px) inside each corner, so the
+   curve is never stretched. The plate brings its own screws. Its four bezel runs are smoothed along their own
+   length in the file (1-D box blur, 90 px blend into the corners) so the 9-slice stretch shows clean straight
+   brushing instead of smeared grain (Dan 10-03 "still something not polished in the edges").
+   box-shadow, not a drop-shadow filter: a filter on a panel this size repaints with the live car. */
+.drift-page .d-drive-panel { padding: clamp(40px, 4.2vw, 52px) clamp(18px, 2vw, 26px) clamp(24px, 2.4vw, 32px); }
 @media (min-width: 1001px) {
-  .d-attract { position: sticky; top: calc(var(--sale-h, 0px) + var(--nav-h, 44px) + 24px); }
+  .drift-page .d-drive-panel {
+    background: none; border-radius: 58px;   /* = the plate's outer corner (~198 file px at .3), so the drop shadow follows the metal */
+    box-shadow: 0 12px 22px rgba(0, 0, 0, .55);
+    border: 0 solid transparent;
+    border-image: var(--d-img-section) 430 fill / 129px stretch;
+    padding: 70px 80px 80px;   /* polish 10-03: the content sits ~39 px inside the lip at the sides and the bottom, the head ~29 px under the top lip */
+    isolation: isolate;   /* the carbon ::before (z -1) paints over the plate, under the content */
+  }
+  .d-drive-panel > .d-screw { display: none; }
+  .d-drive-panel > .d-sticker { right: 84px; top: 8px; }   /* polish 10-03: on the bezel, clear of the top-right screw and the violet lip (37 px) */
+  .drift-page .d-drive-panel h2.d-headline--row { margin-bottom: 26px; }   /* same air below the head as above it */
+  /* Dan 10-03 "it feels pixelated": no image model covers this panel's ~2240 device px, so the carbon face is
+     a vector 2x2 twill tile (crisp at any DPR). Dan 10-03 "the edges": the AI recess (wall + lip) is not a true
+     rounded rect, so a drawn face inside it left a dark band, thin on the straights and fat in the corners.
+     The face now covers the whole recess out to the bezel's inner edge (measured, model px: top 62, right 70,
+     bottom 69, left 69, corner radius ~148 -> css at .6) and draws its own edge: dark wall, violet lip, dark
+     line, then the recess depth (light from the upper left). The plate keeps only the bezel and screws. */
+  .d-drive-panel::before {
+    content: ''; position: absolute; inset: 37px 42px 41px 41px; z-index: -1; border-radius: 89px; pointer-events: none;
+    background:
+      radial-gradient(120% 90% at 18% 10%, rgba(200, 160, 255, .08), transparent 62%),   /* the key light, upper left */
+      linear-gradient(180deg, rgba(255, 255, 255, .035), transparent 30%),               /* clear-coat sheen */
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Cdefs%3E%3ClinearGradient id='v'%3E%3Cstop offset='0' stop-color='%23231e30'/%3E%3Cstop offset='.45' stop-color='%23171420'/%3E%3Cstop offset='1' stop-color='%230b0a11'/%3E%3C/linearGradient%3E%3ClinearGradient id='h' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%231c1826'/%3E%3Cstop offset='.45' stop-color='%2312101a'/%3E%3Cstop offset='1' stop-color='%2308070d'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='0' y='0' width='5' height='5' fill='url(%23v)'/%3E%3Crect x='5' y='0' width='5' height='5' fill='url(%23v)'/%3E%3Crect x='10' y='0' width='5' height='5' fill='url(%23h)'/%3E%3Crect x='15' y='0' width='5' height='5' fill='url(%23h)'/%3E%3Crect x='0' y='5' width='5' height='5' fill='url(%23h)'/%3E%3Crect x='5' y='5' width='5' height='5' fill='url(%23v)'/%3E%3Crect x='10' y='5' width='5' height='5' fill='url(%23v)'/%3E%3Crect x='15' y='5' width='5' height='5' fill='url(%23h)'/%3E%3Crect x='0' y='10' width='5' height='5' fill='url(%23h)'/%3E%3Crect x='5' y='10' width='5' height='5' fill='url(%23h)'/%3E%3Crect x='10' y='10' width='5' height='5' fill='url(%23v)'/%3E%3Crect x='15' y='10' width='5' height='5' fill='url(%23v)'/%3E%3Crect x='0' y='15' width='5' height='5' fill='url(%23v)'/%3E%3Crect x='5' y='15' width='5' height='5' fill='url(%23h)'/%3E%3Crect x='10' y='15' width='5' height='5' fill='url(%23h)'/%3E%3Crect x='15' y='15' width='5' height='5' fill='url(%23v)'/%3E%3C/svg%3E") 0 0 / 20px 20px,   /* 2x2 twill, vector: crisp at any DPR */
+      #100e17;
+    box-shadow:
+      inset 0 0 0 3px #050308,                       /* the recess wall */
+      inset 0 0 0 4.5px rgba(150, 70, 235, .9),      /* the violet lip */
+      inset 0 0 0 6px #07050b,                       /* its inner shadow line */
+      inset 0 12px 16px -6px rgba(0, 0, 0, .75),     /* recess depth: deepest under the top edge */
+      inset 8px 0 14px -8px rgba(0, 0, 0, .5);       /* and the left (key light upper left) */
+  }
+}
+.d-tracks { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: clamp(22px, 3vw, 40px); align-items: stretch; }
+.d-attract { padding: 22px 24px 26px; }
+/* the CRT sits in its own steel panel, level with the GPS cabinet: 2x4 chips fill it (two columns only, ≥1001) */
+@media (min-width: 1001px) {
+  .d-attract-panel { display: flex; flex-direction: column; }
+  .d-attract-panel > .d-attract { flex: 1; display: flex; flex-direction: column; }
+  .d-attract .d-cards { flex: 1; grid-auto-rows: 1fr; }
+  .d-attract .d-chip { justify-content: center; }
+}
+/* 2x4 chips: layout B (10-02) narrowed the tracks panel, so two columns from 1001 up.
+   48px, not 64-80: anything taller makes the CRT taller than the GPS panel */
+@media (min-width: 1001px) {
+  .d-attract .d-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .d-attract .d-chip svg { height: 48px; }
 }
 .d-attract-hdr { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-bottom: 14px; margin-bottom: 18px; position: relative; }
 .d-attract-hdr::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: repeating-linear-gradient(90deg, var(--d-hot) 0 14px, rgba(247, 105, 224, .12) 14px 28px); box-shadow: 0 0 10px rgba(247, 105, 224, .45); }
@@ -672,25 +1210,89 @@
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .35), inset 0 0 18px rgba(190, 90, 255, .08);
   transition: transform .14s ease, border-color .14s ease, box-shadow .14s ease;
 }
-.d-chip:hover, .d-chip[aria-pressed='true'] {
-  transform: translateY(-2px); border-color: var(--d-hot);
-  box-shadow: 0 0 22px rgba(247, 105, 224, .22), inset 0 0 0 1px rgba(247, 105, 224, .5), inset 0 0 22px rgba(247, 105, 224, .1);
-}
+.d-chip:hover { border-color: rgba(247, 105, 224, .7); }
+.d-chip[aria-pressed='true'] { border-color: var(--d-hot); box-shadow: 0 0 22px rgba(247, 105, 224, .22), inset 0 0 0 1px rgba(247, 105, 224, .5), inset 0 0 22px rgba(247, 105, 224, .1); }
+.d-chip:active { transform: translateY(2px); transition-duration: 40ms; }
+#drive .d-chip:not([aria-pressed='true']):hover { border-color: rgba(190, 90, 255, .7); }   /* a purple lift: pink is the selected chip's alone */
 .d-chip svg { display: block; width: 100%; height: 56px; }
-.d-chip svg path { fill: none; stroke: var(--d-cyan); stroke-width: 2.2; filter: drop-shadow(0 0 3px rgba(94, 231, 255, .8)); }
+.d-gps-catch { display: none; }   /* phone only (≤600, below) */
+.d-chip svg path { fill: none; stroke: var(--d-cyan); stroke-width: 2px; vector-effect: non-scaling-stroke; stroke-linejoin: round; filter: drop-shadow(0 0 3px rgba(94, 231, 255, .8)); }
 .d-chip-name { font: 400 19px/1 var(--d-f-lcd); letter-spacing: .04em; color: #f0e2ff; white-space: nowrap; }
 .d-chip[aria-pressed='true'] .d-chip-name { color: var(--d-white-ink); text-shadow: 0 0 8px var(--d-crt-glow); }   /* the selected chip lights */
-.drift-page .d-chips-note { margin-top: 14px; font-size: 17px; color: #a88cd0; }
-.d-gps-col { display: grid; gap: 16px; width: 100%; max-width: 440px; justify-self: end; }
+.drift-page .d-chips-note { margin-top: 14px; }
+.d-gps-col { display: grid; gap: 16px; width: 100%; max-width: 624px; justify-self: end; align-content: stretch; }
 .d-gps { position: relative; width: 100%; aspect-ratio: 1188 / 1324; }
 .d-gps > img, .d-gps > noscript > img { position: absolute; inset: 0; width: 100%; height: 100%; }
 .d-gps-glass { position: absolute; left: 15.5%; top: 44%; width: 69%; height: 44%; }
 .d-gps-glass svg { width: 100%; height: 100%; display: block; overflow: visible; }
-.d-gps-glass path.trk { fill: none; stroke: #b46bff; stroke-width: 2.4; filter: drop-shadow(0 0 4px rgba(180, 107, 255, .8)); }
+/* the car's own svg, the track's twin laid over it (scroll bench 10-05): on its own layer while it laps (trackui.ts),
+   a lap repaints only that layer, never the glowing track and the plate under it */
+.d-gps-trk { position: relative; width: 100%; height: 100%; }
+.d-gps-glass svg.d-gps-car { position: absolute; inset: 0; pointer-events: none; }   /* moving, its box sweeps over the caps and faders */
+.d-gps-glass path.trk { fill: none; stroke: #b46bff; stroke-width: 2px; vector-effect: non-scaling-stroke; stroke-linejoin: round; filter: drop-shadow(0 0 4px rgba(180, 107, 255, .8)); }
 .d-gps-glass circle.car { fill: #fff0ff; filter: drop-shadow(0 0 6px rgba(242, 76, 240, .95)); }
 .d-gps-lcd { position: absolute; left: 62%; top: 9.6%; width: 30%; height: 10%; display: flex; flex-direction: column; justify-content: center; padding: 0 8px; }
 .d-gps-lcd span { font: 400 clamp(11px, 1vw, 14px)/1.1 var(--d-f-lcd); color: var(--d-lcd); text-shadow: 0 0 4px rgba(242, 76, 240, .7); white-space: nowrap; }
-.drift-page .d-auto-line { font-size: 16px; max-width: none; }
+
+/* --- layout B (Dan 10-02): INTENSITY | GPS | SPEED, value screens under ------ */
+@media (min-width: 1001px) {
+  .d-tracks { grid-template-columns: minmax(0, 457fr) minmax(0, 624fr); }
+  .d-gps-panel { display: flex; flex-direction: column; justify-content: center; }   /* when the tracks panel is the taller one (<1280), the rig sits centred */
+}
+.d-rig { display: grid; grid-template-columns: 80px minmax(0, 1fr) 80px; column-gap: 12px; align-items: stretch; }
+.d-rig .d-gps { align-self: start; }
+.d-fad { display: flex; flex-direction: column; align-items: center; gap: 6px; min-height: 0; }
+.d-fad--int { --fad: #b46bff; --fad-rgb: 180, 107, 255; }   /* the plugin's fader fills: violet / magenta, never red */
+.d-fad--spd { --fad: #f24cf0; --fad-rgb: 242, 76, 240; }
+.d-fad-pic { width: 70px; height: auto; filter: drop-shadow(0 1px 0 rgba(0, 0, 0, .55)) drop-shadow(0 0 5px rgba(var(--fad-rgb), .45)); }
+.d-fad-title { height: 22px; width: auto; max-width: 92px; filter: drop-shadow(0 1px 0 rgba(0, 0, 0, .55)) drop-shadow(0 0 5px rgba(var(--fad-rgb), .45)); }
+.d-fad-end { font: 400 9px/1 var(--d-f-pix); letter-spacing: .04em; color: var(--d-fg-neon); white-space: nowrap; }
+/* the slider is the wide hit box; ::before is the groove, the fill and cap ride its centre line */
+.d-fad-slot { position: relative; flex: 1; width: 56px; min-height: 120px; margin: 14px 0; cursor: ns-resize; touch-action: none; border-radius: 8px; }
+.d-fad-slot::before { content: ''; position: absolute; top: 0; bottom: 0; left: 50%; width: 14px; translate: -50% 0; border-radius: 7px; background: #05020a; box-shadow: inset 0 0 0 1px rgba(190, 90, 255, .28), inset 0 2px 6px rgba(0, 0, 0, .9); }
+.d-fad-fill { position: absolute; bottom: 0; left: 50%; width: 14px; translate: -50% 0; border-radius: 7px; background: var(--fad); box-shadow: 0 0 10px rgba(var(--fad-rgb), .55); pointer-events: none; }
+.d-fad-thumb { position: absolute; left: 50%; width: 48px; height: 24px; translate: -50% 50%; border-radius: 5px; pointer-events: none;
+  background: linear-gradient(180deg, #d8d2de, #6f6878 55%, #3b3442); box-shadow: 0 3px 6px rgba(0, 0, 0, .7), inset 0 1px 0 rgba(255, 255, 255, .5); }
+.d-fad-thumb::after { content: ''; position: absolute; left: 8px; right: 8px; top: 50%; height: 2px; translate: 0 -50%; background: #1a1220; }
+.drift-page .d-fad-slot:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--d-pink-ink), 0 0 0 5px rgba(7, 5, 11, .8); }
+.d-rig-base { display: grid; grid-template-columns: 104px minmax(0, 1fr) 104px; column-gap: 12px; align-items: start; margin-top: 18px; }
+.d-rig-base .d-balance-box { margin-top: 0; }
+.d-vs { height: 114px; display: flex; flex-direction: column; align-items: center; justify-content: space-evenly; padding: 6px 4px; }
+.d-vs-lab { font: 400 9px/1 var(--d-f-pix); letter-spacing: .06em; color: var(--d-lcd); text-shadow: 0 0 6px rgba(242, 76, 240, .7); }
+.d-vs-val { font: 400 38px/.9 var(--d-f-lcd); color: var(--d-white-ink); text-shadow: 0 0 8px rgba(242, 76, 240, .8); }
+.d-vs-val b { font-weight: 400; }
+.d-vs-val small { font-size: 20px; margin-left: 2px; }
+.d-vs-unit { font: 400 16px/1 var(--d-f-lcd); color: var(--d-lcd); }
+.d-vs-bars { display: flex; gap: 2px; }
+.d-vs-bars i { width: 5px; height: 9px; border-radius: 1px; background: rgba(242, 76, 240, .12); }
+.d-vs-bars i.on { background: rgb(255, 112, 247); box-shadow: 0 0 4px rgba(242, 76, 240, .8); }
+.drift-page .d-spd-note { margin: 6px 0 0; text-align: center; }
+/* phones (Dan 10-04 "remove this area"): no faders, no value screens, no "Seconds, or locked to bars." The GPS
+   alone, straight into the track picker; the car laps on the plugin's defaults (INTENSITY 60 %, 12.0 s a lap).
+   Hidden, not removed: desktop keeps the whole rig. */
+@media (max-width: 600px) {
+  .d-rig { grid-template-columns: minmax(0, 1fr); }
+  .d-rig .d-fad, .d-rig-base > .d-vs, .d-rig-base > .d-vs-col { display: none; }
+  /* Dan 10-04 "make the track screen smaller and put the pan, so people see how the track affects it in real
+     time": the GPS at ~3/4 width, the car-stereo balance screen (L · readout · R + the 24-bar meter, bus.ts
+     paints it only while it's on screen) right under it, the same width */
+  .d-rig .d-gps { width: 76%; justify-self: center; }
+  .d-rig-base { grid-template-columns: minmax(0, 1fr); margin-top: 12px; }
+  #drive .d-gps-panel .d-rig-base .d-balance-box { display: grid; width: 76%; justify-self: center; margin: 0; padding: 10px 14px 10px; gap: 8px; }
+  #drive .d-rig-base .d-balance { height: 38px; }
+  /* Dan 10-04: no track picker on phones; ONE circuit laps (the first, SUZUKA) and a catch line says the rest.
+     The picker's DOM stays (trackui.ts reads the pressed chip), it just isn't shown. The heading drops its
+     "Pick a track." half here (nothing to pick); the laptop keeps the full line and the picker. */
+  #drive .d-attract-panel { display: none; }
+  #drive h2.d-headline--row .l1 { display: none; }
+  .drift-page .d-gps-catch { display: block; margin: 16px 0 0; text-align: center; text-transform: uppercase;
+    font: 700 clamp(22px, 6.6vw, 30px) / 1.05 var(--d-f-head); letter-spacing: .005em; }
+  .d-gps-catch span { display: block; white-space: nowrap; }   /* two set lines: no lone "BPM." */
+  .d-gps-catch .l1 { color: var(--d-white-ink); text-shadow: var(--d-glow-1); }
+  .d-gps-catch .l2 { color: var(--d-neon); text-shadow: var(--d-glow-2); }
+}
+@media (max-width: 600px) { #drive .d-panel { padding-bottom: 44px; } }   /* clears the 31 px bottom screws, as .d-keep does */
+@media (max-width: 600px) { #drive .d-gps-panel .d-balance-box { display: none; } }   /* the hero's own L/R meter sits 1.5 screens up; the hooks stay in the DOM (fixer r2 10-02) */
 @media (max-width: 1000px) { .d-tracks { grid-template-columns: minmax(0, 1fr); } .d-gps-col { justify-self: center; } }
 @media (max-width: 560px) {
   .d-attract { padding: 16px 12px 18px; }
@@ -698,17 +1300,102 @@
   .d-chip { padding: 6px 3px 7px; }
   .d-chip svg { height: 40px; }
   .d-chip-name { font-size: 17px; letter-spacing: 0; }
+  /* the circuits' own names (Dan 10-04): a two-word name wraps (MARINA / BAY), a long single word shrinks to its
+     chip (SILVERSTONE, INTERLAGOS); --n = the longest word's letters, set in DriftTracks.astro */
+  .d-chip { container-type: inline-size; }
+  .d-chip-name { white-space: normal; text-wrap: balance; line-height: 1.02; text-align: center;
+    font-size: min(17px, calc((100cqi - 4px) / (var(--n, 6) * .5))); }
+}
+/* fit (Dan 10-04): "make it in the size of a laptop page" - the whole panel shows under the nav at every laptop size.
+   One height knob --t: 0px at <=636 px tall (Dan's MacBook in Safari at 115%) .. 1px at >=936 px tall (the 10-03 look);
+   every height-bearing size is compact + delta * --t, so the panel follows the window HEIGHT with no jumps.
+   The panel is a container: cqw = its content box, so the GPS and the head never grow past today's width-driven size. */
+@media (min-width: 1001px) {
+  #drive .d-drive-panel {
+    --t: calc(clamp(0px, 100vh - 636px, 300px) / 300);
+    --gps: min(calc(239px + 165 * var(--t)), calc((100cqw - clamp(22px, 3vw, 40px)) * .5772 - 184px));   /* height fit | the 10-03 width formula (457:624 split, minus 2x(80+12) for the faders) */
+    container-type: inline-size;
+    padding: calc(56px + 14 * var(--t)) 80px calc(68px + 12 * var(--t));   /* air top < bottom, as 10-03; the sides keep the 10-03 80 px: the CRT's 8 px steel ring sits outside its box, at 72 it touched the face's rounded corner (fixer 10-04); the 129 px bezel + the carbon face insets never change */
+  }
+  #drive.d-sec { scroll-margin-top: -32px; }   /* landing on /drift/#drive: html's scroll-padding (nav + .75rem) + the frozen 26 px section pad put the panel 41 px under the nav, 14 px off the bottom at 1141x636; -32 lands the whole panel 9 px under the nav at every laptop size (verifier 10-04; -33 gave < 8) */
+  #drive .d-drive-panel h2.d-headline--row { font-size: min(calc(36px + 16 * var(--t)), 4.9cqw); margin-bottom: calc(18px + 8 * var(--t)); }   /* one row with >= 12% spare even in Dan's Safari (Oswald ~4% wider): 36 px at 1141 (15.7% spare in WebKit, +1.9 px panel height), 52 from 936 tall up = the 10-03 size */
+  /* the rig's width comes from the GPS; the tracks screen takes the rest and stretches to the rig's height */
+  #drive .d-tracks { grid-template-columns: minmax(0, 1fr) auto; }
+  #drive .d-gps-col { width: auto; max-width: none; }
+  #drive .d-gps { width: var(--gps); }   /* the 402:448 aspect-ratio + the %-placed caps, LCD and glass follow */
+  #drive .d-gps-lcd span { font-size: clamp(11px, calc(var(--gps) * .046), 14px); }   /* the LCD text follows its plate, never the window width */
+  #drive .d-cap::before { inset: 50% auto auto 50%; width: max(calc(100% + 8px), 38px); aspect-ratio: 1; translate: -50% -50%; }   /* the 10-03 hit area (cap + 4 px a side), never under 38 px on a smaller plate */
+  /* Dan 10-05 "add color": all three caps in their own colour, as lit as PLAY (STOP's grey-out for "one red per
+     viewport" is lifted here: the pinned #drive panel is the whole screen); the pressed cap keeps its glow ring */
+  #drive .d-cap, #drive .d-cap--stop:not(:active) { filter: brightness(1.15) drop-shadow(0 3px 4px rgba(0, 0, 0, .7)); }
+  #drive .d-cap:hover, #drive .d-cap--stop:not(:active):hover { filter: brightness(1.28) drop-shadow(0 3px 4px rgba(0, 0, 0, .7)); }
+  #drive .d-cap:active { filter: brightness(1); }
+  #drive .d-cap[aria-pressed='true'] { filter: brightness(1.15) drop-shadow(0 0 10px rgba(255, 255, 255, .25)); }
+  /* faders: the graffiti art scales with the GPS (one part); both pictures one height so the slots sit level */
+  #drive .d-fad { gap: calc(4px + 2 * var(--t)); }
+  #drive .d-fad-pic { width: auto; height: calc(64px + 4 * var(--t)); }
+  #drive .d-fad-title { height: calc(20px + 2 * var(--t)); }
+  #drive .d-fad-slot { margin: calc(12px + 2 * var(--t)) 0; min-height: 90px; }   /* >= half the thumb clear of the end words */
+  /* readouts: three screens, one height, level under the rig */
+  #drive .d-rig-base { margin-top: calc(12px + 6 * var(--t)); }
+  #drive .d-vs, #drive .d-rig-base .d-balance-box { height: calc(80px + 34 * var(--t)); }
+  #drive .d-rig-base .d-balance-box { grid-template-rows: auto minmax(0, 1fr); padding: calc(8px + 6 * var(--t)) 16px calc(8px + 4 * var(--t)); gap: calc(6px + 4 * var(--t)); }
+  #drive .d-balance { height: auto; min-height: 20px; }
+  #drive .d-balance-read { font-size: calc(24px + 6 * var(--t)); }
+  #drive .d-spd-note { font-size: calc(11px + 1 * var(--t)); }
+  /* the tracks screen: 2x4 chips fill their rows (even air, no dead band under each chip) */
+  #drive .d-attract { padding: calc(14px + 8 * var(--t)) calc(16px + 8 * var(--t)) calc(16px + 10 * var(--t)); }   /* inner sides 16 at t=0: with the 80 px panel sides the chips fine print keeps one line in Safari's wider Oswald (10 px spare at 1141); 24 at t=1 */
+  #drive .d-attract-panel { margin-bottom: calc(8px - 8 * var(--t)); }   /* the CRT ends 8 px higher at small heights: its steel ring level with the bottom of LOCKED TO BARS and ~10 px clear of the face's rounded corner (it touched at 1141); 0 at t=1 = the 10-03 look */
+  #drive .d-attract-hdr { padding-bottom: calc(9px + 5 * var(--t)); margin-bottom: calc(11px + 7 * var(--t)); }
+  #drive .d-attract .d-cards { gap: calc(8px + 2 * var(--t)); }
+  #drive .d-attract .d-cards > li { display: flex; }
+  #drive .d-attract .d-chip { flex: 1; padding: calc(5px + 3 * var(--t)) 8px calc(6px + 3 * var(--t)); gap: calc(2px + 2 * var(--t)); }
+  #drive .d-attract .d-chip svg { flex: 1 1 0; height: auto; min-height: 32px; max-height: 56px; }   /* under 32 px the 2 px outlines stop reading as circuits */
+  #drive .d-chips-note { margin-top: calc(8px + 6 * var(--t)); font-size: calc(11px + 1 * var(--t)); }   /* 11 px keeps it one line at 1141 even in Safari's wider Oswald */
 }
 
 /* ==========================================================================
    SECTION 3 — EFFECTS (#fx)
    ========================================================================== */
+/* the FX RACK (finish 10-03): the plugin's FX view is a view inside the main window, so it wears #drive's
+   chassis: plate S1 9-sliced + the vector twill face and recess, copied here (never extended from
+   .d-drive-panel, whose region stays untouched). Sticker 周波数 only, no checker, no tagline. Phones: the CSS
+   DriftPanel (screws + sticker). box-shadow, never a filter on the plate (a filter on a panel this size repaints). */
+.drift-page .d-fx-panel { padding: clamp(40px, 4.2vw, 52px) clamp(22px, 2vw, 26px) clamp(24px, 2.4vw, 32px); }
+@media (min-width: 1001px) {
+  .drift-page .d-fx-panel {
+    background: none; border-radius: 58px;
+    box-shadow: 0 12px 22px rgba(0, 0, 0, .55);
+    border: 0 solid transparent;
+    border-image: var(--d-img-section) 430 fill / 129px stretch;
+    padding: 70px 80px 80px;
+    isolation: isolate;
+  }
+  .d-fx-panel > .d-screw { display: none; }
+  .d-fx-panel > .d-sticker { right: 84px; top: 8px; }
+  .drift-page .d-fx-panel h2.d-headline--row { margin-bottom: 26px; }
+  .d-fx-panel::before {
+    content: ''; position: absolute; inset: 37px 42px 41px 41px; z-index: -1; border-radius: 89px; pointer-events: none;
+    background:
+      radial-gradient(120% 90% at 18% 10%, rgba(200, 160, 255, .08), transparent 62%),
+      linear-gradient(180deg, rgba(255, 255, 255, .035), transparent 30%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Cdefs%3E%3ClinearGradient id='v'%3E%3Cstop offset='0' stop-color='%23231e30'/%3E%3Cstop offset='.45' stop-color='%23171420'/%3E%3Cstop offset='1' stop-color='%230b0a11'/%3E%3C/linearGradient%3E%3ClinearGradient id='h' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%231c1826'/%3E%3Cstop offset='.45' stop-color='%2312101a'/%3E%3Cstop offset='1' stop-color='%2308070d'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='0' y='0' width='5' height='5' fill='url(%23v)'/%3E%3Crect x='5' y='0' width='5' height='5' fill='url(%23v)'/%3E%3Crect x='10' y='0' width='5' height='5' fill='url(%23h)'/%3E%3Crect x='15' y='0' width='5' height='5' fill='url(%23h)'/%3E%3Crect x='0' y='5' width='5' height='5' fill='url(%23h)'/%3E%3Crect x='5' y='5' width='5' height='5' fill='url(%23v)'/%3E%3Crect x='10' y='5' width='5' height='5' fill='url(%23v)'/%3E%3Crect x='15' y='5' width='5' height='5' fill='url(%23h)'/%3E%3Crect x='0' y='10' width='5' height='5' fill='url(%23h)'/%3E%3Crect x='5' y='10' width='5' height='5' fill='url(%23h)'/%3E%3Crect x='10' y='10' width='5' height='5' fill='url(%23v)'/%3E%3Crect x='15' y='10' width='5' height='5' fill='url(%23v)'/%3E%3Crect x='0' y='15' width='5' height='5' fill='url(%23v)'/%3E%3Crect x='5' y='15' width='5' height='5' fill='url(%23h)'/%3E%3Crect x='10' y='15' width='5' height='5' fill='url(%23h)'/%3E%3Crect x='15' y='15' width='5' height='5' fill='url(%23v)'/%3E%3C/svg%3E") 0 0 / 20px 20px,
+      #100e17;
+    box-shadow:
+      inset 0 0 0 3px #050308,
+      inset 0 0 0 4.5px rgba(150, 70, 235, .9),
+      inset 0 0 0 6px #07050b,
+      inset 0 12px 16px -6px rgba(0, 0, 0, .75),
+      inset 8px 0 14px -8px rgba(0, 0, 0, .5);
+  }
+}
+@media (max-width: 600px) { #fx .d-panel { padding-bottom: 44px; } }   /* clears the 31 px bottom screws, as #drive does */
 .d-shot { margin: 0 0 28px; }
 .d-shot img { width: 100%; height: auto; display: block; border-radius: 10px; box-shadow: 0 0 0 1px rgba(4, 2, 8, .95), 0 0 0 6px #08040d, 0 1px 0 6px rgba(255, 240, 255, .06); }
 .d-shot figcaption { margin-top: 10px; }
 /* the band strip: static, annotated, a lit window between the two cuts, on
    the sunk-glass screen material so the lit slice reads as a lamp in a window */
-.d-bandfig { margin: 0 0 24px; max-width: 900px; }
+.d-bandfig { margin: 0 0 24px; max-width: none; }
 .d-bandglass { padding: 14px 16px 10px; }
 .d-band-cuts { display: grid; gap: 2px; margin-bottom: 4px; }
 .d-band-cut {
@@ -734,13 +1421,23 @@
 .d-band-ticks span:first-child { transform: none; }
 .d-band-ticks span:last-child { transform: translateX(-100%); }
 @media (max-width: 600px) { .d-tick-10k { display: none; } }
-
-.d-rack {
-  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px;
-  padding: 16px; border-radius: 12px;
-  background: linear-gradient(180deg, #120a18, #0a0610);
-  box-shadow: 0 0 0 1px rgba(4, 2, 8, .95), 0 0 0 6px #08040d, inset 0 12px 24px rgba(0, 0, 0, .55);
+/* "FX PLAY HERE" in the lit slice: VT323, the glass's own readout font. The slice is a lamp, so its label
+   glows. Vertically centred on the strip's lit rect (y 8-88 of 100). */
+.d-band-win { position: relative; }
+.d-fx-slice {
+  position: absolute; top: 48%; left: var(--l); width: calc(var(--r) - var(--l)); translate: 0 -50%;
+  text-align: center; white-space: nowrap; pointer-events: none;
+  font: 400 15px/1 var(--d-f-lcd); letter-spacing: .06em; color: var(--d-white-ink);
+  text-shadow: 0 0 6px rgba(242, 76, 240, .75);
 }
+@media (max-width: 600px) { #fx .d-fx-slice { font-size: 11px; letter-spacing: 0; } .d-fx-slice-w { display: none; } }
+/* one cue: the cut flags + the slice label flicker on once like phosphor when the glass enters view
+   (DriftFx's IntersectionObserver sets [data-lit]). No dim rest state: no JS / reduced motion = lit. */
+.d-bandglass[data-lit] .d-band-cut, .d-bandglass[data-lit] .d-fx-slice { animation: d-fx-phosphor 420ms steps(1, end) both; }
+@keyframes d-fx-phosphor { 0% { opacity: 0; } 20% { opacity: 1; } 35% { opacity: .15; } 55% { opacity: 1; } 70% { opacity: .4; } 100% { opacity: 1; } }
+
+/* the strips sit straight on the twill face: no rack box of their own (the plate is the rack) */
+#fx .d-rack { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; padding: 0; background: none; box-shadow: none; margin-top: 24px; }
 .d-strip { position: relative; margin: 0; }
 /* Head crop of the 512x1004 strip, every viewport: source rows 10-598, the
    screen, the selectors and the first knob row with its labels. Row 598 is
@@ -752,7 +1449,7 @@
 .d-strip img {
   width: 100%; height: auto; display: block;
   aspect-ratio: 512 / 588; object-fit: cover; object-position: 50% 2.4%;
-  transition: filter 120ms ease; filter: brightness(.86);
+  filter: brightness(.86);   /* no hover lamp (law: attention motion is the text, never the box) */
 }
 /* the rack's front rail: each well shades to the rack colour and ends in a
    5 px rail with a top catchlight, so the pedal sits behind the rack instead
@@ -763,45 +1460,339 @@
     linear-gradient(180deg, transparent calc(100% - 6px), rgba(255, 240, 255, .14) calc(100% - 6px), rgba(255, 240, 255, .14) calc(100% - 5px), #0d0813 calc(100% - 5px)),
     linear-gradient(180deg, rgba(10, 6, 16, 0), rgba(10, 6, 16, .75));
 }
-.d-strip:hover img { filter: brightness(1.06); }
 .d-strip figcaption { margin-top: 10px; }
-.d-strip h3 { font-size: 11px; letter-spacing: .1em; margin-bottom: 6px; }
-.d-strip p { font-size: 14.5px; line-height: 1.45; color: var(--d-fg-dim); }
+.d-strip h3 { font: 700 18px/1 var(--d-f-head); letter-spacing: .03em; margin-bottom: 4px; }
+.d-strip p { font: 500 12px/1.35 var(--d-f-head); text-transform: uppercase; letter-spacing: .05em; color: var(--d-fg-dim); }
 .d-strip.s-pitch h3 { color: #d7dde8; }
 .d-strip.s-echo h3 { color: #ff5fd9; }
 .d-strip.s-verb h3 { color: #c79bff; }
 .d-strip.s-trem h3 { color: #6dff9a; }
+#fx .d-strip .d-nw { white-space: nowrap; }   /* 'Tape-dark' never breaks at its hyphen on a phone */
 @media (max-width: 1000px) {
-  .d-rack { grid-template-columns: 1fr 1fr; gap: 12px; overflow: visible; padding: 12px; }
+  #fx .d-rack { grid-template-columns: 1fr 1fr; gap: 12px; }
 }
-/* 'Also in DRIFT': the SATURATE bay photo in its well + AUTOTUNE as text.
+/* the foot row: the SATURATE bay photo in its well | the spec rows under a Press Start kicker.
    sat-bay.png is a loose 1060x382 crop (a dark band with a purple scribble
    across the top 58 px, a slice of the next round part down the left 55 px):
    the well shows the bay's own bezel only, x 55-1060 / y 58-382. */
-.d-alsoin { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(20px, 4vw, 48px); align-items: center; margin-top: 24px; }
+.d-fx-foot { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 40px; align-items: center; margin-top: 24px; }
+.d-fx-kicker { display: block; margin-bottom: 6px; font: 400 9px/1.4 var(--d-f-pix); letter-spacing: .1em; text-transform: uppercase; color: var(--d-fg-dim); text-shadow: none; }   /* printed ink: matte */
 .d-bay { overflow: hidden; aspect-ratio: 1005 / 324; border-radius: 10px; box-shadow: 0 0 0 1px rgba(4, 2, 8, .95), 0 0 0 6px #08040d, 0 1px 0 6px rgba(255, 240, 255, .06); }
 .d-bay img { display: block; width: calc(100% * 1060 / 1005); max-width: none; height: auto; margin: calc(-100% * 58 / 1005) 0 0 calc(-100% * 55 / 1005); }
-.d-alsoin h3 { font-size: 12px; letter-spacing: .12em; margin-bottom: 10px; }
-.d-alsoin p { font-size: 17px; line-height: 1.6; color: var(--d-fg); max-width: 46ch; }
-.d-alsoin strong { color: var(--d-white-ink); font-weight: 600; }
-.drift-page .d-fx-line { margin-top: 24px; }
-@media (max-width: 900px) { .d-alsoin { grid-template-columns: minmax(0, 1fr); } }
+/* the spec plate: Oswald key | value rows, dashed rules */
+.d-spec-plate { margin: 0; display: grid; }
+.d-spec-plate > div { display: grid; grid-template-columns: 7.2em minmax(0, 1fr); column-gap: 14px; align-items: baseline; padding: 9px 0; border-top: 1px dashed rgba(180, 107, 255, .22); }
+.d-spec-plate dt { font: 700 17px/1.2 var(--d-f-head); letter-spacing: .04em; color: var(--d-white-ink); }
+.d-spec-plate dd { margin: 0; font: 500 16px/1.3 var(--d-f-head); text-transform: uppercase; letter-spacing: .03em; color: var(--d-fg); }
+@media (max-width: 1000px) { #fx .d-fx-foot { grid-template-columns: minmax(0, 1fr); gap: 20px; } }
+/* #creators on phones (Dan 10-04, bench pick C on GLASS): the steps as coverflow cards (the #fx engine), the
+   DRIFT BETA note in sight, the video rules + the affiliate line in one fold, all on a piece of car-window glass.
+   Every part below is phone-only markup (DriftCreators.astro), hidden from 601 up. */
+.d-cr-ph, .d-fine-ph { display: none; }
+@media (max-width: 600px) {
+  #creators :is(.d-steps-cr, .d-cr-checks, .d-btn-note, .d-cr-mail) { display: none; }
+  #creators .d-cam-ink.d-cam-tl { display: none; }                   /* no 配信, no ON AIR on the glass (Dan 10-05) */
+  /* the glass: tinted side glass, the swept front corner of door glass, the rubber seal, the ceramic frit (the
+     dotted black band every car window has), long reflection streaks (the etched mark came off, Dan 10-05) */
+  .drift-page #creators .d-cam-panel {
+    background: linear-gradient(170deg, rgba(64, 38, 92, .5) 0%, rgba(22, 12, 36, .62) 45%, rgba(10, 6, 18, .78) 100%);
+    -webkit-backdrop-filter: blur(6px) saturate(1.3); backdrop-filter: blur(6px) saturate(1.3);
+    border: 0; isolation: isolate; padding: 46px 22px 50px;
+    border-radius: 120px 22px 22px 22px / 150px 22px 22px 22px;
+    box-shadow:
+      0 0 0 3px #050308, 0 0 0 5px #19121f, 0 0 0 6px rgba(255, 240, 255, .07),
+      inset 0 1px 0 rgba(255, 255, 255, .22), inset 0 0 0 1px rgba(200, 170, 255, .14),
+      0 18px 36px rgba(0, 0, 0, .6);
+  }
+  #creators .d-cam-panel > .d-screw, #creators .d-cam-panel > .d-checker { display: none; }
+  #creators .d-cam-panel::before {   /* the frit: a dot screen in a band along the edge, solid at the seal */
+    content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: inherit; padding: 16px;
+    background: radial-gradient(circle, #050308 0 1.6px, transparent 2px) 0 0 / 6px 6px;
+    box-shadow: inset 0 0 0 6px #050308, inset 0 0 0 7px rgba(5, 3, 8, .6);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  }
+  #creators .d-cam-panel::after {   /* reflections over the content (pointer-free) */
+    content: ''; position: absolute; inset: 0; z-index: 4; pointer-events: none; border-radius: inherit;
+    background:
+      linear-gradient(118deg, transparent 0 18%, rgba(255, 255, 255, .09) 19%, rgba(255, 255, 255, .03) 27%, transparent 28%),
+      linear-gradient(118deg, transparent 0 33%, rgba(255, 255, 255, .05) 34%, transparent 37%),
+      linear-gradient(180deg, rgba(255, 255, 255, .07), transparent 22%);
+  }
+  /* the step cards: the #fx coverflow, number-led, no image */
+  #creators .d-fxc--steps { margin: 0 -22px; }
+  #creators .d-fxc--steps .d-fxc-vp { height: 190px; }
+  #creators .d-fxc--steps .d-fxc-slide { justify-content: center; gap: 4px; }
+  .d-fxc-num { font: 400 54px/1 var(--d-f-lcd); color: var(--d-white-ink); text-shadow: 0 0 12px rgba(242, 76, 240, .7); }
+  #creators .d-fxc--steps .d-fxc-desc { min-height: 0; }
+  .d-nocase { text-transform: none; }
+  /* under APPLY (.d-cr-cta is order 2 on phones): the note, then the fold */
+  #creators .d-cr-ph { display: block; order: 3; margin-top: 2px; text-align: center; }
+  .drift-page .d-cr-ph-note { margin: 0; font: 500 13px/1.35 var(--d-f-head); text-transform: uppercase; letter-spacing: .04em; color: var(--d-fg); text-wrap: balance; }
+  .d-cr-ph-note strong { color: var(--d-white-ink); }
+  .d-cr-fold { margin-top: 8px; }
+  .d-cr-fold summary { list-style: none; cursor: pointer; min-height: 44px; display: inline-flex; align-items: center; gap: 10px;
+    font: 400 10px/1 var(--d-f-pix); letter-spacing: .1em; text-transform: uppercase; color: var(--d-lcd-hdr); }
+  .d-cr-fold summary::-webkit-details-marker { display: none; }
+  .d-cr-fold summary::before { content: '\25B6'; color: var(--d-hot); transition: transform 120ms ease; }
+  .d-cr-fold[open] summary::before { transform: rotate(90deg); }
+  .d-cr-fold ul { list-style: none; margin: 2px 0 8px; padding: 0; display: grid; gap: 4px; font: 400 17px/1.2 var(--d-f-lcd);
+    letter-spacing: .05em; text-transform: uppercase; color: var(--d-lcd); text-shadow: 0 0 5px rgba(242, 76, 240, .6); }
+  .drift-page .d-cr-fold p { margin: 0; font: 500 12px/1.4 var(--d-f-head); text-transform: uppercase; letter-spacing: .04em; color: var(--d-fg-dim); }
+  .d-cr-fold a { text-transform: none; color: var(--d-fg-neon); text-decoration: underline; text-underline-offset: 3px; }
+  /* APPLY is part of the glass (Dan 10-04): a frosted, etched band in the pane, not a key on top of it. Sandblasted
+     glass (a light violet haze + fine grain), a thin bright cut edge, the words etched white with a violet glow.
+     It still behaves as a button: the frost brightens on hover/focus, sinks 1 px on press; 52 px tall. */
+  #creators .d-btn-violet {
+    position: relative; overflow: hidden; isolation: isolate;
+    border-radius: 10px; padding: 0 24px; min-height: 54px;
+    background:
+      radial-gradient(circle, rgba(255, 255, 255, .07) 0 .6px, transparent 1px) 0 0 / 3px 3px,   /* the sandblast grain */
+      linear-gradient(180deg, rgba(214, 170, 255, .26) 0%, rgba(160, 90, 240, .16) 55%, rgba(120, 60, 200, .2) 100%);
+    -webkit-backdrop-filter: blur(10px) saturate(1.4); backdrop-filter: blur(10px) saturate(1.4);
+    box-shadow:
+      inset 0 0 0 1px rgba(236, 214, 255, .55),                  /* the cut edge */
+      inset 0 1px 0 rgba(255, 255, 255, .5),
+      inset 0 -8px 16px rgba(80, 20, 150, .28),
+      0 0 18px rgba(170, 90, 255, .28);
+    color: #fff; text-shadow: 0 0 10px rgba(200, 140, 255, .9), 0 1px 1px rgba(30, 0, 60, .9);
+  }
+  #creators .d-btn-violet::after {   /* the glass's own streak crosses the etched band too */
+    content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+    background: linear-gradient(118deg, transparent 0 30%, rgba(255, 255, 255, .12) 31%, rgba(255, 255, 255, .03) 42%, transparent 43%);
+  }
+  #creators .d-btn-violet:hover, .drift-page #creators .d-btn-violet:focus-visible { filter: none;
+    box-shadow: inset 0 0 0 1px rgba(246, 230, 255, .8), inset 0 1px 0 rgba(255, 255, 255, .6), inset 0 -8px 16px rgba(80, 20, 150, .2), 0 0 26px rgba(190, 110, 255, .5); }
+  .drift-page #creators .d-btn-violet:focus-visible { outline: 2px solid var(--d-pink-ink); outline-offset: 3px; }
+  #creators .d-btn-violet:active { transform: translateY(1px);
+    box-shadow: inset 0 0 0 1px rgba(236, 214, 255, .5), inset 0 2px 6px rgba(40, 6, 80, .5), 0 0 12px rgba(170, 90, 255, .25); }
+  html.hc #creators .d-btn-violet { -webkit-backdrop-filter: none; backdrop-filter: none; background: #6a1dbd; text-shadow: none; }
+  html.hc #creators .d-cam-panel { -webkit-backdrop-filter: none; backdrop-filter: none; background: #0a0612; }
+  html.hc #creators .d-cam-panel::after { display: none; }
+}
+/* the phone #fx carousel (Dan 10-04, DriftFx.astro): hidden from 601 up; on phones it replaces the 2x2 rack.
+   PluginShowcase's coverflow in DRIFT's dress: the current card centred, the neighbours at ±58% / 0.8 / ±14°
+   rotateY dimmed, the gear-shift overshoot spring. The frame = a gradient border in the pedal's own hue. */
+.d-fxc { display: none; }
+@media (max-width: 600px) {
+  #fx .d-rack { display: none; }
+  .d-fxc { --ph: clamp(250px, 74vw, 340px); display: block; position: relative; margin: 18px -16px 0; overflow: clip; outline: none; }
+  .d-fxc-vp { position: relative; height: calc(var(--ph) + 118px); perspective: 1300px; touch-action: pan-y; }
+  .d-fxc-slide {
+    --acc: #b46bff; --acc-hi: #e6c8ff;
+    position: absolute; top: 4px; bottom: 4px; left: 19%; width: 62%; margin: 0; padding: 16px 10px 12px;
+    display: flex; flex-direction: column; align-items: center; text-align: center; border-radius: 10px;
+    border: 1px solid transparent;
+    background:
+      radial-gradient(70% 45% at 50% 62%, color-mix(in srgb, var(--acc) 16%, transparent), transparent 75%) padding-box,
+      linear-gradient(180deg, #1a0d24 0%, #0d0614 55%, #08040c 100%) padding-box,
+      linear-gradient(180deg, var(--acc-hi) 0%, var(--acc) 26%, color-mix(in srgb, var(--acc) 30%, #000) 62%, var(--acc) 100%) border-box;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, .6);
+    transform-origin: center; transform: scale(.55); opacity: 0; visibility: hidden; pointer-events: none; z-index: 1;
+    transition: transform .4s cubic-bezier(.34, 1.3, .35, 1), opacity .3s ease, filter .3s ease;
+    will-change: transform, opacity;
+  }
+  .d-fxc-slide.s-pitch { --acc: #c9d2e0; --acc-hi: #ffffff; }
+  .d-fxc-slide.s-echo { --acc: #e040c8; --acc-hi: #ffd1f8; }
+  .d-fxc-slide.s-verb { --acc: #b46bff; --acc-hi: #f2c8ff; }
+  .d-fxc-slide.s-trem { --acc: #46e678; --acc-hi: #d8ffe0; }
+  .d-fxc-slide.is-current { opacity: 1; visibility: visible; pointer-events: auto; transform: none; filter: none; z-index: 3;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, .6), 0 0 22px color-mix(in srgb, var(--acc) 22%, transparent); }
+  .d-fxc-slide.is-peek-prev, .d-fxc-slide.is-peek-next { visibility: visible; opacity: .55; pointer-events: auto; z-index: 2;
+    filter: saturate(.55) brightness(.7); cursor: pointer; }
+  .d-fxc-slide.is-peek-prev { transform: translateX(-58%) scale(.8) rotateY(14deg); }
+  .d-fxc-slide.is-peek-next { transform: translateX(58%) scale(.8) rotateY(-14deg); }
+  .drift-page .d-fxc-name { margin: 0; font: 700 30px / 1 var(--d-f-head); letter-spacing: .02em; text-transform: uppercase;
+    color: var(--acc); text-shadow: 0 0 14px color-mix(in srgb, var(--acc) 55%, transparent); }
+  .drift-page .d-fxc-desc { margin: 6px 0 0; min-height: 2.5em; font: 500 13px / 1.25 var(--d-f-head); letter-spacing: .04em;
+    text-transform: uppercase; color: var(--d-fg); text-wrap: balance; }
+  .d-fxc-ped { display: block; height: var(--ph); width: auto; margin-top: auto; filter: drop-shadow(0 10px 14px rgba(0, 0, 0, .7)); pointer-events: none; }
+  .d-fxc-dots { display: flex; justify-content: center; gap: 2px; margin-top: 2px; }
+  .d-fxc-dot { width: 44px; height: 44px; display: grid; place-items: center; padding: 0; border: 0; background: none; cursor: pointer; }
+  .d-fxc-dot::before { content: ''; width: 11px; height: 11px; border-radius: 50%; border: 1px solid rgba(255, 79, 216, .55);
+    transition: background-color .2s ease, transform .2s ease; }
+  .d-fxc-dot.active::before { background: var(--d-hot); border-color: var(--d-hot); transform: scale(1.15); box-shadow: 0 0 8px rgba(255, 79, 216, .7); }
+  .drift-page .d-fxc:focus-visible .d-fxc-slide.is-current { outline: 2px solid var(--d-pink-ink); outline-offset: 3px; }
+}
+@media (max-width: 600px) and (prefers-reduced-motion: reduce) { .d-fxc-slide { transition: none; } }
+@media (max-width: 600px) { #fx .d-bay { display: none; } #fx .d-spec-plate > div { grid-template-columns: 5.2em minmax(0, 1fr); padding: 6px 0; } #fx .d-spec-plate dd { font-size: 14px; } }   /* the bay photo repeats the SATURATE row; 5.2em = AUTOTUNE + air, so SATURATE's line fits the 314 px panel */
+/* phone: the CSS panel's inner column is 314 px (390) / 244 (320): tighter glass, captions 16 + 11 px */
+@media (max-width: 600px) {
+  .drift-page #fx h2.d-headline--row { margin-bottom: 14px; }
+  #fx .d-bandglass { padding: 10px 12px 8px; }
+  #fx .d-band-cut { font-size: 16px; }
+  #fx .d-bandstrip { height: 48px; }
+  #fx .d-band-ticks { margin-top: 2px; }
+  #fx .d-rack { gap: 10px; margin-top: 20px; }
+  #fx .d-strip figcaption { margin-top: 8px; }
+  #fx .d-strip h3 { font-size: 16px; }
+  #fx .d-strip p { font-size: 11px; line-height: 1.3; letter-spacing: .03em; }
+  #fx .d-fx-foot { margin-top: 18px; }
+}
+@media (max-width: 374px) { .drift-page #fx h2.d-headline--row { font-size: 8.6vw; } }   /* 320: "WHOLE SOUND PANS." keeps to one line of the 244 px column (2 lines in all) */
+/* every #fx node speaks Oswald unless its role says otherwise (no Inter inherited from the site body) */
+#fx { font-family: var(--d-f-head); }
+/* the <noscript> twins hold raw markup as text while JS runs; give them the
+   head face so no #fx node reports the site's Inter (no visual change) */
+#fx noscript { font-family: var(--d-f-head); }
+@media (prefers-reduced-motion: reduce) { #fx .d-band-cut, #fx .d-fx-slice { animation: none; } }
+html.hc #fx .d-fx-slice, html.hc #fx .d-headline span { text-shadow: none; }
+
+/* fit (Dan 10-04): "lets do the same" as #drive - the whole #fx panel shows under the nav at every laptop size.
+   #drive's knob and values (--t: 0 at <=636 px tall .. 1 at >=936; padding + head identical), so the two panels scale as siblings.
+   Three full-width rows: band display (both cut flags on one row) / rack (4 strips, one-line captions) / foot (bay | kicker | spec rows, the rack's width).
+   The panel is a container: cqw caps every width-bearing size at its 10-03 size. */
+@media (min-width: 1001px) {
+  #fx .d-fx-panel {
+    --t: calc(clamp(0px, 100vh - 636px, 300px) / 300);
+    --fx-gap: calc(12px + 4 * var(--t));                                     /* rack column gap: 12 at t0 (the captions get the cell), 16 at t1 (10-03) */
+    --fx-cell: calc((100cqw - 3 * var(--fx-gap)) / 4);
+    --fx-strip: min(calc(168px + 100 * var(--t)), var(--fx-cell));           /* height fit | the 10-03 width (4 cells): 168 at 1141x636, 243 from ~900 tall */
+    --fx-inset: calc((var(--fx-cell) - var(--fx-strip)) / 2);               /* each photo is centred in its cell: the band display steps in by the same amount so its edges meet PITCH's left + TREMOLO's right */
+    --fx-bay: min(calc(190px + 150 * var(--t)), 34cqw);                      /* 190x61 at t0 (= the three spec rows) .. 340x110 at t1 (10-03); 34cqw keeps the rows their width on a 1001-1040 px window */
+    container-type: inline-size;
+    padding: calc(56px + 14 * var(--t)) 80px calc(68px + 12 * var(--t));   /* = #drive; the sides stay 80 (the bay's 6 px ring clears the face's rounded corner by ~9 px at 1141 with the foot lift below, 10.6 at t1) */
+  }
+  #fx.d-sec { scroll-margin-top: calc(-6px - clamp(48px, 6vw, 72px)); }   /* landing on /drift/#fx: html's scroll-padding (nav + .75rem) minus this section's own pad puts the panel ~9 px under the nav, as #drive */
+  .drift-page #fx .d-fx-panel h2.d-headline--row { font-size: min(calc(36px + 16 * var(--t)), 4.9cqw); margin-bottom: calc(18px + 8 * var(--t)); }   /* = #drive: one row, 27% spare at 1141 */
+  /* band display: one flag row (LOW CUT ends on its 6k line, HIGH CUT sits between the lines, 12 px clear at 1141); the strip 30..56 */
+  #fx .d-bandfig { margin: 0 var(--fx-inset) calc(10px + 14 * var(--t)); }
+  #fx .d-bandglass { padding: calc(7px + 7 * var(--t)) 16px calc(5px + 5 * var(--t)); }
+  #fx .d-band-cuts { grid-template-areas: 'cut'; gap: 0; margin-bottom: calc(3px + 1 * var(--t)); }
+  #fx .d-band-cut { grid-area: cut; font-size: min(calc(15px + 2 * var(--t)), 2.04cqw); line-height: 1.1; }   /* VT323 >= 15; 2.04cqw keeps HIGH CUT >= 8 px clear of the 6k line on a 1001-1040 px window */
+  #fx .d-band-cut::after, #fx .d-band-cut:first-child::after { height: calc(3px + 1 * var(--t)); }        /* each flag line runs the gap down to the strip */
+  #fx .d-bandstrip { height: calc(30px + 26 * var(--t)); }                 /* never a bar under 30 px; "FX PLAY HERE" keeps its 15 px in the lit rect */
+  #fx .d-band-ticks { height: calc(15px + 7 * var(--t)); margin-top: calc(2px + 2 * var(--t)); }
+  #fx .d-band-ticks span { font-size: calc(14px + 2 * var(--t)); line-height: 1.1; }
+  /* rack: 4 equal cells, the 512:588 photo centred in each, the caption centred under it on one line */
+  #fx .d-rack { margin-top: 0; column-gap: var(--fx-gap); }
+  #fx .d-strip-well { width: var(--fx-strip); margin-inline: auto; }
+  #fx .d-strip figcaption { margin-top: calc(6px + 4 * var(--t)); text-align: center; }
+  #fx .d-strip h3 { font-size: calc(17px + 1 * var(--t)); margin-bottom: calc(2px + 2 * var(--t)); }
+  #fx .d-strip p { font-size: calc(11px + 1 * var(--t)); line-height: 1.25; letter-spacing: .01em; }   /* one line: ECHO's (the longest) has 10% spare at 1141, ~4% in Safari's wider Oswald (nowrap from 1101, below) */
+  /* foot: bay | kicker | spec rows across the rack's width (the bay level with PITCH's left edge, the rules end at TREMOLO's right).
+     Fixed columns, never sized from the text: WebKit keeps a grid column's text width as measured in the fallback (Impact) before
+     the Oswald webfont swaps in, so a content-sized, centred foot came out ~7 px short and PRESETS wrapped in WebKit only (builder 10-04) */
+  #fx .d-fx-foot { margin: calc(13px + 11 * var(--t)) var(--fx-inset) calc(3px - 3 * var(--t)); grid-template-columns: var(--fx-bay) minmax(0, 1fr); column-gap: calc(24px + 16 * var(--t)); }   /* at t0 the foot sits 3 px higher (13 above / 3 below, 16 in all, the panel's height unchanged): the bay's ring then clears the face's rounded corner by ~9 px, as #drive's box does; at t1 24 / 0 as 10-03 */
+  #fx .d-fx-spec { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: calc(20px + 8 * var(--t)); align-items: start; }
+  #fx .d-fx-kicker { margin: 4px 0 0; max-width: 12em; line-height: 1.5; }   /* two lines, ALSO UNDER / THE HOOD, level with SATURATE */
+  #fx .d-spec-plate > div { padding: calc(2px + 7 * var(--t)) 0; grid-template-columns: 5.6em minmax(0, 1fr); }
+  #fx .d-spec-plate dt { font-size: calc(15px + 2 * var(--t)); line-height: 1; }
+  #fx .d-spec-plate dd { font-size: calc(13px + 3 * var(--t)); line-height: 1.15; }
+}
+/* the panel has 5 px spare at 1141x636: a caption that wrapped in real Safari (Oswald ~4% wider than WebKit) would break the fit.
+   From 1101 wide the cell (>= 177 px) holds ECHO's caption (~170) even a few px wider; below that the cells shrink and the captions may wrap as before */
+@media (min-width: 1101px) { #fx .d-strip p { white-space: nowrap; } }
+
+/* the FX crane (Dan 10-04, pick A: "when you scroll it pulls down the fx panel exactly like drift, same sizes and
+   everything"). Laptop only: crane.ts wraps #drive + #fx in .d-crane > .d-crane-stage (phones never get the wrappers;
+   reduced motion gets none either, #fx just follows #drive). The stage sticks for --crane-pin of scroll at
+   --crane-top (crane.ts: the panel centred under the nav, >= 8 px air); both sections share its ONE grid cell and both
+   panels stretch to it, so the taller sets the box and the FX panel lands exactly on the #drive panel. #drive's
+   26 px top pad moves to the wrapper: the hero -> #drive spacing is unchanged. The descent, the sway and the
+   inert swap are crane.ts's (inline transform only while moving; landed = none). */
+@media (min-width: 1001px) {
+  .d-crane { padding-top: 26px; }
+  .d-crane::after { content: ''; display: block; height: var(--crane-pin, 100vh); }   /* the pin: the stage stays put while this scrolls */
+  .d-crane-stage {
+    position: sticky; top: var(--crane-top, 50px); display: grid;
+    /* a bound for the pinned layer, cutting nothing that shows: a screen above (the drop) and 40 px below (the plates'
+       34 px drop shadow). Unbounded, Chrome re-rasters the GPS car + track glows (drop-shadow filters) far wider every
+       frame the car laps: idle ~25 fps pinned vs ~39 with it (headless Chrome, M1 Max). WebKit is unaffected. */
+    clip-path: inset(-100vh 0 -40px 0);
+  }
+  .d-crane-stage > #drive.d-sec, .d-crane-stage > #fx.d-sec { grid-area: 1 / 1; padding-top: 0; display: grid; }
+  .d-crane-stage > .d-sec > .d-wrap { display: grid; }   /* the panel fills the cell: one box for both */
+}
 
 /* ==========================================================================
-   SECTION 4 — TEST DRIVE (#get): ladder + sign-up + folded specs
+   SECTION 4 — TEST DRIVE (#get): one sign-up panel in the hero console's dress + folded specs
+   (the keep-it ladder renders once, in .d-keep under the tracks)
    ========================================================================== */
 /* html already carries scroll-padding-top: nav + .75rem (global.css), so only a
-   sale bar, if one is up, adds here; a nav-sized margin too would land 112 px down */
-.drift-page #get, .drift-page #try, .drift-page .d-creators { scroll-margin-top: var(--sale-h, 0px); }
-.d-getin { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(22px, 4vw, 48px); align-items: start; margin-top: 10px; }
-.d-getin > div > .d-ladder-label { margin-bottom: 14px; font-size: 15px; }
-.d-getin .d-ladder { gap: 16px; }
-.d-getin .d-route { padding-bottom: 14px; border-bottom: 1px dashed rgba(180, 107, 255, .22); }
+   sale bar, if one is up, adds here; a nav-sized margin too would land 112 px down.
+   #try = the WHOLE #get console (.d-getin, the jump CTAs' target; fix2 10-03: the capture box as the
+   target left the head + MAC/WIN rows under the header on a phone): it adds 44 px so the panel's top
+   screws + well stay below the header on a jump, and the head is read before the email field. */
+.drift-page #get, .drift-page .d-creators { scroll-margin-top: var(--sale-h, 0px); }
+.drift-page #try { scroll-margin-top: calc(var(--sale-h, 0px) + 44px); }
+/* 2026-10-03 finish: #get is the hero's trial console again, the page's bookend. Desktop = trial-plate.png
+   3-sliced with the caps tied to the height (216 / 487: 142 + 53 px), the plate bakes its own checker + screws,
+   so the CSS ones hide; phones = the CSS console (checker + screws + 試乗). Left: the head + MAC/WIN rows +
+   the folds (inside the console); right: the capture, #get-capture (field + the red key on one row, the fine line under). */
+#get .d-getin { display: grid; justify-items: center; margin: 0; }
+#get, #creators { font-family: var(--d-f-head); }   /* no node in the closers inherits the site's Inter */
 .d-capture { display: grid; gap: 12px; padding-bottom: 8px; }   /* the last line clears the bottom screws */
 .d-capture [hidden] { display: none; }   /* the grid display must not un-hide the sent form */
-.d-compat { font-size: 15px; line-height: 1.55; color: var(--d-fg); padding-bottom: 12px; border-bottom: 1px dashed rgba(180, 107, 255, .22); }
+.d-capture .d-capture-next { order: 1; }
+.d-capture .d-cta-fine { order: 2; }   /* the answer (or the error) and the creators nudge sit right under the key; the fine print drops last, as in the hero stamp (ux r2 10-02) */
+#get .d-get-grid { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: 14px; }
+#get .d-get-left, #get .d-get-right { min-width: 0; }
+.drift-page #get .d-get-head { margin: 0 0 10px; text-align: left; }
+html.hc #get .d-get-head span { text-shadow: none; }
+/* compat rows: MAC / WIN keys in Oswald, the formats in the spec mono; no rule under them inside the console */
+#get .d-compat { margin: 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 12px; align-items: baseline; }
+#get .d-compat > div { display: contents; }
+#get .d-compat dt { font: 700 15px/1.2 var(--d-f-head); letter-spacing: .06em; color: var(--d-white-ink); }
+#get .d-compat dd { margin: 0; font: 400 15px/1.35 var(--d-f-spec); letter-spacing: .03em; color: var(--d-fg); }
+#get .d-compat .d-nw { white-space: nowrap; }   /* 'needs WebView2', 'Apple silicon + Intel' stay whole */
+/* the folds: slim printed rows inside the console (no box, no glass), ▶ turns when open */
+#get .d-get-folds { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 4px 24px; }   /* one row of printed tabs (keeps the console at 216); an open fold takes its own row */
+#get .d-fold[open] { flex-basis: 100%; }
+#get .d-fold summary {
+  display: flex; align-items: center; min-height: 20px; cursor: pointer; list-style: none;
+  font: 700 13px/1.2 var(--d-f-head); text-transform: uppercase; letter-spacing: .04em; color: var(--d-fg-dim);
+}
+#get .d-fold summary::-webkit-details-marker { display: none; }
+#get .d-fold summary:hover { color: var(--d-white-ink); }
+#get .d-fold summary::before { content: '\25B6'; margin-right: 10px; font: 400 9px/1 var(--d-f-pix); color: var(--d-hot); display: inline-block; transition: transform 120ms ease; }
+#get .d-fold[open] summary::before { transform: rotate(90deg); }
+#get .d-fold > p, #get .d-fold .d-more-dl { margin: 6px 0 8px; font: 500 14px/1.4 var(--d-f-head); text-transform: uppercase; letter-spacing: .04em; color: var(--d-fg); }
+#get .d-fold .d-more-dl { display: grid; gap: 4px; }
+#get .d-fold .d-more-dl div { display: flex; gap: 8px; }
+#get .d-fold .d-more-dl dt::after { content: ':'; }
+#get .d-fold .d-more-dl dd { margin: 0; }
+/* the right column: field + key, then the fine line; the status takes the form's row once sent and the
+   fine line's row on an error, so the console keeps its height */
+#get .d-capture { gap: 8px; padding-bottom: 0; }
+#get .d-capture .d-cta-fine { font-size: 12px; }
+#get .d-get-chip { color: var(--d-fg-neon); }
+#get .d-capture:has(.d-capture-form[hidden]) .d-capture-status { grid-row: 1; }
+#get .d-capture:has(.d-capture-status.err) .d-cta-fine { display: none; }
+#get .d-field:not(:focus)::placeholder { animation: d-ph-blink 2.8s ease-in-out infinite; }   /* the hero's breathing placeholder: the text, not the box */
+@media (prefers-reduced-motion: reduce) { #get .d-field::placeholder { animation: none; } }
+#get .d-cta-sub { font: 500 14px/1.4 var(--d-f-head); text-transform: uppercase; letter-spacing: .04em; }   /* no Inter (the base .d-cta-sub is Inter) */
+@media (min-width: 1001px) {
+  .drift-page #get .d-get-panel {
+    width: min(100%, 1040px); min-height: 216px; box-sizing: border-box;
+    padding: 24px 50px 22px 136px;
+    background: none; box-shadow: none;
+    border: 0 solid transparent;
+    border-image: var(--d-img-trial) 0 120 0 320 fill / 0 53px 0 142px stretch;
+    filter: drop-shadow(0 12px 22px rgba(0, 0, 0, .55));   /* a small box, as the hero console does */
+    display: grid; align-content: center;
+  }
+  #get .d-get-panel > .d-screw, #get .d-get-panel > .d-checker, #get .d-get-panel > .d-sticker { display: none; }
+  /* even halves: the WIN row fits one line at 15 px (5fr left wrapped both rows: 262 px tall). The right half never
+     goes under its 1312 width, 407 = (1040 - 136 - 50 - 40) / 2: the field needs 204 px (18 + "your@email.com" 168
+     + 18) beside the 181 px key, and the halves alone gave it 164 at 1024 / 146 at 1100 (fix2 10-03) */
+  #get .d-get-grid { grid-template-columns: minmax(0, 1fr) minmax(407px, 1fr); column-gap: 40px; align-items: center; }
+  #get .d-get-left { padding-right: 32px; border-right: 1px dashed rgba(180, 107, 255, .22); container-type: inline-size; }
+  /* the head follows its column (cqw = the column's content box, the 32 px padding out): "RUNS ON YOUR SETUP." is 296 px
+     at 32 px, so 32 px whenever the column has 302+ (every width from 1153, and 1041-1099 under the 40 px gutter),
+     and it scales down to one line where the 407 px right half squeezes the column (243 px at 1100 -> 25.8 px) */
+  .drift-page #get .d-get-head { font: 700 clamp(24px, 10.6cqw, 32px)/.95 var(--d-f-head); }
+  #get .d-capture .d-field-row { grid-template-columns: minmax(0, 1fr) auto; gap: 14px; align-items: center; }
+}
+/* WebKit only (Safari, every iOS browser): a repaint inside a box with a filter re-runs that box's whole drop-shadow,
+   and the breathing placeholder repaints every frame, so both consoles held the page near 20 fps (scroll bench 10-05).
+   Their own layer keeps the shadow out of the repaint. Blink rasters by tile and needs nothing; a layer there would
+   move the console text by a device pixel. */
+@supports (font: -apple-system-body) {
+  @media (min-width: 1100px) { .d-trial-panel { will-change: transform; } }
+  @media (min-width: 1001px) { .drift-page #get .d-get-panel { will-change: transform; } }
+}
 .d-capture-form { display: grid; gap: 8px; }
-.d-field-label { font: 600 15px/1.3 Inter, var(--font-body); color: var(--d-white-ink); }
 .d-field-row { display: grid; gap: 14px; justify-items: start; }
 /* the email field is a sunk glass window, same material as every readout */
 .d-field {
@@ -815,100 +1806,291 @@
 }
 .d-field::placeholder { color: #8f7aa8; }
 .d-field:focus { box-shadow: 0 0 0 1px rgba(4, 2, 8, .9), inset 0 5px 8px rgba(0, 0, 0, .7), inset 0 0 0 1px var(--d-neon); }
+/* the capture's field and key wear the hero stamp's dress (scoped: the hero field carries .d-field too) */
+.d-capture .d-field { min-height: 56px; padding: 0 18px; font: 400 20px/1 var(--d-f-spec); letter-spacing: .06em; caret-color: var(--d-hot); }
+.d-capture .d-stamp-key { --h: 56px; min-width: 0; }
+@media (min-width: 901px) { .d-capture .d-field-row { grid-template-columns: minmax(0, 1fr) auto; align-items: center; } }
 .d-hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 .d-capture-status { font-size: 16px; line-height: 1.5; }
 .d-capture-status:empty { display: none; }   /* the live region stays in the tree; only its text changes */
 .d-capture-status.ok { color: var(--d-white-ink); }
 .d-capture-status.err { color: var(--d-fg-dim); }
-.d-capture-next { justify-self: start; color: var(--d-fg-neon); text-decoration: underline; text-underline-offset: 3px; font-weight: 600; }
+/* the capture's answer lights up like the hero stamp's readout; errors are Oswald fine print */
+.d-capture .d-capture-status.ok { font: 400 22px/1.15 var(--d-f-lcd); letter-spacing: .03em; color: var(--d-white-ink); text-shadow: 0 0 8px rgba(242, 76, 240, .6); }
+.d-capture .d-capture-status.err { font: 500 13px/1.4 var(--d-f-head); text-transform: none; letter-spacing: .05em; color: var(--d-pink-ink); }   /* none: the message carries info@revaudio.net, which must read as typed */
+.drift-page .d-capture .d-capture-status:focus-visible { outline: none; }
+.d-capture-next { justify-self: start; display: inline-flex; align-items: center; min-height: 44px; font: 700 15px/1 var(--d-f-head); text-transform: uppercase; letter-spacing: .04em; color: var(--d-fg-neon); text-decoration: none; }
 .d-buyslot { display: grid; gap: 12px; justify-items: start; }
-.d-more { margin-top: 24px; display: grid; gap: 10px; }   /* full width: a 760 px cap ended mid-way under the capture panel */
-.d-more details { padding: 0 18px; border-radius: 8px; background: rgba(20, 8, 30, .7); box-shadow: 0 0 0 1px rgba(190, 90, 255, .22); }
-.d-more summary {
-  display: flex; align-items: center; min-height: 48px; cursor: pointer; list-style: none;
-  font: 600 16px/1.3 Inter, var(--font-body); color: var(--d-white-ink);
+/* phones + tablets: the CSS console (DriftPanel: checker, screws, 試乗), one column, the key spans it */
+@media (max-width: 1000px) {
+  .drift-page #get .d-get-panel { padding: 42px 20px 44px; }   /* clears the corner screws + the checker row */
+  .drift-page #get .d-get-head { font: 700 26px/.95 var(--d-f-head); }
+  #get .d-get-left { padding: 0; border: 0; }
+  #get .d-field-row { justify-items: stretch; }
+  #get .d-field-row .d-cta { margin-left: 0; }
 }
-.d-more summary::-webkit-details-marker { display: none; }
-.d-more summary::before { content: '\25B6'; margin-right: 12px; font-size: 12px; color: var(--d-hot); display: inline-block; transition: transform 120ms ease; }
-.d-more details[open] summary::before { transform: rotate(90deg); }
-.d-more details > p, .d-more-dl { margin: 0 0 16px; font-size: 16px; color: var(--d-fg); line-height: 1.55; }
-.d-more-dl { display: grid; gap: 6px; }
-.d-more-dl div { display: flex; gap: 8px; }
-.d-more-dl dt::after { content: ':'; }
-.d-more-dl dd { margin: 0; }
-.drift-page .d-maker { margin-top: 22px; }
-@media (max-width: 900px) {
-  .d-getin { grid-template-columns: minmax(0, 1fr); }
-  .d-field-row { justify-items: stretch; }
-  .d-field-row .d-cta { margin-left: 0; }
-  .d-get-panel .d-checker { display: none; }   /* the 試乗 sticker needs the top edge on a narrow panel */
-  .d-get-panel { padding-left: clamp(20px, 5vw, 44px); padding-right: clamp(20px, 5vw, 44px); }
+@media (min-width: 600px) and (max-width: 1000px) {
+  #get .d-field-row .d-cta { justify-self: center; width: min(100%, 420px); }   /* a key, not a banner */
 }
-@media (min-width: 600px) and (max-width: 900px) {
-  .d-field-row .d-cta { justify-self: center; width: min(100%, 420px); }   /* a key, not a banner */
+/* phones (Dan 10-04, pick A "match the system"): #get wears #drive's trial plate (no checker, no 試乗), the head
+   centred, the compat rows and folds centred, and the capture is the hero's offer: the TV's arcade field + the red
+   digital GET IT on ONE row (the key's dress is shared with the hero, above), the fine line in phosphor. */
+@media (max-width: 600px) {
+  .drift-page #get .d-get-panel {
+    background: none; border: 0 solid transparent; border-radius: 14px;
+    border-image: var(--d-img-trial) 120 120 120 320 fill / 26px 26px 26px 70px stretch;
+    box-shadow: 0 10px 18px rgba(0, 0, 0, .55); padding: 36px 18px 40px;
+  }
+  #get .d-get-panel > .d-screw, #get .d-get-panel > .d-checker, #get .d-get-panel > .d-sticker { display: none; }
+  .drift-page #get .d-get-head { text-align: center; margin-bottom: 14px; }
+  #get .d-get-head span { display: block; }
+  #get .d-compat, #get .d-get-folds { display: none; }   /* Dan 10-04 "remove this section": no MAC/WIN rows, no folds on phones */
+  .drift-page #get .d-get-head { margin-bottom: 4px; }
+  #get .d-get-right { margin-top: 6px; }
+  #get .d-capture .d-field-row { grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: stretch; justify-items: stretch; }
+  .drift-page #get .d-capture .d-field {   /* the TV's arcade name-entry field (as the hero's) */
+    min-height: 52px; padding: 0 10px; border: 0;
+    font: 400 20px / 1 var(--d-f-lcd); letter-spacing: .03em; caret-color: var(--d-hot);   /* never <16: iOS zooms */
+    color: #ffe9ff; text-shadow: 0 0 8px rgba(242, 76, 240, .55);
+    background: radial-gradient(120% 140% at 50% 30%, #1d0a2c 0%, #0c0415 75%);
+    box-shadow: 0 0 0 1px rgba(4, 2, 8, .9), inset 0 4px 8px rgba(0, 0, 0, .7), inset 0 0 0 1px rgba(247, 105, 224, .45), 0 0 14px rgba(247, 105, 224, .12);
+  }
+  .drift-page #get .d-capture .d-field::placeholder { color: #b98ad8; letter-spacing: .03em; }
+  .drift-page #get .d-capture .d-field:focus { outline: none; box-shadow: 0 0 0 1px rgba(4, 2, 8, .9), inset 0 4px 8px rgba(0, 0, 0, .7), inset 0 0 0 1px var(--d-hot), 0 0 0 3px rgba(247, 105, 224, .22), 0 0 22px rgba(247, 105, 224, .35); }
+  #get .d-capture .d-stamp-key { min-height: 52px; }
+  .drift-page #get .d-capture .d-cta-fine {   /* the hero's phosphor fine print */
+    margin: 4px 0 0; text-align: center; text-wrap: balance;
+    font: 400 15px / 1.12 var(--d-f-lcd); letter-spacing: .06em; text-transform: uppercase;
+    color: var(--d-crt); text-shadow: 0 0 6px rgba(190, 90, 255, .45);
+  }
+  #get .d-get-chip { color: var(--d-pink-ink); }
+  #get .d-fine-full { display: none; }   /* Dan 10-05 "minimize the text": the short line (captureCopyFor().fineShort) */
+  #get .d-fine-ph { display: inline; }
 }
 
 /* ==========================================================================
    SECTION 5 — ON AIR (#creators): the free route, the page's last CTA
    ========================================================================== */
-/* 配信 = the block's one lamp: off = a dark tube, .on = lit while the deal is open */
-.d-onair {
-  align-self: center;
-  padding: 3px 10px 4px; border-radius: 999px;
-  font: 700 13px/1.2 var(--d-f-ja); letter-spacing: .2em;
-  color: rgba(180, 107, 255, .55);
-  border: 1px solid rgba(180, 107, 255, .25);
+/* 2026-10-03 finish: the car's dashcam monitor, ON AIR. A blank AI bezel (dashcam-bezel-2.png,
+   tools/gen-drift-dashcam-bezel.sh roll 2 of 2: cropped 1044 x 680, 2x Lanczos + unsharp = 2088 x 1360, bezel
+   runs smoothed along their length, screen flattened), 9-sliced at .2 css per file px: slice 330 holds the
+   screw AND the trim's corner curve. Measured glass edge (file px): top 236, right 308, bottom 240, left 312
+   -> css 47 / 62 / 48 / 62 (--cam-t/r/b/l). Over it: the dot-matrix LCD face (::before, 10-05; NO scanlines:
+   never a second TV), viewfinder L-brackets in the screen corners, and the livery as live type on the
+   bezel: the 配信 tally lamp + ON AIR top left, stripes + SPEED SOUNDS BETTER top right (printed ink, matte).
+   No filter on the plate (a box-shadow follows its corner). Phones: the CSS DriftPanel (screws, no checker)
+   with the lamp group in the checker's slot. */
+.d-cam-panel { --cam-t: 47px; --cam-r: 62px; --cam-b: 48px; --cam-l: 62px; }
+.d-cr-play, .d-cr-video { display: none; }   /* the how-to player is laptop only (the 1001+ block shows it) */
+.drift-page .d-cam-panel { padding: 48px 22px 40px; }
+#creators .d-cam-panel > .d-sticker { display: none; }
+.d-cam-ink {
+  position: absolute; z-index: 2; pointer-events: none; display: flex; align-items: center; gap: 8px;
+  font: 700 11px/1 var(--d-f-head); letter-spacing: .14em; text-transform: uppercase; color: #9b6fd0; white-space: nowrap;
 }
+.d-cam-tl { left: 44px; top: 12px; }
+.d-cam-tl .d-ja { font: 700 13px/1 var(--d-f-ja); letter-spacing: .2em; color: rgba(180, 107, 255, .55); }
+.d-cam-pix { font: 400 9px/1 var(--d-f-pix); letter-spacing: .1em; color: #c98bff; }
+.d-cam-stripes { width: 70px; height: 10px; transform: skewX(-30deg); background: repeating-linear-gradient(90deg, #8a2be2 0 6px, transparent 6px 11px); opacity: .85; }
+.d-cam-tr, .d-cam-vf { display: none; }
+/* 配信 = the camera's tally lamp: off = a dark bulb, .on = lit while the deal is open (steady, no blink) */
+.d-onair { flex: none; width: 10px; height: 10px; border-radius: 50%; background: #2a1636; box-shadow: inset 0 0 0 1px rgba(180, 107, 255, .3); }
 .d-onair.on {
-  color: var(--d-white-ink);
-  border-color: var(--d-hot);
-  background: rgba(224, 64, 200, .22);
-  box-shadow: 0 0 10px rgba(247, 105, 224, .6), inset 0 0 8px rgba(247, 105, 224, .4);
-  text-shadow: 0 0 6px rgba(247, 105, 224, .9);
+  background: radial-gradient(circle at 40% 35%, #fff0ff, var(--d-hot) 55%, #8a1f7a);
+  box-shadow: 0 0 8px rgba(247, 105, 224, .8), 0 0 0 1px rgba(4, 2, 8, .9);
 }
-/* The VIDEO CHECK readout (a sunk-glass dash screen listing step 3's checks
-   as LCD rows with lit LEDs) keeps DRIFT chrome in the reel's landing spot at
-   every width: ≥1000 a column beside the steps; below, a compact strip
-   between step 4 and the button, its rows flowing two or three to a line. */
-.d-cr-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px clamp(28px, 4vw, 56px); align-items: start; }
-.d-cr-checks { display: grid; gap: 8px; padding: 12px 16px 12px; }
-@media (min-width: 1000px) {
-  .d-cr-grid { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); }
-  .d-steps-cr, .d-cr-cta { grid-column: 1; }
-  .d-cr-checks { grid-column: 2; grid-row: 1 / span 2; gap: 12px; padding: 18px 22px 20px; margin-top: 6px; }
+.d-onair.on ~ .d-ja { color: var(--d-white-ink); text-shadow: 0 0 6px rgba(247, 105, 224, .9); }
+@media (min-width: 1001px) {
+  .drift-page .d-cam-panel {
+    background: none; border: 0 solid transparent;
+    border-image: var(--d-img-dashcam) 330 fill / 66px stretch;
+    border-radius: 28px;   /* = the housing's outer corner (~140 file px at .2), so the shadow follows the plastic */
+    box-shadow: 0 12px 22px rgba(0, 0, 0, .55), 0 0 40px 10px rgba(190, 90, 255, .08);
+    isolation: isolate;   /* the LCD ::before (z -1) paints over the plate, under the content */
+    padding: calc(var(--cam-t) + 20px) calc(var(--cam-r) + 22px) calc(var(--cam-b) + 22px) calc(var(--cam-l) + 22px);
+  }
+  .d-cam-panel > .d-screw { display: none; }   /* the plate bakes its own */
+  /* Dan 10-05: LCD -> not purple -> another colour -> "maybe give it a vibe of youtube": the monitor plays a video
+     player. The dark player face, white + grey type, the VIDEO CHECK rows as the player's grey chips, the ▶ control
+     row along the bottom (no timeline line: Dan 10-05 "remove it"), APPLY as a red subscribe-style pill (the
+     screen's one red = the action). The vibe only: no YouTube logo, name or icon (their marks: like the F1
+     names, never on the site). The faint 3 px pixel grid stays: a screen, never a second TV. The palette = these vars. */
+  .drift-page .d-cam-panel { padding-bottom: calc(var(--cam-b) + 50px); }   /* room for the ▶ control row */
+  .d-cam-panel {
+    --cr-face: #0f0f0f; --cr-face-hi: #1d1d1d; --cr-grid: rgba(255, 255, 255, .022);
+    --cr-ink: #f1f1f1; --cr-ink-2: #aaaaaa; --cr-chip: #272727; --cr-red: #ff0033; --cr-red-hover: #d9002b;
+  }
+  .d-cam-panel::before {
+    content: ''; position: absolute; inset: var(--cam-t) var(--cam-r) var(--cam-b) var(--cam-l); z-index: -1;
+    border-radius: 10px; pointer-events: none;
+    background:
+      linear-gradient(158deg, rgba(255, 255, 255, .06) 0%, rgba(255, 255, 255, .015) 22%, transparent 42%),
+      repeating-linear-gradient(0deg, var(--cr-grid) 0 1px, transparent 1px 3px),
+      repeating-linear-gradient(90deg, var(--cr-grid) 0 1px, transparent 1px 3px),
+      radial-gradient(120% 110% at 50% 40%, var(--cr-face-hi) 0%, var(--cr-face) 70%);
+    box-shadow: inset 0 0 0 1px #000, inset 0 0 0 3px rgba(0, 0, 0, .6), inset 0 10px 22px rgba(0, 0, 0, .5);
+  }
+  .d-cam-vf { display: none; }   /* a player, not a viewfinder (the red timeline under the text went too, Dan 10-05) */
+  /* Dan 10-05 "make the reading on the panel get the effect of the pixeled lcd behind it but not too much": the same
+     3 px pixel mesh laid OVER the screen's content (dark gaps between the pixels, so the type reads as lit pixels; on the
+     black face it's invisible). Under the video (z 3): the player picture stays clean. */
+  .d-cam-panel::after {
+    content: ''; position: absolute; z-index: 2; inset: var(--cam-t) var(--cam-r) var(--cam-b) var(--cam-l); border-radius: 10px; pointer-events: none;
+    background:
+      repeating-linear-gradient(0deg, rgba(0, 0, 0, .2) 0 1px, transparent 1px 3px),
+      repeating-linear-gradient(90deg, rgba(0, 0, 0, .2) 0 1px, transparent 1px 3px);
+  }
+  /* ▶ WATCH HOW IT WORKS 0:24 = the player's control row; the video covers the screen inside the bezel, ✕ top right,
+     the APPLY pill + Watch again as the end screen. Shown only from here up (phones: the text screen) */
+  .d-cr-play:not([hidden]) {
+    display: inline-flex; align-items: center; gap: 12px; position: absolute; z-index: 2;
+    left: calc(var(--cam-l) + 16px); bottom: calc(var(--cam-b) + 8px); padding: 7px 12px; border: 0; border-radius: 6px;
+    background: none; color: var(--cr-ink); font: 600 15px/1 var(--d-f-head); letter-spacing: .06em; text-transform: uppercase; cursor: pointer;
+  }
+  .d-cr-play:hover { background: rgba(255, 255, 255, .1); }
+  .d-cr-play-i { font-size: 15px; }
+  .d-cr-play-t { color: var(--cr-ink-2); font-weight: 500; }
+  .d-cr-video:not([hidden]) {
+    display: block; position: absolute; z-index: 3; inset: var(--cam-t) var(--cam-r) var(--cam-b) var(--cam-l);
+    border-radius: 10px;   /* no fill: the video element is the black, so the cover shows through its first glitch frames */
+  }
+  .d-cr-video video { display: block; width: 100%; height: 100%; object-fit: contain; border-radius: 10px; background: #000; }
+  /* Dan 10-05 "the transition should be a glitch": ▶ tears the text screen (RGB split, slices, jitter, ~160 ms), then
+     the video stutters in through jumping bands with colour-shifted frames; a scanline + colour-band layer flickers
+     over it (::after). Stepped keyframes = digital jumps. No fill after the end: at rest no clip / transform / filter.
+     The video starts on the click (inside it, so the sound isn't blocked); reduced motion = a plain cut. */
+  .d-cam-panel.is-glitching :is(h2, .d-cr-grid, .d-cr-play) { animation: d-cr-glitch-out 170ms steps(1, end) forwards; }
+  .d-cr-video.is-in video { animation: d-cr-glitch-in 540ms steps(1, end); }
+  .d-cr-video::after {
+    content: ''; position: absolute; inset: 0; z-index: 2; border-radius: 10px; pointer-events: none; opacity: 0; mix-blend-mode: screen;
+    background:
+      linear-gradient(transparent 28%, rgba(255, 0, 51, .45) 28% 31%, transparent 31% 62%, rgba(0, 229, 255, .38) 62% 64.5%, transparent 64.5%),
+      repeating-linear-gradient(0deg, rgba(255, 255, 255, .09) 0 1px, transparent 1px 3px);
+  }
+  .d-cr-video.is-in::after { animation: d-cr-noise 540ms steps(1, end); }
+  @keyframes d-cr-glitch-out {
+    0% { transform: none; }
+    20% { transform: translateX(-7px) skewX(-6deg); text-shadow: 4px 0 #ff0033, -4px 0 #00e5ff; }
+    40% { transform: translateX(9px); clip-path: inset(8% 0 44% 0); text-shadow: -5px 0 #ff0033, 5px 0 #00e5ff; }
+    60% { transform: translateX(-4px); clip-path: inset(48% 0 6% 0); opacity: .6; }
+    80% { opacity: .2; }
+    100% { opacity: 0; }
+  }
+  @keyframes d-cr-glitch-in {
+    0% { opacity: 0; }
+    28% { opacity: 1; clip-path: inset(42% 0 46% 0); transform: translateX(-16px); filter: hue-rotate(90deg) saturate(3) contrast(1.8); }
+    36% { clip-path: inset(6% 0 80% 0); transform: translateX(12px); }
+    44% { clip-path: inset(64% 0 14% 0); transform: translateX(-8px); filter: hue-rotate(-70deg) saturate(2.2) contrast(1.5); }
+    52% { clip-path: inset(0 0 55% 0); transform: translateX(9px); }
+    60% { clip-path: inset(22% 0 24% 0); transform: translateX(-4px); filter: contrast(1.4); }
+    70% { clip-path: inset(0); transform: translateX(5px); filter: brightness(1.6) contrast(1.3); }
+    80% { transform: translateX(-2px); filter: none; }
+    90% { transform: translateX(1px); }
+    100% { transform: none; }
+  }
+  @keyframes d-cr-noise {
+    0% { opacity: 0; }
+    28% { opacity: 1; background-position: 0 0, 0 0; }
+    40% { background-position: 0 -90px, 0 1px; }
+    52% { opacity: .8; background-position: 0 70px, 0 0; }
+    64% { opacity: .5; background-position: 0 -30px, 0 2px; }
+    76% { opacity: .2; }
+    88% { opacity: 0; }
+  }
+  .d-cr-end:not([hidden]) {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+    position: absolute; inset: 0; border-radius: 10px; background: var(--cr-face);
+  }
+  .d-cr-end .d-btn-note { margin: 0; }
+  .d-cr-again, .d-cr-close { border: 0; cursor: pointer; color: var(--cr-ink); font-family: var(--d-f-head); }
+  .d-cr-again { padding: 10px 16px; border-radius: 6px; background: none; font-weight: 500; font-size: 16px; letter-spacing: .06em; text-transform: uppercase; }
+  /* ✕ on the bezel, where SPEED SOUNDS BETTER sits (hidden while the video is open): clear of every browser's own
+     video controls (Safari puts its volume at the top right of the picture) */
+  .d-cr-close {
+    position: absolute; right: 0; top: calc(var(--cam-t) / -2); translate: 0 -50%;
+    display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px; border-radius: 15px;
+    background: rgba(255, 255, 255, .08); font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+  }
+  .d-cam-panel:has(.d-cr-video:not([hidden])) .d-cam-tr { visibility: hidden; }
+  .d-cr-again:hover, .d-cr-close:hover { background: rgba(255, 255, 255, .16); }
+  .drift-page .d-cr-play:focus-visible, .drift-page .d-cr-again:focus-visible, .drift-page .d-cr-close:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  .d-cam-vf--a::before { left: 0; top: 0; border-width: 2px 0 0 2px; }
+  .d-cam-vf--a::after { right: 0; bottom: 0; border-width: 0 2px 2px 0; }
+  .d-cam-vf--b::before { right: 0; top: 0; border-width: 2px 2px 0 0; }
+  .d-cam-vf--b::after { left: 0; bottom: 0; border-width: 0 0 2px 2px; }
+  .d-cam-tl { left: 64px; top: calc(var(--cam-t) / 2); translate: 0 -50%; }
+  .d-cam-tr { display: flex; right: 64px; top: calc(var(--cam-t) / 2); translate: 0 -50%; }
 }
-.d-cr-checks-hdr { font: 400 17px/1 var(--d-f-lcd); letter-spacing: .12em; color: var(--d-lcd-hdr); text-shadow: 0 0 3px rgba(240, 70, 235, .6); }
-.d-cr-checks ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 22px; }
-@media (min-width: 1000px) { .d-cr-checks ul { display: grid; gap: 8px; } }
+/* the head: Dan's words, one row on the glass from 1001 (52 px at 1312), 2 lines centred on phones */
+#creators h2.d-headline--row { font-size: clamp(36px, 4vw, 52px); margin: 0 0 16px; }
+@media (min-width: 1001px) { #creators h2.d-headline--row { margin-bottom: 26px; } }
+/* phones: STREAM IT. / GET DRIFT FREE., one phrase per line (the inline flow stranded the neon GET on line 1 at 390; fix2 10-03) */
+@media (max-width: 600px) { #creators h2.d-headline--row .l1, #creators h2.d-headline--row .l2 { display: block; } }
+html.hc #creators .d-headline span, html.hc #creators .d-cr-checks li, html.hc #creators .d-onair ~ .d-ja { text-shadow: none; }
+/* steps | VIDEO CHECK on one row, the Apply row under both; one column on phones (steps, checks, Apply) */
+.d-cr-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; }
+.d-cr-checks { display: grid; gap: 8px; align-content: start; background: none; box-shadow: none; padding: 0; }
+@media (min-width: 1001px) {
+  /* Dan 10-05 "center the reading": the columns are sized to the content (steps up to 540, VIDEO CHECK = its
+     246.7 px rows, one line each) and sit as one block on the head's centre axis. Fixed tracks, not max-content:
+     the APPLY row spans both and would otherwise inflate the second one */
+  .d-cr-grid { grid-template-columns: minmax(0, 540px) 250px; justify-content: center; gap: 24px 64px; }
+  .d-cr-checks li { white-space: nowrap; }
+  .d-steps-cr { grid-column: 1; grid-row: 1; }
+  .d-cr-checks { grid-column: 2; grid-row: 1; gap: 10px; }
+}
+/* the VIDEO CHECK readout: lit print straight on the LCD (no glass box): Press Start kicker, VT323 rows + LEDs */
+.d-cr-checks-hdr { font: 400 10px/1.4 var(--d-f-pix); letter-spacing: .12em; color: var(--d-lcd-hdr); text-shadow: 0 0 3px rgba(240, 70, 235, .6); }
+.d-cr-checks ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .d-cr-checks li {
   display: flex; align-items: center; gap: 10px;
-  font: 400 19px/1.1 var(--d-f-lcd); letter-spacing: .05em; color: var(--d-lcd);
+  font: 400 17px/1.1 var(--d-f-lcd); letter-spacing: .05em; color: var(--d-lcd);
   text-shadow: 0 0 5px rgba(242, 76, 240, .7);
   white-space: nowrap;
 }
-@media (min-width: 1000px) { .d-cr-checks li { font-size: 24px; gap: 14px; } }
-/* the LED: a lit lamp, the block's only glow besides the ON AIR tube */
+@media (min-width: 1001px) { .d-cr-checks ul { gap: 10px; } .d-cr-checks li { font-size: 22px; } }
+/* the LED: a lit lamp, the block's only glow besides the tally lamp */
 .d-cr-checks li::before {
-  content: ''; flex: none; width: 10px; height: 10px; border-radius: 50%;
+  content: ''; flex: none; width: 9px; height: 9px; border-radius: 50%;
   background: radial-gradient(circle at 40% 35%, #fff0ff, var(--d-hot) 55%, #8a1f7a);
   box-shadow: 0 0 6px rgba(247, 105, 224, .8), 0 0 0 1px rgba(4, 2, 8, .9);
 }
-.d-cr-checks-foot { font: 400 16px/1.3 var(--d-f-lcd); letter-spacing: .06em; color: var(--d-dim-violet); }
-.d-steps-cr { list-style: none; counter-reset: cr; margin: 0; padding: 0; display: grid; gap: 16px; max-width: 64ch; }
-.d-steps-cr li { counter-increment: cr; position: relative; padding-left: 52px; font-size: 17px; line-height: 1.55; color: var(--d-fg); }
+/* motion, one cue: on first view the rows + LEDs light top to bottom once (rest = lit: no pre-dim) */
+.d-cr-checks[data-lit] li { animation: d-cr-light 260ms steps(2, end) backwards; animation-delay: calc(var(--i) * 90ms); }
+@keyframes d-cr-light { from { opacity: .12; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { #creators .d-cr-checks li, #creators .d-cam-panel.is-glitching :is(h2, .d-cr-grid, .d-cr-play), #creators .d-cr-video.is-in video, #creators .d-cr-video.is-in::after { animation: none; } }
+.d-steps-cr { list-style: none; counter-reset: cr; margin: 0; padding: 0; display: grid; gap: 12px; align-content: start; }
+@media (min-width: 1001px) { .d-steps-cr { gap: 14px; } }
+.d-steps-cr li { counter-increment: cr; position: relative; min-height: 28px; padding-left: 44px; font: 500 15px/1.35 var(--d-f-head); text-transform: uppercase; letter-spacing: .03em; color: var(--d-fg); }
+@media (min-width: 1001px) { .d-steps-cr li { padding-left: 48px; font-size: 16px; } }
 .d-steps-cr li::before {
   content: counter(cr); position: absolute; left: 0; top: -2px;
-  font: 600 32px/1 var(--d-f-badge); color: var(--d-fg-neon);
+  font: 600 28px/1 var(--d-f-badge); color: var(--d-fg-neon);
 }
 .d-steps-cr strong, .d-btn-note strong { color: var(--d-white-ink); font-weight: 700; }
-.d-cr-cta { display: grid; gap: 10px; justify-items: start; }
+.d-cr-cta { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; justify-items: stretch; }
+@media (min-width: 1001px) {
+  .d-cr-cta { grid-column: 1 / -1; grid-row: 2; grid-template-columns: auto minmax(0, 1fr); gap: 6px 22px; align-items: center; justify-items: start; }
+  .d-cr-cta .d-btn-violet { grid-column: 1; grid-row: 1; }   /* the note reads level with the key; the mail line tucks under the note */
+  .drift-page .d-cr-cta .d-btn-note { grid-column: 2; grid-row: 1; }
+  .drift-page .d-cr-cta .d-cr-mail { grid-column: 2; grid-row: 2; }
+}
+/* BETA FEEDBACK key over Apply (testers' way to /drift/feedback). Laptop: it takes row 1 of the key column, and
+   Apply + its note + the mail line each move down a row, so the note still reads level with Apply */
+.d-cr-cta .d-cr-beta { margin-bottom: 4px; }
+@media (min-width: 1001px) {
+  .d-cr-cta .d-btn-violet.d-cr-beta { grid-column: 1; grid-row: 1; }
+  .d-cr-cta .d-btn-violet:not(.d-cr-beta) { grid-row: 2; }
+  .drift-page .d-cr-cta .d-btn-note { grid-row: 2; }
+  .drift-page .d-cr-cta .d-cr-mail { grid-row: 3; }
+}
 /* the Apply key: a violet keycap (DRIFT's key chrome, never race-red): a lit
    face over a dark skirt, and :active presses it 3 px into the panel */
 .d-btn-violet {
   display: inline-flex; align-items: center; justify-content: center;
   min-height: 52px; padding: 0 30px 3px;
   border-radius: 9px;
-  font: 600 15px/1 var(--d-f-badge); letter-spacing: .12em; text-transform: uppercase;
+  font: 700 22px/1 var(--d-f-head); letter-spacing: .03em; text-transform: uppercase;
   color: var(--d-white-ink); text-decoration: none; white-space: nowrap;
   text-shadow: 0 -1px 0 rgba(30, 0, 60, .8);
   background: linear-gradient(180deg, #9640ee 0%, #8a2be2 45%, #6a1dbd 100%);
@@ -921,6 +2103,7 @@
   transition: transform 90ms ease, box-shadow 90ms ease, filter 120ms ease;
 }
 .d-btn-violet:hover { filter: brightness(1.08); }
+.d-btn-violet:hover .d-stamp-arrow, .d-btn-violet:focus-visible .d-stamp-arrow { transform: translateX(3px); }
 .d-btn-violet:active {
   transform: translateY(3px);
   box-shadow:
@@ -930,19 +2113,261 @@
     0 1px 0 #3b0f6b,
     0 2px 6px rgba(0, 0, 0, .5);
 }
-.d-btn-note { font-size: 15px; line-height: 1.5; color: var(--d-fg); }
-.d-creators .d-small a { color: var(--d-fg-neon); text-decoration: underline; }
-@media (max-width: 900px) {
-  .d-cr-cta { justify-items: stretch; }
-  .d-btn-note, .d-creators .d-small { font-size: 14px; }
+/* Dan 10-05, the player screen (laptop): flat UI type, no glow. The head in the player's two greys (STREAM IT.
+   secondary, GET DRIFT FREE. primary); the steps read as a playlist (grey index numbers); links in the player's link
+   blue (underlined: colour alone isn't a cue); the VIDEO CHECK rows are the player's chips, each with a check (their
+   first-view light-up stays). "the creator button needs to be a part of the panel": APPLY is the player's red
+   subscribe-style pill, drawn on the screen; hover = the darker red, a press dims it, focus = a white ring. */
+@media (min-width: 1001px) {
+  #creators .d-headline .l1 { color: var(--cr-ink-2); text-shadow: none; }
+  #creators .d-headline .l2 { color: var(--cr-ink); text-shadow: none; }
+  #creators .d-steps-cr li, #creators .d-steps-cr strong, #creators .d-btn-note strong { color: var(--cr-ink); text-shadow: none; }
+  #creators .d-steps-cr li::before { color: var(--cr-ink-2); }
+  #creators .d-steps-cr a, #creators .d-cr-mail a { color: #3ea6ff; text-decoration-color: currentColor; }
+  #creators .d-btn-note, #creators .d-cr-mail { color: var(--cr-ink-2); text-shadow: none; }
+  #creators .d-cr-checks-hdr { font: 600 15px/1.2 var(--d-f-head); letter-spacing: .06em; text-transform: uppercase; color: var(--cr-ink); text-shadow: none; }
+  #creators .d-cr-checks ul { justify-items: start; gap: 8px; }
+  #creators .d-cr-checks li {
+    gap: 8px; padding: 7px 14px 7px 11px; border-radius: 8px; background: var(--cr-chip);
+    font: 500 15px/1.2 var(--d-f-head); letter-spacing: .04em; color: var(--cr-ink); text-shadow: none;
+  }
+  #creators .d-cr-checks li::before { content: '\2713'; width: auto; height: auto; border-radius: 0; background: none; box-shadow: none; font: 700 14px/1 var(--d-f-head); color: var(--cr-ink-2); }
+  #creators .d-btn-violet {
+    min-height: 52px; padding: 0 30px; border-radius: 999px;
+    font: 600 21px/1 var(--d-f-head); letter-spacing: .04em; color: #fff; text-shadow: none;
+    background: var(--cr-red); box-shadow: none;
+    transition: background-color 120ms ease, filter 120ms ease;
+  }
+  #creators .d-btn-violet:hover { background: var(--cr-red-hover); filter: none; }
+  #creators .d-btn-violet:active { transform: none; filter: brightness(.88); box-shadow: none; }
+  .drift-page #creators .d-btn-violet:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
 }
+.drift-page .d-btn-note { font: 500 14px/1.4 var(--d-f-head); text-transform: uppercase; letter-spacing: .04em; color: var(--d-fg); }
+/* the page law: Oswald caps for every spoken line, fine print included (the DRIFT BETA note + the mail line inherit
+   .d-btn-note's / .d-fine's uppercase; fix2 10-03). Only the address and the path read as typed: info@revaudio.net
+   must look like an address, /affiliate is case-sensitive. The links pad to a 44 px tap target */
+.d-creators .d-cr-typed { text-transform: none; }
+.d-creators .d-steps-cr a { color: var(--d-fg-neon); text-decoration: underline; text-underline-offset: 3px; display: inline-block; padding: 12px 0; margin: -12px 0; }
+.d-creators .d-cr-mail a { text-transform: none; color: var(--d-fg-neon); text-decoration: underline; text-underline-offset: 3px; display: inline-block; padding: 14px 0; margin: -14px 0; }
+/* THE PAGE END: a finish-flag strip (the TV lap's pattern in the TV checker's violet) + the maker line;
+   .drift-page's bottom padding then hands off to the house footer */
+.d-finish { height: 10px; margin-top: 40px; opacity: .5; background: repeating-conic-gradient(#6c22b8 0 25%, #0b0612 0 50%) 0 0 / 20px 20px; }
+.drift-page #creators .d-maker { margin: 12px 0 0; max-width: none; text-align: center; font: 500 11px/1.4 var(--d-f-head); text-transform: uppercase; letter-spacing: .08em; color: var(--d-fg-dim); }
 
 /* ==========================================================================
    Reduced motion + high contrast
    ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
   .drift-page *, .drift-page *::before, .drift-page *::after { transition: none !important; animation: none !important; }
+  .drift-page ::placeholder { animation: none !important; }   /* the hero's own override (0,2,1) loses to the blink rule (0,3,1) */
 }
 html.hc .drift-page { background: #000000; }
 html.hc .drift-page .d-rails, html.hc .drift-page .d-underglow, html.hc .drift-page .d-stickers { display: none; }
-html.hc .drift-page .d-title, html.hc .drift-page .d-marquee { text-shadow: none; }
+html.hc .drift-page .d-title, html.hc .drift-page .d-marquee, html.hc .drift-page .d-tagline,
+html.hc .drift-page .d-headline span, html.hc .drift-page .d-sechead .d-ja { text-shadow: none; }
+html.hc .drift-page .d-price-label { text-shadow: none; }
+
+/* ==========================================================================
+   PHONE PASS 2026-10-02 (feat/drift-mobile)
+   Dan's picks (build-spec 10-02): screen 1 = DRIFT + tagline + the trial as
+   ONE merged plate, the wheel under it, the price as a plate-less row. Every
+   rule here is ≤600 only; the ≤1099 / ≤900 blocks above keep 601-1099 as it
+   was. IDs = the proposal's (2026-10-02-drift-mobile-proposal.md).
+   ========================================================================== */
+@media (max-width: 600px) {
+  /* --- HERO "A5" (Dan 2026-10-04, spec: workspace 04_website/output/2026-10-04-drift-phone-wheel-hero.md)
+     Replaces the 10-02 hero (F1-F4, H2-H4, the kicker). The wheel is 2.15x the screen and runs off both
+     edges; no gauges, no plates. Three planes in ONE grid cell, back to front:
+       the tagline (.d-hero-left, z1, its feet tucked behind the rim)
+       -> the wheel (.d-cockpit, z3: DRIFT on the hub, sways ±20°, wheel.ts)
+       -> the price over the rim (.d-hero-right, z4) + the offer as type in the window (.d-hero-trial, z5).
+     Offsets are fractions of --wd, measured from the wheel's alpha: rim inner top .095, hub top .381. --- */
+  .d-hero.d-wrap { width: 100%; padding-top: 10px; }    /* bleed: .d-hero's overflow clip now sits on the screen edge */
+  .d-hero {
+    --wd: 215vw;                                         /* 864 at 402 */
+    --tg: clamp(36px, 13.4vw, 72px);                     /* the tagline; 54 at 402 */
+    --ck: calc(var(--tg) * 1.52);                        /* the rim's top, under the tagline's last line */
+  }
+  .d-hero-body { grid-template-columns: minmax(0, 1fr); margin-top: 0; }
+  .d-hero-left, .d-cockpit, .d-hero-right, .d-hero-trial { grid-area: 1 / 1; align-self: start; }
+  .drift-page .d-hero-catch { grid-area: 2 / 1; margin-top: 4px; padding-bottom: 6px; }
+  /* Dan 10-04 "close that gap between sections": the catch line sits right on #drive (40 -> ~10 px). The hero
+     clips sideways only now, so the line's purple glow isn't cut where the hero ends (the wheel under the hub is
+     masked transparent and takes no taps, so nothing else shows below). */
+  .d-hero { overflow: clip visible; }
+  .d-hero .d-hero-meter { display: none; }
+  /* back plane: the tagline. The title plate goes; DRIFT stays in the markup (the h1) but shows on the hub */
+  .d-hero-left { z-index: 1; margin: 0; width: 100%; }
+  .d-hero-left .d-panel { background: none; box-shadow: none; clip-path: none; border-radius: 0; padding: 0; }
+  .d-hero-left .d-screw, .d-hero-left .d-checker, .d-hero-left .d-sticker { display: none; }
+  .d-hero-left .d-title { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .drift-page .d-hero-left .d-tagline { margin: 0; text-align: center; font-size: var(--tg); line-height: .9; }
+  .d-hero-left .d-tagline span { white-space: nowrap; }
+  .drift-page .d-hero-left .d-tagline span:first-child { color: var(--d-white-ink); text-shadow: var(--d-glow-1); }   /* line 1 white-hot, line 2 the purple sign (the house headline rule; Dan 10-04) */
+  /* middle plane: the wheel, centred on the screen (over-wide: left 50% + translate, not justify) */
+  .d-cockpit { justify-self: start; left: 50%; translate: -50% 0; margin: var(--ck) 0 calc(var(--wd) * -0.24); }
+  .d-cluster, .d-needle { display: none; }
+  .d-wheel { -webkit-mask-image: linear-gradient(#000 68%, transparent 78%); mask-image: linear-gradient(#000 68%, transparent 78%); cursor: default; }
+  .d-wheel-grip { display: none; }                       /* no drag on phones (wheel.ts): the page always scrolls */
+  .d-cockpit, .d-cockpit * { pointer-events: none; }    /* display-only: taps fall through to the offer behind it */
+  .d-underglow { display: none; }                        /* the purple, faded (B1): a dim cabin glow on .d-hero instead */
+  .d-hero { background: radial-gradient(ellipse 70% 34% at 50% calc(10px + var(--ck) + var(--wd) * .3), rgba(138, 43, 226, .16), rgba(138, 43, 226, .05) 55%, transparent 80%); }
+  .d-wheel-img { filter: drop-shadow(0 0 1.5px rgba(200, 150, 255, .5)) drop-shadow(0 12px 14px rgba(0, 0, 0, .9)) drop-shadow(0 4px 6px rgba(0, 0, 0, .85)); }
+  /* the price is on the rim (Dan 10-04/05): $69 left of the stripe, ETA NOV 1 right, engraved + paint-filled,
+     turning with the wheel. The price block stays for screen readers only. */
+  .d-hero-right { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; margin: 0; }
+  .d-wheel-print { display: block; position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+  .d-wheel-print text { font: 700 40px var(--d-f-head); letter-spacing: .05em; fill: #ece6f2; }   /* engraved + paint-filled (E4), Oswald */
+  .d-wheel-print .pv { font-size: 54px; }
+  .d-wheel-print .pl1 { font-size: 26px; letter-spacing: .14em; }
+  .d-wheel-print .pl2 { font-size: 38px; }
+  .d-wheel-mark .kana { display: none; }   /* no ドリフト on the hub on phones (Dan 10-05: fewer faces; DRIFT stays) */
+  /* the offer, BEHIND the wheel (B1, Dan 10-04): the gauges are gone and the offer is the car's dash screen,
+     seen through the window. The screen is wider than the window, so the rim cuts its lit top edge in an
+     arc and the hub + spokes hide its foot. z2 < the cockpit's z3; the cockpit takes no taps. */
+  .d-hero-trial { position: relative; z-index: 2; isolation: isolate; justify-self: center; width: min(100% - 32px, max(288px, 79vw)); margin: calc(var(--ck) + var(--wd) * .144) 0 0; }
+  /* the dash screen IS the keep-it TV's tube (Dan 10-04 "a digital screen like the TV, behind the wheel"):
+     the same phosphor-lit CRT, plastic bezel rings and violet spill (::before), scanlines + aperture grille +
+     glass reflection + curved falloff over the picture (::after, like .d-crt.d-keep-screen) */
+  .d-hero-trial::before, .d-hero-trial::after {
+    content: ''; position: absolute; left: -32vw; right: -32vw; pointer-events: none;
+    top: calc(var(--wd) * -.016); height: calc(var(--wd) * .35); border-radius: 30px / 36px;
+  }
+  .d-hero-trial::before {
+    z-index: -1;
+    background: radial-gradient(ellipse 52% 70% at 50% 40%, #2e1347 0%, #1a0b2c 40%, #0b0414 76%, #040107 100%);
+    box-shadow:
+      0 0 0 3px #040206, 0 0 0 14px #19131f, 0 0 0 15px rgba(255, 240, 255, .10), 0 0 0 17px #0a070d,   /* tube seat, plastic bezel, its highlight, the seam */
+      0 0 60px 18px rgba(190, 90, 255, .14),                                                              /* the set is on */
+      inset 0 0 0 1px rgba(190, 90, 255, .25), inset 0 0 70px 24px rgba(0, 0, 0, .8);
+  }
+  .d-hero-trial::after {
+    z-index: 3;
+    background:
+      repeating-linear-gradient(0deg, rgba(0, 0, 0, .34) 0 1px, transparent 1px 3px),
+      repeating-linear-gradient(90deg, rgba(255, 40, 90, .05) 0 1px, rgba(40, 255, 140, .035) 1px 2px, rgba(70, 90, 255, .05) 2px 3px),
+      linear-gradient(158deg, rgba(255, 255, 255, .10) 0%, rgba(255, 255, 255, .03) 18%, transparent 34%),
+      radial-gradient(ellipse 70% 26% at 50% 3%, rgba(255, 255, 255, .07), transparent 70%);
+  }
+  .d-hero-trial .d-trial-panel { background: none; box-shadow: none; clip-path: none; border-radius: 0; padding: 0; }
+  .d-hero-trial .d-screw { display: none; }
+  .drift-page .d-hero-trial .d-stamp-kicker { display: none; }   /* dropped in A5 (Dan 10-04) */
+  .d-hero-trial .d-stamp, .d-hero-trial .d-stamp-form { gap: 8px; }
+  .drift-page .d-hero-trial .d-stamp-label { margin: 9px 0 0; font: 400 clamp(12px, 3.5vw, 17px) / 1.4 var(--d-f-pix); letter-spacing: .06em;
+    text-transform: uppercase; text-align: center; color: var(--d-crt); text-shadow: 0 0 8px var(--d-crt-glow), 0 0 22px rgba(190, 90, 255, .35); }
+  .d-hero-trial .d-stamp-label span { display: block; }
+  .drift-page .d-hero-trial .d-stamp-label em { color: var(--d-hot); text-shadow: 0 0 8px rgba(255, 79, 216, .7), 0 0 20px rgba(255, 79, 216, .3); }
+  .drift-page .d-hero-trial .d-stamp-field {   /* the TV's arcade name-entry field (.d-keep-field) */
+    min-height: 48px; padding: 0 10px; border: 0;
+    font: 400 20px / 1 var(--d-f-lcd); letter-spacing: .03em; caret-color: var(--d-hot);   /* never <16: iOS zooms */
+    color: #ffe9ff; text-shadow: 0 0 8px rgba(242, 76, 240, .55);
+    background: radial-gradient(120% 140% at 50% 30%, #1d0a2c 0%, #0c0415 75%);
+    box-shadow: 0 0 0 1px rgba(4, 2, 8, .9), inset 0 4px 8px rgba(0, 0, 0, .7), inset 0 0 0 1px rgba(247, 105, 224, .45), 0 0 14px rgba(247, 105, 224, .12);
+  }
+  .drift-page .d-hero-trial .d-stamp-field::placeholder { color: #b98ad8; letter-spacing: .03em; }
+  .drift-page .d-hero-trial .d-stamp-field:focus { outline: none; box-shadow: 0 0 0 1px rgba(4, 2, 8, .9), inset 0 4px 8px rgba(0, 0, 0, .7), inset 0 0 0 1px var(--d-hot), 0 0 0 3px rgba(247, 105, 224, .22), 0 0 22px rgba(247, 105, 224, .35); }
+  .d-hero-trial .d-stamp-fine { display: none; }
+  .d-hero-trial .d-stamp-fine.d-stamp-fine--ph {   /* the TV's phosphor fine print (.d-keep-fine) */
+    display: block; margin: 0 -8px;
+    font: 400 15px / 1.12 var(--d-f-lcd); letter-spacing: .06em; text-transform: uppercase; text-align: center;
+    color: var(--d-crt); text-wrap: balance; text-shadow: 0 0 6px rgba(190, 90, 255, .45);
+  }
+  .d-hero-trial .d-capture-next { min-height: 44px; }
+  /* GET IT = the keep-it TV's digital key, in red (D1): pixel label, neon outline, dark screen; the label
+     stutter-blinks, the box holds; hover/focus = inverse video and the blink stops (as .d-keep-key) */
+  /* the TV's PLAYER 1 START bar: field + key on one row (one row of height back for the hub) */
+  .d-hero-trial .d-stamp-form { grid-template-columns: minmax(0, 1fr) auto; align-items: stretch; }
+  :is(.d-hero-trial, #get) .d-stamp-key {
+    --h: 48px; align-self: stretch; width: auto; min-width: 0; height: auto; min-height: 48px; padding: 0 12px;
+    border: 2px solid #ff3346; border-image: none; border-radius: 3px;
+    background: radial-gradient(120% 140% at 50% 30%, #3a0a10 0%, #16040a 75%);
+    box-shadow: 0 0 0 1px rgba(4, 2, 8, .9), 0 0 16px rgba(255, 51, 70, .45), inset 0 0 16px rgba(255, 51, 70, .22);
+    font: 400 clamp(12px, 3.4vw, 14px) / 1 var(--d-f-pix); letter-spacing: .06em; color: #ff4a5a;
+    text-shadow: 0 0 8px rgba(255, 51, 70, .9), 0 0 18px rgba(255, 51, 70, .4);
+    transition: background-color 120ms ease, color 120ms ease, transform 60ms ease;
+  }
+  :is(.d-hero-trial, #get) .d-stamp-key [data-face] { display: inline-flex; align-items: center; gap: .7em; animation: d-stutter 2.6s steps(1, end) infinite; }
+  :is(.d-hero-trial, #get) .d-stamp-key:hover, .drift-page :is(.d-hero-trial, #get) .d-stamp-key:focus-visible {
+    outline: none; filter: none; background: #ff3346; color: #1a0306; text-shadow: none;
+    box-shadow: 0 0 0 1px rgba(4, 2, 8, .9), 0 0 0 4px rgba(255, 190, 196, .35), 0 0 24px rgba(255, 51, 70, .6);
+  }
+  :is(.d-hero-trial, #get) .d-stamp-key:hover [data-face], :is(.d-hero-trial, #get) .d-stamp-key:focus-visible [data-face],
+  :is(.d-hero-trial, #get) .d-stamp-key:disabled [data-face] { animation: none; }
+  :is(.d-hero-trial, #get) .d-stamp-key:active { border-image: none; padding-top: 0; filter: none; transform: translateY(2px); }
+
+  /* --- SIGN-UP STATE (G3 / P4) ------------------------------------------ */
+  html[data-drift-joined] .d-stamp-form, html[data-drift-joined] #try .d-capture-form { display: none; }
+  /* the live region stays rendered while empty (visually hidden), so the
+     first message is announced */
+  .d-capture { position: relative; }
+  .d-capture-status:empty {
+    display: block; position: absolute; width: 1px; height: 1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+  }
+
+  /* --- #drive (D1, D2) --------------------------------------------------- */
+  .d-tracks .d-gps-col { order: -1; }
+  #drive .d-attract-panel { background: none; box-shadow: none; padding: 0; }
+  .d-attract-panel > .d-screw { display: none; }
+  #drive .d-attract-hdr { display: none; }
+  .d-cap::before { inset: -6.5px; }   /* D2: 50 px hit boxes at 402, no overlap */
+
+  /* --- #fx (X1, X2, X3) -------------------------------------------------- */
+  .d-strip img { aspect-ratio: 512 / 470; }
+  .d-rack { gap: 10px; padding: 10px; }
+  .d-bandglass { padding: 10px 12px 6px; }
+  .d-bandstrip { height: 40px; }
+  #fx .d-alsoin { display: none; }
+  .drift-page .d-alsoin-ph { margin-top: 16px; }
+
+  /* --- #get (G1, G4) ----------------------------------------------------- */
+  #get .d-sechead { display: none; }
+  .d-capture .d-compat {
+    order: 4; border-bottom: 0; border-top: 1px dashed rgba(180, 107, 255, .22);
+    padding: 10px 0 0; margin-top: 2px;
+  }
+  .d-capture .d-compat dd { font-size: 14px; }
+  .drift-page .d-capture .d-cta-fine { font-size: 13px; color: var(--d-fg); }
+
+  /* --- #creators (C1) ---------------------------------------------------- */
+  .d-cr-grid { row-gap: 16px; }   /* 22 -> 16: Apply's bottom 601 -> 595 on /drift/#creators at 350x621 (gate ≤600) */
+  .d-cr-panel { order: 1; }
+  .d-cr-cta { order: 2; }
+  .d-cr-checks { order: 3; padding: 10px 12px; }
+  .d-cr-grid .d-cr-panel { padding-top: 30px; padding-bottom: 30px; }
+  .d-steps-cr { gap: 10px; }
+  .d-cr-checks ul { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+  .d-cr-checks li { font-size: 17px; }
+
+  /* --- page-wide (P2, P3, P5, K1) ---------------------------------------- */
+  /* P2: small glass windows lose the stretched bezel PNG; the glass texture drops */
+  .d-lcd:not(.d-lcd--big)::before { background: radial-gradient(120% 100% at 50% 40%, #14061f 0%, #0b0314 70%); }
+  .d-lcd::after { opacity: .2; }
+  .d-lcd--big::after { opacity: .25; }
+  /* P3: rhythm */
+  .drift-page h2.d-headline { font-size: 30px; }
+  .d-sechead .d-ja { text-shadow: none; opacity: .5; }
+  .d-sec { padding-top: 36px; }   /* #drive keeps its own 18 px (id rule above) */
+  .drift-page .d-fine, .drift-page .d-strip p, .drift-page .d-chips-note { font-size: 13px; }
+  /* K1 */
+  .drift-page .d-keep-fine { font-size: 14px; color: var(--d-fg); }
+  /* P5: the house haze plates off (both: display:none alone keeps the fetch) */
+  body:has([data-drift-page]) .haze-plate { background-image: none; display: none; }
+}
+/* D2 at 350: the caps sit 43.1 px apart there, so the inset holds the hit box at 44 px with a 1 px overlap */
+@media (max-width: 355px) { .d-cap::before { inset: -6.35px; } }
+/* A5/B1 at the smallest phones (320): the window is 266 px wide at the offer's top and the hub starts 15 px
+   too high for the 10-04 stack, so the offer tightens (occlusion-gate.mjs: nothing behind wheel pixels at ±20°) */
+@media (max-width: 340px) {
+  .d-hero-trial .d-stamp, .d-hero-trial .d-stamp-form { gap: 6px; }
+  .drift-page .d-hero-trial .d-stamp-label { font-size: 11.5px; letter-spacing: .02em; margin-top: 15px; }
+  .drift-page .d-hero-trial .d-stamp-field { min-height: 46px; padding: 0 8px; font-size: 18px; }
+  .d-hero-trial .d-stamp-key { padding: 0 9px; font-size: 12px; }
+  .drift-page #get .d-capture .d-field { padding: 0 8px; font-size: 18px; }   /* #get's row too: the placeholder fits at 320 */
+  #get .d-stamp-key { padding: 0 9px; font-size: 12px; }
+  .d-hero-trial .d-stamp-fine.d-stamp-fine--ph { font-size: 14px; line-height: 1.08; }
+}
+/* the phone pass's new markup, hidden from 601 up (desktop pixel-identical) */
+@media (min-width: 601px) {
+  .d-stamp-kicker, .d-stamp-fine--ph, .d-alsoin-ph, .d-stamp .d-capture-next { display: none; }
+}
