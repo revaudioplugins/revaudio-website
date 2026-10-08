@@ -145,6 +145,9 @@ export interface Plugin {
   /** Free-trial CTA target (the Downloads portal). When set, the product page
    *  mounts the trial stamp between the title and the buy card. */
   trialUrl?: string;
+  /** Interactive "Hear it" player (the Station Mixer, tools/station-mixer/): base folder of the generated
+   *  <station-mixer> web component; it hangs in the garage wall in place of the A/B rack. */
+  stationMixerUrl?: string;
   /** Embedded YouTube tutorial — when set, a video section renders between
    *  "Hear it" and "System requirements" on the product page. */
   tutorialVideo?: { title: string; youtubeId: string; blurb?: string };
@@ -301,6 +304,7 @@ export const plugins: Plugin[] = [
       { name: 'It cannot blow up', desc: 'Every station is level-matched by a per-station gain model, then finished with a soft ceiling at -0.3 dBFS on the wet path. At least two character effects are always on, so it cannot land on silence either. Watch the VU: chaos, at a sane level.', part: 'vu' },
     ],
     audioDemos: [],
+    stationMixerUrl: '/station-mixer/',
     systemReq: baseSystemReq,
     reviewsCount: 0,
     reviewsAvg: 0,

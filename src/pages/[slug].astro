@@ -50,13 +50,16 @@ const narrowHero = plugin.slug === 'gas';
 // Only surface A/B demos that actually have audio. Until clips are bounced,
 // the "Hear it" section stays hidden rather than showing empty placeholders.
 const playableDemos = plugin.audioDemos.filter((d) => d.beforeUrl && d.afterUrl);
+// The interactive Station Mixer replaces the A/B rack where a plugin has one (Radio Roulette).
+const hasMixer = !!plugin.stationMixerUrl;
+const hasHear = hasMixer || playableDemos.length > 0;
 
 /* The garage wall behind the "Hear it" -> trial span (Dan, 2026-07-29: wood,
    full-bleed). Same getImage()-into-a-CSS-var pattern as TrialPlates' tag art
    — <Image> never sees CSS backgrounds, so .src would ship the raw 1.5MB
    master. 1024px source shown at 512px = 2x retina; the tile is seam-checked
    and darkness-clamped at generation time (tools/gen-wall-texture.sh). */
-const hasWall = playableDemos.length > 0 || !!plugin.trialUrl;
+const hasWall = hasHear || !!plugin.trialUrl;
 const wall = hasWall
   ? await getImage({ src: wallImg, width: 1024, format: 'webp', quality: 55 })
   : null;
@@ -119,7 +122,7 @@ const altShots = hasStage
             <h1>{plugin.name}</h1>
           </div>
           <p class="tagline">{plugin.tagline}</p>
-          <HeroFacts plugin={plugin} hasDemos={playableDemos.length > 0} buyable={buyable} />
+          <HeroFacts plugin={plugin} hasDemos={hasHear} buyable={buyable} />
           <p class="plain-what">
             {plugin.plainHook && <strong class="plain-hook">{plugin.plainHook}</strong>}
             {plugin.plainWhat}
@@ -169,7 +172,19 @@ const altShots = hasStage
           <div class="wall-art" aria-hidden="true">
             <div class="wall-wood" data-drift-y="24"></div>
           </div>
-          {playableDemos.length > 0 && (
+          {hasMixer && (
+            <section class="audio-demos station-mixer" id="hear-it">
+              <h2 data-split>Hear it</h2>
+              <p class="muted" data-reveal>Real Radio Roulette renders, no tricks. Press <strong>play</strong> on the tape deck, then flip the radio on and pick stations.</p>
+              {/* <station-mixer>: a web component generated from the bench (tools/station-mixer/export_component.py).
+                  Shadow DOM keeps its CSS and the page's apart; it builds itself only when it nears the viewport
+                  and loads audio only on PLAY. Not an iframe: the live CSP / X-Frame-Options block framing. */}
+              <link rel="stylesheet" href={`${plugin.stationMixerUrl}fonts.css`} />
+              <station-mixer class="station-mixer-el"></station-mixer>
+              <script is:inline src={`${plugin.stationMixerUrl}station-mixer.js`} defer></script>
+            </section>
+          )}
+          {!hasMixer && playableDemos.length > 0 && (
             <section class="audio-demos" id="hear-it">
               <h2 data-split>Hear it</h2>
               <p class="muted" data-reveal>Real tracks, no tricks. Hit play for the before, <span class="hear-desk">punch <strong>ARM</strong></span><span class="hear-mob">flip <strong>the switch</strong></span> for the after.</p>
@@ -373,7 +388,9 @@ const altShots = hasStage
     const gwall = document.querySelector<HTMLElement>('.garage-wall');
     if (gwall) {
       const fit = () => {
-        if (window.innerWidth < 901) { gwall.style.removeProperty('--wall-fit'); return; }
+        // A wall carrying the Station Mixer is taller than any viewport; fitting it would shrink the mixer
+        // to the 0.55 floor, so that wall just scrolls.
+        if (window.innerWidth < 901 || gwall.querySelector('.station-mixer')) { gwall.style.removeProperty('--wall-fit'); return; }
         gwall.style.setProperty('--wall-fit', '1');           // measure unscaled
         const budget = window.innerHeight - 76;               // sticky nav + air
         const z = Math.max(0.55, Math.min(1, budget / gwall.offsetHeight));
@@ -875,6 +892,9 @@ const altShots = hasStage
      rails are excluded: texture density and trim stay constant, only the
      hung content scales. Phones (<901px) scroll naturally. */
   .garage-wall .audio-demos { padding-bottom: 1.5rem; }   /* rack -> trial gap */
+  /* Station Mixer: reserve its shape before it builds (no layout shift), then it sizes itself */
+  .station-mixer-el { display: block; aspect-ratio: 1540 / 1110; }
+  .station-mixer-el.ready { aspect-ratio: auto; }
   @media (min-width: 901px) {
     .audio-demos { zoom: var(--wall-fit, 1); }
     /* bench 2026-07-29 (desktop-only harness, so desktop-only rules): Dan

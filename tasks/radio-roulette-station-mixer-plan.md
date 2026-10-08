@@ -125,6 +125,29 @@ Yoni's fixes:
 - **Assets:** `python tools/station-mixer/gen_assets.py [slug] [--force]` (7 images, sequential, retries on 429;
   ~$1.75), then `python tools/station-mixer/process_gen.py` (trim and size into `bench/assets/station-mixer/img/`).
 
+## On the Radio Roulette page (2026-10-08)
+
+- **Not an iframe:** the live site sends `X-Frame-Options: DENY` and a CSP `frame-src` without 'self', so a framed
+  page is blocked on revaudio.net (it only worked on the dev server). The mixer ships as a `<station-mixer>` web
+  component instead.
+  - Shadow DOM keeps its CSS and the site's apart.
+  - It builds itself only when it nears the viewport, and the audio loads only on PLAY.
+  - It is generated from the bench by `tools/station-mixer/export_component.py` into `public/station-mixer/`.
+- **Under the live CSP:**
+  - Fonts are self-hosted (`font-src 'self'`): Permanent Marker, Gochi Hand, Yellowtail, Cinzel; Inter / Oswald / VT323
+    come from the site.
+  - Audio is AAC 160k with half a bar of loop padding each side; the player loops the window inside (plan steps 3 + 4).
+  - Total 16.6 MB, of which ~11 MB is audio fetched on the first PLAY.
+- **Page wiring:**
+  - `plugins.ts` `stationMixerUrl` makes `[slug].astro` hang the mixer in the garage wall (the wood) as "Hear it".
+  - That wall skips wall-fit; HeroFacts' "Hear before/after" link now shows on Radio Roulette.
+- **Verified:** `dist/` served with the exact live CSP and X-Frame-Options headers.
+  - Chromium 1440 + 390: plays, fonts load, no CSP errors.
+  - WebKit (Playwright's Windows build has no Web Audio): no errors, shows NO AUDIO IN THIS BROWSER.
+  - Real Safari and iPhone need a check on live.
+- **Still open:** the phone layout (at 390 px the whole thing scales to ~237 px tall) and lazy per-stem decode
+  (plan step 7).
+
 ## Yoni's export spec
 
 - 4 loops: drums, bass, keys, guitar. Same key and BPM, 4 bars, dry (no baked reverb/delay), all exactly the same

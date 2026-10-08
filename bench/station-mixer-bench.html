@@ -617,7 +617,9 @@ function spin(){
 async function play(){
   if (st.playing || play.loading) return;       // a latched PLAY key does nothing; STOP pops it
   if (!ctx) {
-    ctx = new (window.AudioContext||window.webkitAudioContext)({ sampleRate: SR });
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) { $('#loadMsg').textContent = 'NO AUDIO IN THIS BROWSER'; return; }
+    try { ctx = new AC({ sampleRate: SR }); } catch (e) { ctx = new AC(); }   // older Safari: no options, resamples
     $('#playKey').classList.add('down'); play.loading = true;
     try { buffers = await loadAll(); }
     catch (e) {                                  // pop the key back up; the next PLAY starts over
@@ -821,7 +823,7 @@ function setNotes(on){ document.body.classList.toggle('nonotes', !on); if (on &&
 act($('#notetag'), () => setNotes(document.body.classList.contains('nonotes')));
 try { if (localStorage.getItem(NOTES_KEY)==='0') setNotes(false); } catch(e){}
 (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => { buildEmblems(); doFit(); drawArrows(true); });
-new ResizeObserver(doFit).observe(fit); window.addEventListener('load', doFit);
+let fitRaf = 0; new ResizeObserver(() => { cancelAnimationFrame(fitRaf); fitRaf = requestAnimationFrame(doFit); }).observe(fit); window.addEventListener('load', doFit);
 
 fetch(AUD+'manifest.json').then(r=>r.json()).then(m => {
   const f=m.files;
