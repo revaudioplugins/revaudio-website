@@ -7,15 +7,17 @@
  *
  * Same question engine as beta.astro (src/data/beta-survey.ts), English only.
  * The tester types their first name, country and email (required, above the
- * key). ONE response per email: the page posts to the license worker's
- * /form-once relay (form 'drift_feedback'), which forwards to Formspree
- * (site.driftFeedbackFormEndpoint) and answers {already:true} to a repeat.
- * Every answer is keyed by its question text with the choice labels as values,
- * so the notification email reads as the form did. The relay keeps at most
- * 30 string fields, keys up to 64 chars, 16 KB a body: "Other" text rides in
- * its answer and the text boxes stop at 1500 chars, so a full form fits.
- * No no-JS fallback on purpose: a straight Formspree post would skip the
- * one-per-email check.
+ * key). The page posts the raw answers (by question id) to the license
+ * worker's POST /drift-feedback, which re-checks every answer (required,
+ * valid choices, "Other" text, opened follow-ups, free text that reads like
+ * a real answer), allows ONE form per email, and on a complete form mints the
+ * tester's $30-off, one-use, DRIFT-only Paddle code: shown here and emailed.
+ * The team's copy (every answer under its question + the code) goes to
+ * Formspree (site.driftFeedbackFormEndpoint) from the worker. Incomplete or
+ * filler answers come back as {missing, weak} ids and light up here.
+ * The worker's question list (DRIFT_FB_Q in worker.js) is generated from
+ * beta-survey.ts: change a question, regenerate it there too.
+ * No no-JS fallback on purpose: everything goes through the worker's check.
  */
 import { getImage } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
@@ -51,19 +53,21 @@ const imgVars = [
 
 const pad2 = (n: number) => String(n).padStart(2, '0');
 
-// Free-text boxes stop here so a full form stays inside the relay's 16 KB body.
-const TEXT_MAX = 1500;
+// Free-text boxes stop here (the worker keeps 2000 chars an answer).
+const TEXT_MAX = 2000;
 
 const clientConfig = {
-  onceUrl: site.downloadGate.workerUrl + '/form-once',
+  url: site.downloadGate.workerUrl + '/drift-feedback',
   // Build-time placeholder still in the Formspree id ⇒ not wired yet.
   wired: !site.driftFeedbackFormEndpoint.includes('REPLACE_WITH_FORM_ID'),
   t: {
-    thanks: ui.thanksEn,
     err: ui.errEn,
     soft: ui.softEn,
-    already: ui.alreadyEn,
-    requiredMissing: ui.requiredMissingEn,
+    already: ui.alreadyEn + ' Your code went to your email when you sent it.',
+    pending: "Thank you. Your feedback came through. Your $30 off DRIFT code is on its way to your email.",
+    missing: 'Some of the questions were not filled (highlighted).',
+    weak: "Some answers are too short or don't read like an answer (highlighted). Tell us a bit more.",
+    busy: 'Still sending your first try. Give it a moment.',
     badEmail: 'Please enter a valid email address.',
   },
   questions: questions.map((q) => ({
@@ -219,7 +223,7 @@ const clientConfig = {
                 <label class="q-label" for="df-email">Your email</label>
                 <span class="tag tag--req">{ui.requiredEn}</span>
               </div>
-              <p class="q-help">So we can follow up with your $39 code. One form per email.</p>
+              <p class="q-help">Your $30 off DRIFT code goes here too. One form per email.</p>
               <input id="df-email" class="d-field text-in" type="email" name="email" required autocomplete="email" maxlength="254" placeholder="your@email.com" />
             </div>
           </div>
@@ -228,6 +232,16 @@ const clientConfig = {
       </form>
 
       <p class="beta-status df-status" role="status" aria-live="polite" hidden></p>
+
+      <!-- the reward: shown once, on a complete form (the worker mints it: $30 off, one use, DRIFT only) -->
+      <div class="df-code" data-df-code hidden>
+        <p class="df-code-kicker">Thank you. Your $30 off DRIFT code</p>
+        <div class="df-code-row">
+          <output class="df-code-val" data-df-code-val></output>
+          <button type="button" class="df-code-copy" data-df-copy>Copy</button>
+        </div>
+        <p class="d-fine">One use · DRIFT only · $69 at release on Sun Nov 1, $39 with this code · also sent to your email</p>
+      </div>
     </div>
   </div>
 
@@ -265,13 +279,23 @@ const clientConfig = {
       if (q.reveal) {
         const block = document.getElementById('reveal-' + q.reveal.fieldId);
         const upd = () => {
-          const v = one(q.id);
-          block.hidden = !(v && q.reveal.whenIn.includes(v));
+          const vals = q.type === 'multi' ? many(q.id) : [one(q.id)];
+          block.hidden = !vals.some((v) => v && q.reveal.whenIn.includes(v));
         };
         form.querySelectorAll(`input[name="${q.id}"]`).forEach((i) => i.addEventListener('change', upd));
         upd();
       }
     });
+
+    // ── the code box + highlighting ───────────────────────────────────────
+    const codeBox = document.querySelector('[data-df-code]');
+    const codeVal = document.querySelector('[data-df-code-val]');
+    document.querySelector('[data-df-copy]').addEventListener('click', async (ev) => {
+      try { await navigator.clipboard.writeText(codeVal.textContent); ev.currentTarget.textContent = 'Copied'; } catch {}
+    });
+    function flag(missing, weak) {
+      [...missing, ...weak].forEach((id) => qEl(id)?.classList.add('invalid'));
+    }
 
     // ── status ────────────────────────────────────────────────────────────
     function show(msg, ok) {
@@ -288,6 +312,11 @@ const clientConfig = {
       if (q.type === 'single' || q.type === 'likert5' || q.type === 'nps') return one(q.id) != null;
       return q.minLen ? txt(q.id).length >= q.minLen : txt(q.id) !== '';
     }
+    // an "Other" pick needs its text; an opened follow-up needs its answer (the worker checks both too)
+    const otherOpen = (q) => q.hasOther && !document.getElementById('other-' + q.id).hidden;
+    const revealOpen = (q) => q.reveal && !document.getElementById('reveal-' + q.reveal.fieldId).hidden;
+    // a worker id (question, follow-up, name, country) -> the block to light up
+    const qEl = (id) => document.getElementById('q-' + id) || document.getElementById('reveal-' + id)?.closest('.q');
 
     // ── submit ────────────────────────────────────────────────────────────
     form.addEventListener('submit', async (e) => {
@@ -297,7 +326,7 @@ const clientConfig = {
       // honeypot → pretend success, send nothing
       if (form.querySelector('[name="_gotcha"]').value) {
         form.hidden = true;
-        show(t.thanks, true);
+        show(t.pending, true);
         return;
       }
 
@@ -306,63 +335,62 @@ const clientConfig = {
         return;
       }
 
-      // required questions (incl. the DRIFT bar's "≥40 chars" open answers), then name, country, email
-      const missing = CFG.questions.filter((q) => q.required && !answered(q)).map((q) => 'q-' + q.id);
+      // the quick check here (required, "Other" text, opened follow-ups, the ≥40-char answers, name, country,
+      // email); the worker re-checks all of it AND whether the text reads like a real answer
+      const missing = [];
+      for (const q of CFG.questions) {
+        if ((q.required && !answered(q)) || (otherOpen(q) && !txt(q.id + '_other'))) missing.push(q.id);
+        if (revealOpen(q) && !txt(q.reveal.fieldId)) missing.push(q.reveal.fieldId);
+      }
       const name = nameIn.value.trim();
       const country = countryIn.value.trim();
       const email = emailIn.value.trim();
-      if (!name) missing.push('q-name');
-      if (!country) missing.push('q-country');
-      if (!EMAIL_RE.test(email)) missing.push('q-email');
-      if (missing.length) {
-        missing.forEach((id) => document.getElementById(id)?.classList.add('invalid'));
-        show(missing.length === 1 && missing[0] === 'q-email' ? t.badEmail : t.requiredMissing, false);
-        document.getElementById(missing[0])?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (!name) missing.push('name');
+      if (!country) missing.push('country');
+      if (missing.length || !EMAIL_RE.test(email)) {
+        flag(missing, []);
+        if (!EMAIL_RE.test(email)) document.getElementById('q-email').classList.add('invalid');
+        show(missing.length ? t.missing : t.badEmail, false);
+        (qEl(missing[0]) || document.getElementById('q-email')).scrollIntoView({ behavior: 'smooth', block: 'center' });
         return;
       }
 
-      // relay payload (form + email are the relay's; the rest goes to Formspree): the tester first, then each
-      // answer under its question text, choice codes swapped for their labels, "Other" text inside its answer
-      // (empties left out, so a full form is ~26 fields, under the relay's 30)
-      const label = (q, v) => (v === 'other' ? 'Other' : q.choices[v] || v);
-      const payload = {
-        form: 'drift_feedback',
-        email,
-        'First name': name,
-        Country: country,
-        _subject: 'DRIFT beta feedback: ' + name + ' (' + country + ')',
-      };
+      // the raw answers by question id; the worker checks them, mints the code and writes the team's copy
+      const answers = {};
       for (const q of CFG.questions) {
-        let v = '';
-        if (q.type === 'single') v = one(q.id) ? label(q, one(q.id)) : '';
-        else if (q.type === 'multi') v = many(q.id).map((c) => label(q, c)).join(', ');
-        else if (q.type === 'likert5') v = one(q.id) === 'na' ? 'N/A' : one(q.id) ? one(q.id) + ' / 5' : '';
-        else if (q.type === 'nps') v = one(q.id) != null ? one(q.id) + ' / 10' : '';
-        else v = txt(q.id);
-        if (q.hasOther && v) {
-          const o = txt(q.id + '_other');
-          if (o) v = v.replace('Other', 'Other: ' + o);
-        }
-        if (v) payload[q.label] = v;
-        if (q.reveal) {
-          const tx = txt(q.reveal.fieldId);
-          if (tx && !document.getElementById('reveal-' + q.reveal.fieldId).hidden) payload[q.reveal.label] = tx;
-        }
+        const v = q.type === 'multi' ? many(q.id) : q.type === 'text' || q.type === 'shorttext' ? txt(q.id) : one(q.id);
+        if (Array.isArray(v) ? v.length : v) answers[q.id] = v;
+        if (otherOpen(q)) answers[q.id + '_other'] = txt(q.id + '_other');
+        if (revealOpen(q)) answers[q.reveal.fieldId] = txt(q.reveal.fieldId);
       }
+      const payload = { email, name, country, answers };
 
       const submitBtn = form.querySelector('button[type="submit"]');
       if (submitBtn?.getAttribute('aria-disabled') === 'true') return;
       submitBtn?.setAttribute('aria-disabled', 'true');
       try {
-        const res = await fetch(CFG.onceUrl, {
+        const res = await fetch(CFG.url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         });
         const j = await res.json().catch(() => null);
-        if (j && j.ok) {
+        if (j && j.ok && j.code) {
           form.hidden = true;
-          show(j.already ? t.already : t.thanks, true);
+          status.hidden = true;
+          codeVal.textContent = j.code;
+          codeBox.hidden = false;
+          codeBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else if (j && j.ok) {
+          form.hidden = true;
+          show(j.already ? t.already : t.pending, true);
+        } else if (j && j.error === 'incomplete') {
+          const miss = j.missing || [], weak = j.weak || [];
+          flag(miss, weak);
+          show([miss.length && t.missing, weak.length && t.weak].filter(Boolean).join(' '), false);
+          qEl(miss[0] || weak[0])?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else if (j && j.error === 'busy') {
+          show(t.busy, false);
         } else if (j && j.error === t.badEmail) {
           document.getElementById('q-email').classList.add('invalid');
           show(t.badEmail, false);
@@ -552,6 +580,28 @@ const clientConfig = {
     .df-status.ok { font: 400 26px/1.2 var(--d-f-lcd); letter-spacing: .03em; color: var(--d-white-ink); text-shadow: 0 0 8px rgba(242, 76, 240, .6); }
     .df-status.err { font: 500 15px/1.45 var(--d-f-head); letter-spacing: .04em; color: var(--d-pink-ink); }
     #beta-form[hidden] + .df-status { margin-top: 0; }
+
+    /* the reward: the code as a lit readout on sunk glass */
+    .df-code {
+      margin: 0 auto; max-width: 620px; padding: 26px 24px 22px;
+      display: grid; justify-items: center; gap: 14px; text-align: center; border-radius: 6px;
+      background: radial-gradient(120% 100% at 50% 40%, #14061f 0%, #0b0314 70%);
+      box-shadow: 0 0 0 1px rgba(4, 2, 8, .9), 0 1px 0 1px rgba(255, 240, 255, .07), inset 0 5px 8px rgba(0, 0, 0, .7), inset 0 0 0 1px rgba(180, 107, 255, .28);
+    }
+    .df-code[hidden] { display: none; }
+    .drift-page .df-code-kicker { font: 400 clamp(11px, 1.2vw, 13px) / 1.4 var(--d-f-pix); letter-spacing: .1em; text-transform: uppercase; color: var(--d-hot); text-shadow: var(--d-glow-pink); }
+    .df-code-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; justify-content: center; }
+    .df-code-val {
+      font: 400 clamp(34px, 6vw, 48px) / 1 var(--d-f-lcd); letter-spacing: .12em;
+      color: var(--d-white-ink); text-shadow: 0 0 10px rgba(242, 76, 240, .8), 0 0 2px #fff;
+      user-select: all;
+    }
+    .df-code-copy {
+      min-height: 44px; padding: 6px 16px; cursor: pointer; border-radius: 4px;
+      font: 400 20px/1 var(--d-f-lcd); letter-spacing: .08em; text-transform: uppercase; color: #f0e2ff;
+      background: #1d0b2c; border: 1px solid rgba(255, 79, 216, .6);
+    }
+    .df-code-copy:hover { border-color: var(--d-hot); background: #26103a; }
 
     @media (max-width: 600px) {
       .df-panel { padding-left: clamp(18px, 5vw, 44px); padding-right: clamp(18px, 5vw, 44px); }

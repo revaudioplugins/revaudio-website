@@ -83,13 +83,12 @@ export const site = {
 
   /**
    * DRIFT Beta feedback form (src/pages/drift/feedback.astro). Its own
-   * Formspree form (like affiliateFormEndpoint). One response per email: the
-   * page posts to the same /form-once relay as the newsletter + affiliate
-   * forms (form 'drift_feedback'), which forwards here. Changing the id?
-   * Update FORM_ONCE in the license worker too. The page keeps its payload
-   * inside the relay's limits (30 string fields, 64-char keys, 16 KB).
-   * While the id is REPLACE_WITH_FORM_ID the form shows an honest "opens
-   * shortly" notice and never pretends to capture.
+   * Formspree form (like affiliateFormEndpoint), written by the license
+   * worker's POST /drift-feedback (not by the page): it checks every answer,
+   * allows one form per email, mints the $30-off DRIFT code and sends the
+   * team's copy here. Changing the id? Update DRIFT_FB_FORMSPREE in the
+   * worker too. While the id is REPLACE_WITH_FORM_ID the page shows an honest
+   * "opens shortly" notice and never pretends to capture.
    */
   driftFeedbackFormEndpoint: 'https://formspree.io/f/xgaowgkb',
 
