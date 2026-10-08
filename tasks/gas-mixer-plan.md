@@ -115,6 +115,29 @@ Yoni: "lets embedd it in the gas page locally".
   - phones: the 1600 px stage only scales down (unreadable at 390 px); step 6
   - not pushed: a push to main is a live deploy
 
+## Bench round 3 (2026-10-08): knob numbers, tightness pass, new art
+
+Yoni: "the numbers on the knob are not aligned well, align them so it will be centered and non intrusive / make a
+tightness check and maybe create some new assets just to make it more tight and sexy and unique".
+- **Knob numbers.** They were centred on the PNG box, but the tube and knob sit ~3 css px higher (the ring-tank
+  photo is shot from slightly below), so 0/8 sat low on the rim and 4 was clipped. Fix: `numPos()` puts each number at
+  the middle of the brass band along its own ray from the knob axis (band measured from ring-tank.png: outer rim r
+  165 about (170,170), inner = the tube's outer wall COUT). They are now engraved small (23 px dial units ~ 8.4 css px,
+  dark fill + light lip) and only the set detent lights (amber; 8 in red; 0 lit when the GAS jewel is off). Measured:
+  0/8 and 2/6 are mirror-symmetric to 0.5 px. Rule folded into wiki design-language.md (Law 5).
+- **Tightness audit** (script measures every control's box):
+  - track row before: control centres spread from 51 to 67 px; gaps 14-20 px. After: every control on y 66, 16 px
+    gaps (S-M pair 10), 18 px margins both sides. Column heads re-centred over their controls.
+  - master row before: centres 86-108, gaps 36-44 px, right margin 106 vs left 24. After: every block centred on
+    y 103, 62 px gaps, 18 px margins.
+- **New art** (`tools/gas-mixer/gen_assets.py` + `process_gen.py`, gpt-image-1, house lamp prompt):
+  - `tag-blank`: a blank stamped brass gas-pump tag with two screws; the track names are engraved into it in CSS.
+    Replaces the CSS name plates.
+  - `fuel-gauge`: a 1950s chrome fuel gauge, E · 1/2 · F · FUEL + pump icon, no needle. Replaces the VU as the master
+    meter: E = quiet, F = loud. The needle is code: it pivots on the printed brass cap (50.76 % / 77.03 %) and swings
+    +/-45 deg to the printed arc ends (measured on the render).
+- Re-exported to `public/gas-mixer/` (18 images, 232 KB). Verified on the dev server GAS page: plays, 0 errors.
+
 ## Build steps
 
 | # | Owner | Step | Done when |

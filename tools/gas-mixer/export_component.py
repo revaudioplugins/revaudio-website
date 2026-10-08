@@ -51,6 +51,8 @@ IMGS = {
     'rl-arm-plate.png':                  ('rl-arm-plate.webp', 128),
     'start-button.png':                  ('start-button.webp', 208),
     'sl-paper.png':                      ('sl-paper.webp', 472),
+    'tag-blank.png':                     ('tag-blank.webp', 320),
+    'fuel-gauge.png':                    ('fuel-gauge.webp', 340),
 }
 def reimg(t):
     t = t.replace('assets/gas-mixer/img/', URL + 'img/')
