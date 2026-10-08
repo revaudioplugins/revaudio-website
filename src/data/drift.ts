@@ -80,6 +80,11 @@ export const drift = {
   screenshotReady: false,
   /** FX RANDOMIZE confirmed in the Oct 10 build. */
   randomizeInBuild: false,
+
+  /** DRIFT leads the homepage: first slide of the plugin carousel + first word-wall panel, even while
+   *  catalog status is 'in-development' (Dan 2026-10-08, "first slide until Nov 1"). Flip false at release
+   *  and DRIFT drops back to its catalog slot. */
+  homeLead: true,
 };
 
 export const formatsMac = () => (drift.aaxReady ? 'VST3 · AU · AAX' : 'VST3 · AU');

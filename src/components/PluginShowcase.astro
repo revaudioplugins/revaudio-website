@@ -9,6 +9,8 @@
 import { Image } from 'astro:assets';
 import { bySlug, isBuyable, dlGateId } from '../data/plugins';
 import { site } from '../data/site';
+import { drift } from '../data/drift';
+import DriftCard from './drift/DriftCard.astro';
 import arrowBtn from '../assets/showcase/arrow-btn.png';
 import revlimiterShot from '../assets/plugins/revlimiter-hero.png';
 import comingSoonPlate from '../assets/plugins/coming-soon-plate.png';
@@ -79,14 +81,16 @@ const SLIDES = [
     },
   },
   {
+    // DRIFT draws its own card (drift/DriftCard.astro: the arcade cabinet with
+    // its own key); only name and slug are read here.
     slug: 'drift',
-    name: 'Drift',
+    name: 'DRIFT',
     titleHtml: 'DRIFT',
     titleClass: 'drift',
-    shot: comingSoonPlate, shotAlt: 'Drift, coming soon',
-    catchphrase: 'Your sound, sliding. SKRRT!',
-    oneliner: 'Send your selected freq. band to a trip across the stereo field.',
-    priceHtml: 'Target 2026',
+    shot: comingSoonPlate, shotAlt: 'DRIFT',
+    catchphrase: 'Let your sound take the wheel.',
+    oneliner: 'A panner you steer like a drift car.',
+    priceHtml: '',
     style: {
       title:    { left: 132, top: 22,  ff: "'Bebas Neue', sans-serif", fw: 400, fs: 86, ls: 0 },
       sub:      { left: 135, top: 104, ff: "'Bebas Neue', sans-serif", fw: 400, fs: 22, ls: 0 },
@@ -121,10 +125,17 @@ const SLIDES = [
   // 2026-08-03): a "Target 2026" slide in the homepage's prime slot sells
   // nothing and reads roadmap-company. Slide defs for in-development plugins
   // stay above with their bench-tuned styles — they re-enter the rotation by
-  // themselves the day their status flips to live.
+  // themselves the day their status flips to live. DRIFT is the exception
+  // while drift.homeLead is on: its season page takes trial sign-ups now.
   const p = bySlug(s.slug);
+  if (s.slug === 'drift' && drift.homeLead) return true;
   return p && p.status !== 'in-development';
 });
+// DRIFT leads the rotation through its launch (drift.homeLead, Dan 2026-10-08).
+if (drift.homeLead) {
+  const k = SLIDES.findIndex((s) => s.slug === 'drift');
+  if (k > 0) SLIDES.unshift(...SLIDES.splice(k, 1));
+}
 
 // Add-to-cart chip, one per slide — the SAME three branches as the /store card
 // (PluginCard): a gated plugin opens the trial-gate modal, a buyable one feeds
@@ -221,6 +232,10 @@ const peekClass = (i: number) => {
                 HTML and unreadable to assistive tech), so the link became a
                 sibling overlay sitting under the chip in z-order instead. */}
             <a class="sc-hit" href={`/${s.slug}`} aria-label={`${s.name}, more details`}></a>
+            {s.slug === 'drift' ? (
+              <DriftCard />
+            ) : (
+            <Fragment>
             <div class="sec sc-titlewrap" style={`top:${s.style.title.top}px`}>
               <span class={`sc-title ${s.titleClass}`} style={font(s.style.title)} set:html={s.titleHtml} />
             </div>
@@ -248,6 +263,8 @@ const peekClass = (i: number) => {
             {CART[i] && (CART[i]!.href
               ? <a class="sc-cart" href={CART[i]!.href!}>{CART[i]!.label}</a>
               : <button type="button" class="sc-cart" {...CART[i]!.attrs}>{CART[i]!.label}</button>
+            )}
+            </Fragment>
             )}
           </div>
         ))}
@@ -559,11 +576,6 @@ const peekClass = (i: number) => {
   /* Deep brand red, lifted from rgb(146,3,1) (2:1 on the stage) to clear WCAG
      1.4.3 large-text 3:1 on --bg-1 while staying in the oxide/blood-red family. */
   .sc-title :global(.rev) { color: rgb(204, 26, 14); }
-  .sc-title.drift {
-    background: linear-gradient(115deg, #c08bff, #8b3cff 42%, #e23bff 78%, #ff6ad5);
-    -webkit-background-clip: text; background-clip: text; color: transparent;
-    filter: drop-shadow(0 0 22px rgba(150, 60, 255, 0.35));
-  }
   /* Registered so gas-slosh below can INTERPOLATE them — unregistered custom
      properties snap between keyframes instead. Tilt = the liquid surface
      leaning; rise = the whole fuel level bobbing up/down. */

@@ -1,3 +1,8 @@
+> **Added 2026-10-08 (homepage carousel DRIFT card, `src/components/drift/DriftCard.astro`):** `license-crt-plate.png`
+> (1188x1090) = Drift `Source/ui/public/assets/arcade/license_crt_plate.png` copied as is (the licence window's CRT plate,
+> tools/make-license-plate.py there). The window on its glass is `src/assets/showcase/drift-window-init.png` (1725x912): the
+> plugin UI rendered headless from Drift main 6144b8c (`Source/ui/public/index.html` served locally, no host), preset
+> Init, no race loaded, so no F1 names or circuits (Decision 19).
 > **Added 2026-10-03 (Dan's pick "3" on a page bench over rolls 1/2):** `tv-frame-3.png` (2636x1844, RGBA) — the keep-it TV
 > bezel, the plugin's CRT cabinet direction, generated blank by `tools/gen-drift-tv-frame.sh` (gpt-image-1, text-only, no type),
 > cropped, 2x Lanczos + unsharp, bezel runs smoothed along their length, the screen opening flattened under the tube. The livery

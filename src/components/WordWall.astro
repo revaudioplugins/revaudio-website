@@ -18,13 +18,16 @@ import GarageWall from './GarageWall.astro';
 import rlImg from '../assets/plugins/revlimiter-hero.png';
 import gasImg from '../assets/plugins/gas-hero.png';
 import rrImg from '../assets/plugins/radioroulette-hero.png';
+import driftImg from '../assets/showcase/drift-window-init.png';
+import { drift } from '../data/drift';
 
 /* One panel per plugin in the carousel rotation. The panel whose slug matches
    the centred slide is the visible one; PluginShowcase dispatches
    `showcase:change` {slug} on every move and the script below swaps panels.
    First panel = the carousel's first slide (RevLimiter), visible at load with
    the scroll-reveal stagger; the others enter with a CSS stagger on swap.
-   Keep the order in sync with SLIDES in PluginShowcase.astro. */
+   Keep the order in sync with SLIDES in PluginShowcase.astro (DRIFT goes
+   first while drift.homeLead is on, same as the carousel). */
 type Word = { w: string; o: number; hot?: boolean };
 type Panel = {
   slug: string;
@@ -36,6 +39,30 @@ type Panel = {
   blurb: string;
 };
 const panels: Panel[] = [
+  // DRIFT: only while it leads the carousel (drift.homeLead). The window is
+  // rendered from Drift main 6144b8c (preset Init, no race loaded: no F1
+  // names, Decision 19), the same shot as the carousel card's arcade screen.
+  // Words = what a panner does.
+  ...(drift.homeLead
+    ? [{
+        slug: 'drift',
+        name: 'DRIFT',
+        words: [
+          { w: 'Moving',  o: 0.5 },
+          { w: 'Steered', o: 0.72 },
+          { w: 'Sliding', o: 1, hot: true },
+          { w: 'Wide',    o: 0.72 },
+          { w: 'Alive',   o: 0.5 },
+        ],
+        img: driftImg,
+        alt: 'DRIFT plugin window: the steering wheel over the gauges, BAND SELECT and STEREO IMAGER on the left, the effects and the TRACKS screen on the right',
+        blurb:
+          `A panner you steer like a drift car. Steer by hand with the wheel, or hand it to a track shape locked to your tempo. ` +
+          (drift.phase === 'preopen' ? `Free ${drift.trialDays}-day trial, by email ${drift.trialOpensDay}.`
+            : drift.phase === 'open' ? `Free ${drift.trialDays}-day trial, by email.`
+            : `On sale ${drift.releaseLabel}.`),
+      }]
+    : []),
   {
     slug: 'revlimiter',
     name: 'RevLimiter',
