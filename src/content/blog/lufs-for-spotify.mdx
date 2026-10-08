@@ -1,0 +1,134 @@
+---
+title: "LUFS for Spotify: what −14 really means for your master"
+seoTitle: "LUFS for Spotify: What −14 Means for Your Master"
+description: "LUFS for Spotify, straight from Spotify's own pages: the −14 LUFS default, the Loud and Quiet settings, true-peak limits, and what happens to loud masters."
+kicker: "Streaming loudness"
+pubDate: 2026-10-08
+readMinutes: 8
+---
+import FigSpotifyNormalize from '../../components/blog/FigSpotifyNormalize.astro';
+
+Search "LUFS for Spotify" and you get one number, −14, and a lot of arguments about it. The number is real. But what it means for your master is easy to get wrong in both directions: some people crush their tracks to win a loudness race Spotify cancels out, and others play it safe and end up quieter than they meant to be.
+
+Here is how it actually works, taken from Spotify's own help pages for artists (checked 8 October 2026), with what each rule means when you sit down to master.
+
+<aside class="readout" aria-label="Short version">
+  <p class="readout-title">The short version</p>
+  <ul>
+    <li>Spotify plays tracks at −14 LUFS integrated by default, measured with the ITU 1770 standard.</li>
+    <li>Louder masters are turned down. Quieter masters are turned up, but only as far as their true peak allows.</li>
+    <li>Premium listeners can pick Loud (−11 LUFS), Normal (−14) or Quiet (−19).</li>
+    <li>Keep true peak below −1 dBTP. If your master is louder than −14 LUFS, keep it below −2 dBTP.</li>
+    <li>The web player and third-party devices like TVs and speakers don't normalize.</li>
+    <li>Your file is never changed. Normalization is only a volume change at playback.</li>
+  </ul>
+</aside>
+
+## What is LUFS?
+
+LUFS is the unit loudness meters use for how loud audio sounds, not how high its peaks go. The EBU's metering spec uses LUFS for an absolute reading and LU for the difference between two readings. The measurement method comes from the broadcast standard ITU-R BS.1770, which Spotify names as the standard it uses.
+
+A loudness meter usually shows three readings. The EBU's metering specification defines them: **momentary** loudness over a 0.4 second window, **short-term** loudness over 3 seconds, and **integrated** loudness over the whole programme, with gating as described in BS.1770. The gate ignores silence below −70 LUFS and passages more than 10 LU below the overall level, so a quiet intro or a fade doesn't drag the number down. Spotify's mastering tips talk in integrated LUFS: one number for the whole song.
+
+Peak level is a different meter. A track can peak right at the ceiling and still measure quiet in LUFS, if the peaks are sharp and the body of the sound is low. That difference between peaks and loudness is the whole game in mastering, and it's why the two numbers come with separate rules on Spotify.
+
+## LUFS for Spotify: the numbers
+
+Spotify's loudness normalization page states that it adjusts tracks to −14 dB LUFS according to the ITU 1770 standard. A few details matter more than the headline number.
+
+- **It happens at playback.** Spotify measures loudness when you upload, but doesn't process or change your audio. Only the playback volume moves.
+- **Albums are treated as a whole.** When someone plays an album, the whole album gets one gain change, so your quiet songs stay as quiet as you meant. In shuffle or in playlists, each track is adjusted on its own.
+- **Listeners can choose.** Premium listeners can set the level in the app: **Loud** at −11 LUFS, **Normal** at −14 LUFS and **Quiet** at −19 LUFS.
+- **Lossless too.** The page says normalization applies to all playback formats, including lossless FLAC.
+- **Not everywhere.** The web player and third-party devices such as TVs or speakers don't use loudness normalization.
+
+## What happens to a loud master on Spotify
+
+If your master measures louder than −14 LUFS, Spotify applies negative gain until it plays at −14 LUFS. In Spotify's words, this lowers the volume compared to the master, and no additional distortion occurs. It's a plain volume fader.
+
+So a master at −8 LUFS plays 6 dB quieter than it left your studio. It doesn't win any loudness. What it keeps is whatever the limiting did to it: flatter drums and less space between quiet and loud.
+
+Spotify's page on tracks that sound quieter than expected makes the comparison itself. A very dynamic track mastered to −14 LUFS keeps its peak levels intact. A loud master, at around −6 LUFS, is reduced in volume. Both play at the same perceived loudness, but the dynamic track's peaks may feel louder in contrast.
+
+<FigSpotifyNormalize />
+
+## What happens to a quiet master
+
+If your master is quieter than −14 LUFS, Spotify applies positive gain, but carefully. It considers the track's headroom and leaves 1 dB of headroom for lossy encodings.
+
+Spotify gives its own example: a track at −20 LUFS with a true peak of −5 dBFS is only lifted to −16 LUFS. Turning it up the full 6 dB would push its peaks past the ceiling, so Spotify stops at 4 dB of gain. That track will sit 2 dB below its neighbours in a playlist.
+
+The **Loud** setting works differently. Spotify sets that level regardless of true peak and applies a limiter to prevent clipping in soft, dynamic tracks. That limiter engages at −1 dB (sample values) with a 5 ms attack and a 100 ms decay. So on Loud, a very dynamic master can get limited by Spotify's own limiter instead of yours.
+
+This is the real argument against mastering too quietly. Very dynamic material with sharp peaks may not reach −14 LUFS on Spotify at all.
+
+## True peak: −1 dBTP, or −2 if you master loud
+
+Spotify's mastering tips are specific:
+
+- Keep true peak below **−1 dBTP**. This is best for lossy formats (Ogg/Vorbis and AAC) and makes sure no extra distortion is introduced when the track is transcoded.
+- If your master is louder than −14 LUFS integrated, keep true peak below **−2 dBTP**. Louder tracks are more likely to distort when encoded for streaming.
+
+**True peak** is not the same as the sample peak your DAW meter shows. The waveform a converter rebuilds between samples can rise higher than any single sample, and lossy encoding can add more on top. A limiter set to −0.1 dB in sample peak can still overshoot. Set the ceiling in dBTP, on a limiter that detects true peak. We explain why in [how a limiter works](/blog/how-does-a-limiter-work/).
+
+Spotify's page also notes that very loud masters with true peaks above −2 dB can distort during encoding, which can raise the perceived loudness without improving the quality.
+
+## Should you master to −14 LUFS?
+
+Spotify's own tip is to target −14 LUFS integrated. That's the level where Spotify does nothing to your track on the default setting. But it's a recommendation, not a rule, and the honest answer depends on what you want.
+
+**Reasons to stay near −14 LUFS:**
+
+- Nothing gets turned down, and your transients stay intact.
+- You only need the −1 dBTP ceiling, not −2.
+- A quiet, peaky master risks not being lifted to −14 at all. A master that's already there doesn't have that problem.
+
+**Reasons some engineers go louder:**
+
+- The genre sound. Some styles rely on the density that heavy compression and limiting create, and that sound survives being turned down.
+- Places without normalization, like the web player and third-party devices Spotify mentions.
+- One master used everywhere, not only on Spotify.
+
+Whatever you choose, judge the master at the level Spotify will play it. If your master measures −9 LUFS, turn it down by 5 dB in your monitoring and listen again next to a −14 LUFS reference. That's roughly what a Spotify listener on the default setting hears. If it still sounds great, ship it. If it now sounds small and flat next to the reference, you've traded punch for loudness that Spotify took away.
+
+## How to check your master before you upload
+
+1. **Measure integrated LUFS over the whole song**, from the first note to the end. Not a loop of the chorus.
+2. **Read true peak**, not sample peak. Below −1 dBTP, or below −2 dBTP if you're louder than −14 LUFS.
+3. **Watch short-term LUFS** on the loudest section and loudness range (LRA) across the song. If the chorus no longer lifts above the verse, the dynamics went somewhere they shouldn't.
+4. **Compare against a reference at matched loudness.** Turn the louder of the two down until both measure the same, then listen. Louder always sounds better, so take loudness out of the comparison.
+5. **Check the top end.** Spotify notes that inaudible high frequencies can make its loudness algorithm overestimate how loud your track is, because ITU 1770 doesn't apply a low-pass filter. Energy you can't hear can still get your track turned down.
+
+If you're working on getting the track there in the first place, our guide on [how to make music louder](/blog/how-to-make-music-louder/) goes through the whole chain, from the low end in the mix to the limiter settings.
+
+<aside class="garage-note">
+  <p><strong>From the garage.</strong> We built <a href="/revlimiter/">RevLimiter</a> to make these checks part of mastering, not a separate step. It goes last on your master bus and shows true peak, max peak, LUFS-M/S/I, LRA and per-band gain reduction while you work. Auto gain matches the level so you hear the processing, not the volume, and two A/B slots let you flip between settings. <a href="/revlimiter/#trial">Try the full plugin free for 30 days</a>, or <a href="/revlimiter/#hear-it">hear before and after</a> first. $49, two machines, no iLok.</p>
+</aside>
+
+## Questions people ask
+
+### Is −14 LUFS too quiet?
+
+Not on Spotify. It's the level Spotify plays everything at by default, so a −14 LUFS master sits next to a −6 LUFS master at the same perceived loudness. It can sound quiet in your DAW next to unnormalized commercial tracks, which is why you should compare at matched loudness.
+
+### Does Spotify turn up quiet songs?
+
+Yes, but only until the song's true peak would leave less than 1 dB of headroom. Spotify's example: a −20 LUFS track peaking at −5 dBFS is lifted to −16 LUFS, not −14. On the Loud setting, Spotify lifts to −11 LUFS regardless of peak and uses a limiter to stop clipping.
+
+### Does Spotify change my audio file?
+
+No. Spotify measures loudness at upload but says it doesn't process or change your tracks before playback. Normalization is a volume change while the track plays. You send one high-quality stereo master per track.
+
+### Do I need a different master for Spotify's lossless playback?
+
+No. Spotify says its normalization and mastering guidelines apply to lossless playback too, and that it prepares both the compressed and lossless versions from the one master you deliver.
+
+<section class="sources" aria-label="Sources">
+  <p class="sources-title">Sources (checked 8 October 2026)</p>
+  <ul>
+    <li><a href="https://support.spotify.com/us/artists/article/loudness-normalization/" rel="noopener" target="_blank">Spotify for Artists: Loudness normalization on Spotify</a> (−14 LUFS per ITU 1770; Loud −11, Normal −14, Quiet −19; 1 dB headroom for lossy; −20 LUFS / −5 dBFS example lifted to −16 LUFS; Loud-mode limiter at −1 dB, 5 ms attack, 100 ms decay; true peak below −1 dBTP, below −2 dBTP above −14 LUFS; web player and third-party devices not normalized)</li>
+    <li><a href="https://support.spotify.com/us/artists/article/track-not-as-loud-as-others/" rel="noopener" target="_blank">Spotify for Artists: Track not as loud as others?</a> (dynamic −14 LUFS vs loud −6 LUFS master; high-frequency measurement note; true peaks above −2 dB)</li>
+    <li><a href="https://tech.ebu.ch/docs/tech/tech3341.pdf" rel="noopener" target="_blank">EBU Tech 3341: Loudness Metering, "EBU Mode" metering</a> (momentary 0.4 s, short-term 3 s, integrated gated per BS.1770 at −70 LUFS absolute and 10 LU relative; LUFS vs LU)</li>
+    <li><a href="https://www.itu.int/rec/R-REC-BS.1770" rel="noopener" target="_blank">ITU-R BS.1770: Algorithms to measure audio programme loudness and true-peak audio level</a></li>
+  </ul>
+</section>

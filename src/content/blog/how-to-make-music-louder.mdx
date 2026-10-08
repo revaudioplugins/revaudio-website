@@ -1,0 +1,127 @@
+---
+title: "How to make music louder without wrecking the mix"
+seoTitle: "How to Make Music Louder Without Wrecking the Mix"
+description: "How to make music louder the right way: gain staging, compression and saturation before the limiter, a true-peak ceiling, and checking it all in LUFS."
+kicker: "Mastering how-to"
+pubDate: 2026-10-08
+readMinutes: 8
+---
+
+If you want to know how to make music louder, the honest answer is that no single plugin does it. A limiter pushed to the floor makes a track measure louder, but past a point it also makes it smaller, flatter and tiring to hear. Real loudness is built in stages, a little at a time, so that no one stage has to work hard.
+
+Think of tuning a car for speed: you sort the weight, gearing and tyres before you bolt on a bigger turbo. This guide walks the chain in that order, from the mix to the meter.
+
+<aside class="readout" aria-label="Short version">
+  <p class="readout-title">The short version</p>
+  <ul>
+    <li>Loudness is the average level. Peaks are the ceiling. Getting louder means raising the average without raising the peaks.</li>
+    <li>Fix the low end and the balance in the mix first. Most loudness problems start there.</li>
+    <li>Let compression, saturation and gentle clipping each take a little off the peaks before the limiter.</li>
+    <li>Set the limiter ceiling in true peak: below −1 dBTP for streaming, below −2 dBTP if the master is very loud.</li>
+    <li>Check the result on a LUFS meter and against a reference track at the same loudness.</li>
+    <li>Spotify turns loud masters down to −14 LUFS. Louder than that buys you nothing there.</li>
+  </ul>
+</aside>
+
+## What "louder" actually means
+
+Digital audio has a hard ceiling at 0 dBFS. Nothing goes past it. So when a commercial track sounds louder than yours, its peaks are not higher than yours. Both hit roughly the same ceiling. The difference is the space between the peaks and the body of the sound.
+
+In your mix, a snare hit might peak several dB above the vocal, the bass and the pads that carry most of the energy. Your ears judge loudness mostly by that body, not by the brief spikes on top. To make music louder, you shrink the gap: bring the peaks down a little, then turn the whole thing up so the peaks land at the ceiling again. The body is now higher, and the track sounds louder.
+
+You see that gap on two meters. **Peak** meters show the highest point. **Loudness** meters show how loud it feels, in LUFS. Integrated LUFS, one number for the whole song, is what Spotify uses to set its playback level.
+
+Every dB you take out of that gap costs something, because transients are what make drums punch. Squash them too far and the master measures louder but feels weaker.
+
+## How to make music louder: the order of operations
+
+Each step does a modest amount of work, so the total adds up without any one step sounding obvious.
+
+1. **Mix balance and low end.** Clear out what eats headroom without adding loudness.
+2. **Compression on tracks and buses.** Even out the performance and glue the parts together.
+3. **Saturation.** Round off peaks and add harmonics that read as density.
+4. **Clipping, lightly.** Shave the few sharpest transients.
+5. **The limiter, last.** Catch what's left and set the final ceiling.
+6. **Meter and compare.** Check integrated LUFS, true peak, and a reference at matched loudness.
+
+## Start in the mix, not the master
+
+Most "my master won't get loud" problems are mix problems.
+
+**Low end comes first.** Bass and kick usually carry the most energy in a mix, so they hit the limiter first and hardest. A high-pass filter on tracks that don't need deep lows (guitars, pads, vocals, many synths) frees up room that the limiter would otherwise spend on rumble. If the kick and bass fight for the same space, decide which one owns the very bottom.
+
+**Watch the extreme highs too.** Spotify's own help page on quiet tracks notes that inaudible high frequencies can make its loudness measurement read higher than the track really sounds, because ITU 1770 doesn't apply a low-pass filter. It can cost you loudness and give nothing back.
+
+**Leave headroom on the master bus.** If the mix bus clips before anything goes on it, every later stage starts from a damaged signal. Pull the faders down so the mix peaks comfortably below 0 dBFS.
+
+## Shave the peaks before the limiter
+
+A limiter is the last line of defence, not the loudness machine. If it has to remove 8 or 10 dB of peaks on its own, you will hear it: the kick loses its snap, the mix pumps, the bass gets crunchy. Share the work out instead.
+
+**Compression.** A compressor on the drum bus, or a gentle one across the mix, brings peaks a little closer to the body of the sound and glues the parts together. Slow attack lets the transient through for punch. Faster attack tames it. A couple of dB of gain reduction per stage is often plenty.
+
+**Saturation.** Saturation rounds the tips of the waveform and adds harmonics. Those harmonics fill in the sound, so the track reads as denser and louder without the meter peaking higher. If you want to try it free, our saturator [GAS](/gas/) is one option; any saturator you like will do the same job.
+
+**Clipping.** A clipper chops off anything above its ceiling, instantly. On very short peaks, like the front edge of a snare, it can be surprisingly clean, because the chopped part is over too fast to hear. Use it lightly on drums or before the limiter, so the limiter only has to catch what's left. Our article on [how a limiter works](/blog/how-does-a-limiter-work/) covers the limiter vs clipper difference in more detail.
+
+## Set up the limiter
+
+Put the limiter last on the master bus. Nothing with gain should come after it, or you lose the ceiling you set.
+
+1. **Set the ceiling in true peak.** Sample-peak meters miss peaks that form between samples. Spotify's guidance is to keep true peak below −1 dBTP, and below −2 dBTP if the master is louder than −14 LUFS integrated, because louder tracks are more likely to distort when encoded for streaming.
+2. **Push the input until you reach the loudness you want.** Play the loudest section and watch the gain reduction meter. A few dB on the biggest hits usually stays transparent. If you need far more than that, go back a step and let compression or clipping take some of the load.
+3. **Set the release by ear.** Too slow and the whole mix ducks in time with the kick. Too fast and the bass starts to distort, because the gain moves inside each cycle of the note.
+4. **Oversample when you push hard.** Heavy limiting creates high frequencies that fold back down as harsh aliasing. A higher internal rate keeps the top end clean.
+
+This is the stage [RevLimiter](/revlimiter/) is built for. It goes last on your master bus and combines multiband glue, analog-modelled saturation and an adaptive limiter with a clipper ceiling, so much of the peak control above can happen in one plugin. The redline is the threshold and the needle shows gain reduction, so you see how hard you're pushing.
+
+## Check it with a meter and a reference
+
+Your ears get used to whatever you've been playing, so you need two outside checks.
+
+**A loudness meter.** Read integrated LUFS over the whole song, short-term LUFS on the loudest section, and true peak for the ceiling. Loudness range (LRA) tells you how much the level moves between quiet and loud parts. If LRA has collapsed to almost nothing, the chorus may no longer lift above the verse.
+
+**A reference track.** Load a commercial song in a similar style into your session. Turn the louder of the two down until both play at the same integrated loudness, then compare. Now you hear the real differences in tone, punch and width instead of "one is louder."
+
+That level match matters more than any setting. Play the same master twice, one copy a little louder, and most people pick the louder one as better. Auto gain, which turns the processed signal back down to the input level, keeps the comparison fair while you tweak. RevLimiter has auto gain plus two A/B slots for exactly this comparison.
+
+## How loud should a master be?
+
+There is no single right number, but know where the track is going.
+
+Spotify normalizes playback to a default of −14 LUFS integrated. A louder master is turned down until it plays at −14 LUFS. A softer one is turned up, but only as far as its true peak allows. Spotify's help page says a dynamic track at −14 LUFS and a loud one at around −6 LUFS play at the same perceived loudness, and the dynamic track's peaks may feel louder in contrast.
+
+So on Spotify's default setting, extra loudness doesn't make you louder. It only changes how much punch you kept. We go through every Spotify number, the Loud and Quiet settings and the true-peak rules in [LUFS for Spotify](/blog/lufs-for-spotify/).
+
+A sensible way to work: make the master as loud as it can get while it still sounds better, not just bigger, at matched loudness. Then check the true peak, and check that the integrated number isn't far louder than you need.
+
+<aside class="garage-note">
+  <p><strong>From the garage.</strong> Want to try this chain on your own mix? <a href="/revlimiter/">RevLimiter</a> puts the glue, saturation, limiter and clipper ceiling in one plugin, with true peak, LUFS and LRA metering, oversampling up to 32×, and three engine modes: Cruise, Sport and NOS. <a href="/revlimiter/#trial">Start the free 30-day trial</a> of the full plugin, or <a href="/revlimiter/#hear-it">hear before and after</a> first. $49 if you keep it, no iLok.</p>
+</aside>
+
+## Questions people ask
+
+### Does a limiter make music louder?
+
+On its own, a limiter only stops peaks from going past a ceiling. The loudness comes from turning the input up into it: the limiter catches the peaks, so the rest of the track can sit higher. Push it too far and the track gets louder on the meter but flatter to the ear.
+
+### Why does my master distort when I make it louder?
+
+Usually one of three things: too much gain reduction in a single stage, a release so fast it reshapes the bass, or inter-sample peaks after a sample-peak ceiling. Share the peak control across several stages, slow the release, and set the ceiling in true peak.
+
+### Why does my song sound quieter than others on Spotify?
+
+Spotify plays songs at a matched loudness, so a song that sounds quieter at the same LUFS often has less density or a muddier balance. Spotify's own list of reasons also includes inaudible high frequencies inflating the measurement.
+
+### Should every song be mastered to −14 LUFS?
+
+Spotify's mastering tips suggest targeting −14 LUFS integrated, and a louder master will be turned down there. Many engineers still master louder for style or for places without normalization. Either way, keep true peak below −1 dBTP, or below −2 dBTP if you go louder than −14 LUFS.
+
+<section class="sources" aria-label="Sources">
+  <p class="sources-title">Sources (checked 8 October 2026)</p>
+  <ul>
+    <li><a href="https://support.spotify.com/us/artists/article/loudness-normalization/" rel="noopener" target="_blank">Spotify for Artists: Loudness normalization on Spotify</a> (−14 LUFS default, true peak below −1 dBTP, below −2 dBTP for masters louder than −14 LUFS)</li>
+    <li><a href="https://support.spotify.com/us/artists/article/track-not-as-loud-as-others/" rel="noopener" target="_blank">Spotify for Artists: Track not as loud as others?</a> (dynamic −14 LUFS vs loud −6 LUFS masters, high-frequency measurement note)</li>
+    <li><a href="https://www.itu.int/rec/R-REC-BS.1770" rel="noopener" target="_blank">ITU-R BS.1770: Algorithms to measure audio programme loudness and true-peak audio level</a></li>
+  </ul>
+</section>

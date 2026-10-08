@@ -1,0 +1,55 @@
+---
+// Four masters through Spotify's default (Normal) loudness normalization, using
+// the rules on Spotify for Artists' "Loudness normalization" page (checked
+// 2026-10-08): louder masters get negative gain down to -14 LUFS; softer
+// masters get positive gain, but only as far as their true peak allows while
+// leaving 1 dB of headroom. The -20 LUFS / -5 dBTP case is Spotify's own example.
+import { scale, num } from './svg';
+
+const TARGET = -14;        // LUFS, Spotify "Normal"
+const HEADROOM_TP = -1;    // dBTP, the headroom kept when lifting a soft master
+
+const masters = [
+  { lufs: -6, tp: -2 },
+  { lufs: -10, tp: -2 },
+  { lufs: -14, tp: -1 },
+  { lufs: -20, tp: -5 },
+].map((m) => {
+  const want = TARGET - m.lufs;
+  const gain = want <= 0 ? want : Math.min(want, HEADROOM_TP - m.tp);
+  return { ...m, gain, played: m.lufs + gain };
+});
+
+const W = 640, H = 330, X0 = 20, X1 = 620;
+const BASE = -24;
+const y = scale(BASE, -2, 262, 40);
+const colW = (X1 - X0) / masters.length;
+const BAR = 46, GAP = 8;
+
+const cols = masters.map((m, i) => {
+  const cx = X0 + colW * (i + 0.5);
+  const xIn = cx - GAP / 2 - BAR;
+  const xOut = cx + GAP / 2;
+  const gainTxt = m.gain === 0 ? '0 dB' : `${m.gain > 0 ? '+' : ''}${num(m.gain, 0)} dB`;
+  return { ...m, cx, xIn, xOut, gainTxt };
+});
+---
+<figure class="fig">
+  <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-labelledby="fig-spot-cap">
+    <line class="ax" x1={X0} x2={X1} y1={y(BASE)} y2={y(BASE)} />
+    {cols.map((c) => (
+      <g>
+        <rect class="bar-ghost" x={c.xIn} y={y(c.lufs)} width={BAR} height={y(BASE) - y(c.lufs)} />
+        <rect class="bar" x={c.xOut} y={y(c.played)} width={BAR} height={y(BASE) - y(c.played)} />
+        <text class="lbl" x={c.xIn + BAR / 2} y={y(c.lufs) - 8} text-anchor="middle">{num(c.lufs, 0)}</text>
+        <text class="lbl lbl-chrome" x={c.xOut + BAR / 2} y={y(c.played) - 8} text-anchor="middle">{num(c.played, 0)}</text>
+        <text class={`lbl lbl-strong ${c.gain < 0 ? 'lbl-hot' : c.gain > 0 ? 'lbl-brass' : ''}`} x={c.cx} y="22" text-anchor="middle">{c.gainTxt}</text>
+        <text class="lbl" x={c.cx} y={y(BASE) + 24} text-anchor="middle">mastered {num(c.lufs, 0)}</text>
+        <text class="lbl" x={c.cx} y={y(BASE) + 44} text-anchor="middle">peak {num(c.tp, 0)} dBTP</text>
+      </g>
+    ))}
+    <line class="ceil" x1={X0} x2={X1} y1={y(TARGET)} y2={y(TARGET)} />
+    <text class="lbl lbl-hot" x={X1} y={y(TARGET) - 6} text-anchor="end">−14 LUFS</text>
+  </svg>
+  <figcaption id="fig-spot-cap">Four masters on Spotify's default Normal setting. Dashed bar: the integrated loudness you delivered. Solid bar: the loudness it plays at. Numbers on top: the gain Spotify applies. Loud masters are simply turned down. The quiet one is only lifted until its true peak would reach −1 dB, so it stops at −16 LUFS (Spotify's own example).</figcaption>
+</figure>
