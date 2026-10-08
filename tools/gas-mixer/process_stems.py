@@ -1,6 +1,6 @@
 """GAS Mixer stems: Yoni's DAW renders through GAS 0.3.1 (MIX 50 %, DRIVE 2/4/6/8, voice per loop).
 Loudness-match every knob step to its loop's DRY (Yoni 2026-10-08), fix loop seams, one global trim so the loudest
-file peaks at -1 dBTP (4x). Writes 24-bit FLAC + manifest.json to bench/assets/gas-mixer/audio/."""
+file peaks at -1 dBTP (4x). Writes 24-bit FLAC + manifest.json + peaks.json (waveform lanes) to bench/assets/gas-mixer/audio/."""
 import os, json, numpy as np, soundfile as sf, pyloudnorm as pyln
 from scipy.signal import resample_poly
 SRC = r"C:\shirimmmmmm"
@@ -53,6 +53,12 @@ mix = {}
 for k in STEPS:
     m = sum(data[(s, k)] for s in STEMS)
     mix[k] = {"lufs": round(meter.integrated_loudness(m), 2), "tp": round(true_peak(m), 2)}
+# waveform lanes for the bench: max |sample| per column, every stem x knob step (small, loads before PLAY)
+COLS = 600
+peaks = {f"{st}_{k}": [round(float(c), 3) for c in np.abs(x).max(axis=1)[: L // COLS * COLS].reshape(COLS, -1).max(axis=1)]
+         for (st, k), x in data.items()}
+json.dump(peaks, open(os.path.join(OUT, "peaks.json"), "w"), separators=(",", ":"))
+
 man = {"sr": SR, "samples": L, "bpm": 70, "bars": 8, "plugin": "GAS 0.3.1, MIX 50 %, OUTPUT TRIM 0, HQ",
        "voices": {s: v for s, (_, v) in STEMS.items()}, "global_trim_db": round(trim, 2), "files": rep, "mix": mix}
 json.dump(man, open(os.path.join(OUT, "manifest.json"), "w"), indent=1)

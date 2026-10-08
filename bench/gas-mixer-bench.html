@@ -4,19 +4,19 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>GAS Mixer Bench</title>
 <!--
-  GAS page: the GAS Mixer bench, round 1 (2026-10-08). Plan: tasks/gas-mixer-plan.md.
+  GAS page: the GAS Mixer bench, round 2 (2026-10-08). Plan: tasks/gas-mixer-plan.md.
   Serve over http from bench/ (python -m http.server 8794); audio + image cuts live in bench/assets/gas-mixer/
-  (gitignored; audio rebuilt by tools/gas-mixer/process_stems.py, art copied from the GAS repo's
+  (gitignored; audio + peaks.json rebuilt by tools/gas-mixer/process_stems.py, art copied from the GAS repo's
   plugin/Source/ui/public/assets on origin/main).
 
-  Three loops (drums, bass, instruments), each on its own GAS faceplate: the plugin's walnut plate, DRIVE knob,
-  glass fuel tube and check-engine lamp. The knob has 5 detents, 0 2 4 6 8: 0 = the original DRY loop, 2-8 = real
-  GAS 0.3.1 renders by Yoni (MIX 50 %, one voice per loop), loudness-matched to their DRY. The small knob (GAS's MIX
-  knob) is the loop volume here. Player engine, cassette deck, RevLimiter preview and tutorial notes come from the
-  Station Mixer bench (bench/station-mixer-bench.html).
+  Round 2 (Yoni): a DAW-style track view like the Radio Roulette Station Mixer, not three GAS plugins. Three track
+  rows (drums, bass, instruments), each: name plate, volume (GAS's MIX knob), solo, mute and the GAS knob (DRIVE knob
+  + glass fuel tube, 5 detents 0 2 4 6 8: 0 = the original DRY loop, 2-8 = real GAS 0.3.1 renders by Yoni, MIX 50 %,
+  loudness-matched to DRY), then the track's lane: the waveform of what is playing, under a shared playhead.
+  Master row: cassette deck, GAS (all tracks dry / back), status LCD, VU, RevLimiter preview, free download.
 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600&family=VT323&family=Inter:wght@500;600&family=Marcellus&family=Permanent+Marker&family=Gochi+Hand&family=Yellowtail&family=Cinzel:wght@700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600&family=VT323&family=Inter:wght@500;600&family=Permanent+Marker&family=Gochi+Hand&family=Cinzel:wght@700&display=swap" rel="stylesheet">
 <style>
 :root{
   --brass:#c89a48; --brass-hi:#e6c078; --parchment:#ebdcb6; --amber:#d9a03c;
@@ -32,52 +32,46 @@ body{min-height:100vh;padding:28px 16px 60px}
 
 #fit{max-width:1600px;margin:0 auto;position:relative}
 #stage{position:absolute;left:0;top:0;width:1600px;transform-origin:0 0}
-.rig{position:absolute;left:260px;top:30px;width:1080px}
+.rig{position:absolute;left:250px;top:200px;width:1100px;user-select:none;-webkit-user-select:none}
 
-/* ===== one GAS faceplate per loop (the plugin's 400x595 plate, scaled) ===== */
-.pw{position:absolute;top:0;width:344px;height:512px}
-.gplate{position:absolute;left:0;top:0;width:400px;height:595px;transform:scale(.86);transform-origin:0 0;
-  filter:drop-shadow(0 22px 26px rgba(8,5,3,.8)) drop-shadow(0 4px 6px rgba(8,5,3,.6));user-select:none;-webkit-user-select:none}
-.plateskin{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;-webkit-user-drag:none;transition:filter .3s}
-.gplate.silent .plateskin,.gplate.silent .gzone,.gplate.silent .brand{filter:brightness(.5) saturate(.7)}
-.gzone,.brand{transition:filter .3s}
+/* ===== the console: walnut (GAS's dash) in a brass frame, brass rules between the rows ===== */
+.frame{border-radius:24px;padding:9px;
+  background:linear-gradient(180deg,#f0d690 0%,#c89a48 18%,#8a6326 52%,#b78a3e 80%,#e8c77e 100%);
+  box-shadow:0 0 0 1.5px #3a2610,0 30px 44px -10px rgba(8,5,3,.85),0 6px 10px rgba(8,5,3,.6),inset 0 1px 0 rgba(255,244,214,.7),inset 0 -1px 0 rgba(70,44,12,.7)}
+.wood{position:relative;border-radius:16px;overflow:hidden;
+  background:url("assets/gas-mixer/img/dash-walnut.png") -100px -300px/1240px auto no-repeat,#2a1609;
+  box-shadow:inset 0 3px 7px rgba(8,4,2,.9),inset 0 0 0 1.5px rgba(30,16,6,.9)}
+.rule{height:3px;background:linear-gradient(180deg,#f0d690,#a8792e 50%,#4a3212);box-shadow:0 1px 2px rgba(8,4,2,.7)}
 
-/* carved into the walnut: dark recessed fill, light catches the lower lip (GAS .brand .name) */
-.brand{position:absolute;left:0;width:400px;top:44px;text-align:center;line-height:1;pointer-events:none}
-.brand .name{display:inline-block;font:500 34px/1 Oswald,sans-serif;letter-spacing:9px;padding-left:9px;color:rgba(12,7,3,.66);
-  text-shadow:0 1px 0 rgba(255,236,200,.30),0 2px 2px rgba(255,224,176,.12),0 -1px 1px rgba(0,0,0,.92),0 -2px 3px rgba(0,0,0,.45)}
-/* small labels: brass-filled engraving (the carved recipe disappears at 11 px on the dark walnut) */
+/* engraved small labels (brass-filled; the carved recipe disappears at 11 px on dark walnut) */
 .carve{position:absolute;font:500 11px/1 Oswald,sans-serif;letter-spacing:3px;padding-left:3px;text-transform:uppercase;color:rgba(214,178,112,.78);
   text-shadow:0 -1px 0 rgba(0,0,0,.85),0 1px 0 rgba(255,236,200,.12);pointer-events:none;white-space:nowrap}
+.heads{position:relative;height:34px}
+.heads .carve{top:13px;transform:translateX(-50%)}
+.ruler{position:absolute;left:520px;width:544px;top:0;height:34px}
+.ruler span{position:absolute;top:10px;transform:translateX(-50%);font:600 12px/1 Oswald,sans-serif;color:rgba(214,178,112,.8);text-shadow:0 -1px 0 rgba(0,0,0,.85)}
+.ruler i{position:absolute;top:25px;width:1.5px;height:9px;background:rgba(214,178,112,.55)}
 
-/* check-engine lamp: lights at 8, the redline */
-.check{position:absolute;left:283px;top:36px;width:84px;height:84px;pointer-events:none}
-.check img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
-.check .glowic{inset:14%;width:72%;height:72%;opacity:.07;transition:opacity .25s;filter:saturate(.6)}
-.check.lit .glowic{opacity:1;animation:cePulse 1.1s ease-in-out infinite;filter:brightness(1.35) saturate(1.15) drop-shadow(0 0 8px rgba(255,160,40,.8))}
-@keyframes cePulse{50%{opacity:.55}}
-
-/* DRIVE = the GAS knob: brass mount, rotating skirt + face, static light; fuel tube around it */
-.gzone{position:absolute;left:30px;top:96px;width:340px;height:340px;transform:scale(.95);transform-origin:168.9px 163px;cursor:ns-resize;touch-action:none}
-.gzone svg{position:absolute;inset:0;pointer-events:none;z-index:3;overflow:visible}
-.gzone .ring{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none;filter:drop-shadow(0 6px 16px rgba(0,0,0,.55))}
-.gzone .mount{position:absolute;left:168.9px;top:163px;width:209px;height:209px;transform:translate(-50%,-50%);object-fit:contain;
-  pointer-events:none;z-index:4;filter:drop-shadow(0 8px 18px rgba(0,0,0,.6))}
-.rotor{position:absolute;left:168.9px;top:163px;width:157.3px;height:157.3px;margin:-78.65px 0 0 -78.65px;z-index:5;
-  filter:drop-shadow(0 5px 12px rgba(0,0,0,.55))}
-.rotor img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block;pointer-events:none;-webkit-user-drag:none}
-.rotor .dome{transform-origin:49.8037% 46.4005%;transform:scale(1,.937) rotate(var(--turn,0deg)) scale(1,1.067236)}
-.pdot{position:absolute;left:168.9px;top:163px;width:0;height:0;z-index:6;pointer-events:none}
-.pdot i{position:absolute;left:-3.5px;top:-40px;width:7px;height:7px;border-radius:50%;
-  background:radial-gradient(circle at 40% 32%,#f6ecd0,#ebdcb6 55%,#b8a678);box-shadow:0 1px 2px rgba(0,0,0,.6),0 0 5px rgba(235,220,182,.35)}
-.knoblight{position:absolute;left:168.9px;top:163px;width:157.3px;height:157.3px;z-index:7;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;
-  background:radial-gradient(ellipse 52% 40% at 30% 24%,rgba(255,255,255,.14) 0%,rgba(255,255,255,.05) 34%,transparent 62%),
-    radial-gradient(ellipse 50% 46% at 76% 80%,rgba(0,0,0,.28) 0%,rgba(0,0,0,.13) 40%,transparent 82%)}
-.gplate.bypass .liq{opacity:.22;transition:opacity .35s} .liq{transition:opacity .35s}
-.dnum{cursor:pointer;pointer-events:all}
+/* ===== a track row ===== */
+.track{position:relative;height:132px;transition:filter .3s}
+.track .ctl{transition:filter .3s}
+.track.silent .ctl{filter:brightness(.55) saturate(.7)}
+/* brass name plate (Station Mixer recipe: stamped, worn, screws each turned differently) */
+.tplate{position:absolute;left:18px;top:34px;width:142px;height:34px;border-radius:4px;
+  background:radial-gradient(60% 90% at 30% 20%,rgba(255,240,200,.35),rgba(255,240,200,0) 60%),radial-gradient(30% 50% at 82% 70%,rgba(60,36,10,.28),rgba(60,36,10,0)),
+    linear-gradient(180deg,#e6c078 0%,#c89a48 48%,#8f6a2c 100%);
+  box-shadow:0 2px 3px rgba(12,9,6,.75),inset 0 1px 0 rgba(255,244,214,.6),inset 0 -1px 0 rgba(70,44,12,.6);
+  font:600 14px/34px Oswald,sans-serif;letter-spacing:.2em;text-indent:.2em;text-align:center;color:rgba(58,36,10,.88);text-shadow:0 1px 0 rgba(255,236,190,.45)}
+.tplate.long{font-size:12px;letter-spacing:.1em;text-indent:.1em}
+.tplate i{position:absolute;top:13px;width:8px;height:8px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fbf3dc,#b08a4a 55%,#5d4320)}
+.tplate i::after{content:"";position:absolute;left:1px;right:1px;top:3.25px;height:1.5px;background:rgba(50,30,8,.75);transform:rotate(var(--r))}
+.tplate i:first-child{left:5px} .tplate i:last-of-type{right:5px}
+.track .voice{left:89px;top:80px;transform:translateX(-50%);font-size:10px}
+.track .voice b{font-weight:500}
+.track .voice.fuzz b{color:#ff7a5e} .track .voice.tape b{color:#6fe6a8}
 
 /* VOLUME = GAS's MIX knob (photo body + rotating knurl ring under a static multiply light) + its amber LCD */
-.vol{position:absolute;left:76px;top:94px;width:0;height:0;z-index:8}
+.vol{position:absolute;left:206px;top:54px;width:0;height:0;z-index:3}
 .kside3{position:absolute;left:-29px;top:-29px;width:58px;height:58px;border-radius:50%;pointer-events:none;transform:translateY(6px) scaleY(1.045);
   background:radial-gradient(closest-side,rgba(0,0,0,0) 86%,rgba(0,0,0,.95) 100%),
     conic-gradient(from 180deg,#040202 0deg,#2c2318 65deg,#4d3d28 100deg,#2c2318 145deg,#040202 205deg,#040202 360deg)}
@@ -96,53 +90,65 @@ body{min-height:100vh;padding:28px 16px 60px}
   text-shadow:0 0 6px rgba(244,200,120,.55),0 0 2px rgba(244,200,120,.35),0 1px 0 rgba(0,0,0,.75);
   background:radial-gradient(ellipse at 50% 30%,#160a04 0%,#0a0502 70%,#050201 100%);border:1px solid #2a1808;border-radius:2.5px;
   box-shadow:inset 0 2px 4px rgba(0,0,0,.92),inset 0 -1px 0 rgba(244,200,120,.10),0 1px 0 rgba(230,192,120,.10)}
-.vol .lcd{position:absolute;left:-23px;top:36px;width:46px;height:15px;font-size:13px;line-height:14px}
+.vol .lcd{position:absolute;left:-23px;top:38px;width:46px;height:15px;font-size:13px;line-height:14px}
 
-/* jewel push-buttons (GAS T/A/F recipe): S, the loop's voice (lit, not a button), M */
-.jrow{position:absolute;left:0;right:0;top:458px;display:flex;gap:30px;justify-content:center}
-.jcol{display:flex;flex-direction:column;align-items:center;gap:9px}
-.jcol .carve{position:static}
-.jw{position:relative;width:70px;height:70px;border-radius:16px;cursor:pointer;transition:transform .1s,filter .15s;
-  filter:drop-shadow(0 2px 3px rgba(0,0,0,.65)) drop-shadow(0 9px 14px rgba(0,0,0,.45))}
+/* jewel push-buttons (GAS T/A/F recipe) */
+.jw{position:absolute;width:50px;height:50px;border-radius:12px;cursor:pointer;transition:transform .1s,filter .15s;
+  filter:drop-shadow(0 2px 3px rgba(0,0,0,.65)) drop-shadow(0 7px 10px rgba(0,0,0,.45))}
 .jw img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none;-webkit-user-drag:none;transition:filter .15s}
 .jw::before{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;
   -webkit-mask:url('assets/gas-mixer/img/mode-btn-cut.png') center/contain no-repeat;mask:url('assets/gas-mixer/img/mode-btn-cut.png') center/contain no-repeat;
   background:linear-gradient(180deg,rgba(255,246,224,.20) 3%,rgba(255,246,224,.05) 20%,rgba(0,0,0,0) 38%,rgba(0,0,0,.14) 84%,rgba(0,0,0,.28) 98%)}
-.jw .g{position:absolute;inset:0;z-index:3;display:flex;align-items:center;justify-content:center;font:500 23px/1 Oswald,sans-serif;
+.jw .g{position:absolute;inset:0;z-index:3;display:flex;align-items:center;justify-content:center;font:500 18px/1 Oswald,sans-serif;
   color:rgba(216,182,118,.78);text-shadow:0 1px 2px #000;transition:.15s;pointer-events:none}
 .jw::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
   -webkit-mask:url('assets/gas-mixer/img/mode-btn-cut.png') center/contain no-repeat;mask:url('assets/gas-mixer/img/mode-btn-cut.png') center/contain no-repeat;
   background:radial-gradient(circle at 50% 55%,rgba(255,252,240,.95) 0%,rgba(255,252,240,0) 15%),radial-gradient(circle at 50% 55%,var(--jewel) 0%,transparent 55%),
     radial-gradient(circle at 50% 58%,var(--halo) 0%,transparent 85%);mix-blend-mode:screen;opacity:0;transition:opacity .3s ease}
 .jw:active{transform:translateY(3px)}
-.jw.on{transform:translateY(3px);filter:drop-shadow(0 1px 2px rgba(0,0,0,.6)) drop-shadow(0 3px 6px rgba(0,0,0,.4)) drop-shadow(0 0 10px var(--halo)) drop-shadow(0 0 26px var(--halo))}
+.jw.on{transform:translateY(3px);filter:drop-shadow(0 1px 2px rgba(0,0,0,.6)) drop-shadow(0 3px 6px rgba(0,0,0,.4)) drop-shadow(0 0 10px var(--halo)) drop-shadow(0 0 22px var(--halo))}
 .jw.on img{filter:brightness(1.12) saturate(1.08)}
 .jw.on::before{opacity:.55}
 .jw.on::after{opacity:.40;transition:opacity .12s ease-out}
 .jw.on .g{color:color-mix(in srgb,var(--lit) 55%,#fff8ea);text-shadow:0 0 2px rgba(255,250,235,.9),0 0 7px var(--halo),0 0 16px var(--halo),0 1px 2px #000}
-.jw.s{--jewel:#ffb43c;--lit:#ffcf7a;--halo:rgba(255,180,60,.55)}
-.jw.m{--jewel:#fff1d2;--lit:#fff6e2;--halo:rgba(255,236,200,.45)}
-.jw.v{cursor:default}
-.jw.v:active{transform:translateY(3px)}
-.jw.v.tube{--jewel:#ffb43c;--lit:#ffcf7a;--halo:rgba(255,180,60,.55)}
-.jw.v.tape{--jewel:#3fd98a;--lit:#8fe6a2;--halo:rgba(70,220,140,.55)}
-.jw.v.fuzz{--jewel:#ff3b28;--lit:#ff8a72;--halo:rgba(255,70,45,.6)}
-.gplate.bypass .jw.v{filter:drop-shadow(0 2px 3px rgba(0,0,0,.65)) drop-shadow(0 9px 14px rgba(0,0,0,.45))}
-.gplate.bypass .jw.v::after{opacity:.08}
+.jw.s{left:252px;top:30px;--jewel:#ffb43c;--lit:#ffcf7a;--halo:rgba(255,180,60,.55)}
+.jw.m{left:312px;top:30px;--jewel:#fff1d2;--lit:#fff6e2;--halo:rgba(255,236,200,.45)}
 
-/* ===== master bar: walnut in a brass frame ===== */
-.mbar{position:absolute;left:0;top:534px;width:1080px;height:212px;border-radius:24px;padding:9px;
-  background:linear-gradient(180deg,#f0d690 0%,#c89a48 18%,#8a6326 52%,#b78a3e 80%,#e8c77e 100%);
-  box-shadow:0 0 0 1.5px #3a2610,0 22px 30px rgba(8,5,3,.8),0 4px 6px rgba(8,5,3,.6),inset 0 1px 0 rgba(255,244,214,.7),inset 0 -1px 0 rgba(70,44,12,.7)}
-.mbar .wood{position:relative;width:100%;height:100%;border-radius:16px;overflow:hidden;
-  background:url("assets/gas-mixer/img/dash-walnut.png") -70px -380px/1240px auto no-repeat,#2a1609;
-  box-shadow:inset 0 3px 7px rgba(8,4,2,.9),inset 0 0 0 1.5px rgba(30,16,6,.9)}
-.bscrew{position:absolute;width:15px;height:15px;border-radius:50%;z-index:2;
-  background:radial-gradient(circle at 35% 30%,#fbf3dc,#c89a48 50%,#5d4320);box-shadow:0 1px 2px rgba(8,5,3,.8)}
-.bscrew::after{content:"";position:absolute;left:2px;right:2px;top:6.5px;height:2px;background:rgba(50,30,8,.75);transform:rotate(var(--r))}
+/* the GAS knob: the plugin's DRIVE knob in its brass mount + glass fuel tube, scaled into the row */
+.gk{position:absolute;left:376px;top:5px;width:124px;height:124px}
+.gzone{position:absolute;left:0;top:0;width:340px;height:340px;transform:scale(.3647);transform-origin:0 0;cursor:ns-resize;touch-action:none}
+.gzone svg{position:absolute;inset:0;pointer-events:none;z-index:3;overflow:visible}
+.gzone .ring{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none;filter:drop-shadow(0 6px 16px rgba(0,0,0,.55))}
+.gzone .mount{position:absolute;left:168.9px;top:163px;width:209px;height:209px;transform:translate(-50%,-50%);object-fit:contain;
+  pointer-events:none;z-index:4;filter:drop-shadow(0 8px 18px rgba(0,0,0,.6))}
+.rotor{position:absolute;left:168.9px;top:163px;width:157.3px;height:157.3px;margin:-78.65px 0 0 -78.65px;z-index:5;filter:drop-shadow(0 5px 12px rgba(0,0,0,.55))}
+.rotor img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block;pointer-events:none;-webkit-user-drag:none}
+.rotor .dome{transform-origin:49.8037% 46.4005%;transform:scale(1,.937) rotate(var(--turn,0deg)) scale(1,1.067236)}
+.pdot{position:absolute;left:168.9px;top:163px;width:0;height:0;z-index:6;pointer-events:none}
+.pdot i{position:absolute;left:-5px;top:-42px;width:10px;height:10px;border-radius:50%;
+  background:radial-gradient(circle at 40% 32%,#f6ecd0,#ebdcb6 55%,#b8a678);box-shadow:0 1px 2px rgba(0,0,0,.6),0 0 5px rgba(235,220,182,.35)}
+.knoblight{position:absolute;left:168.9px;top:163px;width:157.3px;height:157.3px;z-index:7;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;
+  background:radial-gradient(ellipse 52% 40% at 30% 24%,rgba(255,255,255,.14) 0%,rgba(255,255,255,.05) 34%,transparent 62%),
+    radial-gradient(ellipse 50% 46% at 76% 80%,rgba(0,0,0,.28) 0%,rgba(0,0,0,.13) 40%,transparent 82%)}
+.liq{transition:opacity .35s} .track.bypass .liq{opacity:.22}
+.dnum{cursor:pointer;pointer-events:all}
 
+/* the lane: a recessed screen with the track's region; the waveform is what is playing right now */
+.lane{position:absolute;left:520px;top:12px;width:544px;height:108px;border-radius:7px;overflow:hidden;
+  background:linear-gradient(180deg,#0b0705,#140c07);box-shadow:inset 0 2px 6px rgba(0,0,0,.95),inset 0 0 0 1px rgba(0,0,0,.8),0 1px 0 rgba(255,236,200,.08)}
+.lane canvas{position:absolute;left:0;top:0;width:544px;height:108px}
+.lane .rname{position:absolute;left:8px;top:5px;font:600 10.5px/1 Inter,sans-serif;letter-spacing:.04em;color:rgba(235,220,182,.85);text-shadow:0 1px 1px #000;pointer-events:none}
+.track.silent .lane{opacity:.38}
+.lane{transition:opacity .3s}
+#playhead{position:absolute;top:22px;width:2px;margin-left:-1px;z-index:5;pointer-events:none;
+  background:linear-gradient(180deg,#ff6a4a,#c8281a);box-shadow:0 0 6px rgba(220,60,30,.55)}
+#playhead::before{content:"";position:absolute;left:-5px;top:-2px;border:6px solid transparent;border-top:8px solid #ff6a4a;border-bottom:0}
+
+/* ===== master row ===== */
+.mrow{position:relative;height:206px}
+.mrow .carve.mh{left:24px;top:14px}
 /* cassette deck module (Station Mixer) */
-.deck{position:absolute;left:24px;top:14px;width:176px;height:172px;border-radius:12px;
+.deck{position:absolute;left:24px;top:22px;width:176px;height:172px;border-radius:12px;
   background:linear-gradient(180deg,#f0f1f3,#9aa2a8 30%,#3d4448 60%,#b8bec2 88%,#e3d8c2);box-shadow:0 10px 18px -4px rgba(12,9,6,.85),0 2px 4px rgba(12,9,6,.6)}
 .deck .body{position:absolute;inset:2px;border-radius:10px;background:var(--grain),linear-gradient(180deg,#2b2520,#18130f 55%,#0f0b08);background-size:180px 180px,auto;
   box-shadow:inset 0 1px 0 rgba(255,236,210,.12),inset 0 -2px 4px rgba(12,9,6,.8)}
@@ -166,15 +172,13 @@ body{min-height:100vh;padding:28px 16px 60px}
   background:linear-gradient(180deg,#d9dde0 0%,#b4bbc0 25%,#868e94 65%,#5c646a 100%)}
 @keyframes invite{0%,100%{box-shadow:0 0 0 0 rgba(255,160,50,0);background:radial-gradient(circle at 40% 35%,#8a6a40,#3a2a18)}50%{box-shadow:0 0 10px 3px rgba(255,160,50,.6);background:radial-gradient(circle at 40% 35%,#fff0c8,#ffad3c 50%,#b8620e)}}
 body:not(.started) #playLamp{animation:invite 1.4s ease-in-out infinite}
-
-/* master GAS jewel (all loops: GAS on / dry) + status LCD + master VU */
-.gasbtn{position:absolute;left:238px;top:36px}
-.gasbtn .jw{width:92px;height:92px;--jewel:#ff5a30;--lit:#ffb08a;--halo:rgba(255,80,40,.6)}
+/* master GAS jewel (all tracks: GAS on / dry) + status LCD + master VU */
+.gasbtn{position:absolute;left:236px;top:40px;width:92px;height:120px}
+.gasbtn .jw{left:0;top:0;width:92px;height:92px;border-radius:16px;--jewel:#ff5a30;--lit:#ffb08a;--halo:rgba(255,80,40,.6)}
 .gasbtn .jw .g{font-size:25px;letter-spacing:2px;text-indent:2px}
-.gasbtn .carve{position:absolute;left:46px;top:104px;transform:translateX(-50%);font-size:11px}
-.mlcd{position:absolute;left:372px;top:40px;width:176px;height:40px;font-size:27px;line-height:38px;letter-spacing:2px}
-.mlcd.blink{animation:lcdb 1s steps(2) infinite} @keyframes lcdb{50%{opacity:.35}}
-.mbar .vuwrap{position:absolute;left:400px;top:96px;width:120px;height:72px;border-radius:7px;padding:3px;
+.gasbtn .carve{left:46px;top:106px;transform:translateX(-50%)}
+.mlcd{position:absolute;left:372px;top:44px;width:176px;height:40px;font-size:27px;line-height:38px;letter-spacing:2px}
+.vuwrap{position:absolute;left:400px;top:100px;width:120px;height:72px;border-radius:7px;padding:3px;
   background:linear-gradient(180deg,#f0d690,#a8792e 50%,#e2c27a);box-shadow:0 3px 6px rgba(8,5,3,.75),inset 0 1px 0 rgba(255,244,214,.6)}
 .vu{position:relative;width:114px;height:66px;border-radius:4px;overflow:hidden;pointer-events:none;
   background:radial-gradient(120% 140% at 50% 110%,#f0e3c2 0%,#e2d2aa 55%,#c9b78c 100%);
@@ -183,24 +187,22 @@ body.playing .vu{filter:brightness(1)}
 body.playing .vu::after{content:"";position:absolute;inset:0;background:radial-gradient(80% 90% at 50% 100%,rgba(255,190,90,.22),rgba(255,190,90,0) 70%)}
 .vu svg{position:absolute;inset:0}
 .vu .vn{transform-origin:57px 74px}
-
 /* RevLimiter ARM plate (lit state baked; unlit = overlay) */
-.arm{position:absolute;left:584px;top:44px;width:62px;height:96px;cursor:pointer;border-radius:6px;
+.arm{position:absolute;left:584px;top:48px;width:62px;height:96px;cursor:pointer;border-radius:6px;
   background:url("assets/gas-mixer/img/rl-arm-plate.png") center/100% 100% no-repeat;box-shadow:0 4px 7px rgba(12,9,6,.75)}
 .arm::before{content:"";position:absolute;left:41%;top:9%;width:18%;height:12%;border-radius:50%;background:radial-gradient(circle,#4a3a22 0%,#2a2014 70%);transition:opacity .2s}
 .arm::after{content:"";position:absolute;left:28%;top:83%;width:40%;height:9%;background:#2b2a26;border-radius:2px;transition:opacity .2s}
 .arm.on::before,.arm.on::after{opacity:0}
 .arm.on{box-shadow:0 4px 7px rgba(12,9,6,.75),0 -8px 22px rgba(255,200,80,.2)}
 .arm:active{transform:translateY(1px)}
-.rl-copy{position:absolute;left:662px;top:52px;width:180px}
+.rl-copy{position:absolute;left:662px;top:56px;width:180px}
 .rl-copy .t{white-space:nowrap;font:700 16px/1 Cinzel,serif;letter-spacing:.14em;color:#ebdcb6;text-shadow:0 -1px 0 rgba(12,9,6,.9),0 1px 0 rgba(255,236,200,.12)}
 .rl-copy .t span{display:block;margin-top:5px;font:600 9.5px/1 Oswald,sans-serif;letter-spacing:.34em;color:var(--brass)}
 .rl-copy .s{margin-top:7px;font:500 12px/1.45 Inter,sans-serif;color:#b9a684}
 .rl-copy a{color:var(--brass-hi);text-decoration:none;font-weight:600;border-bottom:1px solid rgba(230,192,120,.35)}
 body.rl .rl-copy a{text-shadow:0 0 10px rgba(230,192,120,.45)}
-
 /* ENGINE START = the free download (Station Mixer button) */
-.start{position:absolute;left:868px;top:30px;display:flex;flex-direction:column;align-items:center;gap:8px;text-decoration:none;cursor:pointer}
+.start{position:absolute;left:880px;top:34px;display:flex;flex-direction:column;align-items:center;gap:8px;text-decoration:none;cursor:pointer}
 .sbtn{position:relative;width:88px;height:88px}
 .simg{position:absolute;left:-7px;top:-7px;width:102px;height:102px;transition:transform .1s cubic-bezier(.2,.9,.25,1.25),filter .2s;filter:drop-shadow(0 6px 7px rgba(12,9,6,.85))}
 @keyframes idle2{0%,100%{filter:drop-shadow(0 6px 7px rgba(12,9,6,.85)) brightness(1)}50%{filter:drop-shadow(0 6px 7px rgba(12,9,6,.85)) drop-shadow(0 0 10px rgba(255,50,20,.35)) brightness(1.1)}}
@@ -215,7 +217,7 @@ body.started .simg{animation:idle2 2.6s ease-in-out infinite}
 .note{max-width:1600px;margin:16px auto 0;font-size:12.5px;line-height:1.55;color:#8f8068}
 
 /* ---- tutorial notes: RevAmp paper family (Station Mixer round 3) ---- */
-.tnote{position:absolute;width:200px;padding:15px 16px 14px;rotate:var(--rot);z-index:9;font:17px/1.2 'Gochi Hand',cursive;color:rgb(32,27,24);
+.tnote{position:absolute;width:210px;padding:15px 16px 14px;rotate:var(--rot);z-index:9;font:17px/1.2 'Gochi Hand',cursive;color:rgb(32,27,24);
   background:url("assets/gas-mixer/img/sl-paper.png") left top/472px 680px no-repeat,linear-gradient(172deg,#f2ecda,#e2d8bb);
   box-shadow:5px 7px 9px rgba(12,9,6,.55),1px 1px 1px rgba(12,9,6,.35);transition:translate .42s cubic-bezier(.5,0,.8,.4),rotate .42s,opacity .42s}
 .tnote h4{margin:0 0 6px;font:400 19px/1.1 'Permanent Marker',cursive;letter-spacing:.3px;color:rgb(176,48,34);padding-right:22px}
@@ -240,16 +242,27 @@ body.nonotes #arrows{opacity:0}
 </style>
 </head>
 <body>
-<div class="benchhead"><b>GAS Mixer · bench round 1</b> (local only). Every knob step is a real GAS 0.3.1 render (MIX 50 %), loudness-matched to its dry loop. RevLimiter on the master: browser preview.</div>
+<div class="benchhead"><b>GAS Mixer · bench round 2</b> (local only). Every knob step is a real GAS 0.3.1 render (MIX 50 %), loudness-matched to its dry loop. RevLimiter on the master: browser preview.</div>
 
 <div id="fit"><div id="stage">
-<div class="rig" id="rig">
-  <div id="plates"></div>
+<div class="rig" id="rig"><div class="frame"><div class="wood">
 
-  <!-- master bar -->
-  <div class="mbar"><div class="wood">
-    <i class="bscrew" style="left:9px;top:9px;--r:21deg"></i><i class="bscrew" style="right:9px;top:9px;--r:-14deg"></i>
-    <i class="bscrew" style="left:9px;bottom:9px;--r:-33deg"></i><i class="bscrew" style="right:9px;bottom:9px;--r:8deg"></i>
+  <!-- column heads, engraved once; the bar ruler over the lanes -->
+  <div class="heads">
+    <span class="carve" style="left:89px">track</span>
+    <span class="carve" style="left:206px">volume</span>
+    <span class="carve" style="left:277px">solo</span>
+    <span class="carve" style="left:337px">mute</span>
+    <span class="carve" style="left:438px">gas</span>
+    <div class="ruler" id="ruler"></div>
+  </div>
+  <div class="rule"></div>
+  <div id="tracks"></div>
+  <div id="playhead"></div>
+  <div class="rule"></div>
+
+  <!-- master row -->
+  <div class="mrow">
     <div class="deck" id="deck"><div class="body">
       <i class="screw" style="left:5px;top:5px;--r:13deg"></i><i class="screw" style="right:5px;top:5px;--r:-7deg"></i>
       <i class="screw" style="left:5px;bottom:5px;--r:19deg"></i><i class="screw" style="right:5px;bottom:5px;--r:-31deg"></i>
@@ -297,7 +310,7 @@ body.nonotes #arrows{opacity:0}
       </div>
     </div></div>
 
-    <div class="gasbtn"><div class="jw" id="gasBtn" role="switch" aria-checked="true" aria-label="GAS on all loops (off = dry)" tabindex="0">
+    <div class="gasbtn"><div class="jw" id="gasBtn" role="switch" aria-checked="true" aria-label="GAS on all tracks (off = dry)" tabindex="0">
       <img src="assets/gas-mixer/img/mode-btn-cut.png" alt=""><span class="g">GAS</span></div>
       <span class="carve">dry · gas</span></div>
     <div class="lcd mlcd" id="mlcd">PRESS PLAY</div>
@@ -312,21 +325,21 @@ body.nonotes #arrows{opacity:0}
       <span class="sbtn"><img class="simg" src="assets/gas-mixer/img/start-button.png" alt=""></span>
       <span class="stxt"><strong>Get GAS free</strong><small>Windows &amp; Mac</small></span>
     </a>
-  </div></div>
-</div><!-- /rig -->
+  </div>
+</div></div></div><!-- /rig -->
 
-<!-- tutorial notes -->
+<!-- tutorial notes: above the console = the tracks, left = play, below = the master -->
 <svg id="arrows" aria-hidden="true"></svg>
-<div class="tnote" data-step="1" data-to="#playKey" data-side="r" style="left:24px;top:600px;--rot:-2deg"><i class="tp a"></i><i class="tp b"></i><span class="tick">&#10003;</span>
+<div class="tnote" data-step="4" data-to="#tr-drums .vol .mrotor, #tr-drums .jw.s, #tr-drums .jw.m" data-all data-side="b" style="left:236px;top:14px;--rot:-1.6deg;width:240px"><i class="tp a"></i><i class="tp b"></i><span class="tick">&#10003;</span>
+  <h4>3. Your mix</h4>Like any DAW: <b>volume</b>, <b>S</b> = hear only this track, <b>M</b> = mute it.</div>
+<div class="tnote" data-step="2" data-to="#tr-drums .gk" data-side="b" style="left:520px;top:6px;--rot:1.4deg;width:250px"><i class="tp c"></i><span class="tick">&#10003;</span>
+  <h4>2. Step on it</h4>Each track has its own <b>GAS</b> knob. <b>0</b> = dry. Turn it up: <b>2, 4, 6, 8</b>.</div>
+<div class="tnote coffee" data-step="7" data-to="#tr-bass .lane" data-side="l" style="left:1372px;top:300px;--rot:1.8deg"><i class="tp c"></i>
+  <h4>Watch it</h4>The lane shows the real audio. Push <b>GAS</b> and see the waveform fill out. The colour is the GAS voice: red = <b>Fuzz</b>, green = <b>Tape</b>.</div>
+<div class="tnote" data-step="1" data-to="#playKey" data-side="r" style="left:20px;top:700px;--rot:-2deg"><i class="tp a"></i><i class="tp b"></i><span class="tick">&#10003;</span>
   <h4>1. Press play</h4>Hit <b>&#9654;</b> on the tape deck. The beat starts <b>dry</b>, then the gas goes on.</div>
-<div class="tnote" data-step="2" data-to="#ch-drums .rotor" data-side="r" style="left:20px;top:130px;--rot:1.6deg"><i class="tp c"></i><span class="tick">&#10003;</span>
-  <h4>2. Step on it</h4>Every loop has its own <b>GAS</b> knob.<br><b>0</b> = the dry loop. Turn it up: <b>2, 4, 6, 8</b>.<br>At 8 the check-engine light comes on.</div>
-<div class="tnote" data-step="4" data-to="#ch-instruments .jw.s, #ch-instruments .jw.m" data-all data-side="l" style="left:1370px;top:300px;--rot:-1.5deg"><i class="tp a"></i><i class="tp b"></i><span class="tick">&#10003;</span>
-  <h4>4. Your mix</h4><b>S</b> = hear only this loop.<br><b>M</b> = mute it.<br>The little knob up top = <b>volume</b>.</div>
-<div class="tnote coffee" data-step="7" style="left:1376px;top:40px;--rot:1.8deg"><i class="tp c"></i>
-  <h4>Good to know</h4>Each loop runs one GAS voice, lit in the middle: <b>F</b> = Fuzz, <b>A</b> = Tape. The fuel colour shows it too.</div>
 <div class="tnote" data-step="3" data-to="#gasBtn" data-side="t" style="left:440px;top:0;--rot:-1.2deg;width:230px"><i class="tp a"></i><i class="tp b"></i><span class="tick">&#10003;</span>
-  <h4>3. Before / after</h4>Press <b>GAS</b> to hear every loop dry. Press it again to bring the gas back.</div>
+  <h4>4. Before / after</h4>Press <b>GAS</b> to hear every track dry. Press it again to bring the gas back.</div>
 <div class="tnote" data-step="6" data-to="#arm" data-side="t" style="left:780px;top:0;--rot:1.2deg;width:240px"><i class="tp a"></i><i class="tp b"></i><span class="tick">&#10003;</span>
   <h4>Finish it on the master</h4>Press <b>ARM</b> for a taste of RevLimiter: louder, glued, finished.</div>
 <div class="notetag" id="notetag" role="button" tabindex="0">hide the notes</div>
@@ -345,6 +358,7 @@ const DEF_STEP = 3;                                 // where the knobs go when t
 const MASTER_DB = -3;                               // 3 matched loops sum to ~+1.4 dBTP on GAS; this keeps the mix under -1.5
 const RL = { driveDb: 4.3, glue: {thr:-18, knee:8, ratio:2, atk:.02, rel:.25}, satB: .45,
   lim: {thr:-4, knee:0, ratio:20, atk:.002, rel:.08}, postDb: 0, ceil: 0.891 };   // Station Mixer preview chain, not yet recalibrated here
+const LANE_X = 520, LANE_W = 544, LANE_H = 108;
 const $ = s => document.querySelector(s);
 const st = { playing:false, rl:false, gas:true, touched:false,
   stems: STEMS.map(() => ({ step:0, cur:0, volDb:0, solo:false, mute:false })) };
@@ -385,75 +399,68 @@ function dialSvg(k){
     <path d="${chanPath(0,1,12)}" fill="none" stroke="rgba(0,0,0,.17)" stroke-width="2.8" filter="url(#soft${k})"/>
     <path d="${chanPath(0,1)}" fill="none" stroke="rgba(198,235,214,.035)" stroke-width="26" stroke-linecap="butt"/>
     <path d="${chanPath(0,1,-13.5)}" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="4" stroke-linecap="round" stroke-dasharray="44 24 92 38 58 999"/>
-    <path d="${chanPath(0,1,11)}" fill="none" stroke="rgba(255,255,255,.045)" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="30 60 70 999"/>
     <path d="${chanPath(0.40,0.60,-5)}" fill="none" stroke="rgba(255,255,255,.055)" stroke-width="14" stroke-linecap="round" filter="url(#soft2${k})"/>`;
-  VERS.forEach((_, j) => { const v=j/4, hot=v>=RED, [tx,ty]=pol(CX,CY,RNUM,ang(v)), n=j*2;
-    const dark=hot?'#3d0b04':'#2c1a0a', lip=hot?'rgba(255,205,175,.45)':'rgba(255,244,208,.55)';
-    h += `<g class="dnum" data-step="${j}" font-family="Oswald" font-size="17" font-weight="600" text-anchor="middle"><circle cx="${tx}" cy="${ty}" r="15" fill="transparent"/>
-      <text x="${tx}" y="${ty+6.9}" fill="${lip}">${n}</text><text x="${tx}" y="${ty+6}" fill="${dark}">${n}</text></g>`; });
+  // the numbers: drawn ~2.3x the plugin's size so they read at the row's scale
+  VERS.forEach((_, j) => { const v=j/4, hot=v>=RED, [tx,ty]=pol(CX,CY,RNUM+6,ang(v)), n=j*2;
+    const dark=hot?'#ffb49c':'#e6c078';
+    h += `<g class="dnum" data-step="${j}" font-family="Oswald" font-size="40" font-weight="600" text-anchor="middle"><circle cx="${tx}" cy="${ty}" r="28" fill="transparent"/>
+      <text x="${tx}" y="${ty+15}" fill="rgba(0,0,0,.85)">${n}</text><text x="${tx}" y="${ty+13}" fill="${dark}">${n}</text></g>`; });
   return h;
 }
 
-/* ---------- build the plates ---------- */
+/* ---------- build the tracks ---------- */
 const act = (el, fn) => { el.addEventListener('click', fn); el.addEventListener('keydown', e => { if (e.key==='Enter'||e.key===' ') { e.preventDefault(); fn(); } }); };
-const jewel = (cls, g, label, attrs='') => `<div class="jw ${cls}" ${attrs} aria-label="${label}"><img src="${IMG}mode-btn-cut.png" alt=""><span class="g">${g}</span></div>`;
+const jewel = (cls, g, label) => `<div class="jw ${cls}" role="button" aria-pressed="false" tabindex="0" aria-label="${label}"><img src="${IMG}mode-btn-cut.png" alt=""><span class="g">${g}</span></div>`;
+const DPR = Math.min(2, window.devicePixelRatio || 1);
 STEMS.forEach((s,i) => {
-  const pw = document.createElement('div'); pw.className='pw'; pw.style.left = (i*368)+'px';
-  const voiceWord = s.voice[0].toUpperCase()+s.voice.slice(1);
-  pw.innerHTML = `<div class="gplate" id="ch-${s.id}">
-    <img class="plateskin" src="${IMG}dash-walnut.png" alt="">
-    <div class="brand"><span class="name">${s.name}</span></div>
-    <div class="check"><img src="${IMG}check-engine-bezel-v1.png" alt=""><img class="glowic" src="${IMG}check-engine-glow-v1.png" alt=""></div>
-    <div class="vol"><div class="kside3"></div>
-      <div class="mrotor" role="slider" aria-label="${s.name.toLowerCase()} volume" aria-valuemin="-40" aria-valuemax="6" aria-valuenow="0" tabindex="0">
-        <img src="${IMG}mix-knob-photo-oai-body-v1.png" alt=""><img class="mspin" src="${IMG}mix-knob-photo-oai-ringflat-v1.png" alt=""><img class="mlight" src="${IMG}mix-knob-photo-oai-ringlight-v1.png" alt=""></div>
-      <div class="mpdot"><i></i></div><div class="spec3"></div><div class="lcd">VOL</div></div>
-    <div class="gzone" role="slider" aria-label="${s.name.toLowerCase()} GAS" aria-valuemin="0" aria-valuemax="8" aria-valuenow="0" tabindex="0">
-      <img class="ring" src="${IMG}ring-tank.png" alt=""><svg viewBox="0 0 340 340">${dialSvg(i)}</svg>
-      <img class="mount" src="${IMG}threshold-mount-v9.png" alt="">
-      <div class="rotor"><img class="skirt" src="${IMG}knob-skirt.png" alt=""><img src="${IMG}knob-skirtshade.png" alt="" style="mix-blend-mode:hard-light">
-        <img src="${IMG}knob-dome-base.png" alt=""><img class="dome" src="${IMG}knob-dome-spin.png" alt="">
-        <img src="${IMG}knob-dome-shade.png" alt="" style="mix-blend-mode:multiply"><img src="${IMG}knob-dome-shine.png" alt="" style="mix-blend-mode:color-dodge"></div>
-      <div class="pdot"><i></i></div><div class="knoblight"></div></div>
-    <div class="jrow">
-      <div class="jcol">${jewel('s','S',`Solo ${s.name.toLowerCase()}`,'role="button" aria-pressed="false" tabindex="0"')}<span class="carve">solo</span></div>
-      <div class="jcol">${jewel('v on '+s.voice, s.voice==='tape'?'A':s.voice[0].toUpperCase(), `Voice: ${voiceWord}`, `title="This loop runs GAS's ${voiceWord} voice"`)}<span class="carve">${voiceWord}</span></div>
-      <div class="jcol">${jewel('m','M',`Mute ${s.name.toLowerCase()}`,'role="button" aria-pressed="false" tabindex="0"')}<span class="carve">mute</span></div>
-    </div></div>`;
-  $('#plates').appendChild(pw);
-  const el = pw.querySelector('.gplate'), c = st.stems[i];
-  ['s','m'].forEach(k => act(el.querySelector('.jw.'+k), () => { touch(); const key = k==='s'?'solo':'mute'; c[key]=!c[key]; render(); }));
-  wireDrive(el.querySelector('.gzone'), i);
-  wireVol(el.querySelector('.vol'), c);
+  if (i) { const r=document.createElement('div'); r.className='rule'; $('#tracks').appendChild(r); }
+  const tr = document.createElement('div'); tr.className='track'; tr.id='tr-'+s.id;
+  const lower = s.name.toLowerCase(), voiceWord = s.voice[0].toUpperCase()+s.voice.slice(1);
+  tr.innerHTML = `<div class="ctl">
+      <div class="tplate${s.name.length>7?' long':''}"><i style="--r:${[13,-21,34][i]}deg"></i>${s.name}<i style="--r:${[-8,27,-15][i]}deg"></i></div>
+      <span class="carve voice ${s.voice}">gas voice <b>${voiceWord}</b></span>
+      <div class="vol"><div class="kside3"></div>
+        <div class="mrotor" role="slider" aria-label="${lower} volume" aria-valuemin="-40" aria-valuemax="6" aria-valuenow="0" tabindex="0">
+          <img src="${IMG}mix-knob-photo-oai-body-v1.png" alt=""><img class="mspin" src="${IMG}mix-knob-photo-oai-ringflat-v1.png" alt=""><img class="mlight" src="${IMG}mix-knob-photo-oai-ringlight-v1.png" alt=""></div>
+        <div class="mpdot"><i></i></div><div class="spec3"></div><div class="lcd">0.0</div></div>
+      ${jewel('s','S',`Solo ${lower}`)}${jewel('m','M',`Mute ${lower}`)}
+      <div class="gk"><div class="gzone" role="slider" aria-label="${lower} GAS" aria-valuemin="0" aria-valuemax="8" aria-valuenow="0" tabindex="0">
+        <img class="ring" src="${IMG}ring-tank.png" alt=""><svg viewBox="0 0 340 340">${dialSvg(i)}</svg>
+        <img class="mount" src="${IMG}threshold-mount-v9.png" alt="">
+        <div class="rotor"><img class="skirt" src="${IMG}knob-skirt.png" alt=""><img src="${IMG}knob-skirtshade.png" alt="" style="mix-blend-mode:hard-light">
+          <img src="${IMG}knob-dome-base.png" alt=""><img class="dome" src="${IMG}knob-dome-spin.png" alt="">
+          <img src="${IMG}knob-dome-shade.png" alt="" style="mix-blend-mode:multiply"><img src="${IMG}knob-dome-shine.png" alt="" style="mix-blend-mode:color-dodge"></div>
+        <div class="pdot"><i></i></div><div class="knoblight"></div></div></div>
+    </div>
+    <div class="lane"><canvas width="${LANE_W*DPR}" height="${LANE_H*DPR}"></canvas><span class="rname"></span></div>`;
+  $('#tracks').appendChild(tr);
+  const c = st.stems[i];
+  ['s','m'].forEach(k => act(tr.querySelector('.jw.'+k), () => { touch(); const key = k==='s'?'solo':'mute'; c[key]=!c[key]; render(); }));
+  wireDrive(tr.querySelector('.gzone'), i);
+  wireVol(tr.querySelector('.vol'), c);
 });
-
-/* long names shrink to fit between the VOL knob and the lamp (run again once Oswald has loaded) */
-function fitNames(){ document.querySelectorAll('.brand .name').forEach(nm => { let fs=34, ls=9;
-  nm.style.fontSize=fs+'px'; nm.style.letterSpacing=nm.style.paddingLeft=ls+'px';
-  while (nm.offsetWidth > 168 && fs > 16) { fs-=1; ls=Math.max(3, ls-.6); nm.style.fontSize=fs+'px'; nm.style.letterSpacing=nm.style.paddingLeft=ls+'px'; } }); }
-fitNames();
+(() => { const r=$('#ruler'); for (let b=0;b<=BARS;b++){ const x=b/BARS*LANE_W;
+  r.insertAdjacentHTML('beforeend', `<i style="left:${x}px"></i>` + (b<BARS?`<span style="left:${x+LANE_W/BARS/2}px">${b+1}</span>`:'')); } })();
 
 /* ---------- GAS knob: 5 detents; drag, wheel, arrows, or click a number ---------- */
 function setStep(i, n){ const c=st.stems[i]; n=Math.max(0,Math.min(4,n)); if (n===c.step && st.gas) return;
   c.step=n; if (!st.gas && n>0) st.gas=true; render(); }
 function wireDrive(zone, i){
-  let y0=null, s0=0, moved=false;
+  let y0=null, s0=0;
   zone.addEventListener('pointerdown', e => { const dn=e.target.closest('.dnum');
     if (dn) { touch(); setStep(i, +dn.dataset.step); return; }
-    zone.setPointerCapture(e.pointerId); y0=e.clientY; s0=st.stems[i].step; moved=false; touch(); });
-  zone.addEventListener('pointermove', e => { if (y0===null) return; const d=Math.round((y0-e.clientY)/34);
-    if (d) moved=true; setStep(i, s0+d); });
+    zone.setPointerCapture(e.pointerId); y0=e.clientY; s0=st.stems[i].step; touch(); });
+  zone.addEventListener('pointermove', e => { if (y0===null) return; setStep(i, s0+Math.round((y0-e.clientY)/26)); });
   zone.addEventListener('pointerup', () => y0=null);
   zone.addEventListener('pointercancel', () => y0=null);
   let acc=0; zone.addEventListener('wheel', e => { e.preventDefault(); acc+=e.deltaY; if (Math.abs(acc)>=60){ touch(); setStep(i, st.stems[i].step+(acc<0?1:-1)); acc=0; } }, {passive:false});
   zone.addEventListener('keydown', e => { const d={ArrowUp:1,ArrowRight:1,ArrowDown:-1,ArrowLeft:-1}[e.key];
     if (d){ e.preventDefault(); touch(); setStep(i, st.stems[i].step+d); } });
 }
-/* volume = the MIX mini knob: -40..+6 dB, LCD shows dB while touched, double-click = 0 dB */
+/* volume = the MIX mini knob: -40..+6 dB, LCD shows the dB, double-click = 0 dB */
 function wireVol(v, c){
-  const rot=v.querySelector('.mrotor'), lcd=v.querySelector('.lcd'); let t=null;
-  const show = () => { lcd.textContent=(c.volDb>0?'+':'')+c.volDb.toFixed(1); clearTimeout(t); t=setTimeout(()=>lcd.textContent='VOL', 900); };
-  const set = x => { c.volDb=Math.round(Math.max(-40,Math.min(6,x))*2)/2; show(); render(); };
+  const rot=v.querySelector('.mrotor');
+  const set = x => { c.volDb=Math.round(Math.max(-40,Math.min(6,x))*2)/2; render(); };
   let y0=null, v0=0;
   rot.addEventListener('pointerdown', e => { rot.setPointerCapture(e.pointerId); y0=e.clientY; v0=c.volDb; touch(); });
   rot.addEventListener('pointermove', e => { if (y0!==null) set(v0+(y0-e.clientY)*46/160*(e.shiftKey?.1:1)); });
@@ -561,19 +568,48 @@ function render(){
   $('#gasBtn').classList.toggle('on', gasOn); $('#gasBtn').setAttribute('aria-checked', String(gasOn));
   $('#arm').classList.toggle('on', st.rl); $('#arm').setAttribute('aria-checked', String(st.rl));
   const anySolo = st.stems.some(c=>c.solo);
-  STEMS.forEach((s,i) => { const c=st.stems[i], el=$('#ch-'+s.id);
-    el.classList.toggle('silent', !audible(c, anySolo)); el.classList.toggle('bypass', !st.gas);
-    el.querySelector('.check').classList.toggle('lit', st.gas && c.step===4);
-    ['s','m'].forEach(k => { const b=el.querySelector('.jw.'+k), on=c[k==='s'?'solo':'mute']; b.classList.toggle('on',on); b.setAttribute('aria-pressed',String(on)); });
-    el.querySelector('.gzone').setAttribute('aria-valuenow', String(c.step*2));
-    const vr=el.querySelector('.vol'), a=-135+(c.volDb+40)/46*270;
+  STEMS.forEach((s,i) => { const c=st.stems[i], tr=$('#tr-'+s.id);
+    tr.classList.toggle('silent', !audible(c, anySolo)); tr.classList.toggle('bypass', !st.gas);
+    ['s','m'].forEach(k => { const b=tr.querySelector('.jw.'+k), on=c[k==='s'?'solo':'mute']; b.classList.toggle('on',on); b.setAttribute('aria-pressed',String(on)); });
+    tr.querySelector('.gzone').setAttribute('aria-valuenow', String(c.step*2));
+    const vr=tr.querySelector('.vol'), a=-135+(c.volDb+40)/46*270;
     vr.querySelector('.mspin').style.rotate=a+'deg'; vr.querySelector('.mpdot').style.rotate=a+'deg';
-    vr.querySelector('.mrotor').setAttribute('aria-valuenow', c.volDb.toFixed(1)); });
-  if (!play.loading) lcd(st.playing ? (st.gas && st.stems.some(c=>c.step>0) ? 'GAS ON' : 'DRY') : (nodes ? 'PRESS PLAY' : 'PRESS PLAY'));
+    vr.querySelector('.mrotor').setAttribute('aria-valuenow', c.volDb.toFixed(1));
+    vr.querySelector('.lcd').textContent = (c.volDb>0?'+':'')+c.volDb.toFixed(1);
+    const v = ver(c); lanes[i].target = v;
+    tr.querySelector('.rname').textContent = `${s.name[0]+s.name.slice(1).toLowerCase()} · ${v==='dry' ? 'dry' : 'GAS '+v}`; });
+  if (!play.loading) lcd(st.playing ? (gasOn ? 'GAS ON' : 'DRY') : 'PRESS PLAY');
   applyAudio();
 }
 
-/* ---------- animation: knobs ease to their detent, fuel + bubbles, reels, VU ---------- */
+/* ---------- lanes: the waveform of what each track plays, crossfading when the knob moves ---------- */
+let PEAKS = null;
+const lanes = STEMS.map(s => { const cv=$('#tr-'+s.id+' canvas'); return { cv, g:cv.getContext('2d'), target:'dry', shown:null, from:null, t:1, dirty:true }; });
+const rgba = (hex, a) => { const n=parseInt(hex.slice(1),16); return `rgba(${n>>16},${n>>8&255},${n&255},${a})`; };
+function laneColor(i, v){ if (v==='dry') return '#e6d6b0'; return v==='8' ? HOT.body : PAL[STEMS[i].voice].body; }
+function drawLane(i){
+  const L=lanes[i], g=L.g, W=LANE_W*DPR, H=LANE_H*DPR; g.setTransform(DPR,0,0,DPR,0,0); g.clearRect(0,0,LANE_W,LANE_H);
+  const top=20, h=LANE_H-top-6, mid=top+h/2, col=laneColor(i, L.target);
+  // region body + bar grid
+  g.fillStyle = rgba(col, .07); g.beginPath(); g.roundRect(3, 3, LANE_W-6, LANE_H-6, 4); g.fill();
+  g.fillStyle = rgba(col, .16); g.fillRect(3, 3, LANE_W-6, 14);
+  g.strokeStyle = 'rgba(235,220,182,.07)'; g.lineWidth = 1;
+  for (let b=1;b<BARS;b++){ const x=Math.round(b/BARS*LANE_W)+.5; g.beginPath(); g.moveTo(x, top); g.lineTo(x, LANE_H-4); g.stroke(); }
+  if (!PEAKS) return;
+  const a=PEAKS[`${STEMS[i].id}_${L.from||L.target}`], b=PEAKS[`${STEMS[i].id}_${L.target}`], n=b.length, k=L.t, scale=h/2/PEAK_MAX[i];
+  g.beginPath();
+  for (let x=0;x<n;x++){ const p=(a[x]*(1-k)+b[x]*k)*scale, px=x/(n-1)*(LANE_W-8)+4; x?g.lineTo(px, mid-p):g.moveTo(px, mid-p); }
+  for (let x=n-1;x>=0;x--){ const p=(a[x]*(1-k)+b[x]*k)*scale, px=x/(n-1)*(LANE_W-8)+4; g.lineTo(px, mid+p); }
+  g.closePath();
+  const grd = g.createLinearGradient(0, top, 0, top+h); grd.addColorStop(0, rgba(col,.95)); grd.addColorStop(.5, rgba(col,.55)); grd.addColorStop(1, rgba(col,.95));
+  g.fillStyle = grd; g.shadowColor = rgba(col, .5); g.shadowBlur = 6; g.fill(); g.shadowBlur = 0;
+}
+let PEAK_MAX = STEMS.map(() => 1);     // each track scaled to its own loudest version, so a quiet track still reads
+fetch(AUD+'peaks.json').then(r=>r.json()).then(p => { PEAKS=p;
+  PEAK_MAX = STEMS.map(s => Math.max(...VERS.flatMap(v => p[`${s.id}_${v}`]))*1.04);
+  lanes.forEach(L=>L.dirty=true); }).catch(()=>{});
+
+/* ---------- animation: knobs ease to their detent, fuel + bubbles, lanes, playhead, reels, VU ---------- */
 const vuEl = $('#masterVu'); vuEl.innerHTML = (() => { let t=''; for (let i=0;i<=10;i++){ const a=(-48+i*9.6)*Math.PI/180, r1=52, r2=i%5?47:44;
     t += `<line x1="${57+Math.sin(a)*r1}" y1="${74-Math.cos(a)*r1}" x2="${57+Math.sin(a)*r2}" y2="${74-Math.cos(a)*r2}" stroke="${i>7?'#9e2a18':'#3a2a18'}" stroke-width="${i%5?1:1.6}"/>`; }
   return `<svg viewBox="0 0 114 66" width="114" height="66">${t}<text x="57" y="44" text-anchor="middle" font-family="Oswald" font-size="9" fill="#3a2a18" letter-spacing="1.5">VU</text>
@@ -591,11 +627,13 @@ function tapeStep(dt){
   $('#reelL').setAttribute('transform', `rotate(${(reelA%360).toFixed(2)} 40 40)`); $('#reelR').setAttribute('transform', `rotate(${(reelB%360).toFixed(2)} 108 40)`);
   dashOff -= dir*TAPE_V*dt; $('#tapeRun').setAttribute('stroke-dashoffset', (dashOff%5.5).toFixed(2));
 }
-const plates = STEMS.map(s => { const el=$('#ch-'+s.id); return { el, liq:Object.fromEntries(LIQ.map(([k])=>[k, el.querySelector('.l-'+k)])),
+const knobs = STEMS.map(s => { const el=$('#tr-'+s.id); return { liq:Object.fromEntries(LIQ.map(([k])=>[k, el.querySelector('.l-'+k)])),
   bubs:[...el.querySelectorAll('.bubbles circle')], skirt:el.querySelector('.skirt'), dome:el.querySelector('.dome'), pdot:el.querySelector('.pdot') }; });
+const ph = $('#playhead');
+function placePlayhead(){ const t=$('#tracks'); ph.style.top=(t.offsetTop-12)+'px'; ph.style.height=(t.offsetHeight+12)+'px'; }
 function frame(now){
   const dt = Math.min(0.1,(now-last)/1000); last=now; idleT += dt*3.3;
-  STEMS.forEach((s,i) => { const c=st.stems[i], p=plates[i], target=c.step/4;
+  STEMS.forEach((s,i) => { const c=st.stems[i], p=knobs[i], target=c.step/4;
     c.cur += (target-c.cur)*(1-Math.exp(-dt/0.07));                              // detent ease, ~200 ms
     if (Math.abs(target-c.cur)<1e-4) c.cur=target;
     const a=ang(c.cur); p.skirt.style.transform=`rotate(${a}deg)`; p.dome.style.setProperty('--turn', a+'deg'); p.pdot.style.transform=`rotate(${a}deg)`;
@@ -609,7 +647,14 @@ function frame(now){
           b.setAttribute('cx',170+t*ux); b.setAttribute('cy',170+t*uy); b.setAttribute('opacity',0.5+0.3*Math.sin(idleT*1.3+j*2.1)); }
         else b.setAttribute('opacity',0); });
     } else { LIQ.forEach(([k]) => p.liq[k].removeAttribute('d')); p.bubs.forEach(b=>b.setAttribute('opacity',0)); }
+    // lane: crossfade the waveform over ~220 ms when the playing version changes
+    const L=lanes[i];
+    if (L.shown!==L.target) { L.from = L.shown===null ? L.target : L.shown; L.shown=L.target; L.t=0; L.dirty=true; }
+    if (L.t<1) { L.t=Math.min(1, L.t+dt/0.22); L.dirty=true; }
+    if (L.dirty) { drawLane(i); L.dirty=false; }
   });
+  const pos = st.playing && ctx ? ((((ctx.currentTime - t0) % LOOP) + LOOP) % LOOP) / LOOP : 0;
+  ph.style.left = (LANE_X + pos*LANE_W) + 'px'; ph.style.opacity = st.playing ? 1 : .45;
   if (st.playing && ctx) tapeStep(dt);
   let target=-48;
   if (nodes && st.playing) { nodes.mAn.getFloatTimeDomainData(tbuf); let s=0; for (let i=0;i<tbuf.length;i++) s+=tbuf[i]*tbuf[i];
@@ -625,14 +670,16 @@ act($('#stopKey'), stop);
 act($('#gasBtn'), gasToggle);
 act($('#arm'), () => { touch(); st.rl = !st.rl; render(); });
 
-/* ---------- fit + notes (Station Mixer round 3) ---------- */
+/* ---------- fit + notes (Station Mixer round 3; side "b" = the arrow leaves the note's bottom) ---------- */
 const fit=$('#fit'), stage=$('#stage');
 function doFit(){
-  const rig=$('#rig'), bar=rig.querySelector('.mbar'), barBottom = rig.offsetTop + bar.offsetTop + bar.offsetHeight;
-  const n3=document.querySelector('.tnote[data-step="3"]'), n6=document.querySelector('.tnote[data-step="6"]'), tag=$('#notetag');
-  n3.style.top = n6.style.top = (barBottom + 26) + 'px';
-  tag.style.left = (rig.offsetLeft + 1080 - 140) + 'px'; tag.style.top = (barBottom + 18) + 'px';
-  const H = barBottom + 26 + Math.max(n3.offsetHeight, n6.offsetHeight) + 30;
+  placePlayhead();
+  const rig=$('#rig'), rigBottom = rig.offsetTop + rig.offsetHeight;
+  const n3=document.querySelector('.tnote[data-step="3"]'), n6=document.querySelector('.tnote[data-step="6"]'), n1=document.querySelector('.tnote[data-step="1"]'), tag=$('#notetag');
+  n3.style.top = n6.style.top = (rigBottom + 26) + 'px';
+  n1.style.top = (rigBottom - 200) + 'px';                     // beside the tape deck
+  tag.style.left = (rig.offsetLeft + 1100 - 140) + 'px'; tag.style.top = (rigBottom + 18) + 'px';
+  const H = rigBottom + 26 + Math.max(n3.offsetHeight, n6.offsetHeight) + 30;
   stage.style.height = H + 'px';
   const s=Math.min(1, fit.clientWidth/1600); stage.style.transform=`scale(${s})`; fit.style.height=(H*s)+'px';
   drawArrows(false);
@@ -657,7 +704,8 @@ function drawArrows(animate){
     const tb=union(els.map(box)), nb=box(n), side=n.dataset.side, seed=i*1.913+.37;
     const pad=8, cx=(tb.l+tb.r)/2, cy=(tb.t+tb.b)/2, rx=(tb.r-tb.l)/2+pad, ry=(tb.b-tb.t)/2+pad;
     const onRing = (p, gap=6) => { const th=Math.atan2((p.y-cy)/ry, (p.x-cx)/rx); return P(cx+(rx+gap)*Math.cos(th), cy+(ry+gap)*Math.sin(th)); };
-    const a = side==='r' ? P(nb.r+3, nb.t+(nb.b-nb.t)*.36) : side==='l' ? P(nb.l-3, nb.t+(nb.b-nb.t)*.36) : P(nb.l+(nb.r-nb.l)*.3, nb.t-3);
+    const a = side==='r' ? P(nb.r+3, nb.t+(nb.b-nb.t)*.36) : side==='l' ? P(nb.l-3, nb.t+(nb.b-nb.t)*.36)
+      : side==='b' ? P(nb.l+(nb.r-nb.l)*.55, nb.b+3) : P(nb.l+(nb.r-nb.l)*.3, nb.t-3);
     const e = onRing(a), dx=e.x-a.x, dy=e.y-a.y, len=Math.hypot(dx,dy);
     const bend = Math.max(12, Math.min(55, len*.16)) * (side==='l' ? -1 : 1);
     const sm = spline([a, P((a.x+e.x)/2 - dy/len*bend, (a.y+e.y)/2 + dx/len*bend), e]), cum=[0];
@@ -696,13 +744,13 @@ function setNotes(on){ document.body.classList.toggle('nonotes', !on); if (on &&
   try { localStorage.setItem(NOTES_KEY, on ? '1' : '0'); } catch(e){} }
 act($('#notetag'), () => setNotes(document.body.classList.contains('nonotes')));
 try { if (localStorage.getItem(NOTES_KEY)==='0') setNotes(false); } catch(e){}
-(document.fonts ? document.fonts.ready : Promise.resolve()).then(() => { fitNames(); doFit(); drawArrows(true); });
+(document.fonts ? document.fonts.ready : Promise.resolve()).then(() => { doFit(); drawArrows(true); });
 new ResizeObserver(doFit).observe(fit); window.addEventListener('load', doFit);
 
 fetch(AUD+'manifest.json').then(r=>r.json()).then(m => {
   LOOP = m.samples / m.sr; BAR = LOOP / m.bars;
   const f=m.files;
-  $('#note').textContent = `Levels: every knob step matched to its loop's DRY (drums ${f.drums_dry.lufs_out}, bass ${f.bass_dry.lufs_out}, instruments ${f.instruments_dry.lufs_out} LUFS); `
+  $('#note').textContent = `Levels: every knob step matched to its track's DRY (drums ${f.drums_dry.lufs_out}, bass ${f.bass_dry.lufs_out}, instruments ${f.instruments_dry.lufs_out} LUFS); `
     + `full mix ${m.mix.dry.lufs} LUFS dry / ${m.mix['6'].lufs} LUFS at 6, played ${MASTER_DB} dB. ${m.plugin}. ${m.bpm} BPM, ${m.bars} bars.`;
 }).catch(()=>{});
 render();

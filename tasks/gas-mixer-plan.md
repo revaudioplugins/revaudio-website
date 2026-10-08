@@ -70,6 +70,30 @@ has a GAS knob that applies GAS to it. The visitor solos loops, turns the knobs 
   - the RevLimiter preview chain still carries the Station Mixer calibration (no RevLimiter render of this mix yet)
   - phone layout
 
+## Bench round 2 (2026-10-08): DAW track view
+
+Yoni on round 1: "not the vibe i planned". He wants it like a DAW, with the tracks visible as in the Radio Roulette
+mixer. Each track gets only solo, mute, volume and the GAS knob; no three full GAS plugins.
+- One console (GAS walnut in a brass frame, brass rules between rows):
+  - engraved column heads plus a bar ruler 1-8
+  - three track rows: brass name plate + "gas voice Fuzz/Tape", volume (GAS's MIX knob + LCD in dB), S and M
+    jewels, the GAS knob (DRIVE knob + fuel tube, scaled into the row, numbers drawn larger)
+  - each row ends in a **lane**: the waveform of what the track is playing right now (cream = dry, voice colour =
+    GAS, hot red at 8). It crossfades in ~220 ms when the knob moves.
+  - one red playhead runs across all lanes
+  - master row as before
+- Peaks: `process_stems.py` now also writes `peaks.json` (600 columns per file, 53 KB). It loads before PLAY, so the
+  lanes show at once. Each lane is scaled to its own track's loudest version.
+- Notes renumbered: 1 play, 2 GAS knob, 3 mix (S/M/volume), 4 before/after, plus "Watch it" (the lane) and the
+  RevLimiter note.
+- Verified in headless Chromium (same script as round 1, new selectors):
+  - auto turn to 6 after 2 bars
+  - "8" click works
+  - solo/mute dim the row and its lane
+  - drag moves detents
+  - GAS bypass works
+  - 0 console errors
+
 ## Build steps
 
 | # | Owner | Step | Done when |
