@@ -1390,9 +1390,6 @@
   }
 }
 @media (max-width: 600px) { #fx .d-panel { padding-bottom: 44px; } }   /* clears the 31 px bottom screws, as #drive does */
-.d-shot { margin: 0 0 28px; }
-.d-shot img { width: 100%; height: auto; display: block; border-radius: 10px; box-shadow: 0 0 0 1px rgba(4, 2, 8, .95), 0 0 0 6px #08040d, 0 1px 0 6px rgba(255, 240, 255, .06); }
-.d-shot figcaption { margin-top: 10px; }
 /* the band strip: static, annotated, a lit window between the two cuts, on
    the sunk-glass screen material so the lit slice reads as a lamp in a window */
 .d-bandfig { margin: 0 0 24px; max-width: none; }
@@ -1436,49 +1433,78 @@
 .d-bandglass[data-lit] .d-band-cut, .d-bandglass[data-lit] .d-fx-slice { animation: d-fx-phosphor 420ms steps(1, end) both; }
 @keyframes d-fx-phosphor { 0% { opacity: 0; } 20% { opacity: 1; } 35% { opacity: .15; } 55% { opacity: 1; } 70% { opacity: .4; } 100% { opacity: 1; } }
 
-/* the strips sit straight on the twill face: no rack box of their own (the plate is the rack) */
-#fx .d-rack { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; padding: 0; background: none; box-shadow: none; margin-top: 24px; }
-.d-strip { position: relative; margin: 0; }
-/* Head crop of the 512x1004 strip, every viewport: source rows 10-598, the
-   screen, the selectors and the first knob row with its labels. Row 598 is
-   the dark gap under those labels in all four strips (a 3/4 crop cut through
-   the second knob row; the second row and MIX go). The 10-row lift hides the
-   red crop leftover on fx-tremolo.png rows 0-1. The ratio also reserves the
-   height before lazy-load, so the hero key's jump lands on #try (10-01). */
-.d-strip-well { position: relative; overflow: hidden; border-radius: 6px; }
-.d-strip img {
-  width: 100%; height: auto; display: block;
-  aspect-ratio: 512 / 588; object-fit: cover; object-position: 50% 2.4%;
-  filter: brightness(.86);   /* no hover lamp (law: attention motion is the text, never the box) */
+/* the FX screen (Dan 10-08: "looks like the plugin itself, just smaller, inside a digital screen"), 601 px up; phones
+   keep the band + carousel + spec rows (hidden here from 601). A bolted display: a dark bezel with a top catchlight and
+   the page's neon seam (.d-crt's ring), a chin with the DRIFT mark + a power lamp; the glass = the real plugin window
+   (fx-window.png) under a faint scanline mesh, the panel's light from upper left as a glare wedge, a vignette and the
+   screen's own spill on the bezel. Sizes: the laptop fit block below. */
+.d-fxs { display: none; }
+@media (min-width: 601px) {
+  #fx .d-bandfig, #fx .d-fx-foot { display: none; }
+  .d-fxs { display: block; margin: 0; }
 }
-/* the rack's front rail: each well shades to the rack colour and ends in a
-   5 px rail with a top catchlight, so the pedal sits behind the rack instead
-   of ending in a flat cut (brand review 10-01) */
-.d-strip-well::after {
-  content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 7%; pointer-events: none;
+@media (min-width: 601px) and (max-width: 1000px) {   /* the CSS panel's 24 px screws (11 px in) stay clear of the bezel */
+  #fx .d-fx-panel { padding-bottom: 44px; }
+  .d-fxs { margin-inline: 18px; }
+}
+.d-fxs-bezel {
+  position: relative; padding: 11px 11px 27px; border-radius: 16px;
   background:
-    linear-gradient(180deg, transparent calc(100% - 6px), rgba(255, 240, 255, .14) calc(100% - 6px), rgba(255, 240, 255, .14) calc(100% - 5px), #0d0813 calc(100% - 5px)),
-    linear-gradient(180deg, rgba(10, 6, 16, 0), rgba(10, 6, 16, .75));
+    linear-gradient(180deg, rgba(255, 240, 255, .06), rgba(255, 240, 255, 0) 16%),
+    linear-gradient(180deg, #1d1826 0%, #110e17 45%, #09070d 100%);
+  box-shadow:
+    0 0 0 1px rgba(4, 2, 8, .95),
+    0 0 0 2px rgba(190, 90, 255, .3),
+    inset 0 1px 0 rgba(255, 240, 255, .14),
+    inset 0 -2px 0 rgba(0, 0, 0, .55),
+    0 16px 28px rgba(0, 0, 0, .6);
 }
-.d-strip figcaption { margin-top: 10px; }
-.d-strip h3 { font: 700 18px/1 var(--d-f-head); letter-spacing: .03em; margin-bottom: 4px; }
-.d-strip p { font: 500 12px/1.35 var(--d-f-head); text-transform: uppercase; letter-spacing: .05em; color: var(--d-fg-dim); }
-.d-strip.s-pitch h3 { color: #d7dde8; }
-.d-strip.s-echo h3 { color: #ff5fd9; }
-.d-strip.s-verb h3 { color: #c79bff; }
-.d-strip.s-trem h3 { color: #6dff9a; }
-#fx .d-strip .d-nw { white-space: nowrap; }   /* 'Tape-dark' never breaks at its hyphen on a phone */
-@media (max-width: 1000px) {
-  #fx .d-rack { grid-template-columns: 1fr 1fr; gap: 12px; }
+.d-fxs-glass {
+  position: relative; overflow: hidden; isolation: isolate; aspect-ratio: 2588 / 1368; border-radius: 5px; background: #050307;
+  box-shadow: 0 0 0 1px #000, 0 0 18px rgba(180, 107, 255, .2);   /* the lit screen spills on the bezel */
+  transition: box-shadow 600ms ease 250ms;
 }
-/* the foot row: the SATURATE bay photo in its well | the spec rows under a Press Start kicker.
-   sat-bay.png is a loose 1060x382 crop (a dark band with a purple scribble
-   across the top 58 px, a slice of the next round part down the left 55 px):
-   the well shows the bay's own bezel only, x 55-1060 / y 58-382. */
+.d-fxs-img { display: block; width: 100%; height: 100%; }
+/* the glass on top: scanline mesh, then the glare wedge + vignette + the sunk edge */
+.d-fxs-glass::before, .d-fxs-glass::after { content: ''; position: absolute; inset: 0; pointer-events: none; }
+.d-fxs-glass::before { z-index: 3; background: repeating-linear-gradient(180deg, rgba(0, 0, 0, .16) 0 1px, transparent 1px 3px); }
+.d-fxs-glass::after {
+  z-index: 4; border-radius: inherit;
+  background:
+    linear-gradient(116deg, rgba(255, 245, 255, .085) 0%, rgba(255, 245, 255, .025) 34%, transparent 34.2%),
+    radial-gradient(125% 110% at 50% 45%, transparent 62%, rgba(0, 0, 0, .42) 100%);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .9), inset 0 6px 14px rgba(0, 0, 0, .5);
+}
+.d-fxs-flash {
+  position: absolute; inset: 0; z-index: 2; pointer-events: none; opacity: 0;
+  background: radial-gradient(60% 50% at 50% 50%, #fff 0%, #f2d8ff 45%, rgba(190, 120, 255, .6) 100%);
+}
+.d-fxs-chin { position: absolute; left: 0; right: 0; bottom: 0; height: 27px; display: grid; place-items: center; pointer-events: none; }
+.d-fxs-chin b { font: 600 9px/1 var(--d-f-badge); letter-spacing: .42em; padding-left: .42em; color: rgba(230, 214, 255, .34); }   /* printed: matte */
+.d-fxs-led {
+  position: absolute; right: 18px; top: 50%; width: 6px; height: 6px; margin-top: -3px; border-radius: 50%;
+  background: #e8b8ff; box-shadow: 0 0 0 1px rgba(0, 0, 0, .7), 0 0 7px rgba(200, 120, 255, .9);
+  transition: background-color 200ms ease 300ms, box-shadow 200ms ease 300ms;
+}
+/* off (JS, until the rack lands): a dark glass, the lamp out */
+.d-fxs[data-off] .d-fxs-img { opacity: 0; }
+.d-fxs[data-off] .d-fxs-glass { box-shadow: 0 0 0 1px #000; }
+.d-fxs[data-off] .d-fxs-led { background: #2a1c33; box-shadow: 0 0 0 1px rgba(0, 0, 0, .7); }
+/* power on, once: a bright line opens to the full picture, then one phosphor settle */
+.d-fxs[data-on] .d-fxs-img { animation: d-fxs-on 900ms cubic-bezier(.2, .7, .2, 1) both; }
+.d-fxs[data-on] .d-fxs-flash { animation: d-fxs-flash 900ms cubic-bezier(.2, .7, .2, 1) both; }
+@keyframes d-fxs-on {
+  0% { transform: scale(.6, .006); } 18% { transform: scale(1, .006); } 46% { transform: none; opacity: 1; }
+  60% { opacity: .72; } 68% { opacity: 1; } 76% { opacity: .88; } 100% { transform: none; opacity: 1; }
+}
+@keyframes d-fxs-flash {
+  0% { transform: scale(.6, .006); opacity: 1; } 18% { transform: scale(1, .006); opacity: 1; } 46% { transform: none; opacity: .5; } 72%, 100% { transform: none; opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .d-fxs-img, .d-fxs-flash { animation: none !important; } }
+
+/* the foot row (phones): the spec rows under a Press Start kicker */
 .d-fx-foot { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 40px; align-items: center; margin-top: 24px; }
 .d-fx-kicker { display: block; margin-bottom: 6px; font: 400 9px/1.4 var(--d-f-pix); letter-spacing: .1em; text-transform: uppercase; color: var(--d-fg-dim); text-shadow: none; }   /* printed ink: matte */
-.d-bay { overflow: hidden; aspect-ratio: 1005 / 324; border-radius: 10px; box-shadow: 0 0 0 1px rgba(4, 2, 8, .95), 0 0 0 6px #08040d, 0 1px 0 6px rgba(255, 240, 255, .06); }
-.d-bay img { display: block; width: calc(100% * 1060 / 1005); max-width: none; height: auto; margin: calc(-100% * 58 / 1005) 0 0 calc(-100% * 55 / 1005); }
 /* the spec plate: Oswald key | value rows, dashed rules */
 .d-spec-plate { margin: 0; display: grid; }
 .d-spec-plate > div { display: grid; grid-template-columns: 7.2em minmax(0, 1fr); column-gap: 14px; align-items: baseline; padding: 9px 0; border-top: 1px dashed rgba(180, 107, 255, .22); }
@@ -1575,7 +1601,6 @@
    rotateY dimmed, the gear-shift overshoot spring. The frame = a gradient border in the pedal's own hue. */
 .d-fxc { display: none; }
 @media (max-width: 600px) {
-  #fx .d-rack { display: none; }
   .d-fxc { --ph: clamp(250px, 74vw, 340px); display: block; position: relative; margin: 18px -16px 0; overflow: clip; outline: none; }
   .d-fxc-vp { position: relative; height: calc(var(--ph) + 118px); perspective: 1300px; touch-action: pan-y; }
   .d-fxc-slide {
@@ -1615,18 +1640,14 @@
   .drift-page .d-fxc:focus-visible .d-fxc-slide.is-current { outline: 2px solid var(--d-pink-ink); outline-offset: 3px; }
 }
 @media (max-width: 600px) and (prefers-reduced-motion: reduce) { .d-fxc-slide { transition: none; } }
-@media (max-width: 600px) { #fx .d-bay { display: none; } #fx .d-spec-plate > div { grid-template-columns: 5.2em minmax(0, 1fr); padding: 6px 0; } #fx .d-spec-plate dd { font-size: 14px; } }   /* the bay photo repeats the SATURATE row; 5.2em = AUTOTUNE + air, so SATURATE's line fits the 314 px panel */
-/* phone: the CSS panel's inner column is 314 px (390) / 244 (320): tighter glass, captions 16 + 11 px */
+@media (max-width: 600px) { #fx .d-spec-plate > div { grid-template-columns: 5.2em minmax(0, 1fr); padding: 6px 0; } #fx .d-spec-plate dd { font-size: 14px; } }   /* 5.2em = AUTOTUNE + air, so SATURATE's line fits the 314 px panel */
+/* phone: the CSS panel's inner column is 314 px (390) / 244 (320): tighter glass */
 @media (max-width: 600px) {
   .drift-page #fx h2.d-headline--row { margin-bottom: 14px; }
   #fx .d-bandglass { padding: 10px 12px 8px; }
   #fx .d-band-cut { font-size: 16px; }
   #fx .d-bandstrip { height: 48px; }
   #fx .d-band-ticks { margin-top: 2px; }
-  #fx .d-rack { gap: 10px; margin-top: 20px; }
-  #fx .d-strip figcaption { margin-top: 8px; }
-  #fx .d-strip h3 { font-size: 16px; }
-  #fx .d-strip p { font-size: 11px; line-height: 1.3; letter-spacing: .03em; }
   #fx .d-fx-foot { margin-top: 18px; }
 }
 @media (max-width: 374px) { .drift-page #fx h2.d-headline--row { font-size: 8.6vw; } }   /* 320: "WHOLE SOUND PANS." keeps to one line of the 244 px column (2 lines in all) */
@@ -1640,49 +1661,25 @@ html.hc #fx .d-fx-slice, html.hc #fx .d-headline span { text-shadow: none; }
 
 /* fit (Dan 10-04): "lets do the same" as #drive - the whole #fx panel shows under the nav at every laptop size.
    #drive's knob and values (--t: 0 at <=636 px tall .. 1 at >=936; padding + head identical), so the two panels scale as siblings.
-   Three full-width rows: band display (both cut flags on one row) / rack (4 strips, one-line captions) / foot (bay | kicker | spec rows, the rack's width).
-   The panel is a container: cqw caps every width-bearing size at its 10-03 size. */
+   The panel is a container: cqw caps every width-bearing size. */
 @media (min-width: 1001px) {
   #fx .d-fx-panel {
     --t: calc(clamp(0px, 100vh - 636px, 300px) / 300);
-    --fx-gap: calc(12px + 4 * var(--t));                                     /* rack column gap: 12 at t0 (the captions get the cell), 16 at t1 (10-03) */
-    --fx-cell: calc((100cqw - 3 * var(--fx-gap)) / 4);
-    --fx-strip: min(calc(168px + 100 * var(--t)), var(--fx-cell));           /* height fit | the 10-03 width (4 cells): 168 at 1141x636, 243 from ~900 tall */
-    --fx-inset: calc((var(--fx-cell) - var(--fx-strip)) / 2);               /* each photo is centred in its cell: the band display steps in by the same amount so its edges meet PITCH's left + TREMOLO's right */
-    --fx-bay: min(calc(190px + 150 * var(--t)), 34cqw);                      /* 190x61 at t0 (= the three spec rows) .. 340x110 at t1 (10-03); 34cqw keeps the rows their width on a 1001-1040 px window */
     container-type: inline-size;
-    padding: calc(56px + 14 * var(--t)) 80px calc(68px + 12 * var(--t));   /* = #drive; the sides stay 80 (the bay's 6 px ring clears the face's rounded corner by ~9 px at 1141 with the foot lift below, 10.6 at t1) */
+    padding: calc(56px + 14 * var(--t)) 80px calc(68px + 12 * var(--t));   /* = #drive; the sides stay 80 */
+    display: flex; flex-direction: column;   /* a crane-stretched panel (#drive the taller) centres the screen under the head */
   }
   #fx.d-sec { scroll-margin-top: calc(-6px - clamp(48px, 6vw, 72px)); }   /* landing on /drift/#fx: html's scroll-padding (nav + .75rem) minus this section's own pad puts the panel ~9 px under the nav, as #drive */
   .drift-page #fx .d-fx-panel h2.d-headline--row { font-size: min(calc(36px + 16 * var(--t)), 4.9cqw); margin-bottom: calc(18px + 8 * var(--t)); }   /* = #drive: one row, 27% spare at 1141 */
-  /* band display: one flag row (LOW CUT ends on its 6k line, HIGH CUT sits between the lines, 12 px clear at 1141); the strip 30..56 */
-  #fx .d-bandfig { margin: 0 var(--fx-inset) calc(10px + 14 * var(--t)); }
-  #fx .d-bandglass { padding: calc(7px + 7 * var(--t)) 16px calc(5px + 5 * var(--t)); }
-  #fx .d-band-cuts { grid-template-areas: 'cut'; gap: 0; margin-bottom: calc(3px + 1 * var(--t)); }
-  #fx .d-band-cut { grid-area: cut; font-size: min(calc(15px + 2 * var(--t)), 2.04cqw); line-height: 1.1; }   /* VT323 >= 15; 2.04cqw keeps HIGH CUT >= 8 px clear of the 6k line on a 1001-1040 px window */
-  #fx .d-band-cut::after, #fx .d-band-cut:first-child::after { height: calc(3px + 1 * var(--t)); }        /* each flag line runs the gap down to the strip */
-  #fx .d-bandstrip { height: calc(30px + 26 * var(--t)); }                 /* never a bar under 30 px; "FX PLAY HERE" keeps its 15 px in the lit rect */
-  #fx .d-band-ticks { height: calc(15px + 7 * var(--t)); margin-top: calc(2px + 2 * var(--t)); }
-  #fx .d-band-ticks span { font-size: calc(14px + 2 * var(--t)); line-height: 1.1; }
-  /* rack: 4 equal cells, the 512:588 photo centred in each, the caption centred under it on one line */
-  #fx .d-rack { margin-top: 0; column-gap: var(--fx-gap); }
-  #fx .d-strip-well { width: var(--fx-strip); margin-inline: auto; }
-  #fx .d-strip figcaption { margin-top: calc(6px + 4 * var(--t)); text-align: center; }
-  #fx .d-strip h3 { font-size: calc(17px + 1 * var(--t)); margin-bottom: calc(2px + 2 * var(--t)); }
-  #fx .d-strip p { font-size: calc(11px + 1 * var(--t)); line-height: 1.25; letter-spacing: .01em; }   /* one line: ECHO's (the longest) has 10% spare at 1141, ~4% in Safari's wider Oswald (nowrap from 1101, below) */
-  /* foot: bay | kicker | spec rows across the rack's width (the bay level with PITCH's left edge, the rules end at TREMOLO's right).
-     Fixed columns, never sized from the text: WebKit keeps a grid column's text width as measured in the fallback (Impact) before
-     the Oswald webfont swaps in, so a content-sized, centred foot came out ~7 px short and PRESETS wrapped in WebKit only (builder 10-04) */
-  #fx .d-fx-foot { margin: calc(13px + 11 * var(--t)) var(--fx-inset) calc(3px - 3 * var(--t)); grid-template-columns: var(--fx-bay) minmax(0, 1fr); column-gap: calc(24px + 16 * var(--t)); }   /* at t0 the foot sits 3 px higher (13 above / 3 below, 16 in all, the panel's height unchanged): the bay's ring then clears the face's rounded corner by ~9 px, as #drive's box does; at t1 24 / 0 as 10-03 */
-  #fx .d-fx-spec { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: calc(20px + 8 * var(--t)); align-items: start; }
-  #fx .d-fx-kicker { margin: 4px 0 0; max-width: 12em; line-height: 1.5; }   /* two lines, ALSO UNDER / THE HOOD, level with SATURATE */
-  #fx .d-spec-plate > div { padding: calc(2px + 7 * var(--t)) 0; grid-template-columns: 5.6em minmax(0, 1fr); }
-  #fx .d-spec-plate dt { font-size: calc(15px + 2 * var(--t)); line-height: 1; }
-  #fx .d-spec-plate dd { font-size: calc(13px + 3 * var(--t)); line-height: 1.15; }
+  /* the screen is as tall as the band + rack + foot stack it replaced at t0 and t1 (399 / 566 px at 1141 wide; a
+     little less between and on wider windows), so the panel never grows: the fit and the crane box hold. Its width
+     follows the glass's 2588:1368, capped at 94% of the column (a screen ON the face, never edge to edge). */
+  #fx .d-fxs {
+    --fxs-h: calc(399px + 167 * var(--t));
+    width: min(94cqw, calc((var(--fxs-h) - 38px) * 2588 / 1368 + 22px));
+    align-self: center; margin-block: auto;
+  }
 }
-/* the panel has 5 px spare at 1141x636: a caption that wrapped in real Safari (Oswald ~4% wider than WebKit) would break the fit.
-   From 1101 wide the cell (>= 177 px) holds ECHO's caption (~170) even a few px wider; below that the cells shrink and the captions may wrap as before */
-@media (min-width: 1101px) { #fx .d-strip p { white-space: nowrap; } }
 
 /* the FX crane (Dan 10-04, pick A: "when you scroll it pulls down the fx panel exactly like drift, same sizes and
    everything"). Laptop only: crane.ts wraps #drive + #fx in .d-crane > .d-crane-stage (phones never get the wrappers;
@@ -2313,8 +2310,6 @@ html.hc .drift-page .d-price-label { text-shadow: none; }
   .d-cap::before { inset: -6.5px; }   /* D2: 50 px hit boxes at 402, no overlap */
 
   /* --- #fx (X1, X2, X3) -------------------------------------------------- */
-  .d-strip img { aspect-ratio: 512 / 470; }
-  .d-rack { gap: 10px; padding: 10px; }
   .d-bandglass { padding: 10px 12px 6px; }
   .d-bandstrip { height: 40px; }
   #fx .d-alsoin { display: none; }
@@ -2348,7 +2343,7 @@ html.hc .drift-page .d-price-label { text-shadow: none; }
   .drift-page h2.d-headline { font-size: 30px; }
   .d-sechead .d-ja { text-shadow: none; opacity: .5; }
   .d-sec { padding-top: 36px; }   /* #drive keeps its own 18 px (id rule above) */
-  .drift-page .d-fine, .drift-page .d-strip p, .drift-page .d-chips-note { font-size: 13px; }
+  .drift-page .d-fine, .drift-page .d-chips-note { font-size: 13px; }
   /* K1 */
   .drift-page .d-keep-fine { font-size: 14px; color: var(--d-fg); }
   /* P5: the house haze plates off (both: display:none alone keeps the fetch) */

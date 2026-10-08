@@ -1,3 +1,10 @@
+> **Added 2026-10-08 (Dan: "looks like the plugin itself, just smaller, inside a digital screen"):** `fx-window.png`
+> (2588x1368, RGB) — the whole DRIFT 5.0.1 window with its FX rack open (GLUE COMP · PITCH · ECHO · REVERB · TREMOLO,
+> preset Init), shot from the plugin's own UI at its native 1725x912 stage, DPR 1.5, by `tools/shoot-drift-fx-window.mjs`.
+> The #fx screen from 601 px up (drift.css `.d-fxs`; the bezel, glass and chin are CSS). Re-shoot when the rack changes.
+> **Unreferenced 2026-10-08:** `fx-pitch.png` / `fx-echo.png` / `fx-reverb.png` / `fx-tremolo.png` (the laptop rack's
+> strips) and `sat-bay.png` (the foot's SATURATE bay): the screen replaced them. They stay in the folder, unreferenced, so
+> they don't ship. The phone carousel keeps `pedal-*.png`.
 > **Added 2026-10-03 (Dan's pick "3" on a page bench over rolls 1/2):** `tv-frame-3.png` (2636x1844, RGBA) — the keep-it TV
 > bezel, the plugin's CRT cabinet direction, generated blank by `tools/gen-drift-tv-frame.sh` (gpt-image-1, text-only, no type),
 > cropped, 2x Lanczos + unsharp, bezel runs smoothed along their length, the screen opening flattened under the tube. The livery

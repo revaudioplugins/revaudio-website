@@ -1,3 +1,16 @@
+## 2026-10-08 — /drift #fx = the plugin itself in a digital screen (Claude Code, Dan's Mac, worktree `drift-laptop`, branch `feat/drift-laptop-1008` off main 8ae3f7f) — COMMITTED LOCAL, not pushed, not live
+Dan: "replace everything in this area, redesign so it looks like the plugin itself, just smaller, inside a digital screen".
+- From 601 px up the #fx panel = the head + ONE screen: the whole DRIFT 5.0.1 window with its FX rack open (GLUE COMP ·
+  PITCH · ECHO · REVERB · TREMOLO), `src/assets/seasons/drift/fx-window.png`, shot from the plugin UI by
+  `tools/shoot-drift-fx-window.mjs` (re-shoot when the rack changes: 5.1.0 HALO). CSS bezel + glass + chin (`.d-fxs`,
+  drift.css SECTION 3); dark until the crane lands (#drive's `drift:covered`; 601-1000 px: in view), powers on once;
+  reduced motion / no JS = on. The band strip, the 4 strip photos, the SAT bay and the spec rows are gone up there.
+- Fit + crane held: the screen takes the old stack's height at t0/t1 (panel 574 px at 1141x636, as before; never taller).
+- Phones (<= 600) untouched: full-page pixel gate vs main IDENTICAL at 320/375/390/402/430/600. Laptop 1141x636 diff
+  confined to the #fx content box. `npm run build` green.
+- 🔴 STILL OPEN for Dan: the head "Whole sound pans. / FX on one slice." is untrue for 5.0.1 (Gil's
+  `drift-handoff-dan-2026-10-07.md`); phones still show the AUTOTUNE spec row + 4 pedals (no GLUE COMP).
+
 ## 2026-10-08 — /drift RE-PUBLISHED to main + /drift/feedback (Claude Code, Gil's session) — Gil: "push and commit to main all we have done here including Dan's commits"
 - `git revert ebdd081` on main (the 10-03 unpublish, as its TRAP note says), then merged `feat/drift-feedback` =
   Dan's `feat/drift-page` @ `13d79cb` + the beta feedback form (`/drift/feedback`, one response per email through the

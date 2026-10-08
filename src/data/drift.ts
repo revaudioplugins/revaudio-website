@@ -70,8 +70,6 @@ export const drift = {
    *  its sound; flip only once it pans the WHOLE signal and plays the <audio>
    *  bounces (D2/H1). The build refuses demoMode 'real' until then. */
   demoWholeSound: false,
-  /** Full DRIFT window screenshot (src/assets/seasons/drift/drift-window.png) staged per Decision 19. */
-  screenshotReady: false,
   /** FX RANDOMIZE confirmed in the Oct 10 build. */
   randomizeInBuild: false,
 };
