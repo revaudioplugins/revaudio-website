@@ -579,8 +579,8 @@ export const driftSurveyMeta = {
     softEn: "The feedback form opens shortly. Your answers weren't sent yet.",
     badCodeHe: 'הקישור הזה לא תקין. בדוק/בדקי את מייל ה-D5 ששלחנו לך.',
     badCodeEn: "This link isn't valid. Check the D5 email we sent you.",
-    alreadyHe: 'כבר קיבלנו משוב מהקישור הזה. תודה!',
-    alreadyEn: 'We already have feedback from this link. Thank you!',
+    alreadyHe: 'כבר קיבלנו משוב מהמייל הזה. אפשר לשלוח טופס אחד לכל מייל. תודה!',
+    alreadyEn: 'We already have feedback from this email. One form per email. Thank you!',
     requiredMissingHe: 'יש שאלות חובה שטרם נענו (מסומנות).',
     requiredMissingEn: 'Some required questions are unanswered (highlighted).',
     langLabelHe: 'EN',
@@ -599,17 +599,6 @@ export const driftSections: Section[] = [
 
 export const driftQuestions: Question[] = [
   // ── A. Setup ──────────────────────────────────────────────────────────────
-  {
-    id: 'pit_code',
-    section: 'setup',
-    type: 'shorttext',
-    required: true,
-    he: 'קוד ה-pit',
-    en: 'Pit code',
-    helpHe: 'מופיע בפאנל ה-INFO של DRIFT. זה גם מוכיח לנו שהבילד נפתח.',
-    helpEn: "Shown in DRIFT's INFO panel. This proves the build actually opened.",
-    maxLen: 40,
-  },
   {
     id: 'daw',
     section: 'setup',

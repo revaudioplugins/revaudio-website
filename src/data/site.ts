@@ -95,16 +95,13 @@ export const site = {
 
   /**
    * DRIFT Beta feedback form (src/pages/drift/feedback.astro). Its own
-   * Formspree form (like affiliateFormEndpoint): the tester types their email,
-   * and the whole response (email + every answer, keyed by the question text)
-   * is POSTed straight to Formspree as JSON. Not via the /form-once relay: that
-   * relay keeps only 30 string fields, so multi-select answers would be lost.
-   * A personal link's `?t=<token>`, when present, rides along as `tester_link`.
-   *
-   * GO-LIVE: create a form at https://formspree.io (info@revaudio.net as the
-   * notification recipient), then replace the REPLACE_WITH_FORM_ID token.
-   * While the token is in place the form shows an honest "opens shortly"
-   * notice and never pretends to capture.
+   * Formspree form (like affiliateFormEndpoint). One response per email: the
+   * page posts to the same /form-once relay as the newsletter + affiliate
+   * forms (form 'drift_feedback'), which forwards here. Changing the id?
+   * Update FORM_ONCE in the license worker too. The page keeps its payload
+   * inside the relay's limits (30 string fields, 64-char keys, 16 KB).
+   * While the id is REPLACE_WITH_FORM_ID the form shows an honest "opens
+   * shortly" notice and never pretends to capture.
    */
   driftFeedbackFormEndpoint: 'https://formspree.io/f/xgaowgkb',
 
