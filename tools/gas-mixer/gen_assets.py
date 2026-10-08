@@ -36,6 +36,37 @@ PROMPTS = {
         "at the upper-left. " + LIGHT + " FLAT ORTHOGRAPHIC front view, camera straight on, centered, fills about 92% "
         "of the frame width. Transparent background outside the bezel. Strict: exactly the marks E, 1/2, F and FUEL, "
         "spelled exactly that way, once each; no needle; no other text, numbers or logos.", 'transparent'),
+    # ---- transport candidates (Yoni 2026-10-08: "the play and stop buttons need to be way cooler and a bit bigger") ----
+    'tkey-chrome': ('1024x1536',
+        "Photorealistic product photo of ONE single oversized piano-key transport button from a 1960s American car "
+        "cassette / 8-track deck, seen from the front and slightly above. A tall rectangular key about 1.4 times taller "
+        "than wide: a thick polished CHROME cap with rounded bevelled edges and a cool sky-blue reflection along the top "
+        "edge and a warm reflection underneath, the front face inlaid with a recessed panel of black-brown bakelite "
+        "with fine vertical ribbing. The bakelite panel is BLANK. Light wear: micro-scratches on the chrome, a small "
+        "dull patch where a thumb presses. " + LIGHT + " FLAT ORTHOGRAPHIC front view, centered, the key fills about "
+        "86% of the frame height. Transparent background. Strict: no text, symbols, arrows or logos; only ONE key.", 'transparent'),
+    'pbtn-amber': ('1024x1024',
+        "Photorealistic product photo of a single large vintage 1950s automobile dashboard PUSH BUTTON: a domed round "
+        "jewel lens of deep translucent AMBER glass (honey #c97a14 to #ffb648), faceted like a tail-light lens with a "
+        "fine radial star pattern moulded inside, a soft lamp glowing inside it. It sits in a thick knurled polished "
+        "CHROME bezel ring with a thin aged-brass outer collar. The lens is BLANK. Light patina, micro-scratches. "
+        + LIGHT + " FLAT ORTHOGRAPHIC front view, perfect circle, centered, fills about 88% of the frame. Transparent "
+        "background. Strict: only ONE button, no text, symbols or logos.", 'transparent'),
+    'pbtn-red': ('1024x1024',
+        "Photorealistic product photo of a single large vintage 1950s automobile dashboard PUSH BUTTON: a domed round "
+        "jewel lens of deep translucent OXBLOOD-RED glass (#6e140c to #d23a26), faceted like a tail-light lens with a "
+        "fine radial star pattern moulded inside, unlit. It sits in a thick knurled polished CHROME bezel ring with a "
+        "thin aged-brass outer collar. The lens is BLANK. Light patina, micro-scratches. " + LIGHT + " FLAT "
+        "ORTHOGRAPHIC front view, perfect circle, centered, fills about 88% of the frame. Transparent background. "
+        "Strict: only ONE button, no text, symbols or logos.", 'transparent'),
+    # ---- console frame wear (Yoni 2026-10-08: "the gas edges ... same like rr - patina wear vibes"; RR = chrome-rust.jpg) ----
+    'brass-patina': ('1024x1024',
+        "Seamless tileable texture: flat top-down macro photograph of old worn BRASS car-dashboard trim. Mostly honey "
+        "and dark-gold brass (about 70% clean metal) with fine brushed scratches running mostly horizontally, rubbed "
+        "brighter patches where hands touched it, darker brown-black tarnish clouds, and small clusters of dull "
+        "green-teal verdigris patina and pitting concentrated in patches, a few dents and nicks. Even flat diffuse "
+        "lighting, no highlights, no reflections of a room, no vignette, no perspective. Fills the whole frame edge to "
+        "edge; tileable edges.", 'opaque'),
 }
 
 def gen(slug):

@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Transport Bench</title>
+<!--
+  PLAY / STOP candidates for BOTH site players (GAS Mixer + Radio Roulette Station Mixer), 2026-10-08.
+  Yoni: "the play and stop button doesn't get the attention they need - they need to be way cooler and a bit bigger
+  ... sick and sexy and RevAudio vibe". Each candidate keeps the cassette window (moving reels) and replaces the two
+  small keys. Shown at true size on GAS walnut and on RR leather, plus phone scale. No audio here: the keys drive the
+  reels and lamps only. Art: tools/gas-mixer/gen_assets.py (tkey-chrome, pbtn-amber, pbtn-red) + process_gen.py.
+  Serve from bench/ (python -m http.server 8794).
+-->
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=VT323&family=Inter:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{--brass:#c89a48;--parchment:#ebdcb6;--ink:#d8c7a2;--page:#0f0c0a;
+  --grain:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .55  0 0 0 0 .45  0 0 0 0 .34  0 0 0 .5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{background:var(--page);color:var(--ink);font-family:Inter,'Segoe UI',Arial,sans-serif}
+body{padding:28px 24px 60px}
+h1{font:600 15px/1.4 Inter,sans-serif;color:var(--parchment)} h1 small{font-weight:500;color:#a8977a}
+.lane{margin-top:22px;border-radius:16px;padding:26px 28px;display:flex;gap:56px;align-items:flex-start;flex-wrap:wrap}
+.lane.walnut{background:url("assets/gas-mixer/img/dash-walnut.png") center/2400px auto,#2a1609;box-shadow:inset 0 3px 7px rgba(8,4,2,.9),0 0 0 9px #b78a3e}
+.lane.leather{background:var(--grain),linear-gradient(180deg,#1d1612,#15100c 55%,#110c09);background-size:180px 180px,auto;box-shadow:inset 0 3px 7px rgba(8,4,2,.9),0 0 0 9px #8c9399}
+svg{overflow:visible}
+.Z .tkey .sym{fill:#2a2420}
+.cand{display:flex;flex-direction:column;align-items:center;gap:12px}
+.cand .tag{font:600 11px/1.3 Oswald,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:rgba(214,178,112,.85);text-align:center;text-shadow:0 -1px 0 rgba(0,0,0,.85)}
+.cand .tag b{display:block;font-size:15px;color:var(--parchment)}
+.phone .cand{transform:scale(.66);transform-origin:top center;margin-bottom:-80px}
+
+/* ---- the deck shell every candidate shares: chrome frame, dark grained body, cassette window ---- */
+.deck{position:relative;border-radius:12px;background:linear-gradient(180deg,#f0f1f3,#9aa2a8 30%,#3d4448 60%,#b8bec2 88%,#e3d8c2);
+  box-shadow:0 12px 20px -4px rgba(12,9,6,.85),0 2px 4px rgba(12,9,6,.6)}
+.deck .body{position:absolute;inset:2px;border-radius:10px;background:var(--grain),linear-gradient(180deg,#2b2520,#18130f 55%,#0f0b08);background-size:180px 180px,auto;
+  box-shadow:inset 0 1px 0 rgba(255,236,210,.12),inset 0 -2px 4px rgba(12,9,6,.8)}
+.screw{position:absolute;width:9px;height:9px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#f4f5f6,#9aa1a6 50%,#3d4246)}
+.screw::after{content:"";position:absolute;left:1px;right:1px;top:3.75px;height:1.5px;background:rgba(20,16,12,.7);transform:rotate(var(--r))}
+.window{position:absolute;width:148px;height:74px;border-radius:7px;overflow:hidden;background:linear-gradient(180deg,#0d0a08,#1a1410);
+  box-shadow:inset 0 0 0 1.5px rgba(160,168,174,.55),inset 0 3px 8px rgba(12,9,6,.95)}
+.window::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(160deg,rgba(220,232,245,.16) 0%,rgba(220,232,245,.04) 28%,rgba(0,0,0,0) 42%,rgba(255,220,170,.05) 100%)}
+.window svg{position:absolute;inset:0}
+.lampdot{position:absolute;width:7px;height:7px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#5a4630,#2a1d12);box-shadow:inset 0 1px 1px rgba(12,9,6,.8);transition:background .15s,box-shadow .15s}
+.playing .lampdot{background:radial-gradient(circle at 40% 35%,#fff0c8,#ffad3c 50%,#b8620e);box-shadow:0 0 8px 2px rgba(255,160,50,.55)}
+.etch{position:absolute;font:600 8.5px/1 Inter,sans-serif;letter-spacing:.2em;color:rgba(214,196,160,.5)}
+
+/* ======== A: XL chrome piano keys (tkey-chrome through border-image: corners keep their shape at any size) ======== */
+.A.deck{width:236px;height:206px}
+.A .window{left:14px;top:14px}
+.A .counter{position:absolute;left:172px;top:20px;width:50px;height:26px;border-radius:4px;overflow:hidden;display:flex;gap:2px;padding:3px 4px;
+  background:linear-gradient(180deg,#0b0806,#1d1611);box-shadow:inset 0 2px 4px rgba(0,0,0,.95),0 1px 0 rgba(255,236,210,.1)}
+.A .counter span{flex:1;position:relative;overflow:hidden;border-radius:2px;background:linear-gradient(180deg,#d8d2c4,#f4efe2 45%,#cfc7b6)}
+.A .counter span i{position:absolute;left:0;right:0;top:0;font:600 14px/20px Oswald,sans-serif;text-align:center;color:#2a2018;font-style:normal;transition:transform .25s}
+.A .etch.c{left:174px;top:52px} .A .lampdot{left:197px;top:66px}
+.A .bed{position:absolute;left:14px;top:100px;width:208px;height:92px;border-radius:8px;padding:6px;display:flex;gap:6px;
+  background:linear-gradient(180deg,#070504,#1a1410);box-shadow:inset 0 3px 6px rgba(12,9,6,.95),0 1px 0 rgba(255,236,210,.08)}
+.A .k{position:relative;flex:1;cursor:pointer;border:14px solid transparent;border-image:url("assets/gas-mixer/img/tkey-chrome.png") 30 fill / 14px;
+  transform:translateY(-4px);filter:drop-shadow(0 6px 2px rgba(8,5,3,.85)) drop-shadow(0 2px 1px rgba(8,5,3,.6));transition:transform 90ms cubic-bezier(.2,.9,.25,1.25),filter 90ms}
+.A .k:active,.A .k.down{transform:translateY(2px);filter:drop-shadow(0 1px 1px rgba(8,5,3,.85)) brightness(.9)}
+.A .k .lit{position:absolute;inset:-6px;border-radius:4px;background:radial-gradient(70% 70% at 50% 55%,rgba(255,170,60,.55),rgba(255,140,40,0));opacity:0;transition:opacity .15s;mix-blend-mode:screen;pointer-events:none}
+.A .k.down .lit{opacity:1}
+.A .k svg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);overflow:visible}
+.A .k .sym{fill:rgba(232,220,192,.72);filter:drop-shadow(0 -1px 0 rgba(0,0,0,.9))}
+.A .k.down .sym{fill:#ffe3a8;filter:drop-shadow(0 0 4px rgba(255,170,60,.95))}
+
+/* ======== B: dash jewel pair (pbtn-amber PLAY lit from inside, pbtn-red STOP) ======== */
+.B.deck{width:204px;height:232px}
+.B .window{left:28px;top:14px} .B .etch.c{left:28px;top:94px} .B .lampdot{left:169px;top:93px}
+.B .jrow{position:absolute;left:0;right:0;top:112px;display:flex;justify-content:center;gap:16px}
+.B .jcol{display:flex;flex-direction:column;align-items:center;gap:6px}
+.B .etch.l{position:static}
+.jewel{position:relative;width:80px;height:80px;border-radius:50%;cursor:pointer;transition:transform 90ms cubic-bezier(.2,.9,.25,1.25),filter .2s;
+  filter:drop-shadow(0 6px 6px rgba(8,5,3,.85))}
+.jewel img{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;transition:filter .2s}
+.jewel svg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);overflow:visible}
+.jewel .sym{fill:rgba(40,16,4,.62);transition:fill .15s}
+.jewel:active{transform:translateY(2px) scale(.97)}
+.jewel.play img{filter:brightness(.62) saturate(.8)}
+.jewel.play.on img{filter:brightness(1.18) saturate(1.1)}
+.jewel.play.on{filter:drop-shadow(0 6px 6px rgba(8,5,3,.85)) drop-shadow(0 0 14px rgba(255,160,50,.75)) drop-shadow(0 0 30px rgba(255,140,40,.45))}
+.jewel.play.on .sym{fill:#fff2cf;filter:drop-shadow(0 0 3px rgba(255,200,120,.95))}
+.jewel.stop img{filter:brightness(.8)}
+.jewel.stop:active img{filter:brightness(1.25)}
+.jewel.stop .sym{fill:rgba(255,220,200,.55)}
+
+/* ======== C: one big starter (pbtn-amber toggles; breathes before the first press) ======== */
+.C.deck{width:204px;height:250px}
+.C .window{left:28px;top:14px} .C .etch.c{left:28px;top:94px} .C .lampdot{left:169px;top:93px}
+.C .big{position:absolute;left:46px;top:110px;width:112px;height:112px}
+.C .ring{position:absolute;inset:-7px;border-radius:50%;pointer-events:none;
+  background:radial-gradient(closest-side,transparent 82%,rgba(255,170,60,.0) 83%,rgba(255,170,60,.0) 100%);transition:background .3s}
+@keyframes breathe{0%,100%{box-shadow:0 0 0 0 rgba(255,160,50,0)}50%{box-shadow:0 0 18px 6px rgba(255,160,50,.45)}}
+.C:not(.started) .big .jewel{animation:breathe 1.6s ease-in-out infinite}
+.C .big .jewel{width:112px;height:112px}
+.C .big .sym{transition:opacity .15s}
+.C .big .s-stop{opacity:0} .C.playing .big .s-stop{opacity:1} .C.playing .big .s-play{opacity:0}
+.C .etch.l{left:0;right:0;top:230px;text-align:center}
+
+/* light the jewel in C while playing (same as B's PLAY) */
+.C.playing .jewel img{filter:brightness(1.18) saturate(1.1)}
+.C.playing .jewel{filter:drop-shadow(0 6px 6px rgba(8,5,3,.85)) drop-shadow(0 0 14px rgba(255,160,50,.75)) drop-shadow(0 0 30px rgba(255,140,40,.45))}
+.C .jewel img{filter:brightness(.7) saturate(.85)}
+.C.playing .jewel .sym{fill:#fff2cf;filter:drop-shadow(0 0 3px rgba(255,200,120,.95))}
+
+/* current (for reference) */
+.Z.deck{width:176px;height:172px}
+.Z .window{left:12px;top:14px} .Z .etch.c{left:14px;top:93px} .Z .lampdot{left:150px;top:92px}
+.Z .tkeys{position:absolute;left:12px;top:108px;width:148px;height:52px;border-radius:6px;padding:4px;display:flex;gap:4px;background:linear-gradient(180deg,#070504,#1a1410)}
+.Z .tkey{flex:1;border-radius:4px;cursor:pointer;background:linear-gradient(180deg,#f3f4f5 0%,#cdd2d6 22%,#9aa2a8 62%,#6d757b 86%,#3f464b 100%);
+  box-shadow:0 5px 0 #2c3135,0 6px 6px rgba(12,9,6,.7);transform:translateY(-3px);display:flex;align-items:center;justify-content:center}
+.Z .tkey.down{transform:translateY(2px);box-shadow:none}
+</style>
+</head>
+<body>
+<h1>Transport bench <small>· new PLAY / STOP for the GAS + Radio Roulette players · press the keys (no audio, reels and lamps only)</small></h1>
+
+<div class="lane walnut" id="laneG"></div>
+<div class="lane leather" id="laneR"></div>
+<div class="lane walnut phone" id="laneP"></div>
+
+<script>
+const IMG = 'assets/gas-mixer/img/';
+const CANDS = [
+  { k:'Z', name:'Now', sub:'current keys' },
+  { k:'A', name:'A · Chrome piano keys', sub:'XL deck keys + tape counter' },
+  { k:'B', name:'B · Dash jewels', sub:'amber play / red stop' },
+  { k:'C', name:'C · One big starter', sub:'one jewel, play / stop' },
+];
+const PLAY = '<path class="sym s-play" d="M-7 -10 L11 0 L-7 10 Z"/>', STOP = '<rect class="sym s-stop" x="-8.5" y="-8.5" width="17" height="17" rx="1.5"/>';
+const sym = (inner, scale=1) => `<svg width="1" height="1" style="transform:translate(-50%,-50%) scale(${scale})">${inner}</svg>`;
+let uid = 0;
+function windowSvg(){ const u = 'w' + (uid++);
+  return `<svg viewBox="0 0 148 74" width="148" height="74"><defs>
+    <linearGradient id="sh${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3d362f"/><stop offset=".5" stop-color="#2a241f"/><stop offset="1" stop-color="#1a1511"/></linearGradient>
+    <radialGradient id="tp${u}" cx=".42" cy=".38" r=".75"><stop offset="0" stop-color="#7a4f2c"/><stop offset=".6" stop-color="#4f311a"/><stop offset="1" stop-color="#2a190b"/></radialGradient>
+    <mask id="mk${u}"><rect width="148" height="74" fill="#fff"/><rect x="50" y="27" width="48" height="22" rx="3" fill="#000"/>
+      <circle cx="40" cy="40" r="9" fill="#000"/><circle cx="108" cy="40" r="9" fill="#000"/><path d="M30 71 L36 58.5 L112 58.5 L118 71 Z" fill="#000"/></mask></defs>
+    <rect x="3" y="3" width="142" height="68" rx="5" fill="#0c0a08"/>
+    <circle cx="40" cy="40" r="20" fill="url(#tp${u})"/><circle cx="108" cy="40" r="13" fill="url(#tp${u})"/>
+    <line x1="22" y1="63.5" x2="126" y2="63.5" stroke="#5a381d" stroke-width="1.8"/>
+    <rect x="3" y="3" width="142" height="68" rx="5" fill="url(#sh${u})" opacity=".8" mask="url(#mk${u})"/>
+    <g class="reel" data-c="40"><circle cx="40" cy="40" r="7.4" fill="#efe9de" stroke="#8b857a" stroke-width=".6"/><circle cx="40" cy="40" r="3.9" fill="#15100c"/><rect x="39.4" y="32.8" width="1.2" height="2.4" fill="#8b857a"/></g>
+    <g class="reel" data-c="108"><circle cx="108" cy="40" r="7.4" fill="#efe9de" stroke="#8b857a" stroke-width=".6"/><circle cx="108" cy="40" r="3.9" fill="#15100c"/><rect x="107.4" y="32.8" width="1.2" height="2.4" fill="#8b857a"/></g>
+    <rect x="9" y="6" width="130" height="17" rx="2" fill="#e8dcbd"/><rect x="9" y="17.5" width="130" height="1.6" fill="#c0392b" opacity=".8"/>
+    <text x="16" y="15" font-family="Segoe Script,Brush Script MT,cursive" font-size="8" font-weight="700" fill="#2e3a6e">Fill her up</text></svg>`; }
+const screws = () => `<i class="screw" style="left:5px;top:5px;--r:13deg"></i><i class="screw" style="right:5px;top:5px;--r:-7deg"></i>
+  <i class="screw" style="left:5px;bottom:5px;--r:19deg"></i><i class="screw" style="right:5px;bottom:5px;--r:-31deg"></i>`;
+
+function build(k){
+  const d = document.createElement('div'); d.className = `deck ${k}`;
+  let t = '';
+  if (k==='Z') t = `<div class="tkeys"><div class="tkey play">${sym(PLAY,.7)}</div><div class="tkey stop">${sym(STOP,.7)}</div></div><span class="etch c">AUTO REVERSE</span>`;
+  if (k==='A') t = `<div class="counter"><span><i>0</i></span><span><i>0</i></span><span><i>0</i></span></div><span class="etch c">COUNTER</span>
+    <div class="bed"><div class="k play" role="button" aria-label="Play"><span class="lit"></span>${sym(PLAY,1.25)}</div><div class="k stop" role="button" aria-label="Stop">${sym(STOP,1.15)}</div></div>`;
+  if (k==='B') t = `<span class="etch c">AUTO REVERSE</span><div class="jrow">
+    <div class="jcol"><div class="jewel play" role="button" aria-label="Play"><img src="${IMG}pbtn-amber.png" alt="">${sym(PLAY,1.2)}</div><span class="etch l">PLAY</span></div>
+    <div class="jcol"><div class="jewel stop" role="button" aria-label="Stop"><img src="${IMG}pbtn-red.png" alt="">${sym(STOP,1.1)}</div><span class="etch l">STOP</span></div></div>`;
+  if (k==='C') t = `<span class="etch c">AUTO REVERSE</span><div class="big"><div class="jewel toggle" role="button" aria-label="Play / stop"><img src="${IMG}pbtn-amber.png" alt="">${sym(PLAY+STOP,1.7)}</div></div><span class="etch l">PLAY · STOP</span>`;
+  d.innerHTML = `<div class="body">${screws()}<div class="window">${windowSvg()}</div><span class="lampdot"></span>${t}</div>`;
+  const st = { playing:false, ang:0, count:0 };
+  d._st = st;
+  const setPlay = on => { st.playing = on; d.classList.toggle('playing', on); if (on) d.classList.add('started');
+    d.querySelectorAll('.play').forEach(e => e.classList.toggle(e.classList.contains('jewel') ? 'on' : 'down', on)); };
+  const q = s => d.querySelector(s);
+  if (q('.play')) q('.play').addEventListener('click', () => setPlay(true));
+  if (q('.stop')) q('.stop').addEventListener('click', () => { setPlay(false); const s=q('.stop'); s.classList.add('down'); setTimeout(()=>s.classList.remove('down'), 140); });
+  if (q('.toggle')) q('.toggle').addEventListener('click', () => setPlay(!st.playing));
+  return d;
+}
+['laneG','laneR','laneP'].forEach(id => CANDS.forEach(c => {
+  const w = document.createElement('div'); w.className = 'cand';
+  w.innerHTML = `<div class="tag"><b>${c.name}</b>${c.sub}</div>`; w.appendChild(build(c.k)); document.getElementById(id).appendChild(w);
+}));
+let last = performance.now();
+(function frame(now){ const dt = Math.min(.1, (now-last)/1000); last = now;
+  document.querySelectorAll('.deck').forEach(d => { const st = d._st; if (!st.playing) return;
+    st.ang -= 240*dt; d.querySelectorAll('.reel').forEach(r => r.setAttribute('transform', `rotate(${st.ang.toFixed(1)} ${r.dataset.c} 40)`));
+    st.count += dt*1.6; const n = Math.floor(st.count) % 1000, digs = String(n).padStart(3,'0');
+    d.querySelectorAll('.counter i').forEach((e,i) => e.textContent = digs[i]); });
+  requestAnimationFrame(frame); })(last);
+</script>
+</body></html>

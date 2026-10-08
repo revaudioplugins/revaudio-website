@@ -16,7 +16,7 @@ def trim(im, pad=4, thr=128, haze=40):
     box = (max(0, xs.min() - pad), max(0, ys.min() - pad), min(im.width, xs.max() + pad + 1), min(im.height, ys.max() + pad + 1))
     return im.crop(box), box
 
-for slug, width in [('tag-blank', 320), ('fuel-gauge', 340)]:
+for slug, width in [('tag-blank', 320), ('fuel-gauge', 340), ('tkey-chrome', 192), ('pbtn-amber', 224), ('pbtn-red', 224)]:
     src = os.path.join(GEN, slug + '.png')
     im, box = trim(Image.open(src).convert('RGBA'))
     k = width / im.width
