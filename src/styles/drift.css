@@ -1436,40 +1436,105 @@
 .d-bandglass[data-lit] .d-band-cut, .d-bandglass[data-lit] .d-fx-slice { animation: d-fx-phosphor 420ms steps(1, end) both; }
 @keyframes d-fx-phosphor { 0% { opacity: 0; } 20% { opacity: 1; } 35% { opacity: .15; } 55% { opacity: 1; } 70% { opacity: .4; } 100% { opacity: 1; } }
 
-/* the strips sit straight on the twill face: no rack box of their own (the plate is the rack) */
-#fx .d-rack { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; padding: 0; background: none; box-shadow: none; margin-top: 24px; }
-.d-strip { position: relative; margin: 0; }
-/* Head crop of the 512x1004 strip, every viewport: source rows 10-598, the
-   screen, the selectors and the first knob row with its labels. Row 598 is
-   the dark gap under those labels in all four strips (a 3/4 crop cut through
-   the second knob row; the second row and MIX go). The 10-row lift hides the
-   red crop leftover on fx-tremolo.png rows 0-1. The ratio also reserves the
-   height before lazy-load, so the hero key's jump lands on #try (10-01). */
-.d-strip-well { position: relative; overflow: hidden; border-radius: 6px; }
-.d-strip img {
-  width: 100%; height: auto; display: block;
-  aspect-ratio: 512 / 588; object-fit: cover; object-position: 50% 2.4%;
-  filter: brightness(.86);   /* no hover lamp (law: attention motion is the text, never the box) */
+/* THE LIVE RACK (601 px up, Dan 10-09; DriftFx.astro + rack.ts): the DRIFT 5.2.4 FX view on a stage in the plugin's
+   own px. --u = one stage px (the stage is 1725 wide, the rack's container width): every part is placed with
+   calc(n * var(--u)) from rack.json, so it scales as one picture and the text stays text. Stacking = the plugin's:
+   floor + LCD 0 < strips 1 < chassis + deck 2 < rail pulse 3 < carriages 4 < the page's LCD parts 5. */
+.d-rk { display: none; }
+@media (min-width: 601px) {
+  #fx .d-bandfig { display: none; }   /* the band lives in #drive; this section is the rack */
+  .d-rk { display: block; position: relative; container-type: inline-size; }
+  .d-rk > * { --u: calc(100cqw / 1725); }
+  .d-rk-stage { position: relative; width: 100%; aspect-ratio: 1725 / 805; overflow: clip; border-radius: calc(10 * var(--u)); }
+  .d-rk-stage > *, .d-rk-strip > * { position: absolute; left: calc(var(--x) * var(--u)); top: calc(var(--y) * var(--u));
+    width: calc(var(--w) * var(--u)); height: calc(var(--h) * var(--u)); margin: 0; }
+  .d-rk-stage img { display: block; max-width: none; }
+  .d-rk-floor, .d-rk-top { left: 0; top: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+  .d-rk-top { z-index: 2; }
+  .d-rk-strip { z-index: 1; }
+  .d-rk-strip > img { left: 0; top: 0; width: 100%; height: 100%; }
+  .d-rk-grab { z-index: 4; pointer-events: none; }
+  /* a strip and its carriage ride the rail together: --dx = stage px to its column (rack.ts) */
+  .d-rk-strip, .d-rk-grab, .d-rk-caps > li { --dx: 0; transform: translateX(calc(var(--dx) * var(--u)));
+    transition: transform 720ms cubic-bezier(.3, .72, .18, 1), filter 380ms ease, opacity 380ms ease; }
+  /* a strip a roll sits out: the plugin's bypass look (the knobs grey, the screen idles) */
+  .d-rk-strip.is-off > img { filter: saturate(.25) brightness(.5); transition: filter 380ms ease; }
+  .d-rk-strip > img { transition: filter 380ms ease; }
+  .d-rk-strip canvas { display: block; }
+  /* the signal: one pulse runs the groove left to right (the chain in order) while the rack is on screen */
+  .d-rk-pulse { --x: 40; --y: 160.8; --w: 90; --h: 8; z-index: 3; pointer-events: none; border-radius: 999px;
+    background: radial-gradient(closest-side, #fff2fc, rgba(255, 95, 216, .9) 45%, rgba(255, 95, 216, 0));
+    filter: drop-shadow(0 0 calc(6 * var(--u)) rgba(255, 95, 216, .9)); opacity: 0;
+    animation: d-rk-pulse 3.6s cubic-bezier(.45, 0, .55, 1) 1.2s infinite; animation-play-state: paused; }
+  .d-rk[data-boot="on"] .d-rk-pulse { animation-play-state: running; }
+  @keyframes d-rk-pulse {
+    0% { transform: translateX(0); opacity: 0; } 6% { opacity: 1; } 64% { opacity: 1; }
+    70% { transform: translateX(calc(1560 * var(--u))); opacity: 0; } 100% { transform: translateX(calc(1560 * var(--u))); opacity: 0; } }
+
+  /* the page's LCD parts, drawn as the plugin draws them (its px x --rk-k, the FX view's LCD scale) */
+  .d-rk-stage { --k: calc(var(--rk-k) * var(--u)); --p: 255, 95, 216; --phos: #ffd6f6;
+    --rim: -1px 0 0 rgba(14, 8, 20, .88), 1px 0 0 rgba(14, 8, 20, .88), 0 -1px 0 rgba(14, 8, 20, .88), 0 1px 0 rgba(14, 8, 20, .88); }
+  .d-rk-cnt { z-index: 5; height: auto; text-align: right; white-space: nowrap; font: 400 calc(8 * var(--k)) / 1.25 var(--d-f-pix);
+    letter-spacing: .04em; color: rgba(231, 184, 255, .55); }
+  .d-rk-cnt, .d-rk-tiles { left: auto; right: calc((1725 - var(--x) - var(--w)) * var(--u)); }
+  .d-rk-tiles { z-index: 5; display: flex; justify-content: flex-start; gap: calc(5 * var(--k)); }
+  .d-rk-tile { position: relative; flex: 0 0 calc(30 * var(--k)); height: 100%; border-radius: calc(4 * var(--k)); padding: 0; border: 0;
+    background: rgba(190, 90, 255, .07); box-shadow: inset 0 0 0 1px rgba(231, 184, 255, .22); cursor: pointer; font: inherit; color: inherit; }
+  i.d-rk-tile.is-empty { background: none; box-shadow: inset 0 0 0 1px rgba(231, 184, 255, .08); cursor: default; }
+  .d-rk-tile .n { position: absolute; left: 0; right: 0; top: calc(4 * var(--k)); text-align: center; font: 400 calc(22 * var(--k)) / 1 var(--d-f-lcd);
+    color: #e7b8ff; text-shadow: 0 0 6px rgba(190, 90, 255, .8); }
+  .d-rk-tile.is-x .n { color: #ff8fa3; text-shadow: 0 0 6px rgba(255, 77, 109, .85); }
+  .d-rk-tile .dots { position: absolute; left: calc(4 * var(--k)); right: calc(4 * var(--k)); top: calc(30 * var(--k)); display: flex; justify-content: space-between; }
+  .d-rk-tile .dots u { width: calc(3 * var(--k)); height: calc(3 * var(--k)); border-radius: 50%; background: rgba(154, 146, 127, .28); }
+  .d-rk-tile .dots u.on { background: var(--c); box-shadow: 0 0 4px var(--c); }
+  .d-rk-tile.is-cur { background: rgba(190, 90, 255, .3); box-shadow: inset 0 0 0 1px rgba(246, 232, 255, .75), inset 0 0 12px rgba(190, 90, 255, .5); }
+  .d-rk-tile.is-cur .n { color: #fbf3ff; }
+  .d-rk-tile.is-new { animation: d-rk-new 380ms ease-out; }
+  @keyframes d-rk-new { from { transform: translateY(calc(-6 * var(--k))); opacity: 0; } }
+  .d-rk-tile:focus-visible { outline: 2px solid #ffd6f6; outline-offset: 1px; }
+  /* RANDOMIZE: the plugin's outlined LCD key ("press / roll inverts, EXTREME in amber with its tag above") */
+  .d-rk-rnd { z-index: 5; display: flex; align-items: center; justify-content: center; gap: calc(10 * var(--k)); padding: 0; border: 0; cursor: pointer;
+    border-radius: calc(5 * var(--k)); background: rgba(var(--p), .06); color: var(--phos);
+    box-shadow: inset 0 0 0 2px rgba(var(--p), .85), 0 0 10px rgba(var(--p), .4), inset 0 0 14px rgba(var(--p), .22);
+    font: 400 calc(11 * var(--k)) / 1 var(--d-f-pix); letter-spacing: .06em; text-shadow: var(--rim), 0 0 6px rgba(var(--p), .9);
+    transition: background-color 120ms ease, box-shadow 120ms ease, color 90ms ease, transform 90ms cubic-bezier(.2, .9, .25, 1.25); }
+  .d-rk-rnd svg { position: static; width: calc(17 * var(--k)); height: calc(17 * var(--k)); filter: drop-shadow(0 0 4px rgba(var(--p), .9)); }
+  .d-rk-rnd-txt::after { content: ''; display: inline-block; margin-left: calc(10 * var(--k)); vertical-align: calc(1 * var(--k));
+    border-left: calc(7 * var(--k)) solid rgb(var(--p)); border-top: calc(5 * var(--k)) solid transparent; border-bottom: calc(5 * var(--k)) solid transparent; }
+  .d-rk-rnd:hover { background: rgba(var(--p), .16); color: #fff2fc; box-shadow: inset 0 0 0 2px rgb(var(--p)), 0 0 16px rgba(var(--p), .6), inset 0 0 18px rgba(var(--p), .35); }
+  .d-rk-rnd:active, .d-rk-rnd.is-rolling { transform: translateY(1px); background: rgb(var(--p)); color: rgb(15, 4, 24); text-shadow: none;
+    box-shadow: inset 0 0 0 2px rgba(255, 214, 246, .9), 0 0 22px rgba(var(--p), .8); }
+  .d-rk-rnd.is-extreme { background: rgb(255, 166, 48); color: rgb(15, 4, 24); text-shadow: none; box-shadow: inset 0 0 0 2px rgba(255, 236, 200, .9), 0 0 22px rgba(255, 166, 48, .8); }
+  .d-rk-rnd:is(:active, .is-rolling, .is-extreme) svg { filter: none; }
+  .d-rk-rnd:is(:active, .is-rolling, .is-extreme) .d-rk-rnd-txt::after { border-left-color: rgb(15, 4, 24); }
+  .d-rk-rnd:focus-visible { outline: 2px solid #ffd6f6; outline-offset: 3px; }
+  /* until the first roll the key breathes (the plugin's "invite": the one control on this rack the page plays) */
+  .d-rk[data-boot="on"] .d-rk-rnd:not(.was-used) { animation: d-rk-phos 520ms steps(1, end) both 1.15s, d-rk-invite 2.4s ease-in-out 2.4s infinite; }
+  @keyframes d-rk-invite { 50% { background: rgba(var(--p), .2); box-shadow: inset 0 0 0 2px rgb(var(--p)), 0 0 22px rgba(var(--p), .75), inset 0 0 18px rgba(var(--p), .4); } }
+  .d-rk-rnd-tag { position: absolute; left: 50%; top: calc(-22 * var(--k)); translate: -50% 0; font-size: calc(8 * var(--k)); letter-spacing: .12em;
+    color: rgb(255, 166, 48); text-shadow: 0 0 6px rgba(255, 166, 48, .8); opacity: 0; transition: opacity 200ms ease; }
+  .d-rk-rnd.is-extreme .d-rk-rnd-tag { opacity: 1; }
+
+  /* the captions: one per strip, riding with it. Five 340-px columns from x 13.75 = the strips' centres (rack.json) */
+  .d-rk-caps { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); margin: 10px 0 0; padding: 0 calc(11.25 * var(--u)) 0 calc(13.75 * var(--u)); list-style: none; }
+  .d-rk-caps > li { text-align: center; padding: 0 4px; text-wrap: balance; }
+  .d-rk-caps h3 { margin: 0 0 3px; font: 700 clamp(15px, 1.5vw, 19px) / 1 var(--d-f-head); letter-spacing: .03em; text-transform: uppercase; color: var(--ink); }
+  .d-rk-caps p { margin: 0; font: 500 clamp(10.5px, .98vw, 12.5px) / 1.25 var(--d-f-head); text-transform: uppercase; letter-spacing: .04em; color: var(--d-fg-dim); }
+  .d-rk-caps > li.is-off { opacity: .45; }
+
+  /* boot (rack.ts, motion only): dark until the rack lands, then each strip rolls in on the rail from the right
+     (--rk-d = its stagger) and its screen powers on like phosphor; the LCD parts light last */
+  .d-rk[data-boot="off"] :is(.d-rk-strip, .d-rk-grab) { transform: translateX(calc((var(--dx) + var(--rk-slide)) * var(--u))); opacity: 0; transition: none; }
+  .d-rk[data-boot="off"] .d-rk-strip canvas, .d-rk[data-boot="off"] :is(.d-rk-tiles, .d-rk-cnt, .d-rk-rnd) { opacity: 0; }
+  .d-rk[data-boot="on"] :is(.d-rk-strip, .d-rk-grab) { transition-delay: var(--rk-d, 0ms); }
+  .d-rk[data-boot="on"] .d-rk-strip canvas { animation: d-rk-phos 520ms steps(1, end) both; animation-delay: calc(var(--rk-d, 0ms) + 620ms); }
+  .d-rk[data-boot="on"] :is(.d-rk-tiles, .d-rk-cnt, .d-rk-rnd) { animation: d-rk-phos 520ms steps(1, end) both 1.15s; }
+  @keyframes d-rk-phos { 0% { opacity: 0; } 20% { opacity: 1; } 35% { opacity: .15; } 55% { opacity: 1; } 70% { opacity: .4; } 100% { opacity: 1; } }
 }
-/* the rack's front rail: each well shades to the rack colour and ends in a
-   5 px rail with a top catchlight, so the pedal sits behind the rack instead
-   of ending in a flat cut (brand review 10-01) */
-.d-strip-well::after {
-  content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 7%; pointer-events: none;
-  background:
-    linear-gradient(180deg, transparent calc(100% - 6px), rgba(255, 240, 255, .14) calc(100% - 6px), rgba(255, 240, 255, .14) calc(100% - 5px), #0d0813 calc(100% - 5px)),
-    linear-gradient(180deg, rgba(10, 6, 16, 0), rgba(10, 6, 16, .75));
-}
-.d-strip figcaption { margin-top: 10px; }
-.d-strip h3 { font: 700 18px/1 var(--d-f-head); letter-spacing: .03em; margin-bottom: 4px; }
-.d-strip p { font: 500 12px/1.35 var(--d-f-head); text-transform: uppercase; letter-spacing: .05em; color: var(--d-fg-dim); }
-.d-strip.s-pitch h3 { color: #d7dde8; }
-.d-strip.s-echo h3 { color: #ff5fd9; }
-.d-strip.s-verb h3 { color: #c79bff; }
-.d-strip.s-trem h3 { color: #6dff9a; }
-#fx .d-strip .d-nw { white-space: nowrap; }   /* 'Tape-dark' never breaks at its hyphen on a phone */
-@media (max-width: 1000px) {
-  #fx .d-rack { grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (min-width: 601px) and (prefers-reduced-motion: reduce) {
+  .d-rk-strip, .d-rk-grab, .d-rk-caps > li, .d-rk-strip > img { transition: none; }
+  .d-rk-pulse { display: none; }
+  .d-rk[data-boot="on"] .d-rk-rnd:not(.was-used) { animation: none; }
 }
 /* the foot row: the SATURATE bay photo in its well | the spec rows under a Press Start kicker.
    sat-bay.png is a loose 1060x382 crop (a dark band with a purple scribble
@@ -1575,7 +1640,6 @@
    rotateY dimmed, the gear-shift overshoot spring. The frame = a gradient border in the pedal's own hue. */
 .d-fxc { display: none; }
 @media (max-width: 600px) {
-  #fx .d-rack { display: none; }
   .d-fxc { --ph: clamp(250px, 74vw, 340px); display: block; position: relative; margin: 18px -16px 0; overflow: clip; outline: none; }
   .d-fxc-vp { position: relative; height: calc(var(--ph) + 118px); perspective: 1300px; touch-action: pan-y; }
   .d-fxc-slide {
@@ -1595,7 +1659,7 @@
   .d-fxc-slide.s-pitch { --acc: #c9d2e0; --acc-hi: #ffffff; }
   .d-fxc-slide.s-echo { --acc: #e040c8; --acc-hi: #ffd1f8; }
   .d-fxc-slide.s-verb { --acc: #b46bff; --acc-hi: #f2c8ff; }
-  .d-fxc-slide.s-trem { --acc: #46e678; --acc-hi: #d8ffe0; }
+  .d-fxc-slide.s-halo { --acc: #46e678; --acc-hi: #d8ffe0; }   /* HALO wears tremolo's green (DRIFT 5.1 plate_halo) */
   .d-fxc-slide.is-current { opacity: 1; visibility: visible; pointer-events: auto; transform: none; filter: none; z-index: 3;
     box-shadow: 0 12px 40px rgba(0, 0, 0, .6), 0 0 22px color-mix(in srgb, var(--acc) 22%, transparent); }
   .d-fxc-slide.is-peek-prev, .d-fxc-slide.is-peek-next { visibility: visible; opacity: .55; pointer-events: auto; z-index: 2;
@@ -1615,7 +1679,7 @@
   .drift-page .d-fxc:focus-visible .d-fxc-slide.is-current { outline: 2px solid var(--d-pink-ink); outline-offset: 3px; }
 }
 @media (max-width: 600px) and (prefers-reduced-motion: reduce) { .d-fxc-slide { transition: none; } }
-@media (max-width: 600px) { #fx .d-bay { display: none; } #fx .d-spec-plate > div { grid-template-columns: 5.2em minmax(0, 1fr); padding: 6px 0; } #fx .d-spec-plate dd { font-size: 14px; } }   /* the bay photo repeats the SATURATE row; 5.2em = AUTOTUNE + air, so SATURATE's line fits the 314 px panel */
+@media (max-width: 600px) { #fx .d-bay { display: none; } #fx .d-spec-plate > div { grid-template-columns: 5.2em minmax(0, 1fr); padding: 6px 0; } #fx .d-spec-plate dt { white-space: nowrap; } #fx .d-spec-plate dd { font-size: 14px; } }   /* the bay photo repeats the SATURATE row; 5.2em (83 px) = the old AUTOTUNE + air, so SATURATE's line fits the 314 px panel; GLUE COMP (86 px) stays one line and runs ~3 px into the 14 px gap */
 /* phone: the CSS panel's inner column is 314 px (390) / 244 (320): tighter glass, captions 16 + 11 px */
 @media (max-width: 600px) {
   .drift-page #fx h2.d-headline--row { margin-bottom: 14px; }
@@ -1623,10 +1687,6 @@
   #fx .d-band-cut { font-size: 16px; }
   #fx .d-bandstrip { height: 48px; }
   #fx .d-band-ticks { margin-top: 2px; }
-  #fx .d-rack { gap: 10px; margin-top: 20px; }
-  #fx .d-strip figcaption { margin-top: 8px; }
-  #fx .d-strip h3 { font-size: 16px; }
-  #fx .d-strip p { font-size: 11px; line-height: 1.3; letter-spacing: .03em; }
   #fx .d-fx-foot { margin-top: 18px; }
 }
 @media (max-width: 374px) { .drift-page #fx h2.d-headline--row { font-size: 8.6vw; } }   /* 320: "WHOLE SOUND PANS." keeps to one line of the 244 px column (2 lines in all) */
@@ -1664,12 +1724,6 @@ html.hc #fx .d-fx-slice, html.hc #fx .d-headline span { text-shadow: none; }
   #fx .d-bandstrip { height: calc(30px + 26 * var(--t)); }                 /* never a bar under 30 px; "FX PLAY HERE" keeps its 15 px in the lit rect */
   #fx .d-band-ticks { height: calc(15px + 7 * var(--t)); margin-top: calc(2px + 2 * var(--t)); }
   #fx .d-band-ticks span { font-size: calc(14px + 2 * var(--t)); line-height: 1.1; }
-  /* rack: 4 equal cells, the 512:588 photo centred in each, the caption centred under it on one line */
-  #fx .d-rack { margin-top: 0; column-gap: var(--fx-gap); }
-  #fx .d-strip-well { width: var(--fx-strip); margin-inline: auto; }
-  #fx .d-strip figcaption { margin-top: calc(6px + 4 * var(--t)); text-align: center; }
-  #fx .d-strip h3 { font-size: calc(17px + 1 * var(--t)); margin-bottom: calc(2px + 2 * var(--t)); }
-  #fx .d-strip p { font-size: calc(11px + 1 * var(--t)); line-height: 1.25; letter-spacing: .01em; }   /* one line: ECHO's (the longest) has 10% spare at 1141, ~4% in Safari's wider Oswald (nowrap from 1101, below) */
   /* foot: bay | kicker | spec rows across the rack's width (the bay level with PITCH's left edge, the rules end at TREMOLO's right).
      Fixed columns, never sized from the text: WebKit keeps a grid column's text width as measured in the fallback (Impact) before
      the Oswald webfont swaps in, so a content-sized, centred foot came out ~7 px short and PRESETS wrapped in WebKit only (builder 10-04) */
@@ -1679,10 +1733,14 @@ html.hc #fx .d-fx-slice, html.hc #fx .d-headline span { text-shadow: none; }
   #fx .d-spec-plate > div { padding: calc(2px + 7 * var(--t)) 0; grid-template-columns: 5.6em minmax(0, 1fr); }
   #fx .d-spec-plate dt { font-size: calc(15px + 2 * var(--t)); line-height: 1; }
   #fx .d-spec-plate dd { font-size: calc(13px + 3 * var(--t)); line-height: 1.15; }
+  /* the live rack (10-09): its height = its width x 805/1725, so on a short screen the width gives: 336 px of stage at
+     t0 (1141x636: the panel = #drive's 570) .. 531 at t1, never wider than the column. The band display and the old strip
+     photos are gone; the foot (bay + spec rows) stays for 601-1000 px only, the rack says it here. */
+  #fx .d-rk { width: min(100%, calc((336px + 195 * var(--t)) * 1725 / 805)); margin-inline: auto; }
+  #fx .d-fx-foot { display: none; }
+  /* #drive sets the box (the taller panel wins the crane's one cell): on a tall laptop the rack sits in its middle */
+  #fx .d-fx-panel { display: flex; flex-direction: column; justify-content: center; }
 }
-/* the panel has 5 px spare at 1141x636: a caption that wrapped in real Safari (Oswald ~4% wider than WebKit) would break the fit.
-   From 1101 wide the cell (>= 177 px) holds ECHO's caption (~170) even a few px wider; below that the cells shrink and the captions may wrap as before */
-@media (min-width: 1101px) { #fx .d-strip p { white-space: nowrap; } }
 
 /* the FX crane (Dan 10-04, pick A: "when you scroll it pulls down the fx panel exactly like drift, same sizes and
    everything"). Laptop only: crane.ts wraps #drive + #fx in .d-crane > .d-crane-stage (phones never get the wrappers;
@@ -2313,8 +2371,6 @@ html.hc .drift-page .d-price-label { text-shadow: none; }
   .d-cap::before { inset: -6.5px; }   /* D2: 50 px hit boxes at 402, no overlap */
 
   /* --- #fx (X1, X2, X3) -------------------------------------------------- */
-  .d-strip img { aspect-ratio: 512 / 470; }
-  .d-rack { gap: 10px; padding: 10px; }
   .d-bandglass { padding: 10px 12px 6px; }
   .d-bandstrip { height: 40px; }
   #fx .d-alsoin { display: none; }
@@ -2348,7 +2404,7 @@ html.hc .drift-page .d-price-label { text-shadow: none; }
   .drift-page h2.d-headline { font-size: 30px; }
   .d-sechead .d-ja { text-shadow: none; opacity: .5; }
   .d-sec { padding-top: 36px; }   /* #drive keeps its own 18 px (id rule above) */
-  .drift-page .d-fine, .drift-page .d-strip p, .drift-page .d-chips-note { font-size: 13px; }
+  .drift-page .d-fine, .drift-page .d-chips-note { font-size: 13px; }
   /* K1 */
   .drift-page .d-keep-fine { font-size: 14px; color: var(--d-fg); }
   /* P5: the house haze plates off (both: display:none alone keeps the fetch) */

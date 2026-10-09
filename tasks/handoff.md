@@ -1,3 +1,17 @@
+## 2026-10-09 — /drift #fx = the LIVE RACK (DRIFT 5.2.4), branch `feat/drift-fx-rack` (Claude Code, Dan's Mac) — COMMITTED LOCAL, NOT PUSHED
+- Dan: "pull the latest DRIFT, design #fx after it, more invested" → pick "Live rack", laptop only. Branch off origin/main
+  f5cc588 in worktree `.claude/worktrees/drift-fx-rack` (upstream unset; dev `astro dev --port 4410`).
+- 601 px up: the 5.2.4 FX view rebuilt from its own pixels (`tools/shoot-drift-fx-rack.mjs` → `src/assets/seasons/drift/rack/`)
+  and run by the plugin's own code (`src/lib/drift/rack.ts`): the 5 strip screens are the plugin's FXV modules
+  (`src/lib/drift/fxv/screen-*.js`, verbatim), RANDOMIZE runs the plugin's dice engine (`fxv/drift-randomizer.js`,
+  verbatim): real scenes, strips that sit a roll out go dark, a new chain order slides the strips on the rail (GLUE stays
+  last), DICE LOG of 8. Boots when the crane lands (strips roll in, screens power on). Headline "Five effects. Any order."
+  (the false "Whole sound pans" is gone, phones too). Band strip + bay/spec foot hidden from 1001 px (fit: panel = #drive 570 at 1141x636).
+- Phones: only HALO for TREMOLO (pedal re-shot from 5.2.4) + GLUE COMP row for AUTOTUNE (the unmerged cfb357d's ask).
+- Not done: the named modes on the strip photos (SYNC, PLATE/FREE, HALO MODE 2) can't change, so rolls hold them on the
+  screens; SNAPSHOT A-D are pixels only. Meta description in `src/pages/drift.astro` still says whole sound + tremolo.
+- Checks: `npm run build` green; Chromium + WebKit 1141x636 / 1280x720 / 1440x900 / 820 / 390, reduced motion, scroll-crane boot.
+
 ## 2026-10-08 — /drift RE-PUBLISHED to main + /drift/feedback (Claude Code, Gil's session) — Gil: "push and commit to main all we have done here including Dan's commits"
 - `git revert ebdd081` on main (the 10-03 unpublish, as its TRAP note says), then merged `feat/drift-feedback` =
   Dan's `feat/drift-page` @ `13d79cb` + the beta feedback form (`/drift/feedback`, one response per email through the
