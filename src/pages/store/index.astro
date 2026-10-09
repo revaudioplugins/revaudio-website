@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PluginCard from '../../components/PluginCard.astro';
+import DriftCard from '../../components/drift/DriftCard.astro';
 import EmailCapture from '../../components/EmailCapture.astro';
 import { plugins } from '../../data/plugins';
 
@@ -42,7 +43,16 @@ const roadmap = plugins.filter(onBench);
           <h2 class="bench-title">On the bench</h2>
           <p class="bench-sub muted">In development now. Join a waitlist and we&rsquo;ll email you at launch.</p>
           <div class="cards cards-bench">
-            {roadmap.map((p) => <PluginCard plugin={p} showCart />)}
+            {roadmap.map((p) => p.slug === 'drift' ? (
+              /* DRIFT = the homepage's arcade cabinet, not the coming-soon plate
+                 (Dan 2026-10-09). The 520x470 stage is scaled to the tile below. */
+              <div class="plugin-card-wrap drift-tile" data-drift-tile>
+                <div class="drift-stage sc-slide is-current" data-slide>
+                  <a class="drift-hit" href="/drift" aria-label="DRIFT, more details"></a>
+                  <DriftCard />
+                </div>
+              </div>
+            ) : <PluginCard plugin={p} showCart />)}
           </div>
         </div>
       )}
@@ -90,8 +100,30 @@ const roadmap = plugins.filter(onBench);
   />
 </BaseLayout>
 
+<script>
+  /* Scale DRIFT's fixed 520x470 arcade stage to its tile's width. */
+  const tile = document.querySelector<HTMLElement>('[data-drift-tile]');
+  if (tile) new ResizeObserver(() => tile.style.setProperty('--s', String(tile.clientWidth / 520))).observe(tile);
+</script>
+
 <style>
   .store-grid { padding: 3rem 0 4rem; }
+
+  /* DRIFT's arcade cabinet (drift/DriftCard.astro), its body painted as on the carousel */
+  .drift-tile { position: relative; aspect-ratio: 520 / 470; align-self: start; }
+  .drift-stage {
+    position: absolute; left: 0; top: 0; width: 520px; height: 470px;
+    transform: scale(var(--s, 0.7)); transform-origin: 0 0;
+    border-radius: 18px; border: 1px solid transparent;
+    background:
+      repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.018) 0 2px, transparent 2px 5px) padding-box,
+      radial-gradient(ellipse 80% 60% at 50% 40%, #1d0a2c 0%, #0f0518 55%, #07040b 100%) padding-box,
+      linear-gradient(180deg, #e58bff 0%, #b23cff 26%, #4b1673 62%, #8a2be2 100%) border-box;
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.55), 0 0 26px rgba(210, 60, 255, 0.22);
+    transition: box-shadow 0.2s ease;
+  }
+  .drift-stage:hover { box-shadow: 0 12px 48px rgba(0, 0, 0, 0.55), 0 0 34px rgba(210, 60, 255, 0.38); }
+  .drift-hit { position: absolute; inset: 0; z-index: 5; }
 
   /* Showroom row: all three plugins side by side on desktop so the range
      reads at a glance; equal-height cards with aligned price footers. Stacks
