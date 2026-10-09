@@ -1,3 +1,18 @@
+## 2026-10-09 — /drift how-to videos + red/yellow ▶ bursts + end-of-video sign-up (Claude Code, Dan's Mac) — LIVE, pushed on Dan's "push", claim closed
+- `f5cc588` `734187f` `aacdfe6` `3831a95` `c9c2fc9`, all on main, with a green deploy and smoke test. The real how-to videos replace the SAMPLE: beta/arcade
+  0:45 on the PLAYER 1 START screen (`drift.betaVideo`) and creators 0:40 in ON AIR (`drift.creatorsVideo`). Each video has a 16:9 and a 9:16 cut in
+  `public/drift/{arcade,creators}-{16x9,9x16}.{mp4,jpg}`. To replace a cut, keep the same filename.
+- Play keys = `DriftPlayBurst.astro` (the plugin's PLAY A SOUND SHOUT bubble): red for beta, `.d-pb--yellow` for creators. On laptop the
+  burst sits over the screen's top-right corner; on phone it sits inside the screen. Each one launches out of the screen 1.1 s after it is
+  first seen. On phone the key opens the 9:16 cut in `DriftVideoSheet` (a `<dialog>`).
+- The native scrub bar stays off the burned-in subtitles: the picture is sized with container units and a black strip under it.
+  On laptop both videos get `brightness(1.22) saturate(1.1)`, and the beta tube's CRT layers fade while a video plays.
+- When the beta video ends, `DriftVideoGate` shows an email + GET IT form (same /form-once and `drift-trial` source as the screen's form),
+  on both the laptop player and the phone sheet.
+- OWED: the sign-up was only tested with /form-once mocked. A real email test and the full GET IT sweep are on Gil, RevTasks #132 (due 10-10).
+  A tap on a real iPhone has not been done.
+- Cleanup: `public/drift/creators-howto-sample.{mp4,vtt}` is no longer referenced by anything.
+
 ## 2026-10-08 — /drift RE-PUBLISHED to main + /drift/feedback (Claude Code, Gil's session) — Gil: "push and commit to main all we have done here including Dan's commits"
 - `git revert ebdd081` on main (the 10-03 unpublish, as its TRAP note says), then merged `feat/drift-feedback` =
   Dan's `feat/drift-page` @ `13d79cb` + the beta feedback form (`/drift/feedback`, one response per email through the
