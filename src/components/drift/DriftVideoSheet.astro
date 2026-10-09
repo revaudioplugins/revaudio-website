@@ -2,12 +2,22 @@
 /**
  * The phone video sheet (Dan 10-09): one full-screen <dialog> the phone ▶ keys open with the 9:16 cut of their
  * video (#try's beta how-to, #creators' creator how-to). A [data-vsheet] button carries data-src / data-poster /
- * data-label; ✕, Esc or the end of the video closes it. Laptop never sees the keys (drift.css: they show <=1000 px),
+ * data-label (+ data-end: the end card, beta = the sign-up); ✕ or Esc closes it. Laptop never sees the keys (drift.css: they show <=1000 px),
  * it plays the 16:9 cuts inside the screens instead.
  */
+import DriftVideoGate from './DriftVideoGate.astro';
 ---
 <dialog class="d-vsheet" data-vsheet-dialog aria-label="Video">
   <div class="d-vsheet-stage"><video playsinline controls preload="none"></video></div>
+  <!-- the end cards (a key's data-end picks one; none = the sheet just closes) -->
+  <div class="d-vsheet-end" data-vsheet-end="beta" hidden><DriftVideoGate id="d-vs-end" againAttr="data-vsheet-again" /></div>
+  <div class="d-vsheet-end" data-vsheet-end="creators" hidden>
+    <div class="d-vend">
+      <a class="d-btn-violet" href="/affiliate">Apply as a creator <span class="d-stamp-arrow" aria-hidden="true">&#9656;</span></a>
+      <p class="d-btn-note">Write <strong>DRIFT BETA</strong> in the “why” box.</p>
+      <button type="button" class="d-cr-again d-vend-again" data-vsheet-again>&#8635; Watch again</button>
+    </div>
+  </div>
   <button type="button" class="d-vsheet-x" data-vsheet-close><span aria-hidden="true">&#10005;</span>Close</button>
 </dialog>
 
@@ -32,10 +42,19 @@
   const video = dlg?.querySelector('video');
   if (dlg && video && typeof dlg.showModal === 'function') {
     let opener: HTMLElement | null = null;
+    const ends = dlg.querySelectorAll<HTMLElement>('[data-vsheet-end]');
     const close = () => dlg.close();
-    dlg.addEventListener('close', () => { video.pause(); video.removeAttribute('src'); video.load(); opener?.focus(); });
+    dlg.addEventListener('close', () => { video.pause(); video.removeAttribute('src'); video.load(); ends.forEach((x) => { x.hidden = true; }); opener?.focus(); });
     dlg.querySelector('[data-vsheet-close]')?.addEventListener('click', close);
-    video.addEventListener('ended', close);
+    // the end: that video's card pops up (beta = the sign-up); no card = close
+    video.addEventListener('ended', () => {
+      const card = dlg.querySelector<HTMLElement>(`[data-vsheet-end="${opener?.dataset.end ?? ''}"]`);
+      if (card) card.hidden = false; else close();
+    });
+    dlg.querySelectorAll('[data-vsheet-again]').forEach((a) => a.addEventListener('click', () => {
+      ends.forEach((x) => { x.hidden = true; });
+      video.currentTime = 0; void video.play().catch(() => {});
+    }));
     document.querySelectorAll<HTMLButtonElement>('[data-vsheet]').forEach((b) => {
       b.hidden = false;
       b.addEventListener('click', () => {

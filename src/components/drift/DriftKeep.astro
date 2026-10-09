@@ -21,6 +21,7 @@
  * Renders only while routes exist (not 'released').
  */
 import DriftPlayBurst from './DriftPlayBurst.astro';
+import DriftVideoGate from './DriftVideoGate.astro';
 import { site } from '../../data/site';
 import { drift, ctaFor, routesFor, lapFor, captureCopyFor } from '../../data/drift';
 const cta = ctaFor();
@@ -58,7 +59,7 @@ const onceUrl = site.downloadGate.workerUrl + '/form-once';
             </div>
             {drift.betaVideo && (
               <DriftPlayBurst class="d-vph d-vph--keep" length={drift.betaVideoLength} label="Watch how the DRIFT beta works"
-                data-vsheet data-src={`${drift.betaVideo}-9x16.mp4`} data-poster={`${drift.betaVideo}-9x16.jpg`} data-label="How the DRIFT beta works" />
+                data-vsheet data-end="beta" data-src={`${drift.betaVideo}-9x16.mp4`} data-poster={`${drift.betaVideo}-9x16.jpg`} data-label="How the DRIFT beta works" />
             )}
           </div>
         </Fragment>
@@ -132,8 +133,7 @@ const onceUrl = site.downloadGate.workerUrl + '/form-once';
             <video preload="none" playsinline controls aria-label="How the DRIFT beta works"
               poster={`${drift.betaVideo}-16x9.jpg`} src={`${drift.betaVideo}-16x9.mp4`}></video>
             <div class="d-kv-end" data-kv-end hidden>
-              <button type="button" class="d-keep-key" data-kv-get><span data-face>Get it <span class="d-keep-arrow" aria-hidden="true">&#9654;</span></span></button>
-              <button type="button" class="d-cr-again" data-kv-again>&#8635; Watch again</button>
+              <DriftVideoGate id="d-kv-end" againAttr="data-kv-again" />
             </div>
             <button type="button" class="d-kv-close" data-kv-close><span aria-hidden="true">&#10005;</span>Close video</button>
           </div>
@@ -156,7 +156,7 @@ const onceUrl = site.downloadGate.workerUrl + '/form-once';
 
 <script>
   // the beta how-to on the PLAYER 1 START screen (laptop: the key shows from 1001 px, drift.css): ▶ opens the video over
-  // the tube and plays it; at the end GET IT (back to the email field) + Watch again; ✕ or Esc closes it
+  // the tube and plays it; at the end the sign-up (DriftVideoGate) + Watch again; ✕ or Esc closes it
   const wrap = document.querySelector<HTMLElement>('.d-keep [data-kv-video]');
   const play = document.querySelector<HTMLButtonElement>('.d-keep [data-kv-play]');
   const video = wrap?.querySelector('video');
@@ -168,8 +168,8 @@ const onceUrl = site.downloadGate.workerUrl + '/form-once';
     play.addEventListener('click', () => { wrap.hidden = false; start(); video.focus(); });
     wrap.querySelector('[data-kv-close]')?.addEventListener('click', () => { close(); play.focus(); });
     wrap.querySelector('[data-kv-again]')?.addEventListener('click', start);
-    wrap.querySelector('[data-kv-get]')?.addEventListener('click', () => { close(); document.getElementById('d-keep-email')?.focus(); });
-    video.addEventListener('ended', () => { end.hidden = false; end.querySelector('button')?.focus(); });
+    // the end: the sign-up pops up over the last frame, the cursor already in the email field
+    video.addEventListener('ended', () => { end.hidden = false; end.querySelector<HTMLElement>('input[type=email]:not([tabindex])')?.focus({ preventScroll: true }); });
     wrap.addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.stopPropagation(); close(); play.focus(); } });
   }
 </script>

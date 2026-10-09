@@ -2423,6 +2423,28 @@ html.hc .drift-page .d-price-label { text-shadow: none; }
 .d-pb--yellow .d-pb-words b { color: #1c1424; -webkit-text-stroke: 0; text-shadow: .9cqw .9cqw 0 #e040c8; }
 .d-pb--yellow .d-pb-words i { color: #ff2b3d; -webkit-text-stroke: 1.2cqw #1c1424; }
 
+/* the end of a video: the sign-up (beta) / APPLY (creators) pops up over the last frame (Dan 10-09) */
+.d-vend { display: grid; justify-items: center; gap: 14px; width: min(100%, 560px); padding: 0 20px; text-align: center; }
+.d-vend-gate { width: 100%; justify-items: center; }
+.d-vend-gate .d-keep-form { width: 100%; }
+.drift-page .d-vend-head { margin: 0; font-size: clamp(14px, 1.6vw, 21px); line-height: 1.4; color: #ffb36b; letter-spacing: .08em;
+  text-shadow: 0 0 8px rgba(255, 120, 60, .6), 0 0 22px rgba(255, 79, 216, .25); }
+.d-vend-head span { display: inline-block; }
+html[data-drift-joined] .d-vend-gate .d-keep-form { display: none; }
+.d-vend-again { padding: 10px 16px; border: 0; border-radius: 6px; background: none; color: var(--d-white-ink); cursor: pointer;
+  font: 500 16px/1 var(--d-f-head); letter-spacing: .06em; text-transform: uppercase; }
+.d-vend-again:hover { background: rgba(255, 255, 255, .12); }
+.drift-page .d-vend-again:focus-visible, .d-vsheet .d-vend-again:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+@media (prefers-reduced-motion: no-preference) {
+  :is(.d-kv-end, .d-vsheet-end):not([hidden]) .d-vend { animation: d-vend-in 460ms cubic-bezier(.2, 1.4, .4, 1) both; }
+}
+@keyframes d-vend-in { from { transform: scale(.6); opacity: 0; } 40% { opacity: 1; } to { transform: none; opacity: 1; } }
+.d-vsheet-end:not([hidden]) { position: absolute; inset: 0; z-index: 1; display: grid; place-items: center; padding: 70px 0 40px;
+  background: radial-gradient(ellipse 80% 70% at 50% 46%, #2e1347 0%, #0b0414 76%, #040107 100%); }
+.d-vsheet-end[hidden] { display: none; }
+.d-vsheet-end .d-keep-form { grid-template-columns: minmax(0, 1fr); }
+.d-vsheet-end .d-vend-head span { display: block; }
+
 /* where each ▶ sits */
 .d-kv-play, .d-kv-video { display: none; }
 @media (min-width: 1001px) {
@@ -2470,6 +2492,6 @@ html.hc .drift-page .d-price-label { text-shadow: none; }
 }
 .d-vsheet-x {
   position: absolute; right: 14px; top: calc(env(safe-area-inset-top) + 12px); display: inline-flex; align-items: center; gap: 8px;
-  height: 36px; padding: 0 14px; border: 0; border-radius: 18px; background: rgba(255, 255, 255, .12); color: #fff; cursor: pointer;
+  z-index: 2; height: 36px; padding: 0 14px; border: 0; border-radius: 18px; background: rgba(255, 255, 255, .12); color: #fff; cursor: pointer;
   font: 600 13px/1 var(--d-f-head); letter-spacing: .08em; text-transform: uppercase;
 }
