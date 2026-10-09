@@ -2051,19 +2051,16 @@ html.hc #get .d-get-head span { text-shadow: none; }
   }
   /* ▶ WATCH HOW IT WORKS 0:24 = the player's control row; the video covers the screen inside the bezel, ✕ top right,
      the APPLY pill + Watch again as the end screen. Shown only from here up (phones: the text screen) */
-  .d-cr-play:not([hidden]) {
-    display: inline-flex; align-items: center; gap: 12px; position: absolute; z-index: 2;
-    left: calc(var(--cam-l) + 16px); bottom: calc(var(--cam-b) + 8px); padding: 7px 12px; border: 0; border-radius: 6px;
-    background: none; color: var(--cr-ink); font: 600 15px/1 var(--d-f-head); letter-spacing: .06em; text-transform: uppercase; cursor: pointer;
-  }
-  .d-cr-play:hover { background: rgba(255, 255, 255, .1); }
-  .d-cr-play-i { font-size: 15px; }
-  .d-cr-play-t { color: var(--cr-ink-2); font-weight: 500; }
+  /* the big red ▶ (DriftPlayBurst) breaks out over the plate's top-right corner, its tail pointing into the screen
+     (the beta TV wears it the same way); gone while the video plays (the ✕ sits there) */
+  .d-cr-play:not([hidden]) { position: absolute; z-index: 5; right: -22px; top: -40px; --pb-w: 196px; }
+  .d-cam-panel:has(.d-cr-video:not([hidden])) .d-cr-play { visibility: hidden; }
   .d-cr-video:not([hidden]) {
     display: block; position: absolute; z-index: 3; inset: var(--cam-t) var(--cam-r) var(--cam-b) var(--cam-l);
     border-radius: 10px;   /* no fill: the video element is the black, so the cover shows through its first glitch frames */
   }
-  .d-cr-video video { display: block; width: 100%; height: 100%; object-fit: contain; border-radius: 10px; background: #000; }
+  .d-cr-video:not([hidden]) { container-type: size; background: #000; }
+  .d-cr-video video { border-radius: 10px; }
   /* Dan 10-05 "the transition should be a glitch": ▶ tears the text screen (RGB split, slices, jitter, ~160 ms), then
      the video stutters in through jumping bands with colour-shifted frames; a scanline + colour-band layer flickers
      over it (::after). Stepped keyframes = digital jumps. No fill after the end: at rest no clip / transform / filter.
@@ -2113,16 +2110,14 @@ html.hc #get .d-get-head span { text-shadow: none; }
   .d-cr-end .d-btn-note { margin: 0; }
   .d-cr-again, .d-cr-close { border: 0; cursor: pointer; color: var(--cr-ink); font-family: var(--d-f-head); }
   .d-cr-again { padding: 10px 16px; border-radius: 6px; background: none; font-weight: 500; font-size: 16px; letter-spacing: .06em; text-transform: uppercase; }
-  /* ✕ on the bezel, where SPEED SOUNDS BETTER sits (hidden while the video is open): clear of every browser's own
-     video controls (Safari puts its volume at the top right of the picture) */
+  /* ✕ inside the screen, on the strip over the picture (Dan 10-09: "inside the screen and not on the frame") */
   .d-cr-close {
-    position: absolute; right: 0; top: calc(var(--cam-t) / -2); translate: 0 -50%;
+    position: absolute; z-index: 1; right: 16px; top: 10px;
     display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px; border-radius: 15px;
-    background: rgba(255, 255, 255, .08); font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+    background: rgba(255, 255, 255, .1); font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
   }
-  .d-cam-panel:has(.d-cr-video:not([hidden])) .d-cam-tr { visibility: hidden; }
   .d-cr-again:hover, .d-cr-close:hover { background: rgba(255, 255, 255, .16); }
-  .drift-page .d-cr-play:focus-visible, .drift-page .d-cr-again:focus-visible, .drift-page .d-cr-close:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  .drift-page .d-cr-again:focus-visible, .drift-page .d-cr-close:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
   .d-cam-vf--a::before { left: 0; top: 0; border-width: 2px 0 0 2px; }
   .d-cam-vf--a::after { right: 0; bottom: 0; border-width: 0 2px 2px 0; }
   .d-cam-vf--b::before { right: 0; top: 0; border-width: 2px 2px 0 0; }
@@ -2480,46 +2475,133 @@ html.hc .drift-page .d-price-label { text-shadow: none; }
 }
 
 /* ── The how-to videos (Dan 10-09) ─────────────────────────────────────────────────────────────────────────────
-   Beta (#try's PLAYER 1 START screen, DriftKeep) + creators (#creators, DriftCreators). Laptop (1001+): the 16:9 cut
-   plays inside the screen. Phones (<=1000): a ▶ key opens the 9:16 cut in the full-screen sheet (DriftVideoSheet). */
+   Beta (the PLAYER 1 START screen, DriftKeep) + creators (#creators, DriftCreators). Laptop (1001+): the 16:9 cut
+   plays inside the screen. Phones (<=1000): the ▶ opens the 9:16 cut in the full-screen sheet (DriftVideoSheet). */
+
+/* The big red ▶ (DriftPlayBurst): the plugin's SHOUT bubble, red. --pb-w sets its size; the lettering scales with it
+   (cqw). It pops out on first view (.is-in, set by drift-pb in DriftVideoSheet's script), then flashes: a double
+   amber blink + a kick every 3.2 s until the first play (.is-played stops it). Transform + opacity only. */
+.d-pb { --pb-w: 240px; position: relative; display: none; width: var(--pb-w); aspect-ratio: 320 / 180; padding: 0; border: 0; background: none;
+  cursor: pointer; container-type: inline-size; -webkit-tap-highlight-color: transparent; }
+.d-pb:not([hidden]) { display: block; }
+.d-pb-pop { position: absolute; inset: 0; transform-origin: 7% 96%; transition: transform 160ms ease-out; }
+.d-pb svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.d-pb-flash { opacity: 0; }
+.d-pb-txt { position: absolute; left: 17%; top: 4%; width: 78%; height: 70%; display: flex; align-items: center; justify-content: center;
+  gap: 5cqw; transform: rotate(-7deg); }
+.d-pb .d-pb-tri { position: static; width: 13cqw; height: auto; flex: none; overflow: visible; filter: drop-shadow(1.2cqw 1.2cqw 0 #1c1424); }
+.d-pb-words { display: flex; flex-direction: column; align-items: flex-start; line-height: .86; }
+.d-pb-words b, .d-pb-words i { font-family: var(--d-f-chip); font-style: normal; font-weight: 400; text-transform: uppercase;
+  color: #fff6d0; -webkit-text-stroke: 1.6cqw #1c1424; paint-order: stroke fill; text-shadow: 1.3cqw 1.3cqw 0 #1c1424; }
+.d-pb-words b { font-size: 17.5cqw; letter-spacing: .02em; }
+.d-pb-words i { font-size: 9.5cqw; letter-spacing: .06em; color: #ffd23b; }
+.d-pb:hover .d-pb-pop { transform: scale(1.07) rotate(-2deg); }
+.d-pb:hover .d-pb-flash { opacity: .35; }
+.d-pb:active .d-pb-pop { transform: scale(.96); }
+.drift-page .d-pb:focus-visible { outline: none; }
+.drift-page .d-pb:focus-visible .d-pb-pop { outline: 3px solid #fff; outline-offset: 4px; border-radius: 40%; }
+@media (prefers-reduced-motion: no-preference) {
+  .d-pb.is-armed .d-pb-pop { transform: translate(-46%, 52%) scale(.08); opacity: 0; }
+  .d-pb.is-in .d-pb-pop { animation: d-pb-in 640ms cubic-bezier(.2, 1.4, .4, 1) both, d-pb-kick 3.2s 2.2s ease-out infinite; }
+  .d-pb.is-in .d-pb-flash { animation: d-pb-spawn 640ms steps(1, end), d-pb-flash 3.2s 2.2s steps(1, end) infinite; }
+  .d-pb.is-played .d-pb-pop, .d-pb.is-played .d-pb-flash { animation: none; }
+  .d-pb.is-played.is-in .d-pb-pop { opacity: 1; transform: none; }
+  .d-pb.is-in:hover .d-pb-pop { animation-play-state: paused; }
+}
+/* Dan 10-09 "notice it coming out of the screen": it launches from inside the screen (down the tail, tiny), flies
+   out past its spot, settles; the fill strobes on the way out */
+@keyframes d-pb-in {
+  0% { transform: translate(-46%, 52%) scale(.08) rotate(14deg); opacity: 0; }
+  18% { opacity: 1; }
+  62% { transform: translate(4%, -5%) scale(1.18) rotate(-5deg); }
+  82% { transform: translate(-1%, 1%) scale(.96) rotate(1deg); }
+  100% { transform: none; opacity: 1; }
+}
+@keyframes d-pb-spawn { 0%, 30%, 60% { opacity: 0; } 15%, 45%, 75% { opacity: .95; } 100% { opacity: 0; } }
+@keyframes d-pb-kick { 0%, 14%, 100% { transform: scale(1) rotate(0); } 4% { transform: scale(1.09) rotate(-2.5deg); } 9% { transform: scale(1.03) rotate(1deg); } }
+@keyframes d-pb-flash { 0%, 6%, 100% { opacity: 0; } 2% { opacity: .9; } 8% { opacity: .9; } 10% { opacity: 0; } }
+
+/* the streamer one is yellow (Dan 10-09): amber body, red blink, ink lettering + a red ▶ */
+.d-pb--yellow .d-pb-fill { fill: #ffd23b; }
+.d-pb--yellow .d-pb-flash { fill: #fff6d0; }
+.d-pb--yellow .d-pb-tri path { fill: #ff2b3d; }
+.d-pb--yellow .d-pb-words b { color: #1c1424; -webkit-text-stroke: 0; text-shadow: .9cqw .9cqw 0 #e040c8; }
+.d-pb--yellow .d-pb-words i { color: #ff2b3d; -webkit-text-stroke: 1.2cqw #1c1424; }
+
+/* the end of a video: the sign-up (beta) / APPLY (creators) pops up over the last frame (Dan 10-09) */
+.d-vend { display: grid; justify-items: center; gap: 14px; width: min(100%, 560px); padding: 0 20px; text-align: center; }
+.d-vend-gate { width: 100%; justify-items: center; }
+.d-vend-gate .d-keep-form { width: 100%; }
+.drift-page .d-vend-head { margin: 0; font-size: clamp(14px, 1.6vw, 21px); line-height: 1.4; color: #ffb36b; letter-spacing: .08em;
+  text-shadow: 0 0 8px rgba(255, 120, 60, .6), 0 0 22px rgba(255, 79, 216, .25); }
+.d-vend-head span { display: inline-block; }
+html[data-drift-joined] .d-vend-gate .d-keep-form { display: none; }
+.d-vend-again { padding: 10px 16px; border: 0; border-radius: 6px; background: none; color: var(--d-white-ink); cursor: pointer;
+  font: 500 16px/1 var(--d-f-head); letter-spacing: .06em; text-transform: uppercase; }
+.d-vend-again:hover { background: rgba(255, 255, 255, .12); }
+.drift-page .d-vend-again:focus-visible, .d-vsheet .d-vend-again:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+@media (prefers-reduced-motion: no-preference) {
+  :is(.d-kv-end, .d-vsheet-end):not([hidden]) .d-vend { animation: d-vend-in 460ms cubic-bezier(.2, 1.4, .4, 1) both; }
+}
+@keyframes d-vend-in { from { transform: scale(.6); opacity: 0; } 40% { opacity: 1; } to { transform: none; opacity: 1; } }
+.d-vsheet-end:not([hidden]) { position: absolute; inset: 0; z-index: 1; display: grid; place-items: center; padding: 70px 0 40px;
+  background: radial-gradient(ellipse 80% 70% at 50% 46%, #2e1347 0%, #0b0414 76%, #040107 100%); }
+.d-vsheet-end[hidden] { display: none; }
+.d-vsheet-end .d-keep-form { grid-template-columns: minmax(0, 1fr); }
+.d-vsheet-end .d-vend-head span { display: block; }
+
+/* where each ▶ sits */
 .d-kv-play, .d-kv-video { display: none; }
-.d-vph:not([hidden]) {
-  display: inline-flex; align-items: center; gap: 10px; margin: 14px auto 0; padding: 10px 16px; border: 1px solid rgba(255, 79, 216, .55);
-  border-radius: 6px; background: rgba(255, 79, 216, .08); color: var(--d-white-ink); cursor: pointer;
-  font: 600 14px/1 var(--d-f-head); letter-spacing: .06em; text-transform: uppercase;
-}
-@media (max-width: 1000px) {
-  .d-vph--keep:not([hidden]) { display: flex; width: max-content; position: relative; z-index: 2; margin-top: 2px; }
-  #creators .d-vph--cr:not([hidden]) { order: 1; align-self: center; margin: 0 auto 6px; }
-}
-.d-vph-t { color: var(--d-fg); font-weight: 500; }
 @media (min-width: 1001px) {
-  .d-vph:not([hidden]) { display: none; }
-  .d-kv-play:not([hidden]) {
-    display: flex; align-items: center; gap: 12px; position: relative; z-index: 2; margin: 4px auto 0; padding: 8px 14px;
-    border: 0; border-radius: 6px; background: none; color: var(--d-white-ink); cursor: pointer;
-    font: 600 15px/1 var(--d-f-head); letter-spacing: .06em; text-transform: uppercase;
-  }
-  .d-kv-play:hover { background: rgba(255, 255, 255, .1); }
-  .d-kv-video:not([hidden]) { display: block; position: absolute; z-index: 3; inset: 0; background: #000; }
-  .d-kv-video video { display: block; width: 100%; height: 100%; object-fit: contain; background: #000; }
+  /* beta: on the TV cabinet, over its top-right corner (outside the tube's mask, so it breaks out of the screen) */
+  .d-keep-tv .d-kv-play:not([hidden]) { display: block; position: absolute; z-index: 6; right: -22px; top: -44px; --pb-w: 196px; }
+  .d-keep-tv:has(.d-kv-video:not([hidden])) .d-kv-play { visibility: hidden; }
+  .d-kv-video:not([hidden]) { display: block; position: absolute; z-index: 3; inset: 0; background: #000; container-type: size; }
   .d-kv-end:not([hidden]) {
     display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
     position: absolute; inset: 0; background: radial-gradient(ellipse 66% 82% at 50% 46%, #2e1347 0%, #0b0414 76%, #040107 100%);
   }
   .d-kv-close {
-    position: absolute; right: 7%; top: 7%; display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px;
-    border: 0; border-radius: 15px; background: rgba(0, 0, 0, .55); color: var(--d-white-ink); cursor: pointer;
+    position: absolute; z-index: 1; right: 9%; top: 12px; display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px;
+    border: 0; border-radius: 15px; background: rgba(255, 255, 255, .1); color: var(--d-white-ink); cursor: pointer;
     font: 600 13px/1 var(--d-f-head); letter-spacing: .08em; text-transform: uppercase;
   }
   .d-kv-close:hover { background: rgba(255, 255, 255, .16); }
-  .drift-page :is(.d-kv-play, .d-kv-close):focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  .drift-page .d-kv-close:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  /* Dan 10-09: the browser's scrub bar sat on the burned-in subtitles. The picture is sized to leave a black strip
+     (--bar) under it and the element hugs picture + strip, so the native control bar lands on the strip. */
+  :is(.d-kv-video, .d-cr-video) video {
+    --bar: 58px; --pw: min(94cqw, (100cqh - var(--bar) - 16px) * 16 / 9);
+    position: absolute; left: 50%; top: 50%; translate: -50% -50%; width: var(--pw); height: calc(var(--pw) * 9 / 16 + var(--bar));
+    object-fit: contain; object-position: 50% 0; background: #000;
+  }
+  /* a top strip too, for ✕ (both players keep it inside the screen) */
+  :is(.d-kv-video, .d-cr-video) video { --top: 50px; --pw: min(94cqw, (100cqh - var(--bar) - var(--top) - 8px) * 16 / 9); top: var(--top); translate: -50% 0; }
+  /* Dan 10-09 "more brighter, the pixel vibe darkens it": the cuts are dark (mean luma ~17/255), so lift them, and
+     while one plays the beta tube's scanlines / grille / vignette (.d-crt::before / ::after, z 5 over the video) fade */
+  :is(.d-kv-video, .d-cr-video) video { filter: brightness(1.22) saturate(1.1); }
+  .d-keep-screen:has(.d-kv-video:not([hidden]))::before { opacity: .12; }
+  .d-keep-screen:has(.d-kv-video:not([hidden]))::after { opacity: .25; }
 }
+@media (min-width: 1001px) { .d-pb.d-vph:not([hidden]) { display: none; } }
+@media (max-width: 1000px) {
+  .d-pb:is(.d-cr-play, .d-kv-play):not([hidden]) { display: none; }
+  .d-vph:not([hidden]) { display: block; margin: 8px auto 4px; --pb-w: min(178px, 48vw); }
+  .d-vph--keep:not([hidden]) { position: relative; z-index: 2; }
+  #creators .d-vph--cr:not([hidden]) { order: 1; margin: 0 auto 10px; }
+}
+
+/* the phone sheet: the 9:16 picture under the ✕ row, a black strip under it for the native bar (same as laptop) */
 .d-vsheet { width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: #000; }
 .d-vsheet::backdrop { background: #000; }
-.d-vsheet video { display: block; width: 100%; height: 100%; object-fit: contain; background: #000; }
+.d-vsheet-stage { position: absolute; inset: calc(env(safe-area-inset-top) + 60px) 0 env(safe-area-inset-bottom) 0; container-type: size; }
+.d-vsheet video {
+  --bar: 56px; --pw: min(100cqw, (100cqh - var(--bar)) * 9 / 16);
+  position: absolute; left: 50%; top: 0; translate: -50% 0; width: var(--pw); height: calc(var(--pw) * 16 / 9 + var(--bar));
+  object-fit: contain; object-position: 50% 0; background: #000;
+}
 .d-vsheet-x {
-  position: absolute; right: 14px; top: calc(env(safe-area-inset-top) + 14px); display: inline-flex; align-items: center; gap: 8px;
-  height: 36px; padding: 0 14px; border: 0; border-radius: 18px; background: rgba(0, 0, 0, .6); color: #fff; cursor: pointer;
+  position: absolute; right: 14px; top: calc(env(safe-area-inset-top) + 12px); display: inline-flex; align-items: center; gap: 8px;
+  z-index: 2; height: 36px; padding: 0 14px; border: 0; border-radius: 18px; background: rgba(255, 255, 255, .12); color: #fff; cursor: pointer;
   font: 600 13px/1 var(--d-f-head); letter-spacing: .08em; text-transform: uppercase;
 }

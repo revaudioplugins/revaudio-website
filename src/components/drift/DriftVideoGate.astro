@@ -1,0 +1,36 @@
+---
+/**
+ * The sign-up at the end of the beta video (Dan 10-09: "when user finish the video, pop up a get it button with
+ * email, so they can sign in right after the video"): the PLAYER 1 START gate again (same arcade field + GET IT key,
+ * same /form-once contract and source as the screen's own form, capture.ts binds it), with Watch again under it.
+ * Used by the laptop player (DriftKeep .d-kv-end) and the phone sheet (DriftVideoSheet). `id` keeps the field's
+ * label unique per copy.
+ */
+import { site } from '../../data/site';
+import { drift, captureCopyFor } from '../../data/drift';
+interface Props { id: string; againAttr: string }
+const { id, againAttr } = Astro.props;
+const gate = captureCopyFor();
+const onceUrl = site.downloadGate.workerUrl + '/form-once';
+---
+{gate && (
+  <div class="d-vend">
+    <p class="d-keep-head d-keep-try d-vend-head" id={`${id}-h`}><span>Ready? Try it free</span>{' '}<span>for {drift.trialDays} days.</span></p>
+    <div class="d-keep-gate d-vend-gate">
+      <form class="d-keep-form" action={site.formspreeEndpoint} method="POST" aria-labelledby={`${id}-h`}
+        data-drift-capture data-once-url={onceUrl} data-msg-ok={gate.ok} data-msg-already={gate.already}>
+        <label for={`${id}-email`} class="d-sr">Your email: we send the DRIFT download here</label>
+        <span class="d-keep-input">
+          <input id={`${id}-email`} class="d-field d-keep-field" type="email" name="email" required
+            autocomplete="email" inputmode="email" enterkeyhint="go" spellcheck="false" placeholder="ENTER YOUR EMAIL" />
+        </span>
+        <input type="hidden" name="source" value={gate.source} />
+        <input type="text" name="_gotcha" class="d-hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+        <button type="submit" class="d-keep-key"><span data-face>Get it <span class="d-keep-arrow" aria-hidden="true">&#9654;</span></span></button>
+      </form>
+      <p class="d-capture-status" role="status" aria-live="polite" tabindex="-1"></p>
+      <p class="d-keep-consent">Open it on a computer · You join our list · unsubscribe anytime</p>
+    </div>
+    <button type="button" class="d-cr-again d-vend-again" {...{ [againAttr]: '' }}>&#8635; Watch again</button>
+  </div>
+)}

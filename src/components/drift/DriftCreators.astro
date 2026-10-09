@@ -19,6 +19,7 @@
  * DRIFT BETA reminder sits right beside it: the last line read before leaving.
  * Motion, one cue: the VIDEO CHECK rows light top to bottom once on first view.
  */
+import DriftPlayBurst from './DriftPlayBurst.astro';
 import { getImage } from 'astro:assets';
 import { drift } from '../../data/drift';
 import DriftPanel from './DriftPanel.astro';
@@ -60,10 +61,8 @@ const rules = ['Public', '2 min or more', 'Up 30 days or more', 'Tagged @revaudi
         </div>
         {/* PHONE ONLY: ▶ the 9:16 how-to, under the step cards (DriftVideoSheet) */}
           {drift.creatorsVideo && (
-            <button type="button" class="d-vph d-vph--cr" data-vsheet hidden data-src={`${drift.creatorsVideo}-9x16.mp4`}
-              data-poster={`${drift.creatorsVideo}-9x16.jpg`} data-label="How to get DRIFT free, step by step">
-              <span aria-hidden="true">&#9654;&#xFE0E;</span> Watch how it works <span class="d-vph-t">{drift.creatorsVideoLength}</span>
-            </button>
+            <DriftPlayBurst class="d-vph d-vph--cr d-pb--yellow" length={drift.creatorsVideoLength} label="Watch how to get DRIFT free"
+              data-vsheet data-end="creators" data-src={`${drift.creatorsVideo}-9x16.mp4`} data-poster={`${drift.creatorsVideo}-9x16.jpg`} data-label="How to get DRIFT free, step by step" />
           )}
         <ol class="d-steps-cr" role="list">
           <li>Apply at <a class="d-cr-typed" href="/affiliate">revaudio.net/affiliate</a>.</li>
@@ -102,9 +101,7 @@ const rules = ['Public', '2 min or more', 'Up 30 days or more', 'Tagged @revaudi
         <Fragment>
           <!-- the player (laptop, Dan 10-05): the ▶ control at the screen's foot plays the how-to inside the monitor; at the end
                the APPLY pill is the end screen. JS unhides the button (no JS / phones: the text screen only) -->
-          <button class="d-cr-play" type="button" data-cr-play aria-controls="d-cr-video" hidden>
-            <span class="d-cr-play-i" aria-hidden="true">&#9654;</span>Watch how it works<span class="d-cr-play-t">{drift.creatorsVideoLength}</span>
-          </button>
+          <DriftPlayBurst class="d-cr-play d-pb--yellow" length={drift.creatorsVideoLength} label="Watch how to get DRIFT free" data-cr-play aria-controls="d-cr-video" />
           <div class="d-cr-video" id="d-cr-video" data-cr-video hidden>
             <video preload="none" playsinline controls aria-label="How to get DRIFT free, step by step"
               poster={`${drift.creatorsVideo}-16x9.jpg`} src={`${drift.creatorsVideo}-16x9.mp4`}></video>
