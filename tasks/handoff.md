@@ -11,6 +11,9 @@
 - Not done: the named modes on the strip photos (SYNC, PLATE/FREE, HALO MODE 2) can't change, so rolls hold them on the
   screens; SNAPSHOT A-D are pixels only. Meta description in `src/pages/drift.astro` still says whole sound + tremolo.
 - Checks: `npm run build` green; Chromium + WebKit 1141x636 / 1280x720 / 1440x900 / 820 / 390, reduced motion, scroll-crane boot.
+- Same day a parallel session put Drift main at 5.2.7 (9490756): its UI differs from 5.2.4 by one preset tooltip, so the rack
+  layers, screens and dice engine are current. But 5.2.7 has 61 factory presets (Green Flag): the "PRESETS 60" row is stale
+  if 5.2.7 ships.
 
 ## 2026-10-08 — /drift RE-PUBLISHED to main + /drift/feedback (Claude Code, Gil's session) — Gil: "push and commit to main all we have done here including Dan's commits"
 - `git revert ebdd081` on main (the 10-03 unpublish, as its TRAP note says), then merged `feat/drift-feedback` =
