@@ -1,0 +1,35 @@
+---
+/**
+ * The phone video sheet (Dan 10-09): one full-screen <dialog> the phone ▶ keys open with the 9:16 cut of their
+ * video (#try's beta how-to, #creators' creator how-to). A [data-vsheet] button carries data-src / data-poster /
+ * data-label; ✕, Esc or the end of the video closes it. Laptop never sees the keys (drift.css: they show <=1000 px),
+ * it plays the 16:9 cuts inside the screens instead.
+ */
+---
+<dialog class="d-vsheet" data-vsheet-dialog aria-label="Video">
+  <video playsinline controls preload="none"></video>
+  <button type="button" class="d-vsheet-x" data-vsheet-close><span aria-hidden="true">&#10005;</span>Close</button>
+</dialog>
+
+<script>
+  const dlg = document.querySelector<HTMLDialogElement>('[data-vsheet-dialog]');
+  const video = dlg?.querySelector('video');
+  if (dlg && video && typeof dlg.showModal === 'function') {
+    let opener: HTMLElement | null = null;
+    const close = () => dlg.close();
+    dlg.addEventListener('close', () => { video.pause(); video.removeAttribute('src'); video.load(); opener?.focus(); });
+    dlg.querySelector('[data-vsheet-close]')?.addEventListener('click', close);
+    video.addEventListener('ended', close);
+    document.querySelectorAll<HTMLButtonElement>('[data-vsheet]').forEach((b) => {
+      b.hidden = false;
+      b.addEventListener('click', () => {
+        opener = b;
+        video.src = b.dataset.src!;
+        video.poster = b.dataset.poster ?? '';
+        video.setAttribute('aria-label', b.dataset.label ?? 'Video');
+        dlg.showModal();
+        void video.play().catch(() => {});   // inside the tap, so the sound isn't blocked
+      });
+    });
+  }
+</script>

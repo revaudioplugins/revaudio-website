@@ -58,6 +58,13 @@ const rules = ['Public', '2 min or more', 'Up 30 days or more', 'Tagged @revaudi
           </div>
           <div class="d-fxc-dots">{steps.map((st, i) => <button type="button" class:list={['d-fxc-dot', { active: i === 0 }]} data-fxc-dot={i} aria-label={`Step ${i + 1}: ${st.t}`}></button>)}</div>
         </div>
+        {/* PHONE ONLY: ▶ the 9:16 how-to, under the step cards (DriftVideoSheet) */}
+          {drift.creatorsVideo && (
+            <button type="button" class="d-vph d-vph--cr" data-vsheet hidden data-src={`${drift.creatorsVideo}-9x16.mp4`}
+              data-poster={`${drift.creatorsVideo}-9x16.jpg`} data-label="How to get DRIFT free, step by step">
+              <span aria-hidden="true">&#9654;&#xFE0E;</span> Watch how it works <span class="d-vph-t">{drift.creatorsVideoLength}</span>
+            </button>
+          )}
         <ol class="d-steps-cr" role="list">
           <li>Apply at <a class="d-cr-typed" href="/affiliate">revaudio.net/affiliate</a>.</li>
           <li>We email you the beta.</li>
@@ -99,9 +106,8 @@ const rules = ['Public', '2 min or more', 'Up 30 days or more', 'Tagged @revaudi
             <span class="d-cr-play-i" aria-hidden="true">&#9654;</span>Watch how it works<span class="d-cr-play-t">{drift.creatorsVideoLength}</span>
           </button>
           <div class="d-cr-video" id="d-cr-video" data-cr-video hidden>
-            <video preload="none" playsinline controls aria-label="How to get DRIFT free, step by step" src={`${drift.creatorsVideo}.mp4`}>
-              <track kind="captions" src={`${drift.creatorsVideo}.vtt`} srclang="en" label="English" />
-            </video>
+            <video preload="none" playsinline controls aria-label="How to get DRIFT free, step by step"
+              poster={`${drift.creatorsVideo}-16x9.jpg`} src={`${drift.creatorsVideo}-16x9.mp4`}></video>
             <div class="d-cr-end" data-cr-end hidden>
               <a class="d-btn-violet" href="/affiliate">Apply as a creator <span class="d-stamp-arrow" aria-hidden="true">&#9656;</span></a>
               <p class="d-btn-note">Write <strong>DRIFT BETA</strong> in the “why” box.</p>

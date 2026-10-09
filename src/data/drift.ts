@@ -42,12 +42,15 @@ export const drift = {
   creatorDealOpen: true,
   /** e.g. 'Sat Oct 24'; appended to creator step 3 when set. */
   videoDeadlineLabel: null as string | null,
-  /** The creators how-to video in the ON AIR player (laptop): public/ path without extension (.mp4 + .vtt captions);
-   *  null = no player button. NOW A SAMPLE (Dan 10-05 "a fake video just to see the change", marked SAMPLE on
-   *  screen): swap for Dan's real screen recording before this goes live.
-   *  null for the 10-08 go-live (Gil): the SAMPLE never ships. Real video ready? Point this at it again. */
-  creatorsVideo: null as string | null,
-  creatorsVideoLength: '0:24',
+  /** The creators how-to video in the ON AIR player: public/ path without the -16x9/-9x16 + .mp4 suffix (+ .jpg
+   *  poster); null = no player button. Dan 10-09: the real 40 s cut (captions burned in, so no .vtt track).
+   *  Laptop plays the 16:9 cut; the 9:16 cut is for phones. */
+  creatorsVideo: '/drift/creators' as string | null,
+  creatorsVideoLength: '0:40',
+  /** The beta how-to video (DRIFT -> download -> we approve it) on the PLAYER 1 START screen (DriftKeep):
+   *  same contract as creatorsVideo. Dan 10-09. */
+  betaVideo: '/drift/arcade' as string | null,
+  betaVideoLength: '0:45',
   /** true = the Oct 10 trial mail goes to the whole newsletter list, so an
    *  already-subscribed sign-up still gets it (worker.js /form-once swallows repeats). */
   trialMailToWholeList: false,

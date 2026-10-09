@@ -54,7 +54,18 @@ const onceUrl = site.downloadGate.workerUrl + '/form-once';
               </form>
               <p class="d-capture-status" role="status" aria-live="polite" tabindex="-1"></p>
               <p class="d-keep-consent">Open it on a computer · You join our list · unsubscribe anytime</p>
+              {drift.betaVideo && (
+                <button type="button" class="d-kv-play" data-kv-play aria-controls="d-kv-video" hidden>
+                  <span aria-hidden="true">&#9654;&#xFE0E;</span> Watch how the beta works <span class="d-vph-t">{drift.betaVideoLength}</span>
+                </button>
+              )}
             </div>
+            {drift.betaVideo && (
+              <button type="button" class="d-vph d-vph--keep" data-vsheet hidden data-src={`${drift.betaVideo}-9x16.mp4`}
+                data-poster={`${drift.betaVideo}-9x16.jpg`} data-label="How the DRIFT beta works">
+                <span aria-hidden="true">&#9654;&#xFE0E;</span> Watch how the beta works <span class="d-vph-t">{drift.betaVideoLength}</span>
+              </button>
+            )}
           </div>
         </Fragment>
       ) : (
@@ -119,6 +130,21 @@ const onceUrl = site.downloadGate.workerUrl + '/form-once';
           {cta.action !== 'cart' && <p class="d-keep-fine">Nothing to pay today.</p>}
         </Fragment>
       )}
+      {drift.betaVideo && gate && (
+        <Fragment>
+          <!-- the beta how-to (Dan 10-09): laptop's ▶ sits under the email field and plays the 16:9 cut over the tube (the bent-tube mask shapes it);
+               phones get the ▶ key that opens the 9:16 cut full screen (DriftVideoSheet). JS unhides both keys. -->
+          <div class="d-kv-video" id="d-kv-video" data-kv-video hidden>
+            <video preload="none" playsinline controls aria-label="How the DRIFT beta works"
+              poster={`${drift.betaVideo}-16x9.jpg`} src={`${drift.betaVideo}-16x9.mp4`}></video>
+            <div class="d-kv-end" data-kv-end hidden>
+              <button type="button" class="d-keep-key" data-kv-get><span data-face>Get it <span class="d-keep-arrow" aria-hidden="true">&#9654;</span></span></button>
+              <button type="button" class="d-cr-again" data-kv-again>&#8635; Watch again</button>
+            </div>
+            <button type="button" class="d-kv-close" data-kv-close><span aria-hidden="true">&#10005;</span>Close video</button>
+          </div>
+        </Fragment>
+      )}
     </div>
     <!-- the plugin's CRT cabinet livery, printed on the TV bezel (Dan 10-03, direction A): live type, never baked -->
     <span class="d-tv-ink d-tv-tl" aria-hidden="true"><i class="d-tv-checker"></i><b>Speed sounds better</b></span>
@@ -130,3 +156,23 @@ const onceUrl = site.downloadGate.workerUrl + '/form-once';
     </div>
   </div>
 )}
+
+<script>
+  // the beta how-to on the PLAYER 1 START screen (laptop: the key shows from 1001 px, drift.css): ▶ opens the video over
+  // the tube and plays it; at the end GET IT (back to the email field) + Watch again; ✕ or Esc closes it
+  const wrap = document.querySelector<HTMLElement>('.d-keep [data-kv-video]');
+  const play = document.querySelector<HTMLButtonElement>('.d-keep [data-kv-play]');
+  const video = wrap?.querySelector('video');
+  const end = wrap?.querySelector<HTMLElement>('[data-kv-end]');
+  if (wrap && play && video && end) {
+    play.hidden = false;
+    const start = () => { end.hidden = true; video.currentTime = 0; void video.play().catch(() => {}); };
+    const close = () => { video.pause(); wrap.hidden = true; };
+    play.addEventListener('click', () => { wrap.hidden = false; start(); video.focus(); });
+    wrap.querySelector('[data-kv-close]')?.addEventListener('click', () => { close(); play.focus(); });
+    wrap.querySelector('[data-kv-again]')?.addEventListener('click', start);
+    wrap.querySelector('[data-kv-get]')?.addEventListener('click', () => { close(); document.getElementById('d-keep-email')?.focus(); });
+    video.addEventListener('ended', () => { end.hidden = false; end.querySelector('button')?.focus(); });
+    wrap.addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.stopPropagation(); close(); play.focus(); } });
+  }
+</script>
