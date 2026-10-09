@@ -2001,14 +2001,12 @@ html.hc #get .d-get-head span { text-shadow: none; }
   .d-cr-end .d-btn-note { margin: 0; }
   .d-cr-again, .d-cr-close { border: 0; cursor: pointer; color: var(--cr-ink); font-family: var(--d-f-head); }
   .d-cr-again { padding: 10px 16px; border-radius: 6px; background: none; font-weight: 500; font-size: 16px; letter-spacing: .06em; text-transform: uppercase; }
-  /* ✕ on the bezel, where SPEED SOUNDS BETTER sits (hidden while the video is open): clear of every browser's own
-     video controls (Safari puts its volume at the top right of the picture) */
+  /* ✕ inside the screen, on the strip over the picture (Dan 10-09: "inside the screen and not on the frame") */
   .d-cr-close {
-    position: absolute; right: 0; top: calc(var(--cam-t) / -2); translate: 0 -50%;
+    position: absolute; z-index: 1; right: 16px; top: 10px;
     display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px; border-radius: 15px;
-    background: rgba(255, 255, 255, .08); font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+    background: rgba(255, 255, 255, .1); font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
   }
-  .d-cam-panel:has(.d-cr-video:not([hidden])) .d-cam-tr { visibility: hidden; }
   .d-cr-again:hover, .d-cr-close:hover { background: rgba(255, 255, 255, .16); }
   .drift-page .d-cr-again:focus-visible, .drift-page .d-cr-close:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
   .d-cam-vf--a::before { left: 0; top: 0; border-width: 2px 0 0 2px; }
@@ -2470,8 +2468,13 @@ html[data-drift-joined] .d-vend-gate .d-keep-form { display: none; }
     position: absolute; left: 50%; top: 50%; translate: -50% -50%; width: var(--pw); height: calc(var(--pw) * 9 / 16 + var(--bar));
     object-fit: contain; object-position: 50% 0; background: #000;
   }
-  /* beta: a top strip too, for ✕ (the creators ✕ sits on the plate's bezel instead) */
-  .d-kv-video video { --top: 50px; --pw: min(94cqw, (100cqh - var(--bar) - var(--top) - 8px) * 16 / 9); top: var(--top); translate: -50% 0; }
+  /* a top strip too, for ✕ (both players keep it inside the screen) */
+  :is(.d-kv-video, .d-cr-video) video { --top: 50px; --pw: min(94cqw, (100cqh - var(--bar) - var(--top) - 8px) * 16 / 9); top: var(--top); translate: -50% 0; }
+  /* Dan 10-09 "more brighter, the pixel vibe darkens it": the cuts are dark (mean luma ~17/255), so lift them, and
+     while one plays the beta tube's scanlines / grille / vignette (.d-crt::before / ::after, z 5 over the video) fade */
+  :is(.d-kv-video, .d-cr-video) video { filter: brightness(1.22) saturate(1.1); }
+  .d-keep-screen:has(.d-kv-video:not([hidden]))::before { opacity: .12; }
+  .d-keep-screen:has(.d-kv-video:not([hidden]))::after { opacity: .25; }
 }
 @media (min-width: 1001px) { .d-pb.d-vph:not([hidden]) { display: none; } }
 @media (max-width: 1000px) {
