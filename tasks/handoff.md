@@ -1,3 +1,13 @@
+## 2026-10-09 — /drift #band v2: DRIFT's real BAND SELECT + STEREO IMAGER on a real vocal (same branch, Claude Code, Dan's Mac) — COMMITTED LOCAL, NOT PUSHED
+- Dan on v1: "close, not it": real spectrum + real imager from DRIFT, a vocal on the band select, no factory presets, give
+  "Below and above the band, your mix stays as it was." more love (his pick: a big two-tone line under the screens).
+- `DriftBand.astro` + `src/lib/drift/bandscreens.ts` (replaces band.ts): the plugin's left cabinet cut in two, its live layers
+  = ports of the plugin's EQ-panel + imager code (5.2.7 index.html: contour, grid, cut shades, handles, caption layout, drag;
+  lissajous, phosphor wipe, CORR bar). Data = `public/drift/band-vocal.bin` (65 KB gzipped, lazy). The imager: stems outside
+  the cuts sum as they came (mono line), stems inside get DRIFT's true pan law from the page pan bus (hero wheel / TRACKS),
+  a slow sway when idle. Hidden range inputs = keyboard access. Opens on 250 Hz - 4 kHz.
+- Checks: build green; Chromium + WebKit 1141x636, 390x844; drag moves the cut + changes what pans; crane still lands.
+
 ## 2026-10-09 — /drift #band = BAND SELECT, minimal (same branch `feat/drift-fx-rack`, Claude Code, Dan's Mac) — COMMITTED LOCAL, NOT PUSHED
 - Dan: "add that there's a filter that picks the area the effects and the whole plugin work on" → own section between the
   hero and #drive, Band Select look, phones too; then "it needs to be very minimized". `DriftBand.astro` + `src/lib/drift/band.ts`.

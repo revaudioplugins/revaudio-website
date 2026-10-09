@@ -1,53 +1,54 @@
 ---
 /**
- * BAND SELECT (#band, Dan 2026-10-09: "add that there is a filter where you choose the area the effects and the whole
- * plugin work on", then "it needs to be very minimized"). One headline, one slim strip, three chips.
- * The truth it shows (Drift 5.2.7 PluginProcessor.cpp): ONE band, cut out by a 3-way LR4 crossover (LOW CUT 20 Hz-20 kHz,
- * HIGH CUT 70 Hz-20 kHz). Band gain, TAPE/DRIVE, the FX chain, the PAN wheel / TRACKS and the width run on that band;
- * below and above it pass untouched (latency-matched). Not "multiband": no per-band settings. GLUE COMP in its default
- * last slot is the one stage on the whole output, so the copy names pan, drive and FX, not "everything".
- * The chips are real factory presets' bands (PresetManager.cpp): Undercut Bass 800 Hz-6 kHz, Banking Keys 3-16 kHz
- * (sides only), Paul Ricard 6 kHz up. Drag a cut (or arrow keys on it) = band.ts. No JS: the Undercut Bass band, static.
- * Sits between the hero and #drive: the wheel pans -> what it pans -> the tracks drive it -> the FX rack plays on it.
+ * BAND SELECT (#band). Dan 2026-10-09: show the filter that picks where the effects and the plugin work; "very
+ * minimized"; then "bring the real spectrum of drift and the imager from real drift, show a spectrum of a vocal on the
+ * band selection, remove the factory presets, 'Below and above the band, your mix stays as it was.' give it more love"
+ * (his pick: a big line under the screens).
+ * The two screens are DRIFT's left cabinet, shot from the plugin (tools/shoot-drift-band-screens.mjs) and cut at the
+ * seam: BAND SELECT (the live spectrum + the LOW / HIGH CUT lines) and STEREO IMAGER (lissajous + CORR). Their live
+ * layers are the plugin's own drawing code (src/lib/drift/bandscreens.ts) fed by a real lead vocal baked to analysis
+ * data (tools/bake-drift-band-vocal.mjs -> public/drift/band-vocal.bin; no audio ships). Drag a cut and the imager
+ * shows it: the band swings with the page's pan, the rest stays a still mono line.
+ * The truth (Drift 5.2.7): ONE band from a 3-way LR4 split, not multiband; pan, DRIVE and the FX run on it; below and
+ * above pass untouched. GLUE COMP in its default last slot is the one whole-output stage, so the copy never says
+ * "everything". Sits between the hero and #drive: the wheel pans -> what it pans -> the tracks drive it -> the FX rack.
  */
-const presets = [
-  { name: 'Undercut Bass', lo: 800, hi: 6000, note: 'grit only, the sub never moves' },
-  { name: 'Banking Keys', lo: 3000, hi: 16000, note: 'the air, on the sides' },
-  { name: 'Paul Ricard', lo: 6000, hi: 20000, note: 'everything above 6k' },
-];
-const [start] = presets;
-const x = (f: number) => (Math.log(f / 20) / Math.log(1000)) * 100;   // log axis, 20 Hz .. 20 kHz = 0 .. 100 %
-const hz = (f: number) => (f >= 1000 ? `${+(f / 1000).toFixed(f % 1000 ? 1 : 0)} kHz` : `${Math.round(f)} Hz`);
-const ticks = [20, 100, 1000, 10000, 20000];
+import { getImage } from 'astro:assets';
+import geo from '../../assets/seasons/drift/band/band.json';
+import bandSrc from '../../assets/seasons/drift/band/band-glass.png';
+import imagerSrc from '../../assets/seasons/drift/band/imager-glass.png';
+
+const LO = 250, HI = 4000;   // the slice the page opens on: a vocal's body and presence
+const [band, imager] = await Promise.all([
+  getImage({ src: bandSrc, width: 800, format: 'webp', quality: 80 }),
+  getImage({ src: imagerSrc, width: 800, format: 'webp', quality: 80 }),
+]);
+const pos = (f: number) => Math.round((Math.log10(f / 20) / 3) * 1000);   // the a11y sliders: 0..1000 on the log axis
+const eq = geo.band.eq, sc = geo.imager.scope;
 ---
 <section class="d-sec d-bs" id="band" aria-labelledby="d-bs-h">
   <div class="d-wrap">
     <h2 id="d-bs-h" class="d-headline d-headline--row"><span class="l1">Pick the slice.</span> <span class="l2">DRIFT plays only there.</span></h2>
-    <div class="d-lcd d-lcd--big d-bs-glass" data-bs style={`--lo:${x(start.lo)}%;--hi:${x(start.hi)}%`}>
-      <p class="d-bs-read" aria-hidden="true"><span>BAND SELECT</span> <b data-bs-read>{hz(start.lo)} – {hz(start.hi)}</b></p>
-      <div class="d-bs-track" data-bs-track>
-        <i class="d-bs-slice" aria-hidden="true"><span>PAN · DRIVE · FX</span></i>
-        <button type="button" class="d-bs-cut" data-cut="lo" role="slider" aria-label="Low cut" aria-valuemin="20" aria-valuemax="19950"
-          aria-valuenow={start.lo} aria-valuetext={hz(start.lo)}></button>
-        <button type="button" class="d-bs-cut" data-cut="hi" role="slider" aria-label="High cut" aria-valuemin="70" aria-valuemax="20000"
-          aria-valuenow={start.hi} aria-valuetext={hz(start.hi)}></button>
-      </div>
-      <div class="d-bs-ticks" aria-hidden="true">
-        {ticks.map((f) => <span class:list={[f === 10000 && 'd-tick-10k']} style={`left:${x(f)}%`}>{hz(f)}</span>)}
-      </div>
+    <div class="d-bs-cab" data-bs data-lo={LO} data-hi={HI} data-vocal="/drift/band-vocal.bin">
+      <figure class="d-bs-piece d-bs-band" style={`--pw:${geo.w};--ph:${geo.band.h}`}>
+        <img src={band.src} width={geo.w} height={Math.round(geo.band.h)} alt="DRIFT's BAND SELECT screen: a vocal's live spectrum between the LOW CUT and HIGH CUT lines" loading="lazy" decoding="async" />
+        <div class="d-bs-eq" data-bs-eq style={`--x:${eq.x};--y:${eq.y};--sx:${eq.sx};--sy:${eq.sy}`}>
+          <canvas data-bs-spec aria-hidden="true"></canvas>
+          <svg data-bs-svg viewBox="0 0 410 156" aria-hidden="true"></svg>
+        </div>
+        <label class="d-sr">Low cut <input type="range" min="0" max="1000" value={pos(LO)} data-bs-range="LOW" /></label>
+        <label class="d-sr">High cut <input type="range" min="0" max="1000" value={pos(HI)} data-bs-range="HIGH" /></label>
+      </figure>
+      <figure class="d-bs-piece d-bs-imager" style={`--pw:${geo.w};--ph:${geo.imager.h}`}>
+        <img src={imager.src} width={geo.w} height={Math.round(geo.imager.h)} alt="DRIFT's STEREO IMAGER: only the band moves left and right" loading="lazy" decoding="async" />
+        <canvas data-bs-scope aria-hidden="true" style={`--x:${sc.x};--y:${sc.y}`}></canvas>
+      </figure>
     </div>
-    <div class="d-bs-foot">
-      <span class="d-bs-kicker" aria-hidden="true">Factory presets</span>
-      {presets.map((p, i) => (
-        <button type="button" class="d-bs-chip" data-lo={p.lo} data-hi={p.hi} aria-pressed={String(i === 0)}
-          aria-label={`${p.name}: ${hz(p.lo)} to ${hz(p.hi)}, ${p.note}`}>{p.name}</button>
-      ))}
-      <p class="d-fine d-bs-fine">Below and above the band, your mix stays as it was.</p>
-    </div>
+    <p class="d-bs-line"><span class="l1">Below and above the band,</span> <span class="l2">your mix stays as it was.</span></p>
   </div>
 </section>
 
 <script>
-  import { initBand } from '../../lib/drift/band';
-  document.querySelectorAll<HTMLElement>('[data-bs]').forEach((el) => initBand(el, el.closest('section')!));
+  import { initBandScreens } from '../../lib/drift/bandscreens';
+  document.querySelectorAll<HTMLElement>('[data-bs]').forEach(initBandScreens);
 </script>
