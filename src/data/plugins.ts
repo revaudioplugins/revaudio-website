@@ -416,7 +416,7 @@ export const plugins: Plugin[] = [
     checkoutPaused: false,
     demoUrl: null,
     releaseTarget: '2026',
-    heroImage: 'coming-soon-plate.png',
+    heroImage: 'drift-hero.png',
     galleryImages: [],
     features: [
       { name: 'Your whole sound, steered', desc: 'Grab the wheel and the whole signal slides across the stereo field.' },
