@@ -1,4 +1,16 @@
-## 2026-10-09 — /drift #band v2: DRIFT's real BAND SELECT + STEREO IMAGER on a real vocal (same branch, Claude Code, Dan's Mac) — COMMITTED LOCAL, NOT PUSHED
+## 2026-10-09 — CLOSE: /drift #fx rack + #band LIVE on main (Claude Code, Dan's Mac) — claim closed 2026-10-09
+- Dan "push" → origin/main merged in (the video work, no conflicts), build green, 0 page errors Chromium + WebKit 1141,
+  pushed `d68c62a`; Pages deploy + smoke test green; revaudio.net/drift serves #band + `band-vocal.bin` (200).
+- Dan: "FROM REVAUDIO, MAKERS OF REVLIMITER. take it down" → `.d-maker` line + its CSS removed from #creators, `c784b1f`,
+  pushed on "push"; live HTML has no such line.
+- Unverified: Dan hasn't looked at #fx / #band live on his laptop or phone yet.
+- Open: (1) `src/pages/drift.astro` meta description still says "whole sound" + tremolo (false: one band, HALO);
+  (2) spec row "PRESETS 60" → 61 if 5.2.7 ships; (3) #fx rack holds named modes at the shot values (SYNC, PLATE, FREE,
+  HALO mode 2), SNAPSHOT A–D are pixels only.
+- Cleanup (Dan's call): worktree `drift-fx-rack` + local branch `feat/drift-fx-rack` are fully merged and can go;
+  its dev server `astro dev --port 4410` (pid 79717) is still up — `kill 79717`.
+
+## 2026-10-09 — /drift #band v2: DRIFT's real BAND SELECT + STEREO IMAGER on a real vocal (same branch, Claude Code, Dan's Mac) — LIVE on main (merge d68c62a)
 - Dan on v1: "close, not it": real spectrum + real imager from DRIFT, a vocal on the band select, no factory presets, give
   "Below and above the band, your mix stays as it was." more love (his pick: a big two-tone line under the screens).
 - `DriftBand.astro` + `src/lib/drift/bandscreens.ts` (replaces band.ts): the plugin's left cabinet cut in two, its live layers
@@ -8,7 +20,7 @@
   a slow sway when idle. Hidden range inputs = keyboard access. Opens on 250 Hz - 4 kHz.
 - Checks: build green; Chromium + WebKit 1141x636, 390x844; drag moves the cut + changes what pans; crane still lands.
 
-## 2026-10-09 — /drift #band = BAND SELECT, minimal (same branch `feat/drift-fx-rack`, Claude Code, Dan's Mac) — COMMITTED LOCAL, NOT PUSHED
+## 2026-10-09 — /drift #band = BAND SELECT, minimal (same branch `feat/drift-fx-rack`, Claude Code, Dan's Mac) — LIVE on main (d68c62a)
 - Dan: "add that there's a filter that picks the area the effects and the whole plugin work on" → own section between the
   hero and #drive, Band Select look, phones too; then "it needs to be very minimized". `DriftBand.astro` + `src/lib/drift/band.ts`.
 - One headline ("Pick the slice. DRIFT plays only there."), one draggable LOW/HIGH CUT strip (arrow keys too), three chips =
@@ -18,7 +30,7 @@
 - The #fx phone band strip is gone (it lives in #band now). Checks: build green; drag / chip / keys at 1141 (Chromium + WebKit)
   and 390; the crane still lands.
 
-## 2026-10-09 — /drift #fx = the LIVE RACK (DRIFT 5.2.4), branch `feat/drift-fx-rack` (Claude Code, Dan's Mac) — COMMITTED LOCAL, NOT PUSHED
+## 2026-10-09 — /drift #fx = the LIVE RACK (DRIFT 5.2.4), branch `feat/drift-fx-rack` (Claude Code, Dan's Mac) — LIVE on main (d68c62a)
 - Dan: "pull the latest DRIFT, design #fx after it, more invested" → pick "Live rack", laptop only. Branch off origin/main
   f5cc588 in worktree `.claude/worktrees/drift-fx-rack` (upstream unset; dev `astro dev --port 4410`).
 - 601 px up: the 5.2.4 FX view rebuilt from its own pixels (`tools/shoot-drift-fx-rack.mjs` → `src/assets/seasons/drift/rack/`)
