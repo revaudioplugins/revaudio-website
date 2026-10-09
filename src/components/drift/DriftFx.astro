@@ -10,7 +10,7 @@
  * plugin's dice engine, the DICE LOG, strips that ride the rail to a new chain
  * order and go dark when a roll sits them out. It powers on when the crane
  * lands. A caption per strip rides under it.
- * Phones (<= 600 px) keep the 10-04 page: the band strip, the coverflow
+ * Phones (<= 600 px) keep the 10-04 page (the band strip moved to #band, DriftBand.astro, 10-09): the coverflow
  * carousel of TRUE-ALPHA pedals and the spec rows. Dan 10-08 ("in phone ONLY
  * change the fx that was replaced"): HALO for TREMOLO, GLUE COMP for AUTOTUNE.
  * The images sit 2-3 screens below the fold, and native loading="lazy" still
@@ -91,15 +91,6 @@ const shotSrc = drift.screenshotReady
   : null;
 const shot = shotSrc ? await getImage({ src: shotSrc, width: 1200, format: 'webp', quality: 80 }) : null;
 
-// band strip: log frequency axis, 20 Hz .. 20 kHz across 1000 units. The SVG
-// stretches to the column (non-scaling strokes); the labels are HTML so they
-// stay ≥14 px at 390 px wide.
-const x = (f: number) => (Math.log(f / 20) / Math.log(1000)) * 1000;
-const ticks = [
-  { f: 20, t: '20 Hz' }, { f: 100, t: '100 Hz' }, { f: 1000, t: '1 kHz' }, { f: 10000, t: '10 kHz' }, { f: 20000, t: '20 kHz' },
-];
-const pc = (f: number) => `${(x(f) / 10).toFixed(2)}%`;
-const LOW = 6000, HIGH = 16000;
 // transparent placeholder with the photo's own aspect, so the box never jumps (CSP img-src allows data:)
 const blank = (w: number, h: number) => `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${w} ${h}'/%3E`;
 const baySizes = '(max-width: 1000px) calc(100vw - 80px), 340px';
@@ -116,32 +107,6 @@ const baySrcset = `${bay600.src} 600w, ${bay.src} 1060w`;
           <figcaption class="d-fine">The DRIFT window, as it opens in your DAW.</figcaption>
         </figure>
       )}
-
-      <figure class="d-bandfig">
-        <div class="d-lcd d-lcd--big d-bandglass">
-        {/* HIGH CUT on the top row: its line runs down past the LOW CUT row on
-            the right of that label (16k > 6k), so the lines never cross a label
-            at any width (at 390 px the other order cut through "HIGH CUT") */}
-        <div class="d-band-cuts" aria-hidden="true">
-          <span class="d-band-cut" style={`--at:${pc(HIGH)}`}>HIGH CUT 16k</span>
-          <span class="d-band-cut" style={`--at:${pc(LOW)}`}>LOW CUT 6k</span>
-        </div>
-        <div class="d-band-win">
-          <svg class="d-bandstrip" viewBox="0 0 1000 100" preserveAspectRatio="none" role="img" aria-label="LOW CUT at 6 kilohertz and HIGH CUT at 16 kilohertz: the effects play only in this slice">
-            <rect class="axis" x="0" y="8" width="1000" height="80" />
-            {ticks.map((t) => <line class="tick" x1={x(t.f)} x2={x(t.f)} y1="88" y2="100" />)}
-            <rect class="lit" x={x(LOW)} y="8" width={x(HIGH) - x(LOW)} height="80" />
-            <line class="cut" x1={x(LOW)} x2={x(LOW)} y1="0" y2="100" />
-            <line class="cut" x1={x(HIGH)} x2={x(HIGH)} y1="0" y2="100" />
-          </svg>
-          {/* the lit slice is a lamp: its label glows; ≤600 px only "FX" fits the slice */}
-          <span class="d-fx-slice" aria-hidden="true" style={`--l:${pc(LOW)};--r:${pc(HIGH)}`}>FX<span class="d-fx-slice-w"> PLAY HERE</span></span>
-        </div>
-        <div class="d-band-ticks" aria-hidden="true">
-          {ticks.map((t) => <span class:list={[t.f === 10000 && 'd-tick-10k']} style={`left:${pc(t.f)}`}>{t.t}</span>)}
-        </div>
-        </div>
-      </figure>
 
       <noscript><style>.drift-page img[data-src] { display: none; }</style></noscript>   {/* no JS: only the twins render */}
       {/* 601 px up: THE LIVE RACK (rack.ts). A stage in the plugin's own px (1725 wide, --u = one of them), stacked in
@@ -226,23 +191,6 @@ const baySrcset = `${bay600.src} 600w, ${bay.src} 1060w`;
     </DriftPanel>
   </div>
 </section>
-
-<script>
-  // one cue: the cut flags + the lit slice flicker on once like phosphor when
-  // the band display comes into view (drift.css SECTION 3). Rest = lit, so no
-  // JS / no IO / reduced motion all show the labels on.
-  const glass = document.querySelector<HTMLElement>('#fx .d-bandglass');
-  if (glass && 'IntersectionObserver' in window) {
-    const io = new IntersectionObserver((entries) => {
-      for (const e of entries) {
-        if (!e.isIntersecting) continue;
-        (e.target as HTMLElement).dataset.lit = '';
-        io.unobserve(e.target);
-      }
-    }, { threshold: 0.5 });
-    io.observe(glass);
-  }
-</script>
 
 <script>
   /* the phone #fx carousel (Dan 10-04): the shared coverflow engine */

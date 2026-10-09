@@ -1355,6 +1355,53 @@
 }
 
 /* ==========================================================================
+   BAND SELECT (#band, Dan 10-09: "very minimized") — DriftBand.astro + band.ts
+   ========================================================================== */
+/* one headline, one slim strip on the sunk glass, three chips. The slice is the lamp (lit, a slow sway inside it =
+   the motion lives there); outside it the strip stays dark glass. Cuts: 2 px hot lines with a grip, 44 px hit boxes. */
+.d-bs .d-wrap { max-width: 860px; }
+.drift-page .d-bs h2.d-headline--row { margin-bottom: 18px; }
+.d-bs-glass { --lo: 37%; --hi: 66%; padding: 10px 16px 8px; }
+.d-bs-read { display: flex; justify-content: space-between; margin: 0 0 6px; font: 400 16px/1.1 var(--d-f-lcd); letter-spacing: .06em; color: var(--d-dim-violet); }
+.d-bs-read b { font-weight: 400; color: var(--d-crt); }
+.d-bs-track { position: relative; height: 44px; touch-action: none; cursor: ew-resize;
+  background: rgba(255, 240, 255, .03); box-shadow: inset 0 0 0 1px rgba(180, 107, 255, .3); border-radius: 2px; }
+.d-bs-slice { position: absolute; top: 0; bottom: 0; left: var(--lo); width: calc(var(--hi) - var(--lo)); overflow: hidden;
+  display: grid; place-items: center; pointer-events: none; container-type: inline-size;
+  background: rgba(180, 107, 255, .26); box-shadow: inset 0 0 0 1.5px var(--d-neon), 0 0 14px rgba(180, 107, 255, .35); }
+.d-bs-slice::before { content: ''; position: absolute; inset: 0 -40%; background: linear-gradient(90deg, transparent 30%, rgba(255, 79, 216, .32) 50%, transparent 70%);
+  animation: d-bs-sway 3.2s ease-in-out infinite alternate; }
+@container (max-width: 118px) { .d-bs-slice span { opacity: 0; } }   /* a narrow slice is lamp only: no clipped label */
+@keyframes d-bs-sway { from { transform: translateX(-28%); } to { transform: translateX(28%); } }
+.d-bs-slice span { position: relative; white-space: nowrap; font: 400 15px/1 var(--d-f-lcd); letter-spacing: .06em; color: var(--d-white-ink); text-shadow: 0 0 6px rgba(242, 76, 240, .75); }
+.d-bs-cut { position: absolute; top: -6px; bottom: -6px; width: 44px; margin-left: -22px; padding: 0; border: 0; background: none; cursor: ew-resize; }
+.d-bs-cut[data-cut="lo"] { left: var(--lo); } .d-bs-cut[data-cut="hi"] { left: var(--hi); }
+.d-bs-cut::before { content: ''; position: absolute; left: 21px; top: 0; bottom: 0; width: 2px; background: var(--d-hot); box-shadow: 0 0 6px rgba(255, 79, 216, .8); }
+.d-bs-cut::after { content: ''; position: absolute; left: 17px; top: 50%; width: 10px; height: 18px; translate: 0 -50%; border-radius: 3px;
+  background: repeating-linear-gradient(180deg, #ffd6f6 0 2px, transparent 2px 4px) 2px 3px / 6px 12px no-repeat, #2a1036;
+  box-shadow: 0 0 0 1px var(--d-hot), 0 0 8px rgba(255, 79, 216, .6); }
+.d-bs-cut:focus-visible { outline: 2px solid #ffd6f6; outline-offset: -2px; border-radius: 4px; }
+.d-bs-glass[data-glide] :is(.d-bs-slice, .d-bs-cut) { transition: left 520ms cubic-bezier(.3, .72, .18, 1), width 520ms cubic-bezier(.3, .72, .18, 1); }
+.d-bs-ticks { position: relative; height: 20px; margin-top: 4px; }
+.d-bs-ticks span { position: absolute; top: 0; transform: translateX(-50%); white-space: nowrap; font: 400 15px/1.2 var(--d-f-lcd); color: var(--d-dim-violet); }
+.d-bs-ticks span:first-child { transform: none; } .d-bs-ticks span:last-child { transform: translateX(-100%); }
+.d-bs-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 10px; margin-top: 14px; }
+.d-bs-kicker { font: 400 9px/1.4 var(--d-f-pix); letter-spacing: .1em; text-transform: uppercase; color: var(--d-fg-dim); }
+.d-bs-chip { min-height: 32px; padding: 0 12px; border: 0; border-radius: 4px; cursor: pointer; background: rgba(190, 90, 255, .07);
+  box-shadow: inset 0 0 0 1px rgba(231, 184, 255, .3); color: var(--d-fg); font: 600 13px/1 var(--d-f-head); letter-spacing: .05em; text-transform: uppercase; }
+.d-bs-chip:hover { box-shadow: inset 0 0 0 1px rgba(255, 79, 216, .8); color: var(--d-white-ink); }
+.d-bs-chip[aria-pressed="true"] { background: rgba(190, 90, 255, .28); box-shadow: inset 0 0 0 1px rgba(246, 232, 255, .75), 0 0 10px rgba(190, 90, 255, .45); color: var(--d-white-ink); }
+.d-bs-chip:focus-visible { outline: 2px solid #ffd6f6; outline-offset: 2px; }
+.d-bs-fine { flex-basis: 100%; margin: 2px 0 0; text-align: center; }
+@media (max-width: 600px) {
+  .d-bs-glass { padding: 8px 12px 6px; }
+  .d-bs-slice span { font-size: 12px; letter-spacing: 0; }
+  .d-bs-chip { padding: 0 9px; font-size: 12px; }
+  .d-bs-kicker { flex-basis: 100%; text-align: center; }
+}
+@media (prefers-reduced-motion: reduce) { .d-bs-slice::before { animation: none; transform: none; } .d-bs-glass[data-glide] :is(.d-bs-slice, .d-bs-cut) { transition: none; } }
+
+/* ==========================================================================
    SECTION 3 — EFFECTS (#fx)
    ========================================================================== */
 /* the FX RACK (finish 10-03): the plugin's FX view is a view inside the main window, so it wears #drive's

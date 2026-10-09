@@ -1,3 +1,13 @@
+## 2026-10-09 — /drift #band = BAND SELECT, minimal (same branch `feat/drift-fx-rack`, Claude Code, Dan's Mac) — COMMITTED LOCAL, NOT PUSHED
+- Dan: "add that there's a filter that picks the area the effects and the whole plugin work on" → own section between the
+  hero and #drive, Band Select look, phones too; then "it needs to be very minimized". `DriftBand.astro` + `src/lib/drift/band.ts`.
+- One headline ("Pick the slice. DRIFT plays only there."), one draggable LOW/HIGH CUT strip (arrow keys too), three chips =
+  real factory presets' bands (Undercut Bass 800-6k, Banking Keys 3-16k, Paul Ricard 6k-20k), one fine line. ~300 px tall.
+- Honesty (Drift 5.2.7 DSP): ONE band from a 3-way LR4 split, not multiband; pan + DRIVE + FX run on it, below/above untouched.
+  GLUE COMP in its default last slot is whole-output, so the copy says "PAN · DRIVE · FX", not "everything".
+- The #fx phone band strip is gone (it lives in #band now). Checks: build green; drag / chip / keys at 1141 (Chromium + WebKit)
+  and 390; the crane still lands.
+
 ## 2026-10-09 — /drift #fx = the LIVE RACK (DRIFT 5.2.4), branch `feat/drift-fx-rack` (Claude Code, Dan's Mac) — COMMITTED LOCAL, NOT PUSHED
 - Dan: "pull the latest DRIFT, design #fx after it, more invested" → pick "Live rack", laptop only. Branch off origin/main
   f5cc588 in worktree `.claude/worktrees/drift-fx-rack` (upstream unset; dev `astro dev --port 4410`).
