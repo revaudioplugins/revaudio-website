@@ -7,11 +7,26 @@
  */
 ---
 <dialog class="d-vsheet" data-vsheet-dialog aria-label="Video">
-  <video playsinline controls preload="none"></video>
+  <div class="d-vsheet-stage"><video playsinline controls preload="none"></video></div>
   <button type="button" class="d-vsheet-x" data-vsheet-close><span aria-hidden="true">&#10005;</span>Close</button>
 </dialog>
 
 <script>
+  // the big red ▶ keys (DriftPlayBurst, every player on the page): pop out of the screen the first time they come
+  // into view, then flash until that key's video has been played once (drift.css .d-pb)
+  const bursts = document.querySelectorAll<HTMLElement>('.d-pb');
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (!e.isIntersecting) continue;
+        e.target.classList.add('is-in');
+        io.unobserve(e.target);
+      }
+    }, { threshold: 0.6 });
+    bursts.forEach((b) => { b.classList.add('is-armed'); io.observe(b); });
+  }
+  bursts.forEach((b) => b.addEventListener('click', () => b.classList.add('is-played')));
+
   const dlg = document.querySelector<HTMLDialogElement>('[data-vsheet-dialog]');
   const video = dlg?.querySelector('video');
   if (dlg && video && typeof dlg.showModal === 'function') {

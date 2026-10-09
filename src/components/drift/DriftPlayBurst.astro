@@ -1,0 +1,31 @@
+---
+/**
+ * The big red ▶ (Dan 10-09: "big red play button ... pops out from the screen like the PLAY A SOUND on the DRIFT
+ * plugin, like comic book, it will flash a bit, give it love", for every video). The plugin's SHOUT bubble
+ * (Drift Source/ui/public/index.html #tbBig, DESIGN.md "PLAY A SOUND talking bubble"): the same 18-spike burst and
+ * tail, 10 px ink line #1c1424, neon-magenta offset print (7,8), one cream gloss stroke, Bangers lettering tilted
+ * -7deg; the fill is red here (a play key, not a hint) and an amber copy blinks over it (the flash).
+ * Motion (drift.css .d-pb): pops out of the screen on first view with the bubble's overshoot, then a double blink +
+ * kick every few seconds until the first play; reduced motion = still. Extra attrs (data-*, aria-controls, class)
+ * pass through; the button ships hidden, the player's script unhides it.
+ */
+interface Props { length: string; label: string; class?: string; [k: string]: unknown }
+const { length, label, class: cls, ...rest } = Astro.props;
+const burst = 'M180.0 -4.0 L200.0 17.2 L225.2 5.8 L238.9 23.0 L272.7 13.3 L266.7 37.6 L311.1 32.4 L292.4 53.5 L315.6 60.9 L291.7 74.0 L311.6 86.7 L293.3 94.6 L308.4 114.7 L265.3 109.8 L275.8 136.7 L240.2 126.1 L225.9 143.3 L199.5 129.3 L180.0 149.1 L159.3 132.6 L128.4 151.9 L123.0 123.4 L86.6 135.1 L90.5 111.5 L65.4 110.3 L70.6 93.9 L41.2 87.4 L65.6 74.0 L30.4 59.5 L68.5 53.7 L58.0 35.3 L93.8 37.9 L94.9 18.3 L119.9 22.0 L130.3 -1.0 L160.6 19.1 Z';
+const tail = 'M126 116 L 72 148 L 90 145 L 22 174 L 104 150 L 93 146 L 156 124 Z';
+---
+<button type="button" class:list={['d-pb', cls]} aria-label={`${label}, ${length}`} hidden {...rest}>
+  <span class="d-pb-pop">
+    <svg viewBox="0 0 320 180" aria-hidden="true" focusable="false">
+      <g fill="#e040c8" stroke="#1c1424" stroke-width="10" stroke-linejoin="round" transform="translate(7 8)"><path d={burst} /><path d={tail} /></g>
+      <g fill="none" stroke="#1c1424" stroke-width="10" stroke-linejoin="round"><path d={burst} /><path d={tail} /></g>
+      <g class="d-pb-fill" fill="#ff2b3d"><path d={burst} /><path d={tail} /></g>
+      <g class="d-pb-flash" fill="#ffd23b"><path d={burst} /><path d={tail} /></g>
+      <path d="M96 40 Q 130 14 184 10" fill="none" stroke="#fff6d0" stroke-opacity=".8" stroke-width="5" stroke-linecap="round" />
+    </svg>
+    <span class="d-pb-txt" aria-hidden="true">
+      <svg class="d-pb-tri" viewBox="0 0 40 46"><path d="M5 4 L36 23 L5 42 Z" fill="#fff6d0" stroke="#1c1424" stroke-width="5" stroke-linejoin="round" /></svg>
+      <span class="d-pb-words"><b>Watch!</b><i>{length}</i></span>
+    </span>
+  </span>
+</button>

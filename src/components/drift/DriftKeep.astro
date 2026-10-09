@@ -20,6 +20,7 @@
  * while it's on screen (init.ts initLap). 'closed' keeps the route boxes.
  * Renders only while routes exist (not 'released').
  */
+import DriftPlayBurst from './DriftPlayBurst.astro';
 import { site } from '../../data/site';
 import { drift, ctaFor, routesFor, lapFor, captureCopyFor } from '../../data/drift';
 const cta = ctaFor();
@@ -54,17 +55,10 @@ const onceUrl = site.downloadGate.workerUrl + '/form-once';
               </form>
               <p class="d-capture-status" role="status" aria-live="polite" tabindex="-1"></p>
               <p class="d-keep-consent">Open it on a computer · You join our list · unsubscribe anytime</p>
-              {drift.betaVideo && (
-                <button type="button" class="d-kv-play" data-kv-play aria-controls="d-kv-video" hidden>
-                  <span aria-hidden="true">&#9654;&#xFE0E;</span> Watch how the beta works <span class="d-vph-t">{drift.betaVideoLength}</span>
-                </button>
-              )}
             </div>
             {drift.betaVideo && (
-              <button type="button" class="d-vph d-vph--keep" data-vsheet hidden data-src={`${drift.betaVideo}-9x16.mp4`}
-                data-poster={`${drift.betaVideo}-9x16.jpg`} data-label="How the DRIFT beta works">
-                <span aria-hidden="true">&#9654;&#xFE0E;</span> Watch how the beta works <span class="d-vph-t">{drift.betaVideoLength}</span>
-              </button>
+              <DriftPlayBurst class="d-vph d-vph--keep" length={drift.betaVideoLength} label="Watch how the DRIFT beta works"
+                data-vsheet data-src={`${drift.betaVideo}-9x16.mp4`} data-poster={`${drift.betaVideo}-9x16.jpg`} data-label="How the DRIFT beta works" />
             )}
           </div>
         </Fragment>
@@ -146,6 +140,9 @@ const onceUrl = site.downloadGate.workerUrl + '/form-once';
         </Fragment>
       )}
     </div>
+    {drift.betaVideo && gate && (
+      <DriftPlayBurst class="d-kv-play" length={drift.betaVideoLength} label="Watch how the DRIFT beta works" data-kv-play aria-controls="d-kv-video" />
+    )}
     <!-- the plugin's CRT cabinet livery, printed on the TV bezel (Dan 10-03, direction A): live type, never baked -->
     <span class="d-tv-ink d-tv-tl" aria-hidden="true"><i class="d-tv-checker"></i><b>Speed sounds better</b></span>
     <span class="d-tv-ink d-tv-tr" aria-hidden="true"><i class="d-tv-stripes"></i><b lang="ja">スピード</b></span>
