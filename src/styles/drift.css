@@ -1944,7 +1944,7 @@ html.hc #get .d-get-head span { text-shadow: none; }
      the APPLY pill + Watch again as the end screen. Shown only from here up (phones: the text screen) */
   /* the big red ▶ (DriftPlayBurst) breaks out over the plate's top-right corner, its tail pointing into the screen
      (the beta TV wears it the same way); gone while the video plays (the ✕ sits there) */
-  .d-cr-play:not([hidden]) { position: absolute; z-index: 5; right: -34px; top: -56px; --pb-w: 262px; }
+  .d-cr-play:not([hidden]) { position: absolute; z-index: 5; right: -22px; top: -40px; --pb-w: 196px; }
   .d-cam-panel:has(.d-cr-video:not([hidden])) .d-cr-play { visibility: hidden; }
   .d-cr-video:not([hidden]) {
     display: block; position: absolute; z-index: 3; inset: var(--cam-t) var(--cam-r) var(--cam-b) var(--cam-l);
@@ -2396,22 +2396,38 @@ html.hc .drift-page .d-price-label { text-shadow: none; }
 .drift-page .d-pb:focus-visible { outline: none; }
 .drift-page .d-pb:focus-visible .d-pb-pop { outline: 3px solid #fff; outline-offset: 4px; border-radius: 40%; }
 @media (prefers-reduced-motion: no-preference) {
-  .d-pb.is-armed .d-pb-pop { transform: scale(.15); opacity: 0; }
-  .d-pb.is-in .d-pb-pop { animation: d-pb-in 420ms cubic-bezier(.18, 1.55, .4, 1) both, d-pb-kick 3.2s 1.2s ease-out infinite; }
-  .d-pb.is-in .d-pb-flash { animation: d-pb-flash 3.2s 1.2s steps(1, end) infinite; }
+  .d-pb.is-armed .d-pb-pop { transform: translate(-46%, 52%) scale(.08); opacity: 0; }
+  .d-pb.is-in .d-pb-pop { animation: d-pb-in 640ms cubic-bezier(.2, 1.4, .4, 1) both, d-pb-kick 3.2s 2.2s ease-out infinite; }
+  .d-pb.is-in .d-pb-flash { animation: d-pb-spawn 640ms steps(1, end), d-pb-flash 3.2s 2.2s steps(1, end) infinite; }
   .d-pb.is-played .d-pb-pop, .d-pb.is-played .d-pb-flash { animation: none; }
   .d-pb.is-played.is-in .d-pb-pop { opacity: 1; transform: none; }
   .d-pb.is-in:hover .d-pb-pop { animation-play-state: paused; }
 }
-@keyframes d-pb-in { from { transform: scale(.15); opacity: 0; } 35% { opacity: 1; } to { transform: scale(1); opacity: 1; } }
+/* Dan 10-09 "notice it coming out of the screen": it launches from inside the screen (down the tail, tiny), flies
+   out past its spot, settles; the fill strobes on the way out */
+@keyframes d-pb-in {
+  0% { transform: translate(-46%, 52%) scale(.08) rotate(14deg); opacity: 0; }
+  18% { opacity: 1; }
+  62% { transform: translate(4%, -5%) scale(1.18) rotate(-5deg); }
+  82% { transform: translate(-1%, 1%) scale(.96) rotate(1deg); }
+  100% { transform: none; opacity: 1; }
+}
+@keyframes d-pb-spawn { 0%, 30%, 60% { opacity: 0; } 15%, 45%, 75% { opacity: .95; } 100% { opacity: 0; } }
 @keyframes d-pb-kick { 0%, 14%, 100% { transform: scale(1) rotate(0); } 4% { transform: scale(1.09) rotate(-2.5deg); } 9% { transform: scale(1.03) rotate(1deg); } }
 @keyframes d-pb-flash { 0%, 6%, 100% { opacity: 0; } 2% { opacity: .9; } 8% { opacity: .9; } 10% { opacity: 0; } }
+
+/* the streamer one is yellow (Dan 10-09): amber body, red blink, ink lettering + a red ▶ */
+.d-pb--yellow .d-pb-fill { fill: #ffd23b; }
+.d-pb--yellow .d-pb-flash { fill: #fff6d0; }
+.d-pb--yellow .d-pb-tri path { fill: #ff2b3d; }
+.d-pb--yellow .d-pb-words b { color: #1c1424; -webkit-text-stroke: 0; text-shadow: .9cqw .9cqw 0 #e040c8; }
+.d-pb--yellow .d-pb-words i { color: #ff2b3d; -webkit-text-stroke: 1.2cqw #1c1424; }
 
 /* where each ▶ sits */
 .d-kv-play, .d-kv-video { display: none; }
 @media (min-width: 1001px) {
   /* beta: on the TV cabinet, over its top-right corner (outside the tube's mask, so it breaks out of the screen) */
-  .d-keep-tv .d-kv-play:not([hidden]) { display: block; position: absolute; z-index: 6; right: -34px; top: -62px; --pb-w: 262px; }
+  .d-keep-tv .d-kv-play:not([hidden]) { display: block; position: absolute; z-index: 6; right: -22px; top: -44px; --pb-w: 196px; }
   .d-keep-tv:has(.d-kv-video:not([hidden])) .d-kv-play { visibility: hidden; }
   .d-kv-video:not([hidden]) { display: block; position: absolute; z-index: 3; inset: 0; background: #000; container-type: size; }
   .d-kv-end:not([hidden]) {
@@ -2438,7 +2454,7 @@ html.hc .drift-page .d-price-label { text-shadow: none; }
 @media (min-width: 1001px) { .d-pb.d-vph:not([hidden]) { display: none; } }
 @media (max-width: 1000px) {
   .d-pb:is(.d-cr-play, .d-kv-play):not([hidden]) { display: none; }
-  .d-vph:not([hidden]) { display: block; margin: 8px auto 4px; --pb-w: min(230px, 62vw); }
+  .d-vph:not([hidden]) { display: block; margin: 8px auto 4px; --pb-w: min(178px, 48vw); }
   .d-vph--keep:not([hidden]) { position: relative; z-index: 2; }
   #creators .d-vph--cr:not([hidden]) { order: 1; margin: 0 auto 10px; }
 }

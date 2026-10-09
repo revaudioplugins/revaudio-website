@@ -12,15 +12,16 @@
 </dialog>
 
 <script>
-  // the big red ▶ keys (DriftPlayBurst, every player on the page): pop out of the screen the first time they come
-  // into view, then flash until that key's video has been played once (drift.css .d-pb)
+  // the big ▶ keys (DriftPlayBurst, every player on the page): ~1 s after they first come into view they fly out of
+  // the screen, then flash until that key's video has been played once (drift.css .d-pb)
   const bursts = document.querySelectorAll<HTMLElement>('.d-pb');
   if ('IntersectionObserver' in window) {
     const io = new IntersectionObserver((entries) => {
       for (const e of entries) {
         if (!e.isIntersecting) continue;
-        e.target.classList.add('is-in');
-        io.unobserve(e.target);
+        const b = e.target;
+        io.unobserve(b);
+        window.setTimeout(() => b.classList.add('is-in'), 1100);   // the reader lands first, then it launches
       }
     }, { threshold: 0.6 });
     bursts.forEach((b) => { b.classList.add('is-armed'); io.observe(b); });
