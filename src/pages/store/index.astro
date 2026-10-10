@@ -7,8 +7,10 @@ import { plugins } from '../../data/plugins';
 // Shipping products lead; in-development plugins sit in their own labeled row
 // below (conversion pass 2026-08-03) — unbuyable tiles mixed into the main
 // grid read "roadmap company" to a first-time visitor.
-const shipping = plugins.filter((p) => p.status !== 'in-development');
-const roadmap = plugins.filter((p) => p.status === 'in-development');
+// A plugin with an open free trial (DRIFT beta) counts as shipping here.
+const onBench = (p: (typeof plugins)[number]) => p.status === 'in-development' && !p.trialOpen;
+const shipping = plugins.filter((p) => !onBench(p));
+const roadmap = plugins.filter(onBench);
 ---
 
 <BaseLayout

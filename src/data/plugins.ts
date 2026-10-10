@@ -158,6 +158,10 @@ export interface Plugin {
    *  construction, get the trial" + an email gate. Drop this flag once
    *  checkout is back to restore the real buy/download buttons everywhere. */
   trialGateActive?: boolean;
+  /** A free trial is open while the product isn't on sale yet (DRIFT beta, from
+   *  2026-10-10): the store lists it with the shipping plugins, not "On the bench",
+   *  and its card reads "Free 30-day trial" -> its own page's sign-up. */
+  trialOpen?: boolean;
 }
 
 const baseSystemReq: SystemReq = {
@@ -411,6 +415,8 @@ export const plugins: Plugin[] = [
       'A panner built for movement. Steer your whole sound across the stereo image by hand with the wheel, or hand it to a track shape locked to your tempo. Turn on Auto Drift and the car speeds up when the music hits harder. Set LOW CUT and HIGH CUT around one slice and echo, reverb, tremolo and pitch play only there. Saturation and autotune on board too. Controlled slides. No spinouts.',
     status: 'in-development',
     statusLabel: 'In development',
+    // Yoni 2026-10-10: the trial is live, so the store shows DRIFT with the live plugins
+    trialOpen: true,
     introPriceUsd: null,
     regularPriceUsd: null,
     checkoutPaused: false,
