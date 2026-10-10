@@ -18,11 +18,12 @@
  * can't honour fails the BUILD instead of shipping a dead route.
  */
 import { existsSync } from 'node:fs';
+import { site } from './site';
 
 export type DriftPhase = 'preopen' | 'open' | 'closed' | 'released';
 
 export const drift = {
-  phase: 'preopen' as DriftPhase,
+  phase: 'open' as DriftPhase,
 
   trialOpensIso: '2026-10-10T17:00:00Z',
   trialOpensLabel: 'Sat Oct 10, 17:00 UTC',
@@ -35,7 +36,7 @@ export const drift = {
   showPrices: true,
 
   /** The $39 route's form. The build refuses phase 'open' until it exists. */
-  feedbackFormLive: false,
+  feedbackFormLive: true,
   /** The beta feedback form (src/pages/drift/feedback.astro); the BETA FEEDBACK key over Apply in #creators. */
   feedbackUrl: '/drift/feedback',
   /** Creator deal (keep DRIFT free with a video). Lights the ON AIR lamp. */
@@ -61,8 +62,9 @@ export const drift = {
 
   /** Gate id the licence worker will know DRIFT by (dlGateId contract). */
   gateId: 'drift',
-  /** false until the worker has DL_PLUGINS.drift; then the open phase uses TrialGateModal. */
-  gateWired: false,
+  /** true = the worker has DL_PLUGINS.drift (RevLimiter 148cded, 2026-10-10): in the open phase every
+   *  sign-up form posts to /download/register, which emails the download (registerUrlFor). */
+  gateWired: true,
   /** AAX ships in the beta (Dan 2026-10-01, Decision 7; PACE signing = Gil).
    *  Every format string reads this: false takes AAX off the whole page. */
   aaxReady: true,
@@ -174,7 +176,8 @@ export function lapFor(phase: DriftPhase = drift.phase): Lap | null {
     head: `The road to ${nb(noDay(drift.releaseLabel))}:`,
     span: `${drift.trialDays} days free`,
     stops: [
-      { id: 'start', flag: 'Start', date: nb(noDay(drift.trialOpensDay)), what: pre ? 'Trial starts · by email' : 'Trial open · by email',
+      { id: 'start', flag: 'Start', date: pre ? nb(noDay(drift.trialOpensDay)) : 'Now',   // live: no past date (Yoni 2026-10-10)
+        what: pre ? 'Trial starts · by email' : 'Trial open · by email',
         chip: p ? { label: 'Today', value: '$0' } : undefined },
       { id: 'check', flag: 'Checkpoint', date: nb(noDay(drift.feedbackClosesLabel)), what: 'Feedback form closes',
         chip: p ? { label: 'Filled the form', value: `$${drift.driverPriceUsd}` } : undefined },
@@ -207,7 +210,9 @@ export function ctaFor(phase: DriftPhase = drift.phase): DriftCta {
         label: 'Get it',
         sub: `Download link by email`,
         sticky: `${drift.trialDays} DAYS FREE · BY EMAIL`,
-        action: drift.gateWired ? 'gate' : 'capture',
+        // the inline forms stay (#try's jump focuses #try .d-capture-form); with gateWired they post to the
+        // worker's /download/register (registerUrlFor), so the email goes out at once (Yoni 2026-10-10)
+        action: 'capture',
       };
     case 'closed':
       return {
@@ -278,6 +283,12 @@ export function captureCopyFor(phase: DriftPhase = drift.phase): CaptureCopy | n
       return null;
   }
 }
+
+/** Where the sign-up forms post the trial (capture.ts): the worker's /download/register, which emails the
+ *  download link at once, while the trial is open and the worker knows DRIFT. undefined = the /form-once
+ *  list relay only (preopen / closed: nothing to send yet). */
+export const registerUrlFor = (phase: DriftPhase = drift.phase): string | undefined =>
+  phase === 'open' && drift.gateWired ? site.downloadGate.workerUrl + '/download/register' : undefined;
 
 /** Build guard: a phase the page can't honour fails the build, loudly. */
 export function assertDriftConfig(checkoutUrl: string | null | undefined): void {

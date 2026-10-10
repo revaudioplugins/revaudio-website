@@ -23,7 +23,7 @@
 import DriftPlayBurst from './DriftPlayBurst.astro';
 import DriftVideoGate from './DriftVideoGate.astro';
 import { site } from '../../data/site';
-import { drift, ctaFor, routesFor, lapFor, captureCopyFor } from '../../data/drift';
+import { drift, ctaFor, routesFor, lapFor, captureCopyFor, registerUrlFor } from '../../data/drift';
 const cta = ctaFor();
 const routes = routesFor();
 const lap = lapFor();   // the trial phases: the lap replaces the route boxes (Dan 10-03, A3)
@@ -31,6 +31,7 @@ const lap = lapFor();   // the trial phases: the lap replaces the route boxes (D
 // stamp (capture.ts: /form-once, this phase's source and status lines)
 const gate = drift.phase === 'preopen' || drift.phase === 'open' ? captureCopyFor() : null;
 const onceUrl = site.downloadGate.workerUrl + '/form-once';
+const registerUrl = registerUrlFor();   // open phase: the form posts the trial to /download/register (capture.ts)
 ---
 {routes.length > 0 && (
   <div class="d-keep d-wrap">
@@ -43,7 +44,7 @@ const onceUrl = site.downloadGate.workerUrl + '/form-once';
             <p class="d-keep-head d-keep-try" id="d-keep-start-h"><span>Try it free</span>{' '}<span>for {drift.trialDays} days.</span></p>
             <div class="d-keep-gate">
               <form class="d-keep-form" action={site.formspreeEndpoint} method="POST" aria-labelledby="d-keep-start-h"
-                data-drift-capture data-once-url={onceUrl} data-msg-ok={gate.ok} data-msg-already={gate.already}>
+                data-drift-capture data-once-url={onceUrl} data-register-url={registerUrl} data-plugin={drift.gateId} data-msg-ok={gate.ok} data-msg-already={gate.already}>
                 <label for="d-keep-email" class="d-sr">Your email: we send the DRIFT download here</label>
                 <span class="d-keep-input">
                   <input id="d-keep-email" class="d-field d-keep-field" type="email" name="email" required

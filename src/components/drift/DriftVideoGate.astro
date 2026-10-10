@@ -7,18 +7,19 @@
  * label unique per copy.
  */
 import { site } from '../../data/site';
-import { drift, captureCopyFor } from '../../data/drift';
+import { drift, captureCopyFor, registerUrlFor } from '../../data/drift';
 interface Props { id: string; againAttr: string }
 const { id, againAttr } = Astro.props;
 const gate = captureCopyFor();
 const onceUrl = site.downloadGate.workerUrl + '/form-once';
+const registerUrl = registerUrlFor();   // open phase: the form posts the trial to /download/register (capture.ts)
 ---
 {gate && (
   <div class="d-vend">
     <p class="d-keep-head d-keep-try d-vend-head" id={`${id}-h`}><span>Ready? Try it free</span>{' '}<span>for {drift.trialDays} days.</span></p>
     <div class="d-keep-gate d-vend-gate">
       <form class="d-keep-form" action={site.formspreeEndpoint} method="POST" aria-labelledby={`${id}-h`}
-        data-drift-capture data-once-url={onceUrl} data-msg-ok={gate.ok} data-msg-already={gate.already}>
+        data-drift-capture data-once-url={onceUrl} data-register-url={registerUrl} data-plugin={drift.gateId} data-msg-ok={gate.ok} data-msg-already={gate.already}>
         <label for={`${id}-email`} class="d-sr">Your email: we send the DRIFT download here</label>
         <span class="d-keep-input">
           <input id={`${id}-email`} class="d-field d-keep-field" type="email" name="email" required

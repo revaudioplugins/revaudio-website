@@ -1,7 +1,9 @@
 /**
  * Every DRIFT sign-up form (form[data-drift-capture]): the hero trial stamp
  * and #try's capture. One contract: POST {form:'newsletter', email, source,
- * _gotcha} to the worker's /form-once (one-per-email relay); the status line
+ * _gotcha} to the worker's /form-once (one-per-email relay); in the open phase
+ * (data-register-url, drift.ts registerUrlFor) it first posts {email, plugin,
+ * marketing} to /download/register, which emails the download; the status line
  * (.d-capture-status) and the creators nudge (.d-capture-next) are the form's
  * siblings. A [data-face] inside the submit button reads "Sending" in flight (no ellipsis: it must not be wider than the rest face).
  */
@@ -56,13 +58,26 @@ export function initCaptures(): void {
       const hadFocus = !!submitBtn && document.activeElement === submitBtn;   // a disabled key drops focus to body; the error path gives it back
       if (submitBtn) { submitBtn.style.minWidth = submitBtn.offsetWidth + 'px'; submitBtn.disabled = true; }   // the key keeps its rest width: 'Sending' is narrower than 'Get it ▸' (measured 10-02)
       if (face) face.textContent = 'Sending';
+      const fields = Object.fromEntries(new FormData(form)) as Record<string, string>;
+      const postJson = (url: string, body: object) => fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        keepalive: true,
+      });
       try {
-        const res = await fetch(form.dataset.onceUrl!, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ form: 'newsletter', ...Object.fromEntries(new FormData(form)) }),
-        });
-        const j = await res.json().catch(() => null);
+        let j: { ok?: boolean; already?: boolean; error?: string } | null;
+        if (form.dataset.registerUrl && !fields._gotcha) {
+          // Open phase: the worker's email gate sends the download now (Yoni 2026-10-10: preopen's
+          // /form-once only filed the address, so nobody got a mail). The form says "You join our list",
+          // so that consent goes along as marketing, and the list relay still runs in the background.
+          const res = await postJson(form.dataset.registerUrl, { email: fields.email, plugin: form.dataset.plugin, marketing: true });
+          j = await res.json().catch(() => null);
+          if (j && j.ok) postJson(form.dataset.onceUrl!, { form: 'newsletter', ...fields }).catch(() => { /* list join is best-effort */ });
+        } else {
+          const res = await postJson(form.dataset.onceUrl!, { form: 'newsletter', ...fields });
+          j = await res.json().catch(() => null);
+        }
         if (j && j.ok) {
           form.hidden = true;
           const msg = j.already ? form.dataset.msgAlready! : form.dataset.msgOk!;

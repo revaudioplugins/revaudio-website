@@ -14,11 +14,12 @@
  * tiny consent line (the sign-up joins the newsletter list).
  */
 import { site } from '../../data/site';
-import { drift, captureCopyFor } from '../../data/drift';
+import { drift, captureCopyFor, registerUrlFor } from '../../data/drift';
 
 const copy = captureCopyFor();
 if (!copy) throw new Error(`[DriftTrialStamp] phase '${drift.phase}' has no capture copy (captureCopyFor).`);
 const onceUrl = site.downloadGate.workerUrl + '/form-once';
+const registerUrl = registerUrlFor();   // open phase: the form posts the trial to /download/register (capture.ts)
 const closed = drift.phase === 'closed';
 // H5 (10-02): the key's accessible name says what the press does, but only while the face reads "Get it"
 // and a trial is on offer (preopen / open); the closed phase is a notify-me, so no label (WCAG 2.5.3)
@@ -33,7 +34,7 @@ const keyLabel = drift.phase === 'preopen' || drift.phase === 'open' ? `Get it: 
       : <Fragment><span>Get your <em>free</em></span> <span>{drift.trialDays}&#8209;day trial</span></Fragment>}
   </p>
   <form class="d-stamp-form" action={site.formspreeEndpoint} method="POST" aria-labelledby="d-stamp-label"
-    data-drift-capture data-once-url={onceUrl} data-msg-ok={copy.ok} data-msg-already={copy.already}>
+    data-drift-capture data-once-url={onceUrl} data-register-url={registerUrl} data-plugin={drift.gateId} data-msg-ok={copy.ok} data-msg-already={copy.already}>
     <label for="d-stamp-email" class="d-sr">Your email: we send the DRIFT download here</label>
     <input id="d-stamp-email" class="d-field d-stamp-field" type="email" name="email" required
       autocomplete="email" inputmode="email" enterkeyhint="go" spellcheck="false" placeholder="your@email.com" />
