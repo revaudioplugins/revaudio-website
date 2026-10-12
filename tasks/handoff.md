@@ -1,3 +1,16 @@
+## 2026-10-12 — /drift WATCH! bursts bigger + a laptop/phone placement bench, branch `feat/drift-watch-bubble` (Claude Code, Dan's Mac) — COMMITTED LOCAL, NOT PUSHED
+- Dan: "make the video bubble 'watch this' bigger and a bit better placement, a bench for phone and laptop, I'll place it
+  and resize it". Branch off origin/main 6c33d31, worktree `.claude/worktrees/drift-watch-bubble` (dev `astro dev --port 4420`).
+- `drift.css` (4 placement rules only): laptop 196 → 264 px, pinned a bit lower on the TV corner (right -26, top -54 beta /
+  -50 creators) so the tail lands at the end of the headline and the spikes clear the R rail at 1141; phones 178 → 232 px
+  (min(232px, 60vw)), translate -4% so the burst body is centred.
+- Bench `/__watchbench` (`tools/watchbench/`, dev only, never built): the real /drift in a laptop iframe (1141x636 default;
+  1280/1440/1728/1001) + a phone iframe (390x844; 360/430), driven from outside. Drag = move, corner dot = resize, arrows,
+  -/+, undo, COPY CSS → "apply watch bench" folds it into the 4 rules. Clicks never start the video.
+- Checks: build green (bench absent from dist); Chromium + WebKit at 1001/1141/1440/1728 + 360/390/430: no sideways scroll;
+  bench drag/resize/undo/export verified in both engines.
+- Open: Dan's own placement in the bench, then apply + push (main = live, his word).
+
 ## 2026-10-09 — /drift #band v2: DRIFT's real BAND SELECT + STEREO IMAGER on a real vocal (same branch, Claude Code, Dan's Mac) — COMMITTED LOCAL, NOT PUSHED
 - Dan on v1: "close, not it": real spectrum + real imager from DRIFT, a vocal on the band select, no factory presets, give
   "Below and above the band, your mix stays as it was." more love (his pick: a big two-tone line under the screens).

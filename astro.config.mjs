@@ -4,6 +4,7 @@ import mdx from '@astrojs/mdx';
 import revedit from './tools/revedit/integration.mjs';
 import bench from './tools/bench/integration.mjs';
 import gaugebench from './tools/gaugebench/integration.mjs';
+import watchbench from './tools/watchbench/integration.mjs';
 
 // Pages that render noindex stay out of the sitemap too, so Search Console
 // never sees a submitted URL that asks not to be indexed. /buy/<slug>/ are
@@ -15,9 +16,10 @@ export default defineConfig({
   // RevEdit overlay only exists when launched via `npm run edit` (EDIT=1).
   // Bench and gaugebench need no flag: both self-disable outside `dev` and
   // stay inert until a URL asks for them with ?bench / ?gauge — so plain
-  // `npm run dev` is unaffected.
+  // `npm run dev` is unaffected. Watchbench (dev only) is its own page:
+  // /__watchbench.
   // MDX: blog posts (src/content/blog) embed figure components.
-  integrations: [mdx(), sitemap({ filter: (page) => !NOINDEX.some((p) => page.includes(p)) }), bench(), gaugebench(), ...(process.env.EDIT ? [revedit()] : [])],
+  integrations: [mdx(), sitemap({ filter: (page) => !NOINDEX.some((p) => page.includes(p)) }), bench(), gaugebench(), watchbench(), ...(process.env.EDIT ? [revedit()] : [])],
   build: {
     inlineStylesheets: 'auto',
   },

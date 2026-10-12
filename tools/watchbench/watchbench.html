@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>Watch Bubble Bench</title>
+<!-- Watch bench (Dan 2026-10-12): place + size the /drift "WATCH!" bursts (DriftPlayBurst) on laptop and phone at once.
+     Both frames are the REAL dev page (/drift/) in same-origin iframes; this page drives them from outside:
+     a live <style> in each frame overrides the four placement rules in drift.css, nothing else.
+     click a bubble = select · drag = move · blue corner dot = resize · arrows = 1 px (shift = 10) · -/+ = size ·
+     Cmd/Ctrl+Z = undo · COPY CSS when happy and hand it back ("apply watch bench"). -->
+<style>
+  :root { --bg: #0d0a12; --panel: #17121f; --line: #2c2338; --ink: #efe8f6; --dim: #9b8fae; --acc: #3aa0ff; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font: 13px/1.3 -apple-system, system-ui, sans-serif; }
+  body { display: flex; flex-direction: column; overflow: hidden; }
+  header { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+  header h1 { margin: 0 6px 0 0; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; }
+  .seg { display: inline-flex; }
+  .seg button { border-radius: 0; margin-left: -1px; }
+  .seg button:first-child { border-radius: 6px 0 0 6px; margin-left: 0; }
+  .seg button:last-child { border-radius: 0 6px 6px 0; }
+  button, select { background: #221a2d; color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: 5px 9px; font: inherit; cursor: pointer; }
+  button:hover { background: #2d2340; }
+  button.on, button.primary { background: var(--acc); border-color: var(--acc); color: #001; }
+  button.primary { font-weight: 600; }
+  .help { margin-left: auto; color: var(--dim); }
+  main { flex: 1; min-height: 0; display: flex; gap: 14px; padding: 12px; overflow: auto; }
+  .stage { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .stage[hidden] { display: none; }
+  .bar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .bar b { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+  .vp { position: relative; flex: none; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: #000; }
+  .vp iframe { position: absolute; left: 0; top: 0; border: 0; transform-origin: 0 0; background: #000; }
+  .rows { display: grid; gap: 4px; align-content: start; }
+  .split { display: flex; gap: 8px; align-items: flex-start; }
+  .split .rows { width: 170px; flex: none; }
+  .split .row label { width: 76px; justify-content: space-between; }
+  .split .row .nm { width: auto; }
+  .row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; padding: 4px 6px; border: 1px solid transparent; border-radius: 6px; }
+  .row.sel { border-color: var(--acc); background: #132033; }
+  .row i { flex: none; width: 10px; height: 10px; border-radius: 50%; }
+  .row .nm { width: 64px; font-weight: 600; cursor: pointer; }
+  .row label { display: inline-flex; align-items: center; gap: 3px; color: var(--dim); }
+  .row input { width: 50px; padding: 3px 4px; border: 1px solid var(--line); border-radius: 4px; background: #0b0810; color: var(--ink); font: inherit; text-align: right; }
+  .row input.chg { border-color: #ffb020; color: #ffd27a; }
+  .row input { appearance: textfield; -moz-appearance: textfield; }
+  .row input::-webkit-inner-spin-button, .row input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  .row .reset { margin-left: auto; padding: 2px 7px; }
+  .toast { position: fixed; left: 50%; bottom: 18px; translate: -50% 0; padding: 8px 14px; border-radius: 8px; background: var(--acc); color: #001;
+    font-weight: 600; opacity: 0; transition: opacity .2s; pointer-events: none; }
+  .toast.on { opacity: 1; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Watch! bubble bench</h1>
+  <span class="seg" id="view">
+    <button data-v="both">Both</button><button data-v="laptop">Laptop</button><button data-v="phone">Phone</button>
+  </span>
+  <button class="primary" id="copy">Copy CSS</button>
+  <button id="export">⬇ Export JSON</button>
+  <button id="undo">Undo</button>
+  <button id="resetAll">Reset all</button>
+  <span class="help">drag = move · blue dot = resize · arrows 1px (⇧ 10) · −/+ size · ⌘Z undo</span>
+</header>
+<main>
+  <section class="stage" data-f="laptop">
+    <div class="bar"><b>Laptop</b> <select data-size></select>
+      <button data-jump="beta">→ Beta TV</button><button data-jump="cr">→ Creators</button><button data-replay>▶ Replay pop-out</button></div>
+    <div class="vp"><iframe title="DRIFT page at laptop size"></iframe></div>
+    <div class="rows"></div>
+  </section>
+  <section class="stage" data-f="phone">
+    <div class="bar"><b>Phone</b> <select data-size></select>
+      <button data-jump="beta">→ Beta</button><button data-jump="cr">→ Creators</button><button data-replay>▶ Pop</button></div>
+    <div class="split"><div class="vp"><iframe title="DRIFT page at phone size"></iframe></div><div class="rows"></div></div>
+  </section>
+</main>
+<div class="toast" id="toast"></div>
+<script>
+(() => {
+  const KEY = 'watchbench:v1';
+  const REF_PHONE = 390;   // phone sizes are authored at 390 wide and scale down on narrower phones (exported as min(px, vw))
+
+  // the four placement rules in src/styles/drift.css ("where each ▶ sits" + the #creators player block)
+  const BUB = {
+    laptop: [
+      { id: 'beta', name: 'Beta', dot: '#ff2b3d', el: '.d-kv-play', rule: '.d-keep-tv .d-kv-play:not([hidden])', jump: '.d-keep-tv' },
+      { id: 'cr', name: 'Creators', dot: '#ffd23b', el: '.d-cr-play', rule: '.d-cr-play:not([hidden])', jump: '.d-cam-panel' },
+    ],
+    phone: [
+      { id: 'beta', name: 'Beta', dot: '#ff2b3d', el: '.d-vph--keep', rule: '.d-vph--keep:not([hidden])', jump: '.d-vph--keep' },
+      { id: 'cr', name: 'Creators', dot: '#ffd23b', el: '.d-vph--cr', rule: '#creators .d-vph--cr:not([hidden])', jump: '.d-vph--cr' },
+    ],
+  };
+  const FIELDS = {
+    laptop: [['w', 'W'], ['right', 'right'], ['top', 'top']],
+    phone: [['w', 'W'], ['x', 'X'], ['y', 'Y'], ['mt', 'above'], ['mb', 'below']],
+  };
+  const SIZES = {
+    laptop: [[1141, 636, "Dan's laptop"], [1280, 680], [1440, 780], [1728, 1000], [1001, 700, 'narrowest laptop']],
+    phone: [[390, 844], [360, 780], [430, 932]],
+  };
+
+  let st = { view: 'both', size: { laptop: 0, phone: 0 }, cur: { laptop: {}, phone: {} } };
+  try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s && s.cur) st = Object.assign(st, s); } catch (e) {}
+  const src = { laptop: {}, phone: {} };   // what drift.css says right now, read from each frame on load
+  const sel = { f: 'laptop', id: 'beta' };
+  const hist = [];
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} };
+  const snap = () => { hist.push(JSON.stringify(st.cur)); if (hist.length > 200) hist.shift(); };
+  const r1 = (n) => Math.round(n * 10) / 10;
+  const px = (s) => { const m = /(-?\d+(?:\.\d+)?)px/.exec(s || ''); return m ? parseFloat(m[1]) : 0; };
+
+  const stages = {};
+  document.querySelectorAll('.stage').forEach((s) => {
+    const f = s.dataset.f;
+    stages[f] = { s, f, iframe: s.querySelector('iframe'), vp: s.querySelector('.vp'), rows: s.querySelector('.rows'), size: s.querySelector('[data-size]') };
+    SIZES[f].forEach(([w, h, n], i) => stages[f].size.add(new Option(`${w}×${h}${n ? ' · ' + n : ''}`, i)));
+    stages[f].size.value = st.size[f] || 0;
+    stages[f].size.onchange = () => { st.size[f] = +stages[f].size.value; save(); layout(); };
+    s.querySelectorAll('[data-jump]').forEach((b) => (b.onclick = () => { select(f, b.dataset.jump); jump(f, b.dataset.jump); }));
+    s.querySelector('[data-replay]').onclick = () => replay(f);
+    buildRows(f);
+    stages[f].iframe.addEventListener('load', () => wire(f));
+    stages[f].iframe.src = '/drift/?watchbench=' + f;
+  });
+
+  // ── layout: both frames fit the window; each iframe renders at its real size, scaled down
+  function layout() { pass(); pass(); }   // twice: the rows re-wrap once the stage widths are set
+  function pass() {
+    document.querySelectorAll('#view button').forEach((b) => b.classList.toggle('on', b.dataset.v === st.view));
+    stages.laptop.s.hidden = st.view === 'phone';
+    stages.phone.s.hidden = st.view === 'laptop';
+    const main = document.querySelector('main');
+    const W = main.clientWidth - 24, H = main.clientHeight - 24;
+    const dims = (f) => SIZES[f][st.size[f] || 0];
+    const bar = (f) => stages[f].s.querySelector('.bar').offsetHeight;
+    let phoneW = 0;
+    if (st.view !== 'laptop') {   // phone: its rows sit beside the frame (.split), so the frame gets the full height
+      const [w, h] = dims('phone');
+      const k = Math.min(1, (H - bar('phone') - 8) / h, ((st.view === 'phone' ? W : W * 0.45) - 178) / w);
+      fit('phone', w, h, k);
+      phoneW = Math.max(w * k + 178, 330);
+      stages.phone.s.style.width = phoneW + 'px';
+    }
+    const room = (f) => H - bar(f) - stages[f].rows.offsetHeight - 16;
+    if (st.view !== 'phone') {
+      const [w, h] = dims('laptop');
+      const k = Math.min(1, room('laptop') / h, (W - (phoneW ? phoneW + 14 : 0)) / w);
+      fit('laptop', w, h, k);
+      stages.laptop.s.style.width = Math.max(w * k, 420) + 'px';
+    }
+  }
+  function fit(f, w, h, k) {
+    const { iframe, vp } = stages[f];
+    iframe.style.width = w + 'px'; iframe.style.height = h + 'px'; iframe.style.transform = `scale(${k})`;
+    vp.style.width = w * k + 'px'; vp.style.height = h * k + 'px';
+  }
+  document.querySelectorAll('#view button').forEach((b) => (b.onclick = () => { st.view = b.dataset.v; save(); layout(); }));
+  addEventListener('resize', layout);
+
+  // ── the panel rows (one per bubble, per frame)
+  function buildRows(f) {
+    const rows = stages[f].rows;
+    rows.innerHTML = '';
+    BUB[f].forEach((b) => {
+      const row = document.createElement('div');
+      row.className = 'row'; row.dataset.id = b.id;
+      row.innerHTML = `<i style="background:${b.dot}"></i><span class="nm">${b.name}</span>` +
+        FIELDS[f].map(([k, l]) => `<label>${l}<input type="number" step="1" data-k="${k}"></label>`).join('') +
+        `<button class="reset" title="back to what drift.css says">reset</button>`;
+      row.querySelector('.nm').onclick = () => { select(f, b.id); jump(f, b.id); };
+      row.querySelectorAll('input').forEach((inp) => {
+        inp.onfocus = () => { select(f, b.id); snap(); };
+        inp.oninput = () => { if (inp.value === '' || isNaN(+inp.value)) return; val(f, b.id)[inp.dataset.k] = +inp.value; commit(f); };
+      });
+      row.querySelector('.reset').onclick = () => { snap(); delete st.cur[f][b.id]; commit(f); };
+      rows.appendChild(row);
+    });
+  }
+  function paintRows(f) {
+    stages[f].rows.querySelectorAll('.row').forEach((row) => {
+      const id = row.dataset.id, v = st.cur[f][id] || src[f][id], s = src[f][id];
+      row.classList.toggle('sel', sel.f === f && sel.id === id);
+      row.querySelectorAll('input').forEach((inp) => {
+        const k = inp.dataset.k;
+        if (document.activeElement !== inp) inp.value = v ? r1(v[k]) : '';
+        inp.classList.toggle('chg', !!(v && s && Math.abs(v[k] - s[k]) > 0.05));
+      });
+    });
+  }
+  // the working values of one bubble: copied from the source the first time it is touched, so an untouched bubble
+  // keeps following drift.css
+  function val(f, id) {
+    if (!st.cur[f][id] && src[f][id]) st.cur[f][id] = { ...src[f][id] };
+    return st.cur[f][id];
+  }
+
+  // ── one frame: read the source values, then take over its bubbles
+  function wire(f) {
+    const win = stages[f].iframe.contentWindow, doc = win.document;
+    const bench = doc.createElement('style');
+    bench.id = 'wb-bench';
+    bench.textContent = `
+      #cookie-banner { display: none !important; }
+      .wb-freeze .d-pb .d-pb-pop, .wb-freeze .d-pb .d-pb-flash { animation: none !important; transition: none !important; }
+      .wb-freeze .d-pb .d-pb-pop { transform: none !important; opacity: 1 !important; }
+      .wb-freeze .d-pb .d-pb-flash { opacity: 0 !important; }
+      .d-pb { cursor: grab !important; touch-action: none; }
+      .d-pb.wb-drag { cursor: grabbing !important; }
+      .d-pb.wb-sel { outline: 2px dashed #3aa0ff !important; outline-offset: 2px; }
+      .wb-h { display: none; position: absolute; right: -9px; bottom: -9px; z-index: 30; width: 18px; height: 18px; border: 2px solid #fff; border-radius: 50%;
+        background: #3aa0ff; cursor: nwse-resize; box-shadow: 0 1px 4px #000; }
+      .d-pb.wb-sel .wb-h { display: block; }`;
+    doc.head.appendChild(bench);
+    doc.documentElement.classList.add('wb-freeze');
+    const live = doc.createElement('style');
+    live.id = 'wb-live';
+    doc.head.appendChild(live);
+
+    // the bursts start [hidden]; the page's script unhides them. Read once they are laid out.
+    const ready = () => BUB[f].every((b) => { const n = doc.querySelector(b.el); return n && !n.hidden && n.offsetWidth; });
+    let tries = 0;
+    (function wait() {
+      if (!ready() && tries++ < 60) return win.setTimeout(wait, 100);
+      BUB[f].forEach((b) => {
+        const n = doc.querySelector(b.el);
+        if (!n) return;
+        const cs = win.getComputedStyle(n);
+        const w = px(cs.getPropertyValue('--pb-w')) || n.offsetWidth;
+        if (f === 'laptop') src[f][b.id] = { w, right: px(cs.right), top: px(cs.top) };
+        else {
+          const [tx = '0px', ty = '0px'] = (cs.translate === 'none' ? '' : cs.translate).split(' ').filter(Boolean);
+          const x = tx.endsWith('%') ? (parseFloat(tx) * w) / 100 : px(tx);
+          src[f][b.id] = { w, x: r1(x), y: px(ty), mt: px(cs.marginTop), mb: px(cs.marginBottom) };
+        }
+        const h = doc.createElement('span');
+        h.className = 'wb-h';
+        n.appendChild(h);
+        grab(f, b, n, h);
+      });
+      commit(f);
+      jump(f, sel.f === f ? sel.id : 'beta');
+    })();
+
+    // the bubble is a play key: in the bench a click never starts the video
+    win.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('.d-pb')) { e.preventDefault(); e.stopImmediatePropagation(); } }, true);
+    doc.addEventListener('keydown', keys);
+  }
+
+  // ── drag = move, corner dot = resize (top-left stays put)
+  function grab(f, b, n, handle) {
+    n.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
+      e.preventDefault(); e.stopPropagation();
+      select(f, b.id);
+      stages[f].iframe.contentDocument.documentElement.classList.add('wb-freeze');
+      snap();
+      const sizing = e.target === handle;
+      const v0 = { ...val(f, b.id) }, x0 = e.clientX, y0 = e.clientY;
+      const fw = SIZES[f][st.size[f] || 0][0];
+      const k = f === 'phone' && fw < REF_PHONE ? REF_PHONE / fw : 1;   // authored px vs drawn px on a narrow phone
+      n.setPointerCapture(e.pointerId);
+      n.classList.add('wb-drag');
+      const move = (ev) => {
+        const dx = ev.clientX - x0, dy = ev.clientY - y0, v = val(f, b.id);
+        const R = Math.round;   // whole px: the frame is drawn scaled, so raw pointer deltas come out fractional
+        if (sizing) {
+          const grow = Math.max(dx, (dy * 320) / 180);   // the burst keeps its 320:180 box
+          v.w = Math.max(80, R(v0.w + grow * k));
+          const drawn = (v.w - v0.w) / k;
+          if (f === 'laptop') v.right = R(v0.right - drawn);
+          else v.x = R(v0.x + drawn / 2);   // in-flow + centred: half the growth goes left
+        } else if (f === 'laptop') { v.right = R(v0.right - dx); v.top = R(v0.top + dy); }
+        else { v.x = R(v0.x + dx); v.y = R(v0.y + dy); }
+        commit(f);
+      };
+      const up = () => { n.removeEventListener('pointermove', move); n.removeEventListener('pointerup', up); n.removeEventListener('pointercancel', up); n.classList.remove('wb-drag'); };
+      n.addEventListener('pointermove', move);
+      n.addEventListener('pointerup', up);
+      n.addEventListener('pointercancel', up);
+    });
+  }
+
+  // ── write the live override into the frame + repaint the rows
+  function cssFor(f, id, imp) {
+    const v = st.cur[f][id];
+    if (!v) return '';
+    const I = imp ? ' !important' : '';
+    if (f === 'laptop') return `--pb-w: ${r1(v.w)}px${I}; right: ${r1(v.right)}px${I}; top: ${r1(v.top)}px${I};`;
+    const vw = r1((v.w / REF_PHONE) * 1000) / 10;
+    return `--pb-w: min(${r1(v.w)}px, ${vw}vw)${I}; translate: ${r1(v.x)}px ${r1(v.y)}px${I}; margin-top: ${r1(v.mt)}px${I}; margin-bottom: ${r1(v.mb)}px${I};`;
+  }
+  function commit(f) {
+    const doc = stages[f].iframe.contentDocument;
+    const live = doc && doc.getElementById('wb-live');
+    if (live) {
+      const body = BUB[f].map((b) => (st.cur[f][b.id] ? `${b.rule} { ${cssFor(f, b.id, true)} }` : '')).join('\n');
+      live.textContent = f === 'laptop' ? `@media (min-width: 1001px) {\n${body}\n}` : `@media (max-width: 1000px) {\n${body}\n}`;
+    }
+    save();
+    paintRows(f);
+  }
+
+  function select(f, id) {
+    sel.f = f; sel.id = id;
+    ['laptop', 'phone'].forEach((g) => {
+      const doc = stages[g].iframe.contentDocument;
+      if (doc) BUB[g].forEach((b) => { const n = doc.querySelector(b.el); if (n) n.classList.toggle('wb-sel', g === f && b.id === id); });
+      paintRows(g);
+    });
+  }
+  function jump(f, id) {
+    const win = stages[f].iframe.contentWindow, doc = win && win.document;
+    const b = BUB[f].find((x) => x.id === id), n = doc && doc.querySelector(b.jump);
+    if (!n) return;
+    const r = n.getBoundingClientRect();
+    const top = f === 'laptop' ? win.scrollY + r.top - 110 : win.scrollY + r.top + r.height / 2 - win.innerHeight / 2;
+    win.scrollTo({ top, behavior: 'instant' });
+  }
+  function replay(f) {
+    const doc = stages[f].iframe.contentDocument;
+    if (!doc) return;
+    doc.documentElement.classList.remove('wb-freeze');
+    BUB[f].forEach((b) => {
+      const n = doc.querySelector(b.el);
+      if (!n) return;
+      n.classList.remove('is-in', 'is-played');
+      void n.offsetWidth;
+      n.classList.add('is-in');
+    });
+  }
+
+  // ── keys: arrows move the selected bubble, -/+ size it, Cmd/Ctrl+Z undo
+  let nudging = 0;
+  function keys(e) {
+    const t = e.target;
+    if (t && (t.tagName === 'INPUT' || t.tagName === 'SELECT')) return;
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); undo(); return; }
+    const step = e.shiftKey ? 10 : 1;
+    const d = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] }[e.key];
+    const grow = { '-': -2 * step, _: -20, '=': 2 * step, '+': 20 }[e.key];
+    if (!d && grow === undefined) return;
+    e.preventDefault();
+    const { f, id } = sel, v = val(f, id);
+    if (!v) return;
+    if (Date.now() - nudging > 600) snap();
+    nudging = Date.now();
+    if (d) {
+      if (f === 'laptop') { v.right = r1(v.right - d[0]); v.top = r1(v.top + d[1]); }
+      else { v.x = r1(v.x + d[0]); v.y = r1(v.y + d[1]); }
+    } else {
+      v.w = Math.max(80, r1(v.w + grow));
+      if (f === 'laptop') v.right = r1(v.right - grow);
+      else v.x = r1(v.x + grow / 2);
+    }
+    commit(f);
+  }
+  document.addEventListener('keydown', keys);
+  function undo() {
+    const s = hist.pop();
+    if (!s) return toast('Nothing to undo');
+    st.cur = JSON.parse(s);
+    commit('laptop'); commit('phone');
+  }
+  document.getElementById('undo').onclick = undo;
+  document.getElementById('resetAll').onclick = () => { snap(); st.cur = { laptop: {}, phone: {} }; commit('laptop'); commit('phone'); toast('Back to drift.css (Undo brings it back)'); };
+
+  // ── hand-back: a CSS block shaped like the drift.css rules + the raw numbers
+  const changed = (f, id) => { const v = st.cur[f][id], s = src[f][id]; return v && s && Object.keys(s).some((k) => Math.abs(v[k] - s[k]) > 0.05); };
+  function exportCss() {
+    const day = new Date().toISOString().slice(0, 10);
+    const block = (f, mq) => {
+      const lines = BUB[f].map((b) => (changed(f, b.id) ? `  ${b.rule} { ${cssFor(f, b.id, false)} }   /* ${b.name.toLowerCase()} */` : `  /* ${b.name.toLowerCase()}: unchanged */`));
+      return `@media (${mq}) {\n${lines.join('\n')}\n}`;
+    };
+    return `/* watch bench ${day}: the WATCH! bursts, laptop (${SIZES.laptop[st.size.laptop || 0].slice(0, 2).join('x')}) + phone (authored at ${REF_PHONE} wide) */\n` +
+      block('laptop', 'min-width: 1001px') + '\n' + block('phone', 'max-width: 1000px') + '\n';
+  }
+  function exportJson() {
+    return JSON.stringify({ bench: 'watchbench', date: new Date().toISOString(), refPhone: REF_PHONE, laptopFrame: SIZES.laptop[st.size.laptop || 0].slice(0, 2), source: src, values: st.cur }, null, 2);
+  }
+  window.__watchbench = () => ({ css: exportCss(), json: JSON.parse(exportJson()) });
+  document.getElementById('copy').onclick = async () => {
+    const css = exportCss();
+    try { await navigator.clipboard.writeText(css); toast('CSS copied. Paste it back to Claude: "apply watch bench"'); }
+    catch (e) { console.log(css); toast('Clipboard blocked: the CSS is in the console'); }
+  };
+  document.getElementById('export').onclick = () => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([exportJson()], { type: 'application/json' }));
+    a.download = `watchbench-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast('Saved to Downloads');
+  };
+  let tt;
+  function toast(m) { const t = document.getElementById('toast'); t.textContent = m; t.classList.add('on'); clearTimeout(tt); tt = setTimeout(() => t.classList.remove('on'), 2200); }
+
+  layout();
+})();
+</script>
+</body>
+</html>
