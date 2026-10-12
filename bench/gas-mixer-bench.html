@@ -120,6 +120,7 @@ body{min-height:100vh;padding:28px 16px 60px}
 .jw.on::before{opacity:.55}
 .jw.on::after{opacity:.40;transition:opacity .12s ease-out}
 .jw.on .g{color:color-mix(in srgb,var(--lit) 55%,#fff8ea);text-shadow:0 0 2px rgba(255,250,235,.9),0 0 7px var(--halo),0 0 16px var(--halo),0 1px 2px #000}
+.track .jw .g{font-size:11px;letter-spacing:1px}
 .jw.s{left:250px;top:41px;--jewel:#ffb43c;--lit:#ffcf7a;--halo:rgba(255,180,60,.55)}
 .jw.m{left:310px;top:41px;--jewel:#fff1d2;--lit:#fff6e2;--halo:rgba(255,236,200,.45)}
 
@@ -247,39 +248,144 @@ body.nonotes #arrows{opacity:0}
 .notetag{position:absolute;padding:5px 14px 4px;cursor:pointer;rotate:-2deg;z-index:10;font:400 14px/1 'Permanent Marker',cursive;color:rgb(40,34,30);
   background:linear-gradient(180deg,rgba(232,222,190,.95),rgba(212,200,166,.95));box-shadow:0 2px 3px rgba(12,9,6,.45)}
 .notetag:hover{translate:0 -1px}
-/* ---- PHONE: the simple player below 760 px (Station Mixer pattern, Yoni 2026-10-08), 380 px design width scaled to
-   the column. The deck, the GAS jewel, the fuel gauge and START are MOVED in here (one set of elements, one set of
-   listeners); the note, the display and the one GAS knob for the whole beat are phone-only. ---- */
-#phone{display:none;width:380px;transform-origin:0 0;padding-top:6px}
-body.phone #fit{display:none} body.phone #phone{display:block}
-.pnote{position:relative;margin:0 14px 16px;padding:12px 16px 12px;rotate:-1.4deg;font:17px/1.25 'Gochi Hand',cursive;color:rgb(32,27,24);
-  background:url("assets/gas-mixer/img/sl-paper.png") left top/472px 680px no-repeat,linear-gradient(172deg,#f2ecda,#e2d8bb);
-  box-shadow:5px 7px 9px rgba(12,9,6,.55),1px 1px 1px rgba(12,9,6,.35)}
-.pnote h4{margin:0 0 4px;font:400 19px/1.1 'Permanent Marker',cursive;color:rgb(176,48,34)}
-.pnote ol{margin:0;padding-left:22px} .pnote b{font:400 14.5px 'Permanent Marker',cursive;color:rgb(40,34,30)}
-.pnote .tp{position:absolute;width:56px;height:18px;background:linear-gradient(180deg,rgba(232,222,190,.86),rgba(212,200,166,.86));box-shadow:0 1px 1px rgba(12,9,6,.3)}
-.pnote .tp.a{left:-14px;top:5px;rotate:-36deg} .pnote .tp.b{right:-14px;top:7px;rotate:33deg}
-#phone .frame{margin:0 4px}
-.ppanel{padding:16px 12px 18px;display:flex;flex-direction:column;align-items:center;gap:12px}
-.pdisp{position:relative;width:340px;height:76px}
-.pg-ruler{position:absolute;left:10px;right:10px;top:6px;height:14px}
-.pg-ruler span{position:absolute;top:0;transform:translateX(-50%);font:600 9px/1 Oswald,sans-serif;color:rgba(244,200,120,.7);text-shadow:none}
-.pg-ruler i{position:absolute;top:10px;width:1px;height:5px;background:rgba(244,200,120,.45)}
-#pNeedle{position:absolute;top:4px;bottom:4px;width:2px;margin-left:-1px;left:10px;background:linear-gradient(180deg,#ff6a4a,#c8281a);box-shadow:0 0 4px rgba(220,60,30,.55)}
-.pg-big{position:absolute;left:0;right:0;top:22px;font-size:34px;line-height:1}
-.pg-sub{position:absolute;left:0;right:0;bottom:5px;font-size:14px;line-height:1;letter-spacing:.08em}
-.pknob{display:flex;flex-direction:column;align-items:center;gap:2px}
-.pknob .carve{position:static}
-.pgk{position:relative;width:200px;height:200px}
-.pgk .gzone{transform:scale(.5882)}
-.pgk.bypass .liq{opacity:.22}
-.prow{width:352px;display:flex;align-items:center;justify-content:space-between}
-.pslot{position:relative}
-#pDeckSlot{width:130px;height:114px} #pDeckSlot .deck{left:0;top:0;transform-origin:0 0;scale:.55}
-#pGasSlot{width:74px;height:100px} #pGasSlot .gasbtn{left:0;top:0;transform-origin:0 0;scale:.8}
-#pFuelSlot{width:120px;height:80px} #pFuelSlot .fuel{left:0;top:0;transform-origin:0 0;scale:.75}
-.pfoot{font:600 10px/1.3 Inter,sans-serif;letter-spacing:.14em;text-transform:uppercase;text-align:center;color:rgba(214,196,160,.6);text-shadow:0 -1px 0 rgba(12,9,6,.9)}
-#pCtaSlot{width:352px;height:132px;display:flex;justify-content:center} #pCtaSlot .start{position:relative;left:auto;top:auto}
+/* ===== THE TOY (2026-10-12, Yoni: "like a toy, fun to use"; plan tasks/player-toy-redesign-plan.md) =====
+   "Step on it": one accelerator pedal is the hero. The 3-track mixer below (#wrap) is the hood, closed by default.
+   Two arrangements of the same parts: desktop (wood 1078 x 610) and phone (wood 358 x 900). Design px, scaled. */
+#box{max-width:1600px;margin:0 auto;position:relative}
+#toyfit{position:relative;margin:0 auto}
+#toystage{position:absolute;left:0;top:0;width:1100px;transform-origin:0 0}
+body.phone #toystage{width:380px}
+.toy{position:relative;width:1078px;height:610px;background-position:-80px -260px}
+body.phone .toy{width:358px;height:900px;background-position:-420px -200px}
+.toy > *{position:absolute}
+.toy .carve{position:absolute}
+.tdiv{left:0;right:0;top:462px;height:4px;background:linear-gradient(180deg,#fbe6b4,#9a6f2a 50%,#2e1d0a),url("assets/gas-mixer/img/brass-patina.jpg") 0 0/240px 240px;
+  background-blend-mode:overlay,normal;box-shadow:0 1px 2px rgba(8,4,2,.7)}
+body.phone .tdiv{top:684px}
+/* the FUEL gauge, large: needle = the pedal (E = the original, F = 8) */
+.tgauge{left:28px;top:22px;width:320px;height:211px;background:url("assets/gas-mixer/img/fuel-gauge-xl.png") center/100% 100% no-repeat;
+  filter:drop-shadow(0 6px 8px rgba(8,5,3,.8)) brightness(.78);transition:filter .4s}
+body.playing .tgauge{filter:drop-shadow(0 6px 8px rgba(8,5,3,.8)) brightness(1)}
+body.phone .tgauge{left:12px;top:236px;width:196px;height:129px}
+.tgauge .fn{position:absolute;left:calc(50.76% - 2.5px);top:calc(77.03% - 38.7%);width:5px;height:38.7%;transform-origin:50% 100%;transform:rotate(-45deg);
+  background:linear-gradient(90deg,#5e1a0e,#c23f24 45%,#7a2412);clip-path:polygon(50% 0,100% 88%,100% 100%,0 100%,0 88%);filter:drop-shadow(1px 2px 1px rgba(20,10,4,.55))}
+body.phone .tgauge .fn{width:3px;left:calc(50.76% - 1.5px)}
+.tgauge .cap{position:absolute;left:calc(50.76% - 8px);top:calc(77.03% - 8px);width:16px;height:16px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#f6e2b0,#b8893e 55%,#5d4320);box-shadow:0 1px 2px rgba(20,10,4,.6)}
+body.phone .tgauge .cap{left:calc(50.76% - 5px);top:calc(77.03% - 5px);width:10px;height:10px}
+.tgauge::after{content:"";position:absolute;inset:14% 12% 14% 12%;border-radius:14px;pointer-events:none;background:linear-gradient(160deg,rgba(255,250,235,.16) 0%,rgba(255,250,235,0) 34%)}
+/* check-engine lamp: the plugin's brass bezel + its amber glyph, lit at 8 (floored) */
+.tchk{left:44px;top:246px;width:66px;height:66px;border-radius:50%;overflow:hidden;
+  background:url("assets/gas-mixer/img/check-engine-bezel-v1.png") center/154% 154% no-repeat;box-shadow:0 3px 6px rgba(8,4,2,.7)}
+body.phone .tchk{left:226px;top:262px;width:56px;height:56px}
+.tchk img{position:absolute;left:14%;top:14%;width:72%;height:72%;border-radius:50%;opacity:.1;mix-blend-mode:screen;transition:opacity .15s}
+body.floored .tchk img{opacity:1}
+body.floored .tchk{box-shadow:0 3px 6px rgba(8,4,2,.7),0 0 22px 4px rgba(255,170,30,.55)}
+.tchk + .carve{left:124px;top:266px;line-height:1.5} body.phone .tchk + .carve{left:216px;top:324px;font-size:9px;letter-spacing:2px;text-align:center}
+body.floored .tchk + .carve{color:#ffcf6a;text-shadow:0 0 8px rgba(255,170,30,.7)}
+/* PLAY / STOP: the XL chrome piano keys */
+.toy .ttk{left:28px;top:322px;width:320px;height:128px;padding:8px;gap:8px}
+body.phone .toy .ttk{left:12px;top:120px;width:204px;height:100px;padding:6px;gap:6px}
+.ttk .tkey{border-width:16px;border-image-width:16px}
+.ttk .tkey svg{scale:1.35} body.phone .ttk .tkey svg{scale:1.05}
+/* the FOOTWELL: ribbed rubber mat in a recess, the pedal hinged at the floor, the detent rail on its right */
+.twell{left:378px;top:22px;width:322px;height:428px;border-radius:14px;cursor:ns-resize;touch-action:none;overflow:hidden;
+  background:linear-gradient(180deg,rgba(8,4,2,.55),rgba(8,4,2,.1) 30%,rgba(8,4,2,.35)),url("assets/gas-mixer/img/floor-rubber.jpg") 0 0/220px 220px;
+  box-shadow:inset 0 8px 18px rgba(0,0,0,.92),inset 0 0 0 2px rgba(0,0,0,.75),0 1px 0 rgba(255,236,200,.14)}
+body.phone .twell{left:34px;top:380px;width:290px;height:292px}
+.twell .carve{left:0;right:0;top:14px;text-align:center}
+.pedal{position:absolute;left:46px;bottom:28px;width:166px;height:320px;transform-origin:50% 96%;will-change:transform;pointer-events:none}
+body.phone .pedal{left:52px;bottom:16px;width:122px;height:235px}
+.pedal img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 3px 2px rgba(0,0,0,.6))}
+.pedal .pshade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,4,2,.5),rgba(8,4,2,0) 70%);opacity:0;
+  -webkit-mask:url("assets/gas-mixer/img/accel-pedal-a.png") center/contain no-repeat;mask:url("assets/gas-mixer/img/accel-pedal-a.png") center/contain no-repeat}
+.pshadow{position:absolute;left:58px;bottom:18px;width:166px;height:320px;border-radius:30px;pointer-events:none;transform-origin:50% 100%;
+  background:rgba(0,0,0,.55);filter:blur(14px)}
+body.phone .pshadow{left:62px;bottom:8px;width:122px;height:235px;border-radius:22px}
+.rail{position:absolute;right:10px;top:58px;bottom:34px;width:90px}
+body.phone .rail{right:18px;top:42px;bottom:22px}
+.rail::before{content:"";position:absolute;left:8px;top:0;bottom:0;width:3px;border-radius:2px;background:linear-gradient(90deg,#9a6f2a,#fbe6b4 50%,#6a4a18);box-shadow:0 1px 2px rgba(0,0,0,.8)}
+.rail .mk{position:absolute;left:0;height:28px;margin-top:-14px;display:flex;align-items:center;gap:8px;cursor:pointer}
+.rail .mk i{width:20px;height:3px;border-radius:2px;background:rgba(214,178,112,.75);box-shadow:0 1px 1px rgba(0,0,0,.8)}
+.rail .mk b{font:600 22px/1 Oswald,sans-serif;color:rgba(214,178,112,.78);text-shadow:0 -1px 0 rgba(0,0,0,.85),0 1px 0 rgba(255,236,200,.12)}
+.rail .mk small{position:absolute;left:30px;top:25px;font:500 8.5px/1 Oswald,sans-serif;letter-spacing:1.5px;text-transform:uppercase;color:rgba(214,178,112,.6)}
+body.phone .rail .mk b{font-size:17px}
+.rail .mk.on i{background:#ffcf7a;box-shadow:0 0 8px rgba(255,180,60,.9)}
+.rail .mk.on b{color:#ffdf9e;text-shadow:0 0 8px rgba(255,170,60,.8),0 1px 0 #000}
+.rail .mk.hot.on b{color:#ffb39a;text-shadow:0 0 8px rgba(255,80,40,.85),0 1px 0 #000}
+.rail .mk:hover b{color:#f6d79a}
+@keyframes floor{0%,100%{translate:0 0}20%{translate:0 2px}45%{translate:0 -1px}70%{translate:0 1px}}
+.toy.shake{animation:floor .22s cubic-bezier(.3,.6,.4,1) 1}
+/* the amber LCD: what you hear + the next step */
+.tlcd{left:726px;top:22px;width:324px;height:124px;border-radius:5px}
+body.phone .tlcd{left:12px;top:12px;width:334px;height:96px}
+.tlcd .lb{position:absolute;left:0;right:0;top:12px;font-size:15px;letter-spacing:4px;opacity:.6}
+.tlcd .bg{position:absolute;left:0;right:0;top:34px;font-size:50px;line-height:1;letter-spacing:3px}
+.tlcd .ht{position:absolute;left:8px;right:8px;bottom:10px;font-size:17px;line-height:1;letter-spacing:1px;color:#ffb36a}
+body.phone .tlcd .lb{top:8px;font-size:12px} body.phone .tlcd .bg{top:26px;font-size:40px} body.phone .tlcd .ht{bottom:8px;font-size:14px}
+.tlcd .bg.tune{animation:tune .22s steps(3) 1}
+@keyframes tune{0%{opacity:.15}50%{opacity:.85}100%{opacity:1}}
+/* BEFORE / AFTER: the bat toggle (lever up = AFTER, with GAS) */
+.ttoggle{left:726px;top:162px;width:324px;height:190px;cursor:pointer}
+body.phone .ttoggle{left:224px;top:114px;width:124px;height:116px}
+.ttoggle .bat{position:absolute;left:24px;top:20px;width:110px;height:141px;transform-origin:50% 37%;transition:transform 130ms cubic-bezier(.2,.9,.25,1.25);
+  filter:drop-shadow(0 6px 6px rgba(0,0,0,.7))}
+body.phone .ttoggle .bat{left:4px;top:8px;width:68px;height:87px}
+body.gason .ttoggle .bat{transform:scaleY(-1)}
+.ttoggle .bat img{width:100%;height:100%;object-fit:contain}
+.ttoggle .lab{position:absolute;left:150px;font:600 22px/1 Oswald,sans-serif;letter-spacing:.14em;color:rgba(214,178,112,.55);text-shadow:0 -1px 0 rgba(0,0,0,.85);transition:color .2s,text-shadow .2s}
+.ttoggle .lab small{display:block;margin-top:5px;font:500 12px/1 Inter,sans-serif;letter-spacing:0;color:rgba(214,178,112,.55)}
+.ttoggle .la{top:26px} .ttoggle .lbf{top:112px}
+body.phone .ttoggle .lab{left:78px;font-size:13px} body.phone .ttoggle .lab small{display:none}
+body.phone .ttoggle .la{top:14px} body.phone .ttoggle .lbf{top:68px}
+body.gason .ttoggle .la,body:not(.gason) .ttoggle .lbf{color:#ffdf9e;text-shadow:0 0 10px rgba(255,170,60,.65),0 1px 0 #000}
+/* RevLimiter ARM */
+.tarm{left:726px;top:364px;width:324px;height:90px}
+body.phone .tarm{display:none}
+.tarm .arm{left:0;top:0;scale:.86;transform-origin:0 0}
+.tarm .tx{position:absolute;left:66px;top:18px;font:600 15px/1.2 Oswald,sans-serif;letter-spacing:.08em;color:#ebdcb6}
+.tarm .tx small{display:block;margin-top:4px;font:500 11.5px/1.35 Inter,sans-serif;letter-spacing:0;color:#b9a684}
+.tarm .tx a{color:var(--brass-hi);text-decoration:none;border-bottom:1px solid rgba(230,192,120,.35)}
+/* footer: honest line, the porcelain sign (= free download), the hood latch */
+.thonest{left:28px;top:500px;width:330px;font:500 12.5px/1.5 Inter,sans-serif;color:#b9a684}
+.thonest b{color:#ebdcb6;font-weight:600}
+body.phone .thonest{display:none}
+.tsign{left:434px;top:474px;width:212px;height:131px;display:block;text-decoration:none;cursor:pointer;transition:transform .12s cubic-bezier(.2,.9,.25,1.25),filter .2s}
+body.phone .tsign{left:66px;top:700px;width:226px;height:140px}
+.tsign img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 6px 7px rgba(8,4,2,.85))}
+.tsign .ct{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-align:center}
+.tsign strong{font:600 25px/1 Oswald,sans-serif;letter-spacing:.12em;color:#7a1608;text-shadow:0 1px 0 rgba(255,250,235,.6)}
+.tsign em{font:600 30px/1 Oswald,sans-serif;font-style:normal;letter-spacing:.2em;color:#1d2a4a;text-shadow:0 1px 0 rgba(255,250,235,.6)}
+.tsign small{font:500 10.5px/1 Inter,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:rgba(40,30,20,.7)}
+.tsign:hover{transform:translateY(-1px);filter:brightness(1.06)} .tsign:active{transform:translateY(1px)}
+.tsign::before{content:"";position:absolute;inset:-20px -36px;border-radius:50%;pointer-events:none;opacity:0;transition:opacity .25s;
+  background:radial-gradient(closest-side,rgba(255,220,150,.22),rgba(255,220,150,0))}
+.tsign:hover::before{opacity:1}
+.thood{left:772px;top:494px;width:290px;height:92px;cursor:pointer}
+body.phone .thood{left:0;right:0;width:auto;top:852px;height:40px;cursor:default}
+.thood img{position:absolute;left:0;top:10px;width:150px;height:72px;object-fit:contain;filter:drop-shadow(0 5px 5px rgba(8,4,2,.85));transition:transform .2s cubic-bezier(.2,.9,.25,1.25)}
+body.phone .thood img{display:none}
+.thood:hover img{transform:translateY(2px)} body.hood .thood img{transform:translateY(7px)}
+.thood .tx{position:absolute;left:150px;top:26px;font:600 14px/1.15 Oswald,sans-serif;letter-spacing:.12em;color:#ebdcb6;white-space:nowrap}
+.thood .tx small{display:block;margin-top:4px;font:500 11px/1.3 Inter,sans-serif;letter-spacing:0;color:#b9a684}
+body.phone .thood .tx{left:0;right:0;top:10px;text-align:center;font-size:11px;color:rgba(214,178,112,.7)}
+body.phone .thood .tx small{display:none}
+.thood .tx .ph{display:none} body.phone .thood .tx .dk{display:none} body.phone .thood .tx .ph{display:inline}
+/* next-step lamp: light spills onto the walnut behind the one thing to touch next; the part itself breathes */
+#tHalo{pointer-events:none;border-radius:50%;opacity:0;transition:opacity .4s,left .4s,top .4s,width .4s,height .4s;z-index:0;
+  background:radial-gradient(closest-side,rgba(255,180,90,.85),rgba(255,155,55,.55) 50%,rgba(255,130,40,.2) 76%,rgba(255,130,40,0))}
+#tHalo.on{opacity:1;animation:halo 1.6s ease-in-out infinite}
+@keyframes halo{0%,100%{opacity:.55}50%{opacity:1}}
+@keyframes nextup{0%,100%{opacity:.55}50%{opacity:1}}
+.tkey.nextup .sym{fill:#ffe3a8;filter:drop-shadow(0 0 5px rgba(255,170,60,.95));animation:nextup 1.6s ease-in-out infinite}
+.twell.nextup .rail .mk b{animation:nextup 1.6s ease-in-out infinite;color:#ffdf9e}
+.ttoggle.nextup .lab{animation:nextup 1.6s ease-in-out infinite}
+.toy > :not(#tHalo):not(.tdiv){z-index:1}
+/* the hood: the old 3-track mixer, closed by default */
+body:not(.hood) #wrap{display:none}
+#wrap{margin-top:30px}
+body.phone #wrap{display:none}
+
 /* PLAY / STOP = XL chrome piano keys (Yoni picked "A" on bench/transport-bench.html, 2026-10-08: the old keys
    "dont get the attention they need"). The key art (gpt-image-1 tkey-chrome) goes through border-image, so the chrome
    corners keep their shape at any key size. PLAY latches down and an amber lamp glows through its ribbed face; STOP is
@@ -307,6 +413,43 @@ body.phone #fit{display:none} body.phone #phone{display:block}
 <body>
 <div class="benchhead"><b>GAS Mixer · bench round 2</b> (local only). Every knob step is a real GAS 0.3.1 render (MIX 50 %), loudness-matched to its dry loop. RevLimiter on the master: browser preview.</div>
 
+<div id="box">
+<!-- THE TOY (2026-10-12): "Step on it". One pedal for the whole beat; the 3-track mixer below (#wrap) is the hood. -->
+<div id="toyfit"><div id="toystage">
+<div class="frame"><div class="wood toy" id="toy">
+  <div id="tHalo"></div>
+  <div class="tgauge" aria-hidden="true"><i class="fn" id="tNeedle"></i><i class="cap"></i></div>
+  <div class="tchk" aria-hidden="true"><img src="assets/gas-mixer/img/check-engine-glow-v1.png" alt=""></div>
+  <span class="carve">check<br>engine</span>
+  <div class="tkeys ttk">
+    <div class="tkey" id="tPlay" role="button" aria-pressed="false" aria-label="Play" tabindex="0"><span class="lit"></span>
+      <svg width="1" height="1" aria-hidden="true"><path class="sym" d="M-9 -12.5 L13.5 0 L-9 12.5 Z"/></svg></div>
+    <div class="tkey" id="tStop" role="button" aria-label="Stop" tabindex="0">
+      <svg width="1" height="1" aria-hidden="true"><rect class="sym" x="-10" y="-10" width="20" height="20" rx="1.5"/></svg></div>
+  </div>
+  <div class="twell" id="tWell" role="slider" aria-label="GAS pedal: 0 = the original, up to 8" aria-valuemin="0" aria-valuemax="8" aria-valuenow="0" tabindex="0">
+    <span class="carve">gas pedal</span>
+    <div class="pshadow" id="tPShadow"></div>
+    <div class="pedal" id="tPedal"><img id="tPedalImg" src="assets/gas-mixer/img/accel-pedal-a.png" alt=""><div class="pshade"></div></div>
+    <div class="rail" id="tRail"></div>
+  </div>
+  <div class="lcd tlcd" aria-live="polite"><div class="lb" id="tLabel">YOU'RE HEARING</div><div class="bg" id="tBig">PRESS PLAY</div><div class="ht" id="tHint"></div></div>
+  <div class="ttoggle" id="tToggle" role="switch" aria-checked="false" aria-label="After: with GAS. Before: the original track" tabindex="0">
+    <div class="bat"><img src="assets/gas-mixer/img/bat-toggle.png" alt=""></div>
+    <span class="lab la">AFTER<small>with GAS</small></span><span class="lab lbf">BEFORE<small>the original</small></span></div>
+  <div class="tarm"><div class="arm" id="tArm" role="switch" aria-checked="false" aria-label="Add RevLimiter: louder and glued" tabindex="0"></div>
+    <div class="tx">+ REVLIMITER<small>Louder and glued.<br><a href="/revlimiter">Meet RevLimiter &rarr;</a></small></div></div>
+  <div class="tdiv"></div>
+  <div class="thonest">Every pedal step is a <b>real GAS render</b>, matched in loudness to the original. You hear the colour, not just louder.</div>
+  <a class="tsign" id="tSign" href="/gas" aria-label="Get GAS free">
+    <img src="assets/gas-mixer/img/porcelain-sign.png" alt="">
+    <span class="ct"><strong>GET GAS</strong><em>FREE</em><small>Windows &amp; Mac</small></span></a>
+  <div class="thood" id="tHood" role="button" aria-expanded="false" aria-label="Open the hood: the full 3-track mixer" tabindex="0">
+    <img src="assets/gas-mixer/img/hood-latch.png" alt="">
+    <div class="tx"><span class="dk" id="tHoodTx">OPEN THE HOOD</span><span class="ph">The full 3-track mixer lives on a computer</span><small>the full 3-track mixer</small></div></div>
+</div></div>
+</div></div>
+
 <div id="wrap"><div id="fit"><div id="stage">
 <div class="rig" id="rig"><div class="frame"><div class="wood">
 
@@ -314,7 +457,7 @@ body.phone #fit{display:none} body.phone #phone{display:block}
   <div class="heads">
     <span class="carve" style="left:89px">track</span>
     <span class="carve" style="left:205px">volume</span>
-    <span class="carve" style="left:275px">solo</span>
+    <span class="carve" style="left:275px">only</span>
     <span class="carve" style="left:335px">mute</span>
     <span class="carve" style="left:438px">gas</span>
     <div class="ruler" id="ruler"></div>
@@ -376,52 +519,27 @@ body.phone #fit{display:none} body.phone #phone{display:block}
 
     <div class="gasbtn"><div class="jw" id="gasBtn" role="switch" aria-checked="true" aria-label="GAS on all tracks (off = dry)" tabindex="0">
       <img src="assets/gas-mixer/img/mode-btn-cut.png" alt=""><span class="g">GAS</span></div>
-      <span class="carve">dry · gas</span></div>
+      <span class="carve">original · gas</span></div>
     <div class="lcd mlcd" id="mlcd">PRESS PLAY</div>
     <div class="fuel" id="fuel"><i class="fn"></i><i class="cap"></i></div>
 
     <div class="arm" id="arm" role="switch" aria-checked="false" aria-label="RevLimiter preview on the master" tabindex="0"></div>
     <div class="rl-copy">
-      <div class="t">REVLIMITER<span>ON THE MASTER</span></div>
-      <div class="s">Arm it for a taste of the glue and loudness. <a href="/revlimiter">Meet RevLimiter&nbsp;&rarr;</a></div>
+      <div class="t">REVLIMITER<span>ON THE WHOLE MIX</span></div>
+      <div class="s">Press ARM: the mix gets louder and glued. <a href="/revlimiter">Meet RevLimiter&nbsp;&rarr;</a></div>
     </div>
-    <a class="start" href="/gas" aria-label="Download GAS free">
-      <span class="sbtn"><img class="simg" src="assets/gas-mixer/img/start-button.png" alt=""></span>
-      <span class="stxt"><strong>Get GAS free</strong><small>Windows &amp; Mac</small></span>
-    </a>
   </div>
 </div></div></div><!-- /rig -->
 
 <!-- tutorial notes: above the console = the tracks, left = play, below = the master -->
 <svg id="arrows" aria-hidden="true"></svg>
-<div class="tnote" data-step="4" data-to="#tr-drums .vol .mrotor, #tr-drums .jw.s, #tr-drums .jw.m" data-all data-side="b" style="left:236px;top:14px;--rot:-1.6deg;width:240px"><i class="tp a"></i><i class="tp b"></i><span class="tick">&#10003;</span>
-  <h4>3. Your mix</h4>Like any DAW: <b>volume</b>, <b>S</b> = hear only this track, <b>M</b> = mute it.</div>
-<div class="tnote" data-step="2" data-to="#tr-drums .gk" data-side="b" style="left:520px;top:6px;--rot:1.4deg;width:250px"><i class="tp c"></i><span class="tick">&#10003;</span>
-  <h4>2. Step on it</h4>Each track has its own <b>GAS</b> knob. <b>0</b> = dry. Turn it up: <b>2, 4, 6, 8</b>.</div>
-<div class="tnote coffee" data-step="7" data-to="#tr-bass .lane" data-side="l" style="left:1372px;top:300px;--rot:1.8deg"><i class="tp c"></i>
-  <h4>Watch it</h4>The lane shows the real audio. Push <b>GAS</b> and see the waveform fill out. The colour is the GAS voice: red = <b>Fuzz</b>, green = <b>Tape</b>.</div>
-<div class="tnote" data-step="1" data-to="#playKey" data-side="r" style="left:20px;top:700px;--rot:-2deg"><i class="tp a"></i><i class="tp b"></i><span class="tick">&#10003;</span>
-  <h4>1. Press play</h4>Hit <b>&#9654;</b> on the tape deck. The beat starts <b>dry</b>, then the gas goes on.</div>
-<div class="tnote" data-step="3" data-to="#gasBtn" data-side="t" style="left:440px;top:0;--rot:-1.2deg;width:230px"><i class="tp a"></i><i class="tp b"></i><span class="tick">&#10003;</span>
-  <h4>4. Before / after</h4>Press <b>GAS</b> to hear every track dry. Press it again to bring the gas back.</div>
-<div class="tnote" data-step="6" data-to="#arm" data-side="t" style="left:780px;top:0;--rot:1.2deg;width:240px"><i class="tp a"></i><i class="tp b"></i><span class="tick">&#10003;</span>
-  <h4>Finish it on the master</h4>Press <b>ARM</b> for a taste of RevLimiter: louder, glued, finished.</div>
+<div class="tnote" data-step="4" data-to="#tr-drums .jw.s, #tr-drums .jw.m" data-all data-side="b" style="left:236px;top:14px;--rot:-1.6deg;width:250px"><i class="tp a"></i><i class="tp b"></i><span class="tick">&#10003;</span>
+  <h4>Under the hood</h4>Every track has its own <b>GAS</b> knob, 0 to 8. <b>ONLY</b> = hear one track. <b>MUTE</b> = drop it.</div>
 <div class="notetag" id="notetag" role="button" tabindex="0">hide the notes</div>
 </div></div>
 
-<!-- PHONE: the simple player (below 760 px). One GAS knob for the whole beat; no per-track controls, no RevLimiter. -->
-<div id="phone">
-  <div class="pnote"><i class="tp a"></i><i class="tp b"></i><h4>How to play</h4>
-    <ol><li>Press <b>&#9654;</b> on the tape deck</li><li>Turn the <b>GAS</b> knob: 0 = dry, up to 8</li><li>Press <b>GAS</b> for before / after</li></ol></div>
-  <div class="frame"><div class="wood ppanel">
-    <div class="lcd pdisp"><div class="pg-ruler" id="pRuler"></div><div id="pNeedle"></div><div class="pg-big" id="pBig">DRY</div><div class="pg-sub" id="pSub">PRESS PLAY</div></div>
-    <div class="pknob"><div class="pgk" id="pKnob"></div><span class="carve">gas · all tracks</span></div>
-    <div class="prow"><div class="pslot" id="pDeckSlot"></div><div class="pslot" id="pGasSlot"></div><div class="pslot" id="pFuelSlot"></div></div>
-    <div class="pfoot">The full 3-track mixer lives on a computer.</div>
-    <div class="pslot" id="pCtaSlot"></div>
-  </div></div>
-</div>
-</div><!-- /wrap -->
+</div><!-- /wrap = the hood -->
+</div><!-- /box -->
 
 <p class="note" id="note"></p>
 
@@ -515,7 +633,7 @@ STEMS.forEach((s,i) => {
         <div class="mrotor" role="slider" aria-label="${lower} volume" aria-valuemin="-40" aria-valuemax="6" aria-valuenow="0" tabindex="0">
           <img src="${IMG}mix-knob-photo-oai-body-v1.png" alt=""><img class="mspin" src="${IMG}mix-knob-photo-oai-ringflat-v1.png" alt=""><img class="mlight" src="${IMG}mix-knob-photo-oai-ringlight-v1.png" alt=""></div>
         <div class="mpdot"><i></i></div><div class="spec3"></div><div class="lcd">0.0</div></div>
-      ${jewel('s','S',`Solo ${lower}`)}${jewel('m','M',`Mute ${lower}`)}
+      ${jewel('s','ONLY',`Only ${lower}`)}${jewel('m','MUTE',`Mute ${lower}`)}
       <div class="gk">${gzoneHtml(i, lower+' GAS')}</div>
     </div>
     <div class="lane"><canvas width="${LANE_W*DPR}" height="${LANE_H*DPR}"></canvas><span class="rname"></span></div>`;
@@ -525,10 +643,6 @@ STEMS.forEach((s,i) => {
   wireDrive(tr.querySelector('.gzone'), i);
   wireVol(tr.querySelector('.vol'), c);
 });
-$('#pKnob').innerHTML = gzoneHtml('p', 'GAS, all tracks');
-wireDrive($('#pKnob .gzone'), 'all', 22);
-(() => { const r=$('#pRuler'); for (let b=0;b<=BARS;b++){ const x=b/BARS*100;
-  r.insertAdjacentHTML('beforeend', `<i style="left:${x}%"></i>` + (b<BARS?`<span style="left:${(b+.5)/BARS*100}%">${b+1}</span>`:'')); } })();
 (() => { const r=$('#ruler'); for (let b=0;b<=BARS;b++){ const x=b/BARS*LANE_W;
   r.insertAdjacentHTML('beforeend', `<i style="left:${x}px"></i>` + (b<BARS?`<span style="left:${x+LANE_W/BARS/2}px">${b+1}</span>`:'')); } })();
 
@@ -599,7 +713,7 @@ function getBuf(n){
 const wanted = () => { const w = new Set(); st.stems.forEach((c,i) => { w.add(`${STEMS[i].id}_dry`); w.add(`${STEMS[i].id}_${ver(c)}`); }); return w; };
 async function loadAll(){   // first PLAY: decode only what is audible now; the other compressed files follow quietly
   const need=[...wanted()], queue=need.slice(); let done=0;
-  const worker = async () => { while (queue.length) { await getBuf(queue.shift()); done++; lcd(`FUEL ${Math.round(done/need.length*100)}%`); } };
+  const worker = async () => { while (queue.length) { await getBuf(queue.shift()); done++; lcd(`FILLING UP ${Math.round(done/need.length*100)}%`); } };
   await Promise.all([1,2,3].map(worker));
   (async () => { for (const s of STEMS) for (const v of VERS) { try { await fetchRaw(`${s.id}_${v}`); } catch(e){} } })();
 }
@@ -660,16 +774,16 @@ function touch(){ st.touched = true; }
 function gasToggle(){ touch();
   if (!st.gas || st.stems.some(c=>c.step>0)) st.gas = !st.gas;
   if (st.gas && st.stems.every(c=>c.step===0)) st.stems.forEach(c=>c.step=DEF_STEP);   // GAS on with every knob at 0: give it some gas
-  flashLcd(st.gas ? 'GAS ON' : 'DRY'); render(); }
+  flashLcd(st.gas ? 'GAS ON' : 'ORIGINAL'); render(); }
 async function play(){
   if (st.playing || play.loading) return;
   if (!ctx) {
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) { lcd('NO AUDIO HERE'); return; }
     try { ctx = new AC({ sampleRate: SR }); } catch (e) { ctx = new AC(); }   // older Safari: no options, resamples
-    $('#playKey').classList.add('down'); play.loading = true;
+    $('#playKey').classList.add('down'); $('#tPlay').classList.add('down'); play.loading = true; sfx.init(); toyHint();
     try { await loadAll(); }
-    catch (e) { play.loading = false; lcd('NO FUEL'); flashLcd('PLAY AGAIN'); ctx.close(); ctx = null; $('#playKey').classList.remove('down'); return; }
+    catch (e) { play.loading = false; lcd('NO FUEL'); flashLcd('PLAY AGAIN'); ctx.close(); ctx = null; $('#playKey').classList.remove('down'); $('#tPlay').classList.remove('down'); toy.big=''; return; }
     play.loading = false; nodes = buildGraph();
   } else {                                       // replay: the knobs may have moved while stopped
     play.loading = true;
@@ -678,12 +792,12 @@ async function play(){
   if (ctx.state === 'suspended') await ctx.resume();
   st.playing = true; startSources(); applyAudio();
   if (!st.touched) autoTimer = setTimeout(() => {      // one-tap default: DRY for 2 bars, then every knob turns to 6
-    if (!st.touched && st.playing) { st.gas = true; st.stems.forEach(c=>c.step=DEF_STEP); render(); flashLcd('GAS ON'); } }, (2*BAR+0.08)*1000);
+    if (!st.touched && st.playing) { st.gas = true; st.stems.forEach(c=>c.step=DEF_STEP); sfx.detent(); render(); flashLcd('GAS ON'); } }, (2*BAR+0.08)*1000);
   render();
 }
 function stop(){ if (!st.playing) return; st.playing=false; stopSources(); clearTimeout(autoTimer); render(); }
 let lcdT=null, lcdBase='PRESS PLAY';
-function lcd(t){ lcdBase=t; if (!lcdT) $('#mlcd').textContent=t; if (play.loading) $('#pSub').textContent=t; }
+function lcd(t){ lcdBase=t; if (!lcdT) $('#mlcd').textContent=t; if (play.loading) $('#tBig').textContent=t; }
 function flashLcd(t){ $('#mlcd').textContent=t; clearTimeout(lcdT); lcdT=setTimeout(()=>{ lcdT=null; $('#mlcd').textContent=lcdBase; }, 1400); }
 
 /* ---------- render ---------- */
@@ -706,21 +820,11 @@ function render(){
     vr.querySelector('.mrotor').setAttribute('aria-valuenow', c.volDb.toFixed(1));
     vr.querySelector('.lcd').textContent = (c.volDb>0?'+':'')+c.volDb.toFixed(1);
     const v = ver(c); lanes[i].target = v;
-    tr.querySelector('.rname').textContent = `${s.name[0]+s.name.slice(1).toLowerCase()} · ${v==='dry' ? 'dry' : 'GAS '+v}`; });
-  if (!play.loading) lcd(st.playing ? (gasOn ? 'GAS ON' : 'DRY') : 'PRESS PLAY');
-  renderPhone(gasOn);
+    tr.querySelector('.rname').textContent = `${s.name[0]+s.name.slice(1).toLowerCase()} · ${v==='dry' ? 'original' : 'GAS '+v}`; });
+  if (!play.loading) lcd(st.playing ? (gasOn ? 'GAS ON' : 'ORIGINAL') : 'PRESS PLAY');
+  renderToy();
   applyAudio();
 }
-function renderPhone(gasOn){
-  const steps = st.stems.map(c=>c.step), same = steps.every(x => x===steps[0]), z = $('#pKnob .gzone');
-  $('#pBig').textContent = !gasOn ? 'DRY' : same ? `GAS ${steps[0]*2}` : 'MIXED';
-  if (st.playing) $('#pSub').textContent = gasOn ? 'GAS ON' : 'BEFORE: THE DRY LOOP';
-  else if (!play.loading) $('#pSub').textContent = 'PRESS PLAY';
-  z.setAttribute('aria-valuenow', String(steps[0]*2));
-  const lit = st.gas ? steps[0] : 0; z.querySelectorAll('.dnum').forEach(d => d.classList.toggle('on', +d.dataset.step === lit));
-  $('#pKnob').classList.toggle('bypass', !st.gas);
-}
-
 /* ---------- lanes: the waveform of what each track plays, crossfading when the knob moves ---------- */
 let PEAKS = null;
 const lanes = STEMS.map(s => { const cv=$('#tr-'+s.id+' canvas'); return { cv, g:cv.getContext('2d'), target:'dry', shown:null, from:null, t:1, dirty:true }; });
@@ -766,7 +870,6 @@ function tapeStep(dt){
 }
 const knobParts = el => ({ liq:Object.fromEntries(LIQ.map(([k])=>[k, el.querySelector('.l-'+k)])),
   bubs:[...el.querySelectorAll('.bubbles circle')], skirt:el.querySelector('.skirt'), dome:el.querySelector('.dome'), pdot:el.querySelector('.pdot') });
-const pk = { step:0, cur:0, parts: knobParts($('#pKnob')) };
 function animKnob(c, p, voice, ph, dt){
   const target=c.step/4;
   c.cur += (target-c.cur)*(1-Math.exp(-dt/0.07));                              // detent ease, ~200 ms
@@ -789,9 +892,8 @@ const ph = $('#playhead');
 function placePlayhead(){ const t=$('#tracks'); ph.style.top=(t.offsetTop-12)+'px'; ph.style.height=(t.offsetHeight+12)+'px'; }
 function frame(now){
   const dt = Math.min(0.1,(now-last)/1000); last=now; idleT += dt*3.3;
-  const phone = document.body.classList.contains('phone');
-  if (phone) { pk.step = st.stems[0].step; animKnob(pk, pk.parts, 'fuzz', 0, dt); }
-  STEMS.forEach((s,i) => { if (!phone) animKnob(st.stems[i], knobs[i], s.voice, i, dt);
+  const hood = document.body.classList.contains('hood');   // the hood's knobs only animate while it is open
+  STEMS.forEach((s,i) => { if (hood) animKnob(st.stems[i], knobs[i], s.voice, i, dt);
     // lane: crossfade the waveform over ~220 ms when the playing version changes
     const L=lanes[i];
     if (L.shown!==L.target) { L.from = L.shown===null ? L.target : L.shown; L.shown=L.target; L.t=0; L.dirty=true; }
@@ -800,12 +902,12 @@ function frame(now){
   });
   const pos = st.playing && ctx ? ((((ctx.currentTime - t0) % LOOP) + LOOP) % LOOP) / LOOP : 0;
   ph.style.left = (LANE_X + pos*LANE_W) + 'px'; ph.style.opacity = st.playing ? 1 : .45;
-  $('#pNeedle').style.left = `calc(10px + ${pos} * (100% - 20px))`;
   if (st.playing && ctx) tapeStep(dt);
   let target=-45;                                                                 // E: empty / silent
   if (nodes && st.playing) { nodes.mAn.getFloatTimeDomainData(tbuf); let s=0; for (let i=0;i<tbuf.length;i++) s+=tbuf[i]*tbuf[i];
     const d=20*Math.log10(Math.sqrt(s/tbuf.length)+1e-9); target=Math.max(-45,Math.min(45,(d+20)*2.3)); }      // 1/2 = -20 dBFS rms
   vuA += (target-vuA)*(1-Math.exp(-dt/0.1)); vn.style.transform=`rotate(${vuA}deg)`;
+  toyFrame(dt);
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
@@ -817,40 +919,163 @@ act($('#gasBtn'), gasToggle);
 act($('#arm'), () => { touch(); st.rl = !st.rl; render(); });
 // on the GAS page itself, START opens the page's own download step (the email gate) instead of reloading /gas
 const page = document;
-$('.start').addEventListener('click', e => { const cta = page.querySelector('.gas-cta'); if (cta) { e.preventDefault(); cta.click(); } });
+
+/* ---------- THE TOY (2026-10-12): "Step on it", one pedal for the whole beat ----------
+   Pedal 0 2 4 6 8 = the real renders (0 = the original). BEFORE / AFTER = instant compare that keeps the pedal where it
+   is. Every toy control also starts the tape, so nothing on the toy is ever dead. */
+const PEDAL = new URLSearchParams(location.search).get('pedal') === 'b' ? 'b' : 'a';   // bench pick: ?pedal=b
+const toy = { pa:0, ga:-45, compared:false, floored:false, wasOn:false, big:'', drag:null };
+const toyStep = () => st.stems[0].step;
+const toyGasOn = () => st.gas && st.stems.some(c=>c.step>0);
+const toySame = () => st.stems.every(c => c.step===st.stems[0].step);
+const ensurePlay = () => { if (!st.playing && !play.loading) play(); };
+
+/* UI sounds: synthesized, quiet, straight to the speakers (never through the mix or the RevLimiter preview) */
+const sfx = { g:null, noise:null,
+  init(){ if (this.g || !ctx) return; this.g = ctx.createGain(); this.g.gain.value = .5; this.g.connect(ctx.destination);
+    const n = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate), d = n.getChannelData(0);
+    for (let i=0;i<d.length;i++) d[i] = Math.random()*2-1; this.noise = n; },
+  ok(){ return !!(this.g && ctx && ctx.state === 'running'); },
+  burst(dur, type, f, q, gain, attack=.002){ if (!this.ok()) return;
+    const t=ctx.currentTime, s=ctx.createBufferSource(); s.buffer=this.noise; s.loop=true;
+    const fl=ctx.createBiquadFilter(); fl.type=type; fl.frequency.value=f; fl.Q.value=q;
+    const g=ctx.createGain(); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(gain,t+attack); g.gain.exponentialRampToValueAtTime(.0005,t+dur);
+    s.connect(fl).connect(g).connect(this.g); s.start(t, Math.random()*.5); s.stop(t+dur+.02); },
+  thump(f0, f1, gain, dur){ if (!this.ok()) return;
+    const t=ctx.currentTime, o=ctx.createOscillator(), g=ctx.createGain(); o.type='sine';
+    o.frequency.setValueAtTime(f0,t); o.frequency.exponentialRampToValueAtTime(f1,t+dur*.75);
+    g.gain.setValueAtTime(gain,t); g.gain.exponentialRampToValueAtTime(.0005,t+dur); o.connect(g).connect(this.g); o.start(t); o.stop(t+dur+.02); },
+  detent(){ this.burst(.02,'bandpass',1400,1.2,.07); },                                   // pedal notch
+  clunk(){ this.burst(.05,'lowpass',900,.7,.1); this.thump(140,60,.12,.08); },            // key / toggle
+  floor(){ this.burst(.08,'lowpass',600,.7,.14); this.thump(90,38,.2,.16); }              // pedal hits the floor
+};
+
+/* the pedal art + the rail: 0 at the top (foot off) down to 8 at the floor */
+$('#tPedalImg').src = IMG + `accel-pedal-${PEDAL}.png`;
+['-webkit-mask-image','mask-image'].forEach(p => $('#tPedal .pshade').style.setProperty(p, `url("${IMG}accel-pedal-${PEDAL}.png")`));
+$('#tRail').innerHTML = VERS.map((_, j) => `<div class="mk${j===4?' hot':''}" data-step="${j}" style="top:${j*25}%"><i></i><b>${j*2}</b>${j===0?'<small>original</small>':''}</div>`).join('');
+
+function pedalTo(n){
+  n = Math.max(0, Math.min(4, n)); touch();
+  if (n === toyStep() && (toyGasOn() || n === 0)) { ensurePlay(); return; }   // same notch: nothing to do (on BEFORE it brings GAS back)
+  if (n === 0) { st.stems.forEach(c => c.step = 0); render(); }      // foot off = the original
+  else setAll(n);
+  if (n === 4) { sfx.floor(); const t=$('#toy'); t.classList.remove('shake'); void t.offsetWidth; t.classList.add('shake'); }
+  else sfx.detent();
+  ensurePlay();
+}
+function toggleBA(){ gasToggle(); sfx.clunk(); ensurePlay(); }
+
+/* the footwell: drag the pedal down (1:1, a notch every 40 design px), click = one more notch (from the floor: foot off),
+   click a rail number = straight there, wheel / arrow keys */
+(() => { const el=$('#tWell');
+  const k = () => { const t=$('#toy'); return t.getBoundingClientRect().width / t.offsetWidth || 1; };
+  el.addEventListener('pointerdown', e => { const mk=e.target.closest('.mk'); if (mk) { pedalTo(+mk.dataset.step); return; }
+    el.setPointerCapture(e.pointerId); toy.drag = { y0:e.clientY, s0:toyStep(), moved:false }; });
+  el.addEventListener('pointermove', e => { const d=toy.drag; if (!d) return; e.preventDefault();
+    const n = d.s0 + Math.round((e.clientY - d.y0) / (40 * k()));
+    if (Math.abs(e.clientY - d.y0) > 6) d.moved = true;
+    if (d.moved && n !== toyStep()) pedalTo(n); });
+  const up = () => { const d=toy.drag; if (!d) return; toy.drag=null; if (!d.moved) { const c = toyStep(); pedalTo(c>=4 ? 0 : c+1); } };
+  el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
+  let acc=0; el.addEventListener('wheel', e => { e.preventDefault(); acc+=e.deltaY; if (Math.abs(acc)>=60) { pedalTo(toyStep()+(acc>0?1:-1)); acc=0; } }, {passive:false});
+  el.addEventListener('keydown', e => { const d={ArrowDown:1,ArrowRight:1,ArrowUp:-1,ArrowLeft:-1}[e.key];
+    if (d) { e.preventDefault(); pedalTo(toyStep()+d); }
+    else if (e.key==='Enter'||e.key===' ') { e.preventDefault(); const c=toyStep(); pedalTo(c>=4?0:c+1); } });
+})();
+
+act($('#tPlay'), play);
+act($('#tStop'), () => { if (st.playing) sfx.clunk(); stop(); });
+act($('#tToggle'), toggleBA);
+act($('#tArm'), () => { touch(); st.rl = !st.rl; sfx.clunk(); render(); ensurePlay(); });
+// on the GAS page itself, the sign opens the page's own download step (the email gate) instead of reloading /gas
+$('#tSign').addEventListener('click', e => { const cta = page.querySelector('.gas-cta'); if (cta) { e.preventDefault(); cta.click(); } });
+act($('#tHood'), () => {
+  if (document.body.classList.contains('phone')) return;
+  const open = !document.body.classList.contains('hood');
+  document.body.classList.toggle('hood', open); $('#tHood').setAttribute('aria-expanded', String(open));
+  $('#tHoodTx').textContent = open ? 'CLOSE THE HOOD' : 'OPEN THE HOOD';
+  sfx.clunk(); doFit();
+  if (open) { drawArrows(true); $('#wrap').scrollIntoView({ behavior:'smooth', block:'start' }); }
+});
+
+/* what the LCD says + the one thing to touch next (its light spills onto the walnut behind it) */
+function toyText(){
+  if (play.loading) return;
+  const on = toyGasOn();
+  const big = !st.playing ? 'PRESS PLAY' : !on ? 'ORIGINAL' : toySame() ? `GAS ${toyStep()*2}` : 'YOUR MIX';
+  $('#tLabel').style.opacity = st.playing ? '' : '0';
+  if (big !== toy.big) { const b=$('#tBig'); b.textContent = toy.big = big; b.classList.remove('tune'); void b.offsetWidth; b.classList.add('tune'); }
+}
+function toyHint(){
+  const on = toyGasOn(); let txt = '', tgt = null;
+  if (play.loading) txt = 'FILLING UP...';
+  else if (!st.playing) { txt = ctx ? 'PRESS PLAY TO CARRY ON' : 'REAL GAS RENDERS, SAME LOUDNESS'; tgt = '#tPlay'; }
+  else if (!toy.compared && !on && !st.touched) txt = 'THE ORIGINAL. GAS COMES ON IN 2 BARS';
+  else if (!toy.compared) { if (on) { txt = "THAT'S GAS. FLIP TO BEFORE"; tgt = '#tToggle'; } else { txt = 'NOW PUSH THE PEDAL'; tgt = '#tWell'; } }
+  else if (on && toyStep() === 4) txt = 'FLOORED! CHECK ENGINE';
+  else if (!toy.floored) { txt = 'PUSH THE PEDAL ALL THE WAY'; tgt = '#tWell'; }
+  $('#tHint').textContent = txt;
+  document.querySelectorAll('.toy .nextup').forEach(e => { if (!tgt || !e.matches(tgt)) e.classList.remove('nextup'); });
+  const h = $('#tHalo');
+  if (!tgt) { h.classList.remove('on'); return; }
+  const t = $(tgt); t.classList.add('nextup');
+  const toyEl = $('#toy'), tr = toyEl.getBoundingClientRect(), r = t.getBoundingClientRect(), k = tr.width / toyEl.offsetWidth || 1;
+  const w = r.width/k, hh = r.height/k, d = Math.max(w, hh) + 170;
+  Object.assign(h.style, { left:((r.left-tr.left)/k + w/2 - d/2)+'px', top:((r.top-tr.top)/k + hh/2 - d/2)+'px', width:d+'px', height:d+'px' });
+  h.classList.add('on');
+}
+function renderToy(){
+  const on = toyGasOn(), n = toyStep();
+  if (toy.wasOn && !on && st.touched) toy.compared = true;
+  toy.wasOn = on;
+  if (on && n === 4) toy.floored = true;
+  document.body.classList.toggle('gason', on);
+  document.body.classList.toggle('floored', on && n === 4);
+  $('#tToggle').setAttribute('aria-checked', String(on));
+  $('#tWell').setAttribute('aria-valuenow', String(n*2));
+  $('#tRail').querySelectorAll('.mk').forEach(m => m.classList.toggle('on', +m.dataset.step === n));   // where the pedal is
+  ['#tPlay'].forEach(s => { $(s).classList.toggle('down', st.playing || !!play.loading); $(s).setAttribute('aria-pressed', String(st.playing)); });
+  $('#tArm').classList.toggle('on', st.rl); $('#tArm').setAttribute('aria-checked', String(st.rl));
+  toyText(); toyHint();
+}
+function toyFrame(dt){
+  // the pedal stays where the foot left it, even on BEFORE (the toggle is a bypass, not a foot)
+  const pt = toySame() ? toyStep() : Math.max(...st.stems.map(c=>c.step));
+  toy.pa += (pt - toy.pa) * (1 - Math.exp(-dt/0.05));
+  const a = toy.pa/4*36;                                              // hinged at the floor: the pad tips away from the light
+  $('#tPedal').style.transform = `perspective(820px) rotateX(${a.toFixed(2)}deg)`;
+  $('#tPedal .pshade').style.opacity = (toy.pa/4*.85).toFixed(3);
+  $('#tPShadow').style.transform = `perspective(820px) rotateX(${(a*1.1).toFixed(2)}deg) scale(${(1-toy.pa*.03).toFixed(3)})`;
+  $('#tPShadow').style.opacity = (1 - toy.pa*.12).toFixed(3);
+  // the fuel needle has weight: it follows what you HEAR (BEFORE = E)
+  const gt = -45 + (toyGasOn() ? pt : 0)/4*90;
+  toy.ga += (gt - toy.ga) * (1 - Math.exp(-dt/0.16));
+  $('#tNeedle').style.transform = `rotate(${toy.ga.toFixed(2)}deg)`;
+}
 
 /* ---------- fit + notes (Station Mixer round 3; side "b" = the arrow leaves the note's bottom) ---------- */
-const fit=$('#fit'), stage=$('#stage');
+const fit=$('#fit'), stage=$('#stage'), toyfit=$('#toyfit'), toystage=$('#toystage');
 const PHONE_W = 760;
 function doFit(){
-  const W = $('#wrap').clientWidth, phone = W < PHONE_W;
+  const W = $('#box').clientWidth, phone = W < PHONE_W;
   document.body.classList.toggle('phone', phone);
-  [['#deck', '#pDeckSlot'], ['.gasbtn', '#pGasSlot'], ['#fuel', '#pFuelSlot'], ['.start', '#pCtaSlot']].forEach(([el, slot]) => {
-    const e = $(el); if (!e) return;
-    if (!e._home) e._home = { parent: e.parentNode, next: e.nextSibling };
-    if (phone && e.parentNode !== $(slot)) $(slot).appendChild(e);
-    if (!phone && e.parentNode !== e._home.parent) e._home.parent.insertBefore(e, e._home.next);
-  });
-  if (phone) {
-    if (st.rl) { st.rl = false; render(); }                   // no RevLimiter preview on phones
-    const ph = $('#phone'), sc = Math.min(1.6, W / 380);
-    ph.style.transform = `scale(${sc})`; $('#wrap').style.height = (ph.offsetHeight * sc) + 'px';
-    return;
-  }
-  $('#wrap').style.height = '';
+  if (phone && st.rl) { st.rl = false; render(); }               // no RevLimiter preview on phones
+  const TW = phone ? 380 : 1100, ts = phone ? Math.min(1.6, W/380) : Math.min(1, W/1100);
+  toystage.style.transform = `scale(${ts})`;
+  toyfit.style.width = (TW*ts) + 'px'; toyfit.style.height = (toystage.offsetHeight*ts) + 'px';
+  toyHint();
+  if (phone || !document.body.classList.contains('hood')) return;
   placePlayhead();
-  const rig=$('#rig'), rigBottom = rig.offsetTop + rig.offsetHeight;
-  const n3=document.querySelector('.tnote[data-step="3"]'), n6=document.querySelector('.tnote[data-step="6"]'), n1=document.querySelector('.tnote[data-step="1"]'), tag=$('#notetag');
-  n3.style.top = n6.style.top = (rigBottom + 26) + 'px';
-  n1.style.top = (rigBottom - 200) + 'px';                     // beside the tape deck
+  const rig=$('#rig'), rigBottom = rig.offsetTop + rig.offsetHeight, tag=$('#notetag');
   tag.style.left = (rig.offsetLeft + 1100 - 140) + 'px'; tag.style.top = (rigBottom + 18) + 'px';
-  const H = rigBottom + 26 + Math.max(n3.offsetHeight, n6.offsetHeight) + 30;
+  const H = rigBottom + 60;
   stage.style.height = H + 'px';
   const s=Math.min(1, fit.clientWidth/1600); stage.style.transform=`scale(${s})`; fit.style.height=(H*s)+'px';
   drawArrows(false);
 }
 function drawArrows(animate){
-  if (document.body.classList.contains('phone')) return;   // no notes / arrows in the phone player
+  if (document.body.classList.contains('phone') || !document.body.classList.contains('hood')) return;   // only under an open hood
   if (!animate && !drawArrows.ready) return;
   drawArrows.ready = true;
   const svg=$('#arrows'), sr=stage.getBoundingClientRect(), k=sr.width/stage.offsetWidth, W=stage.offsetWidth, H=stage.offsetHeight;
@@ -900,7 +1125,7 @@ function drawArrows(animate){
   });
   svg.innerHTML = `<defs><filter id="marker" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency=".05" numOctaves="2" seed="7"/><feDisplacementMap in="SourceGraphic" scale="1.4"/></filter>${defs}</defs><g filter="url(#marker)">${ink}</g>`;
 }
-const STEP_OF = [['#playKey',1],['.gzone',2],['#gasBtn',3],['.jw.s',4],['.jw.m',4],['.vol',4],['#arm',6]];
+const STEP_OF = [['#playKey',1],['#tPlay',1],['.gzone',2],['#gasBtn',3],['.jw.s',4],['.jw.m',4],['.vol',4],['#arm',6]];
 function stepFrom(target){ if (!target.closest) return 0; for (const [sel,n] of STEP_OF) if (target.closest(sel)) return n; return 0; }
 function markStep(n){ const el=document.querySelector(`.tnote[data-step="${n}"]`); if (el) el.classList.add('done'); if (n===1) document.body.classList.add('started'); }
 ['click','pointerdown','wheel'].forEach(ev => document.addEventListener(ev, e => { const n=stepFrom(e.target); if (n) markStep(n); }, true));
@@ -911,7 +1136,7 @@ function setNotes(on){ document.body.classList.toggle('nonotes', !on); if (on &&
 act($('#notetag'), () => setNotes(document.body.classList.contains('nonotes')));
 try { if (localStorage.getItem(NOTES_KEY)==='0') setNotes(false); } catch(e){}
 (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => { doFit(); drawArrows(true); });
-let fitRaf = 0; new ResizeObserver(() => { cancelAnimationFrame(fitRaf); fitRaf = requestAnimationFrame(doFit); }).observe($('#wrap')); window.addEventListener('load', doFit);
+let fitRaf = 0; new ResizeObserver(() => { cancelAnimationFrame(fitRaf); fitRaf = requestAnimationFrame(doFit); }).observe($('#box')); window.addEventListener('load', doFit);
 
 fetch(AUD+'manifest.json').then(r=>r.json()).then(m => {
   LOOP = m.samples / m.sr; BAR = LOOP / m.bars;

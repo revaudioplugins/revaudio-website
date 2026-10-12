@@ -67,6 +67,49 @@ PROMPTS = {
         "green-teal verdigris patina and pitting concentrated in patches, a few dents and nicks. Even flat diffuse "
         "lighting, no highlights, no reflections of a room, no vignette, no perspective. Fills the whole frame edge to "
         "edge; tileable edges.", 'opaque'),
+    # ---- toy redesign (Yoni 2026-10-12: "like a toy, fun to use"; plan tasks/player-toy-redesign-plan.md) ----
+    'accel-pedal-a': ('1024x1536',
+        "Photorealistic product photo of ONE vintage 1950s American car ACCELERATOR PEDAL, seen from the driver's seat "
+        "looking straight down at it (top-down orthographic, the pedal pad faces the camera). A tall rounded-rectangle "
+        "pad of thick black-brown RUBBER with deep horizontal ribs across its face, set in a polished CHROME rim with "
+        "rounded corners; a short chrome hinge barrel along the bottom edge. The pad is about 2.3 times taller than "
+        "wide. Wear: the rubber ribs are worn smooth and slightly shiny in the middle where a shoe pressed for decades, "
+        "grit packed in the grooves at the edges, small scuffs and pitting on the chrome rim. " + LIGHT + " Centered, "
+        "the pedal fills about 86% of the frame height. Transparent background. Strict: only ONE pedal, no foot, no "
+        "floor, no text, letters or logos.", 'transparent'),
+    'accel-pedal-b': ('1024x1536',
+        "Photorealistic product photo of ONE classic hot-rod style ACCELERATOR PEDAL shaped like a stylised bare foot "
+        "sole, cast in polished CHROME, with inlaid strips of black rubber running across the sole for grip. Seen "
+        "straight from above (top-down orthographic, the pedal face toward the camera), toes at the top, heel at the "
+        "bottom, a small chrome hinge at the heel. Wear: chrome lightly pitted with fine scratches, rubber strips worn "
+        "smooth in the middle, a little grime in the recesses. " + LIGHT + " Centered, fills about 86% of the frame "
+        "height. Transparent background. Strict: only ONE pedal, no leg, no floor, no text or logos.", 'transparent'),
+    'floor-rubber': ('1024x1024',
+        "Seamless tileable texture: flat top-down macro photograph of an old black car FLOOR MAT made of thick rubber "
+        "with a pattern of fine parallel raised ribs, dark charcoal-brown, scuffed grey where shoes rubbed, a little "
+        "dust and grit in the grooves, a few small cuts. Even flat diffuse lighting, no highlights, no vignette, no "
+        "perspective. Fills the whole frame edge to edge; tileable edges.", 'opaque'),
+    'bat-toggle': ('1024x1024',
+        "Photorealistic product photo of ONE vintage 1950s car dashboard BAT-HANDLE TOGGLE SWITCH seen straight from "
+        "the front: a polished CHROME tapered bat lever pointing straight DOWN from a knurled chrome hex nut, mounted "
+        "on a round recessed black bakelite boss with a thin aged-brass ring. The lever is thick and chunky, about "
+        "0.4 of the frame height, rounded tip. Light patina, fine scratches. " + LIGHT + " FLAT ORTHOGRAPHIC front "
+        "view, centered. Transparent background. Strict: only ONE switch, no text, letters or logos.", 'transparent'),
+    'porcelain-sign': ('1536x1024',
+        "Photorealistic product photo of ONE small vintage 1950s American gas-station PORCELAIN ENAMEL SIGN: a wide "
+        "rounded-rectangle plate about 2.6 times wider than tall, glossy cream-ivory enamel field with a thick deep "
+        "oxblood-red enamel border band and a thin dark navy pinstripe inside the red. Two mounting grommets, one at "
+        "each short end. The cream field is EMPTY. Age: small chips in the enamel showing dark iron underneath at the "
+        "edges and grommets, light rust bloom around one chip, faint crazing, a soft gloss highlight. " + LIGHT + " "
+        "FLAT ORTHOGRAPHIC front view, centered, fills about 92% of the frame width. Transparent background. Strict: "
+        "no text, letters, numbers, logos or symbols anywhere; only ONE sign.", 'transparent'),
+    'hood-latch': ('1536x1024',
+        "Photorealistic product photo of ONE vintage 1950s American car HOOD RELEASE PULL HANDLE as mounted under a "
+        "dashboard, seen from the front: a chunky polished CHROME T-handle grip (horizontal bar with rounded ends and "
+        "a ribbed finger groove) on a short chrome shaft going into a small round chrome bezel. Wide composition, the "
+        "T-bar is about 3 times wider than tall. Light wear: fine scratches, a dull patch where fingers pull. " + LIGHT
+        + " FLAT ORTHOGRAPHIC front view, centered, fills about 80% of the frame width. Transparent background. "
+        "Strict: only ONE handle, no text, letters or logos.", 'transparent'),
 }
 
 def gen(slug):

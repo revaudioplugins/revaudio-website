@@ -44,6 +44,21 @@ PROMPTS = {
         "chrome (about 75% clean metal), the rust concentrated in patches. Even flat diffuse lighting, no highlights, "
         "no reflections of a room, no vignette, no perspective. Fills the whole frame edge to edge; tileable edges.",
         'opaque'),
+    # ---- toy redesign (Yoni 2026-10-12; plan tasks/player-toy-redesign-plan.md). hood-latch comes from tools/gas-mixer ----
+    'onair-lamp': ('1024x1024',
+        "Photorealistic product photo of ONE vintage 1950s radio-studio / car-radio INDICATOR LAMP, front view: a wide "
+        "rounded-rectangle lens of deep translucent RED glass (about 2.2 times wider than tall) with a fine moulded "
+        "horizontal ribbing inside, UNLIT, set in a thick polished CHROME bezel with a thin aged-brass outer lip and "
+        "two tiny slotted screws, each turned to a different angle. The lens is BLANK. Light patina, micro-scratches. "
+        + LIGHT + " FLAT ORTHOGRAPHIC front view, centered, fills about 88% of the frame width. Transparent background. "
+        "Strict: only ONE lamp, no text, letters or logos.", 'transparent'),
+    'rr-plate-cta': ('1536x1024',
+        "Photorealistic product photo of ONE vintage 1950s American car dashboard BADGE PLATE: a wide rounded-rectangle "
+        "plate about 3 times wider than tall, a field of deep glossy OXBLOOD-RED baked enamel (#6e140c to #b8301f) "
+        "framed by a raised polished CHROME rim with rounded corners and a thin inner chrome bead. The red field is "
+        "EMPTY. Age: tiny chips in the enamel near the rim, fine scratches on the chrome, light pitting. " + LIGHT + " "
+        "FLAT ORTHOGRAPHIC front view, centered, fills about 92% of the frame width. Transparent background. Strict: "
+        "no text, letters, numbers, logos or symbols anywhere; only ONE plate.", 'transparent'),
 }
 
 def gen(slug):
