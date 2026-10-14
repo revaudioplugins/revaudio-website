@@ -1,4 +1,4 @@
-## 2026-10-14 — Homepage word wall: DRIFT panel, two new looks + HD live window on a bench, branch `feat/drift-wordwall` (Claude Code `revaudio-32`, laptop 1) — COMMITTED LOCAL, NOT PUSHED, waiting for Dan's pick on the bench
+## 2026-10-14 — Homepage word wall: DRIFT panel, two new looks + HD live window on a bench, branch `feat/drift-wordwall` (Claude Code `revaudio-32`, laptop 1) — BRANCH PUSHED to origin `feat/drift-wordwall` 2026-10-14 (Dan: "push the laptop design to the branch, Yoni uses it for an Instagram post"); NOT on main, NOT live; waiting for Dan's pick on the bench
 - Dan: "the DRIFT panel on the word wall needs a more interesting design" -> picks: build BOTH looks (NEON sign / STEER the
   words, + BOTH) and show them on a bench; the window = an HD live video of DRIFT running.
 - Worktree `.claude/worktrees/drift-wordwall` off origin/main 6bc09b0 (node_modules = junction to the main clone's).
@@ -57,8 +57,9 @@
 - Then Dan: "when I scroll, the site fits the screen exactly, not past the edges top and bottom" (pick: only the TV + a
   scroll lock). Part A (laptop >= 861px): the TV = one screen under the nav, the panel sized to the glass, a scroll lock
   (Lenis) after the visitor's own scrolling. Checks in `tasks/todo.md` (review "ONE SCREEN, part A"). Phones unchanged.
-  Part B (phones, <= 860px) NOT built: it would shrink the phone words ~74 -> ~46 px and GAS ~384 -> ~200 px on a real
-  phone; Dan decides on before/after shots.
+  Part B (phones, <= 860px): Dan "build part B" -> in progress in the worktree, not in the pushed branch yet (the push
+  was the laptop design only). Origin/main has moved on (ee84c0b, another session's /drift work): rebase before any
+  merge to main.
 - Bench: `npm run dev -- --port 4430` in the worktree -> http://localhost:4430/__wwbench (laptop + phone frames, look switch,
   WOOD/SCREEN + RAILS/BROKEN TV 1-3 switches, sliders incl. the channel colours + Static length, COPY SETTINGS ->
   "apply ww bench"). Dev only, absent from dist.
