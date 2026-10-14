@@ -10,6 +10,8 @@
   STEER = pointer steers per-word springs, SLIDING skid smear, phones = one drift-in; BOTH = both. Logic `src/lib/wordwallDrift.ts`.
   Window = `<video>` of DRIFT 5.2.8 (wall-run-1440 / -800), plays only when the panel is active + in view; reduced motion = poster.
   WordWall falls back to the old `<Image>` if the wall-run files are missing, so they must ship in the same commit (they do).
+- Same day, Dan: "more of a TV screen, like we've been doing" -> the run plays on /drift's keep-it TV (tv-frame-3 bezel,
+  bulged CRT tube, scanlines, livery ink, CRT turn-on) in every look but 'current' (8a26985).
 - Bench: `npm run dev -- --port 4430` in the worktree -> http://localhost:4430/__wwbench (laptop + phone frames, look switch,
   12 sliders, COPY SETTINGS -> "apply ww bench"). Dev only, absent from dist.
 - Checks (website agent): build green; Chromium + WebKit 24/24 (1280 DPR2 / 1141 / 1440 / 860 / 390 / 360 x 4 looks): no sideways
