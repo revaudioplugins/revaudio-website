@@ -18,7 +18,7 @@ OUT = os.path.join(ROOT, 'public', 'drift-player', 'img')
 PICKS = {  # name: (source render, output width px = 2x its CSS size[, GrabCut rect x0,y0,x1,y1 for a haze background])
     'shell': ('shell-3', 2200, (170, 110, 1360, 940)),
     'plate': ('plate-1', 520),
-    'knob': ('knob-2', 220),
+    # 'knob' (knob-2) retired 2026-10-14: the shift knob is an 8-bit pixel sprite drawn in the page now
     'horn': ('horn-1', 280),
     'volknob': ('volknob-1', 200),
 }

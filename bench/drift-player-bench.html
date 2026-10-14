@@ -227,8 +227,16 @@ h2 .l2{color:var(--d-hot);text-shadow:0 0 18px rgba(255,79,216,.45)}
   font-family:var(--f-badge);font-size:17px;color:#6f6080;text-shadow:0 1px 0 rgba(255,255,255,.12),0 -1px 0 #000}
 .gnum.sel{color:var(--d-pink-ink);text-shadow:0 0 6px #fff,0 0 14px rgba(255,79,216,.9)}
 .gnum.n0.sel{color:var(--d-cyan-ink);text-shadow:0 0 6px #fff,0 0 12px rgba(94,231,255,.8)}
-.sknob{position:absolute;left:0;top:0;width:76px;height:91px;cursor:grab;touch-action:none;z-index:4;will-change:transform;
-  background:url(../public/drift-player/img/knob.webp) center/100% 100% no-repeat;filter:drop-shadow(0 3px 3px rgba(0,0,0,.5))}
+/* 8-bit shift knob: a 26 x 32 pixel sprite drawn x3.5, crisp (image-rendering:pixelated), lit upper-left, gear on its face */
+.sknob{position:absolute;left:0;top:0;width:91px;height:112px;cursor:grab;touch-action:none;z-index:4;will-change:transform;
+  filter:drop-shadow(0 3px 0 rgba(10,0,20,.75)) drop-shadow(0 0 6px rgba(255,79,216,.55));transition:filter .25s}
+.sknob.idle{filter:drop-shadow(0 3px 0 rgba(10,0,20,.75)) drop-shadow(0 0 6px rgba(94,231,255,.45))}
+.sknob .vib{position:absolute;inset:0;will-change:transform}
+.sknob canvas{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges;transform-origin:50% 100%}
+.pxspark{position:absolute;left:0;top:0;width:6px;height:6px;z-index:6;pointer-events:none;image-rendering:pixelated}
+.pxpop{position:absolute;left:0;top:0;z-index:7;pointer-events:none;white-space:nowrap;font-family:var(--f-pix);font-size:12px;color:#fff;
+  text-shadow:2px 2px 0 #6a1cb4,0 0 10px rgba(255,79,216,.95),0 0 2px #ff4fd8;transform:translate(-50%,-50%)}
+.pxpop.n0{text-shadow:2px 2px 0 #0b5a6a,0 0 10px rgba(94,231,255,.95)}
 .sknob.drag{cursor:grabbing}
 .sknob-sh{position:absolute;left:0;top:0;width:64px;height:26px;border-radius:50%;z-index:3;pointer-events:none;will-change:transform;
   background:radial-gradient(closest-side,rgba(2,0,6,.75),rgba(2,0,6,.35) 60%,transparent)}
@@ -679,12 +687,75 @@ gtag.addEventListener('keydown', e => {
   const order = [0, 1, 2, 3, 4, 5], i = order.indexOf(state.gear), g = order[(i + (k === 'ArrowDown' || k === 'ArrowRight' ? 1 : 5)) % 6];
   setGear(g); tagEls[g].focus();
 });
-// the knob: collar on the slot, ball above it; shadow falls lower-right (lamp upper-left)
-const sknob = document.getElementById('sknob'), sknobSh = document.getElementById('sknobSh');
+// the knob: an 8-bit sprite. Collar on the slot, ball above it; shadow falls lower-right (lamp upper-left)
+const sknob = document.getElementById('sknob'), sknobSh = document.getElementById('sknobSh'), shiftmod = sknob.closest('.shiftmod');
 let kx = gp(0)[0], ky = gp(0)[1], kAnim = 0;
+const KW = 26, KH = 32;
+const kvib = document.createElement('div'); kvib.className = 'vib'; sknob.appendChild(kvib);
+const kcv = document.createElement('canvas'); kcv.width = KW; kcv.height = KH; kvib.appendChild(kcv);
+const kg = kcv.getContext('2d');
+const KPAL = ['#14031f', '#3d0b70', '#5c1796', '#8a2be2', '#b23ce8', '#d23cff', '#ff4fd8', '#ffd1f8', '#ffffff'];
+const KDIG = { 1:['010','110','010','010','111'], 2:['111','001','111','100','111'], 3:['111','001','111','001','111'],
+               4:['101','101','111','001','001'], 5:['111','100','111','001','111'], 0:['101','111','111','111','101'] };
+const BAYER = [[0, 2], [3, 1]];
+let kLabel = -1, kShine = -1;
+function drawKnobSprite(g, shine){
+  kg.clearRect(0, 0, KW, KH);
+  const P = (x, y, c) => { kg.fillStyle = c; kg.fillRect(x, y, 1, 1); };
+  // collar: gunmetal block with knurled cyan pixel rings
+  for (let y = 22; y < 32; y++) for (let x = 9; x < 17; x++){
+    let c = x === 9 ? '#4a4258' : x === 16 ? '#0e0a14' : x < 12 ? '#2e2838' : '#1c1724';
+    if (y === 24 || y === 27 || y === 30) c = (x + y) % 2 ? '#5ee7ff' : '#1f7f95';
+    if (y === 31) c = '#08050c';
+    P(x, y, c);
+  }
+  // ball: lambert + a hard spec, quantized to the palette with 2x2 Bayer dither; cyan rim light lower-right (synthwave)
+  const cx = 13, cy = 12, r = 11.5, L = [-.55, -.65, .52], ll = Math.hypot(...L);
+  for (let y = 0; y < 24; y++) for (let x = 0; x < 26; x++){
+    const dx = x + .5 - cx, dy = y + .5 - cy, d = Math.hypot(dx, dy);
+    if (d > r) continue;
+    if (d > r - 1.1){ P(x, y, KPAL[0]); continue; }
+    const nz = Math.sqrt(Math.max(0, 1 - (d / r) ** 2)), lam = Math.max(0, (dx / r * L[0] + dy / r * L[1] + nz * L[2]) / ll);
+    let v = .12 + .88 * lam + (BAYER[y % 2][x % 2] / 4 - .375) * .16;
+    let idx = Math.max(1, Math.min(7, Math.floor(v * 7.4)));
+    if (shine >= 0){ const t = (dx - dy) / (2 * r), c0 = shine * 2.6 - 1.3; if (Math.abs(t - c0) < .1) idx = Math.min(8, idx + 3); }
+    if (lam > .965) idx = 8;
+    if (d > r - 2.6 && dx > 1 && dy > 1 && lam < .5) { P(x, y, (x + y) % 2 ? '#5ee7ff' : '#2bb5d1'); continue; }
+    P(x, y, KPAL[idx]);
+  }
+  // the gear, 3 x 5 pixel font at 2x, with a hard drop shadow
+  const rows = KDIG[g] || KDIG[0], ox = 10, oy = 7, ink = g ? '#ffffff' : '#c8f6ff';
+  for (const [col, off] of [['#3d0b70', 1], [ink, 0]])
+    rows.forEach((row, ry) => [...row].forEach((b, rx) => { if (b === '1'){ kg.fillStyle = col; kg.fillRect(ox + rx * 2 + off, oy + ry * 2 + off, 2, 2); } }));
+}
+let kDrawnShine = -2;
+function knobFace(){ if (kLabel !== state.gear || kShine !== kDrawnShine){ kLabel = state.gear; kDrawnShine = kShine; drawKnobSprite(state.gear, kShine); } sknob.classList.toggle('idle', state.gear === 0); }
+// landing in a gear: squash + stretch, a burst of pixel sparks, an arcade pop-up
+function landFx(g){
+  kcv.animate([{ transform: 'scale(1.18,.78)' }, { transform: 'scale(.9,1.14)' }, { transform: 'scale(1.04,.97)' }, { transform: 'scale(1,1)' }],
+              { duration: 300, easing: 'ease-out' });
+  const [px, py, sc] = proj(kx, ky), bx = px, by = py - 66.5 * sc;
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const cols = g ? ['#ff4fd8', '#5ee7ff', '#ffd1f8', 'rgb(255,186,110)', '#d23cff'] : ['#5ee7ff', '#c8f6ff', '#2bb5d1'];
+  for (let i = 0; i < 16; i++){
+    const sp = document.createElement('i'); sp.className = 'pxspark'; sp.style.background = cols[i % cols.length];
+    const a = Math.PI * 2 * i / 16 + Math.random() * .3, v = 34 + Math.random() * 30, dx = Math.cos(a) * v, dy = Math.sin(a) * v - 18;
+    shiftmod.appendChild(sp);
+    sp.animate([{ transform: `translate(${bx}px,${by}px)`, opacity: 1 },
+                { transform: `translate(${bx + dx * .7}px,${by + dy * .7}px)`, opacity: 1, offset: .55 },
+                { transform: `translate(${bx + dx}px,${by + dy + 26}px)`, opacity: 0 }],
+               { duration: 520 + Math.random() * 160, easing: 'cubic-bezier(.2,.7,.4,1)', fill: 'forwards' }).onfinish = () => sp.remove();
+  }
+  const pop = document.createElement('div'); pop.className = 'pxpop' + (g ? '' : ' n0');
+  pop.textContent = g ? `${g} ${STEMS[g - 1].name}!` : 'N STOP';
+  pop.style.left = bx + 'px'; pop.style.top = (by - 56) + 'px'; shiftmod.appendChild(pop);
+  pop.animate([{ transform: 'translate(-50%,-30%) scale(.6)', opacity: 0 }, { transform: 'translate(-50%,-50%) scale(1.15)', opacity: 1, offset: .2 },
+               { transform: 'translate(-50%,-50%) scale(1)', opacity: 1, offset: .65 }, { transform: 'translate(-50%,-120%) scale(1)', opacity: 0 }],
+              { duration: 900, easing: 'steps(18)', fill: 'forwards' }).onfinish = () => pop.remove();
+}
 function placeKnob(x, y){
   kx = x; ky = y; const [px, py, s] = proj(x, y);
-  sknob.style.transform = `translate(${(px - 38 * s).toFixed(1)}px,${(py - 86 * s).toFixed(1)}px) scale(${s.toFixed(3)})`;
+  sknob.style.transform = `translate(${(px - 45.5 * s).toFixed(1)}px,${(py - 108.5 * s).toFixed(1)}px) scale(${s.toFixed(3)})`;
   sknob.style.transformOrigin = '0 0';
   sknobSh.style.transform = `translate(${(px - 18).toFixed(1)}px,${(py - 8).toFixed(1)}px)`;
 }
@@ -698,7 +769,7 @@ function nearestOnGate(x, y){
 }
 // a real shift: out to the neutral rail, across, into the gear. ~2 ms per gate px, eased per leg.
 function moveKnob(g){
-  cancelAnimationFrame(kAnim);
+  cancelAnimationFrame(kAnim); knobFace();
   const [tx, ty] = gp(g), pts = [[kx, ky]];
   if (Math.abs(kx - tx) > .5){ pts.push([kx, GY[1]]); pts.push([tx, GY[1]]); }
   pts.push([tx, ty]);
@@ -709,7 +780,7 @@ function moveKnob(g){
   const step = now => {
     const [[ax, ay], [bx, by], L] = legs[li], dur = Math.max(55, L * 2.1), u = Math.min(1, (now - t0) / dur), e = ease(u);
     placeKnob(ax + (bx - ax) * e, ay + (by - ay) * e);
-    if (u >= 1){ li++; t0 = now; if (li >= legs.length) return; }
+    if (u >= 1){ li++; t0 = now; if (li >= legs.length){ landFx(g); return; } }
     kAnim = requestAnimationFrame(step);
   };
   kAnim = requestAnimationFrame(step);
@@ -786,6 +857,9 @@ function frame(now){
   // --- hints: the next thing to touch glows
   const sinceStart = now - state.playedAt;
   tog.classList.toggle('hint', state.playing && !state.touchedTog && sinceStart > 4000);
+  if (state.playing){ const ph = (now % 2600) / 450; kShine = ph <= 1 ? ph : -1; } else kShine = -1;
+  knobFace();
+  kvib.style.transform = state.playing ? `translate(${((Math.random() - .5) * lvl * 1.6).toFixed(2)}px,${(-lvl * 2.2 + (Math.random() - .5) * lvl * 1.4).toFixed(2)}px)` : '';
   drawCRT(now, dt, pos, dur);
   requestAnimationFrame(frame);
 }

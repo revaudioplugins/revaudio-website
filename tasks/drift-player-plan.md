@@ -58,6 +58,14 @@ matching the drift page", "change the gear selector to a manual gear knob of a d
   scrolls while it plays, neon tube rim round the toy, speed stripes on the tub, chrome italic DRIFT logo; CRT gets
   the same sun, mountains and a grid ground; tacho runs cyan -> magenta -> red.
 
+## Round 5 (2026-10-14): 8-bit shift knob (Yoni: "extra cool gear knob ... really look digital 8 bit and fun")
+
+- The knob is a 26 x 32 pixel sprite drawn in JS at 3.5x, `image-rendering: pixelated`: dithered violet ball lit
+  upper-left (2x2 Bayer over the DRIFT palette), cyan synthwave rim light lower-right, knurled cyan pixel collar,
+  the gear in a 3 x 5 pixel font on its face (N in cyan). Landing in a gear: squash + stretch, 16 pixel sparks,
+  an arcade pop-up ("3 SYNTH!", stepped animation). While it plays: engine shake with the level and a pixel shine
+  sweep every 2.6 s. Reduced motion: no sparks. The AI photo knob (knob-2, public/drift-player/img/knob.webp) is retired.
+
 ## Open questions for Yoni
 
 - Default switch position on load: DRIFT ON (now) or BYPASS?
