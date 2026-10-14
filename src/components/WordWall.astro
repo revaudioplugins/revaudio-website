@@ -705,16 +705,27 @@ const panels: Panel[] = [
      from the frontmatter); the long runs TILE (round): stretched 3-4x they
      streak like brushed metal, tiled they keep the photo's grain and the
      seams don't show. --ww-frame-u = CSS px per cut pixel: the bench's
-     size, capped by the width so the side bezel always fits the wall's own
-     gutter (phones included) and never covers a word or the window. Sized
-     against the widest bezel (roll 2's 246 px). The frame anchors to the
+     size, capped so the roll's side bezel always fits the wall's own gutter
+     (.ww's margin + padding-inline, below) and never covers a word or the
+     window: ~0.25 at 1141-1280, more on wide screens, ~0.065 on a 390
+     phone. The frame anchors to the
      content box (left/right 0), not 100vw: a classic scrollbar must not eat
      the right bezel. The set is on: a magenta power LED in the chin (a lamp)
      lights with the screen's turn-on. */
   .ww {
     --ww-frame-size: 0.25;  /* CSS px per cut pixel, desktop */
-    --ww-frame-gap: 0px;    /* garage wood showing around the set */
-    --ww-frame-u: min(calc(var(--ww-frame-size) * 1px), 0.0185vw);
+    --ww-frame-gap: 0px;    /* garage wood showing around the set (laptop and up) */
+    --ww-frame-g: var(--ww-frame-gap);
+    /* the side gutter (--maxw's margin + .ww's padding-inline) minus the wood and 6 px, over the roll's side bezel */
+    --ww-frame-cap: calc(max(2px, max(2.5vw, 50vw - 720px) + clamp(1rem, 4vw, 2.5rem) - var(--ww-frame-g) - 6px) / max(var(--wf-zl), var(--wf-zr)));
+    --ww-frame-u: min(calc(var(--ww-frame-size) * 1px), var(--ww-frame-cap));
+  }
+  @media (max-width: 900px) {
+    /* phones: a ~20 px gutter has no room for wood round the set */
+    .ww {
+      --ww-frame-g: 0px;
+      --ww-frame-cap: calc((1vw + clamp(1rem, 4vw, 2.5rem) - 4px) / max(var(--wf-zl), var(--wf-zr)));
+    }
   }
   .ww:has(> .ww-panel[data-ww-panel='drift'][data-ww-frame='1']) {
     --wf-img: var(--wf1-img); --wf-sl: var(--wf1-sl);
@@ -733,7 +744,7 @@ const panels: Panel[] = [
   }
   .ww-frame {
     position: absolute;
-    inset: var(--ww-frame-gap);
+    inset: var(--ww-frame-g);
     z-index: 3; /* over the glass fx (2): the bezel is in front of the tube */
     pointer-events: none;
     opacity: 0;
@@ -752,10 +763,10 @@ const panels: Panel[] = [
   .ww:has(> .ww-panel[data-ww-panel='drift'][data-ww-bg='screen']:not([data-ww-look='current']):not([data-ww-frame='rails']).is-active) > .ww-frame { opacity: 1; }
   /* the screen fills the cabinet: from under the bezel's middle, inside the content box */
   .ww:has(> .ww-panel[data-ww-panel='drift'][data-ww-bg='screen']:not([data-ww-look='current']):not([data-ww-frame='rails'])) > :is(.ww-screen, .ww-screen-fx) {
-    left: calc(var(--ww-frame-gap) + var(--wf-zl) * var(--ww-frame-u) / 2);
-    right: calc(var(--ww-frame-gap) + var(--wf-zr) * var(--ww-frame-u) / 2);
-    top: calc(var(--ww-frame-gap) + var(--wf-zt) * var(--ww-frame-u) / 2);
-    bottom: calc(var(--ww-frame-gap) + var(--wf-zb) * var(--ww-frame-u) / 2);
+    left: calc(var(--ww-frame-g) + var(--wf-zl) * var(--ww-frame-u) / 2);
+    right: calc(var(--ww-frame-g) + var(--wf-zr) * var(--ww-frame-u) / 2);
+    top: calc(var(--ww-frame-g) + var(--wf-zt) * var(--ww-frame-u) / 2);
+    bottom: calc(var(--ww-frame-g) + var(--wf-zb) * var(--ww-frame-u) / 2);
     width: auto;
     transform: none;
   }

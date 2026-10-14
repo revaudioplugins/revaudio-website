@@ -19,9 +19,13 @@
   screen wall sits in a broken CRT cabinet front (3 AI rolls, `tools/gen-drift-tv-frame-broken.sh` + `tools/cut-drift-tv-frame-broken.py`,
   `src/assets/seasons/drift/tv-broken-*`), 9-sliced, runs tiled, rails hidden while it shows, magenta power LED in the chin.
   Steer stops at the opening (`.ww-frame-glass` in wordwallDrift.ts). Bench: RAILS / BROKEN TV 1-3 + Frame size + Wood around the TV.
-  Checks: build green; Chromium + WebKit 1280 / 1141 / 1728 / 390; swap to RevLimiter / GAS / Radio Roulette pixel-identical
-  to the 'rails' setting (rails back, frame gone); left lock at 1141 keeps every word inside the glass; real Chromium with a
-  classic scrollbar: frame right = clientWidth, bezels 58.3 / 57.8 px. Unpicked rolls get deleted at "apply ww bench".
+  Frame size is capped by the real side gutter (minus the wood gap): ~0.25 at 1141-1280, more on wide screens, ~0.065 on
+  phones (bezel ~16 px, the corner damage barely shows there); the wood gap is laptop-only.
+  Checks: build green; Chromium 1141 / 1280 / 1728 / 860 / 390 / 360 (rolls 1-3 x size 0.2 / 0.4, gap 0 / 24 / 48: words,
+  kicker and window always inside the glass), WebKit 1280 + 390 (renders the same); swap to RevLimiter / GAS / Radio Roulette
+  pixel-identical to the 'rails' setting (rails back, frame gone); left lock at 1141 keeps every word inside the glass; real
+  Chromium with a classic scrollbar: frame right = clientWidth, bezels 58.3 / 57.8 px; one page load fetches only
+  tv-broken-2 (the others load only when the bench picks them). Unpicked rolls get deleted at "apply ww bench".
 - Bench: `npm run dev -- --port 4430` in the worktree -> http://localhost:4430/__wwbench (laptop + phone frames, look switch,
   12 sliders, COPY SETTINGS -> "apply ww bench"). Dev only, absent from dist.
 - Checks (website agent): build green; Chromium + WebKit 24/24 (1280 DPR2 / 1141 / 1440 / 860 / 390 / 360 x 4 looks): no sideways
