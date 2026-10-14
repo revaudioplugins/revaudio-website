@@ -43,6 +43,11 @@
   off screen / same panel), Chromium reduced motion none; hc Chromium + WebKit 1280 + 390 (no TV, plain words);
   drift.homeLead off (flipped on the dev server, restored): RevLimiter first on the TV, channels inside the glass, static
   fires (Chromium 1280, WebKit 390). Review in `tasks/todo.md`. Not checked: real iPhone / Mac Safari, Firefox.
+  Real carousel clicks (Chromium): on 1141x636 / 1280x665 laptops the wall is below the fold when the carousel moves,
+  so the static is skipped (the visitor scrolls down to the new channel already on); on 390x844 and 1728x1000 the
+  wall's top shows under the carousel and the snow plays. Open question for Dan: keep, or play the static when the
+  wall scrolls into view after a channel change (not built). Bench header DRIFT / RevLimiter / GAS / Radio Roulette
+  buttons = change channel (plays the static in both frames).
 - Bench: `npm run dev -- --port 4430` in the worktree -> http://localhost:4430/__wwbench (laptop + phone frames, look switch,
   WOOD/SCREEN + RAILS/BROKEN TV 1-3 switches, sliders incl. the channel colours + Static length, COPY SETTINGS ->
   "apply ww bench"). Dev only, absent from dist.

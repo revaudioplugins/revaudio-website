@@ -49,6 +49,14 @@ Rules: motion = feedback only; glow only from a lamp (a neon sign is one); copy 
   - hc: Chromium + WebKit at 1280 + 390: screen, fx, snow and frame display:none, no snow on a channel change,
     the words plain white (no phosphor stroke or glow).
   - Only console noise: the dev toolbar's 403 through the node_modules junction (dev only, not in the build).
+  - Bench, real clicks (Chromium): the header channel button (GAS) switches both frames and plays the snow in both;
+    a channel colour slider changes the screen glow in both.
+  - Real carousel clicks on the homepage (Chromium; a visitor at the carousel clicks next / a dot):
+    1141x636 + 1280x665: the carousel fills the screen, the wall starts below the fold (0 px visible), so the static
+    is skipped and the visitor scrolls down to the new channel already on. 390x844 (wall top 170-312 px visible
+    under the carousel) and 1728x1000 (126-250 px): the snow plays. With the carousel's bottom at the screen's
+    bottom edge: 0 px of wall, no snow, at every size. Open for Dan: keep as is, or play the static when the wall
+    scrolls into view after a channel change (not built).
 - Not checked: a real iPhone / Mac Safari (WebKit here is Playwright's Windows build), Firefox.
 - Left for Dan: pick a frame roll + tune colours, frame size and static length on the bench.
 
