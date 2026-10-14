@@ -24,7 +24,28 @@ INSET = 2          # cut the fitted opening this many px inside the lip: a dark 
 SLICE_X = 0.25     # corner patch width, of the frame width (roll 2's tape reaches 22 % in)
 SLICE_Y = 0.27     # corner patch height, of the frame height
 TINT = (1.03, 1.0, 0.95)  # neutral grey with a faint warm cast (the house darks are warm: --bg-0 #0b0a09)
+# the worn checker paint in the top-left corner (painted magenta-red by the generator) becomes burnt RevAudio
+# yellow (Dan 2026-10-14: "replace the purple with a burnt yellow, like RevAudio's colour"): hue near the house
+# --brass (#c9a35c = 38 deg), each pixel's own saturation and value kept (x these), so the wear stays as painted
+PAINT_HUE, PAINT_SAT, PAINT_VAL = 36, 1.1, 1.05
+PAINT_RG = (8, 26)        # paint mask: red minus green, ramp from..to (the bare frame stays under ~10)
 meta = {}
+
+
+def smooth(x, a, b):
+    t = np.clip((x - a) / (b - a), 0, 1)
+    return t * t * (3 - 2 * t)
+
+
+def paint_hsv(rgb, hue):
+    """Same saturation (x PAINT_SAT) and value (x PAINT_VAL) per pixel, one hue."""
+    mx = rgb.max(-1)
+    s = np.clip(np.where(mx > 0, (mx - rgb.min(-1)) / np.maximum(mx, 1e-6), 0) * PAINT_SAT, 0, 0.82)
+    v = np.clip(mx * PAINT_VAL, 0, 255)
+    h6 = hue / 60
+    i, f = int(h6) % 6, h6 - int(h6)
+    p, q, t = v * (1 - s), v * (1 - s * f), v * (1 - s * (1 - f))
+    return np.stack({0: (v, t, p), 1: (q, v, p), 2: (p, v, t), 3: (p, q, v), 4: (t, p, v), 5: (v, p, q)}[i], -1)
 
 for name in sorted(os.listdir(SRC)):
     if not (name.startswith('roll-') and name.endswith('.png')):
@@ -75,11 +96,19 @@ for name in sorted(os.listdir(SRC)):
     im.putalpha(al)
 
     # neutral set (Dan 2026-10-14: "more neutral, fewer colours": every plugin will play on this TV, only the
-    # screen changes, like changing channels): drop the colour, keep the luminance, so the wear, the grime and
-    # the old checker paint stay as painted, in grey; a faint warm cast (TINT) sits it in the garage's bakelite
+    # screen changes, like changing channels): drop the colour, keep the luminance, so the wear and the grime
+    # stay as painted, in grey; a faint warm cast (TINT) sits it in the garage's bakelite
     px3 = np.asarray(im.convert('RGB')).astype(np.float32)
     luma = px3 @ np.array([0.2126, 0.7152, 0.0722], dtype=np.float32)
-    rgb = Image.fromarray(np.clip(luma[..., None] * np.array(TINT, dtype=np.float32), 0, 255).astype(np.uint8), 'RGB')
+    grey = luma[..., None] * np.array(TINT, dtype=np.float32)
+    # ...except the checker paint, which turns burnt yellow; only inside the top-left corner patch (fading out
+    # before its edge: past it the bezel run gets tiled), so the frame's faint magenta grime elsewhere stays grey
+    pm = smooth(px3[..., 0] - px3[..., 1], *PAINT_RG)
+    pm = np.asarray(Image.fromarray((pm * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(1.5)), dtype=np.float32) / 255
+    gy, gx = np.mgrid[0:h, 0:w]
+    pm = pm * (1 - smooth(gx / w, SLICE_X - 0.04, SLICE_X)) * (1 - smooth(gy / h, SLICE_Y - 0.04, SLICE_Y))
+    mixed = grey * (1 - pm[..., None]) + paint_hsv(px3, PAINT_HUE) * pm[..., None]
+    rgb = Image.fromarray(np.clip(mixed, 0, 255).astype(np.uint8), 'RGB')
     rgb.putalpha(im.getchannel('A'))
     im = rgb
 

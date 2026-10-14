@@ -48,6 +48,12 @@
   wall's top shows under the carousel and the snow plays. Open question for Dan: keep, or play the static when the
   wall scrolls into view after a channel change (not built). Bench header DRIFT / RevLimiter / GAS / Radio Roulette
   buttons = change channel (plays the static in both frames).
+- Then Dan (he still saw the purple-black checker): "replace the purple with a burnt yellow, like RevAudio's colour". The
+  checker paint on the top-left corner is now burnt RevAudio yellow (cut script: PAINT_HUE 36 near --brass, each pixel's
+  own saturation + value kept, only inside the corner patch); rest of the frame stays grey; tv-broken.json unchanged.
+  Why he still saw purple: dev's /_image is served with max-age 1 year under a URL that ignores the file's content, so his
+  browser kept the pre-neutral roll. Dev now adds the PNG's mtime to the frame URL (`&v=`); the build's names were
+  already content-hashed. Checked: Chromium 1280 DPR2 shots on DRIFT + RevLimiter (yellow checker, no console errors).
 - Bench: `npm run dev -- --port 4430` in the worktree -> http://localhost:4430/__wwbench (laptop + phone frames, look switch,
   WOOD/SCREEN + RAILS/BROKEN TV 1-3 switches, sliders incl. the channel colours + Static length, COPY SETTINGS ->
   "apply ww bench"). Dev only, absent from dist.

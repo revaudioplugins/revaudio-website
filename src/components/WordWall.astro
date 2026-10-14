@@ -40,7 +40,7 @@
    panel is the active one and on screen; the poster stays for reduced motion.
    Animation never touches the reveal item (the li): words, spills and the
    skid are inner spans. */
-import { existsSync } from 'node:fs';
+import { existsSync, statSync } from 'node:fs';
 import { Image, getImage } from 'astro:assets';
 import GarageWall from './GarageWall.astro';
 import rlImg from '../assets/plugins/revlimiter-hero.png';
@@ -99,8 +99,11 @@ const frameVars = (await Promise.all(
         if (!src) throw new Error(`WordWall: tv-broken-${n}.png is listed in tv-broken.json but missing`);
         const img = await getImage({ src, width: 1400, format: 'webp', quality: 86 });
         const k = 1400 / m.w; // the slice counts in the SERVED image's pixels
+        // dev serves /_image for a year under a URL that ignores the file's content: a re-cut roll kept showing the
+        // old one in the bench, so dev adds the file's mtime (the build's names carry a content hash already)
+        const v = import.meta.env.DEV ? `&v=${Math.round(statSync(`src/assets/seasons/drift/tv-broken-${n}.png`).mtimeMs)}` : '';
         return [
-          `--wf${n}-img:url(${img.src})`,
+          `--wf${n}-img:url(${img.src}${v})`,
           `--wf${n}-sl:${m.slice.map((v) => Math.round(v * k)).join(' ')}`,
           // corner patches + bezel as plain numbers in the cut's own (2x) pixels; CSS x --ww-frame-u (a length)
           ...['t', 'r', 'b', 'l'].map((s, i) => `--wf${n}-${s}:${m.slice[i]}`),

@@ -3,7 +3,7 @@
 > `tv-broken.json` (each roll's size, bezel and 9-slice corner patches). Generated BLANK by `tools/gen-drift-tv-frame-broken.sh`
 > (gpt-image-1, 1536x1024 high, transparent, n=3; text-only prompt, no RevAudio art uploaded, no lettering in the image, all
 > damage in the corners), cut by `tools/cut-drift-tv-frame-broken.py` (crop to alpha; opening = a superellipse fitted to the
-> flood-filled glass, 2 px inside the lip, alpha 0; colour dropped to luminance with a faint warm cast, so the set is neutral charcoal (Dan: "more neutral, fewer colours"); 2x Lanczos +
+> flood-filled glass, 2 px inside the lip, alpha 0; colour dropped to luminance with a faint warm cast, so the set is neutral charcoal (Dan: "more neutral, fewer colours"), except the worn checker paint in the top-left corner, turned burnt RevAudio yellow (hue 36, near --brass; Dan: "a burnt yellow, like RevAudio's colour"); 2x Lanczos +
 > unsharp). Served as 1400 px webp through the image pipeline; only the picked roll loads.
 
 > **Added 2026-10-14 (homepage word wall, DRIFT panel's live window; Dan: "HD live video"):** `public/drift/wall-run-1440.{webm,mp4}`

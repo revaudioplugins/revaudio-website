@@ -124,7 +124,10 @@ neon or glow without a lamp (a neon sign IS a lamp: the DRIFT panel's lit tube m
     word or the window (~0.25 at 1141-1280, more on wide screens, ~0.065 on phones); the steer stops at
     the opening. Anchored to the content box, not 100vw (a classic scrollbar would eat the right
     bezel). Colourless charcoal (Dan: "more neutral, fewer colours"): only the screen changes per
-    channel. The house pilot light (`--emerald`, "armed / live") in the chin; dark only while DRIFT's
+    channel. One brand mark stays: the worn checker paint on the top-left corner is burnt RevAudio
+    yellow, the house brass hue (Dan: "replace the purple with a burnt yellow, like RevAudio's
+    colour"), the same on every channel. The cut script recolours it; it is not a plugin colour.
+    The house pilot light (`--emerald`, "armed / live") in the chin; dark only while DRIFT's
     sign waits to power on, then it lights with the turn-on (a lamp). 'rails' = the brass rails.
   - Channels (Dan's pick: each plugin its own screen colour): one hue + saturation per plugin on `.ww`
     (`--ww-ch-<slug>-h` / `-s`): RevLimiter amber 26 / 78 (kept above ~20 so it never reads as
