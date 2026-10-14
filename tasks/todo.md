@@ -19,6 +19,20 @@ Rules: motion = feedback only; glow only from a lamp (a neon sign is one); copy 
 - [x] Screen wall (DRIFT_BG) after "the whole back a digital screen"; TV window kept as an option (DRIFT_WIN).
 - [x] Broken TV frame round the screen wall (DRIFT_FRAME, 3 rolls, bench switch + size + gap); verified swap,
       scrollbar, steer clamp, Chromium + WebKit.
+- [x] Neutral set (Dan: "more neutral, fewer colours"): frames re-cut colourless, LED = house --emerald.
+- [ ] CHANNELS (Dan 2026-10-14: "every plugin on the TV, only the screen changes when the carousel moves, like
+      changing channels"; picks: each plugin its own screen colour, a short burst of static, no channel number):
+  - [ ] The TV belongs to the whole word wall, not the DRIFT panel: WALL_BG / WALL_FRAME on .ww (were DRIFT_BG /
+        DRIFT_FRAME on the DRIFT panel); screen + frame on for every panel, with or without drift.homeLead.
+  - [ ] One phosphor colour per channel (hue + saturation vars on .ww, mapped from the active panel): DRIFT violet
+        (as now), RevLimiter amber, GAS brass gold, Radio Roulette warm dial-glass cream.
+  - [ ] RevLimiter / GAS / Radio Roulette (and DRIFT 'current'/'steer'): kicker, stencil words, hot word, caption,
+        name and window edge in their channel's phosphor instead of brass on wood. DRIFT neon keeps its own tubes.
+  - [ ] Channel change: a ~300 ms burst of static over the picture when the carousel moves (canvas noise, only
+        during the switch; reduced motion = the plain crossfade; hc = none).
+  - [ ] Bench: channel hue + saturation sliders x4, static length; WOOD/SCREEN + frame switches drive .ww.
+  - [ ] Verify: build; Chromium + WebKit 1280 / 1141 / 390: every channel on the TV, swap shows static then the new
+        colour, no sideways scroll, words never under the bezel, hc + reduced motion; homeLead off still works.
 - [ ] Dan picks + tunes on the bench -> "apply ww bench" -> bake (delete the unpicked rolls) -> commit. Push only on "push".
 
 ---

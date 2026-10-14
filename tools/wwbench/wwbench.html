@@ -62,7 +62,7 @@
   <span class="seg" id="look" title="Which DRIFT look the word wall shows">
     <button data-l="current">CURRENT</button><button data-l="neon">NEON</button><button data-l="steer">STEER</button><button data-l="both">BOTH</button>
   </span>
-  <span class="seg small" id="bg" title="What the wall behind the DRIFT panel is">
+  <span class="seg small" id="bg" title="What the whole word wall is: the garage wood, or one TV every plugin plays on">
     <button data-b="wood">WOOD WALL</button><button data-b="screen">SCREEN WALL</button>
   </span>
   <span class="seg small" id="win" title="The plugin window: plain, or on the /drift TV">
@@ -146,10 +146,10 @@
   const fmt = (c, v) => (c.step < 1 ? (+v).toFixed(2) : String(Math.round(v))) + c.unit;
   const val = (p) => (p in st.cur ? st.cur[p] : src ? src[p] : NaN);
   const look = () => st.look || srcLook;
-  let srcBg = 'screen', srcWin = 'plain'; // DRIFT_BG / DRIFT_WIN as built
+  let srcBg = 'screen', srcWin = 'plain'; // WALL_BG (on .ww) / DRIFT_WIN as built
   const bgv = () => st.bg || srcBg;
   const winv = () => st.win || srcWin;
-  let srcFrame = '2'; // DRIFT_FRAME as built
+  let srcFrame = '2'; // WALL_FRAME (on .ww) as built
   const framev = () => st.frame || srcFrame;
 
   // the frames: no cookie banner, no welcome pop-up (session-only flags, same origin)
@@ -262,9 +262,10 @@
       src = {};
       ALL.forEach((c) => (src[c.p] = parseFloat(cs.getPropertyValue(c.p))));
       srcLook = panel.dataset.wwLook || 'both';
-      srcBg = panel.dataset.wwBg || 'screen';
+      const wallEl = doc.querySelector('[data-wordwall]');
+      srcBg = wallEl.dataset.wwBg || 'screen';
       srcWin = panel.dataset.wwWin || 'plain';
-      srcFrame = panel.dataset.wwFrame || '2';
+      srcFrame = wallEl.dataset.wwFrame || '2';
     }
     // the phone frame is driven by a desktop mouse; tell the panel it is a touch screen (its own bench hook)
     if (f === 'phone') panel.dataset.wwInput = 'touch';
@@ -305,9 +306,10 @@
       const doc = stages[f].iframe.contentDocument;
       const panel = doc.querySelector(PANEL);
       if (panel && panel.dataset.wwLook !== look()) panel.dataset.wwLook = look();
-      if (panel && panel.dataset.wwBg !== bgv()) panel.dataset.wwBg = bgv();
+      const wallEl = doc.querySelector('[data-wordwall]');
+      if (wallEl && wallEl.dataset.wwBg !== bgv()) wallEl.dataset.wwBg = bgv();
       if (panel && panel.dataset.wwWin !== winv()) panel.dataset.wwWin = winv();
-      if (panel && panel.dataset.wwFrame !== framev()) panel.dataset.wwFrame = framev();
+      if (wallEl && wallEl.dataset.wwFrame !== framev()) wallEl.dataset.wwFrame = framev();
       const body = Object.keys(st.cur).map((p) => `${p}: ${st.cur[p]}${unitOf(p)} !important;`).join(' ');
       doc.getElementById('wwb-live').textContent = body ? `${PANEL}, [data-wordwall] { ${body} }` : '';
     });
@@ -336,7 +338,7 @@
     const values = {};
     ALL.forEach((c) => (values[c.p] = `${+(+val(c.p)).toFixed(4)}${c.unit === 'px' ? 'px' : ''}`));
     return {
-      bench: 'wwbench', note: 'apply ww bench: bake look -> DRIFT_LOOK, bg -> DRIFT_BG, win -> DRIFT_WIN, frame -> DRIFT_FRAME and values -> the --ww-* defaults in WordWall.astro',
+      bench: 'wwbench', note: 'apply ww bench: bake look -> DRIFT_LOOK, bg -> WALL_BG, win -> DRIFT_WIN, frame -> WALL_FRAME and values -> the --ww-* defaults in WordWall.astro',
       date: new Date().toISOString(), look: look(), bg: bgv(), win: winv(), frame: framev(),
       values, changed: Object.keys(st.cur).filter((p) => src && Math.abs(st.cur[p] - src[p]) > 1e-6),
     };

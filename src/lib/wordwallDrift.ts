@@ -44,10 +44,9 @@ export function initDriftWall(panel: HTMLElement): void {
   const skid = items[hot].querySelector<HTMLElement>('.ww-skid');
   const ui = panel.querySelector<HTMLElement>('.ww-ui');
   const kana = panel.querySelector<HTMLElement>('.ww-kana');
-  // the screen wall's broken-TV frame (WordWall DRIFT_FRAME): its opening is the steering range's edge
+  // the word wall's broken-TV frame (WordWall WALL_FRAME, on .ww): its opening is the steering range's edge
   const frameGlass = wall.querySelector<HTMLElement>('.ww-frame-glass');
-  const framed = () =>
-    panel.dataset.wwBg === 'screen' && !!panel.dataset.wwFrame && panel.dataset.wwFrame !== 'rails' && look() !== 'current';
+  const framed = () => wall.dataset.wwBg === 'screen' && !!wall.dataset.wwFrame && wall.dataset.wwFrame !== 'rails';
   const video = panel.querySelector<HTMLVideoElement>('video[data-ww-run]');
 
   const mq = (q: string) => window.matchMedia(q).matches;

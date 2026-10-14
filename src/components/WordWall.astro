@@ -55,10 +55,13 @@ import { drift } from '../data/drift';
    Tune on /__wwbench (npm run dev), then "apply ww bench" bakes the numbers
    into the --ww-* defaults below and this constant. */
 const DRIFT_LOOK: 'current' | 'neon' | 'steer' | 'both' = 'both';
-/* What sits behind it (Dan 2026-10-14: "the whole back a digital screen"): the
-   garage wood, or /drift's digital screen. And the window: plain, or on /drift's TV. */
-const DRIFT_BG: 'wood' | 'screen' = 'screen';
+/* The DRIFT window: plain, or on /drift's TV. */
 const DRIFT_WIN: 'plain' | 'tv' = 'plain';
+/* What the whole word wall is (Dan 2026-10-14: "the whole back a digital
+   screen", then "every plugin on the TV, only the screen changes when the
+   carousel moves, like changing channels"): the garage wood, or one TV whose
+   screen every panel plays on. Lives on .ww, not on a panel. */
+const WALL_BG: 'wood' | 'screen' = 'screen';
 
 /* The live window: an HD run of DRIFT (1440 desktop / 800 phone) with its
    first frame as the poster. Only when every file is on disk; otherwise the
@@ -83,15 +86,14 @@ const wallPoster = wallRunReady && wallPosterSrc
 const tvFrame = wallRunReady
   ? await getImage({ src: tvFrameSrc, width: 1318, format: 'webp', quality: 86 })
   : null;
-/* The screen wall's frame (Dan 2026-10-14: "the frame in DRIFT's vibe, a
-   broken TV frame"): a beat-up CRT cabinet front 9-sliced around the whole
-   screen, in place of the brass rails. Three rolls (tools/gen-drift-tv-frame-
-   broken.sh + tools/cut-drift-tv-frame-broken.py, tv-broken.json = each one's
-   size, bezel and corner patches in its own pixels); the bench picks one. */
-const DRIFT_FRAME: 'rails' | '1' | '2' | '3' = '2';
+/* The TV's frame (Dan 2026-10-14: "a broken TV frame", then "more neutral"):
+   a beat-up CRT cabinet front 9-sliced around the whole screen, in place of
+   the brass rails. Three rolls (tools/gen-drift-tv-frame-broken.sh +
+   tools/cut-drift-tv-frame-broken.py, tv-broken.json = each one's size, bezel
+   and corner patches in its own pixels); the bench picks one. */
+const WALL_FRAME: 'rails' | '1' | '2' | '3' = '2';
 const brokenRolls = import.meta.glob<{ default: ImageMetadata }>('../assets/seasons/drift/tv-broken-*.png', { eager: true });
-const frameVars = drift.homeLead
-  ? (await Promise.all(
+const frameVars = (await Promise.all(
       Object.entries(brokenMeta).map(async ([n, m]) => {
         const src = brokenRolls[`../assets/seasons/drift/tv-broken-${n}.png`]?.default;
         if (!src) throw new Error(`WordWall: tv-broken-${n}.png is listed in tv-broken.json but missing`);
@@ -105,8 +107,7 @@ const frameVars = drift.homeLead
           ...['t', 'r', 'b', 'l'].map((s, i) => `--wf${n}-z${s}:${m.bezel[i]}`),
         ].join(';');
       }),
-    )).join(';')
-  : undefined;
+    )).join(';');
 
 /* One panel per plugin in the carousel rotation. The panel whose slug matches
    the centred slide is the visible one; PluginShowcase dispatches
@@ -202,11 +203,11 @@ const panels: Panel[] = [
 ---
 
 <GarageWall id="sound" ariaLabel="What the plugin does">
-  <div class="ww" data-wordwall style={frameVars}>
+  <div class="ww" data-wordwall data-ww-bg={WALL_BG} data-ww-frame={WALL_FRAME} style={frameVars}>
     {/* DRIFT's screen wall: the lit tube behind the panels + the glass over them (CSS below) */}
-    {drift.homeLead && <div class="ww-screen" aria-hidden="true"><div class="ww-screen-glow"></div></div>}
-    {drift.homeLead && <div class="ww-screen-fx" aria-hidden="true"></div>}
-    {drift.homeLead && <div class="ww-frame" aria-hidden="true"><i class="ww-frame-glass"></i><span class="ww-frame-led"></span></div>}
+    <div class="ww-screen" aria-hidden="true"><div class="ww-screen-glow"></div></div>
+    <div class="ww-screen-fx" aria-hidden="true"></div>
+    <div class="ww-frame" aria-hidden="true"><i class="ww-frame-glass"></i><span class="ww-frame-led"></span></div>
     {panels.map((p, i) => {
       // DRIFT only: the look attribute + the light/skid/kana spans the looks
       // switch on (hidden in 'current'); every other panel renders as before
@@ -216,9 +217,7 @@ const panels: Panel[] = [
         class:list={['ww-panel', { 'is-active': i === 0, 'is-portrait': p.portrait }]}
         data-ww-panel={p.slug}
         data-ww-look={isDrift ? DRIFT_LOOK : undefined}
-        data-ww-bg={isDrift ? DRIFT_BG : undefined}
         data-ww-win={isDrift ? DRIFT_WIN : undefined}
-        data-ww-frame={isDrift ? DRIFT_FRAME : undefined}
         aria-hidden={i === 0 ? 'false' : 'true'}
       >
         <div class="ww-words">
@@ -600,17 +599,17 @@ const panels: Panel[] = [
     background-color: var(--bg-1);
   }
 
-  /* ---- THE SCREEN WALL (DRIFT_BG 'screen', every look but 'current') -----
-     Dan 2026-10-14: "the whole back a digital screen like that". While the
-     DRIFT panel is up, the wall behind it is /drift's digital screen, the
-     keep-it TV's phosphor tube (.d-crt.d-keep-screen, the hero's dash screen):
-     full bleed between the brass rails (a screen set into the garage wall),
-     dark glass, violet phosphor lit from the centre, and scanlines + aperture
-     grille + glass + curved falloff OVER the panel, so the words and the window
-     read as ON the screen. The screen is the lamp: the neon and its spill read
-     as phosphor bloom. It fades with the panel swap and powers on with the sign
-     (a CRT turn-on). The layers sit on .ww, outside the panels, so a panel's
-     opacity fade never traps them in its stacking context. */
+  /* ---- THE SCREEN WALL (WALL_BG 'screen': every panel plays on it) ---------
+     Dan 2026-10-14: "the whole back a digital screen like that", then "every
+     plugin on the TV, only the screen changes, like changing channels". The
+     word wall is one TV: /drift's digital screen (the keep-it TV's phosphor
+     tube, .d-crt.d-keep-screen), dark glass lit from the centre, and
+     scanlines + aperture grille + glass + curved falloff OVER the panels, so
+     the words and the window read as ON the screen. Every panel is a channel
+     on it. The screen is the lamp: DRIFT's neon and its spill read as
+     phosphor bloom. With DRIFT up first it powers on with the sign (a CRT
+     turn-on). The layers sit on .ww, outside the panels, so a panel's opacity
+     fade never traps them in its stacking context. */
   .ww {
     --ww-scr-bright: 1;  /* phosphor glow */
     --ww-scr-scan: 0.3;  /* scanline darkness over the whole wall */
@@ -649,12 +648,12 @@ const panels: Panel[] = [
       inset 0 3px 0 #040206, inset 0 -3px 0 #040206, /* the screen's seat under the rails */
       inset 0 0 0 1px rgba(190, 90, 255, 0.22);
   }
-  .ww:has(> .ww-panel[data-ww-panel='drift'].is-active[data-ww-bg='screen']:not([data-ww-look='current'])) > :is(.ww-screen, .ww-screen-fx) {
+  .ww[data-ww-bg='screen'] > :is(.ww-screen, .ww-screen-fx) {
     opacity: 1;
   }
   /* CRT turn-on with the sign: dark glass until first sight, then a bright line that opens */
-  .ww:has(> .ww-panel[data-ww-panel='drift'][data-ww-power='armed']) .ww-screen-glow { opacity: 0; }
-  .ww:has(> .ww-panel[data-ww-panel='drift'][data-ww-power='powering']) .ww-screen-glow {
+  .ww:has(> .ww-panel[data-ww-panel='drift'].is-active[data-ww-power='armed']) .ww-screen-glow { opacity: 0; }
+  .ww:has(> .ww-panel[data-ww-panel='drift'].is-active[data-ww-power='powering']) .ww-screen-glow {
     animation: ww-scr-on 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
   }
   @keyframes ww-scr-on {
@@ -664,29 +663,29 @@ const panels: Panel[] = [
     100% { opacity: 1; transform: none; filter: brightness(var(--ww-scr-bright)); }
   }
   /* the type on the screen: phosphor, not brass routed into wood */
-  .ww-panel[data-ww-panel='drift'][data-ww-bg='screen']:not([data-ww-look='current']) .ww-tag {
+  .ww[data-ww-bg='screen'] > .ww-panel[data-ww-panel='drift']:not([data-ww-look='current']) .ww-tag {
     color: #d98bff;
     text-shadow: 0 0 8px rgba(217, 139, 255, 0.5);
   }
-  .ww-panel[data-ww-panel='drift'][data-ww-bg='screen']:not([data-ww-look='current']) .ww-ui figcaption {
+  .ww[data-ww-bg='screen'] > .ww-panel[data-ww-panel='drift']:not([data-ww-look='current']) .ww-ui figcaption {
     color: #eadcff;
     opacity: 0.92;
     text-shadow: 0 0 6px rgba(190, 90, 255, 0.3);
   }
-  .ww-panel[data-ww-panel='drift'][data-ww-bg='screen']:not([data-ww-look='current']) .ww-ui figcaption strong,
-  .ww-panel[data-ww-panel='drift'][data-ww-bg='screen']:not([data-ww-look='current']) .ww-go-name {
+  .ww[data-ww-bg='screen'] > .ww-panel[data-ww-panel='drift']:not([data-ww-look='current']) .ww-ui figcaption strong,
+  .ww[data-ww-bg='screen'] > .ww-panel[data-ww-panel='drift']:not([data-ww-look='current']) .ww-go-name {
     color: #f24cf0;
     text-shadow: 0 0 8px rgba(242, 76, 240, 0.55);
   }
   /* the plain window on the screen: a lit picture, a violet edge instead of a drop on wood */
-  .ww-panel[data-ww-panel='drift'][data-ww-bg='screen']:not([data-ww-look='current']):not([data-ww-win='tv']) .ww-ui video {
+  .ww[data-ww-bg='screen'] > .ww-panel[data-ww-panel='drift']:not([data-ww-look='current']):not([data-ww-win='tv']) .ww-ui video {
     box-shadow:
       0 0 0 1px rgba(190, 90, 255, 0.4),
       0 0 36px rgba(190, 90, 255, 0.22),
       0 18px 40px rgba(0, 0, 0, 0.55);
   }
   /* the skid on a screen = phosphor afterglow, not rubber on wood */
-  .ww-panel[data-ww-panel='drift'][data-ww-bg='screen']:is([data-ww-look='steer'], [data-ww-look='both']) .ww-skid {
+  .ww[data-ww-bg='screen'] > .ww-panel[data-ww-panel='drift']:is([data-ww-look='steer'], [data-ww-look='both']) .ww-skid {
     color: rgba(190, 90, 255, 0.55);
     mix-blend-mode: screen;
     filter: blur(4px);
@@ -696,7 +695,7 @@ const panels: Panel[] = [
     .ww-screen-fx { transition: none; }
   }
 
-  /* ---- THE BROKEN TV FRAME (DRIFT_FRAME, with the screen wall) -----------
+  /* ---- THE BROKEN TV FRAME (WALL_FRAME, with the screen wall) ------------
      Dan 2026-10-14: "the frame in DRIFT's vibe, a broken TV frame". The
      screen wall sits in a beat-up CRT cabinet front instead of the brass
      rails: cracked corner with a worn checker, gaffer tape, a missing
@@ -730,17 +729,17 @@ const panels: Panel[] = [
       --ww-frame-cap: calc((1vw + clamp(1rem, 4vw, 2.5rem) - 4px) / max(var(--wf-zl), var(--wf-zr)));
     }
   }
-  .ww:has(> .ww-panel[data-ww-panel='drift'][data-ww-frame='1']) {
+  .ww[data-ww-frame='1'] {
     --wf-img: var(--wf1-img); --wf-sl: var(--wf1-sl);
     --wf-t: var(--wf1-t); --wf-r: var(--wf1-r); --wf-b: var(--wf1-b); --wf-l: var(--wf1-l);
     --wf-zt: var(--wf1-zt); --wf-zr: var(--wf1-zr); --wf-zb: var(--wf1-zb); --wf-zl: var(--wf1-zl);
   }
-  .ww:has(> .ww-panel[data-ww-panel='drift'][data-ww-frame='2']) {
+  .ww[data-ww-frame='2'] {
     --wf-img: var(--wf2-img); --wf-sl: var(--wf2-sl);
     --wf-t: var(--wf2-t); --wf-r: var(--wf2-r); --wf-b: var(--wf2-b); --wf-l: var(--wf2-l);
     --wf-zt: var(--wf2-zt); --wf-zr: var(--wf2-zr); --wf-zb: var(--wf2-zb); --wf-zl: var(--wf2-zl);
   }
-  .ww:has(> .ww-panel[data-ww-panel='drift'][data-ww-frame='3']) {
+  .ww[data-ww-frame='3'] {
     --wf-img: var(--wf3-img); --wf-sl: var(--wf3-sl);
     --wf-t: var(--wf3-t); --wf-r: var(--wf3-r); --wf-b: var(--wf3-b); --wf-l: var(--wf3-l);
     --wf-zt: var(--wf3-zt); --wf-zr: var(--wf3-zr); --wf-zb: var(--wf3-zb); --wf-zl: var(--wf3-zl);
@@ -763,9 +762,9 @@ const panels: Panel[] = [
       calc(var(--wf-zb) * var(--ww-frame-u)) calc(var(--wf-zl) * var(--ww-frame-u));
   }
   .ww-frame-glass { display: block; height: 100%; }
-  .ww:has(> .ww-panel[data-ww-panel='drift'][data-ww-bg='screen']:not([data-ww-look='current']):not([data-ww-frame='rails']).is-active) > .ww-frame { opacity: 1; }
+  .ww[data-ww-bg='screen']:not([data-ww-frame='rails']) > .ww-frame { opacity: 1; }
   /* the screen fills the cabinet: from under the bezel's middle, inside the content box */
-  .ww:has(> .ww-panel[data-ww-panel='drift'][data-ww-bg='screen']:not([data-ww-look='current']):not([data-ww-frame='rails'])) > :is(.ww-screen, .ww-screen-fx) {
+  .ww[data-ww-bg='screen']:not([data-ww-frame='rails']) > :is(.ww-screen, .ww-screen-fx) {
     left: calc(var(--ww-frame-g) + var(--wf-zl) * var(--ww-frame-u) / 2);
     right: calc(var(--ww-frame-g) + var(--wf-zr) * var(--ww-frame-u) / 2);
     top: calc(var(--ww-frame-g) + var(--wf-zt) * var(--ww-frame-u) / 2);
@@ -773,10 +772,10 @@ const panels: Panel[] = [
     width: auto;
     transform: none;
   }
-  .ww:has(> .ww-panel[data-ww-panel='drift'][data-ww-bg='screen']:not([data-ww-look='current']):not([data-ww-frame='rails'])) > .ww-screen-fx { box-shadow: none; }
+  .ww[data-ww-bg='screen']:not([data-ww-frame='rails']) > .ww-screen-fx { box-shadow: none; }
   /* the set replaces the brass rails while it is up */
   :global(.garage-wall:has(.ww-frame))::after { transition: opacity 320ms ease; }
-  :global(.garage-wall:has(> .gw-inner > .ww > .ww-panel[data-ww-panel='drift'][data-ww-bg='screen']:not([data-ww-look='current']):not([data-ww-frame='rails']).is-active))::after { opacity: 0; }
+  :global(.garage-wall:has(> .gw-inner > .ww[data-ww-bg='screen']:not([data-ww-frame='rails'])))::after { opacity: 0; }
   /* the power LED, in the chin left of the broken corner */
   .ww-frame-led {
     position: absolute;
@@ -789,7 +788,7 @@ const panels: Panel[] = [
     background: radial-gradient(circle at 40% 35%, #d2f7df 0 18%, #4fbf82 45%, var(--emerald) 100%);
     box-shadow: 0 0 6px 1px rgba(79, 191, 130, 0.75), 0 0 16px 3px rgba(79, 191, 130, 0.3);
   }
-  .ww:has(> .ww-panel[data-ww-panel='drift'][data-ww-power='armed']) .ww-frame-led {
+  .ww:has(> .ww-panel[data-ww-panel='drift'].is-active[data-ww-power='armed']) .ww-frame-led {
     background: radial-gradient(circle at 40% 35%, #3c4a42 0 18%, #18241d 60%, #0b120e 100%);
     box-shadow: none;
   }
