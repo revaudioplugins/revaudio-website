@@ -206,6 +206,7 @@ const panels: Panel[] = [
   <div class="ww" data-wordwall data-ww-bg={WALL_BG} data-ww-frame={WALL_FRAME} style={frameVars}>
     {/* DRIFT's screen wall: the lit tube behind the panels + the glass over them (CSS below) */}
     <div class="ww-screen" aria-hidden="true"><div class="ww-screen-glow"></div></div>
+    <div class="ww-snow" aria-hidden="true"><canvas></canvas></div>
     <div class="ww-screen-fx" aria-hidden="true"></div>
     <div class="ww-frame" aria-hidden="true"><i class="ww-frame-glass"></i><span class="ww-frame-led"></span></div>
     {panels.map((p, i) => {
@@ -324,7 +325,44 @@ const panels: Panel[] = [
       });
       const name = next.querySelector('figcaption strong')?.textContent?.replace(/\.$/, '') ?? 'the plugin';
       section?.setAttribute('aria-label', `What ${name} does`);
+      staticBurst();
     });
+    /* Changing channel: a burst of TV snow over the screen while the panels
+       swap (CSS .ww-snow). Half the CSS resolution (cap 640x400), drawn only
+       for the burst and only when the wall is on screen, the tab is visible
+       and the TV is up; reduced motion / html.hc = no snow. */
+    const snow = wall.querySelector<HTMLElement>('.ww-snow');
+    const snowCanvas = snow?.querySelector('canvas');
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let snowRaf = 0;
+    let snowEnd = 0;
+    const staticBurst = () => {
+      if (!snow || !snowCanvas || reduced.matches || document.hidden || wall.dataset.wwBg !== 'screen') return;
+      if (document.documentElement.classList.contains('hc')) return;
+      const r = wall.getBoundingClientRect();
+      if (r.bottom <= 0 || r.top >= window.innerHeight) return;
+      const box = snow.getBoundingClientRect();
+      const w = Math.max(1, Math.min(640, Math.round(box.width / 2)));
+      const h = Math.max(1, Math.min(400, Math.round(box.height / 2)));
+      if (snowCanvas.width !== w || snowCanvas.height !== h) { snowCanvas.width = w; snowCanvas.height = h; }
+      const ctx = snowCanvas.getContext('2d');
+      if (!ctx) return;
+      const img = ctx.createImageData(w, h);
+      const px = new Uint32Array(img.data.buffer);
+      snowEnd = performance.now() + (parseFloat(getComputedStyle(wall).getPropertyValue('--ww-snow-ms')) || 300);
+      snow.classList.add('is-on');
+      const draw = (t: number) => {
+        for (let i = 0; i < px.length; i++) {
+          const v = 40 + ((Math.random() * 215) | 0);
+          px[i] = 0xff000000 | (v << 16) | (v << 8) | v; // grey, opaque (little-endian ABGR)
+        }
+        ctx.putImageData(img, 0, 0);
+        if (t < snowEnd) snowRaf = requestAnimationFrame(draw);
+        else { snowRaf = 0; snow.classList.remove('is-on'); }
+      };
+      if (!snowRaf) snowRaf = requestAnimationFrame(draw);
+    };
+
     // DRIFT's looks: neon power-on, steering springs, the live window video
     const driftPanel = panels.find((p) => p.dataset.wwPanel === 'drift');
     if (driftPanel) initDriftWall(driftPanel);
@@ -615,6 +653,7 @@ const panels: Panel[] = [
     --ww-scr-scan: 0.3;  /* scanline darkness over the whole wall */
   }
   .ww-screen,
+  .ww-snow,
   .ww-screen-fx {
     position: absolute;
     inset-block: var(--rail-h, 0px);
@@ -770,6 +809,26 @@ const panels: Panel[] = [
       0 18px 40px rgba(0, 0, 0, 0.55);
   }
 
+  /* changing channel (Dan's pick: "a short burst of static"): when the
+     carousel moves, the picture drops to snow for --ww-snow-ms while the
+     panels swap under it, then the new channel comes through. Motion =
+     feedback to the visitor moving the carousel; the script below draws it
+     (half-res canvas, only during the burst, only when the wall is on
+     screen); reduced motion and html.hc = the plain crossfade. Between the
+     tube (-1) and the glass (2, later in the DOM): over the words, under the
+     scanlines and the bezel. */
+  .ww { --ww-snow-ms: 300; }
+  .ww-snow {
+    z-index: 2;
+    display: block;
+    transition: opacity 160ms ease;
+  }
+  .ww-snow.is-on {
+    opacity: 1;
+    transition: none; /* the cut to snow is instant; only the way out fades */
+  }
+  .ww-snow canvas { display: block; width: 100%; height: 100%; } /* a canvas won't stretch to insets itself */
+
   /* ---- THE BROKEN TV FRAME (WALL_FRAME, with the screen wall) ------------
      Dan 2026-10-14: "the frame in DRIFT's vibe, a broken TV frame". The
      screen wall sits in a beat-up CRT cabinet front instead of the brass
@@ -839,7 +898,7 @@ const panels: Panel[] = [
   .ww-frame-glass { display: block; height: 100%; }
   .ww[data-ww-bg='screen']:not([data-ww-frame='rails']) > .ww-frame { opacity: 1; }
   /* the screen fills the cabinet: from under the bezel's middle, inside the content box */
-  .ww[data-ww-bg='screen']:not([data-ww-frame='rails']) > :is(.ww-screen, .ww-screen-fx) {
+  .ww[data-ww-bg='screen']:not([data-ww-frame='rails']) > :is(.ww-screen, .ww-snow, .ww-screen-fx) {
     left: calc(var(--ww-frame-g) + var(--wf-zl) * var(--ww-frame-u) / 2);
     right: calc(var(--ww-frame-g) + var(--wf-zr) * var(--ww-frame-u) / 2);
     top: calc(var(--ww-frame-g) + var(--wf-zt) * var(--ww-frame-u) / 2);
@@ -1268,6 +1327,7 @@ const panels: Panel[] = [
   /* hc: the screen wall goes (the hc wall shows), its text loses the glow */
   :global(html.hc) .ww-screen,
   :global(html.hc) .ww-screen-fx,
+  :global(html.hc) .ww-snow,
   :global(html.hc) .ww-frame { display: none !important; }
   :global(html.hc) .ww-panel[data-ww-panel='drift'] :is(.ww-tag, figcaption, figcaption strong, .ww-go-name) { text-shadow: none !important; }
   /* hc: the TV keeps its plate, the screen effects and the livery go */
