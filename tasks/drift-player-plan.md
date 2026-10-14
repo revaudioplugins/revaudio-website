@@ -23,7 +23,11 @@ cool toy". Sounds come later; design first.
 
 1. [x] Bench round 1: `bench/drift-player-bench.html` (desktop 1100 design px + phone 420; placeholder sounds made in the browser, bench only).
 2. [ ] Yoni reviews the look, feel, words. Fold corrections in.
-3. [ ] Yoni's audio: 10 files = 5 tracks x before/after, level-matched, same length, loopable. Set `AUDIO_BASE`; bake the waveform peaks offline (JSON) so the screen draws before any decode.
+3. [x] Yoni's audio (2026-10-14, `C:\shirimmmmmm`, 10 WAVs 48k/24-bit, pairs equal length): `tools/drift-player/prep_audio.py`
+   -> `public/drift-player/audio/*.m4a` (AAC 160k, padded 0.25 s both sides, 2.8 MB) + `peaks.json` (21 kB).
+   The DRIFT bounces were quieter (vocals/keys -1.0, synth -3.1, guitar -3.5, perc -4.8 LU), so each ORIGINAL is
+   turned down to its DRIFT file's loudness (pairs now within 0.1 LU). Tracks are NOT matched to each other:
+   synth -13.3 LUFS vs perc -23.7 (open question).
 4. [ ] Export to a `<drift-player>` web component (like `tools/station-mixer/export_component.py`), self-hosted fonts, no iframe; mount it in the `#hear` slot (replaces DriftHeadUnit; `drift.demoMode` / `demoWholeSound` flags).
 5. [ ] `npm run build`, test `dist/` under the live CSP, desktop + real phone. Push only on "push".
 
@@ -33,3 +37,5 @@ cool toy". Sounds come later; design first.
 - Loop the track (now) or play once and stop?
 - A download / trial plate on the toy, or leave the page's own CTA?
 - Remove the "SPEED SOUNDS BETTER" sticker / bottom lip text?
+- Even out the 5 tracks' levels with each other (synth is ~10 LU louder than perc)?
+- OK to keep the originals turned down to match DRIFT (fair A/B), or play the raw levels?

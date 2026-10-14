@@ -13,8 +13,7 @@
     CRT            = the track's waveform (L above, R below) + a race road whose car sits where the sound sits
     cluster        = TACHO (level), SPEED, FUEL (clip left), TRIP (time), PAN meter, DRIFT / BYPASS lamps
   One track at a time. Only the current track's two files are in memory (the iPhone rule).
-  SOUND: until Yoni's files arrive, every track is a placeholder made in the browser
-  (bench only, never ships). Real files: set AUDIO_BASE below; names <id>-before / <id>-after.
+  SOUND: Yoni's 10 bounces (2026-10-14) via tools/drift-player/prep_audio.py -> public/drift-player/.
   Serve the worktree root over http (fonts): python -m http.server 8795, open /bench/drift-player-bench.html
   ?layout=phone forces the phone arrangement.
 -->
@@ -377,14 +376,14 @@ h2 .l2{color:var(--d-hot);text-shadow:0 0 18px rgba(255,79,216,.45)}
     </div>
   </div>
 </section>
-<p class="devbar">Bench round 1 · the sounds are browser placeholders until the real files arrive ·
+<p class="devbar">Bench round 2 · Yoni's 10 bounces (originals level-matched to the DRIFT files) ·
   <a href="?layout=desk">desktop</a> · <a href="?layout=phone">phone</a> · <a href="?">auto</a></p>
 
 <script>
 (() => {
 'use strict';
 /* ======================= config ======================= */
-const AUDIO_BASE = null;              // e.g. '/drift-player/audio/' -> <id>-before.m4a, <id>-after.m4a
+const AUDIO_BASE = '../public/drift-player/';   // peaks.json + audio/<id>-before.m4a, audio/<id>-after.m4a
 const AUDIO_EXT = '.m4a';
 const STEMS = [
   { id:'vocals', name:'VOCALS' }, { id:'keys', name:'KEYS' }, { id:'synth', name:'SYNTH' },
@@ -477,73 +476,18 @@ function clusterLamps(){
 /* ======================= state ======================= */
 const state = { gear: 0, last: 1, drift: true, playing: false, vol: .8, touchedTog: false, touchedGear: false, playedAt: 0 };
 
-/* ======================= placeholder sounds (bench only) ======================= */
-// Each track is made once as a mono line; BEFORE = it in the middle, AFTER = the same line panned by a DRIFT-like
-// LFO (equal-power, so both are level-matched). Real files replace this through AUDIO_BASE.
-const PAN_LFO = { vocals:[.25,.85], keys:[.5,.9], synth:[1,.95], guitar:[.375,.85], perc:[.5,.95] };
-function synthMono(id, sr){
-  const dur = 8, N = Math.floor(sr * dur), m = new Float32Array(N), beat = .5, TAU = Math.PI * 2;
-  const hz = n => 440 * Math.pow(2, (n - 69) / 12);
-  const chords = [[57,60,64],[53,57,60],[48,52,55,60],[55,59,62]];
-  const add = (t0, len, fn) => { const s = Math.floor(t0 * sr), e = Math.min(N, s + Math.floor(len * sr)); for (let i = s; i < e; i++) m[i] += fn((i - s) / sr); };
-  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647 * 2 - 1;
-  if (id === 'vocals'){
-    const mel = [[0,1.5,69],[1.5,.5,72],[2,1,71],[3,1,67],[4,2.5,69],[7,1,64],[8,1.5,65],[9.5,.5,69],[10,1.5,72],[12,1,71],[13,2.5,67]];
-    const amps = [1,.75,.55,.32,.2,.12,.08,.05];
-    for (const [b,l,n] of mel){ const f = hz(n), len = l * beat; let ph = 0;
-      add(b * beat, len + .15, t => { const vib = t > .18 ? Math.sin(TAU*5.5*t) * .006 * Math.min(1,(t-.18)*4) : 0; ph += TAU * f * (1 + vib) / sr;
-        const env = Math.min(1, t/.06) * Math.min(1, Math.max(0, (len + .15 - t) / .15)); let s = 0; for (let k = 0; k < 8; k++) s += amps[k] * Math.sin(ph * (k + 1)); return s * env * .2; }); }
-  } else if (id === 'keys'){
-    for (let bar = 0; bar < 4; bar++) for (const hit of [0, 2.5]) for (const n of chords[bar]){ const f = hz(n + 12);
-      add(bar*2 + hit*beat, 1.6, t => { let s = 0; for (let k = 1; k <= 6; k++) s += Math.sin(TAU*f*k*t) * Math.exp(-t*(2.2 + k*1.6)) / k; return s * .14 * Math.min(1, t/.004); }); }
-  } else if (id === 'synth'){
-    for (let st = 0; st < 64; st++){ const bar = st >> 4, ch = chords[bar], f = hz(ch[st % ch.length] + 24 - (st % 8 > 5 ? 12 : 0));
-      add(st * beat / 4, .2, t => { let s = 0; for (let k = 1; k <= 9; k++) s += Math.sin(TAU*f*k*t) / k; return s * .12 * Math.exp(-t*10) * Math.min(1, t/.003); }); }
-    let y = 0; for (let i = 0; i < N; i++){ const c = .18 + .14 * Math.sin(TAU * i / N * 2); y += c * (m[i] - y); m[i] = y * 1.8; }
-  } else if (id === 'guitar'){
-    const pattern = [0, 1, 1.5, 2.5, 3, 3.5];
-    for (let bar = 0; bar < 4; bar++) for (const b of pattern){ const notes = [chords[bar][0] - 12, ...chords[bar], chords[bar][1] + 12];
-      notes.forEach((n, j) => { const f = hz(n), Lp = Math.max(2, Math.round(sr / f)), buf = new Float32Array(Lp); for (let i = 0; i < Lp; i++) buf[i] = rnd();
-        let idx = 0; const down = (b % 1) === 0, order = down ? j : notes.length - 1 - j;
-        add(bar*2 + b*beat + order * .011, .9, () => { const v = buf[idx], nx = buf[(idx + 1) % Lp]; buf[idx] = .995 * .5 * (v + nx); idx = (idx + 1) % Lp; return v * .09; }); }); }
-  } else if (id === 'perc'){
-    for (let bar = 0; bar < 4; bar++){
-      for (const b of [0, 2, 2.75]){ let ph = 0; add(bar*2 + b*beat, .4, t => { ph += TAU * (45 + 90 * Math.exp(-t*30)) / sr; return Math.sin(ph) * Math.exp(-t*8) * .9; }); }
-      for (const b of [1, 3]) add(bar*2 + b*beat, .25, t => (rnd() * Math.exp(-t*16) * .45 + Math.sin(TAU*185*t) * Math.exp(-t*24) * .3));
-      for (let h = 0; h < 8; h++){ let p = 0; const open = h === 7; add(bar*2 + h*beat/2, open ? .3 : .08, t => { const n = rnd(), v = n - p; p = n; return v * Math.exp(-t * (open ? 12 : 55)) * (h % 2 ? .14 : .09); }); }
-    }
-  }
-  let pk = 0; for (let i = 0; i < N; i++) pk = Math.max(pk, Math.abs(m[i])); const g = .85 / (pk || 1); for (let i = 0; i < N; i++) m[i] *= g;
-  return m;
-}
-function makePlaceholder(id, ctx){
-  const sr = ctx.sampleRate, m = synthMono(id, sr), N = m.length, [rate, depth] = PAN_LFO[id], SQ = Math.SQRT1_2;
-  const before = ctx.createBuffer(2, N, sr), after = ctx.createBuffer(2, N, sr);
-  const bL = before.getChannelData(0), bR = before.getChannelData(1), aL = after.getChannelData(0), aR = after.getChannelData(1);
-  for (let i = 0; i < N; i++){ const s = m[i]; bL[i] = bR[i] = s * SQ;
-    const p = depth * Math.sin(Math.PI * 2 * rate * i / sr), th = (p + 1) * Math.PI / 4; aL[i] = s * Math.cos(th); aR[i] = s * Math.sin(th); }
-  return { before, after };
-}
+/* ======================= the real bounces ======================= */
+// tools/drift-player/prep_audio.py: <id>-before.m4a (the original, level-matched DOWN to the DRIFT file's loudness)
+// + <id>-after.m4a (the DRIFT bounce, untouched), each padded PAD s on both sides; peaks.json = the loop length
+// and the L/R waveform of both versions, so the screen draws before anything is decoded.
+let M = null;
+const manifestP = fetch(`${AUDIO_BASE}peaks.json`).then(r => r.json()).then(j => (M = j));
+const BINS = 176;
+function trackInfo(i){ return M ? M.tracks[STEMS[i].id] : null; }
 async function loadReal(id, ctx){
-  const get = async v => ctx.decodeAudioData(await (await fetch(`${AUDIO_BASE}${id}-${v}${AUDIO_EXT}`)).arrayBuffer());
+  const get = async v => ctx.decodeAudioData(await (await fetch(`${AUDIO_BASE}audio/${id}-${v}${AUDIO_EXT}`)).arrayBuffer());
   const [before, after] = await Promise.all([get('before'), get('after')]);
   return { before, after };
-}
-const BINS = 176;
-function peaksOf(buf){
-  const L = buf.getChannelData(0), R = buf.numberOfChannels > 1 ? buf.getChannelData(1) : L, n = L.length, step = n / BINS;
-  const pl = new Float32Array(BINS), pr = new Float32Array(BINS);
-  for (let b = 0; b < BINS; b++){ const s = Math.floor(b * step), e = Math.floor((b + 1) * step); let ml = 0, mr = 0;
-    for (let i = s; i < e; i += 4){ const l = Math.abs(L[i]), r = Math.abs(R[i]); if (l > ml) ml = l; if (r > mr) mr = r; } pl[b] = ml; pr[b] = mr; }
-  return { L: pl, R: pr };
-}
-// before the audio context exists the screen still needs a waveform: draw from a 22.05 kHz offline render
-const previewCache = {};
-function previewPeaks(i){
-  if (previewCache[i]) return previewCache[i];
-  const fake = { sampleRate: 11025, createBuffer: (c, n, sr) => { const d = [new Float32Array(n), new Float32Array(n)]; return { numberOfChannels: 2, length: n, getChannelData: k => d[k] }; } };
-  const b = makePlaceholder(STEMS[i].id, fake);
-  return (previewCache[i] = { before: peaksOf(b.before), after: peaksOf(b.after), dur: 8 });
 }
 
 /* ======================= audio engine ======================= */
@@ -562,9 +506,9 @@ function ensureCtx(){
 async function loadStem(i){
   if (curIdx === i && cur) return cur;
   const tok = ++loadTok, id = STEMS[i].id;
-  const b = AUDIO_BASE ? await loadReal(id, ctx) : makePlaceholder(id, ctx);
+  await manifestP; const b = await loadReal(id, ctx);
   if (tok !== loadTok) return null;
-  cur = { ...b, dur: b.before.duration, peaks: { before: peaksOf(b.before), after: peaksOf(b.after) } };
+  cur = { ...b, dur: M.tracks[id].dur };
   curIdx = i; return cur;              // the previous track's buffers are dropped here (one track in memory)
 }
 function stopSources(){
@@ -577,9 +521,10 @@ function startSources(offset){
   const gB = ctx.createGain(), gA = ctx.createGain();
   gB.gain.value = state.drift ? 0 : 1; gA.gain.value = state.drift ? 1 : 0;
   gB.connect(mix); gA.connect(mix);
-  const mk = (buf, g) => { const s = ctx.createBufferSource(); s.buffer = buf; s.loop = true; s.connect(g); return s; };
+  const P = M.pad;   // loop the window inside the padding, so the seam never hits the AAC priming gap
+  const mk = (buf, g) => { const s = ctx.createBufferSource(); s.buffer = buf; s.loop = true; s.loopStart = P; s.loopEnd = P + cur.dur; s.connect(g); return s; };
   const b = mk(cur.before, gB), a = mk(cur.after, gA), when = ctx.currentTime + .03;
-  b.start(when, offset); a.start(when, offset); t0 = when - offset;
+  b.start(when, P + offset); a.start(when, P + offset); t0 = when - offset;
   srcs = { b, a, gB, gA };
 }
 function position(){ if (!ctx || !cur) return 0; const d = cur.dur; return (((ctx.currentTime - t0) % d) + d) % d; }
@@ -702,7 +647,7 @@ function frame(now){
   // --- cluster
   const lit = Math.round(lvl * TN); tacho.forEach((s, i) => setSeg(s, i < lit, i >= TN - 4 ? '#ff6b63' : null));
   const mph = Math.round(spd); showDigits(speedD, state.playing ? String(mph).padStart(3, ' ') : '  0');
-  const pos = state.playing ? position() : 0, dur = cur ? cur.dur : 8;
+  const pos = state.playing ? position() : 0, dur = cur ? cur.dur : 1;
   const sec = Math.floor(pos); showDigits(tripD, String(Math.floor(sec / 60))); showDigits(tripD2, String(sec % 60).padStart(2, '0'));
   colon.forEach(c => setSeg(c, true));
   const fl = state.playing ? Math.ceil((1 - pos / dur) * 6) : 6; fuel.forEach((s, i) => setSeg(s, i < fl, i === 0 && fl <= 1 ? '#ff6b63' : null));
@@ -729,8 +674,9 @@ function drawCRT(now, dt, pos, dur){
   else { c.strokeStyle = '#5ee7ff'; c.lineWidth = 1.5; c.strokeRect(W - tw - 9.5, 6.5, tw - 1, 14); c.fillStyle = '#c8f6ff'; }
   c.fillText(tag, W - tw - 4, 10);
   // ---- waveform: L above the line, R below. BYPASS = the original (centred, both halves alike); DRIFT = it moves.
-  const pk = (cur && curIdx === gi - 1) ? cur.peaks : previewPeaks(gi - 1);
-  const P = state.drift ? pk.after : pk.before;
+  const T = trackInfo(gi - 1); if (!T) return;
+  const P = state.drift ? T.after : T.before;
+  if (!T.norm){ let mx = 1e-3; for (const v of ['before','after']) for (const k of ['L','R']) for (const x of T[v][k]) mx = Math.max(mx, x); T.norm = 1 / mx; }   // one scale for both versions: fair to compare
   const wx = 22, ww = W - 34, wy = 30, wh = 88, mid = wy + wh / 2, bw = ww / BINS;
   const played = state.playing ? pos / dur : 0;
   c.fillStyle = 'rgba(217,139,255,.5)'; c.font = '7px "Drift Press"'; c.fillText('L', 8, wy + 6); c.fillText('R', 8, wy + wh - 12);
@@ -740,7 +686,7 @@ function drawCRT(now, dt, pos, dur){
     if (pass){ c.shadowColor = 'rgba(255,79,216,.9)'; c.shadowBlur = 5; }
     for (let b = 0; b < BINS; b++){
       const isPlayed = b / BINS < played; if ((pass === 1) !== isPlayed) continue;
-      const x = wx + b * bw, hl = P.L[b] * (wh / 2 - 2), hr = P.R[b] * (wh / 2 - 2);
+      const x = wx + b * bw, hl = P.L[b] * T.norm * (wh / 2 - 2), hr = P.R[b] * T.norm * (wh / 2 - 2);
       c.fillRect(x, mid - hl, Math.max(1, bw - .6), hl); c.fillRect(x, mid + 1, Math.max(1, bw - .6), hr);
     }
     c.shadowBlur = 0;
