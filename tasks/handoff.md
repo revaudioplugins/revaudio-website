@@ -163,6 +163,13 @@ Claim: CLOSED 2026-10-14. Took over `revaudio-c7`'s stale claim (session gone) o
   bench drag/resize/undo/export verified in both engines.
 - Open: Dan's own placement in the bench, then apply + push (main = live, his word).
 
+## 2026-10-14 — Claude Code `revaudio-02` (Yoni's laptop) — DRIFT before/after "Turbo Dash" toy player, bench round 1
+
+Claim: OPEN. Worktree `../revaudio-website-dpl`, branch `drift-player` (off origin/main e84c597), local only until
+"push". Files owned: `bench/drift-player-bench.html`, `tasks/drift-player-plan.md`, this entry. Plan + open questions:
+`tasks/drift-player-plan.md`. Waiting on Yoni's review and his 10 audio files (5 tracks x before/after).
+Bench server: `python -m http.server 8795` from the worktree root.
+
 ## 2026-10-09 — /drift #band v2: DRIFT's real BAND SELECT + STEREO IMAGER on a real vocal (same branch, Claude Code, Dan's Mac) — COMMITTED LOCAL, NOT PUSHED
 - Dan on v1: "close, not it": real spectrum + real imager from DRIFT, a vocal on the band select, no factory presets, give
   "Below and above the band, your mix stays as it was." more love (his pick: a big two-tone line under the screens).
