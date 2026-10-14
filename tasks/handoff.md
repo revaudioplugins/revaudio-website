@@ -57,8 +57,8 @@
 - Then Dan: "when I scroll, the site fits the screen exactly, not past the edges top and bottom" (pick: only the TV + a
   scroll lock). Part A (laptop >= 861px): the TV = one screen under the nav, the panel sized to the glass, a scroll lock
   (Lenis) after the visitor's own scrolling. Checks in `tasks/todo.md` (review "ONE SCREEN, part A"). Phones unchanged.
-  Part B (phones, <= 860px): Dan "build part B" -> in progress in the worktree, not in the pushed branch yet (the push
-  was the laptop design only). Origin/main has moved on (ee84c0b, another session's /drift work): rebase before any
+  Part B (phones, <= 860px): Dan "build part B" -> committed locally after the push, NOT pushed (the push was the
+  laptop design only); checks in `tasks/todo.md` (review "ONE SCREEN, part B"). Origin/main has moved on (ee84c0b, another session's /drift work): rebase before any
   merge to main.
 - Bench: `npm run dev -- --port 4430` in the worktree -> http://localhost:4430/__wwbench (laptop + phone frames, look switch,
   WOOD/SCREEN + RAILS/BROKEN TV 1-3 switches, sliders incl. the channel colours + Static length, COPY SETTINGS ->

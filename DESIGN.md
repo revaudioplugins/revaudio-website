@@ -148,8 +148,12 @@ neon or glow without a lamp (a neon sign IS a lamp: the DRIFT panel's lit tube m
     capped at 8.4rem, so a 1920x1080 TV has room round the panel. A scroll lock lands it: armed only by
     the visitor's wheel, a moved finger or scroll keys, it fires once scrolling is idle and no finger is
     down, if the TV fits and its top stopped within `--ww-snap-zone` % (30) of the screen; Lenis glides
-    it under the nav (0.55s, easeOutQuart). No lock under reduced motion (no Lenis). Phones keep their
-    flow (the TV is taller than the screen there, so the lock leaves it alone).
+    it under the nav (0.55s, easeOutQuart). No lock under reduced motion (no Lenis).
+    Phones + tablets (<= 860px, Dan: "build part B"): the same one-screen TV; the stack is the words (~40 %
+    of the room, max(2.2rem, min(19vw, 6.4rem, room x 0.4 / 4.5))), the window (what is left after the
+    name + button, `--ww-go-h` 8.5rem / 8rem <= 480px), tighter gaps. On a 390x664 phone the words go
+    74 -> 46px and GAS's window ~384 -> ~150px tall. iOS: with Safari's bars hidden a strip of the next
+    section shows under the TV (svh, chosen over a TV that resizes mid-scroll).
   - Bench: WOOD/SCREEN + RAILS/BROKEN TV 1-3 switches, Frame size, Wood around the TV (laptop only),
     Breathing room, Lock zone,
     the channel colour + strength sliders (RevLimiter, GAS, Radio Roulette) and Static length.

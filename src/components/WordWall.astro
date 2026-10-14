@@ -588,7 +588,7 @@ const panels: Panel[] = [
        stagger (no crossfade); nothing below the section shifts noticeably. */
     .ww-panel:not(.is-active) { display: none; }
     .ww-word {
-      font-size: clamp(4rem, 19vw, 6.4rem);
+      font-size: var(--ww-word, clamp(4rem, 19vw, 6.4rem));
       line-height: 0.9;
       letter-spacing: 0.03em;
       -webkit-text-stroke-width: 1.5px;
@@ -986,13 +986,14 @@ const panels: Panel[] = [
 
   /* ---- ONE SCREEN (Dan 2026-10-14: "when I scroll, the site fits the screen
      exactly, not past the edges top and bottom") ---------------------------
-     On a laptop the TV is one screen tall under the nav and the panel is sized
-     to its glass: the words and the windows shrink on a short screen, never
-     grow past their old size, and sit centred in the opening. svh = the screen
-     with the browser's bars shown, so nothing moves when they slide away.
-     min-height, not height: whatever still can't fit grows the TV instead of
-     clipping (and the lock then leaves it alone). The scroll lock that lands
-     it is in the script. Phones keep their flow for now. */
+     The TV is one screen tall under the nav and the panel is sized to its
+     glass: the words and the windows shrink on a short screen, never grow
+     past their old size, and sit centred in the opening. svh = the screen
+     with the browser's bars shown, so nothing moves when they slide away (on
+     a phone a strip of the next section shows under the TV while they are
+     hidden). min-height, not height: whatever still can't fit grows the TV
+     instead of clipping (and the lock then leaves it alone). The scroll lock
+     that lands it is in the script. */
   .ww {
     --ww-nav: var(--site-nav-h, var(--nav-h));
     --ww-breath: 16px;         /* glass showing above and below the panel */
@@ -1005,17 +1006,19 @@ const panels: Panel[] = [
     --ww-bez-b: calc(var(--ww-frame-g) + var(--wf-zb) * var(--ww-frame-u));
   }
   @supports (height: 100svh) {
+    .ww[data-ww-bg='screen'] {
+      /* .gw-inner pads the rails (rail-h + 0.5rem a side); .ww pads from there to the opening, + the breath */
+      --ww-pad-t: max(var(--ww-breath), calc(var(--ww-bez-t) - var(--rail-h) - 0.5rem + var(--ww-breath)));
+      --ww-pad-b: max(var(--ww-breath), calc(var(--ww-bez-b) - var(--rail-h) - 0.5rem + var(--ww-breath)));
+      --ww-room: calc(100svh - var(--ww-nav) - 2 * var(--rail-h) - 1rem - var(--ww-pad-t) - var(--ww-pad-b));
+      min-height: calc(100svh - var(--ww-nav) - 2 * var(--rail-h) - 1rem);
+      padding-block: var(--ww-pad-t) var(--ww-pad-b);
+      align-content: center;
+    }
     @media (min-width: 861px) {
+      /* words beside the window: five words at line-height 0.92 = 4.6em, under the kicker (~2.2rem) */
       .ww[data-ww-bg='screen'] {
-        /* .gw-inner pads the rails (rail-h + 0.5rem a side); .ww pads from there to the opening, + the breath */
-        --ww-pad-t: max(var(--ww-breath), calc(var(--ww-bez-t) - var(--rail-h) - 0.5rem + var(--ww-breath)));
-        --ww-pad-b: max(var(--ww-breath), calc(var(--ww-bez-b) - var(--rail-h) - 0.5rem + var(--ww-breath)));
-        --ww-room: calc(100svh - var(--ww-nav) - 2 * var(--rail-h) - 1rem - var(--ww-pad-t) - var(--ww-pad-b));
-        /* five words at line-height 0.92 = 4.6em, under the kicker (~2.2rem) */
         --ww-word: max(2.4rem, min(clamp(3.6rem, 9vw, 8.4rem), calc((var(--ww-room) - 2.2rem) / 4.6)));
-        min-height: calc(100svh - var(--ww-nav) - 2 * var(--rail-h) - 1rem);
-        padding-block: var(--ww-pad-t) var(--ww-pad-b);
-        align-content: center;
       }
       /* the windows: as wide as before, unless that makes them taller than the glass (the caption takes ~6.5rem) */
       .ww[data-ww-bg='screen'] .ww-panel:not(.is-portrait) .ww-ui :is(img, video) {
@@ -1023,6 +1026,27 @@ const panels: Panel[] = [
       }
       .ww[data-ww-bg='screen'] .ww-panel.is-portrait .ww-ui img {
         max-height: min(clamp(22rem, 46vw, 34rem), calc(var(--ww-room) - 6.5rem));
+      }
+    }
+    @media (max-width: 860px) {
+      /* one column (Dan 2026-10-14, "build part B"): the words take ~40 % of the room (line-height 0.9 =
+         4.5em), then the window, then the name + button (--ww-go-h); tighter gaps than the scrolling stack */
+      .ww[data-ww-bg='screen'] {
+        --ww-go-h: 8.5rem; /* measured: 133 px with its margin (the name grows with the width), 120-125 px <= 480px */
+        --ww-word: max(2.2rem, min(19vw, 6.4rem, calc(var(--ww-room) * 0.4 / 4.5)));
+        --ww-media-h: calc(var(--ww-room) - 4.5 * var(--ww-word) - 1.25rem - var(--ww-go-h));
+      }
+      @media (max-width: 480px) {
+        .ww[data-ww-bg='screen'] { --ww-go-h: 8rem; }
+      }
+      .ww[data-ww-bg='screen'] .ww-panel { gap: 1.25rem; }
+      .ww[data-ww-bg='screen'] .ww-go { margin-top: 0.8rem; gap: 0.6rem; }
+      .ww[data-ww-bg='screen'] .ww-panel:not(.is-portrait) .ww-ui :is(img, video) {
+        max-width: calc(var(--ww-media-h) * var(--ww-ar, 2));
+        margin-inline: auto;
+      }
+      .ww[data-ww-bg='screen'] .ww-panel.is-portrait .ww-ui img {
+        max-height: min(24rem, var(--ww-media-h));
       }
     }
   }
@@ -1386,7 +1410,7 @@ const panels: Panel[] = [
   /* phone sizes: after the base rules above (same specificity, source order wins) */
   @media (max-width: 860px) {
     .ww-panel[data-ww-panel='drift']:is([data-ww-look='steer'], [data-ww-look='both']) .ww-skid {
-      font-size: clamp(4rem, 19vw, 6.4rem);
+      font-size: var(--ww-word, clamp(4rem, 19vw, 6.4rem));
       line-height: 0.9;
       letter-spacing: 0.03em;
     }

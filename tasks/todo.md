@@ -45,8 +45,16 @@ Rules: motion = feedback only; glow only from a lamp (a neon sign is one); copy 
         is down, only if the TV fits the screen and its top is within --ww-snap-zone of the nav; lenis.scrollTo.
         None under reduced motion (no Lenis). Bench: Lock zone + Breathing room sliders; toSound = the exact target.
   - [x] Verify A (see the review).
-  - [ ] B, single column (<= 860px), SEPARATE commit, Dan decides: words ~74 -> ~46 px, GAS window ~384 -> ~200 px on a
-        real phone (svh). Before/after shots to Dan first.
+  - [x] B, single column (<= 860px), SEPARATE commit (Dan: "build part B"): words ~74 -> ~46 px, GAS window
+        ~384 -> ~150 px on a 390x664 phone (svh).
+
+## Review — ONE SCREEN, part B (2026-10-14)
+- Fit, Chromium + WebKit 360x640 / 390x664 / 390x844 / 430x932 / 600x900 / 768x1024 / 860x900 (+ Chromium 360x740),
+  all 4 channels: section = innerHeight - nav exactly, everything inside the glass, 0 sideways scroll. First pass was
+  5-21 px over: the name + button block is 120-133 px with its margin, not the 112 budgeted; fixed (--ww-go-h).
+- Lock on a phone (Chromium 390x664 mobile, CDP touch): finger held -> no lock, lift -> lands at 0; far -> stays; tap
+  -> nothing. Laptop sizes unchanged by B (the shared block only moved; laptop rules identical).
+- Build green, no __wwbench in dist. Not checked: a real iPhone / Android, Firefox.
 
 ## Review — ONE SCREEN, part A (2026-10-14)
 - Fit, Chromium 900x700 / 1024x600 / 1141x636 / 1280x665 / 1440x800 / 1728x1000 / 1920x1080 / 2560x1440, WebKit
