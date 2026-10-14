@@ -35,6 +35,34 @@ Rules: motion = feedback only; glow only from a lamp (a neon sign is one); copy 
   - [x] Verify: see the review below.
 - [ ] Dan picks + tunes on the bench -> "apply ww bench" -> bake (delete the unpicked rolls) -> commit. Push only on "push".
 
+- [x] Frame checker paint in burnt RevAudio yellow (Dan: "replace the purple with a burnt yellow"); dev cache-bust. (d081341)
+- [ ] TV = ONE SCREEN (Dan 2026-10-14: "when I scroll, the site fits the screen exactly, not past the edges top and
+      bottom"; pick: only the TV + a scroll lock):
+  - [x] A, laptop (>= 861px): #sound = 100svh - the nav (min-height, @supports svh); .ww padding from the bezel + a
+        breath; the words + windows sized to the glass (--ww-room): words min(old clamp, (room - tag) / 4.6), windows
+        width-capped by their aspect (--ww-ar), GAS max-height; never larger than before. Content centred.
+  - [x] Scroll lock: armed only by the user's wheel / touch / scroll keys, fires once scrolling is idle and no finger
+        is down, only if the TV fits the screen and its top is within --ww-snap-zone of the nav; lenis.scrollTo.
+        None under reduced motion (no Lenis). Bench: Lock zone + Breathing room sliders; toSound = the exact target.
+  - [x] Verify A (see the review).
+  - [ ] B, single column (<= 860px), SEPARATE commit, Dan decides: words ~74 -> ~46 px, GAS window ~384 -> ~200 px on a
+        real phone (svh). Before/after shots to Dan first.
+
+## Review — ONE SCREEN, part A (2026-10-14)
+- Fit, Chromium 900x700 / 1024x600 / 1141x636 / 1280x665 / 1440x800 / 1728x1000 / 1920x1080 / 2560x1440, WebKit
+  1024x600 / 1141x636 / 1280x665 / 1440x800 / 1920x1080, all 4 channels: section height = innerHeight - nav exactly
+  (no min-height growth anywhere), everything inside the glass, 0 sideways scroll. Words at 1280x665 115 -> 98 px,
+  1141x636 103 -> 92 px; GAS window 544 -> ~382 px tall at 1280. 1728 and up: words capped (134 px), centred with
+  room round them (2560x1440: 654 px of content in a 1294 px glass).
+- Lock, Chromium + WebKit 1280x665, Chromium 1141x636: wheel stopping 100 px off -> lands at 0; 380 px off -> stays;
+  scrolled 110 px past, wheel up -> 0; ArrowDown near -> 0; a script's scrollTo near -> no lock. Reduced motion
+  (Chromium): no lock. Touch (Chromium 1280x800, CDP touch events): finger held 700 ms -> no lock while down, lift ->
+  0; far -> stays; a tap -> nothing. Bench: Lock zone 0 -> no lock, 30 -> lock; toSound lands at 0.
+- Phones / tablet unchanged: 860x900, 390x844, 360x740 section and font sizes identical to before.
+- Build green, no __wwbench in dist. Gotcha: the dev server twice missed a quick second edit to WordWall.astro
+  (served a stale transform); `touch` the file and re-fetch before trusting a dev test.
+- Not checked: a real Mac / iPad, Firefox.
+
 ## Review — CHANNELS (2026-10-14)
 - Checks that ran on the final commit (5a1ef8d), local dev server:
   - `npm run build` green; `dist/` has no `__wwbench`.

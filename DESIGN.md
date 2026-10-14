@@ -139,7 +139,19 @@ neon or glow without a lamp (a neon sign IS a lamp: the DRIFT panel's lit tube m
     back (160ms) on the new channel; a half-resolution canvas, rAF only during the burst. None under
     reduced motion (plain crossfade), in high contrast, on the wood, in a hidden tab, with the wall off
     screen, or when the same panel is picked again. No channel number (Dan: no).
+  - One screen (laptop, >= 861px; Dan 2026-10-14: "when I scroll, the site fits the screen exactly, not
+    past the edges top and bottom"): the TV section is `100svh - --site-nav-h` tall (min-height, behind
+    `@supports (height: 100svh)`), `.ww` pads from the rails to the opening + `--ww-breath` (16px), and
+    the panel is sized to the glass (`--ww-room`): words `min(old clamp, (room - kicker) / 4.6)`,
+    windows width-capped by their aspect (`--ww-ar` per panel), GAS height-capped; never larger than
+    before, centred in the opening. At 1280x665 the words go 115 -> 98px. Big screens: the words stay
+    capped at 8.4rem, so a 1920x1080 TV has room round the panel. A scroll lock lands it: armed only by
+    the visitor's wheel, a moved finger or scroll keys, it fires once scrolling is idle and no finger is
+    down, if the TV fits and its top stopped within `--ww-snap-zone` % (30) of the screen; Lenis glides
+    it under the nav (0.55s, easeOutQuart). No lock under reduced motion (no Lenis). Phones keep their
+    flow (the TV is taller than the screen there, so the lock leaves it alone).
   - Bench: WOOD/SCREEN + RAILS/BROKEN TV 1-3 switches, Frame size, Wood around the TV (laptop only),
+    Breathing room, Lock zone,
     the channel colour + strength sliders (RevLimiter, GAS, Radio Roulette) and Static length.
     `html.hc`: no screen, frame or snow; the plain words.
 - Trial CTA / buy: flat brass-bright button at the page end on `/`; the crane door on product pages.

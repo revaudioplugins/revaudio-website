@@ -54,6 +54,11 @@
   Why he still saw purple: dev's /_image is served with max-age 1 year under a URL that ignores the file's content, so his
   browser kept the pre-neutral roll. Dev now adds the PNG's mtime to the frame URL (`&v=`); the build's names were
   already content-hashed. Checked: Chromium 1280 DPR2 shots on DRIFT + RevLimiter (yellow checker, no console errors).
+- Then Dan: "when I scroll, the site fits the screen exactly, not past the edges top and bottom" (pick: only the TV + a
+  scroll lock). Part A (laptop >= 861px): the TV = one screen under the nav, the panel sized to the glass, a scroll lock
+  (Lenis) after the visitor's own scrolling. Checks in `tasks/todo.md` (review "ONE SCREEN, part A"). Phones unchanged.
+  Part B (phones, <= 860px) NOT built: it would shrink the phone words ~74 -> ~46 px and GAS ~384 -> ~200 px on a real
+  phone; Dan decides on before/after shots.
 - Bench: `npm run dev -- --port 4430` in the worktree -> http://localhost:4430/__wwbench (laptop + phone frames, look switch,
   WOOD/SCREEN + RAILS/BROKEN TV 1-3 switches, sliders incl. the channel colours + Static length, COPY SETTINGS ->
   "apply ww bench"). Dev only, absent from dist.

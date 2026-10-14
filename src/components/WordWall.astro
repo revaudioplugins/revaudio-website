@@ -216,9 +216,12 @@ const panels: Panel[] = [
       // DRIFT only: the look attribute + the light/skid/kana spans the looks
       // switch on (hidden in 'current'); every other panel renders as before
       const isDrift = p.slug === 'drift';
+      // the window's width / height: one screen tall caps the window's width by it (CSS --ww-ar)
+      const media = isDrift && wallPoster && wallPosterSrc ? wallPosterSrc : p.img;
       return (
       <div
         class:list={['ww-panel', { 'is-active': i === 0, 'is-portrait': p.portrait }]}
+        style={`--ww-ar:${(media.width / media.height).toFixed(4)}`}
         data-ww-panel={p.slug}
         data-ww-look={isDrift ? DRIFT_LOOK : undefined}
         data-ww-win={isDrift ? DRIFT_WIN : undefined}
@@ -308,6 +311,7 @@ const panels: Panel[] = [
 
 <script>
   import { initDriftWall } from '../lib/wordwallDrift';
+  import { lenis } from '../lib/motion'; // the house scroller (null under reduced motion)
 
   /* Follow the carousel: PluginShowcase fires showcase:change {slug} on every
      move. Swap the matching panel in; the CSS below crossfades and re-runs
@@ -365,6 +369,53 @@ const panels: Panel[] = [
       };
       if (!snowRaf) snowRaf = requestAnimationFrame(draw);
     };
+
+    /* One screen: lock the scroll onto the TV (Dan 2026-10-14). Only after the
+       visitor's own scrolling (wheel, a finger that moved, scroll keys; never a
+       script's scrollTo, an anchor jump or the bench), once it has gone idle
+       and no finger is down; only when the TV fits the screen, and only when
+       its top stopped within --ww-snap-zone % of the screen from the nav. The
+       target is worked out then, never cached. Lenis glides it there; under
+       reduced motion there is no Lenis and no lock. */
+    if (section) {
+      let armed = false;
+      let touching = false;
+      let idle = 0;
+      const trySnap = () => {
+        if (touching) return; // touchend asks again
+        armed = false;
+        if (!lenis || wall.dataset.wwBg !== 'screen') return;
+        const nav = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--site-nav-h')) || 44;
+        const r = section.getBoundingClientRect();
+        if (r.height > window.innerHeight - nav + 2) return; // taller than the screen: nothing to land
+        const off = r.top - nav; // 0 = the TV sits exactly under the nav
+        const pct = parseFloat(getComputedStyle(wall).getPropertyValue('--ww-snap-zone')); // 0 = never
+        const zone = ((Number.isFinite(pct) ? pct : 30) / 100) * window.innerHeight;
+        if (Math.abs(off) < 1 || Math.abs(off) > zone) return;
+        lenis.scrollTo(window.scrollY + off, { duration: 0.55, easing: (t: number) => 1 - Math.pow(1 - t, 4) });
+      };
+      const later = () => {
+        clearTimeout(idle);
+        idle = window.setTimeout(trySnap, 160);
+      };
+      const arm = () => {
+        armed = true;
+        later();
+      };
+      const SCROLL_KEYS = new Set(['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', ' ', 'Home', 'End']);
+      window.addEventListener('wheel', arm, { passive: true });
+      window.addEventListener('touchstart', () => { touching = true; }, { passive: true });
+      window.addEventListener('touchmove', () => { armed = true; }, { passive: true }); // a tap alone never locks
+      const lift = () => { touching = false; if (armed) later(); };
+      window.addEventListener('touchend', lift, { passive: true });
+      window.addEventListener('touchcancel', lift, { passive: true });
+      window.addEventListener('keydown', (e) => {
+        const t = e.target as HTMLElement | null;
+        if (SCROLL_KEYS.has(e.key) && !t?.closest('input, textarea, select, [contenteditable]')) arm();
+      });
+      // a smooth wheel or a flick keeps scrolling after the input stops: wait it out
+      window.addEventListener('scroll', () => { if (armed) later(); }, { passive: true });
+    }
 
     // DRIFT's looks: neon power-on, steering springs, the live window video
     const driftPanel = panels.find((p) => p.dataset.wwPanel === 'drift');
@@ -429,7 +480,7 @@ const panels: Panel[] = [
   .ww-word {
     display: inline-block;
     font-family: var(--font-display);
-    font-size: clamp(3.6rem, 9vw, 8.4rem);
+    font-size: var(--ww-word, clamp(3.6rem, 9vw, 8.4rem)); /* --ww-word: one screen tall, below */
     line-height: 0.92;
     letter-spacing: 0.02em;
     text-transform: uppercase;
@@ -933,6 +984,49 @@ const panels: Panel[] = [
     .ww-frame { transition: none; }
   }
 
+  /* ---- ONE SCREEN (Dan 2026-10-14: "when I scroll, the site fits the screen
+     exactly, not past the edges top and bottom") ---------------------------
+     On a laptop the TV is one screen tall under the nav and the panel is sized
+     to its glass: the words and the windows shrink on a short screen, never
+     grow past their old size, and sit centred in the opening. svh = the screen
+     with the browser's bars shown, so nothing moves when they slide away.
+     min-height, not height: whatever still can't fit grows the TV instead of
+     clipping (and the lock then leaves it alone). The scroll lock that lands
+     it is in the script. Phones keep their flow for now. */
+  .ww {
+    --ww-nav: var(--site-nav-h, var(--nav-h));
+    --ww-breath: 16px;         /* glass showing above and below the panel */
+    --ww-snap-zone: 30;        /* the lock catches when the TV's top stops within this % of the screen */
+    --ww-bez-t: var(--rail-h); /* the opening's top / bottom edge, from the wall's inner box */
+    --ww-bez-b: var(--rail-h);
+  }
+  .ww[data-ww-bg='screen']:not([data-ww-frame='rails']) {
+    --ww-bez-t: calc(var(--ww-frame-g) + var(--wf-zt) * var(--ww-frame-u));
+    --ww-bez-b: calc(var(--ww-frame-g) + var(--wf-zb) * var(--ww-frame-u));
+  }
+  @supports (height: 100svh) {
+    @media (min-width: 861px) {
+      .ww[data-ww-bg='screen'] {
+        /* .gw-inner pads the rails (rail-h + 0.5rem a side); .ww pads from there to the opening, + the breath */
+        --ww-pad-t: max(var(--ww-breath), calc(var(--ww-bez-t) - var(--rail-h) - 0.5rem + var(--ww-breath)));
+        --ww-pad-b: max(var(--ww-breath), calc(var(--ww-bez-b) - var(--rail-h) - 0.5rem + var(--ww-breath)));
+        --ww-room: calc(100svh - var(--ww-nav) - 2 * var(--rail-h) - 1rem - var(--ww-pad-t) - var(--ww-pad-b));
+        /* five words at line-height 0.92 = 4.6em, under the kicker (~2.2rem) */
+        --ww-word: max(2.4rem, min(clamp(3.6rem, 9vw, 8.4rem), calc((var(--ww-room) - 2.2rem) / 4.6)));
+        min-height: calc(100svh - var(--ww-nav) - 2 * var(--rail-h) - 1rem);
+        padding-block: var(--ww-pad-t) var(--ww-pad-b);
+        align-content: center;
+      }
+      /* the windows: as wide as before, unless that makes them taller than the glass (the caption takes ~6.5rem) */
+      .ww[data-ww-bg='screen'] .ww-panel:not(.is-portrait) .ww-ui :is(img, video) {
+        max-width: calc((var(--ww-room) - 6.5rem) * var(--ww-ar, 2));
+      }
+      .ww[data-ww-bg='screen'] .ww-panel.is-portrait .ww-ui img {
+        max-height: min(clamp(22rem, 46vw, 34rem), calc(var(--ww-room) - 6.5rem));
+      }
+    }
+  }
+
   /* ---- THE TV (DRIFT_WIN 'tv', every look but 'current') ----------------
      Dan 2026-10-14: "more of a TV screen, like we've been doing". The live
      window plays on /drift's keep-it TV (DriftKeep.astro + drift.css
@@ -1275,7 +1369,7 @@ const panels: Panel[] = [
     left: 0;
     top: 0;
     font-family: var(--font-display);
-    font-size: clamp(3.6rem, 9vw, 8.4rem);
+    font-size: var(--ww-word, clamp(3.6rem, 9vw, 8.4rem));
     line-height: 0.92;
     letter-spacing: 0.02em;
     text-transform: uppercase;
