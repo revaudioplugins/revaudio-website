@@ -2,8 +2,10 @@
 - Dan: "the DRIFT panel on the word wall needs a more interesting design" -> picks: build BOTH looks (NEON sign / STEER the
   words, + BOTH) and show them on a bench; the window = an HD live video of DRIFT running.
 - Worktree `.claude/worktrees/drift-wordwall` off origin/main 6bc09b0 (node_modules = junction to the main clone's).
-- Active thread (owner revaudio-32): `src/components/WordWall.astro`, `tools/wwbench/*`, `astro.config.mjs` (one line),
-  `public/drift/wall-run-*`, `src/assets/showcase/drift-window-wall.png`, `DESIGN.md`, `src/assets/seasons/drift/MANIFEST.md`.
+- Active thread (owner revaudio-32): `src/components/WordWall.astro`, `src/lib/wordwallDrift.ts`, `tools/wwbench/*`,
+  `astro.config.mjs` (one line), `public/drift/wall-run-*`, `src/assets/showcase/drift-window-wall.png`,
+  `src/assets/seasons/drift/tv-broken-*`, `tools/gen-drift-tv-frame-broken.sh`, `tools/cut-drift-tv-frame-broken.py`,
+  `DESIGN.md`, `src/assets/seasons/drift/MANIFEST.md`.
 - Plan: `tasks/todo.md` (top section).
 - Built: `DRIFT_LOOK` ('current' | 'neon' | 'steer' | 'both', default 'both') in WordWall.astro -> `data-ww-look` on the DRIFT
   panel only; NEON = glass tubes, SLIDING lit magenta + spill on the wood, ドリフト tube, power-on flicker, hover lights;
@@ -28,8 +30,22 @@
   pixel-identical to the 'rails' setting (rails back, frame gone); left lock at 1141 keeps every word inside the glass; real
   Chromium with a classic scrollbar: frame right = clientWidth, bezels 58.3 / 57.8 px; one page load fetches only
   tv-broken-2 (the others load only when the bench picks them). Unpicked rolls get deleted at "apply ww bench".
+- Then Dan's reason for "neutral": "every plugin on the TV, only the screen changes when the carousel moves, like changing
+  channels" (picks: each plugin its own screen colour, a short burst of static, no channel number). CHANNELS, 3 commits:
+  3b5dff0 the TV moves from the DRIFT panel to the whole word wall (`WALL_BG` / `WALL_FRAME` on `.ww`, were DRIFT_BG /
+  DRIFT_FRAME); a5b89c5 one phosphor colour per channel (`--ww-ch-<slug>-h/-s`: RevLimiter amber 26/78, GAS gold 46/62,
+  Radio Roulette cream 38/28, DRIFT violet 280/70; words, kicker, caption, name, window edge in that phosphor; DRIFT
+  NEON/BOTH keep their tubes); 5a1ef8d a grey-snow burst (`--ww-snow-ms` 300) on every channel change (canvas, rAF only
+  during the burst; none under reduced motion / hc / wood / hidden tab / off screen / same panel). This SUPERSEDES the
+  "RevLimiter / GAS / Radio Roulette pixel-identical / rails back" checks above and below: those panels now play on the TV.
+  Checks on 5a1ef8d: build green, no __wwbench in dist; Chromium + WebKit 1141 / 1280 / 1728 / 860 / 390 / 360 x 4 channels:
+  everything inside the glass, 0 sideways scroll; static Chromium + WebKit 1280 + 390 (on at +120 ms, off by +820 ms, none
+  off screen / same panel), Chromium reduced motion none; hc Chromium + WebKit 1280 + 390 (no TV, plain words);
+  drift.homeLead off (flipped on the dev server, restored): RevLimiter first on the TV, channels inside the glass, static
+  fires (Chromium 1280, WebKit 390). Review in `tasks/todo.md`. Not checked: real iPhone / Mac Safari, Firefox.
 - Bench: `npm run dev -- --port 4430` in the worktree -> http://localhost:4430/__wwbench (laptop + phone frames, look switch,
-  12 sliders, COPY SETTINGS -> "apply ww bench"). Dev only, absent from dist.
+  WOOD/SCREEN + RAILS/BROKEN TV 1-3 switches, sliders incl. the channel colours + Static length, COPY SETTINGS ->
+  "apply ww bench"). Dev only, absent from dist.
 - Checks (website agent): build green; Chromium + WebKit 24/24 (1280 DPR2 / 1141 / 1440 / 860 / 390 / 360 x 4 looks): no sideways
   scroll, no word/window/kana overlap; RevLimiter / GAS / Radio Roulette pixel-identical; video pauses on swap / scroll-away;
   reduced motion + hc OK. Open: real iPhone / Mac Safari check (kana renders thin in Windows WebKit), Dan's taste pick.

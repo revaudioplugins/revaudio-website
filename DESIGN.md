@@ -100,22 +100,9 @@ neon or glow without a lamp (a neon sign IS a lamp: the DRIFT panel's lit tube m
   - The window is the live DRIFT run (`public/drift/wall-run-1440` / `-800`, webm + mp4, poster =
     its first frame through the image pipeline), same box, radius and shadow as the screenshot; it
     plays only while the DRIFT panel is active and on screen, and never under reduced motion.
-  - The wall behind it (`DRIFT_BG`, built 'screen'; Dan 2026-10-14: "the whole back a digital
-    screen"): /drift's digital screen (the keep-it TV's phosphor tube) full bleed between the brass
-    rails, scanlines + grille + glass over the panel, kicker + caption in phosphor violet, the skid
-    as phosphor afterglow, a CRT turn-on with the sign; it fades back to the wood when the carousel
-    moves on. `.ww-screen` / `.ww-screen-fx` live on `.ww`, outside the panels. 'wood' = the garage wall.
-  - The screen's frame (`DRIFT_FRAME`, built '2'; Dan 2026-10-14: "the frame in DRIFT's vibe, a broken
-    TV frame"): a beat-up CRT cabinet front 9-sliced round the whole screen in place of the brass rails
-    (`tv-broken-1/2/3.png`, AI blank rolls; cracked corner with a worn checker, gaffer
-    tape, a missing screw, a chunk broken off, all in the corners). The long runs TILE (`round`):
-    stretched 3-4x they streak. `--ww-frame-u` = CSS px per cut pixel (bench "Frame size", capped by
-    0.0185vw so the side bezel fits the wall's gutter on every width: words never under the bezel, the
-    steer stops at the opening). Anchored to the content box, not 100vw (a classic scrollbar would eat
-    the right bezel). Neutral charcoal, no plugin colour (Dan: "more neutral, fewer colours", so every
-    plugin can play on the same set later, only the screen changing, like channels). The house pilot
-    light (`--emerald`, "armed / live") in the chin lights with the screen's turn-on (a lamp).
-    'rails' = the brass rails as before. Bench: RAILS / BROKEN TV 1-3, Frame size, Wood around the TV.
+  - The wall behind it is the word wall's TV (below; Dan 2026-10-14: "the whole back a digital
+    screen"). On DRIFT's channel: /drift's phosphor violet, kicker + caption in phosphor violet, the
+    skid as phosphor afterglow, a CRT turn-on with the sign.
   - The window (`DRIFT_WIN`, built 'plain'): 'tv' plays the run on /drift's keep-it TV cabinet (`tv-frame-3.png`, 9-sliced, `--ww-tv-size` 0.72
     of /drift's bezel, 0.69 of that on phones), the bulged CRT tube with scanlines + aperture grille +
     glass, the cabinet livery as matte printed ink (laptop only), a CRT turn-on with the neon power-on.
@@ -123,6 +110,35 @@ neon or glow without a lamp (a neon sign IS a lamp: the DRIFT panel's lit tube m
     (`tools/wwbench`: the real homepage at laptop + phone size, look switch, sliders, REPLAY, COPY
     SETTINGS; "apply ww bench" bakes the values). Reduced motion: lit and still, poster only.
     `html.hc`: plain words like the other panels.
+- Word wall TV (every panel; 2026-10-14, Dan: "every plugin on the TV, only the screen changes when
+  the carousel moves, like changing channels"). Two constants in `WordWall.astro`, both on `.ww`:
+  - `WALL_BG` (built 'screen' | 'wood'): /drift's digital screen (the keep-it TV's phosphor tube) full
+    bleed behind every panel, scanlines + grille + glass over the content. `.ww-screen`,
+    `.ww-screen-fx`, `.ww-snow` and `.ww-frame` live on `.ww`, outside the panels, so the set stays
+    put while the carousel swaps panels, with or without `drift.homeLead`. 'wood' = the garage wall.
+  - `WALL_FRAME` (built '2' | '1' | '3' | 'rails'): a beat-up CRT cabinet front 9-sliced round the
+    screen in place of the brass rails (`tv-broken-1/2/3.png`, AI blank rolls; cracked corner with a
+    worn checker, gaffer tape, a missing screw, a chunk broken off, all in the corners). The long runs
+    TILE (`round`): stretched 3-4x they streak. `--ww-frame-u` = CSS px per cut pixel (bench "Frame
+    size"), capped by the wall's real side gutter minus the wood gap, so the side bezel never covers a
+    word or the window (~0.25 at 1141-1280, more on wide screens, ~0.065 on phones); the steer stops at
+    the opening. Anchored to the content box, not 100vw (a classic scrollbar would eat the right
+    bezel). Colourless charcoal (Dan: "more neutral, fewer colours"): only the screen changes per
+    channel. The house pilot light (`--emerald`, "armed / live") in the chin; dark only while DRIFT's
+    sign waits to power on, then it lights with the turn-on (a lamp). 'rails' = the brass rails.
+  - Channels (Dan's pick: each plugin its own screen colour): one hue + saturation per plugin on `.ww`
+    (`--ww-ch-<slug>-h` / `-s`): RevLimiter amber 26 / 78 (kept above ~20 so it never reads as
+    race-red), GAS brass gold 46 / 62, Radio Roulette warm dial-glass cream 38 / 28, DRIFT violet
+    280 / 70. The screen glow, kicker, stencil words, hot word, caption, name and window edge turn to
+    the channel's phosphor instead of brass on wood. DRIFT's NEON / BOTH looks keep their own tubes on
+    DRIFT's violet screen. `hsl(... / a)`, not color-mix (older Safari).
+  - Channel change: the carousel moving cuts the screen to grey snow for `--ww-snow-ms` (300) and fades
+    back (160ms) on the new channel; a half-resolution canvas, rAF only during the burst. None under
+    reduced motion (plain crossfade), in high contrast, on the wood, in a hidden tab, with the wall off
+    screen, or when the same panel is picked again. No channel number (Dan: no).
+  - Bench: WOOD/SCREEN + RAILS/BROKEN TV 1-3 switches, Frame size, Wood around the TV (laptop only),
+    the channel colour + strength sliders (RevLimiter, GAS, Radio Roulette) and Static length.
+    `html.hc`: no screen, frame or snow; the plain words.
 - Trial CTA / buy: flat brass-bright button at the page end on `/`; the crane door on product pages.
 - Coverflow showcase, DAW strip, EmailCapture, SubscribeModal, TrialGateModal: unchanged house parts.
 - Support chat (`SupportChat.astro`, `/support` only): chat-app thread grammar in house materials —
@@ -202,8 +218,12 @@ words first, window under them.
 - Stencil words: LOUD / WARM / PUNCHY / GLUED / DEEP. Which one should be the filled (oxide) word?
 - 2026-10-14 Dan: the word wall's DRIFT panel looked like every other panel. It got its own looks
   (neon sign / steering springs / both, `DRIFT_LOOK`, built `both`) and the live DRIFT run as its
-  window; tuned on `/__wwbench`. RevLimiter, GAS and Radio Roulette panels unchanged.
+  window; tuned on `/__wwbench`.
   Same day, Dan: "more of a TV screen" -> first read as the window on /drift's TV; he meant the whole
-  background ("everything behind a digital screen"), so the wall became the screen (DRIFT_BG) and
+  background ("everything behind a digital screen"), so the wall became the screen (then DRIFT_BG) and
   the TV window stays a bench option (DRIFT_WIN). Then "the frame in DRIFT's vibe, a broken TV
-  frame": the screen sits in a broken CRT cabinet front instead of the rails (DRIFT_FRAME).
+  frame": the screen sits in a broken CRT cabinet front instead of the rails (then DRIFT_FRAME).
+  Then "more neutral, fewer colours", because every plugin should play on the same TV, only the
+  screen changing when the carousel moves, like channels: the frame went colourless, the TV moved to
+  the whole word wall (WALL_BG / WALL_FRAME), each plugin got its own phosphor colour, and a channel
+  change is a short burst of static. So RevLimiter, GAS and Radio Roulette now play on the TV too.

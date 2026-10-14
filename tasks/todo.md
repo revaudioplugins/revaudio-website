@@ -20,20 +20,37 @@ Rules: motion = feedback only; glow only from a lamp (a neon sign is one); copy 
 - [x] Broken TV frame round the screen wall (DRIFT_FRAME, 3 rolls, bench switch + size + gap); verified swap,
       scrollbar, steer clamp, Chromium + WebKit.
 - [x] Neutral set (Dan: "more neutral, fewer colours"): frames re-cut colourless, LED = house --emerald.
-- [ ] CHANNELS (Dan 2026-10-14: "every plugin on the TV, only the screen changes when the carousel moves, like
+- [x] CHANNELS (Dan 2026-10-14: "every plugin on the TV, only the screen changes when the carousel moves, like
       changing channels"; picks: each plugin its own screen colour, a short burst of static, no channel number):
-  - [ ] The TV belongs to the whole word wall, not the DRIFT panel: WALL_BG / WALL_FRAME on .ww (were DRIFT_BG /
-        DRIFT_FRAME on the DRIFT panel); screen + frame on for every panel, with or without drift.homeLead.
-  - [ ] One phosphor colour per channel (hue + saturation vars on .ww, mapped from the active panel): DRIFT violet
-        (as now), RevLimiter amber, GAS brass gold, Radio Roulette warm dial-glass cream.
-  - [ ] RevLimiter / GAS / Radio Roulette (and DRIFT 'current'/'steer'): kicker, stencil words, hot word, caption,
+  - [x] The TV belongs to the whole word wall, not the DRIFT panel: WALL_BG / WALL_FRAME on .ww (were DRIFT_BG /
+        DRIFT_FRAME on the DRIFT panel); screen + frame on for every panel, with or without drift.homeLead. (3b5dff0)
+  - [x] One phosphor colour per channel (hue + saturation vars on .ww, mapped from the active panel): DRIFT violet
+        (as now), RevLimiter amber, GAS brass gold, Radio Roulette warm dial-glass cream. (a5b89c5)
+  - [x] RevLimiter / GAS / Radio Roulette (and DRIFT 'current'/'steer'): kicker, stencil words, hot word, caption,
         name and window edge in their channel's phosphor instead of brass on wood. DRIFT neon keeps its own tubes.
-  - [ ] Channel change: a ~300 ms burst of static over the picture when the carousel moves (canvas noise, only
-        during the switch; reduced motion = the plain crossfade; hc = none).
-  - [ ] Bench: channel hue + saturation sliders x4, static length; WOOD/SCREEN + frame switches drive .ww.
-  - [ ] Verify: build; Chromium + WebKit 1280 / 1141 / 390: every channel on the TV, swap shows static then the new
-        colour, no sideways scroll, words never under the bezel, hc + reduced motion; homeLead off still works.
+  - [x] Channel change: a ~300 ms burst of static over the picture when the carousel moves (canvas noise, only
+        during the switch; reduced motion = the plain crossfade; hc = none). (5a1ef8d)
+  - [x] Bench: channel hue + saturation sliders x3 (RevLimiter, GAS, Radio Roulette; DRIFT's violet is not on a
+        slider), static length; WOOD/SCREEN + frame switches drive .ww.
+  - [x] Verify: see the review below.
 - [ ] Dan picks + tunes on the bench -> "apply ww bench" -> bake (delete the unpicked rolls) -> commit. Push only on "push".
+
+## Review — CHANNELS (2026-10-14)
+- Checks that ran on the final commit (5a1ef8d), local dev server:
+  - `npm run build` green; `dist/` has no `__wwbench`.
+  - Chromium + WebKit at 1141 / 1280 / 1728 / 860 / 390 / 360, each of the 4 channels shown in turn: the kicker,
+    words, window, caption and name all inside the TV glass, 0 px sideways scroll.
+  - Static: Chromium + WebKit at 1280 + 390: snow on at +120 ms, gone by +820 ms; none with the wall scrolled
+    off screen, none when the same panel is picked again; Chromium reduced motion: none.
+  - Bench: the Static length slider reads 300; set to 600, the burst lasted 616 ms (Chromium).
+  - drift.homeLead off (flag flipped on the dev server, then restored, tree clean): no DRIFT panel, Chromium
+    1141-360 all channels inside the glass, 0 sideways scroll; static fires on RevLimiter -> GAS (Chromium 1280)
+    and -> Radio Roulette (WebKit 390). Step 1 also checked RevLimiter opens first with the TV on.
+  - hc: Chromium + WebKit at 1280 + 390: screen, fx, snow and frame display:none, no snow on a channel change,
+    the words plain white (no phosphor stroke or glow).
+  - Only console noise: the dev toolbar's 403 through the node_modules junction (dev only, not in the build).
+- Not checked: a real iPhone / Mac Safari (WebKit here is Playwright's Windows build), Firefox.
+- Left for Dan: pick a frame roll + tune colours, frame size and static length on the bench.
 
 ---
 
