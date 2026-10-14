@@ -923,7 +923,6 @@ const page = document;
 /* ---------- THE TOY (2026-10-12): "Step on it", one pedal for the whole beat ----------
    Pedal 0 2 4 6 8 = the real renders (0 = the original). BEFORE / AFTER = instant compare that keeps the pedal where it
    is. Every toy control also starts the tape, so nothing on the toy is ever dead. */
-const PEDAL = new URLSearchParams(location.search).get('pedal') === 'b' ? 'b' : 'a';   // bench pick: ?pedal=b
 const toy = { pa:0, ga:-45, compared:false, floored:false, wasOn:false, big:'', drag:null };
 const toyStep = () => st.stems[0].step;
 const toyGasOn = () => st.gas && st.stems.some(c=>c.step>0);
@@ -951,8 +950,6 @@ const sfx = { g:null, noise:null,
 };
 
 /* the pedal art + the rail: 0 at the top (foot off) down to 8 at the floor */
-$('#tPedalImg').src = IMG + `accel-pedal-${PEDAL}.png`;
-['-webkit-mask-image','mask-image'].forEach(p => $('#tPedal .pshade').style.setProperty(p, `url("${IMG}accel-pedal-${PEDAL}.png")`));
 $('#tRail').innerHTML = VERS.map((_, j) => `<div class="mk${j===4?' hot':''}" data-step="${j}" style="top:${j*25}%"><i></i><b>${j*2}</b>${j===0?'<small>original</small>':''}</div>`).join('');
 
 function pedalTo(n){

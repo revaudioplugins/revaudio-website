@@ -1,3 +1,14 @@
+## 2026-10-14 — Claude Code `revaudio-12` (Yoni's laptop) — both site players' toy redesign SHIPPED (Yoni: "push those ones to the website and deploy")
+
+Claim: CLOSED 2026-10-14. Took over `revaudio-c7`'s stale claim (session gone) on the toy files: both benches,
+`tools/*-mixer/*`, `public/gas-mixer/`, `public/station-mixer/`, `tasks/player-toy-redesign-plan.md`.
+
+- Deployed from worktree `../revaudio-website-toy` (branch `players-toy-deploy`): `81a00e0` + `c4f08e6` cherry-picked
+  onto origin/main, both components re-exported, GAS export taught the toy art, pedal A hard-wired. Details + test
+  log: `tasks/player-toy-redesign-plan.md` § Ship.
+- The main clone `main` still holds the original `81a00e0` / `c4f08e6` (git drops them on its next rebase).
+- Open: real ears on the UI sounds, real iPhone, Firefox.
+
 ## 2026-10-12 — /drift WATCH! bursts bigger + a laptop/phone placement bench, branch `feat/drift-watch-bubble` (Claude Code, Dan's Mac) — COMMITTED LOCAL, NOT PUSHED
 - Dan: "make the video bubble 'watch this' bigger and a bit better placement, a bench for phone and laptop, I'll place it
   and resize it". Branch off origin/main 6c33d31, worktree `.claude/worktrees/drift-watch-bubble` (dev `astro dev --port 4420`).

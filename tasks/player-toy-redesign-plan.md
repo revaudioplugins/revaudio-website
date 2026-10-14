@@ -159,13 +159,14 @@ Copy:
       wear: accelerator pedal (+ press frames), tuning-dial glass + needle, RADIO power knob, painted download plates.
       Generate several candidates per part, pick the best in the bench.
 - [x] 3. 🤖 RR toy in `bench/station-mixer-bench.html` (toy on top, hood lever reveals today's mixer).
-- [ ] 4. 🧑 Yoni reviews the RR toy bench (look, feel, words, sounds).
+- [x] 4. 🧑 Yoni reviews the RR toy bench (look, feel, words, sounds).
 - [x] 5. 🤖 GAS toy in `bench/gas-mixer-bench.html`, same pattern (built before step 4 so both are reviewed together).
-- [ ] 6. 🧑 Yoni reviews the GAS toy bench (+ picks pedal A or B: `?pedal=b`).
+- [x] 6. 🧑 Yoni reviews the GAS toy bench (2026-10-14: "push those ones to the website and deploy"; no pick made, so
+      pedal A ships, hard-wired in the bench; `accel-pedal-b.png` stays in `bench/assets/` if B is wanted later).
 - [x] 7. 🤖 Hood pass on both mixers: plain words, notes cut to one, START -> plate.
-- [ ] 8. 🤖 Export both components, `npm run build`, test `dist/` under the live CSP + X-Frame-Options, phone width
+- [x] 8. 🤖 Export both components, `npm run build`, test `dist/` under the live CSP + X-Frame-Options, phone width
       390, no console errors, keyboard reachable (Tab / Space / arrows on dial + pedal).
-- [ ] 9. 🤖 Commit by path; deploy via a fresh worktree off origin/main. 🧑 "push" = live.
+- [x] 9. 🤖 Commit by path; deploy via a fresh worktree off origin/main. 🧑 "push" = live.
 
 ## Verify (how we know it worked)
 
@@ -197,3 +198,14 @@ Verified in headless Edge (playwright-core, `bench_shot.js` in the session scrat
 Not verified yet: real ears on the UI sounds (static / ticks / thumps levels), real phone (iPhone Safari), Firefox,
 real-speed motion (headless throttles frames). Page placeholders updated in `[slug].astro` + `gas.astro` (new
 intro lines + toy shapes); site not built yet.
+
+## Ship (2026-10-14, Claude Code `revaudio-12`)
+
+- Worktree `../revaudio-website-toy` (branch `players-toy-deploy` off origin/main `ee84c0b`), `81a00e0` + `c4f08e6`
+  cherry-picked clean. `bench/assets` and `node_modules` are junctions into the main clone (art is gitignored there).
+- `tools/gas-mixer/export_component.py` did not know the toy art (assert: "images referenced but not exported"):
+  8 images added to `IMGS` at 2x display size (WebP). Any new bench image needs a line there before export.
+- `npm run build` clean. `dist/` served with the live CSP + X-Frame-Options headers, headless Edge, 1440 + 390:
+  both toys render, no broken images, no horizontal scroll, PLAY -> ORIGINAL -> STATION 1 / GAS 6 by itself after
+  2 bars. Only console error: the Cloudflare insights beacon (offline, not ours).
+- Still unverified: real ears on the UI sounds, a real iPhone, Firefox.
