@@ -47,6 +47,17 @@ matching the drift page", "change the gear selector to a manual gear knob of a d
   to the nearest gear (or N). A shift-pattern tag under it names the tracks and is the keyboard radiogroup.
 - Phone: no shell; the page's plate is the dash, same parts stacked (screen, cluster, wheel + toggle, gearbox).
 
+## Round 4 (2026-10-14): PLAY/STOP off the wheel, the plugin's wheel 1:1, 80s synthwave (Yoni)
+
+- PLAY / STOP: DRIFT's own arcade caps (mm_cap_green / mm_cap_red) in a well right under the CRT (screen ->
+  transport, like a console). PLAY pulses while stopped; the CRT attract says PLAY BUTTON BELOW.
+- Wheel: a 1:1 copy of the plugin's (Drift Source/ui/public/index.html "steering wheel (PAN)", 5.2.10): same art
+  (md5 fb8a981e), the 790 px build, the fixed light (.wlight / .wlfix counter-rotation), the live DRIFT ドリフト hub
+  mark, the glow; scaled as one module. It turns with where the sound sits; grab it to steer, it springs back.
+- Synthwave: striped amber -> pink -> violet sun rising behind the dash, wireframe mountains, neon grid floor that
+  scrolls while it plays, neon tube rim round the toy, speed stripes on the tub, chrome italic DRIFT logo; CRT gets
+  the same sun, mountains and a grid ground; tacho runs cyan -> magenta -> red.
+
 ## Open questions for Yoni
 
 - Default switch position on load: DRIFT ON (now) or BYPASS?
