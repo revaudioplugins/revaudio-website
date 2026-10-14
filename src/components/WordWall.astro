@@ -695,6 +695,81 @@ const panels: Panel[] = [
     .ww-screen-fx { transition: none; }
   }
 
+  /* ---- THE CHANNELS (every panel on the TV) ------------------------------
+     Dan 2026-10-14: "every plugin on the TV, only the screen changes when the
+     carousel moves, like changing channels"; his pick: each plugin its own
+     screen colour. One phosphor per channel, hue + saturation (unitless %)
+     from the plugin's own UI: RevLimiter amber (its gauge + LCDs; kept well
+     clear of race-red, the homepage's one red is .hh-redline), GAS brass
+     gold, Radio Roulette the dial glass's pale warm cream. The screen glow
+     follows the active channel (--ww-on-*, on .ww); each panel's ink follows
+     its own channel (--ww-ch-*, on the panel), so an outgoing panel keeps its
+     colour while it fades under the static. DRIFT keeps /drift's exact
+     screen and its own neon ink; its 'current' / 'steer' words use the
+     generic phosphor in DRIFT violet. Brass stencil on wood becomes light on
+     glass: outlined phosphor words, the hot word lit, the window with a lit
+     edge. html.hc keeps the plain words (the screen is gone there). */
+  .ww {
+    --ww-ch-revlimiter-h: 26;      --ww-ch-revlimiter-s: 78;
+    --ww-ch-gas-h: 46;             --ww-ch-gas-s: 62;
+    --ww-ch-radio-roulette-h: 38;  --ww-ch-radio-roulette-s: 28;
+    --ww-ch-drift-h: 280;           --ww-ch-drift-s: 70;
+  }
+  .ww-panel[data-ww-panel='revlimiter'] { --ww-ch-h: var(--ww-ch-revlimiter-h); --ww-ch-s: var(--ww-ch-revlimiter-s); }
+  .ww-panel[data-ww-panel='gas'] { --ww-ch-h: var(--ww-ch-gas-h); --ww-ch-s: var(--ww-ch-gas-s); }
+  .ww-panel[data-ww-panel='radio-roulette'] { --ww-ch-h: var(--ww-ch-radio-roulette-h); --ww-ch-s: var(--ww-ch-radio-roulette-s); }
+  .ww-panel[data-ww-panel='drift'] { --ww-ch-h: var(--ww-ch-drift-h); --ww-ch-s: var(--ww-ch-drift-s); }
+  .ww:has(> .ww-panel.is-active[data-ww-panel='revlimiter']) { --ww-on-h: var(--ww-ch-revlimiter-h); --ww-on-s: var(--ww-ch-revlimiter-s); }
+  .ww:has(> .ww-panel.is-active[data-ww-panel='gas']) { --ww-on-h: var(--ww-ch-gas-h); --ww-on-s: var(--ww-ch-gas-s); }
+  .ww:has(> .ww-panel.is-active[data-ww-panel='radio-roulette']) { --ww-on-h: var(--ww-ch-radio-roulette-h); --ww-on-s: var(--ww-ch-radio-roulette-s); }
+  .ww:has(> .ww-panel.is-active:not([data-ww-panel='drift'])) .ww-screen-glow {
+    background: radial-gradient(ellipse 62% 80% at 50% 46%,
+      hsl(var(--ww-on-h) calc(var(--ww-on-s) * 1%) 18%) 0%,
+      hsl(var(--ww-on-h) calc(var(--ww-on-s) * 1%) 11%) 40%,
+      hsl(var(--ww-on-h) calc(var(--ww-on-s) * 1%) 5%) 76%,
+      hsl(var(--ww-on-h) calc(var(--ww-on-s) * 1%) 2%) 100%);
+  }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] > .ww-panel:is(:not([data-ww-panel='drift']), [data-ww-look='current'], [data-ww-look='steer']) {
+    --ww-ink: hsl(var(--ww-ch-h) min(100%, calc(var(--ww-ch-s) * 1% + 25%)) 66%);
+    --ww-ink-hot: hsl(var(--ww-ch-h) min(100%, calc(var(--ww-ch-s) * 1% + 30%)) 74%);
+    --ww-gs: min(100%, calc(var(--ww-ch-s) * 1% + 20%)); /* the glow's saturation */
+  }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] > .ww-panel:is(:not([data-ww-panel='drift']), [data-ww-look='current'], [data-ww-look='steer']) .ww-tag {
+    color: var(--ww-ink);
+    text-shadow: 0 0 8px hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.5);
+  }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] > .ww-panel:is(:not([data-ww-panel='drift']), [data-ww-look='current'], [data-ww-look='steer']) .ww-word {
+    -webkit-text-stroke-color: var(--ww-ink);
+    filter: drop-shadow(0 0 6px hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.45));
+  }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] > .ww-panel:is(:not([data-ww-panel='drift']), [data-ww-look='current'], [data-ww-look='steer']) .ww-word.is-hot,
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] > .ww-panel:is(:not([data-ww-panel='drift']), [data-ww-look='current'], [data-ww-look='steer']) .ww-word.is-hot:hover {
+    color: var(--ww-ink-hot);
+    -webkit-text-stroke-color: var(--ww-ink-hot);
+    filter: drop-shadow(0 0 10px hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.6))
+      drop-shadow(0 0 26px hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.3));
+  }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] > .ww-panel:is(:not([data-ww-panel='drift']), [data-ww-look='current'], [data-ww-look='steer']) .ww-word:hover {
+    color: var(--ww-ink-hot);
+    -webkit-text-stroke-color: var(--ww-ink-hot);
+  }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] > .ww-panel:is(:not([data-ww-panel='drift']), [data-ww-look='current'], [data-ww-look='steer']) .ww-ui figcaption {
+    color: hsl(var(--ww-ch-h) 35% 90%);
+    opacity: 0.92;
+    text-shadow: 0 0 6px hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.3);
+  }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] > .ww-panel:is(:not([data-ww-panel='drift']), [data-ww-look='current'], [data-ww-look='steer']) .ww-ui figcaption strong,
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] > .ww-panel:is(:not([data-ww-panel='drift']), [data-ww-look='current'], [data-ww-look='steer']) .ww-go-name {
+    color: var(--ww-ink-hot);
+    text-shadow: 0 0 8px hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.55);
+  }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] > .ww-panel:is(:not([data-ww-panel='drift']), [data-ww-look='current'], [data-ww-look='steer']) .ww-ui img {
+    box-shadow:
+      0 0 0 1px hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.4),
+      0 0 36px hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.22),
+      0 18px 40px rgba(0, 0, 0, 0.55);
+  }
+
   /* ---- THE BROKEN TV FRAME (WALL_FRAME, with the screen wall) ------------
      Dan 2026-10-14: "the frame in DRIFT's vibe, a broken TV frame". The
      screen wall sits in a beat-up CRT cabinet front instead of the brass
