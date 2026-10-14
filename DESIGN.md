@@ -50,10 +50,13 @@ House tokens, reused verbatim from `src/styles/global.css` `:root`:
   RevLimiter wordmark on product pages. Never on a second element.
 - `--emerald #2f6b4a` for "armed / live" pilot lights only.
 
-Additive, page-local: none.
+Additive, page-local: the word wall's DRIFT panel only (`WordWall.astro`, 2026-10-14): one neon hue
+`--ww-neon-h` (301 = DRIFT's `--d-lcd` #f24cf0), from which the tube, halo, core, glass and kana colours
+are derived so that at 301 they land on the /drift tokens (`--d-neon` #d23cff, `--d-pink-ink` #ffd1f8,
+`--d-crt` #d98bff, `--d-fg-dim` #a58cc4). Nowhere else on the house pages.
 
 Forbidden: pure `#000` / `#fff` outside `html.hc`; yellow speculars on red; race-red on buttons;
-neon or glow without a lamp; the retired tach arc that hue-shifted toward the redline with scroll depth
+neon or glow without a lamp (a neon sign IS a lamp: the DRIFT panel's lit tube may glow and spill); the retired tach arc that hue-shifted toward the redline with scroll depth
 (out in `c3fc068`, stays out). The smoke it sat on came back on its own (`src/lib/haze.ts`, §5).
 
 ## 3. Typography
@@ -75,7 +78,32 @@ neon or glow without a lamp; the retired tach arc that hue-shifted toward the re
   on the wood, warm top light + 38% scrim. Same wall as the product pages' `.garage-wall`.
 - Word wall (`WordWall.astro`): five stencil words in Bebas, `-webkit-text-stroke` brass, opacity
   .5 / .72 / 1 / .72 / .5 outward from the filled word; hover fills any word in ~120ms house curve.
-  The RevLimiter window hangs beside it with the shadow stack and one caption line.
+  The plugin's window hangs beside it with the shadow stack and one caption line. One panel per
+  carousel plugin; `showcase:change` swaps them.
+- Word wall, DRIFT panel (first while `drift.homeLead`; 2026-10-14, Dan: the stencil "says nothing
+  about DRIFT"). `DRIFT_LOOK` picks `current` (the stencil above) / `neon` / `steer` / `both` (built:
+  `both`). Same five words, same blurb, same alt text; only this panel changes.
+  - NEON: a neon shop sign bolted to the wood, still Bebas. Unlit words are pale violet-grey glass
+    tubes (thin edge, faint body, a fine upper-left specular, 2px off the wall); SLIDING is lit:
+    warm near-white core (never #fff), DRIFT-magenta tube skin, a layered glow, and a soft spill on
+    the wood behind it (screen-blended, so the grain brightens: Law 4, light leaks). A small vertical
+    ドリフト tube burns dim beside the stack (the /drift Japanese subset). Motion = feedback: the lit
+    tube powers on with a 600ms three-stutter flicker the first time the panel is seen; hovering a
+    word strikes its tube on (~120ms house curve, one stutter; real hover only, so a phone tap never
+    leaves a second tube lit).
+  - STEER: the hand is the wheel. On a mouse, pointer X over the wall steers the words; each is its
+    own damped spring (lower word = heavier, like low bands lagging the highs), SLIDING travels
+    furthest, leans with its speed and leaves a burnt-rubber smear on the wood that fades in ~1.2s.
+    Travel stops short of the window and the wall's edge. On touch (no hover): one drift-in from the
+    side when the panel is first shown, overshoot, settle. rAF only while something moves.
+  - BOTH: neon tubes that steer; the lit tube's spill rides with it.
+  - The window is the live DRIFT run (`public/drift/wall-run-1440` / `-800`, webm + mp4, poster =
+    its first frame through the image pipeline), same box, radius and shadow as the screenshot; it
+    plays only while the DRIFT panel is active and on screen, and never under reduced motion.
+  - Every tunable is a `--ww-*` property on the panel, tuned on the dev bench `/__wwbench`
+    (`tools/wwbench`: the real homepage at laptop + phone size, look switch, sliders, REPLAY, COPY
+    SETTINGS; "apply ww bench" bakes the values). Reduced motion: lit and still, poster only.
+    `html.hc`: plain words like the other panels.
 - Trial CTA / buy: flat brass-bright button at the page end on `/`; the crane door on product pages.
 - Coverflow showcase, DAW strip, EmailCapture, SubscribeModal, TrialGateModal: unchanged house parts.
 - Support chat (`SupportChat.astro`, `/support` only): chat-app thread grammar in house materials —
@@ -105,7 +133,9 @@ Canon = the crane door (`BuyButtonCrane.astro`): physics, feedback only, in the 
 strikes ~120ms `cubic-bezier(.2,.9,.25,1.25)`. Scroll: needle revs; wood drifts 24px; reveals via
 `data-reveal` (top 80%) with a 2.5s force-reveal. The smoke drifts on a slow sine (40/25px and
 55/30px orbits), kicks up to 3.5x on a fast scroll and settles, leans up to 14px with the pointer
-(desktop only). Reduced motion: everything visible at rest, no parallax, no needle rev, smoke static.
+(desktop only). The word wall's DRIFT panel: neon power-on flicker once, hover strike ~120ms, the
+steering springs on a mouse, one drift-in on touch (§4). Reduced motion: everything visible at rest,
+no parallax, no needle rev, smoke static.
 
 ## 7. Hero + glanceability
 
@@ -122,7 +152,7 @@ card grid.
 +------------------------------------------------------+
 | OUR PLUGINS  coverflow rack (#plugins)                |  unchanged
 +------------------------------------------------------+
-| WORD WALL  LOUD / WARM / PUNCHY / GLUED / DEEP        |  wood wall + rails; RevLimiter UI right
+| WORD WALL  five words per plugin (DRIFT: neon/steer)  |  wood wall + rails; the plugin's UI right
 +------------------------------------------------------+
 | GOES WITH EVERY VEHICLE  DAW strip                    |  unchanged
 | JOIN THE PIT CREW  EmailCapture                       |  unchanged
@@ -151,3 +181,6 @@ words first, window under them.
 - 2026-09-06 Dan: "add the vibe of the smoke that we had before": the haze plates from the old
   enginebg layer are back as `src/lib/haze.ts`; the red-shifting arc, embers and waveform are not.
 - Stencil words: LOUD / WARM / PUNCHY / GLUED / DEEP. Which one should be the filled (oxide) word?
+- 2026-10-14 Dan: the word wall's DRIFT panel looked like every other panel. It got its own looks
+  (neon sign / steering springs / both, `DRIFT_LOOK`, built `both`) and the live DRIFT run as its
+  window; tuned on `/__wwbench`. RevLimiter, GAS and Radio Roulette panels unchanged.

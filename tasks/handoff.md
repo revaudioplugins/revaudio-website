@@ -1,3 +1,21 @@
+## 2026-10-14 — Homepage word wall: DRIFT panel, two new looks + HD live window on a bench, branch `feat/drift-wordwall` (Claude Code `revaudio-32`, laptop 1) — COMMITTED LOCAL, NOT PUSHED, waiting for Dan's pick on the bench
+- Dan: "the DRIFT panel on the word wall needs a more interesting design" -> picks: build BOTH looks (NEON sign / STEER the
+  words, + BOTH) and show them on a bench; the window = an HD live video of DRIFT running.
+- Worktree `.claude/worktrees/drift-wordwall` off origin/main 6bc09b0 (node_modules = junction to the main clone's).
+- Active thread (owner revaudio-32): `src/components/WordWall.astro`, `tools/wwbench/*`, `astro.config.mjs` (one line),
+  `public/drift/wall-run-*`, `src/assets/showcase/drift-window-wall.png`, `DESIGN.md`, `src/assets/seasons/drift/MANIFEST.md`.
+- Plan: `tasks/todo.md` (top section).
+- Built: `DRIFT_LOOK` ('current' | 'neon' | 'steer' | 'both', default 'both') in WordWall.astro -> `data-ww-look` on the DRIFT
+  panel only; NEON = glass tubes, SLIDING lit magenta + spill on the wood, ドリフト tube, power-on flicker, hover lights;
+  STEER = pointer steers per-word springs, SLIDING skid smear, phones = one drift-in; BOTH = both. Logic `src/lib/wordwallDrift.ts`.
+  Window = `<video>` of DRIFT 5.2.8 (wall-run-1440 / -800), plays only when the panel is active + in view; reduced motion = poster.
+  WordWall falls back to the old `<Image>` if the wall-run files are missing, so they must ship in the same commit (they do).
+- Bench: `npm run dev -- --port 4430` in the worktree -> http://localhost:4430/__wwbench (laptop + phone frames, look switch,
+  12 sliders, COPY SETTINGS -> "apply ww bench"). Dev only, absent from dist.
+- Checks (website agent): build green; Chromium + WebKit 24/24 (1280 DPR2 / 1141 / 1440 / 860 / 390 / 360 x 4 looks): no sideways
+  scroll, no word/window/kana overlap; RevLimiter / GAS / Radio Roulette pixel-identical; video pauses on swap / scroll-away;
+  reduced motion + hc OK. Open: real iPhone / Mac Safari check (kana renders thin in Windows WebKit), Dan's taste pick.
+
 ## 2026-10-12 — /drift WATCH! bursts bigger + a laptop/phone placement bench, branch `feat/drift-watch-bubble` (Claude Code, Dan's Mac) — COMMITTED LOCAL, NOT PUSHED
 - Dan: "make the video bubble 'watch this' bigger and a bit better placement, a bench for phone and laptop, I'll place it
   and resize it". Branch off origin/main 6c33d31, worktree `.claude/worktrees/drift-watch-bubble` (dev `astro dev --port 4420`).

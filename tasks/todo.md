@@ -1,3 +1,25 @@
+# Website — DRIFT word-wall panel: NEON / STEER looks + HD live window (2026-10-14, revaudio-32)
+
+Request (Dan): the homepage word-wall DRIFT panel (MOVING / STEERED / SLIDING / WIDE / ALIVE + a static
+screenshot) "needs a more interesting design". Picks: build both looks, show them on a bench; HD live window.
+Rules: motion = feedback only; glow only from a lamp (a neon sign is one); copy unchanged; other panels untouched.
+
+## Steps
+- [x] HD live window: record DRIFT 5.2.8 UI (Drift be43857, git archive) with tools/record-drift-arcade-run.mjs,
+      encode public/drift/wall-run-1440 + wall-run-800 (webm + mp4), poster src/assets/showcase/drift-window-wall.png.
+- [x] WordWall: DRIFT panel `data-ww-look` (neon | steer | both) from one constant; video in the figure
+      (plays only while active + in view; reduced motion = poster).
+- [x] Look NEON: glass tubes, SLIDING lit (DRIFT magenta), spill on the wood, ドリフト tube, power-on flicker, hover lights.
+- [x] Look STEER: pointer = wheel, per-word springs, SLIDING skid smear; phones = one drift-in entrance.
+- [x] Look BOTH.
+- [x] Bench /__wwbench (dev only): laptop + phone iframes, look switch, sliders, COPY SETTINGS.
+- [x] Docs: DESIGN.md, seasons MANIFEST, handoff.
+- [x] Verify: build green, bench absent from dist, Chromium + WebKit 1280x665 DPR2 / 1141 / 1440 / 860 / 390 / 360,
+      no sideways scroll, other panels unchanged, video plays/pauses right, reduced motion + hc.
+- [ ] Dan picks + tunes on the bench -> "apply ww bench" -> bake -> commit. Push only on "push".
+
+---
+
 # Website — /gas sells more (2026-09-06)
 
 Request (Dan): "lets work on the gas page, lets make it sell more" + "work with psychologic and

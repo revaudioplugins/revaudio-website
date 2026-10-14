@@ -1,3 +1,10 @@
+> **Added 2026-10-14 (homepage word wall, DRIFT panel's live window; Dan: "HD live video"):** `public/drift/wall-run-1440.{webm,mp4}`
+> (desktop) + `wall-run-800.{webm,mp4}` (phones) + poster `src/assets/showcase/drift-window-wall.png` (1725x912 = frame 0).
+> The real DRIFT 5.2.8 UI (Drift main be43857, the Beta: `git archive be43857 Source/ui/public`, served locally, no host),
+> preset Init, NO RACE loaded (no F1 names, Decision 19), recorded by `tools/record-drift-arcade-run.mjs` (same scripted
+> hand, centre to centre, 15.7 s, first/last frame SSIM 0.988), encoded fps 30 lanczos: x264 crf 24 (1440) / 26 (800),
+> VP9 crf 38 / 40. The carousel card's `arcade-run.*` (640 px, Drift 6144b8c) and `drift-window-init.png` are unchanged.
+
 > **Added 2026-10-08 (homepage carousel DRIFT card, `src/components/drift/DriftCard.astro`):** `license-crt-plate.png`
 > (1188x1090) = Drift `Source/ui/public/assets/arcade/license_crt_plate.png` copied as is (the licence window's CRT plate,
 > tools/make-license-plate.py there). The window on its glass is `src/assets/showcase/drift-window-init.png` (1725x912): the
