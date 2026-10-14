@@ -77,6 +77,22 @@ matching the drift page", "change the gear selector to a manual gear knob of a d
   70 ms) with the same pixel spark burst + pop-up ("DRIFT ON!" / "BYPASS"). Words in the pixel font.
 - Shared 8-bit toolkit in the page: pxPlate / pxScrew / pxBurst (one look for every pixel part).
 
+## Round 7 (2026-10-14): everything 8-bit, intensity -20 % (Yoni: "lets make all of this 8 bit vibe - but reduce the intensity of the 8 bit by 20%")
+
+- One pixel grid for the whole toy: 1 art pixel = 3.2 css px at desktop size (the round-5/6 parts used 4 px, so 20 %
+  finer). The knob (28 x 35), gate (75 x 75) and DRIFT switch (50 x 55) were redrawn on it.
+- Photo parts resampled offline onto the grid: `tools/drift-player/pixelize.py` -> `public/drift-player/px/`
+  (shell 344 x 215 / 48 colours, CRT bezel 126 x 88 / 24, PLAY + STOP caps 18 x 18 / 16; hard alpha, no dither, 48 kB total).
+- Turning parts re-rasterised every turn in a small canvas, snapped to a fixed DRIFT palette (TURN_PAL, nearest
+  colour), so the grid never rotates: the plugin's wheel (115 px; its fixed light still applied, the hub mark DRIFT in
+  a 3 x 5 pixel font sampled backwards so it stays straight; the kana is too small for the grid and is left out) and
+  the volume knob (29 px, pointer painted into the art).
+- Pixel plates: cluster frame, transport well (recess), phone dash. The sky (sun, mountains, grid floor) is one
+  pixel canvas on the grid. CRT backing store 1x + pixelated. Labels, the chrome logo, cluster print in the pixel font.
+- The "-20 %": finer grid + the soft neon glows / rim light stay on top of the pixel art.
+- Source moves: the cut shell is pixelize.py's source only (tools/drift-player/src/shell.webp, not shipped);
+  horn.webp retired (PLAY/STOP left the wheel in round 4).
+
 ## Open questions for Yoni
 
 - Default switch position on load: DRIFT ON (now) or BYPASS?

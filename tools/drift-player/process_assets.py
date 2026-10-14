@@ -19,7 +19,7 @@ PICKS = {  # name: (source render, output width px = 2x its CSS size[, GrabCut r
     'shell': ('shell-3', 2200, (170, 110, 1360, 940)),
     # 'plate' (plate-1) retired 2026-10-14: the gate frame is an 8-bit pixel plate drawn in the page now
     # 'knob' (knob-2) retired 2026-10-14: the shift knob is an 8-bit pixel sprite drawn in the page now
-    'horn': ('horn-1', 280),
+    # 'horn' (horn-1) retired 2026-10-14: PLAY/STOP left the wheel (round 4)
     'volknob': ('volknob-1', 200),
 }
 
@@ -77,6 +77,7 @@ for name, (src, width, *rect) in PICKS.items():
     path = os.path.join(GEN, src + '.png')
     im = cutout_rect(path, rect[0]) if rect else cutout(path)
     im = im.resize((width, round(im.height * width / im.width)), Image.LANCZOS)
-    im.save(os.path.join(OUT, name + '.webp'), quality=90, method=6)
+    dest = os.path.join(ROOT, 'tools', 'drift-player', 'src') if name == 'shell' else OUT   # shell = pixelize.py's source only
+    im.save(os.path.join(dest, name + '.webp'), quality=90, method=6)
     im.save(os.path.join(GEN, '..', name + '-cut.png'))
-    print(f'{name:8s} {src} -> {im.size}  {os.path.getsize(os.path.join(OUT, name + ".webp")) / 1e3:.0f} kB')
+    print(f'{name:8s} {src} -> {im.size}  {os.path.getsize(os.path.join(dest, name + ".webp")) / 1e3:.0f} kB')
