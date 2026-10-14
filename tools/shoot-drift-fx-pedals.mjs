@@ -48,6 +48,18 @@ if (STRIPS.some(([id]) => id === 'halo' || id === 'glue')) {
   }, SCREEN_STATE);
   await p.waitForTimeout(800);
 }
+// GLUE COMP ships bypassed (BYP_GLUE true), so its strip would shoot dimmed. Yoni 10-14 ("make the display lit and
+// the gr at middle to show how it works"): power it on (bench mode: the click only flips the lamp + the dim) and hold
+// the meter's live feed at 10 dB of squeeze, the middle of its 0-20 dB arc.
+const GLUE_GR_DB = 10;
+if (STRIPS.some(([id]) => id === 'glue')) {
+  await p.evaluate((gr) => {
+    const pwr = document.querySelector('#winFx .fxpwr.s-glue');
+    if (!pwr.classList.contains('on')) pwr.click();
+    window.__gluegr = gr;
+  }, GLUE_GR_DB);
+  await p.waitForTimeout(1200);   // the needle settles (rise tau 12 ms) and the peak readout catches up
+}
 for (const [id, cls] of STRIPS) {
   const box = await p.evaluate((c) => {
     const plate = document.querySelector(`#winFx .fxvplate.${c}`);
