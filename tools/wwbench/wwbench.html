@@ -68,6 +68,9 @@
   <span class="seg small" id="win" title="The plugin window: plain, or on the /drift TV">
     <button data-w="plain">PLAIN WINDOW</button><button data-w="tv">TV WINDOW</button>
   </span>
+  <span class="seg small" id="frame" title="The screen wall's frame: the brass rails, or one of three broken TVs">
+    <button data-fr="rails">RAILS</button><button data-fr="1">BROKEN TV 1</button><button data-fr="2">BROKEN TV 2</button><button data-fr="3">BROKEN TV 3</button>
+  </span>
   <button class="big" id="replay" title="Power-on flicker again, and the phone's drift-in">▶ REPLAY</button>
   <span class="seg small" id="show" title="Compare with the other plugins' panels">
     <button data-s="drift">DRIFT</button><button data-s="revlimiter">RevLimiter</button><button data-s="gas">GAS</button><button data-s="radio-roulette">Radio Roulette</button>
@@ -120,6 +123,10 @@
       { p: '--ww-scr-bright', label: 'Screen glow', hint: 'how lit the violet screen behind is', min: 0.3, max: 1.8, step: 0.01, unit: '×' },
       { p: '--ww-scr-scan', label: 'Screen scanlines', hint: 'how dark the CRT lines over the whole wall are', min: 0, max: 0.6, step: 0.01, unit: '' },
     ] },
+    { id: 'frame', title: 'Broken TV frame', looks: ['neon', 'steer', 'both'], ctl: [
+      { p: '--ww-frame-size', label: 'Frame size', hint: 'bezel thickness (narrow screens cap it so it never covers the words)', min: 0.1, max: 0.4, step: 0.005, unit: '' },
+      { p: '--ww-frame-gap', label: 'Wood around the TV', hint: '0 = the TV fills the wall; more = it hangs on the garage wood', min: 0, max: 48, step: 1, unit: 'px' },
+    ] },
     { id: 'tv', title: 'TV window', looks: ['neon', 'steer', 'both'], ctl: [
       { p: '--ww-tv-size', label: 'TV frame size', hint: 'the bezel vs the /drift TV (phones get a thinner one)', min: 0.4, max: 1.1, step: 0.01, unit: '×' },
       { p: '--ww-tv-scan', label: 'Scanlines', hint: 'how dark the CRT lines over the picture are', min: 0, max: 0.6, step: 0.01, unit: '' },
@@ -131,7 +138,7 @@
     phone: [[390, 844], [360, 740], [430, 932]],
   };
 
-  let st = { look: null, bg: null, win: null, view: 'both', size: { laptop: 0, phone: 0 }, cur: {} };
+  let st = { look: null, bg: null, win: null, frame: null, view: 'both', size: { laptop: 0, phone: 0 }, cur: {} };
   try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s && s.cur) st = Object.assign(st, s); } catch (e) {}
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} };
   let src = null;          // the defaults in WordWall.astro, read from the first frame that loads
@@ -142,6 +149,8 @@
   let srcBg = 'screen', srcWin = 'plain'; // DRIFT_BG / DRIFT_WIN as built
   const bgv = () => st.bg || srcBg;
   const winv = () => st.win || srcWin;
+  let srcFrame = '2'; // DRIFT_FRAME as built
+  const framev = () => st.frame || srcFrame;
 
   // the frames: no cookie banner, no welcome pop-up (session-only flags, same origin)
   try { sessionStorage.setItem('ra-popup-shown-s', '1'); sessionStorage.setItem('ra-welcome10-s', '1'); } catch (e) {}
@@ -197,6 +206,7 @@
     document.querySelectorAll('#look button').forEach((b) => b.classList.toggle('on', b.dataset.l === look()));
     document.querySelectorAll('#bg button').forEach((b) => b.classList.toggle('on', b.dataset.b === bgv()));
     document.querySelectorAll('#win button').forEach((b) => b.classList.toggle('on', b.dataset.w === winv()));
+    document.querySelectorAll('#frame button').forEach((b) => b.classList.toggle('on', b.dataset.fr === framev()));
     document.querySelectorAll('#view button').forEach((b) => b.classList.toggle('on', b.dataset.v === st.view));
   }
 
@@ -254,6 +264,7 @@
       srcLook = panel.dataset.wwLook || 'both';
       srcBg = panel.dataset.wwBg || 'screen';
       srcWin = panel.dataset.wwWin || 'plain';
+      srcFrame = panel.dataset.wwFrame || '2';
     }
     // the phone frame is driven by a desktop mouse; tell the panel it is a touch screen (its own bench hook)
     if (f === 'phone') panel.dataset.wwInput = 'touch';
@@ -269,10 +280,11 @@
     const win = stages[f].iframe.contentWindow, doc = win && win.document;
     const panel = doc && doc.querySelector(PANEL);
     if (!panel) return;
-    const r = panel.getBoundingClientRect();
+    // the section's top edge (the TV frame's top corners: the checker and the tape), just under the nav
+    const r = (doc.getElementById('sound') || panel).getBoundingClientRect();
     const nav = doc.querySelector('nav.site-nav, header');
     const navH = nav ? nav.getBoundingClientRect().height : 60;
-    const top = win.scrollY + r.top - navH - (f === 'laptop' ? 24 : 16);
+    const top = win.scrollY + r.top - navH - 6;
     win.scrollTo({ top, behavior: 'instant' });
   }
   function show(f, slug) {
@@ -295,6 +307,7 @@
       if (panel && panel.dataset.wwLook !== look()) panel.dataset.wwLook = look();
       if (panel && panel.dataset.wwBg !== bgv()) panel.dataset.wwBg = bgv();
       if (panel && panel.dataset.wwWin !== winv()) panel.dataset.wwWin = winv();
+      if (panel && panel.dataset.wwFrame !== framev()) panel.dataset.wwFrame = framev();
       const body = Object.keys(st.cur).map((p) => `${p}: ${st.cur[p]}${unitOf(p)} !important;`).join(' ');
       doc.getElementById('wwb-live').textContent = body ? `${PANEL}, [data-wordwall] { ${body} }` : '';
     });
@@ -306,6 +319,7 @@
   document.querySelectorAll('#look button').forEach((b) => (b.onclick = () => { st.look = b.dataset.l; commit(); setTimeout(() => { replay('laptop'); replay('phone'); }, 60); }));
   document.querySelectorAll('#bg button').forEach((b) => (b.onclick = () => { st.bg = b.dataset.b; commit(); }));
   document.querySelectorAll('#win button').forEach((b) => (b.onclick = () => { st.win = b.dataset.w; commit(); }));
+  document.querySelectorAll('#frame button').forEach((b) => (b.onclick = () => { st.frame = b.dataset.fr; commit(); }));
   document.querySelectorAll('#view button').forEach((b) => (b.onclick = () => { st.view = b.dataset.v; save(); layout(); }));
   document.querySelectorAll('#show button').forEach((b) => (b.onclick = () => {
     ['laptop', 'phone'].forEach((f) => show(f, b.dataset.s));
@@ -314,7 +328,7 @@
   document.getElementById('replay').onclick = () => { ['laptop', 'phone'].forEach((f) => { show(f, 'drift'); replay(f); }); document.querySelectorAll('#show button').forEach((x) => x.classList.toggle('on', x.dataset.s === 'drift')); };
   document.getElementById('resetAll').onclick = () => {
     if (!confirm('Back to the defaults in WordWall.astro? (your bench values are lost)')) return;
-    st.cur = {}; st.look = null; st.bg = null; st.win = null; commit(); toast('Back to the defaults');
+    st.cur = {}; st.look = null; st.bg = null; st.win = null; st.frame = null; commit(); toast('Back to the defaults');
   };
 
   // ── hand-back: the look + every value (defaults included), ready to bake
@@ -322,8 +336,8 @@
     const values = {};
     ALL.forEach((c) => (values[c.p] = `${+(+val(c.p)).toFixed(4)}${c.unit === 'px' ? 'px' : ''}`));
     return {
-      bench: 'wwbench', note: 'apply ww bench: bake look -> DRIFT_LOOK, bg -> DRIFT_BG, win -> DRIFT_WIN and values -> the --ww-* defaults in WordWall.astro',
-      date: new Date().toISOString(), look: look(), bg: bgv(), win: winv(),
+      bench: 'wwbench', note: 'apply ww bench: bake look -> DRIFT_LOOK, bg -> DRIFT_BG, win -> DRIFT_WIN, frame -> DRIFT_FRAME and values -> the --ww-* defaults in WordWall.astro',
+      date: new Date().toISOString(), look: look(), bg: bgv(), win: winv(), frame: framev(),
       values, changed: Object.keys(st.cur).filter((p) => src && Math.abs(st.cur[p] - src[p]) > 1e-6),
     };
   }

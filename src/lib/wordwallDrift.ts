@@ -44,6 +44,10 @@ export function initDriftWall(panel: HTMLElement): void {
   const skid = items[hot].querySelector<HTMLElement>('.ww-skid');
   const ui = panel.querySelector<HTMLElement>('.ww-ui');
   const kana = panel.querySelector<HTMLElement>('.ww-kana');
+  // the screen wall's broken-TV frame (WordWall DRIFT_FRAME): its opening is the steering range's edge
+  const frameGlass = wall.querySelector<HTMLElement>('.ww-frame-glass');
+  const framed = () =>
+    panel.dataset.wwBg === 'screen' && !!panel.dataset.wwFrame && panel.dataset.wwFrame !== 'rails' && look() !== 'current';
   const video = panel.querySelector<HTMLVideoElement>('video[data-ww-run]');
 
   const mq = (q: string) => window.matchMedia(q).matches;
@@ -110,8 +114,13 @@ export function initDriftWall(panel: HTMLElement): void {
      window or the kana tube when they sit beside it (desktop two-column; on the phone the window is below). */
   const measure = () => {
     const box = wall.getBoundingClientRect();
-    const minLeft = Math.max(box.left, 0) + EDGE;
-    const maxRight = Math.min(box.right, document.documentElement.clientWidth) - EDGE;
+    let minLeft = Math.max(box.left, 0) + EDGE;
+    let maxRight = Math.min(box.right, document.documentElement.clientWidth) - EDGE;
+    const g = framed() && frameGlass ? frameGlass.getBoundingClientRect() : null;
+    if (g && g.width > 0) { // a word never slides under the TV's bezel
+      minLeft = Math.max(minLeft, g.left + EDGE);
+      maxRight = Math.min(maxRight, g.right - EDGE);
+    }
     const blocks = [ui, neonLook() ? kana : null]
       .filter((el): el is HTMLElement => !!el)
       .map((el) => el.getBoundingClientRect())

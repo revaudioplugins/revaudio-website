@@ -16,7 +16,10 @@ Rules: motion = feedback only; glow only from a lamp (a neon sign is one); copy 
 - [x] Docs: DESIGN.md, seasons MANIFEST, handoff.
 - [x] Verify: build green, bench absent from dist, Chromium + WebKit 1280x665 DPR2 / 1141 / 1440 / 860 / 390 / 360,
       no sideways scroll, other panels unchanged, video plays/pauses right, reduced motion + hc.
-- [ ] Dan picks + tunes on the bench -> "apply ww bench" -> bake -> commit. Push only on "push".
+- [x] Screen wall (DRIFT_BG) after "the whole back a digital screen"; TV window kept as an option (DRIFT_WIN).
+- [x] Broken TV frame round the screen wall (DRIFT_FRAME, 3 rolls, bench switch + size + gap); verified swap,
+      scrollbar, steer clamp, Chromium + WebKit.
+- [ ] Dan picks + tunes on the bench -> "apply ww bench" -> bake (delete the unpicked rolls) -> commit. Push only on "push".
 
 ---
 

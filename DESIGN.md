@@ -105,6 +105,15 @@ neon or glow without a lamp (a neon sign IS a lamp: the DRIFT panel's lit tube m
     rails, scanlines + grille + glass over the panel, kicker + caption in phosphor violet, the skid
     as phosphor afterglow, a CRT turn-on with the sign; it fades back to the wood when the carousel
     moves on. `.ww-screen` / `.ww-screen-fx` live on `.ww`, outside the panels. 'wood' = the garage wall.
+  - The screen's frame (`DRIFT_FRAME`, built '2'; Dan 2026-10-14: "the frame in DRIFT's vibe, a broken
+    TV frame"): a beat-up CRT cabinet front 9-sliced round the whole screen in place of the brass rails
+    (`tv-broken-1/2/3.png`, AI blank rolls; cracked corner with DRIFT's worn magenta checker, gaffer
+    tape, a missing screw, a chunk broken off, all in the corners). The long runs TILE (`round`):
+    stretched 3-4x they streak. `--ww-frame-u` = CSS px per cut pixel (bench "Frame size", capped by
+    0.0185vw so the side bezel fits the wall's gutter on every width: words never under the bezel, the
+    steer stops at the opening). Anchored to the content box, not 100vw (a classic scrollbar would eat
+    the right bezel). A magenta power LED in the chin lights with the screen's turn-on (a lamp).
+    'rails' = the brass rails as before. Bench: RAILS / BROKEN TV 1-3, Frame size, Wood around the TV.
   - The window (`DRIFT_WIN`, built 'plain'): 'tv' plays the run on /drift's keep-it TV cabinet (`tv-frame-3.png`, 9-sliced, `--ww-tv-size` 0.72
     of /drift's bezel, 0.69 of that on phones), the bulged CRT tube with scanlines + aperture grille +
     glass, the cabinet livery as matte printed ink (laptop only), a CRT turn-on with the neon power-on.
@@ -194,4 +203,5 @@ words first, window under them.
   window; tuned on `/__wwbench`. RevLimiter, GAS and Radio Roulette panels unchanged.
   Same day, Dan: "more of a TV screen" -> first read as the window on /drift's TV; he meant the whole
   background ("everything behind a digital screen"), so the wall became the screen (DRIFT_BG) and
-  the TV window stays a bench option (DRIFT_WIN).
+  the TV window stays a bench option (DRIFT_WIN). Then "the frame in DRIFT's vibe, a broken TV
+  frame": the screen sits in a broken CRT cabinet front instead of the rails (DRIFT_FRAME).

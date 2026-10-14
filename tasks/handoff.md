@@ -15,6 +15,13 @@
 - Then Dan: "not what I meant, the whole back a digital screen" -> `DRIFT_BG` 'screen' (default): the wall behind the
   DRIFT panel = /drift's phosphor screen between the rails, glass/scanlines over the panel; `DRIFT_WIN` 'plain' (default)
   | 'tv'. Bench: WOOD/SCREEN WALL + PLAIN/TV WINDOW switches, Screen glow + Screen scanlines sliders.
+- Then Dan: "the frame in DRIFT's vibe, a broken TV frame" -> `DRIFT_FRAME` ('rails' | '1' | '2' | '3', default '2'): the
+  screen wall sits in a broken CRT cabinet front (3 AI rolls, `tools/gen-drift-tv-frame-broken.sh` + `tools/cut-drift-tv-frame-broken.py`,
+  `src/assets/seasons/drift/tv-broken-*`), 9-sliced, runs tiled, rails hidden while it shows, magenta power LED in the chin.
+  Steer stops at the opening (`.ww-frame-glass` in wordwallDrift.ts). Bench: RAILS / BROKEN TV 1-3 + Frame size + Wood around the TV.
+  Checks: build green; Chromium + WebKit 1280 / 1141 / 1728 / 390; swap to RevLimiter / GAS / Radio Roulette pixel-identical
+  to the 'rails' setting (rails back, frame gone); left lock at 1141 keeps every word inside the glass; real Chromium with a
+  classic scrollbar: frame right = clientWidth, bezels 58.3 / 57.8 px. Unpicked rolls get deleted at "apply ww bench".
 - Bench: `npm run dev -- --port 4430` in the worktree -> http://localhost:4430/__wwbench (laptop + phone frames, look switch,
   12 sliders, COPY SETTINGS -> "apply ww bench"). Dev only, absent from dist.
 - Checks (website agent): build green; Chromium + WebKit 24/24 (1280 DPR2 / 1141 / 1440 / 860 / 390 / 360 x 4 looks): no sideways

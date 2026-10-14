@@ -1,3 +1,11 @@
+> **Added 2026-10-14 (homepage word wall, the DRIFT screen wall's frame; Dan: "the frame in DRIFT's vibe, a broken TV
+> frame"):** `tv-broken-1.png` (2364x1738), `tv-broken-2.png` (2544x1844), `tv-broken-3.png` (2388x1838), RGBA, +
+> `tv-broken.json` (each roll's size, bezel and 9-slice corner patches). Generated BLANK by `tools/gen-drift-tv-frame-broken.sh`
+> (gpt-image-1, 1536x1024 high, transparent, n=3; text-only prompt, no RevAudio art uploaded, no lettering in the image, all
+> damage in the corners), cut by `tools/cut-drift-tv-frame-broken.py` (crop to alpha; opening = a superellipse fitted to the
+> flood-filled glass, 2 px inside the lip, alpha 0; the model's red checker paint moved to DRIFT magenta 312 deg; 2x Lanczos +
+> unsharp). Served as 1400 px webp through the image pipeline; only the picked roll loads.
+
 > **Added 2026-10-14 (homepage word wall, DRIFT panel's live window; Dan: "HD live video"):** `public/drift/wall-run-1440.{webm,mp4}`
 > (desktop) + `wall-run-800.{webm,mp4}` (phones) + poster `src/assets/showcase/drift-window-wall.png` (1725x912 = frame 0).
 > The real DRIFT 5.2.8 UI (Drift main be43857, the Beta: `git archive be43857 Source/ui/public`, served locally, no host),
