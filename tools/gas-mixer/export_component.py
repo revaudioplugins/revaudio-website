@@ -55,6 +55,15 @@ IMGS = {
     'fuel-gauge.png':                    ('fuel-gauge.webp', 340),
     'tkey-chrome.png':                   ('tkey-chrome.webp', 192),
     'brass-patina.jpg':                  ('brass-patina.webp', 512),
+    # the toy (2026-10-13): pedal, gauge, check-engine lamp, footwell rubber, BEFORE/AFTER bat, sign, hood latch
+    'accel-pedal-a.png':                 ('accel-pedal-a.webp', 360),
+    'fuel-gauge-xl.png':                 ('fuel-gauge-xl.webp', 640),
+    'check-engine-bezel-v1.png':         ('check-engine-bezel.webp', 256),
+    'check-engine-glow-v1.png':          ('check-engine-glow.webp', 128),
+    'floor-rubber.jpg':                  ('floor-rubber.webp', 512),
+    'bat-toggle.png':                    ('bat-toggle.webp', 200),
+    'porcelain-sign.png':                ('porcelain-sign.webp', 640),
+    'hood-latch.png':                    ('hood-latch.webp', 320),
 }
 def reimg(t):
     t = t.replace('assets/gas-mixer/img/', URL + 'img/')
@@ -138,7 +147,7 @@ for a, (b, w) in IMGS.items():
     im = Image.open(os.path.join(SRC, 'img', a)).convert('RGBA')
     if im.width > w:
         im = im.resize((w, round(im.height * w / im.width)), Image.LANCZOS)
-    if a in ('dash-walnut.png', 'brass-patina.jpg'):
+    if a in ('dash-walnut.png', 'brass-patina.jpg', 'floor-rubber.jpg'):
         im.convert('RGB').save(os.path.join(OUT, 'img', b), 'WEBP', quality=82, method=6)
     else:
         im.save(os.path.join(OUT, 'img', b), 'WEBP', quality=88, method=6)
