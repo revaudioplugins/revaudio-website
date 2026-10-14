@@ -100,8 +100,12 @@ neon or glow without a lamp (a neon sign IS a lamp: the DRIFT panel's lit tube m
   - The window is the live DRIFT run (`public/drift/wall-run-1440` / `-800`, webm + mp4, poster =
     its first frame through the image pipeline), same box, radius and shadow as the screenshot; it
     plays only while the DRIFT panel is active and on screen, and never under reduced motion.
-  - In every look but 'current' the run plays on a TV (Dan 2026-10-14: "more of a TV screen, like
-    we've been doing"): /drift's keep-it TV cabinet (`tv-frame-3.png`, 9-sliced, `--ww-tv-size` 0.72
+  - The wall behind it (`DRIFT_BG`, built 'screen'; Dan 2026-10-14: "the whole back a digital
+    screen"): /drift's digital screen (the keep-it TV's phosphor tube) full bleed between the brass
+    rails, scanlines + grille + glass over the panel, kicker + caption in phosphor violet, the skid
+    as phosphor afterglow, a CRT turn-on with the sign; it fades back to the wood when the carousel
+    moves on. `.ww-screen` / `.ww-screen-fx` live on `.ww`, outside the panels. 'wood' = the garage wall.
+  - The window (`DRIFT_WIN`, built 'plain'): 'tv' plays the run on /drift's keep-it TV cabinet (`tv-frame-3.png`, 9-sliced, `--ww-tv-size` 0.72
     of /drift's bezel, 0.69 of that on phones), the bulged CRT tube with scanlines + aperture grille +
     glass, the cabinet livery as matte printed ink (laptop only), a CRT turn-on with the neon power-on.
   - Every tunable is a `--ww-*` property on the panel, tuned on the dev bench `/__wwbench`
@@ -188,4 +192,6 @@ words first, window under them.
 - 2026-10-14 Dan: the word wall's DRIFT panel looked like every other panel. It got its own looks
   (neon sign / steering springs / both, `DRIFT_LOOK`, built `both`) and the live DRIFT run as its
   window; tuned on `/__wwbench`. RevLimiter, GAS and Radio Roulette panels unchanged.
-  Same day, Dan: the window on a TV "like we've been doing" = /drift's keep-it TV around the run.
+  Same day, Dan: "more of a TV screen" -> first read as the window on /drift's TV; he meant the whole
+  background ("everything behind a digital screen"), so the wall became the screen (DRIFT_BG) and
+  the TV window stays a bench option (DRIFT_WIN).

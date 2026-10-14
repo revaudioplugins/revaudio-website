@@ -54,6 +54,10 @@ import { drift } from '../data/drift';
    Tune on /__wwbench (npm run dev), then "apply ww bench" bakes the numbers
    into the --ww-* defaults below and this constant. */
 const DRIFT_LOOK: 'current' | 'neon' | 'steer' | 'both' = 'both';
+/* What sits behind it (Dan 2026-10-14: "the whole back a digital screen"): the
+   garage wood, or /drift's digital screen. And the window: plain, or on /drift's TV. */
+const DRIFT_BG: 'wood' | 'screen' = 'screen';
+const DRIFT_WIN: 'plain' | 'tv' = 'plain';
 
 /* The live window: an HD run of DRIFT (1440 desktop / 800 phone) with its
    first frame as the poster. Only when every file is on disk; otherwise the
@@ -174,6 +178,9 @@ const panels: Panel[] = [
 
 <GarageWall id="sound" ariaLabel="What the plugin does">
   <div class="ww" data-wordwall>
+    {/* DRIFT's screen wall: the lit tube behind the panels + the glass over them (CSS below) */}
+    {drift.homeLead && <div class="ww-screen" aria-hidden="true"><div class="ww-screen-glow"></div></div>}
+    {drift.homeLead && <div class="ww-screen-fx" aria-hidden="true"></div>}
     {panels.map((p, i) => {
       // DRIFT only: the look attribute + the light/skid/kana spans the looks
       // switch on (hidden in 'current'); every other panel renders as before
@@ -183,6 +190,8 @@ const panels: Panel[] = [
         class:list={['ww-panel', { 'is-active': i === 0, 'is-portrait': p.portrait }]}
         data-ww-panel={p.slug}
         data-ww-look={isDrift ? DRIFT_LOOK : undefined}
+        data-ww-bg={isDrift ? DRIFT_BG : undefined}
+        data-ww-win={isDrift ? DRIFT_WIN : undefined}
         aria-hidden={i === 0 ? 'false' : 'true'}
       >
         <div class="ww-words">
@@ -564,7 +573,103 @@ const panels: Panel[] = [
     background-color: var(--bg-1);
   }
 
-  /* ---- THE TV (every look but 'current') --------------------------------
+  /* ---- THE SCREEN WALL (DRIFT_BG 'screen', every look but 'current') -----
+     Dan 2026-10-14: "the whole back a digital screen like that". While the
+     DRIFT panel is up, the wall behind it is /drift's digital screen, the
+     keep-it TV's phosphor tube (.d-crt.d-keep-screen, the hero's dash screen):
+     full bleed between the brass rails (a screen set into the garage wall),
+     dark glass, violet phosphor lit from the centre, and scanlines + aperture
+     grille + glass + curved falloff OVER the panel, so the words and the window
+     read as ON the screen. The screen is the lamp: the neon and its spill read
+     as phosphor bloom. It fades with the panel swap and powers on with the sign
+     (a CRT turn-on). The layers sit on .ww, outside the panels, so a panel's
+     opacity fade never traps them in its stacking context. */
+  .ww {
+    --ww-scr-bright: 1;  /* phosphor glow */
+    --ww-scr-scan: 0.3;  /* scanline darkness over the whole wall */
+  }
+  .ww-screen,
+  .ww-screen-fx {
+    position: absolute;
+    inset-block: var(--rail-h, 0px);
+    left: 50%;
+    width: 100vw;
+    transform: translateX(-50%);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 320ms ease;
+  }
+  .ww-screen {
+    z-index: -1; /* over the wood + scrim, under the rails (painted after it) and the content */
+    overflow: hidden;
+    background: #040107;
+  }
+  .ww-screen-glow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 62% 80% at 50% 46%, #2e1347 0%, #1a0b2c 40%, #0b0414 76%, #040107 100%);
+    filter: brightness(var(--ww-scr-bright));
+  }
+  .ww-screen-fx {
+    z-index: 2; /* over the words and the window: they are on the screen */
+    background:
+      repeating-linear-gradient(0deg, rgba(0, 0, 0, var(--ww-scr-scan)) 0 1px, transparent 1px 3px), /* scanlines */
+      repeating-linear-gradient(90deg, rgba(255, 40, 90, 0.05) 0 1px, rgba(40, 255, 140, 0.035) 1px 2px, rgba(70, 90, 255, 0.05) 2px 3px), /* aperture grille */
+      linear-gradient(158deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.02) 16%, transparent 30%), /* glass reflection */
+      radial-gradient(ellipse 70% 22% at 50% 0%, rgba(255, 255, 255, 0.05), transparent 70%),                 /* the glass catching the room light */
+      radial-gradient(130% 120% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.6) 100%);                        /* tube curvature */
+    box-shadow:
+      inset 0 3px 0 #040206, inset 0 -3px 0 #040206, /* the screen's seat under the rails */
+      inset 0 0 0 1px rgba(190, 90, 255, 0.22);
+  }
+  .ww:has(> .ww-panel[data-ww-panel='drift'].is-active[data-ww-bg='screen']:not([data-ww-look='current'])) > :is(.ww-screen, .ww-screen-fx) {
+    opacity: 1;
+  }
+  /* CRT turn-on with the sign: dark glass until first sight, then a bright line that opens */
+  .ww:has(> .ww-panel[data-ww-panel='drift'][data-ww-power='armed']) .ww-screen-glow { opacity: 0; }
+  .ww:has(> .ww-panel[data-ww-panel='drift'][data-ww-power='powering']) .ww-screen-glow {
+    animation: ww-scr-on 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes ww-scr-on {
+    0%   { opacity: 1; transform: scale(1, 0.004); filter: brightness(calc(var(--ww-scr-bright) * 6)); }
+    25%  { opacity: 1; transform: scale(1, 0.004); filter: brightness(calc(var(--ww-scr-bright) * 5)); }
+    60%  { opacity: 1; transform: scale(1, 1); filter: brightness(calc(var(--ww-scr-bright) * 1.8)); }
+    100% { opacity: 1; transform: none; filter: brightness(var(--ww-scr-bright)); }
+  }
+  /* the type on the screen: phosphor, not brass routed into wood */
+  .ww-panel[data-ww-panel='drift'][data-ww-bg='screen']:not([data-ww-look='current']) .ww-tag {
+    color: #d98bff;
+    text-shadow: 0 0 8px rgba(217, 139, 255, 0.5);
+  }
+  .ww-panel[data-ww-panel='drift'][data-ww-bg='screen']:not([data-ww-look='current']) .ww-ui figcaption {
+    color: #eadcff;
+    opacity: 0.92;
+    text-shadow: 0 0 6px rgba(190, 90, 255, 0.3);
+  }
+  .ww-panel[data-ww-panel='drift'][data-ww-bg='screen']:not([data-ww-look='current']) .ww-ui figcaption strong,
+  .ww-panel[data-ww-panel='drift'][data-ww-bg='screen']:not([data-ww-look='current']) .ww-go-name {
+    color: #f24cf0;
+    text-shadow: 0 0 8px rgba(242, 76, 240, 0.55);
+  }
+  /* the plain window on the screen: a lit picture, a violet edge instead of a drop on wood */
+  .ww-panel[data-ww-panel='drift'][data-ww-bg='screen']:not([data-ww-look='current']):not([data-ww-win='tv']) .ww-ui video {
+    box-shadow:
+      0 0 0 1px rgba(190, 90, 255, 0.4),
+      0 0 36px rgba(190, 90, 255, 0.22),
+      0 18px 40px rgba(0, 0, 0, 0.55);
+  }
+  /* the skid on a screen = phosphor afterglow, not rubber on wood */
+  .ww-panel[data-ww-panel='drift'][data-ww-bg='screen']:is([data-ww-look='steer'], [data-ww-look='both']) .ww-skid {
+    color: rgba(190, 90, 255, 0.55);
+    mix-blend-mode: screen;
+    filter: blur(4px);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ww-screen,
+    .ww-screen-fx { transition: none; }
+  }
+
+  /* ---- THE TV (DRIFT_WIN 'tv', every look but 'current') ----------------
      Dan 2026-10-14: "more of a TV screen, like we've been doing". The live
      window plays on /drift's keep-it TV (DriftKeep.astro + drift.css
      .d-keep-tv): the same AI bezel plate 9-sliced around a bulged CRT tube,
@@ -591,7 +696,7 @@ const panels: Panel[] = [
     --ww-tv-scan: 0.3;  /* scanline darkness */
   }
   .ww-panel[data-ww-panel='drift'] .ww-tv-ink { display: none; }
-  .ww-panel[data-ww-panel='drift']:not([data-ww-look='current']) .ww-tv {
+  .ww-panel[data-ww-panel='drift'][data-ww-win='tv']:not([data-ww-look='current']) .ww-tv {
     --tv-t: calc(39px * var(--ww-tv-s));
     --tv-r: calc(59px * var(--ww-tv-s));
     --tv-b: calc(52px * var(--ww-tv-s));
@@ -607,31 +712,31 @@ const panels: Panel[] = [
       0 24px 40px rgba(0, 0, 0, 0.65);        /* the set hangs on the wall */
   }
   /* the tube: the plugin's bulged CRT silhouette (every edge bows out, the corners roll) */
-  .ww-panel[data-ww-panel='drift']:not([data-ww-look='current']) .ww-tube {
+  .ww-panel[data-ww-panel='drift'][data-ww-win='tv']:not([data-ww-look='current']) .ww-tube {
     position: relative;
     overflow: hidden;
     background: radial-gradient(ellipse 66% 82% at 50% 46%, #2e1347 0%, #1a0b2c 40%, #0b0414 76%, #040107 100%);
     -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 1000' preserveAspectRatio='none'%3E%3Cpath d='M70 24 Q500 -6 930 24 Q984 30 988 80 Q1006 500 988 920 Q984 970 930 976 Q500 1006 70 976 Q16 970 12 920 Q-6 500 12 80 Q16 30 70 24 Z' fill='black'/%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
     mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 1000' preserveAspectRatio='none'%3E%3Cpath d='M70 24 Q500 -6 930 24 Q984 30 988 80 Q1006 500 988 920 Q984 970 930 976 Q500 1006 70 976 Q16 970 12 920 Q-6 500 12 80 Q16 30 70 24 Z' fill='black'/%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
   }
-  .ww-panel[data-ww-panel='drift']:not([data-ww-look='current']) .ww-tube video {
+  .ww-panel[data-ww-panel='drift'][data-ww-win='tv']:not([data-ww-look='current']) .ww-tube video {
     border-radius: 0;
     box-shadow: none;
   }
-  .ww-panel[data-ww-panel='drift']:not([data-ww-look='current']) .ww-tube::before,
-  .ww-panel[data-ww-panel='drift']:not([data-ww-look='current']) .ww-tube::after {
+  .ww-panel[data-ww-panel='drift'][data-ww-win='tv']:not([data-ww-look='current']) .ww-tube::before,
+  .ww-panel[data-ww-panel='drift'][data-ww-win='tv']:not([data-ww-look='current']) .ww-tube::after {
     content: '';
     position: absolute;
     inset: 0;
     z-index: 1;
     pointer-events: none;
   }
-  .ww-panel[data-ww-panel='drift']:not([data-ww-look='current']) .ww-tube::before {
+  .ww-panel[data-ww-panel='drift'][data-ww-win='tv']:not([data-ww-look='current']) .ww-tube::before {
     background:
       repeating-linear-gradient(0deg, rgba(0, 0, 0, var(--ww-tv-scan)) 0 1px, transparent 1px 3px), /* scanlines */
       repeating-linear-gradient(90deg, rgba(255, 40, 90, 0.05) 0 1px, rgba(40, 255, 140, 0.035) 1px 2px, rgba(70, 90, 255, 0.05) 2px 3px); /* aperture grille */
   }
-  .ww-panel[data-ww-panel='drift']:not([data-ww-look='current']) .ww-tube::after {
+  .ww-panel[data-ww-panel='drift'][data-ww-win='tv']:not([data-ww-look='current']) .ww-tube::after {
     background:
       radial-gradient(ellipse 58% 36% at 26% 4%, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.03) 55%, transparent 72%), /* the bulge's highlight */
       linear-gradient(158deg, rgba(255, 255, 255, 0.06) 0%, transparent 30%),                                           /* glass reflection */
@@ -639,10 +744,10 @@ const panels: Panel[] = [
   }
   /* CRT turn-on, riding the sign's power-on: dark glass until first sight, then
      a bright line that opens into the picture (motion = feedback to arriving) */
-  .ww-panel[data-ww-panel='drift']:not([data-ww-look='current'])[data-ww-power='armed'] .ww-tube video {
+  .ww-panel[data-ww-panel='drift'][data-ww-win='tv']:not([data-ww-look='current'])[data-ww-power='armed'] .ww-tube video {
     opacity: 0;
   }
-  .ww-panel[data-ww-panel='drift']:not([data-ww-look='current'])[data-ww-power='powering'] .ww-tube video {
+  .ww-panel[data-ww-panel='drift'][data-ww-win='tv']:not([data-ww-look='current'])[data-ww-power='powering'] .ww-tube video {
     animation: ww-crt-on 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
   }
   @keyframes ww-crt-on {
@@ -652,7 +757,7 @@ const panels: Panel[] = [
     100% { opacity: 1; transform: none; filter: none; }
   }
   /* the livery, as on /drift (sizes x0.8 for the smaller bezel); laptop only */
-  .ww-panel[data-ww-panel='drift']:not([data-ww-look='current']) .ww-tv-ink {
+  .ww-panel[data-ww-panel='drift'][data-ww-win='tv']:not([data-ww-look='current']) .ww-tv-ink {
     position: absolute;
     z-index: 2;
     pointer-events: none;
@@ -693,7 +798,7 @@ const panels: Panel[] = [
   /* phones: /drift's phone TV (half the bezel), the small print goes */
   @media (max-width: 860px) {
     .ww-panel[data-ww-panel='drift'] { --ww-tv-s: calc(var(--ww-tv-size) * 0.69); }
-    .ww-panel[data-ww-panel='drift']:not([data-ww-look='current']) .ww-tv-ink { display: none; }
+    .ww-panel[data-ww-panel='drift'][data-ww-win='tv']:not([data-ww-look='current']) .ww-tv-ink { display: none; }
   }
 
   /* every new look: the item hugs its word (the spill + skid size off it) and
@@ -958,6 +1063,10 @@ const panels: Panel[] = [
   :global(html.hc) .ww-panel[data-ww-panel='drift'] .ww-spill,
   :global(html.hc) .ww-panel[data-ww-panel='drift'] .ww-skid,
   :global(html.hc) .ww-panel[data-ww-panel='drift'] .ww-kana { display: none !important; }
+  /* hc: the screen wall goes (the hc wall shows), its text loses the glow */
+  :global(html.hc) .ww-screen,
+  :global(html.hc) .ww-screen-fx { display: none !important; }
+  :global(html.hc) .ww-panel[data-ww-panel='drift'] :is(.ww-tag, figcaption, figcaption strong, .ww-go-name) { text-shadow: none !important; }
   /* hc: the TV keeps its plate, the screen effects and the livery go */
   :global(html.hc) .ww-panel[data-ww-panel='drift'] .ww-tv-ink,
   :global(html.hc) .ww-panel[data-ww-panel='drift'] .ww-tube::before,

@@ -12,6 +12,9 @@
   WordWall falls back to the old `<Image>` if the wall-run files are missing, so they must ship in the same commit (they do).
 - Same day, Dan: "more of a TV screen, like we've been doing" -> the run plays on /drift's keep-it TV (tv-frame-3 bezel,
   bulged CRT tube, scanlines, livery ink, CRT turn-on) in every look but 'current' (8a26985).
+- Then Dan: "not what I meant, the whole back a digital screen" -> `DRIFT_BG` 'screen' (default): the wall behind the
+  DRIFT panel = /drift's phosphor screen between the rails, glass/scanlines over the panel; `DRIFT_WIN` 'plain' (default)
+  | 'tv'. Bench: WOOD/SCREEN WALL + PLAIN/TV WINDOW switches, Screen glow + Screen scanlines sliders.
 - Bench: `npm run dev -- --port 4430` in the worktree -> http://localhost:4430/__wwbench (laptop + phone frames, look switch,
   12 sliders, COPY SETTINGS -> "apply ww bench"). Dev only, absent from dist.
 - Checks (website agent): build green; Chromium + WebKit 24/24 (1280 DPR2 / 1141 / 1440 / 860 / 390 / 360 x 4 looks): no sideways

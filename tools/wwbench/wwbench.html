@@ -62,6 +62,12 @@
   <span class="seg" id="look" title="Which DRIFT look the word wall shows">
     <button data-l="current">CURRENT</button><button data-l="neon">NEON</button><button data-l="steer">STEER</button><button data-l="both">BOTH</button>
   </span>
+  <span class="seg small" id="bg" title="What the wall behind the DRIFT panel is">
+    <button data-b="wood">WOOD WALL</button><button data-b="screen">SCREEN WALL</button>
+  </span>
+  <span class="seg small" id="win" title="The plugin window: plain, or on the /drift TV">
+    <button data-w="plain">PLAIN WINDOW</button><button data-w="tv">TV WINDOW</button>
+  </span>
   <button class="big" id="replay" title="Power-on flicker again, and the phone's drift-in">▶ REPLAY</button>
   <span class="seg small" id="show" title="Compare with the other plugins' panels">
     <button data-s="drift">DRIFT</button><button data-s="revlimiter">RevLimiter</button><button data-s="gas">GAS</button><button data-s="radio-roulette">Radio Roulette</button>
@@ -110,7 +116,11 @@
       { p: '--ww-skid', label: 'Skid marks', hint: 'the burnt-rubber smear SLIDING leaves', min: 0, max: 1, step: 0.01, unit: '' },
       { p: '--ww-steer-entry', label: 'Phone slide-in distance', hint: 'how far off the side the words drift in from', min: 0, max: 300, step: 5, unit: 'px' },
     ] },
-    { id: 'tv', title: 'TV', looks: ['neon', 'steer', 'both'], ctl: [
+    { id: 'screen', title: 'Screen wall', looks: ['neon', 'steer', 'both'], ctl: [
+      { p: '--ww-scr-bright', label: 'Screen glow', hint: 'how lit the violet screen behind is', min: 0.3, max: 1.8, step: 0.01, unit: '×' },
+      { p: '--ww-scr-scan', label: 'Screen scanlines', hint: 'how dark the CRT lines over the whole wall are', min: 0, max: 0.6, step: 0.01, unit: '' },
+    ] },
+    { id: 'tv', title: 'TV window', looks: ['neon', 'steer', 'both'], ctl: [
       { p: '--ww-tv-size', label: 'TV frame size', hint: 'the bezel vs the /drift TV (phones get a thinner one)', min: 0.4, max: 1.1, step: 0.01, unit: '×' },
       { p: '--ww-tv-scan', label: 'Scanlines', hint: 'how dark the CRT lines over the picture are', min: 0, max: 0.6, step: 0.01, unit: '' },
     ] },
@@ -121,7 +131,7 @@
     phone: [[390, 844], [360, 740], [430, 932]],
   };
 
-  let st = { look: null, view: 'both', size: { laptop: 0, phone: 0 }, cur: {} };
+  let st = { look: null, bg: null, win: null, view: 'both', size: { laptop: 0, phone: 0 }, cur: {} };
   try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s && s.cur) st = Object.assign(st, s); } catch (e) {}
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} };
   let src = null;          // the defaults in WordWall.astro, read from the first frame that loads
@@ -129,6 +139,9 @@
   const fmt = (c, v) => (c.step < 1 ? (+v).toFixed(2) : String(Math.round(v))) + c.unit;
   const val = (p) => (p in st.cur ? st.cur[p] : src ? src[p] : NaN);
   const look = () => st.look || srcLook;
+  let srcBg = 'screen', srcWin = 'plain'; // DRIFT_BG / DRIFT_WIN as built
+  const bgv = () => st.bg || srcBg;
+  const winv = () => st.win || srcWin;
 
   // the frames: no cookie banner, no welcome pop-up (session-only flags, same origin)
   try { sessionStorage.setItem('ra-popup-shown-s', '1'); sessionStorage.setItem('ra-welcome10-s', '1'); } catch (e) {}
@@ -182,6 +195,8 @@
       g.classList.toggle('off', !grp.looks.includes(look()));
     });
     document.querySelectorAll('#look button').forEach((b) => b.classList.toggle('on', b.dataset.l === look()));
+    document.querySelectorAll('#bg button').forEach((b) => b.classList.toggle('on', b.dataset.b === bgv()));
+    document.querySelectorAll('#win button').forEach((b) => b.classList.toggle('on', b.dataset.w === winv()));
     document.querySelectorAll('#view button').forEach((b) => b.classList.toggle('on', b.dataset.v === st.view));
   }
 
@@ -237,6 +252,8 @@
       src = {};
       ALL.forEach((c) => (src[c.p] = parseFloat(cs.getPropertyValue(c.p))));
       srcLook = panel.dataset.wwLook || 'both';
+      srcBg = panel.dataset.wwBg || 'screen';
+      srcWin = panel.dataset.wwWin || 'plain';
     }
     // the phone frame is driven by a desktop mouse; tell the panel it is a touch screen (its own bench hook)
     if (f === 'phone') panel.dataset.wwInput = 'touch';
@@ -276,8 +293,10 @@
       const doc = stages[f].iframe.contentDocument;
       const panel = doc.querySelector(PANEL);
       if (panel && panel.dataset.wwLook !== look()) panel.dataset.wwLook = look();
+      if (panel && panel.dataset.wwBg !== bgv()) panel.dataset.wwBg = bgv();
+      if (panel && panel.dataset.wwWin !== winv()) panel.dataset.wwWin = winv();
       const body = Object.keys(st.cur).map((p) => `${p}: ${st.cur[p]}${unitOf(p)} !important;`).join(' ');
-      doc.getElementById('wwb-live').textContent = body ? `${PANEL} { ${body} }` : '';
+      doc.getElementById('wwb-live').textContent = body ? `${PANEL}, [data-wordwall] { ${body} }` : '';
     });
     save();
     paint();
@@ -285,6 +304,8 @@
   const unitOf = (p) => (ALL.find((c) => c.p === p) || {}).unit === 'px' ? 'px' : '';
 
   document.querySelectorAll('#look button').forEach((b) => (b.onclick = () => { st.look = b.dataset.l; commit(); setTimeout(() => { replay('laptop'); replay('phone'); }, 60); }));
+  document.querySelectorAll('#bg button').forEach((b) => (b.onclick = () => { st.bg = b.dataset.b; commit(); }));
+  document.querySelectorAll('#win button').forEach((b) => (b.onclick = () => { st.win = b.dataset.w; commit(); }));
   document.querySelectorAll('#view button').forEach((b) => (b.onclick = () => { st.view = b.dataset.v; save(); layout(); }));
   document.querySelectorAll('#show button').forEach((b) => (b.onclick = () => {
     ['laptop', 'phone'].forEach((f) => show(f, b.dataset.s));
@@ -293,7 +314,7 @@
   document.getElementById('replay').onclick = () => { ['laptop', 'phone'].forEach((f) => { show(f, 'drift'); replay(f); }); document.querySelectorAll('#show button').forEach((x) => x.classList.toggle('on', x.dataset.s === 'drift')); };
   document.getElementById('resetAll').onclick = () => {
     if (!confirm('Back to the defaults in WordWall.astro? (your bench values are lost)')) return;
-    st.cur = {}; st.look = null; commit(); toast('Back to the defaults');
+    st.cur = {}; st.look = null; st.bg = null; st.win = null; commit(); toast('Back to the defaults');
   };
 
   // ── hand-back: the look + every value (defaults included), ready to bake
@@ -301,8 +322,8 @@
     const values = {};
     ALL.forEach((c) => (values[c.p] = `${+(+val(c.p)).toFixed(4)}${c.unit === 'px' ? 'px' : ''}`));
     return {
-      bench: 'wwbench', note: 'apply ww bench: bake look -> DRIFT_LOOK and values -> the --ww-* defaults in WordWall.astro',
-      date: new Date().toISOString(), look: look(),
+      bench: 'wwbench', note: 'apply ww bench: bake look -> DRIFT_LOOK, bg -> DRIFT_BG, win -> DRIFT_WIN and values -> the --ww-* defaults in WordWall.astro',
+      date: new Date().toISOString(), look: look(), bg: bgv(), win: winv(),
       values, changed: Object.keys(st.cur).filter((p) => src && Math.abs(st.cur[p] - src[p]) > 1e-6),
     };
   }

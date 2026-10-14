@@ -62,3 +62,10 @@ Cost 30+ minutes in one session; set these up front for any WebKit verify of `/`
 6. 'Drift JP' (variable Noto Sans JP subset) renders thin in Windows WebKit although the face loads: real Mac /
    iPhone Safari check owed before trusting it.
 7. Local preview logs Cloudflare RUM (`cloudflareinsights`) CORS errors: stub that route before counting console errors.
+
+## 2026-10-14 - "הרגע" was "הרקע": ask when one Hebrew word decides the whole design
+
+Dan wrote "I want the רגע (moment) to be more like a TV screen". It was a typo for רקע (background). I read
+it as "the window" and built a TV around the plugin window; he meant the whole wall behind the panel.
+Rule: when a key word in a Hebrew request doesn't parse, or one letter would change the meaning
+(רגע/רקע, כאן/כן), ask one short question with both readings before building.
