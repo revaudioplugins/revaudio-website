@@ -100,6 +100,10 @@ neon or glow without a lamp (a neon sign IS a lamp: the DRIFT panel's lit tube m
   - The window is the live DRIFT run (`public/drift/wall-run-1440` / `-800`, webm + mp4, poster =
     its first frame through the image pipeline), same box, radius and shadow as the screenshot; it
     plays only while the DRIFT panel is active and on screen, and never under reduced motion.
+  - In every look but 'current' the run plays on a TV (Dan 2026-10-14: "more of a TV screen, like
+    we've been doing"): /drift's keep-it TV cabinet (`tv-frame-3.png`, 9-sliced, `--ww-tv-size` 0.72
+    of /drift's bezel, 0.69 of that on phones), the bulged CRT tube with scanlines + aperture grille +
+    glass, the cabinet livery as matte printed ink (laptop only), a CRT turn-on with the neon power-on.
   - Every tunable is a `--ww-*` property on the panel, tuned on the dev bench `/__wwbench`
     (`tools/wwbench`: the real homepage at laptop + phone size, look switch, sliders, REPLAY, COPY
     SETTINGS; "apply ww bench" bakes the values). Reduced motion: lit and still, poster only.
@@ -184,3 +188,4 @@ words first, window under them.
 - 2026-10-14 Dan: the word wall's DRIFT panel looked like every other panel. It got its own looks
   (neon sign / steering springs / both, `DRIFT_LOOK`, built `both`) and the live DRIFT run as its
   window; tuned on `/__wwbench`. RevLimiter, GAS and Radio Roulette panels unchanged.
+  Same day, Dan: the window on a TV "like we've been doing" = /drift's keep-it TV around the run.
