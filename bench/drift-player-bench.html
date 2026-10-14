@@ -63,48 +63,14 @@ h2 .l2{color:var(--d-hot);text-shadow:0 0 18px rgba(255,79,216,.45)}
 /* ---------- the stage: fixed design px, scaled to the column (transform, never zoom) ---------- */
 .fit{position:relative;width:100%}
 .stage{position:absolute;left:0;top:0;transform-origin:0 0}
-.L-desk{width:1100px;height:750px}
-.L-phone{width:420px;height:915px}
+.L-desk{width:1100px;height:724px}
+.L-phone{width:420px;height:944px}
 .mod{position:absolute;transform-origin:0 0}
 
-/* ---------- plastics ---------- */
-.noise{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .55 0'/></filter><rect width='160' height='160' filter='url(%23n)' opacity='.09'/></svg>")}
-.tub{
-  border-radius:38px 38px 60px 60px / 30px 30px 70px 70px;
-  background:
-    radial-gradient(120% 70% at 28% 8%, rgba(255,210,255,.45), transparent 42%),
-    linear-gradient(180deg,var(--tub-hi) 0%,var(--tub-1) 9%,var(--tub-2) 46%,var(--tub-3) 82%,var(--tub-4) 100%);
-  box-shadow:
-    inset 0 2px 0 rgba(255,220,255,.55), inset 0 -10px 22px rgba(20,0,40,.6),
-    inset 14px 0 30px rgba(255,180,255,.12), inset -14px 0 30px rgba(10,0,30,.45),
-    0 30px 60px rgba(4,0,10,.75), 0 6px 14px rgba(4,0,10,.6);
-}
-.tub::after{ /* the moulded front lip catchlight */
-  content:"";position:absolute;left:40px;right:40px;bottom:20px;height:3px;border-radius:3px;
-  background:linear-gradient(90deg,transparent,rgba(255,220,255,.35) 20%,rgba(255,220,255,.12) 70%,transparent);
-}
-.blk{
-  background-color:var(--blk-2);
-  background-image:
-    radial-gradient(90% 60% at 25% 0%, rgba(210,190,255,.10), transparent 55%),
-    linear-gradient(180deg,var(--blk-1),var(--blk-2) 40%,var(--blk-3));
-  box-shadow:inset 0 2px 0 rgba(230,210,255,.16), inset 0 -3px 8px rgba(0,0,0,.8), 0 14px 30px rgba(0,0,0,.6);
-}
-.blk::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none}
-.blk.noise::before{background-image:inherit}
-
-/* ---------- DASH body ---------- */
-.dash{border-radius:52px 52px 34px 34px}
-.ear{border-radius:40px 40px 10px 10px}
-.ear::after{content:"";position:absolute;left:18%;right:18%;top:6px;height:10px;border-radius:10px;background:linear-gradient(180deg,rgba(255,255,255,.18),transparent)}
-.lip-text{position:absolute;font-family:var(--f-badge);font-size:13px;letter-spacing:.5em;color:rgba(30,0,50,.55);
-  text-shadow:0 1px 0 rgba(255,200,255,.35),0 -1px 0 rgba(0,0,0,.35)}
-.recess{position:absolute;border-radius:30px;background:linear-gradient(180deg,#050308,#0d0912);
-  box-shadow:inset 0 6px 14px rgba(0,0,0,.95),inset 0 -2px 0 rgba(230,210,255,.10),0 1px 0 rgba(230,210,255,.12)}
-
 /* ---------- CLUSTER ---------- */
-.cluster{width:486px;height:290px}
-.cluster .glass{position:absolute;left:14px;top:14px;width:458px;height:262px;border-radius:20px;overflow:hidden;
+.cluster{width:510px;height:314px}
+.cluster .plate{position:absolute;inset:0}
+.cluster .glass{position:absolute;left:26px;top:26px;width:458px;height:262px;border-radius:20px;overflow:hidden;
   background:radial-gradient(120% 90% at 50% 120%,#1a0826,#0a0510 60%,#060309)}
 .cluster svg{position:absolute;inset:0}
 .cluster .glare{position:absolute;inset:0;pointer-events:none;
@@ -129,44 +95,43 @@ h2 .l2{color:var(--d-hot);text-shadow:0 0 18px rgba(255,79,216,.45)}
   box-shadow:inset 0 0 28px rgba(0,0,0,.9),inset 0 0 3px rgba(255,255,255,.15)}
 .livery{position:absolute;font-family:var(--f-chip);letter-spacing:.06em;font-size:15px;color:var(--d-hot);text-shadow:0 0 10px rgba(255,79,216,.5)}
 
+/* ---------- the toy body: AI shell (tools/drift-player/gen_assets.py shell-3, cut by process_assets.py) ---------- */
+.shell{background:url(../public/drift-player/img/shell.webp) 0 0/100% 100% no-repeat;filter:drop-shadow(0 30px 40px rgba(4,0,10,.75)) drop-shadow(0 0 40px rgba(138,43,226,.18))}
+/* the page's own plate (section-plate-s1: black steel, X screws, violet inner line), 9-sliced */
+.plate9{border-style:solid;border-color:transparent;border-image:url(../src/assets/seasons/drift/section-plate-s1.png) 330 fill / 30px stretch}
+.chip{position:absolute;font-family:var(--f-ja);font-weight:700;font-size:13px;letter-spacing:.12em;color:var(--d-hot);padding:2px 7px;
+  background:rgba(40,4,40,.75);border:1px solid rgba(255,79,216,.45);border-radius:3px;text-shadow:0 0 8px rgba(255,79,216,.6)}
+.checker{position:absolute;width:64px;height:30px;transform:skewX(-22deg);
+  background:conic-gradient(var(--d-hot) 25%,#6a1cb4 0 50%,var(--d-hot) 0 75%,#6a1cb4 0) 0 0/16px 15px}
+.slogan{position:absolute;font-family:var(--f-badge);font-size:10px;letter-spacing:.32em;color:#8f7aa6}
+.slogan b{color:var(--d-hot);letter-spacing:.05em;margin-right:8px;font-weight:400}
+
 /* ---------- WHEEL (hero) ---------- */
 .wheelmod{width:400px;height:400px}
-.wheel-shadow{position:absolute;inset:16px;border-radius:50%;box-shadow:0 26px 40px rgba(0,0,0,.65),0 8px 14px rgba(0,0,0,.5)}
-.wheel-col{position:absolute;left:150px;top:150px;width:100px;height:100px;border-radius:50%;
-  background:radial-gradient(circle at 40% 35%,#2b2433,#0b080f 70%);box-shadow:0 30px 30px rgba(0,0,0,.6)}
+.wheel-shadow{position:absolute;inset:22px;border-radius:50%;box-shadow:0 34px 44px rgba(4,0,10,.7),0 10px 16px rgba(4,0,10,.55)}
 .wheel-rot{position:absolute;inset:0;will-change:transform}
 .wheel-rot img{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;user-select:none}
-.hub{position:absolute;left:136px;top:136px;width:128px;height:128px;border-radius:50%;border:0;padding:0;cursor:pointer;
-  background:
-    radial-gradient(circle at 50% 50%,#1a0f22 0 56%,transparent 57%),
-    conic-gradient(from 0deg,#2a2130,#4a4256,#1e1824,#3c3446,#2a2130);
-  box-shadow:0 6px 12px rgba(0,0,0,.7),inset 0 0 0 3px #0b0710,inset 0 0 0 6px rgba(120,100,140,.35);
+/* hub = the horn pad (AI render), START / STOP printed on its rubber */
+.hub{position:absolute;left:124px;top:124px;width:152px;height:152px;border-radius:50%;border:0;padding:0;cursor:pointer;
+  background:url(../public/drift-player/img/horn.webp) center/100% 100% no-repeat;filter:drop-shadow(0 6px 8px rgba(0,0,0,.65));
   transition:transform .12s var(--snap)}
-.hub:active{transform:translateY(2px) scale(.985)}
-.hub .ring{position:absolute;inset:9px;border-radius:50%;border:3px solid rgba(210,60,255,.25);transition:border-color .2s,box-shadow .2s}
-.hub .face{position:absolute;inset:16px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
-  background:radial-gradient(circle at 42% 30%,#3a1450,#14061f 62%,#09030f);
-  box-shadow:inset 0 3px 6px rgba(255,190,255,.18),inset 0 -6px 12px rgba(0,0,0,.8)}
-.hub .ico{width:0;height:0;border-left:30px solid var(--d-hot);border-top:18px solid transparent;border-bottom:18px solid transparent;margin-left:8px;
+.hub:active{transform:translateY(2px) scale(.975)}
+.hub .ring{position:absolute;inset:27px;border-radius:50%;transition:box-shadow .2s}
+.hub .face{position:absolute;inset:30px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px}
+.hub .ico{width:0;height:0;border-left:28px solid var(--d-hot);border-top:17px solid transparent;border-bottom:17px solid transparent;margin-left:7px;
   filter:drop-shadow(0 0 6px rgba(255,79,216,.85))}
-.hub.playing .ico{width:30px;height:30px;border:0;margin:0;background:var(--d-hot);border-radius:3px}
-.hub .word{font-family:var(--f-badge);font-size:11px;letter-spacing:.32em;color:var(--d-pink-ink);margin-left:.32em}
-.hub.hint .ring{border-color:var(--d-hot);animation:pulse 1.1s ease-in-out infinite}
-.hub.playing .ring{border-color:rgba(255,79,216,.75);box-shadow:0 0 12px rgba(255,79,216,.55)}
-.wheel-gloss{position:absolute;left:136px;top:136px;width:128px;height:128px;border-radius:50%;pointer-events:none;
-  background:radial-gradient(60% 45% at 38% 26%,rgba(255,255,255,.22),transparent 70%)}
-@keyframes pulse{0%,100%{box-shadow:0 0 4px rgba(255,79,216,.3)}50%{box-shadow:0 0 22px rgba(255,79,216,.95),inset 0 0 10px rgba(255,79,216,.4)}}
+.hub.playing .ico{width:26px;height:26px;border:0;margin:0;background:var(--d-hot);border-radius:3px}
+.hub .word{font-family:var(--f-badge);font-size:10px;letter-spacing:.34em;margin-left:.34em;color:var(--d-pink-ink);opacity:.92}
+.hub.hint .ring{animation:pulse 1.1s ease-in-out infinite}
+.hub.playing .ring{box-shadow:0 0 0 2px rgba(255,79,216,.7),0 0 14px rgba(255,79,216,.55)}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 2px rgba(255,79,216,.35),0 0 4px rgba(255,79,216,.3)}50%{box-shadow:0 0 0 2px var(--d-hot),0 0 24px rgba(255,79,216,.95)}}
 
-/* ---------- DRIFT / BYPASS toggle ---------- */
-.togmod{width:160px;height:176px;border-radius:18px;cursor:pointer}
-.togmod .plate{position:absolute;inset:0;border-radius:18px;
-  background:linear-gradient(180deg,#2a2232,#120d18);box-shadow:inset 0 1px 0 rgba(255,255,255,.18),inset 0 -2px 4px rgba(0,0,0,.8),0 8px 16px rgba(0,0,0,.6)}
-.screw{position:absolute;width:12px;height:12px;border-radius:50%;
-  background:radial-gradient(circle at 35% 30%,#8d8796,#3a3540 60%,#1c1820);box-shadow:0 1px 1px rgba(0,0,0,.8)}
-.screw::after{content:"";position:absolute;left:1px;right:1px;top:5px;height:2px;background:#16121a;transform:rotate(var(--r,13deg))}
+/* ---------- DRIFT / BYPASS toggle (on the page's plate) ---------- */
+.togmod{width:160px;height:176px;cursor:pointer}
+.togmod .plate{position:absolute;inset:0}
 .tog-word{position:absolute;left:0;right:0;text-align:center;font-family:var(--f-badge);letter-spacing:.25em;font-size:15px;transition:color .15s,text-shadow .15s}
-.tog-word.top{top:16px}
-.tog-word.bot{bottom:14px;font-size:12px}
+.tog-word.top{top:22px}
+.tog-word.bot{bottom:20px;font-size:12px}
 .tog-word.off{color:#5d5068;text-shadow:0 1px 0 rgba(255,255,255,.08)}
 .tog-word.lit{color:var(--d-pink-ink);text-shadow:0 0 4px #fff,0 0 16px rgba(255,79,216,.9)}
 .tog-word.lit.cy{color:var(--d-cyan-ink);text-shadow:0 0 4px #fff,0 0 14px rgba(94,231,255,.8)}
@@ -183,78 +148,73 @@ h2 .l2{color:var(--d-hot);text-shadow:0 0 18px rgba(255,79,216,.45)}
 .lamp{position:absolute;width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#5a2a66,#240b2c);box-shadow:inset 0 1px 2px rgba(0,0,0,.8)}
 .lamp.on{background:radial-gradient(circle at 40% 35%,#fff,var(--d-hot) 45%,#7a0e6e);box-shadow:0 0 12px var(--d-hot),0 0 28px rgba(255,79,216,.6)}
 .lamp.cy.on{background:radial-gradient(circle at 40% 35%,#fff,var(--d-cyan) 45%,#0b5a6a);box-shadow:0 0 12px var(--d-cyan),0 0 26px rgba(94,231,255,.5)}
-.togmod.hint .plate{animation:pulse 1.1s ease-in-out infinite}
+.togmod.hint .plate{animation:togpulse 1.1s ease-in-out infinite}
+@keyframes togpulse{0%,100%{filter:drop-shadow(0 0 0 rgba(255,79,216,0))}50%{filter:drop-shadow(0 0 14px rgba(255,79,216,.9))}}
 
-/* ---------- VOLUME knob ---------- */
-.volmod{width:110px;height:130px}
-.knob{position:absolute;left:15px;top:8px;width:80px;height:80px;border-radius:50%;cursor:ns-resize;touch-action:none;
-  background:repeating-conic-gradient(from 0deg,#2a2430 0 5deg,#121016 5deg 10deg);
-  box-shadow:0 6px 10px rgba(0,0,0,.7),0 0 0 3px #0a080d}
-.knob .cap{position:absolute;inset:11px;border-radius:50%;background:radial-gradient(circle at 40% 30%,#3a3342,#141118 70%);box-shadow:inset 0 2px 2px rgba(255,255,255,.12)}
-.knob .ptr{position:absolute;left:50%;top:6px;width:5px;height:20px;margin-left:-2.5px;border-radius:3px;background:var(--d-pink-ink);outline:1.5px solid rgba(14,8,20,.88);box-shadow:0 0 6px rgba(255,79,216,.8)}
-.knob .rot{position:absolute;inset:0;will-change:transform}
-.knob .lamp-lit{position:absolute;inset:0;border-radius:50%;pointer-events:none;background:radial-gradient(55% 45% at 35% 28%,rgba(255,255,255,.2),transparent 70%)}
-.vol-word{position:absolute;left:0;right:0;top:98px;text-align:center;font-family:var(--f-badge);font-size:11px;letter-spacing:.3em;color:#7f708e}
+/* ---------- VOLUME knob (AI render, flat light: the whole knob may turn) ---------- */
+.volmod{width:120px;height:140px}
+.knob{position:absolute;left:14px;top:6px;width:92px;height:92px;border-radius:50%;cursor:ns-resize;touch-action:none;filter:drop-shadow(0 7px 8px rgba(0,0,0,.7))}
+.knob .rot{position:absolute;inset:0;background:url(../public/drift-player/img/volknob.webp) center/100% 100% no-repeat;will-change:transform}
+.knob .ptr{position:absolute;left:50%;top:21px;width:4px;height:16px;margin-left:-2px;border-radius:2px;background:var(--d-pink-ink);outline:1.5px solid rgba(14,8,20,.88);box-shadow:0 0 6px rgba(255,79,216,.85)}
+.knob .lamp-lit{position:absolute;inset:18px;border-radius:50%;pointer-events:none;background:radial-gradient(60% 50% at 34% 26%,rgba(255,255,255,.22),transparent 70%)}
+.vol-word{position:absolute;left:0;right:0;top:106px;text-align:center;font-family:var(--f-badge);font-size:10px;letter-spacing:.32em;color:#8f7aa6}
 
-/* ---------- SHIFTER tower ---------- */
-.shiftmod{width:204px;height:330px}
-.shiftmod .tower{position:absolute;inset:0;border-radius:26px 26px 18px 18px}
-.shiftmod .face{position:absolute;left:12px;top:14px;width:180px;height:300px;border-radius:16px}
-.gate{position:absolute;left:138px;top:30px;width:16px;height:256px;border-radius:9px;background:#020103;box-shadow:inset 0 3px 6px #000,0 1px 0 rgba(255,255,255,.1)}
-.gear{position:absolute;left:8px;width:118px;height:36px;display:flex;align-items:center;gap:8px;background:none;border:0;padding:0;cursor:pointer;color:inherit}
-.gear .n{width:24px;height:24px;border:1.5px solid #6e5f7c;border-radius:4px;display:grid;place-items:center;font-family:var(--f-badge);font-size:13px;color:#cbb8de}
-.gear .nm{font-family:var(--f-badge);font-size:10px;letter-spacing:.14em;color:#8f7ea0;white-space:nowrap}
-.gear .lad{position:absolute;right:-4px;top:13px;width:12px;height:10px;border-radius:2px;background:#2a1530}
-.gear.sel .n{border-color:var(--d-hot);color:#fff;background:rgba(255,79,216,.18);box-shadow:0 0 10px rgba(255,79,216,.6)}
-.gear.sel .nm{color:var(--d-pink-ink);text-shadow:0 0 8px rgba(255,79,216,.8)}
-.gear.sel .lad{background:var(--d-hot);box-shadow:0 0 8px var(--d-hot)}
-.gear.n0 .n{width:auto;padding:0 5px}
-.gear.n0.sel .n{border-color:var(--d-cyan);background:rgba(94,231,255,.12);box-shadow:0 0 10px rgba(94,231,255,.5)}
-.gear.n0.sel .nm{color:var(--d-cyan-ink);text-shadow:0 0 8px rgba(94,231,255,.7)}
-.gear.n0.sel .lad{background:var(--d-cyan);box-shadow:0 0 8px var(--d-cyan)}
-.lever{position:absolute;left:120px;width:52px;height:58px;margin-top:-29px;cursor:grab;touch-action:none;z-index:3;transition:top .16s var(--snap)}
-.lever.drag{transition:none;cursor:grabbing}
-.lever::before{ /* the knob head: black gloss block, magenta stripe */
-  content:"";position:absolute;inset:0;border-radius:14px 14px 10px 10px;
-  background:
-    linear-gradient(180deg,transparent 18px,var(--d-hot) 18px 23px,transparent 23px),
-    radial-gradient(80% 50% at 35% 20%,rgba(255,255,255,.35),transparent 60%),
-    linear-gradient(180deg,#4a4352,#1b1620 55%,#0b090e);
-  box-shadow:0 8px 12px rgba(0,0,0,.75),inset 0 -3px 5px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.3)}
-.lever::after{content:attr(data-g);position:absolute;left:0;right:0;bottom:7px;text-align:center;font-family:var(--f-badge);font-size:16px;color:#e9dcf5;text-shadow:0 1px 0 #000}
+/* ---------- GEARBOX: H-pattern gate + drift shift knob ---------- */
+.shiftmod{width:240px;height:330px}
+.gtilt{position:absolute;left:0;top:0;width:240px;height:240px;transform:perspective(700px) rotateX(34deg);transform-origin:50% 50%}
+.gplate{position:absolute;inset:0;background:url(../public/drift-player/img/plate.webp) center/100% 100% no-repeat}
+.gate{position:absolute;inset:0;overflow:visible}
+.gnum{position:absolute;width:34px;height:26px;margin:-13px 0 0 -17px;padding:0;border:0;background:none;cursor:pointer;
+  font-family:var(--f-badge);font-size:17px;color:#6f6080;text-shadow:0 1px 0 rgba(255,255,255,.12),0 -1px 0 #000}
+.gnum.sel{color:var(--d-pink-ink);text-shadow:0 0 6px #fff,0 0 14px rgba(255,79,216,.9)}
+.gnum.n0.sel{color:var(--d-cyan-ink);text-shadow:0 0 6px #fff,0 0 12px rgba(94,231,255,.8)}
+.sknob{position:absolute;left:0;top:0;width:76px;height:91px;cursor:grab;touch-action:none;z-index:4;will-change:transform;
+  background:url(../public/drift-player/img/knob.webp) center/100% 100% no-repeat;filter:drop-shadow(0 3px 3px rgba(0,0,0,.5))}
+.sknob.drag{cursor:grabbing}
+.sknob-sh{position:absolute;left:0;top:0;width:64px;height:26px;border-radius:50%;z-index:3;pointer-events:none;will-change:transform;
+  background:radial-gradient(closest-side,rgba(2,0,6,.75),rgba(2,0,6,.35) 60%,transparent)}
+/* shift-pattern tag: the names (engraved, lit when that gear is in) */
+.gtag{position:absolute;left:12px;top:236px;width:216px;height:86px;border-radius:10px;padding:10px 12px;
+  display:grid;grid-template-columns:1fr 1fr;gap:2px 10px;
+  background:linear-gradient(180deg,#2a2232,#120d18);box-shadow:inset 0 1px 0 rgba(255,255,255,.16),inset 0 -2px 4px rgba(0,0,0,.8),0 8px 16px rgba(0,0,0,.6)}
+.gtag button{display:flex;align-items:center;gap:7px;padding:0;border:0;background:none;cursor:pointer;
+  font-family:var(--f-badge);font-size:10px;letter-spacing:.14em;color:#8f7aa6;text-align:left}
+.gtag button b{font-weight:400;font-size:13px;width:14px;color:#b9a6cc}
+.gtag button.sel{color:var(--d-pink-ink);text-shadow:0 0 8px rgba(255,79,216,.85)}
+.gtag button.sel b{color:#fff}
+.gtag button.n0.sel{color:var(--d-cyan-ink);text-shadow:0 0 8px rgba(94,231,255,.7)}
 
 /* ---------- small print ---------- */
-.badge{position:absolute;font-family:var(--f-chip);font-size:34px;letter-spacing:.06em;color:#f6e8ff;
+.badge{position:absolute;font-family:var(--f-chip);font-size:38px;letter-spacing:.06em;color:#f6e8ff;
   text-shadow:0 0 2px #fff,0 0 14px rgba(210,60,255,.9),0 3px 0 #3d0b70}
-.badge small{font-family:var(--f-ja);font-size:13px;letter-spacing:.3em;color:var(--d-jp);text-shadow:none;margin-left:10px;vertical-align:middle}
-.sticker{position:absolute;font-family:var(--f-pix);font-size:8px;line-height:1.6;color:#0b0310;background:var(--d-cyan);padding:4px 7px;border-radius:3px;transform:rotate(-3deg);box-shadow:0 2px 3px rgba(0,0,0,.5)}
+.badge small{font-family:var(--f-ja);font-size:13px;letter-spacing:.3em;color:#e6c6ff;text-shadow:0 0 8px rgba(210,60,255,.8);margin-left:10px;vertical-align:middle}
 
-/* ---------- placement: desktop ---------- */
-.L-desk .m-tub{left:0;top:470px;width:1100px;height:270px}
-.L-desk .m-dash{left:22px;top:46px;width:1056px;height:520px}
-.L-desk .m-earL{left:44px;top:20px;width:170px;height:70px}
-.L-desk .m-earR{left:886px;top:20px;width:170px;height:70px}
-.L-desk .m-clrec{left:52px;top:76px;width:500px;height:304px}
-.L-desk .m-cluster{left:59px;top:83px}
-.L-desk .m-screen{left:566px;top:62px}
-.L-desk .m-wheel{left:58px;top:330px}
-.L-desk .m-tog{left:590px;top:420px}
-.L-desk .m-vol{left:776px;top:432px}
-.L-desk .m-shift{left:888px;top:404px}
-.L-desk .m-badge{left:470px;top:618px}
-.L-desk .m-lip{left:0;right:0;top:704px;text-align:center}
-.L-desk .m-sticker{left:780px;top:575px}
-/* ---------- placement: phone ---------- */
-.L-phone .m-tub{left:0;top:600px;width:420px;height:300px}
-.L-phone .m-dash{left:6px;top:8px;width:408px;height:810px;border-radius:40px 40px 30px 30px}
-.L-phone .m-earL,.L-phone .m-earR,.L-phone .m-vol,.L-phone .m-sticker,.L-phone .m-badge,.L-phone .m-lip{display:none}
-.L-phone .m-screen{left:14px;top:20px;transform:scale(.796)}
-.L-phone .m-clrec{left:20px;top:300px;width:380px;height:228px;border-radius:24px}
-.L-phone .m-cluster{left:20px;top:300px;transform:scale(.782)}
-.L-phone .m-wheel{left:2px;top:548px;transform:scale(.7)}
-.L-phone .m-tog{left:290px;top:540px;transform:scale(.72)}
-.L-phone .m-shift{left:272px;top:672px;transform:scale(.7)}
-.L-phone .m-lip{left:0;right:0;top:872px;text-align:center;letter-spacing:.35em;font-size:11px}
+/* ---------- placement: desktop (stage 1100 x 724; the shell is 1100 x 689) ---------- */
+.L-desk .m-shell{left:0;top:0;width:1100px;height:689px}
+.L-desk .m-dash{display:none}
+.L-desk .m-cluster{left:56px;top:84px;transform:scale(.8)}
+.L-desk .m-chip1{left:398px;top:70px}
+.L-desk .m-screen{left:456px;top:70px;transform:scale(.82)}
+.L-desk .m-vol{left:892px;top:96px}
+.L-desk .m-chip2{left:985px;top:70px}
+.L-desk .m-slogan{left:474px;top:378px}
+.L-desk .m-wheel{left:36px;top:352px;transform:scale(.92)}
+.L-desk .m-tog{left:452px;top:474px;transform:scale(.9)}
+.L-desk .m-shift{left:836px;top:262px}
+.L-desk .m-badge{left:628px;top:600px}
+.L-desk .m-check2{left:640px;top:566px}
+/* ---------- placement: phone (stage 420 x 944, no shell: the page's plate is the dash) ---------- */
+.L-phone .m-shell,.L-phone .m-vol,.L-phone .m-chip2,.L-phone .m-slogan,.L-phone .m-badge,.L-phone .m-check2{display:none}
+.L-phone .m-dash{left:0;top:0;width:420px;height:944px}
+.L-phone .m-screen{left:14px;top:20px;transform:scale(.8)}
+.L-phone .m-chip1{left:340px;top:300px}
+.L-phone .m-cluster{left:10px;top:300px;transform:scale(.78)}
+.L-phone .m-wheel{left:4px;top:560px;transform:scale(.66)}
+.L-phone .m-tog{left:282px;top:560px;transform:scale(.8)}
+.L-phone .m-shift{left:252px;top:700px;transform:scale(.7)}
+.L-phone .gtag{left:-8px;width:236px;height:100px}
+.L-phone .gtag button{font-size:13px}
+.L-phone .gtag button b{font-size:16px;width:16px}
 
 .devbar{max-width:1180px;margin:0 auto;padding:0 16px 40px;font-size:13px;color:#7f708e}
 .devbar a{color:var(--d-crt)}
@@ -270,14 +230,16 @@ h2 .l2{color:var(--d-hot);text-shadow:0 0 18px rgba(255,79,216,.45)}
 
   <div class="fit" id="fit">
     <div class="stage L-desk" id="stage">
-      <div class="mod m-tub tub noise"></div>
-      <div class="mod m-earL ear blk noise"></div>
-      <div class="mod m-earR ear blk noise"></div>
-      <div class="mod m-dash dash blk noise"></div>
-      <div class="mod m-clrec recess"></div>
+            <div class="mod m-shell shell"></div>
+      <div class="mod m-dash plate9"></div>
+      <span class="mod m-chip1 chip" lang="ja" aria-hidden="true">速度</span>
+      <span class="mod m-chip2 chip" lang="ja" aria-hidden="true">音量</span>
+      <div class="mod m-slogan slogan" aria-hidden="true"><b>//////</b>SPEED SOUNDS BETTER</div>
+      <span class="mod m-check2 checker" aria-hidden="true"></span>
 
       <!-- CLUSTER -->
       <div class="mod m-cluster cluster" aria-hidden="true">
+        <div class="plate plate9"></div>
         <div class="glass">
           <svg id="clsvg" viewBox="0 0 458 262" width="458" height="262">
             <defs>
@@ -324,9 +286,8 @@ h2 .l2{color:var(--d-hot);text-shadow:0 0 18px rgba(255,79,216,.45)}
         <p class="sr" id="live" aria-live="polite"></p>
       </div>
 
-      <!-- WHEEL: hub = START / STOP -->
+      <!-- WHEEL: the horn pad = START / STOP -->
       <div class="mod m-wheel wheelmod">
-        <div class="wheel-col"></div>
         <div class="wheel-shadow"></div>
         <div class="wheel-rot" id="wheelRot">
           <img src="../src/assets/seasons/drift/wheel.png" alt="" draggable="false">
@@ -335,14 +296,11 @@ h2 .l2{color:var(--d-hot);text-shadow:0 0 18px rgba(255,79,216,.45)}
             <span class="face"><span class="ico"></span><span class="word" id="hubWord">START</span></span>
           </button>
         </div>
-        <div class="wheel-gloss"></div>
       </div>
 
       <!-- DRIFT / BYPASS -->
       <div class="mod m-tog togmod" id="tog" role="switch" aria-checked="true" tabindex="0" aria-label="DRIFT on or bypass">
-        <div class="plate"></div>
-        <span class="screw" style="left:9px;top:9px;--r:13deg"></span><span class="screw" style="right:9px;top:9px;--r:-7deg"></span>
-        <span class="screw" style="left:9px;bottom:9px;--r:19deg"></span><span class="screw" style="right:9px;bottom:9px;--r:-31deg"></span>
+        <div class="plate plate9"></div>
         <div class="tog-word top lit" id="wDrift">DRIFT</div>
         <span class="lamp on" id="lDrift" style="left:30px;top:80px"></span>
         <span class="lamp cy" id="lByp" style="right:30px;top:80px"></span>
@@ -354,25 +312,26 @@ h2 .l2{color:var(--d-hot);text-shadow:0 0 18px rgba(255,79,216,.45)}
       <!-- VOLUME -->
       <div class="mod m-vol volmod">
         <div class="knob" id="knob" role="slider" tabindex="0" aria-label="Volume" aria-valuemin="0" aria-valuemax="100" aria-valuenow="80">
-          <div class="rot" id="knobRot"><div class="cap"></div><div class="ptr"></div></div>
+          <div class="rot" id="knobRot"><div class="ptr"></div></div>
           <div class="lamp-lit"></div>
         </div>
         <div class="vol-word">VOLUME</div>
       </div>
 
-      <!-- SHIFTER: pick the track -->
+      <!-- GEARBOX: H-pattern gate, drift shift knob. 1 3 5 up, 2 4 down, N in the middle = stop -->
       <div class="mod m-shift shiftmod">
-        <div class="tower tub"></div>
-        <div class="face blk noise">
-          <div class="gate"></div>
-          <div role="radiogroup" aria-label="Track" id="gears"></div>
-          <div class="lever" id="lever" data-g="N" aria-hidden="true"></div>
+        <div class="gtilt">
+          <div class="gplate"></div>
+          <svg class="gate" id="gate" viewBox="0 0 240 240" width="240" height="240" aria-hidden="true"></svg>
+          <div id="gnums"></div>
         </div>
+        <div class="sknob-sh" id="sknobSh"></div>
+        <div class="sknob" id="sknob" aria-hidden="true"></div>
+        <div class="gtag" role="radiogroup" aria-label="Track (gear)" id="gtag"></div>
       </div>
 
       <div class="mod m-badge badge">DRIFT<small lang="ja">ドリフト</small></div>
-      <div class="mod m-sticker sticker">SPEED<br>SOUNDS<br>BETTER</div>
-      <div class="mod m-lip lip-text">REVAUDIO · DRIFT · TURBO DASH</div>
+
     </div>
   </div>
 </section>
@@ -398,7 +357,7 @@ function layout(){
   const forced = qs.get('layout');
   const phone = forced ? forced === 'phone' : w < 760;
   stage.classList.toggle('L-phone', phone); stage.classList.toggle('L-desk', !phone);
-  const W = phone ? 420 : 1100, H = phone ? 915 : 750;
+  const W = phone ? 420 : 1100, H = phone ? 944 : 724;
   const s = Math.min(1, w / W);
   stage.style.transform = `scale(${s})`;
   stage.style.left = ((w - W * s) / 2) + 'px';
@@ -531,7 +490,7 @@ function position(){ if (!ctx || !cur) return 0; const d = cur.dur; return (((ct
 
 async function setGear(g, opts = {}){
   if (g === state.gear && !opts.force) return;
-  const was = state.gear; state.gear = g; drawGears(); placeLever(g);
+  const was = state.gear; state.gear = g; drawGears(); moveKnob(g);
   if (!opts.silent) clunk(.9);
   if (g === 0){ stop(); return; }
   state.last = g; state.touchedGear = state.touchedGear || (was > 0);
@@ -578,35 +537,101 @@ const tog = document.getElementById('tog');
 tog.addEventListener('click', () => { ensureCtx(); setDrift(!state.drift); });
 tog.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); tog.click(); } });
 
-// shifter: 5 at the top, 1 above N, N at the bottom (the toy's gate)
-const gearsEl = document.getElementById('gears'), lever = document.getElementById('lever');
-const GY0 = 46, GSTEP = 44;                           // y of gear 5 .. N inside the face
-const gearY = g => GY0 + (g === 0 ? 5 : 5 - g) * GSTEP;
-const gearBtns = [];
-for (let g = 5; g >= 0; g--){
-  const b = document.createElement('button'); b.type = 'button'; b.className = 'gear' + (g === 0 ? ' n0' : '');
-  b.style.top = (gearY(g) - 18) + 'px'; b.setAttribute('role', 'radio');
-  b.innerHTML = g === 0 ? '<span class="n">N</span><span class="nm">STOP</span><span class="lad"></span>'
-                        : `<span class="n">${g}</span><span class="nm">${STEMS[g-1].name}</span><span class="lad"></span>`;
-  b.setAttribute('aria-label', g === 0 ? 'Neutral: stop' : `Track ${g}: ${STEMS[g-1].name}`);
-  b.addEventListener('click', () => setGear(g));
-  gearsEl.appendChild(b); gearBtns[g] = b;
+// gearbox: a drift car's H gate. 1 3 5 across the top, 2 4 across the bottom, N in the middle (= stop).
+// The plate is tilted in 3D (CSS); the knob stays upright and rides the projected gate, so it reads as a stick.
+const GX = [78, 120, 162], GY = [70, 120, 170];                 // gate columns / rows, plate px (240 x 240)
+const SLOT = { 1:[0,0], 2:[0,2], 3:[1,0], 4:[1,2], 5:[2,0], 0:[1,1] };
+const gp = g => [GX[SLOT[g][0]], GY[SLOT[g][1]]];
+const SEGS = [ [GX[0],GY[0],GX[0],GY[2]], [GX[1],GY[0],GX[1],GY[2]], [GX[2],GY[0],GX[2],GY[1]], [GX[0],GY[1],GX[2],GY[1]] ];
+const TILT = 34 * Math.PI / 180, PERSP = 700;
+function proj(x, y){ const dy = y - 120, z = dy * Math.sin(TILT), s = PERSP / (PERSP - z); return [120 + (x - 120) * s, 120 + dy * Math.cos(TILT) * s, s]; }
+// the slots, cut into the plate: a lit lower lip, the dark slot, an inner shadow at the top
+(() => {
+  const g = document.getElementById('gate');
+  const d = SEGS.map(([a, b, c, e]) => `M${a} ${b}L${c} ${e}`).join('');
+  el('path', { d, stroke: 'rgba(230,210,255,.16)', 'stroke-width': 21, 'stroke-linecap': 'round', fill: 'none', transform: 'translate(0,1.6)' }, g);
+  el('path', { d, stroke: '#030105', 'stroke-width': 19, 'stroke-linecap': 'round', fill: 'none' }, g);
+  el('path', { d, stroke: 'rgba(0,0,0,.9)', 'stroke-width': 9, 'stroke-linecap': 'round', fill: 'none', transform: 'translate(0,-3)' }, g);
+})();
+const gnums = document.getElementById('gnums'), numEls = [], tagEls = [];
+for (const g of [1, 2, 3, 4, 5, 0]){
+  const [x, y] = gp(g), b = document.createElement('button'); b.type = 'button'; b.className = 'gnum' + (g ? '' : ' n0');
+  b.textContent = g ? g : 'N'; b.tabIndex = -1; b.setAttribute('aria-hidden', 'true');
+  b.style.left = (g ? x : x + 64) + 'px'; b.style.top = (g ? (y < 120 ? y - 30 : y + 30) : y) + 'px';
+  b.addEventListener('click', () => setGear(g)); gnums.appendChild(b); numEls[g] = b;
 }
-function drawGears(){ gearBtns.forEach((b, g) => { const sel = g === state.gear; b.classList.toggle('sel', sel); b.setAttribute('aria-checked', sel); }); }
-function placeLever(g){ lever.style.top = gearY(g) + 'px'; lever.dataset.g = g === 0 ? 'N' : g; }
-gearsEl.addEventListener('keydown', e => {
-  if (e.key === 'ArrowUp' || e.key === 'ArrowDown'){ e.preventDefault(); const g = Math.max(0, Math.min(5, state.gear + (e.key === 'ArrowUp' ? 1 : -1))); setGear(g); gearBtns[g].focus(); }
+const gtag = document.getElementById('gtag');
+for (const g of [1, 2, 3, 4, 5, 0]){
+  const b = document.createElement('button'); b.type = 'button'; b.className = g ? '' : 'n0'; b.setAttribute('role', 'radio');
+  b.innerHTML = g ? `<b>${g}</b>${STEMS[g-1].name}` : '<b>N</b>STOP';
+  b.setAttribute('aria-label', g ? `Gear ${g}: ${STEMS[g-1].name}` : 'Neutral: stop');
+  b.addEventListener('click', () => setGear(g)); gtag.appendChild(b); tagEls[g] = b;
+}
+function drawGears(){
+  for (let g = 0; g <= 5; g++){ const sel = g === state.gear; numEls[g].classList.toggle('sel', sel); tagEls[g].classList.toggle('sel', sel);
+    tagEls[g].setAttribute('aria-checked', sel); tagEls[g].tabIndex = sel ? 0 : -1; }
+}
+gtag.addEventListener('keydown', e => {
+  const k = e.key; if (!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(k)) return; e.preventDefault();
+  const order = [0, 1, 2, 3, 4, 5], i = order.indexOf(state.gear), g = order[(i + (k === 'ArrowDown' || k === 'ArrowRight' ? 1 : 5)) % 6];
+  setGear(g); tagEls[g].focus();
 });
-// drag the lever 1:1, snap to the nearest gear on release
+// the knob: collar on the slot, ball above it; shadow falls lower-right (lamp upper-left)
+const sknob = document.getElementById('sknob'), sknobSh = document.getElementById('sknobSh');
+let kx = gp(0)[0], ky = gp(0)[1], kAnim = 0;
+function placeKnob(x, y){
+  kx = x; ky = y; const [px, py, s] = proj(x, y);
+  sknob.style.transform = `translate(${(px - 38 * s).toFixed(1)}px,${(py - 86 * s).toFixed(1)}px) scale(${s.toFixed(3)})`;
+  sknob.style.transformOrigin = '0 0';
+  sknobSh.style.transform = `translate(${(px - 18).toFixed(1)}px,${(py - 8).toFixed(1)}px)`;
+}
+function nearestOnGate(x, y){
+  let best = null, bd = 1e9;
+  for (const [a, b, c, d] of SEGS){
+    const vx = c - a, vy = d - b, t = Math.max(0, Math.min(1, ((x - a) * vx + (y - b) * vy) / (vx * vx + vy * vy)));
+    const qx = a + t * vx, qy = b + t * vy, dd = (qx - x) ** 2 + (qy - y) ** 2; if (dd < bd){ bd = dd; best = [qx, qy]; }
+  }
+  return best;
+}
+// a real shift: out to the neutral rail, across, into the gear. ~2 ms per gate px, eased per leg.
+function moveKnob(g){
+  cancelAnimationFrame(kAnim);
+  const [tx, ty] = gp(g), pts = [[kx, ky]];
+  if (Math.abs(kx - tx) > .5){ pts.push([kx, GY[1]]); pts.push([tx, GY[1]]); }
+  pts.push([tx, ty]);
+  const legs = []; for (let i = 1; i < pts.length; i++){ const L = Math.hypot(pts[i][0] - pts[i-1][0], pts[i][1] - pts[i-1][1]); if (L > .5) legs.push([pts[i-1], pts[i], L]); }
+  if (!legs.length){ placeKnob(tx, ty); return; }
+  let li = 0, t0 = performance.now();
+  const ease = u => u < .5 ? 2 * u * u : 1 - (-2 * u + 2) ** 2 / 2;
+  const step = now => {
+    const [[ax, ay], [bx, by], L] = legs[li], dur = Math.max(55, L * 2.1), u = Math.min(1, (now - t0) / dur), e = ease(u);
+    placeKnob(ax + (bx - ax) * e, ay + (by - ay) * e);
+    if (u >= 1){ li++; t0 = now; if (li >= legs.length) return; }
+    kAnim = requestAnimationFrame(step);
+  };
+  kAnim = requestAnimationFrame(step);
+}
+// drag 1:1 inside the gate (the pointer is held to the slots), drop = nearest gear, or N on the rail
 (() => {
   let drag = null;
-  const scaleNow = () => lever.getBoundingClientRect().height / 58;
-  lever.addEventListener('pointerdown', e => { lever.setPointerCapture(e.pointerId); lever.classList.add('drag'); drag = { y0: e.clientY, top0: gearY(state.gear), s: scaleNow() }; });
-  lever.addEventListener('pointermove', e => { if (!drag) return; const y = Math.max(gearY(5), Math.min(gearY(0), drag.top0 + (e.clientY - drag.y0) / drag.s)); lever.style.top = y + 'px'; drag.y = y; });
-  const end = () => { if (!drag) return; lever.classList.remove('drag'); const y = drag.y ?? drag.top0; drag = null;
-    let best = 0, bd = 1e9; for (let g = 0; g <= 5; g++){ const d = Math.abs(gearY(g) - y); if (d < bd){ bd = d; best = g; } }
-    if (best === state.gear) placeLever(best); else setGear(best); };
-  lever.addEventListener('pointerup', end); lever.addEventListener('pointercancel', end);
+  sknob.addEventListener('pointerdown', e => {
+    cancelAnimationFrame(kAnim); sknob.setPointerCapture(e.pointerId); sknob.classList.add('drag');
+    const r = sknob.closest('.shiftmod').getBoundingClientRect(), s = r.width / 240;
+    drag = { x0: e.clientX, y0: e.clientY, kx0: kx, ky0: ky, s };
+  });
+  sknob.addEventListener('pointermove', e => {
+    if (!drag) return;
+    const dx = (e.clientX - drag.x0) / drag.s, dy = (e.clientY - drag.y0) / drag.s / Math.cos(TILT);
+    const [x, y] = nearestOnGate(drag.kx0 + dx, drag.ky0 + dy); placeKnob(x, y);
+  });
+  const end = () => {
+    if (!drag) return; drag = null; sknob.classList.remove('drag');
+    let best = 0, bd = 1e9;
+    for (let g = 1; g <= 5; g++){ const [x, y] = gp(g), d = Math.hypot(x - kx, y - ky); if (d < bd){ bd = d; best = g; } }
+    if (bd > 26) best = 0;
+    if (best === state.gear) moveKnob(best); else setGear(best);
+  };
+  sknob.addEventListener('pointerup', end); sknob.addEventListener('pointercancel', end);
 })();
 
 // volume knob: vertical drag, pointer only rotates
@@ -755,7 +780,7 @@ function drawCar(c, x, y, yaw, now){
 }
 
 /* ======================= boot ======================= */
-drawGears(); placeLever(0); clusterLamps(); hubUI();
+drawGears(); placeKnob(...gp(0)); clusterLamps(); hubUI();
 document.fonts.ready.then(() => requestAnimationFrame(frame));
 })();
 </script>

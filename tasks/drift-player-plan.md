@@ -31,6 +31,22 @@ cool toy". Sounds come later; design first.
 4. [ ] Export to a `<drift-player>` web component (like `tools/station-mixer/export_component.py`), self-hosted fonts, no iframe; mount it in the `#hear` slot (replaces DriftHeadUnit; `drift.demoMode` / `demoWholeSound` flags).
 5. [ ] `npm run build`, test `dist/` under the live CSP, desktop + real phone. Push only on "push".
 
+## Round 3 (2026-10-14): matched to the /drift page + H-pattern gearbox (Yoni: "volumes are great", "pump the design
+matching the drift page", "change the gear selector to a manual gear knob of a drift car")
+
+- Art: `tools/drift-player/gen_assets.py` (gpt-image-1, text-only prompts, no lettering) -> `bench/assets/drift-player/gen/`
+  (gitignored), picks cut + sized by `tools/drift-player/process_assets.py` -> `public/drift-player/img/*.webp`:
+  shell = shell-3 (Tomy silhouette, violet-black fascia, purple metal-flake candy tub; rolls 1, 2, 4 rejected),
+  plate = plate-1 (gate plate, X screws), knob = knob-2 (violet ball on a knurled collar; knob-1 rejected),
+  horn = horn-1 (horn pad = START / STOP), volknob = volknob-1 (flat light, so the whole knob may turn).
+  gpt-image-1's "transparent" leaves a near-opaque haze; every part is re-cut with GrabCut (shell: hand-set box).
+- Reused from the page: section-plate-s1 (9-sliced round the cluster, the DRIFT/BYPASS toggle, the phone dash),
+  tv-frame-3 (CRT), wheel.png; page livery as live HTML (kanji chips 速度 / 音量, magenta checker, SPEED SOUNDS BETTER).
+- Gearbox: H gate 1-3-5 / 2-4, N in the middle = stop. The plate is tilted in CSS 3D; the knob rides the projected
+  gate, travels out to the neutral rail, across and in (~2 ms per gate px); drag is held to the slots, release snaps
+  to the nearest gear (or N). A shift-pattern tag under it names the tracks and is the keyboard radiogroup.
+- Phone: no shell; the page's plate is the dash, same parts stacked (screen, cluster, wheel + toggle, gearbox).
+
 ## Open questions for Yoni
 
 - Default switch position on load: DRIFT ON (now) or BYPASS?
