@@ -66,6 +66,17 @@ matching the drift page", "change the gear selector to a manual gear knob of a d
   an arcade pop-up ("3 SYNTH!", stepped animation). While it plays: engine shake with the level and a pixel shine
   sweep every 2.6 s. Reduced motion: no sparks. The AI photo knob (knob-2, public/drift-player/img/knob.webp) is retired.
 
+## Round 6 (2026-10-14): gate frame + DRIFT switch in the same 8-bit style (Yoni)
+
+- Gate frame: a flat 60 x 60 pixel plate drawn x4 (dithered violet steel, lit top-left pixel bevel, pixel X-screws),
+  the H slots cut out with a neon pixel outline (pink in gear, cyan in N). The 3D tilt is gone (flat = pixel-true;
+  the gate sits on the 4 px grid: columns 80/120/160, rows 68/120/172). Gear numbers + the shift-pattern tag use the
+  pixel font with hard drop shadows; the knob's shadow is a stepped pixel ellipse. AI plate-1 retired.
+- DRIFT switch: a 40 x 44 pixel sprite drawn x4 on the same plate: pixel lamps (pink DRIFT / cyan BYPASS, 1 px halo),
+  octagonal chrome nut, cylinder-shaded bat lever with a ball tip, flipped in 3 frames (up, toward you, down,
+  70 ms) with the same pixel spark burst + pop-up ("DRIFT ON!" / "BYPASS"). Words in the pixel font.
+- Shared 8-bit toolkit in the page: pxPlate / pxScrew / pxBurst (one look for every pixel part).
+
 ## Open questions for Yoni
 
 - Default switch position on load: DRIFT ON (now) or BYPASS?
