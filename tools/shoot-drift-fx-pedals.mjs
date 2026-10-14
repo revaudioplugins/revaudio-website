@@ -7,7 +7,8 @@
  *   node tools/shoot-drift-fx-pedals.mjs [http://127.0.0.1:4399/index.html] [ids, e.g. halo]
  *
  * HALO (replaces TREMOLO; Dan 10-08) is on Drift main from 5.2 (re-shot from 5.2.4 on 10-09): pass `halo` so the
- * other pedals stay as shot from their own build.
+ * other pedals stay as shot from their own build. GLUE COMP (replaces AUTOTUNE, DRIFT 5.0) joined the phone carousel
+ * 2026-10-14, shot from 5.2.10: pass `glue`.
  *
  * Opens the plugin page standalone (no JUCE: the page's own fallback), opens the FX rack (window.FXBAY), and per
  * strip hides everything except the parts that sit inside that strip's plate (the rack, the other strips, the
@@ -22,9 +23,9 @@ import { fileURLToPath } from 'node:url';
 
 const url = process.argv[2] ?? 'http://127.0.0.1:4399/index.html';
 const outDir = join(dirname(fileURLToPath(import.meta.url)), '../src/assets/seasons/drift');
-const ALL = [['pitch', 's-pitch'], ['echo', 's-dly'], ['reverb', 's-verb'], ['tremolo', 's-trem'], ['halo', 's-halo']];
+const ALL = [['pitch', 's-pitch'], ['echo', 's-dly'], ['reverb', 's-verb'], ['tremolo', 's-trem'], ['halo', 's-halo'], ['glue', 's-glue']];
 const only = process.argv[3]?.split(',');
-const STRIPS = ALL.filter(([id]) => (only ? only.includes(id) : id !== 'halo'));
+const STRIPS = ALL.filter(([id]) => (only ? only.includes(id) : id !== 'halo' && id !== 'glue'));
 const MARGIN = 14;   // css px around the plate: the strip's glow and shadow stay, still transparent past them
 
 const br = await chromium.launch();
@@ -37,8 +38,10 @@ await p.waitForTimeout(1500);
 // standalone, every FX screen reads 0 for every param (no JUCE): HALO's screen then says MODE 1 under the lit
 // default key 2. A narrow JUCE stub answers only the listed params (normalised); anything else throws, which the
 // page's readers already treat as "no JUCE" (0 / the DOM's power lamps), so nothing else changes.
-const SCREEN_STATE = { HALO_MODE: 1 / 3 };   // MODE 2, the plugin's default (DRIFT 5.1.0 index.html HALO_MODE:1/3)
-if (STRIPS.some(([id]) => id === 'halo')) {
+const SCREEN_STATE = { HALO_MODE: 1 / 3,   // MODE 2, the plugin's default (DRIFT 5.1.0 index.html HALO_MODE:1/3)
+  // GLUE COMP's defaults (DRIFT 5.2.10 index.html): -10 dB, 2:1, 10 ms, AUTO, 0 dB makeup, 100 % mix
+  GLUE_THRESH: 0.75, GLUE_RATIO: 0, GLUE_ATTACK: 5 / 6, GLUE_RELEASE: 1, GLUE_MAKEUP: 0, GLUE_MIX: 1 };
+if (STRIPS.some(([id]) => id === 'halo' || id === 'glue')) {
   await p.evaluate((st) => {
     window.Juce = { getSliderState(pid) { if (pid in st) return { getNormalisedValue: () => st[pid] }; throw new Error('stub'); },
       getToggleState() { throw new Error('stub'); } };
