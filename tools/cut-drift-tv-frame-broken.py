@@ -23,7 +23,7 @@ CUT = 11           # erode before the flood: a crack or a dark speckled bezel mu
 INSET = 2          # cut the fitted opening this many px inside the lip: a dark glass hairline beats a bitten lip
 SLICE_X = 0.25     # corner patch width, of the frame width (roll 2's tape reaches 22 % in)
 SLICE_Y = 0.27     # corner patch height, of the frame height
-PAINT_HUE = 312    # the worn checker paint, moved from the model's red to DRIFT magenta (#e040c8 = 312 deg)
+TINT = (1.03, 1.0, 0.95)  # neutral grey with a faint warm cast (the house darks are warm: --bg-0 #0b0a09)
 meta = {}
 
 for name in sorted(os.listdir(SRC)):
@@ -74,17 +74,14 @@ for name in sorted(os.listdir(SRC)):
     al = Image.composite(Image.new('L', (w, h), 0), al, hole)
     im.putalpha(al)
 
-    # the checker paint: the model paints it red whatever the prompt says; DRIFT's is magenta (one red on the
-    # site, and it is not this). Saturated red-to-pink pixels move to PAINT_HUE, value and saturation kept,
-    # so the wear and the grime stay exactly as painted
-    hsv = np.asarray(im.convert('RGB').convert('HSV')).copy()
-    hue = hsv[..., 0].astype(int) * 360 // 255
-    paint = ((hue >= 330) | (hue <= 20)) & (hsv[..., 1] > 90) & (hsv[..., 2] > 50)
-    hsv[..., 0] = np.where(paint, PAINT_HUE * 255 // 360, hsv[..., 0])
-    rgb = Image.fromarray(hsv, 'HSV').convert('RGB')
+    # neutral set (Dan 2026-10-14: "more neutral, fewer colours": every plugin will play on this TV, only the
+    # screen changes, like changing channels): drop the colour, keep the luminance, so the wear, the grime and
+    # the old checker paint stay as painted, in grey; a faint warm cast (TINT) sits it in the garage's bakelite
+    px3 = np.asarray(im.convert('RGB')).astype(np.float32)
+    luma = px3 @ np.array([0.2126, 0.7152, 0.0722], dtype=np.float32)
+    rgb = Image.fromarray(np.clip(luma[..., None] * np.array(TINT, dtype=np.float32), 0, 255).astype(np.uint8), 'RGB')
     rgb.putalpha(im.getchannel('A'))
     im = rgb
-    print(name, 'paint px', int(paint.sum()))
 
     # bezel per side along the centre lines (outer alpha edge -> opening edge)
     hp = hole.load()

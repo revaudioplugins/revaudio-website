@@ -17,7 +17,9 @@
   | 'tv'. Bench: WOOD/SCREEN WALL + PLAIN/TV WINDOW switches, Screen glow + Screen scanlines sliders.
 - Then Dan: "the frame in DRIFT's vibe, a broken TV frame" -> `DRIFT_FRAME` ('rails' | '1' | '2' | '3', default '2'): the
   screen wall sits in a broken CRT cabinet front (3 AI rolls, `tools/gen-drift-tv-frame-broken.sh` + `tools/cut-drift-tv-frame-broken.py`,
-  `src/assets/seasons/drift/tv-broken-*`), 9-sliced, runs tiled, rails hidden while it shows, magenta power LED in the chin.
+  `src/assets/seasons/drift/tv-broken-*`), 9-sliced, runs tiled, rails hidden while it shows, emerald pilot LED in the chin.
+  Then Dan: "more neutral, fewer colours" (so every plugin can play on the same set, only the screen changing, like
+  channels): the frames are re-cut colourless (luminance + a faint warm cast), checker in grey, LED = house --emerald.
   Steer stops at the opening (`.ww-frame-glass` in wordwallDrift.ts). Bench: RAILS / BROKEN TV 1-3 + Frame size + Wood around the TV.
   Frame size is capped by the real side gutter (minus the wood gap): ~0.25 at 1141-1280, more on wide screens, ~0.065 on
   phones (bezel ~16 px, the corner damage barely shows there); the wood gap is laptop-only.

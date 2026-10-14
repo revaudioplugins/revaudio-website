@@ -107,12 +107,14 @@ neon or glow without a lamp (a neon sign IS a lamp: the DRIFT panel's lit tube m
     moves on. `.ww-screen` / `.ww-screen-fx` live on `.ww`, outside the panels. 'wood' = the garage wall.
   - The screen's frame (`DRIFT_FRAME`, built '2'; Dan 2026-10-14: "the frame in DRIFT's vibe, a broken
     TV frame"): a beat-up CRT cabinet front 9-sliced round the whole screen in place of the brass rails
-    (`tv-broken-1/2/3.png`, AI blank rolls; cracked corner with DRIFT's worn magenta checker, gaffer
+    (`tv-broken-1/2/3.png`, AI blank rolls; cracked corner with a worn checker, gaffer
     tape, a missing screw, a chunk broken off, all in the corners). The long runs TILE (`round`):
     stretched 3-4x they streak. `--ww-frame-u` = CSS px per cut pixel (bench "Frame size", capped by
     0.0185vw so the side bezel fits the wall's gutter on every width: words never under the bezel, the
     steer stops at the opening). Anchored to the content box, not 100vw (a classic scrollbar would eat
-    the right bezel). A magenta power LED in the chin lights with the screen's turn-on (a lamp).
+    the right bezel). Neutral charcoal, no plugin colour (Dan: "more neutral, fewer colours", so every
+    plugin can play on the same set later, only the screen changing, like channels). The house pilot
+    light (`--emerald`, "armed / live") in the chin lights with the screen's turn-on (a lamp).
     'rails' = the brass rails as before. Bench: RAILS / BROKEN TV 1-3, Frame size, Wood around the TV.
   - The window (`DRIFT_WIN`, built 'plain'): 'tv' plays the run on /drift's keep-it TV cabinet (`tv-frame-3.png`, 9-sliced, `--ww-tv-size` 0.72
     of /drift's bezel, 0.69 of that on phones), the bulged CRT tube with scanlines + aperture grille +
