@@ -1,8 +1,8 @@
-## 2026-10-14 — Homepage word wall: DRIFT panel, two new looks + HD live window on a bench, branch `feat/drift-wordwall` (Claude Code `revaudio-32`, laptop 1) — BRANCH PUSHED to origin `feat/drift-wordwall` 2026-10-14 (Dan: "push the laptop design to the branch, Yoni uses it for an Instagram post"); NOT on main, NOT live; waiting for Dan's pick on the bench
+## 2026-10-14 — Homepage word wall: DRIFT panel, two new looks + HD live window on a bench, branch `feat/drift-wordwall` (Claude Code `revaudio-32`, laptop 1) — PUSHED TO MAIN = LIVE 2026-10-14 (Dan: "send a checker; if it passes push to main, if not fix then push"); bench tuning ("apply ww bench") still open
 - Dan: "the DRIFT panel on the word wall needs a more interesting design" -> picks: build BOTH looks (NEON sign / STEER the
   words, + BOTH) and show them on a bench; the window = an HD live video of DRIFT running.
 - Worktree `.claude/worktrees/drift-wordwall` off origin/main 6bc09b0 (node_modules = junction to the main clone's).
-- Active thread (owner revaudio-32): `src/components/WordWall.astro`, `src/lib/wordwallDrift.ts`, `tools/wwbench/*`,
+- ~~Active thread (owner revaudio-32)~~ claim CLOSED 2026-10-14 (session closed by Dan): `src/components/WordWall.astro`, `src/lib/wordwallDrift.ts`, `tools/wwbench/*`,
   `astro.config.mjs` (one line), `public/drift/wall-run-*`, `src/assets/showcase/drift-window-wall.png`,
   `src/assets/seasons/drift/tv-broken-*`, `tools/gen-drift-tv-frame-broken.sh`, `tools/cut-drift-tv-frame-broken.py`,
   `DESIGN.md`, `src/assets/seasons/drift/MANIFEST.md`.
@@ -57,9 +57,19 @@
 - Then Dan: "when I scroll, the site fits the screen exactly, not past the edges top and bottom" (pick: only the TV + a
   scroll lock). Part A (laptop >= 861px): the TV = one screen under the nav, the panel sized to the glass, a scroll lock
   (Lenis) after the visitor's own scrolling. Checks in `tasks/todo.md` (review "ONE SCREEN, part A"). Phones unchanged.
-  Part B (phones, <= 860px): Dan "build part B" -> committed locally after the push, NOT pushed (the push was the
-  laptop design only); checks in `tasks/todo.md` (review "ONE SCREEN, part B"). Origin/main has moved on (ee84c0b, another session's /drift work): rebase before any
-  merge to main.
+  Part B (phones, <= 860px): Dan "build part B"; checks in `tasks/todo.md` (review "ONE SCREEN, part B"). Origin/main
+  (ee84c0b, another session's /drift GLUE COMP work) merged into the branch (c1dada5) before the main push.
+- Then Dan: "send a checker that the site's functionality and speed stayed optimal; if it passes push to main, if not fix
+  then push". Checker (revaudio-website-agent) found 1 BLOCKER + 4 SHOULD-FIX; fixed: B1 the lock trapped small steps
+  (one wheel notch / arrow tap pulled back) -> land only when this gesture brought the TV closer; S3 no lock on a
+  sideways wheel / Space on a button / open dialog / hc; S2 the first panel's reveal (layer divs made every panel
+  `:not(:first-child)`) -> `.ww-panel ~ .ww-panel`; S1 landscape phones (844x390 ...) had 0x0 windows -> media floor
+  8rem (the TV there is taller than the screen: it scrolls, no lock); + WebKit: wait while Lenis still glides. Review
+  "CHECKER FIXES" in `tasks/todo.md`. Not fixed, open for Dan: S4 first load +~369 KB laptop / +~246 KB phone (the TV
+  frame webp 254 KB at every width + the DRIFT poster 136 KB) = the cost of the TV; NITs N1-N7 listed there. Pushed to
+  main after the fixes = live.
+- OPEN for Dan: phone + laptop check of the live homepage (real iPhone / Mac Safari never checked), bench pick ->
+  "apply ww bench" (deletes unpicked rolls 1 + 3), big-screen word cap, his further list, Instagram shots for Yoni.
 - Bench: `npm run dev -- --port 4430` in the worktree -> http://localhost:4430/__wwbench (laptop + phone frames, look switch,
   WOOD/SCREEN + RAILS/BROKEN TV 1-3 switches, sliders incl. the channel colours + Static length, COPY SETTINGS ->
   "apply ww bench"). Dev only, absent from dist.

@@ -381,10 +381,16 @@ const panels: Panel[] = [
       let armed = false;
       let touching = false;
       let idle = 0;
+      let startY = 0; // scrollY when this gesture began
       const trySnap = () => {
         if (touching) return; // touchend asks again
+        // Lenis is still gliding (a slow frame rate can outlast the 160 ms idle): not idle yet, ask again
+        if (lenis?.isScrolling === 'smooth') { later(); return; }
         armed = false;
-        if (!lenis || wall.dataset.wwBg !== 'screen') return;
+        if (!lenis || wall.dataset.wwBg !== 'screen' || document.documentElement.classList.contains('hc')) return;
+        // the page itself did not move: a sideways swipe, Space on a button, a wheel inside an open drawer
+        const moved = window.scrollY - startY;
+        if (Math.abs(moved) < 1 || document.querySelector('dialog[open]')) return;
         const nav = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--site-nav-h')) || 44;
         const r = section.getBoundingClientRect();
         if (r.height > window.innerHeight - nav + 2) return; // taller than the screen: nothing to land
@@ -392,20 +398,27 @@ const panels: Panel[] = [
         const pct = parseFloat(getComputedStyle(wall).getPropertyValue('--ww-snap-zone')); // 0 = never
         const zone = ((Number.isFinite(pct) ? pct : 30) / 100) * window.innerHeight;
         if (Math.abs(off) < 1 || Math.abs(off) > zone) return;
+        // never pull back against the visitor: land only when this gesture brought the TV closer to the line
+        if (Math.abs(off) >= Math.abs(off + moved)) return;
         lenis.scrollTo(window.scrollY + off, { duration: 0.55, easing: (t: number) => 1 - Math.pow(1 - t, 4) });
       };
       const later = () => {
         clearTimeout(idle);
         idle = window.setTimeout(trySnap, 160);
       };
-      const arm = () => {
+      const begin = () => {
+        if (armed) return;
         armed = true;
+        startY = window.scrollY;
+      };
+      const arm = () => {
+        begin();
         later();
       };
       const SCROLL_KEYS = new Set(['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', ' ', 'Home', 'End']);
       window.addEventListener('wheel', arm, { passive: true });
       window.addEventListener('touchstart', () => { touching = true; }, { passive: true });
-      window.addEventListener('touchmove', () => { armed = true; }, { passive: true }); // a tap alone never locks
+      window.addEventListener('touchmove', begin, { passive: true }); // a tap alone never locks
       const lift = () => { touching = false; if (armed) later(); };
       window.addEventListener('touchend', lift, { passive: true });
       window.addEventListener('touchcancel', lift, { passive: true });
@@ -451,7 +464,7 @@ const panels: Panel[] = [
   }
   /* swap-in stagger for the non-first panels (the first one rides the
      scroll-reveal lib instead); one word after another, top to bottom */
-  .ww-panel:not(:first-child).is-active .ww-list li {
+  .ww-panel ~ .ww-panel.is-active .ww-list li {
     animation: ww-strike 420ms cubic-bezier(0.2, 0.9, 0.25, 1.1) both;
     animation-delay: calc(60ms + var(--i, 0) * 70ms);
   }
@@ -633,7 +646,7 @@ const panels: Panel[] = [
   @media (prefers-reduced-motion: reduce) {
     .ww-word { transition: none; }
     .ww-panel { transition: none; }
-    .ww-panel:not(:first-child).is-active .ww-list li { animation: none; }
+    .ww-panel ~ .ww-panel.is-active .ww-list li { animation: none; }
   }
 
   :global(html.hc) .ww-word {
@@ -1034,7 +1047,7 @@ const panels: Panel[] = [
       .ww[data-ww-bg='screen'] {
         --ww-go-h: 8.5rem; /* measured: 133 px with its margin (the name grows with the width), 120-125 px <= 480px */
         --ww-word: max(2.2rem, min(19vw, 6.4rem, calc(var(--ww-room) * 0.4 / 4.5)));
-        --ww-media-h: calc(var(--ww-room) - 4.5 * var(--ww-word) - 1.25rem - var(--ww-go-h));
+        --ww-media-h: max(8rem, calc(var(--ww-room) - 4.5 * var(--ww-word) - 1.25rem - var(--ww-go-h)));
       }
       @media (max-width: 480px) {
         .ww[data-ww-bg='screen'] { --ww-go-h: 8rem; }

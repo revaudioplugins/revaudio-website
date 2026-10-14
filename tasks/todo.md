@@ -48,6 +48,33 @@ Rules: motion = feedback only; glow only from a lamp (a neon sign is one); copy 
   - [x] B, single column (<= 860px), SEPARATE commit (Dan: "build part B"): words ~74 -> ~46 px, GAS window
         ~384 -> ~150 px on a 390x664 phone (svh).
 
+## Review — CHECKER FIXES before the main push (2026-10-14)
+- Dan: "send a checker; if it passes push to main, if not fix then push". revaudio-website-agent on c1dada5: LCP, CLS 0,
+  TBT, idle CPU, video gating, carousel, all pages, no __wwbench, reduced motion passed. Found and fixed:
+  - B1 (blocker): the lock pulled one wheel notch / arrow tap back to the TV (small steps never got away). Now the lock
+    lands only when this gesture brought the TV closer (startY at the gesture's start).
+  - S3: no lock on a sideways wheel, Space on a button, a wheel in an open dialog, or in hc (page did not move = bail).
+  - S2: the TV layer divs made every panel `:not(:first-child)`, so the first panel's reveal got the swap stagger;
+    selector now `.ww-panel ~ .ww-panel`.
+  - S1: landscape phones (844x390 / 667x375 / 853x443) rendered 0x0 windows; `--ww-media-h` floor 8rem (there the TV
+    is taller than the screen, so it scrolls and the lock stays off).
+  - Mine, found re-testing in WebKit: headless WebKit paints scroll every ~190 ms, past the 160 ms idle, so the lock
+    saw "page did not move"; it now waits while Lenis is still gliding (`isScrolling === 'smooth'`; native touch untouched).
+- Re-checked on the fix (dev server, served code grepped first): lock, fresh page per case, Chromium + WebKit 1280x665:
+  near wheel down 140 -> 0, far 420 -> 380 stays, past wheel up -150 -> 0, far past -420 -> -380 stays, near wheel UP
+  (away) 100 -> 140 (no pull back), ArrowDown near -> 0, programmatic -> no lock; notches + arrow taps from 0 progress
+  both ways (0 -> 100 -> 200 -> 300); sideways wheel -> no lock. Touch (Chromium, laptop + phone): held -> no lock, lift
+  -> 0, far stays, tap nothing. Reveal: first panel no swap animation, a swapped-in panel staggers (both engines).
+  Fit both engines: 360x640 ... 860x900 and 1024 / 1280 / 1920 laptops exact (section = screen - nav, all inside the
+  glass, 0 sideways); landscape phones: windows 86-265 px wide (were 0), section taller than the screen (by design).
+  `npm run build` green, no __wwbench in dist.
+- Not fixed (reported to Dan): S4 first load +~369 KB laptop / +~246 KB phone (frame webp 254 KB at every width, DRIFT
+  poster 136 KB, no srcset) = the price of the TV; N1 snow +48 ms main thread per channel change (~2.7 ms/frame, no long
+  task); N2 6.4 MB raw PNGs in dist never requested (gas-hero.png, drift-window-wall.png: reading `.width` on the import
+  marks them used) + unused rolls 1/3 until "apply ww bench"; N3 hc still sizes the TV; N4 an anchor right after a wheel
+  can lock; N5 +9 % main thread with the pointer over the wall (steer); N6 the run has no pause button (design call);
+  N7 scanlines stripe the phone button (design call). Not checked: real iPhone / Mac Safari, Firefox, Lighthouse.
+
 ## Review — ONE SCREEN, part B (2026-10-14)
 - Fit, Chromium + WebKit 360x640 / 390x664 / 390x844 / 430x932 / 600x900 / 768x1024 / 860x900 (+ Chromium 360x740),
   all 4 channels: section = innerHeight - nav exactly, everything inside the glass, 0 sideways scroll. First pass was

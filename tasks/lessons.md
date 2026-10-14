@@ -69,3 +69,12 @@ Dan wrote "I want the רגע (moment) to be more like a TV screen". It was a typ
 it as "the window" and built a TV around the plugin window; he meant the whole wall behind the panel.
 Rule: when a key word in a Hebrew request doesn't parse, or one letter would change the meaning
 (רגע/רקע, כאן/כן), ask one short question with both readings before building.
+
+## 2026-10-14 — A scroll lock must never pull back against the visitor
+The word-wall TV lock (WordWall.astro) landed the TV whenever scrolling went idle within the zone, so one wheel notch
+or an arrow tap away from the TV was pulled straight back: small steps could never leave it (checker blocker B1).
+Rule: remember scrollY at the gesture's start; bail if the page did not move (sideways wheel, Space on a button, a
+wheel inside a dialog); land only when this gesture brought the target closer (|off| < |off + moved|). Test small
+steps both ways from the landed spot, each case on a FRESH page: after Lenis finishes it swallows the next native
+scrollTo, so a test's own scrollTo leaves Lenis stale and fakes results. Headless WebKit paints scroll every ~190 ms:
+an idle timer shorter than that fires before Lenis moved; wait while `lenis.isScrolling === 'smooth'`.
