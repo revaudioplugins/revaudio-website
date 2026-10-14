@@ -46,3 +46,19 @@ The "rv close" ritual is an explicit push instruction and still counts.
 - Two sessions rewrote the Privacy page in parallel on 2026-10-07; Yoni's (`1c34cac`) went live first and won.
   Yoni owns cookie consent (Dan, 2026-10-07). Rule: before touching Privacy or cookie text, fetch origin and read
   the newest handoff entries for an owner.
+
+## 2026-10-14 - Playwright WebKit on Windows vs the homepage (DRIFT word wall)
+
+Cost 30+ minutes in one session; set these up front for any WebKit verify of `/`:
+1. `goto(url, { waitUntil: 'domcontentloaded' })` + poll `document.fonts.status === 'loaded'` + env
+   `PW_TEST_SCREENSHOT_NO_FONTS_READY=1`: the homepage `load` event never fires in WebKit-on-Windows (a
+   `<video preload="none">` is enough), and screenshots hang on fonts.ready.
+2. Headless WebKit runs rAF at ~17 fps: physics caps dt (~0.1 s) and snaps on settle; settle checks poll up to ~4 s.
+3. WebKit + `hasTouch` = coarse pointer (touch paths run). Chromium mobile needs `isMobile` + `hasTouch`.
+4. WebKit reports a non-zero `currentTime` on a video that never played: prove "did not play" with play-event counts.
+5. A `writing-mode: vertical-rl` item in an `auto` grid column wraps into two columns in WebKit at phone widths
+   (Chromium doesn't): `white-space: nowrap`. A `maxRight > viewport` check passed it; compare per-element rects
+   across engines, not just "no overflow".
+6. 'Drift JP' (variable Noto Sans JP subset) renders thin in Windows WebKit although the face loads: real Mac /
+   iPhone Safari check owed before trusting it.
+7. Local preview logs Cloudflare RUM (`cloudflareinsights`) CORS errors: stub that route before counting console errors.

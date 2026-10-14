@@ -62,6 +62,12 @@ const wallPosterSrc = Object.values(
 )[0]?.default;
 const WALL_RUN = ['wall-run-1440.webm', 'wall-run-1440.mp4', 'wall-run-800.webm', 'wall-run-800.mp4'];
 const wallRunReady = !!wallPosterSrc && WALL_RUN.every((f) => existsSync(`public/drift/${f}`));
+// While DRIFT leads, a missing run fails the BUILD (CI included) instead of
+// quietly shipping the still: the path is cwd-relative (repo root, as
+// `npm run build` and withastro/action run it).
+if (drift.homeLead && !wallRunReady) {
+  throw new Error(`WordWall: DRIFT's live window is missing (src/assets/showcase/drift-window-wall.png + public/drift/${WALL_RUN.join(', ')}). Build from the repo root, or restore the files.`);
+}
 const wallPoster = wallRunReady && wallPosterSrc
   ? await getImage({ src: wallPosterSrc, width: 1400, format: 'webp', quality: 82 })
   : null;
