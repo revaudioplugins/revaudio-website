@@ -12,7 +12,8 @@
  * lands. A caption per strip rides under it.
  * Phones (<= 600 px) keep the 10-04 page (the band strip moved to #band, DriftBand.astro, 10-09): the coverflow
  * carousel of TRUE-ALPHA pedals and the spec rows. Dan 10-08 ("in phone ONLY
- * change the fx that was replaced"): HALO for TREMOLO, GLUE COMP for AUTOTUNE.
+ * change the fx that was replaced"): HALO for TREMOLO, GLUE COMP for AUTOTUNE. GLUE COMP got its own pedal as the
+ * carousel's fifth slide on 2026-10-14 (Yoni: "add the entry for the glue compressor which is missing").
  * The images sit 2-3 screens below the fold, and native loading="lazy" still
  * fetched them before any scroll (Chromium's proximity window on a fast
  * connection: ~300 KB of a phone's first paint). They load through init.ts's
@@ -27,6 +28,7 @@ import pedPitch from '../../assets/seasons/drift/pedal-pitch.png';
 import pedEcho from '../../assets/seasons/drift/pedal-echo.png';
 import pedVerb from '../../assets/seasons/drift/pedal-reverb.png';
 import pedHalo from '../../assets/seasons/drift/pedal-halo.png';   // DRIFT 5.2.4: HALO replaces TREMOLO (Dan 10-08)
+import pedGlue from '../../assets/seasons/drift/pedal-glue.png';   // DRIFT 5.2.10: GLUE COMP, last in line (Yoni 10-14)
 // the live rack (601 px up): layers shot from DRIFT 5.2.4 by tools/shoot-drift-fx-rack.mjs, geometry in rack.json
 import geo from '../../assets/seasons/drift/rack/rack.json';
 import rkFloor from '../../assets/seasons/drift/rack/rack-floor.png';
@@ -48,6 +50,7 @@ const strips = [
   { cls: 's-echo', ped: pedEcho, name: 'Echo', desc: 'Synced or not. Tape-dark to clean.' },
   { cls: 's-verb', ped: pedVerb, name: 'Reverb', desc: 'Room, plate, hall. Plus shimmer.' },
   { cls: 's-halo', ped: pedHalo, name: 'Halo', desc: 'Wide, airy glow. No tails.' },
+  { cls: 's-glue', ped: pedGlue, name: 'Glue Comp', desc: 'Console bus glue. Last in line.' },
 ];
 // the rack's five strips, in the plugin's default chain (= its markup order); short lines: a caption is one strip wide
 const rack = [
@@ -151,7 +154,7 @@ const baySrcset = `${bay600.src} 600w, ${bay.src} 1060w`;
         <p class="d-sr" aria-live="polite" aria-atomic="true" data-rk-say></p>
       </div>
 
-      {/* PHONE ONLY (drift.css: hidden ≥601, the rack hidden ≤600). Dan 10-04: the four effects as a coverflow carousel
+      {/* PHONE ONLY (drift.css: hidden ≥601, the rack hidden ≤600). Dan 10-04: the effects (five from 10-14) as a coverflow carousel
           like the home page's plugin showcase (PluginShowcase.astro): the pedal centred in a framed card, its neighbours
           peeking tilted and dimmed, the gear-shift snap, swipe / peek-tap / dots / arrow keys. Each frame wears its
           pedal's hue (the plugin's FX VIBE law). Pedals = true-alpha shots of the plugin's own strips. */}
