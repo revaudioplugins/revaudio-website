@@ -32,9 +32,15 @@ const [g, r] = await Promise.all([capGreen, capRed].map((src) => getImage({ src,
 const first = TRACKS[0];
 ---
 <section class="d-sec d-hear-sec" id="hear" aria-labelledby="d-hear-h" data-hear>
+  <canvas class="d-hear-smoke" data-hear-smoke aria-hidden="true"></canvas>
   <div class="d-wrap">
     <DriftPanel sticker="試聴" class="d-hear-panel">
-      <h2 id="d-hear-h" class="d-headline d-headline--row"><span class="l1">Let&rsquo;s</span> <span class="l2">Drift.</span></h2>
+      <!-- the speakers: LEFT moves with the left channel, RIGHT with the right (speakers.ts), so the pan travels between them -->
+      <div class="d-hear-head">
+        <div class="d-spk d-spk--l" data-hear-spk="l" aria-hidden="true"><span class="d-spk-ring"></span><img class="d-spk-base" src="/drift/speaker.webp" width="360" height="360" alt="" decoding="async" /><span class="d-spk-cone"></span><span class="d-spk-shine"></span></div>
+        <h2 id="d-hear-h" class="d-headline d-headline--row"><span class="l1">Let&rsquo;s</span> <span class="l2">Drift.</span></h2>
+        <div class="d-spk d-spk--r" data-hear-spk="r" aria-hidden="true"><span class="d-spk-ring"></span><img class="d-spk-base" src="/drift/speaker.webp" width="360" height="360" alt="" decoding="async" /><span class="d-spk-cone"></span><span class="d-spk-shine"></span></div>
+      </div>
 
       <div class="d-hear">
         <!-- 1 · pick a track -->
