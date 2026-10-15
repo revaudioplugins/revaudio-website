@@ -1,3 +1,44 @@
+# Website — word-wall WEIGHT (checker S4, 2026-10-15, revaudio-32)
+
+Request (Dan): "let's fix the weight", then "is there a way to make it lighter without hurting quality?" -> yes, go.
+Baseline (dist, no scroll): laptop 1280x665 first load 2264 KB, phone 390x844@3 1822 KB; the TV = 380 KB of it on both
+(frame tv-broken-2 webp 1400 = 248 KB at every width, DRIFT poster webp 1400 = 132 KB, eager, no srcset).
+
+## Steps
+- [x] Lazy: the frame + the poster load only once the wall is within one screen (IntersectionObserver, rootMargin
+      100%), started after the page's load / the first scroll / 3 s (whichever first), decoded before they swap in;
+      no-JS = `<noscript><style is:inline>` with today's 1400 webp.
+- [x] Sharp per screen: JS picks the smallest cut that is still pixel-sharp here (frame: roll width x --ww-frame-u x
+      DPR, u read off the frame's padding; poster: video CSS width x DPR); cuts frame 640/960/1400, poster
+      800/1100/1400; upgrade only on resize / rotate / bench roll switch / carousel swap; 1400 stays the top.
+- [x] Frame vars: SSR `--wfN-img:none`; JS sets `--wfN-img` + `--wfN-sl` (slices in the cut's own pixels) for the roll
+      on show only. Every roll still gets its cuts in the build (an imported image Astro never transforms ships raw).
+- [x] Proved the lazy + cut step on WebP first: laptop 1280@2 pixel-identical to today (Chromium + WebKit).
+- [x] AVIF (frame q70, poster q50), WebP when the browser can't decode AVIF (1x1 data-URI probe).
+- [x] N2: sizes read via `.clone`: drift-window-wall.png (2 MB) and gas-hero.png (4.3 MB) no longer ship raw.
+- [x] Verify (below). Docs, commit by path. Push only on "push".
+
+## Review — WEIGHT (2026-10-15)
+- Measured on the built site, both builds on the same plain static server (python http.server, no compression),
+  Chromium, homepage, no scroll, load + 4 s: laptop 1280x665@2 2264 -> 1887 KB, phone 390x844@3 1822 -> 1515 KB.
+  The TV at the wall: laptop 183 KB (frame avif 111 + poster avif 71, was 380 in the first load); phone 70 KB (frame
+  20 + poster 49), and on the phone it now starts after the load event (190 ms vs load 172 ms; was 10-57 ms).
+- Quality, the built files vs the source resized (PSNR): frame 640/960/1400 webp 44.41/43.57/43.87 dB -> avif
+  44.75/44.45/44.63; poster 800/1100/1400 webp 34.37/35.17/35.86 -> avif 35.78/36.08/36.23. Cut needs measured per
+  screen (need.cjs): 390@3 frame 494 / poster 1049 px, 1280@2 1272 / 1231, 1920@1 636 / 736, 932x430@3 1694 (gets
+  1400, as before). Side-by-side zoom sheets (checker corner, tape, broken corner + LED, gauges) at 1280@2 and 390@3.
+- Reduced-motion shots before/after: laptop 1280@2 pixel-identical on WebP (Chromium + WebKit); headless WebKit on
+  Windows has no AVIF, so it took the WebP fallback, still pixel-identical. Other sizes differ only by the cut's
+  resampling (heat map: edges only).
+- Video plays at the wall with the poster set (Chromium + WebKit, 1280 + 390), no console errors. No JS: frame +
+  picture up in both engines (Chromium forces video controls without JS: their panel is hidden in the noscript style).
+  `--ww-ar` and the video's width/height identical to 697f49d. Lock test (snapfresh) unchanged. Dev: all three rolls
+  switch (first AVIF of a roll takes a few seconds in dev only). Build green, no __wwbench in dist.
+- Gotchas met (tasks/lessons.md): a stray `astro preview` on ::1:4431 answered `localhost` with compressed responses
+  while python held 127.0.0.1:4431 (unfair first numbers); headless WebKit on Windows never fires `load` (stalled
+  videos), so the art never waits on `load` alone.
+- Open for Dan: real Safari / iPhone check (AVIF path), as before.
+
 # Website — DRIFT word-wall panel: NEON / STEER looks + HD live window (2026-10-14, revaudio-32)
 
 Request (Dan): the homepage word-wall DRIFT panel (MOVING / STEERED / SLIDING / WIDE / ALIVE + a static
@@ -68,7 +109,7 @@ Rules: motion = feedback only; glow only from a lamp (a neon sign is one); copy 
   Fit both engines: 360x640 ... 860x900 and 1024 / 1280 / 1920 laptops exact (section = screen - nav, all inside the
   glass, 0 sideways); landscape phones: windows 86-265 px wide (were 0), section taller than the screen (by design).
   `npm run build` green, no __wwbench in dist.
-- Not fixed (reported to Dan): S4 first load +~369 KB laptop / +~246 KB phone (frame webp 254 KB at every width, DRIFT
+- Not fixed then (FIXED 2026-10-15, "Review — WEIGHT" above): S4 first load +~369 KB laptop / +~246 KB phone (frame webp 254 KB at every width, DRIFT
   poster 136 KB, no srcset) = the price of the TV; N1 snow +48 ms main thread per channel change (~2.7 ms/frame, no long
   task); N2 6.4 MB raw PNGs in dist never requested (gas-hero.png, drift-window-wall.png: reading `.width` on the import
   marks them used) + unused rolls 1/3 until "apply ww bench"; N3 hc still sizes the TV; N4 an anchor right after a wheel

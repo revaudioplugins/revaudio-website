@@ -77,9 +77,27 @@ const wallRunReady = !!wallPosterSrc && WALL_RUN.every((f) => existsSync(`public
 if (drift.homeLead && !wallRunReady) {
   throw new Error(`WordWall: DRIFT's live window is missing (src/assets/showcase/drift-window-wall.png + public/drift/${WALL_RUN.join(', ')}). Build from the repo root, or restore the files.`);
 }
-const wallPoster = wallRunReady && wallPosterSrc
-  ? await getImage({ src: wallPosterSrc, width: 1400, format: 'webp', quality: 82 })
+/* The TV's art loads late and lean (checker S4, 2026-10-15: the frame + the
+   poster were 380 KB of every first load, the laptop cut on phones too): it
+   waits until the wall is a screen away, then the script below puts up the
+   smallest cut that is still pixel-sharp on that screen, in AVIF where the
+   browser decodes it (equal or better PSNR than the WebP before it, under half
+   the bytes), else WebP. 1400 stays the top cut, as before. A cut =
+   [width, avif, webp] (+ the frame's slices in that cut's pixels). */
+const FRAME_CUTS = [640, 960, 1400];
+const POSTER_CUTS = [800, 1100, 1400];
+type Cut = [number, string, string, string?];
+const cut = async (src: ImageMetadata, width: number, q: { avif: number; webp: number }, v = ''): Promise<Cut> => [
+  width,
+  (await getImage({ src, width, format: 'avif', quality: q.avif })).src + v,
+  (await getImage({ src, width, format: 'webp', quality: q.webp })).src + v,
+];
+const posterCuts = wallRunReady && wallPosterSrc
+  ? await Promise.all(POSTER_CUTS.map((w) => cut(wallPosterSrc, w, { avif: 50, webp: 82 })))
   : null;
+const top = (cuts: Cut[]) => cuts[cuts.length - 1];
+// a size off an imported image without copying the raw file into dist (reading .width straight off the import does)
+const dims = (m: ImageMetadata) => (m as ImageMetadata & { clone?: ImageMetadata }).clone ?? m;
 /* The TV the live window plays on (Dan 2026-10-14: "more of a TV screen, like
    we've been doing"): /drift's keep-it TV cabinet, the same plate at half size
    (1318 px wide, so the 9-slice line is 192, not drift.css's 384). */
@@ -93,24 +111,41 @@ const tvFrame = wallRunReady
    and corner patches in its own pixels); the bench picks one. */
 const WALL_FRAME: 'rails' | '1' | '2' | '3' = '2';
 const brokenRolls = import.meta.glob<{ default: ImageMetadata }>('../assets/seasons/drift/tv-broken-*.png', { eager: true });
-const frameVars = (await Promise.all(
-      Object.entries(brokenMeta).map(async ([n, m]) => {
-        const src = brokenRolls[`../assets/seasons/drift/tv-broken-${n}.png`]?.default;
-        if (!src) throw new Error(`WordWall: tv-broken-${n}.png is listed in tv-broken.json but missing`);
-        const img = await getImage({ src, width: 1400, format: 'webp', quality: 86 });
-        const k = 1400 / m.w; // the slice counts in the SERVED image's pixels
-        // dev serves /_image for a year under a URL that ignores the file's content: a re-cut roll kept showing the
-        // old one in the bench, so dev adds the file's mtime (the build's names carry a content hash already)
-        const v = import.meta.env.DEV ? `&v=${Math.round(statSync(`src/assets/seasons/drift/tv-broken-${n}.png`).mtimeMs)}` : '';
-        return [
-          `--wf${n}-img:url(${img.src}${v})`,
-          `--wf${n}-sl:${m.slice.map((v) => Math.round(v * k)).join(' ')}`,
-          // corner patches + bezel as plain numbers in the cut's own (2x) pixels; CSS x --ww-frame-u (a length)
-          ...['t', 'r', 'b', 'l'].map((s, i) => `--wf${n}-${s}:${m.slice[i]}`),
-          ...['t', 'r', 'b', 'l'].map((s, i) => `--wf${n}-z${s}:${m.bezel[i]}`),
-        ].join(';');
-      }),
-    )).join(';');
+// every roll gets its cuts, picked or not: an imported image Astro never transforms ships as the raw PNG (MBs);
+// only the roll on show is ever fetched
+const frameRolls = await Promise.all(
+  Object.entries(brokenMeta).map(async ([n, m]) => {
+    const src = brokenRolls[`../assets/seasons/drift/tv-broken-${n}.png`]?.default;
+    if (!src) throw new Error(`WordWall: tv-broken-${n}.png is listed in tv-broken.json but missing`);
+    // dev serves /_image for a year under a URL that ignores the file's content: a re-cut roll kept showing the
+    // old one in the bench, so dev adds the file's mtime (the build's names carry a content hash already)
+    const v = import.meta.env.DEV ? `&v=${Math.round(statSync(`src/assets/seasons/drift/tv-broken-${n}.png`).mtimeMs)}` : '';
+    const cuts = await Promise.all(FRAME_CUTS.map(async (w): Promise<Cut> => [
+      ...(await cut(src, w, { avif: 70, webp: 86 }, v)) as [number, string, string],
+      m.slice.map((s) => Math.round((s * w) / m.w)).join(' '), // the slice counts in THIS cut's pixels
+    ]));
+    return { n, m, cuts };
+  }),
+);
+const frameVars = frameRolls.map(({ n, m, cuts }) => [
+  `--wf${n}-img:none`, // the script puts the cut up (the <noscript> style below: the top WebP)
+  `--wf${n}-sl:${top(cuts)[3]}`,
+  // corner patches + bezel as plain numbers in the cut's own (2x) pixels; CSS x --ww-frame-u (a length)
+  ...['t', 'r', 'b', 'l'].map((s, i) => `--wf${n}-${s}:${m.slice[i]}`),
+  ...['t', 'r', 'b', 'l'].map((s, i) => `--wf${n}-z${s}:${m.bezel[i]}`),
+].join(';')).join(';');
+// what the script needs to pick a cut; the roll's width turns --ww-frame-u into its pixels
+const wallArt = JSON.stringify({
+  frame: Object.fromEntries(frameRolls.map(({ n, m, cuts }) => [n, { w: m.w, cuts }])),
+  poster: posterCuts,
+});
+// no JavaScript: the top WebP cuts, as before the lazy load. The video never plays without JS, so its background is the
+// picture; Chromium forces its controls on when scripting is off, and their grey panel would hide it
+const noJsArt = [
+  ...frameRolls.map(({ n, cuts }) => `.ww[data-wordwall]{--wf${n}-img:url(${top(cuts)[2]}) !important}`),
+  posterCuts ? `video[data-ww-run]{background:var(--bg-1) url(${top(posterCuts)[2]}) center / cover no-repeat}` : '',
+  posterCuts ? `video[data-ww-run]::-webkit-media-controls{display:none !important}` : '',
+].join('');
 
 /* One panel per plugin in the carousel rotation. The panel whose slug matches
    the centred slide is the visible one; PluginShowcase dispatches
@@ -206,7 +241,8 @@ const panels: Panel[] = [
 ---
 
 <GarageWall id="sound" ariaLabel="What the plugin does">
-  <div class="ww" data-wordwall data-ww-bg={WALL_BG} data-ww-frame={WALL_FRAME} style={frameVars}>
+  <div class="ww" data-wordwall data-ww-bg={WALL_BG} data-ww-frame={WALL_FRAME} data-ww-art={wallArt} style={frameVars}>
+    <noscript><style is:inline set:html={noJsArt}></style></noscript>
     {/* DRIFT's screen wall: the lit tube behind the panels + the glass over them (CSS below) */}
     <div class="ww-screen" aria-hidden="true"><div class="ww-screen-glow"></div></div>
     <div class="ww-snow" aria-hidden="true"><canvas></canvas></div>
@@ -217,7 +253,7 @@ const panels: Panel[] = [
       // switch on (hidden in 'current'); every other panel renders as before
       const isDrift = p.slug === 'drift';
       // the window's width / height: one screen tall caps the window's width by it (CSS --ww-ar)
-      const media = isDrift && wallPoster && wallPosterSrc ? wallPosterSrc : p.img;
+      const media = dims(isDrift && posterCuts && wallPosterSrc ? wallPosterSrc : p.img);
       return (
       <div
         class:list={['ww-panel', { 'is-active': i === 0, 'is-portrait': p.portrait }]}
@@ -246,7 +282,7 @@ const panels: Panel[] = [
         </div>
 
         <figure class="ww-ui" {...(i === 0 ? { 'data-reveal': 'card' } : {})}>
-          {isDrift && wallPoster && wallPosterSrc ? (
+          {isDrift && posterCuts && wallPosterSrc ? (
             <div class="ww-tv" style={tvFrame ? `--ww-img-tv:url(${tvFrame.src})` : undefined}>
             <div class="ww-tube">
             <video
@@ -257,9 +293,8 @@ const panels: Panel[] = [
               playsinline
               preload="none"
               disablepictureinpicture
-              poster={wallPoster.src}
-              width={wallPosterSrc.width}
-              height={wallPosterSrc.height}
+              width={media.width}
+              height={media.height}
               role="img"
               aria-label={p.alt}
             >
@@ -321,6 +356,78 @@ const panels: Panel[] = [
   if (wall) {
     const panels = Array.from(wall.querySelectorAll<HTMLElement>('[data-ww-panel]'));
     const section = wall.closest<HTMLElement>('section');
+
+    /* The TV's art, late and lean (checker S4): the frame and DRIFT's poster
+       load once the page has loaded and the wall is a screen away, each in
+       the smallest cut that is still pixel-sharp here (frame: the roll's
+       pixels x --ww-frame-u x DPR, u read off the frame's padding; poster:
+       the window's width x DPR), AVIF when this browser decodes it, else
+       WebP. A cut is decoded before it goes up (no half-painted bezel) and
+       never swapped for a smaller one (resize, rotate, the bench's roll
+       switch only upgrade). No JS: the <noscript> style puts the top WebP up. */
+    type Cut = [number, string, string, string?]; // width, avif, webp, the frame's slices in this cut's pixels
+    const art = JSON.parse(wall.dataset.wwArt || '{}') as { frame?: Record<string, { w: number; cuts: Cut[] }>; poster?: Cut[] | null };
+    let avifOk: Promise<boolean> | null = null;
+    const avif = () => (avifOk ??= new Promise<boolean>((done) => {
+      const probe = new Image(); // a 1x1 AVIF
+      probe.onload = () => done(probe.naturalWidth > 0);
+      probe.onerror = () => done(false);
+      probe.src = 'data:image/avif;base64,AAAAHGZ0eXBhdmlmAAAAAGF2aWZtaWYxbWlhZgAAAOptZXRhAAAAAAAAACFoZGxyAAAAAAAAAABwaWN0AAAAAAAAAAAAAAAAAAAAAA5waXRtAAAAAAABAAAAImlsb2MAAAAAREAAAQABAAAAAAEOAAEAAAAAAAAAFQAAACNpaW5mAAAAAAABAAAAFWluZmUCAAAAAAEAAGF2MDEAAAAAamlwcnAAAABLaXBjbwAAABNjb2xybmNseAABAA0ABoAAAAAMYXYxQ4EgAgAAAAAUaXNwZQAAAAAAAAABAAAAAQAAABBwaXhpAAAAAAMICAgAAAAXaXBtYQAAAAAAAAABAAEEAYIDBAAAAB1tZGF0EgAKBzgADlAQ0GkyCBsAAABAQATA';
+    }));
+    const pick = (cuts: Cut[], need: number) => cuts.find((c) => c[0] >= need) ?? cuts[cuts.length - 1];
+    const up: Record<string, number> = {}; // the widest cut asked for, per slot
+    const put = async (slot: string, c: Cut, apply: (url: string) => void) => {
+      if ((up[slot] ?? 0) >= c[0]) return;
+      up[slot] = c[0];
+      const url = (await avif()) ? c[1] : c[2];
+      const img = new Image();
+      img.src = url;
+      await img.decode().catch(() => {});
+      if (up[slot] === c[0]) apply(url); // a wider cut asked for meanwhile wins
+    };
+    const frameEl = wall.querySelector<HTMLElement>('.ww-frame');
+    const runEl = wall.querySelector<HTMLVideoElement>('video[data-ww-run]');
+    let near = false;
+    const dress = () => {
+      if (!near) return;
+      const dpr = window.devicePixelRatio || 1;
+      // the roll on show only (the bench's roll switch asks again); u = CSS px per pixel of that roll
+      const n = wall.dataset.wwFrame ?? '';
+      const roll = art.frame?.[n];
+      const u = frameEl ? parseFloat(getComputedStyle(frameEl).paddingLeft) / parseFloat(getComputedStyle(wall).getPropertyValue('--wf-zl')) : NaN;
+      if (roll && u > 0) {
+        const c = pick(roll.cuts, roll.w * u * dpr);
+        put(`frame${n}`, c, (url) => {
+          wall.style.setProperty(`--wf${n}-img`, `url(${url})`);
+          wall.style.setProperty(`--wf${n}-sl`, c[3] ?? '');
+        });
+      }
+      const w = runEl?.getBoundingClientRect().width ?? 0; // 0 while the panel is display:none (phones): its swap-in asks again
+      if (runEl && art.poster && w > 0) put('poster', pick(art.poster, w * dpr), (url) => { runEl.poster = url; });
+    };
+    // not before the page's own load (on a phone the wall starts a quarter screen below the fold: it must not race
+    // the top), the first scroll or 3 s, whichever comes first (a stalled video can hold the load event back for good)
+    let watching = false;
+    const watch = () => {
+      if (watching) return;
+      watching = true;
+      new IntersectionObserver((entries, io) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        io.disconnect();
+        near = true;
+        dress();
+      }, { rootMargin: '100% 0px' }).observe(wall);
+    };
+    if (document.readyState === 'complete') watch();
+    else {
+      window.addEventListener('load', watch, { once: true });
+      window.addEventListener('scroll', watch, { once: true, passive: true });
+      window.setTimeout(watch, 3000);
+    }
+    let resized = 0;
+    window.addEventListener('resize', () => { clearTimeout(resized); resized = window.setTimeout(dress, 200); });
+    new MutationObserver(dress).observe(wall, { attributes: true, attributeFilter: ['data-ww-frame'] });
+
     document.addEventListener('showcase:change', (e) => {
       const slug = (e as CustomEvent<{ slug?: string }>).detail?.slug;
       const next = panels.find((p) => p.dataset.wwPanel === slug);
@@ -332,6 +439,7 @@ const panels: Panel[] = [
       });
       const name = next.querySelector('figcaption strong')?.textContent?.replace(/\.$/, '') ?? 'the plugin';
       section?.setAttribute('aria-label', `What ${name} does`);
+      dress();
       staticBurst();
     });
     /* Changing channel: a burst of TV snow over the screen while the panels
