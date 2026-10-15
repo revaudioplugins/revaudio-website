@@ -13,6 +13,12 @@
   every cut. Laptop 1280@2 on WebP pixel-identical to before.
 - Open: Dan's real iPhone / Mac Safari check (the AVIF path never ran in a real Safari here; headless WebKit on
   Windows has no AVIF and took the WebP fallback).
+- Bench note (dev only): the bench's Frame size slider changes the frame's scale without a resize, so the frame cut
+  upgrades only at the next resize / roll switch / reload; at DPR 1.25-1.5 a bigger slider value can look a touch soft
+  in the bench until then. Reload before judging sharpness there.
+- On "push": fetch, `git log origin/main..HEAD` (name other sessions' commits), flip this header to PUSHED in the push
+  commit; after the deploy `curl -I` one live `/_astro/*.avif` (content-type image/avif through Cloudflare) and re-run
+  the weight check on the live site. Stale cached HTML is safe: the old 1400 WebP names are still in the new dist.
 
 ## 2026-10-14 — Homepage word wall: DRIFT panel, two new looks + HD live window on a bench, branch `feat/drift-wordwall` (Claude Code `revaudio-32`, laptop 1) — PUSHED TO MAIN = LIVE 2026-10-14 (Dan: "send a checker; if it passes push to main, if not fix then push"); bench tuning ("apply ww bench") still open
 - Dan: "the DRIFT panel on the word wall needs a more interesting design" -> picks: build BOTH looks (NEON sign / STEER the
