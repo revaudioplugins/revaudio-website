@@ -3,6 +3,7 @@ import { initWheel } from './wheel';
 import { initTracks } from './trackui';
 import { initCaptures } from './capture';
 import { initCrane } from './crane';
+import { initSnap } from './snap';
 import { lenis } from '../motion';    // the house scroller (null under reduced motion)
 
 /** /drift page entry: one pan bus, then every section that reads or writes it. */
@@ -17,6 +18,7 @@ export function initDrift(): void {
   initCaptures();
   initDeferredImages(root);
   initLap(root);
+  initSnap(root);   // soft snap: a section that fits the screen settles into view when the scroll rests near it
   // #hear renders only when drift.demoMode === 'real'; hear.ts (the audio) never loads otherwise
   const hear = root.querySelector<HTMLElement>('[data-hear]');
   if (hear) void import('./hear').then((m) => m.initHear(hear));
