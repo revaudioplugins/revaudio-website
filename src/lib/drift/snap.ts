@@ -12,6 +12,7 @@ import { lenis, reducedMotion } from '../motion';
  */
 export function initSnap(root: HTMLElement, tries = 0): void {
   if (reducedMotion()) return;                                 // reduced motion: native scroll, no automatic movement
+  if (document.documentElement.classList.contains('bench-on')) return;   // ?bench (dev): never move the page under a drag
   const l = lenis;
   // the page script can run before BaseLayout starts Lenis: wait for it (up to ~3 s)
   if (!l) { if (tries < 180) requestAnimationFrame(() => initSnap(root, tries + 1)); return; }
