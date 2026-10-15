@@ -1,5 +1,4 @@
 import { setPan } from './bus';
-import { createSpeakers } from './speakers';
 
 /**
  * #hear, the test drive (DriftHear.astro). Real bounces only: <id>-before.m4a (the original, level-matched down to
@@ -35,7 +34,6 @@ export function initHear(root: HTMLElement): void {
   const cv = q<HTMLCanvasElement>('[data-hear-wave]');
   if (!playBtn || !stopBtn || !cv || !chips.length) return;
   const g = cv.getContext('2d')!;
-  const speakers = createSpeakers(root);
 
   const st = { track: chips[0].dataset.hearTrack!, after: true, playing: false, loading: false };
   let M: Manifest | null = null;
@@ -183,15 +181,14 @@ export function initHear(root: HTMLElement): void {
       let target = 0, L = 0, R = 0;
       if (st.playing && ctx) {
         anL.getFloatTimeDomainData(bufL); anR.getFloatTimeDomainData(bufR);
-        L = rms(bufL) * vol; R = rms(bufR) * vol;   // the speakers play what comes out, so they follow the volume
-        target = L + R > 1e-3 * vol ? Math.max(-1, Math.min(1, 4 / Math.PI * Math.atan2(R, L) - 1)) : panS;   // a ratio: the volume cancels out
+        L = rms(bufL); R = rms(bufR);
+        target = L + R > 1e-3 ? Math.max(-1, Math.min(1, 4 / Math.PI * Math.atan2(R, L) - 1)) : panS;
         if (timeEl && cur) timeEl.textContent = `${fmt(position())} / ${fmt(cur.dur)}`;
         draw();
       }
       panS += (target - panS) * Math.min(1, dt * (st.playing ? 10 : 6));
       setPan(Math.abs(panS) < .004 ? 0 : panS, 'demo');
-      const moving = speakers.update(L, R, dt);
-      if (st.playing || Math.abs(panS) > .004 || moving) raf = requestAnimationFrame(step);
+      if (st.playing || Math.abs(panS) > .004) raf = requestAnimationFrame(step);
       else draw();
     };
     raf = requestAnimationFrame(step);

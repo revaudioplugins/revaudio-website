@@ -192,6 +192,8 @@ Removed: DriftHeadUnit.astro + demo.ts (the structure test), the toy bench + its
 - After the close (same day): the three steps wear three of the page's own panels so they read apart: 1 = the keep-it
   TV bezel round the CRT list, 2 = the trial plate (checker cap), 3 = the #drive section plate (carbon, X screws); the
   inner steel pair plate is gone. Desktop panel 590 px, phone 705 px (fits + snaps: -1 / 0 px).
+  Then: Yoni's live-bench round applied (d940a18); the speakers + smoke REMOVED on Yoni's word (speakers.ts, the pod art,
+  drift-pods.json, gen/cut_speaker.py deleted; restore from f3e212f). Desktop 555 px, phone 654 px.
 
 ### Unverified
 
