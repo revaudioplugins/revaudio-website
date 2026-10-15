@@ -165,12 +165,59 @@ Claim: CLOSED 2026-10-14. Took over `revaudio-c7`'s stale claim (session gone) o
 
 ## 2026-10-15 — Claude Code `revaudio-02` (Yoni's laptop) — DRIFT #hear test drive (before/after player), native to /drift
 
-Claim: OPEN. Worktree `../revaudio-website-dpl`, branch `drift-player` (rebased on origin/main 697f49d), local only
-until "push". Files owned: `src/components/drift/DriftHear.astro`, `src/lib/drift/hear.ts`, the #hear block in
-`src/styles/drift.css`, the #hear lines in `src/pages/drift.astro` / `src/lib/drift/init.ts` / `src/data/drift.ts`
-(demoMode 'real', demoWholeSound true), `public/audio/drift/`, `tools/drift-player/prep_audio.py`,
-`tasks/drift-player-plan.md`. Removed: DriftHeadUnit.astro + demo.ts (structure test), the toy bench + its art.
-Waiting on Yoni's look at /drift (dev server: `npx astro dev --port 4381` in the worktree). Deploy = push only on "push".
+Claim: OPEN, paused by Yoni 2026-10-15 ~17:15 ("that's perfect. let's keep it for now local, we push later today").
+Worktree `../revaudio-website-dpl`, branch `drift-player`, local only until "push". Files owned:
+`src/components/drift/DriftHear.astro`, `src/lib/drift/{hear,speakers,snap}.ts`, the #hear block in
+`src/styles/drift.css`, the #hear / snap lines in `src/pages/drift.astro` / `src/lib/drift/init.ts` /
+`src/data/drift.ts` (demoMode 'real', demoWholeSound true) + `src/lib/drift/bus.ts` (one comment),
+`src/data/drift-pods.json`, `public/audio/drift/`, `public/drift/{knob3d-drift-65,pod-l,pod-l-cone,pod-r,pod-r-cone}.webp`,
+`tools/drift-player/*`, `bench/drift-{start,neon}-bench.html`, `tasks/drift-player-plan.md`.
+Removed: DriftHeadUnit.astro + demo.ts (the structure test), the toy bench + its art (restore from 6e8a72c).
+
+### State at session end
+
+- Branch `drift-player`: 19 commits ahead of origin/main, 0 behind (fetched 17:15), working tree clean. Last: `995cde7`.
+  Nothing pushed. The shared repo has my local commit `b866f9d` (memory note), also unpushed.
+- What's built (Yoni, on the way: "great job! beautiful!", "perfect", "that's perfect"): #hear under the hero = "LET'S
+  DRIFT." — a track list (5 stems), the magenta LCD (waveform L over R, PAN readout, clock), PLAY/STOP caps, FLIP = a worn
+  gunmetal push-to-start with a neon tube (lit = DRIFT, dark = original; bars chase while loading, the tube strikes when it
+  plays) + DRIFT's own house knob for VOLUME (bars lit to level), the page's balance screen, two photographed speaker pods
+  beside the title (cone pumps per channel along its axis), faint smoke. The measured pan drives the page's pan bus (hero
+  wheel + rails). Compact: desktop panel 592 px, phone 689 px. Page-wide soft snap (snap.ts). Details per round:
+  `tasks/drift-player-plan.md`.
+- Checks run: `npm run build` green after every step; headless Edge desktop 1440/1920/1366 + phone 390 (screenshots, no
+  console errors); snap tested with real wheel input (desktop) and native scroll (phone emulation). Live CSP read
+  (connect-src 'self', style-src 'unsafe-inline'): nothing the player uses is blocked.
+
+- After the close (same day): the three steps wear three of the page's own panels so they read apart: 1 = the keep-it
+  TV bezel round the CRT list, 2 = the trial plate (checker cap), 3 = the #drive section plate (carbon, X screws); the
+  inner steel pair plate is gone. Desktop panel 590 px, phone 705 px (fits + snaps: -1 / 0 px).
+
+### Unverified
+
+- Never heard on a real phone / iPhone Safari (audio decode + memory, touch swipes + the snap's feel). Yoni saw the phone
+  layout only in a 390 px desktop window ("that's perfect").
+- Firefox / Safari never tested (all checks were Chromium/Edge).
+- `dist/` was not served under the live CSP headers (the memory note's pre-push step); only the header values were read.
+
+### Background processes
+
+- `npx astro dev --port 4381 --host 127.0.0.1` in the worktree, bg `btqjln3wm` (this session). Kill: the PID on port
+  4381 (`Get-NetTCPConnection -LocalPort 4381 | % OwningProcess | % { Stop-Process -Id $_ }`).
+- `python -m http.server 8795` in the worktree, bg `by9vv6vi8` (serves the benches). Kill: same, port 8795.
+- An Edge app window (phone size) with a temp profile under the session scratchpad: just close it.
+
+### Things the next session needs to decide
+
+1. **Push (Yoni: "we push later today")** — only on the word "push". Route: `git -C ../revaudio-website-dpl pull --rebase`
+   (origin/main may have moved), `npm run build`, serve `dist/` under the live CSP, then push `drift-player` to main
+   (main = live GitHub Pages deploy). Name any other session's commits that would ride along (none at 17:15).
+2. **Shared repo commit `b866f9d`** (memory note) goes out with the next shared push.
+
+### Memory written this session
+
+- `shared/memory/feedback_site_interactive_embeds.md` (+1 bullet, committed `b866f9d`): a season page gets a NATIVE
+  section built from its own parts, not a bespoke object.
 
 ## 2026-10-09 — /drift #band v2: DRIFT's real BAND SELECT + STEREO IMAGER on a real vocal (same branch, Claude Code, Dan's Mac) — COMMITTED LOCAL, NOT PUSHED
 - Dan on v1: "close, not it": real spectrum + real imager from DRIFT, a vocal on the band select, no factory presets, give

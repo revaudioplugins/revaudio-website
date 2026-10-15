@@ -1298,8 +1298,8 @@
 @media (max-width: 600px) {
   .d-hear-sec .d-spk { margin-top: -4px; }
   .d-panel.d-hear-panel { padding-top: 14px; }
-  .drift-page .d-hear-sec .d-hear-note { padding: 9px 0 8px; }
-  .d-hear-sec .d-hear-head { margin-bottom: 4px; }
+  .drift-page .d-hear-sec .d-hear-note { padding: 7px 0 5px; }
+  .d-hear-sec .d-hear-head { margin-bottom: 0; }
   .d-hear-sec .d-hear-row { min-height: 27px; font-size: 19px; padding-block: 2px; }
   .d-hear-sec .d-hear-row .len { font-size: 16px; }
   .d-hear-sec .d-attract { padding: 10px 14px 8px; }
@@ -1327,6 +1327,34 @@
   .d-hear-sec .d-vol-ticks { --r: 35px; }
   .d-hear-sec .d-vol-knob { width: 44px; height: 44px; }
   .d-hear-sec .d-cap { width: 40px; height: 40px; }
+}
+
+/* THE THREE STEPS, three of the page's own panels (Yoni 2026-10-15: "use the panels from the drift website ... make the
+   panels 1 2 3 more different so it's easy to see the separation"):
+   1 = the keep-it TV bezel (tv-frame-3) round the CRT list, 2 = the trial plate (black steel, magenta checker cap, the
+   "free 30-day trial" plate), 3 = the #drive section plate (carbon in a black steel bezel, X screws). */
+.d-hear-tv { display: flex; flex-direction: column; padding: 20px 30px 26px; border: 0 solid transparent; border-radius: 16px;
+  border-image: var(--d-img-tv) 384 fill / 43px stretch; filter: drop-shadow(0 12px 22px rgba(0, 0, 0, .55)); }
+.d-hear-tv > .d-hear-pick { flex: 1; border-radius: 18px; box-shadow: inset 0 12px 26px rgba(0, 0, 0, .65), inset 0 0 0 1px rgba(0, 0, 0, .8); }
+.d-hear-sec .d-hear-step:not(.d-hear-step--ab) {
+  background: none; box-shadow: none; border: 0 solid transparent; border-radius: 0;
+  border-image: var(--d-img-trial) 120 120 120 320 fill / 22px 22px 22px 60px stretch;
+  padding: 14px 20px 14px 66px; filter: drop-shadow(0 10px 18px rgba(0, 0, 0, .55)); }
+.d-hear-sec .d-hear-step--ab {
+  background: none; box-shadow: none; border: 0 solid transparent; border-radius: 0;
+  border-image: var(--d-img-section) 430 fill / 40px stretch;
+  padding: 16px 22px 14px; filter: drop-shadow(0 10px 18px rgba(0, 0, 0, .55)); }
+/* the pair sits straight on the carbon now: no second plate, no second set of screws */
+.d-hear-sec .d-hear-pair { background: none; box-shadow: none; padding: 2px 8px 0; }
+.d-hear-sec .d-hear-pair .d-screw { display: none; }
+@media (max-width: 600px) {
+  .d-hear-tv { padding: 14px 20px 18px; border-image: var(--d-img-tv) 384 fill / 32px stretch; }
+  .d-hear-sec .d-hear-step:not(.d-hear-step--ab) { border-image: var(--d-img-trial) 120 120 120 320 fill / 16px 16px 16px 40px stretch; padding: 10px 10px 10px 42px; }
+  .d-hear-sec .d-hear-step--ab { border-image: var(--d-img-section) 430 fill / 28px stretch; padding: 10px 12px 15px; }   /* the labels clear the bezel */
+  .d-hear-sec .d-spk { margin-top: 14px; }   /* under the checker strip + sticker */
+  .d-hear-sec .d-hear-row { min-height: 24px; }
+  .d-hear-sec .d-hear-wave { height: 40px; }
+  .d-hear-sec .d-hear-pair { padding: 2px 0 0; }
 }
 
 /* the smoke: one half-resolution canvas over the whole section, screen blend, never in the way */
