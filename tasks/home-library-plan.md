@@ -27,7 +27,10 @@
 - D1 Button label: PLUGINS (recommended by the research) or LIBRARY.
 - D2 What the TV shows before any click: the ALL channel with the category buttons on the TV (recommended), or
   today's word wall until the header button is clicked.
-- D3 `/store`: redirect to the home TV (recommended), or keep a plain list page that is not in the nav.
+- D3 `/store`: redirect to the home TV (recommended here), or keep a plain list page that is not in the nav.
+  Note: the research synthesis leaned the other way (keep a catalog page, drop only the nav item: every readable
+  peer except Kilohearts and Denise keeps one). The recommendation differs because the catalog is 4 live plugins,
+  the product pages carry search and ads, and the user asked for one place to browse.
 - D4 Ratings: collect now from verified users only, show stars from ~5 ratings, insights = a team page, on its own
   branch after this one (recommended); or open stars to every visitor now.
 
@@ -40,8 +43,9 @@ without an open trial (The AC) stay off the TV; the TV never changes by itself (
 ### Phase 1: catalog data (no visual change)
 
 - [ ] `src/data/library.ts`: the category list (id, label, order). A category with no live plugin is hidden.
-- [ ] `plugins.ts`: per plugin `library: { cats, typeWord, words, blurb }`. The TV copy moves out of
-      `WordWall.astro`, so one source feeds the TV now and "you may also like" later.
+- [ ] `plugins.ts`: per plugin `library: { cats, typeWord, words, blurb }` (new fields only). Phase 1 never edits
+      `WordWall.astro` (revaudio-32's claim); its copy is read from these fields in phase 2, so one source feeds
+      the TV now and "you may also like" later.
 - [ ] Starting categories (research taxonomy; every plugin listed wherever it truly does the job):
       ALL (default) | Mastering: RevLimiter | Vocals: DRIFT | Saturation & Distortion: GAS |
       Modulation & Stereo: DRIFT | Creative FX: Radio Roulette, DRIFT | Free: GAS.
@@ -58,6 +62,9 @@ without an open trial (The AC) stay off the TV; the TV never changes by itself (
       ("one-knob saturator"); the selected one is lit.
 - [ ] Right: the big image, name, short description, the price line, "Try free for N days" (main button),
       "Product page" (small link).
+- [ ] The five glowing words (`DESIGN.md` sections 0 + 4, "what the sound does, in five words") leave the left
+      column to the plugin names; they move into the preview as one small line under the description (default,
+      the user may drop them instead). `DESIGN.md` changes either way.
 - [ ] Switching = a channel change: the existing static burst + each plugin's own phosphor colour.
 - [ ] The list is real `<a href>` links in the HTML (crawlable); the script only enhances it.
 - [ ] URL state: one history entry per category (`/?c=free`), the lit plugin updates the current entry (`&p=gas`),
@@ -76,7 +83,9 @@ without an open trial (The AC) stay off the TV; the TV never changes by itself (
       categories; on every other page it goes to `/?c=all`. Phones: visible next to the menu button.
 - [ ] `PluginShowcase` off the home page; the file is deleted once nothing imports it.
 - [ ] `/store` per D3. Old links must keep working, including the licence worker's `https://revaudio.net/store`
-      link (RevLimiter repo, `gumroad-worker/src/worker.js`).
+      link (RevLimiter repo, `gumroad-worker/src/worker.js`). GitHub Pages cannot send a real 301: the redirect is
+      either a meta-refresh page in the repo (with a canonical link) or a Cloudflare Redirect Rule (dashboard only).
+      Never promise a "301" without the Cloudflare rule.
 - [ ] Internal links re-pointed: Footer "Store", Cart "Explore the plugins", home closing CTA "Browse the store",
       product page breadcrumb "Back to store", the `gas.astro` fallback.
 - [ ] The store FAQ (what you get, trial, Mac/Windows, refund, payment) moves to a page that stays.
