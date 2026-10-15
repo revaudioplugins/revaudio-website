@@ -12,6 +12,7 @@
  * page's pan bus, so the hero wheel, the rails and this balance screen follow what you hear.
  */
 import { readFileSync } from 'node:fs';
+import pods from '../../data/drift-pods.json';
 import { getImage } from 'astro:assets';
 import DriftPanel from './DriftPanel.astro';
 import capGreen from '../../assets/seasons/drift/mm_cap_green.png';
@@ -35,12 +36,14 @@ const first = TRACKS[0];
   <canvas class="d-hear-smoke" data-hear-smoke aria-hidden="true"></canvas>
   <div class="d-wrap">
     <DriftPanel sticker="試聴" class="d-hear-panel">
-      <!-- the speakers: two 3D pods hung over the panel, aimed down and in at it. LEFT moves with the left channel,
-           RIGHT with the right (speakers.ts), so the pan travels between them -->
+      <!-- the speakers: two photographed pods hung from the panel's top edge, aimed down and in at the player.
+           LEFT moves with the left channel, RIGHT with the right (speakers.ts), so the pan travels between them -->
       <div class="d-hear-head">
-        <div class="d-spk d-spk--l" data-hear-spk="l" aria-hidden="true"><span class="d-spk-shadow"></span><div class="d-spk-pod"><span class="d-spk-body">{Array.from({ length: 12 }, (_, i) => <i style={`--z:${i + 1}`}></i>)}</span><img class="d-spk-face" src="/drift/speaker.webp" width="360" height="360" alt="" decoding="async" /><span class="d-spk-surr"></span><span class="d-spk-cone"></span><span class="d-spk-shine"></span></div></div>
+        <div class="d-spk d-spk--l" data-hear-spk="l" aria-hidden="true"
+          style={`--cx:${pods.l.cx}%;--cy:${pods.l.cy}%;--dx:${pods.l.dx};--dy:${pods.l.dy};aspect-ratio:${pods.l.w}/${pods.l.h}`}><img class="d-spk-pod" src="/drift/pod-l.webp" width={pods.l.w} height={pods.l.h} alt="" decoding="async" /><img class="d-spk-cone" src="/drift/pod-l-cone.webp" width={pods.l.w} height={pods.l.h} alt="" decoding="async" /></div>
         <h2 id="d-hear-h" class="d-headline d-headline--row"><span class="l1">Let&rsquo;s</span> <span class="l2">Drift.</span></h2>
-        <div class="d-spk d-spk--r" data-hear-spk="r" aria-hidden="true"><span class="d-spk-shadow"></span><div class="d-spk-pod"><span class="d-spk-body">{Array.from({ length: 12 }, (_, i) => <i style={`--z:${i + 1}`}></i>)}</span><img class="d-spk-face" src="/drift/speaker.webp" width="360" height="360" alt="" decoding="async" /><span class="d-spk-surr"></span><span class="d-spk-cone"></span><span class="d-spk-shine"></span></div></div>
+        <div class="d-spk d-spk--r" data-hear-spk="r" aria-hidden="true"
+          style={`--cx:${pods.r.cx}%;--cy:${pods.r.cy}%;--dx:${pods.r.dx};--dy:${pods.r.dy};aspect-ratio:${pods.r.w}/${pods.r.h}`}><img class="d-spk-pod" src="/drift/pod-r.webp" width={pods.r.w} height={pods.r.h} alt="" decoding="async" /><img class="d-spk-cone" src="/drift/pod-r-cone.webp" width={pods.r.w} height={pods.r.h} alt="" decoding="async" /></div>
       </div>
 
       <div class="d-hear">

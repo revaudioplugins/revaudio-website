@@ -47,10 +47,11 @@ export function createSpeakers(root: HTMLElement) {
       if (!g || !box || !el || calm.matches) continue;
       const hit = env[side] - slow[side] > .12, trickle = Math.random() < env[side] * dt * .7;
       if ((hit || trickle) && puffs.length < 45) {
-        const r = el.getBoundingClientRect(), dir = side === 'l' ? -1 : 1;
+        const r = el.getBoundingClientRect(), cs = getComputedStyle(el), dir = side === 'l' ? 1 : -1;   // the way the cone faces
+        const fx = (parseFloat(cs.getPropertyValue('--cx')) || 50) / 100, fy = (parseFloat(cs.getPropertyValue('--cy')) || 50) / 100;   // from the cone
         const n = 1;
         for (let k = 0; k < n; k++) puffs.push({
-          x: (r.left + r.width / 2 - box.left) * SCALE, y: (r.top + r.height / 2 - box.top) * SCALE,
+          x: (r.left + r.width * fx - box.left) * SCALE, y: (r.top + r.height * fy - box.top) * SCALE,
           vx: dir * (26 + Math.random() * 30), vy: -(8 + Math.random() * 14),
           r: r.width * .3 * SCALE, gr: 26 + Math.random() * 16, a: (hit ? .024 : .015) * (.6 + env[side] * .6),
           life: 5 + Math.random() * 2, age: 0,
