@@ -37,7 +37,7 @@ export function initHear(root: HTMLElement): void {
 
   const st = { track: chips[0].dataset.hearTrack!, after: true, playing: false, loading: false };
   let M: Manifest | null = null;
-  const manifest = fetch(`${BASE}peaks.json`).then((r) => r.json() as Promise<Manifest>).then((m) => { M = m; draw(); return m; });
+  const manifest = fetch(`${BASE}peaks.json`).then((r) => r.json() as Promise<Manifest>).then((m) => { M = m; paintUi(); draw(); return m; });
 
   // ---- audio
   let ctx: AudioContext | null = null, mix: GainNode, volG: GainNode, anL: AnalyserNode, anR: AnalyserNode;
@@ -143,7 +143,7 @@ export function initHear(root: HTMLElement): void {
     if (title) title.textContent = name();
     if (tag) tag.textContent = st.after ? 'DRIFT ON' : 'ORIGINAL';
     if (stateEl) stateEl.textContent = st.loading ? 'LOADING' : st.playing ? 'NOW PLAYING' : 'READY';
-    if (timeEl && !st.playing) timeEl.textContent = `00:00 / ${fmt(M?.tracks[st.track]?.dur ?? 0)}`;
+    if (timeEl && !st.playing && M) timeEl.textContent = `00:00 / ${fmt(M.tracks[st.track].dur)}`;   // before the manifest lands, the build-time length stays
   }
   function draw(): void {
     if (!M) return;
