@@ -27,18 +27,6 @@ const TRACKS = [
 type Peaks = { dur: number; before: { L: number[]; R: number[] }; after: { L: number[]; R: number[] } };
 const peaks = JSON.parse(readFileSync('public/audio/drift/peaks.json', 'utf8')) as { tracks: Record<string, Peaks> };
 
-/** A chip's line: the DRIFT bounce's envelope (L up, R down) as one closed cyan outline, 44 steps. */
-function chipPath(p: Peaks): string {
-  const N = 44, src = p.after, n = src.L.length, max = Math.max(...src.L, ...src.R, 1e-3);
-  const pick = (a: number[], i: number) => Math.max(...a.slice(Math.floor(i * n / N), Math.floor((i + 1) * n / N) || 1));
-  const top: string[] = [], bot: string[] = [];
-  for (let i = 0; i < N; i++) {
-    const x = (i + .5) / N * 100;
-    top.push(`${x.toFixed(1)} ${(20 - 17 * pick(src.L, i) / max).toFixed(1)}`);
-    bot.push(`${x.toFixed(1)} ${(20 + 17 * pick(src.R, i) / max).toFixed(1)}`);
-  }
-  return `M${top.join(' L')} L${bot.reverse().join(' L')} Z`;
-}
 const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 const [g, r] = await Promise.all([capGreen, capRed].map((src) => getImage({ src, width: 136, format: 'webp', quality: 82 })));
 const first = TRACKS[0];
@@ -54,17 +42,19 @@ const first = TRACKS[0];
           <div class="d-attract-hdr">
             <span class="d-attract-title"><b class="d-hear-n">1</b>PICK A TRACK</span>
           </div>
-          <ul class="d-cards d-hear-cards">
-            {TRACKS.map((t) => (
+          <ol class="d-hear-list">
+            {TRACKS.map((t, i) => (
               <li>
-                <button class="d-chip" type="button" data-hear-track={t.id} data-name={t.label}
+                <button class="d-hear-row" type="button" data-hear-track={t.id} data-name={t.label}
                   aria-pressed={t === first ? 'true' : 'false'} aria-label={`${t.label.toLowerCase()} track`}>
-                  <svg viewBox="0 0 100 40" preserveAspectRatio="none" aria-hidden="true"><path d={chipPath(peaks.tracks[t.id])} /></svg>
-                  <span class="d-chip-name">{t.label}</span>
+                  <span class="no">{String(i + 1).padStart(2, '0')}</span>
+                  <span class="nm">{t.label}</span>
+                  <span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+                  <span class="len">{fmt(peaks.tracks[t.id].dur)}</span>
                 </button>
               </li>
             ))}
-          </ul>
+          </ol>
         </div>
 
         <div class="d-hear-deck">
@@ -96,24 +86,40 @@ const first = TRACKS[0];
                   style={`background-image:url(${r.src})`}></button>
               </div>
             </div>
-            <!-- 3 · flip: a worn chrome push-to-start with a neon tube. Lit = DRIFT, dark = the original; the bars round it
-                 chase while the sound loads, the tube strikes when it plays (neon bench D1, Yoni 2026-10-15) -->
+            <!-- 3 · flip + volume: a pair on one steel plate (the page's panel material). The DRIFT push-to-start (lit = DRIFT,
+                 dark = the original; its bars chase while the sound loads) and DRIFT's own house knob (the plugin's filmstrip),
+                 its bars lit up to the level. Both rings = the page's balance-screen bars. -->
             <div class="d-hear-step d-hear-step--ab">
               <span class="d-hear-cap"><b class="d-hear-n">3</b>FLIP</span>
-              <div class="d-start" data-hear-start-box data-on="after">
-                <div class="d-start-in">
-                  <span class="d-start-ticks" aria-hidden="true">{Array.from({ length: 40 }, (_, i) => <i style={`--i:${i}`}></i>)}</span>
-                  <button class="d-start-pb" type="button" data-hear-start aria-pressed="true" aria-label="DRIFT. Lit: you hear DRIFT. Push for the original.">
-                    <span class="d-start-knurl"></span><span class="d-start-wear"></span><span class="d-start-seat"></span>
-                    <span class="d-start-tube"></span><span class="d-start-tube lit"></span>
-                    <span class="d-start-lens"><span class="d-start-bloom lit"></span></span>
-                    <span class="d-start-lg"><span class="w">DRIFT</span><span class="s">START</span></span>
-                    <span class="d-start-lg lit"><span class="w">DRIFT</span><span class="s">START</span></span>
-                    <span class="d-start-spill lit"></span>
-                  </button>
+              <div class="d-hear-pair">
+                <span class="d-screw tl" aria-hidden="true"></span><span class="d-screw tr" aria-hidden="true"></span>
+                <span class="d-screw bl" aria-hidden="true"></span><span class="d-screw br" aria-hidden="true"></span>
+                <div class="d-hear-unit">
+                  <div class="d-start" data-hear-start-box data-on="after">
+                    <div class="d-start-in">
+                      <span class="d-start-ticks" aria-hidden="true">{Array.from({ length: 40 }, (_, i) => <i style={`--i:${i}`}></i>)}</span>
+                      <button class="d-start-pb" type="button" data-hear-start aria-pressed="true" aria-label="DRIFT. Lit: you hear DRIFT. Push for the original.">
+                        <span class="d-start-knurl"></span><span class="d-start-wear"></span><span class="d-start-seat"></span>
+                        <span class="d-start-tube"></span><span class="d-start-tube lit"></span>
+                        <span class="d-start-lens"><span class="d-start-bloom lit"></span></span>
+                        <span class="d-start-lg"><span class="w">DRIFT</span><span class="s">START</span></span>
+                        <span class="d-start-lg lit"><span class="w">DRIFT</span><span class="s">START</span></span>
+                        <span class="d-start-spill lit"></span>
+                      </button>
+                    </div>
+                  </div>
+                  <span class="d-hear-unit-lbl" data-hear-say>DRIFT ON</span>
+                </div>
+                <div class="d-hear-unit">
+                  <div class="d-vol">
+                    <span class="d-vol-ticks" aria-hidden="true">{Array.from({ length: 31 }, (_, i) => <i style={`--i:${i}`}></i>)}</span>
+                    <div class="d-vol-knob" role="slider" tabindex="0" data-hear-vol aria-label="Volume" aria-valuemin="0" aria-valuemax="100" aria-valuenow="80">
+                      <span class="k3d" data-hear-vol-strip></span>
+                    </div>
+                  </div>
+                  <span class="d-hear-unit-lbl" data-hear-vol-read>VOLUME 80</span>
                 </div>
               </div>
-              <span class="d-start-say" data-hear-say>You hear <b>DRIFT</b></span>
             </div>
           </div>
 

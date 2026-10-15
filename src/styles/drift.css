@@ -1096,13 +1096,34 @@
 .d-screen-row { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; }
 .d-screen-t { font: 400 22px/1 var(--d-f-lcd); color: var(--d-lcd); text-shadow: 0 0 4px rgba(242, 76, 240, .6); }
 
-.d-hear { display: grid; grid-template-columns: minmax(0, 400fr) minmax(0, 680fr); gap: clamp(22px, 3vw, 40px); align-items: stretch; }
+.d-hear { display: grid; grid-template-columns: minmax(0, 380fr) minmax(0, 700fr); gap: clamp(22px, 3vw, 40px); align-items: stretch; }
 .d-hear-pick { display: flex; flex-direction: column; }
-.d-hear-cards { flex: 1; grid-template-columns: 1fr; grid-auto-rows: 1fr; gap: 10px; }
-.d-hear-cards .d-chip { flex-direction: row; align-items: center; gap: 14px; height: 100%; padding: 8px 14px; }
-.d-hear-cards .d-chip svg { order: 2; flex: 1; min-width: 0; height: 40px; }
-.d-hear-cards .d-chip-name { width: 6.4ch; text-align: left; }
-.d-hear-cards li:last-child { grid-column: 1 / -1; }   /* 5 tracks in 2 columns: the last one rides full width */
+/* 1 · the tracks: a list (number, name, a live EQ on the one playing, its length), the CRT's own type */
+.d-hear-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; flex: 1; }
+.d-hear-list li { flex: 1; display: flex; border-bottom: 1px dashed rgba(190, 90, 255, .22); }
+.d-hear-list li:last-child { border-bottom: 0; }
+.d-hear-row {
+  flex: 1; display: grid; grid-template-columns: 2.4ch minmax(0, 1fr) auto 3.6ch; align-items: center; gap: 12px;
+  min-height: 46px; padding: 6px 12px 6px 14px; border: 0; cursor: pointer; text-align: left; position: relative;
+  font: 400 26px/1 var(--d-f-lcd); letter-spacing: .04em; color: #cdb8e6; background: none;
+  transition: background-color .14s ease, color .14s ease;
+}
+.d-hear-row .no { color: #7a6890; }
+.d-hear-row .len { font-size: 20px; color: #7a6890; text-align: right; }
+.d-hear-row:hover { color: var(--d-white-ink); background: rgba(190, 90, 255, .06); }
+.d-hear-row[aria-pressed='true'] {
+  color: #fff; text-shadow: 0 0 8px var(--d-crt-glow);
+  background: linear-gradient(90deg, rgba(242, 76, 240, .26), rgba(242, 76, 240, .05) 70%, transparent);
+}
+.d-hear-row[aria-pressed='true']::before { content: ''; position: absolute; left: 0; top: 6px; bottom: 6px; width: 3px; border-radius: 2px; background: var(--d-hot); box-shadow: 0 0 10px var(--d-hot); }
+.d-hear-row[aria-pressed='true'] .no { color: var(--d-hot); }
+.d-hear-row[aria-pressed='true'] .len { color: var(--d-lcd); }
+.d-hear-row .eq { display: flex; align-items: flex-end; gap: 2px; height: 16px; width: 18px; opacity: 0; }
+.d-hear-row .eq i { flex: 1; height: 30%; background: var(--d-lcd); box-shadow: 0 0 5px rgba(242, 76, 240, .7); }
+[data-playing] .d-hear-row[aria-pressed='true'] .eq { opacity: 1; }
+[data-playing] .d-hear-row[aria-pressed='true'] .eq i { animation: d-hear-eq .8s ease-in-out infinite alternate; }
+.d-hear-row .eq i:nth-child(2) { animation-delay: -.3s !important; } .d-hear-row .eq i:nth-child(3) { animation-delay: -.55s !important; } .d-hear-row .eq i:nth-child(4) { animation-delay: -.15s !important; }
+@keyframes d-hear-eq { 0% { height: 20%; } 100% { height: 100%; } }
 /* the step numbers: a lit magenta key, like a lamp telling you where to go next */
 .d-hear-n {
   display: inline-grid; place-items: center; width: 1.75em; height: 1.75em; margin-right: .75em; border-radius: 3px;
@@ -1124,7 +1145,7 @@
   box-shadow: 0 0 0 1px rgba(4, 2, 8, .9), inset 0 1px 0 rgba(255, 240, 255, .06), inset 0 10px 18px -10px rgba(0, 0, 0, .7);
 }
 .d-hear-cap { display: flex; align-items: center; font: 400 12px/1 var(--d-f-pix); letter-spacing: .14em; color: var(--d-crt); text-shadow: 0 0 8px var(--d-crt-glow); }
-.d-hear-caps { display: flex; align-items: center; gap: 14px; }
+.d-hear-caps { display: flex; align-items: center; gap: 14px; flex: 1; justify-content: center; }
 /* stopped: the PLAY cap breathes (the next thing to touch) */
 .d-hear-play::after { content: ''; position: absolute; inset: -5px; border-radius: 50%; pointer-events: none; }
 [data-hear]:not([data-playing]) .d-hear-play::after { animation: d-hear-next 1.2s ease-in-out infinite; }
@@ -1134,7 +1155,7 @@
    Built at 204 px, scaled by --k. Lit (data-on=after) = DRIFT, dark = the original; while the sound loads the 40 bars
    round it chase clockwise (data-loading), and the tube strikes like a neon when it plays (.is-striking). Wear sized to
    read at 100 %: scratches both ways, warm patina, dark edge wear, chamfer chips, the knurl worn smooth where you grab. */
-.d-start { --k: .8; position: relative; width: calc(204px * var(--k)); height: calc(204px * var(--k)); margin: 0 auto; }
+.d-start { --k: .62; position: relative; width: calc(204px * var(--k)); height: calc(204px * var(--k)); margin: 0 auto; }
 .d-start-in { position: absolute; left: 0; top: 0; width: 204px; height: 204px; transform: scale(var(--k)); transform-origin: 0 0; display: grid; place-items: center; }
 .d-start .lit { opacity: 0; transition: opacity .22s ease; }
 .d-start[data-on='after']:not([data-loading]) .lit { opacity: 1; }
@@ -1144,17 +1165,17 @@
 .d-start[data-on='after']:not([data-loading]):not(.is-striking) .d-start-tube.lit { animation: d-start-hum 2.4s ease-in-out infinite; }
 /* the bars */
 .d-start-ticks { position: absolute; left: 50%; top: 50%; width: 0; height: 0; pointer-events: none; --r: 86px; }
-.d-start-ticks i { position: absolute; left: -1.5px; top: calc(-1 * var(--r)); width: 3px; height: 9px; border-radius: 2px; background: #2a1734;
+.d-start-ticks i { position: absolute; left: -1.5px; top: calc(-1 * var(--r)); width: 3px; height: 9px; border-radius: 1px; background: rgba(242, 76, 240, .12);
   transform-origin: 1.5px var(--r); transform: rotate(calc(var(--i) * 9deg)); transition: background .25s ease, box-shadow .25s ease; }
-.d-start[data-on='after'] .d-start-ticks i { background: rgba(255, 111, 227, .62); box-shadow: 0 0 6px rgba(255, 79, 216, .55); }
+.d-start[data-on='after'] .d-start-ticks i { background: rgb(255, 112, 247); box-shadow: 0 0 5px rgba(242, 76, 240, .7); }
 .d-start[data-loading] .d-start-ticks i { animation: d-start-chase .9s linear infinite; animation-delay: calc(var(--i) * .9s / 40 - .9s); }
-@keyframes d-start-chase { 0% { background: #fff4fd; box-shadow: 0 0 8px #ff4fd8, 0 0 16px rgba(255, 79, 216, .85); } 25% { background: rgba(255, 79, 216, .75); box-shadow: 0 0 6px rgba(255, 79, 216, .6); } 70%, 100% { background: #2a1734; box-shadow: none; } }
+@keyframes d-start-chase { 0% { background: #fff4fd; box-shadow: 0 0 8px #ff4fd8, 0 0 16px rgba(255, 79, 216, .85); } 25% { background: rgba(255, 79, 216, .75); box-shadow: 0 0 6px rgba(255, 79, 216, .6); } 70%, 100% { background: rgba(242, 76, 240, .12); box-shadow: none; } }
 /* the chrome bezel (cool sky on top, warm dash below), its knurl band and the wear */
 .d-start-pb { position: relative; width: 150px; height: 150px; border: 0; padding: 0; border-radius: 50%; cursor: pointer; -webkit-tap-highlight-color: transparent;
   background:
     radial-gradient(circle, transparent 63%, rgba(0, 0, 0, .55) 64%, transparent 66%),
     linear-gradient(rgba(120, 104, 112, .14), rgba(120, 104, 112, .14)),
-    conic-gradient(from 200deg, #f1edf5, #7a7286 12%, #ddd6e3 22%, #3d3646 36%, #c6bfd0 50%, #5a5266 64%, #e9e3ef 78%, #6a6276 90%, #f1edf5);
+    conic-gradient(from 200deg, #cdc4d8, #5a5068 12%, #a89eb6 22%, #2a2333 36%, #978ca6 50%, #42394f 64%, #bdb3c9 78%, #4c4358 90%, #cdc4d8);
   box-shadow: 0 14px 22px rgba(0, 0, 0, .7), 0 3px 5px rgba(0, 0, 0, .6), inset 0 0 0 1px rgba(255, 255, 255, .45), inset 0 -2px 3px rgba(0, 0, 0, .4); }
 .d-start-pb:focus-visible { outline: 2px solid var(--d-pink-ink); outline-offset: 10px; }
 .d-start-knurl { position: absolute; inset: 8px; border-radius: 50%;
@@ -1195,27 +1216,48 @@
 .d-start-lg.lit .s { color: var(--d-pink-ink); text-shadow: 0 0 8px rgba(255, 79, 216, .9); }
 .d-start-spill { position: absolute; inset: 8px; border-radius: 50%; pointer-events: none; mix-blend-mode: screen;
   background: radial-gradient(circle, transparent 52%, rgba(255, 79, 216, .28) 62%, transparent 76%); }
-.d-start-say { align-self: center; font: 500 12px/1.3 var(--d-f-head); letter-spacing: .14em; text-transform: uppercase; color: #7a6890; }
-.d-start-say b { font-weight: 600; color: var(--d-white-ink); }
-[data-ab='after'] .d-start-say b { color: #fff; text-shadow: 0 0 10px rgba(255, 79, 216, .9); }
 .d-hear-step--ab { align-items: stretch; }
+.d-hear-pair {
+  position: relative; display: flex; justify-content: center; align-items: flex-start; gap: clamp(18px, 3vw, 40px); padding: 18px 30px 14px; border-radius: 8px;
+  background: linear-gradient(rgba(12, 5, 18, .45), rgba(12, 5, 18, .45)), var(--d-img-panel) center / cover, #150a1f;
+  box-shadow: 0 0 0 1px rgba(4, 2, 8, .95), inset 0 14px 22px -12px rgba(0, 0, 0, .6), inset 12px 0 22px -14px rgba(0, 0, 0, .5), inset 0 -1px 0 rgba(255, 240, 255, .07);
+}
+.d-hear-pair .d-screw { width: 16px; height: 16px; }
+.d-hear-pair .d-screw.tl { left: 7px; top: 7px; } .d-hear-pair .d-screw.tr { right: 7px; top: 7px; }
+.d-hear-pair .d-screw.bl { left: 7px; bottom: 7px; } .d-hear-pair .d-screw.br { right: 7px; bottom: 7px; }
+.d-hear-unit { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.d-hear-unit-lbl { font: 500 11px/1 var(--d-f-head); letter-spacing: .26em; margin-left: .26em; text-transform: uppercase; color: #8f7aa6; white-space: nowrap; }
+[data-ab='after'] .d-hear-unit:first-child .d-hear-unit-lbl { color: var(--d-pink-ink); text-shadow: 0 0 8px rgba(255, 79, 216, .8); }
+/* VOLUME: DRIFT's own house knob (public/drift/knob3d-drift-65.webp, tools/drift-player/make_knob_strip.py), the
+   plugin's inset and lamp tamer; 31 bars over its 270 degrees, lit up to the level, the last lit bar white */
+.d-vol { position: relative; width: 126.5px; height: 126.5px; display: grid; place-items: center; }
+.d-vol-ticks { position: absolute; left: 50%; top: 50%; width: 0; height: 0; pointer-events: none; --r: 53px; }
+.d-vol-ticks i { position: absolute; left: -1px; top: calc(-1 * var(--r)); width: 2px; height: 6px; border-radius: 1px; background: rgba(242, 76, 240, .12);
+  transform-origin: 1px var(--r); transform: rotate(calc(-135deg + var(--i) * 9deg)); transition: background-color 60ms linear; }
+.d-vol-ticks i.on { background: rgb(255, 112, 247); box-shadow: 0 0 5px rgba(242, 76, 240, .7); }
+.d-vol-ticks i.tip { background: rgb(255, 240, 255); box-shadow: 0 0 6px rgba(255, 240, 255, .8); }
+.d-vol-knob { position: relative; width: 66px; height: 66px; border-radius: 50%; cursor: ns-resize; touch-action: none; }
+.d-vol-knob:focus-visible { outline: 2px solid var(--d-pink-ink); outline-offset: 8px; }
+.d-vol-knob .k3d { position: absolute; inset: -29%; pointer-events: none;
+  background: url(/drift/knob3d-drift-65.webp) 0 0 / 1300% 500% no-repeat; }
+.d-vol-knob .k3d::after { content: ''; position: absolute; inset: 0; pointer-events: none; clip-path: ellipse(27.3% 26.3% at 50% 46.6%);
+  background: radial-gradient(ellipse 14% 14% at 33.5% 35.5%, rgb(193, 172, 199) 0%, rgb(203, 185, 207) 25%, rgb(224, 214, 227) 50%, rgb(244, 240, 245) 75%, #fff 100%),
+              radial-gradient(ellipse 32% 32% at 33.5% 35.5%, rgb(238, 212, 245) 0%, rgb(241, 219, 246) 25%, rgb(246, 234, 250) 50%, rgb(252, 247, 253) 75%, #fff 100%);
+  background-blend-mode: multiply; mix-blend-mode: multiply; }
+.d-vol-knob:hover .k3d { filter: drop-shadow(0 0 10px rgba(180, 107, 255, .4)); }
 .d-hear-balance { margin-top: 0; }
 .drift-page .d-hear-note { margin: 18px auto 0; text-align: center; font: 400 12px/1.5 var(--d-f-pix); letter-spacing: .08em; color: var(--d-fg-dim); }
 
 @media (max-width: 1000px) {
   .d-hear { grid-template-columns: minmax(0, 1fr); }
-  .d-hear-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: auto; }
 }
 @media (max-width: 600px) {
   .d-hear-controls { grid-template-columns: minmax(0, 1fr); gap: 10px; }
   .d-hear-step { flex-direction: row; align-items: center; gap: 14px; padding: 10px 12px; }   /* one row per step: label, then its control */
   .d-hear-cap { min-width: 5.6em; }
-  .d-hear-step--ab { flex-wrap: wrap; justify-content: space-between; }
-  .d-start { --k: .66; margin: 0; }
-  .d-start-say { flex-basis: 100%; text-align: center; }
-  .d-hear-cards .d-chip { gap: 10px; padding: 7px 10px; }
-  .d-hear-cards .d-chip svg { height: 28px; }
-  .d-hear-cards .d-chip-name { font-size: 17px; }
+  .d-hear-step--ab { flex-direction: column; align-items: stretch; }
+  .d-hear-pair { padding: 16px 18px 12px; }
+  .d-hear-row { font-size: 23px; min-height: 42px; }
   .d-screen-title { font-size: 28px; }
 }
 @media (prefers-reduced-motion: reduce) {

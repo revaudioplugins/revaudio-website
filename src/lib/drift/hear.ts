@@ -23,6 +23,10 @@ export function initHear(root: HTMLElement): void {
   const startBox = q<HTMLElement>('[data-hear-start-box]');
   const startBtn = q<HTMLButtonElement>('[data-hear-start]');
   const say = q<HTMLElement>('[data-hear-say]');
+  const volKnob = q<HTMLElement>('[data-hear-vol]');
+  const volStrip = q<HTMLElement>('[data-hear-vol-strip]');
+  const volRead = q<HTMLElement>('[data-hear-vol-read]');
+  const volTicks = Array.from(root.querySelectorAll<HTMLElement>('.d-vol-ticks i'));
   const title = q<HTMLElement>('[data-hear-title]');
   const tag = q<HTMLElement>('[data-hear-tag]');
   const stateEl = q<HTMLElement>('[data-hear-state]');
@@ -36,7 +40,8 @@ export function initHear(root: HTMLElement): void {
   const manifest = fetch(`${BASE}peaks.json`).then((r) => r.json() as Promise<Manifest>).then((m) => { M = m; draw(); return m; });
 
   // ---- audio
-  let ctx: AudioContext | null = null, mix: GainNode, anL: AnalyserNode, anR: AnalyserNode;
+  let ctx: AudioContext | null = null, mix: GainNode, volG: GainNode, anL: AnalyserNode, anR: AnalyserNode;
+  let vol = .8;
   let bufL: Float32Array, bufR: Float32Array;
   let cur: { id: string; before: AudioBuffer; after: AudioBuffer; dur: number } | null = null;
   let srcs: { b: AudioBufferSourceNode; a: AudioBufferSourceNode; gB: GainNode; gA: GainNode } | null = null;
@@ -44,7 +49,8 @@ export function initHear(root: HTMLElement): void {
   const ensure = () => {
     if (ctx) return ctx;
     ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
-    mix = ctx.createGain(); mix.connect(ctx.destination);
+    mix = ctx.createGain(); volG = ctx.createGain(); volG.gain.value = vol * vol;
+    mix.connect(volG).connect(ctx.destination);   // the meters read before the volume: the pan stays true at any level
     const sp = ctx.createChannelSplitter(2); mix.connect(sp);
     anL = ctx.createAnalyser(); anR = ctx.createAnalyser(); anL.fftSize = anR.fftSize = 1024;
     sp.connect(anL, 0); sp.connect(anR, 1);
@@ -130,7 +136,7 @@ export function initHear(root: HTMLElement): void {
     startBtn?.setAttribute('aria-label', st.after ? 'DRIFT. Lit: you hear DRIFT. Push for the original.' : 'DRIFT. Dark: you hear the original. Push to start DRIFT.');
     startBox?.setAttribute('data-on', st.after ? 'after' : 'before');
     startBox?.toggleAttribute('data-loading', st.loading);
-    if (say) say.innerHTML = st.loading ? 'Starting&hellip;' : st.after ? 'You hear <b>DRIFT</b>' : 'You hear <b>the original</b>';
+    if (say) say.textContent = st.loading ? 'STARTING…' : st.after ? 'DRIFT ON' : 'ORIGINAL';
     root.dataset.ab = st.after ? 'after' : 'before';
     playBtn!.setAttribute('aria-pressed', String(st.playing));
     root.toggleAttribute('data-playing', st.playing);
@@ -189,6 +195,34 @@ export function initHear(root: HTMLElement): void {
   }
   const loopAfterStop = () => { if (!st.playing) loop(); };
   stopBtn.addEventListener('click', loopAfterStop);
+
+  // ---- VOLUME: DRIFT's own knob (65-frame strip, -135..+135 deg), its bars lit up to the level, the last one white
+  const setVol = (v: number) => {
+    vol = Math.max(0, Math.min(1, v));
+    if (volG && ctx) volG.gain.setTargetAtTime(vol * vol, ctx.currentTime, .02);
+    const f = Math.round(vol * 64), col = f % 13, row = Math.floor(f / 13);
+    if (volStrip) volStrip.style.backgroundPosition = `${(col / 12 * 100).toFixed(3)}% ${(row / 4 * 100).toFixed(3)}%`;
+    const lit = Math.round(vol * (volTicks.length - 1));
+    volTicks.forEach((t, i) => { t.classList.toggle('on', vol > 0 && i < lit); t.classList.toggle('tip', vol > 0 && i === lit); });
+    const pct = Math.round(vol * 100);
+    volKnob?.setAttribute('aria-valuenow', String(pct));
+    if (volRead) volRead.textContent = pct ? `VOLUME ${pct}` : 'MUTE';
+  };
+  if (volKnob) {
+    let drag: { y: number; x: number; v: number } | null = null;
+    volKnob.addEventListener('pointerdown', (e) => { volKnob.setPointerCapture(e.pointerId); drag = { y: e.clientY, x: e.clientX, v: vol }; });
+    volKnob.addEventListener('pointermove', (e) => { if (drag) setVol(drag.v + ((drag.y - e.clientY) + (e.clientX - drag.x)) / 180); });
+    const end = () => { drag = null; };
+    volKnob.addEventListener('pointerup', end); volKnob.addEventListener('pointercancel', end);
+    volKnob.addEventListener('wheel', (e) => { e.preventDefault(); setVol(vol - Math.sign(e.deltaY) * .05); }, { passive: false });
+    volKnob.addEventListener('dblclick', () => setVol(.8));
+    volKnob.addEventListener('keydown', (e) => {
+      const d = { ArrowUp: .05, ArrowRight: .05, ArrowDown: -.05, ArrowLeft: -.05, PageUp: .2, PageDown: -.2 }[e.key];
+      if (d !== undefined) { e.preventDefault(); setVol(vol + d); }
+      if (e.key === 'Home') { e.preventDefault(); setVol(0); } if (e.key === 'End') { e.preventDefault(); setVol(1); }
+    });
+  }
+  setVol(vol);
 
   addEventListener('resize', () => draw());
   paintUi();
