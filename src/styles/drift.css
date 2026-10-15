@@ -1130,31 +1130,75 @@
 [data-hear]:not([data-playing]) .d-hear-play::after { animation: d-hear-next 1.2s ease-in-out infinite; }
 @keyframes d-hear-next { 0%, 100% { box-shadow: 0 0 0 2px rgba(255, 79, 216, .2); } 50% { box-shadow: 0 0 0 2px var(--d-hot), 0 0 22px rgba(255, 79, 216, .85); } }
 
-/* FLIP: one wide switch. The lit thumb slides to the side you hear: violet steel on ORIGINAL, DRIFT magenta on DRIFT */
-.d-hear-step--ab { min-width: 0; }
-.d-hear-ab {
-  position: relative; display: grid; grid-template-columns: 1fr 1fr; flex: 1; min-height: 62px; padding: 5px; border-radius: 10px; cursor: pointer;
-  background: linear-gradient(180deg, #0b0512, #140a1d);
-  box-shadow: 0 0 0 1px rgba(4, 2, 8, .95), inset 0 6px 12px rgba(0, 0, 0, .75), inset 0 -1px 0 rgba(255, 240, 255, .08);
-}
-.d-hear-thumb {
-  position: absolute; top: 5px; bottom: 5px; left: 5px; width: calc(50% - 5px); border-radius: 7px; pointer-events: none;
-  background: linear-gradient(180deg, #ff6fe0, #d23cff 55%, #8a2be2);
-  box-shadow: 0 0 0 1px rgba(4, 2, 8, .9), inset 0 1px 0 rgba(255, 255, 255, .45), inset 0 -4px 8px rgba(60, 0, 90, .55), 0 0 26px rgba(255, 79, 216, .55);
-  transform: translateX(100%);
-  transition: transform .16s cubic-bezier(0.2, 0.9, 0.25, 1.25), background .16s ease, box-shadow .16s ease;
-}
-.d-hear-ab[data-on='before'] .d-hear-thumb {
-  transform: translateX(0);
-  background: linear-gradient(180deg, #54456a, #2a2036);
-  box-shadow: 0 0 0 1px rgba(4, 2, 8, .9), inset 0 1px 0 rgba(255, 255, 255, .2), inset 0 -4px 8px rgba(0, 0, 0, .5);
-}
-.d-hear-ab button {
-  position: relative; z-index: 1; border: 0; padding: 0 8px; background: none; cursor: pointer;
-  font: 400 clamp(12px, 1.15vw, 15px)/1 var(--d-f-pix); letter-spacing: .1em; color: #6f5a86;
-}
-.d-hear-ab button:hover { color: #b9a6cc; }
-.d-hear-ab button[aria-pressed='true'] { color: #fff; text-shadow: 0 1px 0 rgba(0, 0, 0, .45); }
+/* FLIP = a worn chrome push-to-start with a neon tube (neon bench D1, Yoni 2026-10-15: "polished metal, a bit more wear").
+   Built at 204 px, scaled by --k. Lit (data-on=after) = DRIFT, dark = the original; while the sound loads the 40 bars
+   round it chase clockwise (data-loading), and the tube strikes like a neon when it plays (.is-striking). Wear sized to
+   read at 100 %: scratches both ways, warm patina, dark edge wear, chamfer chips, the knurl worn smooth where you grab. */
+.d-start { --k: .8; position: relative; width: calc(204px * var(--k)); height: calc(204px * var(--k)); margin: 0 auto; }
+.d-start-in { position: absolute; left: 0; top: 0; width: 204px; height: 204px; transform: scale(var(--k)); transform-origin: 0 0; display: grid; place-items: center; }
+.d-start .lit { opacity: 0; transition: opacity .22s ease; }
+.d-start[data-on='after']:not([data-loading]) .lit { opacity: 1; }
+@keyframes d-start-strike { 0% { opacity: 0; } 8% { opacity: .9; } 14% { opacity: .1; } 26% { opacity: 1; } 32% { opacity: .35; } 46%, 100% { opacity: 1; } }
+.d-start.is-striking .lit { animation: d-start-strike .55s linear; }
+@keyframes d-start-hum { 0%, 100% { opacity: 1; } 50% { opacity: .93; } }
+.d-start[data-on='after']:not([data-loading]):not(.is-striking) .d-start-tube.lit { animation: d-start-hum 2.4s ease-in-out infinite; }
+/* the bars */
+.d-start-ticks { position: absolute; left: 50%; top: 50%; width: 0; height: 0; pointer-events: none; --r: 86px; }
+.d-start-ticks i { position: absolute; left: -1.5px; top: calc(-1 * var(--r)); width: 3px; height: 9px; border-radius: 2px; background: #2a1734;
+  transform-origin: 1.5px var(--r); transform: rotate(calc(var(--i) * 9deg)); transition: background .25s ease, box-shadow .25s ease; }
+.d-start[data-on='after'] .d-start-ticks i { background: rgba(255, 111, 227, .62); box-shadow: 0 0 6px rgba(255, 79, 216, .55); }
+.d-start[data-loading] .d-start-ticks i { animation: d-start-chase .9s linear infinite; animation-delay: calc(var(--i) * .9s / 40 - .9s); }
+@keyframes d-start-chase { 0% { background: #fff4fd; box-shadow: 0 0 8px #ff4fd8, 0 0 16px rgba(255, 79, 216, .85); } 25% { background: rgba(255, 79, 216, .75); box-shadow: 0 0 6px rgba(255, 79, 216, .6); } 70%, 100% { background: #2a1734; box-shadow: none; } }
+/* the chrome bezel (cool sky on top, warm dash below), its knurl band and the wear */
+.d-start-pb { position: relative; width: 150px; height: 150px; border: 0; padding: 0; border-radius: 50%; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  background:
+    radial-gradient(circle, transparent 63%, rgba(0, 0, 0, .55) 64%, transparent 66%),
+    linear-gradient(rgba(120, 104, 112, .14), rgba(120, 104, 112, .14)),
+    conic-gradient(from 200deg, #f1edf5, #7a7286 12%, #ddd6e3 22%, #3d3646 36%, #c6bfd0 50%, #5a5266 64%, #e9e3ef 78%, #6a6276 90%, #f1edf5);
+  box-shadow: 0 14px 22px rgba(0, 0, 0, .7), 0 3px 5px rgba(0, 0, 0, .6), inset 0 0 0 1px rgba(255, 255, 255, .45), inset 0 -2px 3px rgba(0, 0, 0, .4); }
+.d-start-pb:focus-visible { outline: 2px solid var(--d-pink-ink); outline-offset: 10px; }
+.d-start-knurl { position: absolute; inset: 8px; border-radius: 50%;
+  background: repeating-conic-gradient(from 0deg, rgba(255, 255, 255, .35) 0 1.5deg, rgba(0, 0, 0, .35) 1.5deg 3deg);
+  -webkit-mask: radial-gradient(circle, transparent 82%, #000 83%, #000 99%, transparent 100%), conic-gradient(from 300deg, rgba(0,0,0,.25), #000 25%, #000 55%, rgba(0,0,0,.35) 75%, rgba(0,0,0,.25));
+  -webkit-mask-composite: source-in; mask-composite: intersect;
+  mask: radial-gradient(circle, transparent 82%, #000 83%, #000 99%, transparent 100%), conic-gradient(from 300deg, rgba(0,0,0,.25), #000 25%, #000 55%, rgba(0,0,0,.35) 75%, rgba(0,0,0,.25));
+  opacity: .55; }
+.d-start-wear { position: absolute; inset: 0; border-radius: 50%; pointer-events: none;
+  background:
+    radial-gradient(9px 5px at 86% 30%, rgba(255, 255, 255, .55), transparent 70%),
+    radial-gradient(7px 4px at 18% 76%, rgba(255, 255, 255, .45), transparent 70%),
+    radial-gradient(30% 18% at 78% 82%, rgba(46, 32, 30, .62), transparent 72%),
+    radial-gradient(22% 16% at 18% 64%, rgba(70, 52, 44, .38), transparent 72%),
+    radial-gradient(26% 14% at 60% 6%, rgba(60, 44, 40, .3), transparent 72%),
+    linear-gradient(rgba(150, 112, 84, .14), rgba(150, 112, 84, .14)),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.3' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 .22  0 0 0 0 .17  0 0 0 0 .15  0 0 0 1.5 -.6'/></filter><rect width='200' height='200' filter='url(%23n)' opacity='.7'/><g fill='none' stroke-linecap='round'><g stroke='rgba(255,255,255,.78)' stroke-width='1.4'><path d='M27 55 L60 37'/><path d='M140 21 L172 42'/><path d='M179 121 L187 90'/><path d='M151 168 L119 184'/><path d='M38 162 L22 128'/><path d='M93 6 L120 9'/><path d='M13 99 L17 72'/><path d='M106 191 L133 185'/></g><g stroke='rgba(255,255,255,.42)' stroke-width='.9'><path d='M18 122 Q52 26 162 26'/><path d='M44 178 Q150 196 186 120'/><path d='M8 86 L34 30'/></g><g stroke='rgba(24,14,20,.72)' stroke-width='1.5'><path d='M160 58 L184 78'/><path d='M58 186 L88 194'/><path d='M30 70 L44 46'/><path d='M168 150 L182 128'/></g></g></svg>") center / 100% 100%;
+  -webkit-mask: radial-gradient(circle, transparent 62%, #000 64%); mask: radial-gradient(circle, transparent 62%, #000 64%); }
+.d-start-seat { position: absolute; inset: 21px; border-radius: 50%; background: #050307; box-shadow: inset 0 3px 5px #000, 0 1px 0 rgba(255, 255, 255, .35); }
+/* the neon: a white-hot core in a magenta tube, a halo, light spilling on the metal */
+.d-start-tube { position: absolute; inset: 25px; border-radius: 50%; pointer-events: none; border: 3px solid #2b1733; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .05), 0 1px 0 rgba(255, 255, 255, .06); }
+.d-start-tube.lit { border-color: #fff4fd;
+  box-shadow: 0 0 0 1.5px #ff6fe3, inset 0 0 0 1.5px #ff6fe3, 0 0 8px 2px rgba(255, 79, 216, .95), inset 0 0 8px 2px rgba(255, 79, 216, .75), 0 0 26px 6px rgba(255, 79, 216, .55), inset 0 0 24px 4px rgba(255, 79, 216, .35); }
+.d-start-lens { position: absolute; inset: 31px; border-radius: 50%; overflow: hidden; transition: transform .1s cubic-bezier(0.2, 0.9, 0.25, 1.25);
+  background: radial-gradient(80% 70% at 50% 60%, #1a1220 0%, #0b0710 70%, #060409 100%);
+  box-shadow: inset 0 6px 14px rgba(0, 0, 0, .9), inset 0 -2px 6px rgba(255, 190, 240, .05); }
+.d-start-lens::after { content: ''; position: absolute; inset: 0; border-radius: 50%; pointer-events: none;
+  background:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><g fill='none' stroke-linecap='round' stroke='rgba(255,255,255,.22)' stroke-width='.5'><path d='M22 34 L41 22'/><path d='M63 71 L78 58'/><path d='M30 74 L36 66'/></g><g fill='none' stroke='rgba(255,255,255,.12)' stroke-width='.35'><path d='M55 18 Q70 24 80 40'/><path d='M14 52 L22 47'/></g></svg>") center / 100% 100%,
+    radial-gradient(70% 38% at 40% 14%, rgba(220, 235, 255, .22), transparent 70%),
+    radial-gradient(60% 20% at 50% 96%, rgba(255, 200, 170, .07), transparent 70%); }
+.d-start-pb:active .d-start-lens { transform: scale(.97); }
+.d-start-bloom { position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle, rgba(255, 79, 216, .32), rgba(255, 79, 216, .08) 55%, transparent 72%); }
+.d-start-lg { position: absolute; inset: 31px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; pointer-events: none; }
+.d-start-lg .w { font: 400 15px/1 var(--d-f-badge); letter-spacing: .2em; margin-left: .2em; color: #4c4157; text-shadow: 0 1px 0 rgba(255, 255, 255, .06), 0 -1px 0 rgba(0, 0, 0, .8); }
+.d-start-lg .s { font: 500 9px/1 var(--d-f-head); letter-spacing: .32em; margin-left: .32em; color: #3f354a; }
+.d-start-lg.lit .w { color: #fff; text-shadow: 0 0 3px #fff, 0 0 12px rgba(255, 79, 216, .95), 0 0 24px rgba(255, 79, 216, .5); }
+.d-start-lg.lit .s { color: var(--d-pink-ink); text-shadow: 0 0 8px rgba(255, 79, 216, .9); }
+.d-start-spill { position: absolute; inset: 8px; border-radius: 50%; pointer-events: none; mix-blend-mode: screen;
+  background: radial-gradient(circle, transparent 52%, rgba(255, 79, 216, .28) 62%, transparent 76%); }
+.d-start-say { align-self: center; font: 500 12px/1.3 var(--d-f-head); letter-spacing: .14em; text-transform: uppercase; color: #7a6890; }
+.d-start-say b { font-weight: 600; color: var(--d-white-ink); }
+[data-ab='after'] .d-start-say b { color: #fff; text-shadow: 0 0 10px rgba(255, 79, 216, .9); }
+.d-hear-step--ab { align-items: stretch; }
 .d-hear-balance { margin-top: 0; }
 .drift-page .d-hear-note { margin: 18px auto 0; text-align: center; font: 400 12px/1.5 var(--d-f-pix); letter-spacing: .08em; color: var(--d-fg-dim); }
 
@@ -1166,8 +1210,9 @@
   .d-hear-controls { grid-template-columns: minmax(0, 1fr); gap: 10px; }
   .d-hear-step { flex-direction: row; align-items: center; gap: 14px; padding: 10px 12px; }   /* one row per step: label, then its control */
   .d-hear-cap { min-width: 5.6em; }
-  .d-hear-ab { min-height: 54px; }
-  .d-hear-ab button { font-size: 11px; letter-spacing: .03em; padding: 0 4px; }
+  .d-hear-step--ab { flex-wrap: wrap; justify-content: space-between; }
+  .d-start { --k: .66; margin: 0; }
+  .d-start-say { flex-basis: 100%; text-align: center; }
   .d-hear-cards .d-chip { gap: 10px; padding: 7px 10px; }
   .d-hear-cards .d-chip svg { height: 28px; }
   .d-hear-cards .d-chip-name { font-size: 17px; }
@@ -1175,7 +1220,7 @@
 }
 @media (prefers-reduced-motion: reduce) {
   [data-hear]:not([data-playing]) .d-hear-play::after { animation: none; box-shadow: 0 0 0 2px var(--d-hot); }
-  .d-hear-thumb { transition: none; }
+  .d-start.is-striking .lit, .d-start .d-start-tube.lit, .d-start[data-loading] .d-start-ticks i { animation: none !important; }
 }
 
 /* ==========================================================================

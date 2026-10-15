@@ -20,8 +20,9 @@ export function initHear(root: HTMLElement): void {
   const chips = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-hear-track]'));
   const playBtn = q<HTMLButtonElement>('[data-hear="play"]');
   const stopBtn = q<HTMLButtonElement>('[data-hear="stop"]');
-  const abBox = q<HTMLElement>('[data-hear-ab-box]');
-  const abBtns = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-hear-ab]'));
+  const startBox = q<HTMLElement>('[data-hear-start-box]');
+  const startBtn = q<HTMLButtonElement>('[data-hear-start]');
+  const say = q<HTMLElement>('[data-hear-say]');
   const title = q<HTMLElement>('[data-hear-title]');
   const tag = q<HTMLElement>('[data-hear-tag]');
   const stateEl = q<HTMLElement>('[data-hear-state]');
@@ -88,6 +89,14 @@ export function initHear(root: HTMLElement): void {
     if (!t) return;
     start(keepAt % t.dur);
     st.playing = true; paintUi(); loop();
+    if (st.after) strike();   // the sound is here: the tube strikes
+  };
+  // the neon strike: two flickers, then steady (CSS d-start-strike)
+  let strikeT = 0;
+  const strike = () => {
+    if (!startBox) return;
+    startBox.classList.remove('is-striking'); void startBox.offsetWidth; startBox.classList.add('is-striking');
+    clearTimeout(strikeT); strikeT = window.setTimeout(() => startBox.classList.remove('is-striking'), 600);
   };
   const stop = () => { stopSources(); st.playing = false; paintUi(); };
   const pick = (id: string) => {
@@ -100,21 +109,28 @@ export function initHear(root: HTMLElement): void {
     if (after === st.after) return;
     st.after = after; paintUi(); draw();
     if (srcs && ctx) { const now = ctx.currentTime; srcs.gA.gain.setTargetAtTime(after ? 1 : 0, now, .012); srcs.gB.gain.setTargetAtTime(after ? 0 : 1, now, .012); }
+    if (after && st.playing && !st.loading) strike();
   };
   playBtn.addEventListener('click', () => { if (!st.playing) void play(); });
   stopBtn.addEventListener('click', stop);
   chips.forEach((b) => b.addEventListener('click', () => pick(b.dataset.hearTrack!)));
-  abBtns.forEach((b) => b.addEventListener('click', () => flip(b.dataset.hearAb === 'after')));
-  // the whole switch is one control: a click on its body (the thumb) flips it
-  abBox?.addEventListener('click', (e) => { if (!(e.target as HTMLElement).closest('[data-hear-ab]')) flip(!st.after); });
+  // push to start: one push toggles DRIFT; pushing it on while stopped also starts the music (in DRIFT)
+  startBtn?.addEventListener('click', () => {
+    if (st.loading) return;
+    const on = !st.after; flip(on);
+    if (on && !st.playing) void play();
+  });
 
   // ---- paint
   const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
   const name = () => chips.find((c) => c.dataset.hearTrack === st.track)?.dataset.name ?? '';
   function paintUi(): void {
     chips.forEach((c) => c.setAttribute('aria-pressed', String(c.dataset.hearTrack === st.track)));
-    abBtns.forEach((b) => b.setAttribute('aria-pressed', String((b.dataset.hearAb === 'after') === st.after)));
-    abBox?.setAttribute('data-on', st.after ? 'after' : 'before');
+    startBtn?.setAttribute('aria-pressed', String(st.after));
+    startBtn?.setAttribute('aria-label', st.after ? 'DRIFT. Lit: you hear DRIFT. Push for the original.' : 'DRIFT. Dark: you hear the original. Push to start DRIFT.');
+    startBox?.setAttribute('data-on', st.after ? 'after' : 'before');
+    startBox?.toggleAttribute('data-loading', st.loading);
+    if (say) say.innerHTML = st.loading ? 'Starting&hellip;' : st.after ? 'You hear <b>DRIFT</b>' : 'You hear <b>the original</b>';
     root.dataset.ab = st.after ? 'after' : 'before';
     playBtn!.setAttribute('aria-pressed', String(st.playing));
     root.toggleAttribute('data-playing', st.playing);
