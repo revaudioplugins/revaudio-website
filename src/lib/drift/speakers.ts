@@ -2,7 +2,8 @@
  * #hear speakers + smoke (Yoni 2026-10-15: "a pair of speakers ... the membranes moving ... very light, almost not
  * showing smoke that gives movement to the whole page"). Driven by hear.ts every frame with the measured L / R
  * levels: the LEFT speaker moves with the left channel, the RIGHT with the right, so DRIFT's pan is something you
- * see travel between them. The cone pumps (scale), brightens a touch on a hit and lights its LED ring.
+ * see travel between them. The cone moves in real depth (translateZ in the 3D pod) and grows, the surround
+ * stretches with it; the drive is the level plus its hits (the jump over its own slow average), so kicks punch.
  * Smoke: soft violet puffs leave each speaker on its hits, drift outward and up across the section, grow and fade over
  * ~6 s at about 2 % alpha (screen blend, half-resolution canvas, max 45 puffs). Off under reduced motion.
  */
@@ -37,10 +38,11 @@ export function createSpeakers(root: HTMLElement) {
     const box = cv?.getBoundingClientRect();
     for (const side of ['l', 'r'] as const) {
       const t = level(side === 'l' ? L : R), e = env[side];
-      env[side] = e + (t - e) * Math.min(1, dt * (t > e ? 28 : 7));      // fast attack, softer release: a cone, not a meter
+      env[side] = e + (t - e) * Math.min(1, dt * (t > e ? 45 : 9));      // fast attack, quick release: a cone, not a meter
       slow[side] += (env[side] - slow[side]) * Math.min(1, dt * 3);
+      const drive = Math.max(0, Math.min(1, env[side] * 1.25 + Math.max(0, env[side] - slow[side]) * 2.4));
       const el = spk[side];
-      if (el) el.style.setProperty('--e', env[side].toFixed(3));
+      if (el) el.style.setProperty('--e', drive.toFixed(3));
       // smoke: a puff on a hit (the level jumps over its own slow average), a thin trickle while it plays loud
       if (!g || !box || !el || calm.matches) continue;
       const hit = env[side] - slow[side] > .12, trickle = Math.random() < env[side] * dt * .7;
