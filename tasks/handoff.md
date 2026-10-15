@@ -3,7 +3,9 @@
   turns the glowing words into plugin names + thumbnails; a lit plugin shows a bigger image, a short description,
   "Try it free" (email gate) and a small product-page link; carousel + Store go; later ratings + "you may also like".
 - Worktree `.claude/worktrees/home-library` off origin/main 697f49d (node_modules = junction to the main clone's).
-- Plan + research + open decisions D1-D4: `tasks/home-library-plan.md`. Nothing built, no source file touched yet.
+- Plan + research + decisions: `tasks/home-library-plan.md`. User took all four recommended options (D1 button =
+  PLUGINS, D2 categories always visible inside the TV, D3 `/store` redirects to the home TV, D4 ratings = verified
+  users only, own branch after this one). Nothing built, no source file touched yet; source work waits on "go".
 - Waits on `revaudio-32`'s ACTIVE claim on `src/components/WordWall.astro` (TV weight fix, 2026-10-15) before
   phase 2; no claim on source files until the user's go.
 

@@ -22,17 +22,19 @@
   this branch has their commit.
 - "apply ww bench" (the TV frame roll pick) is still open. The frame stays in this design, so that pick still applies.
 
-## Decisions for the user (asked 2026-10-15)
+## Decisions (user, 2026-10-15; all four took the recommended option)
 
-- D1 Button label: PLUGINS (recommended by the research) or LIBRARY.
-- D2 What the TV shows before any click: the ALL channel with the category buttons on the TV (recommended), or
-  today's word wall until the header button is clicked.
-- D3 `/store`: redirect to the home TV (recommended here), or keep a plain list page that is not in the nav.
-  Note: the research synthesis leaned the other way (keep a catalog page, drop only the nav item: every readable
-  peer except Kilohearts and Denise keeps one). The recommendation differs because the catalog is 4 live plugins,
-  the product pages carry search and ads, and the user asked for one place to browse.
-- D4 Ratings: collect now from verified users only, show stars from ~5 ratings, insights = a team page, on its own
-  branch after this one (recommended); or open stars to every visitor now.
+- D1 Button label: **PLUGINS** (not LIBRARY: peers use "Library" for a customer's own downloads). "LIBRARY" may
+  still appear as the heading inside the TV; decide on the bench.
+- D2 Categories: **inside the TV, always visible.** The TV opens on the ALL channel with the category buttons in it;
+  the header button scrolls to the TV. (Confirms "על המסך" = on the TV, not an overlay over the page.)
+- D3 `/store`: **redirect to the home TV** (`/?c=all`). Note: the research synthesis leaned the other way (keep a
+  catalog page, drop only the nav item: every readable peer except Kilohearts and Denise keeps one). The user took
+  the redirect: the catalog is 4 live plugins, the product pages carry search and ads, and one place to browse.
+- D4 Ratings: **verified users only, on its own branch after this one.** Stars show from ~5 ratings, with the
+  count; insights = a team page, not public.
+
+Go: answers are not a go. Source work starts only on the user's explicit "go".
 
 Defaults taken unless the user objects: a price line in the preview (`$49` / `$19` / `Free download` /
 `Beta: free 30-day trial`), no Add to cart on home (buying stays on the product page); plugins in development
@@ -79,10 +81,10 @@ without an open trial (The AC) stay off the TV; the TV never changes by itself (
 
 ### Phase 3: header + removals
 
-- [ ] Header: the new button takes the lit "Store" slot, in words. On home it scrolls to the TV and opens the
-      categories; on every other page it goes to `/?c=all`. Phones: visible next to the menu button.
+- [ ] Header: a PLUGINS button (D1) takes the lit "Store" slot. On home it scrolls to the TV (the categories are
+      already visible there, D2); on every other page it goes to `/?c=all`. Phones: visible next to the menu button.
 - [ ] `PluginShowcase` off the home page; the file is deleted once nothing imports it.
-- [ ] `/store` per D3. Old links must keep working, including the licence worker's `https://revaudio.net/store`
+- [ ] `/store` redirects to `/?c=all` (D3). Old links must keep working, including the licence worker's `https://revaudio.net/store`
       link (RevLimiter repo, `gumroad-worker/src/worker.js`). GitHub Pages cannot send a real 301: the redirect is
       either a meta-refresh page in the repo (with a canonical link) or a Cloudflare Redirect Rule (dashboard only).
       Never promise a "301" without the Cloudflare rule.
@@ -103,7 +105,7 @@ without an open trial (The AC) stay off the TV; the TV never changes by itself (
 
 ### Phase 5: later, each on its own branch
 
-- [ ] Ratings (D4): ask verified users only (after a Paddle purchase, at the end of a trial, weeks after a GAS
+- [ ] Ratings (D4, decided: verified only, after the TV): ask verified users only (after a Paddle purchase, at the end of a trial, weeks after a GAS
       download), tag each rating bought / trial / free; show stars from ~5 ratings with the count; publish low
       ones too; a real quote until then; team insights page; Cloudflare Worker + D1; the worker goes into the edge
       CSP `connect-src` (dashboard only); `AggregateRating` markup on product pages only.
