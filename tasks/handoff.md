@@ -1,3 +1,12 @@
+## 2026-10-15 — Home LIBRARY: the TV becomes the plugin browser, carousel + Store nav out, branch `feat/home-library` (Claude Code `revaudio-a6`, laptop 1) — PLAN, waiting for the user's go
+- User: one new branch for the home page; a top-right LIBRARY button opens plugin categories on the TV; a category
+  turns the glowing words into plugin names + thumbnails; a lit plugin shows a bigger image, a short description,
+  "Try it free" (email gate) and a small product-page link; carousel + Store go; later ratings + "you may also like".
+- Worktree `.claude/worktrees/home-library` off origin/main 697f49d (node_modules = junction to the main clone's).
+- Plan + research + open decisions D1-D4: `tasks/home-library-plan.md`. Nothing built, no source file touched yet.
+- Waits on `revaudio-32`'s ACTIVE claim on `src/components/WordWall.astro` (TV weight fix, 2026-10-15) before
+  phase 2; no claim on source files until the user's go.
+
 ## 2026-10-14 — Homepage word wall: DRIFT panel, two new looks + HD live window on a bench, branch `feat/drift-wordwall` (Claude Code `revaudio-32`, laptop 1) — PUSHED TO MAIN = LIVE 2026-10-14 (Dan: "send a checker; if it passes push to main, if not fix then push"); bench tuning ("apply ww bench") still open
 - Dan: "the DRIFT panel on the word wall needs a more interesting design" -> picks: build BOTH looks (NEON sign / STEER the
   words, + BOTH) and show them on a bench; the window = an HD live video of DRIFT running.
