@@ -1,0 +1,121 @@
+---
+/**
+ * #hear — the test drive, right under the hero (Yoni 2026-10-15: "same like the drift page ... tight and plug and
+ * play ... easiest to understand"). Built only from the page's own parts: the DRIFT dash panel, the SELECT TRACKS
+ * chips (each chip draws its own track's waveform in the cyan line, where #drive draws a circuit), the magenta LCD,
+ * the arcade caps and the 24-bar balance screen. Three steps, numbered on the plate: 1 pick a track, 2 play,
+ * 3 flip ORIGINAL / DRIFT.
+ *
+ * One track at a time, real bounces (tools/drift-player/prep_audio.py): public/audio/drift/<id>-before.m4a = the
+ * original, level-matched DOWN to the DRIFT bounce's loudness; <id>-after.m4a = the DRIFT bounce, untouched;
+ * peaks.json = loop length + L/R waveform of both. hear.ts measures where the sound sits and writes it to the
+ * page's pan bus, so the hero wheel, the rails and this balance screen follow what you hear.
+ */
+import { readFileSync } from 'node:fs';
+import { getImage } from 'astro:assets';
+import DriftPanel from './DriftPanel.astro';
+import capGreen from '../../assets/seasons/drift/mm_cap_green.png';
+import capRed from '../../assets/seasons/drift/mm_cap_red.png';
+
+const TRACKS = [
+  { id: 'vocals', label: 'VOCALS' },
+  { id: 'keys', label: 'KEYS' },
+  { id: 'synth', label: 'SYNTH' },
+  { id: 'guitar', label: 'GUITAR' },
+  { id: 'perc', label: 'PERC' },
+];
+type Peaks = { dur: number; before: { L: number[]; R: number[] }; after: { L: number[]; R: number[] } };
+const peaks = JSON.parse(readFileSync('public/audio/drift/peaks.json', 'utf8')) as { tracks: Record<string, Peaks> };
+
+/** A chip's line: the DRIFT bounce's envelope (L up, R down) as one closed cyan outline, 44 steps. */
+function chipPath(p: Peaks): string {
+  const N = 44, src = p.after, n = src.L.length, max = Math.max(...src.L, ...src.R, 1e-3);
+  const pick = (a: number[], i: number) => Math.max(...a.slice(Math.floor(i * n / N), Math.floor((i + 1) * n / N) || 1));
+  const top: string[] = [], bot: string[] = [];
+  for (let i = 0; i < N; i++) {
+    const x = (i + .5) / N * 100;
+    top.push(`${x.toFixed(1)} ${(20 - 17 * pick(src.L, i) / max).toFixed(1)}`);
+    bot.push(`${x.toFixed(1)} ${(20 + 17 * pick(src.R, i) / max).toFixed(1)}`);
+  }
+  return `M${top.join(' L')} L${bot.reverse().join(' L')} Z`;
+}
+const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+const [g, r] = await Promise.all([capGreen, capRed].map((src) => getImage({ src, width: 136, format: 'webp', quality: 82 })));
+const first = TRACKS[0];
+---
+<section class="d-sec d-hear-sec" id="hear" aria-labelledby="d-hear-h" data-hear>
+  <div class="d-wrap">
+    <DriftPanel sticker="試聴" class="d-hear-panel">
+      <h2 id="d-hear-h" class="d-headline d-headline--row"><span class="l1">Same track.</span> <span class="l2">Flip DRIFT.</span></h2>
+
+      <div class="d-hear">
+        <!-- 1 · pick a track -->
+        <div class="d-crt d-attract d-hear-pick">
+          <div class="d-attract-hdr">
+            <span class="d-attract-title"><b class="d-hear-n">1</b>PICK A TRACK</span>
+          </div>
+          <ul class="d-cards d-hear-cards">
+            {TRACKS.map((t) => (
+              <li>
+                <button class="d-chip" type="button" data-hear-track={t.id} data-name={t.label}
+                  aria-pressed={t === first ? 'true' : 'false'} aria-label={`${t.label.toLowerCase()} track`}>
+                  <svg viewBox="0 0 100 40" preserveAspectRatio="none" aria-hidden="true"><path d={chipPath(peaks.tracks[t.id])} /></svg>
+                  <span class="d-chip-name">{t.label}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div class="d-hear-deck">
+          <!-- the screen: what you hear, its waveform (L over R), the clock -->
+          <div class="d-lcd d-lcd--big d-screen d-hear-screen">
+            <div class="d-screen-hdr">
+              <span data-hear-state>READY</span>
+              <span class="d-hear-tag" data-hear-tag>DRIFT ON</span>
+            </div>
+            <div class="d-screen-title" data-hear-title aria-live="polite">{first.label}</div>
+            <div class="d-hear-wave">
+              <span class="d-hear-lr" aria-hidden="true"><i>L</i><i>R</i></span>
+              <canvas data-hear-wave aria-hidden="true"></canvas>
+            </div>
+            <div class="d-screen-row">
+              <span class="d-screen-t" data-pan-readout>PAN C</span>
+              <span class="d-screen-t" data-hear-time>00:00 / {fmt(peaks.tracks[first.id].dur)}</span>
+            </div>
+          </div>
+
+          <div class="d-hear-controls">
+            <!-- 2 · play -->
+            <div class="d-hear-step">
+              <span class="d-hear-cap"><b class="d-hear-n">2</b>PLAY</span>
+              <div class="d-hear-caps">
+                <button class="d-cap d-hear-play" type="button" data-hear="play" aria-pressed="false" aria-label="Play"
+                  style={`background-image:url(${g.src})`}></button>
+                <button class="d-cap d-cap--stop" type="button" data-hear="stop" aria-label="Stop"
+                  style={`background-image:url(${r.src})`}></button>
+              </div>
+            </div>
+            <!-- 3 · flip: the one switch that matters -->
+            <div class="d-hear-step d-hear-step--ab">
+              <span class="d-hear-cap"><b class="d-hear-n">3</b>FLIP</span>
+              <div class="d-hear-ab" role="group" aria-label="Hear the original or DRIFT" data-hear-ab-box data-on="after">
+                <span class="d-hear-thumb" aria-hidden="true"></span>
+                <button type="button" data-hear-ab="before" aria-pressed="false">ORIGINAL</button>
+                <button type="button" data-hear-ab="after" aria-pressed="true">DRIFT</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- where the sound sits: the page's balance screen, on the pan bus -->
+          <div class="d-lcd d-lcd--big d-balance-box d-hear-balance">
+            <div class="d-balance" data-balance aria-hidden="true"></div>
+            <div class="d-balance-lr"><span>左 L</span><span>WHERE IT SITS</span><span>R 右</span></div>
+          </div>
+        </div>
+      </div>
+
+      <p class="d-hear-note">Turn it up. The wheel and the rails follow what you hear.</p>
+    </DriftPanel>
+  </div>
+</section>

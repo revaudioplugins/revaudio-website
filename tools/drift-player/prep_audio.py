@@ -3,8 +3,8 @@
   python tools/drift-player/prep_audio.py "C:/shirimmmmmm"
 
 In:   <src>/<name> bypassed.wav + <name> drift.wav per track (percussion's original is "percussion dry.wav").
-Out:  public/drift-player/audio/<id>-before.m4a, <id>-after.m4a   AAC 160k (house setting, like station-mixer)
-      public/drift-player/peaks.json   per track: loop length, the trim applied, L/R peaks for both versions
+Out:  public/audio/drift/<id>-before.m4a, <id>-after.m4a   AAC 160k (house setting, like station-mixer)
+      public/audio/drift/peaks.json   per track: loop length, the trim applied, L/R peaks for both versions
 
 Level match (honest A/B): the DRIFT bounces came back quieter than the originals (1 to 4.8 LU). A louder file
 always sounds "better", so the ORIGINAL is turned DOWN to the DRIFT file's integrated loudness (EBU R128).
@@ -17,7 +17,7 @@ import numpy as np
 
 SRC = sys.argv[1] if len(sys.argv) > 1 else 'C:/shirimmmmmm'
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-OUT = os.path.join(ROOT, 'public', 'drift-player')
+OUT = os.path.join(ROOT, 'public', 'audio', 'drift')
 SR, PAD, BINS = 48000, 0.25, 176
 TRACKS = [  # id, original, DRIFT
     ('vocals', 'Vocal bypassed', 'Vocal drift'),
@@ -48,10 +48,10 @@ def write(a, name):
     p = int(PAD * SR)
     padded = np.concatenate([a[-p:], a, a[:p]]).astype('<f4')
     subprocess.run(['ffmpeg', '-v', 'error', '-y', '-f', 'f32le', '-ar', str(SR), '-ac', '2', '-i', '-',
-                    '-c:a', 'aac', '-b:a', '160k', '-movflags', '+faststart', os.path.join(OUT, 'audio', name)],
+                    '-c:a', 'aac', '-b:a', '160k', '-movflags', '+faststart', os.path.join(OUT, name)],
                    input=padded.tobytes(), check=True)
 
-os.makedirs(os.path.join(OUT, 'audio'), exist_ok=True)
+os.makedirs(OUT, exist_ok=True)
 manifest = {'pad': PAD, 'sr': SR, 'bins': BINS, 'tracks': {}}
 for tid, orig, drift in TRACKS:
     fo, fd = os.path.join(SRC, orig + '.wav'), os.path.join(SRC, drift + '.wav')
@@ -66,5 +66,5 @@ for tid, orig, drift in TRACKS:
 
 with open(os.path.join(OUT, 'peaks.json'), 'w') as f:
     json.dump(manifest, f, separators=(',', ':'))
-size = sum(os.path.getsize(os.path.join(OUT, 'audio', x)) for x in os.listdir(os.path.join(OUT, 'audio')))
+size = sum(os.path.getsize(os.path.join(OUT, x)) for x in os.listdir(OUT) if x.endswith('.m4a'))
 print(f'wrote {OUT}: 10 m4a {size/1e6:.1f} MB + peaks.json {os.path.getsize(os.path.join(OUT, "peaks.json"))/1e3:.0f} kB')

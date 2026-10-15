@@ -93,6 +93,28 @@ matching the drift page", "change the gear selector to a manual gear knob of a d
 - Source moves: the cut shell is pixelize.py's source only (tools/drift-player/src/shell.webp, not shipped);
   horn.webp retired (PLAY/STOP left the wheel in round 4).
 
+## Round 8 (2026-10-15): TOTAL REDESIGN, native to the live /drift page (Yoni: "it doesn't look tight enough ... same like
+drift page ... same colors, same fonts, same styles ... tight and plug and play ... easiest to understand ... full creative decision")
+
+The toy (rounds 1-7, last commit 6e8a72c before the rebase) is retired: bench, AI art, pixel art and their tools are
+removed (restore from git history). The player is now a real page section in the slot the page's architecture kept for
+it (#hear, right under the hero), built only from the page's own parts and classes:
+
+- `src/components/drift/DriftHear.astro`: DriftPanel (screws, checker, sticker 試聴 = "listen"), headline row
+  "SAME TRACK. / FLIP DRIFT.", three numbered steps: 1 PICK A TRACK (the SELECT TRACKS CRT + d-chip tiles, each
+  chip's cyan line = that track's DRIFT envelope, built at build time from peaks.json), 2 PLAY (the page's green /
+  red arcade caps; PLAY breathes while stopped), 3 FLIP (one wide ORIGINAL | DRIFT switch, lit thumb slides).
+  The magenta LCD (NOW PLAYING · track · DRIFT ON / ORIGINAL tag · L-over-R waveform with playhead · PAN readout · clock)
+  and the page's 24-bar balance screen ("WHERE IT SITS").
+- `src/lib/drift/hear.ts`: real bounces only, one track in memory, both versions in sync (12 ms crossfade), padded AAC
+  loop window. The measured L/R pan goes onto the page's pan bus ('demo'): the hero wheel, the 左/右 rails, the PAN
+  readout and the balance screen all follow what you hear; stopped, it settles to centre.
+- Wiring: drift.astro mounts DriftHear in the #hear slot; init.ts lazy-loads hear.ts only when #hear renders;
+  drift.ts demoMode 'real' + demoWholeSound true (the build gates pass); audio moved to public/audio/drift/
+  (the path the page's gate checks); the old structure-test deck (DriftHeadUnit.astro + demo.ts) removed.
+- Responsive HTML (no scaled stage): desktop = chips | deck; <=1000 one column; <=600 the page's compact chips and
+  one row per step. `npm run build` OK (26 pages). Headless desktop 1440 + phone 390: no console errors.
+
 ## Open questions for Yoni
 
 - Default switch position on load: DRIFT ON (now) or BYPASS?

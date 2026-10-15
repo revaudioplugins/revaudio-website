@@ -6,7 +6,7 @@
  * Writers: the wheel (drag / keys), the demo deck (its pan curve), the TRACKS
  * mini GPS (the car's position). The last writer wins, except that the car
  * yields to a hand on the wheel (setHand). Displays only: nothing
- * here makes a sound (demo.ts owns the audio and follows the same value).
+ * here makes a sound (hear.ts, the #hear test drive, owns the audio and writes the pan it measures).
  */
 export type PanSource = 'wheel' | 'demo' | 'tracks' | 'reset';
 type Listener = (pan: number, source: PanSource) => void;

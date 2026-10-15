@@ -4,7 +4,6 @@ import { initTracks } from './trackui';
 import { initCaptures } from './capture';
 import { initCrane } from './crane';
 import { lenis } from '../motion';    // the house scroller (null under reduced motion)
-import type { Slot } from './demo';   // type-only: erased, demo.ts stays out of the bundle
 
 /** /drift page entry: one pan bus, then every section that reads or writes it. */
 export function initDrift(): void {
@@ -18,8 +17,9 @@ export function initDrift(): void {
   initCaptures();
   initDeferredImages(root);
   initLap(root);
-  // #hear renders only when drift.demoMode === 'real'; demo.ts never loads otherwise
-  if (root.querySelector('[data-demo-screen]')) void initDeckUi(root);
+  // #hear renders only when drift.demoMode === 'real'; hear.ts (the audio) never loads otherwise
+  const hear = root.querySelector<HTMLElement>('[data-hear]');
+  if (hear) void import('./hear').then((m) => m.initHear(hear));
 }
 
 const phone = () => matchMedia('(max-width: 600px)').matches;
@@ -179,42 +179,3 @@ function initLap(root: HTMLElement): void {
   }).observe(lap);
 }
 
-async function initDeckUi(root: HTMLElement): Promise<void> {
-  const { deck, elapsedSec, levelBars, onDeck, pause, play, setAfter, setSlot, slotLabel, stop } = await import('./demo');
-  const title = root.querySelector<HTMLElement>('[data-demo-title]');
-  const mode = root.querySelector<HTMLElement>('[data-demo-mode]');
-  const time = root.querySelector<HTMLElement>('[data-demo-time]');
-  const playBtn = root.querySelector<HTMLButtonElement>('[data-demo="play"]');
-  const slots = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-slot]'));
-  const abs = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-ab]'));
-  if (!playBtn) return;
-
-  playBtn.addEventListener('click', () => { void play(); });
-  root.querySelector('[data-demo="pause"]')?.addEventListener('click', pause);
-  root.querySelector('[data-demo="stop"]')?.addEventListener('click', stop);
-  slots.forEach((b) => b.addEventListener('click', () => {
-    setSlot(b.dataset.slot as Slot);
-    slots.forEach((o) => o.setAttribute('aria-pressed', String(o === b)));
-  }));
-  abs.forEach((b) => b.addEventListener('click', () => {
-    setAfter(b.dataset.ab === 'after');
-    abs.forEach((o) => o.setAttribute('aria-pressed', String(o === b)));
-  }));
-
-  let lastTitle = '';
-  const paint = () => {
-    const t = `${slotLabel()} · ${deck.after ? 'AFTER' : 'BEFORE'}`;
-    if (title && t !== lastTitle) { title.textContent = t; lastTitle = t; }
-    if (mode) {
-      const bars = levelBars();
-      mode.textContent = !deck.playing ? 'STOPPED' : deck.paused ? 'PAUSED' : `PLAYING ${'▮'.repeat(bars)}${'▯'.repeat(5 - bars)}`;
-    }
-    if (time) {
-      const s = Math.floor(elapsedSec());
-      time.textContent = `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
-    }
-    playBtn.setAttribute('aria-pressed', String(deck.playing && !deck.paused));
-  };
-  onDeck(paint);
-  paint();
-}

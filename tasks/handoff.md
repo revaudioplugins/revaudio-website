@@ -163,12 +163,14 @@ Claim: CLOSED 2026-10-14. Took over `revaudio-c7`'s stale claim (session gone) o
   bench drag/resize/undo/export verified in both engines.
 - Open: Dan's own placement in the bench, then apply + push (main = live, his word).
 
-## 2026-10-14 — Claude Code `revaudio-02` (Yoni's laptop) — DRIFT before/after "Turbo Dash" toy player, bench round 1
+## 2026-10-15 — Claude Code `revaudio-02` (Yoni's laptop) — DRIFT #hear test drive (before/after player), native to /drift
 
-Claim: OPEN. Worktree `../revaudio-website-dpl`, branch `drift-player` (off origin/main e84c597), local only until
-"push". Files owned: `bench/drift-player-bench.html`, `tasks/drift-player-plan.md`, this entry. Plan + open questions:
-`tasks/drift-player-plan.md`. Waiting on Yoni's review and his 10 audio files (5 tracks x before/after).
-Bench server: `python -m http.server 8795` from the worktree root.
+Claim: OPEN. Worktree `../revaudio-website-dpl`, branch `drift-player` (rebased on origin/main 697f49d), local only
+until "push". Files owned: `src/components/drift/DriftHear.astro`, `src/lib/drift/hear.ts`, the #hear block in
+`src/styles/drift.css`, the #hear lines in `src/pages/drift.astro` / `src/lib/drift/init.ts` / `src/data/drift.ts`
+(demoMode 'real', demoWholeSound true), `public/audio/drift/`, `tools/drift-player/prep_audio.py`,
+`tasks/drift-player-plan.md`. Removed: DriftHeadUnit.astro + demo.ts (structure test), the toy bench + its art.
+Waiting on Yoni's look at /drift (dev server: `npx astro dev --port 4381` in the worktree). Deploy = push only on "push".
 
 ## 2026-10-09 — /drift #band v2: DRIFT's real BAND SELECT + STEREO IMAGER on a real vocal (same branch, Claude Code, Dan's Mac) — COMMITTED LOCAL, NOT PUSHED
 - Dan on v1: "close, not it": real spectrum + real imager from DRIFT, a vocal on the band select, no factory presets, give

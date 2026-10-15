@@ -69,13 +69,13 @@ export const drift = {
    *  Every format string reads this: false takes AAX off the whole page. */
   aaxReady: true,
 
-  /** 'real' = Dan's level-matched before/after bounces in public/audio/drift/
-   *  on the whole-sound build. There is no 'test' value: the browser synth never ships. */
-  demoMode: 'off' as 'off' | 'real',
-  /** false while src/lib/drift/demo.ts still routes only the band and synthesises
-   *  its sound; flip only once it pans the WHOLE signal and plays the <audio>
-   *  bounces (D2/H1). The build refuses demoMode 'real' until then. */
-  demoWholeSound: false,
+  /** 'real' = the #hear test drive (DriftHear.astro + src/lib/drift/hear.ts): Yoni's level-matched
+   *  before/after bounces in public/audio/drift/ (5 tracks, tools/drift-player/prep_audio.py), 2026-10-15.
+   *  There is no 'test' value: the browser synth never ships. */
+  demoMode: 'real' as 'off' | 'real',
+  /** true: hear.ts plays the real whole-sound bounces (DRIFT pans the whole signal in them, D2/H1).
+   *  The build refuses demoMode 'real' without it. */
+  demoWholeSound: true,
   /** Full DRIFT window screenshot (src/assets/seasons/drift/drift-window.png) staged per Decision 19. */
   screenshotReady: false,
   /** FX RANDOMIZE confirmed in the Oct 10 build. */
@@ -307,5 +307,5 @@ export function assertDriftConfig(checkoutUrl: string | null | undefined): void 
   if (drift.demoMode === 'real' && !existsSync('public/audio/drift'))
     fail("demoMode 'real' needs the bounces in public/audio/drift/.");
   if (drift.demoMode === 'real' && !drift.demoWholeSound)
-    fail("demoMode 'real' needs demoWholeSound: demo.ts still pans only the band and synthesises its sound (D2/H1).");
+    fail("demoMode 'real' needs demoWholeSound: the #hear player must play the real whole-sound bounces (D2/H1).");
 }
