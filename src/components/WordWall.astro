@@ -787,9 +787,9 @@ const first = items[0]?.slug ?? '';
     max-width: var(--maxw);
     margin: 0 auto;
     padding: clamp(2.5rem, 6vw, 5rem) clamp(1rem, 4vw, 2.5rem);
-    --ww-list-share: 40;  /* the plugins' share of the screen's width, % (laptop) */
-    --ww-name-max: 4.2;   /* rem: the biggest a plugin name gets */
-    --ww-thumb-w: 6.5;    /* rem: the thumbnail's width in the list */
+    --ww-list-share: 50;  /* the plugins' share of the screen's width, % (laptop) */
+    --ww-name-max: 4.5;   /* rem: the biggest a plugin name gets */
+    --ww-thumb-w: 6.9;    /* rem: the thumbnail's width in the list */
     --ww-dim: 0.62;       /* the unlit names and thumbnails: how much they show */
     --ww-row-gap: clamp(0.9rem, 2.4vh, 1.75rem);
     display: grid;
@@ -1207,8 +1207,8 @@ const first = items[0]?.slug ?? '';
      window read as ON the screen. The layers sit on .ww, outside the panels,
      so a panel's fade never traps them in its stacking context. */
   .ww {
-    --ww-scr-bright: 1;  /* phosphor glow */
-    --ww-scr-scan: 0.3;  /* scanline darkness over the whole wall */
+    --ww-scr-bright: 1.37;  /* phosphor glow */
+    --ww-scr-scan: 0.42;    /* scanline darkness over the whole wall */
   }
   .ww-screen,
   .ww-snow,
@@ -1272,7 +1272,7 @@ const first = items[0]?.slug ?? '';
      drops to snow for --ww-snow-ms and fades back (160ms) on the new channel.
      Over the content, under the scanlines and the bezel. The script draws it
      and, on "picture", sits it over the lit plugin's panel. */
-  .ww { --ww-snow-ms: 300; }
+  .ww { --ww-snow-ms: 100; }
   .ww-snow {
     z-index: 2;
     display: block;
@@ -1402,6 +1402,7 @@ const first = items[0]?.slug ?? '';
     --ww-bez-b: var(--rail-h);
     --ww-osd-h: 2.2rem;        /* the menu's row (measured: 34-35 px at 1141-1728) */
     --ww-info-h: 12.5rem;      /* the lit plugin's text under its window (measured, laptop) */
+    --ww-side-min: 11rem;      /* the narrowest the text beside GAS's tall window gets (laptop) */
   }
   .ww[data-ww-bg='screen']:not([data-ww-frame='rails']) {
     --ww-bez-t: calc(var(--ww-frame-g) + var(--wf-zt) * var(--ww-frame-u));
@@ -1424,8 +1425,18 @@ const first = items[0]?.slug ?? '';
       .ww[data-ww-bg='screen'] .ww-panel:not(.is-portrait) .ww-ui video {
         max-width: calc((var(--ww-main) - var(--ww-info-h)) * var(--ww-ar, 2));
       }
+      /* GAS's tall window yields width before the text beside it gets narrower than --ww-side-min: with the list
+         at half the screen (the bench pick of 2026-10-18) a 1141x636 laptop squeezed that text to 145 px, 473 px
+         tall, and the TV outgrew the screen. The panel is the container (cqi); a browser without container units
+         drops the second height and keeps the first. */
+      .ww[data-ww-bg='screen'] .ww-panel.is-portrait { container-type: inline-size; }
       .ww[data-ww-bg='screen'] .ww-panel.is-portrait .ww-ui :global(img) {
         height: min(clamp(18rem, 40vw, 30rem), var(--ww-main));
+        height: min(
+          clamp(18rem, 40vw, 30rem),
+          var(--ww-main),
+          calc((100cqi - var(--ww-side-min) - clamp(1.25rem, 3vw, 2.5rem)) / var(--ww-ar))
+        );
       }
     }
   }

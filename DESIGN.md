@@ -84,10 +84,10 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
     category a plugin on the TV sits in; an empty one is hidden; short labels on phones). Mono caps in
     the channel's phosphor, the picked one in inverse video (a lit key, dark type). Buttons, shown only
     once the script runs.
-  - List (left, `--ww-list-share` 40 % of the screen): one row per plugin = a small window thumbnail
-    (`--ww-thumb-w` 6.5rem, 4.6 on phones), the name in the stencil the five words used to be (Bebas,
+  - List (left, `--ww-list-share` 50 % of the screen): one row per plugin = a small window thumbnail
+    (`--ww-thumb-w` 6.9rem, 4.6 on phones), the name in the stencil the five words used to be (Bebas,
     outlined in the channel's phosphor, `--ww-dim` .62 unlit, the lit one filled + glowing) and a plain
-    type word ("one-knob saturator"). All names share one size: min(`--ww-name-max` 4.2rem, what the
+    type word ("one-knob saturator"). All names share one size: min(`--ww-name-max` 4.5rem, what the
     column fits, what the room's height fits for four rows). The rows are real links to the product
     pages (crawlable; no JS = a plain list); the script makes them tabs (arrows / Home / End light and
     move, a modified click still opens the page).
@@ -105,7 +105,7 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
     glow, the menu and the list take its phosphor; each panel keeps its own, so a fading panel keeps its
     colour. A plugin with no channel plays in neutral cream. `hsl(... / a)`, not color-mix (older Safari).
   - Channel change: lighting a plugin cuts its picture to grey snow (`data-ww-snow` 'picture'; 'screen'
-    = the whole screen, a bench switch) for `--ww-snow-ms` (300) and fades back (160ms) on the new
+    = the whole screen, a bench switch) for `--ww-snow-ms` (100) and fades back (160ms) on the new
     channel; a half-resolution canvas, rAF only during the burst. None under reduced motion, in high
     contrast, on the wood, in a hidden tab, with the wall off screen, or when the lit plugin is picked
     again. No channel number (Dan: no). A category change re-strikes the rows that stay, 60ms apart.
@@ -118,7 +118,9 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
     name, type word, the price on the right); a tap opens the lit plugin as its own view (a history
     entry, a "‹ All plugins" key); Back returns to the list with the focus on its row.
   - `WALL_BG` (built 'screen' | 'wood'): /drift's digital screen (the keep-it TV's phosphor tube) full
-    bleed behind the content, scanlines + grille + glass over it. `.ww-screen`, `.ww-screen-fx`,
+    bleed behind the content, scanlines + grille + glass over it (glow `--ww-scr-bright` 1.37, scanlines
+    `--ww-scr-scan` .42). The list share, name size, thumbnail width, glow, scanlines and snow length are
+    the user's bench pick of 2026-10-18 (`/__wwbench`). `.ww-screen`, `.ww-screen-fx`,
     `.ww-snow` and `.ww-frame` live on `.ww`, outside the panels. 'wood' = the garage wall, brass type.
   - `WALL_FRAME` (built '2' | '1' | '3' | 'rails'): a beat-up CRT cabinet front 9-sliced round the
     screen in place of the brass rails (`tv-broken-1/2/3.png`, AI blank rolls; cracked corner with a

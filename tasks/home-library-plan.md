@@ -180,6 +180,16 @@ without an open trial (The AC) stay off the TV; the TV never changes by itself (
       site; an Events Manager setting).
 - [ ] People (not agents): real iPhone + Mac Safari, the look.
 
+### Phase 4b: the user's bench pick (done 2026-10-18)
+
+- [x] Baked the user's `/__wwbench` export (2026-10-18 13:26 UTC) into `WordWall.astro`: list share 40 -> 50 %, name
+      max 4.2 -> 4.5rem, thumbnail 6.5 -> 6.9rem (laptop values), screen glow 1 -> 1.37, scanlines 0.3 -> 0.42, snow
+      300 -> 100 ms. `WALL_BG` 'screen', `WALL_FRAME` '2', snow 'picture' and the channel colours were already built.
+- [x] Found with it: at 1141x636 the list at half the screen squeezed the text beside GAS's tall window to 145 px
+      (473 px tall) and the TV outgrew the screen by 61 px. GAS's window now yields width first (`--ww-side-min`
+      11rem, container units on the panel); nothing changes at 1280 and up. Re-checked on the build: the 9 sizes fit
+      one screen in Chromium AND WebKit, no sideways scroll, no name overflow.
+
 ### Phase 5: later, each on its own branch
 
 - [ ] Ratings (D4, decided: verified only, after the TV): ask verified users only (after a Paddle purchase, at the end of a trial, weeks after a GAS
