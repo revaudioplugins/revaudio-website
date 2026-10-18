@@ -27,6 +27,11 @@ import { TERMS_LAST_UPDATED } from '../data/legal';
  * - Attribution: a valid ?ref=<token> on ANY page ([A-Za-z0-9._-]{1,40}) is
  *   kept in sessionStorage ('ra-ref', last one wins) and rides the checkout as
  *   customData.ref next to terms_accepted / terms_version.
+ * - Sale source (2026-10-17): every landing from outside the site is noted in
+ *   localStorage ('ra-src': the last ad touch + the last touch, no click ids)
+ *   and rides the checkout as customData.src_* (google_ads / meta_ads /
+ *   organic), so each sale shows how the buyer reached us. Meta's _fbc / _fbp
+ *   cookies ride along only after cookie Accept (better CAPI matching).
  * - the header cart icon ([data-cart-toggle]) + badge ([data-cart-badge]) open the drawer
  * - A required consent checkbox gates Checkout; its links open the legal-reader
  *   modal (Terms / Licence / Privacy) IN A POPUP — no page navigation.
@@ -167,6 +172,90 @@ for (const p of plugins) {
         var r = sessionStorage.getItem(REF_KEY) || '';
         return REF_RE.test(r) ? r : '';
       } catch (e) { return ''; }
+    }
+
+    // ---- Sale source (how the buyer reached us) ----
+    // Each landing from outside the site is one "touch": a Google ad (gclid /
+    // gbraid / wbraid, or utm_source=google with a paid medium), a Meta ad
+    // (our ad links carry utm_source=meta&utm_medium=paid_social), or
+    // "organic" (an email ?ref=, other utm tags, a Facebook/Instagram post
+    // link, a referring site). Internal clicks and direct visits keep what
+    // is there. localStorage keeps the last ad touch and the last touch; the
+    // checkout credits an ad touch from the last SRC_AD_DAYS days (it covers
+    // the 30-day trial), else the last touch, else "direct". Only the channel,
+    // campaign / ad name and referring host are kept: no click ids, nothing
+    // that names the visitor. The licence worker re-cleans every field.
+    var SRC_KEY = 'ra-src';
+    var SRC_AD_DAYS = 45;
+    function srcText(v) {
+      return String(v || '').replace(/[^\p{L}\p{N} ._\-–/:+()]/gu, '').trim().slice(0, 80);
+    }
+    function srcRead() {
+      var s = JSON.parse(localStorage.getItem(SRC_KEY) || '{}');
+      return s && typeof s === 'object' ? s : {};
+    }
+    try {
+      var sq = new URLSearchParams(window.location.search);
+      var uSrc = (sq.get('utm_source') || '').toLowerCase();
+      var uMed = (sq.get('utm_medium') || '').toLowerCase();
+      var paidMed = /^(cpc|ppc|paid|paid[_-]?social|paidsocial|ads?)$/.test(uMed);
+      var touch = null;
+      if (sq.get('gclid') || sq.get('gbraid') || sq.get('wbraid') || (uSrc === 'google' && paidMed)) {
+        touch = { ch: 'google_ads' };
+      } else if (uSrc === 'meta' || (/^(facebook|fb|instagram|ig)$/.test(uSrc) && paidMed)) {
+        touch = { ch: 'meta_ads' };
+      }
+      if (touch) {
+        touch.camp = srcText(sq.get('utm_campaign'));
+        touch.ad = srcText(sq.get('utm_content'));
+      } else {
+        var host = '';
+        try { host = document.referrer ? new URL(document.referrer).hostname.replace(/^www\./, '') : ''; } catch (e) {}
+        // Our own pages, the download portal and the Paddle checkout are not a
+        // new way in.
+        if (host === window.location.hostname.replace(/^www\./, '') ||
+            /(^|\.)(revaudio\.net|revaudio\.workers\.dev|paddle\.com)$/.test(host)) host = '';
+        var refTok = sq.get('ref');
+        if (refTok && REF_RE.test(refTok)) touch = { ch: 'organic', via: 'ref ' + refTok };
+        else if (uSrc) touch = { ch: 'organic', via: srcText(uSrc + (uMed ? '/' + uMed : '')) };
+        else if (sq.get('fbclid')) touch = { ch: 'organic', via: host ? srcText(host) : 'facebook/instagram link' };
+        else if (host) touch = { ch: 'organic', via: srcText(host) };
+      }
+      if (touch) {
+        touch.at = new Date().toISOString();
+        var srcRec = srcRead();
+        srcRec.last = touch;
+        if (touch.ch !== 'organic') srcRec.ad = touch;
+        localStorage.setItem(SRC_KEY, JSON.stringify(srcRec));
+      }
+    } catch (e) {}
+    // customData.src_* for the checkout, or {} when storage is unavailable
+    // (the worker then records "unknown" rather than a wrong channel).
+    function saleSource() {
+      try {
+        var s = srcRead();
+        var adAt = s.ad && Date.parse(s.ad.at);
+        var t = adAt && Date.now() - adAt < SRC_AD_DAYS * 864e5 ? s.ad : s.last || { ch: 'organic', via: 'direct' };
+        var out = { src_ch: t.ch };
+        if (t.camp) out.src_camp = srcText(t.camp);
+        if (t.ad) out.src_ad = srcText(t.ad);
+        if (t.via) out.src_via = srcText(t.via);
+        if (t.at) out.src_at = t.at;
+        return out;
+      } catch (e) { return {}; }
+    }
+    // Meta's own browser (_fbp) and click (_fbc) cookies, which the Meta Pixel
+    // sets only after cookie Accept; re-checked against the stored choice.
+    function metaCookies() {
+      var out = {};
+      try {
+        if (!adsConsent()) return out;
+        var c = document.cookie.match(/(?:^|;\s*)_fbc=(fb\.\d\.\d{10,16}\.[A-Za-z0-9_.-]{1,500})/);
+        var p = document.cookie.match(/(?:^|;\s*)_fbp=(fb\.\d\.\d{10,16}\.\d{1,25})/);
+        if (c) out.fbc = c[1];
+        if (p) out.fbp = p[1];
+      } catch (e) {}
+      return out;
     }
     // The cookie-banner choice. Sent to Paddle as customData.ad_consent so the
     // licence worker reports the sale to Meta (CAPI) only for buyers who
@@ -449,6 +538,7 @@ for (const p of plugins) {
         if (adsConsent()) customData.ad_consent = 'granted';
         var gclid = adsClickId();
         if (gclid) customData.gclid = gclid;
+        Object.assign(customData, saleSource(), metaCookies());
         window.Paddle.Checkout.open({
           // Paddle sums the full cart natively.
           items: items.map(function (i) { return { priceId: checkoutTargetFor(i), quantity: i.qty || 1 }; }),

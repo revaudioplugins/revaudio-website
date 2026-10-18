@@ -78,3 +78,18 @@ wheel inside a dialog); land only when this gesture brought the target closer (|
 steps both ways from the landed spot, each case on a FRESH page: after Lenis finishes it swallows the next native
 scrollTo, so a test's own scrollTo leaves Lenis stale and fakes results. Headless WebKit paints scroll every ~190 ms:
 an idle timer shorter than that fires before Lenis moved; wait while `lenis.isScrolling === 'smooth'`.
+
+## 2026-10-15 — Weight work: measure fair, and what makes Astro ship raw PNGs
+1. Before/after byte counts only on the SAME kind of server, by IP: a stray `astro preview` on `::1:4431` answered
+   `localhost` with compressed responses while python held `127.0.0.1:4431`, so the first "after" looked 300 KB
+   lighter than it was. Check the port's owner (`Get-NetTCPConnection -LocalPort N`), use `127.0.0.1`, and build the
+   old commit in a temp worktree for the baseline instead of trusting an old number.
+2. Astro ships the raw source file (MBs) for an imported image when (a) code reads a property straight off the import
+   (`img.width`; read `img.clone.width`, the proxy's escape hatch) or (b) it is imported but never transformed (an
+   eager glob of bench rolls you stop running through getImage). Judge by `ls dist/_astro/*.png`, not by reasoning.
+3. Lazy art must not wait on `load` alone: a stalled video can hold `load` back for good (the WebKit lesson above, item 1: headless
+   WebKit never fires it). Start on load OR first scroll OR a timeout.
+4. A video's no-JS fallback: Chromium forces media controls when scripting is off and paints their grey panel over a
+   poster-less video; hide `::-webkit-media-controls` in the `<noscript>` style or the picture never shows.
+5. "Smaller on phones" must come from the screen's real need, not a guess: the phone poster needed ~1050 device px
+   (390@3), not 800; measure CSS size x DPR per device before choosing cuts.

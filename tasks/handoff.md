@@ -1,13 +1,42 @@
-## 2026-10-15 — Home LIBRARY: the TV becomes the plugin browser, carousel + Store nav out, branch `feat/home-library` (Claude Code `revaudio-a6`, laptop 1) — PLAN, waiting for the user's go
+## 2026-10-15 — Home LIBRARY: the TV becomes the plugin browser, carousel + Store nav out, branch `feat/home-library` (Claude Code `revaudio-a6`, laptop 1) — IN PROGRESS (user's "go" 2026-10-18)
 - User: one new branch for the home page; a top-right LIBRARY button opens plugin categories on the TV; a category
   turns the glowing words into plugin names + thumbnails; a lit plugin shows a bigger image, a short description,
   "Try it free" (email gate) and a small product-page link; carousel + Store go; later ratings + "you may also like".
-- Worktree `.claude/worktrees/home-library` off origin/main 697f49d (node_modules = junction to the main clone's).
+- Worktree `.claude/worktrees/home-library` off origin/main 697f49d; origin/main ddada3d (the TV weight work, live
+  2026-10-18) merged in 2026-10-18 before any source edit (node_modules = junction to the main clone's).
 - Plan + research + decisions: `tasks/home-library-plan.md`. User took all four recommended options (D1 button =
   PLUGINS, D2 categories always visible inside the TV, D3 `/store` redirects to the home TV, D4 ratings = verified
-  users only, own branch after this one). Nothing built, no source file touched yet; source work waits on "go".
-- Waits on `revaudio-32`'s ACTIVE claim on `src/components/WordWall.astro` (TV weight fix, 2026-10-15) before
-  phase 2; no claim on source files until the user's go.
+  users only, own branch after this one). Go: 2026-10-18.
+- `revaudio-32`'s claim on `src/components/WordWall.astro` is CLOSED (2026-10-15, entry below), so phase 2 is clear.
+- Active thread (owner revaudio-a6): `src/data/library.ts` (new), `src/data/plugins.ts`, `src/components/WordWall.astro`,
+  `src/lib/wordwallDrift.ts`, `tools/wwbench/*`, `src/pages/index.astro`, `DESIGN.md`, `tasks/home-library-plan.md`,
+  `tasks/handoff.md`. Phase 3 adds the header, footer, cart, store and product-page files when it starts.
+
+## 2026-10-15 — Homepage word wall: WEIGHT (checker S4), branch `feat/drift-wordwall` (Claude Code `revaudio-32`, laptop 1) — PUSHED TO MAIN = LIVE 2026-10-18 (Dan: "push")
+- Dan: "let's fix the weight" + "lighter without hurting quality" -> go. Plan, numbers and checks: `tasks/todo.md`
+  (top section + "Review — WEIGHT").
+- Claim CLOSED 2026-10-15: `src/components/WordWall.astro`, `tasks/todo.md`, `tasks/handoff.md`, `tasks/lessons.md`.
+- Base: HEAD = origin/main 697f49d. Commit by path; push only on Dan's "push" (main = live).
+- What changed: the TV frame + DRIFT's poster are no longer in the first load. They load once the page has loaded (or
+  the first scroll / 3 s) and the wall is a screen away, in the smallest cut that is still pixel-sharp on that screen
+  (frame 640/960/1400, poster 800/1100/1400, picked from DPR x the frame's real scale / the window's width), AVIF with
+  a WebP fallback. No JS: a `<noscript>` style puts the 1400 WebP back. N2 fixed too (raw drift-window-wall.png and
+  gas-hero.png no longer in dist: sizes read via `.clone`).
+- Result (same server, Chromium, load + 4 s): laptop 2264 -> 1887 KB, phone 1822 -> 1515 KB; the TV costs 183 KB on
+  a laptop / 70 KB on a phone when it comes into view (was 380 KB up front on both). AVIF PSNR >= the old WebP at
+  every cut. Laptop 1280@2 on WebP pixel-identical to before.
+- Open: Dan's real iPhone / Mac Safari check (the AVIF path never ran in a real Safari here; headless WebKit on
+  Windows has no AVIF and took the WebP fallback).
+- Bench note (dev only): the bench's Frame size slider changes the frame's scale without a resize, so the frame cut
+  upgrades only at the next resize / roll switch / reload; at DPR 1.25-1.5 a bigger slider value can look a touch soft
+  in the bench until then. Reload before judging sharpness there.
+- Pushed 2026-10-18 on Dan's "push": rebased onto origin/main edb5049 (the cart attribution commit from another
+  session, already live; files apart); only this work's commits went out. Re-checked after the rebase: build green, no
+  __wwbench / raw PNGs in dist, reduced-motion shots identical to the checked build, video + frame + poster in Chromium
+  (AVIF) and WebKit (WebP fallback), no console errors. Post-deploy check: `curl -I` one live `/_astro/*.avif`
+  (content-type image/avif through Cloudflare) + the weight check on the live site. Stale cached HTML is safe: the old
+  1400 WebP names are still in the new dist.
+>>>>>>> origin/main
 
 ## 2026-10-14 — Homepage word wall: DRIFT panel, two new looks + HD live window on a bench, branch `feat/drift-wordwall` (Claude Code `revaudio-32`, laptop 1) — PUSHED TO MAIN = LIVE 2026-10-14 (Dan: "send a checker; if it passes push to main, if not fix then push"); bench tuning ("apply ww bench") still open
 - Dan: "the DRIFT panel on the word wall needs a more interesting design" -> picks: build BOTH looks (NEON sign / STEER the
@@ -76,7 +105,7 @@
   sideways wheel / Space on a button / open dialog / hc; S2 the first panel's reveal (layer divs made every panel
   `:not(:first-child)`) -> `.ww-panel ~ .ww-panel`; S1 landscape phones (844x390 ...) had 0x0 windows -> media floor
   8rem (the TV there is taller than the screen: it scrolls, no lock); + WebKit: wait while Lenis still glides. Review
-  "CHECKER FIXES" in `tasks/todo.md`. Not fixed, open for Dan: S4 first load +~369 KB laptop / +~246 KB phone (the TV
+  "CHECKER FIXES" in `tasks/todo.md`. Not fixed then (FIXED 2026-10-15, WEIGHT entry above): S4 first load +~369 KB laptop / +~246 KB phone (the TV
   frame webp 254 KB at every width + the DRIFT poster 136 KB) = the cost of the TV; NITs N1-N7 listed there. Pushed to
   main after the fixes = live.
 - OPEN for Dan: phone + laptop check of the live homepage (real iPhone / Mac Safari never checked), bench pick ->
