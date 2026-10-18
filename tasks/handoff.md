@@ -1,3 +1,10 @@
+## 2026-10-18 — /revlimiter/ for Google Ads (fixes F + G) (Claude Code `revaudio-75`, Yoni's laptop) — PUSHED TO MAIN = LIVE 2026-10-18 (Yoni: "push", "do all parts and push")
+
+Claim: CLOSED 2026-10-18. Commits on main: `21caf5e` (trial form sends the `ra-src` note with /download/register; privacy text + date 2026-10-18; needs licence worker `3bbefa8`, live), `ef2cc1b` (crane door + BUY patch PNG -> WebP via getImage, both BuyButtonCrane + CraneDropZone, -174 KB), `a4ccea1` (`seoTitle` / `metaDescription` optional plugin fields used only by [slug] <title>/meta; RevLimiter title "RevLimiter – Mastering Limiter Plugin", new description, tagline gains "plugin"; 1% resting floor `max(0.01, …)` on the crane door's light layers so LCP is the hero image, not a light layer that appears at the strike).
+
+- Checks: reference build + screenshots in `C:\RevAudio\Website\pagespeed-ref-2026-10-06\` (`dist-crane-ref`, `shots-crane-ref*`, `shots-crane-new3`): only visible change = the tagline word; door max pixel delta 11/255. Real Chrome, phone viewport, 4x CPU: LCP 3.66 s -> 0.41-0.53 s (hero IMG). Live verified (title, tagline, WebP 68 KB, floors in CSS).
+- Not fixed: Lighthouse mobile (simulated) stays 62-65, LCP render delay ~5 s from the 2 render-blocking CSS files + constant animation main-thread work (the 2026-10-06 plan judged splitting the CSS risky). PSI API daily quota was out; 🧑 run pagespeed.web.dev on /revlimiter/ for the official number. Google Ads Quality Score (landing page exp) re-rates over 1-3 weeks.
+
 ## 2026-10-15 — Homepage word wall: WEIGHT (checker S4), branch `feat/drift-wordwall` (Claude Code `revaudio-32`, laptop 1) — PUSHED TO MAIN = LIVE 2026-10-18 (Dan: "push")
 - Dan: "let's fix the weight" + "lighter without hurting quality" -> go. Plan, numbers and checks: `tasks/todo.md`
   (top section + "Review — WEIGHT").
