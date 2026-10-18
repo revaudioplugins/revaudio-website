@@ -37,6 +37,12 @@
   `.claude/worktrees/home-library`) and `chore/remove-old-store-code` (71b00d7). The main clone's local `main` sits at
   697f49d, 5 behind origin/main (no tracked changes there; an untracked root `HANDOFF.md` from 2026-09-06, not ours,
   left as is).
+- Then, on Dan's picks (2026-10-18, "one by one"): the handoff commit pushed (21caf5e..cc5a1d8, deploy + smoke green);
+  the main clone fast-forwarded to origin/main (its untracked root `HANDOFF.md` untouched); `feat/home-library` left
+  to its session ("don't touch"); `chore/remove-old-store-code` DELETED ("clean it"): its one commit 71b00d7 had the
+  same patch-id as 6d7ec55, already on main (`git cherry main 71b00d7` = "-"); 774a5d9 then removed the second
+  old-store engine. Local-only branch, never on GitHub. 71b00d7 is NOT in any reflog; the object stays until `git gc`
+  (restore: `git branch chore/remove-old-store-code 71b00d7`).
 
 ## 2026-10-14 — Homepage word wall: DRIFT panel, two new looks + HD live window on a bench, branch `feat/drift-wordwall` (Claude Code `revaudio-32`, laptop 1) — PUSHED TO MAIN = LIVE 2026-10-14 (Dan: "send a checker; if it passes push to main, if not fix then push"); bench tuning ("apply ww bench") still open
 - Dan: "the DRIFT panel on the word wall needs a more interesting design" -> picks: build BOTH looks (NEON sign / STEER the
