@@ -2,7 +2,7 @@
    and phone side by side.
 
    Why it is not the ?bench harness: the TV lives in two layouts (laptop: the list beside the lit plugin; phone: one
-   pane at a time) and part of what it tunes is motion (the static, the power-on). So the bench shows the REAL dev
+   pane at a time) and part of what it tunes is motion (the channel change, the power-on). So the bench shows the REAL dev
    homepage twice, in a laptop-size and a phone-size iframe (same origin), scrolled to #plugins, and drives both from
    outside: the wall's data-ww-* attributes, the page's bench hooks (ww:select, ww:replay) and one live <style> per
    frame setting the wall's --ww-* custom properties. Nothing in the page's code paths changes for the bench.

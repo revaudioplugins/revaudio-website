@@ -42,6 +42,7 @@
   .ctl .rs { padding: 1px 7px; border-radius: 6px; font-size: 12px; color: var(--dim); }
   .ctl .hint { color: #8d80a0; font-size: 12px; margin-top: 1px; }
   .ctl input[type=range] { width: 100%; margin: 6px 0 0; accent-color: var(--acc); height: 22px; }
+  .grp.off { opacity: .4; }
   .sw { display: inline-block; width: 14px; height: 14px; border-radius: 50%; vertical-align: -2px; margin-right: 6px; background: currentColor; box-shadow: 0 0 8px currentColor; }
   main { flex: 1; min-width: 0; display: flex; gap: 14px; padding: 12px; overflow: hidden; }
   .stage { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
@@ -65,8 +66,8 @@
   <span class="seg small" id="frame" title="The screen wall's frame: the brass rails, or one of three broken TVs">
     <button data-fr="rails">RAILS</button><button data-fr="1">BROKEN TV 1</button><button data-fr="2">BROKEN TV 2</button><button data-fr="3">BROKEN TV 3</button>
   </span>
-  <span class="seg small" id="snow" title="Where the static plays when a plugin lights: over its picture only, or over the whole screen">
-    <button data-sn="picture">STATIC: PICTURE</button><button data-sn="screen">STATIC: WHOLE SCREEN</button>
+  <span class="seg small" id="motion" title="How a plugin comes onto the screen and leaves it">
+    <button data-mo="tune" title="TUNE: one move for every plugin; down the list the new one rises from below, up the list it drops from above">TUNE</button><button data-mo="gear" title="GEAR CHANGE: each plugin arrives its own way (RevLimiter on an arc, DRIFT from the right, GAS straight up, Radio Roulette from the left) and settles on the crane's seat">GEAR CHANGE</button>
   </span>
   <button class="big" id="replay" title="The TV's power-on again">▶ REPLAY</button>
   <span class="seg small" id="view">
@@ -80,12 +81,12 @@
   <span class="lbl">Category</span>
   <span class="seg small" id="cat" title="Pick a category on both TVs (as a visitor would)"></span>
   <span class="lbl">Light</span>
-  <span class="seg small" id="show" title="Light a plugin on both TVs (a channel change: the static plays)"></span>
+  <span class="seg small" id="show" title="Light a plugin on both TVs (a channel change)"></span>
   <span class="lbl">Phone shows</span>
   <span class="seg small" id="pview" title="The phone shows one pane at a time: the list, or the lit plugin">
     <button data-pv="list">LIST</button><button data-pv="panel">THE PLUGIN</button>
   </span>
-  <button class="big" id="chan" title="Change channel: light the next plugin on both TVs (the static plays)">▶ CHANNEL</button>
+  <button class="big" id="chan" title="Change channel: light the next plugin on both TVs">▶ CHANNEL</button>
   <span class="seg small" id="chg">
     <button data-x="slow" title="Play the channel change 4x slower (the bench only; COPY SETTINGS keeps the real times)">SLOW ×4</button><button data-x="auto" title="Change channel by itself every moment or so">AUTO</button>
   </span>
@@ -131,13 +132,31 @@
       { p: '--ww-ch-radio-roulette-h', label: 'Radio Roulette colour', hint: 'hue: 38 = the dial glass cream', min: 0, max: 360, step: 1, unit: '' },
       { p: '--ww-ch-radio-roulette-s', label: 'Radio Roulette strength', hint: 'saturation: 0 = grey, higher = richer', min: 0, max: 100, step: 1, unit: '' },
     ] },
-    { id: 'change', title: 'Channel change: the static', frames: ['laptop', 'phone'], ctl: [
-      { p: '--ww-chg-snow-ms', label: 'Full static', hint: 'ms of solid snow when a plugin lights; the plugins swap under it (▶ CHANNEL up top, SLOW ×4 to study it)', min: 0, max: 300, step: 10, unit: '' },
-      { p: '--ww-chg-lock-ms', label: 'Lock-in', hint: 'ms for the new picture to come through the snow', min: 0, max: 500, step: 10, unit: '' },
-      { p: '--ww-chg-grain', label: 'Grain', hint: 'the size of a snow dot, px', min: 1, max: 4, step: 0.1, unit: '' },
-      { p: '--ww-chg-tint', label: 'Snow colour', hint: '0 = grey snow; more = it takes the channel\'s colour', min: 0, max: 1, step: 0.01, unit: '' },
-      { p: '--ww-chg-band', label: 'Rolling band', hint: 'the brighter band rolling down the snow (0 = none)', min: 0, max: 1, step: 0.01, unit: '' },
-      { p: '--ww-chg-flash', label: 'Lock-in flash', hint: 'how bright the new picture flashes as it locks in (0 = none)', min: 0, max: 1, step: 0.01, unit: '' },
+    { id: 'gear', mode: 'gear', title: 'Motion: GEAR CHANGE', note: 'each plugin its own way', frames: ['laptop', 'phone'], ctl: [
+      { p: '--ww-gear-px', label: 'Travel', hint: 'px each plugin travels onto the screen along its own axis (▶ CHANNEL up top, SLOW ×4 to study it)', min: 0, max: 60, step: 1, unit: '' },
+      { p: '--ww-gear-out-px', label: 'Exit sink', hint: 'px the old plugin sinks as it dims', min: 0, max: 30, step: 1, unit: '' },
+      { p: '--ww-gear-out-ms', label: 'Exit time', hint: 'ms for the old plugin to leave', min: 60, max: 500, step: 10, unit: '' },
+      { p: '--ww-gear-gap-ms', label: 'Empty screen', hint: 'ms of empty glass between the two (the screen\'s colour changes here)', min: 0, max: 300, step: 10, unit: '' },
+      { p: '--ww-gear-fade-ms', label: 'Turns solid', hint: 'ms for the new plugin to turn solid where it starts, before it travels', min: 0, max: 400, step: 10, unit: '' },
+      { p: '--ww-gear-in-ms', label: 'Travel time', hint: 'ms of travel, on the crane\'s curve', min: 200, max: 1400, step: 10, unit: '' },
+      { p: '--ww-gear-seat-px', label: 'Seat dip', hint: 'px it dips as it lands, like the crane\'s door (0 = none)', min: 0, max: 8, step: 0.5, unit: '' },
+      { p: '--ww-gear-tilt', label: 'Tilt', hint: '0 = no tilt; 1 = RevLimiter swings in like its needle (1.5°) and DRIFT\'s rear steps out (1.2°). A tilted photo tilts its light', min: 0, max: 1.5, step: 0.05, unit: '' },
+    ] },
+    { id: 'tune', mode: 'tune', title: 'Motion: TUNE', note: 'the list\'s direction', frames: ['laptop', 'phone'], ctl: [
+      { p: '--ww-tune-px', label: 'Travel', hint: 'px the new picture travels: from below going down the list, from above going up', min: 0, max: 60, step: 1, unit: '' },
+      { p: '--ww-tune-out-px', label: 'Exit drift', hint: 'px the old plugin drifts the same way as it fades', min: 0, max: 30, step: 1, unit: '' },
+      { p: '--ww-tune-out-ms', label: 'Exit time', hint: 'ms for the old plugin to leave', min: 60, max: 500, step: 10, unit: '' },
+      { p: '--ww-tune-fade-ms', label: 'Fade in', hint: 'ms for the new picture to fade in (it travels meanwhile)', min: 0, max: 400, step: 10, unit: '' },
+      { p: '--ww-tune-in-ms', label: 'Travel time', hint: 'ms of travel, slowing into place', min: 200, max: 1400, step: 10, unit: '' },
+    ] },
+    { id: 'motion', title: 'Motion: both', frames: ['laptop', 'phone'], ctl: [
+      { p: '--ww-mv-text-px', label: 'Text rise', hint: 'px the name, description, words and price rise after the picture, one after another', min: 0, max: 30, step: 1, unit: '' },
+      { p: '--ww-mv-text-ms', label: 'Text time', hint: 'ms each text block takes', min: 100, max: 1000, step: 10, unit: '' },
+      { p: '--ww-mv-text-gap-ms', label: 'Text one after another', hint: 'ms between the text blocks (0 = all at once)', min: 0, max: 150, step: 5, unit: '' },
+      { p: '--ww-mv-text-at-ms', label: 'Text starts', hint: 'ms after the new plugin starts coming on', min: 0, max: 400, step: 10, unit: '' },
+      { p: '--ww-mv-glow-dip', label: 'Screen dims', hint: 'how lit the screen stays while it is empty (1 = no dimming)', min: 0.3, max: 1, step: 0.01, unit: '' },
+      { p: '--ww-mv-pane-px', label: 'Phone: slide', hint: 'px a tapped plugin slides in from the right (the list leaves half as far left); Back runs it backwards', min: 0, max: 60, step: 1, unit: '' },
+      { p: '--ww-mv-pane-ms', label: 'Phone: exit time', hint: 'ms for the list / the plugin to leave on a tap / Back', min: 60, max: 500, step: 10, unit: '' },
     ] },
     { id: 'frame', title: 'Broken TV frame', frames: ['laptop', 'phone'], ctl: [
       { p: '--ww-frame-size', label: 'Frame size', hint: 'bezel thickness; stops growing once the side bezel would reach the menu or a name (about 0.25 on a 1141-1280 laptop, more on wide screens, thin on phones)', min: 0.1, max: 0.4, step: 0.005, unit: '' },
@@ -154,20 +173,21 @@
     phone: [[390, 844], [375, 667, 'iPhone SE'], [360, 740], [430, 932]],
   };
 
-  let st = { bg: null, frame: null, snow: null, view: 'both', pview: 'list', size: { laptop: 0, phone: 0 }, cur: {} };
+  let st = { bg: null, frame: null, motion: null, view: 'both', pview: 'list', size: { laptop: 0, phone: 0 }, cur: {} };
   try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s && s.cur) st = Object.assign(st, s); } catch (e) {}
-  // the word-wall bench's looks, steering, neon and TV-window values have no page to drive any more
+  // the word-wall bench's looks, steering, neon and TV-window values, and the static's (2026-10-18: no noise any
+  // more), have no page to drive
   Object.keys(st.cur).forEach((p) => { if (!ALL.some((c) => c.p === p)) delete st.cur[p]; });
-  delete st.look; delete st.win;
+  delete st.look; delete st.win; delete st.snow;
   st.size.phone = Math.min(st.size.phone || 0, SIZES.phone.length - 1);
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} };
   let src = null; // the defaults in WordWall.astro, read off the laptop frame's wall (the phone frame has phone values)
   const fmt = (c, v) => (c.step < 1 ? (+v).toFixed(2) : String(Math.round(v))) + c.unit;
   const val = (p) => (p in st.cur ? st.cur[p] : src ? src[p] : NaN);
-  let srcBg = 'screen', srcFrame = '2', srcSnow = 'picture'; // WALL_BG / WALL_FRAME / data-ww-snow as built
+  let srcBg = 'screen', srcFrame = '2', srcMotion = 'gear'; // WALL_BG / WALL_FRAME / WALL_MOTION as built
   const bgv = () => st.bg || srcBg;
   const framev = () => st.frame || srcFrame;
-  const snowv = () => st.snow || srcSnow;
+  const motionv = () => st.motion || srcMotion;
   let lit = null, cat = 'all';
   let slow = false, auto = 0; // the channel change: SLOW x4 and AUTO (not saved: a reload starts at real speed, still)
 
@@ -222,7 +242,9 @@
     });
     document.querySelectorAll('#bg button').forEach((b) => b.classList.toggle('on', b.dataset.b === bgv()));
     document.querySelectorAll('#frame button').forEach((b) => b.classList.toggle('on', b.dataset.fr === framev()));
-    document.querySelectorAll('#snow button').forEach((b) => b.classList.toggle('on', b.dataset.sn === snowv()));
+    document.querySelectorAll('#motion button').forEach((b) => b.classList.toggle('on', b.dataset.mo === motionv()));
+    // the motion that is not on show: its sliders dim (they still save; COPY SETTINGS hands both back)
+    GROUPS.forEach((g) => { if (g.mode) aside.querySelector(`[data-g="${g.id}"]`)?.classList.toggle('off', g.mode !== motionv()); });
     document.querySelectorAll('#view button').forEach((b) => b.classList.toggle('on', b.dataset.v === st.view));
     document.querySelectorAll('#pview button').forEach((b) => b.classList.toggle('on', b.dataset.pv === st.pview));
     document.querySelectorAll('#cat button').forEach((b) => b.classList.toggle('on', b.dataset.c === cat));
@@ -282,7 +304,7 @@
       ALL.forEach((c) => (src[c.p] = parseFloat(cs.getPropertyValue(c.p))));
       srcBg = wallEl.dataset.wwBg || 'screen';
       srcFrame = wallEl.dataset.wwFrame || '2';
-      srcSnow = wallEl.dataset.wwSnow || 'picture';
+      srcMotion = wallEl.dataset.wwMotion || 'gear';
     }
     if (!document.querySelector('#show button')) {
       // the page's own categories + plugins, so the bench follows the data (library.ts) without an edit
@@ -336,13 +358,13 @@
       const wallEl = doc.querySelector(WALL);
       if (wallEl && wallEl.dataset.wwBg !== bgv()) wallEl.dataset.wwBg = bgv();
       if (wallEl && wallEl.dataset.wwFrame !== framev()) wallEl.dataset.wwFrame = framev();
-      if (wallEl && wallEl.dataset.wwSnow !== snowv()) wallEl.dataset.wwSnow = snowv();
+      if (wallEl && wallEl.dataset.wwMotion !== motionv()) wallEl.dataset.wwMotion = motionv();
       const vals = {};
       Object.keys(st.cur)
         .filter((p) => (ALL.find((c) => c.p === p) || { frames: [] }).frames.includes(f))
         .forEach((p) => (vals[p] = st.cur[p]));
-      // SLOW x4: the channel change's two times, scaled in the frames only (the sliders and COPY keep the real ones)
-      if (slow) ['--ww-chg-snow-ms', '--ww-chg-lock-ms'].forEach((p) => { const v = val(p); if (Number.isFinite(v)) vals[p] = v * 4; });
+      // SLOW x4: every time of the motion, scaled in the frames only (the sliders and COPY keep the real ones)
+      if (slow) ALL.filter((c) => /-ms$/.test(c.p)).forEach((c) => { const v = val(c.p); if (Number.isFinite(v)) vals[c.p] = v * 4; });
       const body = Object.keys(vals).map((p) => `${p}: ${vals[p]}${unitOf(p)} !important;`).join(' ');
       doc.getElementById('wwb-live').textContent = body ? `${WALL} { ${body} }` : '';
     });
@@ -353,7 +375,7 @@
 
   document.querySelectorAll('#bg button').forEach((b) => (b.onclick = () => { st.bg = b.dataset.b; commit(); }));
   document.querySelectorAll('#frame button').forEach((b) => (b.onclick = () => { st.frame = b.dataset.fr; commit(); }));
-  document.querySelectorAll('#snow button').forEach((b) => (b.onclick = () => { st.snow = b.dataset.sn; commit(); if (lit) light(); }));
+  document.querySelectorAll('#motion button').forEach((b) => (b.onclick = () => { st.motion = b.dataset.mo; commit(); nextChannel(); }));
   document.querySelectorAll('#view button').forEach((b) => (b.onclick = () => { st.view = b.dataset.v; save(); layout(); }));
   document.querySelectorAll('#pview button').forEach((b) => (b.onclick = () => { st.pview = b.dataset.pv; save(); send('phone', 'ww:select', { view: st.pview }); paint(); }));
   document.getElementById('replay').onclick = () => each((g) => g('ww:replay'));
@@ -376,7 +398,7 @@
   }));
   document.getElementById('resetAll').onclick = () => {
     if (!confirm('Back to the defaults in WordWall.astro? (your bench values are lost)')) return;
-    st.cur = {}; st.bg = null; st.frame = null; st.snow = null; commit(); toast('Back to the defaults');
+    st.cur = {}; st.bg = null; st.frame = null; st.motion = null; commit(); toast('Back to the defaults');
   };
 
   // ── hand-back: the wall's switches + every value (defaults included), ready to bake
@@ -384,8 +406,8 @@
     const values = {};
     ALL.forEach((c) => (values[c.p] = `${+(+val(c.p)).toFixed(4)}${c.unit === 'px' ? 'px' : ''}`));
     return {
-      bench: 'wwbench', note: 'apply ww bench: bake bg -> WALL_BG, frame -> WALL_FRAME, snow -> the wall\'s data-ww-snow and values -> the --ww-* defaults in WordWall.astro (the plugin-list values are the laptop\'s)',
-      date: new Date().toISOString(), bg: bgv(), frame: framev(), snow: snowv(),
+      bench: 'wwbench', note: 'apply ww bench: bake bg -> WALL_BG, frame -> WALL_FRAME, motion -> WALL_MOTION (the other motion\'s code and values go) and values -> the --ww-* defaults in WordWall.astro (the plugin-list values are the laptop\'s)',
+      date: new Date().toISOString(), bg: bgv(), frame: framev(), motion: motionv(),
       values, changed: Object.keys(st.cur).filter((p) => src && Math.abs(st.cur[p] - src[p]) > 1e-6),
     };
   }

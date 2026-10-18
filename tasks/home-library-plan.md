@@ -1,8 +1,9 @@
 # Home LIBRARY: the TV becomes the plugin browser (branch `feat/home-library`)
 
 - Owner: Claude Code `revaudio-a0` (was `revaudio-a6` before a restart; laptop 1). Status: **IN PROGRESS (user's "go"
-  2026-10-18).** Phases 1-4c done (local commits, not pushed). Phase 4d (the noise out, motion only) planned, waiting
-  on the user's pick; then the user's look (bench + real devices) and "push".
+  2026-10-18).** Phases 1-4c done (local commits, not pushed). Phase 4d (the noise out, motion only): steps 1-2 done
+  (both candidates on one engine, behind the bench's MOTION switch), waiting on the user's pick in the bench; then
+  the user's look (bench + real devices) and "push".
 - origin/main `141d400` (crane WebP, trial source, /revlimiter/ Ads fixes) merged in 2026-10-18 before phase 3 (`d80e459`).
 - Worktree: `.claude/worktrees/home-library` off origin/main `697f49d`; origin/main `ddada3d` (the TV weight work)
   merged in 2026-10-18 (`8ca4938`). `node_modules` = junction to the main clone's.
@@ -226,7 +227,7 @@ without an open trial (The AC) stay off the TV; the TV never changes by itself (
       under the snow.
 - [x] ~~The user's look in the bench~~: superseded by Phase 4d (the user, 2026-10-18: no noise at all).
 
-### Phase 4d: entrances and exits, motion only (planned 2026-10-18; waiting on the user's pick)
+### Phase 4d: entrances and exits, motion only (planned 2026-10-18; steps 1-2 done, waiting on the user's pick)
 
 - The user (2026-10-18, Hebrew): drop the noise entirely, make it pure motion; plan how the plugins enter and leave
   the screen; creative and elegant, not messy; each plugin's entrance stylized, with interesting motion; no glitches,
@@ -246,7 +247,7 @@ because it is Radio Roulette" is the mess the user ruled out.
 | | TUNE (UX lens) | GEAR CHANGE (brand lens) |
 |---|---|---|
 | Idea | one move for every plugin; its direction comes from the list | each plugin arrives along its own object's axis |
-| Entrance | down the list the new picture rises from 16 px below, up the list it drops from 16 px above (clicks by index delta in `shown()`; arrows by the key, so a wrap stays forward; category, popstate and restore from below; never scaled by distance) | RevLimiter on a shallow arc (the needle), DRIFT from 28 px right on a drift line, GAS straight up from 28 px and planted, Radio Roulette from 28 px left (a dial scanning the band); a new plugin picks rise / arc / from-left / from-right in `src/data/plugins.ts` (default rise) |
+| Entrance | down the list the new picture rises from 16 px below, up the list it drops from 16 px above (clicks by index delta in `shown()`; arrows by the key, so a wrap stays forward; category, popstate and restore from below; never scaled by distance) | RevLimiter on a shallow arc (the needle), DRIFT from 28 px right on a drift line, GAS straight up from 28 px and planted, Radio Roulette from 28 px left (a dial scanning the band); a new plugin picks rise / arc / left / right as `enter` in WordWall's `WINDOWS` table (default rise; built there, not in `src/data/plugins.ts`, because it belongs to the plugin's TV window, next to its crop and ratio) |
 | Exit | the old panel drifts 8 px the same way and fades, 150 ms `--ease-exit` | the old panel sinks 10 px and dims, 220 ms `--ease-exit`, never sideways; then 40 ms of empty glass |
 | Settle | 600 ms `--ease-settle`, opacity in 180 ms | opaque in 150 ms at its start pose, then a solid body travels 600 ms on the crane's curve (`sine.inOut` + a 2 px seat dip over the last 15 %, as `BuyButtonCrane.astro`'s `SEAT_START` .85) |
 | Readable | ~0.4 s after the click (the picture ~90 % home by +240 ms), at rest ~0.75 s | visible ~0.4 s, seated ~1.0 s (220 + 40 + 150 + 600) |
@@ -298,14 +299,35 @@ because it is Radio Roulette" is the mess the user ruled out.
 
 **Steps**
 
-- [ ] 1. Remove the noise, whole: the snow markup (`.ww-snow` + its canvas, `data-ww-snow`), the script
+- [x] 1. Remove the noise, whole: the snow markup (`.ww-snow` + its canvas, `data-ww-snow`), the script
       (makeTiles / placeSnow / endSnow / staticBurst, their calls, the 1.2 s makeTiles timeout, the static-burst
       comments in the glide code), the CSS (the snow block, `--ww-chg-*`, `.is-tuning`, `@keyframes ww-lock-flash`,
       their reduced-motion and hc rules), the bench's STATIC switch, its 6 sliders and `srcSnow` / `snowv`, and
-      DESIGN.md §4's "Channel change" bullet and §6's static line.
-- [ ] 2. Both candidates on one engine, behind a bench switch MOTION: TUNE / GEAR (only the entrance path table
+      DESIGN.md §4's "Channel change" bullet and §6's static line. A grep finds none of them left.
+- [x] 2. Both candidates on one engine, behind a bench switch MOTION: TUNE / GEAR (only the entrance path table
       changes). Sliders: travel px, exit ms, empty beat ms, enter ms, text rise px, text stagger ms, glow dip, seat
       dip px; GEAR's rotation toggle (off). ▶ CHANNEL, SLOW x4 and AUTO stay. The bench opens on GEAR.
+      - Built (2026-10-18): `WALL_MOTION` ('gear') -> `data-ww-motion`; the bench's MOTION seg flips it live. A
+        sequencer (rest / out / gap / in) on GSAP: the old scene leaves, the commit waits for the skim gate (120 ms
+        since the last pick, no held arrow) and the picture's `decode()` (capped 150 ms), then the entrance's start
+        poses are set and the DOM flips in the same task (`tl.from`, so every part ends on its own CSS: the blurb
+        rests at .92). A pick mid-entrance sends the arrival out quick (<= 160 ms) from its live pose; re-picking the
+        leaver brings it back. The URL is written once, at the flip.
+      - The glow: two layers (`.ww-screen-glow` + `.ww-screen-was`), an exact linear cross-fade of the two gradients
+        with the dip folded in (the hue itself never interpolates).
+      - `room()`: the travel shrinks to what fits inside the glass (and right of the list on a laptop), so a plugin
+        never slides under the bezel. GAS at 1280x665 rises 16 px (the glass has 16 px under it), 28 px at 1141x636.
+      - Phone: the list leaves left (half the pane's travel), the pane comes in from the right, its parts cascaded;
+        our Back key plays it backwards; the browser's Back cuts (an iOS swipe-back already animates).
+      - Checks (scratchpad `motioncheck.mjs`, the dev server; the build's run is step 4): Chromium all pass (one panel
+        per frame, each plugin's path and TUNE's direction on the first frame, the old one gone before the new one,
+        the picture on the glass and clear of the list, no layout shift, rest = transform none + nothing inline,
+        rapid picks, a held arrow, the leaver re-picked, a category change, DRIFT paused until seated, 1141x636,
+        reduced motion, hc, a hidden tab, phones 390x844 + 360x740: open / Back key / the browser's Back): 204 / 204
+        PASS. WebKit: the next commit (headless WebKit paints at ~5 fps here, so its run stretches every motion time
+        x4, as the bench's SLOW x4, to still catch the start poses). `astro build` green.
+      - Measured (Chromium, 1280x665): GEAR on the glass ~270 ms after the click, readable ~900 ms, at rest
+        ~1015 ms; TUNE ~160 / ~360 / ~870 ms; reduced motion over in ~250 ms.
 - [ ] 3. The user picks and tunes in the bench; the pick is baked and the other path deleted (no dead code).
 - [ ] 4. Checks on the build, Chromium + WebKit, the rAF recorder (its snow assertions replaced): at most one panel
       visible per frame; rest transform = identity; rapid picks land on the last; held arrows = one entrance and

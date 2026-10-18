@@ -16,8 +16,9 @@
        "Try free for N days" (TrialGateModal's email gate; DRIFT: its own
        page's sign-up) and a small "Product page" link.
    Lighting a plugin is a channel change: the screen takes that plugin's
-   phosphor colour (--ww-ch-<slug>-h / -s), the picture cuts to snow as the
-   plugins swap under it and the new one locks in through it (--ww-chg-*).
+   phosphor colour (--ww-ch-<slug>-h / -s) and the plugins swap by motion
+   alone, the old one off the glass before the new one comes on
+   (WALL_MOTION, --ww-tune-* / --ww-gear-* / --ww-mv-*).
    The list is real links to the product pages (crawlable,
    works without JS); the script turns them into tabs. URL: ?cat= is one
    history entry per category, ?plugin= updates the current one, so Back
@@ -29,8 +30,8 @@
    their order, the price line and the try action are library.ts. Honesty:
    the words describe what the plugin is built to do, not measured results.
    Tune on the dev bench /__wwbench (tools/wwbench): every tunable is a --ww-*
-   custom property on .ww. Reduced motion: no static, no stagger, no
-   power-on, the poster instead of the run. html.hc: a plain list. */
+   custom property on .ww. Reduced motion: a quick fade on a change, no
+   stagger, no power-on, the poster instead of the run. html.hc: a plain list. */
 import { existsSync, statSync } from 'node:fs';
 import { Image, getImage } from 'astro:assets';
 import GarageWall from './GarageWall.astro';
@@ -46,6 +47,12 @@ import type { LibraryWord } from '../data/plugins';
 /* What the whole wall is: the garage wood, or one TV every plugin plays on
    (Dan 2026-10-14). Lives on .ww. The bench can flip it. */
 const WALL_BG: 'wood' | 'screen' = 'screen';
+
+/* How a plugin comes onto the glass and leaves it (the user 2026-10-18: no noise, just motion; plan Phase 4d). Both
+   are built so the bench can compare them; the user's pick stays and the other goes. 'tune': one move for every
+   plugin, its direction from the list (down the list the new one rises, up the list it drops). 'gear': each plugin
+   arrives along its own object's axis (WINDOWS[slug].enter) and settles on the crane's seat. */
+const WALL_MOTION: 'tune' | 'gear' = 'gear';
 
 /* The live window: an HD run of DRIFT (1440 desktop / 800 phone) with its
    first frame as the poster. Only when every file is on disk; otherwise the
@@ -126,12 +133,17 @@ const noJsArt = [
 ].join('');
 
 /* The plugins on the TV (library.ts: a `library` entry AND live or an open
-   trial; DRIFT first while drift.homeLead) and each one's window. */
-const WINDOWS: Record<string, { img: ImageMetadata; portrait?: boolean }> = {
-  drift: { img: driftImg },
-  revlimiter: { img: rlImg },
-  gas: { img: gasImg, portrait: true },
-  'radio-roulette': { img: rrImg },
+   trial; DRIFT first while drift.homeLead) and each one's window. `enter` = how
+   it comes onto the glass on WALL_MOTION 'gear', along its own object's axis:
+   'rise' (straight up, planted: the default), 'arc' (up and across on a curve,
+   as a needle sweeps), 'right' (in from the right on a drift line, caught a
+   hair past its mark) or 'left' (in from the left, as a dial scans the band). */
+type Enter = 'rise' | 'arc' | 'right' | 'left';
+const WINDOWS: Record<string, { img: ImageMetadata; portrait?: boolean; enter?: Enter }> = {
+  drift: { img: driftImg, enter: 'right' },
+  revlimiter: { img: rlImg, enter: 'arc' },
+  gas: { img: gasImg, portrait: true, enter: 'rise' },
+  'radio-roulette': { img: rrImg, enter: 'left' },
 };
 type Item = {
   slug: string;
@@ -141,6 +153,7 @@ type Item = {
   img: ImageMetadata;
   alt: string;
   portrait?: boolean;
+  enter: Enter;
   blurb: string;
   price: string;
   action: TvAction | null;
@@ -156,6 +169,7 @@ const items: Item[] = tvPlugins()
     img: WINDOWS[p.slug].img,
     alt: p.library!.alt,
     portrait: WINDOWS[p.slug].portrait,
+    enter: WINDOWS[p.slug].enter ?? 'rise',
     blurb: p.library!.blurb,
     price: priceLine(p),
     action: tryAction(p),
@@ -174,13 +188,13 @@ const first = items[0]?.slug ?? '';
     data-ww-art={wallArt}
     data-ww-on={first}
     data-ww-view="list"
-    data-ww-snow="picture"
+    data-ww-motion={WALL_MOTION}
     style={`${frameVars};--ww-rows:${items.length}`}
   >
     <noscript><style is:inline set:html={noJsArt}></style></noscript>
-    {/* the set: the lit tube behind everything, the snow, the glass over it, the cabinet front */}
-    <div class="ww-screen" aria-hidden="true"><div class="ww-screen-glow"></div></div>
-    <div class="ww-snow" aria-hidden="true"><canvas></canvas></div>
+    {/* the set: the lit tube behind everything (the last channel's glow fading over the new one), the glass over it,
+        the cabinet front */}
+    <div class="ww-screen" aria-hidden="true"><div class="ww-screen-glow"></div><div class="ww-screen-was"></div></div>
     <div class="ww-screen-fx" aria-hidden="true"></div>
     <div class="ww-frame" aria-hidden="true"><i class="ww-frame-glass"></i><span class="ww-frame-led"></span></div>
 
@@ -235,6 +249,7 @@ const first = items[0]?.slug ?? '';
           style={`--ww-ar:${(media.width / media.height).toFixed(4)}`}
           id={`ww-ch-${it.slug}`}
           data-ww-panel={it.slug}
+          data-ww-enter={it.enter}
           aria-labelledby={`ww-pn-${it.slug}`}
           aria-hidden={i === 0 ? 'false' : 'true'}
         >
@@ -310,7 +325,7 @@ const first = items[0]?.slug ?? '';
 </GarageWall>
 
 <script>
-  import { lenis, DUR_ANCHOR } from '../lib/motion'; // the house scroller (null under reduced motion)
+  import { lenis, DUR_ANCHOR, gsap } from '../lib/motion'; // the house scroller (null under reduced motion) + GSAP
 
   const wall = document.querySelector<HTMLElement>('[data-wordwall]');
   if (wall) {
@@ -423,143 +438,15 @@ const first = items[0]?.slug ?? '';
     }
     wall.dataset.wwLib = 'on'; // the categories + the phone's Back show from here (CSS)
 
-    /* Changing channel (Dan's pick: "a short burst of static"; reworked 2026-10-18 after the user's "the static
-       isn't good": the panels cross-faded, so both plugins showed at once; the snow was a grey box the size of the
-       new picture's figure, so the old picture showed round it; and it ended before the swap did). light() swaps
-       the panels at once (a cut) and this puts snow over the new picture in that same frame: full snow for
-       --ww-chg-snow-ms, then the picture locks in through it for --ww-chg-lock-ms (the snow thins out while the
-       picture settles from a flash, CSS .is-tuning). The snow takes the picture's own box and corners
-       (the img / video: a capped window is narrower than its figure; same box, so percent radii match). The noise
-       is three tiles made once (grain smeared along the line, every line its own gain, a power curve for real
-       blacks), one drawn at a random offset each frame, --ww-chg-grain px a dot, coloured by the channel's phosphor
-       (--ww-chg-tint) with a brighter band rolling down (--ww-chg-band). data-ww-snow="screen" (bench) covers the
-       whole screen. Nothing waits on a frame: a hidden tab, the wall off screen, reduced motion, high contrast and
-       the wood wall get the cut alone. */
-    const snow = wall.querySelector<HTMLElement>('.ww-snow');
-    const snowCanvas = snow?.querySelector('canvas');
-    const snowCtx = snowCanvas?.getContext('2d') ?? null;
-    const TILE = 256;
-    const tiles: HTMLCanvasElement[] = [];
-    const makeTiles = () => {
-      if (tiles.length || reduced.matches) return;
-      for (let k = 0; k < 3; k++) {
-        const c = document.createElement('canvas');
-        c.width = c.height = TILE;
-        const cx = c.getContext('2d');
-        if (!cx) return;
-        const img = cx.createImageData(TILE, TILE);
-        const px = new Uint32Array(img.data.buffer);
-        for (let y = 0; y < TILE; y++) {
-          const gain = 0.75 + Math.random() * 0.5; // each line its own gain: the scan's jitter
-          let v = Math.random();
-          for (let x = 0; x < TILE; x++) {
-            v = v * 0.45 + Math.random() * 0.55; // smeared along the line, as an analog signal is
-            const g = Math.min(255, (Math.pow(v, 1.5) * 330 * gain) | 0);
-            px[y * TILE + x] = 0xff000000 | (g << 16) | (g << 8) | g; // grey, opaque (little-endian ABGR)
-          }
-        }
-        cx.putImageData(img, 0, 0);
-        tiles.push(c);
-      }
-    };
-    const placeSnow = (media: HTMLElement | null) => {
-      if (!snow) return;
-      const s = snow.style;
-      if (wall.dataset.wwSnow !== 'picture' || !media || !snow.offsetParent) {
-        s.left = s.top = s.width = s.height = s.right = s.bottom = s.transform = s.borderRadius = '';
-        return;
-      }
-      const box = snow.offsetParent.getBoundingClientRect();
-      const r = media.getBoundingClientRect();
-      s.left = `${r.left - box.left}px`;
-      s.top = `${r.top - box.top}px`;
-      s.width = `${r.width}px`;
-      s.height = `${r.height}px`;
-      s.right = s.bottom = 'auto';
-      s.transform = 'none';
-      s.borderRadius = getComputedStyle(media).borderRadius;
-    };
-    let snowRaf = 0;
-    const endSnow = () => {
-      cancelAnimationFrame(snowRaf);
-      snowRaf = 0;
-      snow?.classList.remove('is-on');
-      snow?.style.removeProperty('opacity');
-    };
-    const staticBurst = (panel: HTMLElement | null) => {
-      if (!snow || !snowCanvas || !snowCtx || !panel || reduced.matches || document.hidden || wall.dataset.wwBg !== 'screen') return;
-      if (document.documentElement.classList.contains('hc')) return;
-      const r = wall.getBoundingClientRect();
-      if (r.bottom <= 0 || r.top >= window.innerHeight) return;
-      makeTiles();
-      if (!tiles.length) return;
-      const media = panel.querySelector<HTMLElement>('.ww-ui img, .ww-ui video');
-      panels.forEach((p) => p.classList.remove('is-tuning')); // at rest before its box is read
-      placeSnow(media);
-      const cs = getComputedStyle(wall);
-      const num = (p: string, d: number) => {
-        const v = parseFloat(cs.getPropertyValue(p));
-        return Number.isFinite(v) ? v : d;
-      };
-      const hold = Math.max(0, num('--ww-chg-snow-ms', 90));
-      const lock = Math.max(0, num('--ww-chg-lock-ms', 140));
-      const tint = Math.min(1, Math.max(0, num('--ww-chg-tint', 0.35)));
-      const band = Math.max(0, num('--ww-chg-band', 0.5));
-      const grain = Math.max(1, num('--ww-chg-grain', 1.5));
-      const tintCol = `hsl(${num('--ww-on-h', 38)} ${num('--ww-on-s', 28)}% 55%)`; // the new channel's (light() set it)
-      const box = snow.getBoundingClientRect();
-      const w = Math.max(1, Math.min(900, Math.round(box.width / grain)));
-      const h = Math.max(1, Math.min(600, Math.round(box.height / grain)));
-      if (snowCanvas.width !== w || snowCanvas.height !== h) { snowCanvas.width = w; snowCanvas.height = h; }
-      const ctx = snowCtx;
-      const pats = tiles.map((t) => ctx.createPattern(t, 'repeat'));
-      void panel.offsetWidth; // restart the lock-in on a quick second change
-      panel.classList.add('is-tuning');
-      cancelAnimationFrame(snowRaf);
-      const t0 = performance.now();
-      const frame = () => {
-        const t = performance.now() - t0; // the clock, not the frame's stamp: late frames never stretch the change
-        const ox = (Math.random() * TILE) | 0;
-        const oy = (Math.random() * TILE) | 0;
-        ctx.globalCompositeOperation = 'source-over';
-        ctx.globalAlpha = 1;
-        ctx.setTransform(1, 0, 0, 1, -ox, -oy);
-        ctx.fillStyle = pats[(Math.random() * pats.length) | 0] ?? '#808080';
-        ctx.fillRect(ox, oy, w, h);
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        if (band > 0) {
-          const y = (((t / 300) % 1.3) - 0.15) * h;
-          const g = ctx.createLinearGradient(0, y - h * 0.15, 0, y + h * 0.15);
-          g.addColorStop(0, 'rgba(255,255,255,0)');
-          g.addColorStop(0.5, `rgba(255,255,255,${Math.min(1, 0.35 * band)})`);
-          g.addColorStop(1, 'rgba(255,255,255,0)');
-          ctx.globalCompositeOperation = 'lighter';
-          ctx.fillStyle = g;
-          ctx.fillRect(0, 0, w, h);
-        }
-        if (tint > 0) {
-          ctx.globalCompositeOperation = 'color'; // the channel's hue on the snow's own light
-          ctx.globalAlpha = tint;
-          ctx.fillStyle = tintCol;
-          ctx.fillRect(0, 0, w, h);
-        }
-        // full, then thinning out: quick at first (the picture shows through), a soft tail
-        const k = t < hold ? 1 : lock > 0 ? Math.max(0, 1 - (t - hold) / lock) : 0;
-        snow.style.opacity = String(k * k);
-        if (t < hold + lock) snowRaf = requestAnimationFrame(frame);
-        else endSnow();
-      };
-      snow.classList.add('is-on');
-      frame(); // the first snow paints with the swap, in this very frame
-    };
-
-    /* DRIFT's live window plays only while its panel is the lit one, on
-       screen (a quarter of it), the tab is visible and motion is allowed;
-       autoplay refused = the poster stays. */
+    /* DRIFT's live window plays only while its panel is at rest on the glass
+       (never while it comes on or leaves: it starts once seated), on screen
+       (a quarter of it), the tab is visible and motion is allowed; autoplay
+       refused = the poster stays. */
     let runInView = false;
+    let seated = ''; // the plugin at rest on the glass ('' while the glass changes, or a phone shows its list)
     const syncRun = () => {
       if (!runEl || reduced.matches) return;
-      const live = runInView && lit === 'drift' && !document.hidden;
+      const live = runInView && seated === 'drift' && !document.hidden;
       if (live) runEl.play().catch(() => {});
       else if (!runEl.paused) runEl.pause();
     };
@@ -596,11 +483,362 @@ const first = items[0]?.slug ?? '';
       wall.querySelectorAll<HTMLElement>('.ww-info').forEach((el) => ro.observe(el));
     }
 
-    // light a plugin: the tab, the panel, the screen's colour, the static
-    const light = (slug: string, burst = true) => {
-      const next = panels.find((p) => slugOf(p) === slug);
+    /* Changing channel: motion only (the user 2026-10-18, after the static: "no noise at all, just motion"; plan
+       Phase 4d, from a UX lens and a brand lens). Never two plugins on the glass: the one on it leaves first (inert
+       from the click; the row lights at once), then the next comes on. data-ww-motion picks where an entrance comes
+       from. 'tune': the list's direction (down the list the new plugin rises from below, up the list it drops from
+       above; the leaver drifts the same way). 'gear': each plugin's own axis (its panel's data-ww-enter); the leaver
+       sinks, a beat of empty glass, then the newcomer turns opaque where it starts and travels on the crane's curve
+       to a small seat dip (BuyButtonCrane's sine in-out + seat). The text follows in reading order. The last pick
+       wins, from wherever things are: the leaver picked again comes back; another picked while one comes on sends
+       that one out. Picks closer than SKIM, or a held arrow, keep the glass dark until they stop: only the last one
+       comes on. The screen's colour changes as the newcomer comes on, the old glow fading over the new (a gradient
+       can't transition, and a hue must never interpolate: 280 -> 26 runs through green). Times and distances are
+       read off --ww-tune-* / --ww-gear-* / --ww-mv-* at each change (the bench's sliders, SLOW x4). Only the
+       pictures and the text blocks move (never .ww-ui: the first window's reveal; never .ww-try: its hover),
+       transform + opacity only, cleared at rest (transform: none, so the window lands crisp). Reduced motion: a
+       quick fade. High contrast, the wood wall (its own CSS fade), a hidden tab or the wall off screen: a cut.
+       Phones: a tap slides the list out left and the pane in from the right; the pane's Back key runs it backwards
+       (the browser's own Back cuts: an iOS swipe already animates). */
+    type Dir = 1 | -1; // 1 = down the list
+    const LIST = ':list'; // a phone's list on the glass (anything else: a plugin's slug, its panel)
+    const SKIM = 120; // ms: picks closer than this keep the glass dark
+    // GEAR's ways onto the glass (WINDOWS[slug].enter), in travels (x right, y down). r = the tilt at full tilt (deg)
+    // about o; ey = y's ease when it differs from x's, which bends the path into a curve
+    const ENTER: Record<string, { x: number; y: number; r?: number; o?: string; ey?: string }> = {
+      rise: { x: 0, y: 1 },
+      arc: { x: -0.75, y: 0.55, r: -1.5, o: '50% 180%', ey: 'power2.out' },
+      right: { x: 1, y: 0.18, r: -1.2, o: '0% 50%', ey: 'power2.out' },
+      left: { x: -1, y: 0 },
+    };
+    const glowEl = wall.querySelector<HTMLElement>('.ww-screen-glow');
+    const wasEl = wall.querySelector<HTMLElement>('.ww-screen-was');
+    const panelOf = (s: string) => panels.find((p) => slugOf(p) === s) ?? null;
+    const mediaOf = (p: HTMLElement) => p.querySelector<HTMLElement>('.ww-ui img, .ww-ui video');
+    const textOf = (p: HTMLElement) => Array.from(p.querySelectorAll<HTMLElement>('.ww-phead, .ww-blurb, .ww-pwords, .ww-buy'));
+    const listParts = () => [osdEl, list].filter((el): el is HTMLElement => !!el);
+    // what a scene moves: its panel (an exit moves it whole) and the parts an entrance moves one by one
+    const movedOf = (s: string): HTMLElement[] => {
+      if (s === LIST) return listParts();
+      const p = panelOf(s);
+      return p ? [p, mediaOf(p), ...textOf(p), p.querySelector<HTMLElement>('.ww-back')].filter((el): el is HTMLElement => !!el) : [];
+    };
+    const moves = () => {
+      const cs = getComputedStyle(wall);
+      const n = (p: string, d: number) => {
+        const v = parseFloat(cs.getPropertyValue(p));
+        return Number.isFinite(v) ? v : d;
+      };
+      const tune = wall.dataset.wwMotion === 'tune';
+      const k = tune ? '--ww-tune-' : '--ww-gear-';
+      const q = reduced.matches; // a quick fade: nothing travels
+      return {
+        tune,
+        q,
+        outMs: q ? 80 : n(`${k}out-ms`, tune ? 150 : 220),
+        outPx: q ? 0 : n(`${k}out-px`, tune ? 8 : 10),
+        gapMs: q || tune ? 0 : n('--ww-gear-gap-ms', 40),
+        px: q ? 0 : n(`${k}px`, tune ? 16 : 28),
+        fadeMs: q ? 120 : n(`${k}fade-ms`, tune ? 180 : 150),
+        inMs: q ? 120 : n(`${k}in-ms`, 600),
+        seat: q || tune ? 0 : n('--ww-gear-seat-px', 2),
+        tilt: q || tune ? 0 : n('--ww-gear-tilt', 0),
+        textPx: q ? 0 : n('--ww-mv-text-px', 10),
+        textMs: q ? 120 : n('--ww-mv-text-ms', 480),
+        textGap: q ? 0 : n('--ww-mv-text-gap-ms', 50),
+        textAt: q ? 0 : n('--ww-mv-text-at-ms', 90),
+        dip: q ? 1 : n('--ww-mv-glow-dip', 0.85),
+        panePx: q ? 0 : n('--ww-mv-pane-px', 16),
+        paneMs: q ? 80 : n('--ww-mv-pane-ms', 200),
+      };
+    };
+    const sec = (ms: number) => Math.max(0, ms) / 1000; // GSAP counts seconds
+    /* How much of a move fits: the share of (x, y) the picture can travel from its resting box before it would slip
+       under the bezel or over the list (GAS's tall window on a 665px laptop has 16px of glass under it, not 28). */
+    const room = (el: HTMLElement, x: number, y: number) => {
+      const pane = wall.querySelector<HTMLElement>('.ww-frame-glass');
+      const g = (pane?.offsetParent ? pane : wall.querySelector<HTMLElement>('.ww-screen'))?.getBoundingClientRect();
+      if (!g) return 1;
+      const r = el.getBoundingClientRect();
+      const left = !phone.matches && list ? Math.max(g.left, list.getBoundingClientRect().right) : g.left;
+      let k = 1;
+      if (x > 0) k = Math.min(k, (g.right - r.right) / x);
+      if (x < 0) k = Math.min(k, (r.left - left) / -x);
+      if (y > 0) k = Math.min(k, (g.bottom - r.bottom) / y);
+      if (y < 0) k = Math.min(k, (r.top - g.top) / -y);
+      return Math.max(0, Math.min(1, k));
+    };
+
+    let viewWant: 'list' | 'panel' = 'list'; // a phone's view to be (data-ww-view follows as the glass changes)
+    let onGlass = phone.matches ? LIST : lit; // the scene on the glass: coming on, at rest or leaving
+    let stage: 'rest' | 'out' | 'gap' | 'in' = 'rest';
+    let run: ReturnType<typeof gsap.timeline> | null = null; // the exit or the entrance under way
+    let glowRun: ReturnType<typeof gsap.to> | null = null; // the screen's colour changing
+    let wait = 0; // the commit's timer
+    let ticket = 0; // bumped by every new plan, so a late commit knows it is stale
+    let lastPick = 0;
+    let holding = false; // an arrow key held down: the glass stays dark until it is let go
+    let dir: Dir = 1;
+    let gapEnd = 0;
+    let focusView = false; // the view's flip takes focus with it (a tap, the Back key, Back / Forward)
+    let urlDue = false; // laptop: ?plugin= is written once the pick lands (a held arrow would write it 30 times a second)
+    let backKey = false; // the pane's own Back key: the open runs backwards
+    const sceneWant = () => (phone.matches && viewWant === 'list' ? LIST : lit);
+    const still = () => {
+      if (wall.dataset.wwBg !== 'screen' || document.hidden || document.documentElement.classList.contains('hc')) return true;
+      const r = wall.getBoundingClientRect();
+      return r.bottom <= 0 || r.top >= window.innerHeight;
+    };
+    const seat = () => {
+      seated = onGlass === LIST ? '' : onGlass;
+      syncRun();
+    };
+    // the glow back to its CSS (lit, or the power-on's)
+    const calm = () => {
+      glowRun?.kill();
+      glowRun = null;
+      glowEl?.style.removeProperty('opacity');
+      wasEl?.style.removeProperty('opacity');
+    };
+    /* The old channel's glow over the new one, fading as the newcomer comes on, while the dip (d) comes back to 1.
+       Two layers over the black tube: the old on top at b = d(1 - c), the new under it at a = dc / (1 - b), so the
+       light is always d x (old (1 - c) + new c): a straight cross-fade, never a jump. Called before data-ww-on
+       flips, while the glow still shows the old channel. */
+    const glowTo = (ms: number) => {
+      if (!glowEl || !wasEl) return;
+      glowRun?.progress(1);
+      const cs = getComputedStyle(glowEl);
+      const d0 = parseFloat(cs.opacity);
+      wasEl.style.backgroundImage = cs.backgroundImage;
+      const k = { c: 0, d: Number.isFinite(d0) ? d0 : 1 };
+      const paint = () => {
+        const b = k.d * (1 - k.c);
+        wasEl.style.opacity = String(b);
+        glowEl.style.opacity = String(b < 1 ? (k.d * k.c) / (1 - b) : 0);
+      };
+      paint();
+      glowRun = gsap.to(k, { c: 1, d: 1, duration: sec(ms), ease: 'power1.inOut', onUpdate: paint, onComplete: calm });
+    };
+
+    // the glass's DOM as the pick wants it: the lit plugin's panel up (the rest hidden), its colour, a phone's view
+    const apply = () => {
+      panels.forEach((p) => {
+        const on = slugOf(p) === lit;
+        p.classList.toggle('is-active', on);
+        p.classList.remove('is-leaving');
+        p.inert = false;
+        p.setAttribute('aria-hidden', on ? 'false' : 'true');
+      });
+      wall.dataset.wwOn = lit;
+      const v = phone.matches ? viewWant : 'list';
+      if (wall.dataset.wwView !== v) setView(v, focusView);
+      focusView = false;
+      onGlass = sceneWant();
+      dress();
+      if (urlDue && !phone.matches) writeUrl('replace');
+      urlDue = false;
+    };
+    // no motion: everything at rest and the DOM as wanted, at once
+    const cut = () => {
+      clearTimeout(wait);
+      ticket++;
+      run?.kill();
+      run = null;
+      gsap.set([...listParts(), ...panels.flatMap((p) => movedOf(slugOf(p)))], { clearProps: 'transform,opacity,transformOrigin' });
+      calm();
+      apply();
+      stage = 'rest';
+      seat();
+    };
+    // take the glass to what is wanted now, from wherever it is
+    const go = (move: boolean) => {
+      if (!move || still()) { cut(); return; }
+      const want = sceneWant();
+      if (stage === 'rest' || stage === 'in') {
+        if (want === onGlass) apply(); // same scene (a phone's list: a tab lit by key): the DOM only
+        else leave(stage === 'in');
+        return;
+      }
+      if (want === onGlass) back(); // out / gap: the leaver picked again comes back
+      else plan(); // anything else lands once the glass is free
+    };
+    // the scene on the glass goes; one still coming on stops where it is and leaves from there, quicker
+    const leave = (quick: boolean) => {
+      const m = moves();
+      const s = onGlass;
+      const p = s === LIST ? null : panelOf(s);
+      run?.kill();
+      stage = 'out';
+      seated = '';
+      syncRun();
+      if (p) {
+        p.classList.add('is-leaving');
+        p.inert = true;
+      }
+      const opening = s === LIST; // a phone's list making way for a pane: out to the left
+      const closing = phone.matches && sceneWant() === LIST; // a phone's pane going back: out to the right
+      const ms = opening || closing ? m.paneMs : quick ? Math.min(m.outMs, 160) : m.outMs;
+      const to = opening ? { x: -m.panePx / 2 } : closing ? { x: m.panePx } : m.tune ? { y: -dir * m.outPx } : { y: m.outPx };
+      run = gsap.timeline({ onComplete: left });
+      run.to(p ? [p] : listParts(), { opacity: 0, ...to, duration: sec(ms), ease: 'power2.in' }, 0);
+      // the tube dims while the glass empties (not when a change is still fading in: skimming never strobes it)
+      if (glowEl && !glowRun && !opening && !closing && m.dip < 1) run.to(glowEl, { opacity: m.dip, duration: sec(ms), ease: 'power1.inOut' }, 0);
+    };
+    // the glass is empty
+    const left = () => {
+      run = null;
+      stage = 'gap';
+      gapEnd = performance.now() + moves().gapMs;
+      if (onGlass === 'drift' && runEl) {
+        runEl.pause();
+        try { runEl.currentTime = 0; } catch (e) { /* not loaded: it starts at 0 anyway */ }
+      }
+      plan();
+    };
+    // land the pick once the glass is free, the picks have stopped (SKIM) and no arrow is held
+    const plan = () => {
+      clearTimeout(wait);
+      const t = ++ticket;
+      if (stage !== 'gap' || holding) return; // the exit's end, or the key's release, asks again
+      const now = performance.now();
+      wait = window.setTimeout(() => { void commit(t); }, Math.max(0, gapEnd - now, lastPick + SKIM - now));
+    };
+    const commit = async (t: number) => {
+      if (t !== ticket || stage !== 'gap') return;
+      if (sceneWant() === onGlass) { back(); return; }
+      // the newcomer's window decoded first (a moment at most): a picture never comes on half painted
+      const np = sceneWant() === LIST ? null : panelOf(lit);
+      const img = np ? mediaOf(np) : null;
+      if (img instanceof HTMLImageElement) {
+        img.loading = 'eager';
+        await Promise.race([img.decode().catch(() => {}), new Promise((r) => window.setTimeout(r, 150))]);
+        if (t !== ticket || stage !== 'gap') return; // a newer pick took over meanwhile
+      }
+      enter();
+    };
+    /* The next scene comes on: its start pose set, then the DOM flipped, in one task (its first frame already
+       shows the pose), then it travels in. Each part travels FROM its pose to its own CSS (the blurb and the words
+       rest dimmer than 1), so clearing it at rest changes nothing. The old scene, hidden by the flip, goes back to
+       rest for next time. */
+    const enter = () => {
+      const m = moves();
+      const from = onGlass;
+      const s = sceneWant();
+      const p = s === LIST ? null : panelOf(s);
+      stage = 'in';
+      if (wall.dataset.wwOn !== lit) glowTo(m.fadeMs + m.inMs / 2);
+      const tl = gsap.timeline({ onComplete: rest });
+      if (!p) {
+        // a phone's list coming back: in from the left
+        tl.from(listParts(), { opacity: 0, x: -m.panePx / 2, duration: sec(m.textMs), ease: 'power3.out', stagger: sec(m.textGap) }, 0);
+      } else {
+        const media = mediaOf(p);
+        const text = textOf(p);
+        const back = phone.matches ? p.querySelector<HTMLElement>('.ww-back') : null;
+        if (back) tl.from(back, { opacity: 0, duration: sec(m.textMs), ease: 'power1.out' }, 0); // fades in where it is
+        if (phone.matches && from === LIST) {
+          // a phone's pane opening: in from the right, the picture first, the text after it
+          const parts = [media, ...text].filter((el): el is HTMLElement => !!el);
+          tl.from(parts, { opacity: 0, x: m.panePx, duration: sec(m.textMs), ease: 'power3.out', stagger: sec(m.textGap) }, 0);
+        } else {
+          if (media && m.tune) {
+            const y0 = dir * m.px * room(media, 0, dir * m.px);
+            tl.from(media, { opacity: 0, duration: sec(m.fadeMs), ease: 'power1.out' }, 0);
+            tl.from(media, { y: y0, duration: sec(m.inMs), ease: 'power4.out' }, 0); // --ease-settle (easeOutQuint)
+          } else if (media) {
+            const e = ENTER[p.dataset.wwEnter ?? ''] ?? ENTER.rise;
+            const fits = room(media, e.x * m.px, e.y * m.px);
+            const x0 = e.x * m.px * fits;
+            const y0 = e.y * m.px * fits;
+            const r0 = (e.r ?? 0) * m.tilt;
+            const ex = gsap.parseEase('sine.inOut');
+            const ey = gsap.parseEase(e.ey ?? 'sine.inOut');
+            const at = sec(m.fadeMs);
+            const k = { p: 0 };
+            gsap.set(media, { x: x0, y: y0, rotation: r0, transformOrigin: e.o ?? '50% 50%' });
+            tl.from(media, { opacity: 0, duration: at, ease: 'power1.out' }, 0); // solid where it starts, then it travels
+            tl.to(k, {
+              p: 1,
+              duration: sec(m.inMs),
+              ease: 'none',
+              onUpdate: () => {
+                const seatK = Math.sin(Math.PI * Math.min(1, Math.max(0, (k.p - 0.85) / 0.15))); // the last 15 %
+                gsap.set(media, { x: x0 * (1 - ex(k.p)), y: y0 * (1 - ey(k.p)) + m.seat * seatK });
+              },
+            }, at);
+            if (r0) tl.to(media, { rotation: 0, duration: sec(m.inMs), ease: 'sine.inOut' }, at + 0.1); // caught a beat after
+          }
+          if (text.length) tl.from(text, { opacity: 0, y: m.textPx, duration: sec(m.textMs), ease: 'power3.out', stagger: sec(m.textGap) }, sec(m.textAt));
+        }
+      }
+      apply();
+      const gone = movedOf(from);
+      if (gone.length) gsap.set(gone, { clearProps: 'transform,opacity,transformOrigin' });
+      run = tl;
+    };
+    // landed: back to plain CSS (transform: none, so the window rests crisp); DRIFT's run may start
+    const rest = () => {
+      run = null;
+      stage = 'rest';
+      const here = movedOf(onGlass);
+      if (here.length) gsap.set(here, { clearProps: 'transform,opacity,transformOrigin' });
+      if (!glowRun) calm();
+      seat();
+    };
+    // the leaver picked again: it comes back from wherever it got to
+    const back = () => {
+      clearTimeout(wait);
+      ticket++;
+      run?.kill();
+      const m = moves();
+      const p = onGlass === LIST ? null : panelOf(onGlass);
+      if (p) {
+        p.classList.remove('is-leaving');
+        p.inert = false;
+      }
+      stage = 'in';
+      run = gsap.timeline({ onComplete: rest });
+      // home = its own CSS: the inline opacity set aside for a moment to read it (the blurb rests at .92, not 1)
+      const home = (_: number, el: HTMLElement) => {
+        const v = el.style.opacity;
+        el.style.opacity = '';
+        const o = getComputedStyle(el).opacity;
+        el.style.opacity = v;
+        return o;
+      };
+      run.to(movedOf(onGlass), { opacity: home, x: 0, y: 0, rotation: 0, duration: sec(m.textMs), ease: 'power3.out' }, 0);
+      if (glowEl && !glowRun) run.to(glowEl, { opacity: 1, duration: sec(m.textMs), ease: 'power1.inOut' }, 0);
+    };
+    // every plugin's window fetched and decoded after the power-on (laptops; a phone fetches one as it opens), the
+    // lit one's neighbours first, so a change never waits on the network
+    const warm = () => {
+      if (phone.matches) return;
+      const s = shown();
+      const k = s.indexOf(lit);
+      panels
+        .map((p) => ({ p, d: Math.abs(s.indexOf(slugOf(p)) - k) }))
+        .sort((a, b) => a.d - b.d)
+        .forEach(({ p }) => {
+          const img = mediaOf(p);
+          if (!(img instanceof HTMLImageElement)) return;
+          img.loading = 'eager';
+          img.decode().catch(() => {});
+        });
+    };
+    // an arrow let go (or the window left): the glass may land the last pick
+    const release = () => {
+      if (!holding) return;
+      holding = false;
+      plan();
+    };
+    window.addEventListener('keyup', release);
+    window.addEventListener('blur', release);
+
+    // light a plugin: its tab at once, then the glass (go): the move there, or a cut (move false)
+    const light = (slug: string, move: boolean | Dir = true) => {
+      const next = panelOf(slug);
       if (!next) return;
-      const changed = slug !== lit;
+      const was = lit;
       lit = slug;
       rows.forEach((a) => {
         const on = slugOf(a) === slug;
@@ -608,21 +846,20 @@ const first = items[0]?.slug ?? '';
         a.setAttribute('aria-selected', on ? 'true' : 'false');
         a.tabIndex = on ? 0 : -1;
       });
-      if (!changed) return;
-      panels.forEach((p) => {
-        const on = p === next;
-        p.classList.toggle('is-active', on);
-        p.setAttribute('aria-hidden', on ? 'false' : 'true');
-      });
-      wall.dataset.wwOn = slug;
-      dress();
-      syncRun();
-      if (burst) staticBurst(next);
+      if (slug === was) return;
+      const img = mediaOf(next);
+      if (img instanceof HTMLImageElement) img.loading = 'eager'; // its window on its way while the old one leaves
+      lastPick = performance.now();
+      if (move !== false) {
+        const s = shown();
+        dir = move === 1 || move === -1 ? move : s.indexOf(slug) < s.indexOf(was) ? -1 : 1;
+      }
+      go(move !== false);
     };
     light(lit, false); // the tabs' starting state
 
     // pick a category: its plugins stay (one after another), the lit one stays if it is in it, else the first lights
-    const setCat = (c: string, announce = true) => {
+    const setCat = (c: string, announce = true, move = announce) => {
       if (!catBtns.some((b) => b.dataset.wwCat === c)) c = 'all';
       const changed = c !== cat;
       cat = c;
@@ -638,7 +875,7 @@ const first = items[0]?.slug ?? '';
         list.classList.add('is-swapping');
       }
       const on = shown();
-      if (!on.includes(lit) && on[0]) light(on[0]);
+      if (!on.includes(lit) && on[0]) light(on[0], move && 1); // a new one comes up from below
       if (changed && announce && say) say.textContent = `${catLabel(c)}: ${on.length} ${on.length === 1 ? 'plugin' : 'plugins'}`;
     };
 
@@ -670,16 +907,21 @@ const first = items[0]?.slug ?? '';
       if (how === 'push') history.pushState(state, '', u);
       else history.replaceState(state, '', u);
     };
-    const fromUrl = (burst: boolean) => {
+    // nav = Back / Forward (announce, move focus with the view); move = the glass may move there
+    const fromUrl = (nav: boolean, move = nav) => {
       const q = new URLSearchParams(window.location.search);
-      setCat(q.get(P_CAT) ?? 'all', burst);
+      viewWant = phone.matches && history.state?.wwView === 'panel' ? 'panel' : 'list'; // first: one go covers both
+      focusView = nav && viewWant !== wall.dataset.wwView; // focus follows the pane that opened
+      const mv = move && (!phone.matches || backKey); // a phone moves on its own Back key only (the rest cuts)
+      backKey = false;
+      setCat(q.get(P_CAT) ?? 'all', nav, mv);
       const want = q.get(P_PLUGIN);
-      if (want && shown().includes(want)) light(want, burst);
-      const v = phone.matches && history.state?.wwView === 'panel' ? 'panel' : 'list';
-      setView(v, burst && v !== wall.dataset.wwView); // Back / Forward: focus follows the pane that opened
+      if (want && shown().includes(want)) light(want, mv && 1);
+      go(mv);
     };
     fromUrl(false);
-    window.addEventListener('popstate', () => fromUrl(true));
+    // a browser that already animated the Back (an iOS swipe) gets a cut
+    window.addEventListener('popstate', (e) => fromUrl(true, !(e as PopStateEvent & { hasUAVisualTransition?: boolean }).hasUAVisualTransition));
 
     catBtns.forEach((b) => b.addEventListener('click', () => {
       const c = b.dataset.wwCat ?? 'all';
@@ -694,14 +936,15 @@ const first = items[0]?.slug ?? '';
       e.preventDefault();
       const slug = slugOf(a);
       if (phone.matches) {
-        // the panel opens first, so the static lands on its window (a hidden panel has no box)
-        light(slug, false);
-        writeUrl('push', 'panel');
-        setView('panel', true);
-        staticBurst(panels.find((p) => slugOf(p) === slug) ?? null);
-      } else {
+        // the pane opens: the list slides out, then the plugin comes on
+        viewWant = 'panel';
+        focusView = true;
         light(slug);
-        writeUrl('replace');
+        writeUrl('push', 'panel');
+        go(true); // the lit one tapped again opens too
+      } else {
+        urlDue = true;
+        light(slug);
       }
     });
     list?.addEventListener('keydown', (e) => {
@@ -717,16 +960,28 @@ const first = items[0]?.slug ?? '';
       else if (e.key === 'End') n = on.length - 1;
       if (n < 0 || !on[n]) return;
       e.preventDefault();
-      light(slugOf(on[n]));
+      if (e.repeat) holding = true; // held: the glass stays dark, the key's release lands the last one
+      urlDue = !phone.matches;
+      // the arrow says the way (a wrap from the last to the first still goes down)
+      light(slugOf(on[n]), e.key === 'ArrowUp' || e.key === 'ArrowLeft' || e.key === 'Home' ? -1 : 1);
       on[n].focus();
-      if (!phone.matches) writeUrl('replace');
     });
     wall.querySelectorAll<HTMLButtonElement>('[data-ww-back]').forEach((b) => b.addEventListener('click', () => {
-      if (history.state?.wwView === 'panel') history.back(); // popstate lands the list
-      else { setView('list', true); writeUrl('replace'); }
+      if (history.state?.wwView === 'panel') {
+        backKey = true; // popstate lands the list, the open run backwards
+        history.back();
+      } else {
+        viewWant = 'list';
+        focusView = true;
+        go(true);
+        writeUrl('replace');
+      }
     }));
     // rotating a tablet across the breakpoint: the desktop shows both panes, the phone the list
-    phone.addEventListener('change', () => { if (!phone.matches) wall.dataset.wwView = 'list'; dress(); });
+    phone.addEventListener('change', () => {
+      if (!phone.matches) viewWant = 'list';
+      cut();
+    });
 
     /* The scroll that parks the TV exactly under the nav, given the TV's
        distance from that line: a whole pixel, rounded up. WebKit drops a
@@ -737,7 +992,7 @@ const first = items[0]?.slug ?? '';
     /* "/#plugins" links on home (the header's PLUGINS, the footer, the cart's
        "Explore the plugins", the closing CTA) glide to the TV instead of
        navigating: with ?cat= in the address the link would load the page
-       again, and the browser's own jump would fire popstate (a static burst).
+       again, and the browser's own jump would fire popstate (a channel change).
        Lenis listens on window and ignores preventDefault, so the click stops
        here and this glide is the only one (no Lenis = reduced motion = a
        jump). It lands where the lock lands, on the same whole pixel (another
@@ -781,16 +1036,18 @@ const first = items[0]?.slug ?? '';
         if (!e.isIntersecting) return;
         io.disconnect();
         window.setTimeout(powerOn, 120);
-        window.setTimeout(makeTiles, 1200); // the static's noise, made once after the power-on
+        window.setTimeout(warm, 1200); // the other windows, once the tube is lit
       }, { rootMargin: '0px 0px -20% 0px' }).observe(wall);
     }
 
-    // bench hooks (harmless in production): light a plugin / pick a category / replay the power-on
+    // bench hooks (harmless in production): light a plugin / pick a category / open a phone's pane / replay the
+    // power-on
     wall.addEventListener('ww:select', (e) => {
       const d = (e as CustomEvent<{ slug?: string; cat?: string; view?: 'list' | 'panel' }>).detail ?? {};
+      if (d.view) viewWant = d.view; // first: one go covers both
       if (d.cat) setCat(d.cat);
       if (d.slug) { if (!shown().includes(d.slug)) setCat('all'); light(d.slug); }
-      if (d.view) setView(d.view);
+      go(true);
     });
     wall.addEventListener('ww:replay', powerOn);
 
@@ -1058,9 +1315,10 @@ const first = items[0]?.slug ?? '';
     pointer-events: auto;
     transition: opacity 320ms ease 60ms, visibility 0s;
   }
-  /* the screen wall changes channel: a cut under the static (staticBurst), never two plugins at once; the wood wall
-     keeps its fade */
+  /* the screen wall changes channel by motion (the script moves them), never two plugins at once; the wood wall keeps
+     its fade. The panel on the glass keeps .is-active while it leaves (.is-leaving: inert, under the click) */
   .ww[data-ww-bg='screen'] .ww-panel { transition: none; }
+  .ww-panel.is-leaving { pointer-events: none; }
   .ww-back { display: none; }
   .ww-ui { margin: 0; min-width: 0; }
   .ww-ui :global(img),
@@ -1293,7 +1551,6 @@ const first = items[0]?.slug ?? '';
     --ww-scr-scan: 0.42;    /* scanline darkness over the whole wall */
   }
   .ww-screen,
-  .ww-snow,
   .ww-screen-fx {
     position: absolute;
     inset-block: var(--rail-h, 0px);
@@ -1314,7 +1571,15 @@ const first = items[0]?.slug ?? '';
     inset: 0;
     background: radial-gradient(ellipse 62% 80% at 50% 46%, #2e1347 0%, #1a0b2c 40%, #0b0414 76%, #040107 100%);
     filter: brightness(var(--ww-scr-bright));
-    transition: background 320ms ease;
+  }
+  /* the last channel's glow, fading over the new one on a change (the script copies the old gradient in: a gradient
+     can't transition, and the hue must not interpolate) */
+  .ww-screen-was {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    filter: brightness(var(--ww-scr-bright));
+    pointer-events: none;
   }
   .ww:not([data-ww-on='drift']) .ww-screen-glow {
     background: radial-gradient(ellipse 62% 80% at 50% 46%,
@@ -1350,36 +1615,35 @@ const first = items[0]?.slug ?? '';
     100% { opacity: 1; transform: none; filter: brightness(var(--ww-scr-bright)); }
   }
 
-  /* Changing channel (Dan's pick: "a short burst of static"; reworked 2026-10-18): the picture cuts to analog snow
-     as the plugins swap under it, full snow for --ww-chg-snow-ms, then the new picture locks in through the
-     thinning snow for --ww-chg-lock-ms (a flash, below). Over the content, under the scanlines and the
-     bezel. The script draws it, sets its opacity frame by frame and, on "picture", gives it the lit picture's box
-     and corners. (The old snow's length, --ww-snow-ms, was set to 100 ms on the bench, its slider's floor.) */
+  /* Changing channel: motion only (the user 2026-10-18: "no noise at all, just motion"; plan Phase 4d). The script
+     reads these at every change (plain numbers: ms, px). The old plugin leaves before the new one comes on. The
+     exit and the text's stagger are quicker than the house's 300 / 90 ms on purpose: a 300 ms ease-in hardly moves
+     for its first 100 ms, and 90 ms x 4 blocks would seat the Try key past a second. They stay local to the TV (the
+     global --dur-out and STAGGER serve the rest of the site). */
   .ww {
-    --ww-chg-snow-ms: 90;  /* full snow, ms: the plugins swap under it */
-    --ww-chg-lock-ms: 140; /* the new picture locking in through the snow, ms */
-    --ww-chg-grain: 1.5;   /* CSS px a snow dot */
-    --ww-chg-tint: 0.35;   /* how much the snow takes the channel's colour (0 = grey) */
-    --ww-chg-band: 0.5;    /* the brighter band rolling down the snow (0 = none) */
-    --ww-chg-flash: 0.45;  /* the new picture's flash as it locks in (brightness + this) */
-  }
-  .ww-snow {
-    z-index: 2;
-    display: block;
-    overflow: hidden; /* to the picture's corners (border-radius from the script) */
-    transition: none;
-  }
-  .ww-snow.is-on { opacity: 1; }
-  .ww-snow canvas { display: block; width: 100%; height: 100%; } /* a canvas won't stretch to insets itself */
-  /* the new picture locking in under the thinning snow: it flashes and settles, as a set's picture does when the new
-     channel's sync catches. Light only, never a move: a moved picture would show past the snow's edge. */
-  .ww-panel.is-tuning .ww-ui :global(img),
-  .ww-panel.is-tuning .ww-ui video {
-    animation: ww-lock-flash calc(var(--ww-chg-lock-ms) * 1ms) ease-out calc(var(--ww-chg-snow-ms) * 1ms) both;
-  }
-  @keyframes ww-lock-flash {
-    from { filter: brightness(calc(1 + var(--ww-chg-flash))); }
-    to   { filter: none; }
+    /* TUNE: one move for every plugin, its direction from the list */
+    --ww-tune-px: 16;       /* the new picture travels this far (from below down the list, from above up it) */
+    --ww-tune-out-px: 8;    /* the old one drifts this far the same way as it fades */
+    --ww-tune-out-ms: 150;  /* the old one's exit */
+    --ww-tune-fade-ms: 180; /* the new picture's fade in (it travels meanwhile) */
+    --ww-tune-in-ms: 600;   /* the new picture's travel (--ease-settle) */
+    /* GEAR CHANGE: each plugin along its own object's axis (WINDOWS[slug].enter), settling on the crane's seat */
+    --ww-gear-px: 28;       /* how far each plugin travels */
+    --ww-gear-out-px: 10;   /* the old one sinks this far as it dims */
+    --ww-gear-out-ms: 220;  /* the old one's exit */
+    --ww-gear-gap-ms: 40;   /* empty glass between them */
+    --ww-gear-fade-ms: 150; /* the new one turns solid where it starts... */
+    --ww-gear-in-ms: 600;   /* ...then travels on the crane's sine in-out */
+    --ww-gear-seat-px: 2;   /* the seat dip as it lands (the last 15 %) */
+    --ww-gear-tilt: 0;      /* 0 = none; 1 = RevLimiter's needle 1.5deg + DRIFT's rear 1.2deg (a turned photo turns its light) */
+    /* both */
+    --ww-mv-text-px: 10;      /* the text blocks rise this far, in reading order, after the picture */
+    --ww-mv-text-ms: 480;
+    --ww-mv-text-gap-ms: 50;  /* between the blocks */
+    --ww-mv-text-at-ms: 90;   /* after the entrance starts */
+    --ww-mv-glow-dip: 0.85;   /* the screen's glow while the glass is empty (1 = no dip) */
+    --ww-mv-pane-px: 16;      /* phones: the pane comes in this far from the right (the list leaves half as far left) */
+    --ww-mv-pane-ms: 200;     /* phones: the list's / the pane's exit */
   }
 
   /* ---- THE BROKEN TV FRAME (WALL_FRAME, with the screen) ------------------
@@ -1435,7 +1699,7 @@ const first = items[0]?.slug ?? '';
       calc(var(--wf-b) * var(--ww-frame-u)) calc(var(--wf-l) * var(--ww-frame-u)) round;
     filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.55)); /* the bezel's lip over the glass */
   }
-  /* the opening, as a box (the snow's "screen" mode and the bench measure it) */
+  /* the opening, as a box (the script reads it to pick the roll's cut) */
   .ww-frame {
     padding: calc(var(--wf-zt) * var(--ww-frame-u)) calc(var(--wf-zr) * var(--ww-frame-u))
       calc(var(--wf-zb) * var(--ww-frame-u)) calc(var(--wf-zl) * var(--ww-frame-u));
@@ -1443,7 +1707,7 @@ const first = items[0]?.slug ?? '';
   .ww-frame-glass { display: block; height: 100%; }
   .ww[data-ww-bg='screen']:not([data-ww-frame='rails']) > .ww-frame { opacity: 1; }
   /* the screen fills the cabinet: from under the bezel's middle, inside the content box */
-  .ww[data-ww-bg='screen']:not([data-ww-frame='rails']) > :is(.ww-screen, .ww-snow, .ww-screen-fx) {
+  .ww[data-ww-bg='screen']:not([data-ww-frame='rails']) > :is(.ww-screen, .ww-screen-fx) {
     left: calc(var(--ww-frame-g) + var(--wf-zl) * var(--ww-frame-u) / 2);
     right: calc(var(--ww-frame-g) + var(--wf-zr) * var(--ww-frame-u) / 2);
     top: calc(var(--ww-frame-g) + var(--wf-zt) * var(--ww-frame-u) / 2);
@@ -1635,18 +1899,14 @@ const first = items[0]?.slug ?? '';
     .ww-panel,
     .ww-screen,
     .ww-screen-fx,
-    .ww-screen-glow,
     .ww-frame { transition: none; }
     .ww-list.is-swapping .ww-item:not([hidden]) .ww-row { animation: none; }
-    .ww-panel.is-tuning .ww-ui :global(img),
-    .ww-panel.is-tuning .ww-ui video { animation: none; } /* the script never starts one here; belt and braces */
   }
 
-  /* high contrast: a plain list. The screen, its glass, the snow and the frame go (the hc wall shows), the names are
-     plain type, the lit one in oxide */
+  /* high contrast: a plain list. The screen, its glass and the frame go (the hc wall shows), the names are plain
+     type, the lit one in oxide */
   :global(html.hc) .ww-screen,
   :global(html.hc) .ww-screen-fx,
-  :global(html.hc) .ww-snow,
   :global(html.hc) .ww-frame { display: none !important; }
   :global(html.hc) .ww-name {
     color: var(--fg);
