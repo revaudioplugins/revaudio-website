@@ -37,6 +37,7 @@
    crane lets go at the page bottom until the dock swap brings this one back,
    so a line that exists only here disappears on the way down and returns on
    the way up. Exactly how the free-trial call shipped broken, 2026-07-30. */
+import { getImage } from 'astro:assets';
 import type { Plugin } from '../data/plugins';
 import { fmtPrice, discountPct, dlGateId } from '../data/plugins';
 import { site } from '../data/site';
@@ -56,12 +57,18 @@ const pct = discountPct(plugin);
 const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
 const gated = !!plugin.trialGateActive;
 const registerUrl = site.downloadGate.workerUrl + '/download/register';
+/* The two big PNGs ride CSS vars, so <Image> never optimizes them: .src
+   shipped the raw 230 KB door + 73 KB patch (PageSpeed, 2026-10-18). WebP at
+   native size, same getImage()-into-a-CSS-var pattern as the product wall.
+   CraneDropZone.astro makes the SAME calls (same file, one download). */
+const master = await getImage({ src: masterImg, format: 'webp', quality: 85 });
+const buysq = await getImage({ src: buysqImg, format: 'webp', quality: 85 });
 ---
 
 <div
   class="crane-buy"
   data-crane-buy
-  style={`--master-url:url(${masterImg.src}); --hook-url:url(${hookImg.src}); --ring-url:url(${ringImg.src}); --buysq-url:url(${buysqImg.src}); --chain-url:url(${chainImg.src}); --wear-url:url(${wearImg.src});`}
+  style={`--master-url:url(${master.src}); --hook-url:url(${hookImg.src}); --ring-url:url(${ringImg.src}); --buysq-url:url(${buysq.src}); --chain-url:url(${chainImg.src}); --wear-url:url(${wearImg.src});`}
 >
   <div class="crane-stage" data-crane-stage>
     <div class="revcrane-grade">

@@ -22,6 +22,7 @@
    Debug freezes (same pattern as #cranep/#cranelight):
      #cranedrop=1 → landed statics (door down + crack, top released)
      #cranedrop=2 → mid-pickup statics (hook latched, door lifted 220px). */
+import { getImage } from 'astro:assets';
 import type { Plugin } from '../data/plugins';
 import { fmtPrice, discountPct, dlGateId } from '../data/plugins';
 import { site } from '../data/site';
@@ -41,12 +42,15 @@ const pct = discountPct(plugin);
 const cartPrice = plugin.regularPriceUsd ?? plugin.introPriceUsd;
 const gated = !!plugin.trialGateActive;
 const registerUrl = site.downloadGate.workerUrl + '/download/register';
+// Same WebP calls as BuyButtonCrane.astro (parity rule: same file, one download).
+const master = await getImage({ src: masterImg, format: 'webp', quality: 85 });
+const buysq = await getImage({ src: buysqImg, format: 'webp', quality: 85 });
 ---
 
 <section
   class="crane-dropzone"
   data-crane-dropzone
-  style={`--master-url:url(${masterImg.src}); --hook-url:url(${hookImg.src}); --ring-url:url(${ringImg.src}); --buysq-url:url(${buysqImg.src}); --chain-url:url(${chainImg.src}); --wear-url:url(${wearImg.src});`}
+  style={`--master-url:url(${master.src}); --hook-url:url(${hookImg.src}); --ring-url:url(${ringImg.src}); --buysq-url:url(${buysq.src}); --chain-url:url(${chainImg.src}); --wear-url:url(${wearImg.src});`}
 >
   <div class="dz-stage" data-dz-stage>
     <div class="dz-shake" data-dz-shake>
