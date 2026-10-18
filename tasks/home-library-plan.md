@@ -213,9 +213,16 @@ without an open trial (The AC) stay off the TV; the TV never changes by itself (
       hidden tab, wall off screen, reduced motion (the cut alone) and the phone pane; no page errors. Chromium: over
       in 230 ms by its own clock (267-282 ms as recorded: the recorder runs a frame late). Headless WebKit on laptop 1
       runs rAF at ~5 fps, so it is not timed. 4x CPU throttle: idle frames median 24 ms, the click frame worst 58 ms.
-- [x] Filmed again on the build, 4 changes (DRIFT -> RevLimiter -> GAS -> Radio Roulette -> DRIFT): one plugin per
+- [x] Filmed again on the build, 4 changes (DRIFT -> RevLimiter -> GAS -> Radio Roulette -> DRIFT): one panel per
       frame, the snow exactly on the new picture's box in the channel's colour (Radio Roulette's low saturation
-      reads near grey), two frames of full snow, one of the picture through it, then at rest.
+      reads near grey), two frames of full snow, one of the picture through it, then at rest. The list's lit name
+      dims a frame after the cut: `.ww-name`'s own 120 ms house snap, left as designed (the row could cut too, if
+      wanted).
+- [x] The snow stays on the picture for the WHOLE change, not just the click's frame (`boxcheck`: the snow's box vs
+      the picture's in every recorded frame with snow up): laptop 1280x665, each plugin in turn, and phone 390x844 +
+      390x664, each plugin's pane from the list with Back between. Chromium (10-16 snow frames a change) and WebKit
+      (2-3): worst 0.0 px everywhere, no page errors. The phone pane opens by display (no slide), so nothing moves
+      under the snow.
 - [ ] The user's look in the bench (reload it first: the old saved snow setting is dropped).
 
 ### Phase 5: later, each on its own branch
