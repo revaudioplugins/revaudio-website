@@ -38,6 +38,7 @@ Baseline (dist, no scroll): laptop 1280x665 first load 2264 KB, phone 390x844@3 
   while python held 127.0.0.1:4431 (unfair first numbers); headless WebKit on Windows never fires `load` (stalled
   videos), so the art never waits on `load` alone.
 - Open for Dan: real Safari / iPhone check (AVIF path), as before.
+- Pushed to main 2026-10-18 on Dan's "push" (rebased onto edb5049; re-checked after the rebase).
 
 # Website — DRIFT word-wall panel: NEON / STEER looks + HD live window (2026-10-14, revaudio-32)
 

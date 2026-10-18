@@ -1,4 +1,4 @@
-## 2026-10-15 — Homepage word wall: WEIGHT (checker S4), branch `feat/drift-wordwall` (Claude Code `revaudio-32`, laptop 1) — DONE, committed on the branch, NOT pushed (waits for Dan's "push")
+## 2026-10-15 — Homepage word wall: WEIGHT (checker S4), branch `feat/drift-wordwall` (Claude Code `revaudio-32`, laptop 1) — PUSHED TO MAIN = LIVE 2026-10-18 (Dan: "push")
 - Dan: "let's fix the weight" + "lighter without hurting quality" -> go. Plan, numbers and checks: `tasks/todo.md`
   (top section + "Review — WEIGHT").
 - Claim CLOSED 2026-10-15: `src/components/WordWall.astro`, `tasks/todo.md`, `tasks/handoff.md`, `tasks/lessons.md`.
@@ -16,9 +16,12 @@
 - Bench note (dev only): the bench's Frame size slider changes the frame's scale without a resize, so the frame cut
   upgrades only at the next resize / roll switch / reload; at DPR 1.25-1.5 a bigger slider value can look a touch soft
   in the bench until then. Reload before judging sharpness there.
-- On "push": fetch, `git log origin/main..HEAD` (name other sessions' commits), flip this header to PUSHED in the push
-  commit; after the deploy `curl -I` one live `/_astro/*.avif` (content-type image/avif through Cloudflare) and re-run
-  the weight check on the live site. Stale cached HTML is safe: the old 1400 WebP names are still in the new dist.
+- Pushed 2026-10-18 on Dan's "push": rebased onto origin/main edb5049 (the cart attribution commit from another
+  session, already live; files apart); only this work's commits went out. Re-checked after the rebase: build green, no
+  __wwbench / raw PNGs in dist, reduced-motion shots identical to the checked build, video + frame + poster in Chromium
+  (AVIF) and WebKit (WebP fallback), no console errors. Post-deploy check: `curl -I` one live `/_astro/*.avif`
+  (content-type image/avif through Cloudflare) + the weight check on the live site. Stale cached HTML is safe: the old
+  1400 WebP names are still in the new dist.
 
 ## 2026-10-14 — Homepage word wall: DRIFT panel, two new looks + HD live window on a bench, branch `feat/drift-wordwall` (Claude Code `revaudio-32`, laptop 1) — PUSHED TO MAIN = LIVE 2026-10-14 (Dan: "send a checker; if it passes push to main, if not fix then push"); bench tuning ("apply ww bench") still open
 - Dan: "the DRIFT panel on the word wall needs a more interesting design" -> picks: build BOTH looks (NEON sign / STEER the
