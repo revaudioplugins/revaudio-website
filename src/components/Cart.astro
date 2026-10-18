@@ -103,6 +103,7 @@ for (const p of plugins) {
     <div class="cd-summary">
       <div class="cd-sub"><span>Subtotal <small>USD</small></span><span data-cart-subtotal>$0</span></div>
       <p class="cd-tax">Any applicable tax is calculated at payment.</p>
+      <p class="cd-offer" data-cart-offer hidden></p>
     </div>
     <p class="cd-next">Next, enter your details and choose a payment method.</p>
     <label class="cd-agree" data-agree-label>
@@ -172,6 +173,36 @@ for (const p of plugins) {
         var r = sessionStorage.getItem(REF_KEY) || '';
         return REF_RE.test(r) ? r : '';
       } catch (e) { return ''; }
+    }
+
+    // ---- Trial-end offer (?offer=) ----
+    // A plugin's licence window shows a ONE-TIME "10% off" banner when its
+    // trial ends; the licence worker (GET /offer) mints a one-use code limited
+    // to that plugin and lands here on /buy/<slug>/?offer=<CODE>. The code is
+    // kept for the tab's session with the buy page's slug and goes to Paddle
+    // as discountCode while that plugin is in the cart, with the "add a code"
+    // field and "remove" both off: one discount per order, so the site's
+    // WELCOME code can't replace or join it. Paddle checks the code itself
+    // (one use, expiry, product), the site only carries it.
+    var OFFER_KEY = 'ra-offer';
+    var OFFER_RE = /^[A-Z0-9]{6,32}$/;
+    try {
+      var offerParam = new URLSearchParams(window.location.search).get('offer');
+      var offerPage = document.querySelector('[data-cart-autoadd]');
+      var offerSlug = offerPage ? offerPage.getAttribute('data-slug') || '' : '';
+      if (offerParam && OFFER_RE.test(offerParam) && offerSlug)
+        sessionStorage.setItem(OFFER_KEY, JSON.stringify({ code: offerParam, slug: offerSlug }));
+    } catch (e) {}
+    function currentOffer() {
+      try {
+        var o = JSON.parse(sessionStorage.getItem(OFFER_KEY) || 'null');
+        return o && OFFER_RE.test(o.code || '') && o.slug ? o : null;
+      } catch (e) { return null; }
+    }
+    // The offer only counts while its plugin is in the cart.
+    function offerFor(cart) {
+      var o = currentOffer();
+      return o && cart.some(function (i) { return i.slug === o.slug; }) ? o : null;
     }
 
     // ---- Sale source (how the buyer reached us) ----
@@ -485,6 +516,13 @@ for (const p of plugins) {
           '</li>';
       }).join('');
       if (subEl) subEl.textContent = money(sub);
+      var offerEl = drawer && drawer.querySelector('[data-cart-offer]');
+      var offer = offerFor(c);
+      if (offerEl) {
+        var offerItem = offer && c.filter(function (i) { return i.slug === offer.slug; })[0];
+        offerEl.textContent = offerItem ? 'Your one-time 10% off ' + offerItem.name + ' is applied at payment.' : '';
+        offerEl.hidden = !offerItem;
+      }
     }
 
     function openDrawer() {
@@ -542,11 +580,17 @@ for (const p of plugins) {
         var gclid = adsClickId();
         if (gclid) customData.gclid = gclid;
         Object.assign(customData, saleSource(), metaCookies());
-        window.Paddle.Checkout.open({
+        var checkout = {
           // Paddle sums the full cart natively.
           items: items.map(function (i) { return { priceId: checkoutTargetFor(i), quantity: i.qty || 1 }; }),
           customData: customData
-        });
+        };
+        var offer = offerFor(items);
+        if (offer) {
+          checkout.discountCode = offer.code;
+          checkout.settings = { showAddDiscounts: false, allowDiscountRemoval: false };
+        }
+        window.Paddle.Checkout.open(checkout);
         if (drawer && drawer.open) drawer.close();
       } catch (e) { paymentError('Payment could not open. Please try again, or contact RevAudio support below.'); }
     }
@@ -808,6 +852,7 @@ for (const p of plugins) {
   .cd-sub small { color: #b9b0a2; font-size: 0.6875rem; margin-left: 0.35rem; }
   .cd-sub span:last-child { color: var(--fg); font-size: 1.65rem; font-weight: 600; font-variant-numeric: tabular-nums; }
   .cd-tax { font-size: 0.75rem; line-height: 1.5; color: #b9b0a2; margin: 0.45rem 0 0; }
+  .cd-offer { font-size: 0.8125rem; line-height: 1.45; color: var(--brass-bright); margin: 0.45rem 0 0; }
   .cd-next { font-size: 0.8125rem; color: #b9b0a2; line-height: 1.6; margin: 0; padding-top: 0.4rem; }
 
   /* Consent checkbox — required before checkout; its links open the reader popup. */
