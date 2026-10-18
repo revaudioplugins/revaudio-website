@@ -158,7 +158,17 @@ neon or glow without a lamp (a neon sign IS a lamp: the DRIFT panel's lit tube m
     Breathing room, Lock zone,
     the channel colour + strength sliders (RevLimiter, GAS, Radio Roulette) and Static length.
     `html.hc`: no screen, frame or snow; the plain words.
-- Trial CTA / buy: flat brass-bright button at the page end on `/`; the crane door on product pages.
+- Trial CTA / buy: the button family's large brass with the shine at the page end on `/`; the crane door on product pages.
+- **Buttons (Dan 2026-10-18): one family, `src/styles/buttons.css` (`.rv-btn`), tuned on `/buttonlab`.** The grammar
+  of the /gas button: one warm fill with dark ink words, no outline, a lit top edge and a soft darker bottom edge,
+  a 1px lip, the contact shadow plus a long low ambient one, sentence case, Inter 700, 4px grid. Hover lifts 1px
+  (mouse only); press drops 1px with a shorter shadow, 80ms in / 160ms out, held >= 120ms (`src/lib/press.ts`).
+  Tones: **brass** = trial / buy, **honey** = a free download (GAS), **ghost** = the second choice (dark steel,
+  thin brass line). Sizes 64 / 56 / 48 / 40. The **shine** (a faint lamp band every 8s) only on the page's ONE
+  main action. Every regular action button uses it; a new one opts in by class, never restyles a copy. Stays out:
+  the crane door + BUY NOW squares, the audio toys (demo rack, GAS pedal, station mixer), DRIFT's own world,
+  image-plate buttons (SubscribeModal, /beta), the support chat, icon buttons (×, menu, cart, arrows, dots).
+  /gas keeps its own copy of the honey CTA (its bench is `/gasctalab`).
 - Coverflow showcase, DAW strip, EmailCapture, SubscribeModal, TrialGateModal: unchanged house parts.
 - Support chat (`SupportChat.astro`, `/support` only): chat-app thread grammar in house materials —
   visitor right in 3-stop brass, Support left on dark steel with avatar + curved tail on a group's

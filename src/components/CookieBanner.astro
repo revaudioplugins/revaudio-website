@@ -28,10 +28,10 @@
       <strong class="cb-title"><span class="cb-emoji" aria-hidden="true">🍪</span> We use cookies</strong>
     </div>
     <div class="cb-actions">
-      <button type="button" class="cb-btn cb-btn--decline" id="cookie-decline" aria-label="Decline cookies">
+      <button type="button" class="cb-btn cb-btn--decline rv-btn rv-btn--xs rv-btn--ghost" id="cookie-decline" aria-label="Decline cookies">
         Decline
       </button>
-      <button type="button" class="cb-btn cb-btn--accept" id="cookie-accept" aria-label="Accept all cookies">
+      <button type="button" class="cb-btn cb-btn--accept rv-btn rv-btn--xs" id="cookie-accept" aria-label="Accept all cookies">
         Accept All
       </button>
     </div>
@@ -253,36 +253,8 @@
     align-items: center;
   }
 
-  .cb-btn {
-    cursor: pointer;
-    border-radius: 4px;
-    font-family: var(--font-display);
-    letter-spacing: 0.06em;
-    font-size: 0.85rem;
-    padding: 0.55rem 1.3rem;
-    transition: background 0.2s var(--ease), color 0.2s var(--ease), border-color 0.2s var(--ease);
-    white-space: nowrap;
-  }
-
-  .cb-btn--decline {
-    background: transparent;
-    border: 1px solid var(--border-bright);
-    color: var(--fg-dim);
-  }
-  .cb-btn--decline:hover {
-    border-color: var(--fg-dim);
-    color: var(--fg);
-  }
-
-  .cb-btn--accept {
-    background: var(--brass);
-    border: 1px solid var(--brass);
-    color: #0a0908;
-  }
-  .cb-btn--accept:hover {
-    background: var(--brass-bright);
-    border-color: var(--brass-bright);
-  }
+  /* Accept / Decline are the button family's extra-small size (buttons.css,
+     Dan 2026-10-18): Accept brass, Decline the dark second-choice tone. */
 
   /* Desktop shows the full copy; the short line is phone-only. */
   .cb-short { display: none; }
@@ -302,9 +274,6 @@
     .cb-actions {
       display: grid;
       grid-template-columns: 1fr 1fr;
-    }
-    .cb-btn {
-      text-align: center;
     }
     .cb-title {
       margin-left: 0;
@@ -339,10 +308,12 @@
       grid-template-columns: 1fr 1fr;
       gap: 0.6rem;
     }
+    /* ≥44px tap targets: one family step up (48px). */
     .cb-btn {
-      text-align: center;
-      min-height: 44px;
-      padding: 0.5rem 1rem;
+      --rb-h: 48px;
+      --rb-px: 16px;
+      --rb-fs: 16px;
+      --rb-r: 12px;
     }
   }
 </style>

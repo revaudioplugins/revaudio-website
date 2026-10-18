@@ -80,19 +80,19 @@ const gateNames = Object.fromEntries(plugins.map((p) => [dlGateId(p), p.name]));
       </label>
       <p class="tg-notice">We'll send a few short emails about getting started, and a heads-up before a trial ends. Unsubscribe anytime.</p>
     </div>
-    <button type="submit" class="tg-submit" data-tg-submit>Send my link</button>
+    <button type="submit" class="tg-submit rv-btn" data-tg-submit>Send my link</button>
     <p class="tg-err" data-tg-err role="alert" aria-live="polite"></p>
   </form>
   <p class="tg-status" data-tg-status role="status" aria-live="polite" hidden></p>
   <div class="tg-ready" data-tg-ready hidden>
     <div class="tg-dl-row" data-tg-dl-row>
-      <button type="button" class="tg-dl" data-tg-dl="mac">
+      <button type="button" class="tg-dl rv-btn rv-btn--ghost rv-btn--stack" data-tg-dl="mac">
         <span class="tg-dl-os">macOS</span>
-        <span class="tg-dl-fmt">.pkg installer</span>
+        <span class="tg-dl-fmt rv-btn__sub">.pkg installer</span>
       </button>
-      <button type="button" class="tg-dl" data-tg-dl="win">
+      <button type="button" class="tg-dl rv-btn rv-btn--ghost rv-btn--stack" data-tg-dl="win">
         <span class="tg-dl-os">Windows</span>
-        <span class="tg-dl-fmt">.exe installer</span>
+        <span class="tg-dl-fmt rv-btn__sub">.exe installer</span>
       </button>
     </div>
     <p class="tg-dl-note" data-tg-dl-note role="status" aria-live="polite" hidden></p>
@@ -173,6 +173,7 @@ const gateNames = Object.fromEntries(plugins.map((p) => [dlGateId(p), p.name]));
       if (saved) { openReady(pluginSlug, saved); return; }
       var free = trigger.hasAttribute('data-gate-free');
       kicker.hidden = free;
+      submit.classList.toggle('rv-btn--honey', free); // free = the honey tone (buttons.css)
       // "Checkout's under construction" retired 2026-08-03 — checkout is live
       // again; this modal is now purely the trial/free-download email gate.
       kicker.textContent = 'Free 30-day trial';
@@ -520,23 +521,10 @@ const gateNames = Object.fromEntries(plugins.map((p) => [dlGateId(p), p.name]));
   .tg-consent-block { display: flex; flex-direction: column; gap: 0.4rem; }
   .tg-notice { margin: 0; font-size: 0.74rem; line-height: 1.45; color: var(--fg-dim); }
 
-  .tg-submit {
-    display: block;
-    width: 100%;
-    padding: 0.85rem 1.5rem;
-    font-family: var(--font-display);
-    font-size: 1.05rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    text-align: center;
-    border: 1px solid transparent;
-    background: var(--brass);
-    color: var(--bg-0);
-    cursor: pointer;
-    transition: background 0.2s var(--ease);
-  }
-  .tg-submit:hover { background: var(--brass-bright); }
-  .tg-submit:disabled { opacity: 0.6; cursor: default; }
+  /* The buttons here are the button family (buttons.css, Dan 2026-10-18):
+     submit = medium brass (honey for a free download, set in openGate), the
+     platform pair = the dark second-choice tone, two lines. Placement only. */
+  .tg-submit { display: flex; width: 100%; }
 
   .tg-err { min-height: 1.1em; margin: 0; font-size: 0.8rem; color: var(--oxide-text); }
 
@@ -547,26 +535,11 @@ const gateNames = Object.fromEntries(plugins.map((p) => [dlGateId(p), p.name]));
   .tg-dl-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
   @media (max-width: 380px) { .tg-dl-row { grid-template-columns: 1fr; } }
 
-  .tg-dl {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.2rem;
-    padding: 0.9rem 0.75rem;
-    background: var(--bg-0);
-    border: 1px solid var(--border-bright);
-    border-radius: 6px;
-    color: var(--fg);
-    cursor: pointer;
-    transition: border-color 0.2s var(--ease), background 0.2s var(--ease);
-  }
-  .tg-dl:hover { border-color: var(--brass); background: var(--bg-1); }
-  .tg-dl:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 2px; }
-  .tg-dl:disabled { opacity: 0.6; cursor: default; }
+  .tg-dl { padding-inline: 12px; }
   /* Post-click TERMINAL state — reads as confirmed, not as a faded dead
-     button (a faded button reads as “nothing happened” → the multi-click bug). */
-  .tg-dl.tg-dl-done { opacity: 1; border-color: var(--brass); cursor: default; }
-  .tg-dl.tg-dl-done .tg-dl-os { color: var(--brass-bright); }
+     button (a faded button reads as “nothing happened” → the multi-click bug):
+     full opacity even though disabled, the brass line at full strength. */
+  .tg-dl.tg-dl-done { opacity: 1; cursor: default; --rb-line: var(--brass); }
 
   .tg-dl-note { color: var(--fg-dim); font-size: 0.82rem; margin: 0.75rem 0 0; }
   .tg-dl-note[hidden] { display: none; }
@@ -592,17 +565,5 @@ const gateNames = Object.fromEntries(plugins.map((p) => [dlGateId(p), p.name]));
   .tg-mobile-note { color: var(--fg-dim); font-size: 0.92rem; margin: 0; }
   .tg-mobile-note[hidden] { display: none; }
 
-  .tg-dl-os {
-    font-family: var(--font-display);
-    font-size: 1rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--brass-bright);
-  }
-  .tg-dl-fmt {
-    font-family: var(--font-mono);
-    font-size: 0.68rem;
-    letter-spacing: 0.08em;
-    color: var(--fg-dim);
-  }
+  .tg-dl-fmt { color: var(--fg-dim); opacity: 1; }
 </style>

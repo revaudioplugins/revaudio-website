@@ -16,9 +16,8 @@
    Art: true-alpha photoreal assets (nano_banana_pro + bg removal,
    2026-07-24) with LIVE text over blank paper — house recipe, no baked
    type. The tag dangles on an idle sway until the screws go in, then sits
-   dead still (mounted). GET IT is a pure-CSS 3D button per the style
-   bible: soft-plastic face riding an extruded base, fast press-in,
-   spring-back release.
+   dead still (mounted). GET IT is the button family's large brass with
+   the shine (src/styles/buttons.css, 2026-10-18; it was a red 3D cap).
 
    Conversion events (fbq StartTrial + Google Ads) fire HERE on a
    successful register — not on the stamp click — so the count means
@@ -106,7 +105,7 @@ const screw = await getImage({ src: screwImg, width: 96, format: 'webp' });
     <p class="micro notice" data-tp-before>We&rsquo;ll also send a few short getting-started emails and a heads-up before your trial ends. Unsubscribe anytime.</p>
     <p class="micro" data-tp-after hidden>Sent to <b data-tp-sentto></b> &middot; not there in a minute? Check spam</p>
     <p class="err" data-tp-err role="alert" aria-live="polite"></p>
-    <button class="get-btn" form="tp-form" data-tp-submit type="submit" aria-label="Get it, send my download link">
+    <button class="get-btn rv-btn rv-btn--lg rv-btn--shine" form="tp-form" data-tp-submit type="submit" aria-label="Get it, send my download link">
       <span class="face" data-tp-face>Get it <span class="arr">&#9656;</span></span>
     </button>
     <p class="micro" data-tp-after hidden>Wrong address or nothing landed? <a href={plugin.trialUrl}>Open the download page</a></p>
@@ -440,70 +439,21 @@ const screw = await getImage({ src: screwImg, width: 96, format: 'webp' });
     transition: transform 0.28s cubic-bezier(0.2, 1.8, 0.4, 1) 0.35s, opacity 0.12s ease 0.35s;
   }
 
-  /* ── GET IT — big red 3D button, style-bible take: soft-plastic face
-     (top-lit gradient, 1px top highlight) riding 4px above a darker base,
-     press travels down fast, release springs back with ~5% overshoot,
-     ground shadow tightens as it lands. Pure CSS, no asset. ── */
+  /* ── GET IT — the page's trial action: the button family's large brass with
+     the shine (buttons.css, Dan 2026-10-18; it was a red 3D cap, the style
+     /gas moved away from). Placement and the plate's own states only. ── */
   .get-btn {
-    display: block;
+    display: flex;
     /* the plate stays the hero; this is its control — so the button spans the
        paper's printed frame (~78%) and no wider, and stays close enough under
        the tag to read as part of it rather than as a page-wide bar. */
     width: 78%;
     margin: 0.75rem auto 0;
-    border: 0;
-    padding: 0;
-    cursor: pointer;
-    border-radius: 10px;
-    background: linear-gradient(180deg, #6e1509 0%, #4e0e05 100%);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.55), 0 4px 10px rgba(140, 28, 16, 0.35);
-    transition: box-shadow 0.12s ease, opacity 0.25s ease;
-    font: inherit;
   }
-  /* face reds built from the site's --redline (#c8331f) family, not the
-     warmer tomato ramp — same catalog as the door's BUY NOW. */
-  .get-btn .face {
-    display: block;
-    padding: 0.6rem 1rem 0.64rem;
-    border-radius: 10px;
-    background: linear-gradient(180deg, #c8331f 0%, #a02617 55%, #7c1c10 100%);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.28),
-      inset 0 -2px 4px rgba(0, 0, 0, 0.22);
-    font-family: var(--font-display);
-    /* NOT cqw any more: the button now lives outside .plate-wrap, which was
-       the only container-query container here. With no container ancestor,
-       cqw silently falls back to the viewport — 4.7cqw would render 68px at
-       1440. vw keeps the same size it had inside the tag (~23px at 1440). */
-    font-size: clamp(1.2rem, 1.6vw, 1.7rem);
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: #f6ecd9;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
-    /* bench 2026-07-26: Dan dropped the face 3px, i.e. a shallower extrusion
-       (7 -> 4). Folded into the face's own transform rather than left as a
-       composing `translate`, because hover and :active write this same channel
-       — a standalone offset would have ridden along and pushed the pressed
-       state 2px BELOW the base, which reads as the cap falling off. Travel is
-       now 4 -> -1 on press instead of 7 -> -1. */
-    transform: translateY(-4px);
-    transition: transform 0.32s cubic-bezier(0.2, 1.7, 0.4, 1), filter 0.12s ease;
-  }
-  .get-btn:hover .face { filter: brightness(1.07); transform: translateY(-5px); }
-  .get-btn:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 4px; }
-  .get-btn:active .face {
-    transform: translateY(-1px);
-    transition: transform 0.07s ease-out, filter 0.12s ease;
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.12),
-      inset 0 -1px 3px rgba(0, 0, 0, 0.3);
-  }
-  .get-btn:active {
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6), 0 2px 5px rgba(140, 28, 16, 0.3);
-  }
-  .get-btn .arr { color: #ffd9a8; }
-  .get-btn[disabled] { cursor: default; }
-  .get-btn.sending .face { filter: saturate(0.7) brightness(0.92); }
+  .get-btn .arr { opacity: 0.7; }
+  /* disabled while the request is out: keep it solid, just a touch duller */
+  .get-btn[disabled] { cursor: default; opacity: 1; }
+  .get-btn.sending { filter: saturate(0.7) brightness(0.92); }
   .issued .get-btn { opacity: 0; pointer-events: none; }
 
   /* Base = the success lines. Dan's bench 1.31x was scoped to the trust line

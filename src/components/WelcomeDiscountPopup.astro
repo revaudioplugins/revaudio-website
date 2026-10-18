@@ -42,7 +42,7 @@ const excluded = path === '/thank-you' || path === '/drift' || path.startsWith('
     <form class="wd-form" data-wd-form>
       <label class="sr-only" for="wd-email">Email address</label>
       <input id="wd-email" type="email" name="email" placeholder="you@studio.com" required autocomplete="email" />
-      <button type="submit" class="wd-cta"><span class="wd-btn-label">Claim my code</span></button>
+      <button type="submit" class="wd-cta rv-btn"><span class="wd-btn-label">Claim my code</span></button>
     </form>
     <p class="wd-status" role="status" aria-live="polite" hidden></p>
   </div>
@@ -52,7 +52,7 @@ const excluded = path === '/thank-you' || path === '/drift' || path.startsWith('
     <h2>Here's your code</h2>
     <p class="wd-sub" data-wd-success-sub>Good for 10% off your first order, whatever's in your cart. It's yours alone, one-time use. We also emailed it to you.</p>
     <div class="wd-code" data-wd-code></div>
-    <button type="button" class="wd-cta" data-wd-close>Start shopping</button>
+    <button type="button" class="wd-cta rv-btn" data-wd-close>Start shopping</button>
   </div>
 </dialog>
 )}
@@ -292,34 +292,18 @@ const excluded = path === '/thank-you' || path === '/drift' || path.startsWith('
   }
   .wd-form input:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 0; border-color: var(--brass-dark); }
 
-  .wd-cta {
-    display: block;
-    width: 100%;
-    padding: 0.85rem 1.5rem;
-    font-family: var(--font-display);
-    font-size: 1.15rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    text-decoration: none;
-    background: var(--brass);
-    color: var(--bg-0);
-    border: 1px solid transparent;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background 0.2s var(--ease), box-shadow 0.2s var(--ease);
-  }
-  .wd-cta:hover { background: var(--brass-bright); color: var(--bg-0); }
-  :global(html.motion-ok) .wd-cta:hover { box-shadow: 0 0 24px rgba(232, 200, 120, 0.35); }
-  .wd-cta:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 2px; }
-  .wd-cta:disabled { opacity: 0.65; cursor: default; }
+  /* Both buttons are the button family's medium brass (buttons.css, Dan
+     2026-10-18), full width in the card. Placement + the loading spinner only. */
+  .wd-cta { display: flex; width: 100%; }
+  .wd-cta.loading { cursor: progress; opacity: 1; }
 
   .wd-btn-label { display: inline-flex; align-items: center; gap: 0.55rem; justify-content: center; }
   .wd-cta.loading .wd-btn-label::before {
     content: '';
     width: 14px;
     height: 14px;
-    border: 2px solid rgba(11, 10, 9, 0.35);
-    border-top-color: var(--bg-0);
+    border: 2px solid rgba(30, 23, 16, 0.3);
+    border-top-color: #1e1710;
     border-radius: 50%;
     animation: wd-spin 0.7s linear infinite;
   }

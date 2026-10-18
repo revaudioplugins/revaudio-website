@@ -126,7 +126,7 @@ const thumbSizes = `(max-width: 1020px) ${Math.ceil(92 * thumbK)}vw, ${Math.ceil
 {showCart && gated && (buyable || (plugin.isFree && plugin.downloadUrl)) && (
   <button
     type="button"
-    class="card-add"
+    class:list={['card-add rv-btn rv-btn--xs', plugin.isFree && 'rv-btn--honey']}
     data-trial-gate-open
     data-plugin-name={plugin.name}
     data-plugin-slug={dlGateId(plugin)}
@@ -137,7 +137,7 @@ const thumbSizes = `(max-width: 1020px) ${Math.ceil(92 * thumbK)}vw, ${Math.ceil
 {showCart && !gated && buyable && (
   <button
     type="button"
-    class="card-add"
+    class="card-add rv-btn rv-btn--xs"
     data-add-to-cart
     data-cart-label
     data-slug={plugin.slug}
@@ -146,51 +146,31 @@ const thumbSizes = `(max-width: 1020px) ${Math.ceil(92 * thumbK)}vw, ${Math.ceil
   >Add to cart</button>
 )}
 {showCart && !gated && plugin.isFree && plugin.downloadUrl && (
-  <a class="card-add" href={plugin.downloadUrl}>Download</a>
+  <a class="card-add rv-btn rv-btn--xs rv-btn--honey" href={plugin.downloadUrl}>Download</a>
 )}
 </div>
 
 <style>
   .plugin-card-wrap { position: relative; }
 
-  /* Store grid: simple inline Add-to-cart button, sat in the footer row to the
-     right of the card CTA. A sibling of the card <a> (never nested in it). */
+  /* Store grid: Add to cart / Download, sat in the footer row to the right of
+     the card CTA. A sibling of the card <a> (never nested in it). The look is
+     the button family's extra-small size (buttons.css; Download = honey, in
+     the cart = the dark second-choice tone). Only placement here. */
   .card-add {
     position: absolute;
     right: 1.5rem;
     bottom: 1.4rem;
     z-index: 2;
-    font-family: var(--font-display);
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--bg-0);
-    background: var(--brass);
-    border: 1px solid var(--brass-dark);
-    border-radius: 4px;
-    padding: 0.45rem 0.8rem;
-    cursor: pointer;
-    transition: background 0.2s var(--ease), transform 0.15s var(--ease);
   }
-  .card-add:hover { background: var(--brass-bright); }
-  .card-add:active { transform: scale(0.96); }
-  /* Cart.astro flips this on when the item is already in the cart — outline
-     instead of filled brass, same step-down as the carousel chip. */
-  .card-add.is-in-cart {
-    background: transparent;
-    color: var(--brass-bright);
-    border-color: var(--brass);
-  }
-  .card-add.is-in-cart:hover { background: rgba(201, 163, 92, 0.14); }
 
-  /* Phone tap target: grow the store "Add to cart" / "Download" chip to ≥44px
-     tall without touching desktop (bench-tuned card stays pixel-identical). */
+  /* Phone tap target: one family step up (48px), desktop stays at 40. */
   @media (max-width: 900px) {
     .card-add {
-      display: inline-flex;
-      align-items: center;
-      min-height: 44px;
-      padding: 0.6rem 1rem;
+      --rb-h: 48px;
+      --rb-px: 20px;
+      --rb-fs: 16px;
+      --rb-r: 12px;
     }
   }
 

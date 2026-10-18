@@ -261,8 +261,8 @@ const peekClass = (i: number) => {
                 clear of the centred price + "More Details" stack. Above the
                 stretched card link, so the chip acts instead of navigating. */}
             {CART[i] && (CART[i]!.href
-              ? <a class="sc-cart" href={CART[i]!.href!}>{CART[i]!.label}</a>
-              : <button type="button" class="sc-cart" {...CART[i]!.attrs}>{CART[i]!.label}</button>
+              ? <a class={`sc-cart rv-btn rv-btn--sm${CART[i]!.label === 'Download' ? ' rv-btn--honey' : ''}`} href={CART[i]!.href!}>{CART[i]!.label}</a>
+              : <button type="button" class={`sc-cart rv-btn rv-btn--sm${CART[i]!.label === 'Download' ? ' rv-btn--honey' : ''}`} {...CART[i]!.attrs}>{CART[i]!.label}</button>
             )}
             </Fragment>
             )}
@@ -746,42 +746,17 @@ const peekClass = (i: number) => {
   .sc-hit { position: absolute; inset: 0; z-index: 5; }
 
   /* Add to cart / Download chip — bottom-right of the 520×470 stage, so it
-     never collides with the centred price/CTA stack. Same brass chip as the
-     /store card's .card-add, sized for the stage's own coordinate space
-     (fit() scales the whole card down on narrow viewports, so 44px here is
-     ~25px on a phone — still clear of WCAG 2.2 SC 2.5.8's 24px floor). */
+     never collides with the centred price/CTA stack. The look is the button
+     family's small size (buttons.css; Download = honey, the free tone; in the
+     cart = the dark second-choice tone). fit() scales the whole card down on
+     narrow viewports, so 48px here is ~27px on a phone, clear of WCAG 2.2
+     SC 2.5.8's 24px floor. Only placement here. */
   .sc-cart {
     position: absolute;
     right: 18px;
     bottom: 20px;
     z-index: 6;
-    display: inline-flex;
-    align-items: center;
-    min-height: 44px;
-    padding: 0 16px;
-    font-family: Oswald, sans-serif;
-    font-size: 15px;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    text-decoration: none;
-    color: var(--bg-0);
-    background: var(--brass);
-    border: 1px solid var(--brass-dark);
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background 0.2s var(--ease), transform 0.15s var(--ease);
   }
-  .sc-cart:hover { background: var(--brass-bright); }
-  .sc-cart:active { transform: scale(0.96); }
-  /* Already in the cart: the chip steps down from filled brass to an outline,
-     so the card stops shouting "buy me" at something already bought. It stays
-     a live control — pressing it opens the drawer. */
-  .sc-cart.is-in-cart {
-    background: transparent;
-    color: var(--brass-bright);
-    border-color: var(--brass);
-  }
-  .sc-cart.is-in-cart:hover { background: rgba(201, 163, 92, 0.14); }
   /* Hovering the chip is not hovering the card CTA — keep "More Details" at
      rest so the two controls never light up together. */
   .sc-slide:has(.sc-cart:hover) .sc-more {

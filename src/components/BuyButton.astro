@@ -27,7 +27,7 @@ const registerUrl = site.downloadGate.workerUrl + '/download/register';
       <p class="platform-note">Windows &amp; macOS &middot; VST3 / AU / AAX</p>
       <button
         type="button"
-        class="btn primary"
+        class:list={['btn rv-btn', plugin.isFree && 'rv-btn--honey']}
         data-trial-gate-open
         data-plugin-name={plugin.name}
         data-plugin-slug={dlGateId(plugin)}
@@ -49,9 +49,9 @@ const registerUrl = site.downloadGate.workerUrl + '/download/register';
       </div>
       <p class="platform-note">Windows &amp; macOS &middot; VST3 / AU / AAX</p>
       {plugin.downloadUrl ? (
-        <a class="btn primary" href={plugin.downloadUrl}>Download</a>
+        <a class="btn rv-btn rv-btn--honey" href={plugin.downloadUrl}>Download</a>
       ) : (
-        <a class="btn primary" href={`/${plugin.slug}#waitlist`}>Email me when the download is ready</a>
+        <a class="btn rv-btn" href={`/${plugin.slug}#waitlist`}>Email me when the download is ready</a>
       )}
       <p class="micro muted">No account, no licence key. We email you the download link.</p>
     </>
@@ -75,7 +75,7 @@ const registerUrl = site.downloadGate.workerUrl + '/download/register';
       )}
       <p class="platform-note">Windows &amp; macOS &middot; VST3 / AU / AAX</p>
       <button
-        class="btn primary"
+        class="btn rv-btn"
         data-add-to-cart
         data-slug={plugin.slug}
         data-name={plugin.name}
@@ -84,7 +84,7 @@ const registerUrl = site.downloadGate.workerUrl + '/download/register';
         Add to cart · {fmtPrice(plugin.regularPriceUsd ?? plugin.introPriceUsd)}
       </button>
       {plugin.demoUrl && (
-        <a class="btn ghost" href={plugin.demoUrl}>
+        <a class="btn rv-btn rv-btn--ghost" href={plugin.demoUrl}>
           Download demo
         </a>
       )}
@@ -99,7 +99,7 @@ const registerUrl = site.downloadGate.workerUrl + '/download/register';
         )}
       </div>
       <p class="platform-note">Windows &amp; macOS &middot; VST3 / AU / AAX</p>
-      <a class="btn primary" href={`/${plugin.slug}#waitlist`}>Notify me when checkout opens</a>
+      <a class="btn rv-btn" href={`/${plugin.slug}#waitlist`}>Notify me when checkout opens</a>
       <p class="micro muted">We&rsquo;ll email you the moment checkout goes live.</p>
     </>
   ) : plugin.status === 'beta' ? (
@@ -108,7 +108,7 @@ const registerUrl = site.downloadGate.workerUrl + '/download/register';
         <span class="price-now">{fmtPrice(plugin.introPriceUsd)}</span>
         <span class="price-tag waitlist">Waitlist price</span>
       </div>
-      <a class="btn primary" href={`/${plugin.slug}#waitlist`}>
+      <a class="btn rv-btn" href={`/${plugin.slug}#waitlist`}>
         Join the beta waitlist
       </a>
       <p class="micro muted">Beta builds go to the waitlist first. Launch in {plugin.releaseTarget}.</p>
@@ -118,7 +118,7 @@ const registerUrl = site.downloadGate.workerUrl + '/download/register';
       <div class="prices muted">
         <span class="hint muted">Launch target {plugin.releaseTarget}</span>
       </div>
-      <a class="btn primary" href={`/${plugin.slug}#waitlist`}>
+      <a class="btn rv-btn" href={`/${plugin.slug}#waitlist`}>
         Notify me when {plugin.name} ships
       </a>
     </>
@@ -196,31 +196,8 @@ const registerUrl = site.downloadGate.workerUrl + '/download/register';
     border-color: var(--brass-dark);
   }
 
-  .btn {
-    display: inline-block;
-    padding: 0.875rem 1.5rem;
-    font-family: var(--font-display);
-    font-size: 1.05rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    text-align: center;
-    border: 1px solid transparent;
-    transition: background 0.2s var(--ease), border-color 0.2s var(--ease), color 0.2s var(--ease);
-    cursor: pointer;
-  }
-
-  .btn.primary {
-    background: var(--brass);
-    color: var(--bg-0);
-  }
-  .btn.primary:hover { background: var(--brass-bright); color: var(--bg-0); }
-
-  .btn.ghost {
-    background: transparent;
-    color: var(--fg);
-    border-color: var(--border-bright);
-  }
-  .btn.ghost:hover { border-color: var(--brass); color: var(--brass-bright); }
+  /* Buttons here are the button family (buttons.css, Dan 2026-10-18): brass
+     for buy / waitlist, honey for a free download, the dark tone for the demo. */
 
   .btn.link {
     background: transparent;

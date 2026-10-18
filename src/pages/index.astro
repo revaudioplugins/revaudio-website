@@ -150,15 +150,15 @@ const wallM = await getImage({ src: wallMImg, width: 1080, format: 'webp', quali
     <h2 class="cc-head">Hear it on your own mix</h2>
     <button
       type="button"
-      class="trial-cta"
+      class="trial-cta rv-btn rv-btn--lg rv-btn--stack rv-btn--shine"
       data-trial-gate-open
       data-plugin-name={revlimiter.name}
       data-plugin-slug={trialGateId}
       data-register-url={trialRegisterUrl}
       aria-label="Start the free 30-day trial of RevLimiter, full version, no credit card"
     >
-      <span class="tc-verb">Start your 30-day free trial</span>
-      <span class="tc-micro">RevLimiter &middot; full version &middot; no credit card</span>
+      <span class="rv-btn__label">Start your 30-day free trial</span>
+      <span class="rv-btn__sub">RevLimiter &middot; full version &middot; no credit card</span>
     </button>
     <a class="cc-alt" href="/store">Browse the store &rarr;</a>
   </section>
@@ -696,39 +696,9 @@ const wallM = await getImage({ src: wallMImg, width: 1080, format: 'webp', quali
     margin: 0 auto;
   }
 
-  /* ── The trial CTA — the salience system's one "action channel" spend on
-     this page, now only at the page close (the hero CTA came out 2026-08-05):
-     clean flat brass against the worn textured world, dark label, no texture,
-     no glow. Brass-bright, NOT race-red — red-on-red is camouflage here. ── */
-  .trial-cta {
-    display: inline-flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0.95rem 2.1rem;
-    border: 0; /* it's a <button> now (opens the trial gate) — reset the UA chrome */
-    border-radius: 4px;
-    background: var(--brass-bright);
-    color: var(--bg-0);
-    text-shadow: none; /* cancel .hero-head's halo — enamel doesn't glow */
-    cursor: pointer;
-    transition: filter 0.2s var(--ease), transform 0.12s var(--ease);
-  }
-  .trial-cta:hover { filter: brightness(1.12); transform: translateY(-1px); }
-  .trial-cta:active { filter: brightness(0.95); transform: translateY(0); }
-  .tc-verb {
-    font-family: var(--font-display);
-    font-size: 1.5rem;
-    letter-spacing: 0.06em;
-    line-height: 1;
-  }
-  .tc-micro {
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    opacity: 0.85;
-  }
+  /* ── The trial CTA — the page's one action, at the close (the hero CTA came
+     out 2026-08-05). Now the button family's large brass with the shine
+     (src/styles/buttons.css, Dan 2026-10-18); no local look of its own. ── */
 
   /* ── Page terminus: end on the decision, not on a form. Same seam style as
      every other section boundary. ── */
