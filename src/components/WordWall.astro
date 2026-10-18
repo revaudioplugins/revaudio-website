@@ -574,6 +574,8 @@ const first = items[0]?.slug ?? '';
     let stage: 'rest' | 'out' | 'gap' | 'in' = 'rest';
     let run: ReturnType<typeof gsap.timeline> | null = null; // the exit or the entrance under way
     let glowRun: ReturnType<typeof gsap.to> | null = null; // the screen's colour changing
+    let glowMix = 0; // how far that change has got (0 = the old colour, 1 = the new)
+    let held = false; // the old colour kept on the was layer (a change sent back near its start settled there)
     let wait = 0; // the commit's timer
     let ticket = 0; // bumped by every new plan, so a late commit knows it is stale
     let lastPick = 0;
@@ -597,21 +599,25 @@ const first = items[0]?.slug ?? '';
     const calm = () => {
       glowRun?.kill();
       glowRun = null;
+      glowMix = 0;
+      held = false;
       glowEl?.style.removeProperty('opacity');
       wasEl?.style.removeProperty('opacity');
     };
     /* The old channel's glow over the new one, fading as the newcomer comes on, while the dip (d) comes back to 1.
        Two layers over the black tube: the old on top at b = d(1 - c), the new under it at a = dc / (1 - b), so the
        light is always d x (old (1 - c) + new c): a straight cross-fade, never a jump. Called before data-ww-on
-       flips, while the glow still shows the old channel. */
+       flips, while the glow still shows the old channel (or the was layer does: held, see leave()). */
     const glowTo = (ms: number) => {
       if (!glowEl || !wasEl) return;
       glowRun?.progress(1);
-      const cs = getComputedStyle(glowEl);
+      const cs = getComputedStyle(held ? wasEl : glowEl);
       const d0 = parseFloat(cs.opacity);
-      wasEl.style.backgroundImage = cs.backgroundImage;
+      if (!held) wasEl.style.backgroundImage = cs.backgroundImage;
+      held = false;
       const k = { c: 0, d: Number.isFinite(d0) ? d0 : 1 };
       const paint = () => {
+        glowMix = k.c;
         const b = k.d * (1 - k.c);
         wasEl.style.opacity = String(b);
         glowEl.style.opacity = String(b < 1 ? (k.d * k.c) / (1 - b) : 0);
@@ -681,8 +687,20 @@ const first = items[0]?.slug ?? '';
       const to = opening ? { x: -m.panePx / 2 } : closing ? { x: m.panePx } : m.tune ? { y: -dir * m.outPx } : { y: m.outPx };
       run = gsap.timeline({ onComplete: left });
       run.to(p ? [p] : listParts(), { opacity: 0, ...to, duration: sec(ms), ease: 'power2.in' }, 0);
-      // the tube dims while the glass empties (not when a change is still fading in: skimming never strobes it)
-      if (glowEl && !glowRun && !opening && !closing && m.dip < 1) run.to(glowEl, { opacity: m.dip, duration: sec(ms), ease: 'power1.inOut' }, 0);
+      // the tube dims while the glass empties (a phone's list / pane swap keeps it lit). Skimming never strobes it:
+      // picks under SKIM never land, so this runs once per landed change at most
+      const dim = opening || closing ? 1 : m.dip;
+      if (glowRun && glowEl && wasEl) {
+        // sent back while its colour is still changing: the colour settles on the nearer of the two as it goes (the
+        // new one when a phone's pane closes: that plugin stays lit), so it moves as little as it can and the next
+        // change starts from one colour (cutting the change short would jump it in a frame)
+        const keepNew = opening || closing || glowMix >= 0.5;
+        glowRun.kill();
+        glowRun = null;
+        held = !keepNew;
+        run.to(keepNew ? wasEl : glowEl, { opacity: 0, duration: sec(ms), ease: 'power1.inOut' }, 0);
+        run.to(keepNew ? glowEl : wasEl, { opacity: dim, duration: sec(ms), ease: 'power1.inOut' }, 0);
+      } else if (glowEl && dim < 1) run.to(glowEl, { opacity: dim, duration: sec(ms), ease: 'power1.inOut' }, 0);
     };
     // the glass is empty
     const left = () => {
@@ -807,7 +825,11 @@ const first = items[0]?.slug ?? '';
         return o;
       };
       run.to(movedOf(onGlass), { opacity: home, x: 0, y: 0, rotation: 0, duration: sec(m.textMs), ease: 'power3.out' }, 0);
-      if (glowEl && !glowRun) run.to(glowEl, { opacity: 1, duration: sec(m.textMs), ease: 'power1.inOut' }, 0);
+      if (glowEl && !glowRun) {
+        held = false; // its own colour comes back
+        run.to(glowEl, { opacity: 1, duration: sec(m.textMs), ease: 'power1.inOut' }, 0);
+        if (wasEl?.style.opacity) run.to(wasEl, { opacity: 0, duration: sec(m.textMs), ease: 'power1.inOut' }, 0); // an old colour still on
+      }
     };
     // every plugin's window fetched and decoded after the power-on (laptops; a phone fetches one as it opens), the
     // lit one's neighbours first, so a change never waits on the network

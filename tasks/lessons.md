@@ -93,3 +93,18 @@ an idle timer shorter than that fires before Lenis moved; wait while `lenis.isSc
    poster-less video; hide `::-webkit-media-controls` in the `<noscript>` style or the picture never shows.
 5. "Smaller on phones" must come from the screen's real need, not a guess: the phone poster needed ~1050 device px
    (390@3), not 800; measure CSS size x DPR per device before choosing cuts.
+
+## 2026-10-18 — The TV's motion engine (Home LIBRARY phase 4d)
+1. Making a state flip lazy breaks every reader that assumed it was immediate: `data-ww-on` now flips only when a
+   change lands, and the bench read the lit plugin back from it right after asking for a change, so every second
+   ▶ CHANNEL re-picked the plugin already on its way. Before deferring a flag, grep its readers; read "what was
+   asked for" (the lit row) separately from "what is showing" (data-ww-on).
+2. Never finish an interrupted cross-fade with `progress(1)`: the rest of it lands in one frame (the screen's colour
+   jumped 0.27-0.70 of the light on a pick 250-350 ms into the previous change). Settle it continuously as the
+   interrupted thing leaves (to the nearer colour), then start the next from one state.
+3. A rAF recorder that is restarted within one frame of a stop keeps the old loop running too (every frame logged
+   twice, dt 0): presence checks survive it, rate / jump metrics do not. Give each start a generation and let a loop
+   end when its generation is stale. And a jump metric needs its control first: run it on the old code and see it fail.
+4. Headless WebKit on laptop 1 paints ~5 fps: an entrance shorter than ~200 ms is done before its first frame, so
+   "starts from below / from the right" reads as 0 there. Stretch the motion times (x4, as the bench's SLOW) for that
+   engine instead of loosening the check.

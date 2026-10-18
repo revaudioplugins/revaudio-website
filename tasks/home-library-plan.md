@@ -315,6 +315,20 @@ because it is Radio Roulette" is the mess the user ruled out.
         leaver brings it back. The URL is written once, at the flip.
       - The glow: two layers (`.ww-screen-glow` + `.ww-screen-was`), an exact linear cross-fade of the two gradients
         with the dip folded in (the hue itself never interpolates).
+      - Glow continuity (found by the advisor review, 2026-10-18): a pick while the newcomer's colour was still
+        coming in cut that cross-fade short, so the screen's colour jumped in one frame (B picked, C ~250-350 ms
+        later). Now the plugin sent back takes its colour to the nearer of the two as it goes (`glowMix` < .5 ->
+        the old colour stays on the was layer, `held`; a phone's Back keeps the new one, which stays lit), and the
+        next change starts from that one colour. Scratchpad `glowcheck.mjs` (each gradient's share of the light per
+        rAF frame; a jump = one frame far quicker than both neighbours): the old code jumps 0.27-0.70 of the light
+        in a frame in 5 of 17 cases (the control: the metric sees it); now 17 / 17 PASS, worst spike 0.014, worst
+        step 0.17, and an early interrupt moves the colour about as far as one plain change (travel 1.00-1.17).
+        The recorder's own bug found on the way: a start within a frame of a stop left two rAF loops running
+        (every frame logged twice); one loop per generation now, in `motioncheck.mjs` too.
+      - The bench read the lit plugin back from `data-ww-on`, which now flips only when a change lands, so every
+        second ▶ CHANNEL (and AUTO tick) re-picked the plugin already coming on. It reads the page's lit row now.
+        Scratchpad `benchsmoke.mjs`: opens on GEAR, TUNE / GEAR reach both frames, ▶ CHANNEL twice mid-change = two
+        steps, SLOW x4 scales the times and back, no page errors.
       - `room()`: the travel shrinks to what fits inside the glass (and right of the list on a laptop), so a plugin
         never slides under the bezel. GAS at 1280x665 rises 16 px (the glass has 16 px under it), 28 px at 1141x636.
       - Phone: the list leaves left (half the pane's travel), the pane comes in from the right, its parts cascaded;
@@ -324,17 +338,33 @@ because it is Radio Roulette" is the mess the user ruled out.
         the picture on the glass and clear of the list, no layout shift, rest = transform none + nothing inline,
         rapid picks, a held arrow, the leaver re-picked, a category change, DRIFT paused until seated, 1141x636,
         reduced motion, hc, a hidden tab, phones 390x844 + 360x740: open / Back key / the browser's Back): 204 / 204
-        PASS. WebKit: the next commit (headless WebKit paints at ~5 fps here, so its run stretches every motion time
-        x4, as the bench's SLOW x4, to still catch the start poses). `astro build` green.
+        PASS. WebKit 203 / 203 PASS (headless WebKit paints at ~5 fps here, so its run stretches every motion time
+        x4, as the bench's SLOW x4, to still catch the start poses: TUNE's first frame then reads ~11 of its 16 px;
+        the reduced-motion timing check is Chromium's only). Both on the code with the glow fix below. `astro
+        build` green.
       - Measured (Chromium, 1280x665): GEAR on the glass ~270 ms after the click, readable ~900 ms, at rest
         ~1015 ms; TUNE ~160 / ~360 / ~870 ms; reduced motion over in ~250 ms.
 - [ ] 3. The user picks and tunes in the bench; the pick is baked and the other path deleted (no dead code).
+      With it (left out of the bench build so the frames don't reload under the user): `enter()` also runs
+      `glowTo` when `held` is set and `data-ww-on` already equals the pick (`|| held`), so a held colour is always
+      consumed by the next entrance. Reachable only from the bench today (a phone frame's pane-to-pane ▶ CHANNEL,
+      then the leaver picked back with THE PLUGIN -> LIST); otherwise calm() at rest would swap the colour in a frame.
 - [ ] 4. Checks on the build, Chromium + WebKit, the rAF recorder (its snow assertions replaced): at most one panel
       visible per frame; rest transform = identity; rapid picks land on the last; held arrows = one entrance and
       one URL write; no layout shift; the moving picture never leaves the glass or crosses the list (1280x665,
       1141x636 with GAS, phone 360x740 + 390x844); reduced motion and high contrast as above; the phone's Back key vs
       the browser's Back; a category change; a hidden tab; DRIFT plays only seated; no page errors. Filmed (CDP
-      contact sheet) for each option.
+      contact sheet) for each option. Plus `glowcheck.mjs` (the colour never jumps).
+- [ ] 4b. Also (advisor review, 2026-10-18): a phone fetches a pane's picture only at the tap (`warm()` is laptops
+      only), so on a slow network the pane may slide in with an empty picture box. Measured (scratchpad
+      `slowphone.mjs`, Chromium 390x844 @3x, dev server, CDP throttling after the page load): at Lighthouse's mobile
+      throttling (150 ms RTT, 1.6 Mbps) the pane is on at ~395 ms and solid at ~645 ms, but its picture lands at
+      +864 / +963 / +1208 ms (RevLimiter / GAS / Radio Roulette, the 1400w / 960w WebP): an empty box on a solid
+      pane for 0.45-0.8 s. At 60 ms / 9 Mbps: none. Proposed fix (needs the user's OK): on a phone the tapped row
+      lights at once but the list stays until the picture is in (capped ~1 s), then the list leaves and the pane
+      comes on whole; nothing changes when it is cached or the network is quick. And `warm()` fetches every laptop
+      window ~1.2 s after the power-on: measure the wall's transfer against the live WEIGHT baseline (184 KB at the
+      wall); it grows with every plugin added.
 - [ ] 5. DESIGN.md §4 / §6 rewritten (the channel change = motion; why the exit and the stagger are shorter than the
       house values); this plan and the handoff updated.
 

@@ -129,8 +129,11 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
       100ms; 90ms x 4 would seat the Try key past a second) and stay local to the TV. The screen's colour
       changes as the newcomer comes on, the old glow cross-fading over the new (two layers: a gradient
       can't transition and a hue must not interpolate, 280 -> 26 runs through green); the tube dims to
-      `--ww-mv-glow-dip` .85 while the glass is empty. The last pick wins, from wherever things are: the
-      leaver picked again comes back; a pick while one comes on sends that one out. Picks under 120ms
+      `--ww-mv-glow-dip` .85 while the glass is empty. The colour never jumps: a plugin sent back while
+      its colour is still coming in takes it to the nearer of the two colours as it goes (the old one when
+      it had barely started; on a phone's Back the new one, which stays lit), so the next change starts
+      from one colour and the colour moves as little as it can. The last pick wins, from wherever things
+      are: the leaver picked again comes back; a pick while one comes on sends that one out. Picks under 120ms
       apart, or a held arrow, keep the glass dark until they stop, and only the last comes on; `?plugin=`
       is written then, once. Only the pictures and the text blocks move (never `.ww-ui`, the first
       window's reveal, nor `.ww-try`, its hover), transform + opacity only, cleared at rest so the window

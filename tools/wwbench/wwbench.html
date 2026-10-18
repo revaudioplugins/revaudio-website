@@ -347,8 +347,9 @@
   }
   const each = (fn) => ['laptop', 'phone'].forEach((f) => fn((type, detail) => send(f, type, detail), f));
   const light = () => { each((g, f) => g('ww:select', { slug: lit, ...(f === 'phone' ? { view: st.pview } : {}) })); syncLit(); paint(); };
-  // after a category pick the page may light another plugin (the lit one was not in it): read it back
-  const syncLit = () => { const d = stages.laptop.ready ? stages.laptop.iframe.contentDocument : null; lit = d?.querySelector(WALL)?.dataset.wwOn || lit; };
+  // after a category pick the page may light another plugin (the lit one was not in it): read it back from its lit
+  // row (the pick, at once; data-ww-on follows only when the change lands, so it would undo a ▶ CHANNEL mid-change)
+  const syncLit = () => { const d = stages.laptop.ready ? stages.laptop.iframe.contentDocument : null; lit = d?.querySelector('[data-ww-pick].is-lit')?.dataset.wwPick || d?.querySelector(WALL)?.dataset.wwOn || lit; };
 
   // ── write the wall's attributes + the live properties into both frames
   function commit() {
