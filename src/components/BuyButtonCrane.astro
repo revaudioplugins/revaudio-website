@@ -877,7 +877,7 @@ const buysq = await getImage({ src: buysqImg, format: 'webp', quality: 85 });
             mask-image: var(--master-url);
             mask-size: 100% 100%;
             mask-repeat: no-repeat;
-    opacity: calc(var(--l1) * 0.24);
+    opacity: max(0.01, calc(var(--l1) * 0.24));
   }
 
   /* L1 cold strike — a fluorescent tube fires bluish before it warms up. Same
@@ -901,12 +901,16 @@ const buysq = await getImage({ src: buysqImg, format: 'webp', quality: 85 });
             mask-image: var(--master-url);
             mask-size: 100% 100%;
             mask-repeat: no-repeat;
-    opacity: calc(var(--l1c) * 0.35);
+    opacity: max(0.01, calc(var(--l1c) * 0.35));
   }
 
   /* lit surface detail — the light REVEALS the door's ridges and grime instead
      of ironing them flat: the master art overlaid on itself pumps local
-     contrast only while lit. The PNG's own alpha bounds it — no mask needed. */
+     contrast only while lit. The PNG's own alpha bounds it — no mask needed.
+     The 0.01 floor (2026-10-18, PageSpeed): this layer is the page's largest
+     image, and at opacity 0 the browser skips it until the light strikes, so
+     LCP landed 3-6 s late. At 1% it counts from its first paint; the unlit
+     door is unchanged to the eye (screenshot delta under the check's noise). */
   .rc-doorlit-detail {
     position: absolute;
     inset: 0;
@@ -914,7 +918,7 @@ const buysq = await getImage({ src: buysqImg, format: 'webp', quality: 85 });
     pointer-events: none;
     mix-blend-mode: overlay;
     background: var(--master-url) center / contain no-repeat;
-    opacity: calc(var(--l1) * 0.3);
+    opacity: max(0.01, calc(var(--l1) * 0.3));
   }
 
   /* specular streak — tight hot band where the tube reflects off the metal
@@ -936,7 +940,7 @@ const buysq = await getImage({ src: buysqImg, format: 'webp', quality: 85 });
             mask-image: var(--master-url);
             mask-size: 100% 100%;
             mask-repeat: no-repeat;
-    opacity: calc(var(--l1) * 0.45);
+    opacity: max(0.01, calc(var(--l1) * 0.45));
   }
 
   /* ── room-light spill ───────────────────────────────────────────────── */
@@ -969,7 +973,7 @@ const buysq = await getImage({ src: buysqImg, format: 'webp', quality: 85 });
     -webkit-mask-size: 480px 480px;
             mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='420' height='420'><filter id='d' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='0.011' numOctaves='3' seed='11' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.55 1'/></filter><rect width='420' height='420' filter='url(%23d)'/></svg>");
             mask-size: 480px 480px;
-    opacity: calc(var(--l1) * 0.87);
+    opacity: max(0.01, calc(var(--l1) * 0.87));
   }
 
   /* ── the practical strip under the door ─────────────────────────────── */
@@ -1034,15 +1038,15 @@ const buysq = await getImage({ src: buysqImg, format: 'webp', quality: 85 });
          proved invisible on a real phone. Settled at half strength (base
          0.95 → 0.48): clearly lit, calm, and the strip beside the door stays
          lifted clear of pure black so no "cut" returns. */
-      opacity: calc(var(--l1) * 0.48);
+      opacity: max(0.01, calc(var(--l1) * 0.48));
     }
     /* On-door amber wash at half strength to match (base 0.24 → 0.12), and the
        realism layers halved with it — the resting-lit mobile door stays a
        whisper, not a showroom. Cold only flashes during the first-load strike. */
-    .rc-doorlight { opacity: calc(var(--l1) * 0.12); }
-    .rc-doorlight-cold { opacity: calc(var(--l1c) * 0.18); }
-    .rc-doorlit-detail { opacity: calc(var(--l1) * 0.15); }
-    .rc-doorlight-spec { opacity: calc(var(--l1) * 0.22); }
+    .rc-doorlight { opacity: max(0.01, calc(var(--l1) * 0.12)); }
+    .rc-doorlight-cold { opacity: max(0.01, calc(var(--l1c) * 0.18)); }
+    .rc-doorlit-detail { opacity: max(0.01, calc(var(--l1) * 0.15)); }
+    .rc-doorlight-spec { opacity: max(0.01, calc(var(--l1) * 0.22)); }
     .rc-hookglint { opacity: calc(var(--l1) * 0.18); }
     /* L2 box glow: hover-only (L2 never fires on touch), so keep it card-bound. */
     .rc-buysq-glow { inset: 0; }

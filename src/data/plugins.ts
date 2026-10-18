@@ -74,6 +74,11 @@ export interface Plugin {
   category: PluginCategory;
   tagline: string;
   oneLiner: string;
+  /** Optional search-result title for the product page (before " · RevAudio")
+   *  and meta description, worded the way people search (Google Ads landing
+   *  page relevance, 2026-10-18). Omit = name / oneLiner. */
+  seoTitle?: string;
+  metaDescription?: string;
   /** Optional bold hook — one line, in the plugin's character. Rendered on its own
    *  line above plainWhat inside the same paragraph. Omit for no hook. */
   plainHook?: string;
@@ -184,9 +189,12 @@ export const plugins: Plugin[] = [
     slug: 'revlimiter',
     name: 'RevLimiter',
     category: 'limiter',
-    tagline: 'A mastering limiter you read like a tachometer',
+    tagline: 'A mastering limiter plugin you read like a tachometer',
     oneLiner:
       'The redline is your threshold. The needle is your gain reduction. Mastering loudness with the muscle of a tuned engine.',
+    seoTitle: 'RevLimiter – Mastering Limiter Plugin',
+    metaDescription:
+      'RevLimiter: a mastering limiter plugin for Windows & Mac. True-peak safe loudness, multiband glue, a rev gauge you read at a glance. Free 30-day trial.',
     plainHook: 'Easy to drive. Hard to crash.',
     plainWhat:
       'It goes last on your master bus and makes your track commercial-release loud. Punchy, not squashed.',
