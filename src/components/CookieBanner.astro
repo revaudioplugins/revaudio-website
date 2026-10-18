@@ -55,6 +55,12 @@
         t.src = v; s = b.getElementsByTagName(e)[0];
         s.parentNode.insertBefore(t, s);
       }(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
+      // Every real page load fires its PageView just below. On its own the
+      // pixel also fires one on every history change: the home TV's category /
+      // plugin address (pushState / replaceState), /drift's hash, the trial
+      // gate's #dl= cleanup. None of those is a page view (browsing the TV
+      // sent 5 extra PageViews, measured 2026-10-18), so that is switched off.
+      fbq.disablePushState = true;
       fbq('init', '2907572756308697');
       fbq('track', 'PageView');
     }

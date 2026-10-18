@@ -1,7 +1,7 @@
 # Home LIBRARY: the TV becomes the plugin browser (branch `feat/home-library`)
 
 - Owner: Claude Code `revaudio-a0` (was `revaudio-a6` before a restart; laptop 1). Status: **IN PROGRESS (user's "go"
-  2026-10-18).** Phases 1-3 done (local commits, not pushed); Phase 4 (verify) next.
+  2026-10-18).** Phases 1-4 done (local commits, not pushed). Waiting on the user's look (bench + real devices) and "push".
 - origin/main `141d400` (crane WebP, trial source, /revlimiter/ Ads fixes) merged in 2026-10-18 before phase 3 (`d80e459`).
 - Worktree: `.claude/worktrees/home-library` off origin/main `697f49d`; origin/main `ddada3d` (the TV weight work)
   merged in 2026-10-18 (`8ca4938`). `node_modules` = junction to the main clone's.
@@ -154,14 +154,30 @@ without an open trial (The AC) stay off the TV; the TV never changes by itself (
       (query kept, history.length 2); reduced motion too; no console errors. The lock still parks the TV from above
       and below (1280: -0.2, 1440: -0.8). Repo suite: 57 passed, the same 11 mobile-safari "load" failures.
 
-### Phase 4: verify
+### Phase 4: verify (done 2026-10-18, automated part)
 
-- [ ] `npm run build` green; no bench in `dist/`.
-- [ ] Playwright Chromium + WebKit at 1280x665 DPR2, 1141, 1440, 1728, 860, 390, 360: no sideways scroll, every
-      category, every plugin, Back button, a deep link, keyboard only.
-- [ ] Scroll lock: small steps both ways from the TV are never pulled back (lesson 2026-10-14).
-- [ ] Every "Try it free" sends the right gate id (network log).
-- [ ] Console: only the 4 known Meta CSP errors (baseline taken 2026-10-15 on the live site).
+- [x] `npm run build` green; no bench in `dist/` (only `dist/bench`, copied from `public/bench`, as on main; no
+      `__wwbench`).
+- [x] Playwright Chromium + WebKit at 1280x665 DPR2, 1141, 1440, 1728, 860, 390, 360: no sideways scroll, every
+      category, every plugin, Back button, a deep link, keyboard only. Re-run after phase 3 (+ 375x667, 393x852):
+      the TV fits one screen at all 9 sizes in both engines, no sideways scroll, no name overflow, both phone panes
+      fit. (WebKit at DPR2 reports GAS's window low after a Playwright click: the click scrolls the page, as found in
+      phase 2.)
+- [x] Scroll lock: small steps both ways from the TV are never pulled back (lesson 2026-10-14). Wheel 60 / 120 away
+      from the landed TV, both directions, both engines: kept. Toward it from 140px above / below: parked (-0.2 at
+      1280, -0.8 at 1440).
+- [x] Every "Try it free" sends the right gate id (network log): RevLimiter `revlimiter`, Radio Roulette
+      `radioroulette`, GAS `gas` (the free gate), DRIFT = a link to `/drift#try`. Both engines; the POSTs were
+      caught and answered locally (nothing reached the worker, no email went out).
+- [ ] Console: only the 4 known Meta CSP errors (baseline taken 2026-10-15 on the live site). Locally: no errors in
+      either engine (no CSP there); the live check waits for the push.
+- [x] Analytics (consent accepted, the real gtag.js / fbevents.js, every hit caught locally, page served as
+      revaudio.net with a normal user agent: the pixel sends nothing to a headless one): the Google Ads tag sends no
+      extra hit for the TV's URL state. The Meta pixel sent a PageView for every history change (browsing the TV = 5
+      extra), so `CookieBanner.astro` sets `fbq.disablePushState = true` before init: now one PageView per real page
+      load. Side effect, wanted: /drift's hash changes and the trial gate's `#dl=` cleanup stop sending PageViews too.
+      Left as is: Meta's automatic SubscribedButtonClick on the category buttons (it fires for every button on the
+      site; an Events Manager setting).
 - [ ] People (not agents): real iPhone + Mac Safari, the look.
 
 ### Phase 5: later, each on its own branch

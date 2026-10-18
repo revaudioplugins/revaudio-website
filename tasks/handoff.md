@@ -15,7 +15,9 @@
   header's lit PLUGINS chip (Store's slot; on phones beside the burger), every `/#plugins` link on home glides to the
   TV where the lock parks it, `/store` = a bare redirect page to `/#plugins` (query kept, noindex), links re-pointed,
   the store FAQ on `/support` ("Before you buy"), smoke tests reworked; PluginShowcase, DriftCard and PluginCard
-  deleted. Checks in the plan (Phase 3). Next: phase 4 (verify), then the user's look + "push".
+  deleted. Phase 4 (verify, automated) done: sizes, landing, lock, gate ids, analytics (the Meta pixel sent a
+  PageView per TV click: `fbq.disablePushState = true` now). Checks in the plan (Phases 3-4). Next: the user's look
+  (bench + iPhone / Mac Safari), then "push".
 - For the user (dashboard, optional): a Cloudflare Redirect Rule `/store*` -> `/#plugins` would make it a real 301;
   the repo page works without it.
 - Found: index.astro's testimonial CTA said "14-day free trial" (the trial is 30 days in both plugins' code); fixed
@@ -25,7 +27,8 @@
   `tasks/handoff.md`; phase 3 (from 2026-10-18): `src/components/Header.astro`, `src/components/Footer.astro`,
   `src/components/Cart.astro`, `src/components/MobileBuyBar.astro` (comment), `src/data/site.ts` (comment),
   `src/pages/store/index.astro`, `src/pages/[slug].astro`, `src/pages/gas.astro`, `src/pages/support.astro`,
-  `astro.config.mjs`, `tests/smoke.spec.ts`, `README.md`; deleted: `src/components/PluginShowcase.astro`,
+  `astro.config.mjs`, `tests/smoke.spec.ts`, `README.md`, `src/components/CookieBanner.astro` (phase 4: the Meta pixel's
+  history PageViews off); deleted: `src/components/PluginShowcase.astro`,
   `src/components/drift/DriftCard.astro`, `src/components/PluginCard.astro`.
 
 ## 2026-10-18 — /revlimiter/ for Google Ads (fixes F + G) (Claude Code `revaudio-75`, Yoni's laptop) — PUSHED TO MAIN = LIVE 2026-10-18 (Yoni: "push", "do all parts and push")
