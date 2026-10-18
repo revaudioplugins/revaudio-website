@@ -1,3 +1,12 @@
+## 2026-10-18 — Trial-end offer: cart applies `?offer=CODE` locked, branch `trial-offer` (Claude Code `revaudio-70`, Yoni's laptop 2) — committed `e0f6f37`, NOT pushed
+
+Claim: CLOSED 2026-10-18. File: `src/components/Cart.astro`. Worktree `Website/revaudio-website-offer` (off origin/main 141d400; its `node_modules` is a junction to the main checkout's, same lockfile).
+- What: a plugin's one-time trial-over banner -> licence worker `GET /offer` -> `/buy/<slug>/?offer=CODE`. The cart keeps the code for the tab session with that slug, shows "Your one-time 10% off <plugin> is applied at payment" in the drawer, and passes `discountCode` + `settings {showAddDiscounts:false, allowDiscountRemoval:false}` to `Paddle.Checkout.open` while that plugin is in the cart. Popups already skip `/buy/*`. `wiki offer`.
+- Checked: build green; Playwright on the built dist with Paddle.js stubbed, 9/9.
+- Not done (auto mode refused it, Yoni's call): DRIFT on sale in `plugins.ts` (status `live`, `introPriceUsd: 69`, `paddlePriceId: 'pri_01m4362j96wvbqtwf2v45k2pt9'`). Without it `/buy/drift/` does not exist and the DRIFT offer link lands on a 404. That is the Nov 1 flip.
+- Not checked: a real Paddle sandbox checkout with a real code (that `discountCode` plus the two settings render as expected inside Paddle's overlay).
+- Next: Yoni's "push" -> rebase onto origin/main, push (= live deploy). Safe before Nov 1: it only acts on `?offer=`.
+
 ## 2026-10-18 — /revlimiter/ for Google Ads (fixes F + G) (Claude Code `revaudio-75`, Yoni's laptop) — PUSHED TO MAIN = LIVE 2026-10-18 (Yoni: "push", "do all parts and push")
 
 Claim: CLOSED 2026-10-18. Commits on main: `21caf5e` (trial form sends the `ra-src` note with /download/register; privacy text + date 2026-10-18; needs licence worker `3bbefa8`, live), `ef2cc1b` (crane door + BUY patch PNG -> WebP via getImage, both BuyButtonCrane + CraneDropZone, -174 KB), `a4ccea1` (`seoTitle` / `metaDescription` optional plugin fields used only by [slug] <title>/meta; RevLimiter title "RevLimiter – Mastering Limiter Plugin", new description, tagline gains "plugin"; 1% resting floor `max(0.01, …)` on the crane door's light layers so LCP is the hero image, not a light layer that appears at the strike).
