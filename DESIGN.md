@@ -18,9 +18,10 @@ MAPPING TABLE (every visible part of the site maps to something you could touch 
 |------------------------------------|---------------------------------------------|------------------------------------------|
 | the big tach on the wall           | hero gauge medallion (`/` hero)             | the brand in one glance; needle = scroll |
 | the back wall (wood + brass rails) | `GarageWall.astro` / `.garage-wall`         | the surface a section hangs on           |
-| the parts rack                     | plugin showcase coverflow (`#plugins`)      | what's for sale, price on the tag        |
-| stencil sprayed on the wall        | the word wall (`WordWall.astro`, home)      | what the sound does, in five words       |
-| the plugin window hung on the wall | RevLimiter UI beside the stencil            | proof: this is the thing                 |
+| the old TV on the wall             | the plugin TV (`WordWall.astro`, `#plugins`) | every plugin; picking one = changing channel |
+| the set's on-screen menu           | the TV's categories (ALL first)             | narrow it down without leaving the TV    |
+| the channel guide on the screen    | the list: stencil names + a thumbnail       | what there is, at a glance               |
+| the picture on the screen          | the lit plugin's window, text, Try key      | proof: this is the thing; try it         |
 | the truck door with the handle     | BuyButtonCrane (product pages)              | the ONE way in: pull the handle          |
 | the "goes with every vehicle" sign | DAW strip                                   | compatibility                            |
 | the pit-crew clipboard             | EmailCapture ("Join the pit crew")          | newsletter                               |
@@ -50,13 +51,11 @@ House tokens, reused verbatim from `src/styles/global.css` `:root`:
   RevLimiter wordmark on product pages. Never on a second element.
 - `--emerald #2f6b4a` for "armed / live" pilot lights only.
 
-Additive, page-local: the word wall's DRIFT panel only (`WordWall.astro`, 2026-10-14): one neon hue
-`--ww-neon-h` (301 = DRIFT's `--d-lcd` #f24cf0), from which the tube, halo, core, glass and kana colours
-are derived so that at 301 they land on the /drift tokens (`--d-neon` #d23cff, `--d-pink-ink` #ffd1f8,
-`--d-crt` #d98bff, `--d-fg-dim` #a58cc4). Nowhere else on the house pages.
+Additive, page-local: the home TV's channels (`WordWall.astro`): one hue + saturation per plugin
+(`--ww-ch-<slug>-h` / `-s`, §4); the type on the screen is that hue's phosphor. Nowhere else on the house pages.
 
 Forbidden: pure `#000` / `#fff` outside `html.hc`; yellow speculars on red; race-red on buttons;
-neon or glow without a lamp (a neon sign IS a lamp: the DRIFT panel's lit tube may glow and spill); the retired tach arc that hue-shifted toward the redline with scroll depth
+neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glow); the retired tach arc that hue-shifted toward the redline with scroll depth
 (out in `c3fc068`, stays out). The smoke it sat on came back on its own (`src/lib/haze.ts`, §5).
 
 ## 3. Typography
@@ -64,8 +63,9 @@ neon or glow without a lamp (a neon sign IS a lamp: the DRIFT panel's lit tube m
 - Display: `--font-display` Bebas Neue (fallback Oswald, Arial Narrow). Headlines are stamped
   into the wall: `text-shadow: var(--engrave)` on the garage wall, `--engrave-fine` for small caps.
 - Body: `--font-body` Inter. Readouts and specs: `--font-mono`, in object units (dB, ms, `$`, `VST3 · AU`).
-- Painted copy erodes with wear: stencil words on the wall are outlined brass that fills on hover;
-  the filled word is `--oxide-text`, never race-red (Law 5 + one-hero rule).
+- Painted copy erodes with wear: stencil type on the wall is outlined brass that fills on hover;
+  the filled one is `--oxide-text`, never race-red (Law 5 + one-hero rule). On the TV the same
+  stencil is outlined in the channel's phosphor; the lit plugin's name is filled.
 - Kickers (`.hh-tag`, `.sk-tag`, `.ww-tag`): mono, letter-spaced 0.3em, `--brass`.
 
 ## 4. Components
@@ -76,90 +76,86 @@ neon or glow without a lamp (a neon sign IS a lamp: the DRIFT panel's lit tube m
 - Garage wall (`GarageWall.astro`): `wall-wood.png` tile 512px, brass rail `wall-rail.png` top +
   bottom (`--rail-h` 30px, 22px at 480px and below), rail cast shadow, `data-drift-y` 24px parallax
   on the wood, warm top light + 38% scrim. Same wall as the product pages' `.garage-wall`.
-- Word wall (`WordWall.astro`): five stencil words in Bebas, `-webkit-text-stroke` brass, opacity
-  .5 / .72 / 1 / .72 / .5 outward from the filled word; hover fills any word in ~120ms house curve.
-  The plugin's window hangs beside it with the shadow stack and one caption line. One panel per
-  carousel plugin; `showcase:change` swaps them.
-- Word wall, DRIFT panel (first while `drift.homeLead`; 2026-10-14, Dan: the stencil "says nothing
-  about DRIFT"). `DRIFT_LOOK` picks `current` (the stencil above) / `neon` / `steer` / `both` (built:
-  `both`). Same five words, same blurb, same alt text; only this panel changes.
-  - NEON: a neon shop sign bolted to the wood, still Bebas. Unlit words are pale violet-grey glass
-    tubes (thin edge, faint body, a fine upper-left specular, 2px off the wall); SLIDING is lit:
-    warm near-white core (never #fff), DRIFT-magenta tube skin, a layered glow, and a soft spill on
-    the wood behind it (screen-blended, so the grain brightens: Law 4, light leaks). A small vertical
-    ドリフト tube burns dim beside the stack (the /drift Japanese subset). Motion = feedback: the lit
-    tube powers on with a 600ms three-stutter flicker the first time the panel is seen; hovering a
-    word strikes its tube on (~120ms house curve, one stutter; real hover only, so a phone tap never
-    leaves a second tube lit).
-  - STEER: the hand is the wheel. On a mouse, pointer X over the wall steers the words; each is its
-    own damped spring (lower word = heavier, like low bands lagging the highs), SLIDING travels
-    furthest, leans with its speed and leaves a burnt-rubber smear on the wood that fades in ~1.2s.
-    Travel stops short of the window and the wall's edge. On touch (no hover): one drift-in from the
-    side when the panel is first shown, overshoot, settle. rAF only while something moves.
-  - BOTH: neon tubes that steer; the lit tube's spill rides with it.
-  - The window is the live DRIFT run (`public/drift/wall-run-1440` / `-800`, webm + mp4, poster =
-    its first frame through the image pipeline), same box, radius and shadow as the screenshot; it
-    plays only while the DRIFT panel is active and on screen, and never under reduced motion.
-  - The wall behind it is the word wall's TV (below; Dan 2026-10-14: "the whole back a digital
-    screen"). On DRIFT's channel: /drift's phosphor violet, kicker + caption in phosphor violet, the
-    skid as phosphor afterglow, a CRT turn-on with the sign.
-  - The window (`DRIFT_WIN`, built 'plain'): 'tv' plays the run on /drift's keep-it TV cabinet (`tv-frame-3.png`, 9-sliced, `--ww-tv-size` 0.72
-    of /drift's bezel, 0.69 of that on phones), the bulged CRT tube with scanlines + aperture grille +
-    glass, the cabinet livery as matte printed ink (laptop only), a CRT turn-on with the neon power-on.
-  - Every tunable is a `--ww-*` property on the panel, tuned on the dev bench `/__wwbench`
-    (`tools/wwbench`: the real homepage at laptop + phone size, look switch, sliders, REPLAY, COPY
-    SETTINGS; "apply ww bench" bakes the values). Reduced motion: lit and still, poster only.
-    `html.hc`: plain words like the other panels.
-- Word wall TV (every panel; 2026-10-14, Dan: "every plugin on the TV, only the screen changes when
-  the carousel moves, like changing channels"). Two constants in `WordWall.astro`, both on `.ww`:
+- Plugin TV (`WordWall.astro`, `#plugins`; branch feat/home-library, built 2026-10-18; the user: switching
+  between the plugins lives in the TV, only there, only on home). One broken CRT set on the garage wall
+  (Dan 2026-10-14: "every plugin on the TV, only the screen changes, like changing channels"). The
+  carousel and the Store nav item went. On the screen, the set's own menu and a channel guide:
+  - Menu (`.ww-osd`): the kicker PLUGINS + the categories (`src/data/library.ts`: ALL first, then every
+    category a plugin on the TV sits in; an empty one is hidden; short labels on phones). Mono caps in
+    the channel's phosphor, the picked one in inverse video (a lit key, dark type). Buttons, shown only
+    once the script runs.
+  - List (left, `--ww-list-share` 40 % of the screen): one row per plugin = a small window thumbnail
+    (`--ww-thumb-w` 6.5rem, 4.6 on phones), the name in the stencil the five words used to be (Bebas,
+    outlined in the channel's phosphor, `--ww-dim` .62 unlit, the lit one filled + glowing) and a plain
+    type word ("one-knob saturator"). All names share one size: min(`--ww-name-max` 4.2rem, what the
+    column fits, what the room's height fits for four rows). The rows are real links to the product
+    pages (crawlable; no JS = a plain list); the script makes them tabs (arrows / Home / End light and
+    move, a modified click still opens the page).
+  - The lit plugin (right; every panel in one grid cell, so a swap never moves the page): its window
+    (DRIFT's is the live run: it plays only while lit and on screen, never under reduced motion), the
+    name + type word, the blurb, the five words as one small mono line (the hot word lit; a line breaks
+    between words, never before a dot), the price (`$49` / `$19` / `Free` / `Free beta`), ONE lit key
+    "Try free for 30 days" (TrialGateModal's email gate with the licence-worker id; GAS "Free download"
+    through the same gate; DRIFT to `/drift#try`) and a small "Product page ->" link. GAS's tall panel
+    stands beside its text. No Add to cart on home: buying stays on the product page.
+  - Channels (Dan's pick: each plugin its own screen colour): one hue + saturation per plugin on `.ww`
+    (`--ww-ch-<slug>-h` / `-s`): RevLimiter amber 26 / 78 (kept above ~20 so it never reads as
+    race-red), GAS brass gold 46 / 62, Radio Roulette warm dial-glass cream 38 / 28, DRIFT violet
+    280 / 70 (its screen glow stays /drift's tube). The lit plugin is `data-ww-on` on `.ww`: the screen
+    glow, the menu and the list take its phosphor; each panel keeps its own, so a fading panel keeps its
+    colour. A plugin with no channel plays in neutral cream. `hsl(... / a)`, not color-mix (older Safari).
+  - Channel change: lighting a plugin cuts its picture to grey snow (`data-ww-snow` 'picture'; 'screen'
+    = the whole screen, a bench switch) for `--ww-snow-ms` (300) and fades back (160ms) on the new
+    channel; a half-resolution canvas, rAF only during the burst. None under reduced motion, in high
+    contrast, on the wood, in a hidden tab, with the wall off screen, or when the lit plugin is picked
+    again. No channel number (Dan: no). A category change re-strikes the rows that stay, 60ms apart.
+  - Power-on: the first time the TV comes into view the tube opens from a bright line (a CRT turn-on,
+    700ms) and the pilot LED lights with it. JS arms it, so no JS / reduced motion = lit at rest.
+  - URL: `?cat=` = one history entry per category, `?plugin=` updates the current one, so a reload or a
+    return from a product page lands on the same channel. The rest of the address is kept (utm / gclid
+    for the cart; the trial gate's `#dl=...&p=` return link, which is why the TV never uses `p`).
+  - Phones + small tablets (<= 860px): one pane at a time. The menu, then full-width rows (thumbnail,
+    name, type word, the price on the right); a tap opens the lit plugin as its own view (a history
+    entry, a "‹ All plugins" key); Back returns to the list with the focus on its row.
   - `WALL_BG` (built 'screen' | 'wood'): /drift's digital screen (the keep-it TV's phosphor tube) full
-    bleed behind every panel, scanlines + grille + glass over the content. `.ww-screen`,
-    `.ww-screen-fx`, `.ww-snow` and `.ww-frame` live on `.ww`, outside the panels, so the set stays
-    put while the carousel swaps panels, with or without `drift.homeLead`. 'wood' = the garage wall.
+    bleed behind the content, scanlines + grille + glass over it. `.ww-screen`, `.ww-screen-fx`,
+    `.ww-snow` and `.ww-frame` live on `.ww`, outside the panels. 'wood' = the garage wall, brass type.
   - `WALL_FRAME` (built '2' | '1' | '3' | 'rails'): a beat-up CRT cabinet front 9-sliced round the
     screen in place of the brass rails (`tv-broken-1/2/3.png`, AI blank rolls; cracked corner with a
     worn checker, gaffer tape, a missing screw, a chunk broken off, all in the corners). The long runs
     TILE (`round`): stretched 3-4x they streak. `--ww-frame-u` = CSS px per cut pixel (bench "Frame
-    size"), capped by the wall's real side gutter minus the wood gap, so the side bezel never covers a
-    word or the window (~0.25 at 1141-1280, more on wide screens, ~0.065 on phones); the steer stops at
-    the opening. Anchored to the content box, not 100vw (a classic scrollbar would eat the right
-    bezel). Colourless charcoal (Dan: "more neutral, fewer colours"): only the screen changes per
-    channel. One brand mark stays: the worn checker paint on the top-left corner is burnt RevAudio
-    yellow, the house brass hue (Dan: "replace the purple with a burnt yellow, like RevAudio's
-    colour"), the same on every channel. The cut script recolours it; it is not a plugin colour.
-    The house pilot light (`--emerald`, "armed / live") in the chin; dark only while DRIFT's
-    sign waits to power on, then it lights with the turn-on (a lamp). 'rails' = the brass rails.
-  - Channels (Dan's pick: each plugin its own screen colour): one hue + saturation per plugin on `.ww`
-    (`--ww-ch-<slug>-h` / `-s`): RevLimiter amber 26 / 78 (kept above ~20 so it never reads as
-    race-red), GAS brass gold 46 / 62, Radio Roulette warm dial-glass cream 38 / 28, DRIFT violet
-    280 / 70. The screen glow, kicker, stencil words, hot word, caption, name and window edge turn to
-    the channel's phosphor instead of brass on wood. DRIFT's NEON / BOTH looks keep their own tubes on
-    DRIFT's violet screen. `hsl(... / a)`, not color-mix (older Safari).
-  - Channel change: the carousel moving cuts the screen to grey snow for `--ww-snow-ms` (300) and fades
-    back (160ms) on the new channel; a half-resolution canvas, rAF only during the burst. None under
-    reduced motion (plain crossfade), in high contrast, on the wood, in a hidden tab, with the wall off
-    screen, or when the same panel is picked again. No channel number (Dan: no).
-  - One screen (laptop, >= 861px; Dan 2026-10-14: "when I scroll, the site fits the screen exactly, not
-    past the edges top and bottom"): the TV section is `100svh - --site-nav-h` tall (min-height, behind
-    `@supports (height: 100svh)`), `.ww` pads from the rails to the opening + `--ww-breath` (16px), and
-    the panel is sized to the glass (`--ww-room`): words `min(old clamp, (room - kicker) / 4.6)`,
-    windows width-capped by their aspect (`--ww-ar` per panel), GAS height-capped; never larger than
-    before, centred in the opening. At 1280x665 the words go 115 -> 98px. Big screens: the words stay
-    capped at 8.4rem, so a 1920x1080 TV has room round the panel. A scroll lock lands it: armed only by
-    the visitor's wheel, a moved finger or scroll keys, it fires once scrolling is idle and no finger is
+    size"), capped by the wall's real side gutter minus the wood gap, so the side bezel never covers the
+    menu, a name or the window (~0.25 at 1141-1280, more on wide screens, ~0.065 on phones). Anchored to
+    the content box, not 100vw (a classic scrollbar would eat the right bezel). Colourless charcoal
+    (Dan: "more neutral, fewer colours"): only the screen changes per channel. One brand mark stays:
+    the worn checker paint on the top-left corner is burnt RevAudio yellow, the house brass hue (Dan:
+    "replace the purple with a burnt yellow, like RevAudio's colour"), the same on every channel. The
+    cut script recolours it; it is not a plugin colour. The house pilot light (`--emerald`, "armed /
+    live") in the chin, dark until the TV powers on. 'rails' = the brass rails.
+  - One screen (Dan 2026-10-14: "when I scroll, the site fits the screen exactly, not past the edges top
+    and bottom"): the TV section is `100svh - --site-nav-h` tall (min-height, behind `@supports (height:
+    100svh)`), `.ww` pads from the rails to the opening + `--ww-breath` (16px), and the content is sized
+    to the glass (`--ww-room`): the names as above; each window width-capped by its aspect (`--ww-ar`)
+    to the height its panel's text leaves (`--ww-info-h`, with the menu's `--ww-osd-h`: the script
+    measures both, the CSS values are the no-JS estimates); GAS height-capped. Measured 2026-10-18: it
+    fits from 1141x636 to 1728x992 and on 390x664 / 360x640 phones; at 1280x665 the window is ~460px
+    wide; on a 360x640 phone GAS's panel is ~150px tall. The scroll lock lands it: armed only by the
+    visitor's wheel, a moved finger or scroll keys, it fires once scrolling is idle and no finger is
     down, if the TV fits and its top stopped within `--ww-snap-zone` % (30) of the screen; Lenis glides
-    it under the nav (0.55s, easeOutQuart). No lock under reduced motion (no Lenis).
-    Phones + tablets (<= 860px, Dan: "build part B"): the same one-screen TV; the stack is the words (~40 %
-    of the room, max(2.2rem, min(19vw, 6.4rem, room x 0.4 / 4.5))), the window (what is left after the
-    name + button, `--ww-go-h` 8.5rem / 8rem <= 480px), tighter gaps. On a 390x664 phone the words go
-    74 -> 46px and GAS's window ~384 -> ~150px tall. iOS: with Safari's bars hidden a strip of the next
-    section shows under the TV (svh, chosen over a TV that resizes mid-scroll).
-  - Bench: WOOD/SCREEN + RAILS/BROKEN TV 1-3 switches, Frame size, Wood around the TV (laptop only),
-    Breathing room, Lock zone,
-    the channel colour + strength sliders (RevLimiter, GAS, Radio Roulette) and Static length.
-    `html.hc`: no screen, frame or snow; the plain words.
+    it under the nav (0.55s, easeOutQuart) and never pulls back against the visitor. No lock under
+    reduced motion (no Lenis). iOS: with Safari's bars hidden a strip of the next section shows under
+    the TV (svh, chosen over a TV that resizes mid-scroll).
+  - Bench `/__wwbench` (`tools/wwbench`, dev only: the real homepage at laptop + phone size): WOOD /
+    SCREEN, RAILS / BROKEN TV 1-3, STATIC picture / whole screen, REPLAY (the power-on), the categories
+    and plugins as buttons, the phone's pane; sliders: list width, biggest name, thumbnail, unlit names
+    (laptop), screen glow + scanlines, the channel colours + Static length, frame size + wood around the
+    TV, breathing room + lock zone. COPY SETTINGS; "apply ww bench" bakes the values.
+  - Keyboard + screen reader: the list is a vertical tablist (aria-selected, roving tabindex), each
+    panel a tabpanel; a category change is announced (a polite live region). `html.hc`: no screen,
+    frame or snow; plain type, the lit name in oxide.
 - Trial CTA / buy: flat brass-bright button at the page end on `/`; the crane door on product pages.
-- Coverflow showcase, DAW strip, EmailCapture, SubscribeModal, TrialGateModal: unchanged house parts.
+- DAW strip, EmailCapture, SubscribeModal, TrialGateModal: unchanged house parts. (The coverflow
+  showcase left the home page with feat/home-library: the TV is the one place to browse.)
 - Support chat (`SupportChat.astro`, `/support` only): chat-app thread grammar in house materials —
   visitor right in 3-stop brass, Support left on dark steel with avatar + curved tail on a group's
   last bubble, time stamp inside the bubble, bakelite wallpaper with a brushed diagonal. Answers use
@@ -187,15 +183,15 @@ Canon = the crane door (`BuyButtonCrane.astro`): physics, feedback only, in the 
 strikes ~120ms `cubic-bezier(.2,.9,.25,1.25)`. Scroll: needle revs; wood drifts 24px; reveals via
 `data-reveal` (top 80%) with a 2.5s force-reveal. The smoke drifts on a slow sine (40/25px and
 55/30px orbits), kicks up to 3.5x on a fast scroll and settles, leans up to 14px with the pointer
-(desktop only). The word wall's DRIFT panel: neon power-on flicker once, hover strike ~120ms, the
-steering springs on a mouse, one drift-in on touch (§4). Reduced motion: everything visible at rest,
+(desktop only). The plugin TV: the CRT power-on once, a ~120ms hover strike on the names, the static
+on a channel change, the rows re-striking on a category change (§4). Reduced motion: everything visible at rest,
 no parallax, no needle rev, smoke static.
 
 ## 7. Hero + glanceability
 
 THE hero is the gauge medallion with "Engineered, Then Tuned." over it. One glance: brass tach,
 red sweep under the headline, "Boutique plugins" above. Everything below is the walk through the
-garage: rack, stencil wall, the sign, the clipboard, the door. No second hero, no metric grid, no
+garage: the plugin TV, the sign, the clipboard, the door. No second hero, no metric grid, no
 card grid.
 
 ## 8. Layout
@@ -204,9 +200,7 @@ card grid.
 +------------------------------------------------------+
 | HERO  gauge medallion + 2-line headline               |  ~100svh, vignette
 +------------------------------------------------------+
-| OUR PLUGINS  coverflow rack (#plugins)                |  unchanged
-+------------------------------------------------------+
-| WORD WALL  five words per plugin (DRIFT: neon/steer)  |  wood wall + rails; the plugin's UI right
+| PLUGINS  the TV (#plugins): menu, list, lit plugin    |  one screen; the broken CRT set
 +------------------------------------------------------+
 | GOES WITH EVERY VEHICLE  DAW strip                    |  unchanged
 | JOIN THE PIT CREW  EmailCapture                       |  unchanged
@@ -214,13 +208,14 @@ card grid.
 +------------------------------------------------------+
 ```
 
-Base: `--maxw min(1440px, 95vw)`; the word wall collapses to one column at 860px and below,
-words first, window under them.
+Base: `--maxw min(1440px, 95vw)`; at 860px and below the TV shows one pane at a time (the list,
+then the lit plugin).
 
 ## 9. Do's & don'ts
 
-- DO keep every claim checkable against the plugin source. Stencil words describe the intent of
-  the tools, in plain adjectives; the caption line comes from PRODUCT.md / CLAUDE.md.
+- DO keep every claim checkable against the plugin source. The five words describe the intent of
+  the tools, in plain adjectives; the blurb comes from PRODUCT.md / CLAUDE.md (each plugin's
+  `library` entry in `src/data/plugins.ts`).
 - DON'T add a second race-red element, a countdown, a star rating, or a press logo (data files are
   empty by design until real ones exist).
 - DON'T absolute-position decorative props to pixel coordinates; wall and rails are flow +
@@ -246,3 +241,10 @@ words first, window under them.
   screen changing when the carousel moves, like channels: the frame went colourless, the TV moved to
   the whole word wall (WALL_BG / WALL_FRAME), each plugin got its own phosphor colour, and a channel
   change is a short burst of static. So RevLimiter, GAS and Radio Roulette now play on the TV too.
+- 2026-10-15 the user (branch feat/home-library, built 2026-10-18): the TV becomes the plugin
+  browser. The carousel and the Store nav item go (a PLUGINS button leads to the TV, `/store` redirects
+  to it); categories on the screen, ALL first; the plugin names replace the five words on the left, and
+  the five words move under the blurb as one line; the lit plugin shows a bigger window, the blurb, the
+  price, "Try free" and a small "Product page". DRIFT's neon / steer looks and the TV window
+  (DRIFT_LOOK / DRIFT_WIN, `src/lib/wordwallDrift.ts`) went with the words they worked on. Plan:
+  `tasks/home-library-plan.md`.

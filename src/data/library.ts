@@ -66,21 +66,12 @@ export const tvCats = (list: Plugin[] = tvPlugins()): LibraryCat[] => [
 /** The plugin's name on the TV. */
 export const tvName = (p: Plugin) => p.library?.name ?? p.name;
 
-/** DRIFT's trial sentence, by phase (src/data/drift.ts; the page never guesses the phase from the clock). */
-export const driftTrialLine = () =>
-  drift.phase === 'preopen' ? `Free ${drift.trialDays}-day trial, by email ${drift.trialOpensDay}.`
-    : drift.phase === 'open' ? `Free ${drift.trialDays}-day trial, by email.`
-    : `On sale ${drift.releaseLabel}.`;
-
-/** The TV's description: the plugin's own blurb, plus DRIFT's trial sentence. */
-export const tvBlurb = (p: Plugin) =>
-  p.slug === 'drift' ? `${p.library?.blurb ?? ''} ${driftTrialLine()}` : p.library?.blurb ?? '';
-
 /** Trial length of the paid plugins: RevLimiter's and Radio Roulette's LicenseManager::trialDaysRemaining() count
  *  30 days from the first launch (both sources checked 2026-10-18), and TrialGateModal says 30. */
 export const PAID_TRIAL_DAYS = 30;
 
-/** What it costs today, in plain words, for the line under the description. */
+/** What it costs today, in plain words, beside the TV's main button. DRIFT's trial terms ride on its price line and
+ *  its button (drift.ts phase; the page never guesses the phase from the clock). */
 export function priceLine(p: Plugin): string {
   if (p.isFree) return 'Free';
   if (p.status === 'live' && p.introPriceUsd != null) return fmtPrice(p.introPriceUsd);

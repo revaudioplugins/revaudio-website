@@ -8,6 +8,13 @@
   PLUGINS, D2 categories always visible inside the TV, D3 `/store` redirects to the home TV, D4 ratings = verified
   users only, own branch after this one). Go: 2026-10-18.
 - `revaudio-32`'s claim on `src/components/WordWall.astro` is CLOSED (2026-10-15, entry below), so phase 2 is clear.
+- Done (local commits on the branch, NOT pushed): phase 1 = the catalog data (`5b44750`); phase 2 = the TV is the
+  library (WordWall rewritten: categories, stencil names + thumbnails, the lit plugin's pane with price + Try + Product
+  page, URL state `?cat=` / `?plugin=`, phone panes, tabs; the carousel off home; wwbench + DESIGN.md rewritten;
+  `wordwallDrift.ts` deleted). Checked in Chromium + WebKit at 9 sizes (plan, Phase 2). Next: phase 3 (header
+  PLUGINS button, `/store` -> `/#plugins`, links re-pointed, store FAQ moved, smoke tests), then phase 4.
+- Found: index.astro's testimonial CTA said "14-day free trial" (the trial is 30 days in both plugins' code); fixed
+  on this branch. Not visible live: the block renders only with real testimonials, and there are none yet.
 - Active thread (owner revaudio-a6): `src/data/library.ts` (new), `src/data/plugins.ts`, `src/components/WordWall.astro`,
   `src/lib/wordwallDrift.ts`, `tools/wwbench/*`, `src/pages/index.astro`, `DESIGN.md`, `tasks/home-library-plan.md`,
   `tasks/handoff.md`. Phase 3 adds the header, footer, cart, store and product-page files when it starts.

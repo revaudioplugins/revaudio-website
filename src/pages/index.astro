@@ -1,7 +1,6 @@
 ---
 import { Image, getImage } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import PluginShowcase from '../components/PluginShowcase.astro';
 import WordWall from '../components/WordWall.astro';
 import TestimonialBlock from '../components/TestimonialBlock.astro';
 import DAWStrip from '../components/DAWStrip.astro';
@@ -126,9 +125,8 @@ const wallM = await getImage({ src: wallMImg, width: 1080, format: 'webp', quali
     <div class="hero-divider" aria-hidden="true"></div>
   </section>
 
-  <PluginShowcase />
-
-  {/* the stencil wall: what the sound does, beside the RevLimiter window */}
+  {/* the TV: every plugin, by category, and the one place to browse them (the carousel and the
+      Store nav item went, branch feat/home-library 2026-10-18) */}
   <WordWall />
 
   <DAWStrip />
@@ -136,7 +134,7 @@ const wallM = await getImage({ src: wallMImg, width: 1080, format: 'webp', quali
     heading="Producers on RevAudio"
     ctaHref="/revlimiter"
     ctaLabel="Take RevLimiter for a spin"
-    ctaSub="14-day free trial · no credit card"
+    ctaSub="30-day free trial · no credit card"
   />
   <PressLogos />
   <EmailCapture id="subscribe" />
@@ -388,8 +386,8 @@ const wallM = await getImage({ src: wallMImg, width: 1080, format: 'webp', quali
      carries data-hero-in and still rides the text cascade above. */
   :global(html.motion-ok) .hero-medallion { --circles: 0; }
   /* border-bottom: none overrides the global .hero divider — the hero should
-     flow straight into the plugin showcase. */
-  /* Bottom padding is the whole hero→showcase gap: the seam below the gauge
+     flow straight into the plugin TV. */
+  /* Bottom padding is the whole hero→TV gap (it was the carousel's): the seam below the gauge
      used to sit 148px above the carousel (3rem + a +100px block added for
      Gil), which read as dead air on a page whose first two beats are the
      gauge and "Our Plugins". Tightened to 2rem — the showcase heading's own

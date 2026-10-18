@@ -1,6 +1,7 @@
 # Home LIBRARY: the TV becomes the plugin browser (branch `feat/home-library`)
 
-- Owner: Claude Code `revaudio-a6` (laptop 1). Status: **IN PROGRESS (user's "go" 2026-10-18).** Phase 1 done.
+- Owner: Claude Code `revaudio-a6` (laptop 1). Status: **IN PROGRESS (user's "go" 2026-10-18).** Phases 1 + 2 done
+  (local commits, not pushed); Phase 3 next.
 - Worktree: `.claude/worktrees/home-library` off origin/main `697f49d`; origin/main `ddada3d` (the TV weight work)
   merged in 2026-10-18 (`8ca4938`). `node_modules` = junction to the main clone's.
 - "apply ww bench" (the TV frame roll pick) now lands on THIS branch: WordWall.astro is rewritten here, so never
@@ -31,7 +32,7 @@
   still appear as the heading inside the TV; decide on the bench.
 - D2 Categories: **inside the TV, always visible.** The TV opens on the ALL channel with the category buttons in it;
   the header button scrolls to the TV. (Confirms "על המסך" = on the TV, not an overlay over the page.)
-- D3 `/store`: **redirect to the home TV** (`/?c=all`). Note: the research synthesis leaned the other way (keep a
+- D3 `/store`: **redirect to the home TV** (`/#plugins`; ALL is the TV's default, so no parameter). Note: the research synthesis leaned the other way (keep a
   catalog page, drop only the nav item: every readable peer except Kilohearts and Denise keeps one). The user took
   the redirect: the catalog is 4 live plugins, the product pages carry search and ads, and one place to browse.
 - D4 Ratings: **verified users only, on its own branch after this one.** Stars show from ~5 ratings, with the
@@ -64,35 +65,46 @@ without an open trial (The AC) stay off the TV; the TV never changes by itself (
       (`PAID_TRIAL_DAYS`); DRIFT = `drift.trialDays`. Found: index.astro's testimonial CTA says "14-day free trial"
       (wrong: the code says 30) — told the user, fixed on this branch with the home page rework.
 
-### Phase 2: the TV becomes the library (after revaudio-32's claim closes)
+### Phase 2: the TV becomes the library (done 2026-10-18)
 
-- [ ] Category buttons on the TV: ALL (default, every live plugin, zero clicks) + every non-empty category.
-      A one-plugin category opens with that plugin already lit (no list of one).
-- [ ] Left: plugin names in the glowing stencil style + a small thumbnail + a plain type word
+- [x] Category buttons on the TV: ALL (default, every live plugin, zero clicks) + every non-empty category.
+      A one-plugin category opens with that plugin already lit. Its one row stays in the list (on a phone,
+      opening the pane by itself would hide the categories behind a Back).
+- [x] Left: plugin names in the glowing stencil style + a small thumbnail + a plain type word
       ("one-knob saturator"); the selected one is lit.
-- [ ] Right: the big image, name, short description, the price line, "Try free for N days" (main button),
+- [x] Right: the big image, name, short description, the price line, "Try free for N days" (main button),
       "Product page" (small link).
-- [ ] The five glowing words (`DESIGN.md` sections 0 + 4, "what the sound does, in five words") leave the left
-      column to the plugin names; they move into the preview as one small line under the description (default,
-      the user may drop them instead). `DESIGN.md` changes either way.
-- [ ] Switching = a channel change: the existing static burst + each plugin's own phosphor colour.
-- [ ] The list is real `<a href>` links in the HTML (crawlable); the script only enhances it.
-- [ ] URL state: one history entry per category (`/?c=free`), the lit plugin updates the current entry (`&p=gas`),
-      so one Back leaves the category; coming back from a product page restores the lit plugin.
-- [ ] Phones: one pane at a time. Category chips, then full-width rows (thumbnail, name, type word, price);
-      a tap opens the preview as its own view with a history entry, Back returns to the list. No hover-only states.
+- [x] The five glowing words left the left column to the plugin names; they are one small line under the
+      description (the user may drop them instead). `DESIGN.md` sections 0, 2, 3, 4, 6-10 rewritten.
+- [x] Switching = a channel change: the static burst (over the lit plugin's picture; the bench can switch it to
+      the whole screen) + each plugin's own phosphor colour (`data-ww-on` on `.ww`, no `:has`).
+- [x] The list is real `<a href>` links in the HTML (crawlable); the script only enhances it (tabs).
+- [x] URL state: one history entry per category (`/?cat=free`), the lit plugin updates the current entry
+      (`&plugin=gas`), so one Back leaves the category; coming back from a product page restores the lit plugin.
+      Not `c` / `p`: TrialGateModal reads its `p` (the gate id) from the hash AND the query string.
+- [x] Phones: one pane at a time. Category chips, then full-width rows (thumbnail, name, type word, price);
+      a tap opens the preview as its own view with a history entry, Back returns to the list (focus on the row).
+      No hover-only states.
 - [ ] Longer lists (later): the TV pages with CH+ / CH- instead of an inner scrollbar (no scroll trap inside the
       scroll-locked TV); a search from ~10 plugins.
-- [ ] Keyboard + screen reader: real buttons and links, arrow keys move the selection, `aria-selected`, visible
-      focus; reduced motion = no static; high contrast = a plain list.
-- [ ] A dev-only bench first, so the look is tuned by eye before it folds into the page.
+- [x] Keyboard + screen reader: real buttons and links, arrow keys move the selection, `aria-selected`, visible
+      focus, a polite live region for the category; reduced motion = no static; high contrast = a plain list.
+- [x] The dev bench `/__wwbench` drives the new TV (categories, plugins, the phone's pane, STATIC picture/whole,
+      list sliders); same storage key, so a frame pick saved before survives. Tuning by eye = the user's.
+- [x] Removed with the words: DRIFT's neon / steer looks, the TV window, `src/lib/wordwallDrift.ts` (its video
+      sync is in WordWall now); `<PluginShowcase />` off `index.astro` (the file goes in Phase 3).
+- [x] Checks 2026-10-18 (`npm run build` + node Playwright, Chromium AND WebKit, 1280x665@2, 1141x636, 1440x789,
+      1728x992@2, 860x1000, 390x664, 360x640, 375x667, 393x852): the TV fits one screen at every size (list view
+      and both phone panes), no sideways scroll, no name overflow, category / plugin / Back / keyboard flows right,
+      no console errors besides the local preview's Cloudflare RUM beacon. The window sizes off the measured text
+      height (`--ww-info-h`, `--ww-osd-h`). On a 360x640 phone GAS's pane is ~150px tall (the text needs the room).
 
 ### Phase 3: header + removals
 
 - [ ] Header: a PLUGINS button (D1) takes the lit "Store" slot. On home it scrolls to the TV (the categories are
-      already visible there, D2); on every other page it goes to `/?c=all`. Phones: visible next to the menu button.
+      already visible there, D2); on every other page it goes to `/#plugins`. Phones: visible next to the menu button.
 - [ ] `PluginShowcase` off the home page; the file is deleted once nothing imports it.
-- [ ] `/store` redirects to `/?c=all` (D3). Old links must keep working, including the licence worker's `https://revaudio.net/store`
+- [ ] `/store` redirects to `/#plugins` (D3). Old links must keep working, including the licence worker's `https://revaudio.net/store`
       link (RevLimiter repo, `gumroad-worker/src/worker.js`). GitHub Pages cannot send a real 301: the redirect is
       either a meta-refresh page in the repo (with a canonical link) or a Cloudflare Redirect Rule (dashboard only).
       Never promise a "301" without the Cloudflare rule.

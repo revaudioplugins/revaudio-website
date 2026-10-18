@@ -1,45 +1,35 @@
 ---
-/* WordWall — what the sound does, sprayed on the back wall.
-   Five stencil words in the house display face, outlined in brass and
-   fading outward from the one filled word, beside the RevLimiter window.
-   The layout is the "adjective stack next to the UI" beat from the garage
-   homepage pass (2026-09-06, reference: kaelalden.com/products/vibe-rewind)
-   rebuilt in the RevAudio garage: paint on wood, not type on a gradient.
+/* WordWall — the homepage TV, and the one place to browse the plugins
+   (branch feat/home-library, 2026-10-18; the user: "the switching between
+   the plugins moves to the TV, only to the TV, only on the home page").
 
-   Honesty: the words describe what the chain is built to do (PRODUCT.md /
-   CLAUDE.md: loudness, depth, punch, warmth, glue), not measured results.
-   The filled word is --oxide-text, never race-red — the red sweep in the
-   hero is this page's one red element.
+   One broken CRT set on the garage wall (Dan 2026-10-14: "every plugin on
+   the TV, only the screen changes, like changing channels"). On its screen:
+     - the categories, as the set's on-screen menu: ALL (the TV opens on it,
+       zero clicks) + every category a plugin on the TV sits in
+       (src/data/library.ts; an empty category is hidden);
+     - the plugins, left: each name in the glowing stencil the five words
+       used to be, with a small window thumbnail and a plain type word; the
+       lit one is filled;
+     - the lit plugin, right: its window (DRIFT's is the live run), the name,
+       the short description, the five words as one small line, the price,
+       "Try free for N days" (TrialGateModal's email gate; DRIFT: its own
+       page's sign-up) and a small "Product page" link.
+   Lighting a plugin is a channel change: the screen takes that plugin's
+   phosphor colour (--ww-ch-<slug>-h / -s) and the picture drops to snow for
+   --ww-snow-ms. The list is real links to the product pages (crawlable,
+   works without JS); the script turns them into tabs. URL: ?cat= is one
+   history entry per category, ?plugin= updates the current one, so Back
+   leaves a category and a reload or a return from a product page comes back
+   to the same channel. Phones: one pane at a time (the list, then the lit
+   plugin as its own view with a history entry; Back returns to the list).
 
-   The graded opacity lives on the inner span, NOT on the reveal item: the
-   reveal lib animates the item's opacity to 1 and would erase the fade.
-
-   The DRIFT panel (first while drift.homeLead is on) has its own looks,
-   picked by DRIFT_LOOK below and tuned on the dev bench /__wwbench
-   (tools/wwbench, Dan 2026-10-14: the brass stencil said nothing about DRIFT):
-     current  today's brass stencil, untouched
-     neon     a neon shop sign bolted to the wood: every word is a glass tube,
-              SLIDING is lit in DRIFT magenta (a sign is a lamp, so it may
-              glow, and its light spills onto the wall), a dim vertical
-              ドリフト tube beside the stack. The lit tube powers on with a
-              short flicker the first time the panel is shown; hover a word
-              and its tube strikes on.
-     steer    your hand is the wheel: on a mouse, pointer X over the wall
-              steers the words, each on its own damped spring (lower word =
-              heavier, like low bands lagging the highs), SLIDING furthest,
-              leaning with its speed and leaving a fading skid smear. On touch
-              there is no hover: one drift-in entrance when the panel is first
-              shown.
-     both     neon tubes that steer (the lit tube's spill rides with it)
-   Every tunable is a --ww-* custom property on the panel (defaults in the
-   style block), read by src/lib/wordwallDrift.ts when a gesture starts, so
-   the bench retunes it live. Motion is feedback only (the flicker answers
-   "the panel came on", the springs answer the hand); reduced motion = lit
-   and still; html.hc = plain words like the other panels. The window is the
-   live DRIFT video (public/drift/wall-run-*), playing only while the DRIFT
-   panel is the active one and on screen; the poster stays for reduced motion.
-   Animation never touches the reveal item (the li): words, spills and the
-   skid are inner spans. */
+   The copy is the plugins' `library` entries (plugins.ts); which plugins,
+   their order, the price line and the try action are library.ts. Honesty:
+   the words describe what the plugin is built to do, not measured results.
+   Tune on the dev bench /__wwbench (tools/wwbench): every tunable is a --ww-*
+   custom property on .ww. Reduced motion: no static, no stagger, no
+   power-on, the poster instead of the run. html.hc: a plain list. */
 import { existsSync, statSync } from 'node:fs';
 import { Image, getImage } from 'astro:assets';
 import GarageWall from './GarageWall.astro';
@@ -47,22 +37,13 @@ import rlImg from '../assets/plugins/revlimiter-hero.png';
 import gasImg from '../assets/plugins/gas-hero.png';
 import rrImg from '../assets/plugins/radioroulette-hero.png';
 import driftImg from '../assets/showcase/drift-window-init.png';
-import tvFrameSrc from '../assets/seasons/drift/tv-frame-3.png'; // the /drift keep-it TV bezel (Dan 10-03 roll 3)
 import brokenMeta from '../assets/seasons/drift/tv-broken.json';
 import { drift } from '../data/drift';
-import { tvPlugins, tvName, tvBlurb } from '../data/library';
+import { tvPlugins, tvCats, catsOf, tvName, priceLine, tryAction, type TvAction } from '../data/library';
 import type { LibraryWord } from '../data/plugins';
 
-/* The DRIFT panel's look (see the header): 'current' | 'neon' | 'steer' | 'both'.
-   Tune on /__wwbench (npm run dev), then "apply ww bench" bakes the numbers
-   into the --ww-* defaults below and this constant. */
-const DRIFT_LOOK: 'current' | 'neon' | 'steer' | 'both' = 'both';
-/* The DRIFT window: plain, or on /drift's TV. */
-const DRIFT_WIN: 'plain' | 'tv' = 'plain';
-/* What the whole word wall is (Dan 2026-10-14: "the whole back a digital
-   screen", then "every plugin on the TV, only the screen changes when the
-   carousel moves, like changing channels"): the garage wood, or one TV whose
-   screen every panel plays on. Lives on .ww, not on a panel. */
+/* What the whole wall is: the garage wood, or one TV every plugin plays on
+   (Dan 2026-10-14). Lives on .ww. The bench can flip it. */
 const WALL_BG: 'wood' | 'screen' = 'screen';
 
 /* The live window: an HD run of DRIFT (1440 desktop / 800 phone) with its
@@ -100,12 +81,6 @@ const posterCuts = wallRunReady && wallPosterSrc
 const top = (cuts: Cut[]) => cuts[cuts.length - 1];
 // a size off an imported image without copying the raw file into dist (reading .width straight off the import does)
 const dims = (m: ImageMetadata) => (m as ImageMetadata & { clone?: ImageMetadata }).clone ?? m;
-/* The TV the live window plays on (Dan 2026-10-14: "more of a TV screen, like
-   we've been doing"): /drift's keep-it TV cabinet, the same plate at half size
-   (1318 px wide, so the 9-slice line is 192, not drift.css's 384). */
-const tvFrame = wallRunReady
-  ? await getImage({ src: tvFrameSrc, width: 1318, format: 'webp', quality: 86 })
-  : null;
 /* The TV's frame (Dan 2026-10-14: "a broken TV frame", then "more neutral"):
    a beat-up CRT cabinet front 9-sliced around the whole screen, in place of
    the brass rails. Three rolls (tools/gen-drift-tv-frame-broken.sh +
@@ -149,160 +124,205 @@ const noJsArt = [
   posterCuts ? `video[data-ww-run]::-webkit-media-controls{display:none !important}` : '',
 ].join('');
 
-/* One panel per plugin in the carousel rotation. The panel whose slug matches
-   the centred slide is the visible one; PluginShowcase dispatches
-   `showcase:change` {slug} on every move and the script below swaps panels.
-   First panel = the carousel's first slide (RevLimiter), visible at load with
-   the scroll-reveal stagger; the others enter with a CSS stagger on swap.
-   The plugins, their order and their copy come from src/data/library.ts +
-   each plugin's `library` entry in plugins.ts (DRIFT first while
-   drift.homeLead is on, same as the carousel). */
-type Panel = {
-  slug: string;
-  name: string;
-  words: LibraryWord[];
-  img: ImageMetadata;
-  alt: string;
-  portrait?: boolean;
-  blurb: string;
-};
-/* Each plugin's window on the TV. DRIFT's is the same shot as the carousel
-   card's arcade screen (its live run replaces it when the files are there). */
+/* The plugins on the TV (library.ts: a `library` entry AND live or an open
+   trial; DRIFT first while drift.homeLead) and each one's window. */
 const WINDOWS: Record<string, { img: ImageMetadata; portrait?: boolean }> = {
   drift: { img: driftImg },
   revlimiter: { img: rlImg },
   gas: { img: gasImg, portrait: true },
   'radio-roulette': { img: rrImg },
 };
-const panels: Panel[] = tvPlugins()
+type Item = {
+  slug: string;
+  name: string;
+  type: string;
+  words: LibraryWord[];
+  img: ImageMetadata;
+  alt: string;
+  portrait?: boolean;
+  blurb: string;
+  price: string;
+  action: TvAction | null;
+  cats: string[];
+};
+const items: Item[] = tvPlugins()
   .filter((p) => WINDOWS[p.slug] && p.library)
   .map((p) => ({
     slug: p.slug,
     name: tvName(p),
+    type: p.library!.typeWord,
     words: p.library!.words,
     img: WINDOWS[p.slug].img,
     alt: p.library!.alt,
     portrait: WINDOWS[p.slug].portrait,
-    blurb: tvBlurb(p),
+    blurb: p.library!.blurb,
+    price: priceLine(p),
+    action: tryAction(p),
+    cats: catsOf(p),
   }));
+const cats = tvCats(tvPlugins().filter((p) => items.some((it) => it.slug === p.slug)));
+const first = items[0]?.slug ?? '';
 ---
 
-<GarageWall id="sound" ariaLabel="What the plugin does">
-  <div class="ww" data-wordwall data-ww-bg={WALL_BG} data-ww-frame={WALL_FRAME} data-ww-art={wallArt} style={frameVars}>
+<GarageWall id="plugins" ariaLabel="RevAudio plugins">
+  <div
+    class="ww"
+    data-wordwall
+    data-ww-bg={WALL_BG}
+    data-ww-frame={WALL_FRAME}
+    data-ww-art={wallArt}
+    data-ww-on={first}
+    data-ww-view="list"
+    data-ww-snow="picture"
+    style={frameVars}
+  >
     <noscript><style is:inline set:html={noJsArt}></style></noscript>
-    {/* DRIFT's screen wall: the lit tube behind the panels + the glass over them (CSS below) */}
+    {/* the set: the lit tube behind everything, the snow, the glass over it, the cabinet front */}
     <div class="ww-screen" aria-hidden="true"><div class="ww-screen-glow"></div></div>
     <div class="ww-snow" aria-hidden="true"><canvas></canvas></div>
     <div class="ww-screen-fx" aria-hidden="true"></div>
     <div class="ww-frame" aria-hidden="true"><i class="ww-frame-glass"></i><span class="ww-frame-led"></span></div>
-    {panels.map((p, i) => {
-      // DRIFT only: the look attribute + the light/skid/kana spans the looks
-      // switch on (hidden in 'current'); every other panel renders as before
-      const isDrift = p.slug === 'drift';
-      // the window's width / height: one screen tall caps the window's width by it (CSS --ww-ar)
-      const media = dims(isDrift && posterCuts && wallPosterSrc ? wallPosterSrc : p.img);
-      return (
-      <div
-        class:list={['ww-panel', { 'is-active': i === 0, 'is-portrait': p.portrait }]}
-        style={`--ww-ar:${(media.width / media.height).toFixed(4)}`}
-        data-ww-panel={p.slug}
-        data-ww-look={isDrift ? DRIFT_LOOK : undefined}
-        data-ww-win={isDrift ? DRIFT_WIN : undefined}
-        aria-hidden={i === 0 ? 'false' : 'true'}
-      >
-        <div class="ww-words">
-          <p class="ww-tag">What it does</p>
-          <ul
-            class="ww-list"
-            role="list"
-            {...(i === 0 ? { 'data-reveal-group': true, 'data-stagger': '0.07' } : {})}
-          >
-            {p.words.map((x, k) => (
-              <li {...(i === 0 ? { 'data-reveal-item': true } : {})} style={`--i:${k}`}>
-                {isDrift && <span class:list={['ww-spill', { 'is-hot': x.hot }]} aria-hidden="true"></span>}
-                {isDrift && x.hot && <span class="ww-skid" aria-hidden="true">{x.w}</span>}
-                <span class:list={['ww-word', { 'is-hot': x.hot }]} style={`--o:${x.o}`}>{x.w}</span>
-              </li>
-            ))}
-          </ul>
-          {isDrift && <span class="ww-kana" lang="ja" aria-hidden="true">ドリフト</span>}
-        </div>
 
-        <figure class="ww-ui" {...(i === 0 ? { 'data-reveal': 'card' } : {})}>
-          {isDrift && posterCuts && wallPosterSrc ? (
-            <div class="ww-tv" style={tvFrame ? `--ww-img-tv:url(${tvFrame.src})` : undefined}>
-            <div class="ww-tube">
-            <video
-              class="ww-run"
-              data-ww-run
-              muted
-              loop
-              playsinline
-              preload="none"
-              disablepictureinpicture
-              width={media.width}
-              height={media.height}
-              role="img"
-              aria-label={p.alt}
-            >
-              <source src="/drift/wall-run-800.webm" type="video/webm" media="(max-width: 860px)" />
-              <source src="/drift/wall-run-800.mp4" type="video/mp4" media="(max-width: 860px)" />
-              <source src="/drift/wall-run-1440.webm" type="video/webm" />
-              <source src="/drift/wall-run-1440.mp4" type="video/mp4" />
-            </video>
-            </div>
-            {/* the cabinet's livery, printed ink as on /drift's TV (DriftKeep.astro) */}
-            <span class="ww-tv-ink ww-tv-tl" aria-hidden="true"><i class="ww-tv-checker"></i><b>Speed sounds better</b></span>
-            <span class="ww-tv-ink ww-tv-tr" aria-hidden="true"><i class="ww-tv-stripes"></i><b lang="ja">スピード</b></span>
-            <span class="ww-tv-ink ww-tv-r" lang="ja" aria-hidden="true">走り続ける</span>
-            <span class="ww-tv-ink ww-tv-l" aria-hidden="true">Racing music for a higher state</span>
-            <span class="ww-tv-ink ww-tv-bl" aria-hidden="true"><b class="ww-tv-badge">R</b>Fuel ideas not cars</span>
-            <span class="ww-tv-ink ww-tv-br" aria-hidden="true">A faster mind</span>
-            </div>
-          ) : (
-          <Image
-            src={p.img}
-            alt={p.alt}
-            width={1400}
-            widths={[400, 640, 960, 1400]}
-            sizes={p.portrait
-              /* height-capped (24rem phone / 34rem desktop) at 1600:2380 → ≤258 / ≤366px wide */
-              ? '(max-width: 860px) 280px, 400px'
-              : '(max-width: 860px) 92vw, 50vw'}
-            format="webp"
-            quality={86}
-            loading="lazy"
-          />
-          )}
-          <figcaption>
-            <strong>{p.name}.</strong> {p.blurb}
-          </figcaption>
-          {/* phone only: the name centred under the window + one way in to
-              the plugin's page (Dan, 2026-09-08). Desktop shows the caption
-              above instead; the two never render together. */}
-          <div class="ww-go">
-            <span class="ww-go-name">{p.name}</span>
-            <a class="ww-go-btn" href={`/${p.slug}`}>See {p.name} &rarr;</a>
-          </div>
-        </figure>
+    {/* the on-screen menu: the categories (buttons; shown once the script runs, they do nothing without it) */}
+    <div class="ww-osd">
+      <h2 class="ww-tag">Plugins</h2>
+      <div class="ww-cats" role="group" aria-label="Categories">
+        {cats.map((c, k) => (
+          <button
+            type="button"
+            class="ww-cat"
+            data-ww-cat={c.id}
+            aria-pressed={k === 0 ? 'true' : 'false'}
+            aria-label={c.label}
+          ><span class="ww-cat-l">{c.label}</span><span class="ww-cat-s">{c.short}</span></button>
+        ))}
       </div>
+      <p class="sr-only" aria-live="polite" data-ww-say></p>
+    </div>
+
+    {/* the plugins: links to their pages; the script makes them the TV's channel buttons (tabs) */}
+    <ul class="ww-list" role="list" data-ww-list data-reveal-group data-stagger="0.07">
+      {items.map((it, i) => (
+        <li class="ww-item" data-ww-item={it.slug} data-ww-cats={it.cats.join(' ')} data-reveal-item>
+          <a
+            class:list={['ww-row', { 'is-lit': i === 0 }]}
+            href={`/${it.slug}`}
+            id={`ww-tab-${it.slug}`}
+            data-ww-pick={it.slug}
+          >
+            <span class:list={['ww-thumb', { 'is-portrait': it.portrait }]} aria-hidden="true">
+              <Image src={it.img} alt="" width={320} widths={[160, 320]} sizes="(max-width: 860px) 4.5rem, 7rem" format="webp" quality={80} loading="lazy" />
+            </span>
+            <span class="ww-rtext">
+              <span class="ww-name">{it.name}</span>
+              <span class="ww-type">{it.type}</span>
+            </span>
+            {it.price && <span class="ww-rprice">{it.price}</span>}
+          </a>
+        </li>
+      ))}
+    </ul>
+
+    {/* the lit plugin: one panel per plugin, stacked in one cell (swapping never shifts the page) */}
+    {items.map((it, i) => {
+      const isDrift = it.slug === 'drift';
+      // the window's width / height: the panel caps the window's width by the room's height (CSS --ww-ar)
+      const media = dims(isDrift && posterCuts && wallPosterSrc ? wallPosterSrc : it.img);
+      return (
+        <article
+          class:list={['ww-panel', { 'is-active': i === 0, 'is-portrait': it.portrait }]}
+          style={`--ww-ar:${(media.width / media.height).toFixed(4)}`}
+          id={`ww-ch-${it.slug}`}
+          data-ww-panel={it.slug}
+          aria-labelledby={`ww-pn-${it.slug}`}
+          aria-hidden={i === 0 ? 'false' : 'true'}
+        >
+          <button type="button" class="ww-back" data-ww-back>All plugins</button>
+          <figure class="ww-ui" {...(i === 0 ? { 'data-reveal': 'card' } : {})}>
+            {isDrift && posterCuts && wallPosterSrc ? (
+              <video
+                class="ww-run"
+                data-ww-run
+                muted
+                loop
+                playsinline
+                preload="none"
+                disablepictureinpicture
+                width={media.width}
+                height={media.height}
+                role="img"
+                aria-label={it.alt}
+              >
+                <source src="/drift/wall-run-800.webm" type="video/webm" media="(max-width: 860px)" />
+                <source src="/drift/wall-run-800.mp4" type="video/mp4" media="(max-width: 860px)" />
+                <source src="/drift/wall-run-1440.webm" type="video/webm" />
+                <source src="/drift/wall-run-1440.mp4" type="video/mp4" />
+              </video>
+            ) : (
+              <Image
+                src={it.img}
+                alt={it.alt}
+                width={1400}
+                widths={[400, 640, 960, 1400]}
+                sizes={it.portrait
+                  /* height-capped to the room at 1600:2380 */
+                  ? '(max-width: 860px) 240px, 320px'
+                  : '(max-width: 860px) 92vw, 48vw'}
+                format="webp"
+                quality={86}
+                loading="lazy"
+              />
+            )}
+          </figure>
+          <div class="ww-info">
+            <div class="ww-phead">
+              <h3 class="ww-pname" id={`ww-pn-${it.slug}`} tabindex="-1">{it.name}</h3>
+              <p class="ww-ptype">{it.type}</p>
+            </div>
+            <p class="ww-blurb">{it.blurb}</p>
+            <p class="ww-pwords">
+              <span class="sr-only">What it does: </span>
+              {it.words.map((x, k) => (
+                <Fragment><span class="ww-pw-i"><span class:list={['ww-pw', { 'is-hot': x.hot }]}>{x.w}</span>{k < it.words.length - 1 && <span class="ww-pw-dot" aria-hidden="true"> ·</span>}</span>{k < it.words.length - 1 && ' '}</Fragment>
+              ))}
+            </p>
+            <div class="ww-buy">
+              {it.price && <span class="ww-price">{it.price}</span>}
+              {it.action && (it.action.href ? (
+                <a class="ww-try" href={it.action.href}>
+                  <span class="ww-try-l">{it.action.label}</span>
+                  {it.action.sub && <span class="ww-try-s">{it.action.sub}</span>}
+                </a>
+              ) : (
+                <button type="button" class="ww-try" {...it.action.attrs}>
+                  <span class="ww-try-l">{it.action.label}</span>
+                  {it.action.sub && <span class="ww-try-s">{it.action.sub}</span>}
+                </button>
+              ))}
+              <a class="ww-more" href={`/${it.slug}`}><span class="sr-only">{it.name} </span>Product page <span aria-hidden="true">&rarr;</span></a>
+            </div>
+          </div>
+        </article>
       );
     })}
   </div>
 </GarageWall>
 
 <script>
-  import { initDriftWall } from '../lib/wordwallDrift';
   import { lenis } from '../lib/motion'; // the house scroller (null under reduced motion)
 
-  /* Follow the carousel: PluginShowcase fires showcase:change {slug} on every
-     move. Swap the matching panel in; the CSS below crossfades and re-runs
-     the word stagger. Unknown slug (a slide with no panel) = keep the current
-     panel rather than blank the wall. */
   const wall = document.querySelector<HTMLElement>('[data-wordwall]');
   if (wall) {
     const panels = Array.from(wall.querySelectorAll<HTMLElement>('[data-ww-panel]'));
+    const list = wall.querySelector<HTMLElement>('[data-ww-list]');
+    const items = Array.from(wall.querySelectorAll<HTMLElement>('[data-ww-item]'));
+    const rows = Array.from(wall.querySelectorAll<HTMLAnchorElement>('[data-ww-pick]'));
+    const catBtns = Array.from(wall.querySelectorAll<HTMLButtonElement>('[data-ww-cat]'));
+    const say = wall.querySelector<HTMLElement>('[data-ww-say]');
     const section = wall.closest<HTMLElement>('section');
+    const phone = window.matchMedia('(max-width: 860px)');
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const slugOf = (el: HTMLElement) => el.dataset.wwPanel ?? el.dataset.wwPick ?? el.dataset.wwItem ?? '';
 
     /* The TV's art, late and lean (checker S4): the frame and DRIFT's poster
        load once the page has loaded and the wall is a screen away, each in
@@ -349,7 +369,7 @@ const panels: Panel[] = tvPlugins()
           wall.style.setProperty(`--wf${n}-sl`, c[3] ?? '');
         });
       }
-      const w = runEl?.getBoundingClientRect().width ?? 0; // 0 while the panel is display:none (phones): its swap-in asks again
+      const w = runEl?.getBoundingClientRect().width ?? 0; // 0 while its panel is display:none (phones): showing it asks again
       if (runEl && art.poster && w > 0) put('poster', pick(art.poster, w * dpr), (url) => { runEl.poster = url; });
     };
     // not before the page's own load (on a phone the wall starts a quarter screen below the fold: it must not race
@@ -375,34 +395,64 @@ const panels: Panel[] = tvPlugins()
     window.addEventListener('resize', () => { clearTimeout(resized); resized = window.setTimeout(dress, 200); });
     new MutationObserver(dress).observe(wall, { attributes: true, attributeFilter: ['data-ww-frame'] });
 
-    document.addEventListener('showcase:change', (e) => {
-      const slug = (e as CustomEvent<{ slug?: string }>).detail?.slug;
-      const next = panels.find((p) => p.dataset.wwPanel === slug);
-      if (!next || next.classList.contains('is-active')) return;
-      panels.forEach((p) => {
-        const on = p === next;
-        p.classList.toggle('is-active', on);
-        p.setAttribute('aria-hidden', on ? 'false' : 'true');
+    /* ── The library ─────────────────────────────────────────────────────────
+       State = the category (cat) + the lit plugin (lit) + on phones the view
+       (the list, or the lit plugin's panel). The links become tabs: one
+       tabbable at a time, arrows / Home / End move and light, a plain click
+       lights instead of leaving (a modified click still opens the page). */
+    let cat = 'all';
+    let lit = panels.find((p) => p.classList.contains('is-active'))?.dataset.wwPanel ?? slugOf(panels[0] ?? wall);
+    const catLabel = (c: string) => catBtns.find((b) => b.dataset.wwCat === c)?.getAttribute('aria-label') ?? c;
+    const inCat = (li: HTMLElement, c: string) => c === 'all' || (li.dataset.wwCats ?? '').split(' ').includes(c);
+    const shown = () => items.filter((li) => !li.hidden).map(slugOf);
+
+    if (list) {
+      list.setAttribute('role', 'tablist');
+      list.setAttribute('aria-orientation', 'vertical');
+      list.setAttribute('aria-label', 'Plugins');
+      items.forEach((li) => li.setAttribute('role', 'presentation'));
+      rows.forEach((a) => {
+        a.setAttribute('role', 'tab');
+        a.setAttribute('aria-controls', `ww-ch-${slugOf(a)}`);
       });
-      const name = next.querySelector('figcaption strong')?.textContent?.replace(/\.$/, '') ?? 'the plugin';
-      section?.setAttribute('aria-label', `What ${name} does`);
-      dress();
-      staticBurst();
-    });
-    /* Changing channel: a burst of TV snow over the screen while the panels
-       swap (CSS .ww-snow). Half the CSS resolution (cap 640x400), drawn only
-       for the burst and only when the wall is on screen, the tab is visible
-       and the TV is up; reduced motion / html.hc = no snow. */
+      panels.forEach((p) => {
+        p.setAttribute('role', 'tabpanel');
+        p.setAttribute('aria-labelledby', `ww-tab-${slugOf(p)}`);
+      });
+    }
+    wall.dataset.wwLib = 'on'; // the categories + the phone's Back show from here (CSS)
+
+    /* Changing channel: a burst of TV snow over the picture (the lit plugin's
+       panel) while the panels swap; data-ww-snow="screen" (bench) covers the
+       whole screen as the carousel used to. Half the CSS resolution (cap
+       640x400), drawn only for the burst and only when the wall is on screen,
+       the tab is visible and the TV is up; reduced motion / html.hc = none. */
     const snow = wall.querySelector<HTMLElement>('.ww-snow');
     const snowCanvas = snow?.querySelector('canvas');
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
     let snowRaf = 0;
     let snowEnd = 0;
-    const staticBurst = () => {
+    const placeSnow = (over: HTMLElement | null) => {
+      if (!snow) return;
+      const s = snow.style;
+      if (wall.dataset.wwSnow !== 'picture' || !over || !snow.offsetParent) {
+        s.left = s.top = s.width = s.height = s.right = s.bottom = s.transform = '';
+        return;
+      }
+      const box = snow.offsetParent.getBoundingClientRect();
+      const r = over.getBoundingClientRect();
+      s.left = `${r.left - box.left}px`;
+      s.top = `${r.top - box.top}px`;
+      s.width = `${r.width}px`;
+      s.height = `${r.height}px`;
+      s.right = s.bottom = 'auto';
+      s.transform = 'none';
+    };
+    const staticBurst = (over: HTMLElement | null) => {
       if (!snow || !snowCanvas || reduced.matches || document.hidden || wall.dataset.wwBg !== 'screen') return;
       if (document.documentElement.classList.contains('hc')) return;
       const r = wall.getBoundingClientRect();
       if (r.bottom <= 0 || r.top >= window.innerHeight) return;
+      placeSnow(over);
       const box = snow.getBoundingClientRect();
       const w = Math.max(1, Math.min(640, Math.round(box.width / 2)));
       const h = Math.max(1, Math.min(400, Math.round(box.height / 2)));
@@ -424,6 +474,210 @@ const panels: Panel[] = tvPlugins()
       };
       if (!snowRaf) snowRaf = requestAnimationFrame(draw);
     };
+
+    /* DRIFT's live window plays only while its panel is the lit one, on
+       screen (a quarter of it), the tab is visible and motion is allowed;
+       autoplay refused = the poster stays. */
+    let runInView = false;
+    const syncRun = () => {
+      if (!runEl || reduced.matches) return;
+      const live = runInView && lit === 'drift' && !document.hidden;
+      if (live) runEl.play().catch(() => {});
+      else if (!runEl.paused) runEl.pause();
+    };
+    if (runEl) {
+      new IntersectionObserver(([e]) => { runInView = e.isIntersecting; syncRun(); }, { threshold: 0.25 }).observe(runEl);
+      document.addEventListener('visibilitychange', syncRun);
+    }
+
+    /* One screen, exactly: the window takes the height its panel's text leaves it. CSS sizes it off --ww-osd-h (the
+       menu) and --ww-info-h (the panel minus its window: the Back key on phones, the text, the gaps); their CSS values
+       are estimates for no JS, so the real ones are measured here, again whenever a text box changes size (the web
+       font landing, a resize, a panel opening on a phone). The text's width never depends on the window, so this
+       settles in one pass. */
+    const osdEl = wall.querySelector<HTMLElement>('.ww-osd');
+    // the layout height, to the sub-pixel: getBoundingClientRect would include the reveal's transform (the first
+    // window rises in scaled), offsetHeight rounds
+    const tall = (el: HTMLElement) => parseFloat(getComputedStyle(el).height) || 0;
+    const fit = () => {
+      // rounded UP, + 1 px: a TV one pixel taller than the screen already shifts the lock's landing
+      if (osdEl?.offsetParent) wall.style.setProperty('--ww-osd-h', `${Math.ceil(tall(osdEl))}px`);
+      panels.forEach((p) => {
+        const fig = p.querySelector<HTMLElement>('.ww-ui');
+        if (!fig || !p.offsetParent) return; // a closed panel on a phone (display:none): measured when it opens
+        const rest = Math.ceil(tall(p) - tall(fig)) + 1;
+        if (rest > 1) p.style.setProperty('--ww-info-h', `${rest}px`);
+      });
+    };
+    // a text box resized (the font landing, a resize): measure next frame (writing inside the observer's own
+    // delivery is what logs "ResizeObserver loop completed"); a pane opening measures at once (setView)
+    let fitRaf = 0;
+    if ('ResizeObserver' in window) {
+      const ro = new ResizeObserver(() => { cancelAnimationFrame(fitRaf); fitRaf = requestAnimationFrame(fit); });
+      if (osdEl) ro.observe(osdEl);
+      wall.querySelectorAll<HTMLElement>('.ww-info').forEach((el) => ro.observe(el));
+    }
+
+    // light a plugin: the tab, the panel, the screen's colour, the static
+    const light = (slug: string, burst = true) => {
+      const next = panels.find((p) => slugOf(p) === slug);
+      if (!next) return;
+      const changed = slug !== lit;
+      lit = slug;
+      rows.forEach((a) => {
+        const on = slugOf(a) === slug;
+        a.classList.toggle('is-lit', on);
+        a.setAttribute('aria-selected', on ? 'true' : 'false');
+        a.tabIndex = on ? 0 : -1;
+      });
+      if (!changed) return;
+      panels.forEach((p) => {
+        const on = p === next;
+        p.classList.toggle('is-active', on);
+        p.setAttribute('aria-hidden', on ? 'false' : 'true');
+      });
+      wall.dataset.wwOn = slug;
+      dress();
+      syncRun();
+      if (burst) staticBurst(next.querySelector<HTMLElement>('.ww-ui'));
+    };
+    light(lit, false); // the tabs' starting state
+
+    // pick a category: its plugins stay (one after another), the lit one stays if it is in it, else the first lights
+    const setCat = (c: string, announce = true) => {
+      if (!catBtns.some((b) => b.dataset.wwCat === c)) c = 'all';
+      const changed = c !== cat;
+      cat = c;
+      catBtns.forEach((b) => b.setAttribute('aria-pressed', b.dataset.wwCat === c ? 'true' : 'false'));
+      let k = 0;
+      items.forEach((li) => {
+        li.hidden = !inCat(li, c);
+        if (!li.hidden) li.style.setProperty('--k', String(k++));
+      });
+      if (changed && list && !reduced.matches) {
+        list.classList.remove('is-swapping');
+        void list.offsetWidth; // restart the stagger
+        list.classList.add('is-swapping');
+      }
+      const on = shown();
+      if (!on.includes(lit) && on[0]) light(on[0]);
+      if (changed && announce && say) say.textContent = `${catLabel(c)}: ${on.length} ${on.length === 1 ? 'plugin' : 'plugins'}`;
+    };
+
+    // phones: one pane at a time
+    const setView = (v: 'list' | 'panel', focus = false) => {
+      wall.dataset.wwView = v;
+      if (v === 'panel') {
+        fit(); // before the first paint of the pane, so its window never jumps
+        dress();
+        if (focus) panels.find((p) => slugOf(p) === lit)?.querySelector<HTMLElement>('.ww-pname')?.focus({ preventScroll: true });
+      } else if (focus) {
+        rows.find((a) => slugOf(a) === lit)?.focus({ preventScroll: true });
+      }
+      syncRun();
+    };
+
+    /* URL: ?cat= (one history entry per category) + ?plugin= (the current
+       entry); on phones the open panel is its own entry (history.state). The
+       rest of the address is kept: utm / gclid (the cart reads them at load),
+       the trial gate's #dl= return link. */
+    const P_CAT = 'cat';
+    const P_PLUGIN = 'plugin';
+    const writeUrl = (how: 'push' | 'replace', view: 'list' | 'panel' = 'list') => {
+      const u = new URL(window.location.href);
+      if (cat === 'all') u.searchParams.delete(P_CAT);
+      else u.searchParams.set(P_CAT, cat);
+      u.searchParams.set(P_PLUGIN, lit);
+      const state = { ...(history.state ?? {}), wwView: view };
+      if (how === 'push') history.pushState(state, '', u);
+      else history.replaceState(state, '', u);
+    };
+    const fromUrl = (burst: boolean) => {
+      const q = new URLSearchParams(window.location.search);
+      setCat(q.get(P_CAT) ?? 'all', burst);
+      const want = q.get(P_PLUGIN);
+      if (want && shown().includes(want)) light(want, burst);
+      const v = phone.matches && history.state?.wwView === 'panel' ? 'panel' : 'list';
+      setView(v, burst && v !== wall.dataset.wwView); // Back / Forward: focus follows the pane that opened
+    };
+    fromUrl(false);
+    window.addEventListener('popstate', () => fromUrl(true));
+
+    catBtns.forEach((b) => b.addEventListener('click', () => {
+      const c = b.dataset.wwCat ?? 'all';
+      if (c === cat) return;
+      setCat(c);
+      writeUrl('push');
+    }));
+
+    list?.addEventListener('click', (e) => {
+      const a = (e.target as Element | null)?.closest<HTMLAnchorElement>('[data-ww-pick]');
+      if (!a || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      e.preventDefault();
+      const slug = slugOf(a);
+      if (phone.matches) {
+        // the panel opens first, so the static lands on its window (a hidden panel has no box)
+        light(slug, false);
+        writeUrl('push', 'panel');
+        setView('panel', true);
+        staticBurst(panels.find((p) => slugOf(p) === slug)?.querySelector<HTMLElement>('.ww-ui') ?? null);
+      } else {
+        light(slug);
+        writeUrl('replace');
+      }
+    });
+    list?.addEventListener('keydown', (e) => {
+      const a = (e.target as Element | null)?.closest<HTMLAnchorElement>('[data-ww-pick]');
+      if (!a) return;
+      if (e.key === ' ') { e.preventDefault(); a.click(); return; } // a tab answers Space like Enter
+      const on = rows.filter((r) => !(r.parentElement as HTMLElement).hidden);
+      const k = on.indexOf(a);
+      let n = -1;
+      if (e.key === 'ArrowDown' || e.key === 'ArrowRight') n = (k + 1) % on.length;
+      else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') n = (k - 1 + on.length) % on.length;
+      else if (e.key === 'Home') n = 0;
+      else if (e.key === 'End') n = on.length - 1;
+      if (n < 0 || !on[n]) return;
+      e.preventDefault();
+      light(slugOf(on[n]));
+      on[n].focus();
+      if (!phone.matches) writeUrl('replace');
+    });
+    wall.querySelectorAll<HTMLButtonElement>('[data-ww-back]').forEach((b) => b.addEventListener('click', () => {
+      if (history.state?.wwView === 'panel') history.back(); // popstate lands the list
+      else { setView('list', true); writeUrl('replace'); }
+    }));
+    // rotating a tablet across the breakpoint: the desktop shows both panes, the phone the list
+    phone.addEventListener('change', () => { if (!phone.matches) wall.dataset.wwView = 'list'; dress(); });
+
+    /* Power-on: the first time the TV comes into view the tube lights from a
+       line (a CRT turn-on) and the pilot LED with it: motion as feedback to
+       arriving. Only JS arms it, so no JS / reduced motion = lit at rest. */
+    const powerOn = () => {
+      if (reduced.matches) { wall.dataset.wwPower = 'on'; return; }
+      wall.dataset.wwPower = 'armed';
+      void wall.offsetWidth; // restart the keyframes on a replay
+      wall.dataset.wwPower = 'powering';
+      window.setTimeout(() => (wall.dataset.wwPower = 'on'), 750);
+    };
+    if (!reduced.matches) {
+      wall.dataset.wwPower = 'armed';
+      // same line as the reveal lib's trigger (top 80%)
+      new IntersectionObserver(([e], io) => {
+        if (!e.isIntersecting) return;
+        io.disconnect();
+        window.setTimeout(powerOn, 120);
+      }, { rootMargin: '0px 0px -20% 0px' }).observe(wall);
+    }
+
+    // bench hooks (harmless in production): light a plugin / pick a category / replay the power-on
+    wall.addEventListener('ww:select', (e) => {
+      const d = (e as CustomEvent<{ slug?: string; cat?: string; view?: 'list' | 'panel' }>).detail ?? {};
+      if (d.cat) setCat(d.cat);
+      if (d.slug) { if (!shown().includes(d.slug)) setCat('all'); light(d.slug); }
+      if (d.view) setView(d.view);
+    });
+    wall.addEventListener('ww:replay', powerOn);
 
     /* One screen: lock the scroll onto the TV (Dan 2026-10-14). Only after the
        visitor's own scrolling (wheel, a finger that moved, scroll keys; never a
@@ -479,33 +733,205 @@ const panels: Panel[] = tvPlugins()
       window.addEventListener('touchcancel', lift, { passive: true });
       window.addEventListener('keydown', (e) => {
         const t = e.target as HTMLElement | null;
-        if (SCROLL_KEYS.has(e.key) && !t?.closest('input, textarea, select, [contenteditable]')) arm();
+        if (SCROLL_KEYS.has(e.key) && !t?.closest('input, textarea, select, [contenteditable], [role="tab"]')) arm();
       });
       // a smooth wheel or a flick keeps scrolling after the input stops: wait it out
       window.addEventListener('scroll', () => { if (armed) later(); }, { passive: true });
     }
-
-    // DRIFT's looks: neon power-on, steering springs, the live window video
-    const driftPanel = panels.find((p) => p.dataset.wwPanel === 'drift');
-    if (driftPanel) initDriftWall(driftPanel);
   }
 </script>
 
 <style>
+  /* ==========================================================================
+     LAYOUT. Laptop: the menu across the top of the screen, the plugins left,
+     the lit plugin right. The panels share one grid cell, so swapping never
+     shifts the sections below. Phones: further down.
+     ========================================================================== */
   .ww {
     max-width: var(--maxw);
     margin: 0 auto;
     padding: clamp(2.5rem, 6vw, 5rem) clamp(1rem, 4vw, 2.5rem);
-    /* all panels stacked in one cell: the wall keeps the tallest panel's
-       height so swapping never shifts the sections below */
+    --ww-list-share: 40;  /* the plugins' share of the screen's width, % (laptop) */
+    --ww-name-max: 4.2;   /* rem: the biggest a plugin name gets */
+    --ww-thumb-w: 6.5;    /* rem: the thumbnail's width in the list */
+    --ww-dim: 0.62;       /* the unlit names and thumbnails: how much they show */
+    --ww-row-gap: clamp(0.9rem, 2.4vh, 1.75rem);
     display: grid;
-  }
-  .ww-panel {
-    grid-area: 1 / 1;
-    display: grid;
-    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
-    gap: clamp(1.5rem, 5vw, 5rem);
+    grid-template-columns: minmax(0, calc(var(--ww-list-share) * 1%)) minmax(0, 1fr);
+    grid-template-areas: 'osd osd' 'list panel';
+    column-gap: clamp(1.5rem, 4vw, 4rem);
+    row-gap: var(--ww-row-gap);
     align-items: center;
+  }
+  .ww-osd { grid-area: osd; }
+  .ww-list { grid-area: list; }
+  .ww-panel { grid-area: panel; }
+
+  /* ---- the on-screen menu ---- */
+  .ww-osd {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1.25rem;
+    min-width: 0;
+  }
+  .ww-tag {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: 400;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--ww-ink);
+    text-shadow: 0 0 8px var(--ww-glow);
+  }
+  .ww-cats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+  .ww:not([data-ww-lib='on']) .ww-cats { display: none; } /* buttons that do nothing without the script */
+  .ww-cat {
+    appearance: none;
+    margin: 0;
+    padding: 0.42rem 0.72rem;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    background: transparent;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ww-ink);
+    text-shadow: 0 0 6px var(--ww-glow);
+    cursor: pointer;
+    transition: color 120ms ease, background-color 120ms ease, border-color 120ms ease;
+  }
+  .ww-cat-s { display: none; }
+  @media (hover: hover) {
+    .ww-cat:hover { border-color: var(--ww-ink); }
+  }
+  /* the picked one = inverse video, the way a set's menu marks its choice */
+  .ww-cat[aria-pressed='true'] {
+    background: var(--ww-ink-hot);
+    border-color: var(--ww-ink-hot);
+    color: var(--ww-ink-on);
+    text-shadow: none;
+    box-shadow: 0 0 14px var(--ww-glow);
+  }
+  .ww-cat:focus-visible,
+  .ww-row:focus-visible,
+  .ww-try:focus-visible,
+  .ww-more:focus-visible,
+  .ww-back:focus-visible {
+    outline: 2px solid var(--ww-ink-hot);
+    outline-offset: 3px;
+  }
+
+  /* ---- the plugins ---- */
+  .ww-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    container-type: inline-size; /* the names size to the column (cqi) */
+    display: grid;
+    gap: clamp(0.35rem, 1.4vh, 0.9rem);
+    align-content: center;
+  }
+  .ww-item[hidden] { display: none; }
+  .ww-row {
+    display: grid;
+    grid-template-columns: calc(var(--ww-thumb-w) * 1rem) minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 1rem;
+    padding: 0.3rem 0.4rem 0.3rem 0;
+    border-radius: 4px;
+    color: inherit;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .ww-thumb {
+    display: block;
+    aspect-ratio: 16 / 10;
+    border-radius: 3px;
+    overflow: hidden;
+    opacity: var(--ww-dim);
+    box-shadow: 0 0 0 1px var(--ww-edge);
+    transition: opacity 120ms ease, box-shadow 120ms ease;
+  }
+  .ww-thumb :global(img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 30%;
+  }
+  .ww-thumb.is-portrait :global(img) { object-fit: contain; background: #050406; }
+  .ww-rtext { display: grid; gap: 0.3rem; min-width: 0; }
+  /* the name: stencil on the glass, outlined in the channel's phosphor, the lit one filled */
+  .ww-name {
+    display: block;
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 3.2vw, 4.2rem);
+    font-size: min(
+      calc(var(--ww-name-max) * 1rem),
+      calc((100cqi - var(--ww-thumb-w) * 1rem - 1.5rem) / 6.4),
+      max(1.5rem, calc((var(--ww-main, 30rem) / 4 - 1.9rem) / 0.95))
+    );
+    line-height: 0.95;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: transparent;
+    -webkit-text-stroke: 1.5px var(--ww-ink);
+    opacity: var(--ww-dim);
+    filter: drop-shadow(0 0 6px var(--ww-glow));
+    transition:
+      color 120ms cubic-bezier(0.2, 0.9, 0.25, 1.25),
+      opacity 120ms cubic-bezier(0.2, 0.9, 0.25, 1.25),
+      -webkit-text-stroke-color 120ms cubic-bezier(0.2, 0.9, 0.25, 1.25);
+  }
+  .ww-type {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ww-ink-text);
+    opacity: 0.7;
+  }
+  .ww-rprice { display: none; }
+  @media (hover: hover) {
+    .ww-row:hover .ww-name { opacity: 1; -webkit-text-stroke-color: var(--ww-ink-hot); }
+    .ww-row:hover .ww-thumb { opacity: 1; }
+  }
+  .ww-row.is-lit .ww-name {
+    opacity: 1;
+    color: var(--ww-ink-hot);
+    -webkit-text-stroke-color: var(--ww-ink-hot);
+    filter: drop-shadow(0 0 10px var(--ww-glow-hot)) drop-shadow(0 0 26px var(--ww-glow-soft));
+  }
+  .ww-row.is-lit .ww-thumb {
+    opacity: 1;
+    box-shadow: 0 0 0 1px var(--ww-ink-hot), 0 0 18px var(--ww-glow);
+  }
+  .ww-row.is-lit .ww-type { opacity: 1; }
+  /* a category change: the plugins that stay come up one after another (on the row: the reveal owns the li) */
+  .ww-list.is-swapping .ww-item:not([hidden]) .ww-row {
+    animation: ww-strike 420ms cubic-bezier(0.2, 0.9, 0.25, 1.1) both;
+    animation-delay: calc(40ms + var(--k, 0) * 60ms);
+  }
+  @keyframes ww-strike {
+    from { opacity: 0; transform: translateY(14px) scale(0.98); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  /* ---- the lit plugin ---- */
+  .ww-panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-content: center;
+    gap: clamp(0.8rem, 2vh, 1.25rem);
+    min-width: 0;
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
@@ -517,259 +943,230 @@ const panels: Panel[] = tvPlugins()
     pointer-events: auto;
     transition: opacity 320ms ease 60ms, visibility 0s;
   }
-  /* swap-in stagger for the non-first panels (the first one rides the
-     scroll-reveal lib instead); one word after another, top to bottom */
-  .ww-panel ~ .ww-panel.is-active .ww-list li {
-    animation: ww-strike 420ms cubic-bezier(0.2, 0.9, 0.25, 1.1) both;
-    animation-delay: calc(60ms + var(--i, 0) * 70ms);
-  }
-  @keyframes ww-strike {
-    from { opacity: 0; transform: translateY(18px) scale(0.97); }
-    to   { opacity: 1; transform: none; }
-  }
-
-  .ww-tag {
-    margin: 0 0 1rem;
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    letter-spacing: 0.3em;
-    text-transform: uppercase;
-    color: var(--brass);
-    text-shadow: var(--engrave-fine);
-  }
-  .ww-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-  .ww-list li { line-height: 0; }
-
-  /* stencil: outlined brass, one word filled in oxide, ~120ms house strike on hover */
-  .ww-word {
-    display: inline-block;
-    font-family: var(--font-display);
-    font-size: var(--ww-word, clamp(3.6rem, 9vw, 8.4rem)); /* --ww-word: one screen tall, below */
-    line-height: 0.92;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    color: transparent;
-    -webkit-text-stroke: 2px var(--brass);
-    opacity: var(--o, 0.5);
-    filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.9));
-    transition:
-      color 120ms cubic-bezier(0.2, 0.9, 0.25, 1.25),
-      opacity 120ms cubic-bezier(0.2, 0.9, 0.25, 1.25),
-      -webkit-text-stroke-color 120ms cubic-bezier(0.2, 0.9, 0.25, 1.25);
-    cursor: default;
-  }
-  .ww-word.is-hot {
-    color: var(--oxide-text);
-    -webkit-text-stroke-color: var(--oxide-text);
-  }
-  .ww-word:hover {
-    color: var(--brass-bright);
-    -webkit-text-stroke-color: var(--brass-bright);
-    opacity: 1;
-  }
-  .ww-word.is-hot:hover {
-    color: var(--oxide-text);
-    -webkit-text-stroke-color: var(--oxide-text);
-  }
-
-  /* the plugin window, hung on the wall (DRIFT's is the live video) */
-  .ww-ui { margin: 0; }
-  .ww-ui img,
-  .ww-panel[data-ww-panel='drift'] .ww-ui video {
+  .ww-back { display: none; }
+  .ww-ui { margin: 0; min-width: 0; }
+  .ww-ui :global(img),
+  .ww-ui video {
     display: block;
     width: 100%;
     height: auto;
     border-radius: 6px;
-    box-shadow:
-      0 1px 0 0 #000,
-      0 24px 48px rgba(0, 0, 0, 0.55);
+    box-shadow: 0 1px 0 0 #000, 0 24px 48px rgba(0, 0, 0, 0.55);
   }
-  /* GAS's window is a tall single-knob panel: cap it and centre it so it
-     hangs like the others instead of towering over the words */
-  .ww-panel.is-portrait .ww-ui img {
-    width: auto;
-    max-width: 100%;
-    max-height: clamp(22rem, 46vw, 34rem);
-    margin: 0 auto;
-  }
-  /* Both plates are baked on a black/near-black ground with rounded bezels,
-     so the raw <img> rectangle shows dark corners against the wood. Clip to
-     the bezel's own arc (radii measured off the PNGs: GAS ≈170px of 1600×2380,
-     Radio Roulette ≈220px top / ≈260px bottom of 2546×1415), nudged a hair
-     larger so the 1–2px black rim goes with them. Percent radii = x/w, y/h,
-     so the arc stays circular at every rendered size. The shadow follows. */
-  .ww-panel[data-ww-panel='gas'] .ww-ui img {
-    border-radius: 11% / 7.4%;
-  }
-  .ww-panel[data-ww-panel='radio-roulette'] .ww-ui img {
-    border-radius: 9% 9% 10.6% 10.6% / 16.2% 16.2% 19% 19%;
-  }
-  .ww-panel.is-portrait .ww-ui figcaption {
-    margin-left: auto;
-    margin-right: auto;
-    text-align: center;
-  }
-
-  .ww-go { display: none; }
-
-  .ww-ui figcaption {
-    margin-top: 1.1rem;
-    max-width: 36rem;
-    font-family: var(--font-body);
-    font-size: var(--text-base);
-    line-height: 1.55;
-    color: var(--fg);
-    opacity: 0.86;
-    text-shadow: var(--engrave-fine);
-  }
-  .ww-ui figcaption strong {
-    font-family: var(--font-display);
-    font-weight: 400;
-    font-size: 1.25em;
-    letter-spacing: 0.04em;
-    color: var(--brass-bright);
-  }
-
-  /* Phone: the "stencil stack over the window" beat from the reference
-     (kaelalden.com/products/vibe-rewind, 2026-09-08). One column, words
-     start at the top and the window hangs right under them. align-content
-     start matters: the panels share one grid cell and the tallest (GAS,
-     portrait) sets the cell height, so the default stretch + align-items
-     center opened a ~400px hole between the words and the plugin. The
-     kicker goes, the words grow to the wall's width, the caption shrinks. */
-  @media (max-width: 860px) {
-    .ww { padding-top: 2rem; padding-bottom: 2.5rem; }
-    .ww-panel {
-      grid-template-columns: 1fr;
-      align-content: start;
-      align-items: start;
-      gap: 2.25rem;
-    }
-    .ww-tag { display: none; }
-    /* on the phone the inactive panels leave the flow entirely: the shared
-       cell would otherwise keep the tallest panel's height and leave a run
-       of empty wall under the caption. The swap becomes a cut + the word
-       stagger (no crossfade); nothing below the section shifts noticeably. */
-    .ww-panel:not(.is-active) { display: none; }
-    .ww-word {
-      font-size: var(--ww-word, clamp(4rem, 19vw, 6.4rem));
-      line-height: 0.9;
-      letter-spacing: 0.03em;
-      -webkit-text-stroke-width: 1.5px;
-    }
-    .ww-panel.is-portrait .ww-ui img { max-height: 24rem; }
-    /* no caption on the phone (Dan, 2026-09-08): the window speaks, the
-       blurb repeats the product page. Stays in the DOM for desktop + SR. */
-    .ww-ui figcaption { display: none; }
-    .ww-go {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.9rem;
-      margin-top: 1.4rem;
-      text-align: center;
-    }
-    .ww-go-name {
-      font-family: var(--font-display);
-      font-size: clamp(1.6rem, 7vw, 2.2rem);
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: var(--brass-bright);
-      text-shadow: var(--engrave);
-    }
-    /* same enamel as the closing trial button (index.astro .trial-cta) */
-    .ww-go-btn {
-      display: inline-block;
-      padding: 0.85rem 1.9rem;
-      border-radius: 4px;
-      background: var(--brass-bright);
-      color: var(--bg-0);
-      font-family: var(--font-display);
-      font-size: 1.05rem;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      text-decoration: none;
-      text-shadow: none;
-    }
-    .ww-go-btn:active { filter: brightness(1.12); }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .ww-word { transition: none; }
-    .ww-panel { transition: none; }
-    .ww-panel ~ .ww-panel.is-active .ww-list li { animation: none; }
-  }
-
-  :global(html.hc) .ww-word {
-    color: var(--fg);
-    -webkit-text-stroke: 0;
-    opacity: 1;
-    filter: none;
-  }
-  :global(html.hc) .ww-word.is-hot { color: var(--oxide-text); }
-
-  /* ==========================================================================
-     DRIFT panel looks (2026-10-14, Dan: "needs a more interesting design").
-     Picked by DRIFT_LOOK (frontmatter) -> data-ww-look; tuned on /__wwbench.
-     Every rule hangs off .ww-panel[data-ww-panel='drift'] so RevLimiter, GAS
-     and Radio Roulette render exactly as before. 'current' = none of this
-     except the live window video.
-     ========================================================================== */
-  @font-face {
-    /* the DRIFT season page's Japanese subset (drift.css), ドリフト included */
-    font-family: 'Drift JP';
-    src: url('/fonts/drift/NotoSansJP-var.subset-v2.woff2') format('woff2');
-    font-weight: 700 900;
-    font-display: swap;
-  }
-
-  .ww-panel[data-ww-panel='drift'] {
-    /* NEON. One hue drives the sign; the offsets below land on the /drift
-       tokens at the default 301 (tube = --d-lcd #f24cf0, halo = --d-neon
-       #d23cff, kana = --d-crt #d98bff, glass = --d-fg-dim #a58cc4, core =
-       --d-pink-ink #ffd1f8 at 91). Additive and local to this panel. */
-    --ww-neon-h: 301;        /* tube hue, degrees */
-    --ww-neon-core: 91;      /* lit core lightness, % (never 100 = #fff) */
-    --ww-neon-glow: 1;       /* glow radius scale */
-    --ww-neon-spill: 0.45;   /* the lit tube's light on the wood, alpha */
-    --ww-neon-off: 0.5;      /* unlit glass tubes, visibility */
-    /* STEER. Read by src/lib/wordwallDrift.ts when a gesture starts. */
-    --ww-steer-travel: 56px; /* how far SLIDING slides at full lock (others less) */
-    --ww-steer-k: 140;       /* spring stiffness (1/s^2): higher = snappier */
-    --ww-steer-damp: 0.6;    /* damping ratio: 1 = no overshoot, lower = more bounce */
-    --ww-steer-spread: 0.6;  /* how differently the words lag (0 = all the same) */
-    --ww-steer-skew: 0.8;    /* SLIDING's lean, degrees per 100 px/s */
-    --ww-skid: 0.6;          /* skid smear strength (0 = none) */
-    --ww-steer-entry: 140px; /* touch: how far off the side SLIDING drifts in from */
-  }
-
-  /* the extra spans exist only in the DRIFT panel; each look switches its own on */
-  .ww-panel[data-ww-panel='drift'] .ww-spill,
-  .ww-panel[data-ww-panel='drift'] .ww-skid,
-  .ww-panel[data-ww-panel='drift'] .ww-kana { display: none; }
-
-  /* the live window keeps the screenshot's box: same ratio, same radius + shadow */
-  .ww-panel[data-ww-panel='drift'] .ww-ui video {
+  .ww-ui video {
     aspect-ratio: 1725 / 912;
     object-fit: cover;
     background-color: var(--bg-1);
   }
+  /* the plates are baked on a near-black ground with rounded bezels: clip to the bezel's own arc (radii measured off
+     the PNGs: GAS ~170px of 1600x2380, Radio Roulette ~220 top / ~260 bottom of 2546x1415); percent radii stay
+     circular at every size */
+  .ww-panel[data-ww-panel='gas'] .ww-ui :global(img) { border-radius: 11% / 7.4%; }
+  .ww-panel[data-ww-panel='radio-roulette'] .ww-ui :global(img) { border-radius: 9% 9% 10.6% 10.6% / 16.2% 16.2% 19% 19%; }
+  /* GAS's window is one tall knob panel: it stands beside its text instead of over it */
+  .ww-panel.is-portrait {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    column-gap: clamp(1.25rem, 3vw, 2.5rem);
+  }
+  .ww-panel.is-portrait .ww-ui :global(img) {
+    width: auto;
+    max-width: 100%;
+    max-height: clamp(18rem, 40vw, 30rem);
+  }
 
-  /* ---- THE SCREEN WALL (WALL_BG 'screen': every panel plays on it) ---------
-     Dan 2026-10-14: "the whole back a digital screen like that", then "every
-     plugin on the TV, only the screen changes, like changing channels". The
-     word wall is one TV: /drift's digital screen (the keep-it TV's phosphor
-     tube, .d-crt.d-keep-screen), dark glass lit from the centre, and
-     scanlines + aperture grille + glass + curved falloff OVER the panels, so
-     the words and the window read as ON the screen. Every panel is a channel
-     on it. The screen is the lamp: DRIFT's neon and its spill read as
-     phosphor bloom. With DRIFT up first it powers on with the sign (a CRT
-     turn-on). The layers sit on .ww, outside the panels, so a panel's opacity
-     fade never traps them in its stacking context. */
+  .ww-info { display: grid; gap: 0.6rem; justify-items: start; max-width: 40rem; }
+  .ww-phead { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.25rem 0.9rem; }
+  .ww-pname {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(1.5rem, 2.2vw, 2.1rem);
+    line-height: 1;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ww-ink-hot);
+    text-shadow: 0 0 8px var(--ww-glow);
+  }
+  .ww-pname:focus { outline: none; }
+  .ww-ptype {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ww-ink);
+  }
+  .ww-blurb {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    line-height: 1.5;
+    color: var(--ww-ink-text);
+    opacity: 0.92;
+    text-shadow: 0 0 6px var(--ww-glow-faint);
+  }
+  /* the five words, now one small line: what the sound does */
+  .ww-pwords {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ww-ink);
+    opacity: 0.85;
+  }
+  .ww-pw-i { white-space: nowrap; } /* a line breaks between words, never before a dot */
+  .ww-pw.is-hot { color: var(--ww-ink-hot); text-shadow: 0 0 8px var(--ww-glow); }
+  .ww-pw-dot { opacity: 0.6; }
+
+  .ww-buy {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem 1.1rem;
+    margin-top: 0.3rem;
+  }
+  .ww-price {
+    font-family: var(--font-display);
+    font-size: 1.7rem;
+    line-height: 1;
+    letter-spacing: 0.04em;
+    color: var(--ww-ink-hot);
+    text-shadow: 0 0 8px var(--ww-glow);
+  }
+  /* the one action: lit in the channel's phosphor, dark type (the menu's inverse video, as a key) */
+  .ww-try {
+    appearance: none;
+    display: inline-grid;
+    justify-items: start;
+    gap: 0.15rem;
+    margin: 0;
+    padding: 0.62rem 1.15rem 0.6rem;
+    border: 0;
+    border-radius: 4px;
+    background: var(--ww-ink-hot);
+    color: var(--ww-ink-on);
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+    box-shadow: 0 0 18px var(--ww-glow), 0 1px 0 rgba(0, 0, 0, 0.6);
+    transition: filter 120ms cubic-bezier(0.2, 0.9, 0.25, 1.25), transform 120ms cubic-bezier(0.2, 0.9, 0.25, 1.25);
+  }
+  .ww-try-l {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    line-height: 1;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .ww-try-s {
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.08em;
+    opacity: 0.78;
+  }
+  @media (hover: hover) {
+    .ww-try:hover { filter: brightness(1.1); transform: translateY(-1px); }
+  }
+  .ww-try:active { transform: translateY(1px); }
+  .ww-more {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ww-ink);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    padding-block: 0.3rem;
+  }
+  @media (hover: hover) {
+    .ww-more:hover { color: var(--ww-ink-hot); border-bottom-color: currentColor; }
+  }
+
+  /* ==========================================================================
+     INK. On the wood: brass, the lit one oxide (the old stencil). On the
+     screen: the channel's phosphor. The menu and the list follow the lit
+     plugin (--ww-on-*, data-ww-on on .ww); each panel keeps its own channel
+     (--ww-ch-*), so an outgoing panel keeps its colour while it fades.
+     ========================================================================== */
+  .ww,
+  .ww-panel {
+    --ww-ink: var(--brass);
+    --ww-ink-hot: var(--oxide-text);
+    --ww-ink-text: var(--fg);
+    --ww-ink-on: var(--bg-0);
+    --ww-edge: rgba(0, 0, 0, 0.6);
+    --ww-glow: transparent;
+    --ww-glow-hot: transparent;
+    --ww-glow-soft: transparent;
+    --ww-glow-faint: transparent;
+  }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] {
+    --ww-gs: min(100%, calc(var(--ww-on-s) * 1% + 20%)); /* the glow's saturation */
+    --ww-ink: hsl(var(--ww-on-h) min(100%, calc(var(--ww-on-s) * 1% + 25%)) 66%);
+    --ww-ink-hot: hsl(var(--ww-on-h) min(100%, calc(var(--ww-on-s) * 1% + 30%)) 74%);
+    --ww-ink-text: hsl(var(--ww-on-h) 35% 90%);
+    --ww-ink-on: hsl(var(--ww-on-h) 40% 7%);
+    --ww-edge: hsl(var(--ww-on-h) var(--ww-gs) 58% / 0.35);
+    --ww-glow: hsl(var(--ww-on-h) var(--ww-gs) 58% / 0.45);
+    --ww-glow-hot: hsl(var(--ww-on-h) var(--ww-gs) 58% / 0.6);
+    --ww-glow-soft: hsl(var(--ww-on-h) var(--ww-gs) 58% / 0.3);
+    --ww-glow-faint: hsl(var(--ww-on-h) var(--ww-gs) 58% / 0.3);
+  }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] > .ww-panel {
+    --ww-gs: min(100%, calc(var(--ww-ch-s) * 1% + 20%));
+    --ww-ink: hsl(var(--ww-ch-h) min(100%, calc(var(--ww-ch-s) * 1% + 25%)) 66%);
+    --ww-ink-hot: hsl(var(--ww-ch-h) min(100%, calc(var(--ww-ch-s) * 1% + 30%)) 74%);
+    --ww-ink-text: hsl(var(--ww-ch-h) 35% 90%);
+    --ww-ink-on: hsl(var(--ww-ch-h) 40% 7%);
+    --ww-edge: hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.35);
+    --ww-glow: hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.45);
+    --ww-glow-hot: hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.6);
+    --ww-glow-soft: hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.3);
+    --ww-glow-faint: hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.3);
+  }
+  /* the window on the screen: a lit picture with a phosphor edge, not a drop on wood */
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] > .ww-panel .ww-ui :global(img),
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] > .ww-panel .ww-ui video {
+    box-shadow:
+      0 0 0 1px hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.4),
+      0 0 36px hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.22),
+      0 18px 40px rgba(0, 0, 0, 0.55);
+  }
+
+  /* ---- THE CHANNELS -------------------------------------------------------
+     Dan 2026-10-14: "every plugin on the TV, only the screen changes ... like
+     changing channels"; his pick: each plugin its own screen colour. Hue +
+     saturation (unitless %) from the plugin's own UI: RevLimiter amber (its
+     gauge + LCDs; kept well clear of race-red, the homepage's one red is
+     .hh-redline), GAS brass gold, Radio Roulette the dial glass's pale warm
+     cream, DRIFT violet (its screen stays /drift's own tube). A plugin with no
+     channel here plays in neutral cream. */
+  .ww {
+    --ww-ch-revlimiter-h: 26;      --ww-ch-revlimiter-s: 78;
+    --ww-ch-gas-h: 46;             --ww-ch-gas-s: 62;
+    --ww-ch-radio-roulette-h: 38;  --ww-ch-radio-roulette-s: 28;
+    --ww-ch-drift-h: 280;          --ww-ch-drift-s: 70;
+    --ww-on-h: 38;
+    --ww-on-s: 28;
+  }
+  .ww-panel { --ww-ch-h: 38; --ww-ch-s: 28; }
+  .ww-panel[data-ww-panel='revlimiter'] { --ww-ch-h: var(--ww-ch-revlimiter-h); --ww-ch-s: var(--ww-ch-revlimiter-s); }
+  .ww-panel[data-ww-panel='gas'] { --ww-ch-h: var(--ww-ch-gas-h); --ww-ch-s: var(--ww-ch-gas-s); }
+  .ww-panel[data-ww-panel='radio-roulette'] { --ww-ch-h: var(--ww-ch-radio-roulette-h); --ww-ch-s: var(--ww-ch-radio-roulette-s); }
+  .ww-panel[data-ww-panel='drift'] { --ww-ch-h: var(--ww-ch-drift-h); --ww-ch-s: var(--ww-ch-drift-s); }
+  .ww[data-ww-on='revlimiter'] { --ww-on-h: var(--ww-ch-revlimiter-h); --ww-on-s: var(--ww-ch-revlimiter-s); }
+  .ww[data-ww-on='gas'] { --ww-on-h: var(--ww-ch-gas-h); --ww-on-s: var(--ww-ch-gas-s); }
+  .ww[data-ww-on='radio-roulette'] { --ww-on-h: var(--ww-ch-radio-roulette-h); --ww-on-s: var(--ww-ch-radio-roulette-s); }
+  .ww[data-ww-on='drift'] { --ww-on-h: var(--ww-ch-drift-h); --ww-on-s: var(--ww-ch-drift-s); }
+
+  /* ---- THE SCREEN (WALL_BG 'screen') --------------------------------------
+     /drift's digital screen (the keep-it TV's phosphor tube, .d-crt.d-keep-
+     screen): dark glass lit from the centre, and scanlines + aperture grille
+     + glass + curved falloff OVER everything, so the menu, the names and the
+     window read as ON the screen. The layers sit on .ww, outside the panels,
+     so a panel's fade never traps them in its stacking context. */
   .ww {
     --ww-scr-bright: 1;  /* phosphor glow */
     --ww-scr-scan: 0.3;  /* scanline darkness over the whole wall */
@@ -796,9 +1193,17 @@ const panels: Panel[] = tvPlugins()
     inset: 0;
     background: radial-gradient(ellipse 62% 80% at 50% 46%, #2e1347 0%, #1a0b2c 40%, #0b0414 76%, #040107 100%);
     filter: brightness(var(--ww-scr-bright));
+    transition: background 320ms ease;
+  }
+  .ww:not([data-ww-on='drift']) .ww-screen-glow {
+    background: radial-gradient(ellipse 62% 80% at 50% 46%,
+      hsl(var(--ww-on-h) calc(var(--ww-on-s) * 1%) 18%) 0%,
+      hsl(var(--ww-on-h) calc(var(--ww-on-s) * 1%) 11%) 40%,
+      hsl(var(--ww-on-h) calc(var(--ww-on-s) * 1%) 5%) 76%,
+      hsl(var(--ww-on-h) calc(var(--ww-on-s) * 1%) 2%) 100%);
   }
   .ww-screen-fx {
-    z-index: 2; /* over the words and the window: they are on the screen */
+    z-index: 2; /* over the content: it is on the screen */
     background:
       repeating-linear-gradient(0deg, rgba(0, 0, 0, var(--ww-scr-scan)) 0 1px, transparent 1px 3px), /* scanlines */
       repeating-linear-gradient(90deg, rgba(255, 40, 90, 0.05) 0 1px, rgba(40, 255, 140, 0.035) 1px 2px, rgba(70, 90, 255, 0.05) 2px 3px), /* aperture grille */
@@ -809,12 +1214,12 @@ const panels: Panel[] = tvPlugins()
       inset 0 3px 0 #040206, inset 0 -3px 0 #040206, /* the screen's seat under the rails */
       inset 0 0 0 1px rgba(190, 90, 255, 0.22);
   }
-  .ww[data-ww-bg='screen'] > :is(.ww-screen, .ww-screen-fx) {
-    opacity: 1;
-  }
-  /* CRT turn-on with the sign: dark glass until first sight, then a bright line that opens */
-  .ww:has(> .ww-panel[data-ww-panel='drift'].is-active[data-ww-power='armed']) .ww-screen-glow { opacity: 0; }
-  .ww:has(> .ww-panel[data-ww-panel='drift'].is-active[data-ww-power='powering']) .ww-screen-glow {
+  .ww[data-ww-bg='screen'] > :is(.ww-screen, .ww-screen-fx) { opacity: 1; }
+
+  /* Power-on (the script arms it the first time the TV comes into view): dark
+     glass, then a bright line that opens into the picture; the LED lights with it */
+  .ww[data-ww-power='armed'] .ww-screen-glow { opacity: 0; }
+  .ww[data-ww-power='powering'] .ww-screen-glow {
     animation: ww-scr-on 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
   }
   @keyframes ww-scr-on {
@@ -823,122 +1228,11 @@ const panels: Panel[] = tvPlugins()
     60%  { opacity: 1; transform: scale(1, 1); filter: brightness(calc(var(--ww-scr-bright) * 1.8)); }
     100% { opacity: 1; transform: none; filter: brightness(var(--ww-scr-bright)); }
   }
-  /* the type on the screen: phosphor, not brass routed into wood */
-  .ww[data-ww-bg='screen'] > .ww-panel[data-ww-panel='drift']:not([data-ww-look='current']) .ww-tag {
-    color: #d98bff;
-    text-shadow: 0 0 8px rgba(217, 139, 255, 0.5);
-  }
-  .ww[data-ww-bg='screen'] > .ww-panel[data-ww-panel='drift']:not([data-ww-look='current']) .ww-ui figcaption {
-    color: #eadcff;
-    opacity: 0.92;
-    text-shadow: 0 0 6px rgba(190, 90, 255, 0.3);
-  }
-  .ww[data-ww-bg='screen'] > .ww-panel[data-ww-panel='drift']:not([data-ww-look='current']) .ww-ui figcaption strong,
-  .ww[data-ww-bg='screen'] > .ww-panel[data-ww-panel='drift']:not([data-ww-look='current']) .ww-go-name {
-    color: #f24cf0;
-    text-shadow: 0 0 8px rgba(242, 76, 240, 0.55);
-  }
-  /* the plain window on the screen: a lit picture, a violet edge instead of a drop on wood */
-  .ww[data-ww-bg='screen'] > .ww-panel[data-ww-panel='drift']:not([data-ww-look='current']):not([data-ww-win='tv']) .ww-ui video {
-    box-shadow:
-      0 0 0 1px rgba(190, 90, 255, 0.4),
-      0 0 36px rgba(190, 90, 255, 0.22),
-      0 18px 40px rgba(0, 0, 0, 0.55);
-  }
-  /* the skid on a screen = phosphor afterglow, not rubber on wood */
-  .ww[data-ww-bg='screen'] > .ww-panel[data-ww-panel='drift']:is([data-ww-look='steer'], [data-ww-look='both']) .ww-skid {
-    color: rgba(190, 90, 255, 0.55);
-    mix-blend-mode: screen;
-    filter: blur(4px);
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .ww-screen,
-    .ww-screen-fx { transition: none; }
-  }
 
-  /* ---- THE CHANNELS (every panel on the TV) ------------------------------
-     Dan 2026-10-14: "every plugin on the TV, only the screen changes when the
-     carousel moves, like changing channels"; his pick: each plugin its own
-     screen colour. One phosphor per channel, hue + saturation (unitless %)
-     from the plugin's own UI: RevLimiter amber (its gauge + LCDs; kept well
-     clear of race-red, the homepage's one red is .hh-redline), GAS brass
-     gold, Radio Roulette the dial glass's pale warm cream. The screen glow
-     follows the active channel (--ww-on-*, on .ww); each panel's ink follows
-     its own channel (--ww-ch-*, on the panel), so an outgoing panel keeps its
-     colour while it fades under the static. DRIFT keeps /drift's exact
-     screen and its own neon ink; its 'current' / 'steer' words use the
-     generic phosphor in DRIFT violet. Brass stencil on wood becomes light on
-     glass: outlined phosphor words, the hot word lit, the window with a lit
-     edge. html.hc keeps the plain words (the screen is gone there). */
-  .ww {
-    --ww-ch-revlimiter-h: 26;      --ww-ch-revlimiter-s: 78;
-    --ww-ch-gas-h: 46;             --ww-ch-gas-s: 62;
-    --ww-ch-radio-roulette-h: 38;  --ww-ch-radio-roulette-s: 28;
-    --ww-ch-drift-h: 280;           --ww-ch-drift-s: 70;
-  }
-  .ww-panel[data-ww-panel='revlimiter'] { --ww-ch-h: var(--ww-ch-revlimiter-h); --ww-ch-s: var(--ww-ch-revlimiter-s); }
-  .ww-panel[data-ww-panel='gas'] { --ww-ch-h: var(--ww-ch-gas-h); --ww-ch-s: var(--ww-ch-gas-s); }
-  .ww-panel[data-ww-panel='radio-roulette'] { --ww-ch-h: var(--ww-ch-radio-roulette-h); --ww-ch-s: var(--ww-ch-radio-roulette-s); }
-  .ww-panel[data-ww-panel='drift'] { --ww-ch-h: var(--ww-ch-drift-h); --ww-ch-s: var(--ww-ch-drift-s); }
-  .ww:has(> .ww-panel.is-active[data-ww-panel='revlimiter']) { --ww-on-h: var(--ww-ch-revlimiter-h); --ww-on-s: var(--ww-ch-revlimiter-s); }
-  .ww:has(> .ww-panel.is-active[data-ww-panel='gas']) { --ww-on-h: var(--ww-ch-gas-h); --ww-on-s: var(--ww-ch-gas-s); }
-  .ww:has(> .ww-panel.is-active[data-ww-panel='radio-roulette']) { --ww-on-h: var(--ww-ch-radio-roulette-h); --ww-on-s: var(--ww-ch-radio-roulette-s); }
-  .ww:has(> .ww-panel.is-active:not([data-ww-panel='drift'])) .ww-screen-glow {
-    background: radial-gradient(ellipse 62% 80% at 50% 46%,
-      hsl(var(--ww-on-h) calc(var(--ww-on-s) * 1%) 18%) 0%,
-      hsl(var(--ww-on-h) calc(var(--ww-on-s) * 1%) 11%) 40%,
-      hsl(var(--ww-on-h) calc(var(--ww-on-s) * 1%) 5%) 76%,
-      hsl(var(--ww-on-h) calc(var(--ww-on-s) * 1%) 2%) 100%);
-  }
-  :global(html:not(.hc)) .ww[data-ww-bg='screen'] > .ww-panel:is(:not([data-ww-panel='drift']), [data-ww-look='current'], [data-ww-look='steer']) {
-    --ww-ink: hsl(var(--ww-ch-h) min(100%, calc(var(--ww-ch-s) * 1% + 25%)) 66%);
-    --ww-ink-hot: hsl(var(--ww-ch-h) min(100%, calc(var(--ww-ch-s) * 1% + 30%)) 74%);
-    --ww-gs: min(100%, calc(var(--ww-ch-s) * 1% + 20%)); /* the glow's saturation */
-  }
-  :global(html:not(.hc)) .ww[data-ww-bg='screen'] > .ww-panel:is(:not([data-ww-panel='drift']), [data-ww-look='current'], [data-ww-look='steer']) .ww-tag {
-    color: var(--ww-ink);
-    text-shadow: 0 0 8px hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.5);
-  }
-  :global(html:not(.hc)) .ww[data-ww-bg='screen'] > .ww-panel:is(:not([data-ww-panel='drift']), [data-ww-look='current'], [data-ww-look='steer']) .ww-word {
-    -webkit-text-stroke-color: var(--ww-ink);
-    filter: drop-shadow(0 0 6px hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.45));
-  }
-  :global(html:not(.hc)) .ww[data-ww-bg='screen'] > .ww-panel:is(:not([data-ww-panel='drift']), [data-ww-look='current'], [data-ww-look='steer']) .ww-word.is-hot,
-  :global(html:not(.hc)) .ww[data-ww-bg='screen'] > .ww-panel:is(:not([data-ww-panel='drift']), [data-ww-look='current'], [data-ww-look='steer']) .ww-word.is-hot:hover {
-    color: var(--ww-ink-hot);
-    -webkit-text-stroke-color: var(--ww-ink-hot);
-    filter: drop-shadow(0 0 10px hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.6))
-      drop-shadow(0 0 26px hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.3));
-  }
-  :global(html:not(.hc)) .ww[data-ww-bg='screen'] > .ww-panel:is(:not([data-ww-panel='drift']), [data-ww-look='current'], [data-ww-look='steer']) .ww-word:hover {
-    color: var(--ww-ink-hot);
-    -webkit-text-stroke-color: var(--ww-ink-hot);
-  }
-  :global(html:not(.hc)) .ww[data-ww-bg='screen'] > .ww-panel:is(:not([data-ww-panel='drift']), [data-ww-look='current'], [data-ww-look='steer']) .ww-ui figcaption {
-    color: hsl(var(--ww-ch-h) 35% 90%);
-    opacity: 0.92;
-    text-shadow: 0 0 6px hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.3);
-  }
-  :global(html:not(.hc)) .ww[data-ww-bg='screen'] > .ww-panel:is(:not([data-ww-panel='drift']), [data-ww-look='current'], [data-ww-look='steer']) .ww-ui figcaption strong,
-  :global(html:not(.hc)) .ww[data-ww-bg='screen'] > .ww-panel:is(:not([data-ww-panel='drift']), [data-ww-look='current'], [data-ww-look='steer']) .ww-go-name {
-    color: var(--ww-ink-hot);
-    text-shadow: 0 0 8px hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.55);
-  }
-  :global(html:not(.hc)) .ww[data-ww-bg='screen'] > .ww-panel:is(:not([data-ww-panel='drift']), [data-ww-look='current'], [data-ww-look='steer']) .ww-ui img {
-    box-shadow:
-      0 0 0 1px hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.4),
-      0 0 36px hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.22),
-      0 18px 40px rgba(0, 0, 0, 0.55);
-  }
-
-  /* changing channel (Dan's pick: "a short burst of static"): when the
-     carousel moves, the picture drops to snow for --ww-snow-ms while the
-     panels swap under it, then the new channel comes through. Motion =
-     feedback to the visitor moving the carousel; the script below draws it
-     (half-res canvas, only during the burst, only when the wall is on
-     screen); reduced motion and html.hc = the plain crossfade. Between the
-     tube (-1) and the glass (2, later in the DOM): over the words, under the
-     scanlines and the bezel. */
+  /* Changing channel (Dan's pick: "a short burst of static"): the picture
+     drops to snow for --ww-snow-ms and fades back (160ms) on the new channel.
+     Over the content, under the scanlines and the bezel. The script draws it
+     and, on "picture", sits it over the lit plugin's panel. */
   .ww { --ww-snow-ms: 300; }
   .ww-snow {
     z-index: 2;
@@ -951,25 +1245,17 @@ const panels: Panel[] = tvPlugins()
   }
   .ww-snow canvas { display: block; width: 100%; height: 100%; } /* a canvas won't stretch to insets itself */
 
-  /* ---- THE BROKEN TV FRAME (WALL_FRAME, with the screen wall) ------------
-     Dan 2026-10-14: "the frame in DRIFT's vibe, a broken TV frame". The
-     screen wall sits in a beat-up CRT cabinet front instead of the brass
-     rails: cracked corner with a worn checker, gaffer tape, a missing
-     screw, a chunk broken off (all in the corners). Neutral charcoal, no
-     plugin colour (Dan, same day: "more neutral, fewer colours": every
-     plugin will play on this set, only the screen changes, like changing
-     channels). 9-sliced from
-     the roll's numbers (tv-broken.json, vars on .ww
-     from the frontmatter); the long runs TILE (round): stretched 3-4x they
-     streak like brushed metal, tiled they keep the photo's grain and the
-     seams don't show. --ww-frame-u = CSS px per cut pixel: the bench's
-     size, capped so the roll's side bezel always fits the wall's own gutter
-     (.ww's margin + padding-inline, below) and never covers a word or the
-     window: ~0.25 at 1141-1280, more on wide screens, ~0.065 on a 390
-     phone. The frame anchors to the
-     content box (left/right 0), not 100vw: a classic scrollbar must not eat
-     the right bezel. The set is on: the house pilot light (--emerald, the
-     palette's "armed / live" lamp) in the chin lights with the screen. */
+  /* ---- THE BROKEN TV FRAME (WALL_FRAME, with the screen) ------------------
+     Dan 2026-10-14: "a broken TV frame", then "more neutral, fewer colours"
+     (every plugin plays on this set, only the screen changes). A beat-up CRT
+     cabinet front instead of the brass rails, 9-sliced from the roll's
+     numbers (tv-broken.json, vars on .ww from the frontmatter); the long runs
+     TILE (round): stretched they streak, tiled they keep the photo's grain.
+     --ww-frame-u = CSS px per cut pixel: the bench's size, capped so the
+     roll's side bezel always fits the wall's own gutter (.ww's margin +
+     padding-inline) and never covers the menu, a name or the window. The
+     frame anchors to the content box, not 100vw: a classic scrollbar must
+     not eat the right bezel. The house pilot light (--emerald) in the chin. */
   .ww {
     --ww-frame-size: 0.25;  /* CSS px per cut pixel, desktop */
     --ww-frame-gap: 0px;    /* garage wood showing around the set (laptop and up) */
@@ -1012,7 +1298,7 @@ const panels: Panel[] = tvPlugins()
       calc(var(--wf-b) * var(--ww-frame-u)) calc(var(--wf-l) * var(--ww-frame-u)) round;
     filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.55)); /* the bezel's lip over the glass */
   }
-  /* the opening, as a box: the steer keeps the words inside it (wordwallDrift.ts) */
+  /* the opening, as a box (the snow's "screen" mode and the bench measure it) */
   .ww-frame {
     padding: calc(var(--wf-zt) * var(--ww-frame-u)) calc(var(--wf-zr) * var(--ww-frame-u))
       calc(var(--wf-zb) * var(--ww-frame-u)) calc(var(--wf-zl) * var(--ww-frame-u));
@@ -1044,30 +1330,27 @@ const panels: Panel[] = tvPlugins()
     background: radial-gradient(circle at 40% 35%, #d2f7df 0 18%, #4fbf82 45%, var(--emerald) 100%);
     box-shadow: 0 0 6px 1px rgba(79, 191, 130, 0.75), 0 0 16px 3px rgba(79, 191, 130, 0.3);
   }
-  .ww:has(> .ww-panel[data-ww-panel='drift'].is-active[data-ww-power='armed']) .ww-frame-led {
+  .ww[data-ww-power='armed'] .ww-frame-led {
     background: radial-gradient(circle at 40% 35%, #3c4a42 0 18%, #18241d 60%, #0b120e 100%);
     box-shadow: none;
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .ww-frame { transition: none; }
   }
 
   /* ---- ONE SCREEN (Dan 2026-10-14: "when I scroll, the site fits the screen
      exactly, not past the edges top and bottom") ---------------------------
-     The TV is one screen tall under the nav and the panel is sized to its
-     glass: the words and the windows shrink on a short screen, never grow
-     past their old size, and sit centred in the opening. svh = the screen
-     with the browser's bars shown, so nothing moves when they slide away (on
-     a phone a strip of the next section shows under the TV while they are
-     hidden). min-height, not height: whatever still can't fit grows the TV
-     instead of clipping (and the lock then leaves it alone). The scroll lock
-     that lands it is in the script. */
+     The TV is one screen tall under the nav and its content is sized to the
+     glass: the names and the window shrink on a short screen, never past
+     their full size, centred in the opening. svh = the screen with the
+     browser's bars shown, so nothing moves when they slide away. min-height,
+     not height: whatever still can't fit grows the TV instead of clipping
+     (and the lock then leaves it alone). The scroll lock is in the script. */
   .ww {
     --ww-nav: var(--site-nav-h, var(--nav-h));
-    --ww-breath: 16px;         /* glass showing above and below the panel */
+    --ww-breath: 16px;         /* glass showing above and below the content */
     --ww-snap-zone: 30;        /* the lock catches when the TV's top stops within this % of the screen */
     --ww-bez-t: var(--rail-h); /* the opening's top / bottom edge, from the wall's inner box */
     --ww-bez-b: var(--rail-h);
+    --ww-osd-h: 2.2rem;        /* the menu's row (measured: 34-35 px at 1141-1728) */
+    --ww-info-h: 12.5rem;      /* the lit plugin's text under its window (measured, laptop) */
   }
   .ww[data-ww-bg='screen']:not([data-ww-frame='rails']) {
     --ww-bez-t: calc(var(--ww-frame-g) + var(--wf-zt) * var(--ww-frame-u));
@@ -1079,448 +1362,137 @@ const panels: Panel[] = tvPlugins()
       --ww-pad-t: max(var(--ww-breath), calc(var(--ww-bez-t) - var(--rail-h) - 0.5rem + var(--ww-breath)));
       --ww-pad-b: max(var(--ww-breath), calc(var(--ww-bez-b) - var(--rail-h) - 0.5rem + var(--ww-breath)));
       --ww-room: calc(100svh - var(--ww-nav) - 2 * var(--rail-h) - 1rem - var(--ww-pad-t) - var(--ww-pad-b));
+      --ww-main: calc(var(--ww-room) - var(--ww-osd-h) - var(--ww-row-gap));
       min-height: calc(100svh - var(--ww-nav) - 2 * var(--rail-h) - 1rem);
       padding-block: var(--ww-pad-t) var(--ww-pad-b);
       align-content: center;
     }
     @media (min-width: 861px) {
-      /* words beside the window: five words at line-height 0.92 = 4.6em, under the kicker (~2.2rem) */
-      .ww[data-ww-bg='screen'] {
-        --ww-word: max(2.4rem, min(clamp(3.6rem, 9vw, 8.4rem), calc((var(--ww-room) - 2.2rem) / 4.6)));
+      /* the window: as wide as its column, unless that makes it taller than the room left over by its text */
+      .ww[data-ww-bg='screen'] .ww-panel:not(.is-portrait) .ww-ui :global(img),
+      .ww[data-ww-bg='screen'] .ww-panel:not(.is-portrait) .ww-ui video {
+        max-width: calc((var(--ww-main) - var(--ww-info-h)) * var(--ww-ar, 2));
       }
-      /* the windows: as wide as before, unless that makes them taller than the glass (the caption takes ~6.5rem) */
-      .ww[data-ww-bg='screen'] .ww-panel:not(.is-portrait) .ww-ui :is(img, video) {
-        max-width: calc((var(--ww-room) - 6.5rem) * var(--ww-ar, 2));
-      }
-      .ww[data-ww-bg='screen'] .ww-panel.is-portrait .ww-ui img {
-        max-height: min(clamp(22rem, 46vw, 34rem), calc(var(--ww-room) - 6.5rem));
+      .ww[data-ww-bg='screen'] .ww-panel.is-portrait .ww-ui :global(img) {
+        max-height: min(clamp(18rem, 40vw, 30rem), var(--ww-main));
       }
     }
+  }
+
+  /* ==========================================================================
+     PHONES + small tablets (<= 860px): one pane at a time. The list (the
+     menu, then full-width rows: thumbnail, name, type word, price); a tap
+     opens the lit plugin as its own view (a history entry), Back returns.
+     No hover-only states. No JS: the list only, each row a link to its page.
+     ========================================================================== */
+  @media (max-width: 860px) {
+    .ww {
+      padding-top: 2rem;
+      padding-bottom: 2.5rem;
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas: 'osd' 'list';
+      --ww-thumb-w: 4.6;
+      --ww-osd-h: 4.6rem; /* two rows of keys */
+    }
+    .ww[data-ww-view='panel'] { grid-template-areas: 'panel'; }
+    .ww[data-ww-view='panel'] > :is(.ww-osd, .ww-list) { display: none; }
+    .ww:not([data-ww-view='panel']) > .ww-panel,
+    .ww > .ww-panel:not(.is-active) { display: none; }
+    .ww-osd { gap: 0.6rem 0.9rem; }
+    .ww-cat { padding: 0.5rem; letter-spacing: 0.1em; } /* two rows of keys from 360px (a third row = 40px less window) */
+    .ww-cat-l { display: none; }
+    .ww-cat-s { display: inline; }
+    .ww-list { gap: 0.25rem; }
+    .ww-row {
+      column-gap: 0.85rem;
+      padding: 0.45rem 0.25rem 0.45rem 0;
+    }
+    .ww-name {
+      font-size: clamp(1.45rem, 7.4vw, 2.5rem);
+      -webkit-text-stroke-width: 1.25px;
+    }
+    .ww-type { font-size: 0.66rem; letter-spacing: 0.14em; }
+    .ww-rprice {
+      display: block;
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      letter-spacing: 0.04em;
+      color: var(--ww-ink);
+    }
+    .ww-row.is-lit .ww-rprice { color: var(--ww-ink-hot); }
+    /* the panel as its own view */
+    .ww-panel,
+    .ww-panel.is-portrait {
+      grid-template-columns: minmax(0, 1fr);
+      align-content: start;
+      gap: 1rem;
+      transition: none;
+    }
+    .ww[data-ww-lib='on'] .ww-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      justify-self: start;
+      appearance: none;
+      margin: 0;
+      padding: 0.45rem 0.1rem;
+      border: 0;
+      background: none;
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--ww-ink);
+      cursor: pointer;
+    }
+    .ww-back::before { content: '\2039'; font-size: 1.4em; line-height: 0.6; }
+    .ww-ui { justify-self: center; width: 100%; }
+    .ww-panel.is-portrait .ww-ui { width: auto; }
+    .ww-info { gap: 0.55rem; }
+    .ww-pname { font-size: clamp(1.6rem, 7vw, 2.2rem); }
+    .ww-buy { gap: 0.6rem 1rem; }
+  }
+  @supports (height: 100svh) {
     @media (max-width: 860px) {
-      /* one column (Dan 2026-10-14, "build part B"): the words take ~40 % of the room (line-height 0.9 =
-         4.5em), then the window, then the name + button (--ww-go-h); tighter gaps than the scrolling stack */
       .ww[data-ww-bg='screen'] {
-        --ww-go-h: 8.5rem; /* measured: 133 px with its margin (the name grows with the width), 120-125 px <= 480px */
-        --ww-word: max(2.2rem, min(19vw, 6.4rem, calc(var(--ww-room) * 0.4 / 4.5)));
-        --ww-media-h: max(8rem, calc(var(--ww-room) - 4.5 * var(--ww-word) - 1.25rem - var(--ww-go-h)));
+        --ww-info-h: 15rem; /* back + name + blurb + words + price + key + link (measured, 390) */
       }
-      @media (max-width: 480px) {
-        .ww[data-ww-bg='screen'] { --ww-go-h: 8rem; }
-      }
-      .ww[data-ww-bg='screen'] .ww-panel { gap: 1.25rem; }
-      .ww[data-ww-bg='screen'] .ww-go { margin-top: 0.8rem; gap: 0.6rem; }
-      .ww[data-ww-bg='screen'] .ww-panel:not(.is-portrait) .ww-ui :is(img, video) {
-        max-width: calc(var(--ww-media-h) * var(--ww-ar, 2));
+      .ww[data-ww-bg='screen'] .ww-panel:not(.is-portrait) .ww-ui :global(img),
+      .ww[data-ww-bg='screen'] .ww-panel:not(.is-portrait) .ww-ui video {
+        max-width: calc(max(8rem, var(--ww-room) - var(--ww-info-h)) * var(--ww-ar, 2));
         margin-inline: auto;
       }
-      .ww[data-ww-bg='screen'] .ww-panel.is-portrait .ww-ui img {
-        max-height: min(24rem, var(--ww-media-h));
+      .ww[data-ww-bg='screen'] .ww-panel.is-portrait .ww-ui :global(img) {
+        max-height: max(8rem, min(24rem, calc(var(--ww-room) - var(--ww-info-h))));
+        margin-inline: auto;
       }
-    }
-  }
-
-  /* ---- THE TV (DRIFT_WIN 'tv', every look but 'current') ----------------
-     Dan 2026-10-14: "more of a TV screen, like we've been doing". The live
-     window plays on /drift's keep-it TV (DriftKeep.astro + drift.css
-     .d-keep-tv): the same AI bezel plate 9-sliced around a bulged CRT tube,
-     scanlines + aperture grille + glass over the picture, the cabinet's
-     livery as printed ink (matte: a sticker is not a lamp). --ww-tv-s scales
-     /drift's numbers (86 px slice width, 39/59/52/59 px bezel) to the wall.
-     The set is on, so the screen throws a little violet light on the wood
-     (the screen is the lamp). Power-on: a CRT turn-on with the neon's. */
-  @font-face {
-    font-family: 'Drift Oswald';
-    src: url('/fonts/drift/Oswald-var.latin.woff2') format('woff2');
-    font-weight: 300 700;
-    font-display: swap;
-  }
-  @font-face {
-    font-family: 'Drift Orbitron';
-    src: url('/fonts/drift/Orbitron-SemiBold.subset.woff2') format('woff2');
-    font-weight: 400 900;
-    font-display: swap;
-  }
-  .ww-panel[data-ww-panel='drift'] {
-    --ww-tv-size: 0.72; /* TV bezel size vs /drift's TV (phones take 0.69 of it = /drift's phone TV) */
-    --ww-tv-s: var(--ww-tv-size);
-    --ww-tv-scan: 0.3;  /* scanline darkness */
-  }
-  .ww-panel[data-ww-panel='drift'] .ww-tv-ink { display: none; }
-  .ww-panel[data-ww-panel='drift'][data-ww-win='tv']:not([data-ww-look='current']) .ww-tv {
-    --tv-t: calc(39px * var(--ww-tv-s));
-    --tv-r: calc(59px * var(--ww-tv-s));
-    --tv-b: calc(52px * var(--ww-tv-s));
-    --tv-l: calc(59px * var(--ww-tv-s));
-    position: relative;
-    border: 0 solid transparent;
-    border-radius: calc(30px * var(--ww-tv-s));
-    border-image: var(--ww-img-tv) 192 fill / calc(86px * var(--ww-tv-s)) stretch;
-    /* the tube overlaps the opening's lip by 2 px */
-    padding: calc(var(--tv-t) - 2px) calc(var(--tv-r) - 2px) calc(var(--tv-b) - 2px) calc(var(--tv-l) - 2px);
-    box-shadow:
-      0 0 60px 18px rgba(190, 90, 255, 0.12), /* the set is on */
-      0 24px 40px rgba(0, 0, 0, 0.65);        /* the set hangs on the wall */
-  }
-  /* the tube: the plugin's bulged CRT silhouette (every edge bows out, the corners roll) */
-  .ww-panel[data-ww-panel='drift'][data-ww-win='tv']:not([data-ww-look='current']) .ww-tube {
-    position: relative;
-    overflow: hidden;
-    background: radial-gradient(ellipse 66% 82% at 50% 46%, #2e1347 0%, #1a0b2c 40%, #0b0414 76%, #040107 100%);
-    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 1000' preserveAspectRatio='none'%3E%3Cpath d='M70 24 Q500 -6 930 24 Q984 30 988 80 Q1006 500 988 920 Q984 970 930 976 Q500 1006 70 976 Q16 970 12 920 Q-6 500 12 80 Q16 30 70 24 Z' fill='black'/%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
-    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 1000' preserveAspectRatio='none'%3E%3Cpath d='M70 24 Q500 -6 930 24 Q984 30 988 80 Q1006 500 988 920 Q984 970 930 976 Q500 1006 70 976 Q16 970 12 920 Q-6 500 12 80 Q16 30 70 24 Z' fill='black'/%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
-  }
-  .ww-panel[data-ww-panel='drift'][data-ww-win='tv']:not([data-ww-look='current']) .ww-tube video {
-    border-radius: 0;
-    box-shadow: none;
-  }
-  .ww-panel[data-ww-panel='drift'][data-ww-win='tv']:not([data-ww-look='current']) .ww-tube::before,
-  .ww-panel[data-ww-panel='drift'][data-ww-win='tv']:not([data-ww-look='current']) .ww-tube::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    pointer-events: none;
-  }
-  .ww-panel[data-ww-panel='drift'][data-ww-win='tv']:not([data-ww-look='current']) .ww-tube::before {
-    background:
-      repeating-linear-gradient(0deg, rgba(0, 0, 0, var(--ww-tv-scan)) 0 1px, transparent 1px 3px), /* scanlines */
-      repeating-linear-gradient(90deg, rgba(255, 40, 90, 0.05) 0 1px, rgba(40, 255, 140, 0.035) 1px 2px, rgba(70, 90, 255, 0.05) 2px 3px); /* aperture grille */
-  }
-  .ww-panel[data-ww-panel='drift'][data-ww-win='tv']:not([data-ww-look='current']) .ww-tube::after {
-    background:
-      radial-gradient(ellipse 58% 36% at 26% 4%, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.03) 55%, transparent 72%), /* the bulge's highlight */
-      linear-gradient(158deg, rgba(255, 255, 255, 0.06) 0%, transparent 30%),                                           /* glass reflection */
-      radial-gradient(ellipse 72% 88% at 50% 50%, transparent 58%, rgba(0, 0, 0, 0.55) 86%, rgba(0, 0, 0, 0.8) 100%);    /* the curve falls away to the rim */
-  }
-  /* CRT turn-on, riding the sign's power-on: dark glass until first sight, then
-     a bright line that opens into the picture (motion = feedback to arriving) */
-  .ww-panel[data-ww-panel='drift'][data-ww-win='tv']:not([data-ww-look='current'])[data-ww-power='armed'] .ww-tube video {
-    opacity: 0;
-  }
-  .ww-panel[data-ww-panel='drift'][data-ww-win='tv']:not([data-ww-look='current'])[data-ww-power='powering'] .ww-tube video {
-    animation: ww-crt-on 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
-  }
-  @keyframes ww-crt-on {
-    0%   { opacity: 1; transform: scale(0.04, 0.006); filter: brightness(5) saturate(0); }
-    22%  { opacity: 1; transform: scale(1, 0.006); filter: brightness(4) saturate(0.2); }
-    55%  { opacity: 1; transform: scale(1, 1); filter: brightness(1.6); }
-    100% { opacity: 1; transform: none; filter: none; }
-  }
-  /* the livery, as on /drift (sizes x0.8 for the smaller bezel); laptop only */
-  .ww-panel[data-ww-panel='drift'][data-ww-win='tv']:not([data-ww-look='current']) .ww-tv-ink {
-    position: absolute;
-    z-index: 2;
-    pointer-events: none;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font: 700 9px/1 'Drift Oswald', 'Oswald', Impact, sans-serif;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: #b46bff;
-    white-space: nowrap;
-  }
-  .ww-panel[data-ww-panel='drift'] .ww-tv-ink b { font-weight: 700; }
-  .ww-panel[data-ww-panel='drift'] .ww-tv-tl { left: 52px; top: calc(var(--tv-t) / 2); translate: 0 -50%; color: #c98bff; }
-  .ww-panel[data-ww-panel='drift'] .ww-tv-checker {
-    width: 58px; height: 10px; transform: skewX(-24deg);
-    background: repeating-conic-gradient(#e040c8 0 25%, #6c22b8 0 50%) 0 0 / 10px 10px; opacity: 0.9;
-  }
-  .ww-panel[data-ww-panel='drift'] .ww-tv-tr { right: 54px; top: calc(var(--tv-t) / 2); translate: 0 -50%; }
-  .ww-panel[data-ww-panel='drift'] .ww-tv-tr b { font: 900 16px/1 'Drift JP', 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Yu Gothic UI', Meiryo, sans-serif; letter-spacing: 0.02em; color: #e040c8; }
-  .ww-panel[data-ww-panel='drift'] .ww-tv-stripes {
-    width: 54px; height: 8px; transform: skewX(-30deg);
-    background: repeating-linear-gradient(90deg, #8a2be2 0 5px, transparent 5px 9px); opacity: 0.85;
-  }
-  .ww-panel[data-ww-panel='drift'] .ww-tv-r {
-    right: calc(var(--tv-r) / 2); top: 50%; translate: 50% -50%; writing-mode: vertical-rl; text-orientation: upright;
-    font: 900 13px/1 'Drift JP', 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Yu Gothic UI', Meiryo, sans-serif; letter-spacing: 0.14em; color: #e040c8;
-  }
-  .ww-panel[data-ww-panel='drift'] .ww-tv-l {
-    left: calc(var(--tv-l) / 2); top: 50%; translate: -50% -50%; writing-mode: vertical-rl; rotate: 180deg;
-    font-size: 8px; letter-spacing: 0.22em; color: #9b6fd0;
-  }
-  .ww-panel[data-ww-panel='drift'] .ww-tv-bl { left: 52px; bottom: calc(var(--tv-b) / 2); translate: 0 50%; font-size: 8px; color: #9b6fd0; }
-  .ww-panel[data-ww-panel='drift'] .ww-tv-badge {
-    font: italic 900 18px/1 'Drift Orbitron', 'Orbitron', var(--font-display); letter-spacing: 0; color: #e040c8;
-  }
-  .ww-panel[data-ww-panel='drift'] .ww-tv-br { right: 54px; bottom: calc(var(--tv-b) / 2); translate: 0 50%; font-size: 8px; color: #9b6fd0; }
-  /* phones: /drift's phone TV (half the bezel), the small print goes */
-  @media (max-width: 860px) {
-    .ww-panel[data-ww-panel='drift'] { --ww-tv-s: calc(var(--ww-tv-size) * 0.69); }
-    .ww-panel[data-ww-panel='drift'][data-ww-win='tv']:not([data-ww-look='current']) .ww-tv-ink { display: none; }
-  }
-
-  /* every new look: the item hugs its word (the spill + skid size off it) and
-     the window hangs above the words' light */
-  .ww-panel[data-ww-panel='drift']:not([data-ww-look='current']) .ww-list li {
-    position: relative;
-    width: fit-content;
-  }
-  .ww-panel[data-ww-panel='drift']:not([data-ww-look='current']) .ww-ui {
-    position: relative;
-    z-index: 1;
-  }
-
-  /* ---- NEON: a neon shop sign bolted to the garage wood ------------------- */
-  .ww-panel[data-ww-panel='drift']:is([data-ww-look='neon'], [data-ww-look='both']) {
-    --ww-tube: hsl(var(--ww-neon-h) 86% 62%);
-    --ww-core: hsl(calc(var(--ww-neon-h) + 8) 100% calc(var(--ww-neon-core) * 1%));
-    --ww-halo-a: hsl(calc(var(--ww-neon-h) - 15) 100% 62% / 0.9);
-    --ww-halo-b: hsl(calc(var(--ww-neon-h) - 15) 100% 62% / 0.5);
-    --ww-glass-edge: hsl(calc(var(--ww-neon-h) - 34) 32% 72% / var(--ww-neon-off));
-    --ww-glass-body: hsl(calc(var(--ww-neon-h) - 34) 32% 66% / calc(var(--ww-neon-off) * 0.12));
-    --ww-glass-spec: hsl(calc(var(--ww-neon-h) - 34) 40% 92% / calc(var(--ww-neon-off) * 0.7));
-    --ww-spill-c: hsl(calc(var(--ww-neon-h) - 15) 100% 62% / var(--ww-neon-spill));
-    --ww-spill-c2: hsl(calc(var(--ww-neon-h) - 15) 100% 62% / calc(var(--ww-neon-spill) * 0.45));
-    --ww-kana-c: hsl(calc(var(--ww-neon-h) - 21) 100% 77%);
-    /* the two states of a tube, as value sets the flicker keyframes switch
-       between (same shadow count, so hover can also interpolate) */
-    --ww-on-glow:
-      0 0 calc(0.015em * var(--ww-neon-glow)) var(--ww-core),
-      0 0 calc(0.05em * var(--ww-neon-glow)) var(--ww-tube),
-      0 0 calc(0.13em * var(--ww-neon-glow)) var(--ww-halo-a),
-      0 0 calc(0.3em * var(--ww-neon-glow)) var(--ww-halo-b);
-    --ww-off-glow: 0 0 0 transparent, 0 0 0 transparent, 0 0 0 transparent, 0 0 0 transparent;
-    /* glass catches the upper-left light on its top lip, and sits 2px off the wood */
-    --ww-off-filter: drop-shadow(-0.5px -0.75px 0 var(--ww-glass-spec)) drop-shadow(0 2px 1.5px rgba(8, 6, 5, 0.7));
-  }
-
-  /* unlit tube: pale violet-grey glass, a hair of the outward fade kept */
-  .ww-panel[data-ww-panel='drift']:is([data-ww-look='neon'], [data-ww-look='both']) .ww-word {
-    position: relative;
-    color: var(--ww-glass-body);
-    -webkit-text-stroke: 1.5px var(--ww-glass-edge);
-    text-shadow: var(--ww-off-glow);
-    filter: var(--ww-off-filter);
-    opacity: calc(0.75 + 0.25 * var(--o, 0.5));
-    transition:
-      color 120ms cubic-bezier(0.2, 0.9, 0.25, 1.25),
-      -webkit-text-stroke-color 120ms cubic-bezier(0.2, 0.9, 0.25, 1.25),
-      text-shadow 120ms cubic-bezier(0.2, 0.9, 0.25, 1.25),
-      filter 120ms cubic-bezier(0.2, 0.9, 0.25, 1.25),
-      opacity 120ms cubic-bezier(0.2, 0.9, 0.25, 1.25);
-  }
-  /* lit tube: warm near-white core, tube-colour skin, the glow it throws */
-  .ww-panel[data-ww-panel='drift']:is([data-ww-look='neon'], [data-ww-look='both']) .ww-word.is-hot {
-    color: var(--ww-core);
-    -webkit-text-stroke-color: var(--ww-tube);
-    text-shadow: var(--ww-on-glow);
-    filter: none;
-    opacity: 1;
-  }
-  /* hover strikes an unlit tube on: the house ~120ms snap plus one stutter.
-     Real hover only: a phone's sticky tap-hover would leave a second tube lit. */
-  @media (hover: hover) {
-    .ww-panel[data-ww-panel='drift']:is([data-ww-look='neon'], [data-ww-look='both']) li:hover > .ww-word {
-      color: var(--ww-core);
-      -webkit-text-stroke-color: var(--ww-tube);
-      text-shadow: var(--ww-on-glow);
-      filter: none;
-      opacity: 1;
-    }
-    .ww-panel[data-ww-panel='drift']:is([data-ww-look='neon'], [data-ww-look='both']) li:hover > .ww-word:not(.is-hot) {
-      animation: ww-neon-strike 170ms steps(1, end);
-    }
-  }
-
-  /* the light leaks: a soft spill on the wood behind a lit tube (a lamp's
-     light, Law 4). Screen-blended against the wall, so the grain brightens. */
-  .ww-panel[data-ww-panel='drift']:is([data-ww-look='neon'], [data-ww-look='both']) .ww-spill {
-    display: block;
-    position: absolute;
-    inset: -60% -16%;
-    pointer-events: none;
-    background: radial-gradient(closest-side, var(--ww-spill-c), var(--ww-spill-c2) 55%, transparent);
-    mix-blend-mode: screen;
-    opacity: 0;
-    transition: opacity 120ms cubic-bezier(0.2, 0.9, 0.25, 1.25);
-  }
-  .ww-panel[data-ww-panel='drift']:is([data-ww-look='neon'], [data-ww-look='both']) .ww-spill.is-hot {
-    opacity: 1;
-  }
-  @media (hover: hover) {
-    .ww-panel[data-ww-panel='drift']:is([data-ww-look='neon'], [data-ww-look='both']) li:hover > .ww-spill {
-      opacity: 1;
-    }
-  }
-
-  /* ドリフト: a small vertical tube beside the stack, burning dim */
-  .ww-panel[data-ww-panel='drift']:is([data-ww-look='neon'], [data-ww-look='both']) .ww-words {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    column-gap: 0.75rem;
-  }
-  .ww-panel[data-ww-panel='drift']:is([data-ww-look='neon'], [data-ww-look='both']) .ww-tag {
-    grid-column: 1 / -1;
-    grid-row: 1;
-  }
-  .ww-panel[data-ww-panel='drift']:is([data-ww-look='neon'], [data-ww-look='both']) .ww-list {
-    grid-column: 1;
-    grid-row: 2;
-  }
-  .ww-panel[data-ww-panel='drift']:is([data-ww-look='neon'], [data-ww-look='both']) .ww-kana {
-    display: block;
-    grid-column: 2;
-    grid-row: 2;
-    align-self: start;
-    margin-top: 0.4em;
-    writing-mode: vertical-rl;
-    text-orientation: upright;
-    font-family: 'Drift JP', 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Yu Gothic UI', Meiryo, sans-serif;
-    font-weight: 700;
-    font-size: clamp(1.05rem, 2.1vw, 1.9rem);
-    line-height: 1;
-    letter-spacing: 0.14em;
-    /* one tube: WebKit sizes an orthogonal (vertical) grid item against a short
-       guess and would break it into two columns on a phone */
-    white-space: nowrap;
-    color: var(--ww-kana-c);
-    opacity: 0.6;
-    text-shadow:
-      0 0 0.1em var(--ww-halo-a),
-      0 0 0.45em var(--ww-halo-b);
-    pointer-events: none;
-    user-select: none;
-  }
-
-  /* power-on (JS only: no JS / reduced motion = simply lit). armed = the sign
-     is off until the panel is first seen; powering = 600ms, three stutters,
-     then steady. The kana catches with the last strike. */
-  .ww-panel[data-ww-panel='drift']:is([data-ww-look='neon'], [data-ww-look='both'])[data-ww-power='armed'] .ww-word.is-hot {
-    color: var(--ww-glass-body);
-    -webkit-text-stroke-color: var(--ww-glass-edge);
-    text-shadow: var(--ww-off-glow);
-    filter: var(--ww-off-filter);
-    transition: none;
-  }
-  .ww-panel[data-ww-panel='drift']:is([data-ww-look='neon'], [data-ww-look='both'])[data-ww-power='armed'] .ww-spill.is-hot {
-    opacity: 0;
-    transition: none;
-  }
-  .ww-panel[data-ww-panel='drift']:is([data-ww-look='neon'], [data-ww-look='both'])[data-ww-power='armed'] .ww-kana {
-    color: var(--ww-glass-edge);
-    text-shadow: none;
-  }
-  .ww-panel[data-ww-panel='drift']:is([data-ww-look='neon'], [data-ww-look='both'])[data-ww-power='powering'] .ww-word.is-hot {
-    animation: ww-neon-power 600ms steps(1, end) both;
-  }
-  .ww-panel[data-ww-panel='drift']:is([data-ww-look='neon'], [data-ww-look='both'])[data-ww-power='powering'] .ww-spill.is-hot {
-    animation: ww-spill-power 600ms steps(1, end) both;
-  }
-  .ww-panel[data-ww-panel='drift']:is([data-ww-look='neon'], [data-ww-look='both'])[data-ww-power='powering'] .ww-kana {
-    animation: ww-kana-power 600ms steps(1, end) both;
-  }
-  @keyframes ww-neon-power {
-    0%, 15%, 37%, 61% {
-      color: var(--ww-glass-body);
-      -webkit-text-stroke-color: var(--ww-glass-edge);
-      text-shadow: var(--ww-off-glow);
-      filter: var(--ww-off-filter);
-    }
-    9%, 31%, 54%, 70%, 100% {
-      color: var(--ww-core);
-      -webkit-text-stroke-color: var(--ww-tube);
-      text-shadow: var(--ww-on-glow);
-      filter: none;
-    }
-  }
-  @keyframes ww-spill-power {
-    0%, 15%, 37%, 61% { opacity: 0; }
-    9%, 31%, 54%, 70%, 100% { opacity: 1; }
-  }
-  @keyframes ww-kana-power {
-    0%, 61% { color: var(--ww-glass-edge); text-shadow: none; }
-    70%, 100% { color: var(--ww-kana-c); text-shadow: 0 0 0.1em var(--ww-halo-a), 0 0 0.45em var(--ww-halo-b); }
-  }
-  /* the strike: lit, one dip back to glass, lit */
-  @keyframes ww-neon-strike {
-    35% {
-      color: var(--ww-glass-body);
-      -webkit-text-stroke-color: var(--ww-glass-edge);
-      text-shadow: var(--ww-off-glow);
-    }
-    0%, 60%, 100% {
-      color: var(--ww-core);
-      -webkit-text-stroke-color: var(--ww-tube);
-      text-shadow: var(--ww-on-glow);
-    }
-  }
-
-  /* ---- STEER: your hand is the wheel ------------------------------------ */
-  /* JS writes the words' transform (translate + SLIDING's lean); they pivot
-     on their feet, where the tyres would be */
-  .ww-panel[data-ww-panel='drift']:is([data-ww-look='steer'], [data-ww-look='both']) .ww-word {
-    transform-origin: 50% 100%;
-  }
-  /* burnt rubber: a blurred dark ghost of SLIDING left on the wood where it
-     slid, fading over ~1.2s (opacity + position from JS) */
-  .ww-panel[data-ww-panel='drift']:is([data-ww-look='steer'], [data-ww-look='both']) .ww-skid {
-    display: block;
-    position: absolute;
-    left: 0;
-    top: 0;
-    font-family: var(--font-display);
-    font-size: var(--ww-word, clamp(3.6rem, 9vw, 8.4rem));
-    line-height: 0.92;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    white-space: nowrap;
-    color: rgba(14, 9, 6, 0.9);
-    filter: blur(3px);
-    mix-blend-mode: multiply;
-    transform-origin: 0 50%;
-    opacity: 0;
-    pointer-events: none;
-    user-select: none;
-  }
-
-  /* phone sizes: after the base rules above (same specificity, source order wins) */
-  @media (max-width: 860px) {
-    .ww-panel[data-ww-panel='drift']:is([data-ww-look='steer'], [data-ww-look='both']) .ww-skid {
-      font-size: var(--ww-word, clamp(4rem, 19vw, 6.4rem));
-      line-height: 0.9;
-      letter-spacing: 0.03em;
-    }
-    .ww-panel[data-ww-panel='drift']:is([data-ww-look='neon'], [data-ww-look='both']) .ww-kana {
-      font-size: clamp(1rem, 5vw, 1.5rem);
-      margin-top: 0.3em;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .ww-panel[data-ww-panel='drift'] .ww-word,
-    .ww-panel[data-ww-panel='drift'] .ww-spill,
-    .ww-panel[data-ww-panel='drift'] .ww-kana {
-      animation: none !important;
-      transition: none !important;
-    }
-    .ww-panel[data-ww-panel='drift'] .ww-skid { display: none !important; }
+    .ww-name,
+    .ww-thumb,
+    .ww-panel,
+    .ww-screen,
+    .ww-screen-fx,
+    .ww-screen-glow,
+    .ww-frame { transition: none; }
+    .ww-list.is-swapping .ww-item:not([hidden]) .ww-row { animation: none; }
   }
 
-  /* high contrast: plain words, like the other panels; the light, the rubber
-     and the kana are art and go */
-  :global(html.hc) .ww-panel[data-ww-panel='drift'] .ww-word {
-    color: var(--fg) !important;
-    -webkit-text-stroke: 0 !important;
-    text-shadow: none !important;
-    filter: none !important;
-    opacity: 1 !important;
-    transform: none !important;
-    animation: none !important;
-  }
-  :global(html.hc) .ww-panel[data-ww-panel='drift'] .ww-word.is-hot { color: var(--oxide-text) !important; }
-  :global(html.hc) .ww-panel[data-ww-panel='drift'] .ww-spill,
-  :global(html.hc) .ww-panel[data-ww-panel='drift'] .ww-skid,
-  :global(html.hc) .ww-panel[data-ww-panel='drift'] .ww-kana { display: none !important; }
-  /* hc: the screen wall goes (the hc wall shows), its text loses the glow */
+  /* high contrast: a plain list. The screen, its glass, the snow and the frame go (the hc wall shows), the names are
+     plain type, the lit one in oxide */
   :global(html.hc) .ww-screen,
   :global(html.hc) .ww-screen-fx,
   :global(html.hc) .ww-snow,
   :global(html.hc) .ww-frame { display: none !important; }
-  :global(html.hc) .ww-panel[data-ww-panel='drift'] :is(.ww-tag, figcaption, figcaption strong, .ww-go-name) { text-shadow: none !important; }
-  /* hc: the TV keeps its plate, the screen effects and the livery go */
-  :global(html.hc) .ww-panel[data-ww-panel='drift'] .ww-tv-ink,
-  :global(html.hc) .ww-panel[data-ww-panel='drift'] .ww-tube::before,
-  :global(html.hc) .ww-panel[data-ww-panel='drift'] .ww-tube::after { display: none !important; }
+  :global(html.hc) .ww-name {
+    color: var(--fg);
+    -webkit-text-stroke: 0;
+    opacity: 1;
+    filter: none;
+  }
+  :global(html.hc) .ww-row.is-lit .ww-name { color: var(--oxide-text); }
+  :global(html.hc) .ww-thumb { opacity: 1; }
+  :global(html.hc) :is(.ww-tag, .ww-cat, .ww-pname, .ww-blurb, .ww-pw, .ww-price) { text-shadow: none; }
 </style>

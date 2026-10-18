@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="data:,">
-<title>Word Wall Bench · DRIFT</title>
-<!-- Word-wall bench (Dan 2026-10-14): tune the homepage word wall's DRIFT panel (src/components/WordWall.astro).
-     Both frames are the REAL dev homepage in same-origin iframes, scrolled to #sound with the DRIFT panel showing.
-     This page drives them from outside: the panel's data-ww-look + a live <style> setting its --ww-* properties.
-     Hover the laptop frame = steer · REPLAY = power-on flicker + the phone's drift-in · COPY SETTINGS when happy and
-     hand it back ("apply ww bench"). -->
+<title>TV Bench · Plugins</title>
+<!-- TV bench (Dan 2026-10-14; the TV became the plugin browser on feat/home-library, 2026-10-18): tune the homepage
+     TV (src/components/WordWall.astro). Both frames are the REAL dev homepage in same-origin iframes, scrolled to
+     #plugins. This page drives them from outside: the wall's data-ww-* attributes, the page's own bench hooks
+     (ww:select = light a plugin / pick a category / open a phone pane, ww:replay = the power-on) and a live <style>
+     setting its --ww-* properties. COPY SETTINGS when happy and hand it back ("apply ww bench"). -->
 <style>
   :root { --bg: #0d0a12; --panel: #17121f; --line: #2c2338; --ink: #efe8f6; --dim: #a597b8; --acc: #d23cff; --acc-ink: #fbe9ff; }
   * { box-sizing: border-box; }
@@ -19,7 +19,7 @@
   header h1 { margin: 0 8px 0 0; font-size: 14px; letter-spacing: .1em; text-transform: uppercase; }
   button, select { background: #221a2d; color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; font: inherit; cursor: pointer; }
   button:hover { background: #2d2340; }
-  .seg { display: inline-flex; }
+  .seg { display: inline-flex; flex-wrap: wrap; }
   .seg button { border-radius: 0; margin-left: -1px; padding: 9px 16px; font-weight: 600; letter-spacing: .06em; }
   .seg button:first-child { border-radius: 8px 0 0 8px; margin-left: 0; }
   .seg button:last-child { border-radius: 0 8px 8px 0; }
@@ -27,13 +27,13 @@
   .seg.small button { padding: 6px 10px; font-weight: 500; letter-spacing: 0; }
   button.primary { background: var(--acc); border-color: var(--acc); color: #1a0322; font-weight: 700; letter-spacing: .04em; }
   button.big { padding: 9px 18px; font-weight: 700; letter-spacing: .06em; }
+  .lbl { color: var(--dim); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
   .spacer { flex: 1; }
   .wrap { flex: 1; min-height: 0; display: flex; }
   aside { width: 320px; flex: none; overflow: auto; border-right: 1px solid var(--line); padding: 12px 14px 24px; }
   aside h2 { margin: 14px 0 4px; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); display: flex; align-items: center; gap: 8px; }
   aside h2:first-child { margin-top: 0; }
   aside h2 small { font-size: 11px; letter-spacing: 0; text-transform: none; color: #7d7090; }
-  .grp.off { opacity: .45; }
   .ctl { padding: 8px 0 6px; border-bottom: 1px solid #1f1829; }
   .ctl .top { display: flex; align-items: baseline; gap: 8px; }
   .ctl label { font-weight: 600; }
@@ -58,23 +58,17 @@
 </head>
 <body>
 <header>
-  <h1>Word wall bench · DRIFT</h1>
-  <span class="seg" id="look" title="Which DRIFT look the word wall shows">
-    <button data-l="current">CURRENT</button><button data-l="neon">NEON</button><button data-l="steer">STEER</button><button data-l="both">BOTH</button>
-  </span>
-  <span class="seg small" id="bg" title="What the whole word wall is: the garage wood, or one TV every plugin plays on">
+  <h1>TV bench · Plugins</h1>
+  <span class="seg small" id="bg" title="What the whole wall is: the garage wood, or one TV every plugin plays on">
     <button data-b="wood">WOOD WALL</button><button data-b="screen">SCREEN WALL</button>
-  </span>
-  <span class="seg small" id="win" title="The plugin window: plain, or on the /drift TV">
-    <button data-w="plain">PLAIN WINDOW</button><button data-w="tv">TV WINDOW</button>
   </span>
   <span class="seg small" id="frame" title="The screen wall's frame: the brass rails, or one of three broken TVs">
     <button data-fr="rails">RAILS</button><button data-fr="1">BROKEN TV 1</button><button data-fr="2">BROKEN TV 2</button><button data-fr="3">BROKEN TV 3</button>
   </span>
-  <button class="big" id="replay" title="Power-on flicker again, and the phone's drift-in">▶ REPLAY</button>
-  <span class="seg small" id="show" title="Change channel: show another plugin on the TV (plays the static, like the carousel)">
-    <button data-s="drift">DRIFT</button><button data-s="revlimiter">RevLimiter</button><button data-s="gas">GAS</button><button data-s="radio-roulette">Radio Roulette</button>
+  <span class="seg small" id="snow" title="Where the static plays when a plugin lights: over its picture only, or over the whole screen">
+    <button data-sn="picture">STATIC: PICTURE</button><button data-sn="screen">STATIC: WHOLE SCREEN</button>
   </span>
+  <button class="big" id="replay" title="The TV's power-on again">▶ REPLAY</button>
   <span class="seg small" id="view">
     <button data-v="both">Both</button><button data-v="laptop">Laptop</button><button data-v="phone">Phone</button>
   </span>
@@ -82,15 +76,25 @@
   <button class="primary" id="copy">COPY SETTINGS</button>
   <button id="resetAll">RESET</button>
 </header>
+<header>
+  <span class="lbl">Category</span>
+  <span class="seg small" id="cat" title="Pick a category on both TVs (as a visitor would)"></span>
+  <span class="lbl">Light</span>
+  <span class="seg small" id="show" title="Light a plugin on both TVs (a channel change: the static plays)"></span>
+  <span class="lbl">Phone shows</span>
+  <span class="seg small" id="pview" title="The phone shows one pane at a time: the list, or the lit plugin">
+    <button data-pv="list">LIST</button><button data-pv="panel">THE PLUGIN</button>
+  </span>
+</header>
 <div class="wrap">
   <aside id="controls"></aside>
   <main>
     <section class="stage" data-f="laptop">
-      <div class="bar"><b>Laptop</b> <select data-size></select><span class="note">hover = steer</span></div>
+      <div class="bar"><b>Laptop</b> <select data-size></select><span class="note">click the names: they are the real page</span></div>
       <div class="vp"><iframe title="Homepage at laptop size"></iframe></div>
     </section>
     <section class="stage" data-f="phone">
-      <div class="bar"><b>Phone</b> <select data-size></select><span class="note">touch: drift-in once</span></div>
+      <div class="bar"><b>Phone</b> <select data-size></select><span class="note">tap a name = its pane</span></div>
       <div class="vp"><iframe title="Homepage at phone size"></iframe></div>
     </section>
   </main>
@@ -98,72 +102,62 @@
 <div class="toast" id="toast"></div>
 <script>
 (() => {
-  const KEY = 'wwbench:v1';
-  const PANEL = ".ww-panel[data-ww-panel='drift']";
+  const KEY = 'wwbench:v1'; // kept from the word-wall bench, so a frame pick saved there survives
+  const WALL = '[data-wordwall]';
 
-  // every tunable: the custom property on the DRIFT panel, its label, range, unit and which look uses it
+  // every tunable: the custom property on the wall (.ww), its label, range, unit and which frames it is written to
   const GROUPS = [
-    { id: 'neon', title: 'Neon sign', looks: ['neon', 'both'], ctl: [
-      { p: '--ww-neon-h', label: 'Tube colour', hint: 'hue: 301 = DRIFT magenta, lower = violet, higher = pink', min: 250, max: 345, step: 1, unit: '' },
-      { p: '--ww-neon-core', label: 'Core brightness', hint: 'how white-hot the lit tube is (never pure white)', min: 70, max: 97, step: 1, unit: '%' },
-      { p: '--ww-neon-glow', label: 'Glow size', hint: 'how far the glow reaches round the letters', min: 0, max: 2.5, step: 0.05, unit: '×' },
-      { p: '--ww-neon-spill', label: 'Light on the wall', hint: 'the lit tube\'s light spilling onto the wood', min: 0, max: 1, step: 0.01, unit: '' },
-      { p: '--ww-neon-off', label: 'Unlit glass', hint: 'how visible the unlit glass tubes are', min: 0, max: 1, step: 0.01, unit: '' },
+    { id: 'library', title: 'The plugin list', note: 'laptop', frames: ['laptop'], ctl: [
+      { p: '--ww-list-share', label: 'List width', hint: 'the plugins\' share of the screen, %; the lit plugin takes the rest', min: 28, max: 56, step: 1, unit: '' },
+      { p: '--ww-name-max', label: 'Biggest name', hint: 'rem; the names shrink below this to fit the column and the screen\'s height', min: 2.4, max: 6, step: 0.1, unit: '' },
+      { p: '--ww-thumb-w', label: 'Thumbnail width', hint: 'rem', min: 3, max: 10, step: 0.1, unit: '' },
+      { p: '--ww-dim', label: 'Unlit names', hint: 'how much the names that are not lit show (1 = as bright as the lit one\'s outline)', min: 0.2, max: 1, step: 0.01, unit: '' },
     ] },
-    { id: 'steer', title: 'Steering', looks: ['steer', 'both'], ctl: [
-      { p: '--ww-steer-travel', label: 'How far it slides', hint: 'SLIDING at full lock; the other words less', min: 0, max: 120, step: 1, unit: 'px' },
-      { p: '--ww-steer-k', label: 'Spring stiffness', hint: 'higher = snappier, lower = lazier', min: 20, max: 400, step: 5, unit: '' },
-      { p: '--ww-steer-damp', label: 'Damping', hint: '1 = no bounce, lower = more overshoot', min: 0.2, max: 1.5, step: 0.01, unit: '' },
-      { p: '--ww-steer-spread', label: 'Lag between words', hint: '0 = all move together; higher = lower words lag more', min: 0, max: 1.5, step: 0.05, unit: '' },
-      { p: '--ww-steer-skew', label: 'Lean when sliding', hint: 'SLIDING leans with its speed (degrees per 100 px/s)', min: 0, max: 3, step: 0.05, unit: '°' },
-      { p: '--ww-skid', label: 'Skid marks', hint: 'the burnt-rubber smear SLIDING leaves', min: 0, max: 1, step: 0.01, unit: '' },
-      { p: '--ww-steer-entry', label: 'Phone slide-in distance', hint: 'how far off the side the words drift in from', min: 0, max: 300, step: 5, unit: 'px' },
+    { id: 'screen', title: 'Screen', frames: ['laptop', 'phone'], ctl: [
+      { p: '--ww-scr-bright', label: 'Screen glow', hint: 'how lit the tube behind is', min: 0.3, max: 1.8, step: 0.01, unit: '×' },
+      { p: '--ww-scr-scan', label: 'Scanlines', hint: 'how dark the CRT lines over the whole screen are', min: 0, max: 0.6, step: 0.01, unit: '' },
     ] },
-    { id: 'screen', title: 'Screen wall', looks: ['current', 'neon', 'steer', 'both'], ctl: [
-      { p: '--ww-scr-bright', label: 'Screen glow', hint: 'how lit the violet screen behind is', min: 0.3, max: 1.8, step: 0.01, unit: '×' },
-      { p: '--ww-scr-scan', label: 'Screen scanlines', hint: 'how dark the CRT lines over the whole wall are', min: 0, max: 0.6, step: 0.01, unit: '' },
-    ] },
-    { id: 'channels', title: 'Channels: screen colour per plugin', looks: ['current', 'neon', 'steer', 'both'], ctl: [
+    { id: 'channels', title: 'Channels: screen colour per plugin', frames: ['laptop', 'phone'], ctl: [
+      { p: '--ww-ch-drift-h', label: 'DRIFT colour', hint: 'hue of DRIFT\'s type (its screen stays /drift\'s violet tube): 280 = violet', min: 240, max: 330, step: 1, unit: '' },
+      { p: '--ww-ch-drift-s', label: 'DRIFT strength', hint: 'saturation: 0 = grey, higher = richer', min: 0, max: 100, step: 1, unit: '' },
       { p: '--ww-ch-revlimiter-h', label: 'RevLimiter colour', hint: 'hue: 26 = amber (keep above ~20: lower turns race-red)', min: 15, max: 60, step: 1, unit: '' },
       { p: '--ww-ch-revlimiter-s', label: 'RevLimiter strength', hint: 'saturation: 0 = grey, higher = richer', min: 0, max: 100, step: 1, unit: '' },
       { p: '--ww-ch-gas-h', label: 'GAS colour', hint: 'hue: 46 = brass gold', min: 15, max: 70, step: 1, unit: '' },
       { p: '--ww-ch-gas-s', label: 'GAS strength', hint: 'saturation: 0 = grey, higher = richer', min: 0, max: 100, step: 1, unit: '' },
       { p: '--ww-ch-radio-roulette-h', label: 'Radio Roulette colour', hint: 'hue: 38 = the dial glass cream', min: 0, max: 360, step: 1, unit: '' },
       { p: '--ww-ch-radio-roulette-s', label: 'Radio Roulette strength', hint: 'saturation: 0 = grey, higher = richer', min: 0, max: 100, step: 1, unit: '' },
-      { p: '--ww-snow-ms', label: 'Static length', hint: 'milliseconds of snow when the carousel changes channel (use the channel buttons up top to see it)', min: 100, max: 800, step: 10, unit: '' },
+      { p: '--ww-snow-ms', label: 'Static length', hint: 'milliseconds of snow when a plugin lights (use LIGHT up top to see it)', min: 100, max: 800, step: 10, unit: '' },
     ] },
-    { id: 'frame', title: 'Broken TV frame', looks: ['current', 'neon', 'steer', 'both'], ctl: [
-      { p: '--ww-frame-size', label: 'Frame size', hint: 'bezel thickness; stops growing once the side bezel would reach the words (about 0.25 on a 1141-1280 laptop, more on wide screens, thin on phones)', min: 0.1, max: 0.4, step: 0.005, unit: '' },
-      { p: '--ww-frame-gap', label: 'Wood around the TV', hint: '0 = the TV fills the wall; more = it hangs on the garage wood (laptop only; the bezel thins to keep clear of the words)', min: 0, max: 48, step: 1, unit: 'px' },
+    { id: 'frame', title: 'Broken TV frame', frames: ['laptop', 'phone'], ctl: [
+      { p: '--ww-frame-size', label: 'Frame size', hint: 'bezel thickness; stops growing once the side bezel would reach the menu or a name (about 0.25 on a 1141-1280 laptop, more on wide screens, thin on phones)', min: 0.1, max: 0.4, step: 0.005, unit: '' },
+      { p: '--ww-frame-gap', label: 'Wood around the TV', hint: '0 = the TV fills the wall; more = it hangs on the garage wood (laptop only; the bezel thins to keep clear of the content)', min: 0, max: 48, step: 1, unit: 'px' },
     ] },
-    { id: 'screen1', title: 'One screen (laptop)', looks: ['current', 'neon', 'steer', 'both'], ctl: [
-      { p: '--ww-breath', label: 'Breathing room', hint: 'glass showing above and below the words and the window; more = smaller words', min: 0, max: 48, step: 1, unit: 'px' },
+    { id: 'screen1', title: 'One screen', frames: ['laptop', 'phone'], ctl: [
+      { p: '--ww-breath', label: 'Breathing room', hint: 'glass showing above and below the content; more = smaller names and window', min: 0, max: 48, step: 1, unit: 'px' },
       { p: '--ww-snap-zone', label: 'Lock zone', hint: 'how close the TV has to stop for the scroll to lock onto it, in % of the screen (0 = never); scroll inside the laptop frame to feel it', min: 0, max: 60, step: 1, unit: '%' },
     ] },
-    { id: 'tv', title: 'TV window', looks: ['neon', 'steer', 'both'], ctl: [
-      { p: '--ww-tv-size', label: 'TV frame size', hint: 'the bezel vs the /drift TV (phones get a thinner one)', min: 0.4, max: 1.1, step: 0.01, unit: '×' },
-      { p: '--ww-tv-scan', label: 'Scanlines', hint: 'how dark the CRT lines over the picture are', min: 0, max: 0.6, step: 0.01, unit: '' },
-    ] },
   ];
-  const ALL = GROUPS.flatMap((g) => g.ctl);
+  const ALL = GROUPS.flatMap((g) => g.ctl.map((c) => Object.assign(c, { frames: g.frames })));
   const SIZES = {
     laptop: [[1280, 665], [1141, 636, "Dan's laptop"], [1440, 900], [1728, 1000]],
-    phone: [[390, 844], [360, 740], [430, 932]],
+    phone: [[390, 844], [375, 667, 'iPhone SE'], [360, 740], [430, 932]],
   };
 
-  let st = { look: null, bg: null, win: null, frame: null, view: 'both', size: { laptop: 0, phone: 0 }, cur: {} };
+  let st = { bg: null, frame: null, snow: null, view: 'both', pview: 'list', size: { laptop: 0, phone: 0 }, cur: {} };
   try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s && s.cur) st = Object.assign(st, s); } catch (e) {}
+  // the word-wall bench's looks, steering, neon and TV-window values have no page to drive any more
+  Object.keys(st.cur).forEach((p) => { if (!ALL.some((c) => c.p === p)) delete st.cur[p]; });
+  delete st.look; delete st.win;
+  st.size.phone = Math.min(st.size.phone || 0, SIZES.phone.length - 1);
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} };
-  let src = null;          // the defaults in WordWall.astro, read from the first frame that loads
-  let srcLook = 'both';    // DRIFT_LOOK as built
+  let src = null; // the defaults in WordWall.astro, read off the laptop frame's wall (the phone frame has phone values)
   const fmt = (c, v) => (c.step < 1 ? (+v).toFixed(2) : String(Math.round(v))) + c.unit;
   const val = (p) => (p in st.cur ? st.cur[p] : src ? src[p] : NaN);
-  const look = () => st.look || srcLook;
-  let srcBg = 'screen', srcWin = 'plain'; // WALL_BG (on .ww) / DRIFT_WIN as built
+  let srcBg = 'screen', srcFrame = '2', srcSnow = 'picture'; // WALL_BG / WALL_FRAME / data-ww-snow as built
   const bgv = () => st.bg || srcBg;
-  const winv = () => st.win || srcWin;
-  let srcFrame = '2'; // WALL_FRAME (on .ww) as built
   const framev = () => st.frame || srcFrame;
+  const snowv = () => st.snow || srcSnow;
+  let lit = null, cat = 'all';
 
   // the frames: no cookie banner, no welcome pop-up (session-only flags, same origin)
   try { sessionStorage.setItem('ra-popup-shown-s', '1'); sessionStorage.setItem('ra-welcome10-s', '1'); } catch (e) {}
@@ -174,7 +168,7 @@
     stages[f] = { s, f, iframe: s.querySelector('iframe'), vp: s.querySelector('.vp'), size: s.querySelector('[data-size]'), ready: false };
     SIZES[f].forEach(([w, h, n], i) => stages[f].size.add(new Option(`${w}×${h}${n ? ' · ' + n : ''}`, i)));
     stages[f].size.value = st.size[f] || 0;
-    stages[f].size.onchange = () => { st.size[f] = +stages[f].size.value; save(); layout(); setTimeout(() => toSound(f), 120); };
+    stages[f].size.onchange = () => { st.size[f] = +stages[f].size.value; save(); layout(); setTimeout(() => toPlugins(f), 120); };
     stages[f].iframe.src = '/?wwbench=' + f;
     waitFor(f);
   });
@@ -186,11 +180,12 @@
     GROUPS.forEach((g) => {
       const box = document.createElement('div');
       box.className = 'grp'; box.dataset.g = g.id;
-      box.innerHTML = `<h2>${g.title} <small>(${g.looks.map((l) => l.toUpperCase()).join(' / ')})</small></h2>`;
+      box.innerHTML = `<h2>${g.title}${g.note ? ` <small>(${g.note})</small>` : ''}</h2>`;
       g.ctl.forEach((c) => {
         const row = document.createElement('div');
         row.className = 'ctl';
-        row.innerHTML = `<div class="top"><label>${c.p === '--ww-neon-h' ? '<span class="sw"></span>' : ''}${c.label}</label>` +
+        const swatch = /^--ww-ch-.*-h$/.test(c.p);
+        row.innerHTML = `<div class="top"><label>${swatch ? '<span class="sw"></span>' : ''}${c.label}</label>` +
           `<span class="val"></span><button class="rs" title="back to the default">↺</button></div>` +
           `<div class="hint">${c.hint}</div><input type="range" min="${c.min}" max="${c.max}" step="${c.step}" aria-label="${c.label}">`;
         const inp = row.querySelector('input');
@@ -210,17 +205,16 @@
       const out = c.row.querySelector('.val');
       out.textContent = Number.isFinite(v) ? fmt(c, v) : '…';
       out.classList.toggle('chg', c.p in st.cur && src && Math.abs(st.cur[c.p] - src[c.p]) > 1e-6);
-      if (c.p === '--ww-neon-h') c.row.querySelector('.sw').style.color = `hsl(${v} 86% 62%)`;
+      const sw = c.row.querySelector('.sw');
+      if (sw) sw.style.color = `hsl(${v} ${val(c.p.replace(/-h$/, '-s'))}% 62%)`;
     });
-    document.querySelectorAll('.grp').forEach((g) => {
-      const grp = GROUPS.find((x) => x.id === g.dataset.g);
-      g.classList.toggle('off', !grp.looks.includes(look()));
-    });
-    document.querySelectorAll('#look button').forEach((b) => b.classList.toggle('on', b.dataset.l === look()));
     document.querySelectorAll('#bg button').forEach((b) => b.classList.toggle('on', b.dataset.b === bgv()));
-    document.querySelectorAll('#win button').forEach((b) => b.classList.toggle('on', b.dataset.w === winv()));
     document.querySelectorAll('#frame button').forEach((b) => b.classList.toggle('on', b.dataset.fr === framev()));
+    document.querySelectorAll('#snow button').forEach((b) => b.classList.toggle('on', b.dataset.sn === snowv()));
     document.querySelectorAll('#view button').forEach((b) => b.classList.toggle('on', b.dataset.v === st.view));
+    document.querySelectorAll('#pview button').forEach((b) => b.classList.toggle('on', b.dataset.pv === st.pview));
+    document.querySelectorAll('#cat button').forEach((b) => b.classList.toggle('on', b.dataset.c === cat));
+    document.querySelectorAll('#show button').forEach((b) => b.classList.toggle('on', b.dataset.s === lit));
   }
 
   // ── layout: both frames fit the window; each iframe renders at its real size, scaled down
@@ -257,102 +251,107 @@
   // wire each frame as soon as its document is parsed (not on 'load': a lazy <video> can hold the load event)
   function waitFor(f, tries = 0) {
     const doc = stages[f].iframe.contentDocument;
-    const ok = doc && doc.location.href !== 'about:blank' && doc.readyState !== 'loading' && doc.querySelector('[data-wordwall]');
+    const ok = doc && doc.location.href !== 'about:blank' && doc.readyState !== 'loading' && doc.querySelector(WALL);
     if (ok && stages[f].doc !== doc) return wire(f);
     if (tries < 200) setTimeout(() => waitFor(f, tries + 1), 150);
   }
-  // ── one frame: read the defaults, pin DRIFT, scroll to the wall, take over the look + properties
+  // ── one frame: read the defaults (laptop), build the category + plugin buttons from the page, scroll to the TV
   function wire(f) {
     const win = stages[f].iframe.contentWindow, doc = win.document;
     stages[f].doc = doc;
-    const panel = doc.querySelector(PANEL);
-    if (!panel) { toast('No DRIFT panel on the homepage (drift.homeLead off?)'); return; }
+    const wallEl = doc.querySelector(WALL);
     const hide = doc.createElement('style');
     hide.textContent = '#cookie-banner { display: none !important; }';
     doc.head.appendChild(hide);
-    if (!src) {
-      const cs = win.getComputedStyle(panel);
+    if (!src && f === 'laptop') {
+      const cs = win.getComputedStyle(wallEl);
       src = {};
       ALL.forEach((c) => (src[c.p] = parseFloat(cs.getPropertyValue(c.p))));
-      srcLook = panel.dataset.wwLook || 'both';
-      const wallEl = doc.querySelector('[data-wordwall]');
       srcBg = wallEl.dataset.wwBg || 'screen';
-      srcWin = panel.dataset.wwWin || 'plain';
       srcFrame = wallEl.dataset.wwFrame || '2';
+      srcSnow = wallEl.dataset.wwSnow || 'picture';
     }
-    // the phone frame is driven by a desktop mouse; tell the panel it is a touch screen (its own bench hook)
-    if (f === 'phone') panel.dataset.wwInput = 'touch';
+    if (!document.querySelector('#show button')) {
+      // the page's own categories + plugins, so the bench follows the data (library.ts) without an edit
+      const catBox = document.getElementById('cat'), showBox = document.getElementById('show');
+      doc.querySelectorAll('[data-ww-cat]').forEach((b) => {
+        const x = document.createElement('button');
+        x.dataset.c = b.dataset.wwCat; x.textContent = b.getAttribute('aria-label') || b.dataset.wwCat;
+        x.onclick = () => { cat = x.dataset.c; each((g) => g('ww:select', { cat })); syncLit(); paint(); };
+        catBox.appendChild(x);
+      });
+      doc.querySelectorAll('[data-ww-pick]').forEach((a) => {
+        const x = document.createElement('button');
+        x.dataset.s = a.dataset.wwPick; x.textContent = a.querySelector('.ww-name')?.textContent || a.dataset.wwPick;
+        x.onclick = () => { lit = x.dataset.s; light(); };
+        showBox.appendChild(x);
+      });
+      lit = wallEl.dataset.wwOn;
+    }
     const live = doc.createElement('style');
     live.id = 'wwb-live';
     doc.head.appendChild(live);
     stages[f].ready = true;
     commit();
-    show(f, 'drift');
-    setTimeout(() => toSound(f), 150);
+    if (lit) send(f, 'ww:select', { slug: lit, ...(f === 'phone' ? { view: st.pview } : {}) });
+    setTimeout(() => toPlugins(f), 150);
   }
-  function toSound(f) {
+  function toPlugins(f) {
     const win = stages[f].iframe.contentWindow, doc = win && win.document;
-    const panel = doc && doc.querySelector(PANEL);
-    if (!panel) return;
-    // the section's top edge (the TV frame's top corners: the checker and the tape), just under the nav
-    const r = (doc.getElementById('sound') || panel).getBoundingClientRect();
+    const sec = doc && doc.getElementById('plugins');
+    if (!sec) return;
+    // the section's top edge (the TV frame's top corners), just under the nav = the scroll lock's own target
     const nav = doc.querySelector('nav.site-nav, header');
     const navH = nav ? nav.getBoundingClientRect().height : 60;
-    const top = win.scrollY + r.top - navH; // = the scroll lock's own target
-    win.scrollTo({ top, behavior: 'instant' });
+    win.scrollTo({ top: win.scrollY + sec.getBoundingClientRect().top - navH, behavior: 'instant' });
   }
-  function show(f, slug) {
+  function send(f, type, detail) {
     const win = stages[f].iframe.contentWindow;
-    if (!win || !stages[f].ready) return;
-    win.document.dispatchEvent(new win.CustomEvent('showcase:change', { detail: { slug } }));
+    const wallEl = win && stages[f].ready && win.document.querySelector(WALL);
+    if (wallEl) wallEl.dispatchEvent(new win.CustomEvent(type, { detail }));
   }
-  function replay(f) {
-    const win = stages[f].iframe.contentWindow;
-    const panel = win && win.document.querySelector(PANEL);
-    if (panel) panel.dispatchEvent(new win.CustomEvent('ww:replay'));
-  }
+  const each = (fn) => ['laptop', 'phone'].forEach((f) => fn((type, detail) => send(f, type, detail), f));
+  const light = () => { each((g, f) => g('ww:select', { slug: lit, ...(f === 'phone' ? { view: st.pview } : {}) })); syncLit(); paint(); };
+  // after a category pick the page may light another plugin (the lit one was not in it): read it back
+  const syncLit = () => { const d = stages.laptop.ready ? stages.laptop.iframe.contentDocument : null; lit = d?.querySelector(WALL)?.dataset.wwOn || lit; };
 
-  // ── write the look + the live properties into both frames
+  // ── write the wall's attributes + the live properties into both frames
   function commit() {
     ['laptop', 'phone'].forEach((f) => {
       if (!stages[f].ready) return;
       const doc = stages[f].iframe.contentDocument;
-      const panel = doc.querySelector(PANEL);
-      if (panel && panel.dataset.wwLook !== look()) panel.dataset.wwLook = look();
-      const wallEl = doc.querySelector('[data-wordwall]');
+      const wallEl = doc.querySelector(WALL);
       if (wallEl && wallEl.dataset.wwBg !== bgv()) wallEl.dataset.wwBg = bgv();
-      if (panel && panel.dataset.wwWin !== winv()) panel.dataset.wwWin = winv();
       if (wallEl && wallEl.dataset.wwFrame !== framev()) wallEl.dataset.wwFrame = framev();
-      const body = Object.keys(st.cur).map((p) => `${p}: ${st.cur[p]}${unitOf(p)} !important;`).join(' ');
-      doc.getElementById('wwb-live').textContent = body ? `${PANEL}, [data-wordwall] { ${body} }` : '';
+      if (wallEl && wallEl.dataset.wwSnow !== snowv()) wallEl.dataset.wwSnow = snowv();
+      const body = Object.keys(st.cur)
+        .filter((p) => (ALL.find((c) => c.p === p) || { frames: [] }).frames.includes(f))
+        .map((p) => `${p}: ${st.cur[p]}${unitOf(p)} !important;`).join(' ');
+      doc.getElementById('wwb-live').textContent = body ? `${WALL} { ${body} }` : '';
     });
     save();
     paint();
   }
   const unitOf = (p) => (ALL.find((c) => c.p === p) || {}).unit === 'px' ? 'px' : '';
 
-  document.querySelectorAll('#look button').forEach((b) => (b.onclick = () => { st.look = b.dataset.l; commit(); setTimeout(() => { replay('laptop'); replay('phone'); }, 60); }));
   document.querySelectorAll('#bg button').forEach((b) => (b.onclick = () => { st.bg = b.dataset.b; commit(); }));
-  document.querySelectorAll('#win button').forEach((b) => (b.onclick = () => { st.win = b.dataset.w; commit(); }));
   document.querySelectorAll('#frame button').forEach((b) => (b.onclick = () => { st.frame = b.dataset.fr; commit(); }));
+  document.querySelectorAll('#snow button').forEach((b) => (b.onclick = () => { st.snow = b.dataset.sn; commit(); if (lit) light(); }));
   document.querySelectorAll('#view button').forEach((b) => (b.onclick = () => { st.view = b.dataset.v; save(); layout(); }));
-  document.querySelectorAll('#show button').forEach((b) => (b.onclick = () => {
-    ['laptop', 'phone'].forEach((f) => show(f, b.dataset.s));
-    document.querySelectorAll('#show button').forEach((x) => x.classList.toggle('on', x === b));
-  }));
-  document.getElementById('replay').onclick = () => { ['laptop', 'phone'].forEach((f) => { show(f, 'drift'); replay(f); }); document.querySelectorAll('#show button').forEach((x) => x.classList.toggle('on', x.dataset.s === 'drift')); };
+  document.querySelectorAll('#pview button').forEach((b) => (b.onclick = () => { st.pview = b.dataset.pv; save(); send('phone', 'ww:select', { view: st.pview }); paint(); }));
+  document.getElementById('replay').onclick = () => each((g) => g('ww:replay'));
   document.getElementById('resetAll').onclick = () => {
     if (!confirm('Back to the defaults in WordWall.astro? (your bench values are lost)')) return;
-    st.cur = {}; st.look = null; st.bg = null; st.win = null; st.frame = null; commit(); toast('Back to the defaults');
+    st.cur = {}; st.bg = null; st.frame = null; st.snow = null; commit(); toast('Back to the defaults');
   };
 
-  // ── hand-back: the look + every value (defaults included), ready to bake
+  // ── hand-back: the wall's switches + every value (defaults included), ready to bake
   function settings() {
     const values = {};
     ALL.forEach((c) => (values[c.p] = `${+(+val(c.p)).toFixed(4)}${c.unit === 'px' ? 'px' : ''}`));
     return {
-      bench: 'wwbench', note: 'apply ww bench: bake look -> DRIFT_LOOK, bg -> WALL_BG, win -> DRIFT_WIN, frame -> WALL_FRAME and values -> the --ww-* defaults in WordWall.astro',
-      date: new Date().toISOString(), look: look(), bg: bgv(), win: winv(), frame: framev(),
+      bench: 'wwbench', note: 'apply ww bench: bake bg -> WALL_BG, frame -> WALL_FRAME, snow -> the wall\'s data-ww-snow and values -> the --ww-* defaults in WordWall.astro (the plugin-list values are the laptop\'s)',
+      date: new Date().toISOString(), bg: bgv(), frame: framev(), snow: snowv(),
       values, changed: Object.keys(st.cur).filter((p) => src && Math.abs(st.cur[p] - src[p]) > 1e-6),
     };
   }
@@ -366,7 +365,6 @@
   function toast(m) { const t = document.getElementById('toast'); t.textContent = m; t.classList.add('on'); clearTimeout(tt); tt = setTimeout(() => t.classList.remove('on'), 2600); }
 
   buildControls();
-  document.querySelector('#show button[data-s="drift"]').classList.add('on');
   layout();
 })();
 </script>
