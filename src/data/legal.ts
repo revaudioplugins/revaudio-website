@@ -9,4 +9,4 @@ export const TERMS_LAST_UPDATED = '2026-10-07';
 
 /** Date shown on the Privacy Policy. Kept apart from TERMS_LAST_UPDATED so a
  *  privacy-only change doesn't move the terms version stamped on orders. */
-export const PRIVACY_LAST_UPDATED = '2026-10-17';
+export const PRIVACY_LAST_UPDATED = '2026-10-18';

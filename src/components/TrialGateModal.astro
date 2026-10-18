@@ -268,10 +268,14 @@ const gateNames = Object.fromEntries(plugins.map((p) => [dlGateId(p), p.name]));
       submit.disabled = true;
       err.textContent = '';
       var consent = modal.querySelector('[data-tg-consent]');
+      // How the person reached us (Cart.astro's 'ra-src' note: channel +
+      // campaign / referring host, no click ids), stored on the trial lead.
+      var regBody = { email: v, plugin: pluginSlug, marketing: !!(consent && consent.checked) };
+      try { if (window.raSaleSource) Object.assign(regBody, window.raSaleSource()); } catch (e) {}
       fetch(registerUrl, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ email: v, plugin: pluginSlug, marketing: !!(consent && consent.checked) }),
+        body: JSON.stringify(regBody),
       })
         .then(function (res) { return res.json(); })
         .then(function (data) {
