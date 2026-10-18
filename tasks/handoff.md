@@ -19,11 +19,18 @@
   `src/lib/wordwallDrift.ts`, `tools/wwbench/*`, `src/pages/index.astro`, `DESIGN.md`, `tasks/home-library-plan.md`,
   `tasks/handoff.md`. Phase 3 adds the header, footer, cart, store and product-page files when it starts.
 
+## 2026-10-18 — /revlimiter/ for Google Ads (fixes F + G) (Claude Code `revaudio-75`, Yoni's laptop) — PUSHED TO MAIN = LIVE 2026-10-18 (Yoni: "push", "do all parts and push")
+
+Claim: CLOSED 2026-10-18. Commits on main: `21caf5e` (trial form sends the `ra-src` note with /download/register; privacy text + date 2026-10-18; needs licence worker `3bbefa8`, live), `ef2cc1b` (crane door + BUY patch PNG -> WebP via getImage, both BuyButtonCrane + CraneDropZone, -174 KB), `a4ccea1` (`seoTitle` / `metaDescription` optional plugin fields used only by [slug] <title>/meta; RevLimiter title "RevLimiter – Mastering Limiter Plugin", new description, tagline gains "plugin"; 1% resting floor `max(0.01, …)` on the crane door's light layers so LCP is the hero image, not a light layer that appears at the strike).
+
+- Checks: reference build + screenshots in `C:\RevAudio\Website\pagespeed-ref-2026-10-06\` (`dist-crane-ref`, `shots-crane-ref*`, `shots-crane-new3`): only visible change = the tagline word; door max pixel delta 11/255. Real Chrome, phone viewport, 4x CPU: LCP 3.66 s -> 0.41-0.53 s (hero IMG). Live verified (title, tagline, WebP 68 KB, floors in CSS).
+- Not fixed: Lighthouse mobile (simulated) stays 62-65, LCP render delay ~5 s from the 2 render-blocking CSS files + constant animation main-thread work (the 2026-10-06 plan judged splitting the CSS risky). PSI API daily quota was out; 🧑 run pagespeed.web.dev on /revlimiter/ for the official number. Google Ads Quality Score (landing page exp) re-rates over 1-3 weeks.
+
 ## 2026-10-15 — Homepage word wall: WEIGHT (checker S4), branch `feat/drift-wordwall` (Claude Code `revaudio-32`, laptop 1) — PUSHED TO MAIN = LIVE 2026-10-18 (Dan: "push")
 - Dan: "let's fix the weight" + "lighter without hurting quality" -> go. Plan, numbers and checks: `tasks/todo.md`
   (top section + "Review — WEIGHT").
 - Claim CLOSED 2026-10-15: `src/components/WordWall.astro`, `tasks/todo.md`, `tasks/handoff.md`, `tasks/lessons.md`.
-- Base: HEAD = origin/main 697f49d. Commit by path; push only on Dan's "push" (main = live).
+- Base: started on origin/main 697f49d; rebased onto edb5049 for the push (main now ddada3d + later commits).
 - What changed: the TV frame + DRIFT's poster are no longer in the first load. They load once the page has loaded (or
   the first scroll / 3 s) and the wall is a screen away, in the smallest cut that is still pixel-sharp on that screen
   (frame 640/960/1400, poster 800/1100/1400, picked from DPR x the frame's real scale / the window's width), AVIF with
@@ -43,6 +50,27 @@
   (AVIF) and WebKit (WebP fallback), no console errors. Post-deploy check: `curl -I` one live `/_astro/*.avif`
   (content-type image/avif through Cloudflare) + the weight check on the live site. Stale cached HTML is safe: the old
   1400 WebP names are still in the new dist.
+- Session end 2026-10-18 (revaudio-32): deploy + smoke test of ddada3d green. Live checks done: the live HTML carries
+  `data-ww-art`; `/_astro/*.avif` served as `image/avif` through Cloudflare; Chromium gets the AVIF cuts, WebKit the WebP
+  fallback, video plays, no console errors with nothing stubbed (the CF beacon "integrity" errors seen first came from
+  the test's own empty-body stub of cloudflareinsights). Live weight (compressed): laptop 1661 KB at load + 4 s, TV 0 KB
+  up front / 184 KB at the wall; phone 1201 KB until the load event with the TV at 0, then 73 KB right after load.
+  Worktree clean, branch = origin/feat/drift-wordwall, 1 behind origin/main (21caf5e, another session's trial form):
+  pull before the next work here. No background processes left running.
+- OPEN for Dan (unchanged by this work unless noted): real iPhone + Mac Safari look at the wall (the AVIF path never ran
+  in a real Safari); bench pick -> "apply ww bench" (bakes the values, deletes rolls 1 and 3); design calls N6 (video
+  pause control) and N7 (scanlines over the phone button); the big-screen word cap; Instagram shots for Yoni.
+- Git audit at rv close 2026-10-18 (report only, nothing touched): `feat/drift-wordwall` merged into main;
+  `garage-pass` merged; NOT merged and not this session's: `feat/home-library` (d6f0e0c, its own worktree
+  `.claude/worktrees/home-library`) and `chore/remove-old-store-code` (71b00d7). The main clone's local `main` sits at
+  697f49d, 5 behind origin/main (no tracked changes there; an untracked root `HANDOFF.md` from 2026-09-06, not ours,
+  left as is).
+- Then, on Dan's picks (2026-10-18, "one by one"): the handoff commit pushed (21caf5e..cc5a1d8, deploy + smoke green);
+  the main clone fast-forwarded to origin/main (its untracked root `HANDOFF.md` untouched); `feat/home-library` left
+  to its session ("don't touch"); `chore/remove-old-store-code` DELETED ("clean it"): its one commit 71b00d7 had the
+  same patch-id as 6d7ec55, already on main (`git cherry main 71b00d7` = "-"); 774a5d9 then removed the second
+  old-store engine. Local-only branch, never on GitHub. 71b00d7 is NOT in any reflog; the object stays until `git gc`
+  (restore: `git branch chore/remove-old-store-code 71b00d7`).
 
 ## 2026-10-14 — Homepage word wall: DRIFT panel, two new looks + HD live window on a bench, branch `feat/drift-wordwall` (Claude Code `revaudio-32`, laptop 1) — PUSHED TO MAIN = LIVE 2026-10-14 (Dan: "send a checker; if it passes push to main, if not fix then push"); bench tuning ("apply ww bench") still open
 - Dan: "the DRIFT panel on the word wall needs a more interesting design" -> picks: build BOTH looks (NEON sign / STEER the
