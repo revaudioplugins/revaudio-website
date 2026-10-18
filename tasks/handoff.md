@@ -1,4 +1,4 @@
-## 2026-10-15 — Home LIBRARY: the TV becomes the plugin browser, carousel + Store nav out, branch `feat/home-library` (Claude Code `revaudio-a6`, laptop 1) — IN PROGRESS (user's "go" 2026-10-18)
+## 2026-10-15 — Home LIBRARY: the TV becomes the plugin browser, carousel + Store nav out, branch `feat/home-library` (Claude Code `revaudio-a0`, was `revaudio-a6` before a restart, laptop 1) — IN PROGRESS (user's "go" 2026-10-18)
 - User: one new branch for the home page; a top-right LIBRARY button opens plugin categories on the TV; a category
   turns the glowing words into plugin names + thumbnails; a lit plugin shows a bigger image, a short description,
   "Try it free" (email gate) and a small product-page link; carousel + Store go; later ratings + "you may also like".
@@ -15,9 +15,13 @@
   PLUGINS button, `/store` -> `/#plugins`, links re-pointed, store FAQ moved, smoke tests), then phase 4.
 - Found: index.astro's testimonial CTA said "14-day free trial" (the trial is 30 days in both plugins' code); fixed
   on this branch. Not visible live: the block renders only with real testimonials, and there are none yet.
-- Active thread (owner revaudio-a6): `src/data/library.ts` (new), `src/data/plugins.ts`, `src/components/WordWall.astro`,
+- Active thread (owner revaudio-a0): `src/data/library.ts` (new), `src/data/plugins.ts`, `src/components/WordWall.astro`,
   `src/lib/wordwallDrift.ts`, `tools/wwbench/*`, `src/pages/index.astro`, `DESIGN.md`, `tasks/home-library-plan.md`,
-  `tasks/handoff.md`. Phase 3 adds the header, footer, cart, store and product-page files when it starts.
+  `tasks/handoff.md`; phase 3 (from 2026-10-18): `src/components/Header.astro`, `src/components/Footer.astro`,
+  `src/components/Cart.astro`, `src/components/MobileBuyBar.astro` (comment), `src/data/site.ts` (comment),
+  `src/pages/store/index.astro`, `src/pages/[slug].astro`, `src/pages/gas.astro`, `src/pages/support.astro`,
+  `astro.config.mjs`, `tests/smoke.spec.ts`, `README.md`; deleted: `src/components/PluginShowcase.astro`,
+  `src/components/drift/DriftCard.astro`, `src/components/PluginCard.astro`.
 
 ## 2026-10-18 — /revlimiter/ for Google Ads (fixes F + G) (Claude Code `revaudio-75`, Yoni's laptop) — PUSHED TO MAIN = LIVE 2026-10-18 (Yoni: "push", "do all parts and push")
 
