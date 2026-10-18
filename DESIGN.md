@@ -145,6 +145,18 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
     it under the nav (0.55s, easeOutQuart) and never pulls back against the visitor. No lock under
     reduced motion (no Lenis). iOS: with Safari's bars hidden a strip of the next section shows under
     the TV (svh, chosen over a TV that resizes mid-scroll).
+  - The way in (phase 3, 2026-10-18): the header's PLUGINS, the one lit nav item (the brass chip Store
+    had; outside the link list, so on phones it stays on the bar beside the menu button as a 44px chip)
+    and every other `/#plugins` link: the footer's Plugins, the cart's "Explore the plugins", the closing
+    CTA, the product pages' "<- All plugins"; `/store` redirects here (a bare page: script first, so the
+    query string reaches the cart; meta refresh without JS; noindex + canonical). On home the links
+    glide to the TV (0.7s, Lenis; a jump under reduced motion) instead of loading the page; from another
+    page the browser's own jump lands it. Both park it where the lock does: a whole pixel, rounded up,
+    so the TV's top edge tucks under the nav by less than a pixel and no strip of the page above ever
+    shows. `#plugins`' scroll-margin-top takes back global.css's anchor padding (`--nav-h` + 0.75rem)
+    and adds the real bar (`--site-nav-h`, 41px laptop / 58px phone). Focus moves to the TV's PLUGINS
+    heading; a phone's open plugin goes back to the list. Measured (Chromium + WebKit, 1280 + 390, every
+    way in, reduced motion too): the TV's top 0.2-0.3px under the nav line.
   - Bench `/__wwbench` (`tools/wwbench`, dev only: the real homepage at laptop + phone size): WOOD /
     SCREEN, RAILS / BROKEN TV 1-3, STATIC picture / whole screen, REPLAY (the power-on), the categories
     and plugins as buttons, the phone's pane; sliders: list width, biggest name, thumbnail, unlit names

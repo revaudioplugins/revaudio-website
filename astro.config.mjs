@@ -10,7 +10,7 @@ import wwbench from './tools/wwbench/integration.mjs';
 // Pages that render noindex stay out of the sitemap too, so Search Console
 // never sees a submitted URL that asks not to be indexed. /buy/<slug>/ are
 // checkout shortcuts for email links (src/pages/buy).
-const NOINDEX = ['/buy/', '/beta/', '/founders-intake-2yr/', '/paddle-test/', '/thank-you/'];
+const NOINDEX = ['/buy/', '/beta/', '/founders-intake-2yr/', '/paddle-test/', '/thank-you/', '/store/'];
 
 export default defineConfig({
   site: 'https://revaudio.net',
@@ -18,8 +18,8 @@ export default defineConfig({
   // Bench and gaugebench need no flag: both self-disable outside `dev` and
   // stay inert until a URL asks for them with ?bench / ?gauge — so plain
   // `npm run dev` is unaffected. Watchbench (dev only) is its own page:
-  // /__watchbench. Wwbench (dev only, the homepage word wall's DRIFT
-  // panel) likewise: /__wwbench.
+  // /__watchbench. Wwbench (dev only, the homepage's plugin TV)
+  // likewise: /__wwbench.
   // MDX: blog posts (src/content/blog) embed figure components.
   integrations: [mdx(), sitemap({ filter: (page) => !NOINDEX.some((p) => page.includes(p)) }), bench(), gaugebench(), watchbench(), wwbench(), ...(process.env.EDIT ? [revedit()] : [])],
   build: {

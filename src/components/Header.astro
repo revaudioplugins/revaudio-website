@@ -1,9 +1,6 @@
 ---
-import { plugins } from '../data/plugins';
-
 const path = Astro.url.pathname;
 const isActive = (p: string) => path === p || path === p + '/';
-const onProductPage = plugins.some((pl) => isActive(`/${pl.slug}`));
 ---
 
 <nav class="site-nav" data-site-nav aria-label="Main navigation">
@@ -14,14 +11,21 @@ const onProductPage = plugins.some((pl) => isActive(`/${pl.slug}`));
       <span class="logo-word">REV<span class="logo-accent">AUDIO</span></span>
     </a>
     <div class="nav-right">
+      {/* PLUGINS is the one non-plain nav item — the site's "action channel"
+          (one lit treatment reserved for revenue actions; everything else
+          stays plain text so the isolation actually isolates). It leads to
+          the home page's TV, where every plugin lives (home LIBRARY,
+          2026-10-18: it took Store's slot, and /store redirects there). It
+          sits outside the list so phones keep it on the bar next to the menu
+          button while the list folds into the menu. On home, WordWall's
+          script glides to the TV instead of loading the page again. The
+          wrapper is a block holding an inline link, the shape Store had as
+          li > a: the chip's padding never grows the bar. */}
+      <div class="nav-lit"><a href="/#plugins" class="nav-plugins">Plugins</a></div>
       <ul id="nav-menu" class="nav-links">
         {/* Task nav only — the logo is the home link, and legal lives in the
-            footer's Legal column. Keep this list at ~6; past that, Store
+            footer's Legal column. Keep this list at ~6; past that, it
             becomes a dropdown rather than the bar growing. */}
-        {/* Store is the one non-plain nav item — the site's "action channel"
-            (one lit treatment reserved for revenue actions; everything else
-            stays plain text so the isolation actually isolates). */}
-        <li><a href="/store" class="nav-store" aria-current={isActive('/store') || onProductPage ? 'page' : undefined}>Store</a></li>
         <li><a href="https://revlimiter-license.revaudio.workers.dev/download" target="_blank" rel="noopener noreferrer">Downloads</a></li>
         <li><a href="/about" aria-current={isActive('/about') ? 'page' : undefined}>About</a></li>
         <li><a href="/blog" aria-current={path.startsWith('/blog') ? 'page' : undefined}>Blog</a></li>
@@ -80,6 +84,9 @@ const onProductPage = plugins.some((pl) => isActive(`/${pl.slug}`));
     menu.addEventListener('click', function (e) {
       if (e.target.closest('a')) setOpen(false);
     });
+    // PLUGINS sits on the bar, outside the menu: tapping it closes the menu too.
+    var lit = nav.querySelector('.nav-plugins');
+    if (lit) lit.addEventListener('click', function () { setOpen(false); });
     // Outside click / Escape close.
     document.addEventListener('click', function (e) {
       if (isOpen() && !nav.contains(e.target)) setOpen(false);
@@ -110,31 +117,44 @@ const onProductPage = plugins.some((pl) => isActive(`/${pl.slug}`));
   .logo-word .logo-accent { color: var(--brass-bright); }
   .logo:hover .logo-word { filter: brightness(1.12); transform: translateY(-1px); }
 
-  /* ---- Store — the lit slot ----
+  /* ---- PLUGINS — the lit slot ----
      The one non-plain nav item (see the markup comment): a small brass-lit
-     chip against the plain-text row. Desktop-only; the mobile menu keeps its
-     full-width rows and marks Store by colour alone. */
-  @media (min-width: 701px) {
-    .nav-links a.nav-store {
-      color: var(--brass-bright);
-      border: 1px solid var(--brass-dark);
-      border-radius: 3px;
-      padding: 0.3rem 0.8rem;
-      /* Translucent, not --bg-1: an opaque chip on a frosted bar reads as a
-         sticker sitting on the glass instead of a part of it. Denser than the
-         pane on purpose — brass text needs its own darker backing to clear AA
-         where the plain white links get by on the pane alone. */
-      background: rgba(11, 10, 9, 0.55);
-      transition: background 0.2s var(--ease), color 0.2s var(--ease), border-color 0.2s var(--ease);
-    }
-    .nav-links a.nav-store:hover {
-      background: var(--brass);
-      border-color: var(--brass);
-      color: var(--bg-0);
-    }
+     chip against the plain-text row. Outside the list, so it carries the
+     links' type and halo itself (global.css nav ul a / nav.site-nav ul a). */
+  .nav-lit { margin-right: 0.25rem; } /* the bar's 1.75rem gap + this = the list's 2rem rhythm */
+  .nav-plugins {
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75);
+    color: var(--brass-bright);
+    border: 1px solid var(--brass-dark);
+    border-radius: 3px;
+    padding: 0.3rem 0.8rem;
+    /* Translucent, not --bg-1: an opaque chip on a frosted bar reads as a
+       sticker sitting on the glass instead of a part of it. Denser than the
+       pane on purpose — brass text needs its own darker backing to clear AA
+       where the plain white links get by on the pane alone. */
+    background: rgba(11, 10, 9, 0.55);
+    transition: background 0.2s var(--ease), color 0.2s var(--ease), border-color 0.2s var(--ease);
   }
+  .nav-plugins:hover {
+    background: var(--brass);
+    border-color: var(--brass);
+    color: var(--bg-0);
+  }
+  :global(html.hc) .nav-plugins { text-shadow: none; }
+  /* Phones: the same chip on the bar, as tall and round as the menu button
+     beside it (a 44px tap target; the burger already sets the bar's height). */
   @media (max-width: 700px) {
-    .nav-links a.nav-store { color: var(--brass-bright); }
+    .nav-lit { margin-right: 0; display: flex; } /* no line box: an inline-flex chip would add descender room */
+    .nav-plugins {
+      display: inline-flex;
+      align-items: center;
+      min-height: 44px;
+      padding: 0 0.85rem;
+      border-radius: 8px;
+    }
   }
 
   .cart-toggle {

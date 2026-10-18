@@ -109,7 +109,7 @@ export const site = {
   /**
    * Download email gate — the license worker behind every download popup on
    * the site (TrialGateModal triggers in BuyButton / BuyButtonCrane /
-   * CraneDropZone / MobileBuyBar / PluginCard / ExitIntentPopup; TrialPlates
+   * CraneDropZone / MobileBuyBar / ExitIntentPopup; TrialPlates
    * derives the same endpoint from plugin.trialUrl). Popups POST
    * {email, plugin} to `workerUrl`/download/register (CORS-allowed for
    * revaudio.net + localhost); the worker emails a verify link that unlocks

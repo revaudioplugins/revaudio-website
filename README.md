@@ -24,7 +24,7 @@ Output goes to `dist/`. Every push to `main` runs the GitHub Pages workflow and 
 
 - `/` — homepage
 - Product pages, one per entry in `src/data/plugins.ts` (rendered by `src/pages/[slug].astro`): `/revlimiter`, `/radio-roulette`, `/gas`, `/drift`, `/the-ac` (checked 2026-10-05; `plugins.ts` is the source of truth)
-- `/store` and `/buy/<slug>` — store and checkout (Paddle)
+- `/buy/<slug>` — checkout links (Paddle); `/store` redirects to the home page's plugin TV (`/#plugins`, since 2026-10-18)
 - `/blog`, `/about`, `/contact`, `/support`, plus the legal pages (`/eula`, `/privacy`, `/terms`, `/accessibility`)
 
 ## TODO before launch

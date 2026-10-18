@@ -185,7 +185,7 @@ const first = items[0]?.slug ?? '';
 
     {/* the on-screen menu: the categories (buttons; shown once the script runs, they do nothing without it) */}
     <div class="ww-osd">
-      <h2 class="ww-tag">Plugins</h2>
+      <h2 class="ww-tag" tabindex="-1">Plugins</h2>
       <div class="ww-cats" role="group" aria-label="Categories">
         {cats.map((c, k) => (
           <button
@@ -309,7 +309,7 @@ const first = items[0]?.slug ?? '';
 </GarageWall>
 
 <script>
-  import { lenis } from '../lib/motion'; // the house scroller (null under reduced motion)
+  import { lenis, DUR_ANCHOR } from '../lib/motion'; // the house scroller (null under reduced motion)
 
   const wall = document.querySelector<HTMLElement>('[data-wordwall]');
   if (wall) {
@@ -650,6 +650,42 @@ const first = items[0]?.slug ?? '';
     // rotating a tablet across the breakpoint: the desktop shows both panes, the phone the list
     phone.addEventListener('change', () => { if (!phone.matches) wall.dataset.wwView = 'list'; dress(); });
 
+    /* The scroll that parks the TV exactly under the nav, given the TV's
+       distance from that line: a whole pixel, rounded up. WebKit drops a
+       fractional scroll's fraction, which left a 1px strip of the page above
+       showing; up, the TV's top edge tucks <1px under the nav's hairline. */
+    const landY = (off: number) => Math.ceil(window.scrollY + off);
+
+    /* "/#plugins" links on home (the header's PLUGINS, the footer, the cart's
+       "Explore the plugins", the closing CTA) glide to the TV instead of
+       navigating: with ?cat= in the address the link would load the page
+       again, and the browser's own jump would fire popstate (a static burst).
+       Lenis listens on window and ignores preventDefault, so the click stops
+       here and this glide is the only one (no Lenis = reduced motion = a
+       jump). It lands where the lock lands, on the same whole pixel (another
+       page's link lands by #plugins' scroll-margin-top, CSS). Lenis glides
+       from its own copy of the scroll, and when frames starve (5 fps in a
+       headless WebKit) that copy can miss a native jump: the glide then went
+       to the wrong place, or nowhere when Lenis thought it was there already.
+       So the copy is synced first and the target is read off the page's real
+       scroll. Focus moves into the TV, as the browser's own jump would have
+       moved it. */
+    document.addEventListener('click', (e) => {
+      const a = (e.target as Element | null)?.closest('a[href="/#plugins"]');
+      if (!a || !section || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      e.preventDefault();
+      e.stopPropagation();
+      a.closest('dialog')?.close(); // the cart drawer
+      if (history.state?.wwView === 'panel') history.back(); // a phone's open plugin: back to the list (popstate)
+      const nav = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--site-nav-h')) || 44;
+      const y = landY(section.getBoundingClientRect().top - nav);
+      if (lenis) {
+        if (lenis.isScrolling !== 'smooth') lenis.scrollTo(window.scrollY, { immediate: true }); // sync, no move
+        lenis.scrollTo(y, { duration: DUR_ANCHOR, easing: (t: number) => 1 - Math.pow(1 - t, 4) });
+      } else window.scrollTo(0, y);
+      wall.querySelector<HTMLElement>('.ww-tag')?.focus({ preventScroll: true });
+    });
+
     /* Power-on: the first time the TV comes into view the tube lights from a
        line (a CRT turn-on) and the pilot LED with it: motion as feedback to
        arriving. Only JS arms it, so no JS / reduced motion = lit at rest. */
@@ -709,7 +745,7 @@ const first = items[0]?.slug ?? '';
         if (Math.abs(off) < 1 || Math.abs(off) > zone) return;
         // never pull back against the visitor: land only when this gesture brought the TV closer to the line
         if (Math.abs(off) >= Math.abs(off + moved)) return;
-        lenis.scrollTo(window.scrollY + off, { duration: 0.55, easing: (t: number) => 1 - Math.pow(1 - t, 4) });
+        lenis.scrollTo(landY(off), { duration: 0.55, easing: (t: number) => 1 - Math.pow(1 - t, 4) });
       };
       const later = () => {
         clearTimeout(idle);
@@ -1336,6 +1372,18 @@ const first = items[0]?.slug ?? '';
   .ww[data-ww-power='armed'] .ww-frame-led {
     background: radial-gradient(circle at 40% 35%, #3c4a42 0 18%, #18241d 60%, #0b120e 100%);
     box-shadow: none;
+  }
+
+  /* The anchor: /#plugins from another page (the header's PLUGINS, the
+     product pages' breadcrumb, the /store redirect) is the browser's own
+     jump, and it must park the TV where the scroll lock and the script's
+     glide park it: exactly under the nav. global.css pads every anchor jump
+     by --nav-h + 0.75rem (html scroll-padding-top, for focus); this takes
+     that back and adds the real bar (--site-nav-h, from the header script: a
+     phone's bar is taller than --nav-h). Negative on a laptop, which
+     scroll-margin allows. */
+  :global(section#plugins) {
+    scroll-margin-top: calc(var(--site-nav-h, var(--nav-h)) - var(--nav-h) - 0.75rem);
   }
 
   /* ---- ONE SCREEN (Dan 2026-10-14: "when I scroll, the site fits the screen

@@ -11,8 +11,13 @@
 - Done (local commits on the branch, NOT pushed): phase 1 = the catalog data (`5b44750`); phase 2 = the TV is the
   library (WordWall rewritten: categories, stencil names + thumbnails, the lit plugin's pane with price + Try + Product
   page, URL state `?cat=` / `?plugin=`, phone panes, tabs; the carousel off home; wwbench + DESIGN.md rewritten;
-  `wordwallDrift.ts` deleted). Checked in Chromium + WebKit at 9 sizes (plan, Phase 2). Next: phase 3 (header
-  PLUGINS button, `/store` -> `/#plugins`, links re-pointed, store FAQ moved, smoke tests), then phase 4.
+  `wordwallDrift.ts` deleted). Checked in Chromium + WebKit at 9 sizes (plan, Phase 2). Phase 3 (2026-10-18): the
+  header's lit PLUGINS chip (Store's slot; on phones beside the burger), every `/#plugins` link on home glides to the
+  TV where the lock parks it, `/store` = a bare redirect page to `/#plugins` (query kept, noindex), links re-pointed,
+  the store FAQ on `/support` ("Before you buy"), smoke tests reworked; PluginShowcase, DriftCard and PluginCard
+  deleted. Checks in the plan (Phase 3). Next: phase 4 (verify), then the user's look + "push".
+- For the user (dashboard, optional): a Cloudflare Redirect Rule `/store*` -> `/#plugins` would make it a real 301;
+  the repo page works without it.
 - Found: index.astro's testimonial CTA said "14-day free trial" (the trial is 30 days in both plugins' code); fixed
   on this branch. Not visible live: the block renders only with real testimonials, and there are none yet.
 - Active thread (owner revaudio-a0): `src/data/library.ts` (new), `src/data/plugins.ts`, `src/components/WordWall.astro`,

@@ -7,9 +7,10 @@
  *   status: 'live'           → Buy CTA active (isBuyable: paddlePriceId set; it
  *                              is also the Paddle cart item)
  *
- * ARRAY ORDER IS THE STORE ORDER: /store renders this list as-is, so shipping
- * plugins lead and in-development ones trail. Nothing else depends on order
- * (Header/Cart/TrialGateModal look plugins up by slug).
+ * Array order: shipping plugins lead and in-development ones trail. The home
+ * TV sets its own order (tvPlugins() in src/data/library.ts); /store, which
+ * rendered this list as-is, redirects to the TV since 2026-10-18. Everything
+ * else looks plugins up by slug (Header/Cart/TrialGateModal).
  *
  * Prices are intent — flip when commerce launches.
  * Checkout: Paddle Billing since 2026-08-31 (paddlePriceId; config in
@@ -189,7 +190,7 @@ export interface Plugin {
   tutorialVideo?: { title: string; youtubeId: string; blurb?: string };
   /** True while checkout is intentionally paused for a payment-provider
    *  migration (2026-07-26). Every buy/download CTA (BuyButton,
-   *  BuyButtonCrane, CraneDropZone, MobileBuyBar, PluginCard) swaps its
+   *  BuyButtonCrane, CraneDropZone, MobileBuyBar) swaps its
    *  normal action for the TrialGateModal popup instead — "checkout's under
    *  construction, get the trial" + an email gate. Drop this flag once
    *  checkout is back to restore the real buy/download buttons everywhere. */

@@ -1,7 +1,8 @@
 # Home LIBRARY: the TV becomes the plugin browser (branch `feat/home-library`)
 
-- Owner: Claude Code `revaudio-a6` (laptop 1). Status: **IN PROGRESS (user's "go" 2026-10-18).** Phases 1 + 2 done
-  (local commits, not pushed); Phase 3 next.
+- Owner: Claude Code `revaudio-a0` (was `revaudio-a6` before a restart; laptop 1). Status: **IN PROGRESS (user's "go"
+  2026-10-18).** Phases 1-3 done (local commits, not pushed); Phase 4 (verify) next.
+- origin/main `141d400` (crane WebP, trial source, /revlimiter/ Ads fixes) merged in 2026-10-18 before phase 3 (`d80e459`).
 - Worktree: `.claude/worktrees/home-library` off origin/main `697f49d`; origin/main `ddada3d` (the TV weight work)
   merged in 2026-10-18 (`8ca4938`). `node_modules` = junction to the main clone's.
 - "apply ww bench" (the TV frame roll pick) now lands on THIS branch: WordWall.astro is rewritten here, so never
@@ -107,19 +108,51 @@ without an open trial (The AC) stay off the TV; the TV never changes by itself (
       never fires in WebKit on laptop 1 on the pre-change build either (checked against the baseline dist): a
       laptop/WebKit issue, not this branch.
 
-### Phase 3: header + removals
+### Phase 3: header + removals (done 2026-10-18)
 
-- [ ] Header: a PLUGINS button (D1) takes the lit "Store" slot. On home it scrolls to the TV (the categories are
+- [x] Header: a PLUGINS button (D1) takes the lit "Store" slot. On home it scrolls to the TV (the categories are
       already visible there, D2); on every other page it goes to `/#plugins`. Phones: visible next to the menu button.
-- [ ] `PluginShowcase` off the home page; the file is deleted once nothing imports it.
-- [ ] `/store` redirects to `/#plugins` (D3). Old links must keep working, including the licence worker's `https://revaudio.net/store`
+      Built: the chip sits outside the link list (a block holding an inline link, Store's li > a shape, so the bar
+      keeps 41px / 58px); on phones a 44px chip beside the burger, and tapping it closes the menu. On home ONE
+      delegated handler in WordWall takes every `a[href="/#plugins"]` (header, footer, cart drawer, closing CTA):
+      no navigation (with `?cat=` the link would reload the page; the native jump would fire popstate), it closes
+      the cart drawer, sends a phone's open plugin back to the list, glides (Lenis 0.7s; a jump under reduced
+      motion) to `landY()` = the lock's own target, and moves focus to the TV's heading. `stopPropagation`: Lenis's
+      window listener ignores preventDefault and would run a second scroll. Arrivals from other pages land by
+      `#plugins { scroll-margin-top: calc(--site-nav-h - --nav-h - 0.75rem) }` (undoes global.css's anchor padding;
+      -15px on a laptop, 2px on a phone; negative is valid, both engines read it).
+      Found on the way (WebKit): a fractional scroll target is floored (a 1px strip of the page showed above the
+      TV), so `landY()` rounds UP to a whole pixel, for the lock too; and with frames starved (5 fps in headless
+      WebKit) Lenis's copy of the scroll can miss a native jump, so the handler syncs it
+      (`scrollTo(scrollY, { immediate: true })`) and passes a number, not the element.
+- [x] `PluginShowcase` off the home page; the file is deleted once nothing imports it. Deleted with it:
+      `drift/DriftCard.astro` (only the carousel used it) and `PluginCard.astro` (only /store used it). Left alone:
+      the dead `.plugin-card` / `.plugin-grid` rules in global.css, the assets (not imported = not shipped),
+      `public/drift/arcade-run.*` (~800 KB, now unused, still copied into dist), lineage comments in /drift files.
+- [x] `/store` redirects to `/#plugins` (D3). Old links must keep working, including the licence worker's `https://revaudio.net/store`
       link (RevLimiter repo, `gumroad-worker/src/worker.js`). GitHub Pages cannot send a real 301: the redirect is
       either a meta-refresh page in the repo (with a canonical link) or a Cloudflare Redirect Rule (dashboard only).
       Never promise a "301" without the Cloudflare rule.
-- [ ] Internal links re-pointed: Footer "Store", Cart "Explore the plugins", home closing CTA "Browse the store",
-      product page breadcrumb "Back to store", the `gas.astro` fallback.
-- [ ] The store FAQ (what you get, trial, Mac/Windows, refund, payment) moves to a page that stays.
-- [ ] Ride-along: `DESIGN.md` section 4 + wiki `website-update.md`.
+      Built: a bare page (no BaseLayout = no page_view, popup or consent banner for the hop):
+      `location.replace('/' + location.search + '#plugins')` first (keeps utm / gclid; no Back trap), a meta
+      refresh in `<noscript>`, canonical = the home page, robots noindex, a visible link; `/store/` in NOINDEX (out
+      of the sitemap). A real 301 = a Cloudflare Redirect Rule, the user's call (dashboard).
+- [x] Internal links re-pointed: Footer "Store" -> "Plugins", Cart "Explore the plugins", home closing CTA "Browse the store"
+      -> "Browse the plugins", product page breadcrumb "Back to store" -> "All plugins", the `gas.astro` fallback.
+- [x] The store FAQ (what you get, trial, Mac/Windows, refund, payment) moves to a page that stays: `/support`,
+      "Before you buy" (after "What you need", in the section rail), verbatim, as the page's own `<details>`
+      questions; "Need help?" dropped (it pointed at /support itself).
+- [x] Ride-along: `DESIGN.md` section 4 + wiki `website-update.md`. Also stale comments (plugins.ts order note, Cart,
+      site.ts / MobileBuyBar / index.astro PluginCard mentions, astro.config's wwbench note), README pages list,
+      `tests/smoke.spec.ts` (no /store page test; the TV rows each return 200; /store keeps the query string; the
+      Paddle add-to-cart check now walks the product pages).
+- [x] Checks 2026-10-18 (`npm run build` + node Playwright, Chromium AND WebKit): the bar is 41px / 58px as before
+      at 1280 / 390 / 360 / 320 (one row, no sideways scroll, one PLUGINS link). The TV's top lands 0.2-0.3px under
+      the nav at 1280 + 390 for: the chip from the top, the chip with `?cat=` set (no reload, no popstate), the
+      closing CTA and the footer from the bottom, the cart drawer's link (drawer closes), a phone's open plugin
+      (back to the list), the breadcrumb from /revlimiter, the chip on /about, `/store?utm_source=t&gclid=g`
+      (query kept, history.length 2); reduced motion too; no console errors. The lock still parks the TV from above
+      and below (1280: -0.2, 1440: -0.8). Repo suite: 57 passed, the same 11 mobile-safari "load" failures.
 
 ### Phase 4: verify
 

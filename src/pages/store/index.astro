@@ -1,151 +1,39 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import PluginCard from '../../components/PluginCard.astro';
-import EmailCapture from '../../components/EmailCapture.astro';
-import { plugins } from '../../data/plugins';
+/* /store retired 2026-10-18 (home LIBRARY, D3): every plugin lives in the
+   home page's TV now, so this address sends people there. Old links keep
+   working this way (the footer and emails of the past, the licence worker's
+   https://revaudio.net/store link).
 
-// Shipping products lead; in-development plugins sit in their own labeled row
-// below (conversion pass 2026-08-03) — unbuyable tiles mixed into the main
-// grid read "roadmap company" to a first-time visitor.
-// A plugin with an open free trial (DRIFT beta) counts as shipping here.
-const onBench = (p: (typeof plugins)[number]) => p.status === 'in-development' && !p.trialOpen;
-// Store-only order (Yoni 2026-10-11: DRIFT takes GAS's first-row slot); slugs not listed keep catalog order after these.
-const STORE_ORDER = ['revlimiter', 'radio-roulette', 'drift', 'gas'];
-const rank = (slug: string) => { const i = STORE_ORDER.indexOf(slug); return i < 0 ? STORE_ORDER.length : i; };
-const shipping = plugins.filter((p) => !onBench(p)).sort((a, b) => rank(a.slug) - rank(b.slug));
-const roadmap = plugins.filter(onBench);
+   GitHub Pages can't answer with a 301, so the page does it:
+   - a script first: it keeps the query string (utm / gclid / ref reach the
+     cart's attribution on the home page), and replace() leaves no page for
+     Back to bounce off;
+   - a meta refresh when there is no JavaScript;
+   - for search engines a canonical link to the home page + noindex (and
+     /store/ sits in astro.config.mjs's NOINDEX, so the sitemap drops it).
+   Bare on purpose, no BaseLayout: a hop nobody sees fires no analytics
+   page_view, popup or consent banner. A real 301 would be a Cloudflare
+   Redirect Rule (dashboard), not this repo. */
+const home = new URL('/', Astro.site).href;
 ---
 
-<BaseLayout
-  title="Store"
-  description="Buy RevAudio plugins. Boutique mixing and mastering tools, simple controls, built to feel."
->
-  <section class="hero" style="padding: 5rem 0 3rem;">
-    <div class="container">
-      <div class="tag">Store</div>
-      <h1 data-split>The plugins</h1>
-      <p class="lede">Single purchase. Lifetime updates within the major version. No subscription, no hassle.</p>
-    </div>
-  </section>
-
-  <section class="store-grid">
-    <div class="container">
-      {/* sr-only heading: the cards expose plugin names as <h3>; this gives them
-          an <h2> parent so the document outline doesn't jump h1 → h3. */}
-      <h2 class="sr-only">Available plugins</h2>
-      <div class="cards">
-        {shipping.map((p) => <PluginCard plugin={p} showCart />)}
-      </div>
-
-      {roadmap.length > 0 && (
-        <div class="bench">
-          <h2 class="bench-title">On the bench</h2>
-          <p class="bench-sub muted">In development now. Join a waitlist and we&rsquo;ll email you at launch.</p>
-          <div class="cards cards-bench">
-            {roadmap.map((p) => <PluginCard plugin={p} showCart />)}
-          </div>
-        </div>
-      )}
-    </div>
-  </section>
-
-  <section class="store-faq section">
-    <div class="container">
-      <h2 class="center" data-split>Common questions</h2>
-      <div class="faq-grid" data-reveal-group>
-        <div data-reveal-item>
-          <h3>What do I get?</h3>
-          <p class="muted">A VST3 / AU / AAX plugin (Windows &amp; macOS), free updates within the major version, and a licence for one user across up to two machines you own.</p>
-        </div>
-        <div data-reveal-item>
-          <h3>Can I try before I buy?</h3>
-          <p class="muted">Yes, a free 30-day trial. It&rsquo;s the full plugin: every feature, no licence key, and no audio interruptions. Drop your email on the product page and the download link arrives in your inbox.</p>
-        </div>
-        <div data-reveal-item>
-          <h3>Mac and Windows?</h3>
-          <p class="muted">Available on both macOS and Windows. One licence covers both installers.</p>
-        </div>
-        <div data-reveal-item>
-          <h3>Refund policy?</h3>
-          <p class="muted">14-day refund, no questions asked. If a plugin doesn't deliver, take your money back.</p>
-        </div>
-        <div data-reveal-item>
-          <h3>How does payment work?</h3>
-          <p class="muted">Checkout is fully secure. Tax and VAT are handled automatically, your licence is delivered by email, and RevAudio never sees your card details.</p>
-        </div>
-        <div data-reveal-item>
-          <h3>Need help?</h3>
-          <p class="muted">Email <a href="mailto:support@revaudio.net">support@revaudio.net</a> or read the <a href="/support">support page</a>.</p>
-        </div>
-      </div>
-      <p class="center muted" style="margin-top: 2rem; font-size: 0.85rem;">
-        See also <a href="/eula">licence terms</a> &middot; <a href="/support">support &amp; install</a>
-      </p>
-    </div>
-  </section>
-
-  <EmailCapture
-    heading="Hear it first"
-    subhead="New plugins and demo codes, straight to your inbox. Unsubscribe anytime."
-  />
-</BaseLayout>
-
-<style>
-  .store-grid { padding: 3rem 0 4rem; }
-
-  /* Showroom row: all three plugins side by side on desktop so the range
-     reads at a glance; equal-height cards with aligned price footers. Stacks
-     back to the single centred column below 1020px. */
-  .cards {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 2rem;
-  }
-
-  .cards > :global(.plugin-card-wrap) { display: flex; }
-  .cards :global(.plugin-card) { flex: 1; }
-
-  @media (max-width: 1020px) {
-    .cards {
-      grid-template-columns: 1fr;
-      gap: 1.5rem;
-      max-width: 480px;
-      margin: 0 auto;
-    }
-  }
-
-  /* On the bench — the in-development row. Visibly subordinate to the
-     showroom: a rule above, smaller heading, narrower two-up grid. */
-  .bench { margin-top: 3.5rem; padding-top: 2.5rem; border-top: 1px solid var(--border); }
-  .bench-title {
-    font-size: 1.15rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--brass);
-    margin: 0 0 0.35rem;
-  }
-  .bench-sub { margin: 0 0 1.5rem; font-size: 0.9rem; }
-  .cards.cards-bench {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    max-width: 760px;
-  }
-  @media (max-width: 1020px) {
-    .cards.cards-bench { grid-template-columns: 1fr; max-width: 480px; margin: 0; }
-  }
-
-  .faq-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 2rem;
-    margin-top: 2rem;
-  }
-
-  @media (max-width: 720px) {
-    .faq-grid { grid-template-columns: 1fr; }
-  }
-
-  .faq-grid h3 {
-    color: var(--brass-bright);
-    margin-bottom: 0.5rem;
-  }
-</style>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RevAudio plugins</title>
+    <meta name="robots" content="noindex" />
+    <link rel="canonical" href={home} />
+    <script is:inline>location.replace('/' + location.search + '#plugins');</script>
+    <noscript><meta http-equiv="refresh" content="0; url=/#plugins" /></noscript>
+    <style is:inline>
+      html { background: #0b0a09; color: #efe9df; font: 16px/1.5 system-ui, sans-serif; }
+      body { margin: 0; padding: 3rem 1rem; text-align: center; }
+      a { color: #e8c878; } /* --brass-bright */
+    </style>
+  </head>
+  <body>
+    <p><a href="/#plugins">The RevAudio plugins are on the home page &rarr;</a></p>
+  </body>
+</html>

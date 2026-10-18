@@ -5,7 +5,6 @@ import { test, expect, type Page } from '@playwright/test';
 // breakage (bad imports, broken client scripts, dead links) before it ships.
 const STATIC_PAGES = [
   '/',
-  '/store',
   '/about',
   '/contact',
   '/support',
@@ -61,11 +60,25 @@ for (const slug of PLUGIN_SLUGS) {
   });
 }
 
-test('store page renders a card for each plugin', async ({ page }) => {
-  await page.goto('/store');
-  const cards = page.locator('.plugin-card');
-  await expect(cards.first()).toBeVisible();
-  expect(await cards.count()).toBeGreaterThan(0);
+test('the home TV lists the plugins, each row a live product page', async ({ page }) => {
+  // The TV (WordWall) is the plugin browser since 2026-10-18; its rows are
+  // real links, so a crawler and a no-JS visitor reach every product page.
+  // The rows are in the HTML: no need to wait for the page's load event.
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  const rows = page.locator('#plugins .ww-row');
+  expect(await rows.count(), 'the TV lists no plugin').toBeGreaterThan(0);
+  for (const href of await rows.evaluateAll((els) => els.map((el) => el.getAttribute('href')))) {
+    const res = await page.request.get(href ?? '');
+    expect(res.status(), `TV row ${href} should return 200`).toBe(200);
+  }
+});
+
+test('/store sends visitors to the home TV and keeps the query string', async ({ page }) => {
+  // GitHub Pages has no 301: /store is a redirect page. The query string
+  // (utm / gclid) must survive, the cart reads it on the home page.
+  await page.goto('/store?utm_source=smoke', { waitUntil: 'commit' });
+  await page.waitForURL(/\/\?utm_source=smoke#plugins$/, { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('#plugins')).toBeAttached();
 });
 
 test('plugin detail page renders its buy CTA', async ({ page }) => {
@@ -78,12 +91,18 @@ test('plugin detail page renders its buy CTA', async ({ page }) => {
 test('every add-to-cart button resolves to a Paddle price, not a dead button', async ({ page }) => {
   // The cart checks out whatever the [data-checkout-map] catalog holds for a
   // button's slug (Paddle price id), so a button whose slug is missing there
-  // would add to the cart and then do nothing at Continue to payment.
-  await page.goto('/store');
-  const buttons = page.locator('[data-add-to-cart]');
-  expect(await buttons.count(), '/store shows no add-to-cart button').toBeGreaterThan(0);
-  const map = JSON.parse((await page.locator('[data-checkout-map]').textContent()) || '{}');
-  for (const slug of await buttons.evaluateAll((els) => els.map((el) => el.getAttribute('data-slug')))) {
-    expect(map[slug ?? ''] ?? '', `add-to-cart for ${slug} has no Paddle price id`).toMatch(/^pri_/);
+  // would add to the cart and then do nothing at Continue to payment. Buying
+  // lives on the product pages (the home TV has no add-to-cart, and /store
+  // redirects to it since 2026-10-18).
+  let total = 0;
+  for (const slug of PLUGIN_SLUGS) {
+    await page.goto(`/${slug}`);
+    const map = JSON.parse((await page.locator('[data-checkout-map]').textContent()) || '{}');
+    const buttons = page.locator('[data-add-to-cart]');
+    for (const s of await buttons.evaluateAll((els) => els.map((el) => el.getAttribute('data-slug')))) {
+      expect(map[s ?? ''] ?? '', `/${slug}: add-to-cart for ${s} has no Paddle price id`).toMatch(/^pri_/);
+      total++;
+    }
   }
+  expect(total, 'no product page shows an add-to-cart button').toBeGreaterThan(0);
 });
