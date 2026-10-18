@@ -174,7 +174,7 @@ const first = items[0]?.slug ?? '';
     data-ww-on={first}
     data-ww-view="list"
     data-ww-snow="picture"
-    style={frameVars}
+    style={`${frameVars};--ww-rows:${items.length}`}
   >
     <noscript><style is:inline set:html={noJsArt}></style></noscript>
     {/* the set: the lit tube behind everything, the snow, the glass over it, the cabinet front */}
@@ -265,8 +265,8 @@ const first = items[0]?.slug ?? '';
                 width={1400}
                 widths={[400, 640, 960, 1400]}
                 sizes={it.portrait
-                  /* height-capped to the room at 1600:2380 */
-                  ? '(max-width: 860px) 240px, 320px'
+                  /* a set height (24rem phones, 30rem laptop) at 1600:2380 */
+                  ? '(max-width: 860px) 260px, 324px'
                   : '(max-width: 860px) 92vw, 48vw'}
                 format="webp"
                 quality={86}
@@ -876,7 +876,7 @@ const first = items[0]?.slug ?? '';
     font-size: min(
       calc(var(--ww-name-max) * 1rem),
       calc((100cqi - var(--ww-thumb-w) * 1rem - 1.5rem) / 6.4),
-      max(1.5rem, calc((var(--ww-main, 30rem) / 4 - 1.9rem) / 0.95))
+      max(1.5rem, calc((var(--ww-main, 30rem) / var(--ww-rows, 4) - 1.9rem) / 0.95)) /* every row fits the room's height */
     );
     line-height: 0.95;
     letter-spacing: 0.03em;
@@ -953,6 +953,8 @@ const first = items[0]?.slug ?? '';
     border-radius: 6px;
     box-shadow: 0 1px 0 0 #000, 0 24px 48px rgba(0, 0, 0, 0.55);
   }
+  /* the box is there before the picture: a lazy window that arrives late never pushes the text down */
+  .ww-ui :global(img) { aspect-ratio: var(--ww-ar); }
   .ww-ui video {
     aspect-ratio: 1725 / 912;
     object-fit: cover;
@@ -969,10 +971,11 @@ const first = items[0]?.slug ?? '';
     align-items: center;
     column-gap: clamp(1.25rem, 3vw, 2.5rem);
   }
+  /* a set height (not max-height): with width auto, a max-height has no box until the picture loads */
   .ww-panel.is-portrait .ww-ui :global(img) {
     width: auto;
     max-width: 100%;
-    max-height: clamp(18rem, 40vw, 30rem);
+    height: clamp(18rem, 40vw, 30rem);
   }
 
   .ww-info { display: grid; gap: 0.6rem; justify-items: start; max-width: 40rem; }
@@ -1374,7 +1377,7 @@ const first = items[0]?.slug ?? '';
         max-width: calc((var(--ww-main) - var(--ww-info-h)) * var(--ww-ar, 2));
       }
       .ww[data-ww-bg='screen'] .ww-panel.is-portrait .ww-ui :global(img) {
-        max-height: min(clamp(18rem, 40vw, 30rem), var(--ww-main));
+        height: min(clamp(18rem, 40vw, 30rem), var(--ww-main));
       }
     }
   }
@@ -1463,7 +1466,7 @@ const first = items[0]?.slug ?? '';
         margin-inline: auto;
       }
       .ww[data-ww-bg='screen'] .ww-panel.is-portrait .ww-ui :global(img) {
-        max-height: max(8rem, min(24rem, calc(var(--ww-room) - var(--ww-info-h))));
+        height: max(8rem, min(24rem, calc(var(--ww-room) - var(--ww-info-h))));
         margin-inline: auto;
       }
     }

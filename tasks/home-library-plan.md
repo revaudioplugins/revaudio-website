@@ -98,6 +98,14 @@ without an open trial (The AC) stay off the TV; the TV never changes by itself (
       and both phone panes), no sideways scroll, no name overflow, category / plugin / Back / keyboard flows right,
       no console errors besides the local preview's Cloudflare RUM beacon. The window sizes off the measured text
       height (`--ww-info-h`, `--ww-osd-h`). On a 360x640 phone GAS's pane is ~150px tall (the text needs the room).
+- [x] Follow-up checks 2026-10-18: reduced motion (no static, no power-on, the run paused), no JS (a plain list of
+      links, no categories, no pane; the desktop shows DRIFT's pane), `html.hc` (plain list, lit name in oxide) at
+      1280 + 390. A late GAS image (held back 2.5s, WebKit + Chromium) now keeps its box (set height + `aspect-ratio`),
+      so the text never jumps. The names size by the real row count (`--ww-rows`). WebKit's DPR2 "window 260px low"
+      was Playwright's click scrolling the page (an in-page `el.click()` does not move it). Repo suite
+      (`npx playwright test`): 57 passed; the 11 failures are all mobile-safari `page.goto` waiting for "load", which
+      never fires in WebKit on laptop 1 on the pre-change build either (checked against the baseline dist): a
+      laptop/WebKit issue, not this branch.
 
 ### Phase 3: header + removals
 
