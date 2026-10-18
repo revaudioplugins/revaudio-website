@@ -1,11 +1,11 @@
-## 2026-10-18 — Trial-end offer: cart applies `?offer=CODE` locked, branch `trial-offer` (Claude Code `revaudio-70`, Yoni's laptop 2) — committed `e0f6f37`, NOT pushed
+## 2026-10-18 — Trial-end offer: cart applies `?offer=CODE` locked, branch `trial-offer` (Claude Code `revaudio-70`, Yoni's laptop 2) — PUSHED TO MAIN = LIVE 2026-10-18 (Yoni: "push"; Pages deploy + smoke test green, live /buy/revlimiter/ carries `ra-offer`)
 
 Claim: CLOSED 2026-10-18. File: `src/components/Cart.astro`. Worktree `Website/revaudio-website-offer` (off origin/main 141d400; its `node_modules` is a junction to the main checkout's, same lockfile).
 - What: a plugin's one-time trial-over banner -> licence worker `GET /offer` -> `/buy/<slug>/?offer=CODE`. The cart keeps the code for the tab session with that slug, shows "Your one-time 10% off <plugin> is applied at payment" in the drawer, and passes `discountCode` + `settings {showAddDiscounts:false, allowDiscountRemoval:false}` to `Paddle.Checkout.open` while that plugin is in the cart. Popups already skip `/buy/*`. `wiki offer`.
 - Checked: build green; Playwright on the built dist with Paddle.js stubbed, 9/9.
 - DECIDED (Yoni 2026-10-18): DRIFT goes on sale on Sun Nov 1, not before. That day: DRIFT on sale in `plugins.ts` (status `live`, `introPriceUsd: 69`, `paddlePriceId: 'pri_01m4362j96wvbqtwf2v45k2pt9'`). Without it `/buy/drift/` does not exist and the DRIFT offer link lands on a 404. That is the Nov 1 flip.
 - Not checked: a real Paddle sandbox checkout with a real code (that `discountCode` plus the two settings render as expected inside Paddle's overlay).
-- Next: Yoni's "push" -> rebase onto origin/main, push (= live deploy). Safe before Nov 1: it only acts on `?offer=`.
+- Next: Sun Nov 1 = DRIFT on sale in `plugins.ts` (line above); then a real checkout through a banner link (code applied, no code field).
 
 ## 2026-10-18 — /revlimiter/ for Google Ads (fixes F + G) (Claude Code `revaudio-75`, Yoni's laptop) — PUSHED TO MAIN = LIVE 2026-10-18 (Yoni: "push", "do all parts and push")
 
