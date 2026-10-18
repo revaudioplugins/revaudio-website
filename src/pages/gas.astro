@@ -18,8 +18,9 @@
  *     print under it carries formats, platforms and "no licence key";
  *   - the line under the button says the email step BEFORE the modal opens, so
  *     the gate is a known cost and not a surprise at click time;
- *   - one hot focal block: the red CTA (the only red on the page besides the
- *     knob). The video play dot is brass so it does not compete.
+ *   - one warm focal block: the honey CTA (2026-10-18, was the red button),
+ *     the only filled block on the page. The video play dot is brass so it
+ *     does not compete.
  * Nothing invented: no counts, stars, quotes or timers (PRODUCT.md).
  *
  * The CTA speaks TrialGateModal's documented trigger contract (see that
@@ -112,6 +113,7 @@ const highlights = plugin.features.slice(0, 3);
           {highlights.map((f) => <li>{f.name}</li>)}
         </ul>
 
+        {/* The icon is decoration: the accessible name stays "Download free". */}
         {plugin.trialGateActive ? (
           <button
             type="button"
@@ -122,10 +124,14 @@ const highlights = plugin.features.slice(0, 3);
             data-register-url={registerUrl}
             data-gate-free
           >
-            Download free
+            <svg class="gas-cta-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3.5v11.5m0 0-5-5m5 5 5-5M4.5 20h15" /></svg>
+            <span class="gas-cta-label">Download free</span>
           </button>
         ) : (
-          <a class="gas-cta" href={plugin.downloadUrl ?? '/store'}>Download free</a>
+          <a class="gas-cta" href={plugin.downloadUrl ?? '/store'}>
+            <svg class="gas-cta-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3.5v11.5m0 0-5-5m5 5 5-5M4.5 20h15" /></svg>
+            <span class="gas-cta-label">Download free</span>
+          </a>
         )}
 
         <p class="gas-fine">
@@ -197,6 +203,28 @@ const highlights = plugin.features.slice(0, 3);
       document.documentElement.style.overflow = '';
       frame!.replaceChildren(); // stop playback once closed
     });
+  }
+
+  /* CTA press: a quick tap ends :active before a frame shows it (and iOS
+     Safari skips :active without a touch listener), so the pointer holds
+     .is-pressed for at least 120ms. */
+  const cta = document.querySelector<HTMLElement>('.gas-cta');
+  if (cta) {
+    let downAt = 0;
+    let timer = 0;
+    cta.addEventListener('pointerdown', () => {
+      clearTimeout(timer);
+      downAt = performance.now();
+      cta.classList.add('is-pressed');
+    });
+    const release = () => {
+      if (!cta.classList.contains('is-pressed')) return;
+      const wait = Math.max(0, 120 - (performance.now() - downAt));
+      timer = window.setTimeout(() => cta.classList.remove('is-pressed'), wait);
+    };
+    for (const type of ['pointerup', 'pointercancel', 'pointerleave'] as const) {
+      cta.addEventListener(type, release);
+    }
   }
 </script>
 
@@ -474,59 +502,126 @@ const highlights = plugin.features.slice(0, 3);
     font-weight: 600;
   }
 
-  /* The button: red, chunky, physical (Dan 2026-09-06: "make it red, bulky,
-     make me want to press it"). Redline gradient with a lit top edge, a dark
-     bevel below, a slow glow pulse; hover lifts it, :active pushes it down. */
+  /* The button, round 1 of the Miri / BeeMatch pass (Dan 2026-10-18: "go
+     deep into the small details"). Borrowed grammar: ONE warm fill with dark
+     ink text on it (Miri), no outline, a lit top edge and a darker inner
+     bottom edge (BeeMatch "fill" + "paper" depth), sentence case, 4px grid.
+     Adapted to the dark garage: the depth is a 1px amber lip plus the house
+     contact + ambient stack (DESIGN.md §5), never a glow. Press = down 1px
+     with a shorter shadow, 80ms in / 160ms out, held >= 120ms by the script
+     below so a quick tap still shows. Values baked from Dan's bench COPY
+     (18:41: full top light, softer edge, long low shadow).
+     The shine (Dan 18.10: "really really subtle"): a faint band of the bench
+     lamp crosses the fill once every 8s, under the words (z-index -1 inside
+     the button's own stacking context), off for reduced motion and html.hc.
+     Tuned on /gasctalab (git-excluded). */
   .gas-cta {
     grid-area: cta;
     margin-top: var(--space-2);
-    padding: 1.3rem 3.2rem;
-    background: linear-gradient(180deg, #ff5a3c 0%, var(--redline) 45%, #9e2414 100%);
-    color: #fff;
-    border: 1px solid #5a1208;
-    border-radius: 10px;
-    font-family: var(--font-display);
-    font-size: 1.6rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 64px;
+    padding: 0 30px 0 26px;
+    background: #f2be4a;
+    color: #1e1710;
+    border: 0;
+    border-radius: 16px;
+    font-family: var(--font-body);
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1;
     text-decoration: none;
-    text-shadow: 0 2px 0 rgba(0,0,0,.35);
+    white-space: nowrap;
     cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
     box-shadow:
-      inset 0 1px 0 rgba(255,255,255,.35),
-      inset 0 -3px 0 rgba(0,0,0,.35),
-      0 6px 0 #5a1208,
-      0 10px 24px rgba(200,51,31,.45);
-    transform: translateY(0);
-    transition: transform 0.12s var(--ease), box-shadow 0.12s var(--ease), filter 0.2s var(--ease);
-    animation: gas-cta-pulse 2.4s ease-in-out infinite;
+      inset 0 1px 0 rgba(255, 255, 255, 1),
+      inset 0 -2px 0 hsl(38 85% 34% / 0.2),
+      0 1px 0 #5f4311,
+      0 2px 3px rgba(0, 0, 0, 0.45),
+      0 40px 45px rgba(0, 0, 0, 0.25);
+    transition:
+      transform 160ms var(--ease),
+      box-shadow 160ms var(--ease),
+      background-color 160ms var(--ease);
   }
-  .gas-cta:hover {
-    filter: brightness(1.12);
-    transform: translateY(-2px);
+  .gas-cta-icon {
+    width: 20px;
+    height: 20px;
+    flex: none;
+    translate: 0 0;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.25;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .gas-cta::after {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    z-index: -1;
+    width: 28%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.18), transparent);
+    transform: translateX(-160%) skewX(-20deg);
+    pointer-events: none;
+    animation: gas-cta-shine 8s ease-in-out 1.2s infinite;
+  }
+  @keyframes gas-cta-shine {
+    0% { transform: translateX(-160%) skewX(-20deg); }
+    17.5%, 100% { transform: translateX(418%) skewX(-20deg); }
+  }
+  @media (hover: hover) {
+    .gas-cta:hover {
+      background: #f6c95e;
+      transform: translateY(-1px);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 1),
+        inset 0 -2px 0 hsl(38 85% 34% / 0.2),
+        0 1px 0 #5f4311,
+        0 3px 5px rgba(0, 0, 0, 0.45),
+        0 44px 51px rgba(0, 0, 0, 0.3);
+      transition-duration: 150ms;
+    }
+  }
+  .gas-cta:active,
+  .gas-cta.is-pressed {
+    background: #eab53f;
+    transform: translateY(1px);
     box-shadow:
-      inset 0 1px 0 rgba(255,255,255,.4),
-      inset 0 -3px 0 rgba(0,0,0,.35),
-      0 8px 0 #5a1208,
-      0 16px 34px rgba(255,84,54,.6);
-    animation: none;
+      inset 0 1px 0 rgba(255, 255, 255, 0.85),
+      inset 0 -1px 0 hsl(38 85% 34% / 0.2),
+      0 0 0 #5f4311,
+      0 1px 2px rgba(0, 0, 0, 0.45),
+      0 16px 19px rgba(0, 0, 0, 0.15);
+    transition-duration: 80ms;
   }
-  .gas-cta:active {
-    transform: translateY(5px);
-    box-shadow:
-      inset 0 1px 0 rgba(255,255,255,.2),
-      inset 0 -2px 0 rgba(0,0,0,.35),
-      0 1px 0 #5a1208,
-      0 4px 12px rgba(200,51,31,.4);
-    animation: none;
+  .gas-cta:focus-visible {
+    outline: 2px solid var(--fg);
+    outline-offset: 3px;
   }
-  .gas-cta:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 4px; }
-  @keyframes gas-cta-pulse {
-    0%, 100% { box-shadow: inset 0 1px 0 rgba(255,255,255,.35), inset 0 -3px 0 rgba(0,0,0,.35), 0 6px 0 #5a1208, 0 10px 24px rgba(200,51,31,.45); }
-    50%      { box-shadow: inset 0 1px 0 rgba(255,255,255,.35), inset 0 -3px 0 rgba(0,0,0,.35), 0 6px 0 #5a1208, 0 14px 40px rgba(255,84,54,.75); }
+  @media (prefers-reduced-motion: reduce) {
+    .gas-cta { transition: background-color 160ms var(--ease); }
+    .gas-cta:hover, .gas-cta:active, .gas-cta.is-pressed { transform: none; }
+    .gas-cta::after { display: none; }
   }
-  @media (prefers-reduced-motion: reduce) { .gas-cta { animation: none; } }
+  :global(html.hc) .gas-cta::after { display: none; }
+  :global(html.hc) .gas-cta {
+    background: var(--brass);
+    color: #000;
+    box-shadow: none;
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+  }
 
   /* Sits directly under the button: the email step named before the click. */
   .gas-fine {
