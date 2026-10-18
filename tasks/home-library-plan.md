@@ -1,7 +1,8 @@
 # Home LIBRARY: the TV becomes the plugin browser (branch `feat/home-library`)
 
 - Owner: Claude Code `revaudio-a0` (was `revaudio-a6` before a restart; laptop 1). Status: **IN PROGRESS (user's "go"
-  2026-10-18).** Phases 1-4c done (local commits, not pushed). Waiting on the user's look (bench + real devices) and "push".
+  2026-10-18).** Phases 1-4c done (local commits, not pushed). Phase 4d (the noise out, motion only) planned, waiting
+  on the user's pick; then the user's look (bench + real devices) and "push".
 - origin/main `141d400` (crane WebP, trial source, /revlimiter/ Ads fixes) merged in 2026-10-18 before phase 3 (`d80e459`).
 - Worktree: `.claude/worktrees/home-library` off origin/main `697f49d`; origin/main `ddada3d` (the TV weight work)
   merged in 2026-10-18 (`8ca4938`). `node_modules` = junction to the main clone's.
@@ -223,7 +224,97 @@ without an open trial (The AC) stay off the TV; the TV never changes by itself (
       390x664, each plugin's pane from the list with Back between. Chromium (10-16 snow frames a change) and WebKit
       (2-3): worst 0.0 px everywhere, no page errors. The phone pane opens by display (no slide), so nothing moves
       under the snow.
-- [ ] The user's look in the bench (reload it first: the old saved snow setting is dropped).
+- [x] ~~The user's look in the bench~~: superseded by Phase 4d (the user, 2026-10-18: no noise at all).
+
+### Phase 4d: entrances and exits, motion only (planned 2026-10-18; waiting on the user's pick)
+
+- The user (2026-10-18, Hebrew): drop the noise entirely, make it pure motion; plan how the plugins enter and leave
+  the screen; creative and elegant, not messy; each plugin's entrance stylized, with interesting motion; no glitches,
+  no noise; smooth entrances and exits; consult two agents, a UX lens and a brand / identity lens.
+- Consulted (2 Plan agents, Opus): the UX lens picked TUNE, the brand lens GEAR CHANGE. Both chose a shared skeleton
+  with a per-plugin accent: not 20 choreographies (a mess, plus assets per plugin) and not one anonymous move. Both
+  rejected BLINK (a CRT off / on per change: the glitch family being removed; its bright line ten times is a strobe;
+  it spends the once-only power-on) and ROLL (a vertical-hold roll: a third of the screen moving ~440 px, half of
+  each plugin mid-roll). IGNITION (one part of the object wakes on arrival: RevLimiter's needle sweeps, Radio
+  Roulette's pointer scans, GAS's knob turns up) needs a plate-minus-part and a pivoted part layer for every plugin,
+  forever: parked as a possible later accent on top of the pick.
+
+**The two candidates.** They differ only in where the entrance comes from, so one engine runs both (a per-plugin
+entrance path table). The two axes are never blended: "it rises because you went down, but slides in from the left
+because it is Radio Roulette" is the mess the user ruled out.
+
+| | TUNE (UX lens) | GEAR CHANGE (brand lens) |
+|---|---|---|
+| Idea | one move for every plugin; its direction comes from the list | each plugin arrives along its own object's axis |
+| Entrance | down the list the new picture rises from 16 px below, up the list it drops from 16 px above (clicks by index delta in `shown()`; arrows by the key, so a wrap stays forward; category, popstate and restore from below; never scaled by distance) | RevLimiter on a shallow arc (the needle), DRIFT from 28 px right on a drift line, GAS straight up from 28 px and planted, Radio Roulette from 28 px left (a dial scanning the band); a new plugin picks rise / arc / from-left / from-right in `src/data/plugins.ts` (default rise) |
+| Exit | the old panel drifts 8 px the same way and fades, 150 ms `--ease-exit` | the old panel sinks 10 px and dims, 220 ms `--ease-exit`, never sideways; then 40 ms of empty glass |
+| Settle | 600 ms `--ease-settle`, opacity in 180 ms | opaque in 150 ms at its start pose, then a solid body travels 600 ms on the crane's curve (`sine.inOut` + a 2 px seat dip over the last 15 %, as `BuyButtonCrane.astro`'s `SEAT_START` .85) |
+| Readable | ~0.4 s after the click (the picture ~90 % home by +240 ms), at rest ~0.75 s | visible ~0.4 s, seated ~1.0 s (220 + 40 + 150 + 600) |
+| Risk | subtle, so pressure to enlarge it; past ~24 px it needs a clip | past ~28 px it reads as four separate animations |
+
+- My lean: GEAR CHANGE (the user asked for each plugin's own entrance); TUNE if GEAR reads slow or busy. Both are
+  cheap on one engine, so the bench decides.
+- GEAR's rotations (RevLimiter -1.5 deg about a low pivot, DRIFT's rear stepping out -1.2 deg) are OFF by default,
+  behind a bench toggle: rotating a photograph turns its baked light (design-language Law 3, "light never rotates")
+  and resamples the screenshots' fine print. The arc and the drift line are translate paths (x and y on different
+  eases) instead.
+
+**Shared core (both lenses agree; settled)**
+
+- Strictly sequential: the old panel is fully out before the new one starts; never two plugins on screen (4c found
+  the old cross-fade showing two pictures at once).
+- At the click: the row lights and `aria-selected` and focus move at once; the leaving panel goes `inert`,
+  pointer-events none, under the new one. `data-ww-on` and `writeUrl('replace')` flip at the commit (Safari throttles
+  `replaceState`; held arrows today write the URL on every repeat).
+- Panel visibility gets its own state: a leaving panel stays visible after it loses `.is-active` (an `.is-leaving`
+  class), so the `.is-active` opacity / visibility rules change with it.
+- What moves: the img / video and the text blocks. Never `.ww-ui` (the first panel's reveal tween), `.ww-try` (its
+  hover transform) or a wrapper round the panels (the `> .ww-panel` selectors would break; clip in flight only, or
+  not at all). Transform and opacity only, no layout shift; `will-change` only in flight; at rest every moved
+  element computes to `transform: none`, so the screenshots land crisp.
+- Text: the blocks rise 8-10 px in reading order (name, blurb, words, the buy row), ~45-60 ms apart, ~400-480 ms
+  `--ease-settle`, from +90 ms after the picture starts. The exit and the stagger are shorter than the house 300 /
+  90 ms (a 300 ms ease-in barely moves for ~100 ms; 90 ms x 4 seats the Try key past 1 s): new local `--ww-mv-*`
+  vars, never the global `--dur-out` / `STAGGER` (CartFab, MobileBuyBar and others use them).
+- Interrupts: the last pick wins, from the live pose. A pick mid-exit swaps the target (re-picking the leaver brings
+  it back home); mid-entrance the arriving panel exits. Picks under ~150 ms apart (held arrows) keep the glass dark,
+  and only the last one enters.
+- The screen's colour: one glow layer. The dead `transition: background 320ms` on `.ww-screen-glow` (a gradient
+  does not interpolate) becomes a shallow opacity dip during the exit; the hue swaps while it is dim and the glow
+  comes back up with the entrance; no dip while skimming (ten whole-screen dips would be the flicker being removed).
+  The hue is never interpolated (280 -> 26 runs through green).
+- Pictures: after the power-on, every panel picture goes eager + `decode()` (neighbours first), in place of the
+  noise tiles' 1.2 s timeout; an entrance waits for its picture's `decode()`, capped at ~100-200 ms. DRIFT pauses on
+  its exit, rewinds to 0 once out and plays on the seat (`syncRun()` gates on seated, not lit).
+- Engine: GSAP, already in every page's bundle through `src/lib/motion.ts` (WordWall imports `lenis` from it); a
+  tween starts from the current value, so interrupts retarget for free. Durations and px are read from the CSS vars
+  at each change, so the bench sliders work; SLOW x4 scales every motion duration.
+- Reduced motion: opacity only, out 80 ms, in 120 ms (DRIFT stays on its poster). High contrast: a cut. The wood
+  keeps its fade.
+- Phone (one pane at a time), sequential: open = the list sinks and dims ~200 ms, then the pane enters 16 px from
+  the right (its Back key fades in place). Our Back key animates the reverse (a flag the key sets); any other
+  popstate cuts (an iOS swipe-back already animates; `hasUAVisualTransition` is not relied on).
+- Category change: the list's `is-swapping` stagger and the panel move fire together; checked in the bench.
+
+**Steps**
+
+- [ ] 1. Remove the noise, whole: the snow markup (`.ww-snow` + its canvas, `data-ww-snow`), the script
+      (makeTiles / placeSnow / endSnow / staticBurst, their calls, the 1.2 s makeTiles timeout, the static-burst
+      comments in the glide code), the CSS (the snow block, `--ww-chg-*`, `.is-tuning`, `@keyframes ww-lock-flash`,
+      their reduced-motion and hc rules), the bench's STATIC switch, its 6 sliders and `srcSnow` / `snowv`, and
+      DESIGN.md §4's "Channel change" bullet and §6's static line.
+- [ ] 2. Both candidates on one engine, behind a bench switch MOTION: TUNE / GEAR (only the entrance path table
+      changes). Sliders: travel px, exit ms, empty beat ms, enter ms, text rise px, text stagger ms, glow dip, seat
+      dip px; GEAR's rotation toggle (off). ▶ CHANNEL, SLOW x4 and AUTO stay. The bench opens on GEAR.
+- [ ] 3. The user picks and tunes in the bench; the pick is baked and the other path deleted (no dead code).
+- [ ] 4. Checks on the build, Chromium + WebKit, the rAF recorder (its snow assertions replaced): at most one panel
+      visible per frame; rest transform = identity; rapid picks land on the last; held arrows = one entrance and
+      one URL write; no layout shift; the moving picture never leaves the glass or crosses the list (1280x665,
+      1141x636 with GAS, phone 360x740 + 390x844); reduced motion and high contrast as above; the phone's Back key vs
+      the browser's Back; a category change; a hidden tab; DRIFT plays only seated; no page errors. Filmed (CDP
+      contact sheet) for each option.
+- [ ] 5. DESIGN.md §4 / §6 rewritten (the channel change = motion; why the exit and the stagger are shorter than the
+      house values); this plan and the handoff updated.
 
 ### Phase 5: later, each on its own branch
 

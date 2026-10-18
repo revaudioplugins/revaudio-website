@@ -20,8 +20,10 @@
   50 %, names 4.5rem, thumbs 6.9rem, glow 1.37, scanlines .42); GAS's tall window yields to its text below ~1280
   (`--ww-side-min`), so 1141x636 fits again. Phase 4c (the commit after it): the channel change reworked (user: "the
   static isn't good"): a cut under analog snow in the new picture's own box, then a lock-in; tunable in the bench
-  (`--ww-chg-*`, ▶ CHANNEL / SLOW ×4 / AUTO; reload the bench first). Checks in the plan (Phases 3-4c). Next: the
-  user's look (bench + iPhone / Mac Safari), then "push".
+  (`--ww-chg-*`, ▶ CHANNEL / SLOW ×4 / AUTO; reload the bench first). Checks in the plan (Phases 3-4c). Then the
+  user: no noise at all, motion only. Phase 4d planned (UX + brand lens agents: TUNE vs GEAR CHANGE on one engine,
+  the noise removed first), waiting on the user's pick; no code yet. Next: their pick, the bench, the user's look
+  (bench + iPhone / Mac Safari), then "push".
 - For the user (dashboard, optional): a Cloudflare Redirect Rule `/store*` -> `/#plugins` would make it a real 301;
   the repo page works without it.
 - Found: index.astro's testimonial CTA said "14-day free trial" (the trial is 30 days in both plugins' code); fixed
