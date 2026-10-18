@@ -104,11 +104,20 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
     280 / 70 (its screen glow stays /drift's tube). The lit plugin is `data-ww-on` on `.ww`: the screen
     glow, the menu and the list take its phosphor; each panel keeps its own, so a fading panel keeps its
     colour. A plugin with no channel plays in neutral cream. `hsl(... / a)`, not color-mix (older Safari).
-  - Channel change: lighting a plugin cuts its picture to grey snow (`data-ww-snow` 'picture'; 'screen'
-    = the whole screen, a bench switch) for `--ww-snow-ms` (100) and fades back (160ms) on the new
-    channel; a half-resolution canvas, rAF only during the burst. None under reduced motion, in high
-    contrast, on the wood, in a hidden tab, with the wall off screen, or when the lit plugin is picked
-    again. No channel number (Dan: no). A category change re-strikes the rows that stay, 60ms apart.
+  - Channel change (reworked 2026-10-18; the user: "the static isn't good"; filmed, the old one
+    cross-faded both plugins' panels, its grey box had the new figure's size so the old picture showed
+    round it, and it ended before the swap): lighting a plugin is a cut. The panels swap at once (never
+    two plugins on screen; the wood wall keeps its fade) and, in that same frame, the new picture goes to
+    analog snow in the picture's own box and corners (`data-ww-snow` 'picture'; 'screen' = the whole
+    screen, a bench switch): full snow for `--ww-chg-snow-ms` (90), then the picture locks in through the
+    thinning snow for `--ww-chg-lock-ms` (140), settling from a flash (`--ww-chg-flash` .45; light only,
+    never a move: a moved picture shows past the snow's edge). The snow: three noise tiles made once (grain
+    smeared along the line, a gain per line, real blacks), one at a random offset per frame,
+    `--ww-chg-grain` 1.5px a dot, the channel's colour at `--ww-chg-tint` .35, a brighter band rolling
+    down (`--ww-chg-band` .5); rAF only during the change. Nothing waits on a frame: reduced motion,
+    high contrast, the wood, a hidden tab or the wall off screen get the cut alone; picking the lit
+    plugin again does nothing. No channel number (Dan: no). A category change re-strikes the rows that
+    stay, 60ms apart.
   - Power-on: the first time the TV comes into view the tube opens from a bright line (a CRT turn-on,
     700ms) and the pilot LED lights with it. JS arms it, so no JS / reduced motion = lit at rest.
   - URL: `?cat=` = one history entry per category, `?plugin=` updates the current one, so a reload or a

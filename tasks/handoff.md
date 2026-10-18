@@ -16,8 +16,12 @@
   TV where the lock parks it, `/store` = a bare redirect page to `/#plugins` (query kept, noindex), links re-pointed,
   the store FAQ on `/support` ("Before you buy"), smoke tests reworked; PluginShowcase, DriftCard and PluginCard
   deleted. Phase 4 (verify, automated) done: sizes, landing, lock, gate ids, analytics (the Meta pixel sent a
-  PageView per TV click: `fbq.disablePushState = true` now). Checks in the plan (Phases 3-4). Next: the user's look
-  (bench + iPhone / Mac Safari), then "push".
+  PageView per TV click: `fbq.disablePushState = true` now). Phase 4b (`9c828c6`): the user's bench pick baked (list
+  50 %, names 4.5rem, thumbs 6.9rem, glow 1.37, scanlines .42); GAS's tall window yields to its text below ~1280
+  (`--ww-side-min`), so 1141x636 fits again. Phase 4c (the commit after it): the channel change reworked (user: "the
+  static isn't good"): a cut under analog snow in the new picture's own box, then a lock-in; tunable in the bench
+  (`--ww-chg-*`, ▶ CHANNEL / SLOW ×4 / AUTO; reload the bench first). Checks in the plan (Phases 3-4c). Next: the
+  user's look (bench + iPhone / Mac Safari), then "push".
 - For the user (dashboard, optional): a Cloudflare Redirect Rule `/store*` -> `/#plugins` would make it a real 301;
   the repo page works without it.
 - Found: index.astro's testimonial CTA said "14-day free trial" (the trial is 30 days in both plugins' code); fixed

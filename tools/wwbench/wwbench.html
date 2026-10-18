@@ -85,6 +85,10 @@
   <span class="seg small" id="pview" title="The phone shows one pane at a time: the list, or the lit plugin">
     <button data-pv="list">LIST</button><button data-pv="panel">THE PLUGIN</button>
   </span>
+  <button class="big" id="chan" title="Change channel: light the next plugin on both TVs (the static plays)">▶ CHANNEL</button>
+  <span class="seg small" id="chg">
+    <button data-x="slow" title="Play the channel change 4x slower (the bench only; COPY SETTINGS keeps the real times)">SLOW ×4</button><button data-x="auto" title="Change channel by itself every moment or so">AUTO</button>
+  </span>
 </header>
 <div class="wrap">
   <aside id="controls"></aside>
@@ -126,7 +130,14 @@
       { p: '--ww-ch-gas-s', label: 'GAS strength', hint: 'saturation: 0 = grey, higher = richer', min: 0, max: 100, step: 1, unit: '' },
       { p: '--ww-ch-radio-roulette-h', label: 'Radio Roulette colour', hint: 'hue: 38 = the dial glass cream', min: 0, max: 360, step: 1, unit: '' },
       { p: '--ww-ch-radio-roulette-s', label: 'Radio Roulette strength', hint: 'saturation: 0 = grey, higher = richer', min: 0, max: 100, step: 1, unit: '' },
-      { p: '--ww-snow-ms', label: 'Static length', hint: 'milliseconds of snow when a plugin lights (use LIGHT up top to see it)', min: 100, max: 800, step: 10, unit: '' },
+    ] },
+    { id: 'change', title: 'Channel change: the static', frames: ['laptop', 'phone'], ctl: [
+      { p: '--ww-chg-snow-ms', label: 'Full static', hint: 'ms of solid snow when a plugin lights; the plugins swap under it (▶ CHANNEL up top, SLOW ×4 to study it)', min: 0, max: 300, step: 10, unit: '' },
+      { p: '--ww-chg-lock-ms', label: 'Lock-in', hint: 'ms for the new picture to come through the snow', min: 0, max: 500, step: 10, unit: '' },
+      { p: '--ww-chg-grain', label: 'Grain', hint: 'the size of a snow dot, px', min: 1, max: 4, step: 0.1, unit: '' },
+      { p: '--ww-chg-tint', label: 'Snow colour', hint: '0 = grey snow; more = it takes the channel\'s colour', min: 0, max: 1, step: 0.01, unit: '' },
+      { p: '--ww-chg-band', label: 'Rolling band', hint: 'the brighter band rolling down the snow (0 = none)', min: 0, max: 1, step: 0.01, unit: '' },
+      { p: '--ww-chg-flash', label: 'Lock-in flash', hint: 'how bright the new picture flashes as it locks in (0 = none)', min: 0, max: 1, step: 0.01, unit: '' },
     ] },
     { id: 'frame', title: 'Broken TV frame', frames: ['laptop', 'phone'], ctl: [
       { p: '--ww-frame-size', label: 'Frame size', hint: 'bezel thickness; stops growing once the side bezel would reach the menu or a name (about 0.25 on a 1141-1280 laptop, more on wide screens, thin on phones)', min: 0.1, max: 0.4, step: 0.005, unit: '' },
@@ -158,6 +169,7 @@
   const framev = () => st.frame || srcFrame;
   const snowv = () => st.snow || srcSnow;
   let lit = null, cat = 'all';
+  let slow = false, auto = 0; // the channel change: SLOW x4 and AUTO (not saved: a reload starts at real speed, still)
 
   // the frames: no cookie banner, no welcome pop-up (session-only flags, same origin)
   try { sessionStorage.setItem('ra-popup-shown-s', '1'); sessionStorage.setItem('ra-welcome10-s', '1'); } catch (e) {}
@@ -215,6 +227,7 @@
     document.querySelectorAll('#pview button').forEach((b) => b.classList.toggle('on', b.dataset.pv === st.pview));
     document.querySelectorAll('#cat button').forEach((b) => b.classList.toggle('on', b.dataset.c === cat));
     document.querySelectorAll('#show button').forEach((b) => b.classList.toggle('on', b.dataset.s === lit));
+    document.querySelectorAll('#chg button').forEach((b) => b.classList.toggle('on', b.dataset.x === 'slow' ? slow : !!auto));
   }
 
   // ── layout: both frames fit the window; each iframe renders at its real size, scaled down
@@ -324,9 +337,13 @@
       if (wallEl && wallEl.dataset.wwBg !== bgv()) wallEl.dataset.wwBg = bgv();
       if (wallEl && wallEl.dataset.wwFrame !== framev()) wallEl.dataset.wwFrame = framev();
       if (wallEl && wallEl.dataset.wwSnow !== snowv()) wallEl.dataset.wwSnow = snowv();
-      const body = Object.keys(st.cur)
+      const vals = {};
+      Object.keys(st.cur)
         .filter((p) => (ALL.find((c) => c.p === p) || { frames: [] }).frames.includes(f))
-        .map((p) => `${p}: ${st.cur[p]}${unitOf(p)} !important;`).join(' ');
+        .forEach((p) => (vals[p] = st.cur[p]));
+      // SLOW x4: the channel change's two times, scaled in the frames only (the sliders and COPY keep the real ones)
+      if (slow) ['--ww-chg-snow-ms', '--ww-chg-lock-ms'].forEach((p) => { const v = val(p); if (Number.isFinite(v)) vals[p] = v * 4; });
+      const body = Object.keys(vals).map((p) => `${p}: ${vals[p]}${unitOf(p)} !important;`).join(' ');
       doc.getElementById('wwb-live').textContent = body ? `${WALL} { ${body} }` : '';
     });
     save();
@@ -340,6 +357,23 @@
   document.querySelectorAll('#view button').forEach((b) => (b.onclick = () => { st.view = b.dataset.v; save(); layout(); }));
   document.querySelectorAll('#pview button').forEach((b) => (b.onclick = () => { st.pview = b.dataset.pv; save(); send('phone', 'ww:select', { view: st.pview }); paint(); }));
   document.getElementById('replay').onclick = () => each((g) => g('ww:replay'));
+  // ▶ CHANNEL: the next plugin the page shows in its category, on both TVs
+  const nextChannel = () => {
+    const d = stages.laptop.ready ? stages.laptop.iframe.contentDocument : null;
+    const shown = d ? [...d.querySelectorAll('[data-ww-item]')].filter((li) => !li.hidden).map((li) => li.dataset.wwItem) : null;
+    const order = [...document.querySelectorAll('#show button')].map((b) => b.dataset.s).filter((s) => !shown || shown.includes(s));
+    if (!order.length) return;
+    lit = order[(order.indexOf(lit) + 1) % order.length];
+    light();
+  };
+  document.getElementById('chan').onclick = nextChannel;
+  document.querySelectorAll('#chg button').forEach((b) => (b.onclick = () => {
+    if (b.dataset.x === 'slow') { slow = !slow; commit(); return; }
+    if (auto) { clearTimeout(auto); auto = 0; paint(); return; }
+    const tick = () => { nextChannel(); auto = setTimeout(tick, slow ? 2600 : 1400); };
+    tick();
+    paint();
+  }));
   document.getElementById('resetAll').onclick = () => {
     if (!confirm('Back to the defaults in WordWall.astro? (your bench values are lost)')) return;
     st.cur = {}; st.bg = null; st.frame = null; st.snow = null; commit(); toast('Back to the defaults');

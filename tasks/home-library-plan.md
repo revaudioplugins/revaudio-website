@@ -1,7 +1,7 @@
 # Home LIBRARY: the TV becomes the plugin browser (branch `feat/home-library`)
 
 - Owner: Claude Code `revaudio-a0` (was `revaudio-a6` before a restart; laptop 1). Status: **IN PROGRESS (user's "go"
-  2026-10-18).** Phases 1-4 done (local commits, not pushed). Waiting on the user's look (bench + real devices) and "push".
+  2026-10-18).** Phases 1-4c done (local commits, not pushed). Waiting on the user's look (bench + real devices) and "push".
 - origin/main `141d400` (crane WebP, trial source, /revlimiter/ Ads fixes) merged in 2026-10-18 before phase 3 (`d80e459`).
 - Worktree: `.claude/worktrees/home-library` off origin/main `697f49d`; origin/main `ddada3d` (the TV weight work)
   merged in 2026-10-18 (`8ca4938`). `node_modules` = junction to the main clone's.
@@ -189,6 +189,34 @@ without an open trial (The AC) stay off the TV; the TV never changes by itself (
       (473 px tall) and the TV outgrew the screen by 61 px. GAS's window now yields width first (`--ww-side-min`
       11rem, container units on the panel); nothing changes at 1280 and up. Re-checked on the build: the 9 sizes fit
       one screen in Chromium AND WebKit, no sideways scroll, no name overflow.
+
+### Phase 4c: the channel change (done 2026-10-18; the user's look owed)
+
+- [x] The user: "the static isn't good now". Filmed the old change (CDP screencast, 1280x665, ~27 ms a frame): both
+      plugins' panels cross-faded (two pictures at once), the grey box took the new picture's size so the old picture
+      showed round it (GAS's tall window over RevLimiter's wide one), and the snow was gone before the panels finished
+      swapping.
+- [x] Reworked in `WordWall.astro`: a cut. The panels swap in the click's own frame (no opacity transition on the
+      screen wall; the wood keeps its fade) and in that frame the new picture goes to analog snow in its own box and
+      corners: full snow for `--ww-chg-snow-ms` (90), then the picture locks in through thinning snow over
+      `--ww-chg-lock-ms` (140), settling from a flash (`--ww-chg-flash` .45; light only, a move would show past the
+      snow's edge). The snow: 3 noise tiles made once after the power-on (smeared along the line, a gain per line),
+      one at a random offset per frame, `--ww-chg-grain` 1.5 px a dot, the channel's colour at `--ww-chg-tint` .35, a
+      rolling band (`--ww-chg-band` .5). The frame clock is `performance.now()`, so late frames never stretch it.
+      `--ww-snow-ms` is gone.
+- [x] Bench: a "Channel change: the static" group (the 6 `--ww-chg-*` sliders), ▶ CHANNEL (the next plugin), SLOW ×4
+      (the two durations x4 in the frames only; COPY SETTINGS keeps the real values) and AUTO. A saved `--ww-snow-ms`
+      is pruned on load.
+- [x] Checks on the build, Chromium + WebKit, a rAF DOM recorder: exactly one panel visible in every frame; the swap
+      in the click's frame with the snow opaque over the new picture, same box and radius (RevLimiter 6px, GAS and
+      Radio Roulette their percent radii); rapid clicks land on the last pick; category FREE, Back, high contrast,
+      hidden tab, wall off screen, reduced motion (the cut alone) and the phone pane; no page errors. Chromium: over
+      in 230 ms by its own clock (267-282 ms as recorded: the recorder runs a frame late). Headless WebKit on laptop 1
+      runs rAF at ~5 fps, so it is not timed. 4x CPU throttle: idle frames median 24 ms, the click frame worst 58 ms.
+- [x] Filmed again on the build, 4 changes (DRIFT -> RevLimiter -> GAS -> Radio Roulette -> DRIFT): one plugin per
+      frame, the snow exactly on the new picture's box in the channel's colour (Radio Roulette's low saturation
+      reads near grey), two frames of full snow, one of the picture through it, then at rest.
+- [ ] The user's look in the bench (reload it first: the old saved snow setting is dropped).
 
 ### Phase 5: later, each on its own branch
 

@@ -16,8 +16,9 @@
        "Try free for N days" (TrialGateModal's email gate; DRIFT: its own
        page's sign-up) and a small "Product page" link.
    Lighting a plugin is a channel change: the screen takes that plugin's
-   phosphor colour (--ww-ch-<slug>-h / -s) and the picture drops to snow for
-   --ww-snow-ms. The list is real links to the product pages (crawlable,
+   phosphor colour (--ww-ch-<slug>-h / -s), the picture cuts to snow as the
+   plugins swap under it and the new one locks in through it (--ww-chg-*).
+   The list is real links to the product pages (crawlable,
    works without JS); the script turns them into tabs. URL: ?cat= is one
    history entry per category, ?plugin= updates the current one, so Back
    leaves a category and a reload or a return from a product page comes back
@@ -422,57 +423,134 @@ const first = items[0]?.slug ?? '';
     }
     wall.dataset.wwLib = 'on'; // the categories + the phone's Back show from here (CSS)
 
-    /* Changing channel: a burst of TV snow over the picture (the lit plugin's
-       panel) while the panels swap; data-ww-snow="screen" (bench) covers the
-       whole screen as the carousel used to. Half the CSS resolution (cap
-       640x400), drawn only for the burst and only when the wall is on screen,
-       the tab is visible and the TV is up; reduced motion / html.hc = none. */
+    /* Changing channel (Dan's pick: "a short burst of static"; reworked 2026-10-18 after the user's "the static
+       isn't good": the panels cross-faded, so both plugins showed at once; the snow was a grey box the size of the
+       new picture's figure, so the old picture showed round it; and it ended before the swap did). light() swaps
+       the panels at once (a cut) and this puts snow over the new picture in that same frame: full snow for
+       --ww-chg-snow-ms, then the picture locks in through it for --ww-chg-lock-ms (the snow thins out while the
+       picture settles from a flash, CSS .is-tuning). The snow takes the picture's own box and corners
+       (the img / video: a capped window is narrower than its figure; same box, so percent radii match). The noise
+       is three tiles made once (grain smeared along the line, every line its own gain, a power curve for real
+       blacks), one drawn at a random offset each frame, --ww-chg-grain px a dot, coloured by the channel's phosphor
+       (--ww-chg-tint) with a brighter band rolling down (--ww-chg-band). data-ww-snow="screen" (bench) covers the
+       whole screen. Nothing waits on a frame: a hidden tab, the wall off screen, reduced motion, high contrast and
+       the wood wall get the cut alone. */
     const snow = wall.querySelector<HTMLElement>('.ww-snow');
     const snowCanvas = snow?.querySelector('canvas');
-    let snowRaf = 0;
-    let snowEnd = 0;
-    const placeSnow = (over: HTMLElement | null) => {
+    const snowCtx = snowCanvas?.getContext('2d') ?? null;
+    const TILE = 256;
+    const tiles: HTMLCanvasElement[] = [];
+    const makeTiles = () => {
+      if (tiles.length || reduced.matches) return;
+      for (let k = 0; k < 3; k++) {
+        const c = document.createElement('canvas');
+        c.width = c.height = TILE;
+        const cx = c.getContext('2d');
+        if (!cx) return;
+        const img = cx.createImageData(TILE, TILE);
+        const px = new Uint32Array(img.data.buffer);
+        for (let y = 0; y < TILE; y++) {
+          const gain = 0.75 + Math.random() * 0.5; // each line its own gain: the scan's jitter
+          let v = Math.random();
+          for (let x = 0; x < TILE; x++) {
+            v = v * 0.45 + Math.random() * 0.55; // smeared along the line, as an analog signal is
+            const g = Math.min(255, (Math.pow(v, 1.5) * 330 * gain) | 0);
+            px[y * TILE + x] = 0xff000000 | (g << 16) | (g << 8) | g; // grey, opaque (little-endian ABGR)
+          }
+        }
+        cx.putImageData(img, 0, 0);
+        tiles.push(c);
+      }
+    };
+    const placeSnow = (media: HTMLElement | null) => {
       if (!snow) return;
       const s = snow.style;
-      if (wall.dataset.wwSnow !== 'picture' || !over || !snow.offsetParent) {
-        s.left = s.top = s.width = s.height = s.right = s.bottom = s.transform = '';
+      if (wall.dataset.wwSnow !== 'picture' || !media || !snow.offsetParent) {
+        s.left = s.top = s.width = s.height = s.right = s.bottom = s.transform = s.borderRadius = '';
         return;
       }
       const box = snow.offsetParent.getBoundingClientRect();
-      const r = over.getBoundingClientRect();
+      const r = media.getBoundingClientRect();
       s.left = `${r.left - box.left}px`;
       s.top = `${r.top - box.top}px`;
       s.width = `${r.width}px`;
       s.height = `${r.height}px`;
       s.right = s.bottom = 'auto';
       s.transform = 'none';
+      s.borderRadius = getComputedStyle(media).borderRadius;
     };
-    const staticBurst = (over: HTMLElement | null) => {
-      if (!snow || !snowCanvas || reduced.matches || document.hidden || wall.dataset.wwBg !== 'screen') return;
+    let snowRaf = 0;
+    const endSnow = () => {
+      cancelAnimationFrame(snowRaf);
+      snowRaf = 0;
+      snow?.classList.remove('is-on');
+      snow?.style.removeProperty('opacity');
+    };
+    const staticBurst = (panel: HTMLElement | null) => {
+      if (!snow || !snowCanvas || !snowCtx || !panel || reduced.matches || document.hidden || wall.dataset.wwBg !== 'screen') return;
       if (document.documentElement.classList.contains('hc')) return;
       const r = wall.getBoundingClientRect();
       if (r.bottom <= 0 || r.top >= window.innerHeight) return;
-      placeSnow(over);
-      const box = snow.getBoundingClientRect();
-      const w = Math.max(1, Math.min(640, Math.round(box.width / 2)));
-      const h = Math.max(1, Math.min(400, Math.round(box.height / 2)));
-      if (snowCanvas.width !== w || snowCanvas.height !== h) { snowCanvas.width = w; snowCanvas.height = h; }
-      const ctx = snowCanvas.getContext('2d');
-      if (!ctx) return;
-      const img = ctx.createImageData(w, h);
-      const px = new Uint32Array(img.data.buffer);
-      snowEnd = performance.now() + (parseFloat(getComputedStyle(wall).getPropertyValue('--ww-snow-ms')) || 300);
-      snow.classList.add('is-on');
-      const draw = (t: number) => {
-        for (let i = 0; i < px.length; i++) {
-          const v = 40 + ((Math.random() * 215) | 0);
-          px[i] = 0xff000000 | (v << 16) | (v << 8) | v; // grey, opaque (little-endian ABGR)
-        }
-        ctx.putImageData(img, 0, 0);
-        if (t < snowEnd) snowRaf = requestAnimationFrame(draw);
-        else { snowRaf = 0; snow.classList.remove('is-on'); }
+      makeTiles();
+      if (!tiles.length) return;
+      const media = panel.querySelector<HTMLElement>('.ww-ui img, .ww-ui video');
+      panels.forEach((p) => p.classList.remove('is-tuning')); // at rest before its box is read
+      placeSnow(media);
+      const cs = getComputedStyle(wall);
+      const num = (p: string, d: number) => {
+        const v = parseFloat(cs.getPropertyValue(p));
+        return Number.isFinite(v) ? v : d;
       };
-      if (!snowRaf) snowRaf = requestAnimationFrame(draw);
+      const hold = Math.max(0, num('--ww-chg-snow-ms', 90));
+      const lock = Math.max(0, num('--ww-chg-lock-ms', 140));
+      const tint = Math.min(1, Math.max(0, num('--ww-chg-tint', 0.35)));
+      const band = Math.max(0, num('--ww-chg-band', 0.5));
+      const grain = Math.max(1, num('--ww-chg-grain', 1.5));
+      const tintCol = `hsl(${num('--ww-on-h', 38)} ${num('--ww-on-s', 28)}% 55%)`; // the new channel's (light() set it)
+      const box = snow.getBoundingClientRect();
+      const w = Math.max(1, Math.min(900, Math.round(box.width / grain)));
+      const h = Math.max(1, Math.min(600, Math.round(box.height / grain)));
+      if (snowCanvas.width !== w || snowCanvas.height !== h) { snowCanvas.width = w; snowCanvas.height = h; }
+      const ctx = snowCtx;
+      const pats = tiles.map((t) => ctx.createPattern(t, 'repeat'));
+      void panel.offsetWidth; // restart the lock-in on a quick second change
+      panel.classList.add('is-tuning');
+      cancelAnimationFrame(snowRaf);
+      const t0 = performance.now();
+      const frame = () => {
+        const t = performance.now() - t0; // the clock, not the frame's stamp: late frames never stretch the change
+        const ox = (Math.random() * TILE) | 0;
+        const oy = (Math.random() * TILE) | 0;
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.globalAlpha = 1;
+        ctx.setTransform(1, 0, 0, 1, -ox, -oy);
+        ctx.fillStyle = pats[(Math.random() * pats.length) | 0] ?? '#808080';
+        ctx.fillRect(ox, oy, w, h);
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        if (band > 0) {
+          const y = (((t / 300) % 1.3) - 0.15) * h;
+          const g = ctx.createLinearGradient(0, y - h * 0.15, 0, y + h * 0.15);
+          g.addColorStop(0, 'rgba(255,255,255,0)');
+          g.addColorStop(0.5, `rgba(255,255,255,${Math.min(1, 0.35 * band)})`);
+          g.addColorStop(1, 'rgba(255,255,255,0)');
+          ctx.globalCompositeOperation = 'lighter';
+          ctx.fillStyle = g;
+          ctx.fillRect(0, 0, w, h);
+        }
+        if (tint > 0) {
+          ctx.globalCompositeOperation = 'color'; // the channel's hue on the snow's own light
+          ctx.globalAlpha = tint;
+          ctx.fillStyle = tintCol;
+          ctx.fillRect(0, 0, w, h);
+        }
+        // full, then thinning out: quick at first (the picture shows through), a soft tail
+        const k = t < hold ? 1 : lock > 0 ? Math.max(0, 1 - (t - hold) / lock) : 0;
+        snow.style.opacity = String(k * k);
+        if (t < hold + lock) snowRaf = requestAnimationFrame(frame);
+        else endSnow();
+      };
+      snow.classList.add('is-on');
+      frame(); // the first snow paints with the swap, in this very frame
     };
 
     /* DRIFT's live window plays only while its panel is the lit one, on
@@ -539,7 +617,7 @@ const first = items[0]?.slug ?? '';
       wall.dataset.wwOn = slug;
       dress();
       syncRun();
-      if (burst) staticBurst(next.querySelector<HTMLElement>('.ww-ui'));
+      if (burst) staticBurst(next);
     };
     light(lit, false); // the tabs' starting state
 
@@ -620,7 +698,7 @@ const first = items[0]?.slug ?? '';
         light(slug, false);
         writeUrl('push', 'panel');
         setView('panel', true);
-        staticBurst(panels.find((p) => slugOf(p) === slug)?.querySelector<HTMLElement>('.ww-ui') ?? null);
+        staticBurst(panels.find((p) => slugOf(p) === slug) ?? null);
       } else {
         light(slug);
         writeUrl('replace');
@@ -703,6 +781,7 @@ const first = items[0]?.slug ?? '';
         if (!e.isIntersecting) return;
         io.disconnect();
         window.setTimeout(powerOn, 120);
+        window.setTimeout(makeTiles, 1200); // the static's noise, made once after the power-on
       }, { rootMargin: '0px 0px -20% 0px' }).observe(wall);
     }
 
@@ -979,6 +1058,9 @@ const first = items[0]?.slug ?? '';
     pointer-events: auto;
     transition: opacity 320ms ease 60ms, visibility 0s;
   }
+  /* the screen wall changes channel: a cut under the static (staticBurst), never two plugins at once; the wood wall
+     keeps its fade */
+  .ww[data-ww-bg='screen'] .ww-panel { transition: none; }
   .ww-back { display: none; }
   .ww-ui { margin: 0; min-width: 0; }
   .ww-ui :global(img),
@@ -1268,21 +1350,37 @@ const first = items[0]?.slug ?? '';
     100% { opacity: 1; transform: none; filter: brightness(var(--ww-scr-bright)); }
   }
 
-  /* Changing channel (Dan's pick: "a short burst of static"): the picture
-     drops to snow for --ww-snow-ms and fades back (160ms) on the new channel.
-     Over the content, under the scanlines and the bezel. The script draws it
-     and, on "picture", sits it over the lit plugin's panel. */
-  .ww { --ww-snow-ms: 100; }
+  /* Changing channel (Dan's pick: "a short burst of static"; reworked 2026-10-18): the picture cuts to analog snow
+     as the plugins swap under it, full snow for --ww-chg-snow-ms, then the new picture locks in through the
+     thinning snow for --ww-chg-lock-ms (a flash, below). Over the content, under the scanlines and the
+     bezel. The script draws it, sets its opacity frame by frame and, on "picture", gives it the lit picture's box
+     and corners. (The old snow's length, --ww-snow-ms, was set to 100 ms on the bench, its slider's floor.) */
+  .ww {
+    --ww-chg-snow-ms: 90;  /* full snow, ms: the plugins swap under it */
+    --ww-chg-lock-ms: 140; /* the new picture locking in through the snow, ms */
+    --ww-chg-grain: 1.5;   /* CSS px a snow dot */
+    --ww-chg-tint: 0.35;   /* how much the snow takes the channel's colour (0 = grey) */
+    --ww-chg-band: 0.5;    /* the brighter band rolling down the snow (0 = none) */
+    --ww-chg-flash: 0.45;  /* the new picture's flash as it locks in (brightness + this) */
+  }
   .ww-snow {
     z-index: 2;
     display: block;
-    transition: opacity 160ms ease;
+    overflow: hidden; /* to the picture's corners (border-radius from the script) */
+    transition: none;
   }
-  .ww-snow.is-on {
-    opacity: 1;
-    transition: none; /* the cut to snow is instant; only the way out fades */
-  }
+  .ww-snow.is-on { opacity: 1; }
   .ww-snow canvas { display: block; width: 100%; height: 100%; } /* a canvas won't stretch to insets itself */
+  /* the new picture locking in under the thinning snow: it flashes and settles, as a set's picture does when the new
+     channel's sync catches. Light only, never a move: a moved picture would show past the snow's edge. */
+  .ww-panel.is-tuning .ww-ui :global(img),
+  .ww-panel.is-tuning .ww-ui video {
+    animation: ww-lock-flash calc(var(--ww-chg-lock-ms) * 1ms) ease-out calc(var(--ww-chg-snow-ms) * 1ms) both;
+  }
+  @keyframes ww-lock-flash {
+    from { filter: brightness(calc(1 + var(--ww-chg-flash))); }
+    to   { filter: none; }
+  }
 
   /* ---- THE BROKEN TV FRAME (WALL_FRAME, with the screen) ------------------
      Dan 2026-10-14: "a broken TV frame", then "more neutral, fewer colours"
@@ -1540,6 +1638,8 @@ const first = items[0]?.slug ?? '';
     .ww-screen-glow,
     .ww-frame { transition: none; }
     .ww-list.is-swapping .ww-item:not([hidden]) .ww-row { animation: none; }
+    .ww-panel.is-tuning .ww-ui :global(img),
+    .ww-panel.is-tuning .ww-ui video { animation: none; } /* the script never starts one here; belt and braces */
   }
 
   /* high contrast: a plain list. The screen, its glass, the snow and the frame go (the hc wall shows), the names are

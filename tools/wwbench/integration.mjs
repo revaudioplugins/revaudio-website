@@ -11,8 +11,9 @@
 
    Usage:  npm run dev, then http://localhost:4321/__wwbench
    Then:   drag the sliders · pick a category / light a plugin (or click the frames: they are the real page) · REPLAY =
-           the power-on · COPY SETTINGS and hand them back ("apply ww bench"). Work autosaves in this browser; RESET
-           goes back to the defaults in WordWall.astro. */
+           the power-on · ▶ CHANNEL = the next plugin, a channel change (SLOW ×4 to study it, AUTO to keep changing) ·
+           COPY SETTINGS and hand them back ("apply ww bench"). Work autosaves in this browser; RESET goes back to the
+           defaults in WordWall.astro. */
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
