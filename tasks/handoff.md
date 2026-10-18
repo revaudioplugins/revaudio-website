@@ -36,7 +36,6 @@
   (AVIF) and WebKit (WebP fallback), no console errors. Post-deploy check: `curl -I` one live `/_astro/*.avif`
   (content-type image/avif through Cloudflare) + the weight check on the live site. Stale cached HTML is safe: the old
   1400 WebP names are still in the new dist.
->>>>>>> origin/main
 
 ## 2026-10-14 — Homepage word wall: DRIFT panel, two new looks + HD live window on a bench, branch `feat/drift-wordwall` (Claude Code `revaudio-32`, laptop 1) — PUSHED TO MAIN = LIVE 2026-10-14 (Dan: "send a checker; if it passes push to main, if not fix then push"); bench tuning ("apply ww bench") still open
 - Dan: "the DRIFT panel on the word wall needs a more interesting design" -> picks: build BOTH looks (NEON sign / STEER the
