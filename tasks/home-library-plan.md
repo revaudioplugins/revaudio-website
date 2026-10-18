@@ -1,7 +1,10 @@
 # Home LIBRARY: the TV becomes the plugin browser (branch `feat/home-library`)
 
-- Owner: Claude Code `revaudio-a6` (laptop 1). Status: **PLAN, waiting for the user's go. Nothing built.**
-- Worktree: `.claude/worktrees/home-library` off origin/main `697f49d`, `node_modules` = junction to the main clone's.
+- Owner: Claude Code `revaudio-a6` (laptop 1). Status: **IN PROGRESS (user's "go" 2026-10-18).** Phase 1 done.
+- Worktree: `.claude/worktrees/home-library` off origin/main `697f49d`; origin/main `ddada3d` (the TV weight work)
+  merged in 2026-10-18 (`8ca4938`). `node_modules` = junction to the main clone's.
+- "apply ww bench" (the TV frame roll pick) now lands on THIS branch: WordWall.astro is rewritten here, so never
+  apply it to main's copy.
 - Push: nothing goes live without the word "push" (main = live).
 
 ## The request (user, 2026-10-15)
@@ -44,17 +47,22 @@ without an open trial (The AC) stay off the TV; the TV never changes by itself (
 
 ### Phase 1: catalog data (no visual change)
 
-- [ ] `src/data/library.ts`: the category list (id, label, order). A category with no live plugin is hidden.
-- [ ] `plugins.ts`: per plugin `library: { cats, typeWord, words, blurb }` (new fields only). Phase 1 never edits
-      `WordWall.astro` (revaudio-32's claim); its copy is read from these fields in phase 2, so one source feeds
-      the TV now and "you may also like" later.
-- [ ] Starting categories (research taxonomy; every plugin listed wherever it truly does the job):
+- [x] `src/data/library.ts`: the category list (id, label, short label, order); `tvCats()` hides a category with no
+      plugin on the TV. `tvPlugins()`: on the TV = has a `library` entry AND (live OR `trialOpen`); order DRIFT first
+      while `drift.homeLead`, then revlimiter, gas, drift, radio-roulette.
+- [x] `plugins.ts`: per plugin `library: { cats, typeWord, words, blurb, alt, name? }` (new fields only; `name`
+      = DRIFT in capitals on the TV). The claim had closed, so WordWall.astro already reads its panels from it.
+      Proof of "no visual change": `dist/` byte-identical to the pre-edit build (463 files, `diff -rq` empty,
+      index.html rewritten at build time).
+- [x] Starting categories (research taxonomy; every plugin listed wherever it truly does the job):
       ALL (default) | Mastering: RevLimiter | Vocals: DRIFT | Saturation & Distortion: GAS |
-      Modulation & Stereo: DRIFT | Creative FX: Radio Roulette, DRIFT | Free: GAS.
+      Modulation & Stereo: DRIFT | Creative FX: Radio Roulette, DRIFT | Free: GAS (from `isFree`, never listed).
       Hidden until a plugin ships: Reverb & Delay, EQ & Dynamics, Guitar & Bass, Instruments.
-- [ ] The "Try it free" action comes from the data, per plugin: paid live = trial gate with `dlGateId(p)` (never the
-      slug); GAS = the free gate (`data-gate-free`, reads "Free download"); DRIFT = its own page's sign-up
-      (`trialOpen`). The button names the real trial length ("Try free for 30 days").
+- [x] `tryAction(p)` + `priceLine(p)` in library.ts: paid live = trial gate with `dlGateId(p)`; GAS = the free gate
+      (`data-gate-free`, "Free download") while `trialGateActive`, else its plain download link; DRIFT = `/drift#try`.
+      Trial length checked in source 2026-10-18: RevLimiter + Radio Roulette `trialDaysRemaining()` = 30 days
+      (`PAID_TRIAL_DAYS`); DRIFT = `drift.trialDays`. Found: index.astro's testimonial CTA says "14-day free trial"
+      (wrong: the code says 30) — told the user, fixed on this branch with the home page rework.
 
 ### Phase 2: the TV becomes the library (after revaudio-32's claim closes)
 

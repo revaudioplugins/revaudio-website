@@ -21,6 +21,37 @@
 export type PluginStatus = 'in-development' | 'beta' | 'live';
 export type PluginCategory = 'limiter' | 'saturation' | 'panner' | 'eq' | 'multi-fx';
 
+/** A category on the home TV's plugin library (labels + order: src/data/library.ts). 'free' is never listed on a
+ *  plugin: the library adds it from `isFree`, so "free" has one source. */
+export type LibraryCatId =
+  | 'mastering' | 'vocals' | 'saturation' | 'modulation' | 'creative'
+  | 'reverb' | 'eq' | 'guitar' | 'instruments' | 'free';
+
+/** One of the five words the TV glows for a plugin: what the sound does. `o` = the word's opacity (the fade
+ *  outward from the lit word), `hot` = the lit word. */
+export interface LibraryWord {
+  w: string;
+  o: number;
+  hot?: boolean;
+}
+
+/** The plugin's copy on the home TV (WordWall.astro, read through src/data/library.ts). A plugin without it never
+ *  shows on the TV. Honesty: the words and the blurb describe what the plugin is built to do, checkable against
+ *  its source, not measured results. */
+export interface LibraryEntry {
+  /** Categories it truly does the job in (one plugin may sit in several). */
+  cats: Exclude<LibraryCatId, 'free'>[];
+  /** Plain type word under the name: what kind of plugin it is, no metaphor. */
+  typeWord: string;
+  words: LibraryWord[];
+  /** The TV's short description. DRIFT's trial sentence is added from src/data/drift.ts (it follows the phase). */
+  blurb: string;
+  /** Alt text of the plugin window on the TV. */
+  alt: string;
+  /** The name on the TV when it differs from `name` (DRIFT is written in capitals there, as on its own page). */
+  name?: string;
+}
+
 export interface Feature {
   name: string;
   desc: string;
@@ -162,6 +193,8 @@ export interface Plugin {
    *  2026-10-10): the store lists it with the shipping plugins, not "On the bench",
    *  and its card reads "Free 30-day trial" -> its own page's sign-up. */
   trialOpen?: boolean;
+  /** The home TV's copy (see `LibraryEntry`); absent = not on the TV. */
+  library?: LibraryEntry;
 }
 
 const baseSystemReq: SystemReq = {
@@ -234,6 +267,22 @@ export const plugins: Plugin[] = [
     systemReq: baseSystemReq,
     reviewsCount: 0,
     reviewsAvg: 0,
+    library: {
+      cats: ['mastering'],
+      typeWord: 'mastering limiter',
+      words: [
+        { w: 'Loud',   o: 0.5 },
+        { w: 'Warm',   o: 0.72 },
+        { w: 'Punchy', o: 1, hot: true },
+        { w: 'Glued',  o: 0.72 },
+        { w: 'Deep',   o: 0.5 },
+      ],
+      // Chain spot + redline meaning match the product page (Yoni 2026-10-07:
+      // last on the master bus; redline = threshold, as in the plugin's DESIGN.md).
+      blurb:
+        'Multiband compression, saturation and an adaptive limiter in one chain, built to sit last on your master bus. The redline is the threshold.',
+      alt: 'RevLimiter plugin window: the rev gauge with its redline, the band controls and the meters',
+    },
     trialUrl: 'https://revlimiter-license.revaudio.workers.dev/download',
     craneBuy: true,
     tutorialVideo: {
@@ -312,6 +361,20 @@ export const plugins: Plugin[] = [
     systemReq: baseSystemReq,
     reviewsCount: 0,
     reviewsAvg: 0,
+    library: {
+      cats: ['creative'],
+      typeWord: 'random multi-effect',
+      words: [
+        { w: 'Random',  o: 0.5 },
+        { w: 'Twisted', o: 0.72 },
+        { w: 'Lucky',   o: 1, hot: true },
+        { w: 'Weird',   o: 0.72 },
+        { w: 'Alive',   o: 0.5 },
+      ],
+      blurb:
+        'Ten effects on one dial, set by a single station number. Tune it, or let it scan and land somewhere you would never have picked yourself.',
+      alt: 'Radio Roulette plugin window: the tuning dial, the lit effect names on the glass, five station keys and the VU',
+    },
     trialUrl: 'https://revlimiter-license.revaudio.workers.dev/download',
     craneBuy: true,
     tutorialVideo: {
@@ -396,6 +459,20 @@ export const plugins: Plugin[] = [
     systemReq: baseSystemReq,
     reviewsCount: 0,
     reviewsAvg: 0,
+    library: {
+      cats: ['saturation'],
+      typeWord: 'one-knob saturator',
+      words: [
+        { w: 'Gritty', o: 0.5 },
+        { w: 'Warm',   o: 0.72 },
+        { w: 'Driven', o: 1, hot: true },
+        { w: 'Thick',  o: 0.72 },
+        { w: 'Raw',    o: 0.5 },
+      ],
+      blurb:
+        'One DRIVE knob, three voices: Tube, Tape, Fuzz. Turn it and the character changes, never the volume. Free, and it stays free.',
+      alt: 'GAS plugin window: one DRIVE knob with the Tube, Tape and Fuzz selector and the heat lamp',
+    },
   },
   {
     slug: 'drift',
@@ -434,6 +511,22 @@ export const plugins: Plugin[] = [
     systemReq: { ...baseSystemReq, os: 'Windows 64-bit, macOS 10.13+', formats: 'VST3 + AU + AAX on Mac, VST3 + AAX on Windows' },
     reviewsCount: 0,
     reviewsAvg: 0,
+    // Vocals: DRIFT's place is the last stop of a vocal chain (Dan 2026-10-07). Words = what a panner does.
+    // The window is rendered from Drift main 6144b8c (preset Init, no race loaded: no F1 names, Decision 19).
+    library: {
+      cats: ['vocals', 'modulation', 'creative'],
+      typeWord: 'stereo panner',
+      words: [
+        { w: 'Moving',  o: 0.5 },
+        { w: 'Steered', o: 0.72 },
+        { w: 'Sliding', o: 1, hot: true },
+        { w: 'Wide',    o: 0.72 },
+        { w: 'Alive',   o: 0.5 },
+      ],
+      blurb: 'A panner you steer like a drift car. Steer by hand with the wheel, or hand it to a track shape locked to your tempo.',
+      alt: 'DRIFT plugin window: the steering wheel over the gauges, BAND SELECT and STEREO IMAGER on the left, the effects and the TRACKS screen on the right',
+      name: 'DRIFT',
+    },
   },
   {
     slug: 'the-ac',

@@ -50,6 +50,8 @@ import driftImg from '../assets/showcase/drift-window-init.png';
 import tvFrameSrc from '../assets/seasons/drift/tv-frame-3.png'; // the /drift keep-it TV bezel (Dan 10-03 roll 3)
 import brokenMeta from '../assets/seasons/drift/tv-broken.json';
 import { drift } from '../data/drift';
+import { tvPlugins, tvName, tvBlurb } from '../data/library';
+import type { LibraryWord } from '../data/plugins';
 
 /* The DRIFT panel's look (see the header): 'current' | 'neon' | 'steer' | 'both'.
    Tune on /__wwbench (npm run dev), then "apply ww bench" bakes the numbers
@@ -152,92 +154,37 @@ const noJsArt = [
    `showcase:change` {slug} on every move and the script below swaps panels.
    First panel = the carousel's first slide (RevLimiter), visible at load with
    the scroll-reveal stagger; the others enter with a CSS stagger on swap.
-   Keep the order in sync with SLIDES in PluginShowcase.astro (DRIFT goes
-   first while drift.homeLead is on, same as the carousel). */
-type Word = { w: string; o: number; hot?: boolean };
+   The plugins, their order and their copy come from src/data/library.ts +
+   each plugin's `library` entry in plugins.ts (DRIFT first while
+   drift.homeLead is on, same as the carousel). */
 type Panel = {
   slug: string;
   name: string;
-  words: Word[];
+  words: LibraryWord[];
   img: ImageMetadata;
   alt: string;
   portrait?: boolean;
   blurb: string;
 };
-const panels: Panel[] = [
-  // DRIFT: only while it leads the carousel (drift.homeLead). The window is
-  // rendered from Drift main 6144b8c (preset Init, no race loaded: no F1
-  // names, Decision 19), the same shot as the carousel card's arcade screen.
-  // Words = what a panner does.
-  ...(drift.homeLead
-    ? [{
-        slug: 'drift',
-        name: 'DRIFT',
-        words: [
-          { w: 'Moving',  o: 0.5 },
-          { w: 'Steered', o: 0.72 },
-          { w: 'Sliding', o: 1, hot: true },
-          { w: 'Wide',    o: 0.72 },
-          { w: 'Alive',   o: 0.5 },
-        ],
-        img: driftImg,
-        alt: 'DRIFT plugin window: the steering wheel over the gauges, BAND SELECT and STEREO IMAGER on the left, the effects and the TRACKS screen on the right',
-        blurb:
-          `A panner you steer like a drift car. Steer by hand with the wheel, or hand it to a track shape locked to your tempo. ` +
-          (drift.phase === 'preopen' ? `Free ${drift.trialDays}-day trial, by email ${drift.trialOpensDay}.`
-            : drift.phase === 'open' ? `Free ${drift.trialDays}-day trial, by email.`
-            : `On sale ${drift.releaseLabel}.`),
-      }]
-    : []),
-  {
-    slug: 'revlimiter',
-    name: 'RevLimiter',
-    words: [
-      { w: 'Loud',   o: 0.5 },
-      { w: 'Warm',   o: 0.72 },
-      { w: 'Punchy', o: 1, hot: true },
-      { w: 'Glued',  o: 0.72 },
-      { w: 'Deep',   o: 0.5 },
-    ],
-    img: rlImg,
-    alt: 'RevLimiter plugin window: the rev gauge with its redline, the band controls and the meters',
-    blurb:
-      // Chain spot + redline meaning match the product page (Yoni 2026-10-07:
-      // last on the master bus; redline = threshold, as in the plugin's DESIGN.md).
-      'Multiband compression, saturation and an adaptive limiter in one chain, built to sit last on your master bus. The redline is the threshold.',
-  },
-  {
-    slug: 'gas',
-    name: 'GAS',
-    words: [
-      { w: 'Gritty', o: 0.5 },
-      { w: 'Warm',   o: 0.72 },
-      { w: 'Driven', o: 1, hot: true },
-      { w: 'Thick',  o: 0.72 },
-      { w: 'Raw',    o: 0.5 },
-    ],
-    img: gasImg,
-    alt: 'GAS plugin window: one DRIVE knob with the Tube, Tape and Fuzz selector and the heat lamp',
-    portrait: true,
-    blurb:
-      'One DRIVE knob, three voices: Tube, Tape, Fuzz. Turn it and the character changes, never the volume. Free, and it stays free.',
-  },
-  {
-    slug: 'radio-roulette',
-    name: 'Radio Roulette',
-    words: [
-      { w: 'Random',  o: 0.5 },
-      { w: 'Twisted', o: 0.72 },
-      { w: 'Lucky',   o: 1, hot: true },
-      { w: 'Weird',   o: 0.72 },
-      { w: 'Alive',   o: 0.5 },
-    ],
-    img: rrImg,
-    alt: 'Radio Roulette plugin window: the tuning dial, the lit effect names on the glass, five station keys and the VU',
-    blurb:
-      'Ten effects on one dial, set by a single station number. Tune it, or let it scan and land somewhere you would never have picked yourself.',
-  },
-];
+/* Each plugin's window on the TV. DRIFT's is the same shot as the carousel
+   card's arcade screen (its live run replaces it when the files are there). */
+const WINDOWS: Record<string, { img: ImageMetadata; portrait?: boolean }> = {
+  drift: { img: driftImg },
+  revlimiter: { img: rlImg },
+  gas: { img: gasImg, portrait: true },
+  'radio-roulette': { img: rrImg },
+};
+const panels: Panel[] = tvPlugins()
+  .filter((p) => WINDOWS[p.slug] && p.library)
+  .map((p) => ({
+    slug: p.slug,
+    name: tvName(p),
+    words: p.library!.words,
+    img: WINDOWS[p.slug].img,
+    alt: p.library!.alt,
+    portrait: WINDOWS[p.slug].portrait,
+    blurb: tvBlurb(p),
+  }));
 ---
 
 <GarageWall id="sound" ariaLabel="What the plugin does">
