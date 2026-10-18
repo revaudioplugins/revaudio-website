@@ -3,7 +3,7 @@
 Claim: CLOSED 2026-10-18. File: `src/components/Cart.astro`. Worktree `Website/revaudio-website-offer` (off origin/main 141d400; its `node_modules` is a junction to the main checkout's, same lockfile).
 - What: a plugin's one-time trial-over banner -> licence worker `GET /offer` -> `/buy/<slug>/?offer=CODE`. The cart keeps the code for the tab session with that slug, shows "Your one-time 10% off <plugin> is applied at payment" in the drawer, and passes `discountCode` + `settings {showAddDiscounts:false, allowDiscountRemoval:false}` to `Paddle.Checkout.open` while that plugin is in the cart. Popups already skip `/buy/*`. `wiki offer`.
 - Checked: build green; Playwright on the built dist with Paddle.js stubbed, 9/9.
-- Not done (auto mode refused it, Yoni's call): DRIFT on sale in `plugins.ts` (status `live`, `introPriceUsd: 69`, `paddlePriceId: 'pri_01m4362j96wvbqtwf2v45k2pt9'`). Without it `/buy/drift/` does not exist and the DRIFT offer link lands on a 404. That is the Nov 1 flip.
+- DECIDED (Yoni 2026-10-18): DRIFT goes on sale on Sun Nov 1, not before. That day: DRIFT on sale in `plugins.ts` (status `live`, `introPriceUsd: 69`, `paddlePriceId: 'pri_01m4362j96wvbqtwf2v45k2pt9'`). Without it `/buy/drift/` does not exist and the DRIFT offer link lands on a 404. That is the Nov 1 flip.
 - Not checked: a real Paddle sandbox checkout with a real code (that `discountCode` plus the two settings render as expected inside Paddle's overlay).
 - Next: Yoni's "push" -> rebase onto origin/main, push (= live deploy). Safe before Nov 1: it only acts on `?offer=`.
 
