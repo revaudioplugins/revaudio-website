@@ -20,6 +20,7 @@
 import { readFileSync } from 'node:fs';
 import { getImage } from 'astro:assets';
 import DriftPanel from './DriftPanel.astro';
+import { ghost } from '../../lib/drift/lcd';
 import capGreen from '../../assets/seasons/drift/mm_cap_green.png';
 import capRed from '../../assets/seasons/drift/mm_cap_red.png';
 
@@ -36,6 +37,7 @@ const peaks = JSON.parse(readFileSync('public/audio/drift/peaks.json', 'utf8')) 
 const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 const [g, r] = await Promise.all([capGreen, capRed].map((src) => getImage({ src, width: 136, format: 'webp', quality: 82 })));
 const first = TRACKS[0];
+const clock0 = `00:00 / ${fmt(peaks.tracks[first.id].dur)}`;
 ---
 <section class="d-sec d-hear-sec" id="hear" aria-labelledby="d-hear-h" data-hear data-next="play" data-ab="before">
   <div class="d-wrap">
@@ -68,20 +70,21 @@ const first = TRACKS[0];
         </div>
 
         <div class="d-hear-deck">
-          <!-- the screen: what you hear, its waveform (L over R), the clock -->
+          <!-- the screen, a segment LCD: what you hear, its waveform (L over R), the clock. data-g = each readout's
+               unlit segments (lcd.ts keeps them in step with the text) -->
           <div class="d-lcd d-lcd--big d-screen d-hear-screen">
             <div class="d-screen-hdr">
               <!-- the coach: names the next thing to do (hear.ts COACH); the screen's one live region -->
-              <span class="d-hear-coach" data-hear-state aria-live="polite">PRESS PLAY</span>
+              <span class="d-hear-coach" data-hear-state aria-live="polite" data-g={ghost('PRESS PLAY')}>PRESS PLAY</span>
               <span class="d-hear-tag" data-hear-tag>ORIGINAL</span>
             </div>
-            <div class="d-screen-title" data-hear-title>{first.label}</div>
+            <div class="d-screen-title" data-hear-title data-g={ghost(first.label)}>{first.label}</div>
             <div class="d-hear-wave">
               <canvas data-hear-wave aria-hidden="true"></canvas>
             </div>
             <div class="d-screen-row">
-              <span class="d-screen-t" data-pan-readout>PAN C</span>
-              <span class="d-screen-t" data-hear-time>00:00 / {fmt(peaks.tracks[first.id].dur)}</span>
+              <span class="d-screen-t" data-pan-readout data-g={ghost('PAN C')}>PAN C</span>
+              <span class="d-screen-t" data-hear-time data-g={ghost(clock0)}>{clock0}</span>
             </div>
           </div>
 

@@ -1,7 +1,8 @@
 ## 2026-10-19 — DRIFT #hear: guide the visitor step by step, branch `drift-hear-guide` (Claude Code `revaudio-ef`, laptop 1) — BUILT + VERIFIED LOCALLY, NOT PUSHED
 
 Claim (owner `revaudio-ef`): `src/components/drift/DriftHear.astro`, `src/lib/drift/hear.ts`, `src/components/drift/DriftHero.astro`
-(the HEAR IT link), the #hear + `.d-hero-hear` rules in `src/styles/drift.css`, `tasks/todo.md` (top section),
+(the HEAR IT link), the #hear + `.d-hero-hear` rules in `src/styles/drift.css`, `src/lib/drift/lcd.ts` + one line of
+`src/lib/drift/bus.ts` (PAN via lcdText), `public/fonts/drift/DSEG14*`, `bench/drift-lcd-bench.html` + `bench/drift-lcd/`, `DESIGN.md` §9 (one line), `tasks/todo.md` (top section),
 `tasks/drift-player-plan.md` (Round 9), `tasks/lessons.md` (one entry), this entry. Worktree
 `Website/revaudio-website-hear` (off origin/main `d0168a6`; `node_modules` = junction to the main checkout's).
 Plan, findings, checks: `tasks/todo.md` top section.
@@ -9,6 +10,8 @@ Plan, findings, checks: `tasks/todo.md` top section.
   -> NOW PLAYING); the next step's key + control breathe (PLAY's old glow), the others rest dim; ORIGINAL / DRIFT
   under the button, the one you hear lit; step 3 = "3 PUSH DRIFT"; the checker strip no longer runs under the
   title (<= ~770 px), 試聴 off on phones; hero: a "HEAR IT" key under the tagline (desktop + 601-1099, not phones).
+- Then the screen became a car-stereo segment LCD (DSEG14 + ghost cells + a segment bar-graph waveform; user's pick B
+  on `bench/drift-lcd-bench.html`, serve the worktree root on 8796). Same heights; checks in `tasks/todo.md` (LCD).
 - Answers (laptop 1 user, 2026-10-19): default ORIGINAL, "3 PUSH DRIFT", no HEADPHONES tag, hero link yes.
 - Next: the user looks at it (local dist: `python -m http.server 4417 --bind 127.0.0.1` in the worktree's `dist/`,
   then http://127.0.0.1:4417/drift/), then "push" = merge to main = live. A real iPhone / Safari listen is still owed.

@@ -1,3 +1,4 @@
+import { lcdText } from './lcd';
 /**
  * /drift pan bus. ONE pan value (-1 hard left .. +1 hard right) feeds every
  * display on the page: the two neon rails (the stereo field), the dash PAN
@@ -100,7 +101,7 @@ export function initPanDisplays(root: HTMLElement): void {
     // write on change only (D3, 10-02)
     readouts.forEach((r, i) => {
       const t = r.dataset.panReadout === 'bare' ? txt : `PAN ${txt}`;
-      if (t !== readTxt[i]) { r.textContent = t; readTxt[i] = t; }
+      if (t !== readTxt[i]) { lcdText(r, t); readTxt[i] = t; }   // lcdText: #hear's LCD readout also gets its ghost
     });
   };
   let raf = 0;

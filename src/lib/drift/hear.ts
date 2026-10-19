@@ -1,4 +1,5 @@
 import { setPan } from './bus';
+import { lcdText } from './lcd';
 
 /**
  * #hear, the test drive (DriftHear.astro). Real bounces only: <id>-before.m4a (the original, level-matched down to
@@ -142,6 +143,7 @@ export function initHear(root: HTMLElement): void {
   // ---- paint
   const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
   const name = () => chips.find((c) => c.dataset.hearTrack === st.track)?.dataset.name ?? '';
+  const still = matchMedia('(prefers-reduced-motion: reduce)');
   function paintUi(): void {
     chips.forEach((c) => c.setAttribute('aria-pressed', String(c.dataset.hearTrack === st.track)));
     startBtn?.setAttribute('aria-pressed', String(st.after));
@@ -153,33 +155,43 @@ export function initHear(root: HTMLElement): void {
     root.toggleAttribute('data-playing', st.playing);
     const n = next();
     root.dataset.next = n;
-    if (title) title.textContent = name();
-    if (tag) tag.textContent = st.after ? 'DRIFT ON' : 'ORIGINAL';
-    if (stateEl && stateEl.textContent !== COACH[n]) stateEl.textContent = COACH[n];   // unchanged = no repeat announcement
-    if (timeEl && !st.playing && M) timeEl.textContent = `00:00 / ${fmt(M.tracks[st.track].dur)}`;   // before the manifest lands, the build-time length stays
+    // words settle in like liquid crystal (a short fade-in); the running numbers just change
+    for (const [el, s] of [[title, name()], [tag, st.after ? 'DRIFT ON' : 'ORIGINAL'], [stateEl, COACH[n]]] as const)
+      if (el && lcdText(el, s) && !still.matches) el.animate([{ opacity: .25 }, { opacity: 1 }], { duration: 170, easing: 'ease-out' });   // unchanged = no repeat announcement
+    if (timeEl && !st.playing && M) lcdText(timeEl, `00:00 / ${fmt(M.tracks[st.track].dur)}`);   // before the manifest lands, the build-time length stays
   }
+  // the waveform = a segment bar graph on the LCD: columns of 2 px segments on a 3 px pitch, L lit up from the middle
+  // and R down, every unlit segment faintly there; played = full ink, the rest dim, the playhead column pale. Pitch,
+  // bar width and inks come from the screen's CSS (--seg-*), read again whenever the canvas changes size.
+  let seg = { col: 6, bar: 4, ink: '#ff5af5', dim: 'rgba(255,90,245,.34)', ghost: 'rgba(255,90,245,.08)', head: '#ffe6fd' };
+  const readSeg = () => {
+    const c = getComputedStyle(cv!), v = (k: string) => c.getPropertyValue(k).trim();
+    seg = { col: +v('--seg-col') || seg.col, bar: +v('--seg-bar') || seg.bar, ink: v('--seg-ink') || seg.ink,
+      dim: v('--seg-wave-dim') || seg.dim, ghost: v('--seg-ghost') || seg.ghost, head: v('--seg-head') || seg.head };
+  };
   function draw(): void {
     if (!M) return;
     const info = M.tracks[st.track], P = st.after ? info.after : info.before;
     const dpr = Math.min(2, devicePixelRatio || 1), w = cv!.clientWidth, h = cv!.clientHeight;
     if (!w || !h) return;
-    if (cv!.width !== Math.round(w * dpr) || cv!.height !== Math.round(h * dpr)) { cv!.width = Math.round(w * dpr); cv!.height = Math.round(h * dpr); }
+    if (cv!.width !== Math.round(w * dpr) || cv!.height !== Math.round(h * dpr)) { cv!.width = Math.round(w * dpr); cv!.height = Math.round(h * dpr); readSeg(); }
     g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h);
     // one scale for both versions of a track, so ORIGINAL vs DRIFT is a fair picture
     let mx = 1e-3; for (const v of [info.before, info.after]) for (const x of [...v.L, ...v.R]) mx = Math.max(mx, x);
-    const n = P.L.length, bw = w / n, mid = h / 2, played = st.playing && cur ? position() / cur.dur : -1;
-    g.fillStyle = 'rgba(242,76,240,.25)'; g.fillRect(0, mid, w, 1);
-    for (let pass = 0; pass < 2; pass++) {
-      g.fillStyle = pass ? '#f24cf0' : 'rgba(165,140,196,.38)';
-      g.shadowColor = 'rgba(242,76,240,.85)'; g.shadowBlur = pass ? 5 : 0;
-      for (let i = 0; i < n; i++) {
-        if ((i / n < played) !== (pass === 1)) continue;
-        const x = i * bw, hl = P.L[i] / mx * (mid - 2), hr = P.R[i] / mx * (mid - 2);
-        g.fillRect(x, mid - hl, Math.max(1, bw - .8), hl); g.fillRect(x, mid + 1, Math.max(1, bw - .8), hr);
-      }
+    const n = P.L.length, played = st.playing && cur ? position() / cur.dur : -1;
+    const { col, bar } = seg, cols = Math.floor((w + col - bar) / col), ox = Math.floor((w - (cols - 1) * col - bar) / 2);
+    const up = Math.round(h / 6), down = Math.floor((h - 2) / 3) + 1 - up;   // rows above / below the middle
+    const head = played >= 0 ? Math.min(cols - 1, Math.floor(played * w / col)) : -1;
+    const ink = new Path2D(), dim = new Path2D(), off = new Path2D(), hd = new Path2D();
+    for (let i = 0; i < cols; i++) {
+      const b0 = Math.floor(i * col / w * n), b1 = Math.min(n, Math.max(b0 + 1, Math.floor((i + 1) * col / w * n)));
+      let aL = 0, aR = 0; for (let b = b0; b < b1; b++) { aL = Math.max(aL, P.L[b]); aR = Math.max(aR, P.R[b]); }
+      const nl = aL / mx > .02 ? Math.max(1, Math.round(aL / mx * up)) : 0, nr = aR / mx > .02 ? Math.max(1, Math.round(aR / mx * down)) : 0;
+      const x = ox + i * col, lit = i === head ? hd : (i * col + bar / 2) / w < played ? ink : dim;
+      for (let j = 0; j < up; j++) (i === head || j < nl ? lit : off).rect(x, (up - 1 - j) * 3, bar, 2);
+      for (let j = 0; j < down; j++) (i === head || j < nr ? lit : off).rect(x, (up + j) * 3, bar, 2);
     }
-    g.shadowBlur = 0;
-    if (played >= 0) { g.fillStyle = '#fff0ff'; g.shadowColor = '#ff4fd8'; g.shadowBlur = 8; g.fillRect(played * w - 1, 0, 2, h); g.shadowBlur = 0; }
+    for (const [p, c] of [[off, seg.ghost], [dim, seg.dim], [ink, seg.ink], [hd, seg.head]] as const) { g.fillStyle = c; g.fill(p); }
   }
 
   // ---- the loop: screen + clock + the measured pan onto the bus; settles to centre after a stop
@@ -196,7 +208,7 @@ export function initHear(root: HTMLElement): void {
         anL.getFloatTimeDomainData(bufL); anR.getFloatTimeDomainData(bufR);
         L = rms(bufL); R = rms(bufR);
         target = L + R > 1e-3 ? Math.max(-1, Math.min(1, 4 / Math.PI * Math.atan2(R, L) - 1)) : panS;
-        if (timeEl && cur) timeEl.textContent = `${fmt(position())} / ${fmt(cur.dur)}`;
+        if (timeEl && cur) lcdText(timeEl, `${fmt(position())} / ${fmt(cur.dur)}`);
         draw();
       }
       panS += (target - panS) * Math.min(1, dt * (st.playing ? 10 : 6));

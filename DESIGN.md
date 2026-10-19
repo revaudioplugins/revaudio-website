@@ -236,6 +236,11 @@ words first, window under them.
 - DON'T absolute-position decorative props to pixel coordinates; wall and rails are flow +
   percentages so every viewport works.
 - Astro scoped styles: anything injected at runtime or living in another component needs `:global()`.
+- DO make a screen read as the part it is. An LCD does not bloom: crisp segments, every unlit segment faintly there
+  (ghost cells), an even backlight, a bezel inside the window. A blurred glow on every letter reads CRT / neon instead.
+  /drift #hear's screen = the car-stereo 14-segment LCD (DSEG14, RevTune's face), picked on `bench/drift-lcd-bench.html`
+  over a dot-matrix and a reflective LCD (laptop 1 user, 2026-10-19: "design this whole area so it looks like an LCD
+  screen"); the PICK A TRACK list beside it stays a CRT, so the two read as two different parts.
 
 ## 10. History + open questions (for Dan)
 

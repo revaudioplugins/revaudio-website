@@ -54,6 +54,12 @@
   font-weight: 700 900;
   font-display: swap;
 }
+/* DSEG14 Classic Italic (SIL OFL 1.1, fonts/drift/DSEG-LICENSE.txt): RevTune's car-stereo LCD face, on #hear's screen */
+@font-face {
+  font-family: 'Drift DSEG14';
+  src: url('/fonts/drift/DSEG14Classic-Italic.woff2') format('woff2');
+  font-display: swap;
+}
 @font-face {
   font-family: 'Drift Press';
   src: url('/fonts/drift/PressStart2P-Regular.subset.woff2') format('woff2'),
@@ -96,6 +102,7 @@
   --d-f-pix: 'Drift Press', 'Press Start 2P', ui-monospace, monospace;
   --d-f-badge: 'Drift Orbitron', 'Orbitron', var(--font-display);
   --d-f-lcd: 'VT323', ui-monospace, monospace;
+  --d-f-seg: 'Drift DSEG14', ui-monospace, monospace;   /* #hear's segment LCD (THE SCREEN below) */
   --d-f-ja: 'Drift JP', 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Yu Gothic UI', Meiryo, sans-serif;
   --d-f-head: 'Drift Oswald', 'Oswald', Impact, sans-serif;
   --d-f-spec: 'Drift Mono', 'Share Tech Mono', ui-monospace, monospace;
@@ -1413,6 +1420,59 @@
   .d-hear-sec .d-vol-ticks { --r: 35px; }
   .d-hear-sec .d-vol-knob { width: 44px; height: 44px; }
 }
+
+/* THE SCREEN = a car-stereo segment LCD (2026-10-19, LCD bench B: "let's design this whole area so it looks like an LCD
+   screen"; bench/drift-lcd-bench.html). It was violet glass with a blurred glow on every readout, which reads CRT.
+   An LCD does not bloom: crisp segments, every unlit segment faintly there (the ghost: lcd.ts writes it into data-g
+   beside the text), an even backlight, a black bezel with a chrome hairline INSIDE the window (embed law: nothing
+   cast outside it). DSEG14 cells are .816em wide and its space .2em: word-spacing .616em makes a space one full
+   cell, so the ghost cells sit under the letters (a colon keeps its own narrow cell in both). The rows keep the
+   page's heights (22 / 26 or 22 / wave / 18 or 16): the panel keeps its height. One ink: ORIGINAL outlined, DRIFT ON
+   lit solid. The waveform = a segment bar graph, drawn by hear.ts from the --seg-* properties (column pitch / bar
+   width in px, then the inks). */
+.d-hear-sec .d-hear-screen {
+  --seg-col: 6; --seg-bar: 4;
+  --seg-ink: #ff5af5; --seg-dim: #c25ac0; --seg-wave-dim: rgba(255, 90, 245, .34); --seg-ghost: rgba(255, 90, 245, .08); --seg-head: #ffe6fd;
+}
+.d-hear-sec .d-hear-screen::before {
+  background: linear-gradient(180deg, #14061a, #10041a);
+  box-shadow: inset 0 0 0 2px #040106, inset 0 0 0 3px rgba(214, 200, 228, .2), inset 0 5px 8px rgba(0, 0, 0, .7), inset 0 -4px 7px rgba(0, 0, 0, .45);
+}
+.d-hear-sec .d-hear-screen::after { opacity: 1; background: linear-gradient(180deg, rgba(255, 255, 255, .07), rgba(255, 255, 255, 0) 38%); }
+.d-hear-sec .d-hear-screen :is(.d-screen-hdr, .d-screen-title, .d-screen-t) {
+  font-family: var(--d-f-seg); letter-spacing: .06em; word-spacing: .616em; color: var(--seg-ink); text-shadow: 0 0 1px rgba(255, 90, 245, .55);
+}
+.d-hear-sec .d-hear-screen .d-screen-hdr { height: 22px; color: var(--seg-dim); text-shadow: none; }
+.d-hear-sec .d-hear-screen .d-hear-coach { flex: 1; font-size: 13px; color: var(--seg-dim); text-shadow: none; }
+[data-hear]:not([data-next='']) .d-hear-screen .d-hear-coach { color: var(--seg-ink); text-shadow: 0 0 1px rgba(255, 90, 245, .55); }
+.d-hear-sec .d-hear-screen .d-screen-title { height: 26px; font-size: 18px; line-height: 26px; }
+.d-hear-sec .d-hear-screen .d-screen-row { height: 18px; align-items: center; }
+.d-hear-sec .d-hear-screen .d-screen-t { font-size: 12px; }
+/* the ghosts: under the lit text, never read aloud (the '/ ""' alt text); the coach's runs on to the tag */
+.d-hear-sec .d-hear-screen :is(.d-hear-coach, .d-screen-title, .d-screen-t) { position: relative; isolation: isolate; }
+.d-hear-sec .d-hear-screen :is(.d-hear-coach, .d-screen-t)::before,
+.d-hear-sec .d-hear-screen .d-screen-title::after {
+  content: attr(data-g) / ''; position: absolute; top: 0; left: 0; z-index: -1; pointer-events: none;
+  white-space: nowrap; color: var(--seg-ghost); text-shadow: none;
+}
+.d-hear-sec .d-hear-screen .d-hear-coach::before { content: attr(data-g) '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~' / ''; }
+/* the play arrow: DSEG has no triangle, so it is cut (an LCD icon), and the title's ghost starts after it */
+.d-hear-sec .d-hear-screen .d-screen-title::before {
+  content: ''; display: inline-block; width: .55em; height: .75em; margin: 0 .4em 0 0; vertical-align: .08em;
+  font-size: 1em; background: currentColor; clip-path: polygon(0 0, 100% 50%, 0 100%);
+}
+.d-hear-sec .d-hear-screen .d-screen-title::after { left: .95em; }
+.d-hear-sec .d-hear-screen .d-hear-tag { padding: 4px 6px 3px; border-radius: 2px; font-size: 10px; color: #14061a; background: var(--seg-ink); box-shadow: none; text-shadow: none; }
+[data-ab='before'] .d-hear-screen .d-hear-tag { color: var(--seg-ink); background: none; box-shadow: inset 0 0 0 1px var(--seg-ink); }
+@media (max-width: 600px) {
+  .d-hear-sec .d-hear-screen { --seg-col: 4; --seg-bar: 3; }
+  .d-hear-sec .d-hear-screen .d-hear-coach { font-size: 10.5px; }
+  .d-hear-sec .d-hear-screen .d-screen-title { height: 22px; font-size: 15px; line-height: 22px; }
+  .d-hear-sec .d-hear-screen .d-screen-row { height: 16px; }
+  .d-hear-sec .d-hear-screen .d-screen-t { font-size: 11px; }
+  .d-hear-sec .d-hear-screen .d-hear-tag { font-size: 9px; }
+}
+@media (max-width: 380px) { .d-hear-sec .d-hear-screen .d-hear-coach { font-size: 9.5px; letter-spacing: 0; } }   /* PUSH AGAIN: ORIGINAL beside DRIFT ON at 360 (with the .06em it lost its last 2-6 px) */
 
 /* ?bench (dev only, html.bench-on): composite parts select and move as ONE piece (a click on a speaker's cone must
    not grab the cone alone); production never has the class */

@@ -101,3 +101,10 @@ an idle timer shorter than that fires before Lenis moved; wait while `lenis.isSc
    run under LET'S DRIFT. up to ~770 px, not only on phones as the screenshot suggested.
 2. `:is(.a::after, .b .c)` is invalid (pseudo-elements are not allowed inside `:is()` / `:where()`), and the browser
    drops the WHOLE rule with no build error. Write a pseudo-element selector out in full, once per rule.
+
+## 2026-10-19 — a ghost layer blinds scrollWidth: measure the lit text
+The LCD's ghost cells are an absolutely positioned `::before` inside the coach cell (`overflow: hidden`). An absolute
+child counts toward scrollable overflow, so `scrollWidth > clientWidth` turned true for EVERY coach line at every
+width (verify-hear.cjs's coachClipped said "clipped" everywhere, a blind metric). Measure the lit text instead:
+`range.selectNodeContents(el)` -> its right edge vs the cell's right edge, plus a control string that must fail
+(coachfit.cjs). The real check then found the one true clip: 2-6 px at 360, fixed with letter-spacing 0.

@@ -8,12 +8,22 @@ screen". Today's screen = dark violet glass + blurred magenta glow on every read
   real peaks.json, coach-fits + height checks under each screen. 0 = today, A = dot matrix (negative, magenta,
   cyan/magenta tags kept), B = 14-segment car stereo (DSEG14 italic, RevTune's file, OFL; ghost cells), C =
   reflective positive (lilac reflector, violet ink + 1 px liquid-layer shadow). All: heights = page, coach fits.
-- [ ] L2. The user picks (or mixes) by eye on the bench.
-- [ ] L3. Fold the pick: drift.css (`.d-hear-screen` only), hear.ts draw() reads its colours from CSS custom
-  properties (so the CSS owns the look); B also needs the ghost strings (`data-g`) set beside textContent and the
-  font into public/fonts/drift + its licence.
-- [ ] L4. Verify: heights.cjs (panel height unchanged at 11 widths), verify-hear.cjs states, coach at 360,
-  console, reduced motion, embed law (no outer glow on the window). Then commit by exact paths, no push.
+- [x] L2. The user's pick: B, segment ("go with your recommendation").
+- [x] L3. Folded: drift.css "THE SCREEN" block (`.d-hear-sec .d-hear-screen` only) + `--d-f-seg` / `Drift DSEG14`;
+  `src/lib/drift/lcd.ts` (ghost + lcdText: text and data-g together); hear.ts writes coach / title / tag / clock
+  through it (words fade in 170 ms like liquid crystal, not under reduced motion) and draw() = the segment bar
+  graph from `--seg-*`; bus.ts writes PAN through it; DriftHear.astro ships the first ghosts; font + licence in
+  public/fonts/drift.
+- [x] L4. Verified on the built dist: #hear panel height = live at 11 widths, the screen's parts identical
+  (127 px phone; the 1.75 px at 360 is the earlier "3 PUSH DRIFT" caption, not the screen); all guide states
+  (verify-hear.cjs); coach fits beside both tags at 14 widths down to 360 (coachfit.cjs, measured on the lit
+  text, with a control); DSEG really loads; ghosts right (`PUSH AGAIN: ORIGINAL` -> `~~~~~~~~~~:~~~~~~~~~`);
+  0 console errors; reduced motion = 0 fades. Window: inset only (embed law).
+
+### Review (LCD)
+- Below 360 (340 / 320) PUSH AGAIN: ORIGINAL loses its last letters, as the VT323 screen did at 320 before.
+- Firefox without CSS alt-text support drops the ghost declaration: the screen then shows no ghosts (lit text intact).
+- Not seen yet: a real phone (DPR 3), Safari.
 
 # DRIFT #hear — guide the visitor through the test drive (2026-10-19, revaudio-ef)
 
