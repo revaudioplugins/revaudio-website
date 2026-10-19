@@ -3,17 +3,20 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import PluginCard from '../../components/PluginCard.astro';
 import EmailCapture from '../../components/EmailCapture.astro';
 import { plugins } from '../../data/plugins';
+import { revfx } from '../../data/revfx';
 
 // Shipping products lead; in-development plugins sit in their own labeled row
 // below (conversion pass 2026-08-03) — unbuyable tiles mixed into the main
 // grid read "roadmap company" to a first-time visitor.
 // A plugin with an open free trial (DRIFT beta) counts as shipping here.
+// RevFX shows only when revfx.ts listed is on (page-only for now, Gil 2026-10-18)
+const storePlugins = plugins.filter((p) => p.slug !== 'revfx' || revfx.listed);
 const onBench = (p: (typeof plugins)[number]) => p.status === 'in-development' && !p.trialOpen;
 // Store-only order (Yoni 2026-10-11: DRIFT takes GAS's first-row slot); slugs not listed keep catalog order after these.
 const STORE_ORDER = ['revlimiter', 'radio-roulette', 'drift', 'revfx', 'gas'];   // RevFX beside DRIFT (Gil 2026-10-18)
 const rank = (slug: string) => { const i = STORE_ORDER.indexOf(slug); return i < 0 ? STORE_ORDER.length : i; };
-const shipping = plugins.filter((p) => !onBench(p)).sort((a, b) => rank(a.slug) - rank(b.slug));
-const roadmap = plugins.filter(onBench);
+const shipping = storePlugins.filter((p) => !onBench(p)).sort((a, b) => rank(a.slug) - rank(b.slug));
+const roadmap = storePlugins.filter(onBench);
 ---
 
 <BaseLayout

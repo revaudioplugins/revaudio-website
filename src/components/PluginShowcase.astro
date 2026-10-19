@@ -10,6 +10,7 @@ import { Image } from 'astro:assets';
 import { bySlug, isBuyable, dlGateId } from '../data/plugins';
 import { site } from '../data/site';
 import { drift } from '../data/drift';
+import { revfx } from '../data/revfx';
 import DriftCard from './drift/DriftCard.astro';
 import arrowBtn from '../assets/showcase/arrow-btn.png';
 import revlimiterShot from '../assets/plugins/revlimiter-hero.png';
@@ -150,7 +151,7 @@ const SLIDES = [
   const p = bySlug(s.slug);
   if (s.slug === 'drift' && drift.homeLead) return true;
   // RevFX: its page takes trial sign-ups now (catalog trialOpen), like DRIFT (Gil 2026-10-18)
-  if (s.slug === 'revfx' && bySlug(s.slug)?.trialOpen) return true;
+  if (s.slug === 'revfx') return revfx.listed && !!bySlug(s.slug)?.trialOpen;   // revfx.ts listed: off = page only
   return p && p.status !== 'in-development';
 });
 // DRIFT leads the rotation through its launch (drift.homeLead, Dan 2026-10-08).

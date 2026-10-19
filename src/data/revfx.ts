@@ -30,6 +30,9 @@ export const revfx = {
   aaxReady: false,
   winReady: false,
   version: '1.2.0',
+  /** true = RevFX shows in the homepage carousel and the store; false = only the /revfx page is live (Gil 2026-10-18:
+   *  "keep the page link live for now") */
+  listed: false,
 };
 
 export const formatsMac = () => (revfx.aaxReady ? 'VST3 · AU · AAX' : 'VST3 · AU');
