@@ -662,6 +662,17 @@ const highlights = plugin.features.slice(0, 3);
   @media (max-width: 760px) { .gas-mixer-el { aspect-ratio: 380 / 922; max-height: none; } }
   .gas-mixer-el.ready { aspect-ratio: auto; max-height: none; }   /* built: it sizes itself, and OPEN THE HOOD makes it taller (the cap let the mixer spill over the footer) */
 
+  /* Desktop (2026-10-19): the "Hear it" title and its line peek in at the bottom of the first screen, so a visitor
+     sees there is something to play before scrolling. The hero still fits whole above them: it is one screen minus
+     the 11rem the title + line + gaps need, with tighter gaps on both sides of the seam. Phones unchanged. */
+  @media (min-width: 901px) {
+    .gas {
+      min-height: calc(100svh - var(--nav-h, 75px) - 11rem);
+      padding-bottom: var(--space-5);
+    }
+    .gas-hear { padding-top: var(--space-4); }
+  }
+
   /* Phones: stack, plate first but smaller. One screen is a desktop promise —
      here the promise is "the button and its fine print sit above the fold".
      The areas re-order: the video badge drops to the end so it never pushes
