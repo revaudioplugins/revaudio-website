@@ -22,7 +22,7 @@ export const revfx = {
   phase: 'trial' as RevfxPhase,
   trialDays: 30,             // RevFX LicenseManager: REVFX_TRIAL_ENABLED, 30-day silent trial
   priceUsd: null as number | null,
-  paddlePriceId: null as string | null,
+  paddlePriceId: 'pri_01m5a2rfk2kcb3tpm2j87kfgh9' as string | null, // Paddle RevFX (2026-10-19); keep equal to plugins.ts revfx
   /** the licence worker's download gate knows 'revfx' (DL_PLUGINS) */
   gateWired: false,
   gateId: 'revfx',
