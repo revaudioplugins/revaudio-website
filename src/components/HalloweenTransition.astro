@@ -99,7 +99,7 @@ const SKELETONS = 6;
   if (root) {
     document.body.appendChild(root);
     const FX = { spiders: 1300, skeletons: 1450, witch: 1650 } as const;
-    const HOLD = 90; // a beat of full black before the page swaps
+    const HOLD = 45; // a beat of full black before the page swaps
     type Fx = keyof typeof FX;
     const names = Object.keys(FX) as Fx[];
     let busy = false;
@@ -163,7 +163,7 @@ const SKELETONS = 6;
     // Arrived through a scene: the black cover is already up (set in <head>); let it fade, then clear.
     const html = document.documentElement;
     if (html.classList.contains('hw-fadein')) {
-      setTimeout(() => html.classList.remove('hw-fadein'), 1000);
+      setTimeout(() => html.classList.remove('hw-fadein'), 500);
     }
 
     // Back/forward cache: come back to a clean page, not a frozen scene.
@@ -194,9 +194,9 @@ const SKELETONS = 6;
   .hwt-dim { position: absolute; inset: 0; background: #0b0a09; opacity: 0; }
   .hwt[data-play] .hwt-dim { animation: hwt-dim var(--hwt-ms, 1.3s) ease-in forwards; }
 
-  /* fade to black: the last 380ms of every scene, over the scene itself */
+  /* fade to black: the last 190ms of every scene, over the scene itself */
   .hwt-cover { position: absolute; inset: 0; background: #0b0a09; opacity: 0; }
-  .hwt[data-play] .hwt-cover { animation: hwt-cover 380ms cubic-bezier(0.4, 0, 0.6, 1) calc(var(--hwt-ms, 1.3s) - 380ms) forwards; }
+  .hwt[data-play] .hwt-cover { animation: hwt-cover 190ms cubic-bezier(0.4, 0, 0.6, 1) calc(var(--hwt-ms, 1.3s) - 190ms) forwards; }
 
   /* fade up from black on the page we land on */
   :global(html.hw-fadein body::after) {
@@ -206,7 +206,7 @@ const SKELETONS = 6;
     z-index: 2147483000;
     background: #0b0a09;
     pointer-events: none;
-    animation: hwt-unfade 700ms cubic-bezier(0.25, 0.1, 0.25, 1) 80ms both;
+    animation: hwt-unfade 350ms cubic-bezier(0.25, 0.1, 0.25, 1) 40ms both;
   }
 
   /* ── spiders ── */
