@@ -19,10 +19,15 @@ import geo from '../../assets/seasons/drift/rack/rack.json';
 
 type Id = 'pitch' | 'echo' | 'reverb' | 'halo' | 'glue';
 type Norm = Record<string, number>;
-interface Roll { i: number; seed: number; mode: string; name: string; act: string[]; order: string[]; norm: Norm }
+interface Roll { i: number; seed: number; mode: string; name: string; blurb: string; act: string[]; order: string[]; norm: Norm }
 interface Screen { init?(cv: HTMLCanvasElement, P: P): void; draw?(t: number, P: P): void }
 interface P { get(pid: string): number; on: boolean; dpr: number; w: number; h: number; phosphor: string; accent: string; ink: string; hot: string; tempoBpm: number }
-interface Rnd { roll(o: { seed: number; context: unknown }): { mode: string; name: string; active: string[]; order: string[]; norm: Norm } }
+interface Rnd { roll(o: { seed: number; context: unknown }): { mode: string; name: string; blurb?: string; active: string[]; order: string[]; norm: Norm } }
+/** What a host page (/revfx) can do with the rack: read and set the chain + scene, roll, hear about changes.
+ *  /drift ignores it. Events on root: 'rack:roll' (detail = the roll) and 'rack:change' (detail = the state). */
+export interface RackState { order: Id[]; on: Record<Id, boolean>; norm: Norm; label: string }
+export interface RackApi { state(): RackState; restore(s: RackState): void; setOrder(o: Id[]): void; setOn(id: Id, on: boolean): void; roll(): void }
+export type RackId = Id;
 
 const SID: Record<Id, string> = { pitch: 'pitch', echo: 'dly', reverb: 'verb', halo: 'halo', glue: 'glue' };
 const NAME: Record<string, Id> = { PITCH: 'pitch', ECHO: 'echo', REVERB: 'reverb', HALO: 'halo' };
@@ -45,7 +50,7 @@ const ROLL_MS = 520, EXTREME_MS = 1600;
 
 const crop = (id: Id) => geo.strips[id].crop;
 
-export function initRack(root: HTMLElement): void {
+export function initRack(root: HTMLElement): RackApi | undefined {
   const stage = root.querySelector<HTMLElement>('[data-rk-stage]');
   if (!stage) return;
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -57,7 +62,7 @@ export function initRack(root: HTMLElement): void {
     const el = stage.querySelector<HTMLElement>(`[data-rk-strip="${id}"]`);
     const grab = stage.querySelector<HTMLElement>(`[data-rk-grab="${id}"]`);
     const cv = el?.querySelector<HTMLCanvasElement>('canvas');
-    if (!el || !grab || !cv) return;
+    if (!el || !grab || !cv) return undefined;
     const g = geo.strips[id];
     const P: P = { get: (pid) => st.norm[pid] ?? 0, on: true, dpr: 1, w: g.screen.w, h: g.screen.h,
       phosphor: g.phos, accent: g.accent, ink: g.ink, hot: g.hot, tempoBpm: 120 };
@@ -110,7 +115,9 @@ export function initRack(root: HTMLElement): void {
       s.cap?.classList.toggle('is-off', !st.on[id]);
     });
     redraw();
+    root.dispatchEvent(new CustomEvent('rack:change', { detail: snapshot() }));
   };
+  const snapshot = (): RackState => ({ order: st.order.slice(), on: { ...st.on }, norm: { ...st.norm }, label: cnt?.textContent ?? '' });
 
   /* ---- the LCD: dice log + RANDOMIZE ---- */
   const tiles = root.querySelector<HTMLElement>('[data-rk-tiles]');
@@ -135,7 +142,10 @@ export function initRack(root: HTMLElement): void {
     st.cur = r;
     st.norm = { ...st.norm, ...r.norm, ...HELD };
     for (const id of FOUR) st.on[id] = r.act.some((k) => NAME[k] === id);
-    st.order = [...r.order.map((k) => NAME[k]), 'glue'];
+    // the four re-roll round GLUE COMP, which keeps its column (the plugin's law; on /drift it is always last)
+    const four: Id[] = r.order.map((k) => NAME[k]);
+    four.splice(Math.max(0, st.order.indexOf('glue')), 0, 'glue');
+    st.order = four;
     place(); paint();
     if (say) {
       const playing = r.act.map((k) => k[0] + k.slice(1).toLowerCase());
@@ -156,10 +166,11 @@ export function initRack(root: HTMLElement): void {
     const out = R.roll({ seed, context: { atOn: false, ord, sinceExtreme: memory.sinceExtreme, lastPersonality: memory.lastPersonality } });
     memory.sinceExtreme = out.mode === 'EXTREME' ? 0 : (memory.sinceExtreme ?? 0) + 1;
     memory.lastPersonality = out.name;
-    const r: Roll = { i: ++st.n, seed, mode: out.mode, name: out.name, act: out.active, order: out.order, norm: out.norm };
+    const r: Roll = { i: ++st.n, seed, mode: out.mode, name: out.name, blurb: out.blurb ?? '', act: out.active, order: out.order, norm: out.norm };
     st.rolls.push(r);
     if (st.rolls.length > 8) st.rolls.shift();
     apply(r); paint(r);
+    root.dispatchEvent(new CustomEvent('rack:roll', { detail: r }));
     if (btn) {
       btn.classList.add('was-used');
       const x = out.mode === 'EXTREME';
@@ -211,4 +222,12 @@ export function initRack(root: HTMLElement): void {
   near.observe(stage);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) run(); });
   new ResizeObserver(() => { if (modules) { size(); redraw(); } }).observe(stage);
+
+  return {
+    state: snapshot,
+    restore: (x) => { st.order = x.order.slice(); st.on = { ...x.on }; st.norm = { ...x.norm }; st.cur = null; place(); paint(); if (cnt && x.label) cnt.textContent = x.label; },
+    setOrder: (o) => { st.order = o.slice(); place(); },
+    setOn: (id, on) => { st.on[id] = on; place(); },
+    roll: () => btn?.click(),
+  };
 }

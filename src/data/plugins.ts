@@ -444,6 +444,42 @@ export const plugins: Plugin[] = [
     reviewsAvg: 0,
   },
   {
+    // RevFX = DRIFT's FX rack sold on its own (RevFX repo HANDOFF.md, 1.2.0). Its own route (/revfx, src/pages/revfx.astro,
+    // state in src/data/revfx.ts), like /drift. trialOpen = the store shows it with the shipping plugins and the card says
+    // "Try it free"; no price / paddlePriceId until checkout exists (revfx.ts). Copy checked against RevFX
+    // PluginProcessor.cpp: five effects, any order (ORD_* + ORD_GLUE), RANDOMIZE, SNAPSHOT A-D (SCENE is automatable).
+    slug: 'revfx',
+    name: 'RevFX',
+    category: 'multi-fx',
+    tagline: 'Five effects. Your order.',
+    oneLiner: 'Pitch, echo, reverb, halo and glue comp in one rack.',
+    plainHook: 'Stack it. Shuffle it. Roll it.',
+    plainWhat:
+      'Five effects in one rack: pitch, echo, reverb, halo and a bus glue compressor. Drag them into any order, or let the dice roll a whole scene.',
+    longPitch:
+      'DRIFT\'s effects rack on its own. Pitch, echo, reverb, halo and a console-style glue compressor, in any order you drag them. RANDOMIZE rolls one of 21 named scenes; four snapshots save the rack, and FX Scene is automatable so your DAW can switch them.',
+    status: 'in-development',
+    statusLabel: 'Free trial',
+    trialOpen: true,
+    introPriceUsd: null,
+    regularPriceUsd: null,
+    checkoutPaused: false,
+    demoUrl: null,
+    releaseTarget: '2026',
+    heroImage: 'revfx-hero.png',
+    galleryImages: [],
+    features: [
+      { name: 'Five effects, any order', desc: 'Pitch, echo, reverb, halo and glue comp. Drag a strip and the sound runs through it in that place.' },
+      { name: 'Roll the dice', desc: 'RANDOMIZE picks one of 21 named scenes and sets the amounts. One undo step back.' },
+      { name: 'Four snapshots', desc: 'Hold to save, click to recall. FX Scene is automatable, so your DAW can switch them.' },
+    ],
+    audioDemos: [],
+    // RevFX 1.2.0: Mac universal, macOS 10.13 floor (CMakeLists.txt); no AAX (no PACE wcguid yet), no Windows build yet.
+    systemReq: { ...baseSystemReq, os: 'macOS 10.13+ (Apple silicon + Intel)', formats: 'VST3 + AU on Mac' },
+    reviewsCount: 0,
+    reviewsAvg: 0,
+  },
+  {
     slug: 'the-ac',
     name: 'The AC',
     category: 'saturation',

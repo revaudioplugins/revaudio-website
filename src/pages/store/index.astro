@@ -10,7 +10,7 @@ import { plugins } from '../../data/plugins';
 // A plugin with an open free trial (DRIFT beta) counts as shipping here.
 const onBench = (p: (typeof plugins)[number]) => p.status === 'in-development' && !p.trialOpen;
 // Store-only order (Yoni 2026-10-11: DRIFT takes GAS's first-row slot); slugs not listed keep catalog order after these.
-const STORE_ORDER = ['revlimiter', 'radio-roulette', 'drift', 'gas'];
+const STORE_ORDER = ['revlimiter', 'radio-roulette', 'drift', 'revfx', 'gas'];   // RevFX beside DRIFT (Gil 2026-10-18)
 const rank = (slug: string) => { const i = STORE_ORDER.indexOf(slug); return i < 0 ? STORE_ORDER.length : i; };
 const shipping = plugins.filter((p) => !onBench(p)).sort((a, b) => rank(a.slug) - rank(b.slug));
 const roadmap = plugins.filter(onBench);

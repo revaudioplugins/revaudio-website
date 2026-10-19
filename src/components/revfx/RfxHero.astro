@@ -1,0 +1,80 @@
+---
+/**
+ * /revfx hero: the title plate, and the pedalboard: the five strips as true-alpha pedals (the same shots as
+ * /drift's phone carousel, tools/shoot-drift-fx-pedals.mjs) standing in an arc on a neon floor. On load they
+ * stomp down one by one in chain order, each lamp pool lights as it lands, then the patch cable draws IN to OUT
+ * and a signal pulse rides it for good (hero.ts). The board leans with the pointer (desktop). A pedal is a link
+ * to its spotlight in #pedals. Under it: the trial console (RfxCapture), the page's first way in.
+ * Reduced motion: everything lands at rest, the pulse is still.
+ */
+import { getImage } from 'astro:assets';
+import DriftPanel from '../drift/DriftPanel.astro';
+import RfxCapture from './RfxCapture.astro';
+import pedPitch from '../../assets/seasons/drift/pedal-pitch.png';
+import pedEcho from '../../assets/seasons/drift/pedal-echo.png';
+import pedVerb from '../../assets/seasons/drift/pedal-reverb.png';
+import pedHalo from '../../assets/seasons/drift/pedal-halo.png';
+import pedGlue from '../../assets/seasons/drift/pedal-glue.png';
+import { pedals, revfx, buyable } from '../../data/revfx';
+
+const srcs = { pitch: pedPitch, echo: pedEcho, reverb: pedVerb, halo: pedHalo, glue: pedGlue };
+const imgs = await Promise.all(pedals.map(async (p) => ({
+  s: await getImage({ src: srcs[p.id], width: 300, format: 'webp', quality: 82 }),
+  l: await getImage({ src: srcs[p.id], width: 520, format: 'webp', quality: 80 }),
+})));
+---
+<section class="rfx-hero d-wrap" aria-labelledby="rfx-title">
+  <div class="rfx-hero-grid">
+    <div class="rfx-hero-title">
+      <DriftPanel class="rfx-title-panel">
+        <p class="rfx-kicker">Our multi-effect</p>
+        <h1 id="rfx-title" class="d-title rfx-title" data-rfx-title>
+          {'REVFX'.split('').map((c, i) => <span style={`--i:${i}`}>{c}</span>)}
+        </h1>
+        <p class="d-tagline"><span>Five effects.</span> <span>Your order.</span></p>
+        <p class="rfx-hero-what">Pitch, echo, reverb, halo and a bus glue comp in one rack. Drag them into any order, or let the dice roll a whole scene.</p>
+        {buyable() && <p class="rfx-hero-price"><b>${revfx.priceUsd}</b> <span>or {revfx.trialDays} days free</span></p>}
+      </DriftPanel>
+    </div>
+
+    <div class="rfx-board-wrap" data-rfx-board-wrap>
+      <div class="rfx-board" data-rfx-board>
+        <div class="rfx-floor" aria-hidden="true"></div>
+        <svg class="rfx-cable" viewBox="0 0 1000 200" preserveAspectRatio="none" aria-hidden="true">
+          <defs>
+            <linearGradient id="rfx-cable-g" x1="0" x2="1">
+              {pedals.map((p, i) => <stop offset={`${(i + 0.5) / pedals.length}`} stop-color={`rgb(${p.rgb})`} />)}
+            </linearGradient>
+          </defs>
+          <path class="rfx-cable-bed" d="M0 150 C 60 150, 70 120, 110 120 S 210 150, 300 128 S 410 110, 500 126 S 610 150, 700 128 S 820 112, 890 120 S 950 150, 1000 150" />
+          <path class="rfx-cable-lit" pathLength="1" d="M0 150 C 60 150, 70 120, 110 120 S 210 150, 300 128 S 410 110, 500 126 S 610 150, 700 128 S 820 112, 890 120 S 950 150, 1000 150" />
+          <circle class="rfx-cable-pulse" r="7">
+            <animateMotion dur="3.2s" repeatCount="indefinite" begin="indefinite" data-rfx-pulse
+              path="M0 150 C 60 150, 70 120, 110 120 S 210 150, 300 128 S 410 110, 500 126 S 610 150, 700 128 S 820 112, 890 120 S 950 150, 1000 150" />
+          </circle>
+        </svg>
+        <span class="rfx-jack rfx-jack--in" aria-hidden="true">IN</span>
+        <span class="rfx-jack rfx-jack--out" aria-hidden="true">OUT</span>
+        <ul class="rfx-peds" role="list">
+          {pedals.map((p, i) => (
+            <li style={`--i:${i};--rgb:${p.rgb};--ink:${p.ink}`}>
+              <a class="rfx-ped" href={`#p-${p.id}`} data-rfx-goto={i} aria-label={`${p.name}: ${p.line}`}>
+                <span class="rfx-ped-pool" aria-hidden="true"></span>
+                <span class="rfx-ped-ring" aria-hidden="true"></span>
+                <img src={imgs[i].l.src} srcset={`${imgs[i].s.src} 300w, ${imgs[i].l.src} 520w`} sizes="(max-width: 700px) 30vw, 170px"
+                  width="528" height="954" alt="" decoding="async" fetchpriority={i === 2 ? 'high' : 'auto'} />
+                <span class="rfx-ped-name">{p.name}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-hero-trial rfx-hero-trial" id="rfx-trial">
+    <DriftPanel checker={false} class="d-trial-panel"><RfxCapture id="rfx-stamp" /></DriftPanel>
+  </div>
+
+  <p class="d-hero-catch rfx-catch"><span class="l1">Stack it. Shuffle it.</span> <span class="l2">Roll it.</span></p>
+</section>

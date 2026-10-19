@@ -1,0 +1,29 @@
+---
+/**
+ * RevFX trial sign-up: DriftTrialStamp's markup and contract (form[data-drift-capture], bound by
+ * src/lib/drift/capture.ts), with RevFX's source, plugin id and copy from src/data/revfx.ts. Two looks:
+ * 'stamp' (the hero console row) and 'stack' (the #get closer).
+ */
+import { site } from '../../data/site';
+import { revfx, captureCopy, registerUrl } from '../../data/revfx';
+
+interface Props { id: string; look?: 'stamp' | 'stack' }
+const { id, look = 'stamp' } = Astro.props;
+const copy = captureCopy();
+const onceUrl = site.downloadGate.workerUrl + '/form-once';
+---
+<div class:list={['d-stamp', 'rfx-stamp', `rfx-stamp--${look}`]}>
+  <p class="d-stamp-label" id={`${id}-label`}><span>Get your <em>free</em></span> <span>{revfx.trialDays}&#8209;day trial</span></p>
+  <form class="d-stamp-form" action={site.formspreeEndpoint} method="POST" aria-labelledby={`${id}-label`}
+    data-drift-capture data-once-url={onceUrl} data-register-url={registerUrl()} data-plugin={revfx.gateId}
+    data-msg-ok={copy.ok} data-msg-already={copy.already}>
+    <label for={`${id}-email`} class="d-sr">Your email: we send the RevFX download here</label>
+    <input id={`${id}-email`} class="d-field d-stamp-field" type="email" name="email" required
+      autocomplete="email" inputmode="email" enterkeyhint="go" spellcheck="false" placeholder="your@email.com" />
+    <input type="hidden" name="source" value={copy.source} />
+    <input type="text" name="_gotcha" class="d-hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+    <button type="submit" class="d-cta d-stamp-key" aria-label={`Get it: free ${revfx.trialDays}-day RevFX trial by email`}><span data-face>Get it <span class="d-stamp-arrow" aria-hidden="true">&#9656;</span></span></button>
+  </form>
+  <p class="d-capture-status" role="status" aria-live="polite" tabindex="-1"></p>
+  <p class="d-stamp-fine">{look === 'stamp' ? 'Nothing to pay today · you join our list · unsubscribe anytime' : copy.fine}</p>
+</div>

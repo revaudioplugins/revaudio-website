@@ -25,7 +25,7 @@ import railImg from '../assets/bg/wall-rail.png';
    emit the same URL. Any other plugin still gets this long-form layout. */
 export function getStaticPaths() {
   // inside the function: Astro runs getStaticPaths in its own scope (imports only)
-  const OWN_ROUTE = new Set(['gas', 'drift']);
+  const OWN_ROUTE = new Set(['gas', 'drift', 'revfx']);
   return plugins
     .filter((p) => !OWN_ROUTE.has(p.slug))
     .map((p) => ({ params: { slug: p.slug }, props: { plugin: p } }));

@@ -1,0 +1,68 @@
+---
+/**
+ * /revfx — the RevFX page. RevFX = DRIFT's FX rack sold on its own (RevFX repo, HANDOFF.md), so the page wears
+ * DRIFT's materials (.drift-page: drift.css tokens, panels, neon, the red key, the live rack) and adds its own
+ * sections on top (src/styles/revfx.css, .rfx-*). Its own route like /drift and /gas; NOT in plugins.ts yet, so
+ * the store, the homepage carousel and the word wall are unchanged until RevFX is added there.
+ *
+ * Order: hero (pedalboard + trial) · #pedals (meet the five, scroll is the knob) · #rack (the live window: drag,
+ * dice, snapshots) · #scenes (FX Scene automation) · #drift (same rack, on its own) · #get (compat + trial/buy).
+ * State + copy: src/data/revfx.ts (phase, price, trial wiring); assertRevfxConfig() fails the build on a phase the
+ * page can't honour.
+ */
+import { getImage } from 'astro:assets';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import RfxHero from '../components/revfx/RfxHero.astro';
+import RfxPedals from '../components/revfx/RfxPedals.astro';
+import RfxRack from '../components/revfx/RfxRack.astro';
+import RfxScenes from '../components/revfx/RfxScenes.astro';
+import RfxGet from '../components/revfx/RfxGet.astro';
+import { revfx, assertRevfxConfig, formatsMac } from '../data/revfx';
+import '../styles/drift.css';
+import '../styles/revfx.css';
+
+import tileSrc from '../assets/seasons/drift/plate-tile.png';
+import panelSrc from '../assets/seasons/drift/panel-face.png';
+import screwSrc from '../assets/seasons/drift/panel-screw.png';
+import pillSrc from '../assets/seasons/drift/cta-pill.png';
+import ctaRestSrc from '../assets/seasons/drift/cta-key-rest.png';
+import ctaPressSrc from '../assets/seasons/drift/cta-key-press.png';
+import trialPlateSrc from '../assets/seasons/drift/trial-plate.png';
+import sectionPlateSrc from '../assets/seasons/drift/section-plate-s1.png';
+
+assertRevfxConfig();
+
+const [tile, panel, screw, pill, ctaRest, ctaPress, trialPlate, sectionPlate] = await Promise.all([
+  getImage({ src: tileSrc, width: 800, format: 'webp', quality: 62 }),
+  getImage({ src: panelSrc, width: 720, format: 'webp', quality: 70 }),
+  getImage({ src: screwSrc, width: 76, format: 'webp', quality: 85 }),
+  getImage({ src: pillSrc, width: 1443, format: 'webp', quality: 82 }),
+  getImage({ src: ctaRestSrc, width: 720, format: 'webp', quality: 82 }),
+  getImage({ src: ctaPressSrc, width: 720, format: 'webp', quality: 82 }),
+  getImage({ src: trialPlateSrc, width: 1393, format: 'webp', quality: 82 }),
+  getImage({ src: sectionPlateSrc, width: 2308, format: 'webp', quality: 88 }),
+]);
+const u = (i: { src: string }) => `url(${i.src})`;
+const imgVars = [
+  `--d-img-tile:${u(tile)}`, `--d-img-panel:${u(panel)}`, `--d-img-screw:${u(screw)}`, `--d-img-pill:${u(pill)}`,
+  `--d-img-cta:${u(ctaRest)}`, `--d-img-cta-press:${u(ctaPress)}`, `--d-img-trial:${u(trialPlate)}`,
+  `--d-img-section:${u(sectionPlate)}`,
+].join(';');
+---
+<BaseLayout
+  title="RevFX: five effects, your order"
+  description={`RevFX is DRIFT's effects rack on its own: pitch, echo, reverb, halo and a bus glue compressor in any order, a randomizer with 21 named scenes, and four automatable snapshots. ${revfx.trialDays}-day free trial. ${formatsMac()} on Mac.`}
+>
+  <div class="drift-page rfx-page" data-rfx-page style={imgVars}>
+    <RfxHero />
+    <RfxPedals />
+    <RfxRack />
+    <RfxScenes />
+    <RfxGet />
+  </div>
+</BaseLayout>
+
+<script>
+  import { initRevfx } from '../lib/revfx/init';
+  initRevfx();
+</script>

@@ -16,6 +16,7 @@ import revlimiterShot from '../assets/plugins/revlimiter-hero.png';
 import comingSoonPlate from '../assets/plugins/coming-soon-plate.png';
 import gasShot from '../assets/plugins/gas-hero.png';
 import radioRouletteShot from '../assets/plugins/radioroulette-hero.png';
+import revfxShot from '../assets/plugins/revfx-hero.png';
 
 const STAGE_W = 520;
 const STAGE_H = 470;
@@ -101,6 +102,25 @@ const SLIDES = [
     },
   },
   {
+    // RevFX (/revfx): the live rack's own window as the shot, the shared landscape box (it is 2.14:1, the box 2.15:1).
+    slug: 'revfx',
+    name: 'RevFX',
+    titleHtml: 'Rev<span class="rfx">FX</span>',
+    titleClass: 'revfx',
+    shot: revfxShot, shotAlt: 'RevFX plugin: the five-effect rack',
+    catchphrase: 'Five effects. Your order.',
+    oneliner: 'Pitch, echo, reverb, halo and glue comp. Drag them, or roll the dice.',
+    priceHtml: '30 days free',
+    style: {
+      title:    { left: 0, top: 20,  ff: "'Bebas Neue', sans-serif", fw: 400, fs: 86, ls: 0 },
+      sub:      { left: 0, top: 98,  ff: "'Bebas Neue', sans-serif", fw: 400, fs: 22, ls: 0 },
+      shot:     { left: 49, top: 148 },
+      oneliner: { left: 0, top: 358, ff: 'Rajdhani, sans-serif',     fw: 700, fs: 15, ls: 0 },
+      price:    { left: 0, top: 382, ff: "'Bebas Neue', sans-serif", fw: 400, fs: 30, ls: 0 },
+      more:     { left: 0, top: 422, ff: 'Oswald, sans-serif',       fw: 400, fs: 17, ls: 0 },
+    },
+  },
+  {
     slug: 'radio-roulette',
     name: 'Radio Roulette',
     // Roulette colorway: RADIO = plain cream (same as RevLimiter's "Limiter");
@@ -129,12 +149,20 @@ const SLIDES = [
   // while drift.homeLead is on: its season page takes trial sign-ups now.
   const p = bySlug(s.slug);
   if (s.slug === 'drift' && drift.homeLead) return true;
+  // RevFX: its page takes trial sign-ups now (catalog trialOpen), like DRIFT (Gil 2026-10-18)
+  if (s.slug === 'revfx' && bySlug(s.slug)?.trialOpen) return true;
   return p && p.status !== 'in-development';
 });
 // DRIFT leads the rotation through its launch (drift.homeLead, Dan 2026-10-08).
 if (drift.homeLead) {
   const k = SLIDES.findIndex((s) => s.slug === 'drift');
   if (k > 0) SLIDES.unshift(...SLIDES.splice(k, 1));
+}
+// RevFX rides right behind DRIFT (it is DRIFT's rack, sold on its own; Gil 2026-10-18).
+{
+  const d = SLIDES.findIndex((s) => s.slug === 'drift');
+  const r = SLIDES.findIndex((s) => s.slug === 'revfx');
+  if (d >= 0 && r >= 0 && r !== d + 1) { const [x] = SLIDES.splice(r, 1); SLIDES.splice(SLIDES.findIndex((s) => s.slug === 'drift') + 1, 0, x); }
 }
 
 // Add-to-cart chip, one per slide — the SAME three branches as the /store card
@@ -576,6 +604,9 @@ const peekClass = (i: number) => {
   /* Deep brand red, lifted from rgb(146,3,1) (2:1 on the stage) to clear WCAG
      1.4.3 large-text 3:1 on --bg-1 while staying in the oxide/blood-red family. */
   .sc-title :global(.rev) { color: rgb(204, 26, 14); }
+  /* RevFX: the /revfx title, REV violet-white, FX the lit DRIFT purple (a neon sign: it may glow) */
+  .sc-title.revfx { color: #f6e8ff; text-shadow: 0 0 3px rgba(255, 255, 255, .45), 0 0 22px rgba(210, 60, 255, .4); }
+  .sc-title :global(.rfx) { color: #d23cff; text-shadow: 0 0 26px rgba(210, 60, 255, .75); }
   /* Registered so gas-slosh below can INTERPOLATE them — unregistered custom
      properties snap between keyframes instead. Tilt = the liquid surface
      leaning; rise = the whole fuel level bobbing up/down. */

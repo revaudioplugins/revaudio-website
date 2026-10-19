@@ -28,6 +28,7 @@ const isBare = !!plugin.cardThumbBare;
 const TITLE_FX: Record<string, { html: string; cls: string }> = {
   revlimiter: { html: '<span class="rev">Rev</span>Limiter', cls: '' },
   drift: { html: 'DRIFT', cls: 'drift' },
+  revfx: { html: 'Rev<span class="fx">FX</span>', cls: 'revfx' },
   'the-ac': { html: '<span class="acthe">THE</span> <span class="acac">AC</span>', cls: '' },
   gas: { html: 'GAS', cls: 'gas' },
   'radio-roulette': {
@@ -279,6 +280,9 @@ const thumbSizes = `(max-width: 1020px) ${Math.ceil(92 * thumbK)}vw, ${Math.ceil
     -webkit-background-clip: text; background-clip: text; color: transparent;
     filter: drop-shadow(0 0 10px rgba(150, 60, 255, 0.35));
   }
+  /* RevFX: the /revfx title, REV in light violet-white, FX the lit DRIFT purple */
+  .title-fx.revfx { color: #f6e8ff; text-shadow: 0 0 10px rgba(210, 60, 255, 0.35); }
+  .title-fx.revfx :global(.fx) { color: #d23cff; text-shadow: 0 0 12px rgba(210, 60, 255, 0.6); }
   .title-fx :global(.acthe) { color: #f4f6f8; }
   .title-fx :global(.acac) {
     background: linear-gradient(180deg, #aef0ff, #43c6ff 55%, #2aa4e6);
