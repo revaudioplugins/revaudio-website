@@ -108,3 +108,16 @@ an idle timer shorter than that fires before Lenis moved; wait while `lenis.isSc
 4. Headless WebKit on laptop 1 paints ~5 fps: an entrance shorter than ~200 ms is done before its first frame, so
    "starts from below / from the right" reads as 0 there. Stretch the motion times (x4, as the bench's SLOW) for that
    engine instead of loosening the check.
+
+## 2026-10-19 — The TV's motion: smaller, shorter, one way (Home LIBRARY phase 4d step 3)
+1. A fade quicker than its travel reads as "it appears, then slides": TUNE's picture was solid at 180 ms but kept
+   travelling to 600 ms (quint), so the user saw a solid picture sliding. Fade and travel as ONE tween (one time, one
+   curve): the picture is solid only once it is in place. The check: at >= 90 % opacity, within 0.15 x the travel.
+2. A direction tied to the pick (the list's order, a key, a per-plugin axis) reads as random to someone clicking
+   around: three of four changes rose and the wrap dropped. One way for every change of the same kind.
+3. "Make it smaller and more elegant" became two concrete defects and a target time after four questions about what
+   was SEEN (which motion, where and at what speed, what looked odd, what "smaller" means), with no ms or px in them.
+   Ask about the eye, then map each answer to the code.
+4. A control on older code must force the mode the new code replaced: the old file defaulted to GEAR, whose
+   entrances start below their rest and would have passed the new "from below" check by accident (the advisor caught
+   it before the run). Force TUNE (`data-ww-motion`) in the checks; today's code ignores the attribute.

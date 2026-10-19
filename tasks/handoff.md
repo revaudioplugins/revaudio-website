@@ -22,9 +22,13 @@
   static isn't good"): a cut under analog snow in the new picture's own box, then a lock-in; tunable in the bench
   (`--ww-chg-*`, ▶ CHANNEL / SLOW ×4 / AUTO; reload the bench first). Checks in the plan (Phases 3-4c). Then the
   user: no noise at all, motion only. Phase 4d (UX + brand lens agents: TUNE vs GEAR CHANGE on one engine): the
-  noise is gone and both motions run on one GSAP sequencer behind the bench's MOTION switch (`WALL_MOTION` = 'gear'
-  until the pick); checks in the plan. Next: the user picks + tunes in the bench (reload it first), the other motion's
-  code goes (step 3), the build checks (step 4), the user's look (iPhone / Mac Safari), then "push".
+  noise is gone and both motions ran on one GSAP sequencer behind the bench's MOTION switch. 2026-10-19 (step 3):
+  the user looked at TUNE and found "appears, then slides" + "a different direction for each plugin" odd, and wanted
+  it shorter; so GEAR CHANGE is gone and the one motion is smaller, shorter and always the same way (fade and travel
+  as one tween, 12 px / 340 ms, ~0.55 s click to rest; `--ww-mv-*`; the bench's RISE / DROP picks the way). Checks in
+  the plan. Next: the user's look in the bench (a fresh window: the old one runs old bench code), COPY SETTINGS +
+  "apply ww bench" if anything changes, the build checks (step 4), the phone slow-network fix if OKed (step 4b), the
+  user's look (iPhone / Mac Safari), then "push".
 - For the user (dashboard, optional): a Cloudflare Redirect Rule `/store*` -> `/#plugins` would make it a real 301;
   the repo page works without it.
 - Found: index.astro's testimonial CTA said "14-day free trial" (the trial is 30 days in both plugins' code); fixed

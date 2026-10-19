@@ -17,8 +17,8 @@
        page's sign-up) and a small "Product page" link.
    Lighting a plugin is a channel change: the screen takes that plugin's
    phosphor colour (--ww-ch-<slug>-h / -s) and the plugins swap by motion
-   alone, the old one off the glass before the new one comes on
-   (WALL_MOTION, --ww-tune-* / --ww-gear-* / --ww-mv-*).
+   alone, the old one off the glass before the new one comes on, always the
+   same way (--ww-mv-*).
    The list is real links to the product pages (crawlable,
    works without JS); the script turns them into tabs. URL: ?cat= is one
    history entry per category, ?plugin= updates the current one, so Back
@@ -47,12 +47,6 @@ import type { LibraryWord } from '../data/plugins';
 /* What the whole wall is: the garage wood, or one TV every plugin plays on
    (Dan 2026-10-14). Lives on .ww. The bench can flip it. */
 const WALL_BG: 'wood' | 'screen' = 'screen';
-
-/* How a plugin comes onto the glass and leaves it (the user 2026-10-18: no noise, just motion; plan Phase 4d). Both
-   are built so the bench can compare them; the user's pick stays and the other goes. 'tune': one move for every
-   plugin, its direction from the list (down the list the new one rises, up the list it drops). 'gear': each plugin
-   arrives along its own object's axis (WINDOWS[slug].enter) and settles on the crane's seat. */
-const WALL_MOTION: 'tune' | 'gear' = 'gear';
 
 /* The live window: an HD run of DRIFT (1440 desktop / 800 phone) with its
    first frame as the poster. Only when every file is on disk; otherwise the
@@ -133,17 +127,12 @@ const noJsArt = [
 ].join('');
 
 /* The plugins on the TV (library.ts: a `library` entry AND live or an open
-   trial; DRIFT first while drift.homeLead) and each one's window. `enter` = how
-   it comes onto the glass on WALL_MOTION 'gear', along its own object's axis:
-   'rise' (straight up, planted: the default), 'arc' (up and across on a curve,
-   as a needle sweeps), 'right' (in from the right on a drift line, caught a
-   hair past its mark) or 'left' (in from the left, as a dial scans the band). */
-type Enter = 'rise' | 'arc' | 'right' | 'left';
-const WINDOWS: Record<string, { img: ImageMetadata; portrait?: boolean; enter?: Enter }> = {
-  drift: { img: driftImg, enter: 'right' },
-  revlimiter: { img: rlImg, enter: 'arc' },
-  gas: { img: gasImg, portrait: true, enter: 'rise' },
-  'radio-roulette': { img: rrImg, enter: 'left' },
+   trial; DRIFT first while drift.homeLead) and each one's window. */
+const WINDOWS: Record<string, { img: ImageMetadata; portrait?: boolean }> = {
+  drift: { img: driftImg },
+  revlimiter: { img: rlImg },
+  gas: { img: gasImg, portrait: true },
+  'radio-roulette': { img: rrImg },
 };
 type Item = {
   slug: string;
@@ -153,7 +142,6 @@ type Item = {
   img: ImageMetadata;
   alt: string;
   portrait?: boolean;
-  enter: Enter;
   blurb: string;
   price: string;
   action: TvAction | null;
@@ -169,7 +157,6 @@ const items: Item[] = tvPlugins()
     img: WINDOWS[p.slug].img,
     alt: p.library!.alt,
     portrait: WINDOWS[p.slug].portrait,
-    enter: WINDOWS[p.slug].enter ?? 'rise',
     blurb: p.library!.blurb,
     price: priceLine(p),
     action: tryAction(p),
@@ -188,7 +175,6 @@ const first = items[0]?.slug ?? '';
     data-ww-art={wallArt}
     data-ww-on={first}
     data-ww-view="list"
-    data-ww-motion={WALL_MOTION}
     style={`${frameVars};--ww-rows:${items.length}`}
   >
     <noscript><style is:inline set:html={noJsArt}></style></noscript>
@@ -249,7 +235,6 @@ const first = items[0]?.slug ?? '';
           style={`--ww-ar:${(media.width / media.height).toFixed(4)}`}
           id={`ww-ch-${it.slug}`}
           data-ww-panel={it.slug}
-          data-ww-enter={it.enter}
           aria-labelledby={`ww-pn-${it.slug}`}
           aria-hidden={i === 0 ? 'false' : 'true'}
         >
@@ -484,33 +469,25 @@ const first = items[0]?.slug ?? '';
     }
 
     /* Changing channel: motion only (the user 2026-10-18, after the static: "no noise at all, just motion"; plan
-       Phase 4d, from a UX lens and a brand lens). Never two plugins on the glass: the one on it leaves first (inert
-       from the click; the row lights at once), then the next comes on. data-ww-motion picks where an entrance comes
-       from. 'tune': the list's direction (down the list the new plugin rises from below, up the list it drops from
-       above; the leaver drifts the same way). 'gear': each plugin's own axis (its panel's data-ww-enter); the leaver
-       sinks, a beat of empty glass, then the newcomer turns opaque where it starts and travels on the crane's curve
-       to a small seat dip (BuyButtonCrane's sine in-out + seat). The text follows in reading order. The last pick
-       wins, from wherever things are: the leaver picked again comes back; another picked while one comes on sends
-       that one out. Picks closer than SKIM, or a held arrow, keep the glass dark until they stop: only the last one
-       comes on. The screen's colour changes as the newcomer comes on, the old glow fading over the new (a gradient
-       can't transition, and a hue must never interpolate: 280 -> 26 runs through green). Times and distances are
-       read off --ww-tune-* / --ww-gear-* / --ww-mv-* at each change (the bench's sliders, SLOW x4). Only the
-       pictures and the text blocks move (never .ww-ui: the first window's reveal; never .ww-try: its hover),
-       transform + opacity only, cleared at rest (transform: none, so the window lands crisp). Reduced motion: a
-       quick fade. High contrast, the wood wall (its own CSS fade), a hidden tab or the wall off screen: a cut.
-       Phones: a tap slides the list out left and the pane in from the right; the pane's Back key runs it backwards
-       (the browser's own Back cuts: an iOS swipe already animates). */
-    type Dir = 1 | -1; // 1 = down the list
+       Phase 4d), then smaller, shorter and always the same way (the user 2026-10-19, on TUNE: "appears, then slides"
+       and "a different direction for each plugin" felt odd; GEAR CHANGE, each plugin along its own axis, went).
+       Never two plugins on the glass: the one on it leaves first (inert from the click; the row lights at once),
+       drifting a few px the way the motion runs as it fades, then the next comes on from a few px the other side.
+       --ww-mv-dir: 1 = everything rises into place (the default), -1 = it comes down into place; never from the
+       list's order. The picture fades and travels in ONE tween (one time, one curve), so it is solid only once it is
+       in place: a fade quicker than the travel read as a solid picture sliding. The text follows in reading order,
+       the same way. The last pick wins, from wherever things are: the leaver picked again comes back; another picked
+       while one comes on sends that one out. Picks closer than SKIM, or a held arrow, keep the glass dark until they
+       stop: only the last one comes on. The screen's colour changes as the newcomer comes on, the old glow fading
+       over the new (a gradient can't transition, and a hue must never interpolate: 280 -> 26 runs through green).
+       Times and distances are read off --ww-mv-* at each change (the bench's sliders, SLOW x4). Only the pictures
+       and the text blocks move (never .ww-ui: the first window's reveal; never .ww-try: its hover), transform +
+       opacity only, cleared at rest (transform: none, so the window lands crisp). Reduced motion: a quick fade. High
+       contrast, the wood wall (its own CSS fade), a hidden tab or the wall off screen: a cut. Phones: a tap slides
+       the list out left and the pane in from the right; the pane's Back key runs it backwards (the browser's own
+       Back cuts: an iOS swipe already animates). */
     const LIST = ':list'; // a phone's list on the glass (anything else: a plugin's slug, its panel)
     const SKIM = 120; // ms: picks closer than this keep the glass dark
-    // GEAR's ways onto the glass (WINDOWS[slug].enter), in travels (x right, y down). r = the tilt at full tilt (deg)
-    // about o; ey = y's ease when it differs from x's, which bends the path into a curve
-    const ENTER: Record<string, { x: number; y: number; r?: number; o?: string; ey?: string }> = {
-      rise: { x: 0, y: 1 },
-      arc: { x: -0.75, y: 0.55, r: -1.5, o: '50% 180%', ey: 'power2.out' },
-      right: { x: 1, y: 0.18, r: -1.2, o: '0% 50%', ey: 'power2.out' },
-      left: { x: -1, y: 0 },
-    };
     const glowEl = wall.querySelector<HTMLElement>('.ww-screen-glow');
     const wasEl = wall.querySelector<HTMLElement>('.ww-screen-was');
     const panelOf = (s: string) => panels.find((p) => slugOf(p) === s) ?? null;
@@ -529,25 +506,19 @@ const first = items[0]?.slug ?? '';
         const v = parseFloat(cs.getPropertyValue(p));
         return Number.isFinite(v) ? v : d;
       };
-      const tune = wall.dataset.wwMotion === 'tune';
-      const k = tune ? '--ww-tune-' : '--ww-gear-';
       const q = reduced.matches; // a quick fade: nothing travels
       return {
-        tune,
         q,
-        outMs: q ? 80 : n(`${k}out-ms`, tune ? 150 : 220),
-        outPx: q ? 0 : n(`${k}out-px`, tune ? 8 : 10),
-        gapMs: q || tune ? 0 : n('--ww-gear-gap-ms', 40),
-        px: q ? 0 : n(`${k}px`, tune ? 16 : 28),
-        fadeMs: q ? 120 : n(`${k}fade-ms`, tune ? 180 : 150),
-        inMs: q ? 120 : n(`${k}in-ms`, 600),
-        seat: q || tune ? 0 : n('--ww-gear-seat-px', 2),
-        tilt: q || tune ? 0 : n('--ww-gear-tilt', 0),
-        textPx: q ? 0 : n('--ww-mv-text-px', 10),
-        textMs: q ? 120 : n('--ww-mv-text-ms', 480),
-        textGap: q ? 0 : n('--ww-mv-text-gap-ms', 50),
-        textAt: q ? 0 : n('--ww-mv-text-at-ms', 90),
-        dip: q ? 1 : n('--ww-mv-glow-dip', 0.85),
+        dir: Math.sign(n('--ww-mv-dir', 1)), // 1 = everything rises into place, -1 = comes down into place
+        outMs: q ? 80 : n('--ww-mv-out-ms', 120),
+        outPx: q ? 0 : n('--ww-mv-out-px', 4),
+        px: q ? 0 : n('--ww-mv-px', 12),
+        inMs: q ? 120 : n('--ww-mv-in-ms', 340),
+        textPx: q ? 0 : n('--ww-mv-text-px', 6),
+        textMs: q ? 120 : n('--ww-mv-text-ms', 340),
+        textGap: q ? 0 : n('--ww-mv-text-gap-ms', 20),
+        textAt: q ? 0 : n('--ww-mv-text-at-ms', 40),
+        dip: q ? 1 : n('--ww-mv-glow-dip', 0.92),
         panePx: q ? 0 : n('--ww-mv-pane-px', 16),
         paneMs: q ? 80 : n('--ww-mv-pane-ms', 200),
       };
@@ -580,8 +551,6 @@ const first = items[0]?.slug ?? '';
     let ticket = 0; // bumped by every new plan, so a late commit knows it is stale
     let lastPick = 0;
     let holding = false; // an arrow key held down: the glass stays dark until it is let go
-    let dir: Dir = 1;
-    let gapEnd = 0;
     let focusView = false; // the view's flip takes focus with it (a tap, the Back key, Back / Forward)
     let urlDue = false; // laptop: ?plugin= is written once the pick lands (a held arrow would write it 30 times a second)
     let backKey = false; // the pane's own Back key: the open runs backwards
@@ -650,7 +619,7 @@ const first = items[0]?.slug ?? '';
       ticket++;
       run?.kill();
       run = null;
-      gsap.set([...listParts(), ...panels.flatMap((p) => movedOf(slugOf(p)))], { clearProps: 'transform,opacity,transformOrigin' });
+      gsap.set([...listParts(), ...panels.flatMap((p) => movedOf(slugOf(p)))], { clearProps: 'transform,opacity' });
       calm();
       apply();
       stage = 'rest';
@@ -684,7 +653,7 @@ const first = items[0]?.slug ?? '';
       const opening = s === LIST; // a phone's list making way for a pane: out to the left
       const closing = phone.matches && sceneWant() === LIST; // a phone's pane going back: out to the right
       const ms = opening || closing ? m.paneMs : quick ? Math.min(m.outMs, 160) : m.outMs;
-      const to = opening ? { x: -m.panePx / 2 } : closing ? { x: m.panePx } : m.tune ? { y: -dir * m.outPx } : { y: m.outPx };
+      const to = opening ? { x: -m.panePx / 2 } : closing ? { x: m.panePx } : { y: -m.dir * m.outPx };
       run = gsap.timeline({ onComplete: left });
       run.to(p ? [p] : listParts(), { opacity: 0, ...to, duration: sec(ms), ease: 'power2.in' }, 0);
       // the tube dims while the glass empties (a phone's list / pane swap keeps it lit). Skimming never strobes it:
@@ -706,7 +675,6 @@ const first = items[0]?.slug ?? '';
     const left = () => {
       run = null;
       stage = 'gap';
-      gapEnd = performance.now() + moves().gapMs;
       if (onGlass === 'drift' && runEl) {
         runEl.pause();
         try { runEl.currentTime = 0; } catch (e) { /* not loaded: it starts at 0 anyway */ }
@@ -719,7 +687,7 @@ const first = items[0]?.slug ?? '';
       const t = ++ticket;
       if (stage !== 'gap' || holding) return; // the exit's end, or the key's release, asks again
       const now = performance.now();
-      wait = window.setTimeout(() => { void commit(t); }, Math.max(0, gapEnd - now, lastPick + SKIM - now));
+      wait = window.setTimeout(() => { void commit(t); }, Math.max(0, lastPick + SKIM - now));
     };
     const commit = async (t: number) => {
       if (t !== ticket || stage !== 'gap') return;
@@ -744,7 +712,8 @@ const first = items[0]?.slug ?? '';
       const s = sceneWant();
       const p = s === LIST ? null : panelOf(s);
       stage = 'in';
-      if (wall.dataset.wwOn !== lit) glowTo(m.fadeMs + m.inMs / 2);
+      // the colour lands with the picture; held: an old colour still on the was layer cross-fades too, never cut
+      if (wall.dataset.wwOn !== lit || held) glowTo(m.inMs);
       const tl = gsap.timeline({ onComplete: rest });
       if (!p) {
         // a phone's list coming back: in from the left
@@ -759,39 +728,14 @@ const first = items[0]?.slug ?? '';
           const parts = [media, ...text].filter((el): el is HTMLElement => !!el);
           tl.from(parts, { opacity: 0, x: m.panePx, duration: sec(m.textMs), ease: 'power3.out', stagger: sec(m.textGap) }, 0);
         } else {
-          if (media && m.tune) {
-            const y0 = dir * m.px * room(media, 0, dir * m.px);
-            tl.from(media, { opacity: 0, duration: sec(m.fadeMs), ease: 'power1.out' }, 0);
-            tl.from(media, { y: y0, duration: sec(m.inMs), ease: 'power4.out' }, 0); // --ease-settle (easeOutQuint)
-          } else if (media) {
-            const e = ENTER[p.dataset.wwEnter ?? ''] ?? ENTER.rise;
-            const fits = room(media, e.x * m.px, e.y * m.px);
-            const x0 = e.x * m.px * fits;
-            const y0 = e.y * m.px * fits;
-            const r0 = (e.r ?? 0) * m.tilt;
-            const ex = gsap.parseEase('sine.inOut');
-            const ey = gsap.parseEase(e.ey ?? 'sine.inOut');
-            const at = sec(m.fadeMs);
-            const k = { p: 0 };
-            gsap.set(media, { x: x0, y: y0, rotation: r0, transformOrigin: e.o ?? '50% 50%' });
-            tl.from(media, { opacity: 0, duration: at, ease: 'power1.out' }, 0); // solid where it starts, then it travels
-            tl.to(k, {
-              p: 1,
-              duration: sec(m.inMs),
-              ease: 'none',
-              onUpdate: () => {
-                const seatK = Math.sin(Math.PI * Math.min(1, Math.max(0, (k.p - 0.85) / 0.15))); // the last 15 %
-                gsap.set(media, { x: x0 * (1 - ex(k.p)), y: y0 * (1 - ey(k.p)) + m.seat * seatK });
-              },
-            }, at);
-            if (r0) tl.to(media, { rotation: 0, duration: sec(m.inMs), ease: 'sine.inOut' }, at + 0.1); // caught a beat after
-          }
-          if (text.length) tl.from(text, { opacity: 0, y: m.textPx, duration: sec(m.textMs), ease: 'power3.out', stagger: sec(m.textGap) }, sec(m.textAt));
+          // the picture fades and travels as one tween (one time, one curve): solid only once it is in place
+          if (media) tl.from(media, { opacity: 0, y: m.dir * m.px * room(media, 0, m.dir * m.px), duration: sec(m.inMs), ease: 'power3.out' }, 0);
+          if (text.length) tl.from(text, { opacity: 0, y: m.dir * m.textPx, duration: sec(m.textMs), ease: 'power3.out', stagger: sec(m.textGap) }, sec(m.textAt));
         }
       }
       apply();
       const gone = movedOf(from);
-      if (gone.length) gsap.set(gone, { clearProps: 'transform,opacity,transformOrigin' });
+      if (gone.length) gsap.set(gone, { clearProps: 'transform,opacity' });
       run = tl;
     };
     // landed: back to plain CSS (transform: none, so the window rests crisp); DRIFT's run may start
@@ -799,7 +743,7 @@ const first = items[0]?.slug ?? '';
       run = null;
       stage = 'rest';
       const here = movedOf(onGlass);
-      if (here.length) gsap.set(here, { clearProps: 'transform,opacity,transformOrigin' });
+      if (here.length) gsap.set(here, { clearProps: 'transform,opacity' });
       if (!glowRun) calm();
       seat();
     };
@@ -824,7 +768,7 @@ const first = items[0]?.slug ?? '';
         el.style.opacity = v;
         return o;
       };
-      run.to(movedOf(onGlass), { opacity: home, x: 0, y: 0, rotation: 0, duration: sec(m.textMs), ease: 'power3.out' }, 0);
+      run.to(movedOf(onGlass), { opacity: home, x: 0, y: 0, duration: sec(m.textMs), ease: 'power3.out' }, 0);
       if (glowEl && !glowRun) {
         held = false; // its own colour comes back
         run.to(glowEl, { opacity: 1, duration: sec(m.textMs), ease: 'power1.inOut' }, 0);
@@ -857,7 +801,7 @@ const first = items[0]?.slug ?? '';
     window.addEventListener('blur', release);
 
     // light a plugin: its tab at once, then the glass (go): the move there, or a cut (move false)
-    const light = (slug: string, move: boolean | Dir = true) => {
+    const light = (slug: string, move = true) => {
       const next = panelOf(slug);
       if (!next) return;
       const was = lit;
@@ -872,11 +816,7 @@ const first = items[0]?.slug ?? '';
       const img = mediaOf(next);
       if (img instanceof HTMLImageElement) img.loading = 'eager'; // its window on its way while the old one leaves
       lastPick = performance.now();
-      if (move !== false) {
-        const s = shown();
-        dir = move === 1 || move === -1 ? move : s.indexOf(slug) < s.indexOf(was) ? -1 : 1;
-      }
-      go(move !== false);
+      go(move);
     };
     light(lit, false); // the tabs' starting state
 
@@ -897,7 +837,7 @@ const first = items[0]?.slug ?? '';
         list.classList.add('is-swapping');
       }
       const on = shown();
-      if (!on.includes(lit) && on[0]) light(on[0], move && 1); // a new one comes up from below
+      if (!on.includes(lit) && on[0]) light(on[0], move);
       if (changed && announce && say) say.textContent = `${catLabel(c)}: ${on.length} ${on.length === 1 ? 'plugin' : 'plugins'}`;
     };
 
@@ -938,7 +878,7 @@ const first = items[0]?.slug ?? '';
       backKey = false;
       setCat(q.get(P_CAT) ?? 'all', nav, mv);
       const want = q.get(P_PLUGIN);
-      if (want && shown().includes(want)) light(want, mv && 1);
+      if (want && shown().includes(want)) light(want, mv);
       go(mv);
     };
     fromUrl(false);
@@ -984,8 +924,7 @@ const first = items[0]?.slug ?? '';
       e.preventDefault();
       if (e.repeat) holding = true; // held: the glass stays dark, the key's release lands the last one
       urlDue = !phone.matches;
-      // the arrow says the way (a wrap from the last to the first still goes down)
-      light(slugOf(on[n]), e.key === 'ArrowUp' || e.key === 'ArrowLeft' || e.key === 'Home' ? -1 : 1);
+      light(slugOf(on[n]));
       on[n].focus();
     });
     wall.querySelectorAll<HTMLButtonElement>('[data-ww-back]').forEach((b) => b.addEventListener('click', () => {
@@ -1637,33 +1576,23 @@ const first = items[0]?.slug ?? '';
     100% { opacity: 1; transform: none; filter: brightness(var(--ww-scr-bright)); }
   }
 
-  /* Changing channel: motion only (the user 2026-10-18: "no noise at all, just motion"; plan Phase 4d). The script
-     reads these at every change (plain numbers: ms, px). The old plugin leaves before the new one comes on. The
+  /* Changing channel: motion only (the user 2026-10-18: "no noise at all, just motion"; plan Phase 4d), smaller,
+     shorter and always the same way (2026-10-19). The script reads these at every change (plain numbers: ms, px; the
+     bench's sliders). The old plugin leaves before the new one comes on, about 0.55 s from the click to rest. The
      exit and the text's stagger are quicker than the house's 300 / 90 ms on purpose: a 300 ms ease-in hardly moves
      for its first 100 ms, and 90 ms x 4 blocks would seat the Try key past a second. They stay local to the TV (the
      global --dur-out and STAGGER serve the rest of the site). */
   .ww {
-    /* TUNE: one move for every plugin, its direction from the list */
-    --ww-tune-px: 16;       /* the new picture travels this far (from below down the list, from above up it) */
-    --ww-tune-out-px: 8;    /* the old one drifts this far the same way as it fades */
-    --ww-tune-out-ms: 150;  /* the old one's exit */
-    --ww-tune-fade-ms: 180; /* the new picture's fade in (it travels meanwhile) */
-    --ww-tune-in-ms: 600;   /* the new picture's travel (--ease-settle) */
-    /* GEAR CHANGE: each plugin along its own object's axis (WINDOWS[slug].enter), settling on the crane's seat */
-    --ww-gear-px: 28;       /* how far each plugin travels */
-    --ww-gear-out-px: 10;   /* the old one sinks this far as it dims */
-    --ww-gear-out-ms: 220;  /* the old one's exit */
-    --ww-gear-gap-ms: 40;   /* empty glass between them */
-    --ww-gear-fade-ms: 150; /* the new one turns solid where it starts... */
-    --ww-gear-in-ms: 600;   /* ...then travels on the crane's sine in-out */
-    --ww-gear-seat-px: 2;   /* the seat dip as it lands (the last 15 %) */
-    --ww-gear-tilt: 0;      /* 0 = none; 1 = RevLimiter's needle 1.5deg + DRIFT's rear 1.2deg (a turned photo turns its light) */
-    /* both */
-    --ww-mv-text-px: 10;      /* the text blocks rise this far, in reading order, after the picture */
-    --ww-mv-text-ms: 480;
-    --ww-mv-text-gap-ms: 50;  /* between the blocks */
-    --ww-mv-text-at-ms: 90;   /* after the entrance starts */
-    --ww-mv-glow-dip: 0.85;   /* the screen's glow while the glass is empty (1 = no dip) */
+    --ww-mv-dir: 1;           /* the one way everything moves: 1 = rises into place, -1 = comes down into place */
+    --ww-mv-px: 12;           /* the new picture comes from this far... */
+    --ww-mv-in-ms: 340;       /* ...fading and travelling as one (power3.out); the screen's colour changes meanwhile */
+    --ww-mv-out-px: 4;        /* the old one drifts this far the same way as it fades */
+    --ww-mv-out-ms: 120;      /* the old one's exit */
+    --ww-mv-text-px: 6;       /* the text blocks come this far, in reading order, after the picture */
+    --ww-mv-text-ms: 340;
+    --ww-mv-text-gap-ms: 20;  /* between the blocks */
+    --ww-mv-text-at-ms: 40;   /* after the entrance starts */
+    --ww-mv-glow-dip: 0.92;   /* the screen's glow while the glass is empty (1 = no dip) */
     --ww-mv-pane-px: 16;      /* phones: the pane comes in this far from the right (the list leaves half as far left) */
     --ww-mv-pane-ms: 200;     /* phones: the list's / the pane's exit */
   }

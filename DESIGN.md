@@ -105,44 +105,43 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
     glow, the menu and the list take its phosphor; each panel keeps its own, so a fading panel keeps its
     colour. A plugin with no channel plays in neutral cream. `hsl(... / a)`, not color-mix (older Safari).
   - Channel change: motion only (the user 2026-10-18: "no noise at all, just motion ... each plugin's
-    entrance stylized, elegant and smooth"; a UX lens and a brand lens consulted, plan Phase 4d; the
-    analog static it replaces is gone). Never two plugins on the glass: the one on it leaves first
-    (inert from the click, the row lit at once), then the next comes on. `WALL_MOTION` picks where an
-    entrance comes from; both are built until the user picks on the bench:
-    - 'gear' (GEAR CHANGE, the brand lens): each plugin arrives along its own object's axis
-      (`WINDOWS[slug].enter` in WordWall.astro): RevLimiter up and across on an arc (its needle), DRIFT
-      in from the right on a drift line, GAS straight up and planted, Radio Roulette in from the left (a
-      dial scanning the band); a new plugin picks rise / arc / right / left (default rise). The leaver
-      sinks `--ww-gear-out-px` 10 and dims in `--ww-gear-out-ms` 220, never sideways; `--ww-gear-gap-ms`
-      40 of empty glass; the newcomer turns solid where it starts (`--ww-gear-fade-ms` 150), then travels
-      `--ww-gear-px` 28 in `--ww-gear-in-ms` 600 on the crane's sine in-out with its seat dip
-      (`--ww-gear-seat-px` 2 over the last 15 %). Tilt (`--ww-gear-tilt`) is 0: a turned photo turns its
-      baked light (the light never rotates); 1 = RevLimiter's needle 1.5deg and DRIFT's rear 1.2deg.
-    - 'tune' (TUNE, the UX lens): one move for every plugin, its direction from the list. Down the list
-      the new picture rises from `--ww-tune-px` 16 below (up the list it drops from above; an arrow key
-      says the way, so a wrap still goes down; a category change or Back comes from below); the leaver
-      drifts `--ww-tune-out-px` 8 the same way in `--ww-tune-out-ms` 150; the newcomer fades in
-      (`--ww-tune-fade-ms` 180) while it travels `--ww-tune-in-ms` 600 on `--ease-settle`.
-    - Both: the text follows in reading order (name, blurb, words, price row), rising `--ww-mv-text-px`
-      10 in `--ww-mv-text-ms` 480, `--ww-mv-text-gap-ms` 50 apart, from `--ww-mv-text-at-ms` 90. The exit
-      and the stagger are quicker than the house 300 / 90ms on purpose (a 300ms ease-in hardly moves for
-      100ms; 90ms x 4 would seat the Try key past a second) and stay local to the TV. The screen's colour
-      changes as the newcomer comes on, the old glow cross-fading over the new (two layers: a gradient
-      can't transition and a hue must not interpolate, 280 -> 26 runs through green); the tube dims to
-      `--ww-mv-glow-dip` .85 while the glass is empty. The colour never jumps: a plugin sent back while
-      its colour is still coming in takes it to the nearer of the two colours as it goes (the old one when
-      it had barely started; on a phone's Back the new one, which stays lit), so the next change starts
-      from one colour and the colour moves as little as it can. The last pick wins, from wherever things
-      are: the leaver picked again comes back; a pick while one comes on sends that one out. Picks under 120ms
-      apart, or a held arrow, keep the glass dark until they stop, and only the last comes on; `?plugin=`
-      is written then, once. Only the pictures and the text blocks move (never `.ww-ui`, the first
-      window's reveal, nor `.ww-try`, its hover), transform + opacity only, cleared at rest so the window
-      lands crisp. Every window is decoded after the power-on (laptops), and an entrance waits up to
-      150ms for its own. DRIFT's run pauses as it leaves, rewinds, and plays once seated. Reduced motion:
-      a quick fade (80 / 120ms). High contrast, the wood (its own fade), a hidden tab or the wall off
-      screen: a cut. Phones: a tap slides the list out left and the pane in from the right
-      (`--ww-mv-pane-px` 16, the list's exit `--ww-mv-pane-ms` 200); the pane's Back key runs it
-      backwards; the browser's own Back cuts (an iOS swipe already animates).
+    entrance stylized, elegant and smooth"; plan Phase 4d; the analog static it replaces is gone), then
+    smaller, shorter and one way (the user 2026-10-19 on the bench: TUNE's picture "appears, then
+    slides" and "a different direction for each plugin" felt odd; GEAR CHANGE, each plugin along its own
+    object's axis and solid before it travelled, went). Never two plugins on the glass: the one on it
+    leaves first (inert from the click, the row lit at once), then the next comes on.
+    - One way, always: `--ww-mv-dir` 1 = everything rises into place (the default), -1 = it comes down
+      into place (the crane's door; the bench's RISE / DROP). Never from the list's order, a key or a
+      category: a direction that changes with the pick reads as random.
+    - The leaver drifts `--ww-mv-out-px` 4 the way the motion runs as it fades in `--ww-mv-out-ms` 120.
+      The newcomer comes from `--ww-mv-px` 12 the other side, fading and travelling as ONE tween
+      (`--ww-mv-in-ms` 340, power3.out), so it is solid only once it is in place: a fade quicker than
+      its travel (TUNE's 180 vs 600ms) read as a solid picture sliding. `room()` caps the travel so the
+      picture stays on the glass.
+    - The text follows in reading order (name, blurb, words, price row), the same way and on the same
+      curve: `--ww-mv-text-px` 6 in `--ww-mv-text-ms` 340, `--ww-mv-text-gap-ms` 20 apart, from
+      `--ww-mv-text-at-ms` 40. About 0.55s from the click to everything at rest (TUNE was 0.87s),
+      readable at ~0.3s. The exit and the stagger are quicker than the house 300 / 90ms on purpose (a
+      300ms ease-in hardly moves for 100ms; 90ms x 4 would seat the Try key past a second) and stay
+      local to the TV.
+    - The screen's colour changes as the newcomer comes on (in `--ww-mv-in-ms`), the old glow
+      cross-fading over the new (two layers: a gradient can't transition and a hue must not
+      interpolate, 280 -> 26 runs through green); the tube dims to `--ww-mv-glow-dip` .92 while the
+      glass is empty (.85 read as a flicker once the exit got quicker). The colour never jumps: a
+      plugin sent back while its colour is still coming in takes it to the nearer of the two colours as
+      it goes (the old one when it had barely started; on a phone's Back the new one, which stays lit),
+      so the next change starts from one colour and the colour moves as little as it can.
+    - The last pick wins, from wherever things are: the leaver picked again comes back; a pick while one
+      comes on sends that one out. Picks under 120ms apart, or a held arrow, keep the glass dark until
+      they stop, and only the last comes on; `?plugin=` is written then, once. Only the pictures and the
+      text blocks move (never `.ww-ui`, the first window's reveal, nor `.ww-try`, its hover), transform +
+      opacity only, cleared at rest so the window lands crisp. Every window is decoded after the
+      power-on (laptops), and an entrance waits up to 150ms for its own. DRIFT's run pauses as it
+      leaves, rewinds, and plays once seated. Reduced motion: a quick fade (80 / 120ms). High contrast,
+      the wood (its own fade), a hidden tab or the wall off screen: a cut. Phones: a tap slides the list
+      out left and the pane in from the right (`--ww-mv-pane-px` 16, the list's exit `--ww-mv-pane-ms`
+      200, the pane's entrance on the text's times); the pane's Back key runs it backwards; the
+      browser's own Back cuts (an iOS swipe already animates).
     No channel number (Dan: no). A category change re-strikes the rows that stay, 60ms apart.
   - Power-on: the first time the TV comes into view the tube opens from a bright line (a CRT turn-on,
     700ms) and the pilot LED lights with it. JS arms it, so no JS / reduced motion = lit at rest.
@@ -195,12 +194,11 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
     heading; a phone's open plugin goes back to the list. Measured (Chromium + WebKit, 1280 + 390, every
     way in, reduced motion too): the TV's top 0.2-0.3px under the nav line.
   - Bench `/__wwbench` (`tools/wwbench`, dev only: the real homepage at laptop + phone size): WOOD /
-    SCREEN, RAILS / BROKEN TV 1-3, TUNE / GEAR CHANGE, REPLAY (the power-on), the categories and
-    plugins as buttons, the phone's pane, ▶ CHANNEL / SLOW ×4 (every motion time) / AUTO; sliders: list
-    width, biggest name, thumbnail, unlit names (laptop), screen glow + scanlines, the channel colours,
-    each motion's times and distances (the one not on show dims) + the shared text / glow / phone ones,
-    frame size + wood around the TV, breathing room + lock zone. COPY SETTINGS; "apply ww bench" bakes
-    the values.
+    SCREEN, RAILS / BROKEN TV 1-3, RISE / DROP (the motion's one way), REPLAY (the power-on), the
+    categories and plugins as buttons, the phone's pane, ▶ CHANNEL / SLOW ×4 (every motion time) / AUTO;
+    sliders: list width, biggest name, thumbnail, unlit names (laptop), screen glow + scanlines, the
+    channel colours, the motion's times and distances (picture, exit, text, glow dip, phone), frame size
+    + wood around the TV, breathing room + lock zone. COPY SETTINGS; "apply ww bench" bakes the values.
   - Keyboard + screen reader: the list is a vertical tablist (aria-selected, roving tabindex), each
     panel a tabpanel; a category change is announced (a polite live region). `html.hc`: no screen or
     frame; plain type, the lit name in oxide.
@@ -235,8 +233,8 @@ strikes ~120ms `cubic-bezier(.2,.9,.25,1.25)`. Scroll: needle revs; wood drifts 
 `data-reveal` (top 80%) with a 2.5s force-reveal. The smoke drifts on a slow sine (40/25px and
 55/30px orbits), kicks up to 3.5x on a fast scroll and settles, leans up to 14px with the pointer
 (desktop only). The plugin TV: the CRT power-on once, a ~120ms hover strike on the names, a channel
-change by motion alone (the old plugin off the glass, then the new one on: §4), the rows re-striking on a
-category change. Reduced motion: everything visible at rest, no parallax, no needle rev, smoke static.
+change by motion alone (the old plugin off the glass, then the new one on, always the same way, fade and
+travel as one, ~0.55s: §4), the rows re-striking on a category change. Reduced motion: everything visible at rest, no parallax, no needle rev, smoke static.
 
 ## 7. Hero + glanceability
 

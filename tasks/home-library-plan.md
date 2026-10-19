@@ -1,9 +1,10 @@
 # Home LIBRARY: the TV becomes the plugin browser (branch `feat/home-library`)
 
 - Owner: Claude Code `revaudio-a0` (was `revaudio-a6` before a restart; laptop 1). Status: **IN PROGRESS (user's "go"
-  2026-10-18).** Phases 1-4c done (local commits, not pushed). Phase 4d (the noise out, motion only): steps 1-2 done
-  (both candidates on one engine, behind the bench's MOTION switch), waiting on the user's pick in the bench; then
-  the user's look (bench + real devices) and "push".
+  2026-10-18).** Phases 1-4c done (local commits, not pushed). Phase 4d (the noise out, motion only): steps 1-3 done
+  (2026-10-19: the user's answers made it one motion, smaller, shorter and always the same way; GEAR CHANGE gone);
+  waiting on the user's look in the bench (RISE vs DROP, the values), then the build checks (step 4), the real
+  devices and "push".
 - origin/main `141d400` (crane WebP, trial source, /revlimiter/ Ads fixes) merged in 2026-10-18 before phase 3 (`d80e459`).
 - Worktree: `.claude/worktrees/home-library` off origin/main `697f49d`; origin/main `ddada3d` (the TV weight work)
   merged in 2026-10-18 (`8ca4938`). `node_modules` = junction to the main clone's.
@@ -227,7 +228,7 @@ without an open trial (The AC) stay off the TV; the TV never changes by itself (
       under the snow.
 - [x] ~~The user's look in the bench~~: superseded by Phase 4d (the user, 2026-10-18: no noise at all).
 
-### Phase 4d: entrances and exits, motion only (planned 2026-10-18; steps 1-2 done, waiting on the user's pick)
+### Phase 4d: entrances and exits, motion only (planned 2026-10-18; steps 1-3 done 2026-10-19, the user's look owed)
 
 - The user (2026-10-18, Hebrew): drop the noise entirely, make it pure motion; plan how the plugins enter and leave
   the screen; creative and elegant, not messy; each plugin's entrance stylized, with interesting motion; no glitches,
@@ -344,17 +345,43 @@ because it is Radio Roulette" is the mess the user ruled out.
         build` green.
       - Measured (Chromium, 1280x665): GEAR on the glass ~270 ms after the click, readable ~900 ms, at rest
         ~1015 ms; TUNE ~160 / ~360 / ~870 ms; reduced motion over in ~250 ms.
-- [ ] 3. The user picks and tunes in the bench; the pick is baked and the other path deleted (no dead code).
-      With it (left out of the bench build so the frames don't reload under the user): `enter()` also runs
-      `glowTo` when `held` is set and `data-ww-on` already equals the pick (`|| held`), so a held colour is always
-      consumed by the next entrance. Reachable only from the bench today (a phone frame's pane-to-pane ▶ CHANNEL,
-      then the leaver picked back with THE PLUGIN -> LIST); otherwise calm() at rest would swap the colour in a frame.
+- [x] 3. The user's pick (2026-10-19, four questions in Hebrew, answers): the motion looked at = TUNE, on the laptop
+      at real speed; odd = "appears, then slides" + "a different direction for each plugin"; "smaller" = shorter
+      (~0.5 s, not ~1 s). Both odd things are what GEAR CHANGE is made of, so GEAR went and TUNE was cut down (plan
+      approved the same day):
+      - One way, always: `--ww-mv-dir` 1 = everything rises into place (default), -1 = comes down into place (the
+        bench's RISE / DROP, for the user's eye). The list order, the keys and a category no longer pick it.
+      - The picture fades and travels as ONE tween (`--ww-mv-in-ms` 340, power3.out, from `--ww-mv-px` 12): TUNE's
+        fade (180 ms) ended long before its travel (600 ms quint), so a solid picture kept sliding.
+      - Shorter: exit 120 ms / 4 px; text 6 px in 340 ms, 20 ms apart, from +40 ms, the same way and curve; the
+        colour's cross-fade = the picture's 340 ms; the glow dip .92 (.85 read as a flicker with the quicker exit).
+      - Removed: `WALL_MOTION` / `data-ww-motion`, `WINDOWS[].enter` / `data-ww-enter`, the ENTER table, the seat,
+        tilt and empty beat, `type Dir` / `dir` (and `light()`'s direction argument), `gapEnd`, every `--ww-tune-*`
+        / `--ww-gear-*`: one family, `--ww-mv-*`. The bench: MOTION -> RISE / DROP, one Motion group; motion values
+        saved before the retune are dropped once (`st.mv` 2), the rest kept.
+      - `enter()` also runs `glowTo` when `held` is set (`|| held`): a held colour is always consumed by the next
+        entrance (reachable from the bench: a phone frame's pane-to-pane ▶ CHANNEL, then the leaver picked back with
+        THE PLUGIN -> LIST); otherwise calm() at rest would swap the colour in a frame.
+      - Checks (dev server; scratchpad): `motioncheck.mjs` rewritten for one way. Every change (down the list, up
+        one, up to the top, ArrowDown / ArrowUp and both wraps, a category, back to DRIFT, 1141x636 with GAS) comes
+        from the one side, its first frame past 0.4 of the travel the glass allows; the text the same way; never
+        solid while it travels (at >= 90 % opacity within 0.15 x 12 + 0.5 px); click to rest < 650 ms (Chromium);
+        plus everything kept from step 2. Chromium RISE 233 / 233 PASS and DROP 233 / 233 PASS (rest at +553-579
+        ms, on the glass ~+135, readable ~+300; TUNE was ~160 / ~360 / ~870). WebKit (times x4 on the laptop): 210
+        PASS on the laptop sections, first frame y 5.7-7.3 of 12 (> 0.4 x travel); its phone section failed 8 x "the pane comes in from the right" (first frame x 1.9-3.7, needs > 4):
+        headless WebKit paints a newly shown pane's first frame ~0.6 s into the entrance and 340 x 4 ms ends close to
+        that, so the phone section is stretched x8 (stretched, not loosened): 68 / 68 PASS (first frame x 6.6-8.8;
+        Chromium 12.6-13.2). `glowcheck.mjs` 23 / 23 PASS (cuts at 60 / 150 / 230 / 330 / 430 / 560 ms, picked again
+        at 200 / 350, phone Back at 150 / 250 / 400; worst spike 0.020 against the 0.1 limit).
+        `benchsmoke.mjs` 11 / 11 PASS (RISE / DROP reach both frames, an old saved state migrates, COPY SETTINGS
+        hands back `dir`, SLOW x4 340 -> 1360 and back). CONTROL_RESULT
 - [ ] 4. Checks on the build, Chromium + WebKit, the rAF recorder (its snow assertions replaced): at most one panel
       visible per frame; rest transform = identity; rapid picks land on the last; held arrows = one entrance and
       one URL write; no layout shift; the moving picture never leaves the glass or crosses the list (1280x665,
       1141x636 with GAS, phone 360x740 + 390x844); reduced motion and high contrast as above; the phone's Back key vs
       the browser's Back; a category change; a hidden tab; DRIFT plays only seated; no page errors. Filmed (CDP
-      contact sheet) for each option. Plus `glowcheck.mjs` (the colour never jumps).
+      contact sheet) for the baked motion. Plus `glowcheck.mjs` (the colour never jumps) and step 3's one-way /
+      fade-with-travel / short checks.
 - [ ] 4b. Also (advisor review, 2026-10-18): a phone fetches a pane's picture only at the tap (`warm()` is laptops
       only), so on a slow network the pane may slide in with an empty picture box. Measured (scratchpad
       `slowphone.mjs`, Chromium 390x844 @3x, dev server, CDP throttling after the page load): at Lighthouse's mobile
@@ -365,8 +392,9 @@ because it is Radio Roulette" is the mess the user ruled out.
       comes on whole; nothing changes when it is cached or the network is quick. And `warm()` fetches every laptop
       window ~1.2 s after the power-on: measure the wall's transfer against the live WEIGHT baseline (184 KB at the
       wall); it grows with every plugin added.
-- [ ] 5. DESIGN.md §4 / §6 rewritten (the channel change = motion; why the exit and the stagger are shorter than the
-      house values); this plan and the handoff updated.
+- [x] 5. DESIGN.md §4 / §6 rewritten (the channel change = motion, one way, fade and travel as one; why the exit and
+      the stagger are shorter than the house values); this plan and the handoff updated (2026-10-19; a bench bake
+      updates the numbers). The rule went into the shared `design-language.md` §3 too (shared `a953ccb`, not pushed).
 
 ### Phase 5: later, each on its own branch
 
