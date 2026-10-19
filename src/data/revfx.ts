@@ -41,9 +41,17 @@ export const compatRows = () => [
   { k: 'WIN', v: revfx.winReady ? 'VST3 · 64-bit · needs WebView2' : 'Not yet' },
 ];
 
-/** The five, in the plugin's default chain (PITCH, ECHO, REVERB, HALO in slots 0-3, GLUE COMP place 4 = last).
+/** The five, in the order MEET THE FIVE shows them (Gil 2026-10-19: HALO first). The plugin's default chain is
+ *  PITCH, ECHO, REVERB, HALO, GLUE COMP; the hero board and the dice chain set their own orders (RfxHero.astro).
  *  ink / rgb = each strip's own lamp colour (rack.json, the dice-log dots). Specs: PluginProcessor.cpp ranges. */
 export const pedals = [
+  {
+    id: 'halo', name: 'Halo', kana: 'ハロー', ink: '#6dff9a', rgb: '77, 255, 138',
+    line: 'Wide, airy glow. No tails.',
+    pitch: 'A ring of light around the sound: two short modulated lines that breathe against each other, so the source gets wide and shiny without a wash. Four modes from slow and subtle to fast and wide. It never touches the dry.',
+    specs: ['4 modes', 'Size', 'Tone', 'Mix'],
+    knob: { label: 'SIZE', param: 'HALO_SIZE', from: 0, to: 1, fmt: (v: number) => `${Math.round(v * 100)}%` },
+  },
   {
     id: 'pitch', name: 'Pitch', kana: 'ピッチ', ink: '#cfe0ff', rgb: '168, 200, 255',
     line: 'Up or down an octave.',
@@ -64,13 +72,6 @@ export const pedals = [
     pitch: 'Three spaces: room, plate and hall. Decay free or in beats, up to 200 ms of predelay, a brightness control, a shimmer that adds octave air on top, and a duck so the tail blooms in the gaps.',
     specs: ['Room · Plate · Hall', 'Predelay 0 – 200 ms', 'Decay in beats', 'Shimmer', 'Duck'],
     knob: { label: 'DECAY', param: 'VERB_DECAY', from: 0.05, to: 1, fmt: (v: number) => `${Math.round(v * 100)}%` },
-  },
-  {
-    id: 'halo', name: 'Halo', kana: 'ハロー', ink: '#6dff9a', rgb: '77, 255, 138',
-    line: 'Wide, airy glow. No tails.',
-    pitch: 'A ring of light around the sound: two short modulated lines that breathe against each other, so the source gets wide and shiny without a wash. Four modes from slow and subtle to fast and wide. It never touches the dry.',
-    specs: ['4 modes', 'Size', 'Tone', 'Mix'],
-    knob: { label: 'SIZE', param: 'HALO_SIZE', from: 0, to: 1, fmt: (v: number) => `${Math.round(v * 100)}%` },
   },
   {
     id: 'glue', name: 'Glue Comp', kana: 'グルー', ink: '#6fe8ff', rgb: '111, 232, 255',
