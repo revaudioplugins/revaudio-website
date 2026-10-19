@@ -51,8 +51,12 @@ const bulbs = Array.from({ length: SWAGS }, (_, i) => [0.2, 0.4, 0.6, 0.8].map((
   return { x: ((x / 1200) * 100).toFixed(2), y: y.toFixed(1), violet: (i * 4 + j) % 3 === 2, dl: ((i * 4 + j) * 0.37 % 3).toFixed(2) };
 })).flat();
 
-const batPath =
-  'M32 14c-2-4-6-6-10-5 1 2 1 4 0 5-3-3-8-4-12-2 2 1 3 3 3 5-4-2-9-1-13 2 6 0 10 3 13 7 1-3 4-4 7-3-1-2 0-4 2-5 2 2 5 3 8 3h4c3 0 6-1 8-3 2 1 3 3 2 5 3-1 6 0 7 3 3-4 7-7 13-7-4-3-9-4-13-2 0-2 1-4 3-5-4-2-9-1-12 2-1-1-1-3 0-5-4-1-8 1-10 5z';
+// Bat: body + ears + eyes as one piece; each wing its own piece so it can
+// flap from the shoulder. Right wing drawn once, mirrored for the left.
+const batBody =
+  'M50 9.5 L48.6 4.5 L47 10.6 A4.6 4.6 0 0 0 46.6 14.8 C45 17 44.6 21 45.4 25 C46 30 48 34 50 35.5 C52 34 54 30 54.6 25 C55.4 21 55 17 53.4 14.8 A4.6 4.6 0 0 0 53 10.6 L51.4 4.5 Z';
+const batWing =
+  'M53 17 C60 9 74 4 98 10 C93 13 89 18 87 24 C83 20 77 21 74 29 C70 24 64 25 61 31 C58 28 55 27 53.5 26 Z';
 ---
 
 <div class="hw" data-halloween aria-hidden="true">
@@ -97,7 +101,13 @@ const batPath =
   {/* bats cross the screen now and then */}
   <div class="hw-bats" data-hw-bats>
     {[0, 1, 2, 3].map((i) => (
-      <svg class={`hw-bat hw-bat-${i}`} viewBox="0 0 64 30"><path d={batPath} /></svg>
+      <svg class={`hw-bat hw-bat-${i}`} viewBox="0 0 100 44">
+        <path class="hw-wing" d={batWing} />
+        <g transform="translate(100 0) scale(-1 1)"><path class="hw-wing" d={batWing} /></g>
+        <path d={batBody} />
+        <circle class="hw-bat-eye" cx="48.3" cy="13.4" r="0.9" />
+        <circle class="hw-bat-eye" cx="51.7" cy="13.4" r="0.9" />
+      </svg>
     ))}
   </div>
 
@@ -307,17 +317,19 @@ const batPath =
     position: absolute;
     left: -80px;
     width: 62px;
+    overflow: visible;
     fill: #120e0c;
     filter: drop-shadow(0 -1px 0 rgba(232, 160, 80, 0.55)) drop-shadow(0 0 10px rgba(255, 150, 60, 0.28));
     opacity: 0;
   }
-  .hw-bat path { transform-origin: 32px 15px; animation: hw-flap 0.32s ease-in-out infinite alternate; }
+  .hw-wing { transform-box: view-box; transform-origin: 53.5px 20px; animation: hw-flap 0.32s ease-in-out infinite alternate; }
+  .hw-bat-eye { fill: var(--hw-candle); }
   .hw-bat-1 { width: 46px; margin-top: 34px; }
   .hw-bat-2 { width: 38px; margin-top: -22px; }
   .hw-bat-3 { width: 30px; margin-top: 60px; }
-  .hw-bat-1 path { animation-duration: 0.27s; }
-  .hw-bat-2 path { animation-duration: 0.24s; }
-  .hw-bat-3 path { animation-duration: 0.21s; }
+  .hw-bat-1 .hw-wing { animation-duration: 0.27s; }
+  .hw-bat-2 .hw-wing { animation-duration: 0.24s; }
+  .hw-bat-3 .hw-wing { animation-duration: 0.21s; }
   .is-flying .hw-bat { animation: hw-fly 7s cubic-bezier(0.45, 0.05, 0.55, 0.95) forwards; }
   .is-flying .hw-bat-1 { animation-delay: 0.35s; animation-duration: 7.6s; }
   .is-flying .hw-bat-2 { animation-delay: 0.7s; animation-duration: 6.6s; }
@@ -398,7 +410,7 @@ const batPath =
   @keyframes hw-sway { 0%, 100% { transform: rotate(-2.5deg); } 50% { transform: rotate(2.5deg); } }
   @keyframes hw-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
   @keyframes hw-legs { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.92); } }
-  @keyframes hw-flap { from { transform: scaleY(1); } to { transform: scaleY(0.35) translateY(4px); } }
+  @keyframes hw-flap { from { transform: rotate(-28deg); } to { transform: rotate(34deg) scaleX(0.85); } }
   @keyframes hw-fly {
     0%   { opacity: 0; transform: translate(0, 0); }
     8%   { opacity: 1; }
