@@ -476,7 +476,12 @@
 .d-hero-hear:hover { color: var(--d-white-ink); }
 .d-hero-hear:hover .k { box-shadow: 0 0 0 2px var(--d-hot), 0 0 22px rgba(255, 79, 216, .85); }
 .d-hero-hear:focus-visible { outline: 2px solid var(--d-pink-ink); outline-offset: 6px; border-radius: 3px; }
-@media (min-width: 1100px) { .d-hero-hear { margin: 10px 0 -31px; } }   /* 10 + 21 px key - 31 = 0 */
+/* desktop: net height 0 (7 px + the 1.75em key, given back below); the key clears the bottom-left screw (its right
+   edge ~38 px in) by 10 px, since the panel's left pad shrinks to 35 px at 1100; and shrinks a notch with the bottom
+   pad, so it keeps ~10 px off the panel's edge (1100: the pad is 35 px) */
+@media (min-width: 1100px) {
+  .d-hero-hear { font-size: clamp(10px, .95vw, 12px); margin: 7px 0 calc(-7px - 1.75em) calc(48px - clamp(22px, 3.2vw, 44px)); }
+}
 @media (max-width: 600px) { .d-hero-hear { display: none; } }
 .d-hero .d-hero-meter { display: none; }   /* ≤1099 only (below) */
 
@@ -1167,7 +1172,8 @@
 .d-hear-caps { display: flex; align-items: center; gap: 14px; flex: 1; justify-content: center; }
 /* THE GUIDE (2026-10-19, hear.ts next() -> [data-next]): the next thing to touch breathes, and so does its step's key;
    the other keys rest dim until the visitor has heard both sides ([data-next=''] = free play, every key lit again).
-   'play' = the PLAY cap + key 2; 'drift' / 'back' = the DRIFT button + key 3. One breath for all of them (d-hear-next). */
+   'play' = the PLAY cap + key 2; 'drift' / 'back' = the DRIFT button + key 3; 'wait' (loading) = keys dim, nothing
+   breathes (the DRIFT bars chase). One breath for all of them (d-hear-next). */
 .d-hear-play::after { content: ''; position: absolute; inset: -5px; border-radius: 50%; pointer-events: none; }
 [data-hear][data-next='play'] .d-hear-play::after { animation: d-hear-next 1.2s ease-in-out infinite; }
 @keyframes d-hear-next { 0%, 100% { box-shadow: 0 0 0 2px rgba(255, 79, 216, .2); } 50% { box-shadow: 0 0 0 2px var(--d-hot), 0 0 22px rgba(255, 79, 216, .85); } }

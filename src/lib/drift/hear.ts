@@ -12,8 +12,8 @@ import { setPan } from './bus';
  *
  * The guide: it opens on the ORIGINAL, and root[data-next] names the step to take next, for the CSS (that step's key
  * and control breathe) and the LCD's coach cell: 'play' (stopped) -> 'drift' (the original plays, DRIFT never pushed)
- * -> 'back' (DRIFT plays, not yet pushed back to the original) -> '' (heard both: free play). Pushing DRIFT before
- * PLAY starts in DRIFT (the push-to-start), so that visitor is asked for the original next.
+ * -> 'back' (DRIFT plays, not yet pushed back to the original) -> '' (heard both: free play); 'wait' while the sound
+ * loads. Pushing DRIFT before PLAY starts in DRIFT (the push-to-start), so that visitor is asked for the original next.
  */
 const BASE = '/audio/drift/';
 type Lr = { L: number[]; R: number[] };
@@ -42,9 +42,10 @@ export function initHear(root: HTMLElement): void {
   const st = { track: chips[0].dataset.hearTrack!, after: false, playing: false, loading: false };
   // the guide: has the visitor pushed DRIFT on, and then back off to the original?
   let didOn = false, didOff = false;
-  type Next = 'play' | 'drift' | 'back' | '';
-  const next = (): Next => st.loading ? '' : !st.playing ? 'play' : !st.after && !didOn ? 'drift' : st.after && !didOff ? 'back' : '';
-  const COACH: Record<Next, string> = { play: 'PRESS PLAY', drift: 'PUSH DRIFT', back: 'PUSH AGAIN: ORIGINAL', '': 'NOW PLAYING' };
+  // 'wait' while the sound loads: keys stay dim and nothing breathes (never the free-play look before it has played)
+  type Next = 'wait' | 'play' | 'drift' | 'back' | '';
+  const next = (): Next => st.loading ? 'wait' : !st.playing ? 'play' : !st.after && !didOn ? 'drift' : st.after && !didOff ? 'back' : '';
+  const COACH: Record<Next, string> = { wait: 'LOADING', play: 'PRESS PLAY', drift: 'PUSH DRIFT', back: 'PUSH AGAIN: ORIGINAL', '': 'NOW PLAYING' };
   let M: Manifest | null = null;
   const manifest = fetch(`${BASE}peaks.json`).then((r) => r.json() as Promise<Manifest>).then((m) => { M = m; paintUi(); draw(); return m; });
 
@@ -154,8 +155,7 @@ export function initHear(root: HTMLElement): void {
     root.dataset.next = n;
     if (title) title.textContent = name();
     if (tag) tag.textContent = st.after ? 'DRIFT ON' : 'ORIGINAL';
-    const coach = st.loading ? 'LOADING' : COACH[n];
-    if (stateEl && stateEl.textContent !== coach) stateEl.textContent = coach;   // unchanged = no repeat announcement
+    if (stateEl && stateEl.textContent !== COACH[n]) stateEl.textContent = COACH[n];   // unchanged = no repeat announcement
     if (timeEl && !st.playing && M) timeEl.textContent = `00:00 / ${fmt(M.tracks[st.track].dur)}`;   // before the manifest lands, the build-time length stays
   }
   function draw(): void {

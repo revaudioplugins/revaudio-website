@@ -64,6 +64,12 @@ every step (snap.ts soft-snaps the page to this panel).
   - Reduced motion: no animation (static rings). Keyboard: Tab order tracks > PLAY > STOP > DRIFT > VOLUME; Enter on
     PLAY, Space on DRIFT x2 walk the whole guide.
   - Console: 0 errors (only the Cloudflare RUM requests the test itself blocks).
+  - Second pass (review): (1) while the sound loaded, `next()` gave '' = the free-play look (every key lit) for a
+    moment after the first press; now 'wait' (coach LOADING, keys dim, nothing breathes, the DRIFT bars chase).
+    Proved with every .m4a held back 2 s (390x844), PLAY and push-first both. (2) The HEAR IT key sat on the title
+    panel's bottom-left screw and 4 px off its edge at 1100-1280 (the left pad shrinks to 35 px); now indented to
+    clear the screw by 10 px and a notch smaller there: 10-12 px off the edge at 1100 / 1199 / 1280, hero panels
+    still mirror (heights = live).
 - Not checked: real iPhone / Safari / Firefox (the player's open item from 10-15 still stands); a human ear.
 
 # Website — word-wall WEIGHT (checker S4, 2026-10-15, revaudio-32)
