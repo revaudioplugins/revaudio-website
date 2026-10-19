@@ -121,3 +121,20 @@ an idle timer shorter than that fires before Lenis moved; wait while `lenis.isSc
 4. A control on older code must force the mode the new code replaced: the old file defaulted to GEAR, whose
    entrances start below their rest and would have passed the new "from below" check by accident (the advisor caught
    it before the run). Force TUNE (`data-ww-motion`) in the checks; today's code ignores the attribute.
+
+
+## 2026-10-19 — The TV's text under its scanlines (Home LIBRARY phase 4d step 3b)
+1. A texture over type costs the reading: the TV's scanlines (a 1 px line at .42 every 3 px) lay OVER the content, so
+   every letter and the Try key were cut in stripes; the user: the reading suffered "because of the pixels". Put a
+   screen texture on the glass, under the text and the pictures; only smooth light (reflection, curvature) goes over.
+2. The bench draws the phone frame at the laptop's 1x. The user picked the scanlines at .42 against 1-device-px lines;
+   a phone (3x) draws each one 3 device px thick, a band across every glyph. Check a texture in a 3x shot (or on the
+   phone) before baking it.
+3. "Letters identical with the lines on and off" fails on a correct fix: an anti-aliased edge pixel is part glass, so
+   a line under the text still shows through it a little (max diff 7-16 of 255). Measure what a line OVER a letter
+   does instead: the letter itself goes to ~0.58 of its line-free self at .42 (old code 0.58, new >= 0.94). A flat
+   face (the key) and the picture can stay strict (max diff 0). A metric changed after its control run needs a new
+   control run.
+4. Keeping the lines on the pictures would have needed a layer that moves with the picture: the motion tweens the
+   img/video, not `.ww-ui`, so a figure overlay would stand on empty glass while the picture fades in. Check what the
+   motion actually moves before hanging a layer on its parent.

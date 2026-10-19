@@ -152,9 +152,14 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
     name, type word, the price on the right); a tap opens the lit plugin as its own view (a history
     entry, a "‹ All plugins" key); Back returns to the list with the focus on its row.
   - `WALL_BG` (built 'screen' | 'wood'): /drift's digital screen (the keep-it TV's phosphor tube) full
-    bleed behind the content, scanlines + grille + glass over it (glow `--ww-scr-bright` 1.37, scanlines
-    `--ww-scr-scan` .42). The list share, name size, thumbnail width, glow and scanlines are the user's
-    bench pick of 2026-10-18 (`/__wwbench`). `.ww-screen`, `.ww-screen-fx` and `.ww-frame` live on
+    bleed behind the content: the scanlines + grille ON the glass (`.ww-screen::after`), UNDER the text and
+    the pictures; only the glass's smooth light (reflection, room light, curvature) lies over everything
+    (glow `--ww-scr-bright` 1.37, scanlines `--ww-scr-scan` .42). The list share, name size, thumbnail
+    width, glow and scanlines are the user's bench pick of 2026-10-18 (`/__wwbench`). 2026-10-19 the user:
+    the reading suffered "because of the pixels". Over everything, a 1 px line every 3 px crossed every
+    letter and the Try key; on a phone (3 device px per CSS px) each line was a band. The text and the
+    plugin's picture are clean now (the user's pick over keeping the lines on the pictures); the empty glass
+    keeps the lines at .42. `.ww-screen`, `.ww-screen-fx` and `.ww-frame` live on
     `.ww`, outside the panels. 'wood' = the garage wall, brass type.
   - `WALL_FRAME` (built '2' | '1' | '3' | 'rails'): a beat-up CRT cabinet front 9-sliced round the
     screen in place of the brass rails (`tv-broken-1/2/3.png`, AI blank rolls; cracked corner with a
@@ -199,6 +204,8 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
     sliders: list width, biggest name, thumbnail, unlit names (laptop), screen glow + scanlines, the
     channel colours, the motion's times and distances (picture, exit, text, glow dip, phone), frame size
     + wood around the TV, breathing room + lock zone. COPY SETTINGS; "apply ww bench" bakes the values.
+    The phone frame is drawn at the laptop's 1x: a texture is checked at 3x (a real phone, or a 3x shot)
+    before it is baked. The scanlines picked against it were a third as thick as a phone shows them.
   - Keyboard + screen reader: the list is a vertical tablist (aria-selected, roving tabindex), each
     panel a tabpanel; a category change is announced (a polite live region). `html.hc`: no screen or
     frame; plain type, the lit name in oxide.

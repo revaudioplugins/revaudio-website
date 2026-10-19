@@ -29,8 +29,14 @@
   `63841e4` + `0431ee7` (the control runs), local only; the shared wiki rule is `a953ccb` in revaudio-shared, local
   too (that clone was ahead 3 / behind 6: at push time one merge, not `pull --rebase`). Checks + controls in the plan.
   A fresh bench window was opened on the Samsung 2026-10-19 (any older bench tab shares `wwbench:v1`: close it).
-  Next: the user's look in the bench (RISE vs DROP), COPY SETTINGS + "apply ww bench" if anything changes, the build
-  checks (step 4), the phone slow-network fix if OKed (step 4b), the user's look (iPhone / Mac Safari), then "push".
+  Step 3b, same day (the user, after a look on the phone: the reading suffered "because of the pixels"): the
+  scanlines + grille moved onto the glass, under the text and the pictures (the user's pick A of a comparison
+  sheet); the commit after `efe6643`, the shared rule in the shared commit after `a953ccb` (design-language Law 5).
+  A LAN preview of the build is up for the phone (`astro preview --host 0.0.0.0 --port 4393`, PID 70616,
+  http://10.0.0.103:4393/, the laptop on "Kitchen_studio__EXT"); stop it by PID after the phone check (the Wi-Fi
+  is a Public profile). Next: the user's look (the phone, the bench: RISE vs DROP), COPY SETTINGS + "apply ww
+  bench" if anything changes, the build checks (step 4), the phone slow-network fix if OKed (step 4b), the user's
+  look (iPhone / Mac Safari), then "push".
 - For the user (dashboard, optional): a Cloudflare Redirect Rule `/store*` -> `/#plugins` would make it a real 301;
   the repo page works without it.
 - Found: index.astro's testimonial CTA said "14-day free trial" (the trial is 30 days in both plugins' code); fixed

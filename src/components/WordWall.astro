@@ -1503,13 +1503,18 @@ const first = items[0]?.slug ?? '';
 
   /* ---- THE SCREEN (WALL_BG 'screen') --------------------------------------
      /drift's digital screen (the keep-it TV's phosphor tube, .d-crt.d-keep-
-     screen): dark glass lit from the centre, and scanlines + aperture grille
-     + glass + curved falloff OVER everything, so the menu, the names and the
-     window read as ON the screen. The layers sit on .ww, outside the panels,
-     so a panel's fade never traps them in its stacking context. */
+     screen): dark glass lit from the centre with scanlines + aperture grille
+     ON the glass, UNDER everything on it, and the glass's reflection + curved
+     falloff OVER everything, so the menu, the names and the window read as ON
+     the screen. The lines stay off what is read (the user 2026-10-19: the
+     reading suffered "because of the pixels"): over the text, a 1 px line
+     every 3 px crossed every letter, and on a phone (3 device px per CSS px)
+     each was a band; the plugin's picture is clean too (the user's pick). The
+     layers sit on .ww, outside the panels, so a panel's fade never traps them
+     in its stacking context. */
   .ww {
     --ww-scr-bright: 1.37;  /* phosphor glow */
-    --ww-scr-scan: 0.42;    /* scanline darkness over the whole wall */
+    --ww-scr-scan: 0.42;    /* scanline darkness on the glass (under the text and the pictures) */
   }
   .ww-screen,
   .ww-screen-fx {
@@ -1549,11 +1554,19 @@ const first = items[0]?.slug ?? '';
       hsl(var(--ww-on-h) calc(var(--ww-on-s) * 1%) 5%) 76%,
       hsl(var(--ww-on-h) calc(var(--ww-on-s) * 1%) 2%) 100%);
   }
-  .ww-screen-fx {
-    z-index: 2; /* over the content: it is on the screen */
+  /* the lines on the glass, over its glow, under the content (a pseudo-element: the script reads .ww-screen's own
+     children) */
+  .ww-screen::after {
+    content: '';
+    position: absolute;
+    inset: 0;
     background:
       repeating-linear-gradient(0deg, rgba(0, 0, 0, var(--ww-scr-scan)) 0 1px, transparent 1px 3px), /* scanlines */
-      repeating-linear-gradient(90deg, rgba(255, 40, 90, 0.05) 0 1px, rgba(40, 255, 140, 0.035) 1px 2px, rgba(70, 90, 255, 0.05) 2px 3px), /* aperture grille */
+      repeating-linear-gradient(90deg, rgba(255, 40, 90, 0.05) 0 1px, rgba(40, 255, 140, 0.035) 1px 2px, rgba(70, 90, 255, 0.05) 2px 3px); /* aperture grille */
+  }
+  .ww-screen-fx {
+    z-index: 2; /* over the content: it is on the screen (smooth light only: nothing here crosses a letter) */
+    background:
       linear-gradient(158deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.02) 16%, transparent 30%), /* glass reflection */
       radial-gradient(ellipse 70% 22% at 50% 0%, rgba(255, 255, 255, 0.05), transparent 70%),                 /* the glass catching the room light */
       radial-gradient(130% 120% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.6) 100%);                        /* tube curvature */

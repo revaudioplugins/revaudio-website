@@ -1,10 +1,10 @@
 # Home LIBRARY: the TV becomes the plugin browser (branch `feat/home-library`)
 
 - Owner: Claude Code `revaudio-a0` (was `revaudio-a6` before a restart; laptop 1). Status: **IN PROGRESS (user's "go"
-  2026-10-18).** Phases 1-4c done (local commits, not pushed). Phase 4d (the noise out, motion only): steps 1-3 done
-  (2026-10-19: the user's answers made it one motion, smaller, shorter and always the same way; GEAR CHANGE gone);
-  waiting on the user's look in the bench (RISE vs DROP, the values), then the build checks (step 4), the real
-  devices and "push".
+  2026-10-18).** Phases 1-4c done (local commits, not pushed). Phase 4d (the noise out, motion only): steps 1-3 + 3b done
+  (2026-10-19: the user's answers made it one motion, smaller, shorter and always the same way; GEAR CHANGE gone;
+  3b: the scanlines moved under the text and the pictures); waiting on the user's look (the phone via the LAN
+  preview, the bench: RISE vs DROP, the values), then the build checks (step 4), the real devices and "push".
 - origin/main `141d400` (crane WebP, trial source, /revlimiter/ Ads fixes) merged in 2026-10-18 before phase 3 (`d80e459`).
 - Worktree: `.claude/worktrees/home-library` off origin/main `697f49d`; origin/main `ddada3d` (the TV weight work)
   merged in 2026-10-18 (`8ca4938`). `node_modules` = junction to the main clone's.
@@ -228,7 +228,7 @@ without an open trial (The AC) stay off the TV; the TV never changes by itself (
       under the snow.
 - [x] ~~The user's look in the bench~~: superseded by Phase 4d (the user, 2026-10-18: no noise at all).
 
-### Phase 4d: entrances and exits, motion only (planned 2026-10-18; steps 1-3 done 2026-10-19, the user's look owed)
+### Phase 4d: entrances and exits, motion only (planned 2026-10-18; steps 1-3 + 3b done 2026-10-19, the user's look owed)
 
 - The user (2026-10-18, Hebrew): drop the noise entirely, make it pure motion; plan how the plugins enter and leave
   the screen; creative and elegant, not messy; each plugin's entrance stylized, with interesting motion; no glitches,
@@ -381,6 +381,23 @@ because it is Radio Roulette" is the mess the user ruled out.
         frame y -12.7 / -13.0, from above), 14 x never solid while it travels (e.g. opacity 0.91 at 5.0 px), 14 x
         short (rest at +866-900 ms); its other 199 pass. `glowcheck.mjs` on `7e3fe2f` (before the colour fix) fails
         the 230 ms cut (spike 0.357; today 0.016 there).
+- [x] 3b. The text under the scanlines (2026-10-19). The user, after a look on the phone: the reading is not easy
+      "because of the pixels"; better reading on both platforms. Cause: `.ww-screen-fx` (z 2) laid the scanlines (a 1 px
+      line at .42 every 3 px) and the RGB grille OVER the content, so every letter and the Try key were striped; at a
+      phone's 3x each line is 3 device px. Two questions in Hebrew with a comparison sheet (today / A: lines on the
+      glass only / B: the pictures keep theirs): the user picked A, and no type size change before a look without the
+      lines. Done (CSS only): the lines + grille moved to `.ww-screen::after` (on the glass, over its glow, under
+      everything on it; a pseudo-element, so the script's reads of `.ww-screen`'s children are untouched; frame /
+      rails / hc / wood follow `.ww-screen`); `.ww-screen-fx` keeps the reflection, room light, curvature and seat.
+      `--ww-scr-scan` stays .42, now on the glass only; the bench's Scanlines hint says so. (B would have needed a layer
+      that moves with the picture: the motion tweens the img/video, not `.ww-ui`.)
+      Checks (scratchpad `readcheck.mjs`, Chromium, at rest, shot with `--ww-scr-scan` .42 and 0; 1280x665 + 1920x1080
+      @1x, 390x844 @3x on RevLimiter): no letter darkened by a line (the paragraph, the plugin name, the lit list name:
+      the darkest letter px at >= 0.94 of its line-free self; a line over it gives ~0.58), the Try key's face and the
+      picture identical (max diff 0), the empty glass keeps its lines (rows 0.58-1.00, ~35 % dark), no page errors:
+      ALL PASS (20). Control: the component of `efe6643` fails 14 (every letter at 0.57-0.58, key 107, picture
+      102-107), its glass passes. Regression: `motioncheck.mjs` Chromium 233 / 233, WebKit 218 / 218; `glowcheck.mjs`
+      24 / 24; `benchsmoke.mjs` 11 / 11; `npm run build` green (the LAN preview serves the new CSS).
 - [ ] 4. Checks on the build, Chromium + WebKit, the rAF recorder (its snow assertions replaced): at most one panel
       visible per frame; rest transform = identity; rapid picks land on the last; held arrows = one entrance and
       one URL write; no layout shift; the moving picture never leaves the glass or crosses the list (1280x665,
