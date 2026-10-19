@@ -165,11 +165,47 @@ const batWing =
   </div>
 </div>
 
+{/* the offer, lit by the lantern beside it. Outside the aria-hidden layer so
+    screen readers get it; a click copies the code. */}
+<button type="button" class="hw-promo" data-hw-promo aria-label="Halloween offer: 15% off with code BOO. Copy code">
+  <span class="hw-promo-big">15% off</span>
+  <span class="hw-promo-line">
+    <span class="hw-promo-with">with code</span>
+    <span class="hw-promo-code">&ldquo;BOO&rdquo;</span>
+  </span>
+  <span class="hw-promo-copied" aria-live="polite" data-hw-copied></span>
+</button>
+
 <script>
   const root = document.querySelector<HTMLElement>('[data-halloween]');
   if (root) {
     // Fixed layers must live on <body>, out of any transformed ancestor.
     document.body.appendChild(root);
+    const promo = document.querySelector<HTMLButtonElement>('[data-hw-promo]');
+    if (promo) {
+      document.body.appendChild(promo);
+      // Sit beside the pumpkin as actually drawn (its label widens it), centred on it.
+      const pumpkin = root.querySelector<SVGElement>('.hw-pumpkin');
+      const place = () => {
+        if (!pumpkin || innerWidth <= 720) { promo.style.removeProperty('--hw-pl'); promo.style.removeProperty('--hw-pb'); return; }
+        const p = pumpkin.getBoundingClientRect();
+        const mid = innerHeight - (p.top + p.bottom) / 2;
+        promo.style.setProperty('--hw-pl', `${Math.round(p.right + 16)}px`);
+        promo.style.setProperty('--hw-pb', `${Math.round(mid - promo.offsetHeight / 2)}px`);
+      };
+      place();
+      addEventListener('resize', place);
+      document.fonts?.ready.then(place);
+      const note = promo.querySelector<HTMLElement>('[data-hw-copied]');
+      let t = 0;
+      promo.addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText('BOO'); } catch { return; }
+        if (note) note.textContent = 'Copied';
+        promo.classList.add('is-copied');
+        clearTimeout(t);
+        t = window.setTimeout(() => { promo.classList.remove('is-copied'); if (note) note.textContent = ''; }, 1600);
+      });
+    }
     const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     // Spider: scroll lets out silk (up to ~38vh), rAF only while scrolling.
@@ -204,6 +240,14 @@ const batWing =
 </script>
 
 <style>
+  /* Creepster (Font Diner, SIL OFL 1.1), self-hosted like the house faces; Halloween text only */
+  @font-face {
+    font-family: 'Creepster';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(../styles/fonts/creepster-latin.woff2) format('woff2');
+  }
   .hw {
     --hw-pumpkin: #e0742a;
     --hw-candle: #ffb54a;
@@ -396,14 +440,96 @@ const batWing =
   .hw-face { animation: hw-candle 2.6s steps(1, end) infinite; filter: drop-shadow(0 0 4px rgba(255, 170, 60, 0.9)); }
   .hw-tag {
     position: relative;
+    font-family: 'Creepster', var(--font-display, sans-serif);
+    font-size: 1.05rem;
+    line-height: 1;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+    color: #ff9a3c;
+    text-shadow: 0 0 8px rgba(255, 130, 40, 0.6), 0 2px 0 rgba(0, 0, 0, 0.9);
+  }
+
+  /* ── the offer beside the lantern ── */
+  .hw-promo {
+    --lx: clamp(14px, 2.4vw, 36px);
+    --lw: clamp(70px, 6.5vw, 96px);
+    position: fixed;
+    z-index: 45;
+    left: var(--hw-pl, calc(var(--lx) + var(--lw) + 40px));
+    bottom: var(--hw-pb, calc(clamp(14px, 2.4vw, 30px) + 26px));
+    display: grid;
+    justify-items: start;
+    gap: 2px;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: copy;
+    text-align: left;
+    isolation: isolate;
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* a pool of shadow behind the words so they read over any card or photo */
+  .hw-promo::before {
+    content: '';
+    position: absolute;
+    inset: -14px -26px -12px -22px;
+    z-index: -1;
+    border-radius: 50%;
+    background: rgba(11, 10, 9, 0.66);
+    box-shadow: 0 0 26px 18px rgba(11, 10, 9, 0.62);
+  }
+  .hw-promo-big {
+    font-family: 'Creepster', var(--font-display, sans-serif);
+    font-size: clamp(2.3rem, 3vw, 3.1rem);
+    line-height: 0.9;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #a24cf0;
+    /* witch's-brew purple: grainy, mottled, lit warm from the candle side */
+    background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.12 0 0 0 0 0.02 0 0 0 0 0.2 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E"),
+      radial-gradient(circle at 22% 30%, rgba(255, 170, 90, 0.55), transparent 32%),
+      radial-gradient(circle at 70% 65%, rgba(40, 6, 70, 0.7), transparent 30%),
+      radial-gradient(circle at 48% 20%, rgba(230, 170, 255, 0.6), transparent 26%),
+      linear-gradient(170deg, #d9a6ff 0%, #a24cf0 38%, #6d1fbf 70%, #3a0d6e 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 2px 0 rgba(10, 2, 18, 0.95)) drop-shadow(0 0 10px rgba(162, 76, 240, 0.55)) drop-shadow(-4px 0 12px rgba(255, 150, 50, 0.25));
+  }
+  .hw-promo-line { display: flex; align-items: baseline; gap: 0.5em; }
+  .hw-promo-with {
+    font-family: 'Creepster', var(--font-display, sans-serif);
+    font-size: 1.05rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--brass, #c9a35c);
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.8);
+  }
+  .hw-promo-code {
+    font-family: 'Creepster', var(--font-display, sans-serif);
+    font-size: clamp(1.6rem, 2vw, 2.1rem);
+    line-height: 1;
+    letter-spacing: 0.08em;
+    color: #ffb54a;
+    text-shadow: 0 0 6px rgba(255, 150, 50, 0.85), 0 0 18px rgba(224, 116, 42, 0.55), 0 1px 0 rgba(0, 0, 0, 0.9);
+    animation: hw-candle 2.6s steps(1, end) infinite;
+  }
+  .hw-promo-copied {
+    position: absolute;
+    left: 0;
+    top: -1.4em;
     font-family: var(--font-mono, ui-monospace, monospace);
     font-size: 0.6rem;
     letter-spacing: 0.3em;
     text-transform: uppercase;
-    white-space: nowrap;
-    color: var(--brass, #c9a35c);
-    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.8), 0 0 10px rgba(255, 150, 50, 0.35);
+    color: var(--brass-bright, #e8c878);
+    opacity: 0;
+    transition: opacity 0.2s;
   }
+  .hw-promo.is-copied .hw-promo-copied { opacity: 1; }
+  .hw-promo:hover .hw-promo-code, .hw-promo:focus-visible .hw-promo-code { color: #ffd08a; }
+  .hw-promo:focus-visible { outline: 2px solid var(--brass, #c9a35c); outline-offset: 6px; border-radius: 4px; }
 
   /* ── keyframes ── */
   @keyframes hw-twinkle { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
@@ -441,14 +567,22 @@ const batWing =
     .hw-spider-body { width: 26px; }
     .hw-lantern { left: auto; right: 14px; bottom: 84px; width: 54px; }
     .hw-tag { display: none; }
+    .hw-promo { left: auto; right: calc(14px + 54px + 10px); bottom: 92px; justify-items: end; text-align: right; }
+    .hw-promo-big { font-size: 1.8rem; }
+    .hw-promo-with { font-size: 0.85rem; }
+    .hw-promo-code { font-size: 1.3rem; }
+    .hw-promo-copied { left: auto; right: 0; }
     .hw-embers span:nth-child(2n) { display: none; }
     .hw-fog { height: 18vh; }
   }
 
   @media (prefers-reduced-motion: reduce) {
+    .hw-promo-code { animation: none; }
     .hw *, .hw *::before, .hw *::after { animation: none !important; transition: none !important; }
     .hw-bats, .hw-embers { display: none; }
   }
 
   :global(html.hc) .hw { display: none; }
+  :global(html.hc) .hw-promo-big { background: none; -webkit-text-fill-color: currentColor; filter: none; }
+  :global(html.hc) .hw-promo-code { color: inherit; text-shadow: none; animation: none; }
 </style>
