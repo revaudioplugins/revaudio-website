@@ -161,12 +161,16 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
       (`--ww-gl-roll-light` .1) rolling down the glass in `--ww-gl-roll-ms` 900, under the text like the
       lines (a CRT's hum bar; .06 did not show).
     - A channel change lands with a short tear about one time in three (`--ww-gl-chg-chance` .33), only
-      once its picture is in place: the change's motion never changes, and the next pick stops it.
+      once its picture is in place and the tube is lit: the change's motion never changes, and the next
+      pick stops it. The first light is not a change (a cold `?plugin=` cuts, never tears).
     - Never on what is read (the menu, the lit name, the blurb, the price, the keys, the links), never on
       what the pointer is on or the focus is in. Stepped (`steps(1, end)`), `translate` + `filter` only
       (never transform or opacity: the motion's), nothing left behind. No noise, no snow. Off under
       reduced motion, high contrast, the wood wall, a hidden tab, the TV off screen and before the
-      power-on. The times are read when they come due, so the bench's sliders take within 2 s.
+      power-on, and the wait starts over once the TV is on show again: a visitor who glides in from the
+      top (the PLUGINS chip) gets a full 12-25 s before the first, never one as the tube lights (it used to
+      come any time 0-25 s after). The times are read when they come due, so the bench's sliders take
+      within 2 s.
   - URL: `?cat=` = one history entry per category, `?plugin=` updates the current one, so a reload or a
     return from a product page lands on the same channel. The rest of the address is kept (utm / gclid
     for the cart; the trial gate's `#dl=...&p=` return link, which is why the TV never uses `p`).

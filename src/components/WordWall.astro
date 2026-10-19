@@ -816,8 +816,9 @@ const first = items[0]?.slug ?? '';
        lands with a short tear now and then (--ww-gl-chg-chance), once its picture is in place: the change's motion
        never changes, and the next pick stops it. Stepped, translate + filter only (never transform or opacity: the
        motion's), nothing left behind. No noise, no snow (2026-10-18). Off under reduced motion, high contrast, the
-       wood wall, a hidden tab, the TV off screen and before its power-on. The times are read when they come due
-       (the bench's sliders take within 2 s). */
+       wood wall, a hidden tab, the TV off screen and before its power-on, and the wait starts over once it is on
+       show again (a visitor gliding in gets the full wait, never one as the tube lights). The times are read when
+       they come due (the bench's sliders take within 2 s). */
     const RED = '#ff0033';
     const CYAN = '#00e5ff';
     const fxEl = wall.querySelector<HTMLElement>('.ww-screen-fx');
@@ -831,7 +832,8 @@ const first = items[0]?.slug ?? '';
     let glTouched = -Infinity; // the last time the TV was touched
     let glFrom = performance.now(); // when this wait began...
     let glU = Math.random(); // ...and where between the shortest and the longest it ends
-    const glOk = () => !reduced.matches && stage === 'rest' && !still();
+    const glShown = () => !reduced.matches && !still() && wall.dataset.wwPower === 'on'; // on show, its tube lit
+    const glOk = () => glShown() && stage === 'rest';
     const glStop = () => {
       const off = glOff;
       glOff = null;
@@ -1004,12 +1006,20 @@ const first = items[0]?.slug ?? '';
       const max = Math.max(min, glN('--ww-gl-max-s', 25));
       return Math.max(glFrom + (min + glU * (max - min)) * 1000, glTouched + Math.max(0, glN('--ww-gl-idle-s', 4)) * 1000);
     };
+    let glAway = true; // not on show at the last look: the wait starts over once it is
     const glTick = () => {
       try {
+        const shown = glShown();
+        if (!shown || glAway) {
+          glAway = !shown;
+          glFrom = performance.now();
+          glU = Math.random();
+          return;
+        }
         if (performance.now() < glDue()) return;
         glFrom = performance.now();
         glU = Math.random();
-        if (!glOff && glOk() && wall.dataset.wwPower === 'on') glitch(glPick(), true);
+        if (!glOff && glOk()) glitch(glPick(), true);
       } finally {
         window.setTimeout(glTick, Math.min(2000, Math.max(50, glDue() - performance.now())));
       }

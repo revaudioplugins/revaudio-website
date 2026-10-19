@@ -161,3 +161,9 @@ an idle timer shorter than that fires before Lenis moved; wait while `lenis.isSc
    the empty-out, then the wait for a new one ran out. Mark the arming time and look for an event after it
    (`x.t > armed`), never empty the log in between; and let the check prove the touch did it (WebKit: the 4 s
    glitch ended 11 ms into its 4000, not at its natural end).
+6. A "now and then" clock that only rerolls when a wait comes due while it is blocked (off screen, not lit) fires
+   any time 0-25 s after the thing comes back: a visitor gliding in by the PLUGINS chip could get a glitch as the
+   tube lights (the advisor review; measured on `1ce4007`: the first 1510 ms after the tube lit with a 3 s wait).
+   Restart the wait at the first look that finds it on show again, and gate every trigger (the clock, a change's
+   landing, the bench) on the one "on show and lit" test: a pick while the tube was still lighting tore 320 ms
+   before it was lit. Test the arrival, not only the steady state: every earlier check scrolled to the TV first.

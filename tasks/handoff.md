@@ -38,8 +38,10 @@
   it, the screen flickers or rolls a band of light), never on what is read or what the pointer / focus is on, off
   under reduced motion / high contrast / the wood wall / a hidden tab / off screen / before the power-on; about one
   change in three lands with a short tear once the picture is in place. Bench: a Glitch group (8 sliders) + ▶ NAME
-  / PICTURE / SCREEN (reload the bench first). The commit after `706efa0`; the shared design-language §3 exception
-  is the shared commit after `4cfa2b6`; both local. Checks + control in the plan (Phase 4e).
+  / PICTURE / SCREEN (reload the bench first). Commits `1ce4007` + the one after it (the advisor review: the wait
+  starts over once the TV is on show, so a visitor gliding in never gets one as the tube lights; a change tears
+  only once the tube is lit); the shared design-language §3 exception is shared `e8f10a4`; all local. Checks +
+  controls in the plan (Phase 4e).
   A LAN preview of the build is up for the phone (`astro preview --host 0.0.0.0 --port 4393`, PID 70616,
   http://10.0.0.103:4393/, the laptop on "Kitchen_studio__EXT"; the build re-run after phase 4e); stop it by PID
   after the phone check (the Wi-Fi is a Public profile). Next: the user's look (the phone, the bench: RISE vs DROP,

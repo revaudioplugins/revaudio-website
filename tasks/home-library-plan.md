@@ -470,6 +470,21 @@ because it is Radio Roulette" is the mess the user ruled out.
       headless WebKit's frame gap went from ~180 ms (this morning's 218 / 218) to 229-386 ms for the old and the
       new code alike, Chromium's from ~26 to ~55 ms (still passing). Every other WebKit check passes. Re-run on an
       idle machine with step 4. `npm run build` green; the LAN preview serves the new CSS + script.
+- [x] Fix after the advisor review (2026-10-19, the commit after `1ce4007`): two gaps at the TV's first light, both
+      measured on `1ce4007` (new `glitchcheck.mjs` cases, Chromium): a late arrival (the wait fixed at 3 s, parked at
+      the top 8 s) got its first glitch 1510 ms after the tube lit, because the clock rerolled only when a wait came
+      due while the TV was away, so the first came any time 0-25 s after arriving (the PLUGINS chip's glide too); and
+      a pick while the tube was still lighting tore 320 ms before it was lit (`landed()` had no power gate). Now one
+      test, `glShown()` (no reduced motion, not `still()`, the tube `on`), gates the clock, a change's landing and
+      the bench, and the wait starts over at the first look that finds the TV on show (2 s at most). After: the late
+      arrival's first 4510 ms after the tube lit in Chromium, 4437 in WebKit (3000-5000); the pick while it lights:
+      no tear before it is lit (Chromium: it landed before, none; WebKit: a tear 104 ms after); a cold
+      `/?plugin=gas` at chance 1 never tears at the first light; every glitch in every run starts with the tube lit.
+      The shipped times (Chromium): the first 23.32 s after the tube lit (12-25 + the look), and a late arrival by
+      the PLUGINS chip after 30 s at the top 25.83 s after (12-27); "none while touched" and "4008 ms after the
+      pointer stopped" as before. Re-run: `glitchcheck.mjs` Chromium 67 / 67 + the shipped times 5 / 5, WebKit
+      68 / 68; `benchsmoke.mjs` 15 / 15; `motioncheck.mjs` at chance 1 Chromium 233 / 233. `npm run build` green,
+      the LAN preview serves the new script.
 
 ### Phase 5: later, each on its own branch
 
