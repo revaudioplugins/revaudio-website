@@ -95,6 +95,17 @@ const canonical = new URL(Astro.url.pathname, Astro.site).href;
       } catch (e) {}
     </script>
 
+    {/* Halloween 2026: a page reached through a transition scene opens on black
+        and fades up (HalloweenTransition.astro). Set before first paint so the
+        new page never flashes in before the fade. Only honoured if fresh. */}
+    <script is:inline>
+      try {
+        var hwF = sessionStorage.getItem('hw-fadein');
+        sessionStorage.removeItem('hw-fadein');
+        if (hwF && Date.now() - +hwF < 5000) document.documentElement.classList.add('hw-fadein');
+      } catch (e) {}
+    </script>
+
     {/* Cloudflare Web Analytics. No SRI: CF rotates beacon.min.js and ships it
         without a published hash, so a pinned integrity would break on update.
         Token is a public beacon id, not a secret. */}

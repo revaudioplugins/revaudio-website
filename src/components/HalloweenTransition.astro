@@ -89,6 +89,9 @@ const SKELETONS = 6;
       </svg>
     </div>
   </div>
+
+  {/* fade to black over everything, scene included, before the page changes */}
+  <div class="hwt-cover"></div>
 </div>
 
 <script>
@@ -96,6 +99,7 @@ const SKELETONS = 6;
   if (root) {
     document.body.appendChild(root);
     const FX = { spiders: 1300, skeletons: 1450, witch: 1650 } as const;
+    const HOLD = 90; // a beat of full black before the page swaps
     type Fx = keyof typeof FX;
     const names = Object.keys(FX) as Fx[];
     let busy = false;
@@ -135,8 +139,13 @@ const SKELETONS = 6;
       hint.rel = 'prefetch';
       hint.href = href;
       document.head.appendChild(hint);
+      root.style.setProperty('--hwt-ms', `${FX[fx]}ms`);
       root.dataset.play = fx;
-      setTimeout(() => { location.href = href; }, FX[fx]);
+      // The next page opens on black and fades up (BaseLayout head + .hw-fadein below).
+      setTimeout(() => {
+        try { sessionStorage.setItem('hw-fadein', String(Date.now())); } catch {}
+        location.href = href;
+      }, FX[fx] + HOLD);
     };
 
     document.addEventListener('click', (e) => {
@@ -151,9 +160,15 @@ const SKELETONS = 6;
       play(url.href);
     });
 
+    // Arrived through a scene: the black cover is already up (set in <head>); let it fade, then clear.
+    const html = document.documentElement;
+    if (html.classList.contains('hw-fadein')) {
+      setTimeout(() => html.classList.remove('hw-fadein'), 1000);
+    }
+
     // Back/forward cache: come back to a clean page, not a frozen scene.
     addEventListener('pageshow', (e) => {
-      if (e.persisted) { busy = false; delete root.dataset.play; }
+      if (e.persisted) { busy = false; delete root.dataset.play; document.documentElement.classList.remove('hw-fadein'); }
     });
   }
 </script>
@@ -177,8 +192,22 @@ const SKELETONS = 6;
 
   /* the room goes dark behind the scene; the next page arrives out of it */
   .hwt-dim { position: absolute; inset: 0; background: #0b0a09; opacity: 0; }
-  .hwt[data-play] .hwt-dim { animation: hwt-dim 1.2s ease-in forwards; }
-  .hwt[data-play='witch'] .hwt-dim { animation-duration: 1.55s; }
+  .hwt[data-play] .hwt-dim { animation: hwt-dim var(--hwt-ms, 1.3s) ease-in forwards; }
+
+  /* fade to black: the last 380ms of every scene, over the scene itself */
+  .hwt-cover { position: absolute; inset: 0; background: #0b0a09; opacity: 0; }
+  .hwt[data-play] .hwt-cover { animation: hwt-cover 380ms cubic-bezier(0.4, 0, 0.6, 1) calc(var(--hwt-ms, 1.3s) - 380ms) forwards; }
+
+  /* fade up from black on the page we land on */
+  :global(html.hw-fadein body::after) {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 2147483000;
+    background: #0b0a09;
+    pointer-events: none;
+    animation: hwt-unfade 700ms cubic-bezier(0.25, 0.1, 0.25, 1) 80ms both;
+  }
 
   /* ── spiders ── */
   .hwt-crawler {
@@ -256,7 +285,9 @@ const SKELETONS = 6;
   .hwt-trail { fill: #ffc46b; filter: drop-shadow(0 0 4px rgba(255, 150, 50, 0.9)); animation: hwt-twinkle 0.25s steps(2) infinite; }
 
   /* ── keyframes ── */
-  @keyframes hwt-dim { 0% { opacity: 0; } 55% { opacity: 0.45; } 100% { opacity: 0.92; } }
+  @keyframes hwt-dim { 0% { opacity: 0; } 100% { opacity: 0.55; } }
+  @keyframes hwt-cover { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes hwt-unfade { from { opacity: 1; } to { opacity: 0; } }
   @keyframes hwt-crawl {
     from { transform: translate(0, 0); }
     to { transform: translate(var(--dx), calc(-100vh - 160px)); }
