@@ -64,6 +64,9 @@ neon or glow without a lamp (a neon sign IS a lamp: the DRIFT panel's lit tube m
 - Display: `--font-display` Bebas Neue (fallback Oswald, Arial Narrow). Headlines are stamped
   into the wall: `text-shadow: var(--engrave)` on the garage wall, `--engrave-fine` for small caps.
 - Body: `--font-body` Inter. Readouts and specs: `--font-mono`, in object units (dB, ms, `$`, `VST3 · AU`).
+- Script accent: Yellowtail (retro car-badge script), `--brass-bright` with a soft amber glow, for ONE short
+  line under a section title, never body copy. First use: the /gas "Hear it" line "Hit play. Give it gas."
+  (2026-10-19, picked over a marker and a typewriter look: "shorter and sexier").
 - Painted copy erodes with wear: stencil words on the wall are outlined brass that fills on hover;
   the filled word is `--oxide-text`, never race-red (Law 5 + one-hero rule).
 - Kickers (`.hh-tag`, `.sk-tag`, `.ww-tag`): mono, letter-spaced 0.3em, `--brass`.
