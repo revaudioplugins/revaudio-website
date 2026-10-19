@@ -1,6 +1,6 @@
 /**
  * /revfx hero: the pedalboard comes alive (the stomp-in is CSS, keyed off [data-live]); once the last pedal has
- * landed the cable lights IN -> OUT and the pulse starts riding it. On a mouse the board leans toward the pointer
+ * landed the two patch cords light and a pulse starts riding them. On a mouse the board leans toward the pointer
  * (damped, rAF only while it moves). Reduced motion: [data-live="still"], no pulse, no lean.
  */
 const STOMP_STEP = 150, STOMP_MS = 620;
@@ -10,14 +10,13 @@ export function initHero(onGoto: (i: number) => void): void {
   const board = wrap?.querySelector<HTMLElement>('[data-rfx-board]');
   if (!wrap || !board) return;
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const pulse = board.querySelector<SVGAnimateMotionElement>('[data-rfx-pulse]');
   const n = board.querySelectorAll('.rfx-peds > li').length;
 
   if (reduce) board.dataset.live = 'still';
   else {
     // one frame at rest first, so the drop is animated even when the board is in view on load
     requestAnimationFrame(() => requestAnimationFrame(() => { board.dataset.live = 'on'; }));
-    setTimeout(() => { board.dataset.cable = 'on'; try { pulse?.beginElement(); } catch { /* SMIL off */ } }, 350 + n * STOMP_STEP + STOMP_MS);
+    setTimeout(() => { board.dataset.cable = 'on'; }, 350 + n * STOMP_STEP + STOMP_MS);
   }
 
   board.querySelectorAll<HTMLAnchorElement>('[data-rfx-goto]').forEach((a) => a.addEventListener('click', (e) => {

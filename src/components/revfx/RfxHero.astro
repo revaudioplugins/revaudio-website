@@ -3,8 +3,8 @@
  * /revfx hero: the title plate, and the pedalboard: the five strips as true-alpha pedals (the same shots as
  * /drift's phone carousel, tools/shoot-drift-fx-pedals.mjs) standing in an arc on a neon floor. On load they
  * stomp down one by one in chain order, each lamp pool lights as it lands, then the patch cable draws IN to OUT
- * and a signal pulse rides it for good (hero.ts). The board leans with the pointer (desktop). A pedal is a link
- * to its spotlight in #pedals. Under it: the trial console (RfxCapture), the page's first way in.
+ * then the cords light and a pulse rides them (hero.ts). The board leans with the pointer (desktop). A pedal is a link
+ * to its spotlight in #pedals. Two patch cords (laptop): IN into PITCH's left side, OUT from GLUE COMP's right side. Under it: the trial console (RfxCapture), the page's first way in.
  * Reduced motion: everything lands at rest, the pulse is still.
  */
 import { getImage } from 'astro:assets';
@@ -40,21 +40,6 @@ const imgs = await Promise.all(pedals.map(async (p) => ({
     <div class="rfx-board-wrap" data-rfx-board-wrap>
       <div class="rfx-board" data-rfx-board>
         <div class="rfx-floor" aria-hidden="true"></div>
-        <svg class="rfx-cable" viewBox="0 0 1000 200" preserveAspectRatio="none" aria-hidden="true">
-          <defs>
-            <linearGradient id="rfx-cable-g" x1="0" x2="1">
-              {pedals.map((p, i) => <stop offset={`${(i + 0.5) / pedals.length}`} stop-color={`rgb(${p.rgb})`} />)}
-            </linearGradient>
-          </defs>
-          <path class="rfx-cable-bed" d="M0 150 C 60 150, 70 120, 110 120 S 210 150, 300 128 S 410 110, 500 126 S 610 150, 700 128 S 820 112, 890 120 S 950 150, 1000 150" />
-          <path class="rfx-cable-lit" pathLength="1" d="M0 150 C 60 150, 70 120, 110 120 S 210 150, 300 128 S 410 110, 500 126 S 610 150, 700 128 S 820 112, 890 120 S 950 150, 1000 150" />
-          <circle class="rfx-cable-pulse" r="7">
-            <animateMotion dur="3.2s" repeatCount="indefinite" begin="indefinite" data-rfx-pulse
-              path="M0 150 C 60 150, 70 120, 110 120 S 210 150, 300 128 S 410 110, 500 126 S 610 150, 700 128 S 820 112, 890 120 S 950 150, 1000 150" />
-          </circle>
-        </svg>
-        <span class="rfx-jack rfx-jack--in" aria-hidden="true">IN</span>
-        <span class="rfx-jack rfx-jack--out" aria-hidden="true">OUT</span>
         <ul class="rfx-peds" role="list">
           {pedals.map((p, i) => (
             <li style={`--i:${i};--rgb:${p.rgb};--ink:${p.ink}`}>
@@ -64,6 +49,16 @@ const imgs = await Promise.all(pedals.map(async (p) => ({
                 <img src={imgs[i].l.src} srcset={`${imgs[i].s.src} 300w, ${imgs[i].l.src} 520w`} sizes="(max-width: 700px) 30vw, 170px"
                   width="528" height="954" alt="" decoding="async" fetchpriority={i === 2 ? 'high' : 'auto'} />
                 <span class="rfx-ped-name">{p.name}</span>
+                {/* the patch cords (laptop): IN plugs into PITCH's left side, OUT leaves GLUE COMP's right side; the
+                    cord runs from the jack down to the floor and off the board, a signal pulse riding it */}
+                {(i === 0 || i === pedals.length - 1) && (
+                  <svg class:list={['rfx-cord', i === 0 ? 'rfx-cord--in' : 'rfx-cord--out']} viewBox="0 0 220 160" aria-hidden="true">
+                    <path class="rfx-cord-bed" d="M214 40 C 170 40, 160 128, 90 136 S 10 140, -60 140" />
+                    <path class="rfx-cord-lit" pathLength="100" d="M214 40 C 170 40, 160 128, 90 136 S 10 140, -60 140" />
+                    <path class="rfx-cord-pulse" pathLength="100" d="M214 40 C 170 40, 160 128, 90 136 S 10 140, -60 140" />
+                    <rect class="rfx-cord-plug" x="196" y="33" width="24" height="14" rx="3" />
+                  </svg>
+                )}
               </a>
             </li>
           ))}

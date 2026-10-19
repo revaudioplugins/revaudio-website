@@ -21,6 +21,10 @@
 .rfx-hero-grid { display: grid; gap: 28px; align-items: center; }
 @media (min-width: 1000px) { .rfx-hero-grid { grid-template-columns: minmax(330px, 0.8fr) minmax(0, 1.45fr); gap: 20px; } }
 @media (min-width: 1000px) { .rfx-hero-title { translate: -50px 0; } }   /* the plate 50 px further left (Gil 10-18) */
+/* the plate's own layer sits over the pedalboard (the translate made .rfx-hero-title a stacking context, so the panel's
+   z-index alone stayed inside it): the IN cord runs UNDER the plate and its far end is hidden there (Gil 10-18) */
+.rfx-hero-title { position: relative; z-index: 2; }
+.rfx-board-wrap { position: relative; z-index: 1; }
 .rfx-title-panel { position: relative; z-index: 2; }
 .drift-page .rfx-title { font-size: clamp(40px, 4.65vw, 69px); letter-spacing: .04em; margin-bottom: 8px; white-space: nowrap; }
 .rfx-title span { display: inline-block; animation: rfx-tube 1.4s steps(1, end) both; animation-delay: calc(240ms + var(--i) * 110ms); }
@@ -94,20 +98,23 @@
 }
 @keyframes rfx-pool { 0% { opacity: 0; } 25% { opacity: 1.4; } 100% { opacity: .8; } }
 @keyframes rfx-ring { 0% { opacity: 1; transform: scale(.4); } 100% { opacity: 0; transform: scale(1.7); } }
-/* the patch cable */
-.rfx-cable { position: absolute; left: -2%; right: -2%; bottom: 1%; width: 104%; height: 32%; overflow: visible; transform: translateZ(-10px); }
-.rfx-cable path { fill: none; stroke-linecap: round; vector-effect: non-scaling-stroke; }
-.rfx-cable-bed { stroke: #07030b; stroke-width: 9; }
-.rfx-cable-lit { stroke: url(#rfx-cable-g); stroke-width: 3; stroke-dasharray: 1; stroke-dashoffset: 1; filter: drop-shadow(0 0 5px rgba(var(--d-neon-rgb), .9)); transition: stroke-dashoffset 1300ms cubic-bezier(.6, 0, .2, 1); }
-.rfx-board[data-cable] .rfx-cable-lit, .rfx-board[data-live="still"] .rfx-cable-lit { stroke-dashoffset: 0; }
-.rfx-cable-pulse { fill: #fff2fc; filter: drop-shadow(0 0 8px #ff5fd8) drop-shadow(0 0 3px #fff); opacity: 0; }
-.rfx-board[data-cable] .rfx-cable-pulse { opacity: 1; transition: opacity 400ms ease 1200ms; }
-.rfx-jack {
-  position: absolute; bottom: 6%; z-index: 3; padding: 4px 7px; border-radius: 4px;
-  font: 400 9px/1 var(--d-f-pix); letter-spacing: .1em; color: var(--d-pink-ink);
-  background: #0c0612; box-shadow: inset 0 0 0 1px rgba(var(--d-neon-rgb), .6), 0 0 10px rgba(var(--d-neon-rgb), .35);
-}
-.rfx-jack--in { left: -3%; } .rfx-jack--out { right: -3%; }
+/* the patch cords: out of the board's two ends, behind the pedal's edge (the plug sits on it) */
+.rfx-cord { position: absolute; z-index: 0; top: 34%; width: 120%; height: auto; overflow: visible; pointer-events: none; }
+.rfx-cord--in { right: 88%; width: 90%; }   /* runs on under the title plate, which hides its far end */
+.rfx-cord--out { left: 88%; transform: scaleX(-1); }
+.rfx-cord path { fill: none; stroke-linecap: round; }
+.rfx-cord-bed { stroke: #07030b; stroke-width: 9; }
+.rfx-cord-lit { stroke: rgb(var(--rgb)); stroke-width: 3; stroke-dasharray: 100; stroke-dashoffset: 100; opacity: .85;
+  filter: drop-shadow(0 0 4px rgba(var(--rgb), .9)); transition: stroke-dashoffset 900ms cubic-bezier(.6, 0, .2, 1); }
+.rfx-cord-pulse { stroke: #fff2fc; stroke-width: 4; stroke-dasharray: 7 93; stroke-dashoffset: 0; opacity: 0;
+  filter: drop-shadow(0 0 6px rgb(var(--rgb))) drop-shadow(0 0 2px #fff); }
+.rfx-cord-plug { fill: #1a1320; stroke: rgba(var(--rgb), .7); stroke-width: 1.5; }
+.rfx-board[data-cable] .rfx-cord-lit, .rfx-board[data-live="still"] .rfx-cord-lit { stroke-dashoffset: 0; }
+.rfx-board[data-cable] .rfx-cord-pulse { opacity: 1; transition: opacity 300ms ease 900ms; animation: rfx-cord-flow 2.4s linear infinite; }
+/* IN flows into PITCH (far end -> jack), OUT flows away from GLUE COMP (jack -> far end) */
+.rfx-cord--in .rfx-cord-pulse { animation-direction: reverse; }
+@keyframes rfx-cord-flow { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -100; } }
+@media (max-width: 700px) { .rfx-cord { display: none; } }
 
 /* trial console: the /drift hero console, here a plain row under the grid */
 @media (min-width: 1100px) {
@@ -115,6 +122,47 @@
 }
 .rfx-hero .rfx-catch { align-self: center; text-align: center; margin: 0; }
 .rfx-catch .l2 { white-space: nowrap; }
+
+/* GET IT = DRIFT's digital key (its phone key, the keep-it TV's red PLAYER 1 START) on every width here (Gil 10-18:
+   "make the computer Get it button digital too"): pixel label that stutter-blinks, red neon outline, dark screen;
+   hover / focus = inverse video and the blink stops. drift.css only draws it <= 600 px; these are the 601 px-up rules. */
+@media (min-width: 601px) {
+  .rfx-page :is(.rfx-hero-trial, #get) .d-stamp-key {
+    align-self: stretch; width: auto; min-width: 0; height: auto; min-height: 56px; padding: 0 26px;
+    border: 2px solid #ff3346; border-image: none; border-radius: 3px;
+    background: radial-gradient(120% 140% at 50% 30%, #3a0a10 0%, #16040a 75%);
+    box-shadow: 0 0 0 1px rgba(4, 2, 8, .9), 0 0 16px rgba(255, 51, 70, .45), inset 0 0 16px rgba(255, 51, 70, .22);
+    font: 400 16px / 1 var(--d-f-pix); letter-spacing: .06em; color: #ff4a5a;
+    text-shadow: 0 0 8px rgba(255, 51, 70, .9), 0 0 18px rgba(255, 51, 70, .4);
+    transition: background-color 120ms ease, color 120ms ease, transform 60ms ease;
+  }
+  .rfx-page .rfx-hero-trial .d-stamp-key { min-height: 68px; padding: 0 30px; font-size: 18px; }
+  .rfx-page :is(.rfx-hero-trial, #get) .d-stamp-key [data-face] { display: inline-flex; align-items: center; gap: .7em; animation: d-stutter 2.6s steps(1, end) infinite; }
+  .rfx-page :is(.rfx-hero-trial, #get) .d-stamp-key:hover, .rfx-page :is(.rfx-hero-trial, #get) .d-stamp-key:focus-visible {
+    outline: none; filter: none; background: #ff3346; color: #1a0306; text-shadow: none;
+    box-shadow: 0 0 0 1px rgba(4, 2, 8, .9), 0 0 0 4px rgba(255, 190, 196, .35), 0 0 24px rgba(255, 51, 70, .6);
+  }
+  .rfx-page :is(.rfx-hero-trial, #get) .d-stamp-key:is(:hover, :focus-visible, :disabled) [data-face] { animation: none; }
+  .rfx-page :is(.rfx-hero-trial, #get) .d-stamp-key:active { border-image: none; padding-top: 0; filter: none; transform: translateY(2px); }
+}
+@media (prefers-reduced-motion: reduce) { .rfx-page .d-stamp-key [data-face] { animation: none !important; } }
+
+/* phones: the console sits on its steel panel with its screws, as on the laptop (Gil 10-18). drift.css turns the
+   /drift hero console into a screen seen through the wheel (no panel); RevFX has no wheel, so the panel comes back.
+   The label, field and key keep their digital phone dress. */
+@media (max-width: 600px) {
+  .rfx-page .rfx-hero-trial { width: 100%; margin: 0; }
+  .rfx-page .rfx-hero-trial::before, .rfx-page .rfx-hero-trial::after { content: none; display: none; }
+  .rfx-page .rfx-hero-trial .d-trial-panel {
+    border-radius: 12px; padding: 40px 18px 38px;
+    background: linear-gradient(rgba(12, 5, 18, .4), rgba(12, 5, 18, .4)), var(--d-img-panel) center / cover, #150a1f;
+    box-shadow: 0 0 0 1px rgba(4, 2, 8, .95), 0 0 0 6px #08040d, 0 1px 0 6px rgba(255, 240, 255, .06),
+      inset 0 20px 30px -14px rgba(0, 0, 0, .6), inset 16px 0 28px -16px rgba(0, 0, 0, .5), inset 0 -1px 0 rgba(255, 240, 255, .07);
+  }
+  .rfx-page .rfx-hero-trial .d-screw { display: block; }
+  .rfx-page .rfx-hero-trial .d-stamp-label { margin-top: 0; }
+  .rfx-page .rfx-hero-trial .d-stamp-fine { display: block; margin-top: 2px; text-align: center; font-size: 11px; }
+}
 
 /* --------------------------------------------------------------------------
    #pedals — MEET THE FIVE
@@ -194,16 +242,49 @@
 .rfx-knob-read b { font: 400 26px/1 var(--d-f-lcd); color: var(--ink); text-shadow: 0 0 10px rgba(var(--rgb), .8); font-variant-numeric: tabular-nums; }
 .rfx-pd-rail { display: none; }
 
-/* phones + tablets: the slides stack */
+/* phones + tablets: the same pinned stage as the laptop (Gil 2026-10-18: "scroll through every one of them on the
+   phone too"), one screen of scroll per pedal; the pedal on top, the copy, the screen + dial, a dot rail at the foot */
 @media (max-width: 900px) {
-  .rfx-pd-stage { padding: 0 var(--d-gutter); }
-  .rfx-pd { padding: 46px 0 30px; border-top: 1px solid rgba(var(--rgb), .18); }
-  .rfx-pd-ped { width: min(48vw, 220px); }
-  .rfx-pd-live { flex-wrap: wrap; justify-content: center; }
-  .rfx-pd-screen { flex-basis: 100%; }
-  .rfx-pd-room { display: none; }
-  .rfx-pd::before { content: ''; position: absolute; inset: 0 -20%; z-index: -1; background: radial-gradient(50% 40% at 50% 25%, rgba(var(--rgb), .18), transparent 70%); }
+  .rfx-pd-track { position: relative; height: calc(var(--n) * 100svh); }
+  .rfx-pd-stage { position: sticky; top: var(--rfx-nav); height: calc(100svh - var(--rfx-nav)); overflow: clip; }
+  .rfx-pd {
+    position: absolute; inset: 0; align-content: center; gap: 12px; padding: 34px var(--d-gutter) 72px;
+    pointer-events: none; visibility: hidden;
+  }
+  .rfx-pd.is-on { pointer-events: auto; visibility: visible; }
+  .rfx-pd-ped { width: auto; height: min(26svh, 230px); }
+  .rfx-pd-ped img { width: auto; height: 100%; margin-inline: auto; }
+  .rfx-pd-halo { inset: 0 -60%; }
+  .drift-page .rfx-pd-name { margin: 6px 0 2px; font-size: clamp(40px, 12vw, 64px); }
+  .rfx-pd-line { font-size: 16px; }
+  .rfx-pd-pitch { margin-top: 8px !important; font-size: 14px; line-height: 1.5; }
+  .rfx-pd-specs { gap: 6px; margin-top: 10px; }
+  .rfx-pd-specs li { font-size: 11.5px; padding: 5px 8px 4px; }
+  .rfx-pd-live { margin-top: 12px; gap: 14px; }
+  .rfx-pd-screen { padding: 7px; }
+  .rfx-pd-glass { inset: 7px; }
+  .rfx-knob { width: clamp(84px, 24vw, 110px); }
+  .rfx-knob-read b { font-size: 22px; }
+  .rfx-pd-hint { display: none; }
+  /* the swing, as on the laptop */
+  .rfx-pd .rfx-pd-ped, .rfx-pd .rfx-pd-body > * { transition: transform 600ms cubic-bezier(.22, 1, .36, 1), opacity 450ms ease; }
+  .rfx-pd:not(.is-on) .rfx-pd-ped { opacity: 0; transform: perspective(700px) translateX(45%) rotateY(-70deg) scale(.85); }
+  .rfx-pd.is-past:not(.is-on) .rfx-pd-ped { transform: perspective(700px) translateX(-45%) rotateY(70deg) scale(.85); }
+  .rfx-pd:not(.is-on) .rfx-pd-body > * { opacity: 0; transform: translateY(30px); }
+  .rfx-pd.is-past:not(.is-on) .rfx-pd-body > * { transform: translateY(-30px); }
+  .rfx-pd.is-on .rfx-pd-body > * { transition-delay: calc(var(--k, 0) * 50ms + 100ms); }
+  .rfx-pd-body > :nth-child(2) { --k: 1; } .rfx-pd-body > :nth-child(3) { --k: 2; } .rfx-pd-body > :nth-child(4) { --k: 3; }
+  .rfx-pd-body > :nth-child(5) { --k: 4; } .rfx-pd-body > :nth-child(6) { --k: 5; }
+  .rfx-pd.is-on .rfx-pd-name { animation: rfx-tube 1s steps(1, end) both 150ms; }
+  /* the rail: five bars across the top of the stage (the foot is the sticky bar's), the live one lit */
+  .rfx-pd-rail { position: absolute; z-index: 3; left: 50%; top: 6px; translate: -50% 0; display: flex; gap: 6px; margin: 0; padding: 0; list-style: none; }
+  .rfx-pd-rail button { display: block; width: 44px; height: 24px; padding: 10px 0; border: 0; background: none; cursor: pointer; }
+  .rfx-pd-rail button b, .rfx-pd-rail button span { display: none; }
+  .rfx-pd-rail button::before { content: ''; display: block; height: 4px; border-radius: 2px; background: rgba(var(--rgb), .25); transition: background 300ms ease, box-shadow 300ms ease; }
+  .rfx-pd-rail button[aria-current="step"]::before { background: rgb(var(--rgb)); box-shadow: 0 0 10px rgb(var(--rgb)); }
 }
+/* short phones: the long paragraph steps aside so the screen and the dial stay in the frame */
+@media (max-width: 900px) and (max-height: 780px) { .rfx-pd-pitch { display: none; } }
 /* laptop: the pinned stage, five screens of scroll */
 @media (min-width: 901px) {
   .rfx-pd-track { position: relative; height: calc(var(--n) * 100svh); }
@@ -451,7 +532,6 @@
   .rfx-board { --pw: 27vw; }
   .rfx-peds > li { margin: 0 -5.5vw; }
   .rfx-ped-name { display: none; }
-  .rfx-jack { display: none; }
   .rfx-hero-grid { gap: 8px; }
   .drift-page .rfx-catch { font-size: clamp(26px, 8vw, 34px); }
 }

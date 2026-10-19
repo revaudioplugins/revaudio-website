@@ -21,7 +21,6 @@ export function initPedals(): PedalsApi | undefined {
   const slides = Array.from(track.querySelectorAll<HTMLElement>('[data-rfx-slide]'));
   const rail = Array.from(track.querySelectorAll<HTMLButtonElement>('[data-rfx-pd-go]'));
   const room = track.querySelector<HTMLElement>('.rfx-pd-room');
-  const wide = matchMedia('(min-width: 901px)');
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const n = slides.length;
 
@@ -67,38 +66,25 @@ export function initPedals(): PedalsApi | undefined {
   const update = () => {
     raf = 0;
     const vh = window.innerHeight;
-    if (wide.matches) {
-      const r = track.getBoundingClientRect();
-      const span = Math.max(1, r.height - vh);
-      const p = Math.max(0, Math.min(0.99999, -r.top / span));
-      const i = Math.floor(p * n);
-      activate(i);
-      // the knob turns over the middle 80 % of a slide's share, so it rests at each end while the next swings in
-      setKnob(i, (p * n - i - 0.1) / 0.8);
-      for (let k = 0; k < n; k++) if (k !== i) setKnob(k, k < i ? 1 : 0);
-    } else {
-      parts.forEach((pt, k) => {
-        const r = pt.el.getBoundingClientRect();
-        setKnob(k, (vh * 0.9 - r.top) / (r.height + vh * 0.2));
-      });
-    }
+    // one pinned stage at every width (phones too, Gil 2026-10-18)
+    const r = track.getBoundingClientRect();
+    const span = Math.max(1, r.height - vh);
+    const p = Math.max(0, Math.min(0.99999, -r.top / span));
+    const i = Math.floor(p * n);
+    activate(i);
+    // the knob turns over the middle 80 % of a slide's share, so it rests at each end while the next swings in
+    setKnob(i, (p * n - i - 0.1) / 0.8);
+    for (let k = 0; k < n; k++) if (k !== i) setKnob(k, k < i ? 1 : 0);
   };
   const queue = () => { if (!raf) raf = requestAnimationFrame(update); };
   addEventListener('scroll', queue, { passive: true });
   addEventListener('resize', queue);
-  wide.addEventListener('change', queue);
   update();
   if (reduce) parts.forEach((_, k) => setKnob(k, 0.6));
 
   const goTo = (i: number) => {
-    let y: number;
-    if (wide.matches) {
-      const top = track.getBoundingClientRect().top + scrollY;
-      y = top + ((i + 0.5) / n) * (track.offsetHeight - innerHeight);
-    } else {
-      const nav = document.querySelector<HTMLElement>('[data-site-nav]')?.offsetHeight ?? 0;
-      y = slides[i].getBoundingClientRect().top + scrollY - nav - 12;
-    }
+    const top = track.getBoundingClientRect().top + scrollY;
+    const y = top + ((i + 0.5) / n) * (track.offsetHeight - innerHeight);
     if (lenis) lenis.scrollTo(y, { duration: 1.1 });
     else window.scrollTo({ top: y, behavior: reduce ? 'auto' : 'smooth' });
   };
