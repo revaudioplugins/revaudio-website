@@ -1414,6 +1414,166 @@ Claim: CLOSED 2026-10-14. Took over `revaudio-c7`'s stale claim (session gone) o
 - The main clone `main` still holds the original `81a00e0` / `c4f08e6` (git drops them on its next rebase).
 - Open: real ears on the UI sounds, real iPhone, Firefox.
 
+## 2026-10-14 — Claude Code `revaudio-28` (Yoni's laptop) — /drift phone #fx carousel: GLUE COMP pedal added + lit, DONE, pushed (Yoni: "push")
+
+Claim: CLOSED 2026-10-14. Files: `src/components/drift/DriftFx.astro`, `src/styles/drift.css` (one `.s-glue` accent
+line), `tools/shoot-drift-fx-pedals.mjs`, new `src/assets/seasons/drift/pedal-glue.png`.
+
+### State at session end
+
+- Worked in throwaway worktrees off origin/main (this clone is 18 ahead / 106 behind and has other sessions' edits),
+  pushed straight to main: `e84c597` (GLUE COMP = the phone carousel's 5th slide, NEON CYAN frame, "Console bus
+  glue. Last in line.") and `ee84c0b` (pedal re-shot lit: power on, GR feed held at 10 dB = needle mid-arc, readout
+  -10.0). Both deploys + smoke tests green; live /drift/ serves the new pedal at phone width. Laptop rack unchanged.
+- Pedal shot from DRIFT 5.2.10's own UI (`Plugins/Drift/Source/ui/public` served read-only on :4399):
+  `node tools/shoot-drift-fx-pedals.mjs <url> glue` (the tool now powers GLUE on and sets `window.__gluegr`).
+- This clone: nothing of mine uncommitted except this entry. Branches `drift-glue-carousel` / `drift-glue-lit` deleted.
+
+### Cleanup TODOs
+
+- Delete the leftover folders `C:\RevAudio\Website\revaudio-website-glue` and `revaudio-website-glue2` (worktree
+  removal hit "Permission denied", likely VS Code holding them; branches already gone, node_modules junctions
+  already removed, so a plain delete is safe), then `git worktree prune`.
+
+## 2026-10-13 — Claude Code `revaudio-c7` (Yoni's laptop) — both site players redesigned as toys, bench round 1, PAUSED for Yoni's review
+
+Claim: OPEN, paused by Yoni ("lets keep this stage we continue tomorrow"). Files owned: `bench/station-mixer-bench.html`,
+`bench/gas-mixer-bench.html`, `tools/station-mixer/gen_assets.py`, `tools/gas-mixer/gen_assets.py`,
+`tools/gas-mixer/process_toy.py`, `tasks/player-toy-redesign-plan.md`, the "Hear it" lines + placeholder CSS in
+`src/pages/[slug].astro` and `src/pages/gas.astro`. Plan, spec, every word of copy and the round-1 test log:
+`tasks/player-toy-redesign-plan.md`.
+
+### State at session end
+
+- Branch `main` (this clone: 18 ahead / 102 behind origin). One commit this session, NOT pushed: `c4f08e6` "Both
+  site players: toy first, mixer under the hood (bench round 1)". Nothing exported to `public/`, site not built.
+- Uncommitted (mine): this entry + one line in `tasks/lessons.md` (screen-blend glow).
+- Not mine, untouched: the older uncommitted block below in this file, `tasks/pagespeed-plan-2026-10.md`, root
+  `HANDOFF.md`, `.handoff-archive/`.
+- Art (gitignored, `bench/assets/*/img/`): gpt-image-1 renders in `img/gen/`, trimmed copies in `img/` (accel-pedal-a/b,
+  floor-rubber.jpg, bat-toggle, porcelain-sign, hood-latch [both players], onair-lamp, rr-plate-cta, fuel-gauge-xl).
+
+### Unverified
+
+- Yoni has not reviewed either toy yet (opened both benches in his browser at the end; his signal: "good job").
+- UI sound levels (static, ticks, thumps) never heard by a person. Real iPhone, Firefox, real-speed motion untested
+  (headless Edge only).
+
+### Background processes
+
+- `python -m http.server 8794` from `bench/` (bg `bykcofmou`), PID 54304. Kill: `Stop-Process -Id 54304`.
+
+### Things the next session needs to decide
+
+1. **Yoni's review of both toys** (plan steps 4 + 6): look, feel, words, sounds. Fold every correction into the plan
+   (and `design-language.md` if it is a visual rule).
+2. **Pedal A or B** (GAS): A = ribbed rubber pad (default), B = chrome bare-foot hot-rod pedal (`?pedal=b`). Then
+   hardcode the pick and drop the `PEDAL` switch.
+3. Then plan steps 8-9: run both `export_component.py`, `npm run build`, test `dist/` under the live CSP, deploy from a
+   fresh worktree off origin/main (cherry-pick `c4f08e6` + follow-ups; the page edits may conflict with the 102
+   newer origin commits). Push only on "push".
+
+## 2026-10-08 — Radio Roulette Station Mixer: LIVE + phone fix, DONE (Claude Code `revaudio-71` / `revaudio-4a`, Yoni's laptop) — pushed `642abc0` + `acc1b26` (Yoni: "push")
+
+Claim closed 2026-10-08. Nothing in flight.
+
+### State at session end
+
+- **LIVE on /radio-roulette:** the Station Mixer is the "Hear it" section (no other name, Yoni), a `<station-mixer>`
+  web component in the garage wall.
+  - Desktop: full 4-loop mixer.
+  - Phones below 760 px: the simple phone player.
+  - Yoni confirmed: desktop "perfect", phone "loading perfectly" / "it works well!".
+  - Everything is in `tasks/radio-roulette-station-mixer-plan.md`.
+- **Deploy route:** the worktree `../revaudio-website-smx`, branch `station-mixer-deploy`, now level with origin/main
+  `d08aea8` (the GAS mixer went live after mine from `../revaudio-website-gmx`).
+- **This clone's `main`** (75 behind / 14 ahead of origin): the original copies of my pushed commits (git drops them on
+  the next rebase), the GAS session's commits, and ONE unpushed commit of mine: `81a00e0` (plan note: no name, phones
+  confirmed). It can ride along with any later push from the deploy worktree (cherry-pick it there).
+- **Not mine, untouched:** `tasks/pagespeed-plan-2026-10.md` (modified), root `HANDOFF.md`, `.handoff-archive/`
+  (untracked).
+- **Edit / redeploy the mixer:**
+  1. change `bench/station-mixer-bench.html`
+  2. `python tools/station-mixer/export_component.py` (writes `public/station-mixer/`)
+  3. build, then test `dist/` under the LIVE CSP + X-Frame-Options (scratch `csp-serve.py` pattern: memory
+     `feedback_site_interactive_embeds`)
+  4. cherry-pick onto the deploy worktree
+  5. push only on "push"
+- **AI assets:** `python tools/station-mixer/gen_assets.py <slug> --force`, then `process_gen.py`.
+
+### Background processes (Yoni's laptop, left running)
+
+- `npx astro dev` on :4321, PID 38304 (bg `bax5niq35`). Kill: `Stop-Process -Id 38304`.
+- `python -m http.server 8794` (the bench, from `bench/`), PID 5600 (bg `bnyzwko2e`). Kill: `Stop-Process -Id 5600`.
+- `csp-serve.py` on :4399 (old dist from the main clone), PID 10200 (bg `bedti5smq`). Kill: `Stop-Process -Id 10200`.
+- `csp-serve.py` on :4398 (dist of the deploy worktree), PID 52084 (bg `b05113pco`). Kill: `Stop-Process -Id 52084`.
+
+### Open (nothing blocking)
+
+- Real Safari on macOS was never checked (Playwright's Windows WebKit has no Web Audio). iPhone works per Yoni.
+- The RevLimiter ARM on the master is a browser PREVIEW (Yoni's call); the copy says "a taste of". It stays that way
+  unless Yoni decides otherwise.
+
+### Memory written this session
+
+- `feedback_site_interactive_embeds.md`: no iframes on revaudio.net (XFO DENY / frame-src), self-host fonts, web
+  component + shadow DOM, decode only audible audio (the iPhone crash), phones get a simple layout.
+
+### Earlier state (bench rounds 1-2, kept for history)
+
+Claim closed 2026-10-08. Nothing in flight. Plan and every decision: `tasks/radio-roulette-station-mixer-plan.md`
+(sections "Bench round 1" and "Bench round 2").
+
+### State at session end
+
+Branch `main`, 3 commits ahead of origin (none pushed):
+- `631fb80` plan: Yoni renders 5 stations per loop
+- `4145e60` bench round 1 + `tools/station-mixer/*.py`
+- `29d8c91` bench round 2
+
+Not this session's (left untouched): `tasks/pagespeed-plan-2026-10.md` (modified), the untracked root `HANDOFF.md` and
+`.handoff-archive/`.
+
+- **Bench:** `bench/station-mixer-bench.html`, served over http from `bench/` (`python -m http.server 8794`).
+- **Assets:** `bench/assets/station-mixer/` (gitignored, ~70 MB):
+  - `audio/`: 24 stems as 24-bit FLAC, 6 RevLimiter 3.2.1 masters (`rl_*`, now used only for calibration), `manifest.json`
+  - `img/`: plate, knob layers, RevLimiter ARM crop
+- **Rebuild:**
+  - stems: `tools/station-mixer/process_stems.py` (source MP3s: `C:\shirimmmmmm\<loop>_dry/station1..5.mp3`)
+  - RevLimiter masters: `render_revlimiter.py`; pedalboard loads the INNER DLL `RevLimiter.vst3/Contents/x86_64-win/RevLimiter.vst3`
+
+### Unverified
+
+- No human has listened to the bench yet. Yoni approved the look and the direction ("cool ... very good job").
+- Checked in Chromium only, with Playwright: play/stop, auto RADIO ON after 2 bars, stations, solo/mute, SPIN,
+  ARM keeps the stations, no console errors. Not tested: Firefox, Safari, iPhone, real-speed reel motion (headless
+  throttles animation frames).
+- The RevLimiter preview is a Web Audio chain, matched to the real render's loudness on the all-DRY mix
+  (-7.2 vs -7.2). Nobody has compared it with the real render by ear.
+
+### Background processes
+
+- `python -m http.server 8794 --bind 127.0.0.1` (bench), bg ID `bdlydh5s6`, PID 45828.
+  Kill: `Stop-Process -Id 45828`.
+
+### Things the next session needs to decide
+
+1. **Mixer name.** Still open (Station Mixer / Garage Radio / Jam Room).
+2. **Photoreal assets.** The cassette deck, name plates and S/M lenses are drawn in CSS/SVG. Do they get AI photo
+   assets before going live (design law 2)? Yoni hasn't been asked.
+3. **The rest of the plan:**
+   - encode to AAC with padding (step 3)
+   - phone layout 2x2 (step 7: the 1100 px stage only scales down today)
+   - `StationMixer.astro` + `plugins.ts` wiring (step 6)
+   - tests (step 8), then Yoni's localhost review and "push"
+4. **Preview wording.** The RevLimiter copy says "preview / a taste of" because it isn't RevLimiter's DSP. It stays
+   that way unless Yoni decides otherwise.
+
+### Suggested commit splits
+
+- Nothing of this session's is uncommitted. Push only on the word "push". `git log origin/main..HEAD` shows only this
+  session's 3 commits right now.
+
 ## 2026-10-12 — /drift WATCH! bursts bigger + a laptop/phone placement bench, branch `feat/drift-watch-bubble` (Claude Code, Dan's Mac) — COMMITTED LOCAL, NOT PUSHED
 - Dan: "make the video bubble 'watch this' bigger and a bit better placement, a bench for phone and laptop, I'll place it
   and resize it". Branch off origin/main 6c33d31, worktree `.claude/worktrees/drift-watch-bubble` (dev `astro dev --port 4420`).

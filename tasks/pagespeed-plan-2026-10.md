@@ -56,7 +56,7 @@ Goal: mobile LCP <= 2.5 s, INP <= 200 ms, CLS stays <= 0.10, checkout still work
 
 ### Phase 5 — ship + verify 🤖
 - [x] Pushed 2026-10-07 on Yoni's "push" (main e683fb3). Live smoke: 0 errors / 0 failed requests, live screenshots = tested build (0.00%), home on phone 537 KiB transferred.
-- [x] PageSpeed API quota exhausted again; Lighthouse 12.8 mobile ×3. Live from this laptop: median 68 -> 74 (best 84), CLS 0.153 -> 0, server response 220 -> 80 ms; LCP noisy (3.9-5.5 s) from home connection. Fair A/B, same compressed local server: OLD 72 / LCP 4.2 s / FCP 3.4 s vs NOW 93 / LCP 3.2 s / FCP 1.5 s / CLS 0. Font preloads tested: removing them is worse (87-88, CLS back), so kept. Official PageSpeed re-run: 🧑 run pagespeed.web.dev once the quota resets.
+- [x] PageSpeed API quota exhausted again; Lighthouse 12.8 mobile ×3. Live from this laptop: median 68 -> 74 (best 84), CLS 0.153 -> 0, server response 220 -> 80 ms; LCP noisy (3.9-5.5 s) from home connection. Fair A/B, same compressed local server: OLD 72 / LCP 4.2 s / FCP 3.4 s vs NOW 93 / LCP 3.2 s / FCP 1.5 s / CLS 0. Font preloads tested: removing them is worse (87-88, CLS back), so kept. Official PageSpeed re-run (Yoni, 2026-10-07): **mobile 83** (was 70).
 - [ ] Field data (CWV pass/fail) needs ~28 days to roll over — re-check ~2026-11-03.
 - [ ] Wiki `website-update.md`: BLOCKED 2026-10-07, the shared repo's git is damaged (`fatal: unable to read tree 24872f10...`, fsck: missing blobs, bad reflog; stash `v0.37.2 shared docs` from another session). Not repaired here. Paste this section into the page once the repo is fixed:
 

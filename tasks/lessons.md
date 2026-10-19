@@ -46,6 +46,9 @@ The "rv close" ritual is an explicit push instruction and still counts.
 - Two sessions rewrote the Privacy page in parallel on 2026-10-07; Yoni's (`1c34cac`) went live first and won.
   Yoni owns cookie consent (Dan, 2026-10-07). Rule: before touching Privacy or cookie text, fetch origin and read
   the newest handoff entries for an owner.
+- Site players (2026-10-13): a glow layer with `mix-blend-mode:screen` on the leather/walnut panel rendered
+  invisible in Edge (forcing it red proved it was placed right). A plain alpha radial gradient works. Check a glow
+  by a crop screenshot with its animation off, never by computed styles.
 
 ## 2026-10-14 - Playwright WebKit on Windows vs the homepage (DRIFT word wall)
 
