@@ -1,3 +1,20 @@
+# DRIFT #hear — the screen as a real LCD (2026-10-19, revaudio-ef, same branch)
+
+Request (laptop 1 user, on the #hear screen screenshot): "let's design this whole area so it looks like an LCD
+screen". Today's screen = dark violet glass + blurred magenta glow on every readout: reads CRT / neon, not LCD.
+
+- [x] L1. Bench `bench/drift-lcd-bench.html` (serve the worktree root: `python -m http.server 8796`): the real
+  screen markup at the measured sizes (desktop 691 x 179, phone 314 x 127 / 284 x 127), live guide states on the
+  real peaks.json, coach-fits + height checks under each screen. 0 = today, A = dot matrix (negative, magenta,
+  cyan/magenta tags kept), B = 14-segment car stereo (DSEG14 italic, RevTune's file, OFL; ghost cells), C =
+  reflective positive (lilac reflector, violet ink + 1 px liquid-layer shadow). All: heights = page, coach fits.
+- [ ] L2. The user picks (or mixes) by eye on the bench.
+- [ ] L3. Fold the pick: drift.css (`.d-hear-screen` only), hear.ts draw() reads its colours from CSS custom
+  properties (so the CSS owns the look); B also needs the ghost strings (`data-g`) set beside textContent and the
+  font into public/fonts/drift + its licence.
+- [ ] L4. Verify: heights.cjs (panel height unchanged at 11 widths), verify-hear.cjs states, coach at 360,
+  console, reduced motion, embed law (no outer glow on the window). Then commit by exact paths, no push.
+
 # DRIFT #hear — guide the visitor through the test drive (2026-10-19, revaudio-ef)
 
 Request (laptop 1 user, on the live #hear screenshot): "let's open a branch and flesh this out in depth, so people
