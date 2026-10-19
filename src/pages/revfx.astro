@@ -5,8 +5,8 @@
  * sections on top (src/styles/revfx.css, .rfx-*). Its own route like /drift and /gas; NOT in plugins.ts yet, so
  * the store, the homepage carousel and the word wall are unchanged until RevFX is added there.
  *
- * Order: hero (pedalboard + trial) · #pedals (meet the five, scroll is the knob) · #rack (the live window: drag,
- * dice, snapshots) · #scenes (FX Scene automation) · #drift (same rack, on its own) · #get (compat + trial/buy).
+ * Order (Gil 2026-10-19): hero (pedalboard + trial + the dice deck) · #pedals (meet the five, scroll is the knob) ·
+ * #get (compat + trial/buy). The live-rack, snapshots and same-rack sections went that day.
  * State + copy: src/data/revfx.ts (phase, price, trial wiring); assertRevfxConfig() fails the build on a phase the
  * page can't honour.
  */
@@ -14,8 +14,6 @@ import { getImage } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import RfxHero from '../components/revfx/RfxHero.astro';
 import RfxPedals from '../components/revfx/RfxPedals.astro';
-import RfxRack from '../components/revfx/RfxRack.astro';
-import RfxScenes from '../components/revfx/RfxScenes.astro';
 import RfxGet from '../components/revfx/RfxGet.astro';
 import { revfx, assertRevfxConfig, formatsMac } from '../data/revfx';
 import '../styles/drift.css';
@@ -56,8 +54,6 @@ const imgVars = [
   <div class="drift-page rfx-page" data-rfx-page style={imgVars}>
     <RfxHero />
     <RfxPedals />
-    <RfxRack />
-    <RfxScenes />
     <RfxGet />
   </div>
 </BaseLayout>
