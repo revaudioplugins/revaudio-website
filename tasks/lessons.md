@@ -138,3 +138,26 @@ an idle timer shorter than that fires before Lenis moved; wait while `lenis.isSc
 4. Keeping the lines on the pictures would have needed a layer that moves with the picture: the motion tweens the
    img/video, not `.ww-ui`, so a figure overlay would stand on empty glass while the picture fades in. Check what the
    motion actually moves before hanging a layer on its parent.
+
+
+## 2026-10-19 — The TV's glitches (Home LIBRARY phase 4e)
+1. An `!important` in a test style freezes whatever an animation drives: important author declarations outrank CSS
+   animations in the cascade. The roll experiment overrode the glass's `background` shorthand with `!important`,
+   which pinned the band's `background-position` (a longhand of it), so every strength measured 0 lift. Change a test
+   value through its custom property, or without `!important`, whenever an animation drives any longhand of it.
+2. Measure a subtle effect before baking it: the rolling band at .06 white read fine in the CSS but added ~11 of 255
+   on the empty glass and did not show in a still; .1 does (~20). It got a bench slider (`--ww-gl-roll-light`).
+3. Read a tunable when it comes due, not when it is armed: the scheduler keeps where its wait ends (a fraction
+   between the shortest and the longest) and reads the times at every wake (2 s at most), so the bench's sliders and
+   a test's style added after the page loads both take at once. Read once at arming, the shipped 12-25 s wait would
+   have let glitches into every older check that sets its style after `goto` (motioncheck, readcheck, glowcheck).
+4. A glitch must not touch what the motion animates: an animation's value outranks GSAP's inline `transform` /
+   `opacity`, so a `transform` keyframe on the picture would have cancelled the entrance's tween. Glitches animate
+   `translate` + `filter` only, and the tear is a canvas laid over the picture, so the picture itself never moves.
+   The change's tear waits for the landing: at the entrance's start the picture is at opacity 0, 12 px off, and a
+   solid copy of it there would bring back "appears, then slides".
+5. A recorder that hands over its log by emptying it (`splice(0)`) between arming a test and finding its event drops
+   the one already in progress: WebKit failed "a touch stops it" because the 4 s glitch began in the 400 ms before
+   the empty-out, then the wait for a new one ran out. Mark the arming time and look for an event after it
+   (`x.t > armed`), never empty the log in between; and let the check prove the touch did it (WebKit: the 4 s
+   glitch ended 11 ms into its 4000, not at its natural end).

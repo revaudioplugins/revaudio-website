@@ -8,7 +8,8 @@
 <!-- TV bench (Dan 2026-10-14; the TV became the plugin browser on feat/home-library, 2026-10-18): tune the homepage
      TV (src/components/WordWall.astro). Both frames are the REAL dev homepage in same-origin iframes, scrolled to
      #plugins. This page drives them from outside: the wall's data-ww-* attributes, the page's own bench hooks
-     (ww:select = light a plugin / pick a category / open a phone pane, ww:replay = the power-on) and a live <style>
+     (ww:select = light a plugin / pick a category / open a phone pane, ww:replay = the power-on, ww:glitch = one
+     glitch now) and a live <style>
      setting its --ww-* properties. COPY SETTINGS when happy and hand it back ("apply ww bench"). -->
 <style>
   :root { --bg: #0d0a12; --panel: #17121f; --line: #2c2338; --ink: #efe8f6; --dim: #a597b8; --acc: #d23cff; --acc-ink: #fbe9ff; }
@@ -89,6 +90,10 @@
   <span class="seg small" id="chg">
     <button data-x="slow" title="Play the channel change 4x slower (the bench only; COPY SETTINGS keeps the real times)">SLOW ×4</button><button data-x="auto" title="Change channel by itself every moment or so">AUTO</button>
   </span>
+  <span class="lbl">Glitch</span>
+  <span class="seg small" id="gl" title="One glitch now on both TVs (the TV does one by itself every so often)">
+    <button data-gl="name" title="An unlit name jumps a few px with a red / cyan fringe">▶ NAME</button><button data-gl="picture" title="A band of the lit plugin's picture tears sideways">▶ PICTURE</button><button data-gl="screen" title="The whole screen: a flicker, and on the next press a band of light rolling down the glass">▶ SCREEN</button>
+  </span>
 </header>
 <div class="wrap">
   <aside id="controls"></aside>
@@ -143,6 +148,16 @@
       { p: '--ww-mv-glow-dip', label: 'Screen dims', hint: 'how lit the screen stays while it is empty (1 = no dimming)', min: 0.3, max: 1, step: 0.01, unit: '' },
       { p: '--ww-mv-pane-px', label: 'Phone: slide', hint: 'px a tapped plugin slides in from the right (the list leaves half as far left); Back runs it backwards', min: 0, max: 60, step: 1, unit: '' },
       { p: '--ww-mv-pane-ms', label: 'Phone: exit time', hint: 'ms for the list / the plugin to leave on a tap / Back', min: 60, max: 500, step: 10, unit: '' },
+    ] },
+    { id: 'glitch', title: 'Glitch', note: '▶ NAME / PICTURE / SCREEN up top to see one now; SLOW ×4 slows them too', frames: ['laptop', 'phone'], ctl: [
+      { p: '--ww-gl-min-s', label: 'Every, from', hint: 's: the shortest wait between two glitches (each wait is random between this and the next one)', min: 2, max: 60, step: 1, unit: '' },
+      { p: '--ww-gl-max-s', label: 'Every, to', hint: 's: the longest wait between two glitches', min: 2, max: 90, step: 1, unit: '' },
+      { p: '--ww-gl-idle-s', label: 'Left alone for', hint: 's the TV must be left alone (no pointer, finger, key or wheel on it) before one comes', min: 0, max: 15, step: 0.5, unit: '' },
+      { p: '--ww-gl-px', label: 'Jump', hint: 'px a name jumps and a band of the picture tears sideways', min: 1, max: 12, step: 1, unit: '' },
+      { p: '--ww-gl-ms', label: 'Glitch time', hint: 'ms a name\'s jump, a tear and a flicker last', min: 60, max: 600, step: 10, unit: '' },
+      { p: '--ww-gl-roll-ms', label: 'Roll time', hint: 'ms the band of light takes down the glass', min: 300, max: 3000, step: 50, unit: '' },
+      { p: '--ww-gl-roll-light', label: 'Roll light', hint: 'how much the band lights the glass as it rolls (under the text)', min: 0.02, max: 0.3, step: 0.01, unit: '' },
+      { p: '--ww-gl-chg-chance', label: 'On a channel change', hint: 'how often a change lands with a short tear: 0 = never, 1 = every time (▶ CHANNEL to see it)', min: 0, max: 1, step: 0.01, unit: '' },
     ] },
     { id: 'frame', title: 'Broken TV frame', frames: ['laptop', 'phone'], ctl: [
       { p: '--ww-frame-size', label: 'Frame size', hint: 'bezel thickness; stops growing once the side bezel would reach the menu or a name (about 0.25 on a 1141-1280 laptop, more on wide screens, thin on phones)', min: 0.1, max: 0.4, step: 0.005, unit: '' },
@@ -376,6 +391,13 @@
     light();
   };
   document.getElementById('chan').onclick = nextChannel;
+  // ▶ NAME / PICTURE / SCREEN: one glitch now on both TVs (at rest); SCREEN takes turns: a flicker, then a roll
+  let roll = false;
+  document.querySelectorAll('#gl button').forEach((b) => (b.onclick = () => {
+    let kind = b.dataset.gl;
+    if (kind === 'screen') { kind = roll ? 'roll' : 'flicker'; roll = !roll; }
+    each((g) => g('ww:glitch', { kind }));
+  }));
   document.querySelectorAll('#chg button').forEach((b) => (b.onclick = () => {
     if (b.dataset.x === 'slow') { slow = !slow; commit(); return; }
     if (auto) { clearTimeout(auto); auto = 0; paint(); return; }

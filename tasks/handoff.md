@@ -32,11 +32,19 @@
   Step 3b, same day (the user, after a look on the phone: the reading suffered "because of the pixels"): the
   scanlines + grille moved onto the glass, under the text and the pictures (the user's pick A of a comparison
   sheet); the commit after `efe6643`, the shared rule in the shared commit after `a953ccb` (design-language Law 5).
+  Phase 4e, same day (the user: "a small glitch now and then ... to show it's alive", then "also during the
+  channel change"; all the recommended picks): the TV glitches by itself, one at a time every 12-25 s once left
+  alone 4 s (an unlit name jumps 3 px with a red / cyan fringe, a band of the picture tears on a canvas laid over
+  it, the screen flickers or rolls a band of light), never on what is read or what the pointer / focus is on, off
+  under reduced motion / high contrast / the wood wall / a hidden tab / off screen / before the power-on; about one
+  change in three lands with a short tear once the picture is in place. Bench: a Glitch group (8 sliders) + ▶ NAME
+  / PICTURE / SCREEN (reload the bench first). The commit after `706efa0`; the shared design-language §3 exception
+  is the shared commit after `4cfa2b6`; both local. Checks + control in the plan (Phase 4e).
   A LAN preview of the build is up for the phone (`astro preview --host 0.0.0.0 --port 4393`, PID 70616,
-  http://10.0.0.103:4393/, the laptop on "Kitchen_studio__EXT"); stop it by PID after the phone check (the Wi-Fi
-  is a Public profile). Next: the user's look (the phone, the bench: RISE vs DROP), COPY SETTINGS + "apply ww
-  bench" if anything changes, the build checks (step 4), the phone slow-network fix if OKed (step 4b), the user's
-  look (iPhone / Mac Safari), then "push".
+  http://10.0.0.103:4393/, the laptop on "Kitchen_studio__EXT"; the build re-run after phase 4e); stop it by PID
+  after the phone check (the Wi-Fi is a Public profile). Next: the user's look (the phone, the bench: RISE vs DROP,
+  the glitches), COPY SETTINGS + "apply ww bench" if anything changes, the build checks (step 4), the phone
+  slow-network fix if OKed (step 4b), the user's look (iPhone / Mac Safari), then "push".
 - For the user (dashboard, optional): a Cloudflare Redirect Rule `/store*` -> `/#plugins` would make it a real 301;
   the repo page works without it.
 - Found: index.astro's testimonial CTA said "14-day free trial" (the trial is 30 days in both plugins' code); fixed

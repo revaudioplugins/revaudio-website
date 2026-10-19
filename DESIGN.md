@@ -145,6 +145,28 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
     No channel number (Dan: no). A category change re-strikes the rows that stay, 60ms apart.
   - Power-on: the first time the TV comes into view the tube opens from a bright line (a CRT turn-on,
     700ms) and the pilot LED lights with it. JS arms it, so no JS / reduced motion = lit at rest.
+  - Glitches (the user 2026-10-19: "a small glitch now and then, on certain elements, at random, to show
+    it's alive", then "also during the channel change"; design-language §3's exception): the old set's own
+    small faults, one at a time, a random `--ww-gl-min-s` 12 to `--ww-gl-max-s` 25 s apart, and only once
+    the TV has been left alone for `--ww-gl-idle-s` 4 s (no pointer, finger, key or wheel on it); touching
+    it stops one at once. What is on show decides: a phone's list = a name or the screen, its plugin = the
+    picture or the screen.
+    - A name: an unlit one jumps `--ww-gl-px` 3 px sideways and back in three steps, a red then a cyan
+      fringe (the house split #ff0033 / #00e5ff of DRIFT's creators, far smaller), `--ww-gl-ms` 150.
+    - The picture: a band or two of it tears sideways, tinted, in three or four steps. A canvas laid
+      exactly over the picture copies its own pixels (DRIFT's run too), so the picture itself never moves;
+      the canvas is emptied and unsized after. A picture with nothing to copy yet (the run before its first
+      frame) jolts whole instead.
+    - The screen: one 6 % dip of the light (on the glass's light layer), or a soft band of light
+      (`--ww-gl-roll-light` .1) rolling down the glass in `--ww-gl-roll-ms` 900, under the text like the
+      lines (a CRT's hum bar; .06 did not show).
+    - A channel change lands with a short tear about one time in three (`--ww-gl-chg-chance` .33), only
+      once its picture is in place: the change's motion never changes, and the next pick stops it.
+    - Never on what is read (the menu, the lit name, the blurb, the price, the keys, the links), never on
+      what the pointer is on or the focus is in. Stepped (`steps(1, end)`), `translate` + `filter` only
+      (never transform or opacity: the motion's), nothing left behind. No noise, no snow. Off under
+      reduced motion, high contrast, the wood wall, a hidden tab, the TV off screen and before the
+      power-on. The times are read when they come due, so the bench's sliders take within 2 s.
   - URL: `?cat=` = one history entry per category, `?plugin=` updates the current one, so a reload or a
     return from a product page lands on the same channel. The rest of the address is kept (utm / gclid
     for the cart; the trial gate's `#dl=...&p=` return link, which is why the TV never uses `p`).
@@ -200,10 +222,12 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
     way in, reduced motion too): the TV's top 0.2-0.3px under the nav line.
   - Bench `/__wwbench` (`tools/wwbench`, dev only: the real homepage at laptop + phone size): WOOD /
     SCREEN, RAILS / BROKEN TV 1-3, RISE / DROP (the motion's one way), REPLAY (the power-on), the
-    categories and plugins as buttons, the phone's pane, ▶ CHANNEL / SLOW ×4 (every motion time) / AUTO;
-    sliders: list width, biggest name, thumbnail, unlit names (laptop), screen glow + scanlines, the
-    channel colours, the motion's times and distances (picture, exit, text, glow dip, phone), frame size
-    + wood around the TV, breathing room + lock zone. COPY SETTINGS; "apply ww bench" bakes the values.
+    categories and plugins as buttons, the phone's pane, ▶ CHANNEL / SLOW ×4 (every motion and glitch
+    time) / AUTO, ▶ NAME / PICTURE / SCREEN (one glitch now; SCREEN: a flicker, then a roll on the next
+    press); sliders: list width, biggest name, thumbnail, unlit names (laptop), screen glow + scanlines, the
+    channel colours, the motion's times and distances (picture, exit, text, glow dip, phone), the glitches
+    (how often, left alone for, jump, times, roll light, chance on a change), frame size + wood around the
+    TV, breathing room + lock zone. COPY SETTINGS; "apply ww bench" bakes the values.
     The phone frame is drawn at the laptop's 1x: a texture is checked at 3x (a real phone, or a 3x shot)
     before it is baked. The scanlines picked against it were a third as thick as a phone shows them.
   - Keyboard + screen reader: the list is a vertical tablist (aria-selected, roving tabindex), each
@@ -241,7 +265,8 @@ strikes ~120ms `cubic-bezier(.2,.9,.25,1.25)`. Scroll: needle revs; wood drifts 
 55/30px orbits), kicks up to 3.5x on a fast scroll and settles, leans up to 14px with the pointer
 (desktop only). The plugin TV: the CRT power-on once, a ~120ms hover strike on the names, a channel
 change by motion alone (the old plugin off the glass, then the new one on, always the same way, fade and
-travel as one, ~0.55s: §4), the rows re-striking on a category change. Reduced motion: everything visible at rest, no parallax, no needle rev, smoke static.
+travel as one, ~0.55s: §4), the rows re-striking on a category change, a small glitch of its own now and
+then (a name, the picture or the screen, every 12-25 s when left alone: §4). Reduced motion: everything visible at rest, no parallax, no needle rev, smoke static, no glitches.
 
 ## 7. Hero + glanceability
 
@@ -310,3 +335,9 @@ then the lit plugin).
   change; a strobe at ten switches; it spends the once-only power-on). They differ only in where an
   entrance comes from: TUNE (the list's direction) vs GEAR CHANGE (each object's own axis). Both are on
   the bench (`WALL_MOTION`) until the user picks; the static is gone (§4).
+- 2026-10-19 the user, after the one-motion pass and the scanlines' move: "I want certain elements to glitch
+  now and then, at random, a small glitch to show it's alive". Picks: the names, the picture and the whole
+  screen; every 12-25 s; only when the TV is left alone. Then "also during the channel change". That lifts
+  the 2026-10-18 "no glitches" in one place only: the entrance's motion is unchanged, and the new picture
+  locks in with a short tear about one time in three once it is in place (§4). Built as phase 4e;
+  design-language §3 gained the exception (a broken object's own faults, small and rare).

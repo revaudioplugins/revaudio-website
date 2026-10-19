@@ -3,8 +3,9 @@
 - Owner: Claude Code `revaudio-a0` (was `revaudio-a6` before a restart; laptop 1). Status: **IN PROGRESS (user's "go"
   2026-10-18).** Phases 1-4c done (local commits, not pushed). Phase 4d (the noise out, motion only): steps 1-3 + 3b done
   (2026-10-19: the user's answers made it one motion, smaller, shorter and always the same way; GEAR CHANGE gone;
-  3b: the scanlines moved under the text and the pictures); waiting on the user's look (the phone via the LAN
-  preview, the bench: RISE vs DROP, the values), then the build checks (step 4), the real devices and "push".
+  3b: the scanlines moved under the text and the pictures). Phase 4e done (2026-10-19: the TV glitches now and then,
+  by itself and on about one channel change in three). Waiting on the user's look (the phone via the LAN preview,
+  the bench: RISE vs DROP, the glitches, the values), then the build checks (step 4), the real devices and "push".
 - origin/main `141d400` (crane WebP, trial source, /revlimiter/ Ads fixes) merged in 2026-10-18 before phase 3 (`d80e459`).
 - Worktree: `.claude/worktrees/home-library` off origin/main `697f49d`; origin/main `ddada3d` (the TV weight work)
   merged in 2026-10-18 (`8ca4938`). `node_modules` = junction to the main clone's.
@@ -418,6 +419,57 @@ because it is Radio Roulette" is the mess the user ruled out.
 - [x] 5. DESIGN.md §4 / §6 rewritten (the channel change = motion, one way, fade and travel as one; why the exit and
       the stagger are shorter than the house values); this plan and the handoff updated (2026-10-19; a bench bake
       updates the numbers). The rule went into the shared `design-language.md` §3 too (shared `a953ccb`, not pushed).
+
+### Phase 4e: the TV glitches now and then (2026-10-19; the user's look owed)
+
+- [x] The request (the user, 2026-10-19): "I also want certain elements to glitch now and then, at random, a small
+      glitch to show it's alive". Picks (all the recommended ones): the plugin names in the list, the plugin's
+      picture, the whole screen; every 12-25 s; only when the TV is left alone. Then "also during the channel
+      change". The plan said so in plain words and was approved: about one change in three lands with a short tear,
+      the slider 0 = never, 1 = every change. It lifts the 2026-10-18 "no glitches" (DESIGN.md §10) for the change in
+      that one way; the entrance's motion is unchanged.
+- [x] Built (`WordWall.astro` script + CSS, `tools/wwbench`): one glitch at a time, a random `--ww-gl-min-s` 12 to
+      `--ww-gl-max-s` 25 s apart, only after `--ww-gl-idle-s` 4 s without a pointer / finger / key / wheel on the TV;
+      touching it stops an idle one at once. Kinds: an unlit name jumps `--ww-gl-px` 3 px with a red / cyan fringe
+      (WAAPI on `translate` + `filter`, steps); a band or two of the picture tears (a canvas `.ww-gl-tear` appended to
+      `.ww`, z 1 under the glass light, laid over the picture from its rect, copying its pixels with object-fit
+      mapping; emptied, unsized and hidden after; a video with no frame yet jolts whole instead); the screen flickers
+      (a 6 % dip on `.ww-screen-fx`) or rolls a band of light down the glass (a third, parked layer on
+      `.ww-screen::after`, `--ww-gl-roll-ms` 900, `--ww-gl-roll-light` .1: .06 did not show in a pixel check).
+      What is on show decides the kind. Gates: reduced motion, high contrast, the wood wall, a hidden tab, the TV off
+      screen, before the power-on, and only at rest (`stage === 'rest'`). The change's tear fires from the entrance's
+      end (`landed()` = `rest()` + the chance), `leave()` and `cut()` stop any glitch. The times are read when they
+      come due (≤ 2 s), so the bench's sliders and a test's style take at once. Bench: a Glitch group (8 sliders;
+      SLOW x4 covers the two `-ms`) and ▶ NAME / PICTURE / SCREEN (`ww:glitch`; SCREEN: a flicker, then a roll).
+- [x] Checks (scratchpad `glitchcheck.mjs`: a MutationObserver recorder on `data-ww-gl`, since headless WebKit paints
+      ~5 fps; the times sped up with test styles). Chromium + WebKit, 60 / 60 each: it fires by itself, every kind
+      (Chromium 26 in 14 s: name 8, tear 11, roll 4, flicker 3; WebKit 36 in 19.6 s), one at a time, each ending
+      before the next and leaving nothing behind (26/26, 36/36 clean); no glitch crosses what is read (menu, lit
+      name, blurb, price, keys, links) and only unlit names jump; a tear's canvas lies exactly over the picture
+      (GAS's still, DRIFT's video; headless WebKit has no video frame, so DRIFT jolts there); no layout shift, no
+      page errors. Left alone: none while the pointer moves on the TV, the first 1001 ms after it stops (idle 1 s in
+      the test); a touch stops a 4 s one at once (17-39 ms after it in Chromium, 3 ms in WebKit, 11 ms into its
+      4000). The name under the pointer and the focused one never glitch, the others still do; the picture under the
+      pointer never tears. A change at chance 1: one tear on the new picture, only once it is in place (+567 ms
+      Chromium, +1222 ms WebKit; nothing leaving, inline transform / opacity cleared), laid exactly over it; the next
+      pick stops it at once and lands with its own; chance 0: three changes, none. Off: reduced motion, high
+      contrast, the wood wall, a hidden tab, the TV off screen (none, then they come back), none before the
+      power-on. Phone: the list = names + the screen, a pane = its picture + the screen. The shipped times
+      (Chromium, one run): the first 23.27 s after the script ran (12-25), none while the pointer kept touching the
+      TV for 26 s, the next 4008 ms after it stopped. WebKit first failed "a touch stops it" by a race in the test
+      (lessons.md, 2026-10-19 #5); fixed in the test, then both engines pass.
+      Controls: the component of `706efa0` fails "fires" (0 in 14 s) and 3 more; a mutant whose touch does not stop
+      an idle glitch fails "a touch stops it".
+      Regression (the glitches off unless said): `motioncheck.mjs` Chromium 233 / 233 (twice), with the change tear
+      at chance 1 232 / 233 (its one fail: a first frame after a 74 ms gap); `glowcheck.mjs` 24 / 24;
+      `readcheck.mjs` 20 / 20; `benchsmoke.mjs` 15 / 15 (SLOW x4 slows the glitches, the 8 sliders show the
+      defaults, ▶ NAME / PICTURE / SCREEN on both TVs, COPY SETTINGS carries the `--ww-gl-*`). WebKit's
+      `motioncheck.mjs` failed only its first-frame checks ("from below, the one way" wants the first frame past
+      40 % of the travel; "the pane comes in from the right"): 11 and 19 of 218, 18 at chance 1, and the component
+      of `706efa0` run between them fails the same 12. Ableton Live and a media player were busy on the laptop:
+      headless WebKit's frame gap went from ~180 ms (this morning's 218 / 218) to 229-386 ms for the old and the
+      new code alike, Chromium's from ~26 to ~55 ms (still passing). Every other WebKit check passes. Re-run on an
+      idle machine with step 4. `npm run build` green; the LAN preview serves the new CSS + script.
 
 ### Phase 5: later, each on its own branch
 
