@@ -368,13 +368,19 @@ because it is Radio Roulette" is the mess the user ruled out.
         solid while it travels (at >= 90 % opacity within 0.15 x 12 + 0.5 px); click to rest < 650 ms (Chromium);
         plus everything kept from step 2. Chromium RISE 233 / 233 PASS and DROP 233 / 233 PASS (rest at +553-579
         ms, on the glass ~+135, readable ~+300; TUNE was ~160 / ~360 / ~870). WebKit (times x4 on the laptop): 210
-        PASS on the laptop sections, first frame y 5.7-7.3 of 12 (> 0.4 x travel); its phone section failed 8 x "the pane comes in from the right" (first frame x 1.9-3.7, needs > 4):
+        PASS on the laptop sections, first frame y 5.7-7.3 of 12 (> 0.4 x travel); its phone section failed 8 x
+        "the pane comes in from the right" (first frame x 1.9-3.7, needs > 4):
         headless WebKit paints a newly shown pane's first frame ~0.6 s into the entrance and 340 x 4 ms ends close to
         that, so the phone section is stretched x8 (stretched, not loosened): 68 / 68 PASS (first frame x 6.6-8.8;
-        Chromium 12.6-13.2). `glowcheck.mjs` 23 / 23 PASS (cuts at 60 / 150 / 230 / 330 / 430 / 560 ms, picked again
+        Chromium 12.6-13.2). `glowcheck.mjs` 24 / 24 PASS (cuts at 60 / 150 / 230 / 330 / 430 / 560 ms, picked again
         at 200 / 350, phone Back at 150 / 250 / 400; worst spike 0.020 against the 0.1 limit).
         `benchsmoke.mjs` 11 / 11 PASS (RISE / DROP reach both frames, an old saved state migrates, COPY SETTINGS
-        hands back `dir`, SLOW x4 340 -> 1360 and back). CONTROL_RESULT
+        hands back `dir`, SLOW x4 340 -> 1360 and back; again 11 / 11 after the controls).
+        Controls (Chromium, the old component swapped in with TUNE forced, then restored from `63841e4`): `4c19a59`
+        fails 34 checks, all of them the new ones: 6 x the one way (every pick up the list, ArrowUp and its wrap; first
+        frame y -12.7 / -13.0, from above), 14 x never solid while it travels (e.g. opacity 0.91 at 5.0 px), 14 x
+        short (rest at +866-900 ms); its other 199 pass. `glowcheck.mjs` on `7e3fe2f` (before the colour fix) fails
+        the 230 ms cut (spike 0.357; today 0.016 there).
 - [ ] 4. Checks on the build, Chromium + WebKit, the rAF recorder (its snow assertions replaced): at most one panel
       visible per frame; rest transform = identity; rapid picks land on the last; held arrows = one entrance and
       one URL write; no layout shift; the moving picture never leaves the glass or crosses the list (1280x665,
