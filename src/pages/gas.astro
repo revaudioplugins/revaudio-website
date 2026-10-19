@@ -147,10 +147,11 @@ const highlights = plugin.features.slice(0, 3);
       tracks, each with its own GAS knob on real GAS renders. <gas-mixer> is a web component generated from
       bench/gas-mixer-bench.html by tools/gas-mixer/export_component.py: shadow DOM keeps its CSS and the page's
       apart, it builds itself only when it nears the viewport and loads audio only on PLAY. Not an iframe: the
-      live CSP / X-Frame-Options block framing (same route as Radio Roulette's <station-mixer>). */}
+      live CSP / X-Frame-Options block framing (same route as Radio Roulette's <station-mixer>).
+      2026-10-19: desktop shows the 3-track mixer only; phones keep the pedal toy, so the line below fits both. */}
   <section class="gas-hear" id="hear-it">
     <h2>Hear it</h2>
-    <p class="gas-hear-sub">Press <strong>play</strong>, then step on the <strong>pedal</strong>. Real GAS renders on a real beat, matched in loudness: you hear the colour, not just louder.</p>
+    <p class="gas-hear-sub">Press <strong>play</strong>, then give it some <strong>gas</strong>. Real GAS renders on a real beat, matched in loudness: you hear the colour, not just louder.</p>
     <link rel="stylesheet" href="/gas-mixer/fonts.css" />
     <gas-mixer class="gas-mixer-el"></gas-mixer>
     <script is:inline src="/gas-mixer/gas-mixer.js" defer></script>
@@ -657,7 +658,7 @@ const highlights = plugin.features.slice(0, 3);
   }
   .gas-hear-sub strong { color: var(--brass-bright); font-weight: 600; }
   /* reserve the mixer's shape before it builds (no layout shift), then it sizes itself */
-  .gas-mixer-el { display: block; aspect-ratio: 1100 / 632; max-height: 632px; text-align: left; }   /* the pedal toy (2026-10-12) */
+  .gas-mixer-el { display: block; aspect-ratio: 1600 / 958; text-align: left; }   /* the 3-track mixer, its 1600 x 958 stage (2026-10-19) */
   @media (max-width: 760px) { .gas-mixer-el { aspect-ratio: 380 / 922; max-height: none; } }
   .gas-mixer-el.ready { aspect-ratio: auto; max-height: none; }   /* built: it sizes itself, and OPEN THE HOOD makes it taller (the cap let the mixer spill over the footer) */
 
