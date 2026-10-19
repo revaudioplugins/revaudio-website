@@ -1,3 +1,12 @@
+## 2026-10-19 — DRIFT #hear: guide the visitor step by step, branch `drift-hear-guide` (Claude Code `revaudio-ef`, laptop 1) — PLANNING
+
+Claim (owner `revaudio-ef`): `src/components/drift/DriftHear.astro`, `src/lib/drift/hear.ts`, the #hear block in
+`src/styles/drift.css`, `tasks/todo.md` (top section), this entry. Possibly `src/components/drift/DriftHero.astro`
+(only if Q4 = yes). Worktree `Website/revaudio-website-hear` (off origin/main `d0168a6`; `node_modules` = junction to
+the main checkout's). Plan + findings: `tasks/todo.md` top section. Nothing pushed.
+- Note: the main clone's `tasks/handoff.md` was claimed by `revaudio-2a` (uncommitted), so this claim lives on the
+  branch; expect a small merge in this file at push time.
+
 ## 2026-10-18 — Trial-end offer: cart applies `?offer=CODE` locked, branch `trial-offer` (Claude Code `revaudio-70`, Yoni's laptop 2) — PUSHED TO MAIN = LIVE 2026-10-18 (Yoni: "push"; Pages deploy + smoke test green, live /buy/revlimiter/ carries `ra-offer`)
 
 Claim: CLOSED 2026-10-18. File: `src/components/Cart.astro`. Worktree `Website/revaudio-website-offer` (off origin/main 141d400; its `node_modules` is a junction to the main checkout's, same lockfile).

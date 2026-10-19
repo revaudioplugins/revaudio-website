@@ -1,3 +1,54 @@
+# DRIFT #hear — guide the visitor through the test drive (2026-10-19, revaudio-ef)
+
+Request (laptop 1 user, on the live #hear screenshot): "let's open a branch and flesh this out in depth, so people
+understand exactly what they need to do". Branch `drift-hear-guide`, worktree `Website/revaudio-website-hear`, off
+origin/main `d0168a6`. Local only: a push waits for the word "push".
+
+Constraint: the design picked today cut words (`ea323e0`: the closing line, the L/R letters, the balance bar;
+`e5e00a1`: the explanatory headline "SAME TRACK. / FLIP DRIFT." became "LET'S DRIFT."). So the guidance lives INSIDE
+the parts already on the panel (the LCD header cell, the step badges, the DRIFT button's own lamp, the breathing glow
+PLAY already has). Any new visible words are an ask item (Q1-Q4 below), never part of a plain "go".
+
+Baseline (live revaudio.net/drift, headless Edge, 2026-10-19): #hear panel 539 px tall at 1440, 588 px at 390.
+Reference shots: session scratchpad `live/` (desk/phone: fold, idle, playing). Height budget: no growth; diff
+every step (snap.ts soft-snaps the page to this panel).
+
+## Findings (live audit)
+- F1 Default = DRIFT ON: PLAY plays DRIFT first, so there is no reference; step 3 then turns DRIFT OFF. The story
+  runs backwards (it should be: the original -> push DRIFT -> hear it change).
+- F2 "3 FLIP" does not say what flips. The button shows only its current state (DRIFT ON or ORIGINAL), so it does
+  not read as a two-way switch.
+- F3 Once playing, nothing points at step 3 (only PLAY breathes, and only while stopped).
+- F4 VOLUME sits inside step 3, so step 3 reads as two jobs.
+- F5 Phone 360/390: the headline LET'S DRIFT. sits under the checker strip + sticker (headline 147-173 px vs checker
+  145-167 px at 390; the screenshot shows it covered).
+- F6 DRIFT is stereo movement: on phone / laptop speakers it barely shows, and nothing says headphones. The A/B is
+  level-matched (fair), and nothing says that either.
+- F7 Desktop: #hear starts below the first screen and nothing in the hero points to it.
+
+## Steps (decided by the evidence)
+- [ ] A. Guide state in hear.ts: next = PLAY (stopped) -> DRIFT (ORIGINAL playing, DRIFT never pushed) -> COMPARE
+      (heard DRIFT, not yet back to the original) -> none. `root[data-next]` carries it for the CSS.
+- [ ] B. LCD coach cell: the header's left cell (READY / NOW PLAYING today) names the next action while there is
+      one (PRESS PLAY -> PUSH DRIFT -> PUSH AGAIN: ORIGINAL), then NOW PLAYING. Fixed width, fits beside the tag at
+      360 px. One aria-live region for the screen, not two.
+- [ ] C. Next-step light: the badge of the next step lights and its control breathes with the glow PLAY already has
+      (same keyframes); the DRIFT button breathes once the original plays. Done steps go calm. No new animation.
+- [ ] D. Two-way read on the DRIFT unit: under the button, ORIGINAL and DRIFT side by side, the one you hear lit
+      (replaces the single state word).
+- [ ] E. Phone headline (F5): clears the checker + sticker at 360 / 390.
+- [ ] F. Push-first path: pushing DRIFT before PLAY still starts in DRIFT; the coach then asks for the original,
+      so that visitor hears both too.
+- [ ] G. Verify: `npm run build`; headless Edge 1440 / 1366 / 390 / 360 in each state (idle, original playing,
+      DRIFT playing, after compare); panel heights vs the baseline; snap re-test; 0 console errors; reduced motion;
+      keyboard path (Tab -> Enter through the three steps).
+
+## Ask items (each needs its own yes)
+- Q1 Default on load: ORIGINAL (proposed) or keep DRIFT ON.
+- Q2 Step 3 caption: "3 PUSH DRIFT" (proposed; it names the button only, so VOLUME reads as a side knob, F4) or keep "3 FLIP".
+- Q3 One stamped tag "HEADPHONES ON" on the plate (new words; the closing line was cut today).
+- Q4 A "HEAR IT" link from the hero to #hear (F7).
+
 # Website — word-wall WEIGHT (checker S4, 2026-10-15, revaudio-32)
 
 Request (Dan): "let's fix the weight", then "is there a way to make it lighter without hurting quality?" -> yes, go.
