@@ -184,12 +184,15 @@ const batWing =
     const promo = document.querySelector<HTMLButtonElement>('[data-hw-promo]');
     if (promo) {
       document.body.appendChild(promo);
-      // Sit beside the pumpkin as actually drawn (its label widens it), centred on it.
+      // Sit beside the pumpkin as actually drawn (its label widens it), centred on
+      // the whole lantern stack: top of the pumpkin to the bottom of its label.
       const pumpkin = root.querySelector<SVGElement>('.hw-pumpkin');
+      const tag = root.querySelector<HTMLElement>('.hw-tag');
       const place = () => {
         if (!pumpkin || innerWidth <= 720) { promo.style.removeProperty('--hw-pl'); promo.style.removeProperty('--hw-pb'); return; }
         const p = pumpkin.getBoundingClientRect();
-        const mid = innerHeight - (p.top + p.bottom) / 2;
+        const bottom = tag ? tag.getBoundingClientRect().bottom : p.bottom;
+        const mid = innerHeight - (p.top + bottom) / 2;
         promo.style.setProperty('--hw-pl', `${Math.round(p.right + 16)}px`);
         promo.style.setProperty('--hw-pb', `${Math.round(mid - promo.offsetHeight / 2)}px`);
       };
@@ -477,6 +480,7 @@ const batWing =
     border-radius: 50%;
     background: rgba(11, 10, 9, 0.66);
     box-shadow: 0 0 26px 18px rgba(11, 10, 9, 0.62);
+    transform: scale(0.9);
   }
   .hw-promo-big {
     font-family: 'Creepster', var(--font-display, sans-serif);
