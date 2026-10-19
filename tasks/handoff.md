@@ -165,7 +165,7 @@ Claim: CLOSED 2026-10-14. Took over `revaudio-c7`'s stale claim (session gone) o
 
 ## 2026-10-15 — Claude Code `revaudio-02` (Yoni's laptop) — DRIFT #hear test drive (before/after player), native to /drift
 
-Claim: OPEN, paused by Yoni 2026-10-15 ~17:15 ("that's perfect. let's keep it for now local, we push later today").
+Claim: OPEN, paused by Yoni 2026-10-15 ~18:25 ("save this current design. we'll push later. close session").
 Worktree `../revaudio-website-dpl`, branch `drift-player`, local only until "push". Files owned:
 `src/components/drift/DriftHear.astro`, `src/lib/drift/{hear,speakers,snap}.ts`, the #hear block in
 `src/styles/drift.css`, the #hear / snap lines in `src/pages/drift.astro` / `src/lib/drift/init.ts` /
@@ -176,7 +176,8 @@ Removed: DriftHeadUnit.astro + demo.ts (the structure test), the toy bench + its
 
 ### State at session end
 
-- Branch `drift-player`: 19 commits ahead of origin/main, 0 behind (fetched 17:15), working tree clean. Last: `995cde7`.
+- Branch `drift-player`: 24 commits ahead of origin/main, 0 behind (fetched 18:25). Last: `a9d1ddc`. The saved design is
+  tagged locally `drift-hear-design-2026-10-15` (not pushed; `git checkout drift-hear-design-2026-10-15` to see it).
   Nothing pushed. The shared repo has my local commit `b866f9d` (memory note), also unpushed.
 - What's built (Yoni, on the way: "great job! beautiful!", "perfect", "that's perfect"): #hear under the hero = "LET'S
   DRIFT." — a track list (5 stems), the magenta LCD (waveform L over R, PAN readout, clock), PLAY/STOP caps, FLIP = a worn
