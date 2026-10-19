@@ -154,7 +154,10 @@ export function initRack(root: HTMLElement): RackApi | undefined {
     }
   };
   let engine: Promise<Rnd> | null = null;
-  const getEngine = () => (engine ??= import('./fxv/drift-randomizer.js').then(() => (window as unknown as { DriftRandomizer: Rnd }).DriftRandomizer));
+  // the engine is UMD: the dev server runs it as a browser script (window.DriftRandomizer), the production bundle as
+  // CommonJS (module.exports = the module's default). Take whichever exists: reading only window broke every roll live.
+  const getEngine = () => (engine ??= import('./fxv/drift-randomizer.js').then((m: { default?: Rnd }) =>
+    (m.default && typeof m.default.roll === 'function' ? m.default : (window as unknown as { DriftRandomizer: Rnd }).DriftRandomizer)));
   const memory = { sinceExtreme: null as number | null, lastPersonality: null as string | null, count: 0 };
   btn?.addEventListener('pointerenter', () => { void getEngine(); }, { once: true });
   btn?.addEventListener('click', async () => {

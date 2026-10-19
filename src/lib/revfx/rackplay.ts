@@ -118,7 +118,10 @@ export function initRackPlay(): void {
 
   // phones: the same engine, the same seed recipe and memory as rack.ts
   let engine: Promise<Rnd> | null = null;
-  const getEngine = () => (engine ??= import('../drift/fxv/drift-randomizer.js').then(() => (window as unknown as { DriftRandomizer: Rnd }).DriftRandomizer));
+  // the engine is UMD: the dev server runs it as a browser script (window.DriftRandomizer), the production bundle as
+  // CommonJS (module.exports = the module's default). Take whichever exists: reading only window broke every roll live.
+  const getEngine = () => (engine ??= import('../drift/fxv/drift-randomizer.js').then((m: { default?: Rnd }) =>
+    (m.default && typeof m.default.roll === 'function' ? m.default : (window as unknown as { DriftRandomizer: Rnd }).DriftRandomizer)));
   const memory = { sinceExtreme: null as number | null, lastPersonality: null as string | null, count: 0, n: 0 };
   const rollLocal = async () => {
     const R = await getEngine();
