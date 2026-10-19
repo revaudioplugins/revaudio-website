@@ -1130,13 +1130,13 @@
   font: inherit; font-weight: 400; color: #16021c; text-shadow: none;
   background: var(--d-hot); box-shadow: 0 0 12px rgba(255, 79, 216, .55);
 }
+/* step 1's key sits on the title's line like 2 and 3 (Yoni 10-19: the 1 pushed PICK A TRACK onto two lines) */
+.d-hear-title1 { display: flex; align-items: center; white-space: nowrap; }
 .d-hear-deck { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 .d-hear-tag { padding: 4px 9px 3px; border-radius: 3px; color: #16021c; text-shadow: none; background: var(--d-lcd); box-shadow: 0 0 12px rgba(242, 76, 240, .6); }
 [data-ab='before'] .d-hear-tag { color: var(--d-cyan-ink); background: none; box-shadow: inset 0 0 0 1px var(--d-cyan), 0 0 10px rgba(94, 231, 255, .3); }
-.d-hear-wave { position: relative; height: clamp(84px, 9vw, 118px); padding-left: 24px; }
+.d-hear-wave { position: relative; height: clamp(84px, 9vw, 118px); }
 .d-hear-wave canvas { display: block; width: 100%; height: 100%; }
-.d-hear-lr { position: absolute; left: 0; top: 2px; bottom: 2px; display: flex; flex-direction: column; justify-content: space-between; font: 400 17px/1 var(--d-f-lcd); color: var(--d-lcd-hdr); }
-.d-hear-lr i { font-style: normal; }
 
 .d-hear-controls { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 16px; }
 .d-hear-step {
@@ -1245,12 +1245,11 @@
               radial-gradient(ellipse 32% 32% at 33.5% 35.5%, rgb(238, 212, 245) 0%, rgb(241, 219, 246) 25%, rgb(246, 234, 250) 50%, rgb(252, 247, 253) 75%, #fff 100%);
   background-blend-mode: multiply; mix-blend-mode: multiply; }
 .d-vol-knob:hover .k3d { filter: drop-shadow(0 0 10px rgba(180, 107, 255, .4)); }
-.d-hear-balance { margin-top: 0; }
 .d-hear-head { margin-bottom: 14px; }
 .d-hear-head h2.d-headline { margin: 0; }
 /* COMPACT (Yoni 2026-10-15: "fit on the screen without swiping, let's say by 30 %"): the whole #hear panel fits a
    1366 x 768 laptop under the site header (892 -> ~600 px), every part tightened, nothing scaled as a picture. */
-.d-panel.d-hear-panel { padding-top: 24px; }
+.d-panel.d-hear-panel { padding-top: 24px; padding-bottom: 24px; }   /* bottom = top since the closing line went (10-19) */
 .d-hear-sec .d-hear-head { margin-bottom: 8px; }
 .drift-page .d-hear-sec h2.d-headline { font-size: clamp(30px, 2.8vw, 42px); }
 .d-hear-sec .d-hear { gap: clamp(16px, 2vw, 26px); }
@@ -1264,7 +1263,6 @@
 .d-hear-sec .d-screen-title { font-size: 26px; }
 .d-hear-sec .d-screen-t { font-size: 18px; }
 .d-hear-sec .d-hear-wave { height: clamp(56px, 5.4vw, 74px); }
-.d-hear-sec .d-hear-lr { font-size: 15px; }
 .d-hear-sec .d-hear-controls { gap: 10px; }
 .d-hear-sec .d-hear-step { padding: 9px 12px 10px; gap: 6px; }
 .d-hear-sec .d-hear-cap { font-size: 11px; }
@@ -1280,10 +1278,8 @@
 .d-hear-sec .d-hear-unit-lbl { font-size: 10px; }
 .d-hear-sec .d-balance-box { padding: 8px 14px 7px; gap: 6px; }
 .d-hear-sec .d-balance { height: 28px; }
-.drift-page .d-hear-sec .d-hear-note { padding: 13.75px 0 12.25px; font-size: 11px; }   /* equal above and below: dead centre */
 @media (max-width: 600px) {
-  .d-panel.d-hear-panel { padding-top: 14px; }
-  .drift-page .d-hear-sec .d-hear-note { padding: 7px 0 5px; }
+  .d-panel.d-hear-panel { padding-top: 14px; padding-bottom: 14px; }
   .d-hear-sec .d-hear-head { margin-bottom: 0; }
   .d-hear-sec .d-hear-row { min-height: 27px; font-size: 19px; padding-block: 2px; }
   .d-hear-sec .d-hear-row .len { font-size: 16px; }
@@ -1383,11 +1379,6 @@ html.bench-on #hear .d-hear-row *, html.bench-on #hear .d-hear-wave * { pointer-
 }
 /* ═══ end bench ═══ */
 
-
-/* the closing line sits dead centre between the player and the panel's bottom edge (Yoni 2026-10-15): the panel's
-   bottom padding moves into the note, equal above and below */
-.d-panel.d-hear-panel { padding-bottom: 0; }
-.drift-page .d-hear-note { margin: 0 auto; padding: clamp(22px, 2.6vw, 32px) 0; text-align: center; font: 400 12px/1.5 var(--d-f-pix); letter-spacing: .08em; color: var(--d-fg-dim); }
 
 @media (max-width: 1000px) {
   .d-hear { grid-template-columns: minmax(0, 1fr); }
