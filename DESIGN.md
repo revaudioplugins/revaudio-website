@@ -240,7 +240,8 @@ words first, window under them.
   (ghost cells), an even backlight, a bezel inside the window. A blurred glow on every letter reads CRT / neon instead.
   /drift #hear's screen = the car-stereo 14-segment LCD (DSEG14, RevTune's face), picked on `bench/drift-lcd-bench.html`
   over a dot-matrix and a reflective LCD (laptop 1 user, 2026-10-19: "design this whole area so it looks like an LCD
-  screen"); the PICK A TRACK list beside it stays a CRT, so the two read as two different parts.
+  screen"); the PICK A TRACK list beside it stays a CRT, so the two read as two different parts. Approved on the page
+  ("looks killer") with the segment letter shapes as they are (D reads like ], V like I/): that is the car-stereo look.
 
 ## 10. History + open questions (for Dan)
 

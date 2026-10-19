@@ -23,7 +23,9 @@ screen". Today's screen = dark violet glass + blurred magenta glow on every read
 ### Review (LCD)
 - Below 360 (340 / 320) PUSH AGAIN: ORIGINAL loses its last letters, as the VT323 screen did at 320 before.
 - Firefox without CSS alt-text support drops the ghost declaration: the screen then shows no ghosts (lit text intact).
-- Not seen yet: a real phone (DPR 3), Safari.
+- Not seen yet: a real phone (DPR 3), a real Safari (headless WebKit 2336 renders font, ghosts and arrow right).
+- APPROVED on the page (laptop 1 user, 2026-10-19: "cool, looks killer"), told first that the segment D reads
+  like ] (DRIFT), V like I/ and S like 5 and that the phone coach is 9.5-10.5 px: kept as is.
 
 # DRIFT #hear — guide the visitor through the test drive (2026-10-19, revaudio-ef)
 
