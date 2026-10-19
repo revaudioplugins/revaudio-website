@@ -1,9 +1,17 @@
-## 2026-10-19 — DRIFT #hear: guide the visitor step by step, branch `drift-hear-guide` (Claude Code `revaudio-ef`, laptop 1) — PLANNING
+## 2026-10-19 — DRIFT #hear: guide the visitor step by step, branch `drift-hear-guide` (Claude Code `revaudio-ef`, laptop 1) — BUILT + VERIFIED LOCALLY, NOT PUSHED
 
-Claim (owner `revaudio-ef`): `src/components/drift/DriftHear.astro`, `src/lib/drift/hear.ts`, the #hear block in
-`src/styles/drift.css`, `tasks/todo.md` (top section), this entry. Possibly `src/components/drift/DriftHero.astro`
-(only if Q4 = yes). Worktree `Website/revaudio-website-hear` (off origin/main `d0168a6`; `node_modules` = junction to
-the main checkout's). Plan + findings: `tasks/todo.md` top section. Nothing pushed.
+Claim (owner `revaudio-ef`): `src/components/drift/DriftHear.astro`, `src/lib/drift/hear.ts`, `src/components/drift/DriftHero.astro`
+(the HEAR IT link), the #hear + `.d-hero-hear` rules in `src/styles/drift.css`, `tasks/todo.md` (top section),
+`tasks/drift-player-plan.md` (Round 9), `tasks/lessons.md` (one entry), this entry. Worktree
+`Website/revaudio-website-hear` (off origin/main `d0168a6`; `node_modules` = junction to the main checkout's).
+Plan, findings, checks: `tasks/todo.md` top section.
+- What: opens on the ORIGINAL; the LCD's left header cell coaches (PRESS PLAY -> PUSH DRIFT -> PUSH AGAIN: ORIGINAL
+  -> NOW PLAYING); the next step's key + control breathe (PLAY's old glow), the others rest dim; ORIGINAL / DRIFT
+  under the button, the one you hear lit; step 3 = "3 PUSH DRIFT"; the checker strip no longer runs under the
+  title (<= ~770 px), 試聴 off on phones; hero: a "HEAR IT" key under the tagline (desktop + 601-1099, not phones).
+- Answers (laptop 1 user, 2026-10-19): default ORIGINAL, "3 PUSH DRIFT", no HEADPHONES tag, hero link yes.
+- Next: the user looks at it (local dist: `python -m http.server 4417 --bind 127.0.0.1` in the worktree's `dist/`,
+  then http://127.0.0.1:4417/drift/), then "push" = merge to main = live. A real iPhone / Safari listen is still owed.
 - Note: the main clone's `tasks/handoff.md` was claimed by `revaudio-2a` (uncommitted), so this claim lives on the
   branch; expect a small merge in this file at push time.
 

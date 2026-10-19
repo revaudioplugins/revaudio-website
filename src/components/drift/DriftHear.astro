@@ -4,7 +4,12 @@
  * play ... easiest to understand"). Built only from the page's own parts: the DRIFT dash panel, the SELECT TRACKS
  * chips (each chip draws its own track's waveform in the cyan line, where #drive draws a circuit), the magenta LCD,
  * the arcade caps. Three steps, numbered on the plate: 1 pick a track, 2 play,
- * 3 flip ORIGINAL / DRIFT.
+ * 3 push DRIFT (ORIGINAL / DRIFT).
+ *
+ * The guide (2026-10-19, "so people understand exactly what they need to do"): it opens on the ORIGINAL, and the panel
+ * itself says what to do next, in parts it already had: the LCD header cell names the action (PRESS PLAY -> PUSH DRIFT
+ * -> PUSH AGAIN: ORIGINAL -> NOW PLAYING), the next step's key and its control breathe with the glow PLAY always had,
+ * and ORIGINAL / DRIFT under the button light the one you hear. No new lines of copy (they were cut on 10-19).
  *
  * One track at a time, real bounces (tools/drift-player/prep_audio.py): public/audio/drift/<id>-before.m4a = the
  * original, level-matched DOWN to the DRIFT bounce's loudness; <id>-after.m4a = the DRIFT bounce, untouched;
@@ -32,7 +37,7 @@ const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${Str
 const [g, r] = await Promise.all([capGreen, capRed].map((src) => getImage({ src, width: 136, format: 'webp', quality: 82 })));
 const first = TRACKS[0];
 ---
-<section class="d-sec d-hear-sec" id="hear" aria-labelledby="d-hear-h" data-hear>
+<section class="d-sec d-hear-sec" id="hear" aria-labelledby="d-hear-h" data-hear data-next="play" data-ab="before">
   <div class="d-wrap">
     <DriftPanel sticker="試聴" class="d-hear-panel">
       <div class="d-hear-head">
@@ -66,10 +71,11 @@ const first = TRACKS[0];
           <!-- the screen: what you hear, its waveform (L over R), the clock -->
           <div class="d-lcd d-lcd--big d-screen d-hear-screen">
             <div class="d-screen-hdr">
-              <span data-hear-state>READY</span>
-              <span class="d-hear-tag" data-hear-tag>DRIFT ON</span>
+              <!-- the coach: names the next thing to do (hear.ts COACH); the screen's one live region -->
+              <span class="d-hear-coach" data-hear-state aria-live="polite">PRESS PLAY</span>
+              <span class="d-hear-tag" data-hear-tag>ORIGINAL</span>
             </div>
-            <div class="d-screen-title" data-hear-title aria-live="polite">{first.label}</div>
+            <div class="d-screen-title" data-hear-title>{first.label}</div>
             <div class="d-hear-wave">
               <canvas data-hear-wave aria-hidden="true"></canvas>
             </div>
@@ -81,7 +87,7 @@ const first = TRACKS[0];
 
           <div class="d-hear-controls">
             <!-- 2 · play -->
-            <div class="d-hear-step">
+            <div class="d-hear-step" data-step="2">
               <span class="d-hear-cap"><b class="d-hear-n">2</b>PLAY</span>
               <div class="d-hear-caps">
                 <button class="d-cap d-hear-play" type="button" data-hear="play" aria-pressed="false" aria-label="Play"
@@ -90,19 +96,20 @@ const first = TRACKS[0];
                   style={`background-image:url(${r.src})`}></button>
               </div>
             </div>
-            <!-- 3 · flip + volume: a pair on one steel plate (the page's panel material). The DRIFT push-to-start (lit = DRIFT,
+            <!-- 3 · push DRIFT + volume: a pair on one steel plate (the page's panel material). The DRIFT push-to-start (lit = DRIFT,
                  dark = the original; its bars chase while the sound loads) and DRIFT's own house knob (the plugin's filmstrip),
-                 its bars lit up to the level. Both rings = the page's balance-screen bars. -->
-            <div class="d-hear-step d-hear-step--ab">
-              <span class="d-hear-cap"><b class="d-hear-n">3</b>FLIP</span>
+                 its bars lit up to the level. Both rings = the page's balance-screen bars. The caption names the button only,
+                 so VOLUME reads as a side knob, not part of the step. -->
+            <div class="d-hear-step d-hear-step--ab" data-step="3">
+              <span class="d-hear-cap"><b class="d-hear-n">3</b>PUSH DRIFT</span>
               <div class="d-hear-pair">
                 <span class="d-screw tl" aria-hidden="true"></span><span class="d-screw tr" aria-hidden="true"></span>
                 <span class="d-screw bl" aria-hidden="true"></span><span class="d-screw br" aria-hidden="true"></span>
                 <div class="d-hear-unit">
-                  <div class="d-start" data-hear-start-box data-on="after">
+                  <div class="d-start" data-hear-start-box data-on="before">
                     <div class="d-start-in">
                       <span class="d-start-ticks" aria-hidden="true">{Array.from({ length: 40 }, (_, i) => <i style={`--i:${i}`}></i>)}</span>
-                      <button class="d-start-pb" type="button" data-hear-start aria-pressed="true" aria-label="DRIFT. Lit: you hear DRIFT. Push for the original.">
+                      <button class="d-start-pb" type="button" data-hear-start aria-pressed="false" aria-label="DRIFT. Dark: you hear the original. Push to start DRIFT.">
                         <span class="d-start-knurl"></span><span class="d-start-wear"></span><span class="d-start-seat"></span>
                         <span class="d-start-tube"></span><span class="d-start-tube lit"></span>
                         <span class="d-start-lens"><span class="d-start-bloom lit"></span></span>
@@ -112,7 +119,8 @@ const first = TRACKS[0];
                       </button>
                     </div>
                   </div>
-                  <span class="d-hear-unit-lbl" data-hear-say>DRIFT ON</span>
+                  <!-- both sides of the switch, the one you hear lit ([data-ab] on the section) -->
+                  <span class="d-hear-unit-lbl d-hear-ab" aria-hidden="true"><i>ORIGINAL</i><i>DRIFT</i></span>
                 </div>
                 <div class="d-hear-unit">
                   <div class="d-vol">

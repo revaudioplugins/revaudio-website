@@ -115,9 +115,19 @@ it (#hear, right under the hero), built only from the page's own parts and class
 - Responsive HTML (no scaled stage): desktop = chips | deck; <=1000 one column; <=600 the page's compact chips and
   one row per step. `npm run build` OK (26 pages). Headless desktop 1440 + phone 390: no console errors.
 
+## Round 9 (2026-10-19, revaudio-ef, branch `drift-hear-guide`): the guide ("so people understand exactly what they
+need to do", laptop 1 user)
+
+- Opens on the ORIGINAL (answers the first open question below). hear.ts `next()` -> `[data-next]`: play -> drift ->
+  back -> '' (free play); the LCD header's left cell says it (PRESS PLAY / PUSH DRIFT / PUSH AGAIN: ORIGINAL / NOW
+  PLAYING), the next step's key + control breathe with PLAY's old glow, the other keys rest dim.
+- Step 3 = "3 PUSH DRIFT"; under the button ORIGINAL / DRIFT, the one you hear lit (replaces DRIFT ON / ORIGINAL).
+- No new lines of copy (the 10-19 cut stands; a HEADPHONES tag was declined). Hero: a HEAR IT key under the tagline.
+- Details + checks: `tasks/todo.md` top section.
+
 ## Open questions for Yoni
 
-- Default switch position on load: DRIFT ON (now) or BYPASS?
+- ~~Default switch position on load: DRIFT ON (now) or BYPASS?~~ ORIGINAL since Round 9 (2026-10-19).
 - Loop the track (now) or play once and stop?
 - A download / trial plate on the toy, or leave the page's own CTA?
 - Remove the "SPEED SOUNDS BETTER" sticker / bottom lip text?

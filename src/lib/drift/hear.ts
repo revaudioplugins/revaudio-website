@@ -9,6 +9,11 @@ import { setPan } from './bus';
  *
  * What you hear is measured (L / R RMS -> equal-power pan) and written to the page's pan bus as 'demo', so the hero
  * wheel, the rails and the balance screen follow the real sound. Stopped, the pan settles back to centre.
+ *
+ * The guide: it opens on the ORIGINAL, and root[data-next] names the step to take next, for the CSS (that step's key
+ * and control breathe) and the LCD's coach cell: 'play' (stopped) -> 'drift' (the original plays, DRIFT never pushed)
+ * -> 'back' (DRIFT plays, not yet pushed back to the original) -> '' (heard both: free play). Pushing DRIFT before
+ * PLAY starts in DRIFT (the push-to-start), so that visitor is asked for the original next.
  */
 const BASE = '/audio/drift/';
 type Lr = { L: number[]; R: number[] };
@@ -22,7 +27,6 @@ export function initHear(root: HTMLElement): void {
   const stopBtn = q<HTMLButtonElement>('[data-hear="stop"]');
   const startBox = q<HTMLElement>('[data-hear-start-box]');
   const startBtn = q<HTMLButtonElement>('[data-hear-start]');
-  const say = q<HTMLElement>('[data-hear-say]');
   const volKnob = q<HTMLElement>('[data-hear-vol]');
   const volStrip = q<HTMLElement>('[data-hear-vol-strip]');
   const volRead = q<HTMLElement>('[data-hear-vol-read]');
@@ -35,7 +39,12 @@ export function initHear(root: HTMLElement): void {
   if (!playBtn || !stopBtn || !cv || !chips.length) return;
   const g = cv.getContext('2d')!;
 
-  const st = { track: chips[0].dataset.hearTrack!, after: true, playing: false, loading: false };
+  const st = { track: chips[0].dataset.hearTrack!, after: false, playing: false, loading: false };
+  // the guide: has the visitor pushed DRIFT on, and then back off to the original?
+  let didOn = false, didOff = false;
+  type Next = 'play' | 'drift' | 'back' | '';
+  const next = (): Next => st.loading ? '' : !st.playing ? 'play' : !st.after && !didOn ? 'drift' : st.after && !didOff ? 'back' : '';
+  const COACH: Record<Next, string> = { play: 'PRESS PLAY', drift: 'PUSH DRIFT', back: 'PUSH AGAIN: ORIGINAL', '': 'NOW PLAYING' };
   let M: Manifest | null = null;
   const manifest = fetch(`${BASE}peaks.json`).then((r) => r.json() as Promise<Manifest>).then((m) => { M = m; paintUi(); draw(); return m; });
 
@@ -113,7 +122,9 @@ export function initHear(root: HTMLElement): void {
   };
   const flip = (after: boolean) => {
     if (after === st.after) return;
-    st.after = after; paintUi(); draw();
+    st.after = after;
+    if (after) didOn = true; else if (didOn) didOff = true;
+    paintUi(); draw();
     if (srcs && ctx) { const now = ctx.currentTime; srcs.gA.gain.setTargetAtTime(after ? 1 : 0, now, .012); srcs.gB.gain.setTargetAtTime(after ? 0 : 1, now, .012); }
     if (after && st.playing && !st.loading) strike();
   };
@@ -136,13 +147,15 @@ export function initHear(root: HTMLElement): void {
     startBtn?.setAttribute('aria-label', st.after ? 'DRIFT. Lit: you hear DRIFT. Push for the original.' : 'DRIFT. Dark: you hear the original. Push to start DRIFT.');
     startBox?.setAttribute('data-on', st.after ? 'after' : 'before');
     startBox?.toggleAttribute('data-loading', st.loading);
-    if (say) say.textContent = st.loading ? 'STARTING…' : st.after ? 'DRIFT ON' : 'ORIGINAL';
     root.dataset.ab = st.after ? 'after' : 'before';
     playBtn!.setAttribute('aria-pressed', String(st.playing));
     root.toggleAttribute('data-playing', st.playing);
+    const n = next();
+    root.dataset.next = n;
     if (title) title.textContent = name();
     if (tag) tag.textContent = st.after ? 'DRIFT ON' : 'ORIGINAL';
-    if (stateEl) stateEl.textContent = st.loading ? 'LOADING' : st.playing ? 'NOW PLAYING' : 'READY';
+    const coach = st.loading ? 'LOADING' : COACH[n];
+    if (stateEl && stateEl.textContent !== coach) stateEl.textContent = coach;   // unchanged = no repeat announcement
     if (timeEl && !st.playing && M) timeEl.textContent = `00:00 / ${fmt(M.tracks[st.track].dur)}`;   // before the manifest lands, the build-time length stays
   }
   function draw(): void {

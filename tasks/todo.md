@@ -27,27 +27,44 @@ every step (snap.ts soft-snaps the page to this panel).
 - F7 Desktop: #hear starts below the first screen and nothing in the hero points to it.
 
 ## Steps (decided by the evidence)
-- [ ] A. Guide state in hear.ts: next = PLAY (stopped) -> DRIFT (ORIGINAL playing, DRIFT never pushed) -> COMPARE
+- [x] A. Guide state in hear.ts: next = PLAY (stopped) -> DRIFT (ORIGINAL playing, DRIFT never pushed) -> COMPARE
       (heard DRIFT, not yet back to the original) -> none. `root[data-next]` carries it for the CSS.
-- [ ] B. LCD coach cell: the header's left cell (READY / NOW PLAYING today) names the next action while there is
-      one (PRESS PLAY -> PUSH DRIFT -> PUSH AGAIN: ORIGINAL), then NOW PLAYING. Fixed width, fits beside the tag at
-      360 px. One aria-live region for the screen, not two.
-- [ ] C. Next-step light: the badge of the next step lights and its control breathes with the glow PLAY already has
-      (same keyframes); the DRIFT button breathes once the original plays. Done steps go calm. No new animation.
-- [ ] D. Two-way read on the DRIFT unit: under the button, ORIGINAL and DRIFT side by side, the one you hear lit
-      (replaces the single state word).
-- [ ] E. Phone headline (F5): clears the checker + sticker at 360 / 390.
-- [ ] F. Push-first path: pushing DRIFT before PLAY still starts in DRIFT; the coach then asks for the original,
-      so that visitor hears both too.
-- [ ] G. Verify: `npm run build`; headless Edge 1440 / 1366 / 390 / 360 in each state (idle, original playing,
-      DRIFT playing, after compare); panel heights vs the baseline; snap re-test; 0 console errors; reduced motion;
-      keyboard path (Tab -> Enter through the three steps).
+- [x] B. LCD coach cell: the header's left cell (READY / NOW PLAYING today) names the next action while there is
+      one (PRESS PLAY -> PUSH DRIFT -> PUSH AGAIN: ORIGINAL), then NOW PLAYING. Fits beside the tag at 360 px
+      (19 px desktop = the readouts' size, 16 px phones, under the tag's 22 px box). One aria-live region (the cell).
+- [x] C. Next-step light: the key of the next step lights and its control breathes with the glow PLAY already has
+      (same keyframes d-hear-next); the DRIFT button breathes once the original plays (a ring on its bezel). The
+      other keys rest dim until both sides were heard. No new animation.
+- [x] D. Two-way read on the DRIFT unit: under the button, ORIGINAL and DRIFT side by side, the one you hear lit
+      (cyan = the original, as the LCD tag; pink = DRIFT).
+- [x] E. Headline (F5): the checker strip is cropped to the room left of the title (it collided up to ~770 px, not
+      only on phones); the 試聴 tag is off on phones (it touched the title at 360, as #drive's on Dan 10-04).
+- [x] F. Push-first path: pushing DRIFT before PLAY still starts in DRIFT; the coach then asks for the original.
+- [x] G. Verify (below).
 
-## Ask items (each needs its own yes)
-- Q1 Default on load: ORIGINAL (proposed) or keep DRIFT ON.
-- Q2 Step 3 caption: "3 PUSH DRIFT" (proposed; it names the button only, so VOLUME reads as a side knob, F4) or keep "3 FLIP".
-- Q3 One stamped tag "HEADPHONES ON" on the plate (new words; the closing line was cut today).
-- Q4 A "HEAR IT" link from the hero to #hear (F7).
+## Ask items (answered 2026-10-19)
+- Q1 Default on load: ORIGINAL (yes).
+- Q2 Step 3 caption: "3 PUSH DRIFT" (yes).
+- Q3 "HEADPHONES ON" tag: no.
+- Q4 A "HEAR IT" link from the hero to #hear: yes. Built as a lit magenta key + "HEAR IT" in the steps' CRT type, in
+  the title panel under the tagline. Desktop: it rides in the panel's bottom pad, so the title and CTA panels still
+  mirror (both 241 px at 1440, as live). 601-1099: in flow (+35 px on the merged panel). Phones: none, since the
+  player starts where the first screen ends (390x844: catch line ends 824, #hear panel starts 860).
+
+## Review (2026-10-19, revaudio-ef)
+- Build green (27 pages). Checked on the built dist (python http.server 127.0.0.1:4417, headless Edge):
+  - States at 1440x900 / 1366x768 / 820x1180 / 390x844 / 360x740: idle = PRESS PLAY + PLAY and key 2 breathe;
+    PLAY = PUSH DRIFT + DRIFT ring and key 3; DRIFT = PUSH AGAIN: ORIGINAL; back = NOW PLAYING, every key lit, no
+    breath; STOP = PRESS PLAY again; push-first (fresh page) = DRIFT plays + PUSH AGAIN: ORIGINAL. Coach and step
+    captions never clipped; ORIGINAL / DRIFT inside the pair; the checker clears the title glyphs everywhere.
+  - Heights vs live at 11 sizes (1920 down to 360): the #hear panel identical (360: 551 vs 552), header row 22 px
+    everywhere, desktop hero identical; only 601-1099's hero +35 px (the link in flow). Snap unaffected (it keys on
+    the panel height).
+  - HEAR IT lands the #hear panel 87 px under the nav, whole panel on screen at 1366x768 (128-592).
+  - Reduced motion: no animation (static rings). Keyboard: Tab order tracks > PLAY > STOP > DRIFT > VOLUME; Enter on
+    PLAY, Space on DRIFT x2 walk the whole guide.
+  - Console: 0 errors (only the Cloudflare RUM requests the test itself blocks).
+- Not checked: real iPhone / Safari / Firefox (the player's open item from 10-15 still stands); a human ear.
 
 # Website — word-wall WEIGHT (checker S4, 2026-10-15, revaudio-32)
 

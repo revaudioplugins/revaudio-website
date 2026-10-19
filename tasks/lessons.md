@@ -93,3 +93,11 @@ an idle timer shorter than that fires before Lenis moved; wait while `lenis.isSc
    poster-less video; hide `::-webkit-media-controls` in the `<noscript>` style or the picture never shows.
 5. "Smaller on phones" must come from the screen's real need, not a guess: the phone poster needed ~1050 device px
    (390@3), not 800; measure CSS size x DPR per device before choosing cuts.
+
+## 2026-10-19 — overlap checks: measure the GLYPHS, and keep pseudo-elements out of :is()
+1. "Does the title hit the checker strip?" An element box answers wrong: `#d-hear-h` is a full-width block, so its box
+   overlaps everything on its row at every width. Measure the text itself (`range.selectNodeContents(h)`,
+   `range.getBoundingClientRect()`) against the other part's box, at a sweep of widths: the #hear checker really did
+   run under LET'S DRIFT. up to ~770 px, not only on phones as the screenshot suggested.
+2. `:is(.a::after, .b .c)` is invalid (pseudo-elements are not allowed inside `:is()` / `:where()`), and the browser
+   drops the WHOLE rule with no build error. Write a pseudo-element selector out in full, once per rule.

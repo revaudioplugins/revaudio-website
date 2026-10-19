@@ -459,6 +459,25 @@
   color: var(--d-neon); text-shadow: var(--d-glow-2);
 }
 .d-tagline span { display: block; }
+/* ▶ HEAR IT (2026-10-19): the hero's way to the test drive (#hear), in the player's own hand: a lit magenta key like
+   its step keys and the CRT caption type of its steps. Desktop: it rides in the title panel's bottom pad (net height
+   0), so the title and CTA panels still mirror. 601-1099: in flow. Phones: none, the player starts where the first
+   screen ends (390x844: the hero's catch line ends at 824, #hear's panel starts at 860). */
+.d-hero-hear {
+  display: flex; width: max-content; align-items: center; gap: .75em; margin-top: 14px; text-decoration: none;
+  font: 400 12px/1 var(--d-f-pix); letter-spacing: .14em; text-transform: uppercase;
+  color: var(--d-crt); text-shadow: 0 0 8px var(--d-crt-glow); transition: color .12s ease;
+}
+.d-hero-hear .k {
+  display: grid; place-items: center; width: 1.75em; height: 1.75em; border-radius: 3px;
+  background: var(--d-hot); box-shadow: 0 0 12px rgba(255, 79, 216, .55); transition: box-shadow .12s cubic-bezier(.2, .9, .25, 1.25);
+}
+.d-hero-hear .k::before { content: ''; margin-left: 2px; border-left: 7px solid #16021c; border-block: 4.5px solid transparent; }
+.d-hero-hear:hover { color: var(--d-white-ink); }
+.d-hero-hear:hover .k { box-shadow: 0 0 0 2px var(--d-hot), 0 0 22px rgba(255, 79, 216, .85); }
+.d-hero-hear:focus-visible { outline: 2px solid var(--d-pink-ink); outline-offset: 6px; border-radius: 3px; }
+@media (min-width: 1100px) { .d-hero-hear { margin: 10px 0 -31px; } }   /* 10 + 21 px key - 31 = 0 */
+@media (max-width: 600px) { .d-hero-hear { display: none; } }
 .d-hero .d-hero-meter { display: none; }   /* ≤1099 only (below) */
 
 .d-cta-block { display: flex; flex-direction: column; align-items: flex-start; gap: 18px; }
@@ -1146,10 +1165,31 @@
 }
 .d-hear-cap { display: flex; align-items: center; font: 400 12px/1 var(--d-f-pix); letter-spacing: .14em; color: var(--d-crt); text-shadow: 0 0 8px var(--d-crt-glow); }
 .d-hear-caps { display: flex; align-items: center; gap: 14px; flex: 1; justify-content: center; }
-/* stopped: the PLAY cap breathes (the next thing to touch) */
+/* THE GUIDE (2026-10-19, hear.ts next() -> [data-next]): the next thing to touch breathes, and so does its step's key;
+   the other keys rest dim until the visitor has heard both sides ([data-next=''] = free play, every key lit again).
+   'play' = the PLAY cap + key 2; 'drift' / 'back' = the DRIFT button + key 3. One breath for all of them (d-hear-next). */
 .d-hear-play::after { content: ''; position: absolute; inset: -5px; border-radius: 50%; pointer-events: none; }
-[data-hear]:not([data-playing]) .d-hear-play::after { animation: d-hear-next 1.2s ease-in-out infinite; }
+[data-hear][data-next='play'] .d-hear-play::after { animation: d-hear-next 1.2s ease-in-out infinite; }
 @keyframes d-hear-next { 0%, 100% { box-shadow: 0 0 0 2px rgba(255, 79, 216, .2); } 50% { box-shadow: 0 0 0 2px var(--d-hot), 0 0 22px rgba(255, 79, 216, .85); } }
+[data-hear]:not([data-next='']) .d-hear-n { background: rgba(255, 79, 216, .42); box-shadow: none; }
+[data-hear][data-next='play'] [data-step='2'] .d-hear-n,
+[data-hear]:is([data-next='drift'], [data-next='back']) [data-step='3'] .d-hear-n { background: var(--d-hot); animation: d-hear-next 1.2s ease-in-out infinite; }
+/* the DRIFT button's breath: a ring on the chrome bezel (the button is 150 of the box's 204 px) */
+.d-start::after { content: ''; position: absolute; inset: 13%; border-radius: 50%; pointer-events: none; }
+[data-hear]:is([data-next='drift'], [data-next='back']) .d-start::after { animation: d-hear-next 1.2s ease-in-out infinite; }
+/* the coach cell (left of the tag): one line, never wraps; an instruction burns brighter than a status */
+.d-hear-sec .d-screen-hdr { gap: 10px; }
+.d-hear-coach { min-width: 0; overflow: hidden; white-space: nowrap; transition: color .12s ease, text-shadow .12s ease; }
+.d-hear-sec .d-hear-tag { flex: none; }
+[data-hear]:not([data-next='']) .d-hear-coach { color: var(--d-lcd); text-shadow: 0 0 6px rgba(242, 76, 240, .85); }
+/* the size of the screen's readouts (PAN, the clock), under the tag's 22 px box so the row keeps its height; phones
+   16 px: PUSH AGAIN: ORIGINAL still fits beside DRIFT ON at 360 */
+.d-hear-sec .d-hear-coach { font-size: 19px; }
+@media (max-width: 600px) {
+  .d-hear-sec .d-hear-coach { font-size: 16px; }
+  .d-hear-panel > .d-sticker { display: none; }   /* the 試聴 tag touched the title on phones (as #drive's, Dan 10-04) */
+}
+@media (max-width: 380px) { .drift-page .d-hear-sec .d-hear-cap { font-size: 9px; letter-spacing: .08em; white-space: nowrap; } }   /* 3 PUSH DRIFT on one line at 360 (.drift-page: outranks the phone block below) */
 
 /* FLIP = a worn chrome push-to-start with a neon tube (neon bench D1, Yoni 2026-10-15: "polished metal, a bit more wear").
    Built at 204 px, scaled by --k. Lit (data-on=after) = DRIFT, dark = the original; while the sound loads the 40 bars
@@ -1227,7 +1267,11 @@
 .d-hear-pair .d-screw.bl { left: 7px; bottom: 7px; } .d-hear-pair .d-screw.br { right: 7px; bottom: 7px; }
 .d-hear-unit { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .d-hear-unit-lbl { font: 500 11px/1 var(--d-f-head); letter-spacing: .26em; margin-left: .26em; text-transform: uppercase; color: #8f7aa6; white-space: nowrap; }
-[data-ab='after'] .d-hear-unit:first-child .d-hear-unit-lbl { color: var(--d-pink-ink); text-shadow: 0 0 8px rgba(255, 79, 216, .8); }
+/* under the DRIFT button: both sides of the switch, the one you hear lit (cyan = the original, as the LCD tag) */
+.d-hear-ab { display: flex; gap: .9em; }
+.d-hear-ab i { font-style: normal; transition: color .12s ease, text-shadow .12s ease; }
+[data-ab='before'] .d-hear-ab i:first-child { color: var(--d-cyan-ink); text-shadow: 0 0 8px rgba(94, 231, 255, .6); }
+[data-ab='after'] .d-hear-ab i:last-child { color: var(--d-pink-ink); text-shadow: 0 0 8px rgba(255, 79, 216, .8); }
 /* VOLUME: DRIFT's own house knob (public/drift/knob3d-drift-65.webp, tools/drift-player/make_knob_strip.py), the
    plugin's inset and lamp tamer; 31 bars over its 270 degrees, lit up to the level, the last lit bar white */
 .d-vol { position: relative; width: 126.5px; height: 126.5px; display: grid; place-items: center; }
@@ -1247,6 +1291,9 @@
 .d-vol-knob:hover .k3d { filter: drop-shadow(0 0 10px rgba(180, 107, 255, .4)); }
 .d-hear-head { margin-bottom: 14px; }
 .d-hear-head h2.d-headline { margin: 0; }
+/* the checker strip stops short of the centred title: below ~770 px it ran under LET'S DRIFT. (2026-10-19, measured
+   glyph boxes); cropped, not squeezed. Wider panels keep the whole strip (the cap is above 244 px). */
+.d-hear-panel > .d-checker { max-width: calc(50% - 131px); object-fit: cover; object-position: left center; }
 /* COMPACT (Yoni 2026-10-15: "fit on the screen without swiping, let's say by 30 %"): the whole #hear panel fits a
    1366 x 768 laptop under the site header (892 -> ~600 px), every part tightened, nothing scaled as a picture. */
 .d-panel.d-hear-panel { padding-top: 24px; padding-bottom: 24px; }   /* bottom = top since the closing line went (10-19) */
@@ -1373,6 +1420,7 @@ html.bench-on #hear .d-hear-row *, html.bench-on #hear .d-hear-wave * { pointer-
   .d-hear-sec .d-hear-step:not(.d-hear-step--ab) .d-cap { translate: 0 9px; }
   .d-hear-sec .d-start-in { translate: 0 -7.3px; }
   .d-hear-sec .d-start-pb { translate: 0 -3.6px; }
+  .d-hear-sec .d-start::after { translate: 0 calc(-7.3px - 3.6px * var(--k)); }   /* the breath ring follows the button up */
   .d-hear-sec .d-vol { translate: -2.7px -8px; }
   .d-hear-sec .d-hear-pair > .d-hear-unit:first-of-type .d-hear-unit-lbl { translate: -.7px -11.3px; }
   .d-hear-sec .d-hear-pair > .d-hear-unit:last-of-type .d-hear-unit-lbl { translate: -4.4px -12.4px; }
@@ -1393,7 +1441,9 @@ html.bench-on #hear .d-hear-row *, html.bench-on #hear .d-hear-wave * { pointer-
   .d-screen-title { font-size: 28px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  [data-hear]:not([data-playing]) .d-hear-play::after { animation: none; box-shadow: 0 0 0 2px var(--d-hot); }
+  [data-hear][data-next='play'] .d-hear-play::after, [data-hear][data-next='play'] [data-step='2'] .d-hear-n,
+  [data-hear]:is([data-next='drift'], [data-next='back']) .d-start::after,
+  [data-hear]:is([data-next='drift'], [data-next='back']) [data-step='3'] .d-hear-n { animation: none; box-shadow: 0 0 0 2px var(--d-hot); }
   .d-start.is-striking .lit, .d-start .d-start-tube.lit, .d-start[data-loading] .d-start-ticks i { animation: none !important; }
 }
 
