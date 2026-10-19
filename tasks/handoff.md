@@ -165,8 +165,12 @@ Claim: CLOSED 2026-10-14. Took over `revaudio-c7`'s stale claim (session gone) o
 
 ## 2026-10-15 — Claude Code `revaudio-02` (Yoni's laptop) — DRIFT #hear test drive (before/after player), native to /drift
 
-Claim: OPEN, paused by Yoni 2026-10-15 ~18:25 ("save this current design. we'll push later. close session").
-Worktree `../revaudio-website-dpl`, branch `drift-player`, local only until "push". Files owned:
+Claim: CLOSED 2026-10-19 — PUSHED + LIVE (Yoni: "lets push to live website the design we made for the drift's a/b
+player"). `drift-player` rebased clean onto origin/main `1f7fd5d` (pre-rebase tag `drift-player-prerebase-2026-10-19`),
+build green, pushed `1f7fd5d..c4587e5` (only this branch's 25 commits; main's unpushed GAS/Radio player work NOT included).
+Deploy + Smoke test green, CF cache purged; live revaudio.net/drift #hear renders, 0 broken images, 0 console errors
+under the live CSP. Still unverified: real iPhone / Firefox / Safari (below).
+Worktree `../revaudio-website-dpl`, branch `drift-player`. Files owned (until close):
 `src/components/drift/DriftHear.astro`, `src/lib/drift/{hear,speakers,snap}.ts`, the #hear block in
 `src/styles/drift.css`, the #hear / snap lines in `src/pages/drift.astro` / `src/lib/drift/init.ts` /
 `src/data/drift.ts` (demoMode 'real', demoWholeSound true) + `src/lib/drift/bus.ts` (one comment),
@@ -212,7 +216,7 @@ Removed: DriftHeadUnit.astro + demo.ts (the structure test), the toy bench + its
 
 ### Things the next session needs to decide
 
-1. **Push (Yoni: "we push later today")** — only on the word "push". Route: `git -C ../revaudio-website-dpl pull --rebase`
+1. ~~**Push**~~ DONE 2026-10-19 (`c4587e5`, see the claim line). Old route, for the record: Route: `git -C ../revaudio-website-dpl pull --rebase`
    (origin/main may have moved), `npm run build`, serve `dist/` under the live CSP, then push `drift-player` to main
    (main = live GitHub Pages deploy). Name any other session's commits that would ride along (none at 17:15).
 2. **Shared repo commit `b866f9d`** (memory note) goes out with the next shared push.
