@@ -1,3 +1,17 @@
+# DRIFT #hear — step 2 (PLAY / STOP) gets the love (2026-10-19, revaudio-ef, same branch)
+
+Request (laptop 1 user, on a screenshot of the step-2 box): "this is the next area that needs love". Covers the paused
+review item 2 (the next-step breath). Found: the cue is a flat magenta outline lit by nothing; the caps float on the
+plate with no mount (step 3 sits in chrome + LED bars); STOP is filtered to a muddy brown that reads broken.
+
+- [x] P1. Bench `bench/drift-play-bench.html` (worktree root on 8796): the real box (trial-plate, label, mm caps) at
+  186 x 184.5 / 120.6 x 147.5 / 111.4 x 145.8, step 3 crops beside it, guide states cycling, fit + plate-edge
+  checks. 0 = today; A = chrome bezels + 24 LED bars round PLAY (step 3's language); B = wells + pilot lamps
+  (green PLAY lamp); C = chrome bezels + the PLAY cap lit from inside. STOP = an unlit dark red in A-C (one race-red).
+- [ ] P2. The user picks.
+- [ ] P3. Fold (markup: a mount wrapper per cap, scoped to .d-hear-sec so #drive's GPS caps stay), verify heights,
+  states, reduced motion, focus ring, then commit, no push.
+
 # DRIFT #hear — the screen as a real LCD (2026-10-19, revaudio-ef, same branch)
 
 Request (laptop 1 user, on the #hear screen screenshot): "let's design this whole area so it looks like an LCD
