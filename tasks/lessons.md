@@ -93,3 +93,11 @@ an idle timer shorter than that fires before Lenis moved; wait while `lenis.isSc
    poster-less video; hide `::-webkit-media-controls` in the `<noscript>` style or the picture never shows.
 5. "Smaller on phones" must come from the screen's real need, not a guess: the phone poster needed ~1050 device px
    (390@3), not 800; measure CSS size x DPR per device before choosing cuts.
+
+## 2026-10-20 - a bench value tuned at laptop widths can break narrower ones
+
+The GAS lab bench (real /gas in 1366-1920 px frames) gave a fixed `margin-bottom: -7.625rem` that pulls the
+width-scaled <gas-mixer> up under the "Hear it" line. At a 1000 px window the mixer is smaller, so the same pull ran the
+console over the line and the note onto the plate. Rule: after baking a bench offset that works against a component
+that scales with the width, check the narrowest desktop width (~1000 px) too; scale the offset with the width
+(`max(<tuned>, -<n>vw)`) so the tuned look stays exact where it was tuned.

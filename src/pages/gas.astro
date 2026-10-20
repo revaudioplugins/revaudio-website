@@ -671,16 +671,24 @@ const highlights = plugin.features.slice(0, 3);
      those three need (gaps included). The hero is one screen minus that room, and the plate gives way to make it
      fit: it follows the screen height between 25rem (about the copy column, below that it would not help) and
      its old 600px cap. On a screen too short for all of it the note goes first, the hero always fits whole.
-     Tighter gaps on both sides of the seam. Phones unchanged. */
+     No gap between the line and the mixer (2026-10-20): the negative margin pulls the mixer's empty top strip up
+     under the line, so the console follows the line straight on and the note sits beside it. Values placed by
+     eye on the GAS lab bench (real /gas in laptop-size frames). Phones unchanged. */
+  /* GAS lab 2026-10-20 (peek=24rem, heroT=1.5rem, subT=0rem, subS=4rem, subB=-7.625rem): replaces the desktop @media block in src/pages/gas.astro */
   @media (min-width: 901px) {
     .gas {
-      --gas-peek: 17rem;
+      --gas-peek: 24rem;
       min-height: calc(100svh - var(--nav-h, 75px) - var(--gas-peek));
-      padding-bottom: var(--space-5);
+      padding-top: 1.5rem;
+      padding-bottom: 1.5rem;
     }
-    .gas-plate img { max-height: clamp(25rem, calc(100svh - var(--nav-h, 75px) - 3.5rem - var(--gas-peek)), 600px); }
-    .gas-hear { padding-top: var(--space-4); }
-    .gas-hear-sub { margin-bottom: var(--space-3); }
+    .gas-plate img { max-height: clamp(25rem, calc(100svh - var(--nav-h, 75px) - 3rem - var(--gas-peek)), 600px); }
+    .gas-hear { padding-top: 1rem; }
+    .gas-hear h2 { font-size: clamp(2.2rem, 4vw, 3.2rem); }
+    .gas-hear-sub { margin-top: 0rem; margin-bottom: -7.625rem; font-size: clamp(1.9rem, 3vw, 4rem); }
+    /* The mixer (and its empty top strip) shrinks with the width, a fixed pull does not: below ~1284px it would
+       run the console over the line and the note onto the plate (seen at 1000px). Same -7.625rem above that. */
+    .gas-hear-sub { margin-bottom: max(-7.625rem, -9.5vw); }
   }
 
   /* Phones: stack, plate first but smaller. One screen is a desktop promise —
