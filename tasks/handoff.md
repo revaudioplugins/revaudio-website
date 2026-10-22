@@ -1,3 +1,19 @@
+## 2026-10-22 — GAS 2 page: the station mockup on branch `feat/gas2-page` (Claude Code, Dan's Mac) — BRANCH PUSHED, NOT MAIN (Dan: "push this branch so Yoni can work on the player")
+
+Claim: OPEN. Files: `tools/_gas2-scene/**` (static mockup, no build step; README there). Split (one writer per file set):
+**Yoni = the player** (the radio block in `page-b.html` + its own files under `tools/_gas2-scene/player/`, wired in with one
+`<link>` + one `<script>`); **Dan's session = everything else in `page-b.html`.**
+- What: the GAS 2 product page as one scene (final frame v17, desert station at dusk): wall sign = 3 grades, notes, radio =
+  player (visual only, no audio yet), mailbox = email signup (dummy ticket, sends nothing), chalkboard = prices, pump = the
+  real plugin UI (iframe to :4461). Readings on the right: GAS 2 + FREE, "Thicker, smoother, glued master." (Bebas, honey),
+  honey Download button, script "Fill it up." (Dan's picks 2026-10-22: his bench export folded in, measured at his Safari
+  1141x636 to 0.2 px; the tag line dropped; the spec line removed). `page-a.html` = frozen 2026-10-22 snapshot; `ab.html`
+  = A/B viewer; `?bench` = shared bench harness (bench.js symlink, not committed).
+- Not in git (Dan's Mac only): 16 other frame candidates, reference photos, frame-generation scripts.
+- Open: "same loudness" / auto-level is NOT in the copy (needs a measured check first); the mailbox form is a dummy
+  (real contract = the trial worker's `/download/register`); fonts self-hosted woff2 (OFL); page not yet in `src/`.
+- Next: Dan walks the page section by section (readings done); Yoni builds the player.
+
 ## 2026-10-19 — /gas "Hear it": desktop shows the 3-track mixer only, the pedal toy stays on phones (Claude Code `revaudio-2a`, laptop 1) — PUSHED TO MAIN = LIVE 2026-10-20 (user: "push to main this session only"; commits `058fa84`..`ec2f4a4` + this handoff line)
 
 Claim: CLOSED 2026-10-19. Files: `bench/gas-mixer-bench.html`, `public/gas-mixer/gas-mixer.js`, `src/pages/gas.astro`, `tasks/handoff.md`, `tasks/player-toy-redesign-plan.md` (a note at the top).

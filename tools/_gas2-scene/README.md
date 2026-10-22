@@ -1,0 +1,33 @@
+# GAS 2 page — station mockup (work in progress, not built into the site)
+
+The GAS 2 product page as one interactive scene: a 1950s desert gas station at dusk, every prop on the lot does something.
+Static HTML, no build step. Not part of the Astro site yet; it moves into `src/` once the page is signed off.
+
+## Run it
+
+```
+cd tools/_gas2-scene
+python -m http.server 4462 --bind 127.0.0.1
+```
+
+- `page-b.html` — **the working page.** Readings (right side), wall sign = the 3 grades, taped notes, radio = the player,
+  mailbox = email signup, chalkboard = prices, pump = opens the real plugin UI (served separately on :4461 from the GAS2
+  repo's `Source/ui/public`; optional).
+- `page-a.html` — frozen snapshot of 2026-10-22 (read-only), for comparison.
+- `ab.html` — A and B side by side (or Flip with A / B / Space) at real window sizes.
+- `page-b.html?bench` — the shared RevAudio bench harness on B (click, drag, resize, fonts, colors, EXPORT). Needs
+  `bench.js` next to the page: symlink or copy `revaudio-shared/tools/bench/bench.js` here (not committed: machine path).
+- TUNE (button bottom right, or T) — readings position / size + the 4 looks (Now / Neon / Enamel / Badge).
+
+## Who works on what (one writer per file set)
+
+- **The player (the radio, `<!-- 3. radio player -->` block + its `.radio*` / `.dial` CSS): Yoni.** Build it in its own
+  files under `player/` and wire it into `page-b.html` with one `<link>` + one `<script>` line, so the page and the player
+  never edit the same lines.
+- **Everything else in `page-b.html` (readings, layout, props, copy): Dan's session.**
+- Claims and state: `tasks/handoff.md` (top entry).
+
+## Not in git
+
+The other 16 candidate frames, the reference photos and the frame-generation scripts stay on Dan's Mac
+(`tools/_gas2-scene/` in his main clone). Fonts here are SIL OFL; the frame + props are our own generated art.

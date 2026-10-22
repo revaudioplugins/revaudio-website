@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GAS 2 Mockup B</title>
+<style>
+@font-face { font-family: Bebas; src: url(fonts/bebas.woff2) format("woff2"); }
+@font-face { font-family: Inter; src: url(fonts/inter.woff2) format("woff2"); font-weight: 100 900; }
+@font-face { font-family: Yellowtail; src: url(fonts/yellowtail.woff2) format("woff2"); }
+@font-face { font-family: Gochi; src: url(fonts/gochi.woff2) format("woff2"); }
+@font-face { font-family: Marker; src: url(fonts/marker.woff2) format("woff2"); }
+@font-face { font-family: Elite; src: url(fonts/elite.woff2) format("woff2"); }
+@font-face { font-family: Oswald; src: url(fonts/Oswald-Variable.woff2) format("woff2"); font-weight: 200 700; }
+:root {
+  --bg: #120804; --ink: #241a12; --paper: #efe3c2; --brass: #e8c878; --honey: #f2be4a; --oxide: #7a2717;
+  --fg: #efe9df; --muted: #b9b0a2; --dim: #8a8275; --lamp: rgba(255, 196, 110, .55);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: Inter, system-ui, sans-serif; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+
+/* the final frame: a 3:2 scene that always covers the viewport; every prop is placed in % of the scene so it tracks the photo */
+.stage { position: relative; height: 100vh; min-height: 560px; overflow: hidden; background: #0d0806; }
+.scene { position: absolute; left: 50%; top: 50%; width: max(100vw, 150vh); aspect-ratio: 3 / 2; transform: translate(-50%, -50%); container-type: inline-size; }
+/* windows taller than the photo crop its sides: keep the right edge (the readings) in view, the station's far left gives way */
+@media (max-aspect-ratio: 3/2) { .scene { left: auto; right: 0; transform: translateY(-50%); } }
+.scene > img.photo { position: absolute; inset: 0; width: 100%; height: 100%; display: block; user-select: none; }
+.abs { position: absolute; }
+
+/* 1. wall sign: the three grades, painted */
+.sign { left: 3.2%; top: 12.3%; width: 57.6%; height: 6.6%; display: flex; align-items: center; justify-content: center; gap: 2.2cqw; }
+.sign button { font: 400 3.55cqw/1 Bebas; letter-spacing: .14em; color: var(--oxide); opacity: .9; mix-blend-mode: multiply; filter: url(#paint); transition: color .25s, opacity .25s; }
+.sign i { width: .55cqw; height: .55cqw; border-radius: 50%; background: var(--oxide); opacity: .7; mix-blend-mode: multiply; }
+.sign button:hover, .sign button.on { color: #a8321c; opacity: 1; }
+.sign button.on { text-decoration: underline; text-decoration-thickness: .18cqw; text-underline-offset: .5cqw; }
+.gradeTip { left: 50%; top: 19.4%; transform: translate(-50%, -.4cqw) rotate(-.6deg); background: var(--paper); color: var(--ink); padding: .45cqw 1.1cqw; font: 500 max(11px, .86cqw) Oswald; letter-spacing: .16em; text-transform: uppercase; white-space: nowrap; box-shadow: 0 .3cqw .8cqw rgba(0,0,0,.4); opacity: 0; transition: opacity .25s, transform .25s; pointer-events: none; margin-left: -18.1%; }
+.gradeTip.show { opacity: 1; transform: translate(-50%, 0) rotate(-.6deg); }
+/* the pump's three keys glow with the chosen grade */
+.key { top: 60.3%; height: 2.9%; border-radius: .25cqw; box-shadow: 0 0 1.2cqw .25cqw rgba(255, 190, 90, .0), inset 0 0 .9cqw rgba(255, 200, 110, 0); transition: box-shadow .35s; pointer-events: none; }
+.key.on { box-shadow: 0 0 1.4cqw .3cqw rgba(255, 190, 90, .55), inset 0 0 .9cqw rgba(255, 210, 130, .65); }
+
+/* 2. window notes (GAS 1's taped paper note) */
+.note { background: var(--paper); color: var(--ink); font: 400 .98cqw/1.25 Gochi; padding: .9cqw 1cqw 1cqw; box-shadow: 0 .4cqw 1cqw rgba(0,0,0,.45); transform: rotate(var(--r, -2deg)); }
+.note b { display: block; font: 400 1.12cqw Marker; color: #a8321c; letter-spacing: .06em; margin-bottom: .3cqw; }
+.note::before, .note::after { content: ""; position: absolute; top: -.7cqw; width: 2.8cqw; height: 1.3cqw; background: rgba(235, 225, 195, .78); box-shadow: 0 .1cqw .3cqw rgba(0,0,0,.2); }
+.note::before { left: -.6cqw; transform: rotate(-28deg); }
+.note::after { right: -.6cqw; transform: rotate(26deg); }
+.note a { color: #a8321c; }
+.n1 { left: 7.4%; top: 26%; width: 7.9%; --r: -3deg; }
+.n2 { left: 37.6%; top: 25%; width: 11.6%; --r: 2deg; }
+.n3 { left: 39.6%; top: 40.5%; width: 9.4%; --r: -1.5deg; }
+
+/* 3. the radio = the GAS 2 player */
+.radio { left: 5.2%; top: 52.3%; width: 15.3%; height: 15%; border-radius: .6cqw; }
+.radio .glow { position: absolute; inset: -8% -6%; border-radius: 1cqw; background: radial-gradient(closest-side, rgba(255, 190, 100, .38), transparent); opacity: 0; transition: opacity .5s; pointer-events: none; }
+.radio.on .glow { opacity: 1; animation: breathe 1.6s ease-in-out infinite; }
+@keyframes breathe { 50% { opacity: .55; } }
+.dial { position: absolute; left: 25%; right: 25%; top: 71%; height: 13%; display: flex; justify-content: space-between; align-items: center; padding: 0 5%; font: 600 .5cqw Oswald; letter-spacing: .14em; color: #2a1a0c; }
+.dial .ptr { position: absolute; top: 8%; bottom: 8%; width: .16cqw; background: #b3261e; left: 16%; transition: left .7s cubic-bezier(.2, .9, .25, 1.15); box-shadow: 0 0 .3cqw rgba(179, 38, 30, .6); }
+.radio.b .dial .ptr { left: 82%; }
+.dial span { position: relative; z-index: 1; }
+.radioCap { left: 5.2%; top: 68.2%; width: 15.3%; text-align: center; font: 600 max(11px, .78cqw) Oswald; letter-spacing: .2em; color: var(--paper); text-shadow: 0 1px 3px #000; text-transform: uppercase; pointer-events: none; }
+.radioCap em { font-style: normal; color: var(--honey); }
+
+/* 4. mailbox = email signup */
+.mail { left: 53.2%; top: 27%; width: 7.4%; transition: transform .35s cubic-bezier(.2, .9, .25, 1.25); filter: drop-shadow(.3cqw .5cqw .5cqw rgba(12, 9, 6, .55)) brightness(.88) sepia(.12); }
+.mail img { width: 100%; display: block; }
+.mail .plate { position: absolute; left: 33%; top: 33%; width: 34%; text-align: center; font: 700 .52cqw Oswald; letter-spacing: .12em; color: #2a1c0c; }
+.mail .tkt { position: absolute; left: 18%; top: 8%; width: 64%; height: 14%; background: var(--paper); transform: translateY(40%); transition: transform .35s; z-index: -1; box-shadow: 0 .2cqw .4cqw rgba(0,0,0,.3); }
+.mail:hover { transform: translateY(-2%) rotate(-1deg); }
+.mail:hover .tkt { transform: translateY(-55%); }
+.mailCap { left: 52.6%; top: 44.2%; width: 8.6%; text-align: center; font: 600 max(11px, .66cqw) Oswald; letter-spacing: .14em; color: var(--ink); background: var(--paper); padding: .35cqw .4cqw; transform: rotate(1.2deg); box-shadow: 0 .2cqw .6cqw rgba(0,0,0,.35); text-transform: uppercase; pointer-events: none; }
+
+/* 5. chalkboard = the price */
+.chalk { left: 56.2%; top: 53.4%; width: 11.6%; filter: drop-shadow(.5cqw .6cqw .5cqw rgba(12, 9, 6, .6)) brightness(.86) sepia(.1); pointer-events: none; }
+.chalk img { width: 100%; display: block; }
+.chalk .txt { position: absolute; left: 14%; right: 14%; top: 9%; height: 54%; display: flex; flex-direction: column; justify-content: center; gap: .25cqw; text-align: center; color: rgba(244, 240, 230, .9); font: 400 1cqw/1.3 Marker; text-shadow: 0 0 .15cqw rgba(255,255,255,.35); filter: url(#chalk); }
+.chalk .txt { left: 17%; right: 17%; }
+.chalk .txt .h { font-size: .9cqw; margin-bottom: .4cqw; letter-spacing: .03em; line-height: 1.1; }
+.chalk .txt .p { display: flex; justify-content: space-between; font-size: .6cqw; padding: 0 12%; }
+
+/* the pump: hover hint, click = the real plugin */
+.pump { left: 22%; top: 20%; width: 15.8%; height: 61%; border-radius: 1cqw; }
+.pumpTip { left: 22%; top: 82%; width: 15.8%; text-align: center; font: 600 max(11px, .74cqw) Oswald; letter-spacing: .2em; color: var(--paper); text-transform: uppercase; opacity: 0; transition: opacity .25s; pointer-events: none; text-shadow: 0 1px 3px #000; }
+.pump:hover + .pumpTip { opacity: .9; }
+
+/* first-visit hint: every live prop pulses once */
+.hot { outline: none; }
+.hot:focus-visible { box-shadow: 0 0 0 .2cqw var(--honey); }
+.pulse .ring { position: absolute; border: .15cqw solid rgba(242, 190, 74, .9); border-radius: 1cqw; animation: ring 1.4s ease-out 2 forwards; pointer-events: none; }
+@keyframes ring { from { opacity: .9; transform: scale(.96); } to { opacity: 0; transform: scale(1.12); } }
+
+/* readings on the right: the live GAS 1 hero's type and tone */
+.rd { left: calc(var(--rdx, 67.5) * 1%); top: 50%; width: 29%; isolation: isolate; transform-origin: 0 50%;
+  transform: translateY(calc(-50% + var(--rdy, 0) * 1vh)) scale(var(--rds, 1)); } /* centred on the viewport's Y: the scene itself is centred on the stage */
+.rd::before { content: ""; position: absolute; inset: -16% -22% -18% -16%; z-index: -1; background: radial-gradient(closest-side, rgba(18,8,4,.74), rgba(18,8,4,.46) 62%, transparent); }
+.rd .ti { display: flex; align-items: center; gap: 1.4cqw; }
+.rd .n { font: 400 7cqw/.9 Bebas; letter-spacing: .03em; color: var(--fg); text-shadow: 0 .3cqw 2.4cqw rgba(0,0,0,.5); }
+.rd .free { font: 400 .9cqw Inter; letter-spacing: .3em; color: var(--brass); border: 1px solid var(--brass); padding: .5cqw 1cqw; }
+.rd .tag { margin-top: 1.4cqw; font: 400 2.4cqw/1 Bebas; letter-spacing: .04em; color: var(--brass); }
+.rd .lead { margin: 1.6cqw 0 0; font-size: 1.25cqw; line-height: 1.5; color: var(--muted); max-width: 26cqw; }
+.rd .cta { display: inline-flex; gap: .7cqw; align-items: center; margin-top: 1.9cqw; background: var(--honey); color: #1e1710; font: 700 1.2cqw Inter; padding: 1.1cqw 2.1cqw; border-radius: .7cqw; box-shadow: 0 .5cqw 1.6cqw rgba(0,0,0,.35); transition: transform .15s, background .2s; }
+.rd .cta:hover { background: #f6c95e; transform: translateY(-.1cqw); }
+.rd .spec { margin-top: 1.3cqw; font: 400 max(11px, .74cqw) ui-monospace, Menlo, monospace; letter-spacing: .14em; color: #d8cfbf; text-shadow: 0 1px 3px rgba(0,0,0,.8); }
+.rd .scr { margin-top: 2.6cqw; font: 400 1.7cqw Yellowtail; color: var(--brass); }
+
+/* ── LOOKS (TUNE → Look): three ways to make the readings pop. "now" = as baked 2026-10-21. ── */
+.price, .scw { display: none; }
+/* shared by neon / enamel / badge: the house honey button (buttons.css grammar, scaled to the scene) + the shine,
+   a brighter lead, the Yellowtail line's soft amber glow (DESIGN.md §3) */
+body:not([data-look="0"]) .rd .cta { position: relative; isolation: isolate; overflow: hidden; justify-content: center;
+  min-height: max(52px, 4.4cqw); padding: 0 max(24px, 2.1cqw); border-radius: max(12px, 1.1cqw); gap: max(8px, .7cqw);
+  font: 700 max(16px, 1.4cqw)/1 Inter; letter-spacing: -.01em; background: #f2be4a; color: #1e1710;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 1), inset 0 -2px 0 hsl(38 85% 34% / .2), 0 1px 0 #5f4311, 0 2px 3px rgb(0 0 0 / .45), 0 2.8cqw 3.2cqw rgb(0 0 0 / .3);
+  transition: transform .16s, box-shadow .16s, background-color .16s; }
+body:not([data-look="0"]) .rd .cta:hover { background: #f6c95e; transform: translateY(-1px); }
+body:not([data-look="0"]) .rd .cta:active { background: #eab53f; transform: translateY(1px); transition-duration: .08s; }
+body:not([data-look="0"]) .rd .cta::after { content: ""; position: absolute; inset: 0 auto 0 0; z-index: -1; width: 28%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent); transform: translateX(-160%) skewX(-20deg); animation: shine 8s ease-in-out 1.2s infinite; pointer-events: none; }
+@keyframes shine { 0% { transform: translateX(-160%) skewX(-20deg); } 17.5%, 100% { transform: translateX(418%) skewX(-20deg); } }
+body:not([data-look="0"]) .rd .lead { color: rgba(239, 233, 223, .9); }
+body:not([data-look="0"]) .rd .scr { text-shadow: 0 0 .9cqw rgba(232, 200, 120, .35); }
+
+/* A · NEON: GAS 2 is a lit tube sign on a steel sign-can (a neon sign IS a lamp, so it may glow and spill) */
+[data-look="a"] .rd::before { background: radial-gradient(closest-side, rgba(18,8,4,.62), rgba(18,8,4,.36) 62%, transparent); }
+[data-look="a"] .rd .ti { position: relative; width: max-content; gap: 1.8cqw; margin-left: -1.7cqw; padding: 1.2cqw 1.7cqw 1.3cqw; border-radius: .7cqw;
+  background: linear-gradient(180deg, #2a2420 0%, #1d1916 46%, #120e0b 100%);
+  box-shadow: inset 0 1px 0 rgba(239,233,223,.1), inset 0 0 0 .14cqw #3a2f26, inset 0 -.4cqw .8cqw rgba(0,0,0,.55), 0 .6cqw 1.8cqw rgba(0,0,0,.6), 0 .15cqw .2cqw rgba(0,0,0,.6); }
+[data-look="a"] .rd .ti::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; mix-blend-mode: screen;
+  background: radial-gradient(60% 75% at 36% 52%, rgba(255, 176, 70, .26), transparent 72%); animation: neonOn 1.5s linear .35s both; }
+[data-look="a"] .rd .ti::after { content: ""; position: absolute; inset: .55cqw; pointer-events: none; /* four rivets */
+  background: radial-gradient(circle at 50% 40%, #8a8275, #3a332c 70%) 0 0 / .5cqw .5cqw no-repeat, radial-gradient(circle at 50% 40%, #8a8275, #3a332c 70%) 100% 0 / .5cqw .5cqw no-repeat,
+    radial-gradient(circle at 50% 40%, #8a8275, #3a332c 70%) 0 100% / .5cqw .5cqw no-repeat, radial-gradient(circle at 50% 40%, #8a8275, #3a332c 70%) 100% 100% / .5cqw .5cqw no-repeat; }
+[data-look="a"] .rd .n { position: relative; color: transparent; -webkit-text-stroke: .3cqw #fff1d6; text-shadow: none; letter-spacing: .06em;
+  filter: drop-shadow(0 0 .1cqw #ffe9b8) drop-shadow(0 0 .5cqw hsl(42 96% 58%)) drop-shadow(0 0 1.4cqw hsl(38 95% 52% / .75)) drop-shadow(0 0 3cqw hsl(34 92% 48% / .45));
+  animation: neonOn 1.5s linear .35s both; }
+[data-look="a"] .rd .free { position: relative; font: 400 2.2cqw/1 Bebas; letter-spacing: .16em; color: #ffe2cc; border: .16cqw solid #ffd7b8; border-radius: .5cqw; padding: .55cqw .9cqw .45cqw 1.05cqw;
+  text-shadow: 0 0 .3cqw hsl(18 96% 60%), 0 0 1cqw hsl(16 95% 54% / .8);
+  box-shadow: 0 0 .4cqw hsl(18 96% 58%), 0 0 1.4cqw hsl(16 95% 52% / .6), inset 0 0 .4cqw hsl(18 96% 58%), inset 0 0 1cqw hsl(16 95% 52% / .4);
+  animation: neonOn 1.2s linear .9s both, buzz 7s linear 3s infinite; }
+@keyframes neonOn { 0% { opacity: .12; } 6% { opacity: 1; } 10% { opacity: .15; } 18% { opacity: 1; } 22% { opacity: .25; } 34%, 100% { opacity: 1; } }
+@keyframes buzz { 0%, 93%, 95%, 97%, 100% { opacity: 1; } 94%, 96% { opacity: .35; } }
+[data-look="a"] .rd .tag { font-size: 2.7cqw; color: var(--brass); text-shadow: 0 .12cqw 0 rgba(0,0,0,.7), 0 0 1.4cqw rgba(0,0,0,.5); }
+
+/* B · ENAMEL: the readings are a porcelain sign on two posts, oxide enamel, cream stripe, chips, rotated screws;
+   FREE = the pump's price counter rolling back to 0.00 */
+[data-look="b"] .rd { padding: 2.5cqw 2.7cqw 2.3cqw; }
+[data-look="b"] .rd::before { inset: 0; border-radius: 1cqw;
+  background:
+    radial-gradient(.8cqw .5cqw at 4% 6%, #1d1916 45%, transparent 62%), radial-gradient(1.2cqw .7cqw at 97% 34%, #1d1916 40%, transparent 60%),
+    radial-gradient(.7cqw .45cqw at 22% 98%, #1d1916 45%, transparent 62%), radial-gradient(.5cqw .4cqw at 88% 96%, #2a2420 45%, transparent 62%),
+    linear-gradient(104deg, transparent 32%, rgba(255, 240, 215, .13) 44%, transparent 56%),
+    linear-gradient(180deg, transparent 70%, rgba(40, 20, 10, .35)),
+    linear-gradient(165deg, #a54a28 0%, #8b3a1f 48%, #6a2a14 100%);
+  box-shadow: inset 0 0 0 .5cqw #8b3a1f, inset 0 0 0 .78cqw #e6d6ae, inset 0 0 0 .88cqw #5a2410, inset 0 .15cqw .3cqw rgba(255, 220, 190, .25),
+    0 1.2cqw 2.6cqw rgba(0,0,0,.6), 0 .2cqw .35cqw rgba(0,0,0,.55); }
+[data-look="b"] .rd::after { content: ""; position: absolute; z-index: -2; top: 70%; height: 80vh; left: 16%; right: 16%; /* the two posts */
+  background: linear-gradient(90deg, #14110f, #5f5a52 40%, #2a2420) 0 0 / 1.1cqw 100% no-repeat, linear-gradient(90deg, #14110f, #5f5a52 40%, #2a2420) 100% 0 / 1.1cqw 100% no-repeat; }
+[data-look="b"] .rd .scw { display: block; position: absolute; width: .9cqw; height: .9cqw; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #f4f0e8, #b9b5ad 45%, #5f5a52); box-shadow: 0 .1cqw .15cqw rgba(0,0,0,.65), inset 0 0 0 .05cqw rgba(0,0,0,.35); }
+[data-look="b"] .rd .scw::after { content: ""; position: absolute; left: 14%; right: 14%; top: 50%; height: .13cqw; margin-top: -.065cqw; border-radius: .05cqw; background: #2a2420; transform: rotate(var(--a)); }
+[data-look="b"] .rd .ti { justify-content: space-between; gap: 1.2cqw; }
+[data-look="b"] .rd .n { font-size: 6cqw; white-space: nowrap; color: #f1e6c8; text-shadow: 0 .12cqw 0 #4a1c0c, 0 .3cqw .6cqw rgba(0,0,0,.35); }
+[data-look="b"] .rd .free { display: none; }
+[data-look="b"] .rd .price { display: flex; flex-direction: column; align-items: center; gap: .4cqw; }
+.price .pl { font: 600 max(11px, .66cqw) Oswald; letter-spacing: .22em; color: #f1e6c8; white-space: nowrap; }
+.price .reels { display: flex; align-items: center; gap: .16cqw; padding: .4cqw .5cqw; border-radius: .35cqw;
+  background: linear-gradient(180deg, #120e0b, #2a2420 50%, #120e0b); box-shadow: inset 0 0 0 .1cqw #5a2410, inset 0 .25cqw .5cqw rgba(0,0,0,.85), 0 .1cqw 0 rgba(241, 230, 200, .3); }
+.price .reels b { font: 600 2cqw/1 Oswald; color: #f1e6c8; padding: 0 .1cqw; }
+.price .reel { position: relative; width: 1.45cqw; height: 2.6cqw; overflow: hidden; border-radius: .15cqw; background: #f4efe4; }
+.price .reel > span { display: block; transform: translateY(calc(var(--i, 20) * -2.6cqw)); transition: transform var(--d, 2s) cubic-bezier(.12, .7, .18, 1.02); }
+.price .reel em { display: block; height: 2.6cqw; font: 600 2.1cqw/2.6cqw Oswald; font-style: normal; text-align: center; color: #1e1710; }
+.price .reel::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.6), transparent 34%, transparent 66%, rgba(0,0,0,.6)); }
+[data-look="b"] .rd .tag { color: #f2be4a; text-shadow: 0 .1cqw 0 #4a1c0c; }
+[data-look="b"] .rd .lead { color: rgba(241, 230, 200, .94); max-width: none; }
+[data-look="b"] .rd .spec { color: rgba(241, 230, 200, .7); text-shadow: none; }
+[data-look="b"] .rd .scr { color: #f1e6c8; text-shadow: none; }
+
+/* C · BADGE: GAS 2 is a chrome car emblem that mirrors the dusk (sky, sun, horizon, ground);
+   FREE is a paper price tag on a string; FILL IT UP. in the house 3-stop brass */
+[data-look="c"] .rd::before { background: radial-gradient(closest-side, rgba(18,8,4,.8), rgba(18,8,4,.5) 62%, transparent); }
+[data-look="c"] .rd .ti { gap: 2cqw; }
+[data-look="c"] .rd .n { font-size: 7.8cqw; color: transparent; text-shadow: none; transform: skewX(-8deg); transform-origin: 0 100%;
+  background: linear-gradient(180deg, #fbf5ec 0%, #d9cfe0 22%, #f3b27a 42%, #3a2418 50%, #1d1410 53%, #8a6a50 72%, #e9d6b6 100%); -webkit-background-clip: text; background-clip: text;
+  filter: drop-shadow(0 -.05cqw 0 rgba(255, 246, 230, .7)) drop-shadow(0 .14cqw 0 #1d1916) drop-shadow(0 .7cqw 1.1cqw rgba(0,0,0,.7)); }
+[data-look="c"] .rd .free { position: relative; font: 400 2cqw/1 Bebas; letter-spacing: .1em; color: #8b3a1f; border: 0; border-radius: .3cqw; padding: .55cqw 1.1cqw .45cqw 2cqw;
+  background: radial-gradient(circle at .85cqw 50%, #120804 .28cqw, #6b5a40 .33cqw, transparent .36cqw), linear-gradient(170deg, #f3e9cf, #e6d6ae 60%, #d3be90);
+  box-shadow: 0 .35cqw .6cqw rgba(0,0,0,.5), inset 0 -.1cqw 0 rgba(90, 60, 30, .3); transform: rotate(-8deg) translateY(.8cqw); }
+[data-look="c"] .rd .free::before { content: ""; position: absolute; left: .75cqw; top: 50%; width: 3.4cqw; height: .1cqw; background: #d8cfbf; transform-origin: 0 50%; transform: rotate(-148deg); opacity: .85; }
+[data-look="c"] .rd .tag { font-size: 2.7cqw; background: linear-gradient(180deg, #e8c878 0%, #c9a35c 55%, #8c6f3a 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 .1cqw 0 rgba(0,0,0,.7)); }
+
+/* service ticket (the mailbox / download form) */
+.veil { position: fixed; inset: 0; background: rgba(8, 5, 3, .62); display: grid; place-items: center; opacity: 0; pointer-events: none; transition: opacity .25s; z-index: 10; padding: 16px; }
+.veil.open { opacity: 1; pointer-events: auto; }
+.ticket { position: relative; width: min(420px, 100%); background: var(--paper); color: var(--ink); font: 15px/1.5 Elite, ui-monospace, monospace; padding: 26px 28px 24px; box-shadow: 0 30px 80px rgba(0,0,0,.6); transform: translateY(30px) rotate(-1.2deg); transition: transform .35s cubic-bezier(.2,.9,.25,1.2);
+  background-image: radial-gradient(rgba(120, 90, 50, .08) 1px, transparent 1.5px); background-size: 7px 7px; }
+.veil.open .ticket { transform: translateY(0) rotate(-1.2deg); }
+.ticket::after { content: ""; position: absolute; left: 0; right: 0; bottom: -10px; height: 10px; background: linear-gradient(-45deg, transparent 6px, var(--paper) 0) 0 0 / 12px 10px, linear-gradient(45deg, transparent 6px, var(--paper) 0) 0 0 / 12px 10px; }
+.ticket h3 { margin: 0 0 4px; font: 400 26px/1 Bebas; letter-spacing: .08em; color: #a8321c; }
+.ticket .no { font-size: 12px; color: #6b5a40; letter-spacing: .1em; }
+.ticket hr { border: 0; border-top: 1px dashed #8c7a56; margin: 12px 0; }
+.ticket .row { display: flex; justify-content: space-between; }
+.ticket .row.tot { font-weight: bold; font-size: 17px; }
+.ticket label { display: block; margin-top: 14px; font-size: 12px; letter-spacing: .14em; color: #6b5a40; }
+.ticket input { width: 100%; margin-top: 4px; font: 16px Elite, ui-monospace, monospace; color: var(--ink); background: transparent; border: 0; border-bottom: 1.5px solid #6b5a40; padding: 6px 2px; outline: none; }
+.ticket input:focus { border-bottom-color: #a8321c; }
+.ticket .go { margin-top: 18px; width: 100%; background: var(--honey); color: #1e1710; font: 700 15px Inter; padding: 13px; border-radius: 8px; }
+.ticket .fine { margin-top: 12px; font-size: 12px; color: #6b5a40; }
+.ticket .x { position: absolute; top: 10px; right: 12px; font: 22px/1 Inter; color: #6b5a40; }
+.stamp { position: absolute; right: 22px; top: 70px; padding: 6px 12px; border: 3px solid #b3261e; color: #b3261e; font: 400 30px/1 Bebas; letter-spacing: .1em; transform: rotate(-12deg) scale(1.6); opacity: 0; transition: .25s cubic-bezier(.2,.9,.25,1.4); }
+.ticket.sent .stamp { opacity: .85; transform: rotate(-12deg) scale(1); }
+
+/* the real plugin (pump click) */
+.plug { width: min(560px, 96vw); height: min(86vh, 900px); border: 0; border-radius: 10px; box-shadow: 0 30px 80px rgba(0,0,0,.6); background: #120804; }
+
+.bench-note { position: fixed; left: 12px; bottom: 10px; z-index: 5; font: 12px ui-monospace, Menlo, monospace; color: #8a8275; background: rgba(18,8,4,.7); padding: 4px 8px; border-radius: 4px; }
+footer { padding: 40px 6vw; border-top: 1px solid #2a1c10; color: var(--dim); font-size: 13px; letter-spacing: .14em; text-transform: uppercase; display: flex; justify-content: space-between; }
+
+/* TUNE panel (press T): per-section sliders, COPY = the numbers to bake */
+.tune { position: fixed; right: 12px; bottom: 12px; z-index: 20; width: 260px; background: rgba(18,8,4,.92); border: 1px solid #3a2410; border-radius: 8px; padding: 12px 14px; font: 12px Inter, system-ui, sans-serif; color: #efe9df; display: none; }
+.tune.open { display: block; }
+.tune h4 { margin: 0 0 8px; font: 400 16px Bebas; letter-spacing: .12em; color: #e8c878; }
+.tune label { display: grid; grid-template-columns: 62px 1fr 42px; gap: 8px; align-items: center; margin: 6px 0; }
+.tune input { accent-color: #e8c878; }
+.tune output { text-align: right; color: #e8c878; font-variant-numeric: tabular-nums; }
+.tune .row { display: flex; gap: 8px; margin-top: 10px; }
+.tune button { flex: 1; background: #2a1c10; color: #efe9df; border: 1px solid #3a2410; border-radius: 4px; padding: 6px; font: 600 11px Inter; letter-spacing: .12em; }
+.tune button:hover { border-color: #e8c878; }
+.tuneBtn { position: fixed; right: 12px; bottom: 12px; z-index: 19; background: rgba(18,8,4,.8); color: #e8c878; border: 1px solid #3a2410; border-radius: 4px; padding: 5px 10px; font: 600 11px Inter; letter-spacing: .16em; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+/* ?bench: the shared bench harness (bench.js) docks its 272px panel on the LEFT on this page: the readings live on the right edge */
+html.benching .bench-panel { right: auto !important; left: 0 !important; border-left: 0 !important; border-right: 1px solid #2c313a !important; }
+/* ═══ bench 2026-10-22 (Dan's export bench-deltas-page-b-2026-10-22-13-58, folded at his 1141x636) ═══ */
+.rd { margin: -3.746cqw 0 0 1.094cqw; }
+body[data-look] .rd .lead { font-family: Bebas; color: #f6c85d; }
+.rd .scr { font-size: 2.771cqw; margin: .517cqw 0 0 -.657cqw; }
+/* ═══ end bench ═══ */
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="paint"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="4"/><feDisplacementMap in="SourceGraphic" scale="2.2"/></filter>
+  <filter id="chalk"><feTurbulence type="fractalNoise" baseFrequency="1.6" numOctaves="2" seed="9" result="n"/><feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.4 1.3" result="m"/><feComposite in="SourceGraphic" in2="m" operator="in"/></filter>
+</svg>
+
+<main class="stage" id="stage">
+  <div class="scene" id="scene">
+    <img class="photo" src="frames/f6-v17.png" alt="A weathered 1950s desert gas station at dusk, the GAS 2 pump out front">
+
+    <!-- 1. grades on the wall sign -->
+    <nav class="abs sign hot-group" aria-label="Fuel grades">
+      <button class="hot" data-grade="0">REGULAR</button><i></i>
+      <button class="hot" data-grade="1">PREMIUM</button><i></i>
+      <button class="hot" data-grade="2">RACE</button>
+    </nav>
+    <div class="abs gradeTip" id="gradeTip"></div>
+    <div class="abs key" style="left:25%;width:3.2%"></div>
+    <div class="abs key" style="left:28.6%;width:3.3%"></div>
+    <div class="abs key" style="left:32.2%;width:3.5%"></div>
+
+    <!-- 2. taped notes in the window -->
+    <div class="abs note n1"><b>FUEL FILTER</b>Harsh resonances out, before the color. No knob. It just works.</div>
+    <div class="abs note n2"><b>AUTO-LEVEL</b>More GAS, same loudness. You judge the color, not the volume.</div>
+    <div class="abs note n3"><b>FIRST STOP</b>GAS 2 first on the bus. <a href="#">RevLimiter</a> last.</div>
+
+    <!-- the pump -->
+    <button class="abs pump hot" id="pump" aria-label="Try the real GAS 2 pump"></button>
+    <div class="abs pumpTip">Take it for a spin</div>
+
+    <!-- 3. radio player -->
+    <button class="abs radio hot" id="radio" aria-label="Play the GAS 2 demo on the radio">
+      <span class="glow"></span>
+      <span class="dial"><span>ORIGINAL</span><span>GAS 2</span><i class="ptr"></i></span>
+    </button>
+    <div class="abs radioCap" id="radioCap">Tap the radio</div>
+
+    <!-- 4. mailbox -->
+    <button class="abs mail hot" id="mail" aria-label="Get GAS 2 by email">
+      <span class="tkt"></span><img src="props/mailbox.png" alt=""><span class="plate">GAS 2</span>
+    </button>
+    <div class="abs mailCap">Mail me the keys</div>
+
+    <!-- 5. chalkboard -->
+    <div class="abs chalk" aria-label="Today's prices: Regular 0.00, Premium 0.00, Race 0.00">
+      <img src="props/chalkboard.png" alt="">
+      <div class="txt"><div class="h">TODAY'S<br>PRICES</div>
+        <div class="p"><span>REGULAR</span><span>0.00</span></div>
+        <div class="p"><span>PREMIUM</span><span>0.00</span></div>
+        <div class="p"><span>RACE</span><span>0.00</span></div>
+      </div>
+    </div>
+
+    <!-- readings -->
+    <section class="abs rd" aria-label="GAS 2">
+      <i class="scw" style="--a:13deg;left:1.2cqw;top:1.2cqw"></i><i class="scw" style="--a:-7deg;right:1.2cqw;top:1.2cqw"></i>
+      <i class="scw" style="--a:19deg;left:1.2cqw;bottom:1.2cqw"></i><i class="scw" style="--a:-24deg;right:1.2cqw;bottom:1.2cqw"></i>
+      <div class="ti"><h1 class="n" style="margin:0">GAS 2</h1><div class="free">FREE</div>
+        <div class="price" aria-label="Price per gallon: $0.00, free"><span class="pl">FREE · PER GALLON</span>
+          <span class="reels" aria-hidden="true"><b>$</b><i class="reel" data-to="0"></i><b>.</b><i class="reel" data-to="0"></i><i class="reel" data-to="0"></i></span></div></div>
+      <p class="lead">Thicker, smoother, glued master.</p>
+      <button class="cta" id="cta">⤓ Download free</button>
+      <div class="scr">Fill it up.</div>
+    </section>
+  </div>
+</main>
+<footer><span>RevAudio</span><span>Store · Downloads · About · Support</span></footer>
+
+<div class="veil" id="veil" role="dialog" aria-modal="true" aria-label="Get GAS 2">
+  <form class="ticket" id="ticket" autocomplete="on">
+    <button type="button" class="x" data-close aria-label="Close">×</button>
+    <h3>SERVICE TICKET</h3><div class="no">No. 0002 · REVAUDIO STATION</div>
+    <hr>
+    <div class="row"><span>GAS 2 · ALL THREE GRADES</span><span>1</span></div>
+    <div class="row"><span>FUEL FILTER</span><span>INCL.</span></div>
+    <hr>
+    <div class="row tot"><span>TOTAL</span><span>$0.00</span></div>
+    <label for="em">YOUR EMAIL</label>
+    <input id="em" type="email" required placeholder="you@studio.com">
+    <button class="go" type="submit">Mail me the keys</button>
+    <div class="fine">We email you the download link. No licence key, no card. (Mockup: nothing is sent.)</div>
+    <div class="stamp">SENT</div>
+  </form>
+</div>
+<div class="veil" id="plugVeil" role="dialog" aria-modal="true" aria-label="The GAS 2 plugin">
+  <iframe class="plug" title="GAS 2 plugin" data-src="http://127.0.0.1:4461/index.html"></iframe>
+</div>
+<div class="bench-note" data-bench-ignore>B · WORKING COPY · final frame v17 · audio = real GAS 2 renders, made at build</div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+  // grades: the wall sign drives the pump's keys (copy from docs/BRIEF.md, verify before publishing)
+  const G = [
+    'REGULAR · smooth, warm, rounded · for mixes that are already good',
+    'PREMIUM · thick lows, clear mids, silky air, glued · the signature',
+    'RACE · punchy, bright, forward · for loud modern mixes'
+  ];
+  let grade = 1;
+  const setGrade = i => {
+    grade = i; $$('.sign button').forEach((b, k) => b.classList.toggle('on', k === i));
+    $$('.key').forEach((k, n) => k.classList.toggle('on', n === i));
+  };
+  $$('.sign button').forEach((b, i) => {
+    b.onmouseenter = b.onfocus = () => { $('#gradeTip').textContent = G[i]; $('#gradeTip').classList.add('show'); };
+    b.onmouseleave = b.onblur = () => $('#gradeTip').classList.remove('show');
+    b.onclick = () => setGrade(i);
+  });
+  setGrade(1);
+
+  // radio: first tap = ON AIR (original), next taps flip ORIGINAL <-> GAS 2; long state shown in the caption
+  const radio = $('#radio'), cap = $('#radioCap');
+  radio.onclick = () => {
+    if (!radio.classList.contains('on')) { radio.classList.add('on'); cap.innerHTML = 'On air: <em>ORIGINAL</em> · tap for GAS 2'; return; }
+    radio.classList.toggle('b');
+    const b = radio.classList.contains('b');
+    cap.innerHTML = `On air: <em>${b ? 'GAS 2 · ' + ['REGULAR', 'PREMIUM', 'RACE'][grade] : 'ORIGINAL'}</em> · tap to switch`;
+  };
+
+  // mailbox + CTA -> service ticket
+  const veil = $('#veil'), tk = $('#ticket');
+  const open = v => { v.classList.add('open'); if (v === veil) setTimeout(() => $('#em').focus(), 200); };
+  const close = () => $$('.veil').forEach(v => v.classList.remove('open'));
+  $('#mail').onclick = $('#cta').onclick = () => { tk.classList.remove('sent'); open(veil); };
+  tk.onsubmit = e => { e.preventDefault(); tk.classList.add('sent'); };
+  $$('.veil').forEach(v => v.addEventListener('click', e => { if (e.target === v || e.target.hasAttribute('data-close')) close(); }));
+  addEventListener('keydown', e => e.key === 'Escape' && close());
+
+  // pump -> the real plugin UI (served from the GAS2 repo)
+  $('#pump').onclick = () => { const f = $('.plug'); if (!f.src) f.src = f.dataset.src; open($('#plugVeil')); };
+
+  // first visit: every live prop pulses once
+  setTimeout(() => {
+    const sc = $('#scene'), r0 = sc.getBoundingClientRect();
+    $$('.hot').forEach(h => {
+      const r = h.getBoundingClientRect(), ring = document.createElement('i'); ring.className = 'ring';
+      Object.assign(ring.style, { left: (r.left - r0.left) / r0.width * 100 + '%', top: (r.top - r0.top) / r0.height * 100 + '%', width: r.width / r0.width * 100 + '%', height: r.height / r0.height * 100 + '%' });
+      sc.appendChild(ring); setTimeout(() => ring.remove(), 3200);
+    });
+    sc.classList.add('pulse');
+  }, 1200);
+})();
+</script>
+<button class="tuneBtn" id="tuneBtn" data-bench-ignore title="Tune this section (T)">TUNE</button>
+<div class="tune" id="tune" data-bench-ignore aria-label="Tune the readings">
+  <h4>Readings</h4>
+  <div class="row looks" id="t-look"><button data-look="0">Now</button><button data-look="a">Neon</button><button data-look="b">Enamel</button><button data-look="c">Badge</button></div>
+  <label>X %<input type="range" id="t-rdx" min="55" max="75" step=".5"><output></output></label>
+  <label>Y nudge<input type="range" id="t-rdy" min="-25" max="25" step=".5"><output></output></label>
+  <label>Size<input type="range" id="t-rds" min=".7" max="1.3" step=".01"><output></output></label>
+  <div class="row"><button id="t-reset">Reset</button><button id="t-copy">Copy</button></div>
+</div>
+<script>
+(() => {
+  const D = { rdx: 67.5, rdy: 0, rds: 1 }, K = 'gas2page-b:tune';
+  let v = { ...D }; try { Object.assign(v, JSON.parse(localStorage.getItem(K) || '{}')); } catch {}
+  const rd = document.querySelector('.rd'), panel = document.getElementById('tune');
+  const apply = () => {
+    for (const k in D) { rd.style.setProperty('--' + k, v[k]); const i = document.getElementById('t-' + k); i.value = v[k]; i.nextElementSibling.textContent = v[k]; }
+    try { localStorage.setItem(K, JSON.stringify(v)); } catch {}
+  };
+  for (const k in D) document.getElementById('t-' + k).oninput = e => { v[k] = +e.target.value; apply(); };
+  const toggle = () => panel.classList.toggle('open');
+  document.getElementById('tuneBtn').onclick = toggle;
+  addEventListener('keydown', e => { if ((e.key === 't' || e.key === 'T') && !/INPUT|TEXTAREA/.test(e.target.tagName)) toggle(); });
+  document.getElementById('t-reset').onclick = () => { v = { ...D }; apply(); };
+  // LOOK: ?look=a|b|c|0 wins (screenshots), else the last pick; B rolls the price counter back to 0.00 on every pick
+  const LK = 'gas2page-b:look', reels = [...document.querySelectorAll('.reel')];
+  reels.forEach(r => { const s = document.createElement('span'); s.innerHTML = Array.from({ length: 30 }, (_, k) => `<em>${k % 10}</em>`).join(''); r.appendChild(s); });
+  const roll = () => reels.forEach((r, k) => {
+    const s = r.firstChild; s.style.transition = 'none'; s.style.setProperty('--i', 1 + Math.floor(Math.random() * 9)); s.offsetHeight;
+    s.style.transition = ''; s.style.setProperty('--d', (1.5 + (reels.length - 1 - k) * .45) + 's');
+    s.style.setProperty('--i', 20 + +r.dataset.to); // the reflow above committed the start digit, so this one transitions
+  });
+  const setLook = l => {
+    document.body.dataset.look = l; try { localStorage.setItem(LK, l); } catch {}
+    document.querySelectorAll('#t-look button').forEach(b => b.style.borderColor = b.dataset.look === l ? '#e8c878' : '');
+    if (l === 'b') setTimeout(roll, 500);
+  };
+  document.querySelectorAll('#t-look button').forEach(b => b.onclick = () => setLook(b.dataset.look));
+  let l0 = new URLSearchParams(location.search).get('look'); if (!l0) try { l0 = localStorage.getItem(LK); } catch {}
+  setLook(/^[0abc]$/.test(l0 || '') ? l0 : '0');
+  document.getElementById('t-copy').onclick = () => { const t = JSON.stringify({ section: 'readings', look: document.body.dataset.look, ...v }); try { navigator.clipboard.writeText(t); } catch {} document.getElementById('t-copy').textContent = 'Copied'; setTimeout(() => document.getElementById('t-copy').textContent = 'Copy', 1200); };
+  apply();
+})();
+</script>
+<script>
+// ?bench = the shared RevAudio bench harness on THIS page (law book: bench the live page, not a copy).
+// bench.js here is a symlink to revaudio-shared/tools/bench/bench.js; &panel=min starts its panel collapsed.
+// Dan's 2026-10-22 13:58 export is folded into this file: park the browser's stored copy ONCE so it never applies twice
+try { const K = 'bench:page-b.html', A = 'gas2page-b:folded', T = '2026-10-22-13-58';
+  if (localStorage.getItem(A) !== T) { const d = localStorage.getItem(K); if (d) localStorage.setItem(K + ':folded-' + T, d); localStorage.removeItem(K); localStorage.setItem(A, T); } } catch {}
+if (/[?&]bench\b/.test(location.search)) {
+  document.documentElement.classList.add('benching');
+  const s = document.createElement('script'); s.src = 'bench.js'; document.body.appendChild(s);
+}
+</script>
+</body>
+</html>
