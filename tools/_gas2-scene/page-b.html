@@ -41,7 +41,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .key.on { box-shadow: 0 0 1.4cqw .3cqw rgba(255, 190, 90, .55), inset 0 0 .9cqw rgba(255, 210, 130, .65); }
 
 /* 2. window notes (GAS 1's taped paper note) */
-.note { background: var(--paper); color: var(--ink); font: 400 .98cqw/1.25 Gochi; padding: .9cqw 1cqw 1cqw; box-shadow: 0 .4cqw 1cqw rgba(0,0,0,.45); transform: rotate(var(--r, -2deg)); }
+.note { background: var(--paper); color: var(--ink); font: 400 .98cqw/1.25 Gochi; padding: .9cqw 1cqw 1cqw; box-shadow: var(--ng-glow, 0 0 0 transparent), var(--ng-sh, 0 .4cqw 1cqw rgba(0,0,0,.45)); transform: rotate(var(--r, -2deg)); }
 .note b { display: block; font: 400 1.12cqw Marker; color: #a8321c; letter-spacing: .06em; margin-bottom: .3cqw; }
 .note::before, .note::after { content: ""; position: absolute; top: -.7cqw; width: 2.8cqw; height: 1.3cqw; background: rgba(235, 225, 195, .78); box-shadow: 0 .1cqw .3cqw rgba(0,0,0,.2); }
 .note::before { left: -.6cqw; transform: rotate(-28deg); }
@@ -50,6 +50,18 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .n1 { left: 7.4%; top: 26%; width: 7.9%; --r: -3deg; }
 .n2 { left: 37.6%; top: 25%; width: 11.6%; --r: 2deg; }
 .n3 { left: 39.6%; top: 40.5%; width: 9.4%; --r: -1.5deg; }
+/* NOTES ON THE GLASS (Dan 2026-10-22: "the notes are hovering, I want them to feel like they're on the glass").
+   Paper taped to a shop window throws no shadow you can see from outside, takes the window's dusk light and sits BEHIND
+   the glass sheen. Four layers, each a body class with a TUNE checkbox (all on by default), so each can be judged alone. */
+body.ng-shadow .note { --ng-sh: 0 0 0 .04cqw rgba(60, 40, 20, .35), .06cqw .1cqw .2cqw rgba(0, 0, 0, .22); /* paper edge + a hair of contact */
+  background-image: radial-gradient(1.8cqw 1.4cqw at 100% 100%, rgba(70, 45, 20, .2), transparent 70%), radial-gradient(1.4cqw 1.1cqw at 0 100%, rgba(70, 45, 20, .14), transparent 70%); } /* the loose bottom corners curl a touch */
+body.ng-grade .note { filter: brightness(.86) sepia(.3) saturate(1.08) contrast(.96); background-color: #ecdcb4; /* the mailbox / chalkboard grade */
+  --ng-glow: inset 0 0 1.6cqw rgba(255, 176, 84, .3); } /* the shop's lamps behind the paper */
+.note .glass { display: none; position: absolute; inset: 0; z-index: 2; pointer-events: none; mix-blend-mode: screen;
+  background: linear-gradient(162deg, rgba(150, 168, 205, .14), transparent 38%), linear-gradient(112deg, transparent 34%, rgba(255, 236, 210, .14) 44%, rgba(255, 236, 210, .05) 50%, transparent 58%); }
+body.ng-glass .note .glass { display: block; }
+body.ng-tape .note::before, body.ng-tape .note::after { background: linear-gradient(180deg, rgba(248, 242, 225, .52), rgba(232, 222, 196, .4));
+  box-shadow: 0 0 0 .03cqw rgba(255, 250, 235, .25), 0 .03cqw .08cqw rgba(0, 0, 0, .12); }
 
 /* 3. the radio = the GAS 2 player */
 .radio { left: 5.2%; top: 52.3%; width: 15.3%; height: 15%; border-radius: .6cqw; }
@@ -223,6 +235,7 @@ footer { padding: 40px 6vw; border-top: 1px solid #2a1c10; color: var(--dim); fo
 .tune h4 { margin: 0 0 8px; font: 400 16px Bebas; letter-spacing: .12em; color: #e8c878; }
 .tune label { display: grid; grid-template-columns: 62px 1fr 42px; gap: 8px; align-items: center; margin: 6px 0; }
 .tune input { accent-color: #e8c878; }
+.tune .ng label { display: flex; gap: 4px; align-items: center; margin: 0; }
 .tune output { text-align: right; color: #e8c878; font-variant-numeric: tabular-nums; }
 .tune .row { display: flex; gap: 8px; margin-top: 10px; }
 .tune button { flex: 1; background: #2a1c10; color: #efe9df; border: 1px solid #3a2410; border-radius: 4px; padding: 6px; font: 600 11px Inter; letter-spacing: .12em; }
@@ -262,9 +275,9 @@ body[data-look] .rd .cta { margin-top: .664cqw; }
     <div class="abs key" style="left:32.2%;width:3.5%"></div>
 
     <!-- 2. taped notes in the window -->
-    <div class="abs note n1"><b>FUEL FILTER</b>Harsh resonances out, before the color. No knob. It just works.</div>
-    <div class="abs note n2"><b>AUTO-LEVEL</b>More GAS, same loudness. You judge the color, not the volume.</div>
-    <div class="abs note n3"><b>FIRST STOP</b>GAS 2 first on the bus. <a href="#">RevLimiter</a> last.</div>
+    <div class="abs note n1"><b>FUEL FILTER</b>Harsh resonances out, before the color. No knob. It just works.<i class="glass" aria-hidden="true"></i></div>
+    <div class="abs note n2"><b>AUTO-LEVEL</b>More GAS, same loudness. You judge the color, not the volume.<i class="glass" aria-hidden="true"></i></div>
+    <div class="abs note n3"><b>FIRST STOP</b>GAS 2 first on the bus. <a href="#">RevLimiter</a> last.<i class="glass" aria-hidden="true"></i></div>
 
     <!-- the pump -->
     <button class="abs pump hot" id="pump" aria-label="Try the real GAS 2 pump"></button>
@@ -391,9 +404,18 @@ body[data-look] .rd .cta { margin-top: .664cqw; }
   <label>Y nudge<input type="range" id="t-rdy" min="-25" max="25" step=".5"><output></output></label>
   <label>Size<input type="range" id="t-rds" min=".7" max="1.3" step=".01"><output></output></label>
   <div class="row"><button id="t-reset">Reset</button><button id="t-copy">Copy</button></div>
+  <h4 style="margin-top:14px">Notes on the glass</h4>
+  <div class="row ng" id="t-ng"><label><input type="checkbox" data-ng="shadow">Shadow</label><label><input type="checkbox" data-ng="grade">Grade</label><label><input type="checkbox" data-ng="glass">Glass</label><label><input type="checkbox" data-ng="tape">Tape</label></div>
 </div>
 <script>
 (() => {
+  // NOTES ON THE GLASS layers: body classes ng-shadow / ng-grade / ng-glass / ng-tape, all on by default; ?ng=1010 wins (screenshots)
+  const NG = 'gas2page-b:ng', NGK = ['shadow', 'grade', 'glass', 'tape']; let ng = { shadow: 1, grade: 1, glass: 1, tape: 1 };
+  try { Object.assign(ng, JSON.parse(localStorage.getItem(NG) || '{}')); } catch {}
+  const ngq = new URLSearchParams(location.search).get('ng'); if (/^[01]{4}$/.test(ngq || '')) NGK.forEach((k, i) => ng[k] = +ngq[i]);
+  const ngApply = () => { NGK.forEach(k => document.body.classList.toggle('ng-' + k, !!ng[k])); document.querySelectorAll('#t-ng input').forEach(i => i.checked = !!ng[i.dataset.ng]); try { localStorage.setItem(NG, JSON.stringify(ng)); } catch {} };
+  document.querySelectorAll('#t-ng input').forEach(i => i.onchange = () => { ng[i.dataset.ng] = i.checked ? 1 : 0; ngApply(); });
+  ngApply();
   const D = { rdx: 67.5, rdy: 0, rds: 1 }, K = 'gas2page-b:tune';
   let v = { ...D }; try { Object.assign(v, JSON.parse(localStorage.getItem(K) || '{}')); } catch {}
   const rd = document.querySelector('.rd'), panel = document.getElementById('tune');
