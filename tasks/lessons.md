@@ -314,3 +314,10 @@ cutting the viewport to the keyboard's leftover (`setViewportSize`), at every ph
    build. Before resolving a modify/delete, `git grep` the deleted file's name on origin/main for new importers,
    and run `git merge-tree --write-tree --name-only HEAD origin/main` first: it lists the conflicts without
    touching the worktree.
+
+## 2026-10-22 - GAS 2 jukebox bench (Web Audio A/B)
+
+- A drag control with an <img> inside: the browser's native image drag cancels the pointer stream, so the drag
+  silently does nothing (a click still works). `draggable="false"` + `-webkit-user-drag:none` + a pointercancel handler.
+- Gain ramps scheduled while the AudioContext is still suspended (first click) can be read back mid-ramp (0.65)
+  when playback starts. When nothing is playing, set the gain directly (setValueAtTime); ramp only while live.
