@@ -5,7 +5,12 @@
    the bench is applied here verbatim via the STYLE maps below — no flow-layout
    translation, so bench == production. Switching plays a gear-shift overshoot
    spring. Arrows + touch-swipe + keyboard + dots + a 6s auto-advance (in-view
-   only, dies on first interaction) drive it. */
+   only, dies on first interaction) drive it.
+   mode="downloads" (/downloads, 2026-10-21): the same cards as a picker. The
+   slides are the plugins the licence worker's email gate serves, a press on
+   the centred card (or its Download chip) fires `downloads:pick` {slug}
+   instead of opening the product page or the cart, and `showcase:goto` {slug}
+   lets the page centre a plugin. */
 import { Image } from 'astro:assets';
 import { bySlug, isBuyable, dlGateId } from '../data/plugins';
 import { site } from '../data/site';
@@ -19,11 +24,15 @@ import gasShot from '../assets/plugins/gas-hero.png';
 import radioRouletteShot from '../assets/plugins/radioroulette-hero.png';
 import revfxShot from '../assets/plugins/revfx-hero.png';
 
+interface Props { mode?: 'home' | 'downloads' }
+const { mode = 'home' } = Astro.props;
+const isDl = mode === 'downloads';
+
 const STAGE_W = 520;
 const STAGE_H = 470;
 
 // Style maps = the approved card-bench exports, applied verbatim.
-const SLIDES = [
+const ALL_SLIDES = [
   {
     slug: 'revlimiter',
     name: 'RevLimiter',
@@ -141,7 +150,13 @@ const SLIDES = [
       more:     { left: 0, top: 422, ff: 'Oswald, sans-serif',       fw: 400, fs: 17, ls: 0 },
     },
   },
-].filter((s) => {
+];
+// /downloads: what the worker's /download/register can send (DL_PLUGINS +
+// DL_PORTAL_ORDER in the licence worker). RevFX joins once revfx.gateWired.
+const DL_ORDER = ['drift', 'revlimiter', 'gas', 'radio-roulette', ...(revfx.gateWired ? ['revfx'] : [])];
+const SLIDES = isDl
+  ? DL_ORDER.map((slug) => ALL_SLIDES.find((s) => s.slug === slug)!).filter(Boolean)
+  : ALL_SLIDES.filter((s) => {
   // Rotation carries ONLY buyable/downloadable plugins (conversion pass
   // 2026-08-03): a "Target 2026" slide in the homepage's prime slot sells
   // nothing and reads roadmap-company. Slide defs for in-development plugins
@@ -155,12 +170,12 @@ const SLIDES = [
   return p && p.status !== 'in-development';
 });
 // DRIFT leads the rotation through its launch (drift.homeLead, Dan 2026-10-08).
-if (drift.homeLead) {
+if (!isDl && drift.homeLead) {
   const k = SLIDES.findIndex((s) => s.slug === 'drift');
   if (k > 0) SLIDES.unshift(...SLIDES.splice(k, 1));
 }
 // RevFX rides right behind DRIFT (it is DRIFT's rack, sold on its own; Gil 2026-10-18).
-{
+if (!isDl) {
   const d = SLIDES.findIndex((s) => s.slug === 'drift');
   const r = SLIDES.findIndex((s) => s.slug === 'revfx');
   if (d >= 0 && r >= 0 && r !== d + 1) { const [x] = SLIDES.splice(r, 1); SLIDES.splice(SLIDES.findIndex((s) => s.slug === 'drift') + 1, 0, x); }
@@ -174,6 +189,7 @@ if (drift.homeLead) {
 const registerUrl = site.downloadGate.workerUrl + '/download/register';
 type CartCta = { label: string; href: string | null; attrs: Record<string, unknown> } | null;
 const CART: CartCta[] = SLIDES.map((s) => {
+  if (isDl) return { label: 'Download', href: null, attrs: { 'data-dl-pick': s.slug } };
   const p = bySlug(s.slug);
   if (!p) return null;
   const buyable = isBuyable(p);
@@ -211,6 +227,9 @@ const CART: CartCta[] = SLIDES.map((s) => {
   return { label, href: p.downloadUrl!, attrs: {} };
 });
 
+// /downloads: the price row says what the download is instead of what it costs.
+const dlTag = (slug: string) => (bySlug(slug)?.isFree ? 'Free forever' : '30 days free');
+
 const pos = (st: { left: number; top: number; w?: number; h?: number }) =>
   `left:${st.left}px;top:${st.top}px;` + (st.w ? `width:${st.w}px;` : '') + (st.h ? `height:${st.h}px;` : '');
 // Text rows ignore their per-slide left and span the full stage, centered — only
@@ -235,9 +254,11 @@ const peekClass = (i: number) => {
 ---
 
 {/* id="plugins" — scroll target for the hero's "See the plugins" secondary. */}
-<section id="plugins" class="showcase-wrap" data-showcase tabindex="0" role="group" aria-roledescription="carousel" aria-label="RevAudio plugins">
+<section id={isDl ? 'pick' : 'plugins'} class="showcase-wrap" class:list={[{ 'is-dl': isDl }]} data-showcase data-dl-mode={isDl || undefined} tabindex="0" role="group" aria-roledescription="carousel" aria-label={isDl ? 'Pick a plugin to download' : 'RevAudio plugins'}>
   <div class="sr-only" aria-live="polite" aria-atomic="true" data-carousel-announce></div>
-  <h2 class="sc-heading" data-reveal="fade">Our Plugins</h2>
+  {isDl
+    ? <h1 class="sc-heading">Downloads</h1>
+    : <h2 class="sc-heading" data-reveal="fade">Our Plugins</h2>}
   <div class="sc-scaler">
     <div class="showcase">
       <button type="button" class="sc-arrow sc-prev" aria-label="Previous plugin">
@@ -260,7 +281,9 @@ const peekClass = (i: number) => {
                 Add-to-cart control (a button nested inside a link is invalid
                 HTML and unreadable to assistive tech), so the link became a
                 sibling overlay sitting under the chip in z-order instead. */}
-            <a class="sc-hit" href={`/${s.slug}`} aria-label={`${s.name}, more details`}></a>
+            {isDl
+              ? <button type="button" class="sc-hit" data-dl-pick={s.slug} aria-label={`Download ${s.name}`}></button>
+              : <a class="sc-hit" href={`/${s.slug}`} aria-label={`${s.name}, more details`}></a>}
             {s.slug === 'drift' ? (
               <DriftCard />
             ) : (
@@ -276,8 +299,8 @@ const peekClass = (i: number) => {
               <Image src={s.shot} alt={s.shotAlt} width={1600} widths={[320, 480, 640, 800, 1200, 1600]} sizes={s.shot === gasShot ? '140px' : '(max-width: 640px) 70vw, 440px'} format="webp" quality={92} loading="lazy" />
             </div>
             <p class="sec sc-one" style={topf(s.style.oneliner) + font(s.style.oneliner)}>{s.oneliner}</p>
-            <span class="sec sc-price" style={topf(s.style.price) + font(s.style.price)} set:html={s.priceHtml}></span>
-            <span class="sec sc-more" style={topf(s.style.more) + font(s.style.more)}>More Details &rarr;</span>
+            <span class="sec sc-price" style={topf(s.style.price) + font(s.style.price)} set:html={isDl ? dlTag(s.slug) : s.priceHtml}></span>
+            <span class="sec sc-more" style={topf(s.style.more) + font(s.style.more)} set:html={isDl ? 'Get the download &darr;' : 'More Details &rarr;'}></span>
             {/* Rotated corner ribbon (e.g. GAS's bundle freebie) — top-right,
                 tilted so the left edge reads higher than the right (a "\"
                 slant), independent of the left/top style-map grid above. */}
@@ -364,6 +387,27 @@ const peekClass = (i: number) => {
         });
       }
     };
+
+    // /downloads drives the carousel too: the page centres a plugin (?p=, the
+    // verify return leg), and a press on the CENTRED card picks it. Capture
+    // phase on the slide, so the card's own controls (DRIFT's key is a link
+    // to /drift) never navigate away; the swipe guard on the viewport runs
+    // first and still swallows a drag's click.
+    document.addEventListener('showcase:goto', (e) => {
+      const k = slides.findIndex((s) => s.dataset.slug === (e as CustomEvent).detail?.slug);
+      if (k >= 0) go(k, false);
+    });
+    // A goto sent before this script ran (module order isn't guaranteed) is parked on window.
+    const parked = (window as unknown as { __showcaseGoto?: string }).__showcaseGoto;
+    if (parked) { const k = slides.findIndex((s) => s.dataset.slug === parked); if (k >= 0) go(k, false); }
+    if (sc.hasAttribute('data-dl-mode')) {
+      slides.forEach((s) => s.addEventListener('click', (e) => {
+        if (!s.classList.contains('is-current')) return;
+        e.preventDefault();
+        e.stopPropagation();
+        document.dispatchEvent(new CustomEvent('downloads:pick', { detail: { slug: s.dataset.slug } }));
+      }, true));
+    }
 
     sc.querySelector('.sc-prev')?.addEventListener('click', () => { killAuto(); go(idx - 1); });
     sc.querySelector('.sc-next')?.addEventListener('click', () => { killAuto(); go(idx + 1); });
@@ -776,6 +820,10 @@ const peekClass = (i: number) => {
      Above the .sec rows (which are absolutely positioned and would otherwise
      paint over it and swallow their own clicks), below .sc-cart. */
   .sc-hit { position: absolute; inset: 0; z-index: 5; }
+  /* /downloads: the stretched control is a button (it picks, it doesn't navigate). */
+  button.sc-hit { background: none; border: 0; padding: 0; margin: 0; cursor: pointer; border-radius: inherit; }
+  button.sc-hit:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 4px; }
+  .is-dl .sc-heading { font-size: clamp(3rem, 7vw, 4.6rem); }
 
   /* Add to cart / Download chip — bottom-right of the 520×470 stage, so it
      never collides with the centred price/CTA stack. The look is the button

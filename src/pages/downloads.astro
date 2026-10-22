@@ -1,0 +1,498 @@
+---
+/**
+ * /downloads — the in-house download page (2026-10-21). Replaces the nav's
+ * link to the licence worker's /download portal; that portal stays live and
+ * untouched (Paddle's post-purchase flow and old emails still use it).
+ *
+ *   1. pick   the homepage plugin carousel in mode="downloads" (PluginShowcase):
+ *             a press on the centred card fires `downloads:pick` {slug}.
+ *   2. email  the same email gate as every popup: POST {email, plugin,
+ *             marketing, from:'downloads'} to the worker's /download/register,
+ *             so the same emails go out (the download link in direct mode, the
+ *             verify link otherwise).
+ *   3. ready  a verified browser (the verify link returns here as
+ *             #dl=<gate>&p=<gate id> because of from:'downloads', or the
+ *             popups' saved `tg:gate:<id>`, shared with TrialGateModal) gets the
+ *             Mac / Windows buttons: POST /download {plugin, os, gate} mints a
+ *             15-minute /dl link and the worker streams the build from R2 —
+ *             whatever /pit-lane last shipped for that platform.
+ * The panel follows the carousel once a plugin has been picked. ?p=<slug>
+ * deep-links straight to a plugin.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PluginShowcase from '../components/PluginShowcase.astro';
+import { bySlug, dlGateId, trialConversionValueUsd } from '../data/plugins';
+import { site } from '../data/site';
+import { revfx } from '../data/revfx';
+
+// Same list and order as PluginShowcase's DL_ORDER.
+const DL_SLUGS = ['drift', 'revlimiter', 'gas', 'radio-roulette', ...(revfx.gateWired ? ['revfx'] : [])];
+const info = Object.fromEntries(DL_SLUGS.map((slug) => {
+  const p = bySlug(slug)!;
+  return [slug, { gate: dlGateId(p), name: p.name, free: !!p.isFree, value: trialConversionValueUsd(p) || 0 }];
+}));
+---
+
+<BaseLayout
+  title="Downloads"
+  description="Download RevAudio plugins: full-version 30-day trials and free plugins, sent straight to your inbox."
+>
+  <PluginShowcase mode="downloads" />
+
+  <section class="dlp" data-dlp data-worker={site.downloadGate.workerUrl} data-info={JSON.stringify(info)} aria-label="Get your download">
+    <p class="dlp-hint" data-dlp-hint>Pick a plugin, then <strong>press its card</strong>.</p>
+
+    <div class="dlp-card" data-dlp-card hidden tabindex="-1">
+      <p class="dlp-kicker" data-dlp-kicker>Free 30-day trial</p>
+      <h2 class="dlp-title" data-dlp-title>Download</h2>
+      <p class="dlp-sub" data-dlp-sub></p>
+
+      <form class="dlp-form" data-dlp-form novalidate>
+        <label class="dlp-field">
+          <span>Email</span>
+          <input type="email" data-dlp-email name="email" placeholder="you@studio.com" required autocomplete="email" />
+        </label>
+        <!-- honeypot: real users never fill this; bots do -->
+        <input type="text" name="_gotcha" class="dlp-hp" data-dlp-hp tabindex="-1" autocomplete="off" aria-hidden="true" />
+        <!-- Same consent wording as TrialGateModal (MARKETING_CONSENT_TEXT in the
+             worker stores it verbatim): unticked by default, never a condition
+             of the download. -->
+        <div class="dlp-consent-block">
+          <label class="dlp-consent">
+            <input type="checkbox" data-dlp-consent />
+            <span>Also send me new-plugin drops and demo codes (optional)</span>
+          </label>
+          <p class="dlp-notice">We'll send a few short emails about getting started, and a heads-up before a trial ends. Unsubscribe anytime.</p>
+        </div>
+        <button type="submit" class="dlp-submit rv-btn" data-dlp-submit>Send my download</button>
+        <p class="dlp-err" data-dlp-err role="alert" aria-live="polite"></p>
+      </form>
+
+      <div class="dlp-sent" data-dlp-sent hidden>
+        <p class="dlp-status" data-dlp-status role="status" aria-live="polite" tabindex="-1"></p>
+        <p class="dlp-sent-note">Nothing after a few minutes? Check spam and the promotions tab.</p>
+        <button type="button" class="dlp-link" data-dlp-reset>Use a different email</button>
+      </div>
+
+      <div class="dlp-ready" data-dlp-ready hidden>
+        <div class="dlp-dl-row">
+          <button type="button" class="dlp-dl rv-btn rv-btn--ghost rv-btn--stack" data-dlp-dl="mac">
+            <span class="dlp-dl-os">macOS</span>
+            <span class="dlp-dl-fmt rv-btn__sub">.pkg installer</span>
+          </button>
+          <button type="button" class="dlp-dl rv-btn rv-btn--ghost rv-btn--stack" data-dlp-dl="win">
+            <span class="dlp-dl-os">Windows</span>
+            <span class="dlp-dl-fmt rv-btn__sub">.exe installer</span>
+          </button>
+        </div>
+        <p class="dlp-dl-note" data-dlp-dl-note role="status" aria-live="polite" hidden></p>
+        <button type="button" class="dlp-link" data-dlp-again hidden>Didn&rsquo;t start? Try again</button>
+        <p class="dlp-mobile" data-dlp-mobile hidden>
+          These are desktop installers. Save one here and move it to your Mac or PC, or open the link from your email there.
+        </p>
+        <p class="dlp-err" data-dlp-dl-err role="alert" aria-live="polite"></p>
+      </div>
+    </div>
+
+    <p class="dlp-foot">
+      Bought a plugin? The installer link is in the confirmation email sent right after checkout.
+      Can&rsquo;t find it? <a href="/support">Support</a> sorts it out.
+    </p>
+  </section>
+</BaseLayout>
+
+<script>
+  type Info = { gate: string; name: string; free: boolean; value: number };
+  // Set by CookieBanner (gtag, fbq: only after consent) and Cart (raSaleSource).
+  const w = window as unknown as { gtag?: (...a: unknown[]) => void; fbq?: (...a: unknown[]) => void; raSaleSource?: () => Record<string, string> };
+
+  const root = document.querySelector<HTMLElement>('[data-dlp]');
+  if (root) {
+    const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    const worker = root.dataset.worker || '';
+    const info: Record<string, Info> = JSON.parse(root.dataset.info || '{}');
+    const slugByGate: Record<string, string> = {};
+    Object.keys(info).forEach((s) => { slugByGate[info[s].gate] = s; });
+
+    const $ = <T extends HTMLElement>(sel: string) => root.querySelector<T>(sel)!;
+    const hint = $('[data-dlp-hint]');
+    const card = $('[data-dlp-card]');
+    const kicker = $('[data-dlp-kicker]');
+    const title = $('[data-dlp-title]');
+    const sub = $('[data-dlp-sub]');
+    const form = $<HTMLFormElement>('[data-dlp-form]');
+    const email = $<HTMLInputElement>('[data-dlp-email]');
+    const hp = $<HTMLInputElement>('[data-dlp-hp]');
+    const consent = $<HTMLInputElement>('[data-dlp-consent]');
+    const submit = $<HTMLButtonElement>('[data-dlp-submit]');
+    const err = $('[data-dlp-err]');
+    const sent = $('[data-dlp-sent]');
+    const status = $('[data-dlp-status]');
+    const ready = $('[data-dlp-ready]');
+    const dlNote = $('[data-dlp-dl-note]');
+    const dlAgain = $<HTMLButtonElement>('[data-dlp-again]');
+    const dlErr = $('[data-dlp-dl-err]');
+    const mobile = $('[data-dlp-mobile]');
+
+    let slug = document.querySelector<HTMLElement>('[data-showcase] .sc-slide.is-current')?.dataset.slug || Object.keys(info)[0];
+    let picked = false;
+    let inFlight = false;
+    let dlInFlight = false;
+    let againTimer = 0;
+    // Addresses already sent this visit, per gate — coming back to a plugin
+    // shows "check your inbox", not a blank form.
+    const sentTo: Record<string, string> = {};
+
+    // Verified browsers: the SAME store as TrialGateModal (tg:gate:<id>, 24h),
+    // so a visitor verified in a popup is verified here, and the other way round.
+    const GATE_TTL_MS = 24 * 3600 * 1000;
+    const gateKey = (id: string) => 'tg:gate:' + id;
+    const saveGate = (id: string, gate: string) => { try { localStorage.setItem(gateKey(id), JSON.stringify({ gate, exp: Date.now() + GATE_TTL_MS })); } catch { /* private mode */ } };
+    const loadGate = (id: string) => {
+      try {
+        const rec = JSON.parse(localStorage.getItem(gateKey(id)) || 'null');
+        if (rec && rec.gate && rec.exp > Date.now()) return rec.gate as string;
+        if (rec) localStorage.removeItem(gateKey(id));
+      } catch { /* storage blocked */ }
+      return '';
+    };
+    const clearGate = (id: string) => { try { localStorage.removeItem(gateKey(id)); } catch { /* storage blocked */ } };
+    const coarse = (() => { try { return matchMedia('(pointer: coarse)').matches; } catch { return false; } })();
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function show(state: 'form' | 'sent' | 'ready') {
+      form.hidden = state !== 'form';
+      sent.hidden = state !== 'sent';
+      ready.hidden = state !== 'ready';
+    }
+
+    function render() {
+      const p = info[slug];
+      if (!p) return;
+      const gate = loadGate(p.gate);
+      kicker.textContent = gate ? 'Email verified' : p.free ? 'Free forever' : 'Free 30-day trial';
+      title.textContent = 'Download ' + p.name;
+      submit.classList.toggle('rv-btn--honey', p.free);
+      err.textContent = '';
+      dlErr.textContent = '';
+      if (gate) {
+        sub.textContent = 'Full version, no key needed. Pick your platform. The installer lands in your browser’s Downloads folder. Grab both if you work on two machines.';
+        resetDlButtons();
+        mobile.hidden = !coarse;
+        show('ready');
+      } else if (sentTo[p.gate]) {
+        sub.textContent = p.free ? 'Free forever. Full version, no trial clock.' : 'Full version for 30 days, no credit card.';
+        status.textContent = 'Check your inbox. We sent the ' + p.name + ' download to ' + sentTo[p.gate] + '.';
+        show('sent');
+      } else {
+        sub.textContent = p.free
+          ? 'Free forever. Full version, no trial clock, no credit card. Enter your email and your download link lands in your inbox.'
+          : 'Full version for 30 days, no credit card. Enter your email and your download link lands in your inbox.';
+        email.disabled = false;
+        submit.disabled = false;
+        show('form');
+      }
+    }
+
+    function open(nextSlug: string, focus: boolean) {
+      if (!info[nextSlug]) return;
+      slug = nextSlug;
+      picked = true;
+      hint.hidden = true;
+      card.hidden = false;
+      render();
+      if (!focus) return;
+      card.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' });
+      // Focus the first thing to do, without a second scroll jump. Touch
+      // skips it: focusing the email field would throw the keyboard up.
+      if (coarse) return;
+      const target = !form.hidden ? email : !ready.hidden ? ready.querySelector<HTMLElement>('[data-dlp-dl]') : card;
+      target?.focus({ preventScroll: true });
+    }
+
+    document.addEventListener('downloads:pick', (e) => open((e as CustomEvent).detail?.slug, true));
+    // Once something is picked, the panel follows the carousel.
+    document.addEventListener('showcase:change', (e) => {
+      const s = (e as CustomEvent).detail?.slug;
+      if (!info[s]) return;
+      slug = s;
+      if (picked) render();
+    });
+
+    // ---- email -> /download/register (the popups' exact request) ----------
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (inFlight) return;
+      const p = info[slug];
+      const v = email.value.trim();
+      if (!EMAIL_RE.test(v)) {
+        err.textContent = 'That doesn’t look like an email.';
+        email.focus();
+        return;
+      }
+      if (hp.value) { sentTo[p.gate] = v; render(); return; }   // bot: say thanks, send nothing
+      inFlight = true;
+      submit.disabled = true;
+      err.textContent = '';
+      const body: Record<string, unknown> = { email: v, plugin: p.gate, marketing: consent.checked, from: 'downloads' };
+      try { if (w.raSaleSource) Object.assign(body, w.raSaleSource()); } catch { /* attribution is best-effort */ }
+      fetch(worker + '/download/register', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data && data.ok) {
+            sentTo[p.gate] = v;
+            if (slug === slugByGate[p.gate]) { render(); status.focus({ preventScroll: true }); }
+            document.dispatchEvent(new CustomEvent('tg:registered', { detail: { plugin: p.gate } }));
+            // The conversion = an email actually registered (same tags as the
+            // trial plates; both only exist after cookie consent).
+            try { if (w.fbq) w.fbq('track', 'StartTrial'); } catch { /* no consent */ }
+            try { if (w.gtag) w.gtag('event', 'conversion', { send_to: 'AW-18334323184/KDtwCLHa4dIcEPCjvqZE', value: p.value, currency: 'USD' }); } catch { /* no consent */ }
+          } else {
+            err.textContent = (data && data.error) || 'Something went wrong. Try again.';
+          }
+        })
+        .catch(() => {
+          err.innerHTML = 'Couldn’t reach the garage. Try again, or <a href="' + worker + '/download">open the download portal</a>.';
+        })
+        .finally(() => {
+          inFlight = false;
+          submit.disabled = false;
+        });
+    });
+    $<HTMLButtonElement>('[data-dlp-reset]').addEventListener('click', () => {
+      delete sentTo[info[slug].gate];
+      email.value = '';
+      render();
+      email.focus();
+    });
+
+    // ---- verified: Mac / Windows -> POST /download -> /dl ------------------
+    // Same terminal "Downloading…" state as TrialGateModal (the attachment
+    // response leaves the page where it is, so the button has to say so).
+    function resetDlButtons() {
+      ready.querySelectorAll<HTMLButtonElement>('[data-dlp-dl]').forEach((b) => {
+        const orig = b.dataset.orig;
+        if (orig) {
+          const [os, fmt] = orig.split('|');
+          b.querySelector('.dlp-dl-os')!.textContent = os;
+          b.querySelector('.dlp-dl-fmt')!.textContent = fmt;
+        }
+        b.classList.remove('is-done');
+        b.disabled = false;
+      });
+      if (againTimer) { clearTimeout(againTimer); againTimer = 0; }
+      dlAgain.hidden = true;
+      dlNote.hidden = true;
+      dlNote.textContent = '';
+    }
+    function markDownloading(btn: HTMLButtonElement) {
+      const os = btn.querySelector('.dlp-dl-os')!;
+      const fmt = btn.querySelector('.dlp-dl-fmt')!;
+      if (!btn.dataset.orig) btn.dataset.orig = os.textContent + '|' + fmt.textContent;
+      btn.classList.add('is-done');
+      btn.disabled = true;
+      os.textContent = 'Downloading…';
+      fmt.textContent = 'check your Downloads folder';
+      dlNote.textContent = 'Download started. Check your browser’s Downloads folder.';
+      dlNote.hidden = false;
+      if (againTimer) clearTimeout(againTimer);
+      againTimer = window.setTimeout(() => { dlAgain.hidden = false; }, 8000);
+    }
+    dlAgain.addEventListener('click', () => {
+      resetDlButtons();
+      ready.querySelector<HTMLElement>('[data-dlp-dl]')?.focus();
+    });
+    ready.addEventListener('click', (e) => {
+      const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-dlp-dl]');
+      if (!btn || btn.disabled || dlInFlight) return;
+      const p = info[slug];
+      dlInFlight = true;
+      btn.disabled = true;
+      dlErr.textContent = '';
+      fetch(worker + '/download', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ plugin: p.gate, os: btn.dataset.dlpDl, gate: loadGate(p.gate) }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data && data.ok && data.url) {
+            markDownloading(btn);
+            window.location.href = worker + data.url;
+          } else if (data && data.locked) {
+            // The 24h gate aged out: back to the email form for a fresh link.
+            clearGate(p.gate);
+            btn.disabled = false;
+            render();
+            sub.textContent = 'Your verified link expired (they last 24 hours). Enter your email and we’ll send a fresh one.';
+            email.focus();
+          } else {
+            btn.disabled = false;
+            dlErr.textContent = (data && data.error) || 'Something went wrong. Try again.';
+          }
+        })
+        .catch(() => {
+          btn.disabled = false;
+          dlErr.textContent = 'Network hiccup. Try again in a moment.';
+        })
+        .finally(() => { dlInFlight = false; });
+    });
+
+    // ---- arrivals -----------------------------------------------------------
+    // Verify-link return leg: /downloads#dl=<gate token>&p=<gate id>. Read
+    // once, scrubbed from the address bar (TrialGateModal skips it on this page).
+    const hashQ = new URLSearchParams(location.hash.replace(/^#/, ''));
+    const searchQ = new URLSearchParams(location.search);
+    const fromHash = !!(hashQ.get('dl') && hashQ.get('p'));
+    const src = fromHash ? hashQ : searchQ;
+    const dlToken = src.get('dl');
+    const dlGate = src.get('p') || '';
+    let arrive = '';
+    if (dlToken && slugByGate[dlGate]) {
+      saveGate(dlGate, dlToken);
+      arrive = slugByGate[dlGate];
+      src.delete('dl');
+      src.delete('p');
+      const rest = searchQ.toString();
+      history.replaceState(null, '', location.pathname + (rest ? '?' + rest : '') + (fromHash && hashQ.toString() ? '#' + hashQ.toString() : ''));
+    } else {
+      // ?p=<slug or gate id>: straight to one plugin (support replies, emails).
+      const want = searchQ.get('p') || '';
+      arrive = info[want] ? want : slugByGate[want] || '';
+    }
+    if (arrive) {
+      // Parked for the carousel too, in case its script runs after this one.
+      (window as unknown as { __showcaseGoto?: string }).__showcaseGoto = arrive;
+      document.dispatchEvent(new CustomEvent('showcase:goto', { detail: { slug: arrive } }));
+      open(arrive, true);
+    }
+  }
+</script>
+
+<style>
+  .dlp {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 0 1rem 4.5rem;
+  }
+  .dlp-hint {
+    margin: -0.5rem 0 0;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--fg-dim);
+    text-align: center;
+  }
+  .dlp-hint strong { color: var(--brass-bright); font-weight: 600; }
+  .dlp-hint[hidden] { display: none; }
+
+  /* The popup's card (TrialGateModal), set in the page: brass top rail,
+     same field / consent / button family. */
+  .dlp-card {
+    width: min(460px, 100%);
+    padding: 2rem 2rem 1.75rem;
+    background: var(--bg-1);
+    color: var(--fg);
+    border: 1px solid var(--border-bright);
+    border-top: 3px solid var(--brass);
+    border-radius: 12px;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+    outline: none;
+    scroll-margin-top: 6rem;
+  }
+  .dlp-card[hidden] { display: none; }
+  :global(html.motion-ok) .dlp-card:not([hidden]) { animation: dlp-in 0.45s var(--ease-settle) both; }
+  @keyframes dlp-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+  .dlp-kicker {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--oxide-text);
+    margin: 0 0 0.5rem;
+  }
+  .dlp-title {
+    font-family: var(--font-display);
+    letter-spacing: 0.04em;
+    color: var(--brass-bright);
+    margin: 0 0 0.5rem;
+    font-size: 1.7rem;
+    line-height: 1.15;
+  }
+  .dlp-sub { color: var(--fg-dim); font-size: 0.92rem; margin: 0 0 1.5rem; }
+
+  .dlp-form { display: flex; flex-direction: column; gap: 1rem; }
+  .dlp-form[hidden], .dlp-sent[hidden], .dlp-ready[hidden] { display: none; }
+  .dlp-field { display: flex; flex-direction: column; gap: 0.35rem; }
+  .dlp-field span {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--fg-dim);
+  }
+  .dlp-field input {
+    background: var(--bg-0);
+    border: 1px solid var(--border-bright);
+    border-radius: 6px;
+    color: var(--fg);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    padding: 0.7rem 0.85rem;
+  }
+  .dlp-field input:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 0; border-color: var(--brass-dark); }
+  .dlp-hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+  .dlp-consent-block { display: flex; flex-direction: column; gap: 0.4rem; }
+  .dlp-consent { display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.8rem; color: var(--fg-dim); cursor: pointer; }
+  .dlp-consent input { margin: 0.15rem 0 0; accent-color: var(--brass); flex: none; }
+  .dlp-consent input:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 2px; }
+  .dlp-notice { margin: 0; font-size: 0.74rem; line-height: 1.45; color: var(--fg-dim); }
+
+  .dlp-submit { display: flex; width: 100%; }
+  .dlp-err { min-height: 1.1em; margin: 0; font-size: 0.8rem; color: var(--oxide-text); }
+  .dlp-err :global(a) { color: var(--brass-bright); }
+
+  .dlp-sent { text-align: center; }
+  .dlp-status { margin: 0 0 0.5rem; font-size: 1rem; color: var(--brass-bright); outline: none; }
+  .dlp-sent-note { margin: 0 0 0.75rem; font-size: 0.82rem; color: var(--fg-dim); }
+
+  .dlp-link {
+    display: inline-block;
+    padding: 0;
+    background: none;
+    border: 0;
+    color: var(--fg-dim);
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  .dlp-link[hidden] { display: none; }
+  .dlp-link:hover { color: var(--brass-bright); }
+  .dlp-link:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 2px; }
+
+  .dlp-dl-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  @media (max-width: 380px) { .dlp-dl-row { grid-template-columns: 1fr; } }
+  .dlp-dl { padding-inline: 12px; }
+  .dlp-dl.is-done { opacity: 1; cursor: default; --rb-line: var(--brass); }
+  .dlp-dl-fmt { color: var(--fg-dim); opacity: 1; }
+  .dlp-dl-note { color: var(--fg-dim); font-size: 0.82rem; margin: 0.75rem 0 0.4rem; }
+  .dlp-dl-note[hidden], .dlp-mobile[hidden] { display: none; }
+  .dlp-mobile { color: var(--fg-dim); font-size: 0.88rem; margin: 0.75rem 0 0; }
+
+  .dlp-foot { max-width: 460px; margin: 0.5rem 0 0; text-align: center; font-size: 0.82rem; color: var(--fg-dim); }
+  .dlp-foot a { color: var(--brass-bright); }
+
+  @media (max-width: 640px) {
+    .dlp-card { padding: 1.6rem 1.25rem 1.4rem; }
+  }
+</style>
