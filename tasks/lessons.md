@@ -101,3 +101,10 @@ width-scaled <gas-mixer> up under the "Hear it" line. At a 1000 px window the mi
 console over the line and the note onto the plate. Rule: after baking a bench offset that works against a component
 that scales with the width, check the narrowest desktop width (~1000 px) too; scale the offset with the width
 (`max(<tuned>, -<n>vw)`) so the tuned look stays exact where it was tuned.
+
+## 2026-10-22 - A component dropped into someone else's page: prefix EVERY class
+
+- The GAS 2 radio's tuning knob (`.rp-knob.tune`) rendered 0 x 0: page-b's own TUNE panel is `.tune { display: none }`.
+  Generic names (`tune`, `vol`, `on`, `open`, `key`) collide with the host page's CSS. Every class of a player that
+  lives in another writer's page carries its prefix (`rp-`), states included where the host styles them; check an
+  invisible part with `getBoundingClientRect()` first (0 x 0 = a host rule, not your code).

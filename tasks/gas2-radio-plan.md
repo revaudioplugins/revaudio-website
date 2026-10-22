@@ -1,7 +1,7 @@
 # GAS 2 page: the radio player (plan, 2026-10-22)
 
 Owner: Claude Code `revaudio-cd` (Yoni's laptop 2). Branch `feat/gas2-page`, worktree `Website/revaudio-website-g2p`.
-Status: PLAN, waiting for Yoni's go.
+Status: round 1 BUILT (2026-10-22), waiting for Yoni's review.
 
 Ask (Yoni, 2026-10-22): forget the jukebox player design (`tasks/gas2-jukebox-plan.md` on laptop 2's unpushed main =
 history); the player is the radio in Dan's station scene (`tools/_gas2-scene/page-b.html`, frame v17). Form picked:
@@ -42,11 +42,46 @@ in the jukebox plan), placeholder audio until then.
 
 ## Steps
 
-- [ ] 🤖 1. Read `wiki design` + the site's `DESIGN.md` (UI gate), then generate the close-up art -> `player/img/`.
-- [ ] 🤖 2. `player/radio.css` + `player/radio.js` (+ `player/audio/` placeholders): close-up veil, stations, keys,
+- [x] 🤖 1. Read `wiki design` + the site's `DESIGN.md` (UI gate), then generate the close-up art -> `player/img/`.
+- [x] 🤖 2. `player/radio.css` + `player/radio.js` (+ `player/audio/` placeholders): close-up veil, stations, keys,
       knobs, engine, scene caption/glow. Wire into page-b (one link + one script; old inline radio handler out).
-- [ ] 🤖 3. Headless check desktop + phone (no errors, no 404s, A/B swaps at the same position, gains 0/1),
+- [x] 🤖 3. Headless check desktop + phone (no errors, no 404s, A/B swaps at the same position, gains 0/1),
       screenshots, then open page-b for Yoni.
 - [ ] 🧑 4. Yoni's review -> corrections folded in.
 - [ ] 🧑 5. Yoni renders the 10 files -> 🤖 process + level-match + swap in.
 - [ ] 6. Commit + push the branch (own files only); page moves into `src/` with Dan's page later.
+
+## Round 1 (2026-10-22, `revaudio-cd`)
+
+Open: `cd tools/_gas2-scene && python -m http.server 4462 --bind 127.0.0.1`, then http://127.0.0.1:4462/page-b.html,
+tap the radio.
+
+- Art: `player/tools/gen_art.py` (gpt-image-2 EDIT, the scene's own radio crop + the frame as references, 3 takes,
+  ~$1): a = the match but small keys, b = darker cabinet, **c = picked** (same brass radio, keys ~140 px at laptop size).
+  `process_art.py`: crop 1368 x 820, the baked pointer erased (light ramp + borrowed grain, no seam), the OFF plate made
+  from the same photo (glass to tea-brown, warm spill down 38 %), 0 pure #000 / #fff. Raw takes + refs gitignored.
+- States: off = OFF plate; ORIGINAL = lit plate at 30 %; GAS 2 = lit 100 % + a screen glow on the glass. The pressed key
+  sinks 5 px (scaled) into a dark well, -22 % light. Pointer = live, runs in the scale under the names (house curve).
+- Knobs: the photo's caps never move, only a painted cream notch (Law 3). Volume: drag / wheel / arrows. Tuning: 40 px
+  of drag = one detent = next station, with a 0.3 s burst of band-passed static.
+- Open = power on at the current station on ORIGINAL; the station on air tapped again = off; closing keeps it playing
+  (scene radio `.on` / `.b`, caption "On air: GAS 2 · ROCK").
+- Phone (<= 760): crop knob to knob, the 5 stations repeated as paper tags under it, keys' hit area grown.
+- Wiring: page-b gained ONE line in `<head>` (`player/radio.css` + `player/radio.js` defer). The page's own first-draft
+  `radio.onclick` is nulled from radio.js, not edited.
+
+Checks (headless Chromium 1440x900, 1280x720, 390x844 @2x): no page errors, no 404s; open -> playing ORIGINAL (gains
+1/0); GAS 2 key -> 0/1; back -> 1/0; ROCK tag/dial -> station 2 on ORIGINAL; `b` -> 0/1; Space -> off; Space -> on;
+Esc -> close, scene radio `on b`, caption "On air: GAS 2 · ROCK". Not checked: real ears, Safari / Firefox, a real phone.
+
+Found for Dan's session (not mine to change): on a phone the scene is anchored right, so the radio sits off-screen
+(x = -810 at 390 px): phones cannot reach the player from the scene.
+
+### Open questions (Yoni)
+
+1. Close-up look: take c OK? Keys big enough as the hero?
+2. ORIGINAL lamp at 30 % vs GAS 2 full: is the difference right, or should ORIGINAL be fully lit too (honest A/B: only
+   the sound changes)?
+3. The static burst when tuning: keep?
+4. Real renders (spec in `tasks/gas2-jukebox-plan.md` on laptop 2's archive branch, repeated here): 5 mixes x
+   `<id>_before` / `<id>_after`, sample-aligned, 30-45 s, WAV 48k/24, + GAS 2 settings per mix (GRADE, AMOUNT %).
