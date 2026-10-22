@@ -1,3 +1,10 @@
+## 2026-10-22 — GAS 2 page: the radio player (Claude Code `revaudio-cd`, Yoni's laptop 2) — PLAN, waiting for Yoni's go
+
+Claim: OPEN. Files: `tools/_gas2-scene/player/**`, the radio block in `tools/_gas2-scene/page-b.html` (wire = one `<link>` +
+one `<script>`), `tasks/gas2-radio-plan.md`. Branch `feat/gas2-page`, worktree `Website/revaudio-website-g2p`.
+- Yoni: the jukebox player design is dropped; the player = the scene's radio, opening a close-up on tap. Plan:
+  `tasks/gas2-radio-plan.md`.
+
 ## 2026-10-22 — GAS 2 page: the station mockup on branch `feat/gas2-page` (Claude Code, Dan's Mac) — BRANCH PUSHED, NOT MAIN (Dan: "push this branch so Yoni can work on the player")
 
 Claim: OPEN. Files: `tools/_gas2-scene/**` (static mockup, no build step; README there). Split (one writer per file set):
