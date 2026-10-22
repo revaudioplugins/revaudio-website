@@ -49,6 +49,9 @@ The "rv close" ritual is an explicit push instruction and still counts.
 - Site players (2026-10-13): a glow layer with `mix-blend-mode:screen` on the leather/walnut panel rendered
   invisible in Edge (forcing it red proved it was placed right). A plain alpha radial gradient works. Check a glow
   by a crop screenshot with its animation off, never by computed styles.
+- Site players (2026-10-19): a web component's pre-build placeholder (`aspect-ratio` + `max-height` on the host)
+  must be fully released on `.ready`. Releasing only `aspect-ratio` left the cap, and OPEN THE HOOD's taller mixer
+  painted over the footer. Test every state that changes the component's height (hood open, phone), not just first load.
 
 ## 2026-10-14 - Playwright WebKit on Windows vs the homepage (DRIFT word wall)
 

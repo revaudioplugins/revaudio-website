@@ -1262,6 +1262,25 @@ Claim: CLOSED 2026-10-19. Files: `bench/gas-mixer-bench.html`, `public/gas-mixer
 - Then (2026-10-20, user: "a bench so I can place this area", then "no gap between the line and the mixer"): a local GAS lab bench, `public/gaslab.html` (git-excluded in `.git/info/exclude`, never committed; served by `npx astro dev --port 4430` at `/gaslab.html`): the real dev /gas in four same-origin iframes at real window sizes (1366x657, 1536x730, 1440x789, 1920x953), driven by one live `<style>` each; sliders + drag HEAR IT for RISE; COPY = the desktop @media block. The user's COPY is baked verbatim into gas.astro: peek 24rem, hero top 1.5rem, line size up to 4rem, line top gap 0, line -> mixer -7.625rem (the mixer's empty top strip slides up under the line; the note sits beside it). Plus one line of my own after the user's block: `margin-bottom: max(-7.625rem, -9.5vw)`, because at a 1000 px window the fixed pull ran the console over the line's descenders and the note onto the plate (identical from ~1284 px up). Checked on the real page (no lab style) at 1000x700, 1280x720, 1366x657, 1440x789, 1536x730, 1920x953, 2560x1300: hero whole, note whole in the first screen, console 21-49 px below the line, note clear of the title and line; 390 unchanged (toy). Build green. Lesson in `tasks/lessons.md` (2026-10-20).
 - Next: a look at the live /gas on a laptop and a phone (real Safari / iPhone not checked). Delete `public/gaslab.html` (and its exclude line) once the user is done with it.
 
+## 2026-10-19 — Claude Code `revaudio-a5` (Yoni's laptop 2) — OPEN THE HOOD overflow fix LIVE + this clone re-synced
+
+Claim: CLOSED 2026-10-19. Files: `src/pages/gas.astro`, `src/pages/[slug].astro` (one line each); `tasks/handoff.md`, `tasks/lessons.md`, `tasks/pagespeed-plan-2026-10.md` (rescue).
+- Bug (Yoni's screenshot): on /gas, OPEN THE HOOD drew the 3-track mixer over the footer. Cause: `.gas-mixer-el` /
+  `.station-mixer-el` kept their pre-build `max-height` (632 / 558 px) after `.ready`, so the taller hood content
+  overflowed the host. Fix: `.ready { aspect-ratio: auto; max-height: none; }` on both players. Radio Roulette had the same bug.
+- PUSHED TO MAIN = LIVE (Yoni: "push"): `aba5081`; Pages deploy green. Live check (playwright-core, 1900x1000, hood
+  opened, no injection): GAS host 1495 px, footer below the mixer; RR host 1442 px, content inside the host.
+- Clone re-sync: this checkout was 18 ahead / 151 behind with uncommitted notes. `git cherry` = all 18 already upstream
+  (patch-equal), so a plain rebase dropped them. The uncommitted notes (revaudio-28 / -c7 / -71 entries, the Edge
+  glow lesson, the PageSpeed 83 line) were real and missing upstream: rescued as `d54c4da`, conflicts resolved by
+  hand keeping both sides (diff vs origin = additions only). NOT PUSHED: Yoni was asked "push?" and closed instead.
+  Backup of the pre-rebase edits: session scratchpad `website-rescue/` (laptop-only, temporary).
+- Untracked, untouched: root `HANDOFF.md` (2026-09-07) and `.handoff-archive/` (2026-08-29), old relics.
+- Cleanup owed: `C:\RevAudio\Website\rw-gas-hood` half-deleted (locked, likely VS Code), delete it; `.git/worktrees/`
+  holds stale entries git can't delete (Permission denied: revaudio-website-glue/-glue2/-src/-trialsrc, rw-gas-hood,
+  wt-*), likely desktop.ini (memory `feedback_desktop_ini_poisons_all_repos`).
+- Next: on "push", `git pull --rebase` (origin moved 1 commit since) then push `d54c4da` + this entry (notes only; site output unchanged).
+
 ## 2026-10-18 — Trial-end offer: cart applies `?offer=CODE` locked, branch `trial-offer` (Claude Code `revaudio-70`, Yoni's laptop 2) — PUSHED TO MAIN = LIVE 2026-10-18 (Yoni: "push"; Pages deploy + smoke test green, live /buy/revlimiter/ carries `ra-offer`)
 
 Claim: CLOSED 2026-10-18. File: `src/components/Cart.astro`. Worktree `Website/revaudio-website-offer` (off origin/main 141d400; its `node_modules` is a junction to the main checkout's, same lockfile).
