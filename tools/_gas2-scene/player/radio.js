@@ -9,7 +9,7 @@
   // PLACEHOLDER until Yoni's renders exist: every station plays the GAS mixer loops (-17 LUFS both sides).
   const PH = { a: 'audio/placeholder_before.m4a', b: 'audio/placeholder_after.m4a', gas: null };
   const STATIONS = [
-    { id: 'hiphop', name: 'HIP HOP', a: 'audio/hiphop_before.m4a', b: 'audio/hiphop_after.m4a', gas: null },   // Yoni's renders 2026-10-23 (prep_audio.py)
+    { id: 'hiphop', name: 'HIP HOP', a: 'audio/hiphop_before.m4a', b: 'audio/hiphop_after.m4a', gas: { grade: 'PREMIUM', amount: 140 } },   // Yoni's renders 2026-10-23 (prep_audio.py)
     { id: 'electronic', name: 'ELECTRONIC', ...PH },
     { id: 'rock', name: 'ROCK', ...PH },
     { id: 'trap', name: 'TRAP', ...PH },
@@ -31,8 +31,8 @@
       <button type="button" class="rp-key p" aria-label="Play / stop" aria-pressed="false"><span><svg viewBox="0 0 10 10"><path d="M1.5 .8 9 5 1.5 9.2z"/></svg><svg viewBox="0 0 10 10"><path d="M1.2 1.2h7.6v7.6H1.2z"/></svg></span></button>
       <button type="button" class="rp-key a" data-side="a" aria-pressed="true"><span>ORIGINAL</span></button>
       <button type="button" class="rp-key b" data-side="b" aria-pressed="false"><span>GAS 2</span></button>
-      <div class="rp-knob rp-vol" role="slider" tabindex="0" aria-label="Volume" aria-valuemin="0" aria-valuemax="100"><i></i></div>
-      <div class="rp-knob rp-tun" role="slider" tabindex="0" aria-label="Tuning" aria-valuemin="1" aria-valuemax="${STATIONS.length}"><i></i></div>
+      <div class="rp-knob rp-vol" role="slider" tabindex="0" aria-label="Volume" aria-valuemin="0" aria-valuemax="100"><b></b></div>
+      <div class="rp-knob rp-tun" role="slider" tabindex="0" aria-label="Tuning" aria-valuemin="1" aria-valuemax="${STATIONS.length}"><b></b></div>
       <i class="rp-jewel"></i><i class="rp-eye"><canvas></canvas></i>
       <span class="rp-eng" style="left:calc(345 * var(--u))">VOLUME</span><span class="rp-eng" style="left:calc(1013.5 * var(--u))">TUNING</span>
     </div></div>
@@ -43,6 +43,18 @@
   const q = s => veil.querySelector(s), qa = s => [...veil.querySelectorAll(s)];
   const plate = q('.rp-plate'), cap = q('.rp-cap'), ptr = q('.rp-ptr');
   const knobVol = q('.rp-knob.rp-vol'), knobTune = q('.rp-knob.rp-tun');
+
+  const knobAt = (el, deg) => {
+    const f = Math.round((Math.max(-135, Math.min(135, deg)) + 135) / 270 * 128), b = el.firstChild;
+    b.style.backgroundPosition = `${(f % 12) * 100 / 11}% ${Math.floor(f / 12) * 10}%`;
+  };
+  // the tuning knob glides to its detent (a short ease-out tween of the angle, frame by frame); the hand drives it 1:1
+  let tuneA = -100, tuneRaf = 0;
+  const tuneTo = deg => {
+    cancelAnimationFrame(tuneRaf); const a0 = tuneA, t0 = performance.now();
+    const step = t => { const k = Math.min(1, (t - t0) / 380), e = 1 - Math.pow(1 - k, 3); tuneA = a0 + (deg - a0) * e; knobAt(knobTune, tuneA); if (k < 1) tuneRaf = requestAnimationFrame(step); };
+    tuneRaf = requestAnimationFrame(step);
+  };
 
   // ---------- state ----------
   let st = 0, side = 'a', playing = false, vol = .8;
@@ -87,7 +99,7 @@
     s.buffer = b; s.connect(f).connect(g).connect(master); s.start(t);
   };
   const setVol = v => { vol = Math.min(1, Math.max(0, v)); if (master) master.gain.setTargetAtTime(vol * vol, ac.currentTime, .015);
-    knobVol.style.setProperty('--a', (-135 + vol * 270) + 'deg'); knobVol.setAttribute('aria-valuenow', Math.round(vol * 100)); };
+    knobAt(knobVol, -135 + vol * 270); knobVol.setAttribute('aria-valuenow', Math.round(vol * 100)); };
 
   // ---------- actions ----------
   const play = () => { ensure(); playing = true; start(); render(); };
@@ -117,7 +129,7 @@
     if (playing) eyeLoop();
     qa('[data-st]').forEach(x => x.classList.toggle('on', +x.dataset.st === st));
     ptr.style.left = (2 + 96 * (st + .5) / STATIONS.length) + '%';
-    knobTune.style.setProperty('--a', (-100 + 200 * st / (STATIONS.length - 1)) + 'deg'); knobTune.setAttribute('aria-valuenow', st + 1);
+    tuneTo(-100 + 200 * st / (STATIONS.length - 1)); knobTune.setAttribute('aria-valuenow', st + 1);
     const set = s.gas ? `${s.gas.grade} · GAS ${s.gas.amount} %` : 'on the master';
     cap.innerHTML = !playing ? 'Off · tap a station' : b ? `On air: ${s.name} · <em>GAS 2</em> ${set}` : `On air: ${s.name} · <em>Original</em> · press GAS 2`;
     q('.rp-ph').hidden = s.a !== PH.a;

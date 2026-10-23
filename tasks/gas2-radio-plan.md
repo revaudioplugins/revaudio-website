@@ -94,8 +94,8 @@ Picks (Yoni): play / stop = a 3rd key on the radio + a red jewel lamp; Fly-in fr
       a magic-eye tube window (dark when off). Re-measure, re-process (lit / off), erase pointer.
 - [x] 🤖 2. KNOB LAB page for the radio (`player/knoblab/`, generator + `__klCfg`; the lab code untouched): start look
       = a vintage radio knob in the Radio Roulette family, not identical. Open for Yoni.
-- [ ] 🧑 3. Yoni tweaks / approves the knob in the lab (save through serve-lab).
-- [ ] 🤖 4. Bake the look into 129-frame strips (lab's `bake-knob-lab.js`), knobs = strips, the photo's caps covered.
+- [x] 🧑 3. Yoni tweaks / approves the knob in the lab (save through serve-lab).
+- [x] 🤖 4. Bake the look into 129-frame strips (lab's `bake-knob-lab.js`), knobs = strips, the photo's caps covered.
 - [x] 🤖 5. Code: play key + jewel; magic eye live from an AnalyserNode (opens with the level); fly-in from the scene
       radio's rect into the close-up and back out (one tween, house curve).
 - [ ] 🤖 6. Headless checks + screenshots, open for Yoni.
@@ -117,3 +117,8 @@ Picks (Yoni): play / stop = a 3rd key on the radio + a red jewel lamp; Fly-in fr
   brass ring. Waiting for Yoni's look; then bake (`bake-knob-lab.js <recipe> <out> 256 1 --foot=60,60,84,120`).
 - Checks (headless, 1440 / 1280 / 390): no errors, no 404s; flight mid-scale at 120 ms; eye pixel green while playing;
   keys 1/0 -> 0/1; play key stop / start; Esc -> closed; scene caption "On air: GAS 2 · HIP HOP". Not: real ears / Safari.
+- Knob (Yoni "done" 2026-10-23): his lab EXPORT `library/saves/gas2radio/gas2radio-knob-recipe-2026-10-23-1725-2.json`
+  (copy: `player/knoblab/knob-recipe-yoni-2026-10-23.json`), KNURL, gunmetal knurl, bakelite #442b13 dome, glow index
+  #ffd23b, linked (both knobs). Baked 129 x 256 px (`--foot=60,60,84,120`, k3dCss -1.391 / -3.326 / 102.783 %), shipped as
+  `img/knob-radio.webp` (192 px frames, 518 KB). Volume = frame per angle 1:1; tuning glides to its detent (380 ms ease-out).
+- HIP HOP GAS 2 settings (Yoni): PREMIUM, 140 % -> the caption on GAS 2.

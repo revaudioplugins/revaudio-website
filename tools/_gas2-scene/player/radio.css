@@ -70,17 +70,15 @@
 .rp-st button:focus-visible { outline: none; text-decoration: underline; text-underline-offset: calc(4 * var(--u)); }
 .rp-key:focus-visible, .rp-knob:focus-visible { outline: calc(2.5 * var(--u)) solid var(--honey, #f2be4a); outline-offset: calc(2 * var(--u)); }
 
-/* knobs: the photo's caps stay put (the lamp never turns); only the painted notch rotates */
-.rp-knob { position: absolute; width: calc(76 * var(--u)); height: calc(76 * var(--u)); margin: calc(-38 * var(--u)) 0 0 calc(-38 * var(--u));
+/* knobs: Yoni's KNOB LAB look (2026-10-23: KNURL, gunmetal knurl, brown bakelite dome, glowing index), baked into
+   129 frames under the fixed house lamp (knoblab/make-knoblab.py; bake --foot=60,60,84,120). The box is the lab's
+   120 px .knob box; the strip sits in it where the bake says (k3dCss). A frame per angle: nothing ever rotates in CSS */
+.rp-knob { position: absolute; width: calc(120 * var(--u)); height: calc(120 * var(--u)); margin: calc(-60 * var(--u)) 0 0 calc(-60 * var(--u));
   border-radius: 50%; top: calc(530 * var(--u)); cursor: ns-resize; touch-action: none; }
+.rp-knob b { position: absolute; left: -1.391%; top: -3.326%; width: 102.783%; height: 102.783%; pointer-events: none;
+  background: url(img/knob-radio.webp) 0 0 / 1200% 1100% no-repeat; }
 .rp-knob.rp-vol { left: calc(345 * var(--u)); }
 .rp-knob.rp-tun { left: calc(1013.5 * var(--u)); }
-.rp-knob i { position: absolute; inset: 0; transform: rotate(var(--a, 0deg)); pointer-events: none; }
-.rp-knob i::after { content: ""; position: absolute; left: 50%; top: calc(38 * var(--u) - 31 * var(--u)); width: calc(4 * var(--u)); height: calc(17 * var(--u));
-  margin-left: calc(-2 * var(--u)); border-radius: calc(2 * var(--u)); background: linear-gradient(#efe3c2, #c9b68e);
-  box-shadow: 0 0 0 calc(1.2 * var(--u)) rgba(28, 14, 6, .8); opacity: .92; }
-.rp-knob.rp-tun i { transition: transform .45s cubic-bezier(.2, .9, .25, 1.15); }
-.rp-knob.drag i { transition: none; }
 /* the red pilot jewel: its lit glass is cut from the lit plate; it burns while the radio plays */
 .rp-jewel { position: absolute; left: calc(413 * var(--u)); top: calc(505 * var(--u)); width: calc(31 * var(--u)); height: calc(31 * var(--u));
   border-radius: 50%; background: url(img/radio-lit.webp) no-repeat calc(-413 * var(--u)) calc(-505 * var(--u)) / calc(1368 * var(--u)) calc(820 * var(--u));
