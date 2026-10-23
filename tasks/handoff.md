@@ -1,3 +1,33 @@
+## 2026-10-23 — GAS 2 page: three PHONE options, Swipe / Walk / Stack (Claude Code, Dan's Mac, Dan on his phone) — BRANCH `feat/gas2-phone`, waiting for Dan's pick
+
+Claim: OPEN until Dan picks. Files: `tools/_gas2-scene/phone-{swipe,walk,stack}.html` only (new; git-excluded folder, so `git add -f`).
+Worktree `.claude/worktrees/gas2-phone`, branched from `feat/gas2-page` at `c4302cf`; static server :4464 (pid 37789) from its `tools/_gas2-scene`.
+- Ask (Dan, on his phone): the GAS 2 page for phones, "same principles, same posters, same layout vibe", several options, right in one go.
+- Each file = `page-b.html` (c4302cf) + ONE `@media (max-width: 760px)` block `/* ═══ PHONE · <OPTION> ═══ */` + one matchMedia-gated
+  script + the minimum markup (all `hidden` / unstyled on desktop). Desktop renders pixel-identical to page-b (checked 1141x636,
+  1440x900, 800x900). The winner pastes into page-b verbatim.
+- SWIPE: the stage is a sideways scroller (100svh, scene 150svh wide = laptop scale), opens on the sky + readings, mandatory snap to
+  store front / pump / radio, a "← Walk the lot" caption + one 56 px peek. WALK: a sticky 100lvh frame, page scroll dollies the camera
+  with flat holds (readings → store → pump → radio), then an end band with the button. STACK: the readings screen, then portrait crops
+  of the same scene (sign strip → pump → mail + chalkboard → radio), each live prop moved into its one shot, feathered seams.
+- All three: same readings recipe in vw/svh (GAS2 ~71-74vw), always-on pump caption, grade tap = pick + tip 2.4 s, the photo's bottom
+  melts into the page (no hard line), FOCUS blur off on phones (HUG + DUSK kept).
+- Checked (WebKit + Chromium, 390x844 / 375x667 / 393x659 / 430x932): every prop tapped by script opens the right thing, no overflow,
+  no page errors except WebKit's missing AAC decoder (page-b throws the same). iOS Simulator (iPhone 17 Pro, 402x714): Swipe opens on
+  the sky and stays (scrollLeft = max through 4 s), Walk's first screen right. NOT checked: a real iPhone (momentum, snap feel, toolbar
+  collapse, the keyboard over the ticket), audio by ear.
+- Dan views them at https://claude.ai/artifact/WaDdeVGPhHdxXxseH22H6H (private; a chooser + the three pages + assets + the GAS 2
+  plugin UI copied from the GAS2 repo for the pump; fonts inlined; the radio renders renamed .m4a → .mp4 because the host won't serve .m4a).
+  Packager: `build_artifact.py` in the session scratchpad (not in git).
+- 🔴 page-b bugs found on the way (fixed in the phone blocks only, desktop untouched): (1) after the plugin veil closes its iframe keeps
+  swallowing taps in its rect (WebKit touch): fix `.veil:not(.open) .plug { display: none; }`; (2) the reduced-motion rule misses the
+  button's `::after` shine, so it keeps running.
+- ⚠️ The radio moved on: `feat/gas2-page` gained Yoni's radio round 3 (`e96ef81`..`7a4a318`: the radio stands IN the scene, no close-up)
+  after this branch was cut, and its `radio.css` has no phone rules. The three options use the c4302cf close-up player. Rebase this
+  branch only after Dan's pick, and then the phone radio is Yoni's lane (one writer per file set).
+- Next: Dan picks Swipe / Walk / Stack on his phone → paste that block into page-b (strip Walk's `window.gas2Walk` test hook), delete
+  the other two files, rebase on `feat/gas2-page`, re-check with Yoni's in-scene radio.
+
 ## 2026-10-23 — GAS 2 page: MAIL ME THE KEYS poster on the wall (Claude Code `danavivi-2a`, Dan's Mac) — BRANCH `feat/gas2-page` PUSHED
 
 Claim: CLOSED 2026-10-23. Files: `tools/_gas2-scene/page-b.html` (mailbox block: `.mp` poster button + `.mail` moved down,
