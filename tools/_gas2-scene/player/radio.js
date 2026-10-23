@@ -33,7 +33,7 @@
       <button type="button" class="rp-key b" data-side="b" aria-pressed="false"><span>GAS 2</span></button>
       <div class="rp-knob rp-vol" role="slider" tabindex="0" aria-label="Volume" aria-valuemin="0" aria-valuemax="100"><b></b></div>
       <div class="rp-knob rp-tun" role="slider" tabindex="0" aria-label="Tuning" aria-valuemin="1" aria-valuemax="${STATIONS.length}"><b></b></div>
-      <i class="rp-jewel"></i><i class="rp-eye"><canvas></canvas></i>
+      <i class="rp-jewel"></i>
       <span class="rp-eng" style="left:calc(345 * var(--u))">VOLUME</span><span class="rp-eng" style="left:calc(1013.5 * var(--u))">TUNING</span>
     </div></div>
     <div class="rp-tags">${STATIONS.map((s, i) => `<button type="button" data-st="${i}" style="--r:${[-1.5, 1, -.5, 1.5, -1][i]}deg">${s.name}</button>`).join('')}</div>
@@ -60,14 +60,13 @@
   let st = 0, side = 'a', playing = false, vol = .8;
 
   // ---------- the engine: both sides of a mix play in sync, the keys only move two gains ----------
-  let ac, bus, master, gA, gB, an, srcs = [], cache = new Map(), token = 0;
+  let ac, bus, master, gA, gB, srcs = [], cache = new Map(), token = 0;
   const ensure = () => {
     if (ac) { if (ac.state === 'suspended') ac.resume(); return; }
     ac = new (window.AudioContext || window.webkitAudioContext)();
     master = ac.createGain(); master.connect(ac.destination);
     bus = ac.createGain(); bus.connect(master);
     gA = ac.createGain(); gB = ac.createGain(); gA.connect(bus); gB.connect(bus);
-    an = ac.createAnalyser(); an.fftSize = 2048; bus.connect(an);   // the magic eye listens after the keys, before volume
     setVol(vol);
   };
   const buf = url => {
@@ -126,7 +125,6 @@
     plate.classList.toggle('on', playing); plate.classList.toggle('b', playing && b);
     qa('.rp-key[data-side]').forEach(k => { const d = k.dataset.side === side; k.classList.toggle('down', d); k.setAttribute('aria-pressed', d); });
     const pk = q('.rp-key.p'); pk.classList.toggle('down', playing); pk.setAttribute('aria-pressed', playing);
-    if (playing) eyeLoop();
     qa('[data-st]').forEach(x => x.classList.toggle('on', +x.dataset.st === st));
     ptr.style.left = (2 + 96 * (st + .5) / STATIONS.length) + '%';
     tuneTo(-100 + 200 * st / (STATIONS.length - 1)); knobTune.setAttribute('aria-valuenow', st + 1);
@@ -141,40 +139,6 @@
   qa('.rp-key[data-side]').forEach(k => k.addEventListener('click', () => setSide(k.dataset.side)));
   q('.rp-key.p').addEventListener('click', () => (playing ? stop() : play()));
 
-  // ---------- the magic eye: an EM34-style green fan whose dark shadow closes as the music gets louder ----------
-  const eyeC = q('.rp-eye canvas'), eyeX = eyeC.getContext('2d');
-  let eyeRaf = 0, lvl = 0, tbuf;
-  const eyeSize = () => { const r = eyeC.getBoundingClientRect(), d = Math.max(16, Math.round(r.width * (window.devicePixelRatio || 1))); if (eyeC.width !== d) eyeC.width = eyeC.height = d; };
-  const drawEye = open => {
-    const W = eyeC.width, c = W / 2, r0 = c * .36, r1 = c * .95, th = (52 - 46 * open) * Math.PI / 180;
-    eyeX.clearRect(0, 0, W, W);
-    let g = eyeX.createRadialGradient(c, c * .9, 0, c, c, c); g.addColorStop(0, '#10261a'); g.addColorStop(1, '#07120b');
-    eyeX.fillStyle = g; eyeX.beginPath(); eyeX.arc(c, c, c, 0, 7); eyeX.fill();
-    g = eyeX.createRadialGradient(c, c, r0, c, c, r1);
-    g.addColorStop(0, 'rgba(170,255,185,.96)'); g.addColorStop(.45, 'rgba(84,236,128,.88)'); g.addColorStop(1, 'rgba(22,128,64,.55)');
-    const a0 = -Math.PI / 2 + th, a1 = Math.PI * 1.5 - th;
-    eyeX.fillStyle = g; eyeX.beginPath(); eyeX.arc(c, c, r1, a0, a1); eyeX.arc(c, c, r0, a1, a0, true); eyeX.closePath(); eyeX.fill();
-    eyeX.strokeStyle = 'rgba(200,255,210,.75)'; eyeX.lineWidth = Math.max(1, W / 70);   // the bright edges of the shadow
-    [a0, a1].forEach(a => { eyeX.beginPath(); eyeX.moveTo(c + Math.cos(a) * r0, c + Math.sin(a) * r0); eyeX.lineTo(c + Math.cos(a) * r1, c + Math.sin(a) * r1); eyeX.stroke(); });
-    g = eyeX.createRadialGradient(c * .9, c * .85, 0, c, c, r0 * .9); g.addColorStop(0, '#3a2c1e'); g.addColorStop(1, '#140d08');
-    eyeX.fillStyle = g; eyeX.beginPath(); eyeX.arc(c, c, r0 * .86, 0, 7); eyeX.fill();   // the cathode cap
-    g = eyeX.createLinearGradient(0, 0, W * .6, W * .6); g.addColorStop(0, 'rgba(235,245,230,.22)'); g.addColorStop(1, 'rgba(235,245,230,0)');
-    eyeX.fillStyle = g; eyeX.beginPath(); eyeX.ellipse(c * .72, c * .62, c * .5, c * .3, -.6, 0, 7); eyeX.fill();   // the glass, lit from the upper left
-  };
-  const eyeLoop = () => {
-    if (eyeRaf) return;
-    eyeSize();
-    const step = () => {
-      if (!playing || !an) { eyeRaf = 0; return; }
-      tbuf = tbuf || new Float32Array(an.fftSize); an.getFloatTimeDomainData(tbuf);
-      let e = 0; for (let i = 0; i < tbuf.length; i++) e += tbuf[i] * tbuf[i];
-      const db = 10 * Math.log10(e / tbuf.length + 1e-12), t = Math.min(1, Math.max(0, (db + 34) / 26));
-      lvl += (t - lvl) * (t > lvl ? .45 : .07);   // fast attack, slow release: the tube's own ballistics
-      drawEye(lvl); eyeRaf = requestAnimationFrame(step);
-    };
-    eyeRaf = requestAnimationFrame(step);
-  };
-  addEventListener('resize', eyeSize);
   qa('[data-st]').forEach(x => x.addEventListener('click', () => tune(+x.dataset.st)));
   // knobs: drag up / right = clockwise, 1:1 (no transition while the hand is on it); wheel and arrow keys too
   const knob = (el, onDelta) => {
@@ -208,7 +172,7 @@
     if (from) { view.style.transform = from; view.offsetWidth; view.classList.add('fly'); }
     veil.classList.add('open'); view.style.transform = 'none';
     if (!playing) play(); else render();
-    eyeSize(); setTimeout(() => { eyeSize(); q('.rp-key.b').focus({ preventScroll: true }); }, 650);
+    setTimeout(() => q('.rp-key.b').focus({ preventScroll: true }), 650);
   };
   const close = () => {
     if (!veil.classList.contains('open')) return;

@@ -122,3 +122,6 @@ Picks (Yoni): play / stop = a 3rd key on the radio + a red jewel lamp; Fly-in fr
   #ffd23b, linked (both knobs). Baked 129 x 256 px (`--foot=60,60,84,120`, k3dCss -1.391 / -3.326 / 102.783 %), shipped as
   `img/knob-radio.webp` (192 px frames, 518 KB). Volume = frame per angle 1:1; tuning glides to its detent (380 ms ease-out).
 - HIP HOP GAS 2 settings (Yoni): PREMIUM, 140 % -> the caption on GAS 2.
+- Magic eye REMOVED (Yoni 2026-10-23: "remove that green thing, its not nice"): the green glow is off-palette on this
+  brass + amber radio. Gone from the plate too: `process_art.py` patches its spot from radio-c (radio-e is an edit of
+  radio-c, aligned to 0 px there; feathered disc r 44..62), and the analyser / canvas code is out of radio.js / .css.

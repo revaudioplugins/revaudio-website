@@ -14,6 +14,7 @@ IMG = os.path.join(os.path.dirname(HERE), 'img')
 X0, Y0, X1, Y1 = 110, 110, 1478, 930
 SRC = 'radio-e'
 GLASS = (569, 580, 1044, 660)          # the dial glass, gen px (measured on a 2x grid)
+EYE = (767, 505)                        # the magic eye's centre, gen px (removed)
 JEWEL = (538.5, 630, 15)               # the red pilot jewel: centre + glass radius, gen px
 PTR = None                              # radio-e has no baked pointer (radio-c: (566, 624))
 PTR_C = (566, 624)                        # the baked red pointer's columns
@@ -22,6 +23,14 @@ PTR_C = (566, 624)                        # the baked red pointer's columns
 def main():
     a = np.asarray(Image.open(os.path.join(IMG, 'gen', SRC + '.png')).convert('RGB')).astype(np.float32)
     H, W, _ = a.shape
+
+    # 0. no magic eye (Yoni 2026-10-23: "remove that green thing"): radio-e is an edit of radio-c, aligned to 0 px there,
+    #    so the eye's spot takes radio-c's own grille + bar back through a feathered disc (r 44 solid, 62 gone)
+    ex, ey = EYE
+    c = np.asarray(Image.open(os.path.join(IMG, 'gen', 'radio-c.png')).convert('RGB')).astype(np.float32)
+    yy0, xx0 = np.mgrid[0:H, 0:W]
+    m = np.clip((62 - np.hypot(xx0 - ex, yy0 - ey)) / 18, 0, 1)[..., None]
+    a = a * (1 - m) + c * m
 
     # 1. erase the baked pointer: split the glass into light (a 12 px blur) + grain; across the pointer the light is a
     #    straight ramp between its two sides and the grain is borrowed from 44 px to the right (no band, no seam)
