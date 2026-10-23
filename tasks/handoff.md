@@ -6,9 +6,9 @@ Claim: CLOSED 2026-10-23. `feat/gas2-page` (f72afcc) + `feat/gas2-page-s2` (6a5a
 - Ilay: `git pull`, then `cd tools/_gas2-scene && python -m http.server 4462 --bind 127.0.0.1`, open `http://127.0.0.1:4462/page-b.html`. The pump iframe (:4461) and the radio's real audio are not there (placeholder audio only).
 - Ilay's note: the posters are in now too. Both branches stay open for more work; rebase them on main before the next push.
 
-## 2026-10-23 — GAS 2 page: window posters + light on the pump (Claude Code `danavivi-59`, Dan's Mac) — BRANCH `feat/gas2-page-s2` PUSHED, NOT IN `feat/gas2-page` YET
+## 2026-10-23 — GAS 2 page: window posters + light on the pump (Claude Code `danavivi-59`, Dan's Mac) — ON MAIN (merged by `danavivi-a3` for Ilay, `92a4794`; live site unchanged)
 
-Claim: OPEN. Files: in `tools/_gas2-scene/page-b.html` the posters (`.note.poster` `.pk/.pl/.ps`, were the notes `.n1-3`)
+Claim: CLOSED 2026-10-23 (rv close). Files: in `tools/_gas2-scene/page-b.html` the posters (`.note.poster` `.pk/.pl/.ps`, were the notes `.n1-3`)
 + the pump light (`.pumpCut` / `.pumpLit`, TUNE → Spotlight script at the bottom); `props/poster-{knock,level,start}.webp`,
 `props/pump-cut.png`; the README owner line; DESIGN.md ("Posters IN the window", "Making one object pop").
 Worktree `.claude/worktrees/gas2-page-s2`, served on :4463 (session 1 keeps :4462). `feat/gas2-page` merged in at `b47fcc6`.
@@ -19,8 +19,7 @@ Worktree `.claude/worktrees/gas2-page-s2`, served on :4463 (session 1 keeps :446
   · START EVERY MIX HERE. (first stop, start #2). gpt-image-2, 2 options each. Left pane one tall, right pane two wide,
   inside the measured glass, no tape / shadow / blur. Unpicked options + prompts + generator: `tools/_gas2-scene/_posters-gen/`
   in Dan's main clone (git-ignored).
-- Open: (1) bring this into `feat/gas2-page` on Dan's word (a fast-forward today: push `feat/gas2-page-s2` to
-  `feat/gas2-page`); (2) "SAME LEVEL" states auto-level as a claim: same "needs a measured check" as the entry below,
+- Open: (1) the branch stays open for more work: rebase it on main first (entry above); (2) "SAME LEVEL" states auto-level as a claim: same "needs a measured check" as the entry below,
   before it ships; (3) phones: the scene keeps its right edge, so the left-window poster is likely off-screen (not checked).
 - Note: the shell's `OPENAI_API_KEY` is stale (401); `tools/.openai_key.local` works.
 
