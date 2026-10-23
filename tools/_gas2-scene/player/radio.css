@@ -71,12 +71,18 @@
 .rp-key.b span { font-size: calc(32 * var(--u)); color: rgba(122, 39, 23, .92); }
 .rp-key.p span { display: flex; justify-content: center; align-items: center; gap: calc(9 * var(--u)); }
 .rp-key.p svg { width: calc(20 * var(--u)); height: calc(20 * var(--u)); fill: rgba(52, 30, 14, .85); }
+/* depth (Yoni 2026-10-23: pressed = DOWN, up = UP, for all three keys): a key that is UP stands proud of the panel, its
+   top edge catching the lamp and a shadow cast below it; a PRESSED key sinks into its slot: the dark slot opens above
+   it, the slot's lip shades its top, its bottom slides behind the lower lip (clipped), and it glows from inside */
+.rp-key { box-shadow: 0 calc(6 * var(--u)) calc(5 * var(--u)) rgba(10, 5, 2, .75),
+  inset 0 calc(5 * var(--u)) 0 rgba(255, 242, 212, .42), inset 0 calc(-4 * var(--u)) calc(4 * var(--u)) rgba(30, 16, 6, .4); }
 .rp-key:hover { filter: brightness(1.05); }
-.rp-key.down { transform: translateY(calc(4 * var(--u)));
-  filter: brightness(1.22) saturate(1.12);
-  box-shadow: 0 0 calc(16 * var(--u)) calc(2 * var(--u)) rgba(255, 178, 80, .5), inset 0 0 calc(14 * var(--u)) rgba(255, 214, 140, .75),
-              inset 0 calc(-4 * var(--u)) calc(6 * var(--u)) rgba(255, 196, 110, .5); }
+.rp-key.down { transform: translateY(calc(11 * var(--u))); clip-path: inset(0 0 calc(11 * var(--u)) 0 round calc(5 * var(--u)));
+  filter: saturate(1.08);
+  box-shadow: inset 0 calc(14 * var(--u)) calc(10 * var(--u)) calc(-3 * var(--u)) rgba(20, 10, 3, .85),
+              inset 0 calc(-10 * var(--u)) calc(18 * var(--u)) rgba(255, 190, 90, .75), inset 0 0 calc(12 * var(--u)) rgba(255, 210, 130, .4); }
 .rp-key.down::before { opacity: 0; }   /* a lit key ignores the dial lamp: it has its own */
+.rp-key.down span { transform: translateY(calc(2 * var(--u))); }
 .rp-key:focus-visible, .rp-knob:focus-visible { outline: calc(3 * var(--u)) solid var(--honey, #f2be4a); outline-offset: calc(3 * var(--u)); }
 
 /* knobs: Yoni's KNOB LAB look (2026-10-23: KNURL, gunmetal knurl, brown bakelite dome, glowing index), baked into
