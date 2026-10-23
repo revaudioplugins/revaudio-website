@@ -6,24 +6,31 @@
 
 /* the photo's own radio (and its old hotspot) gives way to the live one; page-b's .radio / .radioCap lose on #ids */
 #scene #radio { visibility: hidden; }
-/* the caption: on the porch floor under the bench, never wider than the radio (Yoni 2026-10-23: "contained in the
-   radio size"): the dock's own width and centre, two lines (the station, then the side + its settings) */
-#scene #radioCap { left: calc(12.5cqw - 15cqw * 1.3 / 2); width: calc(15cqw * 1.3); top: 77.4%; z-index: 3;
-  white-space: normal; letter-spacing: .14em; line-height: 1.35; }
+/* the caption: on the porch floor under the stool, never wider than the radio (Yoni 2026-10-23: "contained in the
+   radio size"): the radio's own width and centre, two lines (the station, then the side + its settings) */
+#scene #radioCap { left: calc(var(--rp-x) * 1cqw - 15cqw * var(--rp-rs) / 2); width: calc(15cqw * var(--rp-rs));
+  top: calc((var(--st-y) + .4) * 1cqw); z-index: 3; white-space: normal; letter-spacing: .14em; line-height: 1.35; }
 #scene #radioCap span { display: block; white-space: nowrap; overflow: hidden; text-overflow: clip; }
 
-/* a lower bench (Yoni 2026-10-23: "make the stool a bit lower"): the frame's own bench, its top moved from frame y 688
-   to 710 and the legs shortened to the same floor (tools/bench_patch.py); the frame file itself is untouched */
-/* the photo radio's spot, repainted without it (gen_noradio.py: a masked edit of the frame; the 1.04x radio no longer
-   covers the photo radio's top) */
+/* WHERE THINGS STAND (the defaults; ?rbench on the page shows the panel that moves them, radio.js). Plain numbers,
+   in cqw of the scene (1 = 1 % of its width) or as factors:
+   --rp-rs radio size vs the photo's radio (230 frame px = 15cqw), --rp-x its centre, --rp-y its bottom;
+   --st-x the stool's centre, --st-y its floor line (the feet), --st-w / --st-h its width / height vs the frame's bench */
+#scene { --rp-rs: 1.3; --rp-x: 12.5; --rp-y: 46.224; --st-x: 13.0534; --st-y: 51.8229; --st-w: 1; --st-h: .854; }
+
+/* the photo radio + its shadow + the old bench, painted out (gen_noradio.py: a masked edit of the frame) */
 .rp-noradio { position: absolute; left: 3.3854%; top: 50.293%; width: 19.2708%; height: 27.4414%; z-index: 1; pointer-events: none; }
-.rp-bench { position: absolute; left: 3.776%; top: 67.1875%; width: 18.4896%; height: 10.1562%; z-index: 1; pointer-events: none; }
-/* the dock: 1.3x the photo's radio (Yoni 2026-10-23, after 1.3 / 1.04 / 1.18: "increase size by 10%, and center it on
-   the stool"), centred on the bench (frame x 192 = 12.5cqw);
-   sitting on the lowered bench (frame y 710 of
-   1024 = 46.224cqw); the radio's body is 936 x 555 plate px. --rs = the size against the photo's radio (230 px = 15cqw) */
-.rp-dock { --rs: 1.3; --w: calc(15cqw * var(--rs)); position: absolute; left: calc(12.5cqw - var(--w) / 2);
-  top: calc(46.224cqw - var(--w) * 555 / 936); width: var(--w); aspect-ratio: 936 / 555; z-index: 2;
+
+/* the stool: the frame's own bench as a cut-out (bench_patch.py), 297 x 112 frame px = 19.3359 x 7.2917cqw, scaled
+   about its feet; --st-h .854 = the 2026-10-23 "a bit lower" stool (slab top frame y 695 -> 710) */
+.rp-stool { position: absolute; z-index: 1; pointer-events: none;
+  width: calc(19.3359cqw * var(--st-w)); height: calc(7.2917cqw * var(--st-h));
+  left: calc(var(--st-x) * 1cqw - 19.3359cqw * var(--st-w) / 2); top: calc(var(--st-y) * 1cqw - 7.2917cqw * var(--st-h));
+  filter: drop-shadow(-.25cqw .12cqw .2cqw rgba(14, 7, 3, .45)); }
+/* the dock = the radio: --rp-rs x the photo's radio, centred on --rp-x, its bottom on --rp-y (the stool's top by default:
+   1.3x on the bench's centre, Yoni 2026-10-23); the radio's body is 936 x 555 plate px */
+.rp-dock { --w: calc(15cqw * var(--rp-rs)); position: absolute; left: calc(var(--rp-x) * 1cqw - var(--w) / 2);
+  top: calc(var(--rp-y) * 1cqw - var(--w) * 555 / 936); width: var(--w); aspect-ratio: 936 / 555; z-index: 2;
   /* the porch lamp hangs up and to the right: the radio throws its shadow down-left onto the wall */
   filter: drop-shadow(-.45cqw .35cqw .5cqw rgba(14, 7, 3, .55)) drop-shadow(-.1cqw .1cqw .12cqw rgba(14, 7, 3, .5)); }
 .rp-dock::after { content: ""; position: absolute; left: 4%; right: 2%; bottom: -3%; height: 7%; z-index: -1;   /* contact shadow on the bench */
@@ -111,3 +118,16 @@
 .rp-eng { position: absolute; top: calc(601 * var(--u)); width: calc(200 * var(--u)); margin-left: calc(-100 * var(--u)); text-align: center;
   font: 600 calc(23 * var(--u))/1 Oswald, sans-serif; letter-spacing: .16em; padding-left: .16em; box-sizing: border-box;
   color: rgba(236, 216, 172, .88); text-shadow: 0 calc(-1.5 * var(--u)) 0 rgba(16, 8, 2, .75), 0 0 calc(6 * var(--u)) rgba(16, 8, 2, .5); pointer-events: none; }
+
+/* the placement panel (?rbench): a bench tool, never shown on the real page */
+.rp-tp { position: fixed; right: 12px; top: 12px; z-index: 30; width: 270px; padding: 10px 12px 12px; border-radius: 8px;
+  background: rgba(18, 10, 5, .92); border: 1px solid #5a4024; color: #efe3c2; font: 12px Inter, system-ui, sans-serif;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .5); }
+.rp-tp h4 { margin: 6px 0 4px; font: 600 11px Oswald, sans-serif; letter-spacing: .18em; color: #f2be4a; }
+.rp-tp label { display: grid; grid-template-columns: 62px 1fr 44px; align-items: center; gap: 6px; margin: 3px 0; }
+.rp-tp input { width: 100%; accent-color: #f2be4a; }
+.rp-tp output { text-align: right; font-variant-numeric: tabular-nums; color: #b9b0a2; }
+.rp-tp .row { display: flex; gap: 6px; margin-top: 8px; }
+.rp-tp button { flex: 1; padding: 5px 0; border: 1px solid #5a4024; border-radius: 4px; color: #efe3c2; background: #2a1a0e; font: 600 11px Inter, sans-serif; }
+.rp-tp button:hover { border-color: #f2be4a; }
+.rp-tp textarea { width: 100%; margin-top: 8px; background: #120a05; color: #efe3c2; border: 1px solid #5a4024; border-radius: 4px; font: 11px ui-monospace, Menlo, monospace; resize: none; }

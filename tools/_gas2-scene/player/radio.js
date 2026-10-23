@@ -36,8 +36,8 @@
       <i class="rp-jewel"></i>
       <span class="rp-eng" style="left:calc(345 * var(--u))">VOLUME</span><span class="rp-eng" style="left:calc(1013.5 * var(--u))">TUNING</span>
     </div></div>`;
-  const bench = document.createElement('img');   // the lower bench under it (radio.css .rp-bench)
-  bench.className = 'rp-bench'; bench.src = BASE + 'img/bench-low.webp'; bench.alt = ''; bench.draggable = false;
+  const bench = document.createElement('img');   // the stool, a cut-out placed by radio.css (.rp-stool, --st-*)
+  bench.className = 'rp-stool'; bench.src = BASE + 'img/stool.webp'; bench.alt = ''; bench.draggable = false;
   const noradio = document.createElement('img');   // the photo radio's spot without it (radio.css .rp-noradio)
   noradio.className = 'rp-noradio'; noradio.src = BASE + 'img/noradio.webp'; noradio.alt = ''; noradio.draggable = false;
   scene.appendChild(noradio); scene.appendChild(bench); scene.appendChild(dock);
@@ -167,5 +167,36 @@
   });
 
   setVol(vol); render();
+
+  // ---------- ?rbench: the placement panel (Yoni 2026-10-23: "a bench where I can control size + position of radio and
+  // stool, each separate"). Sliders write the --rp-* / --st-* numbers on #scene (radio.css defaults); the browser keeps
+  // them (this panel only); COPY = the numbers to paste back, so they become the page's defaults ----------
+  if (new URLSearchParams(location.search).has('rbench')) {
+    const KEY = 'gas2radio:place', cs = getComputedStyle(scene);
+    const F = [['RADIO'], ['rp-rs', 'size', .7, 1.8, .01], ['rp-x', 'x', 3, 24, .05], ['rp-y', 'bottom', 38, 54, .05],
+      ['STOOL'], ['st-x', 'x', 3, 24, .05], ['st-y', 'floor', 46, 58, .05], ['st-w', 'width', .5, 1.6, .01], ['st-h', 'height', .4, 1.4, .01]];
+    const D = {}; F.forEach(f => f[1] && (D[f[0]] = parseFloat(cs.getPropertyValue('--' + f[0]))));
+    let V = { ...D }; try { Object.assign(V, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) {}
+    const tp = document.createElement('div'); tp.className = 'rp-tp';
+    tp.innerHTML = F.map(f => f[1] ? `<label>${f[1]}<input type="range" data-k="${f[0]}" min="${f[2]}" max="${f[3]}" step="${f[4]}"><output></output></label>` : `<h4>${f[0]}</h4>`).join('') +
+      '<div class="row"><button data-a="snap" title="Put the radio on the stool top">Radio on stool</button></div>' +
+      '<div class="row"><button data-a="reset">Reset</button><button data-a="copy">Copy</button></div><textarea readonly hidden rows="3"></textarea>';
+    document.body.appendChild(tp);
+    const apply = () => {
+      for (const k in V) { scene.style.setProperty('--' + k, V[k]); const i = tp.querySelector(`[data-k="${k}"]`); i.value = V[k]; i.nextElementSibling.textContent = (+V[k]).toFixed(2); }
+      try { localStorage.setItem(KEY, JSON.stringify(V)); } catch (e) {}
+    };
+    tp.addEventListener('input', e => { if (e.target.dataset.k) { V[e.target.dataset.k] = +e.target.value; apply(); } });
+    tp.addEventListener('click', e => {
+      const a = e.target.dataset.a; if (!a) return;
+      if (a === 'reset') V = { ...D };
+      if (a === 'snap') V['rp-y'] = +(V['st-y'] - 7.2917 * V['st-h'] * (796 - 695.3) / 112).toFixed(3);   // the slab top: frame y 695.3 of the 684..796 cut
+      if (a === 'copy') { const t = JSON.stringify(Object.fromEntries(Object.entries(V).map(([k, v]) => [k, +(+v).toFixed(3)])));
+        tp.querySelector('textarea').value = t; tp.querySelector('textarea').hidden = false; tp.querySelector('textarea').select();
+        Promise.resolve().then(() => navigator.clipboard.writeText(t)).then(() => { e.target.textContent = 'Copied'; setTimeout(() => e.target.textContent = 'Copy', 1200); }, () => {}); }
+      apply();
+    });
+    apply();
+  }
   window.gas2Radio = { tune, setSide, play, stop, get state() { return { st, side, playing, vol, t: ac && ac.currentTime, gA: gA && gA.gain.value, gB: gB && gB.gain.value }; } };
 })();

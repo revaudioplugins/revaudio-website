@@ -163,3 +163,10 @@ Picks (Yoni): play / stop = a 3rd key on the radio + a red jewel lamp; Fly-in fr
   was hip hop -9.8 / pop -10.9 / rock -8.3 = level jumps between stations); peaks -1.08 .. -4.43 dBFS. ELEC. = placeholder.
   GAS 2 settings for POP / ROCK owed by Yoni (the caption shows "GAS 2" alone until then).
 - Final size (Yoni 2026-10-23: "+10 %, center it on the stool"): 1.3x, centred on the bench (12.5cqw). Left edge 35 / 40 / 53 px at 1280 / 1440 / 1920, ~8 px from the pump at 1440; dial 8.0 / 9.0 / 12.0 px.
+- Placement bench (Yoni 2026-10-23: "a bench where I can control size + position of radio and stool, each separate"):
+  `page-b.html?rbench` shows a panel (top right) with RADIO size / x / bottom and STOOL x / floor / width / height,
+  "Radio on stool" (snaps the radio's bottom to the slab top), Reset, Copy (JSON, also shown as selectable text). The
+  numbers are CSS variables on #scene (radio.css "WHERE THINGS STAND" = the defaults); the panel keeps its own values
+  in localStorage (only with ?rbench). The stool is now a CUT-OUT of the frame's bench (`img/stool.webp`, traced
+  polygons in bench_patch.py) over the painted-out spot, so it moves and scales freely; `img/bench-low.webp` is gone.
+  Defaults = the current look (radio 1.3x on 12.5 / 46.224; stool 13.05 / 51.82, width 1, height .854).
