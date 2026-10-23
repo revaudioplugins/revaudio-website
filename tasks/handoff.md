@@ -1,6 +1,27 @@
-## 2026-10-23 — GAS 2 page: three PHONE options, Swipe / Walk / Stack (Claude Code, Dan's Mac, Dan on his phone) — BRANCH `feat/gas2-phone`, waiting for Dan's pick
+## 2026-10-24 — GAS 2 page: the PHONE page, "zoom in on the plugin" (Claude Code, Dan's Mac, Dan on his phone) — BRANCH `feat/gas2-phone`, waiting for Dan's look
 
-Claim: OPEN until Dan picks. Files: `tools/_gas2-scene/phone-{swipe,walk,stack}.html` only (new; git-excluded folder, so `git add -f`).
+Claim: OPEN. Files: `tools/_gas2-scene/phone.html` + `tools/_gas2-scene/phone/*.webp` (new; git-excluded folder, so `git add -f`).
+- Dan tried Swipe / Walk / Stack (entry below) on his phone: "they don't work for me". Restart, his idea: zoom in on the plugin itself,
+  the player there, the readings there. His approved summary: the globe + gauge zoomed, the station soft behind, the readings on it,
+  the pump's grade keys = the player (no radio on phones), MAIL ME THE KEYS = the ticket, the 3 posters under. Simple and minimal.
+- Built: the pump is the PLUGIN's own render, re-baked at 4x from the GAS2 repo (`bench/pump-lab.html?bake=1&knobs=bare`, `LAB.P.scale=4`,
+  `tools/ui/bake-pump-page.js`; real GPU Chrome; nothing written to the GAS2 repo), placed in the plugin's base px (`--z`), layer order
+  = the plugin's. Hero: globe (= the name, h1 kept for readers) + gauge, needle sweeps to 160 % on load; zoom ~118 % of the width, eased
+  on short screens so the gauge is never cut and the button stays in view. HEAR IT: counter + keys; tap = GAS 2, lit key again = the
+  original, ■ Stop; the needle follows (140 % / 0); the counter shows short-term loudness off the output (no K-weighting; mockup).
+  Then the 3 posters in a shop-window frame, then MAIL ME THE KEYS + mailbox + chalkboard on the stucco. ~4.8 screens at 390x844.
+- ⚠️ Every grade plays Yoni's one HIP HOP render (PREMIUM 140 %) until per-grade renders exist: needs 3 renders of one mix
+  (REGULAR / PREMIUM / RACE) + the original before this ships.
+- Checked: WebKit 390x844 / 393x659 / 375x667 / 430x932 (gauge whole, button in the first screen, no overflow); Chrome: keys play,
+  original toggle, stop, counter, the ticket from the button / the poster / the box; iOS Simulator (iPhone 17 Pro) first screen. Not
+  checked: a real iPhone, audio by ear.
+- Dan views it at https://claude.ai/artifact/RY5g1zHQsdmQRUkisbEqvc (private; fonts inlined, audio as .mp4).
+- Research brief behind it (10 phone-native sites, patterns, 3 directions): session scratchpad `research/` (not in git).
+- Next: Dan's verdict on his phone → then it moves into page-b as the `@media (max-width: 760px)` layout (the scene hidden on phones).
+
+## 2026-10-23 — GAS 2 page: three PHONE options, Swipe / Walk / Stack (Claude Code, Dan's Mac, Dan on his phone) — SUPERSEDED 2026-10-24
+
+Claim: CLOSED 2026-10-24 (Dan: they don't work for him on the phone; replaced by the entry above). Files: `tools/_gas2-scene/phone-{swipe,walk,stack}.html` only (new; git-excluded folder, so `git add -f`).
 Worktree `.claude/worktrees/gas2-phone`, branched from `feat/gas2-page` at `c4302cf`; static server :4464 (pid 37789) from its `tools/_gas2-scene`.
 - Ask (Dan, on his phone): the GAS 2 page for phones, "same principles, same posters, same layout vibe", several options, right in one go.
 - Each file = `page-b.html` (c4302cf) + ONE `@media (max-width: 760px)` block `/* ═══ PHONE · <OPTION> ═══ */` + one matchMedia-gated
