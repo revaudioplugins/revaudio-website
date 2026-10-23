@@ -147,3 +147,4 @@ Picks (Yoni): play / stop = a 3rd key on the radio + a red jewel lamp; Fly-in fr
   the radio stands on 710 (46.224cqw). Caption moved to the porch floor (top 77.8 %). Dial prints ELEC. (the caption
   keeps ELECTRONIC); sizes kept (Yoni: "keep the original size").
 - Caption contained in the radio width (Yoni 2026-10-23): the dock's width + centre, two lines (station / side + settings); measured inside the radio at 1280 / 1440 / 1920.
+- Room from the pump (Yoni 2026-10-23, picked "slide the radio left" over moving Dan's pump): radio + bench + caption 23 frame px left (centre 11.0026cqw; bench_patch.py DX); the strip the bench leaves = the clean stucco + floor between the old right leg and the pump (x 323..346). Gap to the pump ~30 px at 1440.
