@@ -170,3 +170,4 @@ Picks (Yoni): play / stop = a 3rd key on the radio + a red jewel lamp; Fly-in fr
   in localStorage (only with ?rbench). The stool is now a CUT-OUT of the frame's bench (`img/stool.webp`, traced
   polygons in bench_patch.py) over the painted-out spot, so it moves and scales freely; `img/bench-low.webp` is gone.
   Defaults = the current look (radio 1.3x on 12.5 / 46.224; stool 13.05 / 51.82, width 1, height .854).
+- PLACEMENT FINAL (Yoni 2026-10-23, from ?rbench): {"rp-rs":1.33,"rp-x":11.8,"rp-y":49.25,"st-x":11.8,"st-y":54.4,"st-w":0.93,"st-h":0.75} = radio.css #scene defaults. Radio left edge 23 / 26 / 35 px at 1280 / 1440 / 1920; dial 8.2 / 9.2 / 12.3 px.

@@ -99,7 +99,7 @@ This branch lacks those 5 main commits; main lacks 426052d + 32279f5. Both sides
 - None in auto-memory (venture rules stay in the venture). The design rules went to `DESIGN.md` on this branch: §3 product names
   in the plugin's header lockup + the script line's second use, §5 paper on glass, §7 the readings recipe + its shadow.
 
-## 2026-10-22/23 — GAS 2 page: the radio player (Claude Code `revaudio-cd`, Yoni's laptop 2) — ROUND 3 DONE, Yoni: "great" (branch pushed, last `bdd34b2`)
+## 2026-10-22/23 — GAS 2 page: the radio player (Claude Code `revaudio-cd`, Yoni's laptop 2) — DONE for now, Yoni: "yalla we got it!" (branch pushed)
 
 Claim: OPEN (Yoni's radio). Files: `tools/_gas2-scene/player/**`, ONE `<head>` line in `page-b.html`, `tasks/gas2-radio-plan.md`.
 Branch `feat/gas2-page`, worktree `Website/revaudio-website-g2p`. Full state + numbers: `tasks/gas2-radio-plan.md`.
@@ -108,7 +108,13 @@ Branch `feat/gas2-page`, worktree `Website/revaudio-website-g2p`. Full state + n
   keys light up), Yoni's KNOB LAB knobs (volume, tuning), red jewel while playing. Caption under the bench, inside the
   radio's width. The photo's radio + `#radio` hotspot are hidden from radio.css (`#scene #radio`); `#radioCap` restyled
   there too. A lower bench is laid over the frame from the frame's own pixels (`img/bench-low.webp`; the frame untouched).
-- Audio: HIP HOP = Yoni's renders (PREMIUM 140 %, level-matched); POP / ELEC. / ROCK = placeholder loops until his renders.
+- Since: keys read pressed = DOWN / up = UP at full size; the photo radio, its shadow and the old bench are painted out
+  (`img/noradio.webp`, a masked gpt-image-1 edit of the frame, `gen_noradio.py`); the stool is a cut-out of the frame's
+  bench (`img/stool.webp`); radio + stool are placed by CSS numbers on #scene (radio.css "WHERE THINGS STAND"), Yoni's
+  final pick from the `page-b.html?rbench` placement panel: radio 1.33x at x 11.8 / bottom 49.25cqw, stool x 11.8 /
+  floor 54.4 / width .93 / height .75.
+- Audio: HIP HOP / POP / ROCK = Yoni's renders, every station -11 LUFS both sides; ELEC. = placeholder. GAS 2 settings
+  shown: HIP HOP PREMIUM 140 %; POP / ROCK owed by Yoni.
 - For Dan: (1) on phones the scene crops the radio off-screen (x < 0 at 390 px) - your layout; (2) real Safari not
   checked yet; (3) radio.css only touches page-b's `#radio` / `#radioCap`, nothing else of yours.
 - Next: Yoni's POP / ELECTRONIC / ROCK renders (dry + gas + grade / amount) -> `player/tools/prep_audio.py <id> dry gas`.
