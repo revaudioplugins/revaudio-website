@@ -179,8 +179,15 @@ neon or glow without a lamp (a neon sign IS a lamp: the DRIFT panel's lit tube m
   thin brass line). Sizes 64 / 56 / 48 / 40. The **shine** (a faint lamp band every 8s) only on the page's ONE
   main action. Every regular action button uses it; a new one opts in by class, never restyles a copy. Stays out:
   the crane door + BUY NOW squares, the audio toys (demo rack, GAS pedal, station mixer), DRIFT's own world,
-  image-plate buttons (SubscribeModal, /beta), the support chat, icon buttons (×, menu, cart, arrows, dots).
-  /gas keeps its own copy of the honey CTA (its bench is `/gasctalab`).
+  image-plate buttons (SubscribeModal, /beta), the support chat, icon buttons (×, menu, cart, arrows, dots),
+  the GAS 2 page's ticket stub (next item). /gas keeps its own copy of the honey CTA (its bench is `/gasctalab`).
+- **A paper form speaks paper (the GAS 2 page's service ticket, Dan 2026-10-23: fewer fonts, and the button in
+  "the same language as the note"; approved: "commit and push").** Two faces only: Bebas for what the station
+  printed (title, stub label, SENT stamp), the typewriter Elite for what got typed (rows, labels, input, fine
+  print, ×); no Inter on paper. The submit is the ticket's own tear-off stub, not a house button: a perforation
+  with a scissors mark, a punched hole at each end, the honey "customer copy" (honey = a free download) with the
+  ticket's zigzag edge. Hover = it starts to peel and the scissors slide along the line; submit = it tears off
+  and drops, then the SENT stamp lands in rubber-stamp ink.
 - Coverflow showcase, DAW strip, EmailCapture, SubscribeModal, TrialGateModal: unchanged house parts.
 - Support chat (`SupportChat.astro`, `/support` only): chat-app thread grammar in house materials —
   visitor right in 3-stop brass, Support left on dark steel with avatar + curved tail on a group's
