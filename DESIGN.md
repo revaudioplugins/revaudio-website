@@ -204,6 +204,18 @@ outside), only a paper edge and a curl shade at the loose corners; the paper tak
 every other prop; the glass sheen lies OVER the paper; the tape is translucent. A drop shadow on anything
 flat against a surface reads as floating.
 
+Posters IN the window (the GAS 2 page, Dan 2026-10-23, the notes became three 1950s gas posters: "smaller,
+fit the window better ... like it's stuck to the window, part of the picture, no need for tape", then "too
+blurred"): pasted flat inside the pane, so no tape, no shadow, near-square to the frame (≤ 0.4°); sized
+inside the measured pane glass with a margin, never touching the frame; they take the room's light (warm
+top, falling off to the sill) and a light glass sheen, and stay sharp: a blur reads as a bad photo, not
+depth. Poster copy = one short catchphrase per feature, period ad-speak (NO KNOCK. NO KNOB.).
+
+Making one object pop (the GAS 2 pump, Dan 2026-10-23: "tone down all ... this needs to be subtle", then
+"just keep the light on the GAS 2 itself"): light the object only, from its own motivated lamp (a soft
+warm top-down light masked to its cut-out + ~4% brightness); no light cone, no floor pool, no darkening
+of the rest of the scene. Start subtle and let Dan raise it.
+
 The smoke: two screen-blended haze plates (`public/bg/haze1.webp`, `haze2.webp`) on a fixed layer
 behind the page at 16% / 10% under a 40% `--bg-0` veil (25% on phones), so the dust in the lamp light
 reads through the hero and the translucent footer; solid section panels cover it. Off in `html.hc`.
@@ -230,7 +242,12 @@ card grid.
 so much", "this is amazing"; `tools/_gas2-scene/page-b.html` on `feat/gas2-page`).** The vibe to repeat:
 - **Fill the open space.** One centred column sized to the scene's empty area (GAS 2: the dusk sky right
   of the canopy, 31 % of the scene wide), everything BIG; no small left-aligned text block floating in it.
-  A soft dark radial scrim behind the column, no panel.
+  No scrim shape behind the column (the radial circle was rejected 2026-10-23: "not a regular circle ... a premium
+  shadow"). The shadow HUGS THE WORDS: per letter a contact shadow, an even close halo and a short soft drop
+  (CSS drop-shadow on the title, the line and the script); the general shadow stays faint (the sky behind the
+  column a touch out of focus and ~15 % down, feathered with no edge; the frame edges ~5-8 % darker). Every
+  layer fades out on all sides: a gradient band that starts at a hard element edge reads as a cut (Dan,
+  same day). Approved: "really cool, I like it".
 - **Four parts, top to bottom, nothing else:** the name in the plugin's header lockup (§3), huge
   (13.5 cqw); ONE outcome line in Bebas, honey `#f6c85d`, letter-spaced .05em ("THICKER, SMOOTHER, GLUED
   MASTER."); the house honey button, large, with the shine, "⤓ Download FREE" (FREE in caps on a free
