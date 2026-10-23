@@ -1,27 +1,28 @@
 /* GAS 2 radio player (Yoni's part of page-b; plan tasks/gas2-radio-plan.md).
-   Scene: tap the station's radio -> the close-up opens and plays the station on ORIGINAL. Close-up: the dial = 5
-   stations, the two band keys ORIGINAL | GAS 2 = the A/B (same spot in the song, 30 ms crossfade, level-matched
-   renders), left knob = volume, right knob = tuning. Closing the close-up keeps it playing; the scene radio glows.
-   Keys while open: A / B or arrows left-right = the keys, 1-4 / arrows up-down = stations, Space = play / stop. */
+   Round 3 (Yoni 2026-10-23: "ditch the zoom"): the radio stands on the station's bench in the scene and IS the player.
+   Dial = 4 stations, keys PLAY/STOP | ORIGINAL | GAS 2 (the A/B: same spot in the song, 30 ms crossfade,
+   level-matched renders), left knob = volume, right knob = tuning. The caption under the bench says what's on air.
+   Keys while the radio has focus: A / B or arrows left-right = the keys, 1-4 / arrows up-down = stations, Space =
+   play / stop. */
 (() => {
   const BASE = new URL('.', document.currentScript.src).href;
-  // the renders: <id>_before / <id>_after, sample-aligned, level-matched (spec: tasks/gas2-radio-plan.md).
-  // PLACEHOLDER until Yoni's renders exist: every station plays the GAS mixer loops (-17 LUFS both sides).
+  // the renders: <id>_before / <id>_after, sample-aligned, level-matched (player/tools/prep_audio.py).
+  // PLACEHOLDER until Yoni's renders exist: the GAS mixer loops (-17 LUFS both sides).
   const PH = { a: 'audio/placeholder_before.m4a', b: 'audio/placeholder_after.m4a', gas: null };
   const STATIONS = [
-    { id: 'hiphop', name: 'HIP HOP', a: 'audio/hiphop_before.m4a', b: 'audio/hiphop_after.m4a', gas: { grade: 'PREMIUM', amount: 140 } },   // Yoni's renders 2026-10-23 (prep_audio.py)
+    { id: 'hiphop', name: 'HIP HOP', a: 'audio/hiphop_before.m4a', b: 'audio/hiphop_after.m4a', gas: { grade: 'PREMIUM', amount: 140 } },   // Yoni's renders 2026-10-23
     { id: 'pop', name: 'POP', ...PH },
     { id: 'electronic', name: 'ELECTRONIC', ...PH },
     { id: 'rock', name: 'ROCK', ...PH },   // 4 stations (Yoni 2026-10-23: hip hop, pop, electronic, rock)
-  ];   // gas: { grade: 'PREMIUM', amount: 140 } prints the mix's GAS 2 settings in the caption
+  ];   // gas: { grade, amount } prints the mix's GAS 2 settings in the caption
 
-  // ---------- the close-up ----------
-  const veil = document.createElement('div');
-  veil.className = 'veil rp-veil'; veil.id = 'rpVeil';
-  veil.setAttribute('role', 'dialog'); veil.setAttribute('aria-modal', 'true'); veil.setAttribute('aria-label', 'The GAS 2 radio');
-  veil.innerHTML = `
-    <button type="button" class="rp-x" data-close aria-label="Close">×</button>
-    <div class="rp-view"><div class="rp-plate">
+  // ---------- the radio, standing on the bench ----------
+  const scene = document.getElementById('scene');
+  if (!scene) return;
+  const dock = document.createElement('div');
+  dock.className = 'rp-dock'; dock.id = 'rpDock';
+  dock.setAttribute('role', 'group'); dock.setAttribute('aria-label', 'The GAS 2 radio: hear GAS 2 on and off');
+  dock.innerHTML = `<div class="rp-body"><div class="rp-plate">
       <img class="rp-off" src="${BASE}img/radio-off.webp" alt="" draggable="false">
       <img class="rp-lit" src="${BASE}img/radio-lit.webp" alt="" draggable="false">
       <div class="rp-px rp-glass"><i class="rp-glow"></i><i class="rp-scale"></i><i class="rp-ptr"></i>
@@ -34,20 +35,18 @@
       <div class="rp-knob rp-tun" role="slider" tabindex="0" aria-label="Tuning" aria-valuemin="1" aria-valuemax="${STATIONS.length}"><b></b></div>
       <i class="rp-jewel"></i>
       <span class="rp-eng" style="left:calc(345 * var(--u))">VOLUME</span><span class="rp-eng" style="left:calc(1013.5 * var(--u))">TUNING</span>
-    </div></div>
-    <div class="rp-tags">${STATIONS.map((s, i) => `<button type="button" data-st="${i}" style="--r:${[-1.5, 1, -.5, 1.5, -1][i]}deg">${s.name}</button>`).join('')}</div>
-    <div class="rp-cap" aria-live="polite"></div>
-    <div class="rp-hint">A / B switch · 1-4 stations · Space play / stop<span class="rp-ph"> · placeholder audio</span></div>`;
-  document.body.appendChild(veil);
-  const q = s => veil.querySelector(s), qa = s => [...veil.querySelectorAll(s)];
-  const plate = q('.rp-plate'), cap = q('.rp-cap'), ptr = q('.rp-ptr');
+    </div></div>`;
+  scene.appendChild(dock);
+  const q = s => dock.querySelector(s), qa = s => [...dock.querySelectorAll(s)];
+  const plate = q('.rp-plate'), ptr = q('.rp-ptr');
   const knobVol = q('.rp-knob.rp-vol'), knobTune = q('.rp-knob.rp-tun');
 
+  // the knob strip: an angle -135..+135 picks one of 129 frames (12 x 11 grid)
   const knobAt = (el, deg) => {
     const f = Math.round((Math.max(-135, Math.min(135, deg)) + 135) / 270 * 128), b = el.firstChild;
     b.style.backgroundPosition = `${(f % 12) * 100 / 11}% ${Math.floor(f / 12) * 10}%`;
   };
-  // the tuning knob glides to its detent (a short ease-out tween of the angle, frame by frame); the hand drives it 1:1
+  // the tuning knob glides to its detent (a short ease-out tween of the angle, frame by frame)
   let tuneA = -100, tuneRaf = 0;
   const tuneTo = deg => {
     cancelAnimationFrame(tuneRaf); const a0 = tuneA, t0 = performance.now();
@@ -118,72 +117,40 @@
   };
 
   // ---------- what the eye reads ----------
-  const radio = document.getElementById('radio'), sceneCap = document.getElementById('radioCap');
+  const sceneCap = document.getElementById('radioCap');
+  if (sceneCap) sceneCap.setAttribute('aria-live', 'polite');
   const render = () => {
     const s = STATIONS[st], b = side === 'b';
     plate.classList.toggle('on', playing); plate.classList.toggle('b', playing && b);
     qa('.rp-key[data-side]').forEach(k => { const d = k.dataset.side === side; k.classList.toggle('down', d); k.setAttribute('aria-pressed', d); });
     const pk = q('.rp-key.p'); pk.classList.toggle('down', playing); pk.setAttribute('aria-pressed', playing);
     qa('[data-st]').forEach(x => x.classList.toggle('on', +x.dataset.st === st));
-    ptr.style.left = (2 + 96 * (st + .5) / STATIONS.length) + '%';
+    ptr.style.left = (1.5 + 97 * (st + .5) / STATIONS.length) + '%';
     tuneTo(-100 + 200 * st / (STATIONS.length - 1)); knobTune.setAttribute('aria-valuenow', st + 1);
-    const set = s.gas ? `${s.gas.grade} · GAS ${s.gas.amount} %` : 'on the master';
-    cap.innerHTML = !playing ? 'Off · tap a station' : b ? `On air: ${s.name} · <em>GAS 2</em> ${set}` : `On air: ${s.name} · <em>Original</em> · press GAS 2`;
-    q('.rp-ph').hidden = s.a !== PH.a;
-    if (radio) { radio.classList.toggle('on', playing); radio.classList.toggle('b', playing && b); }
-    if (sceneCap) sceneCap.innerHTML = playing ? `On air: <em>${b ? 'GAS 2' : 'ORIGINAL'}</em> · ${s.name}` : 'Tap the radio';
+    const set = s.gas ? ` · ${s.gas.grade} ${s.gas.amount} %` : '';
+    if (sceneCap) sceneCap.innerHTML = !playing ? 'Press <em>play</em> on the radio'
+      : b ? `On air: ${s.name} · <em>GAS 2</em>${set}` : `On air: ${s.name} · <em>Original</em>`;
   };
 
   // ---------- hands ----------
   qa('.rp-key[data-side]').forEach(k => k.addEventListener('click', () => setSide(k.dataset.side)));
   q('.rp-key.p').addEventListener('click', () => (playing ? stop() : play()));
-
   qa('[data-st]').forEach(x => x.addEventListener('click', () => tune(+x.dataset.st)));
-  // knobs: drag up / right = clockwise, 1:1 (no transition while the hand is on it); wheel and arrow keys too
+  // knobs: drag up / right = clockwise, 1:1; wheel and arrow keys too
   const knob = (el, onDelta) => {
     let y0 = null, acc = 0;
-    el.addEventListener('pointerdown', e => { y0 = e.clientY - e.clientX; acc = 0; el.setPointerCapture(e.pointerId); el.classList.add('drag'); });
+    el.addEventListener('pointerdown', e => { y0 = e.clientY - e.clientX; acc = 0; el.setPointerCapture(e.pointerId); });
     el.addEventListener('pointermove', e => { if (y0 === null) return; const p = e.clientY - e.clientX, d = y0 - p; y0 = p; acc = onDelta(d, acc); });
-    const up = () => { y0 = null; el.classList.remove('drag'); };
+    const up = () => { y0 = null; };
     el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
     el.addEventListener('wheel', e => { e.preventDefault(); acc = onDelta(-e.deltaY / 2, acc); }, { passive: false });
     el.addEventListener('keydown', e => { const d = { ArrowUp: 1, ArrowRight: 1, ArrowDown: -1, ArrowLeft: -1 }[e.key]; if (d) { e.preventDefault(); e.stopPropagation(); acc = onDelta(d * 40, 0); } });
   };
   knob(knobVol, (d, acc) => { setVol(vol + d / 220); return 0; });
   knob(knobTune, (d, acc) => { acc += d; if (Math.abs(acc) >= 40) { tune(st + Math.sign(acc)); return 0; } return acc; });   // detents
-
-  // the camera flies from the radio on the bench into the close-up, and back out (one tween, the house curve; a
-  // radio the scene has cropped off-screen, e.g. on a phone, just fades)
-  const view = q('.rp-view');
-  const flightFrom = () => {
-    const r = radio && radio.getBoundingClientRect();
-    if (!r || r.right < 0 || r.left > innerWidth || r.bottom < 0 || r.top > innerHeight) return null;
-    view.classList.remove('fly'); const t0 = view.style.transform; view.style.transform = 'none';
-    const V = view.getBoundingClientRect(), cs = getComputedStyle(view), cw = +cs.getPropertyValue('--cw'), cx = +cs.getPropertyValue('--cx'), cy = +cs.getPropertyValue('--cy');
-    view.style.transform = t0;
-    const u = V.width / cw, bx = (204 - cx) * u, by = (108 - cy) * u, bw = 960 * u, sc = r.width / bw;   // the radio's body in the plate: x 204..1164, top 108
-    return `translate(${r.left - V.left - bx * sc}px, ${r.top - V.top - by * sc}px) scale(${sc})`;
-  };
-  let flyT = 0;
-  const open = () => {
-    clearTimeout(flyT);
-    const from = flightFrom();
-    if (from) { view.style.transform = from; view.offsetWidth; view.classList.add('fly'); }
-    veil.classList.add('open'); view.style.transform = 'none';
-    if (!playing) play(); else render();
-    setTimeout(() => q('.rp-key.b').focus({ preventScroll: true }), 650);
-  };
-  const close = () => {
-    if (!veil.classList.contains('open')) return;
-    const to = flightFrom();
-    if (to) { view.classList.add('fly'); view.style.transform = to; }
-    veil.classList.remove('open');
-    flyT = setTimeout(() => { view.classList.remove('fly'); view.style.transform = 'none'; }, 650);
-  };
-  veil.addEventListener('click', e => { if (e.target === veil || e.target.closest('[data-close]')) close(); });
-  addEventListener('keydown', e => { if (e.key === 'Escape' && veil.classList.contains('open')) { e.stopImmediatePropagation(); close(); } }, true);
-  addEventListener('keydown', e => {
-    if (!veil.classList.contains('open') || e.metaKey || e.ctrlKey || e.altKey) return;
+  // the radio's own keyboard, only while focus is on it (the page keeps Space for scrolling everywhere else)
+  dock.addEventListener('keydown', e => {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
     const k = e.key.toLowerCase();
     if (k === 'a' || k === 'arrowleft') setSide('a');
     else if (k === 'b' || k === 'arrowright') setSide('b');
@@ -195,8 +162,6 @@
     e.preventDefault();
   });
 
-  // the scene's radio opens the close-up (the page's own first-draft handler is replaced, not stacked)
-  if (radio) { radio.onclick = null; radio.addEventListener('click', open); radio.setAttribute('aria-label', 'Open the radio: hear GAS 2 on and off'); }
   setVol(vol); render();
-  window.gas2Radio = { open, close, tune, setSide, play, stop, get state() { return { st, side, playing, vol, t: ac && ac.currentTime, gA: gA && gA.gain.value, gB: gB && gB.gain.value }; } };
+  window.gas2Radio = { tune, setSide, play, stop, get state() { return { st, side, playing, vol, t: ac && ac.currentTime, gA: gA && gA.gain.value, gB: gB && gB.gain.value }; } };
 })();

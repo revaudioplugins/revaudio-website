@@ -127,3 +127,18 @@ Picks (Yoni): play / stop = a 3rd key on the radio + a red jewel lamp; Fly-in fr
   radio-c, aligned to 0 px there; feathered disc r 44..62), and the analyser / canvas code is out of radio.js / .css.
 - 4 stations (Yoni 2026-10-23): HIP HOP (real) / POP / ELECTRONIC / ROCK (placeholders). Fixed on the way: the close-up's
   dark backdrop never applied (page-b's `.veil` won on order); now `.veil.rp-veil`, 0.86 desktop / 0.93 phone.
+
+## Round 3 (2026-10-23, Yoni: "ditch the zoom ... embed it on the page itself ... like 30% bigger, still readable")
+
+- The close-up radio now STANDS ON THE BENCH in the scene (`.rp-dock` in `#scene`), 1.3x the photo's own radio
+  (`--rs: 1.3` in radio.css), centred on the photo radio (frame x 192), sitting on the bench (frame y 688); body cut out of
+  the plate (crop 212..1148 x 108..663, r 42), drop shadow down-left (the porch lamp is up-right) + a contact shadow.
+  The photo's radio + its hotspot are hidden (`#scene #radio`). No veil, no flight, no phone tags.
+- 1.3x is about the most that fits: the radio's right edge sits ~7 px before the pump at 1440; left edge 40 px in.
+- Printed text is ~2x the photo's proportion so it reads at scene size: dial 30u, keys 28 / 32u, VOLUME / TUNING 23u.
+  Measured: 1280x720 dial 8.3 px, keys 7.5 / 8.5, labels 6.1; 1440x900 9.3 / 8.4 / 9.6 / 6.9; 1920x1080 12.4 / 11.2 / 12.8 / 9.2.
+- Keys LIGHT UP when down (Yoni): brightness + an amber glow inside and a little spill out; the dial lamp's off-state
+  no longer dims a pressed key. VOLUME / TUNING: cream, centred on each knob (letter-spacing balanced with padding-left).
+- Start = off ("Press play on the radio"); the caption under the bench says what's on air. Keyboard only while focus is
+  on the radio (Space stays page scroll elsewhere).
+- Phone: still Dan's layout (the scene crops the radio off-screen).
