@@ -162,3 +162,4 @@ Picks (Yoni): play / stop = a 3rd key on the radio + a red jewel lamp; Fly-in fr
   rock 0; dry vs gas within 0.16 dB). Every station now at ONE loudness, -11.00 LUFS both sides (prep_audio.py TARGET;
   was hip hop -9.8 / pop -10.9 / rock -8.3 = level jumps between stations); peaks -1.08 .. -4.43 dBFS. ELEC. = placeholder.
   GAS 2 settings for POP / ROCK owed by Yoni (the caption shows "GAS 2" alone until then).
+- Final size (Yoni 2026-10-23: "+10 %, center it on the stool"): 1.3x, centred on the bench (12.5cqw). Left edge 35 / 40 / 53 px at 1280 / 1440 / 1920, ~8 px from the pump at 1440; dial 8.0 / 9.0 / 12.0 px.
