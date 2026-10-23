@@ -48,9 +48,15 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .note::before { left: -.6cqw; transform: rotate(-28deg); }
 .note::after { right: -.6cqw; transform: rotate(26deg); }
 .note a { color: #a8321c; }
-.n1 { left: 7.4%; top: 26%; width: 7.9%; --r: -3deg; }
-.n2 { left: 37.6%; top: 25%; width: 11.6%; --r: 2deg; }
-.n3 { left: 37.1%; top: 40.5%; width: 9.4%; --r: -1.5deg; } /* its left edge tucks behind the pump (2026-10-23) */
+/* the notes became 1950s gas posters (Dan 2026-10-23: "instead of notes I want posters ... from the time of this vintage
+   gas pump ... simple and short, almost like a catchphrase", lines his picks). Art: gpt-image-2, props/poster-*.webp.
+   They keep every paper-on-glass layer below (tape, grade, glass sheen, fade); the art replaces the paper + text.
+   Left window: one tall poster; right window: two wide ones stacked, the lower one tucked behind the pump. */
+.poster { padding: 0; }
+.poster img { display: block; width: 100%; user-select: none; }
+.pk { left: 6.9%; top: 25.3%; width: 9.4%; --r: -2deg; }
+.pl { left: 37.9%; top: 24.6%; width: 11.9%; --r: 1.2deg; }
+.ps { left: 37.25%; top: 38.6%; width: 12.2%; --r: -1deg; } /* only its paper margin tucks behind the pump: the S of START stays clear */
 /* NOTES ON THE GLASS (Dan 2026-10-22: "the notes are hovering, I want them to feel like they're on the glass").
    Paper taped to a shop window throws no shadow you can see from outside, takes the window's dusk light and sits BEHIND
    the glass sheen. Four layers, each a body class with a TUNE checkbox (all on by default), so each can be judged alone. */
@@ -301,9 +307,9 @@ body[data-look] .rd .cta { margin-top: 2cqw; min-height: max(56px, 5cqw); paddin
     <div class="abs key" style="left:32.2%;width:3.5%"></div>
 
     <!-- 2. taped notes in the window -->
-    <div class="abs note n1"><b>FUEL FILTER</b>Harsh resonances out, before the color. No knob. It just works.<i class="glass" aria-hidden="true"></i></div>
-    <div class="abs note n2"><b>AUTO-LEVEL</b>More GAS, same loudness. You judge the color, not the volume.<i class="glass" aria-hidden="true"></i></div>
-    <div class="abs note n3"><b>FIRST STOP</b>GAS 2 first on the bus. <a href="#">RevLimiter</a> last.<i class="glass" aria-hidden="true"></i></div>
+    <div class="abs note poster pk"><img src="props/poster-knock.webp" alt="No knock. No knob. The fuel filter takes the harsh resonances out, with no knob to set."><i class="glass" aria-hidden="true"></i></div>
+    <div class="abs note poster pl"><img src="props/poster-level.webp" alt="Fill it up. Same level. Auto-level: more GAS, same loudness."><i class="glass" aria-hidden="true"></i></div>
+    <div class="abs note poster ps"><img src="props/poster-start.webp" alt="Start every mix here. GAS 2 goes first on the mix bus."><i class="glass" aria-hidden="true"></i></div>
     <img class="abs pumpCut" src="props/pump-cut.png" alt=""><i class="abs pumpLit" aria-hidden="true"></i><!-- the pump, back over the notes -->
 
     <!-- the pump -->
