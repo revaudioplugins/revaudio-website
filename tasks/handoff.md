@@ -19,7 +19,13 @@ Claim: OPEN. Files: `tools/_gas2-scene/phone.html` + `tools/_gas2-scene/phone/*.
 - Research brief behind it (10 phone-native sites, patterns, 3 directions): session scratchpad `research/` (not in git).
 - Dan on his phone, 2026-10-24: "very cool, I like the direction it's going, commit". Rule written to DESIGN.md §7 (rebuild for
   portrait, never crop the desktop scene).
-- Next: Dan's polish notes, the per-grade renders (Yoni), then it moves into page-b as the `@media (max-width: 760px)` layout
+- 2026-10-24 Dan: no needle on his phone (a zero-size filtered carrier) -> rebuilt as real-size boxes turning about the pivot.
+- 2026-10-24 Dan: "make a bench so I can move stuff around in my phone". `tools/_gas2-scene/phone-bench.js` (git-excluded, never
+  commit) on the real page (`phone.html#bench` locally); phone bench Artifact https://claude.ai/artifact/VmFDkUMg6n1mCCg4PE4aY8
+  (db capability). BENCH -> tap a part, drag, SIZE / TURN, arrows, SAVE -> db doc `bench/phone` (`ArtifactData get`, collection
+  `bench`, doc `phone`) + clipboard. Values = px / scale / deg at Dan's screen (the dump carries w/h/dpr); the two pumps' SIZE =
+  `--zk` (a real re-flow), the hero pump's up/down = `--topd`. Bake: convert px to the page's units, then delete the deltas.
+- Next: bake Dan's bench save, Dan's polish notes, the per-grade renders (Yoni), then it moves into page-b as the `@media (max-width: 760px)` layout
   (the scene hidden on phones).
 
 ## 2026-10-23 — GAS 2 page: three PHONE options, Swipe / Walk / Stack (Claude Code, Dan's Mac, Dan on his phone) — SUPERSEDED 2026-10-24

@@ -49,8 +49,8 @@ main > * { position: relative; z-index: 1; }
 /* 1 · HERO: the globe is the name (the plugin's own header lockup, DESIGN §3), the gauge under it, the readings on it */
 /* the zoom: the body ~118 % of the column wide (its sides run off the screen), unless the screen is too short to hold the
    globe + the whole gauge + the readings: then the zoom eases off so the gauge is never cut and the button stays in view */
-.hero { --top: calc(env(safe-area-inset-top, 0px) + max(10px, 2svh)); --rdh: 192px;
-  --z: min(calc(var(--u) * 118 / 328), calc((100svh - var(--top) - var(--rdh)) / 396)); }
+.hero { --top: calc(env(safe-area-inset-top, 0px) + max(10px, 2svh) + var(--topd, 0px)); --rdh: 192px;   /* --zk / --topd: bench hooks (1 / 0) */
+  --z: calc(min(calc(var(--u) * 118 / 328), calc((100svh - var(--top) - var(--rdh)) / 396)) * var(--zk, 1)); }
 .hero .shot { position: relative; overflow: hidden; height: calc(var(--top) + var(--z) * 411);
   -webkit-mask-image: linear-gradient(#000 calc(100% - var(--z) * 20), transparent); mask-image: linear-gradient(#000 calc(100% - var(--z) * 20), transparent); }
 .hero .pump { top: var(--top); height: calc(var(--z) * 411); filter: drop-shadow(0 calc(var(--z) * 6) calc(var(--z) * 18) rgba(8, 4, 2, .55)); }
@@ -79,7 +79,7 @@ main > * { position: relative; z-index: 1; }
 .rd.lit .scr { color: #fbe0a0; text-shadow: var(--hug), 0 0 8px rgba(255, 216, 140, .55), 0 0 26px rgba(242, 190, 74, .5); }
 
 /* 2 · HEAR IT: the pump's counter + grade keys, closer still. Tap a grade = GAS 2 on that grade; tap it again = the original */
-.hear { --z: calc(var(--u) * 124 / 328); padding: 34px 0 30px; text-align: center; }
+.hear { --z: calc(var(--u) * 124 / 328 * var(--zk, 1)); padding: 34px 0 30px; text-align: center; }
 .h2 { margin: 0; font: 400 calc(var(--u) * 9.5)/1 Bebas, Oswald, sans-serif; letter-spacing: .06em; color: var(--parch); text-shadow: var(--hug); }
 .hear .shot { position: relative; height: calc(var(--z) * 156); margin-top: 14px; overflow: hidden;
   -webkit-mask-image: linear-gradient(transparent, #000 18%, #000 84%, transparent); mask-image: linear-gradient(transparent, #000 18%, #000 84%, transparent); }
@@ -377,6 +377,10 @@ footer { position: relative; z-index: 1; display: grid; justify-items: center; g
   veil.addEventListener('click', e => { if (e.target === veil || e.target.closest('[data-close]')) close(); });
   addEventListener('keydown', e => e.key === 'Escape' && close());
 })();
+</script>
+<script>
+// #bench = the phone tuning bench on THIS page (phone-bench.js, git-excluded): tap, drag, size, turn, SAVE
+if (location.hash === '#bench') { const b = document.createElement('script'); b.src = 'phone-bench.js'; document.body.appendChild(b); }
 </script>
 </body>
 </html>
