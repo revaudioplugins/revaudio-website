@@ -50,13 +50,21 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .note a { color: #a8321c; }
 /* the notes became 1950s gas posters (Dan 2026-10-23: "instead of notes I want posters ... from the time of this vintage
    gas pump ... simple and short, almost like a catchphrase", lines his picks). Art: gpt-image-2, props/poster-*.webp.
-   They keep every paper-on-glass layer below (tape, grade, glass sheen, fade); the art replaces the paper + text.
-   Left window: one tall poster; right window: two wide ones stacked, the lower one tucked behind the pump. */
-.poster { padding: 0; }
+   Round 2 (Dan, same day: "smaller and fit the window better ... like it's stuck to the window, part of the picture,
+   no need for tape"): pasted flat INSIDE the glass, so no tape, no shadow, nearly square to the frame; sized inside the
+   panes with a margin (measured on f6-v17: left pane glass x 105-245 / y 240-535, right x 565-765 / y 240-540);
+   the shop's dusk light (warm at the top, falling off to the sill), the photo's softness, the glass sheen over them. */
+.poster { padding: 0; box-shadow: none; }
+.poster::before { display: none; }
+.poster::after { inset: 0; width: auto; height: auto; transform: none; /* the tape's slot, reused for the light */ box-shadow: none; z-index: 1; pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 196, 120, .1), transparent 35%, rgba(24, 12, 4, .28)); }
+body.ng-tape .note.poster::after { background: linear-gradient(180deg, rgba(255, 196, 120, .1), transparent 35%, rgba(24, 12, 4, .28)); box-shadow: none; }
+body.ng-grade .note.poster { filter: brightness(var(--nf-b, .86)) sepia(.22) saturate(.96) contrast(.97) blur(.03cqw); }
+body.ng-glass .poster .glass { opacity: .6; } /* a lighter sheen than the notes': the posters stay ink, not milk */
 .poster img { display: block; width: 100%; user-select: none; }
-.pk { left: 6.9%; top: 25.3%; width: 9.4%; --r: -2deg; }
-.pl { left: 37.9%; top: 24.6%; width: 11.9%; --r: 1.2deg; }
-.ps { left: 37.25%; top: 38.6%; width: 12.2%; --r: -1deg; } /* only its paper margin tucks behind the pump: the S of START stays clear */
+.pk { left: 7.75%; top: 26.6%; width: 7.3%; --r: -.4deg; }
+.pl { left: 38.4%; top: 25%; width: 10.4%; --r: .3deg; }
+.ps { left: 38.4%; top: 37.1%; width: 10.4%; --r: -.2deg; }
 /* NOTES ON THE GLASS (Dan 2026-10-22: "the notes are hovering, I want them to feel like they're on the glass").
    Paper taped to a shop window throws no shadow you can see from outside, takes the window's dusk light and sits BEHIND
    the glass sheen. Four layers, each a body class with a TUNE checkbox (all on by default), so each can be judged alone. */
