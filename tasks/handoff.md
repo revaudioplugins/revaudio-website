@@ -99,15 +99,19 @@ This branch lacks those 5 main commits; main lacks 426052d + 32279f5. Both sides
 - None in auto-memory (venture rules stay in the venture). The design rules went to `DESIGN.md` on this branch: §3 product names
   in the plugin's header lockup + the script line's second use, §5 paper on glass, §7 the readings recipe + its shadow.
 
-## 2026-10-22 — GAS 2 page: the radio player (Claude Code `revaudio-cd`, Yoni's laptop 2) — ROUND 1 BUILT, waiting for Yoni's review
+## 2026-10-22/23 — GAS 2 page: the radio player (Claude Code `revaudio-cd`, Yoni's laptop 2) — ROUND 3 DONE, Yoni: "great" (branch pushed, last `bdd34b2`)
 
-Claim: OPEN. Files: `tools/_gas2-scene/player/**`, the radio block in `tools/_gas2-scene/page-b.html` (wire = one `<link>` +
-one `<script>`), `tasks/gas2-radio-plan.md`. Branch `feat/gas2-page`, worktree `Website/revaudio-website-g2p`.
-- Yoni: the jukebox player design is dropped; the player = the scene's radio, opening a close-up on tap. Plan:
-  `tasks/gas2-radio-plan.md` (round 1 + checks + open questions).
-- Round 1: close-up photo (gpt-image-2 edit of the scene's own radio), dial = 5 stations, keys ORIGINAL | GAS 2, volume +
-  tuning knobs, Web Audio A/B on placeholder audio. page-b gained one `<head>` line only.
-- For Dan: on phones the scene crops the radio off-screen (x = -810 at 390 px), so phones can't reach the player.
+Claim: OPEN (Yoni's radio). Files: `tools/_gas2-scene/player/**`, ONE `<head>` line in `page-b.html`, `tasks/gas2-radio-plan.md`.
+Branch `feat/gas2-page`, worktree `Website/revaudio-website-g2p`. Full state + numbers: `tasks/gas2-radio-plan.md`.
+- Now: no pop-up, no zoom. The radio stands IN the scene on the bench (1.3x the photo's radio, slid 23 frame px left for
+  room from the pump) and is the player: dial HIP HOP / POP / ELEC. / ROCK, keys PLAY-STOP | ORIGINAL | GAS 2 (pressed
+  keys light up), Yoni's KNOB LAB knobs (volume, tuning), red jewel while playing. Caption under the bench, inside the
+  radio's width. The photo's radio + `#radio` hotspot are hidden from radio.css (`#scene #radio`); `#radioCap` restyled
+  there too. A lower bench is laid over the frame from the frame's own pixels (`img/bench-low.webp`; the frame untouched).
+- Audio: HIP HOP = Yoni's renders (PREMIUM 140 %, level-matched); POP / ELEC. / ROCK = placeholder loops until his renders.
+- For Dan: (1) on phones the scene crops the radio off-screen (x < 0 at 390 px) - your layout; (2) real Safari not
+  checked yet; (3) radio.css only touches page-b's `#radio` / `#radioCap`, nothing else of yours.
+- Next: Yoni's POP / ELECTRONIC / ROCK renders (dry + gas + grade / amount) -> `player/tools/prep_audio.py <id> dry gas`.
 
 ## 2026-10-22 — GAS 2 page: the station mockup on branch `feat/gas2-page` (Claude Code `danavivi-a3`, Dan's Mac) — BRANCH PUSHED, NOT MAIN (Dan: "push this branch so Yoni can work on the player")
 
