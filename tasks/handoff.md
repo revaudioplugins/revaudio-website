@@ -1,3 +1,14 @@
+## 2026-10-23 — GAS 2 page: MAIL ME THE KEYS poster on the wall (Claude Code `danavivi-2a`, Dan's Mac) — BRANCH `feat/gas2-page` PUSHED
+
+Claim: CLOSED 2026-10-23. Files: `tools/_gas2-scene/page-b.html` (mailbox block: `.mp` poster button + `.mail` moved down,
+`.mailCap` slip removed, TUNE → Mail poster script), `props/poster-mail-{1-4}.webp`, README line, DESIGN.md "Poster ON the wall".
+- Dan: "just the reading need to be a poster that catches the eye". The slip became a 2:3 poster on the wall above the box
+  (x 52.55 % / y 20.6 % / w 9 % of the scene), arrow down into the box. Click = the ticket; hover = the ticket peeks out of the box.
+- 4 options, gpt-image-2: 1-2 red with a GAS 2 badge, 3-4 yellow with a FREE starburst (FREE was Claude's addition, not Dan's line).
+  Default 1; `?mp=1-4` or TUNE. **Open: Dan's pick**, then delete the other 3 webps and the TUNE row.
+- Checked: headless Chromium 1141x636 + 1440x900, no console errors, ticket opens. Not checked: Dan's Safari, phones (the wall is off-screen there).
+- `.git/info/exclude` hides `tools/_gas2-scene/`: new files there need `git add -f`.
+
 ## 2026-10-23 — GAS 2 page mockup on `main` for Ilay (Claude Code, Dan's Mac) — PUSHED TO MAIN (Dan: "push the page of gas2 to main, Ilay needs it for social media inspiration")
 
 Claim: CLOSED 2026-10-23. `feat/gas2-page` (f72afcc) + `feat/gas2-page-s2` (6a5af16, the spotlight + notes on the glass, Dan picked "both") merged clean.

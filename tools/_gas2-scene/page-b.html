@@ -105,13 +105,23 @@ body.ng-tape .note::before, body.ng-tape .note::after { background: linear-gradi
 .radioCap em { font-style: normal; color: var(--honey); }
 
 /* 4. mailbox = email signup */
-.mail { left: 53.14%; top: 31.77%; width: 7.4%; transition: transform .35s cubic-bezier(.2, .9, .25, 1.25); filter: drop-shadow(.3cqw .5cqw .5cqw rgba(12, 9, 6, .55)) brightness(.88) sepia(.12); }
+.mail { left: 53.31%; top: 41.63%; width: 7.4%; transition: transform .35s cubic-bezier(.2, .9, .25, 1.25); filter: drop-shadow(.3cqw .5cqw .5cqw rgba(12, 9, 6, .55)) brightness(.88) sepia(.12); }
 .mail img { width: 100%; display: block; }
 .mail .plate { position: absolute; left: 33%; top: 38.31%; width: 34%; text-align: center; font: 700 .52cqw Oswald; letter-spacing: .12em; color: #2a1c0c; }
 .mail .tkt { position: absolute; left: 18%; top: 8%; width: 64%; height: 14%; background: var(--paper); transform: translateY(40%); transition: transform .35s; z-index: -1; box-shadow: 0 .2cqw .4cqw rgba(0,0,0,.3); }
 .mail:hover { transform: translateY(-2%) rotate(-1deg); }
 .mail:hover .tkt { transform: translateY(-55%); }
-.mailCap { left: 52.6%; top: 44.2%; width: 8.6%; text-align: center; font: 600 max(11px, .66cqw) Oswald; letter-spacing: .14em; color: var(--ink); background: var(--paper); padding: .35cqw .4cqw; transform: rotate(1.2deg); box-shadow: 0 .2cqw .6cqw rgba(0,0,0,.35); text-transform: uppercase; pointer-events: none; }
+/* the "Mail me the keys" slip became a poster pasted on the wall above the box (Dan 2026-10-23: "just the reading need to
+   be a poster that catches the eye"). Art: gpt-image-2, props/poster-mail-{1-4}.webp (TUNE → Mail poster, ?mp=1-4).
+   Outside the glass, so full ink: no sheen, no fade; the stucco shows through the paper and the porch lamp lights it from
+   the upper right. Its arrow points at the box, which moved down under it. Click = the box's ticket; hover = the ticket peeks. */
+.mp { left: 52.55%; top: 20.6%; width: 9%; transform: rotate(.5deg); filter: brightness(var(--mp-b, .94)) sepia(.1) contrast(.98); transition: filter .25s; }
+.mp:hover { --mp-b: 1.02; }
+.mp img { display: block; width: 100%; user-select: none; }
+.mp::before, .mp::after { content: ""; position: absolute; inset: 0; pointer-events: none; }
+.mp::before { background: url(frames/f6-v17.png) -52.55cqw -13.733cqw / 100cqw 66.667cqw; filter: grayscale(1) contrast(1.8) brightness(1.2); mix-blend-mode: overlay; opacity: var(--mp-t, .4); } /* the wall's own pixels behind it */
+.mp::after { background: linear-gradient(205deg, rgba(255, 204, 140, .14), transparent 45%, rgba(20, 10, 4, .26)); } /* the lamp: warm top right, falling off */
+.mp:hover + .mail .tkt { transform: translateY(-55%); }
 
 /* 5. chalkboard = the price */
 .chalk { left: 56.2%; top: 53.4%; width: 11.6%; filter: drop-shadow(.5cqw .6cqw .5cqw rgba(12, 9, 6, .6)) brightness(.86) sepia(.1); pointer-events: none; }
@@ -387,11 +397,11 @@ body[data-look="0"].rs-dusk .dusk { display: block; }
     </button>
     <div class="abs radioCap" id="radioCap">Tap the radio</div>
 
-    <!-- 4. mailbox -->
+    <!-- 4. mailbox, the poster above it points at it -->
+    <button class="abs mp hot" id="mailPoster" aria-label="Mail me the keys: get GAS 2 by email"><img id="mpImg" src="props/poster-mail-1.webp" alt=""></button>
     <button class="abs mail hot" id="mail" aria-label="Get GAS 2 by email">
       <span class="tkt"></span><img src="props/mailbox.png" alt=""><span class="plate">GAS 2</span>
     </button>
-    <div class="abs mailCap">Mail me the keys</div>
 
     <!-- 5. chalkboard -->
     <div class="abs chalk" aria-label="Today's prices: Regular 0.00, Premium 0.00, Race 0.00">
@@ -484,7 +494,7 @@ body[data-look="0"].rs-dusk .dusk { display: block; }
   const open = v => { v.classList.add('open'); if (v === veil) setTimeout(() => $('#em').focus(), 200); };
   const close = () => $$('.veil').forEach(v => v.classList.remove('open'));
   // a fresh ticket each time: the torn stub snaps back without animating
-  $('#mail').onclick = $('#cta').onclick = () => { tk.classList.add('nofx'); tk.classList.remove('sent'); void tk.offsetWidth; tk.classList.remove('nofx'); open(veil); };
+  $('#mail').onclick = $('#mailPoster').onclick = $('#cta').onclick = () => { tk.classList.add('nofx'); tk.classList.remove('sent'); void tk.offsetWidth; tk.classList.remove('nofx'); open(veil); };
   tk.onsubmit = e => { e.preventDefault(); tk.classList.add('sent'); };
   $$('.veil').forEach(v => v.addEventListener('click', e => { if (e.target === v || e.target.hasAttribute('data-close')) close(); }));
   addEventListener('keydown', e => e.key === 'Escape' && close());
@@ -516,7 +526,20 @@ body[data-look="0"].rs-dusk .dusk { display: block; }
   <div class="row ng" id="t-rs"><label><input type="checkbox" data-rs="hug">Hug</label><label><input type="checkbox" data-rs="focus">Focus</label><label><input type="checkbox" data-rs="dusk">Dusk</label><label><input type="checkbox" data-rs="circle">Old circle</label></div>
   <h4 style="margin-top:14px">Notes on the glass</h4>
   <div class="row ng" id="t-ng"><label><input type="checkbox" data-ng="shadow">Shadow</label><label><input type="checkbox" data-ng="grade">Grade</label><label><input type="checkbox" data-ng="glass">Glass</label><label><input type="checkbox" data-ng="tape">Tape</label></div>
+  <h4 style="margin-top:14px">Mail poster</h4>
+  <div class="row looks" id="t-mp"><button data-mp="1">Red 1</button><button data-mp="2">Red 2</button><button data-mp="3">Yel 1</button><button data-mp="4">Yel 2</button></div>
 </div>
+<script>
+// TUNE → Mail poster: the 4 options on the wall; ?mp=1-4 wins (screenshots), else the last pick
+(() => {
+  const K = 'gas2page-b:mp', img = document.getElementById('mpImg');
+  const set = n => { img.src = `props/poster-mail-${n}.webp`; try { localStorage.setItem(K, n); } catch {}
+    document.querySelectorAll('#t-mp button').forEach(b => b.style.borderColor = b.dataset.mp === n ? '#e8c878' : ''); };
+  document.querySelectorAll('#t-mp button').forEach(b => b.onclick = () => set(b.dataset.mp));
+  let n = new URLSearchParams(location.search).get('mp'); if (!n) try { n = localStorage.getItem(K); } catch {}
+  set(/^[1-4]$/.test(n || '') ? n : '1');
+})();
+</script>
 <script>
 (() => {
   // NOTES ON THE GLASS layers: body classes ng-shadow / ng-grade / ng-glass / ng-tape, all on by default; ?ng=1010 wins (screenshots)

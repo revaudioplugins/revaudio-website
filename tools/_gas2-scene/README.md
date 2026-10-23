@@ -11,7 +11,7 @@ python -m http.server 4462 --bind 127.0.0.1
 ```
 
 - `page-b.html` — **the working page.** Readings (right side), wall sign = the 3 grades, taped notes, radio = the player,
-  mailbox = email signup, chalkboard = prices, pump = opens the real plugin UI (served separately on :4461 from the GAS2
+  mailbox = email signup (+ the MAIL ME THE KEYS poster above it, 4 options in TUNE → Mail poster), chalkboard = prices, pump = opens the real plugin UI (served separately on :4461 from the GAS2
   repo's `Source/ui/public`; optional).
 - `page-a.html` — frozen snapshot of 2026-10-22 (read-only), for comparison.
 - `ab.html` — A and B side by side (or Flip with A / B / Space) at real window sizes.

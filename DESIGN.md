@@ -218,6 +218,12 @@ inside the measured pane glass with a margin, never touching the frame; they tak
 top, falling off to the sill) and a light glass sheen, and stay sharp: a blur reads as a bad photo, not
 depth. Poster copy = one short catchphrase per feature, period ad-speak (NO KNOCK. NO KNOB.).
 
+Poster ON the wall (the GAS 2 page's mailbox, Dan 2026-10-23: "just the reading need to be a poster that
+catches the eye"): a CTA's paper label becomes a 1950s poster pasted on the stucco right above its prop, a
+big arrow pointing into it. Outside the glass it keeps full ink (no sheen, no fade): the wall's texture shows
+through faintly and the porch lamp lights it from its side. Poster and prop are one control: both open the
+same form, and hovering the poster moves the prop.
+
 Painted wall sign (the GAS 2 page's grades, Dan 2026-10-23: "remove that line under premium"): the picked
 grade shows by its brighter red only, no underline. Paint on a wall has no web-link underline.
 
