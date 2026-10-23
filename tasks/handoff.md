@@ -25,6 +25,9 @@ Claim: OPEN. Files: `tools/_gas2-scene/phone.html` + `tools/_gas2-scene/phone/*.
   (db capability). BENCH -> tap a part, drag, SIZE / TURN, arrows, SAVE -> db doc `bench/phone` (`ArtifactData get`, collection
   `bench`, doc `phone`) + clipboard. Values = px / scale / deg at Dan's screen (the dump carries w/h/dpr); the two pumps' SIZE =
   `--zk` (a real re-flow), the hero pump's up/down = `--topd`. Bake: convert px to the page's units, then delete the deltas.
+- 2026-10-24 Dan: "under the Fill it up remove all the page, keep one page, no scroll" -> HEAR IT, the window posters, the
+  mailbox block, the footer and their assets/JS removed; html/body locked to one screen, the hero centred (100svh). Checked
+  390x844 / 393x659 / 375x667 / 430x932: page height = the screen. Both Artifacts updated (page v3, bench v2).
 - Next: bake Dan's bench save, Dan's polish notes, the per-grade renders (Yoni), then it moves into page-b as the `@media (max-width: 760px)` layout
   (the scene hidden on phones).
 
