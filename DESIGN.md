@@ -211,6 +211,9 @@ inside the measured pane glass with a margin, never touching the frame; they tak
 top, falling off to the sill) and a light glass sheen, and stay sharp: a blur reads as a bad photo, not
 depth. Poster copy = one short catchphrase per feature, period ad-speak (NO KNOCK. NO KNOB.).
 
+Painted wall sign (the GAS 2 page's grades, Dan 2026-10-23: "remove that line under premium"): the picked
+grade shows by its brighter red only, no underline. Paint on a wall has no web-link underline.
+
 Making one object pop (the GAS 2 pump, Dan 2026-10-23: "tone down all ... this needs to be subtle", then
 "just keep the light on the GAS 2 itself"): light the object only, from its own motivated lamp (a soft
 warm top-down light masked to its cut-out + ~4% brightness); no light cone, no floor pool, no darkening
