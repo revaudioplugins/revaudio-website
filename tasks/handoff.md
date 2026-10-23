@@ -24,6 +24,70 @@ Worktree `.claude/worktrees/gas2-page-s2`, served on :4463 (session 1 keeps :446
   before it ships; (3) phones: the scene keeps its right edge, so the left-window poster is likely off-screen (not checked).
 - Note: the shell's `OPENAI_API_KEY` is stale (401); `tools/.openai_key.local` works.
 
+## 2026-10-23 — Claude Code `danavivi-a3` (Dan's Mac) — GAS 2 page: readings composition 2, premium shadow, notes on the glass
+
+Claim: OPEN (`tools/_gas2-scene/page-b.html` minus the radio block; `DESIGN.md` §3/§5/§7 readings lines). Continues the 2026-10-22 entry below.
+
+### State at session end
+
+Branch `feat/gas2-page` in revaudio-website, worktree `.claude/worktrees/gas2-page`, 0 ahead / 0 behind `origin/feat/gas2-page`;
+the only uncommitted change is this handoff entry. Commits this session (all pushed to the branch): 9e52949 branch + mockup,
+06c300b bench round 2, 97538ad notes on the glass, 754c25d readings composition 2 (GAS2 in the pump globe's lockup, centred
+column, "⤓ Download FREE"), 1cce306 DESIGN.md readings vibe, 1cdaf08 / 643f330 / ad0e2c1 the GAS2 rule gap (2.5 -> 20.5 px at
+1141x636), 0fca023 "Fill it up." lights with the button hover, 8c1eed6 button label in Oswald 700, e5a68ed premium shadow (circle
+out: HUG / FOCUS / DUSK layers + TUNE checkboxes), bef24e7 Dusk fades in (the "cut"), f72afcc edges subtle, 426052d general shadow
+-50% + the shadow hugs the words, 32279f5 DESIGN.md shadow recipe.
+
+🔴 **Diverged from main.** Another session merged `feat/gas2-page`@f72afcc + `feat/gas2-page-s2` (fe5d622 / f2e2f61 / 6a5af16:
+the pump in a spotlight, notes toned down, `props/pump-cut.png`) to main (8044e2f + 881d1a7, Dan: "both to main for Ilay").
+This branch lacks those 5 main commits; main lacks 426052d + 32279f5. Both sides edit `page-b.html` and the top of this file.
+
+### Unverified
+
+- Dan approved in Safari: composition 2 ("I love you so much", "this is amazing"), the rule gap ("perfect"), the hover ("nice"),
+  the shadow at 426052d ("really cool, I like it"). Not checked: phones (390 px: the radio is off-screen), Firefox, the
+  Neon / Enamel / Badge looks under the new centred column (the GAS2 lockup + shadow are scoped to the "Now" look only).
+- The FOCUS layer (backdrop-filter in a mask) does not render in `wksnap` snapshots: checked in headless Chromium + by Dan's eye only.
+- Oswald has no "⤓" glyph, so the arrow falls back to another font (offered Dan a matching SVG icon; no answer yet).
+
+### Background processes
+
+- `python3 -m http.server 4462 --bind 127.0.0.1` from `.claude/worktrees/gas2-page/tools/_gas2-scene` (nohup, pid 41222):
+  Dan's Safari tabs point at it. Kill: `kill 41222`.
+- Not this session's (left alone): :4461 pid 29302 (GAS2 repo `Source/ui/public`, the pump iframe), :4463 pid 69799
+  (the `gas2-page-s2` worktree's server).
+
+### Things the next session needs to decide
+
+1. **Reconcile this branch with main.** Options: rebase `feat/gas2-page` on `origin/main` (main's own handoff asks for that) vs
+   merge `origin/main` in. Either way resolve `page-b.html` keeping BOTH the s2 spotlight / notes and the 426052d hug shadow,
+   and `tasks/handoff.md` keeping both top entries; re-run the headless checks, push the branch. Whether 426052d + 32279f5 go
+   to main is Dan's word (a main push = a site deploy, though `tools/` is not built into the site).
+2. **Next section** (Dan picks): phones (the radio can't be reached at 390 px; Yoni flagged it), the wall sign, the mailbox,
+   the chalkboard.
+3. **The ⤓ arrow:** keep the fallback glyph or draw an SVG in Oswald's weight.
+4. **"Same loudness"** stays out of the copy until the auto-level is measured on real mixes.
+
+### Suggested commit splits
+
+- One commit: `docs(handoff): GAS 2 page session 2026-10-23 (danavivi-a3)` — `tasks/handoff.md` only.
+
+### Cleanup TODOs
+
+- Dan's main clone `tools/_gas2-scene/` (git-excluded, the 2026-10-21/22 original): holds the 16 unused frames, the reference
+  photos and the frame scripts; the worktree copy is the live one now. Keep as the archive until Dan says otherwise.
+- `~/.impeccable/config.json` (home, not a repo) gained two file-scoped waivers for `**/tools/_gas2-scene/*`: `marquee` (the
+  house button shine) and `overused-font inter` (the site's body font).
+- Bench lesson not written to the shared law book (`revaudio-shared` carries another session's uncommitted `LESSONS.md` /
+  `bench.js` edits): when the bench subject sits on the right edge, dock the harness panel left (page-b does it with a CSS
+  override, `html.benching .bench-panel`).
+- Node 26.0.0 on Dan's Mac has CVE-2026-111497: upgrade to 26.12.1+.
+
+### Memory written this session
+
+- None in auto-memory (venture rules stay in the venture). The design rules went to `DESIGN.md` on this branch: §3 product names
+  in the plugin's header lockup + the script line's second use, §5 paper on glass, §7 the readings recipe + its shadow.
+
 ## 2026-10-22 — GAS 2 page: the radio player (Claude Code `revaudio-cd`, Yoni's laptop 2) — ROUND 1 BUILT, waiting for Yoni's review
 
 Claim: OPEN. Files: `tools/_gas2-scene/player/**`, the radio block in `tools/_gas2-scene/page-b.html` (wire = one `<link>` +
@@ -34,7 +98,7 @@ one `<script>`), `tasks/gas2-radio-plan.md`. Branch `feat/gas2-page`, worktree `
   tuning knobs, Web Audio A/B on placeholder audio. page-b gained one `<head>` line only.
 - For Dan: on phones the scene crops the radio off-screen (x = -810 at 390 px), so phones can't reach the player.
 
-## 2026-10-22 — GAS 2 page: the station mockup on branch `feat/gas2-page` (Claude Code, Dan's Mac) — BRANCH PUSHED, NOT MAIN (Dan: "push this branch so Yoni can work on the player")
+## 2026-10-22 — GAS 2 page: the station mockup on branch `feat/gas2-page` (Claude Code `danavivi-a3`, Dan's Mac) — BRANCH PUSHED, NOT MAIN (Dan: "push this branch so Yoni can work on the player")
 
 Claim: OPEN. Files: `tools/_gas2-scene/**` (static mockup, no build step; README there). Split (one writer per file set):
 **Yoni = the player** (the radio block in `page-b.html` + its own files under `tools/_gas2-scene/player/`, wired in with one
