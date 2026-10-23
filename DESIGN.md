@@ -234,7 +234,8 @@ so much", "this is amazing"; `tools/_gas2-scene/page-b.html` on `feat/gas2-page`
 - **Four parts, top to bottom, nothing else:** the name in the plugin's header lockup (§3), huge
   (13.5 cqw); ONE outcome line in Bebas, honey `#f6c85d`, letter-spaced .05em ("THICKER, SMOOTHER, GLUED
   MASTER."); the house honey button, large, with the shine, "⤓ Download FREE" (FREE in caps on a free
-  product); the Yellowtail signature line under it ("Fill it up.").
+  product; the label in the title's own face, Oswald 700, case exactly as written: Dan 2026-10-23,
+  the one exception to the family's Inter label); the Yellowtail signature line under it ("Fill it up.").
 - **Copy: punchy and minimal.** No tagline when the signature carries it, no spec line, no FREE tag (the
   button says it), no claim that needs a footnote (no "one dial" when there are three controls).
 - Tuned at Dan's Safari 1141x636 and checked at 1440x900 / 1920x953: the column stays in the open sky.
