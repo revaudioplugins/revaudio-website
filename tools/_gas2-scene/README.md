@@ -26,8 +26,8 @@ python -m http.server 4462 --bind 127.0.0.1
   never edit the same lines.
 - **Everything else in `page-b.html` (readings, layout, props, copy): Dan's session.**
 - **The notes on the glass + the pump spotlight (`.note*` / `.n1-3`, `.pumpCut` / `.pumpLit`, TUNE → Spotlight,
-  `props/pump-cut.png`): Dan's 2nd session (danavivi-59), branch `feat/gas2-page-s2`, from 2026-10-23.** Rebased onto
-  `feat/gas2-page` when Dan signs it off.
+  `props/pump-cut.png`): Dan's 2nd session (danavivi-59), branch `feat/gas2-page-s2`, from 2026-10-23.** Merged with
+  `feat/gas2-page` into `main` 2026-10-23.
 - Claims and state: `tasks/handoff.md` (top entry).
 
 ## Not in git

@@ -1,3 +1,10 @@
+## 2026-10-23 — GAS 2 page mockup on `main` for Ilay (Claude Code, Dan's Mac) — PUSHED TO MAIN (Dan: "push the page of gas2 to main, Ilay needs it for social media inspiration")
+
+Claim: CLOSED 2026-10-23. `feat/gas2-page` (f72afcc) + `feat/gas2-page-s2` (6a5af16, the spotlight + notes on the glass, Dan picked "both") merged clean.
+- Only `tools/_gas2-scene/**`, `DESIGN.md`, `tasks/**`: nothing in `src/` or `public/`, so the live site is unchanged. The page is still a static mockup.
+- Ilay: `git pull`, then `cd tools/_gas2-scene && python -m http.server 4462 --bind 127.0.0.1`, open `http://127.0.0.1:4462/page-b.html`. The pump iframe (:4461) and the radio's real audio are not there (placeholder audio only).
+- Both branches stay open for more work; rebase them on main before the next push.
+
 ## 2026-10-22 — GAS 2 page: the radio player (Claude Code `revaudio-cd`, Yoni's laptop 2) — ROUND 1 BUILT, waiting for Yoni's review
 
 Claim: OPEN. Files: `tools/_gas2-scene/player/**`, the radio block in `tools/_gas2-scene/page-b.html` (wire = one `<link>` +
