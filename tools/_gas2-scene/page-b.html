@@ -136,11 +136,9 @@ body.ng-tape .note::before, body.ng-tape .note::after { background: linear-gradi
 .pumpTip { left: 22%; top: 82%; width: 15.8%; text-align: center; font: 600 max(11px, .74cqw) Oswald; letter-spacing: .2em; color: var(--paper); text-transform: uppercase; opacity: 0; transition: opacity .25s; pointer-events: none; text-shadow: 0 1px 3px #000; }
 .pump:hover + .pumpTip { opacity: .9; }
 
-/* first-visit hint: every live prop pulses once */
+/* live props: keyboard focus only (the first-visit gold frames were cut, Dan 2026-10-23: "remove it") */
 .hot { outline: none; }
 .hot:focus-visible { box-shadow: 0 0 0 .2cqw var(--honey); }
-.pulse .ring { position: absolute; border: .15cqw solid rgba(242, 190, 74, .9); border-radius: 1cqw; animation: ring 1.4s ease-out 2 forwards; pointer-events: none; }
-@keyframes ring { from { opacity: .9; transform: scale(.96); } to { opacity: 0; transform: scale(1.12); } }
 
 /* readings on the right: the live GAS 1 hero's type and tone */
 .rd { left: calc(var(--rdx, 67.5) * 1%); top: 50%; width: 29%; isolation: isolate; transform-origin: 0 50%;
@@ -501,17 +499,6 @@ body[data-look="0"].rs-dusk .dusk { display: block; }
 
   // pump -> the real plugin UI (served from the GAS2 repo)
   $('#pump').onclick = () => { const f = $('.plug'); if (!f.src) f.src = f.dataset.src; open($('#plugVeil')); };
-
-  // first visit: every live prop pulses once
-  setTimeout(() => {
-    const sc = $('#scene'), r0 = sc.getBoundingClientRect();
-    $$('.hot').forEach(h => {
-      const r = h.getBoundingClientRect(), ring = document.createElement('i'); ring.className = 'ring';
-      Object.assign(ring.style, { left: (r.left - r0.left) / r0.width * 100 + '%', top: (r.top - r0.top) / r0.height * 100 + '%', width: r.width / r0.width * 100 + '%', height: r.height / r0.height * 100 + '%' });
-      sc.appendChild(ring); setTimeout(() => ring.remove(), 3200);
-    });
-    sc.classList.add('pulse');
-  }, 1200);
 })();
 </script>
 <button class="tuneBtn" id="tuneBtn" data-bench-ignore title="Tune this section (T)">TUNE</button>

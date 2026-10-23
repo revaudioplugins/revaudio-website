@@ -247,6 +247,11 @@ strikes ~120ms `cubic-bezier(.2,.9,.25,1.25)`. Scroll: needle revs; wood drifts 
 steering springs on a mouse, one drift-in on touch (§4). Reduced motion: everything visible at rest,
 no parallax, no needle rev, smoke static.
 
+No UI chrome drawn over a scene (the GAS 2 page, Dan 2026-10-23, on the first-visit gold frames that
+flashed around every live prop: "what is this square line around the elements, remove it"): a prop shows
+it's alive by itself (its own hover, its poster, its caption), never by a web outline around the photo.
+The one frame allowed is the keyboard focus ring.
+
 ## 7. Hero + glanceability
 
 THE hero is the gauge medallion with "Engineered, Then Tuned." over it. One glance: brass tach,
