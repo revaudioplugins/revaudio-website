@@ -1,3 +1,9 @@
+## 2026-09-22 — RevLimiter phone door, revised local preview (Codex)
+Owner: Codex. Branch: `feat/mobile-tweaks-0922`. Files: `src/components/BuyButtonCrane.astro`, this handoff.
+User rejected the smaller door beside the screenshot: restore original door position/size and replace BUY NOW with “Start your free trial” on phones. Fully undid the previous `[slug].astro` layout experiment; that page is back to HEAD. The existing trial anchor now occupies the original action patch at ≤900px on RevLimiter, with a 44px minimum target, and scrolls to #trial. Mobile BUY NOW is hidden. Desktop and other products remain unchanged; the bottom door clone is desktop-only and requires no mobile-label change.
+- Verified: 319px phone link navigates to #trial (form clears the header; no cart/dialog opened); desktop 1280px retains BUY NOW. Build PASS (31 pages; existing warnings), diff check clean, design detector [].
+- Preference: preserve the original large hanging phone door; make the trial action explicit. Continue one change at a time, with user review before the next step. Local preview only, not committed or deployed. Do not infer approval to publish from the earlier cart deployment authorization.
+
 ## 2026-09-22 — cart drawer redesign (Codex)
 Owner: Codex. Scope: `src/components/Cart.astro`, cart plan and this handoff, DESIGN.md cart notes.
 User approved the design plan with “go”, then explicitly authorized “push to main make it live”. First step (cart drawer) implemented and verified in the existing localhost:4321 dev preview. Release target: `origin/main`; unrelated untracked GAS assets/files preserved.

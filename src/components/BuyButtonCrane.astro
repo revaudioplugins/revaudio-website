@@ -59,7 +59,7 @@ const registerUrl = site.downloadGate.workerUrl + '/download/register';
 ---
 
 <div
-  class="crane-buy"
+  class:list={['crane-buy', plugin.slug === 'revlimiter' && plugin.trialUrl && pct == null && 'crane-buy--mobile-trial']}
   data-crane-buy
   style={`--master-url:url(${masterImg.src}); --hook-url:url(${hookImg.src}); --ring-url:url(${ringImg.src}); --buysq-url:url(${buysqImg.src}); --chain-url:url(${chainImg.src}); --wear-url:url(${wearImg.src});`}
 >
@@ -1055,6 +1055,33 @@ const registerUrl = site.downloadGate.workerUrl + '/download/register';
        checkout is paused) and the #trial section this link points at, so
        nothing is lost by leaving the paint to desktop. */
     .rc-freetrial { display: none; }
+    /* RevLimiter phones: reuse the real trial anchor on the original door's
+       action patch. Desktop keeps BUY NOW; the landed clone is desktop-only. */
+    .crane-buy--mobile-trial .rc-buysq { display: none; }
+    .crane-buy--mobile-trial .rc-freetrial {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      left: 50%;
+      top: 79.8%;
+      width: 67.8%;
+      aspect-ratio: 620 / 237;
+      min-height: 44px;
+      rotate: 1deg;
+      background: var(--buysq-url) center / 100% 100% no-repeat;
+      font-family: var(--font-display);
+      font-size: max(16px, 12cqw);
+      line-height: 1;
+      letter-spacing: 0.02em;
+      color: #241310;
+      text-shadow: none;
+    }
+    .crane-buy--mobile-trial .rc-freetrial span:first-child { font-size: 0.8em; }
+    .crane-buy--mobile-trial .rc-freetrial b {
+      color: inherit;
+      text-decoration: none;
+    }
     /* Trial escape hatch: at a ~242px door this paints ~8px tall — unreadable
        and an accessibility miss. The mobile funnel is served by the TrialStamp
        relocated above the gallery instead. */

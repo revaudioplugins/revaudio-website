@@ -1,0 +1,251 @@
+---
+/* GAS drive-in — the page terminus.
+
+   Replaces the old .closing-cta trial button at the bottom of index.astro
+   (baked in from the take-5 bench 2026-08-09). A cel-shaded muscle car slides
+   in off the desert highway, power-slides, drives at the viewer and parks
+   nose-on with NEED GAS? on the plate; the email form then rolls out from
+   under the bumper. Locked decisions from the bench: plate reads NEED GAS?,
+   no section heading, the band is exactly the old .closing-cta box.
+
+   All the scene/physics code lives in ../lib/gas-drive-in.ts and is imported
+   DYNAMICALLY below — three.js plus the 4.8 MB GLB are by far the heaviest
+   assets on the site and must stay out of the homepage's critical path. They
+   only start downloading when the visitor is within a viewport of this band.
+
+   Tuning still happens on the bench (src/pages/gasmock.astro, git-excluded),
+   which keeps the sliders; the values it produces get copied into the lib. */
+---
+
+<section class="gas-stop" data-gas aria-label="Get GAS free">
+  <div class="gas-road" data-gas-road>
+    <canvas class="gas-canvas" data-gas-canvas></canvas>
+    <div class="plate3d" data-gas-plate><span class="plate-txt">NEED&nbsp;GAS?</span></div>
+    <div class="pump3d" data-gas-pump>
+      <div class="pump-inner" data-gas-pump-inner>
+        {/* The plate carries the hook visually; screen readers get the offer
+            spelled out here, since "NEED GAS?" alone doesn't say what happens
+            when you hand over an address. */}
+        <p class="sr-only" id="gas-offer">Leave your email and we&rsquo;ll send you GAS, free.</p>
+        <form class="pump-form" data-gas-form novalidate aria-describedby="gas-offer">
+          <label class="sr-only" for="gas-email">Email address</label>
+          <input id="gas-email" type="email" name="email" placeholder="you@studio.com" required autocomplete="email" />
+          <input type="text" name="_gotcha" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+          <button type="submit">Fill &rsquo;er up</button>
+        </form>
+        <div class="pump-done" data-gas-done hidden>Tank&rsquo;s on us. Check your inbox.</div>
+        <p class="pump-status" data-gas-status role="status" aria-live="polite" hidden></p>
+      </div>
+    </div>
+    <i class="head-glow" data-gas-glow></i>
+    <i class="head-glow" data-gas-glow></i>
+    <div class="gas-smoke" data-gas-smoke aria-hidden="true"></div>
+  </div>
+</section>
+
+<script>
+  import { reducedMotion } from '../lib/motion';
+
+  const root = document.querySelector<HTMLElement>('[data-gas]');
+  if (root) {
+    const boot = async () => {
+      try {
+        const { initGasDriveIn } = await import('../lib/gas-drive-in');
+        initGasDriveIn(root, { reduced: reducedMotion() });
+      } catch {
+        /* No WebGL (old browser, blocked context, GPU blacklist) or the GLB
+           404s: the band would otherwise sit there empty with the email ask
+           invisible. Fall back to a flat painted band with the plate and the
+           form laid out normally — the offer survives, the stunt doesn't. */
+        root.classList.add('gas-fallback');
+      }
+    };
+
+    /* Start the download a viewport early so three.js and the model are ready
+       by the time the band scrolls in; the lib itself owns the play trigger. */
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver(
+        (entries) => {
+          if (!entries.some((e) => e.isIntersecting)) return;
+          io.disconnect();
+          boot();
+        },
+        { rootMargin: '100% 0px' }
+      );
+      io.observe(root);
+    } else {
+      boot();
+    }
+  }
+</script>
+
+<style>
+  .gas-stop { padding: 0; overflow-x: clip; text-align: center; }
+
+  /* The band is the EXACT box the old .closing-cta occupied: full-bleed
+     width, height = its 8vh/9vh paddings + ~188px of content, seam on top. */
+  .gas-road {
+    position: relative;
+    width: 100%;
+    height: calc(clamp(3rem, 8vh, 5rem) + clamp(3.5rem, 9vh, 5.5rem) + 188px);
+    border-top: 1px solid var(--border);
+    border-bottom: 2px solid #2b2320;
+    overflow: hidden; /* the band is a window — glows/smoke stay inside it */
+  }
+  /* Narrow screens stack the form into two rows (~47px taller), which the
+     desktop-sized band can't hold without the form climbing over the plate.
+     Buy that height back here — the band only has to match .closing-cta
+     exactly where .closing-cta itself was a single-row CTA. */
+  @media (max-width: 560px) {
+    .gas-road {
+      height: calc(clamp(3rem, 8vh, 5rem) + clamp(3.5rem, 9vh, 5.5rem) + 188px + 72px);
+    }
+  }
+  .gas-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+  /* live plate text — positioned in px by projection off the car's matrix */
+  .plate3d {
+    position: absolute;
+    display: grid;
+    place-content: center;
+    container-type: inline-size;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 3;
+  }
+  .plate-txt {
+    font-family: var(--font-display);
+    font-size: 19cqw; /* the real plate is smaller than the primitive's — fill it */
+    letter-spacing: 0.04em;
+    line-height: 1;
+    color: #241a10;
+    opacity: 0.88;
+    white-space: nowrap;
+  }
+
+  /* pump form — rolls out from behind the bumper onto the tarmac */
+  .pump3d {
+    position: absolute;
+    overflow: hidden;
+    padding-bottom: 6px;
+    opacity: 0;
+    z-index: 4;
+    container-type: inline-size;
+  }
+  .pump-inner { display: grid; gap: 0.4rem; }
+  .pump-form {
+    display: flex;
+    gap: 0.5rem;
+    background: #e8dcc2;
+    border: 3px solid #0d0a08;
+    border-radius: 8px;
+    padding: 0.5rem;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+  }
+  .pump-form input[type='email'] {
+    flex: 1;
+    min-width: 0;
+    padding: 0.6rem 0.9rem;
+    border-radius: 5px;
+    border: 2px solid #241a10;
+    background: #f4ecd9;
+    color: #241a10;
+    font-size: 1rem;
+  }
+  .pump-form input[type='email']::placeholder { color: #7a6a52; }
+  .pump-form button {
+    padding: 0.6rem 1.2rem;
+    background: var(--redline, #c22820);
+    color: #f6efdd;
+    border: 2px solid #0d0a08;
+    border-radius: 5px;
+    font-family: var(--font-display);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .pump-form button:hover { filter: brightness(1.12); }
+  .pump-form button:active { transform: translateY(1px); }
+  .pump-form input[type='email']:focus-visible,
+  .pump-form button:focus-visible {
+    outline: 3px solid var(--brass-bright, #ffd68c);
+    outline-offset: 2px;
+  }
+  .pump-form[hidden] { display: none; } /* author display:flex beats UA [hidden] otherwise */
+  @container (max-width: 430px) {
+    .pump-form { flex-direction: column; }
+  }
+  .pump-done {
+    background: #e8dcc2;
+    border: 3px solid #0d0a08;
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+    text-align: center;
+    color: #241a10;
+    font-family: var(--font-display);
+    letter-spacing: 0.05em;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+  }
+  .pump-done[hidden] { display: none; }
+  .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  .pump-status {
+    color: #f2e2c4;
+    font-size: 0.9rem;
+    text-align: center;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+  }
+  .pump-status.ok { color: #ffd68c; }
+
+  .head-glow {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 214, 140, 0.8) 0%, rgba(255, 201, 120, 0.28) 45%, transparent 70%);
+    filter: blur(2px);
+    pointer-events: none;
+    opacity: 0;
+    z-index: 2;
+  }
+
+  .gas-smoke {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: visible;
+    z-index: 1;
+  }
+  .gas-smoke :global(.puff) {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(226, 221, 212, 0.6) 0%, rgba(196, 194, 196, 0.28) 45%, transparent 70%);
+    filter: blur(9px);
+    opacity: 0;
+  }
+
+  /* ── no-WebGL fallback: the same desert-dusk band, painted flat, with the
+     plate line and the form in ordinary flow instead of projected px. ── */
+  .gas-fallback .gas-road {
+    display: grid;
+    place-content: center;
+    gap: 0.9rem;
+    padding: 0 1.5rem;
+    background: linear-gradient(180deg, #0e0b09 0%, #221510 55%, #47281a 80%, #7a4527 93%, #9c5c2e 100%);
+  }
+  .gas-fallback .gas-canvas,
+  .gas-fallback .head-glow,
+  .gas-fallback .gas-smoke { display: none; }
+  .gas-fallback .plate3d,
+  .gas-fallback .pump3d {
+    position: static;
+    opacity: 1;
+    width: auto;
+    height: auto;
+    container-type: normal;
+    overflow: visible;
+  }
+  .gas-fallback .pump3d { width: min(460px, 100%); margin: 0 auto; }
+  .gas-fallback .plate-txt {
+    font-size: clamp(1.8rem, 5vw, 2.6rem);
+    color: #f2e2c4;
+    opacity: 1;
+  }
+</style>
