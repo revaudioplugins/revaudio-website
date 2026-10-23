@@ -2,7 +2,7 @@
    Scene: tap the station's radio -> the close-up opens and plays the station on ORIGINAL. Close-up: the dial = 5
    stations, the two band keys ORIGINAL | GAS 2 = the A/B (same spot in the song, 30 ms crossfade, level-matched
    renders), left knob = volume, right knob = tuning. Closing the close-up keeps it playing; the scene radio glows.
-   Keys while open: A / B or arrows left-right = the keys, 1-5 / arrows up-down = stations, Space = play / stop. */
+   Keys while open: A / B or arrows left-right = the keys, 1-4 / arrows up-down = stations, Space = play / stop. */
 (() => {
   const BASE = new URL('.', document.currentScript.src).href;
   // the renders: <id>_before / <id>_after, sample-aligned, level-matched (spec: tasks/gas2-radio-plan.md).
@@ -10,10 +10,9 @@
   const PH = { a: 'audio/placeholder_before.m4a', b: 'audio/placeholder_after.m4a', gas: null };
   const STATIONS = [
     { id: 'hiphop', name: 'HIP HOP', a: 'audio/hiphop_before.m4a', b: 'audio/hiphop_after.m4a', gas: { grade: 'PREMIUM', amount: 140 } },   // Yoni's renders 2026-10-23 (prep_audio.py)
+    { id: 'pop', name: 'POP', ...PH },
     { id: 'electronic', name: 'ELECTRONIC', ...PH },
-    { id: 'rock', name: 'ROCK', ...PH },
-    { id: 'trap', name: 'TRAP', ...PH },
-    { id: 'folk', name: 'FOLK', ...PH },
+    { id: 'rock', name: 'ROCK', ...PH },   // 4 stations (Yoni 2026-10-23: hip hop, pop, electronic, rock)
   ];   // gas: { grade: 'PREMIUM', amount: 140 } prints the mix's GAS 2 settings in the caption
 
   // ---------- the close-up ----------
@@ -38,7 +37,7 @@
     </div></div>
     <div class="rp-tags">${STATIONS.map((s, i) => `<button type="button" data-st="${i}" style="--r:${[-1.5, 1, -.5, 1.5, -1][i]}deg">${s.name}</button>`).join('')}</div>
     <div class="rp-cap" aria-live="polite"></div>
-    <div class="rp-hint">A / B switch · 1-5 stations · Space play / stop<span class="rp-ph"> · placeholder audio</span></div>`;
+    <div class="rp-hint">A / B switch · 1-4 stations · Space play / stop<span class="rp-ph"> · placeholder audio</span></div>`;
   document.body.appendChild(veil);
   const q = s => veil.querySelector(s), qa = s => [...veil.querySelectorAll(s)];
   const plate = q('.rp-plate'), cap = q('.rp-cap'), ptr = q('.rp-ptr');

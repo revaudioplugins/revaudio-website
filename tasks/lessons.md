@@ -122,3 +122,7 @@ that scales with the width, check the narrowest desktop width (~1000 px) too; sc
   set that stamp in probes that inject deltas, or the probe's fresh profile parks them too.
 - New TUNE defaults do nothing for a viewer whose localStorage already holds the old values. Rule: a new composition gets a
   new storage key (`gas2page-b:tune2`).
+- Same day, the second half of it: equal specificity loses to the host's LATER stylesheet. The radio's `<link>` sits
+  above page-b's own `<style>`, so `.rp-veil { background }` lost to the page's `.veil { background }` (0.62, not 0.86 /
+  0.93) and nobody saw it for two rounds. Style a shared base class as `.veil.rp-veil`, and check a component's key
+  rules with `getComputedStyle` in the host page, not by reading the CSS.

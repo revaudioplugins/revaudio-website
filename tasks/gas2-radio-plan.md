@@ -125,3 +125,5 @@ Picks (Yoni): play / stop = a 3rd key on the radio + a red jewel lamp; Fly-in fr
 - Magic eye REMOVED (Yoni 2026-10-23: "remove that green thing, its not nice"): the green glow is off-palette on this
   brass + amber radio. Gone from the plate too: `process_art.py` patches its spot from radio-c (radio-e is an edit of
   radio-c, aligned to 0 px there; feathered disc r 44..62), and the analyser / canvas code is out of radio.js / .css.
+- 4 stations (Yoni 2026-10-23): HIP HOP (real) / POP / ELECTRONIC / ROCK (placeholders). Fixed on the way: the close-up's
+  dark backdrop never applied (page-b's `.veil` won on order); now `.veil.rp-veil`, 0.86 desktop / 0.93 phone.
