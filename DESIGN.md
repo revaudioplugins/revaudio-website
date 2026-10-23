@@ -73,8 +73,8 @@ neon or glow without a lamp (a neon sign IS a lamp: the DRIFT panel's lit tube m
   set in the face, colour split and rule of the plugin's own header, lifted from the plugin's render code,
   never the house Bebas: GAS 2 = the pump globe's GAS2 (Oswald 700, set tight, the 2 in oxide, an oxide
   rule under it; GAS2 repo `bench/pump-render.js` texGlobeLens), turned light-on-dark on a dark photo
-  (GAS in parchment `#efe3c6`, the 2 and the rule `#b8341e`; the rule sits ~.1em under the letters, never
-  touching them, Dan 2026-10-23). Why: the page and the plugin read as the same
+  (GAS in parchment `#efe3c6`, the 2 and the rule `#b8341e`; the rule sits ~.18em under the letters (the
+  globe's own proportion), never touching them, Dan 2026-10-23). Why: the page and the plugin read as the same
   object; the site's display face made the name generic.
 - Painted copy erodes with wear: stencil words on the wall are outlined brass that fills on hover;
   the filled word is `--oxide-text`, never race-red (Law 5 + one-hero rule).
