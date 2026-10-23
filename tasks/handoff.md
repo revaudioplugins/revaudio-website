@@ -17,7 +17,10 @@ Claim: OPEN. Files: `tools/_gas2-scene/phone.html` + `tools/_gas2-scene/phone/*.
   checked: a real iPhone, audio by ear.
 - Dan views it at https://claude.ai/artifact/RY5g1zHQsdmQRUkisbEqvc (private; fonts inlined, audio as .mp4).
 - Research brief behind it (10 phone-native sites, patterns, 3 directions): session scratchpad `research/` (not in git).
-- Next: Dan's verdict on his phone → then it moves into page-b as the `@media (max-width: 760px)` layout (the scene hidden on phones).
+- Dan on his phone, 2026-10-24: "very cool, I like the direction it's going, commit". Rule written to DESIGN.md §7 (rebuild for
+  portrait, never crop the desktop scene).
+- Next: Dan's polish notes, the per-grade renders (Yoni), then it moves into page-b as the `@media (max-width: 760px)` layout
+  (the scene hidden on phones).
 
 ## 2026-10-23 — GAS 2 page: three PHONE options, Swipe / Walk / Stack (Claude Code, Dan's Mac, Dan on his phone) — SUPERSEDED 2026-10-24
 

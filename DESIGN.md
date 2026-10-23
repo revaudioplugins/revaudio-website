@@ -278,6 +278,14 @@ so much", "this is amazing"; `tools/_gas2-scene/page-b.html` on `feat/gas2-page`
   button says it), no claim that needs a footnote (no "one dial" when there are three controls).
 - Tuned at Dan's Safari 1141x636 and checked at 1440x900 / 1920x953: the column stays in the open sky.
 
+**A product page on a phone is rebuilt for portrait, never a crop of the desktop scene (the GAS 2 page, Dan
+2026-10-24).** Three ways of showing the wide station photo on a phone (a sideways swipe, a scroll-driven camera,
+stacked crops) "don't work for me"; the zoom-in on the plugin itself did ("very cool, I like the direction"). The
+recipe (`tools/_gas2-scene/phone.html`): the plugin's own render re-baked sharp for the zoom (its parts in the
+plugin's base px, its layer order), the globe as the name, the readings under the gauge, the plugin's own controls
+as the demo player, the posters and the mailbox as objects in their own frames, the station only as a soft backdrop.
+Why: a portrait phone shows a third of a 3:2 scene, the photo goes soft, and the props turn into hunt-the-hotspot.
+
 ## 8. Layout
 
 ```
