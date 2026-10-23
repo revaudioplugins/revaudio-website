@@ -108,3 +108,17 @@ that scales with the width, check the narrowest desktop width (~1000 px) too; sc
   Generic names (`tune`, `vol`, `on`, `open`, `key`) collide with the host page's CSS. Every class of a player that
   lives in another writer's page carries its prefix (`rp-`), states included where the host styles them; check an
   invisible part with `getBoundingClientRect()` first (0 x 0 = a host rule, not your code).
+
+## 2026-10-23 — GAS 2 page mockup (`danavivi-a3`): checking a page Dan views in Safari
+- A gradient layer that starts at a hard element edge shows as a "cut": the Dusk layer's top/bottom band had no
+  horizontal fade. My Chromium screenshots missed it by eye; a column-luminance scan across the band found it (a step of
+  ~9 at the layer's left edge). Rule: before showing any overlay / shadow layer, scan luminance across it (or the darkening
+  ratio against a layers-off render), and mask every layer so it fades out on all sides.
+- Never `screencapture` after activating Safari: it steals focus while Dan types and captured his editor instead of the
+  page. Rule: check Safari rendering offscreen with `wksnap` (`revaudio-shared/tools/wksnap/wksnap.swift`, built into the
+  scratchpad). It does not render `backdrop-filter`, so those layers need Chromium + Dan's eye.
+- A live-page bench (`?bench`) keeps its deltas in localStorage, so after an export is folded into the source they apply
+  on top again (doubled offsets). Rule: park the stored copy once behind a stamp (page-b's loader, `gas2page-b:folded`), and
+  set that stamp in probes that inject deltas, or the probe's fresh profile parks them too.
+- New TUNE defaults do nothing for a viewer whose localStorage already holds the old values. Rule: a new composition gets a
+  new storage key (`gas2page-b:tune2`).
