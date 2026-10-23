@@ -6,12 +6,15 @@
 
 /* the photo's own radio (and its old hotspot) gives way to the live one; page-b's .radio / .radioCap lose on #ids */
 #scene #radio { visibility: hidden; }
-#scene #radioCap { left: .5%; width: 24%; top: 67.8%; white-space: nowrap; }
+#scene #radioCap { left: .5%; width: 24%; top: 77.8%; white-space: nowrap; z-index: 3; }   /* on the porch floor, under the bench */
 
-/* the dock: centred where the photo's radio stands (frame x 192 of 1536), sitting on the bench (frame y 688 of 1024 =
-   44.79cqw); the radio's body is 936 x 555 plate px. --rs = the size against the photo's radio (230 px of frame = 15cqw) */
+/* a lower bench (Yoni 2026-10-23: "make the stool a bit lower"): the frame's own bench, its top moved from frame y 688
+   to 710 and the legs shortened to the same floor (tools/bench_patch.py); the frame file itself is untouched */
+.rp-bench { position: absolute; left: 3.776%; top: 67.1875%; width: 18.4896%; height: 10.1562%; z-index: 1; pointer-events: none; }
+/* the dock: centred where the photo's radio stands (frame x 192 of 1536), sitting on the lowered bench (frame y 710 of
+   1024 = 46.224cqw); the radio's body is 936 x 555 plate px. --rs = the size against the photo's radio (230 px = 15cqw) */
 .rp-dock { --rs: 1.3; --w: calc(15cqw * var(--rs)); position: absolute; left: calc(12.5cqw - var(--w) / 2);
-  top: calc(44.79cqw - var(--w) * 555 / 936); width: var(--w); aspect-ratio: 936 / 555; z-index: 2;
+  top: calc(46.224cqw - var(--w) * 555 / 936); width: var(--w); aspect-ratio: 936 / 555; z-index: 2;
   /* the porch lamp hangs up and to the right: the radio throws its shadow down-left onto the wall */
   filter: drop-shadow(-.45cqw .35cqw .5cqw rgba(14, 7, 3, .55)) drop-shadow(-.1cqw .1cqw .12cqw rgba(14, 7, 3, .5)); }
 .rp-dock::after { content: ""; position: absolute; left: 4%; right: 2%; bottom: -3%; height: 7%; z-index: -1;   /* contact shadow on the bench */

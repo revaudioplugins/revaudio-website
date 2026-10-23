@@ -142,3 +142,7 @@ Picks (Yoni): play / stop = a 3rd key on the radio + a red jewel lamp; Fly-in fr
 - Start = off ("Press play on the radio"); the caption under the bench says what's on air. Keyboard only while focus is
   on the radio (Space stays page scroll elsewhere).
 - Phone: still Dan's layout (the scene crops the radio off-screen).
+- Lower bench (Yoni 2026-10-23): `player/tools/bench_patch.py` makes `img/bench-low.webp` from the frame's own pixels
+  (top 688 -> 710 frame px, legs squashed to the same floor 792; the frame file untouched), laid under the radio;
+  the radio stands on 710 (46.224cqw). Caption moved to the porch floor (top 77.8 %). Dial prints ELEC. (the caption
+  keeps ELECTRONIC); sizes kept (Yoni: "keep the original size").

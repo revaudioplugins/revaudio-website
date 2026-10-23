@@ -12,7 +12,7 @@
   const STATIONS = [
     { id: 'hiphop', name: 'HIP HOP', a: 'audio/hiphop_before.m4a', b: 'audio/hiphop_after.m4a', gas: { grade: 'PREMIUM', amount: 140 } },   // Yoni's renders 2026-10-23
     { id: 'pop', name: 'POP', ...PH },
-    { id: 'electronic', name: 'ELECTRONIC', ...PH },
+    { id: 'electronic', name: 'ELECTRONIC', dial: 'ELEC.', ...PH },   // the dial prints ELEC. (Yoni 2026-10-23)
     { id: 'rock', name: 'ROCK', ...PH },   // 4 stations (Yoni 2026-10-23: hip hop, pop, electronic, rock)
   ];   // gas: { grade, amount } prints the mix's GAS 2 settings in the caption
 
@@ -26,7 +26,7 @@
       <img class="rp-off" src="${BASE}img/radio-off.webp" alt="" draggable="false">
       <img class="rp-lit" src="${BASE}img/radio-lit.webp" alt="" draggable="false">
       <div class="rp-px rp-glass"><i class="rp-glow"></i><i class="rp-scale"></i><i class="rp-ptr"></i>
-        <div class="rp-st">${STATIONS.map((s, i) => `<button type="button" data-st="${i}">${s.name}</button>`).join('')}</div></div>
+        <div class="rp-st">${STATIONS.map((s, i) => `<button type="button" data-st="${i}" aria-label="${s.name}">${s.dial || s.name}</button>`).join('')}</div></div>
       <div class="rp-px rp-well"></div>
       <button type="button" class="rp-key p" aria-label="Play / stop" aria-pressed="false"><span><svg viewBox="0 0 10 10"><path d="M1.5 .8 9 5 1.5 9.2z"/></svg><svg viewBox="0 0 10 10"><path d="M1.2 1.2h7.6v7.6H1.2z"/></svg></span></button>
       <button type="button" class="rp-key a" data-side="a" aria-pressed="true"><span>ORIGINAL</span></button>
@@ -36,7 +36,9 @@
       <i class="rp-jewel"></i>
       <span class="rp-eng" style="left:calc(345 * var(--u))">VOLUME</span><span class="rp-eng" style="left:calc(1013.5 * var(--u))">TUNING</span>
     </div></div>`;
-  scene.appendChild(dock);
+  const bench = document.createElement('img');   // the lower bench under it (radio.css .rp-bench)
+  bench.className = 'rp-bench'; bench.src = BASE + 'img/bench-low.webp'; bench.alt = ''; bench.draggable = false;
+  scene.appendChild(bench); scene.appendChild(dock);
   const q = s => dock.querySelector(s), qa = s => [...dock.querySelectorAll(s)];
   const plate = q('.rp-plate'), ptr = q('.rp-ptr');
   const knobVol = q('.rp-knob.rp-vol'), knobTune = q('.rp-knob.rp-tun');
