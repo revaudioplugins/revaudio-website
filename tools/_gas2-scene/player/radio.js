@@ -130,8 +130,8 @@
     ptr.style.left = (1.5 + 97 * (st + .5) / STATIONS.length) + '%';
     tuneTo(-100 + 200 * st / (STATIONS.length - 1)); knobTune.setAttribute('aria-valuenow', st + 1);
     const set = s.gas ? ` · ${s.gas.grade} ${s.gas.amount} %` : '';
-    if (sceneCap) sceneCap.innerHTML = !playing ? 'Press <em>play</em> on the radio'
-      : b ? `On air: ${s.name} · <em>GAS 2</em>${set}` : `On air: ${s.name} · <em>Original</em>`;
+    if (sceneCap) sceneCap.innerHTML = !playing ? '<span>Press <em>play</em> on the radio</span>'
+      : `<span>On air: ${s.name}</span><span>${b ? `<em>GAS 2</em>${set}` : '<em>Original</em>'}</span>`;
   };
 
   // ---------- hands ----------

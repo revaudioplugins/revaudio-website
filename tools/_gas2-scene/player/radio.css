@@ -6,7 +6,11 @@
 
 /* the photo's own radio (and its old hotspot) gives way to the live one; page-b's .radio / .radioCap lose on #ids */
 #scene #radio { visibility: hidden; }
-#scene #radioCap { left: .5%; width: 24%; top: 77.8%; white-space: nowrap; z-index: 3; }   /* on the porch floor, under the bench */
+/* the caption: on the porch floor under the bench, never wider than the radio (Yoni 2026-10-23: "contained in the
+   radio size"): the dock's own width and centre, two lines (the station, then the side + its settings) */
+#scene #radioCap { left: calc(12.5cqw - 15cqw * 1.3 / 2); width: calc(15cqw * 1.3); top: 77.4%; z-index: 3;
+  white-space: normal; letter-spacing: .14em; line-height: 1.35; }
+#scene #radioCap span { display: block; white-space: nowrap; overflow: hidden; text-overflow: clip; }
 
 /* a lower bench (Yoni 2026-10-23: "make the stool a bit lower"): the frame's own bench, its top moved from frame y 688
    to 710 and the legs shortened to the same floor (tools/bench_patch.py); the frame file itself is untouched */

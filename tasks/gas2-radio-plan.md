@@ -146,3 +146,4 @@ Picks (Yoni): play / stop = a 3rd key on the radio + a red jewel lamp; Fly-in fr
   (top 688 -> 710 frame px, legs squashed to the same floor 792; the frame file untouched), laid under the radio;
   the radio stands on 710 (46.224cqw). Caption moved to the porch floor (top 77.8 %). Dial prints ELEC. (the caption
   keeps ELECTRONIC); sizes kept (Yoni: "keep the original size").
+- Caption contained in the radio width (Yoni 2026-10-23): the dock's width + centre, two lines (station / side + settings); measured inside the radio at 1280 / 1440 / 1920.
