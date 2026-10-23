@@ -1,3 +1,21 @@
+## 2026-10-23 — GAS 2 page: window posters + light on the pump (Claude Code `danavivi-59`, Dan's Mac) — BRANCH `feat/gas2-page-s2` PUSHED, NOT IN `feat/gas2-page` YET
+
+Claim: OPEN. Files: in `tools/_gas2-scene/page-b.html` the posters (`.note.poster` `.pk/.pl/.ps`, were the notes `.n1-3`)
++ the pump light (`.pumpCut` / `.pumpLit`, TUNE → Spotlight script at the bottom); `props/poster-{knock,level,start}.webp`,
+`props/pump-cut.png`; the README owner line; DESIGN.md ("Posters IN the window", "Making one object pop").
+Worktree `.claude/worktrees/gas2-page-s2`, served on :4463 (session 1 keeps :4462). `feat/gas2-page` merged in at `b47fcc6`.
+- Pump: `pump-cut.png` = the pump traced from f6-v17 (globe ellipse + cap + body + base, same pixels), laid back over the
+  posters so the window art sits behind it; light on the pump only (soft-light top-down, masked to the cut-out, +4 %).
+  Dan toned it down twice ("this needs to be subtle", "just keep the light on the GAS 2 itself"): no cone, no pool, no dim.
+- Posters (Dan's lines + picks): NO KNOCK. NO KNOB. (fuel filter, knock #2) · FILL IT UP. SAME LEVEL. (auto-level, level #1)
+  · START EVERY MIX HERE. (first stop, start #2). gpt-image-2, 2 options each. Left pane one tall, right pane two wide,
+  inside the measured glass, no tape / shadow / blur. Unpicked options + prompts + generator: `tools/_gas2-scene/_posters-gen/`
+  in Dan's main clone (git-ignored).
+- Open: (1) bring this into `feat/gas2-page` on Dan's word (a fast-forward today: push `feat/gas2-page-s2` to
+  `feat/gas2-page`); (2) "SAME LEVEL" states auto-level as a claim: same "needs a measured check" as the entry below,
+  before it ships; (3) phones: the scene keeps its right edge, so the left-window poster is likely off-screen (not checked).
+- Note: the shell's `OPENAI_API_KEY` is stale (401); `tools/.openai_key.local` works.
+
 ## 2026-10-22 — GAS 2 page: the radio player (Claude Code `revaudio-cd`, Yoni's laptop 2) — ROUND 1 BUILT, waiting for Yoni's review
 
 Claim: OPEN. Files: `tools/_gas2-scene/player/**`, the radio block in `tools/_gas2-scene/page-b.html` (wire = one `<link>` +

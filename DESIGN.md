@@ -204,6 +204,18 @@ outside), only a paper edge and a curl shade at the loose corners; the paper tak
 every other prop; the glass sheen lies OVER the paper; the tape is translucent. A drop shadow on anything
 flat against a surface reads as floating.
 
+Posters IN the window (the GAS 2 page, Dan 2026-10-23, the notes became three 1950s gas posters: "smaller,
+fit the window better ... like it's stuck to the window, part of the picture, no need for tape", then "too
+blurred"): pasted flat inside the pane, so no tape, no shadow, near-square to the frame (≤ 0.4°); sized
+inside the measured pane glass with a margin, never touching the frame; they take the room's light (warm
+top, falling off to the sill) and a light glass sheen, and stay sharp: a blur reads as a bad photo, not
+depth. Poster copy = one short catchphrase per feature, period ad-speak (NO KNOCK. NO KNOB.).
+
+Making one object pop (the GAS 2 pump, Dan 2026-10-23: "tone down all ... this needs to be subtle", then
+"just keep the light on the GAS 2 itself"): light the object only, from its own motivated lamp (a soft
+warm top-down light masked to its cut-out + ~4% brightness); no light cone, no floor pool, no darkening
+of the rest of the scene. Start subtle and let Dan raise it.
+
 The smoke: two screen-blended haze plates (`public/bg/haze1.webp`, `haze2.webp`) on a fixed layer
 behind the page at 16% / 10% under a 40% `--bg-0` veil (25% on phones), so the dust in the lamp light
 reads through the hero and the translucent footer; solid section panels cover it. Off in `html.hc`.
