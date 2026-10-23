@@ -122,17 +122,17 @@ body.ng-tape .note::before, body.ng-tape .note::after { background: linear-gradi
 .price, .scw { display: none; }
 /* shared by neon / enamel / badge: the house honey button (buttons.css grammar, scaled to the scene) + the shine,
    a brighter lead, the Yellowtail line's soft amber glow (DESIGN.md §3) */
-body:not([data-look="0"]) .rd .cta { position: relative; isolation: isolate; overflow: hidden; justify-content: center;
+body[data-look] .rd .cta { position: relative; isolation: isolate; overflow: hidden; justify-content: center;
   min-height: max(52px, 4.4cqw); padding: 0 max(24px, 2.1cqw); border-radius: max(12px, 1.1cqw); gap: max(8px, .7cqw);
   font: 700 max(16px, 1.4cqw)/1 Inter; letter-spacing: -.01em; background: #f2be4a; color: #1e1710;
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 1), inset 0 -2px 0 hsl(38 85% 34% / .2), 0 1px 0 #5f4311, 0 2px 3px rgb(0 0 0 / .45), 0 2.8cqw 3.2cqw rgb(0 0 0 / .3);
   transition: transform .16s, box-shadow .16s, background-color .16s; }
-body:not([data-look="0"]) .rd .cta:hover { background: #f6c95e; transform: translateY(-1px); }
-body:not([data-look="0"]) .rd .cta:active { background: #eab53f; transform: translateY(1px); transition-duration: .08s; }
-body:not([data-look="0"]) .rd .cta::after { content: ""; position: absolute; inset: 0 auto 0 0; z-index: -1; width: 28%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent); transform: translateX(-160%) skewX(-20deg); animation: shine 8s ease-in-out 1.2s infinite; pointer-events: none; }
+body[data-look] .rd .cta:hover { background: #f6c95e; transform: translateY(-1px); }
+body[data-look] .rd .cta:active { background: #eab53f; transform: translateY(1px); transition-duration: .08s; }
+body[data-look] .rd .cta::after { content: ""; position: absolute; inset: 0 auto 0 0; z-index: -1; width: 28%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent); transform: translateX(-160%) skewX(-20deg); animation: shine 8s ease-in-out 1.2s infinite; pointer-events: none; }
 @keyframes shine { 0% { transform: translateX(-160%) skewX(-20deg); } 17.5%, 100% { transform: translateX(418%) skewX(-20deg); } }
 body:not([data-look="0"]) .rd .lead { color: rgba(239, 233, 223, .9); }
-body:not([data-look="0"]) .rd .scr { text-shadow: 0 0 .9cqw rgba(232, 200, 120, .35); }
+body[data-look] .rd .scr { text-shadow: 0 0 .9cqw rgba(232, 200, 120, .35); }
 
 /* A · NEON: GAS 2 is a lit tube sign on a steel sign-can (a neon sign IS a lamp, so it may glow and spill) */
 [data-look="a"] .rd::before { background: radial-gradient(closest-side, rgba(18,8,4,.62), rgba(18,8,4,.36) 62%, transparent); }
@@ -245,13 +245,23 @@ footer { padding: 40px 6vw; border-top: 1px solid #2a1c10; color: var(--dim); fo
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 /* ?bench: the shared bench harness (bench.js) docks its 272px panel on the LEFT on this page: the readings live on the right edge */
 html.benching .bench-panel { right: auto !important; left: 0 !important; border-left: 0 !important; border-right: 1px solid #2c313a !important; }
-/* ═══ bench 2026-10-22 (Dan's exports bench-deltas-page-b-2026-10-22-13-58 + -14-10, folded at his 1141x636) ═══ */
-.rd { margin: -6.59cqw 0 0 -2.818cqw; }
+/* ═══ readings · composition 2 (Dan 2026-10-23: "fill up all the space", "readings bigger", "a new composition",
+   "⤓ Download FREE", "GAS 2 in the same font and style as the plugin's HEADER") ═══
+   One centred column in the open sky right of the canopy (replaces the two 2026-10-22 bench rounds' offsets).
+   The title IS the pump globe's lockup (GAS2 repo bench/pump-render.js texGlobeLens: GAS2 set tight in Oswald 700,
+   the 2 in oxide, an oxide rule under it), turned light-on-dark for the dusk sky. */
+.rd { width: 31%; text-align: center; }
+.rd::before { inset: -12% -16% -14% -16%; background: radial-gradient(closest-side, rgba(18,8,4,.72), rgba(18,8,4,.44) 60%, transparent); }
+.rd .ti { justify-content: center; }
 body[data-look] .rd .free { display: none; }
-body[data-look] .rd .lead { font-family: Bebas; color: #f6c85d; margin-top: .408cqw; }
-body[data-look] .rd .cta { margin-top: .664cqw; }
-.rd .scr { font-size: 2.771cqw; margin: .517cqw 0 0 -.657cqw; }
-/* ═══ end bench ═══ */
+body[data-look="0"] .rd .n { position: relative; font: 700 13.5cqw/.84 Oswald; letter-spacing: .02em; color: #efe3c6; padding-bottom: 1.5cqw;
+  text-shadow: 0 .22cqw 0 rgba(20, 10, 4, .55), 0 .4cqw 2.2cqw rgba(0, 0, 0, .45); }
+body[data-look="0"] .rd .n .two { color: #b8341e; }
+body[data-look="0"] .rd .n::after { content: ""; position: absolute; left: 5%; right: 5%; bottom: 0; height: .75cqw; background: #b8341e; box-shadow: 0 .18cqw 0 rgba(20, 10, 4, .5); }
+body[data-look] .rd .lead { margin: 1.9cqw auto 0; max-width: none; font: 400 2.25cqw/1.1 Bebas; letter-spacing: .05em; color: #f6c85d; }
+body[data-look] .rd .cta { margin-top: 2cqw; min-height: max(56px, 5cqw); padding: 0 max(28px, 3cqw); font: 700 max(17px, 1.8cqw)/1 Inter; border-radius: max(14px, 1.2cqw); gap: max(8px, .8cqw); }
+.rd .scr { display: block; margin: 1.3cqw 0 0 9cqw; font: 400 4.4cqw/1 Yellowtail; transform: rotate(-6deg); }
+/* ═══ end composition 2 ═══ */
 </style>
 </head>
 <body>
@@ -311,11 +321,11 @@ body[data-look] .rd .cta { margin-top: .664cqw; }
     <section class="abs rd" aria-label="GAS 2">
       <i class="scw" style="--a:13deg;left:1.2cqw;top:1.2cqw"></i><i class="scw" style="--a:-7deg;right:1.2cqw;top:1.2cqw"></i>
       <i class="scw" style="--a:19deg;left:1.2cqw;bottom:1.2cqw"></i><i class="scw" style="--a:-24deg;right:1.2cqw;bottom:1.2cqw"></i>
-      <div class="ti"><h1 class="n" style="margin:0">GAS 2</h1><div class="free">FREE</div>
+      <div class="ti"><h1 class="n" style="margin:0" aria-label="GAS 2">GAS<span class="two">2</span></h1><div class="free">FREE</div>
         <div class="price" aria-label="Price per gallon: $0.00, free"><span class="pl">FREE · PER GALLON</span>
           <span class="reels" aria-hidden="true"><b>$</b><i class="reel" data-to="0"></i><b>.</b><i class="reel" data-to="0"></i><i class="reel" data-to="0"></i></span></div></div>
       <p class="lead">Thicker, smoother, glued master.</p>
-      <button class="cta" id="cta">⤓ Download free</button>
+      <button class="cta" id="cta">⤓ Download FREE</button>
       <div class="scr">Fill it up.</div>
     </section>
   </div>
@@ -417,7 +427,7 @@ body[data-look] .rd .cta { margin-top: .664cqw; }
   const ngApply = () => { NGK.forEach(k => document.body.classList.toggle('ng-' + k, !!ng[k])); document.querySelectorAll('#t-ng input').forEach(i => i.checked = !!ng[i.dataset.ng]); try { localStorage.setItem(NG, JSON.stringify(ng)); } catch {} };
   document.querySelectorAll('#t-ng input').forEach(i => i.onchange = () => { ng[i.dataset.ng] = i.checked ? 1 : 0; ngApply(); });
   ngApply();
-  const D = { rdx: 67.5, rdy: 0, rds: 1 }, K = 'gas2page-b:tune';
+  const D = { rdx: 64.5, rdy: 0, rds: 1 }, K = 'gas2page-b:tune2'; // tune2 = composition 2's own start (2026-10-23)
   let v = { ...D }; try { Object.assign(v, JSON.parse(localStorage.getItem(K) || '{}')); } catch {}
   const rd = document.querySelector('.rd'), panel = document.getElementById('tune');
   const apply = () => {
