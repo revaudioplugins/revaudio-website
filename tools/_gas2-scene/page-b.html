@@ -260,7 +260,12 @@ body[data-look="0"] .rd .n .two { color: #b8341e; }
 body[data-look="0"] .rd .n::after { content: ""; position: absolute; left: 5%; right: 5%; bottom: 0; height: .75cqw; background: #b8341e; box-shadow: 0 .18cqw 0 rgba(20, 10, 4, .5); }
 body[data-look] .rd .lead { margin: 1.9cqw auto 0; max-width: none; font: 400 2.25cqw/1.1 Bebas; letter-spacing: .05em; color: #f6c85d; }
 body[data-look] .rd .cta { margin-top: 2cqw; min-height: max(56px, 5cqw); padding: 0 max(28px, 3cqw); font: 700 max(17px, 1.8cqw)/1 Inter; border-radius: max(14px, 1.2cqw); gap: max(8px, .8cqw); }
-.rd .scr { display: block; margin: 1.3cqw 0 0 9cqw; font: 400 4.4cqw/1 Yellowtail; transform: rotate(-6deg); }
+.rd .scr { display: block; margin: 1.3cqw 0 0 9cqw; font: 400 4.4cqw/1 Yellowtail; transform: rotate(-6deg); transition: color .15s, text-shadow .15s, transform .15s; }
+/* the signature lights up with the button (Dan 2026-10-23: "when I hover the Download button it lights up, I want the same on Fill it up") */
+@media (hover: hover) {
+  body[data-look] .rd:has(.cta:hover) .scr, body[data-look] .rd .scr:hover { color: #fbe0a0; transform: rotate(-6deg) translateY(-1px);
+    text-shadow: 0 0 .5cqw rgba(255, 216, 140, .55), 0 0 1.8cqw rgba(242, 190, 74, .5); }
+}
 /* ═══ end composition 2 ═══ */
 </style>
 </head>
