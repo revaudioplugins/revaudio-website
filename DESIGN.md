@@ -67,6 +67,15 @@ neon or glow without a lamp (a neon sign IS a lamp: the DRIFT panel's lit tube m
 - Script accent: Yellowtail (retro car-badge script), `--brass-bright` with a soft amber glow, for ONE short
   line under a section title, never body copy. First use: the /gas "Hear it" line "Hit play. Give it gas."
   (2026-10-19, picked over a marker and a typewriter look: "shorter and sexier").
+  Second use: the GAS 2 page's "Fill it up." as a signature under the hero button (§7), tilted -6deg,
+  offset right. Still ONE script line per screen.
+- **A product name wears its plugin's own header lockup (Dan 2026-10-23).** The title on a product page is
+  set in the face, colour split and rule of the plugin's own header, lifted from the plugin's render code,
+  never the house Bebas: GAS 2 = the pump globe's GAS2 (Oswald 700, set tight, the 2 in oxide, an oxide
+  rule under it; GAS2 repo `bench/pump-render.js` texGlobeLens), turned light-on-dark on a dark photo
+  (GAS in parchment `#efe3c6`, the 2 and the rule `#b8341e`; the rule sits ~.13em under the letters (Dan
+  2026-10-23, by eye: 2.5 px touching -> 29 px too much -> 20 px), never touching them). Why: the page and the plugin read as the same
+  object; the site's display face made the name generic.
 - Painted copy erodes with wear: stencil words on the wall are outlined brass that fills on hover;
   the filled word is `--oxide-text`, never race-red (Law 5 + one-hero rule).
 - Kickers (`.hh-tag`, `.sk-tag`, `.ww-tag`): mono, letter-spaced 0.3em, `--brass`.
@@ -189,6 +198,12 @@ over the first 32% of height, plus a 38% `--bg-0` scrim so parchment ink passes 
 Shadow stack (all raised parts): `0 1px 0 #000` contact + `0 8-24px 24-48px rgba(0,0,0,.5-.6)`.
 Hover: lift 1px + shadow grows; press: return, 2px max travel.
 
+Paper ON glass (the GAS 2 page's window notes, Dan 2026-10-22: "the notes are hovering, I want them to
+feel like they're on the glass"): no drop shadow (paper taped to a window throws none you can see from
+outside), only a paper edge and a curl shade at the loose corners; the paper takes the scene's grade like
+every other prop; the glass sheen lies OVER the paper; the tape is translucent. A drop shadow on anything
+flat against a surface reads as floating.
+
 The smoke: two screen-blended haze plates (`public/bg/haze1.webp`, `haze2.webp`) on a fixed layer
 behind the page at 16% / 10% under a 40% `--bg-0` veil (25% on phones), so the dust in the lamp light
 reads through the hero and the translucent footer; solid section panels cover it. Off in `html.hc`.
@@ -210,6 +225,25 @@ THE hero is the gauge medallion with "Engineered, Then Tuned." over it. One glan
 red sweep under the headline, "Boutique plugins" above. Everything below is the walk through the
 garage: rack, stencil wall, the sign, the clipboard, the door. No second hero, no metric grid, no
 card grid.
+
+**Product-page hero = "the readings" (canon: the GAS 2 page, composition 2; Dan 2026-10-23: "I love you
+so much", "this is amazing"; `tools/_gas2-scene/page-b.html` on `feat/gas2-page`).** The vibe to repeat:
+- **Fill the open space.** One centred column sized to the scene's empty area (GAS 2: the dusk sky right
+  of the canopy, 31 % of the scene wide), everything BIG; no small left-aligned text block floating in it.
+  No scrim shape behind the column (the radial circle was rejected 2026-10-23: "not a regular circle ... a premium
+  shadow"). The shadow HUGS THE WORDS: per letter a contact shadow, an even close halo and a short soft drop
+  (CSS drop-shadow on the title, the line and the script); the general shadow stays faint (the sky behind the
+  column a touch out of focus and ~15 % down, feathered with no edge; the frame edges ~5-8 % darker). Every
+  layer fades out on all sides: a gradient band that starts at a hard element edge reads as a cut (Dan,
+  same day). Approved: "really cool, I like it".
+- **Four parts, top to bottom, nothing else:** the name in the plugin's header lockup (§3), huge
+  (13.5 cqw); ONE outcome line in Bebas, honey `#f6c85d`, letter-spaced .05em ("THICKER, SMOOTHER, GLUED
+  MASTER."); the house honey button, large, with the shine, "⤓ Download FREE" (FREE in caps on a free
+  product; the label in the title's own face, Oswald 700, case exactly as written: Dan 2026-10-23,
+  the one exception to the family's Inter label); the Yellowtail signature line under it ("Fill it up.").
+- **Copy: punchy and minimal.** No tagline when the signature carries it, no spec line, no FREE tag (the
+  button says it), no claim that needs a footnote (no "one dial" when there are three controls).
+- Tuned at Dan's Safari 1141x636 and checked at 1440x900 / 1920x953: the column stays in the open sky.
 
 ## 8. Layout
 
