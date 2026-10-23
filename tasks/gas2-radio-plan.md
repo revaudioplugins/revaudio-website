@@ -149,3 +149,10 @@ Picks (Yoni): play / stop = a 3rd key on the radio + a red jewel lamp; Fly-in fr
 - Caption contained in the radio width (Yoni 2026-10-23): the dock's width + centre, two lines (station / side + settings); measured inside the radio at 1280 / 1440 / 1920.
 - Room from the pump (Yoni 2026-10-23, picked "slide the radio left" over moving Dan's pump): radio + bench + caption 23 frame px left (centre 11.0026cqw; bench_patch.py DX); the strip the bench leaves = the clean stucco + floor between the old right leg and the pump (x 323..346). Gap to the pump ~30 px at 1440.
 - Key depth fixed (Yoni 2026-10-23: pressed keys read as UP): brightness reads as raised, so a pressed key now sinks 11u into its slot (dark gap above, lip shade, bottom clipped behind the lower lip) and glows amber from its base without extra brightness; an up key has a lit top bevel + a cast shadow below. Same for PLAY/STOP, ORIGINAL, GAS 2.
+- Keys keep their size (Yoni 2026-10-23: "keep the before sizes, just flip the up/down"): no clip; pressed = 5u lower +
+  the slot's shade on top + an amber glow from the base; up = lit top bevel + cast shadow.
+- Radio 20 % smaller (Yoni: room from the page edge): --rs 1.04, back on the bench's own centre (12.5cqw, DX 0); left
+  edge 68 px in at 1440, pump gap ~38 frame px. The photo radio no longer hides under it, so `gen_noradio.py` makes a
+  masked gpt-image-1 edit of the frame with the radio, its shadow AND the old bench removed (box 52..349 x 515..796,
+  2 runs ~$0.4); `bench_patch.py` cuts `img/noradio.webp` from it and lays the lowered bench back on top. The frame file
+  is untouched. Text at 1.04x: dial 6.4 / 7.2 / 9.6 px at 1280 / 1440 / 1920 (keys 6-10, VOLUME/TUNING 4.9-7.4).

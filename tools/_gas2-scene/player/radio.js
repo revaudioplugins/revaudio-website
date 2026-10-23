@@ -38,7 +38,9 @@
     </div></div>`;
   const bench = document.createElement('img');   // the lower bench under it (radio.css .rp-bench)
   bench.className = 'rp-bench'; bench.src = BASE + 'img/bench-low.webp'; bench.alt = ''; bench.draggable = false;
-  scene.appendChild(bench); scene.appendChild(dock);
+  const noradio = document.createElement('img');   // the photo radio's spot without it (radio.css .rp-noradio)
+  noradio.className = 'rp-noradio'; noradio.src = BASE + 'img/noradio.webp'; noradio.alt = ''; noradio.draggable = false;
+  scene.appendChild(noradio); scene.appendChild(bench); scene.appendChild(dock);
   const q = s => dock.querySelector(s), qa = s => [...dock.querySelectorAll(s)];
   const plate = q('.rp-plate'), ptr = q('.rp-ptr');
   const knobVol = q('.rp-knob.rp-vol'), knobTune = q('.rp-knob.rp-tun');
