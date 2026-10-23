@@ -68,8 +68,8 @@ body.ng-tape .note::before, body.ng-tape .note::after { background: linear-gradi
    will pop out") ═══
    The pump is painted into the frame, so props/pump-cut.png (traced from f6-v17, the same pixels) is laid back over it
    AFTER the notes: they slide behind its edge, and its soft shadow fades them where they meet it. FADE = thinner paper
-   (the lit shop shows through) and a little less light on it. The light is motivated: the lamp hanging right above
-   the pump throws a cone down onto it and a pool at its foot, and the rest of the lot drops a stop.
+   (the lit shop shows through) and a little less light on it. The light is the lamp hanging right above the pump,
+   on the pump only (Dan, same day: "a little less, just keep the light on the GAS 2 itself": no cone, no pool, no dim).
    All of it is TUNE → Spotlight (COPY = the numbers to bake); the defaults live in the script at the bottom. */
 .note { opacity: var(--nf-o, 1); }
 .pumpCut { left: 21.289%; top: 20.215%; width: 17.643%; pointer-events: none; user-select: none;
@@ -77,15 +77,6 @@ body.ng-tape .note::before, body.ng-tape .note::after { background: linear-gradi
 .pumpLit { left: 21.289%; top: 20.215%; width: 17.643%; height: 61.523%; pointer-events: none; mix-blend-mode: soft-light; opacity: var(--sp-l, 0);
   background: linear-gradient(180deg, rgba(255, 214, 150, .95) 0%, rgba(255, 200, 130, .5) 42%, transparent 88%);
   -webkit-mask: url(props/pump-cut.png) 0 0 / 100% 100% no-repeat; mask: url(props/pump-cut.png) 0 0 / 100% 100% no-repeat; }
-.spot { inset: 0; pointer-events: none; }
-.spot i { position: absolute; inset: 0; }
-.spot .sd { background: radial-gradient(ellipse 40% 62% at 30.2% 52%, rgba(12, 6, 3, 0) 30%, rgba(12, 6, 3, var(--sp-d, 0)) 100%); }
-.spot .sc { mix-blend-mode: screen; opacity: var(--sp-c, 0); /* the cone: straight down from the lamp shade */
-  background: conic-gradient(from 163deg at 31.2% 13%, transparent 0deg, rgba(255, 196, 120, .5) 9deg, rgba(255, 196, 120, .5) 25deg, transparent 34deg);
-  -webkit-mask: linear-gradient(180deg, transparent 13%, #000 18%, rgba(0, 0, 0, .45) 62%, transparent 90%);
-  mask: linear-gradient(180deg, transparent 13%, #000 18%, rgba(0, 0, 0, .45) 62%, transparent 90%); }
-.spot .sp { mix-blend-mode: screen; opacity: var(--sp-c, 0); background: radial-gradient(ellipse 17% 5.5% at 30.4% 81.5%, rgba(255, 190, 110, .7), transparent); }
-.radioCap, .mailCap, .pumpTip, .gradeTip { z-index: 1; } /* the captions stay above the dim */
 /* ═══ end spotlight ═══ */
 
 /* 3. the radio = the GAS 2 player */
@@ -341,8 +332,6 @@ body[data-look] .rd .cta { margin-top: 2cqw; min-height: max(56px, 5cqw); paddin
         <div class="p"><span>RACE</span><span>0.00</span></div>
       </div>
     </div>
-    <!-- the lamp over the pump: cone + pool, the rest of the lot a stop down -->
-    <div class="abs spot" aria-hidden="true"><i class="sd"></i><i class="sc"></i><i class="sp"></i></div>
 
     <!-- readings -->
     <section class="abs rd" aria-label="GAS 2">
@@ -498,10 +487,10 @@ if (/[?&]bench\b/.test(location.search)) {
 }
 </script>
 <script>
-// TUNE → Spotlight: the pump's light + the notes' fade. ?spot=0 = all off (A/B screenshots); COPY = the numbers to bake
+// TUNE → Spotlight: the light on the pump + the notes' fade. ?spot=0 = all off (A/B screenshots); COPY = the numbers to bake
 (() => {
-  const D = { dim: .2, light: .35, pump: 1.05, shadow: .35, fade: .2 }, K = 'gas2page-b:spot2'; // spot2 = the subtle start (Dan 2026-10-23: "tone it all down, this needs to be subtle")
-  const S = [['dim', 'Dim', 0, .8, .01], ['light', 'Light', 0, 1, .01], ['pump', 'Pump', 1, 1.3, .01], ['shadow', 'Shadow', 0, 1, .01], ['fade', 'Fade', 0, 1, .01]];
+  const D = { light: .3, pump: 1.04, shadow: .3, fade: .15 }, K = 'gas2page-b:spot3'; // spot3 = light on the pump only (Dan 2026-10-23)
+  const S = [['light', 'Light', 0, 1, .01], ['pump', 'Pump', 1, 1.3, .01], ['shadow', 'Shadow', 0, 1, .01], ['fade', 'Fade', 0, 1, .01]];
   let v = { ...D }, on = 1; try { Object.assign(v, JSON.parse(localStorage.getItem(K) || '{}')); } catch {}
   const q = new URLSearchParams(location.search).get('spot'); if (q === '0') on = 0;
   const sc = document.getElementById('scene'), box = document.createElement('div');
@@ -510,8 +499,8 @@ if (/[?&]bench\b/.test(location.search)) {
     + '<div class="row"><button id="sp-reset">Reset</button><button id="sp-copy">Copy</button></div>';
   document.getElementById('tune').appendChild(box);
   const apply = () => {
-    const x = on ? v : { dim: 0, light: 0, pump: 1, shadow: 0, fade: 0 };
-    sc.style.setProperty('--sp-d', x.dim); sc.style.setProperty('--sp-c', x.light); sc.style.setProperty('--sp-l', x.light);
+    const x = on ? v : { light: 0, pump: 1, shadow: 0, fade: 0 };
+    sc.style.setProperty('--sp-l', x.light);
     sc.style.setProperty('--sp-b', x.pump); sc.style.setProperty('--sp-k', 1 + (x.pump - 1) * .5); sc.style.setProperty('--sp-s', x.shadow);
     sc.style.setProperty('--nf-o', 1 - .3 * x.fade); sc.style.setProperty('--nf-b', .86 - .16 * x.fade);
     document.getElementById('sp-on').checked = !!on;
