@@ -9,13 +9,12 @@
   // PLACEHOLDER until Yoni's renders exist: every station plays the GAS mixer loops (-17 LUFS both sides).
   const PH = { a: 'audio/placeholder_before.m4a', b: 'audio/placeholder_after.m4a', gas: null };
   const STATIONS = [
-    { id: 'hiphop', name: 'HIP HOP', ...PH },
+    { id: 'hiphop', name: 'HIP HOP', a: 'audio/hiphop_before.m4a', b: 'audio/hiphop_after.m4a', gas: null },   // Yoni's renders 2026-10-23 (prep_audio.py)
     { id: 'electronic', name: 'ELECTRONIC', ...PH },
     { id: 'rock', name: 'ROCK', ...PH },
     { id: 'trap', name: 'TRAP', ...PH },
     { id: 'folk', name: 'FOLK', ...PH },
   ];   // gas: { grade: 'PREMIUM', amount: 140 } prints the mix's GAS 2 settings in the caption
-  const placeholder = STATIONS.every(s => s.a === PH.a);
 
   // ---------- the close-up ----------
   const veil = document.createElement('div');
@@ -29,15 +28,17 @@
       <div class="rp-px rp-glass"><i class="rp-glow"></i><i class="rp-scale"></i><i class="rp-ptr"></i>
         <div class="rp-st">${STATIONS.map((s, i) => `<button type="button" data-st="${i}">${s.name}</button>`).join('')}</div></div>
       <div class="rp-px rp-well"></div>
+      <button type="button" class="rp-key p" aria-label="Play / stop" aria-pressed="false"><span><svg viewBox="0 0 10 10"><path d="M1.5 .8 9 5 1.5 9.2z"/></svg><svg viewBox="0 0 10 10"><path d="M1.2 1.2h7.6v7.6H1.2z"/></svg></span></button>
       <button type="button" class="rp-key a" data-side="a" aria-pressed="true"><span>ORIGINAL</span></button>
       <button type="button" class="rp-key b" data-side="b" aria-pressed="false"><span>GAS 2</span></button>
       <div class="rp-knob rp-vol" role="slider" tabindex="0" aria-label="Volume" aria-valuemin="0" aria-valuemax="100"><i></i></div>
       <div class="rp-knob rp-tun" role="slider" tabindex="0" aria-label="Tuning" aria-valuemin="1" aria-valuemax="${STATIONS.length}"><i></i></div>
-      <span class="rp-eng" style="left:calc(342 * var(--u))">VOLUME</span><span class="rp-eng" style="left:calc(1014 * var(--u))">TUNING</span>
+      <i class="rp-jewel"></i><i class="rp-eye"><canvas></canvas></i>
+      <span class="rp-eng" style="left:calc(345 * var(--u))">VOLUME</span><span class="rp-eng" style="left:calc(1013.5 * var(--u))">TUNING</span>
     </div></div>
     <div class="rp-tags">${STATIONS.map((s, i) => `<button type="button" data-st="${i}" style="--r:${[-1.5, 1, -.5, 1.5, -1][i]}deg">${s.name}</button>`).join('')}</div>
     <div class="rp-cap" aria-live="polite"></div>
-    <div class="rp-hint">A / B switch · 1-5 stations · Space play / stop${placeholder ? ' · placeholder audio' : ''}</div>`;
+    <div class="rp-hint">A / B switch · 1-5 stations · Space play / stop<span class="rp-ph"> · placeholder audio</span></div>`;
   document.body.appendChild(veil);
   const q = s => veil.querySelector(s), qa = s => [...veil.querySelectorAll(s)];
   const plate = q('.rp-plate'), cap = q('.rp-cap'), ptr = q('.rp-ptr');
@@ -47,13 +48,14 @@
   let st = 0, side = 'a', playing = false, vol = .8;
 
   // ---------- the engine: both sides of a mix play in sync, the keys only move two gains ----------
-  let ac, bus, master, gA, gB, srcs = [], cache = new Map(), token = 0;
+  let ac, bus, master, gA, gB, an, srcs = [], cache = new Map(), token = 0;
   const ensure = () => {
     if (ac) { if (ac.state === 'suspended') ac.resume(); return; }
     ac = new (window.AudioContext || window.webkitAudioContext)();
     master = ac.createGain(); master.connect(ac.destination);
     bus = ac.createGain(); bus.connect(master);
     gA = ac.createGain(); gB = ac.createGain(); gA.connect(bus); gB.connect(bus);
+    an = ac.createAnalyser(); an.fftSize = 2048; bus.connect(an);   // the magic eye listens after the keys, before volume
     setVol(vol);
   };
   const buf = url => {
@@ -110,18 +112,57 @@
   const render = () => {
     const s = STATIONS[st], b = side === 'b';
     plate.classList.toggle('on', playing); plate.classList.toggle('b', playing && b);
-    qa('.rp-key').forEach(k => { const d = k.dataset.side === side; k.classList.toggle('down', d); k.setAttribute('aria-pressed', d); });
+    qa('.rp-key[data-side]').forEach(k => { const d = k.dataset.side === side; k.classList.toggle('down', d); k.setAttribute('aria-pressed', d); });
+    const pk = q('.rp-key.p'); pk.classList.toggle('down', playing); pk.setAttribute('aria-pressed', playing);
+    if (playing) eyeLoop();
     qa('[data-st]').forEach(x => x.classList.toggle('on', +x.dataset.st === st));
     ptr.style.left = (2 + 96 * (st + .5) / STATIONS.length) + '%';
     knobTune.style.setProperty('--a', (-100 + 200 * st / (STATIONS.length - 1)) + 'deg'); knobTune.setAttribute('aria-valuenow', st + 1);
     const set = s.gas ? `${s.gas.grade} · GAS ${s.gas.amount} %` : 'on the master';
     cap.innerHTML = !playing ? 'Off · tap a station' : b ? `On air: ${s.name} · <em>GAS 2</em> ${set}` : `On air: ${s.name} · <em>Original</em> · press GAS 2`;
+    q('.rp-ph').hidden = s.a !== PH.a;
     if (radio) { radio.classList.toggle('on', playing); radio.classList.toggle('b', playing && b); }
     if (sceneCap) sceneCap.innerHTML = playing ? `On air: <em>${b ? 'GAS 2' : 'ORIGINAL'}</em> · ${s.name}` : 'Tap the radio';
   };
 
   // ---------- hands ----------
-  qa('.rp-key').forEach(k => k.addEventListener('click', () => setSide(k.dataset.side)));
+  qa('.rp-key[data-side]').forEach(k => k.addEventListener('click', () => setSide(k.dataset.side)));
+  q('.rp-key.p').addEventListener('click', () => (playing ? stop() : play()));
+
+  // ---------- the magic eye: an EM34-style green fan whose dark shadow closes as the music gets louder ----------
+  const eyeC = q('.rp-eye canvas'), eyeX = eyeC.getContext('2d');
+  let eyeRaf = 0, lvl = 0, tbuf;
+  const eyeSize = () => { const r = eyeC.getBoundingClientRect(), d = Math.max(16, Math.round(r.width * (window.devicePixelRatio || 1))); if (eyeC.width !== d) eyeC.width = eyeC.height = d; };
+  const drawEye = open => {
+    const W = eyeC.width, c = W / 2, r0 = c * .36, r1 = c * .95, th = (52 - 46 * open) * Math.PI / 180;
+    eyeX.clearRect(0, 0, W, W);
+    let g = eyeX.createRadialGradient(c, c * .9, 0, c, c, c); g.addColorStop(0, '#10261a'); g.addColorStop(1, '#07120b');
+    eyeX.fillStyle = g; eyeX.beginPath(); eyeX.arc(c, c, c, 0, 7); eyeX.fill();
+    g = eyeX.createRadialGradient(c, c, r0, c, c, r1);
+    g.addColorStop(0, 'rgba(170,255,185,.96)'); g.addColorStop(.45, 'rgba(84,236,128,.88)'); g.addColorStop(1, 'rgba(22,128,64,.55)');
+    const a0 = -Math.PI / 2 + th, a1 = Math.PI * 1.5 - th;
+    eyeX.fillStyle = g; eyeX.beginPath(); eyeX.arc(c, c, r1, a0, a1); eyeX.arc(c, c, r0, a1, a0, true); eyeX.closePath(); eyeX.fill();
+    eyeX.strokeStyle = 'rgba(200,255,210,.75)'; eyeX.lineWidth = Math.max(1, W / 70);   // the bright edges of the shadow
+    [a0, a1].forEach(a => { eyeX.beginPath(); eyeX.moveTo(c + Math.cos(a) * r0, c + Math.sin(a) * r0); eyeX.lineTo(c + Math.cos(a) * r1, c + Math.sin(a) * r1); eyeX.stroke(); });
+    g = eyeX.createRadialGradient(c * .9, c * .85, 0, c, c, r0 * .9); g.addColorStop(0, '#3a2c1e'); g.addColorStop(1, '#140d08');
+    eyeX.fillStyle = g; eyeX.beginPath(); eyeX.arc(c, c, r0 * .86, 0, 7); eyeX.fill();   // the cathode cap
+    g = eyeX.createLinearGradient(0, 0, W * .6, W * .6); g.addColorStop(0, 'rgba(235,245,230,.22)'); g.addColorStop(1, 'rgba(235,245,230,0)');
+    eyeX.fillStyle = g; eyeX.beginPath(); eyeX.ellipse(c * .72, c * .62, c * .5, c * .3, -.6, 0, 7); eyeX.fill();   // the glass, lit from the upper left
+  };
+  const eyeLoop = () => {
+    if (eyeRaf) return;
+    eyeSize();
+    const step = () => {
+      if (!playing || !an) { eyeRaf = 0; return; }
+      tbuf = tbuf || new Float32Array(an.fftSize); an.getFloatTimeDomainData(tbuf);
+      let e = 0; for (let i = 0; i < tbuf.length; i++) e += tbuf[i] * tbuf[i];
+      const db = 10 * Math.log10(e / tbuf.length + 1e-12), t = Math.min(1, Math.max(0, (db + 34) / 26));
+      lvl += (t - lvl) * (t > lvl ? .45 : .07);   // fast attack, slow release: the tube's own ballistics
+      drawEye(lvl); eyeRaf = requestAnimationFrame(step);
+    };
+    eyeRaf = requestAnimationFrame(step);
+  };
+  addEventListener('resize', eyeSize);
   qa('[data-st]').forEach(x => x.addEventListener('click', () => tune(+x.dataset.st)));
   // knobs: drag up / right = clockwise, 1:1 (no transition while the hand is on it); wheel and arrow keys too
   const knob = (el, onDelta) => {
@@ -136,9 +177,36 @@
   knob(knobVol, (d, acc) => { setVol(vol + d / 220); return 0; });
   knob(knobTune, (d, acc) => { acc += d; if (Math.abs(acc) >= 40) { tune(st + Math.sign(acc)); return 0; } return acc; });   // detents
 
-  const open = () => { veil.classList.add('open'); if (!playing) play(); else render(); setTimeout(() => q('.rp-key.b').focus({ preventScroll: true }), 250); };
-  const close = () => veil.classList.remove('open');
+  // the camera flies from the radio on the bench into the close-up, and back out (one tween, the house curve; a
+  // radio the scene has cropped off-screen, e.g. on a phone, just fades)
+  const view = q('.rp-view');
+  const flightFrom = () => {
+    const r = radio && radio.getBoundingClientRect();
+    if (!r || r.right < 0 || r.left > innerWidth || r.bottom < 0 || r.top > innerHeight) return null;
+    view.classList.remove('fly'); const t0 = view.style.transform; view.style.transform = 'none';
+    const V = view.getBoundingClientRect(), cs = getComputedStyle(view), cw = +cs.getPropertyValue('--cw'), cx = +cs.getPropertyValue('--cx'), cy = +cs.getPropertyValue('--cy');
+    view.style.transform = t0;
+    const u = V.width / cw, bx = (204 - cx) * u, by = (108 - cy) * u, bw = 960 * u, sc = r.width / bw;   // the radio's body in the plate: x 204..1164, top 108
+    return `translate(${r.left - V.left - bx * sc}px, ${r.top - V.top - by * sc}px) scale(${sc})`;
+  };
+  let flyT = 0;
+  const open = () => {
+    clearTimeout(flyT);
+    const from = flightFrom();
+    if (from) { view.style.transform = from; view.offsetWidth; view.classList.add('fly'); }
+    veil.classList.add('open'); view.style.transform = 'none';
+    if (!playing) play(); else render();
+    eyeSize(); setTimeout(() => { eyeSize(); q('.rp-key.b').focus({ preventScroll: true }); }, 650);
+  };
+  const close = () => {
+    if (!veil.classList.contains('open')) return;
+    const to = flightFrom();
+    if (to) { view.classList.add('fly'); view.style.transform = to; }
+    veil.classList.remove('open');
+    flyT = setTimeout(() => { view.classList.remove('fly'); view.style.transform = 'none'; }, 650);
+  };
   veil.addEventListener('click', e => { if (e.target === veil || e.target.closest('[data-close]')) close(); });
+  addEventListener('keydown', e => { if (e.key === 'Escape' && veil.classList.contains('open')) { e.stopImmediatePropagation(); close(); } }, true);
   addEventListener('keydown', e => {
     if (!veil.classList.contains('open') || e.metaKey || e.ctrlKey || e.altKey) return;
     const k = e.key.toLowerCase();

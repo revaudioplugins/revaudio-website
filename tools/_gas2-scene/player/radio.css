@@ -10,15 +10,16 @@
 /* the window onto the plate: desktop = the whole plate, phones = the radio's front only (--cx/--cy/--cw/--ch = crop) */
 .rp-view { --cx: 0; --cy: 0; --cw: 1368; --ch: 820;
   position: relative; width: min(92vw, 1180px, calc((100vh - 170px) * 1368 / 820)); aspect-ratio: var(--cw) / var(--ch);
-  container-type: inline-size; overflow: hidden; transform: translateY(10px); opacity: 0;
-  transition: transform .34s cubic-bezier(.2, .9, .25, 1), opacity .34s cubic-bezier(.2, .9, .25, 1);
+  container-type: inline-size; overflow: hidden; transform-origin: 0 0;
   /* in the page, not a box: the photo dissolves into the dark round it */
   --fx: 11%; --fy: 13%;
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 var(--fx), #000 calc(100% - var(--fx)), transparent), linear-gradient(transparent, #000 var(--fy), #000 calc(100% - var(--fy)), transparent);
   -webkit-mask-composite: source-in;
           mask-image: linear-gradient(90deg, transparent, #000 var(--fx), #000 calc(100% - var(--fx)), transparent), linear-gradient(transparent, #000 var(--fy), #000 calc(100% - var(--fy)), transparent);
           mask-composite: intersect; }
-.rp-veil.open .rp-view { transform: none; opacity: 1; }
+/* the veil's dark comes up with the flight; the page's .veil transition is .25s, the flight is longer */
+.rp-veil { transition: opacity .45s cubic-bezier(.2, .9, .25, 1); }
+.rp-view.fly { transition: transform .62s cubic-bezier(.22, .8, .2, 1), -webkit-mask-size .62s; }
 .rp-plate { --u: calc(100cqw / var(--cw)); position: absolute; width: calc(1368 * var(--u)); height: calc(820 * var(--u));
   left: calc(var(--cx) * var(--u) * -1); top: calc(var(--cy) * var(--u) * -1); --lit: 0; }
 .rp-plate > img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; user-select: none; -webkit-user-drag: none; }
@@ -28,7 +29,7 @@
 .rp-px { position: absolute; }
 
 /* the dial glass: stations printed on it, the red pointer runs behind the print */
-.rp-glass { left: calc(428 * var(--u)); top: calc(471 * var(--u)); width: calc(504 * var(--u)); height: calc(79 * var(--u)); }
+.rp-glass { left: calc(459 * var(--u)); top: calc(470 * var(--u)); width: calc(475 * var(--u)); height: calc(80 * var(--u)); }
 .rp-glow { position: absolute; inset: -40% -8%; pointer-events: none; opacity: 0; transition: opacity .5s;
   background: radial-gradient(closest-side, rgba(255, 196, 110, .42), rgba(255, 170, 70, .12) 60%, transparent); mix-blend-mode: screen; }
 .rp-plate.on.b .rp-glow { opacity: 1; }
@@ -46,16 +47,20 @@
 .rp-plate.on .rp-ptr { box-shadow: 0 0 calc(5 * var(--u)) rgba(200, 50, 30, .5); }
 
 /* the two band keys = THE HERO. Each cap is cut from the plate itself and sinks into the dark well when pressed */
-.rp-well { left: calc(500 * var(--u)); top: calc(574 * var(--u)); width: calc(363 * var(--u)); height: calc(70 * var(--u));
+.rp-well { left: calc(500 * var(--u)); top: calc(572 * var(--u)); width: calc(364 * var(--u)); height: calc(71 * var(--u));
   background: linear-gradient(#120a05, #24160c); border-radius: calc(4 * var(--u)); }
-.rp-key { position: absolute; top: calc(575 * var(--u)); height: calc(67 * var(--u)); border-radius: calc(5 * var(--u));
+.rp-key { position: absolute; top: calc(574 * var(--u)); height: calc(66 * var(--u)); border-radius: calc(5 * var(--u));
   background: url(img/radio-lit.webp) no-repeat; background-size: calc(1368 * var(--u)) calc(820 * var(--u));
   transition: transform .12s cubic-bezier(.2, .9, .25, 1.25), filter .12s; -webkit-tap-highlight-color: transparent; }
 .rp-key::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background: url(img/radio-off.webp) no-repeat;
   background-size: inherit; background-position: inherit; opacity: calc(1 - var(--lit)); transition: opacity .5s; }
 .rp-key::after { content: ""; position: absolute; inset: calc(-14 * var(--u)) calc(-4 * var(--u)); }   /* a bigger finger target */
-.rp-key.a { left: calc(501 * var(--u)); width: calc(175 * var(--u)); background-position: calc(-501 * var(--u)) calc(-575 * var(--u)); }
-.rp-key.b { left: calc(680 * var(--u)); width: calc(182 * var(--u)); background-position: calc(-680 * var(--u)) calc(-575 * var(--u)); }
+.rp-key.p { left: calc(504 * var(--u)); width: calc(87 * var(--u)); background-position: calc(-504 * var(--u)) calc(-574 * var(--u)); }
+.rp-key.a { left: calc(595 * var(--u)); width: calc(122 * var(--u)); background-position: calc(-595 * var(--u)) calc(-574 * var(--u)); }
+.rp-key.b { left: calc(722 * var(--u)); width: calc(137 * var(--u)); background-position: calc(-722 * var(--u)) calc(-574 * var(--u)); }
+/* the play / stop key: two printed glyphs (play, stop), the key latches down while it plays */
+.rp-key.p span { display: flex; justify-content: center; align-items: center; gap: calc(7 * var(--u)); padding-top: calc(2 * var(--u)); }
+.rp-key.p svg { width: calc(15 * var(--u)); height: calc(15 * var(--u)); fill: rgba(52, 30, 14, .82); }
 .rp-key span { position: relative; z-index: 1; display: block; font: 600 calc(17 * var(--u))/1 Oswald, sans-serif; letter-spacing: .18em;
   color: rgba(52, 30, 14, .82); mix-blend-mode: multiply; filter: blur(.2px); padding-top: calc(4 * var(--u)); }
 .rp-key.b span { color: rgba(122, 39, 23, .9); }
@@ -68,14 +73,26 @@
 /* knobs: the photo's caps stay put (the lamp never turns); only the painted notch rotates */
 .rp-knob { position: absolute; width: calc(76 * var(--u)); height: calc(76 * var(--u)); margin: calc(-38 * var(--u)) 0 0 calc(-38 * var(--u));
   border-radius: 50%; top: calc(530 * var(--u)); cursor: ns-resize; touch-action: none; }
-.rp-knob.rp-vol { left: calc(342 * var(--u)); }
-.rp-knob.rp-tun { left: calc(1014 * var(--u)); }
+.rp-knob.rp-vol { left: calc(345 * var(--u)); }
+.rp-knob.rp-tun { left: calc(1013.5 * var(--u)); }
 .rp-knob i { position: absolute; inset: 0; transform: rotate(var(--a, 0deg)); pointer-events: none; }
 .rp-knob i::after { content: ""; position: absolute; left: 50%; top: calc(38 * var(--u) - 31 * var(--u)); width: calc(4 * var(--u)); height: calc(17 * var(--u));
   margin-left: calc(-2 * var(--u)); border-radius: calc(2 * var(--u)); background: linear-gradient(#efe3c2, #c9b68e);
   box-shadow: 0 0 0 calc(1.2 * var(--u)) rgba(28, 14, 6, .8); opacity: .92; }
 .rp-knob.rp-tun i { transition: transform .45s cubic-bezier(.2, .9, .25, 1.15); }
 .rp-knob.drag i { transition: none; }
+/* the red pilot jewel: its lit glass is cut from the lit plate; it burns while the radio plays */
+.rp-jewel { position: absolute; left: calc(413 * var(--u)); top: calc(505 * var(--u)); width: calc(31 * var(--u)); height: calc(31 * var(--u));
+  border-radius: 50%; background: url(img/radio-lit.webp) no-repeat calc(-413 * var(--u)) calc(-505 * var(--u)) / calc(1368 * var(--u)) calc(820 * var(--u));
+  opacity: 0; transition: opacity .3s; pointer-events: none; }
+.rp-jewel::after { content: ""; position: absolute; inset: -60%; border-radius: 50%; background: radial-gradient(closest-side, rgba(255, 70, 40, .55), rgba(255, 60, 30, .15) 55%, transparent); mix-blend-mode: screen; }
+.rp-plate.on .rp-jewel { opacity: 1; }
+/* the magic eye: the tube's green fan, drawn live from the music's level (radio.js); dark glass when off */
+.rp-eye { position: absolute; left: calc((657 - 23) * var(--u)); top: calc((395 - 23) * var(--u)); width: calc(46 * var(--u)); height: calc(46 * var(--u));
+  border-radius: 50%; opacity: 0; transition: opacity .9s cubic-bezier(.3, .6, .3, 1); pointer-events: none; }
+.rp-eye canvas { width: 100%; height: 100%; display: block; border-radius: 50%; }
+.rp-eye::after { content: ""; position: absolute; inset: -45%; border-radius: 50%; background: radial-gradient(closest-side, rgba(90, 255, 150, .3), transparent); mix-blend-mode: screen; }
+.rp-plate.on .rp-eye { opacity: 1; }   /* a tube needs a moment to warm: the eye fades in slower than the lamp */
 .rp-eng { position: absolute; top: calc(612 * var(--u)); width: calc(140 * var(--u)); margin-left: calc(-70 * var(--u)); text-align: center;
   font: 600 calc(11 * var(--u))/1 Oswald, sans-serif; letter-spacing: .28em; color: rgba(226, 204, 158, .62); text-shadow: 0 calc(-1 * var(--u)) 0 rgba(16, 8, 2, .7); pointer-events: none; }
 
@@ -89,7 +106,7 @@
 /* phones: the radio's front only (knob to knob), the stations repeated as paper tags under the thumb */
 @media (max-width: 760px) {
   .rp-veil { gap: 10px; padding: 12px; background: rgba(8, 5, 3, .93); }
-  .rp-view { --cx: 252; --cy: 290; --cw: 864; --ch: 440; width: calc(100vw - 24px);
+  .rp-view { --cx: 252; --cy: 350; --cw: 864; --ch: 320; width: calc(100vw - 24px);
     --fx: 4%; --fy: 10%; }
   .rp-key::after { inset: calc(-24 * var(--u)) calc(-4 * var(--u)) calc(-40 * var(--u)); }
   .rp-tags { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-width: 360px; }

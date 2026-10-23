@@ -49,6 +49,18 @@ PROMPTS = {
                 "radio, chunky and deep like piano keys, the bottom rail made taller to hold them") + CAM),
 }
 
+# round 2 (Yoni 2026-10-23): the picked radio-c gets a 3rd key (play / stop) + a red jewel + a magic-eye tube.
+# An EDIT of radio-c itself, so it stays the same photo.
+R2 = ("Edit this exact photograph. Keep EVERYTHING the same: the same radio, cabinet, brass frame, grille cloth, dial "
+      "window, both knobs, the bench, the wall, the window, the light, the camera, the film grain. Change ONLY these: "
+      "(1) the row of ivory bakelite piano keys below the dial now has THREE keys side by side instead of two, the same "
+      "style and height, all blank, the row centred; the left key is a little narrower than the other two. (2) A small "
+      "round red glass jewel pilot lamp (unlit, deep red) set in the brass rail just left of the key row. (3) In the "
+      "centre of the brass bar between the grille cloth and the dial, a small round 'magic eye' tuning tube window: a "
+      "dark green glass disc in a thin brass bezel, about the size of a coin, unlit. Strict: no text, letters, numbers "
+      "or logos anywhere.")
+EDITS = {'radio-d': R2, 'radio-e': R2 + " Make the three keys slightly taller and chunkier."}
+
 
 def refs():
     from PIL import Image
@@ -76,11 +88,15 @@ def gen(slug):
     if os.path.exists(path) and '--force' not in sys.argv:
         return f'{slug}: exists, skipped'
     model = os.environ.get('GEN_MODEL', 'gpt-image-1')
-    fields = {'model': model, 'prompt': PROMPTS[slug], 'size': '1536x1024', 'quality': 'high'}
+    fields = {'model': model, 'prompt': PROMPTS.get(slug, ''), 'size': '1536x1024', 'quality': 'high'}
     if model == 'gpt-image-1':
         fields['input_fidelity'] = 'high'
-    body, b = multipart(fields, [('image[]', os.path.join(HERE, 'ref-radio.png')),
-                                 ('image[]', os.path.join(HERE, 'ref-scene.png'))])
+    if slug in EDITS:
+        fields['prompt'] = EDITS[slug]
+        body, b = multipart(fields, [('image[]', os.path.join(OUT, 'radio-c.png'))])
+    else:
+        body, b = multipart(fields, [('image[]', os.path.join(HERE, 'ref-radio.png')),
+                                     ('image[]', os.path.join(HERE, 'ref-scene.png'))])
     for attempt in range(5):   # 429 = rate limit: wait and retry; any other error: print the API's message
         req = urllib.request.Request('https://api.openai.com/v1/images/edits', data=body,
                                      headers={'Authorization': f'Bearer {KEY}', 'Content-Type': f'multipart/form-data; boundary={b}'})
@@ -98,7 +114,7 @@ def gen(slug):
 
 
 if __name__ == '__main__':
-    slugs = [a for a in sys.argv[1:] if not a.startswith('--')] or list(PROMPTS)
+    slugs = [a for a in sys.argv[1:] if not a.startswith('--')] or list(PROMPTS) + list(EDITS)
     refs()
     for s in slugs:               # one at a time: parallel image requests hit the rate limit (429)
         print(gen(s), flush=True)

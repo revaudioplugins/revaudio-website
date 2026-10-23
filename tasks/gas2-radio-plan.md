@@ -85,3 +85,35 @@ Found for Dan's session (not mine to change): on a phone the scene is anchored r
 3. The static burst when tuning: keep?
 4. Real renders (spec in `tasks/gas2-jukebox-plan.md` on laptop 2's archive branch, repeated here): 5 mixes x
    `<id>_before` / `<id>_after`, sample-aligned, 30-45 s, WAV 48k/24, + GAS 2 settings per mix (GRADE, AMOUNT %).
+
+## Round 2 (2026-10-23, Yoni: play / stop button, KNOB LAB knobs "maybe Radio Roulette style but not identical",
+## "more aesthetic and cool, think creative")
+
+Picks (Yoni): play / stop = a 3rd key on the radio + a red jewel lamp; Fly-in from the scene; Magic eye tube.
+- [x] 🤖 1. New plate: the same photo (edit of radio-c) with 3 keys [PLAY/STOP] [ORIGINAL] [GAS 2], a red jewel, and
+      a magic-eye tube window (dark when off). Re-measure, re-process (lit / off), erase pointer.
+- [x] 🤖 2. KNOB LAB page for the radio (`player/knoblab/`, generator + `__klCfg`; the lab code untouched): start look
+      = a vintage radio knob in the Radio Roulette family, not identical. Open for Yoni.
+- [ ] 🧑 3. Yoni tweaks / approves the knob in the lab (save through serve-lab).
+- [ ] 🤖 4. Bake the look into 129-frame strips (lab's `bake-knob-lab.js`), knobs = strips, the photo's caps covered.
+- [x] 🤖 5. Code: play key + jewel; magic eye live from an AnalyserNode (opens with the level); fly-in from the scene
+      radio's rect into the close-up and back out (one tween, house curve).
+- [ ] 🤖 6. Headless checks + screenshots, open for Yoni.
+
+### Round 2 state (2026-10-23, `revaudio-cd`)
+
+- Plate = radio-e (edit of radio-c: 3 keys, red jewel, magic eye; no baked pointer). radio-d grew 4 keys (dropped).
+  Measured (crop px): glass 459..934 x 470..550; keys PLAY 504..591, ORIGINAL 595..717, GAS 2 722..859, y 574..640;
+  jewel (428.5, 520); eye (657, 395) r 23; knobs (345, 530) + (1013.5, 530).
+- HIP HOP = Yoni's renders (`C:/shirimmmmmm/hip hop dry.wav` + `hip hop gas.wav`, 48k, 26.24 s) via
+  `player/tools/prep_audio.py`: lag 0, LUFS -7.20 / -7.26 (already matched; GAS side +0.05 dB), sources peak +1.05 /
+  +1.52 dBFS (4x), so both got one shared -2.57 dB: -9.78 LUFS each, peaks -1.53 / -1.00. AAC 256k. Other 4 = placeholder.
+- Play key latches down while playing; jewel burns while playing; magic eye = AnalyserNode RMS after the keys (-34..-8
+  dB -> shadow 52 deg..6 deg, fast attack / slow release), fades in slower than the lamp (tube warm-up).
+- Fly-in: the close-up starts on the bench radio's rect and grows (0.62 s, house curve); Esc / X / backdrop fly back.
+  Phone: the radio is off-screen in the scene, so it fades.
+- KNOB LAB: `player/knoblab/make-knoblab.py` -> radio-knoblab.html (gitignored), served by
+  `serve-lab.py 8797 --pages player`, start look = walnut bakelite SKIRTED with a spun-brass skirt seated in the photo's
+  brass ring. Waiting for Yoni's look; then bake (`bake-knob-lab.js <recipe> <out> 256 1 --foot=60,60,84,120`).
+- Checks (headless, 1440 / 1280 / 390): no errors, no 404s; flight mid-scale at 120 ms; eye pixel green while playing;
+  keys 1/0 -> 0/1; play key stop / start; Esc -> closed; scene caption "On air: GAS 2 · HIP HOP". Not: real ears / Safari.
