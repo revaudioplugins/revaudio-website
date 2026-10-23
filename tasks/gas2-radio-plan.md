@@ -156,3 +156,9 @@ Picks (Yoni): play / stop = a 3rd key on the radio + a red jewel lamp; Fly-in fr
   masked gpt-image-1 edit of the frame with the radio, its shadow AND the old bench removed (box 52..349 x 515..796,
   2 runs ~$0.4); `bench_patch.py` cuts `img/noradio.webp` from it and lays the lowered bench back on top. The frame file
   is untouched. Text at 1.04x: dial 6.4 / 7.2 / 9.6 px at 1280 / 1440 / 1920 (keys 6-10, VOLUME/TUNING 4.9-7.4).
+- Size settled at 1.18x (Yoni: 1.04 "too small", wants just some room on the left), centre 12.3cqw: left edge 44 / 50 /
+  66 px at 1280 / 1440 / 1920; dial 7.3 / 8.2 / 10.9 px.
+- POP + ROCK = Yoni's renders (`C:/shirimmmmmm/pop|rock dry|gas.wav`, 48k, 37.19 s / 24.00 s; pop lag 1 sample trimmed,
+  rock 0; dry vs gas within 0.16 dB). Every station now at ONE loudness, -11.00 LUFS both sides (prep_audio.py TARGET;
+  was hip hop -9.8 / pop -10.9 / rock -8.3 = level jumps between stations); peaks -1.08 .. -4.43 dBFS. ELEC. = placeholder.
+  GAS 2 settings for POP / ROCK owed by Yoni (the caption shows "GAS 2" alone until then).

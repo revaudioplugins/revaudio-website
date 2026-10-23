@@ -11,9 +11,9 @@
   const PH = { a: 'audio/placeholder_before.m4a', b: 'audio/placeholder_after.m4a', gas: null };
   const STATIONS = [
     { id: 'hiphop', name: 'HIP HOP', a: 'audio/hiphop_before.m4a', b: 'audio/hiphop_after.m4a', gas: { grade: 'PREMIUM', amount: 140 } },   // Yoni's renders 2026-10-23
-    { id: 'pop', name: 'POP', ...PH },
+    { id: 'pop', name: 'POP', a: 'audio/pop_before.m4a', b: 'audio/pop_after.m4a', gas: null },   // Yoni's renders 2026-10-23
     { id: 'electronic', name: 'ELECTRONIC', dial: 'ELEC.', ...PH },   // the dial prints ELEC. (Yoni 2026-10-23)
-    { id: 'rock', name: 'ROCK', ...PH },   // 4 stations (Yoni 2026-10-23: hip hop, pop, electronic, rock)
+    { id: 'rock', name: 'ROCK', a: 'audio/rock_before.m4a', b: 'audio/rock_after.m4a', gas: null },   // Yoni's renders 2026-10-23   // 4 stations (Yoni 2026-10-23: hip hop, pop, electronic, rock)
   ];   // gas: { grade, amount } prints the mix's GAS 2 settings in the caption
 
   // ---------- the radio, standing on the bench ----------

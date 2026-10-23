@@ -3,8 +3,10 @@
   out: player/audio/<id>_before.m4a + <id>_after.m4a
 Checks + steps: same rate / length; sample alignment (cross-correlation, must be 0 or it is reported and fixed);
 LEVEL MATCH (Yoni 2026-10-22: honest A/B): the GAS 2 side is gained to the dry side's integrated LUFS (BS.1770), then
-both share one gain so the louder peak sits at -1 dBFS true-ish (4x oversampled) — never a limiter; AAC 256k.
+both share one gain to TARGET LUFS (every station equally loud, so tuning never jumps in level), or lower if that
+would put the louder peak over -1 dBFS true-ish (4x oversampled) — never a limiter; AAC 256k.
 Usage: python player/tools/prep_audio.py <id> <dry.wav> <gas.wav>"""
+TARGET = -11.0   # LUFS, every station (2026-10-23: hip hop -9.8 / pop -10.9 / rock -8.3 before = 2.7 dB jumps)
 import os, subprocess, sys
 import numpy as np, soundfile as sf, pyloudnorm as pyln
 from scipy.signal import resample_poly, correlate
@@ -34,7 +36,7 @@ def main(sid, dry_p, gas_p):
     la, lb = meter.integrated_loudness(a), meter.integrated_loudness(b)
     print(f'LUFS dry {la:.2f} | gas {lb:.2f} (diff {lb - la:+.2f} dB) | peaks dry {peak_db(a):.2f} gas {peak_db(b):.2f} dBFS')
     b = b * 10 ** ((la - lb) / 20)                                   # GAS 2 side to the dry side's loudness
-    g = 10 ** ((-1.0 - max(peak_db(a), peak_db(b))) / 20)            # one shared gain: the louder peak at -1 dBFS
+    g = 10 ** (min(TARGET - la, -1.0 - max(peak_db(a), peak_db(b))) / 20)   # one shared gain: TARGET, or the peak at -1 dBFS
     a, b = a * g, b * g
     print(f'after: LUFS dry {meter.integrated_loudness(a):.2f} gas {meter.integrated_loudness(b):.2f} | peaks {peak_db(a):.2f} / {peak_db(b):.2f} dBFS | shared gain {20 * np.log10(g):+.2f} dB')
     os.makedirs(OUT, exist_ok=True)
