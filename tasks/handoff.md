@@ -5,6 +5,10 @@ Claim: CLOSED 2026-10-24. File: `tools/_gas2-scene/page-b.html` (`.chalk` gets `
   brightness .84) reached left over the board's right half. Now the board stacks above `.rd`; no overlap with the readings' type.
 - Checked: headless Chrome 1141x636 + 1440x900. Board right half brightness 47 -> 54, edge sharpness 15 -> 21 (= the left half).
   Then Dan: "make it more" -> board brightness .86 -> 1.08 + contrast 1.06. Dan in Safari: "perfect".
+- Then the sidewalk out of the shadow too: `props/walk-cut.png` = the slab traced from f6-v17 (same pixels, 1 px feather;
+  back edge 71 %, the edge line (68.85, 71) -> (87.9, 85), curb end 88.7 %, curb foot 92 %), laid over FOCUS + DUSK with
+  `z-index: 1` (`.walkCut`), under the chalkboard. Measured at 1141: ~10 % brighter + sharper. Dan: "commit".
+  Note: moving the readings down in TUNE would put "Fill it up." behind the cut (at default it clears it).
 - Pulled first: Yoni's radio round 3 + `?rbench` placement (origin 4bfc117) are on this branch now.
 
 ## 2026-10-24 — GAS 2 radio: the grille nameplate "Play me" (Claude Code `danavivi-7e`, Dan's Mac) — BRANCH `feat/gas2-page` PUSHED
