@@ -4,7 +4,7 @@ Claim: CLOSED 2026-10-24. File: `tools/_gas2-scene/page-b.html` (`.chalk` gets `
 - Dan: the chalkboard "sits behind the shadow, I want it in front of it". The readings' FOCUS layer (`.rd::before`, blur +
   brightness .84) reached left over the board's right half. Now the board stacks above `.rd`; no overlap with the readings' type.
 - Checked: headless Chrome 1141x636 + 1440x900. Board right half brightness 47 -> 54, edge sharpness 15 -> 21 (= the left half).
-  Not checked: Dan's Safari.
+  Then Dan: "make it more" -> board brightness .86 -> 1.08 + contrast 1.06. Dan in Safari: "perfect".
 - Pulled first: Yoni's radio round 3 + `?rbench` placement (origin 4bfc117) are on this branch now.
 
 ## 2026-10-24 — GAS 2 radio: the grille nameplate "Play me" (Claude Code `danavivi-7e`, Dan's Mac) — BRANCH `feat/gas2-page` PUSHED
