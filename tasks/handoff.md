@@ -21,6 +21,12 @@ badge click = play / stop, `.played` on first play), `DESIGN.md` §3 (script acc
   now EMBROIDERY: no hover / press move, no float shadow; dark thread edge (.rp-b0), cream satin-stitch thread (.rp-b1), the
   grille's own weave soft-light over it (.rp-b2, cut from radio-lit.webp); tight halo + 1u shadow = thread on fabric. Picked
   from 6 headless variants (too muddy when the weave multiplies the thread: keep the cream bright).
+- Then (Dan, same day): "let me see more of the stitches, like Marshall stitch": the badge is now ONE SVG (radio.js badgeSvg):
+  dark thread edge + cream satin stitches as a pattern (threads 8u apart at -20deg, each a groove + a sheen) + a lit-top shade
+  + a SMIL sheen sweep (hidden on .played / reduced motion). The CSS gradient-text layers (and their impeccable waiver) are gone.
+  Default = bigger satin, NO outline. `page-b.html?stitch` = picker for a running-stitch outline (none / cream / gold, a dashed
+  stroke under the letters): busy at scene size (stitches land in the letter joins and the a / e counters), so not default.
+  Open: Dan's outline pick; then drop the ?stitch picker.
 - Picked with the DESIGN.md "ONE script line per screen" rule flagged ("Fill it up." is Yellowtail too): recorded as
   "a nameplate ON a prop is not a line".
 - Checked: headless Chromium 1141x636 + 1440x900, no errors / 404s; badge click -> playing ORIGINAL (gains 1/0), glint stops;

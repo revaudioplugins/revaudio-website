@@ -25,7 +25,7 @@
   dock.innerHTML = `<div class="rp-body"><div class="rp-plate">
       <img class="rp-off" src="${BASE}img/radio-off.webp" alt="" draggable="false">
       <img class="rp-lit" src="${BASE}img/radio-lit.webp" alt="" draggable="false">
-      <button type="button" class="rp-badge"><span class="rp-b0" aria-hidden="true">Play me</span><span class="rp-b1">Play me</span><span class="rp-b2" aria-hidden="true">Play me</span></button>
+      <button type="button" class="rp-badge" aria-label="Play me"></button>
       <div class="rp-px rp-glass"><i class="rp-glow"></i><i class="rp-scale"></i><i class="rp-ptr"></i>
         <div class="rp-st">${STATIONS.map((s, i) => `<button type="button" data-st="${i}" aria-label="${s.name}">${s.dial || s.name}</button>`).join('')}</div></div>
       <div class="rp-px rp-well"></div>
@@ -45,9 +45,28 @@
   const q = s => dock.querySelector(s), qa = s => [...dock.querySelectorAll(s)];
   const plate = q('.rp-plate'), ptr = q('.rp-ptr');
 
-  // the nameplate on the grille (Dan 2026-10-24: "like a brand name, like a Marshall ... pops out"): a script badge that
-  // is a second play key. Dan's pick: "Play me", cream thread sewn into the cloth, tilted (radio.css .rp-badge)
+  // the nameplate on the grille (Dan 2026-10-24: "like a brand name, like a Marshall ... pops out ... sewn in ... let me see
+  // more of the stitches"): "Play me" EMBROIDERED into the cloth, a second play key. One SVG, 1 user unit = 1u (plate px),
+  // the words' centre (320, 120) on the plate's (687, 270). Layers, bottom up: [the running stitch around the letters, a dashed
+  // stroke whose inner half the letters cover], the dark thread edge, the cream satin stitches (a pattern of threads at
+  // -20deg, each a groove + a sheen), a lit-top shade, and a sheen that sweeps the thread every 7 s until the first play
+  // (radio.css hides it on .played / reduced motion). STITCH = the outline thread; ?stitch shows Dan's picker
+  const STITCH = { none: null, cream: '#efe2c2', gold: '#e8c878' };
+  const badgeSvg = out => { const t = a => `<text x="320" y="165"${a}>Play me</text>`;
+    return `<svg viewBox="0 0 640 240" aria-hidden="true"><defs>
+      <pattern id="rpSat" width="40" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(-20)"><rect width="40" height="8" fill="#efe2c2"/>
+        <rect width="40" height="1.6" fill="rgba(96,64,28,.6)"/><rect y="3.6" width="40" height="2.4" fill="rgba(255,253,246,.75)"/></pattern>
+      <linearGradient id="rpShade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff8e8" stop-opacity=".35"/>
+        <stop offset=".6" stop-color="#fff8e8" stop-opacity="0"/><stop offset="1" stop-color="#5a3c18" stop-opacity=".35"/></linearGradient>
+      <linearGradient id="rpSheen" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="640" y2="0" gradientTransform="translate(-700 0)">
+        <stop offset=".42" stop-color="#fff8e8" stop-opacity="0"/><stop offset=".5" stop-color="#fff8e8" stop-opacity=".85"/><stop offset=".58" stop-color="#fff8e8" stop-opacity="0"/>
+        <animateTransform attributeName="gradientTransform" type="translate" values="-700 0;700 0;700 0" keyTimes="0;.14;1" dur="7s" begin="1.4s" repeatCount="indefinite"/></linearGradient></defs>
+      <g font-family="Yellowtail, cursive" font-size="170" text-anchor="middle">
+        ${out ? t(` fill="none" stroke="${out}" stroke-width="18" stroke-dasharray="7 5"`) : ''}
+        ${t(` fill="#3b220d" stroke="#3b220d" stroke-width="${out ? 6 : 5}" stroke-linejoin="round"`)}
+        ${t(' fill="url(#rpSat)"')}${t(' fill="url(#rpShade)"')}${t(' class="rp-sheen" fill="url(#rpSheen)"')}</g></svg>`; };
   const badge = q('.rp-badge');
+  badge.innerHTML = badgeSvg(STITCH.none);   // Dan 2026-10-24: S1, the bigger satin stitches, no outline (the outline was busy at scene size)
   const knobVol = q('.rp-knob.rp-vol'), knobTune = q('.rp-knob.rp-tun');
 
   // the knob strip: an angle -135..+135 picks one of 129 frames (12 x 11 grid)
@@ -203,6 +222,15 @@
       apply();
     });
     apply();
+  }
+  // ---------- ?stitch: Dan's picker for the nameplate's outline thread (a bench tool like ?rbench) ----------
+  if (new URLSearchParams(location.search).has('stitch')) {
+    const tp = document.createElement('div'); tp.className = 'rp-tp';
+    tp.innerHTML = '<h4>OUTLINE STITCH</h4><div class="row">' + Object.keys(STITCH).map(k => `<button data-s="${k}">${k}</button>`).join('') + '</div>';
+    document.body.appendChild(tp);
+    const pick = k => { badge.innerHTML = badgeSvg(STITCH[k]); tp.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.s === k)); };
+    tp.addEventListener('click', e => { const b = e.target.closest('button'); if (b) pick(b.dataset.s); });
+    pick('none');
   }
   window.gas2Radio = { tune, setSide, play, stop, get state() { return { st, side, playing, vol, t: ac && ac.currentTime, gA: gA && gA.gain.value, gB: gB && gB.gain.value }; } };
 })();
