@@ -17,6 +17,10 @@ badge click = play / stop, `.played` on first play), `DESIGN.md` §3 (script acc
   cloth, tilted -5deg; click = play / stop; a glint crosses it every 7 s until the first play (off under reduced motion).
 - Dan picked from a `?badge` picker (now removed): **"Give it gas" · Cream · tilted**, then the same day **"Play me"** (170u). Not taken: Give it gas / Play with it /
   Tune in; chrome / brass / honey (lit on play) / oxide + cream (the recipes are in this commit's parent diff if wanted again).
+- Then (Dan, same day): "not get closer when user hover" + "more embedded to the net ... look like it is sewn in": the badge is
+  now EMBROIDERY: no hover / press move, no float shadow; dark thread edge (.rp-b0), cream satin-stitch thread (.rp-b1), the
+  grille's own weave soft-light over it (.rp-b2, cut from radio-lit.webp); tight halo + 1u shadow = thread on fabric. Picked
+  from 6 headless variants (too muddy when the weave multiplies the thread: keep the cream bright).
 - Picked with the DESIGN.md "ONE script line per screen" rule flagged ("Fill it up." is Yellowtail too): recorded as
   "a nameplate ON a prop is not a line".
 - Checked: headless Chromium 1141x636 + 1440x900, no errors / 404s; badge click -> playing ORIGINAL (gains 1/0), glint stops;

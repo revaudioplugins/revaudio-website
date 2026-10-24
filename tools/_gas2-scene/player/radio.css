@@ -114,31 +114,31 @@
 .rp-plate.on .rp-jewel { opacity: 1; }
 
 /* the NAMEPLATE on the grille (Dan 2026-10-24: "like a brand name, like a Marshall ... very vintagey ... it needs to pop
-   out"): a raised script badge in Yellowtail, centred on the cloth (grille 262..1112 x 148..408), and a play key too.
-   Two layers of the same words in one grid cell: .rp-b0 = the badge's dark backing (a fat stroke, set down-left = its
-   depth, the porch lamp is up-right), .rp-b1 = the face (a gradient clipped to the letters). The cast shadow on the
-   cloth is a drop-shadow on the whole badge. A light glint crosses the face now and then until the radio is first
-   played (.played), then it rests. Dan's pick from the 2026-10-24 picker: "Play me" (first "Give it gas", switched the same day), cream enamel (Marshall's white
-   script, the same cream as the keys), tilted; not taken: Play me / Play with it / Tune in, chrome / brass / honey / oxide */
-.rp-badge { --f: linear-gradient(#fbf3e1, #efe2c2 55%, #d3bd8f); --e: #2b1708; --gl: rgba(255, 248, 232, .95);
-  position: absolute; left: calc(687 * var(--u)); top: calc(270 * var(--u)); display: grid; padding: 0 calc(30 * var(--u));
+   out"): "Play me" in Yellowtail, centred on the cloth (grille 262..1112 x 148..408), tilted, and a play key too. Then
+   (Dan, same day): "not get closer" on hover, "more embedded to the net ... look like it is sewn in" = EMBROIDERY, not
+   an enamel badge: no float shadow, no hover move. Three layers of the same words in one grid cell: .rp-b0 = the dark
+   thread edge (a stroke), .rp-b1 = the cream thread in satin stitches (fine diagonal lines over a lit-top gradient),
+   .rp-b2 = the grille's own weave from the plate, soft-light over the thread, so the letters sit IN the cloth. A tight
+   halo + a 1u shadow = thread raised on fabric. A sheen crosses the thread now and then until the radio is first played
+   (.played), then it rests. Picked from the 2026-10-24 picker (first "Give it gas"); not taken: Play with it / Tune in,
+   chrome / brass / honey / oxide */
+.rp-badge { position: absolute; left: calc(687 * var(--u)); top: calc(270 * var(--u)); display: grid; padding: 0 calc(30 * var(--u));
   transform: translate(-50%, -50%) rotate(-5deg); font: 400 calc(170 * var(--u))/1.25 Yellowtail, cursive;
   white-space: nowrap; cursor: pointer; -webkit-tap-highlight-color: transparent;
-  filter: drop-shadow(calc(-4 * var(--u)) calc(7 * var(--u)) calc(5 * var(--u)) rgba(14, 7, 3, .72))
-          drop-shadow(calc(-1 * var(--u)) calc(2 * var(--u)) calc(1 * var(--u)) rgba(14, 7, 3, .55));
-  transition: transform .18s cubic-bezier(.2, .9, .25, 1.25), filter .4s; }
+  filter: drop-shadow(0 0 calc(2.5 * var(--u)) rgba(20, 10, 4, .4)) drop-shadow(calc(-1 * var(--u)) calc(1.5 * var(--u)) calc(1 * var(--u)) rgba(14, 7, 3, .6)); }
 .rp-badge > span { grid-area: 1 / 1; display: block; padding: 0 .12em; }   /* script swashes overhang their box */
-.rp-b0 { color: var(--e); -webkit-text-stroke: calc(13 * var(--u)) var(--e); transform: translate(calc(-2 * var(--u)), calc(4 * var(--u))); }
-.rp-b1 { position: relative; z-index: 1;   /* .rp-b0's transform would otherwise paint it over the face */
-  color: transparent; -webkit-text-fill-color: transparent; -webkit-text-stroke: calc(1.5 * var(--u)) rgba(30, 16, 6, .35);
-  background: linear-gradient(100deg, transparent 42%, var(--gl) 50%, transparent 58%) 100% 0 / 260% 100% no-repeat, var(--f);
-  -webkit-background-clip: text; background-clip: text; animation: rp-glint 7s 1.4s infinite; }
-@keyframes rp-glint { 0% { background-position: 100% 0, 0 0; } 14%, 100% { background-position: 0% 0, 0 0; } }
+.rp-b0 { color: #3b220d; -webkit-text-stroke: calc(4 * var(--u)) #3b220d; }
+.rp-b1, .rp-b2 { position: relative; color: transparent; -webkit-text-fill-color: transparent; }   /* the clip goes AFTER each background shorthand */
+.rp-b1 { z-index: 1; animation: rp-glint 7s 1.4s infinite;
+  background: linear-gradient(100deg, transparent 42%, rgba(255, 248, 232, .95) 50%, transparent 58%) 100% 0 / 260% 100% no-repeat,
+    repeating-linear-gradient(118deg, rgba(255, 252, 240, .5) 0 calc(2 * var(--u)), rgba(120, 85, 40, .16) calc(2 * var(--u)) calc(5 * var(--u))),
+    linear-gradient(#fbf3e1, #efe2c2 55%, #dccaa0); -webkit-background-clip: text; background-clip: text; }
+.rp-b2 { z-index: 2; opacity: .6; mix-blend-mode: soft-light; pointer-events: none;   /* the cloth under the words, about */
+  background: url(img/radio-lit.webp) no-repeat calc(-412 * var(--u)) calc(-141 * var(--u)) / calc(1368 * var(--u)) calc(820 * var(--u)); -webkit-background-clip: text; background-clip: text; }
+@keyframes rp-glint { 0% { background-position: 100% 0, 0 0, 0 0; } 14%, 100% { background-position: 0% 0, 0 0, 0 0; } }
 .rp-plate.played .rp-b1 { animation: none; }
-.rp-badge:hover { transform: translate(-50%, -52%) rotate(-5deg) scale(1.03); }
-.rp-badge:active { transform: translate(-50%, -49%) rotate(-5deg) scale(.99); }
 .rp-badge:focus-visible { outline: calc(3 * var(--u)) solid var(--honey, #f2be4a); outline-offset: calc(6 * var(--u)); border-radius: calc(12 * var(--u)); }
-@media (prefers-reduced-motion: reduce) { .rp-b1 { animation: none; } .rp-badge { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .rp-b1 { animation: none; } }
 
 /* VOLUME / TUNING: cream paint in the wood under each knob, centred on the knob's axis. Letter-spacing pads the right
    side of the last letter, so the same space goes on the left (padding-left) or the word sits off-centre */
