@@ -69,7 +69,7 @@ neon or glow without a lamp (a neon sign IS a lamp: the DRIFT panel's lit tube m
   (2026-10-19, picked over a marker and a typewriter look: "shorter and sexier").
   Second use: the GAS 2 page's "Fill it up." as a signature under the hero button (§7), tilted -6deg,
   offset right. Still ONE script line per screen. A nameplate ON a prop is not a line: the GAS 2 radio's grille
-  badge "Give it gas" (raised cream enamel, tilted -5deg, click = play; Dan 2026-10-24, picked with this rule flagged,
+  badge "Play me" (raised cream enamel, tilted -5deg, click = play; Dan 2026-10-24, picked with this rule flagged,
   "like a Marshall").
 - **A product name wears its plugin's own header lockup (Dan 2026-10-23).** The title on a product page is
   set in the face, colour split and rule of the plugin's own header, lifted from the plugin's render code,

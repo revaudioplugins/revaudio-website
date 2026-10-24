@@ -25,7 +25,7 @@
   dock.innerHTML = `<div class="rp-body"><div class="rp-plate">
       <img class="rp-off" src="${BASE}img/radio-off.webp" alt="" draggable="false">
       <img class="rp-lit" src="${BASE}img/radio-lit.webp" alt="" draggable="false">
-      <button type="button" class="rp-badge"><span class="rp-b0" aria-hidden="true">Give it gas</span><span class="rp-b1">Give it gas</span></button>
+      <button type="button" class="rp-badge"><span class="rp-b0" aria-hidden="true">Play me</span><span class="rp-b1">Play me</span></button>
       <div class="rp-px rp-glass"><i class="rp-glow"></i><i class="rp-scale"></i><i class="rp-ptr"></i>
         <div class="rp-st">${STATIONS.map((s, i) => `<button type="button" data-st="${i}" aria-label="${s.name}">${s.dial || s.name}</button>`).join('')}</div></div>
       <div class="rp-px rp-well"></div>
@@ -46,7 +46,7 @@
   const plate = q('.rp-plate'), ptr = q('.rp-ptr');
 
   // the nameplate on the grille (Dan 2026-10-24: "like a brand name, like a Marshall ... pops out"): a script badge that
-  // is a second play key. Dan's pick from the ?badge picker: "Give it gas", cream, tilted (radio.css .rp-badge)
+  // is a second play key. Dan's pick: "Play me", cream, tilted (radio.css .rp-badge)
   const badge = q('.rp-badge');
   const knobVol = q('.rp-knob.rp-vol'), knobTune = q('.rp-knob.rp-tun');
 
