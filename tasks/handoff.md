@@ -1,3 +1,18 @@
+## 2026-10-24 — GAS 2 radio: the grille nameplate "Give it gas" (Claude Code `danavivi-7e`, Dan's Mac) — BRANCH `feat/gas2-page` PUSHED
+
+Claim: CLOSED 2026-10-24. Files: `tools/_gas2-scene/player/radio.css` (`.rp-badge` block), `player/radio.js` (badge markup,
+badge click = play / stop, `.played` on first play), `DESIGN.md` §3 (script accent: the nameplate exception),
+`.impeccable/config.json` (gradient-text waiver, radio.css only). Not page-b.html.
+- Dan: a "Play with it"-type line on the speaker grille "like a brand name, like a Marshall", vintage, pops out. Built a raised
+  Yellowtail script badge (dark backing + cream enamel face + cast shadow down-left, the porch lamp is up-right), centred on the
+  cloth, tilted -5deg; click = play / stop; a glint crosses it every 7 s until the first play (off under reduced motion).
+- Dan picked from a `?badge` picker (now removed): **"Give it gas" · Cream · tilted**. Not taken: Play me / Play with it /
+  Tune in; chrome / brass / honey (lit on play) / oxide + cream (the recipes are in this commit's parent diff if wanted again).
+- Picked with the DESIGN.md "ONE script line per screen" rule flagged ("Fill it up." is Yellowtail too): recorded as
+  "a nameplate ON a prop is not a line".
+- Checked: headless Chromium 1141x636 + 1440x900, no errors / 404s; badge click -> playing ORIGINAL (gains 1/0), glint stops;
+  2nd click -> stopped. Not checked: Dan's Safari by eye after the bake, phones (the radio is off-screen there).
+
 ## 2026-10-23 — GAS 2 page: MAIL ME THE KEYS poster on the wall (Claude Code `danavivi-2a`, Dan's Mac) — BRANCH `feat/gas2-page` PUSHED
 
 Claim: CLOSED 2026-10-23. Files: `tools/_gas2-scene/page-b.html` (mailbox block: `.mp` poster button + `.mail` moved down,

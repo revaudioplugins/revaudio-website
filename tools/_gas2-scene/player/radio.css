@@ -113,6 +113,33 @@
 .rp-jewel::after { content: ""; position: absolute; inset: -60%; border-radius: 50%; background: radial-gradient(closest-side, rgba(255, 70, 40, .55), rgba(255, 60, 30, .15) 55%, transparent); mix-blend-mode: screen; }
 .rp-plate.on .rp-jewel { opacity: 1; }
 
+/* the NAMEPLATE on the grille (Dan 2026-10-24: "like a brand name, like a Marshall ... very vintagey ... it needs to pop
+   out"): a raised script badge in Yellowtail, centred on the cloth (grille 262..1112 x 148..408), and a play key too.
+   Two layers of the same words in one grid cell: .rp-b0 = the badge's dark backing (a fat stroke, set down-left = its
+   depth, the porch lamp is up-right), .rp-b1 = the face (a gradient clipped to the letters). The cast shadow on the
+   cloth is a drop-shadow on the whole badge. A light glint crosses the face now and then until the radio is first
+   played (.played), then it rests. Dan's pick from the 2026-10-24 picker: "Give it gas", cream enamel (Marshall's white
+   script, the same cream as the keys), tilted; not taken: Play me / Play with it / Tune in, chrome / brass / honey / oxide */
+.rp-badge { --f: linear-gradient(#fbf3e1, #efe2c2 55%, #d3bd8f); --e: #2b1708; --gl: rgba(255, 248, 232, .95);
+  position: absolute; left: calc(687 * var(--u)); top: calc(270 * var(--u)); display: grid; padding: 0 calc(30 * var(--u));
+  transform: translate(-50%, -50%) rotate(-5deg); font: 400 calc(146 * var(--u))/1.25 Yellowtail, cursive;
+  white-space: nowrap; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  filter: drop-shadow(calc(-4 * var(--u)) calc(7 * var(--u)) calc(5 * var(--u)) rgba(14, 7, 3, .72))
+          drop-shadow(calc(-1 * var(--u)) calc(2 * var(--u)) calc(1 * var(--u)) rgba(14, 7, 3, .55));
+  transition: transform .18s cubic-bezier(.2, .9, .25, 1.25), filter .4s; }
+.rp-badge > span { grid-area: 1 / 1; display: block; padding: 0 .12em; }   /* script swashes overhang their box */
+.rp-b0 { color: var(--e); -webkit-text-stroke: calc(13 * var(--u)) var(--e); transform: translate(calc(-2 * var(--u)), calc(4 * var(--u))); }
+.rp-b1 { position: relative; z-index: 1;   /* .rp-b0's transform would otherwise paint it over the face */
+  color: transparent; -webkit-text-fill-color: transparent; -webkit-text-stroke: calc(1.5 * var(--u)) rgba(30, 16, 6, .35);
+  background: linear-gradient(100deg, transparent 42%, var(--gl) 50%, transparent 58%) 100% 0 / 260% 100% no-repeat, var(--f);
+  -webkit-background-clip: text; background-clip: text; animation: rp-glint 7s 1.4s infinite; }
+@keyframes rp-glint { 0% { background-position: 100% 0, 0 0; } 14%, 100% { background-position: 0% 0, 0 0; } }
+.rp-plate.played .rp-b1 { animation: none; }
+.rp-badge:hover { transform: translate(-50%, -52%) rotate(-5deg) scale(1.03); }
+.rp-badge:active { transform: translate(-50%, -49%) rotate(-5deg) scale(.99); }
+.rp-badge:focus-visible { outline: calc(3 * var(--u)) solid var(--honey, #f2be4a); outline-offset: calc(6 * var(--u)); border-radius: calc(12 * var(--u)); }
+@media (prefers-reduced-motion: reduce) { .rp-b1 { animation: none; } .rp-badge { transition: none; } }
+
 /* VOLUME / TUNING: cream paint in the wood under each knob, centred on the knob's axis. Letter-spacing pads the right
    side of the last letter, so the same space goes on the left (padding-left) or the word sits off-centre */
 .rp-eng { position: absolute; top: calc(601 * var(--u)); width: calc(200 * var(--u)); margin-left: calc(-100 * var(--u)); text-align: center;

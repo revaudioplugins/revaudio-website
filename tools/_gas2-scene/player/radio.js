@@ -25,6 +25,7 @@
   dock.innerHTML = `<div class="rp-body"><div class="rp-plate">
       <img class="rp-off" src="${BASE}img/radio-off.webp" alt="" draggable="false">
       <img class="rp-lit" src="${BASE}img/radio-lit.webp" alt="" draggable="false">
+      <button type="button" class="rp-badge"><span class="rp-b0" aria-hidden="true">Give it gas</span><span class="rp-b1">Give it gas</span></button>
       <div class="rp-px rp-glass"><i class="rp-glow"></i><i class="rp-scale"></i><i class="rp-ptr"></i>
         <div class="rp-st">${STATIONS.map((s, i) => `<button type="button" data-st="${i}" aria-label="${s.name}">${s.dial || s.name}</button>`).join('')}</div></div>
       <div class="rp-px rp-well"></div>
@@ -43,6 +44,10 @@
   scene.appendChild(noradio); scene.appendChild(bench); scene.appendChild(dock);
   const q = s => dock.querySelector(s), qa = s => [...dock.querySelectorAll(s)];
   const plate = q('.rp-plate'), ptr = q('.rp-ptr');
+
+  // the nameplate on the grille (Dan 2026-10-24: "like a brand name, like a Marshall ... pops out"): a script badge that
+  // is a second play key. Dan's pick from the ?badge picker: "Give it gas", cream, tilted (radio.css .rp-badge)
+  const badge = q('.rp-badge');
   const knobVol = q('.rp-knob.rp-vol'), knobTune = q('.rp-knob.rp-tun');
 
   // the knob strip: an angle -135..+135 picks one of 129 frames (12 x 11 grid)
@@ -103,7 +108,7 @@
     knobAt(knobVol, -135 + vol * 270); knobVol.setAttribute('aria-valuenow', Math.round(vol * 100)); };
 
   // ---------- actions ----------
-  const play = () => { ensure(); playing = true; start(); render(); };
+  const play = () => { ensure(); playing = true; plate.classList.add('played'); start(); render(); };   // played = the badge's glint rests
   const stop = () => {
     playing = false; token++;
     if (ac) { const t = ac.currentTime; bus.gain.cancelScheduledValues(t); bus.gain.setValueAtTime(bus.gain.value, t); bus.gain.linearRampToValueAtTime(0, t + .12);
@@ -139,6 +144,7 @@
   // ---------- hands ----------
   qa('.rp-key[data-side]').forEach(k => k.addEventListener('click', () => setSide(k.dataset.side)));
   q('.rp-key.p').addEventListener('click', () => (playing ? stop() : play()));
+  badge.addEventListener('click', () => (playing ? stop() : play()));
   qa('[data-st]').forEach(x => x.addEventListener('click', () => tune(+x.dataset.st)));
   // knobs: drag up / right = clockwise, 1:1; wheel and arrow keys too
   const knob = (el, onDelta) => {
