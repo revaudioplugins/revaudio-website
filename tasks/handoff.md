@@ -156,6 +156,27 @@ Branch `feat/gas2-page`, worktree `Website/revaudio-website-g2p`. Full state + n
 - For Dan: (1) on phones the scene crops the radio off-screen (x < 0 at 390 px) - your layout; (2) real Safari not
   checked yet; (3) radio.css only touches page-b's `#radio` / `#radioCap`, nothing else of yours.
 - Next: Yoni's POP / ELECTRONIC / ROCK renders (dry + gas + grade / amount) -> `player/tools/prep_audio.py <id> dry gas`.
+### Session end (2026-10-23, `revaudio-cd`, close-session)
+
+- `feat/gas2-page` = origin (0 / 0), last `4bfc117`; only this note uncommitted. Worktree `Website/revaudio-website-g2p`.
+- NOT pushed elsewhere (both wait for Yoni's word):
+  - Website main clone: `main` ahead 3 / behind 33: `70f8f8d` + `860e56a` (rescued notes from earlier sessions) + `a5fa319`
+    (2 Web Audio lessons from the dropped jukebox). A push to main = live deploy. The jukebox itself is dropped from main
+    (Yoni) and kept on LOCAL branches `archive/gas2-jukebox` + `archive/gas2-jukebox-notes` (main clone only).
+  - Shared clone: ahead 3 / behind 3: `fa5a1a2` (design-language: a pressed key reads down by depth) on top of
+    `9b5a0c4` + `c392a35` from the jukebox session -> Yoni to say "push shared" (merge --no-ff, then push).
+  - Shared, uncommitted: `tools/knob-lab/library/knobs.json` = Yoni's radio knob card ("GAS 2 RADIO TUNING · KNURL ·
+    10-23 17:25", saved by serve-lab) -> commit on his "save"; `memory/feedback_placement_bench_early.md` + its
+    MEMORY.md line (mine); MEMORY.md also holds another session's uncommitted line (Hebrew-layout), not mine.
+- Background processes (all on Yoni's laptop 2, started this session):
+  - `python -m http.server 4462` (page-b), PID 13620. Kill: `Stop-Process -Id 13620`.
+  - `serve-lab.py 8797 --pages .../player` (radio KNOB LAB), PID 2836. Kill: `Stop-Process -Id 2836`.
+  - `python -m http.server 8793` from `C:/RevAudio` (knob bake), PID 40696. Kill: `Stop-Process -Id 40696`.
+- Unverified: real Safari / Firefox / a real phone; sound by ear in a browser (headless only measured gains + loudness).
+- Next session decides: (1) POP / ROCK GAS 2 settings (caption) + ELECTRONIC renders, from Yoni; (2) "push shared";
+  (3) push the 3 website-main notes commits or not (live deploy); (4) Dan's answers: phone crop, Safari check.
+- Cleanup: `player/knoblab/knob-recipe-yoni-2026-10-23.bake.json` untracked + now gitignored (bake output, fine).
+
 
 ## 2026-10-22 — GAS 2 page: the station mockup on branch `feat/gas2-page` (Claude Code `danavivi-a3`, Dan's Mac) — BRANCH PUSHED, NOT MAIN (Dan: "push this branch so Yoni can work on the player")
 
