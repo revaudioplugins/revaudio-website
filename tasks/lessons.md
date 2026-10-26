@@ -108,3 +108,13 @@ child counts toward scrollable overflow, so `scrollWidth > clientWidth` turned t
 width (verify-hear.cjs's coachClipped said "clipped" everywhere, a blind metric). Measure the lit text instead:
 `range.selectNodeContents(el)` -> its right edge vs the cell's right edge, plus a control string that must fail
 (coachfit.cjs). The real check then found the one true clip: 2-6 px at 360, fixed with letter-spacing 0.
+
+## 2026-10-26 — bench files, font fallbacks and WebKit: three traps from the #hear LCD work
+1. `bench/assets/` is gitignored (big AI originals). A bench's own crops / fonts put there never reach git, and a
+   partner gets a bench with broken images. Give each bench its own folder (`bench/drift-lcd/`, `bench/drift-play/`)
+   and check `git status --short bench/` shows the files before the commit.
+2. A Playwright screenshot waits for web fonts, so it can never show a `font-display: swap` fallback. To judge the
+   fallback, block the font request and capture through CDP (`Page.captureScreenshot`), which does not wait.
+3. playwright-core 1.63 asks for `webkit-2359`; laptop 1 has `webkit-2336`. Launch it with
+   `executablePath: %LOCALAPPDATA%/ms-playwright/webkit-2336/Playwright.exe` instead of downloading. Windows WebKit has no
+   `AudioContext`, so the #hear player stays on its no-audio path there: WebKit checks the look, not the sound.

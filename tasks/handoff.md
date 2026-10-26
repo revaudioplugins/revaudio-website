@@ -1,10 +1,23 @@
-## 2026-10-19 — DRIFT #hear: guide the visitor step by step, branch `drift-hear-guide` (Claude Code `revaudio-ef`, laptop 1) — BUILT + VERIFIED LOCALLY, NOT PUSHED
+## 2026-10-19 — DRIFT #hear: guide the visitor step by step, branch `drift-hear-guide` (Claude Code `revaudio-ef`, laptop 1) — BUILT + VERIFIED LOCALLY; BRANCH PUSHED TO ORIGIN AS A BACKUP 2026-10-26, NOT ON MAIN (not live)
 
-Claim (owner `revaudio-ef`): `src/components/drift/DriftHear.astro`, `src/lib/drift/hear.ts`, `src/components/drift/DriftHero.astro`
+Claim (owner `revaudio-ef`): CLOSED 2026-10-26 at rv close; the next session on this branch re-claims these files:
+`src/components/drift/DriftHear.astro`, `src/lib/drift/hear.ts`, `src/components/drift/DriftHero.astro`
 (the HEAR IT link), the #hear + `.d-hero-hear` rules in `src/styles/drift.css`, `src/lib/drift/lcd.ts` + one line of
-`src/lib/drift/bus.ts` (PAN via lcdText), `public/fonts/drift/DSEG14*`, `bench/drift-lcd-bench.html` + `bench/drift-lcd/`, `DESIGN.md` §9 (one line), `tasks/todo.md` (top section),
-`tasks/drift-player-plan.md` (Round 9), `tasks/lessons.md` (one entry), this entry. Worktree
+`src/lib/drift/bus.ts` (PAN via lcdText), `public/fonts/drift/DSEG14*`, `bench/drift-lcd-bench.html` + `bench/drift-lcd/`,
+`bench/drift-play-bench.html` + `bench/drift-play/`, `DESIGN.md` §9 (one line), `tasks/todo.md` (top sections),
+`tasks/drift-player-plan.md` (Round 9), `tasks/lessons.md` (three entries), this entry. Worktree
 `Website/revaudio-website-hear` (off origin/main `d0168a6`; `node_modules` = junction to the main checkout's).
+- State at rv close 2026-10-26: 7 commits on the branch (`9133d86`..`cca3cc4`) + this close commit. The LCD is APPROVED
+  on the page (user: "מגניב נראה קול רצח" = looks killer). Step 2 (PLAY / STOP) has a bench,
+  `bench/drift-play-bench.html` (serve the worktree root on 8796): 0 today's box, A chrome bezels + 24 LED bars round
+  PLAY (step 3's language; recommended), B pilot lamps, C a lit PLAY cap; STOP stays unlit dark red in all three (one
+  race-red per viewport). WAITING: the user's pick, then fold it (`tasks/todo.md` "step 2", P2 + P3; scope the mount
+  wrapper to `.d-hear-sec` so #drive's GPS caps don't change).
+- Then resume the one-by-one review of the guide at item 3 ("3 PUSH DRIFT" + the ORIGINAL / DRIFT labels), then 4
+  loading state, 5 checker crop, 6 試聴 off on phones, 7 HEAR IT hero link (item 2, the breathing, is covered by step 2).
+- origin/main moved 46 commits past this branch's base `d0168a6` (seen 2026-10-26), DRIFT pages among them (`5007e66`
+  DRIFT stays free on /drift, `fb3941f` feedback-form dates). Before "push": rebase or merge onto origin/main, resolve
+  this file by hand, rebuild, re-run the #hear checks (heights, guide states, coach fit, reduced motion).
 Plan, findings, checks: `tasks/todo.md` top section.
 - What: opens on the ORIGINAL; the LCD's left header cell coaches (PRESS PLAY -> PUSH DRIFT -> PUSH AGAIN: ORIGINAL
   -> NOW PLAYING); the next step's key + control breathe (PLAY's old glow), the others rest dim; ORIGINAL / DRIFT
@@ -14,7 +27,8 @@ Plan, findings, checks: `tasks/todo.md` top section.
   on `bench/drift-lcd-bench.html`, serve the worktree root on 8796). Same heights; checks in `tasks/todo.md` (LCD).
 - Answers (laptop 1 user, 2026-10-19): default ORIGINAL, "3 PUSH DRIFT", no HEADPHONES tag, hero link yes.
 - Next: the user looks at it (local dist: `python -m http.server 4417 --bind 127.0.0.1` in the worktree's `dist/`,
-  then http://127.0.0.1:4417/drift/), then "push" = merge to main = live. A real iPhone / Safari listen is still owed.
+  then http://127.0.0.1:4417/drift/), then "push" = merge to main = live (only on the user's word). A real iPhone /
+  Safari listen is still owed.
 - Note: the main clone's `tasks/handoff.md` was claimed by `revaudio-2a` (uncommitted), so this claim lives on the
   branch; expect a small merge in this file at push time.
 
