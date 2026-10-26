@@ -25,3 +25,30 @@ Straight-on, perfectly flat orthographic photograph of one wide steel dashboard 
 
 Like a Tokyo highway-underpass wall bolted to a racing cabinet: layers of overlapping old spray tags in faded magenta, cyan and white along the edges, peeling paper stickers, black tyre-rubber marks swept across it, one corner scorched and heat-blued from the crash, dents and scrapes to bare steel. A bold chalky-white hand-sprayed Japanese "聴け" across the top left with drips, and a small hot-magenta katakana "ドリフト" tag at the top right. Every Japanese character must be correct and clearly legible.
 ```
+
+
+## panel3-portrait (2026-10-26, the phone plate)
+
+`/v1/images/edits` with `panel3.png` as the input image, gpt-image-2, 1024 x 1536. The Japanese came back correct
+(聴け, ドリフト, 夜, 最高速度で, 逃げ場はない), checked by eye.
+
+```text
+Recompose this exact graffiti steel plate as a tall PORTRAIT plate: the same wall, the same violet-black worn gunmetal, the same tags, stickers, tyre marks, scorched heat-blued corner, dents and scrapes, the same colours and lighting, straight-on and flat, filling the whole frame edge to edge with no border and no background. Keep the Japanese lettering exactly as written, correct and legible: the big white spray-painted "聴け" at the top, the magenta katakana "ドリフト" tag, "夜", "最高速度で" and "逃げ場はない" running down the left and right edges. Most graffiti hugs the top strip and the left and right edges; the middle is quieter worn metal. No screws, no bolts, no buttons, no other lettering.
+```
+
+## crack-lcd / crack-crt (2026-10-26, the broken glass on the LCD and the track list)
+
+gpt-image-2, generated on black, cut into two crops, used with `mix-blend-mode: screen`.
+
+```text
+Macro photograph of cracked glass on a PURE BLACK background, made to be used as a screen-blend overlay layer. One crack system in a thin glass screen: a small impact point near the right edge with a tight star of fine radial cracks, and three long thin branching hairline cracks running from it to the left and down across the frame, each catching the light as a thin bright silvery-white line with a faint dark shadow line beside it and a hint of prismatic edge. Some short secondary branches. Everything else is pure black (#000000): no glass texture, no reflections, no dust, no frame, no text, no colour cast.
+```
+
+## spray-arrow (2026-10-26, variant B's arrows at PLAY and DRIFT)
+
+gpt-image-2, generated on black; the left half = the arrow. The right half (a sprayed ring) was tried round the DRIFT
+button and dropped: a magenta ring there reads as the button's own lamp (magenta = DRIFT on).
+
+```text
+Hand-sprayed graffiti marks in hot magenta (#ff4fd8) aerosol spray paint on a PURE BLACK background, photographed flat and straight-on, made to be used as a screen-blend overlay layer. Left half: one bold curved arrow sprayed in a single fast stroke, sweeping from the upper left and pointing down to the lower right, with a soft overspray mist halo, fine paint speckles, thicker paint where the stroke starts and two paint drips running straight down. Right half: one rough hand-sprayed circle ring, open at the top where the stroke started and ended, like a tagger circling a target, with overspray and two drips. Real aerosol paint texture. Nothing else: pure black background (#000000), no wall, no texture, no text, no letters.
+```

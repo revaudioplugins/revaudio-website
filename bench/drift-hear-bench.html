@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>#hear section bench</title>
+<!--
+  #hear SECTION bench (2026-10-26, laptop 1 user, after picking plate 3: "the LCD panels and all of those elements
+  engraved in that background ... remove LET'S DRIFT from the top, keep it simple ... the panels the elements sit on a
+  little worn, same vibe ... the LCD and PICK A TRACK a little broken ... PLAY and PUSH DRIFT upfront, catch the eye
+  more ... make this whole section glued together").
+  The REAL built /drift page in two frames (desktop 1440, phone 390). Everything below is injected into the frames:
+  the page itself is untouched until the user picks.
+  Serve: npm run build, then python bench/serve-panel-bench.py -> http://127.0.0.1:8797/bench/drift-hear-bench.html
+-->
+<style>
+:root { color-scheme: dark; --ink: #e9def5; --dim: #9a8bb0; --hot: #ff4fd8; }
+* { box-sizing: border-box; }
+body { margin: 0; background: #0c0811; color: var(--ink); font: 14px/1.45 system-ui, sans-serif; }
+.wrap { max-width: 1500px; margin: 0 auto; padding: 18px 16px 40px; }
+h1 { font: 800 24px/1.1 system-ui; margin: 0 0 6px; }
+.lede { color: var(--dim); max-width: 920px; margin: 0 0 14px; }
+.bar { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center;
+  padding: 10px 12px; margin-bottom: 14px; background: #160f1f; border: 1px solid #2c2138; border-radius: 8px; }
+.bar b { font-size: 12px; letter-spacing: .14em; color: var(--dim); }
+.grp { display: flex; gap: 6px; align-items: center; }
+.bar button { font: 700 13px/1 system-ui; color: var(--ink); background: #241a30; border: 1px solid #3a2d4a; border-radius: 6px; padding: 8px 11px; cursor: pointer; }
+.bar button[aria-pressed='true'] { background: var(--hot); border-color: var(--hot); color: #14061a; }
+.bar label { display: flex; align-items: center; gap: 8px; color: var(--dim); font-size: 12px; letter-spacing: .08em; }
+.bar output { color: var(--ink); min-width: 3.2em; font-variant-numeric: tabular-nums; }
+.note { color: var(--dim); margin: 0 0 12px; min-height: 2.8em; max-width: 1100px; }
+.frames { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: start; }
+.cell small { display: block; color: var(--dim); font-size: 12px; letter-spacing: .1em; margin: 0 0 6px; }
+.view { position: relative; overflow: hidden; border-radius: 8px; border: 1px solid #2c2138; background: #000; }
+.view iframe { position: absolute; left: 0; top: 0; border: 0; transform-origin: 0 0; }
+.desk { width: 100%; }
+.phone { width: 330px; }
+@media (max-width: 900px) { .frames { grid-template-columns: minmax(0, 1fr); } .phone { width: 100%; max-width: 360px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>#hear: one engraved wall</h1>
+  <p class="lede">The real /drift page, live (the player works). LOOK E = plate 3, the title row gone, every part sunk into
+  a pocket milled into the wall, worn lips, a cracked corner on the LCD and the CRT glass. UPFRONT = how PLAY and PUSH
+  DRIFT step forward. FLOOR = what the pockets are cut into.</p>
+  <div class="bar" id="bar">
+    <span class="grp"><b>LOOK</b><button data-k="look" data-v="0">0 · TODAY</button><button data-k="look" data-v="e" aria-pressed="true">E · ENGRAVED</button></span>
+    <span class="grp"><b>UPFRONT</b><button data-k="up" data-v="0">AS IS</button><button data-k="up" data-v="a" aria-pressed="true">A · BIG + LIGHT</button><button data-k="up" data-v="b">B · A + SPRAY</button></span>
+    <span class="grp"><b>FLOOR</b><button data-k="floor" data-v="wall" aria-pressed="true">WALL</button><button data-k="floor" data-v="steel">DRIFT STEEL</button></span>
+    <label>VEIL <input type="range" id="veil" min="0" max="50" value="18"><output id="veilo"></output></label>
+    <label>PHONE Y <input type="range" id="px" min="0" max="100" value="0"><output id="pxo"></output></label>
+  </div>
+  <p class="note" id="note"></p>
+  <div class="frames">
+    <div class="cell"><small>DESKTOP 1440</small><div class="view desk" id="vd"><iframe id="fd" title="desktop 1440" width="1440" height="640"></iframe></div></div>
+    <div class="cell"><small>PHONE 390</small><div class="view phone" id="vp"><iframe id="fp" title="phone 390" width="390" height="720"></iframe></div></div>
+  </div>
+</div>
+<script>
+const PLATE = '/bench/drift-panel/panel3.webp', PW = 2560, PH = 1024;
+const PLATE_P = '/bench/drift-panel/panel3-portrait.webp', PPW = 1024, PPH = 1536;
+const st = { look: 'e', up: 'a', floor: 'wall', veil: 18, px: 0 };
+const NOTES = {
+  a: 'A · BIG + LIGHT: PLAY is the big cap now (STOP steps down), its lamp lights the floor round it; the DRIFT button grows, its light spills when it is on; VOLUME steps back. The breath still marks only the next step.',
+  b: 'B · A + SPRAY: A, plus a hand-sprayed magenta arrow at PLAY and one at the DRIFT button: the one that is next is fresh paint, the other faded. Phones skip the arrows (no room).',
+  0: 'AS IS: the controls as they are on the page today, inside the engraved wall.',
+};
+
+/* ---- the injected look ---------------------------------------------------------------------------------------- */
+const cssLook = () => {
+  const v = (st.veil / 100).toFixed(2);
+  return `
+#cookie-banner { display: none !important; }
+/* the wall: plate 3, the title row off the screen (kept for screen readers), no checker, no sticker */
+.d-panel.d-hear-panel { background: linear-gradient(rgba(12, 5, 18, ${v}), rgba(12, 5, 18, ${v})), url(${PLATE}) 50% 50% / cover, #150a1f !important;
+  padding-top: 40px !important; padding-bottom: 30px !important; }
+@media (max-width: 600px) { .d-panel.d-hear-panel { background: linear-gradient(rgba(12, 5, 18, ${v}), rgba(12, 5, 18, ${v})), url(${PLATE_P}) 50% ${st.px}% / cover, #150a1f !important; padding-top: 24px !important; padding-bottom: 22px !important; } }
+#hear .d-hear-head { position: absolute !important; width: 1px; height: 1px; margin: 0 !important; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.d-hear-panel > .d-checker, .d-hear-panel > .d-sticker { display: none !important; }
+
+/* a pocket milled into the wall: cut line, the lip catching the lamp on the bottom-right edge, the wall dark on the
+   top-left inside, the floor a step down (light from the upper left, Law 4) */
+#hear .d-hear-tv, #hear .d-hear-step, #hear .d-hear-screen {
+  --cut: 0 0 0 1px rgba(3, 1, 6, .95), 1px 1px 0 1px rgba(232, 220, 246, .26), -1px -1px 0 1px rgba(0, 0, 0, .7), 0 0 0 4px rgba(10, 4, 16, .35);
+  --sink: inset 0 12px 16px -8px rgba(0, 0, 0, .85), inset 12px 0 16px -10px rgba(0, 0, 0, .6), inset 0 -1px 0 rgba(255, 240, 255, .06), inset -1px 0 0 rgba(255, 240, 255, .04);
+}
+#hear .d-hear-tv, #hear .d-hear-step { border-image: none !important; border: 0 !important; filter: none !important; border-radius: 10px !important;
+  box-shadow: var(--cut), var(--sink) !important; }
+#hear .d-hear-tv { padding: 12px !important; }
+#hear .d-hear-tv > .d-hear-pick { border-radius: 8px !important; }
+#hear .d-hear-sec .d-hear-step:not(.d-hear-step--ab), #hear .d-hear-step:not(.d-hear-step--ab) { padding: 14px 22px 16px !important; }
+#hear .d-hear-step--ab { padding: 14px 18px 12px !important; }
+@media (max-width: 600px) { #hear .d-hear-tv { padding: 8px !important; } #hear .d-hear-step:not(.d-hear-step--ab) { padding: 10px 10px 10px !important; } #hear .d-hear-step--ab { padding: 10px 10px 10px !important; } }
+/* the LCD: its window cut straight into the wall (the glass a step down) */
+#hear .d-hear-screen { box-shadow: var(--cut) !important; border-radius: 6px !important; }
+#hear .d-hear-screen::before { box-shadow: inset 0 0 0 2px #040106, inset 0 8px 12px rgba(0, 0, 0, .8), inset 8px 0 10px -4px rgba(0, 0, 0, .55), inset 0 -4px 7px rgba(0, 0, 0, .45) !important; }
+/* the CRT glass in its pocket: a worn black bezel ring, no violet halo */
+#hear .d-hear-pick { box-shadow: 0 0 0 1px rgba(4, 2, 8, .95), 0 0 0 5px #0d0612, 1px 1px 0 5px rgba(232, 220, 246, .14), inset 0 12px 26px rgba(0, 0, 0, .65) !important; }
+
+/* broken: a cracked corner on each glass, never over what is read (Law 5) */
+#hear .bx-crack { position: absolute; pointer-events: none; z-index: 3; mix-blend-mode: screen; opacity: .75; background: center / contain no-repeat; }
+#hear .bx-crack.lcd { right: 0; top: 24%; width: 30%; height: 52%; background-image: url(/bench/drift-panel/crack-lcd.webp); background-position: right center; }
+#hear .bx-crack.crt { right: 0; top: 0; width: 30%; height: 17%; background-image: url(/bench/drift-panel/crack-crt.webp); background-position: right top; }
+`;
+};
+const cssFloor = () => st.floor === 'wall'
+  ? `#hear .d-hear-tv, #hear .d-hear-step { background: linear-gradient(rgba(7, 3, 11, .66), rgba(7, 3, 11, .66)), url(${PLATE}) var(--fx, 0) var(--fy, 0) / var(--fw, 100%) var(--fh, 100%) no-repeat, #0d0612 !important; }
+@media (max-width: 600px) { #hear .d-hear-tv, #hear .d-hear-step { background-image: linear-gradient(rgba(7, 3, 11, .66), rgba(7, 3, 11, .66)), url(${PLATE_P}) !important; } }`
+  : `#hear .d-hear-tv, #hear .d-hear-step { background: linear-gradient(rgba(10, 4, 16, .5), rgba(10, 4, 16, .5)), var(--d-img-panel) center / cover, #150a1f !important; }`;
+
+const cssUp = () => {
+  if (st.up === '0') return '';
+  let s = `
+/* PLAY = the big cap, STOP steps down; the lamp lights the floor round it */
+#hear .d-hear-step:not(.d-hear-step--ab) .d-hear-caps { gap: 8px !important; }
+#hear .d-hear-step:not(.d-hear-step--ab) .d-hear-mount--play { width: 84px !important; height: 84px !important; }
+#hear .d-hear-step:not(.d-hear-step--ab) .d-hear-mount--play .d-cap { width: 66px !important; height: 66px !important; }
+#hear .d-hear-step:not(.d-hear-step--ab) .d-hear-mount:not(.d-hear-mount--play) { width: 50px !important; height: 50px !important; }
+#hear .d-hear-step:not(.d-hear-step--ab) .d-hear-mount:not(.d-hear-mount--play) .d-cap { width: 38px !important; height: 38px !important; }
+#hear .d-hear-step:not(.d-hear-step--ab) .d-hear-mount:not(.d-hear-mount--play)::before { inset: 3px !important; }
+#hear .d-hear-mount--play { transition: box-shadow .25s ease; }
+[data-hear][data-next='play'] .d-hear-mount--play { animation: bx-floor 1.2s ease-in-out infinite; }
+[data-hear][data-playing] .d-hear-mount--play { box-shadow: 0 7px 11px rgba(0, 0, 0, .7), 0 2px 3px rgba(0, 0, 0, .6), inset 0 0 0 1px rgba(255, 255, 255, .42), inset 0 -2px 3px rgba(0, 0, 0, .4), 0 0 26px 8px rgba(70, 255, 120, .2) !important; }
+@keyframes bx-floor { 0%, 100% { box-shadow: 0 7px 11px rgba(0, 0, 0, .7), 0 2px 3px rgba(0, 0, 0, .6), inset 0 0 0 1px rgba(255, 255, 255, .42), inset 0 -2px 3px rgba(0, 0, 0, .4), 0 0 26px 8px rgba(70, 255, 120, 0); }
+  50% { box-shadow: 0 7px 11px rgba(0, 0, 0, .7), 0 2px 3px rgba(0, 0, 0, .6), inset 0 0 0 1px rgba(255, 255, 255, .42), inset 0 -2px 3px rgba(0, 0, 0, .4), 0 0 30px 10px rgba(70, 255, 120, .26); } }
+/* the DRIFT button grows; lit, its light spills on the floor */
+#hear .d-hear-sec .d-start, #hear .d-start { --k: .66 !important; }
+#hear .d-start:not([data-on='after']):not([data-loading]) .d-start-ticks i { background: rgba(242, 76, 240, .3); }   /* its ring reads as an instrument at rest */
+#hear .d-start:not([data-on='after']) .d-start-lg.lit { opacity: .3; }   /* a push-to-start button's standby backlight: the legend glows dim while it is off */
+#hear .d-start::before { content: ''; position: absolute; inset: 4%; border-radius: 50%; pointer-events: none; opacity: 0; transition: opacity .3s ease;
+  box-shadow: 0 0 34px 12px rgba(255, 79, 216, .3); }
+#hear .d-start[data-on='after']:not([data-loading])::before { opacity: 1; }
+/* VOLUME steps back: smaller, quieter label */
+#hear .d-vol { width: 92px !important; height: 92px !important; }
+#hear .d-vol-ticks { --r: 39px !important; }
+#hear .d-vol-knob { width: 48px !important; height: 48px !important; }
+#hear .d-hear-pair > .d-hear-unit:last-of-type .d-hear-unit-lbl { color: #6f5f84 !important; }
+@media (max-width: 600px) {
+  #hear .d-hear-step:not(.d-hear-step--ab) .d-hear-caps { gap: 6px !important; }
+  #hear .d-hear-step:not(.d-hear-step--ab) .d-hear-mount--play { width: 62px !important; height: 62px !important; }
+  #hear .d-hear-step:not(.d-hear-step--ab) .d-hear-mount--play .d-cap { width: 49px !important; height: 49px !important; }
+  #hear .d-hear-step:not(.d-hear-step--ab) .d-hear-mount:not(.d-hear-mount--play) { width: 40px !important; height: 40px !important; }
+  #hear .d-hear-step:not(.d-hear-step--ab) .d-hear-mount:not(.d-hear-mount--play) .d-cap { width: 30px !important; height: 30px !important; }
+  #hear .d-hear-sec .d-start, #hear .d-start { --k: .46 !important; }
+  #hear .d-vol { width: 72px !important; height: 72px !important; } #hear .d-vol-ticks { --r: 30px !important; } #hear .d-vol-knob { width: 38px !important; height: 38px !important; }
+}
+@media (prefers-reduced-motion: reduce) { [data-hear][data-next='play'] .d-hear-mount--play { animation: none; } }
+`;
+  if (st.up === 'b') s += `
+/* B: hand-sprayed magenta paint on the floor (photographed aerosol, screen-blended so the floor shows through the
+   mist): an arrow at PLAY and one at the DRIFT button (a ring round DRIFT read as its lamp: magenta = DRIFT on).
+   Fresh paint on the step that is next, faded on the other */
+#hear .bx-spray { position: absolute; pointer-events: none; mix-blend-mode: screen; background: center / contain no-repeat; opacity: .32; transition: opacity .35s ease; }
+#hear .bx-arrow { background-image: url(/bench/drift-panel/spray-arrow.webp); }
+#hear .bx-arrow.play { left: 4px; top: 16px; width: 50px; height: 60px; }
+#hear .bx-arrow.drift { left: 50px; top: 66px; width: 56px; height: 68px; }   /* left of the button, under the title: paint never crosses what is read */
+#hear [data-step='3'] { position: relative; }
+#hear[data-next='play'] .bx-arrow.play, #hear:is([data-next='drift'], [data-next='back']) .bx-arrow.drift { opacity: .95; }   /* #hear: an id rule above would outrank a plain [data-hear] one */
+#hear[data-next=''] .bx-spray { opacity: .55; }
+@media (max-width: 600px) { #hear .bx-arrow { display: none; } }
+`;
+  return s;
+};
+
+/* ---- the injected parts: cracks, arrows, the noise mask, the floor alignment --------------------------------- */
+const CRACK_LCD = '<span class="bx-crack lcd" aria-hidden="true"></span>';
+const CRACK_CRT = '<span class="bx-crack crt" aria-hidden="true"></span>';
+const ARROW_PLAY = '<span class="bx-spray bx-arrow play" aria-hidden="true"></span>';
+const ARROW_DRIFT = '<span class="bx-spray bx-arrow drift" aria-hidden="true"></span>';
+const NOISE = `url("data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="7"/><feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 -2.2 1.9"/></filter><rect width="160" height="160" filter="url(#n)"/></svg>')}")`;
+
+const parts = (d, on) => {
+  const hear = d.getElementById('hear'); if (!hear) return;
+  hear.style.setProperty('--bx-noise', NOISE);
+  d.querySelectorAll('#hear .bx-crack, #hear .bx-spray').forEach((e) => e.remove());
+  if (!on) return;
+  const add = (sel, html) => { const host = hear.querySelector(sel); if (host) host.insertAdjacentHTML('beforeend', html); };
+  add('.d-hear-screen', CRACK_LCD); add('.d-hear-pick', CRACK_CRT);
+  if (st.up === 'b') { add('[data-step="2"]', ARROW_PLAY); add('[data-step="3"]', ARROW_DRIFT); }
+};
+// the pocket floors continue the wall: each floor shows the plate at the place it was cut from (cover + position maths)
+const align = (w) => {
+  const d = w.document, panel = d.querySelector('.d-hear-panel'); if (!panel) return;
+  const phone = w.innerWidth <= 600, pw = phone ? PPW : PW, ph = phone ? PPH : PH;
+  const P = panel.getBoundingClientRect(), k = Math.max(P.width / pw, P.height / ph), iw = pw * k, ih = ph * k;
+  const x0 = (P.width - iw) * .5, y0 = (P.height - ih) * (phone ? st.px / 100 : .5);
+  for (const el of d.querySelectorAll('#hear .d-hear-tv, #hear .d-hear-step')) {
+    const r = el.getBoundingClientRect();
+    el.style.setProperty('--fx', `${x0 - (r.left - P.left)}px`); el.style.setProperty('--fy', `${y0 - (r.top - P.top)}px`);
+    el.style.setProperty('--fw', `${iw}px`); el.style.setProperty('--fh', `${ih}px`);
+  }
+};
+
+const apply = () => {
+  for (const f of [$('fd'), $('fp')]) {
+    const d = f.contentDocument, w = f.contentWindow; if (!d || !d.head) continue;
+    let el = d.getElementById('hear-bench'); if (!el) { el = d.createElement('style'); el.id = 'hear-bench'; d.head.append(el); }
+    const on = st.look === 'e';
+    el.textContent = on ? cssLook() + cssFloor() + cssUp() : '#cookie-banner { display: none !important; }';
+    parts(d, on); requestAnimationFrame(() => align(w));
+    if (!w.__bxAlign) { w.__bxAlign = true; w.addEventListener('resize', () => align(w)); }
+  }
+  $('veilo').textContent = st.veil + ' %'; $('pxo').textContent = st.px + ' %';
+  $('note').textContent = st.look === '0' ? 'TODAY: the page as it is.' : NOTES[st.up];
+  for (const b of document.querySelectorAll('[data-k]')) b.setAttribute('aria-pressed', String(st[b.dataset.k] === b.dataset.v));
+};
+const $ = (id) => document.getElementById(id);
+const fit = () => {
+  for (const [v, f, w, h] of [[$('vd'), $('fd'), 1440, 640], [$('vp'), $('fp'), 390, 720]]) {
+    const k = v.clientWidth / w; f.style.transform = `scale(${k})`; v.style.height = `${Math.round(h * k)}px`;
+  }
+};
+const toHear = (f) => { const d = f.contentDocument, h = d && d.getElementById('hear'); if (h) f.contentWindow.scrollTo(0, h.getBoundingClientRect().top + f.contentWindow.scrollY - 64); align(f.contentWindow); };
+for (const f of [$('fd'), $('fp')]) f.addEventListener('load', () => { apply(); setTimeout(() => toHear(f), 500); });
+$('fd').src = '/drift/'; $('fp').src = '/drift/';
+$('bar').addEventListener('click', (e) => { const b = e.target.closest('[data-k]'); if (!b) return; st[b.dataset.k] = b.dataset.v; apply(); });
+$('veil').addEventListener('input', (e) => { st.veil = +e.target.value; apply(); });
+$('px').addEventListener('input', (e) => { st.px = +e.target.value; apply(); });
+addEventListener('resize', fit); fit();
+// test hook: window.benchSet({look, up, floor, veil, px})
+window.benchSet = (o) => { Object.assign(st, o); apply(); };
+</script>
+</body>
+</html>

@@ -9,11 +9,25 @@ Scope: the outer `.d-panel.d-hear-panel` plate only (step 3's pair plate and the
   marks), 3 STREET WALL (聴け, ドリフト, 夜, 最高速度で, 逃げ場はない, stickers, a heat-blued scorch). Every Japanese line
   read and correct. Bench `bench/drift-panel-bench.html` = the real built /drift in two frames (1440 / 390), the plate
   swapped live, VEIL + PHONE X sliders, checker + 試聴 toggle (`python bench/serve-panel-bench.py`, port 8797).
-- [ ] K2. The user picks (and says whether the checker strip + 試聴 sticker stay on top of the graffiti).
-- [ ] K3. Fold the pick: likely a second generation of it with the lettering placed where the plate shows (the parts
-  cover ~85 % on desktop: the title strip beside LET'S DRIFT., 44 px sides, 25 px bottom; phones show a narrow slice),
-  a phone crop or a portrait cut, `getImage` sizes (WebP), only `.d-hear-panel` changes.
-- [ ] K4. Verify: heights identical, the title and every readout still read (contrast over the graffiti), phone crop.
+- [x] K2. The user's pick: 3, STREET WALL (2026-10-26), with a bigger ask: "the LCD panels and all of those elements
+  engraved in that background ... remove LET'S DRIFT from the top, keep it simple ... the panels the elements sit on
+  a little worn, same vibe ... the LCD and PICK A TRACK a little broken, worn ... PLAY and PUSH DRIFT upfront, more
+  appealing, catch the eye more ... make this whole section glued together".
+- [x] E1. Assets (gpt-image-2, prompts in `bench/drift-panel/PROMPTS.md`): `panel3-portrait.webp` (an edit FROM plate
+  3, Japanese checked), `crack-lcd.webp` + `crack-crt.webp` (photographed glass crack on black, screen-blended),
+  `spray-arrow.webp`. No separate sub-plate: the pocket floors continue the wall itself (FLOOR WALL), darker.
+- [x] E2 (bench). Engrave: every part sits in a pocket milled into the plate (dark inner wall top-left, bare-steel chamfer +
+  catch-light on the bottom-right lip, the graffiti stops at the cut) instead of a box floating on it.
+- [x] E3 (bench). Simple top: LET'S DRIFT. off the screen (kept for screen readers: it names the section), checker strip + 試聴
+  sticker off; the plate's own top strip shows instead. The panel gets ~45 px shorter on desktop.
+- [ ] E4. PLAY + PUSH DRIFT up front: bigger, their lamps spill on the plate, hand-sprayed marks pointing at them;
+  VOLUME steps back. Section bench `bench/drift-hear-bench.html` (same server, port 8797): UPFRONT AS IS / A BIG +
+  LIGHT / B A + SPRAY (an arrow at PLAY and at DRIFT, the next one fresh paint), FLOOR WALL / DRIFT STEEL, VEIL,
+  PHONE Y. A sprayed ring round DRIFT was tried and dropped (it read as the button's own magenta lamp).
+  Waiting: the user picks UPFRONT + FLOOR.
+- [ ] E5. Fold the pick (DriftHear.astro + drift.css, #hear only; assets via getImage).
+- [ ] E6. Verify: every guide state, readouts still read over the graffiti, reduced motion, focus, phone 390 / 360,
+  WebKit, 0 errors; heights = before minus the title row.
 
 # DRIFT #hear — step 2 (PLAY / STOP) gets the love (2026-10-19, revaudio-ef, same branch)
 
