@@ -1,3 +1,10 @@
+## 2026-10-26 - DRIFT: the feedback form keeps DRIFT FREE (was $39) on /drift (Claude Code `revaudio-67`, Yoni's laptop 2) - PUSHED TO MAIN = LIVE
+
+Claim: CLOSED 2026-10-26. File: `src/data/drift.ts` (`driverPriceUsd: 0` = FREE; `driverValue()` feeds the road chip + the feedback route).
+- Ask (Yoni): the checkpoint gives DRIFT free, not $39; scope "email + website" (email 01 = revaudio-shared `6bb43b2`).
+- Left as is on purpose: `/drift/feedback` + `beta-survey.ts` still say "$30 off code" / "$39 with this code", because that is what the worker really mints today. They change together with the worker + a 100%-off Paddle code (Yoni's "deploy the worker").
+- Checked: build green; /drift dist has no $39; road screenshot at 1280 = FILLED THE FORM FREE.
+
 ## 2026-10-26 - DRIFT dates moved: feedback form closes Fri Nov 20, on sale Tue Dec 1 (Claude Code, Yoni's laptop 2) - PUSHED TO MAIN = LIVE (Yoni: "push deploy")
 
 Claim: CLOSED 2026-10-26. Files: `src/data/drift.ts` (feedbackClosesLabel, releaseLabel, header note), `src/data/beta-survey.ts` (intro), `src/pages/drift/feedback.astro` (code fine print), `src/components/drift/DriftHero.astro` + `DriftKeep.astro` (comments; the DriftKeep one ships in the HTML).

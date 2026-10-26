@@ -8,8 +8,8 @@
  * up, the download goes out BY EMAIL on Sat Oct 10 17:00 UTC (never linked on
  * the page). 30 days (Dan 2026-10-08 "its 30 days free" = the plugin's
  * LicenseManager kTrialDays; was 14). After the trial you keep DRIFT one of three ways: free with a
- * qualifying video (creator deal via /affiliate), $39 by filling in the
- * feedback form by Fri Nov 20, or $69 at release on Tue Dec 1. Prices show;
+ * qualifying video (creator deal via /affiliate), free by filling in the
+ * feedback form (Yoni 2026-10-26; was $39) by Fri Nov 20, or $69 at release on Tue Dec 1. Prices show;
  * nothing is on sale before Dec 1 (no buy button, no checkout, no coupon or
  * discount wording). D2/H1: DRIFT pans the WHOLE sound; the LOW/HIGH CUT band
  * is only where echo, reverb, tremolo and pitch play.
@@ -32,10 +32,11 @@ export const drift = {
   releaseLabel: 'Tue Dec 1',
   trialDays: 30,
   listPriceUsd: 69,
-  driverPriceUsd: 39,
+  /** The feedback route's price: 0 = the form keeps DRIFT free (Yoni 2026-10-26; was 39). */
+  driverPriceUsd: 0,
   showPrices: true,
 
-  /** The $39 route's form. The build refuses phase 'open' until it exists. */
+  /** The feedback route's form. The build refuses phase 'open' until it exists. */
   feedbackFormLive: true,
   /** The beta feedback form (src/pages/drift/feedback.astro); the BETA FEEDBACK key over Apply in #creators. */
   feedbackUrl: '/drift/feedback',
@@ -101,6 +102,9 @@ export const compatRows = () => [
   ...(drift.aaxReady ? [] : [{ k: 'PRO TOOLS', v: 'not yet' }]),
 ];
 
+/** The feedback route's value: '$39', or 'FREE' when driverPriceUsd is 0. */
+const driverValue = () => (drift.driverPriceUsd ? `$${drift.driverPriceUsd}` : 'FREE');
+
 /** 'Sat Oct 24' -> 'Oct 24' (the short rows are tighter than #get). */
 export const noDay = (label: string) => label.replace(/^[A-Z][a-z]{2} /, '');
 /** A date that never breaks across lines ('Oct\u00a024'). */
@@ -139,8 +143,8 @@ export function routesFor(phase: DriftPhase = drift.phase): Route[] {
     cond: 'Keep it with the feedback form',
     heroCond: 'Fill the feedback form',
     keepNote: `Form closes ${nb(noDay(drift.feedbackClosesLabel))}`,
-    note: `Fill it in by ${drift.feedbackClosesLabel} and we email you how to keep DRIFT${p ? ` for $${drift.driverPriceUsd}` : ''}.`,
-    value: p ? `$${drift.driverPriceUsd}` : undefined,
+    note: `Fill it in by ${drift.feedbackClosesLabel} and we email you how to keep DRIFT${p ? (drift.driverPriceUsd ? ` for $${drift.driverPriceUsd}` : ' free') : ''}.`,
+    value: p ? driverValue() : undefined,
   };
   const release: Route = {
     id: 'release',
@@ -185,7 +189,7 @@ export function lapFor(phase: DriftPhase = drift.phase): Lap | null {
         what: pre ? 'Trial starts · by email' : 'Trial open · by email',
         chip: p ? { label: 'Today', value: '$0' } : undefined },
       { id: 'check', flag: 'Checkpoint', date: nb(noDay(drift.feedbackClosesLabel)), what: 'Feedback form closes',
-        chip: p ? { label: 'Filled the form', value: `$${drift.driverPriceUsd}` } : undefined },
+        chip: p ? { label: 'Filled the form', value: driverValue() } : undefined },
       { id: 'finish', flag: 'Finish', date: nb(noDay(drift.releaseLabel)), what: 'On sale',
         chip: p ? { label: 'Everyone else', value: `$${drift.listPriceUsd}` } : undefined },
     ],
@@ -299,7 +303,7 @@ export const registerUrlFor = (phase: DriftPhase = drift.phase): string | undefi
 export function assertDriftConfig(checkoutUrl: string | null | undefined): void {
   const fail = (msg: string) => { throw new Error(`[drift.ts] ${msg}`); };
   if (drift.phase === 'open' && !drift.feedbackFormLive)
-    fail("phase 'open' needs feedbackFormLive: the $39 route would point at a form that doesn't exist.");
+    fail("phase 'open' needs feedbackFormLive: the feedback route would point at a form that doesn't exist.");
   if (drift.phase === 'released' && !checkoutUrl)
     fail("phase 'released' needs plugins.ts drift.checkoutUrl.");
   if (drift.phase === 'released' && drift.demoMode !== 'real' && drift.trialAfterRelease !== true)
