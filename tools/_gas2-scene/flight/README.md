@@ -111,6 +111,17 @@ r185 ~180 KB gzipped as vendored (a bundler tree-shakes it further), our own cod
 site (`src/`), re-render `img/land.webp`, `land-bg.webp` and `land-chalk.png` from the published page ("When the page
 changes"): touchdown is exact only against the page the landing frame was rendered from.
 
+Self-contained check (2026-10-26): exactly what git holds (`git archive`), served alone from an empty folder, runs the
+flight and the page in Chromium + WebKit at 1141x636 and 390x844 with no request leaving the origin, no 404 and no
+console error, except the pump's plugin face. That one still loads from `http://127.0.0.1:4461` (the GAS2 checkout on
+Dan's Mac). A snapshot of GAS 2's UI next to the page works (tested), but this repo is PUBLIC and GAS2 is PRIVATE, so
+committing it would publish the plugin's UI source: Dan's call (keep it as a URL, bundle it, or ship a built copy).
+
+Before page-b can go live (not the flight's; recorded for Dan): its "Download FREE" button opens the service ticket,
+and the ticket's form is a mock (`onsubmit` only shows "sent": nothing is sent, nothing downloads). GAS 2's public
+download (a signed installer, its hosting, the download worker) has to exist first and the form wired to it; the
+site's honesty rule forbids a form that pretends.
+
 How exact the hand-offs are (2026-10-26, straight off the canvas, DPR 2; Chromium 1141x636 / 1281x720 / 1440x900 /
 390x844 and WebKit 1141x636 / 390x844):
 

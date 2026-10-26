@@ -85,6 +85,16 @@ Files: NEW `tools/_gas2-scene/flight/**`; in `page-b.html` ONE `<link>` + `<scri
     pop scan (none), both hand-offs in Chromium 1141x636 / 1281x720 / 1440x900 / 390x844 + WebKit 1141x636 / 390x844
     (touchdown mean 1.5-3.2/255, closer than the page to itself one pixel narrower: 4.1; colour off by > 12 levels in
     <= 0.03 % of pixels), the page after = `?flight=0` 0.000, fallbacks, real iOS Safari on page-b itself (fresh origin).
+  - Self-contained check: `git archive` of the tree into an empty folder, served alone, page-b in Chromium + WebKit at
+    1141x636 + 390x844: flight, touchdown; 0 off-origin requests, 0 failed / 4xx, 0 console errors, EXCEPT the pump's
+    plugin face, still `http://127.0.0.1:4461` (the GAS2 checkout). A snapshot of GAS 2's UI beside the page works
+    (tested; kept OUT of the repo, in session scratch only): this repo is PUBLIC, GAS2 is PRIVATE, so committing it would
+    publish the plugin's UI source. Auto mode refused that push too. Dan's call: keep the URL, bundle, or a built copy.
+  - 🔴 Publish blocker found, NOT the flight's, Dan's call: page-b's "Download FREE" opens the service ticket, whose form
+    is a mock (`tk.onsubmit` only adds `.sent`: nothing is sent, nothing downloads). GAS 2's public download is owed
+    (shared CLAUDE.md: a code-signing cert before public download, R2 / site, Mac 1.0.0), then the form wired to the
+    download worker. Live also needs: page-b moved into the site (a route, its nav / analytics), Dan's real-phone look,
+    his sign-off and his push word (main = a live deploy).
 
 ## 2026-10-26 — GAS 2 page: no copying (Claude Code `danavivi-7e`, Dan's Mac) — BRANCH `feat/gas2-page` PUSHED
 
