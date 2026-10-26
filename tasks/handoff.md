@@ -42,6 +42,10 @@ badge click = play / stop, `.played` on first play), `DESIGN.md` §3 (script acc
   Checked (headless 1141 + 1440): no errors / 404s, all audio 200; badge -> play ORIGINAL 1/0; GAS 2 key 0/1; ORIGINAL 1/0;
   dial ELEC. -> st 2; tuning knob -> st 3; volume knob -> .62; play key stop / start; badge -> stop; hover moves nothing.
   Not checked: Dan's Safari by eye, real ears.
+- 2026-10-26, then (Dan: "cool make it white"): the same take-1 letters, thread recoloured warm white in code (`compose 1`,
+  default; `--tan` = the model's tan): letter mask = the take blurred 2.5 px minus blurred 14 px > 14 (the weave's own highlights
+  max 9, so no cloth blotches), each stitch's light kept (groove shade -> #f7f2e8). Compose now always starts from BASE_REV
+  `ec4504e` (the last plain-grille plates). Checked again headless: all keys / badge / hover as above.
 - Picked with the DESIGN.md "ONE script line per screen" rule flagged ("Fill it up." is Yellowtail too): recorded as
   "a nameplate ON a prop is not a line".
 - Checked: headless Chromium 1141x636 + 1440x900, no errors / 404s; badge click -> playing ORIGINAL (gains 1/0), glint stops;

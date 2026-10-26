@@ -4,7 +4,8 @@ the mask opens only the grille cloth, then compose() lays back ONLY the pixels t
 feathered), so the radio, keys, knobs, dial and every coordinate in radio.css stay pixel-identical. The off plate gets the
 same patch through the off/lit ratio of the old plates (the dial lamp's spill), so both states match.
 Usage: python player/tools/gen_stitch.py gen [n]       -> img/gen/stitch-<i>.png (gitignored) + img/gen/stitch-sheet.png
-       python player/tools/gen_stitch.py compose <i>   -> img/radio-lit.webp + img/radio-off.webp (from the git copies)"""
+       python player/tools/gen_stitch.py compose <i> [--tan]   -> img/radio-lit.webp + img/radio-off.webp, built from the
+           plain plates of BASE_REV; the thread is recoloured WHITE (Dan 2026-10-26: "make it white") unless --tan"""
 import base64, json, os, subprocess, sys, urllib.request, uuid
 import numpy as np
 from PIL import Image, ImageFilter
@@ -13,6 +14,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 PLAYER = os.path.dirname(HERE)
 IMG = os.path.join(PLAYER, 'img')
 GEN = os.path.join(IMG, 'gen')
+BASE_REV = 'ec4504e'                   # the last commit whose plates have a plain grille (compose always starts from it)
 W, H = 1368, 820                       # the plate, px (radio.css 1u = 1 px of it)
 S = 1536 / W                           # plate -> model px
 GRILLE = (290, 158, 1085, 400)         # the cloth inside its frame (262..1112 x 148..408) minus a margin, plate px
@@ -38,12 +40,12 @@ def key():
 
 
 def plate(name):
-    """the plate as committed (git HEAD), so compose() never stacks a patch on a patched plate"""
+    """the plain plate as committed at BASE_REV, so compose() never stacks a patch on a patched plate"""
     rel = os.path.relpath(os.path.join(IMG, name + '.webp'), subprocess.run(['git', '-C', HERE, 'rev-parse', '--show-toplevel'],
                           capture_output=True, text=True).stdout.strip())
-    tmp = os.path.join(GEN, '_head-' + name + '.webp')
+    tmp = os.path.join(GEN, '_base-' + name + '.webp')
     os.makedirs(GEN, exist_ok=True)
-    open(tmp, 'wb').write(subprocess.run(['git', '-C', HERE, 'show', 'HEAD:' + rel], capture_output=True, check=True).stdout)
+    open(tmp, 'wb').write(subprocess.run(['git', '-C', HERE, 'show', BASE_REV + ':' + rel], capture_output=True, check=True).stdout)
     return np.asarray(Image.open(tmp).convert('RGB')).astype(np.float32)
 
 
@@ -93,7 +95,22 @@ def gen(n):
     sheet.save(os.path.join(GEN, 'stitch-sheet.png'))
 
 
-def compose(i):
+def whiten(a, region):
+    """the take's tan thread -> warm white thread, same stitches. The letters = the thread blurred 2.5 px (stitches + their
+    grooves merge into strokes) standing 14+ above the cloth blurred 14 px (the weave's own highlights are too small to
+    survive the blur: cloth max 9); inside, each pixel's light maps groove-shade -> white (never pure #fff)"""
+    L = a @ np.array([.3, .59, .11], np.float32)
+    blur = lambda x, r: np.asarray(Image.fromarray(x.clip(0, 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(r))).astype(np.float32)
+    seed = ((blur(L, 2.5) - blur(L, 14) > 14) & (region > .2)).astype(np.uint8) * 255
+    let = Image.fromarray(seed).filter(ImageFilter.MaxFilter(3)).filter(ImageFilter.GaussianBlur(1))
+    al = (np.asarray(let).astype(np.float32) / 255)[..., None]
+    hi = np.percentile(L[al[..., 0] > .9], 97)
+    rel = np.clip((L - 30) / (hi - 30), 0, 1)[..., None] ** .85
+    shade, wh = np.array([88, 80, 70], np.float32), np.array([247, 242, 232], np.float32)
+    return a * (1 - al) + (shade + (wh - shade) * rel) * al
+
+
+def compose(i, white=True):
     lit, off = plate('radio-lit'), plate('radio-off')
     out = Image.open(os.path.join(GEN, f'stitch-{i}.png')).convert('RGB')
     new = np.asarray(out.crop((0, 0, 1536, round(H * S))).resize((W, H), Image.LANCZOS)).astype(np.float32)
@@ -104,6 +121,8 @@ def compose(i):
     box = Image.new('L', (W, H), 0); box.paste(255, GRILLE)
     m = np.asarray(m).astype(np.float32) / 255 * np.asarray(box.filter(ImageFilter.GaussianBlur(6))).astype(np.float32) / 255
     m = m[..., None]
+    if white:
+        new = whiten(new, m[..., 0])
     lit2 = lit * (1 - m) + new * m
     ratio = np.stack([np.asarray(Image.fromarray(np.clip((off[..., c] + 1) / (lit[..., c] + 1) * 128, 0, 255).astype(np.uint8))
                                  .filter(ImageFilter.GaussianBlur(20))).astype(np.float32) / 128 for c in range(3)], -1)
@@ -119,6 +138,6 @@ if __name__ == '__main__':
     if sys.argv[1:2] == ['gen']:
         gen(int(sys.argv[2]) if len(sys.argv) > 2 else 3)
     elif sys.argv[1:2] == ['compose']:
-        compose(int(sys.argv[2]))
+        compose(int(sys.argv[2]), white='--tan' not in sys.argv)
     else:
         print(__doc__)
