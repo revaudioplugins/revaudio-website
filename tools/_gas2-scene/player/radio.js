@@ -35,7 +35,7 @@
       <div class="rp-knob rp-vol" role="slider" tabindex="0" aria-label="Volume" aria-valuemin="0" aria-valuemax="100"><b></b></div>
       <div class="rp-knob rp-tun" role="slider" tabindex="0" aria-label="Tuning" aria-valuemin="1" aria-valuemax="${STATIONS.length}"><b></b></div>
       <i class="rp-jewel"></i>
-      <span class="rp-eng" style="left:calc(345 * var(--u))">VOLUME</span><span class="rp-eng" style="left:calc(1013.5 * var(--u))">TUNING</span>
+      <svg class="rp-arc" style="left:calc(345 * var(--u))" viewBox="-90 -90 180 180" aria-hidden="true"><path id="rpArc0" d="M -76 0 A 76 76 0 0 0 76 0" fill="none"/><text><textPath href="#rpArc0" startOffset="50%" text-anchor="middle">VOLUME</textPath></text></svg><svg class="rp-arc" style="left:calc(1013.5 * var(--u))" viewBox="-90 -90 180 180" aria-hidden="true"><path id="rpArc1" d="M -76 0 A 76 76 0 0 0 76 0" fill="none"/><text><textPath href="#rpArc1" startOffset="50%" text-anchor="middle">TUNING</textPath></text></svg>
     </div></div>`;
   const bench = document.createElement('img');   // the stool, a cut-out placed by radio.css (.rp-stool, --st-*)
   bench.className = 'rp-stool'; bench.src = BASE + 'img/stool.webp'; bench.alt = ''; bench.draggable = false;
