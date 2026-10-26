@@ -1,3 +1,14 @@
+## 2026-10-26 — GAS 2 page: no copying (Claude Code `danavivi-7e`, Dan's Mac) — BRANCH `feat/gas2-page` PUSHED
+
+Claim: CLOSED 2026-10-26. File: `tools/_gas2-scene/page-b.html` (one `<style>` + one `<script>` block in `<head>`, after the radio line).
+- Dan: "I can copy the page and mark it down. I can copy elements and assets ... disable that from users." Now: `user-select: none`
+  on the page (inputs / textareas / contenteditable keep it), `-webkit-user-drag: none` on img / svg / video, no iOS long-press
+  callout, and `contextmenu` / `dragstart` / `copy` / `cut` / `selectstart` cancelled outside form fields.
+- Checked headless 1141: Cmd+A and a mouse drag select nothing; right-click + drag on an image, copy / cut on the page: blocked;
+  copy inside the MAIL email field: allowed; the radio plays, A/B, volume drag all work; no errors.
+- A deterrent only (screenshots, view-source, the network tab still work). The pump iframe (:4461) is its own page: not covered.
+  The live site (`src/`) does not have this; carry it when the page moves into `src/` (Dan's call for the rest of the site).
+
 ## 2026-10-24 — GAS 2 page: chalkboard in front of the readings' shadow (Claude Code `danavivi-b4`, Dan's Mac) — BRANCH `feat/gas2-page`
 
 Claim: CLOSED 2026-10-24. File: `tools/_gas2-scene/page-b.html` (`.chalk` gets `z-index: 1`).
