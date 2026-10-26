@@ -74,7 +74,7 @@ bench; git-excluded, never commit).
 4. **Into page-b**: the phone page becomes page-b's `@media (max-width: 760px)` layout, after rebasing on `feat/gas2-page`.
 5. **page-b desktop bugs found 2026-10-23** (fixed only in the phone options, now superseded): the closed plugin veil's iframe keeps
    taps (`.veil:not(.open) .plug { display: none; }`); the reduced-motion rule misses the button's `::after` shine. Dan's word to fix.
-6. **Old Artifact** https://claude.ai/artifact/WaDdeVGPhHdxXxseH22H6H (the Swipe / Walk / Stack chooser) is obsolete: delete only on Dan's word.
+6. ~~Old Artifact (the Swipe / Walk / Stack chooser)~~: gone from Dan's account (deleted) 2026-10-26.
 
 **Suggested commit.** `docs(handoff): GAS 2 phone page session close (2026-10-26)`: `tasks/handoff.md` only.
 
