@@ -1,6 +1,12 @@
 ## 2026-10-26 — GAS 2 page: the drone intro (hover above the station, scroll = descent, land, readings pop) (Claude Code `danavivi-19`, Dan's Mac) — BRANCH `feat/gas2-page`
 
-Claim: OPEN (`danavivi-fb`; taken over 2026-10-26 from `danavivi-19`, which Dan closed: "continue from where you stopped").
+Claim: CLOSED 2026-10-26 (`danavivi-fb`): DELETED on Dan's word. He flew the finished version and said "this is not good,
+clear this, I'll make it from scratch", then picked "delete the drone intro": `tools/_gas2-scene/flight/**` removed, its
+`<link>` / `<script>` line out of `page-b.html`, its lines out of `tools/_gas2-scene/README.md`. Everything below is history;
+the last state is in git (the commit before the deletion, `6836c35`). Kept in page-b (not the intro's): the `.scene`
+half-pixel fix and the TUNE / bench-note opt-in (`?dev` or T). No reason given beyond "not good": ask Dan what he wants
+from the new one before building.
+(Was: OPEN `danavivi-fb`, taken over 2026-10-26 from `danavivi-19`, which Dan closed: "continue from where you stopped".)
 Files: NEW `tools/_gas2-scene/flight/**`; in `page-b.html` ONE `<link>` + `<script>` line in
 `<head>` (after the radio line), nothing else of page-b's; one README line pair in `tools/_gas2-scene/README.md`; this entry.
 - Dan: "the hovering drone scene for GAS2 page ... above the gas station and then when the user scroll down ... it goes to the
