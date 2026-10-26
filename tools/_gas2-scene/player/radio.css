@@ -6,11 +6,12 @@
 
 /* the photo's own radio (and its old hotspot) gives way to the live one; page-b's .radio / .radioCap lose on #ids */
 #scene #radio { visibility: hidden; }
-/* the caption: on the porch floor under the stool, never wider than the radio (Yoni 2026-10-23: "contained in the
-   radio size"): the radio's own width and centre, two lines (the station, then the side + its settings) */
-#scene #radioCap { left: calc(var(--rp-x) * 1cqw - 15cqw * var(--rp-rs) / 2); width: calc(15cqw * var(--rp-rs));
-  top: calc((var(--st-y) + .4) * 1cqw); z-index: 3; white-space: normal; letter-spacing: .14em; line-height: 1.35; }
-#scene #radioCap span { display: block; white-space: nowrap; overflow: hidden; text-overflow: clip; }
+/* the caption under the stool is GONE from sight (Dan 2026-10-26: "remove the reading"; the stitched "Play me" says it now).
+   It stays in the page, visually hidden, as the radio's screen-reader status ("On air: ROCK, GAS 2 ...", aria-live).
+   Was (Yoni 2026-10-23): on the porch floor under the stool, the radio's width, two lines */
+#scene #radioCap { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap; }
+#scene #radioCap span { display: block; }   /* two lines = two phrases to a screen reader */
 
 /* WHERE THINGS STAND (the defaults; ?rbench on the page shows the panel that moves them, radio.js). Plain numbers,
    in cqw of the scene (1 = 1 % of its width) or as factors:

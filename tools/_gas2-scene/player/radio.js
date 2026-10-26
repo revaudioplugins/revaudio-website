@@ -126,7 +126,7 @@
     playing = true; setTimeout(start, was ? 160 : 0); render();
   };
 
-  // ---------- what the eye reads ----------
+  // ---------- what the eye reads (and #radioCap, now a visually hidden status, what a screen reader hears) ----------
   const sceneCap = document.getElementById('radioCap');
   if (sceneCap) sceneCap.setAttribute('aria-live', 'polite');
   const render = () => {
