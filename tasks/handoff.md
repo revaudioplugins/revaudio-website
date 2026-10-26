@@ -11,7 +11,7 @@ Claim: CLOSED 2026-10-24. File: `tools/_gas2-scene/page-b.html` (`.chalk` gets `
   Note: moving the readings down in TUNE would put "Fill it up." behind the cut (at default it clears it).
 - Pulled first: Yoni's radio round 3 + `?rbench` placement (origin 4bfc117) are on this branch now.
 
-## 2026-10-24 — GAS 2 radio: the grille nameplate "Play me" (Claude Code `danavivi-7e`, Dan's Mac) — BRANCH `feat/gas2-page` PUSHED
+## 2026-10-24 / 26 — GAS 2 radio: the grille nameplate "Play me" (Claude Code `danavivi-7e`, Dan's Mac) — BRANCH `feat/gas2-page` PUSHED
 
 Claim: CLOSED 2026-10-24. Files: `tools/_gas2-scene/player/radio.css` (`.rp-badge` block), `player/radio.js` (badge markup,
 badge click = play / stop, `.played` on first play), `DESIGN.md` §3 (script accent: the nameplate exception),
@@ -31,6 +31,17 @@ badge click = play / stop, `.played` on first play), `DESIGN.md` §3 (script acc
   Default = bigger satin, NO outline. `page-b.html?stitch` = picker for a running-stitch outline (none / cream / gold, a dashed
   stroke under the letters): busy at scene size (stitches land in the letter joins and the a / e counters), so not default.
   Open: Dan's outline pick; then drop the ?stitch picker.
+- 2026-10-26 (Dan): the SVG stitches "look like CSS ... make it much more fine ... create an asset of the whole box including
+  the stitches ... glued together ... the same box ... not too much". Now IN THE PHOTO: `player/tools/gen_stitch.py gen 3` =
+  one masked gpt-image-2 edit of radio-lit.webp (mask = the grille cloth only; gpt-image-1 is gone on this key, and the shell's
+  OPENAI_API_KEY is stale, so the script reads the website clone's `tools/.openai_key.local`), 3 takes (~$0.75): 1 fine thin
+  script (PICKED), 2 + a swash underline, 3 bolder (`img/gen/stitch-*.png`, gitignored). `compose 1` lays back only the pixels
+  the stitching changed (diff mask, grown + feathered, inside the cloth) on the git copies of BOTH plates (off = through the old
+  off/lit ratio), so the cabinet, keys, knobs, dial and every radio.css coordinate are pixel-identical. The SVG badge, the sheen
+  and the ?stitch picker are gone; `.rp-badge` is now only an invisible hit area over the words (440..935 x 190..375 plate px).
+  Checked (headless 1141 + 1440): no errors / 404s, all audio 200; badge -> play ORIGINAL 1/0; GAS 2 key 0/1; ORIGINAL 1/0;
+  dial ELEC. -> st 2; tuning knob -> st 3; volume knob -> .62; play key stop / start; badge -> stop; hover moves nothing.
+  Not checked: Dan's Safari by eye, real ears.
 - Picked with the DESIGN.md "ONE script line per screen" rule flagged ("Fill it up." is Yellowtail too): recorded as
   "a nameplate ON a prop is not a line".
 - Checked: headless Chromium 1141x636 + 1440x900, no errors / 404s; badge click -> playing ORIGINAL (gains 1/0), glint stops;

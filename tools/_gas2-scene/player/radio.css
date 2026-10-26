@@ -113,18 +113,12 @@
 .rp-jewel::after { content: ""; position: absolute; inset: -60%; border-radius: 50%; background: radial-gradient(closest-side, rgba(255, 70, 40, .55), rgba(255, 60, 30, .15) 55%, transparent); mix-blend-mode: screen; }
 .rp-plate.on .rp-jewel { opacity: 1; }
 
-/* the NAMEPLATE on the grille (Dan 2026-10-24): "Play me", embroidered into the cloth; the SVG and its layers are built in
-   radio.js (badgeSvg). Here: where it sits (the words' box, 640 x 240 u, centred on the cloth at plate (687, 270)), the tilt,
-   and the thread's shadow on the fabric (a tight halo + 1u down-left; the porch lamp is up-right). No hover / press move
-   (Dan: "not get closer when user hover"). Picked on 2026-10-24: "Play me" (first "Give it gas"), cream, tilted, sewn in,
-   bigger satin stitches; not taken: Play with it / Tune in, chrome / brass / honey / oxide enamel */
-.rp-badge { position: absolute; left: calc(367 * var(--u)); top: calc(150 * var(--u)); width: calc(640 * var(--u)); height: calc(240 * var(--u));
-  transform: rotate(-5deg); cursor: pointer; -webkit-tap-highlight-color: transparent;
-  filter: drop-shadow(0 0 calc(2.5 * var(--u)) rgba(20, 10, 4, .4)) drop-shadow(calc(-1 * var(--u)) calc(1.5 * var(--u)) calc(1 * var(--u)) rgba(14, 7, 3, .6)); }
-.rp-badge svg { display: block; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
-.rp-plate.played .rp-sheen { display: none; }
-.rp-badge:focus-visible { outline: calc(3 * var(--u)) solid var(--honey, #f2be4a); outline-offset: calc(2 * var(--u)); border-radius: calc(12 * var(--u)); }
-@media (prefers-reduced-motion: reduce) { .rp-sheen { display: none; } }
+/* the NAMEPLATE: "Play me" is embroidered in the plate photo itself (both plates; player/tools/gen_stitch.py, Dan 2026-10-26:
+   "glued together ... feel a whole"). This is only its hit area over the stitched words (plate px), a second play key: no
+   look of its own, no hover move (Dan 2026-10-24: "not get closer when user hover") */
+.rp-badge { position: absolute; left: calc(440 * var(--u)); top: calc(190 * var(--u)); width: calc(495 * var(--u)); height: calc(185 * var(--u));
+  border-radius: calc(24 * var(--u)); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.rp-badge:focus-visible { outline: calc(3 * var(--u)) solid var(--honey, #f2be4a); outline-offset: calc(2 * var(--u)); }
 
 /* VOLUME / TUNING: cream paint in the wood under each knob, centred on the knob's axis. Letter-spacing pads the right
    side of the last letter, so the same space goes on the left (padding-left) or the word sits off-centre */
@@ -143,5 +137,4 @@
 .rp-tp .row { display: flex; gap: 6px; margin-top: 8px; }
 .rp-tp button { flex: 1; padding: 5px 0; border: 1px solid #5a4024; border-radius: 4px; color: #efe3c2; background: #2a1a0e; font: 600 11px Inter, sans-serif; }
 .rp-tp button:hover { border-color: #f2be4a; }
-.rp-tp button.on { border-color: #f2be4a; color: #f2be4a; }
 .rp-tp textarea { width: 100%; margin-top: 8px; background: #120a05; color: #efe3c2; border: 1px solid #5a4024; border-radius: 4px; font: 11px ui-monospace, Menlo, monospace; resize: none; }
