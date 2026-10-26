@@ -69,8 +69,9 @@ bench; git-excluded, never commit).
    changes on tap). Waiting for Dan's A/B + copy OK. Note: this re-opens scrolling, which he locked to one screen on 2026-10-24.
    No "one knob" / "that's it" (GAS dial + IN/OUT exist; DESIGN.md copy rule).
 2. **Tap a grade to hear it**: needs Yoni's per-grade renders of one mix (REGULAR / PREMIUM / RACE + the original).
-3. **Bake the bench** when Dan saves: `ArtifactData get` collection `bench` doc `phone` (claude.ai bench), or `xcrun simctl pbpaste
-   <udid>` (the Simulator's local bench copies to its clipboard).
+3. **Bake the bench** when Dan saves: the claude.ai bench Artifact is gone (deleted from Dan's account 2026-10-26, no save ever
+   reached it); the local bench `phone.html#bench` remains: its SAVE copies to the clipboard (`xcrun simctl pbpaste <udid>` in the
+   Simulator). Republish a bench Artifact only if Dan asks.
 4. **Into page-b**: the phone page becomes page-b's `@media (max-width: 760px)` layout, after rebasing on `feat/gas2-page`.
 5. **page-b desktop bugs found 2026-10-23** (fixed only in the phone options, now superseded): the closed plugin veil's iframe keeps
    taps (`.veil:not(.open) .plug { display: none; }`); the reduced-motion rule misses the button's `::after` shine. Dan's word to fix.
