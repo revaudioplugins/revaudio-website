@@ -242,6 +242,11 @@ words first, window under them.
   over a dot-matrix and a reflective LCD (laptop 1 user, 2026-10-19: "design this whole area so it looks like an LCD
   screen"); the PICK A TRACK list beside it stays a CRT, so the two read as two different parts. Approved on the page
   ("looks killer") with the segment letter shapes as they are (D reads like ], V like I/): that is the car-stereo look.
+- DO light a "press this next" cue from a real lamp inside the part, never a painted ring lit by nothing. /drift #hear
+  step 2 = each arcade cap seated in a small chrome bezel (step 3's metal) and the PLAY cap itself is the lamp: it
+  breathes from inside when PLAY is next and burns while playing; STOP = real red plastic, just off, not a filtered
+  brown. Picked on `bench/drift-play-bench.html` over LED bars round PLAY (A) and pilot lamps (B) (laptop 1 user,
+  2026-10-26: "C").
 
 ## 10. History + open questions (for Dan)
 

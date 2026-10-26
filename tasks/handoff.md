@@ -1,6 +1,6 @@
 ## 2026-10-19 — DRIFT #hear: guide the visitor step by step, branch `drift-hear-guide` (Claude Code `revaudio-ef`, laptop 1) — BUILT + VERIFIED LOCALLY; BRANCH PUSHED TO ORIGIN AS A BACKUP 2026-10-26, NOT ON MAIN (not live)
 
-Claim (owner `revaudio-ef`): CLOSED 2026-10-26 at rv close; the next session on this branch re-claims these files:
+Claim (owner `revaudio-ef`): closed at rv close 2026-10-26, RE-OPENED the same day by `revaudio-ef` for the step 2 fold:
 `src/components/drift/DriftHear.astro`, `src/lib/drift/hear.ts`, `src/components/drift/DriftHero.astro`
 (the HEAR IT link), the #hear + `.d-hero-hear` rules in `src/styles/drift.css`, `src/lib/drift/lcd.ts` + one line of
 `src/lib/drift/bus.ts` (PAN via lcdText), `public/fonts/drift/DSEG14*`, `bench/drift-lcd-bench.html` + `bench/drift-lcd/`,
@@ -11,8 +11,9 @@ Claim (owner `revaudio-ef`): CLOSED 2026-10-26 at rv close; the next session on 
   on the page (user: "מגניב נראה קול רצח" = looks killer). Step 2 (PLAY / STOP) has a bench,
   `bench/drift-play-bench.html` (serve the worktree root on 8796): 0 today's box, A chrome bezels + 24 LED bars round
   PLAY (step 3's language; recommended), B pilot lamps, C a lit PLAY cap; STOP stays unlit dark red in all three (one
-  race-red per viewport). WAITING: the user's pick, then fold it (`tasks/todo.md` "step 2", P2 + P3; scope the mount
-  wrapper to `.d-hear-sec` so #drive's GPS caps don't change).
+  race-red per viewport). The user picked C ("C", 2026-10-26): FOLDED into the page and verified (`tasks/todo.md`
+  "step 2", P3 + P4): heights identical at 11 widths, all guide states, reduced motion, focus ring (now round on every
+  cap, #drive's too). The user has not seen it on the page yet.
 - Then resume the one-by-one review of the guide at item 3 ("3 PUSH DRIFT" + the ORIGINAL / DRIFT labels), then 4
   loading state, 5 checker crop, 6 試聴 off on phones, 7 HEAR IT hero link (item 2, the breathing, is covered by step 2).
 - origin/main moved 46 commits past this branch's base `d0168a6` (seen 2026-10-26), DRIFT pages among them (`5007e66`

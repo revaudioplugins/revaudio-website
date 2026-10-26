@@ -8,9 +8,19 @@ plate with no mount (step 3 sits in chrome + LED bars); STOP is filtered to a mu
   186 x 184.5 / 120.6 x 147.5 / 111.4 x 145.8, step 3 crops beside it, guide states cycling, fit + plate-edge
   checks. 0 = today; A = chrome bezels + 24 LED bars round PLAY (step 3's language); B = wells + pilot lamps
   (green PLAY lamp); C = chrome bezels + the PLAY cap lit from inside. STOP = an unlit dark red in A-C (one race-red).
-- [ ] P2. The user picks.
-- [ ] P3. Fold (markup: a mount wrapper per cap, scoped to .d-hear-sec so #drive's GPS caps stay), verify heights,
-  states, reduced motion, focus ring, then commit, no push.
+- [x] P2. The user picks: C, LIT CAP (2026-10-26, "C").
+- [x] P3. Folded: DriftHear.astro wraps each cap in `.d-hear-mount` (PLAY's also `--play`); drift.css "STEP 2 · LIT
+  CAP" block, all under `.d-hear-sec` / the section's [data-next] / [data-playing]: chrome bezel 66 / 48 px (the old
+  cap's footprint), cap 52 / 38 px inside it, the lamp (::after in the cap, screen blend) + its spill on the seat
+  breathe on next=play and burn while playing; playing = the lamp, not the white pressed ring; STOP brightness .6 /
+  saturate .75. The old magenta ring rules are gone; the bench-baked 9 px desktop drop moved from the cap to the bezel.
+- [x] P4. Verified on the built dist: #hear + hero + page heights identical to before at 11 widths (heights.cjs);
+  bezels / caps sized, centred and 6 px inside the plate at 1440 / 390 / 360 (verify-step2.cjs); lamp + spill =
+  d-hear-lamp on open and after STOP, opacity 1 while playing, none + .8 under reduced motion; all guide states and
+  coach texts as before (verify-hear.cjs); #drive's caps unchanged (44 px, no bezel, own filters); 0 page errors.
+  Found + fixed: hovering the playing cap fell back to the GPS pressed glow (now the hover look); every focused cap's
+  ring was a 6 px rounded square (`.drift-page :focus-visible` sets border-radius 6px, it predates this work):
+  `.drift-page .d-cap:focus-visible` now keeps 50 %, which fixes #drive's GPS caps too.
 
 # DRIFT #hear — the screen as a real LCD (2026-10-19, revaudio-ef, same branch)
 
