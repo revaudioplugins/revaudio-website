@@ -12,7 +12,7 @@
  * worker's POST /drift-feedback, which re-checks every answer (required,
  * valid choices, "Other" text, opened follow-ups, free text that reads like
  * a real answer), allows ONE form per email, and on a complete form mints the
- * tester's $30-off, one-use, DRIFT-only Paddle code: shown here and emailed.
+ * tester's free (100%-off, Yoni 2026-10-26), one-use, DRIFT-only Paddle code: shown here and emailed.
  * The team's copy (every answer under its question + the code) goes to
  * Formspree (site.driftFeedbackFormEndpoint) from the worker. Incomplete or
  * filler answers come back as {missing, weak} ids and light up here.
@@ -73,7 +73,7 @@ const clientConfig = {
     err: ui.errEn,
     soft: ui.softEn,
     already: ui.alreadyEn + ' Your code went to your email when you sent it.',
-    pending: "Thank you. Your feedback came through. Your $30 off DRIFT code is on its way to your email.",
+    pending: "Thank you. Your feedback came through. Your free DRIFT code is on its way to your email.",
     missing: 'Some of the questions were not filled (highlighted).',
     weak: "Some answers are too short or don't read like an answer (highlighted). Tell us a bit more.",
     busy: 'Still sending your first try. Give it a moment.',
@@ -236,7 +236,7 @@ const clientConfig = {
                 <label class="q-label" for="df-email">Your email</label>
                 <span class="tag tag--req">{ui.requiredEn}</span>
               </div>
-              <p class="q-help">Your $30 off DRIFT code goes here too. One form per email.</p>
+              <p class="q-help">Your free DRIFT code goes here too. One form per email.</p>
               <input id="df-email" class="d-field text-in" type="email" name="email" required autocomplete="email" maxlength="254" placeholder="your@email.com" />
             </div>
           </div>
@@ -246,14 +246,14 @@ const clientConfig = {
 
       <p class="beta-status df-status" role="status" aria-live="polite" hidden></p>
 
-      <!-- the reward: shown once, on a complete form (the worker mints it: $30 off, one use, DRIFT only) -->
+      <!-- the reward: shown once, on a complete form (the worker mints it: free, one use, DRIFT only) -->
       <div class="df-code" data-df-code hidden>
-        <p class="df-code-kicker">Thank you. Your $30 off DRIFT code</p>
+        <p class="df-code-kicker">Thank you. Your free DRIFT code</p>
         <div class="df-code-row">
           <output class="df-code-val" data-df-code-val></output>
           <button type="button" class="df-code-copy" data-df-copy>Copy</button>
         </div>
-        <p class="d-fine">One use · DRIFT only · $69 at release on Tue Dec 1, $39 with this code · also emailed to you from keys@revaudio.net</p>
+        <p class="d-fine">One use · DRIFT only · $69 at release on Tue Dec 1, free with this code · also emailed to you from keys@revaudio.net</p>
       </div>
 
       <!-- the creator route: shown with the result when "Want to submit a video for the creator route?" = yes -->

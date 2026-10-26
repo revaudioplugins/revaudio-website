@@ -1,3 +1,9 @@
+## 2026-10-26 - /drift/feedback + survey: the form keeps DRIFT free (Claude Code `revaudio-67`, Yoni's laptop 2) - goes live WITH the worker deploy
+
+Claim: CLOSED 2026-10-26. Files: `src/pages/drift/feedback.astro`, `src/data/beta-survey.ts` (intro + thanks, EN + HE; the HE intro still said Nov 1), `src/data/site.ts` (comment).
+- Pairs with licence worker `ec24229` (the form mints a 100%-off DRIFTFREE code). Push together with its deploy, never before (the page would promise free while the worker still mints $30 off).
+- Checked: build green; dist /drift + /drift/feedback: no $30 / $39.
+
 ## 2026-10-26 - DRIFT: the feedback form keeps DRIFT FREE (was $39) on /drift (Claude Code `revaudio-67`, Yoni's laptop 2) - PUSHED TO MAIN = LIVE
 
 Claim: CLOSED 2026-10-26. File: `src/data/drift.ts` (`driverPriceUsd: 0` = FREE; `driverValue()` feeds the road chip + the feedback route).
