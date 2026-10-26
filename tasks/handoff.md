@@ -1,3 +1,26 @@
+## 2026-10-26 — GAS 2 page: the drone intro (hover above the station, scroll = descent, land, readings pop) (Claude Code `danavivi-19`, Dan's Mac) — BRANCH `feat/gas2-page`
+
+Claim: OPEN (`danavivi-19`). Files: NEW `tools/_gas2-scene/flight/**`; in `page-b.html` ONE `<link>` + `<script>` line in
+`<head>` (after the radio line), nothing else of page-b's; one README line pair in `tools/_gas2-scene/README.md`; this entry.
+- Dan: "the hovering drone scene for GAS2 page ... above the gas station and then when the user scroll down ... it goes to the
+  main page that we have right now. Then all the readings ... on the right side ... pop out. After it the user lands on the page."
+- No AI video: Higgsfield = 0 credits (free plan) on this connector, and OpenAI shut the Sora 2 / Videos API on 2026-09-24
+  (checked: `/v1/videos` 404, docs say so). So the flight is a real-time three.js fly-through of the station as a 3D set
+  painted by two photos (`flight/README.md`): the page's own frame at touchdown (exact) + a new hover aerial (gpt-image-2,
+  painted from the set's own blockout, so it lines up). Spent: OpenAI images only, 15 gpt-image-2 images (~90k output tokens, ~$4).
+- Flow: hover (sway; "SCROLL TO LAND" after 1.8 s still) -> 4-screen scroll runway = descent, gimbal tilts up into the
+  sunset, glide in -> touchdown on the page frame -> canvas fades onto the page -> readings pop (GAS2 overshoot, its rule
+  draws, the line rises, the button pops, "Fill it up." writes on) -> runway folds away, scroll back at 0.
+- Checked (headless, DPR 2): Chromium 1141x636 + 1440x900 + 390x844, WebKit 1141x636: the flight runs, no console errors;
+  last frame vs the page 1.7/255 (webp); after touchdown the page = `?flight=0` (0.00 difference), footer back, scroll 0;
+  reduced motion = no flight. Frame time while scrolling: Chromium ~8 ms, WebKit ~17 ms (one 129 ms first-scroll hitch).
+- Not checked: Dan's real Safari by eye (opened for him), a real trackpad feel, a real phone.
+- Open (Dan's word): (1) the look of the hover shot (a lone lit shack in the dark; regenerate = ~$0.6 / 2 takes); (2) the
+  "SCROLL TO LAND" line (DESIGN.md §6 says no UI chrome over a scene: it is text, not a frame; cut it if he says);
+  (3) runway length / sway (TUNE → Flight, COPY); (4) DESIGN.md rule for the intro once he signs it off.
+- Others on this branch: plain `page-b.html` now opens with the flight; `?flight=0` skips it, `?rbench` (the radio bench)
+  skips it too.
+
 ## 2026-10-26 — GAS 2 page: no copying (Claude Code `danavivi-7e`, Dan's Mac) — BRANCH `feat/gas2-page` PUSHED
 
 Claim: CLOSED 2026-10-26. File: `tools/_gas2-scene/page-b.html` (one `<style>` + one `<script>` block in `<head>`, after the radio line).
