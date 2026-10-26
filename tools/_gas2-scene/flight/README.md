@@ -22,25 +22,34 @@ ground, sky) and paints it with two photos, like slide projectors:
 
 - **A** `img/land.webp`: the page's own scene at touchdown, rendered from `page-b.html?flight=0` without the readings
   (`tools/render-landing.cjs`). The landing camera POSE_A is calibrated on f6-v17 (f = 1500 px, eye 1.33 m, 6.6 m off the wall).
-- **B** `img/aerial.webp`: the hover. Painted by gpt-image-2 from this set's own blockout seen from POSE_B
-  (`lab.html?b=0&s=1&minres=30` and `&mask=1`, graded to blue hour by `tools/grade-blockout.py`, then
-  `tools/gen-aerial.sh`), so it lines up with the set (0 px shift measured).
+- **B** `img/aerial-blue.webp`: the hover. Painted by gpt-image-2 from this set's own blockout seen from POSE_B
+  (`lab.html?b=0&s=1&minres=30&road=0` and `&mask=1`, graded to blue hour by `tools/grade-blockout.py`, then
+  `tools/gen-aerial.sh`), so it lines up with the set (0 px shift measured). `aerial-last.webp` (the last light) and
+  `aerial-lamp.webp` (night, lamps only) are local grades of it (2026-10-26, the OpenAI key had been invalidated):
+  TUNE → Flight → Blue / Last light / Lamp, or `?air=blue|last|lamp`.
 
 A camera standing on a projector sees that photo exactly; in between, each surface takes the sharper photo there.
 What neither photo saw: `img/sky.webp` (a dusk panorama re-graded to A's sky by elevation) and `img/ground.webp`
 (desert, matched to B), both via `tools/gen-free.sh` + `tools/match-sky-ground.py`; and `img/land-bg.webp` (A's sky
 and desert carried on behind the station, `tools/make-landbg.py`) for the sliver past the wall corner near touchdown.
 
+By the road (`roadside.js`, Dan 2026-10-26 "go 1"): a lit GAS2 pole sign (the readings' own lockup, drawn in Oswald on
+cream enamel; neon start, a rare buzz; its light on the lot) and a telephone line from the highway back into the desert
+left of the station. Real 3D objects with their own materials, NOT in the hover photo (so nothing of theirs is painted
+on the ground twice), and none of them can reach the touchdown frame (the sign is behind the landing camera; the line
+is outside its frame up close and behind the house further out). The roof got a parapet and two vents.
+
 ## Files
 
 - `flight.js` boot (in `<head>`, before the page paints) + TUNE → Flight · `flight-run.js` the run · `flight.css`
-- `world.js` the set, the shader, the path (POSE_A, POSE_B, `poseAt`) · `lab.html` the bench (pose sliders, path, mix)
-- `vendor/` three.js r185 (MIT) · `img/` the five pictures · `tools/` how each picture was made
+- `world.js` the set, the shader, the path (POSE_A, POSE_B, `poseAt`) · `roadside.js` the sign + the telephone line
+- `lab.html` the bench (pose sliders, path, mix; `?road=0` without the roadside, `?bimg=` another hover photo)
+- `vendor/` three.js r185 (MIT) · `img/` the pictures · `tools/` how each picture was made
 
 ## Switches
 
 - `?flight=0` = straight onto the page; reduced motion = no flight; `?bench` / `?rbench` skip it.
-- TUNE → Flight: Length (screens of scroll, from the next Replay), Sway (live), Replay, Skip, Copy.
+- TUNE → Flight: Length (screens of scroll, from the next Replay), Sway (live), Replay, Skip, Copy; the hover's light.
 
 ## When the page changes
 

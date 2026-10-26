@@ -20,6 +20,17 @@ Claim: OPEN (`danavivi-19`). Files: NEW `tools/_gas2-scene/flight/**`; in `page-
   (3) runway length / sway (TUNE → Flight, COPY); (4) DESIGN.md rule for the intro once he signs it off.
 - Others on this branch: plain `page-b.html` now opens with the flight; `?flight=0` skips it, `?rbench` (the radio bench)
   skips it too.
+- Dan after the first round: "the scroll feels amazing", then "go 1" = the hover shot should read as a real 1950s station
+  from above. Done (`roadside.js`): a lit GAS2 pole sign (the readings' lockup in Oswald on cream enamel, neon start, a
+  rare buzz, its light on the lot) and a telephone line from the highway back into the desert LEFT of the station (first
+  routed along the highway: its wires crossed the shop front on the way down, so moved); both 3D objects, kept out of the
+  photos, never in the touchdown frame. Roof: parapet + two vents (a stove pipe poked above the roof line; removed).
+  Three hover lights to pick from (TUNE → Flight → Blue / Last light / Lamp, `?air=`): 🔴 the website OpenAI key
+  (`tools/.openai_key.local`) came back "invalidated" (401 token_invalidated) mid-session, so the planned re-paint from
+  the richer blockout did not run; Last light + Lamp are local grades of the Blue aerial (`tools/mood-grade.py`).
+  Re-checked: Chromium all three lights + WebKit, no errors, the page after touchdown = `?flight=0` (0.03).
+- Open (Dan's word): (5) which light; (6) a new OpenAI key, then re-paint the picked light from the richer blockout
+  (`lab.html?b=0&s=1&minres=30&road=0`, grade, `tools/gen-aerial.sh` with MOOD/EXPO; ~$0.6 for 2 takes).
 
 ## 2026-10-26 — GAS 2 page: no copying (Claude Code `danavivi-7e`, Dan's Mac) — BRANCH `feat/gas2-page` PUSHED
 

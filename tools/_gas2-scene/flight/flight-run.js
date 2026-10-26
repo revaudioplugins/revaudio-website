@@ -2,6 +2,7 @@
 // the scroll runway flies the camera from the hover (img/aerial.webp) down to the page's own frame, which it meets
 // pixel-for-pixel; then the canvas fades onto the page, the readings pop, the runway folds away: the page is the page.
 import { THREE, makeWorld, loadSet, poseAt, applyPose, makeCamera, POSE_A, POSE_B } from './world.js';
+import { makeRoadside } from './roadside.js';
 
 const html = document.documentElement;
 // TUNE → Flight (flight.js): runway length in screens, sway strength. Stored per browser, read once per flight.
@@ -20,11 +21,12 @@ document.body.append(fl, cue, run);
 const cueTimer = setTimeout(() => scrollY < 8 && cue.classList.add('show'), 1800);
 const abandon = () => { clearTimeout(cueTimer); fl.remove(); cue.remove(); run.remove(); html.classList.remove('fl-on', 'fl-hold', 'fl-land'); };
 
-let renderer, world;
+let renderer, world, road;
 try {
   renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
   renderer.outputColorSpace = THREE.LinearSRGBColorSpace;   // the photos' own sRGB values straight through (the landing frame must match the page)
-  world = makeWorld(await loadSet());
+  world = makeWorld(await loadSet({ aerial: `img/aerial-${html.dataset.air || 'blue'}.webp` }));
+  road = await makeRoadside(world);                        // the pole sign + the telephone line (3D, behind the landing camera)
 } catch (err) { abandon(); throw err; }                     // no WebGL / a photo missing: the page as it was
 const cam = makeCamera(POSE_B);
 
@@ -69,7 +71,7 @@ const frame = now => {
   const age = (now - born) / 1000, pose = poseAt(u), w = sway(age, TUNE.sway * hoverAmp(u) * smooth(0, 1.6, age));
   pose.pos = [pose.pos[0] + w.x, pose.pos[1] + w.y, pose.pos[2] + w.z];
   pose.yaw += w.yaw; pose.pitch += w.pitch; pose.roll += w.roll;
-  applyPose(cam, pose); view(u); world.setS(u);
+  applyPose(cam, pose); view(u); world.setS(u); road.update(age);
   renderer.render(world.scene, cam);
   if (!shown) { shown = true; fl.classList.add('gl'); }
   if (p > .01) { clearTimeout(cueTimer); cue.classList.remove('show'); }

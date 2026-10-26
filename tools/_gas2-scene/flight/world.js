@@ -1,6 +1,6 @@
 // GAS 2 page · the drone flight: the station as a projection-mapped 3D set (three.js, no build step).
 // Two photos paint the set like slide projectors. A = the page's own frame at touchdown (img/land.webp, rendered from
-// page-b without the readings), B = the drone's hover shot (img/aerial.webp, painted from this set's own blockout seen
+// page-b without the readings), B = the drone's hover shot (img/aerial-*.webp, painted from this set's own blockout seen
 // from POSE_B, so it lines up). A camera standing exactly on a projector sees that photo exactly: the flight starts
 // pixel-true on B and lands pixel-true on A. In between, every surface takes the sharper photo (texels per metre on the
 // worst axis); what neither photo saw is filled from a dusk sky panorama (img/sky.webp, colour-matched to A's sky by
@@ -16,6 +16,7 @@ export const HOUSE = [[-6.6, 0, -6], [0.867, 3.5, 0]];   // 7.5 x 6 m: a roadsid
 // photo (measured on f6-v17: the canopy's edge from (2.24, 0.33) back to (1.68, -4.83); the sidewalk's end from
 // (1.85, 1.91) back to (2.75, -1.29)), and a box there would carry sky / desert pixels on its square corner
 const ROOF = { y: [3.5, 3.85], xz: [[-6.9, 0.45], [2.24, 0.45], [1.62, -6.3], [-6.9, -6.3]] };
+const ROOFTOP = [[-4.6, -3.6, .7, .45, .7], [-1.9, -4.9, .5, .35, .5]];   // two low vents: x, z, w, h, d (a stove pipe poked above the roof line on the way in)
 const SLAB = { y: [0, 0.25], xz: [[-6.9, 1.91], [1.85, 1.91], [2.75, -1.29], [1.7, -6], [-6.9, -6]] };
 // occluders for the shader's line-of-sight test = axis-aligned boxes inside those shapes (the slanted ends as steps)
 const OCCLUDERS = [
@@ -35,7 +36,7 @@ const CHALK = { x: .562 * 1536, y: .534 * 1024, w: .116 * 1536, img: [420, 627],
 
 // poses: position (m), yaw (deg, + = turn left), pitch (deg, + = look up), roll (deg), vertical fov (deg). Frame = 3:2.
 export const POSE_A = { pos: [0, 1.328, 6.6], yaw: 0, pitch: -0.4966, roll: 0, vfov: 37.7497 }; // f = 1500 px on 1024
-export const POSE_B = { pos: [0, 22, 19.5], yaw: 8, pitch: -48, roll: 0, vfov: 46 };            // the hover: img/aerial.webp was painted from this camera
+export const POSE_B = { pos: [0, 22, 19.5], yaw: 8, pitch: -48, roll: 0, vfov: 46 };            // the hover: img/aerial-*.webp were painted from this camera
 
 const D2R = Math.PI / 180;
 export function applyPose(cam, p) {
@@ -82,6 +83,7 @@ uniform vec3 pA; uniform vec3 pB;
 uniform float fA; uniform float fB;
 uniform float s; uniform float useB; uniform float minRes; uniform float dbg;
 uniform int kind;                   // 0 ground, 1 building, 2 sky, 3 the chalkboard panel
+uniform vec3 lampP; uniform vec3 lampC; uniform float lampI; uniform float lampR;   // the pole sign (roadside.js)
 uniform vec3 bmin[${NBOX}]; uniform vec3 bmax[${NBOX}];
 varying vec3 vW; varying vec3 vN; varying vec2 vUv;
 
@@ -169,7 +171,10 @@ void main() {
   if (wA > 0.0) col += texture2D(tA, uA).rgb * wA;
   if (wAbg > 0.0) col += texture2D(tAbg, uA).rgb * wAbg;
   if (wB > 0.0) col += texture2D(tB, uB).rgb * wB;
-  gl_FragColor = vec4(col / (wA + wAbg + wB + wF + eps), 1.0);
+  vec3 c = col / (wA + wAbg + wB + wF + eps);
+  // the pole sign's light on the lot; gone by touchdown, where the frame has to be the page's own
+  if (kind == 0 && lampI > 0.0) { vec2 d = vW.xz - lampP.xz; c += lampC * lampI * exp(-dot(d, d) / (lampR * lampR)) * (1.0 - smoothstep(0.75, 0.95, s)); }
+  gl_FragColor = vec4(c, 1.0);
 }`;
 
 export function makeWorld({ land, landBg, aerial = null, sky, ground, chalk }) {
@@ -190,6 +195,7 @@ export function makeWorld({ land, landBg, aerial = null, sky, ground, chalk }) {
     pA: { value: new THREE.Vector3() }, pB: { value: new THREE.Vector3() },
     fA: { value: focal(POSE_A) }, fB: { value: focal(POSE_B) },
     s: { value: 1 }, useB: { value: aerial ? 1 : 0 }, minRes: { value: 0 }, dbg: { value: 0 },
+    lampP: { value: new THREE.Vector3() }, lampC: { value: new THREE.Vector3(1, .62, .4) }, lampI: { value: 0 }, lampR: { value: 5 },
     bmin: { value: boxes.map(b => new THREE.Vector3(...b[0])) },
     bmax: { value: boxes.map(b => new THREE.Vector3(...b[1])) },
   };
@@ -207,6 +213,14 @@ export function makeWorld({ land, landBg, aerial = null, sky, ground, chalk }) {
   const [lo, hi] = HOUSE, hm = new THREE.Mesh(new THREE.BoxGeometry(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]), house);
   hm.position.set((lo[0] + hi[0]) / 2, (lo[1] + hi[1]) / 2, (lo[2] + hi[2]) / 2); scene.add(hm);
   scene.add(new THREE.Mesh(prism(ROOF), house), new THREE.Mesh(prism(SLAB), house));
+  const rc = ROOF.xz.reduce((a, p) => [a[0] + p[0] / ROOF.xz.length, a[1] + p[1] / ROOF.xz.length], [0, 0]);
+  ROOF.xz.forEach(([x, z], i) => {                       // the parapet: a 16 cm wall, 25 cm high, along every roof edge
+    const [x2, z2] = ROOF.xz[(i + 1) % ROOF.xz.length], L = Math.hypot(x2 - x, z2 - z);
+    let nx = (z2 - z) / L, nz = -(x2 - x) / L;
+    if (nx * (rc[0] - (x + x2) / 2) + nz * (rc[1] - (z + z2) / 2) < 0) { nx = -nx; nz = -nz; }
+    scene.add(new THREE.Mesh(prism({ y: [ROOF.y[1], ROOF.y[1] + .25], xz: [[x, z], [x2, z2], [x2 + nx * .16, z2 + nz * .16], [x + nx * .16, z + nz * .16]] }), house));
+  });
+  for (const [x0, z0, w, h, d] of ROOFTOP) scene.add(new THREE.Mesh(prism({ y: [ROOF.y[1], ROOF.y[1] + h], xz: [[x0, z0], [x0 + w, z0], [x0 + w, z0 + d], [x0, z0 + d]] }), house));
   const board = new THREE.BufferGeometry();
   board.setAttribute('position', new THREE.Float32BufferAttribute(corners.flatMap(v => [v.x, v.y, v.z]), 3));
   board.setAttribute('normal', new THREE.Float32BufferAttribute([0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1], 3));
@@ -251,13 +265,13 @@ export function loadTexture(url, { repeat = false, flip = true } = {}) {
     t.needsUpdate = true; res(t);
   }, undefined, rej));
 }
-export const loadSet = async ({ aerial = true } = {}) => {
+export const loadSet = async ({ aerial = 'img/aerial-blue.webp' } = {}) => {
   const u = p => new URL(p, import.meta.url).href;
   const [land, landBg, sky, ground, chalk, air] = await Promise.all([
     loadTexture(u('img/land.webp')), loadTexture(u('img/land-bg.webp')),
     loadTexture(u('img/sky.webp'), { repeat: true }), loadTexture(u('img/ground.webp'), { repeat: true }),
     loadTexture(u('../props/chalkboard.png')),
-    aerial ? loadTexture(u('img/aerial.webp')).catch(() => null) : null,
+    aerial ? loadTexture(u(aerial)).catch(() => null) : null,
   ]);
   return { land, landBg, sky, ground, chalk, aerial: air };
 };

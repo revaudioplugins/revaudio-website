@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GAS 2 flight lab</title>
 <style>
+  @font-face { font-family: Oswald; src: url(../fonts/Oswald-Variable.woff2) format("woff2"); font-weight: 200 700; }
   html, body { margin: 0; background: #0d0806; color: #efe9df; font: 12px ui-monospace, Menlo, monospace; overflow: hidden; }
   canvas { display: block; }
   .p { position: fixed; right: 10px; top: 10px; width: 300px; background: rgba(18, 8, 4, .9); border: 1px solid #3a2410; border-radius: 8px; padding: 10px 12px; }
@@ -20,19 +21,23 @@
 <script type="module">
 // The flight lab: the projection-mapped station on its own. Pose sliders (or ?cam=x,y,z,yaw,pitch,roll,vfov), the path
 // (?u=0..1), the projector mix (?s=0..1, s=1 = A only), ?b=0 = without the aerial (the proxy render that the aerial is made
-// from), ?w=&h= = canvas size at DPR 1 (?shot = no panel, title "ready" when drawn: headless captures).
+// from; with ?road=0 the pole sign + telephone line stay out of it), ?bimg= = another hover photo, ?w=&h= = canvas size at
+// DPR 1 (?shot = no panel, title "ready" when drawn: headless captures).
 import { THREE, makeWorld, loadSet, POSE_A, POSE_B, poseAt, applyPose, makeCamera } from './world.js';
+import { makeRoadside } from './roadside.js';
 const q = new URLSearchParams(location.search), num = (k, d) => q.has(k) ? +q.get(k) : d;
 const W = num('w', innerWidth), H = num('h', innerHeight), shot = q.has('shot');
 if (shot) document.body.classList.add('shot');
 const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), antialias: true, preserveDrawingBuffer: true });
 renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
 renderer.setPixelRatio(shot ? 1 : Math.min(devicePixelRatio, 2)); renderer.setSize(W, H);
-const set = await loadSet({ aerial: q.get('b') !== '0' });
+const set = await loadSet({ aerial: q.get('b') === '0' ? null : (q.get('bimg') || 'img/aerial-blue.webp') });
 const texB = set.aerial;
 const world = makeWorld(set);
 if (!texB) world.uniforms.minRes.value = num('minres', 3);
 world.uniforms.dbg.value = num('mask', 0);
+const road = q.get('road') === '0' ? null : await makeRoadside(world);   // ?road=0 = the blockout without the roadside objects
+if (road) road.update(num('lit', 9));
 const cam = makeCamera(POSE_B);
 const pose = q.has('cam') ? (() => { const v = q.get('cam').split(',').map(Number); return { pos: v.slice(0, 3), yaw: v[3], pitch: v[4], roll: v[5] || 0, vfov: v[6] || 56 }; })()
   : q.has('u') ? poseAt(num('u', 0)) : { ...POSE_B, pos: [...POSE_B.pos] };
