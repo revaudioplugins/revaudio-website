@@ -85,6 +85,23 @@ measured):
 - `?flight=0` = straight onto the page; reduced motion = no flight; `?bench` / `?rbench` skip it.
 - TUNE → Flight: Length (screens of scroll, from the next Replay), Sway (live), Replay, Skip, Copy.
 
+## Publishing
+
+The flight is self-contained in `flight/`. From its host page it needs `#scene` (the 3:2 scene box: the canvas frames
+the same window into it, so touchdown lands on it), `.stage` (pinned during the flight), `.rd` with `.ti` / `.lead` /
+`.cta` / `.scr` (the readings it pops) and a `footer`; `#tune` is optional (dev only: TUNE → Flight). Hook-up = one
+`<link>` + one `<script>` in `<head>` (as in `page-b.html`, after the radio line). Checked 2026-10-26 on a
+production-like copy of page-b (TUNE and the bench note gone) in real iOS Safari (iPhone 17 Pro Simulator, iOS 26.5):
+hover, descent, the pan to the phone's crop, touchdown, the readings pop. Weight: the pictures ~1.2 MB (webp), three.js
+r185 ~180 KB gzipped as vendored (a bundler tree-shakes it further), our own code ~50 KB. When the page moves into the
+site (`src/`), re-render `img/land.webp`, `land-bg.webp` and `land-chalk.png` from the published page ("When the page
+changes"): touchdown is exact only against the page the landing frame was rendered from.
+
+How exact touchdown is (2026-10-26, 1141x636 @2x): the page after touchdown is the page (0.000 against `?flight=0`); the
+last 3D frame differs from the live page by 3.8/255 mean, while the page itself, rendered one pixel narrower or wider,
+differs from itself by 4.1 (text and filters rasterize a hair differently at every window size). The landing frame
+sits below the browser's own noise.
+
 ## When the page changes
 
 A prop on the page changes (a poster pick, the radio, the chalkboard) → re-render A, then its background plate (and
@@ -105,10 +122,13 @@ porch patched (`tools/patch-porch.py`).
 
 ## Known limits
 
-- The hover photo was painted before the set got its parapet and vents, so the roof edge in the photo is its own, not
-  the set's. The re-paint from today's blockout is ready to run (`tools/gen-aerial.sh` on the graded blockout, ~$0.6 for
-  2 takes) and waits on OpenAI credits (2026-10-26: the account is at 0).
-- The props are painted on the wall, except the chalkboard (its own panel): the pump reads flat from above. A cut-out
-  layer for it needs a picture of the wall without the pump (OpenAI, ~$0.3).
+- The hover photo was painted before the set got its parapet and vents; the photo's own roof paints them, and frame by
+  frame (2026-10-26) the roof reads as one roof all the way down. A re-paint from today's blockout (`tools/gen-aerial.sh`
+  on the graded blockout, ~$0.6 for 2 takes; its porch floor is concrete now, so the new photo should not need the porch
+  patch) would only add photo detail to the vents; it waits on OpenAI credits (the account was at 0 on 2026-10-26).
+- The props are painted on the wall, except the chalkboard (its own panel). Checked frame by frame (2026-10-26): on this
+  path, which never views them from the side, the pump, the radio and the drum read as standing in front of the window.
+  A side view would need the pump on its own layer and the wall behind it (no picture has it: the pump is painted into
+  f6-v17, and `props/pump-cut.png` is traced from those same pixels).
 - Phones / tall windows: the hover is centred on the station and the window pans to the page's crop at touchdown.
 - `img/land.webp` holds the mail poster at its default (#1); a browser with another TUNE pick sees it swap at touchdown.

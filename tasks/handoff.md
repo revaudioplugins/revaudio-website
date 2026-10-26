@@ -67,6 +67,13 @@ Files: NEW `tools/_gas2-scene/flight/**`; in `page-b.html` ONE `<link>` + `<scri
     filtering, < 1 level brighter), the 3D sign / poles / door lamp the only real differences. Frame time Chromium 8.3 ms
     median at every size; headless WebKit 17 ms (its 60 Hz cap) with a few ~160 ms hitches even with the flight standing
     still (harness). Reduced motion, `?flight=0` and no-WebGL fall back to the page.
+  - Publish-readiness round: the page against itself one pixel narrower / wider differs by 4.1/255 (fonts, filters), so
+    the last 3D frame (3.8) sits below the browser's own noise. Real iOS Safari (iPhone 17 Pro Simulator, iOS 26.5) on a
+    throwaway production-like copy of page-b (TUNE + bench note hidden, an auto-scroll; deleted after): hover, descent,
+    the pan to the phone crop, touchdown, the readings pop. The pump and the roof checked at full size in every frame of
+    the path: no flat-decal or roof-edge read (the path never views them from the side). README: "Publishing" (the host
+    page contract, weight, re-render the landing frame from the published page). Going live = page-b into `src/` + a push
+    to main (a live deploy): Dan's word.
 
 ## 2026-10-26 — GAS 2 page: no copying (Claude Code `danavivi-7e`, Dan's Mac) — BRANCH `feat/gas2-page` PUSHED
 
