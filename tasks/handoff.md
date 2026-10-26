@@ -42,6 +42,11 @@ Claim: OPEN. Files: `tools/_gas2-scene/phone.html` + `tools/_gas2-scene/phone/*.
   `public/gas-mixer` (excluded) so `/gas-mixer/...` resolves on :4464; the Artifacts carry a copy (paths made relative, .m4a ->
   .mp4, fonts inlined). ⚠️ The toy's plate reads GET GAS FREE (GAS 1's download) and is GAS 1's mix: Dan's call. Page v5, bench v4.
 
+- 2026-10-26: Dan deleted the session's Artifacts from his account (options chooser, player bench, phone bench, and the page
+  itself, https://claude.ai/artifact/RY5g1zHQsdmQRUkisbEqvc). The work is all on this branch + local :4464; a phone link needs a
+  fresh publish (new URL) on Dan's ask. Packager recipe: derive body-only from `phone.html` (title + style + body), inline the
+  fonts, `/gas-mixer/` -> `gas-mixer/`, copy `public/gas-mixer` with `.m4a` -> `.mp4` and its fonts.css inlined.
+
 ### Session close 2026-10-26 (/close-session)
 
 **State.** Branch `feat/gas2-phone` (worktree `.claude/worktrees/gas2-phone`) = `origin/feat/gas2-phone` (0 ahead / 0 behind),
