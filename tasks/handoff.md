@@ -4,7 +4,8 @@ Claim (owner `revaudio-ef`): closed at rv close 2026-10-26, RE-OPENED the same d
 `src/components/drift/DriftHear.astro`, `src/lib/drift/hear.ts`, `src/components/drift/DriftHero.astro`
 (the HEAR IT link), the #hear + `.d-hero-hear` rules in `src/styles/drift.css`, `src/lib/drift/lcd.ts` + one line of
 `src/lib/drift/bus.ts` (PAN via lcdText), `public/fonts/drift/DSEG14*`, `bench/drift-lcd-bench.html` + `bench/drift-lcd/`,
-`bench/drift-play-bench.html` + `bench/drift-play/`, `DESIGN.md` §9 (one line), `tasks/todo.md` (top sections),
+`bench/drift-play-bench.html` + `bench/drift-play/`, `bench/drift-panel-bench.html` + `bench/drift-panel/` +
+`bench/serve-panel-bench.py`, `DESIGN.md` §9 (two lines), `tasks/todo.md` (top sections),
 `tasks/drift-player-plan.md` (Round 9), `tasks/lessons.md` (three entries), this entry. Worktree
 `Website/revaudio-website-hear` (off origin/main `d0168a6`; `node_modules` = junction to the main checkout's).
 - State at rv close 2026-10-26: 7 commits on the branch (`9133d86`..`cca3cc4`) + this close commit. The LCD is APPROVED
@@ -14,6 +15,9 @@ Claim (owner `revaudio-ef`): closed at rv close 2026-10-26, RE-OPENED the same d
   race-red per viewport). The user picked C ("C", 2026-10-26): FOLDED into the page and verified (`tasks/todo.md`
   "step 2", P3 + P4): heights identical at 11 widths, all guide states, reduced motion, focus ring (now round on every
   cap, #drive's too). The user has not seen it on the page yet.
+- Then (2026-10-26) the panel under the player: three worn / crashed plates with Japanese + graffiti from gpt-image-2,
+  on `bench/drift-panel-bench.html` (`python bench/serve-panel-bench.py`, 8797). WAITING: the user's pick (`tasks/todo.md`
+  top section, K2-K4). The OpenAI key on laptop 1 was replaced by the user that day (the old one was rejected).
 - Then resume the one-by-one review of the guide at item 3 ("3 PUSH DRIFT" + the ORIGINAL / DRIFT labels), then 4
   loading state, 5 checker crop, 6 試聴 off on phones, 7 HEAR IT hero link (item 2, the breathing, is covered by step 2).
 - origin/main moved 46 commits past this branch's base `d0168a6` (seen 2026-10-26), DRIFT pages among them (`5007e66`

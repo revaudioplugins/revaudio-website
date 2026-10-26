@@ -1,3 +1,20 @@
+# DRIFT #hear — a new panel under the player: worn, crashed, Japanese + graffiti (2026-10-26, revaudio-ef, same branch)
+
+Request (laptop 1 user): "the panel that everything sits on is a different panel, use OpenAI for it ... three different
+panels that suit the vibe ... wear out a little, like it went through a crash ... a little Japanese and graffiti".
+Scope: the outer `.d-panel.d-hear-panel` plate only (step 3's pair plate and the rest of /drift keep the DRIFT steel).
+
+- [x] K1. Three plates from gpt-image-2 (2560 x 1024, high; prompts `bench/drift-panel/PROMPTS.md`): 1 峠 WRECK
+  (ドリフト tag, 峠, 限界を超えろ, 夜の走り屋, torn checker, a crease), 2 STENCIL (全開, 試聴, gaffer tape, a crack, skid
+  marks), 3 STREET WALL (聴け, ドリフト, 夜, 最高速度で, 逃げ場はない, stickers, a heat-blued scorch). Every Japanese line
+  read and correct. Bench `bench/drift-panel-bench.html` = the real built /drift in two frames (1440 / 390), the plate
+  swapped live, VEIL + PHONE X sliders, checker + 試聴 toggle (`python bench/serve-panel-bench.py`, port 8797).
+- [ ] K2. The user picks (and says whether the checker strip + 試聴 sticker stay on top of the graffiti).
+- [ ] K3. Fold the pick: likely a second generation of it with the lettering placed where the plate shows (the parts
+  cover ~85 % on desktop: the title strip beside LET'S DRIFT., 44 px sides, 25 px bottom; phones show a narrow slice),
+  a phone crop or a portrait cut, `getImage` sizes (WebP), only `.d-hear-panel` changes.
+- [ ] K4. Verify: heights identical, the title and every readout still read (contrast over the graffiti), phone crop.
+
 # DRIFT #hear — step 2 (PLAY / STOP) gets the love (2026-10-19, revaudio-ef, same branch)
 
 Request (laptop 1 user, on a screenshot of the step-2 box): "this is the next area that needs love". Covers the paused
