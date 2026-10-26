@@ -47,6 +47,7 @@ h1 { font: 800 24px/1.1 system-ui; margin: 0 0 6px; }
   <div class="bar" id="bar">
     <span class="grp"><b>LOOK</b><button data-k="look" data-v="0">0 · TODAY</button><button data-k="look" data-v="e" aria-pressed="true">E · ENGRAVED</button></span>
     <span class="grp"><b>UPFRONT</b><button data-k="up" data-v="0">AS IS</button><button data-k="up" data-v="a" aria-pressed="true">A · BIG + LIGHT</button><button data-k="up" data-v="b">B · A + SPRAY</button></span>
+    <span class="grp"><b>CONTROLS</b><button data-k="ctl" data-v="split" aria-pressed="true">SPLIT</button><button data-k="ctl" data-v="plate">ONE PLATE</button><button data-k="ctl" data-v="unit">HEAD UNIT</button><button data-k="ctl" data-v="flush">FLUSH</button></span>
     <span class="grp"><b>FLOOR</b><button data-k="floor" data-v="wall" aria-pressed="true">WALL</button><button data-k="floor" data-v="steel">DRIFT STEEL</button></span>
     <label>VEIL <input type="range" id="veil" min="0" max="50" value="18"><output id="veilo"></output></label>
     <label>PHONE Y <input type="range" id="px" min="0" max="100" value="0"><output id="pxo"></output></label>
@@ -60,7 +61,19 @@ h1 { font: 800 24px/1.1 system-ui; margin: 0 0 6px; }
 <script>
 const PLATE = '/bench/drift-panel/panel3.webp', PW = 2560, PH = 1024;
 const PLATE_P = '/bench/drift-panel/panel3-portrait.webp', PPW = 1024, PPH = 1536;
-const st = { look: 'e', up: 'a', floor: 'wall', veil: 18, px: 0 };
+const st = { look: 'e', up: 'a', floor: 'wall', ctl: 'split', veil: 18, px: 0 };
+// CONTROLS (the user, 2026-10-26, on the PLAY / PUSH DRIFT row: "just this section doesn't feel glued to me"): which
+// parts get a pocket of their own. SPLIT = step 2 and step 3 each a box; ONE PLATE = both steps in one pocket, an
+// engraved groove between; HEAD UNIT = the LCD and the controls on one face, like a car stereo; FLUSH = no box, the
+// controls go straight through the wall
+const FLOORED = { split: '.d-hear-tv, .d-hear-step', plate: '.d-hear-tv, .d-hear-controls', unit: '.d-hear-tv, .d-hear-deck', flush: '.d-hear-tv' };
+const sel = (list) => list.split(', ').map((x) => '#hear ' + x).join(', ');
+const CTL_NOTES = {
+  split: 'SPLIT: step 2 and step 3 each in a pocket of their own (the look you saw).',
+  plate: 'ONE PLATE: step 2 and step 3 in one pocket, an engraved groove between them, DRIFT and VOLUME closer together, the DRIFT button seated in a bore.',
+  unit: 'HEAD UNIT: the LCD and the controls on one face, like a car stereo: one pocket for the whole right side, the LCD window cut into it.',
+  flush: 'FLUSH: no boxes for the controls; they go straight through the wall, the wall darkened only round them.',
+};
 const NOTES = {
   a: 'A · BIG + LIGHT: PLAY is the big cap now (STOP steps down), its lamp lights the floor round it; the DRIFT button grows, its light spills when it is on; VOLUME steps back. The breath still marks only the next step.',
   b: 'B · A + SPRAY: A, plus a hand-sprayed magenta arrow at PLAY and one at the DRIFT button: the one that is next is fresh paint, the other faded. Phones skip the arrows (no room).',
@@ -81,11 +94,12 @@ const cssLook = () => {
 
 /* a pocket milled into the wall: cut line, the lip catching the lamp on the bottom-right edge, the wall dark on the
    top-left inside, the floor a step down (light from the upper left, Law 4) */
-#hear .d-hear-tv, #hear .d-hear-step, #hear .d-hear-screen {
+#hear .d-hear-tv, #hear .d-hear-step, #hear .d-hear-controls, #hear .d-hear-deck, #hear .d-hear-screen {
   --cut: 0 0 0 1px rgba(3, 1, 6, .95), 1px 1px 0 1px rgba(232, 220, 246, .26), -1px -1px 0 1px rgba(0, 0, 0, .7), 0 0 0 4px rgba(10, 4, 16, .35);
   --sink: inset 0 12px 16px -8px rgba(0, 0, 0, .85), inset 12px 0 16px -10px rgba(0, 0, 0, .6), inset 0 -1px 0 rgba(255, 240, 255, .06), inset -1px 0 0 rgba(255, 240, 255, .04);
 }
-#hear .d-hear-tv, #hear .d-hear-step { border-image: none !important; border: 0 !important; filter: none !important; border-radius: 10px !important;
+#hear .d-hear-step { border-image: none !important; border: 0 !important; filter: none !important; box-shadow: none !important; background: none !important; }
+${sel(FLOORED[st.ctl])} { border-image: none !important; border: 0 !important; filter: none !important; border-radius: 10px !important;
   box-shadow: var(--cut), var(--sink) !important; }
 #hear .d-hear-tv { padding: 12px !important; }
 #hear .d-hear-tv > .d-hear-pick { border-radius: 8px !important; }
@@ -105,9 +119,41 @@ const cssLook = () => {
 `;
 };
 const cssFloor = () => st.floor === 'wall'
-  ? `#hear .d-hear-tv, #hear .d-hear-step { background: linear-gradient(rgba(7, 3, 11, .66), rgba(7, 3, 11, .66)), url(${PLATE}) var(--fx, 0) var(--fy, 0) / var(--fw, 100%) var(--fh, 100%) no-repeat, #0d0612 !important; }
-@media (max-width: 600px) { #hear .d-hear-tv, #hear .d-hear-step { background-image: linear-gradient(rgba(7, 3, 11, .66), rgba(7, 3, 11, .66)), url(${PLATE_P}) !important; } }`
-  : `#hear .d-hear-tv, #hear .d-hear-step { background: linear-gradient(rgba(10, 4, 16, .5), rgba(10, 4, 16, .5)), var(--d-img-panel) center / cover, #150a1f !important; }`;
+  ? `${sel(FLOORED[st.ctl])} { background: linear-gradient(rgba(7, 3, 11, .66), rgba(7, 3, 11, .66)), url(${PLATE}) var(--fx, 0) var(--fy, 0) / var(--fw, 100%) var(--fh, 100%) no-repeat, #0d0612 !important; }
+@media (max-width: 600px) { ${sel(FLOORED[st.ctl])} { background-image: linear-gradient(rgba(7, 3, 11, .66), rgba(7, 3, 11, .66)), url(${PLATE_P}) !important; } }`
+  : `${sel(FLOORED[st.ctl])} { background: linear-gradient(rgba(10, 4, 16, .5), rgba(10, 4, 16, .5)), var(--d-img-panel) center / cover, #150a1f !important; }`;
+
+const cssCtl = () => {
+  if (st.ctl === 'split') return '';
+  let s = `
+/* one row of controls: DRIFT and VOLUME a group in the middle, not two things at the far ends of a box */
+#hear .d-hear-sec .d-hear-pair, #hear .d-hear-pair { justify-content: center !important; gap: 44px !important; }
+@media (max-width: 600px) { #hear .d-hear-sec .d-hear-pair, #hear .d-hear-pair { gap: 8px !important; } }
+#hear .d-hear-step--ab > .d-hear-cap { align-self: center !important; }   /* the step's name over its group, not at the box's old corner */
+/* the DRIFT button goes through the plate: a bore round its bezel (dark inside wall top-left, catch-light on the lip
+   bottom-right), so it sits IN the metal instead of on it */
+#hear .bx-bore { position: absolute; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle, #050208 0 64%, rgba(5, 2, 8, .55) 82%, rgba(5, 2, 8, 0) 100%);
+  box-shadow: inset 3px 4px 5px rgba(0, 0, 0, .9), inset -1px -1px 0 rgba(232, 220, 246, .22), 1px 1px 0 rgba(232, 220, 246, .14), -1px -1px 0 rgba(0, 0, 0, .7); }
+`;
+  if (st.ctl === 'plate' || st.ctl === 'unit') s += `
+#hear .d-hear-controls { gap: 0 !important; }
+/* an engraved groove where the two boxes met */
+#hear .d-hear-controls > [data-step='3'] { background: linear-gradient(90deg, rgba(0, 0, 0, .85) 0 1px, rgba(232, 220, 246, .16) 1px 2px, transparent 2px) 0 50% / 2px calc(100% - 30px) no-repeat !important; }
+@media (max-width: 600px) { #hear .d-hear-controls > [data-step='3'] { background-size: 2px calc(100% - 20px) !important; } }
+`;
+  if (st.ctl === 'unit') s += `
+#hear .d-hear-deck { padding: 12px !important; gap: 0 !important; }
+#hear .d-hear-screen { margin-bottom: 4px; }
+@media (max-width: 600px) { #hear .d-hear-deck { padding: 8px !important; } }
+`;
+  if (st.ctl === 'flush') s += `
+/* the wall shows through; only a soft dark wash round the controls so their labels still read (Law 5) */
+#hear .d-hear-controls > .d-hear-step { background: radial-gradient(ellipse 62% 66% at 50% 56%, rgba(6, 2, 10, .62), rgba(6, 2, 10, 0)) !important; }
+@media (max-width: 600px) { #hear .d-hear-controls > .d-hear-step { background: radial-gradient(ellipse 75% 80% at 50% 55%, rgba(6, 2, 10, .8), rgba(6, 2, 10, 0)) !important; } }   /* the phone plate is busier down here */
+`;
+  return s;
+};
 
 const cssUp = () => {
   if (st.up === '0') return '';
@@ -168,16 +214,18 @@ const CRACK_LCD = '<span class="bx-crack lcd" aria-hidden="true"></span>';
 const CRACK_CRT = '<span class="bx-crack crt" aria-hidden="true"></span>';
 const ARROW_PLAY = '<span class="bx-spray bx-arrow play" aria-hidden="true"></span>';
 const ARROW_DRIFT = '<span class="bx-spray bx-arrow drift" aria-hidden="true"></span>';
+const BORE = '<span class="bx-bore" aria-hidden="true"></span>';
 const NOISE = `url("data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="7"/><feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 -2.2 1.9"/></filter><rect width="160" height="160" filter="url(#n)"/></svg>')}")`;
 
 const parts = (d, on) => {
   const hear = d.getElementById('hear'); if (!hear) return;
   hear.style.setProperty('--bx-noise', NOISE);
-  d.querySelectorAll('#hear .bx-crack, #hear .bx-spray').forEach((e) => e.remove());
+  d.querySelectorAll('#hear .bx-crack, #hear .bx-spray, #hear .bx-bore').forEach((e) => e.remove());
   if (!on) return;
   const add = (sel, html) => { const host = hear.querySelector(sel); if (host) host.insertAdjacentHTML('beforeend', html); };
   add('.d-hear-screen', CRACK_LCD); add('.d-hear-pick', CRACK_CRT);
   if (st.up === 'b') { add('[data-step="2"]', ARROW_PLAY); add('[data-step="3"]', ARROW_DRIFT); }
+  if (st.ctl !== 'split') { const sb = hear.querySelector('.d-start'); if (sb) sb.insertAdjacentHTML('afterbegin', BORE); }
 };
 // the pocket floors continue the wall: each floor shows the plate at the place it was cut from (cover + position maths)
 const align = (w) => {
@@ -185,7 +233,13 @@ const align = (w) => {
   const phone = w.innerWidth <= 600, pw = phone ? PPW : PW, ph = phone ? PPH : PH;
   const P = panel.getBoundingClientRect(), k = Math.max(P.width / pw, P.height / ph), iw = pw * k, ih = ph * k;
   const x0 = (P.width - iw) * .5, y0 = (P.height - ih) * (phone ? st.px / 100 : .5);
-  for (const el of d.querySelectorAll('#hear .d-hear-tv, #hear .d-hear-step')) {
+  // the bore sits round the visible bezel (the button is scaled inside its box)
+  const bore = d.querySelector('#hear .bx-bore'), sb = d.querySelector('#hear .d-start'), pb = d.querySelector('#hear .d-start-pb');
+  if (bore && sb && pb) {
+    const a = sb.getBoundingClientRect(), b = pb.getBoundingClientRect(), m = phone ? 5 : 7;
+    Object.assign(bore.style, { left: `${b.left - a.left - m}px`, top: `${b.top - a.top - m}px`, width: `${b.width + 2 * m}px`, height: `${b.height + 2 * m}px` });
+  }
+  for (const el of d.querySelectorAll('#hear .d-hear-tv, #hear .d-hear-step, #hear .d-hear-controls, #hear .d-hear-deck')) {
     const r = el.getBoundingClientRect();
     el.style.setProperty('--fx', `${x0 - (r.left - P.left)}px`); el.style.setProperty('--fy', `${y0 - (r.top - P.top)}px`);
     el.style.setProperty('--fw', `${iw}px`); el.style.setProperty('--fh', `${ih}px`);
@@ -197,12 +251,12 @@ const apply = () => {
     const d = f.contentDocument, w = f.contentWindow; if (!d || !d.head) continue;
     let el = d.getElementById('hear-bench'); if (!el) { el = d.createElement('style'); el.id = 'hear-bench'; d.head.append(el); }
     const on = st.look === 'e';
-    el.textContent = on ? cssLook() + cssFloor() + cssUp() : '#cookie-banner { display: none !important; }';
+    el.textContent = on ? cssLook() + cssFloor() + cssCtl() + cssUp() : '#cookie-banner { display: none !important; }';
     parts(d, on); requestAnimationFrame(() => align(w));
     if (!w.__bxAlign) { w.__bxAlign = true; w.addEventListener('resize', () => align(w)); }
   }
   $('veilo').textContent = st.veil + ' %'; $('pxo').textContent = st.px + ' %';
-  $('note').textContent = st.look === '0' ? 'TODAY: the page as it is.' : NOTES[st.up];
+  $('note').textContent = st.look === '0' ? 'TODAY: the page as it is.' : `${CTL_NOTES[st.ctl]}  ${NOTES[st.up]}`;
   for (const b of document.querySelectorAll('[data-k]')) b.setAttribute('aria-pressed', String(st[b.dataset.k] === b.dataset.v));
 };
 const $ = (id) => document.getElementById(id);
@@ -218,7 +272,7 @@ $('bar').addEventListener('click', (e) => { const b = e.target.closest('[data-k]
 $('veil').addEventListener('input', (e) => { st.veil = +e.target.value; apply(); });
 $('px').addEventListener('input', (e) => { st.px = +e.target.value; apply(); });
 addEventListener('resize', fit); fit();
-// test hook: window.benchSet({look, up, floor, veil, px})
+// test hook: window.benchSet({look, up, floor, ctl, veil, px})
 window.benchSet = (o) => { Object.assign(st, o); apply(); };
 </script>
 </body>
