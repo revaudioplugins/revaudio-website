@@ -27,8 +27,8 @@
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
-html { background: var(--bg); -webkit-text-size-adjust: 100%; height: 100%; overflow: hidden; overscroll-behavior: none; }
-body { margin: 0; height: 100%; overflow: hidden; overscroll-behavior: none; background: var(--bg); color: var(--fg); font: 15px/1.5 Inter, system-ui, sans-serif; }
+html { background: var(--bg); -webkit-text-size-adjust: 100%; }
+body { margin: 0; overflow-x: clip; background: var(--bg); color: var(--fg); font: 15px/1.5 Inter, system-ui, sans-serif; }
 button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 img { display: block; user-select: none; -webkit-user-drag: none; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
@@ -36,7 +36,7 @@ main { position: relative; max-width: 480px; margin: 0 auto; }
 
 /* the station, soft behind: the shop window + its lamp around the pump, out of focus and a stop down (a camera focused
    close on the pump); it stays put while the page moves over it */
-.bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; background: var(--bg); }
+.bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; background: var(--bg); }   /* clips the blur's -4 % overhang */
 .bg::before { content: ""; position: absolute; inset: -4%; background: url(phone/bg-station.webp) 50% 30% / cover no-repeat; opacity: .9; }
 .bg::after { content: ""; position: absolute; inset: 0;
   background: radial-gradient(70% 38% at 50% 26%, rgba(255, 190, 110, .14), transparent 70%),
@@ -50,7 +50,7 @@ main > * { position: relative; z-index: 1; }
 /* 1 · HERO: the globe is the name (the plugin's own header lockup, DESIGN §3), the gauge under it, the readings on it */
 /* the zoom: the body ~118 % of the column wide (its sides run off the screen), unless the screen is too short to hold the
    globe + the whole gauge + the readings: then the zoom eases off so the gauge is never cut and the button stays in view */
-/* one screen, no scroll (Dan 2026-10-24): the pump + the readings as one group, centred in the screen */
+/* the hero is one screen (Dan 2026-10-24): the pump + the readings as one group, centred in it */
 .hero { height: 100svh; display: flex; flex-direction: column; justify-content: center; }
 .hero { --top: calc(env(safe-area-inset-top, 0px) + max(10px, 2svh) + var(--topd, 0px)); --rdh: 192px;   /* --zk / --topd: bench hooks (1 / 0) */
   --z: calc(min(calc(var(--u) * 118 / 328), calc((100svh - var(--top) - var(--rdh)) / 396)) * var(--zk, 1)); }
@@ -80,6 +80,24 @@ main > * { position: relative; z-index: 1; }
 .scr { margin: 4px 0 0 calc(var(--u) * 24); font: 400 calc(var(--u) * 12)/1 Yellowtail, cursive; color: var(--brass); transform: rotate(-6deg);
   text-shadow: var(--hug), 0 0 10px rgba(232, 200, 120, .3); transition: color .15s, text-shadow .15s; }
 .rd.lit .scr { color: #fbe0a0; text-shadow: var(--hug), 0 0 8px rgba(255, 216, 140, .55), 0 0 26px rgba(242, 190, 74, .5); }
+
+
+/* 2 · THREE GRADES (Dan 2026-10-26: "how simple the plugin is, three modes, a short line for each"; picked A of two):
+   one screen, three rows, the pump's own grade key (the plugin's render, 4x) + its line, all readable at once.
+   A tap lights that key (one at a time); the lines come from GAS2 docs/BRIEF.md. */
+.grades { min-height: 100svh; display: flex; flex-direction: column; justify-content: center; gap: 26px; padding: 56px 16px 64px; }
+.gh { margin: 0; text-align: center; font: 400 calc(var(--u) * 9.4)/1 Bebas, Oswald, sans-serif; letter-spacing: .05em; color: var(--parch); text-shadow: var(--hug); }
+.gh span { color: var(--line); }
+.rows { display: grid; gap: 18px; }
+.row { display: grid; grid-template-columns: 38% 1fr; gap: 16px; align-items: center; }
+.gk { position: relative; display: block; touch-action: manipulation; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .45)); transition: transform .12s cubic-bezier(.2, .9, .25, 1.25); }
+.gk img { display: block; width: 100%; height: auto; }
+.gk .lit { position: absolute; inset: 0; opacity: 0; transition: opacity .18s; }
+.gk.on .lit { opacity: 1; }
+.gk.on { transform: translateY(2px); }
+.gk:focus-visible { outline: 2px solid var(--honey); outline-offset: 3px; }
+.g3 { margin: 0; font: 400 calc(var(--u) * 6.4)/1.05 Bebas, Oswald, sans-serif; letter-spacing: .05em; color: var(--line); text-shadow: var(--hug); }
+.gp { margin: 4px 0 0; font: 400 16px/1.4 Inter, system-ui, sans-serif; color: #d8cfbf; text-shadow: var(--hug); }
 
 /* service ticket (the mailbox / download form) */
 .veil { position: fixed; inset: 0; background: rgba(8, 5, 3, .62); display: grid; place-items: center; opacity: 0; pointer-events: none; transition: opacity .25s; z-index: 10; padding: 16px; }
@@ -157,6 +175,15 @@ main > * { position: relative; z-index: 1; }
     </div>
   </section>
 
+
+  <section class="grades" aria-labelledby="gradesH">
+    <h2 class="gh" id="gradesH">Three grades. <span>Pick one.</span></h2>
+    <div class="rows">
+      <div class="row"><button class="gk" type="button" data-g="0" aria-label="REGULAR" aria-pressed="false"><img src="phone/key0.webp" alt=""><img class="lit" src="phone/key0-lit.webp" alt=""></button><div><p class="g3">Smooth and warm.</p><p class="gp">For mixes that are already good.</p></div></div>
+      <div class="row"><button class="gk on" type="button" data-g="1" aria-label="PREMIUM" aria-pressed="true"><img src="phone/key1.webp" alt=""><img class="lit" src="phone/key1-lit.webp" alt=""></button><div><p class="g3">The signature.</p><p class="gp">Thick lows, clear mids, silky air.</p></div></div>
+      <div class="row"><button class="gk" type="button" data-g="2" aria-label="RACE" aria-pressed="false"><img src="phone/key2.webp" alt=""><img class="lit" src="phone/key2-lit.webp" alt=""></button><div><p class="g3">Punchy and bright.</p><p class="gp">For loud, modern mixes.</p></div></div>
+    </div>
+  </section>
 </main>
 
 <div class="veil" id="veil" role="dialog" aria-modal="true" aria-label="Get GAS 2">
@@ -201,6 +228,9 @@ main > * { position: relative; z-index: 1; }
   $('#cta').addEventListener('pointerdown', () => { clearTimeout(litT); rd.classList.add('lit'); });
   addEventListener('pointerup', () => { litT = setTimeout(() => rd.classList.remove('lit'), 500); });
 
+
+  // the grade keys: one lit at a time (the sound of each grade joins when the per-grade renders exist)
+  $$('.gk').forEach(k => k.addEventListener('click', () => $$('.gk').forEach(x => { const on = x === k; x.classList.toggle('on', on); x.setAttribute('aria-pressed', on); })));
 
   // the service ticket: the button, the MAIL ME THE KEYS poster and the box all open it (a fresh ticket each time)
   const veil = $('#veil'), tk = $('#ticket');

@@ -31,6 +31,50 @@ Claim: OPEN. Files: `tools/_gas2-scene/phone.html` + `tools/_gas2-scene/phone/*.
 - Next: bake Dan's bench save, Dan's polish notes, the per-grade renders (Yoni), then it moves into page-b as the `@media (max-width: 760px)` layout
   (the scene hidden on phones).
 
+- 2026-10-26 Dan picked **A** for the screen under the hero (A/B preview Artifact https://claude.ai/artifact/P3A86oo9tomiujdFnfPz5g,
+  now obsolete): `.grades` = THREE GRADES. PICK ONE. + three rows (the pump's key, 4x, + headline + line); a tap lights one key
+  (no sound yet). The page scrolls again: hero (one screen) + grades (one screen). `.bg` now clips its blur overhang. Page Artifact
+  v4, bench v3 (bench parts + the grades title and rows). Decision 1 below is DONE.
+
+### Session close 2026-10-26 (/close-session)
+
+**State.** Branch `feat/gas2-phone` (worktree `.claude/worktrees/gas2-phone`) = `origin/feat/gas2-phone` (0 ahead / 0 behind),
+7 commits on top of `feat/gas2-page`@`c4302cf`; `feat/gas2-page` has moved 24 commits on since (Yoni's radio round 3+), not merged
+in here. The only uncommitted change is this session-close block. Untracked on purpose: `tools/_gas2-scene/phone-bench.js` (the
+bench; git-excluded, never commit).
+
+**Unverified.**
+- The needle fix on Dan's real phone (rebuilt after "no needle"; seen in the iOS Simulator only). Dan has not confirmed it since.
+- The one-screen page on a real iPhone (checked headless WebKit at 4 sizes, page height = screen height).
+- The bench on a real phone: no save has reached the bench db yet (`bench` collection empty 2026-10-26), and the Simulator's
+  clipboard is empty, so Dan has not saved a bench round.
+
+**Background processes (not this session's to kill unless Dan says).**
+- `python3 -m http.server 4464` from this worktree's `tools/_gas2-scene` (pid 37789): the page + `phone.html#bench`. Kill: `kill 37789`.
+- iOS Simulator iPhone 17 Pro (B0B0F88C-95BB-40DA-B292-A73157B50757) booted with `127.0.0.1:4464/phone.html#bench` open in Safari
+  (claude.ai Artifacts show "Sign in" there: the Simulator's Safari is not signed in). Stop: `xcrun simctl shutdown B0B0F88C-95BB-40DA-B292-A73157B50757`.
+- Not this session's: :4461 pid 29302 (GAS2 plugin UI), :4462 pid 41222 (the gas2-page worktree).
+
+**Decisions open for the next session.**
+1. **The screen under the hero** (Dan 2026-10-26: "explain how simple the plugin is, three modes, a short line for each one, let's
+   think about it"). Proposed title THREE GRADES. PICK ONE. + REGULAR "Smooth and warm. For mixes that are already good." /
+   PREMIUM "The signature. Thick lows, clear mids, silky air." / RACE "Punchy and bright. For loud, modern mixes." (from GAS2
+   `docs/BRIEF.md`). Layout A (recommended: three rows, the pump's real key image + name + line) vs B (the keys in a row, one line that
+   changes on tap). Waiting for Dan's A/B + copy OK. Note: this re-opens scrolling, which he locked to one screen on 2026-10-24.
+   No "one knob" / "that's it" (GAS dial + IN/OUT exist; DESIGN.md copy rule).
+2. **Tap a grade to hear it**: needs Yoni's per-grade renders of one mix (REGULAR / PREMIUM / RACE + the original).
+3. **Bake the bench** when Dan saves: `ArtifactData get` collection `bench` doc `phone` (claude.ai bench), or `xcrun simctl pbpaste
+   <udid>` (the Simulator's local bench copies to its clipboard).
+4. **Into page-b**: the phone page becomes page-b's `@media (max-width: 760px)` layout, after rebasing on `feat/gas2-page`.
+5. **page-b desktop bugs found 2026-10-23** (fixed only in the phone options, now superseded): the closed plugin veil's iframe keeps
+   taps (`.veil:not(.open) .plug { display: none; }`); the reduced-motion rule misses the button's `::after` shine. Dan's word to fix.
+6. **Old Artifact** https://claude.ai/artifact/WaDdeVGPhHdxXxseH22H6H (the Swipe / Walk / Stack chooser) is obsolete: delete only on Dan's word.
+
+**Suggested commit.** `docs(handoff): GAS 2 phone page session close (2026-10-26)`: `tasks/handoff.md` only.
+
+**Cleanup.** The superseded `phone-{swipe,walk,stack}.html` are still committed on this branch (`e98ea01`): drop them in the
+page-b merge. Node 26.0.0 on Dan's Mac has CVE-2026-111497 (upgrade to 26.12.1+).
+
 ## 2026-10-23 — GAS 2 page: three PHONE options, Swipe / Walk / Stack (Claude Code, Dan's Mac, Dan on his phone) — SUPERSEDED 2026-10-24
 
 Claim: CLOSED 2026-10-24 (Dan: they don't work for him on the phone; replaced by the entry above). Files: `tools/_gas2-scene/phone-{swipe,walk,stack}.html` only (new; git-excluded folder, so `git add -f`).

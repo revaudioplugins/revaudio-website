@@ -285,7 +285,10 @@ recipe (`tools/_gas2-scene/phone.html`): the plugin's own render re-baked sharp 
 plugin's base px, its layer order), the globe as the name, the readings under the gauge, the station only as a soft
 backdrop. ONE screen, no scroll (Dan, same day: "under the Fill it up remove all the page, keep one page, no scroll"):
 the pump + the four readings centred as one group, the zoom easing off on short screens so nothing is cut; the button
-opens the service ticket; no player, posters or mailbox on phones.
+opens the service ticket; no player, posters or mailbox on phones. Then one more screen (Dan 2026-10-26, "how simple the plugin
+is, three modes, a short line for each", A picked over B): THREE GRADES. PICK ONE. as three rows, the pump's own grade key +
+a Bebas honey headline + one Inter line, all readable at once (B, the key bank with one line that changes on tap, hid two of
+the three lines).
 Why: a portrait phone shows a third of a 3:2 scene, the photo goes soft, and the props turn into hunt-the-hotspot.
 
 ## 8. Layout
