@@ -1,3 +1,10 @@
+## 2026-10-26 - DRIFT dates moved: feedback form closes Fri Nov 20, on sale Tue Dec 1 (Claude Code, Yoni's laptop 2) - PUSHED TO MAIN = LIVE (Yoni: "push deploy")
+
+Claim: CLOSED 2026-10-26. Files: `src/data/drift.ts` (feedbackClosesLabel, releaseLabel, header note), `src/data/beta-survey.ts` (intro), `src/pages/drift/feedback.astro` (code fine print), `src/components/drift/DriftHero.astro` + `DriftKeep.astro` (comments; the DriftKeep one ships in the HTML).
+- Ask (Yoni): the form date Oct 24 -> Nov 20, the sale date Nov 1 -> Dec 1 (so the road stays in order). Same change in DRIFT email 01 (shared `01f3c26`).
+- Checked: build green; dist has no Oct 24 / Nov 1 left; screenshots of the road (NOW / NOV 20 / DEC 1) and the hero (ETA DEC 1) at 1280.
+- Owed: the Cart handoff below says "DRIFT on sale Sun Nov 1" in `plugins.ts`: that day is now Tue Dec 1. The licence worker's DRIFT emails (form code, trial sequence, email 01 text) still say Oct 24 / Nov 1 (RevLimiter repo `worker.js`).
+
 ## 2026-10-23 — GAS 2 page mockup on `main` for Ilay (Claude Code, Dan's Mac) — PUSHED TO MAIN (Dan: "push the page of gas2 to main, Ilay needs it for social media inspiration")
 
 Claim: CLOSED 2026-10-23. `feat/gas2-page` (f72afcc) + `feat/gas2-page-s2` (6a5af16, the spotlight + notes on the glass, Dan picked "both") merged clean.

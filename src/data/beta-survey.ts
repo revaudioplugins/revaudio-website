@@ -559,7 +559,7 @@ export const driftSurveyMeta = {
     introHe:
       'תודה שבדקת את DRIFT. המשוב הזה קובע אם DRIFT מוכן לשיגור ב-1 בנובמבר, ומזכה אותך בקוד הנחה של $30 על DRIFT. כל שאלה עוזרת. ~7 דקות.',
     introEn:
-      "Thanks for testing DRIFT. This feedback decides if DRIFT is release-ready on Nov 1, and a complete form gets you a $30 off DRIFT code on the spot. Every answer helps. ~7 minutes.",
+      "Thanks for testing DRIFT. This feedback decides if DRIFT is release-ready on Dec 1, and a complete form gets you a $30 off DRIFT code on the spot. Every answer helps. ~7 minutes.",
     requiredHe: 'חובה',
     requiredEn: 'required',
     optionalHe: 'רשות',

@@ -9,8 +9,8 @@
  * the page). 30 days (Dan 2026-10-08 "its 30 days free" = the plugin's
  * LicenseManager kTrialDays; was 14). After the trial you keep DRIFT one of three ways: free with a
  * qualifying video (creator deal via /affiliate), $39 by filling in the
- * feedback form by Sat Oct 24, or $69 at release on Sun Nov 1. Prices show;
- * nothing is on sale before Nov 1 (no buy button, no checkout, no coupon or
+ * feedback form by Fri Nov 20, or $69 at release on Tue Dec 1. Prices show;
+ * nothing is on sale before Dec 1 (no buy button, no checkout, no coupon or
  * discount wording). D2/H1: DRIFT pans the WHOLE sound; the LOW/HIGH CUT band
  * is only where echo, reverb, tremolo and pitch play.
  *
@@ -28,8 +28,8 @@ export const drift = {
   trialOpensIso: '2026-10-10T17:00:00Z',
   trialOpensLabel: 'Sat Oct 10, 17:00 UTC',
   trialOpensDay: 'Sat Oct 10',
-  feedbackClosesLabel: 'Sat Oct 24',
-  releaseLabel: 'Sun Nov 1',
+  feedbackClosesLabel: 'Fri Nov 20',
+  releaseLabel: 'Tue Dec 1',
   trialDays: 30,
   listPriceUsd: 69,
   driverPriceUsd: 39,
