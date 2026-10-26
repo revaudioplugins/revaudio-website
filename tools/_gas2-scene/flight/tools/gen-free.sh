@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# (OUT=<dir> = where the files land; key: tools/.openai_key.local of the website clone, never printed)
+# (OUT=<dir> = where the files land; key: $OPENAI_API_KEY (source ~/.zsh/openai.zsh), else tools/.openai_key.local of the website clone; never printed)
 # gpt-image-2 generation (no input image). Usage: gen-free.sh <tag> <size> <n> "<prompt>"  -> free-<tag><k>.png
 set -euo pipefail
 cd "${OUT:-.}"
 TAG="$1"; SIZE="$2"; N="$3"; PROMPT="$4"
-KEY="$(tr -d '[:space:]' < "$HOME/projects/revaudio/revaudio-website/tools/.openai_key.local")"
+KEY="${OPENAI_API_KEY:-$(tr -d '[:space:]' < "$HOME/projects/revaudio/revaudio-website/tools/.openai_key.local")}"
 python3 -c 'import json,sys; print(json.dumps({"model":"gpt-image-2","prompt":sys.argv[1],"n":int(sys.argv[2]),"size":sys.argv[3],"quality":"high"}))' "$PROMPT" "$N" "$SIZE" > "req-$TAG.json"
 curl -s https://api.openai.com/v1/images/generations -H "Authorization: Bearer $KEY" -H "Content-Type: application/json" -d @"req-$TAG.json" -o "resp-$TAG.json"
 python3 - "$TAG" <<'PY'

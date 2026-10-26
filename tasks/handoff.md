@@ -1,6 +1,7 @@
 ## 2026-10-26 — GAS 2 page: the drone intro (hover above the station, scroll = descent, land, readings pop) (Claude Code `danavivi-19`, Dan's Mac) — BRANCH `feat/gas2-page`
 
-Claim: OPEN (`danavivi-19`). Files: NEW `tools/_gas2-scene/flight/**`; in `page-b.html` ONE `<link>` + `<script>` line in
+Claim: OPEN (`danavivi-fb`; taken over 2026-10-26 from `danavivi-19`, which Dan closed: "continue from where you stopped").
+Files: NEW `tools/_gas2-scene/flight/**`; in `page-b.html` ONE `<link>` + `<script>` line in
 `<head>` (after the radio line), nothing else of page-b's; one README line pair in `tools/_gas2-scene/README.md`; this entry.
 - Dan: "the hovering drone scene for GAS2 page ... above the gas station and then when the user scroll down ... it goes to the
   main page that we have right now. Then all the readings ... on the right side ... pop out. After it the user lands on the page."
@@ -31,6 +32,27 @@ Claim: OPEN (`danavivi-19`). Files: NEW `tools/_gas2-scene/flight/**`; in `page-
   Re-checked: Chromium all three lights + WebKit, no errors, the page after touchdown = `?flight=0` (0.03).
 - Open (Dan's word): (5) which light; (6) a new OpenAI key, then re-paint the picked light from the richer blockout
   (`lab.html?b=0&s=1&minres=30&road=0`, grade, `tools/gen-aerial.sh` with MOOD/EXPO; ~$0.6 for 2 takes).
+- `danavivi-fb` took over (Dan: "continue from where you stopped" ... "the drone view scene for gas 2 page"):
+  - (5) DONE, Dan picked **Blue** (the same sky the drone lands in). Last light + Lamp, their TUNE buttons, `?air=` and
+    `tools/mood-grade.py` are gone: one hover photo, `img/aerial-blue.webp`.
+  - (6) 🔴 BLOCKED on money: the key in `~/.zsh/openai.zsh` works (the `tools/.openai_key.local` one is dead, 401), but the
+    OpenAI account has no credits (`credit_balance_exhausted`); Higgsfield is at 0 too. `gen-aerial.sh` / `gen-free.sh`
+    now take `$OPENAI_API_KEY` first; the prompt no longer asks for a stove pipe. Once there are credits: blockout + mask
+    (lab-shot, identical to the old prep) -> `grade-blockout.py ... blue` -> `zsh -c 'source ~/.zsh/openai.zsh && OUT=<dir>
+    bash tools/gen-aerial.sh <h-blue.png> Nblue 2'` (~$0.6) -> check the shift (0 px) -> `cwebp -q 92 -m 6` over
+    `img/aerial-blue.webp`.
+  - Fixed: a dark "ghost" streak in the sky over the canopy in the last stretch (u 0.82-0.97). The line-of-sight test
+    used box steps for the slanted roof end and the roof's edge sat 0.2-0.27 m short of the photo's, so A's dark canopy lip
+    rode on the sky. Now the roof + sidewalk are exact prisms there, and the roof's slanted edge is fitted to A.
+  - Item 3 of the "what's next" list, the house's left end lived in: as the drone closes in, the front wall left of the
+    window + the curb hand over from the blown-up hover photo (~28 px/m) to the fill (stucco with grime, eave shadow and
+    falloff; a panelled side door with a brass knob; concrete curb). A gooseneck lamp over the door (`roadside.js`) lights
+    the wall, sidewalk and dirt; the door's four lights show the shop's interior, cut from A.
+  - Checked (headless, DPR 2): page-b in Chromium 1141x636, 1440x900, 390x844 + WebKit 1141x636: no console errors,
+    lands, the page after touchdown = `?flight=0` (0.000); lab u=1 vs `land.webp` 0.010 (max diff 0 against before the
+    door work). Not checked: Dan's Safari by eye, a real phone.
+  - Open (Dan's word): (6) OpenAI credits, then the Blue re-paint; item 2 (the pump's own cut-out layer, one more image
+    ~$0.3); item 4 (a DESIGN.md rule for the intro, the phone pass, merge to main) once he signs the look off; (2) and (3).
 
 ## 2026-10-26 — GAS 2 page: no copying (Claude Code `danavivi-7e`, Dan's Mac) — BRANCH `feat/gas2-page` PUSHED
 

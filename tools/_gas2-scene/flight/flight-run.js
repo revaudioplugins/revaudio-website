@@ -1,5 +1,5 @@
 // GAS 2 page · the drone intro, the run (loaded by flight.js). The station's 3D set (world.js) on a full-window canvas;
-// the scroll runway flies the camera from the hover (img/aerial.webp) down to the page's own frame, which it meets
+// the scroll runway flies the camera from the hover (img/aerial-blue.webp) down to the page's own frame, which it meets
 // pixel-for-pixel; then the canvas fades onto the page, the readings pop, the runway folds away: the page is the page.
 import { THREE, makeWorld, loadSet, poseAt, applyPose, makeCamera, POSE_A, POSE_B } from './world.js';
 import { makeRoadside } from './roadside.js';
@@ -25,7 +25,7 @@ let renderer, world, road;
 try {
   renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
   renderer.outputColorSpace = THREE.LinearSRGBColorSpace;   // the photos' own sRGB values straight through (the landing frame must match the page)
-  world = makeWorld(await loadSet({ aerial: `img/aerial-${html.dataset.air || 'blue'}.webp` }));
+  world = makeWorld(await loadSet());
   road = await makeRoadside(world);                        // the pole sign + the telephone line (3D, behind the landing camera)
 } catch (err) { abandon(); throw err; }                     // no WebGL / a photo missing: the page as it was
 const cam = makeCamera(POSE_B);

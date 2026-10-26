@@ -1,10 +1,11 @@
 // GAS 2 page · the drone flight: what stands by the road (Dan 2026-10-26, "go 1": the hover shot should read as a real
 // 1950s station from above). A lit GAS2 pole sign at the front of the lot and a telephone line that leaves the highway
-// and runs back into the desert left of the station. Real 3D objects with their own materials (not painted by the
+// and runs back into the desert left of the station; and the lamp over the side door (the house's plain left end, lived
+// in: its light and the door's lit pane are world.js's, doorL / doorI). Real 3D objects with their own materials (not painted by the
 // photos): the drone passes them with true depth, and the hover photo (img/aerial-*.webp) is painted WITHOUT them, so
 // nothing of theirs lies on the ground twice. None of it can reach the touchdown frame: the sign stands behind the
 // landing camera (z > 8); the line runs at x = -20, outside its frame up close and hidden behind the house further out.
-import { THREE } from './world.js';
+import { THREE, DOOR } from './world.js';
 
 const SIGN = { x: 5.6, z: 9.0, turn: -18, pole: 7.2, w: 3.3, h: 1.65, d: .36, y: 6.5 };   // turned toward the drone's side
 const POLES = { x: -20, z0: 12, step: 30, n: 11, h: 8.6, arm: 8.05, sag: .5 };   // from the highway back to the horizon, never across the shop front
@@ -27,6 +28,10 @@ void main() {
   c += albedo * lampC * lampI * 3.0 * max(dot(N, normalize(L)), 0.0) / (1.0 + dot(L, L) * 0.08);
   gl_FragColor = vec4(mix(c, vec3(0.17, 0.12, 0.10), smoothstep(40.0, 900.0, distance(vW, cameraPosition))), 1.0);
 }`;
+const GLOW = /* glsl */`
+precision highp float;
+uniform vec3 col;
+void main() { gl_FragColor = vec4(col, 1.0); }`;
 const FACE = /* glsl */`
 precision highp float;
 uniform sampler2D map; uniform float lit;
@@ -113,6 +118,18 @@ export async function makeRoadside(world) {
     wires.push(new THREE.TubeGeometry(curve, 20, .012, 4, false));
   }
   group.add(new THREE.Mesh(merge(parts), dusk([.2, .15, .11])), new THREE.Mesh(merge(wires), dusk([.08, .07, .065])));
+
+  // the lamp over the side door: a gooseneck + a dark dome shade like the porch lamps in the landing photo, a steady bulb
+  const lx = (DOOR.x[0] + DOOR.x[1]) / 2, ly = DOOR.top + .5, lz = .32;          // the shade's rim, 0.32 m off the wall
+  const neck = new THREE.CatmullRomCurve3([[lx, ly + .42, 0], [lx, ly + .47, .14], [lx, ly + .36, lz], [lx, ly + .13, lz]].map(p => new THREE.Vector3(...p)));
+  const dome = new THREE.LatheGeometry([[.03, .13], [.08, .115], [.135, .07], [.165, .02], [.17, 0]].map(([r, y]) => new THREE.Vector2(r, y)), 20).translate(lx, ly, lz);
+  group.add(new THREE.Mesh(merge([new THREE.TubeGeometry(neck, 16, .016, 6), new THREE.CylinderGeometry(.04, .04, .02, 12).rotateX(Math.PI / 2).translate(lx, ly + .42, .01), dome]), dusk([.11, .095, .085])));
+  const under = new THREE.Mesh(new THREE.CircleGeometry(.165, 20).rotateX(Math.PI / 2).translate(lx, ly + .005, lz),   // the shade's lit inside
+    new THREE.ShaderMaterial({ vertexShader: VERT, fragmentShader: GLOW, toneMapped: false, uniforms: { col: { value: new THREE.Vector3(1, .86, .64) } } }));
+  const bulb = new THREE.Sprite(new THREE.SpriteMaterial({ map: haloTexture(), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, toneMapped: false, opacity: .65 }));
+  bulb.scale.set(.7, .5, 1); bulb.position.set(lx, ly - .1, lz + .03);
+  group.add(under, bulb);
+  U.doorL.value.set(lx, ly - .03, lz); U.doorI.value = 1.5;
   world.scene.add(group);
 
   // the neon starts the way page-b's NEON look does (a few stutters, then on), and buzzes once in a while

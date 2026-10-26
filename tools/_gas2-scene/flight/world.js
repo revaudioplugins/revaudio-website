@@ -1,6 +1,6 @@
 // GAS 2 page · the drone flight: the station as a projection-mapped 3D set (three.js, no build step).
 // Two photos paint the set like slide projectors. A = the page's own frame at touchdown (img/land.webp, rendered from
-// page-b without the readings), B = the drone's hover shot (img/aerial-*.webp, painted from this set's own blockout seen
+// page-b without the readings), B = the drone's hover shot (img/aerial-blue.webp, painted from this set's own blockout seen
 // from POSE_B, so it lines up). A camera standing exactly on a projector sees that photo exactly: the flight starts
 // pixel-true on B and lands pixel-true on A. In between, every surface takes the sharper photo (texels per metre on the
 // worst axis); what neither photo saw is filled from a dusk sky panorama (img/sky.webp, colour-matched to A's sky by
@@ -13,17 +13,19 @@ import * as THREE from './vendor/three.module.min.js';
 // z 1.91 (slab top 0.25 m), the wall's right corner x 0.87, the roof's underside 3.5 m. Everything is scale-free except f.
 export const HOUSE = [[-6.6, 0, -6], [0.867, 3.5, 0]];   // 7.5 x 6 m: a roadside shack, the shop window is most of its front
 // the roof and the sidewalk are prisms (footprint [x, z] corners, y from-to): both their right ends run slanted in the
-// photo (measured on f6-v17: the canopy's edge from (2.24, 0.33) back to (1.68, -4.83); the sidewalk's end from
-// (1.85, 1.91) back to (2.75, -1.29)), and a box there would carry sky / desert pixels on its square corner
-const ROOF = { y: [3.5, 3.85], xz: [[-6.9, 0.45], [2.24, 0.45], [1.62, -6.3], [-6.9, -6.3]] };
+// photo, and a box there would carry sky / desert pixels on its square corner. The canopy's slanted edge = where the
+// landing photo's underside meets the sky, back-projected onto the underside (y 3.5): x = 0.1045 z + 2.4575, a straight
+// line within 1 cm over z -6 .. -0.2, + 1.5 cm for the anti-aliased edge (2026-10-26; the f6-v17 measure had it
+// 0.2-0.27 m in, so a strip of the dark lip rode on the sky). The sidewalk's end from (1.85, 1.91) back to
+// (2.75, -1.29), measured on f6-v17.
+const ROOF = { y: [3.5, 3.85], xz: [[-6.9, 0.45], [2.52, 0.45], [1.815, -6.3], [-6.9, -6.3]] };
 const ROOFTOP = [[-4.6, -3.6, .7, .45, .7], [-1.9, -4.9, .5, .35, .5]];   // two low vents: x, z, w, h, d (a stove pipe poked above the roof line on the way in)
 const SLAB = { y: [0, 0.25], xz: [[-6.9, 1.91], [1.85, 1.91], [2.75, -1.29], [1.7, -6], [-6.9, -6]] };
-// occluders for the shader's line-of-sight test = axis-aligned boxes inside those shapes (the slanted ends as steps)
-const OCCLUDERS = [
-  HOUSE,
-  [[-6.9, 3.5, -6.3], [1.62, 3.85, 0.45]], [[1.62, 3.5, -1.2], [2.09, 3.85, 0.45]], [[1.62, 3.5, -3.0], [1.92, 3.85, -1.2]], [[1.62, 3.5, -4.8], [1.76, 3.85, -3.0]],
-  [[-6.9, 0, -6], [1.85, 0.25, 1.91]], [[1.85, 0, 1.0], [2.1, 0.25, 1.91]], [[1.85, 0, -0.2], [2.4, 0.25, 1.0]], [[1.85, 0, -1.29], [2.7, 0.25, -0.2]],
-];
+// occluders for the shader's line-of-sight test: the house (+ the chalkboard's board, added in makeWorld) as boxes, the
+// roof and the sidewalk as their own prisms. Their slanted ends used to be box steps: through the gaps the landing photo's
+// dark canopy edge leaked onto the sky as a stepped ghost in the last stretch of the descent (2026-10-26).
+const OCCLUDERS = [HOUSE];
+const PRISMS = [ROOF, SLAB];
 const ROAD = { z0: 10.5, z1: 17.5 };          // the two-lane highway in front of the apron
 const SKY_R = 1450, GROUND_R = 1400;
 // img/sky.webp: horizon at 87.8 % of its height, linear in elevation, 35 deg at the top, -4.87 deg at the bottom;
@@ -32,11 +34,13 @@ const SKY = { hz: 0.878, top: 35, bot: 4.87, az: 70, haze: [0.17, 0.12, 0.10] };
 // page-b's chalkboard (.chalk: left 56.2 %, top 53.4 %, width 11.6 % of the scene; props/chalkboard.png 420 x 627, its
 // feet at row 622, its solid board between cols 70-350 / rows 90-440). It stands on the sidewalk right of the wall
 // corner, so it gets its own cut-out panel at its own depth instead of smearing across the corner.
+// the side door, left of the shop window (x from-to, y to; on the front wall z = 0) and the pane in its upper half
+export const DOOR = { x: [-5.5, -4.5], top: 2.35, pane: { c: [-5.0, 1.78], h: [0.27, 0.34] } };
 const CHALK = { x: .562 * 1536, y: .534 * 1024, w: .116 * 1536, img: [420, 627], feet: 622, core: [70, 90, 350, 440] };
 
 // poses: position (m), yaw (deg, + = turn left), pitch (deg, + = look up), roll (deg), vertical fov (deg). Frame = 3:2.
 export const POSE_A = { pos: [0, 1.328, 6.6], yaw: 0, pitch: -0.4966, roll: 0, vfov: 37.7497 }; // f = 1500 px on 1024
-export const POSE_B = { pos: [0, 22, 19.5], yaw: 8, pitch: -48, roll: 0, vfov: 46 };            // the hover: img/aerial-*.webp were painted from this camera
+export const POSE_B = { pos: [0, 22, 19.5], yaw: 8, pitch: -48, roll: 0, vfov: 46 };            // the hover: img/aerial-blue.webp was painted from this camera
 
 const D2R = Math.PI / 180;
 export function applyPose(cam, p) {
@@ -74,7 +78,20 @@ void main() {
   gl_Position = projectionMatrix * viewMatrix * w;
 }`;
 const f2 = v => v.toFixed(4);
-const NBOX = 10;   // OCCLUDERS + the chalkboard's solid board
+const NBOX = OCCLUDERS.length + 1;   // + the chalkboard's solid board
+const CAM_F = 1300;                   // ~ the flight camera's focal on the 1024-high frame (1206 at the hover, 1500 at touchdown)
+// a convex prism as planes (inside: dot(n, p) <= d): top, bottom, one per footprint edge -> a GLSL ray-slab clip
+function prismHit({ y: [y0, y1], xz }) {
+  const cx = xz.reduce((a, p) => a + p[0], 0) / xz.length, cz = xz.reduce((a, p) => a + p[1], 0) / xz.length;
+  const pl = [[0, 1, 0, y1], [0, -1, 0, -y0]];
+  xz.forEach(([x, z], i) => {
+    const [x2, z2] = xz[(i + 1) % xz.length], L = Math.hypot(x2 - x, z2 - z);
+    let nx = (z2 - z) / L, nz = -(x2 - x) / L;
+    if (nx * (cx - x) + nz * (cz - z) > 0) { nx = -nx; nz = -nz; }
+    pl.push([nx, 0, nz, nx * x + nz * z]);
+  });
+  return pl.map(([a, b, c, d]) => `if (!clipPlane(ro, rd, vec3(${f2(a)}, ${f2(b)}, ${f2(c)}), ${f2(d)}, t0, t1)) return false;`).join('\n  ');
+}
 const FRAG = /* glsl */`
 precision highp float;
 uniform sampler2D tA; uniform sampler2D tAbg; uniform sampler2D tB; uniform sampler2D tSky; uniform sampler2D tGround; uniform sampler2D tChalk;
@@ -84,6 +101,7 @@ uniform float fA; uniform float fB;
 uniform float s; uniform float useB; uniform float minRes; uniform float dbg;
 uniform int kind;                   // 0 ground, 1 building, 2 sky, 3 the chalkboard panel
 uniform vec3 lampP; uniform vec3 lampC; uniform float lampI; uniform float lampR;   // the pole sign (roadside.js)
+uniform vec3 doorL; uniform float doorI;                                             // the side door's lamp (roadside.js)
 uniform vec3 bmin[${NBOX}]; uniform vec3 bmax[${NBOX}];
 varying vec3 vW; varying vec3 vN; varying vec2 vUv;
 
@@ -97,10 +115,22 @@ bool hitBox(vec3 ro, vec3 rd, float tmax, vec3 lo, vec3 hi) {
   float tn = max(max(a.x, a.y), a.z), tf = min(min(b.x, b.y), b.z);
   return tf > max(tn, 0.0) && tn < tmax;
 }
+bool clipPlane(vec3 ro, vec3 rd, vec3 n, float d, inout float t0, inout float t1) {
+  float dn = dot(n, rd), dist = d - dot(n, ro);
+  if (abs(dn) < 1e-6) return dist >= 0.0;
+  if (dn > 0.0) t1 = min(t1, dist / dn); else t0 = max(t0, dist / dn);
+  return t0 < t1;
+}
+${PRISMS.map((P, i) => `bool hitPrism${i}(vec3 ro, vec3 rd, float tmax) {
+  float t0 = 0.0, t1 = tmax;
+  ${prismHit(P)}
+  return true;
+}`).join('\n')}
 float seen(vec3 w, vec3 n, vec3 p) {          // 1 = nothing of the set stands between this point and the projector
   vec3 d = p - w; float L = length(d); vec3 rd = d / L;
   vec3 ro = w + n * 0.03 + rd * 0.03;
   for (int i = 0; i < ${NBOX}; i++) if (hitBox(ro, rd, L, bmin[i], bmax[i])) return 0.0;
+  ${PRISMS.map((P, i) => `if (hitPrism${i}(ro, rd, L)) return 0.0;`).join(' ')}
   return 1.0;
 }
 // a projector's sharpness on this point (texels per metre on the worst axis), inside its frame, feathered over the
@@ -126,8 +156,24 @@ vec3 fallback(vec3 N) {
   if (kind == 2) return skyAt(normalize(vW));
   if (kind == 1) {
     if (N.y > 0.5) return vec3(0.29, 0.26, 0.23) * (0.85 + 0.3 * vnoise(vW.xz * 1.7));          // tar-and-gravel roof
-    vec3 st = textureLod(tA, vec2(0.06, 0.72), 6.0).rgb * (0.9 + 0.15 * vnoise(vW.xy * 2.3));  // stucco
-    if (N.z > 0.5 && vW.x > -5.5 && vW.x < -4.5 && vW.y < 2.35) st = vec3(0.16, 0.2, 0.17);     // the shop door, left of the window
+    // stucco: A's own wall colour, mottled at three scales
+    float m = 0.5 * vnoise(vW.xy * 1.7) + 0.3 * vnoise(vW.xy * 5.1 + 3.0) + 0.2 * vnoise(vW.xy * 17.0 + 7.0);
+    vec3 st = textureLod(tA, vec2(0.06, 0.72), 6.0).rgb * (0.8 + 0.34 * m);
+    if (N.z > 0.5 && vW.z < 0.05 && vW.y < 3.5) {                // the front wall left of the shop window, lit like the photo's:
+      st *= 1.0 - 0.2 * (1.0 - smoothstep(0.25, 0.8, vW.y));    // splash grime along its foot
+      st *= 1.0 - 0.16 * smoothstep(2.9, 3.5, vW.y) * (0.5 + 0.5 * vnoise(vec2(vW.x * 6.0, 0.5)));   // the eave's shadow, streaked
+      st *= 0.6 + 0.4 * smoothstep(-6.6, -3.4, vW.x);            // further from the shop's lamps, deeper in the dusk
+      if (vW.x > ${f2(DOOR.x[0])} && vW.x < ${f2(DOOR.x[1])} && vW.y < ${f2(DOOR.top)}) {   // the side door, its edges in shadow
+        vec2 e = min(vW.xy - vec2(${f2(DOOR.x[0])}, 0.25), vec2(${f2(DOOR.x[1])}, ${f2(DOOR.top)}) - vW.xy);
+        st = vec3(0.16, 0.2, 0.17) * (0.9 + 0.12 * vnoise(vW.xy * 9.0)) * (0.55 + 0.45 * smoothstep(0.0, 0.05, min(e.x, e.y)));
+        vec2 pn = vec2(abs(vW.x - ${f2((DOOR.x[0] + DOOR.x[1]) / 2)}) - 0.2, vW.y - 0.86);   // two recessed panels under the pane
+        float pe = max(abs(pn.x) - 0.15, abs(pn.y) - 0.4);
+        st *= 1.0 - 0.35 * (1.0 - smoothstep(0.0, 0.018, abs(pe))) - 0.08 * step(pe, 0.0);
+        if (distance(vW.xy, vec2(${f2(DOOR.x[1] - 0.12)}, 1.05)) < 0.032) st = vec3(0.5, 0.38, 0.18);   // the knob
+      }
+    }
+    if (N.z > 0.5 && vW.z > 1.85 && vW.y < 0.3)                   // the sidewalk's curb: A's own concrete, its foot in the dirt
+      st = textureLod(tA, vec2(0.15, 0.1), 4.0).rgb * (0.8 + 0.3 * m) * (0.75 + 0.25 * smoothstep(0.0, 0.2, vW.y));
     return st;
   }
   vec3 g = texture2D(tGround, vW.xz / 9.0).rgb;
@@ -163,6 +209,13 @@ void main() {
   vec2 uB = cB.xy / cB.w * 0.5 + 0.5;
   float wB = useB > 0.5 ? sharp(cB, uB, pB, fB, N) * (1.0 - s) : 0.0;
   if (wB > 0.0) wB *= seen(vW, N, pB);
+  // the front wall left of the shop window (and the curb below it): the hover photo has ~28 px a metre there, so once the
+  // drone's view is 2-4.5x sharper than that (closing in), they hand over to the fill: stucco, the side door, concrete
+  if (kind == 1 && !proxy && wB > 0.0 && N.z > 0.5 && (vW.z < 0.05 || vW.y < 0.3) && vW.x < -3.45) {
+    vec3 dc = cameraPosition - vW, db = pB - vW; float Lc = length(dc), Lb = length(db);
+    float mag = (${CAM_F.toFixed(1)} * max(dot(N, dc), 0.0) / (Lc * Lc)) / max(fB * max(dot(N, db), 0.0) / (Lb * Lb), 1e-3);
+    wB *= 1.0 - smoothstep(2.0, 4.5, mag);
+  }
   // ── the fill competes in mid-flight (0 on both photos, so each end stays exact): it wins where the photos are smeared
   float wF = kind == 3 || proxy ? 0.0 : (kind == 2 ? 1.0 : kind == 0 ? 3.0 : 1.5) * smoothstep(0.0, 0.3, s) * (1.0 - smoothstep(0.88, 1.0, s));
   float eps = 1e-4;
@@ -174,6 +227,26 @@ void main() {
   vec3 c = col / (wA + wAbg + wB + wF + eps);
   // the pole sign's light on the lot; gone by touchdown, where the frame has to be the page's own
   if (kind == 0 && lampI > 0.0) { vec2 d = vW.xz - lampP.xz; c += lampC * lampI * exp(-dot(d, d) / (lampR * lampR)) * (1.0 - smoothstep(0.75, 0.95, s)); }
+  // the side door's lamp: its light on the wall, the sidewalk and the dirt (only what leaves the shade downward), and the
+  // lit pane in the door, over whichever photo paints there. All of it left of x -3.5: the landing frame never looks there.
+  if (doorI > 0.0 && kind < 2) {
+    vec3 l = doorL - vW; float dd = dot(l, l); vec3 ln = l * inversesqrt(dd);
+    float k = doorI * max(dot(N, ln), 0.0) * smoothstep(0.38, 0.62, ln.y) / (0.3 + dd) * (1.0 - smoothstep(-4.1, -3.5, vW.x));
+    c += (c * 1.8 + 0.03) * vec3(1.0, 0.64, 0.34) * k;
+    vec2 q = (vW.xy - vec2(${f2(DOOR.pane.c[0])}, ${f2(DOOR.pane.c[1])})) / vec2(${f2(DOOR.pane.h[0])}, ${f2(DOOR.pane.h[1])});
+    if (kind == 1 && N.z > 0.5 && vW.z < 0.05 && abs(q.x) < 1.0 && abs(q.y) < 1.0) {
+      vec2 a = abs(q), aa = fwidth(q);
+      float glass = smoothstep(0.06 - aa.x, 0.06 + aa.x, a.x) * smoothstep(0.05 - aa.y, 0.05 + aa.y, a.y)
+                  * (1.0 - smoothstep(0.93 - aa.x, 0.93 + aa.x, a.x)) * (1.0 - smoothstep(0.93 - aa.y, 0.93 + aa.y, a.y));   // a cross of bars, a frame
+      // each light shows its own stretch of the shop's interior (the landing photo's window right of the radio, x 282-343):
+      // jars and the hanging lamp up top, bottles and the kettle below; a little darker, and the dusk faint on the glass
+      vec2 l2 = vec2((a.x - 0.06) / 0.87, (q.y > 0.0 ? q.y - 0.05 : q.y + 0.93) / 0.88);
+      float row = q.y > 0.0 ? (q.x < 0.0 ? 330.0 : 250.0) : (q.x < 0.0 ? 410.0 : 468.0);
+      vec2 uvI = vec2((282.0 + (q.x < 0.0 ? l2.x : 1.0 - l2.x) * 61.0) / 1536.0, 1.0 - (row + (1.0 - l2.y) * 77.0) / 1024.0);
+      vec3 inside = texture2D(tA, uvI).rgb * 0.88 + vec3(0.03, 0.035, 0.05) * (1.0 - l2.y);
+      c = mix(c, mix(vec3(0.07, 0.085, 0.07), inside, glass), min(1.0, doorI));
+    }
+  }
   gl_FragColor = vec4(c, 1.0);
 }`;
 
@@ -196,6 +269,7 @@ export function makeWorld({ land, landBg, aerial = null, sky, ground, chalk }) {
     fA: { value: focal(POSE_A) }, fB: { value: focal(POSE_B) },
     s: { value: 1 }, useB: { value: aerial ? 1 : 0 }, minRes: { value: 0 }, dbg: { value: 0 },
     lampP: { value: new THREE.Vector3() }, lampC: { value: new THREE.Vector3(1, .62, .4) }, lampI: { value: 0 }, lampR: { value: 5 },
+    doorL: { value: new THREE.Vector3() }, doorI: { value: 0 },
     bmin: { value: boxes.map(b => new THREE.Vector3(...b[0])) },
     bmax: { value: boxes.map(b => new THREE.Vector3(...b[1])) },
   };
