@@ -10,8 +10,10 @@ readings pop out; then the visitor is on the page.
    quiet line: SCROLL TO LAND.
 2. **Descent.** A scroll runway (4 screens) flies the camera down, the gimbal tilts up into the sunset, and it glides in
    to the shop front.
-3. **Touchdown.** The last frame IS the page's frame (checked: 1.7/255 mean difference, the webp). The canvas fades
-   onto the identical page; the readings pop (GAS2 springs up with a small overshoot, its rule draws out, the line
+3. **Touchdown.** The last frame IS the page's frame (checked 2026-10-26 straight off the canvas at 1141x636 @2x:
+   3.8/255 mean against the live page, where a lossless render of the page itself at 1536 wide already differs by
+   3.3 — fonts and filters land a hair differently at another window size; the phone 1.6). The canvas fades onto the
+   identical page; the readings pop (GAS2 springs up with a small overshoot, its rule draws out, the line
    rises, the button pops, "Fill it up." writes on); the runway folds away and the page is exactly the page (checked:
    0.00 difference against `?flight=0`).
 
@@ -46,15 +48,36 @@ cut from A's window), concrete for the curb. Over the door hangs a gooseneck lam
 (`roadside.js`); its light on the wall, the sidewalk and the dirt and the door's lit pane are `world.js`'s
 (`doorL` / `doorI`), all of it left of x -3.5, where the landing frame never looks.
 
-The occluders (what blocks a projector's line of sight) are the house box and the roof and sidewalk as their own
-prisms. The canopy's slanted edge is fitted to where A's underside meets the sky (a stepped box version and an edge
-0.2-0.27 m short let A's dark canopy lip ride on the sky as a ghost in the last stretch).
+The occluders (what blocks a projector's line of sight) are the house box, the chalkboard's board and the roof and
+sidewalk as their own prisms. The canopy's slanted edge is fitted to where A's underside meets the sky (a stepped box
+version and an edge 0.2-0.27 m short let A's dark canopy lip ride on the sky as a ghost in the last stretch).
+
+Ghost hunting, 2026-10-26 (Dan: "check pixel by pixel, frame by frame"; 101 steps of the path, a pop scan, both ends
+measured):
+
+- **A photo blown up on screen hands over to the fill.** Where the drone's view of a surface is 2-4.5x sharper than a
+  photo's texels there (the hover photo on the walls up close, the landing photo on what it saw edge-on), that photo
+  gives way to the fill. On its own projector a photo is 1:1, so the hover and the touchdown stay exact.
+- **The porch** (under the canopy, right of the house; `porch()` in `world.js`): the hover photo had been painted from a
+  blockout with the roof's tar on the porch floor, so gpt-image-2 made it a grey wall, which smeared into a see-through
+  box as the drone left the hover; the landing photo sees that floor edge-on. Mid-flight the porch floor is now the
+  set's own (concrete from A's sidewalk, dimmer deep under the canopy, the porch lamp's warm pool at its front): the hover
+  photo only leaving the hover, the landing photo only coming in to land. The hover photo's porch itself was patched
+  from the set's render (`tools/patch-porch.py`, its mask = `lab.html?...&mask=2`).
+- **A's background plate** (`img/land-bg.webp`) only over the last stretch, as meant: earlier it painted the dirt behind
+  the porch with A's mirrored desert (a ghost stick, a ghost sidewalk end) all the way down.
+- **The chalkboard** takes its outline from the landing photo's own board (`img/land-chalk.png`,
+  `tools/make-chalkmask.py`): the panel's cut-out, and for the landing photo's line of sight, what lies behind the
+  board's plane under it. The prop file's cut-out sits a few pixels off the board as the photo has it, and a box round
+  the board alone let its frame and legs ride onto the floor behind (a floating stick near touchdown).
+- The sidewalk's top and sides are concrete in the fill (A's own), not the roof's tar / the wall's stucco.
 
 ## Files
 
 - `flight.js` boot (in `<head>`, before the page paints) + TUNE → Flight · `flight-run.js` the run · `flight.css`
 - `world.js` the set, the shader, the path (POSE_A, POSE_B, `poseAt`) · `roadside.js` the sign, the telephone line, the door lamp
-- `lab.html` the bench (pose sliders, path, mix; `?road=0` without the roadside, `?bimg=` another hover photo)
+- `lab.html` the bench (pose sliders, path, mix; `?road=0` without the roadside, `?bimg=` another hover photo,
+  `?mask=1` where A paints, `?mask=2` the porch)
 - `vendor/` three.js r185 (MIT) · `img/` the pictures · `tools/` how each picture was made
 
 ## Switches
@@ -64,7 +87,8 @@ prisms. The canopy's slanted edge is fitted to where A's underside meets the sky
 
 ## When the page changes
 
-A prop on the page changes (a poster pick, the radio, the chalkboard) → re-render A, then its background plate:
+A prop on the page changes (a poster pick, the radio, the chalkboard) → re-render A, then its background plate (and
+the chalkboard's cut-out if the board changed or moved):
 
 ```
 cd tools/_gas2-scene && python3 -m http.server 4462 --bind 127.0.0.1 &
@@ -72,9 +96,12 @@ PW=<website clone>/node_modules/playwright node flight/tools/render-landing.cjs 
 python3 -I -c "from PIL import Image; Image.open('/tmp/land@2x.png').convert('RGB').resize((1536,1024), Image.LANCZOS).save('/tmp/land.png')"
 cwebp -q 94 -m 6 /tmp/land.png -o flight/img/land.webp
 python3 -I flight/tools/make-landbg.py /tmp/land.png /tmp/land-bg.png && cwebp -q 88 -m 6 /tmp/land-bg.png -o flight/img/land-bg.webp
+CHALK=bare PW=... node flight/tools/render-landing.cjs /tmp/bare@2x.png && CHALK=off PW=... node flight/tools/render-landing.cjs /tmp/off@2x.png
+python3 -I flight/tools/make-chalkmask.py /tmp/bare@2x.png /tmp/off@2x.png flight/img/land-chalk.png
 ```
 
-The chalkboard moved → `CHALK` in `world.js`. The aerial only changes if the station itself does.
+The chalkboard moved → `CHALK` in `world.js` too. The aerial only changes if the station itself does; a new one gets its
+porch patched (`tools/patch-porch.py`).
 
 ## Known limits
 
@@ -83,7 +110,5 @@ The chalkboard moved → `CHALK` in `world.js`. The aerial only changes if the s
   2 takes) and waits on OpenAI credits (2026-10-26: the account is at 0).
 - The props are painted on the wall, except the chalkboard (its own panel): the pump reads flat from above. A cut-out
   layer for it needs a picture of the wall without the pump (OpenAI, ~$0.3).
-- Under the porch canopy's right end the two photos disagree mid-flight (a see-through look around the post); a hover
-  photo painted from today's blockout should line that up.
 - Phones / tall windows: the hover is centred on the station and the window pans to the page's crop at touchdown.
 - `img/land.webp` holds the mail poster at its default (#1); a browser with another TUNE pick sees it swap at touchdown.

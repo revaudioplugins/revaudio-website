@@ -21,9 +21,10 @@ export const HOUSE = [[-6.6, 0, -6], [0.867, 3.5, 0]];   // 7.5 x 6 m: a roadsid
 const ROOF = { y: [3.5, 3.85], xz: [[-6.9, 0.45], [2.52, 0.45], [1.815, -6.3], [-6.9, -6.3]] };
 const ROOFTOP = [[-4.6, -3.6, .7, .45, .7], [-1.9, -4.9, .5, .35, .5]];   // two low vents: x, z, w, h, d (a stove pipe poked above the roof line on the way in)
 const SLAB = { y: [0, 0.25], xz: [[-6.9, 1.91], [1.85, 1.91], [2.75, -1.29], [1.7, -6], [-6.9, -6]] };
-// occluders for the shader's line-of-sight test: the house (+ the chalkboard's board, added in makeWorld) as boxes, the
-// roof and the sidewalk as their own prisms. Their slanted ends used to be box steps: through the gaps the landing photo's
-// dark canopy edge leaked onto the sky as a stepped ghost in the last stretch of the descent (2026-10-26).
+// occluders for the shader's line-of-sight test: the house as a box (+ the chalkboard's board, added in makeWorld), the
+// roof and the sidewalk as their own prisms; for the landing photo the chalkboard is its own cut-out (img/land-chalk.png).
+// The roof's and the sidewalk's slanted ends used to be box steps: through the gaps the landing photo's dark canopy edge
+// leaked onto the sky as a stepped ghost in the last stretch of the descent (2026-10-26).
 const OCCLUDERS = [HOUSE];
 const PRISMS = [ROOF, SLAB];
 const ROAD = { z0: 10.5, z1: 17.5 };          // the two-lane highway in front of the apron
@@ -79,6 +80,7 @@ void main() {
 }`;
 const f2 = v => v.toFixed(4);
 const NBOX = OCCLUDERS.length + 1;   // + the chalkboard's solid board
+const PORCH_LAMP = [1.9, 0.2];       // x, z of the porch lamp under the canopy's front (the landing photo's right lamp)
 const CAM_F = 1300;                   // ~ the flight camera's focal on the 1024-high frame (1206 at the hover, 1500 at touchdown)
 // a convex prism as planes (inside: dot(n, p) <= d): top, bottom, one per footprint edge -> a GLSL ray-slab clip
 function prismHit({ y: [y0, y1], xz }) {
@@ -94,7 +96,7 @@ function prismHit({ y: [y0, y1], xz }) {
 }
 const FRAG = /* glsl */`
 precision highp float;
-uniform sampler2D tA; uniform sampler2D tAbg; uniform sampler2D tB; uniform sampler2D tSky; uniform sampler2D tGround; uniform sampler2D tChalk;
+uniform sampler2D tA; uniform sampler2D tAbg; uniform sampler2D tB; uniform sampler2D tSky; uniform sampler2D tGround;
 uniform mat4 mA; uniform mat4 mB;
 uniform vec3 pA; uniform vec3 pB;
 uniform float fA; uniform float fB;
@@ -103,6 +105,7 @@ uniform int kind;                   // 0 ground, 1 building, 2 sky, 3 the chalkb
 uniform vec3 lampP; uniform vec3 lampC; uniform float lampI; uniform float lampR;   // the pole sign (roadside.js)
 uniform vec3 doorL; uniform float doorI;                                             // the side door's lamp (roadside.js)
 uniform vec3 bmin[${NBOX}]; uniform vec3 bmax[${NBOX}];
+uniform sampler2D tChalkA; uniform float chalkZ;   // the chalkboard as the landing photo has it, its plane z = chalkZ
 varying vec3 vW; varying vec3 vN; varying vec2 vUv;
 
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
@@ -145,6 +148,9 @@ float sharp(vec4 c, vec2 uv, vec3 p, float f, vec3 N) {
   float res = f * co / L;
   return edge * res * smoothstep(minRes * 0.5, minRes + 1e-6, res);
 }
+bool porch() {                                  // under the canopy, right of the house: the floor, its slanted end, the dirt there
+  return vW.x > 0.87 && vW.y < 3.45 && vW.z < 0.6 && vW.z > -6.5 && vW.x < 0.1045 * vW.z + 3.05;
+}
 vec3 skyAt(vec3 dir) {                          // the panorama by azimuth (mirrored past +-${SKY.az} deg) and elevation
   float az = degrees(atan(dir.x, -dir.z)), el = degrees(asin(clamp(dir.y, -1.0, 1.0)));
   float u = az / ${f2(2 * SKY.az)} + 0.5; u = abs(mod(u + 1.0, 2.0) - 1.0);
@@ -155,7 +161,14 @@ vec3 skyAt(vec3 dir) {                          // the panorama by azimuth (mirr
 vec3 fallback(vec3 N) {
   if (kind == 2) return skyAt(normalize(vW));
   if (kind == 1) {
-    if (N.y > 0.5) return vec3(0.29, 0.26, 0.23) * (0.85 + 0.3 * vnoise(vW.xz * 1.7));          // tar-and-gravel roof
+    if (N.y > 0.5 && vW.y > 1.0) return vec3(0.29, 0.26, 0.23) * (0.85 + 0.3 * vnoise(vW.xz * 1.7));   // tar-and-gravel roof
+    // the slab's top: A's sidewalk concrete; under the porch the canopy's shade, and the porch lamp's warm pool at its front
+    if (N.y > 0.5) {
+      vec3 cc = textureLod(tA, vec2(0.13, 0.16), 4.0).rgb * (0.82 + 0.3 * vnoise(vW.xz * 2.1) + 0.08 * vnoise(vW.xz * 13.0));
+      vec2 pl = vW.xz - vec2(${f2(PORCH_LAMP[0])}, ${f2(PORCH_LAMP[1])});
+      float under = (1.0 - smoothstep(-3.0, 0.3, vW.z)) * smoothstep(0.7, 1.1, vW.x);
+      return cc * mix(1.0, 0.36, under) + cc * vec3(0.3, 0.21, 0.11) * exp(-dot(pl, pl) / 1.4) * smoothstep(0.7, 1.1, vW.x);
+    }
     // stucco: A's own wall colour, mottled at three scales
     float m = 0.5 * vnoise(vW.xy * 1.7) + 0.3 * vnoise(vW.xy * 5.1 + 3.0) + 0.2 * vnoise(vW.xy * 17.0 + 7.0);
     vec3 st = textureLod(tA, vec2(0.06, 0.72), 6.0).rgb * (0.8 + 0.34 * m);
@@ -172,7 +185,7 @@ vec3 fallback(vec3 N) {
         if (distance(vW.xy, vec2(${f2(DOOR.x[1] - 0.12)}, 1.05)) < 0.032) st = vec3(0.5, 0.38, 0.18);   // the knob
       }
     }
-    if (N.z > 0.5 && vW.z > 1.85 && vW.y < 0.3)                   // the sidewalk's curb: A's own concrete, its foot in the dirt
+    if (vW.y < 0.26 && abs(N.y) < 0.5)                            // the sidewalk's sides (the curb, the slanted end): A's concrete
       st = textureLod(tA, vec2(0.15, 0.1), 4.0).rgb * (0.8 + 0.3 * m) * (0.75 + 0.25 * smoothstep(0.0, 0.2, vW.y));
     return st;
   }
@@ -190,7 +203,11 @@ vec3 fallback(vec3 N) {
   return mix(g, vec3(${SKY.haze.map(f2).join(', ')}), far);
 }
 void main() {
-  if (kind == 3 && texture2D(tChalk, vUv).a < 0.5) discard;
+  vec4 cA = mA * vec4(vW, 1.0);
+  vec2 uA = cA.xy / cA.w * 0.5 + 0.5;
+  // the chalkboard panel takes its outline from the landing photo's own board (img/land-chalk.png), so the panel and the
+  // line of sight behind it (below) agree with the photo to the pixel; the prop's cut-out sat a few pixels off
+  if (kind == 3 && textureLod(tChalkA, uA, 0.0).r < 0.5) discard;
   vec3 N = kind == 2 ? -normalize(vW) : normalize(vN);
   bool proxy = minRes > 0.0;
   // ── A, the landing photo. Its sky only comes in over the last stretch (earlier the panorama carries the sky, so no
@@ -198,27 +215,42 @@ void main() {
   // A's 8 % edge feather reads as the lamp light falling off); past the wall corner A's background plate shows what
   // the wall hid from A.
   float gA = kind == 2 ? smoothstep(0.8, 1.0, s) : s;
-  vec4 cA = mA * vec4(vW, 1.0);
-  vec2 uA = cA.xy / cA.w * 0.5 + 0.5;
   float shA = sharp(cA, uA, pA, fA, N) * gA;
   float vis = shA > 0.0 ? seen(vW, N, pA) : 0.0;
-  float wA = shA * vis, wAbg = (kind == 0 || kind == 2) && !proxy ? shA * (1.0 - vis) : 0.0;
+  // behind the chalkboard's plane, under the board as A has it, A saw the board, not this: its frame and legs no longer
+  // ride onto the floor behind (a floating stick near touchdown, 2026-10-26; the box round the board alone missed them)
+  if (vis > 0.0 && kind != 3 && vW.z < chalkZ - 0.05 && textureLod(tChalkA, uA, 0.0).r > 0.5) vis = 0.0;
+  // A's background plate only for the last stretch (the sliver past the wall corner near touchdown): earlier it painted the
+  // dirt behind the porch with A's mirrored desert (a ghost stick, a ghost sidewalk end) all the way down
+  float wA = shA * vis, wAbg = (kind == 0 || kind == 2) && !proxy ? shA * (1.0 - vis) * smoothstep(0.8, 0.95, s) : 0.0;
   if (proxy && (vW.z < -0.05 || vW.x < -3.45 || vW.x > 2.4)) wA = 0.0;       // blockout: A paints the shop front only
   // ── B, the hover photo
   vec4 cB = mB * vec4(vW, 1.0);
   vec2 uB = cB.xy / cB.w * 0.5 + 0.5;
   float wB = useB > 0.5 ? sharp(cB, uB, pB, fB, N) * (1.0 - s) : 0.0;
   if (wB > 0.0) wB *= seen(vW, N, pB);
-  // the front wall left of the shop window (and the curb below it): the hover photo has ~28 px a metre there, so once the
-  // drone's view is 2-4.5x sharper than that (closing in), they hand over to the fill: stucco, the side door, concrete
-  if (kind == 1 && !proxy && wB > 0.0 && N.z > 0.5 && (vW.z < 0.05 || vW.y < 0.3) && vW.x < -3.45) {
-    vec3 dc = cameraPosition - vW, db = pB - vW; float Lc = length(dc), Lb = length(db);
-    float mag = (${CAM_F.toFixed(1)} * max(dot(N, dc), 0.0) / (Lc * Lc)) / max(fB * max(dot(N, db), 0.0) / (Lb * Lb), 1e-3);
-    wB *= 1.0 - smoothstep(2.0, 4.5, mag);
+  // the porch (under the canopy, right of the house): the hover photo was painted from a blockout that had no open porch
+  // and the landing photo sees its floor edge-on, so mid-flight the porch is the set's own (the fill): the hover photo only
+  // leaving the hover, the landing photo only coming in to land
+  if (kind == 1 && !proxy && porch()) {
+    wB *= 1.0 - smoothstep(0.02, 0.18, s);
+    wA *= smoothstep(0.74, 0.94, s); wAbg *= smoothstep(0.74, 0.94, s);
+  }
+  // a photo much blurrier than the drone's own view of a surface (its texels blown up 2-4.5x on screen: the hover photo on
+  // the walls up close, the landing photo on what it saw edge-on, like the floor under the porch) hands over to the fill.
+  // On its own projector a photo is 1:1, so the hover and the touchdown stay exact.
+  if (kind < 2 && !proxy && (wA > 0.0 || wB > 0.0)) {
+    vec3 dc = cameraPosition - vW; float Lc = length(dc);
+    float camRes = ${CAM_F.toFixed(1)} * max(dot(N, dc), 0.0) / (Lc * Lc);
+    vec3 da = pA - vW, db = pB - vW;
+    float keepA = 1.0 - smoothstep(2.0, 4.5, camRes / max(fA * max(dot(N, da), 0.0) / dot(da, da), 1e-3));
+    wA *= keepA; wAbg *= keepA;
+    wB *= 1.0 - smoothstep(2.0, 4.5, camRes / max(fB * max(dot(N, db), 0.0) / dot(db, db), 1e-3));
   }
   // ── the fill competes in mid-flight (0 on both photos, so each end stays exact): it wins where the photos are smeared
   float wF = kind == 3 || proxy ? 0.0 : (kind == 2 ? 1.0 : kind == 0 ? 3.0 : 1.5) * smoothstep(0.0, 0.3, s) * (1.0 - smoothstep(0.88, 1.0, s));
   float eps = 1e-4;
+  if (dbg > 1.5) { gl_FragColor = vec4(vec3(float(kind < 2 && porch())), 1.0); return; }   // lab ?mask=2: the porch (tools/patch-porch.py)
   if (dbg > 0.5) { gl_FragColor = vec4(vec3(step(0.5, wA / (wA + wAbg + wB + wF + eps))), 1.0); return; }   // lab: where A paints
   vec3 col = fallback(N) * (wF + eps);
   if (wA > 0.0) col += texture2D(tA, uA).rgb * wA;
@@ -250,7 +282,7 @@ void main() {
   gl_FragColor = vec4(c, 1.0);
 }`;
 
-export function makeWorld({ land, landBg, aerial = null, sky, ground, chalk }) {
+export function makeWorld({ land, landBg, aerial = null, sky, ground, chalkA }) {
   const projA = makeCamera(POSE_A), projB = makeCamera(POSE_B);
   const focal = p => 512 / Math.tan(p.vfov * D2R / 2);   // px on the 1024-high frame
   // the chalkboard panel: rays from A through page-b's .chalk rect, stopped on the board's own plane (feet on the slab)
@@ -261,15 +293,16 @@ export function makeWorld({ land, landBg, aerial = null, sky, ground, chalk }) {
   const bx = c => CHALK.x + c * k, by = r => CHALK.y + r * k;
   const corners = [onBoard(bx(0), by(0)), onBoard(bx(420), by(0)), onBoard(bx(0), by(627)), onBoard(bx(420), by(627))];
   const c0 = onBoard(bx(CHALK.core[0]), by(CHALK.core[3])), c1 = onBoard(bx(CHALK.core[2]), by(CHALK.core[1]));
-  const boxes = [...OCCLUDERS, [[c0.x, c0.y, zq - 0.02], [c1.x, c1.y, zq + 0.02]]];   // the solid board blocks A's view of what's behind it
+  const boxes = [...OCCLUDERS, [[c0.x, c0.y, zq - 0.02], [c1.x, c1.y, zq + 0.02]]];   // the solid board blocks both photos' view behind it
   const uniforms = {
-    tA: { value: land }, tAbg: { value: landBg }, tB: { value: aerial || land }, tSky: { value: sky }, tGround: { value: ground }, tChalk: { value: chalk },
+    tA: { value: land }, tAbg: { value: landBg }, tB: { value: aerial || land }, tSky: { value: sky }, tGround: { value: ground },
     mA: { value: new THREE.Matrix4() }, mB: { value: new THREE.Matrix4() },
     pA: { value: new THREE.Vector3() }, pB: { value: new THREE.Vector3() },
     fA: { value: focal(POSE_A) }, fB: { value: focal(POSE_B) },
     s: { value: 1 }, useB: { value: aerial ? 1 : 0 }, minRes: { value: 0 }, dbg: { value: 0 },
     lampP: { value: new THREE.Vector3() }, lampC: { value: new THREE.Vector3(1, .62, .4) }, lampI: { value: 0 }, lampR: { value: 5 },
     doorL: { value: new THREE.Vector3() }, doorI: { value: 0 },
+    tChalkA: { value: chalkA }, chalkZ: { value: zq },
     bmin: { value: boxes.map(b => new THREE.Vector3(...b[0])) },
     bmax: { value: boxes.map(b => new THREE.Vector3(...b[1])) },
   };
@@ -341,12 +374,12 @@ export function loadTexture(url, { repeat = false, flip = true } = {}) {
 }
 export const loadSet = async ({ aerial = 'img/aerial-blue.webp' } = {}) => {
   const u = p => new URL(p, import.meta.url).href;
-  const [land, landBg, sky, ground, chalk, air] = await Promise.all([
+  const [land, landBg, sky, ground, chalkA, air] = await Promise.all([
     loadTexture(u('img/land.webp')), loadTexture(u('img/land-bg.webp')),
     loadTexture(u('img/sky.webp'), { repeat: true }), loadTexture(u('img/ground.webp'), { repeat: true }),
-    loadTexture(u('../props/chalkboard.png')),
+    loadTexture(u('img/land-chalk.png')),
     aerial ? loadTexture(u(aerial)).catch(() => null) : null,
   ]);
-  return { land, landBg, sky, ground, chalk, aerial: air };
+  return { land, landBg, sky, ground, chalkA, aerial: air };
 };
 export { THREE };

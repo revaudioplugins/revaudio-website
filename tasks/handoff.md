@@ -53,6 +53,20 @@ Files: NEW `tools/_gas2-scene/flight/**`; in `page-b.html` ONE `<link>` + `<scri
     door work). Not checked: Dan's Safari by eye, a real phone.
   - Open (Dan's word): (6) OpenAI credits, then the Blue re-paint; item 2 (the pump's own cut-out layer, one more image
     ~$0.3); item 4 (a DESIGN.md rule for the intro, the phone pass, merge to main) once he signs the look off; (2) and (3).
+  - Dan then: "finish the scene so it will be ready for publish ... check pixel by pixel, frame by frame". QA = 41 frames
+    of the path at 1536x1024 by eye, a 101-step pop scan (none), both hand-offs read straight off the canvas, page-b in
+    Chromium 1141x636 / 1440x900 / 390x844 + WebKit 1141x636. Ghosts found and fixed (all in `world.js` + `flight/README.md`
+    "Ghost hunting"): the porch (a grey see-through box u 0.05-0.8: the hover photo's porch was a painted wall; now the
+    set's own concrete floor mid-flight, and the hover photo's porch patched from the set's render, `tools/patch-porch.py`);
+    A's background plate painting the dirt behind the porch all flight long (a ghost stick, now last stretch only); the
+    chalkboard's frame + legs riding onto the floor behind it (now A's own board cut-out, `img/land-chalk.png` via
+    `tools/make-chalkmask.py` + `render-landing.cjs` CHALK=bare|off); blown-up photos hand over to the fill (2-4.5x).
+  - Numbers: touchdown, the page after = `?flight=0` 0.000 in all four; the last canvas frame vs the live page 3.8/255 at
+    1141x636 @2x (a lossless render of the page at 1536 already differs by 3.3: fonts / filters at another size), 2.9 at
+    1440, 1.6 on the phone; lab u=1 vs `land.webp` 0.010; hover, still -> first canvas frame 0.7 (Chromium) / 2.5 (WebKit,
+    filtering, < 1 level brighter), the 3D sign / poles / door lamp the only real differences. Frame time Chromium 8.3 ms
+    median at every size; headless WebKit 17 ms (its 60 Hz cap) with a few ~160 ms hitches even with the flight standing
+    still (harness). Reduced motion, `?flight=0` and no-WebGL fall back to the page.
 
 ## 2026-10-26 — GAS 2 page: no copying (Claude Code `danavivi-7e`, Dan's Mac) — BRANCH `feat/gas2-page` PUSHED
 
