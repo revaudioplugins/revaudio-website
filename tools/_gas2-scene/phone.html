@@ -99,6 +99,15 @@ main > * { position: relative; z-index: 1; }
 .g3 { margin: 0; font: 400 calc(var(--u) * 6.4)/1.05 Bebas, Oswald, sans-serif; letter-spacing: .05em; color: var(--line); text-shadow: var(--hug); }
 .gp { margin: 4px 0 0; font: 400 16px/1.4 Inter, system-ui, sans-serif; color: #d8cfbf; text-shadow: var(--hug); }
 
+
+/* 3 · HEAR IT (Dan 2026-10-26: "copy the jukebox we have on the GAS page, put it there, phone size, same songs, same
+   everything"): the live /gas page's <gas-mixer> as is (public/gas-mixer, Yoni's web component, its own shadow DOM;
+   under 760 px it builds its pedal toy), with /gas's own title + line. Its box is reserved until it builds. */
+.hear { padding: 40px 16px 56px; text-align: center; }
+.hl { margin: 8px 0 22px; font: 400 calc(var(--u) * 9.6)/1.1 Yellowtail, cursive; color: var(--brass); text-shadow: var(--hug), 0 0 18px rgba(230, 170, 70, .35); }
+.gas-mixer-el { display: block; aspect-ratio: 380 / 922; text-align: left; }
+.gas-mixer-el.ready { aspect-ratio: auto; }
+
 /* service ticket (the mailbox / download form) */
 .veil { position: fixed; inset: 0; background: rgba(8, 5, 3, .62); display: grid; place-items: center; opacity: 0; pointer-events: none; transition: opacity .25s; z-index: 10; padding: 16px; }
 .veil.open { opacity: 1; pointer-events: auto; }
@@ -183,6 +192,14 @@ main > * { position: relative; z-index: 1; }
       <div class="row"><button class="gk on" type="button" data-g="1" aria-label="PREMIUM" aria-pressed="true"><img src="phone/key1.webp" alt=""><img class="lit" src="phone/key1-lit.webp" alt=""></button><div><p class="g3">The signature.</p><p class="gp">Thick lows, clear mids, silky air.</p></div></div>
       <div class="row"><button class="gk" type="button" data-g="2" aria-label="RACE" aria-pressed="false"><img src="phone/key2.webp" alt=""><img class="lit" src="phone/key2-lit.webp" alt=""></button><div><p class="g3">Punchy and bright.</p><p class="gp">For loud, modern mixes.</p></div></div>
     </div>
+  </section>
+
+  <section class="hear" id="hear-it" aria-labelledby="hearH">
+    <h2 class="gh" id="hearH">Hear it</h2>
+    <p class="hl">Hit play. Give it gas.</p>
+    <link rel="stylesheet" href="/gas-mixer/fonts.css">
+    <gas-mixer class="gas-mixer-el"></gas-mixer>
+    <script src="/gas-mixer/gas-mixer.js" defer></script>
   </section>
 </main>
 

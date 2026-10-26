@@ -36,6 +36,12 @@ Claim: OPEN. Files: `tools/_gas2-scene/phone.html` + `tools/_gas2-scene/phone/*.
   (no sound yet). The page scrolls again: hero (one screen) + grades (one screen). `.bg` now clips its blur overhang. Page Artifact
   v4, bench v3 (bench parts + the grades title and rows). Decision 1 below is DONE.
 
+- 2026-10-26 Dan: the player = "copy the jukebox we have on the GAS page, same songs, same everything" (after a pedal-vs-gauge
+  bench he rejected: "neither"). `phone.html` gained `.hear`: /gas's own title + line + the live `<gas-mixer>` (public/gas-mixer,
+  Yoni's component, untouched; under 760 px it builds its pedal toy). Locally `tools/_gas2-scene/gas-mixer` is a symlink to
+  `public/gas-mixer` (excluded) so `/gas-mixer/...` resolves on :4464; the Artifacts carry a copy (paths made relative, .m4a ->
+  .mp4, fonts inlined). ⚠️ The toy's plate reads GET GAS FREE (GAS 1's download) and is GAS 1's mix: Dan's call. Page v5, bench v4.
+
 ### Session close 2026-10-26 (/close-session)
 
 **State.** Branch `feat/gas2-phone` (worktree `.claude/worktrees/gas2-phone`) = `origin/feat/gas2-phone` (0 ahead / 0 behind),
