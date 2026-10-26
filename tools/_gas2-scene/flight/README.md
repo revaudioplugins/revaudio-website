@@ -27,7 +27,12 @@ ground, sky) and paints it with two photos, like slide projectors:
 - **B** `img/aerial-blue.webp`: the hover, blue hour (Dan's pick 2026-10-26, over a warm "last light" and a night grade:
   the same sky the drone lands in). Painted by gpt-image-2 from this set's own blockout seen from POSE_B
   (`lab.html?b=0&s=1&minres=30&road=0` and `&mask=1`, graded to blue hour by `tools/grade-blockout.py`, then
-  `tools/gen-aerial.sh`), so it lines up with the set (0 px shift measured).
+  `tools/gen-aerial.sh`), so it lines up with the set (0 px shift measured). Then made exact where the AI went wrong
+  (2026-10-26), in this order: `tools/patch-porch.py` (the porch, painted as a wall), `tools/patch-front.py` (the
+  shop-front lettering: the sign had come out "REGULAR · PREMIUM · EACH" and the posters as gibberish; now A's own sign,
+  posters and MAIL poster, mapped by the front wall's homography, supersampled and matched to B's light) and
+  `tools/draw-vents.py` (the two roof vents of Dan's "go 1" plan, drawn in the hover camera's exact perspective so the
+  3D vent boxes pick up their own faces all the way down).
 
 A camera standing on a projector sees that photo exactly; in between, each surface takes the sharper photo there.
 What neither photo saw: `img/sky.webp` (a dusk panorama re-graded to A's sky by elevation) and `img/ground.webp`
@@ -71,6 +76,13 @@ measured):
   board's plane under it. The prop file's cut-out sits a few pixels off the board as the photo has it, and a box round
   the board alone let its frame and legs ride onto the floor behind (a floating stick near touchdown).
 - The sidewalk's top and sides are concrete in the fill (A's own), not the roof's tar / the wall's stucco.
+- The vents are occluders too: the hover photo has them, so the roof behind one, seen from lower down, must not wear
+  their picture.
+- The division's eps is 1e-8: at both ends the fill's weight is 0, and on the far desert at a grazing angle inside the
+  frame's edge feather a photo's weight is only ~2e-5, so an eps of 1e-4 let the fill win there (a dark streak on the
+  horizon at the touchdown frame's right edge).
+- page-b itself: on wide windows `.scene` starts at `left: 0` instead of being centred with `translate(-50%)`, which put
+  it half a device pixel off at odd widths in Chromium (a dark line down the page's left edge at 1141, 1281, 1439 ...).
 
 ## Files
 
@@ -82,7 +94,8 @@ measured):
 
 ## Switches
 
-- `?flight=0` = straight onto the page; reduced motion = no flight; `?bench` / `?rbench` skip it.
+- `?flight=0` = straight onto the page; reduced motion = no flight; `?bench` / `?rbench` skip it; `?autofly` = the drone
+  flies itself after 3 s (device checks where nobody can scroll, a hands-free demo).
 - TUNE → Flight: Length (screens of scroll, from the next Replay), Sway (live), Replay, Skip, Copy.
 
 ## Publishing
@@ -91,16 +104,24 @@ The flight is self-contained in `flight/`. From its host page it needs `#scene` 
 the same window into it, so touchdown lands on it), `.stage` (pinned during the flight), `.rd` with `.ti` / `.lead` /
 `.cta` / `.scr` (the readings it pops) and a `footer`; `#tune` is optional (dev only: TUNE → Flight). Hook-up = one
 `<link>` + one `<script>` in `<head>` (as in `page-b.html`, after the radio line). Checked 2026-10-26 on a
-production-like copy of page-b (TUNE and the bench note gone) in real iOS Safari (iPhone 17 Pro Simulator, iOS 26.5):
-hover, descent, the pan to the phone's crop, touchdown, the readings pop. Weight: the pictures ~1.2 MB (webp), three.js
+production-like copy of page-b, then on page-b itself once its dev chrome went opt-in (`?dev`, `?tune`, `?bench`,
+`?rbench`, or for good on a browser once T has opened TUNE), in real iOS Safari (iPhone 17 Pro Simulator, iOS 26.5, a
+fresh origin, `?autofly`): hover, descent, the pan to the phone's crop, touchdown, the readings pop. Weight: the pictures ~1.2 MB (webp), three.js
 r185 ~180 KB gzipped as vendored (a bundler tree-shakes it further), our own code ~50 KB. When the page moves into the
 site (`src/`), re-render `img/land.webp`, `land-bg.webp` and `land-chalk.png` from the published page ("When the page
 changes"): touchdown is exact only against the page the landing frame was rendered from.
 
-How exact touchdown is (2026-10-26, 1141x636 @2x): the page after touchdown is the page (0.000 against `?flight=0`); the
-last 3D frame differs from the live page by 3.8/255 mean, while the page itself, rendered one pixel narrower or wider,
-differs from itself by 4.1 (text and filters rasterize a hair differently at every window size). The landing frame
-sits below the browser's own noise.
+How exact the hand-offs are (2026-10-26, straight off the canvas, DPR 2; Chromium 1141x636 / 1281x720 / 1440x900 /
+390x844 and WebKit 1141x636 / 390x844):
+
+- After touchdown the page IS the page: 0.000 against `?flight=0` in every setup.
+- The last 3D frame against the live page: mean 3.2 / 3.1 / 2.9 / 1.5 and 3.0 / 1.7 (/255). Colour, region by region
+  (6 px blur): 0.33-0.73; more than 12 levels apart in at most 0.03 % of pixels (the chalkboard's lettering, which the
+  page itself draws through an SVG filter). The rest is edge sharpness. For scale, the page against itself one pixel
+  narrower: mean 4.1, colour 0.78. The landing frame is closer to the page than the page is to itself.
+- The landing frame in the lab against `img/land.webp`: mean 0.002, max 29, no pixel more than 40 apart.
+- The hover: the first canvas frame against the CSS still under it, mean 0.7 (Chromium) / 2.5 and 1.4 (WebKit's texture
+  filtering); without the 3D sign, poles and door lamp the lab's hover is the photo exactly (0.00).
 
 ## When the page changes
 
@@ -117,15 +138,14 @@ CHALK=bare PW=... node flight/tools/render-landing.cjs /tmp/bare@2x.png && CHALK
 python3 -I flight/tools/make-chalkmask.py /tmp/bare@2x.png /tmp/off@2x.png flight/img/land-chalk.png
 ```
 
-The chalkboard moved → `CHALK` in `world.js` too. The aerial only changes if the station itself does; a new one gets its
-porch patched (`tools/patch-porch.py`).
+The chalkboard moved → `CHALK` in `world.js` too. The aerial only changes if the station itself does; a new one goes
+through `tools/patch-porch.py` (if its porch came out a wall), `tools/patch-front.py` and `tools/draw-vents.py`. The
+lettering patch reads `img/land.webp`, so a new landing frame (a new poster pick) means re-running it on the aerial.
 
 ## Known limits
 
-- The hover photo was painted before the set got its parapet and vents; the photo's own roof paints them, and frame by
-  frame (2026-10-26) the roof reads as one roof all the way down. A re-paint from today's blockout (`tools/gen-aerial.sh`
-  on the graded blockout, ~$0.6 for 2 takes; its porch floor is concrete now, so the new photo should not need the porch
-  patch) would only add photo detail to the vents; it waits on OpenAI credits (the account was at 0 on 2026-10-26).
+- The parapet is in the set but not drawn into the hover photo (the photo's own roof lip paints it; frame by frame it
+  reads as one roof all the way down).
 - The props are painted on the wall, except the chalkboard (its own panel). Checked frame by frame (2026-10-26): on this
   path, which never views them from the side, the pump, the radio and the drum read as standing in front of the window.
   A side view would need the pump on its own layer and the wall behind it (no picture has it: the pump is painted into

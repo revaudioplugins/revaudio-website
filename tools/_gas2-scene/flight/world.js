@@ -25,7 +25,8 @@ const SLAB = { y: [0, 0.25], xz: [[-6.9, 1.91], [1.85, 1.91], [2.75, -1.29], [1.
 // roof and the sidewalk as their own prisms; for the landing photo the chalkboard is its own cut-out (img/land-chalk.png).
 // The roof's and the sidewalk's slanted ends used to be box steps: through the gaps the landing photo's dark canopy edge
 // leaked onto the sky as a stepped ghost in the last stretch of the descent (2026-10-26).
-const OCCLUDERS = [HOUSE];
+const OCCLUDERS = [HOUSE, ...ROOFTOP.map(([x, z, w, h, d]) => [[x, ROOF.y[1], z], [x + w, ROOF.y[1] + h, z + d]])];   // + the vents: the hover
+// photo has them (tools/draw-vents.py), so the roof behind one, as the drone sees it from lower down, must not wear its picture
 const PRISMS = [ROOF, SLAB];
 const ROAD = { z0: 10.5, z1: 17.5 };          // the two-lane highway in front of the apron
 const SKY_R = 1450, GROUND_R = 1400;
@@ -249,7 +250,10 @@ void main() {
   }
   // ── the fill competes in mid-flight (0 on both photos, so each end stays exact): it wins where the photos are smeared
   float wF = kind == 3 || proxy ? 0.0 : (kind == 2 ? 1.0 : kind == 0 ? 3.0 : 1.5) * smoothstep(0.0, 0.3, s) * (1.0 - smoothstep(0.88, 1.0, s));
-  float eps = 1e-4;
+  // eps only guards the division: at both ends the fill's weight is 0 and a photo's weight can be tiny (the far desert at a
+  // grazing angle, in the frame's 8 % edge feather: ~2e-5), and an eps of 1e-4 let the fill win there (a dark streak on the
+  // horizon at the right edge of the touchdown frame, 2026-10-26)
+  float eps = 1e-8;
   if (dbg > 1.5) { gl_FragColor = vec4(vec3(float(kind < 2 && porch())), 1.0); return; }   // lab ?mask=2: the porch (tools/patch-porch.py)
   if (dbg > 0.5) { gl_FragColor = vec4(vec3(step(0.5, wA / (wA + wAbg + wB + wF + eps))), 1.0); return; }   // lab: where A paints
   vec3 col = fallback(N) * (wF + eps);

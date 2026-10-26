@@ -74,6 +74,17 @@ Files: NEW `tools/_gas2-scene/flight/**`; in `page-b.html` ONE `<link>` + `<scri
     the path: no flat-decal or roof-edge read (the path never views them from the side). README: "Publishing" (the host
     page contract, weight, re-render the landing frame from the published page). Going live = page-b into `src/` + a push
     to main (a live deploy): Dan's word.
+  - Claim widened (`danavivi-fb`, 2026-10-26; page-b's earlier claims are all CLOSED): in `page-b.html` also (1) the dev
+    chrome opt-in: the TUNE button + the "WORKING COPY" note hidden unless `?dev` / `?tune` / `?bench` / `?rbench`, or
+    for good on a browser once T has opened TUNE; (2) `.scene` on wide windows = `left: 0` (no `translate(-50%)`: it put
+    the scene half a device pixel off at odd widths in Chromium, a dark line down the left edge).
+  - Last round (the goal check said "not done"): the hover photo's lettering made exact (the AI had painted
+    "REGULAR · PREMIUM · EACH" and gibberish posters; `tools/patch-front.py` lays A's own lettering in by the wall's
+    homography), the roof vents drawn into it (`tools/draw-vents.py`) and made occluders, a dark streak on the touchdown
+    frame's horizon fixed (eps 1e-8), `?autofly` for hands-free device checks. Re-checked: 41 frames by eye, the 101-step
+    pop scan (none), both hand-offs in Chromium 1141x636 / 1281x720 / 1440x900 / 390x844 + WebKit 1141x636 / 390x844
+    (touchdown mean 1.5-3.2/255, closer than the page to itself one pixel narrower: 4.1; colour off by > 12 levels in
+    <= 0.03 % of pixels), the page after = `?flight=0` 0.000, fallbacks, real iOS Safari on page-b itself (fresh origin).
 
 ## 2026-10-26 — GAS 2 page: no copying (Claude Code `danavivi-7e`, Dan's Mac) — BRANCH `feat/gas2-page` PUSHED
 

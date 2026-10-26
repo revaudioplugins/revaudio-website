@@ -79,6 +79,17 @@ const frame = now => {
 };
 requestAnimationFrame(frame);
 
+// ?autofly: the drone flies itself after the hover (device checks where nobody can scroll; a hands-free demo)
+if (new URLSearchParams(location.search).has('autofly')) setTimeout(() => {
+  const t0 = performance.now(), D = 6500;
+  const step = now => {
+    const k = Math.min(1, (now - t0) / D);
+    scrollTo(0, Math.round((document.documentElement.scrollHeight - innerHeight) * k * k * (3 - 2 * k)));
+    if (k < 1 && !landed) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}, 3000);
+
 // touchdown: the canvas shows the page's own frame (exact), fades onto it, the readings pop, the runway folds away
 function land() {
   landed = true;
