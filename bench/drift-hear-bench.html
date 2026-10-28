@@ -61,7 +61,7 @@ h1 { font: 800 24px/1.1 system-ui; margin: 0 0 6px; }
 <script>
 const PLATE = '/bench/drift-panel/panel3.webp', PW = 2560, PH = 1024;
 const PLATE_P = '/bench/drift-panel/panel3-portrait.webp', PPW = 1024, PPH = 1536;
-const st = { look: 'e', up: 'a', floor: 'wall', ctl: 'split', veil: 18, px: 0 };
+const st = { look: 'e', up: 'b', floor: 'wall', ctl: 'flush', veil: 18, px: 0 };
 // CONTROLS (the user, 2026-10-26, on the PLAY / PUSH DRIFT row: "just this section doesn't feel glued to me"): which
 // parts get a pocket of their own. SPLIT = step 2 and step 3 each a box; ONE PLATE = both steps in one pocket, an
 // engraved groove between; HEAD UNIT = the LCD and the controls on one face, like a car stereo; FLUSH = no box, the
@@ -130,8 +130,9 @@ const cssCtl = () => {
 #hear .d-hear-sec .d-hear-pair, #hear .d-hear-pair { justify-content: center !important; gap: 44px !important; }
 @media (max-width: 600px) { #hear .d-hear-sec .d-hear-pair, #hear .d-hear-pair { gap: 8px !important; } }
 #hear .d-hear-step--ab > .d-hear-cap { align-self: center !important; }   /* the step's name over its group, not at the box's old corner */
-/* the DRIFT button goes through the plate: a bore round its bezel (dark inside wall top-left, catch-light on the lip
-   bottom-right), so it sits IN the metal instead of on it */
+/* every control goes through the metal: a bore round its bezel (dark inside wall top-left, catch-light on the lip
+   bottom-right), so it sits IN the wall instead of on it */
+#hear .d-hear-caps { position: relative; }
 #hear .bx-bore { position: absolute; border-radius: 50%; pointer-events: none;
   background: radial-gradient(circle, #050208 0 64%, rgba(5, 2, 8, .55) 82%, rgba(5, 2, 8, 0) 100%);
   box-shadow: inset 3px 4px 5px rgba(0, 0, 0, .9), inset -1px -1px 0 rgba(232, 220, 246, .22), 1px 1px 0 rgba(232, 220, 246, .14), -1px -1px 0 rgba(0, 0, 0, .7); }
@@ -214,7 +215,7 @@ const CRACK_LCD = '<span class="bx-crack lcd" aria-hidden="true"></span>';
 const CRACK_CRT = '<span class="bx-crack crt" aria-hidden="true"></span>';
 const ARROW_PLAY = '<span class="bx-spray bx-arrow play" aria-hidden="true"></span>';
 const ARROW_DRIFT = '<span class="bx-spray bx-arrow drift" aria-hidden="true"></span>';
-const BORE = '<span class="bx-bore" aria-hidden="true"></span>';
+const BORE = (t) => `<span class="bx-bore" data-t="${t}" aria-hidden="true"></span>`;
 const NOISE = `url("data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="7"/><feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 -2.2 1.9"/></filter><rect width="160" height="160" filter="url(#n)"/></svg>')}")`;
 
 const parts = (d, on) => {
@@ -225,7 +226,10 @@ const parts = (d, on) => {
   const add = (sel, html) => { const host = hear.querySelector(sel); if (host) host.insertAdjacentHTML('beforeend', html); };
   add('.d-hear-screen', CRACK_LCD); add('.d-hear-pick', CRACK_CRT);
   if (st.up === 'b') { add('[data-step="2"]', ARROW_PLAY); add('[data-step="3"]', ARROW_DRIFT); }
-  if (st.ctl !== 'split') { const sb = hear.querySelector('.d-start'); if (sb) sb.insertAdjacentHTML('afterbegin', BORE); }
+  if (st.ctl !== 'split') {
+    const sb = hear.querySelector('.d-start'); if (sb) sb.insertAdjacentHTML('afterbegin', BORE('pb'));
+    const caps = hear.querySelector('.d-hear-caps'); if (caps) caps.querySelectorAll('.d-hear-mount').forEach((m, i) => caps.insertAdjacentHTML('afterbegin', BORE('m' + i)));
+  }
 };
 // the pocket floors continue the wall: each floor shows the plate at the place it was cut from (cover + position maths)
 const align = (w) => {
@@ -233,12 +237,21 @@ const align = (w) => {
   const phone = w.innerWidth <= 600, pw = phone ? PPW : PW, ph = phone ? PPH : PH;
   const P = panel.getBoundingClientRect(), k = Math.max(P.width / pw, P.height / ph), iw = pw * k, ih = ph * k;
   const x0 = (P.width - iw) * .5, y0 = (P.height - ih) * (phone ? st.px / 100 : .5);
-  // the bore sits round the visible bezel (the button is scaled inside its box)
-  const bore = d.querySelector('#hear .bx-bore'), sb = d.querySelector('#hear .d-start'), pb = d.querySelector('#hear .d-start-pb');
-  if (bore && sb && pb) {
-    const a = sb.getBoundingClientRect(), b = pb.getBoundingClientRect(), m = phone ? 5 : 7;
+  // each bore sits round its control's visible bezel (the DRIFT button is scaled inside its box)
+  for (const bore of d.querySelectorAll('#hear .bx-bore')) {
+    const t = bore.dataset.t === 'pb' ? d.querySelector('#hear .d-start-pb') : d.querySelectorAll('#hear .d-hear-caps .d-hear-mount')[+bore.dataset.t.slice(1)];
+    if (!t) continue;
+    const a = bore.parentElement.getBoundingClientRect(), b = t.getBoundingClientRect(), m = bore.dataset.t === 'pb' ? (phone ? 5 : 7) : (phone ? 3 : 5);
     Object.assign(bore.style, { left: `${b.left - a.left - m}px`, top: `${b.top - a.top - m}px`, width: `${b.width + 2 * m}px`, height: `${b.height + 2 * m}px` });
   }
+  // the sprayed arrows land on their control wherever the layout puts it: the tip (the arrow box's bottom-right) at a
+  // point on the control, given as a fraction of its box
+  const arrow = (cls, target, fx, fy) => {
+    const a = d.querySelector('#hear .bx-arrow.' + cls), t = d.querySelector('#hear ' + target); if (!a || !t || !a.offsetWidth) return;
+    const h = a.parentElement.getBoundingClientRect(), r = t.getBoundingClientRect();
+    a.style.left = `${r.left + fx * r.width - a.offsetWidth - h.left}px`; a.style.top = `${r.top + fy * r.height - a.offsetHeight - h.top}px`;
+  };
+  arrow('play', '.d-hear-play', .35, 0); arrow('drift', '.d-start-pb', .03, .85);
   for (const el of d.querySelectorAll('#hear .d-hear-tv, #hear .d-hear-step, #hear .d-hear-controls, #hear .d-hear-deck')) {
     const r = el.getBoundingClientRect();
     el.style.setProperty('--fx', `${x0 - (r.left - P.left)}px`); el.style.setProperty('--fy', `${y0 - (r.top - P.top)}px`);
