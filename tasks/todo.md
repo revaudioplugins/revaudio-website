@@ -1,3 +1,18 @@
+# GAS 2 drone descent (branch `feat/gas2-drone`, 2026-10-28, revaudio-59) — PLAN, waiting on Dan's go
+
+Plan page: https://claude.ai/artifact/NnyBRQchpWfY541CZA1Unn. Rule: every frame comes from the page frame `f6-v17`.
+
+## Steps
+- [ ] 0. Dan answers Q1-Q6 (world, coupon, car route, old scroll numbers, hover angle, scroll back up) and says go.
+- [ ] 1. Look gate (~$3-6): hover aerial painted from `f6-v17`, 3 closer levels + the ground under the camera painted
+      from it; storyboard page with a rough scroll. STOP for Dan's OK on the look.
+- [ ] 2. Flight engine in `tools/_gas2-scene/drone/`: scroll runway, nadir drop, tilt-up from the page frame, hand-off.
+- [ ] 3. GAS 2 pop: GAS2 springs out, then rule, tagline, button, "Fill it up." (~0.7 s).
+- [ ] 4. The car (~$1-2): top-down car in the same light, code on a roof board, right to left once per load.
+- [ ] 5. QA: 1440x900, 1141x636, 390x844, WebKit, reduced motion, no-WebGL, page after landing = page without intro
+      (0 diff), weight <= 2.5 MB, frame time.
+- [ ] 6. Dan's Safari + phone look; handoff, commit, push the branch (never main).
+
 # Website — word-wall WEIGHT (checker S4, 2026-10-15, revaudio-32)
 
 Request (Dan): "let's fix the weight", then "is there a way to make it lighter without hurting quality?" -> yes, go.

@@ -1,3 +1,22 @@
+## 2026-10-28 — GAS 2 page: the drone intro, from scratch (Claude Code `revaudio-59`, laptop 1) — BRANCH `feat/gas2-drone`
+
+Claim: OPEN `revaudio-59`, PLAN ONLY (waiting on Dan's six answers + go; nothing painted or built yet).
+Files (once he says go): NEW `tools/_gas2-scene/drone/**`; in `page-b.html` ONE `<link>` + `<script>` line (after the radio
+line), nothing else of page-b's; one README line pair; `tasks/todo.md` (the "GAS 2 drone descent" section); this entry.
+- Dan: a hovering drone above the station; scroll down = it comes down into the final scene, then GAS 2 pops and the right
+  side pops in fast "like it pops out of the screen". Every shot must feel like the final scene (same graphics, same vibe:
+  "not moving from one type of scene to another"). Side feature: a car right to left on load with a coupon on its roof.
+  Use the OpenAI key; plan first; present in dynamic HTML.
+- Plan (artifact, private: https://claude.ai/artifact/NnyBRQchpWfY541CZA1Unn): hover straight down at 30 m over the shop
+  front; the drop = nadir descent to the landing spot (flat ground = a zoom: each closer level painted from the crop of
+  the one above; roof / wall / pump as real-height layers); at eye height (1.33 m) a pure tilt-up rendered from the page
+  frame itself (exact, no ghosts); hand-off to the live page; readings pop. Car on the road in the hover shot, code as
+  real HTML text on a roof board. Checked in headless Edge: the tilt-up maths lands on `f6-v17` exactly.
+- Facts (2026-10-28): OpenAI `/v1/videos` 404 on GET + POST (no video); Higgsfield 0 credits; laptop 1's User-env
+  `OPENAI_API_KEY` works with credits (gpt-image-2 / 2.5 listed); no torch on laptop 1 (cv2, numpy, PIL yes).
+- Open (Dan): Q1 keep the page's world; Q2 the coupon (a real Paddle code, for what); Q3 car route; Q4 old scroll numbers
+  as reference; Q5 hover angle; Q6 scroll back up. Cost cap asked: $15 (images only).
+
 ## 2026-10-26 — GAS 2 page: the drone intro (hover above the station, scroll = descent, land, readings pop) (Claude Code `danavivi-19`, Dan's Mac) — BRANCH `feat/gas2-page`
 
 Claim: CLOSED 2026-10-26 (`danavivi-fb`): DELETED on Dan's word. He flew the finished version and said "this is not good,
