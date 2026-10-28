@@ -1,6 +1,6 @@
 ## 2026-10-28 — GAS 2 page: the drone intro, from scratch (Claude Code `revaudio-59`, laptop 1) — BRANCH `feat/gas2-drone`
 
-Claim: OPEN `revaudio-59`. Scene + bench + camera bench (`?cam`) BUILT with placeholder art (2026-10-28); waiting on Dan's camera values (Copy), then art.
+Claim: OPEN `revaudio-59`. Scene + bench + camera bench (`?cam`) BUILT with placeholder art (2026-10-28). Dan picked the DEFAULT camera; next = the real art (waiting on his cost OK).
 Files: NEW `tools/_gas2-scene/drone/**`; in `page-b.html` ONE `<link>` + `<script>` line (after the radio
 line), nothing else of page-b's; one README line pair; `tasks/todo.md` (the "GAS 2 drone descent" section); this entry.
 - Dan: a hovering drone above the station; scroll down = it comes down into the final scene, then GAS 2 pops and the right
@@ -42,6 +42,13 @@ line), nothing else of page-b's; one README line pair; `tasks/todo.md` (the "GAS
   = `?drone=0` (0.00) and their landing frames 2.55 vs the page scene; the bench drags, saves, scrubs to the landing and
   back; no page errors. Weak spot for every angle: bare road around 30-50 % of the scroll (the dive onto the road before
   the tilt-up): Dan can shorten it with Lands at / Turn from; the art (near road) fixes the rest.
+- Dan (2026-10-28): "in the end we liked the default" = TOP (yaw 0, down 90, 34 m, aim -4 / -6, lands at 42 %, turn
+  from 18 %, arrive 40): nothing to bake, the code defaults stand. Asked OpenAI or Higgsfield for the best result:
+  recommended OpenAI images (top-down views of flat ground = an AI orthophoto reads as a real drone shot; edits from the
+  page frame keep the light; keeps his camera path + the exact landing; credits there). Higgsfield rechecked: 0 credits,
+  free plan; its video (first/last frame) would lose the exact hand-off and the bench path, garble the roof text, and
+  need an image-sequence scrub (MBs). Art list + cost asked: aerial orthophoto (roof, field, road), the close road, the
+  car top-down (transparent), ~8-10 images with retakes, ~$3-5.
 
 ## 2026-10-26 — GAS 2 page: the drone intro (hover above the station, scroll = descent, land, readings pop) (Claude Code `danavivi-19`, Dan's Mac) — BRANCH `feat/gas2-page`
 
