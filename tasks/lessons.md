@@ -126,3 +126,45 @@ scrolled the frame instead, even with `preventDefault` in a `{ passive: false }`
 `[data-lenis-prevent]`, so the bench sets that attribute on `#hear` while EDIT is on (and stops propagation, or the
 VOLUME knob's own wheel handler turns it too). Moves ride on the CSS `translate` property and sizes on `scale`, added to
 the part's own translate read with the tune style disabled, so the page never reflows under the hand.
+
+## 2026-10-20 - a bench value tuned at laptop widths can break narrower ones
+
+The GAS lab bench (real /gas in 1366-1920 px frames) gave a fixed `margin-bottom: -7.625rem` that pulls the
+width-scaled <gas-mixer> up under the "Hear it" line. At a 1000 px window the mixer is smaller, so the same pull ran the
+console over the line and the note onto the plate. Rule: after baking a bench offset that works against a component
+that scales with the width, check the narrowest desktop width (~1000 px) too; scale the offset with the width
+(`max(<tuned>, -<n>vw)`) so the tuned look stays exact where it was tuned.
+
+## 2026-10-22 - A component dropped into someone else's page: prefix EVERY class
+
+- The GAS 2 radio's tuning knob (`.rp-knob.tune`) rendered 0 x 0: page-b's own TUNE panel is `.tune { display: none }`.
+  Generic names (`tune`, `vol`, `on`, `open`, `key`) collide with the host page's CSS. Every class of a player that
+  lives in another writer's page carries its prefix (`rp-`), states included where the host styles them; check an
+  invisible part with `getBoundingClientRect()` first (0 x 0 = a host rule, not your code).
+
+## 2026-10-23 — GAS 2 page mockup (`danavivi-a3`): checking a page Dan views in Safari
+- A gradient layer that starts at a hard element edge shows as a "cut": the Dusk layer's top/bottom band had no
+  horizontal fade. My Chromium screenshots missed it by eye; a column-luminance scan across the band found it (a step of
+  ~9 at the layer's left edge). Rule: before showing any overlay / shadow layer, scan luminance across it (or the darkening
+  ratio against a layers-off render), and mask every layer so it fades out on all sides.
+- Never `screencapture` after activating Safari: it steals focus while Dan types and captured his editor instead of the
+  page. Rule: check Safari rendering offscreen with `wksnap` (`revaudio-shared/tools/wksnap/wksnap.swift`, built into the
+  scratchpad). It does not render `backdrop-filter`, so those layers need Chromium + Dan's eye.
+- A live-page bench (`?bench`) keeps its deltas in localStorage, so after an export is folded into the source they apply
+  on top again (doubled offsets). Rule: park the stored copy once behind a stamp (page-b's loader, `gas2page-b:folded`), and
+  set that stamp in probes that inject deltas, or the probe's fresh profile parks them too.
+- New TUNE defaults do nothing for a viewer whose localStorage already holds the old values. Rule: a new composition gets a
+  new storage key (`gas2page-b:tune2`).
+- Same day, the second half of it: equal specificity loses to the host's LATER stylesheet. The radio's `<link>` sits
+  above page-b's own `<style>`, so `.rp-veil { background }` lost to the page's `.veil { background }` (0.62, not 0.86 /
+  0.93) and nobody saw it for two rounds. Style a shared base class as `.veil.rp-veil`, and check a component's key
+  rules with `getComputedStyle` in the host page, not by reading the CSS.
+
+## 2026-10-28 - folding a hand-tuned bench layout: positions, not the bench's translates
+The #hear section bench was tuned by hand with CSS `translate` / `scale` on top of the page's flow layout, at one deck
+width (691 px). Copying those translates would hold only at that width: at 1100 px the pair re-centres in a narrower
+step and STOP's +92 px ran into the DRIFT ring. Fold it as layout instead: measure every part's centre on the bench
+(a geometry dump in panel coordinates), place the parts absolutely in the controls box at x = place * --s + a share
+of the deck's spare width (--e = 100% - the tuned width), the edge part pinned to its edge, and step --s down with a
+container query on the deck. Then prove parity by dumping the folded page with the same keys and diffing (here every
+part within 0.5 px), plus an overlap sweep over many widths with a forced-overlap control that must fail.

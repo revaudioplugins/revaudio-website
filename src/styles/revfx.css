@@ -8,7 +8,7 @@
 
 .rfx-page { --rfx-nav: var(--site-nav-h, 64px); overflow-x: clip; }
 .rfx-page b { font-weight: 700; color: var(--d-white-ink); }
-.rfx-sec .rfx-sec-lede, .rfx-rack-lede {
+.rfx-sec .rfx-sec-lede {
   max-width: 64ch; margin: 0 auto 28px; text-align: center; text-wrap: balance;
   font: 400 clamp(15px, 1.2vw, 17.5px) / 1.6 var(--font-body, Inter, sans-serif); color: var(--d-fg);
 }
@@ -26,6 +26,30 @@
 .rfx-hero-title { position: relative; z-index: 2; }
 .rfx-board-wrap { position: relative; z-index: 1; }
 .rfx-title-panel { position: relative; z-index: 2; }
+/* laptop: the title panel wears the trial console's plate (trial-plate.png: black brushed steel, the checker flag,
+   four screws; Gil 2026-10-19 "the same colour as the Get your free trial panel"), 9-sliced so the corners, screws
+   and checker keep their shape at this panel's size, and the panel hugs its text */
+@media (min-width: 1000px) {
+  .drift-page .rfx-title-panel {
+    width: fit-content; max-width: 100%;
+    background: none; box-shadow: none; border-radius: 0;
+    border: 0 solid transparent;
+    border-image: var(--d-img-trial) 130 120 130 320 fill / 45px 42px 45px 111px stretch;
+    filter: drop-shadow(0 12px 22px rgba(0, 0, 0, .55));
+    padding: 62px 52px 46px 50px;
+  }
+  .rfx-title-panel > .d-screw, .rfx-title-panel > .d-checker { display: none; }
+}
+/* phones + tablets: the same black plate as the #get console on the phone (Gil 2026-10-19), its own screws + checker */
+@media (max-width: 999px) {
+  .drift-page .rfx-title-panel {
+    border-radius: 14px; padding: 40px 22px 30px;
+    background: none; border: 0 solid transparent;
+    border-image: var(--d-img-trial) 120 120 120 320 fill / 26px 26px 26px 70px stretch;
+    box-shadow: 0 10px 18px rgba(0, 0, 0, .55);
+  }
+  .rfx-title-panel > .d-screw, .rfx-title-panel > .d-checker { display: none; }
+}
 .drift-page .rfx-title { font-size: clamp(40px, 4.65vw, 69px); letter-spacing: .04em; margin-bottom: 8px; white-space: nowrap; }
 .rfx-title span { display: inline-block; animation: rfx-tube 1.4s steps(1, end) both; animation-delay: calc(240ms + var(--i) * 110ms); }
 .rfx-title span:nth-child(n+4) { color: var(--d-neon); text-shadow: var(--d-glow-2); }   /* REV in white, FX the lit purple */
@@ -67,6 +91,11 @@
 }
 .rfx-board[data-live="on"] .rfx-ped img { animation-play-state: running; }
 @keyframes rfx-bob { 50% { translate: 0 -5px; } }
+/* a pedal the dice sat out (deck.ts): the plugin's bypass look, its lamp pool off */
+.rfx-peds > li .rfx-ped-pool, .rfx-peds > li .rfx-ped-name { transition: opacity 400ms ease, filter 400ms ease; }
+.rfx-peds > li.is-off .rfx-ped img { filter: saturate(.15) brightness(.42) drop-shadow(0 18px 18px rgba(0, 0, 0, .7)); }
+.rfx-peds > li.is-off .rfx-ped-pool { opacity: .08 !important; animation: none !important; }
+.rfx-peds > li.is-off .rfx-ped-name { opacity: .35; filter: saturate(.2); }
 .rfx-ped:hover img, .rfx-ped:focus-visible img { transform: translateY(-14px) scale(1.04); filter: drop-shadow(0 26px 22px rgba(0, 0, 0, .7)) drop-shadow(0 0 18px rgba(var(--rgb), .55)); }
 /* the lamp pool on the floor under each pedal: lights when it lands */
 .rfx-ped-pool {
@@ -153,13 +182,15 @@
 @media (max-width: 600px) {
   .rfx-page .rfx-hero-trial { width: 100%; margin: 0; }
   .rfx-page .rfx-hero-trial::before, .rfx-page .rfx-hero-trial::after { content: none; display: none; }
+  /* the #get console's phone plate (drift.css: trial-plate.png 9-sliced at phone size, its own screws + checker), so all
+     three panels on the phone are the same black steel (Gil 2026-10-19) */
   .rfx-page .rfx-hero-trial .d-trial-panel {
-    border-radius: 12px; padding: 40px 18px 38px;
-    background: linear-gradient(rgba(12, 5, 18, .4), rgba(12, 5, 18, .4)), var(--d-img-panel) center / cover, #150a1f;
-    box-shadow: 0 0 0 1px rgba(4, 2, 8, .95), 0 0 0 6px #08040d, 0 1px 0 6px rgba(255, 240, 255, .06),
-      inset 0 20px 30px -14px rgba(0, 0, 0, .6), inset 16px 0 28px -16px rgba(0, 0, 0, .5), inset 0 -1px 0 rgba(255, 240, 255, .07);
+    border-radius: 14px; padding: 36px 18px 38px;
+    background: none; border: 0 solid transparent;
+    border-image: var(--d-img-trial) 120 120 120 320 fill / 26px 26px 26px 70px stretch;
+    box-shadow: 0 10px 18px rgba(0, 0, 0, .55);
   }
-  .rfx-page .rfx-hero-trial .d-screw { display: block; }
+  .rfx-page .rfx-hero-trial .d-screw { display: none; }
   .rfx-page .rfx-hero-trial .d-stamp-label { margin-top: 0; }
   .rfx-page .rfx-hero-trial .d-stamp-fine { display: block; margin-top: 2px; text-align: center; font-size: 11px; }
 }
@@ -324,48 +355,11 @@
 }
 
 /* --------------------------------------------------------------------------
-   #rack — the RevFX window, played
+   THE DICE DECK (in the hero since 2026-10-19; the #rack, #scenes and #drift sections went)
    -------------------------------------------------------------------------- */
-@media (min-width: 601px) {
-  .rfx-rk .d-rk-strip { cursor: grab; touch-action: none; }
-  .rfx-rk.is-dragging, .rfx-rk.is-dragging * { cursor: grabbing !important; user-select: none; }
-  .rfx-rk .d-rk-strip.is-drag, .rfx-rk .d-rk-grab.is-drag, .rfx-rk .d-rk-caps > li.is-drag { transition: none; z-index: 6; }
-  .rfx-rk .d-rk-grab.is-drag { z-index: 7; }
-  .rfx-rk .d-rk-strip.is-drag > img { filter: drop-shadow(0 calc(30 * var(--u)) calc(30 * var(--u)) rgba(0, 0, 0, .8)) brightness(1.08); }
-  .rfx-rk .d-rk-strip:hover > img:not(.is-off > img) { filter: brightness(1.06); }
-  /* RevFX where the plugin prints FX RACK: the LCD glass painted over, the name in the plugin's pixel face */
-  .rfx-rk-hdr {
-    z-index: 5; display: flex; align-items: center; justify-content: center; gap: calc(8 * var(--u));
-    background: linear-gradient(#240b2e, #200a2a); box-shadow: 0 0 calc(6 * var(--u)) calc(4 * var(--u)) #220a2c;
-    font: 400 calc(19 * var(--u)) / 1 var(--d-f-pix); letter-spacing: .06em; color: #fff4fd;
-    text-shadow: 0 0 calc(6 * var(--u)) rgba(255, 95, 216, .95), 0 0 calc(16 * var(--u)) rgba(255, 95, 216, .5);
-  }
-  .rfx-rk-hdr i { font-style: normal; font-size: .62em; color: rgba(255, 140, 230, .8); letter-spacing: -.1em; }
-  /* SNAPSHOT A-D over the baked slots: the plugin's LCD tile, the hold bar filling under the letter */
-  .rfx-rk-slot {
-    z-index: 5; padding: 0; border: 0; cursor: pointer; border-radius: calc(7 * var(--u));
-    background: #1d0a26; box-shadow: inset 0 0 0 calc(1.5 * var(--u)) rgba(231, 184, 255, .2);
-    display: grid; grid-template-rows: 1fr auto; justify-items: center; align-items: center; overflow: hidden;
-    color: rgba(231, 184, 255, .42); font: inherit; transition: box-shadow 160ms ease, background-color 160ms ease;
-  }
-  .rfx-rk-slot .L { font: 400 calc(34 * var(--u)) / 1 var(--d-f-lcd); padding-top: calc(6 * var(--u)); }
-  .rfx-rk-slot .m { font: 400 calc(7.5 * var(--u)) / 1 var(--d-f-pix); letter-spacing: .06em; padding-bottom: calc(9 * var(--u)); }
-  .rfx-rk-slot .bar { position: absolute; left: 0; bottom: 0; height: calc(4 * var(--u)); width: 0; background: #ff5fd8; box-shadow: 0 0 8px #ff5fd8; }
-  .rfx-rk-slot:hover { box-shadow: inset 0 0 0 calc(1.5 * var(--u)) rgba(231, 184, 255, .5); color: rgba(231, 184, 255, .7); }
-  .rfx-rk-slot.is-holding .bar { width: 100%; transition: width 600ms linear; }
-  .rfx-rk-slot.is-full { color: #e7b8ff; background: rgba(190, 90, 255, .14); box-shadow: inset 0 0 0 calc(1.5 * var(--u)) rgba(231, 184, 255, .45); }
-  .rfx-rk-slot.is-full .L { text-shadow: 0 0 8px rgba(190, 90, 255, .9); }
-  .rfx-rk-slot.is-cur { background: rgba(190, 90, 255, .32); color: #fbf3ff; box-shadow: inset 0 0 0 calc(1.5 * var(--u)) rgba(246, 232, 255, .8), inset 0 0 14px rgba(190, 90, 255, .5); }
-  .rfx-rk-slot.is-flash { animation: rfx-slot-flash 420ms ease-out; }
-  .rfx-rk-slot.is-nope { animation: rfx-slot-nope 360ms ease-in-out; }
-  .rfx-rk-slot:focus-visible { outline: 2px solid #ffd6f6; outline-offset: 1px; }
-  @keyframes rfx-slot-flash { 0% { background: #ff5fd8; color: #0f0418; } }
-  @keyframes rfx-slot-nope { 25% { translate: calc(-3 * var(--u)) 0; } 75% { translate: calc(3 * var(--u)) 0; } }
-}
-@media (max-width: 600px) { .rfx-rack-lede { display: none; } }
-
-/* the deck: the die + the scene CRT */
+/* the deck: the die + the scene CRT, under the hero's catch line */
 .rfx-deck { display: grid; gap: 22px; align-items: center; margin-top: clamp(26px, 3vw, 40px); }
+.rfx-hero .rfx-deck { order: 7; width: min(100%, 1040px); align-self: center; margin-top: 0; }   /* after the catch line at every width (drift.css orders the hero's parts below 1100 px: trial 4, catch 6) */
 @media (min-width: 760px) { .rfx-deck { grid-template-columns: auto minmax(0, 1fr); gap: 34px; } }
 .rfx-die-btn {
   --s: clamp(78px, 8vw, 104px);
@@ -435,78 +429,6 @@
   .rfx-chain-fx:hover .rfx-chain-mv, .rfx-chain-fx:focus-within .rfx-chain-mv { opacity: 1; }
   .rfx-chain { padding-bottom: 26px; }
 }
-.rfx-hood { margin-top: 30px; }
-/* phones + tablets: /drift's #fx foot rules are keyed to #fx, so the plate gets its own one-column fit here */
-@media (max-width: 1000px) { .rfx-hood { grid-template-columns: minmax(0, 1fr); gap: 8px; } }
-@media (max-width: 600px) {
-  .rfx-hood { margin-top: 26px; }
-  .rfx-hood .d-spec-plate > div { grid-template-columns: 5.6em minmax(0, 1fr); padding: 7px 0; }
-  .rfx-hood .d-spec-plate dt { font-size: 15px; white-space: nowrap; }
-  .rfx-hood .d-spec-plate dd { font-size: 14px; }
-}
-
-/* --------------------------------------------------------------------------
-   #scenes — the arrange window
-   -------------------------------------------------------------------------- */
-.rfx-scenes h2 { margin-bottom: 14px; }
-.rfx-daw {
-  position: relative; display: grid; gap: 18px; padding: clamp(18px, 2.4vw, 30px); border-radius: 18px;
-  background: linear-gradient(#150b1c, #0b0610); box-shadow: 0 0 0 1px #000, 0 0 0 7px #0b0711, 0 0 0 8px rgba(255, 240, 255, .06), 0 24px 40px rgba(0, 0, 0, .55);
-}
-.rfx-daw-slots { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(8px, 1.4vw, 16px); }
-.rfx-daw-slot {
-  display: grid; justify-items: center; gap: 6px; padding: 12px 6px 10px; border-radius: 8px;
-  background: rgba(190, 90, 255, .05); box-shadow: inset 0 0 0 1px rgba(231, 184, 255, .16); color: rgba(231, 184, 255, .4);
-  transition: background 200ms ease, box-shadow 200ms ease, color 200ms ease;
-}
-.rfx-daw-slot b { font: 400 clamp(34px, 4vw, 52px)/1 var(--d-f-lcd); color: inherit; }
-.rfx-daw-slot span { font: 400 8px/1 var(--d-f-pix); letter-spacing: .08em; text-transform: uppercase; }
-.rfx-daw-slot.is-on { background: rgba(190, 90, 255, .3); color: #fbf3ff; box-shadow: inset 0 0 0 1px rgba(246, 232, 255, .8), 0 0 22px rgba(190, 90, 255, .45); }
-.rfx-daw-slot.is-on b { text-shadow: 0 0 12px rgba(190, 90, 255, .95); }
-.rfx-daw-lamps { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; }
-.rfx-daw-lamps span { display: inline-flex; align-items: center; gap: 7px; font: 600 12px/1 var(--d-f-head); text-transform: uppercase; letter-spacing: .06em; color: var(--d-fg-dim); transition: color 220ms ease; }
-.rfx-daw-lamps i { width: 10px; height: 10px; border-radius: 50%; background: rgba(var(--rgb), .15); box-shadow: inset 0 0 0 1px rgba(var(--rgb), .4); transition: background 220ms ease, box-shadow 220ms ease; }
-.rfx-daw-lamps .is-on { color: var(--ink); }
-.rfx-daw-lamps .is-on i { background: rgb(var(--rgb)); box-shadow: 0 0 10px rgb(var(--rgb)), 0 0 2px #fff; }
-.rfx-daw-arr { display: grid; grid-template-columns: auto minmax(0, 1fr); border-radius: 8px; overflow: hidden; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .06); }
-.rfx-daw-hd { display: grid; grid-template-rows: 70px 40px; background: #1a1220; }
-.rfx-daw-hd span { display: flex; align-items: center; padding: 0 14px; font: 400 8px/1 var(--d-f-pix); letter-spacing: .08em; color: var(--d-fg-dim); border-right: 1px solid rgba(255, 255, 255, .06); }
-.rfx-daw-hd span + span { border-top: 1px solid rgba(255, 255, 255, .06); color: var(--d-hot); }
-.rfx-daw-tracks { position: relative; display: grid; grid-template-rows: 70px 40px; background: repeating-linear-gradient(90deg, rgba(255, 255, 255, .035) 0 1px, transparent 1px 6.25%), #0e0913; }
-.rfx-daw-region { display: flex; align-items: center; gap: 1px; margin: 8px 0; padding: 0 4px; border-radius: 4px; background: rgba(var(--d-neon-rgb), .12); box-shadow: inset 0 0 0 1px rgba(var(--d-neon-rgb), .4); }
-.rfx-daw-region i { flex: 1; height: var(--h); background: linear-gradient(rgba(var(--d-neon-rgb), .85), rgba(var(--d-neon-rgb), .35)); border-radius: 1px; }
-.rfx-daw-lane { position: relative; border-top: 1px solid rgba(255, 255, 255, .06); }
-.rfx-daw-lane .blk {
-  position: absolute; top: 7px; bottom: 7px; display: flex; align-items: center; padding-left: 8px; border-radius: 3px;
-  font: 400 15px/1 var(--d-f-lcd); color: rgba(231, 184, 255, .6); background: rgba(190, 90, 255, .1); box-shadow: inset 0 0 0 1px rgba(231, 184, 255, .25), inset 2px 0 0 #ff5fd8;
-  transition: background 200ms ease, color 200ms ease;
-}
-.rfx-daw-lane .blk.is-on { background: rgba(255, 95, 216, .3); color: #fff2fc; }
-.rfx-daw-head { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: #fff2fc; box-shadow: 0 0 10px #ff5fd8, 0 0 2px #fff; }
-.rfx-daw-head::before { content: ''; position: absolute; top: -1px; left: -5px; border: 6px solid transparent; border-top-color: #fff2fc; }
-.drift-page .rfx-daw-now { text-align: center; font: 400 clamp(12px, 1.3vw, 15px)/1 var(--d-f-pix); letter-spacing: .08em; color: #fff2fc; text-shadow: 0 0 10px rgba(255, 95, 216, .9); }
-.rfx-daw.is-cut .rfx-daw-now { animation: rfx-crt-hit 300ms steps(2, end); }
-.rfx-daw-fine { text-align: center; margin-top: -8px !important; }
-
-/* --------------------------------------------------------------------------
-   #drift — same rack, on its own
-   -------------------------------------------------------------------------- */
-.rfx-drift-grid { display: grid; gap: 18px; align-items: center; }
-@media (min-width: 900px) { .rfx-drift-grid { grid-template-columns: 1fr 1.5fr 1fr; gap: 26px; } }
-.rfx-drift-mid { text-align: center; }
-.rfx-drift-mid h2 { margin-bottom: 14px; }
-.rfx-drift-mid p { max-width: 54ch; margin: 0 auto; font: 400 clamp(15px, 1.15vw, 17px)/1.6 var(--font-body, Inter, sans-serif); color: var(--d-fg); text-wrap: balance; }
-.rfx-drift-card {
-  display: grid; gap: 10px; padding: 22px 22px 20px; border-radius: 12px; text-align: center;
-  background: linear-gradient(rgba(12, 5, 18, .5), rgba(12, 5, 18, .5)), var(--d-img-panel) center / cover, #150a1f;
-  box-shadow: 0 0 0 1px rgba(4, 2, 8, .95), 0 0 0 6px #08040d, 0 1px 0 6px rgba(255, 240, 255, .06);
-}
-.rfx-drift-card p { font: 400 15px/1.5 var(--font-body, Inter, sans-serif); color: var(--d-fg); }
-.drift-page .rfx-drift-tag { font: 600 26px/1 var(--d-f-badge); letter-spacing: .08em; color: var(--d-white-ink); text-shadow: var(--d-glow-1); }
-.rfx-drift-card--r .rfx-drift-tag { color: var(--d-neon); text-shadow: var(--d-glow-2); }
-.rfx-drift-link { justify-self: center; font: 600 14px/1 var(--d-f-head); text-transform: uppercase; letter-spacing: .08em; color: var(--d-hot); text-decoration: none; padding: 8px 4px; }
-.rfx-drift-link:hover { color: var(--d-pink-ink); text-shadow: var(--d-glow-pink); }
-
 /* --------------------------------------------------------------------------
    #get + the phone sticky bar
    -------------------------------------------------------------------------- */

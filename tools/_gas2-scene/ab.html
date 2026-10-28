@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GAS 2 A/B</title>
+<style>
+@font-face { font-family: Bebas; src: url(fonts/bebas.woff2) format("woff2"); }
+@font-face { font-family: Inter; src: url(fonts/inter.woff2) format("woff2"); font-weight: 100 900; }
+:root { --bg: #0b0a09; --panel: #14110f; --line: #3a2410; --fg: #efe9df; --dim: #b9b0a2; --brass: #e8c878; }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg); font: 13px/1.4 Inter, system-ui, sans-serif; }
+header { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; padding: 10px 16px; background: var(--panel); border-bottom: 1px solid var(--line); }
+h1 { margin: 0; font: 400 22px/1 Bebas; letter-spacing: .12em; color: var(--brass); }
+.grp { display: flex; gap: 6px; align-items: center; color: var(--dim); }
+button { font: 600 12px Inter; letter-spacing: .1em; color: var(--fg); background: #2a1c10; border: 1px solid var(--line); border-radius: 4px; padding: 6px 10px; cursor: pointer; }
+button:hover { border-color: var(--brass); }
+button.on { border-color: var(--brass); color: var(--brass); }
+.hint { margin-left: auto; color: var(--dim); }
+main { position: relative; height: calc(100% - 52px); padding: 16px; display: flex; gap: 16px; justify-content: center; align-items: flex-start; }
+.cell { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.cell .lbl { display: flex; justify-content: space-between; align-items: baseline; font: 400 20px/1 Bebas; letter-spacing: .14em; color: var(--brass); }
+.cell .lbl a { font: 600 11px Inter; letter-spacing: .12em; color: var(--dim); }
+.frame { position: relative; overflow: hidden; border: 1px solid var(--line); border-radius: 6px; background: #000; }
+.frame iframe { position: absolute; left: 0; top: 0; border: 0; transform-origin: 0 0; }
+body.flip .cell.off { display: none; }
+@media (max-width: 700px) { main { flex-direction: column; align-items: center; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>GAS 2 · A / B</h1>
+  <div class="grp">Window
+    <button data-size="1141x636">1141×636</button><button data-size="1440x900">1440×900</button><button data-size="1920x1080">1920×1080</button><button data-size="390x844">390×844</button>
+  </div>
+  <div class="grp">View <button data-mode="side">Side by side</button><button data-mode="flip">Flip</button></div>
+  <div class="grp"><button id="reload">Reload both</button></div>
+  <span class="hint">Flip: A / B or Space switches</span>
+</header>
+<main id="main">
+  <div class="cell" data-k="a"><div class="lbl"><span>A · saved</span><a href="page-a.html" target="_blank">open ↗</a></div><div class="frame"><iframe src="page-a.html" title="Mockup A"></iframe></div></div>
+  <div class="cell" data-k="b"><div class="lbl"><span>B · working</span><a href="page-b.html?bench" target="_blank">design it ↗</a></div><div class="frame"><iframe src="page-b.html?bench&panel=min" title="Mockup B"></iframe></div></div>
+</main>
+<script>
+(() => {
+  // each mockup renders at a REAL window size inside its iframe, then scales down to fit (side by side) or the whole area (flip)
+  const K = 'gas2ab', main = document.getElementById('main'), cells = [...document.querySelectorAll('.cell')];
+  let s = { size: '1141x636', mode: 'side', show: 'a' };
+  try { Object.assign(s, JSON.parse(localStorage.getItem(K) || '{}')); } catch {}
+  const fit = () => {
+    const [w, h] = s.size.split('x').map(Number), flip = s.mode === 'flip';
+    document.body.classList.toggle('flip', flip);
+    cells.forEach(c => c.classList.toggle('off', flip && c.dataset.k !== s.show));
+    const narrow = innerWidth <= 700, n = flip || narrow ? 1 : 2;
+    const availW = (main.clientWidth - 32 - (n - 1) * 16) / n, availH = main.clientHeight - 32 - 28;
+    const k = Math.min(availW / w, narrow ? Infinity : availH / h, 1);
+    cells.forEach(c => {
+      const f = c.querySelector('.frame'), i = c.querySelector('iframe');
+      f.style.width = Math.round(w * k) + 'px'; f.style.height = Math.round(h * k) + 'px';
+      i.style.width = w + 'px'; i.style.height = h + 'px'; i.style.transform = `scale(${k})`;
+    });
+    document.querySelectorAll('[data-size]').forEach(b => b.classList.toggle('on', b.dataset.size === s.size));
+    document.querySelectorAll('[data-mode]').forEach(b => b.classList.toggle('on', b.dataset.mode === s.mode));
+    try { localStorage.setItem(K, JSON.stringify(s)); } catch {}
+  };
+  document.querySelectorAll('[data-size]').forEach(b => b.onclick = () => { s.size = b.dataset.size; fit(); });
+  document.querySelectorAll('[data-mode]').forEach(b => b.onclick = () => { s.mode = b.dataset.mode; fit(); });
+  document.getElementById('reload').onclick = () => document.querySelectorAll('iframe').forEach(i => i.contentWindow.location.reload());
+  addEventListener('keydown', e => {
+    if (s.mode !== 'flip') return;
+    const key = e.key.toLowerCase();
+    if (key === 'a' || key === 'b') s.show = key; else if (key === ' ') { s.show = s.show === 'a' ? 'b' : 'a'; e.preventDefault(); } else return;
+    fit();
+  });
+  addEventListener('resize', fit); fit();
+})();
+</script>
+</body>
+</html>

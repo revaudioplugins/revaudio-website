@@ -1,0 +1,592 @@
+---
+// Halloween skin (2026-10): a seasonal layer laid over the garage, nothing
+// underneath changes. Mounted per page (home + store only); delete the
+// <HalloweenSkin /> line from a page to take it off. Everything here is
+// fixed, aria-hidden and pointer-events:none, so it never takes a click or
+// a screen-reader turn. Light still needs a lamp (DESIGN.md §2): the only
+// glow is the candle inside the jack-o'-lantern and the embers it throws.
+// Reduced motion: still, no bats, no embers. html.hc: off entirely.
+
+// Corner cobweb: spokes out of the corner, sagging threads between them.
+const SPOKES = 7;
+const RINGS = [26, 50, 78, 110, 146, 186];
+const spokeAngles = Array.from({ length: SPOKES }, (_, i) => (i / (SPOKES - 1)) * (Math.PI / 2));
+const pt = (r: number, a: number) => [r * Math.cos(a), r * Math.sin(a)];
+const webSpokes = spokeAngles
+  .map((a) => { const [x, y] = pt(220, a); return `M0 0L${x.toFixed(1)} ${y.toFixed(1)}`; })
+  .join('');
+const webRings = RINGS.map((r, ri) =>
+  spokeAngles.slice(0, -1).map((a, i) => {
+    const b = spokeAngles[i + 1];
+    const jitter = 1 + ((ri * 7 + i * 3) % 5) * 0.025;
+    const [x1, y1] = pt(r * jitter, a);
+    const [x2, y2] = pt(r * (2 - jitter), b);
+    const [cx, cy] = pt(r * 0.8, (a + b) / 2); // sag toward the corner
+    return `M${x1.toFixed(1)} ${y1.toFixed(1)}Q${cx.toFixed(1)} ${cy.toFixed(1)} ${x2.toFixed(1)} ${y2.toFixed(1)}`;
+  }).join('')
+).join('');
+
+// Embers off the candle: fixed pseudo-random so SSR is stable.
+let seed = 31;
+const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+const embers = Array.from({ length: 18 }, () => ({
+  x: (rnd() * 100).toFixed(1),
+  size: (2 + rnd() * 3).toFixed(1),
+  dur: (11 + rnd() * 10).toFixed(1),
+  delay: (-rnd() * 20).toFixed(1),
+  drift: ((rnd() - 0.5) * 120).toFixed(0),
+}));
+
+// String lights draped under the nav: swags between hooks, bulbs on each swag.
+const SWAGS = 6;
+const SAG = 26;
+const garland = Array.from({ length: SWAGS }, (_, i) => {
+  const x0 = (i / SWAGS) * 1200, x1 = ((i + 1) / SWAGS) * 1200, mx = (x0 + x1) / 2;
+  return `M${x0} 2Q${mx} ${2 + SAG * 2} ${x1} 2`;
+}).join('');
+const bulbs = Array.from({ length: SWAGS }, (_, i) => [0.2, 0.4, 0.6, 0.8].map((t, j) => {
+  const x0 = (i / SWAGS) * 1200, x1 = ((i + 1) / SWAGS) * 1200, mx = (x0 + x1) / 2;
+  const x = (1 - t) ** 2 * x0 + 2 * (1 - t) * t * mx + t * t * x1;
+  const y = (1 - t) ** 2 * 2 + 2 * (1 - t) * t * (2 + SAG * 2) + t * t * 2;
+  return { x: ((x / 1200) * 100).toFixed(2), y: y.toFixed(1), violet: (i * 4 + j) % 3 === 2, dl: ((i * 4 + j) * 0.37 % 3).toFixed(2) };
+})).flat();
+
+// Bat: body + ears + eyes as one piece; each wing its own piece so it can
+// flap from the shoulder. Right wing drawn once, mirrored for the left.
+const batBody =
+  'M50 9.5 L48.6 4.5 L47 10.6 A4.6 4.6 0 0 0 46.6 14.8 C45 17 44.6 21 45.4 25 C46 30 48 34 50 35.5 C52 34 54 30 54.6 25 C55.4 21 55 17 53.4 14.8 A4.6 4.6 0 0 0 53 10.6 L51.4 4.5 Z';
+const batWing =
+  'M53 17 C60 9 74 4 98 10 C93 13 89 18 87 24 C83 20 77 21 74 29 C70 24 64 25 61 31 C58 28 55 27 53.5 26 Z';
+---
+
+<div class="hw" data-halloween aria-hidden="true">
+  <div class="hw-vignette"></div>
+
+  {/* party lights strung under the nav */}
+  <div class="hw-lights">
+    <svg class="hw-wire" viewBox="0 0 1200 60" preserveAspectRatio="none"><path d={garland} /></svg>
+    {bulbs.map((b) => (
+      <span class={b.violet ? 'is-violet' : ''} style={`--bx:${b.x}%;--by:${b.y}px;--bdl:-${b.dl}s`}></span>
+    ))}
+  </div>
+
+  {/* cobwebs strung in the corners under the nav */}
+  <svg class="hw-web hw-web-l" viewBox="0 0 220 220">
+    <path d={webSpokes} />
+    <path d={webRings} />
+  </svg>
+  <svg class="hw-web hw-web-r" viewBox="0 0 220 220">
+    <path d={webSpokes} />
+    <path d={webRings} />
+  </svg>
+
+  {/* spider on a thread from the nav; scroll lets out more silk */}
+  <div class="hw-spider" data-hw-spider>
+    <div class="hw-silk"></div>
+    <svg class="hw-spider-body" viewBox="0 0 60 60">
+      <g class="hw-legs" fill="none" stroke-linecap="round">
+        <path d="M24 26 Q14 16 6 20" /><path d="M24 30 Q12 26 3 32" />
+        <path d="M24 34 Q13 36 6 46" /><path d="M25 37 Q18 44 14 55" />
+        <path d="M36 26 Q46 16 54 20" /><path d="M36 30 Q48 26 57 32" />
+        <path d="M36 34 Q47 36 54 46" /><path d="M35 37 Q42 44 46 55" />
+      </g>
+      <ellipse class="hw-abdomen" cx="30" cy="36" rx="9" ry="11" />
+      <circle class="hw-head" cx="30" cy="23" r="6" />
+      <circle class="hw-eye" cx="27.6" cy="22.4" r="1.3" />
+      <circle class="hw-eye" cx="32.4" cy="22.4" r="1.3" />
+      <path class="hw-mark" d="M30 31 l3 4 -3 4 -3 -4z" />
+    </svg>
+  </div>
+
+  {/* bats cross the screen now and then */}
+  <div class="hw-bats" data-hw-bats>
+    {[0, 1, 2, 3].map((i) => (
+      <svg class={`hw-bat hw-bat-${i}`} viewBox="0 0 100 44">
+        <path class="hw-wing" d={batWing} />
+        <g transform="translate(100 0) scale(-1 1)"><path class="hw-wing" d={batWing} /></g>
+        <path d={batBody} />
+        <circle class="hw-bat-eye" cx="48.3" cy="13.4" r="0.9" />
+        <circle class="hw-bat-eye" cx="51.7" cy="13.4" r="0.9" />
+      </svg>
+    ))}
+  </div>
+
+  {/* embers off the candle */}
+  <div class="hw-embers">
+    {embers.map((e) => (
+      <span style={`--x:${e.x}%;--s:${e.size}px;--d:${e.dur}s;--dl:${e.delay}s;--dx:${e.drift}px`}></span>
+    ))}
+  </div>
+
+  {/* fog along the floor */}
+  <div class="hw-fog">
+    <div class="hw-fog-a"></div>
+    <div class="hw-fog-b"></div>
+  </div>
+
+  {/* the jack-o'-lantern on the bench: the one lamp this skin brings */}
+  <div class="hw-lantern">
+    <div class="hw-lantern-glow"></div>
+    <svg class="hw-pumpkin" viewBox="0 0 120 104">
+      <defs>
+        <radialGradient id="hwSkin" cx="45%" cy="38%" r="70%">
+          <stop offset="0" stop-color="#e88a3a" />
+          <stop offset=".55" stop-color="#c25a1c" />
+          <stop offset="1" stop-color="#6e2a0c" />
+        </radialGradient>
+        <radialGradient id="hwRib" cx="50%" cy="40%" r="65%">
+          <stop offset="0" stop-color="#f09a48" />
+          <stop offset="1" stop-color="#8b3a14" />
+        </radialGradient>
+        <radialGradient id="hwFire" cx="50%" cy="60%" r="60%">
+          <stop offset="0" stop-color="#fff1c4" />
+          <stop offset=".45" stop-color="#ffc35a" />
+          <stop offset="1" stop-color="#e2621c" />
+        </radialGradient>
+      </defs>
+      <path class="hw-stem" d="M58 22 C57 14 60 7 67 3 L70 6 C65 10 64 15 65 22 Z" />
+      <ellipse cx="60" cy="62" rx="54" ry="40" fill="url(#hwSkin)" />
+      <ellipse cx="38" cy="62" rx="24" ry="38" fill="url(#hwRib)" opacity=".55" />
+      <ellipse cx="82" cy="62" rx="24" ry="38" fill="url(#hwRib)" opacity=".55" />
+      <ellipse cx="60" cy="62" rx="20" ry="40" fill="url(#hwSkin)" />
+      <g fill="none" stroke="#5a2410" stroke-opacity=".45" stroke-width="1.4">
+        <path d="M40 24 Q26 62 40 100" /><path d="M80 24 Q94 62 80 100" />
+        <path d="M52 22 Q46 62 52 102" /><path d="M68 22 Q74 62 68 102" />
+      </g>
+      <g class="hw-face" fill="url(#hwFire)">
+        <path d="M30 50 L46 38 L48 56 Z" />
+        <path d="M90 50 L74 38 L72 56 Z" />
+        <path d="M60 58 L66 68 L54 68 Z" />
+        <path d="M26 72 Q60 98 94 72 L86 74 L82 82 L74 76 L66 86 L60 78 L54 86 L46 76 L38 82 L34 74 Z" />
+      </g>
+      <ellipse cx="44" cy="40" rx="10" ry="5" fill="#ffd9a8" opacity=".14" transform="rotate(-20 44 40)" />
+    </svg>
+    <span class="hw-tag">Happy Halloween</span>
+  </div>
+</div>
+
+{/* the offer, lit by the lantern beside it. Outside the aria-hidden layer so
+    screen readers get it; a click copies the code. */}
+<button type="button" class="hw-promo" data-hw-promo aria-label="Halloween offer: 15% off with code BOO. Copy code">
+  <span class="hw-promo-big">15% off</span>
+  <span class="hw-promo-line">
+    <span class="hw-promo-with">with code</span>
+    <span class="hw-promo-code">&ldquo;BOO&rdquo;</span>
+  </span>
+  <span class="hw-promo-copied" aria-live="polite" data-hw-copied></span>
+</button>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-halloween]');
+  if (root) {
+    // Fixed layers must live on <body>, out of any transformed ancestor.
+    document.body.appendChild(root);
+    const promo = document.querySelector<HTMLButtonElement>('[data-hw-promo]');
+    if (promo) {
+      document.body.appendChild(promo);
+      // Sit beside the pumpkin as actually drawn (its label widens it), centred on
+      // the whole lantern stack: top of the pumpkin to the bottom of its label.
+      const pumpkin = root.querySelector<SVGElement>('.hw-pumpkin');
+      const tag = root.querySelector<HTMLElement>('.hw-tag');
+      const place = () => {
+        if (!pumpkin || innerWidth <= 720) { promo.style.removeProperty('--hw-pl'); promo.style.removeProperty('--hw-pb'); return; }
+        const p = pumpkin.getBoundingClientRect();
+        const bottom = tag ? tag.getBoundingClientRect().bottom : p.bottom;
+        const mid = innerHeight - (p.top + bottom) / 2;
+        promo.style.setProperty('--hw-pl', `${Math.round(p.right + 16)}px`);
+        promo.style.setProperty('--hw-pb', `${Math.round(mid - promo.offsetHeight / 2)}px`);
+      };
+      place();
+      addEventListener('resize', place);
+      document.fonts?.ready.then(place);
+      const note = promo.querySelector<HTMLElement>('[data-hw-copied]');
+      let t = 0;
+      promo.addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText('BOO'); } catch { return; }
+        if (note) note.textContent = 'Copied';
+        promo.classList.add('is-copied');
+        clearTimeout(t);
+        t = window.setTimeout(() => { promo.classList.remove('is-copied'); if (note) note.textContent = ''; }, 1600);
+      });
+    }
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Spider: scroll lets out silk (up to ~38vh), rAF only while scrolling.
+    const spider = root.querySelector<HTMLElement>('[data-hw-spider]');
+    let ticking = false;
+    const drop = () => {
+      ticking = false;
+      const max = innerHeight * 0.38;
+      const d = Math.min(max, 40 + scrollY * 0.18);
+      spider?.style.setProperty('--hw-drop', `${d.toFixed(0)}px`);
+    };
+    if (spider && !still) {
+      addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(drop); } }, { passive: true });
+    }
+    drop();
+
+    // Bats: a flight every 14–26s, each one on a fresh line across the screen.
+    const bats = root.querySelector<HTMLElement>('[data-hw-bats]');
+    if (bats && !still) {
+      const fly = () => {
+        const ltr = Math.random() > 0.5;
+        bats.style.setProperty('--hw-y', `${(8 + Math.random() * 30).toFixed(0)}vh`);
+        bats.style.setProperty('--hw-dir', ltr ? '1' : '-1');
+        bats.classList.remove('is-flying');
+        void bats.offsetWidth;
+        bats.classList.add('is-flying');
+        setTimeout(fly, 14000 + Math.random() * 12000);
+      };
+      setTimeout(fly, 2200);
+    }
+  }
+</script>
+
+<style>
+  /* Creepster (Font Diner, SIL OFL 1.1), self-hosted like the house faces; Halloween text only */
+  @font-face {
+    font-family: 'Creepster';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(../styles/fonts/creepster-latin.woff2) format('woff2');
+  }
+  .hw {
+    --hw-pumpkin: #e0742a;
+    --hw-candle: #ffb54a;
+    --hw-nav: calc(var(--sale-h, 0px) + var(--site-nav-h, 64px));
+    position: fixed;
+    inset: 0;
+    z-index: 45; /* under nav.site-nav (50), over the page, under cart/popups */
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .hw * { pointer-events: none; }
+
+  /* a cold violet dusk at the edges, warm at the floor where the candle is */
+  .hw-vignette {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(120% 70% at 50% 110%, rgba(224, 116, 42, 0.10), transparent 60%),
+      radial-gradient(140% 100% at 50% 40%, transparent 62%, rgba(46, 18, 64, 0.28) 100%);
+  }
+
+  /* ── party lights ── */
+  .hw-lights {
+    position: absolute;
+    top: calc(var(--hw-nav) - 2px);
+    left: 0;
+    right: 0;
+    height: 60px;
+  }
+  .hw-wire { position: absolute; inset: 0; width: 100%; height: 100%; fill: none; stroke: #3d3229; stroke-width: 1.6; vector-effect: non-scaling-stroke; }
+  .hw-lights span {
+    --c: 255, 140, 40;
+    position: absolute;
+    left: var(--bx);
+    top: var(--by);
+    width: 7px;
+    height: 10px;
+    margin-left: -3.5px;
+    border-radius: 45% 45% 50% 50% / 35% 35% 65% 65%;
+    background: radial-gradient(circle at 40% 35%, #fff0d0, rgb(var(--c)) 55%, rgba(var(--c), 0.7));
+    box-shadow: 0 0 6px 2px rgba(var(--c), 0.6), 0 0 18px 4px rgba(var(--c), 0.22);
+    animation: hw-twinkle 3s ease-in-out var(--bdl) infinite;
+  }
+  .hw-lights span::before {
+    content: '';
+    position: absolute;
+    left: 1.5px;
+    top: -3px;
+    width: 4px;
+    height: 4px;
+    border-radius: 1px;
+    background: #2a221d;
+  }
+  .hw-lights span.is-violet { --c: 180, 90, 255; }
+
+  /* ── cobwebs ── */
+  .hw-web {
+    position: absolute;
+    top: var(--hw-nav);
+    width: clamp(120px, 15vw, 210px);
+    height: auto;
+    fill: none;
+    stroke: var(--chrome, #d8d4cc);
+    stroke-opacity: 0.2;
+    stroke-width: 0.8;
+    filter: drop-shadow(0 0 1px rgba(216, 212, 204, 0.25));
+  }
+  .hw-web-l { left: 0; }
+  .hw-web-r { right: 0; transform: scaleX(-1); }
+
+  /* ── spider ── */
+  .hw-spider {
+    --hw-drop: 40px;
+    position: absolute;
+    top: var(--hw-nav);
+    right: clamp(64px, 11vw, 170px);
+    width: 46px;
+    transform-origin: 50% 0;
+    animation: hw-sway 6s ease-in-out infinite;
+  }
+  .hw-silk {
+    width: 1px;
+    height: var(--hw-drop);
+    margin: 0 auto;
+    background: linear-gradient(rgba(216, 212, 204, 0.05), rgba(216, 212, 204, 0.45));
+    transition: height 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .hw-spider-body {
+    display: block;
+    width: 46px;
+    margin-top: -8px;
+    animation: hw-bob 3.2s ease-in-out infinite;
+    filter: drop-shadow(0 0 1px rgba(232, 200, 120, 0.55)) drop-shadow(0 6px 8px rgba(0, 0, 0, 0.7));
+  }
+  .hw-legs { stroke: #2a221d; stroke-width: 2.4; animation: hw-legs 1.6s ease-in-out infinite; transform-origin: 30px 30px; }
+  .hw-abdomen, .hw-head { fill: #1d1916; stroke: #6b5638; stroke-width: 0.8; }
+  .hw-eye { fill: var(--hw-candle); }
+  .hw-mark { fill: var(--oxide-text, #d4622a); opacity: 0.85; }
+
+  /* ── bats ── */
+  .hw-bats {
+    --hw-y: 18vh;
+    --hw-dir: 1;
+    position: absolute;
+    top: var(--hw-y);
+    left: 0;
+    width: 100%;
+    transform: scaleX(var(--hw-dir));
+  }
+  .hw-bat {
+    position: absolute;
+    left: -80px;
+    width: 62px;
+    overflow: visible;
+    fill: #120e0c;
+    filter: drop-shadow(0 -1px 0 rgba(232, 160, 80, 0.55)) drop-shadow(0 0 10px rgba(255, 150, 60, 0.28));
+    opacity: 0;
+  }
+  .hw-wing { transform-box: view-box; transform-origin: 53.5px 20px; animation: hw-flap 0.32s ease-in-out infinite alternate; }
+  .hw-bat-eye { fill: var(--hw-candle); }
+  .hw-bat-1 { width: 46px; margin-top: 34px; }
+  .hw-bat-2 { width: 38px; margin-top: -22px; }
+  .hw-bat-3 { width: 30px; margin-top: 60px; }
+  .hw-bat-1 .hw-wing { animation-duration: 0.27s; }
+  .hw-bat-2 .hw-wing { animation-duration: 0.24s; }
+  .hw-bat-3 .hw-wing { animation-duration: 0.21s; }
+  .is-flying .hw-bat { animation: hw-fly 7s cubic-bezier(0.45, 0.05, 0.55, 0.95) forwards; }
+  .is-flying .hw-bat-1 { animation-delay: 0.35s; animation-duration: 7.6s; }
+  .is-flying .hw-bat-2 { animation-delay: 0.7s; animation-duration: 6.6s; }
+  .is-flying .hw-bat-3 { animation-delay: 1.1s; animation-duration: 8.2s; }
+
+  /* ── embers ── */
+  .hw-embers span {
+    position: absolute;
+    bottom: -12px;
+    left: var(--x);
+    width: var(--s);
+    height: var(--s);
+    border-radius: 50%;
+    background: #ffc46b;
+    box-shadow: 0 0 6px 2px rgba(255, 140, 40, 0.55);
+    opacity: 0;
+    animation: hw-rise var(--d) linear var(--dl) infinite;
+  }
+
+  /* ── fog ── */
+  .hw-fog {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 26vh;
+    -webkit-mask-image: linear-gradient(transparent, #000 60%);
+    mask-image: linear-gradient(transparent, #000 60%);
+  }
+  .hw-fog > div {
+    position: absolute;
+    inset: 0 -50% 0 -50%;
+    background:
+      radial-gradient(30% 60% at 20% 90%, rgba(150, 130, 170, 0.16), transparent 70%),
+      radial-gradient(25% 50% at 55% 100%, rgba(200, 180, 160, 0.12), transparent 70%),
+      radial-gradient(30% 55% at 85% 95%, rgba(150, 130, 170, 0.14), transparent 70%);
+    animation: hw-fog 38s linear infinite alternate;
+  }
+  .hw-fog-b { animation-duration: 52s !important; animation-direction: alternate-reverse !important; opacity: 0.8; }
+
+  /* ── jack-o'-lantern ── */
+  .hw-lantern {
+    position: absolute;
+    left: clamp(14px, 2.4vw, 36px);
+    bottom: clamp(14px, 2.4vw, 30px);
+    width: clamp(70px, 6.5vw, 96px);
+    display: grid;
+    justify-items: center;
+    gap: 6px;
+  }
+  .hw-lantern-glow {
+    position: absolute;
+    left: 50%;
+    top: 46%;
+    width: 360%;
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle, rgba(255, 150, 50, 0.32), rgba(224, 116, 42, 0.1) 35%, transparent 65%);
+    mix-blend-mode: screen;
+    animation: hw-candle 2.6s steps(1, end) infinite, hw-breathe 4.4s ease-in-out infinite;
+  }
+  .hw-pumpkin { position: relative; width: 100%; filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.7)); }
+  .hw-stem { fill: #4a3b1c; stroke: #2a2010; stroke-width: 1; }
+  .hw-face { animation: hw-candle 2.6s steps(1, end) infinite; filter: drop-shadow(0 0 4px rgba(255, 170, 60, 0.9)); }
+  .hw-tag {
+    position: relative;
+    font-family: 'Creepster', var(--font-display, sans-serif);
+    font-size: 1.05rem;
+    line-height: 1;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+    color: #ff9a3c;
+    text-shadow: 0 0 8px rgba(255, 130, 40, 0.6), 0 2px 0 rgba(0, 0, 0, 0.9);
+  }
+
+  /* ── the offer beside the lantern ── */
+  .hw-promo {
+    --lx: clamp(14px, 2.4vw, 36px);
+    --lw: clamp(70px, 6.5vw, 96px);
+    position: fixed;
+    z-index: 45;
+    left: var(--hw-pl, calc(var(--lx) + var(--lw) + 40px));
+    bottom: var(--hw-pb, calc(clamp(14px, 2.4vw, 30px) + 26px));
+    display: grid;
+    justify-items: start;
+    gap: 2px;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: copy;
+    text-align: left;
+    isolation: isolate;
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* a pool of shadow behind the words so they read over any card or photo */
+  .hw-promo::before {
+    content: '';
+    position: absolute;
+    inset: -14px -26px -12px -22px;
+    z-index: -1;
+    border-radius: 50%;
+    background: rgba(11, 10, 9, 0.66);
+    box-shadow: 0 0 26px 18px rgba(11, 10, 9, 0.62);
+    transform: scale(0.81);
+  }
+  .hw-promo-big {
+    font-family: 'Creepster', var(--font-display, sans-serif);
+    font-size: clamp(2.3rem, 3vw, 3.1rem);
+    line-height: 0.9;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #a24cf0;
+    /* witch's-brew purple: grainy, mottled, lit warm from the candle side */
+    background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.12 0 0 0 0 0.02 0 0 0 0 0.2 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E"),
+      radial-gradient(circle at 22% 30%, rgba(255, 170, 90, 0.55), transparent 32%),
+      radial-gradient(circle at 70% 65%, rgba(40, 6, 70, 0.7), transparent 30%),
+      radial-gradient(circle at 48% 20%, rgba(230, 170, 255, 0.6), transparent 26%),
+      linear-gradient(170deg, #d9a6ff 0%, #a24cf0 38%, #6d1fbf 70%, #3a0d6e 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 2px 0 rgba(10, 2, 18, 0.95)) drop-shadow(0 0 10px rgba(162, 76, 240, 0.55)) drop-shadow(-4px 0 12px rgba(255, 150, 50, 0.25));
+  }
+  .hw-promo-line { display: flex; align-items: baseline; gap: 0.5em; }
+  .hw-promo-with {
+    font-family: 'Creepster', var(--font-display, sans-serif);
+    font-size: 1.05rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--brass, #c9a35c);
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.8);
+  }
+  .hw-promo-code {
+    font-family: 'Creepster', var(--font-display, sans-serif);
+    font-size: clamp(1.6rem, 2vw, 2.1rem);
+    line-height: 1;
+    letter-spacing: 0.08em;
+    color: #ffb54a;
+    text-shadow: 0 0 6px rgba(255, 150, 50, 0.85), 0 0 18px rgba(224, 116, 42, 0.55), 0 1px 0 rgba(0, 0, 0, 0.9);
+    animation: hw-candle 2.6s steps(1, end) infinite;
+  }
+  .hw-promo-copied {
+    position: absolute;
+    left: 0;
+    top: -1.4em;
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 0.6rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--brass-bright, #e8c878);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .hw-promo.is-copied .hw-promo-copied { opacity: 1; }
+  .hw-promo:hover .hw-promo-code, .hw-promo:focus-visible .hw-promo-code { color: #ffd08a; }
+  .hw-promo:focus-visible { outline: 2px solid var(--brass, #c9a35c); outline-offset: 6px; border-radius: 4px; }
+
+  /* ── keyframes ── */
+  @keyframes hw-twinkle { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+  @keyframes hw-sway { 0%, 100% { transform: rotate(-2.5deg); } 50% { transform: rotate(2.5deg); } }
+  @keyframes hw-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
+  @keyframes hw-legs { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.92); } }
+  @keyframes hw-flap { from { transform: rotate(-28deg); } to { transform: rotate(34deg) scaleX(0.85); } }
+  @keyframes hw-fly {
+    0%   { opacity: 0; transform: translate(0, 0); }
+    8%   { opacity: 1; }
+    30%  { transform: translate(32vw, -4vh); }
+    55%  { transform: translate(58vw, 3vh); }
+    80%  { transform: translate(86vw, -5vh); }
+    92%  { opacity: 1; }
+    100% { opacity: 0; transform: translate(calc(100vw + 120px), -2vh); }
+  }
+  @keyframes hw-rise {
+    0%   { opacity: 0; transform: translate(0, 0) scale(1); }
+    10%  { opacity: 0.85; }
+    60%  { opacity: 0.45; }
+    100% { opacity: 0; transform: translate(var(--dx), -70vh) scale(0.4); }
+  }
+  @keyframes hw-fog { from { transform: translateX(-8%); } to { transform: translateX(8%); } }
+  @keyframes hw-candle {
+    0% { opacity: 1; } 12% { opacity: 0.82; } 15% { opacity: 1; } 41% { opacity: 0.9; }
+    47% { opacity: 0.7; } 50% { opacity: 1; } 78% { opacity: 0.88; } 83% { opacity: 1; }
+  }
+  @keyframes hw-breathe { 0%, 100% { scale: 1; } 50% { scale: 1.08; } }
+
+  /* ── phones: fewer, smaller props; the lantern makes way for the cart FAB ── */
+  @media (max-width: 720px) {
+    .hw-web { width: 96px; }
+    .hw-lights span:nth-child(odd) { display: none; }
+    .hw-spider { right: 26px; width: 26px; }
+    .hw-spider-body { width: 26px; }
+    .hw-lantern { left: auto; right: 14px; bottom: 84px; width: 54px; }
+    .hw-tag { display: none; }
+    .hw-promo { left: auto; right: calc(14px + 54px + 10px); bottom: 92px; justify-items: end; text-align: right; }
+    .hw-promo-big { font-size: 1.8rem; }
+    .hw-promo-with { font-size: 0.85rem; }
+    .hw-promo-code { font-size: 1.3rem; }
+    .hw-promo-copied { left: auto; right: 0; }
+    .hw-embers span:nth-child(2n) { display: none; }
+    .hw-fog { height: 18vh; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hw-promo-code { animation: none; }
+    .hw *, .hw *::before, .hw *::after { animation: none !important; transition: none !important; }
+    .hw-bats, .hw-embers { display: none; }
+  }
+
+  :global(html.hc) .hw { display: none; }
+  :global(html.hc) .hw-promo-big { background: none; -webkit-text-fill-color: currentColor; filter: none; }
+  :global(html.hc) .hw-promo-code { color: inherit; text-shadow: none; animation: none; }
+</style>

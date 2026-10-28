@@ -403,7 +403,8 @@ const gateNames = Object.fromEntries(plugins.map((p) => [dlGateId(p), p.name]));
     var src = fromHash ? hashQ : searchQ;
     var dlToken = src.get('dl');
     var dlPlugin = src.get('p');
-    if (dlToken && dlPlugin) {
+    // /downloads ([data-dlp]) runs its own return leg inline, on the page.
+    if (dlToken && dlPlugin && !document.querySelector('[data-dlp]')) {
       src.delete('dl');
       src.delete('p');
       // Only rebuild the hash when it was ours — a plain anchor (#features) has

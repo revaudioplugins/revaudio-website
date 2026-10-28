@@ -3,16 +3,14 @@ import { initCaptures } from '../drift/capture';
 import { lenis } from '../motion';
 import { initHero } from './hero';
 import { initPedals } from './pedals';
-import { initRackPlay } from './rackplay';
-import { initScenes } from './scenes';
+import { initDeck } from './deck';
 
 export function initRevfx(): void {
   if (!document.querySelector('[data-rfx-page]')) return;
   initCaptures();
   const pedals = initPedals();
   initHero((i) => pedals?.goTo(i));
-  initRackPlay();
-  initScenes();
+  initDeck();
   initJumps();
   initSticky();
   initSep();

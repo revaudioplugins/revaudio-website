@@ -5,6 +5,7 @@
  * stomp down one by one in chain order, each lamp pool lights as it lands, then the patch cable draws IN to OUT
  * then the cords light and a pulse rides them (hero.ts). The board leans with the pointer (desktop). A pedal is a link
  * to its spotlight in #pedals. Two patch cords (laptop): IN into PITCH's left side, OUT from GLUE COMP's right side. Under it: the trial console (RfxCapture), the page's first way in.
+ * Under the catch line: the dice deck (die + scene CRT + chain); a roll dims the pedals that sit it out (deck.ts).
  * Reduced motion: everything lands at rest, the pulse is still.
  */
 import { getImage } from 'astro:assets';
@@ -18,7 +19,15 @@ import pedGlue from '../../assets/seasons/drift/pedal-glue.png';
 import { pedals, revfx, buyable } from '../../data/revfx';
 
 const srcs = { pitch: pedPitch, echo: pedEcho, reverb: pedVerb, halo: pedHalo, glue: pedGlue };
-const imgs = await Promise.all(pedals.map(async (p) => ({
+// the board's order (Gil 2026-10-19: HALO and REVERB swap places); a pedal still links to its own slide in #pedals
+const BOARD = ['pitch', 'echo', 'halo', 'reverb', 'glue'] as const;
+const board = BOARD.map((id) => ({ p: pedals.find((x) => x.id === id)!, slide: pedals.findIndex((x) => x.id === id) }));
+// the dice deck's chain as it starts (Gil 10-19: HALO first); a roll reorders it
+const CHAIN = ['halo', 'pitch', 'echo', 'reverb', 'glue'] as const;
+const chain = CHAIN.map((id) => pedals.find((x) => x.id === id)!);
+// the die's six faces: pips on a 3x3 grid (index 0-8)
+const PIPS = [[4], [0, 8], [0, 4, 8], [0, 2, 6, 8], [0, 2, 4, 6, 8], [0, 2, 3, 5, 6, 8]];
+const imgs = await Promise.all(board.map(async ({ p }) => ({
   s: await getImage({ src: srcs[p.id], width: 300, format: 'webp', quality: 82 }),
   l: await getImage({ src: srcs[p.id], width: 520, format: 'webp', quality: 80 }),
 })));
@@ -32,7 +41,7 @@ const imgs = await Promise.all(pedals.map(async (p) => ({
           {'REVFX'.split('').map((c, i) => <span style={`--i:${i}`}>{c}</span>)}
         </h1>
         <p class="d-tagline"><span>Five effects.</span> <span>Your order.</span></p>
-        <p class="rfx-hero-what">Pitch, echo, reverb, halo and a bus glue comp in one rack. Drag them into any order, or let the dice roll a whole scene.</p>
+        <p class="rfx-hero-what">Pitch, echo, reverb, halo and a bus glue comp in one rack.</p>
         {buyable() && <p class="rfx-hero-price"><b>${revfx.priceUsd}</b> <span>or {revfx.trialDays} days free</span></p>}
       </DriftPanel>
     </div>
@@ -41,9 +50,9 @@ const imgs = await Promise.all(pedals.map(async (p) => ({
       <div class="rfx-board" data-rfx-board>
         <div class="rfx-floor" aria-hidden="true"></div>
         <ul class="rfx-peds" role="list">
-          {pedals.map((p, i) => (
-            <li style={`--i:${i};--rgb:${p.rgb};--ink:${p.ink}`}>
-              <a class="rfx-ped" href={`#p-${p.id}`} data-rfx-goto={i} aria-label={`${p.name}: ${p.line}`}>
+          {board.map(({ p, slide }, i) => (
+            <li style={`--i:${i};--rgb:${p.rgb};--ink:${p.ink}`} data-fx={p.id}>
+              <a class="rfx-ped" href={`#p-${p.id}`} data-rfx-goto={slide} aria-label={`${p.name}: ${p.line}`}>
                 <span class="rfx-ped-pool" aria-hidden="true"></span>
                 <span class="rfx-ped-ring" aria-hidden="true"></span>
                 <img src={imgs[i].l.src} srcset={`${imgs[i].s.src} 300w, ${imgs[i].l.src} 520w`} sizes="(max-width: 700px) 30vw, 170px"
@@ -51,7 +60,7 @@ const imgs = await Promise.all(pedals.map(async (p) => ({
                 <span class="rfx-ped-name">{p.name}</span>
                 {/* the patch cords (laptop): IN plugs into PITCH's left side, OUT leaves GLUE COMP's right side; the
                     cord runs from the jack down to the floor and off the board, a signal pulse riding it */}
-                {(i === 0 || i === pedals.length - 1) && (
+                {(i === 0 || i === board.length - 1) && (
                   <svg class:list={['rfx-cord', i === 0 ? 'rfx-cord--in' : 'rfx-cord--out']} viewBox="0 0 220 160" aria-hidden="true">
                     <path class="rfx-cord-bed" d="M214 40 C 170 40, 160 128, 90 136 S 10 140, -60 140" />
                     <path class="rfx-cord-lit" pathLength="100" d="M214 40 C 170 40, 160 128, 90 136 S 10 140, -60 140" />
@@ -72,4 +81,27 @@ const imgs = await Promise.all(pedals.map(async (p) => ({
   </div>
 
   <p class="d-hero-catch rfx-catch"><span class="l1">Stack it. Shuffle it.</span> <span class="l2">Roll it.</span></p>
+
+  {/* the dice deck (Gil 10-19: moved up from the old #rack section, which is gone): the die, the scene CRT and the
+      signal chain. A roll runs the plugin's own dice engine (deck.ts) and the board above shows which pedals play. */}
+  <div class="rfx-deck" data-rfx-deck>
+    <button type="button" class="rfx-die-btn" data-rfx-die aria-label="Roll the dice: a new effects scene">
+      <span class="rfx-die" data-rfx-cube aria-hidden="true">
+        {PIPS.map((f, i) => <span class={`rfx-die-f f${i + 1}`}>{Array.from({ length: 9 }, (_, k) => <i class={f.includes(k) ? 'on' : ''}></i>)}</span>)}
+      </span>
+      <span class="rfx-die-txt">Roll it</span>
+    </button>
+    <div class="rfx-crt" data-rfx-crt>
+      <p class="rfx-crt-top"><span data-rfx-roll>ROLL —</span><span class="rfx-crt-x" data-rfx-x hidden>EXTREME</span></p>
+      <p class="rfx-crt-name" data-rfx-name>PRESS THE DICE</p>
+      <p class="rfx-crt-blurb" data-rfx-blurb>21 named scenes. Every roll picks one, sets the amounts, and sometimes the order.</p>
+      <ol class="rfx-chain" data-rfx-chain aria-label="Signal chain">
+        <li class="rfx-chain-io">IN</li>
+        {chain.map((p) => <li class="rfx-chain-fx" data-fx={p.id} style={`--ink:${p.ink};--rgb:${p.rgb}`}><span>{p.name}</span>
+          <span class="rfx-chain-mv"><button type="button" data-mv="-1" aria-label={`Move ${p.name} earlier`}>‹</button><button type="button" data-mv="1" aria-label={`Move ${p.name} later`}>›</button></span></li>)}
+        <li class="rfx-chain-io">OUT</li>
+      </ol>
+      <p class="d-sr" aria-live="polite" data-rfx-say></p>
+    </div>
+  </div>
 </section>

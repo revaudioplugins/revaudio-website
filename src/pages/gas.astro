@@ -147,10 +147,11 @@ const highlights = plugin.features.slice(0, 3);
       tracks, each with its own GAS knob on real GAS renders. <gas-mixer> is a web component generated from
       bench/gas-mixer-bench.html by tools/gas-mixer/export_component.py: shadow DOM keeps its CSS and the page's
       apart, it builds itself only when it nears the viewport and loads audio only on PLAY. Not an iframe: the
-      live CSP / X-Frame-Options block framing (same route as Radio Roulette's <station-mixer>). */}
+      live CSP / X-Frame-Options block framing (same route as Radio Roulette's <station-mixer>).
+      2026-10-19: desktop shows the 3-track mixer only; phones keep the pedal toy, so the line below fits both. */}
   <section class="gas-hear" id="hear-it">
     <h2>Hear it</h2>
-    <p class="gas-hear-sub">Press <strong>play</strong>, then step on the <strong>pedal</strong>. Real GAS renders on a real beat, matched in loudness: you hear the colour, not just louder.</p>
+    <p class="gas-hear-sub">Hit play. Give it gas.</p>
     <link rel="stylesheet" href="/gas-mixer/fonts.css" />
     <gas-mixer class="gas-mixer-el"></gas-mixer>
     <script is:inline src="/gas-mixer/gas-mixer.js" defer></script>
@@ -650,16 +651,45 @@ const highlights = plugin.features.slice(0, 3);
     letter-spacing: 0.06em;
     color: var(--fg);
   }
+  /* The line under the title: retro car-badge script in brass with a soft glow (picked 2026-10-19 over marker and
+     typewriter looks). */
   .gas-hear-sub {
     margin: var(--space-2) auto var(--space-5);
-    max-width: 56ch;
-    color: var(--fg-dim);
+    font-family: 'Yellowtail', cursive;
+    font-size: clamp(1.9rem, 3vw, 2.4rem);
+    line-height: 1.1;
+    color: var(--brass-bright);
+    text-shadow: 0 0 18px rgba(230, 170, 70, 0.35), 0 2px 0 rgba(0, 0, 0, 0.6);
   }
-  .gas-hear-sub strong { color: var(--brass-bright); font-weight: 600; }
   /* reserve the mixer's shape before it builds (no layout shift), then it sizes itself */
-  .gas-mixer-el { display: block; aspect-ratio: 1100 / 632; max-height: 632px; text-align: left; }   /* the pedal toy (2026-10-12) */
+  .gas-mixer-el { display: block; aspect-ratio: 1600 / 958; text-align: left; }   /* the 3-track mixer, its 1600 x 958 stage (2026-10-19) */
   @media (max-width: 760px) { .gas-mixer-el { aspect-ratio: 380 / 922; max-height: none; } }
   .gas-mixer-el.ready { aspect-ratio: auto; max-height: none; }   /* built: it sizes itself, and OPEN THE HOOD makes it taller (the cap let the mixer spill over the footer) */
+
+  /* Desktop (2026-10-19): the first screen shows the hero, then the "Hear it" title, its line and the mixer's
+     "Under the hood" note, so a visitor sees there is something to play before scrolling. --gas-peek = the room
+     those three need (gaps included). The hero is one screen minus that room, and the plate gives way to make it
+     fit: it follows the screen height between 25rem (about the copy column, below that it would not help) and
+     its old 600px cap. On a screen too short for all of it the note goes first, the hero always fits whole.
+     No gap between the line and the mixer (2026-10-20): the negative margin pulls the mixer's empty top strip up
+     under the line, so the console follows the line straight on and the note sits beside it. Values placed by
+     eye on the GAS lab bench (real /gas in laptop-size frames). Phones unchanged. */
+  /* GAS lab 2026-10-20 (peek=24rem, heroT=1.5rem, subT=0rem, subS=4rem, subB=-7.625rem): replaces the desktop @media block in src/pages/gas.astro */
+  @media (min-width: 901px) {
+    .gas {
+      --gas-peek: 24rem;
+      min-height: calc(100svh - var(--nav-h, 75px) - var(--gas-peek));
+      padding-top: 1.5rem;
+      padding-bottom: 1.5rem;
+    }
+    .gas-plate img { max-height: clamp(25rem, calc(100svh - var(--nav-h, 75px) - 3rem - var(--gas-peek)), 600px); }
+    .gas-hear { padding-top: 1rem; }
+    .gas-hear h2 { font-size: clamp(2.2rem, 4vw, 3.2rem); }
+    .gas-hear-sub { margin-top: 0rem; margin-bottom: -7.625rem; font-size: clamp(1.9rem, 3vw, 4rem); }
+    /* The mixer (and its empty top strip) shrinks with the width, a fixed pull does not: below ~1284px it would
+       run the console over the line and the note onto the plate (seen at 1000px). Same -7.625rem above that. */
+    .gas-hear-sub { margin-bottom: max(-7.625rem, -9.5vw); }
+  }
 
   /* Phones: stack, plate first but smaller. One screen is a desktop promise —
      here the promise is "the button and its fine print sit above the fold".

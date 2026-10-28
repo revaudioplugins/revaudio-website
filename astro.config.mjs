@@ -10,7 +10,7 @@ import wwbench from './tools/wwbench/integration.mjs';
 // Pages that render noindex stay out of the sitemap too, so Search Console
 // never sees a submitted URL that asks not to be indexed. /buy/<slug>/ are
 // checkout shortcuts for email links (src/pages/buy).
-const NOINDEX = ['/buy/', '/beta/', '/founders-intake-2yr/', '/paddle-test/', '/thank-you/'];
+const NOINDEX = ['/buy/', '/beta/', '/founders-intake-2yr/', '/paddle-test/', '/thank-you/', '/pit-lane/'];
 
 export default defineConfig({
   site: 'https://revaudio.net',

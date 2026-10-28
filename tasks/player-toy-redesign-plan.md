@@ -1,5 +1,9 @@
 # Both site players: toy first, mixer under the hood (plan, 2026-10-12)
 
+> **2026-10-19, GAS only:** the toy came off the desktop /gas page (user on laptop 1: "remove this section ... and keep
+> this" = the mixer). Desktop shows the 3-track mixer alone, the hood always open, no latch; phones keep the GAS toy
+> (the mixer does not fit them). Radio Roulette's `<station-mixer>` is unchanged. Handoff entry of 2026-10-19.
+
 Owner: Claude Code `revaudio-c7` (Yoni's laptop). Status: PLAN, waiting for Yoni's "go".
 Files this work will touch: this plan, `bench/station-mixer-bench.html`, `bench/gas-mixer-bench.html`,
 `tools/station-mixer/*`, `tools/gas-mixer/*`, `public/station-mixer/`, `public/gas-mixer/`,
