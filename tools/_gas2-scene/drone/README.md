@@ -19,8 +19,9 @@ Open `http://127.0.0.1:4464/page-b.html` and scroll. Any free port works.
 | Address | What |
 |---|---|
 | `page-b.html` | the flight (TOP by default) |
-| `?angle=top` / `front` / `right` | the hover angle: straight down / 45° down from the front / 45° down and 45° round to the right |
-| `?dev`, then TUNE (or T) → Drone | the bench: angle (a click flies it), Hover m, Length (screens of scroll), Sway; Fly again, Car, Skip, Copy |
+| `?cam` | **the camera bench** (Dan 2026-10-28): drag the scene to turn the hover camera; sliders for the hover (Around, Down, Height, Aim x / z) and the landing (Lands at, Turn from, Arrive); a Scroll slider + readout. It never hands over: scroll up and down freely. Fly = the real flight with these values; Copy = the values to bake in |
+| `?angle=top` / `front` / `right` | a hover preset: straight down / 45° down from the front / 45° down and 45° round to the right |
+| `?dev`, then TUNE (or T) → Drone | presets (a click flies it), Hover m, Length (screens of scroll), Sway; Camera (opens `?cam`), Fly again, Car, Skip, Copy |
 | `?drone=0` | the page without the intro (also with `?bench`, `?rbench` and reduced motion) |
 | `?autofly` | flies itself 3 s after the hover (hands-free demos, device checks) |
 | `?landhold` | QA: freezes on the exact landing frame instead of handing over |
@@ -31,19 +32,22 @@ change in the code "does nothing", clear that key or press Copy to see what is s
 ## How it works
 
 - `drone.js` — boot. A plain script in `<head>` (one line in page-b), so the readings never flash before the hover.
-  Adds `html.dr-on dr-hold`, the TUNE section, then imports `run.js`. Any failure = the page as it was.
+  Holds the settings + presets, adds `html.dr-on dr-hold`, the TUNE section, then imports `run.js` (and `cam-bench.js`
+  with `?cam`). Any failure = the page as it was.
+- `cam-bench.js` — the camera bench panel (bench only; the page never loads it without `?cam`).
 - `run.js` — the flight. A full-window WebGL canvas over the page, a scroll runway (`--dr-len` screens), the camera
-  paths, the hand-off and `pop()` (the readings' entrance, WAAPI).
+  path, the hand-off and `pop()` (the readings' entrance, WAAPI).
 - `world.js` — the 3D set (three.js r185 in `vendor/`): ground (road, cracks, potholes, field), shop box, roof with
   GAS 2 painted on it, props as boxes, the car, sky, and the **landing quad**: the page frame (`img/land.webp`) on a
   plane 60 m out that exactly fills the landing camera's view.
 - The landing camera matches `frames/f6-v17.png`: f = 1500 px on 1536×1024, eye 1.33 m, wall 6.6 m ahead. The canvas
   uses the page's own `.scene` crop (`setViewOffset`), so touchdown lands pixel for pixel at any window size.
-- **TOP** lands exactly: the drone sinks onto the landing spot looking down (log altitude, done at u = .42), the gimbal
-  starts up on the way, and from there on it is a pure tilt at the landing camera, so the page frame slides in from
-  the top. The quad switches on at -40°, where the frame is still above the top edge (unseen).
-- **45 front / 45 right** are a Bézier path plus a look-at, with the frame projected onto the boxes near the end.
-  Blockout: they ghost near touchdown until the shop has real textured proxies.
+- **One path for any hover camera, always exact:** the drone flies a straight line from the hover down onto the
+  landing spot (log altitude, there at *Lands at*, default 42 % of the scroll); the camera holds its hover angle until
+  *Turn from* (18 %), then turns to face the page looking *Arrive* degrees down (40) by touchdown; from there on it is a
+  pure tilt at the landing camera, so the page frame slides in from the top. The quad switches on at touchdown, where
+  the frame is still above the top edge (Arrive ≥ 38), so the switch is unseen. The last frame is the page and stays
+  fixed; the hover and the landing settings only change how the drone gets there.
 - Hand-off: render the exact landing frame, show the page under it, fade the canvas, pop the readings, remove the
   runway, scroll to 0, dispose the renderer. After landing the page equals `?drone=0`.
 

@@ -11,7 +11,8 @@ Dan's order (2026-10-28): finish the scene with placeholders first, then generat
 - [x] 4a. The car (placeholder box car): right to left once per load, roof board readable from the hover.
 - [x] 5a. QA (headless Edge, 1440x900 + 390x844, all three angles): page after landing = `?drone=0` (mean 0.00);
       exact landing frame vs the page scene 2.55 / 1.47; no errors; classes, runway and layer gone, scroll 0.
-- [ ] 1. Dan picks the hover angle in the bench (TOP = the photo carries the landing, short art list; 45 front / right =
+- [x] 1a. Camera bench (`?cam`): free hover camera + landing timing, one exact path for every angle.
+- [ ] 1. Dan sets the camera in the bench (`?cam`, Copy) (TOP = the photo carries the landing, short art list; 45 front / right =
       the shop needs real textured proxies + the ghosting fixed: much more art).
 - [ ] 4b. Real art (cost confirmed first; OpenAI images): near road under the frame (fixes the seam + the close-up
       asphalt), roof + field aerial, the car (top-down sprite). The roof board stays text-only until Dan names a real

@@ -1,6 +1,6 @@
 ## 2026-10-28 — GAS 2 page: the drone intro, from scratch (Claude Code `revaudio-59`, laptop 1) — BRANCH `feat/gas2-drone`
 
-Claim: OPEN `revaudio-59`. Scene + bench BUILT with placeholder art (2026-10-28); waiting on Dan's angle pick, then art.
+Claim: OPEN `revaudio-59`. Scene + bench + camera bench (`?cam`) BUILT with placeholder art (2026-10-28); waiting on Dan's camera values (Copy), then art.
 Files: NEW `tools/_gas2-scene/drone/**`; in `page-b.html` ONE `<link>` + `<script>` line (after the radio
 line), nothing else of page-b's; one README line pair; `tasks/todo.md` (the "GAS 2 drone descent" section); this entry.
 - Dan: a hovering drone above the station; scroll down = it comes down into the final scene, then GAS 2 pops and the right
@@ -33,6 +33,15 @@ line), nothing else of page-b's; one README line pair; `tasks/todo.md` (the "GAS
   0 credits); (3) the coupon: a real Paddle code + what catching it does (no code until he names one).
 - Next: after (1) + (2), the art for the picked path: near road under the frame (the .66-.8 seam and the close-up
   asphalt), roof + field aerial, a top-down car; then QA 5b (todo).
+- Camera bench (2026-10-28, Dan: "make me a bench to control the scene's camera angle", then "and the landing"):
+  `drone/cam-bench.js`, `?cam` (or TUNE -> Drone -> Camera). Drag the scene to turn the hover camera; sliders for the
+  hover (yaw, down angle, height, aim point) and the landing (lands at, turn from, arrive angle); Scroll slider + readout;
+  never hands over. The three angle paths became ONE path for any hover (straight line down onto the landing spot, the
+  camera turns to face the page looking down, then the pure tilt): every angle now lands exactly, the 45 paths' ghosting
+  is gone. Checked headless 1440x900: top / front / right / a custom camera (yaw -60, down 30, 20 m, lands 50 %) all land
+  = `?drone=0` (0.00) and their landing frames 2.55 vs the page scene; the bench drags, saves, scrubs to the landing and
+  back; no page errors. Weak spot for every angle: bare road around 30-50 % of the scroll (the dive onto the road before
+  the tilt-up): Dan can shorten it with Lands at / Turn from; the art (near road) fixes the rest.
 
 ## 2026-10-26 — GAS 2 page: the drone intro (hover above the station, scroll = descent, land, readings pop) (Claude Code `danavivi-19`, Dan's Mac) — BRANCH `feat/gas2-page`
 

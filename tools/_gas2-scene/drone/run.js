@@ -1,13 +1,13 @@
 // GAS 2 page · drone intro v2, the run (loaded by drone.js). A full-window WebGL canvas over the page; a scroll
 // runway flies the drone from the hover down to the page's own frame; at touchdown the canvas fades onto the identical
 // page, the readings pop out, the runway folds away and the page is the page (one flight per load: Dan 2026-10-28).
-// Three hover angles for the bench (Dan 2026-10-28): top = straight down, front = 45 deg down from the front,
-// right = 45 deg down and 45 deg round to the right. TOP lands exactly (a pure tilt-up at the landing spot); the two
-// angled paths are blockout until Dan picks one.
+// The hover is any camera (drone.js: presets top / 45 front / 45 right, or the camera bench, ?cam); every hover lands
+// exactly: the drone flies a straight line down onto the landing spot while the camera turns to look down the road,
+// then a pure tilt-up at the landing camera brings the page frame in.
 import { THREE, EYE, VFOV, LAND_POS, buildWorld } from './world.js';
 
 const html = document.documentElement;
-const T = window.__droneTune || { angle: 'top', alt: 34, len: 4, sway: 1 };
+const T = window.__droneTune || { alt: 34, len: 4, sway: 1, yaw: 0, tilt: 90, ax: -4, az: -6, down: .42, gimbal: .18, arrive: 40 };
 if (document.readyState === 'loading') await new Promise(r => document.addEventListener('DOMContentLoaded', r, { once: true }));
 scrollTo(0, 0);
 const sceneEl = document.getElementById('scene');
@@ -28,38 +28,28 @@ const cam = new THREE.PerspectiveCamera(VFOV, 1.5, .05, 2000);
 
 const clamp01 = x => Math.min(1, Math.max(0, x));
 const smooth = (a, b, x) => { const t = clamp01((x - a) / (b - a)); return t * t * (3 - 2 * t); };
-const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 const DEG = Math.PI / 180;
 
-// ---- the paths: u (0 hover .. 1 touchdown) -> camera position, orientation, and how much of the landing frame shows
-const E = new THREE.Euler(0, 0, 0, 'YXZ'), M = new THREE.Matrix4(), UP = new THREE.Vector3(0, 1, 0);
-const LOOK_HOME = new THREE.Vector3(0, EYE, -50);
-// TOP: the drop ends on the landing spot at DOWN; the gimbal starts up while it is still sinking, and from DOWN on it is
-// a pure tilt at the landing camera, so the page frame shows exactly. The quad switches on at DOWN, where the pitch
-// (-40) still puts the whole page frame above the top edge (it shows from about -37.6), so the switch is unseen.
-// Altitude: log toward a 4 m offset, slow off the hover and still sinking on arrival, so little scroll is spent on
-// bare road close up.
-const DOWN = .42, TILT0 = .18, HOVER_X = -4, HOVER_Z = -6;   // the hover looks straight down on the shop
+// ---- the path: u (0 hover .. 1 touchdown) -> camera position, orientation, and whether the landing frame shows
+const E = new THREE.Euler(0, 0, 0, 'YXZ');
 const herm = (u, u0, p0, m0, u1, p1, m1) => { const h = u1 - u0, s = (u - u0) / h, s2 = s * s, s3 = s2 * s; return (2 * s3 - 3 * s2 + 1) * p0 + (s3 - 2 * s2 + s) * h * m0 + (3 * s2 - 2 * s3) * p1 + (s3 - s2) * h * m1; };
-function topPose(u) {
+const wrap = a => ((a + 180) % 360 + 360) % 360 - 180;
+// The drop ends on the landing spot at T.down (altitude: log toward a 4 m offset, slow off the hover and still sinking
+// on arrival, so little scroll goes on bare road close up); the camera holds the hover angle until T.gimbal, then turns
+// to T.arrive degrees down, facing the page, by T.down; from there on it is a pure tilt at the landing camera, so the
+// page frame shows exactly. The quad switches on at T.down, where the whole page frame is still above the top edge
+// (it shows from about -37.6 deg), so the switch is unseen.
+function poseAt(u) {
+  const DOWN = T.down, G = Math.min(T.gimbal, DOWN - .02), P = -T.arrive, m = 1.5 * T.arrive / (1 - DOWN);   // deg per unit u: the turn runs on into the tilt-up
+  const yaw0 = wrap(T.yaw) * DEG, d = T.tilt >= 89.9 ? 0 : T.alt / Math.tan(T.tilt * DEG);
+  const hx = T.ax + d * Math.sin(yaw0), hz = T.az + d * Math.cos(yaw0);          // the hover, on the line of sight to the aim point
   const s = Math.min(1, u / DOWN), t = 2.5 * s * s - 1.5 * s * s * s, C = 4, top = T.alt - EYE + C;
   const h = EYE - C + top * Math.pow(C / top, t), k = (h - EYE) / (T.alt - EYE);
-  const pitch = u <= TILT0 ? -90 : u <= DOWN ? herm(u, TILT0, -90, 0, DOWN, -40, 110) : herm(u, DOWN, -40, 110, 1, 0, 0);
-  E.set(pitch * DEG, 0, 0);
-  return { pos: new THREE.Vector3(HOVER_X * k, h, HOVER_Z * k), quat: new THREE.Quaternion().setFromEuler(E), pitch, quad: u >= DOWN ? 1 : 0, uA: 0 };
+  const pitch = u <= G ? -T.tilt : u <= DOWN ? herm(u, G, -T.tilt, 0, DOWN, P, m) : herm(u, DOWN, P, m, 1, 0, 0);
+  const yaw = yaw0 * (1 - smooth(G, DOWN, u));
+  E.set(pitch * DEG, yaw, 0);
+  return { pos: new THREE.Vector3(hx * k, h, hz * k), quat: new THREE.Quaternion().setFromEuler(E), pitch, yaw: yaw / DEG, quad: u >= DOWN ? 1 : 0 };
 }
-const target0 = new THREE.Vector3(-1.5, .5, -7);             // the shop front, where the angled hovers look
-function anglePose(u, yaw) {
-  const p0 = new THREE.Vector3(target0.x + T.alt * Math.sin(yaw), T.alt, target0.z + T.alt * Math.cos(yaw));
-  const p2 = LAND_POS.clone().add(new THREE.Vector3(9 * Math.sin(yaw * .5), 1.6, 9 * Math.cos(yaw * .5)));
-  const p1 = p0.clone().lerp(p2, .55).add(new THREE.Vector3(0, -T.alt * .22, 0));
-  const t = ease(u), s = 1 - t;
-  const pos = p0.clone().multiplyScalar(s * s * s).add(p1.clone().multiplyScalar(3 * s * s * t)).add(p2.clone().multiplyScalar(3 * s * t * t)).add(LAND_POS.clone().multiplyScalar(t * t * t));
-  const look = target0.clone().lerp(LOOK_HOME, smooth(.3, 1, t));
-  const quat = u >= 1 ? new THREE.Quaternion() : new THREE.Quaternion().setFromRotationMatrix(M.lookAt(pos, look, UP));
-  return { pos, quat, pitch: 0, quad: smooth(.93, .995, u), uA: smooth(.7, .95, u), feather: .04 * (1 - smooth(.97, 1, u)) };
-}
-const poseAt = u => T.angle === 'front' ? anglePose(u, 0) : T.angle === 'right' ? anglePose(u, 45 * DEG) : topPose(u);
 
 // ---- framing: the canvas shows the same window into the 3:2 frame as the page's .scene, so touchdown lands on the
 // page pixel for pixel at any window size. Narrower than the scene (phones): the hover is centred, then pans home.
@@ -76,7 +66,7 @@ function view(u) {
 }
 fit(); addEventListener('resize', fit);
 
-// ---- the hover: slow, unrelated sines; full at the hover, gone by TOP's touchdown (DOWN): the landing must sit still and exact
+// ---- the hover: slow, unrelated sines; full at the hover, gone by the touchdown (T.down): the landing must sit still and exact
 const n = (t, f1, f2, ph) => .6 * Math.sin(t * f1 + ph) + .4 * Math.sin(t * f2 + ph * 1.7);
 const swayQ = new THREE.Quaternion();
 function applySway(pose, t, a) {
@@ -88,6 +78,7 @@ function applySway(pose, t, a) {
 
 // ---- the loop
 const progress = () => { const max = runway.offsetHeight + runway.offsetTop - innerHeight; return max > 0 ? clamp01(scrollY / max) : 0; };
+const CAM = new URLSearchParams(location.search).has('cam');   // the camera bench (cam-bench.js)
 let shown = false, landed = false, sDisp = 0, last = performance.now();
 const born = last;
 world.car.start();
@@ -100,14 +91,15 @@ function frame(now) {
   if (Math.abs(p - sDisp) < 1e-4) sDisp = p;
   const u = sDisp, age = (now - born) / 1000;
   const pose = poseAt(u);
-  applySway(pose, age, T.sway * (1 - .7 * smooth(0, .3, u)) * (1 - smooth(.22, .42, u)) * smooth(0, 1.5, age));
+  applySway(pose, age, T.sway * (1 - .7 * smooth(0, .3, u)) * (1 - smooth(T.down - .2, T.down, u)) * smooth(0, 1.5, age));
   cam.position.copy(pose.pos); cam.quaternion.copy(pose.quat); cam.updateMatrixWorld();
   view(u);
-  world.set({ uA: pose.uA, quad: pose.quad, feather: pose.feather ?? .04 * Math.min(1, -pose.pitch / 10) });
+  world.set({ uA: 0, quad: pose.quad, feather: .04 * Math.min(1, -pose.pitch / 10) });
+  if (CAM) window.__droneState = { u, h: pose.pos.y, pitch: pose.pitch, yaw: pose.yaw };
   world.car.update(now);
   renderer.render(world.scene, cam);
   if (!shown) { shown = true; layer.classList.add('on'); }
-  if (p >= .999 && sDisp >= .997) land(); else requestAnimationFrame(frame);
+  if (!CAM && p >= .999 && sDisp >= .997) land(); else requestAnimationFrame(frame);   // the camera bench never lands: scroll back up
 }
 requestAnimationFrame(frame);
 
