@@ -175,8 +175,10 @@ for (const p of plugins) {
       } catch (e) { return ''; }
     }
 
-    // ---- Trial-end offer (?offer=) ----
-    // A plugin's licence window shows a ONE-TIME "10% off" banner when its
+    // ---- Trial offers (?offer=) ----
+    // Two sources, same path (the drawer names no percentage; Paddle shows it):
+    // the RevLimiter day-9 trial email (20%, 48 h, licence worker /go?d=offer-rl,
+    // 2026-10-28), and a plugin's licence window ONE-TIME "10% off" banner when its
     // trial ends; the licence worker (GET /offer) mints a one-use code limited
     // to that plugin and lands here on /buy/<slug>/?offer=<CODE>. The code is
     // kept for the tab's session with the buy page's slug and goes to Paddle
@@ -520,7 +522,7 @@ for (const p of plugins) {
       var offer = offerFor(c);
       if (offerEl) {
         var offerItem = offer && c.filter(function (i) { return i.slug === offer.slug; })[0];
-        offerEl.textContent = offerItem ? 'Your one-time 10% off ' + offerItem.name + ' is applied at payment.' : '';
+        offerEl.textContent = offerItem ? 'Your personal discount on ' + offerItem.name + ' is applied at payment.' : '';
         offerEl.hidden = !offerItem;
       }
     }
