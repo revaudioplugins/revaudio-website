@@ -1,7 +1,8 @@
-"""GAS 2 radio player: the close-up plate from the picked generation (img/gen/radio-c.png, gpt-image-2 edit of the
-scene's own radio). States are made FROM this one photo (design-language Law 2), never from a second generation:
+"""GAS 2 radio player: the close-up plate from the picked generation (round 2: img/gen/radio-e.png = an edit of
+radio-c, the gpt-image-2 edit of the scene's own radio, with 3 keys + a red jewel + a magic-eye window). States are made FROM this one photo (design-language Law 2), never from a second generation:
   img/radio-lit.webp  the photo, dial lamp on, baked pointer erased (the pointer is live)
-  img/radio-off.webp  the same plate with the dial lamp and its warm spill masked down, pushed to brown, not grey
+  img/radio-off.webp  the same plate with the dial lamp and its warm spill masked down, pushed to brown, not grey,
+                      and the red jewel dark (the page lights the jewel and the magic eye live)
 Crop (gen px): x 110..1478, y 110..930 = 1368 x 820. Every coordinate in radio.css = gen px minus (110, 110).
 Usage: python player/tools/process_art.py"""
 import os
@@ -11,18 +12,30 @@ from PIL import Image, ImageFilter
 HERE = os.path.dirname(os.path.abspath(__file__))
 IMG = os.path.join(os.path.dirname(HERE), 'img')
 X0, Y0, X1, Y1 = 110, 110, 1478, 930
-GLASS = (538, 581, 1042, 660)          # the dial glass, gen px (measured on a 2x grid)
-PTR = (566, 624)                        # the baked red pointer's columns
+SRC = 'radio-e'
+GLASS = (569, 580, 1044, 660)          # the dial glass, gen px (measured on a 2x grid)
+EYE = (767, 505)                        # the magic eye's centre, gen px (removed)
+JEWEL = (538.5, 630, 15)               # the red pilot jewel: centre + glass radius, gen px
+PTR = None                              # radio-e has no baked pointer (radio-c: (566, 624))
+PTR_C = (566, 624)                        # the baked red pointer's columns
 
 
 def main():
-    a = np.asarray(Image.open(os.path.join(IMG, 'gen', 'radio-c.png')).convert('RGB')).astype(np.float32)
+    a = np.asarray(Image.open(os.path.join(IMG, 'gen', SRC + '.png')).convert('RGB')).astype(np.float32)
     H, W, _ = a.shape
+
+    # 0. no magic eye (Yoni 2026-10-23: "remove that green thing"): radio-e is an edit of radio-c, aligned to 0 px there,
+    #    so the eye's spot takes radio-c's own grille + bar back through a feathered disc (r 44 solid, 62 gone)
+    ex, ey = EYE
+    c = np.asarray(Image.open(os.path.join(IMG, 'gen', 'radio-c.png')).convert('RGB')).astype(np.float32)
+    yy0, xx0 = np.mgrid[0:H, 0:W]
+    m = np.clip((62 - np.hypot(xx0 - ex, yy0 - ey)) / 18, 0, 1)[..., None]
+    a = a * (1 - m) + c * m
 
     # 1. erase the baked pointer: split the glass into light (a 12 px blur) + grain; across the pointer the light is a
     #    straight ramp between its two sides and the grain is borrowed from 44 px to the right (no band, no seam)
     gx0, gy0, gx1, gy1 = GLASS
-    p0, p1 = PTR
+    p0, p1 = PTR or (0, 0)
     ys = slice(gy0 - 1, gy1 + 1)
     low = np.asarray(Image.fromarray(a.clip(0, 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(12))).astype(np.float32)
     grain = a - low
@@ -44,6 +57,10 @@ def main():
     # the spill on the brass and wood round it goes down by up to 38 %, warm tint kept (age/dark takes colour out)
     k = (spill * (1 - glass))[..., None] * .38
     off = off * (1 - k * np.array([1.0, 1.05, 1.1]))
+    # the jewel unlit: deep oxblood glass, its lamp gone (a soft disc so the bezel keeps its own light)
+    jx, jy, jr = JEWEL
+    jd = np.clip(1.2 - np.hypot(xx - jx, yy - jy) / jr, 0, 1)[..., None]
+    off = off * (1 - jd * np.array([.72, .62, .55]))
 
     for name, arr in (('radio-lit', a), ('radio-off', off)):
         im = Image.fromarray(np.clip(arr, 3, 252).astype(np.uint8)).crop((X0, Y0, X1, Y1))   # no pure #000 / #fff

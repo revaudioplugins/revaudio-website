@@ -68,7 +68,10 @@ neon or glow without a lamp (a neon sign IS a lamp: the DRIFT panel's lit tube m
   line under a section title, never body copy. First use: the /gas "Hear it" line "Hit play. Give it gas."
   (2026-10-19, picked over a marker and a typewriter look: "shorter and sexier").
   Second use: the GAS 2 page's "Fill it up." as a signature under the hero button (§7), tilted -6deg,
-  offset right. Still ONE script line per screen.
+  offset right. Still ONE script line per screen. A nameplate ON a prop is not a line: the GAS 2 radio's grille
+  badge "Play me" (Dan 2026-10-24, picked with this rule flagged, "like a Marshall"): embroidered IN the radio photo
+  itself, fine satin stitch sunk into the weave, rising to the right, click = play, no hover move. Dan 2026-10-26: CSS / SVG
+  stitches "look like CSS"; texture on a photographed prop is baked into the photo asset, never drawn over it.
 - **A product name wears its plugin's own header lockup (Dan 2026-10-23).** The title on a product page is
   set in the face, colour split and rule of the plugin's own header, lifted from the plugin's render code,
   never the house Bebas: GAS 2 = the pump globe's GAS2 (Oswald 700, set tight, the 2 in oxide, an oxide
@@ -179,8 +182,15 @@ neon or glow without a lamp (a neon sign IS a lamp: the DRIFT panel's lit tube m
   thin brass line). Sizes 64 / 56 / 48 / 40. The **shine** (a faint lamp band every 8s) only on the page's ONE
   main action. Every regular action button uses it; a new one opts in by class, never restyles a copy. Stays out:
   the crane door + BUY NOW squares, the audio toys (demo rack, GAS pedal, station mixer), DRIFT's own world,
-  image-plate buttons (SubscribeModal, /beta), the support chat, icon buttons (×, menu, cart, arrows, dots).
-  /gas keeps its own copy of the honey CTA (its bench is `/gasctalab`).
+  image-plate buttons (SubscribeModal, /beta), the support chat, icon buttons (×, menu, cart, arrows, dots),
+  the GAS 2 page's ticket stub (next item). /gas keeps its own copy of the honey CTA (its bench is `/gasctalab`).
+- **A paper form speaks paper (the GAS 2 page's service ticket, Dan 2026-10-23: fewer fonts, and the button in
+  "the same language as the note"; approved: "commit and push").** Two faces only: Bebas for what the station
+  printed (title, stub label, SENT stamp), the typewriter Elite for what got typed (rows, labels, input, fine
+  print, ×); no Inter on paper. The submit is the ticket's own tear-off stub, not a house button: a perforation
+  with a scissors mark, a punched hole at each end, the honey "customer copy" (honey = a free download) with the
+  ticket's zigzag edge. Hover = it starts to peel and the scissors slide along the line; submit = it tears off
+  and drops, then the SENT stamp lands in rubber-stamp ink.
 - Coverflow showcase, DAW strip, EmailCapture, SubscribeModal, TrialGateModal: unchanged house parts.
 - Support chat (`SupportChat.astro`, `/support` only): chat-app thread grammar in house materials —
   visitor right in 3-stop brass, Support left on dark steel with avatar + curved tail on a group's
@@ -211,6 +221,12 @@ inside the measured pane glass with a margin, never touching the frame; they tak
 top, falling off to the sill) and a light glass sheen, and stay sharp: a blur reads as a bad photo, not
 depth. Poster copy = one short catchphrase per feature, period ad-speak (NO KNOCK. NO KNOB.).
 
+Poster ON the wall (the GAS 2 page's mailbox, Dan 2026-10-23: "just the reading need to be a poster that
+catches the eye"): a CTA's paper label becomes a 1950s poster pasted on the stucco right above its prop, a
+big arrow pointing into it. Outside the glass it keeps full ink (no sheen, no fade): the wall's texture shows
+through faintly and the porch lamp lights it from its side. Poster and prop are one control: both open the
+same form, and hovering the poster moves the prop.
+
 Painted wall sign (the GAS 2 page's grades, Dan 2026-10-23: "remove that line under premium"): the picked
 grade shows by its brighter red only, no underline. Paint on a wall has no web-link underline.
 
@@ -233,6 +249,11 @@ strikes ~120ms `cubic-bezier(.2,.9,.25,1.25)`. Scroll: needle revs; wood drifts 
 (desktop only). The word wall's DRIFT panel: neon power-on flicker once, hover strike ~120ms, the
 steering springs on a mouse, one drift-in on touch (§4). Reduced motion: everything visible at rest,
 no parallax, no needle rev, smoke static.
+
+No UI chrome drawn over a scene (the GAS 2 page, Dan 2026-10-23, on the first-visit gold frames that
+flashed around every live prop: "what is this square line around the elements, remove it"): a prop shows
+it's alive by itself (its own hover, its poster, its caption), never by a web outline around the photo.
+The one frame allowed is the keyboard focus ring.
 
 ## 7. Hero + glanceability
 

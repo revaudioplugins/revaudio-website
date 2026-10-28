@@ -85,3 +85,89 @@ Found for Dan's session (not mine to change): on a phone the scene is anchored r
 3. The static burst when tuning: keep?
 4. Real renders (spec in `tasks/gas2-jukebox-plan.md` on laptop 2's archive branch, repeated here): 5 mixes x
    `<id>_before` / `<id>_after`, sample-aligned, 30-45 s, WAV 48k/24, + GAS 2 settings per mix (GRADE, AMOUNT %).
+
+## Round 2 (2026-10-23, Yoni: play / stop button, KNOB LAB knobs "maybe Radio Roulette style but not identical",
+## "more aesthetic and cool, think creative")
+
+Picks (Yoni): play / stop = a 3rd key on the radio + a red jewel lamp; Fly-in from the scene; Magic eye tube.
+- [x] 🤖 1. New plate: the same photo (edit of radio-c) with 3 keys [PLAY/STOP] [ORIGINAL] [GAS 2], a red jewel, and
+      a magic-eye tube window (dark when off). Re-measure, re-process (lit / off), erase pointer.
+- [x] 🤖 2. KNOB LAB page for the radio (`player/knoblab/`, generator + `__klCfg`; the lab code untouched): start look
+      = a vintage radio knob in the Radio Roulette family, not identical. Open for Yoni.
+- [x] 🧑 3. Yoni tweaks / approves the knob in the lab (save through serve-lab).
+- [x] 🤖 4. Bake the look into 129-frame strips (lab's `bake-knob-lab.js`), knobs = strips, the photo's caps covered.
+- [x] 🤖 5. Code: play key + jewel; magic eye live from an AnalyserNode (opens with the level); fly-in from the scene
+      radio's rect into the close-up and back out (one tween, house curve).
+- [ ] 🤖 6. Headless checks + screenshots, open for Yoni.
+
+### Round 2 state (2026-10-23, `revaudio-cd`)
+
+- Plate = radio-e (edit of radio-c: 3 keys, red jewel, magic eye; no baked pointer). radio-d grew 4 keys (dropped).
+  Measured (crop px): glass 459..934 x 470..550; keys PLAY 504..591, ORIGINAL 595..717, GAS 2 722..859, y 574..640;
+  jewel (428.5, 520); eye (657, 395) r 23; knobs (345, 530) + (1013.5, 530).
+- HIP HOP = Yoni's renders (`C:/shirimmmmmm/hip hop dry.wav` + `hip hop gas.wav`, 48k, 26.24 s) via
+  `player/tools/prep_audio.py`: lag 0, LUFS -7.20 / -7.26 (already matched; GAS side +0.05 dB), sources peak +1.05 /
+  +1.52 dBFS (4x), so both got one shared -2.57 dB: -9.78 LUFS each, peaks -1.53 / -1.00. AAC 256k. Other 4 = placeholder.
+- Play key latches down while playing; jewel burns while playing; magic eye = AnalyserNode RMS after the keys (-34..-8
+  dB -> shadow 52 deg..6 deg, fast attack / slow release), fades in slower than the lamp (tube warm-up).
+- Fly-in: the close-up starts on the bench radio's rect and grows (0.62 s, house curve); Esc / X / backdrop fly back.
+  Phone: the radio is off-screen in the scene, so it fades.
+- KNOB LAB: `player/knoblab/make-knoblab.py` -> radio-knoblab.html (gitignored), served by
+  `serve-lab.py 8797 --pages player`, start look = walnut bakelite SKIRTED with a spun-brass skirt seated in the photo's
+  brass ring. Waiting for Yoni's look; then bake (`bake-knob-lab.js <recipe> <out> 256 1 --foot=60,60,84,120`).
+- Checks (headless, 1440 / 1280 / 390): no errors, no 404s; flight mid-scale at 120 ms; eye pixel green while playing;
+  keys 1/0 -> 0/1; play key stop / start; Esc -> closed; scene caption "On air: GAS 2 · HIP HOP". Not: real ears / Safari.
+- Knob (Yoni "done" 2026-10-23): his lab EXPORT `library/saves/gas2radio/gas2radio-knob-recipe-2026-10-23-1725-2.json`
+  (copy: `player/knoblab/knob-recipe-yoni-2026-10-23.json`), KNURL, gunmetal knurl, bakelite #442b13 dome, glow index
+  #ffd23b, linked (both knobs). Baked 129 x 256 px (`--foot=60,60,84,120`, k3dCss -1.391 / -3.326 / 102.783 %), shipped as
+  `img/knob-radio.webp` (192 px frames, 518 KB). Volume = frame per angle 1:1; tuning glides to its detent (380 ms ease-out).
+- HIP HOP GAS 2 settings (Yoni): PREMIUM, 140 % -> the caption on GAS 2.
+- Magic eye REMOVED (Yoni 2026-10-23: "remove that green thing, its not nice"): the green glow is off-palette on this
+  brass + amber radio. Gone from the plate too: `process_art.py` patches its spot from radio-c (radio-e is an edit of
+  radio-c, aligned to 0 px there; feathered disc r 44..62), and the analyser / canvas code is out of radio.js / .css.
+- 4 stations (Yoni 2026-10-23): HIP HOP (real) / POP / ELECTRONIC / ROCK (placeholders). Fixed on the way: the close-up's
+  dark backdrop never applied (page-b's `.veil` won on order); now `.veil.rp-veil`, 0.86 desktop / 0.93 phone.
+
+## Round 3 (2026-10-23, Yoni: "ditch the zoom ... embed it on the page itself ... like 30% bigger, still readable")
+
+- The close-up radio now STANDS ON THE BENCH in the scene (`.rp-dock` in `#scene`), 1.3x the photo's own radio
+  (`--rs: 1.3` in radio.css), centred on the photo radio (frame x 192), sitting on the bench (frame y 688); body cut out of
+  the plate (crop 212..1148 x 108..663, r 42), drop shadow down-left (the porch lamp is up-right) + a contact shadow.
+  The photo's radio + its hotspot are hidden (`#scene #radio`). No veil, no flight, no phone tags.
+- 1.3x is about the most that fits: the radio's right edge sits ~7 px before the pump at 1440; left edge 40 px in.
+- Printed text is ~2x the photo's proportion so it reads at scene size: dial 30u, keys 28 / 32u, VOLUME / TUNING 23u.
+  Measured: 1280x720 dial 8.3 px, keys 7.5 / 8.5, labels 6.1; 1440x900 9.3 / 8.4 / 9.6 / 6.9; 1920x1080 12.4 / 11.2 / 12.8 / 9.2.
+- Keys LIGHT UP when down (Yoni): brightness + an amber glow inside and a little spill out; the dial lamp's off-state
+  no longer dims a pressed key. VOLUME / TUNING: cream, centred on each knob (letter-spacing balanced with padding-left).
+- Start = off ("Press play on the radio"); the caption under the bench says what's on air. Keyboard only while focus is
+  on the radio (Space stays page scroll elsewhere).
+- Phone: still Dan's layout (the scene crops the radio off-screen).
+- Lower bench (Yoni 2026-10-23): `player/tools/bench_patch.py` makes `img/bench-low.webp` from the frame's own pixels
+  (top 688 -> 710 frame px, legs squashed to the same floor 792; the frame file untouched), laid under the radio;
+  the radio stands on 710 (46.224cqw). Caption moved to the porch floor (top 77.8 %). Dial prints ELEC. (the caption
+  keeps ELECTRONIC); sizes kept (Yoni: "keep the original size").
+- Caption contained in the radio width (Yoni 2026-10-23): the dock's width + centre, two lines (station / side + settings); measured inside the radio at 1280 / 1440 / 1920.
+- Room from the pump (Yoni 2026-10-23, picked "slide the radio left" over moving Dan's pump): radio + bench + caption 23 frame px left (centre 11.0026cqw; bench_patch.py DX); the strip the bench leaves = the clean stucco + floor between the old right leg and the pump (x 323..346). Gap to the pump ~30 px at 1440.
+- Key depth fixed (Yoni 2026-10-23: pressed keys read as UP): brightness reads as raised, so a pressed key now sinks 11u into its slot (dark gap above, lip shade, bottom clipped behind the lower lip) and glows amber from its base without extra brightness; an up key has a lit top bevel + a cast shadow below. Same for PLAY/STOP, ORIGINAL, GAS 2.
+- Keys keep their size (Yoni 2026-10-23: "keep the before sizes, just flip the up/down"): no clip; pressed = 5u lower +
+  the slot's shade on top + an amber glow from the base; up = lit top bevel + cast shadow.
+- Radio 20 % smaller (Yoni: room from the page edge): --rs 1.04, back on the bench's own centre (12.5cqw, DX 0); left
+  edge 68 px in at 1440, pump gap ~38 frame px. The photo radio no longer hides under it, so `gen_noradio.py` makes a
+  masked gpt-image-1 edit of the frame with the radio, its shadow AND the old bench removed (box 52..349 x 515..796,
+  2 runs ~$0.4); `bench_patch.py` cuts `img/noradio.webp` from it and lays the lowered bench back on top. The frame file
+  is untouched. Text at 1.04x: dial 6.4 / 7.2 / 9.6 px at 1280 / 1440 / 1920 (keys 6-10, VOLUME/TUNING 4.9-7.4).
+- Size settled at 1.18x (Yoni: 1.04 "too small", wants just some room on the left), centre 12.3cqw: left edge 44 / 50 /
+  66 px at 1280 / 1440 / 1920; dial 7.3 / 8.2 / 10.9 px.
+- POP + ROCK = Yoni's renders (`C:/shirimmmmmm/pop|rock dry|gas.wav`, 48k, 37.19 s / 24.00 s; pop lag 1 sample trimmed,
+  rock 0; dry vs gas within 0.16 dB). Every station now at ONE loudness, -11.00 LUFS both sides (prep_audio.py TARGET;
+  was hip hop -9.8 / pop -10.9 / rock -8.3 = level jumps between stations); peaks -1.08 .. -4.43 dBFS. ELEC. = placeholder.
+  GAS 2 settings for POP / ROCK owed by Yoni (the caption shows "GAS 2" alone until then).
+- Final size (Yoni 2026-10-23: "+10 %, center it on the stool"): 1.3x, centred on the bench (12.5cqw). Left edge 35 / 40 / 53 px at 1280 / 1440 / 1920, ~8 px from the pump at 1440; dial 8.0 / 9.0 / 12.0 px.
+- Placement bench (Yoni 2026-10-23: "a bench where I can control size + position of radio and stool, each separate"):
+  `page-b.html?rbench` shows a panel (top right) with RADIO size / x / bottom and STOOL x / floor / width / height,
+  "Radio on stool" (snaps the radio's bottom to the slab top), Reset, Copy (JSON, also shown as selectable text). The
+  numbers are CSS variables on #scene (radio.css "WHERE THINGS STAND" = the defaults); the panel keeps its own values
+  in localStorage (only with ?rbench). The stool is now a CUT-OUT of the frame's bench (`img/stool.webp`, traced
+  polygons in bench_patch.py) over the painted-out spot, so it moves and scales freely; `img/bench-low.webp` is gone.
+  Defaults = the current look (radio 1.3x on 12.5 / 46.224; stool 13.05 / 51.82, width 1, height .854).
+- PLACEMENT FINAL (Yoni 2026-10-23, from ?rbench): {"rp-rs":1.33,"rp-x":11.8,"rp-y":49.25,"st-x":11.8,"st-y":54.4,"st-w":0.93,"st-h":0.75} = radio.css #scene defaults. Radio left edge 23 / 26 / 35 px at 1280 / 1440 / 1920; dial 8.2 / 9.2 / 12.3 px.

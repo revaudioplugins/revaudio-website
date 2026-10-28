@@ -5,6 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GAS 2 Mockup B</title>
 <link rel="stylesheet" href="player/radio.css"><script src="player/radio.js" defer></script><!-- the radio player: Yoni (player/) -->
+<!-- no copying the page (Dan 2026-10-26: "I can copy the page and mark it ... copy elements and assets ... disable that"):
+     nothing highlights or select-alls, images don't drag out, no right-click menu (Save Image), no copy / cut. Form fields
+     keep theirs. A deterrent only: screenshots, view-source and the network tab always work on the web. -->
+<style>
+html { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+input, textarea, [contenteditable="true"] { -webkit-user-select: text; user-select: text; }
+img, svg, video { -webkit-user-drag: none; }
+</style>
+<script>
+(() => {
+  const field = e => { const n = e.target, el = n && n.nodeType === 1 ? n : n && n.parentElement;
+    return el && el.closest('input, textarea, [contenteditable="true"]'); };
+  for (const ev of ['contextmenu', 'dragstart', 'copy', 'cut', 'selectstart'])
+    document.addEventListener(ev, e => { if (!field(e)) e.preventDefault(); });
+})();
+</script>
 <style>
 @font-face { font-family: Bebas; src: url(fonts/bebas.woff2) format("woff2"); }
 @font-face { font-family: Inter; src: url(fonts/inter.woff2) format("woff2"); font-weight: 100 900; }
@@ -26,6 +42,10 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .scene { position: absolute; left: 50%; top: 50%; width: max(100vw, 150vh); aspect-ratio: 3 / 2; transform: translate(-50%, -50%); container-type: inline-size; }
 /* windows taller than the photo crop its sides: keep the right edge (the readings) in view, the station's far left gives way */
 @media (max-aspect-ratio: 3/2) { .scene { left: auto; right: 0; transform: translateY(-50%); } }
+/* wide windows: the scene is exactly the window's width, so it starts at 0. Centring it with translate(-50%) put it half a
+   device pixel off at odd widths in Chromium (1141, 1281, 1439 ...), and the stage's background showed as a dark line down
+   the left edge (found by the drone intro's touchdown check, 2026-10-26; Safari was fine). Same geometry, no half pixel. */
+@media (min-aspect-ratio: 3/2) { .scene { left: 0; transform: translateY(-50%); } }
 .scene > img.photo { position: absolute; inset: 0; width: 100%; height: 100%; display: block; user-select: none; }
 .abs { position: absolute; }
 
@@ -105,16 +125,30 @@ body.ng-tape .note::before, body.ng-tape .note::after { background: linear-gradi
 .radioCap em { font-style: normal; color: var(--honey); }
 
 /* 4. mailbox = email signup */
-.mail { left: 53.14%; top: 31.77%; width: 7.4%; transition: transform .35s cubic-bezier(.2, .9, .25, 1.25); filter: drop-shadow(.3cqw .5cqw .5cqw rgba(12, 9, 6, .55)) brightness(.88) sepia(.12); }
+.mail { left: 53.31%; top: 41.63%; width: 7.4%; transition: transform .35s cubic-bezier(.2, .9, .25, 1.25); filter: drop-shadow(.3cqw .5cqw .5cqw rgba(12, 9, 6, .55)) brightness(.88) sepia(.12); }
 .mail img { width: 100%; display: block; }
 .mail .plate { position: absolute; left: 33%; top: 38.31%; width: 34%; text-align: center; font: 700 .52cqw Oswald; letter-spacing: .12em; color: #2a1c0c; }
 .mail .tkt { position: absolute; left: 18%; top: 8%; width: 64%; height: 14%; background: var(--paper); transform: translateY(40%); transition: transform .35s; z-index: -1; box-shadow: 0 .2cqw .4cqw rgba(0,0,0,.3); }
 .mail:hover { transform: translateY(-2%) rotate(-1deg); }
 .mail:hover .tkt { transform: translateY(-55%); }
-.mailCap { left: 52.6%; top: 44.2%; width: 8.6%; text-align: center; font: 600 max(11px, .66cqw) Oswald; letter-spacing: .14em; color: var(--ink); background: var(--paper); padding: .35cqw .4cqw; transform: rotate(1.2deg); box-shadow: 0 .2cqw .6cqw rgba(0,0,0,.35); text-transform: uppercase; pointer-events: none; }
+/* the "Mail me the keys" slip became a poster pasted on the wall above the box (Dan 2026-10-23: "just the reading need to
+   be a poster that catches the eye"). Art: gpt-image-2, props/poster-mail-{1-4}.webp (TUNE → Mail poster, ?mp=1-4).
+   Outside the glass, so full ink: no sheen, no fade; the stucco shows through the paper and the porch lamp lights it from
+   the upper right. Its arrow points at the box, which moved down under it. Click = the box's ticket; hover = the ticket peeks. */
+.mp { left: 52.55%; top: 20.6%; width: 9%; transform: rotate(.5deg); filter: brightness(var(--mp-b, .94)) sepia(.1) contrast(.98); transition: filter .25s; }
+.mp:hover { --mp-b: 1.02; }
+.mp img { display: block; width: 100%; user-select: none; }
+.mp::before, .mp::after { content: ""; position: absolute; inset: 0; pointer-events: none; }
+.mp::before { background: url(frames/f6-v17.png) -52.55cqw -13.733cqw / 100cqw 66.667cqw; filter: grayscale(1) contrast(1.8) brightness(1.2); mix-blend-mode: overlay; opacity: var(--mp-t, .4); } /* the wall's own pixels behind it */
+.mp::after { background: linear-gradient(205deg, rgba(255, 204, 140, .14), transparent 45%, rgba(20, 10, 4, .26)); } /* the lamp: warm top right, falling off */
+.mp:hover + .mail .tkt { transform: translateY(-55%); }
 
+/* the sidewalk out of the readings' shadow (Dan 2026-10-24): walk-cut.png = the slab traced from f6-v17 (same pixels,
+   1 px feather), laid back over the FOCUS + DUSK layers; the chalkboard stands on it */
+.walkCut { left: 57.747%; top: 70.703%; width: 31.185%; z-index: 1; pointer-events: none; user-select: none; }
 /* 5. chalkboard = the price */
-.chalk { left: 56.2%; top: 53.4%; width: 11.6%; filter: drop-shadow(.5cqw .6cqw .5cqw rgba(12, 9, 6, .6)) brightness(.86) sepia(.1); pointer-events: none; }
+.chalk { left: 56.2%; top: 53.4%; width: 11.6%; filter: drop-shadow(.5cqw .6cqw .5cqw rgba(12, 9, 6, .6)) brightness(1.08) contrast(1.06) sepia(.1); pointer-events: none;
+  z-index: 1; /* Dan 2026-10-24: in front of the readings' shadow (the FOCUS blur + darken reached over its right half), then "make it more": brightness .86 -> 1.08 */ }
 .chalk img { width: 100%; display: block; }
 .chalk .txt { position: absolute; left: 14%; right: 14%; top: 9%; height: 54%; display: flex; flex-direction: column; justify-content: center; gap: .25cqw; text-align: center; color: rgba(244, 240, 230, .9); font: 400 1cqw/1.3 Marker; text-shadow: 0 0 .15cqw rgba(255,255,255,.35); filter: url(#chalk); }
 .chalk .txt { left: 17%; right: 17%; }
@@ -126,11 +160,9 @@ body.ng-tape .note::before, body.ng-tape .note::after { background: linear-gradi
 .pumpTip { left: 22%; top: 82%; width: 15.8%; text-align: center; font: 600 max(11px, .74cqw) Oswald; letter-spacing: .2em; color: var(--paper); text-transform: uppercase; opacity: 0; transition: opacity .25s; pointer-events: none; text-shadow: 0 1px 3px #000; }
 .pump:hover + .pumpTip { opacity: .9; }
 
-/* first-visit hint: every live prop pulses once */
+/* live props: keyboard focus only (the first-visit gold frames were cut, Dan 2026-10-23: "remove it") */
 .hot { outline: none; }
 .hot:focus-visible { box-shadow: 0 0 0 .2cqw var(--honey); }
-.pulse .ring { position: absolute; border: .15cqw solid rgba(242, 190, 74, .9); border-radius: 1cqw; animation: ring 1.4s ease-out 2 forwards; pointer-events: none; }
-@keyframes ring { from { opacity: .9; transform: scale(.96); } to { opacity: 0; transform: scale(1.12); } }
 
 /* readings on the right: the live GAS 1 hero's type and tone */
 .rd { left: calc(var(--rdx, 67.5) * 1%); top: 50%; width: 29%; isolation: isolate; transform-origin: 0 50%;
@@ -234,23 +266,48 @@ body[data-look] .rd .scr { text-shadow: 0 0 .9cqw rgba(232, 200, 120, .35); }
 /* service ticket (the mailbox / download form) */
 .veil { position: fixed; inset: 0; background: rgba(8, 5, 3, .62); display: grid; place-items: center; opacity: 0; pointer-events: none; transition: opacity .25s; z-index: 10; padding: 16px; }
 .veil.open { opacity: 1; pointer-events: auto; }
-.ticket { position: relative; width: min(420px, 100%); background: var(--paper); color: var(--ink); font: 15px/1.5 Elite, ui-monospace, monospace; padding: 26px 28px 24px; box-shadow: 0 30px 80px rgba(0,0,0,.6); transform: translateY(30px) rotate(-1.2deg); transition: transform .35s cubic-bezier(.2,.9,.25,1.2);
-  background-image: radial-gradient(rgba(120, 90, 50, .08) 1px, transparent 1.5px); background-size: 7px 7px; }
+/* two faces only: Bebas = what the station printed (title, stub, stamp), Elite = what got typed (everything else).
+   The button is the ticket's tear-off stub: perforated, punched at both ends, the honey "customer copy".
+   Hover = it starts to peel, submit = it tears off and drops, then the SENT stamp lands. */
+.ticket { position: relative; width: min(420px, 100%); color: var(--ink); font: 15px/1.5 Elite, ui-monospace, monospace; filter: drop-shadow(0 26px 30px rgba(0,0,0,.5)) drop-shadow(0 2px 2px rgba(0,0,0,.25)); transform: translateY(30px) rotate(-1.2deg); transition: transform .35s cubic-bezier(.2,.9,.25,1.2); }
 .veil.open .ticket { transform: translateY(0) rotate(-1.2deg); }
-.ticket::after { content: ""; position: absolute; left: 0; right: 0; bottom: -10px; height: 10px; background: linear-gradient(-45deg, transparent 6px, var(--paper) 0) 0 0 / 12px 10px, linear-gradient(45deg, transparent 6px, var(--paper) 0) 0 0 / 12px 10px; }
-.ticket h3 { margin: 0 0 4px; font: 400 26px/1 Bebas; letter-spacing: .08em; color: #a8321c; }
+.ticket .tk { position: relative; padding: 26px 28px 20px; background: var(--paper) radial-gradient(rgba(120, 90, 50, .08) 1px, transparent 1.5px) 0 0 / 7px 7px;
+  -webkit-mask: radial-gradient(circle 9px at 0 100%, #0000 97%, #000) left / 51% 100% no-repeat, radial-gradient(circle 9px at 100% 100%, #0000 97%, #000) right / 51% 100% no-repeat;
+  mask: radial-gradient(circle 9px at 0 100%, #0000 97%, #000) left / 51% 100% no-repeat, radial-gradient(circle 9px at 100% 100%, #0000 97%, #000) right / 51% 100% no-repeat; }
+.ticket h2 { margin: 0 0 4px; font: 400 26px/1 Bebas; letter-spacing: .08em; color: #a8321c; }
 .ticket .no { font-size: 12px; color: #6b5a40; letter-spacing: .1em; }
 .ticket hr { border: 0; border-top: 1px dashed #8c7a56; margin: 12px 0; }
+.ticket hr.dbl { border-top: 3px double #8c7a56; }
 .ticket .row { display: flex; justify-content: space-between; }
-.ticket .row.tot { font-weight: bold; font-size: 17px; }
-.ticket label { display: block; margin-top: 14px; font-size: 12px; letter-spacing: .14em; color: #6b5a40; }
-.ticket input { width: 100%; margin-top: 4px; font: 16px Elite, ui-monospace, monospace; color: var(--ink); background: transparent; border: 0; border-bottom: 1.5px solid #6b5a40; padding: 6px 2px; outline: none; }
+.ticket .row.tot { font-size: 18px; }
+.ticket label { display: block; margin-top: 16px; font-size: 12px; letter-spacing: .14em; color: #6b5a40; }
+.ticket input { width: 100%; margin-top: 4px; font: 16px Elite, ui-monospace, monospace; color: var(--ink); caret-color: #a8321c; background: transparent; border: 0; border-bottom: 1.5px solid #6b5a40; padding: 6px 2px; outline: none; }
 .ticket input:focus { border-bottom-color: #a8321c; }
-.ticket .go { margin-top: 18px; width: 100%; background: var(--honey); color: #1e1710; font: 700 15px Inter; padding: 13px; border-radius: 8px; }
 .ticket .fine { margin-top: 12px; font-size: 12px; color: #6b5a40; }
-.ticket .x { position: absolute; top: 10px; right: 12px; font: 22px/1 Inter; color: #6b5a40; }
-.stamp { position: absolute; right: 22px; top: 70px; padding: 6px 12px; border: 3px solid #b3261e; color: #b3261e; font: 400 30px/1 Bebas; letter-spacing: .1em; transform: rotate(-12deg) scale(1.6); opacity: 0; transition: .25s cubic-bezier(.2,.9,.25,1.4); }
-.ticket.sent .stamp { opacity: .85; transform: rotate(-12deg) scale(1); }
+.ticket .x { position: absolute; top: 10px; right: 12px; font: 22px/1 Elite, ui-monospace, monospace; color: #6b5a40; }
+.ticket .go { position: relative; display: block; width: 100%; text-align: left; color: #1e1710; transform-origin: 0 0; transition: transform .3s cubic-bezier(.3,.7,.3,1.3); }
+.ticket .go::after { content: ""; position: absolute; left: 0; right: 0; bottom: -10px; height: 10px; background: linear-gradient(-45deg, transparent 6px, var(--honey) 0) 0 0 / 12px 10px, linear-gradient(45deg, transparent 6px, var(--honey) 0) 0 0 / 12px 10px; }
+.ticket .go-face { display: grid; grid-template-columns: 1fr auto; align-items: center; column-gap: 12px; padding: 15px 28px 12px; background: var(--honey) radial-gradient(rgba(90, 60, 20, .1) 1px, transparent 1.5px) 0 0 / 7px 7px;
+  -webkit-mask: radial-gradient(circle 9px at 0 0, #0000 97%, #000) left / 51% 100% no-repeat, radial-gradient(circle 9px at 100% 0, #0000 97%, #000) right / 51% 100% no-repeat;
+  mask: radial-gradient(circle 9px at 0 0, #0000 97%, #000) left / 51% 100% no-repeat, radial-gradient(circle 9px at 100% 0, #0000 97%, #000) right / 51% 100% no-repeat; }
+.ticket .go-no { font-size: 11px; letter-spacing: .14em; color: rgba(30, 23, 16, .68); }
+.ticket .go-l { grid-column: 1; font: 400 34px/1 Bebas; letter-spacing: .06em; margin-top: 3px; }
+.ticket .go-arr { grid-column: 2; grid-row: 1 / 3; width: 30px; height: 18px; transition: transform .3s; }
+.ticket .perf, .ticket .snip { z-index: 1; } /* above the masked face (a mask makes its own layer) */
+.ticket .perf { position: absolute; left: 14px; right: 14px; top: -1px; height: 2px; background: repeating-linear-gradient(90deg, rgba(36, 26, 18, .55) 0 5px, transparent 5px 9px); }
+.ticket .snip { position: absolute; left: 24px; top: -10px; width: 20px; height: 20px; color: rgba(36, 26, 18, .75); transition: transform .45s cubic-bezier(.3,.7,.3,1); }
+@media (hover: hover) {
+  .ticket .go:hover { transform: translateY(2px) rotate(1deg); }
+  .ticket .go:hover .snip { transform: translateX(18px); }
+  .ticket .go:hover .go-arr { transform: translateX(4px); }
+}
+.ticket .go:active { transform: translateY(4px) rotate(2deg); }
+.ticket .go:focus-visible { outline: none; }
+.ticket .go:focus-visible .go-l { text-decoration: underline 2px; text-underline-offset: 4px; }
+.ticket.sent .go { transform: translate(8px, 130px) rotate(11deg); opacity: 0; visibility: hidden; pointer-events: none; transition: transform .7s cubic-bezier(.55,0,.85,.4), opacity .4s .3s, visibility 0s .7s; }
+.ticket.nofx .go, .ticket.nofx .stamp { transition: none !important; }
+.stamp { position: absolute; right: 22px; top: 70px; padding: 6px 12px; border: 3px solid #b3261e; color: #b3261e; font: 400 30px/1 Bebas; letter-spacing: .1em; mix-blend-mode: multiply; filter: url(#paint); transform: rotate(-12deg) scale(1.6); opacity: 0; transition: .25s cubic-bezier(.2,.9,.25,1.4); }
+.ticket.sent .stamp { opacity: .85; transform: rotate(-12deg) scale(1); transition-delay: .35s; }
 
 /* the real plugin (pump click) */
 .plug { width: min(560px, 96vw); height: min(86vh, 900px); border: 0; border-radius: 10px; box-shadow: 0 30px 80px rgba(0,0,0,.6); background: #120804; }
@@ -270,6 +327,9 @@ footer { padding: 40px 6vw; border-top: 1px solid #2a1c10; color: var(--dim); fo
 .tune button { flex: 1; background: #2a1c10; color: #efe9df; border: 1px solid #3a2410; border-radius: 4px; padding: 6px; font: 600 11px Inter; letter-spacing: .12em; }
 .tune button:hover { border-color: #e8c878; }
 .tuneBtn { position: fixed; right: 12px; bottom: 12px; z-index: 19; background: rgba(18,8,4,.8); color: #e8c878; border: 1px solid #3a2410; border-radius: 4px; padding: 5px 10px; font: 600 11px Inter; letter-spacing: .16em; }
+/* the dev chrome is opt-in, so the page itself ships clean (Dan 2026-10-26: "ready for publish"): the TUNE button and the
+   working-copy note show with ?dev / ?tune / ?bench / ?rbench, or for good on this browser once T has opened TUNE */
+html:not(.dev) .tuneBtn, html:not(.dev) .bench-note { display: none; }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 /* ?bench: the shared bench harness (bench.js) docks its 272px panel on the LEFT on this page: the readings live on the right edge */
 html.benching .bench-panel { right: auto !important; left: 0 !important; border-left: 0 !important; border-right: 1px solid #2c313a !important; }
@@ -362,11 +422,13 @@ body[data-look="0"].rs-dusk .dusk { display: block; }
     </button>
     <div class="abs radioCap" id="radioCap">Tap the radio</div>
 
-    <!-- 4. mailbox -->
+    <!-- 4. mailbox, the poster above it points at it -->
+    <button class="abs mp hot" id="mailPoster" aria-label="Mail me the keys: get GAS 2 by email"><img id="mpImg" src="props/poster-mail-1.webp" alt=""></button>
     <button class="abs mail hot" id="mail" aria-label="Get GAS 2 by email">
       <span class="tkt"></span><img src="props/mailbox.png" alt=""><span class="plate">GAS 2</span>
     </button>
-    <div class="abs mailCap">Mail me the keys</div>
+
+    <img class="abs walkCut" src="props/walk-cut.png" alt=""><!-- the sidewalk, back over the readings' shadow -->
 
     <!-- 5. chalkboard -->
     <div class="abs chalk" aria-label="Today's prices: Regular 0.00, Premium 0.00, Race 0.00">
@@ -395,18 +457,28 @@ body[data-look="0"].rs-dusk .dusk { display: block; }
 
 <div class="veil" id="veil" role="dialog" aria-modal="true" aria-label="Get GAS 2">
   <form class="ticket" id="ticket" autocomplete="on">
-    <button type="button" class="x" data-close aria-label="Close">×</button>
-    <h3>SERVICE TICKET</h3><div class="no">No. 0002 · REVAUDIO STATION</div>
-    <hr>
-    <div class="row"><span>GAS 2 · ALL THREE GRADES</span><span>1</span></div>
-    <div class="row"><span>FUEL FILTER</span><span>INCL.</span></div>
-    <hr>
-    <div class="row tot"><span>TOTAL</span><span>$0.00</span></div>
-    <label for="em">YOUR EMAIL</label>
-    <input id="em" type="email" required placeholder="you@studio.com">
-    <button class="go" type="submit">Mail me the keys</button>
-    <div class="fine">We email you the download link. No licence key, no card. (Mockup: nothing is sent.)</div>
-    <div class="stamp">SENT</div>
+    <div class="tk">
+      <button type="button" class="x" data-close aria-label="Close">×</button>
+      <h2>SERVICE TICKET</h2><div class="no">No. 0002 · REVAUDIO STATION</div>
+      <hr>
+      <div class="row"><span>GAS 2 · ALL THREE GRADES</span><span>1</span></div>
+      <div class="row"><span>FUEL FILTER</span><span>INCL.</span></div>
+      <hr class="dbl">
+      <div class="row tot"><span>TOTAL</span><span>$0.00</span></div>
+      <label for="em">YOUR EMAIL</label>
+      <input id="em" type="email" required placeholder="you@studio.com">
+      <div class="fine">We email you the download link. No licence key, no card. (Mockup: nothing is sent.)</div>
+      <div class="stamp">SENT</div>
+    </div>
+    <button class="go" type="submit">
+      <i class="perf" aria-hidden="true"></i>
+      <svg class="snip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.1 15.9M14.5 14.5 20 20M8.1 8.1 12 12"/></svg>
+      <span class="go-face">
+        <span class="go-no" aria-hidden="true">CUSTOMER COPY · No. 0002</span>
+        <span class="go-l">MAIL ME THE KEYS</span>
+        <svg class="go-arr" viewBox="0 0 30 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 9h25M19 2l8 7-8 7"/></svg>
+      </span>
+    </button>
   </form>
 </div>
 <div class="veil" id="plugVeil" role="dialog" aria-modal="true" aria-label="The GAS 2 plugin">
@@ -448,24 +520,14 @@ body[data-look="0"].rs-dusk .dusk { display: block; }
   const veil = $('#veil'), tk = $('#ticket');
   const open = v => { v.classList.add('open'); if (v === veil) setTimeout(() => $('#em').focus(), 200); };
   const close = () => $$('.veil').forEach(v => v.classList.remove('open'));
-  $('#mail').onclick = $('#cta').onclick = () => { tk.classList.remove('sent'); open(veil); };
+  // a fresh ticket each time: the torn stub snaps back without animating
+  $('#mail').onclick = $('#mailPoster').onclick = $('#cta').onclick = () => { tk.classList.add('nofx'); tk.classList.remove('sent'); void tk.offsetWidth; tk.classList.remove('nofx'); open(veil); };
   tk.onsubmit = e => { e.preventDefault(); tk.classList.add('sent'); };
   $$('.veil').forEach(v => v.addEventListener('click', e => { if (e.target === v || e.target.hasAttribute('data-close')) close(); }));
   addEventListener('keydown', e => e.key === 'Escape' && close());
 
   // pump -> the real plugin UI (served from the GAS2 repo)
   $('#pump').onclick = () => { const f = $('.plug'); if (!f.src) f.src = f.dataset.src; open($('#plugVeil')); };
-
-  // first visit: every live prop pulses once
-  setTimeout(() => {
-    const sc = $('#scene'), r0 = sc.getBoundingClientRect();
-    $$('.hot').forEach(h => {
-      const r = h.getBoundingClientRect(), ring = document.createElement('i'); ring.className = 'ring';
-      Object.assign(ring.style, { left: (r.left - r0.left) / r0.width * 100 + '%', top: (r.top - r0.top) / r0.height * 100 + '%', width: r.width / r0.width * 100 + '%', height: r.height / r0.height * 100 + '%' });
-      sc.appendChild(ring); setTimeout(() => ring.remove(), 3200);
-    });
-    sc.classList.add('pulse');
-  }, 1200);
 })();
 </script>
 <button class="tuneBtn" id="tuneBtn" data-bench-ignore title="Tune this section (T)">TUNE</button>
@@ -480,7 +542,20 @@ body[data-look="0"].rs-dusk .dusk { display: block; }
   <div class="row ng" id="t-rs"><label><input type="checkbox" data-rs="hug">Hug</label><label><input type="checkbox" data-rs="focus">Focus</label><label><input type="checkbox" data-rs="dusk">Dusk</label><label><input type="checkbox" data-rs="circle">Old circle</label></div>
   <h4 style="margin-top:14px">Notes on the glass</h4>
   <div class="row ng" id="t-ng"><label><input type="checkbox" data-ng="shadow">Shadow</label><label><input type="checkbox" data-ng="grade">Grade</label><label><input type="checkbox" data-ng="glass">Glass</label><label><input type="checkbox" data-ng="tape">Tape</label></div>
+  <h4 style="margin-top:14px">Mail poster</h4>
+  <div class="row looks" id="t-mp"><button data-mp="1">Red 1</button><button data-mp="2">Red 2</button><button data-mp="3">Yel 1</button><button data-mp="4">Yel 2</button></div>
 </div>
+<script>
+// TUNE → Mail poster: the 4 options on the wall; ?mp=1-4 wins (screenshots), else the last pick
+(() => {
+  const K = 'gas2page-b:mp', img = document.getElementById('mpImg');
+  const set = n => { img.src = `props/poster-mail-${n}.webp`; try { localStorage.setItem(K, n); } catch {}
+    document.querySelectorAll('#t-mp button').forEach(b => b.style.borderColor = b.dataset.mp === n ? '#e8c878' : ''); };
+  document.querySelectorAll('#t-mp button').forEach(b => b.onclick = () => set(b.dataset.mp));
+  let n = new URLSearchParams(location.search).get('mp'); if (!n) try { n = localStorage.getItem(K); } catch {}
+  set(/^[1-4]$/.test(n || '') ? n : '1');
+})();
+</script>
 <script>
 (() => {
   // NOTES ON THE GLASS layers: body classes ng-shadow / ng-grade / ng-glass / ng-tape, all on by default; ?ng=1010 wins (screenshots)
@@ -505,7 +580,9 @@ body[data-look="0"].rs-dusk .dusk { display: block; }
     try { localStorage.setItem(K, JSON.stringify(v)); } catch {}
   };
   for (const k in D) document.getElementById('t-' + k).oninput = e => { v[k] = +e.target.value; apply(); };
-  const toggle = () => panel.classList.toggle('open');
+  const html = document.documentElement, DEV = 'gas2page-b:dev';
+  try { if (/[?&](dev|tune|bench|rbench)(=|&|$)/.test(location.search) || localStorage.getItem(DEV)) html.classList.add('dev'); } catch {}
+  const toggle = () => { panel.classList.toggle('open'); html.classList.add('dev'); try { localStorage.setItem(DEV, '1'); } catch {} };
   document.getElementById('tuneBtn').onclick = toggle;
   addEventListener('keydown', e => { if ((e.key === 't' || e.key === 'T') && !/INPUT|TEXTAREA/.test(e.target.tagName)) toggle(); });
   document.getElementById('t-reset').onclick = () => { v = { ...D }; apply(); };
