@@ -251,6 +251,11 @@ words first, window under them.
   paint on the step that is next) were tried on `bench/drift-hear-bench.html` and dropped (laptop 1 user, 2026-10-28:
   "remove the pink arrows"); the lamp-lit breath above stays the only "next" cue. A sprayed ring round DRIFT had already
   gone: on a lamp-lit button it read as the button's own magenta light.
+- DO give a level a fader, and give one part one control language. /drift #hear's VOLUME is the page's own #drive fader
+  (`DriftFader.astro` look: the plugin's vertical slot, chrome cap, violet fill, so it stays a step behind DRIFT's
+  magenta), not a round knob beside the round DRIFT button (laptop 1 user, 2026-10-28: "let's use a fader for volume
+  instead of a knob"). It stands on the knob's old centre line, its cap travelling the DRIFT ring's height; the
+  VOLUME readout sits on ORIGINAL / DRIFT's line. Tried on `bench/drift-hear-bench.html` (VOLUME KNOB / FADER).
 
 ## 10. History + open questions (for Dan)
 

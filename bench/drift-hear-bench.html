@@ -62,6 +62,7 @@ h1 { font: 800 24px/1.1 system-ui; margin: 0 0 6px; }
     <span class="grp"><b>CONTROLS</b><button data-k="ctl" data-v="split" aria-pressed="true">SPLIT</button><button data-k="ctl" data-v="plate">ONE PLATE</button><button data-k="ctl" data-v="unit">HEAD UNIT</button><button data-k="ctl" data-v="flush">FLUSH</button></span>
     <span class="grp"><b>FLOOR</b><button data-k="floor" data-v="wall">WALL</button><button data-k="floor" data-v="steel" aria-pressed="true">DRIFT STEEL</button></span>
     <span class="grp"><b>LCD</b><button data-k="lcd" data-v="cut">CUT</button><button data-k="lcd" data-v="framed" aria-pressed="true">FRAMED</button></span>
+    <span class="grp"><b>VOLUME</b><button data-k="vol" data-v="knob">KNOB</button><button data-k="vol" data-v="fader" aria-pressed="true">FADER</button></span>
     <label>VEIL <input type="range" id="veil" min="0" max="50" value="18"><output id="veilo"></output></label>
     <label>PHONE Y <input type="range" id="px" min="0" max="100" value="0"><output id="pxo"></output></label>
   </div>
@@ -84,7 +85,7 @@ h1 { font: 800 24px/1.1 system-ui; margin: 0 0 6px; }
 <script>
 const PLATE = '/bench/drift-panel/panel3.webp', PW = 2560, PH = 1024;
 const PLATE_P = '/bench/drift-panel/panel3-portrait.webp', PPW = 1024, PPH = 1536;
-const st = { look: 'e', up: 'a', floor: 'steel', ctl: 'flush', lcd: 'framed', veil: 18, px: 0 };   // B (sprayed arrows) dropped 2026-10-28: "remove the pink arrows"; its code stays for benchSet only. FLOOR: DRIFT STEEL picked 2026-10-28 ("Drift wall i like")
+const st = { look: 'e', up: 'a', floor: 'steel', ctl: 'flush', lcd: 'framed', vol: 'fader', veil: 18, px: 0 };   // B (sprayed arrows) dropped 2026-10-28: "remove the pink arrows"; its code stays for benchSet only. FLOOR: DRIFT STEEL picked 2026-10-28 ("Drift wall i like")
 // CONTROLS (the user, 2026-10-26, on the PLAY / PUSH DRIFT row: "just this section doesn't feel glued to me"): which
 // parts get a pocket of their own. SPLIT = step 2 and step 3 each a box; ONE PLATE = both steps in one pocket, an
 // engraved groove between; HEAD UNIT = the LCD and the controls on one face, like a car stereo; FLUSH = no box, the
@@ -196,6 +197,22 @@ const cssCtl = () => {
   return s;
 };
 
+// VOLUME (the user, 2026-10-28: "let's use a fader for volume instead of a knob"): FADER = the page's own fader
+// (DriftFader.astro in #drive: the plugin's vertical fader, chrome cap, lit fill; violet = INTENSITY's ink, so VOLUME
+// stays a step behind DRIFT's magenta) standing on the knob's centre line, its travel as tall as the DRIFT ring. The
+// knob stays in the layout, hidden, so nothing else moves
+const cssVol = () => st.vol !== 'fader' ? '' : `
+#hear .d-vol { visibility: hidden; }
+#hear .d-hear-controls { position: relative; }
+#hear .bx-vfad { --fad: #b46bff; --fad-rgb: 180, 107, 255; position: absolute; flex: none; margin: 0; min-height: 0; z-index: 1; }
+@media (max-width: 600px) {   /* the phone's DRIFT ring is ~80 px tall: a smaller cap keeps the travel */
+  #hear .bx-vfad { width: 42px; }
+  #hear .bx-vfad::before, #hear .bx-vfad .d-fad-fill { width: 10px; }
+  #hear .bx-vfad .d-fad-thumb { width: 34px; height: 17px; }
+  #hear .bx-vfad .d-fad-thumb::after { left: 6px; right: 6px; }
+}
+`;
+
 const cssUp = () => {
   if (st.up === '0') return '';
   let s = `
@@ -255,13 +272,14 @@ const CRACK_LCD = '<span class="bx-crack lcd" aria-hidden="true"></span>';
 const CRACK_CRT = '<span class="bx-crack crt" aria-hidden="true"></span>';
 const ARROW_PLAY = '<span class="bx-spray bx-arrow play" aria-hidden="true"></span>';
 const ARROW_DRIFT = '<span class="bx-spray bx-arrow drift" aria-hidden="true"></span>';
+const VFAD = '<div class="bx-vfad d-fad-slot" role="slider" tabindex="0" aria-label="Volume" aria-orientation="vertical" aria-valuemin="0" aria-valuemax="100"><span class="d-fad-fill"></span><span class="d-fad-thumb"></span></div>';
 const BORE = (t) => `<span class="bx-bore" data-t="${t}" aria-hidden="true"></span>`;
 const NOISE = `url("data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="7"/><feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 -2.2 1.9"/></filter><rect width="160" height="160" filter="url(#n)"/></svg>')}")`;
 
 const parts = (d, on) => {
   const hear = d.getElementById('hear'); if (!hear) return;
   hear.style.setProperty('--bx-noise', NOISE);
-  d.querySelectorAll('#hear .bx-crack, #hear .bx-spray, #hear .bx-bore').forEach((e) => e.remove());
+  d.querySelectorAll('#hear .bx-crack, #hear .bx-spray, #hear .bx-bore, #hear .bx-vfad').forEach((e) => e.remove());
   const scr = hear.querySelector('.d-hear-screen'), box = hear.querySelector('.bx-lcdbox'), framed = on && st.lcd === 'framed';
   if (framed && scr && !box) { const b = d.createElement('div'); b.className = 'bx-lcdbox'; scr.before(b); b.append(scr); }
   if (!framed && box) box.replaceWith(...box.childNodes);
@@ -273,6 +291,31 @@ const parts = (d, on) => {
     const sb = hear.querySelector('.d-start'); if (sb) sb.insertAdjacentHTML('afterbegin', BORE('pb'));
     const caps = hear.querySelector('.d-hear-caps'); if (caps) caps.querySelectorAll('.d-hear-mount').forEach((m, i) => caps.insertAdjacentHTML('afterbegin', BORE('m' + i)));
   }
+  if (st.vol === 'fader') { const ctl = hear.querySelector('.d-hear-controls'); if (ctl) { ctl.insertAdjacentHTML('beforeend', VFAD); wireFader(d, ctl.querySelector('.bx-vfad')); } }
+};
+// the bench fader drives the page's own volume through the hidden knob's keys (hear.ts: Home = 0, ArrowUp = +5 %), so
+// the sound and the VOLUME readout stay the page's; 5 % steps here. At the fold hear.ts drives a real fader with
+// faders.ts (1 % steps) instead
+const wireFader = (d, slot) => {
+  const knob = d.querySelector('#hear [data-hear-vol]'); if (!slot || !knob) return;
+  const K = d.defaultView.KeyboardEvent, key = (k) => knob.dispatchEvent(new K('keydown', { key: k, bubbles: true, cancelable: true }));
+  const fill = slot.querySelector('.d-fad-fill'), thumb = slot.querySelector('.d-fad-thumb');
+  let v = (+knob.getAttribute('aria-valuenow') || 0) / 100;
+  const paint = () => { const p = `${(v * 100).toFixed(2)}%`; fill.style.height = p; thumb.style.bottom = p; slot.setAttribute('aria-valuenow', String(Math.round(v * 100))); };
+  const set = (next) => {
+    const n = Math.round(Math.min(1, Math.max(0, next)) * 20); if (n === Math.round(v * 20)) return;
+    v = n / 20; key('Home'); for (let i = 0; i < n; i++) key('ArrowUp'); paint();
+  };
+  const fromY = (y) => { const r = slot.getBoundingClientRect(); return 1 - (y - r.top) / r.height; };
+  slot.addEventListener('pointerdown', (e) => { if (e.button !== 0) return; e.preventDefault(); slot.focus({ preventScroll: true }); slot.setPointerCapture(e.pointerId); set(fromY(e.clientY)); });
+  slot.addEventListener('pointermove', (e) => { if (slot.hasPointerCapture(e.pointerId)) set(fromY(e.clientY)); });
+  slot.addEventListener('keydown', (e) => {
+    const step = { ArrowUp: .05, ArrowRight: .05, ArrowDown: -.05, ArrowLeft: -.05, PageUp: .2, PageDown: -.2 }[e.key];
+    if (step !== undefined) set(v + step); else if (e.key === 'Home') set(0); else if (e.key === 'End') set(1); else return;
+    e.preventDefault();
+  });
+  slot.addEventListener('dblclick', () => set(.8));
+  paint();
 };
 // the pocket floors continue the wall: each floor shows the plate at the place it was cut from (cover + position maths)
 const align = (w) => {
@@ -296,6 +339,20 @@ const align = (w) => {
     a.style.left = `${r.left + fx * r.width - a.offsetWidth - h.left + o.x}px`; a.style.top = `${r.top + fy * r.height - a.offsetHeight - h.top + o.y}px`;
   };
   arrow('play', 'arrowPlay', '.d-hear-play', .35, 0); arrow('drift', 'arrowDrift', '.d-start-pb', .03, .85);
+  // the VOLUME fader on the knob's centre line; the cap's centre travels the DRIFT ring's height, so the cap's ends
+  // land on the ring's top and bottom lines; never into the VOLUME readout under it (the phone's sits beside the ring)
+  const fad = d.querySelector('#hear .bx-vfad'), vk = d.querySelector('#hear .d-vol'), vr = d.querySelector('#hear [data-hear-vol-read]');
+  const ring = [...d.querySelectorAll('#hear .d-start-ticks i')].map((e) => e.getBoundingClientRect()).filter((r) => r.width);
+  // the VOLUME readout on ORIGINAL / DRIFT's line (TIGHT's shared baseline; the phone's sat beside the ring, where it
+  // left the fader no travel)
+  const ab = d.querySelector('#hear .d-hear-ab');
+  if (vr) { vr.style.position = ''; vr.style.top = ''; }
+  if (fad && vr && ab) { const dy = ab.getBoundingClientRect().top - vr.getBoundingClientRect().top; if (dy > 0) { vr.style.position = 'relative'; vr.style.top = `${dy}px`; } }
+  if (fad && vk && vr && ring.length) {
+    const h = fad.parentElement.getBoundingClientRect(), c = vk.getBoundingClientRect(), half = fad.querySelector('.d-fad-thumb').offsetHeight / 2;
+    const top = Math.min(...ring.map((r) => r.top)), bot = Math.min(Math.max(...ring.map((r) => r.bottom)), vr.getBoundingClientRect().top - 6);
+    Object.assign(fad.style, { left: `${c.left + c.width / 2 - h.left - fad.offsetWidth / 2}px`, top: `${top + half - h.top}px`, height: `${bot - top - 2 * half}px` });
+  }
   for (const el of d.querySelectorAll('#hear .d-hear-tv, #hear .d-hear-step, #hear .d-hear-controls, #hear .d-hear-deck, #hear .bx-lcdbox')) {
     const r = el.getBoundingClientRect();
     el.style.setProperty('--fx', `${x0 - (r.left - P.left)}px`); el.style.setProperty('--fy', `${y0 - (r.top - P.top)}px`);
@@ -308,7 +365,7 @@ const apply = () => {
     const d = f.contentDocument, w = f.contentWindow; if (!d || !d.head) continue;
     let el = d.getElementById('hear-bench'); if (!el) { el = d.createElement('style'); el.id = 'hear-bench'; d.head.append(el); }
     const on = st.look === 'e';
-    el.textContent = on ? cssLook() + cssFloor() + cssCtl() + cssUp() : '#cookie-banner { display: none !important; }';
+    el.textContent = on ? cssLook() + cssFloor() + cssCtl() + cssUp() + cssVol() : '#cookie-banner { display: none !important; }';
     parts(d, on); installEditor(f); readBases(f); renderTune(f); requestAnimationFrame(() => { align(w); drawOverlay(f); });
     if (on && Object.keys(bases.d).length && Object.keys(bases.p).length) postTune();   // both frames measured: send what this browser holds
     if (!w.__bxAlign) { w.__bxAlign = true; w.addEventListener('resize', () => align(w)); }
@@ -343,6 +400,7 @@ const TUNABLE = {
   drift: { label: 'DRIFT button', sel: '.d-start' },
   ab: { label: 'ORIGINAL / DRIFT', sel: '.d-hear-ab' },
   vol: { label: 'VOLUME knob', sel: '.d-vol' },
+  fader: { label: 'VOLUME fader', sel: '.bx-vfad' },
   volLbl: { label: 'VOLUME readout', sel: '[data-hear-vol-read]' },
   arrowPlay: { label: 'arrow at PLAY', sel: '.bx-arrow.play', origin: '100% 100%' },   // grows from its tip
   arrowDrift: { label: 'arrow at DRIFT', sel: '.bx-arrow.drift', origin: '100% 100%' },
@@ -357,7 +415,7 @@ let postT = 0;
 const postTune = () => {
   clearTimeout(postT);
   postT = setTimeout(() => fetch('/__bench/save', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Bench-Save': '1' },
-    body: JSON.stringify({ tune, bases, view: { ctl: st.ctl, up: st.up, floor: st.floor, veil: st.veil }, saved: new Date().toISOString() }) }).catch(() => {}), 400);
+    body: JSON.stringify({ tune, bases, view: { ctl: st.ctl, up: st.up, floor: st.floor, lcd: st.lcd, vol: st.vol, veil: st.veil }, saved: new Date().toISOString() }) }).catch(() => {}), 400);
 };
 const saveTune = () => { try { localStorage.setItem(TKEY, JSON.stringify(tune)); } catch (e) { /* not saved, still works */ } postTune(); };
 const tk = (w) => (w.innerWidth <= 600 ? 'p' : 'd');
@@ -414,7 +472,7 @@ const drawAll = () => frames().forEach(drawOverlay);
 const hit = (d, x, y) => {
   let best = null, area = Infinity;
   for (const n of Object.keys(TUNABLE)) {
-    const el = partEl(d, n); if (!el) continue; const r = el.getBoundingClientRect();
+    const el = partEl(d, n); if (!el || d.defaultView.getComputedStyle(el).visibility === 'hidden') continue; const r = el.getBoundingClientRect();
     if (!r.width || x < r.left || x > r.right || y < r.top || y > r.bottom) continue;
     if (r.width * r.height < area) { area = r.width * r.height; best = n; }
   }
@@ -518,7 +576,7 @@ for (const b of document.querySelectorAll('[data-layout]')) b.addEventListener('
 { const L = new URLSearchParams(location.search).get('layout'); if (L && /^[a-z0-9-]+$/.test(L)) loadLayout(L); }
 syncPanel();
 
-// test hook: window.benchSet({look, up, floor, ctl, lcd, veil, px})
+// test hook: window.benchSet({look, up, floor, ctl, lcd, vol, veil, px})
 window.benchSet = (o) => { Object.assign(st, o); apply(); };
 </script>
 </body>
