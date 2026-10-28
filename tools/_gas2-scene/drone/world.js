@@ -1,9 +1,12 @@
 // GAS 2 page · drone intro v2 (revaudio-59, 2026-10-28): the station as a 3D set in metres. x = east (the page's
 // right), y = up, z = south (behind the landing camera). The landing camera is the page's own: f = 1500 px on the
 // 1536 x 1024 frame, eye 1.33 m, the shop wall 6.6 m ahead.
-// BLOCKOUT: every texture here is drawn on a canvas as a stand-in; the painted ones (made from the page frame) replace
-// them later. What is exact already: img/land.webp (page-b's own scene, drone/tools/render-landing.cjs) on a quad that
-// fills the landing camera's view, so any frame taken from the landing spot IS the page.
+// The art (2026-10-28, gpt-image-2, drone/tools/: ortho guide -> gen-edit.sh -> post-art.py): img/aerial.webp = the set
+// from straight above (ground, sidewalk and roof tops, AER), img/near.webp = the ground round the landing spot close up
+// (RN, loads after the hover shows), img/car.webp = the car from above. Walls and props stay blockout boxes: the TOP
+// flight never sees them (the page frame takes over first). Exact: img/land.webp (page-b's own scene,
+// drone/tools/render-landing.cjs) on a quad that fills the landing camera's view, so any frame from the landing spot IS
+// the page.
 import * as THREE from './vendor/three.module.min.js';
 export { THREE };
 
@@ -82,14 +85,19 @@ function groundTex(r, px) {   // r = {x0, z0, w, h} in metres
 // then the landing frame projected from the landing camera, faded in by uA near touchdown
 const VS = `varying vec3 vW; varying vec3 vN; varying vec2 vUv;
 void main() { vec4 w = modelMatrix * vec4(position, 1.); vW = w.xyz; vN = normalize(mat3(modelMatrix) * normal); vUv = uv; gl_Position = projectionMatrix * viewMatrix * w; }`;
-const FS = `uniform sampler2D map, mapN, mapA; uniform vec3 color, eyeA, fogCol; uniform vec4 rect, rectN; uniform mat4 projA;
-uniform float mode, hasNear, uA, ground, fogNear, fogFar;
+const FS = `uniform sampler2D map, mapM, mapN, mapA; uniform vec3 color, eyeA, fogCol; uniform vec4 rect, rectM, rectN; uniform mat4 projA;
+uniform float mode, hasMid, hasNear, uA, ground, fogNear, fogFar;
 varying vec3 vW; varying vec3 vN; varying vec2 vUv;
 void main() {
   vec3 c = color;
   if (mode > .5) {
     vec2 uv = mode > 1.5 ? vec2((vW.x - rect.x) / rect.z, 1. - (vW.z - rect.y) / rect.w) : vUv;
     c = (uv.x < 0. || uv.x > 1. || uv.y < 0. || uv.y > 1.) ? color : texture2D(map, uv).rgb;
+    if (hasMid > .5) {
+      vec2 um = vec2((vW.x - rectM.x) / rectM.z, 1. - (vW.z - rectM.y) / rectM.w);
+      float e = min(min(um.x, 1. - um.x), min(um.y, 1. - um.y));
+      if (e > 0.) c = mix(c, texture2D(mapM, um).rgb, smoothstep(0., .02, e));
+    }
     if (hasNear > .5) {
       vec2 un = vec2((vW.x - rectN.x) / rectN.z, 1. - (vW.z - rectN.y) / rectN.w);
       float e = min(min(un.x, 1. - un.x), min(un.y, 1. - un.y));
@@ -122,17 +130,21 @@ export async function buildWorld() {
   const mats = [];
   const mat = (o = {}) => {
     const m = new THREE.ShaderMaterial({ vertexShader: VS, fragmentShader: FS, uniforms: { ...shared,
-      map: { value: o.map || null }, mapN: { value: o.mapN || null }, color: { value: new THREE.Color(o.color || FIELD) },
-      rect: { value: new THREE.Vector4(...(o.rect || [0, 0, 1, 1])) }, rectN: { value: new THREE.Vector4(...(o.rectN || [0, 0, 1, 1])) },
-      mode: { value: o.rect ? 2 : o.map ? 1 : 0 }, hasNear: { value: o.mapN ? 1 : 0 }, ground: { value: o.ground ? 1 : 0 } } });
+      map: { value: o.map || null }, mapM: { value: o.mapM || null }, mapN: { value: o.mapN || null }, color: { value: new THREE.Color(o.color || FIELD) },
+      rect: { value: new THREE.Vector4(...(o.rect || [0, 0, 1, 1])) }, rectM: { value: new THREE.Vector4(...(o.rectM || [0, 0, 1, 1])) },
+      rectN: { value: new THREE.Vector4(...(o.rectN || [0, 0, 1, 1])) },
+      mode: { value: o.rect ? 2 : o.map ? 1 : 0 }, hasMid: { value: o.mapM ? 1 : 0 }, hasNear: { value: o.mapN ? 1 : 0 }, ground: { value: o.ground ? 1 : 0 } } });
     mats.push(m); return m;
   };
 
-  // ground: a far texture (160 m, ~5 cm a pixel) and a near one round the landing spot (~6 mm a pixel)
-  const RF = [-80, -80, 160, 160], RN = [-6, -6.8, 12, 9.2];
+  // ground: a far blockout texture (160 m, ~5 cm a pixel; only the angled hovers see past the aerial), the aerial
+  // (39 x 26 m round the hover, ~1.5 cm a pixel) and the close-up round the landing spot (12 x 8 m, ~5 mm a pixel)
+  const RF = [-80, -80, 160, 160], AER = [-23.5, -19, 39, 26], RN = [-6, -6.6, 12, 8];   // AER + RN: as drone/tools/post-art.py
   const gFar = groundTex({ x0: RF[0], z0: RF[1], w: RF[2], h: RF[3] }, 19.2);
-  const gNear = groundTex({ x0: RN[0], z0: RN[1], w: RN[2], h: RN[3] }, 170);
-  const groundMat = mat({ map: gFar, rect: RF, mapN: gNear, rectN: RN, ground: true });
+  const art = name => { const t = new THREE.TextureLoader().loadAsync(new URL(`img/${name}.webp`, import.meta.url).href); return t.then(x => { x.anisotropy = 8; return x; }); };
+  const [aerial, carTex] = await Promise.all([art('aerial'), art('car')]);
+  const groundMat = mat({ map: gFar, rect: RF, mapM: aerial, rectM: AER, rectN: RN, ground: true });
+  art('near').then(t => { groundMat.uniforms.mapN.value = t; groundMat.uniforms.hasNear.value = 1; }).catch(() => { /* the aerial carries it */ });
   const ground = new THREE.Mesh(new THREE.PlaneGeometry(1200, 1200), groundMat);
   ground.rotation.x = -Math.PI / 2; scene.add(ground);
 
@@ -154,17 +166,8 @@ export async function buildWorld() {
   });
   const stucco = mat({ color: '#7f7668' }), dark = mat({ color: '#2f2a25' });
   box(-12, .85, 0, 3.6, -15.5, -6.6, [stucco, stucco, dark, dark, mat({ map: wallTex }), stucco]);
-  const roofTex = canvasTex(1510, 1000, g => {
-    g.fillStyle = '#56514a'; g.fillRect(0, 0, 1510, 1000);
-    const R = rng(5); for (let i = 0; i < 9000; i++) { g.fillStyle = `rgba(${R() < .5 ? '230,220,200' : '10,8,6'},${.04 + R() * .08})`; g.fillRect(R() * 1510, R() * 1000, 2 + R() * 3, 2 + R() * 3); }
-    g.strokeStyle = 'rgba(0,0,0,.18)'; g.lineWidth = 3; for (let y = 90; y < 1000; y += 90) { g.beginPath(); g.moveTo(0, y); g.lineTo(1510, y); g.stroke(); }
-    g.fillStyle = '#3e3a35'; g.fillRect(380, 200, 90, 90); g.fillRect(540, 200, 90, 90);   // vents
-    g.save(); g.translate(840, 470); g.font = '700 300px Oswald, Arial Narrow, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.fillStyle = 'rgba(232,220,192,.78)'; g.fillText('GAS', -80, 0); g.fillStyle = 'rgba(184,52,30,.85)'; g.fillText('2', 215, 0); g.restore();
-    g.strokeStyle = '#3a3631'; g.lineWidth = 22; g.strokeRect(0, 0, 1510, 1000);       // parapet
-  });
-  const fascia = mat({ color: '#3a3530' });
-  box(-12.5, 2.6, 3.6, 4.1, -15.5, -5.5, [fascia, fascia, mat({ map: roofTex }), mat({ color: '#2a2622' }), fascia, fascia]);
+  const fascia = mat({ color: '#3a3530' });   // the roof top = the aerial (its painted GAS2, vents and parapet)
+  box(-12.5, 2.6, 3.6, 4.1, -15.5, -5.5, [fascia, fascia, mat({ map: aerial, rect: AER }), mat({ color: '#2a2622' }), fascia, fascia]);
   const curb = mat({ color: '#9b9183' });
   box(-12, 3.0, 0, .18, -6.6, -4.8, [curb, curb, groundMat, curb, curb, curb]);
 
@@ -206,7 +209,7 @@ export async function buildWorld() {
   const quad = new THREE.Mesh(new THREE.PlaneGeometry(qh * 1.5, qh), quadMat);
   quad.position.set(0, EYE, -D); quad.renderOrder = 10; quad.frustumCulled = false; scene.add(quad);
 
-  const car = await makeCar(scene);
+  const car = makeCar(scene, carTex);
   return {
     scene, car,
     set(o) {
@@ -218,7 +221,7 @@ export async function buildWorld() {
 }
 
 // ---- the car (Dan: right to left on the road, once per load, "CATCH YOUR COUPON" on the roof, read from the drone)
-async function makeCar(scene) {
+function makeCar(scene, carTex) {
   const g = new THREE.Group(); g.position.set(40, 0, -2.4); g.visible = false; scene.add(g);
   const basic = (c, o = {}) => new THREE.MeshBasicMaterial({ color: c, ...o });
   const add = (geo, m, x, y, z) => { const o = new THREE.Mesh(geo, m); o.position.set(x, y, z); g.add(o); return o; };
@@ -226,11 +229,8 @@ async function makeCar(scene) {
   const sh = add(new THREE.PlaneGeometry(6.4, 3), basic(0xffffff, { map: shadow, transparent: true, depthWrite: false }), .3, .02, .35); sh.rotation.x = -Math.PI / 2;
   const beam = canvasTex(256, 128, c => { const gr = c.createLinearGradient(256, 0, 0, 0); gr.addColorStop(0, 'rgba(255,214,140,.55)'); gr.addColorStop(1, 'rgba(255,214,140,0)'); c.fillStyle = gr; c.beginPath(); c.moveTo(256, 44); c.lineTo(0, 0); c.lineTo(0, 128); c.lineTo(256, 84); c.fill(); });
   const bm = add(new THREE.PlaneGeometry(9, 4.2), basic(0xffffff, { map: beam, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }), -7, .03, 0); bm.rotation.x = -Math.PI / 2;
-  add(new THREE.BoxGeometry(4.9, .62, 1.9), basic('#7ea69a'), 0, .62, 0);                 // body
-  add(new THREE.BoxGeometry(4.95, .1, 1.94), basic('#d9d2c0'), 0, .5, 0);                  // chrome strip
-  add(new THREE.BoxGeometry(2.5, .5, 1.62), basic('#1d2830'), .25, 1.18, 0);               // cabin glass
-  for (const [x, z] of [[-1.5, .9], [1.5, .9], [-1.5, -.9], [1.5, -.9]]) { const w = add(new THREE.CylinderGeometry(.36, .36, .26, 16), basic('#151311'), x, .36, z); w.rotation.x = Math.PI / 2; }
-  for (const z of [-.6, .6]) { add(new THREE.BoxGeometry(.06, .16, .3), basic('#fff1c8'), -2.46, .7, z); add(new THREE.BoxGeometry(.06, .14, .22), basic('#d0352a'), 2.46, .72, z); }
+  const body = add(new THREE.PlaneGeometry(5, 5 / 2.472), basic(0xffffff, { map: carTex, transparent: true, depthWrite: false }), 0, 1.2, 0);   // the car from above (img/car.webp)
+  body.rotation.x = -Math.PI / 2;
   const sign = canvasTex(1024, 400, c => {
     c.fillStyle = '#efe6d2'; c.fillRect(0, 0, 1024, 400);
     c.strokeStyle = '#b8341e'; c.lineWidth = 22; c.strokeRect(11, 11, 1002, 378);

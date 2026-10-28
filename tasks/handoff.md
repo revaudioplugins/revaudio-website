@@ -1,6 +1,6 @@
 ## 2026-10-28 — GAS 2 page: the drone intro, from scratch (Claude Code `revaudio-59`, laptop 1) — BRANCH `feat/gas2-drone`
 
-Claim: OPEN `revaudio-59`. Scene + bench + camera bench (`?cam`) BUILT with placeholder art (2026-10-28). Dan picked the DEFAULT camera; next = the real art (waiting on his cost OK).
+Claim: OPEN `revaudio-59`. Scene + benches BUILT; Dan picked the DEFAULT camera (TOP); the REAL ART is in (gpt-image-2, 2026-10-28, ~$1.50). Waiting on Dan's look.
 Files: NEW `tools/_gas2-scene/drone/**`; in `page-b.html` ONE `<link>` + `<script>` line (after the radio
 line), nothing else of page-b's; one README line pair; `tasks/todo.md` (the "GAS 2 drone descent" section); this entry.
 - Dan: a hovering drone above the station; scroll down = it comes down into the final scene, then GAS 2 pops and the right
@@ -49,6 +49,18 @@ line), nothing else of page-b's; one README line pair; `tasks/todo.md` (the "GAS
   free plan; its video (first/last frame) would lose the exact hand-off and the bench path, garble the roof text, and
   need an image-sequence scrub (MBs). Art list + cost asked: aerial orthophoto (roof, field, road), the close road, the
   car top-down (transparent), ~8-10 images with retakes, ~$3-5.
+- Art DONE (Dan: "approved", 2026-10-28): 3 gpt-image-2 images, one take each (~$1.50 est. at $40/M output tokens:
+  12.7k + 12.7k + 11k): the aerial (3072x2048 over an ortho guide of the set, the page frame as reference), the close
+  road (over the aerial's crop, the photo's paving as reference), the car (2 takes, magenta, keyed; take 1). Pipeline +
+  commands: `drone/README.md` "The art"; originals q95 in design-assets `gas2-drone/` (`504c75e`). Post fixes: lane
+  edge softened, close road toned to the aerial (no patch in the hover), the AI's orange lamp pool on the road tamed to
+  the page photo's road colour (seam: near 123/97/72 vs photo 122/97/80). Model facts: gpt-image-2 takes any size in
+  multiples of 16 (3072x2048 worked), no transparent background.
+- Checked (headless Edge, `check.cjs` top, 1440x900 + 390x844): landed = `?drone=0` mean 0.00; landing frame 2.55 /
+  1.47 (unchanged); no errors. Weight now: three 744 KB + land 703 + aerial 569 + car 103 KB (+ near 1.1 MB after the
+  hover shows) = ~2.1 MB before the hover, ~3.2 MB in all. Not checked: WebKit, a real phone.
+- Open: the roof board on the car is still drawn text (crisp, readable; looks graphic next to the photo car); the coupon
+  code (a real Paddle code from Dan); Dan's look.
 
 ## 2026-10-26 — GAS 2 page: the drone intro (hover above the station, scroll = descent, land, readings pop) (Claude Code `danavivi-19`, Dan's Mac) — BRANCH `feat/gas2-page`
 

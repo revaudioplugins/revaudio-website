@@ -13,7 +13,7 @@ Dan's order (2026-10-28): finish the scene with placeholders first, then generat
       exact landing frame vs the page scene 2.55 / 1.47; no errors; classes, runway and layer gone, scroll 0.
 - [x] 1a. Camera bench (`?cam`): free hover camera + landing timing, one exact path for every angle.
 - [x] 1. Dan picked the camera: the default (TOP), 2026-10-28.
-- [ ] 4b. Real art (cost confirmed first; OpenAI images): near road under the frame (fixes the seam + the close-up
+- [x] 4b. Real art (Dan OK'd 2026-10-28; ~$1.50, 3 gpt-image-2 images: aerial, close road, car; `drone/README.md` "The art"): near road under the frame (fixes the seam + the close-up
       asphalt), roof + field aerial, the car (top-down sprite). The roof board stays text-only until Dan names a real
       Paddle code and what catching it does.
 - [ ] 5b. QA again + 1141x636, WebKit, reduced motion, no-WebGL, weight <= 2.5 MB, frame time.

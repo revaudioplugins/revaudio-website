@@ -4,8 +4,9 @@ Dan, 2026-10-28: a drone hovers above the station; scrolling brings it down into
 out and the readings pop in fast. A car drives right to left on load with **CATCH YOUR COUPON** on its roof, readable
 from the hover. One flight per load (scrolling back up does not fly back). Owner: Claude Code `revaudio-59`.
 
-State: the scene and the bench are built; the art is placeholder (procedural canvas textures on boxes). The real art
-(ground, roof, field, car) is the next step, after Dan picks a hover angle.
+State: Dan picked the default camera (TOP). The flight's art is real (gpt-image-2, 2026-10-28): the aerial (field, roof,
+road), the close-up road round the landing spot and the car. Walls and props stay blockout boxes; the TOP flight never
+sees them (the page frame takes over first). The angled presets still see past the aerial onto the blockout ground.
 
 ## Run it
 
@@ -50,6 +51,24 @@ change in the code "does nothing", clear that key or press Copy to see what is s
   fixed; the hover and the landing settings only change how the drone gets there.
 - Hand-off: render the exact landing frame, show the page under it, fade the canvas, pop the readings, remove the
   runway, scroll to 0, dispose the renderer. After landing the page equals `?drone=0`.
+
+## The art (how it was made; Dan OK'd the cost 2026-10-28, ~$1.50 for three images)
+
+1. `node drone/tools/ortho.cjs <out.png> <x0,z0,w,h> 3072x2048` renders the set straight from above (`ortho.html`):
+   the layout guide. AER = `-23.5,-19,39,26` (the hover's view with margin), RN = `-6,-6.6,12,8` (round the landing spot).
+2. `bash drone/tools/gen-edit.sh <out prefix> 3072x2048 1 <prompt file> <image> [ref]` (gpt-image-2 edit, key from
+   `$OPENAI_API_KEY`, prints the token use):
+   - aerial = `prompt-aerial.txt` over the AER guide, with the page frame (1536 px) as the light / colour reference;
+   - near = `prompt-near.txt` over the aerial's RN crop blown up to 3072 px, with the page photo's bottom as reference.
+   - car = `prompt-car.txt` as a plain generation (`/v1/images/generations`, 1536x1024; no transparent background on
+     this model, so flat magenta), 2 takes, take 1 kept.
+3. `python -I drone/tools/post-art.py <aerial> <near> <car> drone/img`: softens the straight edge between the lanes,
+   gives the close-up the aerial's tone (no lighter patch in the hover), tames the AI's orange lamp pool on the road to
+   the page photo's road colour where the 3D ground meets the photo at touchdown, keys the car, writes the webp files
+   (2560 px, q75: aerial ~0.57 MB, near ~1.1 MB, loaded after the hover shows; car ~0.1 MB).
+   The originals (q95) are in the design-assets repo, `gas2-drone/`.
+
+AER and RN live in both `world.js` and `post-art.py`: change them together, then re-render the guides and regenerate.
 
 ## Tools (node needs `playwright-core` in `%USERPROFILE%/node_modules` + Edge)
 
