@@ -32,6 +32,7 @@ h1 { font: 800 24px/1.1 system-ui; margin: 0 0 6px; }
 .bars .bar { position: static; margin: 0; }
 .bar.tune { border-color: #1f4a55; }
 .bar.tune b { color: #5ee7ff; }
+[data-layout][aria-pressed='true'] { background: #5ee7ff !important; border-color: #5ee7ff !important; color: #06121a !important; }
 #t-edit[aria-pressed='true'] { background: #5ee7ff; border-color: #5ee7ff; color: #06121a; }
 #t-sel { color: var(--ink); min-width: 15em; font-weight: 700; }
 #t-out { display: none; width: 100%; height: 150px; margin: 0 0 12px; background: #0f0a16; color: #cfe; border: 1px solid #2c2138; border-radius: 6px; font: 12px/1.4 ui-monospace, Consolas, monospace; }
@@ -65,6 +66,7 @@ h1 { font: 800 24px/1.1 system-ui; margin: 0 0 6px; }
   </div>
   <div class="bar tune" id="tune">
     <span class="grp"><b>EDIT</b><button id="t-edit" aria-pressed="true">ON</button></span>
+    <span class="grp"><b>LAYOUT</b><button data-layout="yours">YOURS</button><button data-layout="tight">TIGHT</button></span>
     <span id="t-sel">click a part in either frame</span>
     <label>X <output id="t-x">-</output></label><label>Y <output id="t-y">-</output></label>
     <label>SIZE <input type="range" id="t-size" min="30" max="250" value="100" disabled><output id="t-so">-</output></label>
@@ -172,6 +174,13 @@ const cssCtl = () => {
 /* the wall shows through; only a soft dark wash round the controls so their labels still read (Law 5) */
 #hear .d-hear-controls > .d-hear-step { background: radial-gradient(ellipse 62% 66% at 50% 56%, rgba(6, 2, 10, .62), rgba(6, 2, 10, 0)) !important; }
 @media (max-width: 600px) { #hear .d-hear-controls > .d-hear-step { background: radial-gradient(ellipse 75% 80% at 50% 55%, rgba(6, 2, 10, .8), rgba(6, 2, 10, 0)) !important; } }   /* the phone plate is busier down here */
+/* VOLUME sits on the scorched corner when moved there: a dark patch of wall behind it, and both readouts lifted off
+   the paint with a dark halo (Law 5: what is read stays clear) */
+#hear .d-vol { isolation: isolate; }
+#hear .d-vol::before { content: ''; position: absolute; inset: -24%; border-radius: 50%; z-index: -1; pointer-events: none;
+  background: radial-gradient(circle, rgba(6, 2, 10, .74) 42%, rgba(6, 2, 10, 0) 70%); }
+#hear .d-hear-ab, #hear [data-hear-vol-read] { text-shadow: 0 0 3px rgba(6, 2, 10, .95), 0 0 9px rgba(6, 2, 10, .85); }
+#hear .d-hear-controls .d-hear-pair > .d-hear-unit:last-of-type .d-hear-unit-lbl { color: #9384aa !important; }
 `;
   return s;
 };
@@ -287,6 +296,7 @@ const apply = () => {
     const on = st.look === 'e';
     el.textContent = on ? cssLook() + cssFloor() + cssCtl() + cssUp() : '#cookie-banner { display: none !important; }';
     parts(d, on); installEditor(f); readBases(f); renderTune(f); requestAnimationFrame(() => { align(w); drawOverlay(f); });
+    if (on && Object.keys(bases.d).length && Object.keys(bases.p).length) postTune();   // both frames measured: send what this browser holds
     if (!w.__bxAlign) { w.__bxAlign = true; w.addEventListener('resize', () => align(w)); }
   }
   $('veilo').textContent = st.veil + ' %'; $('pxo').textContent = st.px + ' %';
@@ -326,7 +336,15 @@ const TUNABLE = {
 const TKEY = 'drift-hear-bench-tune-v1';
 let tune = { d: {}, p: {} };
 try { const t = JSON.parse(localStorage.getItem(TKEY) || 'null'); if (t && t.d && t.p) tune = t; } catch (e) { /* private window: start clean */ }
-const saveTune = () => { try { localStorage.setItem(TKEY, JSON.stringify(tune)); } catch (e) { /* not saved, still works */ } };
+// saved twice: in this browser, and (debounced) to bench/drift-hear-tune/latest.json through serve-panel-bench.py, so
+// the values reach Claude without a COPY / paste
+let postT = 0;
+const postTune = () => {
+  clearTimeout(postT);
+  postT = setTimeout(() => fetch('/__bench/save', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Bench-Save': '1' },
+    body: JSON.stringify({ tune, bases, view: { ctl: st.ctl, up: st.up, floor: st.floor, veil: st.veil }, saved: new Date().toISOString() }) }).catch(() => {}), 400);
+};
+const saveTune = () => { try { localStorage.setItem(TKEY, JSON.stringify(tune)); } catch (e) { /* not saved, still works */ } postTune(); };
 const tk = (w) => (w.innerWidth <= 600 ? 'p' : 'd');
 const tv = (k, n) => tune[k][n] || (tune[k][n] = { x: 0, y: 0, s: 1 });
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
@@ -474,6 +492,15 @@ ${tuneCss('p')}
   try { await navigator.clipboard.writeText(txt); $('t-copy').textContent = 'COPIED'; } catch (err) { $('t-copy').textContent = 'COPY (select the box)'; }
   setTimeout(() => { $('t-copy').textContent = 'COPY'; }, 1600);
 });
+// LAYOUT: a saved tune from bench/drift-hear-tune/ (YOURS = the user's hand layout, TIGHT = it tightened), also on
+// ?layout=<name>; loading one replaces this browser's values (YOURS keeps the user's)
+const loadLayout = (name) => fetch(`/bench/drift-hear-tune/${name}.json`, { cache: 'no-store' }).then((r) => r.json()).then((j) => {
+  tune = { d: j.tune.d || {}, p: j.tune.p || {} }; saveTune(); frames().forEach(renderTune); syncPanel();
+  for (const b of document.querySelectorAll('[data-layout]')) b.setAttribute('aria-pressed', String(b.dataset.layout === name));
+  $('note').textContent = j.note || '';
+}).catch(() => {});
+for (const b of document.querySelectorAll('[data-layout]')) b.addEventListener('click', () => loadLayout(b.dataset.layout));
+{ const L = new URLSearchParams(location.search).get('layout'); if (L && /^[a-z0-9-]+$/.test(L)) loadLayout(L); }
 syncPanel();
 
 // test hook: window.benchSet({look, up, floor, ctl, veil, px})
