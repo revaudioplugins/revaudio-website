@@ -43,6 +43,12 @@ Scope: the outer `.d-panel.d-hear-panel` plate only (step 3's pair plate and the
   ArrowDown / dblclick = 80, readout + knob aria follow, EDIT ON picks the fader and leaves the volume (control),
   0 page errors. The user's look owed. At the fold: hear.ts drives the fader with faders.ts `initFader` (1 % steps),
   the knob markup + its 65-frame strip go.
+- [x] E4d. The fader as a worn real part (the user, 2026-10-28: "lets make that fader with open ai ... same vibe ...
+  wear out broken and 3d vibe"). gpt-image-2 x 4 (two caps, two slot plates) on chroma green, keyed out
+  (`bench/drift-panel/fader-cap1/2.webp`, `fader-plate1/2.webp`; prompts + recipe in PROMPTS.md). Bench VOLUME WORN
+  (default) + CAP 1 / 2 (default 2) + PLATE 1 / 2 (default 1): the plate fills the DRIFT ring's height (clear of the
+  readout), the cap travels the plate's cut, the violet fill glows inside the cut. Desktop cap 46 px, phone 30 px.
+  Same drag / keys / dblclick / EDIT-ON control tests pass, 0 page errors. The user's pick owed.
 - [ ] E5. Fold the pick (DriftHear.astro + drift.css, #hear only; assets via getImage). The LCD frame = a wrapper in
   the markup (`.d-hear-lcdbox` round the screen, as `.d-hear-tv` wraps the list); new heights into the baselines.
 - [ ] E6. Verify: every guide state, readouts still read over the graffiti, reduced motion, focus, phone 390 / 360,

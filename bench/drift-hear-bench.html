@@ -62,7 +62,9 @@ h1 { font: 800 24px/1.1 system-ui; margin: 0 0 6px; }
     <span class="grp"><b>CONTROLS</b><button data-k="ctl" data-v="split" aria-pressed="true">SPLIT</button><button data-k="ctl" data-v="plate">ONE PLATE</button><button data-k="ctl" data-v="unit">HEAD UNIT</button><button data-k="ctl" data-v="flush">FLUSH</button></span>
     <span class="grp"><b>FLOOR</b><button data-k="floor" data-v="wall">WALL</button><button data-k="floor" data-v="steel" aria-pressed="true">DRIFT STEEL</button></span>
     <span class="grp"><b>LCD</b><button data-k="lcd" data-v="cut">CUT</button><button data-k="lcd" data-v="framed" aria-pressed="true">FRAMED</button></span>
-    <span class="grp"><b>VOLUME</b><button data-k="vol" data-v="knob">KNOB</button><button data-k="vol" data-v="fader" aria-pressed="true">FADER</button></span>
+    <span class="grp"><b>VOLUME</b><button data-k="vol" data-v="knob">KNOB</button><button data-k="vol" data-v="fader">FADER</button><button data-k="vol" data-v="worn" aria-pressed="true">WORN</button></span>
+    <span class="grp"><b>CAP</b><button data-k="cap" data-v="1">1</button><button data-k="cap" data-v="2" aria-pressed="true">2</button></span>
+    <span class="grp"><b>PLATE</b><button data-k="plate" data-v="1" aria-pressed="true">1</button><button data-k="plate" data-v="2">2</button></span>
     <label>VEIL <input type="range" id="veil" min="0" max="50" value="18"><output id="veilo"></output></label>
     <label>PHONE Y <input type="range" id="px" min="0" max="100" value="0"><output id="pxo"></output></label>
   </div>
@@ -85,7 +87,7 @@ h1 { font: 800 24px/1.1 system-ui; margin: 0 0 6px; }
 <script>
 const PLATE = '/bench/drift-panel/panel3.webp', PW = 2560, PH = 1024;
 const PLATE_P = '/bench/drift-panel/panel3-portrait.webp', PPW = 1024, PPH = 1536;
-const st = { look: 'e', up: 'a', floor: 'steel', ctl: 'flush', lcd: 'framed', vol: 'fader', veil: 18, px: 0 };   // B (sprayed arrows) dropped 2026-10-28: "remove the pink arrows"; its code stays for benchSet only. FLOOR: DRIFT STEEL picked 2026-10-28 ("Drift wall i like")
+const st = { look: 'e', up: 'a', floor: 'steel', ctl: 'flush', lcd: 'framed', vol: 'worn', cap: '2', plate: '1', veil: 18, px: 0 };   // B (sprayed arrows) dropped 2026-10-28: "remove the pink arrows"; its code stays for benchSet only. FLOOR: DRIFT STEEL picked 2026-10-28 ("Drift wall i like")
 // CONTROLS (the user, 2026-10-26, on the PLAY / PUSH DRIFT row: "just this section doesn't feel glued to me"): which
 // parts get a pocket of their own. SPLIT = step 2 and step 3 each a box; ONE PLATE = both steps in one pocket, an
 // engraved groove between; HEAD UNIT = the LCD and the controls on one face, like a car stereo; FLUSH = no box, the
@@ -201,7 +203,15 @@ const cssCtl = () => {
 // (DriftFader.astro in #drive: the plugin's vertical fader, chrome cap, lit fill; violet = INTENSITY's ink, so VOLUME
 // stays a step behind DRIFT's magenta) standing on the knob's centre line, its travel as tall as the DRIFT ring. The
 // knob stays in the layout, hidden, so nothing else moves
-const cssVol = () => st.vol !== 'fader' ? '' : `
+// WORN (the user, 2026-10-28: "lets make that fader with open ai, make it like it comes from the same vibe, make it
+// wear out broken and 3d vibe"): a crash-worn cap and slot plate, gpt-image-2 on chroma green, keyed out (prompts:
+// bench/drift-panel/PROMPTS.md). ar = width / height of the cut; sx / sy = where the slot is cut in the plate (fractions)
+const CAPS = { 1: { src: '/bench/drift-panel/fader-cap1.webp', ar: 1.71 }, 2: { src: '/bench/drift-panel/fader-cap2.webp', ar: 1.884 } };
+const PLATES = {
+  1: { src: '/bench/drift-panel/fader-plate1.webp', ar: .1964, sx0: .428, sx1: .535, sy0: .122, sy1: .851 },
+  2: { src: '/bench/drift-panel/fader-plate2.webp', ar: .169, sx0: .403, sx1: .538, sy0: .096, sy1: .885 },
+};
+const cssVol = () => st.vol === 'knob' ? '' : `
 #hear .d-vol { visibility: hidden; }
 #hear .d-hear-controls { position: relative; }
 #hear .bx-vfad { --fad: #b46bff; --fad-rgb: 180, 107, 255; position: absolute; flex: none; margin: 0; min-height: 0; z-index: 1; }
@@ -211,7 +221,19 @@ const cssVol = () => st.vol !== 'fader' ? '' : `
   #hear .bx-vfad .d-fad-thumb { width: 34px; height: 17px; }
   #hear .bx-vfad .d-fad-thumb::after { left: 6px; right: 6px; }
 }
-`;
+` + (st.vol !== 'worn' ? '' : `
+/* WORN: the plate is screwed onto the wall (its own shadow), the light lives in the cut, the cap is a heavy part that
+   throws its shadow down-right onto the plate (light from the upper left, Law 4) */
+#hear .bx-vfad::before { display: none; }
+#hear .bx-vplate { display: block; position: absolute; left: 50%; translate: -50% 0; pointer-events: none;
+  background: url(${PLATES[st.plate].src}) center / 100% 100% no-repeat; filter: drop-shadow(1px 2px 2px rgba(0, 0, 0, .85)); }
+#hear .bx-vfad .d-fad-fill { translate: none; border-radius: 2px;
+  background: linear-gradient(to top, rgba(var(--fad-rgb), .95), rgba(var(--fad-rgb), .6)); box-shadow: 0 0 6px rgba(var(--fad-rgb), .85); }
+#hear .bx-vfad .d-fad-thumb { width: 46px; height: ${(46 / CAPS[st.cap].ar).toFixed(1)}px; border-radius: 0; box-shadow: none;
+  background: url(${CAPS[st.cap].src}) center / 100% 100% no-repeat; filter: drop-shadow(2px 5px 4px rgba(0, 0, 0, .75)) drop-shadow(0 1px 1px rgba(0, 0, 0, .9)); }
+#hear .bx-vfad .d-fad-thumb::after { display: none; }
+@media (max-width: 600px) { #hear .bx-vfad .d-fad-thumb { width: 30px; height: ${(30 / CAPS[st.cap].ar).toFixed(1)}px; } }
+`);
 
 const cssUp = () => {
   if (st.up === '0') return '';
@@ -272,7 +294,7 @@ const CRACK_LCD = '<span class="bx-crack lcd" aria-hidden="true"></span>';
 const CRACK_CRT = '<span class="bx-crack crt" aria-hidden="true"></span>';
 const ARROW_PLAY = '<span class="bx-spray bx-arrow play" aria-hidden="true"></span>';
 const ARROW_DRIFT = '<span class="bx-spray bx-arrow drift" aria-hidden="true"></span>';
-const VFAD = '<div class="bx-vfad d-fad-slot" role="slider" tabindex="0" aria-label="Volume" aria-orientation="vertical" aria-valuemin="0" aria-valuemax="100"><span class="d-fad-fill"></span><span class="d-fad-thumb"></span></div>';
+const VFAD = '<div class="bx-vfad d-fad-slot" role="slider" tabindex="0" aria-label="Volume" aria-orientation="vertical" aria-valuemin="0" aria-valuemax="100"><span class="bx-vplate" hidden></span><span class="d-fad-fill"></span><span class="d-fad-thumb"></span></div>';
 const BORE = (t) => `<span class="bx-bore" data-t="${t}" aria-hidden="true"></span>`;
 const NOISE = `url("data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="7"/><feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 -2.2 1.9"/></filter><rect width="160" height="160" filter="url(#n)"/></svg>')}")`;
 
@@ -291,7 +313,7 @@ const parts = (d, on) => {
     const sb = hear.querySelector('.d-start'); if (sb) sb.insertAdjacentHTML('afterbegin', BORE('pb'));
     const caps = hear.querySelector('.d-hear-caps'); if (caps) caps.querySelectorAll('.d-hear-mount').forEach((m, i) => caps.insertAdjacentHTML('afterbegin', BORE('m' + i)));
   }
-  if (st.vol === 'fader') { const ctl = hear.querySelector('.d-hear-controls'); if (ctl) { ctl.insertAdjacentHTML('beforeend', VFAD); wireFader(d, ctl.querySelector('.bx-vfad')); } }
+  if (st.vol !== 'knob') { const ctl = hear.querySelector('.d-hear-controls'); if (ctl) { ctl.insertAdjacentHTML('beforeend', VFAD); wireFader(d, ctl.querySelector('.bx-vfad')); } }
 };
 // the bench fader drives the page's own volume through the hidden knob's keys (hear.ts: Home = 0, ArrowUp = +5 %), so
 // the sound and the VOLUME readout stay the page's; 5 % steps here. At the fold hear.ts drives a real fader with
@@ -351,7 +373,16 @@ const align = (w) => {
   if (fad && vk && vr && ring.length) {
     const h = fad.parentElement.getBoundingClientRect(), c = vk.getBoundingClientRect(), half = fad.querySelector('.d-fad-thumb').offsetHeight / 2;
     const top = Math.min(...ring.map((r) => r.top)), bot = Math.min(Math.max(...ring.map((r) => r.bottom)), vr.getBoundingClientRect().top - 6);
-    Object.assign(fad.style, { left: `${c.left + c.width / 2 - h.left - fad.offsetWidth / 2}px`, top: `${top + half - h.top}px`, height: `${bot - top - 2 * half}px` });
+    const left = `${c.left + c.width / 2 - h.left - fad.offsetWidth / 2}px`, plate = fad.querySelector('.bx-vplate'), fill = fad.querySelector('.d-fad-fill');
+    if (st.vol === 'worn' && plate) {
+      const P = PLATES[st.plate], ph = bot - top, pw = ph * P.ar, cw = (P.sx1 - P.sx0) * pw;
+      Object.assign(fad.style, { left, top: `${top + P.sy0 * ph - h.top}px`, height: `${(P.sy1 - P.sy0) * ph}px` });
+      Object.assign(plate.style, { top: `${-P.sy0 * ph}px`, height: `${ph}px`, width: `${pw}px` });
+      Object.assign(fill.style, { left: `${fad.offsetWidth / 2 - pw / 2 + (P.sx0 + P.sx1) / 2 * pw - cw * .3}px`, width: `${cw * .6}px` });
+    } else {
+      Object.assign(fad.style, { left, top: `${top + half - h.top}px`, height: `${bot - top - 2 * half}px` });
+      if (fill) Object.assign(fill.style, { left: '', width: '' });
+    }
   }
   for (const el of d.querySelectorAll('#hear .d-hear-tv, #hear .d-hear-step, #hear .d-hear-controls, #hear .d-hear-deck, #hear .bx-lcdbox')) {
     const r = el.getBoundingClientRect();
@@ -415,7 +446,7 @@ let postT = 0;
 const postTune = () => {
   clearTimeout(postT);
   postT = setTimeout(() => fetch('/__bench/save', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Bench-Save': '1' },
-    body: JSON.stringify({ tune, bases, view: { ctl: st.ctl, up: st.up, floor: st.floor, lcd: st.lcd, vol: st.vol, veil: st.veil }, saved: new Date().toISOString() }) }).catch(() => {}), 400);
+    body: JSON.stringify({ tune, bases, view: { ctl: st.ctl, up: st.up, floor: st.floor, lcd: st.lcd, vol: st.vol, cap: st.cap, plate: st.plate, veil: st.veil }, saved: new Date().toISOString() }) }).catch(() => {}), 400);
 };
 const saveTune = () => { try { localStorage.setItem(TKEY, JSON.stringify(tune)); } catch (e) { /* not saved, still works */ } postTune(); };
 const tk = (w) => (w.innerWidth <= 600 ? 'p' : 'd');
@@ -576,7 +607,7 @@ for (const b of document.querySelectorAll('[data-layout]')) b.addEventListener('
 { const L = new URLSearchParams(location.search).get('layout'); if (L && /^[a-z0-9-]+$/.test(L)) loadLayout(L); }
 syncPanel();
 
-// test hook: window.benchSet({look, up, floor, ctl, lcd, vol, veil, px})
+// test hook: window.benchSet({look, up, floor, ctl, lcd, vol, cap, plate, veil, px})
 window.benchSet = (o) => { Object.assign(st, o); apply(); };
 </script>
 </body>
