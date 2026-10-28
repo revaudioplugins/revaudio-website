@@ -247,6 +247,10 @@ words first, window under them.
   breathes from inside when PLAY is next and burns while playing; STOP = real red plastic, just off, not a filtered
   brown. Picked on `bench/drift-play-bench.html` over LED bars round PLAY (A) and pilot lamps (B) (laptop 1 user,
   2026-10-26: "C").
+- DON'T paint arrows at a control to say "press this". Hand-sprayed magenta arrows at PLAY and the DRIFT button (fresh
+  paint on the step that is next) were tried on `bench/drift-hear-bench.html` and dropped (laptop 1 user, 2026-10-28:
+  "remove the pink arrows"); the lamp-lit breath above stays the only "next" cue. A sprayed ring round DRIFT had already
+  gone: on a lamp-lit button it read as the button's own magenta light.
 
 ## 10. History + open questions (for Dan)
 
