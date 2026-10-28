@@ -1,3 +1,11 @@
+## 2026-10-28 - Cart offer note + trial-form spam hint, branch `mid-trial-offer` (Claude Code `revaudio-9a`, Yoni's laptop 2) - PUSHED TO MAIN = LIVE 2026-10-29 (Yoni: "push deploy and OK")
+
+Claim: CLOSED 2026-10-28. Worktree `Website/revaudio-website-midoffer` off origin/main `fab1336`, branch pushed (`9bc9576`, `524b67f`).
+- `9bc9576` Cart.astro: the drawer note said "Your one-time 10% off <plugin>" for any `?offer=` code; the licence worker's new mid-trial offer (RevLimiter repo `590211d`, RevLimiter day-9 email, 20% / 48 h) needs "Your personal discount on <plugin> is applied at payment." Ship together with that worker deploy (website first, then the worker).
+- `524b67f` TrialGateModal / TrialPlates / downloads.astro: "Not there in a minute? Look in Promotions or Spam." after a sign-up (51% of RevLimiter trial sign-ups never download from the link email, leads 2026-10-28).
+- Checked: `npm run build` green; the new strings are in dist. Not checked in a browser.
+- Do NOT pull into the main checkout as is: it holds another session's 3 local commits (`a5fa319` lessons, conflicts with origin on `tasks/lessons.md`); a pull --rebase from this session was aborted untouched.
+
 ## 2026-10-19 — DRIFT #hear: guide the visitor step by step, branch `drift-hear-guide` (Claude Code `revaudio-ef`, laptop 1) — PUSHED TO MAIN = LIVE 2026-10-28 (the user: "commit ודחוף לאתר" = commit and push to the site)
 
 - 2026-10-28 (laptop 1, this session): the engraved wall (`tasks/todo.md` top section, K1-K2 + E1-E6) was picked on
