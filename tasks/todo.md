@@ -1,16 +1,22 @@
-# GAS 2 drone descent (branch `feat/gas2-drone`, 2026-10-28, revaudio-59) — PLAN, waiting on Dan's go
+# GAS 2 drone descent (branch `feat/gas2-drone`, 2026-10-28, revaudio-59) — SCENE + BENCH BUILT, art next
 
-Plan page: https://claude.ai/artifact/NnyBRQchpWfY541CZA1Unn. Rule: every frame comes from the page frame `f6-v17`.
+Plan page: https://claude.ai/artifact/NnyBRQchpWfY541CZA1Unn. How it works + bench: `tools/_gas2-scene/drone/README.md`.
+Dan's order (2026-10-28): finish the scene with placeholders first, then generate the real elements (OpenAI or Higgsfield).
 
 ## Steps
-- [ ] 0. Dan answers Q1-Q6 (world, coupon, car route, old scroll numbers, hover angle, scroll back up) and says go.
-- [ ] 1. Look gate (~$3-6): hover aerial painted from `f6-v17`, 3 closer levels + the ground under the camera painted
-      from it; storyboard page with a rough scroll. STOP for Dan's OK on the look.
-- [ ] 2. Flight engine in `tools/_gas2-scene/drone/`: scroll runway, nadir drop, tilt-up from the page frame, hand-off.
-- [ ] 3. GAS 2 pop: GAS2 springs out, then rule, tagline, button, "Fill it up." (~0.7 s).
-- [ ] 4. The car (~$1-2): top-down car in the same light, code on a roof board, right to left once per load.
-- [ ] 5. QA: 1440x900, 1141x636, 390x844, WebKit, reduced motion, no-WebGL, page after landing = page without intro
-      (0 diff), weight <= 2.5 MB, frame time.
+- [x] 0. Dan's answers: the page's own world; roof text "CATCH YOUR COUPON" (he wrote "catch your compon"); car in the
+      hover shot; try three hover angles in a bench (top / 45 front / 45 right); no flying back up.
+- [x] 2. Flight engine in `tools/_gas2-scene/drone/`: scroll runway, three paths, exact TOP landing, hand-off.
+- [x] 3. GAS 2 pop: GAS2 springs out (blur + overshoot), the rule draws, then tagline / button / "Fill it up." pop fast.
+- [x] 4a. The car (placeholder box car): right to left once per load, roof board readable from the hover.
+- [x] 5a. QA (headless Edge, 1440x900 + 390x844, all three angles): page after landing = `?drone=0` (mean 0.00);
+      exact landing frame vs the page scene 2.55 / 1.47; no errors; classes, runway and layer gone, scroll 0.
+- [ ] 1. Dan picks the hover angle in the bench (TOP = the photo carries the landing, short art list; 45 front / right =
+      the shop needs real textured proxies + the ghosting fixed: much more art).
+- [ ] 4b. Real art (cost confirmed first; OpenAI images): near road under the frame (fixes the seam + the close-up
+      asphalt), roof + field aerial, the car (top-down sprite). The roof board stays text-only until Dan names a real
+      Paddle code and what catching it does.
+- [ ] 5b. QA again + 1141x636, WebKit, reduced motion, no-WebGL, weight <= 2.5 MB, frame time.
 - [ ] 6. Dan's Safari + phone look; handoff, commit, push the branch (never main).
 
 # Website — word-wall WEIGHT (checker S4, 2026-10-15, revaudio-32)

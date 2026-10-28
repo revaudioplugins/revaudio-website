@@ -18,6 +18,8 @@ python -m http.server 4462 --bind 127.0.0.1
 - `page-b.html?bench` — the shared RevAudio bench harness on B (click, drag, resize, fonts, colors, EXPORT). Needs
   `bench.js` next to the page: symlink or copy `revaudio-shared/tools/bench/bench.js` here (not committed: machine path).
 - TUNE (button bottom right, or T) — readings position / size + the 4 looks (Now / Neon / Enamel / Badge).
+- The drone intro (branch `feat/gas2-drone`) — scroll from a hovering drone down into the scene; `?drone=0` skips it,
+  `?angle=top|front|right` picks the hover. How it works + its bench: `drone/README.md`.
 
 ## Who works on what (one writer per file set)
 
@@ -28,6 +30,8 @@ python -m http.server 4462 --bind 127.0.0.1
 - **The window posters (were the notes) + the pump spotlight (`.note*` / `.poster` `.pk/.pl/.ps` + `props/poster-*.webp`, `.pumpCut` / `.pumpLit`, TUNE → Spotlight,
   `props/pump-cut.png`): Dan's 2nd session (danavivi-59), branch `feat/gas2-page-s2`, from 2026-10-23.** Merged with
   `feat/gas2-page` into `main` 2026-10-23.
+- **The drone intro (`drone/**` + its one `<link>`/`<script>` line in `page-b.html`): Claude Code `revaudio-59`, branch
+  `feat/gas2-drone`, from 2026-10-28.**
 - Claims and state: `tasks/handoff.md` (top entry).
 
 ## Not in git

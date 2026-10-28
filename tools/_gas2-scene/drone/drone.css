@@ -1,0 +1,20 @@
+/* GAS 2 page · drone intro v2 (drone/drone.js + run.js). html.dr-on: the page's stage is pinned and hidden under a
+   full-window WebGL canvas while a scroll runway flies the drone down; html.dr-hold keeps the readings back until
+   touchdown; html.dr-land = touchdown (the page shows under the canvas, which fades off it). */
+html.dr-on { background: #0d0806; }
+html.dr-on .stage { position: fixed; inset: 0; opacity: 0; }
+html.dr-land .stage { opacity: 1; }
+html.dr-on footer { display: none; }
+.dr { position: fixed; inset: 0; z-index: 8; }
+.dr canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: 0; transition: opacity .3s; }
+.dr.on canvas { opacity: 1; }
+.dr.out canvas { opacity: 0; transition: opacity .45s cubic-bezier(.22, 1, .36, 1); }
+.dr.out { pointer-events: none; }
+.dr-run { display: none; }
+html.dr-on .dr-run { display: block; height: calc(var(--dr-len, 4) * 100vh); }
+
+/* the readings wait for touchdown, then pop (run.js pop(): opacity pre-hide only) */
+html.dr-hold .rd > .ti, html.dr-hold .rd > .lead, html.dr-hold .rd > .cta, html.dr-hold .rd > .scr { opacity: 0; }
+html.dr-hold .rd::before { opacity: 0; }
+html.dr-on .rd::before { transition: opacity .7s cubic-bezier(.22, 1, .36, 1); }
+.tune [data-dr="angle"] button.on { border-color: #e8c878; color: #e8c878; }   /* the angle flying now (TUNE -> Drone) */

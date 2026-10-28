@@ -1,7 +1,7 @@
 ## 2026-10-28 — GAS 2 page: the drone intro, from scratch (Claude Code `revaudio-59`, laptop 1) — BRANCH `feat/gas2-drone`
 
-Claim: OPEN `revaudio-59`, PLAN ONLY (waiting on Dan's six answers + go; nothing painted or built yet).
-Files (once he says go): NEW `tools/_gas2-scene/drone/**`; in `page-b.html` ONE `<link>` + `<script>` line (after the radio
+Claim: OPEN `revaudio-59`. Scene + bench BUILT with placeholder art (2026-10-28); waiting on Dan's angle pick, then art.
+Files: NEW `tools/_gas2-scene/drone/**`; in `page-b.html` ONE `<link>` + `<script>` line (after the radio
 line), nothing else of page-b's; one README line pair; `tasks/todo.md` (the "GAS 2 drone descent" section); this entry.
 - Dan: a hovering drone above the station; scroll down = it comes down into the final scene, then GAS 2 pops and the right
   side pops in fast "like it pops out of the screen". Every shot must feel like the final scene (same graphics, same vibe:
@@ -14,8 +14,25 @@ line), nothing else of page-b's; one README line pair; `tasks/todo.md` (the "GAS
   real HTML text on a roof board. Checked in headless Edge: the tilt-up maths lands on `f6-v17` exactly.
 - Facts (2026-10-28): OpenAI `/v1/videos` 404 on GET + POST (no video); Higgsfield 0 credits; laptop 1's User-env
   `OPENAI_API_KEY` works with credits (gpt-image-2 / 2.5 listed); no torch on laptop 1 (cv2, numpy, PIL yes).
-- Open (Dan): Q1 keep the page's world; Q2 the coupon (a real Paddle code, for what); Q3 car route; Q4 old scroll numbers
+- Asked in the plan (answered below): Q1 keep the page's world; Q2 the coupon (a real Paddle code, for what); Q3 car route; Q4 old scroll numbers
   as reference; Q5 hover angle; Q6 scroll back up. Cost cap asked: $15 (images only).
+- Dan's answers (2026-10-28): the page's own world; roof text "catch your compon" (written CATCH YOUR COUPON); car in
+  the hover shot; try three hover angles in a bench: straight down, 45 deg from the front, 45 deg + 45 deg round to the
+  right; scrolling up does not fly back; finish the scene first, then generate the real elements (OpenAI or Higgsfield).
+- Built (`tools/_gas2-scene/drone/`, README there): three.js r185 set (procedural placeholder textures), the page frame
+  re-rendered without the readings (`img/land.webp`, `tools/render-landing.cjs`), TOP / 45 front / 45 right paths,
+  TUNE -> Drone bench (an angle click flies it; Hover m / Length / Sway; settings in localStorage), the box car with the
+  roof board, the hand-off and the readings pop. TOP: nadir log descent onto the landing spot by u .42 with the gimbal
+  starting up from u .18, then a pure tilt (the quad switches on at -40 deg, unseen). 45 front / right = blockout
+  (ghosting near touchdown until the shop has textured proxies).
+- Checked (headless Edge, `tools/check.cjs` + `diff.py`; 1440x900 + 390x844; top, front, right): page after landing =
+  `?drone=0` mean 0.00 (max 27 / 4); exact landing frame vs the page scene with the readings hidden 2.55 / 1.47 (resampling
+  noise); no page errors or 4xx; classes, runway, layer gone; scroll 0. TOP after the last choreography change: one
+  bare-asphalt sample left (u .45). Not checked: WebKit, 1141x636, a real trackpad / phone, Dan's eye.
+- Open (Dan): (1) the hover angle; (2) cost OK for the art (OpenAI images; Higgsfield only for a video descent and it has
+  0 credits); (3) the coupon: a real Paddle code + what catching it does (no code until he names one).
+- Next: after (1) + (2), the art for the picked path: near road under the frame (the .66-.8 seam and the close-up
+  asphalt), roof + field aerial, a top-down car; then QA 5b (todo).
 
 ## 2026-10-26 — GAS 2 page: the drone intro (hover above the station, scroll = descent, land, readings pop) (Claude Code `danavivi-19`, Dan's Mac) — BRANCH `feat/gas2-page`
 
