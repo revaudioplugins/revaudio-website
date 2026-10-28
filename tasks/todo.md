@@ -48,7 +48,12 @@ Scope: the outer `.d-panel.d-hear-panel` plate only (step 3's pair plate and the
   (`bench/drift-panel/fader-cap1/2.webp`, `fader-plate1/2.webp`; prompts + recipe in PROMPTS.md). Bench VOLUME WORN
   (default) + CAP 1 / 2 (default 2) + PLATE 1 / 2 (default 1): the plate fills the DRIFT ring's height (clear of the
   readout), the cap travels the plate's cut, the violet fill glows inside the cut. Desktop cap 46 px, phone 30 px.
-  Same drag / keys / dblclick / EDIT-ON control tests pass, 0 page errors. The user's pick owed.
+  Same drag / keys / dblclick / EDIT-ON control tests pass, 0 page errors.
+  Then (the user: "i like it make it bigger and place somewhere better ... you got this"): a channel strip on the
+  deck's right edge line, as tall as the controls. Desktop plate 1084..1120 x 267..454 (top = the step names' line,
+  bottom = the pocket's line), cap 58 px, readout 1068..1136 (right edge = the LCD frame's 1136) on ORIGINAL /
+  DRIFT's line. Phone plate 409..495 (just under "3 PUSH DRIFT", which runs over the column), cap 36 px, readout's
+  right edge = the LCD frame's 336. Tests pass again, 0 page errors.
 - [ ] E5. Fold the pick (DriftHear.astro + drift.css, #hear only; assets via getImage). The LCD frame = a wrapper in
   the markup (`.d-hear-lcdbox` round the screen, as `.d-hear-tv` wraps the list); new heights into the baselines.
 - [ ] E6. Verify: every guide state, readouts still read over the graffiti, reduced motion, focus, phone 390 / 360,

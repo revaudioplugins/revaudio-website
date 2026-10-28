@@ -259,8 +259,10 @@ words first, window under them.
   Then made a real part (the user, same day: "make it like it comes from the same vibe, make it wear out broken and
   3d"): a photographed crash-worn slot plate screwed onto the wall (its own shadow) and a heavy black-and-chrome cap
   worn to bare metal, chipped and cracked, throwing its shadow down-right; the violet light lives inside the cut
-  (VOLUME WORN, CAP 1 / 2, PLATE 1 / 2; prompts in `bench/drift-panel/PROMPTS.md`). The plate fits the DRIFT ring's
-  height, the cap's travel = the plate's cut.
+  (VOLUME WORN, CAP 1 / 2, PLATE 1 / 2; prompts in `bench/drift-panel/PROMPTS.md`). The cap's travel = the plate's
+  cut. Placed as a channel strip ("make it bigger and place somewhere better"): on the deck's right edge line (the
+  LCD frame's right edge; PLAY's left edge sits on its left one), as tall as the controls, from the step names' top
+  line to the pocket's bottom line (phone: from just under "3 PUSH DRIFT", which runs over its column).
 
 ## 10. History + open questions (for Dan)
 

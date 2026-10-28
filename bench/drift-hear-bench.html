@@ -229,10 +229,10 @@ const cssVol = () => st.vol === 'knob' ? '' : `
   background: url(${PLATES[st.plate].src}) center / 100% 100% no-repeat; filter: drop-shadow(1px 2px 2px rgba(0, 0, 0, .85)); }
 #hear .bx-vfad .d-fad-fill { translate: none; border-radius: 2px;
   background: linear-gradient(to top, rgba(var(--fad-rgb), .95), rgba(var(--fad-rgb), .6)); box-shadow: 0 0 6px rgba(var(--fad-rgb), .85); }
-#hear .bx-vfad .d-fad-thumb { width: 46px; height: ${(46 / CAPS[st.cap].ar).toFixed(1)}px; border-radius: 0; box-shadow: none;
+#hear .bx-vfad .d-fad-thumb { width: 58px; height: ${(58 / CAPS[st.cap].ar).toFixed(1)}px; border-radius: 0; box-shadow: none;
   background: url(${CAPS[st.cap].src}) center / 100% 100% no-repeat; filter: drop-shadow(2px 5px 4px rgba(0, 0, 0, .75)) drop-shadow(0 1px 1px rgba(0, 0, 0, .9)); }
 #hear .bx-vfad .d-fad-thumb::after { display: none; }
-@media (max-width: 600px) { #hear .bx-vfad .d-fad-thumb { width: 30px; height: ${(30 / CAPS[st.cap].ar).toFixed(1)}px; } }
+@media (max-width: 600px) { #hear .bx-vfad .d-fad-thumb { width: 36px; height: ${(36 / CAPS[st.cap].ar).toFixed(1)}px; } }
 `);
 
 const cssUp = () => {
@@ -361,19 +361,26 @@ const align = (w) => {
     a.style.left = `${r.left + fx * r.width - a.offsetWidth - h.left + o.x}px`; a.style.top = `${r.top + fy * r.height - a.offsetHeight - h.top + o.y}px`;
   };
   arrow('play', 'arrowPlay', '.d-hear-play', .35, 0); arrow('drift', 'arrowDrift', '.d-start-pb', .03, .85);
-  // the VOLUME fader on the knob's centre line; the cap's centre travels the DRIFT ring's height, so the cap's ends
-  // land on the ring's top and bottom lines; never into the VOLUME readout under it (the phone's sits beside the ring)
-  const fad = d.querySelector('#hear .bx-vfad'), vk = d.querySelector('#hear .d-vol'), vr = d.querySelector('#hear [data-hear-vol-read]');
+  // the VOLUME fader (the user, 2026-10-28, on the worn fader: "make it bigger and place somewhere better"): a channel
+  // strip on the deck's right edge line (the LCD frame's right edge, as PLAY's left edge sits on its left one), as tall
+  // as the controls: from the step names' top line (where a name runs over its column, just under that name) down to
+  // the pocket's bottom line, never into the VOLUME readout under it
+  const fad = d.querySelector('#hear .bx-vfad'), vr = d.querySelector('#hear [data-hear-vol-read]');
   const ring = [...d.querySelectorAll('#hear .d-start-ticks i')].map((e) => e.getBoundingClientRect()).filter((r) => r.width);
   // the VOLUME readout on ORIGINAL / DRIFT's line (TIGHT's shared baseline; the phone's sat beside the ring, where it
-  // left the fader no travel)
-  const ab = d.querySelector('#hear .d-hear-ab');
-  if (vr) { vr.style.position = ''; vr.style.top = ''; }
-  if (fad && vr && ab) { const dy = ab.getBoundingClientRect().top - vr.getBoundingClientRect().top; if (dy > 0) { vr.style.position = 'relative'; vr.style.top = `${dy}px`; } }
-  if (fad && vk && vr && ring.length) {
-    const h = fad.parentElement.getBoundingClientRect(), c = vk.getBoundingClientRect(), half = fad.querySelector('.d-fad-thumb').offsetHeight / 2;
-    const top = Math.min(...ring.map((r) => r.top)), bot = Math.min(Math.max(...ring.map((r) => r.bottom)), vr.getBoundingClientRect().top - 6);
-    const left = `${c.left + c.width / 2 - h.left - fad.offsetWidth / 2}px`, plate = fad.querySelector('.bx-vplate'), fill = fad.querySelector('.d-fad-fill');
+  // left the fader no travel), centred under the fader
+  const ab = d.querySelector('#hear .d-hear-ab'), lcd = d.querySelector('#hear .bx-lcdbox') || d.querySelector('#hear .d-hear-screen');
+  if (vr) { vr.style.position = ''; vr.style.top = ''; vr.style.left = ''; }
+  if (fad && vr && ab) { const dy = ab.getBoundingClientRect().top - vr.getBoundingClientRect().top; vr.style.position = 'relative'; if (dy > 0) vr.style.top = `${dy}px`; }
+  if (fad && vr && lcd && ring.length) {
+    const h = fad.parentElement.getBoundingClientRect(), thumb = fad.querySelector('.d-fad-thumb'), half = thumb.offsetHeight / 2;
+    const rr = vr.getBoundingClientRect(), wide = Math.max(thumb.offsetWidth, rr.width), cx = lcd.getBoundingClientRect().right - wide / 2;
+    vr.style.left = `${cx - (rr.left + rr.width / 2)}px`;
+    const names = [...d.querySelectorAll('#hear [data-step] > .d-hear-cap')].map((e) => e.getBoundingClientRect()).filter((r) => r.width);
+    const over = names.filter((r) => r.right > cx - wide / 2 && r.left < cx + wide / 2);
+    const top = over.length ? Math.max(...over.map((r) => r.bottom)) + 8 : Math.min(...names.map((r) => r.top));
+    const bot = Math.min(Math.max(...ring.map((r) => r.bottom)), vr.getBoundingClientRect().top - 4);
+    const left = `${cx - h.left - fad.offsetWidth / 2}px`, plate = fad.querySelector('.bx-vplate'), fill = fad.querySelector('.d-fad-fill');
     if (st.vol === 'worn' && plate) {
       const P = PLATES[st.plate], ph = bot - top, pw = ph * P.ar, cw = (P.sx1 - P.sx0) * pw;
       Object.assign(fad.style, { left, top: `${top + P.sy0 * ph - h.top}px`, height: `${(P.sy1 - P.sy0) * ph}px` });
