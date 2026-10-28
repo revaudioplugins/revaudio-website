@@ -25,7 +25,8 @@ Scope: the outer `.d-panel.d-hear-panel` plate only (step 3's pair plate and the
   LIGHT / B A + SPRAY (an arrow at PLAY and at DRIFT, the next one fresh paint), FLOOR WALL / DRIFT STEEL, VEIL,
   PHONE Y. A sprayed ring round DRIFT was tried and dropped (it read as the button's own magenta lamp).
   Picked 2026-10-28 (the user: "commit"): CONTROLS FLUSH (no boxes: "just this section doesn't feel glued"), UPFRONT A
-  (B's sprayed arrows dropped: "remove the pink arrows"), FLOOR WALL, LAYOUT TIGHT = the user's own hand layout
+  (B's sprayed arrows dropped: "remove the pink arrows"), FLOOR DRIFT STEEL (was WALL; the user on the bench with
+  the framed LCD, 2026-10-28: "Drift wall i like", confirmed = the DRIFT STEEL floor), LAYOUT TIGHT = the user's own hand layout
   (EDIT mode, `bench/drift-hear-tune/yours.json`) on a grid (`tight.json`, its note has the maths). Two micro-moves
   made after TIGHT were left out: "3 PUSH DRIFT" at 94 % (the step names stay one size) and DRIFT 1 px off the axis.
 - [x] E4b. The LCD gets the track list's frame (the user: "make a frame for this to lcd"): the same pocket + 5 px
