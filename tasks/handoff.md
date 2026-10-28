@@ -194,6 +194,125 @@ badge click = play / stop, `.played` on first play), `DESIGN.md` §3 (script acc
 - Checked: headless Chromium 1141x636 + 1440x900, no errors / 404s; badge click -> playing ORIGINAL (gains 1/0), glint stops;
   2nd click -> stopped. Not checked: Dan's Safari by eye after the bake, phones (the radio is off-screen there).
 
+## 2026-10-24 — GAS 2 page: the PHONE page, "zoom in on the plugin" (Claude Code, Dan's Mac, Dan on his phone) — BRANCH `feat/gas2-phone`, waiting for Dan's look
+
+Claim: OPEN. Files: `tools/_gas2-scene/phone.html` + `tools/_gas2-scene/phone/*.webp` (new; git-excluded folder, so `git add -f`).
+- Dan tried Swipe / Walk / Stack (entry below) on his phone: "they don't work for me". Restart, his idea: zoom in on the plugin itself,
+  the player there, the readings there. His approved summary: the globe + gauge zoomed, the station soft behind, the readings on it,
+  the pump's grade keys = the player (no radio on phones), MAIL ME THE KEYS = the ticket, the 3 posters under. Simple and minimal.
+- Built: the pump is the PLUGIN's own render, re-baked at 4x from the GAS2 repo (`bench/pump-lab.html?bake=1&knobs=bare`, `LAB.P.scale=4`,
+  `tools/ui/bake-pump-page.js`; real GPU Chrome; nothing written to the GAS2 repo), placed in the plugin's base px (`--z`), layer order
+  = the plugin's. Hero: globe (= the name, h1 kept for readers) + gauge, needle sweeps to 160 % on load; zoom ~118 % of the width, eased
+  on short screens so the gauge is never cut and the button stays in view. HEAR IT: counter + keys; tap = GAS 2, lit key again = the
+  original, ■ Stop; the needle follows (140 % / 0); the counter shows short-term loudness off the output (no K-weighting; mockup).
+  Then the 3 posters in a shop-window frame, then MAIL ME THE KEYS + mailbox + chalkboard on the stucco. ~4.8 screens at 390x844.
+- ⚠️ Every grade plays Yoni's one HIP HOP render (PREMIUM 140 %) until per-grade renders exist: needs 3 renders of one mix
+  (REGULAR / PREMIUM / RACE) + the original before this ships.
+- Checked: WebKit 390x844 / 393x659 / 375x667 / 430x932 (gauge whole, button in the first screen, no overflow); Chrome: keys play,
+  original toggle, stop, counter, the ticket from the button / the poster / the box; iOS Simulator (iPhone 17 Pro) first screen. Not
+  checked: a real iPhone, audio by ear.
+- Dan views it at https://claude.ai/artifact/RY5g1zHQsdmQRUkisbEqvc (private; fonts inlined, audio as .mp4).
+- Research brief behind it (10 phone-native sites, patterns, 3 directions): session scratchpad `research/` (not in git).
+- Dan on his phone, 2026-10-24: "very cool, I like the direction it's going, commit". Rule written to DESIGN.md §7 (rebuild for
+  portrait, never crop the desktop scene).
+- 2026-10-24 Dan: no needle on his phone (a zero-size filtered carrier) -> rebuilt as real-size boxes turning about the pivot.
+- 2026-10-24 Dan: "make a bench so I can move stuff around in my phone". `tools/_gas2-scene/phone-bench.js` (git-excluded, never
+  commit) on the real page (`phone.html#bench` locally); phone bench Artifact https://claude.ai/artifact/VmFDkUMg6n1mCCg4PE4aY8
+  (db capability). BENCH -> tap a part, drag, SIZE / TURN, arrows, SAVE -> db doc `bench/phone` (`ArtifactData get`, collection
+  `bench`, doc `phone`) + clipboard. Values = px / scale / deg at Dan's screen (the dump carries w/h/dpr); the two pumps' SIZE =
+  `--zk` (a real re-flow), the hero pump's up/down = `--topd`. Bake: convert px to the page's units, then delete the deltas.
+- 2026-10-24 Dan: "under the Fill it up remove all the page, keep one page, no scroll" -> HEAR IT, the window posters, the
+  mailbox block, the footer and their assets/JS removed; html/body locked to one screen, the hero centred (100svh). Checked
+  390x844 / 393x659 / 375x667 / 430x932: page height = the screen. Both Artifacts updated (page v3, bench v2).
+- Next: bake Dan's bench save, Dan's polish notes, the per-grade renders (Yoni), then it moves into page-b as the `@media (max-width: 760px)` layout
+  (the scene hidden on phones).
+
+- 2026-10-26 Dan picked **A** for the screen under the hero (A/B preview Artifact https://claude.ai/artifact/P3A86oo9tomiujdFnfPz5g,
+  now obsolete): `.grades` = THREE GRADES. PICK ONE. + three rows (the pump's key, 4x, + headline + line); a tap lights one key
+  (no sound yet). The page scrolls again: hero (one screen) + grades (one screen). `.bg` now clips its blur overhang. Page Artifact
+  v4, bench v3 (bench parts + the grades title and rows). Decision 1 below is DONE.
+
+- 2026-10-26 Dan: the player = "copy the jukebox we have on the GAS page, same songs, same everything" (after a pedal-vs-gauge
+  bench he rejected: "neither"). `phone.html` gained `.hear`: /gas's own title + line + the live `<gas-mixer>` (public/gas-mixer,
+  Yoni's component, untouched; under 760 px it builds its pedal toy). Locally `tools/_gas2-scene/gas-mixer` is a symlink to
+  `public/gas-mixer` (excluded) so `/gas-mixer/...` resolves on :4464; the Artifacts carry a copy (paths made relative, .m4a ->
+  .mp4, fonts inlined). ⚠️ The toy's plate reads GET GAS FREE (GAS 1's download) and is GAS 1's mix: Dan's call. Page v5, bench v4.
+
+- 2026-10-26: Dan deleted the session's Artifacts from his account (options chooser, player bench, phone bench, and the page
+  itself, https://claude.ai/artifact/RY5g1zHQsdmQRUkisbEqvc). The work is all on this branch + local :4464; a phone link needs a
+  fresh publish (new URL) on Dan's ask. Packager recipe: derive body-only from `phone.html` (title + style + body), inline the
+  fonts, `/gas-mixer/` -> `gas-mixer/`, copy `public/gas-mixer` with `.m4a` -> `.mp4` and its fonts.css inlined.
+
+### Session close 2026-10-26 (/close-session)
+
+**State.** Branch `feat/gas2-phone` (worktree `.claude/worktrees/gas2-phone`) = `origin/feat/gas2-phone` (0 ahead / 0 behind),
+7 commits on top of `feat/gas2-page`@`c4302cf`; `feat/gas2-page` has moved 24 commits on since (Yoni's radio round 3+), not merged
+in here. The only uncommitted change is this session-close block. Untracked on purpose: `tools/_gas2-scene/phone-bench.js` (the
+bench; git-excluded, never commit).
+
+**Unverified.**
+- The needle fix on Dan's real phone (rebuilt after "no needle"; seen in the iOS Simulator only). Dan has not confirmed it since.
+- The one-screen page on a real iPhone (checked headless WebKit at 4 sizes, page height = screen height).
+- The bench on a real phone: no save has reached the bench db yet (`bench` collection empty 2026-10-26), and the Simulator's
+  clipboard is empty, so Dan has not saved a bench round.
+
+**Background processes (not this session's to kill unless Dan says).**
+- `python3 -m http.server 4464` from this worktree's `tools/_gas2-scene` (pid 37789): the page + `phone.html#bench`. Kill: `kill 37789`.
+- iOS Simulator iPhone 17 Pro (B0B0F88C-95BB-40DA-B292-A73157B50757) booted with `127.0.0.1:4464/phone.html#bench` open in Safari
+  (claude.ai Artifacts show "Sign in" there: the Simulator's Safari is not signed in). Stop: `xcrun simctl shutdown B0B0F88C-95BB-40DA-B292-A73157B50757`.
+- Not this session's: :4461 pid 29302 (GAS2 plugin UI), :4462 pid 41222 (the gas2-page worktree).
+
+**Decisions open for the next session.**
+1. **The screen under the hero** (Dan 2026-10-26: "explain how simple the plugin is, three modes, a short line for each one, let's
+   think about it"). Proposed title THREE GRADES. PICK ONE. + REGULAR "Smooth and warm. For mixes that are already good." /
+   PREMIUM "The signature. Thick lows, clear mids, silky air." / RACE "Punchy and bright. For loud, modern mixes." (from GAS2
+   `docs/BRIEF.md`). Layout A (recommended: three rows, the pump's real key image + name + line) vs B (the keys in a row, one line that
+   changes on tap). Waiting for Dan's A/B + copy OK. Note: this re-opens scrolling, which he locked to one screen on 2026-10-24.
+   No "one knob" / "that's it" (GAS dial + IN/OUT exist; DESIGN.md copy rule).
+2. **Tap a grade to hear it**: needs Yoni's per-grade renders of one mix (REGULAR / PREMIUM / RACE + the original).
+3. **Bake the bench** when Dan saves: the claude.ai bench Artifact is gone (deleted from Dan's account 2026-10-26, no save ever
+   reached it); the local bench `phone.html#bench` remains: its SAVE copies to the clipboard (`xcrun simctl pbpaste <udid>` in the
+   Simulator). Republish a bench Artifact only if Dan asks.
+4. **Into page-b**: the phone page becomes page-b's `@media (max-width: 760px)` layout, after rebasing on `feat/gas2-page`.
+5. **page-b desktop bugs found 2026-10-23** (fixed only in the phone options, now superseded): the closed plugin veil's iframe keeps
+   taps (`.veil:not(.open) .plug { display: none; }`); the reduced-motion rule misses the button's `::after` shine. Dan's word to fix.
+6. ~~Old Artifact (the Swipe / Walk / Stack chooser)~~: gone from Dan's account (deleted) 2026-10-26.
+
+**Suggested commit.** `docs(handoff): GAS 2 phone page session close (2026-10-26)`: `tasks/handoff.md` only.
+
+**Cleanup.** The superseded `phone-{swipe,walk,stack}.html` are still committed on this branch (`e98ea01`): drop them in the
+page-b merge. Node 26.0.0 on Dan's Mac has CVE-2026-111497 (upgrade to 26.12.1+).
+
+## 2026-10-23 — GAS 2 page: three PHONE options, Swipe / Walk / Stack (Claude Code, Dan's Mac, Dan on his phone) — SUPERSEDED 2026-10-24
+
+Claim: CLOSED 2026-10-24 (Dan: they don't work for him on the phone; replaced by the entry above). Files: `tools/_gas2-scene/phone-{swipe,walk,stack}.html` only (new; git-excluded folder, so `git add -f`).
+Worktree `.claude/worktrees/gas2-phone`, branched from `feat/gas2-page` at `c4302cf`; static server :4464 (pid 37789) from its `tools/_gas2-scene`.
+- Ask (Dan, on his phone): the GAS 2 page for phones, "same principles, same posters, same layout vibe", several options, right in one go.
+- Each file = `page-b.html` (c4302cf) + ONE `@media (max-width: 760px)` block `/* ═══ PHONE · <OPTION> ═══ */` + one matchMedia-gated
+  script + the minimum markup (all `hidden` / unstyled on desktop). Desktop renders pixel-identical to page-b (checked 1141x636,
+  1440x900, 800x900). The winner pastes into page-b verbatim.
+- SWIPE: the stage is a sideways scroller (100svh, scene 150svh wide = laptop scale), opens on the sky + readings, mandatory snap to
+  store front / pump / radio, a "← Walk the lot" caption + one 56 px peek. WALK: a sticky 100lvh frame, page scroll dollies the camera
+  with flat holds (readings → store → pump → radio), then an end band with the button. STACK: the readings screen, then portrait crops
+  of the same scene (sign strip → pump → mail + chalkboard → radio), each live prop moved into its one shot, feathered seams.
+- All three: same readings recipe in vw/svh (GAS2 ~71-74vw), always-on pump caption, grade tap = pick + tip 2.4 s, the photo's bottom
+  melts into the page (no hard line), FOCUS blur off on phones (HUG + DUSK kept).
+- Checked (WebKit + Chromium, 390x844 / 375x667 / 393x659 / 430x932): every prop tapped by script opens the right thing, no overflow,
+  no page errors except WebKit's missing AAC decoder (page-b throws the same). iOS Simulator (iPhone 17 Pro, 402x714): Swipe opens on
+  the sky and stays (scrollLeft = max through 4 s), Walk's first screen right. NOT checked: a real iPhone (momentum, snap feel, toolbar
+  collapse, the keyboard over the ticket), audio by ear.
+- Dan views them at https://claude.ai/artifact/WaDdeVGPhHdxXxseH22H6H (private; a chooser + the three pages + assets + the GAS 2
+  plugin UI copied from the GAS2 repo for the pump; fonts inlined; the radio renders renamed .m4a → .mp4 because the host won't serve .m4a).
+  Packager: `build_artifact.py` in the session scratchpad (not in git).
+- 🔴 page-b bugs found on the way (fixed in the phone blocks only, desktop untouched): (1) after the plugin veil closes its iframe keeps
+  swallowing taps in its rect (WebKit touch): fix `.veil:not(.open) .plug { display: none; }`; (2) the reduced-motion rule misses the
+  button's `::after` shine, so it keeps running.
+- ⚠️ The radio moved on: `feat/gas2-page` gained Yoni's radio round 3 (`e96ef81`..`7a4a318`: the radio stands IN the scene, no close-up)
+  after this branch was cut, and its `radio.css` has no phone rules. The three options use the c4302cf close-up player. Rebase this
+  branch only after Dan's pick, and then the phone radio is Yoni's lane (one writer per file set).
+- Next: Dan picks Swipe / Walk / Stack on his phone → paste that block into page-b (strip Walk's `window.gas2Walk` test hook), delete
+  the other two files, rebase on `feat/gas2-page`, re-check with Yoni's in-scene radio.
+
 ## 2026-10-23 — GAS 2 page: MAIL ME THE KEYS poster on the wall (Claude Code `danavivi-2a`, Dan's Mac) — BRANCH `feat/gas2-page` PUSHED
 
 Claim: CLOSED 2026-10-23. Files: `tools/_gas2-scene/page-b.html` (mailbox block: `.mp` poster button + `.mail` moved down,

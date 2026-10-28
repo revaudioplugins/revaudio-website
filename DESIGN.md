@@ -281,6 +281,19 @@ so much", "this is amazing"; `tools/_gas2-scene/page-b.html` on `feat/gas2-page`
   button says it), no claim that needs a footnote (no "one dial" when there are three controls).
 - Tuned at Dan's Safari 1141x636 and checked at 1440x900 / 1920x953: the column stays in the open sky.
 
+**A product page on a phone is rebuilt for portrait, never a crop of the desktop scene (the GAS 2 page, Dan
+2026-10-24).** Three ways of showing the wide station photo on a phone (a sideways swipe, a scroll-driven camera,
+stacked crops) "don't work for me"; the zoom-in on the plugin itself did ("very cool, I like the direction"). The
+recipe (`tools/_gas2-scene/phone.html`): the plugin's own render re-baked sharp for the zoom (its parts in the
+plugin's base px, its layer order), the globe as the name, the readings under the gauge, the station only as a soft
+backdrop. ONE screen, no scroll (Dan, same day: "under the Fill it up remove all the page, keep one page, no scroll"):
+the pump + the four readings centred as one group, the zoom easing off on short screens so nothing is cut; the button
+opens the service ticket; no player, posters or mailbox on phones. Then one more screen (Dan 2026-10-26, "how simple the plugin
+is, three modes, a short line for each", A picked over B): THREE GRADES. PICK ONE. as three rows, the pump's own grade key +
+a Bebas honey headline + one Inter line, all readable at once (B, the key bank with one line that changes on tap, hid two of
+the three lines).
+Why: a portrait phone shows a third of a 3:2 scene, the photo goes soft, and the props turn into hunt-the-hotspot.
+
 ## 8. Layout
 
 ```
