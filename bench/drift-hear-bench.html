@@ -28,6 +28,13 @@ h1 { font: 800 24px/1.1 system-ui; margin: 0 0 6px; }
 .bar button[aria-pressed='true'] { background: var(--hot); border-color: var(--hot); color: #14061a; }
 .bar label { display: flex; align-items: center; gap: 8px; color: var(--dim); font-size: 12px; letter-spacing: .08em; }
 .bar output { color: var(--ink); min-width: 3.2em; font-variant-numeric: tabular-nums; }
+.bars { position: sticky; top: 0; z-index: 5; display: grid; gap: 6px; margin-bottom: 14px; }
+.bars .bar { position: static; margin: 0; }
+.bar.tune { border-color: #1f4a55; }
+.bar.tune b { color: #5ee7ff; }
+#t-edit[aria-pressed='true'] { background: #5ee7ff; border-color: #5ee7ff; color: #06121a; }
+#t-sel { color: var(--ink); min-width: 15em; font-weight: 700; }
+#t-out { display: none; width: 100%; height: 150px; margin: 0 0 12px; background: #0f0a16; color: #cfe; border: 1px solid #2c2138; border-radius: 6px; font: 12px/1.4 ui-monospace, Consolas, monospace; }
 .note { color: var(--dim); margin: 0 0 12px; min-height: 2.8em; max-width: 1100px; }
 .frames { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: start; }
 .cell small { display: block; color: var(--dim); font-size: 12px; letter-spacing: .1em; margin: 0 0 6px; }
@@ -43,7 +50,11 @@ h1 { font: 800 24px/1.1 system-ui; margin: 0 0 6px; }
   <h1>#hear: one engraved wall</h1>
   <p class="lede">The real /drift page, live (the player works). LOOK E = plate 3, the title row gone, every part sunk into
   a pocket milled into the wall, worn lips, a cracked corner on the LCD and the CRT glass. UPFRONT = how PLAY and PUSH
-  DRIFT step forward. FLOOR = what the pockets are cut into.</p>
+  DRIFT step forward. FLOOR = what the pockets are cut into.<br>
+  <b>EDIT ON</b>: drag a part to move it · drag the cyan corner square (or roll the mouse wheel over a part) to resize ·
+  arrow keys nudge 1 px (Shift = 10), + / - resize · Esc lets go. The desktop frame and the phone frame keep their own
+  values; they are saved in this browser. EDIT OFF = the player works again. COPY = the values for the page.</p>
+  <div class="bars">
   <div class="bar" id="bar">
     <span class="grp"><b>LOOK</b><button data-k="look" data-v="0">0 · TODAY</button><button data-k="look" data-v="e" aria-pressed="true">E · ENGRAVED</button></span>
     <span class="grp"><b>UPFRONT</b><button data-k="up" data-v="0">AS IS</button><button data-k="up" data-v="a" aria-pressed="true">A · BIG + LIGHT</button><button data-k="up" data-v="b">B · A + SPRAY</button></span>
@@ -52,6 +63,15 @@ h1 { font: 800 24px/1.1 system-ui; margin: 0 0 6px; }
     <label>VEIL <input type="range" id="veil" min="0" max="50" value="18"><output id="veilo"></output></label>
     <label>PHONE Y <input type="range" id="px" min="0" max="100" value="0"><output id="pxo"></output></label>
   </div>
+  <div class="bar tune" id="tune">
+    <span class="grp"><b>EDIT</b><button id="t-edit" aria-pressed="true">ON</button></span>
+    <span id="t-sel">click a part in either frame</span>
+    <label>X <output id="t-x">-</output></label><label>Y <output id="t-y">-</output></label>
+    <label>SIZE <input type="range" id="t-size" min="30" max="250" value="100" disabled><output id="t-so">-</output></label>
+    <span class="grp"><button id="t-reset1">RESET PART</button><button id="t-resetall">RESET ALL</button><button id="t-copy">COPY</button></span>
+  </div>
+  </div>
+  <textarea id="t-out" readonly aria-label="tuned values"></textarea>
   <p class="note" id="note"></p>
   <div class="frames">
     <div class="cell"><small>DESKTOP 1440</small><div class="view desk" id="vd"><iframe id="fd" title="desktop 1440" width="1440" height="640"></iframe></div></div>
@@ -242,16 +262,17 @@ const align = (w) => {
     const t = bore.dataset.t === 'pb' ? d.querySelector('#hear .d-start-pb') : d.querySelectorAll('#hear .d-hear-caps .d-hear-mount')[+bore.dataset.t.slice(1)];
     if (!t) continue;
     const a = bore.parentElement.getBoundingClientRect(), b = t.getBoundingClientRect(), m = bore.dataset.t === 'pb' ? (phone ? 5 : 7) : (phone ? 3 : 5);
-    Object.assign(bore.style, { left: `${b.left - a.left - m}px`, top: `${b.top - a.top - m}px`, width: `${b.width + 2 * m}px`, height: `${b.height + 2 * m}px` });
+    const k = parseFloat(w.getComputedStyle(bore.parentElement).scale) || 1;   // a hand-resized DRIFT box scales its bore with it
+    Object.assign(bore.style, { left: `${(b.left - a.left) / k - m}px`, top: `${(b.top - a.top) / k - m}px`, width: `${b.width / k + 2 * m}px`, height: `${b.height / k + 2 * m}px` });
   }
   // the sprayed arrows land on their control wherever the layout puts it: the tip (the arrow box's bottom-right) at a
   // point on the control, given as a fraction of its box
-  const arrow = (cls, target, fx, fy) => {
+  const arrow = (cls, n, target, fx, fy) => {
     const a = d.querySelector('#hear .bx-arrow.' + cls), t = d.querySelector('#hear ' + target); if (!a || !t || !a.offsetWidth) return;
-    const h = a.parentElement.getBoundingClientRect(), r = t.getBoundingClientRect();
-    a.style.left = `${r.left + fx * r.width - a.offsetWidth - h.left}px`; a.style.top = `${r.top + fy * r.height - a.offsetHeight - h.top}px`;
+    const h = a.parentElement.getBoundingClientRect(), r = t.getBoundingClientRect(), o = tune[phone ? 'p' : 'd'][n] || { x: 0, y: 0 };
+    a.style.left = `${r.left + fx * r.width - a.offsetWidth - h.left + o.x}px`; a.style.top = `${r.top + fy * r.height - a.offsetHeight - h.top + o.y}px`;
   };
-  arrow('play', '.d-hear-play', .35, 0); arrow('drift', '.d-start-pb', .03, .85);
+  arrow('play', 'arrowPlay', '.d-hear-play', .35, 0); arrow('drift', 'arrowDrift', '.d-start-pb', .03, .85);
   for (const el of d.querySelectorAll('#hear .d-hear-tv, #hear .d-hear-step, #hear .d-hear-controls, #hear .d-hear-deck')) {
     const r = el.getBoundingClientRect();
     el.style.setProperty('--fx', `${x0 - (r.left - P.left)}px`); el.style.setProperty('--fy', `${y0 - (r.top - P.top)}px`);
@@ -265,7 +286,7 @@ const apply = () => {
     let el = d.getElementById('hear-bench'); if (!el) { el = d.createElement('style'); el.id = 'hear-bench'; d.head.append(el); }
     const on = st.look === 'e';
     el.textContent = on ? cssLook() + cssFloor() + cssCtl() + cssUp() : '#cookie-banner { display: none !important; }';
-    parts(d, on); requestAnimationFrame(() => align(w));
+    parts(d, on); installEditor(f); readBases(f); renderTune(f); requestAnimationFrame(() => { align(w); drawOverlay(f); });
     if (!w.__bxAlign) { w.__bxAlign = true; w.addEventListener('resize', () => align(w)); }
   }
   $('veilo').textContent = st.veil + ' %'; $('pxo').textContent = st.px + ' %';
@@ -285,6 +306,176 @@ $('bar').addEventListener('click', (e) => { const b = e.target.closest('[data-k]
 $('veil').addEventListener('input', (e) => { st.veil = +e.target.value; apply(); });
 $('px').addEventListener('input', (e) => { st.px = +e.target.value; apply(); });
 addEventListener('resize', fit); fit();
+/* ---- TUNE: move and resize the controls row by hand (the user, 2026-10-28: "make a bench so I can resize ... and
+   move around elements"). x / y = px moved from where the layout puts the part, s = a scale of the bench's own size.
+   The desktop frame (1440) and the phone frame (390) keep their own values ('d' / 'p'). Moves ride on the CSS
+   translate property (added to the part's own translate, read with the tune off), sizes on the scale property, so
+   the page's layout never reflows under the hand. ----------------------------------------------------------------- */
+const TUNABLE = {
+  cap2: { label: '2 PLAY label', sel: '[data-step="2"] > .d-hear-cap' },
+  play: { label: 'PLAY', sel: '.d-hear-mount--play' },
+  stop: { label: 'STOP', sel: '.d-hear-caps .d-hear-mount:not(.d-hear-mount--play)' },
+  cap3: { label: '3 PUSH DRIFT label', sel: '[data-step="3"] > .d-hear-cap' },
+  drift: { label: 'DRIFT button', sel: '.d-start' },
+  ab: { label: 'ORIGINAL / DRIFT', sel: '.d-hear-ab' },
+  vol: { label: 'VOLUME knob', sel: '.d-vol' },
+  volLbl: { label: 'VOLUME readout', sel: '[data-hear-vol-read]' },
+  arrowPlay: { label: 'arrow at PLAY', sel: '.bx-arrow.play', origin: '100% 100%' },   // grows from its tip
+  arrowDrift: { label: 'arrow at DRIFT', sel: '.bx-arrow.drift', origin: '100% 100%' },
+};
+const TKEY = 'drift-hear-bench-tune-v1';
+let tune = { d: {}, p: {} };
+try { const t = JSON.parse(localStorage.getItem(TKEY) || 'null'); if (t && t.d && t.p) tune = t; } catch (e) { /* private window: start clean */ }
+const saveTune = () => { try { localStorage.setItem(TKEY, JSON.stringify(tune)); } catch (e) { /* not saved, still works */ } };
+const tk = (w) => (w.innerWidth <= 600 ? 'p' : 'd');
+const tv = (k, n) => tune[k][n] || (tune[k][n] = { x: 0, y: 0, s: 1 });
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const bases = { d: {}, p: {} };
+let edit = true, picked = null;   // picked = { f: the iframe, n: a TUNABLE name }
+const frames = () => [$('fd'), $('fp')];
+const partEl = (d, n) => d.querySelector('#hear ' + TUNABLE[n].sel);
+
+// each part's own translate (the page may already move it, e.g. the step 2 bezels sit 9 px low), read with the tune off
+const readBases = (f) => {
+  const d = f.contentDocument, w = f.contentWindow; if (!d || !d.head) return;
+  const ts = d.getElementById('hear-tune'); if (ts) ts.disabled = true;
+  for (const n of Object.keys(TUNABLE)) {
+    const el = partEl(d, n); if (!el) continue;
+    const tr = w.getComputedStyle(el).translate, m = tr && tr !== 'none' ? tr.split(' ').map(parseFloat) : [0, 0];
+    bases[tk(w)][n] = [m[0] || 0, m[1] || 0];
+  }
+  if (ts) ts.disabled = false;
+};
+const tuneCss = (k) => Object.entries(tune[k]).map(([n, v]) => {
+  const t = TUNABLE[n], b = bases[k][n] || [0, 0]; if (!t) return '';
+  const move = n.startsWith('arrow') ? '' : `translate: ${+(b[0] + v.x).toFixed(1)}px ${+(b[1] + v.y).toFixed(1)}px !important; `;   // arrows: placed by align()
+  return `#hear ${t.sel} { ${move}scale: ${+v.s.toFixed(3)} !important;${t.origin ? ` transform-origin: ${t.origin} !important;` : ''} }`;
+}).filter(Boolean).join('\n');
+const renderTune = (f) => {
+  const d = f.contentDocument, w = f.contentWindow; if (!d || !d.head) return;
+  let el = d.getElementById('hear-tune'); if (!el) { el = d.createElement('style'); el.id = 'hear-tune'; d.head.append(el); }
+  el.textContent = st.look === 'e' ? tuneCss(tk(w)) : '';
+  align(w); drawOverlay(f);
+};
+
+// the overlay inside each frame: hover outline, the picked part's outline + name, the resize grip
+const OV_CSS = `#bx-ov > div { position: fixed; z-index: 2147483000; pointer-events: none; display: none; box-sizing: border-box; }
+#bx-ov .hov { border: 1px dashed rgba(94, 231, 255, .7); border-radius: 4px; }
+#bx-ov .sel { border: 2px solid #5ee7ff; border-radius: 4px; box-shadow: 0 0 0 1px rgba(0, 0, 0, .6); }
+#bx-ov .grip { width: 16px; height: 16px; background: #5ee7ff; border: 2px solid #06121a; border-radius: 3px; pointer-events: auto; cursor: nwse-resize; }
+#bx-ov .tag { font: 700 11px/1 system-ui, sans-serif; letter-spacing: .04em; color: #06121a; background: #5ee7ff; padding: 3px 6px; border-radius: 3px; white-space: nowrap; }
+html.bx-edit #hear .d-hear-controls, html.bx-edit #hear .d-hear-controls * { cursor: move !important; }`;
+const drawOverlay = (f) => {
+  const d = f.contentDocument; if (!d) return; const o = d.getElementById('bx-ov'); if (!o) return;
+  const [, sl, grip, tag] = o.children, on = edit && st.look === 'e';
+  d.documentElement.classList.toggle('bx-edit', on);
+  const hear = d.getElementById('hear'); if (hear) hear.toggleAttribute('data-lenis-prevent', on);   // the site's smooth scroller (Lenis) would eat the wheel
+  const el = on && picked && picked.f === f ? partEl(d, picked.n) : null, r = el && el.getBoundingClientRect();
+  if (!r || !r.width) { sl.style.display = grip.style.display = tag.style.display = 'none'; return; }
+  Object.assign(sl.style, { display: 'block', left: `${r.left - 3}px`, top: `${r.top - 3}px`, width: `${r.width + 6}px`, height: `${r.height + 6}px` });
+  Object.assign(grip.style, { display: 'block', left: `${r.right - 6}px`, top: `${r.bottom - 6}px` });
+  tag.textContent = TUNABLE[picked.n].label; Object.assign(tag.style, { display: 'block', left: `${r.left - 3}px`, top: `${r.top - 22}px` });
+};
+const drawAll = () => frames().forEach(drawOverlay);
+// the smallest part under the pointer wins (an arrow over its control, a label over its group)
+const hit = (d, x, y) => {
+  let best = null, area = Infinity;
+  for (const n of Object.keys(TUNABLE)) {
+    const el = partEl(d, n); if (!el) continue; const r = el.getBoundingClientRect();
+    if (!r.width || x < r.left || x > r.right || y < r.top || y > r.bottom) continue;
+    if (r.width * r.height < area) { area = r.width * r.height; best = n; }
+  }
+  return best;
+};
+const syncPanel = () => {
+  const k = picked && tk(picked.f.contentWindow), v = picked && (tune[k][picked.n] || { x: 0, y: 0, s: 1 });
+  $('t-sel').textContent = picked ? `${TUNABLE[picked.n].label} · ${k === 'p' ? 'PHONE' : 'DESKTOP'}` : 'click a part in either frame';
+  $('t-x').textContent = v ? `${v.x} px` : '-'; $('t-y').textContent = v ? `${v.y} px` : '-';
+  $('t-size').disabled = !v; $('t-size').value = v ? Math.round(v.s * 100) : 100; $('t-so').textContent = v ? `${Math.round(v.s * 100)} %` : '-';
+};
+const pick = (f, n) => { picked = n ? { f, n } : null; drawAll(); syncPanel(); };
+const changed = () => { if (picked) renderTune(picked.f); syncPanel(); saveTune(); };
+
+const installEditor = (f) => {
+  const d = f.contentDocument, w = f.contentWindow; if (!d || !d.body || d.__bx) return; d.__bx = true;
+  const cs = d.createElement('style'); cs.textContent = OV_CSS; d.head.append(cs);
+  d.body.insertAdjacentHTML('beforeend', '<div id="bx-ov" aria-hidden="true"><div class="hov"></div><div class="picked"></div><div class="grip"></div><div class="tag"></div></div>');
+  const hov = d.querySelector('#bx-ov .hov');
+  const live = () => edit && st.look === 'e';
+  const inHear = (e) => { const h = d.getElementById('hear'); return !!(h && e.target && h.contains(e.target)); };
+  let drag = null;
+  d.addEventListener('pointerdown', (e) => {
+    if (!live()) return;
+    const onGrip = !!(e.target.closest && e.target.closest('#bx-ov .grip'));
+    const n = onGrip && picked && picked.f === f ? picked.n : hit(d, e.clientX, e.clientY);
+    if (!n) { if (inHear(e)) { e.preventDefault(); e.stopPropagation(); pick(f, null); } return; }
+    e.preventDefault(); e.stopPropagation(); pick(f, n);
+    const v = tv(tk(w), n), r = partEl(d, n).getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    drag = { grip: onGrip, x0: e.clientX, y0: e.clientY, vx: v.x, vy: v.y, s0: v.s, cx, cy, d0: Math.max(8, Math.hypot(e.clientX - cx, e.clientY - cy)) };
+    try { e.target.setPointerCapture(e.pointerId); } catch (err) { /* fine without */ }
+  }, true);
+  d.addEventListener('pointermove', (e) => {
+    if (!live()) { hov.style.display = 'none'; return; }
+    if (drag) {
+      const v = tv(tk(w), picked.n);
+      if (drag.grip) v.s = clamp(drag.s0 * Math.hypot(e.clientX - drag.cx, e.clientY - drag.cy) / drag.d0, .3, 3);
+      else { v.x = Math.round(drag.vx + e.clientX - drag.x0); v.y = Math.round(drag.vy + e.clientY - drag.y0); }
+      renderTune(f); syncPanel(); e.preventDefault(); e.stopPropagation(); return;
+    }
+    const n = hit(d, e.clientX, e.clientY), r = n && partEl(d, n).getBoundingClientRect();
+    if (!r) { hov.style.display = 'none'; return; }
+    Object.assign(hov.style, { display: 'block', left: `${r.left - 2}px`, top: `${r.top - 2}px`, width: `${r.width + 4}px`, height: `${r.height + 4}px` });
+  }, true);
+  const end = () => { if (drag) { drag = null; saveTune(); } };
+  d.addEventListener('pointerup', end, true); d.addEventListener('pointercancel', end, true);
+  // EDIT ON: nothing inside the section plays, picks a track or turns while you move things
+  for (const t of ['click', 'mousedown', 'mouseup', 'touchstart', 'dblclick', 'contextmenu']) d.addEventListener(t, (e) => { if (live() && inHear(e)) { e.preventDefault(); e.stopPropagation(); } }, { capture: true, passive: false });
+  d.addEventListener('wheel', (e) => {
+    if (!live()) return; const n = hit(d, e.clientX, e.clientY); if (!n) return;
+    e.preventDefault(); e.stopPropagation(); if (!picked || picked.f !== f || picked.n !== n) pick(f, n);   // stop: the VOLUME knob turns on the wheel too
+    const v = tv(tk(w), n); v.s = clamp(v.s * (e.deltaY < 0 ? 1.03 : 1 / 1.03), .3, 3); changed();
+  }, { passive: false });
+  d.addEventListener('keydown', nudge, true);
+  w.addEventListener('scroll', () => drawOverlay(f), { passive: true });
+};
+const nudge = (e) => {
+  if (!edit || !picked || st.look !== 'e' || (e.target && e.target.tagName === 'INPUT')) return;
+  const step = e.shiftKey ? 10 : 1, v = tv(tk(picked.f.contentWindow), picked.n);
+  const mv = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] }[e.key];
+  if (mv) { v.x += mv[0]; v.y += mv[1]; }
+  else if (e.key === '+' || e.key === '=') v.s = clamp(v.s * 1.02, .3, 3);
+  else if (e.key === '-' || e.key === '_') v.s = clamp(v.s / 1.02, .3, 3);
+  else if (e.key === 'Escape') { pick(null, null); return; }
+  else return;
+  e.preventDefault(); changed();
+};
+document.addEventListener('keydown', nudge);
+$('t-edit').addEventListener('click', () => {
+  edit = !edit; $('t-edit').setAttribute('aria-pressed', String(edit)); $('t-edit').textContent = edit ? 'ON' : 'OFF';
+  for (const f of frames()) { const o = f.contentDocument && f.contentDocument.querySelector('#bx-ov .hov'); if (o) o.style.display = 'none'; }
+  drawAll();
+});
+$('t-size').addEventListener('input', (e) => { if (!picked) return; tv(tk(picked.f.contentWindow), picked.n).s = +e.target.value / 100; changed(); });
+$('t-reset1').addEventListener('click', () => { if (!picked) return; delete tune[tk(picked.f.contentWindow)][picked.n]; changed(); });
+$('t-resetall').addEventListener('click', () => { tune = { d: {}, p: {} }; saveTune(); frames().forEach(renderTune); syncPanel(); });
+// COPY: the whole tune as it would land on the page, desktop and phone apart, plus the raw values to bake from
+$('t-copy').addEventListener('click', async () => {
+  const day = new Date().toISOString().slice(0, 10);
+  const txt = `/* #hear controls row, moved + resized by hand on bench/drift-hear-bench.html (CONTROLS ${st.ctl}, UPFRONT ${st.up}, FLOOR ${st.floor}), ${day}.
+   translate = where the part sits (its own offset included), scale = its size against the bench's */
+@media (min-width: 601px) {
+${tuneCss('d')}
+}
+@media (max-width: 600px) {
+${tuneCss('p')}
+}
+/* raw: ${JSON.stringify(tune)} */`;
+  const out = $('t-out'); out.value = txt; out.style.display = 'block'; out.select();
+  try { await navigator.clipboard.writeText(txt); $('t-copy').textContent = 'COPIED'; } catch (err) { $('t-copy').textContent = 'COPY (select the box)'; }
+  setTimeout(() => { $('t-copy').textContent = 'COPY'; }, 1600);
+});
+syncPanel();
+
 // test hook: window.benchSet({look, up, floor, ctl, veil, px})
 window.benchSet = (o) => { Object.assign(st, o); apply(); };
 </script>

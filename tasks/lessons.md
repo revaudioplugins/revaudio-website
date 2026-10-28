@@ -118,3 +118,11 @@ width (verify-hear.cjs's coachClipped said "clipped" everywhere, a blind metric)
 3. playwright-core 1.63 asks for `webkit-2359`; laptop 1 has `webkit-2336`. Launch it with
    `executablePath: %LOCALAPPDATA%/ms-playwright/webkit-2336/Playwright.exe` instead of downloading. Windows WebKit has no
    `AudioContext`, so the #hear player stays on its no-audio path there: WebKit checks the look, not the sound.
+
+## 2026-10-28 — a hand-tuning bench over the real page: Lenis eats the wheel
+The #hear section bench drags and resizes parts inside same-origin iframes of the built /drift page. Wheel-to-resize
+scrolled the frame instead, even with `preventDefault` in a `{ passive: false }` listener: the site's smooth scroller
+(Lenis, `src/lib/motion.ts`) scrolls the page from its own wheel listener. Lenis skips anything inside
+`[data-lenis-prevent]`, so the bench sets that attribute on `#hear` while EDIT is on (and stops propagation, or the
+VOLUME knob's own wheel handler turns it too). Moves ride on the CSS `translate` property and sizes on `scale`, added to
+the part's own translate read with the tune style disabled, so the page never reflows under the hand.
