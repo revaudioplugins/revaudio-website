@@ -18,6 +18,8 @@ Dan's order (2026-10-28): finish the scene with placeholders first, then generat
       Paddle code and what catching it does.
 - [x] 4c. Dan, 2026-10-28: the roof sign photographed into the car (~$0.50, `drone/tools/sign-guide.py`) and the sidewalk
       blockout props (the "css" boxes in the descent) removed. Landing still exact.
+- [x] 4d. Real headlight beam + contact shadow; catch the car = the coupon ticket + CATCH10 copied (Dan, 2026-10-28).
+- [ ] 4e. Gil: the Paddle discount CATCH10, 10% sitewide (RevTasks #193). Gate: the page stays off main until it exists.
 - [ ] 5b. QA again + 1141x636, WebKit, reduced motion, no-WebGL, weight <= 2.5 MB, frame time.
 - [ ] 6. Dan's Safari + phone look; handoff, commit, push the branch (never main).
 

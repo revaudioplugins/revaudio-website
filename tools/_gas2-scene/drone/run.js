@@ -83,6 +83,11 @@ let shown = false, landed = false, sDisp = 0, last = performance.now();
 const born = last;
 world.car.start();
 addEventListener('dr:car', () => world.car.start(0));
+// catch the car (Dan 2026-10-28): a click / tap on it = dr:caught (page-b opens the coupon ticket, the code copied)
+const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+const onCar = e => { ndc.set(e.clientX / innerWidth * 2 - 1, 1 - e.clientY / innerHeight * 2); ray.setFromCamera(ndc, cam); return world.car.hit(ray.ray); };
+canvas.addEventListener('click', e => { if (onCar(e)) dispatchEvent(new CustomEvent('dr:caught')); });
+canvas.addEventListener('pointermove', e => { if (e.pointerType === 'mouse') canvas.style.cursor = onCar(e) ? 'pointer' : ''; });
 function frame(now) {
   if (landed) return;
   const dt = Math.min(.05, (now - last) / 1000); last = now;

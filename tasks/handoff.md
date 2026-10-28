@@ -1,6 +1,6 @@
 ## 2026-10-28 — GAS 2 page: the drone intro, from scratch (Claude Code `revaudio-59`, laptop 1) — BRANCH `feat/gas2-drone`
 
-Claim: OPEN `revaudio-59`. Scene + benches BUILT; Dan picked the DEFAULT camera (TOP); the REAL ART is in (gpt-image-2, 2026-10-28, ~$2 with the roof sign); sidewalk blockout props removed. Waiting on Dan's look.
+Claim: OPEN `revaudio-59`. Scene + benches BUILT; Dan picked the DEFAULT camera (TOP); the REAL ART is in (gpt-image-2, 2026-10-28, ~$2 with the roof sign); sidewalk blockout props removed; real headlights; catch the car = the CATCH10 coupon ticket (Paddle code: Gil, RevTasks #193). Waiting on Dan's look.
 Files: NEW `tools/_gas2-scene/drone/**`; in `page-b.html` ONE `<link>` + `<script>` line (after the radio
 line), nothing else of page-b's; one README line pair; `tasks/todo.md` (the "GAS 2 drone descent" section); this entry.
 - Dan: a hovering drone above the station; scroll down = it comes down into the final scene, then GAS 2 pops and the right
@@ -72,8 +72,13 @@ line), nothing else of page-b's; one README line pair; `tasks/todo.md` (the "GAS
   from the lamps, light falling off with distance, blended as road * (1 + beam) so it lights the asphalt (cracks stay
   dark); shadow = a soft contact shadow hugging the footprint (dusk: no sun shadow). Procedural in `world.js`, no new
   file. Landing still mean 0.00 (1440 + 390), no errors.
-- Coupon: Dan, 2026-10-28: "10% coupon on the whole site". The code must be a live Paddle discount (wiki store); not
-  created yet. Open: the code name, creating it in Paddle (his OK), what catching does; WebKit / a real phone; his look.
+- Coupon (Dan, 2026-10-28: "10% coupon on the whole site"; picks: code CATCH10, Gil creates it, a ticket + copy):
+  catching the car (click / tap) opens a coupon ticket in the page's service-ticket look (`#cpVeil`: YOU CAUGHT IT,
+  CATCH10, 10% OFF THE WHOLE STORE, a COPIED stamp) and copies the code. Checked (headless Edge): a miss opens nothing,
+  a hit opens it with the clipboard = CATCH10 at 1440 (click) and 390 (tap), Escape closes, no errors.
+  The Paddle discount is NOT created yet: Gil, RevTasks #193 (urgent, Sales; bell only, a raw insert sends no email)
+  + shared `collaboration/STATUS.md` (`b20a848`). This page must not go live before the code exists.
+- Open: Gil's CATCH10 in Paddle; WebKit / a real phone; Dan's look.
 
 ## 2026-10-26 — GAS 2 page: the drone intro (hover above the station, scroll = descent, land, readings pop) (Claude Code `danavivi-19`, Dan's Mac) — BRANCH `feat/gas2-page`
 

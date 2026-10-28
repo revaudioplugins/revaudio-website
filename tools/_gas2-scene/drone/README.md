@@ -3,6 +3,9 @@
 Dan, 2026-10-28: a drone hovers above the station; scrolling brings it down into the page's own scene; then GAS 2 pops
 out and the readings pop in fast. A car drives right to left on load with **CATCH YOUR COUPON** on its roof, readable
 from the hover. One flight per load (scrolling back up does not fly back). Owner: Claude Code `revaudio-59`.
+Catch the car (Dan, 2026-10-28): a click / tap on it (`world.car.hit`, a generous box round the moving car) fires
+`dr:caught`; page-b opens the coupon ticket (`#cpVeil`) and copies `CATCH10` = 10% off the whole store. The code must be
+a live Paddle discount before this page goes live: Gil, RevTasks #193 (shared `collaboration/STATUS.md`).
 
 State: Dan picked the default camera (TOP). The flight's art is real (gpt-image-2, 2026-10-28): the aerial (field, roof,
 road), the close-up road round the landing spot and the car with its roof sign. The walls stay blockout boxes (the TOP

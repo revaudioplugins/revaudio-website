@@ -309,6 +309,10 @@ body[data-look] .rd .scr { text-shadow: 0 0 .9cqw rgba(232, 200, 120, .35); }
 .ticket.nofx .go, .ticket.nofx .stamp { transition: none !important; }
 .stamp { position: absolute; right: 22px; top: 70px; padding: 6px 12px; border: 3px solid #b3261e; color: #b3261e; font: 400 30px/1 Bebas; letter-spacing: .1em; mix-blend-mode: multiply; filter: url(#paint); transform: rotate(-12deg) scale(1.6); opacity: 0; transition: .25s cubic-bezier(.2,.9,.25,1.4); }
 .ticket.sent .stamp { opacity: .85; transform: rotate(-12deg) scale(1); transition-delay: .35s; }
+/* the coupon (caught car, drone/run.js dr:caught): the same ticket; the code is printed (Bebas), COPIED lands as a stamp */
+.coupon .cp { margin: 6px 0 10px; padding: 8px 0 4px; border: 2px dashed #8c7a56; text-align: center; font: 400 64px/1 Bebas; letter-spacing: .12em; color: #a8321c; user-select: all; }
+.coupon .stamp { top: auto; bottom: 16px; }
+.coupon.copied .stamp { opacity: .85; transform: rotate(-12deg) scale(1); transition-delay: .35s; }
 
 /* the real plugin (pump click) */
 .plug { width: min(560px, 96vw); height: min(86vh, 900px); border: 0; border-radius: 10px; box-shadow: 0 30px 80px rgba(0,0,0,.6); background: #120804; }
@@ -482,6 +486,20 @@ body[data-look="0"].rs-dusk .dusk { display: block; }
     </button>
   </form>
 </div>
+<div class="veil" id="cpVeil" role="dialog" aria-modal="true" aria-label="Your coupon">
+  <div class="ticket coupon" id="coupon">
+    <div class="tk">
+      <button type="button" class="x" data-close aria-label="Close">×</button>
+      <h2>YOU CAUGHT IT</h2><div class="no">COUPON · REVAUDIO STATION</div>
+      <hr>
+      <div class="cp" id="cpCode">CATCH10</div>
+      <div class="row tot"><span>10% OFF</span><span>THE WHOLE STORE</span></div>
+      <hr class="dbl">
+      <div class="fine" id="cpFine">Copy the code and paste it at checkout.</div>
+      <div class="stamp">COPIED</div>
+    </div>
+  </div>
+</div>
 <div class="veil" id="plugVeil" role="dialog" aria-modal="true" aria-label="The GAS 2 plugin">
   <iframe class="plug" title="GAS 2 plugin" data-src="http://127.0.0.1:4461/index.html"></iframe>
 </div>
@@ -529,6 +547,14 @@ body[data-look="0"].rs-dusk .dusk { display: block; }
 
   // pump -> the real plugin UI (served from the GAS2 repo)
   $('#pump').onclick = () => { const f = $('.plug'); if (!f.src) f.src = f.dataset.src; open($('#plugVeil')); };
+
+  // the drone intro's car caught (drone/run.js) -> the coupon ticket, the code copied (Paddle discount: RevTasks #193)
+  addEventListener('dr:caught', () => {
+    const cp = $('#coupon'); cp.classList.add('nofx'); cp.classList.remove('copied'); void cp.offsetWidth; cp.classList.remove('nofx');
+    open($('#cpVeil'));
+    const done = () => { cp.classList.add('copied'); $('#cpFine').textContent = 'Copied. Paste it at checkout.'; };
+    try { navigator.clipboard.writeText($('#cpCode').textContent).then(done, () => {}); } catch (e) { /* no clipboard: the code stays selectable */ }
+  });
 })();
 </script>
 <button class="tuneBtn" id="tuneBtn" data-bench-ignore title="Tune this section (T)">TUNE</button>

@@ -246,6 +246,7 @@ function makeCar(scene, carTex) {
   const body = add(new THREE.PlaneGeometry(5, 5 / 2.472), basic(0xffffff, { map: carTex, transparent: true, depthWrite: false }), 0, 1.2, 0);
   body.rotation.x = -Math.PI / 2;
   let t0 = null;
+  const roof = new THREE.Plane(new THREE.Vector3(0, 1, 0), -1.2), at = new THREE.Vector3();
   return {
     start(delay = 900) { t0 = performance.now() + delay; },
     update(now) {
@@ -254,5 +255,7 @@ function makeCar(scene, carTex) {
       if (k < 0 || k > 1) { g.visible = false; if (k > 1) t0 = null; return; }
       g.visible = true; g.position.x = 26 - 52 * k;
     },
+    // a click / tap on the car (generous, it is moving): the ray meets the roof's height within ~1 m of the body
+    hit(ray) { return g.visible && !!ray.intersectPlane(roof, at) && Math.abs(at.x - g.position.x) < 3.5 && Math.abs(at.z - g.position.z) < 2; },
   };
 }
