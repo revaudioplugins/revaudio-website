@@ -1,5 +1,6 @@
 import { setPan } from './bus';
 import { lcdText } from './lcd';
+import { initFader } from './faders';
 
 /**
  * #hear, the test drive (DriftHear.astro). Real bounces only: <id>-before.m4a (the original, level-matched down to
@@ -28,10 +29,8 @@ export function initHear(root: HTMLElement): void {
   const stopBtn = q<HTMLButtonElement>('[data-hear="stop"]');
   const startBox = q<HTMLElement>('[data-hear-start-box]');
   const startBtn = q<HTMLButtonElement>('[data-hear-start]');
-  const volKnob = q<HTMLElement>('[data-hear-vol]');
-  const volStrip = q<HTMLElement>('[data-hear-vol-strip]');
+  const volSlot = q<HTMLElement>('[data-hear-vol]');
   const volRead = q<HTMLElement>('[data-hear-vol-read]');
-  const volTicks = Array.from(root.querySelectorAll<HTMLElement>('.d-vol-ticks i'));
   const title = q<HTMLElement>('[data-hear-title]');
   const tag = q<HTMLElement>('[data-hear-tag]');
   const stateEl = q<HTMLElement>('[data-hear-state]');
@@ -221,33 +220,14 @@ export function initHear(root: HTMLElement): void {
   const loopAfterStop = () => { if (!st.playing) loop(); };
   stopBtn.addEventListener('click', loopAfterStop);
 
-  // ---- VOLUME: DRIFT's own knob (65-frame strip, -135..+135 deg), its bars lit up to the level, the last one white
-  const setVol = (v: number) => {
-    vol = Math.max(0, Math.min(1, v));
+  // ---- VOLUME: the worn fader (faders.ts: drag, arrows 1 %, PageUp/Down 10 %, Home/End, double-click = 80);
+  // the gain follows the square of the level, the readout under the cap names it
+  const volText = (v: number) => { const pct = Math.round(v * 100); return pct ? `VOLUME ${pct}` : 'MUTE'; };
+  if (volSlot) initFader(volSlot, vol, volText, (v) => {
+    vol = v;
     if (volG && ctx) volG.gain.setTargetAtTime(vol * vol, ctx.currentTime, .02);
-    const f = Math.round(vol * 64), col = f % 13, row = Math.floor(f / 13);
-    if (volStrip) volStrip.style.backgroundPosition = `${(col / 12 * 100).toFixed(3)}% ${(row / 4 * 100).toFixed(3)}%`;
-    const lit = Math.round(vol * (volTicks.length - 1));
-    volTicks.forEach((t, i) => { t.classList.toggle('on', vol > 0 && i < lit); t.classList.toggle('tip', vol > 0 && i === lit); });
-    const pct = Math.round(vol * 100);
-    volKnob?.setAttribute('aria-valuenow', String(pct));
-    if (volRead) volRead.textContent = pct ? `VOLUME ${pct}` : 'MUTE';
-  };
-  if (volKnob) {
-    let drag: { y: number; x: number; v: number } | null = null;
-    volKnob.addEventListener('pointerdown', (e) => { volKnob.setPointerCapture(e.pointerId); drag = { y: e.clientY, x: e.clientX, v: vol }; });
-    volKnob.addEventListener('pointermove', (e) => { if (drag) setVol(drag.v + ((drag.y - e.clientY) + (e.clientX - drag.x)) / 180); });
-    const end = () => { drag = null; };
-    volKnob.addEventListener('pointerup', end); volKnob.addEventListener('pointercancel', end);
-    volKnob.addEventListener('wheel', (e) => { e.preventDefault(); setVol(vol - Math.sign(e.deltaY) * .05); }, { passive: false });
-    volKnob.addEventListener('dblclick', () => setVol(.8));
-    volKnob.addEventListener('keydown', (e) => {
-      const d = { ArrowUp: .05, ArrowRight: .05, ArrowDown: -.05, ArrowLeft: -.05, PageUp: .2, PageDown: -.2 }[e.key];
-      if (d !== undefined) { e.preventDefault(); setVol(vol + d); }
-      if (e.key === 'Home') { e.preventDefault(); setVol(0); } if (e.key === 'End') { e.preventDefault(); setVol(1); }
-    });
-  }
-  setVol(vol);
+    if (volRead) volRead.textContent = volText(v);
+  });
 
   addEventListener('resize', () => draw());
   paintUi();

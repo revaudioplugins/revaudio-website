@@ -11,6 +11,11 @@
  * -> PUSH AGAIN: ORIGINAL -> NOW PLAYING), the next step's key and its control breathe with the glow PLAY always had,
  * and ORIGINAL / DRIFT under the button light the one you hear. No new lines of copy (they were cut on 10-19).
  *
+ * The engraved wall (2026-10-28, bench/drift-hear-bench.html, the user's picks): the panel is one AI wall plate
+ * (hear/wall*.webp: 試聴 is stencilled on it, so no sticker or checker), the title row only for screen readers, both
+ * screens sit in pockets milled into the wall with a cracked corner each, every control goes through the metal in a
+ * bore, and VOLUME is a worn fader on a screwed-on plate down the deck's right edge (bench/drift-panel/PROMPTS.md).
+ *
  * One track at a time, real bounces (tools/drift-player/prep_audio.py): public/audio/drift/<id>-before.m4a = the
  * original, level-matched DOWN to the DRIFT bounce's loudness; <id>-after.m4a = the DRIFT bounce, untouched;
  * peaks.json = loop length + L/R waveform of both. hear.ts measures where the sound sits and writes it to the
@@ -23,6 +28,12 @@ import DriftPanel from './DriftPanel.astro';
 import { ghost } from '../../lib/drift/lcd';
 import capGreen from '../../assets/seasons/drift/mm_cap_green.png';
 import capRed from '../../assets/seasons/drift/mm_cap_red.png';
+import wallSrc from '../../assets/seasons/drift/hear/wall.webp';
+import wallPortraitSrc from '../../assets/seasons/drift/hear/wall-portrait.webp';
+import crackLcdSrc from '../../assets/seasons/drift/hear/crack-lcd.webp';
+import crackCrtSrc from '../../assets/seasons/drift/hear/crack-crt.webp';
+import faderCapSrc from '../../assets/seasons/drift/hear/fader-cap.webp';
+import faderPlateSrc from '../../assets/seasons/drift/hear/fader-plate.webp';
 
 const TRACKS = [
   { id: 'vocals', label: 'VOCALS' },
@@ -36,12 +47,24 @@ const peaks = JSON.parse(readFileSync('public/audio/drift/peaks.json', 'utf8')) 
 
 const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 const [g, r] = await Promise.all([capGreen, capRed].map((src) => getImage({ src, width: 136, format: 'webp', quality: 82 })));
+// the wall and its parts, painted by drift.css through custom properties (only the wall for the viewport loads)
+const [wall, wallP, crackLcd, crackCrt, fadCap, fadPlate] = await Promise.all([
+  getImage({ src: wallSrc, width: 2000, format: 'webp', quality: 72 }),
+  getImage({ src: wallPortraitSrc, width: 1024, format: 'webp', quality: 72 }),
+  getImage({ src: crackLcdSrc, width: 420, format: 'webp', quality: 80 }),
+  getImage({ src: crackCrtSrc, width: 320, format: 'webp', quality: 80 }),
+  getImage({ src: faderCapSrc, width: 180, format: 'webp', quality: 85 }),
+  getImage({ src: faderPlateSrc, width: 141, format: 'webp', quality: 85 }),
+]);
+const u = (i: { src: string }) => `url(${i.src})`;
+const wallVars = [`--hear-wall:${u(wall)}`, `--hear-wall-p:${u(wallP)}`, `--hear-crack-lcd:${u(crackLcd)}`, `--hear-crack-crt:${u(crackCrt)}`,
+  `--hear-fad-cap:${u(fadCap)}`, `--hear-fad-plate:${u(fadPlate)}`].join(';');
 const first = TRACKS[0];
 const clock0 = `00:00 / ${fmt(peaks.tracks[first.id].dur)}`;
 ---
-<section class="d-sec d-hear-sec" id="hear" aria-labelledby="d-hear-h" data-hear data-next="play" data-ab="before">
+<section class="d-sec d-hear-sec" id="hear" aria-labelledby="d-hear-h" data-hear data-next="play" data-ab="before" style={wallVars}>
   <div class="d-wrap">
-    <DriftPanel sticker="試聴" class="d-hear-panel">
+    <DriftPanel class="d-hear-panel" checker={false}>
       <div class="d-hear-head">
         <h2 id="d-hear-h" class="d-headline d-headline--row"><span class="l1">Let&rsquo;s</span> <span class="l2">Drift.</span></h2>
       </div>
@@ -66,12 +89,14 @@ const clock0 = `00:00 / ${fmt(peaks.tracks[first.id].dur)}`;
               </li>
             ))}
           </ol>
+          <span class="d-hear-crack d-hear-crack--crt" aria-hidden="true"></span>
         </div>
         </div>
 
         <div class="d-hear-deck">
           <!-- the screen, a segment LCD: what you hear, its waveform (L over R), the clock. data-g = each readout's
                unlit segments (lcd.ts keeps them in step with the text) -->
+          <div class="d-hear-lcdbox">
           <div class="d-lcd d-lcd--big d-screen d-hear-screen">
             <div class="d-screen-hdr">
               <!-- the coach: names the next thing to do (hear.ts COACH); the screen's one live region -->
@@ -86,6 +111,8 @@ const clock0 = `00:00 / ${fmt(peaks.tracks[first.id].dur)}`;
               <span class="d-screen-t" data-pan-readout data-g={ghost('PAN C')}>PAN C</span>
               <span class="d-screen-t" data-hear-time data-g={ghost(clock0)}>{clock0}</span>
             </div>
+            <span class="d-hear-crack d-hear-crack--lcd" aria-hidden="true"></span>
+          </div>
           </div>
 
           <div class="d-hear-controls">
@@ -93,20 +120,19 @@ const clock0 = `00:00 / ${fmt(peaks.tracks[first.id].dur)}`;
             <div class="d-hear-step" data-step="2">
               <span class="d-hear-cap"><b class="d-hear-n">2</b>PLAY</span>
               <div class="d-hear-caps">
-                <span class="d-hear-mount d-hear-mount--play">
+                <span class="d-hear-bore d-hear-bore--play"><span class="d-hear-mount d-hear-mount--play">
                   <button class="d-cap d-hear-play" type="button" data-hear="play" aria-pressed="false" aria-label="Play"
                     style={`background-image:url(${g.src})`}></button>
-                </span>
-                <span class="d-hear-mount">
+                </span></span>
+                <span class="d-hear-bore d-hear-bore--stop"><span class="d-hear-mount">
                   <button class="d-cap d-cap--stop" type="button" data-hear="stop" aria-label="Stop"
                     style={`background-image:url(${r.src})`}></button>
-                </span>
+                </span></span>
               </div>
             </div>
-            <!-- 3 · push DRIFT + volume: a pair on one steel plate (the page's panel material). The DRIFT push-to-start (lit = DRIFT,
-                 dark = the original; its bars chase while the sound loads) and DRIFT's own house knob (the plugin's filmstrip),
-                 its bars lit up to the level. Both rings = the page's balance-screen bars. The caption names the button only,
-                 so VOLUME reads as a side knob, not part of the step. -->
+            <!-- 3 · push DRIFT + volume. The DRIFT push-to-start (lit = DRIFT, dark = the original; its bars chase while the
+                 sound loads) in its bore, and VOLUME, a worn fader (faders.ts) down the deck's right edge. The caption names
+                 the button only, so VOLUME reads as a side control, not part of the step. -->
             <div class="d-hear-step d-hear-step--ab" data-step="3">
               <span class="d-hear-cap"><b class="d-hear-n">3</b>PUSH DRIFT</span>
               <div class="d-hear-pair">
@@ -114,6 +140,7 @@ const clock0 = `00:00 / ${fmt(peaks.tracks[first.id].dur)}`;
                 <span class="d-screw bl" aria-hidden="true"></span><span class="d-screw br" aria-hidden="true"></span>
                 <div class="d-hear-unit">
                   <div class="d-start" data-hear-start-box data-on="before">
+                    <span class="d-hear-bore d-hear-bore--start" aria-hidden="true"></span>
                     <div class="d-start-in">
                       <span class="d-start-ticks" aria-hidden="true">{Array.from({ length: 40 }, (_, i) => <i style={`--i:${i}`}></i>)}</span>
                       <button class="d-start-pb" type="button" data-hear-start aria-pressed="false" aria-label="DRIFT. Dark: you hear the original. Push to start DRIFT.">
@@ -129,12 +156,13 @@ const clock0 = `00:00 / ${fmt(peaks.tracks[first.id].dur)}`;
                   <!-- both sides of the switch, the one you hear lit ([data-ab] on the section) -->
                   <span class="d-hear-unit-lbl d-hear-ab" aria-hidden="true"><i>ORIGINAL</i><i>DRIFT</i></span>
                 </div>
-                <div class="d-hear-unit">
-                  <div class="d-vol">
-                    <span class="d-vol-ticks" aria-hidden="true">{Array.from({ length: 31 }, (_, i) => <i style={`--i:${i}`}></i>)}</span>
-                    <div class="d-vol-knob" role="slider" tabindex="0" data-hear-vol aria-label="Volume" aria-valuemin="0" aria-valuemax="100" aria-valuenow="80">
-                      <span class="k3d" data-hear-vol-strip></span>
-                    </div>
+                <div class="d-hear-unit d-hear-unit--vol">
+                  <!-- the slot is the slider (the wide hit box); the plate is its picture, the fill rides the plate's cut -->
+                  <div class="d-fad-slot" role="slider" tabindex="0" data-hear-vol aria-label="Volume" aria-orientation="vertical"
+                    aria-valuemin="0" aria-valuemax="100" aria-valuenow="80" aria-valuetext="VOLUME 80">
+                    <span class="d-hear-fplate" aria-hidden="true"></span>
+                    <span class="d-fad-fill" style="height:80.00%"></span>
+                    <span class="d-fad-thumb" style="bottom:80.00%"></span>
                   </div>
                   <span class="d-hear-unit-lbl" data-hear-vol-read>VOLUME 80</span>
                 </div>

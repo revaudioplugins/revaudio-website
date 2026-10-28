@@ -1284,23 +1284,6 @@
 .d-hear-ab i { font-style: normal; transition: color .12s ease, text-shadow .12s ease; }
 [data-ab='before'] .d-hear-ab i:first-child { color: var(--d-cyan-ink); text-shadow: 0 0 8px rgba(94, 231, 255, .6); }
 [data-ab='after'] .d-hear-ab i:last-child { color: var(--d-pink-ink); text-shadow: 0 0 8px rgba(255, 79, 216, .8); }
-/* VOLUME: DRIFT's own house knob (public/drift/knob3d-drift-65.webp, tools/drift-player/make_knob_strip.py), the
-   plugin's inset and lamp tamer; 31 bars over its 270 degrees, lit up to the level, the last lit bar white */
-.d-vol { position: relative; width: 126.5px; height: 126.5px; display: grid; place-items: center; }
-.d-vol-ticks { position: absolute; left: 50%; top: 50%; width: 0; height: 0; pointer-events: none; --r: 53px; }
-.d-vol-ticks i { position: absolute; left: -1px; top: calc(-1 * var(--r)); width: 2px; height: 6px; border-radius: 1px; background: rgba(242, 76, 240, .12);
-  transform-origin: 1px var(--r); transform: rotate(calc(-135deg + var(--i) * 9deg)); transition: background-color 60ms linear; }
-.d-vol-ticks i.on { background: rgb(255, 112, 247); box-shadow: 0 0 5px rgba(242, 76, 240, .7); }
-.d-vol-ticks i.tip { background: rgb(255, 240, 255); box-shadow: 0 0 6px rgba(255, 240, 255, .8); }
-.d-vol-knob { position: relative; width: 66px; height: 66px; border-radius: 50%; cursor: ns-resize; touch-action: none; }
-.d-vol-knob:focus-visible { outline: 2px solid var(--d-pink-ink); outline-offset: 8px; }
-.d-vol-knob .k3d { position: absolute; inset: -29%; pointer-events: none;
-  background: url(/drift/knob3d-drift-65.webp) 0 0 / 1300% 500% no-repeat; }
-.d-vol-knob .k3d::after { content: ''; position: absolute; inset: 0; pointer-events: none; clip-path: ellipse(27.3% 26.3% at 50% 46.6%);
-  background: radial-gradient(ellipse 14% 14% at 33.5% 35.5%, rgb(193, 172, 199) 0%, rgb(203, 185, 207) 25%, rgb(224, 214, 227) 50%, rgb(244, 240, 245) 75%, #fff 100%),
-              radial-gradient(ellipse 32% 32% at 33.5% 35.5%, rgb(238, 212, 245) 0%, rgb(241, 219, 246) 25%, rgb(246, 234, 250) 50%, rgb(252, 247, 253) 75%, #fff 100%);
-  background-blend-mode: multiply; mix-blend-mode: multiply; }
-.d-vol-knob:hover .k3d { filter: drop-shadow(0 0 10px rgba(180, 107, 255, .4)); }
 .d-hear-head { margin-bottom: 14px; }
 .d-hear-head h2.d-headline { margin: 0; }
 /* the checker strip stops short of the centred title: below ~770 px it ran under LET'S DRIFT. (2026-10-19, measured
@@ -1330,10 +1313,6 @@
 .d-hear-sec .d-hear-pair .d-screw { width: 13px; height: 13px; }
 .d-hear-sec .d-hear-unit { gap: 3px; }
 .d-hear-sec .d-start { --k: .5; }
-.d-hear-sec .d-vol { width: 102px; height: 102px; }
-.d-hear-sec .d-vol-ticks { --r: 43px; }
-.d-hear-sec .d-vol-ticks i { height: 5px; }
-.d-hear-sec .d-vol-knob { width: 54px; height: 54px; }
 .d-hear-sec .d-hear-unit-lbl { font-size: 10px; }
 .d-hear-sec .d-balance-box { padding: 8px 14px 7px; gap: 6px; }
 .d-hear-sec .d-balance { height: 28px; }
@@ -1362,9 +1341,6 @@
   .d-hear-sec .d-hear-pair { flex: 1; gap: 10px; padding: 8px 8px 6px; }
   .d-hear-sec .d-hear-pair .d-screw.bl, .d-hear-sec .d-hear-pair .d-screw.br { display: none; }   /* they sat on the labels */
   .d-hear-sec .d-start { --k: .4; }
-  .d-hear-sec .d-vol { width: 84px; height: 84px; }
-  .d-hear-sec .d-vol-ticks { --r: 35px; }
-  .d-hear-sec .d-vol-knob { width: 44px; height: 44px; }
   .d-hear-sec .d-cap { width: 40px; height: 40px; }
 }
 
@@ -1404,9 +1380,6 @@
 .d-hear-sec .d-hear-step:not(.d-hear-step--ab) .d-hear-mount { width: 66px; height: 66px; }   /* the bezel keeps the old cap's footprint */
 .d-hear-sec .d-hear-step:not(.d-hear-step--ab) .d-cap { width: 52px; height: 52px; }
 .d-hear-sec .d-start { --k: .56; }
-.d-hear-sec .d-vol { width: 114px; height: 114px; }
-.d-hear-sec .d-vol-ticks { --r: 48px; }
-.d-hear-sec .d-vol-knob { width: 60px; height: 60px; }
 .d-hear-sec .d-hear-pair { justify-content: space-evenly; }
 @media (max-width: 600px) {
   .d-hear-sec .d-hear-step:not(.d-hear-step--ab) { padding: 10px 12px 12px; }
@@ -1417,9 +1390,6 @@
   .d-hear-sec .d-hear-step:not(.d-hear-step--ab) .d-hear-mount { width: 48px; height: 48px; }
   .d-hear-sec .d-hear-step:not(.d-hear-step--ab) .d-cap { width: 38px; height: 38px; }
   .d-hear-sec .d-start { --k: .4; }
-  .d-hear-sec .d-vol { width: 84px; height: 84px; }
-  .d-hear-sec .d-vol-ticks { --r: 35px; }
-  .d-hear-sec .d-vol-knob { width: 44px; height: 44px; }
 }
 
 /* STEP 2 · LIT CAP (2026-10-26, the user's pick C on bench/drift-play-bench.html). Each cap sits in a small chrome bezel,
@@ -1520,7 +1490,7 @@
 
 /* ?bench (dev only, html.bench-on): composite parts select and move as ONE piece (a click on a speaker's cone must
    not grab the cone alone); production never has the class */
-html.bench-on #hear .d-start-pb *, html.bench-on #hear .d-vol-knob *,
+html.bench-on #hear .d-start-pb *,
 html.bench-on #hear .d-hear-row *, html.bench-on #hear .d-hear-wave * { pointer-events: none; }
 
 /* ═══ bench 2026-10-15 (Yoni, live bench on /drift, desktop) ═══
@@ -1531,9 +1501,7 @@ html.bench-on #hear .d-hear-row *, html.bench-on #hear .d-hear-wave * { pointer-
   .d-hear-sec .d-start-in { translate: 0 -7.3px; }
   .d-hear-sec .d-start-pb { translate: 0 -3.6px; }
   .d-hear-sec .d-start::after { translate: 0 calc(-7.3px - 3.6px * var(--k)); }   /* the breath ring follows the button up */
-  .d-hear-sec .d-vol { translate: -2.7px -8px; }
   .d-hear-sec .d-hear-pair > .d-hear-unit:first-of-type .d-hear-unit-lbl { translate: -.7px -11.3px; }
-  .d-hear-sec .d-hear-pair > .d-hear-unit:last-of-type .d-hear-unit-lbl { translate: -4.4px -12.4px; }
 }
 /* ═══ end bench ═══ */
 
@@ -1556,6 +1524,178 @@ html.bench-on #hear .d-hear-row *, html.bench-on #hear .d-hear-wave * { pointer-
   [data-hear]:is([data-next='drift'], [data-next='back']) [data-step='3'] .d-hear-n { animation: none; box-shadow: 0 0 0 2px var(--d-hot); }
   .d-start.is-striking .lit, .d-start .d-start-tube.lit, .d-start[data-loading] .d-start-ticks i { animation: none !important; }
 }
+
+/* ═══ THE ENGRAVED WALL (2026-10-28, the user's picks on bench/drift-hear-bench.html, folded from its generated CSS) ═══
+   One AI wall plate (hear/wall*.webp, bench/drift-panel/PROMPTS.md) under an 18 % veil is the whole panel. Both
+   screens sit in pockets milled into it: a cut line, the lip catching the lamp on the bottom-right edge, the wall dark
+   top-left inside, a floor of DRIFT steel a step down (light from the upper left, Law 4), each glass with a cracked
+   corner that never covers what is read (Law 5). Every control goes through the metal in a bore; the steps keep only a
+   soft dark wash so their names read. VOLUME is a worn fader on a screwed-on plate. These rules outrank the older #hear
+   rules above through the #hear id. */
+#hear {
+  --cut: 0 0 0 1px rgba(3, 1, 6, .95), 1px 1px 0 1px rgba(232, 220, 246, .26), -1px -1px 0 1px rgba(0, 0, 0, .7), 0 0 0 4px rgba(10, 4, 16, .35);
+  --sink: inset 0 12px 16px -8px rgba(0, 0, 0, .85), inset 12px 0 16px -10px rgba(0, 0, 0, .6), inset 0 -1px 0 rgba(255, 240, 255, .06), inset -1px 0 0 rgba(255, 240, 255, .04);
+}
+#hear .d-hear-panel { background: linear-gradient(rgba(12, 5, 18, .18), rgba(12, 5, 18, .18)), var(--hear-wall) 50% 50% / cover, #150a1f;
+  padding-top: 40px; padding-bottom: 30px; }
+#hear .d-hear-head { position: absolute; width: 1px; height: 1px; margin: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }   /* the title, for screen readers only: the wall says 試聴 */
+
+/* the pockets: the track list (12 px of floor, the CRT glass in a worn black bezel ring) and the LCD, the same recipe */
+#hear .d-hear-step { border-image: none; border: 0; filter: none; box-shadow: none; background: none; }
+#hear .d-hear-tv, #hear .d-hear-lcdbox { border-image: none; border: 0; filter: none; border-radius: 10px; box-shadow: var(--cut), var(--sink);
+  background: linear-gradient(rgba(10, 4, 16, .5), rgba(10, 4, 16, .5)), var(--d-img-panel) center / cover, #150a1f; }
+#hear .d-hear-tv, #hear .d-hear-lcdbox { padding: 12px; }
+#hear .d-hear-tv > .d-hear-pick { border-radius: 8px; }
+#hear .d-hear-pick { box-shadow: 0 0 0 1px rgba(4, 2, 8, .95), 0 0 0 5px #0d0612, 1px 1px 0 5px rgba(232, 220, 246, .14), inset 0 12px 26px rgba(0, 0, 0, .65); }
+#hear .d-hear-lcdbox > .d-hear-screen { border-radius: 8px; box-shadow: 0 0 0 1px rgba(4, 2, 8, .95), 0 0 0 5px #0d0612, 1px 1px 0 5px rgba(232, 220, 246, .14); }
+#hear .d-hear-screen::before { box-shadow: inset 0 0 0 2px #040106, inset 0 8px 12px rgba(0, 0, 0, .8), inset 8px 0 10px -4px rgba(0, 0, 0, .55), inset 0 -4px 7px rgba(0, 0, 0, .45); }
+#hear .d-hear-step:not(.d-hear-step--ab) { padding: 14px 22px 16px; }
+#hear .d-hear-step--ab { padding: 14px 18px 12px; }
+/* broken: a cracked corner on each glass (screen-blended white cracks on black) */
+#hear .d-hear-crack { position: absolute; right: 0; z-index: 3; pointer-events: none; mix-blend-mode: screen; opacity: .75; background: center / contain no-repeat; }
+#hear .d-hear-crack--lcd { top: 24%; width: 30%; height: 52%; background-image: var(--hear-crack-lcd); background-position: right center; }
+#hear .d-hear-crack--crt { top: 0; width: 30%; height: 17%; background-image: var(--hear-crack-crt); background-position: right top; }
+/* the wall shows through the steps; a soft dark wash round the controls keeps their names readable */
+#hear .d-hear-controls > .d-hear-step { background: radial-gradient(ellipse 62% 66% at 50% 56%, rgba(6, 2, 10, .62), rgba(6, 2, 10, 0)); }
+#hear .d-hear-pair { justify-content: center; }
+#hear .d-hear-step--ab > .d-hear-cap { align-self: center; }
+
+/* the bores: every control goes through the metal (dark inside wall top-left, catch-light on the lip bottom-right). PLAY
+   and STOP sit in theirs (the bore is the mount's wrapper); the DRIFT button's is drawn under its ring */
+#hear .d-hear-bore { border-radius: 50%;
+  background: radial-gradient(circle, #050208 0 64%, rgba(5, 2, 8, .55) 82%, rgba(5, 2, 8, 0) 100%);
+  box-shadow: inset 3px 4px 5px rgba(0, 0, 0, .9), inset -1px -1px 0 rgba(232, 220, 246, .22), 1px 1px 0 rgba(232, 220, 246, .14), -1px -1px 0 rgba(0, 0, 0, .7); }
+#hear .d-hear-bore--play, #hear .d-hear-bore--stop { display: grid; place-items: center; flex: none; }
+#hear .d-hear-bore--start { position: absolute; left: 50%; top: 50%; width: 79px; height: 79px; translate: -50% -50%; pointer-events: none; }
+
+/* PLAY = the big cap, STOP steps down; the lamp lights the floor round it */
+#hear .d-hear-step:not(.d-hear-step--ab) .d-hear-caps { gap: 8px; }
+#hear .d-hear-step:not(.d-hear-step--ab) .d-hear-mount--play { width: 84px; height: 84px; }
+#hear .d-hear-step:not(.d-hear-step--ab) .d-hear-mount--play .d-cap { width: 66px; height: 66px; }
+#hear .d-hear-step:not(.d-hear-step--ab) .d-hear-mount:not(.d-hear-mount--play) { width: 50px; height: 50px; }
+#hear .d-hear-step:not(.d-hear-step--ab) .d-hear-mount:not(.d-hear-mount--play) .d-cap { width: 38px; height: 38px; }
+#hear .d-hear-step:not(.d-hear-step--ab) .d-hear-mount:not(.d-hear-mount--play)::before { inset: 3px; }
+#hear .d-hear-mount--play { transition: box-shadow .25s ease; }
+#hear[data-next='play'] .d-hear-mount--play { animation: d-hear-floor 1.2s ease-in-out infinite; }
+#hear[data-playing] .d-hear-mount--play { box-shadow: 0 7px 11px rgba(0, 0, 0, .7), 0 2px 3px rgba(0, 0, 0, .6), inset 0 0 0 1px rgba(255, 255, 255, .42), inset 0 -2px 3px rgba(0, 0, 0, .4), 0 0 26px 8px rgba(70, 255, 120, .2); }
+@keyframes d-hear-floor { 0%, 100% { box-shadow: 0 7px 11px rgba(0, 0, 0, .7), 0 2px 3px rgba(0, 0, 0, .6), inset 0 0 0 1px rgba(255, 255, 255, .42), inset 0 -2px 3px rgba(0, 0, 0, .4), 0 0 26px 8px rgba(70, 255, 120, 0); }
+  50% { box-shadow: 0 7px 11px rgba(0, 0, 0, .7), 0 2px 3px rgba(0, 0, 0, .6), inset 0 0 0 1px rgba(255, 255, 255, .42), inset 0 -2px 3px rgba(0, 0, 0, .4), 0 0 30px 10px rgba(70, 255, 120, .26); } }
+
+/* the DRIFT button grows; its ring reads as an instrument at rest, the legend glows dim on standby, lit its light spills on the floor */
+#hear .d-start { --k: .66; }
+#hear .d-start:not([data-on='after']):not([data-loading]) .d-start-ticks i { background: rgba(242, 76, 240, .3); }
+#hear .d-start:not([data-on='after']) .d-start-lg.lit { opacity: .3; }
+#hear .d-start::before { content: ''; position: absolute; inset: 4%; border-radius: 50%; pointer-events: none; opacity: 0; transition: opacity .3s ease;
+  box-shadow: 0 0 34px 12px rgba(255, 79, 216, .3); }
+#hear .d-start[data-on='after']:not([data-loading])::before { opacity: 1; }
+/* the push cap stands proud of the chrome (2026-10-28 DRIFT BTN CAP): a raised dark lens with a lit rim and a soft
+   top highlight that goes down 1.5 px and dims when pushed */
+#hear .d-start-seat { inset: 18px; }
+#hear .d-start-tube { inset: 21px; }
+#hear .d-start-lens, #hear .d-start-lg { inset: 27px; }
+#hear .d-start-lens { transition: transform .08s ease-out, box-shadow .08s ease-out;
+  background: radial-gradient(115% 95% at 34% 22%, #43384f 0%, #221a2b 38%, #0f0a15 72%, #060409 100%);
+  box-shadow: 0 5px 7px rgba(0, 0, 0, .85), 0 1px 2px rgba(0, 0, 0, .95), inset 0 2px 0 rgba(255, 255, 255, .22), inset 0 0 0 1px rgba(0, 0, 0, .85),
+    inset 0 -5px 7px rgba(0, 0, 0, .75), inset 3px 0 6px -2px rgba(255, 255, 255, .05); }
+#hear .d-start-lens::before { content: ''; position: absolute; inset: 0; border-radius: 50%; pointer-events: none; z-index: 1;
+  background: radial-gradient(34% 17% at 37% 15%, rgba(255, 255, 255, .34), rgba(255, 255, 255, .08) 62%, transparent 75%),
+    radial-gradient(closest-side, transparent 88%, rgba(255, 255, 255, .07) 96%, transparent 100%); }
+#hear .d-start-lg { transition: transform .08s ease-out; }
+#hear .d-start-lg .w { font-size: 16px; }
+#hear .d-start-pb:active .d-start-lens, #hear .d-start-pb:active .d-start-lg { transform: translateY(1.5px) scale(.965); }
+#hear .d-start-pb:active .d-start-lens { box-shadow: 0 1px 1px rgba(0, 0, 0, .95), inset 0 1px 0 rgba(255, 255, 255, .12), inset 0 0 0 1px rgba(0, 0, 0, .85),
+    inset 0 -2px 4px rgba(0, 0, 0, .75), inset 0 5px 9px rgba(0, 0, 0, .6); }
+#hear .d-start-pb:active .d-start-lens::before { opacity: .55; }
+@media (hover: hover) { #hear .d-start-pb:hover:not(:active) .d-start-lens { box-shadow: 0 5px 7px rgba(0, 0, 0, .85), 0 1px 2px rgba(0, 0, 0, .95),
+    inset 0 2px 0 rgba(255, 255, 255, .32), inset 0 0 0 1px rgba(0, 0, 0, .85), inset 0 -5px 7px rgba(0, 0, 0, .75), inset 3px 0 6px -2px rgba(255, 255, 255, .08); } }
+
+/* VOLUME, the worn fader: the plate is screwed onto the wall (its own shadow), the violet light lives in the plate's cut,
+   the cap is a heavy part throwing its shadow down-right onto the plate. The slot (faders.ts) is the hit box; --ph = the
+   plate's height, the slot and the fill are placed on the plate's cut (bench/drift-panel: the cut runs 12.2-85.1 %
+   down, 42.8-53.5 % across; the fill is 60 % of the cut) */
+#hear .d-hear-unit--vol { --fad: #b46bff; --fad-rgb: 180, 107, 255; position: absolute; z-index: 1; display: block; }
+#hear .d-hear-unit--vol .d-fad-slot { position: absolute; left: 50%; translate: -50% 0; top: calc(var(--ph) * .122); height: calc(var(--ph) * .729);
+  flex: none; margin: 0; min-height: 0; }
+#hear .d-hear-unit--vol .d-fad-slot::before { display: none; }
+#hear .d-hear-fplate { position: absolute; left: 50%; top: calc(var(--ph) * -.122); width: calc(var(--ph) * .1964); height: var(--ph); translate: -50% 0;
+  pointer-events: none; background: var(--hear-fad-plate) center / 100% 100% no-repeat; filter: drop-shadow(1px 2px 2px rgba(0, 0, 0, .85)); }
+#hear .d-hear-unit--vol .d-fad-fill { left: calc(50% - var(--ph) * .00994); width: calc(var(--ph) * .01261); translate: none; border-radius: 2px;
+  background: linear-gradient(to top, rgba(var(--fad-rgb), .95), rgba(var(--fad-rgb), .6)); box-shadow: 0 0 6px rgba(var(--fad-rgb), .85); }
+#hear .d-hear-unit--vol .d-fad-thumb { border-radius: 0; box-shadow: none;
+  background: var(--hear-fad-cap) center / 100% 100% no-repeat; filter: drop-shadow(2px 5px 4px rgba(0, 0, 0, .75)) drop-shadow(0 1px 1px rgba(0, 0, 0, .9)); }
+#hear .d-hear-unit--vol .d-fad-thumb::after { display: none; }
+/* both readouts lifted off the paint with a dark halo (Law 5); VOLUME's centred under its cap */
+#hear .d-hear-ab, #hear [data-hear-vol-read] { text-shadow: 0 0 3px rgba(6, 2, 10, .95), 0 0 9px rgba(6, 2, 10, .85); }
+#hear [data-hear-vol-read] { position: absolute; left: 50%; translate: -50% 0; margin: 0; color: #9384aa; }
+
+/* TIGHT (desktop, the user's layout): one row of controls under the LCD. PLAY's left edge on the LCD frame's left
+   edge, the VOLUME readout's right edge on its right edge, PLAY / STOP / DRIFT on one axis, the DRIFT ring and the
+   fader plate ending on the deck's bottom line, the readouts 8 px under it. Measured on the bench at 1440 (deck 691 px)
+   and written as positions in the controls box: x = the 1440 place * --s + a share of the room the deck has more or
+   less than that (--e: 21 % to STOP, 55 % to DRIFT, the fader holds the right edge); y = the names' row, then the body
+   * --s. Narrow decks (1024-1279 px screens, tablets) step --s down so nothing touches. */
+@media (min-width: 601px) {
+  #hear .d-hear-deck { container: hear-deck / inline-size; }
+  #hear .d-hear-controls { --s: 1; --e: calc(100% - 622.9px * var(--s) - 67.9px); --ph: calc(19.3px + 167.2px * var(--s));
+    position: relative; height: calc(33.3px + 167.6px * var(--s)); grid-template-columns: calc(186px * var(--s)) minmax(0, 1fr); }
+  #hear .d-hear-step, #hear .d-hear-pair { position: static; }   /* every part below is placed in the controls box */
+  #hear .d-hear-controls .d-hear-cap { position: absolute; top: 14px; margin: 0; translate: -50% 0; white-space: nowrap; }
+  #hear [data-step='2'] > .d-hear-cap { left: calc(141.5px * var(--s) + var(--e) * .1045); }   /* over PLAY + STOP */
+  #hear [data-step='3'] > .d-hear-cap { left: calc(439.45px * var(--s) + var(--e) * .549); }   /* over DRIFT */
+  #hear .d-hear-bore--play, #hear .d-hear-bore--stop { position: absolute; top: calc(33.3px + 91.1px * var(--s)); translate: -50% -50%; }
+  #hear .d-hear-bore--play { left: calc(64px * var(--s)); width: calc(128px * var(--s) + 10px); height: calc(128px * var(--s) + 10px); }
+  #hear .d-hear-bore--stop { left: calc(231px * var(--s) + var(--e) * .209); width: calc(104px * var(--s) + 10px); height: calc(104px * var(--s) + 10px); }
+  #hear .d-hear-mount--play { translate: none; scale: calc(1.524 * var(--s)); }   /* 84 -> 128 px */
+  #hear .d-hear-caps .d-hear-mount:not(.d-hear-mount--play) { translate: none; scale: calc(2.08 * var(--s)); }   /* 50 -> 104 px */
+  #hear .d-start { position: absolute; margin: 0; left: calc(439.45px * var(--s) + var(--e) * .549); top: calc(33.3px + 103.25px * var(--s));
+    translate: -50% -50%; scale: calc(1.293 * var(--s)); }
+  #hear .d-hear-bore--start { top: calc(50% - 7.3px - 3.6px * var(--k)); width: 113px; height: 113px; }   /* on the pushbutton, which rides 7.3 + 3.6 px up (bench 2026-10-15) */
+  #hear .d-hear-ab { position: absolute; margin: 0; left: calc(439.45px * var(--s) + var(--e) * .549); top: calc(33.3px + 167.2px * var(--s) + 8.1px); translate: -50% 0; }
+  #hear .d-hear-unit--vol { left: calc(100% - 67.9px); top: 14px; width: 67.9px; height: var(--ph); }
+  #hear .d-hear-unit--vol .d-fad-slot { width: calc(56px * var(--s)); }
+  #hear .d-hear-unit--vol .d-fad-thumb { width: calc(58px * var(--s)); height: calc(30.8px * var(--s)); }
+  #hear [data-hear-vol-read] { top: calc(var(--ph) + 8.3px); }
+}
+@container hear-deck (max-width: 619px) { #hear .d-hear-controls { --s: .86; } }
+@container hear-deck (max-width: 539px) { #hear .d-hear-controls { --s: .78; } }
+
+/* phones: the flow layout (PLAY over STOP, DRIFT beside them), the fader down the right edge from under 3 PUSH DRIFT
+   to the ring's bottom line, its readout on the ORIGINAL / DRIFT line */
+@media (max-width: 600px) {
+  #hear .d-hear-panel { background: linear-gradient(rgba(12, 5, 18, .18), rgba(12, 5, 18, .18)), var(--hear-wall-p) 50% 0% / cover, #150a1f;
+    padding-top: 24px; padding-bottom: 22px; }
+  #hear .d-hear-tv { padding: 8px; }
+  #hear .d-hear-step:not(.d-hear-step--ab), #hear .d-hear-step--ab { padding: 10px; }
+  /* the LCD's frame is slimmer and the glass gives back its side padding, so every readout keeps the width it had */
+  #hear .d-hear-lcdbox { padding: 7px; }
+  #hear .d-hear-lcdbox > .d-hear-screen { padding-inline: 5px; box-shadow: 0 0 0 1px rgba(4, 2, 8, .95), 0 0 0 4px #0d0612, 1px 1px 0 4px rgba(232, 220, 246, .14); }
+  #hear .d-hear-controls > .d-hear-step { background: radial-gradient(ellipse 75% 80% at 50% 55%, rgba(6, 2, 10, .8), rgba(6, 2, 10, 0)); }   /* the phone plate is busier down here */
+  #hear .d-hear-step:not(.d-hear-step--ab) .d-hear-caps { gap: 6px; }
+  #hear .d-hear-step:not(.d-hear-step--ab) .d-hear-mount--play { width: 62px; height: 62px; }
+  #hear .d-hear-step:not(.d-hear-step--ab) .d-hear-mount--play .d-cap { width: 49px; height: 49px; }
+  #hear .d-hear-step:not(.d-hear-step--ab) .d-hear-mount:not(.d-hear-mount--play) { width: 40px; height: 40px; }
+  #hear .d-hear-step:not(.d-hear-step--ab) .d-hear-mount:not(.d-hear-mount--play) .d-cap { width: 30px; height: 30px; }
+  #hear .d-hear-bore--play { width: 68px; height: 68px; margin: -3px; }   /* the bore shows 3 px round the bezel; the layout keeps the bezel's size */
+  #hear .d-hear-bore--stop { width: 46px; height: 46px; margin: -3px; }
+  #hear .d-start { --k: .46; }
+  #hear .d-hear-controls { position: relative; }
+  #hear .d-hear-step, #hear .d-hear-pair { position: static; }
+  #hear .d-hear-pair { padding-right: 80px; }   /* the room the old VOLUME knob held (72 + 8): DRIFT keeps its place */
+  #hear .d-hear-unit--vol { --ph: 86.5px; left: calc(100% - 54.6px); top: 35.5px; width: 54.6px; height: var(--ph); }
+  #hear .d-hear-unit--vol .d-fad-slot { width: 42px; }
+  #hear .d-hear-unit--vol .d-fad-thumb { width: 36px; height: 19.1px; }
+  #hear [data-hear-vol-read] { top: calc(var(--ph) + 10.3px); }
+}
+@media (max-width: 340px) {   /* PUSH AGAIN: ORIGINAL beside the tag at 320 (9.5 px ran 18 px into it) */
+  #hear .d-hear-screen .d-screen-hdr { gap: 4px; }
+  #hear .d-hear-screen .d-hear-coach { font-size: 8px; }
+  #hear .d-hear-screen .d-hear-tag { padding-inline: 4px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #hear[data-next='play'] .d-hear-mount--play { animation: none; }
+  #hear .d-start-lens, #hear .d-start-lg { transition: none; }
+}
+/* ═══ end the engraved wall ═══ */
 
 /* ==========================================================================
    BELOW-HERO TYPE HELPERS: the hero's hand for every line the page says

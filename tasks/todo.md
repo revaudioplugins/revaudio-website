@@ -60,10 +60,33 @@ Scope: the outer `.d-panel.d-hear-panel` plate only (step 3's pair plate and the
   and shading it; hover brightens the rim; pressed, the cap AND its legend travel in together (translateY 1.5 px +
   scale .965; before, only the lens shrank and the legend stayed put). Shot off / on / pressed vs AS IS, 0 page errors.
   The user's look owed.
-- [ ] E5. Fold the pick (DriftHear.astro + drift.css, #hear only; assets via getImage). The LCD frame = a wrapper in
-  the markup (`.d-hear-lcdbox` round the screen, as `.d-hear-tv` wraps the list); new heights into the baselines.
-- [ ] E6. Verify: every guide state, readouts still read over the graffiti, reduced motion, focus, phone 390 / 360,
-  WebKit, 0 errors; heights = before minus the title row.
+- [x] E5. Folded (2026-10-28, the user: "commit ודחוף לאתר"). DriftHear.astro: DriftPanel without sticker / checker,
+  `.d-hear-lcdbox` round the screen, a `.d-hear-crack` span in each glass, PLAY / STOP wrapped in `.d-hear-bore`, a
+  `.d-hear-bore--start` under the DRIFT ring, the knob replaced by `.d-hear-unit--vol` (a `.d-fad-slot` slider with the
+  plate, fill and cap + the readout). Assets: `src/assets/seasons/drift/hear/` (wall 2000 px q72, wall-portrait 1024,
+  cracks, fader cap + plate) through getImage, as `--hear-*` custom properties on the section. hear.ts: VOLUME =
+  faders.ts `initFader` (1 % steps, PageUp/Down 10 %, Home = MUTE, dblclick = 80; gain = level squared as before);
+  the 65-frame knob code and every `.d-vol*` rule are gone (`public/drift/knob3d-drift-65.webp` is now unused).
+  drift.css: one "THE ENGRAVED WALL" block at the end of #hear (`#hear`-scoped, no !important), the bench's generated
+  CSS with the picked defaults. TIGHT is real layout, not the bench's translates: on desktop every control part is
+  placed in the controls box from the bench's 1440 measures, x = place * --s + a share of the deck's spare width
+  (--e: 21 % to STOP, 55 % to DRIFT, the fader holds the right edge), and `@container hear-deck` steps --s to .86
+  (deck < 620) and .78 (deck < 540). Phones keep the bench's flow layout; the fader column is placed on the controls'
+  right edge and the pair keeps the old knob's 80 px so DRIFT stays put. Not folded: the bench's cookie-banner hide.
+  Follow-up (not done): the older #hear rules the wall now overrides (step plates, the 10-15 bench translates, the
+  pair plate) can be deleted in a tidy pass; the section bench double-applies on top of the folded page now.
+- [x] E6. Verified on the built dist (127.0.0.1:8797, no bench): geometry vs the bench dump at 1440 and 390, every
+  part within 0.5 px (panel 1180 x 483.9 / 358 x 546.5, same as the bench); shots vs the bench shots identical except
+  the DRIFT cap (the CAP pick, made after those shots). Overlap check at 25 widths 1920 -> 320 (control parts >= 4 px
+  apart, inside the panel; a forced overlap control fails): all pass. Desktop deck / --s / panel height: 1440 691 / 1 /
+  484, 1280 636 / 1 / 479, 1180 576 / .86 / 450, 1100 529 / .78 / 432, 1024 556 / .86 / 442, 1000 (one column) 856 / 1 /
+  751, 820 702 / 1 / 747, 700 599 / .86 / 723, 601 509 / .78 / 710; phones 547 (600-390), 545 (375-320). Coach fit at
+  14 widths: all fit after one fix, 320 px ran PUSH AGAIN: ORIGINAL 18 px into the tag (the segment LCD, older than
+  this fold) -> <= 340 px: coach 8 px, header gap 4, tag padding 4 (the too-long control still clips). Fader: drag
+  50 / 100 / 25 %, ArrowUp, PageDown, Home = MUTE, End, dblclick = 80, aria-valuenow / valuetext + readout + fill + cap
+  follow, cap centre at 0.80 of the slot, keyboard focus ring; DRIFT cap pressed = matrix(.965, 0, 0, .965, 0, 1.5),
+  released none. Edge 1440 + 390 and WebKit (Playwright 2336) 1440 + 390: same layout; WebKit's only errors =
+  no AudioContext in Playwright's Windows WebKit (environment). `grep -r /bench/ dist` empty. 0 page errors in Edge.
 
 # DRIFT #hear — step 2 (PLAY / STOP) gets the love (2026-10-19, revaudio-ef, same branch)
 
