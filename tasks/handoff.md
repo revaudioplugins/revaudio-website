@@ -1,6 +1,6 @@
 ## 2026-10-28 — GAS 2 page: the drone intro, from scratch (Claude Code `revaudio-59`, laptop 1) — BRANCH `feat/gas2-drone`
 
-Claim: OPEN `revaudio-59`. Scene + benches BUILT; Dan picked the DEFAULT camera (TOP); the REAL ART is in (gpt-image-2, 2026-10-28, ~$1.50). Waiting on Dan's look.
+Claim: OPEN `revaudio-59`. Scene + benches BUILT; Dan picked the DEFAULT camera (TOP); the REAL ART is in (gpt-image-2, 2026-10-28, ~$2 with the roof sign); sidewalk blockout props removed. Waiting on Dan's look.
 Files: NEW `tools/_gas2-scene/drone/**`; in `page-b.html` ONE `<link>` + `<script>` line (after the radio
 line), nothing else of page-b's; one README line pair; `tasks/todo.md` (the "GAS 2 drone descent" section); this entry.
 - Dan: a hovering drone above the station; scroll down = it comes down into the final scene, then GAS 2 pops and the right
@@ -59,8 +59,16 @@ line), nothing else of page-b's; one README line pair; `tasks/todo.md` (the "GAS
 - Checked (headless Edge, `check.cjs` top, 1440x900 + 390x844): landed = `?drone=0` mean 0.00; landing frame 2.55 /
   1.47 (unchanged); no errors. Weight now: three 744 KB + land 703 + aerial 569 + car 103 KB (+ near 1.1 MB after the
   hover shows) = ~2.1 MB before the hover, ~3.2 MB in all. Not checked: WebKit, a real phone.
-- Open: the roof board on the car is still drawn text (crisp, readable; looks graphic next to the photo car); the coupon
-  code (a real Paddle code from Dan); Dan's look.
+- Then (Dan: "make it", "do what you think is right", 2026-10-28): the roof sign is IN the car photo now (masked
+  gpt-image-2 edit over the old drawn board, 2 takes, take 1, ~$0.50; pasted back onto the approved car, so the car and
+  its crop are unchanged; `drone/tools/sign-guide.py`, `prompt-car-sign.txt`, README "The art"); the drawn board + frame
+  box are gone from `world.js`. Spelling read at full size: CATCH YOUR / COUPON, nothing else. Original q95 in
+  design-assets (`2393679`). Readable in the hover at 1440 and at 390 (phone shots taken while the car crosses).
+  The sidewalk blockout props (pump, globe, radio, bin, chalkboard boxes) are out too (Dan: "delete the css", a
+  screenshot of the descent; `b0ea903`): the page frame has the props after the hand-off.
+- Checked again: landed = `?drone=0` mean 0.00 (1440 + 390); landing frame 2.55 / 1.47; no errors. Car 169 KB (was
+  103). Art spend in all: ~$2.
+- Open: the coupon code (a real Paddle code from Dan) and what catching it does; WebKit / a real phone; Dan's look.
 
 ## 2026-10-26 — GAS 2 page: the drone intro (hover above the station, scroll = descent, land, readings pop) (Claude Code `danavivi-19`, Dan's Mac) — BRANCH `feat/gas2-page`
 

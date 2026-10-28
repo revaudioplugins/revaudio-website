@@ -220,17 +220,9 @@ function makeCar(scene, carTex) {
   const sh = add(new THREE.PlaneGeometry(6.4, 3), basic(0xffffff, { map: shadow, transparent: true, depthWrite: false }), .3, .02, .35); sh.rotation.x = -Math.PI / 2;
   const beam = canvasTex(256, 128, c => { const gr = c.createLinearGradient(256, 0, 0, 0); gr.addColorStop(0, 'rgba(255,214,140,.55)'); gr.addColorStop(1, 'rgba(255,214,140,0)'); c.fillStyle = gr; c.beginPath(); c.moveTo(256, 44); c.lineTo(0, 0); c.lineTo(0, 128); c.lineTo(256, 84); c.fill(); });
   const bm = add(new THREE.PlaneGeometry(9, 4.2), basic(0xffffff, { map: beam, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }), -7, .03, 0); bm.rotation.x = -Math.PI / 2;
-  const body = add(new THREE.PlaneGeometry(5, 5 / 2.472), basic(0xffffff, { map: carTex, transparent: true, depthWrite: false }), 0, 1.2, 0);   // the car from above (img/car.webp)
+  // the car from above with its roof sign in the photo (img/car.webp; the sign: drone/tools/sign-guide.py)
+  const body = add(new THREE.PlaneGeometry(5, 5 / 2.472), basic(0xffffff, { map: carTex, transparent: true, depthWrite: false }), 0, 1.2, 0);
   body.rotation.x = -Math.PI / 2;
-  const sign = canvasTex(1024, 400, c => {
-    c.fillStyle = '#efe6d2'; c.fillRect(0, 0, 1024, 400);
-    c.strokeStyle = '#b8341e'; c.lineWidth = 22; c.strokeRect(11, 11, 1002, 378);
-    c.fillStyle = '#b8341e'; c.textAlign = 'center'; c.textBaseline = 'middle';
-    c.font = '700 150px Oswald, Arial Narrow, sans-serif'; c.fillText('CATCH YOUR', 512, 128);
-    c.font = '700 168px Oswald, Arial Narrow, sans-serif'; c.fillText('COUPON', 512, 290);
-  });
-  add(new THREE.BoxGeometry(3.3, .08, 1.4), basic('#2a2622'), .25, 1.47, 0);              // the roof board's frame
-  const top = add(new THREE.PlaneGeometry(3.2, 1.32), basic(0xffffff, { map: sign }), .25, 1.52, 0); top.rotation.x = -Math.PI / 2;
   let t0 = null;
   return {
     start(delay = 900) { t0 = performance.now() + delay; },

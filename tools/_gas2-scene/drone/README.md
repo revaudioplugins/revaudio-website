@@ -5,8 +5,8 @@ out and the readings pop in fast. A car drives right to left on load with **CATC
 from the hover. One flight per load (scrolling back up does not fly back). Owner: Claude Code `revaudio-59`.
 
 State: Dan picked the default camera (TOP). The flight's art is real (gpt-image-2, 2026-10-28): the aerial (field, roof,
-road), the close-up road round the landing spot and the car. Walls and props stay blockout boxes; the TOP flight never
-sees them (the page frame takes over first). The angled presets still see past the aerial onto the blockout ground.
+road), the close-up road round the landing spot and the car with its roof sign. The walls stay blockout boxes (the TOP
+flight never sees them: the page frame takes over first); the sidewalk props are left out, the page frame has them. The angled presets still see past the aerial onto the blockout ground.
 
 ## Run it
 
@@ -39,7 +39,7 @@ change in the code "does nothing", clear that key or press Copy to see what is s
 - `run.js` — the flight. A full-window WebGL canvas over the page, a scroll runway (`--dr-len` screens), the camera
   path, the hand-off and `pop()` (the readings' entrance, WAAPI).
 - `world.js` — the 3D set (three.js r185 in `vendor/`): ground (road, cracks, potholes, field), shop box, roof with
-  GAS 2 painted on it, props as boxes, the car, sky, and the **landing quad**: the page frame (`img/land.webp`) on a
+  GAS 2 painted on it, no sidewalk props (the page frame has them), the car, sky, and the **landing quad**: the page frame (`img/land.webp`) on a
   plane 60 m out that exactly fills the landing camera's view.
 - The landing camera matches `frames/f6-v17.png`: f = 1500 px on 1536×1024, eye 1.33 m, wall 6.6 m ahead. The canvas
   uses the page's own `.scene` crop (`setViewOffset`), so touchdown lands pixel for pixel at any window size.
@@ -52,7 +52,7 @@ change in the code "does nothing", clear that key or press Copy to see what is s
 - Hand-off: render the exact landing frame, show the page under it, fade the canvas, pop the readings, remove the
   runway, scroll to 0, dispose the renderer. After landing the page equals `?drone=0`.
 
-## The art (how it was made; Dan OK'd the cost 2026-10-28, ~$1.50 for three images)
+## The art (how it was made; Dan OK'd the cost 2026-10-28, ~$2 in all: ~$1.50 for three images + ~$0.50 the sign)
 
 1. `node drone/tools/ortho.cjs <out.png> <x0,z0,w,h> 3072x2048` renders the set straight from above (`ortho.html`):
    the layout guide. AER = `-23.5,-19,39,26` (the hover's view with margin), RN = `-6,-6.6,12,8` (round the landing spot).
@@ -62,10 +62,16 @@ change in the code "does nothing", clear that key or press Copy to see what is s
    - near = `prompt-near.txt` over the aerial's RN crop blown up to 3072 px, with the page photo's bottom as reference.
    - car = `prompt-car.txt` as a plain generation (`/v1/images/generations`, 1536x1024; no transparent background on
      this model, so flat magenta), 2 takes, take 1 kept.
+   - the roof sign (Dan: "make it", 2026-10-28) goes into the car photo, not on a drawn board:
+     `python -I drone/tools/sign-guide.py guide <car.png> <dir>` draws a flat placeholder board where the old drawn sign
+     sat (3.2 x 1.32 m) + a mask; `MASK=<dir>/sign-mask.png bash drone/tools/gen-edit.sh <out> 1536x1024 2
+     prompt-car-sign.txt <dir>/sign-guide.png`; read the letters at full size (only CATCH YOUR / COUPON, nothing
+     invented); `sign-guide.py compose <car.png> <edit.png> <car-sign.png>` pastes only the board area back onto the
+     approved car (the crop and its 2.472 aspect stay). car-sign.png is the `<car>` for step 3. ~$0.50.
 3. `python -I drone/tools/post-art.py <aerial> <near> <car> drone/img`: softens the straight edge between the lanes,
    gives the close-up the aerial's tone (no lighter patch in the hover), tames the AI's orange lamp pool on the road to
    the page photo's road colour where the 3D ground meets the photo at touchdown, keys the car, writes the webp files
-   (2560 px, q75: aerial ~0.57 MB, near ~1.1 MB, loaded after the hover shows; car ~0.1 MB).
+   (2560 px, q75: aerial ~0.57 MB, near ~1.1 MB, loaded after the hover shows; car ~0.17 MB).
    The originals (q95) are in the design-assets repo, `gas2-drone/`.
 
 AER and RN live in both `world.js` and `post-art.py`: change them together, then re-render the guides and regenerate.

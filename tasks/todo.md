@@ -16,6 +16,8 @@ Dan's order (2026-10-28): finish the scene with placeholders first, then generat
 - [x] 4b. Real art (Dan OK'd 2026-10-28; ~$1.50, 3 gpt-image-2 images: aerial, close road, car; `drone/README.md` "The art"): near road under the frame (fixes the seam + the close-up
       asphalt), roof + field aerial, the car (top-down sprite). The roof board stays text-only until Dan names a real
       Paddle code and what catching it does.
+- [x] 4c. Dan, 2026-10-28: the roof sign photographed into the car (~$0.50, `drone/tools/sign-guide.py`) and the sidewalk
+      blockout props (the "css" boxes in the descent) removed. Landing still exact.
 - [ ] 5b. QA again + 1141x636, WebKit, reduced motion, no-WebGL, weight <= 2.5 MB, frame time.
 - [ ] 6. Dan's Safari + phone look; handoff, commit, push the branch (never main).
 
