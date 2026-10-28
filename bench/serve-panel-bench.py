@@ -2,14 +2,16 @@
 Usage (from the worktree root, after npm run build): python bench/serve-panel-bench.py  ->  http://127.0.0.1:8797/bench/drift-panel-bench.html
 
 POST /__bench/save (the #hear section bench, 2026-10-28): the bench's hand-tuned values leave the browser here, as
-bench/drift-hear-tune/latest.json + a stamped copy, so Claude reads them from disk (never from the browser profile).
+bench/assets/drift-hear-tune/latest.json + a stamped copy per change, so Claude reads them from disk (never from the
+browser profile). bench/assets/ is gitignored: these are autosaves; a layout worth keeping is copied by hand into
+bench/drift-hear-tune/<name>.json (tracked; the bench's LAYOUT buttons load those).
 JSON only, 1 MB cap, Host + Origin = this server, header X-Bench-Save: 1.
 """
 import datetime, functools, http.server, json, os
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DIST, BENCH = os.path.join(ROOT, 'dist'), os.path.join(ROOT, 'bench')
-SAVES = os.path.join(BENCH, 'drift-hear-tune')
+SAVES = os.path.join(BENCH, 'assets', 'drift-hear-tune')
 PORT = 8797
 HOSTS = {f'127.0.0.1:{PORT}', f'localhost:{PORT}'}
 
@@ -57,7 +59,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             with open(tmp, 'w', encoding='utf-8') as fh:
                 fh.write(text)
             os.replace(tmp, latest)
-        return self._answer(200, {'saved': 'bench/drift-hear-tune/latest.json'})
+        return self._answer(200, {'saved': 'bench/assets/drift-hear-tune/latest.json'})
 
 
 if __name__ == '__main__':

@@ -24,8 +24,18 @@ Scope: the outer `.d-panel.d-hear-panel` plate only (step 3's pair plate and the
   VOLUME steps back. Section bench `bench/drift-hear-bench.html` (same server, port 8797): UPFRONT AS IS / A BIG +
   LIGHT / B A + SPRAY (an arrow at PLAY and at DRIFT, the next one fresh paint), FLOOR WALL / DRIFT STEEL, VEIL,
   PHONE Y. A sprayed ring round DRIFT was tried and dropped (it read as the button's own magenta lamp).
-  Waiting: the user picks UPFRONT + FLOOR.
-- [ ] E5. Fold the pick (DriftHear.astro + drift.css, #hear only; assets via getImage).
+  Picked 2026-10-28 (the user: "commit"): CONTROLS FLUSH (no boxes: "just this section doesn't feel glued"), UPFRONT A
+  (B's sprayed arrows dropped: "remove the pink arrows"), FLOOR WALL, LAYOUT TIGHT = the user's own hand layout
+  (EDIT mode, `bench/drift-hear-tune/yours.json`) on a grid (`tight.json`, its note has the maths). Two micro-moves
+  made after TIGHT were left out: "3 PUSH DRIFT" at 94 % (the step names stay one size) and DRIFT 1 px off the axis.
+- [x] E4b. The LCD gets the track list's frame (the user: "make a frame for this to lcd"): the same pocket + 5 px
+  black bezel, the outer box = today's LCD box so the TIGHT lines hold; slimmer on phones. Bench toggle LCD CUT /
+  FRAMED. On the bench 2026-10-28 (FRAMED by default; the user's look owed): desktop frame 445..1136 x 40..243, glass
+  457..1124, panel 460 -> 484, rings' bottom = the list pocket's bottom (454). Phone pocket 7 + bezel 4, the glass's
+  side padding 12 -> 5 so the readouts keep their width (coach spare 16 px at 390, 18 at 360, same as CUT; the
+  too-long control clips); panel +14. Crack still on the glass, 0 page errors.
+- [ ] E5. Fold the pick (DriftHear.astro + drift.css, #hear only; assets via getImage). The LCD frame = a wrapper in
+  the markup (`.d-hear-lcdbox` round the screen, as `.d-hear-tv` wraps the list); new heights into the baselines.
 - [ ] E6. Verify: every guide state, readouts still read over the graffiti, reduced motion, focus, phone 390 / 360,
   WebKit, 0 errors; heights = before minus the title row.
 

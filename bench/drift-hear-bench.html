@@ -61,6 +61,7 @@ h1 { font: 800 24px/1.1 system-ui; margin: 0 0 6px; }
     <span class="grp"><b>UPFRONT</b><button data-k="up" data-v="0">AS IS</button><button data-k="up" data-v="a" aria-pressed="true">A · BIG + LIGHT</button></span>
     <span class="grp"><b>CONTROLS</b><button data-k="ctl" data-v="split" aria-pressed="true">SPLIT</button><button data-k="ctl" data-v="plate">ONE PLATE</button><button data-k="ctl" data-v="unit">HEAD UNIT</button><button data-k="ctl" data-v="flush">FLUSH</button></span>
     <span class="grp"><b>FLOOR</b><button data-k="floor" data-v="wall" aria-pressed="true">WALL</button><button data-k="floor" data-v="steel">DRIFT STEEL</button></span>
+    <span class="grp"><b>LCD</b><button data-k="lcd" data-v="cut">CUT</button><button data-k="lcd" data-v="framed" aria-pressed="true">FRAMED</button></span>
     <label>VEIL <input type="range" id="veil" min="0" max="50" value="18"><output id="veilo"></output></label>
     <label>PHONE Y <input type="range" id="px" min="0" max="100" value="0"><output id="pxo"></output></label>
   </div>
@@ -83,13 +84,17 @@ h1 { font: 800 24px/1.1 system-ui; margin: 0 0 6px; }
 <script>
 const PLATE = '/bench/drift-panel/panel3.webp', PW = 2560, PH = 1024;
 const PLATE_P = '/bench/drift-panel/panel3-portrait.webp', PPW = 1024, PPH = 1536;
-const st = { look: 'e', up: 'a', floor: 'wall', ctl: 'flush', veil: 18, px: 0 };   // B (sprayed arrows) dropped 2026-10-28: "remove the pink arrows"; its code stays for benchSet only
+const st = { look: 'e', up: 'a', floor: 'wall', ctl: 'flush', lcd: 'framed', veil: 18, px: 0 };   // B (sprayed arrows) dropped 2026-10-28: "remove the pink arrows"; its code stays for benchSet only
 // CONTROLS (the user, 2026-10-26, on the PLAY / PUSH DRIFT row: "just this section doesn't feel glued to me"): which
 // parts get a pocket of their own. SPLIT = step 2 and step 3 each a box; ONE PLATE = both steps in one pocket, an
 // engraved groove between; HEAD UNIT = the LCD and the controls on one face, like a car stereo; FLUSH = no box, the
 // controls go straight through the wall
 const FLOORED = { split: '.d-hear-tv, .d-hear-step', plate: '.d-hear-tv, .d-hear-controls', unit: '.d-hear-tv, .d-hear-deck', flush: '.d-hear-tv' };
 const sel = (list) => list.split(', ').map((x) => '#hear ' + x).join(', ');
+// LCD (the user, 2026-10-28, on the LCD next to the PICK A TRACK screen: "make a frame for this to lcd"): CUT = its
+// window cut straight into the wall; FRAMED = the track list's frame, a pocket of its own with the glass in a worn
+// black bezel ring, so the two screens read as one family (bench: a .bx-lcdbox wrapper; the page gets real markup)
+const floored = () => FLOORED[st.ctl] + (st.lcd === 'framed' ? ', .bx-lcdbox' : '');
 const CTL_NOTES = {
   split: 'SPLIT: step 2 and step 3 each in a pocket of their own (the look you saw).',
   plate: 'ONE PLATE: step 2 and step 3 in one pocket, an engraved groove between them, DRIFT and VOLUME closer together, the DRIFT button seated in a bore.',
@@ -116,20 +121,26 @@ const cssLook = () => {
 
 /* a pocket milled into the wall: cut line, the lip catching the lamp on the bottom-right edge, the wall dark on the
    top-left inside, the floor a step down (light from the upper left, Law 4) */
-#hear .d-hear-tv, #hear .d-hear-step, #hear .d-hear-controls, #hear .d-hear-deck, #hear .d-hear-screen {
+#hear .d-hear-tv, #hear .d-hear-step, #hear .d-hear-controls, #hear .d-hear-deck, #hear .d-hear-screen, #hear .bx-lcdbox {
   --cut: 0 0 0 1px rgba(3, 1, 6, .95), 1px 1px 0 1px rgba(232, 220, 246, .26), -1px -1px 0 1px rgba(0, 0, 0, .7), 0 0 0 4px rgba(10, 4, 16, .35);
   --sink: inset 0 12px 16px -8px rgba(0, 0, 0, .85), inset 12px 0 16px -10px rgba(0, 0, 0, .6), inset 0 -1px 0 rgba(255, 240, 255, .06), inset -1px 0 0 rgba(255, 240, 255, .04);
 }
 #hear .d-hear-step { border-image: none !important; border: 0 !important; filter: none !important; box-shadow: none !important; background: none !important; }
-${sel(FLOORED[st.ctl])} { border-image: none !important; border: 0 !important; filter: none !important; border-radius: 10px !important;
+${sel(floored())} { border-image: none !important; border: 0 !important; filter: none !important; border-radius: 10px !important;
   box-shadow: var(--cut), var(--sink) !important; }
 #hear .d-hear-tv { padding: 12px !important; }
 #hear .d-hear-tv > .d-hear-pick { border-radius: 8px !important; }
 #hear .d-hear-sec .d-hear-step:not(.d-hear-step--ab), #hear .d-hear-step:not(.d-hear-step--ab) { padding: 14px 22px 16px !important; }
 #hear .d-hear-step--ab { padding: 14px 18px 12px !important; }
 @media (max-width: 600px) { #hear .d-hear-tv { padding: 8px !important; } #hear .d-hear-step:not(.d-hear-step--ab) { padding: 10px 10px 10px !important; } #hear .d-hear-step--ab { padding: 10px 10px 10px !important; } }
-/* the LCD: its window cut straight into the wall (the glass a step down) */
-#hear .d-hear-screen { box-shadow: var(--cut) !important; border-radius: 6px !important; }
+/* the LCD. CUT: its window cut straight into the wall (the glass a step down). FRAMED: .d-hear-tv's recipe, a
+   pocket with 12 px of floor (7 showing) and the glass in .d-hear-pick's bezel ring; the phone frame is slimmer and
+   the glass gives back its side padding, so every readout keeps the width it had */
+${st.lcd === 'framed' ? `#hear .bx-lcdbox { padding: 12px !important; }
+#hear .bx-lcdbox > .d-hear-screen { border-radius: 8px !important; box-shadow: 0 0 0 1px rgba(4, 2, 8, .95), 0 0 0 5px #0d0612, 1px 1px 0 5px rgba(232, 220, 246, .14) !important; }
+@media (max-width: 600px) { #hear .bx-lcdbox { padding: 7px !important; }
+  #hear .bx-lcdbox > .d-hear-screen { padding-inline: 5px !important; box-shadow: 0 0 0 1px rgba(4, 2, 8, .95), 0 0 0 4px #0d0612, 1px 1px 0 4px rgba(232, 220, 246, .14) !important; } }`
+  : `#hear .d-hear-screen { box-shadow: var(--cut) !important; border-radius: 6px !important; }`}
 #hear .d-hear-screen::before { box-shadow: inset 0 0 0 2px #040106, inset 0 8px 12px rgba(0, 0, 0, .8), inset 8px 0 10px -4px rgba(0, 0, 0, .55), inset 0 -4px 7px rgba(0, 0, 0, .45) !important; }
 /* the CRT glass in its pocket: a worn black bezel ring, no violet halo */
 #hear .d-hear-pick { box-shadow: 0 0 0 1px rgba(4, 2, 8, .95), 0 0 0 5px #0d0612, 1px 1px 0 5px rgba(232, 220, 246, .14), inset 0 12px 26px rgba(0, 0, 0, .65) !important; }
@@ -141,9 +152,9 @@ ${sel(FLOORED[st.ctl])} { border-image: none !important; border: 0 !important; f
 `;
 };
 const cssFloor = () => st.floor === 'wall'
-  ? `${sel(FLOORED[st.ctl])} { background: linear-gradient(rgba(7, 3, 11, .66), rgba(7, 3, 11, .66)), url(${PLATE}) var(--fx, 0) var(--fy, 0) / var(--fw, 100%) var(--fh, 100%) no-repeat, #0d0612 !important; }
-@media (max-width: 600px) { ${sel(FLOORED[st.ctl])} { background-image: linear-gradient(rgba(7, 3, 11, .66), rgba(7, 3, 11, .66)), url(${PLATE_P}) !important; } }`
-  : `${sel(FLOORED[st.ctl])} { background: linear-gradient(rgba(10, 4, 16, .5), rgba(10, 4, 16, .5)), var(--d-img-panel) center / cover, #150a1f !important; }`;
+  ? `${sel(floored())} { background: linear-gradient(rgba(7, 3, 11, .66), rgba(7, 3, 11, .66)), url(${PLATE}) var(--fx, 0) var(--fy, 0) / var(--fw, 100%) var(--fh, 100%) no-repeat, #0d0612 !important; }
+@media (max-width: 600px) { ${sel(floored())} { background-image: linear-gradient(rgba(7, 3, 11, .66), rgba(7, 3, 11, .66)), url(${PLATE_P}) !important; } }`
+  : `${sel(floored())} { background: linear-gradient(rgba(10, 4, 16, .5), rgba(10, 4, 16, .5)), var(--d-img-panel) center / cover, #150a1f !important; }`;
 
 const cssCtl = () => {
   if (st.ctl === 'split') return '';
@@ -251,6 +262,9 @@ const parts = (d, on) => {
   const hear = d.getElementById('hear'); if (!hear) return;
   hear.style.setProperty('--bx-noise', NOISE);
   d.querySelectorAll('#hear .bx-crack, #hear .bx-spray, #hear .bx-bore').forEach((e) => e.remove());
+  const scr = hear.querySelector('.d-hear-screen'), box = hear.querySelector('.bx-lcdbox'), framed = on && st.lcd === 'framed';
+  if (framed && scr && !box) { const b = d.createElement('div'); b.className = 'bx-lcdbox'; scr.before(b); b.append(scr); }
+  if (!framed && box) box.replaceWith(...box.childNodes);
   if (!on) return;
   const add = (sel, html) => { const host = hear.querySelector(sel); if (host) host.insertAdjacentHTML('beforeend', html); };
   add('.d-hear-screen', CRACK_LCD); add('.d-hear-pick', CRACK_CRT);
@@ -282,7 +296,7 @@ const align = (w) => {
     a.style.left = `${r.left + fx * r.width - a.offsetWidth - h.left + o.x}px`; a.style.top = `${r.top + fy * r.height - a.offsetHeight - h.top + o.y}px`;
   };
   arrow('play', 'arrowPlay', '.d-hear-play', .35, 0); arrow('drift', 'arrowDrift', '.d-start-pb', .03, .85);
-  for (const el of d.querySelectorAll('#hear .d-hear-tv, #hear .d-hear-step, #hear .d-hear-controls, #hear .d-hear-deck')) {
+  for (const el of d.querySelectorAll('#hear .d-hear-tv, #hear .d-hear-step, #hear .d-hear-controls, #hear .d-hear-deck, #hear .bx-lcdbox')) {
     const r = el.getBoundingClientRect();
     el.style.setProperty('--fx', `${x0 - (r.left - P.left)}px`); el.style.setProperty('--fy', `${y0 - (r.top - P.top)}px`);
     el.style.setProperty('--fw', `${iw}px`); el.style.setProperty('--fh', `${ih}px`);
@@ -336,7 +350,8 @@ const TUNABLE = {
 const TKEY = 'drift-hear-bench-tune-v1';
 let tune = { d: {}, p: {} };
 try { const t = JSON.parse(localStorage.getItem(TKEY) || 'null'); if (t && t.d && t.p) tune = t; } catch (e) { /* private window: start clean */ }
-// saved twice: in this browser, and (debounced) to bench/drift-hear-tune/latest.json through serve-panel-bench.py, so
+// saved twice: in this browser, and (debounced) to bench/assets/drift-hear-tune/latest.json (gitignored autosaves)
+// through serve-panel-bench.py, so
 // the values reach Claude without a COPY / paste
 let postT = 0;
 const postTune = () => {
@@ -503,7 +518,7 @@ for (const b of document.querySelectorAll('[data-layout]')) b.addEventListener('
 { const L = new URLSearchParams(location.search).get('layout'); if (L && /^[a-z0-9-]+$/.test(L)) loadLayout(L); }
 syncPanel();
 
-// test hook: window.benchSet({look, up, floor, ctl, veil, px})
+// test hook: window.benchSet({look, up, floor, ctl, lcd, veil, px})
 window.benchSet = (o) => { Object.assign(st, o); apply(); };
 </script>
 </body>
