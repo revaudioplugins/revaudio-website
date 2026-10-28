@@ -68,7 +68,12 @@ line), nothing else of page-b's; one README line pair; `tasks/todo.md` (the "GAS
   screenshot of the descent; `b0ea903`): the page frame has the props after the hand-off.
 - Checked again: landed = `?drone=0` mean 0.00 (1440 + 390); landing frame 2.55 / 1.47; no errors. Car 169 KB (was
   103). Art spend in all: ~$2.
-- Open: the coupon code (a real Paddle code from Dan) and what catching it does; WebKit / a real phone; Dan's look.
+- Then (Dan: yes, replace them): the car's headlight beam and shadow are no longer drawn shapes. Beam = two soft cones
+  from the lamps, light falling off with distance, blended as road * (1 + beam) so it lights the asphalt (cracks stay
+  dark); shadow = a soft contact shadow hugging the footprint (dusk: no sun shadow). Procedural in `world.js`, no new
+  file. Landing still mean 0.00 (1440 + 390), no errors.
+- Coupon: Dan, 2026-10-28: "10% coupon on the whole site". The code must be a live Paddle discount (wiki store); not
+  created yet. Open: the code name, creating it in Paddle (his OK), what catching does; WebKit / a real phone; his look.
 
 ## 2026-10-26 — GAS 2 page: the drone intro (hover above the station, scroll = descent, land, readings pop) (Claude Code `danavivi-19`, Dan's Mac) — BRANCH `feat/gas2-page`
 

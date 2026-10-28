@@ -216,10 +216,32 @@ function makeCar(scene, carTex) {
   const g = new THREE.Group(); g.position.set(40, 0, -2.4); g.visible = false; scene.add(g);
   const basic = (c, o = {}) => new THREE.MeshBasicMaterial({ color: c, ...o });
   const add = (geo, m, x, y, z) => { const o = new THREE.Mesh(geo, m); o.position.set(x, y, z); g.add(o); return o; };
-  const shadow = canvasTex(256, 128, c => { const gr = c.createRadialGradient(128, 64, 10, 128, 64, 128); gr.addColorStop(0, 'rgba(0,0,0,.6)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = gr; c.fillRect(0, 0, 256, 128); });
-  const sh = add(new THREE.PlaneGeometry(6.4, 3), basic(0xffffff, { map: shadow, transparent: true, depthWrite: false }), .3, .02, .35); sh.rotation.x = -Math.PI / 2;
-  const beam = canvasTex(256, 128, c => { const gr = c.createLinearGradient(256, 0, 0, 0); gr.addColorStop(0, 'rgba(255,214,140,.55)'); gr.addColorStop(1, 'rgba(255,214,140,0)'); c.fillStyle = gr; c.beginPath(); c.moveTo(256, 44); c.lineTo(0, 0); c.lineTo(0, 128); c.lineTo(256, 84); c.fill(); });
-  const bm = add(new THREE.PlaneGeometry(9, 4.2), basic(0xffffff, { map: beam, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }), -7, .03, 0); bm.rotation.x = -Math.PI / 2;
+  // dusk: no sun shadow, only a soft contact shadow hugging the car's footprint (a rounded box 5 x 2 m, 32 px a metre)
+  const shadow = canvasTex(192, 96, c => {
+    const im = c.createImageData(192, 96);
+    for (let j = 0; j < 96; j++) for (let i = 0; i < 192; i++) {
+      const qx = Math.abs((i + .5) / 32 - 3) - 2.2, qz = Math.abs((j + .5) / 32 - 1.5) - .72;
+      const sd = Math.hypot(Math.max(qx, 0), Math.max(qz, 0)) + Math.min(Math.max(qx, qz), 0) - .3;   // metres outside the outline
+      const s = Math.min(1, Math.max(0, (sd + .05) / .45)); im.data[(j * 192 + i) * 4 + 3] = 115 * (1 - s * s * (3 - 2 * s));
+    }
+    c.putImageData(im, 0, 0);
+  });
+  const sh = add(new THREE.PlaneGeometry(6, 3), basic(0xffffff, { map: shadow, transparent: true, depthWrite: false }), 0, .02, .1); sh.rotation.x = -Math.PI / 2;
+  // the headlights: two soft cones from the lamps (z +-0.75 m), brightest a few metres out, fading with distance; the
+  // blend multiplies the road (road * (1 + beam)), so the light lands on the asphalt and its cracks stay dark
+  const beam = canvasTex(448, 256, c => {
+    const im = c.createImageData(448, 256);
+    for (let j = 0; j < 256; j++) for (let i = 0; i < 448; i++) {
+      const x = (448 - i - .5) / 32, z = (j + .5) / 32 - 4;              // metres ahead of the lamps, across
+      let e = 0;
+      for (const lz of [-.75, .75]) { const dz = z - lz, d = Math.hypot(x, dz); e += Math.exp(-((Math.atan2(Math.abs(dz), x) / .3) ** 2)) * (.4 + .6 * Math.min(1, d / 1.5)) * Math.exp(-d / 6); }
+      const k = Math.min(1, 1.1 * e * Math.min(1, (14 - x) / 3) * Math.min(1, (4 - Math.abs(z)) / 1)), o = (j * 448 + i) * 4;
+      im.data[o] = 255 * k; im.data[o + 1] = 214 * k; im.data[o + 2] = 150 * k; im.data[o + 3] = 255;
+    }
+    c.putImageData(im, 0, 0);
+  });
+  const lit = { blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.DstColorFactor, blendDst: THREE.OneFactor };
+  const bm = add(new THREE.PlaneGeometry(14, 8), basic(0xffffff, { map: beam, transparent: true, depthWrite: false, ...lit }), -9.4, .03, 0); bm.rotation.x = -Math.PI / 2;
   // the car from above with its roof sign in the photo (img/car.webp; the sign: drone/tools/sign-guide.py)
   const body = add(new THREE.PlaneGeometry(5, 5 / 2.472), basic(0xffffff, { map: carTex, transparent: true, depthWrite: false }), 0, 1.2, 0);
   body.rotation.x = -Math.PI / 2;
