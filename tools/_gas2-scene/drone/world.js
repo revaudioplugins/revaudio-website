@@ -3,10 +3,10 @@
 // 1536 x 1024 frame, eye 1.33 m, the shop wall 6.6 m ahead.
 // The art (2026-10-28, gpt-image-2, drone/tools/: ortho guide -> gen-edit.sh -> post-art.py): img/aerial.webp = the set
 // from straight above (ground, sidewalk and roof tops, AER), img/near.webp = the ground round the landing spot close up
-// (RN, loads after the hover shows), img/car.webp = the car from above. Walls and props stay blockout boxes: the TOP
-// flight never sees them (the page frame takes over first). Exact: img/land.webp (page-b's own scene,
-// drone/tools/render-landing.cjs) on a quad that fills the landing camera's view, so any frame from the landing spot IS
-// the page.
+// (RN, loads after the hover shows), img/car.webp = the car from above. The walls stay blockout boxes: the TOP
+// flight never sees them (the page frame takes over first); the sidewalk props are left out (the page frame has them).
+// Exact: img/land.webp (page-b's own scene, drone/tools/render-landing.cjs) on a quad that fills the landing camera's
+// view, so any frame from the landing spot IS the page.
 import * as THREE from './vendor/three.module.min.js';
 export { THREE };
 
@@ -170,17 +170,8 @@ export async function buildWorld() {
   box(-12.5, 2.6, 3.6, 4.1, -15.5, -5.5, [fascia, fascia, mat({ map: aerial, rect: AER }), mat({ color: '#2a2622' }), fascia, fascia]);
   const curb = mat({ color: '#9b9183' });
   box(-12, 3.0, 0, .18, -6.6, -4.8, [curb, curb, groundMat, curb, curb, curb]);
-
-  // what stands on the sidewalk (blockout boxes at the page frame's positions)
-  const pumpRed = mat({ color: '#9b2f22' }), pumpTop = mat({ color: '#c9bfa8' });
-  box(-1.9, -.78, .18, 2.1, -6.25, -5.7, [pumpRed, pumpRed, pumpTop, pumpRed, pumpRed, pumpRed]);
-  const globe = new THREE.Mesh(new THREE.SphereGeometry(.26, 24, 16), mat({ color: '#efe6d2' })); globe.position.set(-1.34, 2.42, -5.98); scene.add(globe);
-  const wood = mat({ color: '#6e5228' }), radioTop = mat({ color: '#93733a' });
-  box(-3.1, -1.95, .18, 1.15, -6.5, -6.05, [wood, wood, radioTop, wood, wood, wood]);
-  const binY = mat({ color: '#b8962f' }), binTop = mat({ color: '#2a241d' });
-  box(-.3, .36, .18, 1.32, -6.2, -5.6, [binY, binY, binTop, binY, binY, binY]);
-  const chalk = mat({ color: '#25302a' }), chalkWood = mat({ color: '#a9783a' });
-  box(.55, 1.05, .18, 1.2, -5.35, -5.22, [chalkWood, chalkWood, chalkWood, chalkWood, chalk, chalk]);
+  // nothing stands on the sidewalk: the blockout props (pump, radio, bin, chalkboard) read as flat boxes from above
+  // next to the photo art (Dan, 2026-10-28); the page frame shows the real ones after the hand-off
 
   // the two lamps under the eave: a warm bulb and a soft glow (glow sprites read from any angle)
   const glowTex = canvasTex(128, 128, g => { const gr = g.createRadialGradient(64, 64, 0, 64, 64, 64); gr.addColorStop(0, 'rgba(255,226,170,1)'); gr.addColorStop(.18, 'rgba(255,196,120,.55)'); gr.addColorStop(1, 'rgba(255,170,90,0)'); g.fillStyle = gr; g.fillRect(0, 0, 128, 128); });
