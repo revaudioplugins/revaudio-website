@@ -63,6 +63,7 @@ h1 { font: 800 24px/1.1 system-ui; margin: 0 0 6px; }
     <span class="grp"><b>FLOOR</b><button data-k="floor" data-v="wall">WALL</button><button data-k="floor" data-v="steel" aria-pressed="true">DRIFT STEEL</button></span>
     <span class="grp"><b>LCD</b><button data-k="lcd" data-v="cut">CUT</button><button data-k="lcd" data-v="framed" aria-pressed="true">FRAMED</button></span>
     <span class="grp"><b>VOLUME</b><button data-k="vol" data-v="knob">KNOB</button><button data-k="vol" data-v="fader">FADER</button><button data-k="vol" data-v="worn" aria-pressed="true">WORN</button></span>
+    <span class="grp"><b>DRIFT BTN</b><button data-k="btn" data-v="0">AS IS</button><button data-k="btn" data-v="cap" aria-pressed="true">CAP</button></span>
     <span class="grp"><b>CAP</b><button data-k="cap" data-v="1">1</button><button data-k="cap" data-v="2" aria-pressed="true">2</button></span>
     <span class="grp"><b>PLATE</b><button data-k="plate" data-v="1" aria-pressed="true">1</button><button data-k="plate" data-v="2">2</button></span>
     <label>VEIL <input type="range" id="veil" min="0" max="50" value="18"><output id="veilo"></output></label>
@@ -87,7 +88,7 @@ h1 { font: 800 24px/1.1 system-ui; margin: 0 0 6px; }
 <script>
 const PLATE = '/bench/drift-panel/panel3.webp', PW = 2560, PH = 1024;
 const PLATE_P = '/bench/drift-panel/panel3-portrait.webp', PPW = 1024, PPH = 1536;
-const st = { look: 'e', up: 'a', floor: 'steel', ctl: 'flush', lcd: 'framed', vol: 'worn', cap: '2', plate: '1', veil: 18, px: 0 };   // B (sprayed arrows) dropped 2026-10-28: "remove the pink arrows"; its code stays for benchSet only. FLOOR: DRIFT STEEL picked 2026-10-28 ("Drift wall i like")
+const st = { look: 'e', up: 'a', floor: 'steel', ctl: 'flush', lcd: 'framed', vol: 'worn', cap: '2', plate: '1', btn: 'cap', veil: 18, px: 0 };   // B (sprayed arrows) dropped 2026-10-28: "remove the pink arrows"; its code stays for benchSet only. FLOOR: DRIFT STEEL picked 2026-10-28 ("Drift wall i like")
 // CONTROLS (the user, 2026-10-26, on the PLAY / PUSH DRIFT row: "just this section doesn't feel glued to me"): which
 // parts get a pocket of their own. SPLIT = step 2 and step 3 each a box; ONE PLATE = both steps in one pocket, an
 // engraved groove between; HEAD UNIT = the LCD and the controls on one face, like a car stereo; FLUSH = no box, the
@@ -234,6 +235,33 @@ const cssVol = () => st.vol === 'knob' ? '' : `
 #hear .bx-vfad .d-fad-thumb::after { display: none; }
 @media (max-width: 600px) { #hear .bx-vfad .d-fad-thumb { width: 36px; height: ${(36 / CAPS[st.cap].ar).toFixed(1)}px; } }
 `);
+
+// DRIFT BTN (the user, 2026-10-28, on the DRIFT push-start: "i want it to feel more like a button and polish it"): CAP =
+// the dark lens becomes a raised cap. It was a window sunk in the bezel (inset shadow only), so the part read as a
+// gauge. Now: bigger (64 % of the bezel, was 59 %), convex (lit top-left, its rim shaded bottom-right, a gloss on the
+// shoulder), standing proud of the light ring and shading it; pressed, the cap and its legend travel in together (the
+// legend used to stay put while the lens shrank). Sizes are in the button's own 204 px box (scaled by --k)
+const cssBtn = () => st.btn !== 'cap' ? '' : `
+#hear .d-start-seat { inset: 18px; }
+#hear .d-start-tube { inset: 21px; }
+#hear .d-start-lens, #hear .d-start-lg { inset: 27px; }
+#hear .d-start-lens { transition: transform .08s ease-out, box-shadow .08s ease-out;
+  background: radial-gradient(115% 95% at 34% 22%, #43384f 0%, #221a2b 38%, #0f0a15 72%, #060409 100%);
+  box-shadow: 0 5px 7px rgba(0, 0, 0, .85), 0 1px 2px rgba(0, 0, 0, .95), inset 0 2px 0 rgba(255, 255, 255, .22), inset 0 0 0 1px rgba(0, 0, 0, .85),
+    inset 0 -5px 7px rgba(0, 0, 0, .75), inset 3px 0 6px -2px rgba(255, 255, 255, .05); }
+#hear .d-start-lens::before { content: ''; position: absolute; inset: 0; border-radius: 50%; pointer-events: none; z-index: 1;
+  background: radial-gradient(34% 17% at 37% 15%, rgba(255, 255, 255, .34), rgba(255, 255, 255, .08) 62%, transparent 75%),
+    radial-gradient(closest-side, transparent 88%, rgba(255, 255, 255, .07) 96%, transparent 100%); }
+#hear .d-start-lg { transition: transform .08s ease-out; }
+#hear .d-start-lg .w { font-size: 16px; }
+#hear .d-start-pb:active .d-start-lens, #hear .d-start-pb:active .d-start-lg { transform: translateY(1.5px) scale(.965); }
+#hear .d-start-pb:active .d-start-lens { box-shadow: 0 1px 1px rgba(0, 0, 0, .95), inset 0 1px 0 rgba(255, 255, 255, .12), inset 0 0 0 1px rgba(0, 0, 0, .85),
+    inset 0 -2px 4px rgba(0, 0, 0, .75), inset 0 5px 9px rgba(0, 0, 0, .6); }
+#hear .d-start-pb:active .d-start-lens::before { opacity: .55; }
+@media (hover: hover) { #hear .d-start-pb:hover:not(:active) .d-start-lens { box-shadow: 0 5px 7px rgba(0, 0, 0, .85), 0 1px 2px rgba(0, 0, 0, .95),
+    inset 0 2px 0 rgba(255, 255, 255, .32), inset 0 0 0 1px rgba(0, 0, 0, .85), inset 0 -5px 7px rgba(0, 0, 0, .75), inset 3px 0 6px -2px rgba(255, 255, 255, .08); } }
+@media (prefers-reduced-motion: reduce) { #hear .d-start-lens, #hear .d-start-lg { transition: none; } }
+`;
 
 const cssUp = () => {
   if (st.up === '0') return '';
@@ -403,7 +431,7 @@ const apply = () => {
     const d = f.contentDocument, w = f.contentWindow; if (!d || !d.head) continue;
     let el = d.getElementById('hear-bench'); if (!el) { el = d.createElement('style'); el.id = 'hear-bench'; d.head.append(el); }
     const on = st.look === 'e';
-    el.textContent = on ? cssLook() + cssFloor() + cssCtl() + cssUp() + cssVol() : '#cookie-banner { display: none !important; }';
+    el.textContent = on ? cssLook() + cssFloor() + cssCtl() + cssUp() + cssVol() + cssBtn() : '#cookie-banner { display: none !important; }';
     parts(d, on); installEditor(f); readBases(f); renderTune(f); requestAnimationFrame(() => { align(w); drawOverlay(f); });
     if (on && Object.keys(bases.d).length && Object.keys(bases.p).length) postTune();   // both frames measured: send what this browser holds
     if (!w.__bxAlign) { w.__bxAlign = true; w.addEventListener('resize', () => align(w)); }
@@ -453,7 +481,7 @@ let postT = 0;
 const postTune = () => {
   clearTimeout(postT);
   postT = setTimeout(() => fetch('/__bench/save', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Bench-Save': '1' },
-    body: JSON.stringify({ tune, bases, view: { ctl: st.ctl, up: st.up, floor: st.floor, lcd: st.lcd, vol: st.vol, cap: st.cap, plate: st.plate, veil: st.veil }, saved: new Date().toISOString() }) }).catch(() => {}), 400);
+    body: JSON.stringify({ tune, bases, view: { ctl: st.ctl, up: st.up, floor: st.floor, lcd: st.lcd, vol: st.vol, cap: st.cap, plate: st.plate, btn: st.btn, veil: st.veil }, saved: new Date().toISOString() }) }).catch(() => {}), 400);
 };
 const saveTune = () => { try { localStorage.setItem(TKEY, JSON.stringify(tune)); } catch (e) { /* not saved, still works */ } postTune(); };
 const tk = (w) => (w.innerWidth <= 600 ? 'p' : 'd');
@@ -614,7 +642,7 @@ for (const b of document.querySelectorAll('[data-layout]')) b.addEventListener('
 { const L = new URLSearchParams(location.search).get('layout'); if (L && /^[a-z0-9-]+$/.test(L)) loadLayout(L); }
 syncPanel();
 
-// test hook: window.benchSet({look, up, floor, ctl, lcd, vol, cap, plate, veil, px})
+// test hook: window.benchSet({look, up, floor, ctl, lcd, vol, cap, plate, btn, veil, px})
 window.benchSet = (o) => { Object.assign(st, o); apply(); };
 </script>
 </body>

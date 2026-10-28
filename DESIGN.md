@@ -263,6 +263,10 @@ words first, window under them.
   cut. Placed as a channel strip ("make it bigger and place somewhere better"): on the deck's right edge line (the
   LCD frame's right edge; PLAY's left edge sits on its left one), as tall as the controls, from the step names' top
   line to the pocket's bottom line (phone: from just under "3 PUSH DRIFT", which runs over its column).
+- DO make a push button stand proud: a convex cap that throws its shadow onto what is around it, its legend printed on
+  the cap so both travel in together when pressed. /drift #hear's DRIFT push-start had a dark lens sunk in the bezel
+  (inset shadow only) and read as a gauge; on `bench/drift-hear-bench.html` (DRIFT BTN CAP) it became a raised cap
+  (laptop 1 user, 2026-10-28: "i want it to feel more like a button and polish it").
 
 ## 10. History + open questions (for Dan)
 

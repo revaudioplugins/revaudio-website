@@ -54,6 +54,12 @@ Scope: the outer `.d-panel.d-hear-panel` plate only (step 3's pair plate and the
   bottom = the pocket's line), cap 58 px, readout 1068..1136 (right edge = the LCD frame's 1136) on ORIGINAL /
   DRIFT's line. Phone plate 409..495 (just under "3 PUSH DRIFT", which runs over the column), cap 36 px, readout's
   right edge = the LCD frame's 336. Tests pass again, 0 page errors.
+- [x] E4e. The DRIFT push-start feels like a button (the user, 2026-10-28: "i want it to feel more like a button and
+  polish it"). Bench DRIFT BTN AS IS / CAP (default CAP): the sunk lens becomes a raised convex cap, 64 % of the bezel
+  (was 59 %), lit top-left with a gloss on its shoulder, its rim shaded bottom-right, standing proud of the light ring
+  and shading it; hover brightens the rim; pressed, the cap AND its legend travel in together (translateY 1.5 px +
+  scale .965; before, only the lens shrank and the legend stayed put). Shot off / on / pressed vs AS IS, 0 page errors.
+  The user's look owed.
 - [ ] E5. Fold the pick (DriftHear.astro + drift.css, #hear only; assets via getImage). The LCD frame = a wrapper in
   the markup (`.d-hear-lcdbox` round the screen, as `.d-hear-tv` wraps the list); new heights into the baselines.
 - [ ] E6. Verify: every guide state, readouts still read over the graffiti, reduced motion, focus, phone 390 / 360,
