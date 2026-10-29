@@ -124,7 +124,7 @@ descent" section); this entry.
   out (cue.js = the chevrons only). Checked 1440 + 390 on 4465: in at the hover, 0 after .6 screen, back at the top,
   no panel, no errors; landed = `?drone=0` mean 0.00.
 - Then (Dan, 2026-10-29: "a bench only on the light on GAS 2 ... on the GAS on the last page of the site"; a first
-  take benched the plugin's own 3D pump instead, GAS2 repo branch `bench/pump-light`, left there): NEW
+  take benched the plugin's own 3D pump instead, GAS2 repo branch `bench/pump-light`, deleted 10-29 on Dan's word): NEW
   `tools/_gas2-scene/light-bench.html` (+ its README line). The real page (`page-b.html?drone=0`) in a frame, panel
   docked right: LAMP (= `--sp-l`, the `.pumpLit` soft-light opacity), LAMP MIX (soft-light / overlay / screen), LAMP
   REACH (the gradient's 42 % / 88 % stops x reach), LAMP COLOUR (amber -> white), PUMP BRIGHTNESS / CONTRAST
@@ -151,27 +151,34 @@ descent" section); this entry.
 
 ### Session end 2 (2026-10-29 evening, `revaudio-59`, close-session) — claim stays OPEN (CATCH10, then Dan's push word)
 
-- State: branch `feat/gas2-drone` = origin after the close commits; 21 commits ahead of origin/main. Today:
-  `1d0f3c5` grade strip out, `9815ee6` / `b249801` / `ee2356f` radio knobs (ALU), `4ac3aad` / `7d36b36` scroll cue
-  (chevrons), `a81dfa9` / `b527eaf` pump light (bench, then Dan's pick), `247a7a7` / `4fc6ddd` radio knobs WORN, then
-  the close commits (this file + radio.css comment). Elsewhere, all pushed: GAS2 branch `bench/pump-light` (`679bc0f`,
-  `dee156a`, `1389182`; see the GAS2 handoff), shared `d6b7893` (the radio knob saves + RevTasks note) and `30f4fec`
-  (STATUS + memory).
+- State: branch `feat/gas2-drone` = origin (0 / 0), 24 commits ahead of origin/main, 58+ behind (main moved on; the
+  go-live merge conflicts in `tasks/handoff.md` + `tasks/todo.md`, and `player/radio.css`'s knob comment: take this
+  branch's). Today: `1d0f3c5` grade strip out, `9815ee6` / `b249801` / `ee2356f` radio knobs (ALU), `4ac3aad` /
+  `7d36b36` scroll cue (chevrons), `a81dfa9` / `b527eaf` pump light (bench, then Dan's pick), `247a7a7` / `4fc6ddd`
+  radio knobs WORN, close notes, `e55f953` private tool files out, `10eef58` Safari coupon fix. Shared (private, all
+  pushed): the radio knob recipes + the moved knob tool port + the private part of these notes.
+- Dan's decisions at the close (2026-10-29), all done: (1) the private knob tool's files left the PUBLIC repo: main
+  `e1123fe` (pushed on his word "1א": 2 files out, docs + comments neutral; Pages deploy ran) and this branch
+  `e55f953`; old versions stay in git history (his pick, no rewrite). At go-live: squash-merge (the branch's commit
+  subjects name the tool), then ask Dan whether to delete the remote `feat/gas2-drone`. (2) GAS2 branch
+  `bench/pump-light` + worktree `GAS2-light` deleted (local + remote). (4) worktree `gas2-page-view` removed; the
+  local knob candidates folder + its `.git/info/exclude` line deleted; servers stopped except 4465.
+- (3) Safari: Playwright WebKit 26.6 (Safari's engine) at 1440 + 390 (iPhone size, touch): the drone top, mid-descent,
+  landed and the coupon ticket look like Chrome, no errors, pump light overlay + filter, knobs, `cqw` all applied.
+  Found + fixed: `.coupon .cp` had `user-select: all` without `-webkit-` while html sets `-webkit-user-select: none`, so
+  in Safari the code could not be selected by hand when the auto copy fails (`10eef58`). Owed: Dan on a real iPhone at
+  http://10.0.0.103:4465/page-b.html (same Wi-Fi). Over LAN http the page is not a secure context: the auto copy
+  ("Copied") does not run there, by design of the browser; the code is selectable. Not covered: Safari <= 15 / iOS
+  <= 15 (no `cqw`, the layout would break).
 - **CATCH10: Dan, 2026-10-29: "today at 18 the coupon will place"** = Gil creates it in Paddle today at 18:00 (RevTasks
   #193). After that: check the code works at checkout, then merge to main only on Dan's push word (`tasks/todo.md` 4e).
   The claim stays with `revaudio-59` until then; if this session is gone, the go-live session takes it (its name here).
-- Unverified: WebKit / Safari and a real phone (headless Edge / Chrome only); Dan saw the pump light and the WORN
-  knobs on the page ("מדהים אהבתי" for the light; WORN picked from the bench), not yet in Safari.
-- Background (laptop 1): `python -m http.server` 4461 (PID 38924, GAS2 `Source/ui/public`), 4462 (38184, worktree
-  `gas2-page-view`), 4463 (45096, the plan page), 4464 (17152, this scene), 8793 (69344, `C:\RevAudio`);
-  `serve-nostore.py` 4465 (63888, this scene, no-store: open the page here), 8811 (50268, worktree `GAS2-light`);
-  8798 (66712, a private tool server). Kill: `Stop-Process -Id <PID>`.
-- Decide next (Dan): (1) private-tool files that sit in this PUBLIC repo since 2026-10-23 (list + options: shared
-  `collaboration/STATUS.md` -> Waiting on Dan); this branch's commit subjects and this file's history name the tool
-  too: a squash-merge keeps the branch history off main, deleting or rewriting the branch is his call (never a
-  force-push without his explicit word); (2) after CATCH10 exists: go live.
-- Cleanup: local, git-excluded knob candidates under `player/` (45 MB; path + the exclude line: the shared note
-  above). Worktree `gas2-page-view` still to remove when unused (`git worktree remove`).
+- Background (laptop 1): `serve-nostore-lan.py 4465` (PID 26708, this scene, bound to 0.0.0.0 for the phone check,
+  no-store; the Wi-Fi profile is Public and python.exe has an inbound allow rule): after the phone check stop it
+  (`Stop-Process -Id 26708`) or rebind to 127.0.0.1. Not ours: `python -m http.server 8811` (PID 63816, another
+  session's Drift UI server).
+- Cleanup left: the main clone (`C:/RevAudio/Website/revaudio-website`, at `96c1ee7`, another session's checkout) still
+  holds the old knob tool files until it is pulled; its ignored leftovers under `player/` go by hand then.
 
 ## 2026-10-26 — GAS 2 page: the drone intro (hover above the station, scroll = descent, land, readings pop) (Claude Code `danavivi-19`, Dan's Mac) — BRANCH `feat/gas2-page`
 
@@ -456,7 +463,7 @@ Claim: OPEN (Yoni's radio). Files: `tools/_gas2-scene/player/**`, ONE `<head>` l
 Branch `feat/gas2-page`, worktree `Website/revaudio-website-g2p`. Full state + numbers: `tasks/gas2-radio-plan.md`.
 - Now: no pop-up, no zoom. The radio stands IN the scene on the bench (1.3x the photo's radio, slid 23 frame px left for
   room from the pump) and is the player: dial HIP HOP / POP / ELEC. / ROCK, keys PLAY-STOP | ORIGINAL | GAS 2 (pressed
-  keys light up), Yoni's KNOB LAB knobs (volume, tuning), red jewel while playing. Caption under the bench, inside the
+  keys light up), Yoni's new knobs (volume, tuning), red jewel while playing. Caption under the bench, inside the
   radio's width. The photo's radio + `#radio` hotspot are hidden from radio.css (`#scene #radio`); `#radioCap` restyled
   there too. A lower bench is laid over the frame from the frame's own pixels (`img/bench-low.webp`; the frame untouched).
 - Since: keys read pressed = DOWN / up = UP at full size; the photo radio, its shadow and the old bench are painted out
@@ -478,17 +485,18 @@ Branch `feat/gas2-page`, worktree `Website/revaudio-website-g2p`. Full state + n
     (Yoni) and kept on LOCAL branches `archive/gas2-jukebox` + `archive/gas2-jukebox-notes` (main clone only).
   - Shared clone: ahead 3 / behind 3: `fa5a1a2` (design-language: a pressed key reads down by depth) on top of
     `9b5a0c4` + `c392a35` from the jukebox session -> Yoni to say "push shared" (merge --no-ff, then push).
-  - Shared, uncommitted: `tools/knob-lab/library/knobs.json` = Yoni's radio knob card ("GAS 2 RADIO TUNING · KNURL ·
-    10-23 17:25", saved by serve-lab) -> commit on his "save"; `memory/feedback_placement_bench_early.md` + its
+  - Shared, uncommitted: Yoni's radio knob card (the private knob tool's library,
+    10-23 17:25) -> commit on his "save"; `memory/feedback_placement_bench_early.md` + its
     MEMORY.md line (mine); MEMORY.md also holds another session's uncommitted line (Hebrew-layout), not mine.
 - Background processes (all on Yoni's laptop 2, started this session):
   - `python -m http.server 4462` (page-b), PID 13620. Kill: `Stop-Process -Id 13620`.
-  - `serve-lab.py 8797 --pages .../player` (radio KNOB LAB), PID 2836. Kill: `Stop-Process -Id 2836`.
+  - The private knob tool's server on 8797, PID 2836. Kill: `Stop-Process -Id 2836`.
   - `python -m http.server 8793` from `C:/RevAudio` (knob bake), PID 40696. Kill: `Stop-Process -Id 40696`.
 - Unverified: real Safari / Firefox / a real phone; sound by ear in a browser (headless only measured gains + loudness).
 - Next session decides: (1) POP / ROCK GAS 2 settings (caption) + ELECTRONIC renders, from Yoni; (2) "push shared";
   (3) push the 3 website-main notes commits or not (live deploy); (4) Dan's answers: phone crop, Safari check.
-- Cleanup: `player/knoblab/knob-recipe-yoni-2026-10-23.bake.json` untracked + now gitignored (bake output, fine).
+- Cleanup: a knob bake output under `player/` (laptop 2), untracked; since 2026-10-29 the knob tool's files live in the
+  shared repo, so delete that folder's leftovers there (no longer gitignored).
 
 
 ## 2026-10-22 — GAS 2 page: the station mockup on branch `feat/gas2-page` (Claude Code `danavivi-a3`, Dan's Mac) — BRANCH PUSHED, NOT MAIN (Dan: "push this branch so Yoni can work on the player")
