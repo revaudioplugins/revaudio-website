@@ -154,6 +154,18 @@ descent" section); this entry.
   new defaults). Checked: the page = the bench at his values (1280 x 915, max diff 1 / 255; vars .67 / 1.12 / 1.08 /
   .21). `drone/img/land.webp` re-rendered (748 KB); check.cjs top 1440 + 390: landed vs ref-page mean 0.00 / 0.00,
   landframe 2.57 / 1.42 (was 2.56 / 1.47), no errors. `light-bench.html` + its README line removed (in git at `a81dfa9`).
+- Then (Dan, 2026-10-29: "new knobs for the jukebox [= the radio] that fit the scene's lighting and vibe better"): four
+  new looks (walnut bakelite / brass + ivory / butterscotch / chrome + oxblood) on the real page; Dan: "wear out more
+  the knobs and more like the shipped one" -> round 2 = the shipped knob + wear (worn / heavy / very heavy) + heavy in
+  the scene's lamp light (az 105, el 62, warm .35, envMood warm, expo .92). Dan picked "HEAVY, LAMP LIGHT":
+  `player/img/knob-radio.webp` = that strip (q84, 862 KB, was 653; same k3dCss, so `radio.css .rp-knob b` keeps its
+  numbers; bake: no pure #000 / #fff, edge alpha 0). `drone/img/land.webp` re-rendered; check.cjs top 1440 + 390:
+  landed mean 0.00 / 0.00, landframe 2.58 / 1.42. KNOB LAB stays OUT of this public repo: the recipe is in the shared
+  repo (`tools/knob-lab/library/saves/gas2radio/gas2radio-knob-recipe-2026-10-29-heavy-lamp.json`); the candidates +
+  their bench sat in `player/knoblab/cands/` (git-excluded via `.git/info/exclude`, local only). Open, for Dan:
+  `player/knoblab/make-knoblab.py` + two recipe JSONs ARE in this public repo (main since 2026-10-23, `d2baece`) against
+  the KNOB LAB secrecy rule: move them to the shared repo and out of here (a main push = his word; git history keeps
+  them unless rewritten). Until then the lab opens on the 10-29 ALU recipe, not this heavier one.
 
 ## 2026-10-26 — GAS 2 page: the drone intro (hover above the station, scroll = descent, land, readings pop) (Claude Code `danavivi-19`, Dan's Mac) — BRANCH `feat/gas2-page`
 
