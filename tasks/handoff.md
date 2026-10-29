@@ -96,6 +96,12 @@ Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postca
   that style for future work") + this content: `CFG.round = 2` (notes in collection `notes-r2`), his round-1 note +
   "what changed" under each screen, a new "Hear it, playing" shot (Chrome, in `build.cjs`); version 3 at the same URL;
   files map now 35 files (+ the wear art, - the keys). Checked locally: Chrome 1280 + WebKit 390, 0 errors.
+- Then the design hook (Stop, round 2), `e537a4a`: fixed cramped-padding (the ticket: 16/26 px so the words clear its
+  printed rule; under 680 px tall the one-line ticket without the rule) and organic-clip-path (card 1's tape = a
+  generated torn cut-out, `tape.webp`, instead of a 24-point polygon). Waived nested-cards for `.deck` only (the record
+  player Dan asked for, drawn as an object on the card; dropping its case shadow clears the finding) in the worktree's
+  `.impeccable/config.local.json`; there the stale buried-raster waiver (the keys) is gone and the marquee reason now
+  names `.rd .cta::after`. check.cjs again 26 + 30 pass. Review page version 4 (build `e537a4a`), files map 36.
 - Open (Dan): (1) his round-2 notes: read `notes-r2`, apply, re-shoot, round 3; (2) painted art still only on his OK;
   (3) per-grade renders (Yoni) before any grade card plays its own sound; (4) later: this as page-b's phone layout.
 
