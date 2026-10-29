@@ -18,6 +18,9 @@ Dan's concept (2026-10-29): a stack of 1950s "Greetings from GAS 2" postcards, p
 - [x] 4. Checks: WebKit 402x714 / 375x553 / 390x664 / 393x659 / 430x750 (fits, no overflow, no page errors), flick +
       buttons + flip + A/B state + form by script (`postcards/tools/check.cjs`: 22 steps + 20 layouts pass); iOS
       Simulator (iPhone 17 Pro, 127.0.0.1) shots of every card.
+- [x] 4b. The end page (Dan 2026-10-29: "in the end page the user will reach the right side of the desktop page, the words
+      will pop out and everything"): after the last card (flicked, next, or mailed) the lens pulls focus onto the
+      desktop's right side and page-b's readings pop as after the drone lands. Checks: 24 steps + 30 layouts pass.
 - [ ] 5. Dan's look in the Simulator. Then, only on his OK: illustrated grade fronts (gpt-image-2, cost asked first).
 - [ ] 6. Commit my files by path on the branch; no push (Dan's word; main = live).
 

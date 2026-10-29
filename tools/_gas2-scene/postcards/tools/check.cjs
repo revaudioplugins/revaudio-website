@@ -37,8 +37,23 @@ async function drag(p, dx, dy, ms, hold) {               // a finger-like drag w
   // ── layout: every card fits, nothing overflows, the controls are on screen ──
   for (const [w, h] of SIZES) {
     const p = await page(wk, w, h);
-    for (const q of ["?card=1", "?card=2", "?card=5&flip", "?card=6"]) {
+    for (const q of ["?card=1", "?card=2", "?card=5&flip", "?card=6", "?card=7", "?card=7&sent"]) {
       await go(p, q);
+      if (q.startsWith("?card=7")) {
+        await p.waitForTimeout(1500);                    // the focus pull + the pop
+        const e = await p.evaluate(() => {
+          const r = (s) => { const b = document.querySelector(s).getBoundingClientRect(); return [Math.round(b.left), Math.round(b.top), Math.round(b.right), Math.round(b.bottom)]; };
+          const op = (s) => getComputedStyle(document.querySelector(s)).opacity;
+          return { sw: document.documentElement.scrollWidth, iw: innerWidth, ih: innerHeight, rd: r(".rd"), n: r(".rd .n"), cta: r(".rd .cta"), bar: r(".endbar"),
+                   ended: document.getElementById("desk").classList.contains("ended"), end: op(".end"), ti: op(".rd .ti"), scr: op(".rd .scr"),
+                   gas2px: parseFloat(getComputedStyle(document.querySelector(".rd .n")).fontSize), label: document.querySelector(".rd .cta").innerText.trim() };
+        });
+        const pass = e.ended && e.end === "1" && e.ti === "1" && e.scr === "1" && e.sw <= e.iw && e.rd[0] >= 0 && e.rd[2] <= e.iw && e.n[1] >= 0 && e.cta[3] < e.bar[1] &&
+          (q.endsWith("sent") ? e.label === "✓ Keys in the mail" : e.label === "⤓ Download FREE");
+        out.layout.push({ size: `${w}x${h}`, q, pass, m: e });
+        if (SHOTS) await p.screenshot({ path: `${SHOTS}/${w}x${h}-${q.replace(/[?&=]/g, "")}.png` });
+        continue;
+      }
       const m = await p.evaluate(() => {
         const top = document.querySelector(".pc.top").getBoundingClientRect(), ctl = document.querySelector(".ctl").getBoundingClientRect();
         const send = document.querySelector(".send").getBoundingClientRect();
@@ -85,8 +100,16 @@ async function drag(p, dx, dy, ms, hold) {               // a finger-like drag w
   ok("Turn back shows the front again", !(await p.evaluate(() => document.getElementById("hear").classList.contains("flipped"))));
   await p.click("#next"); await p.waitForTimeout(700);
   ok("card 6 is up, the mailbox with it", (await cur(p)) === 5 && await p.evaluate(() => document.getElementById("box").classList.contains("up")));
-  await drag(p, -220, 0, 100);
-  ok("the last card can't be thrown", (await cur(p)) === 5);
+  const grab6 = await p.evaluate(() => { const b = document.querySelector(".pc.top .mtitle").getBoundingClientRect(); return { x: b.left + 10, y: b.top + 10 }; });
+  await p.mouse.move(grab6.x, grab6.y); await p.mouse.down();
+  for (let i = 1; i <= 8; i++) { await p.mouse.move(grab6.x - 30 * i, grab6.y - 3 * i); await p.waitForTimeout(12); }
+  await p.mouse.up(); await p.waitForTimeout(1500);
+  const end1 = await p.evaluate(() => ({ cur: window.gas2Postcards.cur, ended: document.getElementById("desk").classList.contains("ended"),
+    ti: getComputedStyle(document.querySelector(".rd .ti")).opacity, ctl: getComputedStyle(document.querySelector(".ctl")).opacity, box: document.getElementById("box").classList.contains("up") }));
+  ok("flicking the last card = the end page, the readings popped, the counter + mailbox gone", end1.cur === 6 && end1.ended && end1.ti === "1" && end1.ctl === "0" && !end1.box, end1);
+  if (SHOTS) await p.screenshot({ path: `${SHOTS}/flow-end.png` });
+  await p.click("#cta"); await p.waitForTimeout(900);
+  ok("⤓ Download FREE brings the mail card back", (await cur(p)) === 5 && !(await p.evaluate(() => document.getElementById("desk").classList.contains("ended"))));
 
   // ── MAIL ME THE KEYS: empty + bad address stop it, a good one drops the card in the box (nothing sent) ──
   let netMail = 0; p.on("request", (r) => { if (!/\.(webp|png|woff2|m4a|html)(\?|$)/.test(r.url())) netMail++; });
@@ -95,13 +118,18 @@ async function drag(p, dx, dy, ms, hold) {               // a finger-like drag w
   await p.fill("#em", "dan@"); await p.click(".send"); await p.waitForTimeout(200);
   ok("bad address: the error shows", await p.evaluate(() => !document.getElementById("err").hidden));
   await p.fill("#em", "dan@example.com"); await p.click(".send"); await p.waitForTimeout(1400);
-  const sent = await p.evaluate(() => ({ done: document.getElementById("desk").classList.contains("done"), sent: !document.getElementById("sent").hidden,
-    to: document.getElementById("sentTo").textContent, cardOpacity: getComputedStyle(document.querySelectorAll(".pc")[5]).opacity }));
-  ok("good address: the card goes in the box, SENT shows the address", sent.done && sent.sent && sent.to === "dan@example.com" && sent.cardOpacity === "0", sent);
+  await p.waitForTimeout(800);
+  const sent = await p.evaluate(() => ({ ended: document.getElementById("desk").classList.contains("ended"), sent: document.getElementById("desk").classList.contains("sent"),
+    note: document.getElementById("sentNote").textContent, cta: document.querySelector(".rd .cta").innerText.trim(), cardOpacity: getComputedStyle(document.querySelectorAll(".pc")[5]).opacity }));
+  ok("good address: the card goes in the box, then the end page says the keys are in the mail", sent.ended && sent.sent && sent.note.includes("dan@example.com") && sent.cta === "✓ Keys in the mail" && sent.cardOpacity === "0", sent);
+  await p.keyboard.press("ArrowLeft"); await p.waitForTimeout(300);
+  ok("after mailing, back doesn't pull the mailed card out of the box", (await cur(p)) === 6);
   ok("nothing is sent (no request besides assets)", netMail === 0, netMail);
   if (SHOTS) await p.screenshot({ path: `${SHOTS}/flow-sent.png` });
-  await p.click("#again"); await p.waitForTimeout(500);
-  ok("Start over restacks on card 1", (await cur(p)) === 0 && await p.evaluate(() => getComputedStyle(document.querySelectorAll(".pc")[5]).opacity === "1"));
+  await p.click("#again"); await p.waitForTimeout(1200);
+  const re = await p.evaluate(() => ({ cur: window.gas2Postcards.cur, ended: document.getElementById("desk").classList.contains("ended"), sent: document.getElementById("desk").classList.contains("sent"),
+    o6: getComputedStyle(document.querySelectorAll(".pc")[5]).opacity, top: document.querySelector(".pc.top").getBoundingClientRect().left }));
+  ok("The postcards again: dealt back, card 1 on top, the form fresh", re.cur === 0 && !re.ended && !re.sent && re.o6 === "1" && re.top > 0, re);
   await p.context().close();
 
   // ── reduced motion: no flight, the same states ──

@@ -4,7 +4,7 @@
 
 Writes postcards/img/: pump.webp (the plugin's own render, hose run on along the ground), station.webp (card 1's
 backdrop: the station photo with its painted pump filled out, then softened = a lens focused on the real pump),
-dusk.webp (the page behind the stack: the desert sky, very soft), linen.webp (the linen stock), stamp.webp (the keys from
+dusk.webp + scene.webp (the page behind the stack, out of focus, and the end page sharp: the same frame), linen.webp (the linen stock), stamp.webp (the keys from
 the MAIL ME THE KEYS poster). DESIGN.md 7 (phones): the station is only ever a soft backdrop, never a crop as the page.
 """
 import sys, os, subprocess
@@ -75,11 +75,13 @@ w = (w * 0.86 * v[..., None]) ** 1.06
 station = Image.fromarray((w.clip(0, 1) * 255).astype(np.uint8)).resize((436, 685), Image.LANCZOS)
 webp(station, "station.webp", 72)
 
-# ---- the page backdrop: the dusk sky over the desert, right of the canopy, very soft and dim ----
-sky = Image.open(os.path.join(SCENE, "frames", "f6-v17.png")).convert("RGB").crop((972, 0, 1536, 1024))
-sky = sky.resize((282, 512), Image.LANCZOS).filter(ImageFilter.GaussianBlur(9))
-s = (np.array(sky).astype(np.float32) / 255) * 0.62
-webp(Image.fromarray((s.clip(0, 1) * 255).astype(np.uint8)), "dusk.webp", 70)
+# ---- the page behind the stack + the end page: the whole frame, so both line up (cover, right-aligned = the open sky
+#      right of the canopy on a phone). dusk = out of focus and dim behind the cards; scene = the same frame sharp, the
+#      end page (the right side of the desktop page; DESIGN.md 7's readings stand in its sky) ----
+frame = Image.open(os.path.join(SCENE, "frames", "f6-v17.png")).convert("RGB")
+d = frame.resize((576, 384), Image.LANCZOS).filter(ImageFilter.GaussianBlur(6.8))
+webp(Image.fromarray(((np.array(d).astype(np.float32) / 255 * 0.62).clip(0, 1) * 255).astype(np.uint8)), "dusk.webp", 70)
+webp(frame, "scene.webp", 84)
 
 # ---- the linen stock: a plain weave embossed from a height map, threads of uneven width (seamless at 96 css px, 3x) ----
 rng = np.random.default_rng(7)

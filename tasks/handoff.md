@@ -46,6 +46,23 @@ Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postca
   Left standing: repeating-stripes-gradient (advisory, the grade cards' sunburst).
 - Server: no-store on :4466 from this worktree's `tools/_gas2-scene` (dies with the session); again:
   `python3 -m http.server 4466 --bind 127.0.0.1` there (plain: reload twice if a change doesn't show).
+- Then (Dan, 2026-10-29, after v1: "okey cool! i want that in the end page the user will reach the right side of the
+  desktop page, the words will pop out and everything"): THE END PAGE. When the last card goes (flicked, next, or
+  dropped in the mailbox) the lens pulls focus from the cards onto the open sky right of the canopy = the desktop page's
+  right side (`postcards/img/scene.webp` = `f6-v17` as webp, 260 KB, fetched from card 5 on; the dusk behind the cards
+  is now the same frame blurred, both cover + right-aligned, so the focus pull lines up), and page-b's readings stand in
+  it: composition 2 + the premium shadow (HUG, FOCUS, DUSK) ported 1:1, sized by the same 3:2 scene (cqw; GAS2 145 px
+  at 402x714), the column centred on the phone (page-b: x 64.5 %). They pop with the drone's `pop()` keyframes and
+  timings (GAS2 springs out with blur + overshoot, the oxide rule draws, the line, the button and "Fill it up." pop
+  fast), a beat (380 ms) into the focus pull; the flicked card flies over the scene. ⤓ Download FREE = the mail card
+  comes back; after mailing the button reads "✓ Keys in the mail" and the foot says "Sent to … · Mockup: nothing was
+  sent." (back can't pull the mailed card out of the box). "↺ The postcards again" deals them back, bottom card first.
+  The last card can now be flicked (it rubber-banded before); the old SENT overlay is gone (the end page replaces it).
+  Fixed on the way: the end page's photo first reused `.photo` (HEAR IT's poster class) and took its z-index, tilt and
+  border, covering the button (found by check.cjs); now `.vista`.
+- Checked (end page): `check.cjs` 24 steps + 30 layouts (5 sizes x cards 1, 2, 5 back, 6, end, end sent) all pass, 0
+  console errors; in-page timing: card off by ~350 ms, the scene 90 % in by 345 ms, GAS2 pops from 380 ms; iOS Simulator:
+  the end page, the sent variant and card 6 (next = to the end) right.
 - Open (Dan): (1) the look + the flick feel in the Simulator; (2) art, only on his OK: illustrated fronts for the grade
   cards (gpt-image-2, in the posters' style); (3) per-grade renders (Yoni) before any grade card plays its own sound;
   (4) later: this as page-b's phone layout.

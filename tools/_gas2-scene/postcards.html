@@ -10,7 +10,9 @@
      world. Card 1 = the real pump in front of the station; flick away REGULAR / PREMIUM / RACE; HEAR IT turns over
      (▶ on the back); the last card is a postcard back: the email on the address lines, dropped in the mailbox.
      DESIGN.md §7 (phones): rebuilt for portrait, the station only as a soft backdrop, never a crop as the page.
-     Assets + how they were made: postcards/tools/. ?card=1-6 opens on a card, &flip turns HEAR IT over. -->
+     The end (Dan, same day): the last card goes and the lens pulls focus onto the right side of the desktop page, where
+     page-b's readings pop out as after the drone lands. Assets + how they were made: postcards/tools/. ?card=1-6 opens on
+     a card, &flip turns HEAR IT over, ?card=7 = the end page (&sent = after mailing). -->
 <style>
 @font-face { font-family: Bebas; src: url(fonts/bebas.woff2) format("woff2"); }
 @font-face { font-family: Inter; src: url(fonts/inter.woff2) format("woff2"); font-weight: 100 900; }
@@ -31,14 +33,15 @@ body { color: var(--fg); font: 15px/1.4 Inter, system-ui, sans-serif; -webkit-fo
 button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
-/* ── the lot at dusk, out of focus: you stand at the station holding the cards ── */
+/* ── the lot at dusk, out of focus: you stand at the station holding the cards. The same frame as the end page, framed
+   the same way (cover, right-aligned), so when the last card goes the lens pulls focus onto it ── */
 .desk { position: fixed; inset: 0; display: grid; grid-template-rows: 1fr auto; padding-top: env(safe-area-inset-top); }
 .sky { position: absolute; inset: 0; z-index: -1; background:
   radial-gradient(120% 70% at 50% 108%, rgba(11, 9, 7, .82), transparent 70%),
   radial-gradient(90% 60% at 50% 42%, transparent 40%, rgba(8, 6, 4, .55)),
-  url(postcards/img/dusk.webp) 50% 40% / cover; }
+  url(postcards/img/dusk.webp) right center / cover; }
 
-.table { position: relative; container-type: size; display: grid; place-items: center; min-height: 0; }
+.table { position: relative; z-index: 1; container-type: size; display: grid; place-items: center; min-height: 0; }  /* over .end: the last card flies off over the scene */
 .stack { --cw: min(90cqw, calc((100cqh - 24px) / 1.55), 420px); position: relative; width: var(--cw); height: calc(var(--cw) * 1.55); }
 
 /* ── one postcard: linen stock, a hair of edge wear, a soft shadow on the card under it ── */
@@ -202,21 +205,63 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
    goes in through the lid */
 .box { position: absolute; left: 50%; bottom: 0; width: min(31vw, 132px); z-index: 4; pointer-events: none;
   transform: translate(-50%, 110%); transition: transform .6s var(--ease-settle); }
-.desk.mailing .count, .desk.mailing #next { opacity: 0; pointer-events: none; }
+.desk.mailing .count { opacity: 0; pointer-events: none; }
 .box img { display: block; width: 100%; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .6)); }
 .box.up { transform: translate(-50%, 46%); }
 .box.full { transform: translate(-50%, 18%); }
 .box.gulp { animation: gulp .45s var(--ease-snap); }
 @keyframes gulp { 40% { transform: translate(-50%, 21%) scale(1.04, .97); } }
-.sent { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 14px; padding: 0 12%; text-align: center; z-index: 3; }
-.sent[hidden] { display: none; }
-.sent .pm { width: 120px; color: var(--honey-line); transform: rotate(-8deg); animation: thud .5s var(--ease-snap) both; }
-@keyframes thud { 0% { transform: rotate(-8deg) scale(1.6); opacity: 0; } 100% { transform: rotate(-8deg) scale(1); opacity: 1; } }
-.sent h2 { margin: 0; font: 400 34px/1 Bebas; letter-spacing: .06em; color: var(--fg); }
-.sent p { margin: 0; color: var(--fg-dim); font-size: 15px; }
-.sent p b { color: var(--fg); font-weight: 600; overflow-wrap: anywhere; }
-.again { margin-top: 4px; min-height: 44px; padding: 0 18px; border: 1.5px solid var(--brass); border-radius: 999px; color: var(--brass-bright);
-  font: 600 13px/1 Oswald; letter-spacing: .18em; text-transform: uppercase; }
+
+/* ── the end (Dan 2026-10-29: "in the end page the user will reach the right side of the desktop page, the words will
+   pop out and everything"): the last card goes, the lens pulls focus from the cards onto the open sky right of the
+   canopy, and page-b's readings stand in it, popping out as they do after the drone lands. The readings below are
+   page-b's composition 2 + the premium shadow (HUG, FOCUS, DUSK), sized by the same 3:2 scene (cqw) so they keep the
+   desktop's proportions; on a phone the column is centred in the screen (page-b: x 64.5 %). ── */
+.end { position: absolute; inset: 0; z-index: 0; overflow: hidden; opacity: 0; visibility: hidden;
+  transition: opacity .9s var(--ease-settle), visibility 0s .9s; }
+.desk.ended .end { opacity: 1; visibility: visible; transition: opacity .9s var(--ease-settle); }
+.desk.ended .ctl, .desk.ended .table { opacity: 0; pointer-events: none; }
+.view { position: absolute; right: 0; top: 50%; height: max(100%, 66.667vw); aspect-ratio: 3 / 2; transform: translateY(-50%); container-type: inline-size; }
+.view .vista { position: absolute; inset: 0; background: center / 100% 100% no-repeat; }
+.view.warm .vista { background-image: url(postcards/img/scene.webp); }  /* fetched once the stack reaches HEAR IT */
+.view .dusk { position: absolute; left: 58%; top: 0; width: 42%; height: 100%; pointer-events: none;
+  background: linear-gradient(90deg, rgba(14, 8, 5, .03), rgba(14, 8, 5, .085)), linear-gradient(180deg, rgba(14, 8, 5, .065) 0%, transparent 34%, transparent 62%, rgba(14, 8, 5, .06) 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 45%); mask-image: linear-gradient(90deg, transparent, #000 45%); }
+.rd { position: absolute; top: 50%; right: calc(50vw - 15.5cqw); width: 31cqw; transform: translateY(-50%); text-align: center; isolation: isolate; }
+.rd::before { content: ""; position: absolute; inset: -9% -13% -10% -13%; z-index: -1; background: rgba(12, 6, 3, .15);
+  -webkit-backdrop-filter: blur(.32cqw) brightness(.84) saturate(.9); backdrop-filter: blur(.32cqw) brightness(.84) saturate(.9);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 24%, #000 76%, transparent), linear-gradient(180deg, transparent, #000 14%, #000 86%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(90deg, transparent, #000 24%, #000 76%, transparent), linear-gradient(180deg, transparent, #000 14%, #000 86%, transparent);
+  mask-composite: intersect; }
+.rd .ti { display: flex; align-items: center; justify-content: center; }
+.rd .n { position: relative; margin: 0; font: 700 13.5cqw/.84 Oswald; letter-spacing: .02em; color: #efe3c6; padding-bottom: 3.02cqw;
+  text-shadow: 0 .22cqw 0 rgba(20, 10, 4, .55);
+  filter: drop-shadow(0 .1cqw .15cqw rgba(12, 6, 3, .85)) drop-shadow(0 0 .55cqw rgba(12, 6, 3, .6)) drop-shadow(0 .35cqw .9cqw rgba(12, 6, 3, .6)) drop-shadow(0 1.2cqw 2.4cqw rgba(12, 6, 3, .3)); }
+.rd .n .two { color: #b8341e; }
+.rd .n::after { content: ""; position: absolute; left: 5%; right: 5%; bottom: 0; height: .75cqw; background: #b8341e; box-shadow: 0 .18cqw 0 rgba(20, 10, 4, .5); }
+.rd .lead { margin: 1.9cqw auto 0; font: 400 2.25cqw/1.1 Bebas; letter-spacing: .05em; color: #f6c85d; }
+.rd .lead, .rd .scr { filter: drop-shadow(0 .08cqw .1cqw rgba(12, 6, 3, .9)) drop-shadow(0 0 .4cqw rgba(12, 6, 3, .6)) drop-shadow(0 .25cqw .6cqw rgba(12, 6, 3, .6)); }
+.rd .cta { position: relative; isolation: isolate; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; margin-top: 2cqw;
+  min-height: max(56px, 5cqw); padding: 0 max(28px, 3cqw); border-radius: max(14px, 1.2cqw); gap: max(8px, .8cqw);
+  font: 700 max(19px, 2.1cqw)/1 Oswald; letter-spacing: .02em; background: var(--honey); color: #1e1710;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 1), inset 0 -2px 0 hsl(38 85% 34% / .2), 0 1px 0 #5f4311, 0 2px 3px rgb(0 0 0 / .45), 0 2.8cqw 3.2cqw rgb(0 0 0 / .3);
+  transition: transform .16s, box-shadow .16s, background-color .16s; }
+.rd .cta:active { background: #eab53f; transform: translateY(1px); transition-duration: .08s; }
+.rd .cta::after { content: ""; position: absolute; inset: 0 auto 0 0; z-index: -1; width: 28%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .18), transparent);
+  transform: translateX(-160%) skewX(-20deg); animation: ctashine 8s ease-in-out 1.2s infinite; pointer-events: none; }
+@keyframes ctashine { 0% { transform: translateX(-160%) skewX(-20deg); } 17.5%, 100% { transform: translateX(418%) skewX(-20deg); } }
+.rd .cta .ok, .desk.sent .rd .cta .go { display: none; }
+.desk.sent .rd .cta .ok { display: inline; }
+.desk.sent .rd .cta { background: transparent; color: #f6c85d; box-shadow: inset 0 0 0 2px rgba(246, 200, 93, .8); cursor: default; }
+.desk.sent .rd .cta::after { content: none; }
+.rd .scr { display: block; margin: 1.3cqw 0 0 9cqw; font: 400 4.4cqw/1 Yellowtail; color: #e8c878; transform: rotate(-6deg); text-shadow: 0 0 .9cqw rgba(232, 200, 120, .35); }
+.endbar { position: absolute; left: 0; right: 0; bottom: calc(10px + env(safe-area-inset-bottom)); display: grid; justify-items: center; gap: 2px; text-align: center; }
+.endbar button { min-height: 44px; padding: 0 16px; font: 600 12.5px/1 Oswald; letter-spacing: .18em; text-transform: uppercase; color: rgba(239, 227, 198, .88);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .8); }
+.endbar p { margin: 0; font: 400 12px/1.3 Inter; color: rgba(239, 227, 198, .78); text-shadow: 0 1px 3px rgba(0, 0, 0, .8); }
+.endbar p, .desk.sent .endbar .back2 { display: none; }
+.desk.sent .endbar p { display: block; }
 
 /* ── page chrome under the stack: back · n / 6 · next ── */
 .ctl { position: relative; z-index: 5; display: grid; grid-template-columns: 44px auto 44px; justify-content: center; align-items: center; column-gap: 22px;
@@ -231,13 +276,12 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .hint { position: absolute; left: 0; right: 0; bottom: 100%; margin: 0 0 2px; text-align: center; font: 500 13px/1.2 Inter; color: var(--fg-dim);
   letter-spacing: .02em; transition: opacity .4s; }
 .hint.gone { opacity: 0; }
-.desk.done .ctl { opacity: 0; pointer-events: none; transition: opacity .3s; }
 :focus-visible { outline: 2px solid var(--honey); outline-offset: 3px; }
 .addr input:focus-visible { outline: none; }
 
 @media (prefers-reduced-motion: reduce) {
-  .pc.nudge, .pc.top .key, .pc-hear.top:not(.flipped) .curl, .send::after, .box.gulp, .sent .pm { animation: none !important; }
-  .flip, .box, .key .on { transition-duration: .01s !important; transition-delay: 0s !important; }
+  .pc.nudge, .pc.top .key, .pc-hear.top:not(.flipped) .curl, .send::after, .box.gulp, .rd .cta::after { animation: none !important; }
+  .flip, .box, .key .on, .end { transition-duration: .01s !important; transition-delay: 0s !important; }
 }
 </style>
 </head>
@@ -352,17 +396,26 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
         <p class="fine">We email you the download link. (Mockup: nothing is sent.)</p>
       </article>
     </section>
-
-    <div class="sent" id="sent" hidden>
-      <svg class="pm" viewBox="0 0 120 120" fill="none" stroke="currentColor" aria-hidden="true"><circle cx="60" cy="60" r="54" stroke-width="3"/><circle cx="60" cy="60" r="44" stroke-width="1.5"/>
-        <text x="60" y="70" font-family="Bebas" font-size="34" letter-spacing="3" text-anchor="middle" fill="currentColor" stroke="none">SENT</text></svg>
-      <h2>In the mail</h2>
-      <p>The keys are on their way to <b id="sentTo"></b>.</p>
-      <p>(Mockup: nothing was sent.)</p>
-      <button class="again" type="button" id="again">Start over</button>
-    </div>
   </div>
   <div class="box" id="box" aria-hidden="true"><img src="props/mailbox.png" alt=""></div>
+
+  <!-- the end: the right side of the desktop page (page-b's readings, in the sky right of the canopy) -->
+  <section class="end" id="end" aria-label="GAS 2">
+    <div class="view">
+      <i class="vista" role="img" aria-label="The desert at dusk, seen from under the station's canopy"></i>
+      <i class="dusk" aria-hidden="true"></i>
+      <div class="rd" id="rd">
+        <div class="ti"><h2 class="n" aria-label="GAS 2">GAS<span class="two">2</span></h2></div>
+        <p class="lead">Thicker, smoother, glued master.</p>
+        <button class="cta" type="button" id="cta"><span class="go">⤓ Download FREE</span><span class="ok">✓ Keys in the mail</span></button>
+        <div class="scr">Fill it up.</div>
+      </div>
+    </div>
+    <div class="endbar">
+      <button type="button" id="again">↺ The postcards again</button>
+      <p id="sentNote"></p>
+    </div>
+  </section>
 
   <nav class="ctl" aria-label="Postcards">
     <p class="hint" id="hint">Flick the card</p>
@@ -390,7 +443,8 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
                    : `translate3d(${x}px, ${d * 9}px, 0) rotate(${r}deg) scale(${1 - d * .028})`;
   };
 
-  function layout(anim) {
+  // cur = the card on top; cur === N = every card is gone: the end page
+  function layout(anim, deal) {
     cards.forEach((c, i) => {
       const d = i - cur;
       c.classList.toggle('top', d === 0);
@@ -400,23 +454,46 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
       c.style.zIndex = String(N - i);
       c.style.visibility = d <= 2 ? 'visible' : 'hidden';
       c.style.setProperty('--rest', rest(i, d));
-      c.style.transition = anim && !reduce ? 'transform .56s var(--ease-settle), opacity .3s' : 'none';
+      c.style.transition = anim && !reduce ? `transform .56s var(--ease-settle) ${deal ? (N - 1 - i) * 70 : 0}ms, opacity .3s` : 'none';
       c.style.transform = rest(i, d);
       c.style.opacity = '';
     });
-    $('num').textContent = cur + 1;
+    $('num').textContent = Math.min(cur + 1, N);
     $('prev').disabled = cur === 0;
-    $('next').disabled = cur === N - 1;
+    $('next').disabled = cur === N;
     box.classList.toggle('up', cur === N - 1);
     desk.classList.toggle('mailing', cur === N - 1);
     if (cur >= 3) audio.warm().catch(() => {});              // decode the demo before HEAR IT comes up
+    if (cur >= 4) document.querySelector('.view').classList.add('warm');   // and the end page's photo
     if (cur !== 4) audio.stop();
+    ending(cur === N, anim);
   }
-  const say = () => { $('live').textContent = `Card ${cur + 1} of ${N}: ${NAMES[cur]}`; };
+  const say = () => { $('live').textContent = cur === N ? 'GAS 2. Thicker, smoother, glued master.' : `Card ${cur + 1} of ${N}: ${NAMES[cur]}`; };
 
-  // ── throw the top card off the table (any direction), the next one settles up ──
+  // ── the end page: the lens pulls focus onto the desktop page's right side, then the readings pop out of the screen,
+  //    exactly as after the drone lands (drone/run.js pop(): same keyframes, same timings), a beat into the focus pull ──
+  function ending(on, anim) {
+    if (on === desk.classList.contains('ended')) return;
+    desk.classList.toggle('ended', on);
+    $('end').inert = !on;
+    if (!on || !anim || reduce) return;
+    const rd = $('rd'), EASE = 'cubic-bezier(.2, 1, .3, 1)', T = 380;
+    const go = (el, kf, duration, delay) => el.animate(kf, { duration, delay: T + delay, easing: EASE, fill: 'backwards' });
+    try { rd.animate([{ opacity: 0 }, { opacity: 1 }], { pseudoElement: '::before', duration: 700, delay: T, easing: 'cubic-bezier(.22, 1, .36, 1)', fill: 'backwards' }); } catch (e) {}
+    go(rd.querySelector('.ti'), [{ opacity: 0, scale: .5, filter: 'blur(8px)' }, { opacity: 1, filter: 'blur(0)', offset: .35 }, { scale: 1.07, offset: .62 }, { opacity: 1, scale: 1, filter: 'blur(0)' }], 620, 0);
+    try {                                                    // the oxide rule under GAS2 draws out
+      const a = rd.querySelector('.n').animate([{ scale: '0 1' }, { scale: '1 1' }], { pseudoElement: '::after', duration: 420, delay: T + 200, easing: EASE, fill: 'backwards' });
+      if (a && a.effect.pseudoElement !== '::after') a.cancel();
+    } catch (e) { /* no pseudo-element animation: the rule just shows */ }
+    const fast = [{ opacity: 0, scale: .82 }, { opacity: 1, offset: .5 }, { scale: 1.03, offset: .75 }, { opacity: 1, scale: 1 }];
+    go(rd.querySelector('.lead'), fast, 340, 230);
+    go(rd.querySelector('.cta'), fast, 360, 290);
+    go(rd.querySelector('.scr'), fast, 380, 350);
+  }
+
+  // ── throw the top card off the table (any direction), the next one settles up; after the last one, the end ──
   function toss(vx, vy, from) {
-    if (cur >= N - 1) return false;
+    if (cur >= N) return false;
     const c = cards[cur], W = innerWidth, H = innerHeight;
     let dx = vx, dy = vy;
     const m = Math.hypot(dx, dy) || 1; dx /= m; dy /= m;
@@ -435,7 +512,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   }
   function next() { toss(-1.6, -.25); }
   function prev() {
-    if (cur === 0 || desk.classList.contains('done')) return;
+    if (cur === 0 || (cur === N && desk.classList.contains('sent'))) return;
     cur--;
     const c = cards[cur];
     c.style.transition = 'none';
@@ -455,7 +532,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     if (e.target.closest('button, input, label, a, form')) return;
     const r = c.getBoundingClientRect();
     drag = { c, id: e.pointerId, x0: e.clientX, y0: e.clientY, pts: [[performance.now(), e.clientX, e.clientY]],
-             side: e.clientY < r.top + r.height / 2 ? 1 : -1, moved: false, last: cur === N - 1 };
+             side: e.clientY < r.top + r.height / 2 ? 1 : -1, moved: false };
     c.setPointerCapture(e.pointerId);
     c.classList.remove('nudge');
   });
@@ -464,7 +541,6 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     let dx = e.clientX - drag.x0, dy = e.clientY - drag.y0;
     if (!drag.moved && Math.hypot(dx, dy) < 7) return;
     if (!drag.moved) { drag.moved = true; drag.c.style.transition = 'none'; drag.c.classList.add('lift'); }
-    if (drag.last) { dx *= .22; dy *= .22; }                     // the last card stays: a little give, then back
     const now = performance.now();
     drag.pts.push([now, e.clientX, e.clientY]); while (drag.pts.length > 2 && now - drag.pts[0][0] > 90) drag.pts.shift();
     const r = LIE[cur][0] * .45 + dx * .065 * drag.side;
@@ -479,7 +555,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     const a = pts[0], b = pts[pts.length - 1], dt = Math.max(16, pts.length > 1 ? b[0] - a[0] : 1e9);
     const vx = pts.length > 1 ? (b[1] - a[1]) / dt : 0, vy = pts.length > 1 ? (b[2] - a[2]) / dt : 0, v = Math.hypot(vx, vy);
     const far = Math.hypot(d.cur.x, d.cur.y) > d.c.offsetWidth * .34;
-    if (e.type === 'pointerup' && !d.last && (v > .5 || far)) {
+    if (e.type === 'pointerup' && (v > .5 || far)) {
       toss(v > .5 ? vx : d.cur.x, v > .5 ? vy : d.cur.y, d.cur);
     } else {
       d.c.classList.remove('lift');
@@ -607,19 +683,24 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     c.style.transition = reduce ? 'opacity .2s' : 'transform .72s cubic-bezier(.55,0,.35,1), opacity .25s .58s';
     if (!reduce) c.style.transform = `translate3d(${tx}px, ${ty + cr.height * s * .5}px, 0) rotate(-3deg) scale(${s})`;
     c.style.opacity = '0';
-    desk.classList.add('done');
-    setTimeout(() => {
-      box.classList.remove('gulp'); void box.offsetWidth; box.classList.add('gulp');
-      $('sentTo').textContent = v;
-      $('sent').hidden = false;
-      $('live').textContent = `Mailed to ${v}. Mockup: nothing was sent.`;
-    }, reduce ? 220 : 760);
+    $('prev').disabled = $('next').disabled = true;
+    setTimeout(() => { box.classList.remove('gulp'); void box.offsetWidth; box.classList.add('gulp'); }, reduce ? 0 : 760);
+    setTimeout(() => {                                           // the box swallows it, then the end page: "✓ Keys in the mail"
+      desk.classList.add('sent');
+      $('sentNote').textContent = `Sent to ${v} · Mockup: nothing was sent.`;
+      box.classList.remove('full');
+      cur = N; layout(true);
+      $('live').textContent = `Mailed to ${v}. Mockup: nothing was sent. GAS 2. Thicker, smoother, glued master.`;
+    }, reduce ? 220 : 1150);
   }
-  $('again').addEventListener('click', () => {
-    $('sent').hidden = true; desk.classList.remove('done'); box.classList.remove('full', 'gulp');
-    em.value = ''; turn(false, true);
-    cards.forEach((c) => { c.style.transition = 'none'; c.style.opacity = ''; c.style.visibility = 'visible'; c._gone = null; });
-    cur = 0; void stack.offsetWidth; layout(false); say();
+  $('cta').addEventListener('click', () => { if (!desk.classList.contains('sent')) prev(); });   // ⤓ Download FREE = the mail card comes back
+  $('again').addEventListener('click', () => {                  // the postcards dealt back onto the table, bottom card first
+    desk.classList.remove('sent'); $('sentNote').textContent = ''; box.classList.remove('full', 'gulp');
+    em.value = ''; err.hidden = true; turn(false, true);
+    cards.forEach((c, i) => { c.style.transition = 'none'; c.style.opacity = ''; c.style.visibility = 'visible'; c._gone = null;
+      c.style.transform = `translate3d(${-innerWidth * 1.15}px, ${i * 8 - 30}px, 0) rotate(${-20 - i * 2}deg)`; });
+    void stack.offsetWidth;
+    cur = 0; layout(true, true); say();
   });
 
   // ── buttons + keys ──
@@ -631,13 +712,15 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     if (e.key === 'ArrowLeft' || e.key === 'PageUp') { prev(); e.preventDefault(); }
   });
 
-  // ── open: ?card=1-6 (+ &flip) for reviews where a finger can't flick (the Simulator from a script) ──
+  // ── open: ?card=1-6 (+ &flip), ?card=7 = the end page (+ &sent), for reviews where a finger can't flick ──
   const q = new URLSearchParams(location.search);
-  const start = Math.min(N, Math.max(1, parseInt(q.get('card'), 10) || 1)) - 1;
+  const start = Math.min(N + 1, Math.max(1, parseInt(q.get('card'), 10) || 1)) - 1;
   cards.forEach((c, i) => { if (i < start) { c.style.visibility = 'hidden'; c._gone = `translate3d(${-innerWidth * 1.2}px, -40px, 0) rotate(-22deg)`; c.style.transform = c._gone; } });
   cur = start;
   if (q.has('flip')) turn(true, true);
+  if (start === N && q.has('sent')) { desk.classList.add('sent'); $('sentNote').textContent = 'Sent to you@studio.com · Mockup: nothing was sent.'; }
   layout(false);
+  if (start === N) { desk.classList.remove('ended'); ending(true, true); }
   if (start > 0 || q.has('flip')) quiet();
   if (start === 0 && !reduce) setTimeout(() => { if (!touched && cur === 0 && !drag) cards[0].classList.add('nudge'); }, 1100);
   cards.forEach((c) => c.addEventListener('animationend', (e) => { if (e.animationName === 'nudge') c.classList.remove('nudge'); }));

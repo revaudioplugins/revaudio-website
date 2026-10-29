@@ -21,7 +21,8 @@ python -m http.server 4462 --bind 127.0.0.1
 - The drone intro (branch `feat/gas2-drone`) — scroll from a hovering drone down into the scene; `?drone=0` skips it,
   `?angle=top|front|right` picks the hover. How it works + its bench: `drone/README.md`.
 - `postcards.html` — **the phone page** (branch `feat/gas2-postcards`): a stack of "Greetings from GAS 2" postcards to
-  flick through; `?card=1-6` opens on a card, `&flip` turns the HEAR IT card. Assets + their tools: `postcards/`.
+  flick through, ending on the right side of the desktop page (the readings pop out); `?card=1-6` opens on a card,
+  `&flip` turns the HEAR IT card, `?card=7` = the end page (`&sent` = after mailing). Assets + their tools: `postcards/`.
 
 ## Who works on what (one writer per file set)
 
