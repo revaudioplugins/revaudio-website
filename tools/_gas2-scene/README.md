@@ -18,6 +18,8 @@ python -m http.server 4462 --bind 127.0.0.1
 - `page-b.html?bench` — the shared RevAudio bench harness on B (click, drag, resize, fonts, colors, EXPORT). Needs
   `bench.js` next to the page: symlink or copy `revaudio-shared/tools/bench/bench.js` here (not committed: machine path).
 - TUNE (button bottom right, or T) — readings position / size + the 4 looks (Now / Neon / Enamel / Badge).
+- `light-bench.html` — the light on the pump (lamp amount / mix / reach / colour, pump brightness / contrast, shadow) on
+  the real page in a frame; LAB / SHIPPED (A), zoom on the pump, EXPORT. Temporary: goes once the look is picked.
 - The drone intro (branch `feat/gas2-drone`) — scroll from a hovering drone down into the scene; `?drone=0` skips it,
   `?angle=top|front|right` picks the hover. How it works + its bench: `drone/README.md`.
 

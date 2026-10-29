@@ -136,6 +136,17 @@ descent" section); this entry.
   `serve-nostore.py`; open the page there). Dan: "perfect, chevrons": the other four looks, the bench and `?cue` are
   out (cue.js = the chevrons only). Checked 1440 + 390 on 4465: in at the hover, 0 after .6 screen, back at the top,
   no panel, no errors; landed = `?drone=0` mean 0.00.
+- Then (Dan, 2026-10-29: "a bench only on the light on GAS 2 ... on the GAS on the last page of the site"; a first
+  take benched the plugin's own 3D pump instead, GAS2 repo branch `bench/pump-light`, left there): NEW
+  `tools/_gas2-scene/light-bench.html` (+ its README line). The real page (`page-b.html?drone=0`) in a frame, panel
+  docked right: LAMP (= `--sp-l`, the `.pumpLit` soft-light opacity), LAMP MIX (soft-light / overlay / screen), LAMP
+  REACH (the gradient's 42 % / 88 % stops x reach), LAMP COLOUR (amber -> white), PUMP BRIGHTNESS / CONTRAST
+  (`--sp-b` / `--sp-k`), SHADOW BEHIND (`--sp-s`); LAB / SHIPPED (A), ZOOM x1.5 / x2 on the pump, START, EXPORT.
+  SHIPPED = page-b's Spotlight D, read from the file. page-b.html untouched. Checked headless: the frame at the start
+  values = the plain page pixel for pixel (1280 x 915, max diff 1 / 255); a lamp change shows; no errors. Open it on
+  4465 (`serve-nostore.py`): http://127.0.0.1:4465/light-bench.html. Next: Dan EXPORTs -> "apply" = the numbers into
+  page-b's `.pumpLit` / `.pumpCut` CSS + the Spotlight D, then re-render `drone/img/land.webp` (the pump is in the
+  landing frame) + the landing check; the bench goes once he has picked (as `?cue` did).
 
 ## 2026-10-26 — GAS 2 page: the drone intro (hover above the station, scroll = descent, land, readings pop) (Claude Code `danavivi-19`, Dan's Mac) — BRANCH `feat/gas2-page`
 

@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="data:,">
+<title>Pump Light Bench</title>
+<!-- GAS 2 page · a bench for the AMOUNT OF LIGHT on the pump (Dan 2026-10-29: "a bench only on the light on GAS 2 ... on
+     the GAS on the last page of the site"). The REAL page (page-b.html?drone=0, straight onto the scene) in a frame; the
+     panel docks right, so it never covers the scene. The pump is painted into the frame and props/pump-cut.png is laid
+     back over it (.pumpCut: brightness / contrast / drop shadow) with the hanging lamp's warm gradient on it (.pumpLit,
+     soft-light, masked to the pump). The sliders drive those numbers live (the --sp-* vars TUNE → Spotlight drives) plus
+     three the page has not got yet: the lamp's MIX, REACH and COLOUR (a small style injected into the frame).
+     SHIPPED = the page's own numbers (read from page-b.html's Spotlight defaults). Nothing here ships: EXPORT -> "apply"
+     = the numbers into page-b.html (.pumpLit / .pumpCut CSS + the Spotlight D) + a re-render of drone/img/land.webp
+     (the landing frame shows the pump). -->
+<style>
+  :root { --bg:#120804; --panel:#1c110a; --line:#3a2410; --ink:#efe9df; --muted:#a8957a; --gold:#e8c878; --hot:#3a2814; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; height:100%; background:var(--bg); color:var(--ink); font:12px/1.45 "Segoe UI",system-ui,sans-serif; }
+  body { display:grid; grid-template-columns:1fr 320px; grid-template-rows:auto 1fr; }
+  header { grid-column:1 / -1; display:flex; gap:12px; align-items:center; flex-wrap:wrap; padding:8px 14px; border-bottom:1px solid var(--line); }
+  header h1 { margin:0; font-size:13px; letter-spacing:.14em; color:var(--gold); }
+  .ab { display:flex; border:1px solid var(--line); border-radius:4px; overflow:hidden; }
+  .ab button { border:0; border-radius:0; }
+  .ab button.on { background:var(--gold); color:#120804; font-weight:600; }
+  kbd { border:1px solid var(--line); border-radius:3px; padding:0 4px; color:var(--muted); }
+  #stat { margin-left:auto; color:var(--muted); }
+  #view { position:relative; min-height:0; }
+  #page { position:absolute; inset:0; width:100%; height:100%; border:0; display:block; }
+  aside { min-height:0; overflow-y:auto; background:var(--panel); border-left:1px solid var(--line); padding:8px 12px 12px; }
+  aside h2 { margin:10px 0 4px; font-size:11px; letter-spacing:.16em; color:var(--gold); font-weight:600; }
+  .row { margin:4px 0; padding:2px 4px; border-radius:3px; }
+  .row.chg { background:var(--hot); }
+  .row .top { display:grid; grid-template-columns:1fr auto; gap:6px; align-items:center; }
+  .row span { cursor:default; user-select:none; letter-spacing:.06em; }
+  .row.chg span { color:var(--gold); }
+  .row small { display:block; color:var(--muted); font-size:10.5px; }
+  .row output { text-align:right; font-variant-numeric:tabular-nums; }
+  input[type=range] { width:100%; accent-color:var(--gold); }
+  button, select { background:#2a1c10; color:var(--ink); border:1px solid var(--line); padding:4px 9px; border-radius:4px; font:inherit; cursor:pointer; }
+  button:hover { border-color:var(--gold); }
+  .btns { display:flex; gap:6px; flex-wrap:wrap; margin:10px 0 2px; }
+  .hint { color:var(--muted); font-size:11px; margin-top:10px; line-height:1.5; }
+  @media (max-width:900px) { body { grid-template-columns:1fr; grid-template-rows:auto 62vh auto; } aside { border-left:0; border-top:1px solid var(--line); } }
+</style>
+</head>
+<body>
+<header>
+  <h1>GAS 2 PAGE · LIGHT ON THE PUMP</h1>
+  <div class="ab"><button id="abLab" class="on">LAB</button><button id="abShip">SHIPPED</button></div>
+  <span style="color:var(--muted)"><kbd>A</kbd> flips</span>
+  <select id="zoom" title="zoom on the pump"><option value="1">whole page</option><option value="1.5">x1.5 on the pump</option><option value="2">x2 on the pump</option></select>
+  <span id="stat">loading…</span>
+</header>
+<div id="view"><iframe id="page" title="GAS 2 page"></iframe></div>
+<aside id="ui"></aside>
+<script>
+(async () => {
+  'use strict';
+  const $ = (id) => document.getElementById(id), stat = (m) => { $('stat').textContent = m; };
+  const STORE = 'gas2page-b:lightbench1';
+  // SHIPPED = the page's own Spotlight defaults (the D of TUNE → Spotlight in page-b.html), read from the file so it never drifts
+  const src = await (await fetch('page-b.html', { cache: 'no-store' })).text();
+  const m = src.match(/const D = (\{ light:[^}]*\}), K = 'gas2page-b:spot3'/);
+  const PD = m ? Function('return ' + m[1])() : { light: 0.3, pump: 1.04, shadow: 0.3 };
+  const SHIP = { lamp: PD.light, mix: 'soft-light', reach: 1, warm: 1, bright: PD.pump, contrast: Math.round((1 + (PD.pump - 1) * 0.5) * 1000) / 1000, shadow: PD.shadow };
+  const SPEC = [
+    ['lamp', 'LAMP', 'the hanging lamp above the pump: how much light lands on it', 0, 1],
+    ['mix', 'LAMP MIX', 'how the lamp light sits on the paint', ['soft-light', 'overlay', 'screen']],
+    ['reach', 'LAMP REACH', 'how far down the pump the light reaches (1 = the globe to the keys)', 0.4, 1.8],
+    ['warm', 'LAMP COLOUR', '0 = white light, 1 = warm amber', 0, 1],
+    ['bright', 'PUMP BRIGHTNESS', 'the whole pump, brighter / darker', 0.8, 1.5],
+    ['contrast', 'PUMP CONTRAST', 'deeper darks + brighter highlights', 0.8, 1.4],
+    ['shadow', 'SHADOW BEHIND', 'the soft shadow that lifts it off the shop window', 0, 1],
+  ];
+  const V = Object.assign({}, SHIP);
+  try { const s = JSON.parse(localStorage.getItem(STORE) || 'null'); if (s) SPEC.forEach(([k]) => { if (s[k] != null) V[k] = s[k]; }); } catch (_) {}
+  const save = () => { try { localStorage.setItem(STORE, JSON.stringify(V)); } catch (_) {} };
+  let mode = 'lab';
+
+  // ── the panel ──
+  const ui = $('ui'), rows = {};
+  const h = document.createElement('h2'); h.textContent = 'LIGHT ON THE PUMP'; ui.appendChild(h);
+  SPEC.forEach(([k, label, sub, a, b]) => {
+    const r = document.createElement('div'); r.className = 'row';
+    const ctl = Array.isArray(a) ? '<select>' + a.map((o) => '<option>' + o + '</option>').join('') + '</select>'
+      : '<input type="range" min="' + a + '" max="' + b + '" step="0.01">';
+    r.innerHTML = '<div class="top"><span title="double-click = back to the page today">' + label + '</span><output></output></div>' + ctl + '<small>' + sub + '</small>';
+    const inp = r.querySelector('input, select');
+    inp.addEventListener('input', () => { V[k] = inp.tagName === 'SELECT' ? inp.value : +inp.value; paintRow(k); save(); apply(); });
+    r.querySelector('span').addEventListener('dblclick', () => { V[k] = SHIP[k]; paintRow(k); save(); apply(); });
+    rows[k] = { r, inp, out: r.querySelector('output') }; ui.appendChild(r);
+  });
+  const btn = (txt, fn, title) => { const b = document.createElement('button'); b.textContent = txt; b.onclick = fn; if (title) b.title = title; return b; };
+  const bx = document.createElement('div'); bx.className = 'btns';
+  bx.append(btn('START', () => { Object.assign(V, SHIP); paintAll(); save(); apply(); }, 'every control back to the page today'),
+            btn('EXPORT', () => exportRecipe(true), 'downloads the numbers as JSON (and copies them)'), btn('COPY', () => exportRecipe(false)));
+  ui.appendChild(bx);
+  const hint = document.createElement('div'); hint.className = 'hint';
+  hint.innerHTML = 'The frame is the real page. Lit rows differ from the page today; double-click a name = back to it.<br>' +
+    'SHIPPED = the page as it is now. ZOOM (top) closes in on the pump.<br>' +
+    'Happy? <b>EXPORT</b>, then tell Claude <b>apply</b>.';
+  ui.appendChild(hint);
+  function paintRow(k) { const o = rows[k]; o.inp.value = V[k]; o.out.textContent = typeof V[k] === 'number' ? V[k].toFixed(2) : V[k]; o.r.classList.toggle('chg', V[k] !== SHIP[k]); }
+  function paintAll() { Object.keys(rows).forEach(paintRow); }
+  paintAll();
+  function recipe() { return { page: 'GAS 2 page (page-b.html)', part: 'pump light', bench: 'tools/_gas2-scene/light-bench.html', date: new Date().toISOString(), values: Object.assign({}, V), shipped: SHIP }; }
+  window.__pumpLight = recipe;
+  function exportRecipe(dl) {
+    const j = JSON.stringify(recipe(), null, 1);
+    if (navigator.clipboard) navigator.clipboard.writeText(j).catch(() => {});
+    if (dl) { const a = document.createElement('a'), d = new Date(), p = (n) => String(n).padStart(2, '0');
+      a.href = URL.createObjectURL(new Blob([j], { type: 'application/json' }));
+      a.download = 'gas2-page-pump-light-' + d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + p(d.getHours()) + p(d.getMinutes()) + '.json';
+      a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); stat('exported ' + a.download + ' (also copied)'); }
+    else stat('numbers copied');
+  }
+
+  // ── the page ──
+  // the lamp's MIX / REACH / COLOUR as vars (at 1 / 1 / soft-light this is the page's own .pumpLit gradient, stop for stop)
+  const LAMP_CSS = '#scene .pumpLit { mix-blend-mode: var(--lb-mix, soft-light);' +
+    ' background: linear-gradient(180deg, color-mix(in srgb, rgba(255, 214, 150, .95) calc(var(--lb-warm, 1) * 100%), rgba(255, 246, 232, .95)) 0%,' +
+    ' color-mix(in srgb, rgba(255, 200, 130, .5) calc(var(--lb-warm, 1) * 100%), rgba(255, 244, 228, .5)) calc(42% * var(--lb-reach, 1)),' +
+    ' transparent calc(88% * var(--lb-reach, 1))); }';
+  const fr = $('page');
+  function apply() {
+    const d = fr.contentDocument, sc = d && d.getElementById('scene');
+    if (!sc) return;
+    if (!d.getElementById('lbStyle')) { const s = d.createElement('style'); s.id = 'lbStyle'; s.textContent = LAMP_CSS; d.body.appendChild(s); }
+    const x = mode === 'lab' ? V : SHIP;
+    sc.style.setProperty('--sp-l', x.lamp); sc.style.setProperty('--sp-b', x.bright); sc.style.setProperty('--sp-k', x.contrast); sc.style.setProperty('--sp-s', x.shadow);
+    sc.style.setProperty('--lb-mix', x.mix); sc.style.setProperty('--lb-reach', x.reach); sc.style.setProperty('--lb-warm', x.warm);
+  }
+  function zoom() {
+    const d = fr.contentDocument, st = d && d.getElementById('stage'), pc = d && d.querySelector('.pumpCut');
+    if (!st || !pc) return;
+    const z = +$('zoom').value; st.style.transform = '';
+    if (z === 1) return;
+    // the pump (its upper part, where the lamp lands) to the middle of the view, then magnified
+    const r = pc.getBoundingClientRect(), s = st.getBoundingClientRect();
+    const px = r.left + r.width / 2 - s.left, py = r.top + r.height * 0.4 - s.top;
+    st.style.transformOrigin = '0 0';
+    st.style.transform = 'translate(' + Math.round(s.width / 2 - z * px) + 'px, ' + Math.round(s.height / 2 - z * py) + 'px) scale(' + z + ')';
+  }
+  $('zoom').onchange = zoom;
+  window.addEventListener('resize', () => setTimeout(zoom, 50));
+  const keys = (e) => { if ((e.key === 'a' || e.key === 'A') && !e.ctrlKey && !e.metaKey && !(e.target && /INPUT|SELECT/.test(e.target.tagName))) setMode(mode === 'lab' ? 'shipped' : 'lab'); };
+  function setMode(md) { mode = md; $('abLab').classList.toggle('on', md === 'lab'); $('abShip').classList.toggle('on', md === 'shipped'); apply(); stat(md === 'lab' ? 'LAB (the sliders\' light)' : 'SHIPPED (the page today)'); }
+  $('abLab').onclick = () => setMode('lab'); $('abShip').onclick = () => setMode('shipped');
+  document.addEventListener('keydown', keys);
+  fr.addEventListener('load', () => {
+    try { fr.contentDocument.addEventListener('keydown', keys); fr.contentWindow.addEventListener('resize', () => setTimeout(zoom, 50)); } catch (_) {}
+    apply(); setTimeout(apply, 400); setTimeout(zoom, 400);
+    stat('ready · the page today: lamp ' + SHIP.lamp + ', pump ' + SHIP.bright + ', shadow ' + SHIP.shadow);
+    window.LAB = { V, SHIP, apply, setMode, zoom, ready: true, get mode() { return mode; } };
+  });
+  fr.src = 'page-b.html?drone=0';
+})().catch((e) => { document.getElementById('stat').textContent = 'ERROR ' + (e && e.stack || e); window.LAB = { error: String(e && e.stack || e) }; });
+</script>
+</body>
+</html>
