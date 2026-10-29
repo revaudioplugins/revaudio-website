@@ -1,4 +1,4 @@
-# GAS 2 phone POSTCARDS (branch `feat/gas2-postcards`, 2026-10-29, danavivi-75) — v1 BUILT, waiting on Dan's look
+# GAS 2 phone POSTCARDS (branch `feat/gas2-postcards`, 2026-10-29, danavivi-75) — BUILT, waiting on Dan's notes
 
 Dan's concept (2026-10-29): a stack of 1950s "Greetings from GAS 2" postcards, phone only. State: `tasks/handoff.md` top entry.
 
@@ -21,8 +21,11 @@ Dan's concept (2026-10-29): a stack of 1950s "Greetings from GAS 2" postcards, p
 - [x] 4b. The end page (Dan 2026-10-29: "in the end page the user will reach the right side of the desktop page, the words
       will pop out and everything"): after the last card (flicked, next, or mailed) the lens pulls focus onto the
       desktop's right side and page-b's readings pop as after the drone lands. Checks: 24 steps + 30 layouts pass.
-- [ ] 5. Dan's look in the Simulator. Then, only on his OK: illustrated grade fronts (gpt-image-2, cost asked first).
-- [ ] 6. Commit my files by path on the branch; no push (Dan's word; main = live).
+- [x] 4c. The review page (Dan: "open a bench so i can comment on every section of this page"): artifact
+      https://claude.ai/artifact/6zn14ha4qswV1gmCb8v3qG, a notes box + pins + ▶ Live per screen, notes in its db.
+- [ ] 5. Dan's notes in the review page → read `notes` (ArtifactData list), apply, re-shoot (`review/build.cjs`),
+      republish to the same URL. Only on his OK: illustrated grade fronts (gpt-image-2, cost asked first).
+- [x] 6. Commit my files by path on the branch; no push (Dan's word; main = live).
 
 # GAS 2 drone descent (branch `feat/gas2-drone`, 2026-10-28, revaudio-59) — SCENE + BENCH BUILT, art next
 

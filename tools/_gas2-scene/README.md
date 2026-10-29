@@ -22,7 +22,8 @@ python -m http.server 4462 --bind 127.0.0.1
   `?angle=top|front|right` picks the hover. How it works + its bench: `drone/README.md`.
 - `postcards.html` — **the phone page** (branch `feat/gas2-postcards`): a stack of "Greetings from GAS 2" postcards to
   flick through, ending on the right side of the desktop page (the readings pop out); `?card=1-6` opens on a card,
-  `&flip` turns the HEAR IT card, `?card=7` = the end page (`&sent` = after mailing). Assets + their tools: `postcards/`.
+  `&flip` turns the HEAR IT card, `?card=7` = the end page (`&sent` = after mailing). Assets + their tools: `postcards/`;
+  the review page (a notes box per screen, a claude.ai artifact; link in `tasks/handoff.md`): `postcards/review/`.
 
 ## Who works on what (one writer per file set)
 

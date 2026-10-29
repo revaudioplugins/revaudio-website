@@ -1,6 +1,6 @@
 ## 2026-10-29 — GAS 2 page: the PHONE page as POSTCARDS (Claude Code `danavivi-75`, Dan's Mac) — BRANCH `feat/gas2-postcards`, not pushed
 
-Claim: OPEN `danavivi-75`. v1 BUILT + checked (WebKit, Chrome audio, iOS Simulator); waiting on Dan's look. Branched from `origin/feat/gas2-drone` @ `4fc6ddd` (no upstream set, so a bare push
+Claim: OPEN `danavivi-75`. v1 + the end page BUILT + checked; waiting on Dan's notes in the review page (below). Branched from `origin/feat/gas2-drone` @ `4fc6ddd` (no upstream set, so a bare push
 can't reach the drone branch); `revaudio-59` keeps writing `feat/gas2-drone`, so this branch stays out of its files.
 Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postcards/**`; one README line pair; the
 "GAS 2 phone POSTCARDS" section on top of `tasks/todo.md`; this entry. Read only: `page-b.html` (copy, ticket), `fonts/`,
@@ -63,9 +63,23 @@ Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postca
 - Checked (end page): `check.cjs` 24 steps + 30 layouts (5 sizes x cards 1, 2, 5 back, 6, end, end sent) all pass, 0
   console errors; in-page timing: card off by ~350 ms, the scene 90 % in by 345 ms, GAS2 pops from 380 ms; iOS Simulator:
   the end page, the sent variant and card 6 (next = to the end) right.
-- Open (Dan): (1) the look + the flick feel in the Simulator; (2) art, only on his OK: illustrated fronts for the grade
-  cards (gpt-image-2, in the posters' style); (3) per-grade renders (Yoni) before any grade card plays its own sound;
-  (4) later: this as page-b's phone layout.
+- Then (Dan, same day: "open a bench so i can comment on every section of this page and give my notes for adjustments
+  in an html"): THE REVIEW PAGE, private artifact https://claude.ai/artifact/6zn14ha4qswV1gmCb8v3qG (of build `b5279b1`).
+  11 sections in visitor order (cards 1-6, the HEAR IT back, the end page, mailed, motion, overall), each: the screenshot
+  (a tap = a numbered pin, the note starts with ①), ▶ Live = the real page in the frame at that state, a notes box,
+  ✓ Looks right; on Regular the painted-fronts question (Paint them / Keep the plugin keys / Show me one first). Notes =
+  the artifact's db, `notes/<section id>` = {screen, text, ok, pins [{n, x, y}: 0-1 of the 402x714 screen], choice,
+  updatedAt}: read with ArtifactData `list`, collection `notes` (fallback: this browser + "Copy all notes"). Source:
+  `postcards/review/index.html`; `postcards/review/build.cjs` makes `out/` (not in git): `live.html` (fonts inlined,
+  audio renamed .mp4, the state read from the hash) + `shots/*.webp` (WebKit 402x714). Republish = the Artifact tool with
+  `url` + the same 28-file `files` map (out/live.html, out/shots/*, postcards/img/*, props/mailbox.png,
+  props/poster-level.webp, audio/hiphop_*.mp4 from player/audio/*.m4a, no contentType: .mp4 is served as video/mp4).
+  Checked locally (Chrome 1280 + WebKit 390): pins, notes, ✓, the question, live frames (right state, one at a time),
+  reload, copy, no sideways scroll, 0 errors; on claude.ai a db probe written, listed and deleted.
+- Open (Dan): (1) his notes in the review page, then: read `notes`, apply, re-shoot, republish to the same URL; (2) art,
+  only on his OK (asked on Regular in the review page): illustrated fronts for the grade cards (gpt-image-2, in the
+  posters' style); (3) per-grade renders (Yoni) before any grade card plays its own sound; (4) later: this as page-b's
+  phone layout.
 
 ## 2026-10-28 — GAS 2 page: the drone intro, from scratch (Claude Code `revaudio-59`, laptop 1) — BRANCH `feat/gas2-drone`
 

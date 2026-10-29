@@ -1,0 +1,393 @@
+<title>GAS 2 Postcards Review</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Oswald:wght@500;600&display=swap">
+<style>
+/* Layout: the screens in the order a visitor meets them, one per row: the phone on the left, its notes on the right
+   (stacked on a phone). One dark look on purpose: the postcards' own dusk, their honey and card stock. */
+:root {
+  --ground: #100d0a; --panel: #18130f; --rule: #2e261f; --fg: #efe9df; --dim: #a99f90;
+  --honey: #f2be4a; --on-honey: #1a1208; --red: #e0694c; --ok: #9fc07c; --on-ok: #13200b;
+  --stock: #efe5cc; --ink: #24304d; --ink-rule: rgba(36, 48, 77, .17); --ink-dim: rgba(36, 48, 77, .72);
+  --display: Oswald, "Arial Narrow", "Helvetica Neue", sans-serif;
+  --body: Barlow, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+[hidden] { display: none !important; }
+*, *::before, *::after { box-sizing: border-box; }
+body { background: var(--ground); color: var(--fg); font: 16px/1.5 var(--body); -webkit-font-smoothing: antialiased; }
+.wrap { max-width: 1040px; margin: 0 auto; padding-block: 40px 72px; background: var(--ground); color: var(--fg);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.label { margin: 0; font: 500 12px/1.2 var(--display); letter-spacing: .16em; text-transform: uppercase; color: var(--honey); }
+h1, h2 { margin: 0; font-family: var(--display); font-weight: 600; text-transform: uppercase; letter-spacing: .01em; text-wrap: balance; }
+h1 { font-size: clamp(40px, 8vw, 60px); line-height: .95; }
+h2 { font-size: 30px; line-height: 1; }
+
+/* ── the head: what this is, how to use it, where the notes go, and a jump list ── */
+.top { display: grid; gap: 16px; padding-bottom: 30px; border-bottom: 1px solid var(--rule); }
+.lede { margin: 0; max-width: 60ch; font-size: 18px; }
+.tips { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; max-width: 64ch; color: var(--dim); }
+.tips b { color: var(--fg); font-weight: 600; }
+.conn { margin: 0; display: flex; gap: 10px; align-items: baseline; font-size: 15px; color: var(--dim); }
+.conn::before { content: ""; flex: none; width: 9px; height: 9px; border-radius: 50%; background: var(--dim); transform: translateY(-1px); }
+.conn[data-s="ok"]::before { background: var(--ok); }
+.conn[data-s="local"]::before { background: var(--red); }
+.index { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 0; padding: 0; list-style: none; }
+.chip { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid var(--rule); border-radius: 999px;
+  color: var(--fg); text-decoration: none; font: 500 13px/1 var(--display); letter-spacing: .08em; text-transform: uppercase; }
+.chip:hover { border-color: var(--dim); }
+.chip .dot { width: 8px; height: 8px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--dim); }
+.chip.note .dot { background: var(--honey); box-shadow: none; }
+.chip.ok .dot { background: var(--ok); box-shadow: none; }
+.progress { margin: 0; font: 500 13px/1 var(--display); letter-spacing: .1em; text-transform: uppercase; color: var(--dim); }
+
+/* ── one screen ── */
+.sc { display: grid; gap: 22px; padding-block: 44px; border-bottom: 1px solid var(--rule); scroll-margin-top: 8px; }
+.shot { display: grid; gap: 10px; justify-items: center; }
+.phone { position: relative; width: min(100%, 360px); aspect-ratio: 402 / 714; max-width: 100%; border-radius: 22px; overflow: hidden;
+  background: #0b0907; box-shadow: 0 0 0 1px var(--rule), 0 26px 50px -26px #000; cursor: crosshair; }
+.phone img { display: block; width: 100%; height: 100%; object-fit: cover; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.phone.live { cursor: auto; box-shadow: 0 0 0 2px var(--honey), 0 26px 50px -26px #000; }
+.phone.live img, .phone.live .pins { visibility: hidden; }
+.phone iframe { position: absolute; left: 0; top: 0; width: 402px; height: 714px; border: 0; transform: scale(var(--k, 1)); transform-origin: 0 0; }
+.pins { position: absolute; inset: 0; pointer-events: none; }
+.pin { position: absolute; width: 28px; height: 28px; padding: 0; transform: translate(-50%, -50%); pointer-events: auto; cursor: pointer;
+  border: 2px solid var(--ground); border-radius: 50%; background: var(--honey); color: var(--on-honey);
+  font: 600 14px/24px var(--display); text-align: center; box-shadow: 0 3px 8px rgba(0, 0, 0, .6); }
+.shot-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; width: min(100%, 360px); }
+.q { margin-left: auto; font: 12px/1 var(--mono); color: var(--dim); }
+.hint { margin: 0; width: min(100%, 360px); font-size: 14px; color: var(--dim); }
+.btn { min-height: 40px; padding: 0 14px; border: 1px solid var(--honey); border-radius: 10px; background: transparent; color: var(--honey);
+  font: 600 13px/1 var(--display); letter-spacing: .1em; text-transform: uppercase; cursor: pointer; }
+.btn.solid { background: var(--honey); color: var(--on-honey); }
+.btn:focus-visible, .chip:focus-visible, .pin:focus-visible, .notes:focus-visible { outline: 2px solid var(--honey); outline-offset: 3px; }
+
+.side { display: grid; gap: 16px; align-content: start; min-width: 0; }
+.parts { margin: 0; padding: 0; list-style: none; display: grid; gap: 7px; max-width: 64ch; color: var(--dim); }
+.parts b { color: var(--fg); font-weight: 600; margin-right: 4px; }
+.tip { margin: 0; max-width: 64ch; }
+.tip span { margin-right: 8px; font: 600 12px/1 var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--honey); }
+.ask { margin: 0; padding: 12px 14px 14px; display: grid; gap: 10px; border: 1px solid var(--rule); border-radius: 12px; }
+.ask legend { padding: 0 6px; }
+.seg { display: flex; flex-wrap: wrap; gap: 8px; }
+.seg .btn[aria-pressed="true"] { background: var(--honey); color: var(--on-honey); }
+
+/* the notes: the back of a postcard, ruled, in pen */
+.notes { display: block; width: 100%; min-height: 176px; resize: vertical; margin: 0; padding: 12px 16px; border: 0; border-radius: 4px;
+  background-color: var(--stock); background-image: linear-gradient(transparent calc(100% - 1px), var(--ink-rule) 0);
+  background-size: 100% 1.6em; background-position: 0 12px; background-attachment: local;
+  color: var(--ink); font: 17px/1.6 var(--body); box-shadow: 0 14px 30px -20px #000; }
+.notes::placeholder { color: var(--ink-dim); }
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+.ok-btn { border-color: var(--rule); color: var(--fg); }
+.ok-btn[aria-pressed="true"] { border-color: var(--ok); background: var(--ok); color: var(--on-ok); }
+.save { font-size: 14px; color: var(--dim); }
+.save[data-s="error"] { color: var(--red); }
+
+@media (min-width: 820px) {
+  .sc { grid-template-columns: 300px minmax(0, 1fr); gap: 48px; align-items: start; }
+  .sc.wide { grid-template-columns: minmax(0, 1fr); }
+  .shot { justify-items: start; }
+  .phone, .shot-bar, .hint { width: 300px; }
+}
+
+/* ── the foot: the way out ── */
+.foot { display: grid; gap: 14px; padding-top: 40px; }
+.foot p { margin: 0; max-width: 62ch; }
+.foot .small { font-size: 14px; color: var(--dim); }
+#dump { width: 100%; min-height: 240px; padding: 12px; border: 1px solid var(--rule); border-radius: 8px; background: var(--panel); color: var(--fg); font: 13px/1.5 var(--mono); }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <p class="label">GAS 2 · phone page · build b5279b1</p>
+    <h1>Postcards review</h1>
+    <p class="lede">Every screen of the postcards page, in the order a visitor sees it. Write your notes under each one.</p>
+    <ul class="tips">
+      <li><b>Pin a spot:</b> tap a picture. A numbered pin drops and your note starts with its number.</li>
+      <li><b>▶ Live</b> runs the real page in the frame: flick, turn over, play, mail.</li>
+      <li><b>Nothing to change?</b> Tap ✓ Looks right.</li>
+    </ul>
+    <p class="conn" id="conn" data-s="wait">Connecting…</p>
+    <nav aria-label="Screens"><ul class="index" id="index"></ul></nav>
+    <p class="progress" id="progress"></p>
+  </header>
+
+  <main id="screens"></main>
+
+  <footer class="foot">
+    <h2>Done?</h2>
+    <p>Tell me in the chat. I read every note straight from this page.</p>
+    <div class="row"><button class="btn" type="button" id="copy">Copy all notes</button><span class="save" id="copied" role="status"></span></div>
+    <p class="small">The copy is for pasting to me if the line at the top says your notes stay in this browser.</p>
+    <label class="sr" for="dump">All notes as text</label>
+    <textarea id="dump" readonly hidden></textarea>
+  </footer>
+</div>
+
+<script>
+(() => {
+  // ── the screens, in the order a visitor meets them (shots/<id>.webp: WebKit at 402 x 714, build.cjs) ──
+  const SECTIONS = [
+    { id: 'card-1', short: '1 Greetings', kick: 'Card 1 of 6', title: 'Greetings from GAS 2', q: 'card=1', parts: [
+      ['“Greetings from”', 'the script across the top'],
+      ['The pump', 'the real GAS 2 pump (globe sign, gauge, −11.0 counter, the three grade windows) in front of the blurred station'],
+      ['The line', '“Thicker, smoother, glued master.”'],
+      ['The strip', '“GAS 2 · FREE” and “No. 1”'],
+      ['Around the card', 'the lot at dusk out of focus, the stack edges, “Flick the card”, ‹ 1 / 6 ›']] },
+    { id: 'card-2', short: '2 Regular', kick: 'Card 2 of 6', title: 'Regular', q: 'card=2', ask: true, parts: [
+      ['The key', 'the REGULAR key from the plugin, on sunburst rays'],
+      ['Lettering', '“Smooth & warm” over a big REGULAR'],
+      ['The line', '“Smooth and warm. For mixes that are already good.”'],
+      ['The frame', '“No. 2 · Fuel grade”, “Grade 1 of 3”, the GAS 2 seal']] },
+    { id: 'card-3', short: '3 Premium', kick: 'Card 3 of 6', title: 'Premium', q: 'card=3', parts: [
+      ['The key', 'the PREMIUM key from the plugin'],
+      ['Lettering', '“The signature” over a big PREMIUM'],
+      ['The line', '“Thick lows, clear mids, silky air.”'],
+      ['The frame', '“No. 3 · Fuel grade”, “Grade 2 of 3”, the GAS 2 seal']] },
+    { id: 'card-4', short: '4 Race', kick: 'Card 4 of 6', title: 'Race', q: 'card=4', parts: [
+      ['The key', 'the RACE key from the plugin'],
+      ['Lettering', '“Punchy & bright” over a big RACE'],
+      ['The line', '“Punchy and bright. For loud, modern mixes.”'],
+      ['The frame', '“No. 4 · Fuel grade”, “Grade 3 of 3”, the GAS 2 seal']] },
+    { id: 'card-5', short: '5 Hear it', kick: 'Card 5 of 6 · front', title: 'Hear it', q: 'card=5', parts: [
+      ['The poster', '“Fill it up. Same level.”'],
+      ['Lettering', 'a big HEAR IT'],
+      ['The line', '“The same song, the same level. One side is GAS 2.”'],
+      ['Turn it over', 'the button, and the curled corner']] },
+    { id: 'card-5-back', short: '5 Back', kick: 'Card 5 of 6 · back', title: 'Hear it, the back', q: 'card=5&flip', parts: [
+      ['The note', '“Same song, same loudness. Switch while it plays.”'],
+      ['▶', 'the play button'],
+      ['The switch', 'ORIGINAL / GAS 2, and the progress line under it'],
+      ['Fine print', '“Hip-hop demo · PREMIUM at GAS 140 % · both sides −11.0 LUFS”, and “Turn back”']],
+      tip: '▶ Live, then tap ▶ on the card. Sound on.' },
+    { id: 'card-6', short: '6 Mail', kick: 'Card 6 of 6', title: 'Mail me the keys', q: 'card=6', parts: [
+      ['The heading', '“POST CARD”, MAIL ME THE KEYS, “All three grades · free”'],
+      ['Stamp and postmark', 'GAS 2 POST 0¢, REVAUDIO STATION · FREE'],
+      ['The message', '“Drop me in the box: we’ll mail you the download link. No licence key, no card.”'],
+      ['The form', 'the TO line, MAIL ME THE KEYS →, the fine print'],
+      ['The mailbox', 'under the card, between ‹ and ›']],
+      tip: '▶ Live, type any email and send it: the card drops into the box. Nothing is sent.' },
+    { id: 'end', short: 'End', kick: 'After the last card', title: 'The end page', q: 'card=7', parts: [
+      ['The view', 'the right side of the desktop page: the canopy and its lamp, the dusk sky, the mesas'],
+      ['GAS 2', 'the lockup and the red line under it'],
+      ['The line', '“Thicker, smoother, glued master.”'],
+      ['Download FREE', 'brings the mail card back'],
+      ['The rest', '“Fill it up.” and “↺ The postcards again”']],
+      tip: '▶ Live replays the landing: the words pop out.' },
+    { id: 'end-sent', short: 'End · mailed', kick: 'After mailing', title: 'The end page, mailed', q: 'card=7&sent', parts: [
+      ['The button', 'reads “✓ Keys in the mail”'],
+      ['The foot', '“Sent to … · Mockup: nothing was sent.”']] },
+    { id: 'motion', short: 'Motion', kick: 'Live only', title: 'Motion and feel', q: 'card=1', parts: [
+      ['The flick', 'a fast flick, or a drag past a third, throws the card; a short drag springs back'],
+      ['Turn over', 'the flip on Hear it'],
+      ['The mail drop', 'the card shrinks into the box'],
+      ['The landing', 'the cards fade, the lot comes into focus, the words pop'],
+      ['The deal back', '“↺ The postcards again” deals the stack back']],
+      tip: '▶ Live starts on card 1. Your mouse and the arrow keys work too.' },
+    { id: 'overall', short: 'Overall', kick: 'The whole page', title: 'Overall', frame: false,
+      placeholder: 'What to keep, what to cut, what’s missing. And the “also” question you had earlier.' },
+  ];
+  const SEC = Object.fromEntries(SECTIONS.map((s) => [s.id, s]));
+  const CHOICES = { paint: 'Paint them', keep: 'Keep the plugin keys', sample: 'Show me one first' };
+  const KEY = 'gas2-postcards-review';
+  const $ = (s, el) => (el || document).querySelector(s);
+  const circ = (n) => (n >= 1 && n <= 20 ? String.fromCodePoint(0x245f + n) : `(${n})`);   // ① … ⑳
+  const blank = () => ({ text: '', ok: false, pins: [], choice: '', updatedAt: '' });
+  const norm = (d) => ({
+    text: typeof d.text === 'string' ? d.text : '', ok: d.ok === true,
+    pins: Array.isArray(d.pins) ? d.pins.filter((p) => p && [p.n, p.x, p.y].every(Number.isFinite)).map((p) => ({ n: p.n, x: p.x, y: p.y })) : [],
+    choice: CHOICES[d.choice] ? d.choice : '', updatedAt: typeof d.updatedAt === 'string' ? d.updatedAt : '' });
+  const has = (s) => !!(s && (s.text.trim() || s.ok || s.choice || s.pins.length));
+
+  // ── state: this browser first (instant, and the fallback), then the page's store, which Claude reads ──
+  const state = {};
+  try { const raw = JSON.parse(localStorage.getItem(KEY) || '{}'); for (const id in raw) if (SEC[id] && raw[id]) state[id] = norm(raw[id]); } catch (e) {}
+  const st = (id) => state[id] || (state[id] = blank());
+  const saveLocal = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} };
+
+  // ── build the page ──
+  const ask = `<fieldset class="ask"><legend>Paint a 1950s picture for each grade card instead of the plugin key? About $2 of OpenAI images.</legend>
+    <div class="seg">${Object.entries(CHOICES).map(([k, v]) => `<button class="btn" type="button" data-choice="${k}" aria-pressed="false">${v}</button>`).join('')}</div></fieldset>`;
+  $('#screens').innerHTML = SECTIONS.map((S) => `
+    <section class="sc${S.frame === false ? ' wide' : ''}" id="${S.id}" aria-labelledby="h-${S.id}">
+      ${S.frame === false ? '' : `<div class="shot">
+        <div class="phone" data-hash="${S.q}">
+          <img src="shots/${S.id}.webp" alt="${S.kick}, ${S.title}, as it shows on the phone" width="402" height="714" draggable="false">
+          <div class="pins"></div>
+        </div>
+        <div class="shot-bar"><button class="btn solid go" type="button">▶ Live</button><button class="btn again" type="button" hidden>↺ Restart</button><code class="q">?${S.q}</code></div>
+        <p class="hint">Tap the picture to pin a spot.</p>
+      </div>`}
+      <div class="side">
+        <p class="label">${S.kick}</p>
+        <h2 id="h-${S.id}">${S.title}</h2>
+        ${S.parts ? `<ul class="parts">${S.parts.map(([a, b]) => `<li><b>${a}</b> ${b}</li>`).join('')}</ul>` : ''}
+        ${S.tip ? `<p class="tip"><span>Try it</span>${S.tip}</p>` : ''}
+        ${S.ask ? ask : ''}
+        <label class="sr" for="n-${S.id}">Notes on ${S.title}</label>
+        <textarea class="notes" id="n-${S.id}" dir="auto" rows="6" placeholder="${S.placeholder || 'What to change here. Tap the picture to pin a spot first.'}"></textarea>
+        <div class="row">${S.frame === false ? '' : '<button class="btn ok-btn" type="button" aria-pressed="false">✓ Looks right</button>'}<span class="save" role="status"></span></div>
+      </div>
+    </section>`).join('');
+  $('#index').innerHTML = SECTIONS.map((S) => `<li><a class="chip" href="#${S.id}" data-id="${S.id}"><i class="dot" aria-hidden="true"></i>${S.short}</a></li>`).join('');
+
+  const size = (ta) => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; };
+  function paint(id) {
+    const el = document.getElementById(id), s = st(id);
+    const okb = $('.ok-btn', el); if (okb) okb.setAttribute('aria-pressed', String(s.ok));
+    el.querySelectorAll('[data-choice]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const box = $('.pins', el);
+    if (box) box.replaceChildren(...s.pins.map((p) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'pin'; b.dataset.n = p.n; b.textContent = p.n; b.title = 'Tap to remove';
+      b.setAttribute('aria-label', `Pin ${p.n}, tap to remove`);
+      b.style.left = (p.x * 100).toFixed(1) + '%'; b.style.top = (p.y * 100).toFixed(1) + '%';
+      return b;
+    }));
+  }
+  function fill(id) { const ta = document.getElementById('n-' + id); ta.value = st(id).text; size(ta); paint(id); }
+  function renderIndex() {
+    let n = 0;
+    SECTIONS.forEach((S) => {
+      const s = state[S.id], c = $(`[data-id="${S.id}"]`, $('#index'));
+      const note = !!(s && (s.text.trim() || s.pins.length || s.choice)), ok = !!(s && s.ok);
+      c.classList.toggle('note', note); c.classList.toggle('ok', ok && !note);
+      if (note || ok) n++;
+    });
+    $('#progress').textContent = `${n} of ${SECTIONS.length} done`;
+  }
+
+  // ── saving: every change goes to this browser at once and to the store after a pause in typing ──
+  let db = null;
+  const timers = {}, writing = {}, again = {};
+  const SAY = { local: 'Saved in this browser only', saving: 'Saving…', saved: 'Saved', error: 'Not saved for Claude. It is kept in this browser: use Copy all notes.' };
+  const status = (id, s) => { const el = $(`#${id} .save`); el.dataset.s = s; el.textContent = SAY[s] || ''; };
+  function touch(id, wait) {
+    st(id).updatedAt = new Date().toISOString();
+    saveLocal(); renderIndex();
+    clearTimeout(timers[id]); timers[id] = 0;
+    if (!db) { status(id, 'local'); return; }
+    status(id, 'saving');
+    timers[id] = setTimeout(() => { timers[id] = 0; push(id); }, wait);
+  }
+  function flush(id) { if (timers[id]) { clearTimeout(timers[id]); timers[id] = 0; push(id); } }
+  async function push(id, retry) {
+    if (!db) return;
+    if (writing[id]) { again[id] = true; return; }
+    writing[id] = true; status(id, 'saving');
+    const s = st(id), S = SEC[id];
+    try {
+      await db.doc('notes/' + id).set({ screen: `${S.kick} · ${S.title}`, text: s.text, ok: s.ok, pins: s.pins, choice: s.choice, updatedAt: s.updatedAt });
+      status(id, 'saved');
+    } catch (e) {
+      writing[id] = false;
+      if (e && e.code === 'unavailable' && !retry) { setTimeout(() => push(id, true), 600 + Math.random() * 900); return; }
+      status(id, 'error'); return;
+    }
+    writing[id] = false;
+    if (again[id]) { again[id] = false; push(id); }
+  }
+  const busy = (id) => document.activeElement === document.getElementById('n-' + id) || !!timers[id] || !!writing[id];
+  function conn(s) {
+    const el = $('#conn'); el.dataset.s = s;
+    el.textContent = s === 'ok' ? 'Your notes save to this page as you type. I read them from here.'
+      : 'This view can’t save to the page, so your notes stay in this browser. When you’re done, use Copy all notes at the bottom.';
+  }
+  async function connect() {
+    const c = window.claude;
+    try { db = c && typeof c.use === 'function' ? await c.use('db') : null; } catch (e) { db = null; }
+    if (!db) { conn('local'); SECTIONS.forEach((S) => has(state[S.id]) && status(S.id, 'local')); return; }
+    conn('ok');
+    let first = true;
+    db.collection('notes').onSnapshot((snap) => {
+      const seen = new Set();
+      snap.docs.forEach((d) => {
+        if (!SEC[d.id]) return;
+        seen.add(d.id);
+        if (d.metadata.hasPendingWrites) return;
+        const r = norm(d.data() || {}), l = state[d.id];
+        if (l && l.updatedAt > r.updatedAt) { if (first) push(d.id); return; }    // typed here while it was away
+        if (l && l.updatedAt === r.updatedAt) { if (first) status(d.id, 'saved'); return; }
+        if (busy(d.id)) return;
+        state[d.id] = r; fill(d.id); status(d.id, 'saved');                        // written on another device
+      });
+      if (first) { first = false; for (const id in state) if (!seen.has(id) && has(state[id])) push(id); }
+      saveLocal(); renderIndex();
+    }, () => { db = null; conn('local'); });
+  }
+
+  // ── live: the real page in the frame, one at a time ──
+  let current = null;
+  const fit = (ph) => ph.style.setProperty('--k', (ph.clientWidth / 402).toFixed(4));
+  const ro = new ResizeObserver((es) => es.forEach((e) => fit(e.target)));
+  function live(ph) {
+    if (current && current !== ph) still(current);
+    const old = $('iframe', ph); if (old) old.remove();
+    const f = document.createElement('iframe');
+    f.title = 'The postcards page, live'; f.allow = 'autoplay'; f.src = 'live.html#' + ph.dataset.hash;
+    ph.append(f); ph.classList.add('live'); current = ph; fit(ph);
+    const shot = ph.parentElement;
+    $('.go', shot).textContent = '■ Picture'; $('.again', shot).hidden = false; $('.hint', shot).hidden = true;
+  }
+  function still(ph) {
+    const f = $('iframe', ph); if (f) f.remove();
+    ph.classList.remove('live'); if (current === ph) current = null;
+    const shot = ph.parentElement;
+    $('.go', shot).textContent = '▶ Live'; $('.again', shot).hidden = true; $('.hint', shot).hidden = false;
+  }
+
+  // ── wire each screen ──
+  SECTIONS.forEach((S) => {
+    const el = document.getElementById(S.id), ta = $('textarea', el), ph = $('.phone', el);
+    fill(S.id);
+    ta.addEventListener('input', () => { st(S.id).text = ta.value; size(ta); touch(S.id, 800); });
+    ta.addEventListener('blur', () => flush(S.id));
+    const okb = $('.ok-btn', el);
+    if (okb) okb.addEventListener('click', () => { const s = st(S.id); s.ok = !s.ok; paint(S.id); touch(S.id, 0); });
+    el.querySelectorAll('[data-choice]').forEach((b) => b.addEventListener('click', () => {
+      const s = st(S.id); s.choice = s.choice === b.dataset.choice ? '' : b.dataset.choice; paint(S.id); touch(S.id, 0);
+    }));
+    if (!ph) return;
+    ro.observe(ph);
+    ph.addEventListener('click', (e) => {
+      if (ph.classList.contains('live')) return;
+      const s = st(S.id), pin = e.target.closest('.pin');
+      if (pin) { s.pins = s.pins.filter((p) => p.n !== +pin.dataset.n); paint(S.id); touch(S.id, 0); return; }
+      const r = ph.getBoundingClientRect();
+      const x = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)), y = Math.min(1, Math.max(0, (e.clientY - r.top) / r.height));
+      const n = s.pins.reduce((m, p) => Math.max(m, p.n), 0) + 1;
+      s.pins.push({ n, x: +x.toFixed(3), y: +y.toFixed(3) });
+      const v = ta.value.replace(/\s+$/, '');
+      ta.value = (v ? v + '\n' : '') + circ(n) + ' ';
+      s.text = ta.value; size(ta); paint(S.id); touch(S.id, 0);
+      ta.focus({ preventScroll: true }); ta.setSelectionRange(ta.value.length, ta.value.length);
+    });
+    $('.go', el).addEventListener('click', () => (ph.classList.contains('live') ? still(ph) : live(ph)));
+    $('.again', el).addEventListener('click', () => live(ph));
+  });
+  renderIndex();
+  SECTIONS.forEach((S) => has(state[S.id]) && status(S.id, 'local'));
+  connect();
+
+  // ── the way out: everything as text ──
+  function dump() {
+    const out = [`GAS 2 Postcards review · build b5279b1 · ${new Date().toLocaleString()}`, ''];
+    SECTIONS.forEach((S) => {
+      const s = st(S.id);
+      out.push(`== ${S.kick} · ${S.title}${S.q ? ` (?${S.q})` : ''} ==${s.ok ? '  ✓ looks right' : ''}`);
+      if (s.choice) out.push(`Painted fronts: ${CHOICES[s.choice]}`);
+      if (s.pins.length) out.push('Pins: ' + s.pins.map((p) => `${circ(p.n)} ${Math.round(p.x * 100)}% across, ${Math.round(p.y * 100)}% down`).join(' · '));
+      out.push(s.text.trim() || '(no note)', '');
+    });
+    return out.join('\n');
+  }
+  $('#copy').addEventListener('click', () => {
+    const t = dump(), box = $('#dump'), said = $('#copied');
+    const manual = () => { box.hidden = false; box.value = t; size(box); box.focus(); box.select(); said.textContent = 'Select the text below and copy it.'; };
+    try { navigator.clipboard.writeText(t).then(() => { said.textContent = 'Copied. Paste it to me in the chat.'; }, manual); } catch (e) { manual(); }
+  });
+})();
+</script>
