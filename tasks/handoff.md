@@ -115,6 +115,17 @@ descent" section); this entry.
   http://127.0.0.1:8798/scratch/knoblab/radio-knoblab.html. Checked headless: LIVE 3D KNURL, SHIPPED = the strip, no page
   errors (one console 404 = favicon). Next: Dan's look in the lab -> EXPORT -> bake (`bake-knob-lab.js <recipe> <out>
   256 1 --foot=60,60,84,120`) -> `img/knob-radio.webp` + radio.css `.rp-knob b` k3dCss, then the page check.
+- Then (Dan, 2026-10-29: "i exported the knobs"): his EXPORT `shared/tools/knob-lab/library/saves/gas2radio/
+  gas2radio-knob-recipe-2026-10-29-1218.json` (the `-2` twin is equal as JSON; copy: `player/knoblab/knob-recipe-
+  2026-10-29.json`) = type ALU, linked: machined metal body, copper-brown spun cap (#52301e), white line index, no halo,
+  light az 130.6 / el 58.4. Baked (`bake-knob-lab.js ... 256 1 --foot=60,60,84,120`: no clipped edge, no pure #000 /
+  #fff; k3dCss unchanged -1.391 / -3.326 / 102.783 %, so radio.css keeps its numbers) -> 192 px frames (premultiplied
+  LANCZOS) webp q84 = `player/img/knob-radio.webp` 653 KB (was 518; q88 790 KB for p99 13 vs 14). The lab now opens on
+  this recipe. `drone/img/land.webp` re-rendered (the landing frame carries the radio: only the two knob areas changed).
+  Checked headless: radio before / after + a drag turns the new strip, no errors; `check.cjs` top 1440 + 390: landed =
+  `?drone=0` mean 0.00, landing frame 2.56 / 1.47 (the same noise map as before). Not seen by Dan on the page yet.
+  Shared clone, uncommitted (lab writes, Dan's): `tools/knob-lab/library/knobs.json` (his EXPORT card) +
+  `library/saves/gas2radio/` + `library/saves/library/knobs-before-2026-10-29-1218.json`.
 
 ## 2026-10-26 — GAS 2 page: the drone intro (hover above the station, scroll = descent, land, readings pop) (Claude Code `danavivi-19`, Dan's Mac) — BRANCH `feat/gas2-page`
 

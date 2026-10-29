@@ -9,7 +9,7 @@ Never edit the output (gitignored); regenerate after a plate or lab change.
 Serve with the lab's own server, so EXPORT / LIBRARY saves land in the shared library:
   python C:/RevAudio/shared/tools/knob-lab/serve-lab.py 8798 --pages <this player folder>
   open http://127.0.0.1:8798/scratch/knoblab/radio-knoblab.html
-The lab opens on the look on the radio today (Yoni's recipe below), with its baked strip as the SHIPPED reference.
+The lab opens on the look on the radio today (the recipe below), with its baked strip as the SHIPPED reference.
 Bake (needs the :8793 bench server serving C:/RevAudio): see radio.css / the plan, --foot=60,60,84,120.
 """
 import hashlib, json
@@ -26,8 +26,9 @@ def tag(name):
     return hashlib.sha1((LAB / name).read_bytes()).hexdigest()[:8]
 
 
-# the look on the radio today (Yoni "done", 2026-10-23), baked into img/knob-radio.webp: 129 frames, 12 x 11
-SHIPPED = json.loads((HERE / "knob-recipe-yoni-2026-10-23.json").read_text(encoding="utf-8"))
+# the look on the radio today (Dan's EXPORT 2026-10-29: ALU; was Yoni's KNURL of 10-23), baked into img/knob-radio.webp:
+# 129 frames, 12 x 11, 192 px (the bake's 256 px, premultiplied downscale, webp q84)
+SHIPPED = json.loads((HERE / "knob-recipe-2026-10-29.json").read_text(encoding="utf-8"))
 K3D = "left:-1.391%;top:-3.326%;width:102.783%;height:102.783%"   # the strip in its .knob box (radio.css .rp-knob b)
 
 
