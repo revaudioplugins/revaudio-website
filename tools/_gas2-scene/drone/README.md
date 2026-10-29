@@ -25,7 +25,6 @@ Open `http://127.0.0.1:4464/page-b.html` and scroll. Any free port works.
 | `page-b.html` | the flight (TOP by default) |
 | `?cam` | **the camera bench** (Dan 2026-10-28): drag the scene to turn the hover camera; sliders for the hover (Around, Down, Height, Aim x / z) and the landing (Lands at, Turn from, Arrive); a Scroll slider + readout. It never hands over: scroll up and down freely. Fly = the real flight with these values; Copy = the values to bake in |
 | `?angle=top` / `front` / `right` | a hover preset: straight down / 45° down from the front / 45° down and 45° round to the right |
-| `?cue` | **the scroll-cue bench** (Dan 2026-10-29): a panel on the left picks the cue at the bottom of the hover (Chevrons, Mouse / Swipe up on touch, Ticket, Fuel drop, Altimeter, None) live; Replay = from the top. The pick stays in this browser (`gas2page-b:cue`) |
 | `?dev`, then TUNE (or T) → Drone | presets (a click flies it), Hover m, Length (screens of scroll), Sway; Camera (opens `?cam`), Fly again, Car, Skip, Copy |
 | `?drone=0` | the page without the intro (also with `?bench`, `?rbench` and reduced motion) |
 | `?autofly` | flies itself 3 s after the hover (hands-free demos, device checks) |
@@ -40,7 +39,7 @@ change in the code "does nothing", clear that key or press Copy to see what is s
   Holds the settings + presets, adds `html.dr-on dr-hold`, the TUNE section, then imports `run.js` (and `cam-bench.js`
   with `?cam`). Any failure = the page as it was.
 - `cam-bench.js` — the camera bench panel (bench only; the page never loads it without `?cam`).
-- `cue.js` — the scroll cue at the bottom of the hover: in once the hover shows, out with the first scroll (run.js hands it u); its looks in `drone.css`; with `?cue` its bench panel.
+- `cue.js` — the scroll cue at the bottom of the hover (Dan picked the chevrons from a bench of five, 2026-10-29): in once the hover shows, out with the first scroll (run.js hands it u); CSS in `drone.css`.
 - `run.js` — the flight. A full-window WebGL canvas over the page, a scroll runway (`--dr-len` screens), the camera
   path, the hand-off and `pop()` (the readings' entrance, WAAPI).
 - `world.js` — the 3D set (three.js r185 in `vendor/`): ground (road, cracks, potholes, field), shop box, roof with

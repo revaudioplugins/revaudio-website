@@ -98,7 +98,7 @@ function frame(now) {
   if (Math.abs(p - sDisp) < 1e-4) sDisp = p;
   const u = sDisp, age = (now - born) / 1000;
   const pose = poseAt(u);
-  cue(u, pose.pos.y);
+  cue(u);
   applySway(pose, age, T.sway * (1 - .7 * smooth(0, .3, u)) * (1 - smooth(T.down - .2, T.down, u)) * smooth(0, 1.5, age));
   cam.position.copy(pose.pos); cam.quaternion.copy(pose.quat); cam.updateMatrixWorld();
   view(u);

@@ -131,8 +131,11 @@ descent" section); this entry.
   after the hover shows, out by 4 % of the scroll; bench `?cue` (panel top left): Chevrons (default until he picks) /
   Mouse (Swipe up on touch) / Ticket ("SCROLL TO LAND", page paper) / Fuel drop / Altimeter (live height, fades by 90 %)
   / None. Checked headless 1440 + 390: every look shows, chevrons gone after 1.2 screens and back at the top, the
-  altimeter 34 -> 2 m; landing still mean 0.00 / landframe 2.56 / 1.47; no errors. Waiting on Dan's pick; then the
-  other looks come out of cue.js + drone.css and the bench goes.
+  altimeter 34 -> 2 m; landing still mean 0.00 / landframe 2.56 / 1.47; no errors. Dan didn't see it at first: his
+  browser kept the old run.js (plain `http.server` = heuristic cache); a no-store server on 4465 fixed it (scratchpad
+  `serve-nostore.py`; open the page there). Dan: "perfect, chevrons": the other four looks, the bench and `?cue` are
+  out (cue.js = the chevrons only). Checked 1440 + 390 on 4465: in at the hover, 0 after .6 screen, back at the top,
+  no panel, no errors; landed = `?drone=0` mean 0.00.
 
 ## 2026-10-26 — GAS 2 page: the drone intro (hover above the station, scroll = descent, land, readings pop) (Claude Code `danavivi-19`, Dan's Mac) — BRANCH `feat/gas2-page`
 
