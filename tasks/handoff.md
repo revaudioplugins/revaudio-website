@@ -9,6 +9,25 @@
   wall. Owed: a real iPhone / Safari listen (Playwright's Windows WebKit has no AudioContext); the tidy pass in
   todo E5; `public/drift/knob3d-drift-65.webp` is unused now. The section bench now double-applies on the folded page.
 
+### Session close 2026-10-29 (`revaudio-ef`, /close-session)
+
+- State: worktree `Website/revaudio-website-hear` clean; branch `drift-hear-guide` = origin at `c905e48` (= the merge
+  that went live). origin/main has moved 5 commits past it since (other sessions); nothing of this session is unpushed.
+  Live check after the deploy (Edge, 1440 + 390, cache-busted): 200, wall + fader assets from `/_astro/`, fader present,
+  old knob gone, LCD frame present, DSEG14 loaded, 0 page errors. Shots sent to the user.
+- Unverified: the user has not answered since the live shots; step 2 (lit PLAY cap) and the guide were never looked at
+  by the user on the page before they went live.
+- Background: the bench server (`python bench/serve-panel-bench.py`, 8797) is no longer running. Restart it from the
+  worktree root if the bench is needed again.
+- To decide:
+  1. `public/bench/*.html` (drag, hero, home, layout, studio) are served on the live site
+     (revaudio.net/bench/hero-bench.html = 200, checked 2026-10-28). They predate this branch. Intended, or move them
+     out of `public/` (or noindex)? Asked the user, no answer yet. Not touched.
+  2. After the user looks at the live page: keep everything, or roll a part back (guide / segment LCD / step 2 / wall)?
+  3. The tidy pass (todo E5: drop the old #hear rules the wall overrides, stop the section bench double-applying) and
+     deleting the orphan `public/drift/knob3d-drift-65.webp`: on the user's OK.
+  4. Lines 30-31 below (resume the guide review at item 3) date from 10-26; unknown whether still wanted.
+
 Claim (owner `revaudio-ef`): CLOSED 2026-10-28 (pushed). History: closed at rv close 2026-10-26, RE-OPENED the same day by `revaudio-ef` for the step 2 fold:
 `src/components/drift/DriftHear.astro`, `src/lib/drift/hear.ts`, `src/components/drift/DriftHero.astro`
 (the HEAR IT link), the #hear + `.d-hero-hear` rules in `src/styles/drift.css`, `src/lib/drift/lcd.ts` + one line of
