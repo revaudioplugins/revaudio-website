@@ -106,26 +106,13 @@ descent" section); this entry.
   `page-b.html` with its CSS, its hover handlers and the copy array; a click on REGULAR / PREMIUM / RACE still picks the
   pump's key. `page-a.html` still has it (not asked). Checked headless 1440: hover PREMIUM = no strip, click RACE =
   on, no errors. The tip was hidden at rest, so `img/land.webp` (the landing frame) is unchanged.
-- Then (Dan, 2026-10-29: "let's work on the player's knobs, open them in KNOB LAB, they need refining"): the radio's
-  lab (`player/knoblab/make-knoblab.py`; `player/**` is Yoni's radio claim from `revaudio-cd`, touched here on Dan's word)
-  now opens on the look on the radio today (Yoni's recipe `knob-recipe-yoni-2026-10-23.json`: KNURL, gunmetal knurl,
-  brown bakelite dome, glow index), not the first SKIRT look; SHIPPED shows the baked strip `img/knob-radio.webp` on
-  the radio at the knob's angle; storage key v2 (so it opens fresh on the shipped look). Server: `serve-lab.py 8798
-  --pages <this player folder>` (8797 is another session's panel bench on laptop 1), PID 66712, URL
-  http://127.0.0.1:8798/scratch/knoblab/radio-knoblab.html. Checked headless: LIVE 3D KNURL, SHIPPED = the strip, no page
-  errors (one console 404 = favicon). Next: Dan's look in the lab -> EXPORT -> bake (`bake-knob-lab.js <recipe> <out>
-  256 1 --foot=60,60,84,120`) -> `img/knob-radio.webp` + radio.css `.rp-knob b` k3dCss, then the page check.
-- Then (Dan, 2026-10-29: "i exported the knobs"): his EXPORT `shared/tools/knob-lab/library/saves/gas2radio/
-  gas2radio-knob-recipe-2026-10-29-1218.json` (the `-2` twin is equal as JSON; copy: `player/knoblab/knob-recipe-
-  2026-10-29.json`) = type ALU, linked: machined metal body, copper-brown spun cap (#52301e), white line index, no halo,
-  light az 130.6 / el 58.4. Baked (`bake-knob-lab.js ... 256 1 --foot=60,60,84,120`: no clipped edge, no pure #000 /
-  #fff; k3dCss unchanged -1.391 / -3.326 / 102.783 %, so radio.css keeps its numbers) -> 192 px frames (premultiplied
-  LANCZOS) webp q84 = `player/img/knob-radio.webp` 653 KB (was 518; q88 790 KB for p99 13 vs 14). The lab now opens on
-  this recipe. `drone/img/land.webp` re-rendered (the landing frame carries the radio: only the two knob areas changed).
-  Checked headless: radio before / after + a drag turns the new strip, no errors; `check.cjs` top 1440 + 390: landed =
-  `?drone=0` mean 0.00, landing frame 2.56 / 1.47 (the same noise map as before). Dan saw it on the page: "looks very good" (2026-10-29).
-  Shared clone, uncommitted (lab writes, Dan's): `tools/knob-lab/library/knobs.json` (his EXPORT card) +
-  `library/saves/gas2radio/` + `library/saves/library/knobs-before-2026-10-29-1218.json`.
+- Then (Dan, 2026-10-29: "let's work on the player's knobs, they need refining"): new radio knobs from the team's
+  private knob tool (how, server, recipe: shared repo `.handoff-archive/HANDOFF-2026-10-29-gas2-radio-knobs.md`;
+  `player/**` is Yoni's radio claim from `revaudio-cd`, touched here on Dan's word). Dan's look: machined metal body,
+  copper-brown spun cap, white line index -> `player/img/knob-radio.webp` 653 KB (was 518); the strip's box is
+  unchanged, so radio.css keeps its numbers. `drone/img/land.webp` re-rendered. Checked headless: a drag turns the new
+  strip, no errors; `check.cjs` top 1440 + 390: landed mean 0.00, landing frame 2.56 / 1.47. Dan saw it on the page:
+  "looks very good" (2026-10-29).
 - Then (Dan, 2026-10-29: "an indicator at the bottom of the hover that tells the user to scroll down; give me options
   in a bench"): `drone/cue.js` (+ drone.css "the scroll cue", 3 lines in run.js): bottom centre of the hover, in 1.4 s
   after the hover shows, out by 4 % of the scroll; bench `?cue` (panel top left): Chevrons (default until he picks) /
@@ -155,41 +142,36 @@ descent" section); this entry.
   .21). `drone/img/land.webp` re-rendered (748 KB); check.cjs top 1440 + 390: landed vs ref-page mean 0.00 / 0.00,
   landframe 2.57 / 1.42 (was 2.56 / 1.47), no errors. `light-bench.html` + its README line removed (in git at `a81dfa9`).
 - Then (Dan, 2026-10-29: "new knobs for the jukebox [= the radio] that fit the scene's lighting and vibe better"): four
-  new looks (walnut bakelite / brass + ivory / butterscotch / chrome + oxblood) on the real page; Dan: "wear out more
-  the knobs and more like the shipped one" -> round 2 = the shipped knob + wear (worn / heavy / very heavy) + heavy in
-  the scene's lamp light (az 105, el 62, warm .35, envMood warm, expo .92). Dan picked "HEAVY, LAMP LIGHT":
-  `player/img/knob-radio.webp` = that strip (q84, 862 KB, was 653; same k3dCss, so `radio.css .rp-knob b` keeps its
-  numbers; bake: no pure #000 / #fff, edge alpha 0). `drone/img/land.webp` re-rendered; check.cjs top 1440 + 390:
-  landed mean 0.00 / 0.00, landframe 2.58 / 1.42. Then Dan: "WORN replace": `knob-radio.webp` = round 2's WORN (the
-  shipped light, scuffs 1.4 / size 1.0 / white 1.4, dirt .9, chip .5, rim rubbed to #b08a4a; 869 KB), land.webp
-  re-rendered again, the same check passes (0.00 / 0.00, 2.58 / 1.42). KNOB LAB stays OUT of this public repo: the recipe is in the shared
-  repo (`tools/knob-lab/library/saves/gas2radio/gas2radio-knob-recipe-2026-10-29-worn.json`); the candidates +
-  their bench sat in `player/knoblab/cands/` (git-excluded via `.git/info/exclude`, local only). Open, for Dan:
-  `player/knoblab/make-knoblab.py` + two recipe JSONs ARE in this public repo (main since 2026-10-23, `d2baece`) against
-  the KNOB LAB secrecy rule: move them to the shared repo and out of here (a main push = his word; git history keeps
-  them unless rewritten). Until then the lab opens on the 10-29 ALU recipe, not the WORN one on the page.
+  new looks; Dan: "wear out more the knobs and more like the shipped one" -> round 2 = the shipped knob + wear (worn /
+  heavy / very heavy) + heavy in the scene's lamp light. Dan picked "HEAVY, LAMP LIGHT" (`247a7a7`), then "WORN
+  replace" (`4fc6ddd`): `player/img/knob-radio.webp` = WORN (scuffed cap, rim rubbed to brass, dirt, a chipped line;
+  the shipped light; 869 KB; same box). `drone/img/land.webp` re-rendered each time; check.cjs top 1440 + 390: landed
+  mean 0.00 / 0.00, landframe 2.58 / 1.42. Recipes, candidates and their pick bench stay private (the shared note
+  above); none of them enters this repo.
 
 ### Session end 2 (2026-10-29 evening, `revaudio-59`, close-session) — claim stays OPEN (CATCH10, then Dan's push word)
 
-- State: branch `feat/gas2-drone` = origin (0 / 0), clean before this edit; 19 commits ahead of origin/main. Today:
+- State: branch `feat/gas2-drone` = origin after the close commits; 21 commits ahead of origin/main. Today:
   `1d0f3c5` grade strip out, `9815ee6` / `b249801` / `ee2356f` radio knobs (ALU), `4ac3aad` / `7d36b36` scroll cue
-  (chevrons), `a81dfa9` / `b527eaf` pump light (bench, then Dan's pick), `247a7a7` / `4fc6ddd` radio knobs WORN.
-  Elsewhere: GAS2 branch `bench/pump-light` (`679bc0f`, `dee156a`, pushed; see the GAS2 handoff), shared `d6b7893`
-  (knob-lab saves incl. the WORN recipe + RevTasks note; push may need Dan's `!` line, auto mode).
+  (chevrons), `a81dfa9` / `b527eaf` pump light (bench, then Dan's pick), `247a7a7` / `4fc6ddd` radio knobs WORN, then
+  the close commits (this file + radio.css comment). Elsewhere, all pushed: GAS2 branch `bench/pump-light` (`679bc0f`,
+  `dee156a`, `1389182`; see the GAS2 handoff), shared `d6b7893` (the radio knob saves + RevTasks note) and `30f4fec`
+  (STATUS + memory).
 - **CATCH10: Dan, 2026-10-29: "today at 18 the coupon will place"** = Gil creates it in Paddle today at 18:00 (RevTasks
   #193). After that: check the code works at checkout, then merge to main only on Dan's push word (`tasks/todo.md` 4e).
+  The claim stays with `revaudio-59` until then; if this session is gone, the go-live session takes it (its name here).
 - Unverified: WebKit / Safari and a real phone (headless Edge / Chrome only); Dan saw the pump light and the WORN
   knobs on the page ("מדהים אהבתי" for the light; WORN picked from the bench), not yet in Safari.
 - Background (laptop 1): `python -m http.server` 4461 (PID 38924, GAS2 `Source/ui/public`), 4462 (38184, worktree
-  `gas2-page-view`), 4463 (45096, the plan page), 4464 (17152, this scene), 8793 (69344, `C:\RevAudio` for knob bakes);
+  `gas2-page-view`), 4463 (45096, the plan page), 4464 (17152, this scene), 8793 (69344, `C:\RevAudio`);
   `serve-nostore.py` 4465 (63888, this scene, no-store: open the page here), 8811 (50268, worktree `GAS2-light`);
-  `serve-lab.py` 8798 (66712, the radio KNOB LAB). Kill: `Stop-Process -Id <PID>`.
-- Decide next: (1) KNOB LAB files in this PUBLIC repo (`player/knoblab/make-knoblab.py` + 2 recipes, main since
-  `d2baece`): move to the shared repo + remove here (a main push = Dan's word; history keeps them unless rewritten,
-  and a force-push to main is never done without his explicit word); (2) after CATCH10 exists: go live.
-- Cleanup: `player/knoblab/cands/` (round 2 knob candidates, 45 MB of PNGs + their bench) is local only, excluded by
-  a line in `C:\Revaudio\Website\revaudio-website\.git\info\exclude`: delete both when no one needs the candidates.
-  Worktree `gas2-page-view` still to remove when unused (`git worktree remove`).
+  8798 (66712, a private tool server). Kill: `Stop-Process -Id <PID>`.
+- Decide next (Dan): (1) private-tool files that sit in this PUBLIC repo since 2026-10-23 (list + options: shared
+  `collaboration/STATUS.md` -> Waiting on Dan); this branch's commit subjects and this file's history name the tool
+  too: a squash-merge keeps the branch history off main, deleting or rewriting the branch is his call (never a
+  force-push without his explicit word); (2) after CATCH10 exists: go live.
+- Cleanup: local, git-excluded knob candidates under `player/` (45 MB; path + the exclude line: the shared note
+  above). Worktree `gas2-page-view` still to remove when unused (`git worktree remove`).
 
 ## 2026-10-26 — GAS 2 page: the drone intro (hover above the station, scroll = descent, land, readings pop) (Claude Code `danavivi-19`, Dan's Mac) — BRANCH `feat/gas2-page`
 
