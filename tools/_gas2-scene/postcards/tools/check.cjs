@@ -44,24 +44,32 @@ async function drag(p, dx, dy, ms, hold) {               // a finger-like drag w
         const e = await p.evaluate(() => {
           const r = (s) => { const b = document.querySelector(s).getBoundingClientRect(); return [Math.round(b.left), Math.round(b.top), Math.round(b.right), Math.round(b.bottom)]; };
           const op = (s) => getComputedStyle(document.querySelector(s)).opacity;
+          const tk = document.getElementById("toSite");
           return { sw: document.documentElement.scrollWidth, iw: innerWidth, ih: innerHeight, rd: r(".rd"), n: r(".rd .n"), cta: r(".rd .cta"), bar: r(".endbar"),
                    ended: document.getElementById("desk").classList.contains("ended"), end: op(".end"), ti: op(".rd .ti"), scr: op(".rd .scr"),
-                   gas2px: parseFloat(getComputedStyle(document.querySelector(".rd .n")).fontSize), label: document.querySelector(".rd .cta").innerText.trim() };
+                   gas2px: parseFloat(getComputedStyle(document.querySelector(".rd .n")).fontSize), label: document.querySelector(".rd .cta").innerText.trim(),
+                   ticket: getComputedStyle(tk).display === "none" ? null : r("#toSite .tk"), href: tk.href };
         });
         const pass = e.ended && e.end === "1" && e.ti === "1" && e.scr === "1" && e.sw <= e.iw && e.rd[0] >= 0 && e.rd[2] <= e.iw && e.n[1] >= 0 && e.cta[3] < e.bar[1] &&
-          (q.endsWith("sent") ? e.label === "✓ Keys in the mail" : e.label === "⤓ Download FREE");
+          (q.endsWith("sent") ? e.label === "✓ Keys in the mail" && e.ticket && e.ticket[0] >= 0 && e.ticket[2] <= e.iw && e.ticket[3] < e.bar[1] && e.href === "https://revaudio.net/store"
+                              : e.label === "⤓ Download FREE" && !e.ticket);
         out.layout.push({ size: `${w}x${h}`, q, pass, m: e });
         if (SHOTS) await p.screenshot({ path: `${SHOTS}/${w}x${h}-${q.replace(/[?&=]/g, "")}.png` });
         continue;
       }
       const m = await p.evaluate(() => {
         const top = document.querySelector(".pc.top").getBoundingClientRect(), ctl = document.querySelector(".ctl").getBoundingClientRect();
-        const send = document.querySelector(".send").getBoundingClientRect();
+        const send = document.querySelector(".send .ink").getBoundingClientRect(), y = (s) => { const b = document.querySelector(s).getBoundingClientRect(); return [Math.round(b.top), Math.round(b.bottom)]; };
         return { sw: document.documentElement.scrollWidth, iw: innerWidth, ih: innerHeight, card: [Math.round(top.left), Math.round(top.top), Math.round(top.width), Math.round(top.height)],
                  cardBottom: Math.round(top.bottom), ctlTop: Math.round(ctl.top), ctlBottom: Math.round(ctl.bottom), sendH: Math.round(send.height),
-                 input: parseFloat(getComputedStyle(document.getElementById("em")).fontSize) };
+                 input: parseFloat(getComputedStyle(document.getElementById("em")).fontSize),
+                 // the mail card, top to bottom: the TO line, the consent box, the stamp; the HEAR IT back: the deck, the fine print, Turn back
+                 mail: [y(".addr"), y(".opt"), y(".send .ink")], hear: [y("#hear .deck"), y("#hear .keys"), y("#hear .back .fine"), y("#hear .back .turn")] };
       });
-      const pass = m.sw <= m.iw && m.card[0] >= 0 && m.card[1] >= 0 && m.cardBottom <= m.ctlTop + 2 && m.ctlBottom <= m.ih && m.input >= 16;
+      const inOrder = (rows) => rows.every((r, i) => i === 0 || r[0] >= rows[i - 1][1] - 1);
+      const pass = m.sw <= m.iw && m.card[0] >= 0 && m.card[1] >= 0 && m.cardBottom <= m.ctlTop + 2 && m.ctlBottom <= m.ih && m.input >= 16 &&
+        (q !== "?card=6" || (inOrder(m.mail) && m.mail[2][1] <= m.cardBottom)) &&
+        (q !== "?card=5&flip" || (m.hear[1][1] <= m.hear[0][1] && inOrder([m.hear[0], m.hear[2], m.hear[3]]) && m.hear[3][1] <= m.cardBottom));
       out.layout.push({ size: `${w}x${h}`, q, pass, m });
       if (SHOTS) await p.screenshot({ path: `${SHOTS}/${w}x${h}-${q.replace(/[?&=]/g, "")}.png` });
     }
@@ -84,8 +92,9 @@ async function drag(p, dx, dy, ms, hold) {               // a finger-like drag w
   ok("flick down throws too", (await cur(p)) === 2);
   await p.click("#prev"); await p.waitForTimeout(650);
   ok("back brings the last card back", (await cur(p)) === 1);
-  const lit = await p.evaluate(() => getComputedStyle(document.querySelector(".pc.top .key .on")).opacity);
-  ok("the grade key is lit on its card", parseFloat(lit) > .95, lit);
+  const g = await p.evaluate(() => { const c = document.querySelector(".pc.top"), r = c.getBoundingClientRect(), b = c.querySelector(".big").getBoundingClientRect();
+    return { key: !!c.querySelector(".key"), mid: +(((b.top + b.bottom) / 2 - r.top) / r.height).toFixed(3), line: getComputedStyle(c.querySelector(".gline")).fontFamily }; });
+  ok("grade card (Dan, round 2): no key, the lettering centred, the line in its face", !g.key && Math.abs(g.mid - .5) < .04 && /Oswald/.test(g.line), g);
   await p.click("#next"); await p.click("#next"); await p.keyboard.press("ArrowRight"); await p.waitForTimeout(650);
   ok("next + ArrowRight reach HEAR IT", (await cur(p)) === 4);
 
@@ -117,7 +126,12 @@ async function drag(p, dx, dy, ms, hold) {               // a finger-like drag w
   ok("empty address: the error shows", await p.evaluate(() => !document.getElementById("err").hidden));
   await p.fill("#em", "dan@"); await p.click(".send"); await p.waitForTimeout(200);
   ok("bad address: the error shows", await p.evaluate(() => !document.getElementById("err").hidden));
-  await p.fill("#em", "dan@example.com"); await p.click(".send"); await p.waitForTimeout(1400);
+  const mk0 = await p.evaluate(() => document.getElementById("mk").checked);
+  await p.click(".opt"); await p.waitForTimeout(100);
+  ok("the consent box starts unticked and ticks", !mk0 && await p.evaluate(() => document.getElementById("mk").checked));
+  await p.fill("#em", "dan@example.com"); await p.click(".send"); await p.waitForTimeout(200);
+  ok("the stamp comes down (thump) and can't be stamped twice", await p.evaluate(() => { const s = document.querySelector(".send"); return s.classList.contains("thump") && s.disabled; }));
+  await p.waitForTimeout(1400);
   await p.waitForTimeout(800);
   const sent = await p.evaluate(() => ({ ended: document.getElementById("desk").classList.contains("ended"), sent: document.getElementById("desk").classList.contains("sent"),
     note: document.getElementById("sentNote").textContent, cta: document.querySelector(".rd .cta").innerText.trim(), cardOpacity: getComputedStyle(document.querySelectorAll(".pc")[5]).opacity }));
@@ -128,8 +142,9 @@ async function drag(p, dx, dy, ms, hold) {               // a finger-like drag w
   if (SHOTS) await p.screenshot({ path: `${SHOTS}/flow-sent.png` });
   await p.click("#again"); await p.waitForTimeout(1200);
   const re = await p.evaluate(() => ({ cur: window.gas2Postcards.cur, ended: document.getElementById("desk").classList.contains("ended"), sent: document.getElementById("desk").classList.contains("sent"),
-    o6: getComputedStyle(document.querySelectorAll(".pc")[5]).opacity, top: document.querySelector(".pc.top").getBoundingClientRect().left }));
-  ok("The postcards again: dealt back, card 1 on top, the form fresh", re.cur === 0 && !re.ended && !re.sent && re.o6 === "1" && re.top > 0, re);
+    o6: getComputedStyle(document.querySelectorAll(".pc")[5]).opacity, top: document.querySelector(".pc.top").getBoundingClientRect().left,
+    mk: document.getElementById("mk").checked, stamp: document.querySelector(".send").disabled }));
+  ok("The postcards again: dealt back, card 1 on top, the form fresh", re.cur === 0 && !re.ended && !re.sent && re.o6 === "1" && re.top > 0 && !re.mk && !re.stamp, re);
   await p.context().close();
 
   // ── reduced motion: no flight, the same states ──
@@ -153,16 +168,17 @@ async function drag(p, dx, dy, ms, hold) {               // a finger-like drag w
   await a.click("#play");
   await a.waitForFunction(() => window.gas2Postcards.audio.on, null, { timeout: 8000 }).catch(() => {});
   const s1 = await a.evaluate(() => ({ on: gas2Postcards.audio.on, side: gas2Postcards.audio.side, label: document.getElementById("play").getAttribute("aria-label") }));
-  await a.waitForTimeout(600);
-  const w1 = await a.evaluate(() => parseFloat(document.getElementById("prog").style.width));
+  await a.waitForTimeout(1500);
+  const d1 = await a.evaluate(() => ({ angle: gas2Postcards.deck.angle, lead: gas2Postcards.deck.LEAD, run: gas2Postcards.deck.RUN, speed: gas2Postcards.deck.speed, pos: gas2Postcards.audio.pos }));
   await a.click('#player .ab [data-side="a"]'); await a.waitForTimeout(200);
-  const s2 = await a.evaluate(() => ({ side: gas2Postcards.audio.side, pressed: document.querySelector('#player [data-side="a"]').getAttribute("aria-pressed") }));
-  await a.click("#play"); await a.waitForTimeout(250);
-  const s3 = await a.evaluate(() => gas2Postcards.audio.on);
-  out.audio = { s1, progressPct: w1, s2, onAfterStop: s3 };
-  ok("demo plays on GAS 2, the bar moves", s1.on && s1.side === "b" && s1.label === "Stop the demo" && w1 > 0, out.audio);
-  ok("ORIGINAL switches the side", s2.side === "a" && s2.pressed === "true");
-  ok("▶ again stops it", s3 === false);
+  const s2 = await a.evaluate(() => ({ side: gas2Postcards.audio.side, on: gas2Postcards.audio.on, pressed: document.querySelector('#player [data-side="a"]').getAttribute("aria-pressed") }));
+  await a.click("#play", { force: true }); await a.waitForTimeout(2500);   // force: a spinning record never holds still for Playwright
+  const s3 = await a.evaluate(() => ({ on: gas2Postcards.audio.on, angle: gas2Postcards.deck.angle, speed: gas2Postcards.deck.speed }));
+  out.audio = { s1, d1, s2, s3 };
+  ok("tap the record: the demo plays on GAS 2, it spins at 33 1/3, the arm is in the grooves and moving in", s1.on && s1.side === "b" && s1.label === "Stop the demo" &&
+     d1.speed > 150 && d1.pos > 0 && d1.angle > d1.lead && d1.angle < d1.run, out.audio);
+  ok("ORIGINAL switches the side while it plays", s2.side === "a" && s2.on && s2.pressed === "true");
+  ok("tap the record again: it stops, coasts to a halt, the arm goes back to its rest", !s3.on && s3.speed === 0 && s3.angle < .5);
   await a.click('#player .back [data-turn], #hear .back [data-turn]').catch(() => {});
   await a.context().close();
   await ch.close();

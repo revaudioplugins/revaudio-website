@@ -12,7 +12,10 @@
      DESIGN.md §7 (phones): rebuilt for portrait, the station only as a soft backdrop, never a crop as the page.
      The end (Dan, same day): the last card goes and the lens pulls focus onto the right side of the desktop page, where
      page-b's readings pop out as after the drone lands. Assets + how they were made: postcards/tools/. ?card=1-6 opens on
-     a card, &flip turns HEAR IT over, ?card=7 = the end page (&sent = after mailing). -->
+     a card, &flip turns HEAR IT over, ?card=7 = the end page (&sent = after mailing).
+     Round 2 (Dan's notes in the review page, same day): the keys gone and the lettering centred; worn stock with its own
+     character per card + more life; HEAR IT's back = a turntable seen from above; MAIL ME THE KEYS = a rubber stamp, and
+     the site's consent box; after mailing, a ticket to the store. -->
 <style>
 @font-face { font-family: Bebas; src: url(fonts/bebas.woff2) format("woff2"); }
 @font-face { font-family: Inter; src: url(fonts/inter.woff2) format("woff2"); font-weight: 100 900; }
@@ -40,6 +43,11 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   radial-gradient(120% 70% at 50% 108%, rgba(11, 9, 7, .82), transparent 70%),
   radial-gradient(90% 60% at 50% 42%, transparent 40%, rgba(8, 6, 4, .55)),
   url(postcards/img/dusk.webp) right center / cover; }
+.dust { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; transition: opacity .6s; }   /* in the last of the sun (round 2) */
+.dust i { position: absolute; width: var(--s); height: var(--s); border-radius: 50%; background: rgba(255, 216, 160, .75); filter: blur(.5px); opacity: 0;
+  animation: mote var(--d) linear var(--t) infinite; }
+@keyframes mote { 0% { opacity: 0; translate: 0 0; } 20%, 80% { opacity: var(--o); } 100% { opacity: 0; translate: var(--dx) var(--dy); } }
+.desk.ended .dust { opacity: 0; }
 
 .table { position: relative; z-index: 1; container-type: size; display: grid; place-items: center; min-height: 0; }  /* over .end: the last card flies off over the scene */
 .stack { --cw: min(90cqw, calc((100cqh - 24px) / 1.55), 420px); position: relative; width: var(--cw); height: calc(var(--cw) * 1.55); }
@@ -55,6 +63,16 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .pc::before, .face::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 5;
   background: radial-gradient(130% 90% at 50% 45%, transparent 58%, rgba(120, 88, 40, .16)),
     linear-gradient(115deg, rgba(255, 246, 225, .22), transparent 38%); }
+/* the age on each card (Dan, round 2: "each card has its own character", "worn out and vintage"): its own wear over the
+   print (postcards/tools/make-wear.py: browned edges, rubbed corners, foxing, scuffs) and one mark of its own */
+.age { position: absolute; inset: 0; z-index: 5; pointer-events: none; border-radius: inherit; background: 0 0 / 100% 100% no-repeat; }
+.pc-hello .age { background-image: url(postcards/img/wear-1.webp); }
+.g-reg .age { background: url(postcards/img/coffee.webp) right -16cqw top -13cqw / 56cqw no-repeat, url(postcards/img/wear-2.webp) 0 0 / 100% 100%; }
+.g-pre .age { background-image: url(postcards/img/wear-3.webp); }
+.g-race .age { background: url(postcards/img/thumb.webp) left 3.5cqw bottom 2.5cqw / 22cqw no-repeat, url(postcards/img/wear-4.webp) 0 0 / 100% 100%; }
+.front .age { background: url(postcards/img/ringwear.webp) 50% 28% / 94cqw no-repeat, url(postcards/img/wear-5.webp) 0 0 / 100% 100%; }
+.back .age { background-image: url(postcards/img/wear-5b.webp); }
+.pc-mail .age { background-image: url(postcards/img/wear-6.webp); }
 .pc img { -webkit-user-drag: none; user-select: none; pointer-events: none; }
 .pc:not(.top) { pointer-events: none; }
 .pc.lift { box-shadow: 0 1px 1px rgba(16, 10, 5, .35), 0 26px 44px -10px rgba(6, 4, 2, .75), inset 0 0 0 1px rgba(110, 86, 52, .18); }
@@ -94,33 +112,45 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .cap { position: absolute; left: 4.4cqw; right: 4.4cqw; bottom: 3.3cqw; display: flex; justify-content: space-between; z-index: 2;
   font: 600 3.2cqw/1 Oswald; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-2); }
 .cap b { color: var(--red); font-weight: 700; }
+.tape { position: absolute; left: 50%; top: -2.8cqw; width: 30cqw; height: 8.4cqw; z-index: 7; translate: -50% 0; rotate: -4deg; pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 251, 236, .32), rgba(255, 244, 214, .06) 60%, rgba(220, 200, 150, .18)), rgba(232, 216, 160, .5);
+  clip-path: polygon(0 6%, 3% 0, 6% 9%, 9% 1%, 12% 5%, 88% 2%, 91% 8%, 94% 0, 97% 7%, 100% 3%, 98% 30%, 100% 52%, 97% 74%, 100% 96%, 96% 100%,
+    93% 92%, 90% 100%, 10% 98%, 7% 91%, 4% 100%, 1% 94%, 2% 70%, 0 48%, 3% 26%); }
+.pc-hello.top .pic .lamp { animation: flicker 7s 1.5s infinite; }   /* the lamp over the pump, not quite steady */
+@keyframes flicker { 0%, 100% { opacity: 1; } 6% { opacity: .76; } 7% { opacity: 1; } 8.5% { opacity: .85; } 10% { opacity: 1; } 52% { opacity: .9; } 54% { opacity: 1; } }
 
-/* ── 2-4 · the grades: a 1950s ad card each, the pump's own key, lit when its card comes up ── */
-.pc-grade .rays { position: absolute; left: -10cqw; right: -10cqw; top: 3cqh; height: 120cqw; z-index: 0;
+/* ── 2-4 · the grades: a 1950s large-letter card each (Dan, round 2: the key goes, the lettering is centred on the card,
+   the line under it in the lettering's face); the sunburst turns slowly behind the word while its card is up ── */
+.pc-grade { overflow: hidden; }
+.pc-grade .rays { position: absolute; left: -30cqw; width: 160cqw; top: calc(50.5cqh - 80cqw); height: 160cqw; z-index: 0;
   background: repeating-conic-gradient(from 3deg at 50% 50%, var(--ray) 0 6deg, transparent 6deg 12deg);
-  -webkit-mask: radial-gradient(closest-side, #000 18%, rgba(0, 0, 0, .55) 46%, transparent 72%); mask: radial-gradient(closest-side, #000 18%, rgba(0, 0, 0, .55) 46%, transparent 72%); }
+  -webkit-mask: radial-gradient(closest-side, #000 14%, rgba(0, 0, 0, .55) 42%, transparent 70%); mask: radial-gradient(closest-side, #000 14%, rgba(0, 0, 0, .55) 42%, transparent 70%); }
+.pc-grade.top .rays { animation: rays 150s linear infinite; }
+@keyframes rays { to { rotate: 360deg; } }
 .g-reg { --ray: rgba(232, 160, 46, .3); }
 .g-pre { --ray: rgba(184, 52, 30, .2); }
 .g-race { --ray: rgba(36, 26, 18, .16); }
-.key { position: absolute; left: 26cqw; width: 48cqw; top: 14cqh; aspect-ratio: 530 / 384; z-index: 2; transition: transform .18s ease-in; }  /* bake-keys.cjs, 9x */
-.key img { position: absolute; inset: 0; width: 100%; height: 100%; }
-.key .on { opacity: 0; transition: opacity .45s .32s; }
-.pc.top .key .on { opacity: 1; }
-.pc.top .key { animation: press .5s .2s both; }
-@keyframes press { 0%, 100% { transform: none; } 30% { transform: translateY(.8cqw) scale(.975); } }
-.pc-grade .script { top: 46cqh; }
-.pc-grade .big { top: 52.5cqh; }
+.pc-grade .script { top: 37.5cqh; }
+.pc-grade .big { top: 44cqh; translate: -.035em 0; }   /* the ink block hangs right and down: optically centred */
 .g-reg .fr { background-image: radial-gradient(rgba(255, 240, 200, .35) 18%, transparent 22%), linear-gradient(180deg, #ffe2a0 0%, #f6b24a 42%, #e0742e 78%, #c4452a 100%);
   background-size: .09em .09em, 100% 100%; }
 .g-pre .fr { background-image: radial-gradient(rgba(255, 230, 200, .3) 18%, transparent 22%), linear-gradient(180deg, #2b3a63 0%, #6a4c78 34%, #e2733c 70%, #ffd27c 100%);
   background-size: .09em .09em, 100% 100%; }
 .g-race .fr { background-image: conic-gradient(#221a13 25%, #f2e6c8 0 50%, #221a13 0 75%, #f2e6c8 0); background-size: .2em .2em; background-position: .02em .06em; }
 .g-race .big .bk { color: var(--red); -webkit-text-stroke-color: var(--red); text-shadow: .03em .03em 0 var(--ink), .055em .055em 0 var(--ink), .08em .08em 0 var(--ink), .1em .11em .06em rgba(36, 26, 18, .35); }
-.gline { position: absolute; left: 10cqw; right: 10cqw; top: 76.5cqh; margin: 0; text-align: center; font: 450 4.7cqw/1.38 Inter; color: var(--ink); z-index: 2; }
+.gline { position: absolute; left: 9cqw; right: 9cqw; top: 61.5cqh; margin: 0; text-align: center; font: 500 5.2cqw/1.22 Oswald; letter-spacing: .045em;
+  text-transform: uppercase; text-wrap: balance; color: var(--ink); z-index: 2; }
 .badge { position: absolute; right: 6.5cqw; bottom: 6cqw; width: 14cqw; height: 14cqw; border-radius: 50%; z-index: 2; display: grid; place-content: center;
   background: var(--cream); box-shadow: inset 0 0 0 .7cqw var(--red), inset 0 0 0 1.1cqw var(--cream), inset 0 0 0 1.25cqw rgba(36, 26, 18, .4);
   font: 700 3.6cqw/.92 Oswald; text-align: center; color: var(--ink); letter-spacing: .02em; }
 .badge b { display: block; font-size: 5.2cqw; color: var(--red); }
+.g-pre .badge { overflow: hidden; color: #3b2a10; background: radial-gradient(circle at 34% 28%, #fff4c8, #ebc764 34%, #c39433 64%, #8f6a22);   /* the signature: gold foil */
+  box-shadow: inset 0 0 0 .7cqw #7b5a1d, inset 0 0 0 1.1cqw #f3d98a, inset 0 0 0 1.25cqw rgba(70, 46, 12, .5), 0 .25cqw .5cqw rgba(70, 46, 12, .35); }
+.g-pre .badge b { color: #6a2412; }
+.g-pre .badge::after { content: ""; position: absolute; inset: 0; border-radius: 50%; mix-blend-mode: soft-light;
+  background: linear-gradient(115deg, transparent 38%, rgba(255, 252, 235, .8) 50%, transparent 62%) 160% 0 / 300% 100% no-repeat; }
+.g-pre.top .badge::after { animation: foil 5s 1.4s ease-in-out infinite; }
+@keyframes foil { 0%, 55% { background-position: 160% 0; } 100% { background-position: -60% 0; } }
 .foot { position: absolute; left: 7cqw; bottom: 8cqw; font: 600 3cqw/1 Oswald; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-2); z-index: 2; }
 
 /* ── 5 · HEAR IT: turns over. Two quarter turns with the face swapped edge-on (JS), not backface-visibility: WebKit
@@ -146,26 +176,51 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .pc-hear.top:not(.flipped) .curl { animation: curl 2.6s 1s ease-in-out infinite; }
 @keyframes curl { 0%, 70%, 100% { transform: none; } 82% { transform: scale(1.35); } }
 .note { position: absolute; left: 8cqw; right: 8cqw; top: 15cqw; margin: 0; font: 400 6.1cqw/1.18 Gochi; color: var(--pen); transform: rotate(-1.5deg); z-index: 2; }
-.play { position: absolute; left: 33cqw; top: 44cqh; width: 34cqw; height: 34cqw; margin-top: -17cqw; border-radius: 50%; z-index: 6; display: grid; place-items: center;
-  background: radial-gradient(circle at 38% 30%, #ffe08e, var(--honey) 46%, #d99a2c 100%); color: #1e1710;
-  box-shadow: 0 .5cqw 0 #a8741f, 0 1.6cqw 3cqw rgba(60, 36, 10, .45), inset 0 -.8cqw 1.4cqw rgba(140, 80, 10, .35), inset 0 .6cqw 1cqw rgba(255, 248, 220, .7);
-  transition: transform .12s, box-shadow .12s; }
-.play:active { transform: translateY(.5cqw); box-shadow: 0 0 0 #a8741f, 0 .8cqw 1.6cqw rgba(60, 36, 10, .4), inset 0 -.8cqw 1.4cqw rgba(140, 80, 10, .35), inset 0 .6cqw 1cqw rgba(255, 248, 220, .7); }
-.play svg { width: 12cqw; height: 12cqw; }
-.play .i-stop, .play .i-wait, .playing .play .i-go, .loading .play .i-go { display: none; }
-.playing .play .i-stop { display: block; }
-.loading .play .i-wait { display: block; animation: spin 1s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
-.ab { position: absolute; left: 12cqw; right: 12cqw; top: 66cqh; display: grid; grid-template-columns: 1fr 1fr; z-index: 6;
-  border: 1.5px solid var(--ink); border-radius: 999px; padding: .8cqw; }
-.ab button { min-height: 44px; border-radius: 999px; font: 600 3.9cqw/1 Oswald; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); transition: background .2s, color .2s; }
-.ab button[aria-pressed="true"] { background: var(--ink); color: var(--cream); }
-.ab button[aria-pressed="true"][data-side="b"] { background: var(--red); }
-.bar { position: absolute; left: 14cqw; right: 14cqw; top: 79.5cqh; height: 2px; background: rgba(36, 26, 18, .2); z-index: 2; }
-.bar i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--red); }
+.back .note { top: 13.5cqw; font-size: 5.6cqw; }
+/* the back (Dan, round 2: "a vinyl from top view that will act as the player"): a portable deck seen from above. Tap the
+   record = the needle drops and it spins at 33 1/3; ORIGINAL / GAS 2 = the deck's two keys, like 33 / 45 (switch while it
+   plays); the tonearm creeps toward the label with the song. Inside the deck 1 unit = 1cqw: the arm's SVG is drawn in them. */
+.deck { position: absolute; left: 6cqw; width: 88cqw; top: 31cqw; height: 92cqw; z-index: 3; border-radius: 3cqw;
+  background: radial-gradient(120% 90% at 28% 18%, #ab3a2a, #7d2316 68%, #5c170e);
+  box-shadow: 0 1.4cqw 2.6cqw -.8cqw rgba(40, 20, 8, .6), inset 0 0 0 .3cqw rgba(255, 214, 180, .14), inset 0 -.8cqw 1.4cqw rgba(0, 0, 0, .35); }
+.deck::before { content: ""; position: absolute; inset: 1.3cqw; border-radius: 2.2cqw; border: .3cqw dashed rgba(255, 222, 190, .3); pointer-events: none; }   /* the stitching */
+.deck .plate { position: absolute; inset: 2.6cqw 2.6cqw 17cqw; border-radius: 2cqw; background: linear-gradient(165deg, #f5ecd5, #e4d5b2 64%, #d3c19a);
+  box-shadow: inset 0 0 0 .3cqw rgba(120, 88, 48, .35), inset 0 .5cqw 1cqw rgba(255, 255, 255, .55), 0 .25cqw .5cqw rgba(0, 0, 0, .3); }
+.platter { position: absolute; left: 4cqw; top: 7cqw; width: 66cqw; height: 66cqw; border-radius: 50%; will-change: transform; }
+.platter .mat { position: absolute; inset: -1.2cqw; border-radius: 50%; box-shadow: 0 .8cqw 1.4cqw rgba(30, 16, 6, .45);   /* strobe dots on the rim */
+  background: radial-gradient(closest-side, #1f1c1a 95.2%, transparent 95.6%), repeating-conic-gradient(#b9b0a0 0 1.6deg, #39332f 1.6deg 4deg); }
+.disc { position: absolute; inset: 0; border-radius: 50%; display: grid; place-items: center; cursor: pointer;
+  background: radial-gradient(closest-side, transparent 35.8%, rgba(255, 255, 255, .09) 36.3% 37%, transparent 37.5%),   /* the run-out */
+    radial-gradient(closest-side, #181717 40%, transparent 40.4%),                                                            /* dead wax */
+    radial-gradient(closest-side, transparent 61%, rgba(255, 255, 255, .06) 61.4% 62.3%, transparent 62.7%),                  /* between songs */
+    radial-gradient(closest-side, transparent 80%, rgba(255, 255, 255, .06) 80.4% 81.3%, transparent 81.7%),
+    repeating-radial-gradient(closest-side, #161515 0, #1f1e1e 1.1%, #121111 2.3%), #131212;                                  /* the grooves */
+  box-shadow: inset 0 0 0 .3cqw #0a0909, inset 0 0 0 .6cqw rgba(255, 255, 255, .05); }
+.disc .label { position: relative; width: 34%; aspect-ratio: 1; border-radius: 50%; }
+.disc .label svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.disc .wait { position: absolute; left: 32%; top: 32%; width: 36%; height: 36%; display: none; color: #f3e6c4; }
+.loading .disc .wait { display: block; animation: spin 1s linear infinite; }
+@keyframes spin { to { rotate: 360deg; } }
+.deck .glare { position: absolute; left: 4cqw; top: 7cqw; width: 66cqw; height: 66cqw; border-radius: 50%; pointer-events: none;   /* the light stays put */
+  background: conic-gradient(from 205deg, transparent, rgba(255, 246, 226, .15) 16deg, transparent 44deg, transparent 180deg, rgba(255, 246, 226, .1) 196deg, transparent 224deg);
+  -webkit-mask: radial-gradient(closest-side, transparent 35%, #000 36%); mask: radial-gradient(closest-side, transparent 35%, #000 36%); }
+.deck .arm { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; filter: drop-shadow(.5cqw .9cqw .5cqw rgba(30, 16, 6, .4)); }
+.keys { position: absolute; left: 5cqw; top: 77cqw; display: flex; gap: 1.8cqw; z-index: 2; }
+.keys button { display: grid; justify-items: center; align-content: center; gap: 1cqw; min-width: 23cqw; min-height: max(44px, 11.5cqw); padding: 0 2cqw;
+  border-radius: 1cqw 1cqw 1.6cqw 1.6cqw; background: linear-gradient(180deg, #fbf4e2, #e8dab9 68%, #cfbd94); color: var(--ink);
+  font: 600 max(11px, 3.2cqw)/1 Oswald; letter-spacing: .12em; text-transform: uppercase;
+  box-shadow: 0 1cqw 0 #8f7c55, 0 1.6cqw 1.8cqw rgba(30, 14, 4, .45), inset 0 .3cqw 0 rgba(255, 255, 255, .85); transition: transform .09s, box-shadow .09s; }
+.keys button::before { content: ""; width: 1.8cqw; height: 1.8cqw; border-radius: 50%; background: #6a3326; box-shadow: inset 0 .2cqw .3cqw rgba(0, 0, 0, .5); }
+.keys button[aria-pressed="true"] { transform: translateY(.8cqw); box-shadow: 0 .2cqw 0 #8f7c55, 0 .5cqw .9cqw rgba(30, 14, 4, .4), inset 0 .4cqw .8cqw rgba(110, 80, 36, .35); }
+.keys button[aria-pressed="true"]::before { background: #ff6b3d; box-shadow: 0 0 1.4cqw #ff6b3d, 0 0 .4cqw #ffd2a0; }
+.deck .brand { position: absolute; right: 5.5cqw; top: 78.5cqw; display: grid; justify-items: end; gap: .6cqw; pointer-events: none;
+  font: 600 2.4cqw/1 Oswald; letter-spacing: .32em; text-transform: uppercase; color: rgba(255, 228, 196, .82); }
+.deck .brand b { font: 700 4.6cqw/1 Oswald; letter-spacing: .08em; color: #f6dfb2; }
 .fine { position: absolute; left: 8cqw; right: 8cqw; margin: 0; text-align: center; font: 400 3.15cqw/1.35 Elite, ui-monospace, monospace; color: var(--ink-2); z-index: 2; }
-.back .fine { top: 82.5cqh; }
-.fail { position: absolute; left: 8cqw; right: 8cqw; top: 24cqh; margin: 0; text-align: center; font: 500 3.4cqw/1.2 Inter; color: var(--red); z-index: 6; }
+.back .fine { top: 80.6cqh; }
+.back .turn { bottom: 5cqw; }
+.fail { position: absolute; left: 8cqw; right: 8cqw; top: 80cqh; margin: 0; text-align: center; font: 500 3.4cqw/1.2 Inter; color: var(--red); z-index: 6; }
+.fail:not([hidden]) + .fine { visibility: hidden; }
 
 /* ── 6 · the postcard back: the address lines take the email, MAIL ME THE KEYS drops it in the box ── */
 .pc-mail .pchead { position: absolute; left: 7cqw; right: 7cqw; top: 6cqw; padding-bottom: 2.6cqw; border-bottom: 1px solid rgba(36, 26, 18, .5);
@@ -182,24 +237,37 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .stamp .s2 { bottom: 2.6cqw; text-align: right; padding-right: 1.2cqw; font-size: 4.6cqw; }
 .pmark { position: absolute; right: 11.4cqw; top: 27.6cqw; width: 34cqw; z-index: 3; color: rgba(36, 30, 40, .74); transform: rotate(-11deg); pointer-events: none; }
 .pc-mail .note { top: 52cqw; font-size: 5.6cqw; }
-.addr { position: absolute; left: 7cqw; right: 7cqw; top: 54cqh; z-index: 6; }
-.addr label { display: flex; align-items: flex-end; gap: 2.4cqw; border-bottom: 1.5px solid rgba(36, 26, 18, .6); padding-bottom: .6cqw; }
-.addr label span { font: 400 3.6cqw/1 Elite, ui-monospace, monospace; letter-spacing: .1em; color: var(--ink-2); padding-bottom: 1.4cqw; }
+.addr { position: absolute; left: 7cqw; right: 7cqw; top: 50.5cqh; z-index: 6; }   /* one line, the email big (Dan, round 2) */
+.addr label { display: flex; align-items: flex-end; gap: 2.8cqw; border-bottom: 1.5px solid rgba(36, 26, 18, .6); padding-bottom: .6cqw; }
+.addr label span { font: 400 4.6cqw/1 Elite, ui-monospace, monospace; letter-spacing: .1em; color: var(--ink-2); padding-bottom: 1.8cqw; }
 .addr input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; padding: .6cqw 0 0; border-radius: 0;
-  font: 400 max(16px, 6.4cqw)/1.15 Gochi; color: var(--pen); caret-color: var(--red); -webkit-appearance: none; appearance: none; }
-.addr input::placeholder { font: 400 max(15px, 4.2cqw)/1.15 Elite, ui-monospace, monospace; letter-spacing: .04em; color: var(--ink-2); }  /* printed, so it never reads as handwriting */
-.addr i { display: block; height: 9.2cqw; border-bottom: 1px solid rgba(36, 26, 18, .32); }
+  font: 400 max(18px, 7.6cqw)/1.15 Gochi; color: var(--pen); caret-color: var(--red); -webkit-appearance: none; appearance: none; }
+.addr input::placeholder { font: 400 max(16px, 5.4cqw)/1.15 Elite, ui-monospace, monospace; letter-spacing: .04em; color: var(--ink-2); }  /* printed, so it never reads as handwriting */
 .addr .err { position: absolute; left: 0; top: 100%; margin: 1.6cqw 0 0; font: 500 3.4cqw/1.2 Inter; color: var(--red); }
-.send { position: absolute; left: 7cqw; right: 7cqw; top: 79.5cqh; min-height: max(48px, 12.5cqw); border-radius: 2.6cqw; z-index: 6; overflow: hidden;
-  display: flex; align-items: center; justify-content: center; gap: 2.4cqw; background: var(--honey); color: #1e1710;
-  font: 700 max(17px, 5.8cqw)/1 Oswald; letter-spacing: .02em; box-shadow: 0 .4cqw 0 #b98422, 0 1.4cqw 2.6cqw rgba(60, 36, 10, .35);
-  transition: transform .12s, box-shadow .12s, background .2s; }
-.send:active { transform: translateY(.4cqw); box-shadow: 0 0 0 #b98422, 0 .6cqw 1.2cqw rgba(60, 36, 10, .35); background: #eab53f; }
-.send svg { width: 7cqw; height: 4.2cqw; }
-.send::after { content: ""; position: absolute; inset: 0 auto 0 0; width: 28%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .2), transparent);
-  transform: translateX(-160%) skewX(-20deg); animation: shine 8s ease-in-out 1.2s infinite; pointer-events: none; }
-@keyframes shine { 0%, 82% { transform: translateX(-160%) skewX(-20deg); } 100% { transform: translateX(420%) skewX(-20deg); } }
-.pc-mail .fine { top: 92.3cqh; }
+/* the site's own consent line (TrialGateModal + downloads word it the same: unticked, never a condition of the keys) */
+.opt { position: absolute; left: 7cqw; right: 7cqw; top: 62cqh; z-index: 6; display: flex; gap: 2.6cqw; align-items: center; min-height: 44px; cursor: pointer;
+  font: 400 max(12px, 3.4cqw)/1.3 Elite, ui-monospace, monospace; color: var(--ink-2); }
+.opt input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.opt .tick { flex: none; position: relative; width: 5.4cqw; height: 5.4cqw; border: 1.5px solid rgba(36, 26, 18, .7); border-radius: .6cqw; rotate: -3deg; background: rgba(255, 252, 240, .35); }
+.opt .tick svg { position: absolute; left: -12%; top: -40%; width: 140%; height: 140%; overflow: visible; }
+.opt .tick path { fill: none; stroke: var(--pen); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 27; stroke-dashoffset: 27; transition: stroke-dashoffset .3s ease-out; }
+.opt input:checked + .tick path { stroke-dashoffset: 0; }   /* ticked in pen */
+.opt input:focus-visible + .tick { outline: 2px solid var(--honey); outline-offset: 2px; }
+/* MAIL ME THE KEYS (Dan, round 2: "a stamp like a train stamp, not like a button"): a station dater in red ink with
+   today's date; a tap stamps it (it lands, the ink takes, the card jumps), then the card goes in the box */
+.send { position: absolute; left: 7cqw; right: 7cqw; top: 74cqh; z-index: 6; display: flex; justify-content: center; min-height: 44px; color: #b0321f; }
+.send .ink { display: grid; justify-items: center; gap: 1cqw; padding: 2.4cqw 5cqw 2.2cqw; rotate: -3.5deg; text-transform: uppercase; white-space: nowrap;
+  border: .8cqw solid currentColor; border-radius: 2.4cqw; outline: .35cqw solid currentColor; outline-offset: -1.9cqw; mix-blend-mode: multiply; opacity: .88;
+  -webkit-mask: url(postcards/img/ink.webp) 0 0 / 100% 100%; mask: url(postcards/img/ink.webp) 0 0 / 100% 100%; }
+.send .s1, .send .s3 { font: 600 max(9px, 2.6cqw)/1 Oswald; letter-spacing: .26em; }
+.send .s2 { font: 700 max(20px, 7.2cqw)/.92 Oswald; letter-spacing: .025em; }
+.send:active .ink { scale: .97; }
+.send.thump .ink { animation: thump .34s cubic-bezier(.3, 1.4, .5, 1) both; }
+@keyframes thump { 0% { scale: 1.22; opacity: .25; } 55% { scale: .95; opacity: 1; } 100% { scale: 1; opacity: 1; } }
+.send.nope .ink { animation: nope .38s ease-in-out; }
+@keyframes nope { 20%, 60% { rotate: -6.5deg; } 40%, 80% { rotate: -.5deg; } }
+.pc-mail.jolt { animation: jolt .3s ease-out; }
+@keyframes jolt { 35% { translate: 0 .5cqw; } }
 
 /* the mailbox: up from the bottom of the screen while the last card is on top (it takes the counter's place); the card
    goes in through the lid */
@@ -256,6 +324,30 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .desk.sent .rd .cta { background: transparent; color: #f6c85d; box-shadow: inset 0 0 0 2px rgba(246, 200, 93, .8); cursor: default; }
 .desk.sent .rd .cta::after { content: none; }
 .rd .scr { display: block; margin: 1.3cqw 0 0 9cqw; font: 400 4.4cqw/1 Yellowtail; color: #e8c878; transform: rotate(-6deg); text-shadow: 0 0 .9cqw rgba(232, 200, 120, .35); }
+/* after mailing (Dan, round 2: "a pop up button in a vintage style reading 'to the website', right to the store"): a
+   railway ticket that pops out under the readings once the keys are in the mail. The end page itself is signed off. */
+.rd .ticket { position: absolute; left: 50%; top: calc(100% + max(14px, 1.4cqw)); display: none; translate: -40% 0; rotate: -4deg; text-decoration: none;
+  filter: drop-shadow(0 .5cqw .6cqw rgba(0, 0, 0, .5)); -webkit-tap-highlight-color: transparent; }
+.desk.sent .rd .ticket { display: block; animation: sway 5s 2.4s ease-in-out infinite; }
+@keyframes sway { 50% { rotate: -1.5deg; } }
+.ticket .tk { display: grid; justify-items: center; gap: max(4px, .4cqw); padding: max(11px, 1.05cqw) max(24px, 2.4cqw) max(10px, .95cqw);
+  background: linear-gradient(180deg, #f6ecd2, #eadbb6); color: #8f2717; text-transform: uppercase; white-space: nowrap;
+  outline: 1.5px solid rgba(143, 39, 23, .75); outline-offset: -6px;
+  -webkit-mask: radial-gradient(circle at 0 0, #0000 8px, #000 8.5px) 0 0 / 51% 51% no-repeat, radial-gradient(circle at 100% 0, #0000 8px, #000 8.5px) 100% 0 / 51% 51% no-repeat,
+    radial-gradient(circle at 0 100%, #0000 8px, #000 8.5px) 0 100% / 51% 51% no-repeat, radial-gradient(circle at 100% 100%, #0000 8px, #000 8.5px) 100% 100% / 51% 51% no-repeat;
+  mask: radial-gradient(circle at 0 0, #0000 8px, #000 8.5px) 0 0 / 51% 51% no-repeat, radial-gradient(circle at 100% 0, #0000 8px, #000 8.5px) 100% 0 / 51% 51% no-repeat,
+    radial-gradient(circle at 0 100%, #0000 8px, #000 8.5px) 0 100% / 51% 51% no-repeat, radial-gradient(circle at 100% 100%, #0000 8px, #000 8.5px) 100% 100% / 51% 51% no-repeat; }
+.ticket .t1, .ticket .t3 { font: 600 max(9px, .85cqw)/1 Oswald; letter-spacing: .28em; color: #5d4b37; }
+.ticket .t2 { display: flex; align-items: center; gap: max(6px, .6cqw); font: 700 max(19px, 1.9cqw)/1 Oswald; letter-spacing: .03em; }
+.ticket .t2 svg { width: max(20px, 2cqw); height: max(12px, 1.2cqw); }
+.ticket:active .tk { scale: .97; }
+.ticket:focus-visible { outline: none; }
+.ticket:focus-visible .tk { outline: 2px solid var(--honey); outline-offset: 2px; }
+@media (max-height: 640px) {                    /* short phones (SE): just the ticket's big line, clear of the foot */
+  .rd .ticket { top: calc(100% + 10px); }
+  .ticket .t1, .ticket .t3 { display: none; }
+  .ticket .tk { padding-block: 9px; }
+}
 .endbar { position: absolute; left: 0; right: 0; bottom: calc(10px + env(safe-area-inset-bottom)); display: grid; justify-items: center; gap: 2px; text-align: center; }
 .endbar button { min-height: 44px; padding: 0 16px; font: 600 12.5px/1 Oswald; letter-spacing: .18em; text-transform: uppercase; color: rgba(239, 227, 198, .88);
   text-shadow: 0 1px 3px rgba(0, 0, 0, .8); }
@@ -280,14 +372,16 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .addr input:focus-visible { outline: none; }
 
 @media (prefers-reduced-motion: reduce) {
-  .pc.nudge, .pc.top .key, .pc-hear.top:not(.flipped) .curl, .send::after, .box.gulp, .rd .cta::after { animation: none !important; }
-  .flip, .box, .key .on, .end { transition-duration: .01s !important; transition-delay: 0s !important; }
+  .pc.nudge, .pc-hear.top:not(.flipped) .curl, .box.gulp, .rd .cta::after, .pc-grade.top .rays, .pc-hello.top .pic .lamp, .g-pre.top .badge::after,
+  .send.thump .ink, .send.nope .ink, .pc-mail.jolt, .desk.sent .rd .ticket { animation: none !important; }
+  .flip, .box, .end, .opt .tick path { transition-duration: .01s !important; transition-delay: 0s !important; }
 }
 </style>
 </head>
 <body>
 <main class="desk" id="desk">
   <div class="sky" aria-hidden="true"></div>
+  <div class="dust" aria-hidden="true"></div>
   <div class="table">
     <section class="stack" id="stack" aria-roledescription="postcard stack" aria-label="GAS 2 postcards">
 
@@ -304,13 +398,14 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
           <p class="out">Thicker, smoother, glued master.</p>
         </div>
         <div class="cap"><span>GAS 2 · <b>FREE</b></span><span>No. 1</span></div>
+        <i class="age" aria-hidden="true"></i><i class="tape" aria-hidden="true"></i>
       </article>
 
       <!-- 2-4 · the three grades (lines: GAS2 docs/BRIEF.md, as approved for the phone 2026-10-26) -->
       <article class="pc pc-grade g-reg" aria-roledescription="postcard" aria-label="2 of 6: Regular">
         <i class="rays" aria-hidden="true"></i><i class="frame" aria-hidden="true"></i>
         <div class="row"><span>No. 2</span><span>Fuel grade</span></div>
-        <div class="key" aria-hidden="true"><img src="postcards/img/key0.webp" alt=""><img class="on" src="postcards/img/key0-lit.webp" alt=""></div>
+        <i class="age" aria-hidden="true"></i>
         <p class="script" aria-hidden="true">Smooth &amp; warm</p>
         <h2 class="big"><span class="bk" aria-hidden="true">Regular</span><span class="fr">Regular</span></h2>
         <p class="gline">Smooth and warm. For mixes that are already good.</p>
@@ -321,7 +416,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
       <article class="pc pc-grade g-pre" aria-roledescription="postcard" aria-label="3 of 6: Premium">
         <i class="rays" aria-hidden="true"></i><i class="frame" aria-hidden="true"></i>
         <div class="row"><span>No. 3</span><span>Fuel grade</span></div>
-        <div class="key" aria-hidden="true"><img src="postcards/img/key1.webp" alt=""><img class="on" src="postcards/img/key1-lit.webp" alt=""></div>
+        <i class="age" aria-hidden="true"></i>
         <p class="script" aria-hidden="true">The signature</p>
         <h2 class="big"><span class="bk" aria-hidden="true">Premium</span><span class="fr">Premium</span></h2>
         <p class="gline">Thick lows, clear mids, silky air.</p>
@@ -332,7 +427,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
       <article class="pc pc-grade g-race" aria-roledescription="postcard" aria-label="4 of 6: Race">
         <i class="rays" aria-hidden="true"></i><i class="frame" aria-hidden="true"></i>
         <div class="row"><span>No. 4</span><span>Fuel grade</span></div>
-        <div class="key" aria-hidden="true"><img src="postcards/img/key2.webp" alt=""><img class="on" src="postcards/img/key2-lit.webp" alt=""></div>
+        <i class="age" aria-hidden="true"></i>
         <p class="script" aria-hidden="true">Punchy &amp; bright</p>
         <h2 class="big"><span class="bk" aria-hidden="true">Race</span><span class="fr">Race</span></h2>
         <p class="gline">Punchy and bright. For loud, modern mixes.</p>
@@ -350,22 +445,51 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
             <p class="hline">The same song, the same level.<br>One side is GAS 2.</p>
             <button class="turn" type="button" data-turn><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>Turn it over</button>
             <i class="curl" aria-hidden="true"></i>
+            <i class="age" aria-hidden="true"></i>
           </section>
           <section class="face back" id="player">
             <div class="row"><span>Hear it</span><span>GAS 2 · Premium</span></div>
-            <p class="note">Same song, same loudness. Switch while it plays.</p>
-            <button class="play" type="button" id="play" aria-label="Play the demo">
-              <svg class="i-go" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>
-              <svg class="i-stop" viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="6.5" width="11" height="11" rx="1.2" fill="currentColor"/></svg>
-              <svg class="i-wait" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 3a9 9 0 1 1-9 9"/></svg>
-            </button>
-            <div class="ab" role="group" aria-label="Which side plays">
-              <button type="button" data-side="a" aria-pressed="false">Original</button>
-              <button type="button" data-side="b" aria-pressed="true">GAS 2</button>
+            <p class="note">Tap the record. Same song, same loudness: switch while it plays.</p>
+            <div class="deck">
+              <i class="plate" aria-hidden="true"></i>
+              <div class="platter" id="platter">
+                <i class="mat" aria-hidden="true"></i>
+                <button class="disc" type="button" id="play" aria-label="Play the demo">
+                  <span class="label" aria-hidden="true">
+                    <svg viewBox="0 0 100 100">
+                      <circle cx="50" cy="50" r="50" fill="#b8341e"/><circle cx="50" cy="50" r="45" fill="none" stroke="#efe3c6" stroke-width=".9" opacity=".75"/>
+                      <path id="lbTop" d="M17 50a33 33 0 0 1 66 0" fill="none"/><path id="lbBot" d="M14 50a36 36 0 0 0 72 0" fill="none"/>
+                      <text font-family="Oswald" font-weight="600" font-size="7.4" letter-spacing="2.2" fill="#efe3c6"><textPath href="#lbTop" startOffset="50%" text-anchor="middle">REVAUDIO RECORDS</textPath></text>
+                      <text x="50" y="49" font-family="Oswald" font-weight="700" font-size="17" letter-spacing=".6" text-anchor="middle" fill="#f6ead0">GAS 2</text>
+                      <text x="50" y="61" font-family="Oswald" font-weight="500" font-size="6.2" letter-spacing="1.4" text-anchor="middle" fill="#efe3c6">HIP-HOP DEMO</text>
+                      <text font-family="Oswald" font-weight="500" font-size="5.6" letter-spacing="1.6" fill="#efe3c6" opacity=".85"><textPath href="#lbBot" startOffset="50%" text-anchor="middle">33⅓ RPM · −11.0 LUFS</textPath></text>
+                      <circle cx="50" cy="50" r="3.2" fill="#d9d4ca"/><circle cx="50" cy="50" r="1.6" fill="#8d877d"/>
+                    </svg>
+                    <svg class="wait" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 3a9 9 0 1 1-9 9"/></svg>
+                  </span>
+                </button>
+              </div>
+              <i class="glare" aria-hidden="true"></i>
+              <svg class="arm" viewBox="0 0 88 92" aria-hidden="true">
+                <defs><linearGradient id="chrome" x1="0" x2="1"><stop offset="0" stop-color="#8d8a84"/><stop offset=".45" stop-color="#f4f1ea"/><stop offset="1" stop-color="#77746e"/></linearGradient></defs>
+                <path d="M74.6 47h4.8v3.4a2.4 2.4 0 0 1-4.8 0z" fill="#3a3430"/>
+                <circle cx="77" cy="13" r="6.4" fill="#2b2622"/><circle cx="77" cy="13" r="4.7" fill="url(#chrome)"/>
+                <g id="arm">
+                  <rect x="74.4" y="1.8" width="5.2" height="6.6" rx="1.3" fill="#2a2522" stroke="#5b544c" stroke-width=".3"/>
+                  <path d="M77 8v40.5q0 4.4-2.4 7.8" fill="none" stroke="url(#chrome)" stroke-width="1.8" stroke-linecap="round"/>
+                  <g transform="rotate(30 74.6 56.3)"><rect x="72.4" y="54.6" width="4.4" height="6.8" rx=".8" fill="#ece6d8" stroke="#6f6a62" stroke-width=".35"/><rect x="73.5" y="58.6" width="2.2" height="2.2" fill="#b8341e"/></g>
+                  <circle cx="77" cy="13" r="2.3" fill="#d8d4cc" stroke="#6f6a62" stroke-width=".4"/>
+                </g>
+              </svg>
+              <div class="keys ab" role="group" aria-label="Which side plays">
+                <button type="button" data-side="a" aria-pressed="false">Original</button>
+                <button type="button" data-side="b" aria-pressed="true">GAS 2</button>
+              </div>
+              <span class="brand" aria-hidden="true">RevAudio<b>Hi-Fi</b></span>
             </div>
-            <div class="bar" aria-hidden="true"><i id="prog"></i></div>
+            <p class="fail" id="fail" role="status" hidden>The demo didn't load. Tap the record to try again.</p>
             <p class="fine">Hip-hop demo · PREMIUM at GAS 140 %<br>both sides −11.0 LUFS</p>
-            <p class="fail" id="fail" role="status" hidden>The demo didn't load. Tap ▶ to try again.</p>
+            <i class="age" aria-hidden="true"></i>
             <button class="turn" type="button" data-turn><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>Turn back</button>
           </section>
         </div>
@@ -388,12 +512,12 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
         <form class="mailform" id="mailform" novalidate>
           <div class="addr">
             <label for="em"><span>TO</span><input id="em" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" enterkeyhint="send" placeholder="your email" required></label>
-            <i aria-hidden="true"></i><i aria-hidden="true"></i>
             <p class="err" id="err" role="alert" hidden>That email looks off. Check it and try again.</p>
           </div>
-          <button class="send" type="submit">MAIL ME THE KEYS<svg viewBox="0 0 30 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 9h25M19 2l8 7-8 7"/></svg></button>
+          <label class="opt"><input type="checkbox" id="mk" name="marketing"><i class="tick" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 13l5 5L21 4"/></svg></i><span>Also send me new-plugin drops and demo codes (optional)</span></label>
+          <button class="send" type="submit" aria-label="Mail me the keys"><span class="ink" aria-hidden="true"><span class="s1">RevAudio station</span><span class="s2">Mail me the keys</span><span class="s3" id="sdate">★ Free ★</span></span></button>
         </form>
-        <p class="fine">We email you the download link. (Mockup: nothing is sent.)</p>
+        <i class="age" aria-hidden="true"></i>
       </article>
     </section>
   </div>
@@ -409,6 +533,8 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
         <p class="lead">Thicker, smoother, glued master.</p>
         <button class="cta" type="button" id="cta"><span class="go">⤓ Download FREE</span><span class="ok">✓ Keys in the mail</span></button>
         <div class="scr">Fill it up.</div>
+        <!-- _blank: inside the review page's frame a same-tab link can't leave; on the site this is a plain link -->
+        <a class="ticket" id="toSite" href="https://revaudio.net/store" target="_blank" rel="noopener" aria-label="To the website: the RevAudio store"><span class="tk"><span class="t1">RevAudio.net</span><span class="t2">To the website<svg viewBox="0 0 30 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 9h25M19 2l8 7-8 7"/></svg></span><span class="t3">Admit one · the store</span></span></a>
       </div>
     </div>
     <div class="endbar">
@@ -435,7 +561,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   // each card lies a little crooked, like a real stack; the top one straightens most of the way
   const LIE = [[-1.1, 0], [1.8, 3], [-1.6, -2], [2.3, 2], [-2, -3], [1.2, 1]];
   const NAMES = ['Greetings from GAS 2', 'Regular', 'Premium', 'Race', 'Hear it', 'Mail me the keys'];
-  let cur = 0, touched = false;
+  let cur = 0, touched = false, shown = null;
 
   const rest = (i, d) => {
     const [r, x] = LIE[i];
@@ -467,8 +593,36 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     if (cur >= 4) document.querySelector('.view').classList.add('warm');   // and the end page's photo
     if (cur !== 4) audio.stop();
     ending(cur === N, anim);
+    if (anim && cards[cur] && cards[cur] !== shown) arrive(cards[cur], deal ? (N - 1) * 70 + 260 : 0);
+    shown = cards[cur];
   }
   const say = () => { $('live').textContent = cur === N ? 'GAS 2. Thicker, smoother, glued master.' : `Card ${cur + 1} of ${N}: ${NAMES[cur]}`; };
+
+  // ── each card has its moment as it comes up (round 2: "make everything feel much more alive"): the lettering pops and
+  //    the seal stamps down, "Greetings from" writes itself, the postmark thumps ──
+  const SPRING = 'cubic-bezier(.2, 1, .3, 1)';
+  const POP = [{ opacity: 0, scale: .8 }, { opacity: 1, offset: .5 }, { scale: 1.04, offset: .75 }, { opacity: 1, scale: 1 }];
+  const THUMP = [{ opacity: 0, scale: 1.7 }, { opacity: 1, offset: .55 }, { scale: .95, offset: .8 }, { opacity: 1, scale: 1 }];
+  function arrive(c, wait) {
+    if (reduce) return;
+    const a = (sel, kf, duration, delay, easing) => {
+      const el = c.querySelector(sel);
+      if (el) el.animate(kf, { duration, delay: wait + delay, easing: easing || SPRING, fill: 'backwards' });
+    };
+    if (c.classList.contains('pc-grade')) {
+      a('.script', [{ opacity: 0, translate: '0 35%' }, { opacity: 1, translate: '0 0' }], 460, 120);
+      a('.big', POP, 560, 200);
+      a('.gline', [{ opacity: 0 }, { opacity: 1 }], 420, 440);
+      a('.badge', THUMP, 420, 640);
+    } else if (c === hear) {
+      if (!hear.classList.contains('flipped')) a('.front .big', POP, 560, 180);
+    } else if (c.classList.contains('pc-mail')) {
+      a('.pmark', THUMP, 380, 420);
+    } else {
+      a('.greet', [{ clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0% 0 0)' }], 1000, 200, 'cubic-bezier(.45, .05, .4, 1)');
+      a('.out', [{ opacity: 0, translate: '0 40%' }, { opacity: 1, translate: '0 0' }], 520, 760);
+    }
+  }
 
   // ── the end page: the lens pulls focus onto the desktop page's right side, then the readings pop out of the screen,
   //    exactly as after the drone lands (drone/run.js pop(): same keyframes, same timings), a beat into the focus pull ──
@@ -489,6 +643,8 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     go(rd.querySelector('.lead'), fast, 340, 230);
     go(rd.querySelector('.cta'), fast, 360, 290);
     go(rd.querySelector('.scr'), fast, 380, 350);
+    if (desk.classList.contains('sent'))                     // after mailing: the ticket to the store pops out last
+      go($('toSite'), [{ opacity: 0, scale: .3, rotate: '-16deg' }, { opacity: 1, offset: .45 }, { scale: 1.08, rotate: '-1deg', offset: .72 }, { opacity: 1, scale: 1, rotate: '-4deg' }], 560, 720);
   }
 
   // ── throw the top card off the table (any direction), the next one settles up; after the last one, the end ──
@@ -566,7 +722,8 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   stack.addEventListener('pointerup', release);
   stack.addEventListener('pointercancel', release);
 
-  function tap(c) {
+  function tap(c, e) {
+    if (e && e.target.closest('.deck')) return;                  // a tap on the turntable's case doesn't turn the card
     if (c === hear) return turn();
     if (c.classList.contains('pc-mail')) return;
     c.classList.remove('nudge'); void c.offsetWidth; if (!reduce) c.classList.add('nudge');   // "flick me"
@@ -601,10 +758,39 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   hear.querySelectorAll('[data-turn]').forEach((b) => b.addEventListener('click', () => turn()));
   hear.querySelector('.back').inert = true;
 
+  // ── the deck (round 2): the record spins up to 33 1/3 (200°/s) while the demo plays and coasts down after; the arm
+  //    swings in to the lead-in, creeps toward the label with the song, and goes back to its rest when it stops ──
+  const deck = (() => {
+    const platter = $('platter'), arm = $('arm');
+    const P = [77, 13], C = [37, 40], S0 = [72.1, 60.7];        // the arm's pivot, the record's centre, the stylus at rest (deck units)
+    const reach = (deg) => {                                     // stylus to the record's centre with the arm turned deg
+      const a = deg * Math.PI / 180, x = S0[0] - P[0], y = S0[1] - P[1];
+      return Math.hypot(P[0] + x * Math.cos(a) - y * Math.sin(a) - C[0], P[1] + x * Math.sin(a) + y * Math.cos(a) - C[1]);
+    };
+    const swing = (r) => { let lo = 0, hi = 60; for (let i = 0; i < 30; i++) { const m = (lo + hi) / 2; if (reach(m) > r) lo = m; else hi = m; } return lo; };
+    const LEAD = swing(31.5), RUN = swing(13.2);                 // the lead-in groove and the run-out
+    let spin = 0, w = 0, ang = 0, raf = 0, last = 0;
+    function frame(t) {
+      const dt = last ? Math.min(.05, (t - last) / 1000) : 0; last = t;
+      const on = audio.on, want = on ? LEAD + (RUN - LEAD) * audio.pos : 0;
+      if (reduce) { w = 0; ang = want; }
+      else {
+        w += ((on ? 200 : 0) - w) * Math.min(1, dt * (on ? 3 : 2));
+        if (!on && w < 3) w = 0;
+        ang += (want - ang) * Math.min(1, dt * (Math.abs(want - ang) > 1.5 ? 6 : 24));
+      }
+      spin = (spin + w * dt) % 360;
+      platter.style.transform = `rotate(${spin.toFixed(2)}deg)`;
+      arm.setAttribute('transform', `rotate(${ang.toFixed(3)} ${P[0]} ${P[1]})`);
+      if (on || w || Math.abs(want - ang) > .02) raf = requestAnimationFrame(frame); else { raf = 0; last = 0; }
+    }
+    return { wake() { if (!raf) raf = requestAnimationFrame(frame); }, LEAD, RUN, get angle() { return ang; }, get speed() { return w; } };
+  })();
+
   // ── the demo: both sides start together and loop, the switch only moves two gains (30 ms), so the song never jumps ──
   const audio = (() => {
     const URLS = ['player/audio/hiphop_before.m4a', 'player/audio/hiphop_after.m4a'];
-    let ac = null, bufs = null, loading = null, srcs = null, gA, gB, bus, t0 = 0, off = 0, side = 'b', on = false, raf = 0;
+    let ac = null, bufs = null, loading = null, srcs = null, gA, gB, bus, t0 = 0, off = 0, side = 'b', on = false;
     const ctx = () => {
       if (ac) return ac;
       ac = new (window.AudioContext || window.webkitAudioContext)();
@@ -624,12 +810,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
       back.classList.toggle('playing', on);
       $('play').setAttribute('aria-label', on ? 'Stop the demo' : 'Play the demo');
       back.querySelectorAll('.ab button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.side === side)));
-    };
-    const tick = () => {
-      if (!on) return;
-      const dur = bufs[0].duration;
-      $('prog').style.width = (((ac.currentTime - t0) % dur) / dur * 100).toFixed(2) + '%';
-      raf = requestAnimationFrame(tick);
+      deck.wake();
     };
     async function play() {
       if (navigator.audioSession) { try { navigator.audioSession.type = 'playback'; } catch (e) {} }   // plays with the ring switch on silent
@@ -639,18 +820,18 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
       try { await warm(); } catch (e) { back.classList.remove('loading'); $('fail').hidden = false; return; }
       back.classList.remove('loading');
       if (on || !hear.classList.contains('flipped')) return;
-      const t = ac.currentTime + .03;
+      const t = ac.currentTime + (reduce ? .03 : .3);            // the needle lands first
       srcs = bufs.map((bf, i) => { const n = ac.createBufferSource(); n.buffer = bf; n.loop = true; n.connect(i ? gB : gA); n.start(t, off % bf.duration); return n; });
       gA.gain.setValueAtTime(side === 'a' ? 1 : 0, t); gB.gain.setValueAtTime(side === 'b' ? 1 : 0, t);
       bus.gain.cancelScheduledValues(t); bus.gain.setValueAtTime(0, t); bus.gain.linearRampToValueAtTime(1, t + .12);
-      t0 = t - off; on = true; paint(); tick();
+      t0 = t - off; on = true; paint();
     }
     function stop() {
       if (!on) return;
       const t = ac.currentTime;
       bus.gain.cancelScheduledValues(t); bus.gain.setValueAtTime(bus.gain.value, t); bus.gain.linearRampToValueAtTime(0, t + .12);
       srcs.forEach((s) => s.stop(t + .13)); srcs = null;
-      off = (t - t0) % bufs[0].duration; on = false; cancelAnimationFrame(raf); paint();
+      off = Math.max(0, t - t0) % bufs[0].duration; on = false; paint();
     }
     function set(s) {
       side = s; paint();
@@ -658,21 +839,26 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
       const t = ac.currentTime;
       [[gA, s === 'a'], [gB, s === 'b']].forEach(([g, up]) => { g.gain.cancelScheduledValues(t); g.gain.setValueAtTime(g.gain.value, t); g.gain.linearRampToValueAtTime(up ? 1 : 0, t + .03); });
     }
-    return { warm, play, stop, set, get on() { return on; }, get side() { return side; } };
+    return { warm, play, stop, set, get on() { return on; }, get side() { return side; },
+      get pos() { return on ? Math.max(0, ac.currentTime - t0) % bufs[0].duration / bufs[0].duration : 0; } };   // 0-1 through the song
   })();
   $('play').addEventListener('click', () => (audio.on ? audio.stop() : audio.play()));
   $('player').querySelectorAll('.ab button').forEach((b) => b.addEventListener('click', () => audio.set(b.dataset.side)));
   document.addEventListener('visibilitychange', () => { if (document.hidden) audio.stop(); });
 
   // ── MAIL ME THE KEYS: check the address, then the card goes into the box (a dummy: nothing is sent) ──
-  const form = $('mailform'), em = $('em'), err = $('err');
+  const form = $('mailform'), em = $('em'), err = $('err'), send = form.querySelector('.send');
+  const replay = (el, cls) => { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); };
+  $('sdate').textContent = `★ ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })} ★`;   // the dater: today
   em.addEventListener('input', () => { err.hidden = true; });
   form.addEventListener('submit', (e) => {
     e.preventDefault();
+    if (send.disabled) return;
     const v = em.value.trim();
-    if (!v || !em.checkValidity()) { err.hidden = false; em.focus(); return; }
+    if (!v || !em.checkValidity()) { err.hidden = false; replay(send, 'nope'); em.focus(); return; }
     em.blur();
-    setTimeout(() => drop(v), 280);                              // let the keyboard go down first
+    send.disabled = true; replay(send, 'thump'); replay(cards[N - 1], 'jolt');   // the stamp comes down, the ink takes
+    setTimeout(() => drop(v), reduce ? 0 : 560);                               // the keyboard goes down meanwhile
   });
   function drop(v) {
     const c = cards[N - 1];
@@ -697,6 +883,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   $('again').addEventListener('click', () => {                  // the postcards dealt back onto the table, bottom card first
     desk.classList.remove('sent'); $('sentNote').textContent = ''; box.classList.remove('full', 'gulp');
     em.value = ''; err.hidden = true; turn(false, true);
+    $('mk').checked = false; send.disabled = false; send.classList.remove('thump', 'nope'); cards[N - 1].classList.remove('jolt');
     cards.forEach((c, i) => { c.style.transition = 'none'; c.style.opacity = ''; c.style.visibility = 'visible'; c._gone = null;
       c.style.transform = `translate3d(${-innerWidth * 1.15}px, ${i * 8 - 30}px, 0) rotate(${-20 - i * 2}deg)`; });
     void stack.offsetWidth;
@@ -724,7 +911,16 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   if (start > 0 || q.has('flip')) quiet();
   if (start === 0 && !reduce) setTimeout(() => { if (!touched && cur === 0 && !drag) cards[0].classList.add('nudge'); }, 1100);
   cards.forEach((c) => c.addEventListener('animationend', (e) => { if (e.animationName === 'nudge') c.classList.remove('nudge'); }));
-  window.gas2Postcards = { next, prev, turn, toss, audio, get cur() { return cur; } };   // for the checks (postcards/tools/check.cjs)
+  if (!reduce) {                                                // dust drifting in the last of the sun (round 2)
+    const dust = desk.querySelector('.dust'), r = Math.random;
+    for (let i = 0; i < 14; i++) {
+      const m = document.createElement('i');
+      m.style.cssText = `left:${(r() * 100).toFixed(1)}%;top:${(12 + r() * 76).toFixed(1)}%;--s:${(1.2 + r() * 2.4).toFixed(1)}px;--o:${(.25 + r() * .45).toFixed(2)};` +
+        `--d:${(14 + r() * 16).toFixed(1)}s;--t:${(-r() * 20).toFixed(1)}s;--dx:${Math.round(r() * 60 - 30)}px;--dy:${Math.round(-40 - r() * 80)}px`;
+      dust.append(m);
+    }
+  }
+  window.gas2Postcards = { next, prev, turn, toss, audio, deck, get cur() { return cur; } };   // for the checks (postcards/tools/check.cjs)
 })();
 </script>
 </body>

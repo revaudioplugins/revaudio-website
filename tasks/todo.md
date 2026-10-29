@@ -1,4 +1,4 @@
-# GAS 2 phone POSTCARDS (branch `feat/gas2-postcards`, 2026-10-29, danavivi-75) — BUILT, waiting on Dan's notes
+# GAS 2 phone POSTCARDS (branch `feat/gas2-postcards`, 2026-10-29, danavivi-75) — ROUND 2 (Dan's notes) in progress
 
 Dan's concept (2026-10-29): a stack of 1950s "Greetings from GAS 2" postcards, phone only. State: `tasks/handoff.md` top entry.
 
@@ -23,9 +23,25 @@ Dan's concept (2026-10-29): a stack of 1950s "Greetings from GAS 2" postcards, p
       desktop's right side and page-b's readings pop as after the drone lands. Checks: 24 steps + 30 layouts pass.
 - [x] 4c. The review page (Dan: "open a bench so i can comment on every section of this page"): artifact
       https://claude.ai/artifact/6zn14ha4qswV1gmCb8v3qG, a notes box + pins + ▶ Live per screen, notes in its db.
-- [ ] 5. Dan's notes in the review page → read `notes` (ArtifactData list), apply, re-shoot (`review/build.cjs`),
-      republish to the same URL. Only on his OK: illustrated grade fronts (gpt-image-2, cost asked first).
+- [x] 5. Dan's notes in the review page (2026-10-29 21:03, pasted + `notes` in the db; the pins drawn on the shots).
 - [x] 6. Commit my files by path on the branch; no push (Dan's word; main = live).
+
+## Round 2 — Dan's notes (plan OK'd 2026-10-29: he picked "deck buttons" for the vinyl; textures drawn in code, no spend)
+- [x] 7. Grade cards 2-4: the plugin key goes (①); the script + big lettering centred on the card, the sunburst behind
+      them (②); the line under them in the lettering's face, Oswald caps (③).
+- [x] 8. Mail card: the two empty address lines go (①②); the email bigger (③④); MAIL ME THE KEYS = a rubber stamp, a
+      station / ticket stamp in ink, not a button: tap = it stamps, then the card goes in the box (⑤); a checkbox with
+      the site's own consent words, unticked (⑥: "Also send me new-plugin drops and demo codes (optional)").
+- [x] 9. End page, mailed: a vintage "TO THE WEBSITE" ticket pops up after the readings, to revaudio.net/store. The end
+      page itself is ✓ (frozen).
+- [x] 10. HEAR IT back = a turntable seen from above: tap the record = the needle drops and it spins; ORIGINAL / GAS 2 =
+      the deck's two speed-style buttons (switch while it plays); the tonearm creeps in with the song (= progress).
+- [x] 11. Overall: worn, sun-faded stock + edge wear on every card, each its own (card 1 tape, Regular a coffee ring,
+      Premium a gold seal, Race a grease thumbprint, HEAR IT ring wear, the mail card a crease + dog-ear); more alive:
+      the lettering pops as its card comes up, the sunburst turns slowly, the postmark thumps, dust in the lamp light.
+      Textures made in `postcards/tools/make-wear.py` (numpy, no spend).
+- [ ] 12. check.cjs updated + all pass; re-shoot; review page round 2 (his note + what changed per screen, fresh
+      boxes) republished to the same URL; commit by path; handoff.
 
 # GAS 2 drone descent (branch `feat/gas2-drone`, 2026-10-28, revaudio-59) — SCENE + BENCH BUILT, art next
 
