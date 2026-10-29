@@ -1,8 +1,10 @@
 ## 2026-10-28 — GAS 2 page: the drone intro, from scratch (Claude Code `revaudio-59`, laptop 1) — BRANCH `feat/gas2-drone`
 
 Claim: OPEN `revaudio-59`. Scene + benches BUILT; Dan picked the DEFAULT camera (TOP); the REAL ART is in (gpt-image-2, 2026-10-28, ~$2 with the roof sign); sidewalk blockout props removed; real headlights; catch the car = the CATCH10 coupon ticket (Paddle code: Gil, RevTasks #193). Waiting on Dan's look.
-Files: NEW `tools/_gas2-scene/drone/**`; in `page-b.html` ONE `<link>` + `<script>` line (after the radio
-line), nothing else of page-b's; one README line pair; `tasks/todo.md` (the "GAS 2 drone descent" section); this entry.
+Files: NEW `tools/_gas2-scene/drone/**`; in `page-b.html` the `<link>` + `<script>` line (after the radio line) plus
+the coupon ticket (`.coupon` CSS after `.ticket.sent .stamp`, `#cpVeil` markup before `#plugVeil`, the `dr:caught`
+listener at the end of the IIFE) and the grade hover strip removed (`#gradeTip`), nothing else of page-b's; one README line pair; `tasks/todo.md` (the "GAS 2 drone
+descent" section); this entry.
 - Dan: a hovering drone above the station; scroll down = it comes down into the final scene, then GAS 2 pops and the right
   side pops in fast "like it pops out of the screen". Every shot must feel like the final scene (same graphics, same vibe:
   "not moving from one type of scene to another"). Side feature: a car right to left on load with a coupon on its roof.
@@ -79,6 +81,31 @@ line), nothing else of page-b's; one README line pair; `tasks/todo.md` (the "GAS
   The Paddle discount is NOT created yet: Gil, RevTasks #193 (urgent, Sales; bell only, a raw insert sends no email)
   + shared `collaboration/STATUS.md` (`b20a848`). This page must not go live before the code exists.
 - Open: Gil's CATCH10 in Paddle; WebKit / a real phone; Dan's look.
+
+### Session end (2026-10-29, `revaudio-59`, close-session) — claim stays OPEN (waiting on Dan's look)
+
+- State: branch `feat/gas2-drone` = origin (0 ahead / 0 behind), clean before this handoff edit. Commits this
+  session: `7bb0c43` plan, `fd60c72` scene + bench, `3b7568e` camera bench, `f7c8a86` TOP picked, `c2c7280` the art,
+  `b0ea903` props out, `ae41fa8` roof sign, `2081379` beam + shadow, `64f19a3` catch = coupon. Elsewhere, all pushed:
+  design-assets `504c75e` + `2393679` (art originals), shared `b20a848` (STATUS: Gil, CATCH10). RevTasks #193 (Gil, urgent).
+- Unverified: WebKit / Safari and a real phone (only headless Edge so far); Dan has not seen the beam, the shadow or
+  the coupon ticket yet (shots sent, last signal before them: "do what you think is right"); `check.cjs` was not re-run
+  after `64f19a3` (event handlers only; the catch test showed no page errors). The car drives once, ~6 s after load:
+  offered a replay button, no answer.
+- Background (laptop 1, die with the session): `python -m http.server` on 4464 (this worktree's `tools/_gas2-scene`,
+  PID 17152), 4462 (worktree `gas2-page-view`, detached `0b58cb0`, PID 38184), 4461 (GAS2 `Source/ui/public`, PID
+  38924), 4463 (the plan page in the session scratchpad, PID 45096). Kill: `Stop-Process -Id <PID>`.
+- Decide next: (1) Dan's look at beam / shadow / coupon; (2) a "drive again" button or not; (3) going live = merge to
+  main only after Gil's CATCH10 exists in Paddle and Dan says push (`tasks/todo.md` 4e).
+- Commit: `docs(gas2-drone): session-end handoff (revaudio-59)` — this file only.
+- Cleanup: worktree `gas2-page-view` (detached at `0b58cb0` = the page right after the old intro was deleted) was
+  served on 4462 to view the page as it was: remove it when no session uses it (`git worktree remove`), not done here.
+- Memory: shared `project_revtasks_app.md` + Sales section id = 4 (uncommitted in the shared clone, which is behind 2).
+- Then (Dan, 2026-10-29, a screenshot of the strip under the wall sign: "lets remove this section of it"): the grade
+  hover strip (`#gradeTip`: "PREMIUM · thick lows, clear mids, silky air, glued · the signature") is gone from
+  `page-b.html` with its CSS, its hover handlers and the copy array; a click on REGULAR / PREMIUM / RACE still picks the
+  pump's key. `page-a.html` still has it (not asked). Checked headless 1440: hover PREMIUM = no strip, click RACE =
+  on, no errors. The tip was hidden at rest, so `img/land.webp` (the landing frame) is unchanged.
 
 ## 2026-10-26 — GAS 2 page: the drone intro (hover above the station, scroll = descent, land, readings pop) (Claude Code `danavivi-19`, Dan's Mac) — BRANCH `feat/gas2-page`
 

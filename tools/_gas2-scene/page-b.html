@@ -55,8 +55,6 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .sign button { font: 400 3.55cqw/1 Bebas; letter-spacing: .14em; color: var(--oxide); opacity: .9; mix-blend-mode: multiply; filter: url(#paint); transition: color .25s, opacity .25s; }
 .sign i { width: .55cqw; height: .55cqw; border-radius: 50%; background: var(--oxide); opacity: .7; mix-blend-mode: multiply; }
 .sign button:hover, .sign button.on { color: #a8321c; opacity: 1; } /* the picked grade = this red only; underline out (Dan 2026-10-23) */
-.gradeTip { left: 50%; top: 19.4%; transform: translate(-50%, -.4cqw) rotate(-.6deg); background: var(--paper); color: var(--ink); padding: .45cqw 1.1cqw; font: 500 max(11px, .86cqw) Oswald; letter-spacing: .16em; text-transform: uppercase; white-space: nowrap; box-shadow: 0 .3cqw .8cqw rgba(0,0,0,.4); opacity: 0; transition: opacity .25s, transform .25s; pointer-events: none; margin-left: -18.1%; }
-.gradeTip.show { opacity: 1; transform: translate(-50%, 0) rotate(-.6deg); }
 /* the pump's three keys glow with the chosen grade */
 .key { top: 60.3%; height: 2.9%; border-radius: .25cqw; box-shadow: 0 0 1.2cqw .25cqw rgba(255, 190, 90, .0), inset 0 0 .9cqw rgba(255, 200, 110, 0); transition: box-shadow .35s; pointer-events: none; }
 .key.on { box-shadow: 0 0 1.4cqw .3cqw rgba(255, 190, 90, .55), inset 0 0 .9cqw rgba(255, 210, 130, .65); }
@@ -405,7 +403,6 @@ body[data-look="0"].rs-dusk .dusk { display: block; }
       <button class="hot" data-grade="1">PREMIUM</button><i></i>
       <button class="hot" data-grade="2">RACE</button>
     </nav>
-    <div class="abs gradeTip" id="gradeTip"></div>
     <div class="abs key" style="left:25%;width:3.2%"></div>
     <div class="abs key" style="left:28.6%;width:3.3%"></div>
     <div class="abs key" style="left:32.2%;width:3.5%"></div>
@@ -508,20 +505,13 @@ body[data-look="0"].rs-dusk .dusk { display: block; }
 <script>
 (() => {
   const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
-  // grades: the wall sign drives the pump's keys (copy from docs/BRIEF.md, verify before publishing)
-  const G = [
-    'REGULAR · smooth, warm, rounded · for mixes that are already good',
-    'PREMIUM · thick lows, clear mids, silky air, glued · the signature',
-    'RACE · punchy, bright, forward · for loud modern mixes'
-  ];
+  // grades: the wall sign drives the pump's keys
   let grade = 1;
   const setGrade = i => {
     grade = i; $$('.sign button').forEach((b, k) => b.classList.toggle('on', k === i));
     $$('.key').forEach((k, n) => k.classList.toggle('on', n === i));
   };
   $$('.sign button').forEach((b, i) => {
-    b.onmouseenter = b.onfocus = () => { $('#gradeTip').textContent = G[i]; $('#gradeTip').classList.add('show'); };
-    b.onmouseleave = b.onblur = () => $('#gradeTip').classList.remove('show');
     b.onclick = () => setGrade(i);
   });
   setGrade(1);
