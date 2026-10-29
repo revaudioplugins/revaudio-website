@@ -1,3 +1,26 @@
+# GAS 2 phone POSTCARDS (branch `feat/gas2-postcards`, 2026-10-29, danavivi-75) — v1 BUILT, waiting on Dan's look
+
+Dan's concept (2026-10-29): a stack of 1950s "Greetings from GAS 2" postcards, phone only. State: `tasks/handoff.md` top entry.
+
+## Steps
+- [x] 0. Branch + worktree off `origin/feat/gas2-drone` (`4fc6ddd`); claim, plan, README line pair.
+- [x] 1. Assets, no spend (`postcards/tools/`): the real pump baked from the plugin page (`Source/ui/public` on :4461, 2x,
+      alpha, ROOM hidden, full hose, PREMIUM lit, GAS 140 % = the demo's setting); card 1's backdrop = the station, soft
+      (the painted pump filled out, blurred); the page backdrop; a linen tile; the grade keys (the 4x bake on
+      `feat/gas2-phone`); a stamp from `poster-mail-1`.
+- [x] 2. `postcards.html`: six cards in one stack; flick = drag, throw on velocity / distance, spring back otherwise;
+      back / next buttons + arrow keys; counter; one nudge on first load; `?card=1-6` (+ `&flip`) opens on a card (review
+      in the Simulator, where we can't flick); reduced motion = a crossfade.
+- [x] 3. Cards: 1 Greetings from GAS 2; 2-4 REGULAR / PREMIUM / RACE (the pump's key + the BRIEF grade lines); 5 HEAR IT
+      (front: "Fill it up. Same level." poster; tap = flip; back: ▶ + ORIGINAL / GAS 2, "PREMIUM, GAS 140 %, both
+      -11.0 LUFS"); 6 the postcard back (email on the address lines; MAIL ME THE KEYS = the card drops into the mailbox,
+      SENT postmark; dummy, nothing sent).
+- [x] 4. Checks: WebKit 402x714 / 375x553 / 390x664 / 393x659 / 430x750 (fits, no overflow, no page errors), flick +
+      buttons + flip + A/B state + form by script (`postcards/tools/check.cjs`: 22 steps + 20 layouts pass); iOS
+      Simulator (iPhone 17 Pro, 127.0.0.1) shots of every card.
+- [ ] 5. Dan's look in the Simulator. Then, only on his OK: illustrated grade fronts (gpt-image-2, cost asked first).
+- [ ] 6. Commit my files by path on the branch; no push (Dan's word; main = live).
+
 # GAS 2 drone descent (branch `feat/gas2-drone`, 2026-10-28, revaudio-59) — SCENE + BENCH BUILT, art next
 
 Plan page: https://claude.ai/artifact/NnyBRQchpWfY541CZA1Unn. How it works + bench: `tools/_gas2-scene/drone/README.md`.

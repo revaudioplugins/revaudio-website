@@ -20,6 +20,8 @@ python -m http.server 4462 --bind 127.0.0.1
 - TUNE (button bottom right, or T) — readings position / size + the 4 looks (Now / Neon / Enamel / Badge).
 - The drone intro (branch `feat/gas2-drone`) — scroll from a hovering drone down into the scene; `?drone=0` skips it,
   `?angle=top|front|right` picks the hover. How it works + its bench: `drone/README.md`.
+- `postcards.html` — **the phone page** (branch `feat/gas2-postcards`): a stack of "Greetings from GAS 2" postcards to
+  flick through; `?card=1-6` opens on a card, `&flip` turns the HEAR IT card. Assets + their tools: `postcards/`.
 
 ## Who works on what (one writer per file set)
 
@@ -32,6 +34,8 @@ python -m http.server 4462 --bind 127.0.0.1
   `feat/gas2-page` into `main` 2026-10-23.
 - **The drone intro (`drone/**` + its one `<link>`/`<script>` line in `page-b.html`): Claude Code `revaudio-59`, branch
   `feat/gas2-drone`, from 2026-10-28.**
+- **The phone postcards (`postcards.html` + `postcards/**`): Claude Code `danavivi-75`, branch `feat/gas2-postcards`, from
+  2026-10-29.**
 - Claims and state: `tasks/handoff.md` (top entry).
 
 ## Not in git

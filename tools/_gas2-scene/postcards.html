@@ -1,0 +1,648 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0907">
+<title>GAS 2 · Postcards</title>
+<link rel="icon" href="data:,">
+<!-- GAS 2 page, PHONE (Dan 2026-10-29, "Postcards"): a stack of 1950s "Greetings from GAS 2" postcards in the station
+     world. Card 1 = the real pump in front of the station; flick away REGULAR / PREMIUM / RACE; HEAR IT turns over
+     (▶ on the back); the last card is a postcard back: the email on the address lines, dropped in the mailbox.
+     DESIGN.md §7 (phones): rebuilt for portrait, the station only as a soft backdrop, never a crop as the page.
+     Assets + how they were made: postcards/tools/. ?card=1-6 opens on a card, &flip turns HEAR IT over. -->
+<style>
+@font-face { font-family: Bebas; src: url(fonts/bebas.woff2) format("woff2"); }
+@font-face { font-family: Inter; src: url(fonts/inter.woff2) format("woff2"); font-weight: 100 900; }
+@font-face { font-family: Yellowtail; src: url(fonts/yellowtail.woff2) format("woff2"); }
+@font-face { font-family: Gochi; src: url(fonts/gochi.woff2) format("woff2"); }
+@font-face { font-family: Elite; src: url(fonts/elite.woff2) format("woff2"); }
+@font-face { font-family: Oswald; src: url(fonts/Oswald-Variable.woff2) format("woff2"); font-weight: 200 700; }
+
+:root {
+  --bg: #0b0907; --fg: #efe9df; --fg-dim: #a99f90; --brass: #c9a35c; --brass-bright: #e8c878;
+  --honey: #f2be4a; --honey-line: #f6c85d; --cream: #efe3c6; --red: #b8341e; --oxide: #7a2717;
+  --stock: #efe5cc; --stock-2: #e6d8b8; --ink: #241a12; --ink-2: #5d4b37; --pen: #24304d;
+  --ease-settle: cubic-bezier(.22, 1, .36, 1); --ease-snap: cubic-bezier(.34, 1.3, .35, 1);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; overscroll-behavior: none; background: var(--bg); }
+body { color: var(--fg); font: 15px/1.4 Inter, system-ui, sans-serif; -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: 100%; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* ── the lot at dusk, out of focus: you stand at the station holding the cards ── */
+.desk { position: fixed; inset: 0; display: grid; grid-template-rows: 1fr auto; padding-top: env(safe-area-inset-top); }
+.sky { position: absolute; inset: 0; z-index: -1; background:
+  radial-gradient(120% 70% at 50% 108%, rgba(11, 9, 7, .82), transparent 70%),
+  radial-gradient(90% 60% at 50% 42%, transparent 40%, rgba(8, 6, 4, .55)),
+  url(postcards/img/dusk.webp) 50% 40% / cover; }
+
+.table { position: relative; container-type: size; display: grid; place-items: center; min-height: 0; }
+.stack { --cw: min(90cqw, calc((100cqh - 24px) / 1.55), 420px); position: relative; width: var(--cw); height: calc(var(--cw) * 1.55); }
+
+/* ── one postcard: linen stock, a hair of edge wear, a soft shadow on the card under it ── */
+.pc { position: absolute; inset: 0; container-type: size; border-radius: 4px; color: var(--ink); background: var(--stock);
+  box-shadow: 0 1px 1px rgba(16, 10, 5, .4), 0 12px 26px -8px rgba(6, 4, 2, .7), inset 0 0 0 1px rgba(110, 86, 52, .18);
+  transform: var(--rest); transform-origin: 50% 55%; touch-action: none; user-select: none; -webkit-user-select: none;
+  -webkit-touch-callout: none; isolation: isolate; }
+.pc::after, .face::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 5;
+  background: url(postcards/img/linen.webp) 0 0 / 96px 96px; mix-blend-mode: multiply; opacity: var(--linen, .5); }
+.pc-hello { --linen: .3; }
+.pc::before, .face::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 5;
+  background: radial-gradient(130% 90% at 50% 45%, transparent 58%, rgba(120, 88, 40, .16)),
+    linear-gradient(115deg, rgba(255, 246, 225, .22), transparent 38%); }
+.pc img { -webkit-user-drag: none; user-select: none; pointer-events: none; }
+.pc:not(.top) { pointer-events: none; }
+.pc.lift { box-shadow: 0 1px 1px rgba(16, 10, 5, .35), 0 26px 44px -10px rgba(6, 4, 2, .75), inset 0 0 0 1px rgba(110, 86, 52, .18); }
+.pc.nudge { animation: nudge 1.1s var(--ease-settle) both; }
+@keyframes nudge { 0%, 100% { transform: var(--rest); } 38% { transform: var(--rest) translate(-10cqw, -1.5cqw) rotate(-6deg); } }
+.row { position: absolute; left: 7cqw; right: 7cqw; top: 6.6cqw; display: flex; justify-content: space-between;
+  font: 600 3.3cqw/1 Oswald; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-2); z-index: 2; }
+.frame { position: absolute; inset: 3.2cqw; pointer-events: none; z-index: 1;
+  box-shadow: inset 0 0 0 1px rgba(36, 26, 18, .55), inset 0 0 0 .9cqw var(--stock), inset 0 0 0 calc(.9cqw + 1px) rgba(36, 26, 18, .45); }
+
+/* the big letters of a 1950s large-letter card: a picture inside, a cream inline, an ink block behind */
+.big { position: absolute; left: 0; right: 0; margin: 0; text-align: center; font: 700 19.5cqw/1 Oswald; letter-spacing: .015em; text-transform: uppercase; z-index: 2; }
+.big .bk { position: absolute; inset: 0; color: var(--ink); -webkit-text-stroke: .085em var(--ink);
+  text-shadow: .03em .03em 0 var(--ink), .055em .055em 0 var(--ink), .08em .08em 0 var(--ink), .1em .11em .06em rgba(36, 26, 18, .35); }
+.big .fr { position: relative; color: transparent; -webkit-text-fill-color: transparent; -webkit-background-clip: text; background-clip: text;
+  -webkit-text-stroke: .024em var(--cream); }
+.script { position: absolute; left: 0; right: 0; margin: 0; text-align: center; font: 400 9.2cqw/1 Yellowtail; color: var(--red); transform: rotate(-5deg); z-index: 3; }
+
+/* ── 1 · GREETINGS FROM GAS 2: the real pump (the plugin's own render) in front of the station, a lens on the pump ── */
+.pic { position: absolute; left: 3.4cqw; right: 3.4cqw; top: 3.4cqw; bottom: 10cqw; overflow: hidden; container-type: size;
+  border-radius: 1px; background: #2a1d14; color: var(--cream); isolation: isolate; }
+.pic > * { position: absolute; }
+.pic .st { inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.pic { --ph: 76.5cqh; --bw: calc(var(--ph) * .3956); --bx: 50cqw; --base: 89.6cqh; }  /* pump.webp: body 597 of 1398 px, base at 1505 of 1509 */
+.pic .pump { height: var(--ph); left: calc(var(--bx) - var(--bw) / 2); top: calc(var(--base) - var(--ph) * .99735); filter: sepia(.07) saturate(1.05) brightness(.97); }
+.pic .floor { left: calc(var(--bx) - var(--bw) * .66); width: calc(var(--bw) * 1.32); top: calc(var(--base) - 2.6cqh); height: 5.4cqh;
+  background: radial-gradient(closest-side, rgba(6, 4, 2, .9), rgba(6, 4, 2, .5) 55%, transparent); }
+.pic .lamp { height: var(--ph); aspect-ratio: 1398 / 1509; left: calc(var(--bx) - var(--bw) / 2); top: calc(var(--base) - var(--ph) * .99735);
+  -webkit-mask: url(postcards/img/pump.webp) 0 0 / 100% 100%; mask: url(postcards/img/pump.webp) 0 0 / 100% 100%;
+  background: radial-gradient(34% 40% at 21% 8%, rgba(255, 214, 150, .75), rgba(255, 196, 120, .18) 60%, transparent 85%);
+  mix-blend-mode: soft-light; }
+.pic .grade { inset: 0; background: linear-gradient(180deg, rgba(40, 22, 10, .1), transparent 30%, transparent 70%, rgba(14, 8, 4, .5)); }
+.pic .greet { left: 0; right: 0; top: 2cqh; margin: 0; text-align: center; font: 400 12.5cqw/1 Yellowtail; color: var(--cream); transform: rotate(-5deg);
+  text-shadow: 0 .3cqw 0 rgba(30, 14, 6, .9), 0 0 1.4cqw rgba(20, 10, 4, .7), 0 .8cqw 3cqw rgba(0, 0, 0, .45); }
+.pic .out { left: 0; right: 0; bottom: 2.2cqh; margin: 0; text-align: center; font: 400 6.9cqw/1 Bebas; letter-spacing: .05em; color: var(--honey-line);
+  text-shadow: 0 .25cqw 0 rgba(20, 10, 4, .8), 0 0 1.6cqw rgba(0, 0, 0, .6); }
+.cap { position: absolute; left: 4.4cqw; right: 4.4cqw; bottom: 3.3cqw; display: flex; justify-content: space-between; z-index: 2;
+  font: 600 3.2cqw/1 Oswald; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-2); }
+.cap b { color: var(--red); font-weight: 700; }
+
+/* ── 2-4 · the grades: a 1950s ad card each, the pump's own key, lit when its card comes up ── */
+.pc-grade .rays { position: absolute; left: -10cqw; right: -10cqw; top: 3cqh; height: 120cqw; z-index: 0;
+  background: repeating-conic-gradient(from 3deg at 50% 50%, var(--ray) 0 6deg, transparent 6deg 12deg);
+  -webkit-mask: radial-gradient(closest-side, #000 18%, rgba(0, 0, 0, .55) 46%, transparent 72%); mask: radial-gradient(closest-side, #000 18%, rgba(0, 0, 0, .55) 46%, transparent 72%); }
+.g-reg { --ray: rgba(232, 160, 46, .3); }
+.g-pre { --ray: rgba(184, 52, 30, .2); }
+.g-race { --ray: rgba(36, 26, 18, .16); }
+.key { position: absolute; left: 26cqw; width: 48cqw; top: 14cqh; aspect-ratio: 530 / 384; z-index: 2; transition: transform .18s ease-in; }  /* bake-keys.cjs, 9x */
+.key img { position: absolute; inset: 0; width: 100%; height: 100%; }
+.key .on { opacity: 0; transition: opacity .45s .32s; }
+.pc.top .key .on { opacity: 1; }
+.pc.top .key { animation: press .5s .2s both; }
+@keyframes press { 0%, 100% { transform: none; } 30% { transform: translateY(.8cqw) scale(.975); } }
+.pc-grade .script { top: 46cqh; }
+.pc-grade .big { top: 52.5cqh; }
+.g-reg .fr { background-image: radial-gradient(rgba(255, 240, 200, .35) 18%, transparent 22%), linear-gradient(180deg, #ffe2a0 0%, #f6b24a 42%, #e0742e 78%, #c4452a 100%);
+  background-size: .09em .09em, 100% 100%; }
+.g-pre .fr { background-image: radial-gradient(rgba(255, 230, 200, .3) 18%, transparent 22%), linear-gradient(180deg, #2b3a63 0%, #6a4c78 34%, #e2733c 70%, #ffd27c 100%);
+  background-size: .09em .09em, 100% 100%; }
+.g-race .fr { background-image: conic-gradient(#221a13 25%, #f2e6c8 0 50%, #221a13 0 75%, #f2e6c8 0); background-size: .2em .2em; background-position: .02em .06em; }
+.g-race .big .bk { color: var(--red); -webkit-text-stroke-color: var(--red); text-shadow: .03em .03em 0 var(--ink), .055em .055em 0 var(--ink), .08em .08em 0 var(--ink), .1em .11em .06em rgba(36, 26, 18, .35); }
+.gline { position: absolute; left: 10cqw; right: 10cqw; top: 76.5cqh; margin: 0; text-align: center; font: 450 4.7cqw/1.38 Inter; color: var(--ink); z-index: 2; }
+.badge { position: absolute; right: 6.5cqw; bottom: 6cqw; width: 14cqw; height: 14cqw; border-radius: 50%; z-index: 2; display: grid; place-content: center;
+  background: var(--cream); box-shadow: inset 0 0 0 .7cqw var(--red), inset 0 0 0 1.1cqw var(--cream), inset 0 0 0 1.25cqw rgba(36, 26, 18, .4);
+  font: 700 3.6cqw/.92 Oswald; text-align: center; color: var(--ink); letter-spacing: .02em; }
+.badge b { display: block; font-size: 5.2cqw; color: var(--red); }
+.foot { position: absolute; left: 7cqw; bottom: 8cqw; font: 600 3cqw/1 Oswald; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-2); z-index: 2; }
+
+/* ── 5 · HEAR IT: turns over. Two quarter turns with the face swapped edge-on (JS), not backface-visibility: WebKit
+   lets composited children of a hidden back face show through, mirrored ── */
+.pc-hear { background: none; box-shadow: none; perspective: 1600px; }
+.pc-hear::before, .pc-hear::after { content: none; }
+.flip { position: absolute; inset: 0; }
+.face { position: absolute; inset: 0; border-radius: 4px; overflow: hidden; background: var(--stock);
+  box-shadow: 0 1px 1px rgba(16, 10, 5, .4), 0 12px 26px -8px rgba(6, 4, 2, .7), inset 0 0 0 1px rgba(110, 86, 52, .18); }
+.pc-hear .back, .pc-hear.flipped .front { visibility: hidden; }
+.pc-hear.flipped .back { visibility: visible; }
+.photo { position: absolute; left: 7cqw; right: 7cqw; top: 13cqw; aspect-ratio: 3 / 2; border: 1.6cqw solid #f6eedc; transform: rotate(-1.4deg); z-index: 2;
+  box-shadow: 0 0 0 1px rgba(110, 86, 52, .3); background: #e8d6b0 url(props/poster-level.webp) center / cover; }
+.pc-hear .big { top: 51cqh; font-size: 21cqw; }
+.pc-hear .big .fr { background-image: radial-gradient(rgba(255, 220, 190, .28) 18%, transparent 22%), linear-gradient(180deg, #d04a2c, #a52a17); background-size: .09em .09em, 100% 100%; }
+.hline { position: absolute; left: 8cqw; right: 8cqw; top: 70cqh; margin: 0; text-align: center; font: 450 4.7cqw/1.38 Inter; z-index: 2; }
+.turn { position: absolute; left: 50%; bottom: 7cqw; transform: translateX(-50%); z-index: 6; display: inline-flex; align-items: center; gap: 1.6cqw;
+  min-height: 44px; padding: 0 3cqw; font: 600 3.6cqw/1 Oswald; letter-spacing: .16em; text-transform: uppercase; color: var(--red); white-space: nowrap; }
+.turn svg { width: 4.6cqw; height: 4.6cqw; }
+.curl { position: absolute; right: 0; bottom: 0; width: 10cqw; height: 10cqw; z-index: 6; pointer-events: none;
+  background: linear-gradient(315deg, var(--stock-2) 0 47%, transparent 48%), linear-gradient(135deg, transparent 0 48%, #d8c8a2 50%, #f3e9d2 58%, #e0cfa8 100%);
+  border-top-left-radius: 2cqw; filter: drop-shadow(-.4cqw -.4cqw .6cqw rgba(60, 40, 20, .25)); transform-origin: 100% 100%; }
+.pc-hear.top:not(.flipped) .curl { animation: curl 2.6s 1s ease-in-out infinite; }
+@keyframes curl { 0%, 70%, 100% { transform: none; } 82% { transform: scale(1.35); } }
+.note { position: absolute; left: 8cqw; right: 8cqw; top: 15cqw; margin: 0; font: 400 6.1cqw/1.18 Gochi; color: var(--pen); transform: rotate(-1.5deg); z-index: 2; }
+.play { position: absolute; left: 33cqw; top: 44cqh; width: 34cqw; height: 34cqw; margin-top: -17cqw; border-radius: 50%; z-index: 6; display: grid; place-items: center;
+  background: radial-gradient(circle at 38% 30%, #ffe08e, var(--honey) 46%, #d99a2c 100%); color: #1e1710;
+  box-shadow: 0 .5cqw 0 #a8741f, 0 1.6cqw 3cqw rgba(60, 36, 10, .45), inset 0 -.8cqw 1.4cqw rgba(140, 80, 10, .35), inset 0 .6cqw 1cqw rgba(255, 248, 220, .7);
+  transition: transform .12s, box-shadow .12s; }
+.play:active { transform: translateY(.5cqw); box-shadow: 0 0 0 #a8741f, 0 .8cqw 1.6cqw rgba(60, 36, 10, .4), inset 0 -.8cqw 1.4cqw rgba(140, 80, 10, .35), inset 0 .6cqw 1cqw rgba(255, 248, 220, .7); }
+.play svg { width: 12cqw; height: 12cqw; }
+.play .i-stop, .play .i-wait, .playing .play .i-go, .loading .play .i-go { display: none; }
+.playing .play .i-stop { display: block; }
+.loading .play .i-wait { display: block; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.ab { position: absolute; left: 12cqw; right: 12cqw; top: 66cqh; display: grid; grid-template-columns: 1fr 1fr; z-index: 6;
+  border: 1.5px solid var(--ink); border-radius: 999px; padding: .8cqw; }
+.ab button { min-height: 44px; border-radius: 999px; font: 600 3.9cqw/1 Oswald; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); transition: background .2s, color .2s; }
+.ab button[aria-pressed="true"] { background: var(--ink); color: var(--cream); }
+.ab button[aria-pressed="true"][data-side="b"] { background: var(--red); }
+.bar { position: absolute; left: 14cqw; right: 14cqw; top: 79.5cqh; height: 2px; background: rgba(36, 26, 18, .2); z-index: 2; }
+.bar i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--red); }
+.fine { position: absolute; left: 8cqw; right: 8cqw; margin: 0; text-align: center; font: 400 3.15cqw/1.35 Elite, ui-monospace, monospace; color: var(--ink-2); z-index: 2; }
+.back .fine { top: 82.5cqh; }
+.fail { position: absolute; left: 8cqw; right: 8cqw; top: 24cqh; margin: 0; text-align: center; font: 500 3.4cqw/1.2 Inter; color: var(--red); z-index: 6; }
+
+/* ── 6 · the postcard back: the address lines take the email, MAIL ME THE KEYS drops it in the box ── */
+.pc-mail .pchead { position: absolute; left: 7cqw; right: 7cqw; top: 6cqw; padding-bottom: 2.6cqw; border-bottom: 1px solid rgba(36, 26, 18, .5);
+  text-align: center; font: 500 4.4cqw/1 Elite, ui-monospace, monospace; letter-spacing: .55em; color: var(--ink); z-index: 2; }
+.mtitle { position: absolute; left: 7cqw; top: 19cqw; margin: 0; font: 700 9.4cqw/.94 Oswald; text-transform: uppercase; color: var(--red); z-index: 2; }
+.msub { position: absolute; left: 7cqw; top: 39.5cqw; margin: 0; font: 500 3.6cqw/1.3 Inter; color: var(--ink-2); z-index: 2; }
+.stamp { position: absolute; right: 7cqw; top: 17.5cqw; width: 24cqw; height: 28cqw; padding: 1.9cqw; z-index: 2; transform: rotate(2deg);
+  background: url(postcards/img/stamp.webp) center / cover content-box, #f4ecd8;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, radial-gradient(circle, transparent .62cqw, #000 .68cqw) -.95cqw -.95cqw / 1.9cqw 1.9cqw;
+  -webkit-mask-composite: source-over; mask: linear-gradient(#000 0 0) content-box, radial-gradient(circle, transparent .62cqw, #000 .68cqw) -.95cqw -.95cqw / 1.9cqw 1.9cqw;
+  mask-composite: add; filter: drop-shadow(0 .2cqw .2cqw rgba(60, 40, 20, .25)); }
+.stamp span { position: absolute; left: 1.9cqw; right: 1.9cqw; font: 700 3cqw/1 Oswald; letter-spacing: .08em; color: var(--cream); text-shadow: 0 0 .5cqw rgba(60, 10, 4, .9); }
+.stamp .s1 { top: 3cqw; text-align: center; }
+.stamp .s2 { bottom: 2.6cqw; text-align: right; padding-right: 1.2cqw; font-size: 4.6cqw; }
+.pmark { position: absolute; right: 11.4cqw; top: 27.6cqw; width: 34cqw; z-index: 3; color: rgba(36, 30, 40, .74); transform: rotate(-11deg); pointer-events: none; }
+.pc-mail .note { top: 52cqw; font-size: 5.6cqw; }
+.addr { position: absolute; left: 7cqw; right: 7cqw; top: 54cqh; z-index: 6; }
+.addr label { display: flex; align-items: flex-end; gap: 2.4cqw; border-bottom: 1.5px solid rgba(36, 26, 18, .6); padding-bottom: .6cqw; }
+.addr label span { font: 400 3.6cqw/1 Elite, ui-monospace, monospace; letter-spacing: .1em; color: var(--ink-2); padding-bottom: 1.4cqw; }
+.addr input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; padding: .6cqw 0 0; border-radius: 0;
+  font: 400 max(16px, 6.4cqw)/1.15 Gochi; color: var(--pen); caret-color: var(--red); -webkit-appearance: none; appearance: none; }
+.addr input::placeholder { font: 400 max(15px, 4.2cqw)/1.15 Elite, ui-monospace, monospace; letter-spacing: .04em; color: var(--ink-2); }  /* printed, so it never reads as handwriting */
+.addr i { display: block; height: 9.2cqw; border-bottom: 1px solid rgba(36, 26, 18, .32); }
+.addr .err { position: absolute; left: 0; top: 100%; margin: 1.6cqw 0 0; font: 500 3.4cqw/1.2 Inter; color: var(--red); }
+.send { position: absolute; left: 7cqw; right: 7cqw; top: 79.5cqh; min-height: max(48px, 12.5cqw); border-radius: 2.6cqw; z-index: 6; overflow: hidden;
+  display: flex; align-items: center; justify-content: center; gap: 2.4cqw; background: var(--honey); color: #1e1710;
+  font: 700 max(17px, 5.8cqw)/1 Oswald; letter-spacing: .02em; box-shadow: 0 .4cqw 0 #b98422, 0 1.4cqw 2.6cqw rgba(60, 36, 10, .35);
+  transition: transform .12s, box-shadow .12s, background .2s; }
+.send:active { transform: translateY(.4cqw); box-shadow: 0 0 0 #b98422, 0 .6cqw 1.2cqw rgba(60, 36, 10, .35); background: #eab53f; }
+.send svg { width: 7cqw; height: 4.2cqw; }
+.send::after { content: ""; position: absolute; inset: 0 auto 0 0; width: 28%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .2), transparent);
+  transform: translateX(-160%) skewX(-20deg); animation: shine 8s ease-in-out 1.2s infinite; pointer-events: none; }
+@keyframes shine { 0%, 82% { transform: translateX(-160%) skewX(-20deg); } 100% { transform: translateX(420%) skewX(-20deg); } }
+.pc-mail .fine { top: 92.3cqh; }
+
+/* the mailbox: up from the bottom of the screen while the last card is on top (it takes the counter's place); the card
+   goes in through the lid */
+.box { position: absolute; left: 50%; bottom: 0; width: min(31vw, 132px); z-index: 4; pointer-events: none;
+  transform: translate(-50%, 110%); transition: transform .6s var(--ease-settle); }
+.desk.mailing .count, .desk.mailing #next { opacity: 0; pointer-events: none; }
+.box img { display: block; width: 100%; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .6)); }
+.box.up { transform: translate(-50%, 46%); }
+.box.full { transform: translate(-50%, 18%); }
+.box.gulp { animation: gulp .45s var(--ease-snap); }
+@keyframes gulp { 40% { transform: translate(-50%, 21%) scale(1.04, .97); } }
+.sent { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 14px; padding: 0 12%; text-align: center; z-index: 3; }
+.sent[hidden] { display: none; }
+.sent .pm { width: 120px; color: var(--honey-line); transform: rotate(-8deg); animation: thud .5s var(--ease-snap) both; }
+@keyframes thud { 0% { transform: rotate(-8deg) scale(1.6); opacity: 0; } 100% { transform: rotate(-8deg) scale(1); opacity: 1; } }
+.sent h2 { margin: 0; font: 400 34px/1 Bebas; letter-spacing: .06em; color: var(--fg); }
+.sent p { margin: 0; color: var(--fg-dim); font-size: 15px; }
+.sent p b { color: var(--fg); font-weight: 600; overflow-wrap: anywhere; }
+.again { margin-top: 4px; min-height: 44px; padding: 0 18px; border: 1.5px solid var(--brass); border-radius: 999px; color: var(--brass-bright);
+  font: 600 13px/1 Oswald; letter-spacing: .18em; text-transform: uppercase; }
+
+/* ── page chrome under the stack: back · n / 6 · next ── */
+.ctl { position: relative; z-index: 5; display: grid; grid-template-columns: 44px auto 44px; justify-content: center; align-items: center; column-gap: 22px;
+  padding: 8px 0 calc(12px + env(safe-area-inset-bottom)); }
+.ctl .nav { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; color: var(--brass-bright);
+  box-shadow: inset 0 0 0 1.5px rgba(201, 163, 92, .7); background: rgba(20, 14, 9, .45); transition: opacity .25s, transform .12s; }
+.ctl .nav:active { transform: scale(.94); }
+.ctl .nav:disabled { opacity: .28; cursor: default; }
+.ctl .nav svg { width: 18px; height: 18px; }
+.count { min-width: 64px; text-align: center; font: 600 14px/1 Oswald; letter-spacing: .2em; color: var(--fg); }
+.count b { font-weight: 700; color: var(--brass-bright); }
+.hint { position: absolute; left: 0; right: 0; bottom: 100%; margin: 0 0 2px; text-align: center; font: 500 13px/1.2 Inter; color: var(--fg-dim);
+  letter-spacing: .02em; transition: opacity .4s; }
+.hint.gone { opacity: 0; }
+.desk.done .ctl { opacity: 0; pointer-events: none; transition: opacity .3s; }
+:focus-visible { outline: 2px solid var(--honey); outline-offset: 3px; }
+.addr input:focus-visible { outline: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pc.nudge, .pc.top .key, .pc-hear.top:not(.flipped) .curl, .send::after, .box.gulp, .sent .pm { animation: none !important; }
+  .flip, .box, .key .on { transition-duration: .01s !important; transition-delay: 0s !important; }
+}
+</style>
+</head>
+<body>
+<main class="desk" id="desk">
+  <div class="sky" aria-hidden="true"></div>
+  <div class="table">
+    <section class="stack" id="stack" aria-roledescription="postcard stack" aria-label="GAS 2 postcards">
+
+      <!-- 1 · Greetings from GAS 2 -->
+      <article class="pc pc-hello" aria-roledescription="postcard" aria-label="1 of 6: Greetings from GAS 2">
+        <div class="pic">
+          <img class="st" src="postcards/img/station.webp" alt="">
+          <i class="floor" aria-hidden="true"></i>
+          <img class="pump" src="postcards/img/pump.webp" alt="The GAS 2 pump outside the station: GAS at 140 %, PREMIUM lit, the counter reading -11.0 LUFS">
+          <i class="lamp" aria-hidden="true"></i>
+          <i class="grade" aria-hidden="true"></i>
+          <p class="greet" aria-hidden="true">Greetings from</p>
+          <h1 class="sr">Greetings from GAS 2</h1>
+          <p class="out">Thicker, smoother, glued master.</p>
+        </div>
+        <div class="cap"><span>GAS 2 · <b>FREE</b></span><span>No. 1</span></div>
+      </article>
+
+      <!-- 2-4 · the three grades (lines: GAS2 docs/BRIEF.md, as approved for the phone 2026-10-26) -->
+      <article class="pc pc-grade g-reg" aria-roledescription="postcard" aria-label="2 of 6: Regular">
+        <i class="rays" aria-hidden="true"></i><i class="frame" aria-hidden="true"></i>
+        <div class="row"><span>No. 2</span><span>Fuel grade</span></div>
+        <div class="key" aria-hidden="true"><img src="postcards/img/key0.webp" alt=""><img class="on" src="postcards/img/key0-lit.webp" alt=""></div>
+        <p class="script" aria-hidden="true">Smooth &amp; warm</p>
+        <h2 class="big"><span class="bk" aria-hidden="true">Regular</span><span class="fr">Regular</span></h2>
+        <p class="gline">Smooth and warm. For mixes that are already good.</p>
+        <span class="foot" aria-hidden="true">Grade 1 of 3</span>
+        <span class="badge" aria-hidden="true">GAS<b>2</b></span>
+      </article>
+
+      <article class="pc pc-grade g-pre" aria-roledescription="postcard" aria-label="3 of 6: Premium">
+        <i class="rays" aria-hidden="true"></i><i class="frame" aria-hidden="true"></i>
+        <div class="row"><span>No. 3</span><span>Fuel grade</span></div>
+        <div class="key" aria-hidden="true"><img src="postcards/img/key1.webp" alt=""><img class="on" src="postcards/img/key1-lit.webp" alt=""></div>
+        <p class="script" aria-hidden="true">The signature</p>
+        <h2 class="big"><span class="bk" aria-hidden="true">Premium</span><span class="fr">Premium</span></h2>
+        <p class="gline">Thick lows, clear mids, silky air.</p>
+        <span class="foot" aria-hidden="true">Grade 2 of 3</span>
+        <span class="badge" aria-hidden="true">GAS<b>2</b></span>
+      </article>
+
+      <article class="pc pc-grade g-race" aria-roledescription="postcard" aria-label="4 of 6: Race">
+        <i class="rays" aria-hidden="true"></i><i class="frame" aria-hidden="true"></i>
+        <div class="row"><span>No. 4</span><span>Fuel grade</span></div>
+        <div class="key" aria-hidden="true"><img src="postcards/img/key2.webp" alt=""><img class="on" src="postcards/img/key2-lit.webp" alt=""></div>
+        <p class="script" aria-hidden="true">Punchy &amp; bright</p>
+        <h2 class="big"><span class="bk" aria-hidden="true">Race</span><span class="fr">Race</span></h2>
+        <p class="gline">Punchy and bright. For loud, modern mixes.</p>
+        <span class="foot" aria-hidden="true">Grade 3 of 3</span>
+        <span class="badge" aria-hidden="true">GAS<b>2</b></span>
+      </article>
+
+      <!-- 5 · HEAR IT: tap = turn over; the back plays the one demo we have (PREMIUM at GAS 140 %, both sides -11.0 LUFS) -->
+      <article class="pc pc-hear" id="hear" aria-roledescription="postcard" aria-label="5 of 6: Hear it">
+        <div class="flip">
+          <section class="face front">
+            <div class="row"><span>No. 5</span><span>Side A</span></div>
+            <div class="photo" role="img" aria-label="Poster: Fill it up. Same level."></div>
+            <h2 class="big"><span class="bk" aria-hidden="true">Hear it</span><span class="fr">Hear it</span></h2>
+            <p class="hline">The same song, the same level.<br>One side is GAS 2.</p>
+            <button class="turn" type="button" data-turn><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>Turn it over</button>
+            <i class="curl" aria-hidden="true"></i>
+          </section>
+          <section class="face back" id="player">
+            <div class="row"><span>Hear it</span><span>GAS 2 · Premium</span></div>
+            <p class="note">Same song, same loudness. Switch while it plays.</p>
+            <button class="play" type="button" id="play" aria-label="Play the demo">
+              <svg class="i-go" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>
+              <svg class="i-stop" viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="6.5" width="11" height="11" rx="1.2" fill="currentColor"/></svg>
+              <svg class="i-wait" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 3a9 9 0 1 1-9 9"/></svg>
+            </button>
+            <div class="ab" role="group" aria-label="Which side plays">
+              <button type="button" data-side="a" aria-pressed="false">Original</button>
+              <button type="button" data-side="b" aria-pressed="true">GAS 2</button>
+            </div>
+            <div class="bar" aria-hidden="true"><i id="prog"></i></div>
+            <p class="fine">Hip-hop demo · PREMIUM at GAS 140 %<br>both sides −11.0 LUFS</p>
+            <p class="fail" id="fail" role="status" hidden>The demo didn't load. Tap ▶ to try again.</p>
+            <button class="turn" type="button" data-turn><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>Turn back</button>
+          </section>
+        </div>
+      </article>
+
+      <!-- 6 · the postcard back: MAIL ME THE KEYS (a dummy: nothing is sent) -->
+      <article class="pc pc-mail" aria-roledescription="postcard" aria-label="6 of 6: Mail me the keys">
+        <div class="pchead" aria-hidden="true">POST CARD</div>
+        <h2 class="mtitle">Mail me<br>the keys</h2>
+        <p class="msub">All three grades · free</p>
+        <div class="stamp" aria-hidden="true"><span class="s1">GAS 2 POST</span><span class="s2">0¢</span></div>
+        <svg class="pmark" viewBox="0 0 200 110" fill="none" stroke="currentColor" aria-hidden="true">
+          <circle cx="55" cy="55" r="44" stroke-width="2.4"/><circle cx="55" cy="55" r="29" stroke-width="1.4"/>
+          <path id="pmArc" d="M21 55a34 34 0 0 1 68 0" stroke="none"/>
+          <text font-family="Oswald" font-weight="600" font-size="10.5" letter-spacing="1.6" fill="currentColor" stroke="none"><textPath href="#pmArc" startOffset="50%" text-anchor="middle">REVAUDIO STATION</textPath></text>
+          <text x="55" y="61" font-family="Oswald" font-weight="700" font-size="15" letter-spacing="1" text-anchor="middle" fill="currentColor" stroke="none">FREE</text>
+          <path d="M104 36c8-5 16-5 24 0s16 5 24 0 16-5 24 0 16 5 22 1M104 50c8-5 16-5 24 0s16 5 24 0 16-5 24 0 16 5 22 1M104 64c8-5 16-5 24 0s16 5 24 0 16-5 24 0 16 5 22 1M104 78c8-5 16-5 24 0s16 5 24 0 16-5 24 0 16 5 22 1" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+        <p class="note">Drop me in the box: we'll mail you the download link. No licence key, no card.</p>
+        <form class="mailform" id="mailform" novalidate>
+          <div class="addr">
+            <label for="em"><span>TO</span><input id="em" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" enterkeyhint="send" placeholder="your email" required></label>
+            <i aria-hidden="true"></i><i aria-hidden="true"></i>
+            <p class="err" id="err" role="alert" hidden>That email looks off. Check it and try again.</p>
+          </div>
+          <button class="send" type="submit">MAIL ME THE KEYS<svg viewBox="0 0 30 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 9h25M19 2l8 7-8 7"/></svg></button>
+        </form>
+        <p class="fine">We email you the download link. (Mockup: nothing is sent.)</p>
+      </article>
+    </section>
+
+    <div class="sent" id="sent" hidden>
+      <svg class="pm" viewBox="0 0 120 120" fill="none" stroke="currentColor" aria-hidden="true"><circle cx="60" cy="60" r="54" stroke-width="3"/><circle cx="60" cy="60" r="44" stroke-width="1.5"/>
+        <text x="60" y="70" font-family="Bebas" font-size="34" letter-spacing="3" text-anchor="middle" fill="currentColor" stroke="none">SENT</text></svg>
+      <h2>In the mail</h2>
+      <p>The keys are on their way to <b id="sentTo"></b>.</p>
+      <p>(Mockup: nothing was sent.)</p>
+      <button class="again" type="button" id="again">Start over</button>
+    </div>
+  </div>
+  <div class="box" id="box" aria-hidden="true"><img src="props/mailbox.png" alt=""></div>
+
+  <nav class="ctl" aria-label="Postcards">
+    <p class="hint" id="hint">Flick the card</p>
+    <button class="nav" type="button" id="prev" aria-label="Previous card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <span class="count" aria-hidden="true"><b id="num">1</b> / 6</span>
+    <button class="nav" type="button" id="next" aria-label="Next card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+  </nav>
+  <p class="sr" id="live" aria-live="polite"></p>
+</main>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const desk = $('desk'), stack = $('stack'), cards = [...stack.querySelectorAll('.pc')], N = cards.length;
+  const hear = $('hear'), box = $('box'), hint = $('hint');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // each card lies a little crooked, like a real stack; the top one straightens most of the way
+  const LIE = [[-1.1, 0], [1.8, 3], [-1.6, -2], [2.3, 2], [-2, -3], [1.2, 1]];
+  const NAMES = ['Greetings from GAS 2', 'Regular', 'Premium', 'Race', 'Hear it', 'Mail me the keys'];
+  let cur = 0, touched = false;
+
+  const rest = (i, d) => {
+    const [r, x] = LIE[i];
+    return d === 0 ? `translate3d(${x * .3}px, 0px, 0) rotate(${r * .45}deg)`
+                   : `translate3d(${x}px, ${d * 9}px, 0) rotate(${r}deg) scale(${1 - d * .028})`;
+  };
+
+  function layout(anim) {
+    cards.forEach((c, i) => {
+      const d = i - cur;
+      c.classList.toggle('top', d === 0);
+      c.inert = d !== 0;
+      c.setAttribute('aria-hidden', String(d !== 0));
+      if (d < 0) return;                                   // thrown: keeps its flight transform, hidden after it lands
+      c.style.zIndex = String(N - i);
+      c.style.visibility = d <= 2 ? 'visible' : 'hidden';
+      c.style.setProperty('--rest', rest(i, d));
+      c.style.transition = anim && !reduce ? 'transform .56s var(--ease-settle), opacity .3s' : 'none';
+      c.style.transform = rest(i, d);
+      c.style.opacity = '';
+    });
+    $('num').textContent = cur + 1;
+    $('prev').disabled = cur === 0;
+    $('next').disabled = cur === N - 1;
+    box.classList.toggle('up', cur === N - 1);
+    desk.classList.toggle('mailing', cur === N - 1);
+    if (cur >= 3) audio.warm().catch(() => {});              // decode the demo before HEAR IT comes up
+    if (cur !== 4) audio.stop();
+  }
+  const say = () => { $('live').textContent = `Card ${cur + 1} of ${N}: ${NAMES[cur]}`; };
+
+  // ── throw the top card off the table (any direction), the next one settles up ──
+  function toss(vx, vy, from) {
+    if (cur >= N - 1) return false;
+    const c = cards[cur], W = innerWidth, H = innerHeight;
+    let dx = vx, dy = vy;
+    const m = Math.hypot(dx, dy) || 1; dx /= m; dy /= m;
+    const dist = Math.hypot(W, H) * .75 + c.offsetWidth;
+    const f = from || { x: 0, y: 0, r: LIE[cur][0] * .45 };
+    const speed = Math.max(1.4, Math.hypot(vx, vy));           // px per ms
+    const ms = reduce ? 1 : Math.min(520, Math.max(240, dist / speed));
+    c.style.transition = `transform ${ms}ms cubic-bezier(.2,.62,.32,1), opacity ${ms}ms`;
+    c.style.transform = `translate3d(${f.x + dx * dist}px, ${f.y + dy * dist}px, 0) rotate(${f.r + (dx || 1) * 24}deg)`;
+    c.classList.remove('lift');
+    if (reduce) c.style.opacity = '0';
+    c._gone = c.style.transform;
+    setTimeout(() => { if (cards.indexOf(c) < cur) c.style.visibility = 'hidden'; }, ms + 30);
+    cur++; layout(true); say(); quiet();
+    return true;
+  }
+  function next() { toss(-1.6, -.25); }
+  function prev() {
+    if (cur === 0 || desk.classList.contains('done')) return;
+    cur--;
+    const c = cards[cur];
+    c.style.transition = 'none';
+    c.style.visibility = 'visible';
+    c.style.opacity = '';
+    c.style.transform = c._gone || `translate3d(${-innerWidth}px, 0, 0) rotate(-24deg)`;
+    void c.offsetWidth;
+    layout(true); say();
+  }
+  function quiet() { if (!touched) { touched = true; hint.classList.add('gone'); } }
+
+  // ── drag: the card follows the finger, turning about where it was held; a fast flick or a long drag throws it ──
+  let drag = null;
+  stack.addEventListener('pointerdown', (e) => {
+    const c = e.target.closest('.pc');
+    if (!c || !c.classList.contains('top') || drag || e.button > 0) return;
+    if (e.target.closest('button, input, label, a, form')) return;
+    const r = c.getBoundingClientRect();
+    drag = { c, id: e.pointerId, x0: e.clientX, y0: e.clientY, pts: [[performance.now(), e.clientX, e.clientY]],
+             side: e.clientY < r.top + r.height / 2 ? 1 : -1, moved: false, last: cur === N - 1 };
+    c.setPointerCapture(e.pointerId);
+    c.classList.remove('nudge');
+  });
+  stack.addEventListener('pointermove', (e) => {
+    if (!drag || e.pointerId !== drag.id) return;
+    let dx = e.clientX - drag.x0, dy = e.clientY - drag.y0;
+    if (!drag.moved && Math.hypot(dx, dy) < 7) return;
+    if (!drag.moved) { drag.moved = true; drag.c.style.transition = 'none'; drag.c.classList.add('lift'); }
+    if (drag.last) { dx *= .22; dy *= .22; }                     // the last card stays: a little give, then back
+    const now = performance.now();
+    drag.pts.push([now, e.clientX, e.clientY]); while (drag.pts.length > 2 && now - drag.pts[0][0] > 90) drag.pts.shift();
+    const r = LIE[cur][0] * .45 + dx * .065 * drag.side;
+    drag.cur = { x: dx, y: dy, r };
+    drag.c.style.transform = `translate3d(${dx}px, ${dy}px, 0) rotate(${r}deg) scale(1.015)`;
+  });
+  const release = (e) => {
+    if (!drag || e.pointerId !== drag.id) return;
+    const d = drag; drag = null;
+    if (!d.moved) { if (e.type === 'pointerup') tap(d.c, e); return; }
+    const now = performance.now(), pts = d.pts.filter((p) => now - p[0] < 110);   // a finger that stopped before letting go = no flick
+    const a = pts[0], b = pts[pts.length - 1], dt = Math.max(16, pts.length > 1 ? b[0] - a[0] : 1e9);
+    const vx = pts.length > 1 ? (b[1] - a[1]) / dt : 0, vy = pts.length > 1 ? (b[2] - a[2]) / dt : 0, v = Math.hypot(vx, vy);
+    const far = Math.hypot(d.cur.x, d.cur.y) > d.c.offsetWidth * .34;
+    if (e.type === 'pointerup' && !d.last && (v > .5 || far)) {
+      toss(v > .5 ? vx : d.cur.x, v > .5 ? vy : d.cur.y, d.cur);
+    } else {
+      d.c.classList.remove('lift');
+      d.c.style.transition = reduce ? 'none' : 'transform .48s var(--ease-snap)';
+      d.c.style.transform = rest(cur, 0);
+    }
+  };
+  stack.addEventListener('pointerup', release);
+  stack.addEventListener('pointercancel', release);
+
+  function tap(c) {
+    if (c === hear) return turn();
+    if (c.classList.contains('pc-mail')) return;
+    c.classList.remove('nudge'); void c.offsetWidth; if (!reduce) c.classList.add('nudge');   // "flick me"
+  }
+
+  // ── HEAR IT turns over: a quarter turn, the faces swap edge-on, the second quarter lands on the other side ──
+  const flipEl = hear.querySelector('.flip');
+  let turning = false;
+  function turn(on, now) {
+    const f = on === undefined ? !hear.classList.contains('flipped') : on;
+    if (turning || f === hear.classList.contains('flipped')) return;
+    const swap = () => {
+      hear.classList.toggle('flipped', f);
+      hear.querySelector('.front').inert = f;
+      hear.querySelector('.back').inert = !f;
+      if (!f) audio.stop();
+    };
+    if (now || reduce) return swap();
+    turning = true;
+    flipEl.style.transition = 'transform .22s cubic-bezier(.55,0,.9,.4)';
+    flipEl.style.transform = 'rotateY(90deg)';
+    setTimeout(() => {
+      swap();
+      flipEl.style.transition = 'none';
+      flipEl.style.transform = 'rotateY(-90deg)';
+      void flipEl.offsetWidth;
+      flipEl.style.transition = 'transform .5s var(--ease-settle)';
+      flipEl.style.transform = 'rotateY(0deg)';
+      setTimeout(() => { turning = false; }, 500);
+    }, 220);
+  }
+  hear.querySelectorAll('[data-turn]').forEach((b) => b.addEventListener('click', () => turn()));
+  hear.querySelector('.back').inert = true;
+
+  // ── the demo: both sides start together and loop, the switch only moves two gains (30 ms), so the song never jumps ──
+  const audio = (() => {
+    const URLS = ['player/audio/hiphop_before.m4a', 'player/audio/hiphop_after.m4a'];
+    let ac = null, bufs = null, loading = null, srcs = null, gA, gB, bus, t0 = 0, off = 0, side = 'b', on = false, raf = 0;
+    const ctx = () => {
+      if (ac) return ac;
+      ac = new (window.AudioContext || window.webkitAudioContext)();
+      bus = ac.createGain(); gA = ac.createGain(); gB = ac.createGain();
+      gA.connect(bus); gB.connect(bus); bus.connect(ac.destination);
+      return ac;
+    };
+    const warm = () => {
+      if (loading) return loading;
+      ctx();
+      loading = Promise.all(URLS.map((u) => fetch(u).then((r) => r.arrayBuffer()).then((d) => new Promise((ok, no) => { const r = ac.decodeAudioData(d, ok, no); if (r && r.catch) r.catch(no); }))))
+        .then((b) => (bufs = b)).catch((err) => { loading = null; throw err; });
+      return loading;
+    };
+    const paint = () => {
+      const back = $('player');
+      back.classList.toggle('playing', on);
+      $('play').setAttribute('aria-label', on ? 'Stop the demo' : 'Play the demo');
+      back.querySelectorAll('.ab button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.side === side)));
+    };
+    const tick = () => {
+      if (!on) return;
+      const dur = bufs[0].duration;
+      $('prog').style.width = (((ac.currentTime - t0) % dur) / dur * 100).toFixed(2) + '%';
+      raf = requestAnimationFrame(tick);
+    };
+    async function play() {
+      if (navigator.audioSession) { try { navigator.audioSession.type = 'playback'; } catch (e) {} }   // plays with the ring switch on silent
+      ctx(); ac.resume();
+      const back = $('player');
+      back.classList.add('loading'); $('fail').hidden = true;
+      try { await warm(); } catch (e) { back.classList.remove('loading'); $('fail').hidden = false; return; }
+      back.classList.remove('loading');
+      if (on || !hear.classList.contains('flipped')) return;
+      const t = ac.currentTime + .03;
+      srcs = bufs.map((bf, i) => { const n = ac.createBufferSource(); n.buffer = bf; n.loop = true; n.connect(i ? gB : gA); n.start(t, off % bf.duration); return n; });
+      gA.gain.setValueAtTime(side === 'a' ? 1 : 0, t); gB.gain.setValueAtTime(side === 'b' ? 1 : 0, t);
+      bus.gain.cancelScheduledValues(t); bus.gain.setValueAtTime(0, t); bus.gain.linearRampToValueAtTime(1, t + .12);
+      t0 = t - off; on = true; paint(); tick();
+    }
+    function stop() {
+      if (!on) return;
+      const t = ac.currentTime;
+      bus.gain.cancelScheduledValues(t); bus.gain.setValueAtTime(bus.gain.value, t); bus.gain.linearRampToValueAtTime(0, t + .12);
+      srcs.forEach((s) => s.stop(t + .13)); srcs = null;
+      off = (t - t0) % bufs[0].duration; on = false; cancelAnimationFrame(raf); paint();
+    }
+    function set(s) {
+      side = s; paint();
+      if (!on) return;
+      const t = ac.currentTime;
+      [[gA, s === 'a'], [gB, s === 'b']].forEach(([g, up]) => { g.gain.cancelScheduledValues(t); g.gain.setValueAtTime(g.gain.value, t); g.gain.linearRampToValueAtTime(up ? 1 : 0, t + .03); });
+    }
+    return { warm, play, stop, set, get on() { return on; }, get side() { return side; } };
+  })();
+  $('play').addEventListener('click', () => (audio.on ? audio.stop() : audio.play()));
+  $('player').querySelectorAll('.ab button').forEach((b) => b.addEventListener('click', () => audio.set(b.dataset.side)));
+  document.addEventListener('visibilitychange', () => { if (document.hidden) audio.stop(); });
+
+  // ── MAIL ME THE KEYS: check the address, then the card goes into the box (a dummy: nothing is sent) ──
+  const form = $('mailform'), em = $('em'), err = $('err');
+  em.addEventListener('input', () => { err.hidden = true; });
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const v = em.value.trim();
+    if (!v || !em.checkValidity()) { err.hidden = false; em.focus(); return; }
+    em.blur();
+    setTimeout(() => drop(v), 280);                              // let the keyboard go down first
+  });
+  function drop(v) {
+    const c = cards[N - 1];
+    box.classList.add('full');
+    const cr = c.getBoundingClientRect(), br = box.getBoundingClientRect();
+    const s = br.width * .6 / cr.width;
+    const tx = br.left + br.width / 2 - (cr.left + cr.width / 2), ty = br.top + br.height * .2 - (cr.top + cr.height / 2) - (box.classList.contains('up') ? br.height * .28 : 0);
+    c.style.transition = reduce ? 'opacity .2s' : 'transform .72s cubic-bezier(.55,0,.35,1), opacity .25s .58s';
+    if (!reduce) c.style.transform = `translate3d(${tx}px, ${ty + cr.height * s * .5}px, 0) rotate(-3deg) scale(${s})`;
+    c.style.opacity = '0';
+    desk.classList.add('done');
+    setTimeout(() => {
+      box.classList.remove('gulp'); void box.offsetWidth; box.classList.add('gulp');
+      $('sentTo').textContent = v;
+      $('sent').hidden = false;
+      $('live').textContent = `Mailed to ${v}. Mockup: nothing was sent.`;
+    }, reduce ? 220 : 760);
+  }
+  $('again').addEventListener('click', () => {
+    $('sent').hidden = true; desk.classList.remove('done'); box.classList.remove('full', 'gulp');
+    em.value = ''; turn(false, true);
+    cards.forEach((c) => { c.style.transition = 'none'; c.style.opacity = ''; c.style.visibility = 'visible'; c._gone = null; });
+    cur = 0; void stack.offsetWidth; layout(false); say();
+  });
+
+  // ── buttons + keys ──
+  $('next').addEventListener('click', () => { quiet(); next(); });
+  $('prev').addEventListener('click', prev);
+  document.addEventListener('keydown', (e) => {
+    if (e.target.closest && e.target.closest('input')) return;
+    if (e.key === 'ArrowRight' || e.key === 'PageDown') { quiet(); next(); e.preventDefault(); }
+    if (e.key === 'ArrowLeft' || e.key === 'PageUp') { prev(); e.preventDefault(); }
+  });
+
+  // ── open: ?card=1-6 (+ &flip) for reviews where a finger can't flick (the Simulator from a script) ──
+  const q = new URLSearchParams(location.search);
+  const start = Math.min(N, Math.max(1, parseInt(q.get('card'), 10) || 1)) - 1;
+  cards.forEach((c, i) => { if (i < start) { c.style.visibility = 'hidden'; c._gone = `translate3d(${-innerWidth * 1.2}px, -40px, 0) rotate(-22deg)`; c.style.transform = c._gone; } });
+  cur = start;
+  if (q.has('flip')) turn(true, true);
+  layout(false);
+  if (start > 0 || q.has('flip')) quiet();
+  if (start === 0 && !reduce) setTimeout(() => { if (!touched && cur === 0 && !drag) cards[0].classList.add('nudge'); }, 1100);
+  cards.forEach((c) => c.addEventListener('animationend', (e) => { if (e.animationName === 'nudge') c.classList.remove('nudge'); }));
+  window.gas2Postcards = { next, prev, turn, toss, audio, get cur() { return cur; } };   // for the checks (postcards/tools/check.cjs)
+})();
+</script>
+</body>
+</html>

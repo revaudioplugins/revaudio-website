@@ -1,3 +1,55 @@
+## 2026-10-29 — GAS 2 page: the PHONE page as POSTCARDS (Claude Code `danavivi-75`, Dan's Mac) — BRANCH `feat/gas2-postcards`, not pushed
+
+Claim: OPEN `danavivi-75`. v1 BUILT + checked (WebKit, Chrome audio, iOS Simulator); waiting on Dan's look. Branched from `origin/feat/gas2-drone` @ `4fc6ddd` (no upstream set, so a bare push
+can't reach the drone branch); `revaudio-59` keeps writing `feat/gas2-drone`, so this branch stays out of its files.
+Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postcards/**`; one README line pair; the
+"GAS 2 phone POSTCARDS" section on top of `tasks/todo.md`; this entry. Read only: `page-b.html` (copy, ticket), `fonts/`,
+`frames/f6-v17.png`, `props/poster-level.webp`, `props/poster-mail-1.webp`, `props/mailbox.png`, and
+`player/audio/hiphop_{before,after}.m4a` (Yoni's lane: played, never edited). Desktop `page-b.html` untouched.
+- Dan (2026-10-29, picked over the receipt and "pump as player"): a stack of 1950s "Greetings from GAS 2" postcards, phone
+  only. Card 1 = the real GAS 2 pump in front of the station; flick away REGULAR / PREMIUM / RACE; a "hear it" card (flip,
+  ▶ on the back); the last card = a postcard back, email on the address lines, dropped in the mailbox = MAIL ME THE KEYS.
+  Dead (don't re-propose): Swipe / Walk / Stack, the pump close-up + jukebox (`feat/gas2-phone` `phone.html`), the pump as
+  player, pedal / gauge toys, the receipt. DESIGN.md rule (on `feat/gas2-phone`): rebuild for portrait, never crop the
+  desktop scene. Art spend only on Dan's OK (OpenAI images; Higgsfield 0 credits). The form stays a dummy.
+- Audio facts (measured 2026-10-29, ffmpeg ebur128): `hiphop_before` / `hiphop_after` both I -11.0 LUFS, LRA 1.7, 26.24 s,
+  AAC 48 kHz stereo. The after = PREMIUM at GAS 140 %. No per-grade renders exist: no per-grade sound claim anywhere.
+- Built v1 (`postcards.html`, one file, no build): six cards in one stack over the dusk sky (soft). Drag = the card follows
+  the finger and turns about where it was held; a flick (> .5 px/ms) or a drag past a third of the card throws it off in
+  that direction, otherwise it springs back; a finger that stops before letting go doesn't throw. Back / next buttons +
+  arrow keys, "n / 6", "Flick the card" until the first flick, one nudge on first load. 1 = "Greetings from" + the real
+  pump in front of the station (soft) + THICKER, SMOOTHER, GLUED MASTER. + "GAS 2 · FREE"; 2-4 = large-letter grade
+  cards (the pump's own key, lit as its card comes up, the BRIEF line, a script kicker); 5 = HEAR IT ("Fill it up. Same
+  level." poster), tap or "Turn it over" = two quarter turns with the faces swapped edge-on (backface-visibility let
+  WebKit show the hidden face's layers through, mirrored), the back = ▶ / ■, ORIGINAL | GAS 2 in place (both sides loop
+  in sync, 30 ms crossfade), a progress line, "PREMIUM at GAS 140 % · both sides -11.0 LUFS"; 6 = POST CARD back: MAIL ME
+  THE KEYS, a 0¢ stamp from `poster-mail-1` + a REVAUDIO STATION postmark, the email on the TO line (handwriting; the
+  placeholder printed), MAIL ME THE KEYS = the card shrinks into the mailbox (up from the bottom on this card only), SENT
+  + the address + "(Mockup: nothing was sent.)" + Start over. `?card=1-6`, `&flip`. Reduced motion: no flight, instant
+  swaps.
+- Art (no spend, `postcards/tools/`): `bake-pump.cjs` = the plugin page itself (:4461) at DPR 2, ROOM with the room
+  hidden, PREMIUM lit, needle 140, counter -11.0 (= the demo), hose run on along the ground in `make-art.py`;
+  `bake-keys.cjs` = the three keys + lit at 9x from the GAS2 3D lab (`bench/pump-lab.html`, real GPU: Apple M1 Max via
+  ANGLE Metal, 9 s; same look as the 4x bake, crisp at card size; the GAS2 repo is only read) + `make-keys.py`;
+  `make-art.py` = card 1's station (painted pump filled out, softened), the dusk, a woven linen tile, the stamp.
+  Weight: ~778 KB for every card; the demo (1.76 MB) is fetched from card 4 on.
+- Checked: `postcards/tools/check.cjs` = WebKit 22 steps (flick / spring back / hold-then-let-go / down-flick / back /
+  key lit / next + keys / tap-to-turn, one face at a time / turn back / mailbox / last card stays / empty + bad email /
+  drop + SENT / no network request / Start over / reduced motion) + 20 layouts (402x714, 375x553, 390x664, 393x659,
+  430x750: card + controls on screen, no overflow, input >= 16 px) all pass, 0 console errors; Chrome: the demo plays on
+  GAS 2, the bar moves, ORIGINAL switches, ▶ stops. iOS Simulator (iPhone 17 Pro, iOS 26.5, 127.0.0.1:4466, Safari
+  restarted per shot): all six cards + the HEAR IT back right, crops at 1:1 sharp. Not checked: a finger (flick feel),
+  the iOS keyboard over the TO line, sound by ear on iOS, a real iPhone.
+- Design hook (impeccable): fixed 3 contrast nits; waivers in `~/.impeccable/config.json` (home, not the repo), scoped to
+  `**/tools/_gas2-scene/postcards.html`, each with its reason: gradient-text (the large-letter fill), buried-raster (the
+  lit keys), flat-type-hierarchy (cqw sizes, measured), marquee (the house button shine), radial-halo (the pump's lamp).
+  Left standing: repeating-stripes-gradient (advisory, the grade cards' sunburst).
+- Server: no-store on :4466 from this worktree's `tools/_gas2-scene` (dies with the session); again:
+  `python3 -m http.server 4466 --bind 127.0.0.1` there (plain: reload twice if a change doesn't show).
+- Open (Dan): (1) the look + the flick feel in the Simulator; (2) art, only on his OK: illustrated fronts for the grade
+  cards (gpt-image-2, in the posters' style); (3) per-grade renders (Yoni) before any grade card plays its own sound;
+  (4) later: this as page-b's phone layout.
+
 ## 2026-10-28 — GAS 2 page: the drone intro, from scratch (Claude Code `revaudio-59`, laptop 1) — BRANCH `feat/gas2-drone`
 
 Claim: OPEN `revaudio-59`. Scene + benches BUILT; Dan picked the DEFAULT camera (TOP); the REAL ART is in (gpt-image-2, 2026-10-28, ~$2 with the roof sign); sidewalk blockout props removed; real headlights; catch the car = the CATCH10 coupon ticket (Paddle code: Gil, RevTasks #193). Waiting on Dan's look.
