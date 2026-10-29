@@ -5,7 +5,8 @@ vintage, a little coffee stain on one card"), drawn here from noise (no AI spend
 
 Writes postcards/img/: wear-1..6.webp + wear-5b.webp (each card's own wear: browned edges, rubbed corners, foxing,
 scuffs, sun-fade; the mail card's fold), coffee.webp (a cup set down twice: Regular), ringwear.webp (the record rubbing
-through the card: HEAR IT), thumb.webp (a greasy thumb: Race), ink.webp (a rubber stamp's uneven ink, used as a mask).
+through the card: HEAR IT), thumb.webp (a greasy thumb: Race), tape.webp (a strip of old tape, torn at both ends: card 1),
+ink.webp (a rubber stamp's uneven ink, used as a mask).
 """
 import sys, os, subprocess, math
 import numpy as np
@@ -152,6 +153,21 @@ def thumb(seed, w=240, h=300):
     return L.rgba()
 
 
+def tape(seed, w=360, h=100):
+    """A strip of old tape: the roll's clean cut along the long edges, both ends torn (each row stops at its own x)."""
+    rng = np.random.default_rng(seed)
+    L = Layer(w, h)
+    yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
+    rag = lambda: np.interp(np.arange(h), np.linspace(0, h - 1, 8), rng.uniform(0, 16, 8)) + rng.uniform(0, 6, h)
+    left, right = rag(), w - 1 - rag()
+    inside = Image.fromarray((((xx >= left[:, None]) & (xx <= right[:, None])) * 255).astype(np.uint8), "L")
+    inside = np.asarray(inside.filter(ImageFilter.GaussianBlur(.7)), np.float32) / 255
+    L.over((230, 212, 152), inside * (.5 + .14 * (noise(w, h, 36, 3, rng) - .5)))           # the yellowed film, crinkled
+    L.over((255, 251, 234), inside * np.clip(1 - yy / (h * .4), 0, 1) * .2)                 # light on its top half
+    L.over((140, 112, 64), inside * (np.exp(-(yy / 2.5) ** 2) + np.exp(-((h - 1 - yy) / 2.5) ** 2)) * .28)   # grime on the edges
+    return L.rgba()
+
+
 def ink(seed, w=640, h=260):
     rng = np.random.default_rng(seed)
     dens = .72 + .4 * noise(w, h, 80, 3, rng)                                      # pressed harder here than there
@@ -176,4 +192,5 @@ for name, kw in SPEC.items():
 webp(coffee(7), "coffee.webp")
 webp(ringwear(8), "ringwear.webp")
 webp(thumb(9), "thumb.webp")
+webp(tape(12), "tape.webp", q=80)
 webp(ink(10), "ink.webp", q=80)

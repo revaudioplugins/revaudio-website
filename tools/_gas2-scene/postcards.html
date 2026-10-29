@@ -113,9 +113,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   font: 600 3.2cqw/1 Oswald; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-2); }
 .cap b { color: var(--red); font-weight: 700; }
 .tape { position: absolute; left: 50%; top: -2.8cqw; width: 30cqw; height: 8.4cqw; z-index: 7; translate: -50% 0; rotate: -4deg; pointer-events: none;
-  background: linear-gradient(180deg, rgba(255, 251, 236, .32), rgba(255, 244, 214, .06) 60%, rgba(220, 200, 150, .18)), rgba(232, 216, 160, .5);
-  clip-path: polygon(0 6%, 3% 0, 6% 9%, 9% 1%, 12% 5%, 88% 2%, 91% 8%, 94% 0, 97% 7%, 100% 3%, 98% 30%, 100% 52%, 97% 74%, 100% 96%, 96% 100%,
-    93% 92%, 90% 100%, 10% 98%, 7% 91%, 4% 100%, 1% 94%, 2% 70%, 0 48%, 3% 26%); }
+  background: url(postcards/img/tape.webp) 0 0 / 100% 100% no-repeat; }   /* torn at both ends (make-wear.py) */
 .pc-hello.top .pic .lamp { animation: flicker 7s 1.5s infinite; }   /* the lamp over the pump, not quite steady */
 @keyframes flicker { 0%, 100% { opacity: 1; } 6% { opacity: .76; } 7% { opacity: 1; } 8.5% { opacity: .85; } 10% { opacity: 1; } 52% { opacity: .9; } 54% { opacity: 1; } }
 
@@ -330,7 +328,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   filter: drop-shadow(0 .5cqw .6cqw rgba(0, 0, 0, .5)); -webkit-tap-highlight-color: transparent; }
 .desk.sent .rd .ticket { display: block; animation: sway 5s 2.4s ease-in-out infinite; }
 @keyframes sway { 50% { rotate: -1.5deg; } }
-.ticket .tk { display: grid; justify-items: center; gap: max(4px, .4cqw); padding: max(11px, 1.05cqw) max(24px, 2.4cqw) max(10px, .95cqw);
+.ticket .tk { display: grid; justify-items: center; gap: max(4px, .4cqw); padding: 16px 26px;   /* the printed rule sits 6px in: 8px+ clear of the words */
   background: linear-gradient(180deg, #f6ecd2, #eadbb6); color: #8f2717; text-transform: uppercase; white-space: nowrap;
   outline: 1.5px solid rgba(143, 39, 23, .75); outline-offset: -6px;
   -webkit-mask: radial-gradient(circle at 0 0, #0000 8px, #000 8.5px) 0 0 / 51% 51% no-repeat, radial-gradient(circle at 100% 0, #0000 8px, #000 8.5px) 100% 0 / 51% 51% no-repeat,
@@ -343,10 +341,10 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .ticket:active .tk { scale: .97; }
 .ticket:focus-visible { outline: none; }
 .ticket:focus-visible .tk { outline: 2px solid var(--honey); outline-offset: 2px; }
-@media (max-height: 640px) {                    /* short phones (SE): just the ticket's big line, clear of the foot */
+@media (max-height: 680px) {                    /* shorter phones (SE, a 6.1" with the toolbar up): just the ticket's big line, clear of the foot */
   .rd .ticket { top: calc(100% + 10px); }
   .ticket .t1, .ticket .t3 { display: none; }
-  .ticket .tk { padding-block: 9px; }
+  .ticket .tk { padding: 10px 22px; outline: none; }
 }
 .endbar { position: absolute; left: 0; right: 0; bottom: calc(10px + env(safe-area-inset-bottom)); display: grid; justify-items: center; gap: 2px; text-align: center; }
 .endbar button { min-height: 44px; padding: 0 16px; font: 600 12.5px/1 Oswald; letter-spacing: .18em; text-transform: uppercase; color: rgba(239, 227, 198, .88);
