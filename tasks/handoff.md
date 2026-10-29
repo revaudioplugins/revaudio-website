@@ -486,7 +486,7 @@ Claim: OPEN (Yoni's radio). Files: `tools/_gas2-scene/player/**`, ONE `<head>` l
 Branch `feat/gas2-page`, worktree `Website/revaudio-website-g2p`. Full state + numbers: `tasks/gas2-radio-plan.md`.
 - Now: no pop-up, no zoom. The radio stands IN the scene on the bench (1.3x the photo's radio, slid 23 frame px left for
   room from the pump) and is the player: dial HIP HOP / POP / ELEC. / ROCK, keys PLAY-STOP | ORIGINAL | GAS 2 (pressed
-  keys light up), Yoni's KNOB LAB knobs (volume, tuning), red jewel while playing. Caption under the bench, inside the
+  keys light up), Yoni's new knobs (volume, tuning), red jewel while playing. Caption under the bench, inside the
   radio's width. The photo's radio + `#radio` hotspot are hidden from radio.css (`#scene #radio`); `#radioCap` restyled
   there too. A lower bench is laid over the frame from the frame's own pixels (`img/bench-low.webp`; the frame untouched).
 - Since: keys read pressed = DOWN / up = UP at full size; the photo radio, its shadow and the old bench are painted out
@@ -508,17 +508,18 @@ Branch `feat/gas2-page`, worktree `Website/revaudio-website-g2p`. Full state + n
     (Yoni) and kept on LOCAL branches `archive/gas2-jukebox` + `archive/gas2-jukebox-notes` (main clone only).
   - Shared clone: ahead 3 / behind 3: `fa5a1a2` (design-language: a pressed key reads down by depth) on top of
     `9b5a0c4` + `c392a35` from the jukebox session -> Yoni to say "push shared" (merge --no-ff, then push).
-  - Shared, uncommitted: `tools/knob-lab/library/knobs.json` = Yoni's radio knob card ("GAS 2 RADIO TUNING · KNURL ·
-    10-23 17:25", saved by serve-lab) -> commit on his "save"; `memory/feedback_placement_bench_early.md` + its
+  - Shared, uncommitted: Yoni's radio knob card (the private knob tool's library,
+    10-23 17:25) -> commit on his "save"; `memory/feedback_placement_bench_early.md` + its
     MEMORY.md line (mine); MEMORY.md also holds another session's uncommitted line (Hebrew-layout), not mine.
 - Background processes (all on Yoni's laptop 2, started this session):
   - `python -m http.server 4462` (page-b), PID 13620. Kill: `Stop-Process -Id 13620`.
-  - `serve-lab.py 8797 --pages .../player` (radio KNOB LAB), PID 2836. Kill: `Stop-Process -Id 2836`.
+  - The private knob tool's server on 8797, PID 2836. Kill: `Stop-Process -Id 2836`.
   - `python -m http.server 8793` from `C:/RevAudio` (knob bake), PID 40696. Kill: `Stop-Process -Id 40696`.
 - Unverified: real Safari / Firefox / a real phone; sound by ear in a browser (headless only measured gains + loudness).
 - Next session decides: (1) POP / ROCK GAS 2 settings (caption) + ELECTRONIC renders, from Yoni; (2) "push shared";
   (3) push the 3 website-main notes commits or not (live deploy); (4) Dan's answers: phone crop, Safari check.
-- Cleanup: `player/knoblab/knob-recipe-yoni-2026-10-23.bake.json` untracked + now gitignored (bake output, fine).
+- Cleanup: a knob bake output under `player/` (laptop 2), untracked; since 2026-10-29 the knob tool's files live in the
+  shared repo, so delete that folder's leftovers there (no longer gitignored).
 
 
 ## 2026-10-22 — GAS 2 page: the station mockup on branch `feat/gas2-page` (Claude Code `danavivi-a3`, Dan's Mac) — BRANCH PUSHED, NOT MAIN (Dan: "push this branch so Yoni can work on the player")

@@ -36,7 +36,7 @@ Scope: the outer `.d-panel.d-hear-panel` plate only (step 3's pair plate and the
   side padding 12 -> 5 so the readouts keep their width (coach spare 16 px at 390, 18 at 360, same as CUT; the
   too-long control clips); panel +14. Crack still on the glass, 0 page errors.
 - [x] E4c. VOLUME = a fader, not a knob (the user, 2026-10-28: "let's use a fader for volume instead of a knob";
-  replaces the KNOB LAB knob question). Bench toggle VOLUME KNOB / FADER, FADER by default: the page's #drive fader
+  replaces the knob question). Bench toggle VOLUME KNOB / FADER, FADER by default: the page's #drive fader
   (DriftFader.astro look, violet fill) on the knob's centre line (desktop x 1088), cap travel = the DRIFT ring's height
   (desktop 307..454, phone 416..495; phone cap 34 x 17), readout on ORIGINAL / DRIFT's line. The bench drives
   hear.ts's volume through the hidden knob's keys (5 % steps); tested: drag 75 % / past the bottom = MUTE / End /
