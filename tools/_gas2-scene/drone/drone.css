@@ -18,3 +18,59 @@ html.dr-hold .rd > .ti, html.dr-hold .rd > .lead, html.dr-hold .rd > .cta, html.
 html.dr-hold .rd::before { opacity: 0; }
 html.dr-on .rd::before { transition: opacity .7s cubic-bezier(.22, 1, .36, 1); }
 .tune [data-dr="angle"] button.on { border-color: #e8c878; color: #e8c878; }   /* the angle flying now (TUNE -> Drone) */
+
+/* the scroll cue (drone/cue.js; Dan 2026-10-29): bottom centre of the hover, in once the hover shows, out with the
+   first bit of scroll (--u = run.js's u); the altimeter stays and fades near touchdown. Bench ?cue: five looks */
+.dr .cue { position: absolute; left: 50%; bottom: max(24px, calc(env(safe-area-inset-bottom) + 16px)); transform: translateX(-50%);
+  pointer-events: none; color: #efe3c2; text-align: center; white-space: nowrap; opacity: clamp(0, calc(1 - var(--u, 0) * 25), 1); }
+.dr .cue .in { opacity: 0; }
+.dr.on .cue .in { animation: cue-in .9s cubic-bezier(.22, 1, .36, 1) 1.4s both; }
+.dr.on.cue-bench .cue .in { animation-delay: .1s; }
+@keyframes cue-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+.cue .w { display: block; font: 500 12px/1 Oswald; letter-spacing: .32em; padding-left: .32em; text-transform: uppercase;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .85), 0 0 16px rgba(0, 0, 0, .6); }
+/* 1 chevrons: three marks light down in turn, honey at their peak */
+.cue-chev .chev { display: block; width: 18px; margin: 12px auto 0; }
+.cue-chev .chev b { display: block; width: 11px; height: 11px; margin: -4px auto 0; border: solid currentColor; border-width: 0 2px 2px 0;
+  transform: rotate(45deg); opacity: .3; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .8)); animation: cue-chev 1.8s infinite; }
+.cue-chev .chev b:nth-child(2) { animation-delay: .2s; }
+.cue-chev .chev b:nth-child(3) { animation-delay: .4s; }
+@keyframes cue-chev { 0%, 60%, 100% { opacity: .3; } 25% { opacity: 1; color: #f2be4a; } }
+/* 2 mouse: the wheel rolls down (on touch: a dot swipes up) */
+.cue-mouse .mouse { display: block; position: relative; width: 24px; height: 38px; margin: 0 auto 10px; border: 2px solid currentColor; border-radius: 13px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, .55), inset 0 0 6px rgba(0, 0, 0, .35); }
+.cue-mouse .mouse b { position: absolute; left: 50%; top: 7px; width: 4px; height: 8px; margin-left: -2px; border-radius: 2px; background: #f2be4a;
+  animation: cue-wheel 1.6s cubic-bezier(.22, 1, .36, 1) infinite; }
+.cue-mouse .mouse.touch b { top: 22px; animation-name: cue-swipe; }
+@keyframes cue-wheel { 0% { opacity: 0; transform: translateY(-3px); } 25% { opacity: 1; } 70%, 100% { opacity: 0; transform: translateY(13px); } }
+@keyframes cue-swipe { 0% { opacity: 0; transform: translateY(3px); } 25% { opacity: 1; } 70%, 100% { opacity: 0; transform: translateY(-13px); } }
+/* 3 ticket: a paper tag in the page's ticket paper, punched, bobbing */
+.cue-tag .tag { display: inline-flex; align-items: center; gap: 10px; padding: 9px 16px 7px 12px; color: #241a12; font: 400 21px/1 Bebas; letter-spacing: .14em;
+  background: #efe3c2 radial-gradient(rgba(120, 90, 50, .08) 1px, transparent 1.5px) 0 0 / 7px 7px; border-radius: 3px;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, .5), 0 1px 2px rgba(0, 0, 0, .3); animation: cue-bob 2.6s ease-in-out infinite; }
+.cue-tag .tag i { width: 8px; height: 8px; border-radius: 50%; background: #120804; box-shadow: inset 0 1px 2px #000; margin-top: -2px; }
+.cue-tag .ar { color: #a8321c; font: 700 17px Inter; animation: cue-nudge 1.3s ease-in-out infinite; }
+@keyframes cue-bob { 0%, 100% { transform: rotate(-1.5deg); } 50% { transform: rotate(-1.5deg) translateY(4px); } }
+@keyframes cue-nudge { 50% { transform: translateY(3px); } }
+/* 4 fuel drop: a honey drop falls and splashes */
+.cue-drop .drip { display: block; position: relative; width: 30px; height: 44px; margin: 0 auto 8px; }
+.cue-drop .drip b { position: absolute; left: 50%; top: 2px; width: 12px; height: 12px; margin-left: -6px; border-radius: 0 50% 50% 50%;
+  background: radial-gradient(circle at 60% 60%, #ffe6a0, #f2be4a 45%, #a86c10); box-shadow: 0 0 12px rgba(242, 190, 74, .55);
+  animation: cue-drip 1.9s cubic-bezier(.55, 0, .85, .35) infinite; }
+.cue-drop .drip::after { content: ''; position: absolute; left: 50%; bottom: 0; width: 22px; height: 4px; margin-left: -11px; border-radius: 50%;
+  background: rgba(242, 190, 74, .6); opacity: 0; animation: cue-splash 1.9s infinite; }
+@keyframes cue-drip { 0% { opacity: 0; transform: rotate(45deg) scale(.4); } 25% { opacity: 1; transform: rotate(45deg) scale(1); }
+  75% { opacity: 1; transform: translateY(28px) rotate(45deg); } 80%, 100% { opacity: 0; transform: translateY(28px) rotate(45deg); } }
+@keyframes cue-splash { 0%, 74% { opacity: 0; transform: scale(.2); } 78% { opacity: 1; transform: scale(.6); } 100% { opacity: 0; transform: scale(1.3); } }
+/* 5 altimeter: a drone-HUD pill, the height counts down as it descends; fades near touchdown */
+.dr .cue.cue-alt { opacity: clamp(0, calc((.9 - var(--u, 0)) * 5), 1); }
+.cue-alt .alt { display: inline-flex; align-items: baseline; gap: 7px; padding: 8px 14px 7px; border: 1px solid rgba(232, 200, 120, .45); border-radius: 999px;
+  background: rgba(18, 8, 4, .55); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); font: 500 12px/1 Oswald; letter-spacing: .24em; text-transform: uppercase;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .45); }
+.cue-alt .v { min-width: 2ch; text-align: right; font: 600 20px/1 Oswald; letter-spacing: .04em; color: #f2be4a; font-variant-numeric: tabular-nums; }
+.cue-alt .un { letter-spacing: .1em; opacity: .8; }
+.cue-alt .ar { color: #f2be4a; animation: cue-nudge 1.3s ease-in-out infinite; }
+.tune.cuebench { left: 12px; right: auto; top: 12px; bottom: auto; width: 250px; }
+.cuebench .looks { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+.cuebench .looks button { background: #2a1c10; color: #efe9df; border: 1px solid #3a2410; border-radius: 4px; padding: 6px 2px; font: 600 10px Inter; letter-spacing: .08em; }
+.cuebench .looks button.on { border-color: #e8c878; color: #e8c878; }

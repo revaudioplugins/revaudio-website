@@ -5,6 +5,7 @@
 // exactly: the drone flies a straight line down onto the landing spot while the camera turns to look down the road,
 // then a pure tilt-up at the landing camera brings the page frame in.
 import { THREE, EYE, VFOV, LAND_POS, buildWorld } from './world.js';
+import { mountCue } from './cue.js';
 
 const html = document.documentElement;
 const T = window.__droneTune || { alt: 34, len: 4, sway: 1, yaw: 0, tilt: 90, ax: -4, az: -6, down: .42, gimbal: .18, arrive: 40 };
@@ -16,6 +17,7 @@ const layer = document.createElement('div'); layer.className = 'dr'; layer.setAt
 const canvas = document.createElement('canvas'); layer.appendChild(canvas);
 const runway = document.createElement('div'); runway.className = 'dr-run'; runway.style.setProperty('--dr-len', T.len);
 document.body.append(layer, runway);
+const cue = mountCue(layer);                              // the scroll cue at the bottom of the hover (cue.js)
 const abandon = () => { layer.remove(); runway.remove(); html.classList.remove('dr-on', 'dr-hold', 'dr-land'); };
 
 let renderer, world;
@@ -96,6 +98,7 @@ function frame(now) {
   if (Math.abs(p - sDisp) < 1e-4) sDisp = p;
   const u = sDisp, age = (now - born) / 1000;
   const pose = poseAt(u);
+  cue(u, pose.pos.y);
   applySway(pose, age, T.sway * (1 - .7 * smooth(0, .3, u)) * (1 - smooth(T.down - .2, T.down, u)) * smooth(0, 1.5, age));
   cam.position.copy(pose.pos); cam.quaternion.copy(pose.quat); cam.updateMatrixWorld();
   view(u);

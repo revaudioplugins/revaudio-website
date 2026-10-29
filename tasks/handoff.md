@@ -126,6 +126,13 @@ descent" section); this entry.
   `?drone=0` mean 0.00, landing frame 2.56 / 1.47 (the same noise map as before). Dan saw it on the page: "looks very good" (2026-10-29).
   Shared clone, uncommitted (lab writes, Dan's): `tools/knob-lab/library/knobs.json` (his EXPORT card) +
   `library/saves/gas2radio/` + `library/saves/library/knobs-before-2026-10-29-1218.json`.
+- Then (Dan, 2026-10-29: "an indicator at the bottom of the hover that tells the user to scroll down; give me options
+  in a bench"): `drone/cue.js` (+ drone.css "the scroll cue", 3 lines in run.js): bottom centre of the hover, in 1.4 s
+  after the hover shows, out by 4 % of the scroll; bench `?cue` (panel top left): Chevrons (default until he picks) /
+  Mouse (Swipe up on touch) / Ticket ("SCROLL TO LAND", page paper) / Fuel drop / Altimeter (live height, fades by 90 %)
+  / None. Checked headless 1440 + 390: every look shows, chevrons gone after 1.2 screens and back at the top, the
+  altimeter 34 -> 2 m; landing still mean 0.00 / landframe 2.56 / 1.47; no errors. Waiting on Dan's pick; then the
+  other looks come out of cue.js + drone.css and the bench goes.
 
 ## 2026-10-26 — GAS 2 page: the drone intro (hover above the station, scroll = descent, land, readings pop) (Claude Code `danavivi-19`, Dan's Mac) — BRANCH `feat/gas2-page`
 
