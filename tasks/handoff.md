@@ -123,7 +123,7 @@ descent" section); this entry.
   LANCZOS) webp q84 = `player/img/knob-radio.webp` 653 KB (was 518; q88 790 KB for p99 13 vs 14). The lab now opens on
   this recipe. `drone/img/land.webp` re-rendered (the landing frame carries the radio: only the two knob areas changed).
   Checked headless: radio before / after + a drag turns the new strip, no errors; `check.cjs` top 1440 + 390: landed =
-  `?drone=0` mean 0.00, landing frame 2.56 / 1.47 (the same noise map as before). Not seen by Dan on the page yet.
+  `?drone=0` mean 0.00, landing frame 2.56 / 1.47 (the same noise map as before). Dan saw it on the page: "looks very good" (2026-10-29).
   Shared clone, uncommitted (lab writes, Dan's): `tools/knob-lab/library/knobs.json` (his EXPORT card) +
   `library/saves/gas2radio/` + `library/saves/library/knobs-before-2026-10-29-1218.json`.
 
