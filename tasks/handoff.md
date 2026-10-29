@@ -106,6 +106,15 @@ descent" section); this entry.
   `page-b.html` with its CSS, its hover handlers and the copy array; a click on REGULAR / PREMIUM / RACE still picks the
   pump's key. `page-a.html` still has it (not asked). Checked headless 1440: hover PREMIUM = no strip, click RACE =
   on, no errors. The tip was hidden at rest, so `img/land.webp` (the landing frame) is unchanged.
+- Then (Dan, 2026-10-29: "let's work on the player's knobs, open them in KNOB LAB, they need refining"): the radio's
+  lab (`player/knoblab/make-knoblab.py`; `player/**` is Yoni's radio claim from `revaudio-cd`, touched here on Dan's word)
+  now opens on the look on the radio today (Yoni's recipe `knob-recipe-yoni-2026-10-23.json`: KNURL, gunmetal knurl,
+  brown bakelite dome, glow index), not the first SKIRT look; SHIPPED shows the baked strip `img/knob-radio.webp` on
+  the radio at the knob's angle; storage key v2 (so it opens fresh on the shipped look). Server: `serve-lab.py 8798
+  --pages <this player folder>` (8797 is another session's panel bench on laptop 1), PID 66712, URL
+  http://127.0.0.1:8798/scratch/knoblab/radio-knoblab.html. Checked headless: LIVE 3D KNURL, SHIPPED = the strip, no page
+  errors (one console 404 = favicon). Next: Dan's look in the lab -> EXPORT -> bake (`bake-knob-lab.js <recipe> <out>
+  256 1 --foot=60,60,84,120`) -> `img/knob-radio.webp` + radio.css `.rp-knob b` k3dCss, then the page check.
 
 ## 2026-10-26 — GAS 2 page: the drone intro (hover above the station, scroll = descent, land, readings pop) (Claude Code `danavivi-19`, Dan's Mac) — BRANCH `feat/gas2-page`
 
