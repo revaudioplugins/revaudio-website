@@ -147,6 +147,13 @@ descent" section); this entry.
   4465 (`serve-nostore.py`): http://127.0.0.1:4465/light-bench.html. Next: Dan EXPORTs -> "apply" = the numbers into
   page-b's `.pumpLit` / `.pumpCut` CSS + the Spotlight D, then re-render `drone/img/land.webp` (the pump is in the
   landing frame) + the landing check; the bench goes once he has picked (as `?cue` did).
+- Then Dan pasted his EXPORT (2026-10-29 11:54: lamp .67, overlay, reach 1.26, colour 1 = amber, pump 1.12, contrast
+  1.08, shadow .21; was .3 / soft-light / 1 / 1 / 1.04 / 1.02 / .3) = apply: page-b `.pumpLit` overlay + stops 53 % /
+  111 % (42 / 88 x 1.26); TUNE → Spotlight D = { light .67, pump 1.12, contrast 1.08, shadow .21, fade .15 }, contrast
+  now its own slider (was 1 + (pump - 1) / 2), storage key spot3 -> spot4 (a browser's old TUNE numbers would hide the
+  new defaults). Checked: the page = the bench at his values (1280 x 915, max diff 1 / 255; vars .67 / 1.12 / 1.08 /
+  .21). `drone/img/land.webp` re-rendered (748 KB); check.cjs top 1440 + 390: landed vs ref-page mean 0.00 / 0.00,
+  landframe 2.57 / 1.42 (was 2.56 / 1.47), no errors. `light-bench.html` + its README line removed (in git at `a81dfa9`).
 
 ## 2026-10-26 — GAS 2 page: the drone intro (hover above the station, scroll = descent, land, readings pop) (Claude Code `danavivi-19`, Dan's Mac) — BRANCH `feat/gas2-page`
 
