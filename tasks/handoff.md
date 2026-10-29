@@ -1,3 +1,13 @@
+## 2026-10-29 — Blog: "How to glue a mix with saturation" (Claude Code `revaudio-59`, Yoni's laptop 2) — PUSHED TO MAIN = LIVE 2026-10-29 (Yoni: "deploy it")
+
+Claim: CLOSED 2026-10-29. File: `src/content/blog/how-to-glue-a-mix-with-saturation.mdx` (new). Commit `111dd5e` on top of origin/main `87dc172`, made in a scratch worktree off origin/main because this clone is 3 ahead / 127 behind (the 3 ahead are another session's; untouched, not pushed).
+- Ask (Yoni): a newsletter article on glue saturation, how shaving peaks with saturation glues a mix; keep the most-searched keywords. Written as a blog post the newsletter can link to: https://revaudio.net/blog/how-to-glue-a-mix-with-saturation/
+- Keywords (no volume tool; picked from the phrases that own Google's results): how to glue a mix / glue a mix together, mix bus saturation, saturation vs compression, soft clipping, crest factor, glue compressor; two question H2s. Closes on the free GAS (/gas/).
+- Checked: build green (30 pages, post in the blog index + sitemap), tanh table numbers computed, no em dashes; Pages deploy + smoke test green, live URL 200.
+- Not done: figures (ideas in an MDX comment at the top of the file: soft-knee curve, crest before/after); the short newsletter email (60-120 words, `shared/marketing/2026-10-18-drift-beta-series/VOICE.md`) linking to it.
+- Open (Yoni asked for date + author on every article; both already exist: post header "By the RevAudio team · <date> · N min read" + BlogPosting JSON-LD author/datePublished in `src/pages/blog/[slug].astro`). Offered, no answer yet: (1) make that byline line brighter / bigger, (2) add "By the RevAudio team" to the blog list cards (`src/pages/blog/index.astro`).
+- Cleanup owed: stale `.git/worktrees/site-wt` metadata (Permission denied on prune, same as the older entries listed 2026-10-19).
+
 ## 2026-10-28 - Cart offer note + trial-form spam hint, branch `mid-trial-offer` (Claude Code `revaudio-9a`, Yoni's laptop 2) - PUSHED TO MAIN = LIVE 2026-10-29 (Yoni: "push deploy and OK")
 
 Claim: CLOSED 2026-10-28. Worktree `Website/revaudio-website-midoffer` off origin/main `fab1336`, branch pushed (`9bc9576`, `524b67f`).
