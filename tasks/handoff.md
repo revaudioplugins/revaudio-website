@@ -160,8 +160,10 @@ descent" section); this entry.
   the scene's lamp light (az 105, el 62, warm .35, envMood warm, expo .92). Dan picked "HEAVY, LAMP LIGHT":
   `player/img/knob-radio.webp` = that strip (q84, 862 KB, was 653; same k3dCss, so `radio.css .rp-knob b` keeps its
   numbers; bake: no pure #000 / #fff, edge alpha 0). `drone/img/land.webp` re-rendered; check.cjs top 1440 + 390:
-  landed mean 0.00 / 0.00, landframe 2.58 / 1.42. KNOB LAB stays OUT of this public repo: the recipe is in the shared
-  repo (`tools/knob-lab/library/saves/gas2radio/gas2radio-knob-recipe-2026-10-29-heavy-lamp.json`); the candidates +
+  landed mean 0.00 / 0.00, landframe 2.58 / 1.42. Then Dan: "WORN replace": `knob-radio.webp` = round 2's WORN (the
+  shipped light, scuffs 1.4 / size 1.0 / white 1.4, dirt .9, chip .5, rim rubbed to #b08a4a; 869 KB), land.webp
+  re-rendered again, the same check passes (0.00 / 0.00, 2.58 / 1.42). KNOB LAB stays OUT of this public repo: the recipe is in the shared
+  repo (`tools/knob-lab/library/saves/gas2radio/gas2radio-knob-recipe-2026-10-29-worn.json`); the candidates +
   their bench sat in `player/knoblab/cands/` (git-excluded via `.git/info/exclude`, local only). Open, for Dan:
   `player/knoblab/make-knoblab.py` + two recipe JSONs ARE in this public repo (main since 2026-10-23, `d2baece`) against
   the KNOB LAB secrecy rule: move them to the shared repo and out of here (a main push = his word; git history keeps
