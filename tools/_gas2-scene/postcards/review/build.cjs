@@ -4,9 +4,10 @@
    1. out/live.html - postcards.html as the artifact can serve it: fonts inlined (the artifact CSP only lets Google Fonts
       faces load), the demo audio renamed .mp4 (.m4a is refused at publish), and the state read from the hash too
       (live.html#card=5&flip), because the artifact's links pass no query string.
-   2. out/shots/<id>.webp - each screen in WebKit at Safari's visible viewport on the iPhone 17 Pro (402 x 714).
+   2. out/shots/<id>.webp - each screen in WebKit at Safari's visible viewport on the iPhone 17 Pro (402 x 714); the record
+      playing in Chrome (Playwright's WebKit can't decode the AAC demo).
    3. out/preview.html - index.html in a document skeleton, with links to the scene assets, to try it on localhost. */
-const { webkit } = require("playwright");
+const { webkit, chromium } = require("playwright");
 const fs = require("fs");
 const path = require("path");
 const { execFileSync } = require("child_process");
@@ -41,11 +42,11 @@ for (const s of ["before", "after"]) link(path.join(SCENE, "player/audio", `hiph
 // 2 · the screens
 (async () => {
   const wk = await webkit.launch();
-  const ctx = await wk.newContext({ viewport: { width: 402, height: 714 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
-  const p = await ctx.newPage();
-  const shot = async (id) => {
+  const PHONE = { viewport: { width: 402, height: 714 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true };
+  const p = await (await wk.newContext(PHONE)).newPage();
+  const shot = async (id, pg) => {
     const png = path.join(OUT, "shots", id + ".png");
-    await p.screenshot({ path: png });
+    await (pg || p).screenshot({ path: png });
     execFileSync("cwebp", ["-quiet", "-q", "80", png, "-o", png.replace(/\.png$/, ".webp")]);
     fs.unlinkSync(png);
   };
@@ -66,5 +67,15 @@ for (const s of ["before", "after"]) link(path.join(SCENE, "player/audio", `hiph
   await shot("motion");
   await p.mouse.up();
   await wk.close();
+  // the HEAR IT back while the record plays: the arm in the grooves
+  const ch = await chromium.launch({ channel: "chrome", args: ["--autoplay-policy=no-user-gesture-required"] });
+  const cp = await (await ch.newContext(PHONE)).newPage();
+  await cp.goto(BASE + "?card=5&flip");
+  await cp.evaluate(() => document.fonts.ready);
+  await cp.waitForTimeout(700);
+  await cp.click("#play");
+  await cp.waitForTimeout(6000);
+  await shot("card-5-play", cp);
+  await ch.close();
   console.log(fs.readdirSync(path.join(OUT, "shots")).map((f) => `${f} ${(fs.statSync(path.join(OUT, "shots", f)).size / 1024).toFixed(0)} KB`).join("\n"));
 })().catch((e) => { console.error(e); process.exit(1); });

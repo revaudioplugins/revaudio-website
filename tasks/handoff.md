@@ -1,6 +1,6 @@
 ## 2026-10-29 — GAS 2 page: the PHONE page as POSTCARDS (Claude Code `danavivi-75`, Dan's Mac) — BRANCH `feat/gas2-postcards`, not pushed
 
-Claim: OPEN `danavivi-75`. v1 + the end page BUILT + checked; waiting on Dan's notes in the review page (below). Branched from `origin/feat/gas2-drone` @ `4fc6ddd` (no upstream set, so a bare push
+Claim: OPEN `danavivi-75`. Round 2 (Dan's notes) BUILT + checked + in the review page; waiting on his round-2 notes (below). Branched from `origin/feat/gas2-drone` @ `4fc6ddd` (no upstream set, so a bare push
 can't reach the drone branch); `revaudio-59` keeps writing `feat/gas2-drone`, so this branch stays out of its files.
 Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postcards/**`; one README line pair; the
 "GAS 2 phone POSTCARDS" section on top of `tasks/todo.md`; this entry. Read only: `page-b.html` (copy, ticket), `fonts/`,
@@ -76,10 +76,28 @@ Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postca
   props/poster-level.webp, audio/hiphop_*.mp4 from player/audio/*.m4a, no contentType: .mp4 is served as video/mp4).
   Checked locally (Chrome 1280 + WebKit 390): pins, notes, ✓, the question, live frames (right state, one at a time),
   reload, copy, no sideways scroll, 0 errors; on claude.ai a db probe written, listed and deleted.
-- Open (Dan): (1) his notes in the review page, then: read `notes`, apply, re-shoot, republish to the same URL; (2) art,
-  only on his OK (asked on Regular in the review page): illustrated fronts for the grade cards (gpt-image-2, in the
-  posters' style); (3) per-grade renders (Yoni) before any grade card plays its own sound; (4) later: this as page-b's
-  phone layout.
+- Then ROUND 2 (Dan's notes, 2026-10-29 21:03: pasted "Copy all notes" + the db; he skipped the painted-fronts question;
+  plan OK'd by his pick "deck buttons" for the vinyl). `1cdeebc`: grade cards = the plugin key gone, script + lettering
+  centred on the card with the sunburst behind (turns, 150 s), the line in Oswald caps; mail card = one TO line (the two
+  empty lines gone), the email bigger, the site's consent box verbatim ("Also send me new-plugin drops and demo codes
+  (optional)", unticked, above the stamp so it's ticked before sending; `name="marketing"` like the worker's field),
+  MAIL ME THE KEYS = a red station dater stamp (REVAUDIO STATION / today's date, `ink.webp` mask) that thumps, the card
+  jolts, then the drop; HEAR IT back = a portable record player from above (tap the record = arm swings in, needle drop
+  0.3 s before the sound, 33 1/3 = 200 deg/s, coasts down; ORIGINAL / GAS 2 = the deck keys; the arm angle = song
+  position, lead-in to run-out solved from the drawn geometry); after mailing a "TO THE WEBSITE" railway ticket pops
+  out under the readings (revaudio.net/store, `target=_blank` because the review frame can't navigate; on SE heights
+  only its big line); the end page itself untouched (Dan's ✓). Overall: each card worn its own way (`make-wear.py`,
+  numpy noise, no spend, ~235 KB total): tape on 1, a coffee ring on Regular, gold-foil seal on Premium, a thumbprint on
+  Race, ring wear on HEAR IT, a fold on the mail card; alive = arrival pops (lettering, seal, "Greetings from" writes
+  itself, postmark thump), lamp flicker, dust motes; all off under reduced motion. The keys' files + bake tools stay in
+  the repo, unused (in case Dan wants them back). Checked: `check.cjs` 26 steps + 30 layouts pass, 0 console errors
+  (new: lettering centred, mail + deck stacking per size, consent box, stamp, ticket + href, record spin / arm / coast
+  in Chrome). Review page round 2 = the review-bench skill's template (`~/.claude/skills/review-bench/`, Dan: "save
+  that style for future work") + this content: `CFG.round = 2` (notes in collection `notes-r2`), his round-1 note +
+  "what changed" under each screen, a new "Hear it, playing" shot (Chrome, in `build.cjs`); version 3 at the same URL;
+  files map now 35 files (+ the wear art, - the keys). Checked locally: Chrome 1280 + WebKit 390, 0 errors.
+- Open (Dan): (1) his round-2 notes: read `notes-r2`, apply, re-shoot, round 3; (2) painted art still only on his OK;
+  (3) per-grade renders (Yoni) before any grade card plays its own sound; (4) later: this as page-b's phone layout.
 
 ## 2026-10-28 — GAS 2 page: the drone intro, from scratch (Claude Code `revaudio-59`, laptop 1) — BRANCH `feat/gas2-drone`
 

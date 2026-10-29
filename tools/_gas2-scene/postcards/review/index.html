@@ -2,8 +2,10 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Oswald:wght@500;600&display=swap">
 <style>
-/* Layout: the screens in the order a visitor meets them, one per row: the phone on the left, its notes on the right
-   (stacked on a phone). One dark look on purpose: the postcards' own dusk, their honey and card stock. */
+/* GAS 2 postcards, the review page, from the review-bench skill's template (Dan 2026-10-29: "i really like the bench, save that style for future work"). One section per screen,
+   in the order a visitor meets them: the screen on the left, its notes on the right (stacked on a phone). One dark look
+   on purpose; the notes box is the one light thing, ruled card stock in pen ink. The content lives in CFG + SECTIONS in
+   the script; the look and the mechanics stay as they are. */
 :root {
   --ground: #100d0a; --panel: #18130f; --rule: #2e261f; --fg: #efe9df; --dim: #a99f90;
   --honey: #f2be4a; --on-honey: #1a1208; --red: #e0694c; --ok: #9fc07c; --on-ok: #13200b;
@@ -11,6 +13,7 @@
   --display: Oswald, "Arial Narrow", "Helvetica Neue", sans-serif;
   --body: Barlow, system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --fw: 402; --fh: 714;                                   /* the screen, set from CFG.frame */
   color-scheme: dark;
 }
 @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
@@ -46,12 +49,13 @@ h2 { font-size: 30px; line-height: 1; }
 /* ── one screen ── */
 .sc { display: grid; gap: 22px; padding-block: 44px; border-bottom: 1px solid var(--rule); scroll-margin-top: 8px; }
 .shot { display: grid; gap: 10px; justify-items: center; }
-.phone { position: relative; width: min(100%, 360px); aspect-ratio: 402 / 714; max-width: 100%; border-radius: 22px; overflow: hidden;
+.phone { position: relative; width: min(100%, 360px); aspect-ratio: var(--fw) / var(--fh); max-width: 100%; border-radius: 22px; overflow: hidden;
   background: #0b0907; box-shadow: 0 0 0 1px var(--rule), 0 26px 50px -26px #000; cursor: crosshair; }
 .phone img { display: block; width: 100%; height: 100%; object-fit: cover; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
 .phone.live { cursor: auto; box-shadow: 0 0 0 2px var(--honey), 0 26px 50px -26px #000; }
 .phone.live img, .phone.live .pins { visibility: hidden; }
-.phone iframe { position: absolute; left: 0; top: 0; width: 402px; height: 714px; border: 0; transform: scale(var(--k, 1)); transform-origin: 0 0; }
+.phone iframe { position: absolute; left: 0; top: 0; width: calc(var(--fw) * 1px); height: calc(var(--fh) * 1px); border: 0;
+  transform: scale(var(--k, 1)); transform-origin: 0 0; }
 .pins { position: absolute; inset: 0; pointer-events: none; }
 .pin { position: absolute; width: 28px; height: 28px; padding: 0; transform: translate(-50%, -50%); pointer-events: auto; cursor: pointer;
   border: 2px solid var(--ground); border-radius: 50%; background: var(--honey); color: var(--on-honey);
@@ -74,6 +78,14 @@ h2 { font-size: 30px; line-height: 1; }
 .seg { display: flex; flex-wrap: wrap; gap: 8px; }
 .seg .btn[aria-pressed="true"] { background: var(--honey); color: var(--on-honey); }
 
+/* the last round, under the screen it was about: the note as written, then what changed */
+.was { margin: 0; padding: 14px 16px; display: grid; gap: 8px; max-width: 64ch; border: 1px solid var(--rule); border-left: 3px solid var(--honey);
+  border-radius: 4px 12px 12px 4px; background: var(--panel); }
+.was q { quotes: none; white-space: pre-line; color: var(--fg); font-style: italic; }
+.was ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 5px; color: var(--dim); }
+.was li { display: grid; grid-template-columns: 22px minmax(0, 1fr); }
+.was li::before { content: "✓"; color: var(--ok); font-weight: 600; }
+
 /* the notes: the back of a postcard, ruled, in pen */
 .notes { display: block; width: 100%; min-height: 176px; resize: vertical; margin: 0; padding: 12px 16px; border: 0; border-radius: 4px;
   background-color: var(--stock); background-image: linear-gradient(transparent calc(100% - 1px), var(--ink-rule) 0);
@@ -92,6 +104,10 @@ h2 { font-size: 30px; line-height: 1; }
   .shot { justify-items: start; }
   .phone, .shot-bar, .hint { width: 300px; }
 }
+/* desktop screens (CFG.frame wider than tall): the screen takes the row, the notes go under it */
+.sc.land { grid-template-columns: minmax(0, 1fr); }
+.sc.land .phone { width: 100%; max-width: 960px; border-radius: 10px; }
+.sc.land .shot-bar, .sc.land .hint { width: 100%; max-width: 960px; }
 
 /* ── the foot: the way out ── */
 .foot { display: grid; gap: 14px; padding-top: 40px; }
@@ -102,11 +118,11 @@ h2 { font-size: 30px; line-height: 1; }
 
 <div class="wrap">
   <header class="top">
-    <h1>Postcards review</h1>
-    <p class="lede">Every screen of the GAS 2 phone page (build b5279b1), in the order a visitor sees it. Write your notes under each one.</p>
+    <h1 id="title">Postcards review</h1>
+    <p class="lede" id="lede"></p>
     <ul class="tips">
       <li><b>Pin a spot:</b> tap a picture. A numbered pin drops and your note starts with its number.</li>
-      <li><b>▶ Live</b> runs the real page in the frame: flick, turn over, play, mail.</li>
+      <li class="tip-live"><b>▶ Live</b> runs the real page in the frame, at that screen.</li>
       <li><b>Nothing to change?</b> Tap ✓ Looks right.</li>
     </ul>
     <p class="conn" id="conn" data-s="wait">Connecting…</p>
@@ -128,96 +144,157 @@ h2 { font-size: 30px; line-height: 1; }
 
 <script>
 (() => {
-  // ── the screens, in the order a visitor meets them (shots/<id>.webp: WebKit at 402 x 714, build.cjs) ──
-  const SECTIONS = [
+  // ── what this page reviews. Shots: shots/<id>.webp at CFG.frame (build.cjs). Live: CFG.live + '#' + q ('' = none) ──
+  const CFG = {
+    title: 'Postcards review', thing: 'the GAS 2 phone page', build: '1cdeebc',
+    key: 'gas2-postcards-review',        // this browser's copy: one key per review page
+    frame: [402, 714],                   // Safari's visible viewport on an iPhone 17 Pro
+    live: 'live.html',
+    round: 2,                            // round 1's notes: collection `notes`; this round: `notes-r2`
+  };
+  const SECTIONS = [                     // in the order a visitor meets them (shots: build.cjs)
     { id: 'card-1', short: '1 Greetings', kick: 'Card 1 of 6', title: 'Greetings from GAS 2', q: 'card=1', parts: [
-      ['“Greetings from”', 'the script across the top'],
-      ['The pump', 'the real GAS 2 pump (globe sign, gauge, −11.0 counter, the three grade windows) in front of the blurred station'],
+      ['“Greetings from”', 'the script across the top; it writes itself when the card comes back'],
+      ['The pump', 'the real GAS 2 pump in front of the blurred station, the lamp over it flickering'],
       ['The line', '“Thicker, smoother, glued master.”'],
-      ['The strip', '“GAS 2 · FREE” and “No. 1”'],
-      ['Around the card', 'the lot at dusk out of focus, the stack edges, “Flick the card”, ‹ 1 / 6 ›']] },
-    { id: 'card-2', short: '2 Regular', kick: 'Card 2 of 6', title: 'Regular', q: 'card=2', ask: true, parts: [
-      ['The key', 'the REGULAR key from the plugin, on sunburst rays'],
-      ['Lettering', '“Smooth & warm” over a big REGULAR'],
-      ['The line', '“Smooth and warm. For mixes that are already good.”'],
-      ['The frame', '“No. 2 · Fuel grade”, “Grade 1 of 3”, the GAS 2 seal']] },
+      ['The age', 'a scuffed photo, rubbed corners, a strip of old tape across the top'],
+      ['Around the card', 'the lot at dusk out of focus, dust drifting, “Flick the card”, ‹ 1 / 6 ›']],
+      did: ['Its own wear: scuffs on the photo, rubbed corners, a strip of yellowed tape.',
+        'Alive: the lamp flickers, “Greetings from” writes itself as the card comes back, dust drifts behind the stack.'] },
+    { id: 'card-2', short: '2 Regular', kick: 'Card 2 of 6', title: 'Regular', q: 'card=2', parts: [
+      ['Lettering', '“Smooth & warm” over a big REGULAR, centred, the sunburst turning slowly behind'],
+      ['The line', '“Smooth and warm. For mixes that are already good.” in Oswald caps'],
+      ['The frame', '“No. 2 · Fuel grade”, “Grade 1 of 3”, the GAS 2 seal'],
+      ['The age', 'a coffee ring top right, sun-faded stock']],
+      was: '① the regular button should be gone\n② center this\n③ change font to the same one as the "regular"',
+      did: ['① The key is gone.', '② REGULAR and “Smooth & warm” sit in the middle of the card, the sunburst behind them.',
+        '③ The line is in the lettering’s face now: Oswald, in caps.',
+        'Its own mark: a coffee ring, top right. Alive: the word pops and the seal stamps down as the card comes up.'] },
     { id: 'card-3', short: '3 Premium', kick: 'Card 3 of 6', title: 'Premium', q: 'card=3', parts: [
-      ['The key', 'the PREMIUM key from the plugin'],
-      ['Lettering', '“The signature” over a big PREMIUM'],
+      ['Lettering', '“The signature” over a big PREMIUM, centred'],
       ['The line', '“Thick lows, clear mids, silky air.”'],
-      ['The frame', '“No. 3 · Fuel grade”, “Grade 2 of 3”, the GAS 2 seal']] },
+      ['The frame', '“No. 3 · Fuel grade”, “Grade 2 of 3”, the GAS 2 seal in gold foil'],
+      ['The age', 'the best kept of the lot']],
+      was: 'same as regular',
+      did: ['The same three changes as Regular.', 'Its own mark: the seal in gold foil, a glint runs across it now and then.'] },
     { id: 'card-4', short: '4 Race', kick: 'Card 4 of 6', title: 'Race', q: 'card=4', parts: [
-      ['The key', 'the RACE key from the plugin'],
-      ['Lettering', '“Punchy & bright” over a big RACE'],
+      ['Lettering', '“Punchy & bright” over a checkered RACE, centred'],
       ['The line', '“Punchy and bright. For loud, modern mixes.”'],
-      ['The frame', '“No. 4 · Fuel grade”, “Grade 3 of 3”, the GAS 2 seal']] },
+      ['The frame', '“No. 4 · Fuel grade”, “Grade 3 of 3”, the GAS 2 seal'],
+      ['The age', 'a greasy thumbprint bottom left, the edges knocked about']],
+      was: 'same here',
+      did: ['The same three changes as Regular.', 'Its own mark: a greasy thumbprint, bottom left.'] },
     { id: 'card-5', short: '5 Hear it', kick: 'Card 5 of 6 · front', title: 'Hear it', q: 'card=5', parts: [
       ['The poster', '“Fill it up. Same level.”'],
       ['Lettering', 'a big HEAR IT'],
       ['The line', '“The same song, the same level. One side is GAS 2.”'],
-      ['Turn it over', 'the button, and the curled corner']] },
+      ['Turn it over', 'the button, and the curled corner'],
+      ['The age', 'ring wear: a record’s circle rubbed into the card']],
+      did: ['Its own mark: ring wear, a record’s circle rubbed into the card.', 'Alive: HEAR IT pops as the card comes up.'] },
     { id: 'card-5-back', short: '5 Back', kick: 'Card 5 of 6 · back', title: 'Hear it, the back', q: 'card=5&flip', parts: [
-      ['The note', '“Same song, same loudness. Switch while it plays.”'],
-      ['▶', 'the play button'],
-      ['The switch', 'ORIGINAL / GAS 2, and the progress line under it'],
+      ['The note', '“Tap the record. Same song, same loudness: switch while it plays.”'],
+      ['The record', 'tap: the arm swings in, the needle drops, it spins at 33⅓; tap again: it stops and coasts down'],
+      ['The keys', 'ORIGINAL / GAS 2, like a deck’s 33 / 45: the lit one is the one you hear; switch while it plays'],
+      ['The arm', 'creeps toward the label as the song plays (it replaces the progress line)'],
       ['Fine print', '“Hip-hop demo · PREMIUM at GAS 140 % · both sides −11.0 LUFS”, and “Turn back”']],
-      tip: '▶ Live, then tap ▶ on the card. Sound on.' },
+      tip: '▶ Live, then tap the record. Sound on.',
+      was: 'over here I want a to make a vinyl from top view that will act as the player its a comltly different startgy',
+      did: ['A portable record player seen from above takes the whole back.',
+        'Tap the record to play and stop. ORIGINAL / GAS 2 are the deck’s two keys (your pick). The arm shows how far into the song you are.'] },
+    { id: 'card-5-play', short: '5 Playing', kick: 'Card 5 of 6 · back, playing', title: 'Hear it, playing', q: 'card=5&flip', parts: [
+      ['The arm', 'in the grooves, moving in with the song'],
+      ['The record', 'turning; the light on it stays put'],
+      ['GAS 2', 'the lit key: the side you hear']],
+      tip: '▶ Live, then tap the record.' },
     { id: 'card-6', short: '6 Mail', kick: 'Card 6 of 6', title: 'Mail me the keys', q: 'card=6', parts: [
       ['The heading', '“POST CARD”, MAIL ME THE KEYS, “All three grades · free”'],
-      ['Stamp and postmark', 'GAS 2 POST 0¢, REVAUDIO STATION · FREE'],
+      ['Stamp and postmark', 'GAS 2 POST 0¢, REVAUDIO STATION · FREE (it thumps on as the card comes up)'],
       ['The message', '“Drop me in the box: we’ll mail you the download link. No licence key, no card.”'],
-      ['The form', 'the TO line, MAIL ME THE KEYS →, the fine print'],
-      ['The mailbox', 'under the card, between ‹ and ›']],
-      tip: '▶ Live, type any email and send it: the card drops into the box. Nothing is sent.' },
+      ['The TO line', 'one line, the email big'],
+      ['The checkbox', '“Also send me new-plugin drops and demo codes (optional)”, unticked'],
+      ['The stamp', 'MAIL ME THE KEYS in red ink, REVAUDIO STATION over it, today’s date under it'],
+      ['The age', 'folded once across the top, yellowed, foxed']],
+      tip: '▶ Live, type any email, tick the box if you like, tap the stamp: it stamps, then the card drops into the box. Nothing is sent.',
+      was: '①remove the line\n② remove the line\n③make the email scale bigger\n⑤ should be a stomp like a train stomp not like a buttton\n⑥ add a check box',
+      did: ['①② Both empty lines are gone: one TO line.', '③ The email is bigger, the pen writing and the printed “your email” both.',
+        '⑤ MAIL ME THE KEYS is a station dater stamp now, red ink with today’s date. Tap it: it stamps down, the card jumps, then it goes in the box.',
+        '⑥ The checkbox, in the site’s own words, unticked. It sits above the stamp so it can be ticked before the card goes.'] },
     { id: 'end', short: 'End', kick: 'After the last card', title: 'The end page', q: 'card=7', parts: [
       ['The view', 'the right side of the desktop page: the canopy and its lamp, the dusk sky, the mesas'],
       ['GAS 2', 'the lockup and the red line under it'],
       ['The line', '“Thicker, smoother, glued master.”'],
       ['Download FREE', 'brings the mail card back'],
       ['The rest', '“Fill it up.” and “↺ The postcards again”']],
-      tip: '▶ Live replays the landing: the words pop out.' },
+      tip: '▶ Live replays the landing: the words pop out.',
+      did: ['Untouched: you marked it ✓ last round.'] },
     { id: 'end-sent', short: 'End · mailed', kick: 'After mailing', title: 'The end page, mailed', q: 'card=7&sent', parts: [
       ['The button', 'reads “✓ Keys in the mail”'],
-      ['The foot', '“Sent to … · Mockup: nothing was sent.”']] },
+      ['The ticket', '“TO THE WEBSITE →”, REVAUDIO.NET, ADMIT ONE · THE STORE: pops out last, sways a little, opens revaudio.net/store'],
+      ['The foot', '“Sent to … · Mockup: nothing was sent.”']],
+      tip: '▶ Live replays it: the words pop, then the ticket.',
+      was: '① add a pop up button in avintage style to with reading "to the website" the user will send right to the store',
+      did: ['① A railway ticket, TO THE WEBSITE →, pops out under the readings after mailing. It opens revaudio.net/store (a new tab here in the review, a plain link on the site).',
+        'On a short phone (SE) only its big line shows, so it stays clear of the foot.'] },
     { id: 'motion', short: 'Motion', kick: 'Live only', title: 'Motion and feel', q: 'card=1', parts: [
       ['The flick', 'a fast flick, or a drag past a third, throws the card; a short drag springs back'],
-      ['Turn over', 'the flip on Hear it'],
-      ['The mail drop', 'the card shrinks into the box'],
-      ['The landing', 'the cards fade, the lot comes into focus, the words pop'],
-      ['The deal back', '“↺ The postcards again” deals the stack back']],
-      tip: '▶ Live starts on card 1. Your mouse and the arrow keys work too.' },
+      ['Each card’s moment', 'the lettering pops and the seal stamps down; “Greetings from” writes itself; the postmark thumps'],
+      ['Always moving', 'the sunburst turns slowly, the lamp flickers, dust drifts in the last of the sun'],
+      ['The record', 'spins up, the arm drops in, it coasts down when you stop it'],
+      ['The stamp and the drop', 'the stamp lands, the card jumps, then shrinks into the box'],
+      ['The landing', 'the cards fade, the lot comes into focus, the words pop, then the ticket']],
+      tip: '▶ Live starts on card 1. Your mouse and the arrow keys work too.',
+      did: ['More life on every card, listed above. Phones set to reduce motion get the same screens, still.'] },
     { id: 'overall', short: 'Overall', kick: 'The whole page', title: 'Overall', frame: false,
-      placeholder: 'What to keep, what to cut, what’s missing. And the “also” question you had earlier.' },
+      placeholder: 'What to keep, what to cut, what’s missing.',
+      was: 'in general I want the cards to be with character each card has it on\nI want it to fill like it is seared out and vintage vibe\na little coffee stain here in one card\nand make everything feel much more alive',
+      did: ['Every card is worn its own way: browned edges, rubbed corners, age spots, scuffs. Drawn in code, no art spend.',
+        'Each card has one mark of its own: tape, a coffee ring, a gold seal, a thumbprint, ring wear, a fold.',
+        'More alive: see Motion and feel.',
+        'The old plugin keys are off the page but kept in the repo, in case you want them back.'] },
   ];
+
   const SEC = Object.fromEntries(SECTIONS.map((s) => [s.id, s]));
-  const CHOICES = { paint: 'Paint them', keep: 'Keep the plugin keys', sample: 'Show me one first' };
-  const KEY = 'gas2-postcards-review';
+  const R = CFG.round > 1 ? `-r${CFG.round}` : '';
+  const COLL = 'notes' + R, KEY = CFG.key + R;
+  const [FW, FH] = CFG.frame, LAND = FW > FH;
+  document.documentElement.style.setProperty('--fw', FW); document.documentElement.style.setProperty('--fh', FH);
   const $ = (s, el) => (el || document).querySelector(s);
+  const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
   const circ = (n) => (n >= 1 && n <= 20 ? String.fromCodePoint(0x245f + n) : `(${n})`);   // ① … ⑳
   const blank = () => ({ text: '', ok: false, pins: [], choice: '', updatedAt: '' });
-  const norm = (d) => ({
+  const norm = (d, S) => ({
     text: typeof d.text === 'string' ? d.text : '', ok: d.ok === true,
     pins: Array.isArray(d.pins) ? d.pins.filter((p) => p && [p.n, p.x, p.y].every(Number.isFinite)).map((p) => ({ n: p.n, x: p.x, y: p.y })) : [],
-    choice: CHOICES[d.choice] ? d.choice : '', updatedAt: typeof d.updatedAt === 'string' ? d.updatedAt : '' });
+    choice: S && S.ask && S.ask.choices[d.choice] ? d.choice : '', updatedAt: typeof d.updatedAt === 'string' ? d.updatedAt : '' });
   const has = (s) => !!(s && (s.text.trim() || s.ok || s.choice || s.pins.length));
+
+  // ── the head ──
+  document.title = CFG.title;
+  $('#title').textContent = CFG.title;
+  $('#lede').textContent = CFG.round > 1
+    ? `Round ${CFG.round} of ${CFG.thing} (build ${CFG.build}). Under each screen: your last note and what changed. Write what’s still off.`
+    : `Every screen of ${CFG.thing} (build ${CFG.build}), in the order a visitor sees it. Write your notes under each one.`;
+  if (!CFG.live) $('.tip-live').hidden = true;
 
   // ── state: this browser first (instant, and the fallback), then the page's store, which Claude reads ──
   const state = {};
-  try { const raw = JSON.parse(localStorage.getItem(KEY) || '{}'); for (const id in raw) if (SEC[id] && raw[id]) state[id] = norm(raw[id]); } catch (e) {}
+  try { const raw = JSON.parse(localStorage.getItem(KEY) || '{}'); for (const id in raw) if (SEC[id] && raw[id]) state[id] = norm(raw[id], SEC[id]); } catch (e) {}
   const st = (id) => state[id] || (state[id] = blank());
   const saveLocal = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} };
 
   // ── build the page ──
-  const ask = `<fieldset class="ask"><legend>Paint a 1950s picture for each grade card instead of the plugin key? About $2 of OpenAI images.</legend>
-    <div class="seg">${Object.entries(CHOICES).map(([k, v]) => `<button class="btn" type="button" data-choice="${k}" aria-pressed="false">${v}</button>`).join('')}</div></fieldset>`;
+  const ask = (S) => `<fieldset class="ask"><legend>${esc(S.ask.q)}</legend>
+    <div class="seg">${Object.entries(S.ask.choices).map(([k, v]) => `<button class="btn" type="button" data-choice="${esc(k)}" aria-pressed="false">${esc(v)}</button>`).join('')}</div></fieldset>`;
+  const was = (S) => `<div class="was">${S.was ? `<p class="label">Round ${CFG.round - 1} · your note</p><q>${esc(S.was)}</q>` : ''}
+    ${S.did && S.did.length ? `<p class="label">What changed</p><ul>${S.did.map((d) => `<li>${esc(d)}</li>`).join('')}</ul>` : ''}</div>`;
   $('#screens').innerHTML = SECTIONS.map((S) => `
-    <section class="sc${S.frame === false ? ' wide' : ''}" id="${S.id}" aria-labelledby="h-${S.id}">
+    <section class="sc${S.frame === false ? ' wide' : LAND ? ' land' : ''}" id="${S.id}" aria-labelledby="h-${S.id}">
       ${S.frame === false ? '' : `<div class="shot">
-        <div class="phone" data-hash="${S.q}">
-          <img src="shots/${S.id}.webp" alt="${S.kick}, ${S.title}, as it shows on the phone" width="402" height="714" draggable="false">
+        <div class="phone" data-hash="${esc(S.q || '')}">
+          <img src="shots/${S.id}.webp" alt="${esc(S.kick)}, ${esc(S.title)}, as it shows on screen" width="${FW}" height="${FH}" draggable="false">
           <div class="pins"></div>
         </div>
-        <div class="shot-bar"><button class="btn solid go" type="button">▶ Live</button><button class="btn again" type="button" hidden>↺ Restart</button><code class="q">?${S.q}</code></div>
+        <div class="shot-bar">${CFG.live ? '<button class="btn solid go" type="button">▶ Live</button><button class="btn again" type="button" hidden>↺ Restart</button>' : ''}${S.q ? `<code class="q">?${esc(S.q)}</code>` : ''}</div>
         <p class="hint">Tap the picture to pin a spot.</p>
       </div>`}
       <div class="side">
@@ -225,7 +302,8 @@ h2 { font-size: 30px; line-height: 1; }
         <h2 id="h-${S.id}">${S.title}</h2>
         ${S.parts ? `<ul class="parts">${S.parts.map(([a, b]) => `<li><b>${a}</b> ${b}</li>`).join('')}</ul>` : ''}
         ${S.tip ? `<p class="tip"><span>Try it</span>${S.tip}</p>` : ''}
-        ${S.ask ? ask : ''}
+        ${CFG.round > 1 && (S.was || (S.did && S.did.length)) ? was(S) : ''}
+        ${S.ask ? ask(S) : ''}
         <label class="sr" for="n-${S.id}">Notes on ${S.title}</label>
         <textarea class="notes" id="n-${S.id}" dir="auto" rows="6" placeholder="${S.placeholder || 'What to change here. Tap the picture to pin a spot first.'}"></textarea>
         <div class="row">${S.frame === false ? '' : '<button class="btn ok-btn" type="button" aria-pressed="false">✓ Looks right</button>'}<span class="save" role="status"></span></div>
@@ -279,7 +357,7 @@ h2 { font-size: 30px; line-height: 1; }
     writing[id] = true; status(id, 'saving');
     const s = st(id), S = SEC[id];
     try {
-      await db.doc('notes/' + id).set({ screen: `${S.kick} · ${S.title}`, text: s.text, ok: s.ok, pins: s.pins, choice: s.choice, updatedAt: s.updatedAt });
+      await db.doc(COLL + '/' + id).set({ screen: `${S.kick} · ${S.title}`, text: s.text, ok: s.ok, pins: s.pins, choice: s.choice, updatedAt: s.updatedAt });
       status(id, 'saved');
     } catch (e) {
       writing[id] = false;
@@ -301,13 +379,13 @@ h2 { font-size: 30px; line-height: 1; }
     if (!db) { conn('local'); SECTIONS.forEach((S) => has(state[S.id]) && status(S.id, 'local')); return; }
     conn('ok');
     let first = true;
-    db.collection('notes').onSnapshot((snap) => {
+    db.collection(COLL).onSnapshot((snap) => {
       const seen = new Set();
       snap.docs.forEach((d) => {
         if (!SEC[d.id]) return;
         seen.add(d.id);
         if (d.metadata.hasPendingWrites) return;
-        const r = norm(d.data() || {}), l = state[d.id];
+        const r = norm(d.data() || {}, SEC[d.id]), l = state[d.id];
         if (l && l.updatedAt > r.updatedAt) { if (first) push(d.id); return; }    // typed here while it was away
         if (l && l.updatedAt === r.updatedAt) { if (first) status(d.id, 'saved'); return; }
         if (busy(d.id)) return;
@@ -320,13 +398,13 @@ h2 { font-size: 30px; line-height: 1; }
 
   // ── live: the real page in the frame, one at a time ──
   let current = null;
-  const fit = (ph) => ph.style.setProperty('--k', (ph.clientWidth / 402).toFixed(4));
+  const fit = (ph) => ph.style.setProperty('--k', (ph.clientWidth / FW).toFixed(4));
   const ro = new ResizeObserver((es) => es.forEach((e) => fit(e.target)));
   function live(ph) {
     if (current && current !== ph) still(current);
     const old = $('iframe', ph); if (old) old.remove();
     const f = document.createElement('iframe');
-    f.title = 'The postcards page, live'; f.allow = 'autoplay'; f.src = 'live.html#' + ph.dataset.hash;
+    f.title = `${CFG.thing}, live`; f.allow = 'autoplay'; f.src = CFG.live + '#' + ph.dataset.hash;
     ph.append(f); ph.classList.add('live'); current = ph; fit(ph);
     const shot = ph.parentElement;
     $('.go', shot).textContent = '■ Picture'; $('.again', shot).hidden = false; $('.hint', shot).hidden = true;
@@ -364,8 +442,11 @@ h2 { font-size: 30px; line-height: 1; }
       s.text = ta.value; size(ta); paint(S.id); touch(S.id, 0);
       ta.focus({ preventScroll: true }); ta.setSelectionRange(ta.value.length, ta.value.length);
     });
-    $('.go', el).addEventListener('click', () => (ph.classList.contains('live') ? still(ph) : live(ph)));
-    $('.again', el).addEventListener('click', () => live(ph));
+    const go = $('.go', el);
+    if (go) {
+      go.addEventListener('click', () => (ph.classList.contains('live') ? still(ph) : live(ph)));
+      $('.again', el).addEventListener('click', () => live(ph));
+    }
   });
   renderIndex();
   SECTIONS.forEach((S) => has(state[S.id]) && status(S.id, 'local'));
@@ -373,11 +454,11 @@ h2 { font-size: 30px; line-height: 1; }
 
   // ── the way out: everything as text ──
   function dump() {
-    const out = [`GAS 2 Postcards review · build b5279b1 · ${new Date().toLocaleString()}`, ''];
+    const out = [`${CFG.title}${CFG.round > 1 ? ` · round ${CFG.round}` : ''} · build ${CFG.build} · ${new Date().toLocaleString()}`, ''];
     SECTIONS.forEach((S) => {
       const s = st(S.id);
       out.push(`== ${S.kick} · ${S.title}${S.q ? ` (?${S.q})` : ''} ==${s.ok ? '  ✓ looks right' : ''}`);
-      if (s.choice) out.push(`Painted fronts: ${CHOICES[s.choice]}`);
+      if (s.choice) out.push(`${S.ask.q} ${S.ask.choices[s.choice]}`);
       if (s.pins.length) out.push('Pins: ' + s.pins.map((p) => `${circ(p.n)} ${Math.round(p.x * 100)}% across, ${Math.round(p.y * 100)}% down`).join(' · '));
       out.push(s.text.trim() || '(no note)', '');
     });

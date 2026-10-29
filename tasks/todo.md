@@ -1,4 +1,4 @@
-# GAS 2 phone POSTCARDS (branch `feat/gas2-postcards`, 2026-10-29, danavivi-75) — ROUND 2 (Dan's notes) in progress
+# GAS 2 phone POSTCARDS (branch `feat/gas2-postcards`, 2026-10-29, danavivi-75) — ROUND 2 BUILT, waiting on Dan's round-2 notes
 
 Dan's concept (2026-10-29): a stack of 1950s "Greetings from GAS 2" postcards, phone only. State: `tasks/handoff.md` top entry.
 
@@ -40,8 +40,9 @@ Dan's concept (2026-10-29): a stack of 1950s "Greetings from GAS 2" postcards, p
       Premium a gold seal, Race a grease thumbprint, HEAR IT ring wear, the mail card a crease + dog-ear); more alive:
       the lettering pops as its card comes up, the sunburst turns slowly, the postmark thumps, dust in the lamp light.
       Textures made in `postcards/tools/make-wear.py` (numpy, no spend).
-- [ ] 12. check.cjs updated + all pass; re-shoot; review page round 2 (his note + what changed per screen, fresh
+- [x] 12. check.cjs updated + all pass; re-shoot; review page round 2 (his note + what changed per screen, fresh
       boxes) republished to the same URL; commit by path; handoff.
+- [ ] 13. Dan's round-2 notes (`notes-r2`) → round 3.
 
 # GAS 2 drone descent (branch `feat/gas2-drone`, 2026-10-28, revaudio-59) — SCENE + BENCH BUILT, art next
 
