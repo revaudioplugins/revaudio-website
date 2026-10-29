@@ -167,7 +167,29 @@ descent" section); this entry.
   their bench sat in `player/knoblab/cands/` (git-excluded via `.git/info/exclude`, local only). Open, for Dan:
   `player/knoblab/make-knoblab.py` + two recipe JSONs ARE in this public repo (main since 2026-10-23, `d2baece`) against
   the KNOB LAB secrecy rule: move them to the shared repo and out of here (a main push = his word; git history keeps
-  them unless rewritten). Until then the lab opens on the 10-29 ALU recipe, not this heavier one.
+  them unless rewritten). Until then the lab opens on the 10-29 ALU recipe, not the WORN one on the page.
+
+### Session end 2 (2026-10-29 evening, `revaudio-59`, close-session) — claim stays OPEN (CATCH10, then Dan's push word)
+
+- State: branch `feat/gas2-drone` = origin (0 / 0), clean before this edit; 19 commits ahead of origin/main. Today:
+  `1d0f3c5` grade strip out, `9815ee6` / `b249801` / `ee2356f` radio knobs (ALU), `4ac3aad` / `7d36b36` scroll cue
+  (chevrons), `a81dfa9` / `b527eaf` pump light (bench, then Dan's pick), `247a7a7` / `4fc6ddd` radio knobs WORN.
+  Elsewhere: GAS2 branch `bench/pump-light` (`679bc0f`, `dee156a`, pushed; see the GAS2 handoff), shared `d6b7893`
+  (knob-lab saves incl. the WORN recipe + RevTasks note; push may need Dan's `!` line, auto mode).
+- **CATCH10: Dan, 2026-10-29: "today at 18 the coupon will place"** = Gil creates it in Paddle today at 18:00 (RevTasks
+  #193). After that: check the code works at checkout, then merge to main only on Dan's push word (`tasks/todo.md` 4e).
+- Unverified: WebKit / Safari and a real phone (headless Edge / Chrome only); Dan saw the pump light and the WORN
+  knobs on the page ("מדהים אהבתי" for the light; WORN picked from the bench), not yet in Safari.
+- Background (laptop 1): `python -m http.server` 4461 (PID 38924, GAS2 `Source/ui/public`), 4462 (38184, worktree
+  `gas2-page-view`), 4463 (45096, the plan page), 4464 (17152, this scene), 8793 (69344, `C:\RevAudio` for knob bakes);
+  `serve-nostore.py` 4465 (63888, this scene, no-store: open the page here), 8811 (50268, worktree `GAS2-light`);
+  `serve-lab.py` 8798 (66712, the radio KNOB LAB). Kill: `Stop-Process -Id <PID>`.
+- Decide next: (1) KNOB LAB files in this PUBLIC repo (`player/knoblab/make-knoblab.py` + 2 recipes, main since
+  `d2baece`): move to the shared repo + remove here (a main push = Dan's word; history keeps them unless rewritten,
+  and a force-push to main is never done without his explicit word); (2) after CATCH10 exists: go live.
+- Cleanup: `player/knoblab/cands/` (round 2 knob candidates, 45 MB of PNGs + their bench) is local only, excluded by
+  a line in `C:\Revaudio\Website\revaudio-website\.git\info\exclude`: delete both when no one needs the candidates.
+  Worktree `gas2-page-view` still to remove when unused (`git worktree remove`).
 
 ## 2026-10-26 — GAS 2 page: the drone intro (hover above the station, scroll = descent, land, readings pop) (Claude Code `danavivi-19`, Dan's Mac) — BRANCH `feat/gas2-page`
 
