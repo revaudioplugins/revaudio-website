@@ -1,6 +1,6 @@
 ## 2026-10-29 — GAS 2 page: the PHONE page as POSTCARDS (Claude Code `danavivi-75`, Dan's Mac) — BRANCH `feat/gas2-postcards`, not pushed
 
-Claim: OPEN `danavivi-75`. Round 3 (HEAR IT's back as a working turntable) BUILT + checked + in the review page (version 5); waiting on his round-3 notes (below). Branched from `origin/feat/gas2-drone` @ `4fc6ddd` (no upstream set, so a bare push
+Claim: OPEN `danavivi-75`. Round 4 (his round-3 notes on HEAR IT) BUILT + checked + in the review page (version 6); waiting on his round-4 notes (below). Branched from `origin/feat/gas2-drone` @ `4fc6ddd` (no upstream set, so a bare push
 can't reach the drone branch); `revaudio-59` keeps writing `feat/gas2-drone`, so this branch stays out of its files.
 Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postcards/**`; one README line pair; the
 "GAS 2 phone POSTCARDS" section on top of `tasks/todo.md`; this entry. Read only: `page-b.html` (copy, ticket), `fonts/`,
@@ -120,7 +120,21 @@ Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postca
   0 errors. Review page round 3 (`CFG.round = 3`, notes in `notes-r3`; his note + what changed on the back, "No note
   last round: unchanged." elsewhere) = version 5 at the same URL (+ `postcards/img/deck.webp`). Design hook: the
   nested-cards waiver now names `.dymo` (the label-maker tape; `.deck` is gone); only the advisory stripes remain.
-- Open (Dan): (1) his round-3 notes: read `notes-r3`, apply, re-shoot, round 4; (2) painted art still only on his OK;
+- Then ROUND 4 (Dan's round-3 notes, 2026-10-30 13:15, pasted, all on HEAR IT; plus "if you need to create more assets
+  ... please do so": done in code, no spend). `bf71096`: front = TURN IT OVER in HEAR IT's large letters (the `.big`
+  bk/fr rules shared), ~2.5x, nodding with the curl (`beckon`, 2.6 s). Back = "I want the buttons to feel real": ivory
+  piano keys in a graphite escutcheon with amber jewel lamps, rendered in `make-deck.py` (height field: dished keys,
+  rounded edges, chamfered bezel; lamp 40 deg up like the deck; shadows marched, AO; 2x then halved): `deck-bank.webp`
+  + one opening's key up / latched (`deck-key-up/-down.webp`, the bank repeats every 43 units so they serve A and B;
+  ~6 KB in all). The button's background swaps by state (no hidden layer: the design hook's buried-raster). Press =
+  goes in under the finger + a synthesized click, latch = a clack + a haptic tick (`navigator.vibrate`, else iOS 18's
+  `<input switch>` tick); the lamps follow the side. "TAP THE RECORD" = a die-cut vinyl sticker (honey, red rule,
+  arrow), under the arm in z, slapped on as the deck comes round (WAAPI), its top-right corner peels (`@property
+  --peel` + clip-path), a glint; tapping it = play (tap() reads the pointerdown target). Fine print gone; Turn = a 7.6
+  cqw knob (44 px target). check.cjs: `?card=5` front Turn layout, the sticker cues the record, the keys latch (picture
+  + lamp): 30 steps + 35 layouts pass, 0 errors. Review page round 4 (`notes-r4`) = version 6 at the same URL. Design
+  hook: nested-cards waiver now names `.sticker .sk`; only the advisory stripes remain.
+- Open (Dan): (1) his round-4 notes: read `notes-r4`, apply, re-shoot, round 5; (2) painted art still only on his OK;
   (3) per-grade renders (Yoni) before any grade card plays its own sound; (4) later: this as page-b's phone layout.
 
 ## 2026-10-28 — GAS 2 page: the drone intro, from scratch (Claude Code `revaudio-59`, laptop 1) — BRANCH `feat/gas2-drone`

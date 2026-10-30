@@ -1,4 +1,4 @@
-# GAS 2 phone POSTCARDS (branch `feat/gas2-postcards`, 2026-10-29, danavivi-75) — ROUND 3 BUILT, waiting on Dan's round-3 notes
+# GAS 2 phone POSTCARDS (branch `feat/gas2-postcards`, 2026-10-29, danavivi-75) — ROUND 4 BUILT, waiting on Dan's round-4 notes
 
 Dan's concept (2026-10-29): a stack of 1950s "Greetings from GAS 2" postcards, phone only. State: `tasks/handoff.md` top entry.
 
@@ -51,7 +51,16 @@ Dan's concept (2026-10-29): a stack of 1950s "Greetings from GAS 2" postcards, p
       = cue up, swing in, needle down, the song starts as it lands; tap again = home. Keys, fine print, label-maker tape.
 - [x] 15. check.cjs 29 steps + 30 layouts pass, 0 errors; review page round 3 = version 5 at the same URL; commits by
       path (`b05c079` + the review/handoff one); no push.
-- [ ] 16. Dan's round-3 notes (`notes-r3`) → round 4.
+- [x] 16. Dan's round-3 notes (2026-10-30 13:15, pasted, + "if you need to create more assets ... please do so").
+
+## Round 4 — Dan's round-3 notes, all on HEAR IT
+- [x] 17. Front: TURN IT OVER in HEAR IT's letters, bigger, nodding with the curl. Back: real keys (ivory piano keys in a
+      graphite escutcheon, rendered from a height field in `make-deck.py`, no spend; press click, latch clack, haptic
+      tick); TAP THE RECORD = a die-cut sticker (slapped on, peels, glints, plays the record too); no fine print; a
+      smaller Turn knob.
+- [x] 18. check.cjs 30 steps + 35 layouts pass, 0 errors; review page round 4 = version 6; commits `bf71096` + the review
+      one; no push.
+- [ ] 19. Dan's round-4 notes (`notes-r4`) → round 5.
 
 # GAS 2 drone descent (branch `feat/gas2-drone`, 2026-10-28, revaudio-59) — SCENE + BENCH BUILT, art next
 
