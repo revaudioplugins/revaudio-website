@@ -151,3 +151,13 @@ still for a frame or two first; a box-shadow swap on the held card and a depth `
 `new AudioContext()` took 226 ms (4x) while warming the demo (decode on an `OfflineAudioContext` instead; open the
 device on the tap); a 1M-pixel canvas loop blocked 240 ms (slice it, a few ms a frame). Sample the moving element's
 speed per frame around the release to prove there's no jump. DESIGN.md §6.
+
+## 2026-10-30 - two movers on one element: whoever takes it over starts from where it is
+
+GAS 2 postcards (`danavivi-75`, the ponytail pass): a let-go card moves frame by frame in JS while the stack settles in
+CSS. Five paths took a moving card over without reading where it was: ‹ mid-throw (an ~890 px jump), › on its way
+back or while it sprang home, a tap mid-spring (frozen off its place), a layout mid-spring (settled on the wrong
+place), and a flick whose move and lift fell inside one frame (state set only in rAF: a TypeError). Rule: one mover at
+a time; the one taking over stops the other and starts from the pose this frame (the computed transform covers both
+movers); state the release reads is set synchronously. Test each takeover by reading the rect just before and just
+after it, and fire down/move/up in one task for the sub-frame flick (`check.cjs`).

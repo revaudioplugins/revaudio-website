@@ -1,4 +1,4 @@
-# GAS 2 phone POSTCARDS (branch `feat/gas2-postcards`, 2026-10-29, danavivi-75) — ROUND 9 BUILT (motion on Dan's iPhone), pushed to `origin/feat/gas2-postcards`
+# GAS 2 phone POSTCARDS (branch `feat/gas2-postcards`, 2026-10-29, danavivi-75) — ROUND 9 BUILT (motion on Dan's iPhone) + a ponytail pass, pushed to `origin/feat/gas2-postcards`
 
 Dan's concept (2026-10-29): a stack of 1950s "Greetings from GAS 2" postcards, phone only. State: `tasks/handoff.md` top entry.
 
@@ -78,7 +78,10 @@ Dan's concept (2026-10-29): a stack of 1950s "Greetings from GAS 2" postcards, p
       scratchpad): no vinyl animation, the buttons don't move the cards, not smooth = iOS Reduce Motion (all of it was
       switched off for it). `c22bab5`: the hand's moves survive it, calmer; the held card leans with its speed. A temp
       check page `tools/_gas2-scene/motion-check.html` (git-ignored, not committed). Review page round 9 = version 11.
-- [ ] 25. Dan's word from the phone (and the check page: Reduce Motion on or off?).
+- [x] 25. Dan (chat): "check your work and do a ponytail on it": `205661d` - no card jumps when something takes it over
+      (‹ mid-throw, › right after ‹, a tap or a layout while a card springs home, a flick inside one frame), the strobe
+      still under Reduce Motion; dead code, CSS and unused art cut. Pixel-identical states, check.cjs 41 + 35 pass.
+- [ ] 26. Dan's word from the phone (and the check page: Reduce Motion on or off?).
 
 # GAS 2 drone descent (branch `feat/gas2-drone`, 2026-10-28, revaudio-59) — SCENE + BENCH BUILT, art next
 

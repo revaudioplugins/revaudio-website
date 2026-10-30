@@ -1,6 +1,6 @@
-## 2026-10-29 — GAS 2 page: the PHONE page as POSTCARDS (Claude Code `danavivi-75`, Dan's Mac) — BRANCH `feat/gas2-postcards`, not pushed
+## 2026-10-29 — GAS 2 page: the PHONE page as POSTCARDS (Claude Code `danavivi-75`, Dan's Mac) — BRANCH `feat/gas2-postcards`, pushed (not main)
 
-Claim: OPEN `danavivi-75`. Round 9 (motion on Dan's iPhone) BUILT + checked + in the review page (version 11); the branch tracks `origin/feat/gas2-postcards` (pushed on Dan's "commit everything and push it"; not main, no deploy). Branched from `origin/feat/gas2-drone` @ `4fc6ddd` (no upstream set, so a bare push
+Claim: OPEN `danavivi-75`. Round 9 (motion on Dan's iPhone) BUILT + checked + in the review page (version 11, build `c22bab5`), then a ponytail pass (`205661d`, not in the review page); the branch tracks `origin/feat/gas2-postcards` (pushed on Dan's "commit everything and push it"; not main, no deploy). Branched from `origin/feat/gas2-drone` @ `4fc6ddd` (no upstream set, so a bare push
 can't reach the drone branch); `revaudio-59` keeps writing `feat/gas2-drone`, so this branch stays out of its files.
 Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postcards/**`; one README line pair; the
 "GAS 2 phone POSTCARDS" section on top of `tasks/todo.md`; this entry. Read only: `page-b.html` (copy, ticket), `fonts/`,
@@ -30,7 +30,8 @@ Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postca
 - Art (no spend, `postcards/tools/`): `bake-pump.cjs` = the plugin page itself (:4461) at DPR 2, ROOM with the room
   hidden, PREMIUM lit, needle 140, counter -11.0 (= the demo), hose run on along the ground in `make-art.py`;
   `bake-keys.cjs` = the three keys + lit at 9x from the GAS2 3D lab (`bench/pump-lab.html`, real GPU: Apple M1 Max via
-  ANGLE Metal, 9 s; same look as the 4x bake, crisp at card size; the GAS2 repo is only read) + `make-keys.py`;
+  ANGLE Metal, 9 s; same look as the 4x bake, crisp at card size; the GAS2 repo is only read) + `make-keys.py` (both
+  and the key images removed in the ponytail pass, 2026-10-30; in git at `082c5c4`);
   `make-art.py` = card 1's station (painted pump filled out, softened), the dusk, a woven linen tile, the stamp.
   Weight: ~778 KB for every card; the demo (1.76 MB) is fetched from card 4 on.
 - Checked: `postcards/tools/check.cjs` = WebKit 22 steps (flick / spring back / hold-then-let-go / down-flick / back /
@@ -179,6 +180,19 @@ Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postca
   (`hold()`) and leans up to 7 deg into its speed. For his phone test: a LAN server (`serve-lan.py`, bound 0.0.0.0,
   port 4470, the session's scratchpad) and a git-ignored `tools/_gas2-scene/motion-check.html` that says whether
   Reduce Motion is on; stop the server and delete the check page when done. Review page round 9 = version 11.
+- Then (Dan, chat, 2026-10-30: "check your work and do a ponytail on it"): a review of the whole branch, smallest fixes.
+  `205661d`: whatever takes over a moving card now takes it from where it is. Before, ‹ mid-throw started it back from
+  its landing spot (~890 px jump); › right after ‹ or while a let-go card sprang home restarted it from the top pose
+  (~100-530 px); a tap while it sprang home froze it off its place (the drag now takes the card on its first move);
+  a layout left the JS spring running (it settled on the wrong place); a flick whose last move and lift fell between
+  two frames threw (`d.cur` null). `at()` = a card's pose this frame from its computed transform (JS spring or CSS
+  settle). Under Reduce Motion the strobe dots under the lamp crawled (the neon's clock now runs only past half speed:
+  still at rest and at 33 1/3). Cut: the spring cache + `v0` (`SETTLE`), dead CSS, unused exports, the grade-key art +
+  its two tools and `wear-5b.webp` (unused since rounds 2 and 3). Every state pixel-identical but the strobe;
+  `make-wear.py` rebuilds byte-identical; check.cjs 41 steps + 35 layouts pass, 0 errors (the 6 new steps fail on the
+  page before). Not changed: the first throw's release frame is ~50 ms at 4x CPU on the round-8, round-9 and this
+  build alike (the Mac was at load 11-13; DESIGN.md asks <= 33): measure again on a quiet machine before chasing it.
+  The review page still runs `c22bab5` (no visible change; republish only with the next round).
 - Open (Dan): (1) his word from the phone; more notes go to `notes-r9`;
   (2) painted art still only on his OK;
   (3) per-grade renders (Yoni) before any grade card plays its own sound; (4) later: this as page-b's phone layout.
