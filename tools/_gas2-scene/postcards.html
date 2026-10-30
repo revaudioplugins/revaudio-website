@@ -56,7 +56,9 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .desk.ended .dust { opacity: 0; }
 
 .table { position: relative; z-index: 1; container-type: size; display: grid; place-items: center; min-height: 0; }  /* over .end: the last card flies off over the scene */
-.stack { --cw: min(90cqw, calc((100cqh - 24px) / 1.55), 420px); position: relative; width: var(--cw); height: calc(var(--cw) * 1.55); }
+.stack { --cw: min(90cqw, calc((100cqh - 24px) / 1.55), 420px); position: relative; width: var(--cw); height: calc(var(--cw) * 1.55);
+  transition: translate .4s var(--ease-settle); }   /* the slide while typing the address (JS fit()) */
+.desk.typing .ctl, .desk.typing .box { opacity: 0; pointer-events: none; }
 
 /* ── one postcard: linen stock, a hair of edge wear, a soft shadow on the card under it ── */
 .pc { position: absolute; inset: 0; container-type: size; border-radius: 4px; color: var(--ink); background: var(--stock);
@@ -1196,6 +1198,21 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   const replay = (el, cls) => { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); };
   $('sdate').textContent = `★ ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })} ★`;   // the dater: today
   em.addEventListener('input', () => { err.hidden = true; });
+  // typing the address (Dan, 2026-10-30, on his iPhone: the keyboard shrank the card to half and the tick line ran into the
+  // stamp; his pick: "the card slides up"): the card keeps its size and slides up till the TO line, the tick box and the
+  // stamp sit just over the keys; ‹ › and the mailbox step aside till the keyboard goes
+  const vv = window.visualViewport;
+  function fit() {
+    if (!desk.classList.contains('typing')) return;
+    const top = vv ? vv.offsetTop : 0, bottom = top + (vv ? vv.height : innerHeight);
+    const y = stack.parentElement.getBoundingClientRect().top + stack.offsetTop;   // the stack's top, without its slide
+    const a = y + em.closest('.addr').offsetTop, s = y + send.offsetTop + send.offsetHeight;
+    stack.style.translate = `0 ${Math.round(Math.max(top + 10 - a, Math.min(0, bottom - 18 - s)))}px`;   // the stamp (tilted) over the keys, the TO line never above the top
+  }
+  em.addEventListener('focus', () => { stack.style.setProperty('--cw', `${stack.offsetWidth}px`); desk.classList.add('typing'); fit(); });
+  em.addEventListener('blur', () => { desk.classList.remove('typing'); stack.style.removeProperty('--cw'); stack.style.translate = ''; });
+  (vv || window).addEventListener('resize', fit);
+  if (vv) vv.addEventListener('scroll', fit);
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     if (send.disabled) return;

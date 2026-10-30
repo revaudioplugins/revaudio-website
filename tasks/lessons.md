@@ -161,3 +161,12 @@ place), and a flick whose move and lift fell inside one frame (state set only in
 a time; the one taking over stops the other and starts from the pose this frame (the computed transform covers both
 movers); state the release reads is set synchronously. Test each takeover by reading the rect just before and just
 after it, and fire down/move/up in one task for the sub-frame flick (`check.cjs`).
+
+## 2026-10-30 - the iOS keyboard shrinks a viewport-sized page
+
+GAS 2 postcards (`danavivi-75`), Dan on his iPhone (iOS 26), a screenshot of the mail card with the keyboard up: "it's
+not comfortable like this". iOS 26 cut the fixed full-screen page to the ~387 px above the keys, so the stack (sized
+by its container's height) shrank the card to half, and the type with px floors (the input >= 16 px against iOS zoom,
+the tick line >= 12 px) ran into the stamp. check.cjs had listed "the iOS keyboard" as not covered. Rule: on focus,
+keep the card's size and slide it so the field and its button sit over the keys; check it by focusing the input and
+cutting the viewport to the keyboard's leftover (`setViewportSize`), at every phone size.

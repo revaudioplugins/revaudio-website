@@ -311,6 +311,11 @@ so much", "this is amazing"; `tools/_gas2-scene/page-b.html` on `feat/gas2-page`
 Base: `--maxw min(1440px, 95vw)`; the word wall collapses to one column at 860px and below,
 words first, window under them.
 
+Typing on a phone (the GAS 2 postcards, Dan 2026-10-30, on his iPhone: "it's not comfortable like this"): the keyboard
+never shrinks the thing you write on. iOS 26 cuts the page to what's above the keys, so a layout sized by the viewport
+halves and its px-floored type runs together. Keep the object's size on focus and slide it up until the field, its
+options and its button sit just over the keys; the page's own controls step aside until the keyboard goes.
+
 ## 9. Do's & don'ts
 
 - DO keep every claim checkable against the plugin source. Stencil words describe the intent of

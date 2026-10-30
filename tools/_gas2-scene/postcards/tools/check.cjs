@@ -2,8 +2,8 @@
      NODE_PATH=<revaudio-website>/node_modules node check.cjs [base url] [shots dir]
    WebKit (the engine of the phones we target): layout at five phone viewports + every interaction by script.
    Chrome (channel "chrome"): the demo audio, because Playwright's WebKit build has no AAC decoder.
-   Not covered here: a real finger (momentum, iOS edge swipes), the iOS keyboard, sound by ear - that is the
-   Simulator / a real iPhone. */
+   Not covered here: a real finger (momentum, iOS edge swipes), the real iOS keyboard (mimicked: a shorter screen, as
+   iOS 26 cuts the page to what's above the keys), sound by ear - that is a real iPhone. */
 const { webkit, chromium } = require("playwright");
 const fs = require("fs");
 const BASE = process.argv[2] || "http://127.0.0.1:4466/postcards.html";
@@ -204,6 +204,15 @@ async function drag(p, dx, dy, ms, hold, after = 650) {   // a finger-like drag 
   ok("⤓ Download FREE brings the mail card back", (await cur(p)) === 5 && !(await p.evaluate(() => document.getElementById("desk").classList.contains("ended"))));
 
   // ── MAIL ME THE KEYS: empty + bad address stop it, a good one drops the card in the box (nothing sent) ──
+  // the keyboard (Dan's iPhone, iOS 26: it cut the page to ~387 px and the card shrank to half): the card keeps its size
+  // and slides up, the TO line, the tick box and the stamp in sight above the keys; ‹ › aside till it goes
+  await p.click("#em"); await p.setViewportSize({ width: 402, height: 387 }); await p.waitForTimeout(700);
+  const kb = await p.evaluate(() => { const r = (s) => { const b = document.querySelector(s).getBoundingClientRect(); return [Math.round(b.top), Math.round(b.bottom)]; };
+    return { w: Math.round(document.querySelector(".pc-mail").getBoundingClientRect().width), to: r(".addr"), opt: r(".opt"), ink: r(".send .ink"), ctl: getComputedStyle(document.querySelector(".ctl")).opacity }; });
+  await p.evaluate(() => document.activeElement.blur()); await p.setViewportSize({ width: 402, height: 714 }); await p.waitForTimeout(700);
+  const kb2 = await p.evaluate(() => ({ slide: document.getElementById("stack").style.translate, w: Math.round(document.querySelector(".pc-mail").getBoundingClientRect().width), ctl: getComputedStyle(document.querySelector(".ctl")).opacity }));
+  ok("typing the address: the card keeps its size and slides up, TO line + tick box + stamp in sight and clear of each other; the keyboard down, it's back",
+     kb.w >= 350 && kb.to[0] >= 0 && kb.opt[0] >= kb.to[1] - 1 && kb.ink[0] >= kb.opt[1] - 1 && kb.ink[1] <= 387 && kb.ctl === "0" && kb2.slide === "" && kb2.w === kb.w && kb2.ctl === "1", { kb, kb2 });
   let netMail = 0; p.on("request", (r) => { if (!/\.(webp|png|woff2|m4a|html)(\?|$)/.test(r.url())) netMail++; });
   await p.click(".send"); await p.waitForTimeout(200);
   ok("empty address: the error shows", await p.evaluate(() => !document.getElementById("err").hidden));
