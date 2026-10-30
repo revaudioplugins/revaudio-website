@@ -18,7 +18,9 @@
      the site's consent box; after mailing, a ticket to the store.
      Round 3 (Dan: "an animation of the vinyl working ... more like a whole picture"): HEAR IT's back is one photo of a
      turntable from above, alive: the platter spins while it's up; tap the record and the arm cues in and drops the
-     needle, the song starts as it lands (postcards/tools/make-deck.py draws the deck's body). -->
+     needle, the song starts as it lands (postcards/tools/make-deck.py draws the deck's body).
+     Round 4 (same day): the keys rendered as ivory piano keys, the sticker, TURN IT OVER in HEAR IT's letters. Then
+     (Dan: "the readings should be glued to the card itself, physics-wise"): nothing printed moves on its own any more. -->
 <style>
 @font-face { font-family: Bebas; src: url(fonts/bebas.woff2) format("woff2"); }
 @font-face { font-family: Inter; src: url(fonts/inter.woff2) format("woff2"); font-weight: 100 900; }
@@ -116,17 +118,13 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .cap b { color: var(--red); font-weight: 700; }
 .tape { position: absolute; left: 50%; top: -2.8cqw; width: 30cqw; height: 8.4cqw; z-index: 7; translate: -50% 0; rotate: -4deg; pointer-events: none;
   background: url(postcards/img/tape.webp) 0 0 / 100% 100% no-repeat; }   /* torn at both ends (make-wear.py) */
-.pc-hello.top .pic .lamp { animation: flicker 7s 1.5s infinite; }   /* the lamp over the pump, not quite steady */
-@keyframes flicker { 0%, 100% { opacity: 1; } 6% { opacity: .76; } 7% { opacity: 1; } 8.5% { opacity: .85; } 10% { opacity: 1; } 52% { opacity: .9; } 54% { opacity: 1; } }
 
 /* ── 2-4 · the grades: a 1950s large-letter card each (Dan, round 2: the key goes, the lettering is centred on the card,
-   the line under it in the lettering's face); the sunburst turns slowly behind the word while its card is up ── */
+   the line under it in the lettering's face); a sunburst printed behind the word ── */
 .pc-grade { overflow: hidden; }
 .pc-grade .rays { position: absolute; left: -30cqw; width: 160cqw; top: calc(50.5cqh - 80cqw); height: 160cqw; z-index: 0;
   background: repeating-conic-gradient(from 3deg at 50% 50%, var(--ray) 0 6deg, transparent 6deg 12deg);
   -webkit-mask: radial-gradient(closest-side, #000 14%, rgba(0, 0, 0, .55) 42%, transparent 70%); mask: radial-gradient(closest-side, #000 14%, rgba(0, 0, 0, .55) 42%, transparent 70%); }
-.pc-grade.top .rays { animation: rays 150s linear infinite; }
-@keyframes rays { to { rotate: 360deg; } }
 .g-reg { --ray: rgba(232, 160, 46, .3); }
 .g-pre { --ray: rgba(184, 52, 30, .2); }
 .g-race { --ray: rgba(36, 26, 18, .16); }
@@ -174,8 +172,6 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   font: 700 9.4cqw/1 Oswald; letter-spacing: .02em; color: var(--red); }
 .pc-hear .front .turn svg { width: 7.4cqw; height: 7.4cqw; stroke-width: 2.8; filter: drop-shadow(.06em .06em 0 var(--ink)); }
 .turn .tt { position: relative; }
-.pc-hear.top:not(.flipped) .front .turn { animation: beckon 2.6s 1s ease-in-out infinite; }      /* in step with the curling corner */
-@keyframes beckon { 0%, 70%, 100% { rotate: 0deg; scale: 1; } 82% { rotate: -2.5deg; scale: 1.07; } 91% { rotate: 1deg; scale: 1.02; } }
 .curl { position: absolute; right: 0; bottom: 0; width: 10cqw; height: 10cqw; z-index: 6; pointer-events: none;
   background: linear-gradient(315deg, var(--stock-2) 0 47%, transparent 48%), linear-gradient(135deg, transparent 0 48%, #d8c8a2 50%, #f3e9d2 58%, #e0cfa8 100%);
   border-top-left-radius: 2cqw; filter: drop-shadow(-.4cqw -.4cqw .6cqw rgba(60, 40, 20, .25)); transform-origin: 100% 100%; }
@@ -422,9 +418,9 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .addr input:focus-visible { outline: none; }
 
 @media (prefers-reduced-motion: reduce) {
-  .pc.nudge, .pc-hear.top:not(.flipped) .curl, .box.gulp, .rd .cta::after, .pc-grade.top .rays, .pc-hello.top .pic .lamp, .g-pre.top .badge::after,
+  .pc.nudge, .pc-hear.top:not(.flipped) .curl, .box.gulp, .rd .cta::after, .g-pre.top .badge::after,
   .send.thump .ink, .send.nope .ink, .pc-mail.jolt, .desk.sent .rd .ticket, .loading .pilot.on,
-  .pc-hear.top:not(.flipped) .front .turn, .pc-hear.flipped.top .sticker, .pc-hear.flipped.top .sticker .sk::after { animation: none !important; }
+  .pc-hear.flipped.top .sticker, .pc-hear.flipped.top .sticker .sk::after { animation: none !important; }
   .flip, .box, .end, .opt .tick path { transition-duration: .01s !important; transition-delay: 0s !important; }
 }
 </style>
@@ -660,7 +656,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   // each card lies a little crooked, like a real stack; the top one straightens most of the way
   const LIE = [[-1.1, 0], [1.8, 3], [-1.6, -2], [2.3, 2], [-2, -3], [1.2, 1]];
   const NAMES = ['Greetings from GAS 2', 'Regular', 'Premium', 'Race', 'Hear it', 'Mail me the keys'];
-  let cur = 0, touched = false, shown = null;
+  let cur = 0, touched = false;
 
   const rest = (i, d) => {
     const [r, x] = LIE[i];
@@ -692,38 +688,12 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     if (cur >= 4) document.querySelector('.view').classList.add('warm');   // and the end page's photo
     deck.power(cards[cur] === hear && hear.classList.contains('flipped'));   // the deck runs only while its back is up
     ending(cur === N, anim);
-    if (anim && cards[cur] && cards[cur] !== shown) arrive(cards[cur], deal ? (N - 1) * 70 + 260 : 0);
-    shown = cards[cur];
   }
   const say = () => { $('live').textContent = cur === N ? 'GAS 2. Thicker, smoother, glued master.' : `Card ${cur + 1} of ${N}: ${NAMES[cur]}`; };
 
-  // ── each card has its moment as it comes up (round 2: "make everything feel much more alive"): the lettering pops and
-  //    the seal stamps down, "Greetings from" writes itself, the postmark thumps ──
-  const SPRING = 'cubic-bezier(.2, 1, .3, 1)';
-  const POP = [{ opacity: 0, scale: .8 }, { opacity: 1, offset: .5 }, { scale: 1.04, offset: .75 }, { opacity: 1, scale: 1 }];
-  const THUMP = [{ opacity: 0, scale: 1.7 }, { opacity: 1, offset: .55 }, { scale: .95, offset: .8 }, { opacity: 1, scale: 1 }];
-  const SLAP = [{ opacity: 0, scale: 1.5, rotate: '-17deg' }, { opacity: 1, offset: .35 }, { scale: .95, rotate: '-3.5deg', offset: .7 }, { opacity: 1, scale: 1, rotate: '-5deg' }];
-  function arrive(c, wait) {
-    if (reduce) return;
-    const a = (sel, kf, duration, delay, easing) => {
-      const el = c.querySelector(sel);
-      if (el) el.animate(kf, { duration, delay: wait + delay, easing: easing || SPRING, fill: 'backwards' });
-    };
-    if (c.classList.contains('pc-grade')) {
-      a('.script', [{ opacity: 0, translate: '0 35%' }, { opacity: 1, translate: '0 0' }], 460, 120);
-      a('.big', POP, 560, 200);
-      a('.gline', [{ opacity: 0 }, { opacity: 1 }], 420, 440);
-      a('.badge', THUMP, 420, 640);
-    } else if (c === hear) {
-      if (!hear.classList.contains('flipped')) a('.front .big', POP, 560, 180);
-      else a('.sticker', SLAP, 560, 380);                       // the sticker, slapped on
-    } else if (c.classList.contains('pc-mail')) {
-      a('.pmark', THUMP, 380, 420);
-    } else {
-      a('.greet', [{ clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0% 0 0)' }], 1000, 200, 'cubic-bezier(.45, .05, .4, 1)');
-      a('.out', [{ opacity: 0, translate: '0 40%' }, { opacity: 1, translate: '0 0' }], 520, 760);
-    }
-  }
+  // ── a card is paper (Dan, 2026-10-30: "the readings should be glued to the card ... physics-wise"): it comes up whole,
+  //    nothing printed on it pops, slides, writes itself or thumps. What moves is the card (the flick, the curling corner),
+  //    the turntable, a sticker's lifting corner, light (a glint) ──
 
   // ── the end page: the lens pulls focus onto the desktop page's right side, then the readings pop out of the screen,
   //    exactly as after the drone lands (drone/run.js pop(): same keyframes, same timings), a beat into the focus pull ──
@@ -853,7 +823,6 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
       void flipEl.offsetWidth;
       flipEl.style.transition = 'transform .5s var(--ease-settle)';
       flipEl.style.transform = 'rotateY(0deg)';
-      if (f) $('sticker').animate(SLAP, { duration: 560, delay: 300, easing: SPRING, fill: 'backwards' });   // stuck on as the deck comes round
       setTimeout(() => { turning = false; }, 500);
     }, 220);
   }

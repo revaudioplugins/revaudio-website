@@ -133,3 +133,11 @@ GAS 2 postcards (`danavivi-75`): the stack calls `setPointerCapture` on pointerd
 with `e.target` = the capturing card, never the child under the finger. Round 2's "a tap on the deck doesn't turn the
 card" (`e.target.closest('.deck')` on pointerup) never worked; round 3's check caught it. Rule: keep the pointerdown
 target and test that, and write a check that taps the exact spot.
+
+## 2026-10-30 - a physical object's print doesn't animate
+
+GAS 2 postcards (`danavivi-75`): round 2's "make everything feel much more alive" became arrival pops on every card
+(the lettering popped, seals and postmarks thumped, "Greetings from" wrote itself), a turning sunburst and a
+flickering lamp in a photo. Dan, round 5: "the readings should be glued to the card itself ... physics-wise". Rule:
+on a physical metaphor, life comes from the object and its real mechanisms (the card's flick and curl, the turntable,
+a sticker's corner, light), never from its printed content moving. DESIGN.md §6.

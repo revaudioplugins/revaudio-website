@@ -255,6 +255,11 @@ flashed around every live prop: "what is this square line around the elements, r
 it's alive by itself (its own hover, its poster, its caption), never by a web outline around the photo.
 The one frame allowed is the keyboard focus ring.
 
+Printed things stay glued (the GAS 2 phone page's postcards, Dan 2026-10-30: "the readings should be glued to the
+card itself ... physics-wise"): on a physical object (a card, a poster, a label) the print never moves on its own:
+no pops, slides or write-ons as it comes up, no turning sunburst, no flickering lamp in a photo. Motion belongs to the
+object (a flick, a curling corner, a sticker's lifting edge), to a real mechanism (a turntable), or to light (a glint).
+
 ## 7. Hero + glanceability
 
 THE hero is the gauge medallion with "Engineered, Then Tuned." over it. One glance: brass tach,

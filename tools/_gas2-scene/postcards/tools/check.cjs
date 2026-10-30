@@ -100,6 +100,10 @@ async function drag(p, dx, dy, ms, hold) {               // a finger-like drag w
   ok("flick left throws card 1", (await cur(p)) === 1);
   const gone = await p.evaluate(() => getComputedStyle(document.querySelectorAll(".pc")[0]).visibility);
   ok("thrown card is hidden after it lands", gone === "hidden", gone);
+  const moving = await p.evaluate(() => { const c = document.querySelector(".pc.top");   // the card itself may settle; its print may not
+    return document.getAnimations().filter((x) => { const t = x.effect && x.effect.target; return t && t !== c && c.contains(t); })
+      .map((x) => (x.effect.target.className || x.effect.target.tagName) + (x.effect.pseudoElement || "")); });
+  ok("a card comes up whole (Dan, 2026-10-30: the readings glued to the card): nothing printed on it pops or moves", moving.length === 0, moving);
   await drag(p, 30, 260, 110);
   ok("flick down throws too", (await cur(p)) === 2);
   await p.click("#prev"); await p.waitForTimeout(650);
