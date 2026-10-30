@@ -197,8 +197,9 @@ Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postca
   comfortable like this ... give options"; his pick of three: "card slides up"). iOS 26 cuts the page to the ~387 px
   above the keys: the stack (sized by its container) shrank the card to half and the tick line ran into the stamp.
   `b15a2eb`: on focus the stack keeps its size (`--cw` frozen in px) and `fit()` slides it (translate .4 s, from the
-  visual viewport) till the TO line, the tick box and the stamp sit just over the keys; ‹ › and the mailbox step aside
-  until blur. Checked at 402x714 -> 387, 375x553 -> 293, 430x750 -> 410 (WebKit, the keyboard mimicked by a shorter
+  visual viewport) till the TO line, the tick box and the stamp sit just over the keys; ‹ › and the mailbox step aside.
+  The card goes back once the keyboard has gone, not on blur: a tap on the stamp blurs the input first, and going
+  back on blur moved the stamp out from under the finger (found by a stamp-with-the-keys-up check). Checked at 402x714 -> 387, 375x553 -> 293, 430x750 -> 410 (WebKit, the keyboard mimicked by a shorter
   viewport); check.cjs 42 + 35 pass, 0 errors; stills pixel-identical. DESIGN.md §8 + lessons. Not on a real iPhone yet.
 - Open (Dan): (1) his word from the phone; more notes go to `notes-r9`;
   (2) painted art still only on his OK;

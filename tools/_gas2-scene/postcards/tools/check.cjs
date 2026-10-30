@@ -209,10 +209,12 @@ async function drag(p, dx, dy, ms, hold, after = 650) {   // a finger-like drag 
   await p.click("#em"); await p.setViewportSize({ width: 402, height: 387 }); await p.waitForTimeout(700);
   const kb = await p.evaluate(() => { const r = (s) => { const b = document.querySelector(s).getBoundingClientRect(); return [Math.round(b.top), Math.round(b.bottom)]; };
     return { w: Math.round(document.querySelector(".pc-mail").getBoundingClientRect().width), to: r(".addr"), opt: r(".opt"), ink: r(".send .ink"), ctl: getComputedStyle(document.querySelector(".ctl")).opacity }; });
-  await p.evaluate(() => document.activeElement.blur()); await p.setViewportSize({ width: 402, height: 714 }); await p.waitForTimeout(700);
+  await p.keyboard.type("dan@"); await p.click(".send"); await p.waitForTimeout(400);   // the stamp tapped with the keys up: the tap blurs first, and still lands
+  kb.stamped = await p.evaluate(() => !document.getElementById("err").hidden && document.activeElement.id === "em");
+  await p.fill("#em", ""); await p.evaluate(() => document.activeElement.blur()); await p.setViewportSize({ width: 402, height: 714 }); await p.waitForTimeout(700);
   const kb2 = await p.evaluate(() => ({ slide: document.getElementById("stack").style.translate, w: Math.round(document.querySelector(".pc-mail").getBoundingClientRect().width), ctl: getComputedStyle(document.querySelector(".ctl")).opacity }));
-  ok("typing the address: the card keeps its size and slides up, TO line + tick box + stamp in sight and clear of each other; the keyboard down, it's back",
-     kb.w >= 350 && kb.to[0] >= 0 && kb.opt[0] >= kb.to[1] - 1 && kb.ink[0] >= kb.opt[1] - 1 && kb.ink[1] <= 387 && kb.ctl === "0" && kb2.slide === "" && kb2.w === kb.w && kb2.ctl === "1", { kb, kb2 });
+  ok("typing the address: the card keeps its size and slides up, TO line + tick box + stamp in sight and clear of each other, the stamp tap lands; the keyboard down, it's back",
+     kb.w >= 350 && kb.to[0] >= 0 && kb.opt[0] >= kb.to[1] - 1 && kb.ink[0] >= kb.opt[1] - 1 && kb.ink[1] <= 387 && kb.ctl === "0" && kb.stamped && kb2.slide === "" && kb2.w === kb.w && kb2.ctl === "1", { kb, kb2 });
   let netMail = 0; p.on("request", (r) => { if (!/\.(webp|png|woff2|m4a|html)(\?|$)/.test(r.url())) netMail++; });
   await p.click(".send"); await p.waitForTimeout(200);
   ok("empty address: the error shows", await p.evaluate(() => !document.getElementById("err").hidden));

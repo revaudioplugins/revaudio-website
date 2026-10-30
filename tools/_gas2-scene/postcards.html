@@ -1201,16 +1201,23 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   // typing the address (Dan, 2026-10-30, on his iPhone: the keyboard shrank the card to half and the tick line ran into the
   // stamp; his pick: "the card slides up"): the card keeps its size and slides up till the TO line, the tick box and the
   // stamp sit just over the keys; ‹ › and the mailbox step aside till the keyboard goes
-  const vv = window.visualViewport;
+  const vv = window.visualViewport, high = () => (vv ? vv.height : innerHeight);
+  let h0 = 0;                                                    // the screen's height before the keyboard
   function fit() {
     if (!desk.classList.contains('typing')) return;
-    const top = vv ? vv.offsetTop : 0, bottom = top + (vv ? vv.height : innerHeight);
+    if (document.activeElement !== em && high() > h0 - 60) {    // the keyboard has gone: the card goes back with it
+      desk.classList.remove('typing'); stack.style.removeProperty('--cw'); stack.style.translate = ''; return;
+    }
+    const top = vv ? vv.offsetTop : 0, bottom = top + high();
     const y = stack.parentElement.getBoundingClientRect().top + stack.offsetTop;   // the stack's top, without its slide
     const a = y + em.closest('.addr').offsetTop, s = y + send.offsetTop + send.offsetHeight;
     stack.style.translate = `0 ${Math.round(Math.max(top + 10 - a, Math.min(0, bottom - 18 - s)))}px`;   // the stamp (tilted) over the keys, the TO line never above the top
   }
-  em.addEventListener('focus', () => { stack.style.setProperty('--cw', `${stack.offsetWidth}px`); desk.classList.add('typing'); fit(); });
-  em.addEventListener('blur', () => { desk.classList.remove('typing'); stack.style.removeProperty('--cw'); stack.style.translate = ''; });
+  em.addEventListener('focus', () => {
+    if (!desk.classList.contains('typing')) { h0 = high(); stack.style.setProperty('--cw', `${stack.offsetWidth}px`); desk.classList.add('typing'); }
+    fit();
+  });
+  em.addEventListener('blur', fit);                              // not on blur itself: a tap on the stamp blurs first, and must land
   (vv || window).addEventListener('resize', fit);
   if (vv) vv.addEventListener('scroll', fit);
   form.addEventListener('submit', (e) => {
