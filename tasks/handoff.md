@@ -1,6 +1,6 @@
 ## 2026-10-29 — GAS 2 page: the PHONE page as POSTCARDS (Claude Code `danavivi-75`, Dan's Mac) — BRANCH `feat/gas2-postcards`, not pushed
 
-Claim: OPEN `danavivi-75`. Round 4 (his round-3 notes on HEAR IT) BUILT + checked + in the review page (version 6); waiting on his round-4 notes (below). Branched from `origin/feat/gas2-drone` @ `4fc6ddd` (no upstream set, so a bare push
+Claim: OPEN `danavivi-75`. Round 4 OK'd by Dan (2026-10-30: "looks amazing"); the branch pushed to `origin/feat/gas2-postcards` on his "commit everything and push it" (not main, no deploy). Branched from `origin/feat/gas2-drone` @ `4fc6ddd` (no upstream set, so a bare push
 can't reach the drone branch); `revaudio-59` keeps writing `feat/gas2-drone`, so this branch stays out of its files.
 Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postcards/**`; one README line pair; the
 "GAS 2 phone POSTCARDS" section on top of `tasks/todo.md`; this entry. Read only: `page-b.html` (copy, ticket), `fonts/`,
@@ -134,7 +134,12 @@ Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postca
   cqw knob (44 px target). check.cjs: `?card=5` front Turn layout, the sticker cues the record, the keys latch (picture
   + lamp): 30 steps + 35 layouts pass, 0 errors. Review page round 4 (`notes-r4`) = version 6 at the same URL. Design
   hook: nested-cards waiver now names `.sticker .sk`; only the advisory stripes remain.
-- Open (Dan): (1) his round-4 notes: read `notes-r4`, apply, re-shoot, round 5; (2) painted art still only on his OK;
+- Then Dan's OK (2026-10-30): "looks amazing / the vinyl looks crazy / i really like the buttons / save them for future
+  purposes for next sessions". The keys are saved for reuse in the shared repo: `collaboration/handoffs/2026-10-30-
+  piano-keys/` (a standalone kit: `make-piano-keys.py`, a demo page, the pictures, his look; + a handoff to put them in
+  the shared button library) + memory `feedback_ivory_piano_keys_liked` (shared `959b947`). `make-deck.py`: the bank's
+  comment brought up to date, dead helpers out (the pictures come out byte-identical). Pushed this branch.
+- Open (Dan): (1) more notes, if any: the review page takes round 4's in `notes-r4`; (2) painted art still only on his OK;
   (3) per-grade renders (Yoni) before any grade card plays its own sound; (4) later: this as page-b's phone layout.
 
 ## 2026-10-28 — GAS 2 page: the drone intro, from scratch (Claude Code `revaudio-59`, laptop 1) — BRANCH `feat/gas2-drone`

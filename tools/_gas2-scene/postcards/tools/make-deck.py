@@ -189,11 +189,12 @@ subprocess.run(["cwebp", "-quiet", "-q", "80", "-m", "6", tmp, "-o", os.path.joi
 os.remove(tmp)
 print("deck.webp", im.size, os.path.getsize(os.path.join(OUT, "deck.webp")) // 1024, "KB")
 
-# ── the switch bank (round 3, Dan: "I want the buttons to feel real"): a satin aluminium escutcheon with two openings and
-#    two pilot-lamp sockets, a black key in each opening (a dished top, rounded edges), lit like the deck (the lamp at the
-#    top left, 48° up): a height field, shaded, with its shadows, drawn at 2x and halved. Three pictures: the bank with both
-#    keys down (deck-bank.webp) and one key's opening with a margin of bezel, up and down (deck-key-up / -down.webp). The
-#    page lays a key picture over each opening; the bank repeats every 43 units, so one pair serves A and B ──
+# ── the switch bank (round 3, Dan: "I want the buttons to feel real"; then "i really like the buttons"): a graphite
+#    escutcheon with two openings and two jewel-lamp sockets, an ivory key in each opening (a dished top, rounded edges),
+#    lit like the deck (the lamp at the top left, 40° up): a height field, shaded, with its shadows, drawn at 2x and halved.
+#    Three pictures: the bank with both keys latched in (deck-bank.webp) and one key's opening with a margin of bezel, up
+#    and latched (deck-key-up / -down.webp). The page lays a key picture over each opening; the bank repeats every 43
+#    units, so one pair serves A and B ──
 BX0, BY0, BX1, BY1 = 4.5, 124.5, 95.5, 151.4      # the picture, card units
 BEZ = (6.5, 126, 93.5, 149.5)                      # the escutcheon
 OPEN = [(9, 132, 48, 147), (52, 132, 91, 147)]     # the openings; each key sits .55 in
@@ -203,7 +204,6 @@ UP, DOWN = 4, -.6                                  # the key tops: out of the be
 KEY, BEZEL = rgb(222, 212, 188), .16               # ivory keys (their shading reads), a graphite escutcheon
 S2, EL = 20, math.radians(40)                      # px a unit while drawing; the lamp's height (the deck's shadows)
 LV = np.array([-.6 * math.cos(EL), -.8 * math.cos(EL), math.sin(EL)], np.float32)
-HV = (LV + [0, 0, 1]) / np.linalg.norm(LV + [0, 0, 1])
 
 
 def sd_rrect(x, y, x0, y0, x1, y1, r):
@@ -211,18 +211,6 @@ def sd_rrect(x, y, x0, y0, x1, y1, r):
     cx, cy, hx, hy = (x0 + x1) / 2, (y0 + y1) / 2, (x1 - x0) / 2 - r, (y1 - y0) / 2 - r
     qx, qy = np.abs(x - cx) - hx, np.abs(y - cy) - hy
     return np.hypot(np.maximum(qx, 0), np.maximum(qy, 0)) + np.minimum(np.maximum(qx, qy), 0) - r
-
-
-def vnoise(w, h, cell, octaves=2):
-    """Value noise 0-1, cells cell px across (the bezel's bead-blasted grain)."""
-    out, amp, tot = np.zeros((h, w), np.float32), 1.0, 0.0
-    for o in range(octaves):
-        c = cell / 2 ** o
-        g = rng.random((max(2, int(h / c) + 2), max(2, int(w / c) + 2))).astype(np.float32)
-        out += np.asarray(Image.fromarray(g, "F").resize((w, h), Image.BICUBIC)) * amp
-        tot, amp = tot + amp, amp * .5
-    out /= tot
-    return (out - out.min()) / (out.max() - out.min() + 1e-6)
 
 
 def soft(a, r):
@@ -260,9 +248,7 @@ def bank(top):
     nl = np.sqrt(gzx ** 2 + gzy ** 2 + 1)
     nx, ny, nz = -gzx / nl, -gzy / nl, 1 / nl
     ndl = np.clip(nx * LV[0] + ny * LV[1] + nz * LV[2], 0, 1)
-    ndh = np.clip(nx * HV[0] + ny * HV[1] + nz * HV[2], 0, 1)
     rx, ry, rz = 2 * nz * nx, 2 * nz * ny, 2 * nz * nz - 1                # the mirror direction, seen from straight above
-    env = .15 + .3 * np.clip(rz, 0, 1) ** 2 + 1.7 * np.clip(rx * LV[0] + ry * LV[1] + rz * LV[2], 0, 1) ** 28
     occ = np.zeros((h, w), bool)                                           # shadows: march toward the lamp
     tan = math.tan(EL)
     for k in range(1, 172):

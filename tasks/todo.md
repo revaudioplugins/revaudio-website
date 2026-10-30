@@ -1,4 +1,4 @@
-# GAS 2 phone POSTCARDS (branch `feat/gas2-postcards`, 2026-10-29, danavivi-75) — ROUND 4 BUILT, waiting on Dan's round-4 notes
+# GAS 2 phone POSTCARDS (branch `feat/gas2-postcards`, 2026-10-29, danavivi-75) — ROUND 4 OK'd by Dan ("looks amazing"), pushed to `origin/feat/gas2-postcards`
 
 Dan's concept (2026-10-29): a stack of 1950s "Greetings from GAS 2" postcards, phone only. State: `tasks/handoff.md` top entry.
 
@@ -60,7 +60,9 @@ Dan's concept (2026-10-29): a stack of 1950s "Greetings from GAS 2" postcards, p
       smaller Turn knob.
 - [x] 18. check.cjs 30 steps + 35 layouts pass, 0 errors; review page round 4 = version 6; commits `bf71096` + the review
       one; no push.
-- [ ] 19. Dan's round-4 notes (`notes-r4`) → round 5.
+- [x] 19. Dan, 2026-10-30: "looks amazing ... the vinyl looks crazy ... i really like the buttons". The keys saved for
+      reuse in the shared repo (`collaboration/handoffs/2026-10-30-piano-keys/`: kit + handoff + memory
+      `feedback_ivory_piano_keys_liked`, pushed `959b947`); "commit everything and push it": this branch pushed (not main).
 
 # GAS 2 drone descent (branch `feat/gas2-drone`, 2026-10-28, revaudio-59) — SCENE + BENCH BUILT, art next
 
