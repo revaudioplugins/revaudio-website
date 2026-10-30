@@ -331,7 +331,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
    canopy, and page-b's readings stand in it, popping out as they do after the drone lands. The readings below are
    page-b's composition 2 + the premium shadow (HUG, FOCUS, DUSK), sized by the same 3:2 scene (cqw) so they keep the
    desktop's proportions; on a phone the column is centred in the screen (page-b: x 64.5 %). ── */
-.end { position: absolute; inset: 0; z-index: 0; overflow: hidden; opacity: 0; visibility: hidden;
+.end { position: absolute; inset: 0; z-index: 0; overflow: hidden; opacity: 0; visibility: hidden; touch-action: pan-y pinch-zoom;   /* a sideways swipe is ours */
   transition: opacity .9s var(--ease-settle), visibility 0s .9s; }
 .desk.ended .end { opacity: 1; visibility: visible; transition: opacity .9s var(--ease-settle); }
 .desk.ended .ctl, .desk.ended .table { opacity: 0; pointer-events: none; }
@@ -639,7 +639,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   </section>
 
   <nav class="ctl" aria-label="Postcards">
-    <p class="hint" id="hint">Flick the card</p>
+    <p class="hint" id="hint">Flick left: the next card · right: back</p>
     <button class="nav" type="button" id="prev" aria-label="Previous card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
     <span class="count" aria-hidden="true"><b id="num">1</b> / 6</span>
     <button class="nav" type="button" id="next" aria-label="Next card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
@@ -751,7 +751,8 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   }
   function quiet() { if (!touched) { touched = true; hint.classList.add('gone'); } }
 
-  // ── drag: the card follows the finger, turning about where it was held; a fast flick or a long drag throws it ──
+  // ── drag: the card follows the finger, turning about where it was held; a fast flick or a long drag throws it.
+  //    Left to right is back (Dan, 2026-10-30): the card before comes in from the left under the finger ──
   let drag = null;
   stack.addEventListener('pointerdown', (e) => {
     const c = e.target.closest('.pc');
@@ -767,9 +768,21 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     if (!drag || e.pointerId !== drag.id) return;
     let dx = e.clientX - drag.x0, dy = e.clientY - drag.y0;
     if (!drag.moved && Math.hypot(dx, dy) < 7) return;
-    if (!drag.moved) { drag.moved = true; drag.c.style.transition = 'none'; drag.c.classList.add('lift'); }
+    if (!drag.moved) {
+      drag.moved = true;
+      drag.back = dx > 0 && dx > Math.abs(dy);                    // left to right = back, right to left = on (Dan, 2026-10-30)
+      if (drag.back && cur > 0) pull(drag);
+      else { drag.c.style.transition = 'none'; drag.c.classList.add('lift'); }
+    }
     const now = performance.now();
     drag.pts.push([now, e.clientX, e.clientY]); while (drag.pts.length > 2 && now - drag.pts[0][0] > 90) drag.pts.shift();
+    if (drag.back) {
+      if (drag.p) {                                              // the card before comes in from the left under the finger
+        const k = drag.k = Math.min(1.04, Math.max(0, dx / (innerWidth * .55)));
+        drag.p.style.transform = `translate3d(${drag.x * (1 - k)}px, ${-24 * (1 - k) + dy * .12}px, 0) rotate(${-16 * (1 - k) + drag.r * k}deg) scale(1.015)`;
+      } else drag.c.style.transform = `translate3d(${dx * .18}px, 0, 0) rotate(${LIE[cur][0] * .45}deg)`;   // nothing before card 1: it only gives a little
+      return;
+    }
     const r = LIE[cur][0] * .45 + dx * .065 * drag.side;
     drag.cur = { x: dx, y: dy, r };
     drag.c.style.transform = `translate3d(${dx}px, ${dy}px, 0) rotate(${r}deg) scale(1.015)`;
@@ -781,8 +794,20 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     const now = performance.now(), pts = d.pts.filter((p) => now - p[0] < 110);   // a finger that stopped before letting go = no flick
     const a = pts[0], b = pts[pts.length - 1], dt = Math.max(16, pts.length > 1 ? b[0] - a[0] : 1e9);
     const vx = pts.length > 1 ? (b[1] - a[1]) / dt : 0, vy = pts.length > 1 ? (b[2] - a[2]) / dt : 0, v = Math.hypot(vx, vy);
+    if (d.back) {
+      d.c.classList.remove('lift');
+      if (!d.p) { d.c.style.transition = reduce ? 'none' : 'transform .4s var(--ease-snap)'; d.c.style.transform = rest(cur, 0); return; }
+      d.p.classList.remove('lift');
+      if (e.type === 'pointerup' && (d.k > .32 || vx > .45)) { cur--; layout(true); say(); quiet(); return; }   // back on the stack
+      const p = d.p, off = `translate3d(${d.x}px, -24px, 0) rotate(-16deg)`;                                     // let go early: it slides back out
+      p.style.transition = reduce ? 'none' : 'transform .34s cubic-bezier(.4, 0, .2, 1)';
+      p.style.transform = p._gone = off;
+      setTimeout(() => { if (cards.indexOf(p) < cur) p.style.visibility = 'hidden'; }, reduce ? 0 : 360);
+      return;
+    }
     const far = Math.hypot(d.cur.x, d.cur.y) > d.c.offsetWidth * .34;
-    if (e.type === 'pointerup' && (v > .5 || far)) {
+    const fx = v > .5 ? vx : d.cur.x, fy = v > .5 ? vy : d.cur.y;   // a throw that turned to the right isn't "on": it springs back
+    if (e.type === 'pointerup' && (v > .5 || far) && !(fx > 0 && fx > Math.abs(fy))) {
       toss(v > .5 ? vx : d.cur.x, v > .5 ? vy : d.cur.y, d.cur);
     } else {
       d.c.classList.remove('lift');
@@ -790,8 +815,28 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
       d.c.style.transform = rest(cur, 0);
     }
   };
+  function pull(d) {                                             // left to right: the card before, back from the left
+    const p = cards[cur - 1], sr = stack.getBoundingClientRect();
+    Object.assign(d, { p, x: -(sr.left + sr.width + 30), r: LIE[cur - 1][0] * .45, k: 0 });
+    p.style.transition = 'none'; p.style.visibility = 'visible'; p.style.opacity = ''; p.style.zIndex = String(N + 1);
+    p.style.transform = `translate3d(${d.x}px, -24px, 0) rotate(-16deg) scale(1.015)`;
+    p.classList.add('lift');
+  }
   stack.addEventListener('pointerup', release);
   stack.addEventListener('pointercancel', release);
+
+  let sw = null;                                                 // the station: left to right = back to the cards
+  $('end').addEventListener('pointerdown', (e) => {
+    if (desk.classList.contains('ended') && e.button <= 0 && !e.target.closest('button, a')) sw = { id: e.pointerId, x: e.clientX, y: e.clientY };
+  });
+  $('end').addEventListener('pointerup', (e) => {
+    if (!sw || e.pointerId !== sw.id) return;
+    const dx = e.clientX - sw.x, dy = e.clientY - sw.y; sw = null;
+    if (dx < 56 || dx < Math.abs(dy) * 1.4) return;
+    if (desk.classList.contains('sent')) $('again').click();     // mailed: the card is in the box, so the postcards are dealt again
+    else prev();
+  });
+  $('end').addEventListener('pointercancel', () => { sw = null; });
 
   function tap(c, at) {
     if (at.closest('#player')) { if (at.closest('.sticker')) deck.start(); return; }   // the turntable's own taps (the sticker = play); its Turn button turns it back

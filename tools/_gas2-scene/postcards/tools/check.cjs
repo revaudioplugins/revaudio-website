@@ -108,6 +108,15 @@ async function drag(p, dx, dy, ms, hold) {               // a finger-like drag w
   ok("flick down throws too", (await cur(p)) === 2);
   await p.click("#prev"); await p.waitForTimeout(650);
   ok("back brings the last card back", (await cur(p)) === 1);
+  await drag(p, 150, 6, 160);                                 // left to right (Dan, 2026-10-30): back
+  const b1 = await p.evaluate(() => ({ cur: window.gas2Postcards.cur, top: document.querySelector(".pc.top") === document.querySelectorAll(".pc")[0] }));
+  ok("a flick from left to right brings the card before back on top", b1.cur === 0 && b1.top, b1);
+  await drag(p, 150, 6, 160);
+  ok("on card 1 a flick right only gives a little: nothing before it, nothing thrown", (await cur(p)) === 0 &&
+     await p.evaluate(() => getComputedStyle(document.querySelectorAll(".pc")[0]).visibility === "visible"));
+  await drag(p, 40, 2, 400);
+  await drag(p, -190, -20, 120);
+  ok("right to left still throws it on", (await cur(p)) === 1);
   const g = await p.evaluate(() => { const c = document.querySelector(".pc.top"), r = c.getBoundingClientRect(), b = c.querySelector(".big").getBoundingClientRect();
     return { key: !!c.querySelector(".key"), mid: +(((b.top + b.bottom) / 2 - r.top) / r.height).toFixed(3), line: getComputedStyle(c.querySelector(".gline")).fontFamily }; });
   ok("grade card (Dan, round 2): no key, the lettering centred, the line in its face", !g.key && Math.abs(g.mid - .5) < .04 && /Oswald/.test(g.line), g);
@@ -142,6 +151,15 @@ async function drag(p, dx, dy, ms, hold) {               // a finger-like drag w
   const end1 = await p.evaluate(() => ({ cur: window.gas2Postcards.cur, ended: document.getElementById("desk").classList.contains("ended"),
     ti: getComputedStyle(document.querySelector(".rd .ti")).opacity, ctl: getComputedStyle(document.querySelector(".ctl")).opacity, box: document.getElementById("box").classList.contains("up") }));
   ok("flicking the last card = the end page, the readings popped, the counter + mailbox gone", end1.cur === 6 && end1.ended && end1.ti === "1" && end1.ctl === "0" && !end1.box, end1);
+  await p.mouse.move(120, 360); await p.mouse.down();
+  for (let i = 1; i <= 8; i++) { await p.mouse.move(120 + 22 * i, 362); await p.waitForTimeout(14); }
+  await p.mouse.up(); await p.waitForTimeout(900);
+  const st1 = await p.evaluate(() => ({ cur: window.gas2Postcards.cur, ended: document.getElementById("desk").classList.contains("ended") }));
+  ok("on the station, left to right brings the last card back", st1.cur === 5 && !st1.ended, st1);
+  const grab7 = await p.evaluate(() => { const b = document.querySelector(".pc.top .mtitle").getBoundingClientRect(); return { x: b.left + 10, y: b.top + 10 }; });
+  await p.mouse.move(grab7.x, grab7.y); await p.mouse.down();
+  for (let i = 1; i <= 8; i++) { await p.mouse.move(grab7.x - 30 * i, grab7.y - 3 * i); await p.waitForTimeout(12); }
+  await p.mouse.up(); await p.waitForTimeout(1500);
   if (SHOTS) await p.screenshot({ path: `${SHOTS}/flow-end.png` });
   await p.click("#cta"); await p.waitForTimeout(900);
   ok("⤓ Download FREE brings the mail card back", (await cur(p)) === 5 && !(await p.evaluate(() => document.getElementById("desk").classList.contains("ended"))));
@@ -172,6 +190,16 @@ async function drag(p, dx, dy, ms, hold) {               // a finger-like drag w
     mk: document.getElementById("mk").checked, stamp: document.querySelector(".send").disabled }));
   ok("The postcards again: dealt back, card 1 on top, the form fresh", re.cur === 0 && !re.ended && !re.sent && re.o6 === "1" && re.top > 0 && !re.mk && !re.stamp, re);
   await p.context().close();
+
+  // ── mailed: the card is in the box, so left to right on the station deals the postcards again ──
+  const ms = await page(wk, 402, 714);
+  await go(ms, "?card=7&sent"); await ms.waitForTimeout(1500);
+  await ms.mouse.move(120, 360); await ms.mouse.down();
+  for (let i = 1; i <= 8; i++) { await ms.mouse.move(120 + 22 * i, 362); await ms.waitForTimeout(14); }
+  await ms.mouse.up(); await ms.waitForTimeout(1200);
+  const ms1 = await ms.evaluate(() => ({ cur: window.gas2Postcards.cur, sent: document.getElementById("desk").classList.contains("sent") }));
+  ok("mailed, left to right on the station deals the postcards again", ms1.cur === 0 && !ms1.sent, ms1);
+  await ms.context().close();
 
   // ── reduced motion: no flight, the same states ──
   const r = await page(wk, 402, 714, { reducedMotion: "reduce" });
