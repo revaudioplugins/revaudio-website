@@ -29,6 +29,7 @@
 @font-face { font-family: Elite; src: url(fonts/elite.woff2) format("woff2"); }
 @font-face { font-family: Oswald; src: url(fonts/Oswald-Variable.woff2) format("woff2"); font-weight: 200 700; }
 
+@property --rest { syntax: "*"; inherits: false; }   /* a card's rest pose is its own: setting it never restyles its print */
 :root {
   --bg: #0b0907; --fg: #efe9df; --fg-dim: #a99f90; --brass: #c9a35c; --brass-bright: #e8c878;
   --honey: #f2be4a; --honey-line: #f6c85d; --cream: #efe3c6; --red: #b8341e; --oxide: #7a2717;
@@ -79,7 +80,10 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .pc-mail .age { background-image: url(postcards/img/wear-6.webp); }
 .pc img { -webkit-user-drag: none; user-select: none; pointer-events: none; }
 .pc:not(.top) { pointer-events: none; }
-.pc.lift { box-shadow: 0 1px 1px rgba(16, 10, 5, .35), 0 26px 44px -10px rgba(6, 4, 2, .75), inset 0 0 0 1px rgba(110, 86, 52, .18); }
+.pc .lifts { position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity .18s;   /* held: a deeper
+  shadow fades in (its own layer: lifting a card never repaints it) */
+  box-shadow: 0 26px 44px -10px rgba(6, 4, 2, .75); will-change: opacity; }
+.pc.lift .lifts { opacity: 1; }
 .pc.nudge { animation: nudge 1.1s var(--ease-settle) both; }
 @keyframes nudge { 0%, 100% { transform: var(--rest); } 38% { transform: var(--rest) translate(-10cqw, -1.5cqw) rotate(-6deg); } }
 .row { position: absolute; left: 7cqw; right: 7cqw; top: 6.6cqw; display: flex; justify-content: space-between;
@@ -661,10 +665,73 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   const NAMES = ['Greetings from GAS 2', 'Regular', 'Premium', 'Race', 'Hear it', 'Mail me the keys'];
   let cur = 0, touched = false;
 
+  // ── springs (Dan, 2026-10-30: "everything that moves needs to be smooth"): a damped spring baked into CSS linear(), so
+  //    the compositor plays it, starting at the finger's own speed (v0, in whole moves a second): a card never jumps ──
+  const LINEAR = !!(window.CSS && CSS.supports('transition-timing-function', 'linear(0, 1)')), springs = new Map();
+  function spring(v0, zeta, w) {
+    v0 = Math.max(-8, Math.min(30, v0 || 0));
+    const key = `${v0.toFixed(1)}/${zeta}/${w}`;
+    if (springs.has(key)) return springs.get(key);
+    let x = 0, v = v0, t = 0;
+    const dt = 1 / 240, pts = [0], out = [];
+    while (t < 1.6 && (Math.abs(1 - x) > .0015 || Math.abs(v) > .02)) { v += (w * w * (1 - x) - 2 * zeta * w * v) * dt; x += v * dt; t += dt; pts.push(x); }
+    for (let i = 0; i <= 40; i++) out.push(i === 40 ? 1 : +pts[Math.round(i / 40 * (pts.length - 1))].toFixed(4));
+    const r = [LINEAR ? `linear(${out.join(', ')})` : 'cubic-bezier(.22, 1, .36, 1)', Math.max(120, Math.round(t * 1000))];
+    springs.set(key, r);
+    return r;
+  }
+  // ── a let-go card moves frame by frame from the finger's own speed (a CSS animation takes a frame or two to start, and
+  //    that reads as a stop): thrown on at that speed, or sprung back to its place. The stack settling stays in CSS ──
+  const moving = new Map();
+  let mraf = 0, mlast = 0;
+  const pose0 = (i) => ({ x: LIE[i][1] * .3, y: 0, r: LIE[i][0] * .45 });   // a card's place on top of the stack
+  function glide(t) {
+    const dt = mlast ? Math.min(34, t - mlast) : 16.7; mlast = t;
+    moving.forEach((m, c) => {
+      const fin = m.step(dt);
+      c.style.transform = `translate3d(${m.x.toFixed(2)}px, ${m.y.toFixed(2)}px, 0) rotate(${m.r.toFixed(3)}deg)`;
+      if (fin) { moving.delete(c); if (m.done) m.done(); }
+    });
+    if (moving.size) mraf = requestAnimationFrame(glide); else { mraf = 0; mlast = 0; }
+  }
+  function move(c, m, done) {
+    m.done = done; moving.set(c, m); c.style.transition = 'none';
+    c.style.transform = `translate3d(${m.x}px, ${m.y}px, 0) rotate(${m.r}deg)`;
+    if (!mraf) mraf = requestAnimationFrame(glide);
+  }
+  function halt(c) { const m = moving.get(c); moving.delete(c); return m; }
+  function flight(f, dx, dy, v, dist, T, rot) {                  // thrown: d = v t + a t²/2 (from the finger's v), off the table at T
+    const a = 2 * (dist - v * T) / (T * T);
+    let t = 0;
+    const m = { x: f.x, y: f.y, r: f.r };
+    m.step = (dt) => { t = Math.min(T, t + dt); const d = v * t + a * t * t / 2;
+      m.x = f.x + dx * d; m.y = f.y + dy * d; m.r = f.r + rot * d / dist; return t >= T; };
+    return m;
+  }
+  function sprung(f, to, vx, vy, k, c) {                         // a damped spring to a place, starting at the finger's speed (px a ms)
+    const m = { x: f.x, y: f.y, r: f.r, vx: vx * 1000, vy: vy * 1000, vr: 0 };
+    m.step = (dt) => {
+      for (let n = Math.ceil(dt / 4), h = dt / n / 1000; n > 0; n--) {
+        m.vx += (k * (to.x - m.x) - c * m.vx) * h; m.x += m.vx * h;
+        m.vy += (k * (to.y - m.y) - c * m.vy) * h; m.y += m.vy * h;
+        m.vr += (k * (to.r - m.r) - c * m.vr) * h; m.r += m.vr * h;
+      }
+      const fin = Math.hypot(to.x - m.x, to.y - m.y) < .3 && Math.abs(to.r - m.r) < .05 && Math.hypot(m.vx, m.vy) < 8;
+      if (fin) Object.assign(m, { x: to.x, y: to.y, r: to.r });
+      return fin;
+    };
+    return m;
+  }
+  const idle = (fn) => {                                         // heavy work waits for a still hand
+    const go = () => (drag ? setTimeout(go, 300) : fn());
+    if (window.requestIdleCallback) requestIdleCallback(go, { timeout: 2000 }); else setTimeout(go, 700);
+  };
+
   const rest = (i, d) => {
-    const [r, x] = LIE[i];
+    if (d > 2) return rest(i - d + 2, 2);                        // the card after the three in sight waits right under the third, unseen,
+    const [r, x] = LIE[i];                                       // already drawn: when its turn comes nothing has to be painted
     return d === 0 ? `translate3d(${x * .3}px, 0px, 0) rotate(${r * .45}deg)`
-                   : `translate3d(${x}px, ${d * 9}px, 0) rotate(${r}deg) scale(${1 - d * .028})`;
+                   : `translate3d(${x}px, ${d * 9}px, 0) rotate(${r}deg)`;    // a real stack: every card the same size
   };
 
   // cur = the card on top; cur === N = every card is gone: the end page
@@ -672,13 +739,15 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     cards.forEach((c, i) => {
       const d = i - cur;
       c.classList.toggle('top', d === 0);
-      c.inert = d !== 0;
-      c.setAttribute('aria-hidden', String(d !== 0));
+      if (c.inert !== (d !== 0)) c.inert = d !== 0;
+      if (c.getAttribute('aria-hidden') !== String(d !== 0)) c.setAttribute('aria-hidden', String(d !== 0));
       if (d < 0) return;                                   // thrown: keeps its flight transform, hidden after it lands
       c.style.zIndex = String(N - i);
-      c.style.visibility = d <= 2 ? 'visible' : 'hidden';
+      c.style.visibility = 'visible';                     // every card still to come lies drawn under the stack (its pictures decoded early)
+      c.style.willChange = d <= 3 ? 'transform' : '';      // the cards in sight (+ the one under them) keep their own layers: moving one never repaints it
       c.style.setProperty('--rest', rest(i, d));
-      c.style.transition = anim && !reduce ? `transform .56s var(--ease-settle) ${deal ? (N - 1 - i) * 70 : 0}ms, opacity .3s` : 'none';
+      const [ez, ms] = deal ? ['var(--ease-settle)', 560] : spring(0, .86, 15);
+      c.style.transition = anim && !reduce ? `transform ${ms}ms ${ez} ${deal ? (N - 1 - i) * 70 : 0}ms, opacity .3s` : 'none';
       c.style.transform = rest(i, d);
       c.style.opacity = '';
     });
@@ -687,8 +756,8 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     $('next').disabled = cur === N;
     box.classList.toggle('up', cur === N - 1);
     desk.classList.toggle('mailing', cur === N - 1);
-    if (cur >= 3) { audio.warm().catch(() => {}); setTimeout(deck.press, 650); }   // decode the demo, cut the record, before HEAR IT comes up
-    if (cur >= 4) document.querySelector('.view').classList.add('warm');   // and the end page's photo
+    if (cur >= 3) idle(() => { audio.warm().catch(() => {}); deck.press(); });   // decode the demo, cut the record, before HEAR IT comes up
+    if (cur >= 4) idle(() => document.querySelector('.view').classList.add('warm'));   // and the end page's photo
     deck.power(cards[cur] === hear && hear.classList.contains('flipped'));   // the deck runs only while its back is up
     ending(cur === N, anim);
   }
@@ -722,21 +791,20 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   }
 
   // ── throw the top card off the table (any direction), the next one settles up; after the last one, the end ──
-  function toss(vx, vy, from) {
+  function toss(vx, vy, from, speed) {
     if (cur >= N) return false;
     const c = cards[cur], W = innerWidth, H = innerHeight;
     let dx = vx, dy = vy;
     const m = Math.hypot(dx, dy) || 1; dx /= m; dy /= m;
     const dist = Math.hypot(W, H) * .75 + c.offsetWidth;
-    const f = from || { x: 0, y: 0, r: LIE[cur][0] * .45 };
-    const speed = Math.max(1.4, Math.hypot(vx, vy));           // px per ms
-    const ms = reduce ? 1 : Math.min(520, Math.max(240, dist / speed));
-    c.style.transition = `transform ${ms}ms cubic-bezier(.2,.62,.32,1), opacity ${ms}ms`;
-    c.style.transform = `translate3d(${f.x + dx * dist}px, ${f.y + dy * dist}px, 0) rotate(${f.r + (dx || 1) * 24}deg)`;
+    const f = from || pose0(cur);
+    const v = Math.max(.9, speed === undefined ? m : speed);     // px a ms: it leaves the finger at the finger's own speed
+    const T = Math.min(560, Math.max(200, dist / v)), rot = (dx || 1) * 24;
+    const gone = () => { c.style.transform = c._gone; if (cards.indexOf(c) < cur) { c.style.visibility = 'hidden'; c.style.willChange = ''; } };
+    c._gone = `translate3d(${f.x + dx * dist}px, ${f.y + dy * dist}px, 0) rotate(${f.r + rot}deg)`;
     c.classList.remove('lift');
-    if (reduce) c.style.opacity = '0';
-    c._gone = c.style.transform;
-    setTimeout(() => { if (cards.indexOf(c) < cur) c.style.visibility = 'hidden'; }, ms + 30);
+    if (reduce) { halt(c); c.style.transition = 'opacity .2s'; c.style.opacity = '0'; setTimeout(gone, 220); }
+    else move(c, flight(f, dx, dy, v, dist, T, rot), gone);
     cur++; layout(true); say(); quiet();
     return true;
   }
@@ -745,6 +813,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     if (cur === 0 || (cur === N && desk.classList.contains('sent'))) return;
     cur--;
     const c = cards[cur];
+    halt(c);                                                     // called back mid-flight
     c.style.transition = 'none';
     c.style.visibility = 'visible';
     c.style.opacity = '';
@@ -762,8 +831,9 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     if (!c || !c.classList.contains('top') || drag || e.button > 0) return;
     if (e.target.closest('button, input, label, a, form')) return;
     const r = c.getBoundingClientRect();
+    const was = halt(c);                                         // caught mid-spring: held where it is
     drag = { c, at: e.target, id: e.pointerId, x0: e.clientX, y0: e.clientY, pts: [[performance.now(), e.clientX, e.clientY]],
-             side: e.clientY < r.top + r.height / 2 ? 1 : -1, moved: false };
+             side: e.clientY < r.top + r.height / 2 ? 1 : -1, moved: false, base: was ? { x: was.x, y: was.y, r: was.r } : pose0(cur) };
     c.setPointerCapture(e.pointerId);
     c.classList.remove('nudge');
   });
@@ -782,13 +852,17 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     if (drag.back) {
       if (drag.p) {                                              // the card before comes in from the left under the finger
         const k = drag.k = Math.min(1.04, Math.max(0, dx / (innerWidth * .55)));
-        drag.p.style.transform = `translate3d(${drag.x * (1 - k)}px, ${-24 * (1 - k) + dy * .12}px, 0) rotate(${-16 * (1 - k) + drag.r * k}deg) scale(1.015)`;
-      } else drag.c.style.transform = `translate3d(${dx * .18}px, 0, 0) rotate(${LIE[cur][0] * .45}deg)`;   // nothing before card 1: it only gives a little
+        drag.pose = { x: drag.x * (1 - k), y: -24 * (1 - k) + dy * .12, r: -16 * (1 - k) + drag.r * k };
+        drag.p.style.transform = `translate3d(${drag.pose.x}px, ${drag.pose.y}px, 0) rotate(${drag.pose.r}deg)`;
+      } else {                                                   // nothing before card 1: it only gives a little
+        drag.pose = { x: drag.base.x + dx * .18, y: drag.base.y, r: drag.base.r };
+        drag.c.style.transform = `translate3d(${drag.pose.x}px, ${drag.pose.y}px, 0) rotate(${drag.pose.r}deg)`;
+      }
       return;
     }
-    const r = LIE[cur][0] * .45 + dx * .065 * drag.side;
-    drag.cur = { x: dx, y: dy, r };
-    drag.c.style.transform = `translate3d(${dx}px, ${dy}px, 0) rotate(${r}deg) scale(1.015)`;
+    const b = drag.base, r = b.r + dx * .065 * drag.side;
+    drag.cur = { x: b.x + dx, y: b.y + dy, r };
+    drag.c.style.transform = `translate3d(${drag.cur.x}px, ${drag.cur.y}px, 0) rotate(${r}deg)`;
   });
   const release = (e) => {
     if (!drag || e.pointerId !== drag.id) return;
@@ -799,30 +873,42 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     const vx = pts.length > 1 ? (b[1] - a[1]) / dt : 0, vy = pts.length > 1 ? (b[2] - a[2]) / dt : 0, v = Math.hypot(vx, vy);
     if (d.back) {
       d.c.classList.remove('lift');
-      if (!d.p) { d.c.style.transition = reduce ? 'none' : 'transform .4s var(--ease-snap)'; d.c.style.transform = rest(cur, 0); return; }
+      if (!d.p) {
+        const c = d.c, i = cur;
+        if (reduce || !d.pose) c.style.transform = rest(i, 0); else move(c, sprung(d.pose, pose0(i), vx, 0, 260, 26), () => { c.style.transform = rest(i, 0); });
+        return;
+      }
       d.p.classList.remove('lift');
-      if (e.type === 'pointerup' && (d.k > .32 || vx > .45)) { cur--; layout(true); say(); quiet(); return; }   // back on the stack
-      const p = d.p, off = `translate3d(${d.x}px, -24px, 0) rotate(-16deg)`;                                     // let go early: it slides back out
-      p.style.transition = reduce ? 'none' : 'transform .34s cubic-bezier(.4, 0, .2, 1)';
-      p.style.transform = p._gone = off;
-      setTimeout(() => { if (cards.indexOf(p) < cur) p.style.visibility = 'hidden'; }, reduce ? 0 : 360);
+      const p = d.p, from = d.pose || { x: d.x, y: -24, r: -16 };
+      if (e.type === 'pointerup' && (d.k > .32 || vx > .45)) {   // back on the stack, carried on at the finger's speed
+        cur--; layout(true); say(); quiet();
+        const i = cur;
+        if (!reduce) move(p, sprung(from, pose0(i), vx, 0, 170, 21), () => { p.style.transform = rest(i, 0); });
+        return;
+      }
+      const off = { x: d.x, y: -24, r: -16 };                    // let go early: it slides back out
+      p._gone = `translate3d(${off.x}px, ${off.y}px, 0) rotate(${off.r}deg)`;
+      const hide = () => { p.style.transform = p._gone; if (cards.indexOf(p) < cur) { p.style.visibility = 'hidden'; p.style.willChange = ''; } };
+      if (reduce) hide(); else move(p, sprung(from, off, vx, 0, 240, 30), hide);
       return;
     }
     const far = Math.hypot(d.cur.x, d.cur.y) > d.c.offsetWidth * .34;
     const fx = v > .5 ? vx : d.cur.x, fy = v > .5 ? vy : d.cur.y;   // a throw that turned to the right isn't "on": it springs back
     if (e.type === 'pointerup' && (v > .5 || far) && !(fx > 0 && fx > Math.abs(fy))) {
-      toss(v > .5 ? vx : d.cur.x, v > .5 ? vy : d.cur.y, d.cur);
-    } else {
+      toss(fx, fy, d.cur, v > .5 ? v : 0);
+    } else {                                                     // back to the stack, from the finger's speed
       d.c.classList.remove('lift');
-      d.c.style.transition = reduce ? 'none' : 'transform .48s var(--ease-snap)';
-      d.c.style.transform = rest(cur, 0);
+      const c = d.c, i = cur;
+      if (reduce) c.style.transform = rest(i, 0); else move(c, sprung(d.cur, pose0(i), vx, vy, 190, 22), () => { c.style.transform = rest(i, 0); });
     }
   };
   function pull(d) {                                             // left to right: the card before, back from the left
     const p = cards[cur - 1], sr = stack.getBoundingClientRect();
+    halt(p);
     Object.assign(d, { p, x: -(sr.left + sr.width + 30), r: LIE[cur - 1][0] * .45, k: 0 });
     p.style.transition = 'none'; p.style.visibility = 'visible'; p.style.opacity = ''; p.style.zIndex = String(N + 1);
-    p.style.transform = `translate3d(${d.x}px, -24px, 0) rotate(-16deg) scale(1.015)`;
+    p.style.willChange = 'transform';
+    p.style.transform = `translate3d(${d.x}px, -24px, 0) rotate(-16deg)`;
     p.classList.add('lift');
   }
   stack.addEventListener('pointerup', release);
@@ -862,17 +948,13 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     };
     if (now || reduce) return swap();
     turning = true;
-    flipEl.style.transition = 'transform .22s cubic-bezier(.55,0,.9,.4)';
-    flipEl.style.transform = 'rotateY(90deg)';
-    setTimeout(() => {
+    const a = flipEl.animate([{ transform: 'rotateY(0deg)' }, { transform: 'rotateY(90deg)' }], { duration: 210, easing: 'cubic-bezier(.5, 0, .75, .55)', fill: 'forwards' });
+    a.finished.then(() => {                                      // edge-on: the faces swap, and the turn goes on at the same speed (.77°/ms)
       swap();
-      flipEl.style.transition = 'none';
-      flipEl.style.transform = 'rotateY(-90deg)';
-      void flipEl.offsetWidth;
-      flipEl.style.transition = 'transform .5s var(--ease-settle)';
-      flipEl.style.transform = 'rotateY(0deg)';
-      setTimeout(() => { turning = false; }, 500);
-    }, 220);
+      a.cancel();
+      flipEl.animate([{ transform: 'rotateY(-90deg)' }, { transform: 'rotateY(0deg)' }], { duration: 440, easing: 'cubic-bezier(.12, .45, .3, 1)' })
+        .finished.then(() => { turning = false; }, () => { turning = false; });
+    }, () => { turning = false; });
   }
   hear.querySelectorAll('[data-turn]').forEach((b) => b.addEventListener('click', () => turn()));
   hear.querySelector('.back').inert = true;
@@ -985,7 +1067,9 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
       const ca = cv.getContext('2d'), cb = sheen.getContext('2d');
       cv.width = cv.height = sheen.width = sheen.height = px;
       const ia = ca.createImageData(px, px), ib = cb.createImageData(px, px), da = ia.data, db = ib.data;
-      for (let y = 0; y < px; y++) {
+      let y = 0;
+      (function rows() {                                         // a few rows a frame: a card in motion never waits on the record
+      for (const t0 = performance.now(); y < px && performance.now() - t0 < 6; y++) {
         const dy = y + .5 - R;
         for (let x = 0; x < px; x++) {
           const dx = x + .5 - R, r = Math.sqrt(dx * dx + dy * dy);
@@ -1000,7 +1084,9 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
           db[k] = sv * 255; db[k + 1] = sv * 242; db[k + 2] = sv * 220; db[k + 3] = al;
         }
       }
+      if (y < px) return requestAnimationFrame(rows);
       ca.putImageData(ia, 0, 0); cb.putImageData(ib, 0, 0);
+      })();
     }
     return { power, press, toggle: () => (mode === 'cue' || mode === 'play' ? home() : cue()), start: () => (mode === 'rest' || mode === 'home') && cue(), LEAD, RUN,
       get angle() { return a; }, get speed() { return w; }, get lift() { return h; }, get mode() { return mode; } };
@@ -1018,10 +1104,10 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
       gA.connect(bus); gB.connect(bus); bus.connect(ac.destination);
       return ac;
     };
-    const warm = () => {
-      if (loading) return loading;
-      ctx();
-      loading = Promise.all(URLS.map((u) => fetch(u).then((r) => r.arrayBuffer()).then((d) => new Promise((ok, no) => { const r = ac.decodeAudioData(d, ok, no); if (r && r.catch) r.catch(no); }))))
+    const warm = () => {                                         // decoded off the sound device: opening that waits for a tap
+      if (loading) return loading;                               // (it costs a frame or more, and only a tap may open it on a phone)
+      const oc = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(2, 1, 48000);
+      loading = Promise.all(URLS.map((u) => fetch(u).then((r) => r.arrayBuffer()).then((d) => new Promise((ok, no) => { const r = oc.decodeAudioData(d, ok, no); if (r && r.catch) r.catch(no); }))))
         .then((b) => (bufs = b)).catch((err) => { loading = null; throw err; });
       return loading;
     };
@@ -1164,6 +1250,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   if (start > 0 || q.has('flip')) quiet();
   if (start === 0 && !reduce) setTimeout(() => { if (!touched && cur === 0 && !drag) cards[0].classList.add('nudge'); }, 1100);
   cards.forEach((c) => c.addEventListener('animationend', (e) => { if (e.animationName === 'nudge') c.classList.remove('nudge'); }));
+  cards.forEach((c) => { const s = document.createElement('i'); s.className = 'lifts'; s.setAttribute('aria-hidden', 'true'); c.prepend(s); });
   if (!reduce) {                                                // dust drifting in the last of the sun (round 2)
     const dust = desk.querySelector('.dust'), r = Math.random;
     for (let i = 0; i < 14; i++) {

@@ -260,6 +260,12 @@ card itself ... physics-wise"): on a physical object (a card, a poster, a label)
 no pops, slides or write-ons as it comes up, no turning sunburst, no flickering lamp in a photo. Motion belongs to the
 object (a flick, a curling corner, a sticker's lifting edge), to a real mechanism (a turntable), or to light (a glint).
 
+Let-go motion keeps the finger's speed (the postcards, Dan 2026-10-30: "everything that moves needs to be smooth"): a
+thrown or released object leaves at the speed the finger had, never a jump or a stop (a CSS animation takes a frame or
+two to start: drive a let-go frame by frame from that speed, springs not fixed curves); nothing that moves changes scale
+(a scale change repaints the layer); a held object's deeper shadow fades in on its own layer; heavy work (decoding,
+drawing a canvas) waits for a still hand and runs a few ms a frame. Measure on a 4x-slowed CPU: no frame over 33 ms.
+
 ## 7. Hero + glanceability
 
 THE hero is the gauge medallion with "Engineered, Then Tuned." over it. One glance: brass tach,

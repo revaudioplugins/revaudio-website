@@ -101,7 +101,7 @@ async function drag(p, dx, dy, ms, hold) {               // a finger-like drag w
   const gone = await p.evaluate(() => getComputedStyle(document.querySelectorAll(".pc")[0]).visibility);
   ok("thrown card is hidden after it lands", gone === "hidden", gone);
   const moving = await p.evaluate(() => { const c = document.querySelector(".pc.top");   // the card itself may settle; its print may not
-    return document.getAnimations().filter((x) => { const t = x.effect && x.effect.target; return t && t !== c && c.contains(t); })
+    return document.getAnimations().filter((x) => { const t = x.effect && x.effect.target; return t && t !== c && c.contains(t) && !t.classList.contains("lifts"); })
       .map((x) => (x.effect.target.className || x.effect.target.tagName) + (x.effect.pseudoElement || "")); });
   ok("a card comes up whole (Dan, 2026-10-30: the readings glued to the card): nothing printed on it pops or moves", moving.length === 0, moving);
   await drag(p, 30, 260, 110);

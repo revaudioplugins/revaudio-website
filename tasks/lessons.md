@@ -141,3 +141,13 @@ GAS 2 postcards (`danavivi-75`): round 2's "make everything feel much more alive
 flickering lamp in a photo. Dan, round 5: "the readings should be glued to the card itself ... physics-wise". Rule:
 on a physical metaphor, life comes from the object and its real mechanisms (the card's flick and curl, the turntable,
 a sticker's corner, light), never from its printed content moving. DESIGN.md §6.
+
+## 2026-10-30 - "not smooth": measure frames on a slowed CPU before touching the motion
+
+GAS 2 postcards (`danavivi-75`), Dan: "the card moves are not smooth yet ... everything that moves needs to be smooth".
+Chrome with `Emulation.setCPUThrottlingRate` 4 + a rAF frame log + a `longtask` observer found what eyes alone would not:
+a thrown card left at ~3x the finger's speed (a fixed cubic-bezier over a fixed distance) and a CSS transition held it
+still for a frame or two first; a box-shadow swap on the held card and a depth `scale()` repainted whole cards;
+`new AudioContext()` took 226 ms (4x) while warming the demo (decode on an `OfflineAudioContext` instead; open the
+device on the tap); a 1M-pixel canvas loop blocked 240 ms (slice it, a few ms a frame). Sample the moving element's
+speed per frame around the release to prove there's no jump. DESIGN.md §6.
