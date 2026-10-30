@@ -126,3 +126,10 @@ that scales with the width, check the narrowest desktop width (~1000 px) too; sc
   above page-b's own `<style>`, so `.rp-veil { background }` lost to the page's `.veil { background }` (0.62, not 0.86 /
   0.93) and nobody saw it for two rounds. Style a shared base class as `.veil.rp-veil`, and check a component's key
   rules with `getComputedStyle` in the host page, not by reading the CSS.
+
+## 2026-10-30 - pointer capture moves the pointerup's target
+
+GAS 2 postcards (`danavivi-75`): the stack calls `setPointerCapture` on pointerdown, so the matching pointerup arrives
+with `e.target` = the capturing card, never the child under the finger. Round 2's "a tap on the deck doesn't turn the
+card" (`e.target.closest('.deck')` on pointerup) never worked; round 3's check caught it. Rule: keep the pointerdown
+target and test that, and write a check that taps the exact spot.

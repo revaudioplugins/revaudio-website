@@ -1,6 +1,6 @@
 ## 2026-10-29 — GAS 2 page: the PHONE page as POSTCARDS (Claude Code `danavivi-75`, Dan's Mac) — BRANCH `feat/gas2-postcards`, not pushed
 
-Claim: OPEN `danavivi-75`. Round 2 (Dan's notes) BUILT + checked + in the review page; waiting on his round-2 notes (below). Branched from `origin/feat/gas2-drone` @ `4fc6ddd` (no upstream set, so a bare push
+Claim: OPEN `danavivi-75`. Round 3 (HEAR IT's back as a working turntable) BUILT + checked + in the review page (version 5); waiting on his round-3 notes (below). Branched from `origin/feat/gas2-drone` @ `4fc6ddd` (no upstream set, so a bare push
 can't reach the drone branch); `revaudio-59` keeps writing `feat/gas2-drone`, so this branch stays out of its files.
 Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postcards/**`; one README line pair; the
 "GAS 2 phone POSTCARDS" section on top of `tasks/todo.md`; this entry. Read only: `page-b.html` (copy, ticket), `fonts/`,
@@ -102,7 +102,25 @@ Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postca
   player Dan asked for, drawn as an object on the card; dropping its case shadow clears the finding) in the worktree's
   `.impeccable/config.local.json`; there the stale buried-raster waiver (the keys) is gone and the marquee reason now
   names `.rd .cta::after`. check.cjs again 26 + 30 pass. Review page version 4 (build `e537a4a`), files map 36.
-- Open (Dan): (1) his round-2 notes: read `notes-r2`, apply, re-shoot, round 3; (2) painted art still only on his OK;
+- Then ROUND 3 (Dan's round-2 notes, 2026-10-29 23:48, pasted; one note, on HEAR IT's back: "lets make an animation of
+  the vines cd working and make it less like a post card more like a hole picture real vinyl animation"; his message
+  opened with "commit"). `b05c079`: the back is one top-down photo of a turntable, full bleed. Its body is a picture
+  (`make-deck.py`, numpy: walnut frame mitred at the corners, brushed aluminium under a lamp at the top left, platter
+  well + shadow, arm boss; 42 KB); no paper, handwriting or `.age` on that face. Over it in card units (1 = 1cqw): the
+  platter rim's 180 strobe dots (they blur with speed; under the neon lamp a second ring turns at spin - 200 deg/s, so
+  they stand still at speed), the grooves cut once on a canvas at device pixels (track gaps, lead-in, run-out; the
+  lamp's two-lobed streak on a second, screen-blended canvas that wobbles a hair at the turn rate), the label + specks +
+  a run-out etching turning, a chrome S-arm + its shadow layer pivoting at (77.25, 95.2). The motor runs while the back
+  is up (0.6 s to 33 1/3, 1.1 s brake; none under reduced motion). Tap the record = cue up 260 ms, swing to the lead-in
+  900 ms, wait for the demo, lower 420 ms; the song starts as the needle lands, after a synthesized knock; playing, the
+  arm creeps over a 240 s "side"; tap again = up, home, down, the platter keeps turning. Fixed on the way: a tap on
+  the deck's body turned the card (setPointerCapture retargets pointerup to the card; tap() reads the pointerdown
+  target now). check.cjs: the back's layout per size (record, tape, legend, keys, fine print + badge in order, Turn
+  clear of the record, keys + Turn >= 44 px), the cue mid-swing, motor + reduced motion: 29 steps + 30 layouts pass,
+  0 errors. Review page round 3 (`CFG.round = 3`, notes in `notes-r3`; his note + what changed on the back, "No note
+  last round: unchanged." elsewhere) = version 5 at the same URL (+ `postcards/img/deck.webp`). Design hook: the
+  nested-cards waiver now names `.dymo` (the label-maker tape; `.deck` is gone); only the advisory stripes remain.
+- Open (Dan): (1) his round-3 notes: read `notes-r3`, apply, re-shoot, round 4; (2) painted art still only on his OK;
   (3) per-grade renders (Yoni) before any grade card plays its own sound; (4) later: this as page-b's phone layout.
 
 ## 2026-10-28 — GAS 2 page: the drone intro, from scratch (Claude Code `revaudio-59`, laptop 1) — BRANCH `feat/gas2-drone`

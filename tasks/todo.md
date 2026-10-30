@@ -1,4 +1,4 @@
-# GAS 2 phone POSTCARDS (branch `feat/gas2-postcards`, 2026-10-29, danavivi-75) — ROUND 2 BUILT, waiting on Dan's round-2 notes
+# GAS 2 phone POSTCARDS (branch `feat/gas2-postcards`, 2026-10-29, danavivi-75) — ROUND 3 BUILT, waiting on Dan's round-3 notes
 
 Dan's concept (2026-10-29): a stack of 1950s "Greetings from GAS 2" postcards, phone only. State: `tasks/handoff.md` top entry.
 
@@ -42,7 +42,16 @@ Dan's concept (2026-10-29): a stack of 1950s "Greetings from GAS 2" postcards, p
       Textures made in `postcards/tools/make-wear.py` (numpy, no spend).
 - [x] 12. check.cjs updated + all pass; re-shoot; review page round 2 (his note + what changed per screen, fresh
       boxes) republished to the same URL; commit by path; handoff.
-- [ ] 13. Dan's round-2 notes (`notes-r2`) → round 3.
+- [x] 13. Dan's round-2 notes (2026-10-29 23:48, pasted): one note, on HEAR IT's back.
+
+## Round 3 — Dan's note on the back ("an animation of the vinyl working ... less like a post card, more like a whole
+   picture, real vinyl"; his message opened with "commit" = go)
+- [x] 14. The back = one photo of a turntable seen from above (`make-deck.py`: walnut + brushed aluminium, no spend);
+      it runs while it's up (platter at 33 1/3, strobe dots, the lamp's streak on the grooves stays put); tap the record
+      = cue up, swing in, needle down, the song starts as it lands; tap again = home. Keys, fine print, label-maker tape.
+- [x] 15. check.cjs 29 steps + 30 layouts pass, 0 errors; review page round 3 = version 5 at the same URL; commits by
+      path (`b05c079` + the review/handoff one); no push.
+- [ ] 16. Dan's round-3 notes (`notes-r3`) → round 4.
 
 # GAS 2 drone descent (branch `feat/gas2-drone`, 2026-10-28, revaudio-59) — SCENE + BENCH BUILT, art next
 
