@@ -1,4 +1,4 @@
-# GAS 2 phone POSTCARDS (branch `feat/gas2-postcards`, 2026-10-29, danavivi-75) — ROUND 9 BUILT (motion on Dan's iPhone) + a ponytail pass, pushed to `origin/feat/gas2-postcards`
+# GAS 2 phone POSTCARDS (branch `feat/gas2-postcards`, 2026-10-29, danavivi-75) — ROUND 9 BUILT (motion on Dan's iPhone) + a ponytail pass + the keyboard slide-up, review page round 10, pushed to `origin/feat/gas2-postcards`
 
 Dan's concept (2026-10-29): a stack of 1950s "Greetings from GAS 2" postcards, phone only. State: `tasks/handoff.md` top entry.
 
@@ -84,7 +84,8 @@ Dan's concept (2026-10-29): a stack of 1950s "Greetings from GAS 2" postcards, p
 - [x] 26. Dan on his iPhone (a screenshot, "it's not comfortable like this ... give options"): the keyboard shrank the
       mail card to half and the tick line ran into the stamp. His pick "card slides up": `b15a2eb`, the card keeps its
       size and slides up over the keys; check.cjs 42 + 35 pass.
-- [ ] 27. Dan's word from the phone (and the check page: Reduce Motion on or off?).
+- [x] 27. Dan: "open the bench": review page round 10 (`notes-r10`) = version 12 on `6c91731`.
+- [ ] 28. Dan's word from the phone + his round-10 notes (and the check page: Reduce Motion on or off?).
 
 # GAS 2 drone descent (branch `feat/gas2-drone`, 2026-10-28, revaudio-59) — SCENE + BENCH BUILT, art next
 

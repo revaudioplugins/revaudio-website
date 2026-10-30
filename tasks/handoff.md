@@ -1,6 +1,6 @@
 ## 2026-10-29 — GAS 2 page: the PHONE page as POSTCARDS (Claude Code `danavivi-75`, Dan's Mac) — BRANCH `feat/gas2-postcards`, pushed (not main)
 
-Claim: OPEN `danavivi-75`. Round 9 (motion on Dan's iPhone) BUILT + checked + in the review page (version 11, build `c22bab5`), then a ponytail pass (`205661d`, not in the review page); the branch tracks `origin/feat/gas2-postcards` (pushed on Dan's "commit everything and push it"; not main, no deploy). Branched from `origin/feat/gas2-drone` @ `4fc6ddd` (no upstream set, so a bare push
+Claim: OPEN `danavivi-75`. Round 9 (motion on Dan's iPhone) BUILT + checked, then a ponytail pass (`205661d`) and the keyboard slide-up (`6c91731`); the review page = round 10 (version 12, build `6c91731`); the branch tracks `origin/feat/gas2-postcards` (pushed on Dan's "commit everything and push it"; not main, no deploy). Branched from `origin/feat/gas2-drone` @ `4fc6ddd` (no upstream set, so a bare push
 can't reach the drone branch); `revaudio-59` keeps writing `feat/gas2-drone`, so this branch stays out of its files.
 Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postcards/**`; one README line pair; the
 "GAS 2 phone POSTCARDS" section on top of `tasks/todo.md`; this entry. Read only: `page-b.html` (copy, ticket), `fonts/`,
@@ -192,7 +192,7 @@ Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postca
   `make-wear.py` rebuilds byte-identical; check.cjs 41 steps + 35 layouts pass, 0 errors (the 6 new steps fail on the
   page before). Not changed: the first throw's release frame is ~50 ms at 4x CPU on the round-8, round-9 and this
   build alike (the Mac was at load 11-13; DESIGN.md asks <= 33): measure again on a quiet machine before chasing it.
-  The review page still runs `c22bab5` (no visible change; republish only with the next round).
+  The review page stayed on `c22bab5` till round 10 (below).
 - Then (Dan on his iPhone, iOS 26, 2026-10-30 19:00: a screenshot of the mail card with the keyboard up, then "it's not
   comfortable like this ... give options"; his pick of three: "card slides up"). iOS 26 cuts the page to the ~387 px
   above the keys: the stack (sized by its container) shrank the card to half and the tick line ran into the stamp.
@@ -201,7 +201,15 @@ Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postca
   The card goes back once the keyboard has gone, not on blur: a tap on the stamp blurs the input first, and going
   back on blur moved the stamp out from under the finger (found by a stamp-with-the-keys-up check). Checked at 402x714 -> 387, 375x553 -> 293, 430x750 -> 410 (WebKit, the keyboard mimicked by a shorter
   viewport); check.cjs 42 + 35 pass, 0 errors; stills pixel-identical. DESIGN.md §8 + lessons. Not on a real iPhone yet.
-- Open (Dan): (1) his word from the phone; more notes go to `notes-r9`;
+- Then (Dan, 2026-10-30: "open the bench"; `notes-r9` was empty): review page ROUND 10 (`notes-r10`) = version 12 on
+  `6c91731`, same URL. Card 6 = his keyboard note verbatim + what changed, and its tip says the slide over the keys
+  shows on the page itself on his phone, not in the review frame (a frame's viewport never feels the keyboard);
+  motion = the takeover fixes; HEAR IT back = the strobe under Reduce Motion; the rest "unchanged". Files: `live.html`
+  + the 11 shots re-sent; `wear-5b.webp` and the unused `props/poster-level.webp` removed (the page uses
+  `postcards/img/poster-level.webp`). Checked locally (Chrome 1280 + WebKit 390): 12 sections by title, pin, note, ✓,
+  reload, copy, the live frames (card 6 runs the new build: the stack slides, `typing` on focus), no sideways
+  scroll, 0 errors; the shots = round 9's but for the record's angle.
+- Open (Dan): (1) his word from the phone; more notes go to `notes-r10`;
   (2) painted art still only on his OK;
   (3) per-grade renders (Yoni) before any grade card plays its own sound; (4) later: this as page-b's phone layout.
 
