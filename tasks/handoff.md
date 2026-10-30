@@ -1,6 +1,6 @@
 ## 2026-10-29 — GAS 2 page: the PHONE page as POSTCARDS (Claude Code `danavivi-75`, Dan's Mac) — BRANCH `feat/gas2-postcards`, not pushed
 
-Claim: OPEN `danavivi-75`. Round 5 (the print glued to the cards) BUILT + checked + in the review page (version 7); the branch tracks `origin/feat/gas2-postcards` (pushed on Dan's "commit everything and push it"; not main, no deploy). Branched from `origin/feat/gas2-drone` @ `4fc6ddd` (no upstream set, so a bare push
+Claim: OPEN `danavivi-75`. Round 6 (back and forth: left to right = back) BUILT + checked + in the review page (version 8); the branch tracks `origin/feat/gas2-postcards` (pushed on Dan's "commit everything and push it"; not main, no deploy). Branched from `origin/feat/gas2-drone` @ `4fc6ddd` (no upstream set, so a bare push
 can't reach the drone branch); `revaudio-59` keeps writing `feat/gas2-drone`, so this branch stays out of its files.
 Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postcards/**`; one README line pair; the
 "GAS 2 phone POSTCARDS" section on top of `tasks/todo.md`; this entry. Read only: `page-b.html` (copy, ticket), `fonts/`,
@@ -147,7 +147,14 @@ Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postca
   comes up with nothing on it animating (`document.getAnimations()`); 31 steps + 35 layouts pass. DESIGN.md §6: "printed
   things stay glued"; tasks/lessons.md. Review page round 5 (`notes-r5`) = version 7; card 6 restored there (round 3's
   edit had dropped it; the review-bench skill now says to count sections).
-- Open (Dan): (1) more notes, if any: the review page takes round 5's in `notes-r5`; (2) painted art still only on his OK;
+- Then (Dan, chat, 2026-10-30): "go back and forth from the cards ... back is left to right, and front is right to left",
+  the station too. `743e67f`: a drag that starts left to right is "back" (`pull()`): the card before comes in from the
+  left under the finger, lands on top past a third or on a flick, slides back out if let go early; on card 1 it only
+  gives a little. Right to left / up / down throw it on as before; a throw that turns right springs back. The station
+  (`#end`): left to right = `prev()`, or after mailing the "again" deal (the card is in the box); `.end` is
+  `touch-action: pan-y pinch-zoom`. The hint: "Flick left: the next card · right: back". check.cjs 36 steps + 35
+  layouts pass. Review page round 6 (`notes-r6`) = version 8.
+- Open (Dan): (1) more notes, if any: the review page takes round 6's in `notes-r6`; (2) painted art still only on his OK;
   (3) per-grade renders (Yoni) before any grade card plays its own sound; (4) later: this as page-b's phone layout.
 
 ## 2026-10-28 — GAS 2 page: the drone intro, from scratch (Claude Code `revaudio-59`, laptop 1) — BRANCH `feat/gas2-drone`
