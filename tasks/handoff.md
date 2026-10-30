@@ -1,6 +1,6 @@
 ## 2026-10-29 — GAS 2 page: the PHONE page as POSTCARDS (Claude Code `danavivi-75`, Dan's Mac) — BRANCH `feat/gas2-postcards`, not pushed
 
-Claim: OPEN `danavivi-75`. Round 8 (smooth motion) BUILT + checked + in the review page (version 10); the branch tracks `origin/feat/gas2-postcards` (pushed on Dan's "commit everything and push it"; not main, no deploy). Branched from `origin/feat/gas2-drone` @ `4fc6ddd` (no upstream set, so a bare push
+Claim: OPEN `danavivi-75`. Round 9 (motion on Dan's iPhone) BUILT + checked + in the review page (version 11); the branch tracks `origin/feat/gas2-postcards` (pushed on Dan's "commit everything and push it"; not main, no deploy). Branched from `origin/feat/gas2-drone` @ `4fc6ddd` (no upstream set, so a bare push
 can't reach the drone branch); `revaudio-59` keeps writing `feat/gas2-drone`, so this branch stays out of its files.
 Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postcards/**`; one README line pair; the
 "GAS 2 phone POSTCARDS" section on top of `tasks/todo.md`; this entry. Read only: `page-b.html` (copy, ticket), `fonts/`,
@@ -171,7 +171,15 @@ Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postca
   record's grooves are drawn ~6 ms a frame, both via `idle()`; the turn = WAAPI halves at a matched .77 deg/ms; the
   stack settle = a spring in CSS `linear()`. Worst frame (4x) 417 -> 33 ms, no long tasks; check.cjs 36 + 35 pass.
   DESIGN.md §6 + lessons. Review page round 8 (`notes-r8`) = version 10. Not felt on a real iPhone yet.
-- Open (Dan): (1) more notes, if any: the review page takes round 8's in `notes-r8`; a feel check on his iPhone;
+- Then (Dan on his iPhone, 2026-10-30, Hebrew): "no vinyl animation as it should be, the cards don't move when you press
+  the buttons, it should feel like you're moving the card". All three = iOS Reduce Motion: `reduce` switched off every
+  move. `c22bab5`: Reduce Motion now stills only what moves by itself (dust, glints, the hint's wiggle, the idle record,
+  the end page's pops); the hand's moves (throw, spring back, pull back, the ‹ › buttons, the turn, the arm's cue, the
+  record under the needle, the mail drop) always run, with more damping (`Z`). The held card is drawn once a frame
+  (`hold()`) and leans up to 7 deg into its speed. For his phone test: a LAN server (`serve-lan.py`, bound 0.0.0.0,
+  port 4470, the session's scratchpad) and a git-ignored `tools/_gas2-scene/motion-check.html` that says whether
+  Reduce Motion is on; stop the server and delete the check page when done. Review page round 9 = version 11.
+- Open (Dan): (1) his word from the phone; more notes go to `notes-r9`;
   (2) painted art still only on his OK;
   (3) per-grade renders (Yoni) before any grade card plays its own sound; (4) later: this as page-b's phone layout.
 

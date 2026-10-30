@@ -1,4 +1,4 @@
-# GAS 2 phone POSTCARDS (branch `feat/gas2-postcards`, 2026-10-29, danavivi-75) — ROUND 8 BUILT (smooth motion), pushed to `origin/feat/gas2-postcards`
+# GAS 2 phone POSTCARDS (branch `feat/gas2-postcards`, 2026-10-29, danavivi-75) — ROUND 9 BUILT (motion on Dan's iPhone), pushed to `origin/feat/gas2-postcards`
 
 Dan's concept (2026-10-29): a stack of 1950s "Greetings from GAS 2" postcards, phone only. State: `tasks/handoff.md` top entry.
 
@@ -74,7 +74,11 @@ Dan's concept (2026-10-29): a stack of 1950s "Greetings from GAS 2" postcards, p
 - [x] 23. Dan (chat): "the card moves is not smooth yet ... everything that moves needs to be smooth": measured on a
       4x-slowed CPU, fixed (`1065d59`: let-go motion at the finger's speed, no repaints mid-move, heavy work at idle,
       the turn at one speed); worst frame 417 -> 33 ms. Review page round 8 = version 10.
-- [ ] 24. Dan's next notes (`notes-r8` or the chat); a feel check on his iPhone.
+- [x] 24. Dan on his iPhone (LAN link http://10.0.0.5:4470, a no-store server bound 0.0.0.0 from the session's
+      scratchpad): no vinyl animation, the buttons don't move the cards, not smooth = iOS Reduce Motion (all of it was
+      switched off for it). `c22bab5`: the hand's moves survive it, calmer; the held card leans with its speed. A temp
+      check page `tools/_gas2-scene/motion-check.html` (git-ignored, not committed). Review page round 9 = version 11.
+- [ ] 25. Dan's word from the phone (and the check page: Reduce Motion on or off?).
 
 # GAS 2 drone descent (branch `feat/gas2-drone`, 2026-10-28, revaudio-59) — SCENE + BENCH BUILT, art next
 
