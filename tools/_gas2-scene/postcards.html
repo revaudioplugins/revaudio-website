@@ -87,9 +87,9 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 
 /* the big letters of a 1950s large-letter card: a picture inside, a cream inline, an ink block behind */
 .big { position: absolute; left: 0; right: 0; margin: 0; text-align: center; font: 700 19.5cqw/1 Oswald; letter-spacing: .015em; text-transform: uppercase; z-index: 2; }
-.big .bk { position: absolute; inset: 0; color: var(--ink); -webkit-text-stroke: .085em var(--ink);
+.big .bk, .turn .bk { position: absolute; inset: 0; color: var(--ink); -webkit-text-stroke: .085em var(--ink);
   text-shadow: .03em .03em 0 var(--ink), .055em .055em 0 var(--ink), .08em .08em 0 var(--ink), .1em .11em .06em rgba(36, 26, 18, .35); }
-.big .fr { position: relative; color: transparent; -webkit-text-fill-color: transparent; -webkit-background-clip: text; background-clip: text;
+.big .fr, .turn .fr { position: relative; color: transparent; -webkit-text-fill-color: transparent; -webkit-background-clip: text; background-clip: text;
   -webkit-text-stroke: .024em var(--cream); }
 .script { position: absolute; left: 0; right: 0; margin: 0; text-align: center; font: 400 9.2cqw/1 Yellowtail; color: var(--red); transform: rotate(-5deg); z-index: 3; }
 
@@ -165,11 +165,17 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .photo { position: absolute; left: 7cqw; right: 7cqw; top: 13cqw; aspect-ratio: 3 / 2; border: 1.6cqw solid #f6eedc; transform: rotate(-1.4deg); z-index: 2;
   box-shadow: 0 0 0 1px rgba(110, 86, 52, .3); background: #e8d6b0 url(props/poster-level.webp) center / cover; }
 .pc-hear .big { top: 51cqh; font-size: 21cqw; }
-.pc-hear .big .fr { background-image: radial-gradient(rgba(255, 220, 190, .28) 18%, transparent 22%), linear-gradient(180deg, #d04a2c, #a52a17); background-size: .09em .09em, 100% 100%; }
+.pc-hear .big .fr, .pc-hear .turn .fr { background-image: radial-gradient(rgba(255, 220, 190, .28) 18%, transparent 22%), linear-gradient(180deg, #d04a2c, #a52a17); background-size: .09em .09em, 100% 100%; }
 .hline { position: absolute; left: 8cqw; right: 8cqw; top: 70cqh; margin: 0; text-align: center; font: 450 4.7cqw/1.38 Inter; z-index: 2; }
 .turn { position: absolute; left: 50%; bottom: 7cqw; transform: translateX(-50%); z-index: 6; display: inline-flex; align-items: center; gap: 1.6cqw;
   min-height: 44px; padding: 0 3cqw; font: 600 3.6cqw/1 Oswald; letter-spacing: .16em; text-transform: uppercase; color: var(--red); white-space: nowrap; }
 .turn svg { width: 4.6cqw; height: 4.6cqw; }
+.pc-hear .front .turn { left: 0; right: 0; bottom: 5.2cqw; width: max-content; margin: auto; transform: none; gap: 2.2cqw; padding: 1cqw 2.4cqw 1.8cqw;   /* round 3: in HEAR IT's letters */
+  font: 700 9.4cqw/1 Oswald; letter-spacing: .02em; color: var(--red); }
+.pc-hear .front .turn svg { width: 7.4cqw; height: 7.4cqw; stroke-width: 2.8; filter: drop-shadow(.06em .06em 0 var(--ink)); }
+.turn .tt { position: relative; }
+.pc-hear.top:not(.flipped) .front .turn { animation: beckon 2.6s 1s ease-in-out infinite; }      /* in step with the curling corner */
+@keyframes beckon { 0%, 70%, 100% { rotate: 0deg; scale: 1; } 82% { rotate: -2.5deg; scale: 1.07; } 91% { rotate: 1deg; scale: 1.02; } }
 .curl { position: absolute; right: 0; bottom: 0; width: 10cqw; height: 10cqw; z-index: 6; pointer-events: none;
   background: linear-gradient(315deg, var(--stock-2) 0 47%, transparent 48%), linear-gradient(135deg, transparent 0 48%, #d8c8a2 50%, #f3e9d2 58%, #e0cfa8 100%);
   border-top-left-radius: 2cqw; filter: drop-shadow(-.4cqw -.4cqw .6cqw rgba(60, 40, 20, .25)); transform-origin: 100% 100%; }
@@ -215,41 +221,56 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .arm { position: absolute; left: 11.25cqw; top: 87.2cqw; width: 80cqw; height: 17cqw; z-index: 5; transform-origin: 66cqw 8cqw; pointer-events: none; will-change: transform; }
 .arm svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .arm.shade { z-index: 4; opacity: .5; filter: blur(.42cqw); }
-.dymo { position: absolute; left: 8.5cqw; top: 105.5cqw; margin: 0; z-index: 6; display: flex; align-items: center; gap: 1.4cqw;   /* label-maker tape */
-  padding: 1.1cqw 2.2cqw 1.2cqw; border-radius: .5cqw; rotate: -1.8deg; color: #fdf8f0; background: linear-gradient(180deg, #cf3b2c, #ab2519 52%, #921d12);
-  font: 600 3.8cqw/1 Oswald; letter-spacing: .17em; text-transform: uppercase; text-shadow: 0 .16cqw 0 rgba(60, 6, 0, .55), 0 -.1cqw 0 rgba(255, 255, 255, .3);
-  box-shadow: .3cqw .5cqw .8cqw rgba(30, 10, 4, .42), inset 0 .22cqw 0 rgba(255, 255, 255, .32), inset 0 -.2cqw 0 rgba(0, 0, 0, .22); }
-.dymo svg { width: 3.4cqw; height: 3.4cqw; }
-.legend, .pc-hear .fine { position: absolute; margin: 0; z-index: 6; font: 600 3.1cqw/1.2 Oswald; letter-spacing: .1em; text-transform: uppercase;
-  color: rgba(38, 34, 30, .84); text-shadow: 0 .14cqw 0 rgba(255, 255, 255, .55); }        /* engraved in the plate */
-.legend { left: 5cqw; right: 5cqw; top: 115.2cqw; text-align: center; }
-.keys { position: absolute; left: 7cqw; right: 7cqw; top: 121.4cqw; z-index: 6; display: grid; grid-template-columns: 1fr 1fr; gap: 4cqw; }
-.keys button { display: flex; align-items: center; justify-content: center; gap: 2.2cqw; min-height: max(44px, 15cqw); padding: 0 2.4cqw; border-radius: 1.4cqw;
-  color: #f3eadb; background: linear-gradient(180deg, #3b3936, #242220 42%, #161514); font: 600 max(13px, 4.5cqw)/1 Oswald; letter-spacing: .1em; text-transform: uppercase;
-  box-shadow: 0 1.1cqw 0 #0a0908, .4cqw 2cqw 2cqw rgba(12, 6, 2, .5), inset 0 .25cqw 0 rgba(255, 255, 255, .16), inset 0 0 0 .2cqw rgba(0, 0, 0, .55);
-  transition: transform .09s, box-shadow .09s; }
-.keys button b { font-weight: 500; font-size: .66em; letter-spacing: .18em; opacity: .62; }
-.keys button i { flex: none; width: 2.8cqw; height: 2.8cqw; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #7c452c, #34190e);   /* the pilot lamp */
-  box-shadow: 0 0 0 .35cqw #8a857d, 0 0 0 .55cqw #1c1b1a; }
-.keys button[aria-pressed="true"] { transform: translateY(.8cqw);
-  box-shadow: 0 .3cqw 0 #0a0908, .2cqw .8cqw 1cqw rgba(12, 6, 2, .45), inset 0 .35cqw .7cqw rgba(0, 0, 0, .55), inset 0 0 0 .2cqw rgba(0, 0, 0, .55); }
-.keys button[aria-pressed="true"] i { background: radial-gradient(circle at 40% 35%, #ffd9a0, #e8892f 50%, #a5420f); box-shadow: 0 0 0 .35cqw #8a857d, 0 0 0 .55cqw #1c1b1a, 0 0 1.2cqw rgba(255, 140, 50, .55); }
-.playing .keys button[aria-pressed="true"] i { background: radial-gradient(circle at 40% 35%, #fff6d8, #ffb04a 45%, #f06a1c);
-  box-shadow: 0 0 0 .35cqw #8a857d, 0 0 0 .55cqw #1c1b1a, 0 0 2.8cqw #ff8a2e, 0 0 .8cqw #ffd08a; }
-.loading .keys button[aria-pressed="true"] i { animation: blink .7s steps(2, jump-none) infinite; }
+@property --peel { syntax: "<length>"; inherits: true; initial-value: 0px; }
+.sticker { position: absolute; left: 8.5cqw; top: 101.4cqw; width: 38cqw; height: 15.4cqw; z-index: 3; rotate: -5deg; --peel: 2.6cqw;   /* a die-cut vinyl sticker (round 3), under the arm */
+  filter: drop-shadow(.25cqw .45cqw .35cqw rgba(30, 14, 4, .4)); }
+.sticker .sk { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 1.3cqw; border-radius: 1.8cqw; overflow: hidden;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .3), transparent 44%), linear-gradient(160deg, #ffd463, #f2b23c 60%, #e39a2a);
+  box-shadow: inset 0 0 0 .9cqw #fbf8f1, inset 0 0 0 1.25cqw #b8341e; clip-path: polygon(0 0, calc(100% - var(--peel)) 0, 100% var(--peel), 100% 100%, 0 100%); }
+.sticker .sk::after { content: ""; position: absolute; inset: 0; background: linear-gradient(115deg, transparent 38%, rgba(255, 255, 255, .6) 50%, transparent 62%) 160% 0 / 300% 100% no-repeat; }
+.sticker svg { flex: none; width: 5.6cqw; height: 7.4cqw; color: #b8341e; }
+.sticker p { margin: 0; display: grid; font: 700 6.8cqw/.92 Oswald; letter-spacing: .02em; text-transform: uppercase; color: #241a12; }
+.sticker p span { font: 600 3.1cqw/1.15 Oswald; letter-spacing: .3em; color: #b8341e; }
+.sticker .flap { position: absolute; top: 0; right: 0; width: var(--peel); height: var(--peel); filter: drop-shadow(-.3cqw .5cqw .35cqw rgba(20, 10, 4, .35)); }
+.sticker .flap::before { content: ""; position: absolute; inset: 0; border-bottom-left-radius: 45%; clip-path: polygon(0 0, 100% 100%, 0 100%);   /* its back, curling up */
+  background: linear-gradient(225deg, #fffefb, #ebe7de 45%, #c4beb2); }
+.pc-hear.flipped.top .sticker { animation: peel 5.6s 2s ease-in-out infinite; }
+.pc-hear.flipped.top .sticker .sk::after { animation: foil 6.5s 3s ease-in-out infinite; }
+@keyframes peel { 0%, 60%, 100% { --peel: 2.6cqw; } 72% { --peel: 4.8cqw; } 82% { --peel: 3.2cqw; } 89% { --peel: 3.8cqw; } }
+.legend { position: absolute; left: 5cqw; right: 5cqw; top: 120.4cqw; margin: 0; z-index: 6; text-align: center; font: 600 3.1cqw/1.2 Oswald; letter-spacing: .1em;
+  text-transform: uppercase; color: rgba(38, 34, 30, .84); text-shadow: 0 .14cqw 0 rgba(255, 255, 255, .55); }        /* engraved in the plate */
+.bank { position: absolute; left: 4.5cqw; top: 124.5cqw; width: 91cqw; height: 26.9cqw; z-index: 5; pointer-events: none;   /* the switch bank, rendered (make-deck.py) */
+  background: url(postcards/img/deck-bank.webp) 0 0 / 100% 100%; }
+.pilot { position: absolute; top: 128.35cqw; width: 1.7cqw; height: 1.7cqw; z-index: 6; border-radius: 50%; pointer-events: none;   /* the jewel lamps */
+  background: radial-gradient(circle at 38% 34%, rgba(255, 220, 170, .45) 0 14%, transparent 24%), radial-gradient(circle at 50% 55%, #6b2f12, #2a1006 75%);
+  box-shadow: inset 0 0 0 .12cqw rgba(0, 0, 0, .5); transition: background .12s, box-shadow .12s; }
+.pilot.a { left: 27.65cqw; }
+.pilot.b { left: 70.65cqw; }
+.pilot.on { background: radial-gradient(circle at 38% 34%, #fff8e6 0 16%, transparent 26%), radial-gradient(circle at 50% 55%, #ffb24a, #e8661c 70%, #9c3a0c);
+  box-shadow: 0 0 1.4cqw rgba(255, 138, 46, .7), 0 0 .5cqw rgba(255, 200, 120, .8); }
+.playing .pilot.on { box-shadow: 0 0 2.8cqw #ff8a2e, 0 0 .9cqw #ffd08a; }
+.loading .pilot.on { animation: blink .7s steps(2, jump-none) infinite; }
 @keyframes blink { 50% { filter: brightness(.45); } }
-.pc-hear .fine { left: 7cqw; top: 141.6cqw; font-weight: 500; font-size: 2.8cqw; line-height: 1.32; letter-spacing: .08em; color: rgba(38, 34, 30, .8); }
-.maker { position: absolute; right: 7cqw; top: 141cqw; z-index: 6; display: grid; justify-items: center; gap: .6cqw; padding: 1.2cqw 2.6cqw 1.1cqw; border-radius: .7cqw;
+.keys { position: absolute; left: 7cqw; top: 130cqw; width: 86cqw; height: 19cqw; z-index: 6; display: grid; grid-template-columns: 1fr 1fr; }
+.keys button { position: relative; display: grid; place-content: center; color: #2b241d; background: url(postcards/img/deck-key-up.webp) 0 0 / 100% 100%;   /* ivory piano keys */
+  font: 600 max(13px, 4.4cqw)/1 Oswald; letter-spacing: .12em; text-transform: uppercase; }
+.keys button span { position: relative; display: flex; align-items: baseline; gap: 1.6cqw; text-shadow: 0 .1cqw 0 rgba(255, 252, 240, .55); transition: opacity .06s; }   /* printed on the key */
+.keys button b { font-weight: 500; font-size: .62em; letter-spacing: .2em; opacity: .7; }
+.keys button[aria-pressed="true"], .keys button.press { background-image: url(postcards/img/deck-key-down.webp); }   /* latched in / under the finger */
+.keys button[aria-pressed="true"] span, .keys button.press span { opacity: .8; }
+.keys button:focus-visible { outline-offset: -1.2cqw; }
+.maker { position: absolute; right: 7cqw; top: 105.5cqw; z-index: 6; display: grid; justify-items: center; gap: .6cqw; padding: 1.2cqw 2.6cqw 1.1cqw; border-radius: .7cqw;
   background: linear-gradient(170deg, #2e2c29, #121110); color: #eadfca; font: 600 1.9cqw/1 Oswald; letter-spacing: .34em; text-transform: uppercase;
   box-shadow: 0 0 0 .3cqw #a39e95, 0 0 0 .45cqw #3b3835, .3cqw .5cqw .9cqw rgba(0, 0, 0, .4); }    /* the maker's badge */
 .maker b { font: 700 4.1cqw/1 Oswald; letter-spacing: .05em; text-transform: none; }
-.fail { position: absolute; left: 5cqw; right: 5cqw; top: 114.6cqw; margin: 0; z-index: 7; text-align: center; font: 600 3.1cqw/1.2 Inter; color: #a0230f; }
+.fail { position: absolute; left: 5cqw; right: 5cqw; top: 120.2cqw; margin: 0; z-index: 7; text-align: center; font: 600 3.1cqw/1.2 Inter; color: #a0230f; }
 .fail:not([hidden]) + .legend { visibility: hidden; }
-.pc-hear .back .turn { left: auto; right: 4.2cqw; top: 4.2cqw; bottom: auto; transform: none; z-index: 7; justify-content: center; width: max(44px, 12.5cqw);
-  height: max(44px, 12.5cqw); min-height: 0; padding: 0; border-radius: 50%; color: #34302b; background: radial-gradient(circle at 38% 32%, #fdfcf8, #d2cdc4 46%, #8d8880);
-  box-shadow: .4cqw .7cqw 1.1cqw rgba(20, 12, 6, .45), inset 0 -.4cqw .6cqw rgba(0, 0, 0, .22), 0 0 0 .3cqw rgba(48, 44, 40, .5); }
-.pc-hear .back .turn svg { width: 5.6cqw; height: 5.6cqw; }
-.pc-hear .back .turn span { position: absolute; top: calc(100% + 1.4cqw); font: 600 2.6cqw/1 Oswald; letter-spacing: .2em; color: rgba(38, 34, 30, .82); text-shadow: 0 .12cqw 0 rgba(255, 255, 255, .5); }
+.pc-hear .back .turn { left: auto; right: 3.4cqw; top: 3.4cqw; bottom: auto; transform: none; z-index: 7; justify-content: center; width: max(44px, 11cqw);   /* small (round 3) */
+  height: max(44px, 11cqw); min-height: 0; padding: 0; color: #3a3632; }
+.pc-hear .back .turn::before { content: ""; position: absolute; left: 50%; top: 50%; z-index: -1; width: 7.6cqw; height: 7.6cqw; translate: -50% -50%; border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, #fdfcf8, #d2cdc4 46%, #8d8880); box-shadow: .3cqw .5cqw .8cqw rgba(20, 12, 6, .45), inset 0 -.3cqw .5cqw rgba(0, 0, 0, .22), 0 0 0 .25cqw rgba(48, 44, 40, .5); }
+.pc-hear .back .turn svg { width: 3.9cqw; height: 3.9cqw; }
+.pc-hear .back .turn span { position: absolute; top: calc(50% + 5cqw); font: 600 2.2cqw/1 Oswald; letter-spacing: .2em; color: rgba(38, 34, 30, .8); text-shadow: 0 .12cqw 0 rgba(255, 255, 255, .5); }
 
 /* ── 6 · the postcard back: the address lines take the email, MAIL ME THE KEYS drops it in the box ── */
 .pc-mail .pchead { position: absolute; left: 7cqw; right: 7cqw; top: 6cqw; padding-bottom: 2.6cqw; border-bottom: 1px solid rgba(36, 26, 18, .5);
@@ -402,7 +423,8 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 
 @media (prefers-reduced-motion: reduce) {
   .pc.nudge, .pc-hear.top:not(.flipped) .curl, .box.gulp, .rd .cta::after, .pc-grade.top .rays, .pc-hello.top .pic .lamp, .g-pre.top .badge::after,
-  .send.thump .ink, .send.nope .ink, .pc-mail.jolt, .desk.sent .rd .ticket, .loading .keys button[aria-pressed="true"] i { animation: none !important; }
+  .send.thump .ink, .send.nope .ink, .pc-mail.jolt, .desk.sent .rd .ticket, .loading .pilot.on,
+  .pc-hear.top:not(.flipped) .front .turn, .pc-hear.flipped.top .sticker, .pc-hear.flipped.top .sticker .sk::after { animation: none !important; }
   .flip, .box, .end, .opt .tick path { transition-duration: .01s !important; transition-delay: 0s !important; }
 }
 </style>
@@ -472,7 +494,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
             <div class="photo" role="img" aria-label="Poster: Fill it up. Same level."></div>
             <h2 class="big"><span class="bk" aria-hidden="true">Hear it</span><span class="fr">Hear it</span></h2>
             <p class="hline">The same song, the same level.<br>One side is GAS 2.</p>
-            <button class="turn" type="button" data-turn><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>Turn it over</button>
+            <button class="turn" type="button" data-turn><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg><span class="tt"><span class="bk" aria-hidden="true">Turn it over</span><span class="fr">Turn it over</span></span></button>
             <i class="curl" aria-hidden="true"></i>
             <i class="age" aria-hidden="true"></i>
           </section>
@@ -558,14 +580,14 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
               </g>
               <circle r="3.4" fill="#1e1d1c"/><circle r="2.5" fill="url(#amCap)"/><circle r=".55" fill="#3b3936"/>
             </svg></div>
-            <p class="dymo">Tap the record<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20V5M5.5 11.5L12 5l6.5 6.5"/></svg></p>
+            <div class="sticker" id="sticker" aria-hidden="true"><div class="sk"><svg viewBox="0 0 20 26"><path d="M10 0l10 11h-6v15H6V11H0z" fill="currentColor"/></svg><p><span>Tap the</span>Record</p></div><i class="flap"></i></div>
             <p class="fail" id="fail" role="status" hidden>The demo didn't load. Tap the record to try again.</p>
             <p class="legend">Same song, same loudness: switch while it plays</p>
+            <i class="bank" aria-hidden="true"></i><i class="pilot a" data-side="a" aria-hidden="true"></i><i class="pilot b on" data-side="b" aria-hidden="true"></i>
             <div class="keys ab" role="group" aria-label="Which side plays">
-              <button type="button" data-side="a" aria-pressed="false"><i></i><b aria-hidden="true">A</b>Original</button>
-              <button type="button" data-side="b" aria-pressed="true"><i></i><b aria-hidden="true">B</b>GAS 2</button>
+              <button type="button" data-side="a" aria-pressed="false"><span><b aria-hidden="true">A</b>Original</span></button>
+              <button type="button" data-side="b" aria-pressed="true"><span><b aria-hidden="true">B</b>GAS 2</span></button>
             </div>
-            <p class="fine">Hip-hop demo · GAS 2 Premium at 140 %<br>both sides −11.0 LUFS</p>
             <span class="maker" aria-hidden="true">RevAudio<b>Hi-Fi</b></span>
             <button class="turn" type="button" data-turn aria-label="Turn back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg><span aria-hidden="true">Turn</span></button>
           </section>
@@ -680,6 +702,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   const SPRING = 'cubic-bezier(.2, 1, .3, 1)';
   const POP = [{ opacity: 0, scale: .8 }, { opacity: 1, offset: .5 }, { scale: 1.04, offset: .75 }, { opacity: 1, scale: 1 }];
   const THUMP = [{ opacity: 0, scale: 1.7 }, { opacity: 1, offset: .55 }, { scale: .95, offset: .8 }, { opacity: 1, scale: 1 }];
+  const SLAP = [{ opacity: 0, scale: 1.5, rotate: '-17deg' }, { opacity: 1, offset: .35 }, { scale: .95, rotate: '-3.5deg', offset: .7 }, { opacity: 1, scale: 1, rotate: '-5deg' }];
   function arrive(c, wait) {
     if (reduce) return;
     const a = (sel, kf, duration, delay, easing) => {
@@ -693,6 +716,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
       a('.badge', THUMP, 420, 640);
     } else if (c === hear) {
       if (!hear.classList.contains('flipped')) a('.front .big', POP, 560, 180);
+      else a('.sticker', SLAP, 560, 380);                       // the sticker, slapped on
     } else if (c.classList.contains('pc-mail')) {
       a('.pmark', THUMP, 380, 420);
     } else {
@@ -800,7 +824,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   stack.addEventListener('pointercancel', release);
 
   function tap(c, at) {
-    if (at.closest('#player')) return;                // the turntable's own taps: only its Turn button turns it back
+    if (at.closest('#player')) { if (at.closest('.sticker')) deck.start(); return; }   // the turntable's own taps (the sticker = play); its Turn button turns it back
     if (c === hear) return turn();
     if (c.classList.contains('pc-mail')) return;
     c.classList.remove('nudge'); void c.offsetWidth; if (!reduce) c.classList.add('nudge');   // "flick me"
@@ -829,6 +853,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
       void flipEl.offsetWidth;
       flipEl.style.transition = 'transform .5s var(--ease-settle)';
       flipEl.style.transform = 'rotateY(0deg)';
+      if (f) $('sticker').animate(SLAP, { duration: 560, delay: 300, easing: SPRING, fill: 'backwards' });   // stuck on as the deck comes round
       setTimeout(() => { turning = false; }, 500);
     }, 220);
   }
@@ -960,7 +985,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
       }
       ca.putImageData(ia, 0, 0); cb.putImageData(ib, 0, 0);
     }
-    return { power, press, toggle: () => (mode === 'cue' || mode === 'play' ? home() : cue()), LEAD, RUN,
+    return { power, press, toggle: () => (mode === 'cue' || mode === 'play' ? home() : cue()), start: () => (mode === 'rest' || mode === 'home') && cue(), LEAD, RUN,
       get angle() { return a; }, get speed() { return w; }, get lift() { return h; }, get mode() { return mode; } };
   })();
 
@@ -988,6 +1013,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
       back.classList.toggle('playing', on);
       $('play').setAttribute('aria-label', on ? 'Stop the demo' : 'Play the demo');
       back.querySelectorAll('.ab button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.side === side)));
+      back.querySelectorAll('.pilot').forEach((p) => p.classList.toggle('on', p.dataset.side === side));
     };
     function ready() {                                           // in the tap (iOS only starts sound there), then the demo loads
       if (navigator.audioSession) { try { navigator.audioSession.type = 'playback'; } catch (e) {} }   // plays with the ring switch on silent
@@ -1022,12 +1048,38 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
       const t = ac.currentTime;
       [[gA, s === 'a'], [gB, s === 'b']].forEach(([g, up]) => { g.gain.cancelScheduledValues(t); g.gain.setValueAtTime(g.gain.value, t); g.gain.linearRampToValueAtTime(up ? 1 : 0, t + .03); });
     }
-    return { warm, ready, start, stop, set, get on() { return on; }, get side() { return side; },
+    const clicks = [];
+    function tick(k) {                                           // the keys' works: 0 = one goes down, 1 = it latches and the other lets go
+      ctx(); if (ac.state !== 'running') ac.resume();
+      if (!clicks[k]) {
+        const sr = ac.sampleRate, n = Math.round(sr * .09), b = ac.createBuffer(1, n, sr), d = b.getChannelData(0);
+        for (let i = 0; i < n; i++) {
+          const s = i / sr;
+          d[i] = (Math.random() * 2 - 1) * Math.exp(-s * (k ? 170 : 300)) * (k ? .55 : .3) + Math.sin(2 * Math.PI * (k ? 150 : 210) * s) * Math.exp(-s * 70) * (k ? .45 : .2);
+          if (k && s > .028) d[i] += (Math.random() * 2 - 1) * Math.exp(-(s - .028) * 260) * .3;
+        }
+        clicks[k] = b;
+      }
+      const s = ac.createBufferSource(), g = ac.createGain();
+      s.buffer = clicks[k]; g.gain.value = .3; s.connect(g); g.connect(ac.destination); s.start();
+    }
+    return { warm, ready, start, stop, set, tick, get on() { return on; }, get side() { return side; },
       get played() { return on ? Math.max(0, ac.currentTime - t0) : 0; },                                // s since the needle landed
       get pos() { return on ? Math.max(0, ac.currentTime - t0) % bufs[0].duration / bufs[0].duration : 0; } };   // 0-1 through the song
   })();
   $('play').addEventListener('click', () => deck.toggle());
-  $('player').querySelectorAll('.ab button').forEach((b) => b.addEventListener('click', () => audio.set(b.dataset.side)));
+  const buzz = () => {                                           // a tick under the finger: Android vibrates; iOS 18 ticks when a switch toggles
+    if (navigator.vibrate) { navigator.vibrate(8); return; }
+    const l = document.createElement('label'), i = document.createElement('input');
+    i.type = 'checkbox'; i.setAttribute('switch', ''); l.hidden = true; l.append(i);
+    document.head.append(l); l.click(); l.remove();
+  };
+  $('player').querySelectorAll('.ab button').forEach((b) => {     // the keys (Dan, round 3: "feel real"): down under the finger, a clack as one latches
+    const up = () => b.classList.remove('press');
+    b.addEventListener('pointerdown', () => { b.classList.add('press'); audio.tick(0); });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach((t) => b.addEventListener(t, up));
+    b.addEventListener('click', () => { if (audio.side !== b.dataset.side) { audio.tick(1); buzz(); } audio.set(b.dataset.side); });
+  });
   document.addEventListener('visibilitychange', () => deck.power(!document.hidden && cards[cur] === hear && hear.classList.contains('flipped')));
 
   // ── MAIL ME THE KEYS: check the address, then the card goes into the box (a dummy: nothing is sent) ──

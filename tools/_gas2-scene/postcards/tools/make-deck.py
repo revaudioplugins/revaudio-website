@@ -26,11 +26,11 @@ ux, uy = (xx + .5) / SC, (yy + .5) / SC       # card units
 rgb = lambda *c: np.array(c, np.float32) / 255
 
 
-def box(a, r, axis):
+def box(a, r, axis, mode="reflect"):
     """Box blur along one axis; three passes come close to a gaussian. Brushed metal = noise smeared one way."""
     pad = [(0, 0), (0, 0)]
     pad[axis] = (r + 1, r)
-    c = np.cumsum(np.pad(a, pad, mode="reflect"), axis=axis, dtype=np.float64)
+    c = np.cumsum(np.pad(a, pad, mode=mode), axis=axis, dtype=np.float64)
     n = a.shape[axis]
     if axis == 1:
         return (c[:, 2 * r + 1:2 * r + 1 + n] - c[:, :n]).astype(np.float32) / (2 * r + 1)
@@ -188,3 +188,129 @@ im.save(tmp)
 subprocess.run(["cwebp", "-quiet", "-q", "80", "-m", "6", tmp, "-o", os.path.join(OUT, "deck.webp")], check=True)
 os.remove(tmp)
 print("deck.webp", im.size, os.path.getsize(os.path.join(OUT, "deck.webp")) // 1024, "KB")
+
+# ── the switch bank (round 3, Dan: "I want the buttons to feel real"): a satin aluminium escutcheon with two openings and
+#    two pilot-lamp sockets, a black key in each opening (a dished top, rounded edges), lit like the deck (the lamp at the
+#    top left, 48° up): a height field, shaded, with its shadows, drawn at 2x and halved. Three pictures: the bank with both
+#    keys down (deck-bank.webp) and one key's opening with a margin of bezel, up and down (deck-key-up / -down.webp). The
+#    page lays a key picture over each opening; the bank repeats every 43 units, so one pair serves A and B ──
+BX0, BY0, BX1, BY1 = 4.5, 124.5, 95.5, 151.4      # the picture, card units
+BEZ = (6.5, 126, 93.5, 149.5)                      # the escutcheon
+OPEN = [(9, 132, 48, 147), (52, 132, 91, 147)]     # the openings; each key sits .55 in
+LAMPS = [(28.5, 129.2), (71.5, 129.2)]
+REGION = (7, 130, 50, 149)                         # key A's picture (B's is 43 to the right)
+UP, DOWN = 4, -.6                                  # the key tops: out of the bezel (face at 1.0) / latched in below it
+KEY, BEZEL = rgb(222, 212, 188), .16               # ivory keys (their shading reads), a graphite escutcheon
+S2, EL = 20, math.radians(40)                      # px a unit while drawing; the lamp's height (the deck's shadows)
+LV = np.array([-.6 * math.cos(EL), -.8 * math.cos(EL), math.sin(EL)], np.float32)
+HV = (LV + [0, 0, 1]) / np.linalg.norm(LV + [0, 0, 1])
+
+
+def sd_rrect(x, y, x0, y0, x1, y1, r):
+    """Signed distance to a rounded rectangle, card units (negative inside)."""
+    cx, cy, hx, hy = (x0 + x1) / 2, (y0 + y1) / 2, (x1 - x0) / 2 - r, (y1 - y0) / 2 - r
+    qx, qy = np.abs(x - cx) - hx, np.abs(y - cy) - hy
+    return np.hypot(np.maximum(qx, 0), np.maximum(qy, 0)) + np.minimum(np.maximum(qx, qy), 0) - r
+
+
+def vnoise(w, h, cell, octaves=2):
+    """Value noise 0-1, cells cell px across (the bezel's bead-blasted grain)."""
+    out, amp, tot = np.zeros((h, w), np.float32), 1.0, 0.0
+    for o in range(octaves):
+        c = cell / 2 ** o
+        g = rng.random((max(2, int(h / c) + 2), max(2, int(w / c) + 2))).astype(np.float32)
+        out += np.asarray(Image.fromarray(g, "F").resize((w, h), Image.BICUBIC)) * amp
+        tot, amp = tot + amp, amp * .5
+    out /= tot
+    return (out - out.min()) / (out.max() - out.min() + 1e-6)
+
+
+def soft(a, r):
+    """Three box blurs each way: close to a gaussian (PIL won't blur float pictures)."""
+    for _ in range(3):
+        a = box(box(a, r, 1), r, 0)
+    return a
+
+
+def bank(top):
+    w, h = round((BX1 - BX0) * S2), round((BY1 - BY0) * S2)
+    gy, gx = np.mgrid[0:h, 0:w].astype(np.float32)
+    x, y = BX0 + (gx + .5) / S2, BY0 + (gy + .5) / S2
+    Z, M = np.zeros((h, w), np.float32), np.zeros((h, w), np.int8)   # M: 0 plate 1 bezel 2 chrome 3 hole 4 floor 5 key
+    db = sd_rrect(x, y, *BEZ, 1.6)
+    inb = db < 0
+    Z[inb], M[inb] = np.clip(.35 + .65 * -db[inb] / .5, .35, 1), 1   # a chamfered rim
+    for x0, y0, x1, y1 in OPEN:
+        do = sd_rrect(x, y, x0, y0, x1, y1, 1.2)
+        ch = (do >= 0) & (do < .22) & inb
+        Z[ch] = np.minimum(Z[ch], .75 + .25 * do[ch] / .22)            # the opening's lip
+        Z[do < 0], M[do < 0] = -3, 4                                      # its floor, deep down
+        k = (x0 + .55, y0 + .55, x1 - .55, y1 - .55)
+        e, cy, hh, fr = -sd_rrect(x, y, *k, .8), (k[1] + k[3]) / 2, (k[3] - k[1]) / 2, .9
+        t = top - .45 * (1 - ((y - cy) / hh) ** 2)                        # dished across, like a piano key
+        z = np.where(e < fr, t - fr + np.sqrt(np.clip(fr * fr - (fr - e) ** 2, 0, None)), t)
+        Z[e > 0], M[e > 0] = z[e > 0], 5
+    for lx, ly in LAMPS:
+        rr = np.hypot(x - lx, y - ly)
+        ring = (rr >= .85) & (rr < 1.35)
+        Z[ring], M[ring] = 1 + .35 * np.sin(np.pi * (rr[ring] - .85) / .5), 2
+        Z[rr < .85], M[rr < .85] = .45, 3
+    gzx = np.clip(np.gradient(Z, axis=1) * S2, -3, 3)
+    gzy = np.clip(np.gradient(Z, axis=0) * S2, -3, 3)
+    nl = np.sqrt(gzx ** 2 + gzy ** 2 + 1)
+    nx, ny, nz = -gzx / nl, -gzy / nl, 1 / nl
+    ndl = np.clip(nx * LV[0] + ny * LV[1] + nz * LV[2], 0, 1)
+    ndh = np.clip(nx * HV[0] + ny * HV[1] + nz * HV[2], 0, 1)
+    rx, ry, rz = 2 * nz * nx, 2 * nz * ny, 2 * nz * nz - 1                # the mirror direction, seen from straight above
+    env = .15 + .3 * np.clip(rz, 0, 1) ** 2 + 1.7 * np.clip(rx * LV[0] + ry * LV[1] + rz * LV[2], 0, 1) ** 28
+    occ = np.zeros((h, w), bool)                                           # shadows: march toward the lamp
+    tan = math.tan(EL)
+    for k in range(1, 172):
+        a, b = round(.8 * k), round(.6 * k)
+        src = np.zeros_like(Z)
+        src[a:, b:] = Z[:h - a, :w - b]
+        occ |= src > Z + k / S2 * tan + 1e-3
+    sh = 1 - soft(occ.astype(np.float32), 2)
+    zb = soft(Z, 7)
+    ao = np.clip(1 - .45 * np.clip(zb - Z, 0, None), .28, 1)
+    P43 = round(43 * S2)                                                   # brushed side to side, repeating every 43 units
+    g = rng.standard_normal((h, P43)).astype(np.float32)
+    for _ in range(3):
+        g = box(g, 30, 1, "wrap")
+    brush = np.tile(g / g.std(), (1, w // P43 + 1))[:, :w]
+    lamp = np.clip(rx * LV[0] + ry * LV[1] + rz * LV[2], 0, 1)             # how straight the lamp mirrors in
+    sky = .14 + .26 * np.clip(rz, 0, 1) ** 2
+    lit = (.3 + .8 * ndl * sh) * ao
+    alu = (BEZEL * (1 + .025 * brush) * lit + .55 * lamp ** 10 * sh + .1 * sky)[..., None] * rgb(255, 250, 242)
+    chrome = np.clip(.05 + .85 * sky + 2.2 * lamp ** 10 * sh, 0, 1.2)[..., None] * rgb(250, 248, 244)
+    F = .05 + .95 * (1 - nz) ** 5                                          # glossy plastic: the lamp shows on its edges
+    key = KEY * lit[..., None] + (F * (sky + 4 * lamp ** 4 + 24 * lamp ** 24 * sh) * ao)[..., None] * rgb(255, 252, 248)
+    col = np.select([(M == 1)[..., None], (M == 2)[..., None], (M == 3)[..., None], (M == 4)[..., None], (M == 5)[..., None]],
+                    [alu, chrome, rgb(10, 8, 6) * np.ones_like(alu), (.012 * ao)[..., None] * np.ones_like(alu), key], 0)
+    al = np.where(M > 0, 1, np.clip(.55 * (1 - sh) + .25 * (1 - ao), 0, .75)).astype(np.float32)   # off the bank: its shadow
+    col = np.clip(col * rgb(263, 255, 243), 0, 1)
+    im = Image.fromarray(np.dstack([col * al[..., None], al]).astype(np.float32).__mul__(255).round().astype(np.uint8), "RGBA")
+    return im.reduce(2)                                                    # premultiplied, halved: 10 px a unit
+
+
+def save(im, name, q=82):
+    a = np.asarray(im, np.float32) / 255                                   # un-premultiply before encoding
+    rgba = np.dstack([a[..., :3] / np.maximum(a[..., 3:], 1e-6), a[..., 3]])
+    im = Image.fromarray(np.clip(rgba * 255 + .5, 0, 255).astype(np.uint8), "RGBA")
+    tmp = os.path.join(OUT, "_tmp.png")
+    im.save(tmp)
+    subprocess.run(["cwebp", "-quiet", "-q", str(q), "-alpha_q", "90", "-m", "6", tmp, "-o", os.path.join(OUT, name)], check=True)
+    os.remove(tmp)
+    print(name, im.size, os.path.getsize(os.path.join(OUT, name)) // 1024, "KB")
+
+
+down, up = bank(DOWN), bank(UP)
+save(down, "deck-bank.webp")
+box_ = tuple(round((v - o) * 10) for v, o in zip(REGION, (BX0, BY0, BX0, BY0)))
+for im, name in ((up, "deck-key-up.webp"), (down, "deck-key-down.webp")):
+    c = np.asarray(im.crop(box_), np.float32).copy()
+    hh_, ww_ = c.shape[:2]
+    yy_, xx_ = np.mgrid[0:hh_, 0:ww_]
+    edge = np.minimum(np.minimum(xx_, ww_ - 1 - xx_), np.minimum(yy_, hh_ - 1 - yy_)) / 8   # fade over the outer .8 unit
+    c *= np.clip(edge, 0, 1)[..., None]                                    # premultiplied: fade all four channels
+    save(Image.fromarray(c.round().astype(np.uint8), "RGBA"), name)

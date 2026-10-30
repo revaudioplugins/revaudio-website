@@ -37,7 +37,7 @@ async function drag(p, dx, dy, ms, hold) {               // a finger-like drag w
   // ── layout: every card fits, nothing overflows, the controls are on screen ──
   for (const [w, h] of SIZES) {
     const p = await page(wk, w, h);
-    for (const q of ["?card=1", "?card=2", "?card=5&flip", "?card=6", "?card=7", "?card=7&sent"]) {
+    for (const q of ["?card=1", "?card=2", "?card=5", "?card=5&flip", "?card=6", "?card=7", "?card=7&sent"]) {
       await go(p, q);
       if (q.startsWith("?card=7")) {
         await p.waitForTimeout(1500);                    // the focus pull + the pop
@@ -65,21 +65,23 @@ async function drag(p, dx, dy, ms, hold) {               // a finger-like drag w
                  cardBottom: Math.round(top.bottom), ctlTop: Math.round(ctl.top), ctlBottom: Math.round(ctl.bottom), sendH: Math.round(send.height),
                  input: parseFloat(getComputedStyle(document.getElementById("em")).fontSize),
                  // the mail card, top to bottom: the TO line, the consent box, the stamp. The HEAR IT back (round 3): the record, the
-                 // label-maker tape, the legend, the keys, then the fine print beside the maker's badge; Turn back up in a corner
+                 // sticker (the maker's badge beside it), the legend, the keys; Turn back up in a corner. Its front: Turn it over, big
                  mail: [y(".addr"), y(".opt"), y(".send .ink")], hearCard: box("#hear"), keyH: Math.round(document.querySelector("#hear .keys button").getBoundingClientRect().height),
-                 hear: ["#hear .disc", "#hear .dymo", "#hear .legend", "#hear .keys", "#hear .back .fine", "#hear .maker", "#hear .back .turn"].map(box) };
+                 hear: ["#hear .disc", "#hear .sticker", "#hear .legend", "#hear .keys", "#hear .maker", "#hear .back .turn"].map(box),
+                 front: [box("#hear .front .hline"), box("#hear .front .turn")] };
       });
       const inOrder = (rows) => rows.every((r, i) => i === 0 || r[0] >= rows[i - 1][1] - 1);
       const deckOk = (() => {
-        const [disc, dymo, legend, keys, fine, maker, turn] = m.hear, c = m.hearCard, r = (disc[2] - disc[0]) / 2, cx = (disc[0] + disc[2]) / 2, cy = (disc[1] + disc[3]) / 2;
+        const [disc, sticker, legend, keys, maker, turn] = m.hear, c = m.hearCard, r = (disc[2] - disc[0]) / 2, cx = (disc[0] + disc[2]) / 2, cy = (disc[1] + disc[3]) / 2;
         const inside = m.hear.every((b) => b[0] >= c[0] - 1 && b[1] >= c[1] - 1 && b[2] <= c[2] + 1 && b[3] <= c[3] + 1);
-        const stacked = [disc, dymo, legend, keys].every((b, i, a) => i === 0 || b[1] >= a[i - 1][3] - 1) && keys[3] <= Math.min(fine[1], maker[1]) + 1 && fine[2] <= maker[0];
+        const stacked = [disc, sticker, legend, keys].every((b, i, a) => i === 0 || b[1] >= a[i - 1][3] - 1) && maker[0] >= sticker[2] && maker[3] <= legend[1] + 1;
         const turnClear = Math.hypot(Math.max(turn[0] - cx, 0, cx - turn[2]), Math.max(turn[1] - cy, 0, cy - turn[3])) > r;   // the corner button never sits on the record
         return inside && stacked && turnClear && m.keyH >= 44 && turn[2] - turn[0] >= 44;
       })();
       const pass = m.sw <= m.iw && m.card[0] >= 0 && m.card[1] >= 0 && m.cardBottom <= m.ctlTop + 2 && m.ctlBottom <= m.ih && m.input >= 16 &&
         (q !== "?card=6" || (inOrder(m.mail) && m.mail[2][1] <= m.cardBottom)) &&
-        (q !== "?card=5&flip" || deckOk);
+        (q !== "?card=5&flip" || deckOk) &&
+        (q !== "?card=5" || (m.front[1][1] >= m.front[0][3] - 1 && m.front[1][3] <= m.cardBottom && m.front[1][0] >= m.card[0] && m.front[1][2] <= m.card[0] + m.card[2] && m.front[1][3] - m.front[1][1] >= 44));
       out.layout.push({ size: `${w}x${h}`, q, pass, m });
       if (SHOTS) await p.screenshot({ path: `${SHOTS}/${w}x${h}-${q.replace(/[?&=]/g, "")}.png` });
     }
@@ -120,6 +122,11 @@ async function drag(p, dx, dy, ms, hold) {               // a finger-like drag w
   const f2 = await p.evaluate(() => ({ flipped: document.getElementById("hear").classList.contains("flipped"), grooves: document.getElementById("vinyl").width,
     speed: gas2Postcards.deck.speed, mode: gas2Postcards.deck.mode }));
   ok("the back up: the record is cut, the motor runs, the arm rests; a tap on the deck's body doesn't turn the card", f2.flipped && f2.grooves > 300 && f2.speed > 150 && f2.mode === "rest", f2);
+  const st = await p.evaluate(() => { const b = document.getElementById("sticker").getBoundingClientRect(); return { x: b.left + b.width * .4, y: b.top + b.height * .6 }; });
+  await p.mouse.click(st.x, st.y); await p.waitForTimeout(150);
+  const f3 = await p.evaluate(() => ({ mode: gas2Postcards.deck.mode, flipped: document.getElementById("hear").classList.contains("flipped") }));
+  ok("the sticker is a way in (round 3): a tap on it cues the record, the card stays turned", f3.mode === "cue" && f3.flipped, f3);
+  await p.waitForTimeout(2600);                              // WebKit here can't decode the demo: the arm goes home, the note says so
   await p.click("#hear .back [data-turn]"); await p.waitForTimeout(900);
   ok("Turn back shows the front again", !(await p.evaluate(() => document.getElementById("hear").classList.contains("flipped"))));
   await p.click("#next"); await p.waitForTimeout(700);
@@ -191,13 +198,15 @@ async function drag(p, dx, dy, ms, hold) {               // a finger-like drag w
   await a.waitForTimeout(1500);
   const d1 = await a.evaluate(() => ({ angle: gas2Postcards.deck.angle, lead: gas2Postcards.deck.LEAD, run: gas2Postcards.deck.RUN, speed: gas2Postcards.deck.speed, pos: gas2Postcards.audio.pos }));
   await a.click('#player .ab [data-side="a"]'); await a.waitForTimeout(200);
-  const s2 = await a.evaluate(() => ({ side: gas2Postcards.audio.side, on: gas2Postcards.audio.on, pressed: document.querySelector('#player [data-side="a"]').getAttribute("aria-pressed") }));
+  const s2 = await a.evaluate(() => { const o = (s) => /key-down/.test(getComputedStyle(document.querySelector(s)).backgroundImage) ? "in" : "out";
+    return { side: gas2Postcards.audio.side, on: gas2Postcards.audio.on, pressed: document.querySelector('#player .keys [data-side="a"]').getAttribute("aria-pressed"),
+      a: o('#player .keys [data-side="a"]'), b: o('#player .keys [data-side="b"]'), lamp: document.querySelector("#player .pilot.a").classList.contains("on") }; });
   await a.click("#play", { force: true }); await a.waitForTimeout(2500);   // force: a spinning record never holds still for Playwright
   const s3 = await a.evaluate(() => ({ on: gas2Postcards.audio.on, angle: gas2Postcards.deck.angle, speed: gas2Postcards.deck.speed, mode: gas2Postcards.deck.mode }));
   out.audio = { s1, d1, s2, s3 };
   ok("tap the record: the demo plays on GAS 2, it spins at 33 1/3, the arm is in the grooves and moving in", s1.on && s1.side === "b" && s1.label === "Stop the demo" &&
      d1.speed > 150 && d1.pos > 0 && d1.angle > d1.lead && d1.angle < d1.run, out.audio);
-  ok("ORIGINAL switches the side while it plays", s2.side === "a" && s2.on && s2.pressed === "true");
+  ok("ORIGINAL switches the side while it plays: its key latches in, GAS 2's comes up, its lamp lights", s2.side === "a" && s2.on && s2.pressed === "true" && s2.a === "in" && s2.b === "out" && s2.lamp, s2);
   ok("tap the record again: it stops, the arm lifts and goes back to its rest, the platter keeps turning", !s3.on && s3.angle < .5 && s3.mode === "rest" && s3.speed > 150, s3);
   await a.click("#hear .back [data-turn]"); await a.waitForTimeout(1800);
   const s4 = await a.evaluate(() => ({ flipped: document.getElementById("hear").classList.contains("flipped"), speed: gas2Postcards.deck.speed, on: gas2Postcards.audio.on }));
