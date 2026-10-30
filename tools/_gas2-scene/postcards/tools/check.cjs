@@ -207,13 +207,14 @@ async function drag(p, dx, dy, ms, hold) {               // a finger-like drag w
   await r.click("#next"); await r.waitForTimeout(100);
   const rm = { afterNext: await cur(r) };
   await r.goto(BASE + "?card=5"); await r.waitForTimeout(500);
-  await r.click("#hear .front [data-turn]"); await r.waitForTimeout(80);
-  rm.flippedAt80ms = await r.evaluate(() => document.getElementById("hear").classList.contains("flipped"));
+  await r.click("#hear .front [data-turn]"); await r.waitForTimeout(900);
+  rm.flipped = await r.evaluate(() => document.getElementById("hear").classList.contains("flipped"));
   rm.nudge = await r.evaluate(() => document.querySelectorAll(".pc.nudge").length);
   await r.waitForTimeout(600);
   rm.speed = await r.evaluate(() => gas2Postcards.deck.speed);
   out.reduced = rm;
-  ok("reduced motion: next + flip are instant, no nudge, the platter holds still", rm.afterNext === 1 && rm.flippedAt80ms && rm.nudge === 0 && rm.speed === 0, rm);
+  ok("reduced motion (Dan's iPhone): the hand's moves still happen (next, the turn), nothing moves by itself (no nudge, the idle record still)",
+     rm.afterNext === 1 && rm.flipped && rm.nudge === 0 && rm.speed === 0, rm);
   await r.context().close();
   await wk.close();
 

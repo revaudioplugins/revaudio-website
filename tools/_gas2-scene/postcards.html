@@ -659,7 +659,9 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   const $ = (id) => document.getElementById(id);
   const desk = $('desk'), stack = $('stack'), cards = [...stack.querySelectorAll('.pc')], N = cards.length;
   const hear = $('hear'), box = $('box'), hint = $('hint');
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // reduce = the phone asks for less motion: nothing moves by itself (dust, glints, the idle record, the hint's wiggle, the
+  // end page's pops), but what the visitor's own hand does still moves, calmer (Dan, 2026-10-30, on his iPhone: no card moved)
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches, Z = reduce ? 1.6 : 1;   // Z: more damping, no bounce
   // each card lies a little crooked, like a real stack; the top one straightens most of the way
   const LIE = [[-1.1, 0], [1.8, 3], [-1.6, -2], [2.3, 2], [-2, -3], [1.2, 1]];
   const NAMES = ['Greetings from GAS 2', 'Regular', 'Premium', 'Race', 'Hear it', 'Mail me the keys'];
@@ -746,8 +748,8 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
       c.style.visibility = 'visible';                     // every card still to come lies drawn under the stack (its pictures decoded early)
       c.style.willChange = d <= 3 ? 'transform' : '';      // the cards in sight (+ the one under them) keep their own layers: moving one never repaints it
       c.style.setProperty('--rest', rest(i, d));
-      const [ez, ms] = deal ? ['var(--ease-settle)', 560] : spring(0, .86, 15);
-      c.style.transition = anim && !reduce ? `transform ${ms}ms ${ez} ${deal ? (N - 1 - i) * 70 : 0}ms, opacity .3s` : 'none';
+      const [ez, ms] = deal ? ['var(--ease-settle)', 560] : spring(0, reduce ? 1 : .86, 15);
+      c.style.transition = anim ? `transform ${ms}ms ${ez} ${deal ? (N - 1 - i) * 70 : 0}ms, opacity .3s` : 'none';
       c.style.transform = rest(i, d);
       c.style.opacity = '';
     });
@@ -803,8 +805,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     const gone = () => { c.style.transform = c._gone; if (cards.indexOf(c) < cur) { c.style.visibility = 'hidden'; c.style.willChange = ''; } };
     c._gone = `translate3d(${f.x + dx * dist}px, ${f.y + dy * dist}px, 0) rotate(${f.r + rot}deg)`;
     c.classList.remove('lift');
-    if (reduce) { halt(c); c.style.transition = 'opacity .2s'; c.style.opacity = '0'; setTimeout(gone, 220); }
-    else move(c, flight(f, dx, dy, v, dist, T, rot), gone);
+    move(c, flight(f, dx, dy, v, dist, T, rot), gone);
     cur++; layout(true); say(); quiet();
     return true;
   }
@@ -833,7 +834,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     const r = c.getBoundingClientRect();
     const was = halt(c);                                         // caught mid-spring: held where it is
     drag = { c, at: e.target, id: e.pointerId, x0: e.clientX, y0: e.clientY, pts: [[performance.now(), e.clientX, e.clientY]],
-             side: e.clientY < r.top + r.height / 2 ? 1 : -1, moved: false, base: was ? { x: was.x, y: was.y, r: was.r } : pose0(cur) };
+             side: e.clientY < r.top + r.height / 2 ? 1 : -1, moved: false, tilt: 0, dx: 0, dy: 0, cur: null, base: was ? { x: was.x, y: was.y, r: was.r } : pose0(cur) };
     c.setPointerCapture(e.pointerId);
     c.classList.remove('nudge');
   });
@@ -860,10 +861,20 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
       }
       return;
     }
-    const b = drag.base, r = b.r + dx * .065 * drag.side;
-    drag.cur = { x: b.x + dx, y: b.y + dy, r };
-    drag.c.style.transform = `translate3d(${drag.cur.x}px, ${drag.cur.y}px, 0) rotate(${r}deg)`;
+    drag.dx = dx; drag.dy = dy;
+    if (!drag.loop) drag.loop = requestAnimationFrame(hold);
   });
+  function hold() {                                              // the held card, once a frame: under the finger, leaning a little into the
+    const d = drag;                                              // move and settling when the finger stops (a card has weight)
+    if (!d || d.back || !d.moved) return;
+    d.loop = requestAnimationFrame(hold);
+    const now = performance.now(), pts = d.pts.filter((p) => now - p[0] < 80);
+    const vx = pts.length > 1 ? (pts[pts.length - 1][1] - pts[0][1]) / Math.max(16, now - pts[0][0]) : 0;
+    d.tilt += ((reduce ? 0 : Math.max(-7, Math.min(7, vx * 9 * d.side))) - d.tilt) * .22;
+    const b = d.base, r = b.r + d.dx * .065 * d.side + d.tilt;
+    d.cur = { x: b.x + d.dx, y: b.y + d.dy, r };
+    d.c.style.transform = `translate3d(${d.cur.x}px, ${d.cur.y}px, 0) rotate(${r}deg)`;
+  }
   const release = (e) => {
     if (!drag || e.pointerId !== drag.id) return;
     const d = drag; drag = null;
@@ -875,7 +886,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
       d.c.classList.remove('lift');
       if (!d.p) {
         const c = d.c, i = cur;
-        if (reduce || !d.pose) c.style.transform = rest(i, 0); else move(c, sprung(d.pose, pose0(i), vx, 0, 260, 26), () => { c.style.transform = rest(i, 0); });
+        if (!d.pose) c.style.transform = rest(i, 0); else move(c, sprung(d.pose, pose0(i), vx, 0, 260, 26 * Z), () => { c.style.transform = rest(i, 0); });
         return;
       }
       d.p.classList.remove('lift');
@@ -883,13 +894,13 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
       if (e.type === 'pointerup' && (d.k > .32 || vx > .45)) {   // back on the stack, carried on at the finger's speed
         cur--; layout(true); say(); quiet();
         const i = cur;
-        if (!reduce) move(p, sprung(from, pose0(i), vx, 0, 170, 21), () => { p.style.transform = rest(i, 0); });
+        move(p, sprung(from, pose0(i), vx, 0, 170, 21 * Z), () => { p.style.transform = rest(i, 0); });
         return;
       }
       const off = { x: d.x, y: -24, r: -16 };                    // let go early: it slides back out
       p._gone = `translate3d(${off.x}px, ${off.y}px, 0) rotate(${off.r}deg)`;
       const hide = () => { p.style.transform = p._gone; if (cards.indexOf(p) < cur) { p.style.visibility = 'hidden'; p.style.willChange = ''; } };
-      if (reduce) hide(); else move(p, sprung(from, off, vx, 0, 240, 30), hide);
+      move(p, sprung(from, off, vx, 0, 240, 30 * Z), hide);
       return;
     }
     const far = Math.hypot(d.cur.x, d.cur.y) > d.c.offsetWidth * .34;
@@ -899,7 +910,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     } else {                                                     // back to the stack, from the finger's speed
       d.c.classList.remove('lift');
       const c = d.c, i = cur;
-      if (reduce) c.style.transform = rest(i, 0); else move(c, sprung(d.cur, pose0(i), vx, vy, 190, 22), () => { c.style.transform = rest(i, 0); });
+      move(c, sprung(d.cur, pose0(i), vx, vy, 190, 22 * Z), () => { c.style.transform = rest(i, 0); });
     }
   };
   function pull(d) {                                             // left to right: the card before, back from the left
@@ -946,7 +957,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
       hear.querySelector('.back').inert = !f;
       deck.power(f && cards[cur] === hear);
     };
-    if (now || reduce) return swap();
+    if (now) return swap();
     turning = true;
     const a = flipEl.animate([{ transform: 'rotateY(0deg)' }, { transform: 'rotateY(90deg)' }], { duration: 210, easing: 'cubic-bezier(.5, 0, .75, .55)', fill: 'forwards' });
     a.finished.then(() => {                                      // edge-on: the faces swap, and the turn goes on at the same speed (.77°/ms)
@@ -994,8 +1005,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
       let ready = 0;                                             // 1 = the demo is in, -1 = it didn't load
       back.classList.add('loading');
       audio.ready().then(() => { ready = 1; }, () => { ready = -1; }).then(() => back.classList.remove('loading'));
-      const land = () => { if (ready < 0) { $('fail').hidden = false; return home(); } audio.start(reduce ? .03 : .42); };
-      if (reduce) return run([{ until: () => ready }, { fn: () => { if (ready > 0) { a = LEAD; mode = 'play'; } land(); } }]);
+      const land = () => { if (ready < 0) { $('fail').hidden = false; return home(); } audio.start(.42); };
       run([{ k: 'h', to: 1, ms: 260, ease: OUT }, { k: 'a', to: LEAD, ms: 900 }, { until: () => ready }, { fn: land },
         { k: 'h', to: 0, ms: 420 }, { fn: () => { mode = 'play'; } }]);
     }
@@ -1003,13 +1013,12 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
       audio.stop();
       if (mode === 'rest' || mode === 'home') return;
       mode = 'home';
-      if (reduce) { plan = []; a = 0; h = 0; mode = 'rest'; return wake(); }
       run([{ k: 'h', to: 1, ms: 40 + 200 * (1 - h), ease: OUT }, { k: 'a', to: 0, ms: 380 + 520 * Math.min(1, a / LEAD) },
         { k: 'h', to: 0, ms: 380 }, { fn: () => { mode = 'rest'; } }]);
     }
     function frame(t) {
       const dt = last ? Math.min(.05, (t - last) / 1000) : 0; last = t;
-      const want = motor && !reduce ? 200 : 0;
+      const want = motor && (!reduce || mode !== 'rest') ? 200 : 0;   // less motion asked for: it turns only under the needle
       w = want > w ? Math.min(want, w + 330 * dt) : Math.max(want, w - 190 * dt);   // a direct drive: at speed in .6 s
       spin = (spin + w * dt) % 360; ref = (ref + 200 * dt) % 360;
       lamp += ((motor && (t > flick || Math.random() < .55) ? 1 : 0) - lamp) * Math.min(1, dt * 14);   // the neon catches, flickering
@@ -1197,7 +1206,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     if (!v || !em.checkValidity()) { err.hidden = false; replay(send, 'nope'); em.focus(); return; }
     em.blur();
     send.disabled = true; replay(send, 'thump'); replay(cards[N - 1], 'jolt');   // the stamp comes down, the ink takes
-    setTimeout(() => drop(v), reduce ? 0 : 560);                               // the keyboard goes down meanwhile
+    setTimeout(() => drop(v), 560);                               // the keyboard goes down meanwhile
   });
   function drop(v) {
     const c = cards[N - 1];
@@ -1205,18 +1214,18 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     const cr = c.getBoundingClientRect(), br = box.getBoundingClientRect();
     const s = br.width * .6 / cr.width;
     const tx = br.left + br.width / 2 - (cr.left + cr.width / 2), ty = br.top + br.height * .2 - (cr.top + cr.height / 2) - (box.classList.contains('up') ? br.height * .28 : 0);
-    c.style.transition = reduce ? 'opacity .2s' : 'transform .72s cubic-bezier(.55,0,.35,1), opacity .25s .58s';
-    if (!reduce) c.style.transform = `translate3d(${tx}px, ${ty + cr.height * s * .5}px, 0) rotate(-3deg) scale(${s})`;
+    c.style.transition = 'transform .72s cubic-bezier(.55,0,.35,1), opacity .25s .58s';
+    c.style.transform = `translate3d(${tx}px, ${ty + cr.height * s * .5}px, 0) rotate(-3deg) scale(${s})`;
     c.style.opacity = '0';
     $('prev').disabled = $('next').disabled = true;
-    setTimeout(() => { box.classList.remove('gulp'); void box.offsetWidth; box.classList.add('gulp'); }, reduce ? 0 : 760);
+    setTimeout(() => { box.classList.remove('gulp'); void box.offsetWidth; box.classList.add('gulp'); }, 760);
     setTimeout(() => {                                           // the box swallows it, then the end page: "✓ Keys in the mail"
       desk.classList.add('sent');
       $('sentNote').textContent = `Sent to ${v} · Mockup: nothing was sent.`;
       box.classList.remove('full');
       cur = N; layout(true);
       $('live').textContent = `Mailed to ${v}. Mockup: nothing was sent. GAS 2. Thicker, smoother, glued master.`;
-    }, reduce ? 220 : 1150);
+    }, 1150);
   }
   $('cta').addEventListener('click', () => { if (!desk.classList.contains('sent')) prev(); });   // ⤓ Download FREE = the mail card comes back
   $('again').addEventListener('click', () => {                  // the postcards dealt back onto the table, bottom card first
