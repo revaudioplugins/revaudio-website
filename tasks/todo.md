@@ -1,4 +1,4 @@
-# GAS 2 phone POSTCARDS (branch `feat/gas2-postcards`, 2026-10-29, danavivi-75) — ROUND 6 BUILT (back and forth), pushed to `origin/feat/gas2-postcards`
+# GAS 2 phone POSTCARDS (branch `feat/gas2-postcards`, 2026-10-29, danavivi-75) — ROUND 7 BUILT (HEAR IT's front), pushed to `origin/feat/gas2-postcards`
 
 Dan's concept (2026-10-29): a stack of 1950s "Greetings from GAS 2" postcards, phone only. State: `tasks/handoff.md` top entry.
 
@@ -68,7 +68,10 @@ Dan's concept (2026-10-29): a stack of 1950s "Greetings from GAS 2" postcards, p
       had dropped out in round 3).
 - [x] 21. Dan (chat): "back is left to right, and front is right to left", the station too: `743e67f`; review page round 6
       = version 8.
-- [ ] 22. Dan's next notes (`notes-r6` or the chat).
+- [x] 22. Dan's round-6 notes (2026-10-30 14:29, pasted; all on HEAR IT's front): no red level line in the poster,
+      the readings crisp (the wear under the print), TURN IT OVER up under the line and centred: `55cc52f`; review page
+      round 7 = version 9.
+- [ ] 23. Dan's next notes (`notes-r7` or the chat).
 
 # GAS 2 drone descent (branch `feat/gas2-drone`, 2026-10-28, revaudio-59) — SCENE + BENCH BUILT, art next
 

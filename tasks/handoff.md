@@ -1,6 +1,6 @@
 ## 2026-10-29 — GAS 2 page: the PHONE page as POSTCARDS (Claude Code `danavivi-75`, Dan's Mac) — BRANCH `feat/gas2-postcards`, not pushed
 
-Claim: OPEN `danavivi-75`. Round 6 (back and forth: left to right = back) BUILT + checked + in the review page (version 8); the branch tracks `origin/feat/gas2-postcards` (pushed on Dan's "commit everything and push it"; not main, no deploy). Branched from `origin/feat/gas2-drone` @ `4fc6ddd` (no upstream set, so a bare push
+Claim: OPEN `danavivi-75`. Round 7 (HEAR IT's front) BUILT + checked + in the review page (version 9); the branch tracks `origin/feat/gas2-postcards` (pushed on Dan's "commit everything and push it"; not main, no deploy). Branched from `origin/feat/gas2-drone` @ `4fc6ddd` (no upstream set, so a bare push
 can't reach the drone branch); `revaudio-59` keeps writing `feat/gas2-drone`, so this branch stays out of its files.
 Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postcards/**`; one README line pair; the
 "GAS 2 phone POSTCARDS" section on top of `tasks/todo.md`; this entry. Read only: `page-b.html` (copy, ticket), `fonts/`,
@@ -154,7 +154,14 @@ Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postca
   (`#end`): left to right = `prev()`, or after mailing the "again" deal (the card is in the box); `.end` is
   `touch-action: pan-y pinch-zoom`. The hint: "Flick left: the next card · right: back". check.cjs 36 steps + 35
   layouts pass. Review page round 6 (`notes-r6`) = version 8.
-- Open (Dan): (1) more notes, if any: the review page takes round 6's in `notes-r6`; (2) painted art still only on his OK;
+- Then ROUND 7 (Dan's round-6 notes, 2026-10-30 14:29, pasted, all on HEAR IT's front). `55cc52f`: ① the gauge's thin
+  red level line wiped from the card's own copy of the poster (`postcards/tools/fix-poster.py` ->
+  `postcards/img/poster-level.webp`; desktop `props/poster-level.webp` untouched); ② "all the readings except TURN IT
+  OVER are faded out": the front's `.age`, `::before` (light, vignette) and `::after` (linen) now sit under the print
+  (z-index 1), so the words read as crisp as TURN IT OVER (which sat above them); ③④ TURN IT OVER moved up under the
+  line (bottom 17.2cqw, at his pin and a bit lower), its words centred (`translate: -4.8cqw`, the arrow hangs left).
+  check.cjs 36 + 35 pass. Review page round 7 (`notes-r7`) = version 9 (+ the poster copy).
+- Open (Dan): (1) more notes, if any: the review page takes round 7's in `notes-r7`; (2) painted art still only on his OK;
   (3) per-grade renders (Yoni) before any grade card plays its own sound; (4) later: this as page-b's phone layout.
 
 ## 2026-10-28 — GAS 2 page: the drone intro, from scratch (Claude Code `revaudio-59`, laptop 1) — BRANCH `feat/gas2-drone`
