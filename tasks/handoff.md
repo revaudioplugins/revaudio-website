@@ -1,6 +1,6 @@
 ## 2026-10-29 — GAS 2 page: the PHONE page as POSTCARDS (Claude Code `danavivi-75`, Dan's Mac) — BRANCH `feat/gas2-postcards`, not pushed
 
-Claim: OPEN `danavivi-75`. Round 7 (HEAR IT's front) BUILT + checked + in the review page (version 9); the branch tracks `origin/feat/gas2-postcards` (pushed on Dan's "commit everything and push it"; not main, no deploy). Branched from `origin/feat/gas2-drone` @ `4fc6ddd` (no upstream set, so a bare push
+Claim: OPEN `danavivi-75`. Round 8 (smooth motion) BUILT + checked + in the review page (version 10); the branch tracks `origin/feat/gas2-postcards` (pushed on Dan's "commit everything and push it"; not main, no deploy). Branched from `origin/feat/gas2-drone` @ `4fc6ddd` (no upstream set, so a bare push
 can't reach the drone branch); `revaudio-59` keeps writing `feat/gas2-drone`, so this branch stays out of its files.
 Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postcards/**`; one README line pair; the
 "GAS 2 phone POSTCARDS" section on top of `tasks/todo.md`; this entry. Read only: `page-b.html` (copy, ticket), `fonts/`,
@@ -161,7 +161,18 @@ Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postca
   (z-index 1), so the words read as crisp as TURN IT OVER (which sat above them); ③④ TURN IT OVER moved up under the
   line (bottom 17.2cqw, at his pin and a bit lower), its words centred (`translate: -4.8cqw`, the arrow hangs left).
   check.cjs 36 + 35 pass. Review page round 7 (`notes-r7`) = version 9 (+ the poster copy).
-- Open (Dan): (1) more notes, if any: the review page takes round 7's in `notes-r7`; (2) painted art still only on his OK;
+- Then (Dan, chat, 2026-10-30): "the card moves is not smooth yet ... everything that moves needs to be smooth".
+  Measured first (scratch probes: Chrome, `Emulation.setCPUThrottlingRate` 4, rAF frame log, longtask observer, a trace
+  of the release, per-frame speed of the card around the release). `1065d59`: let-go motion runs frame by frame from
+  the finger's speed (`move()` + `flight()` / `sprung()`, one rAF loop `glide`; a card caught mid-spring is held);
+  no depth `scale()` (same-size stack) and none while held; the held shadow = a `.lifts` layer (opacity); will-change on
+  the cards in sight + the next; every coming card visible under the stack (decoded early); `@property --rest` not
+  inherited; the demo decodes on an OfflineAudioContext (the device context opens on a tap: 226 ms at 4x) and the
+  record's grooves are drawn ~6 ms a frame, both via `idle()`; the turn = WAAPI halves at a matched .77 deg/ms; the
+  stack settle = a spring in CSS `linear()`. Worst frame (4x) 417 -> 33 ms, no long tasks; check.cjs 36 + 35 pass.
+  DESIGN.md §6 + lessons. Review page round 8 (`notes-r8`) = version 10. Not felt on a real iPhone yet.
+- Open (Dan): (1) more notes, if any: the review page takes round 8's in `notes-r8`; a feel check on his iPhone;
+  (2) painted art still only on his OK;
   (3) per-grade renders (Yoni) before any grade card plays its own sound; (4) later: this as page-b's phone layout.
 
 ## 2026-10-28 — GAS 2 page: the drone intro, from scratch (Claude Code `revaudio-59`, laptop 1) — BRANCH `feat/gas2-drone`
