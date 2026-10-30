@@ -193,6 +193,13 @@ Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postca
   page before). Not changed: the first throw's release frame is ~50 ms at 4x CPU on the round-8, round-9 and this
   build alike (the Mac was at load 11-13; DESIGN.md asks <= 33): measure again on a quiet machine before chasing it.
   The review page still runs `c22bab5` (no visible change; republish only with the next round).
+- Then (Dan on his iPhone, iOS 26, 2026-10-30 19:00: a screenshot of the mail card with the keyboard up, then "it's not
+  comfortable like this ... give options"; his pick of three: "card slides up"). iOS 26 cuts the page to the ~387 px
+  above the keys: the stack (sized by its container) shrank the card to half and the tick line ran into the stamp.
+  `b15a2eb`: on focus the stack keeps its size (`--cw` frozen in px) and `fit()` slides it (translate .4 s, from the
+  visual viewport) till the TO line, the tick box and the stamp sit just over the keys; ‹ › and the mailbox step aside
+  until blur. Checked at 402x714 -> 387, 375x553 -> 293, 430x750 -> 410 (WebKit, the keyboard mimicked by a shorter
+  viewport); check.cjs 42 + 35 pass, 0 errors; stills pixel-identical. DESIGN.md §8 + lessons. Not on a real iPhone yet.
 - Open (Dan): (1) his word from the phone; more notes go to `notes-r9`;
   (2) painted art still only on his OK;
   (3) per-grade renders (Yoni) before any grade card plays its own sound; (4) later: this as page-b's phone layout.

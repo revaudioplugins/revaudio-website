@@ -81,7 +81,10 @@ Dan's concept (2026-10-29): a stack of 1950s "Greetings from GAS 2" postcards, p
 - [x] 25. Dan (chat): "check your work and do a ponytail on it": `205661d` - no card jumps when something takes it over
       (‹ mid-throw, › right after ‹, a tap or a layout while a card springs home, a flick inside one frame), the strobe
       still under Reduce Motion; dead code, CSS and unused art cut. Pixel-identical states, check.cjs 41 + 35 pass.
-- [ ] 26. Dan's word from the phone (and the check page: Reduce Motion on or off?).
+- [x] 26. Dan on his iPhone (a screenshot, "it's not comfortable like this ... give options"): the keyboard shrank the
+      mail card to half and the tick line ran into the stamp. His pick "card slides up": `b15a2eb`, the card keeps its
+      size and slides up over the keys; check.cjs 42 + 35 pass.
+- [ ] 27. Dan's word from the phone (and the check page: Reduce Motion on or off?).
 
 # GAS 2 drone descent (branch `feat/gas2-drone`, 2026-10-28, revaudio-59) — SCENE + BENCH BUILT, art next
 
