@@ -23,12 +23,12 @@ async function page(browser, w, h, extra) {
 const go = async (p, q) => { await p.goto(BASE + (q || "")); await p.evaluate(() => document.fonts.ready); await p.waitForTimeout(700); };
 const cur = (p) => p.evaluate(() => window.gas2Postcards.cur);
 
-async function drag(p, dx, dy, ms, hold) {               // a finger-like drag with the mouse (pointer events)
+async function drag(p, dx, dy, ms, hold, after = 650) {   // a finger-like drag with the mouse (pointer events)
   const r = await p.evaluate(() => { const b = document.querySelector(".pc.top").getBoundingClientRect(); return { x: b.left + b.width / 2, y: b.top + b.height * .4 }; });
   await p.mouse.move(r.x, r.y); await p.mouse.down();
   const n = 8; for (let i = 1; i <= n; i++) { await p.mouse.move(r.x + dx * i / n, r.y + dy * i / n); await p.waitForTimeout(ms / n); }
   if (hold) await p.waitForTimeout(hold);
-  await p.mouse.up(); await p.waitForTimeout(650);
+  await p.mouse.up(); await p.waitForTimeout(after);
 }
 
 (async () => {
@@ -117,6 +117,45 @@ async function drag(p, dx, dy, ms, hold) {               // a finger-like drag w
   await drag(p, 40, 2, 400);
   await drag(p, -190, -20, 120);
   ok("right to left still throws it on", (await cur(p)) === 1);
+  // whatever takes over a moving card takes it from where it is: no jumps (Dan, 2026-10-30: "everything ... smooth")
+  const jump1 = await p.evaluate(async () => {
+    const c = document.querySelectorAll(".pc")[1], x = () => Math.round(c.getBoundingClientRect().left);
+    const frames = async (n) => { for (let i = 0; i < n; i++) await new Promise((r) => requestAnimationFrame(r)); };
+    document.getElementById("next").click(); await frames(5);
+    const a = x(); document.getElementById("prev").click(); const b = x();     // called back mid-flight...
+    await frames(5);
+    const c1 = x(); document.getElementById("next").click(); return { a, b, c: c1, d: x() };   // ...and on again on its way back
+  });
+  await p.waitForTimeout(700);
+  ok("back mid-flight, then next on its way back: each time it turns round where it is, no jump", (await cur(p)) === 2 &&
+     Math.abs(jump1.b - jump1.a) < 2 && Math.abs(jump1.d - jump1.c) < 2, jump1);
+  await p.click("#prev"); await p.waitForTimeout(700);
+  await drag(p, -80, 0, 320, 150, 0);                       // let go still: it springs home...
+  await p.mouse.down(); await p.mouse.up(); await p.waitForTimeout(1400);   // ...and a tap on the way (it nudges)
+  const home = await p.evaluate(() => { const m = new DOMMatrix(getComputedStyle(document.querySelector(".pc.top")).transform); return { x: +m.m41.toFixed(1), y: +m.m42.toFixed(1) }; });
+  ok("a tap while a let-go card springs home doesn't stop it there: it gets home", Math.abs(home.x - .9) < .5 && Math.abs(home.y) < .5, home);
+  await drag(p, -80, 0, 320, 150, 0);                       // let go still: it springs home, and next comes before it's there
+  const jump2 = await p.evaluate(() => { const c = document.querySelector(".pc.top"), x = () => Math.round(c.getBoundingClientRect().left);
+    const a = x(); document.getElementById("next").click(); return { a, b: x() }; });
+  await p.waitForTimeout(700);
+  ok("next while a let-go card springs home: it flies from where it is", (await cur(p)) === 2 && Math.abs(jump2.b - jump2.a) < 2, jump2);
+  await p.click("#prev"); await p.waitForTimeout(700);
+  await drag(p, -80, 0, 320, 150, 0);
+  await p.evaluate(() => document.getElementById("prev").click());
+  await p.waitForTimeout(900);
+  const under = await p.evaluate(() => ({ cur: window.gas2Postcards.cur, ty: +new DOMMatrix(getComputedStyle(document.querySelectorAll(".pc")[1]).transform).m42.toFixed(1) }));
+  ok("back while a let-go card springs home: it settles as the second card, under the one brought back", under.cur === 0 && Math.abs(under.ty - 9) < .6, under);
+  await p.click("#next"); await p.waitForTimeout(700);
+  const quick = await p.evaluate(() => new Promise((done) => {   // the finger up before the next frame
+    const c = document.querySelector(".pc.top"), r = c.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height * .4;
+    c.setPointerCapture = () => {};                         // synthetic events have no pointer to capture
+    const ev = (type, dx) => c.dispatchEvent(new PointerEvent(type, { bubbles: true, pointerId: 7, isPrimary: true, clientX: x + dx, clientY: y }));
+    ev("pointerdown", 0); ev("pointermove", -40); ev("pointerup", -90);
+    delete c.setPointerCapture;
+    setTimeout(() => done(window.gas2Postcards.cur), 700);
+  }));
+  ok("a flick quicker than a frame still throws", quick === 2, quick);
+  await go(p, "?card=2");                                    // the rest starts on card 2 whatever happened above
   const g = await p.evaluate(() => { const c = document.querySelector(".pc.top"), r = c.getBoundingClientRect(), b = c.querySelector(".big").getBoundingClientRect();
     return { key: !!c.querySelector(".key"), mid: +(((b.top + b.bottom) / 2 - r.top) / r.height).toFixed(3), line: getComputedStyle(c.querySelector(".gline")).fontFamily }; });
   ok("grade card (Dan, round 2): no key, the lettering centred, the line in its face", !g.key && Math.abs(g.mid - .5) < .04 && /Oswald/.test(g.line), g);
@@ -175,8 +214,7 @@ async function drag(p, dx, dy, ms, hold) {               // a finger-like drag w
   ok("the consent box starts unticked and ticks", !mk0 && await p.evaluate(() => document.getElementById("mk").checked));
   await p.fill("#em", "dan@example.com"); await p.click(".send"); await p.waitForTimeout(200);
   ok("the stamp comes down (thump) and can't be stamped twice", await p.evaluate(() => { const s = document.querySelector(".send"); return s.classList.contains("thump") && s.disabled; }));
-  await p.waitForTimeout(1400);
-  await p.waitForTimeout(800);
+  await p.waitForTimeout(2200);
   const sent = await p.evaluate(() => ({ ended: document.getElementById("desk").classList.contains("ended"), sent: document.getElementById("desk").classList.contains("sent"),
     note: document.getElementById("sentNote").textContent, cta: document.querySelector(".rd .cta").innerText.trim(), cardOpacity: getComputedStyle(document.querySelectorAll(".pc")[5]).opacity }));
   ok("good address: the card goes in the box, then the end page says the keys are in the mail", sent.ended && sent.sent && sent.note.includes("dan@example.com") && sent.cta === "✓ Keys in the mail" && sent.cardOpacity === "0", sent);
@@ -212,9 +250,10 @@ async function drag(p, dx, dy, ms, hold) {               // a finger-like drag w
   rm.nudge = await r.evaluate(() => document.querySelectorAll(".pc.nudge").length);
   await r.waitForTimeout(600);
   rm.speed = await r.evaluate(() => gas2Postcards.deck.speed);
+  rm.strobe = await r.evaluate(() => document.getElementById("strobeDots").style.transform === document.getElementById("dots").style.transform);
   out.reduced = rm;
-  ok("reduced motion (Dan's iPhone): the hand's moves still happen (next, the turn), nothing moves by itself (no nudge, the idle record still)",
-     rm.afterNext === 1 && rm.flipped && rm.nudge === 0 && rm.speed === 0, rm);
+  ok("reduced motion (Dan's iPhone): the hand's moves still happen (next, the turn), nothing moves by itself (no nudge, the idle record and its strobe dots still)",
+     rm.afterNext === 1 && rm.flipped && rm.nudge === 0 && rm.speed === 0 && rm.strobe, rm);
   await r.context().close();
   await wk.close();
 

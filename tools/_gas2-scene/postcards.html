@@ -8,7 +8,7 @@
 <link rel="icon" href="data:,">
 <!-- GAS 2 page, PHONE (Dan 2026-10-29, "Postcards"): a stack of 1950s "Greetings from GAS 2" postcards in the station
      world. Card 1 = the real pump in front of the station; flick away REGULAR / PREMIUM / RACE; HEAR IT turns over
-     (▶ on the back); the last card is a postcard back: the email on the address lines, dropped in the mailbox.
+     (a turntable on the back); the last card is a postcard back: the email on the address lines, dropped in the mailbox.
      DESIGN.md §7 (phones): rebuilt for portrait, the station only as a soft backdrop, never a crop as the page.
      The end (Dan, same day): the last card goes and the lens pulls focus onto the right side of the desktop page, where
      page-b's readings pop out as after the drone lands. Assets + how they were made: postcards/tools/. ?card=1-6 opens on
@@ -139,7 +139,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .g-pre .fr { background-image: radial-gradient(rgba(255, 230, 200, .3) 18%, transparent 22%), linear-gradient(180deg, #2b3a63 0%, #6a4c78 34%, #e2733c 70%, #ffd27c 100%);
   background-size: .09em .09em, 100% 100%; }
 .g-race .fr { background-image: conic-gradient(#221a13 25%, #f2e6c8 0 50%, #221a13 0 75%, #f2e6c8 0); background-size: .2em .2em; background-position: .02em .06em; }
-.g-race .big .bk { color: var(--red); -webkit-text-stroke-color: var(--red); text-shadow: .03em .03em 0 var(--ink), .055em .055em 0 var(--ink), .08em .08em 0 var(--ink), .1em .11em .06em rgba(36, 26, 18, .35); }
+.g-race .big .bk { color: var(--red); -webkit-text-stroke-color: var(--red); }
 .gline { position: absolute; left: 9cqw; right: 9cqw; top: 61.5cqh; margin: 0; text-align: center; font: 500 5.2cqw/1.22 Oswald; letter-spacing: .045em;
   text-transform: uppercase; text-wrap: balance; color: var(--ink); z-index: 2; }
 .badge { position: absolute; right: 6.5cqw; bottom: 6cqw; width: 14cqw; height: 14cqw; border-radius: 50%; z-index: 2; display: grid; place-content: center;
@@ -169,10 +169,8 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .pc-hear .big { top: 51cqh; font-size: 21cqw; }
 .pc-hear .big .fr, .pc-hear .turn .fr { background-image: radial-gradient(rgba(255, 220, 190, .28) 18%, transparent 22%), linear-gradient(180deg, #d04a2c, #a52a17); background-size: .09em .09em, 100% 100%; }
 .hline { position: absolute; left: 8cqw; right: 8cqw; top: 70cqh; margin: 0; text-align: center; font: 450 4.7cqw/1.38 Inter; z-index: 2; }
-.turn { position: absolute; left: 50%; bottom: 7cqw; transform: translateX(-50%); z-index: 6; display: inline-flex; align-items: center; gap: 1.6cqw;
-  min-height: 44px; padding: 0 3cqw; font: 600 3.6cqw/1 Oswald; letter-spacing: .16em; text-transform: uppercase; color: var(--red); white-space: nowrap; }
-.turn svg { width: 4.6cqw; height: 4.6cqw; }
-.pc-hear .front .turn { left: 0; right: 0; bottom: 17.2cqw; width: max-content; margin: auto; transform: none; translate: -4.8cqw 0; gap: 2.2cqw;
+.turn { position: absolute; z-index: 6; display: inline-flex; align-items: center; min-height: 44px; text-transform: uppercase; white-space: nowrap; }
+.pc-hear .front .turn { left: 0; right: 0; bottom: 17.2cqw; width: max-content; margin: auto; translate: -4.8cqw 0; gap: 2.2cqw;
   padding: 1cqw 2.4cqw 1.8cqw;   /* round 3: in HEAR IT's letters; round 6: up under the line, the words centred (the arrow hangs left) */
   font: 700 9.4cqw/1 Oswald; letter-spacing: .02em; color: var(--red); }
 .pc-hear .front .turn svg { width: 7.4cqw; height: 7.4cqw; stroke-width: 2.8; filter: drop-shadow(.06em .06em 0 var(--ink)); }
@@ -184,7 +182,6 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   border-top-left-radius: 2cqw; filter: drop-shadow(-.4cqw -.4cqw .6cqw rgba(60, 40, 20, .25)); transform-origin: 100% 100%; }
 .pc-hear.top:not(.flipped) .curl { animation: curl 2.6s 1s ease-in-out infinite; }
 @keyframes curl { 0%, 70%, 100% { transform: none; } 82% { transform: scale(1.35); } }
-.note { position: absolute; left: 8cqw; right: 8cqw; top: 15cqw; margin: 0; font: 400 6.1cqw/1.18 Gochi; color: var(--pen); transform: rotate(-1.5deg); z-index: 2; }
 /* the back (Dan, round 3: "an animation of the vinyl working ... less like a post card, more like a whole picture, real
    vinyl"): the whole card is one photo of a turntable seen from above, under the lamp. Its body is a picture
    (postcards/tools/make-deck.py: walnut round brushed aluminium); over it, in the same units (1 = 1cqw, the card is
@@ -268,8 +265,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .maker b { font: 700 4.1cqw/1 Oswald; letter-spacing: .05em; text-transform: none; }
 .fail { position: absolute; left: 5cqw; right: 5cqw; top: 120.2cqw; margin: 0; z-index: 7; text-align: center; font: 600 3.1cqw/1.2 Inter; color: #a0230f; }
 .fail:not([hidden]) + .legend { visibility: hidden; }
-.pc-hear .back .turn { left: auto; right: 3.4cqw; top: 3.4cqw; bottom: auto; transform: none; z-index: 7; justify-content: center; width: max(44px, 11cqw);   /* small (round 3) */
-  height: max(44px, 11cqw); min-height: 0; padding: 0; color: #3a3632; }
+.pc-hear .back .turn { right: 3.4cqw; top: 3.4cqw; z-index: 7; justify-content: center; width: max(44px, 11cqw); height: max(44px, 11cqw); color: #3a3632; }   /* small (round 3) */
 .pc-hear .back .turn::before { content: ""; position: absolute; left: 50%; top: 50%; z-index: -1; width: 7.6cqw; height: 7.6cqw; translate: -50% -50%; border-radius: 50%;
   background: radial-gradient(circle at 38% 32%, #fdfcf8, #d2cdc4 46%, #8d8880); box-shadow: .3cqw .5cqw .8cqw rgba(20, 12, 6, .45), inset 0 -.3cqw .5cqw rgba(0, 0, 0, .22), 0 0 0 .25cqw rgba(48, 44, 40, .5); }
 .pc-hear .back .turn svg { width: 3.9cqw; height: 3.9cqw; }
@@ -289,7 +285,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .stamp .s1 { top: 3cqw; text-align: center; }
 .stamp .s2 { bottom: 2.6cqw; text-align: right; padding-right: 1.2cqw; font-size: 4.6cqw; }
 .pmark { position: absolute; right: 11.4cqw; top: 27.6cqw; width: 34cqw; z-index: 3; color: rgba(36, 30, 40, .74); transform: rotate(-11deg); pointer-events: none; }
-.pc-mail .note { top: 52cqw; font-size: 5.6cqw; }
+.note { position: absolute; left: 8cqw; right: 8cqw; top: 52cqw; margin: 0; font: 400 5.6cqw/1.18 Gochi; color: var(--pen); transform: rotate(-1.5deg); z-index: 2; }
 .addr { position: absolute; left: 7cqw; right: 7cqw; top: 50.5cqh; z-index: 6; }   /* one line, the email big (Dan, round 2) */
 .addr label { display: flex; align-items: flex-end; gap: 2.8cqw; border-bottom: 1.5px solid rgba(36, 26, 18, .6); padding-bottom: .6cqw; }
 .addr label span { font: 400 4.6cqw/1 Elite, ui-monospace, monospace; letter-spacing: .1em; color: var(--ink-2); padding-bottom: 1.8cqw; }
@@ -405,7 +401,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .endbar button { min-height: 44px; padding: 0 16px; font: 600 12.5px/1 Oswald; letter-spacing: .18em; text-transform: uppercase; color: rgba(239, 227, 198, .88);
   text-shadow: 0 1px 3px rgba(0, 0, 0, .8); }
 .endbar p { margin: 0; font: 400 12px/1.3 Inter; color: rgba(239, 227, 198, .78); text-shadow: 0 1px 3px rgba(0, 0, 0, .8); }
-.endbar p, .desk.sent .endbar .back2 { display: none; }
+.endbar p { display: none; }
 .desk.sent .endbar p { display: block; }
 
 /* ── page chrome under the stack: back · n / 6 · next ── */
@@ -428,7 +424,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   .pc.nudge, .pc-hear.top:not(.flipped) .curl, .box.gulp, .rd .cta::after, .g-pre.top .badge::after,
   .send.thump .ink, .send.nope .ink, .pc-mail.jolt, .desk.sent .rd .ticket, .loading .pilot.on,
   .pc-hear.flipped.top .sticker, .pc-hear.flipped.top .sticker .sk::after { animation: none !important; }
-  .flip, .box, .end, .opt .tick path { transition-duration: .01s !important; transition-delay: 0s !important; }
+  .box, .end, .opt .tick path { transition-duration: .01s !important; transition-delay: 0s !important; }
 }
 </style>
 </head>
@@ -667,21 +663,16 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   const NAMES = ['Greetings from GAS 2', 'Regular', 'Premium', 'Race', 'Hear it', 'Mail me the keys'];
   let cur = 0, touched = false;
 
-  // ── springs (Dan, 2026-10-30: "everything that moves needs to be smooth"): a damped spring baked into CSS linear(), so
-  //    the compositor plays it, starting at the finger's own speed (v0, in whole moves a second): a card never jumps ──
-  const LINEAR = !!(window.CSS && CSS.supports('transition-timing-function', 'linear(0, 1)')), springs = new Map();
-  function spring(v0, zeta, w) {
-    v0 = Math.max(-8, Math.min(30, v0 || 0));
-    const key = `${v0.toFixed(1)}/${zeta}/${w}`;
-    if (springs.has(key)) return springs.get(key);
-    let x = 0, v = v0, t = 0;
-    const dt = 1 / 240, pts = [0], out = [];
+  // ── the stack settling (Dan, 2026-10-30: "everything that moves needs to be smooth"): a damped spring baked into CSS
+  //    linear(), so the compositor plays it ──
+  const SETTLE = (() => {
+    const zeta = reduce ? 1 : .86, w = 15, dt = 1 / 240, pts = [0], out = [];
+    let x = 0, v = 0, t = 0;
     while (t < 1.6 && (Math.abs(1 - x) > .0015 || Math.abs(v) > .02)) { v += (w * w * (1 - x) - 2 * zeta * w * v) * dt; x += v * dt; t += dt; pts.push(x); }
     for (let i = 0; i <= 40; i++) out.push(i === 40 ? 1 : +pts[Math.round(i / 40 * (pts.length - 1))].toFixed(4));
-    const r = [LINEAR ? `linear(${out.join(', ')})` : 'cubic-bezier(.22, 1, .36, 1)', Math.max(120, Math.round(t * 1000))];
-    springs.set(key, r);
-    return r;
-  }
+    const linear = window.CSS && CSS.supports('transition-timing-function', 'linear(0, 1)');
+    return [linear ? `linear(${out.join(', ')})` : 'cubic-bezier(.22, 1, .36, 1)', Math.max(120, Math.round(t * 1000))];
+  })();
   // ── a let-go card moves frame by frame from the finger's own speed (a CSS animation takes a frame or two to start, and
   //    that reads as a stop): thrown on at that speed, or sprung back to its place. The stack settling stays in CSS ──
   const moving = new Map();
@@ -702,6 +693,10 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     if (!mraf) mraf = requestAnimationFrame(glide);
   }
   function halt(c) { const m = moving.get(c); moving.delete(c); return m; }
+  const at = (c) => {                                            // where a card is this frame, whatever moves it (a spring here or a CSS settle)
+    const m = new DOMMatrix(getComputedStyle(c).transform);
+    return { x: m.m41, y: m.m42, r: Math.atan2(m.m12, m.m11) * 180 / Math.PI };
+  };
   function flight(f, dx, dy, v, dist, T, rot) {                  // thrown: d = v t + a t²/2 (from the finger's v), off the table at T
     const a = 2 * (dist - v * T) / (T * T);
     let t = 0;
@@ -744,11 +739,12 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
       if (c.inert !== (d !== 0)) c.inert = d !== 0;
       if (c.getAttribute('aria-hidden') !== String(d !== 0)) c.setAttribute('aria-hidden', String(d !== 0));
       if (d < 0) return;                                   // thrown: keeps its flight transform, hidden after it lands
+      halt(c);                                             // a card still springing home settles from where it is, to its new place
       c.style.zIndex = String(N - i);
       c.style.visibility = 'visible';                     // every card still to come lies drawn under the stack (its pictures decoded early)
       c.style.willChange = d <= 3 ? 'transform' : '';      // the cards in sight (+ the one under them) keep their own layers: moving one never repaints it
       c.style.setProperty('--rest', rest(i, d));
-      const [ez, ms] = deal ? ['var(--ease-settle)', 560] : spring(0, reduce ? 1 : .86, 15);
+      const [ez, ms] = deal ? ['var(--ease-settle)', 560] : SETTLE;
       c.style.transition = anim ? `transform ${ms}ms ${ez} ${deal ? (N - 1 - i) * 70 : 0}ms, opacity .3s` : 'none';
       c.style.transform = rest(i, d);
       c.style.opacity = '';
@@ -793,32 +789,32 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   }
 
   // ── throw the top card off the table (any direction), the next one settles up; after the last one, the end ──
+  const away = (c) => () => {                                    // landed off the table: unseen till it's called back
+    c.style.transform = c._gone; if (cards.indexOf(c) < cur) { c.style.visibility = 'hidden'; c.style.willChange = ''; }
+  };
   function toss(vx, vy, from, speed) {
-    if (cur >= N) return false;
+    if (cur >= N) return;
     const c = cards[cur], W = innerWidth, H = innerHeight;
     let dx = vx, dy = vy;
     const m = Math.hypot(dx, dy) || 1; dx /= m; dy /= m;
     const dist = Math.hypot(W, H) * .75 + c.offsetWidth;
-    const f = from || pose0(cur);
+    const f = from || at(c);                                     // from the finger, or from wherever it is (springing home, settling up)
     const v = Math.max(.9, speed === undefined ? m : speed);     // px a ms: it leaves the finger at the finger's own speed
     const T = Math.min(560, Math.max(200, dist / v)), rot = (dx || 1) * 24;
-    const gone = () => { c.style.transform = c._gone; if (cards.indexOf(c) < cur) { c.style.visibility = 'hidden'; c.style.willChange = ''; } };
     c._gone = `translate3d(${f.x + dx * dist}px, ${f.y + dy * dist}px, 0) rotate(${f.r + rot}deg)`;
     c.classList.remove('lift');
-    move(c, flight(f, dx, dy, v, dist, T, rot), gone);
+    move(c, flight(f, dx, dy, v, dist, T, rot), away(c));
     cur++; layout(true); say(); quiet();
-    return true;
   }
   function next() { toss(-1.6, -.25); }
   function prev() {
     if (cur === 0 || (cur === N && desk.classList.contains('sent'))) return;
     cur--;
     const c = cards[cur];
-    halt(c);                                                     // called back mid-flight
     c.style.transition = 'none';
     c.style.visibility = 'visible';
     c.style.opacity = '';
-    c.style.transform = c._gone || `translate3d(${-innerWidth}px, 0, 0) rotate(-24deg)`;
+    if (!halt(c)) c.style.transform = c._gone || `translate3d(${-innerWidth}px, 0, 0) rotate(-24deg)`;   // mid-flight: it turns round where it is
     void c.offsetWidth;
     layout(true); say();
   }
@@ -832,9 +828,8 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     if (!c || !c.classList.contains('top') || drag || e.button > 0) return;
     if (e.target.closest('button, input, label, a, form')) return;
     const r = c.getBoundingClientRect();
-    const was = halt(c);                                         // caught mid-spring: held where it is
     drag = { c, at: e.target, id: e.pointerId, x0: e.clientX, y0: e.clientY, pts: [[performance.now(), e.clientX, e.clientY]],
-             side: e.clientY < r.top + r.height / 2 ? 1 : -1, moved: false, tilt: 0, dx: 0, dy: 0, cur: null, base: was ? { x: was.x, y: was.y, r: was.r } : pose0(cur) };
+             side: e.clientY < r.top + r.height / 2 ? 1 : -1, moved: false, tilt: 0, dx: 0, dy: 0, cur: null };
     c.setPointerCapture(e.pointerId);
     c.classList.remove('nudge');
   });
@@ -846,7 +841,10 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
       drag.moved = true;
       drag.back = dx > 0 && dx > Math.abs(dy);                    // left to right = back, right to left = on (Dan, 2026-10-30)
       if (drag.back && cur > 0) pull(drag);
-      else { drag.c.style.transition = 'none'; drag.c.classList.add('lift'); }
+      else {                                                     // caught mid-move: held where it is (a tap doesn't stop it)
+        halt(drag.c); drag.base = at(drag.c);
+        drag.c.style.transition = 'none'; drag.c.classList.add('lift');
+      }
     }
     const now = performance.now();
     drag.pts.push([now, e.clientX, e.clientY]); while (drag.pts.length > 2 && now - drag.pts[0][0] > 90) drag.pts.shift();
@@ -862,7 +860,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
       return;
     }
     drag.dx = dx; drag.dy = dy;
-    if (!drag.loop) drag.loop = requestAnimationFrame(hold);
+    if (!drag.loop) hold();                                      // now, not next frame: a flick can let go before then
   });
   function hold() {                                              // the held card, once a frame: under the finger, leaning a little into the
     const d = drag;                                              // move and settling when the finger stops (a card has weight)
@@ -899,8 +897,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
       }
       const off = { x: d.x, y: -24, r: -16 };                    // let go early: it slides back out
       p._gone = `translate3d(${off.x}px, ${off.y}px, 0) rotate(${off.r}deg)`;
-      const hide = () => { p.style.transform = p._gone; if (cards.indexOf(p) < cur) { p.style.visibility = 'hidden'; p.style.willChange = ''; } };
-      move(p, sprung(from, off, vx, 0, 240, 30 * Z), hide);
+      move(p, sprung(from, off, vx, 0, 240, 30 * Z), away(p));
       return;
     }
     const far = Math.hypot(d.cur.x, d.cur.y) > d.c.offsetWidth * .34;
@@ -1020,7 +1017,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
       const dt = last ? Math.min(.05, (t - last) / 1000) : 0; last = t;
       const want = motor && (!reduce || mode !== 'rest') ? 200 : 0;   // less motion asked for: it turns only under the needle
       w = want > w ? Math.min(want, w + 330 * dt) : Math.max(want, w - 190 * dt);   // a direct drive: at speed in .6 s
-      spin = (spin + w * dt) % 360; ref = (ref + 200 * dt) % 360;
+      spin = (spin + w * dt) % 360; ref = (ref + (w > 100 ? 200 : 0) * dt) % 360;   // the neon's flash rate, aliased: past half a step the dots seem to run back
       lamp += ((motor && (t > flick || Math.random() < .55) ? 1 : 0) - lamp) * Math.min(1, dt * 14);   // the neon catches, flickering
       step(t);
       if (mode === 'play') a = LEAD + (RUN - LEAD) * Math.min(1, audio.played / SIDE);
@@ -1028,7 +1025,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
       const r = `rotate(${spin.toFixed(2)}deg)`, ad = (a + wob).toFixed(3);
       dots.style.transform = spinEl.style.transform = r;
       dots.style.opacity = (1 - .68 * w / 200).toFixed(3);                          // fast, the dots blur into the rim
-      sdots.style.transform = `rotate(${(spin - ref).toFixed(2)}deg)`;               // under the lamp they stand still at speed
+      sdots.style.transform = `rotate(${(spin - ref).toFixed(2)}deg)`;               // under the lamp they stand still at speed and at rest
       strobe.style.opacity = glow.style.opacity = lens.style.opacity = lamp.toFixed(3);
       sheen.style.transform = w ? `rotate(${(.5 * Math.sin(spin * Math.PI / 180 + .8)).toFixed(3)}deg)` : '';   // the light on a warped record breathes
       arm.style.transform = `rotate(${ad}deg) scale(${(1 + .016 * h).toFixed(4)})`;
@@ -1269,7 +1266,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
       dust.append(m);
     }
   }
-  window.gas2Postcards = { next, prev, turn, toss, audio, deck, get cur() { return cur; } };   // for the checks (postcards/tools/check.cjs)
+  window.gas2Postcards = { audio, deck, get cur() { return cur; } };   // for the checks (postcards/tools/check.cjs)
 })();
 </script>
 </body>

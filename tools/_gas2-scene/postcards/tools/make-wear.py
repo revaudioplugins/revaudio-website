@@ -3,7 +3,7 @@ vintage, a little coffee stain on one card"), drawn here from noise (no AI spend
 
   python3 make-wear.py <scene dir>
 
-Writes postcards/img/: wear-1..6.webp + wear-5b.webp (each card's own wear: browned edges, rubbed corners, foxing,
+Writes postcards/img/: wear-1..6.webp (each card's own wear: browned edges, rubbed corners, foxing,
 scuffs, sun-fade; the mail card's fold), coffee.webp (a cup set down twice: Regular), ringwear.webp (the record rubbing
 through the card: HEAR IT), thumb.webp (a greasy thumb: Race), tape.webp (a strip of old tape, torn at both ends: card 1),
 ink.webp (a rubber stamp's uneven ink, used as a mask).
@@ -183,7 +183,6 @@ SPEC = {  # card: seed, wear
     "wear-3.webp": dict(seed=33, edge=.55, fox=24, scuffs=4),                                   # Premium: kept well
     "wear-4.webp": dict(seed=44, edge=1.25, fox=60, scuffs=22, fade=.06, fade_deg=120),          # Race: knocked about
     "wear-5.webp": dict(seed=55, edge=.9, fox=50, scuffs=10, fade=.08, fade_deg=30),             # HEAR IT front
-    "wear-5b.webp": dict(seed=56, edge=.9, fox=40, scuffs=8),                                    # HEAR IT back
     "wear-6.webp": dict(seed=66, edge=1.0, fox=110, scuffs=8, fade=.14, fade_deg=200,            # the mail card: folded
                         crease=((-.05, .27), (1.05, .35))),
 }
