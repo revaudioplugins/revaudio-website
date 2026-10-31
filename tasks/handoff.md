@@ -224,10 +224,23 @@ Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postca
   button in thumb reach). `?spot=z,x,y,tx,ty,r` tries any framing. Readings clear the pump's globe by 11-27 px at all
   five check sizes. iOS Simulator (iPhone 17 Pro, 127.0.0.1:4466, a no-store server from the session scratchpad) shots
   of all four + card 1 with B: right. check.cjs 42 steps + 35 layouts pass, 0 errors.
+- Then (Dan: "show them all to me in a bench side by side"): the SPOTS BENCH, private artifact
+  https://claude.ai/artifact/XdDVWwHNoSLesVBARU4dxQ (build `ad8c371`): the review-bench template with one layout change,
+  the five end pages in one row (the signed-off sky, A-D; under 1100 px the row scrolls sideways inside itself), each
+  with ▶ Live (`live.html#card=7&spot=x`; inside it ↺ The postcards again lands on card 1 with that spot), pins, a notes
+  box, ✓; under the row the pick ("Which one becomes the end page?": sky / A / B / C / D) + a notes box. Notes = its db,
+  collection `notes`, doc = `sky`, `a`-`d`, `overall` (the pick is `overall.choice`). Source:
+  `postcards/review/spots.html`; shots = the iOS Simulator renders (real Safari, the HUG blur included) cropped to the
+  page, 804x1428 webp; `live.html` from `build.cjs` (now carries `?spot`); published from a scratch dir of real copies
+  (31 files: live.html, shots/*, postcards/img/*, props/mailbox.png, audio/hiphop_*.mp4 from the .m4a). Checked locally
+  (Chrome 1280: five in a row, no scroll; WebKit 390: the row scrolls, the page doesn't): pin, note, ✓, pick, ▶ Live on
+  the right spot, one frame at a time, reload keeps it, copy, 0 errors (a favicon 404 on the local server only). Fixed on
+  the way: the hidden `.sr` labels escaped the scrolling row and widened the page at 390 (`#screens` is positioned now).
+  On claude.ai a db probe written, listed and deleted.
 - Open (Dan): (1) his word from the phone; more notes go to `notes-r10`;
   (2) painted art still only on his OK;
   (3) per-grade renders (Yoni) before any grade card plays its own sound; (4) later: this as page-b's phone layout;
-  (5) his pick of the end page's spot (A-D, or a tweak): it then becomes the default, and the after-mailing ticket gets
+  (5) his pick of the end page's spot (A-D, or a tweak; the spots bench, `notes`): it then becomes the default, and the after-mailing ticket gets
   a place for it (with `?spot` it lands on the pump's globe in A-C and below the screen in D; unchanged without);
   a real night sky above the roof (outpainted) instead of the gradient would be art spend, his OK first.
 
