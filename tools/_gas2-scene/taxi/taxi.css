@@ -1,0 +1,101 @@
+/* GAS 2 page: the taxi to the store (Dan 2026-10-31: "the moment the user finishes downloading GAS 2, a vintage American
+   taxi stops and covers the gas station and honks twice; on the taxi it says TO THE STORE!; click it = a tyre screech and
+   the main site, landing on the store at Radio Roulette"). Every class carries tx- (the host page styles .key, .on, .open).
+   The car is one photo (gpt-image-2, painted into this scene's light) cut into layers so it can drive: the body, and per
+   wheel a turning ring under a fixed shade and a fixed chrome dome (README "The art"). Sizes are in cqw of the scene. */
+.tx { position: absolute; left: 0; width: 100%; z-index: 2; pointer-events: none;
+  /* the tyres stand on the stage's visible bottom: the scene is cropped top and bottom on wide windows */
+  bottom: max(0px, calc(50% - max(50vh, 280px)));
+  /* Dan 2026-10-31: "bigger, the sizes are not matching real life": a real cab at the curb is about the scene's width
+     (the pump is ~2 m tall at the wall; the car stands nearer the camera than the wall). Bench: ?taxi=bench. */
+  /* then "stop where you don't see the driver": it pulls up until the driver is past the left edge, the rear door in
+     front of you; the roof sign moved back over that door so its words stay whole (tools/make-glass.py) */
+  --tx-w: 105cqw; --tx-x: -53.8cqw; --tx-lift: -.2cqw; --tx-signc: .403; }
+/* it drives right to left (Dan, same day): the art faces right, so the car is mirrored; the sign's words are not */
+.tx-west { --tx-signc: .597; }
+.tx-west .tx-car, .tx-west .tx-hit, .tx-west .tx-sign { transform: scaleX(-1); }
+/* if the cab stands in front of the readings (a bigger or later stop on the bench), the lines it half hides step back
+   (a word peeking past the roof reads as a mistake); GAS 2 stays over the roof. Hidden = not focusable either. */
+.rd .lead, .rd .cta, .rd .scr { transition: opacity .35s, visibility 0s; }
+html.tx-here .rd .lead, html.tx-here .rd .cta, html.tx-here .rd .scr { opacity: 0; visibility: hidden; transition: opacity .35s, visibility 0s .35s; }
+.tx[hidden] { display: none; }
+.tx-car { position: absolute; left: var(--tx-x); bottom: var(--tx-lift); width: var(--tx-w); aspect-ratio: 2385 / 894; will-change: transform; }
+.tx-car img { position: absolute; display: block; user-select: none; -webkit-user-drag: none; }
+.tx-body { position: absolute; inset: 0; transform-origin: 21.5% 100.5%; will-change: transform; }
+.tx-body > img { inset: 0; width: 100%; height: 100%; }
+.tx-wheel { position: absolute; width: 14.591%; aspect-ratio: 1; isolation: isolate; }
+.tx-wheel.tx-r { left: 14.172%; top: 61.857%; }
+.tx-wheel.tx-f { left: 74.256%; top: 62.528%; }
+.tx-wheel img { inset: 0; width: 100%; height: 100%; }
+.tx-wheel .tx-spin { opacity: 0; }
+.tx-wheel .tx-shade { mix-blend-mode: multiply; }
+/* the ground: a long soft shadow under the sills + one contact shadow per tyre (dusk: no sun shadow) */
+.tx-shadow { position: absolute; left: 4%; right: 3%; bottom: -2.5%; height: 12%;
+  background: radial-gradient(closest-side, rgba(14, 8, 4, .72), rgba(14, 8, 4, .35) 55%, transparent); }
+.tx-shadow::before, .tx-shadow::after { content: ""; position: absolute; bottom: 8%; width: 17%; height: 70%;
+  background: radial-gradient(closest-side, rgba(8, 5, 2, .85), transparent); }
+.tx-shadow::before { left: 8.8%; }
+.tx-shadow::after { left: 70%; }
+/* the roof sign says it: real text on the lit glass, printed ink behind the light */
+.tx-sign { position: absolute; left: 30.02%; top: 2.9%; width: 20.55%; height: 8.05%; display: grid; place-items: center;
+  /* Dan 2026-10-31: the sign says just TAXI (the page's button says To the store) */
+  font: 400 calc(var(--tx-w) * .0262)/1 Bebas, Oswald, sans-serif; letter-spacing: .24em; text-indent: .24em; white-space: nowrap;
+  color: #3a1d0c; opacity: .92; mix-blend-mode: multiply; padding-top: .1em; }
+.tx-glow { position: absolute; border-radius: 50%; pointer-events: none; mix-blend-mode: screen; }
+.tx-head { left: 94.1%; top: 50.4%; width: 6%; aspect-ratio: 1; background: radial-gradient(closest-side, rgba(255, 236, 196, .85), rgba(255, 214, 150, .28) 45%, transparent); }
+.tx-tail { left: 1.2%; top: 54.4%; width: 3.6%; aspect-ratio: 1; background: radial-gradient(closest-side, rgba(255, 70, 40, .55), transparent); }
+.tx-lit { left: 27.8%; top: -3%; width: 25%; height: 20%; border-radius: 40%; background: radial-gradient(closest-side, rgba(255, 220, 160, .3), transparent);
+  opacity: .55; transition: opacity .25s; }
+/* the tail pipe, peeking out under the rear bumper (the art has none): the exhaust smoke comes out of it */
+.tx-pipe { position: absolute; left: -.5%; top: 77.9%; width: 3%; height: 1.35%; border-radius: 45% 20% 20% 45%;
+  background: radial-gradient(55% 65% at 12% 50%, #060504 60%, transparent 66%), linear-gradient(180deg, #6f6860, #36302a 45%, #15110e); }
+/* the exhaust and the tyre smoke are drawn on one canvas over the stage (taxi.js drawFx) */
+.tx-fx { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+/* after the download the house button turns over to the store, red and bold (Dan 2026-10-31: "make this button turn
+   around, become red, bold, reading To the store"): the GAS 2 red (the 2 and its rule), the honey button's own
+   lighting; taxi.js swaps the label and turns it. Out-ranks page-b's body[data-look] .rd .cta. */
+html body .rd .cta.tx-red { background: #b8341e; color: #f8ecd2; text-shadow: 0 1px 0 rgb(60 10 4 / .5);
+  box-shadow: inset 0 1px 0 rgb(255 196 170 / .45), inset 0 -2px 0 rgb(70 12 4 / .35), 0 1px 0 #5a160b, 0 2px 3px rgb(0 0 0 / .45), 0 2.8cqw 3.2cqw rgb(0 0 0 / .3); }
+@media (hover: hover) { html body .rd .cta.tx-red:hover { background: #c8442b; } }
+html body .rd .cta.tx-red:active { background: #a52f1a; }
+
+/* the control: an invisible button the shape of the car (a box would catch clicks in the sky over the trunk) */
+.tx-hit { position: absolute; left: var(--tx-x); bottom: var(--tx-lift); width: var(--tx-w); aspect-ratio: 2385 / 894; pointer-events: auto; cursor: pointer;
+  background: none; border: 0; padding: 0; outline: none; -webkit-tap-highlight-color: transparent;
+  clip-path: polygon(0 52%, 6% 40%, 21% 33%, 29% 11%, 34% 0, 56% 0, 58% 9%, 67% 12%, 76% 33%, 95% 42%, 100% 55%, 100% 93%, 84% 100%, 70% 100%, 64% 86%, 31% 86%, 25% 100%, 10% 100%, 0 92%); }
+.tx-hit[disabled] { pointer-events: none; cursor: default; }
+@media (hover: hover) { .tx-hit:hover ~ .tx-car .tx-lit { opacity: 1; } }
+.tx-hit:focus-visible ~ .tx-car { filter: drop-shadow(0 0 .12cqw #f2be4a) drop-shadow(0 0 .12cqw #f2be4a); }
+/* the caption, in the page's caption grammar (Tap the radio / Take it for a spin), over the roof sign */
+.tx-cap { position: absolute; left: calc(var(--tx-x) + var(--tx-w) * var(--tx-signc)); bottom: calc(var(--tx-lift) + var(--tx-w) * 894 / 2385 + .6cqw); transform: translateX(-50%);
+  display: flex; gap: .9em; align-items: baseline; white-space: nowrap; pointer-events: auto;
+  font: 600 max(13px, 1.05cqw) Oswald, sans-serif; letter-spacing: .2em; text-transform: uppercase; color: var(--paper, #efe3c2);
+  /* it sits over the pump's lit dial: a halo that hugs the letters (no box) */
+  text-shadow: 0 1px 2px #0b0806, 0 0 .35cqw rgba(11, 8, 6, .95), 0 0 .9cqw rgba(11, 8, 6, .85), 0 0 1.8cqw rgba(11, 8, 6, .7), 0 0 3cqw rgba(11, 8, 6, .5);
+  opacity: 0; transition: opacity .4s; }
+.tx-cap.tx-on { opacity: 1; }                         /* not .95: an opacity < 1 would cut its backdrop blur off from the scene */
+/* over the window posters: the scene right behind the words drops out of focus and down a stop, feathered all round
+   (the readings' FOCUS layer, small): no box, no edge */
+.tx-cap::before { content: ""; position: absolute; inset: -.9em -1.4em; z-index: -1; pointer-events: none;
+  -webkit-backdrop-filter: blur(3px) brightness(.5); backdrop-filter: blur(3px) brightness(.5);
+  -webkit-mask-image: radial-gradient(closest-side, #000 45%, transparent); mask-image: radial-gradient(closest-side, #000 45%, transparent); }
+.tx-cap b { font-weight: 600; color: var(--honey, #f2be4a); }
+.tx-cap button { font: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit; opacity: .78; background: none; border: 0; padding: 0;
+  cursor: pointer; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .25em; }
+.tx-cap button:hover, .tx-cap button:focus-visible { opacity: 1; outline: none; }
+/* the dust that carries you to the store */
+.tx-dust { position: fixed; inset: 0; z-index: 30; pointer-events: none; overflow: hidden; }
+.tx-dust i { position: absolute; border-radius: 50%; background: radial-gradient(closest-side, rgba(176, 150, 118, .9), rgba(150, 124, 96, .45) 55%, transparent); }
+.tx-dust::after { content: ""; position: absolute; inset: 0; background: #0b0a09; opacity: var(--tx-dark, 0); }
+@media (prefers-reduced-motion: reduce) { .tx-cap { transition: none; } }
+/* ?taxi=bench: size and place the parked cab by eye (top left: the readings and TUNE live on the right) */
+.tx-bench { position: fixed; left: 12px; top: 12px; z-index: 40; width: 280px; padding: 12px 14px; border: 1px solid #3a2410; border-radius: 8px;
+  background: rgba(18, 8, 4, .92); color: #efe9df; font: 12px Inter, system-ui, sans-serif; }
+.tx-bench b { display: block; margin-bottom: 6px; font: 400 16px Bebas, sans-serif; letter-spacing: .12em; color: #e8c878; }
+.tx-bench label { display: grid; grid-template-columns: 40px 1fr 44px; gap: 8px; align-items: center; margin: 6px 0; }
+.tx-bench input { accent-color: #e8c878; }
+.tx-bench output { text-align: right; color: #e8c878; font-variant-numeric: tabular-nums; }
+.tx-bench-row { display: flex; gap: 6px; margin: 10px 0 6px; }
+.tx-bench-row button { flex: 1; padding: 6px; border: 1px solid #3a2410; border-radius: 4px; background: #2a1c10; color: #efe9df; font: 600 11px Inter, sans-serif; letter-spacing: .1em; cursor: pointer; }
+.tx-bench-row button:hover { border-color: #e8c878; }
+.tx-bench small { display: block; color: #a99f90; line-height: 1.4; -webkit-user-select: text; user-select: text; }

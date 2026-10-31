@@ -280,6 +280,11 @@ so much", "this is amazing"; `tools/_gas2-scene/page-b.html` on `feat/gas2-page`
 - **Copy: punchy and minimal.** No tagline when the signature carries it, no spec line, no FREE tag (the
   button says it), no claim that needs a footnote (no "one dial" when there are three controls).
 - Tuned at Dan's Safari 1141x636 and checked at 1440x900 / 1920x953: the column stays in the open sky.
+- **After the download (the GAS 2 page's taxi, Dan 2026-10-31: "make this button turn around, become red, bold, reading
+  To the store").** When the cab pulls up, the honey button turns over (a quarter turn out, a quarter turn back, ~0.7 s)
+  and comes back red, bold, "To the store": the GAS 2 red of the 2 and its rule (#b8341e), the house button's own
+  lighting, the label in the title's face. It sends the waiting cab. The one red button in the house, by Dan's word: the
+  "no race-red on buttons" rule (§2) stands everywhere else. The cab's roof sign says just TAXI.
 
 **A product page on a phone is rebuilt for portrait, never a crop of the desktop scene (the GAS 2 page, Dan
 2026-10-24).** Three ways of showing the wide station photo on a phone (a sideways swipe, a scroll-driven camera,

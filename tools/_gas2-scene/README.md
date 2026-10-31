@@ -17,6 +17,9 @@ python -m http.server 4462 --bind 127.0.0.1
 - `ab.html` — A and B side by side (or Flip with A / B / Space) at real window sizes.
 - `page-b.html?bench` — the shared RevAudio bench harness on B (click, drag, resize, fonts, colors, EXPORT). Needs
   `bench.js` next to the page: symlink or copy `revaudio-shared/tools/bench/bench.js` here (not committed: machine path).
+- The taxi to the store — after MAIL ME THE KEYS a 1950s cab pulls up at the curb, idles, honks; a click (or the button,
+  now a red "To the store") = tyre squeal, dust, the store at Radio Roulette. `?taxi=park` shows it parked, `?taxi=bench`
+  sizes it. How it works: `taxi/README.md`.
 - TUNE (button bottom right, or T) — readings position / size + the 4 looks (Now / Neon / Enamel / Badge).
 
 ## Who works on what (one writer per file set)
@@ -28,6 +31,8 @@ python -m http.server 4462 --bind 127.0.0.1
 - **The window posters (were the notes) + the pump spotlight (`.note*` / `.poster` `.pk/.pl/.ps` + `props/poster-*.webp`, `.pumpCut` / `.pumpLit`, TUNE → Spotlight,
   `props/pump-cut.png`): Dan's 2nd session (danavivi-59), branch `feat/gas2-page-s2`, from 2026-10-23.** Merged with
   `feat/gas2-page` into `main` 2026-10-23.
+- **The taxi to the store (`taxi/**` + its one `<link>`/`<script>` line in `page-b.html`): Claude Code `danavivi-a5`,
+  from 2026-10-31.**
 - Claims and state: `tasks/handoff.md` (top entry).
 
 ## Not in git

@@ -1,3 +1,30 @@
+# GAS 2 taxi to the store (branch `feat/gas2-taxi`, 2026-10-31, danavivi-a5) — LAPTOP PAGE FIRST, phone after
+
+Dan (2026-10-31): "the moment the user finishes downloading GAS 2, a vintage American taxi stops and covers the gas
+station and honks twice; on the taxi it says TO THE STORE!; when the user clicks the taxi there's a tyre-screech sound and
+a move to the main site; the user lands on the store screen at Radio Roulette". Then: "do it on the laptop page, then the
+phone", "use whatever tools you need for the best result".
+
+## Steps
+- [x] 0. Branch `feat/gas2-taxi` off `origin/feat/gas2-drone` @ `951936d` (no upstream: a bare push can't reach the
+      drone branch). Mine: NEW `tools/_gas2-scene/taxi/**`, ONE `<link>` + `<script>` line in `page-b.html`, one README
+      line pair, this section, the handoff entry. `drone/**` (revaudio-59) and `player/**` (Yoni) untouched.
+- [x] 1. Sound (CC0 recordings from freesound.org, commercial use OK, no credit needed; sources in `taxi/README.md`):
+      arrive (an old car rolls in on dirt and stops), honk (two blasts of an old Ford V-8 horn), peel (tyre squeal over
+      the engine pulling away). Cut + balanced: -21 / -15 / -15 LUFS, 91 KB in all.
+- [x] 2. Art (gpt-image-2, ~$1, one call, 2 takes; take 2 kept): the taxi painted INTO the scene (the page frame as the
+      image, so its light is the page's), lifted out with Apple Vision, the wheels cut out to roll (ring turns, shade + dome
+      stay put), blank lit roof sign (TO THE STORE! is real text). `taxi/README.md` "The art".
+- [x] 3. v1 built + checked headless (Chromium + WebKit 1141x636 / 1440x900: parked, no errors; Chromium: send -> roll-in
+      -> park -> click -> dust -> the store URL). `taxi.js` + `taxi.css`: after SENT the ticket closes, the taxi drives in from the left (wheels roll, the nose
+      dips on the brake), parks in front of the station, honks twice; click / Enter = squeal, wheelspin, it peels off
+      right, the dust fills the screen, then the store at Radio Roulette. Sound pans with the car. Reduced motion: it is
+      just there; no drive. A quiet "not now" / Esc sends it away calmly (the radio and pump sit behind it).
+- [ ] 4. The landing: `/store#radio-roulette` (the store page needs an id on the Radio Roulette card; separate small
+      change off `main`, Dan's word before it ships).
+- [ ] 5. QA: Chromium + WebKit at 1141x636 / 1440x900 / 1920x1080, no errors, reduced motion, keyboard; Dan's Safari.
+- [ ] 6. Dan's look, then the phone page (postcards end page).
+
 # DRIFT #hear — a new panel under the player: worn, crashed, Japanese + graffiti (2026-10-26, revaudio-ef, same branch)
 
 Request (laptop 1 user): "the panel that everything sits on is a different panel, use OpenAI for it ... three different

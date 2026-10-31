@@ -1,3 +1,15 @@
+## 2026-10-31 — GAS 2 page: the taxi to the store (Claude Code `danavivi-a5`, Dan's Mac) — BRANCH `feat/gas2-taxi`
+
+Claim: OPEN `danavivi-a5`. Laptop page first (`page-b.html`), then the phone page. Plan + state: `tasks/todo.md` top section.
+On `main` (2026-10-31, Dan: "commit push to main"): the taxi as ONE commit (rounds 1-5, squashed from `feat/gas2-taxi`),
+its line in main's `page-b.html` after the radio line, plus the store card anchors (`src/components/PluginCard.astro`,
+from `feat/store-rr-landing`). NOT in it: the drone intro (`revaudio-59`'s `feat/gas2-drone`, gated on CATCH10), which
+the taxi branch was built on top of; the taxi does not need it. The `tools/` scene is not part of the built site; the
+store anchors are (live on deploy). Next: the phone page (postcards).
+Files (mine): NEW `tools/_gas2-scene/taxi/**`; in `page-b.html` ONE `<link>` + `<script>` line (after the drone line),
+nothing else of page-b's; one README line pair; the todo section; this entry. Branched from `origin/feat/gas2-drone`
+@ `951936d` with no upstream; `revaudio-59` keeps its claim on `feat/gas2-drone` and its files.
+
 ## 2026-10-29 — Blog: "How to glue a mix with saturation" (Claude Code `revaudio-59`, Yoni's laptop 2) — PUSHED TO MAIN = LIVE 2026-10-29 (Yoni: "deploy it")
 
 Claim: CLOSED 2026-10-29. File: `src/content/blog/how-to-glue-a-mix-with-saturation.mdx` (new). Commit `111dd5e` on top of origin/main `87dc172`, made in a scratch worktree off origin/main because this clone is 3 ahead / 127 behind (the 3 ahead are another session's; untouched, not pushed).
