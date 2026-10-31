@@ -1,6 +1,6 @@
 ## 2026-10-29 — GAS 2 page: the PHONE page as POSTCARDS (Claude Code `danavivi-75`, Dan's Mac) — BRANCH `feat/gas2-postcards`, pushed (not main)
 
-Claim: OPEN `danavivi-75`. Round 9 (motion on Dan's iPhone) BUILT + checked, then a ponytail pass (`205661d`) and the keyboard slide-up (`6c91731`); the review page = round 10 (version 12, build `6c91731`); the branch tracks `origin/feat/gas2-postcards` (pushed on Dan's "commit everything and push it"; not main, no deploy). Branched from `origin/feat/gas2-drone` @ `4fc6ddd` (no upstream set, so a bare push
+Claim: OPEN `danavivi-83` (took the postcards over 2026-10-31 from `danavivi-75`, no longer running: the end page's scene spots, phone only). Round 9 (motion on Dan's iPhone) BUILT + checked, then a ponytail pass (`205661d`) and the keyboard slide-up (`6c91731`); the review page = round 10 (version 12, build `6c91731`); the branch tracks `origin/feat/gas2-postcards` (pushed on Dan's "commit everything and push it"; not main, no deploy). Branched from `origin/feat/gas2-drone` @ `4fc6ddd` (no upstream set, so a bare push
 can't reach the drone branch); `revaudio-59` keeps writing `feat/gas2-drone`, so this branch stays out of its files.
 Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postcards/**`; one README line pair; the
 "GAS 2 phone POSTCARDS" section on top of `tasks/todo.md`; this entry. Read only: `page-b.html` (copy, ticket), `fonts/`,
@@ -209,9 +209,27 @@ Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postca
   `postcards/img/poster-level.webp`). Checked locally (Chrome 1280 + WebKit 390): 12 sections by title, pin, note, ✓,
   reload, copy, the live frames (card 6 runs the new build: the stack slides, `typing` on focus), no sideways
   scroll, 0 errors; the shots = round 9's but for the record's angle.
+- Then (`danavivi-83`, Dan 2026-10-31, phone only: "when user lands on this page lets try different areas of the screen
+  that also involves the gas pump / lets try a different spots of background image from the scene for the end page"):
+  `?spot=` (JS `place()`, the `SPOTS` table) frames the end page on another part of `f6-v17` and moves the blurred
+  frame behind the cards with it (vars `--cl/--ct/--cw/--ch`, so the focus pull still lines up: measured 0.01 px);
+  no `?spot` = the signed-off sky, pixel-identical to `c947709` at 402x714, 375x553 and 430x750 (cards 1, 5 back, 6, 7,
+  7 sent; the one diff, the mailbox rising on card 6 at 375x553, varies run to run on the old build too). Why the
+  spots look like this: the frame is 3:2 with the pump at x 335-590 and the open sky right of x 965, so a portrait
+  crop can't hold the pump and the readings' sky together; A-C zoom out (0.58-0.75 of "the frame's height fills the
+  screen") and put the readings in a night above the roof: the frame's top edge fades (`--cm` mask) into a navy taken
+  from the frame's own top-of-sky (`#152d4c` sampled, `#0e1b2d` -> `--bg`). A = the station front (radio, pump,
+  barrel), B = the pump close (base on the screen's bottom, the endbar over its knobs), C = the pump at the left and
+  the desert sunset at the right (the canopy's eave, both lamps), D = the station on top and the readings below (the
+  button in thumb reach). `?spot=z,x,y,tx,ty,r` tries any framing. Readings clear the pump's globe by 11-27 px at all
+  five check sizes. iOS Simulator (iPhone 17 Pro, 127.0.0.1:4466, a no-store server from the session scratchpad) shots
+  of all four + card 1 with B: right. check.cjs 42 steps + 35 layouts pass, 0 errors.
 - Open (Dan): (1) his word from the phone; more notes go to `notes-r10`;
   (2) painted art still only on his OK;
-  (3) per-grade renders (Yoni) before any grade card plays its own sound; (4) later: this as page-b's phone layout.
+  (3) per-grade renders (Yoni) before any grade card plays its own sound; (4) later: this as page-b's phone layout;
+  (5) his pick of the end page's spot (A-D, or a tweak): it then becomes the default, and the after-mailing ticket gets
+  a place for it (with `?spot` it lands on the pump's globe in A-C and below the screen in D; unchanged without);
+  a real night sky above the roof (outpainted) instead of the gradient would be art spend, his OK first.
 
 ## 2026-10-28 — GAS 2 page: the drone intro, from scratch (Claude Code `revaudio-59`, laptop 1) — BRANCH `feat/gas2-drone`
 

@@ -86,6 +86,12 @@ Dan's concept (2026-10-29): a stack of 1950s "Greetings from GAS 2" postcards, p
       size and slides up over the keys; check.cjs 42 + 35 pass.
 - [x] 27. Dan: "open the bench": review page round 10 (`notes-r10`) = version 12 on `6c91731`.
 - [ ] 28. Dan's word from the phone + his round-10 notes (and the check page: Reduce Motion on or off?).
+- [x] 29. Dan (2026-10-31, phone only: "lets try different spots of background image from the scene for the end page",
+      spots with the pump in them): `?spot=a-d` frames the end page (and the blurred frame behind the cards) elsewhere;
+      no spot = the signed-off sky, pixel-identical. A the station front, B the pump close, C the pump + the desert,
+      D the station on top with the button low; A-C put the readings in a navy night above the roof. check.cjs 42 + 35 pass.
+- [ ] 30. Dan picks a spot (or a tweak): it becomes the default; then place the after-mailing ticket for it (in A-C it
+      lands on the pump's globe, in D it falls below the screen).
 
 # GAS 2 drone descent (branch `feat/gas2-drone`, 2026-10-28, revaudio-59) — SCENE + BENCH BUILT, art next
 
