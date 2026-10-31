@@ -54,7 +54,7 @@ const thumbK = (plugin.cardThumbMaxWidthPct ?? 100) / 100;
 const thumbSizes = `(max-width: 1020px) ${Math.ceil(92 * thumbK)}vw, ${Math.ceil(30 * thumbK)}vw`;
 ---
 
-<div class="plugin-card-wrap">
+<div class="plugin-card-wrap" id={plugin.slug}>
 <a class="plugin-card" href={`/${plugin.slug}`} data-reveal="card">
   <div
     class:list={['card-thumb', { 'is-plate': isPlate, 'is-bare': isBare }]}
@@ -153,6 +153,17 @@ const thumbSizes = `(max-width: 1020px) ${Math.ceil(92 * thumbK)}vw, ${Math.ceil
 
 <style>
   .plugin-card-wrap { position: relative; }
+
+  /* A link to /store#<slug> lands on that card under the nav (html scroll-padding-top), e.g. the GAS 2 page's taxi
+     "to the store" drops you at #radio-roulette (Dan 2026-10-31). The card's edge catches the lamp once, then settles. */
+  .plugin-card-wrap:target .plugin-card {
+    outline: 1px solid rgb(232 200 120 / 0);
+    outline-offset: 6px;
+    animation: card-arrive 2.4s var(--ease-settle, cubic-bezier(.22, 1, .36, 1)) .6s;
+  }
+  @keyframes card-arrive {
+    25% { outline-color: rgb(232 200 120 / .9); box-shadow: 0 0 40px rgb(232 200 120 / .16); }
+  }
 
   /* Store grid: Add to cart / Download, sat in the footer row to the right of
      the card CTA. A sibling of the card <a> (never nested in it). The look is
