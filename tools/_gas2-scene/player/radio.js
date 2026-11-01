@@ -8,7 +8,7 @@
   const BASE = new URL('.', document.currentScript.src).href;
   // the renders: <id>_before / <id>_after, sample-aligned, level-matched (player/tools/prep_audio.py: every file -16 LUFS).
   const STATIONS = [
-    { id: 'hiphop', name: 'HIP HOP', a: 'audio/hiphop_before.m4a', b: 'audio/hiphop_after.m4a', gas: { grade: 'PREMIUM', amount: 140 } },   // Yoni's renders 2026-11-01 (caption = the 2026-10-23 render's settings)
+    { id: 'hiphop', name: 'HIP HOP', a: 'audio/hiphop_before.m4a', b: 'audio/hiphop_after.m4a', gas: null },   // Yoni's renders 2026-11-01 (no settings caption, Yoni 2026-11-01)
     { id: 'pop', name: 'POP', a: 'audio/pop_before.m4a', b: 'audio/pop_after.m4a', gas: null },   // Yoni's renders 2026-11-01
     { id: 'electronic', name: 'ELECTRONIC', dial: 'ELEC.', a: 'audio/electronic_before.m4a', b: 'audio/electronic_after.m4a', gas: null },   // Yoni's renders 2026-11-01; the dial prints ELEC. (Yoni 2026-10-23)
     { id: 'rock', name: 'ROCK', a: 'audio/rock_before.m4a', b: 'audio/rock_after.m4a', gas: null },   // Yoni's renders 2026-11-01   // 4 stations (Yoni 2026-10-23: hip hop, pop, electronic, rock)

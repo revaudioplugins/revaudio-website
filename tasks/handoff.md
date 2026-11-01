@@ -6,8 +6,7 @@
   I = -16.0 LUFS, true peak <= -1.2 dBFS. The page now plays ~5 dB quieter than the 10-23 files.
 - ELECTRONIC gets real files (was the placeholder): `radio.js` PH + `placeholder_*.m4a` removed. The phone page's HEAR IT
   card plays the hip hop pair, so it follows.
-- Open: the HIP HOP caption still prints PREMIUM 140 (the 10-23 render's settings): Yoni to confirm the new render's
-  grade/amount.
+- HIP HOP settings caption removed (Yoni 2026-11-01: "no need for the settings"); no station prints GAS 2 settings now.
 
 ## 2026-10-15 — Home LIBRARY: the TV becomes the plugin browser, carousel + Store nav out, branch `feat/home-library` (Claude Code `revaudio-a0`, was `revaudio-a6` before a restart, laptop 1) — PUSHED TO MAIN = LIVE 2026-11-01 (the user: "push"; main `2eea1f2` -> `3a19a87`, a fast-forward)
 - User: one new branch for the home page; a top-right LIBRARY button opens plugin categories on the TV; a category
