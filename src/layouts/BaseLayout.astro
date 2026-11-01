@@ -96,12 +96,14 @@ const canonical = new URL(Astro.url.pathname, Astro.site).href;
 
     {/* Cloudflare Web Analytics. No SRI: CF rotates beacon.min.js and ships it
         without a published hash, so a pinned integrity would break on update.
-        Token is a public beacon id, not a secret. */}
+        Token is a public beacon id, not a secret. spa false: the beacon counts every
+        history change (query included) as a page view, so each click on the home
+        TV (?cat= / ?plugin=) was one; this site is multi-page. */}
     {analyticsOn && (
       <script
         defer
         src="https://static.cloudflareinsights.com/beacon.min.js"
-        data-cf-beacon={`{"token": "${site.cfBeaconToken}"}`}
+        data-cf-beacon={`{"token": "${site.cfBeaconToken}", "spa": false}`}
       ></script>
     )}
 
