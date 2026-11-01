@@ -265,7 +265,7 @@ Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postca
 - Open (Dan): (1) his word from the phone; more notes go to `notes-r10`;
   (2) painted art still only on his OK;
   (3) per-grade renders (Yoni) before any grade card plays its own sound; (4) later: this as page-b's phone layout;
-  (5) the taxi on his iPhone with sound (the Simulator has none): a Wi-Fi URL from this Mac, on his OK.
+  (5) the taxi on his iPhone with sound (the iOS Simulator plays it through the Mac; the phone itself needs a Wi-Fi URL from this Mac, on his OK).
 
 ## 2026-10-28 — GAS 2 page: the drone intro, from scratch (Claude Code `revaudio-59`, laptop 1) — BRANCH `feat/gas2-drone`
 
