@@ -83,9 +83,9 @@ export const drift = {
   randomizeInBuild: false,
 
   /** DRIFT leads the homepage: first slide of the plugin carousel + first word-wall panel, even while
-   *  catalog status is 'in-development' (Dan 2026-10-08, "first slide until Nov 1"). Flip false at release
-   *  and DRIFT drops back to its catalog slot. */
-  homeLead: true,
+   *  catalog status is 'in-development' (Dan 2026-10-08, "first slide until Nov 1"). Off since 2026-11-01 (the
+   *  user): DRIFT sits in its own slot on the home TV (library.ts TV_ORDER); its open trial keeps it there. */
+  homeLead: false,
 };
 
 export const formatsMac = () => (drift.aaxReady ? 'VST3 · AU · AAX' : 'VST3 · AU');
