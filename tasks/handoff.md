@@ -299,6 +299,13 @@ Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postca
   commits, all `danavivi-83`; not main, no deploy). Dan's phone test: "done" (2026-11-01; `notes-r14` empty); the
   Simulator's server (:4466) and the Wi-Fi link (10.0.0.103:4470) stopped. Next: Dan's word on merging to main (the
   site), the open items in todo 34.
+- MERGED TO MAIN (Dan 2026-11-01: "merge to main", his pick "phone page only"): `1ddb18a` on main (fast-forward from
+  `ddd0ebc`), ONE squash: the phone page + the shared taxi + the postcards' DESIGN.md rules, lessons, this entry, its
+  todo section, the README lines; built in a temporary detached worktree from origin/main (removed after). NOT on
+  main: revaudio-59's drone intro, radio knob work and page-b edits that this branch sits on (unreviewed). Checked on
+  the merged tree before the push: check.cjs 47 + 40, 0 errors; page-b identical. Before it, this branch dropped the
+  radio-knob design files Dan moved private on 10-29 (`2a6d9ea`; they stay in the old commits of the public repo).
+  Still: the page is a mockup in `tools/`; revaudio.net shows it only once it's built into `src/`.
 - Open (Dan): (1) his word from the phone; more notes go to `notes-r10`;
   (2) painted art still only on his OK;
   (3) per-grade renders (Yoni) before any grade card plays its own sound; (4) later: this as page-b's phone layout;
