@@ -266,6 +266,10 @@ two to start: drive a let-go frame by frame from that speed, springs not fixed c
 (a scale change repaints the layer); a held object's deeper shadow fades in on its own layer; heavy work (decoding,
 drawing a canvas) waits for a still hand and runs a few ms a frame. Measure on a 4x-slowed CPU: no frame over 33 ms.
 
+A button that turns over to a new job turns hard and fast (the GAS 2 phone page's taxi, Dan 2026-11-01: "I want it to
+flip harder faster"): about 0.4 s, a deep turn that lands with a punch and the house snap curve. And it keeps its size
+and place whatever the new label says (same day: "To the store" the same size as "Download FREE").
+
 ## 7. Hero + glanceability
 
 THE hero is the gauge medallion with "Engineered, Then Tuned." over it. One glance: brass tach,
@@ -315,6 +319,11 @@ Typing on a phone (the GAS 2 postcards, Dan 2026-10-30, on his iPhone: "it's not
 never shrinks the thing you write on. iOS 26 cuts the page to what's above the keys, so a layout sized by the viewport
 halves and its px-floored type runs together. Keep the object's size on focus and slide it up until the field, its
 options and its button sit just over the keys; the page's own controls step aside until the keyboard goes.
+
+A product page's end on a phone frames the subject, not the desktop's open sky (the GAS 2 postcards, Dan 2026-11-01,
+picked from four spots on a bench): a portrait crop can't hold the pump and the sky together, so the station and its
+pump go on top and the readings hang under them on the dark ground, their top just under the pump's base at every
+screen height. The blur behind the cards is the same spot, so the focus pull lands on it.
 
 ## 9. Do's & don'ts
 
