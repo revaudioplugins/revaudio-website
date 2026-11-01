@@ -637,6 +637,19 @@ Outside this branch (to the user):
 - Screenshots cited above: `tasks/evidence/persona-qa-2026-11-01/shots/` (the full sets stayed in the session's
   scratchpad).
 
+The user's decisions after the round (2026-11-01):
+- Step 2 scope: the lit name AND the blurb glitch, rarely; never the price, the keys or the form; everything frozen
+  while the form is open; off under reduced motion, high contrast and forced colours. (Over the personas' "name
+  only".) The law changes when step 2 is built: design-language §3's exception + DESIGN.md §4, same session.
+- D6: a REQUIRED terms box, as asked (over the personas' line). Built to their access notes: a 24 px+ target, the
+  links outside the label, a worded error beside it, the site's page names ("Terms & Conditions", "Licence terms");
+  Privacy is a notice link, never inside "agree".
+- D5: B (the verify link returns to the TV on that plugin with Mac / Windows keys on its screen; the worker change
+  goes live only on the user's word).
+- Extras: step 8 (the 10 % pop-up off the TV) and step 9 (the specs / terms strip) are IN; step 10 (BUY on the TV)
+  and step 11 (HEAR IT on the TV) are OUT.
+- Still open: D7 (the second key's words), D8 (the screen type, on the bench), D9 (`.rv-btn`).
+
 Approved-look pushback (taste, the user decides): hollow unlit names read greyed out / unavailable (Maya, Ron:
 3.56:1); the hero names no plugin or "free" (Maya, Lena, Kai); GAS's text squeezed into 192 px beside its tall
 window; the huge names spend half the screen on four plugins; FREE shows one lonely row; facts beside the five
