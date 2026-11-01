@@ -648,7 +648,22 @@ The user's decisions after the round (2026-11-01):
   goes live only on the user's word).
 - Extras: step 8 (the 10 % pop-up off the TV) and step 9 (the specs / terms strip) are IN; step 10 (BUY on the TV)
   and step 11 (HEAR IT on the TV) are OUT.
-- Still open: D7 (the second key's words), D8 (the screen type, on the bench), D9 (`.rv-btn`).
+- Still open: D7 (the second key's words), D9 (`.rv-btn`).
+
+#### The menu line and the reading (done 2026-11-01, `revaudio-b5`)
+
+The user, on the category line: "more visible, different fonts ... understand exactly what he needs to do", the
+reading "bigger, bolder ... sexier and much more comfortable". Three menu looks + three readings went on
+`/__wwbench` (e317518, e6afc0a); the user picked menu C (CHANNEL GUIDE) + reading A (TINTED SANS), plus eight
+slider values (list share 46, name max 5.5, thumbnail 9.8, dim 1, scanlines .2, motion 24 px / 560 ms, breath
+15px). Baked into `WordWall.astro`, the bench's switches retired (8005bb3). That closes D8 (the reading = Inter).
+- The menu: "PICK A CATEGORY ▸" (shown only with the script; the h2 keeps "Plugins" for a screen reader), the
+  categories as big Bebas words with a count each, the pick in inverse video.
+- The thumbnail at 9.8rem made four rows 21 px too tall for 1280x665 (45 px at 1141x636): it now fits the room's
+  height the way the names do.
+- Checked: one screen at 1141x636, 1280x665, 1440x900, 1728x1000 and on 390x844, 375x667, 360x740, 430x932
+  phones with DRIFT, RevLimiter and GAS lit; no JS = a plain PLUGINS title; `npm run build` green. At 1280x665
+  DRIFT's window is 406 px wide (was ~455): the bigger text's price.
 
 Approved-look pushback (taste, the user decides): hollow unlit names read greyed out / unavailable (Maya, Ron:
 3.56:1); the hero names no plugin or "free" (Maya, Lena, Kai); GAS's text squeezed into 192 px beside its tall

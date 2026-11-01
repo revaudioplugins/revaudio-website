@@ -80,24 +80,40 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
   between the plugins lives in the TV, only there, only on home). One broken CRT set on the garage wall
   (Dan 2026-10-14: "every plugin on the TV, only the screen changes, like changing channels"). The
   carousel and the Store nav item went. On the screen, the set's own menu and a channel guide:
-  - Menu (`.ww-osd`): the kicker PLUGINS + the categories (`src/data/library.ts`: ALL first, then every
-    category a plugin on the TV sits in; an empty one is hidden; short labels on phones). Mono caps in
-    the channel's phosphor, the picked one in inverse video (a lit key, dark type). Buttons, shown only
-    once the script runs.
-  - List (left, `--ww-list-share` 50 % of the screen): one row per plugin = a small window thumbnail
-    (`--ww-thumb-w` 6.9rem, 4.6 on phones), the name in the stencil the five words used to be (Bebas,
-    outlined in the channel's phosphor, `--ww-dim` .62 unlit, the lit one filled + glowing) and a plain
-    type word ("one-knob saturator"). All names share one size: min(`--ww-name-max` 4.5rem, what the
-    column fits, what the room's height fits for four rows). The rows are real links to the product
+  - Menu (`.ww-osd`), a channel guide (the user's bench pick of 2026-11-01, option C of three; asked
+    for "more visible ... the user should understand exactly what to do there", bigger and bolder, in the
+    brand, after the GAS 2 and DRIFT pages): the ask "PICK A CATEGORY ▸" in big Bebas (the ▸ blinks like
+    a set's cursor; still under reduced motion), then the categories (`src/data/library.ts`: ALL first,
+    then every category a plugin on the TV sits in; an empty one is hidden) as big Bebas words, short
+    labels everywhere (the full name stays the key's aria-label), each with how many plugins it holds as
+    a small superscript, the picked one in inverse video (a lit key, dark type). Buttons and the ask show
+    only once the script runs; without it the title is a plain PLUGINS (the heading keeps "Plugins" for a
+    screen reader either way). One row on every laptop from 1141 (smaller there), wrapping on phones.
+  - List (left, `--ww-list-share` 46 % of the screen): one row per plugin = a window thumbnail
+    (`--ww-thumb-w` 9.8rem, 4.6 on phones; less on a short laptop: it fits the room's height for four
+    rows as the names do), the name in the stencil the five words used to be (Bebas, outlined in the
+    channel's phosphor, `--ww-dim` 1 = the unlit ones at full strength, the lit one filled + glowing) and
+    a plain type word ("one-knob saturator"). All names share one size: min(`--ww-name-max` 5.5rem, what
+    the column fits, what the room's height fits for four rows). Values: the user's bench pick of
+    2026-11-01. The rows are real links to the product
     pages (crawlable; no JS = a plain list); the script makes them tabs (arrows / Home / End light and
     move, a modified click still opens the page).
   - The lit plugin (right; every panel in one grid cell, so a swap never moves the page): its window
     (DRIFT's is the live run: it plays only while lit and on screen, never under reduced motion), the
-    name + type word, the blurb, the five words as one small mono line (the hot word lit; a line breaks
-    between words, never before a dot), the price (`$49` / `$19` / `Free` / `Free beta`), ONE lit key
+    name + type word, the blurb, the five words as one line (the hot word lit; a line breaks between
+    words, never before a dot), the price (`$49` / `$19` / `Free` / `Free beta`), ONE lit key
     "Try free for 30 days" (TrialGateModal's email gate with the licence-worker id; GAS "Free download"
     through the same gate; DRIFT to `/drift#try`) and a small "Product page ->" link. GAS's tall panel
-    stands beside its text. No Add to cart on home: buying stays on the product page.
+    stands beside its text (at least `--ww-side-min` 16rem wide, 17 on a small laptop). No Add to cart on
+    home: buying stays on the product page.
+    - Reading (the user's bench pick of 2026-11-01, option A of three; asked for "sexier and much more
+      comfortable to understand"): bigger and bolder, still the house faces. The name in Bebas up to
+      2.7rem; the type word, the five words and "Product page" in Oswald 600; the blurb in Inter 500 at
+      1.1rem, tinted with the channel (`hsl(ch-h 30% 92%)`); the price 2.15rem; the key's label 1.3rem.
+      Bigger type takes height from the window (it takes what the text leaves): on a tight screen (a
+      small laptop to 1200 wide, a phone under 760 tall) the text keeps its look at about its old size,
+      and the small laptop keeps the price row on one line (wrapped, DRIFT's window went 195 -> 54 px
+      tall). The two mono readings (Share Tech Mono, VT323) read more like a screen but less easily.
   - Channels (Dan's pick: each plugin its own screen colour): one hue + saturation per plugin on `.ww`
     (`--ww-ch-<slug>-h` / `-s`): RevLimiter amber 26 / 78 (kept above ~20 so it never reads as
     race-red), GAS brass gold 46 / 62, Radio Roulette warm dial-glass cream 38 / 28, DRIFT violet
@@ -114,8 +130,8 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
       into place (the crane's door; the bench's RISE / DROP). Never from the list's order, a key or a
       category: a direction that changes with the pick reads as random.
     - The leaver drifts `--ww-mv-out-px` 4 the way the motion runs as it fades in `--ww-mv-out-ms` 120.
-      The newcomer comes from `--ww-mv-px` 12 the other side, fading and travelling as ONE tween
-      (`--ww-mv-in-ms` 340, power3.out), so it is solid only once it is in place: a fade quicker than
+      The newcomer comes from `--ww-mv-px` 24 the other side, fading and travelling as ONE tween
+      (`--ww-mv-in-ms` 560, power3.out; the user's bench pick of 2026-11-01, was 12 / 340), so it is solid only once it is in place: a fade quicker than
       its travel (TUNE's 180 vs 600ms) read as a solid picture sliding. `room()` caps the travel so the
       picture stays on the glass.
     - The text follows in reading order (name, blurb, words, price row), the same way and on the same
@@ -180,12 +196,12 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
   - `WALL_BG` (built 'screen' | 'wood'): /drift's digital screen (the keep-it TV's phosphor tube) full
     bleed behind the content: the scanlines + grille ON the glass (`.ww-screen::after`), UNDER the text and
     the pictures; only the glass's smooth light (reflection, room light, curvature) lies over everything
-    (glow `--ww-scr-bright` 1.37, scanlines `--ww-scr-scan` .42). The list share, name size, thumbnail
-    width, glow and scanlines are the user's bench pick of 2026-10-18 (`/__wwbench`). 2026-10-19 the user:
+    (glow `--ww-scr-bright` 1.37, scanlines `--ww-scr-scan` .2). The glow is the user's bench pick of
+    2026-10-18 (`/__wwbench`); the scanlines, list share, name size and thumbnail width of 2026-11-01. 2026-10-19 the user:
     the reading suffered "because of the pixels". Over everything, a 1 px line every 3 px crossed every
     letter and the Try key; on a phone (3 device px per CSS px) each line was a band. The text and the
     plugin's picture are clean now (the user's pick over keeping the lines on the pictures); the empty glass
-    keeps the lines at .42. `.ww-screen`, `.ww-screen-fx` and `.ww-frame` live on
+    keeps the lines (.2 since 2026-11-01). `.ww-screen`, `.ww-screen-fx` and `.ww-frame` live on
     `.ww`, outside the panels. 'wood' = the garage wall, brass type.
   - `WALL_FRAME` (built '2' | '1' | '3' | 'rails'): a beat-up CRT cabinet front 9-sliced round the
     screen in place of the brass rails (`tv-broken-1/2/3.png`, AI blank rolls; cracked corner with a
@@ -201,7 +217,7 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
     live") in the chin, dark until the TV powers on. 'rails' = the brass rails.
   - One screen (Dan 2026-10-14: "when I scroll, the site fits the screen exactly, not past the edges top
     and bottom"): the TV section is `100svh - --site-nav-h` tall (min-height, behind `@supports (height:
-    100svh)`), `.ww` pads from the rails to the opening + `--ww-breath` (16px), and the content is sized
+    100svh)`), `.ww` pads from the rails to the opening + `--ww-breath` (15px), and the content is sized
     to the glass (`--ww-room`): the names as above; each window width-capped by its aspect (`--ww-ar`)
     to the height its panel's text leaves (`--ww-info-h`, with the menu's `--ww-osd-h`: the script
     measures both, the CSS values are the no-JS estimates); GAS height-capped. Measured 2026-10-18: it
