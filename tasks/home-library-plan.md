@@ -486,7 +486,163 @@ because it is Radio Roulette" is the mess the user ruled out.
       68 / 68; `benchsmoke.mjs` 15 / 15; `motioncheck.mjs` at chance 1 Chromium 233 / 233. `npm run build` green,
       the LAN preview serves the new script.
 
-### Phase 5: later, each on its own branch
+### Phase 5: the TV sells (planned 2026-11-01, Claude Code `revaudio-b5`, laptop 1; waiting for go)
+
+The user, 2026-11-01, after a look at the branch as it is: "as it is, it's great". Then: the reading should glitch
+too and sit in the screen's vibe; "Try" takes the email ON the screen, no pop-up, with a terms check and a
+newsletter check, so the visitor downloads from the TV without any other window; the way deeper to the product
+page is not visible ("I didn't see anywhere in the LCD that there is like referring to the page"). "This is the
+main thing that the user is going to use in our website." ("LCD" = the user's word for the TV's screen.)
+
+Facts behind the plan (checked 2026-11-01):
+- Today the Try key opens `TrialGateModal` (a `<dialog>` from BaseLayout): email, an optional unchecked marketing
+  box (the worker stores its exact wording, `MARKETING_CONSENT_TEXT` in the licence worker: "Also send me
+  new-plugin drops and demo codes (optional)"), the service-email notice, "Send my link". POST
+  `/download/register` {email, plugin: dlGateId, marketing, + raSaleSource}. No terms box today.
+- The download is email-verified: the worker mails a verify link; `handleDownloadVerify` (RevLimiter repo,
+  `tools/RevLicenseKeygen/gumroad-worker/src/worker.js`) sends the visitor to `DL_PLUGINS[plugin].sitePath` (the
+  product page, e.g. `/revlimiter`) `#dl=<gate>&p=<id>`, where the modal opens on Mac / Windows buttons. It already
+  has a second return target: `from: "downloads"` -> `r=dl` -> `/downloads`.
+- DRIFT's Try is a plain link to `/drift#try` (leaves the TV); `/drift`'s forms post `/download/register` +
+  `/form-once`.
+- The branch is 96 commits behind origin/main, 19 files changed on both sides (DESIGN.md, astro.config, Cart,
+  CookieBanner, Footer, Header, MobileBuyBar, PluginCard, PluginShowcase, WordWall, plugins.ts, site.ts, `[slug]`,
+  gas, index, store/index, support, handoff, lessons).
+- Phone (390x844, Edge mobile emulation, cold load, tap RevLimiter): ~130 px of empty glass above "‹ All plugins"
+  (`[data-ww-back]` top 216 vs the TV's top 88).
+
+Steps (each one checked before the next):
+- [ ] 0. Sync first: merge origin/main into the branch by hand (one merge; keep PluginCard + PluginShowcase
+      deleted), the `.rv-btn` question (D9) answered, the old checks + `npm run build` green again. No source edit
+      before this. The closed session `revaudio-a0`'s close notes in handoff.md / lessons.md are uncommitted: ask the
+      user once before committing them.
+- [ ] 1. The reading in the screen's type (D8). Everything in the lit plugin's text column takes the screen's
+      phosphor: today the blurb is clean web Inter in near-white and reads as a page laid over the TV. Three
+      options on the bench, all in the channel's colour with the names' glow: A = Inter, phosphor-tinted (smallest
+      change); B = the house mono (`--font-mono`), an on-screen-display look; C = a screen face (VT323, the arcade
+      preset's readout face). Checked at 3x on a phone before baking (Law 5: the scanlines stay under the text).
+- [ ] 2. The reading glitches too (overrides "never on what is read": design-language §3 and DESIGN.md §4 updated
+      with the user's word, same session). The lit name, the blurb, the five words and the price join the glitch
+      picker: the same 3 px jump + red / cyan fringe, ~150 ms, on the same 12-25 s clock once left alone. Never: on
+      the open form, a field, a key, what has focus or the pointer, while typing; off under reduced motion / high
+      contrast (as today).
+- [ ] 3. Try on the screen, no pop-up. The Try key turns the lit plugin's text column (phone: its pane) into the
+      set's own sign-up screen, in the screen's type:
+      - TRY <NAME> FREE · 30 DAYS (GAS: FREE DOWNLOAD), the email field;
+      - [ ] I agree to the Terms of Use and the EULA (new, required; links open in a new tab) (D6);
+      - [ ] Also send me new-plugin drops and demo codes (optional) (unchecked, the worker's exact words);
+      - the service-email notice line; SEND MY LINK; ‹ Back (and Esc) returns to the plugin.
+      - On the screen after: sending -> CHECK YOUR INBOX (the address, "wrong email?" goes back to the field).
+      - Same endpoint, honeypot, raSaleSource and `tg:registered` event as the modal. The register + download calls
+        move out of TrialGateModal into one small module both use (the modal stays for the product pages).
+      - DRIFT: the same on-screen form (plugin `drift`, + `/form-once` as /drift does) instead of the link out;
+        check drift.ts' phase and `gateWired` after the merge.
+      - Phone keyboard: the TV is one screen tall with a scroll lock; while the field has focus the lock stands down
+        and the form slides up over the keys (the pattern on `feat/gas2-postcards`, 2026-10-30).
+- [ ] 4. The download on the screen (D5). A = no worker change: the TV takes the sign-up, the email link still lands
+      on the product page with its Mac / Windows buttons. B = a small worker change (RevLimiter repo, live worker,
+      `wrangler deploy` on the user's word): the form sends `from: "tv"`, the verify link returns to
+      `/?plugin=<slug>#dl=...&p=...` (like `r=dl`), and the TV opens on that plugin with Mac / Windows keys on its
+      screen. C = instant: the keys show on the screen right after the email, the email still sends a copy; needs a
+      worker change that skips the verify, and fake emails then get the download and miss the trial emails (the
+      trial clock is in the plugin). Recommended: B.
+- [ ] 5. The way deeper. A second key beside Try, same family, outlined not lit (D7: "SEE + HEAR IT ->" or
+      "FULL DETAILS ->"); the picture and the name link to the product page too (a modified click still opens a tab).
+      Phone: the key full width under Try.
+- [ ] 6. Phone: no empty glass above "‹ All plugins" when a plugin's pane opens.
+- [ ] 7. Checks: Chromium + WebKit at the 9 sizes; the form by keyboard and screen reader; the form's posts blocked
+      in every automated test (never the live worker); `npm run build`; the user's look (bench, phone, iPhone
+      keyboard); then "push" (= live).
+- [ ] P. Before the go: 5 persona agents (Opus, own headless browsers, live endpoints and trackers blocked) walk
+      the branch build and read this phase, each on its own charter; reports in
+      `tasks/evidence/persona-qa-2026-11-01/`; their findings fold into this phase.
+
+Decisions for the user:
+- D5 the download on the screen: A / B / C (recommended B).
+- D6 terms: a required box "I agree to the Terms of Use and the EULA" (as asked) or a line under the key "By
+  downloading you agree to ..." (less friction).
+- D7 the second key's words.
+- D8 the screen type: A / B / C, picked on the bench.
+- D9 (open since 2026-10-19) the TV's keys join main's `.rv-btn` family, or stay part of the object.
+
+#### Persona round (2026-11-01, step P done): what it changes
+
+Five Opus persona agents, own headless Edge (WebKit screenshots hung on "waiting for fonts" on this box: every
+pixel is Edge), live worker / trackers / Paddle route-blocked. Reports: `tasks/evidence/persona-qa-2026-11-01/`
+(p1 Maya, phone from Instagram; p2 Daniel, mastering pro on a Mac; p3 Lena, privacy-minded, Berlin; p4 Ron, 58,
+200 % zoom + keyboard + reduced motion; p5 Kai, 19, free-plugin hunter). All five got "this is the store" within
+seconds and liked the TV; the losses are around it.
+
+Votes: D5 B x3, A x1 (Daniel: land beside the requirements), "C for GAS, B for trials" x1 (Kai). D6 the line x5
+(none wants a required box: a skipped box = a failed send; a thumb on a link inside the label opens a tab). D7
+"DETAILS & DEMOS" x2, "HEAR IT + SPECS", "HEAR IT FIRST", "HEAR IT" (people go deeper to hear it and for specs). D8
+A x5 (B / C set wider, read toy-like on a $49 tool, and drop contrast; legal lines must stay plain).
+
+Changes to the steps:
+- 1: the blurb stays >= 7:1 on every channel measured from pixels with the scanlines (Ron: a full channel tint takes
+  DRIFT's blurb from ~12:1 to ~5:1), >= 16 px, no opacity on text; the tint is a hint; the form's text plain.
+- 2: four of five push back on the reading glitching (Ron: the 4 s idle gate = reading, he'd lose his line and
+  leave; Daniel: a jumping $49 reads as a broken render on a pro tool). Their line: at most the lit name, never the
+  blurb, five words, price, "no credit card", keys or form; none within ~20 s of a channel change; nothing at all
+  (flicker, roll, picture tear too) while the form is open; add `forced-colors: active` to the gate (today glitches
+  fire under it: 8 in 12 s); a "glitches off" switch on the set (WCAG 2.2.2). The user decides the scope.
+- 3: the form takes the lit plugin's whole pane, not the text column (1366x768: ~250 px left under the picture,
+  GAS's column 192 px wide; today's form alone ~225 px); field + key first, the boxes / notice below; a visible
+  label, worded errors (`aria-invalid` + `aria-describedby`), focus to the field, Esc back to Try, 24 px+ targets;
+  a Privacy link at the point of collection; the notice per plugin (free GAS never "before a trial ends"); on
+  phones "We'll email the link. Open it on your Mac or PC."; CHECK YOUR INBOX (`role=status`) gets "Not there in a
+  minute? Check spam · Resend · Wrong email?"; one "form open" flag pauses every glitch and blocks the marketing
+  pop-ups; the key's sub-label says the link comes by email (GAS: "Mac + Windows · link by email").
+- 3 DRIFT: one deal in one word ("Free beta" beside "Try free for 30 days" reads as two offers); its sign-up says
+  "You join our list" with no box (Lena: consent tied to a download, GDPR Art. 7(4), for a human to confirm): the
+  TV form gives DRIFT the optional box, and the worker must not list without it (check before shipping); a line
+  for the streamer offer; DRIFT under FREE, or a "free to try" mark. `drift.homeLead` says "until Nov 1" (today).
+- 4: B for the trials (verified address, back on the TV); GAS: B, or C (no inbox trip, unverified leads) by the
+  owner's call. The ready keys focus the visitor's OS (today macOS is focused on Windows).
+- 5: the picture, the name and a second click on the lit row open the product page too (all dead today; the lit row
+  even shows a pointer).
+- 6: top AND bottom, and the list pane too (204 px empty); it shows at 150-200 % desktop zoom as well.
+- 7: add desktop at 150 / 200 % zoom (they hit the phone layout), NVDA, Windows High Contrast, and a real-iPhone
+  keyboard check as a hard gate.
+
+New steps from the round (each to the user):
+- [ ] 8. The 10 %-off pop-up (`WelcomeDiscountPopup.astro`, 35 % scroll) opens ON the TV: four of five hit it, it
+      blurs the store and takes keyboard focus mid-arrow (Ron). Never while the TV is in view, the pointer / focus is
+      in it, or after a TV interaction (main fires at the same 35 %, so this is the branch's TV landing on it).
+- [ ] 9. A one-line specs / terms strip on the lit plugin (formats · Mac + Win · no iLok · 2 machines · 14-day
+      refund, from plugins.ts; the product page's hero has it). Apple Silicon only in words once confirmed.
+- [ ] 10. (user) A BUY $49 key on paid plugins opening the existing cart (reverses phase 2's "no Add to cart on
+      home").
+- [ ] 11. (user) ▶ HEAR IT on the lit plugin, playing the product page's before / after pair.
+- [ ] 12. The price on the desktop list rows (`.ww-rprice` is hidden on desktop; prices only show per channel).
+- [ ] 13. Access fixes: under forced colours the Try key loses its shape and the lit name's plate cuts its type word;
+      DRIFT's five words 3.8:1 (AA fail: drop `.ww-pw`'s .85 opacity); Try's second line 10.56 px at .78 (13 px+, no
+      opacity); a ring on the pane's name after opening; the closed nav drawer's five links are hidden Tab stops at
+      <= 860 px; the floating cart button sits on the TV at narrow widths.
+
+Outside this branch (to the user):
+- The GAS notice bug is LIVE on main: `TrialGateModal.astro:81` says "a heads-up before a trial ends" under "Free
+  forever ... no trial clock" (the free branch swaps the title and sub, never the notice). A one-line fix on main.
+- The cookie banner: focus lands on ACCEPT ALL, Decline is a ghost button, at 200 % zoom it covers ~2/3 of the
+  screen; `cdn.paddle.com/paddle.js` loads on home before consent (Lena; for a human to confirm under ePrivacy).
+- Privacy policy (Lena, for a human): §3 says the how-you-found-us note goes only at checkout, but the trial
+  sign-up sends it; no retention for trial emails; the 10 % pop-up missing from §2. Licence terms: no trial clause.
+- System requirements say "CPU 2 GHz dual-core (Intel/AMD)", nothing on Apple Silicon (Daniel stops there on an
+  M-series Mac). RevLimiter's `CMakeLists.txt` builds universal (`arm64;x86_64`, checked 2026-11-01), so it is a
+  copy fix once the shipped Mac build is checked (`check-macos-floor.py` / `lipo`).
+- DRIFT's list consent, checked 2026-11-01: `DriftKeep.astro` posts `/form-once` (the newsletter list) with the
+  trial register and prints "You join our list · unsubscribe anytime"; there is no box.
+- Findings on files main also changed (CookieBanner, the Header drawer, Cart, MobileBuyBar) were seen on a branch
+  96 commits behind: check them again after step 0's merge.
+- Screenshots cited above: `tasks/evidence/persona-qa-2026-11-01/shots/` (the full sets stayed in the session's
+  scratchpad).
+
+Approved-look pushback (taste, the user decides): hollow unlit names read greyed out / unavailable (Maya, Ron:
+3.56:1); the hero names no plugin or "free" (Maya, Lena, Kai); GAS's text squeezed into 192 px beside its tall
+window; the huge names spend half the screen on four plugins; FREE shows one lonely row; facts beside the five
+adjectives (Daniel: "TRUE-PEAK · 8x OS · LUFS METERS"); keep the picture tear off the lit plugin's window.
+
+### Later, each on its own branch
 
 - [ ] Ratings (D4, decided: verified only, after the TV): ask verified users only (after a Paddle purchase, at the end of a trial, weeks after a GAS
       download), tag each rating bought / trial / free; show stars from ~5 ratings with the count; publish low
