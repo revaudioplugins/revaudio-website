@@ -172,3 +172,12 @@ an idle timer shorter than that fires before Lenis moved; wait while `lenis.isSc
    first-frame checks failed. The component of the commit before failed the same checks in the same hour, so it
    was the machine, not the change. Before calling a timing FAIL a regression, run the previous commit as a control
    in the same hour and compare the frame gaps the check prints; re-run on an idle machine for the record.
+
+## 2026-11-01 — The bench pick of the menu line and the reading (Home LIBRARY phase 5)
+
+1. A bench pick that grows a size can break the one-screen rule on a short laptop while the bench looks fine: the
+   thumbnail went 6.9 -> 9.8rem and four rows then ran 21 px past a 1280x665 screen, 45 px past 1141x636. The
+   bench's own shots after a size change showed an empty list (the reveal runs again when the frame reloads), so
+   they could not show it. After "apply ww bench", measure the wall's bottom against the screen on the real page at
+   1141x636, 1280x665 and a short phone, and give any size that grows a height term the way the names have one
+   (`min(slider, room / rows ...)`), so the pick holds wherever there is room and yields where there is none.

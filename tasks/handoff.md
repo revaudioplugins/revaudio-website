@@ -92,11 +92,17 @@
     PluginCard + PluginShowcase deleted), then steps 1-9 + 13 in the plan's order. Open: D7 (the second key's
     words), D9 (the TV's keys join `.rv-btn` or not). Outside the branch: the GAS notice bug LIVE on main
     (`TrialGateModal.astro:81`, a one-line fix, the user's word first).
-  - Running on laptop 1 (die with the session): `astro dev` 4392 (page + `/__wwbench`), `astro preview` 4393
-    (127.0.0.1), `python -m http.server` 4471 (GAS 2 mockups, scratchpad). Check scripts (bakecheck, listcheck,
-    fit2, nojs, blink, bench*) only in b5's scratchpad:
+  - Unverified: the user has not looked at the baked page yet (opened for them at http://127.0.0.1:4392/#plugins;
+    the last signal was the pasted bench pick itself). The bake was checked in Edge / Chromium only: WebKit, a real
+    phone and iPhone / Mac Safari were not run on it.
+  - Running on laptop 1 at the close (b5's background shells; they die with the session): `astro dev --port 4392`
+    (page + `/__wwbench`, PID 37308), `astro preview --port 4393` (127.0.0.1, serves `dist/` = the last
+    `npm run build`, PID 23312), `python -m http.server 4471` (GAS 2 mockups from the scratchpad, PID 37004). Stop
+    one with `Stop-Process -Id <PID>` (by PID, never every node.exe).
+  - Check scripts (bakecheck, listcheck, fit2, nojs, blink, bench*) live only in b5's scratchpad:
     `C:\Users\shlik\AppData\Local\Temp\claude\c--Revaudio\9a45622a-182f-481b-ae66-7bfc8dc8c798\scratchpad\`.
-  - Claim: b5 is the writer on this worktree until another session writes its own claim here; then b5 stops.
+  - Lesson: `tasks/lessons.md` 2026-11-01 #1 (a bench pick that grows sizes must be fit-checked on the real page).
+  - Claim CLOSED 2026-11-01 (session close). The next session writes its own claim here before editing.
 - For the user (dashboard, optional): a Cloudflare Redirect Rule `/store*` -> `/#plugins` would make it a real 301;
   the repo page works without it.
 - Found: index.astro's testimonial CTA said "14-day free trial" (the trial is 30 days in both plugins' code); fixed
