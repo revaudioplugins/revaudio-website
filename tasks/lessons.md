@@ -168,3 +168,47 @@ step and STOP's +92 px ran into the DRIFT ring. Fold it as layout instead: measu
 of the deck's spare width (--e = 100% - the tuned width), the edge part pinned to its edge, and step --s down with a
 container query on the deck. Then prove parity by dumping the folded page with the same keys and diffing (here every
 part within 0.5 px), plus an overlap sweep over many widths with a forced-overlap control that must fail.
+
+## 2026-10-30 - pointer capture moves the pointerup's target
+
+GAS 2 postcards (`danavivi-75`): the stack calls `setPointerCapture` on pointerdown, so the matching pointerup arrives
+with `e.target` = the capturing card, never the child under the finger. Round 2's "a tap on the deck doesn't turn the
+card" (`e.target.closest('.deck')` on pointerup) never worked; round 3's check caught it. Rule: keep the pointerdown
+target and test that, and write a check that taps the exact spot.
+
+## 2026-10-30 - a physical object's print doesn't animate
+
+GAS 2 postcards (`danavivi-75`): round 2's "make everything feel much more alive" became arrival pops on every card
+(the lettering popped, seals and postmarks thumped, "Greetings from" wrote itself), a turning sunburst and a
+flickering lamp in a photo. Dan, round 5: "the readings should be glued to the card itself ... physics-wise". Rule:
+on a physical metaphor, life comes from the object and its real mechanisms (the card's flick and curl, the turntable,
+a sticker's corner, light), never from its printed content moving. DESIGN.md §6.
+
+## 2026-10-30 - "not smooth": measure frames on a slowed CPU before touching the motion
+
+GAS 2 postcards (`danavivi-75`), Dan: "the card moves are not smooth yet ... everything that moves needs to be smooth".
+Chrome with `Emulation.setCPUThrottlingRate` 4 + a rAF frame log + a `longtask` observer found what eyes alone would not:
+a thrown card left at ~3x the finger's speed (a fixed cubic-bezier over a fixed distance) and a CSS transition held it
+still for a frame or two first; a box-shadow swap on the held card and a depth `scale()` repainted whole cards;
+`new AudioContext()` took 226 ms (4x) while warming the demo (decode on an `OfflineAudioContext` instead; open the
+device on the tap); a 1M-pixel canvas loop blocked 240 ms (slice it, a few ms a frame). Sample the moving element's
+speed per frame around the release to prove there's no jump. DESIGN.md §6.
+
+## 2026-10-30 - two movers on one element: whoever takes it over starts from where it is
+
+GAS 2 postcards (`danavivi-75`, the ponytail pass): a let-go card moves frame by frame in JS while the stack settles in
+CSS. Five paths took a moving card over without reading where it was: ‹ mid-throw (an ~890 px jump), › on its way
+back or while it sprang home, a tap mid-spring (frozen off its place), a layout mid-spring (settled on the wrong
+place), and a flick whose move and lift fell inside one frame (state set only in rAF: a TypeError). Rule: one mover at
+a time; the one taking over stops the other and starts from the pose this frame (the computed transform covers both
+movers); state the release reads is set synchronously. Test each takeover by reading the rect just before and just
+after it, and fire down/move/up in one task for the sub-frame flick (`check.cjs`).
+
+## 2026-10-30 - the iOS keyboard shrinks a viewport-sized page
+
+GAS 2 postcards (`danavivi-75`), Dan on his iPhone (iOS 26), a screenshot of the mail card with the keyboard up: "it's
+not comfortable like this". iOS 26 cut the fixed full-screen page to the ~387 px above the keys, so the stack (sized
+by its container's height) shrank the card to half, and the type with px floors (the input >= 16 px against iOS zoom,
+the tick line >= 12 px) ran into the stamp. check.cjs had listed "the iOS keyboard" as not covered. Rule: on focus,
+keep the card's size and slide it so the field and its button sit over the keys; check it by focusing the input and
+cutting the viewport to the keyboard's leftover (`setViewportSize`), at every phone size.

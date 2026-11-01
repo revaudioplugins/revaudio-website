@@ -255,6 +255,21 @@ flashed around every live prop: "what is this square line around the elements, r
 it's alive by itself (its own hover, its poster, its caption), never by a web outline around the photo.
 The one frame allowed is the keyboard focus ring.
 
+Printed things stay glued (the GAS 2 phone page's postcards, Dan 2026-10-30: "the readings should be glued to the
+card itself ... physics-wise"): on a physical object (a card, a poster, a label) the print never moves on its own:
+no pops, slides or write-ons as it comes up, no turning sunburst, no flickering lamp in a photo. Motion belongs to the
+object (a flick, a curling corner, a sticker's lifting edge), to a real mechanism (a turntable), or to light (a glint).
+
+Let-go motion keeps the finger's speed (the postcards, Dan 2026-10-30: "everything that moves needs to be smooth"): a
+thrown or released object leaves at the speed the finger had, never a jump or a stop (a CSS animation takes a frame or
+two to start: drive a let-go frame by frame from that speed, springs not fixed curves); nothing that moves changes scale
+(a scale change repaints the layer); a held object's deeper shadow fades in on its own layer; heavy work (decoding,
+drawing a canvas) waits for a still hand and runs a few ms a frame. Measure on a 4x-slowed CPU: no frame over 33 ms.
+
+A button that turns over to a new job turns hard and fast (the GAS 2 phone page's taxi, Dan 2026-11-01: "I want it to
+flip harder faster"): about 0.4 s, a deep turn that lands with a punch and the house snap curve. And it keeps its size
+and place whatever the new label says (same day: "To the store" the same size as "Download FREE").
+
 ## 7. Hero + glanceability
 
 THE hero is the gauge medallion with "Engineered, Then Tuned." over it. One glance: brass tach,
@@ -317,6 +332,16 @@ Why: a portrait phone shows a third of a 3:2 scene, the photo goes soft, and the
 
 Base: `--maxw min(1440px, 95vw)`; the word wall collapses to one column at 860px and below,
 words first, window under them.
+
+Typing on a phone (the GAS 2 postcards, Dan 2026-10-30, on his iPhone: "it's not comfortable like this"): the keyboard
+never shrinks the thing you write on. iOS 26 cuts the page to what's above the keys, so a layout sized by the viewport
+halves and its px-floored type runs together. Keep the object's size on focus and slide it up until the field, its
+options and its button sit just over the keys; the page's own controls step aside until the keyboard goes.
+
+A product page's end on a phone frames the subject, not the desktop's open sky (the GAS 2 postcards, Dan 2026-11-01,
+picked from four spots on a bench): a portrait crop can't hold the pump and the sky together, so the station and its
+pump go on top and the readings hang under them on the dark ground, their top just under the pump's base at every
+screen height. The blur behind the cards is the same spot, so the focus pull lands on it.
 
 ## 9. Do's & don'ts
 

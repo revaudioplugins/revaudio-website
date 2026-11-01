@@ -6,11 +6,15 @@
    One clock drives the whole visit, so nothing switches on with a jump (Dan, round 5: "make this scene more smooth,
    seamless"): the engine shakes the body and smokes from the tail pipe from the moment it rolls in, a trail behind it on
    the move, idling at the curb; the engine's sound idles on under it. The sound pans with the car.
-   Dev: ?taxi=park shows it parked, ?taxi=bench adds the size / place bench, ?store=<url> sends the ride elsewhere. */
+   Two pages, one cab (2026-11-01): page-b (its #scene, #stage, the #ticket form + #veil) and the phone's postcards.html
+   ([data-taxi-scene] = the frame's own box, [data-taxi-stage] = the end page; it fires gas2:mailed with { roll } inside
+   the stamp's tap and gas2:reset when the postcards are dealt again). README "On the phone".
+   Dev: ?taxi=park shows it parked, ?taxi=arrive rolls it in by itself (silent), ?taxi=bench adds the size / place bench,
+   ?store=<url> sends the ride elsewhere. */
 (() => {
   const Q = new URLSearchParams(location.search);
   const STORE = (() => {                               // ?store= is for a local review only, and only to an http(s) page:
-    const def = 'https://revaudio.net/store#radio-roulette', o = Q.get('store');   // never a javascript: link on the web
+    const def = 'https://revaudio.net/store/#radio-roulette', o = Q.get('store');  // never a javascript: link on the web (/store 301s here)
     if (!o || !/^(127\.0\.0\.1|localhost)$/.test(location.hostname)) return def;
     try { const u = new URL(o, location.href); return /^https?:$/.test(u.protocol) ? u.href : def; } catch (e) { return def; }
   })();
@@ -28,8 +32,8 @@
   let ac = null, master = null; const bufs = {};
   const unlock = () => {
     const AC = window.AudioContext || window.webkitAudioContext;
-    if (!ac && AC) {
-      ac = new AC(); master = ac.createGain(); master.connect(ac.destination);
+    if (!ac && AC) {                                   // the page may have made one inside its own tap (the phone's stamp)
+      ac = window.gas2AC || new AC(); master = ac.createGain(); master.connect(ac.destination);
       for (const n of NAMES) bufs[n] = raw[n].then(ab => ab && new Promise(res => {      // a browser that can't decode AAC stays silent
         const p = ac.decodeAudioData(ab.slice(0), res, () => res(null)); if (p && p.catch) p.catch(() => res(null)); }));
     }
@@ -37,9 +41,10 @@
     if (master) master.gain.cancelScheduledValues(ac.currentTime), master.gain.setValueAtTime(1, ac.currentTime);
   };
   const voices = new Set();
+  let epoch = 0;                                       // a reset cancels whatever was still on its way
   async function play(name, at = 0, loop = false) {     // at: seconds from now; returns the voice, or null without sound
     if (!ac) return null;
-    const when = ac.currentTime + at, b = await bufs[name]; if (!b) return null;
+    const e0 = epoch, when = ac.currentTime + at, b = await bufs[name]; if (!b || e0 !== epoch) return null;
     const src = ac.createBufferSource(), gain = ac.createGain(), pan = ac.createStereoPanner ? ac.createStereoPanner() : null;
     src.buffer = b; src.loop = loop; src.connect(gain); gain.connect(pan || master); if (pan) pan.connect(master);
     const v = { src, gain, pan }; voices.add(v); src.onended = () => voices.delete(v);
@@ -66,7 +71,8 @@
   }
 
   // ── the taxi, in the scene (its sizes are cqw of the photo); the exhaust is drawn on a canvas over the stage ──
-  const scene = document.getElementById('scene'), stage = document.getElementById('stage');
+  const scene = document.querySelector('[data-taxi-scene]') || document.getElementById('scene'),
+    stage = document.querySelector('[data-taxi-stage]') || document.getElementById('stage');
   if (!scene || !stage) return;
   const wheel = w => `<div class="tx-wheel tx-${w}"><img class="tx-ring" src="${DIR}img/ring-${w}.webp" alt=""><img class="tx-ring tx-spin" src="${DIR}img/ring-${w}-spin.webp" alt="">` +
     `<img class="tx-shade" src="${DIR}img/shade-${w}.webp" alt=""><img class="tx-hub" src="${DIR}img/hub-${w}.webp" alt=""></div>`;
@@ -78,6 +84,8 @@
         <i class="tx-glow tx-head"></i><i class="tx-glow tx-tail"></i><i class="tx-glow tx-lit"></i></div></div>
     <div class="tx-cap"><b>Hop in</b><button type="button" class="tx-no">Not now</button></div>`;
   scene.append(tx);
+  // it rolls in only once its pictures are in: on a slow line it waits rather than send a lone tyre (the tester, 2026-11-01)
+  const ready = Promise.all([...tx.querySelectorAll('img')].map(i => (i.decode ? i.decode() : Promise.resolve()).catch(() => {})));
   const $ = s => tx.querySelector(s);
   const car = $('.tx-car'), body = $('.tx-body'), hit = $('.tx-hit'), cap = $('.tx-cap');
   const rings = { r: [...tx.querySelectorAll('.tx-r .tx-ring')], f: [...tx.querySelectorAll('.tx-f .tx-ring')] };
@@ -85,9 +93,13 @@
   const fxc = document.createElement('canvas'); fxc.className = 'tx-fx'; fxc.setAttribute('aria-hidden', 'true'); stage.append(fxc);
   const fx = fxc.getContext('2d');
 
-  let state = 'gone', viaKeys = false;
+  let state = 'gone', viaKeys = false, rideT = [];          // rideT: the ride's own timers (the hush, the store)
   const here = on => document.documentElement.classList.toggle('tx-here', on);   // the readings it covers step back
-  const covers = () => { const rd = document.querySelector('.rd'); return !!rd && geo().c.right > rd.getBoundingClientRect().left + 8; };
+  const covers = () => {                                // the cab really over them (on the phone it stands above them)
+    const rd = document.querySelector('.rd'); if (!rd) return false;
+    const c = geo().c, r = rd.getBoundingClientRect();
+    return c.right > r.left + 8 && c.left < r.right - 8 && c.bottom > r.top + 8 && c.top < r.bottom - 8;
+  };
   addEventListener('keydown', () => { viaKeys = true; }, true);
   addEventListener('pointerdown', () => { viaKeys = false; }, true);
 
@@ -117,7 +129,8 @@
   let fxW = 0, fxH = 0, dpr = 1;
   const sizeFx = () => { const r = stage.getBoundingClientRect(); dpr = Math.min(2, devicePixelRatio || 1); fxW = r.width; fxH = r.height;
     fxc.width = Math.round(fxW * dpr); fxc.height = Math.round(fxH * dpr); };
-  sizeFx(); addEventListener('resize', sizeFx);
+  sizeFx();                                              // the stage's own box: iOS can settle it under the toolbar with no resize event;
+  new ResizeObserver(() => { sizeFx(); if (g && state !== 'gone') g = geo(); }).observe(stage);   // a turned phone: the smoke stays at the pipe
   const sprite = rgb => { const c = document.createElement('canvas'); c.width = c.height = 64; const x = c.getContext('2d');
     const gr = x.createRadialGradient(32, 32, 0, 32, 32, 32);
     gr.addColorStop(0, `rgba(${rgb},1)`); gr.addColorStop(.42, `rgba(${rgb},.5)`); gr.addColorStop(1, `rgba(${rgb},0)`);
@@ -225,9 +238,10 @@
     here(covers());
     if (still()) {                                       // reduced motion: it is just there at the stop
       car.style.opacity = 0; pose(0, 0, 0, 0, 0, 0, 0);
-      setTimeout(() => { car.style.opacity = ''; }, DRIVE * 1000);
-      setTimeout(() => { play('honk'); idleOn(0); }, (DRIVE + .35) * 1000);
-      setTimeout(park, (DRIVE + 1.2) * 1000);
+      const e0 = epoch, later = (f, t) => setTimeout(() => { if (e0 === epoch) f(); }, t * 1000);
+      later(() => { car.style.opacity = ''; }, DRIVE);
+      later(() => { play('honk'); idleOn(0); }, DRIVE + .35);
+      later(park, DRIVE + 1.2);
       return;
     }
     g = geo(); s = g.start; ar = af = s / g.tyre; body$.p = body$.v = 0;
@@ -249,14 +263,16 @@
     turn(true);
     if (!still() && !plan) { g = geo(); s = 0; follow(waiting); }   // straight to the curb (?taxi=park): idle anyway
   }
+  const leave = () => { location.href = STORE; };
   function go() {                                        // squeal, wheelspin, the tail squats, it peels off; the dust; the store
+    if (state === 'nocab') { leave(); return; }          // no cab came (too slow a line): the button goes straight there
     if (state !== 'parked') return;
     state = 'leaving'; hit.disabled = true; cap.classList.remove('tx-on');
     unlock(); play('peel'); idleOff(.25);
     const dust = document.createElement('div'); dust.className = 'tx-dust'; document.body.append(dust);
     const leaveAt = still() ? .35 : 1.38;
-    setTimeout(() => hush(.2), (leaveAt - .22) * 1000);
-    setTimeout(() => { location.href = STORE; }, leaveAt * 1000);
+    rideT.push(setTimeout(() => hush(.2), (leaveAt - .22) * 1000));
+    rideT.push(setTimeout(leave, leaveAt * 1000));
     if (still()) { dust.style.setProperty('--tx-dark', 1); return; }
     g = geo(); follow(peelOff(dust));
   }
@@ -280,17 +296,27 @@
       { duration: 900 + Math.random() * 300, easing: 'cubic-bezier(.15,.6,.3,1)', fill: 'forwards' });
   }
 
-  // ── the page's Download FREE turns over to a red "To the store" while the cab waits (Dan, 2026-10-31) ──
+  // ── the page's Download FREE turns over to a red "To the store" while the cab waits (Dan, 2026-10-31). A stage with
+  //    data-taxi-flip="hard" turns it harder and faster (the phone, Dan 2026-11-01: "I want it to flip harder faster"):
+  //    a deeper turn in about half the time that lands with a snap (the house switch-lever curve) ──
   const cta = document.getElementById('cta'), ctaHTML = cta ? cta.innerHTML : '';
+  const HARD = stage.dataset.taxiFlip === 'hard';
   let red = false;
   function turn(on) {
     if (!cta || red === on) return;
     red = on;
-    const swap = () => { cta.classList.toggle('tx-red', on); cta.innerHTML = on ? 'To the store' : ctaHTML; };
+    const swap = () => {                                // the red label in its own span: a page can size the button by it
+      cta.classList.toggle('tx-red', on);
+      if (on) { const l = document.createElement('span'); l.className = 'tx-label'; l.textContent = 'To the store'; cta.replaceChildren(l); }
+      else cta.innerHTML = ctaHTML;
+    };
     if (still()) { swap(); return; }
-    const P = 'perspective(700px) ';
-    cta.animate([{ transform: P + 'rotateY(0deg)' }, { transform: P + 'rotateY(90deg)' }], { duration: 240, easing: 'cubic-bezier(.55,0,.9,.4)' })
-      .onfinish = () => { swap(); cta.animate([{ transform: P + 'rotateY(-90deg)' }, { transform: P + 'rotateY(0deg)' }], { duration: 460, easing: 'cubic-bezier(.2,.9,.25,1.12)' }); };
+    const P = HARD ? 'perspective(400px) ' : 'perspective(700px) ';
+    cta.animate([{ transform: P + 'rotateY(0deg)' }, { transform: P + 'rotateY(90deg)' }], { duration: HARD ? 120 : 240, easing: HARD ? 'cubic-bezier(.7,0,1,.6)' : 'cubic-bezier(.55,0,.9,.4)' })
+      .onfinish = () => { swap(); cta.animate(HARD
+        ? [{ transform: P + 'rotateY(-90deg)' }, { transform: P + 'rotateY(0deg) scale(1.08)', offset: .6 }, { transform: P + 'rotateY(0deg) scale(1)' }]
+        : [{ transform: P + 'rotateY(-90deg)' }, { transform: P + 'rotateY(0deg)' }],
+        { duration: HARD ? 280 : 460, easing: HARD ? 'cubic-bezier(0.2, 0.9, 0.25, 1.25)' : 'cubic-bezier(.2,.9,.25,1.12)' }); };
   }
   // red, it rides: caught before the page's own click (which opens the service ticket)
   document.addEventListener('click', e => {
@@ -301,23 +327,66 @@
   hit.addEventListener('click', go);
   $('.tx-no').addEventListener('click', away);
   addEventListener('keydown', e => { if (e.key === 'Escape' && state === 'parked' && !document.querySelector('.veil.open')) away(); });
-  // the ticket is sent (page-b's own submit handler has stamped it): close it after a beat, then the cab rolls in
+  // the keys are mailed: the cab starts rolling in `roll` s from now (inside the tap that sent them, so the sound unlocks)
+  let rollT = 0;
+  function mailed(roll, honkAt) {
+    unlock();
+    if (state === 'gone') comeIn(roll);
+    else if (state === 'parked') play('honk', honkAt);
+  }
+  // heard first (the arrival clip runs half a second ahead of the stop), seen once its pictures are in. A line too slow
+  // for them (Slow 3G took 36 s): after WAIT s no cab comes, the button just turns red and goes straight to the store
+  const WAIT = 6;
+  function comeIn(roll) {
+    const e0 = epoch, lead = STOP_IN_CLIP - DRIVE;
+    clearTimeout(rollT);
+    rollT = setTimeout(() => {
+      let late = false;
+      rideT.push(setTimeout(() => { late = true; if (e0 === epoch && state === 'gone') { state = 'nocab'; turn(true); } }, WAIT * 1000));
+      ready.then(() => {
+        if (late || e0 !== epoch || state !== 'gone') return;
+        play('arrive'); rollT = setTimeout(arrive, lead * 1000);
+      });
+    }, Math.max(0, roll - lead) * 1000);
+  }
+  // page-b: the ticket is sent (page-b's own submit handler has stamped it): close it after a beat, then the cab rolls in
   const ticket = document.getElementById('ticket'), veil = document.getElementById('veil');
   const CLOSE = 1.35, ROLL = 1.6;                      // s after the send: the ticket goes, the cab starts rolling in
   if (ticket) ticket.addEventListener('submit', () => {
-    unlock();
     setTimeout(() => { if (veil) veil.classList.remove('open'); }, CLOSE * 1000);
-    if (state === 'gone') { play('arrive', ROLL + DRIVE - STOP_IN_CLIP); setTimeout(arrive, ROLL * 1000); }
-    else if (state === 'parked') play('honk', CLOSE + .3);
+    mailed(ROLL, CLOSE + .3);
   });
-  // back from the store: the page comes back as it was left (bfcache), so clear the dust and send the cab home
+  // the phone: its mail card is in the box (it says when its end page is up); the page also leaves a note of it
+  // (window.gas2Mailed) for when this script comes in after the stamp, a quick tap or a slow line (below)
+  document.addEventListener('gas2:mailed', e => { const roll = +(e.detail && e.detail.roll) || ROLL; window.gas2Mailed = null; mailed(roll, roll + .3); });
+  const hushAll = () => { epoch++; clearTimeout(rollT); rideT.forEach(clearTimeout); rideT = []; idleOff(0);
+    for (const v of voices) { try { v.src.stop(); } catch (e) {} } };
+  // the phone deals the postcards again: the cab is simply gone, its engine and a ride on its way with it
+  document.addEventListener('gas2:reset', () => {
+    hushAll(); document.querySelectorAll('.tx-dust').forEach(d => d.remove());
+    if (master) master.gain.cancelScheduledValues(ac.currentTime), master.gain.setValueAtTime(1, ac.currentTime);
+    if (state !== 'gone' || plan) gone();
+    parts.length = 0;
+  });
+  // leaving the page (for the store, or anywhere): every sound stops, so Back finds it quiet (the squeal's tail came back
+  // at full volume, the tester 2026-11-01); back from the store (bfcache) the dust is cleared and the cab sent home
+  addEventListener('pagehide', hushAll);
   addEventListener('pageshow', e => { if (!e.persisted) return;
-    document.querySelectorAll('.tx-dust').forEach(d => d.remove());
-    cancelAnimationFrame(raf); raf = 0; plan = null; parts.length = 0; drawFx(0); idleOff(0);
+    hushAll(); document.querySelectorAll('.tx-dust').forEach(d => d.remove());
+    cancelAnimationFrame(raf); raf = 0; plan = null; parts.length = 0; drawFx(0);
     state = 'gone'; tx.hidden = true; pose(0, 0, 0, 0, 0, 0, 0); here(false); turn(false); if (master) master.gain.value = 1; });
+  // a hidden page: the engine stops (it would idle on behind other tabs and the lock screen); in sight again, it idles on
+  document.addEventListener('visibilitychange', () => {
+    if (!ac) return;
+    if (document.hidden) { idleOff(.1); ac.suspend(); }
+    else { ac.resume(); if (state === 'parked') idleOn(.2); }
+  });
 
   if (Q.get('taxi') === 'park' || Q.get('taxi') === 'bench') park();
   if (Q.get('taxi') === 'bench') bench();
+  if (Q.get('taxi') === 'arrive') comeIn(1.2);          // a review: it rolls in by itself (silent: no tap has unlocked the sound)
+  const early = window.gas2Mailed;                      // mailed before this script was in: it comes all the same
+  if (early) { window.gas2Mailed = null; mailed(Math.max(STOP_IN_CLIP - DRIVE, early.roll - (performance.now() - early.at) / 1000), 0); }
 
   // ── ?taxi=bench: size and place the parked cab by eye; COPY = the numbers to bake into taxi.css ──
   function bench() {

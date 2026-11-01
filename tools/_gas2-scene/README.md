@@ -20,6 +20,12 @@ python -m http.server 4462 --bind 127.0.0.1
 - The taxi to the store — after MAIL ME THE KEYS a 1950s cab pulls up at the curb, idles, honks; a click (or the button,
   now a red "To the store") = tyre squeal, dust, the store at Radio Roulette. `?taxi=park` shows it parked, `?taxi=bench`
   sizes it. How it works: `taxi/README.md`.
+- `postcards.html` — **the phone page** (merged from `feat/gas2-postcards` 2026-11-01): a stack of "Greetings from GAS 2"
+  postcards to flick through; `?card=1-6` opens on a card, `&flip` turns the HEAR IT card, `?card=7` = the end page
+  (`&sent` = after mailing): the station on top, the readings under it (spot D, Dan's pick 2026-11-01; `&spot=sky` = the
+  sky right of the canopy); after mailing the taxi pulls up in front of the station (`taxi/`, one script for both pages;
+  `&taxi=park` = parked, `&taxi=arrive` = it rolls in). Assets + their tools: `postcards/`; the review page (a notes box
+  per screen, a claude.ai artifact; link in `tasks/handoff.md`): `postcards/review/`; the checks: `postcards/tools/check.cjs`.
 - TUNE (button bottom right, or T) — readings position / size + the 4 looks (Now / Neon / Enamel / Badge).
 
 ## Who works on what (one writer per file set)
@@ -32,7 +38,9 @@ python -m http.server 4462 --bind 127.0.0.1
   `props/pump-cut.png`): Dan's 2nd session (danavivi-59), branch `feat/gas2-page-s2`, from 2026-10-23.** Merged with
   `feat/gas2-page` into `main` 2026-10-23.
 - **The taxi to the store (`taxi/**` + its one `<link>`/`<script>` line in `page-b.html`): Claude Code `danavivi-a5`,
-  from 2026-10-31.**
+  from 2026-10-31; `danavivi-83` from 2026-11-01 (one script for page-b and the phone).**
+- **The phone postcards (`postcards.html` + `postcards/**`): Claude Code `danavivi-75` from 2026-10-29, `danavivi-83` from
+  2026-10-31.**
 - Claims and state: `tasks/handoff.md` (top entry).
 
 ## Not in git

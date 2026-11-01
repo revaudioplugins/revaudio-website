@@ -1,3 +1,122 @@
+# GAS 2 phone POSTCARDS (branch `feat/gas2-postcards`, 2026-10-29, danavivi-75, then danavivi-83) — squash-merged to main 2026-11-01 (the phone page only)
+
+Dan's concept (2026-10-29): a stack of 1950s "Greetings from GAS 2" postcards, phone only. State: `tasks/handoff.md` top entry.
+
+## Steps
+- [x] 0. Branch + worktree off `origin/feat/gas2-drone` (`4fc6ddd`); claim, plan, README line pair.
+- [x] 1. Assets, no spend (`postcards/tools/`): the real pump baked from the plugin page (`Source/ui/public` on :4461, 2x,
+      alpha, ROOM hidden, full hose, PREMIUM lit, GAS 140 % = the demo's setting); card 1's backdrop = the station, soft
+      (the painted pump filled out, blurred); the page backdrop; a linen tile; the grade keys (the 4x bake on
+      `feat/gas2-phone`); a stamp from `poster-mail-1`.
+- [x] 2. `postcards.html`: six cards in one stack; flick = drag, throw on velocity / distance, spring back otherwise;
+      back / next buttons + arrow keys; counter; one nudge on first load; `?card=1-6` (+ `&flip`) opens on a card (review
+      in the Simulator, where we can't flick); reduced motion = a crossfade.
+- [x] 3. Cards: 1 Greetings from GAS 2; 2-4 REGULAR / PREMIUM / RACE (the pump's key + the BRIEF grade lines); 5 HEAR IT
+      (front: "Fill it up. Same level." poster; tap = flip; back: ▶ + ORIGINAL / GAS 2, "PREMIUM, GAS 140 %, both
+      -11.0 LUFS"); 6 the postcard back (email on the address lines; MAIL ME THE KEYS = the card drops into the mailbox,
+      SENT postmark; dummy, nothing sent).
+- [x] 4. Checks: WebKit 402x714 / 375x553 / 390x664 / 393x659 / 430x750 (fits, no overflow, no page errors), flick +
+      buttons + flip + A/B state + form by script (`postcards/tools/check.cjs`: 22 steps + 20 layouts pass); iOS
+      Simulator (iPhone 17 Pro, 127.0.0.1) shots of every card.
+- [x] 4b. The end page (Dan 2026-10-29: "in the end page the user will reach the right side of the desktop page, the words
+      will pop out and everything"): after the last card (flicked, next, or mailed) the lens pulls focus onto the
+      desktop's right side and page-b's readings pop as after the drone lands. Checks: 24 steps + 30 layouts pass.
+- [x] 4c. The review page (Dan: "open a bench so i can comment on every section of this page"): artifact
+      https://claude.ai/artifact/6zn14ha4qswV1gmCb8v3qG, a notes box + pins + ▶ Live per screen, notes in its db.
+- [x] 5. Dan's notes in the review page (2026-10-29 21:03, pasted + `notes` in the db; the pins drawn on the shots).
+- [x] 6. Commit my files by path on the branch; no push (Dan's word; main = live).
+
+## Round 2 — Dan's notes (plan OK'd 2026-10-29: he picked "deck buttons" for the vinyl; textures drawn in code, no spend)
+- [x] 7. Grade cards 2-4: the plugin key goes (①); the script + big lettering centred on the card, the sunburst behind
+      them (②); the line under them in the lettering's face, Oswald caps (③).
+- [x] 8. Mail card: the two empty address lines go (①②); the email bigger (③④); MAIL ME THE KEYS = a rubber stamp, a
+      station / ticket stamp in ink, not a button: tap = it stamps, then the card goes in the box (⑤); a checkbox with
+      the site's own consent words, unticked (⑥: "Also send me new-plugin drops and demo codes (optional)").
+- [x] 9. End page, mailed: a vintage "TO THE WEBSITE" ticket pops up after the readings, to revaudio.net/store. The end
+      page itself is ✓ (frozen).
+- [x] 10. HEAR IT back = a turntable seen from above: tap the record = the needle drops and it spins; ORIGINAL / GAS 2 =
+      the deck's two speed-style buttons (switch while it plays); the tonearm creeps in with the song (= progress).
+- [x] 11. Overall: worn, sun-faded stock + edge wear on every card, each its own (card 1 tape, Regular a coffee ring,
+      Premium a gold seal, Race a grease thumbprint, HEAR IT ring wear, the mail card a crease + dog-ear); more alive:
+      the lettering pops as its card comes up, the sunburst turns slowly, the postmark thumps, dust in the lamp light.
+      Textures made in `postcards/tools/make-wear.py` (numpy, no spend).
+- [x] 12. check.cjs updated + all pass; re-shoot; review page round 2 (his note + what changed per screen, fresh
+      boxes) republished to the same URL; commit by path; handoff.
+- [x] 13. Dan's round-2 notes (2026-10-29 23:48, pasted): one note, on HEAR IT's back.
+
+## Round 3 — Dan's note on the back ("an animation of the vinyl working ... less like a post card, more like a whole
+   picture, real vinyl"; his message opened with "commit" = go)
+- [x] 14. The back = one photo of a turntable seen from above (`make-deck.py`: walnut + brushed aluminium, no spend);
+      it runs while it's up (platter at 33 1/3, strobe dots, the lamp's streak on the grooves stays put); tap the record
+      = cue up, swing in, needle down, the song starts as it lands; tap again = home. Keys, fine print, label-maker tape.
+- [x] 15. check.cjs 29 steps + 30 layouts pass, 0 errors; review page round 3 = version 5 at the same URL; commits by
+      path (`b05c079` + the review/handoff one); no push.
+- [x] 16. Dan's round-3 notes (2026-10-30 13:15, pasted, + "if you need to create more assets ... please do so").
+
+## Round 4 — Dan's round-3 notes, all on HEAR IT
+- [x] 17. Front: TURN IT OVER in HEAR IT's letters, bigger, nodding with the curl. Back: real keys (ivory piano keys in a
+      graphite escutcheon, rendered from a height field in `make-deck.py`, no spend; press click, latch clack, haptic
+      tick); TAP THE RECORD = a die-cut sticker (slapped on, peels, glints, plays the record too); no fine print; a
+      smaller Turn knob.
+- [x] 18. check.cjs 30 steps + 35 layouts pass, 0 errors; review page round 4 = version 6; commits `bf71096` + the review
+      one; no push.
+- [x] 19. Dan, 2026-10-30: "looks amazing ... the vinyl looks crazy ... i really like the buttons". The keys saved for
+      reuse in the shared repo (`collaboration/handoffs/2026-10-30-piano-keys/`: kit + handoff + memory
+      `feedback_ivory_piano_keys_liked`, pushed `959b947`); "commit everything and push it": this branch pushed (not main).
+- [x] 20. Dan (chat): "the readings should be glued to the card itself ... physics-wise": no arrival pops, no moving
+      print (sunburst, lamp flicker, the nod); `22d779e`, DESIGN.md §6. Review page round 5 = version 7 (card 6 back: it
+      had dropped out in round 3).
+- [x] 21. Dan (chat): "back is left to right, and front is right to left", the station too: `743e67f`; review page round 6
+      = version 8.
+- [x] 22. Dan's round-6 notes (2026-10-30 14:29, pasted; all on HEAR IT's front): no red level line in the poster,
+      the readings crisp (the wear under the print), TURN IT OVER up under the line and centred: `55cc52f`; review page
+      round 7 = version 9.
+- [x] 23. Dan (chat): "the card moves is not smooth yet ... everything that moves needs to be smooth": measured on a
+      4x-slowed CPU, fixed (`1065d59`: let-go motion at the finger's speed, no repaints mid-move, heavy work at idle,
+      the turn at one speed); worst frame 417 -> 33 ms. Review page round 8 = version 10.
+- [x] 24. Dan on his iPhone (LAN link http://10.0.0.5:4470, a no-store server bound 0.0.0.0 from the session's
+      scratchpad): no vinyl animation, the buttons don't move the cards, not smooth = iOS Reduce Motion (all of it was
+      switched off for it). `c22bab5`: the hand's moves survive it, calmer; the held card leans with its speed. A temp
+      check page `tools/_gas2-scene/motion-check.html` (git-ignored, not committed). Review page round 9 = version 11.
+- [x] 25. Dan (chat): "check your work and do a ponytail on it": `205661d` - no card jumps when something takes it over
+      (‹ mid-throw, › right after ‹, a tap or a layout while a card springs home, a flick inside one frame), the strobe
+      still under Reduce Motion; dead code, CSS and unused art cut. Pixel-identical states, check.cjs 41 + 35 pass.
+- [x] 26. Dan on his iPhone (a screenshot, "it's not comfortable like this ... give options"): the keyboard shrank the
+      mail card to half and the tick line ran into the stamp. His pick "card slides up": `b15a2eb`, the card keeps its
+      size and slides up over the keys; check.cjs 42 + 35 pass.
+- [x] 27. Dan: "open the bench": review page round 10 (`notes-r10`) = version 12 on `6c91731`.
+- [ ] 28. Dan's word from the phone + his round-10 notes (and the check page: Reduce Motion on or off?).
+- [x] 29. Dan (2026-10-31, phone only: "lets try different spots of background image from the scene for the end page",
+      spots with the pump in them): `?spot=a-d` frames the end page (and the blurred frame behind the cards) elsewhere;
+      no spot = the signed-off sky, pixel-identical. A the station front, B the pump close, C the pump + the desert,
+      D the station on top with the button low; A-C put the readings in a navy night above the roof. check.cjs 42 + 35 pass.
+- [x] 30. Dan picked D (2026-11-01): the default end page (`?spot=sky` = the sky, pixel-identical); the readings hang by
+      their top under the station; after mailing the line + Fill it up. step aside, the ticket comes up under the ✓.
+      check.cjs 42 + 35 pass (+ GAS2 under the pump's plinth, the ticket between the ✓ and the endbar).
+- [ ] 31. The laptop page's taxi on the phone (Dan, via `danavivi-a5`, 2026-11-01; `taxi/` on main `ddd0ebc`): after
+      mailing the cab pulls up in front of the station, the button turns to red "To the store"; it replaces the ticket.
+      Phone size + stop for D (`?taxi=bench`), the audio unlocked in the stamp's tap (iOS), thumb-sized taps; iOS
+      Simulator, then Dan's iPhone with sound; the store landing on a phone. page-b keeps working. Dan: "go" (2026-11-01):
+  - [x] a. `taxi/` into this branch from main (`git checkout origin/main -- tools/_gas2-scene/taxi`, new files
+        `add -f`); `taxi/**` claimed by `danavivi-83` (handed over by `danavivi-a5`).
+  - [x] b. One taxi.js for both pages, not a fork: the trigger = a page event (the phone fires it on a valid stamp,
+        inside the tap, so iOS lets the sound play, and with `navigator.audioSession.type = 'playback'` as HEAR IT already
+        sets it, so it sounds with the ring switch on silent; page-b keeps its `#ticket` submit + `#veil`); `covers()` = a real
+        overlap (the phone's cab stands above the readings, not beside them); The postcards again sends it home.
+        page-b.html untouched, checked on main's page-b (states + parked pixels identical, old vs new).
+  - [x] c. Phone: a frame-sized `#scene` box where the vista sits (the taxi's cqw = the frame's, as on page-b), the end
+        page = `#stage`; size + stop for D by eye on `?taxi=bench` (in front of the station, tyres on the forecourt
+        above GAS2, the driver past the left edge); Not now a 44 px tap; the ✓ turns over to red "To the store".
+        page-b's 105 / -53.8 cqw fit as they are (D's frame starts at the screen's edge); tyres at 17 % (frame y 850).
+  - [x] d. The railway ticket goes (the cab + the red button do its job); `?card=7&sent&taxi=park` = the review state.
+  - [ ] e. ✓ check.cjs 47 + 40 (the cab parks, the red button, Not now turns it back, a tap on the cab = the store URL, no
+        errors); ✓ iOS Simulator; ✓ the store landing (`revaudio.net/store#radio-roulette`) on the Simulator; open: Dan's
+        iPhone with sound (a Wi-Fi URL from this Mac, on his OK).
+- [x] 32. Dan's notes on the taxi (rounds 11-12): no HOP IN · NOT NOW, a harder faster flip, red = Download FREE size.
+- [x] 33. A tester agent's run (Dan's ask): 3 majors + 5 quick fixes done on his "fix" (`a788990`); round 14 up.
+- [ ] 34. Left for Dan: small text + hint at 375x553, a11y names/announcements, the cab's focus ring, the record's
+        first-tap freeze, the demo audio fetched at card 4, Esc = the cab gone (handoff, the tester's run).
+
 # GAS 2 taxi to the store (branch `feat/gas2-taxi`, 2026-10-31, danavivi-a5) — LAPTOP PAGE FIRST, phone after
 
 Dan (2026-10-31): "the moment the user finishes downloading GAS 2, a vintage American taxi stops and covers the gas

@@ -1,6 +1,319 @@
+## 2026-10-29 — GAS 2 page: the PHONE page as POSTCARDS (Claude Code `danavivi-75`, then `danavivi-83`, Dan's Mac) — BRANCH `feat/gas2-postcards`; the phone page SQUASH-MERGED TO MAIN 2026-11-01
+
+Claim: OPEN `danavivi-83` (took the postcards over 2026-10-31 from `danavivi-75`, no longer running: the end page's scene spots, phone only; D picked 2026-11-01). Round 9 (motion on Dan's iPhone) BUILT + checked, then a ponytail pass (`205661d`) and the keyboard slide-up (`6c91731`); the review page = round 10 (version 12, build `6c91731`); the branch tracks `origin/feat/gas2-postcards` (pushed on Dan's "commit everything and push it"; not main, no deploy). Branched from `origin/feat/gas2-drone` @ `4fc6ddd` (no upstream set, so a bare push
+can't reach the drone branch); `revaudio-59` keeps writing `feat/gas2-drone`, so this branch stays out of its files.
+Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postcards/**`; `tools/_gas2-scene/taxi/**`
+(from `danavivi-a5`, 2026-11-01: one script for page-b and the phone, page-b.html itself untouched); one README line pair; the
+"GAS 2 phone POSTCARDS" section on top of `tasks/todo.md`; this entry. Read only: `page-b.html` (copy, ticket), `fonts/`,
+`frames/f6-v17.png`, `props/poster-level.webp`, `props/poster-mail-1.webp`, `props/mailbox.png`, and
+`player/audio/hiphop_{before,after}.m4a` (Yoni's lane: played, never edited). Desktop `page-b.html` untouched.
+- Dan (2026-10-29, picked over the receipt and "pump as player"): a stack of 1950s "Greetings from GAS 2" postcards, phone
+  only. Card 1 = the real GAS 2 pump in front of the station; flick away REGULAR / PREMIUM / RACE; a "hear it" card (flip,
+  ▶ on the back); the last card = a postcard back, email on the address lines, dropped in the mailbox = MAIL ME THE KEYS.
+  Dead (don't re-propose): Swipe / Walk / Stack, the pump close-up + jukebox (`feat/gas2-phone` `phone.html`), the pump as
+  player, pedal / gauge toys, the receipt. DESIGN.md rule (on `feat/gas2-phone`): rebuild for portrait, never crop the
+  desktop scene. Art spend only on Dan's OK (OpenAI images; Higgsfield 0 credits). The form stays a dummy.
+- Audio facts (measured 2026-10-29, ffmpeg ebur128): `hiphop_before` / `hiphop_after` both I -11.0 LUFS, LRA 1.7, 26.24 s,
+  AAC 48 kHz stereo. The after = PREMIUM at GAS 140 %. No per-grade renders exist: no per-grade sound claim anywhere.
+- Built v1 (`postcards.html`, one file, no build): six cards in one stack over the dusk sky (soft). Drag = the card follows
+  the finger and turns about where it was held; a flick (> .5 px/ms) or a drag past a third of the card throws it off in
+  that direction, otherwise it springs back; a finger that stops before letting go doesn't throw. Back / next buttons +
+  arrow keys, "n / 6", "Flick the card" until the first flick, one nudge on first load. 1 = "Greetings from" + the real
+  pump in front of the station (soft) + THICKER, SMOOTHER, GLUED MASTER. + "GAS 2 · FREE"; 2-4 = large-letter grade
+  cards (the pump's own key, lit as its card comes up, the BRIEF line, a script kicker); 5 = HEAR IT ("Fill it up. Same
+  level." poster), tap or "Turn it over" = two quarter turns with the faces swapped edge-on (backface-visibility let
+  WebKit show the hidden face's layers through, mirrored), the back = ▶ / ■, ORIGINAL | GAS 2 in place (both sides loop
+  in sync, 30 ms crossfade), a progress line, "PREMIUM at GAS 140 % · both sides -11.0 LUFS"; 6 = POST CARD back: MAIL ME
+  THE KEYS, a 0¢ stamp from `poster-mail-1` + a REVAUDIO STATION postmark, the email on the TO line (handwriting; the
+  placeholder printed), MAIL ME THE KEYS = the card shrinks into the mailbox (up from the bottom on this card only), SENT
+  + the address + "(Mockup: nothing was sent.)" + Start over. `?card=1-6`, `&flip`. Reduced motion: no flight, instant
+  swaps.
+- Art (no spend, `postcards/tools/`): `bake-pump.cjs` = the plugin page itself (:4461) at DPR 2, ROOM with the room
+  hidden, PREMIUM lit, needle 140, counter -11.0 (= the demo), hose run on along the ground in `make-art.py`;
+  `bake-keys.cjs` = the three keys + lit at 9x from the GAS2 3D lab (`bench/pump-lab.html`, real GPU: Apple M1 Max via
+  ANGLE Metal, 9 s; same look as the 4x bake, crisp at card size; the GAS2 repo is only read) + `make-keys.py` (both
+  and the key images removed in the ponytail pass, 2026-10-30; in git at `082c5c4`);
+  `make-art.py` = card 1's station (painted pump filled out, softened), the dusk, a woven linen tile, the stamp.
+  Weight: ~778 KB for every card; the demo (1.76 MB) is fetched from card 4 on.
+- Checked: `postcards/tools/check.cjs` = WebKit 22 steps (flick / spring back / hold-then-let-go / down-flick / back /
+  key lit / next + keys / tap-to-turn, one face at a time / turn back / mailbox / last card stays / empty + bad email /
+  drop + SENT / no network request / Start over / reduced motion) + 20 layouts (402x714, 375x553, 390x664, 393x659,
+  430x750: card + controls on screen, no overflow, input >= 16 px) all pass, 0 console errors; Chrome: the demo plays on
+  GAS 2, the bar moves, ORIGINAL switches, ▶ stops. iOS Simulator (iPhone 17 Pro, iOS 26.5, 127.0.0.1:4466, Safari
+  restarted per shot): all six cards + the HEAR IT back right, crops at 1:1 sharp. Not checked: a finger (flick feel),
+  the iOS keyboard over the TO line, sound by ear on iOS, a real iPhone.
+- Design hook (impeccable): fixed 3 contrast nits; waivers in `~/.impeccable/config.json` (home, not the repo), scoped to
+  `**/tools/_gas2-scene/postcards.html`, each with its reason: gradient-text (the large-letter fill), buried-raster (the
+  lit keys), flat-type-hierarchy (cqw sizes, measured), marquee (the house button shine), radial-halo (the pump's lamp).
+  Left standing: repeating-stripes-gradient (advisory, the grade cards' sunburst).
+- Server: no-store on :4466 from this worktree's `tools/_gas2-scene` (dies with the session); again:
+  `python3 -m http.server 4466 --bind 127.0.0.1` there (plain: reload twice if a change doesn't show).
+- Then (Dan, 2026-10-29, after v1: "okey cool! i want that in the end page the user will reach the right side of the
+  desktop page, the words will pop out and everything"): THE END PAGE. When the last card goes (flicked, next, or
+  dropped in the mailbox) the lens pulls focus from the cards onto the open sky right of the canopy = the desktop page's
+  right side (`postcards/img/scene.webp` = `f6-v17` as webp, 260 KB, fetched from card 5 on; the dusk behind the cards
+  is now the same frame blurred, both cover + right-aligned, so the focus pull lines up), and page-b's readings stand in
+  it: composition 2 + the premium shadow (HUG, FOCUS, DUSK) ported 1:1, sized by the same 3:2 scene (cqw; GAS2 145 px
+  at 402x714), the column centred on the phone (page-b: x 64.5 %). They pop with the drone's `pop()` keyframes and
+  timings (GAS2 springs out with blur + overshoot, the oxide rule draws, the line, the button and "Fill it up." pop
+  fast), a beat (380 ms) into the focus pull; the flicked card flies over the scene. ⤓ Download FREE = the mail card
+  comes back; after mailing the button reads "✓ Keys in the mail" and the foot says "Sent to … · Mockup: nothing was
+  sent." (back can't pull the mailed card out of the box). "↺ The postcards again" deals them back, bottom card first.
+  The last card can now be flicked (it rubber-banded before); the old SENT overlay is gone (the end page replaces it).
+  Fixed on the way: the end page's photo first reused `.photo` (HEAR IT's poster class) and took its z-index, tilt and
+  border, covering the button (found by check.cjs); now `.vista`.
+- Checked (end page): `check.cjs` 24 steps + 30 layouts (5 sizes x cards 1, 2, 5 back, 6, end, end sent) all pass, 0
+  console errors; in-page timing: card off by ~350 ms, the scene 90 % in by 345 ms, GAS2 pops from 380 ms; iOS Simulator:
+  the end page, the sent variant and card 6 (next = to the end) right.
+- Then (Dan, same day: "open a bench so i can comment on every section of this page and give my notes for adjustments
+  in an html"): THE REVIEW PAGE, private artifact https://claude.ai/artifact/6zn14ha4qswV1gmCb8v3qG (of build `b5279b1`).
+  11 sections in visitor order (cards 1-6, the HEAR IT back, the end page, mailed, motion, overall), each: the screenshot
+  (a tap = a numbered pin, the note starts with ①), ▶ Live = the real page in the frame at that state, a notes box,
+  ✓ Looks right; on Regular the painted-fronts question (Paint them / Keep the plugin keys / Show me one first). Notes =
+  the artifact's db, `notes/<section id>` = {screen, text, ok, pins [{n, x, y}: 0-1 of the 402x714 screen], choice,
+  updatedAt}: read with ArtifactData `list`, collection `notes` (fallback: this browser + "Copy all notes"). Source:
+  `postcards/review/index.html`; `postcards/review/build.cjs` makes `out/` (not in git): `live.html` (fonts inlined,
+  audio renamed .mp4, the state read from the hash) + `shots/*.webp` (WebKit 402x714). Republish = the Artifact tool with
+  `url` + the same 28-file `files` map (out/live.html, out/shots/*, postcards/img/*, props/mailbox.png,
+  props/poster-level.webp, audio/hiphop_*.mp4 from player/audio/*.m4a, no contentType: .mp4 is served as video/mp4).
+  Checked locally (Chrome 1280 + WebKit 390): pins, notes, ✓, the question, live frames (right state, one at a time),
+  reload, copy, no sideways scroll, 0 errors; on claude.ai a db probe written, listed and deleted.
+- Then ROUND 2 (Dan's notes, 2026-10-29 21:03: pasted "Copy all notes" + the db; he skipped the painted-fronts question;
+  plan OK'd by his pick "deck buttons" for the vinyl). `1cdeebc`: grade cards = the plugin key gone, script + lettering
+  centred on the card with the sunburst behind (turns, 150 s), the line in Oswald caps; mail card = one TO line (the two
+  empty lines gone), the email bigger, the site's consent box verbatim ("Also send me new-plugin drops and demo codes
+  (optional)", unticked, above the stamp so it's ticked before sending; `name="marketing"` like the worker's field),
+  MAIL ME THE KEYS = a red station dater stamp (REVAUDIO STATION / today's date, `ink.webp` mask) that thumps, the card
+  jolts, then the drop; HEAR IT back = a portable record player from above (tap the record = arm swings in, needle drop
+  0.3 s before the sound, 33 1/3 = 200 deg/s, coasts down; ORIGINAL / GAS 2 = the deck keys; the arm angle = song
+  position, lead-in to run-out solved from the drawn geometry); after mailing a "TO THE WEBSITE" railway ticket pops
+  out under the readings (revaudio.net/store, `target=_blank` because the review frame can't navigate; on SE heights
+  only its big line); the end page itself untouched (Dan's ✓). Overall: each card worn its own way (`make-wear.py`,
+  numpy noise, no spend, ~235 KB total): tape on 1, a coffee ring on Regular, gold-foil seal on Premium, a thumbprint on
+  Race, ring wear on HEAR IT, a fold on the mail card; alive = arrival pops (lettering, seal, "Greetings from" writes
+  itself, postmark thump), lamp flicker, dust motes; all off under reduced motion. The keys' files + bake tools stay in
+  the repo, unused (in case Dan wants them back). Checked: `check.cjs` 26 steps + 30 layouts pass, 0 console errors
+  (new: lettering centred, mail + deck stacking per size, consent box, stamp, ticket + href, record spin / arm / coast
+  in Chrome). Review page round 2 = the review-bench skill's template (`~/.claude/skills/review-bench/`, Dan: "save
+  that style for future work") + this content: `CFG.round = 2` (notes in collection `notes-r2`), his round-1 note +
+  "what changed" under each screen, a new "Hear it, playing" shot (Chrome, in `build.cjs`); version 3 at the same URL;
+  files map now 35 files (+ the wear art, - the keys). Checked locally: Chrome 1280 + WebKit 390, 0 errors.
+- Then the design hook (Stop, round 2), `e537a4a`: fixed cramped-padding (the ticket: 16/26 px so the words clear its
+  printed rule; under 680 px tall the one-line ticket without the rule) and organic-clip-path (card 1's tape = a
+  generated torn cut-out, `tape.webp`, instead of a 24-point polygon). Waived nested-cards for `.deck` only (the record
+  player Dan asked for, drawn as an object on the card; dropping its case shadow clears the finding) in the worktree's
+  `.impeccable/config.local.json`; there the stale buried-raster waiver (the keys) is gone and the marquee reason now
+  names `.rd .cta::after`. check.cjs again 26 + 30 pass. Review page version 4 (build `e537a4a`), files map 36.
+- Then ROUND 3 (Dan's round-2 notes, 2026-10-29 23:48, pasted; one note, on HEAR IT's back: "lets make an animation of
+  the vines cd working and make it less like a post card more like a hole picture real vinyl animation"; his message
+  opened with "commit"). `b05c079`: the back is one top-down photo of a turntable, full bleed. Its body is a picture
+  (`make-deck.py`, numpy: walnut frame mitred at the corners, brushed aluminium under a lamp at the top left, platter
+  well + shadow, arm boss; 42 KB); no paper, handwriting or `.age` on that face. Over it in card units (1 = 1cqw): the
+  platter rim's 180 strobe dots (they blur with speed; under the neon lamp a second ring turns at spin - 200 deg/s, so
+  they stand still at speed), the grooves cut once on a canvas at device pixels (track gaps, lead-in, run-out; the
+  lamp's two-lobed streak on a second, screen-blended canvas that wobbles a hair at the turn rate), the label + specks +
+  a run-out etching turning, a chrome S-arm + its shadow layer pivoting at (77.25, 95.2). The motor runs while the back
+  is up (0.6 s to 33 1/3, 1.1 s brake; none under reduced motion). Tap the record = cue up 260 ms, swing to the lead-in
+  900 ms, wait for the demo, lower 420 ms; the song starts as the needle lands, after a synthesized knock; playing, the
+  arm creeps over a 240 s "side"; tap again = up, home, down, the platter keeps turning. Fixed on the way: a tap on
+  the deck's body turned the card (setPointerCapture retargets pointerup to the card; tap() reads the pointerdown
+  target now). check.cjs: the back's layout per size (record, tape, legend, keys, fine print + badge in order, Turn
+  clear of the record, keys + Turn >= 44 px), the cue mid-swing, motor + reduced motion: 29 steps + 30 layouts pass,
+  0 errors. Review page round 3 (`CFG.round = 3`, notes in `notes-r3`; his note + what changed on the back, "No note
+  last round: unchanged." elsewhere) = version 5 at the same URL (+ `postcards/img/deck.webp`). Design hook: the
+  nested-cards waiver now names `.dymo` (the label-maker tape; `.deck` is gone); only the advisory stripes remain.
+- Then ROUND 4 (Dan's round-3 notes, 2026-10-30 13:15, pasted, all on HEAR IT; plus "if you need to create more assets
+  ... please do so": done in code, no spend). `bf71096`: front = TURN IT OVER in HEAR IT's large letters (the `.big`
+  bk/fr rules shared), ~2.5x, nodding with the curl (`beckon`, 2.6 s). Back = "I want the buttons to feel real": ivory
+  piano keys in a graphite escutcheon with amber jewel lamps, rendered in `make-deck.py` (height field: dished keys,
+  rounded edges, chamfered bezel; lamp 40 deg up like the deck; shadows marched, AO; 2x then halved): `deck-bank.webp`
+  + one opening's key up / latched (`deck-key-up/-down.webp`, the bank repeats every 43 units so they serve A and B;
+  ~6 KB in all). The button's background swaps by state (no hidden layer: the design hook's buried-raster). Press =
+  goes in under the finger + a synthesized click, latch = a clack + a haptic tick (`navigator.vibrate`, else iOS 18's
+  `<input switch>` tick); the lamps follow the side. "TAP THE RECORD" = a die-cut vinyl sticker (honey, red rule,
+  arrow), under the arm in z, slapped on as the deck comes round (WAAPI), its top-right corner peels (`@property
+  --peel` + clip-path), a glint; tapping it = play (tap() reads the pointerdown target). Fine print gone; Turn = a 7.6
+  cqw knob (44 px target). check.cjs: `?card=5` front Turn layout, the sticker cues the record, the keys latch (picture
+  + lamp): 30 steps + 35 layouts pass, 0 errors. Review page round 4 (`notes-r4`) = version 6 at the same URL. Design
+  hook: nested-cards waiver now names `.sticker .sk`; only the advisory stripes remain.
+- Then Dan's OK (2026-10-30): "looks amazing / the vinyl looks crazy / i really like the buttons / save them for future
+  purposes for next sessions". The keys are saved for reuse in the shared repo: `collaboration/handoffs/2026-10-30-
+  piano-keys/` (a standalone kit: `make-piano-keys.py`, a demo page, the pictures, his look; + a handoff to put them in
+  the shared button library) + memory `feedback_ivory_piano_keys_liked` (shared `959b947`). `make-deck.py`: the bank's
+  comment brought up to date, dead helpers out (the pictures come out byte-identical). Pushed this branch.
+- Then (Dan, chat, 2026-10-30): "the readings on the cards should be glued to the card and not pop out ... like physical
+  cards ... Physics-wise". `22d779e`: `arrive()` and its keyframes are gone (lettering pop, slide-ins, "Greetings from"
+  writing itself, seal + postmark thumps, the sticker's slap), the sunburst no longer turns, the lamp in card 1's photo
+  no longer flickers, TURN IT OVER no longer nods. Kept: the cards' own motion (flick, nudge, HEAR IT's curl), dust,
+  the turntable, the sticker's peel, the gold seal's glint, the stamp's thump on a tap, the end page. check.cjs: a card
+  comes up with nothing on it animating (`document.getAnimations()`); 31 steps + 35 layouts pass. DESIGN.md §6: "printed
+  things stay glued"; tasks/lessons.md. Review page round 5 (`notes-r5`) = version 7; card 6 restored there (round 3's
+  edit had dropped it; the review-bench skill now says to count sections).
+- Then (Dan, chat, 2026-10-30): "go back and forth from the cards ... back is left to right, and front is right to left",
+  the station too. `743e67f`: a drag that starts left to right is "back" (`pull()`): the card before comes in from the
+  left under the finger, lands on top past a third or on a flick, slides back out if let go early; on card 1 it only
+  gives a little. Right to left / up / down throw it on as before; a throw that turns right springs back. The station
+  (`#end`): left to right = `prev()`, or after mailing the "again" deal (the card is in the box); `.end` is
+  `touch-action: pan-y pinch-zoom`. The hint: "Flick left: the next card · right: back". check.cjs 36 steps + 35
+  layouts pass. Review page round 6 (`notes-r6`) = version 8.
+- Then ROUND 7 (Dan's round-6 notes, 2026-10-30 14:29, pasted, all on HEAR IT's front). `55cc52f`: ① the gauge's thin
+  red level line wiped from the card's own copy of the poster (`postcards/tools/fix-poster.py` ->
+  `postcards/img/poster-level.webp`; desktop `props/poster-level.webp` untouched); ② "all the readings except TURN IT
+  OVER are faded out": the front's `.age`, `::before` (light, vignette) and `::after` (linen) now sit under the print
+  (z-index 1), so the words read as crisp as TURN IT OVER (which sat above them); ③④ TURN IT OVER moved up under the
+  line (bottom 17.2cqw, at his pin and a bit lower), its words centred (`translate: -4.8cqw`, the arrow hangs left).
+  check.cjs 36 + 35 pass. Review page round 7 (`notes-r7`) = version 9 (+ the poster copy).
+- Then (Dan, chat, 2026-10-30): "the card moves is not smooth yet ... everything that moves needs to be smooth".
+  Measured first (scratch probes: Chrome, `Emulation.setCPUThrottlingRate` 4, rAF frame log, longtask observer, a trace
+  of the release, per-frame speed of the card around the release). `1065d59`: let-go motion runs frame by frame from
+  the finger's speed (`move()` + `flight()` / `sprung()`, one rAF loop `glide`; a card caught mid-spring is held);
+  no depth `scale()` (same-size stack) and none while held; the held shadow = a `.lifts` layer (opacity); will-change on
+  the cards in sight + the next; every coming card visible under the stack (decoded early); `@property --rest` not
+  inherited; the demo decodes on an OfflineAudioContext (the device context opens on a tap: 226 ms at 4x) and the
+  record's grooves are drawn ~6 ms a frame, both via `idle()`; the turn = WAAPI halves at a matched .77 deg/ms; the
+  stack settle = a spring in CSS `linear()`. Worst frame (4x) 417 -> 33 ms, no long tasks; check.cjs 36 + 35 pass.
+  DESIGN.md §6 + lessons. Review page round 8 (`notes-r8`) = version 10. Not felt on a real iPhone yet.
+- Then (Dan on his iPhone, 2026-10-30, Hebrew): "no vinyl animation as it should be, the cards don't move when you press
+  the buttons, it should feel like you're moving the card". All three = iOS Reduce Motion: `reduce` switched off every
+  move. `c22bab5`: Reduce Motion now stills only what moves by itself (dust, glints, the hint's wiggle, the idle record,
+  the end page's pops); the hand's moves (throw, spring back, pull back, the ‹ › buttons, the turn, the arm's cue, the
+  record under the needle, the mail drop) always run, with more damping (`Z`). The held card is drawn once a frame
+  (`hold()`) and leans up to 7 deg into its speed. For his phone test: a LAN server (`serve-lan.py`, bound 0.0.0.0,
+  port 4470, the session's scratchpad) and a git-ignored `tools/_gas2-scene/motion-check.html` that says whether
+  Reduce Motion is on; stop the server and delete the check page when done. Review page round 9 = version 11.
+- Then (Dan, chat, 2026-10-30: "check your work and do a ponytail on it"): a review of the whole branch, smallest fixes.
+  `205661d`: whatever takes over a moving card now takes it from where it is. Before, ‹ mid-throw started it back from
+  its landing spot (~890 px jump); › right after ‹ or while a let-go card sprang home restarted it from the top pose
+  (~100-530 px); a tap while it sprang home froze it off its place (the drag now takes the card on its first move);
+  a layout left the JS spring running (it settled on the wrong place); a flick whose last move and lift fell between
+  two frames threw (`d.cur` null). `at()` = a card's pose this frame from its computed transform (JS spring or CSS
+  settle). Under Reduce Motion the strobe dots under the lamp crawled (the neon's clock now runs only past half speed:
+  still at rest and at 33 1/3). Cut: the spring cache + `v0` (`SETTLE`), dead CSS, unused exports, the grade-key art +
+  its two tools and `wear-5b.webp` (unused since rounds 2 and 3). Every state pixel-identical but the strobe;
+  `make-wear.py` rebuilds byte-identical; check.cjs 41 steps + 35 layouts pass, 0 errors (the 6 new steps fail on the
+  page before). Not changed: the first throw's release frame is ~50 ms at 4x CPU on the round-8, round-9 and this
+  build alike (the Mac was at load 11-13; DESIGN.md asks <= 33): measure again on a quiet machine before chasing it.
+  The review page stayed on `c22bab5` till round 10 (below).
+- Then (Dan on his iPhone, iOS 26, 2026-10-30 19:00: a screenshot of the mail card with the keyboard up, then "it's not
+  comfortable like this ... give options"; his pick of three: "card slides up"). iOS 26 cuts the page to the ~387 px
+  above the keys: the stack (sized by its container) shrank the card to half and the tick line ran into the stamp.
+  `b15a2eb`: on focus the stack keeps its size (`--cw` frozen in px) and `fit()` slides it (translate .4 s, from the
+  visual viewport) till the TO line, the tick box and the stamp sit just over the keys; ‹ › and the mailbox step aside.
+  The card goes back once the keyboard has gone, not on blur: a tap on the stamp blurs the input first, and going
+  back on blur moved the stamp out from under the finger (found by a stamp-with-the-keys-up check). Checked at 402x714 -> 387, 375x553 -> 293, 430x750 -> 410 (WebKit, the keyboard mimicked by a shorter
+  viewport); check.cjs 42 + 35 pass, 0 errors; stills pixel-identical. DESIGN.md §8 + lessons. Not on a real iPhone yet.
+- Then (Dan, 2026-10-30: "open the bench"; `notes-r9` was empty): review page ROUND 10 (`notes-r10`) = version 12 on
+  `6c91731`, same URL. Card 6 = his keyboard note verbatim + what changed, and its tip says the slide over the keys
+  shows on the page itself on his phone, not in the review frame (a frame's viewport never feels the keyboard);
+  motion = the takeover fixes; HEAR IT back = the strobe under Reduce Motion; the rest "unchanged". Files: `live.html`
+  + the 11 shots re-sent; `wear-5b.webp` and the unused `props/poster-level.webp` removed (the page uses
+  `postcards/img/poster-level.webp`). Checked locally (Chrome 1280 + WebKit 390): 12 sections by title, pin, note, ✓,
+  reload, copy, the live frames (card 6 runs the new build: the stack slides, `typing` on focus), no sideways
+  scroll, 0 errors; the shots = round 9's but for the record's angle.
+- Then (`danavivi-83`, Dan 2026-10-31, phone only: "when user lands on this page lets try different areas of the screen
+  that also involves the gas pump / lets try a different spots of background image from the scene for the end page"):
+  `?spot=` (JS `place()`, the `SPOTS` table) frames the end page on another part of `f6-v17` and moves the blurred
+  frame behind the cards with it (vars `--cl/--ct/--cw/--ch`, so the focus pull still lines up: measured 0.01 px);
+  no `?spot` = the signed-off sky, pixel-identical to `c947709` at 402x714, 375x553 and 430x750 (cards 1, 5 back, 6, 7,
+  7 sent; the one diff, the mailbox rising on card 6 at 375x553, varies run to run on the old build too). Why the
+  spots look like this: the frame is 3:2 with the pump at x 335-590 and the open sky right of x 965, so a portrait
+  crop can't hold the pump and the readings' sky together; A-C zoom out (0.58-0.75 of "the frame's height fills the
+  screen") and put the readings in a night above the roof: the frame's top edge fades (`--cm` mask) into a navy taken
+  from the frame's own top-of-sky (`#152d4c` sampled, `#0e1b2d` -> `--bg`). A = the station front (radio, pump,
+  barrel), B = the pump close (base on the screen's bottom, the endbar over its knobs), C = the pump at the left and
+  the desert sunset at the right (the canopy's eave, both lamps), D = the station on top and the readings below (the
+  button in thumb reach). `?spot=z,x,y,tx,ty,r` tries any framing. Readings clear the pump's globe by 11-27 px at all
+  five check sizes. iOS Simulator (iPhone 17 Pro, 127.0.0.1:4466, a no-store server from the session scratchpad) shots
+  of all four + card 1 with B: right. check.cjs 42 steps + 35 layouts pass, 0 errors.
+- Then (Dan: "show them all to me in a bench side by side"): the SPOTS BENCH, private artifact
+  https://claude.ai/artifact/XdDVWwHNoSLesVBARU4dxQ (build `ad8c371`): the review-bench template with one layout change,
+  the five end pages in one row (the signed-off sky, A-D; under 1100 px the row scrolls sideways inside itself), each
+  with ▶ Live (`live.html#card=7&spot=x`; inside it ↺ The postcards again lands on card 1 with that spot), pins, a notes
+  box, ✓; under the row the pick ("Which one becomes the end page?": sky / A / B / C / D) + a notes box. Notes = its db,
+  collection `notes`, doc = `sky`, `a`-`d`, `overall` (the pick is `overall.choice`). Source:
+  `postcards/review/spots.html`; shots = the iOS Simulator renders (real Safari, the HUG blur included) cropped to the
+  page, 804x1428 webp; `live.html` from `build.cjs` (now carries `?spot`); published from a scratch dir of real copies
+  (31 files: live.html, shots/*, postcards/img/*, props/mailbox.png, audio/hiphop_*.mp4 from the .m4a). Checked locally
+  (Chrome 1280: five in a row, no scroll; WebKit 390: the row scrolls, the page doesn't): pin, note, ✓, pick, ▶ Live on
+  the right spot, one frame at a time, reload keeps it, copy, 0 errors (a favicon 404 on the local server only). Fixed on
+  the way: the hidden `.sr` labels escaped the scrolling row and widened the page at 390 (`#screens` is positioned now).
+  On claude.ai a db probe written, listed and deleted.
+- Then (Dan 2026-11-01 in chat: "Spot D"; the bench's `notes` stayed empty): D is the end page. No `?spot` = D;
+  `?spot=sky` = the sky as signed off, pixel-identical to `32e25ae`'s default (the same 15 shots; the one diff = the
+  card-6 mailbox again). A-C are out of `SPOTS` (they live in the bench and in `32e25ae`). The readings now hang by
+  their top (r = .4027 of the screen height = where D put them at 402x714, to 0.1 px), so GAS2 clears the pump's
+  plinth (frame y 830) at every height: it touched it at 375x553 before. After mailing, D has no room under Fill it up.
+  (the station above): the line and Fill it up. step aside and the ticket comes up under ✓ Keys in the mail. check.cjs
+  now also asserts GAS2 under the plinth and the ticket between the ✓ and the endbar: 42 steps + 35 layouts pass,
+  0 errors. Landscape phones (852x393) aren't designed, sky or D: both overlap there. Fixed after, in the iOS
+  Simulator (real Safari): on some loads iOS lays the page out at the full screen (874) and settles it under the
+  toolbar (714) with no window resize, so the spot stayed placed for 874 (the station shifted right, Fill it up. on the
+  endbar); `place()` now runs from a ResizeObserver on `#end` (caught with a debug overlay: end 874 -> 714, rs0, ro2).
+- Then the TAXI on the phone (Dan's ask via `danavivi-a5`, then his own "go" here 2026-11-01, the railway ticket going):
+  `tools/_gas2-scene/taxi/**` came in from main `ddd0ebc` (`git checkout origin/main --`) and is `danavivi-83`'s now
+  (`danavivi-a5` hands-off); ONE taxi.js for both pages: `[data-taxi-scene]` / `[data-taxi-stage]` beside page-b's
+  `#scene` / `#stage`, a `gas2:mailed {roll}` event beside page-b's `#ticket` submit, `gas2:reset`, `covers()` = a real
+  overlap, the smoke's canvas on a ResizeObserver; details + checks in `taxi/README.md` "On the phone". postcards.html:
+  the ticket's markup / CSS / pop are gone; the stamp's tap sets the audio session to `playback` and fires `gas2:mailed`
+  (roll 2.5 s, the end page up); The postcards again fires `gas2:reset`; a `.txscene` box over the frame; the sent outline
+  yields to `.tx-red`; Fill it up. steps aside after mailing (the lead is back); taxi.js loads with the end page's photo.
+  check.cjs: 47 steps + 40 layouts pass, 0 errors (+ the parked cab at five sizes: above GAS2, the driver past the left
+  edge, the caption on screen, Not now and the cab thumb-sized; the ride; Not now; the reset; cab + button = the store).
+  main's page-b with this taxi.js vs main's own: identical states and parked pixels (Chromium 1141x636, WebKit 1440x900).
+  iOS Simulator: parked right; the live store#radio-roulette lands under the nav with its edge lit once. On a merge to
+  main, `taxi/**` is an add/add: take this branch's (main's + the phone).
+- Then (Dan: the review page link + "update this bench"): ROUND 11 (`notes-r11`) = version 13 of
+  https://claude.ai/artifact/6zn14ha4qswV1gmCb8v3qG, build `cde5af7`, same URL. End = his spots note verbatim + D;
+  end-sent = "The taxi to the store" (`#card=7&sent&taxi=park`, parked), his taxi note as `taxi/README.md` quotes it;
+  card 1 = the station blur; the rest unchanged. `build.cjs` now writes `out/taxi/` (taxi.js from the hash, .mp4, and
+  the ride's last step comes back as from the store: the review frame can't leave) + links the taxi art/sound; the
+  end-sent shot waits for the park. Published from a scratch dir of real copies (28 files: live.html, 11 shots,
+  taxi/**). Checked locally (Chrome 1280 + WebKit 390): 12 sections by title, pin, note, ✓, ▶ Live on the taxi
+  (parked, red; the ride ends back on the page, the cab gone), one frame at a time, reload, copy, no sideways scroll,
+  0 errors (2 favicon 404s on the local server only); a db probe on `notes-r11` written + deleted.
+- Then (Dan's round 11 dump, both pins on the taxi screen: ① on HOP IN · NOT NOW "remove it", ② on the red button
+  "I want it to flip harder faster"), `3378948`: the phone hides `.tx-cap` (the cab waits; The postcards again sends it
+  off); `data-taxi-flip="hard"` on the phone's stage = a 120 + 280 ms turn (was 240 + 460), perspective 400, a punch
+  and the house snap curve; page-b keeps its caption and quarter turns (states + parked pixels identical, old vs new).
+  `?taxi=arrive` rolls the cab in by itself (silent) for a review. check.cjs 46 + 40 pass, 0 errors. ROUND 12
+  (`notes-r12`) = version 14, same URL: the taxi screen's Live = `#card=7&sent&taxi=arrive` (it rolls in, stops, the
+  button flips), its note verbatim + what changed; the rest unchanged. Checked locally (Chrome 1280 + WebKit 390).
+- Then (Dan in chat, pinned on the red button in `notes-r12`: "the size of the button to the store should be in the same
+  size of the download free"), `94f2621`: taxi.js puts the red label in `.tx-label`; the phone lays an unseen "⤓ Download
+  FREE" under it in one grid cell, so red = that box to the pixel (WebKit + Chrome, three sizes; check.cjs asserts it at
+  five: 47 + 40 pass). page-b identical. ROUND 13 (`notes-r13`) = version 15, same URL, that note + what changed.
+- Then (Dan: "summon a tester ... technical UX and backend"): one Opus tester agent ran the phone page end to end
+  (WebKit at five sizes, real Chrome with sound, 4x CPU throttle, Slow 3G, races, bfcache, a11y; scripts + results in
+  the session scratchpad `tester/`): smooth (60 fps on almost every motion at 4x), no blockers, 3 majors, all three
+  confirmed here. On Dan's "fix", `a788990` (taxi.js + postcards.html): a stamp before taxi.js was in lost the cab
+  (now `window.gas2Mailed` + `window.gas2AC` from the tap, replayed on load); a slow line sent a lone tyre (now the
+  cab waits for its decoded art; 6 s past its time with none, no cab: the button turns red straight to the store);
+  Back replayed the squeal (now `pagehide` stops every sound); plus: the reset clears the ride's timers + dust, a
+  hidden page stops the engine + suspends the audio, a resize re-measures the cab, the stack holds still after an
+  accepted stamp, the store is `/store/#radio-roulette`. The tester's scenarios rerun clean (G1, E, I, Slow 3G,
+  hidden, stamp then ‹/›/flick, Back with bfcache: -12 dBFS tail -> one -42 dBFS blip); check.cjs 47 + 40 pass;
+  page-b identical. ROUND 14 (`notes-r14`) = version 16, same URL (build `a788990`). Left for Dan (not fixed): small
+  text + the hint over the cards at 375x553, a11y names/announcements, the cab's faint focus ring, the first record
+  tap's ~0.25 s freeze (Chrome on a Mac), the HEAR IT demo audio (1.75 MB) fetched at card 4, Esc = the cab gone.
+- Pushed on Dan's "push the page and commit" (2026-11-01): `c947709..f87379d` to `origin/feat/gas2-postcards` (17
+  commits, all `danavivi-83`; not main, no deploy). Dan's phone test: "done" (2026-11-01; `notes-r14` empty); the
+  Simulator's server (:4466) and the Wi-Fi link (10.0.0.103:4470) stopped. Next: Dan's word on merging to main (the
+  site), the open items in todo 34.
+- Open (Dan): (1) his word from the phone; more notes go to `notes-r10`;
+  (2) painted art still only on his OK;
+  (3) per-grade renders (Yoni) before any grade card plays its own sound; (4) later: this as page-b's phone layout;
+  (5) the taxi on his iPhone with sound (the iOS Simulator plays it through the Mac; the phone itself needs a Wi-Fi URL from this Mac, on his OK).
+- Then (Dan 2026-11-01: "merge to main", his pick "phone page only"): ONE squash commit on main with the phone page
+  (`postcards.html`, `postcards/**`), the shared `taxi/**` (main's + the phone), the postcards' DESIGN.md rules, lessons,
+  this entry and its todo section, the scene README lines. NOT in it: what the branch sits on from `revaudio-59`'s
+  `feat/gas2-drone` (the drone intro, the radio knob changes, 4 page-b edits: unreviewed, they stay on the branches).
+  The branch keeps the full history. Checked before the push: the postcards' check.cjs against the merged tree, and
+  main's page-b with the new taxi.js (states + parked pixels identical). The phone page is a mockup in `tools/`: it is
+  not on revaudio.net until it is built into the site (`src/`), a separate job.
+
 ## 2026-10-31 — GAS 2 page: the taxi to the store (Claude Code `danavivi-a5`, Dan's Mac) — BRANCH `feat/gas2-taxi`
 
-Claim: OPEN `danavivi-a5`. Laptop page first (`page-b.html`), then the phone page. Plan + state: `tasks/todo.md` top section.
+Claim: OPEN `danavivi-a5`. Laptop page first (`page-b.html`), then the phone page. Handed over 2026-11-01: `taxi/**` -> `danavivi-83` (one script for page-b and the phone; the postcards entry above). Plan + state: `tasks/todo.md` top section.
 On `main` (2026-10-31, Dan: "commit push to main"): the taxi as ONE commit (rounds 1-5, squashed from `feat/gas2-taxi`),
 its line in main's `page-b.html` after the radio line, plus the store card anchors (`src/components/PluginCard.astro`,
 from `feat/store-rr-landing`). NOT in it: the drone intro (`revaudio-59`'s `feat/gas2-drone`, gated on CATCH10), which
