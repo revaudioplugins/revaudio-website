@@ -35,8 +35,7 @@ fs.writeFileSync(path.join(OUT, "live.html"), html);
 let taxi = fs.readFileSync(path.join(SCENE, "taxi/taxi.js"), "utf8");
 taxi = taxi.replace("new URLSearchParams(location.search)", "new URLSearchParams(location.search || location.hash.slice(1))");
 taxi = taxi.replace("n + '.m4a'", "n + '.mp4'");
-taxi = taxi.replace("setTimeout(() => { location.href = STORE; }, leaveAt * 1000);",
-  "setTimeout(() => dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true })), (leaveAt + .6) * 1000);   // the review: back as from the store");
+taxi = taxi.replace("{ location.href = STORE; }", "{ dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true })); }");   // the review: back as from the store
 if (/'\.m4a'|URLSearchParams\(location\.search\)|location\.href = STORE/.test(taxi)) throw new Error("taxi.js: a rewrite missed");   // (its comments name arrive.m4a)
 fs.mkdirSync(path.join(OUT, "taxi"), { recursive: true });
 fs.writeFileSync(path.join(OUT, "taxi/taxi.js"), taxi);

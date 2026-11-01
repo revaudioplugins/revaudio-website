@@ -74,6 +74,14 @@ Dan: the laptop page's taxi on the phone page too, in place of its railway ticke
   page-b keeps its 240 + 460 ms quarter turns.
   Red, the phone's button keeps the Download FREE size (Dan, round 12): taxi.js puts the red label in `.tx-label`, and
   the phone lays an unseen "⤓ Download FREE" under it in one grid cell, so the button sizes to that (page-b unchanged).
+- Robust (a tester agent's run, 2026-11-01; its scripts: the session scratchpad `tester/`): the cab rolls in only once
+  its pictures are decoded (`ready`), heard first by the clip's half-second lead; if they aren't in WAIT = 6 s after
+  that, no cab comes and the button just turns red and goes straight to the store (`nocab`; Slow 3G took 36 s for the
+  art). A stamp before taxi.js is in still brings it: the phone leaves `window.gas2Mailed` and makes `window.gas2AC`
+  inside the tap (adopted by `unlock()`), taxi.js replays it when it loads. `pagehide` stops every sound (Back from the
+  store had replayed the squeal's tail at ~-12 dBFS); a reset clears the ride's timers and dust (it used to still go
+  to the store); a hidden page stops the engine and suspends the audio; a resize re-measures the cab for the smoke;
+  the store is `/store/#radio-roulette` (`/store` is a 301).
 - The phone loads taxi.js with the end page's photo (from HEAR IT on: ~0.7 MB of art + sound), never on its first card.
 - Checked: the postcards' check.cjs (the parked cab at five phone sizes, the ride, Not now, The postcards again, a tap on
   the cab and on the button = the store), the iOS Simulator (parked; revaudio.net/store#radio-roulette lands its card

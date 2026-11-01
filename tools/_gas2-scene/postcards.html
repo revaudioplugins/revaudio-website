@@ -803,7 +803,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     c.style.transform = c._gone; if (cards.indexOf(c) < cur) { c.style.visibility = 'hidden'; c.style.willChange = ''; }
   };
   function toss(vx, vy, from, speed) {
-    if (cur >= N) return;
+    if (cur >= N || posting()) return;
     const c = cards[cur], W = innerWidth, H = innerHeight;
     let dx = vx, dy = vy;
     const m = Math.hypot(dx, dy) || 1; dx /= m; dy /= m;
@@ -818,7 +818,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   }
   function next() { toss(-1.6, -.25); }
   function prev() {
-    if (cur === 0 || (cur === N && desk.classList.contains('sent'))) return;
+    if (cur === 0 || (cur === N && desk.classList.contains('sent')) || posting()) return;
     cur--;
     const c = cards[cur];
     c.style.transition = 'none';
@@ -835,7 +835,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   let drag = null;
   stack.addEventListener('pointerdown', (e) => {
     const c = e.target.closest('.pc');
-    if (!c || !c.classList.contains('top') || drag || e.button > 0) return;
+    if (!c || !c.classList.contains('top') || drag || e.button > 0 || posting()) return;
     if (e.target.closest('button, input, label, a, form')) return;
     const r = c.getBoundingClientRect();
     drag = { c, at: e.target, id: e.pointerId, x0: e.clientX, y0: e.clientY, pts: [[performance.now(), e.clientX, e.clientY]],
@@ -1203,6 +1203,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 
   // ── MAIL ME THE KEYS: check the address, then the card goes into the box (a dummy: nothing is sent) ──
   const form = $('mailform'), em = $('em'), err = $('err'), send = form.querySelector('.send');
+  function posting() { return send.disabled && cur === N - 1; }  // stamped, on its way into the box: the stack holds still
   const replay = (el, cls) => { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); };
   $('sdate').textContent = `★ ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })} ★`;   // the dater: today
   em.addEventListener('input', () => { err.hidden = true; });
@@ -1235,9 +1236,15 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     if (!v || !em.checkValidity()) { err.hidden = false; replay(send, 'nope'); em.focus(); return; }
     em.blur();
     send.disabled = true; replay(send, 'thump'); replay(cards[N - 1], 'jolt');   // the stamp comes down, the ink takes
-    // the taxi (taxi/) rolls in once the end page is up (2.5 s); said inside the tap, so iOS lets its sound play, and as
-    // HEAR IT's, with the ring switch on silent too
+    // the taxi (taxi/) rolls in once the end page is up (2.5 s). Its sound is unlocked here, inside the tap (iOS plays
+    // nothing a tap didn't start), and as HEAR IT's, with the ring switch on silent too. The mailing is also left as a note:
+    // when taxi.js isn't in yet (a quick stamp, a slow line), the cab comes once it is (the tester, 2026-11-01)
     if (navigator.audioSession) { try { navigator.audioSession.type = 'playback'; } catch (e) {} }
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (AC && !window.gas2AC) { try { window.gas2AC = new AC(); } catch (e) {} }
+    if (window.gas2AC && window.gas2AC.state === 'suspended') window.gas2AC.resume();
+    window.gas2Mailed = { roll: 2.5, at: performance.now() };
+    taxi();
     document.dispatchEvent(new CustomEvent('gas2:mailed', { detail: { roll: 2.5 } }));
     setTimeout(() => drop(v), 560);                               // the keyboard goes down meanwhile
   });
@@ -1262,7 +1269,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   }
   $('cta').addEventListener('click', () => { if (!desk.classList.contains('sent')) prev(); });   // ⤓ Download FREE = the mail card comes back
   $('again').addEventListener('click', () => {                  // the postcards dealt back onto the table, bottom card first
-    document.dispatchEvent(new Event('gas2:reset'));             // the taxi goes with the end page
+    window.gas2Mailed = null; document.dispatchEvent(new Event('gas2:reset'));   // the taxi goes with the end page
     desk.classList.remove('sent'); $('sentNote').textContent = ''; box.classList.remove('full', 'gulp');
     em.value = ''; err.hidden = true; turn(false, true);
     $('mk').checked = false; send.disabled = false; send.classList.remove('thump', 'nope'); cards[N - 1].classList.remove('jolt');
