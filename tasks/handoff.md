@@ -271,6 +271,13 @@ Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postca
   taxi/**). Checked locally (Chrome 1280 + WebKit 390): 12 sections by title, pin, note, ✓, ▶ Live on the taxi
   (parked, red; the ride ends back on the page, the cab gone), one frame at a time, reload, copy, no sideways scroll,
   0 errors (2 favicon 404s on the local server only); a db probe on `notes-r11` written + deleted.
+- Then (Dan's round 11 dump, both pins on the taxi screen: ① on HOP IN · NOT NOW "remove it", ② on the red button
+  "I want it to flip harder faster"), `3378948`: the phone hides `.tx-cap` (the cab waits; The postcards again sends it
+  off); `data-taxi-flip="hard"` on the phone's stage = a 120 + 280 ms turn (was 240 + 460), perspective 400, a punch
+  and the house snap curve; page-b keeps its caption and quarter turns (states + parked pixels identical, old vs new).
+  `?taxi=arrive` rolls the cab in by itself (silent) for a review. check.cjs 46 + 40 pass, 0 errors. ROUND 12
+  (`notes-r12`) = version 14, same URL: the taxi screen's Live = `#card=7&sent&taxi=arrive` (it rolls in, stops, the
+  button flips), its note verbatim + what changed; the rest unchanged. Checked locally (Chrome 1280 + WebKit 390).
 - Open (Dan): (1) his word from the phone; more notes go to `notes-r10`;
   (2) painted art still only on his OK;
   (3) per-grade renders (Yoni) before any grade card plays its own sound; (4) later: this as page-b's phone layout;
