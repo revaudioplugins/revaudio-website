@@ -108,6 +108,17 @@
   after step 0's merge (Phase 5 later, its own branch); Halloween off; D9 = the TV's keys join `.rv-btn`; in the
   deploy too: the GAS notice line, DRIFT no longer first (`drift.homeLead` false), the macOS floor in the system
   requirements, the Cloudflare beacon's SPA page views. Review + steps: plan § "Deploy today".
+  - Done (on the branch, pushed to origin/feat/home-library; main and the live site untouched): `22747ef` (b5's
+    close note, on the user's word), `6d489ba` the merge of origin/main `2eea1f2` (11 conflicts by hand; /downloads
+    needs PluginShowcase + DriftCard, so they stay), `01c3f85` Halloween off, `2f75693` the TV's keys = `.rv-btn`,
+    `629f72a` the GAS notice, `f3d52eb` DRIFT not first, `3e54d1b` the beacon's `"spa": false`.
+  - Checked: build green (30 pages), 0 broken links, gate ids = worker keys, 8 sizes in Edge (fit, keys, notices,
+    no errors), /downloads, /store redirect, smoke chromium 21/21. Not run: WebKit, a real iPhone / Mac Safari.
+  - Not done: step F (the Mac floor in the system requirements): the shipped pkgs are in R2 and this laptop has no
+    wrangler; Radio Roulette's pkg predates the 10.13 rule. Needs `check-macos-floor.py` on each R2 pkg first.
+  - Next: the user's "push" = main gets the branch (live), then the live check. Then GAS 2 on the TV (Dan's note via
+    `danavivi-83`): on this branch after the deploy, hidden until live (blockers in the plan). Open: Phase 5.
+  - Running (dies with the session): `astro preview --port 4395` (127.0.0.1, serves this worktree's `dist/`).
 - For the user (dashboard, optional): a Cloudflare Redirect Rule `/store*` -> `/#plugins` would make it a real 301;
   the repo page works without it.
 - Found: index.astro's testimonial CTA said "14-day free trial" (the trial is 30 days in both plugins' code); fixed

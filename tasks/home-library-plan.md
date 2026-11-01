@@ -696,17 +696,29 @@ Review of the branch at `22747ef` (before the merge):
   two machines" while the EULA says "a reasonable number of installations"; `drift.homeLead` ran "until Nov 1".
 
 Steps (the user's picks, 2026-11-01):
-- [ ] A. Merge origin/main by hand (keep PluginShowcase + DriftCard for /downloads; the Header keeps main's
-      `/downloads` link beside PLUGINS; gas.astro = main's + the one `/#plugins` change; store = the redirect).
-- [ ] B. Halloween off: the `<HalloweenSkin />` mounts and BaseLayout's HalloweenTransition + its fade-in script go
-      (the components stay for next year).
-- [ ] C. D9: the TV's Try + Product page keys join `.rv-btn` (main's `src/styles/buttons.css`).
-- [ ] D. The GAS notice (`TrialGateModal.astro`): a free download never says "before a trial ends".
-- [ ] E. `drift.homeLead` false: DRIFT drops back to its TV slot (third).
-- [ ] F. System requirements: the macOS floor + Apple Silicon, only where the shipped Mac build is checked.
-- [ ] G. The Cloudflare beacon: check its SPA page views; `"spa": false` if the TV's history changes count.
-- [ ] H. Checks on the merged tree: `npm run build`, the link check, `tests/smoke.spec.ts`, the TV + /downloads +
-      /gas in a browser; then the branch to origin, and main only on the user's "push" (= live).
+- [x] A. Merge origin/main by hand: `6d489ba` (PluginShowcase + DriftCard kept for /downloads, PluginCard deleted,
+      the Header + Footer keep PLUGINS and take main's `/downloads`, gas.astro = main's + `/#plugins`, store = the
+      redirect, DESIGN.md / handoff / lessons both sides). Build green before the commit.
+- [x] B. Halloween off: `01c3f85` (the mounts only; HalloweenSkin / HalloweenTransition stay in the repo).
+- [x] C. D9: `2f75693`, Try = `.rv-btn` two lines (honey when free), Product page = small ghost; DESIGN.md §4.
+- [x] D. The GAS notice: `629f72a` (the notice follows `data-gate-free`).
+- [x] E. `drift.homeLead` false: `f3d52eb`; the TV reads RevLimiter, GAS, DRIFT, Radio Roulette.
+- [ ] F. NOT DONE: the shipped Mac pkgs live in R2 `revaudio-builds` (the worker's BUILD_MAP) and this laptop has
+      no wrangler to fetch them for `check-macos-floor.py`; Radio Roulette's pkg (1.9.2, Aug) predates the 10.13
+      rule, so "10.13+" stays unwritten until each pkg passes. "macOS 12+" and the CPU line stay as they were.
+- [x] G. Cloudflare: `3e54d1b`, `"spa": false`. Read in beacon.min.js (2026-11-01): by default it hooks pushState,
+      popstate and the Navigation API and counts any new URL with its query, so every TV click was a page view.
+- [x] H. Checks on the merged tree (Edge, every request off 127.0.0.1 aborted): `npm run build` green (30 pages);
+      0 broken internal links; the TV's gate ids = the worker's keys; at 1141x636, 1280x665, 1366x657, 1440x900,
+      1728x1000, 390x844, 375x667, 360x740: the TV fits one screen with GAS and RevLimiter lit, both keys on
+      screen, GAS honey / RevLimiter brass, GAS's notice without the trial line, RevLimiter's with it, no page
+      errors; no Halloween on home; /downloads renders its picker; `/store?utm_source=x` -> `/?utm_source=x#plugins`;
+      `tests/smoke.spec.ts` chromium 21/21. Not run: WebKit / mobile-safari, a real iPhone or Mac Safari.
+- [ ] I. The user's "push": main = the branch (live), then the live check (the TV, a Try, /downloads, console).
+- GAS 2 on the TV (Dan via `danavivi-83`, 2026-11-01): AFTER today's deploy, on this branch, hidden until it is
+  live; its blockers per that note: a `gas2` gate in the worker, its own product page (not a generated `[slug]`
+  one: add `gas2` to OWN_ROUTE first), the signed + notarized download, CATCH10 in Paddle. Its mock was on
+  `b67c76f` with DRIFT first; DRIFT no longer leads, so its TV order is open for Dan.
 
 ### Later, each on its own branch
 
