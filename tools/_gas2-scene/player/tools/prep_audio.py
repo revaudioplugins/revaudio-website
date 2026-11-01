@@ -6,7 +6,8 @@ LEVEL MATCH (Yoni 2026-10-22: honest A/B): the GAS 2 side is gained to the dry s
 both share one gain to TARGET LUFS (every station equally loud, so tuning never jumps in level), or lower if that
 would put the louder peak over -1 dBFS true-ish (4x oversampled) — never a limiter; AAC 256k.
 Usage: python player/tools/prep_audio.py <id> <dry.wav> <gas.wav>"""
-TARGET = -11.0   # LUFS, every station (2026-10-23: hip hop -9.8 / pop -10.9 / rock -8.3 before = 2.7 dB jumps)
+TARGET = -16.0   # LUFS, every station (2026-11-01 renders: hip hop peaks -0.16 dBFS at -15 LUFS, so -16 is the loudest all 4 reach
+                 # under the -1 dBFS ceiling without a limiter; was -11 for the 2026-10-23 renders)
 import os, subprocess, sys
 import numpy as np, soundfile as sf, pyloudnorm as pyln
 from scipy.signal import resample_poly, correlate
