@@ -74,6 +74,29 @@
     `C:\Users\shlik\AppData\Local\Temp\claude\c--Revaudio\74573275-0f44-45db-97c3-a134cca05d4d\scratchpad\`
     (`glitchcheck.mjs`, `motioncheck.mjs`, `glowcheck.mjs`, `readcheck.mjs`, `benchsmoke.mjs`, `slowphone.mjs`); a
     new session gets another scratchpad, so copy them from there (or into the repo if the user wants them kept).
+- Session 2026-11-01 (Claude Code `revaudio-b5`, laptop 1). Phase 5 "the TV sells" planned, persona-tested and
+  decided; the menu line + the reading picked on the bench and baked. The whole record is in
+  `tasks/home-library-plan.md` § Phase 5 (steps 0-13, the persona round, the user's decisions, "The menu line and
+  the reading"); persona reports in `tasks/evidence/persona-qa-2026-11-01/`. The user wanted another session to see
+  the work, so the branch went to origin as `feat/home-library` (a branch only: main and the live site untouched).
+  - Commits: `f123ab9` (plan + persona round), `2e8828b` (the user's decisions: glitch = lit name + blurb, rarely; a
+    REQUIRED terms box; D5 = B; extras 8 + 9 in, 10 + 11 out), `e317518` + `e6afc0a` (three menu looks + three
+    readings on `/__wwbench`), `8005bb3` (those switches retired), `573fa7b` (the pick baked: menu C "PICK A
+    CATEGORY ▸" channel guide + reading A tinted Inter + eight values; the thumbnail now fits the room's height),
+    `f1162a4` (the ▸ blinks four times as the tube lights, then holds: WCAG 2.2.2). a0's close note above went in as
+    `936e91e` on the user's word.
+  - Checked: one screen at 1141x636, 1280x665, 1366x657, 1440x900, 1536x730, 1728x1000 + four phones with DRIFT,
+    RevLimiter, GAS lit; no-JS title; `npm run build` green; `tests/smoke.spec.ts` chromium 21/21 (twice).
+  - Next (each waits for the user's word): "go" for Phase 5 step 0 = merge origin/main into the branch by hand (187
+    commits behind on 2026-11-01; main's `0ab2c4b` touches WordWall.astro, 19 lines, and DESIGN.md +159; keep
+    PluginCard + PluginShowcase deleted), then steps 1-9 + 13 in the plan's order. Open: D7 (the second key's
+    words), D9 (the TV's keys join `.rv-btn` or not). Outside the branch: the GAS notice bug LIVE on main
+    (`TrialGateModal.astro:81`, a one-line fix, the user's word first).
+  - Running on laptop 1 (die with the session): `astro dev` 4392 (page + `/__wwbench`), `astro preview` 4393
+    (127.0.0.1), `python -m http.server` 4471 (GAS 2 mockups, scratchpad). Check scripts (bakecheck, listcheck,
+    fit2, nojs, blink, bench*) only in b5's scratchpad:
+    `C:\Users\shlik\AppData\Local\Temp\claude\c--Revaudio\9a45622a-182f-481b-ae66-7bfc8dc8c798\scratchpad\`.
+  - Claim: b5 is the writer on this worktree until another session writes its own claim here; then b5 stops.
 - For the user (dashboard, optional): a Cloudflare Redirect Rule `/store*` -> `/#plugins` would make it a real 301;
   the repo page works without it.
 - Found: index.astro's testimonial CTA said "14-day free trial" (the trial is 30 days in both plugins' code); fixed

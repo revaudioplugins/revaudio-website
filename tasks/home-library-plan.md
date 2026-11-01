@@ -514,8 +514,8 @@ Facts behind the plan (checked 2026-11-01):
 Steps (each one checked before the next):
 - [ ] 0. Sync first: merge origin/main into the branch by hand (one merge; keep PluginCard + PluginShowcase
       deleted), the `.rv-btn` question (D9) answered, the old checks + `npm run build` green again. No source edit
-      before this. The closed session `revaudio-a0`'s close notes in handoff.md / lessons.md are uncommitted: ask the
-      user once before committing them.
+      before this. (The closed session `revaudio-a0`'s close notes went in as `936e91e`, on the user's word,
+      2026-11-01.)
 - [ ] 1. The reading in the screen's type (D8). Everything in the lit plugin's text column takes the screen's
       phosphor: today the blurb is clean web Inter in near-white and reads as a page laid over the TV. Three
       options on the bench, all in the channel's colour with the names' glow: A = Inter, phosphor-tinted (smallest
