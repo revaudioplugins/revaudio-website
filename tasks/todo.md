@@ -100,7 +100,8 @@ Dan's concept (2026-10-29): a stack of 1950s "Greetings from GAS 2" postcards, p
   - [ ] a. `taxi/` into this branch from main (`git checkout origin/main -- tools/_gas2-scene/taxi`, new files
         `add -f`); `taxi/**` claimed by `danavivi-83` (handed over by `danavivi-a5`).
   - [ ] b. One taxi.js for both pages, not a fork: the trigger = a page event (the phone fires it on a valid stamp,
-        inside the tap, so iOS lets the sound play; page-b keeps its `#ticket` submit + `#veil`); `covers()` = a real
+        inside the tap, so iOS lets the sound play, and with `navigator.audioSession.type = 'playback'` as HEAR IT already
+        sets it, so it sounds with the ring switch on silent; page-b keeps its `#ticket` submit + `#veil`); `covers()` = a real
         overlap (the phone's cab stands above the readings, not beside them); The postcards again sends it home.
         page-b.html untouched, checked on main's page-b.
   - [ ] c. Phone: a frame-sized `#scene` box where the vista sits (the taxi's cqw = the frame's, as on page-b), the end
