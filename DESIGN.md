@@ -83,7 +83,7 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
   - Menu (`.ww-osd`), a channel guide (the user's bench pick of 2026-11-01, option C of three; asked
     for "more visible ... the user should understand exactly what to do there", bigger and bolder, in the
     brand, after the GAS 2 and DRIFT pages): the ask "PICK A CATEGORY ▸" in big Bebas (the ▸ blinks like
-    a set's cursor; still under reduced motion), then the categories (`src/data/library.ts`: ALL first,
+    a set's cursor, four times as the tube lights, then holds; steady under reduced motion), then the categories (`src/data/library.ts`: ALL first,
     then every category a plugin on the TV sits in; an empty one is hidden) as big Bebas words, short
     labels everywhere (the full name stays the key's aria-label), each with how many plugins it holds as
     a small superscript, the picked one in inverse video (a lit key, dark type). Buttons and the ask show

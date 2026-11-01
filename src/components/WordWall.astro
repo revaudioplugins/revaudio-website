@@ -1383,7 +1383,11 @@ const first = items[0]?.slug ?? '';
     text-shadow: 0 0 12px var(--ww-glow);
     white-space: nowrap;
   }
-  .ww-tag-ask i { font-style: normal; color: var(--ww-ink-hot); animation: ww-blink 1.1s steps(1, end) infinite; }
+  .ww-tag-ask i { font-style: normal; color: var(--ww-ink-hot); }
+  /* the cursor blinks four times as the tube lights, then holds (a blink that never stops fails WCAG 2.2.2) */
+  @media (prefers-reduced-motion: no-preference) {
+    .ww[data-ww-power='on'] .ww-tag-ask i { animation: ww-blink 1.1s steps(1, end) 4; }
+  }
   @keyframes ww-blink { 50% { opacity: 0; } }
   .ww-cats {
     display: flex;
@@ -2191,7 +2195,6 @@ const first = items[0]?.slug ?? '';
     .ww-screen-fx,
     .ww-frame { transition: none; }
     .ww-list.is-swapping .ww-item:not([hidden]) .ww-row { animation: none; }
-    .ww-tag-ask i { animation: none; }
   }
 
   /* high contrast: a plain list. The screen, its glass and the frame go (the hc wall shows), the names are plain
