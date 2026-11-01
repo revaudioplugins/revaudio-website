@@ -92,6 +92,10 @@ const info = Object.fromEntries(DL_SLUGS.map((slug) => {
         </p>
         <p class="dlp-err" data-dlp-dl-err role="alert" aria-live="polite"></p>
       </div>
+
+      <!-- The plugin's owner's manual, in every state: the worker's /manual/<gate id> (the latest /pit-lane upload),
+           listed by its GET /manuals. A plugin with none shows nothing. -->
+      <a class="dlp-manual" data-dlp-manual href="#" target="_blank" rel="noopener" hidden>Owner&rsquo;s manual (PDF) &rarr;</a>
     </div>
 
     <p class="dlp-foot">
@@ -133,6 +137,12 @@ const info = Object.fromEntries(DL_SLUGS.map((slug) => {
     const dlAgain = $<HTMLButtonElement>('[data-dlp-again]');
     const dlErr = $('[data-dlp-dl-err]');
     const mobile = $('[data-dlp-mobile]');
+    const manual = $<HTMLAnchorElement>('[data-dlp-manual]');
+    let manuals: Record<string, string> = {};
+    fetch(worker + '/manuals')
+      .then((r) => r.json())
+      .then((d) => { if (d && d.ok) { manuals = d.manuals || {}; if (picked) render(); } })
+      .catch(() => { /* no manual links, the downloads still work */ });
 
     let slug = document.querySelector<HTMLElement>('[data-showcase] .sc-slide.is-current')?.dataset.slug || Object.keys(info)[0];
     let picked = false;
@@ -175,6 +185,9 @@ const info = Object.fromEntries(DL_SLUGS.map((slug) => {
       submit.classList.toggle('rv-btn--honey', p.free);
       err.textContent = '';
       dlErr.textContent = '';
+      const m = manuals[p.gate];
+      manual.hidden = !m;
+      if (m) manual.href = m;
       if (gate) {
         sub.textContent = 'Full version, no key needed. Pick your platform. The installer lands in your browser’s Downloads folder. Grab both if you work on two machines.';
         resetDlButtons();
@@ -479,6 +492,11 @@ const info = Object.fromEntries(DL_SLUGS.map((slug) => {
   .dlp-link[hidden] { display: none; }
   .dlp-link:hover { color: var(--brass-bright); }
   .dlp-link:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 2px; }
+
+  .dlp-manual { display: inline-block; margin-top: 1rem; font-size: 0.88rem; color: var(--brass-bright); text-decoration: underline; text-underline-offset: 3px; }
+  .dlp-manual[hidden] { display: none; }
+  .dlp-manual:hover { color: var(--fg); }
+  .dlp-manual:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 2px; }
 
   .dlp-dl-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
   @media (max-width: 380px) { .dlp-dl-row { grid-template-columns: 1fr; } }

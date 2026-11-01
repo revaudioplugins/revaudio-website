@@ -438,7 +438,7 @@ body[data-look="0"].rs-dusk .dusk { display: block; }
     <div class="abs radioCap" id="radioCap">Tap the radio</div>
 
     <!-- 4. mailbox, the poster above it points at it -->
-    <button class="abs mp hot" id="mailPoster" aria-label="Mail me the keys: get GAS 2 by email"><img id="mpImg" src="props/poster-mail-1.webp" alt=""></button>
+    <button class="abs mp hot" id="mailPoster" aria-label="Email me the download files: get GAS 2 by email"><img id="mpImg" src="props/poster-mail-1.webp" alt=""></button>
     <button class="abs mail hot" id="mail" aria-label="Get GAS 2 by email">
       <span class="tkt"></span><img src="props/mailbox.png" alt=""><span class="plate">GAS 2</span>
     </button>
@@ -484,7 +484,7 @@ body[data-look="0"].rs-dusk .dusk { display: block; }
       <input id="em" type="email" required placeholder="you@studio.com">
       <label class="ck"><input type="checkbox" name="terms" required><span>I have read and agree to RevAudio's <a href="https://revaudio.net/terms" target="_blank" rel="noopener">Terms</a>, <a href="https://revaudio.net/eula" target="_blank" rel="noopener">Licence</a> &amp; <a href="https://revaudio.net/privacy" target="_blank" rel="noopener">Privacy</a>.</span></label>
       <label class="ck"><input type="checkbox" name="marketing"><span>Also send me new-plugin drops and demo codes (optional)</span></label>
-      <div class="fine">We email you the download link. No licence key, no card. (Mockup: nothing is sent.)</div>
+      <div class="fine" id="tkFine">We email you the download files and the manual. No licence key, no card.</div>
       <div class="stamp">SENT</div>
     </div>
     <button class="go" type="submit">
@@ -492,7 +492,7 @@ body[data-look="0"].rs-dusk .dusk { display: block; }
       <svg class="snip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.1 15.9M14.5 14.5 20 20M8.1 8.1 12 12"/></svg>
       <span class="go-face">
         <span class="go-no" aria-hidden="true">CUSTOMER COPY · No. 0002</span>
-        <span class="go-l">MAIL ME THE KEYS</span>
+        <span class="go-l">EMAIL ME THE DOWNLOAD FILES</span>
         <svg class="go-arr" viewBox="0 0 30 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 9h25M19 2l8 7-8 7"/></svg>
       </span>
     </button>
@@ -546,7 +546,21 @@ body[data-look="0"].rs-dusk .dusk { display: block; }
   const close = () => $$('.veil').forEach(v => v.classList.remove('open'));
   // a fresh ticket each time: the torn stub snaps back without animating
   $('#mail').onclick = $('#mailPoster').onclick = $('#cta').onclick = () => { tk.classList.add('nofx'); tk.classList.remove('sent'); void tk.offsetWidth; tk.classList.remove('nofx'); open(veil); };
-  tk.onsubmit = e => { e.preventDefault(); tk.classList.add('sent'); };
+  // the download email: the license worker's /download/register, as the live site's TrialGateModal (plugin = its gate
+  // id `gas2`): it emails the Windows + Mac links and the manual. SENT lands at once (the taxi runs off the same submit);
+  // if the worker says no, the ticket comes back, unstamped, with its answer in the fine print.
+  const fine = $('#tkFine'), fineText = fine.textContent;
+  tk.onsubmit = e => {
+    e.preventDefault(); tk.classList.add('sent'); fine.textContent = fineText;
+    const fail = msg => { tk.classList.add('nofx'); tk.classList.remove('sent'); void tk.offsetWidth; tk.classList.remove('nofx'); fine.textContent = msg; open(veil); };
+    fetch('https://revlimiter-license.revaudio.workers.dev/download/register', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ email: $('#em').value.trim(), plugin: 'gas2', marketing: tk.marketing.checked }),
+    })
+      .then(r => r.json())
+      .then(d => { if (!d || !d.ok) fail((d && d.error) || 'Something went wrong. Try again.'); })
+      .catch(() => fail('Network hiccup. Try again in a moment.'));
+  };
   $$('.veil').forEach(v => v.addEventListener('click', e => { if (e.target === v || e.target.hasAttribute('data-close')) close(); }));
   addEventListener('keydown', e => e.key === 'Escape' && close());
 

@@ -110,6 +110,26 @@ const worker = (import.meta.env.DEV && import.meta.env.PUBLIC_PITLANE_WORKER) ||
           <p class="pl-ok" data-pl-ok role="status"></p>
         </form>
 
+        <!-- owner's manual -->
+        <form class="pl-card" data-pl-manual novalidate>
+          <h2>Upload a manual</h2>
+          <p class="pl-note">A PDF. It replaces the plugin&rsquo;s manual everywhere at once: the Downloads page, the Paddle purchase page (paid plugins) and the download email.</p>
+          <div class="pl-row">
+            <label class="pl-field">
+              <span>Plugin</span>
+              <select data-pl-mplugin></select>
+            </label>
+            <label class="pl-field">
+              <span>Manual (PDF)</span>
+              <input type="file" accept=".pdf,application/pdf" data-pl-mfile />
+            </label>
+          </div>
+          <p class="pl-drop-now" data-pl-mnow></p>
+          <button type="submit" class="rv-btn pl-go" data-pl-mgo>Upload manual</button>
+          <p class="pl-err" data-pl-merr role="alert"></p>
+          <p class="pl-ok" data-pl-mok role="status"></p>
+        </form>
+
         <!-- what's live -->
         <section class="pl-card">
           <div class="pl-h2row">
@@ -129,7 +149,8 @@ const worker = (import.meta.env.DEV && import.meta.env.PUBLIC_PITLANE_WORKER) ||
 
     <script>
       type Slot = { platform: string; ext: string; filename: string; key: string | null; size: number; version: string; name: string; uploaded: string } | null;
-      type Plug = { id: string; name: string; platforms: { mac: Slot; win: Slot } };
+      type Manual = { url: string; name: string; size: number; at: string; site?: boolean } | null;
+      type Plug = { id: string; name: string; platforms: { mac: Slot; win: Slot }; manual: Manual };
       type LogRow = { at: string; platform: string; plugin: string; mode: string; version: string; key: string; size: number; name: string; prevKey: string; removed: string };
 
       const root = document.querySelector<HTMLElement>('[data-pl]')!;
@@ -137,7 +158,7 @@ const worker = (import.meta.env.DEV && import.meta.env.PUBLIC_PITLANE_WORKER) ||
       const $ = <T extends HTMLElement>(s: string, el: ParentNode = root) => el.querySelector<T>(s)!;
       const TOKEN_KEY = 'pl:token';
       const MIN_BYTES = 10 * 1024 * 1024;
-      const PARALLEL = 3;
+      const PARALLEL = 6;   // 50 MB parts in flight at once: more keeps a fast line full; a slow one is the limit either way
 
       let token = '';
       try { token = sessionStorage.getItem(TOKEN_KEY) || ''; } catch { /* storage blocked: sign in each visit */ }
@@ -193,6 +214,11 @@ const worker = (import.meta.env.DEV && import.meta.env.PUBLIC_PITLANE_WORKER) ||
 
       // ---- status board + log ------------------------------------------------
       const pluginSel = $<HTMLSelectElement>('[data-pl-plugin]');
+      const mPluginSel = $<HTMLSelectElement>('[data-pl-mplugin]');
+      const drawManualNow = () => {
+        const p = plugins.find((x) => x.id === mPluginSel.value);
+        $('[data-pl-mnow]').innerHTML = p ? 'Now: ' + manualLine(p.manual) : '';
+      };
       const osSel = $<HTMLSelectElement>('[data-pl-os]');
       async function refresh() {
         const r = await api('GET', '/status').catch(() => ({ ok: false, error: 'Network error.' }));
@@ -201,6 +227,10 @@ const worker = (import.meta.env.DEV && import.meta.env.PUBLIC_PITLANE_WORKER) ||
         const keep = pluginSel.value;
         pluginSel.innerHTML = plugins.map((p) => `<option value="${p.id}">${esc(p.name)}</option>`).join('');
         if (keep && plugins.some((p) => p.id === keep)) pluginSel.value = keep;
+        const mkeep = mPluginSel.value;
+        mPluginSel.innerHTML = pluginSel.innerHTML;
+        if (mkeep && plugins.some((p) => p.id === mkeep)) mPluginSel.value = mkeep;
+        drawManualNow();
         drawBoard();
         drawLog(r.log as LogRow[]);
         syncSlots();
@@ -210,9 +240,13 @@ const worker = (import.meta.env.DEV && import.meta.env.PUBLIC_PITLANE_WORKER) ||
         if (!s.key) return '<span class="pl-bad">nothing live</span>';
         return `<b>${esc(s.name || (s.version ? 'v' + s.version : s.key.split('/').pop()!))}</b> <span class="pl-dim">${mb(s.size)}${s.uploaded ? ' · ' + when(s.uploaded) : ''}</span>`;
       }
+      function manualLine(m: Manual) {
+        if (!m) return '<span class="pl-dim">none</span>';
+        return `<a href="${esc(m.url)}" target="_blank" rel="noopener"><b>${esc(m.name)}</b></a> <span class="pl-dim">${m.site ? 'on the site' : mb(m.size) + (m.at ? ' · ' + when(m.at) : '')}</span>`;
+      }
       function drawBoard() {
-        $('[data-pl-board]').innerHTML = `<table><thead><tr><th>Plugin</th><th>Mac</th><th>Windows</th></tr></thead><tbody>${
-          plugins.map((p) => `<tr><th scope="row">${esc(p.name)}</th><td>${slotLine(p.platforms.mac)}</td><td>${slotLine(p.platforms.win)}</td></tr>`).join('')
+        $('[data-pl-board]').innerHTML = `<table><thead><tr><th>Plugin</th><th>Mac</th><th>Windows</th><th>Manual</th></tr></thead><tbody>${
+          plugins.map((p) => `<tr><th scope="row">${esc(p.name)}</th><td>${slotLine(p.platforms.mac)}</td><td>${slotLine(p.platforms.win)}</td><td>${manualLine(p.manual)}</td></tr>`).join('')
         }</tbody></table>`;
       }
       function drawLog(log: LogRow[]) {
@@ -324,6 +358,7 @@ const worker = (import.meta.env.DEV && import.meta.env.PUBLIC_PITLANE_WORKER) ||
         const parts: Array<{ partNumber: number; etag: string }> = [];
         let done = 0;
         let next = 1;
+        const t0 = performance.now();
         bar(os, 0, `Uploading ${f.name}…`);
         const worker = async () => {
           while (next <= count) {
@@ -338,7 +373,9 @@ const worker = (import.meta.env.DEV && import.meta.env.PUBLIC_PITLANE_WORKER) ||
             }
             if (last) throw new Error(`Part ${n} of ${count} failed: ${last}`);
             done += blob.size;
-            bar(os, done / f.size, `Uploading ${f.name}… ${Math.round((done / f.size) * 100)}%`);
+            const rate = done / Math.max(1, (performance.now() - t0) / 1000);   // bytes/s so far
+            const left = Math.round((f.size - done) / rate);
+            bar(os, done / f.size, `Uploading ${f.name}… ${Math.round((done / f.size) * 100)}% · ${(rate * 8 / 1e6).toFixed(1)} Mbit/s${left > 0 ? ' · ~' + (left >= 90 ? Math.round(left / 60) + ' min' : left + ' s') + ' left' : ''}`);
           }
         };
         try {
@@ -352,6 +389,31 @@ const worker = (import.meta.env.DEV && import.meta.env.PUBLIC_PITLANE_WORKER) ||
         if (!c.ok) throw new Error(c.error);
         return c;
       }
+
+      // ---- the manual -----------------------------------------------------------
+      // One PUT with the raw PDF (manuals are a few MB): the worker stores it, then points /manual/<plugin> at it.
+      mPluginSel.addEventListener('change', drawManualNow);
+      $<HTMLFormElement>('[data-pl-manual]').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const merr = $('[data-pl-merr]'), mok = $('[data-pl-mok]'), mgo = $<HTMLButtonElement>('[data-pl-mgo]');
+        const input = $<HTMLInputElement>('[data-pl-mfile]');
+        const f = input.files?.[0];
+        const p = plugins.find((x) => x.id === mPluginSel.value);
+        merr.textContent = ''; mok.textContent = '';
+        if (!p) return;
+        if (!f) { merr.textContent = 'Pick the PDF first.'; return; }
+        if (!/\.pdf$/i.test(f.name)) { merr.textContent = `${f.name} isn't a PDF.`; return; }
+        if (f.size > 50 * 1048576) { merr.textContent = `${f.name} is over 50 MB.`; return; }
+        if (!confirmLive('Manual', '', `make ${f.name} the ${p.name} manual`)) return;
+        mgo.disabled = true; mgo.textContent = 'Uploading…';
+        const r = await api('PUT', `/manual?plugin=${encodeURIComponent(p.id)}&name=${encodeURIComponent(f.name)}`, undefined, f)
+          .catch(() => ({ ok: false, error: 'Network error.' }));
+        mgo.disabled = false; mgo.textContent = 'Upload manual';
+        if (!r.ok) { merr.textContent = r.error || 'Upload failed.'; return; }
+        mok.textContent = `Done. ${p.name}'s manual is live.`;
+        input.value = '';
+        refresh();
+      });
 
       $<HTMLFormElement>('[data-pl-form]').addEventListener('submit', async (e) => {
         e.preventDefault();

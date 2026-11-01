@@ -392,7 +392,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .desk.sent .rd .cta:not(.tx-red)::after { content: none; }
 .rd .scr { display: block; margin: 1.3cqw 0 0 9cqw; font: 400 4.4cqw/1 Yellowtail; color: #e8c878; transform: rotate(-6deg); text-shadow: 0 0 .9cqw rgba(232, 200, 120, .35); }
 /* after mailing (Dan 2026-10-31, the laptop page's taxi; here too from 2026-11-01, in the railway ticket's place): the
-   cab pulls up in front of the station and ✓ Keys in the mail turns over to a red "To the store" (taxi/taxi.js). With
+   cab pulls up in front of the station and ✓ Files in your inbox turns over to a red "To the store" (taxi/taxi.js). With
    the station on top, Fill it up. steps aside so the note and The postcards again fit on the shorter phones */
 .desk[data-spot].sent .rd .scr { display: none; }
 /* red, it keeps the Download FREE size (Dan, round 12: "the size of the button To the store should be the same size of
@@ -602,10 +602,10 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
         </div>
       </article>
 
-      <!-- 6 · the postcard back: MAIL ME THE KEYS (a dummy: nothing is sent) -->
-      <article class="pc pc-mail" aria-roledescription="postcard" aria-label="6 of 6: Mail me the keys">
+      <!-- 6 · the postcard back: EMAIL ME THE DOWNLOAD FILES (POST /download/register, plugin gas2) -->
+      <article class="pc pc-mail" aria-roledescription="postcard" aria-label="6 of 6: Email me the download files">
         <div class="pchead" aria-hidden="true">POST CARD</div>
-        <h2 class="mtitle">Mail me<br>the keys</h2>
+        <h2 class="mtitle">Email me the<br>download files</h2>
         <p class="msub">All three grades · free</p>
         <div class="stamp" aria-hidden="true"><span class="s1">GAS 2 POST</span><span class="s2">0¢</span></div>
         <svg class="pmark" viewBox="0 0 200 110" fill="none" stroke="currentColor" aria-hidden="true">
@@ -615,14 +615,14 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
           <text x="55" y="61" font-family="Oswald" font-weight="700" font-size="15" letter-spacing="1" text-anchor="middle" fill="currentColor" stroke="none">FREE</text>
           <path d="M104 36c8-5 16-5 24 0s16 5 24 0 16-5 24 0 16 5 22 1M104 50c8-5 16-5 24 0s16 5 24 0 16-5 24 0 16 5 22 1M104 64c8-5 16-5 24 0s16 5 24 0 16-5 24 0 16 5 22 1M104 78c8-5 16-5 24 0s16 5 24 0 16-5 24 0 16 5 22 1" stroke-width="2.2" stroke-linecap="round"/>
         </svg>
-        <p class="note">Drop me in the box: we'll mail you the download link. No licence key, no card.</p>
+        <p class="note">Drop me in the box: we'll email you the download files and the manual. No licence key, no card.</p>
         <form class="mailform" id="mailform" novalidate>
           <div class="addr">
             <label for="em"><span>TO</span><input id="em" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" enterkeyhint="send" placeholder="your email" required></label>
             <p class="err" id="err" role="alert" hidden>That email looks off. Check it and try again.</p>
           </div>
           <label class="opt"><input type="checkbox" id="mk" name="marketing"><i class="tick" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 13l5 5L21 4"/></svg></i><span>Also send me new-plugin drops and demo codes (optional)</span></label>
-          <button class="send" type="submit" aria-label="Mail me the keys"><span class="ink" aria-hidden="true"><span class="s1">RevAudio station</span><span class="s2">Mail me the keys</span><span class="s3" id="sdate">★ Free ★</span></span></button>
+          <button class="send" type="submit" aria-label="Email me the download files"><span class="ink" aria-hidden="true"><span class="s1">RevAudio station</span><span class="s2">Email me the download files</span><span class="s3" id="sdate">★ Free ★</span></span></button>
         </form>
         <i class="age" aria-hidden="true"></i>
       </article>
@@ -639,7 +639,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
       <div class="rd" id="rd">
         <div class="ti"><h2 class="n" aria-label="GAS 2">GAS<span class="two">2</span></h2></div>
         <p class="lead">Thicker, smoother, glued master.</p>
-        <button class="cta" type="button" id="cta"><span class="go">⤓ Download FREE</span><span class="ok">✓ Keys in the mail</span></button>
+        <button class="cta" type="button" id="cta"><span class="go">⤓ Download FREE</span><span class="ok">✓ Files in your inbox</span></button>
         <div class="scr">Fill it up.</div>
       </div>
     </div>
@@ -668,7 +668,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches, Z = reduce ? 1.6 : 1;   // Z: more damping, no bounce
   // each card lies a little crooked, like a real stack; the top one straightens most of the way
   const LIE = [[-1.1, 0], [1.8, 3], [-1.6, -2], [2.3, 2], [-2, -3], [1.2, 1]];
-  const NAMES = ['Greetings from GAS 2', 'Regular', 'Premium', 'Race', 'Hear it', 'Mail me the keys'];
+  const NAMES = ['Greetings from GAS 2', 'Regular', 'Premium', 'Race', 'Hear it', 'Email me the download files'];
   let cur = 0, touched = false;
 
   // ── the stack settling (Dan, 2026-10-30: "everything that moves needs to be smooth"): a damped spring baked into CSS
@@ -1201,7 +1201,8 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   });
   document.addEventListener('visibilitychange', () => deck.power(!document.hidden && cards[cur] === hear && hear.classList.contains('flipped')));
 
-  // ── MAIL ME THE KEYS: check the address, then the card goes into the box (a dummy: nothing is sent) ──
+  // ── EMAIL ME THE DOWNLOAD FILES: check the address, then the card goes into the box; the license worker's
+  // /download/register (plugin gas2, as the live site's TrialGateModal) emails the Windows + Mac links and the manual ──
   const form = $('mailform'), em = $('em'), err = $('err'), send = form.querySelector('.send');
   function posting() { return send.disabled && cur === N - 1; }  // stamped, on its way into the box: the stack holds still
   const replay = (el, cls) => { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); };
@@ -1235,6 +1236,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     const v = em.value.trim();
     if (!v || !em.checkValidity()) { err.hidden = false; replay(send, 'nope'); em.focus(); return; }
     em.blur();
+    mailing = register(v);                                       // posted now; the end page reads the answer
     send.disabled = true; replay(send, 'thump'); replay(cards[N - 1], 'jolt');   // the stamp comes down, the ink takes
     // the taxi (taxi/) rolls in once the end page is up (2.5 s). Its sound is unlocked here, inside the tap (iOS plays
     // nothing a tap didn't start), and as HEAR IT's, with the ring switch on silent too. The mailing is also left as a note:
@@ -1248,6 +1250,16 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     document.dispatchEvent(new CustomEvent('gas2:mailed', { detail: { roll: 2.5 } }));
     setTimeout(() => drop(v), 560);                               // the keyboard goes down meanwhile
   });
+  let mailing = null;
+  function register(v) {
+    return fetch('https://revlimiter-license.revaudio.workers.dev/download/register', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ email: v, plugin: 'gas2', marketing: $('mk').checked }),
+    })
+      .then((r) => r.json())
+      .then((d) => (d && d.ok ? '' : (d && d.error) || 'Something went wrong. Tap Again and try once more.'))
+      .catch(() => 'Network hiccup. Tap Again and try once more.');
+  }
   function drop(v) {
     const c = cards[N - 1];
     box.classList.add('full');
@@ -1259,18 +1271,20 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     c.style.opacity = '0';
     $('prev').disabled = $('next').disabled = true;
     setTimeout(() => { box.classList.remove('gulp'); void box.offsetWidth; box.classList.add('gulp'); }, 760);
-    setTimeout(() => {                                           // the box swallows it, then the end page: "✓ Keys in the mail"
+    setTimeout(() => {                                           // the box swallows it, then the end page: "✓ Files in your inbox"
       desk.classList.add('sent');
-      $('sentNote').textContent = `Sent to ${v} · Mockup: nothing was sent.`;
+      $('sentNote').textContent = `Sending to ${v}…`;
+      const sent = mailing;
+      sent.then((no) => { if (mailing === sent) $('sentNote').textContent = no || `Sent to ${v}. Check your inbox.`; });
       box.classList.remove('full');
       cur = N; layout(true);
-      $('live').textContent = `Mailed to ${v}. Mockup: nothing was sent. GAS 2. Thicker, smoother, glued master.`;
+      $('live').textContent = `Emailing the download files to ${v}. GAS 2. Thicker, smoother, glued master.`;
     }, 1150);
   }
   $('cta').addEventListener('click', () => { if (!desk.classList.contains('sent')) prev(); });   // ⤓ Download FREE = the mail card comes back
   $('again').addEventListener('click', () => {                  // the postcards dealt back onto the table, bottom card first
     window.gas2Mailed = null; document.dispatchEvent(new Event('gas2:reset'));   // the taxi goes with the end page
-    desk.classList.remove('sent'); $('sentNote').textContent = ''; box.classList.remove('full', 'gulp');
+    mailing = null; desk.classList.remove('sent'); $('sentNote').textContent = ''; box.classList.remove('full', 'gulp');
     em.value = ''; err.hidden = true; turn(false, true);
     $('mk').checked = false; send.disabled = false; send.classList.remove('thump', 'nope'); cards[N - 1].classList.remove('jolt');
     cards.forEach((c, i) => { c.style.transition = 'none'; c.style.opacity = ''; c.style.visibility = 'visible'; c._gone = null;
@@ -1294,7 +1308,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   cards.forEach((c, i) => { if (i < start) { c.style.visibility = 'hidden'; c._gone = `translate3d(${-innerWidth * 1.2}px, -40px, 0) rotate(-22deg)`; c.style.transform = c._gone; } });
   cur = start;
   if (q.has('flip')) turn(true, true);
-  if (start === N && q.has('sent')) { desk.classList.add('sent'); $('sentNote').textContent = 'Sent to you@studio.com · Mockup: nothing was sent.'; }
+  if (start === N && q.has('sent')) { desk.classList.add('sent'); $('sentNote').textContent = 'Sent to you@studio.com. Check your inbox.'; }
   // ── the end page's spot (Dan, 2026-10-31, phone only: "let's try different spots of the background image from the scene
   //    for the end page", spots with the pump in them; 2026-11-01 he picked D of the four on the spots bench, the others
   //    are in git 32e25ae): the end page frames another part of the frame, the blurred one behind the cards with it, so
