@@ -1,6 +1,6 @@
-## 2026-11-01 — GAS 2 laptop page (page-b): Terms + newsletter checkboxes on the service ticket (Claude Code `danavivi-83 [c52ea5]`, Dan's Mac) — BRANCH `feat/gas2-consent`
+## 2026-11-01 — GAS 2 laptop page (page-b): Terms + newsletter checkboxes on the service ticket (Claude Code `danavivi-83 [c52ea5]`, Dan's Mac) — ON MAIN (fast-forward, 2026-11-01)
 
-Claim: OPEN `danavivi-83 [c52ea5]` (a second session under the same name as the one below; `[c52ea5]` tells them apart).
+Claim: CLOSED 2026-11-01 `danavivi-83 [c52ea5]` (a second session under the same name as the one below; `[c52ea5]` tells them apart).
 Files: `tools/_gas2-scene/page-b.html` (the `#ticket` form and its `.ticket .ck*` CSS only) + this entry. Not `taxi/**`.
 - Dan (2026-11-01): "add the terms and conditions checkbox and the newsletter, that they subscribe to the newsletter if
   they put the email."
@@ -19,8 +19,9 @@ Files: `tools/_gas2-scene/page-b.html` (the `#ticket` form and its `.ticket .ck*
   `-drone`, `-phone`, `-page`, `-page-s2`) line by line against `origin/main`: nothing missing; HOP IN was off on the
   phone only. Phone-only, still open for the laptop: the harder, faster red flip and the red button keeping the
   Download FREE size.
-- Next: Dan's look at http://127.0.0.1:4465/page-b.html (server from this worktree's `tools/_gas2-scene`); then the
-  phone page's boxes (owner `danavivi-83 [76660c]`'s postcards) and the merge to main, on his word.
+- Dan: "no" to the phone's flip + button size on the laptop; "push everything to main" + a RevTasks task to check the
+  page works and the backend is wired (the email form is still a dummy: Terms / `marketing` / the download mail are
+  not posted anywhere yet). Open: the phone page's boxes (`postcards.html`, owner `danavivi-83 [76660c]`).
 
 ## 2026-11-01 — GAS 2: the LAPTOP page (page-b) on main too: the drone intro, the coupon, the pump light, the worn knobs, with the taxi (Claude Code `danavivi-83`, Dan's Mac) — SQUASH-MERGED TO MAIN
 
