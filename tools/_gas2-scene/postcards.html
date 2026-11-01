@@ -22,7 +22,10 @@
      Round 4 (same day): the keys rendered as ivory piano keys, the sticker, TURN IT OVER in HEAR IT's letters. Then
      (Dan: "the readings should be glued to the card itself, physics-wise"): nothing printed moves on its own any more.
      2026-10-31 (Dan): spots of the frame with the pump in them for the end page, four on a bench; 2026-11-01 he picked
-     D: the station on top, the readings hanging under it on the dark lot. ?spot=sky = the sky right of the canopy. -->
+     D: the station on top, the readings hanging under it on the dark lot. ?spot=sky = the sky right of the canopy.
+     2026-11-01 (Dan: the laptop page's taxi here too): after mailing the cab pulls up in front of the station and the
+     button turns over to a red "To the store"; it replaced the railway ticket. taxi/ (page-b's own, one script for both). -->
+<link rel="stylesheet" href="taxi/taxi.css"><!-- the taxi to the store (taxi/): its script loads with the end page's photo -->
 <style>
 @font-face { font-family: Bebas; src: url(fonts/bebas.woff2) format("woff2"); }
 @font-face { font-family: Inter; src: url(fonts/inter.woff2) format("woff2"); font-weight: 100 900; }
@@ -385,34 +388,21 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 @keyframes ctashine { 0% { transform: translateX(-160%) skewX(-20deg); } 17.5%, 100% { transform: translateX(418%) skewX(-20deg); } }
 .rd .cta .ok, .desk.sent .rd .cta .go { display: none; }
 .desk.sent .rd .cta .ok { display: inline; }
-.desk.sent .rd .cta { background: transparent; color: #f6c85d; box-shadow: inset 0 0 0 2px rgba(246, 200, 93, .8); cursor: default; }
-.desk.sent .rd .cta::after { content: none; }
+.desk.sent .rd .cta:not(.tx-red) { background: transparent; color: #f6c85d; box-shadow: inset 0 0 0 2px rgba(246, 200, 93, .8); cursor: default; }
+.desk.sent .rd .cta:not(.tx-red)::after { content: none; }
 .rd .scr { display: block; margin: 1.3cqw 0 0 9cqw; font: 400 4.4cqw/1 Yellowtail; color: #e8c878; transform: rotate(-6deg); text-shadow: 0 0 .9cqw rgba(232, 200, 120, .35); }
-/* after mailing (Dan, round 2: "a pop up button in a vintage style reading 'to the website', right to the store"): a
-   railway ticket that pops out under the readings once the keys are in the mail. The end page itself is signed off. */
-.rd .ticket { position: absolute; left: 50%; top: calc(100% + max(14px, 1.4cqw)); display: none; translate: -40% 0; rotate: -4deg; text-decoration: none;
-  filter: drop-shadow(0 .5cqw .6cqw rgba(0, 0, 0, .5)); -webkit-tap-highlight-color: transparent; }
-.desk.sent .rd .ticket { display: block; animation: sway 5s 2.4s ease-in-out infinite; }
-.desk[data-spot].sent .rd .lead, .desk[data-spot].sent .rd .scr { display: none; }   /* D: the station above leaves no room under Fill it up., so the ticket comes up under the ✓ */
-@keyframes sway { 50% { rotate: -1.5deg; } }
-.ticket .tk { display: grid; justify-items: center; gap: max(4px, .4cqw); padding: 16px 26px;   /* the printed rule sits 6px in: 8px+ clear of the words */
-  background: linear-gradient(180deg, #f6ecd2, #eadbb6); color: #8f2717; text-transform: uppercase; white-space: nowrap;
-  outline: 1.5px solid rgba(143, 39, 23, .75); outline-offset: -6px;
-  -webkit-mask: radial-gradient(circle at 0 0, #0000 8px, #000 8.5px) 0 0 / 51% 51% no-repeat, radial-gradient(circle at 100% 0, #0000 8px, #000 8.5px) 100% 0 / 51% 51% no-repeat,
-    radial-gradient(circle at 0 100%, #0000 8px, #000 8.5px) 0 100% / 51% 51% no-repeat, radial-gradient(circle at 100% 100%, #0000 8px, #000 8.5px) 100% 100% / 51% 51% no-repeat;
-  mask: radial-gradient(circle at 0 0, #0000 8px, #000 8.5px) 0 0 / 51% 51% no-repeat, radial-gradient(circle at 100% 0, #0000 8px, #000 8.5px) 100% 0 / 51% 51% no-repeat,
-    radial-gradient(circle at 0 100%, #0000 8px, #000 8.5px) 0 100% / 51% 51% no-repeat, radial-gradient(circle at 100% 100%, #0000 8px, #000 8.5px) 100% 100% / 51% 51% no-repeat; }
-.ticket .t1, .ticket .t3 { font: 600 max(9px, .85cqw)/1 Oswald; letter-spacing: .28em; color: #5d4b37; }
-.ticket .t2 { display: flex; align-items: center; gap: max(6px, .6cqw); font: 700 max(19px, 1.9cqw)/1 Oswald; letter-spacing: .03em; }
-.ticket .t2 svg { width: max(20px, 2cqw); height: max(12px, 1.2cqw); }
-.ticket:active .tk { scale: .97; }
-.ticket:focus-visible { outline: none; }
-.ticket:focus-visible .tk { outline: 2px solid var(--honey); outline-offset: 2px; }
-@media (max-height: 680px) {                    /* shorter phones (SE, a 6.1" with the toolbar up): just the ticket's big line, clear of the foot */
-  .rd .ticket { top: calc(100% + 10px); }
-  .ticket .t1, .ticket .t3 { display: none; }
-  .ticket .tk { padding: 10px 22px; outline: none; }
-}
+/* after mailing (Dan 2026-10-31, the laptop page's taxi; here too from 2026-11-01, in the railway ticket's place): the
+   cab pulls up in front of the station and ✓ Keys in the mail turns over to a red "To the store" (taxi/taxi.js). With
+   the station on top, Fill it up. steps aside so the note and The postcards again fit on the shorter phones */
+.desk[data-spot].sent .rd .scr { display: none; }
+/* the taxi's scene = the frame's own box, so its sizes (cqw of the frame) mean what they mean on page-b; its stage = the
+   end page (the smoke's canvas; out of sight = off the screen) */
+.txscene { position: absolute; inset: 0; container-type: inline-size; pointer-events: none; }
+.desk[data-spot] .txscene { inset: auto; left: var(--vl); top: var(--vt); width: var(--cw); height: var(--ch); }
+.txscene .tx { bottom: 17%; }                   /* its tyres on the forecourt just under the pump's plinth (frame y 850), GAS2 under them */
+.txscene .tx-cap { transform: translateX(max(-50%, calc(16px - var(--tx-x) - var(--tx-w) * var(--tx-signc)))); }   /* over the roof sign, on the screen */
+.txscene .tx-no { position: relative; }
+.txscene .tx-no::after { content: ""; position: absolute; inset: -14px -12px; }   /* Not now: a thumb-sized tap */
 .endbar { position: absolute; left: 0; right: 0; bottom: calc(10px + env(safe-area-inset-bottom)); display: grid; justify-items: center; gap: 2px; text-align: center; }
 .endbar button { min-height: 44px; padding: 0 16px; font: 600 12.5px/1 Oswald; letter-spacing: .18em; text-transform: uppercase; color: rgba(239, 227, 198, .88);
   text-shadow: 0 1px 3px rgba(0, 0, 0, .8); }
@@ -438,7 +428,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 
 @media (prefers-reduced-motion: reduce) {
   .pc.nudge, .pc-hear.top:not(.flipped) .curl, .box.gulp, .rd .cta::after, .g-pre.top .badge::after,
-  .send.thump .ink, .send.nope .ink, .pc-mail.jolt, .desk.sent .rd .ticket, .loading .pilot.on,
+  .send.thump .ink, .send.nope .ink, .pc-mail.jolt, .loading .pilot.on,
   .pc-hear.flipped.top .sticker, .pc-hear.flipped.top .sticker .sk::after { animation: none !important; }
   .box, .end, .opt .tick path { transition-duration: .01s !important; transition-delay: 0s !important; }
 }
@@ -638,17 +628,16 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   <div class="box" id="box" aria-hidden="true"><img src="props/mailbox.png" alt=""></div>
 
   <!-- the end: the station (spot D) with page-b's readings under it; ?spot=sky = the sky right of the canopy -->
-  <section class="end" id="end" aria-label="GAS 2">
+  <section class="end" id="end" aria-label="GAS 2" data-taxi-stage>
     <div class="view">
       <i class="vista" role="img" aria-label="The desert at dusk, seen from under the station's canopy"></i>
       <i class="dusk" aria-hidden="true"></i>
+      <div class="txscene" data-taxi-scene></div>
       <div class="rd" id="rd">
         <div class="ti"><h2 class="n" aria-label="GAS 2">GAS<span class="two">2</span></h2></div>
         <p class="lead">Thicker, smoother, glued master.</p>
         <button class="cta" type="button" id="cta"><span class="go">⤓ Download FREE</span><span class="ok">✓ Keys in the mail</span></button>
         <div class="scr">Fill it up.</div>
-        <!-- _blank: inside the review page's frame a same-tab link can't leave; on the site this is a plain link -->
-        <a class="ticket" id="toSite" href="https://revaudio.net/store" target="_blank" rel="noopener" aria-label="To the website: the RevAudio store"><span class="tk"><span class="t1">RevAudio.net</span><span class="t2">To the website<svg viewBox="0 0 30 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 9h25M19 2l8 7-8 7"/></svg></span><span class="t3">Admit one · the store</span></span></a>
       </div>
     </div>
     <div class="endbar">
@@ -739,6 +728,10 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     const go = () => (drag ? setTimeout(go, 300) : fn());
     if (window.requestIdleCallback) requestIdleCallback(go, { timeout: 2000 }); else setTimeout(go, 700);
   };
+  const taxi = () => {                                           // the taxi to the store (taxi/, ~0.7 MB of art + sound): in before the mail card
+    if (document.querySelector('script[data-taxi]')) return;
+    const s = document.createElement('script'); s.src = 'taxi/taxi.js'; s.dataset.taxi = ''; document.body.append(s);
+  };
 
   const rest = (i, d) => {
     if (d > 2) return rest(i - d + 2, 2);                        // the card after the three in sight waits right under the third, unseen,
@@ -771,7 +764,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     box.classList.toggle('up', cur === N - 1);
     desk.classList.toggle('mailing', cur === N - 1);
     if (cur >= 3) idle(() => { audio.warm().catch(() => {}); deck.press(); });   // decode the demo, cut the record, before HEAR IT comes up
-    if (cur >= 4) idle(() => document.querySelector('.view').classList.add('warm'));   // and the end page's photo
+    if (cur >= 4) idle(() => { document.querySelector('.view').classList.add('warm'); taxi(); });   // and the end page's photo + its taxi
     deck.power(cards[cur] === hear && hear.classList.contains('flipped'));   // the deck runs only while its back is up
     ending(cur === N, anim);
   }
@@ -800,8 +793,6 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     go(rd.querySelector('.lead'), fast, 340, 230);
     go(rd.querySelector('.cta'), fast, 360, 290);
     go(rd.querySelector('.scr'), fast, 380, 350);
-    if (desk.classList.contains('sent'))                     // after mailing: the ticket to the store pops out last
-      go($('toSite'), [{ opacity: 0, scale: .3, rotate: '-16deg' }, { opacity: 1, offset: .45 }, { scale: 1.08, rotate: '-1deg', offset: .72 }, { opacity: 1, scale: 1, rotate: '-4deg' }], 560, 720);
   }
 
   // ── throw the top card off the table (any direction), the next one settles up; after the last one, the end ──
@@ -1241,6 +1232,10 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     if (!v || !em.checkValidity()) { err.hidden = false; replay(send, 'nope'); em.focus(); return; }
     em.blur();
     send.disabled = true; replay(send, 'thump'); replay(cards[N - 1], 'jolt');   // the stamp comes down, the ink takes
+    // the taxi (taxi/) rolls in once the end page is up (2.5 s); said inside the tap, so iOS lets its sound play, and as
+    // HEAR IT's, with the ring switch on silent too
+    if (navigator.audioSession) { try { navigator.audioSession.type = 'playback'; } catch (e) {} }
+    document.dispatchEvent(new CustomEvent('gas2:mailed', { detail: { roll: 2.5 } }));
     setTimeout(() => drop(v), 560);                               // the keyboard goes down meanwhile
   });
   function drop(v) {
@@ -1264,6 +1259,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   }
   $('cta').addEventListener('click', () => { if (!desk.classList.contains('sent')) prev(); });   // ⤓ Download FREE = the mail card comes back
   $('again').addEventListener('click', () => {                  // the postcards dealt back onto the table, bottom card first
+    document.dispatchEvent(new Event('gas2:reset'));             // the taxi goes with the end page
     desk.classList.remove('sent'); $('sentNote').textContent = ''; box.classList.remove('full', 'gulp');
     em.value = ''; err.hidden = true; turn(false, true);
     $('mk').checked = false; send.disabled = false; send.classList.remove('thump', 'nope'); cards[N - 1].classList.remove('jolt');

@@ -37,25 +37,34 @@ async function drag(p, dx, dy, ms, hold, after = 650) {   // a finger-like drag 
   // ── layout: every card fits, nothing overflows, the controls are on screen ──
   for (const [w, h] of SIZES) {
     const p = await page(wk, w, h);
-    for (const q of ["?card=1", "?card=2", "?card=5", "?card=5&flip", "?card=6", "?card=7", "?card=7&sent"]) {
+    for (const q of ["?card=1", "?card=2", "?card=5", "?card=5&flip", "?card=6", "?card=7", "?card=7&sent", "?card=7&sent&taxi=park"]) {
       await go(p, q);
       if (q.startsWith("?card=7")) {
         await p.waitForTimeout(1500);                    // the focus pull + the pop
+        const cab = q.endsWith("park");                  // the taxi (taxi/, 2026-11-01) parked in front of the station
+        if (cab) await p.waitForFunction(() => { const c = document.querySelector(".tx-cap"); return c && c.classList.contains("tx-on") && !!document.querySelector(".rd .cta.tx-red"); }, null, { timeout: 8000 }).catch(() => {});
         const e = await p.evaluate(() => {
           const r = (s) => { const b = document.querySelector(s).getBoundingClientRect(); return [Math.round(b.left), Math.round(b.top), Math.round(b.right), Math.round(b.bottom)]; };
           const op = (s) => getComputedStyle(document.querySelector(s)).opacity;
-          const tk = document.getElementById("toSite");
+          const tx = document.querySelector(".tx"), hit = (x, y) => { const el = document.elementFromPoint(x, y); return el ? el.className : ""; };
+          const car = tx && !tx.hidden ? r(".tx-car") : null, no = car ? r(".tx-no") : null;
           return { sw: document.documentElement.scrollWidth, iw: innerWidth, ih: innerHeight, rd: r(".rd"), n: r(".rd .n"), cta: r(".rd .cta"), bar: r(".endbar"),
                    ended: document.getElementById("desk").classList.contains("ended"), end: op(".end"), ti: op(".rd .ti"), scr: op(".rd .scr"),
                    gas2px: parseFloat(getComputedStyle(document.querySelector(".rd .n")).fontSize), label: document.querySelector(".rd .cta").innerText.trim(),
-                   ticket: getComputedStyle(tk).display === "none" ? null : r("#toSite .tk"), href: tk.href,
+                   red: document.querySelector(".rd .cta").classList.contains("tx-red"), here: document.documentElement.classList.contains("tx-here"),
+                   car, cap: car ? r(".tx-cap") : null, no,
+                   // a thumb on Not now (14 px above and below its words) and on the cab's body land on them
+                   noTap: no ? [hit((no[0] + no[2]) / 2, no[1] - 12), hit((no[0] + no[2]) / 2, no[3] + 12)] : null,
+                   carTap: car ? hit(Math.min(innerWidth - 4, car[0] + (car[2] - car[0]) * .75), car[1] + (car[3] - car[1]) * .6) : null,
                    // the end page's spot (D, Dan 2026-11-01): GAS2 hangs under the station, clear of the pump's plinth (frame y 830)
                    spot: document.getElementById("desk").dataset.spot || "", pump: (() => { const v = document.querySelector(".vista").getBoundingClientRect(); return Math.round(v.top + v.height * 830 / 1024); })() };
         });
         const pass = e.ended && e.end === "1" && e.ti === "1" && e.scr === "1" && e.sw <= e.iw && e.rd[0] >= 0 && e.rd[2] <= e.iw && e.n[1] >= 0 && e.cta[3] < e.bar[1] &&
           (!e.spot || e.n[1] >= e.pump) &&
-          (q.endsWith("sent") ? e.label === "✓ Keys in the mail" && e.ticket && e.ticket[0] >= 0 && e.ticket[2] <= e.iw && e.ticket[1] >= e.cta[3] && e.ticket[3] < e.bar[1] && e.href === "https://revaudio.net/store"
-                              : e.label === "⤓ Download FREE" && !e.ticket);
+          (cab ? e.label === "To the store" && e.red && !e.here && e.car && e.car[3] <= e.n[1] && e.car[0] + .513 * (e.car[2] - e.car[0]) <= 1 && e.car[2] <= e.iw &&
+                 e.cap[0] >= 0 && e.cap[1] >= 0 && e.cap[2] <= e.iw && e.noTap.every((c) => c === "tx-no") && e.carTap === "tx-hit"
+           : q.endsWith("sent") ? e.label === "✓ Keys in the mail" && !e.red && !e.car
+           : e.label === "⤓ Download FREE" && !e.car);
         out.layout.push({ size: `${w}x${h}`, q, pass, m: e });
         if (SHOTS) await p.screenshot({ path: `${SHOTS}/${w}x${h}-${q.replace(/[?&=]/g, "")}.png` });
         continue;
@@ -218,7 +227,7 @@ async function drag(p, dx, dy, ms, hold, after = 650) {   // a finger-like drag 
   const kb2 = await p.evaluate(() => ({ slide: document.getElementById("stack").style.translate, w: Math.round(document.querySelector(".pc-mail").getBoundingClientRect().width), ctl: getComputedStyle(document.querySelector(".ctl")).opacity }));
   ok("typing the address: the card keeps its size and slides up, TO line + tick box + stamp in sight and clear of each other, the stamp tap lands; the keyboard down, it's back",
      kb.w >= 350 && kb.to[0] >= 0 && kb.opt[0] >= kb.to[1] - 1 && kb.ink[0] >= kb.opt[1] - 1 && kb.ink[1] <= 387 && kb.ctl === "0" && kb.stamped && kb2.slide === "" && kb2.w === kb.w && kb2.ctl === "1", { kb, kb2 });
-  let netMail = 0; p.on("request", (r) => { if (!/\.(webp|png|woff2|m4a|html)(\?|$)/.test(r.url())) netMail++; });
+  let netMail = 0; p.on("request", (r) => { if (!/\.(webp|png|woff2|m4a|html|js|css)(\?|$)/.test(r.url())) netMail++; });
   await p.click(".send"); await p.waitForTimeout(200);
   ok("empty address: the error shows", await p.evaluate(() => !document.getElementById("err").hidden));
   await p.fill("#em", "dan@"); await p.click(".send"); await p.waitForTimeout(200);
@@ -236,6 +245,16 @@ async function drag(p, dx, dy, ms, hold, after = 650) {   // a finger-like drag 
   ok("after mailing, back doesn't pull the mailed card out of the box", (await cur(p)) === 6);
   ok("nothing is sent (no request besides assets)", netMail === 0, netMail);
   if (SHOTS) await p.screenshot({ path: `${SHOTS}/flow-sent.png` });
+  // the taxi (taxi/, Dan 2026-11-01: the laptop page's, here too): it rolls in once the end page is up and parks in front
+  // of the station, the ✓ turns over to a red "To the store"; Not now = it drives off and the button turns back
+  await p.waitForFunction(() => document.querySelector(".tx-cap.tx-on") && document.querySelector(".rd .cta.tx-red"), null, { timeout: 8000 }).catch(() => {});
+  const cab = () => p.evaluate(() => ({ shown: !document.querySelector(".tx").hidden, cta: document.querySelector(".rd .cta").innerText.trim(), red: document.querySelector(".rd .cta").classList.contains("tx-red") }));
+  const cab1 = await cab();
+  ok("after mailing the taxi pulls up in front of the station, the button turns over to a red To the store", cab1.shown && cab1.red && cab1.cta === "To the store", cab1);
+  if (SHOTS) await p.screenshot({ path: `${SHOTS}/flow-taxi.png` });
+  await p.click(".tx-no"); await p.waitForTimeout(2900);
+  const cab2 = await cab();
+  ok("Not now: it drives off, the button turns back to ✓ Keys in the mail", !cab2.shown && !cab2.red && cab2.cta === "✓ Keys in the mail", cab2);
   await p.click("#again"); await p.waitForTimeout(1200);
   const re = await p.evaluate(() => ({ cur: window.gas2Postcards.cur, ended: document.getElementById("desk").classList.contains("ended"), sent: document.getElementById("desk").classList.contains("sent"),
     o6: getComputedStyle(document.querySelectorAll(".pc")[5]).opacity, top: document.querySelector(".pc.top").getBoundingClientRect().left,
@@ -252,6 +271,26 @@ async function drag(p, dx, dy, ms, hold, after = 650) {   // a finger-like drag 
   const ms1 = await ms.evaluate(() => ({ cur: window.gas2Postcards.cur, sent: document.getElementById("desk").classList.contains("sent") }));
   ok("mailed, left to right on the station deals the postcards again", ms1.cur === 0 && !ms1.sent, ms1);
   await ms.context().close();
+
+  // ── the cab waiting: The postcards again sends it home; a tap on it (or the red button) = the squeal, the dust, the
+  //    store (here ?store= points it back at this page) ──
+  const rs = await page(wk, 402, 714);
+  await go(rs, "?card=7&sent&taxi=park");
+  await rs.waitForFunction(() => document.querySelector(".tx-cap.tx-on") && document.querySelector(".rd .cta.tx-red"), null, { timeout: 8000 }).catch(() => {});
+  await rs.click("#again"); await rs.waitForTimeout(900);
+  const rs1 = await rs.evaluate(() => ({ cur: window.gas2Postcards.cur, cab: !document.querySelector(".tx").hidden, red: document.querySelector(".rd .cta").classList.contains("tx-red") }));
+  ok("the cab waiting, The postcards again: dealt back, the cab gone with its engine, the button back", rs1.cur === 0 && !rs1.cab && !rs1.red, rs1);
+  await rs.context().close();
+  for (const how of ["cab", "button"]) {
+    const rp = await page(wk, 402, 714);
+    await go(rp, "?card=7&sent&taxi=park&store=" + encodeURIComponent(BASE.replace(/[^/]*$/, `postcards.html?card=2&landed=${how}`)));
+    await rp.waitForFunction(() => document.querySelector(".tx-cap.tx-on") && document.querySelector(".rd .cta.tx-red"), null, { timeout: 8000 }).catch(() => {});
+    if (how === "cab") { const c = await rp.evaluate(() => { const b = document.querySelector(".tx-car").getBoundingClientRect(); return { x: Math.min(innerWidth - 4, b.left + b.width * .75), y: b.top + b.height * .6 }; }); await rp.mouse.click(c.x, c.y); }
+    else await rp.click(".rd .cta");
+    await rp.waitForURL(/landed=/, { timeout: 4000 }).catch(() => {});
+    ok(`a tap on the ${how === "cab" ? "cab" : "red button"}: the squeal, the dust, then the store`, rp.url().includes(`landed=${how}`), rp.url());
+    await rp.context().close();
+  }
 
   // ── reduced motion: no flight, the same states ──
   const r = await page(wk, 402, 714, { reducedMotion: "reduce" });

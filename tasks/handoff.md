@@ -2,7 +2,8 @@
 
 Claim: OPEN `danavivi-83` (took the postcards over 2026-10-31 from `danavivi-75`, no longer running: the end page's scene spots, phone only; D picked 2026-11-01). Round 9 (motion on Dan's iPhone) BUILT + checked, then a ponytail pass (`205661d`) and the keyboard slide-up (`6c91731`); the review page = round 10 (version 12, build `6c91731`); the branch tracks `origin/feat/gas2-postcards` (pushed on Dan's "commit everything and push it"; not main, no deploy). Branched from `origin/feat/gas2-drone` @ `4fc6ddd` (no upstream set, so a bare push
 can't reach the drone branch); `revaudio-59` keeps writing `feat/gas2-drone`, so this branch stays out of its files.
-Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postcards/**`; one README line pair; the
+Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postcards/**`; `tools/_gas2-scene/taxi/**`
+(from `danavivi-a5`, 2026-11-01: one script for page-b and the phone, page-b.html itself untouched); one README line pair; the
 "GAS 2 phone POSTCARDS" section on top of `tasks/todo.md`; this entry. Read only: `page-b.html` (copy, ticket), `fonts/`,
 `frames/f6-v17.png`, `props/poster-level.webp`, `props/poster-mail-1.webp`, `props/mailbox.png`, and
 `player/audio/hiphop_{before,after}.m4a` (Yoni's lane: played, never edited). Desktop `page-b.html` untouched.
@@ -248,12 +249,23 @@ Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postca
   Simulator (real Safari): on some loads iOS lays the page out at the full screen (874) and settles it under the
   toolbar (714) with no window resize, so the spot stayed placed for 874 (the station shifted right, Fill it up. on the
   endbar); `place()` now runs from a ResizeObserver on `#end` (caught with a debug overlay: end 874 -> 714, rs0, ro2).
+- Then the TAXI on the phone (Dan's ask via `danavivi-a5`, then his own "go" here 2026-11-01, the railway ticket going):
+  `tools/_gas2-scene/taxi/**` came in from main `ddd0ebc` (`git checkout origin/main --`) and is `danavivi-83`'s now
+  (`danavivi-a5` hands-off); ONE taxi.js for both pages: `[data-taxi-scene]` / `[data-taxi-stage]` beside page-b's
+  `#scene` / `#stage`, a `gas2:mailed {roll}` event beside page-b's `#ticket` submit, `gas2:reset`, `covers()` = a real
+  overlap, the smoke's canvas on a ResizeObserver; details + checks in `taxi/README.md` "On the phone". postcards.html:
+  the ticket's markup / CSS / pop are gone; the stamp's tap sets the audio session to `playback` and fires `gas2:mailed`
+  (roll 2.5 s, the end page up); The postcards again fires `gas2:reset`; a `.txscene` box over the frame; the sent outline
+  yields to `.tx-red`; Fill it up. steps aside after mailing (the lead is back); taxi.js loads with the end page's photo.
+  check.cjs: 47 steps + 40 layouts pass, 0 errors (+ the parked cab at five sizes: above GAS2, the driver past the left
+  edge, the caption on screen, Not now and the cab thumb-sized; the ride; Not now; the reset; cab + button = the store).
+  main's page-b with this taxi.js vs main's own: identical states and parked pixels (Chromium 1141x636, WebKit 1440x900).
+  iOS Simulator: parked right; the live store#radio-roulette lands under the nav with its edge lit once. On a merge to
+  main, `taxi/**` is an add/add: take this branch's (main's + the phone).
 - Open (Dan): (1) his word from the phone; more notes go to `notes-r10`;
   (2) painted art still only on his OK;
   (3) per-grade renders (Yoni) before any grade card plays its own sound; (4) later: this as page-b's phone layout;
-  (5) next: the laptop page's taxi on the phone too (Dan's ask, handed over by `danavivi-a5` 2026-11-01: source
-  `tools/_gas2-scene/taxi/` on main `ddd0ebc`, its README = the spec; `taxi/**` passes to `danavivi-83`, generalised,
-  page-b kept working). On the phone it takes the ticket's job: the red "To the store" button + the cab.
+  (5) the taxi on his iPhone with sound (the Simulator has none): a Wi-Fi URL from this Mac, on his OK.
 
 ## 2026-10-28 — GAS 2 page: the drone intro, from scratch (Claude Code `revaudio-59`, laptop 1) — BRANCH `feat/gas2-drone`
 

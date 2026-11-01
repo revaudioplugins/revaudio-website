@@ -96,21 +96,22 @@ Dan's concept (2026-10-29): a stack of 1950s "Greetings from GAS 2" postcards, p
 - [ ] 31. The laptop page's taxi on the phone (Dan, via `danavivi-a5`, 2026-11-01; `taxi/` on main `ddd0ebc`): after
       mailing the cab pulls up in front of the station, the button turns to red "To the store"; it replaces the ticket.
       Phone size + stop for D (`?taxi=bench`), the audio unlocked in the stamp's tap (iOS), thumb-sized taps; iOS
-      Simulator, then Dan's iPhone with sound; the store landing on a phone. page-b keeps working. PLAN, waiting on Dan's go:
-  - [ ] a. `taxi/` into this branch from main (`git checkout origin/main -- tools/_gas2-scene/taxi`, new files
+      Simulator, then Dan's iPhone with sound; the store landing on a phone. page-b keeps working. Dan: "go" (2026-11-01):
+  - [x] a. `taxi/` into this branch from main (`git checkout origin/main -- tools/_gas2-scene/taxi`, new files
         `add -f`); `taxi/**` claimed by `danavivi-83` (handed over by `danavivi-a5`).
-  - [ ] b. One taxi.js for both pages, not a fork: the trigger = a page event (the phone fires it on a valid stamp,
+  - [x] b. One taxi.js for both pages, not a fork: the trigger = a page event (the phone fires it on a valid stamp,
         inside the tap, so iOS lets the sound play, and with `navigator.audioSession.type = 'playback'` as HEAR IT already
         sets it, so it sounds with the ring switch on silent; page-b keeps its `#ticket` submit + `#veil`); `covers()` = a real
         overlap (the phone's cab stands above the readings, not beside them); The postcards again sends it home.
-        page-b.html untouched, checked on main's page-b.
-  - [ ] c. Phone: a frame-sized `#scene` box where the vista sits (the taxi's cqw = the frame's, as on page-b), the end
+        page-b.html untouched, checked on main's page-b (states + parked pixels identical, old vs new).
+  - [x] c. Phone: a frame-sized `#scene` box where the vista sits (the taxi's cqw = the frame's, as on page-b), the end
         page = `#stage`; size + stop for D by eye on `?taxi=bench` (in front of the station, tyres on the forecourt
         above GAS2, the driver past the left edge); Not now a 44 px tap; the ✓ turns over to red "To the store".
-  - [ ] d. The railway ticket goes (the cab + the red button do its job); `?card=7&sent&taxi=park` = the review state.
-  - [ ] e. check.cjs (the cab parks, the red button, Not now turns it back, a tap on the cab = the store URL, no
-        errors); iOS Simulator; the store landing (`revaudio.net/store#radio-roulette`) on the Simulator; Dan's iPhone
-        with sound.
+        page-b's 105 / -53.8 cqw fit as they are (D's frame starts at the screen's edge); tyres at 17 % (frame y 850).
+  - [x] d. The railway ticket goes (the cab + the red button do its job); `?card=7&sent&taxi=park` = the review state.
+  - [ ] e. ✓ check.cjs 47 + 40 (the cab parks, the red button, Not now turns it back, a tap on the cab = the store URL, no
+        errors); ✓ iOS Simulator; ✓ the store landing (`revaudio.net/store#radio-roulette`) on the Simulator; open: Dan's
+        iPhone with sound (a Wi-Fi URL from this Mac, on his OK).
 
 # GAS 2 drone descent (branch `feat/gas2-drone`, 2026-10-28, revaudio-59) — SCENE + BENCH BUILT, art next
 

@@ -53,6 +53,28 @@ Dev: `?taxi=park` shows it parked at load; `?taxi=bench` adds a panel (top left)
 its length in cqw, Stop = where its left end parks, Lift; ▶ Arrive replays the roll-in with sound; COPY = the three
 numbers for `taxi.css`); `?drone=0` skips the drone intro.
 
+## On the phone (`postcards.html`, 2026-11-01, `danavivi-83`)
+
+Dan: the laptop page's taxi on the phone page too, in place of its railway ticket ("To the website"). One taxi.js for both:
+- The page gives the cab a scene and a stage: page-b's `#scene` / `#stage`; the phone's `[data-taxi-scene]` (a box laid
+  exactly over the end page's frame, so the cab's cqw are the frame's, as on page-b) and `[data-taxi-stage]` (the end
+  page: the smoke's canvas; past its edges = out of sight).
+- The trigger: page-b's `#ticket` submit (`#veil` closed at 1.35 s, the cab at 1.6 s), or the page's own `gas2:mailed`
+  event, `{ roll }` = s till the cab rolls in. The phone fires it inside the stamp's tap, so iOS unlocks the sound there,
+  after setting `navigator.audioSession.type = 'playback'` as its HEAR IT does (it plays with the ring switch on silent),
+  and rolls it at 2.5 s, once its end page is up. `gas2:reset` (The postcards again) sends the cab home at once, its
+  engine and whatever was still on its way with it.
+- The readings step back only if the cab really overlaps them (`covers()`); on the phone it stands above them. The smoke's
+  canvas follows the stage's own box (iOS can settle a page under its toolbar without a resize event).
+- The phone's stop: page-b's 105 cqw / -53.8 cqw (spot D's frame starts at the screen's left edge, so the driver is just
+  past it too), the tyres on the forecourt just under the pump's plinth (`.txscene .tx { bottom: 17% }`, frame y 850),
+  GAS2 right under them; the caption held 16 px inside the screen, Not now a 44 px tap. ✓ Keys in the mail turns over.
+- The phone loads taxi.js with the end page's photo (from HEAR IT on: ~0.7 MB of art + sound), never on its first card.
+- Checked: the postcards' check.cjs (the parked cab at five phone sizes, the ride, Not now, The postcards again, a tap on
+  the cab and on the button = the store), the iOS Simulator (parked; revaudio.net/store#radio-roulette lands its card
+  under the nav, the edge lit once); main's page-b with this taxi.js against main's own: the same parked cab, button,
+  ticket flow and Not now, the parked shot pixel-identical (Chromium 1141x636, WebKit 1440x900, reduced motion).
+
 ## The art (gpt-image-2, 2026-10-31, one call, 2 takes, ~$1)
 
 - `tools/prompt-taxi.txt` = the prompt; the image = the page frame `frames/f6-v17.png` upscaled to 3072x2048, a mask on
