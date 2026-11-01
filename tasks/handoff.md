@@ -295,6 +295,10 @@ Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postca
   page-b identical. ROUND 14 (`notes-r14`) = version 16, same URL (build `a788990`). Left for Dan (not fixed): small
   text + the hint over the cards at 375x553, a11y names/announcements, the cab's faint focus ring, the first record
   tap's ~0.25 s freeze (Chrome on a Mac), the HEAR IT demo audio (1.75 MB) fetched at card 4, Esc = the cab gone.
+- Pushed on Dan's "push the page and commit" (2026-11-01): `c947709..f87379d` to `origin/feat/gas2-postcards` (17
+  commits, all `danavivi-83`; not main, no deploy). Still running from the session scratchpad: the Simulator's no-store
+  server on 127.0.0.1:4466 and the Wi-Fi link for Dan's phone on 10.0.0.103:4470 (`serve-lan.py`, no listings);
+  stop both when the phone test is done.
 - Open (Dan): (1) his word from the phone; more notes go to `notes-r10`;
   (2) painted art still only on his OK;
   (3) per-grade renders (Yoni) before any grade card plays its own sound; (4) later: this as page-b's phone layout;
