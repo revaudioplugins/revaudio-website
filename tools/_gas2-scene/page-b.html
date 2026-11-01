@@ -6,6 +6,7 @@
 <title>GAS 2 Mockup B</title>
 <link rel="stylesheet" href="player/radio.css"><script src="player/radio.js" defer></script><!-- the radio player: Yoni (player/) -->
 <link rel="stylesheet" href="taxi/taxi.css"><script src="taxi/taxi.js" defer></script><!-- the taxi to the store: danavivi-a5 (taxi/) -->
+<link rel="stylesheet" href="drone/drone.css"><script src="drone/drone.js"></script><!-- the drone intro v2: revaudio-59 (drone/) -->
 <!-- no copying the page (Dan 2026-10-26: "I can copy the page and mark it ... copy elements and assets ... disable that"):
      nothing highlights or select-alls, images don't drag out, no right-click menu (Save Image), no copy / cut. Form fields
      keep theirs. A deterrent only: screenshots, view-source and the network tab always work on the web. -->
@@ -55,8 +56,6 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .sign button { font: 400 3.55cqw/1 Bebas; letter-spacing: .14em; color: var(--oxide); opacity: .9; mix-blend-mode: multiply; filter: url(#paint); transition: color .25s, opacity .25s; }
 .sign i { width: .55cqw; height: .55cqw; border-radius: 50%; background: var(--oxide); opacity: .7; mix-blend-mode: multiply; }
 .sign button:hover, .sign button.on { color: #a8321c; opacity: 1; } /* the picked grade = this red only; underline out (Dan 2026-10-23) */
-.gradeTip { left: 50%; top: 19.4%; transform: translate(-50%, -.4cqw) rotate(-.6deg); background: var(--paper); color: var(--ink); padding: .45cqw 1.1cqw; font: 500 max(11px, .86cqw) Oswald; letter-spacing: .16em; text-transform: uppercase; white-space: nowrap; box-shadow: 0 .3cqw .8cqw rgba(0,0,0,.4); opacity: 0; transition: opacity .25s, transform .25s; pointer-events: none; margin-left: -18.1%; }
-.gradeTip.show { opacity: 1; transform: translate(-50%, 0) rotate(-.6deg); }
 /* the pump's three keys glow with the chosen grade */
 .key { top: 60.3%; height: 2.9%; border-radius: .25cqw; box-shadow: 0 0 1.2cqw .25cqw rgba(255, 190, 90, .0), inset 0 0 .9cqw rgba(255, 200, 110, 0); transition: box-shadow .35s; pointer-events: none; }
 .key.on { box-shadow: 0 0 1.4cqw .3cqw rgba(255, 190, 90, .55), inset 0 0 .9cqw rgba(255, 210, 130, .65); }
@@ -104,12 +103,14 @@ body.ng-tape .note::before, body.ng-tape .note::after { background: linear-gradi
    AFTER the notes: they slide behind its edge, and its soft shadow fades them where they meet it. FADE = thinner paper
    (the lit shop shows through) and a little less light on it. The light is the lamp hanging right above the pump,
    on the pump only (Dan, same day: "a little less, just keep the light on the GAS 2 itself": no cone, no pool, no dim).
-   All of it is TUNE → Spotlight (COPY = the numbers to bake); the defaults live in the script at the bottom. */
+   All of it is TUNE → Spotlight (COPY = the numbers to bake); the defaults live in the script at the bottom.
+   Dan's pick 2026-10-29 (light bench: "a bench only on the light on GAS 2"): more lamp, overlay instead of soft-light,
+   reaching further down (the stops x1.26: was 42 % / 88 %), the pump a touch brighter + more contrast, a lighter shadow. */
 .note { opacity: var(--nf-o, 1); }
 .pumpCut { left: 21.289%; top: 20.215%; width: 17.643%; pointer-events: none; user-select: none;
   filter: brightness(var(--sp-b, 1)) contrast(var(--sp-k, 1)) drop-shadow(0 .4cqw 1.8cqw rgba(8, 4, 2, var(--sp-s, .55))); }
-.pumpLit { left: 21.289%; top: 20.215%; width: 17.643%; height: 61.523%; pointer-events: none; mix-blend-mode: soft-light; opacity: var(--sp-l, 0);
-  background: linear-gradient(180deg, rgba(255, 214, 150, .95) 0%, rgba(255, 200, 130, .5) 42%, transparent 88%);
+.pumpLit { left: 21.289%; top: 20.215%; width: 17.643%; height: 61.523%; pointer-events: none; mix-blend-mode: overlay; opacity: var(--sp-l, 0);
+  background: linear-gradient(180deg, rgba(255, 214, 150, .95) 0%, rgba(255, 200, 130, .5) 53%, transparent 111%);
   -webkit-mask: url(props/pump-cut.png) 0 0 / 100% 100% no-repeat; mask: url(props/pump-cut.png) 0 0 / 100% 100% no-repeat; }
 /* ═══ end spotlight ═══ */
 
@@ -309,6 +310,10 @@ body[data-look] .rd .scr { text-shadow: 0 0 .9cqw rgba(232, 200, 120, .35); }
 .ticket.nofx .go, .ticket.nofx .stamp { transition: none !important; }
 .stamp { position: absolute; right: 22px; top: 70px; padding: 6px 12px; border: 3px solid #b3261e; color: #b3261e; font: 400 30px/1 Bebas; letter-spacing: .1em; mix-blend-mode: multiply; filter: url(#paint); transform: rotate(-12deg) scale(1.6); opacity: 0; transition: .25s cubic-bezier(.2,.9,.25,1.4); }
 .ticket.sent .stamp { opacity: .85; transform: rotate(-12deg) scale(1); transition-delay: .35s; }
+/* the coupon (caught car, drone/run.js dr:caught): the same ticket; the code is printed (Bebas), COPIED lands as a stamp */
+.coupon .cp { margin: 6px 0 10px; padding: 8px 0 4px; border: 2px dashed #8c7a56; text-align: center; font: 400 64px/1 Bebas; letter-spacing: .12em; color: #a8321c; -webkit-user-select: all; user-select: all; }
+.coupon .stamp { top: auto; bottom: 16px; }
+.coupon.copied .stamp { opacity: .85; transform: rotate(-12deg) scale(1); transition-delay: .35s; }
 
 /* the real plugin (pump click) */
 .plug { width: min(560px, 96vw); height: min(86vh, 900px); border: 0; border-radius: 10px; box-shadow: 0 30px 80px rgba(0,0,0,.6); background: #120804; }
@@ -401,7 +406,6 @@ body[data-look="0"].rs-dusk .dusk { display: block; }
       <button class="hot" data-grade="1">PREMIUM</button><i></i>
       <button class="hot" data-grade="2">RACE</button>
     </nav>
-    <div class="abs gradeTip" id="gradeTip"></div>
     <div class="abs key" style="left:25%;width:3.2%"></div>
     <div class="abs key" style="left:28.6%;width:3.3%"></div>
     <div class="abs key" style="left:32.2%;width:3.5%"></div>
@@ -482,6 +486,20 @@ body[data-look="0"].rs-dusk .dusk { display: block; }
     </button>
   </form>
 </div>
+<div class="veil" id="cpVeil" role="dialog" aria-modal="true" aria-label="Your coupon">
+  <div class="ticket coupon" id="coupon">
+    <div class="tk">
+      <button type="button" class="x" data-close aria-label="Close">×</button>
+      <h2>YOU CAUGHT IT</h2><div class="no">COUPON · REVAUDIO STATION</div>
+      <hr>
+      <div class="cp" id="cpCode">CATCH10</div>
+      <div class="row tot"><span>10% OFF</span><span>THE WHOLE STORE</span></div>
+      <hr class="dbl">
+      <div class="fine" id="cpFine">Copy the code and paste it at checkout.</div>
+      <div class="stamp">COPIED</div>
+    </div>
+  </div>
+</div>
 <div class="veil" id="plugVeil" role="dialog" aria-modal="true" aria-label="The GAS 2 plugin">
   <iframe class="plug" title="GAS 2 plugin" data-src="http://127.0.0.1:4461/index.html"></iframe>
 </div>
@@ -490,20 +508,13 @@ body[data-look="0"].rs-dusk .dusk { display: block; }
 <script>
 (() => {
   const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
-  // grades: the wall sign drives the pump's keys (copy from docs/BRIEF.md, verify before publishing)
-  const G = [
-    'REGULAR · smooth, warm, rounded · for mixes that are already good',
-    'PREMIUM · thick lows, clear mids, silky air, glued · the signature',
-    'RACE · punchy, bright, forward · for loud modern mixes'
-  ];
+  // grades: the wall sign drives the pump's keys
   let grade = 1;
   const setGrade = i => {
     grade = i; $$('.sign button').forEach((b, k) => b.classList.toggle('on', k === i));
     $$('.key').forEach((k, n) => k.classList.toggle('on', n === i));
   };
   $$('.sign button').forEach((b, i) => {
-    b.onmouseenter = b.onfocus = () => { $('#gradeTip').textContent = G[i]; $('#gradeTip').classList.add('show'); };
-    b.onmouseleave = b.onblur = () => $('#gradeTip').classList.remove('show');
     b.onclick = () => setGrade(i);
   });
   setGrade(1);
@@ -529,6 +540,14 @@ body[data-look="0"].rs-dusk .dusk { display: block; }
 
   // pump -> the real plugin UI (served from the GAS2 repo)
   $('#pump').onclick = () => { const f = $('.plug'); if (!f.src) f.src = f.dataset.src; open($('#plugVeil')); };
+
+  // the drone intro's car caught (drone/run.js) -> the coupon ticket, the code copied (Paddle discount: RevTasks #193)
+  addEventListener('dr:caught', () => {
+    const cp = $('#coupon'); cp.classList.add('nofx'); cp.classList.remove('copied'); void cp.offsetWidth; cp.classList.remove('nofx');
+    open($('#cpVeil'));
+    const done = () => { cp.classList.add('copied'); $('#cpFine').textContent = 'Copied. Paste it at checkout.'; };
+    try { navigator.clipboard.writeText($('#cpCode').textContent).then(done, () => {}); } catch (e) { /* no clipboard: the code stays selectable */ }
+  });
 })();
 </script>
 <button class="tuneBtn" id="tuneBtn" data-bench-ignore title="Tune this section (T)">TUNE</button>
@@ -621,8 +640,9 @@ if (/[?&]bench\b/.test(location.search)) {
 <script>
 // TUNE → Spotlight: the light on the pump + the notes' fade. ?spot=0 = all off (A/B screenshots); COPY = the numbers to bake
 (() => {
-  const D = { light: .3, pump: 1.04, shadow: .3, fade: .15 }, K = 'gas2page-b:spot3'; // spot3 = light on the pump only (Dan 2026-10-23)
-  const S = [['light', 'Light', 0, 1, .01], ['pump', 'Pump', 1, 1.3, .01], ['shadow', 'Shadow', 0, 1, .01], ['fade', 'Fade', 0, 1, .01]];
+  // spot4 = Dan's light bench pick (2026-10-29; contrast now its own number, was 1 + (pump - 1) / 2); spot3 = light on the pump only (10-23)
+  const D = { light: .67, pump: 1.12, contrast: 1.08, shadow: .21, fade: .15 }, K = 'gas2page-b:spot4';
+  const S = [['light', 'Light', 0, 1, .01], ['pump', 'Pump', 1, 1.3, .01], ['contrast', 'Contrast', .8, 1.4, .01], ['shadow', 'Shadow', 0, 1, .01], ['fade', 'Fade', 0, 1, .01]];
   let v = { ...D }, on = 1; try { Object.assign(v, JSON.parse(localStorage.getItem(K) || '{}')); } catch {}
   const q = new URLSearchParams(location.search).get('spot'); if (q === '0') on = 0;
   const sc = document.getElementById('scene'), box = document.createElement('div');
@@ -631,9 +651,9 @@ if (/[?&]bench\b/.test(location.search)) {
     + '<div class="row"><button id="sp-reset">Reset</button><button id="sp-copy">Copy</button></div>';
   document.getElementById('tune').appendChild(box);
   const apply = () => {
-    const x = on ? v : { light: 0, pump: 1, shadow: 0, fade: 0 };
+    const x = on ? v : { light: 0, pump: 1, contrast: 1, shadow: 0, fade: 0 };
     sc.style.setProperty('--sp-l', x.light);
-    sc.style.setProperty('--sp-b', x.pump); sc.style.setProperty('--sp-k', 1 + (x.pump - 1) * .5); sc.style.setProperty('--sp-s', x.shadow);
+    sc.style.setProperty('--sp-b', x.pump); sc.style.setProperty('--sp-k', x.contrast); sc.style.setProperty('--sp-s', x.shadow);
     sc.style.setProperty('--nf-o', 1 - .3 * x.fade); sc.style.setProperty('--nf-b', .86 - .16 * x.fade);
     document.getElementById('sp-on').checked = !!on;
     S.forEach(([k]) => { const i = document.getElementById('sp-' + k); i.value = v[k]; i.nextElementSibling.textContent = v[k]; });

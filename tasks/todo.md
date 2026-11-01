@@ -1,3 +1,21 @@
+# GAS 2 on the front page: in the LCD screen (Dan 2026-11-01, danavivi-83) — PLAN, waits for the LCD screen
+
+Dan (2026-11-01): "where do we put gas 2 ... in the front page. Like I think it should be in the LCD screen that we do
+right now in a different computer, so just wait for it and then we'll do a publish." Both GAS 2 pages are on main
+(`tools/_gas2-scene/`: page-b = laptop, postcards = phone), not in the site yet.
+
+## Steps
+- [ ] 1. ⏸ The LCD screen lands (the other computer's session; nothing on origin yet, 2026-11-01). Read its handoff
+      entry first: how it takes content (one product or several, slides, a channel per plugin).
+- [ ] 2. GAS 2 on the LCD, in the LCD's own look: the name, FREE, one line ("Thicker, smoother, glued master."), the
+      station art; a click or tap = the GAS 2 page. A review bench for Dan's notes before it ships.
+- [ ] 3. The GAS 2 page into the site (`src/`): one address, page-b on a laptop, the postcards on a phone. Dan picks
+      the address (`/gas2`? `/gas` is GAS 1 today).
+- [ ] 4. Gates before the publish: CATCH10 live in Paddle and tried at checkout (RevTasks #193); MAIL ME THE KEYS sends
+      the real download (both pages' forms are dummies today); the weight (the drone intro ~3.2 MB) and old Safari
+      (15 and older has no `cqw`: the scene breaks).
+- [ ] 5. Publish = main on Dan's word (= live): Deploy + Smoke test green, then a live look on his phone and laptop.
+
 # GAS 2 phone POSTCARDS (branch `feat/gas2-postcards`, 2026-10-29, danavivi-75, then danavivi-83) — squash-merged to main 2026-11-01 (the phone page only)
 
 Dan's concept (2026-10-29): a stack of 1950s "Greetings from GAS 2" postcards, phone only. State: `tasks/handoff.md` top entry.
@@ -143,6 +161,38 @@ phone", "use whatever tools you need for the best result".
       change off `main`, Dan's word before it ships).
 - [ ] 5. QA: Chromium + WebKit at 1141x636 / 1440x900 / 1920x1080, no errors, reduced motion, keyboard; Dan's Safari.
 - [ ] 6. Dan's look, then the phone page (postcards end page).
+
+# GAS 2 drone descent (branch `feat/gas2-drone`, 2026-10-28, revaudio-59) — ON MAIN 2026-11-01 (squash, danavivi-83)
+
+Plan page: https://claude.ai/artifact/NnyBRQchpWfY541CZA1Unn. How it works + bench: `tools/_gas2-scene/drone/README.md`.
+Dan's order (2026-10-28): finish the scene with placeholders first, then generate the real elements (OpenAI or Higgsfield).
+
+## Steps
+- [x] 0. Dan's answers: the page's own world; roof text "CATCH YOUR COUPON" (he wrote "catch your compon"); car in the
+      hover shot; try three hover angles in a bench (top / 45 front / 45 right); no flying back up.
+- [x] 2. Flight engine in `tools/_gas2-scene/drone/`: scroll runway, three paths, exact TOP landing, hand-off.
+- [x] 3. GAS 2 pop: GAS2 springs out (blur + overshoot), the rule draws, then tagline / button / "Fill it up." pop fast.
+- [x] 4a. The car (placeholder box car): right to left once per load, roof board readable from the hover.
+- [x] 5a. QA (headless Edge, 1440x900 + 390x844, all three angles): page after landing = `?drone=0` (mean 0.00);
+      exact landing frame vs the page scene 2.55 / 1.47; no errors; classes, runway and layer gone, scroll 0.
+- [x] 1a. Camera bench (`?cam`): free hover camera + landing timing, one exact path for every angle.
+- [x] 1. Dan picked the camera: the default (TOP), 2026-10-28.
+- [x] 4b. Real art (Dan OK'd 2026-10-28; ~$1.50, 3 gpt-image-2 images: aerial, close road, car; `drone/README.md` "The art"): near road under the frame (fixes the seam + the close-up
+      asphalt), roof + field aerial, the car (top-down sprite). The roof board stays text-only until Dan names a real
+      Paddle code and what catching it does.
+- [x] 4c. Dan, 2026-10-28: the roof sign photographed into the car (~$0.50, `drone/tools/sign-guide.py`) and the sidewalk
+      blockout props (the "css" boxes in the descent) removed. Landing still exact.
+- [x] 4d. Real headlight beam + contact shadow; catch the car = the coupon ticket + CATCH10 copied (Dan, 2026-10-28).
+- [x] 4f. Scroll cue (Dan, 2026-10-29: "an indicator at the bottom of the hover that tells the user to scroll down; give
+      me options in a bench"): `drone/cue.js` + drone.css, bottom centre of the hover, in after the hover shows, out with
+      the first scroll. Bench `?cue`: Chevrons / Mouse (Swipe up on touch) / Ticket / Fuel drop / Altimeter (live height,
+      stays until near touchdown) / None. Dan picked CHEVRONS (2026-10-29); the other looks + the bench are out.
+- [ ] 4e. Gil: the Paddle discount CATCH10, 10% sitewide (RevTasks #193). Gate (moved 2026-11-01, when Dan merged the page to main):
+      main is not live for `tools/`; the page goes LIVE (into `src/`) only after CATCH10 works at checkout.
+- [ ] 5b. QA again + 1141x636, WebKit, reduced motion, no-WebGL, weight <= 2.5 MB, frame time.
+- [ ] 6. Dan's Safari + phone look.
+- [x] 7. On main (Dan 2026-11-01: "push the latest page for the laptop one. And merge them to main"): a squash, the
+      taxi's line kept; checked Chromium + WebKit (handoff, the 2026-11-01 laptop entry).
 
 # DRIFT #hear — a new panel under the player: worn, crashed, Japanese + graffiti (2026-10-26, revaudio-ef, same branch)
 

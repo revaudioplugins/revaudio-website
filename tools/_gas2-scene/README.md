@@ -27,6 +27,8 @@ python -m http.server 4462 --bind 127.0.0.1
   `&taxi=park` = parked, `&taxi=arrive` = it rolls in). Assets + their tools: `postcards/`; the review page (a notes box
   per screen, a claude.ai artifact; link in `tasks/handoff.md`): `postcards/review/`; the checks: `postcards/tools/check.cjs`.
 - TUNE (button bottom right, or T) — readings position / size + the 4 looks (Now / Neon / Enamel / Badge).
+- The drone intro (merged from `feat/gas2-drone` 2026-11-01) — scroll from a hovering drone down into the scene; `?drone=0` skips it,
+  `?angle=top|front|right` picks the hover. How it works + its bench: `drone/README.md`.
 
 ## Who works on what (one writer per file set)
 
@@ -41,6 +43,8 @@ python -m http.server 4462 --bind 127.0.0.1
   from 2026-10-31; `danavivi-83` from 2026-11-01 (one script for page-b and the phone).**
 - **The phone postcards (`postcards.html` + `postcards/**`): Claude Code `danavivi-75` from 2026-10-29, `danavivi-83` from
   2026-10-31.**
+- **The drone intro (`drone/**` + its one `<link>`/`<script>` line in `page-b.html`): Claude Code `revaudio-59`, branch
+  `feat/gas2-drone`, from 2026-10-28; on main from 2026-11-01 (`danavivi-83`).**
 - Claims and state: `tasks/handoff.md` (top entry).
 
 ## Not in git

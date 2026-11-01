@@ -1,3 +1,27 @@
+## 2026-11-01 — GAS 2: the LAPTOP page (page-b) on main too: the drone intro, the coupon, the pump light, the worn knobs, with the taxi (Claude Code `danavivi-83`, Dan's Mac) — SQUASH-MERGED TO MAIN
+
+Claim: CLOSED (merged). Next: GAS 2 on the front page, in the LCD screen (`tasks/todo.md` top): it waits for the LCD
+work from the other computer, then the publish, on Dan's word.
+- Dan (2026-11-01): "Let's also push the latest page for the laptop one. And merge them to main. Then we need to have a
+  plan on where do we put gas 2 ... in the front page. Like I think it should be in the LCD screen that we do right now
+  in a different computer, so just wait for it and then we'll do a publish."
+- What: a squash of `origin/feat/gas2-drone` (`fd60c72`..`951936d`, `revaudio-59`, its entry below) onto main:
+  `drone/**`, the CATCH10 coupon ticket, Dan's pump light (Spotlight D, storage key `spot4`), the WORN radio knobs, the
+  grade hover strip out. A squash, as `revaudio-59` asked (that branch's commit subjects name the private knob tool).
+  Conflicts: page-b's head keeps both lines (the taxi, then the drone); `player/radio.css` = the drone branch's neutral
+  knob note; the scene README and these two files = both sides.
+- Checked (Playwright Chromium + WebKit, 1141x636 + 1440x900, a no-cache server on the merged tree): the hover (runway,
+  the car); `dr:caught` = the ticket with CATCH10, Esc closes it; the landing = `?drone=0` (mean 0.00-0.19 / 255: the
+  page's own idle animations); then on the same visit MAIL ME THE KEYS -> the taxi parks, the red "To the store", Not
+  now = it leaves and the button is Download FREE again; `?drone=0&taxi=park` = the same car box as main's page-b before
+  the merge; 0 page errors, 0 failed requests (the plugin frame on :4461 is never served here). Not checked: a real
+  iPhone / Safari (owed since 10-29), the drone's own `check.cjs` (written for Edge on Windows).
+- CATCH10 is NOT confirmed in Paddle (the shared STATUS still says "waiting on Gil", RevTasks #193). Main is not live
+  for this page (`tools/` is not in the Pages build), so `revaudio-59`'s gate ("off main until it exists") now guards
+  going live: the page goes into `src/` only after CATCH10 works at checkout.
+- Open for Dan: delete the remote `feat/gas2-drone` (its old commits name the private tool; `revaudio-59`'s close note:
+  ask after the squash); the laptop page on his iPhone.
+
 ## 2026-10-29 — GAS 2 page: the PHONE page as POSTCARDS (Claude Code `danavivi-75`, then `danavivi-83`, Dan's Mac) — BRANCH `feat/gas2-postcards`; the phone page SQUASH-MERGED TO MAIN 2026-11-01
 
 Claim: OPEN `danavivi-83` (took the postcards over 2026-10-31 from `danavivi-75`, no longer running: the end page's scene spots, phone only; D picked 2026-11-01). Round 9 (motion on Dan's iPhone) BUILT + checked, then a ponytail pass (`205661d`) and the keyboard slide-up (`6c91731`); the review page = round 10 (version 12, build `6c91731`); the branch tracks `origin/feat/gas2-postcards` (pushed on Dan's "commit everything and push it"; not main, no deploy). Branched from `origin/feat/gas2-drone` @ `4fc6ddd` (no upstream set, so a bare push
@@ -322,6 +346,189 @@ store anchors are (live on deploy). Next: the phone page (postcards).
 Files (mine): NEW `tools/_gas2-scene/taxi/**`; in `page-b.html` ONE `<link>` + `<script>` line (after the drone line),
 nothing else of page-b's; one README line pair; the todo section; this entry. Branched from `origin/feat/gas2-drone`
 @ `951936d` with no upstream; `revaudio-59` keeps its claim on `feat/gas2-drone` and its files.
+
+## 2026-10-28 — GAS 2 page: the drone intro, from scratch (Claude Code `revaudio-59`, laptop 1) — BRANCH `feat/gas2-drone` — SQUASH-MERGED TO MAIN 2026-11-01
+
+Claim: CLOSED 2026-11-01: squash-merged to main by `danavivi-83` on Dan's word (the 2026-11-01 laptop entry at the top).
+Was: OPEN `revaudio-59`. Scene + benches BUILT; Dan picked the DEFAULT camera (TOP); the REAL ART is in (gpt-image-2, 2026-10-28, ~$2 with the roof sign); sidewalk blockout props removed; real headlights; catch the car = the CATCH10 coupon ticket (Paddle code: Gil, RevTasks #193). Waiting on Dan's look.
+Files: NEW `tools/_gas2-scene/drone/**`; in `page-b.html` the `<link>` + `<script>` line (after the radio line) plus
+the coupon ticket (`.coupon` CSS after `.ticket.sent .stamp`, `#cpVeil` markup before `#plugVeil`, the `dr:caught`
+listener at the end of the IIFE) and the grade hover strip removed (`#gradeTip`), nothing else of page-b's; one README line pair; `tasks/todo.md` (the "GAS 2 drone
+descent" section); this entry.
+- Dan: a hovering drone above the station; scroll down = it comes down into the final scene, then GAS 2 pops and the right
+  side pops in fast "like it pops out of the screen". Every shot must feel like the final scene (same graphics, same vibe:
+  "not moving from one type of scene to another"). Side feature: a car right to left on load with a coupon on its roof.
+  Use the OpenAI key; plan first; present in dynamic HTML.
+- Plan (artifact, private: https://claude.ai/artifact/NnyBRQchpWfY541CZA1Unn): hover straight down at 30 m over the shop
+  front; the drop = nadir descent to the landing spot (flat ground = a zoom: each closer level painted from the crop of
+  the one above; roof / wall / pump as real-height layers); at eye height (1.33 m) a pure tilt-up rendered from the page
+  frame itself (exact, no ghosts); hand-off to the live page; readings pop. Car on the road in the hover shot, code as
+  real HTML text on a roof board. Checked in headless Edge: the tilt-up maths lands on `f6-v17` exactly.
+- Facts (2026-10-28): OpenAI `/v1/videos` 404 on GET + POST (no video); Higgsfield 0 credits; laptop 1's User-env
+  `OPENAI_API_KEY` works with credits (gpt-image-2 / 2.5 listed); no torch on laptop 1 (cv2, numpy, PIL yes).
+- Asked in the plan (answered below): Q1 keep the page's world; Q2 the coupon (a real Paddle code, for what); Q3 car route; Q4 old scroll numbers
+  as reference; Q5 hover angle; Q6 scroll back up. Cost cap asked: $15 (images only).
+- Dan's answers (2026-10-28): the page's own world; roof text "catch your compon" (written CATCH YOUR COUPON); car in
+  the hover shot; try three hover angles in a bench: straight down, 45 deg from the front, 45 deg + 45 deg round to the
+  right; scrolling up does not fly back; finish the scene first, then generate the real elements (OpenAI or Higgsfield).
+- Built (`tools/_gas2-scene/drone/`, README there): three.js r185 set (procedural placeholder textures), the page frame
+  re-rendered without the readings (`img/land.webp`, `tools/render-landing.cjs`), TOP / 45 front / 45 right paths,
+  TUNE -> Drone bench (an angle click flies it; Hover m / Length / Sway; settings in localStorage), the box car with the
+  roof board, the hand-off and the readings pop. TOP: nadir log descent onto the landing spot by u .42 with the gimbal
+  starting up from u .18, then a pure tilt (the quad switches on at -40 deg, unseen). 45 front / right = blockout
+  (ghosting near touchdown until the shop has textured proxies).
+- Checked (headless Edge, `tools/check.cjs` + `diff.py`; 1440x900 + 390x844; top, front, right): page after landing =
+  `?drone=0` mean 0.00 (max 27 / 4); exact landing frame vs the page scene with the readings hidden 2.55 / 1.47 (resampling
+  noise); no page errors or 4xx; classes, runway, layer gone; scroll 0. TOP after the last choreography change: one
+  bare-asphalt sample left (u .45). Not checked: WebKit, 1141x636, a real trackpad / phone, Dan's eye.
+- Open (Dan): (1) the hover angle; (2) cost OK for the art (OpenAI images; Higgsfield only for a video descent and it has
+  0 credits); (3) the coupon: a real Paddle code + what catching it does (no code until he names one).
+- Next: after (1) + (2), the art for the picked path: near road under the frame (the .66-.8 seam and the close-up
+  asphalt), roof + field aerial, a top-down car; then QA 5b (todo).
+- Camera bench (2026-10-28, Dan: "make me a bench to control the scene's camera angle", then "and the landing"):
+  `drone/cam-bench.js`, `?cam` (or TUNE -> Drone -> Camera). Drag the scene to turn the hover camera; sliders for the
+  hover (yaw, down angle, height, aim point) and the landing (lands at, turn from, arrive angle); Scroll slider + readout;
+  never hands over. The three angle paths became ONE path for any hover (straight line down onto the landing spot, the
+  camera turns to face the page looking down, then the pure tilt): every angle now lands exactly, the 45 paths' ghosting
+  is gone. Checked headless 1440x900: top / front / right / a custom camera (yaw -60, down 30, 20 m, lands 50 %) all land
+  = `?drone=0` (0.00) and their landing frames 2.55 vs the page scene; the bench drags, saves, scrubs to the landing and
+  back; no page errors. Weak spot for every angle: bare road around 30-50 % of the scroll (the dive onto the road before
+  the tilt-up): Dan can shorten it with Lands at / Turn from; the art (near road) fixes the rest.
+- Dan (2026-10-28): "in the end we liked the default" = TOP (yaw 0, down 90, 34 m, aim -4 / -6, lands at 42 %, turn
+  from 18 %, arrive 40): nothing to bake, the code defaults stand. Asked OpenAI or Higgsfield for the best result:
+  recommended OpenAI images (top-down views of flat ground = an AI orthophoto reads as a real drone shot; edits from the
+  page frame keep the light; keeps his camera path + the exact landing; credits there). Higgsfield rechecked: 0 credits,
+  free plan; its video (first/last frame) would lose the exact hand-off and the bench path, garble the roof text, and
+  need an image-sequence scrub (MBs). Art list + cost asked: aerial orthophoto (roof, field, road), the close road, the
+  car top-down (transparent), ~8-10 images with retakes, ~$3-5.
+- Art DONE (Dan: "approved", 2026-10-28): 3 gpt-image-2 images, one take each (~$1.50 est. at $40/M output tokens:
+  12.7k + 12.7k + 11k): the aerial (3072x2048 over an ortho guide of the set, the page frame as reference), the close
+  road (over the aerial's crop, the photo's paving as reference), the car (2 takes, magenta, keyed; take 1). Pipeline +
+  commands: `drone/README.md` "The art"; originals q95 in design-assets `gas2-drone/` (`504c75e`). Post fixes: lane
+  edge softened, close road toned to the aerial (no patch in the hover), the AI's orange lamp pool on the road tamed to
+  the page photo's road colour (seam: near 123/97/72 vs photo 122/97/80). Model facts: gpt-image-2 takes any size in
+  multiples of 16 (3072x2048 worked), no transparent background.
+- Checked (headless Edge, `check.cjs` top, 1440x900 + 390x844): landed = `?drone=0` mean 0.00; landing frame 2.55 /
+  1.47 (unchanged); no errors. Weight now: three 744 KB + land 703 + aerial 569 + car 103 KB (+ near 1.1 MB after the
+  hover shows) = ~2.1 MB before the hover, ~3.2 MB in all. Not checked: WebKit, a real phone.
+- Then (Dan: "make it", "do what you think is right", 2026-10-28): the roof sign is IN the car photo now (masked
+  gpt-image-2 edit over the old drawn board, 2 takes, take 1, ~$0.50; pasted back onto the approved car, so the car and
+  its crop are unchanged; `drone/tools/sign-guide.py`, `prompt-car-sign.txt`, README "The art"); the drawn board + frame
+  box are gone from `world.js`. Spelling read at full size: CATCH YOUR / COUPON, nothing else. Original q95 in
+  design-assets (`2393679`). Readable in the hover at 1440 and at 390 (phone shots taken while the car crosses).
+  The sidewalk blockout props (pump, globe, radio, bin, chalkboard boxes) are out too (Dan: "delete the css", a
+  screenshot of the descent; `b0ea903`): the page frame has the props after the hand-off.
+- Checked again: landed = `?drone=0` mean 0.00 (1440 + 390); landing frame 2.55 / 1.47; no errors. Car 169 KB (was
+  103). Art spend in all: ~$2.
+- Then (Dan: yes, replace them): the car's headlight beam and shadow are no longer drawn shapes. Beam = two soft cones
+  from the lamps, light falling off with distance, blended as road * (1 + beam) so it lights the asphalt (cracks stay
+  dark); shadow = a soft contact shadow hugging the footprint (dusk: no sun shadow). Procedural in `world.js`, no new
+  file. Landing still mean 0.00 (1440 + 390), no errors.
+- Coupon (Dan, 2026-10-28: "10% coupon on the whole site"; picks: code CATCH10, Gil creates it, a ticket + copy):
+  catching the car (click / tap) opens a coupon ticket in the page's service-ticket look (`#cpVeil`: YOU CAUGHT IT,
+  CATCH10, 10% OFF THE WHOLE STORE, a COPIED stamp) and copies the code. Checked (headless Edge): a miss opens nothing,
+  a hit opens it with the clipboard = CATCH10 at 1440 (click) and 390 (tap), Escape closes, no errors.
+  The Paddle discount is NOT created yet: Gil, RevTasks #193 (urgent, Sales; bell only, a raw insert sends no email)
+  + shared `collaboration/STATUS.md` (`b20a848`). This page must not go live before the code exists.
+- Open: Gil's CATCH10 in Paddle; WebKit / a real phone; Dan's look.
+
+### Session end (2026-10-29, `revaudio-59`, close-session) — claim stays OPEN (waiting on Dan's look)
+
+- State: branch `feat/gas2-drone` = origin (0 ahead / 0 behind), clean before this handoff edit. Commits this
+  session: `7bb0c43` plan, `fd60c72` scene + bench, `3b7568e` camera bench, `f7c8a86` TOP picked, `c2c7280` the art,
+  `b0ea903` props out, `ae41fa8` roof sign, `2081379` beam + shadow, `64f19a3` catch = coupon. Elsewhere, all pushed:
+  design-assets `504c75e` + `2393679` (art originals), shared `b20a848` (STATUS: Gil, CATCH10). RevTasks #193 (Gil, urgent).
+- Unverified: WebKit / Safari and a real phone (only headless Edge so far); Dan has not seen the beam, the shadow or
+  the coupon ticket yet (shots sent, last signal before them: "do what you think is right"); `check.cjs` was not re-run
+  after `64f19a3` (event handlers only; the catch test showed no page errors). The car drives once, ~6 s after load:
+  offered a replay button, no answer.
+- Background (laptop 1, die with the session): `python -m http.server` on 4464 (this worktree's `tools/_gas2-scene`,
+  PID 17152), 4462 (worktree `gas2-page-view`, detached `0b58cb0`, PID 38184), 4461 (GAS2 `Source/ui/public`, PID
+  38924), 4463 (the plan page in the session scratchpad, PID 45096). Kill: `Stop-Process -Id <PID>`.
+- Decide next: (1) Dan's look at beam / shadow / coupon; (2) a "drive again" button or not; (3) going live = merge to
+  main only after Gil's CATCH10 exists in Paddle and Dan says push (`tasks/todo.md` 4e).
+- Commit: `docs(gas2-drone): session-end handoff (revaudio-59)` — this file only.
+- Cleanup: worktree `gas2-page-view` (detached at `0b58cb0` = the page right after the old intro was deleted) was
+  served on 4462 to view the page as it was: remove it when no session uses it (`git worktree remove`), not done here.
+- Memory: shared `project_revtasks_app.md` + Sales section id = 4 (uncommitted in the shared clone, which is behind 2).
+- Then (Dan, 2026-10-29, a screenshot of the strip under the wall sign: "lets remove this section of it"): the grade
+  hover strip (`#gradeTip`: "PREMIUM · thick lows, clear mids, silky air, glued · the signature") is gone from
+  `page-b.html` with its CSS, its hover handlers and the copy array; a click on REGULAR / PREMIUM / RACE still picks the
+  pump's key. `page-a.html` still has it (not asked). Checked headless 1440: hover PREMIUM = no strip, click RACE =
+  on, no errors. The tip was hidden at rest, so `img/land.webp` (the landing frame) is unchanged.
+- Then (Dan, 2026-10-29: "let's work on the player's knobs, they need refining"): new radio knobs from the team's
+  private knob tool (how, server, recipe: shared repo `.handoff-archive/HANDOFF-2026-10-29-gas2-radio-knobs.md`;
+  `player/**` is Yoni's radio claim from `revaudio-cd`, touched here on Dan's word). Dan's look: machined metal body,
+  copper-brown spun cap, white line index -> `player/img/knob-radio.webp` 653 KB (was 518); the strip's box is
+  unchanged, so radio.css keeps its numbers. `drone/img/land.webp` re-rendered. Checked headless: a drag turns the new
+  strip, no errors; `check.cjs` top 1440 + 390: landed mean 0.00, landing frame 2.56 / 1.47. Dan saw it on the page:
+  "looks very good" (2026-10-29).
+- Then (Dan, 2026-10-29: "an indicator at the bottom of the hover that tells the user to scroll down; give me options
+  in a bench"): `drone/cue.js` (+ drone.css "the scroll cue", 3 lines in run.js): bottom centre of the hover, in 1.4 s
+  after the hover shows, out by 4 % of the scroll; bench `?cue` (panel top left): Chevrons (default until he picks) /
+  Mouse (Swipe up on touch) / Ticket ("SCROLL TO LAND", page paper) / Fuel drop / Altimeter (live height, fades by 90 %)
+  / None. Checked headless 1440 + 390: every look shows, chevrons gone after 1.2 screens and back at the top, the
+  altimeter 34 -> 2 m; landing still mean 0.00 / landframe 2.56 / 1.47; no errors. Dan didn't see it at first: his
+  browser kept the old run.js (plain `http.server` = heuristic cache); a no-store server on 4465 fixed it (scratchpad
+  `serve-nostore.py`; open the page there). Dan: "perfect, chevrons": the other four looks, the bench and `?cue` are
+  out (cue.js = the chevrons only). Checked 1440 + 390 on 4465: in at the hover, 0 after .6 screen, back at the top,
+  no panel, no errors; landed = `?drone=0` mean 0.00.
+- Then (Dan, 2026-10-29: "a bench only on the light on GAS 2 ... on the GAS on the last page of the site"; a first
+  take benched the plugin's own 3D pump instead, GAS2 repo branch `bench/pump-light`, deleted 10-29 on Dan's word): NEW
+  `tools/_gas2-scene/light-bench.html` (+ its README line). The real page (`page-b.html?drone=0`) in a frame, panel
+  docked right: LAMP (= `--sp-l`, the `.pumpLit` soft-light opacity), LAMP MIX (soft-light / overlay / screen), LAMP
+  REACH (the gradient's 42 % / 88 % stops x reach), LAMP COLOUR (amber -> white), PUMP BRIGHTNESS / CONTRAST
+  (`--sp-b` / `--sp-k`), SHADOW BEHIND (`--sp-s`); LAB / SHIPPED (A), ZOOM x1.5 / x2 on the pump, START, EXPORT.
+  SHIPPED = page-b's Spotlight D, read from the file. page-b.html untouched. Checked headless: the frame at the start
+  values = the plain page pixel for pixel (1280 x 915, max diff 1 / 255); a lamp change shows; no errors. Open it on
+  4465 (`serve-nostore.py`): http://127.0.0.1:4465/light-bench.html. Next: Dan EXPORTs -> "apply" = the numbers into
+  page-b's `.pumpLit` / `.pumpCut` CSS + the Spotlight D, then re-render `drone/img/land.webp` (the pump is in the
+  landing frame) + the landing check; the bench goes once he has picked (as `?cue` did).
+- Then Dan pasted his EXPORT (2026-10-29 11:54: lamp .67, overlay, reach 1.26, colour 1 = amber, pump 1.12, contrast
+  1.08, shadow .21; was .3 / soft-light / 1 / 1 / 1.04 / 1.02 / .3) = apply: page-b `.pumpLit` overlay + stops 53 % /
+  111 % (42 / 88 x 1.26); TUNE → Spotlight D = { light .67, pump 1.12, contrast 1.08, shadow .21, fade .15 }, contrast
+  now its own slider (was 1 + (pump - 1) / 2), storage key spot3 -> spot4 (a browser's old TUNE numbers would hide the
+  new defaults). Checked: the page = the bench at his values (1280 x 915, max diff 1 / 255; vars .67 / 1.12 / 1.08 /
+  .21). `drone/img/land.webp` re-rendered (748 KB); check.cjs top 1440 + 390: landed vs ref-page mean 0.00 / 0.00,
+  landframe 2.57 / 1.42 (was 2.56 / 1.47), no errors. `light-bench.html` + its README line removed (in git at `a81dfa9`).
+- Then (Dan, 2026-10-29: "new knobs for the jukebox [= the radio] that fit the scene's lighting and vibe better"): four
+  new looks; Dan: "wear out more the knobs and more like the shipped one" -> round 2 = the shipped knob + wear (worn /
+  heavy / very heavy) + heavy in the scene's lamp light. Dan picked "HEAVY, LAMP LIGHT" (`247a7a7`), then "WORN
+  replace" (`4fc6ddd`): `player/img/knob-radio.webp` = WORN (scuffed cap, rim rubbed to brass, dirt, a chipped line;
+  the shipped light; 869 KB; same box). `drone/img/land.webp` re-rendered each time; check.cjs top 1440 + 390: landed
+  mean 0.00 / 0.00, landframe 2.58 / 1.42. Recipes, candidates and their pick bench stay private (the shared note
+  above); none of them enters this repo.
+
+### Session end 2 (2026-10-29 evening, `revaudio-59`, close-session) — claim stays OPEN (CATCH10, then Dan's push word)
+
+- State: branch `feat/gas2-drone` = origin (0 / 0), 24 commits ahead of origin/main, 58+ behind (main moved on; the
+  go-live merge conflicts in `tasks/handoff.md` + `tasks/todo.md`, and `player/radio.css`'s knob comment: take this
+  branch's). Today: `1d0f3c5` grade strip out, `9815ee6` / `b249801` / `ee2356f` radio knobs (ALU), `4ac3aad` /
+  `7d36b36` scroll cue (chevrons), `a81dfa9` / `b527eaf` pump light (bench, then Dan's pick), `247a7a7` / `4fc6ddd`
+  radio knobs WORN, close notes, `e55f953` private tool files out, `10eef58` Safari coupon fix. Shared (private, all
+  pushed): the radio knob recipes + the moved knob tool port + the private part of these notes.
+- Dan's decisions at the close (2026-10-29), all done: (1) the private knob tool's files left the PUBLIC repo: main
+  `e1123fe` (pushed on his word "1א": 2 files out, docs + comments neutral; Pages deploy ran) and this branch
+  `e55f953`; old versions stay in git history (his pick, no rewrite). At go-live: squash-merge (the branch's commit
+  subjects name the tool), then ask Dan whether to delete the remote `feat/gas2-drone`. (2) GAS2 branch
+  `bench/pump-light` + worktree `GAS2-light` deleted (local + remote). (4) worktree `gas2-page-view` removed; the
+  local knob candidates folder + its `.git/info/exclude` line deleted; servers stopped except 4465.
+- (3) Safari: Playwright WebKit 26.6 (Safari's engine) at 1440 + 390 (iPhone size, touch): the drone top, mid-descent,
+  landed and the coupon ticket look like Chrome, no errors, pump light overlay + filter, knobs, `cqw` all applied.
+  Found + fixed: `.coupon .cp` had `user-select: all` without `-webkit-` while html sets `-webkit-user-select: none`, so
+  in Safari the code could not be selected by hand when the auto copy fails (`10eef58`). Owed: Dan on a real iPhone at
+  http://10.0.0.103:4465/page-b.html (same Wi-Fi). Over LAN http the page is not a secure context: the auto copy
+  ("Copied") does not run there, by design of the browser; the code is selectable. Not covered: Safari <= 15 / iOS
+  <= 15 (no `cqw`, the layout would break).
+- **CATCH10: Dan, 2026-10-29: "today at 18 the coupon will place"** = Gil creates it in Paddle today at 18:00 (RevTasks
+  #193). After that: check the code works at checkout, then merge to main only on Dan's push word (`tasks/todo.md` 4e).
+  The claim stays with `revaudio-59` until then; if this session is gone, the go-live session takes it (its name here).
+- Background (laptop 1): `serve-nostore-lan.py 4465` (PID 26708, this scene, bound to 0.0.0.0 for the phone check,
+  no-store; the Wi-Fi profile is Public and python.exe has an inbound allow rule): after the phone check stop it
+  (`Stop-Process -Id 26708`) or rebind to 127.0.0.1. Not ours: `python -m http.server 8811` (PID 63816, another
+  session's Drift UI server).
+- Cleanup left: the main clone (`C:/RevAudio/Website/revaudio-website`, at `96c1ee7`, another session's checkout) still
+  holds the old knob tool files until it is pulled; its ignored leftovers under `player/` go by hand then.
 
 ## 2026-10-29 — Blog: "How to glue a mix with saturation" (Claude Code `revaudio-59`, Yoni's laptop 2) — PUSHED TO MAIN = LIVE 2026-10-29 (Yoni: "deploy it")
 
