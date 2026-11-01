@@ -1318,7 +1318,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   if (spot) {
     desk.dataset.spot = sp;
     desk.querySelector('.vista').setAttribute('aria-label', 'The GAS 2 station at dusk, its pump lit');
-    place(); addEventListener('resize', place);
+    place(); new ResizeObserver(place).observe($('end'));   // its box, not the window: iOS can lay the page out at the full screen (874) and settle it under the toolbar (714) with no resize event
   }
   layout(false);
   if (start === N) { desk.classList.remove('ended'); ending(true, true); }

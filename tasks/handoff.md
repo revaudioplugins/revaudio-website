@@ -244,7 +244,10 @@ Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postca
   plinth (frame y 830) at every height: it touched it at 375x553 before. After mailing, D has no room under Fill it up.
   (the station above): the line and Fill it up. step aside and the ticket comes up under ✓ Keys in the mail. check.cjs
   now also asserts GAS2 under the plinth and the ticket between the ✓ and the endbar: 42 steps + 35 layouts pass,
-  0 errors. Landscape phones (852x393) aren't designed, sky or D: both overlap there.
+  0 errors. Landscape phones (852x393) aren't designed, sky or D: both overlap there. Fixed after, in the iOS
+  Simulator (real Safari): on some loads iOS lays the page out at the full screen (874) and settles it under the
+  toolbar (714) with no window resize, so the spot stayed placed for 874 (the station shifted right, Fill it up. on the
+  endbar); `place()` now runs from a ResizeObserver on `#end` (caught with a debug overlay: end 874 -> 714, rs0, ro2).
 - Open (Dan): (1) his word from the phone; more notes go to `notes-r10`;
   (2) painted art still only on his OK;
   (3) per-grade renders (Yoni) before any grade card plays its own sound; (4) later: this as page-b's phone layout;
