@@ -1,3 +1,21 @@
+## 2026-11-01 — GAS 2 laptop page (page-b): Terms + newsletter checkboxes on the service ticket (Claude Code `danavivi-83 [c52ea5]`, Dan's Mac) — BRANCH `feat/gas2-consent`
+
+Claim: OPEN `danavivi-83 [c52ea5]` (a second session under the same name as the one below; `[c52ea5]` tells them apart).
+Files: `tools/_gas2-scene/page-b.html` (the `#ticket` form and its `.ticket .ck*` CSS only) + this entry. Not `taxi/**`.
+- Dan (2026-11-01): "add the terms and conditions checkbox and the newsletter, that they subscribe to the newsletter if
+  they put the email."
+- What: two printed boxes on the `#ticket` under YOUR EMAIL, ticked in the red pen. Terms = `required` (the live
+  `Cart.astro` line: Terms / Licence / Privacy, links to revaudio.net in a new tab); newsletter = opt-in, unticked (the
+  live `TrialGateModal.astro` consent, word for word, which the licence worker stores as `MARKETING_CONSENT_TEXT`). Not
+  "the email = subscribed": the live site chose a separate, unticked yes (UK / EU / Israel §30A); Dan can overrule.
+- The taxi is untouched: with Terms unticked the form never submits, so no SENT and no cab; ticked = as before.
+- Checked (local Playwright, Chromium + WebKit, 1141x636 + 1440x900, `?drone=0`): the ticket fits (63-573 px at
+  1141x636); MAIL ME THE KEYS without Terms = the browser's "check this box", no SENT; ticked = SENT, the cab parks, the
+  button turns "To the store"; 0 page errors. Not checked: the phone page (`postcards.html` has its own email card, no
+  boxes yet), a real iPhone.
+- Next: Dan's look at http://127.0.0.1:4465/page-b.html (server from this worktree's `tools/_gas2-scene`); then the
+  phone page's boxes (owner `danavivi-83 [76660c]`'s postcards) and the merge to main, on his word.
+
 ## 2026-11-01 — GAS 2: the LAPTOP page (page-b) on main too: the drone intro, the coupon, the pump light, the worn knobs, with the taxi (Claude Code `danavivi-83`, Dan's Mac) — SQUASH-MERGED TO MAIN
 
 Claim: CLOSED (merged). Next: GAS 2 on the front page, in the LCD screen (`tasks/todo.md` top): it waits for the LCD
