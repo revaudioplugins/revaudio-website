@@ -300,3 +300,11 @@ by its container's height) shrank the card to half, and the type with px floors 
 the tick line >= 12 px) ran into the stamp. check.cjs had listed "the iOS keyboard" as not covered. Rule: on focus,
 keep the card's size and slide it so the field and its button sit over the keys; check it by focusing the input and
 cutting the viewport to the keyboard's leftover (`setViewportSize`), at every phone size.
+
+## 2026-11-01 — A plan's "keep X deleted" goes stale while the branch waits (deploy-today merge, `revaudio-67`)
+
+1. The plan said to keep PluginShowcase deleted in the merge; main had since built `/downloads` on it
+   (`<PluginShowcase mode="downloads" />`, which imports DriftCard). Taking the deletion would have broken the
+   build. Before resolving a modify/delete, `git grep` the deleted file's name on origin/main for new importers,
+   and run `git merge-tree --write-tree --name-only HEAD origin/main` first: it lists the conflicts without
+   touching the worktree.

@@ -118,7 +118,9 @@
     wrangler; Radio Roulette's pkg predates the 10.13 rule. Needs `check-macos-floor.py` on each R2 pkg first.
   - Next: the user's "push" = main gets the branch (live), then the live check. Then GAS 2 on the TV (Dan's note via
     `danavivi-83`): on this branch after the deploy, hidden until live (blockers in the plan). Open: Phase 5.
-  - Running (dies with the session): `astro preview --port 4395` (127.0.0.1, serves this worktree's `dist/`).
+  - Motion on too (Lenis, the glide, GSAP): header PLUGINS glides from the top and with `?plugin=` in the address
+    (no reload, parks at 0 / -0.2 px, focus on the heading), a channel change, Try opens the gate; 1280x665 +
+    390x844, no errors. Nothing under `src` / `public` is untracked or ignored. No server left running.
 - For the user (dashboard, optional): a Cloudflare Redirect Rule `/store*` -> `/#plugins` would make it a real 301;
   the repo page works without it.
 - Found: index.astro's testimonial CTA said "14-day free trial" (the trial is 30 days in both plugins' code); fixed
