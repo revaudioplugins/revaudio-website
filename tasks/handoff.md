@@ -278,6 +278,10 @@ Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postca
   `?taxi=arrive` rolls the cab in by itself (silent) for a review. check.cjs 46 + 40 pass, 0 errors. ROUND 12
   (`notes-r12`) = version 14, same URL: the taxi screen's Live = `#card=7&sent&taxi=arrive` (it rolls in, stops, the
   button flips), its note verbatim + what changed; the rest unchanged. Checked locally (Chrome 1280 + WebKit 390).
+- Then (Dan in chat, pinned on the red button in `notes-r12`: "the size of the button to the store should be in the same
+  size of the download free"), `94f2621`: taxi.js puts the red label in `.tx-label`; the phone lays an unseen "⤓ Download
+  FREE" under it in one grid cell, so red = that box to the pixel (WebKit + Chrome, three sizes; check.cjs asserts it at
+  five: 47 + 40 pass). page-b identical. ROUND 13 (`notes-r13`) = version 15, same URL, that note + what changed.
 - Open (Dan): (1) his word from the phone; more notes go to `notes-r10`;
   (2) painted art still only on his OK;
   (3) per-grade renders (Yoni) before any grade card plays its own sound; (4) later: this as page-b's phone layout;
