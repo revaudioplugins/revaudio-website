@@ -63,6 +63,21 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
 - Display: `--font-display` Bebas Neue (fallback Oswald, Arial Narrow). Headlines are stamped
   into the wall: `text-shadow: var(--engrave)` on the garage wall, `--engrave-fine` for small caps.
 - Body: `--font-body` Inter. Readouts and specs: `--font-mono`, in object units (dB, ms, `$`, `VST3 · AU`).
+- Script accent: Yellowtail (retro car-badge script), `--brass-bright` with a soft amber glow, for ONE short
+  line under a section title, never body copy. First use: the /gas "Hear it" line "Hit play. Give it gas."
+  (2026-10-19, picked over a marker and a typewriter look: "shorter and sexier").
+  Second use: the GAS 2 page's "Fill it up." as a signature under the hero button (§7), tilted -6deg,
+  offset right. Still ONE script line per screen. A nameplate ON a prop is not a line: the GAS 2 radio's grille
+  badge "Play me" (Dan 2026-10-24, picked with this rule flagged, "like a Marshall"): embroidered IN the radio photo
+  itself, fine satin stitch sunk into the weave, rising to the right, click = play, no hover move. Dan 2026-10-26: CSS / SVG
+  stitches "look like CSS"; texture on a photographed prop is baked into the photo asset, never drawn over it.
+- **A product name wears its plugin's own header lockup (Dan 2026-10-23).** The title on a product page is
+  set in the face, colour split and rule of the plugin's own header, lifted from the plugin's render code,
+  never the house Bebas: GAS 2 = the pump globe's GAS2 (Oswald 700, set tight, the 2 in oxide, an oxide
+  rule under it; GAS2 repo `bench/pump-render.js` texGlobeLens), turned light-on-dark on a dark photo
+  (GAS in parchment `#efe3c6`, the 2 and the rule `#b8341e`; the rule sits ~.13em under the letters (Dan
+  2026-10-23, by eye: 2.5 px touching -> 29 px too much -> 20 px), never touching them). Why: the page and the plugin read as the same
+  object; the site's display face made the name generic.
 - Painted copy erodes with wear: stencil type on the wall is outlined brass that fills on hover;
   the filled one is `--oxide-text`, never race-red (Law 5 + one-hero rule). On the TV the same
   stencil is outlined in the channel's phosphor; the lit plugin's name is filled.
@@ -253,9 +268,27 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
   - Keyboard + screen reader: the list is a vertical tablist (aria-selected, roving tabindex), each
     panel a tabpanel; a category change is announced (a polite live region). `html.hc`: no screen or
     frame; plain type, the lit name in oxide.
-- Trial CTA / buy: flat brass-bright button at the page end on `/`; the crane door on product pages.
+- Trial CTA / buy: the button family's large brass with the shine at the page end on `/`; the crane door on product pages.
+- **Buttons (Dan 2026-10-18): one family, `src/styles/buttons.css` (`.rv-btn`), tuned on `/buttonlab`.** The grammar
+  of the /gas button: one warm fill with dark ink words, no outline, a lit top edge and a soft darker bottom edge,
+  a 1px lip, the contact shadow plus a long low ambient one, sentence case, Inter 700, 4px grid. Hover lifts 1px
+  (mouse only); press drops 1px with a shorter shadow, 80ms in / 160ms out, held >= 120ms (`src/lib/press.ts`).
+  Tones: **brass** = trial / buy, **honey** = a free download (GAS), **ghost** = the second choice (dark steel,
+  thin brass line). Sizes 64 / 56 / 48 / 40. The **shine** (a faint lamp band every 8s) only on the page's ONE
+  main action. Every regular action button uses it; a new one opts in by class, never restyles a copy. Stays out:
+  the crane door + BUY NOW squares, the audio toys (demo rack, GAS pedal, station mixer), DRIFT's own world,
+  image-plate buttons (SubscribeModal, /beta), the support chat, icon buttons (×, menu, cart, arrows, dots),
+  the GAS 2 page's ticket stub (next item). /gas keeps its own copy of the honey CTA (its bench is `/gasctalab`).
+- **A paper form speaks paper (the GAS 2 page's service ticket, Dan 2026-10-23: fewer fonts, and the button in
+  "the same language as the note"; approved: "commit and push").** Two faces only: Bebas for what the station
+  printed (title, stub label, SENT stamp), the typewriter Elite for what got typed (rows, labels, input, fine
+  print, ×); no Inter on paper. The submit is the ticket's own tear-off stub, not a house button: a perforation
+  with a scissors mark, a punched hole at each end, the honey "customer copy" (honey = a free download) with the
+  ticket's zigzag edge. Hover = it starts to peel and the scissors slide along the line; submit = it tears off
+  and drops, then the SENT stamp lands in rubber-stamp ink.
 - DAW strip, EmailCapture, SubscribeModal, TrialGateModal: unchanged house parts. (The coverflow
-  showcase left the home page with feat/home-library: the TV is the one place to browse.)
+  showcase left the home page with feat/home-library: the TV is the one place to browse. It stays only on
+  `/downloads`, as that page's picker, `mode="downloads"`.)
 - Support chat (`SupportChat.astro`, `/support` only): chat-app thread grammar in house materials —
   visitor right in 3-stop brass, Support left on dark steel with avatar + curved tail on a group's
   last bubble, time stamp inside the bubble, bakelite wallpaper with a brushed diagonal. Answers use
@@ -271,6 +304,33 @@ One light source, upper-left (~35% 25%). On the wall: a warm top light `rgba(255
 over the first 32% of height, plus a 38% `--bg-0` scrim so parchment ink passes AA on the wood.
 Shadow stack (all raised parts): `0 1px 0 #000` contact + `0 8-24px 24-48px rgba(0,0,0,.5-.6)`.
 Hover: lift 1px + shadow grows; press: return, 2px max travel.
+
+Paper ON glass (the GAS 2 page's window notes, Dan 2026-10-22: "the notes are hovering, I want them to
+feel like they're on the glass"): no drop shadow (paper taped to a window throws none you can see from
+outside), only a paper edge and a curl shade at the loose corners; the paper takes the scene's grade like
+every other prop; the glass sheen lies OVER the paper; the tape is translucent. A drop shadow on anything
+flat against a surface reads as floating.
+
+Posters IN the window (the GAS 2 page, Dan 2026-10-23, the notes became three 1950s gas posters: "smaller,
+fit the window better ... like it's stuck to the window, part of the picture, no need for tape", then "too
+blurred"): pasted flat inside the pane, so no tape, no shadow, near-square to the frame (≤ 0.4°); sized
+inside the measured pane glass with a margin, never touching the frame; they take the room's light (warm
+top, falling off to the sill) and a light glass sheen, and stay sharp: a blur reads as a bad photo, not
+depth. Poster copy = one short catchphrase per feature, period ad-speak (NO KNOCK. NO KNOB.).
+
+Poster ON the wall (the GAS 2 page's mailbox, Dan 2026-10-23: "just the reading need to be a poster that
+catches the eye"): a CTA's paper label becomes a 1950s poster pasted on the stucco right above its prop, a
+big arrow pointing into it. Outside the glass it keeps full ink (no sheen, no fade): the wall's texture shows
+through faintly and the porch lamp lights it from its side. Poster and prop are one control: both open the
+same form, and hovering the poster moves the prop.
+
+Painted wall sign (the GAS 2 page's grades, Dan 2026-10-23: "remove that line under premium"): the picked
+grade shows by its brighter red only, no underline. Paint on a wall has no web-link underline.
+
+Making one object pop (the GAS 2 pump, Dan 2026-10-23: "tone down all ... this needs to be subtle", then
+"just keep the light on the GAS 2 itself"): light the object only, from its own motivated lamp (a soft
+warm top-down light masked to its cut-out + ~4% brightness); no light cone, no floor pool, no darkening
+of the rest of the scene. Start subtle and let Dan raise it.
 
 The smoke: two screen-blended haze plates (`public/bg/haze1.webp`, `haze2.webp`) on a fixed layer
 behind the page at 16% / 10% under a 40% `--bg-0` veil (25% on phones), so the dust in the lamp light
@@ -288,12 +348,69 @@ change by motion alone (the old plugin off the glass, then the new one on, alway
 travel as one, ~0.55s: §4), the rows re-striking on a category change, a small glitch of its own now and
 then (a name, the picture or the screen, every 12-25 s when left alone: §4). Reduced motion: everything visible at rest, no parallax, no needle rev, smoke static, no glitches.
 
+No UI chrome drawn over a scene (the GAS 2 page, Dan 2026-10-23, on the first-visit gold frames that
+flashed around every live prop: "what is this square line around the elements, remove it"): a prop shows
+it's alive by itself (its own hover, its poster, its caption), never by a web outline around the photo.
+The one frame allowed is the keyboard focus ring.
+
+Printed things stay glued (the GAS 2 phone page's postcards, Dan 2026-10-30: "the readings should be glued to the
+card itself ... physics-wise"): on a physical object (a card, a poster, a label) the print never moves on its own:
+no pops, slides or write-ons as it comes up, no turning sunburst, no flickering lamp in a photo. Motion belongs to the
+object (a flick, a curling corner, a sticker's lifting edge), to a real mechanism (a turntable), or to light (a glint).
+
+Let-go motion keeps the finger's speed (the postcards, Dan 2026-10-30: "everything that moves needs to be smooth"): a
+thrown or released object leaves at the speed the finger had, never a jump or a stop (a CSS animation takes a frame or
+two to start: drive a let-go frame by frame from that speed, springs not fixed curves); nothing that moves changes scale
+(a scale change repaints the layer); a held object's deeper shadow fades in on its own layer; heavy work (decoding,
+drawing a canvas) waits for a still hand and runs a few ms a frame. Measure on a 4x-slowed CPU: no frame over 33 ms.
+
+A button that turns over to a new job turns hard and fast (the GAS 2 phone page's taxi, Dan 2026-11-01: "I want it to
+flip harder faster"): about 0.4 s, a deep turn that lands with a punch and the house snap curve. And it keeps its size
+and place whatever the new label says (same day: "To the store" the same size as "Download FREE").
+
 ## 7. Hero + glanceability
 
 THE hero is the gauge medallion with "Engineered, Then Tuned." over it. One glance: brass tach,
 red sweep under the headline, "Boutique plugins" above. Everything below is the walk through the
 garage: the plugin TV, the sign, the clipboard, the door. No second hero, no metric grid, no
 card grid.
+
+**Product-page hero = "the readings" (canon: the GAS 2 page, composition 2; Dan 2026-10-23: "I love you
+so much", "this is amazing"; `tools/_gas2-scene/page-b.html` on `feat/gas2-page`).** The vibe to repeat:
+- **Fill the open space.** One centred column sized to the scene's empty area (GAS 2: the dusk sky right
+  of the canopy, 31 % of the scene wide), everything BIG; no small left-aligned text block floating in it.
+  No scrim shape behind the column (the radial circle was rejected 2026-10-23: "not a regular circle ... a premium
+  shadow"). The shadow HUGS THE WORDS: per letter a contact shadow, an even close halo and a short soft drop
+  (CSS drop-shadow on the title, the line and the script); the general shadow stays faint (the sky behind the
+  column a touch out of focus and ~15 % down, feathered with no edge; the frame edges ~5-8 % darker). Every
+  layer fades out on all sides: a gradient band that starts at a hard element edge reads as a cut (Dan,
+  same day). Approved: "really cool, I like it".
+- **Four parts, top to bottom, nothing else:** the name in the plugin's header lockup (§3), huge
+  (13.5 cqw); ONE outcome line in Bebas, honey `#f6c85d`, letter-spaced .05em ("THICKER, SMOOTHER, GLUED
+  MASTER."); the house honey button, large, with the shine, "⤓ Download FREE" (FREE in caps on a free
+  product; the label in the title's own face, Oswald 700, case exactly as written: Dan 2026-10-23,
+  the one exception to the family's Inter label); the Yellowtail signature line under it ("Fill it up.").
+- **Copy: punchy and minimal.** No tagline when the signature carries it, no spec line, no FREE tag (the
+  button says it), no claim that needs a footnote (no "one dial" when there are three controls).
+- Tuned at Dan's Safari 1141x636 and checked at 1440x900 / 1920x953: the column stays in the open sky.
+- **After the download (the GAS 2 page's taxi, Dan 2026-10-31: "make this button turn around, become red, bold, reading
+  To the store").** When the cab pulls up, the honey button turns over (a quarter turn out, a quarter turn back, ~0.7 s)
+  and comes back red, bold, "To the store": the GAS 2 red of the 2 and its rule (#b8341e), the house button's own
+  lighting, the label in the title's face. It sends the waiting cab. The one red button in the house, by Dan's word: the
+  "no race-red on buttons" rule (§2) stands everywhere else. The cab's roof sign says just TAXI.
+
+**A product page on a phone is rebuilt for portrait, never a crop of the desktop scene (the GAS 2 page, Dan
+2026-10-24).** Three ways of showing the wide station photo on a phone (a sideways swipe, a scroll-driven camera,
+stacked crops) "don't work for me"; the zoom-in on the plugin itself did ("very cool, I like the direction"). The
+recipe (`tools/_gas2-scene/phone.html`): the plugin's own render re-baked sharp for the zoom (its parts in the
+plugin's base px, its layer order), the globe as the name, the readings under the gauge, the station only as a soft
+backdrop. ONE screen, no scroll (Dan, same day: "under the Fill it up remove all the page, keep one page, no scroll"):
+the pump + the four readings centred as one group, the zoom easing off on short screens so nothing is cut; the button
+opens the service ticket; no player, posters or mailbox on phones. Then one more screen (Dan 2026-10-26, "how simple the plugin
+is, three modes, a short line for each", A picked over B): THREE GRADES. PICK ONE. as three rows, the pump's own grade key +
+a Bebas honey headline + one Inter line, all readable at once (B, the key bank with one line that changes on tap, hid two of
+the three lines).
+Why: a portrait phone shows a third of a 3:2 scene, the photo goes soft, and the props turn into hunt-the-hotspot.
 
 ## 8. Layout
 
@@ -312,6 +429,16 @@ card grid.
 Base: `--maxw min(1440px, 95vw)`; at 860px and below the TV shows one pane at a time (the list,
 then the lit plugin).
 
+Typing on a phone (the GAS 2 postcards, Dan 2026-10-30, on his iPhone: "it's not comfortable like this"): the keyboard
+never shrinks the thing you write on. iOS 26 cuts the page to what's above the keys, so a layout sized by the viewport
+halves and its px-floored type runs together. Keep the object's size on focus and slide it up until the field, its
+options and its button sit just over the keys; the page's own controls step aside until the keyboard goes.
+
+A product page's end on a phone frames the subject, not the desktop's open sky (the GAS 2 postcards, Dan 2026-11-01,
+picked from four spots on a bench): a portrait crop can't hold the pump and the sky together, so the station and its
+pump go on top and the readings hang under them on the dark ground, their top just under the pump's base at every
+screen height. The blur behind the cards is the same spot, so the focus pull lands on it.
+
 ## 9. Do's & don'ts
 
 - DO keep every claim checkable against the plugin source. The five words describe the intent of
@@ -322,6 +449,37 @@ then the lit plugin).
 - DON'T absolute-position decorative props to pixel coordinates; wall and rails are flow +
   percentages so every viewport works.
 - Astro scoped styles: anything injected at runtime or living in another component needs `:global()`.
+- DO make a screen read as the part it is. An LCD does not bloom: crisp segments, every unlit segment faintly there
+  (ghost cells), an even backlight, a bezel inside the window. A blurred glow on every letter reads CRT / neon instead.
+  /drift #hear's screen = the car-stereo 14-segment LCD (DSEG14, RevTune's face), picked on `bench/drift-lcd-bench.html`
+  over a dot-matrix and a reflective LCD (laptop 1 user, 2026-10-19: "design this whole area so it looks like an LCD
+  screen"); the PICK A TRACK list beside it stays a CRT, so the two read as two different parts. Approved on the page
+  ("looks killer") with the segment letter shapes as they are (D reads like ], V like I/): that is the car-stereo look.
+- DO light a "press this next" cue from a real lamp inside the part, never a painted ring lit by nothing. /drift #hear
+  step 2 = each arcade cap seated in a small chrome bezel (step 3's metal) and the PLAY cap itself is the lamp: it
+  breathes from inside when PLAY is next and burns while playing; STOP = real red plastic, just off, not a filtered
+  brown. Picked on `bench/drift-play-bench.html` over LED bars round PLAY (A) and pilot lamps (B) (laptop 1 user,
+  2026-10-26: "C").
+- DON'T paint arrows at a control to say "press this". Hand-sprayed magenta arrows at PLAY and the DRIFT button (fresh
+  paint on the step that is next) were tried on `bench/drift-hear-bench.html` and dropped (laptop 1 user, 2026-10-28:
+  "remove the pink arrows"); the lamp-lit breath above stays the only "next" cue. A sprayed ring round DRIFT had already
+  gone: on a lamp-lit button it read as the button's own magenta light.
+- DO give a level a fader, and give one part one control language. /drift #hear's VOLUME is the page's own #drive fader
+  (`DriftFader.astro` look: the plugin's vertical slot, chrome cap, violet fill, so it stays a step behind DRIFT's
+  magenta), not a round knob beside the round DRIFT button (laptop 1 user, 2026-10-28: "let's use a fader for volume
+  instead of a knob"). It stands on the knob's old centre line, its cap travelling the DRIFT ring's height; the
+  VOLUME readout sits on ORIGINAL / DRIFT's line. Tried on `bench/drift-hear-bench.html` (VOLUME KNOB / FADER).
+  Then made a real part (the user, same day: "make it like it comes from the same vibe, make it wear out broken and
+  3d"): a photographed crash-worn slot plate screwed onto the wall (its own shadow) and a heavy black-and-chrome cap
+  worn to bare metal, chipped and cracked, throwing its shadow down-right; the violet light lives inside the cut
+  (VOLUME WORN, CAP 1 / 2, PLATE 1 / 2; prompts in `bench/drift-panel/PROMPTS.md`). The cap's travel = the plate's
+  cut. Placed as a channel strip ("make it bigger and place somewhere better"): on the deck's right edge line (the
+  LCD frame's right edge; PLAY's left edge sits on its left one), as tall as the controls, from the step names' top
+  line to the pocket's bottom line (phone: from just under "3 PUSH DRIFT", which runs over its column).
+- DO make a push button stand proud: a convex cap that throws its shadow onto what is around it, its legend printed on
+  the cap so both travel in together when pressed. /drift #hear's DRIFT push-start had a dark lens sunk in the bezel
+  (inset shadow only) and read as a gauge; on `bench/drift-hear-bench.html` (DRIFT BTN CAP) it became a raised cap
+  (laptop 1 user, 2026-10-28: "i want it to feel more like a button and polish it").
 
 ## 10. History + open questions (for Dan)
 

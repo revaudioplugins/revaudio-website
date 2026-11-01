@@ -121,6 +121,1125 @@
   history PageViews off); deleted: `src/components/PluginShowcase.astro`,
   `src/components/drift/DriftCard.astro`, `src/components/PluginCard.astro`.
 
+## 2026-11-01 — GAS 2 laptop page (page-b): Terms + newsletter checkboxes on the service ticket (Claude Code `danavivi-83 [c52ea5]`, Dan's Mac) — ON MAIN (fast-forward, 2026-11-01)
+
+Claim: CLOSED 2026-11-01 `danavivi-83 [c52ea5]` (a second session under the same name as the one below; `[c52ea5]` tells them apart).
+Files: `tools/_gas2-scene/page-b.html` (the `#ticket` form and its `.ticket .ck*` CSS only) + this entry. Not `taxi/**`.
+- Dan (2026-11-01): "add the terms and conditions checkbox and the newsletter, that they subscribe to the newsletter if
+  they put the email."
+- What: two printed boxes on the `#ticket` under YOUR EMAIL, ticked in the red pen. Terms = `required` (the live
+  `Cart.astro` line: Terms / Licence / Privacy, links to revaudio.net in a new tab); newsletter = opt-in, unticked (the
+  live `TrialGateModal.astro` consent, word for word, which the licence worker stores as `MARKETING_CONSENT_TEXT`). Not
+  "the email = subscribed": the live site chose a separate, unticked yes (UK / EU / Israel §30A); Dan can overrule.
+- The taxi is untouched: with Terms unticked the form never submits, so no SENT and no cab; ticked = as before.
+- Checked (local Playwright, Chromium + WebKit, 1141x636 + 1440x900, `?drone=0`): the ticket fits (63-573 px at
+  1141x636); MAIL ME THE KEYS without Terms = the browser's "check this box", no SENT; ticked = SENT, the cab parks, the
+  button turns "To the store"; 0 page errors. Not checked: the phone page (`postcards.html` has its own email card, no
+  boxes yet), a real iPhone.
+- Round 2 (Dan, same day: "the HOP IN reading over the taxi, I don't want it"): `.tx-cap { display: none }` in page-b's
+  own CSS, as the phone did (round 11, `3378948`); `taxi/**` untouched. The cab waits, Esc still sends it off (checked,
+  Chromium + WebKit). His "commits that aren't there": checked every GAS 2 branch (`feat/gas2-taxi`, `-postcards`,
+  `-drone`, `-phone`, `-page`, `-page-s2`) line by line against `origin/main`: nothing missing; HOP IN was off on the
+  phone only. Phone-only, still open for the laptop: the harder, faster red flip and the red button keeping the
+  Download FREE size.
+- Dan: "no" to the phone's flip + button size on the laptop; "push everything to main" + a RevTasks task to check the
+  page works and the backend is wired (the email form is still a dummy: Terms / `marketing` / the download mail are
+  not posted anywhere yet). Open: the phone page's boxes (`postcards.html`, owner `danavivi-83 [76660c]`).
+
+## 2026-11-01 — GAS 2: the LAPTOP page (page-b) on main too: the drone intro, the coupon, the pump light, the worn knobs, with the taxi (Claude Code `danavivi-83`, Dan's Mac) — SQUASH-MERGED TO MAIN
+
+Claim: CLOSED (merged). Next: GAS 2 on the front page, in the LCD screen (`tasks/todo.md` top): it waits for the LCD
+work from the other computer, then the publish, on Dan's word.
+- Dan (2026-11-01): "Let's also push the latest page for the laptop one. And merge them to main. Then we need to have a
+  plan on where do we put gas 2 ... in the front page. Like I think it should be in the LCD screen that we do right now
+  in a different computer, so just wait for it and then we'll do a publish."
+- What: a squash of `origin/feat/gas2-drone` (`fd60c72`..`951936d`, `revaudio-59`, its entry below) onto main:
+  `drone/**`, the CATCH10 coupon ticket, Dan's pump light (Spotlight D, storage key `spot4`), the WORN radio knobs, the
+  grade hover strip out. A squash, as `revaudio-59` asked (that branch's commit subjects name the private knob tool).
+  Conflicts: page-b's head keeps both lines (the taxi, then the drone); `player/radio.css` = the drone branch's neutral
+  knob note; the scene README and these two files = both sides.
+- Checked (Playwright Chromium + WebKit, 1141x636 + 1440x900, a no-cache server on the merged tree): the hover (runway,
+  the car); `dr:caught` = the ticket with CATCH10, Esc closes it; the landing = `?drone=0` (mean 0.00-0.19 / 255: the
+  page's own idle animations); then on the same visit MAIL ME THE KEYS -> the taxi parks, the red "To the store", Not
+  now = it leaves and the button is Download FREE again; `?drone=0&taxi=park` = the same car box as main's page-b before
+  the merge; 0 page errors, 0 failed requests (the plugin frame on :4461 is never served here). Not checked: a real
+  iPhone / Safari (owed since 10-29), the drone's own `check.cjs` (written for Edge on Windows).
+- CATCH10 is NOT confirmed in Paddle (the shared STATUS still says "waiting on Gil", RevTasks #193). Main is not live
+  for this page (`tools/` is not in the Pages build), so `revaudio-59`'s gate ("off main until it exists") now guards
+  going live: the page goes into `src/` only after CATCH10 works at checkout.
+- Open for Dan: delete the remote `feat/gas2-drone` (its old commits name the private tool; `revaudio-59`'s close note:
+  ask after the squash); the laptop page on his iPhone.
+
+## 2026-10-29 — GAS 2 page: the PHONE page as POSTCARDS (Claude Code `danavivi-75`, then `danavivi-83`, Dan's Mac) — BRANCH `feat/gas2-postcards`; the phone page SQUASH-MERGED TO MAIN 2026-11-01
+
+Claim: OPEN `danavivi-83` (took the postcards over 2026-10-31 from `danavivi-75`, no longer running: the end page's scene spots, phone only; D picked 2026-11-01). Round 9 (motion on Dan's iPhone) BUILT + checked, then a ponytail pass (`205661d`) and the keyboard slide-up (`6c91731`); the review page = round 10 (version 12, build `6c91731`); the branch tracks `origin/feat/gas2-postcards` (pushed on Dan's "commit everything and push it"; not main, no deploy). Branched from `origin/feat/gas2-drone` @ `4fc6ddd` (no upstream set, so a bare push
+can't reach the drone branch); `revaudio-59` keeps writing `feat/gas2-drone`, so this branch stays out of its files.
+Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postcards/**`; `tools/_gas2-scene/taxi/**`
+(from `danavivi-a5`, 2026-11-01: one script for page-b and the phone, page-b.html itself untouched); one README line pair; the
+"GAS 2 phone POSTCARDS" section on top of `tasks/todo.md`; this entry. Read only: `page-b.html` (copy, ticket), `fonts/`,
+`frames/f6-v17.png`, `props/poster-level.webp`, `props/poster-mail-1.webp`, `props/mailbox.png`, and
+`player/audio/hiphop_{before,after}.m4a` (Yoni's lane: played, never edited). Desktop `page-b.html` untouched.
+- Dan (2026-10-29, picked over the receipt and "pump as player"): a stack of 1950s "Greetings from GAS 2" postcards, phone
+  only. Card 1 = the real GAS 2 pump in front of the station; flick away REGULAR / PREMIUM / RACE; a "hear it" card (flip,
+  ▶ on the back); the last card = a postcard back, email on the address lines, dropped in the mailbox = MAIL ME THE KEYS.
+  Dead (don't re-propose): Swipe / Walk / Stack, the pump close-up + jukebox (`feat/gas2-phone` `phone.html`), the pump as
+  player, pedal / gauge toys, the receipt. DESIGN.md rule (on `feat/gas2-phone`): rebuild for portrait, never crop the
+  desktop scene. Art spend only on Dan's OK (OpenAI images; Higgsfield 0 credits). The form stays a dummy.
+- Audio facts (measured 2026-10-29, ffmpeg ebur128): `hiphop_before` / `hiphop_after` both I -11.0 LUFS, LRA 1.7, 26.24 s,
+  AAC 48 kHz stereo. The after = PREMIUM at GAS 140 %. No per-grade renders exist: no per-grade sound claim anywhere.
+- Built v1 (`postcards.html`, one file, no build): six cards in one stack over the dusk sky (soft). Drag = the card follows
+  the finger and turns about where it was held; a flick (> .5 px/ms) or a drag past a third of the card throws it off in
+  that direction, otherwise it springs back; a finger that stops before letting go doesn't throw. Back / next buttons +
+  arrow keys, "n / 6", "Flick the card" until the first flick, one nudge on first load. 1 = "Greetings from" + the real
+  pump in front of the station (soft) + THICKER, SMOOTHER, GLUED MASTER. + "GAS 2 · FREE"; 2-4 = large-letter grade
+  cards (the pump's own key, lit as its card comes up, the BRIEF line, a script kicker); 5 = HEAR IT ("Fill it up. Same
+  level." poster), tap or "Turn it over" = two quarter turns with the faces swapped edge-on (backface-visibility let
+  WebKit show the hidden face's layers through, mirrored), the back = ▶ / ■, ORIGINAL | GAS 2 in place (both sides loop
+  in sync, 30 ms crossfade), a progress line, "PREMIUM at GAS 140 % · both sides -11.0 LUFS"; 6 = POST CARD back: MAIL ME
+  THE KEYS, a 0¢ stamp from `poster-mail-1` + a REVAUDIO STATION postmark, the email on the TO line (handwriting; the
+  placeholder printed), MAIL ME THE KEYS = the card shrinks into the mailbox (up from the bottom on this card only), SENT
+  + the address + "(Mockup: nothing was sent.)" + Start over. `?card=1-6`, `&flip`. Reduced motion: no flight, instant
+  swaps.
+- Art (no spend, `postcards/tools/`): `bake-pump.cjs` = the plugin page itself (:4461) at DPR 2, ROOM with the room
+  hidden, PREMIUM lit, needle 140, counter -11.0 (= the demo), hose run on along the ground in `make-art.py`;
+  `bake-keys.cjs` = the three keys + lit at 9x from the GAS2 3D lab (`bench/pump-lab.html`, real GPU: Apple M1 Max via
+  ANGLE Metal, 9 s; same look as the 4x bake, crisp at card size; the GAS2 repo is only read) + `make-keys.py` (both
+  and the key images removed in the ponytail pass, 2026-10-30; in git at `082c5c4`);
+  `make-art.py` = card 1's station (painted pump filled out, softened), the dusk, a woven linen tile, the stamp.
+  Weight: ~778 KB for every card; the demo (1.76 MB) is fetched from card 4 on.
+- Checked: `postcards/tools/check.cjs` = WebKit 22 steps (flick / spring back / hold-then-let-go / down-flick / back /
+  key lit / next + keys / tap-to-turn, one face at a time / turn back / mailbox / last card stays / empty + bad email /
+  drop + SENT / no network request / Start over / reduced motion) + 20 layouts (402x714, 375x553, 390x664, 393x659,
+  430x750: card + controls on screen, no overflow, input >= 16 px) all pass, 0 console errors; Chrome: the demo plays on
+  GAS 2, the bar moves, ORIGINAL switches, ▶ stops. iOS Simulator (iPhone 17 Pro, iOS 26.5, 127.0.0.1:4466, Safari
+  restarted per shot): all six cards + the HEAR IT back right, crops at 1:1 sharp. Not checked: a finger (flick feel),
+  the iOS keyboard over the TO line, sound by ear on iOS, a real iPhone.
+- Design hook (impeccable): fixed 3 contrast nits; waivers in `~/.impeccable/config.json` (home, not the repo), scoped to
+  `**/tools/_gas2-scene/postcards.html`, each with its reason: gradient-text (the large-letter fill), buried-raster (the
+  lit keys), flat-type-hierarchy (cqw sizes, measured), marquee (the house button shine), radial-halo (the pump's lamp).
+  Left standing: repeating-stripes-gradient (advisory, the grade cards' sunburst).
+- Server: no-store on :4466 from this worktree's `tools/_gas2-scene` (dies with the session); again:
+  `python3 -m http.server 4466 --bind 127.0.0.1` there (plain: reload twice if a change doesn't show).
+- Then (Dan, 2026-10-29, after v1: "okey cool! i want that in the end page the user will reach the right side of the
+  desktop page, the words will pop out and everything"): THE END PAGE. When the last card goes (flicked, next, or
+  dropped in the mailbox) the lens pulls focus from the cards onto the open sky right of the canopy = the desktop page's
+  right side (`postcards/img/scene.webp` = `f6-v17` as webp, 260 KB, fetched from card 5 on; the dusk behind the cards
+  is now the same frame blurred, both cover + right-aligned, so the focus pull lines up), and page-b's readings stand in
+  it: composition 2 + the premium shadow (HUG, FOCUS, DUSK) ported 1:1, sized by the same 3:2 scene (cqw; GAS2 145 px
+  at 402x714), the column centred on the phone (page-b: x 64.5 %). They pop with the drone's `pop()` keyframes and
+  timings (GAS2 springs out with blur + overshoot, the oxide rule draws, the line, the button and "Fill it up." pop
+  fast), a beat (380 ms) into the focus pull; the flicked card flies over the scene. ⤓ Download FREE = the mail card
+  comes back; after mailing the button reads "✓ Keys in the mail" and the foot says "Sent to … · Mockup: nothing was
+  sent." (back can't pull the mailed card out of the box). "↺ The postcards again" deals them back, bottom card first.
+  The last card can now be flicked (it rubber-banded before); the old SENT overlay is gone (the end page replaces it).
+  Fixed on the way: the end page's photo first reused `.photo` (HEAR IT's poster class) and took its z-index, tilt and
+  border, covering the button (found by check.cjs); now `.vista`.
+- Checked (end page): `check.cjs` 24 steps + 30 layouts (5 sizes x cards 1, 2, 5 back, 6, end, end sent) all pass, 0
+  console errors; in-page timing: card off by ~350 ms, the scene 90 % in by 345 ms, GAS2 pops from 380 ms; iOS Simulator:
+  the end page, the sent variant and card 6 (next = to the end) right.
+- Then (Dan, same day: "open a bench so i can comment on every section of this page and give my notes for adjustments
+  in an html"): THE REVIEW PAGE, private artifact https://claude.ai/artifact/6zn14ha4qswV1gmCb8v3qG (of build `b5279b1`).
+  11 sections in visitor order (cards 1-6, the HEAR IT back, the end page, mailed, motion, overall), each: the screenshot
+  (a tap = a numbered pin, the note starts with ①), ▶ Live = the real page in the frame at that state, a notes box,
+  ✓ Looks right; on Regular the painted-fronts question (Paint them / Keep the plugin keys / Show me one first). Notes =
+  the artifact's db, `notes/<section id>` = {screen, text, ok, pins [{n, x, y}: 0-1 of the 402x714 screen], choice,
+  updatedAt}: read with ArtifactData `list`, collection `notes` (fallback: this browser + "Copy all notes"). Source:
+  `postcards/review/index.html`; `postcards/review/build.cjs` makes `out/` (not in git): `live.html` (fonts inlined,
+  audio renamed .mp4, the state read from the hash) + `shots/*.webp` (WebKit 402x714). Republish = the Artifact tool with
+  `url` + the same 28-file `files` map (out/live.html, out/shots/*, postcards/img/*, props/mailbox.png,
+  props/poster-level.webp, audio/hiphop_*.mp4 from player/audio/*.m4a, no contentType: .mp4 is served as video/mp4).
+  Checked locally (Chrome 1280 + WebKit 390): pins, notes, ✓, the question, live frames (right state, one at a time),
+  reload, copy, no sideways scroll, 0 errors; on claude.ai a db probe written, listed and deleted.
+- Then ROUND 2 (Dan's notes, 2026-10-29 21:03: pasted "Copy all notes" + the db; he skipped the painted-fronts question;
+  plan OK'd by his pick "deck buttons" for the vinyl). `1cdeebc`: grade cards = the plugin key gone, script + lettering
+  centred on the card with the sunburst behind (turns, 150 s), the line in Oswald caps; mail card = one TO line (the two
+  empty lines gone), the email bigger, the site's consent box verbatim ("Also send me new-plugin drops and demo codes
+  (optional)", unticked, above the stamp so it's ticked before sending; `name="marketing"` like the worker's field),
+  MAIL ME THE KEYS = a red station dater stamp (REVAUDIO STATION / today's date, `ink.webp` mask) that thumps, the card
+  jolts, then the drop; HEAR IT back = a portable record player from above (tap the record = arm swings in, needle drop
+  0.3 s before the sound, 33 1/3 = 200 deg/s, coasts down; ORIGINAL / GAS 2 = the deck keys; the arm angle = song
+  position, lead-in to run-out solved from the drawn geometry); after mailing a "TO THE WEBSITE" railway ticket pops
+  out under the readings (revaudio.net/store, `target=_blank` because the review frame can't navigate; on SE heights
+  only its big line); the end page itself untouched (Dan's ✓). Overall: each card worn its own way (`make-wear.py`,
+  numpy noise, no spend, ~235 KB total): tape on 1, a coffee ring on Regular, gold-foil seal on Premium, a thumbprint on
+  Race, ring wear on HEAR IT, a fold on the mail card; alive = arrival pops (lettering, seal, "Greetings from" writes
+  itself, postmark thump), lamp flicker, dust motes; all off under reduced motion. The keys' files + bake tools stay in
+  the repo, unused (in case Dan wants them back). Checked: `check.cjs` 26 steps + 30 layouts pass, 0 console errors
+  (new: lettering centred, mail + deck stacking per size, consent box, stamp, ticket + href, record spin / arm / coast
+  in Chrome). Review page round 2 = the review-bench skill's template (`~/.claude/skills/review-bench/`, Dan: "save
+  that style for future work") + this content: `CFG.round = 2` (notes in collection `notes-r2`), his round-1 note +
+  "what changed" under each screen, a new "Hear it, playing" shot (Chrome, in `build.cjs`); version 3 at the same URL;
+  files map now 35 files (+ the wear art, - the keys). Checked locally: Chrome 1280 + WebKit 390, 0 errors.
+- Then the design hook (Stop, round 2), `e537a4a`: fixed cramped-padding (the ticket: 16/26 px so the words clear its
+  printed rule; under 680 px tall the one-line ticket without the rule) and organic-clip-path (card 1's tape = a
+  generated torn cut-out, `tape.webp`, instead of a 24-point polygon). Waived nested-cards for `.deck` only (the record
+  player Dan asked for, drawn as an object on the card; dropping its case shadow clears the finding) in the worktree's
+  `.impeccable/config.local.json`; there the stale buried-raster waiver (the keys) is gone and the marquee reason now
+  names `.rd .cta::after`. check.cjs again 26 + 30 pass. Review page version 4 (build `e537a4a`), files map 36.
+- Then ROUND 3 (Dan's round-2 notes, 2026-10-29 23:48, pasted; one note, on HEAR IT's back: "lets make an animation of
+  the vines cd working and make it less like a post card more like a hole picture real vinyl animation"; his message
+  opened with "commit"). `b05c079`: the back is one top-down photo of a turntable, full bleed. Its body is a picture
+  (`make-deck.py`, numpy: walnut frame mitred at the corners, brushed aluminium under a lamp at the top left, platter
+  well + shadow, arm boss; 42 KB); no paper, handwriting or `.age` on that face. Over it in card units (1 = 1cqw): the
+  platter rim's 180 strobe dots (they blur with speed; under the neon lamp a second ring turns at spin - 200 deg/s, so
+  they stand still at speed), the grooves cut once on a canvas at device pixels (track gaps, lead-in, run-out; the
+  lamp's two-lobed streak on a second, screen-blended canvas that wobbles a hair at the turn rate), the label + specks +
+  a run-out etching turning, a chrome S-arm + its shadow layer pivoting at (77.25, 95.2). The motor runs while the back
+  is up (0.6 s to 33 1/3, 1.1 s brake; none under reduced motion). Tap the record = cue up 260 ms, swing to the lead-in
+  900 ms, wait for the demo, lower 420 ms; the song starts as the needle lands, after a synthesized knock; playing, the
+  arm creeps over a 240 s "side"; tap again = up, home, down, the platter keeps turning. Fixed on the way: a tap on
+  the deck's body turned the card (setPointerCapture retargets pointerup to the card; tap() reads the pointerdown
+  target now). check.cjs: the back's layout per size (record, tape, legend, keys, fine print + badge in order, Turn
+  clear of the record, keys + Turn >= 44 px), the cue mid-swing, motor + reduced motion: 29 steps + 30 layouts pass,
+  0 errors. Review page round 3 (`CFG.round = 3`, notes in `notes-r3`; his note + what changed on the back, "No note
+  last round: unchanged." elsewhere) = version 5 at the same URL (+ `postcards/img/deck.webp`). Design hook: the
+  nested-cards waiver now names `.dymo` (the label-maker tape; `.deck` is gone); only the advisory stripes remain.
+- Then ROUND 4 (Dan's round-3 notes, 2026-10-30 13:15, pasted, all on HEAR IT; plus "if you need to create more assets
+  ... please do so": done in code, no spend). `bf71096`: front = TURN IT OVER in HEAR IT's large letters (the `.big`
+  bk/fr rules shared), ~2.5x, nodding with the curl (`beckon`, 2.6 s). Back = "I want the buttons to feel real": ivory
+  piano keys in a graphite escutcheon with amber jewel lamps, rendered in `make-deck.py` (height field: dished keys,
+  rounded edges, chamfered bezel; lamp 40 deg up like the deck; shadows marched, AO; 2x then halved): `deck-bank.webp`
+  + one opening's key up / latched (`deck-key-up/-down.webp`, the bank repeats every 43 units so they serve A and B;
+  ~6 KB in all). The button's background swaps by state (no hidden layer: the design hook's buried-raster). Press =
+  goes in under the finger + a synthesized click, latch = a clack + a haptic tick (`navigator.vibrate`, else iOS 18's
+  `<input switch>` tick); the lamps follow the side. "TAP THE RECORD" = a die-cut vinyl sticker (honey, red rule,
+  arrow), under the arm in z, slapped on as the deck comes round (WAAPI), its top-right corner peels (`@property
+  --peel` + clip-path), a glint; tapping it = play (tap() reads the pointerdown target). Fine print gone; Turn = a 7.6
+  cqw knob (44 px target). check.cjs: `?card=5` front Turn layout, the sticker cues the record, the keys latch (picture
+  + lamp): 30 steps + 35 layouts pass, 0 errors. Review page round 4 (`notes-r4`) = version 6 at the same URL. Design
+  hook: nested-cards waiver now names `.sticker .sk`; only the advisory stripes remain.
+- Then Dan's OK (2026-10-30): "looks amazing / the vinyl looks crazy / i really like the buttons / save them for future
+  purposes for next sessions". The keys are saved for reuse in the shared repo: `collaboration/handoffs/2026-10-30-
+  piano-keys/` (a standalone kit: `make-piano-keys.py`, a demo page, the pictures, his look; + a handoff to put them in
+  the shared button library) + memory `feedback_ivory_piano_keys_liked` (shared `959b947`). `make-deck.py`: the bank's
+  comment brought up to date, dead helpers out (the pictures come out byte-identical). Pushed this branch.
+- Then (Dan, chat, 2026-10-30): "the readings on the cards should be glued to the card and not pop out ... like physical
+  cards ... Physics-wise". `22d779e`: `arrive()` and its keyframes are gone (lettering pop, slide-ins, "Greetings from"
+  writing itself, seal + postmark thumps, the sticker's slap), the sunburst no longer turns, the lamp in card 1's photo
+  no longer flickers, TURN IT OVER no longer nods. Kept: the cards' own motion (flick, nudge, HEAR IT's curl), dust,
+  the turntable, the sticker's peel, the gold seal's glint, the stamp's thump on a tap, the end page. check.cjs: a card
+  comes up with nothing on it animating (`document.getAnimations()`); 31 steps + 35 layouts pass. DESIGN.md §6: "printed
+  things stay glued"; tasks/lessons.md. Review page round 5 (`notes-r5`) = version 7; card 6 restored there (round 3's
+  edit had dropped it; the review-bench skill now says to count sections).
+- Then (Dan, chat, 2026-10-30): "go back and forth from the cards ... back is left to right, and front is right to left",
+  the station too. `743e67f`: a drag that starts left to right is "back" (`pull()`): the card before comes in from the
+  left under the finger, lands on top past a third or on a flick, slides back out if let go early; on card 1 it only
+  gives a little. Right to left / up / down throw it on as before; a throw that turns right springs back. The station
+  (`#end`): left to right = `prev()`, or after mailing the "again" deal (the card is in the box); `.end` is
+  `touch-action: pan-y pinch-zoom`. The hint: "Flick left: the next card · right: back". check.cjs 36 steps + 35
+  layouts pass. Review page round 6 (`notes-r6`) = version 8.
+- Then ROUND 7 (Dan's round-6 notes, 2026-10-30 14:29, pasted, all on HEAR IT's front). `55cc52f`: ① the gauge's thin
+  red level line wiped from the card's own copy of the poster (`postcards/tools/fix-poster.py` ->
+  `postcards/img/poster-level.webp`; desktop `props/poster-level.webp` untouched); ② "all the readings except TURN IT
+  OVER are faded out": the front's `.age`, `::before` (light, vignette) and `::after` (linen) now sit under the print
+  (z-index 1), so the words read as crisp as TURN IT OVER (which sat above them); ③④ TURN IT OVER moved up under the
+  line (bottom 17.2cqw, at his pin and a bit lower), its words centred (`translate: -4.8cqw`, the arrow hangs left).
+  check.cjs 36 + 35 pass. Review page round 7 (`notes-r7`) = version 9 (+ the poster copy).
+- Then (Dan, chat, 2026-10-30): "the card moves is not smooth yet ... everything that moves needs to be smooth".
+  Measured first (scratch probes: Chrome, `Emulation.setCPUThrottlingRate` 4, rAF frame log, longtask observer, a trace
+  of the release, per-frame speed of the card around the release). `1065d59`: let-go motion runs frame by frame from
+  the finger's speed (`move()` + `flight()` / `sprung()`, one rAF loop `glide`; a card caught mid-spring is held);
+  no depth `scale()` (same-size stack) and none while held; the held shadow = a `.lifts` layer (opacity); will-change on
+  the cards in sight + the next; every coming card visible under the stack (decoded early); `@property --rest` not
+  inherited; the demo decodes on an OfflineAudioContext (the device context opens on a tap: 226 ms at 4x) and the
+  record's grooves are drawn ~6 ms a frame, both via `idle()`; the turn = WAAPI halves at a matched .77 deg/ms; the
+  stack settle = a spring in CSS `linear()`. Worst frame (4x) 417 -> 33 ms, no long tasks; check.cjs 36 + 35 pass.
+  DESIGN.md §6 + lessons. Review page round 8 (`notes-r8`) = version 10. Not felt on a real iPhone yet.
+- Then (Dan on his iPhone, 2026-10-30, Hebrew): "no vinyl animation as it should be, the cards don't move when you press
+  the buttons, it should feel like you're moving the card". All three = iOS Reduce Motion: `reduce` switched off every
+  move. `c22bab5`: Reduce Motion now stills only what moves by itself (dust, glints, the hint's wiggle, the idle record,
+  the end page's pops); the hand's moves (throw, spring back, pull back, the ‹ › buttons, the turn, the arm's cue, the
+  record under the needle, the mail drop) always run, with more damping (`Z`). The held card is drawn once a frame
+  (`hold()`) and leans up to 7 deg into its speed. For his phone test: a LAN server (`serve-lan.py`, bound 0.0.0.0,
+  port 4470, the session's scratchpad) and a git-ignored `tools/_gas2-scene/motion-check.html` that says whether
+  Reduce Motion is on; stop the server and delete the check page when done. Review page round 9 = version 11.
+- Then (Dan, chat, 2026-10-30: "check your work and do a ponytail on it"): a review of the whole branch, smallest fixes.
+  `205661d`: whatever takes over a moving card now takes it from where it is. Before, ‹ mid-throw started it back from
+  its landing spot (~890 px jump); › right after ‹ or while a let-go card sprang home restarted it from the top pose
+  (~100-530 px); a tap while it sprang home froze it off its place (the drag now takes the card on its first move);
+  a layout left the JS spring running (it settled on the wrong place); a flick whose last move and lift fell between
+  two frames threw (`d.cur` null). `at()` = a card's pose this frame from its computed transform (JS spring or CSS
+  settle). Under Reduce Motion the strobe dots under the lamp crawled (the neon's clock now runs only past half speed:
+  still at rest and at 33 1/3). Cut: the spring cache + `v0` (`SETTLE`), dead CSS, unused exports, the grade-key art +
+  its two tools and `wear-5b.webp` (unused since rounds 2 and 3). Every state pixel-identical but the strobe;
+  `make-wear.py` rebuilds byte-identical; check.cjs 41 steps + 35 layouts pass, 0 errors (the 6 new steps fail on the
+  page before). Not changed: the first throw's release frame is ~50 ms at 4x CPU on the round-8, round-9 and this
+  build alike (the Mac was at load 11-13; DESIGN.md asks <= 33): measure again on a quiet machine before chasing it.
+  The review page stayed on `c22bab5` till round 10 (below).
+- Then (Dan on his iPhone, iOS 26, 2026-10-30 19:00: a screenshot of the mail card with the keyboard up, then "it's not
+  comfortable like this ... give options"; his pick of three: "card slides up"). iOS 26 cuts the page to the ~387 px
+  above the keys: the stack (sized by its container) shrank the card to half and the tick line ran into the stamp.
+  `b15a2eb`: on focus the stack keeps its size (`--cw` frozen in px) and `fit()` slides it (translate .4 s, from the
+  visual viewport) till the TO line, the tick box and the stamp sit just over the keys; ‹ › and the mailbox step aside.
+  The card goes back once the keyboard has gone, not on blur: a tap on the stamp blurs the input first, and going
+  back on blur moved the stamp out from under the finger (found by a stamp-with-the-keys-up check). Checked at 402x714 -> 387, 375x553 -> 293, 430x750 -> 410 (WebKit, the keyboard mimicked by a shorter
+  viewport); check.cjs 42 + 35 pass, 0 errors; stills pixel-identical. DESIGN.md §8 + lessons. Not on a real iPhone yet.
+- Then (Dan, 2026-10-30: "open the bench"; `notes-r9` was empty): review page ROUND 10 (`notes-r10`) = version 12 on
+  `6c91731`, same URL. Card 6 = his keyboard note verbatim + what changed, and its tip says the slide over the keys
+  shows on the page itself on his phone, not in the review frame (a frame's viewport never feels the keyboard);
+  motion = the takeover fixes; HEAR IT back = the strobe under Reduce Motion; the rest "unchanged". Files: `live.html`
+  + the 11 shots re-sent; `wear-5b.webp` and the unused `props/poster-level.webp` removed (the page uses
+  `postcards/img/poster-level.webp`). Checked locally (Chrome 1280 + WebKit 390): 12 sections by title, pin, note, ✓,
+  reload, copy, the live frames (card 6 runs the new build: the stack slides, `typing` on focus), no sideways
+  scroll, 0 errors; the shots = round 9's but for the record's angle.
+- Then (`danavivi-83`, Dan 2026-10-31, phone only: "when user lands on this page lets try different areas of the screen
+  that also involves the gas pump / lets try a different spots of background image from the scene for the end page"):
+  `?spot=` (JS `place()`, the `SPOTS` table) frames the end page on another part of `f6-v17` and moves the blurred
+  frame behind the cards with it (vars `--cl/--ct/--cw/--ch`, so the focus pull still lines up: measured 0.01 px);
+  no `?spot` = the signed-off sky, pixel-identical to `c947709` at 402x714, 375x553 and 430x750 (cards 1, 5 back, 6, 7,
+  7 sent; the one diff, the mailbox rising on card 6 at 375x553, varies run to run on the old build too). Why the
+  spots look like this: the frame is 3:2 with the pump at x 335-590 and the open sky right of x 965, so a portrait
+  crop can't hold the pump and the readings' sky together; A-C zoom out (0.58-0.75 of "the frame's height fills the
+  screen") and put the readings in a night above the roof: the frame's top edge fades (`--cm` mask) into a navy taken
+  from the frame's own top-of-sky (`#152d4c` sampled, `#0e1b2d` -> `--bg`). A = the station front (radio, pump,
+  barrel), B = the pump close (base on the screen's bottom, the endbar over its knobs), C = the pump at the left and
+  the desert sunset at the right (the canopy's eave, both lamps), D = the station on top and the readings below (the
+  button in thumb reach). `?spot=z,x,y,tx,ty,r` tries any framing. Readings clear the pump's globe by 11-27 px at all
+  five check sizes. iOS Simulator (iPhone 17 Pro, 127.0.0.1:4466, a no-store server from the session scratchpad) shots
+  of all four + card 1 with B: right. check.cjs 42 steps + 35 layouts pass, 0 errors.
+- Then (Dan: "show them all to me in a bench side by side"): the SPOTS BENCH, private artifact
+  https://claude.ai/artifact/XdDVWwHNoSLesVBARU4dxQ (build `ad8c371`): the review-bench template with one layout change,
+  the five end pages in one row (the signed-off sky, A-D; under 1100 px the row scrolls sideways inside itself), each
+  with ▶ Live (`live.html#card=7&spot=x`; inside it ↺ The postcards again lands on card 1 with that spot), pins, a notes
+  box, ✓; under the row the pick ("Which one becomes the end page?": sky / A / B / C / D) + a notes box. Notes = its db,
+  collection `notes`, doc = `sky`, `a`-`d`, `overall` (the pick is `overall.choice`). Source:
+  `postcards/review/spots.html`; shots = the iOS Simulator renders (real Safari, the HUG blur included) cropped to the
+  page, 804x1428 webp; `live.html` from `build.cjs` (now carries `?spot`); published from a scratch dir of real copies
+  (31 files: live.html, shots/*, postcards/img/*, props/mailbox.png, audio/hiphop_*.mp4 from the .m4a). Checked locally
+  (Chrome 1280: five in a row, no scroll; WebKit 390: the row scrolls, the page doesn't): pin, note, ✓, pick, ▶ Live on
+  the right spot, one frame at a time, reload keeps it, copy, 0 errors (a favicon 404 on the local server only). Fixed on
+  the way: the hidden `.sr` labels escaped the scrolling row and widened the page at 390 (`#screens` is positioned now).
+  On claude.ai a db probe written, listed and deleted.
+- Then (Dan 2026-11-01 in chat: "Spot D"; the bench's `notes` stayed empty): D is the end page. No `?spot` = D;
+  `?spot=sky` = the sky as signed off, pixel-identical to `32e25ae`'s default (the same 15 shots; the one diff = the
+  card-6 mailbox again). A-C are out of `SPOTS` (they live in the bench and in `32e25ae`). The readings now hang by
+  their top (r = .4027 of the screen height = where D put them at 402x714, to 0.1 px), so GAS2 clears the pump's
+  plinth (frame y 830) at every height: it touched it at 375x553 before. After mailing, D has no room under Fill it up.
+  (the station above): the line and Fill it up. step aside and the ticket comes up under ✓ Keys in the mail. check.cjs
+  now also asserts GAS2 under the plinth and the ticket between the ✓ and the endbar: 42 steps + 35 layouts pass,
+  0 errors. Landscape phones (852x393) aren't designed, sky or D: both overlap there. Fixed after, in the iOS
+  Simulator (real Safari): on some loads iOS lays the page out at the full screen (874) and settles it under the
+  toolbar (714) with no window resize, so the spot stayed placed for 874 (the station shifted right, Fill it up. on the
+  endbar); `place()` now runs from a ResizeObserver on `#end` (caught with a debug overlay: end 874 -> 714, rs0, ro2).
+- Then the TAXI on the phone (Dan's ask via `danavivi-a5`, then his own "go" here 2026-11-01, the railway ticket going):
+  `tools/_gas2-scene/taxi/**` came in from main `ddd0ebc` (`git checkout origin/main --`) and is `danavivi-83`'s now
+  (`danavivi-a5` hands-off); ONE taxi.js for both pages: `[data-taxi-scene]` / `[data-taxi-stage]` beside page-b's
+  `#scene` / `#stage`, a `gas2:mailed {roll}` event beside page-b's `#ticket` submit, `gas2:reset`, `covers()` = a real
+  overlap, the smoke's canvas on a ResizeObserver; details + checks in `taxi/README.md` "On the phone". postcards.html:
+  the ticket's markup / CSS / pop are gone; the stamp's tap sets the audio session to `playback` and fires `gas2:mailed`
+  (roll 2.5 s, the end page up); The postcards again fires `gas2:reset`; a `.txscene` box over the frame; the sent outline
+  yields to `.tx-red`; Fill it up. steps aside after mailing (the lead is back); taxi.js loads with the end page's photo.
+  check.cjs: 47 steps + 40 layouts pass, 0 errors (+ the parked cab at five sizes: above GAS2, the driver past the left
+  edge, the caption on screen, Not now and the cab thumb-sized; the ride; Not now; the reset; cab + button = the store).
+  main's page-b with this taxi.js vs main's own: identical states and parked pixels (Chromium 1141x636, WebKit 1440x900).
+  iOS Simulator: parked right; the live store#radio-roulette lands under the nav with its edge lit once. On a merge to
+  main, `taxi/**` is an add/add: take this branch's (main's + the phone).
+- Then (Dan: the review page link + "update this bench"): ROUND 11 (`notes-r11`) = version 13 of
+  https://claude.ai/artifact/6zn14ha4qswV1gmCb8v3qG, build `cde5af7`, same URL. End = his spots note verbatim + D;
+  end-sent = "The taxi to the store" (`#card=7&sent&taxi=park`, parked), his taxi note as `taxi/README.md` quotes it;
+  card 1 = the station blur; the rest unchanged. `build.cjs` now writes `out/taxi/` (taxi.js from the hash, .mp4, and
+  the ride's last step comes back as from the store: the review frame can't leave) + links the taxi art/sound; the
+  end-sent shot waits for the park. Published from a scratch dir of real copies (28 files: live.html, 11 shots,
+  taxi/**). Checked locally (Chrome 1280 + WebKit 390): 12 sections by title, pin, note, ✓, ▶ Live on the taxi
+  (parked, red; the ride ends back on the page, the cab gone), one frame at a time, reload, copy, no sideways scroll,
+  0 errors (2 favicon 404s on the local server only); a db probe on `notes-r11` written + deleted.
+- Then (Dan's round 11 dump, both pins on the taxi screen: ① on HOP IN · NOT NOW "remove it", ② on the red button
+  "I want it to flip harder faster"), `3378948`: the phone hides `.tx-cap` (the cab waits; The postcards again sends it
+  off); `data-taxi-flip="hard"` on the phone's stage = a 120 + 280 ms turn (was 240 + 460), perspective 400, a punch
+  and the house snap curve; page-b keeps its caption and quarter turns (states + parked pixels identical, old vs new).
+  `?taxi=arrive` rolls the cab in by itself (silent) for a review. check.cjs 46 + 40 pass, 0 errors. ROUND 12
+  (`notes-r12`) = version 14, same URL: the taxi screen's Live = `#card=7&sent&taxi=arrive` (it rolls in, stops, the
+  button flips), its note verbatim + what changed; the rest unchanged. Checked locally (Chrome 1280 + WebKit 390).
+- Then (Dan in chat, pinned on the red button in `notes-r12`: "the size of the button to the store should be in the same
+  size of the download free"), `94f2621`: taxi.js puts the red label in `.tx-label`; the phone lays an unseen "⤓ Download
+  FREE" under it in one grid cell, so red = that box to the pixel (WebKit + Chrome, three sizes; check.cjs asserts it at
+  five: 47 + 40 pass). page-b identical. ROUND 13 (`notes-r13`) = version 15, same URL, that note + what changed.
+- Then (Dan: "summon a tester ... technical UX and backend"): one Opus tester agent ran the phone page end to end
+  (WebKit at five sizes, real Chrome with sound, 4x CPU throttle, Slow 3G, races, bfcache, a11y; scripts + results in
+  the session scratchpad `tester/`): smooth (60 fps on almost every motion at 4x), no blockers, 3 majors, all three
+  confirmed here. On Dan's "fix", `a788990` (taxi.js + postcards.html): a stamp before taxi.js was in lost the cab
+  (now `window.gas2Mailed` + `window.gas2AC` from the tap, replayed on load); a slow line sent a lone tyre (now the
+  cab waits for its decoded art; 6 s past its time with none, no cab: the button turns red straight to the store);
+  Back replayed the squeal (now `pagehide` stops every sound); plus: the reset clears the ride's timers + dust, a
+  hidden page stops the engine + suspends the audio, a resize re-measures the cab, the stack holds still after an
+  accepted stamp, the store is `/store/#radio-roulette`. The tester's scenarios rerun clean (G1, E, I, Slow 3G,
+  hidden, stamp then ‹/›/flick, Back with bfcache: -12 dBFS tail -> one -42 dBFS blip); check.cjs 47 + 40 pass;
+  page-b identical. ROUND 14 (`notes-r14`) = version 16, same URL (build `a788990`). Left for Dan (not fixed): small
+  text + the hint over the cards at 375x553, a11y names/announcements, the cab's faint focus ring, the first record
+  tap's ~0.25 s freeze (Chrome on a Mac), the HEAR IT demo audio (1.75 MB) fetched at card 4, Esc = the cab gone.
+- Pushed on Dan's "push the page and commit" (2026-11-01): `c947709..f87379d` to `origin/feat/gas2-postcards` (17
+  commits, all `danavivi-83`; not main, no deploy). Dan's phone test: "done" (2026-11-01; `notes-r14` empty); the
+  Simulator's server (:4466) and the Wi-Fi link (10.0.0.103:4470) stopped. Next: Dan's word on merging to main (the
+  site), the open items in todo 34.
+- Open (Dan): (1) his word from the phone; more notes go to `notes-r10`;
+  (2) painted art still only on his OK;
+  (3) per-grade renders (Yoni) before any grade card plays its own sound; (4) later: this as page-b's phone layout;
+  (5) the taxi on his iPhone with sound (the iOS Simulator plays it through the Mac; the phone itself needs a Wi-Fi URL from this Mac, on his OK).
+- Then (Dan 2026-11-01: "merge to main", his pick "phone page only"): ONE squash commit on main with the phone page
+  (`postcards.html`, `postcards/**`), the shared `taxi/**` (main's + the phone), the postcards' DESIGN.md rules, lessons,
+  this entry and its todo section, the scene README lines. NOT in it: what the branch sits on from `revaudio-59`'s
+  `feat/gas2-drone` (the drone intro, the radio knob changes, 4 page-b edits: unreviewed, they stay on the branches).
+  The branch keeps the full history. Checked before the push: the postcards' check.cjs against the merged tree, and
+  main's page-b with the new taxi.js (states + parked pixels identical). The phone page is a mockup in `tools/`: it is
+  not on revaudio.net until it is built into the site (`src/`), a separate job.
+
+## 2026-10-31 — GAS 2 page: the taxi to the store (Claude Code `danavivi-a5`, Dan's Mac) — BRANCH `feat/gas2-taxi`
+
+Claim: OPEN `danavivi-a5`. Laptop page first (`page-b.html`), then the phone page. Handed over 2026-11-01: `taxi/**` -> `danavivi-83` (one script for page-b and the phone; the postcards entry above). Plan + state: `tasks/todo.md` top section.
+On `main` (2026-10-31, Dan: "commit push to main"): the taxi as ONE commit (rounds 1-5, squashed from `feat/gas2-taxi`),
+its line in main's `page-b.html` after the radio line, plus the store card anchors (`src/components/PluginCard.astro`,
+from `feat/store-rr-landing`). NOT in it: the drone intro (`revaudio-59`'s `feat/gas2-drone`, gated on CATCH10), which
+the taxi branch was built on top of; the taxi does not need it. The `tools/` scene is not part of the built site; the
+store anchors are (live on deploy). Next: the phone page (postcards).
+Files (mine): NEW `tools/_gas2-scene/taxi/**`; in `page-b.html` ONE `<link>` + `<script>` line (after the drone line),
+nothing else of page-b's; one README line pair; the todo section; this entry. Branched from `origin/feat/gas2-drone`
+@ `951936d` with no upstream; `revaudio-59` keeps its claim on `feat/gas2-drone` and its files.
+
+## 2026-10-28 — GAS 2 page: the drone intro, from scratch (Claude Code `revaudio-59`, laptop 1) — BRANCH `feat/gas2-drone` — SQUASH-MERGED TO MAIN 2026-11-01
+
+Claim: CLOSED 2026-11-01: squash-merged to main by `danavivi-83` on Dan's word (the 2026-11-01 laptop entry at the top).
+Was: OPEN `revaudio-59`. Scene + benches BUILT; Dan picked the DEFAULT camera (TOP); the REAL ART is in (gpt-image-2, 2026-10-28, ~$2 with the roof sign); sidewalk blockout props removed; real headlights; catch the car = the CATCH10 coupon ticket (Paddle code: Gil, RevTasks #193). Waiting on Dan's look.
+Files: NEW `tools/_gas2-scene/drone/**`; in `page-b.html` the `<link>` + `<script>` line (after the radio line) plus
+the coupon ticket (`.coupon` CSS after `.ticket.sent .stamp`, `#cpVeil` markup before `#plugVeil`, the `dr:caught`
+listener at the end of the IIFE) and the grade hover strip removed (`#gradeTip`), nothing else of page-b's; one README line pair; `tasks/todo.md` (the "GAS 2 drone
+descent" section); this entry.
+- Dan: a hovering drone above the station; scroll down = it comes down into the final scene, then GAS 2 pops and the right
+  side pops in fast "like it pops out of the screen". Every shot must feel like the final scene (same graphics, same vibe:
+  "not moving from one type of scene to another"). Side feature: a car right to left on load with a coupon on its roof.
+  Use the OpenAI key; plan first; present in dynamic HTML.
+- Plan (artifact, private: https://claude.ai/artifact/NnyBRQchpWfY541CZA1Unn): hover straight down at 30 m over the shop
+  front; the drop = nadir descent to the landing spot (flat ground = a zoom: each closer level painted from the crop of
+  the one above; roof / wall / pump as real-height layers); at eye height (1.33 m) a pure tilt-up rendered from the page
+  frame itself (exact, no ghosts); hand-off to the live page; readings pop. Car on the road in the hover shot, code as
+  real HTML text on a roof board. Checked in headless Edge: the tilt-up maths lands on `f6-v17` exactly.
+- Facts (2026-10-28): OpenAI `/v1/videos` 404 on GET + POST (no video); Higgsfield 0 credits; laptop 1's User-env
+  `OPENAI_API_KEY` works with credits (gpt-image-2 / 2.5 listed); no torch on laptop 1 (cv2, numpy, PIL yes).
+- Asked in the plan (answered below): Q1 keep the page's world; Q2 the coupon (a real Paddle code, for what); Q3 car route; Q4 old scroll numbers
+  as reference; Q5 hover angle; Q6 scroll back up. Cost cap asked: $15 (images only).
+- Dan's answers (2026-10-28): the page's own world; roof text "catch your compon" (written CATCH YOUR COUPON); car in
+  the hover shot; try three hover angles in a bench: straight down, 45 deg from the front, 45 deg + 45 deg round to the
+  right; scrolling up does not fly back; finish the scene first, then generate the real elements (OpenAI or Higgsfield).
+- Built (`tools/_gas2-scene/drone/`, README there): three.js r185 set (procedural placeholder textures), the page frame
+  re-rendered without the readings (`img/land.webp`, `tools/render-landing.cjs`), TOP / 45 front / 45 right paths,
+  TUNE -> Drone bench (an angle click flies it; Hover m / Length / Sway; settings in localStorage), the box car with the
+  roof board, the hand-off and the readings pop. TOP: nadir log descent onto the landing spot by u .42 with the gimbal
+  starting up from u .18, then a pure tilt (the quad switches on at -40 deg, unseen). 45 front / right = blockout
+  (ghosting near touchdown until the shop has textured proxies).
+- Checked (headless Edge, `tools/check.cjs` + `diff.py`; 1440x900 + 390x844; top, front, right): page after landing =
+  `?drone=0` mean 0.00 (max 27 / 4); exact landing frame vs the page scene with the readings hidden 2.55 / 1.47 (resampling
+  noise); no page errors or 4xx; classes, runway, layer gone; scroll 0. TOP after the last choreography change: one
+  bare-asphalt sample left (u .45). Not checked: WebKit, 1141x636, a real trackpad / phone, Dan's eye.
+- Open (Dan): (1) the hover angle; (2) cost OK for the art (OpenAI images; Higgsfield only for a video descent and it has
+  0 credits); (3) the coupon: a real Paddle code + what catching it does (no code until he names one).
+- Next: after (1) + (2), the art for the picked path: near road under the frame (the .66-.8 seam and the close-up
+  asphalt), roof + field aerial, a top-down car; then QA 5b (todo).
+- Camera bench (2026-10-28, Dan: "make me a bench to control the scene's camera angle", then "and the landing"):
+  `drone/cam-bench.js`, `?cam` (or TUNE -> Drone -> Camera). Drag the scene to turn the hover camera; sliders for the
+  hover (yaw, down angle, height, aim point) and the landing (lands at, turn from, arrive angle); Scroll slider + readout;
+  never hands over. The three angle paths became ONE path for any hover (straight line down onto the landing spot, the
+  camera turns to face the page looking down, then the pure tilt): every angle now lands exactly, the 45 paths' ghosting
+  is gone. Checked headless 1440x900: top / front / right / a custom camera (yaw -60, down 30, 20 m, lands 50 %) all land
+  = `?drone=0` (0.00) and their landing frames 2.55 vs the page scene; the bench drags, saves, scrubs to the landing and
+  back; no page errors. Weak spot for every angle: bare road around 30-50 % of the scroll (the dive onto the road before
+  the tilt-up): Dan can shorten it with Lands at / Turn from; the art (near road) fixes the rest.
+- Dan (2026-10-28): "in the end we liked the default" = TOP (yaw 0, down 90, 34 m, aim -4 / -6, lands at 42 %, turn
+  from 18 %, arrive 40): nothing to bake, the code defaults stand. Asked OpenAI or Higgsfield for the best result:
+  recommended OpenAI images (top-down views of flat ground = an AI orthophoto reads as a real drone shot; edits from the
+  page frame keep the light; keeps his camera path + the exact landing; credits there). Higgsfield rechecked: 0 credits,
+  free plan; its video (first/last frame) would lose the exact hand-off and the bench path, garble the roof text, and
+  need an image-sequence scrub (MBs). Art list + cost asked: aerial orthophoto (roof, field, road), the close road, the
+  car top-down (transparent), ~8-10 images with retakes, ~$3-5.
+- Art DONE (Dan: "approved", 2026-10-28): 3 gpt-image-2 images, one take each (~$1.50 est. at $40/M output tokens:
+  12.7k + 12.7k + 11k): the aerial (3072x2048 over an ortho guide of the set, the page frame as reference), the close
+  road (over the aerial's crop, the photo's paving as reference), the car (2 takes, magenta, keyed; take 1). Pipeline +
+  commands: `drone/README.md` "The art"; originals q95 in design-assets `gas2-drone/` (`504c75e`). Post fixes: lane
+  edge softened, close road toned to the aerial (no patch in the hover), the AI's orange lamp pool on the road tamed to
+  the page photo's road colour (seam: near 123/97/72 vs photo 122/97/80). Model facts: gpt-image-2 takes any size in
+  multiples of 16 (3072x2048 worked), no transparent background.
+- Checked (headless Edge, `check.cjs` top, 1440x900 + 390x844): landed = `?drone=0` mean 0.00; landing frame 2.55 /
+  1.47 (unchanged); no errors. Weight now: three 744 KB + land 703 + aerial 569 + car 103 KB (+ near 1.1 MB after the
+  hover shows) = ~2.1 MB before the hover, ~3.2 MB in all. Not checked: WebKit, a real phone.
+- Then (Dan: "make it", "do what you think is right", 2026-10-28): the roof sign is IN the car photo now (masked
+  gpt-image-2 edit over the old drawn board, 2 takes, take 1, ~$0.50; pasted back onto the approved car, so the car and
+  its crop are unchanged; `drone/tools/sign-guide.py`, `prompt-car-sign.txt`, README "The art"); the drawn board + frame
+  box are gone from `world.js`. Spelling read at full size: CATCH YOUR / COUPON, nothing else. Original q95 in
+  design-assets (`2393679`). Readable in the hover at 1440 and at 390 (phone shots taken while the car crosses).
+  The sidewalk blockout props (pump, globe, radio, bin, chalkboard boxes) are out too (Dan: "delete the css", a
+  screenshot of the descent; `b0ea903`): the page frame has the props after the hand-off.
+- Checked again: landed = `?drone=0` mean 0.00 (1440 + 390); landing frame 2.55 / 1.47; no errors. Car 169 KB (was
+  103). Art spend in all: ~$2.
+- Then (Dan: yes, replace them): the car's headlight beam and shadow are no longer drawn shapes. Beam = two soft cones
+  from the lamps, light falling off with distance, blended as road * (1 + beam) so it lights the asphalt (cracks stay
+  dark); shadow = a soft contact shadow hugging the footprint (dusk: no sun shadow). Procedural in `world.js`, no new
+  file. Landing still mean 0.00 (1440 + 390), no errors.
+- Coupon (Dan, 2026-10-28: "10% coupon on the whole site"; picks: code CATCH10, Gil creates it, a ticket + copy):
+  catching the car (click / tap) opens a coupon ticket in the page's service-ticket look (`#cpVeil`: YOU CAUGHT IT,
+  CATCH10, 10% OFF THE WHOLE STORE, a COPIED stamp) and copies the code. Checked (headless Edge): a miss opens nothing,
+  a hit opens it with the clipboard = CATCH10 at 1440 (click) and 390 (tap), Escape closes, no errors.
+  The Paddle discount is NOT created yet: Gil, RevTasks #193 (urgent, Sales; bell only, a raw insert sends no email)
+  + shared `collaboration/STATUS.md` (`b20a848`). This page must not go live before the code exists.
+- Open: Gil's CATCH10 in Paddle; WebKit / a real phone; Dan's look.
+
+### Session end (2026-10-29, `revaudio-59`, close-session) — claim stays OPEN (waiting on Dan's look)
+
+- State: branch `feat/gas2-drone` = origin (0 ahead / 0 behind), clean before this handoff edit. Commits this
+  session: `7bb0c43` plan, `fd60c72` scene + bench, `3b7568e` camera bench, `f7c8a86` TOP picked, `c2c7280` the art,
+  `b0ea903` props out, `ae41fa8` roof sign, `2081379` beam + shadow, `64f19a3` catch = coupon. Elsewhere, all pushed:
+  design-assets `504c75e` + `2393679` (art originals), shared `b20a848` (STATUS: Gil, CATCH10). RevTasks #193 (Gil, urgent).
+- Unverified: WebKit / Safari and a real phone (only headless Edge so far); Dan has not seen the beam, the shadow or
+  the coupon ticket yet (shots sent, last signal before them: "do what you think is right"); `check.cjs` was not re-run
+  after `64f19a3` (event handlers only; the catch test showed no page errors). The car drives once, ~6 s after load:
+  offered a replay button, no answer.
+- Background (laptop 1, die with the session): `python -m http.server` on 4464 (this worktree's `tools/_gas2-scene`,
+  PID 17152), 4462 (worktree `gas2-page-view`, detached `0b58cb0`, PID 38184), 4461 (GAS2 `Source/ui/public`, PID
+  38924), 4463 (the plan page in the session scratchpad, PID 45096). Kill: `Stop-Process -Id <PID>`.
+- Decide next: (1) Dan's look at beam / shadow / coupon; (2) a "drive again" button or not; (3) going live = merge to
+  main only after Gil's CATCH10 exists in Paddle and Dan says push (`tasks/todo.md` 4e).
+- Commit: `docs(gas2-drone): session-end handoff (revaudio-59)` — this file only.
+- Cleanup: worktree `gas2-page-view` (detached at `0b58cb0` = the page right after the old intro was deleted) was
+  served on 4462 to view the page as it was: remove it when no session uses it (`git worktree remove`), not done here.
+- Memory: shared `project_revtasks_app.md` + Sales section id = 4 (uncommitted in the shared clone, which is behind 2).
+- Then (Dan, 2026-10-29, a screenshot of the strip under the wall sign: "lets remove this section of it"): the grade
+  hover strip (`#gradeTip`: "PREMIUM · thick lows, clear mids, silky air, glued · the signature") is gone from
+  `page-b.html` with its CSS, its hover handlers and the copy array; a click on REGULAR / PREMIUM / RACE still picks the
+  pump's key. `page-a.html` still has it (not asked). Checked headless 1440: hover PREMIUM = no strip, click RACE =
+  on, no errors. The tip was hidden at rest, so `img/land.webp` (the landing frame) is unchanged.
+- Then (Dan, 2026-10-29: "let's work on the player's knobs, they need refining"): new radio knobs from the team's
+  private knob tool (how, server, recipe: shared repo `.handoff-archive/HANDOFF-2026-10-29-gas2-radio-knobs.md`;
+  `player/**` is Yoni's radio claim from `revaudio-cd`, touched here on Dan's word). Dan's look: machined metal body,
+  copper-brown spun cap, white line index -> `player/img/knob-radio.webp` 653 KB (was 518); the strip's box is
+  unchanged, so radio.css keeps its numbers. `drone/img/land.webp` re-rendered. Checked headless: a drag turns the new
+  strip, no errors; `check.cjs` top 1440 + 390: landed mean 0.00, landing frame 2.56 / 1.47. Dan saw it on the page:
+  "looks very good" (2026-10-29).
+- Then (Dan, 2026-10-29: "an indicator at the bottom of the hover that tells the user to scroll down; give me options
+  in a bench"): `drone/cue.js` (+ drone.css "the scroll cue", 3 lines in run.js): bottom centre of the hover, in 1.4 s
+  after the hover shows, out by 4 % of the scroll; bench `?cue` (panel top left): Chevrons (default until he picks) /
+  Mouse (Swipe up on touch) / Ticket ("SCROLL TO LAND", page paper) / Fuel drop / Altimeter (live height, fades by 90 %)
+  / None. Checked headless 1440 + 390: every look shows, chevrons gone after 1.2 screens and back at the top, the
+  altimeter 34 -> 2 m; landing still mean 0.00 / landframe 2.56 / 1.47; no errors. Dan didn't see it at first: his
+  browser kept the old run.js (plain `http.server` = heuristic cache); a no-store server on 4465 fixed it (scratchpad
+  `serve-nostore.py`; open the page there). Dan: "perfect, chevrons": the other four looks, the bench and `?cue` are
+  out (cue.js = the chevrons only). Checked 1440 + 390 on 4465: in at the hover, 0 after .6 screen, back at the top,
+  no panel, no errors; landed = `?drone=0` mean 0.00.
+- Then (Dan, 2026-10-29: "a bench only on the light on GAS 2 ... on the GAS on the last page of the site"; a first
+  take benched the plugin's own 3D pump instead, GAS2 repo branch `bench/pump-light`, deleted 10-29 on Dan's word): NEW
+  `tools/_gas2-scene/light-bench.html` (+ its README line). The real page (`page-b.html?drone=0`) in a frame, panel
+  docked right: LAMP (= `--sp-l`, the `.pumpLit` soft-light opacity), LAMP MIX (soft-light / overlay / screen), LAMP
+  REACH (the gradient's 42 % / 88 % stops x reach), LAMP COLOUR (amber -> white), PUMP BRIGHTNESS / CONTRAST
+  (`--sp-b` / `--sp-k`), SHADOW BEHIND (`--sp-s`); LAB / SHIPPED (A), ZOOM x1.5 / x2 on the pump, START, EXPORT.
+  SHIPPED = page-b's Spotlight D, read from the file. page-b.html untouched. Checked headless: the frame at the start
+  values = the plain page pixel for pixel (1280 x 915, max diff 1 / 255); a lamp change shows; no errors. Open it on
+  4465 (`serve-nostore.py`): http://127.0.0.1:4465/light-bench.html. Next: Dan EXPORTs -> "apply" = the numbers into
+  page-b's `.pumpLit` / `.pumpCut` CSS + the Spotlight D, then re-render `drone/img/land.webp` (the pump is in the
+  landing frame) + the landing check; the bench goes once he has picked (as `?cue` did).
+- Then Dan pasted his EXPORT (2026-10-29 11:54: lamp .67, overlay, reach 1.26, colour 1 = amber, pump 1.12, contrast
+  1.08, shadow .21; was .3 / soft-light / 1 / 1 / 1.04 / 1.02 / .3) = apply: page-b `.pumpLit` overlay + stops 53 % /
+  111 % (42 / 88 x 1.26); TUNE → Spotlight D = { light .67, pump 1.12, contrast 1.08, shadow .21, fade .15 }, contrast
+  now its own slider (was 1 + (pump - 1) / 2), storage key spot3 -> spot4 (a browser's old TUNE numbers would hide the
+  new defaults). Checked: the page = the bench at his values (1280 x 915, max diff 1 / 255; vars .67 / 1.12 / 1.08 /
+  .21). `drone/img/land.webp` re-rendered (748 KB); check.cjs top 1440 + 390: landed vs ref-page mean 0.00 / 0.00,
+  landframe 2.57 / 1.42 (was 2.56 / 1.47), no errors. `light-bench.html` + its README line removed (in git at `a81dfa9`).
+- Then (Dan, 2026-10-29: "new knobs for the jukebox [= the radio] that fit the scene's lighting and vibe better"): four
+  new looks; Dan: "wear out more the knobs and more like the shipped one" -> round 2 = the shipped knob + wear (worn /
+  heavy / very heavy) + heavy in the scene's lamp light. Dan picked "HEAVY, LAMP LIGHT" (`247a7a7`), then "WORN
+  replace" (`4fc6ddd`): `player/img/knob-radio.webp` = WORN (scuffed cap, rim rubbed to brass, dirt, a chipped line;
+  the shipped light; 869 KB; same box). `drone/img/land.webp` re-rendered each time; check.cjs top 1440 + 390: landed
+  mean 0.00 / 0.00, landframe 2.58 / 1.42. Recipes, candidates and their pick bench stay private (the shared note
+  above); none of them enters this repo.
+
+### Session end 2 (2026-10-29 evening, `revaudio-59`, close-session) — claim stays OPEN (CATCH10, then Dan's push word)
+
+- State: branch `feat/gas2-drone` = origin (0 / 0), 24 commits ahead of origin/main, 58+ behind (main moved on; the
+  go-live merge conflicts in `tasks/handoff.md` + `tasks/todo.md`, and `player/radio.css`'s knob comment: take this
+  branch's). Today: `1d0f3c5` grade strip out, `9815ee6` / `b249801` / `ee2356f` radio knobs (ALU), `4ac3aad` /
+  `7d36b36` scroll cue (chevrons), `a81dfa9` / `b527eaf` pump light (bench, then Dan's pick), `247a7a7` / `4fc6ddd`
+  radio knobs WORN, close notes, `e55f953` private tool files out, `10eef58` Safari coupon fix. Shared (private, all
+  pushed): the radio knob recipes + the moved knob tool port + the private part of these notes.
+- Dan's decisions at the close (2026-10-29), all done: (1) the private knob tool's files left the PUBLIC repo: main
+  `e1123fe` (pushed on his word "1א": 2 files out, docs + comments neutral; Pages deploy ran) and this branch
+  `e55f953`; old versions stay in git history (his pick, no rewrite). At go-live: squash-merge (the branch's commit
+  subjects name the tool), then ask Dan whether to delete the remote `feat/gas2-drone`. (2) GAS2 branch
+  `bench/pump-light` + worktree `GAS2-light` deleted (local + remote). (4) worktree `gas2-page-view` removed; the
+  local knob candidates folder + its `.git/info/exclude` line deleted; servers stopped except 4465.
+- (3) Safari: Playwright WebKit 26.6 (Safari's engine) at 1440 + 390 (iPhone size, touch): the drone top, mid-descent,
+  landed and the coupon ticket look like Chrome, no errors, pump light overlay + filter, knobs, `cqw` all applied.
+  Found + fixed: `.coupon .cp` had `user-select: all` without `-webkit-` while html sets `-webkit-user-select: none`, so
+  in Safari the code could not be selected by hand when the auto copy fails (`10eef58`). Owed: Dan on a real iPhone at
+  http://10.0.0.103:4465/page-b.html (same Wi-Fi). Over LAN http the page is not a secure context: the auto copy
+  ("Copied") does not run there, by design of the browser; the code is selectable. Not covered: Safari <= 15 / iOS
+  <= 15 (no `cqw`, the layout would break).
+- **CATCH10: Dan, 2026-10-29: "today at 18 the coupon will place"** = Gil creates it in Paddle today at 18:00 (RevTasks
+  #193). After that: check the code works at checkout, then merge to main only on Dan's push word (`tasks/todo.md` 4e).
+  The claim stays with `revaudio-59` until then; if this session is gone, the go-live session takes it (its name here).
+- Background (laptop 1): `serve-nostore-lan.py 4465` (PID 26708, this scene, bound to 0.0.0.0 for the phone check,
+  no-store; the Wi-Fi profile is Public and python.exe has an inbound allow rule): after the phone check stop it
+  (`Stop-Process -Id 26708`) or rebind to 127.0.0.1. Not ours: `python -m http.server 8811` (PID 63816, another
+  session's Drift UI server).
+- Cleanup left: the main clone (`C:/RevAudio/Website/revaudio-website`, at `96c1ee7`, another session's checkout) still
+  holds the old knob tool files until it is pulled; its ignored leftovers under `player/` go by hand then.
+
+## 2026-10-29 — Blog: "How to glue a mix with saturation" (Claude Code `revaudio-59`, Yoni's laptop 2) — PUSHED TO MAIN = LIVE 2026-10-29 (Yoni: "deploy it")
+
+Claim: CLOSED 2026-10-29. File: `src/content/blog/how-to-glue-a-mix-with-saturation.mdx` (new). Commit `111dd5e` on top of origin/main `87dc172`, made in a scratch worktree off origin/main because this clone is 3 ahead / 127 behind (the 3 ahead are another session's; untouched, not pushed).
+- Ask (Yoni): a newsletter article on glue saturation, how shaving peaks with saturation glues a mix; keep the most-searched keywords. Written as a blog post the newsletter can link to: https://revaudio.net/blog/how-to-glue-a-mix-with-saturation/
+- Keywords (no volume tool; picked from the phrases that own Google's results): how to glue a mix / glue a mix together, mix bus saturation, saturation vs compression, soft clipping, crest factor, glue compressor; two question H2s. Closes on the free GAS (/gas/).
+- Checked: build green (30 pages, post in the blog index + sitemap), tanh table numbers computed, no em dashes; Pages deploy + smoke test green, live URL 200.
+- Not done: figures (ideas in an MDX comment at the top of the file: soft-knee curve, crest before/after); the short newsletter email (60-120 words, `shared/marketing/2026-10-18-drift-beta-series/VOICE.md`) linking to it.
+- Open (Yoni asked for date + author on every article; both already exist: post header "By the RevAudio team · <date> · N min read" + BlogPosting JSON-LD author/datePublished in `src/pages/blog/[slug].astro`). Offered, no answer yet: (1) make that byline line brighter / bigger, (2) add "By the RevAudio team" to the blog list cards (`src/pages/blog/index.astro`).
+- Cleanup owed: stale `.git/worktrees/site-wt` metadata (Permission denied on prune, same as the older entries listed 2026-10-19).
+
+## 2026-10-28 - Cart offer note + trial-form spam hint, branch `mid-trial-offer` (Claude Code `revaudio-9a`, Yoni's laptop 2) - PUSHED TO MAIN = LIVE 2026-10-29 (Yoni: "push deploy and OK")
+
+Claim: CLOSED 2026-10-28. Worktree `Website/revaudio-website-midoffer` off origin/main `fab1336`, branch pushed (`9bc9576`, `524b67f`).
+- `9bc9576` Cart.astro: the drawer note said "Your one-time 10% off <plugin>" for any `?offer=` code; the licence worker's new mid-trial offer (RevLimiter repo `590211d`, RevLimiter day-9 email, 20% / 48 h) needs "Your personal discount on <plugin> is applied at payment." Ship together with that worker deploy (website first, then the worker).
+- `524b67f` TrialGateModal / TrialPlates / downloads.astro: "Not there in a minute? Look in Promotions or Spam." after a sign-up (51% of RevLimiter trial sign-ups never download from the link email, leads 2026-10-28).
+- Checked: `npm run build` green; the new strings are in dist. Not checked in a browser.
+- Do NOT pull into the main checkout as is: it holds another session's 3 local commits (`a5fa319` lessons, conflicts with origin on `tasks/lessons.md`); a pull --rebase from this session was aborted untouched.
+
+## 2026-10-19 — DRIFT #hear: guide the visitor step by step, branch `drift-hear-guide` (Claude Code `revaudio-ef`, laptop 1) — PUSHED TO MAIN = LIVE 2026-10-28 (the user: "commit ודחוף לאתר" = commit and push to the site)
+
+- 2026-10-28 (laptop 1, this session): the engraved wall (`tasks/todo.md` top section, K1-K2 + E1-E6) was picked on
+  `bench/drift-hear-bench.html`, folded into DriftHear.astro / drift.css / hear.ts (`acaf46e`) and verified on the
+  built dist (geometry = the bench within 0.5 px at 1440 / 390, 25-width overlap check, coach fit at 14 widths, fader
+  + DRIFT cap driven, Edge + WebKit). Then origin/main (111 commits: Halloween skin, GAS 2 pages, DRIFT dates) merged
+  in (conflicts only in this file + lessons.md, both kept), rebuilt, the checks re-run, and pushed to main. What went
+  live is the whole branch since 10-19: the guide, the segment LCD, step 2's lit cap, the HEAR IT hero link and the
+  wall. Owed: a real iPhone / Safari listen (Playwright's Windows WebKit has no AudioContext); the tidy pass in
+  todo E5; `public/drift/knob3d-drift-65.webp` is unused now. The section bench now double-applies on the folded page.
+
+Claim (owner `revaudio-ef`): CLOSED 2026-10-28 (pushed). History: closed at rv close 2026-10-26, RE-OPENED the same day by `revaudio-ef` for the step 2 fold:
+`src/components/drift/DriftHear.astro`, `src/lib/drift/hear.ts`, `src/components/drift/DriftHero.astro`
+(the HEAR IT link), the #hear + `.d-hero-hear` rules in `src/styles/drift.css`, `src/lib/drift/lcd.ts` + one line of
+`src/lib/drift/bus.ts` (PAN via lcdText), `public/fonts/drift/DSEG14*`, `bench/drift-lcd-bench.html` + `bench/drift-lcd/`,
+`bench/drift-play-bench.html` + `bench/drift-play/`, `bench/drift-panel-bench.html` + `bench/drift-panel/` +
+`bench/serve-panel-bench.py`, `DESIGN.md` §9 (two lines), `tasks/todo.md` (top sections),
+`tasks/drift-player-plan.md` (Round 9), `tasks/lessons.md` (three entries), this entry. Worktree
+`Website/revaudio-website-hear` (off origin/main `d0168a6`; `node_modules` = junction to the main checkout's).
+- State at rv close 2026-10-26: 7 commits on the branch (`9133d86`..`cca3cc4`) + this close commit. The LCD is APPROVED
+  on the page (user: "מגניב נראה קול רצח" = looks killer). Step 2 (PLAY / STOP) has a bench,
+  `bench/drift-play-bench.html` (serve the worktree root on 8796): 0 today's box, A chrome bezels + 24 LED bars round
+  PLAY (step 3's language; recommended), B pilot lamps, C a lit PLAY cap; STOP stays unlit dark red in all three (one
+  race-red per viewport). The user picked C ("C", 2026-10-26): FOLDED into the page and verified (`tasks/todo.md`
+  "step 2", P3 + P4): heights identical at 11 widths, all guide states, reduced motion, focus ring (now round on every
+  cap, #drive's too). The user has not seen it on the page yet.
+- Then (2026-10-26) the panel under the player: three worn / crashed plates with Japanese + graffiti from gpt-image-2,
+  on `bench/drift-panel-bench.html` (`python bench/serve-panel-bench.py`, 8797). WAITING: the user's pick (`tasks/todo.md`
+  top section, K2-K4). The OpenAI key on laptop 1 was replaced by the user that day (the old one was rejected).
+- Then resume the one-by-one review of the guide at item 3 ("3 PUSH DRIFT" + the ORIGINAL / DRIFT labels), then 4
+  loading state, 5 checker crop, 6 試聴 off on phones, 7 HEAR IT hero link (item 2, the breathing, is covered by step 2).
+- origin/main moved 46 commits past this branch's base `d0168a6` (seen 2026-10-26), DRIFT pages among them (`5007e66`
+  DRIFT stays free on /drift, `fb3941f` feedback-form dates). Before "push": rebase or merge onto origin/main, resolve
+  this file by hand, rebuild, re-run the #hear checks (heights, guide states, coach fit, reduced motion).
+Plan, findings, checks: `tasks/todo.md` top section.
+- What: opens on the ORIGINAL; the LCD's left header cell coaches (PRESS PLAY -> PUSH DRIFT -> PUSH AGAIN: ORIGINAL
+  -> NOW PLAYING); the next step's key + control breathe (PLAY's old glow), the others rest dim; ORIGINAL / DRIFT
+  under the button, the one you hear lit; step 3 = "3 PUSH DRIFT"; the checker strip no longer runs under the
+  title (<= ~770 px), 試聴 off on phones; hero: a "HEAR IT" key under the tagline (desktop + 601-1099, not phones).
+- Then the screen became a car-stereo segment LCD (DSEG14 + ghost cells + a segment bar-graph waveform; user's pick B
+  on `bench/drift-lcd-bench.html`, serve the worktree root on 8796). Same heights; checks in `tasks/todo.md` (LCD).
+- Answers (laptop 1 user, 2026-10-19): default ORIGINAL, "3 PUSH DRIFT", no HEADPHONES tag, hero link yes.
+- Next: the user looks at it (local dist: `python -m http.server 4417 --bind 127.0.0.1` in the worktree's `dist/`,
+  then http://127.0.0.1:4417/drift/), then "push" = merge to main = live (only on the user's word). A real iPhone /
+  Safari listen is still owed.
+- Note: the main clone's `tasks/handoff.md` was claimed by `revaudio-2a` (uncommitted), so this claim lives on the
+  branch; expect a small merge in this file at push time.
+
+## 2026-10-26 - /drift/feedback + survey: the form keeps DRIFT free (Claude Code `revaudio-67`, Yoni's laptop 2) - goes live WITH the worker deploy
+
+Claim: CLOSED 2026-10-26. Files: `src/pages/drift/feedback.astro`, `src/data/beta-survey.ts` (intro + thanks, EN + HE; the HE intro still said Nov 1), `src/data/site.ts` (comment).
+- Pairs with licence worker `ec24229` (the form mints a 100%-off DRIFTFREE code). Push together with its deploy, never before (the page would promise free while the worker still mints $30 off).
+- Checked: build green; dist /drift + /drift/feedback: no $30 / $39.
+
+## 2026-10-26 - DRIFT: the feedback form keeps DRIFT FREE (was $39) on /drift (Claude Code `revaudio-67`, Yoni's laptop 2) - PUSHED TO MAIN = LIVE
+
+Claim: CLOSED 2026-10-26. File: `src/data/drift.ts` (`driverPriceUsd: 0` = FREE; `driverValue()` feeds the road chip + the feedback route).
+- Ask (Yoni): the checkpoint gives DRIFT free, not $39; scope "email + website" (email 01 = revaudio-shared `6bb43b2`).
+- Left as is on purpose: `/drift/feedback` + `beta-survey.ts` still say "$30 off code" / "$39 with this code", because that is what the worker really mints today. They change together with the worker + a 100%-off Paddle code (Yoni's "deploy the worker").
+- Checked: build green; /drift dist has no $39; road screenshot at 1280 = FILLED THE FORM FREE.
+
+## 2026-10-26 - DRIFT dates moved: feedback form closes Fri Nov 20, on sale Tue Dec 1 (Claude Code, Yoni's laptop 2) - PUSHED TO MAIN = LIVE (Yoni: "push deploy")
+
+Claim: CLOSED 2026-10-26. Files: `src/data/drift.ts` (feedbackClosesLabel, releaseLabel, header note), `src/data/beta-survey.ts` (intro), `src/pages/drift/feedback.astro` (code fine print), `src/components/drift/DriftHero.astro` + `DriftKeep.astro` (comments; the DriftKeep one ships in the HTML).
+- Ask (Yoni): the form date Oct 24 -> Nov 20, the sale date Nov 1 -> Dec 1 (so the road stays in order). Same change in DRIFT email 01 (shared `01f3c26`).
+- Checked: build green; dist has no Oct 24 / Nov 1 left; screenshots of the road (NOW / NOV 20 / DEC 1) and the hero (ETA DEC 1) at 1280.
+- Owed: the Cart handoff below says "DRIFT on sale Sun Nov 1" in `plugins.ts`: that day is now Tue Dec 1. The licence worker's DRIFT emails (form code, trial sequence, email 01 text) still say Oct 24 / Nov 1 (RevLimiter repo `worker.js`).
+
+## 2026-10-26 — GAS 2 page: the drone intro (hover above the station, scroll = descent, land, readings pop) (Claude Code `danavivi-19`, Dan's Mac) — BRANCH `feat/gas2-page`
+
+Claim: CLOSED 2026-10-26 (`danavivi-fb`): DELETED on Dan's word. He flew the finished version and said "this is not good,
+clear this, I'll make it from scratch", then picked "delete the drone intro": `tools/_gas2-scene/flight/**` removed, its
+`<link>` / `<script>` line out of `page-b.html`, its lines out of `tools/_gas2-scene/README.md`. Everything below is history;
+the last state is in git (the commit before the deletion, `6836c35`). Kept in page-b (not the intro's): the `.scene`
+half-pixel fix and the TUNE / bench-note opt-in (`?dev` or T). No reason given beyond "not good": ask Dan what he wants
+from the new one before building.
+(Was: OPEN `danavivi-fb`, taken over 2026-10-26 from `danavivi-19`, which Dan closed: "continue from where you stopped".)
+Files: NEW `tools/_gas2-scene/flight/**`; in `page-b.html` ONE `<link>` + `<script>` line in
+`<head>` (after the radio line), nothing else of page-b's; one README line pair in `tools/_gas2-scene/README.md`; this entry.
+- Dan: "the hovering drone scene for GAS2 page ... above the gas station and then when the user scroll down ... it goes to the
+  main page that we have right now. Then all the readings ... on the right side ... pop out. After it the user lands on the page."
+- No AI video: Higgsfield = 0 credits (free plan) on this connector, and OpenAI shut the Sora 2 / Videos API on 2026-09-24
+  (checked: `/v1/videos` 404, docs say so). So the flight is a real-time three.js fly-through of the station as a 3D set
+  painted by two photos (`flight/README.md`): the page's own frame at touchdown (exact) + a new hover aerial (gpt-image-2,
+  painted from the set's own blockout, so it lines up). Spent: OpenAI images only, 15 gpt-image-2 images (~90k output tokens, ~$4).
+- Flow: hover (sway; "SCROLL TO LAND" after 1.8 s still) -> 4-screen scroll runway = descent, gimbal tilts up into the
+  sunset, glide in -> touchdown on the page frame -> canvas fades onto the page -> readings pop (GAS2 overshoot, its rule
+  draws, the line rises, the button pops, "Fill it up." writes on) -> runway folds away, scroll back at 0.
+- Checked (headless, DPR 2): Chromium 1141x636 + 1440x900 + 390x844, WebKit 1141x636: the flight runs, no console errors;
+  last frame vs the page 1.7/255 (webp); after touchdown the page = `?flight=0` (0.00 difference), footer back, scroll 0;
+  reduced motion = no flight. Frame time while scrolling: Chromium ~8 ms, WebKit ~17 ms (one 129 ms first-scroll hitch).
+- Not checked: Dan's real Safari by eye (opened for him), a real trackpad feel, a real phone.
+- Open (Dan's word): (1) the look of the hover shot (a lone lit shack in the dark; regenerate = ~$0.6 / 2 takes); (2) the
+  "SCROLL TO LAND" line (DESIGN.md §6 says no UI chrome over a scene: it is text, not a frame; cut it if he says);
+  (3) runway length / sway (TUNE → Flight, COPY); (4) DESIGN.md rule for the intro once he signs it off.
+- Others on this branch: plain `page-b.html` now opens with the flight; `?flight=0` skips it, `?rbench` (the radio bench)
+  skips it too.
+- Dan after the first round: "the scroll feels amazing", then "go 1" = the hover shot should read as a real 1950s station
+  from above. Done (`roadside.js`): a lit GAS2 pole sign (the readings' lockup in Oswald on cream enamel, neon start, a
+  rare buzz, its light on the lot) and a telephone line from the highway back into the desert LEFT of the station (first
+  routed along the highway: its wires crossed the shop front on the way down, so moved); both 3D objects, kept out of the
+  photos, never in the touchdown frame. Roof: parapet + two vents (a stove pipe poked above the roof line; removed).
+  Three hover lights to pick from (TUNE → Flight → Blue / Last light / Lamp, `?air=`): 🔴 the website OpenAI key
+  (`tools/.openai_key.local`) came back "invalidated" (401 token_invalidated) mid-session, so the planned re-paint from
+  the richer blockout did not run; Last light + Lamp are local grades of the Blue aerial (`tools/mood-grade.py`).
+  Re-checked: Chromium all three lights + WebKit, no errors, the page after touchdown = `?flight=0` (0.03).
+- Open (Dan's word): (5) which light; (6) a new OpenAI key, then re-paint the picked light from the richer blockout
+  (`lab.html?b=0&s=1&minres=30&road=0`, grade, `tools/gen-aerial.sh` with MOOD/EXPO; ~$0.6 for 2 takes).
+- `danavivi-fb` took over (Dan: "continue from where you stopped" ... "the drone view scene for gas 2 page"):
+  - (5) DONE, Dan picked **Blue** (the same sky the drone lands in). Last light + Lamp, their TUNE buttons, `?air=` and
+    `tools/mood-grade.py` are gone: one hover photo, `img/aerial-blue.webp`.
+  - (6) 🔴 BLOCKED on money: the key in `~/.zsh/openai.zsh` works (the `tools/.openai_key.local` one is dead, 401), but the
+    OpenAI account has no credits (`credit_balance_exhausted`); Higgsfield is at 0 too. `gen-aerial.sh` / `gen-free.sh`
+    now take `$OPENAI_API_KEY` first; the prompt no longer asks for a stove pipe. Once there are credits: blockout + mask
+    (lab-shot, identical to the old prep) -> `grade-blockout.py ... blue` -> `zsh -c 'source ~/.zsh/openai.zsh && OUT=<dir>
+    bash tools/gen-aerial.sh <h-blue.png> Nblue 2'` (~$0.6) -> check the shift (0 px) -> `cwebp -q 92 -m 6` over
+    `img/aerial-blue.webp`.
+  - Fixed: a dark "ghost" streak in the sky over the canopy in the last stretch (u 0.82-0.97). The line-of-sight test
+    used box steps for the slanted roof end and the roof's edge sat 0.2-0.27 m short of the photo's, so A's dark canopy lip
+    rode on the sky. Now the roof + sidewalk are exact prisms there, and the roof's slanted edge is fitted to A.
+  - Item 3 of the "what's next" list, the house's left end lived in: as the drone closes in, the front wall left of the
+    window + the curb hand over from the blown-up hover photo (~28 px/m) to the fill (stucco with grime, eave shadow and
+    falloff; a panelled side door with a brass knob; concrete curb). A gooseneck lamp over the door (`roadside.js`) lights
+    the wall, sidewalk and dirt; the door's four lights show the shop's interior, cut from A.
+  - Checked (headless, DPR 2): page-b in Chromium 1141x636, 1440x900, 390x844 + WebKit 1141x636: no console errors,
+    lands, the page after touchdown = `?flight=0` (0.000); lab u=1 vs `land.webp` 0.010 (max diff 0 against before the
+    door work). Not checked: Dan's Safari by eye, a real phone.
+  - Open (Dan's word): (6) OpenAI credits, then the Blue re-paint; item 2 (the pump's own cut-out layer, one more image
+    ~$0.3); item 4 (a DESIGN.md rule for the intro, the phone pass, merge to main) once he signs the look off; (2) and (3).
+  - Dan then: "finish the scene so it will be ready for publish ... check pixel by pixel, frame by frame". QA = 41 frames
+    of the path at 1536x1024 by eye, a 101-step pop scan (none), both hand-offs read straight off the canvas, page-b in
+    Chromium 1141x636 / 1440x900 / 390x844 + WebKit 1141x636. Ghosts found and fixed (all in `world.js` + `flight/README.md`
+    "Ghost hunting"): the porch (a grey see-through box u 0.05-0.8: the hover photo's porch was a painted wall; now the
+    set's own concrete floor mid-flight, and the hover photo's porch patched from the set's render, `tools/patch-porch.py`);
+    A's background plate painting the dirt behind the porch all flight long (a ghost stick, now last stretch only); the
+    chalkboard's frame + legs riding onto the floor behind it (now A's own board cut-out, `img/land-chalk.png` via
+    `tools/make-chalkmask.py` + `render-landing.cjs` CHALK=bare|off); blown-up photos hand over to the fill (2-4.5x).
+  - Numbers: touchdown, the page after = `?flight=0` 0.000 in all four; the last canvas frame vs the live page 3.8/255 at
+    1141x636 @2x (a lossless render of the page at 1536 already differs by 3.3: fonts / filters at another size), 2.9 at
+    1440, 1.6 on the phone; lab u=1 vs `land.webp` 0.010; hover, still -> first canvas frame 0.7 (Chromium) / 2.5 (WebKit,
+    filtering, < 1 level brighter), the 3D sign / poles / door lamp the only real differences. Frame time Chromium 8.3 ms
+    median at every size; headless WebKit 17 ms (its 60 Hz cap) with a few ~160 ms hitches even with the flight standing
+    still (harness). Reduced motion, `?flight=0` and no-WebGL fall back to the page.
+  - Publish-readiness round: the page against itself one pixel narrower / wider differs by 4.1/255 (fonts, filters), so
+    the last 3D frame (3.8) sits below the browser's own noise. Real iOS Safari (iPhone 17 Pro Simulator, iOS 26.5) on a
+    throwaway production-like copy of page-b (TUNE + bench note hidden, an auto-scroll; deleted after): hover, descent,
+    the pan to the phone crop, touchdown, the readings pop. The pump and the roof checked at full size in every frame of
+    the path: no flat-decal or roof-edge read (the path never views them from the side). README: "Publishing" (the host
+    page contract, weight, re-render the landing frame from the published page). Going live = page-b into `src/` + a push
+    to main (a live deploy): Dan's word.
+  - Claim widened (`danavivi-fb`, 2026-10-26; page-b's earlier claims are all CLOSED): in `page-b.html` also (1) the dev
+    chrome opt-in: the TUNE button + the "WORKING COPY" note hidden unless `?dev` / `?tune` / `?bench` / `?rbench`, or
+    for good on a browser once T has opened TUNE; (2) `.scene` on wide windows = `left: 0` (no `translate(-50%)`: it put
+    the scene half a device pixel off at odd widths in Chromium, a dark line down the left edge).
+  - Last round (the goal check said "not done"): the hover photo's lettering made exact (the AI had painted
+    "REGULAR · PREMIUM · EACH" and gibberish posters; `tools/patch-front.py` lays A's own lettering in by the wall's
+    homography), the roof vents drawn into it (`tools/draw-vents.py`) and made occluders, a dark streak on the touchdown
+    frame's horizon fixed (eps 1e-8), `?autofly` for hands-free device checks. Re-checked: 41 frames by eye, the 101-step
+    pop scan (none), both hand-offs in Chromium 1141x636 / 1281x720 / 1440x900 / 390x844 + WebKit 1141x636 / 390x844
+    (touchdown mean 1.5-3.2/255, closer than the page to itself one pixel narrower: 4.1; colour off by > 12 levels in
+    <= 0.03 % of pixels), the page after = `?flight=0` 0.000, fallbacks, real iOS Safari on page-b itself (fresh origin).
+  - Self-contained check: `git archive` of the tree into an empty folder, served alone, page-b in Chromium + WebKit at
+    1141x636 + 390x844: flight, touchdown; 0 off-origin requests, 0 failed / 4xx, 0 console errors, EXCEPT the pump's
+    plugin face, still `http://127.0.0.1:4461` (the GAS2 checkout). A snapshot of GAS 2's UI beside the page works
+    (tested; kept OUT of the repo, in session scratch only): this repo is PUBLIC, GAS2 is PRIVATE, so committing it would
+    publish the plugin's UI source. Auto mode refused that push too. Dan's call: keep the URL, bundle, or a built copy.
+  - 🔴 Publish blocker found, NOT the flight's, Dan's call: page-b's "Download FREE" opens the service ticket, whose form
+    is a mock (`tk.onsubmit` only adds `.sent`: nothing is sent, nothing downloads). GAS 2's public download is owed
+    (shared CLAUDE.md: a code-signing cert before public download, R2 / site, Mac 1.0.0), then the form wired to the
+    download worker. Live also needs: page-b moved into the site (a route, its nav / analytics), Dan's real-phone look,
+    his sign-off and his push word (main = a live deploy).
+
+## 2026-10-26 — GAS 2 page: no copying (Claude Code `danavivi-7e`, Dan's Mac) — BRANCH `feat/gas2-page` PUSHED
+
+Claim: CLOSED 2026-10-26. File: `tools/_gas2-scene/page-b.html` (one `<style>` + one `<script>` block in `<head>`, after the radio line).
+- Dan: "I can copy the page and mark it down. I can copy elements and assets ... disable that from users." Now: `user-select: none`
+  on the page (inputs / textareas / contenteditable keep it), `-webkit-user-drag: none` on img / svg / video, no iOS long-press
+  callout, and `contextmenu` / `dragstart` / `copy` / `cut` / `selectstart` cancelled outside form fields.
+- Checked headless 1141: Cmd+A and a mouse drag select nothing; right-click + drag on an image, copy / cut on the page: blocked;
+  copy inside the MAIL email field: allowed; the radio plays, A/B, volume drag all work; no errors.
+- A deterrent only (screenshots, view-source, the network tab still work). The pump iframe (:4461) is its own page: not covered.
+  The live site (`src/`) does not have this; carry it when the page moves into `src/` (Dan's call for the rest of the site).
+
+## 2026-10-24 — GAS 2 page: chalkboard in front of the readings' shadow (Claude Code `danavivi-b4`, Dan's Mac) — BRANCH `feat/gas2-page`
+
+Claim: CLOSED 2026-10-24. File: `tools/_gas2-scene/page-b.html` (`.chalk` gets `z-index: 1`).
+- Dan: the chalkboard "sits behind the shadow, I want it in front of it". The readings' FOCUS layer (`.rd::before`, blur +
+  brightness .84) reached left over the board's right half. Now the board stacks above `.rd`; no overlap with the readings' type.
+- Checked: headless Chrome 1141x636 + 1440x900. Board right half brightness 47 -> 54, edge sharpness 15 -> 21 (= the left half).
+  Then Dan: "make it more" -> board brightness .86 -> 1.08 + contrast 1.06. Dan in Safari: "perfect".
+- Then the sidewalk out of the shadow too: `props/walk-cut.png` = the slab traced from f6-v17 (same pixels, 1 px feather;
+  back edge 71 %, the edge line (68.85, 71) -> (87.9, 85), curb end 88.7 %, curb foot 92 %), laid over FOCUS + DUSK with
+  `z-index: 1` (`.walkCut`), under the chalkboard. Measured at 1141: ~10 % brighter + sharper. Dan: "commit".
+  Note: moving the readings down in TUNE would put "Fill it up." behind the cut (at default it clears it).
+- Pulled first: Yoni's radio round 3 + `?rbench` placement (origin 4bfc117) are on this branch now.
+
+## 2026-10-24 / 26 — GAS 2 radio: the grille nameplate "Play me" (Claude Code `danavivi-7e`, Dan's Mac) — BRANCH `feat/gas2-page` PUSHED
+
+Claim: CLOSED 2026-10-24. Files: `tools/_gas2-scene/player/radio.css` (`.rp-badge` block), `player/radio.js` (badge markup,
+badge click = play / stop, `.played` on first play), `DESIGN.md` §3 (script accent: the nameplate exception),
+`.impeccable/config.json` (gradient-text waiver, radio.css only). Not page-b.html.
+- Dan: a "Play with it"-type line on the speaker grille "like a brand name, like a Marshall", vintage, pops out. Built a raised
+  Yellowtail script badge (dark backing + cream enamel face + cast shadow down-left, the porch lamp is up-right), centred on the
+  cloth, tilted -5deg; click = play / stop; a glint crosses it every 7 s until the first play (off under reduced motion).
+- Dan picked from a `?badge` picker (now removed): **"Give it gas" · Cream · tilted**, then the same day **"Play me"** (170u). Not taken: Give it gas / Play with it /
+  Tune in; chrome / brass / honey (lit on play) / oxide + cream (the recipes are in this commit's parent diff if wanted again).
+- Then (Dan, same day): "not get closer when user hover" + "more embedded to the net ... look like it is sewn in": the badge is
+  now EMBROIDERY: no hover / press move, no float shadow; dark thread edge (.rp-b0), cream satin-stitch thread (.rp-b1), the
+  grille's own weave soft-light over it (.rp-b2, cut from radio-lit.webp); tight halo + 1u shadow = thread on fabric. Picked
+  from 6 headless variants (too muddy when the weave multiplies the thread: keep the cream bright).
+- Then (Dan, same day): "let me see more of the stitches, like Marshall stitch": the badge is now ONE SVG (radio.js badgeSvg):
+  dark thread edge + cream satin stitches as a pattern (threads 8u apart at -20deg, each a groove + a sheen) + a lit-top shade
+  + a SMIL sheen sweep (hidden on .played / reduced motion). The CSS gradient-text layers (and their impeccable waiver) are gone.
+  Default = bigger satin, NO outline. `page-b.html?stitch` = picker for a running-stitch outline (none / cream / gold, a dashed
+  stroke under the letters): busy at scene size (stitches land in the letter joins and the a / e counters), so not default.
+  Open: Dan's outline pick; then drop the ?stitch picker.
+- 2026-10-26 (Dan): the SVG stitches "look like CSS ... make it much more fine ... create an asset of the whole box including
+  the stitches ... glued together ... the same box ... not too much". Now IN THE PHOTO: `player/tools/gen_stitch.py gen 3` =
+  one masked gpt-image-2 edit of radio-lit.webp (mask = the grille cloth only; gpt-image-1 is gone on this key, and the shell's
+  OPENAI_API_KEY is stale, so the script reads the website clone's `tools/.openai_key.local`), 3 takes (~$0.75): 1 fine thin
+  script (PICKED), 2 + a swash underline, 3 bolder (`img/gen/stitch-*.png`, gitignored). `compose 1` lays back only the pixels
+  the stitching changed (diff mask, grown + feathered, inside the cloth) on the git copies of BOTH plates (off = through the old
+  off/lit ratio), so the cabinet, keys, knobs, dial and every radio.css coordinate are pixel-identical. The SVG badge, the sheen
+  and the ?stitch picker are gone; `.rp-badge` is now only an invisible hit area over the words (440..935 x 190..375 plate px).
+  Checked (headless 1141 + 1440): no errors / 404s, all audio 200; badge -> play ORIGINAL 1/0; GAS 2 key 0/1; ORIGINAL 1/0;
+  dial ELEC. -> st 2; tuning knob -> st 3; volume knob -> .62; play key stop / start; badge -> stop; hover moves nothing.
+  Not checked: Dan's Safari by eye, real ears.
+- 2026-10-26, then (Dan: "cool make it white"): the same take-1 letters, thread recoloured warm white in code (`compose 1`,
+  default; `--tan` = the model's tan): letter mask = the take blurred 2.5 px minus blurred 14 px > 14 (the weave's own highlights
+  max 9, so no cloth blotches), each stitch's light kept (groove shade -> #f7f2e8). Compose now always starts from BASE_REV
+  `ec4504e` (the last plain-grille plates). Checked again headless: all keys / badge / hover as above.
+- 2026-10-26 (Dan: "remove the reading" = the caption under the radio, his pick): `#radioCap` is visually hidden in radio.css
+  (still in page-b.html, untouched; still written by radio.js), kept as the radio's aria-live status for screen readers
+  ("On air: HIP HOP / GAS 2 · PREMIUM 140 %", two blocks = two phrases). Checked headless 1141 + 1440: 1 x 1 px, text updates.
+- 2026-10-26 (Dan: VOLUME / TUNING "sitting between the frame of the radio and the box ... more polished ... give me some
+  options"): the straight labels (top 601u) crossed the seam where the wood panel ends (y 610) and the frame's brass lip starts
+  (612..640). Offered on the page (`?eng`, now removed): wood (inside the panel) / brass (stamped in the lip) / ARC / off.
+  Dan picked ARC: one SVG per knob, the word on the lower half of a circle r 76 about the knob centre (ring r 55), Oswald 600
+  16.5u, cream + the old 1.2u top shadow. `.rp-eng` and its spans are gone. Checked headless: all controls as above, no errors.
+- Picked with the DESIGN.md "ONE script line per screen" rule flagged ("Fill it up." is Yellowtail too): recorded as
+  "a nameplate ON a prop is not a line".
+- Checked: headless Chromium 1141x636 + 1440x900, no errors / 404s; badge click -> playing ORIGINAL (gains 1/0), glint stops;
+  2nd click -> stopped. Not checked: Dan's Safari by eye after the bake, phones (the radio is off-screen there).
+
+## 2026-10-24 — GAS 2 page: the PHONE page, "zoom in on the plugin" (Claude Code, Dan's Mac, Dan on his phone) — BRANCH `feat/gas2-phone`, waiting for Dan's look
+
+Claim: OPEN. Files: `tools/_gas2-scene/phone.html` + `tools/_gas2-scene/phone/*.webp` (new; git-excluded folder, so `git add -f`).
+- Dan tried Swipe / Walk / Stack (entry below) on his phone: "they don't work for me". Restart, his idea: zoom in on the plugin itself,
+  the player there, the readings there. His approved summary: the globe + gauge zoomed, the station soft behind, the readings on it,
+  the pump's grade keys = the player (no radio on phones), MAIL ME THE KEYS = the ticket, the 3 posters under. Simple and minimal.
+- Built: the pump is the PLUGIN's own render, re-baked at 4x from the GAS2 repo (`bench/pump-lab.html?bake=1&knobs=bare`, `LAB.P.scale=4`,
+  `tools/ui/bake-pump-page.js`; real GPU Chrome; nothing written to the GAS2 repo), placed in the plugin's base px (`--z`), layer order
+  = the plugin's. Hero: globe (= the name, h1 kept for readers) + gauge, needle sweeps to 160 % on load; zoom ~118 % of the width, eased
+  on short screens so the gauge is never cut and the button stays in view. HEAR IT: counter + keys; tap = GAS 2, lit key again = the
+  original, ■ Stop; the needle follows (140 % / 0); the counter shows short-term loudness off the output (no K-weighting; mockup).
+  Then the 3 posters in a shop-window frame, then MAIL ME THE KEYS + mailbox + chalkboard on the stucco. ~4.8 screens at 390x844.
+- ⚠️ Every grade plays Yoni's one HIP HOP render (PREMIUM 140 %) until per-grade renders exist: needs 3 renders of one mix
+  (REGULAR / PREMIUM / RACE) + the original before this ships.
+- Checked: WebKit 390x844 / 393x659 / 375x667 / 430x932 (gauge whole, button in the first screen, no overflow); Chrome: keys play,
+  original toggle, stop, counter, the ticket from the button / the poster / the box; iOS Simulator (iPhone 17 Pro) first screen. Not
+  checked: a real iPhone, audio by ear.
+- Dan views it at https://claude.ai/artifact/RY5g1zHQsdmQRUkisbEqvc (private; fonts inlined, audio as .mp4).
+- Research brief behind it (10 phone-native sites, patterns, 3 directions): session scratchpad `research/` (not in git).
+- Dan on his phone, 2026-10-24: "very cool, I like the direction it's going, commit". Rule written to DESIGN.md §7 (rebuild for
+  portrait, never crop the desktop scene).
+- 2026-10-24 Dan: no needle on his phone (a zero-size filtered carrier) -> rebuilt as real-size boxes turning about the pivot.
+- 2026-10-24 Dan: "make a bench so I can move stuff around in my phone". `tools/_gas2-scene/phone-bench.js` (git-excluded, never
+  commit) on the real page (`phone.html#bench` locally); phone bench Artifact https://claude.ai/artifact/VmFDkUMg6n1mCCg4PE4aY8
+  (db capability). BENCH -> tap a part, drag, SIZE / TURN, arrows, SAVE -> db doc `bench/phone` (`ArtifactData get`, collection
+  `bench`, doc `phone`) + clipboard. Values = px / scale / deg at Dan's screen (the dump carries w/h/dpr); the two pumps' SIZE =
+  `--zk` (a real re-flow), the hero pump's up/down = `--topd`. Bake: convert px to the page's units, then delete the deltas.
+- 2026-10-24 Dan: "under the Fill it up remove all the page, keep one page, no scroll" -> HEAR IT, the window posters, the
+  mailbox block, the footer and their assets/JS removed; html/body locked to one screen, the hero centred (100svh). Checked
+  390x844 / 393x659 / 375x667 / 430x932: page height = the screen. Both Artifacts updated (page v3, bench v2).
+- Next: bake Dan's bench save, Dan's polish notes, the per-grade renders (Yoni), then it moves into page-b as the `@media (max-width: 760px)` layout
+  (the scene hidden on phones).
+
+- 2026-10-26 Dan picked **A** for the screen under the hero (A/B preview Artifact https://claude.ai/artifact/P3A86oo9tomiujdFnfPz5g,
+  now obsolete): `.grades` = THREE GRADES. PICK ONE. + three rows (the pump's key, 4x, + headline + line); a tap lights one key
+  (no sound yet). The page scrolls again: hero (one screen) + grades (one screen). `.bg` now clips its blur overhang. Page Artifact
+  v4, bench v3 (bench parts + the grades title and rows). Decision 1 below is DONE.
+
+- 2026-10-26 Dan: the player = "copy the jukebox we have on the GAS page, same songs, same everything" (after a pedal-vs-gauge
+  bench he rejected: "neither"). `phone.html` gained `.hear`: /gas's own title + line + the live `<gas-mixer>` (public/gas-mixer,
+  Yoni's component, untouched; under 760 px it builds its pedal toy). Locally `tools/_gas2-scene/gas-mixer` is a symlink to
+  `public/gas-mixer` (excluded) so `/gas-mixer/...` resolves on :4464; the Artifacts carry a copy (paths made relative, .m4a ->
+  .mp4, fonts inlined). ⚠️ The toy's plate reads GET GAS FREE (GAS 1's download) and is GAS 1's mix: Dan's call. Page v5, bench v4.
+
+- 2026-10-26: Dan deleted the session's Artifacts from his account (options chooser, player bench, phone bench, and the page
+  itself, https://claude.ai/artifact/RY5g1zHQsdmQRUkisbEqvc). The work is all on this branch + local :4464; a phone link needs a
+  fresh publish (new URL) on Dan's ask. Packager recipe: derive body-only from `phone.html` (title + style + body), inline the
+  fonts, `/gas-mixer/` -> `gas-mixer/`, copy `public/gas-mixer` with `.m4a` -> `.mp4` and its fonts.css inlined.
+
+### Session close 2026-10-26 (/close-session)
+
+**State.** Branch `feat/gas2-phone` (worktree `.claude/worktrees/gas2-phone`) = `origin/feat/gas2-phone` (0 ahead / 0 behind),
+7 commits on top of `feat/gas2-page`@`c4302cf`; `feat/gas2-page` has moved 24 commits on since (Yoni's radio round 3+), not merged
+in here. The only uncommitted change is this session-close block. Untracked on purpose: `tools/_gas2-scene/phone-bench.js` (the
+bench; git-excluded, never commit).
+
+**Unverified.**
+- The needle fix on Dan's real phone (rebuilt after "no needle"; seen in the iOS Simulator only). Dan has not confirmed it since.
+- The one-screen page on a real iPhone (checked headless WebKit at 4 sizes, page height = screen height).
+- The bench on a real phone: no save has reached the bench db yet (`bench` collection empty 2026-10-26), and the Simulator's
+  clipboard is empty, so Dan has not saved a bench round.
+
+**Background processes (not this session's to kill unless Dan says).**
+- `python3 -m http.server 4464` from this worktree's `tools/_gas2-scene` (pid 37789): the page + `phone.html#bench`. Kill: `kill 37789`.
+- iOS Simulator iPhone 17 Pro (B0B0F88C-95BB-40DA-B292-A73157B50757) booted with `127.0.0.1:4464/phone.html#bench` open in Safari
+  (claude.ai Artifacts show "Sign in" there: the Simulator's Safari is not signed in). Stop: `xcrun simctl shutdown B0B0F88C-95BB-40DA-B292-A73157B50757`.
+- Not this session's: :4461 pid 29302 (GAS2 plugin UI), :4462 pid 41222 (the gas2-page worktree).
+
+**Decisions open for the next session.**
+1. **The screen under the hero** (Dan 2026-10-26: "explain how simple the plugin is, three modes, a short line for each one, let's
+   think about it"). Proposed title THREE GRADES. PICK ONE. + REGULAR "Smooth and warm. For mixes that are already good." /
+   PREMIUM "The signature. Thick lows, clear mids, silky air." / RACE "Punchy and bright. For loud, modern mixes." (from GAS2
+   `docs/BRIEF.md`). Layout A (recommended: three rows, the pump's real key image + name + line) vs B (the keys in a row, one line that
+   changes on tap). Waiting for Dan's A/B + copy OK. Note: this re-opens scrolling, which he locked to one screen on 2026-10-24.
+   No "one knob" / "that's it" (GAS dial + IN/OUT exist; DESIGN.md copy rule).
+2. **Tap a grade to hear it**: needs Yoni's per-grade renders of one mix (REGULAR / PREMIUM / RACE + the original).
+3. **Bake the bench** when Dan saves: the claude.ai bench Artifact is gone (deleted from Dan's account 2026-10-26, no save ever
+   reached it); the local bench `phone.html#bench` remains: its SAVE copies to the clipboard (`xcrun simctl pbpaste <udid>` in the
+   Simulator). Republish a bench Artifact only if Dan asks.
+4. **Into page-b**: the phone page becomes page-b's `@media (max-width: 760px)` layout, after rebasing on `feat/gas2-page`.
+5. **page-b desktop bugs found 2026-10-23** (fixed only in the phone options, now superseded): the closed plugin veil's iframe keeps
+   taps (`.veil:not(.open) .plug { display: none; }`); the reduced-motion rule misses the button's `::after` shine. Dan's word to fix.
+6. ~~Old Artifact (the Swipe / Walk / Stack chooser)~~: gone from Dan's account (deleted) 2026-10-26.
+
+**Suggested commit.** `docs(handoff): GAS 2 phone page session close (2026-10-26)`: `tasks/handoff.md` only.
+
+**Cleanup.** The superseded `phone-{swipe,walk,stack}.html` are still committed on this branch (`e98ea01`): drop them in the
+page-b merge. Node 26.0.0 on Dan's Mac has CVE-2026-111497 (upgrade to 26.12.1+).
+
+## 2026-10-23 — GAS 2 page: three PHONE options, Swipe / Walk / Stack (Claude Code, Dan's Mac, Dan on his phone) — SUPERSEDED 2026-10-24
+
+Claim: CLOSED 2026-10-24 (Dan: they don't work for him on the phone; replaced by the entry above). Files: `tools/_gas2-scene/phone-{swipe,walk,stack}.html` only (new; git-excluded folder, so `git add -f`).
+Worktree `.claude/worktrees/gas2-phone`, branched from `feat/gas2-page` at `c4302cf`; static server :4464 (pid 37789) from its `tools/_gas2-scene`.
+- Ask (Dan, on his phone): the GAS 2 page for phones, "same principles, same posters, same layout vibe", several options, right in one go.
+- Each file = `page-b.html` (c4302cf) + ONE `@media (max-width: 760px)` block `/* ═══ PHONE · <OPTION> ═══ */` + one matchMedia-gated
+  script + the minimum markup (all `hidden` / unstyled on desktop). Desktop renders pixel-identical to page-b (checked 1141x636,
+  1440x900, 800x900). The winner pastes into page-b verbatim.
+- SWIPE: the stage is a sideways scroller (100svh, scene 150svh wide = laptop scale), opens on the sky + readings, mandatory snap to
+  store front / pump / radio, a "← Walk the lot" caption + one 56 px peek. WALK: a sticky 100lvh frame, page scroll dollies the camera
+  with flat holds (readings → store → pump → radio), then an end band with the button. STACK: the readings screen, then portrait crops
+  of the same scene (sign strip → pump → mail + chalkboard → radio), each live prop moved into its one shot, feathered seams.
+- All three: same readings recipe in vw/svh (GAS2 ~71-74vw), always-on pump caption, grade tap = pick + tip 2.4 s, the photo's bottom
+  melts into the page (no hard line), FOCUS blur off on phones (HUG + DUSK kept).
+- Checked (WebKit + Chromium, 390x844 / 375x667 / 393x659 / 430x932): every prop tapped by script opens the right thing, no overflow,
+  no page errors except WebKit's missing AAC decoder (page-b throws the same). iOS Simulator (iPhone 17 Pro, 402x714): Swipe opens on
+  the sky and stays (scrollLeft = max through 4 s), Walk's first screen right. NOT checked: a real iPhone (momentum, snap feel, toolbar
+  collapse, the keyboard over the ticket), audio by ear.
+- Dan views them at https://claude.ai/artifact/WaDdeVGPhHdxXxseH22H6H (private; a chooser + the three pages + assets + the GAS 2
+  plugin UI copied from the GAS2 repo for the pump; fonts inlined; the radio renders renamed .m4a → .mp4 because the host won't serve .m4a).
+  Packager: `build_artifact.py` in the session scratchpad (not in git).
+- 🔴 page-b bugs found on the way (fixed in the phone blocks only, desktop untouched): (1) after the plugin veil closes its iframe keeps
+  swallowing taps in its rect (WebKit touch): fix `.veil:not(.open) .plug { display: none; }`; (2) the reduced-motion rule misses the
+  button's `::after` shine, so it keeps running.
+- ⚠️ The radio moved on: `feat/gas2-page` gained Yoni's radio round 3 (`e96ef81`..`7a4a318`: the radio stands IN the scene, no close-up)
+  after this branch was cut, and its `radio.css` has no phone rules. The three options use the c4302cf close-up player. Rebase this
+  branch only after Dan's pick, and then the phone radio is Yoni's lane (one writer per file set).
+- Next: Dan picks Swipe / Walk / Stack on his phone → paste that block into page-b (strip Walk's `window.gas2Walk` test hook), delete
+  the other two files, rebase on `feat/gas2-page`, re-check with Yoni's in-scene radio.
+
+## 2026-10-23 — GAS 2 page: MAIL ME THE KEYS poster on the wall (Claude Code `danavivi-2a`, Dan's Mac) — BRANCH `feat/gas2-page` PUSHED
+
+Claim: CLOSED 2026-10-23. Files: `tools/_gas2-scene/page-b.html` (mailbox block: `.mp` poster button + `.mail` moved down,
+`.mailCap` slip removed, TUNE → Mail poster script), `props/poster-mail-{1-4}.webp`, README line, DESIGN.md "Poster ON the wall".
+- Dan: "just the reading need to be a poster that catches the eye". The slip became a 2:3 poster on the wall above the box
+  (x 52.55 % / y 20.6 % / w 9 % of the scene), arrow down into the box. Click = the ticket; hover = the ticket peeks out of the box.
+- 4 options, gpt-image-2: 1-2 red with a GAS 2 badge, 3-4 yellow with a FREE starburst (FREE was Claude's addition, not Dan's line).
+  Default 1; `?mp=1-4` or TUNE. **Open: Dan's pick**, then delete the other 3 webps and the TUNE row.
+- Checked: headless Chromium 1141x636 + 1440x900, no console errors, ticket opens. Not checked: Dan's Safari, phones (the wall is off-screen there).
+- `.git/info/exclude` hides `tools/_gas2-scene/`: new files there need `git add -f`.
+
+## 2026-10-23 — GAS 2 page mockup on `main` for Ilay (Claude Code, Dan's Mac) — PUSHED TO MAIN (Dan: "push the page of gas2 to main, Ilay needs it for social media inspiration")
+
+Claim: CLOSED 2026-10-23. `feat/gas2-page` (f72afcc) + `feat/gas2-page-s2` (6a5af16, the spotlight + notes on the glass, Dan picked "both") merged clean.
+- 2nd push same day (Dan: "push latest branch"): both branches again, now with the window posters, the pump light and the readings' premium shadow. Only the doc files conflicted (handoff + README), both sides kept.
+- Only `tools/_gas2-scene/**`, `DESIGN.md`, `tasks/**`: nothing in `src/` or `public/`, so the live site is unchanged. The page is still a static mockup.
+- Ilay: `git pull`, then `cd tools/_gas2-scene && python -m http.server 4462 --bind 127.0.0.1`, open `http://127.0.0.1:4462/page-b.html`. The pump iframe (:4461) and the radio's real audio are not there (placeholder audio only).
+- Ilay's note: the posters are in now too. Both branches stay open for more work; rebase them on main before the next push.
+
+## 2026-10-23 — GAS 2 page: window posters + light on the pump (Claude Code `danavivi-59`, Dan's Mac) — BRANCH `feat/gas2-page-s2` PUSHED, NOT IN `feat/gas2-page` YET
+
+Claim: OPEN. Files: in `tools/_gas2-scene/page-b.html` the posters (`.note.poster` `.pk/.pl/.ps`, were the notes `.n1-3`)
++ the pump light (`.pumpCut` / `.pumpLit`, TUNE → Spotlight script at the bottom); `props/poster-{knock,level,start}.webp`,
+`props/pump-cut.png`; the README owner line; DESIGN.md ("Posters IN the window", "Making one object pop").
+Worktree `.claude/worktrees/gas2-page-s2`, served on :4463 (session 1 keeps :4462). `feat/gas2-page` merged in at `b47fcc6`.
+- Pump: `pump-cut.png` = the pump traced from f6-v17 (globe ellipse + cap + body + base, same pixels), laid back over the
+  posters so the window art sits behind it; light on the pump only (soft-light top-down, masked to the cut-out, +4 %).
+  Dan toned it down twice ("this needs to be subtle", "just keep the light on the GAS 2 itself"): no cone, no pool, no dim.
+- Posters (Dan's lines + picks): NO KNOCK. NO KNOB. (fuel filter, knock #2) · FILL IT UP. SAME LEVEL. (auto-level, level #1)
+  · START EVERY MIX HERE. (first stop, start #2). gpt-image-2, 2 options each. Left pane one tall, right pane two wide,
+  inside the measured glass, no tape / shadow / blur. Unpicked options + prompts + generator: `tools/_gas2-scene/_posters-gen/`
+  in Dan's main clone (git-ignored).
+- Open: (1) bring this into `feat/gas2-page` on Dan's word (a fast-forward today: push `feat/gas2-page-s2` to
+  `feat/gas2-page`); (2) "SAME LEVEL" states auto-level as a claim: same "needs a measured check" as the entry below,
+  before it ships; (3) phones: the scene keeps its right edge, so the left-window poster is likely off-screen (not checked).
+- Note: the shell's `OPENAI_API_KEY` is stale (401); `tools/.openai_key.local` works.
+
+## 2026-10-23 — Claude Code `danavivi-a3` (Dan's Mac) — GAS 2 page: readings composition 2, premium shadow, notes on the glass
+
+Claim: OPEN (`tools/_gas2-scene/page-b.html` minus the radio block; `DESIGN.md` §3/§5/§7 readings lines). Continues the 2026-10-22 entry below.
+
+### State at session end
+
+Branch `feat/gas2-page` in revaudio-website, worktree `.claude/worktrees/gas2-page`, 0 ahead / 0 behind `origin/feat/gas2-page`;
+the only uncommitted change is this handoff entry. Commits this session (all pushed to the branch): 9e52949 branch + mockup,
+06c300b bench round 2, 97538ad notes on the glass, 754c25d readings composition 2 (GAS2 in the pump globe's lockup, centred
+column, "⤓ Download FREE"), 1cce306 DESIGN.md readings vibe, 1cdaf08 / 643f330 / ad0e2c1 the GAS2 rule gap (2.5 -> 20.5 px at
+1141x636), 0fca023 "Fill it up." lights with the button hover, 8c1eed6 button label in Oswald 700, e5a68ed premium shadow (circle
+out: HUG / FOCUS / DUSK layers + TUNE checkboxes), bef24e7 Dusk fades in (the "cut"), f72afcc edges subtle, 426052d general shadow
+-50% + the shadow hugs the words, 32279f5 DESIGN.md shadow recipe.
+
+🔴 **Diverged from main.** Another session merged `feat/gas2-page`@f72afcc + `feat/gas2-page-s2` (fe5d622 / f2e2f61 / 6a5af16:
+the pump in a spotlight, notes toned down, `props/pump-cut.png`) to main (8044e2f + 881d1a7, Dan: "both to main for Ilay").
+This branch lacks those 5 main commits; main lacks 426052d + 32279f5. Both sides edit `page-b.html` and the top of this file.
+
+### Unverified
+
+- Dan approved in Safari: composition 2 ("I love you so much", "this is amazing"), the rule gap ("perfect"), the hover ("nice"),
+  the shadow at 426052d ("really cool, I like it"). Not checked: phones (390 px: the radio is off-screen), Firefox, the
+  Neon / Enamel / Badge looks under the new centred column (the GAS2 lockup + shadow are scoped to the "Now" look only).
+- The FOCUS layer (backdrop-filter in a mask) does not render in `wksnap` snapshots: checked in headless Chromium + by Dan's eye only.
+- Oswald has no "⤓" glyph, so the arrow falls back to another font (offered Dan a matching SVG icon; no answer yet).
+
+### Background processes
+
+- `python3 -m http.server 4462 --bind 127.0.0.1` from `.claude/worktrees/gas2-page/tools/_gas2-scene` (nohup, pid 41222):
+  Dan's Safari tabs point at it. Kill: `kill 41222`.
+- Not this session's (left alone): :4461 pid 29302 (GAS2 repo `Source/ui/public`, the pump iframe), :4463 pid 69799
+  (the `gas2-page-s2` worktree's server).
+
+### Things the next session needs to decide
+
+1. **Reconcile this branch with main.** Options: rebase `feat/gas2-page` on `origin/main` (main's own handoff asks for that) vs
+   merge `origin/main` in. Either way resolve `page-b.html` keeping BOTH the s2 spotlight / notes and the 426052d hug shadow,
+   and `tasks/handoff.md` keeping both top entries; re-run the headless checks, push the branch. Whether 426052d + 32279f5 go
+   to main is Dan's word (a main push = a site deploy, though `tools/` is not built into the site).
+2. **Next section** (Dan picks): phones (the radio can't be reached at 390 px; Yoni flagged it), the wall sign, the mailbox,
+   the chalkboard.
+3. **The ⤓ arrow:** keep the fallback glyph or draw an SVG in Oswald's weight.
+4. **"Same loudness"** stays out of the copy until the auto-level is measured on real mixes.
+
+### Suggested commit splits
+
+- One commit: `docs(handoff): GAS 2 page session 2026-10-23 (danavivi-a3)` — `tasks/handoff.md` only.
+
+### Cleanup TODOs
+
+- Dan's main clone `tools/_gas2-scene/` (git-excluded, the 2026-10-21/22 original): holds the 16 unused frames, the reference
+  photos and the frame scripts; the worktree copy is the live one now. Keep as the archive until Dan says otherwise.
+- `~/.impeccable/config.json` (home, not a repo) gained two file-scoped waivers for `**/tools/_gas2-scene/*`: `marquee` (the
+  house button shine) and `overused-font inter` (the site's body font).
+- Bench lesson not written to the shared law book (`revaudio-shared` carries another session's uncommitted `LESSONS.md` /
+  `bench.js` edits): when the bench subject sits on the right edge, dock the harness panel left (page-b does it with a CSS
+  override, `html.benching .bench-panel`).
+- Node 26.0.0 on Dan's Mac has CVE-2026-111497: upgrade to 26.12.1+.
+
+### Memory written this session
+
+- None in auto-memory (venture rules stay in the venture). The design rules went to `DESIGN.md` on this branch: §3 product names
+  in the plugin's header lockup + the script line's second use, §5 paper on glass, §7 the readings recipe + its shadow.
+
+## 2026-10-22/23 — GAS 2 page: the radio player (Claude Code `revaudio-cd`, Yoni's laptop 2) — DONE for now, Yoni: "yalla we got it!" (branch pushed)
+
+Claim: OPEN (Yoni's radio). Files: `tools/_gas2-scene/player/**`, ONE `<head>` line in `page-b.html`, `tasks/gas2-radio-plan.md`.
+Branch `feat/gas2-page`, worktree `Website/revaudio-website-g2p`. Full state + numbers: `tasks/gas2-radio-plan.md`.
+- Now: no pop-up, no zoom. The radio stands IN the scene on the bench (1.3x the photo's radio, slid 23 frame px left for
+  room from the pump) and is the player: dial HIP HOP / POP / ELEC. / ROCK, keys PLAY-STOP | ORIGINAL | GAS 2 (pressed
+  keys light up), Yoni's new knobs (volume, tuning), red jewel while playing. Caption under the bench, inside the
+  radio's width. The photo's radio + `#radio` hotspot are hidden from radio.css (`#scene #radio`); `#radioCap` restyled
+  there too. A lower bench is laid over the frame from the frame's own pixels (`img/bench-low.webp`; the frame untouched).
+- Since: keys read pressed = DOWN / up = UP at full size; the photo radio, its shadow and the old bench are painted out
+  (`img/noradio.webp`, a masked gpt-image-1 edit of the frame, `gen_noradio.py`); the stool is a cut-out of the frame's
+  bench (`img/stool.webp`); radio + stool are placed by CSS numbers on #scene (radio.css "WHERE THINGS STAND"), Yoni's
+  final pick from the `page-b.html?rbench` placement panel: radio 1.33x at x 11.8 / bottom 49.25cqw, stool x 11.8 /
+  floor 54.4 / width .93 / height .75.
+- Audio: HIP HOP / POP / ROCK = Yoni's renders, every station -11 LUFS both sides; ELEC. = placeholder. GAS 2 settings
+  shown: HIP HOP PREMIUM 140 %; POP / ROCK owed by Yoni.
+- For Dan: (1) on phones the scene crops the radio off-screen (x < 0 at 390 px) - your layout; (2) real Safari not
+  checked yet; (3) radio.css only touches page-b's `#radio` / `#radioCap`, nothing else of yours.
+- Next: Yoni's POP / ELECTRONIC / ROCK renders (dry + gas + grade / amount) -> `player/tools/prep_audio.py <id> dry gas`.
+### Session end (2026-10-23, `revaudio-cd`, close-session)
+
+- `feat/gas2-page` = origin (0 / 0), last `4bfc117`; only this note uncommitted. Worktree `Website/revaudio-website-g2p`.
+- NOT pushed elsewhere (both wait for Yoni's word):
+  - Website main clone: `main` ahead 3 / behind 33: `70f8f8d` + `860e56a` (rescued notes from earlier sessions) + `a5fa319`
+    (2 Web Audio lessons from the dropped jukebox). A push to main = live deploy. The jukebox itself is dropped from main
+    (Yoni) and kept on LOCAL branches `archive/gas2-jukebox` + `archive/gas2-jukebox-notes` (main clone only).
+  - Shared clone: ahead 3 / behind 3: `fa5a1a2` (design-language: a pressed key reads down by depth) on top of
+    `9b5a0c4` + `c392a35` from the jukebox session -> Yoni to say "push shared" (merge --no-ff, then push).
+  - Shared, uncommitted: Yoni's radio knob card (the private knob tool's library,
+    10-23 17:25) -> commit on his "save"; `memory/feedback_placement_bench_early.md` + its
+    MEMORY.md line (mine); MEMORY.md also holds another session's uncommitted line (Hebrew-layout), not mine.
+- Background processes (all on Yoni's laptop 2, started this session):
+  - `python -m http.server 4462` (page-b), PID 13620. Kill: `Stop-Process -Id 13620`.
+  - The private knob tool's server on 8797, PID 2836. Kill: `Stop-Process -Id 2836`.
+  - `python -m http.server 8793` from `C:/RevAudio` (knob bake), PID 40696. Kill: `Stop-Process -Id 40696`.
+- Unverified: real Safari / Firefox / a real phone; sound by ear in a browser (headless only measured gains + loudness).
+- Next session decides: (1) POP / ROCK GAS 2 settings (caption) + ELECTRONIC renders, from Yoni; (2) "push shared";
+  (3) push the 3 website-main notes commits or not (live deploy); (4) Dan's answers: phone crop, Safari check.
+- Cleanup: a knob bake output under `player/` (laptop 2), untracked; since 2026-10-29 the knob tool's files live in the
+  shared repo, so delete that folder's leftovers there (no longer gitignored).
+
+
+## 2026-10-22 — GAS 2 page: the station mockup on branch `feat/gas2-page` (Claude Code `danavivi-a3`, Dan's Mac) — BRANCH PUSHED, NOT MAIN (Dan: "push this branch so Yoni can work on the player")
+
+Claim: OPEN. Files: `tools/_gas2-scene/**` (static mockup, no build step; README there). Split (one writer per file set):
+**Yoni = the player** (the radio block in `page-b.html` + its own files under `tools/_gas2-scene/player/`, wired in with one
+`<link>` + one `<script>`); **Dan's session = everything else in `page-b.html`.**
+- What: the GAS 2 product page as one scene (final frame v17, desert station at dusk): wall sign = 3 grades, notes, radio =
+  player (visual only, no audio yet), mailbox = email signup (dummy ticket, sends nothing), chalkboard = prices, pump = the
+  real plugin UI (iframe to :4461). Readings on the right: GAS 2 + FREE, "Thicker, smoother, glued master." (Bebas, honey),
+  honey Download button, script "Fill it up." (Dan's picks 2026-10-22: his bench export folded in, measured at his Safari
+  1141x636 to 0.2 px; the tag line dropped; the spec line removed). `page-a.html` = frozen 2026-10-22 snapshot; `ab.html`
+  = A/B viewer; `?bench` = shared bench harness (bench.js symlink, not committed).
+- Not in git (Dan's Mac only): 16 other frame candidates, reference photos, frame-generation scripts.
+- Open: "same loudness" / auto-level is NOT in the copy (needs a measured check first); the mailbox form is a dummy
+  (real contract = the trial worker's `/download/register`); fonts self-hosted woff2 (OFL); page not yet in `src/`.
+- Next: Dan walks the page section by section (readings done); Yoni builds the player.
+
+## 2026-10-19 — /gas "Hear it": desktop shows the 3-track mixer only, the pedal toy stays on phones (Claude Code `revaudio-2a`, laptop 1) — PUSHED TO MAIN = LIVE 2026-10-20 (user: "push to main this session only"; commits `058fa84`..`ec2f4a4` + this handoff line)
+
+Claim: CLOSED 2026-10-19. Files: `bench/gas-mixer-bench.html`, `public/gas-mixer/gas-mixer.js`, `src/pages/gas.astro`, `tasks/handoff.md`, `tasks/player-toy-redesign-plan.md` (a note at the top).
+- Ask (laptop 1 user, with two screenshots): remove the pedal toy section, keep the "Under the hood" mixer. Picks: phones keep the toy (the mixer does not fit a phone; the old phone player is gone since `1cf38db`); keep the "Hear it" title, fix the line under it.
+- What: the component's `doFit` sets `.hood` on every non-phone width (< 760 = phone, as before); `.hood` hides `#toyfit`, so desktop = the mixer, hood always open; the OPEN THE HOOD handler is gone; the toy's frame work runs only on phones. `#wrap` lost its 30 px top margin (nothing above it now). /gas: line under "Hear it" = "Press play, then give it some gas." (true for the mixer and the phone toy); the space reserved before the component builds = `aspect-ratio: 1600 / 958` (the mixer's stage; was the toy's 1100 / 632, max 632 px).
+- `gas-mixer.js` NOT made by a full export: `bench/assets/gas-mixer/` (gitignored) is not on laptop 1. It came from the export script's own text steps (scratch runner: export_component.py up to "write", manifest numbers read from the current js), which first reproduced the committed `gas-mixer.js` byte for byte from the committed bench. So the next real export on laptop 2 gives the same js; audio, images and fonts are untouched.
+- Checked on the built dist (headless Edge): 1280 -> reserved 1232x738 = built 1232x738, toy hidden, mixer + note arrow shown, PLAY on the mixer runs (tape counter rolls, fuel needle follows the audio); 1440 -> 1392x833; 390 -> toy 342x830, mixer hidden; 1280 -> 390 -> 1280 while playing swaps both ways; no console / page errors (Cloudflare RUM CORS on localhost aside). Not checked: real Safari / iPhone, sound by ear.
+- Then (user: "looks good", move it up so "Hear it" is in the first look): desktop only (>= 901 px), the hero is one screen minus 11rem, its bottom gap 3rem -> 1.5rem, the Hear it top gap 2rem -> 1rem. Measured: the title + its line sit inside the first screen at 1280x720 (line ends 703), 1366x768 (735), 1440x900 (852), 1536x864 (816), 1920x1080 (1032), and the whole hero (plate, button, fine print) still fits above them. Phones unchanged.
+- Then (user: shorten the line under "Hear it", sexier, another font from the site's): picked A of 3 on screenshots (Yellowtail script / Permanent Marker / Special Elite). The line is now "Hit play. Give it gas." in Yellowtail, `--brass-bright` + soft glow, `clamp(1.9rem, 3vw, 2.4rem)`. Yellowtail joined the site's own fonts (`src/styles/fonts.css` + `src/styles/fonts/yellowtail-latin.woff2`, the same file `public/station-mixer/fonts/` ships), so /gas does not lean on another player's generated folder. `DESIGN.md` §3 gains the script-accent rule. Checked: font loaded (`document.fonts`), one line at 1440 and 390; the title + line still inside the first screen at all five laptop sizes. The "same loudness" claim left this line (the phone toy's display still says it).
+- Then (user: raise it all more, down to the "Under the hood" note): desktop first screen = hero + title + line + the whole note. `--gas-peek: 17rem` on `.gas`; hero min-height = 100svh - nav - peek; the plate's max-height follows the screen, `clamp(25rem, 100svh - nav - 3.5rem - peek, 600px)` (the copy column is 408 px, so the plate never goes below it); line -> mixer gap 1.5rem -> 0.75rem. Measured at real window sizes (screen minus browser bars): note whole at 1440x789, 1440x900, 1920x953, 1920x1080, 2560x1300; title + line in but the note cut at 1536x730 (29 px), 1280x720 (23 px) and 1366x657 (note just starting): the hero (copy column 408 px) does not leave room there. Plate 400-600 px tall (was 475-600).
+- Then (2026-10-20, user: "a bench so I can place this area", then "no gap between the line and the mixer"): a local GAS lab bench, `public/gaslab.html` (git-excluded in `.git/info/exclude`, never committed; served by `npx astro dev --port 4430` at `/gaslab.html`): the real dev /gas in four same-origin iframes at real window sizes (1366x657, 1536x730, 1440x789, 1920x953), driven by one live `<style>` each; sliders + drag HEAR IT for RISE; COPY = the desktop @media block. The user's COPY is baked verbatim into gas.astro: peek 24rem, hero top 1.5rem, line size up to 4rem, line top gap 0, line -> mixer -7.625rem (the mixer's empty top strip slides up under the line; the note sits beside it). Plus one line of my own after the user's block: `margin-bottom: max(-7.625rem, -9.5vw)`, because at a 1000 px window the fixed pull ran the console over the line's descenders and the note onto the plate (identical from ~1284 px up). Checked on the real page (no lab style) at 1000x700, 1280x720, 1366x657, 1440x789, 1536x730, 1920x953, 2560x1300: hero whole, note whole in the first screen, console 21-49 px below the line, note clear of the title and line; 390 unchanged (toy). Build green. Lesson in `tasks/lessons.md` (2026-10-20).
+- Next: a look at the live /gas on a laptop and a phone (real Safari / iPhone not checked). Delete `public/gaslab.html` (and its exclude line) once the user is done with it.
+
+## 2026-10-18 — Trial-end offer: cart applies `?offer=CODE` locked, branch `trial-offer` (Claude Code `revaudio-70`, Yoni's laptop 2) — PUSHED TO MAIN = LIVE 2026-10-18 (Yoni: "push"; Pages deploy + smoke test green, live /buy/revlimiter/ carries `ra-offer`)
+
+Claim: CLOSED 2026-10-18. File: `src/components/Cart.astro`. Worktree `Website/revaudio-website-offer` (off origin/main 141d400; its `node_modules` is a junction to the main checkout's, same lockfile).
+- What: a plugin's one-time trial-over banner -> licence worker `GET /offer` -> `/buy/<slug>/?offer=CODE`. The cart keeps the code for the tab session with that slug, shows "Your one-time 10% off <plugin> is applied at payment" in the drawer, and passes `discountCode` + `settings {showAddDiscounts:false, allowDiscountRemoval:false}` to `Paddle.Checkout.open` while that plugin is in the cart. Popups already skip `/buy/*`. `wiki offer`.
+- Checked: build green; Playwright on the built dist with Paddle.js stubbed, 9/9.
+- DECIDED (Yoni 2026-10-18): DRIFT goes on sale on Sun Nov 1, not before. That day: DRIFT on sale in `plugins.ts` (status `live`, `introPriceUsd: 69`, `paddlePriceId: 'pri_01m4362j96wvbqtwf2v45k2pt9'`). Without it `/buy/drift/` does not exist and the DRIFT offer link lands on a 404. That is the Nov 1 flip.
+- Not checked: a real Paddle sandbox checkout with a real code (that `discountCode` plus the two settings render as expected inside Paddle's overlay).
+- Next: Sun Nov 1 = DRIFT on sale in `plugins.ts` (line above); then a real checkout through a banner link (code applied, no code field).
+
 ## 2026-10-18 — /revlimiter/ for Google Ads (fixes F + G) (Claude Code `revaudio-75`, Yoni's laptop) — PUSHED TO MAIN = LIVE 2026-10-18 (Yoni: "push", "do all parts and push")
 
 Claim: CLOSED 2026-10-18. Commits on main: `21caf5e` (trial form sends the `ra-src` note with /download/register; privacy text + date 2026-10-18; needs licence worker `3bbefa8`, live), `ef2cc1b` (crane door + BUY patch PNG -> WebP via getImage, both BuyButtonCrane + CraneDropZone, -174 KB), `a4ccea1` (`seoTitle` / `metaDescription` optional plugin fields used only by [slug] <title>/meta; RevLimiter title "RevLimiter – Mastering Limiter Plugin", new description, tagline gains "plugin"; 1% resting floor `max(0.01, …)` on the crane door's light layers so LCP is the hero image, not a light layer that appears at the strike).
@@ -276,6 +1395,69 @@ Claim: CLOSED 2026-10-14. Took over `revaudio-c7`'s stale claim (session gone) o
 - Checks: build green (bench absent from dist); Chromium + WebKit at 1001/1141/1440/1728 + 360/390/430: no sideways scroll;
   bench drag/resize/undo/export verified in both engines.
 - Open: Dan's own placement in the bench, then apply + push (main = live, his word).
+
+## 2026-10-15 — Claude Code `revaudio-02` (Yoni's laptop) — DRIFT #hear test drive (before/after player), native to /drift
+
+Claim: CLOSED 2026-10-19 — PUSHED + LIVE (Yoni: "lets push to live website the design we made for the drift's a/b
+player"). `drift-player` rebased clean onto origin/main `1f7fd5d` (pre-rebase tag `drift-player-prerebase-2026-10-19`),
+build green, pushed `1f7fd5d..c4587e5` (only this branch's 25 commits; main's unpushed GAS/Radio player work NOT included).
+Deploy + Smoke test green, CF cache purged; live revaudio.net/drift #hear renders, 0 broken images, 0 console errors
+under the live CSP. Still unverified: real iPhone / Firefox / Safari (below).
+Worktree `../revaudio-website-dpl`, branch `drift-player`. Files owned (until close):
+`src/components/drift/DriftHear.astro`, `src/lib/drift/{hear,speakers,snap}.ts`, the #hear block in
+`src/styles/drift.css`, the #hear / snap lines in `src/pages/drift.astro` / `src/lib/drift/init.ts` /
+`src/data/drift.ts` (demoMode 'real', demoWholeSound true) + `src/lib/drift/bus.ts` (one comment),
+`src/data/drift-pods.json`, `public/audio/drift/`, `public/drift/{knob3d-drift-65,pod-l,pod-l-cone,pod-r,pod-r-cone}.webp`,
+`tools/drift-player/*`, `bench/drift-{start,neon}-bench.html`, `tasks/drift-player-plan.md`.
+Removed: DriftHeadUnit.astro + demo.ts (the structure test), the toy bench + its art (restore from 6e8a72c).
+
+### State at session end
+
+- Branch `drift-player`: 24 commits ahead of origin/main, 0 behind (fetched 18:25). Last: `a9d1ddc`. The saved design is
+  tagged locally `drift-hear-design-2026-10-15` (not pushed; `git checkout drift-hear-design-2026-10-15` to see it).
+  Nothing pushed. The shared repo has my local commit `b866f9d` (memory note), also unpushed.
+- What's built (Yoni, on the way: "great job! beautiful!", "perfect", "that's perfect"): #hear under the hero = "LET'S
+  DRIFT." — a track list (5 stems), the magenta LCD (waveform L over R, PAN readout, clock), PLAY/STOP caps, FLIP = a worn
+  gunmetal push-to-start with a neon tube (lit = DRIFT, dark = original; bars chase while loading, the tube strikes when it
+  plays) + DRIFT's own house knob for VOLUME (bars lit to level), the page's balance screen, two photographed speaker pods
+  beside the title (cone pumps per channel along its axis), faint smoke. The measured pan drives the page's pan bus (hero
+  wheel + rails). Compact: desktop panel 592 px, phone 689 px. Page-wide soft snap (snap.ts). Details per round:
+  `tasks/drift-player-plan.md`.
+- Checks run: `npm run build` green after every step; headless Edge desktop 1440/1920/1366 + phone 390 (screenshots, no
+  console errors); snap tested with real wheel input (desktop) and native scroll (phone emulation). Live CSP read
+  (connect-src 'self', style-src 'unsafe-inline'): nothing the player uses is blocked.
+
+- After the close (same day): the three steps wear three of the page's own panels so they read apart: 1 = the keep-it
+  TV bezel round the CRT list, 2 = the trial plate (checker cap), 3 = the #drive section plate (carbon, X screws); the
+  inner steel pair plate is gone. Desktop panel 590 px, phone 705 px (fits + snaps: -1 / 0 px).
+  Then: Yoni's live-bench round applied (d940a18); the speakers + smoke REMOVED on Yoni's word (speakers.ts, the pod art,
+  drift-pods.json, gen/cut_speaker.py deleted; restore from f3e212f). Desktop 555 px, phone 654 px.
+
+### Unverified
+
+- Never heard on a real phone / iPhone Safari (audio decode + memory, touch swipes + the snap's feel). Yoni saw the phone
+  layout only in a 390 px desktop window ("that's perfect").
+- Firefox / Safari never tested (all checks were Chromium/Edge).
+- `dist/` was not served under the live CSP headers (the memory note's pre-push step); only the header values were read.
+
+### Background processes
+
+- `npx astro dev --port 4381 --host 127.0.0.1` in the worktree, bg `btqjln3wm` (this session). Kill: the PID on port
+  4381 (`Get-NetTCPConnection -LocalPort 4381 | % OwningProcess | % { Stop-Process -Id $_ }`).
+- `python -m http.server 8795` in the worktree, bg `by9vv6vi8` (serves the benches). Kill: same, port 8795.
+- An Edge app window (phone size) with a temp profile under the session scratchpad: just close it.
+
+### Things the next session needs to decide
+
+1. ~~**Push**~~ DONE 2026-10-19 (`c4587e5`, see the claim line). Old route, for the record: Route: `git -C ../revaudio-website-dpl pull --rebase`
+   (origin/main may have moved), `npm run build`, serve `dist/` under the live CSP, then push `drift-player` to main
+   (main = live GitHub Pages deploy). Name any other session's commits that would ride along (none at 17:15).
+2. **Shared repo commit `b866f9d`** (memory note) goes out with the next shared push.
+
+### Memory written this session
+
+- `shared/memory/feedback_site_interactive_embeds.md` (+1 bullet, committed `b866f9d`): a season page gets a NATIVE
+  section built from its own parts, not a bespoke object.
 
 ## 2026-10-09 — /drift #band v2: DRIFT's real BAND SELECT + STEREO IMAGER on a real vocal (same branch, Claude Code, Dan's Mac) — COMMITTED LOCAL, NOT PUSHED
 - Dan on v1: "close, not it": real spectrum + real imager from DRIFT, a vocal on the band select, no factory presets, give

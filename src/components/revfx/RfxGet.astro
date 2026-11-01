@@ -1,0 +1,64 @@
+---
+/**
+ * #get — the closer (the #drift note above it went 2026-10-19, Gil):
+ * /drift's slim #get console (DriftPanel + d-get-* styles) with RevFX's compat rows, the specs folds and the trial
+ * form; in phase 'released' (revfx.ts, the build guards it) the buy key sits over the trial. id="try" = the
+ * sticky bar's jump target.
+ */
+import DriftPanel from '../drift/DriftPanel.astro';
+import RfxCapture from './RfxCapture.astro';
+import { revfx, compatRows, buyable, formatsMac } from '../../data/revfx';
+---
+<section class="d-sec rfx-sec" id="get" aria-labelledby="rfx-get-h">
+  <div class="d-wrap">
+    <div class="d-getin" id="try">
+      <DriftPanel class="d-get-panel" sticker="試乗">
+        <div class="d-get-grid">
+          <div class="d-get-left">
+            <h2 id="rfx-get-h" class="d-headline d-get-head">
+              <span class="l1">Runs on your setup.</span> <span class="l2">{buyable() ? `$${revfx.priceUsd}. Or ${revfx.trialDays} days free.` : `${revfx.trialDays} days free.`}</span>
+            </h2>
+            <dl class="d-compat">{compatRows().map((r) => <div><dt>{r.k}</dt><dd>{r.v.split(' · ').map((s, i) => <Fragment>{i ? ' · ' : ''}<span class="d-nw">{s}</span></Fragment>)}</dd></div>)}</dl>
+            <div class="d-get-folds">
+              <details class="d-fold">
+                <summary>Specs</summary>
+                <dl class="d-more-dl">
+                  <div><dt>Effects</dt><dd>Pitch, Echo, Reverb, Halo, Glue Comp</dd></div>
+                  <div><dt>Chain</dt><dd>any order, drag to change</dd></div>
+                  <div><dt>Scenes</dt><dd>Randomize · 4 snapshots, automatable</dd></div>
+                  <div><dt>Bypass</dt><dd>latency-matched</dd></div>
+                  <div><dt>Input</dt><dd>mono or stereo in, stereo out</dd></div>
+                  <div><dt>Window</dt><dd>resizable</dd></div>
+                </dl>
+              </details>
+              <details class="d-fold">
+                <summary>DAWs</summary>
+                <p>{revfx.aaxReady ? 'Any VST3 or AAX host, plus AU on Mac.' : `Any VST3 or AU host on Mac (${formatsMac()}). Not Pro Tools yet.`}</p>
+              </details>
+              <details class="d-fold">
+                <summary>After {revfx.trialDays} days?</summary>
+                <p>The trial is the full plugin. When it ends, RevFX passes your audio through untouched until you add a licence key.</p>
+              </details>
+            </div>
+          </div>
+          <div class="d-get-right">
+            {buyable() && (
+              <div class="d-buyslot rfx-buyslot">
+                <button type="button" class="d-cta" data-add-to-cart data-cart-label data-slug="revfx" data-name="RevFX"
+                  data-price={revfx.priceUsd}>Buy RevFX · ${revfx.priceUsd}</button>
+                <p class="d-cta-sub">{formatsMac()} · Mac</p>
+              </div>
+            )}
+            <RfxCapture id="rfx-get" look="stack" />
+          </div>
+        </div>
+      </DriftPanel>
+    </div>
+  </div>
+</section>
+
+<!-- phones: the sticky way in (hides while a trial form is on screen) -->
+<div class="rfx-sticky" data-rfx-sticky aria-hidden="true">
+  <span>{revfx.trialDays} DAYS FREE · MAC</span>
+  <a href="#try" class="d-cta" data-rfx-jump tabindex="-1">Get it</a>
+</div>

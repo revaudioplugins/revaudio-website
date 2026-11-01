@@ -43,8 +43,8 @@ const onceUrl = site.downloadGate.workerUrl + '/form-once';
       />
       <!-- honeypot: real users never fill this; bots do -->
       <input type="text" name="_gotcha" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
-      <button type="submit" class="signup-submit">
-        <span class="ss-face">{buttonLabel} <span class="ss-arrow">&#9656;</span></span>
+      <button type="submit" class="signup-submit rv-btn rv-btn--sm">
+        <span class="rv-btn__label">{buttonLabel}</span><span class="ss-arrow" aria-hidden="true">&#9656;</span>
       </button>
     </form>
     <p class="signup-status" role="status" aria-live="polite" hidden></p>
@@ -95,44 +95,13 @@ const onceUrl = site.downloadGate.workerUrl + '/form-once';
 </script>
 
 <style>
-  /* Flat brass button, same language as TrialStamp's .tc-submit / .btn.primary.
-     Replaces the btn-submit image plate — that plate had to be stacked under
-     the input because it cropped beside it; a text button sits on the row. */
+  /* The submit is the button family's small brass (src/styles/buttons.css,
+     Dan 2026-10-18), level with the input on the row. Only placement here. */
   .signup form { align-items: stretch; gap: 0.5rem; }
 
-  .signup .signup-form .signup-submit {
-    flex: none;
-    padding: 0.875rem 1.5rem;
-    background: var(--brass);
-    color: var(--bg-0);
-    border: 1px solid transparent;
-    border-radius: 6px;
-    cursor: pointer;
-    font: inherit;
-    transition: background 0.2s var(--ease), box-shadow 0.2s var(--ease);
-  }
+  .signup .signup-form .signup-submit { flex: none; }
+  .signup .signup-form .ss-arrow { opacity: 0.7; }
 
-  .signup .signup-form .ss-face {
-    display: block;
-    font-family: var(--font-display);
-    font-size: 1.05rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    white-space: nowrap;
-    line-height: 1;
-  }
-
-  .signup .signup-form .ss-arrow { color: var(--bg-1); opacity: 0.7; }
-
-  .signup .signup-form .signup-submit:hover {
-    background: var(--brass-bright);
-    box-shadow: 0 0 24px rgba(232, 200, 120, 0.35);
-  }
-
-  .signup .signup-form .signup-submit:focus-visible {
-    outline: 2px solid var(--brass-bright);
-    outline-offset: 2px;
-  }
   /* honeypot — visually and semantically hidden, still submittable by bots */
   .signup form .hp {
     position: absolute;

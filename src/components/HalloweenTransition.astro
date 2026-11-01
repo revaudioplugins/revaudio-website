@@ -1,0 +1,317 @@
+---
+// Halloween page transition (2026-10): clicking an internal link plays one
+// of three short scenes, picked at random (never the same one twice in a
+// row), then the browser navigates. Mounted in BaseLayout, so it runs on
+// every page (the decorations in HalloweenSkin stay on home + store). Skipped for new-tab/modified clicks,
+// downloads, hash links, other origins and reduced motion.
+
+const SPIDERS = 18;
+const SKELETONS = 6;
+---
+
+<div class="hwt" data-hwt aria-hidden="true">
+  <div class="hwt-dim"></div>
+
+  {/* 1. spiders scuttle up the screen */}
+  <div class="hwt-scene hwt-spiders">
+    {Array.from({ length: SPIDERS }).map(() => (
+      <div class="hwt-crawler">
+        <svg viewBox="0 0 40 44">
+          <g class="hwt-legs-a">
+            <path d="M17 13 L9 9 L5 2" /><path d="M16 20 L7 22 L2 28" />
+            <path d="M23 16 L31 14 L37 8" /><path d="M24 23 L32 28 L35 36" />
+          </g>
+          <g class="hwt-legs-b">
+            <path d="M17 16 L8 14 L3 9" /><path d="M16 23 L8 28 L5 36" />
+            <path d="M23 13 L31 9 L35 2" /><path d="M24 20 L33 22 L38 28" />
+          </g>
+          <ellipse class="hwt-sp-body" cx="20" cy="28" rx="6.5" ry="8.5" />
+          <circle class="hwt-sp-body" cx="20" cy="15" r="4.6" />
+          <circle class="hwt-sp-eye" cx="18.4" cy="12.6" r="1" />
+          <circle class="hwt-sp-eye" cx="21.6" cy="12.6" r="1" />
+          <path class="hwt-sp-mark" d="M20 24 l2.6 4 -2.6 4 -2.6 -4z" />
+        </svg>
+      </div>
+    ))}
+  </div>
+
+  {/* 2. skeletons drop from the rafters */}
+  <div class="hwt-scene hwt-skeletons">
+    {Array.from({ length: SKELETONS }).map(() => (
+      <div class="hwt-faller">
+        <svg viewBox="0 0 60 112">
+          <g class="hwt-bones" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M30 27 V63" />
+            <path d="M27 31 H33 M27 37 H33 M27 43 H33 M27 49 H33 M27 55 H33" stroke-width="1.6" />
+            <path d="M30 34 Q18 33 20 40 M30 40 Q17 39 19 46 M30 46 Q19 45 21 52" />
+            <path d="M30 34 Q42 33 40 40 M30 40 Q43 39 41 46 M30 46 Q41 45 39 52" />
+            <path d="M21 31 H39" />
+            <g class="hwt-arm-l"><path d="M21 31 L13 46 L9 60" /><path d="M9 60 L6 64 M9 60 L9 65 M9 60 L12 64" stroke-width="1.6" /></g>
+            <g class="hwt-arm-r"><path d="M39 31 L47 46 L51 60" /><path d="M51 60 L54 64 M51 60 L51 65 M51 60 L48 64" stroke-width="1.6" /></g>
+            <path class="hwt-pelvis" d="M21 63 Q30 72 39 63 Q30 59 21 63 Z" />
+            <g class="hwt-leg-l"><path d="M25 67 L21 86 L22 104 L16 106" /></g>
+            <g class="hwt-leg-r"><path d="M35 67 L39 86 L38 104 L44 106" /></g>
+          </g>
+          <ellipse class="hwt-skull" cx="30" cy="13" rx="10" ry="11" />
+          <rect class="hwt-skull" x="24" y="19" width="12" height="7" rx="2" />
+          <ellipse class="hwt-socket" cx="26" cy="12" rx="3" ry="3.4" />
+          <ellipse class="hwt-socket" cx="34" cy="12" rx="3" ry="3.4" />
+          <path class="hwt-socket" d="M30 16 l1.6 3 h-3.2z" />
+          <path class="hwt-teeth" d="M24.5 22.5 H35.5 M27 20.5 V25 M30 20.5 V25 M33 20.5 V25" />
+        </svg>
+      </div>
+    ))}
+  </div>
+
+  {/* 3. a witch crosses the moon */}
+  <div class="hwt-scene hwt-witch">
+    <div class="hwt-moon"></div>
+    <div class="hwt-flyer">
+      <svg viewBox="-10 -6 220 120">
+        <g class="hwt-trail">
+          <path d="M-4 66 l2 -5 2 5 5 2 -5 2 -2 5 -2 -5 -5 -2z" />
+          <path d="M-30 74 l1.4 -3.6 1.4 3.6 3.6 1.4 -3.6 1.4 -1.4 3.6 -1.4 -3.6 -3.6 -1.4z" />
+          <path d="M-56 62 l1.2 -3 1.2 3 3 1.2 -3 1.2 -1.2 3 -1.2 -3 -3 -1.2z" />
+        </g>
+        <g class="hwt-witch-shape">
+          <path class="hwt-broom" d="M10 80 L172 61" />
+          <path d="M40 77 L6 66 L0 76 L4 90 L40 83 Z" />
+          <path class="hwt-cape" d="M96 48 Q70 46 52 66 Q70 60 86 72 Z" />
+          <path d="M86 74 Q94 42 114 40 Q128 50 131 70 L102 76 Z" />
+          <path d="M111 72 L124 84 L134 81 L136 85 L121 89 L106 76 Z" />
+          <path d="M116 46 L138 63 L134 66 L113 52 Z" />
+          <circle cx="118" cy="34" r="7.5" />
+          <path d="M124 32 L135 37 L124 39 Z" />
+          <path d="M112 36 Q102 46 96 42 Q105 39 110 33 Z" />
+          <ellipse cx="116" cy="27.5" rx="15" ry="3.2" />
+          <path d="M106 28 Q110 14 100 1 Q116 9 126 28 Z" />
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  {/* fade to black over everything, scene included, before the page changes */}
+  <div class="hwt-cover"></div>
+</div>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-hwt]');
+  if (root) {
+    document.body.appendChild(root);
+    const FX = { spiders: 1300, skeletons: 1450, witch: 1650 } as const;
+    const HOLD = 45; // a beat of full black before the page swaps
+    type Fx = keyof typeof FX;
+    const names = Object.keys(FX) as Fx[];
+    let busy = false;
+    const rand = (a: number, b: number) => a + Math.random() * (b - a);
+
+    const pick = (): Fx => {
+      let last: string | null = null;
+      try { last = sessionStorage.getItem('hw-last-fx'); } catch {}
+      const pool = names.filter((n) => n !== last);
+      const fx = pool[Math.floor(Math.random() * pool.length)];
+      try { sessionStorage.setItem('hw-last-fx', fx); } catch {}
+      return fx;
+    };
+
+    // Fresh positions every play so no two transitions look the same.
+    const scatter = (fx: Fx) => {
+      if (fx === 'spiders') {
+        root.querySelectorAll<HTMLElement>('.hwt-crawler').forEach((el) => {
+          const tilt = rand(-28, 28);
+          el.style.cssText = `--x:${rand(-4, 100).toFixed(1)}vw;--size:${rand(34, 78).toFixed(0)}px;--tilt:${tilt.toFixed(0)}deg;--dx:${(tilt * 1.4).toFixed(0)}vh;--d:${rand(0.75, 1.15).toFixed(2)}s;--dl:${rand(0, 0.25).toFixed(2)}s`;
+        });
+      } else if (fx === 'skeletons') {
+        root.querySelectorAll<HTMLElement>('.hwt-faller').forEach((el, i) => {
+          const lane = (i + Math.random() * 0.8) / 6;
+          el.style.cssText = `--x:${(lane * 100 - 4).toFixed(1)}vw;--size:${rand(80, 140).toFixed(0)}px;--spin:${rand(-260, 260).toFixed(0)}deg;--d:${rand(0.95, 1.2).toFixed(2)}s;--dl:${rand(0, 0.3).toFixed(2)}s`;
+        });
+      } else {
+        root.style.setProperty('--hwt-dir', Math.random() > 0.5 ? '1' : '-1');
+      }
+    };
+
+    const play = (href: string) => {
+      busy = true;
+      const fx = pick();
+      scatter(fx);
+      const hint = document.createElement('link');
+      hint.rel = 'prefetch';
+      hint.href = href;
+      document.head.appendChild(hint);
+      root.style.setProperty('--hwt-ms', `${FX[fx]}ms`);
+      root.dataset.play = fx;
+      // The next page opens on black and fades up (BaseLayout head + .hw-fadein below).
+      setTimeout(() => {
+        try { sessionStorage.setItem('hw-fadein', String(Date.now())); } catch {}
+        location.href = href;
+      }, FX[fx] + HOLD);
+    };
+
+    document.addEventListener('click', (e) => {
+      if (busy || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches || document.documentElement.classList.contains('hc')) return;
+      const a = (e.target as Element | null)?.closest?.('a[href]') as HTMLAnchorElement | null;
+      if (!a || a.hasAttribute('download') || (a.target && a.target !== '_self')) return;
+      const url = new URL(a.href, location.href);
+      if (url.origin !== location.origin || !/^https?:$/.test(url.protocol)) return;
+      if (url.pathname === location.pathname && url.search === location.search) return; // same page / hash jump
+      e.preventDefault();
+      play(url.href);
+    });
+
+    // Arrived through a scene: the black cover is already up (set in <head>); let it fade, then clear.
+    const html = document.documentElement;
+    if (html.classList.contains('hw-fadein')) {
+      setTimeout(() => html.classList.remove('hw-fadein'), 500);
+    }
+
+    // Back/forward cache: come back to a clean page, not a frozen scene.
+    addEventListener('pageshow', (e) => {
+      if (e.persisted) { busy = false; delete root.dataset.play; document.documentElement.classList.remove('hw-fadein'); }
+    });
+  }
+</script>
+
+<style>
+  .hwt {
+    --hwt-dir: 1;
+    --bone: #e9dfc9;
+    position: fixed;
+    inset: 0;
+    z-index: 9500; /* over everything, the scene is the whole screen */
+    pointer-events: none;
+    overflow: hidden;
+    visibility: hidden;
+  }
+  .hwt[data-play] { visibility: visible; pointer-events: auto; cursor: progress; }
+  .hwt-scene { display: none; position: absolute; inset: 0; }
+  .hwt[data-play='spiders'] .hwt-spiders,
+  .hwt[data-play='skeletons'] .hwt-skeletons,
+  .hwt[data-play='witch'] .hwt-witch { display: block; }
+
+  /* the room goes dark behind the scene; the next page arrives out of it */
+  .hwt-dim { position: absolute; inset: 0; background: #0b0a09; opacity: 0; }
+  .hwt[data-play] .hwt-dim { animation: hwt-dim var(--hwt-ms, 1.3s) ease-in forwards; }
+
+  /* fade to black: the last 190ms of every scene, over the scene itself */
+  .hwt-cover { position: absolute; inset: 0; background: #0b0a09; opacity: 0; }
+  .hwt[data-play] .hwt-cover { animation: hwt-cover 190ms cubic-bezier(0.4, 0, 0.6, 1) calc(var(--hwt-ms, 1.3s) - 190ms) forwards; }
+
+  /* fade up from black on the page we land on */
+  :global(html.hw-fadein body::after) {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 2147483000;
+    background: #0b0a09;
+    pointer-events: none;
+    animation: hwt-unfade 350ms cubic-bezier(0.25, 0.1, 0.25, 1) 40ms both;
+  }
+
+  /* ── spiders ── */
+  .hwt-crawler {
+    position: absolute;
+    left: var(--x);
+    top: 100%;
+    width: var(--size);
+    rotate: var(--tilt);
+    animation: hwt-crawl var(--d) cubic-bezier(0.3, 0.1, 0.7, 0.9) var(--dl) both;
+  }
+  .hwt-crawler svg { display: block; width: 100%; overflow: visible; filter: drop-shadow(0 0 1px rgba(232, 200, 120, 0.6)) drop-shadow(0 8px 10px rgba(0, 0, 0, 0.7)); }
+  .hwt-legs-a, .hwt-legs-b { fill: none; stroke: #241d18; stroke-width: 2.3; stroke-linecap: round; stroke-linejoin: round; transform-box: view-box; transform-origin: 20px 20px; }
+  .hwt-legs-a { animation: hwt-gait 0.12s ease-in-out infinite alternate; }
+  .hwt-legs-b { animation: hwt-gait 0.12s ease-in-out infinite alternate-reverse; }
+  .hwt-sp-body { fill: #1d1916; stroke: #6b5638; stroke-width: 0.8; }
+  .hwt-sp-eye { fill: #ffb54a; }
+  .hwt-sp-mark { fill: var(--oxide-text, #d4622a); }
+
+  /* ── skeletons ── */
+  .hwt-faller {
+    position: absolute;
+    left: var(--x);
+    top: 0;
+    width: var(--size);
+    animation: hwt-fall var(--d) cubic-bezier(0.55, 0, 0.9, 0.55) var(--dl) both;
+  }
+  .hwt-faller svg { display: block; width: 100%; overflow: visible; filter: drop-shadow(0 0 6px rgba(255, 170, 80, 0.25)) drop-shadow(0 10px 12px rgba(0, 0, 0, 0.6)); }
+  .hwt-bones { stroke: var(--bone); stroke-width: 3.2; }
+  .hwt-pelvis { fill: var(--bone); }
+  .hwt-skull { fill: var(--bone); }
+  .hwt-socket { fill: #14110f; }
+  .hwt-teeth { fill: none; stroke: #5a4c3c; stroke-width: 0.9; }
+  .hwt-arm-l, .hwt-arm-r, .hwt-leg-l, .hwt-leg-r { transform-box: view-box; }
+  .hwt-arm-l { transform-origin: 21px 31px; animation: hwt-flail 0.18s ease-in-out infinite alternate; }
+  .hwt-arm-r { transform-origin: 39px 31px; animation: hwt-flail 0.18s ease-in-out infinite alternate-reverse; }
+  .hwt-leg-l { transform-origin: 25px 67px; animation: hwt-kick 0.24s ease-in-out infinite alternate; }
+  .hwt-leg-r { transform-origin: 35px 67px; animation: hwt-kick 0.24s ease-in-out infinite alternate-reverse; }
+
+  /* ── witch ── */
+  .hwt-moon {
+    position: absolute;
+    left: 50%;
+    top: 34%;
+    width: min(42vw, 52vh);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    translate: -50% -50%;
+    background:
+      radial-gradient(circle at 34% 30%, rgba(0, 0, 0, 0.08) 0 7%, transparent 8%),
+      radial-gradient(circle at 62% 58%, rgba(0, 0, 0, 0.07) 0 10%, transparent 11%),
+      radial-gradient(circle at 70% 28%, rgba(0, 0, 0, 0.06) 0 5%, transparent 6%),
+      radial-gradient(circle at 42% 42%, #f6ead0, #e2cfa6 60%, #c9ad7a);
+    box-shadow: 0 0 60px 20px rgba(246, 222, 170, 0.28), 0 0 200px 60px rgba(224, 116, 42, 0.18);
+    animation: hwt-moon 1.65s ease-out both;
+  }
+  .hwt-flyer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    scale: var(--hwt-dir) 1;
+  }
+  .hwt-flyer svg {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: clamp(180px, 22vw, 320px);
+    overflow: visible;
+    animation: hwt-fly 1.6s cubic-bezier(0.35, 0.1, 0.6, 0.95) both;
+  }
+  .hwt-witch-shape { fill: #0f0c0a; filter: drop-shadow(0 -1px 0 rgba(246, 222, 170, 0.5)); animation: hwt-bob 0.4s ease-in-out infinite alternate; }
+  .hwt-broom { fill: none; stroke: #0f0c0a; stroke-width: 4; stroke-linecap: round; }
+  .hwt-cape { animation: hwt-cape 0.2s ease-in-out infinite alternate; transform-box: view-box; transform-origin: 96px 50px; }
+  .hwt-trail { fill: #ffc46b; filter: drop-shadow(0 0 4px rgba(255, 150, 50, 0.9)); animation: hwt-twinkle 0.25s steps(2) infinite; }
+
+  /* ── keyframes ── */
+  @keyframes hwt-dim { 0% { opacity: 0; } 100% { opacity: 0.55; } }
+  @keyframes hwt-cover { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes hwt-unfade { from { opacity: 1; } to { opacity: 0; } }
+  @keyframes hwt-crawl {
+    from { transform: translate(0, 0); }
+    to { transform: translate(var(--dx), calc(-100vh - 160px)); }
+  }
+  @keyframes hwt-gait { from { transform: rotate(-7deg); } to { transform: rotate(7deg); } }
+  @keyframes hwt-fall {
+    from { transform: translateY(-160px) rotate(0deg); }
+    to { transform: translateY(calc(100vh + 60px)) rotate(var(--spin)); }
+  }
+  @keyframes hwt-flail { from { transform: rotate(-40deg); } to { transform: rotate(55deg); } }
+  @keyframes hwt-kick { from { transform: rotate(-22deg); } to { transform: rotate(26deg); } }
+  @keyframes hwt-moon {
+    0% { opacity: 0; transform: scale(0.85) translateY(30px); }
+    35% { opacity: 1; }
+    100% { opacity: 0.85; transform: scale(1) translateY(0); }
+  }
+  @keyframes hwt-fly {
+    0% { transform: translate(-30vw, 62vh) rotate(-8deg); }
+    50% { transform: translate(38vw, 18vh) rotate(-4deg); }
+    100% { transform: translate(110vw, 30vh) rotate(6deg); }
+  }
+  @keyframes hwt-bob { from { transform: translateY(-2px); } to { transform: translateY(3px); } }
+  @keyframes hwt-cape { from { transform: skewY(-6deg); } to { transform: skewY(6deg) scaleX(1.08); } }
+  @keyframes hwt-twinkle { 50% { opacity: 0.4; } }
+
+  :global(html.hc) .hwt { display: none; }
+</style>

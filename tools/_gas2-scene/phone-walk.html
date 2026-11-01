@@ -1,0 +1,813 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GAS 2 Mockup B · Phone Walk</title>
+<link rel="stylesheet" href="player/radio.css"><script src="player/radio.js" defer></script><!-- the radio player: Yoni (player/) -->
+<style>
+@font-face { font-family: Bebas; src: url(fonts/bebas.woff2) format("woff2"); }
+@font-face { font-family: Inter; src: url(fonts/inter.woff2) format("woff2"); font-weight: 100 900; }
+@font-face { font-family: Yellowtail; src: url(fonts/yellowtail.woff2) format("woff2"); }
+@font-face { font-family: Gochi; src: url(fonts/gochi.woff2) format("woff2"); }
+@font-face { font-family: Marker; src: url(fonts/marker.woff2) format("woff2"); }
+@font-face { font-family: Elite; src: url(fonts/elite.woff2) format("woff2"); }
+@font-face { font-family: Oswald; src: url(fonts/Oswald-Variable.woff2) format("woff2"); font-weight: 200 700; }
+:root {
+  --bg: #120804; --ink: #241a12; --paper: #efe3c2; --brass: #e8c878; --honey: #f2be4a; --oxide: #7a2717;
+  --fg: #efe9df; --muted: #b9b0a2; --dim: #8a8275; --lamp: rgba(255, 196, 110, .55);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: Inter, system-ui, sans-serif; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+
+/* the final frame: a 3:2 scene that always covers the viewport; every prop is placed in % of the scene so it tracks the photo */
+.stage { position: relative; height: 100vh; min-height: 560px; overflow: hidden; background: #0d0806; }
+.scene { position: absolute; left: 50%; top: 50%; width: max(100vw, 150vh); aspect-ratio: 3 / 2; transform: translate(-50%, -50%); container-type: inline-size; }
+/* windows taller than the photo crop its sides: keep the right edge (the readings) in view, the station's far left gives way */
+@media (max-aspect-ratio: 3/2) { .scene { left: auto; right: 0; transform: translateY(-50%); } }
+.scene > img.photo { position: absolute; inset: 0; width: 100%; height: 100%; display: block; user-select: none; }
+.abs { position: absolute; }
+
+/* 1. wall sign: the three grades, painted */
+.sign { left: 3.2%; top: 12.3%; width: 57.6%; height: 6.6%; display: flex; align-items: center; justify-content: center; gap: 2.2cqw; }
+.sign button { font: 400 3.55cqw/1 Bebas; letter-spacing: .14em; color: var(--oxide); opacity: .9; mix-blend-mode: multiply; filter: url(#paint); transition: color .25s, opacity .25s; }
+.sign i { width: .55cqw; height: .55cqw; border-radius: 50%; background: var(--oxide); opacity: .7; mix-blend-mode: multiply; }
+.sign button:hover, .sign button.on { color: #a8321c; opacity: 1; } /* the picked grade = this red only; underline out (Dan 2026-10-23) */
+.gradeTip { left: 50%; top: 19.4%; transform: translate(-50%, -.4cqw) rotate(-.6deg); background: var(--paper); color: var(--ink); padding: .45cqw 1.1cqw; font: 500 max(11px, .86cqw) Oswald; letter-spacing: .16em; text-transform: uppercase; white-space: nowrap; box-shadow: 0 .3cqw .8cqw rgba(0,0,0,.4); opacity: 0; transition: opacity .25s, transform .25s; pointer-events: none; margin-left: -18.1%; }
+.gradeTip.show { opacity: 1; transform: translate(-50%, 0) rotate(-.6deg); }
+/* the pump's three keys glow with the chosen grade */
+.key { top: 60.3%; height: 2.9%; border-radius: .25cqw; box-shadow: 0 0 1.2cqw .25cqw rgba(255, 190, 90, .0), inset 0 0 .9cqw rgba(255, 200, 110, 0); transition: box-shadow .35s; pointer-events: none; }
+.key.on { box-shadow: 0 0 1.4cqw .3cqw rgba(255, 190, 90, .55), inset 0 0 .9cqw rgba(255, 210, 130, .65); }
+
+/* 2. window notes (GAS 1's taped paper note) */
+.note { background: var(--paper); color: var(--ink); font: 400 .98cqw/1.25 Gochi; padding: .9cqw 1cqw 1cqw; box-shadow: var(--ng-glow, 0 0 0 transparent), var(--ng-sh, 0 .4cqw 1cqw rgba(0,0,0,.45)); transform: rotate(var(--r, -2deg)); }
+.note b { display: block; font: 400 1.12cqw Marker; color: #a8321c; letter-spacing: .06em; margin-bottom: .3cqw; }
+.note::before, .note::after { content: ""; position: absolute; top: -.7cqw; width: 2.8cqw; height: 1.3cqw; background: rgba(235, 225, 195, .78); box-shadow: 0 .1cqw .3cqw rgba(0,0,0,.2); }
+.note::before { left: -.6cqw; transform: rotate(-28deg); }
+.note::after { right: -.6cqw; transform: rotate(26deg); }
+.note a { color: #a8321c; }
+/* the notes became 1950s gas posters (Dan 2026-10-23: "instead of notes I want posters ... from the time of this vintage
+   gas pump ... simple and short, almost like a catchphrase", lines his picks). Art: gpt-image-2, props/poster-*.webp.
+   Round 2 (Dan, same day: "smaller and fit the window better ... like it's stuck to the window, part of the picture,
+   no need for tape"): pasted flat INSIDE the glass, so no tape, no shadow, nearly square to the frame; sized inside the
+   panes with a margin (measured on f6-v17: left pane glass x 105-245 / y 240-535, right x 565-765 / y 240-540);
+   the shop's dusk light (warm at the top, falling off to the sill), the glass sheen over them; kept sharp. */
+.poster { padding: 0; box-shadow: none; }
+.poster::before { display: none; }
+.poster::after { inset: 0; width: auto; height: auto; transform: none; /* the tape's slot, reused for the light */ box-shadow: none; z-index: 1; pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 196, 120, .1), transparent 35%, rgba(24, 12, 4, .28)); }
+body.ng-tape .note.poster::after { background: linear-gradient(180deg, rgba(255, 196, 120, .1), transparent 35%, rgba(24, 12, 4, .28)); box-shadow: none; }
+body.ng-grade .note.poster { filter: brightness(var(--nf-b, .86)) sepia(.22) saturate(.96) contrast(.97); } /* no blur: Dan 2026-10-23 "too blurred" */
+body.ng-glass .poster .glass { opacity: .6; } /* a lighter sheen than the notes': the posters stay ink, not milk */
+.poster img { display: block; width: 100%; user-select: none; }
+.pk { left: 7.75%; top: 26.6%; width: 7.3%; --r: -.4deg; }
+.pl { left: 38.4%; top: 25%; width: 10.4%; --r: .3deg; }
+.ps { left: 38.4%; top: 37.1%; width: 10.4%; --r: -.2deg; }
+/* NOTES ON THE GLASS (Dan 2026-10-22: "the notes are hovering, I want them to feel like they're on the glass").
+   Paper taped to a shop window throws no shadow you can see from outside, takes the window's dusk light and sits BEHIND
+   the glass sheen. Four layers, each a body class with a TUNE checkbox (all on by default), so each can be judged alone. */
+body.ng-shadow .note { --ng-sh: 0 0 0 .04cqw rgba(60, 40, 20, .35), .06cqw .1cqw .2cqw rgba(0, 0, 0, .22); /* paper edge + a hair of contact */
+  background-image: radial-gradient(1.8cqw 1.4cqw at 100% 100%, rgba(70, 45, 20, .2), transparent 70%), radial-gradient(1.4cqw 1.1cqw at 0 100%, rgba(70, 45, 20, .14), transparent 70%); } /* the loose bottom corners curl a touch */
+body.ng-grade .note { filter: brightness(var(--nf-b, .86)) sepia(.3) saturate(1.08) contrast(.96); background-color: #ecdcb4; /* the mailbox / chalkboard grade */
+  --ng-glow: inset 0 0 1.6cqw rgba(255, 176, 84, .3); } /* the shop's lamps behind the paper */
+.note .glass { display: none; position: absolute; inset: 0; z-index: 2; pointer-events: none; mix-blend-mode: screen;
+  background: linear-gradient(162deg, rgba(150, 168, 205, .14), transparent 38%), linear-gradient(112deg, transparent 34%, rgba(255, 236, 210, .14) 44%, rgba(255, 236, 210, .05) 50%, transparent 58%); }
+body.ng-glass .note .glass { display: block; }
+body.ng-tape .note::before, body.ng-tape .note::after { background: linear-gradient(180deg, rgba(248, 242, 225, .52), rgba(232, 222, 196, .4));
+  box-shadow: 0 0 0 .03cqw rgba(255, 250, 235, .25), 0 .03cqw .08cqw rgba(0, 0, 0, .12); }
+/* ═══ the pump in the spotlight, the notes behind it (Dan 2026-10-23: "the notes need to feel like they're sitting on the
+   glass and behind the gas pump and have a bit of fade behind it", "the gas pump itself needs to be in a spotlight so it
+   will pop out") ═══
+   The pump is painted into the frame, so props/pump-cut.png (traced from f6-v17, the same pixels) is laid back over it
+   AFTER the notes: they slide behind its edge, and its soft shadow fades them where they meet it. FADE = thinner paper
+   (the lit shop shows through) and a little less light on it. The light is the lamp hanging right above the pump,
+   on the pump only (Dan, same day: "a little less, just keep the light on the GAS 2 itself": no cone, no pool, no dim).
+   All of it is TUNE → Spotlight (COPY = the numbers to bake); the defaults live in the script at the bottom. */
+.note { opacity: var(--nf-o, 1); }
+.pumpCut { left: 21.289%; top: 20.215%; width: 17.643%; pointer-events: none; user-select: none;
+  filter: brightness(var(--sp-b, 1)) contrast(var(--sp-k, 1)) drop-shadow(0 .4cqw 1.8cqw rgba(8, 4, 2, var(--sp-s, .55))); }
+.pumpLit { left: 21.289%; top: 20.215%; width: 17.643%; height: 61.523%; pointer-events: none; mix-blend-mode: soft-light; opacity: var(--sp-l, 0);
+  background: linear-gradient(180deg, rgba(255, 214, 150, .95) 0%, rgba(255, 200, 130, .5) 42%, transparent 88%);
+  -webkit-mask: url(props/pump-cut.png) 0 0 / 100% 100% no-repeat; mask: url(props/pump-cut.png) 0 0 / 100% 100% no-repeat; }
+/* ═══ end spotlight ═══ */
+
+/* 3. the radio = the GAS 2 player */
+.radio { left: 5.2%; top: 52.3%; width: 15.3%; height: 15%; border-radius: .6cqw; }
+.radio .glow { position: absolute; inset: -8% -6%; border-radius: 1cqw; background: radial-gradient(closest-side, rgba(255, 190, 100, .38), transparent); opacity: 0; transition: opacity .5s; pointer-events: none; }
+.radio.on .glow { opacity: 1; animation: breathe 1.6s ease-in-out infinite; }
+@keyframes breathe { 50% { opacity: .55; } }
+.dial { position: absolute; left: 25%; right: 25%; top: 71%; height: 13%; display: flex; justify-content: space-between; align-items: center; padding: 0 5%; font: 600 .5cqw Oswald; letter-spacing: .14em; color: #2a1a0c; }
+.dial .ptr { position: absolute; top: 8%; bottom: 8%; width: .16cqw; background: #b3261e; left: 16%; transition: left .7s cubic-bezier(.2, .9, .25, 1.15); box-shadow: 0 0 .3cqw rgba(179, 38, 30, .6); }
+.radio.b .dial .ptr { left: 82%; }
+.dial span { position: relative; z-index: 1; }
+.radioCap { left: 5.2%; top: 68.2%; width: 15.3%; text-align: center; font: 600 max(11px, .78cqw) Oswald; letter-spacing: .2em; color: var(--paper); text-shadow: 0 1px 3px #000; text-transform: uppercase; pointer-events: none; }
+.radioCap em { font-style: normal; color: var(--honey); }
+
+/* 4. mailbox = email signup */
+.mail { left: 53.31%; top: 41.63%; width: 7.4%; transition: transform .35s cubic-bezier(.2, .9, .25, 1.25); filter: drop-shadow(.3cqw .5cqw .5cqw rgba(12, 9, 6, .55)) brightness(.88) sepia(.12); }
+.mail img { width: 100%; display: block; }
+.mail .plate { position: absolute; left: 33%; top: 38.31%; width: 34%; text-align: center; font: 700 .52cqw Oswald; letter-spacing: .12em; color: #2a1c0c; }
+.mail .tkt { position: absolute; left: 18%; top: 8%; width: 64%; height: 14%; background: var(--paper); transform: translateY(40%); transition: transform .35s; z-index: -1; box-shadow: 0 .2cqw .4cqw rgba(0,0,0,.3); }
+.mail:hover { transform: translateY(-2%) rotate(-1deg); }
+.mail:hover .tkt { transform: translateY(-55%); }
+/* the "Mail me the keys" slip became a poster pasted on the wall above the box (Dan 2026-10-23: "just the reading need to
+   be a poster that catches the eye"). Art: gpt-image-2, props/poster-mail-{1-4}.webp (TUNE → Mail poster, ?mp=1-4).
+   Outside the glass, so full ink: no sheen, no fade; the stucco shows through the paper and the porch lamp lights it from
+   the upper right. Its arrow points at the box, which moved down under it. Click = the box's ticket; hover = the ticket peeks. */
+.mp { left: 52.55%; top: 20.6%; width: 9%; transform: rotate(.5deg); filter: brightness(var(--mp-b, .94)) sepia(.1) contrast(.98); transition: filter .25s; }
+.mp:hover { --mp-b: 1.02; }
+.mp img { display: block; width: 100%; user-select: none; }
+.mp::before, .mp::after { content: ""; position: absolute; inset: 0; pointer-events: none; }
+.mp::before { background: url(frames/f6-v17.png) -52.55cqw -13.733cqw / 100cqw 66.667cqw; filter: grayscale(1) contrast(1.8) brightness(1.2); mix-blend-mode: overlay; opacity: var(--mp-t, .4); } /* the wall's own pixels behind it */
+.mp::after { background: linear-gradient(205deg, rgba(255, 204, 140, .14), transparent 45%, rgba(20, 10, 4, .26)); } /* the lamp: warm top right, falling off */
+.mp:hover + .mail .tkt { transform: translateY(-55%); }
+
+/* 5. chalkboard = the price */
+.chalk { left: 56.2%; top: 53.4%; width: 11.6%; filter: drop-shadow(.5cqw .6cqw .5cqw rgba(12, 9, 6, .6)) brightness(.86) sepia(.1); pointer-events: none; }
+.chalk img { width: 100%; display: block; }
+.chalk .txt { position: absolute; left: 14%; right: 14%; top: 9%; height: 54%; display: flex; flex-direction: column; justify-content: center; gap: .25cqw; text-align: center; color: rgba(244, 240, 230, .9); font: 400 1cqw/1.3 Marker; text-shadow: 0 0 .15cqw rgba(255,255,255,.35); filter: url(#chalk); }
+.chalk .txt { left: 17%; right: 17%; }
+.chalk .txt .h { font-size: .9cqw; margin-bottom: .4cqw; letter-spacing: .03em; line-height: 1.1; }
+.chalk .txt .p { display: flex; justify-content: space-between; font-size: .6cqw; padding: 0 12%; }
+
+/* the pump: hover hint, click = the real plugin */
+.pump { left: 22%; top: 20%; width: 15.8%; height: 61%; border-radius: 1cqw; }
+.pumpTip { left: 22%; top: 82%; width: 15.8%; text-align: center; font: 600 max(11px, .74cqw) Oswald; letter-spacing: .2em; color: var(--paper); text-transform: uppercase; opacity: 0; transition: opacity .25s; pointer-events: none; text-shadow: 0 1px 3px #000; }
+.pump:hover + .pumpTip { opacity: .9; }
+
+/* live props: keyboard focus only (the first-visit gold frames were cut, Dan 2026-10-23: "remove it") */
+.hot { outline: none; }
+.hot:focus-visible { box-shadow: 0 0 0 .2cqw var(--honey); }
+
+/* readings on the right: the live GAS 1 hero's type and tone */
+.rd { left: calc(var(--rdx, 67.5) * 1%); top: 50%; width: 29%; isolation: isolate; transform-origin: 0 50%;
+  transform: translateY(calc(-50% + var(--rdy, 0) * 1vh)) scale(var(--rds, 1)); } /* centred on the viewport's Y: the scene itself is centred on the stage */
+.rd::before { content: ""; position: absolute; inset: -16% -22% -18% -16%; z-index: -1; background: radial-gradient(closest-side, rgba(18,8,4,.74), rgba(18,8,4,.46) 62%, transparent); }
+.rd .ti { display: flex; align-items: center; gap: 1.4cqw; }
+.rd .n { font: 400 7cqw/.9 Bebas; letter-spacing: .03em; color: var(--fg); text-shadow: 0 .3cqw 2.4cqw rgba(0,0,0,.5); }
+.rd .free { font: 400 .9cqw Inter; letter-spacing: .3em; color: var(--brass); border: 1px solid var(--brass); padding: .5cqw 1cqw; }
+.rd .tag { margin-top: 1.4cqw; font: 400 2.4cqw/1 Bebas; letter-spacing: .04em; color: var(--brass); }
+.rd .lead { margin: 1.6cqw 0 0; font-size: 1.25cqw; line-height: 1.5; color: var(--muted); max-width: 26cqw; }
+.rd .cta { display: inline-flex; gap: .7cqw; align-items: center; margin-top: 1.9cqw; background: var(--honey); color: #1e1710; font: 700 1.2cqw Inter; padding: 1.1cqw 2.1cqw; border-radius: .7cqw; box-shadow: 0 .5cqw 1.6cqw rgba(0,0,0,.35); transition: transform .15s, background .2s; }
+.rd .cta:hover { background: #f6c95e; transform: translateY(-.1cqw); }
+.rd .spec { margin-top: 1.3cqw; font: 400 max(11px, .74cqw) ui-monospace, Menlo, monospace; letter-spacing: .14em; color: #d8cfbf; text-shadow: 0 1px 3px rgba(0,0,0,.8); }
+.rd .scr { margin-top: 2.6cqw; font: 400 1.7cqw Yellowtail; color: var(--brass); }
+
+/* ── LOOKS (TUNE → Look): three ways to make the readings pop. "now" = as baked 2026-10-21. ── */
+.price, .scw { display: none; }
+/* shared by neon / enamel / badge: the house honey button (buttons.css grammar, scaled to the scene) + the shine,
+   a brighter lead, the Yellowtail line's soft amber glow (DESIGN.md §3) */
+body[data-look] .rd .cta { position: relative; isolation: isolate; overflow: hidden; justify-content: center;
+  min-height: max(52px, 4.4cqw); padding: 0 max(24px, 2.1cqw); border-radius: max(12px, 1.1cqw); gap: max(8px, .7cqw);
+  font: 700 max(16px, 1.4cqw)/1 Inter; letter-spacing: -.01em; background: #f2be4a; color: #1e1710;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 1), inset 0 -2px 0 hsl(38 85% 34% / .2), 0 1px 0 #5f4311, 0 2px 3px rgb(0 0 0 / .45), 0 2.8cqw 3.2cqw rgb(0 0 0 / .3);
+  transition: transform .16s, box-shadow .16s, background-color .16s; }
+body[data-look] .rd .cta:hover { background: #f6c95e; transform: translateY(-1px); }
+body[data-look] .rd .cta:active { background: #eab53f; transform: translateY(1px); transition-duration: .08s; }
+body[data-look] .rd .cta::after { content: ""; position: absolute; inset: 0 auto 0 0; z-index: -1; width: 28%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent); transform: translateX(-160%) skewX(-20deg); animation: shine 8s ease-in-out 1.2s infinite; pointer-events: none; }
+@keyframes shine { 0% { transform: translateX(-160%) skewX(-20deg); } 17.5%, 100% { transform: translateX(418%) skewX(-20deg); } }
+body:not([data-look="0"]) .rd .lead { color: rgba(239, 233, 223, .9); }
+body[data-look] .rd .scr { text-shadow: 0 0 .9cqw rgba(232, 200, 120, .35); }
+
+/* A · NEON: GAS 2 is a lit tube sign on a steel sign-can (a neon sign IS a lamp, so it may glow and spill) */
+[data-look="a"] .rd::before { background: radial-gradient(closest-side, rgba(18,8,4,.62), rgba(18,8,4,.36) 62%, transparent); }
+[data-look="a"] .rd .ti { position: relative; width: max-content; gap: 1.8cqw; margin-left: -1.7cqw; padding: 1.2cqw 1.7cqw 1.3cqw; border-radius: .7cqw;
+  background: linear-gradient(180deg, #2a2420 0%, #1d1916 46%, #120e0b 100%);
+  box-shadow: inset 0 1px 0 rgba(239,233,223,.1), inset 0 0 0 .14cqw #3a2f26, inset 0 -.4cqw .8cqw rgba(0,0,0,.55), 0 .6cqw 1.8cqw rgba(0,0,0,.6), 0 .15cqw .2cqw rgba(0,0,0,.6); }
+[data-look="a"] .rd .ti::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; mix-blend-mode: screen;
+  background: radial-gradient(60% 75% at 36% 52%, rgba(255, 176, 70, .26), transparent 72%); animation: neonOn 1.5s linear .35s both; }
+[data-look="a"] .rd .ti::after { content: ""; position: absolute; inset: .55cqw; pointer-events: none; /* four rivets */
+  background: radial-gradient(circle at 50% 40%, #8a8275, #3a332c 70%) 0 0 / .5cqw .5cqw no-repeat, radial-gradient(circle at 50% 40%, #8a8275, #3a332c 70%) 100% 0 / .5cqw .5cqw no-repeat,
+    radial-gradient(circle at 50% 40%, #8a8275, #3a332c 70%) 0 100% / .5cqw .5cqw no-repeat, radial-gradient(circle at 50% 40%, #8a8275, #3a332c 70%) 100% 100% / .5cqw .5cqw no-repeat; }
+[data-look="a"] .rd .n { position: relative; color: transparent; -webkit-text-stroke: .3cqw #fff1d6; text-shadow: none; letter-spacing: .06em;
+  filter: drop-shadow(0 0 .1cqw #ffe9b8) drop-shadow(0 0 .5cqw hsl(42 96% 58%)) drop-shadow(0 0 1.4cqw hsl(38 95% 52% / .75)) drop-shadow(0 0 3cqw hsl(34 92% 48% / .45));
+  animation: neonOn 1.5s linear .35s both; }
+[data-look="a"] .rd .free { position: relative; font: 400 2.2cqw/1 Bebas; letter-spacing: .16em; color: #ffe2cc; border: .16cqw solid #ffd7b8; border-radius: .5cqw; padding: .55cqw .9cqw .45cqw 1.05cqw;
+  text-shadow: 0 0 .3cqw hsl(18 96% 60%), 0 0 1cqw hsl(16 95% 54% / .8);
+  box-shadow: 0 0 .4cqw hsl(18 96% 58%), 0 0 1.4cqw hsl(16 95% 52% / .6), inset 0 0 .4cqw hsl(18 96% 58%), inset 0 0 1cqw hsl(16 95% 52% / .4);
+  animation: neonOn 1.2s linear .9s both, buzz 7s linear 3s infinite; }
+@keyframes neonOn { 0% { opacity: .12; } 6% { opacity: 1; } 10% { opacity: .15; } 18% { opacity: 1; } 22% { opacity: .25; } 34%, 100% { opacity: 1; } }
+@keyframes buzz { 0%, 93%, 95%, 97%, 100% { opacity: 1; } 94%, 96% { opacity: .35; } }
+[data-look="a"] .rd .tag { font-size: 2.7cqw; color: var(--brass); text-shadow: 0 .12cqw 0 rgba(0,0,0,.7), 0 0 1.4cqw rgba(0,0,0,.5); }
+
+/* B · ENAMEL: the readings are a porcelain sign on two posts, oxide enamel, cream stripe, chips, rotated screws;
+   FREE = the pump's price counter rolling back to 0.00 */
+[data-look="b"] .rd { padding: 2.5cqw 2.7cqw 2.3cqw; }
+[data-look="b"] .rd::before { inset: 0; border-radius: 1cqw;
+  background:
+    radial-gradient(.8cqw .5cqw at 4% 6%, #1d1916 45%, transparent 62%), radial-gradient(1.2cqw .7cqw at 97% 34%, #1d1916 40%, transparent 60%),
+    radial-gradient(.7cqw .45cqw at 22% 98%, #1d1916 45%, transparent 62%), radial-gradient(.5cqw .4cqw at 88% 96%, #2a2420 45%, transparent 62%),
+    linear-gradient(104deg, transparent 32%, rgba(255, 240, 215, .13) 44%, transparent 56%),
+    linear-gradient(180deg, transparent 70%, rgba(40, 20, 10, .35)),
+    linear-gradient(165deg, #a54a28 0%, #8b3a1f 48%, #6a2a14 100%);
+  box-shadow: inset 0 0 0 .5cqw #8b3a1f, inset 0 0 0 .78cqw #e6d6ae, inset 0 0 0 .88cqw #5a2410, inset 0 .15cqw .3cqw rgba(255, 220, 190, .25),
+    0 1.2cqw 2.6cqw rgba(0,0,0,.6), 0 .2cqw .35cqw rgba(0,0,0,.55); }
+[data-look="b"] .rd::after { content: ""; position: absolute; z-index: -2; top: 70%; height: 80vh; left: 16%; right: 16%; /* the two posts */
+  background: linear-gradient(90deg, #14110f, #5f5a52 40%, #2a2420) 0 0 / 1.1cqw 100% no-repeat, linear-gradient(90deg, #14110f, #5f5a52 40%, #2a2420) 100% 0 / 1.1cqw 100% no-repeat; }
+[data-look="b"] .rd .scw { display: block; position: absolute; width: .9cqw; height: .9cqw; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #f4f0e8, #b9b5ad 45%, #5f5a52); box-shadow: 0 .1cqw .15cqw rgba(0,0,0,.65), inset 0 0 0 .05cqw rgba(0,0,0,.35); }
+[data-look="b"] .rd .scw::after { content: ""; position: absolute; left: 14%; right: 14%; top: 50%; height: .13cqw; margin-top: -.065cqw; border-radius: .05cqw; background: #2a2420; transform: rotate(var(--a)); }
+[data-look="b"] .rd .ti { justify-content: space-between; gap: 1.2cqw; }
+[data-look="b"] .rd .n { font-size: 6cqw; white-space: nowrap; color: #f1e6c8; text-shadow: 0 .12cqw 0 #4a1c0c, 0 .3cqw .6cqw rgba(0,0,0,.35); }
+[data-look="b"] .rd .free { display: none; }
+[data-look="b"] .rd .price { display: flex; flex-direction: column; align-items: center; gap: .4cqw; }
+.price .pl { font: 600 max(11px, .66cqw) Oswald; letter-spacing: .22em; color: #f1e6c8; white-space: nowrap; }
+.price .reels { display: flex; align-items: center; gap: .16cqw; padding: .4cqw .5cqw; border-radius: .35cqw;
+  background: linear-gradient(180deg, #120e0b, #2a2420 50%, #120e0b); box-shadow: inset 0 0 0 .1cqw #5a2410, inset 0 .25cqw .5cqw rgba(0,0,0,.85), 0 .1cqw 0 rgba(241, 230, 200, .3); }
+.price .reels b { font: 600 2cqw/1 Oswald; color: #f1e6c8; padding: 0 .1cqw; }
+.price .reel { position: relative; width: 1.45cqw; height: 2.6cqw; overflow: hidden; border-radius: .15cqw; background: #f4efe4; }
+.price .reel > span { display: block; transform: translateY(calc(var(--i, 20) * -2.6cqw)); transition: transform var(--d, 2s) cubic-bezier(.12, .7, .18, 1.02); }
+.price .reel em { display: block; height: 2.6cqw; font: 600 2.1cqw/2.6cqw Oswald; font-style: normal; text-align: center; color: #1e1710; }
+.price .reel::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.6), transparent 34%, transparent 66%, rgba(0,0,0,.6)); }
+[data-look="b"] .rd .tag { color: #f2be4a; text-shadow: 0 .1cqw 0 #4a1c0c; }
+[data-look="b"] .rd .lead { color: rgba(241, 230, 200, .94); max-width: none; }
+[data-look="b"] .rd .spec { color: rgba(241, 230, 200, .7); text-shadow: none; }
+[data-look="b"] .rd .scr { color: #f1e6c8; text-shadow: none; }
+
+/* C · BADGE: GAS 2 is a chrome car emblem that mirrors the dusk (sky, sun, horizon, ground);
+   FREE is a paper price tag on a string; FILL IT UP. in the house 3-stop brass */
+[data-look="c"] .rd::before { background: radial-gradient(closest-side, rgba(18,8,4,.8), rgba(18,8,4,.5) 62%, transparent); }
+[data-look="c"] .rd .ti { gap: 2cqw; }
+[data-look="c"] .rd .n { font-size: 7.8cqw; color: transparent; text-shadow: none; transform: skewX(-8deg); transform-origin: 0 100%;
+  background: linear-gradient(180deg, #fbf5ec 0%, #d9cfe0 22%, #f3b27a 42%, #3a2418 50%, #1d1410 53%, #8a6a50 72%, #e9d6b6 100%); -webkit-background-clip: text; background-clip: text;
+  filter: drop-shadow(0 -.05cqw 0 rgba(255, 246, 230, .7)) drop-shadow(0 .14cqw 0 #1d1916) drop-shadow(0 .7cqw 1.1cqw rgba(0,0,0,.7)); }
+[data-look="c"] .rd .free { position: relative; font: 400 2cqw/1 Bebas; letter-spacing: .1em; color: #8b3a1f; border: 0; border-radius: .3cqw; padding: .55cqw 1.1cqw .45cqw 2cqw;
+  background: radial-gradient(circle at .85cqw 50%, #120804 .28cqw, #6b5a40 .33cqw, transparent .36cqw), linear-gradient(170deg, #f3e9cf, #e6d6ae 60%, #d3be90);
+  box-shadow: 0 .35cqw .6cqw rgba(0,0,0,.5), inset 0 -.1cqw 0 rgba(90, 60, 30, .3); transform: rotate(-8deg) translateY(.8cqw); }
+[data-look="c"] .rd .free::before { content: ""; position: absolute; left: .75cqw; top: 50%; width: 3.4cqw; height: .1cqw; background: #d8cfbf; transform-origin: 0 50%; transform: rotate(-148deg); opacity: .85; }
+[data-look="c"] .rd .tag { font-size: 2.7cqw; background: linear-gradient(180deg, #e8c878 0%, #c9a35c 55%, #8c6f3a 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 .1cqw 0 rgba(0,0,0,.7)); }
+
+/* service ticket (the mailbox / download form) */
+.veil { position: fixed; inset: 0; background: rgba(8, 5, 3, .62); display: grid; place-items: center; opacity: 0; pointer-events: none; transition: opacity .25s; z-index: 10; padding: 16px; }
+.veil.open { opacity: 1; pointer-events: auto; }
+/* two faces only: Bebas = what the station printed (title, stub, stamp), Elite = what got typed (everything else).
+   The button is the ticket's tear-off stub: perforated, punched at both ends, the honey "customer copy".
+   Hover = it starts to peel, submit = it tears off and drops, then the SENT stamp lands. */
+.ticket { position: relative; width: min(420px, 100%); color: var(--ink); font: 15px/1.5 Elite, ui-monospace, monospace; filter: drop-shadow(0 26px 30px rgba(0,0,0,.5)) drop-shadow(0 2px 2px rgba(0,0,0,.25)); transform: translateY(30px) rotate(-1.2deg); transition: transform .35s cubic-bezier(.2,.9,.25,1.2); }
+.veil.open .ticket { transform: translateY(0) rotate(-1.2deg); }
+.ticket .tk { position: relative; padding: 26px 28px 20px; background: var(--paper) radial-gradient(rgba(120, 90, 50, .08) 1px, transparent 1.5px) 0 0 / 7px 7px;
+  -webkit-mask: radial-gradient(circle 9px at 0 100%, #0000 97%, #000) left / 51% 100% no-repeat, radial-gradient(circle 9px at 100% 100%, #0000 97%, #000) right / 51% 100% no-repeat;
+  mask: radial-gradient(circle 9px at 0 100%, #0000 97%, #000) left / 51% 100% no-repeat, radial-gradient(circle 9px at 100% 100%, #0000 97%, #000) right / 51% 100% no-repeat; }
+.ticket h2 { margin: 0 0 4px; font: 400 26px/1 Bebas; letter-spacing: .08em; color: #a8321c; }
+.ticket .no { font-size: 12px; color: #6b5a40; letter-spacing: .1em; }
+.ticket hr { border: 0; border-top: 1px dashed #8c7a56; margin: 12px 0; }
+.ticket hr.dbl { border-top: 3px double #8c7a56; }
+.ticket .row { display: flex; justify-content: space-between; }
+.ticket .row.tot { font-size: 18px; }
+.ticket label { display: block; margin-top: 16px; font-size: 12px; letter-spacing: .14em; color: #6b5a40; }
+.ticket input { width: 100%; margin-top: 4px; font: 16px Elite, ui-monospace, monospace; color: var(--ink); caret-color: #a8321c; background: transparent; border: 0; border-bottom: 1.5px solid #6b5a40; padding: 6px 2px; outline: none; }
+.ticket input:focus { border-bottom-color: #a8321c; }
+.ticket .fine { margin-top: 12px; font-size: 12px; color: #6b5a40; }
+.ticket .x { position: absolute; top: 10px; right: 12px; font: 22px/1 Elite, ui-monospace, monospace; color: #6b5a40; }
+.ticket .go { position: relative; display: block; width: 100%; text-align: left; color: #1e1710; transform-origin: 0 0; transition: transform .3s cubic-bezier(.3,.7,.3,1.3); }
+.ticket .go::after { content: ""; position: absolute; left: 0; right: 0; bottom: -10px; height: 10px; background: linear-gradient(-45deg, transparent 6px, var(--honey) 0) 0 0 / 12px 10px, linear-gradient(45deg, transparent 6px, var(--honey) 0) 0 0 / 12px 10px; }
+.ticket .go-face { display: grid; grid-template-columns: 1fr auto; align-items: center; column-gap: 12px; padding: 15px 28px 12px; background: var(--honey) radial-gradient(rgba(90, 60, 20, .1) 1px, transparent 1.5px) 0 0 / 7px 7px;
+  -webkit-mask: radial-gradient(circle 9px at 0 0, #0000 97%, #000) left / 51% 100% no-repeat, radial-gradient(circle 9px at 100% 0, #0000 97%, #000) right / 51% 100% no-repeat;
+  mask: radial-gradient(circle 9px at 0 0, #0000 97%, #000) left / 51% 100% no-repeat, radial-gradient(circle 9px at 100% 0, #0000 97%, #000) right / 51% 100% no-repeat; }
+.ticket .go-no { font-size: 11px; letter-spacing: .14em; color: rgba(30, 23, 16, .68); }
+.ticket .go-l { grid-column: 1; font: 400 34px/1 Bebas; letter-spacing: .06em; margin-top: 3px; }
+.ticket .go-arr { grid-column: 2; grid-row: 1 / 3; width: 30px; height: 18px; transition: transform .3s; }
+.ticket .perf, .ticket .snip { z-index: 1; } /* above the masked face (a mask makes its own layer) */
+.ticket .perf { position: absolute; left: 14px; right: 14px; top: -1px; height: 2px; background: repeating-linear-gradient(90deg, rgba(36, 26, 18, .55) 0 5px, transparent 5px 9px); }
+.ticket .snip { position: absolute; left: 24px; top: -10px; width: 20px; height: 20px; color: rgba(36, 26, 18, .75); transition: transform .45s cubic-bezier(.3,.7,.3,1); }
+@media (hover: hover) {
+  .ticket .go:hover { transform: translateY(2px) rotate(1deg); }
+  .ticket .go:hover .snip { transform: translateX(18px); }
+  .ticket .go:hover .go-arr { transform: translateX(4px); }
+}
+.ticket .go:active { transform: translateY(4px) rotate(2deg); }
+.ticket .go:focus-visible { outline: none; }
+.ticket .go:focus-visible .go-l { text-decoration: underline 2px; text-underline-offset: 4px; }
+.ticket.sent .go { transform: translate(8px, 130px) rotate(11deg); opacity: 0; visibility: hidden; pointer-events: none; transition: transform .7s cubic-bezier(.55,0,.85,.4), opacity .4s .3s, visibility 0s .7s; }
+.ticket.nofx .go, .ticket.nofx .stamp { transition: none !important; }
+.stamp { position: absolute; right: 22px; top: 70px; padding: 6px 12px; border: 3px solid #b3261e; color: #b3261e; font: 400 30px/1 Bebas; letter-spacing: .1em; mix-blend-mode: multiply; filter: url(#paint); transform: rotate(-12deg) scale(1.6); opacity: 0; transition: .25s cubic-bezier(.2,.9,.25,1.4); }
+.ticket.sent .stamp { opacity: .85; transform: rotate(-12deg) scale(1); transition-delay: .35s; }
+
+/* the real plugin (pump click) */
+.plug { width: min(560px, 96vw); height: min(86vh, 900px); border: 0; border-radius: 10px; box-shadow: 0 30px 80px rgba(0,0,0,.6); background: #120804; }
+
+.bench-note { position: fixed; left: 12px; bottom: 10px; z-index: 5; font: 12px ui-monospace, Menlo, monospace; color: #8a8275; background: rgba(18,8,4,.7); padding: 4px 8px; border-radius: 4px; }
+footer { padding: 40px 6vw; border-top: 1px solid #2a1c10; color: var(--dim); font-size: 13px; letter-spacing: .14em; text-transform: uppercase; display: flex; justify-content: space-between; }
+
+/* TUNE panel (press T): per-section sliders, COPY = the numbers to bake */
+.tune { position: fixed; right: 12px; bottom: 12px; z-index: 20; width: 260px; background: rgba(18,8,4,.92); border: 1px solid #3a2410; border-radius: 8px; padding: 12px 14px; font: 12px Inter, system-ui, sans-serif; color: #efe9df; display: none; }
+.tune.open { display: block; }
+.tune h4 { margin: 0 0 8px; font: 400 16px Bebas; letter-spacing: .12em; color: #e8c878; }
+.tune label { display: grid; grid-template-columns: 62px 1fr 42px; gap: 8px; align-items: center; margin: 6px 0; }
+.tune input { accent-color: #e8c878; }
+.tune .ng label { display: flex; gap: 4px; align-items: center; margin: 0; }
+.tune output { text-align: right; color: #e8c878; font-variant-numeric: tabular-nums; }
+.tune .row { display: flex; gap: 8px; margin-top: 10px; }
+.tune button { flex: 1; background: #2a1c10; color: #efe9df; border: 1px solid #3a2410; border-radius: 4px; padding: 6px; font: 600 11px Inter; letter-spacing: .12em; }
+.tune button:hover { border-color: #e8c878; }
+.tuneBtn { position: fixed; right: 12px; bottom: 12px; z-index: 19; background: rgba(18,8,4,.8); color: #e8c878; border: 1px solid #3a2410; border-radius: 4px; padding: 5px 10px; font: 600 11px Inter; letter-spacing: .16em; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+/* ?bench: the shared bench harness (bench.js) docks its 272px panel on the LEFT on this page: the readings live on the right edge */
+html.benching .bench-panel { right: auto !important; left: 0 !important; border-left: 0 !important; border-right: 1px solid #2c313a !important; }
+/* ═══ readings · composition 2 (Dan 2026-10-23: "fill up all the space", "readings bigger", "a new composition",
+   "⤓ Download FREE", "GAS 2 in the same font and style as the plugin's HEADER") ═══
+   One centred column in the open sky right of the canopy (replaces the two 2026-10-22 bench rounds' offsets).
+   The title IS the pump globe's lockup (GAS2 repo bench/pump-render.js texGlobeLens: GAS2 set tight in Oswald 700,
+   the 2 in oxide, an oxide rule under it), turned light-on-dark for the dusk sky. */
+.rd { width: 31%; text-align: center; }
+.rd::before { inset: -12% -16% -14% -16%; background: radial-gradient(closest-side, rgba(18,8,4,.72), rgba(18,8,4,.44) 60%, transparent); }
+.rd .ti { justify-content: center; }
+body[data-look] .rd .free { display: none; }
+body[data-look="0"] .rd .n { position: relative; font: 700 13.5cqw/.84 Oswald; letter-spacing: .02em; color: #efe3c6; padding-bottom: 3.02cqw; /* Dan 2026-10-23: a gap between the letters and the rule (29 px, then "less gap by 30%" = ~20 px at 1141) */
+  text-shadow: 0 .22cqw 0 rgba(20, 10, 4, .55), 0 .4cqw 2.2cqw rgba(0, 0, 0, .45); }
+body[data-look="0"] .rd .n .two { color: #b8341e; }
+body[data-look="0"] .rd .n::after { content: ""; position: absolute; left: 5%; right: 5%; bottom: 0; height: .75cqw; background: #b8341e; box-shadow: 0 .18cqw 0 rgba(20, 10, 4, .5); }
+body[data-look] .rd .lead { margin: 1.9cqw auto 0; max-width: none; font: 400 2.25cqw/1.1 Bebas; letter-spacing: .05em; color: #f6c85d; }
+body[data-look] .rd .cta { margin-top: 2cqw; min-height: max(56px, 5cqw); padding: 0 max(28px, 3cqw); border-radius: max(14px, 1.2cqw); gap: max(8px, .8cqw);
+  font: 700 max(19px, 2.1cqw)/1 Oswald; letter-spacing: .02em; text-transform: none; } /* Dan 2026-10-23: the label in the GAS2 title's face, "Download FREE" exactly as written */
+.rd .scr { display: block; margin: 1.3cqw 0 0 9cqw; font: 400 4.4cqw/1 Yellowtail; transform: rotate(-6deg); transition: color .15s, text-shadow .15s, transform .15s; }
+/* the signature lights up with the button (Dan 2026-10-23: "when I hover the Download button it lights up, I want the same on Fill it up") */
+@media (hover: hover) {
+  body[data-look] .rd:has(.cta:hover) .scr, body[data-look] .rd .scr:hover { color: #fbe0a0; transform: rotate(-6deg) translateY(-1px);
+    text-shadow: 0 0 .5cqw rgba(255, 216, 140, .55), 0 0 1.8cqw rgba(242, 190, 74, .5); }
+}
+/* ═══ end composition 2 ═══ */
+/* ═══ readings · premium shadow (Dan 2026-10-23: "not a regular circle behind the reading, a premium shadow") ═══
+   The circle scrim is out. Three layers, each a body class with a TUNE checkbox (on by default); the old circle stays
+   as a fourth (off) to compare.
+   HUG   = shadows that follow every letter, the rule and the script (contact + soft + wide ambient), no blob;
+   FOCUS = the sky right behind the column drops slightly out of focus and down a stop, feathered as a soft column
+           (the camera focused on the type), so no edge shows;
+   DUSK  = the open sky and ground darken toward the frame edge like a real dusk exposure: a darker field, no edge. */
+body[data-look="0"] .rd::before { background: none; }
+body[data-look="0"].rs-circle .rd::before { background: radial-gradient(closest-side, rgba(18,8,4,.72), rgba(18,8,4,.44) 60%, transparent); }
+body[data-look="0"].rs-focus .rd::before { inset: -9% -13% -10% -13%; background: rgba(12, 6, 3, .15); /* Dan 2026-10-23: then "less by 50%, more hugging the words, less general shadow" */
+  -webkit-backdrop-filter: blur(.32cqw) brightness(.84) saturate(.9); backdrop-filter: blur(.32cqw) brightness(.84) saturate(.9);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 24%, #000 76%, transparent), linear-gradient(180deg, transparent, #000 14%, #000 86%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(90deg, transparent, #000 24%, #000 76%, transparent), linear-gradient(180deg, transparent, #000 14%, #000 86%, transparent);
+  mask-composite: intersect; }
+body[data-look="0"].rs-hug .rd .n { text-shadow: 0 .22cqw 0 rgba(20, 10, 4, .55);
+  filter: drop-shadow(0 .1cqw .15cqw rgba(12, 6, 3, .85)) drop-shadow(0 0 .55cqw rgba(12, 6, 3, .6)) drop-shadow(0 .35cqw .9cqw rgba(12, 6, 3, .6)) drop-shadow(0 1.2cqw 2.4cqw rgba(12, 6, 3, .3)); }
+body[data-look="0"].rs-hug .rd .lead, body[data-look="0"].rs-hug .rd .scr { filter: drop-shadow(0 .08cqw .1cqw rgba(12, 6, 3, .9)) drop-shadow(0 0 .4cqw rgba(12, 6, 3, .6)) drop-shadow(0 .25cqw .6cqw rgba(12, 6, 3, .6)); }
+.dusk { display: none; left: 58%; top: 0; width: 42%; height: 100%; pointer-events: none;
+  background: linear-gradient(90deg, rgba(14, 8, 5, .03), rgba(14, 8, 5, .085)), linear-gradient(180deg, rgba(14, 8, 5, .065) 0%, transparent 34%, transparent 62%, rgba(14, 8, 5, .06) 100%); /* halved twice (was .12/.38, .3/.28) */
+  /* Dan 2026-10-23: "it has a cut" = the top/bottom band had no horizontal fade, a hard edge at the layer's left side.
+     One mask fades EVERY layer in from the left, so no edge can show anywhere. */
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 45%); mask-image: linear-gradient(90deg, transparent, #000 45%); }
+body[data-look="0"].rs-dusk .dusk { display: block; }
+/* ═══ end premium shadow ═══ */
+/* ═══ PHONE · WALK ═══ (2026-10-23, one of three phone options; Dan: "adapted especially for the phone, same principles,
+   same posters, same layout vibe"). Scroll down = the camera dollies along the station: the stage becomes a tall track,
+   the frame (.pin) sticks to the screen, the whole-height scene slides under it (translate3d, one rAF per frame, the
+   script below). Four holds: the readings in the sky (the right end) -> the store front (MAIL ME THE KEYS, the box,
+   the chalkboard) -> the lit pump + the right pane's posters -> the radio on its bench (the left end); then the frame
+   lets go and the end band repeats the main action. Desktop (> 760px) never sees any of this. */
+.endband, .phoneOpts { display: none; }
+@media (max-width: 760px) {
+  /* the track: one frame + 3 screens of walking. lvh, not svh, for the frame: the walk scrolls, so iOS hides its bars
+     and a svh frame would leave a dark strip under the photo the whole way; the readings stay centred in svh (below) */
+  .stage { height: 400vh; height: calc(100lvh + 300svh); min-height: 0; overflow: visible; }
+  .pin { position: sticky; top: 0; height: 100vh; height: 100lvh; overflow: hidden; clip-path: inset(0); /* trap 6: bound the pinned layer */
+    background: #0d0806; }
+  .scene { left: 0; right: auto; top: 0; width: max(150vh, 100vw); width: max(150lvh, 100vw); height: calc(max(150vh, 100vw) / 1.5); height: calc(max(150lvh, 100vw) / 1.5);
+    transform: translate3d(calc(100vw - max(150vh, 100vw)), 0, 0); transform: translate3d(calc(100vw - max(150lvh, 100vw)), 0, 0); } /* first paint = the right end, before the script runs */
+  .scene.walking { will-change: transform; } /* only while the track is on screen (IntersectionObserver) */
+  .stage.nowalk { height: auto; } /* a phone in landscape: the scene is no wider than the screen, nothing to walk */
+
+  /* the readings: painted on the sky at the scene's right end, in a box exactly one screen wide, so the first view
+     frames them; they slide away with the photo and fade before the store front (they'd sit cut at its right edge) */
+  .rd { left: auto; right: 0; top: 0; width: 100vw; height: 100svh; transform: none; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 0 16px clamp(0px, calc(50svh - 95vw + 45px), 12svh); /* tall phones: lifted above the middle; short ones see more
+      canopy roof (the view starts further left), so the column drops back toward the middle to stay clear of it */
+    pointer-events: none; will-change: opacity; }
+  .rd .cta { pointer-events: auto; }
+  .rd.gone .cta { pointer-events: none; }
+  body[data-look] .rd::before { display: none; } /* FOCUS (a backdrop blur) re-renders on every camera frame: dropped on phones; HUG + DUSK stay */
+  body[data-look="0"] .rd .n { font-size: min(33vw, 142px, 19svh); padding-bottom: .224em; } /* = desktop's 3.02 / 13.5: the rule ~.13em under the letters */
+  body[data-look="0"] .rd .n::after { height: .0556em; box-shadow: 0 .013em 0 rgba(20, 10, 4, .5); }
+  /* HUG, same stack, as glyph shadows: the desktop's filter: drop-shadow() chain is re-rendered offscreen every time the
+     camera brings its tiles back into coverage or the fade crosses 0 / 1 (measured in WebKit: 95-175 ms frames at five
+     points of the walk; with text-shadow, no frame over 45 ms). The alphas are a touch up because a text-shadow doesn't
+     shadow the shadow before it, as a drop-shadow chain does (matched by eye and by mean luminance, within ~2 / 255). */
+  body[data-look="0"].rs-hug .rd .n, body[data-look="0"].rs-hug .rd .lead, body[data-look="0"].rs-hug .rd .scr { filter: none; }
+  body[data-look="0"].rs-hug .rd .n { text-shadow: 0 .22cqw 0 rgba(20, 10, 4, .55), 0 .1cqw .15cqw rgba(12, 6, 3, .9), 0 0 .55cqw rgba(12, 6, 3, .8),
+    0 .35cqw .9cqw rgba(12, 6, 3, .8), 0 1.2cqw 2.4cqw rgba(12, 6, 3, .62); }
+  body[data-look="0"].rs-hug .rd .n::after { box-shadow: 0 .013em 0 rgba(20, 10, 4, .5), 0 .1cqw .15cqw rgba(12, 6, 3, .9), 0 0 .8cqw rgba(12, 6, 3, .85),
+    0 .35cqw .9cqw rgba(12, 6, 3, .85), 0 1.2cqw 2.4cqw rgba(12, 6, 3, .7); }
+  body[data-look="0"].rs-hug .rd .lead { text-shadow: 0 .08cqw .1cqw rgba(12, 6, 3, .9), 0 0 .4cqw rgba(12, 6, 3, .8), 0 .25cqw .6cqw rgba(12, 6, 3, .8); }
+  body[data-look="0"].rs-hug .rd .scr { text-shadow: 0 0 .9cqw rgba(232, 200, 120, .35), 0 .08cqw .1cqw rgba(12, 6, 3, .9), 0 0 .4cqw rgba(12, 6, 3, .8), 0 .25cqw .6cqw rgba(12, 6, 3, .8); }
+  body[data-look] .rd .lead { margin: .62em 0 0; font-size: min(6.5vw, 28px); white-space: nowrap; }
+  body[data-look] .rd .cta { margin-top: 22px; min-height: 56px; padding: 0 30px; border-radius: 14px; gap: 9px; font-size: clamp(20px, 5.6vw, 23px); }
+  .rd .scr { margin: 12px 0 0 22vw; font-size: min(12vw, 52px); }
+  /* no hover on a phone: the signature lights with the button under the thumb */
+  body[data-look] .rd:has(.cta:active) .scr, body[data-look] .rd.lit .scr, .endband.lit .scr { color: #fbe0a0; transform: rotate(-6deg) translateY(-1px);
+    text-shadow: 0 0 .5cqw rgba(255, 216, 140, .55), 0 0 1.8cqw rgba(242, 190, 74, .5), 0 .08cqw .1cqw rgba(12, 6, 3, .9), 0 .25cqw .6cqw rgba(12, 6, 3, .6); }
+  .endband.lit .scr { text-shadow: 0 0 6px rgba(255, 216, 140, .55), 0 0 22px rgba(242, 190, 74, .5); }
+  /* a small phone in landscape (nowalk): the screen IS the whole scene, so the readings go back to the desktop's column in the sky */
+  .stage.nowalk .scene { top: calc(50vh - max(150vh, 100vw) / 3); top: calc(50lvh - max(150lvh, 100vw) / 3); } /* taller than the screen: crop top and bottom evenly */
+  .stage.nowalk .rd { top: calc(max(150vh, 100vw) / 3 - 50vh); top: calc(max(150lvh, 100vw) / 3 - 50lvh); left: 64.5%; right: auto; width: 31%; padding: 0 0 4svh; }
+  body[data-look="0"] .stage.nowalk .rd .n { font-size: 13.5cqw; }
+  body[data-look] .stage.nowalk .rd .lead { font-size: 2.25cqw; }
+  body[data-look] .stage.nowalk .rd .cta { margin-top: 2cqw; min-height: 44px; padding: 0 max(18px, 2.4cqw); font-size: max(16px, 2.1cqw); }
+  .stage.nowalk .rd .scr { margin: 1.3cqw 0 0 9cqw; font-size: 4.4cqw; }
+  .stage.nowalk .pumpTip { left: 17%; width: 25.8%; } /* same centre as the pump, wide enough for one line at 11px */
+
+  /* touch: no hover, so the pump's caption stays up like the radio's; a caption the frame would cut fades instead (--vis) */
+  .pumpTip { opacity: calc(.9 * var(--vis, 1)); }
+  .radioCap { opacity: var(--vis, 1); }
+  .hot, .cta { -webkit-tap-highlight-color: transparent; }
+  .sign button { min-height: 44px; padding: 0 .12em; }
+  .gradeTip { z-index: 3; margin-left: 0; white-space: normal; width: max-content; max-width: min(84vw, 330px); text-align: center; font-size: 12px; line-height: 1.4; }
+  /* left = the script, inside the frame; z-index: two lines reach down past the MAIL poster's and the globe's tops */
+
+  /* after the walk: the main action again, on the page */
+  .endband { display: flex; flex-direction: column; align-items: center; padding: 48px 16px 56px; background: var(--bg); }
+  .endband .cta { position: relative; isolation: isolate; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    min-height: 52px; padding: 0 26px; border-radius: 13px; font: 700 20px/1 Oswald; letter-spacing: .02em; background: #f2be4a; color: #1e1710;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 1), inset 0 -2px 0 hsl(38 85% 34% / .2), 0 1px 0 #5f4311, 0 2px 3px rgb(0 0 0 / .45), 0 22px 26px rgb(0 0 0 / .3);
+    transition: transform .16s, box-shadow .16s, background-color .16s; }
+  .endband .cta:active { background: #eab53f; transform: translateY(1px); transition-duration: .08s; }
+  .endband .cta::after { content: ""; position: absolute; inset: 0 auto 0 0; z-index: -1; width: 28%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
+    transform: translateX(-160%) skewX(-20deg); animation: shine 8s ease-in-out 1.2s infinite; pointer-events: none; }
+  .endband .scr { margin: 10px 0 0 19vw; font: 400 min(10.5vw, 46px)/1 Yellowtail; color: var(--brass); transform: rotate(-6deg); text-shadow: 0 0 10px rgba(232, 200, 120, .35);
+    transition: color .15s, text-shadow .15s, transform .15s; }
+
+  /* desktop tools off; the footer stacks (its two spans ran together at 390) + the line to the three phone options */
+  .bench-note, .tuneBtn, .tune { display: none !important; }
+  footer { flex-direction: column; align-items: center; gap: 10px; padding: 28px 16px 36px; text-align: center; font-size: 12px; letter-spacing: .12em; }
+  .phoneOpts { display: block; text-transform: none; letter-spacing: .04em; }
+  .phoneOpts a { color: var(--brass); }
+  /* reduced motion: page-b's `* { animation: none }` doesn't reach ::after, so the shine kept running */
+  @media (prefers-reduced-motion: reduce) { body[data-look] .rd .cta::after, .endband .cta::after { animation: none !important; } }
+  /* the photo melts into the page below instead of ending on a hard line (DESIGN §7: a band that starts at a hard
+     element edge reads as a cut); under every prop, so captions and props stay on top of it */
+  .feather { display: block; left: 0; right: 0; top: auto; bottom: 0; height: 9%; pointer-events: none;
+    background: linear-gradient(180deg, transparent, rgba(18, 8, 4, .55) 55%, var(--bg)); }
+  /* a closed veil's iframe kept every later tap inside its rect (WebKit touch; found on the Stack option) */
+  .veil:not(.open) .plug { display: none; }
+}
+/* ═══ end PHONE · WALK ═══ */
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="paint"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="4"/><feDisplacementMap in="SourceGraphic" scale="2.2"/></filter>
+  <filter id="chalk"><feTurbulence type="fractalNoise" baseFrequency="1.6" numOctaves="2" seed="9" result="n"/><feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.4 1.3" result="m"/><feComposite in="SourceGraphic" in2="m" operator="in"/></filter>
+</svg>
+
+<main class="stage" id="stage">
+  <div class="pin" id="pin"><!-- phones: the sticky camera frame (PHONE · WALK); desktop: an unstyled wrapper -->
+  <div class="scene" id="scene">
+    <img class="photo" src="frames/f6-v17.png" alt="A weathered 1950s desert gas station at dusk, the GAS 2 pump out front">
+    <i class="abs dusk" aria-hidden="true"></i><i class="abs feather" hidden aria-hidden="true"></i>
+
+    <!-- 1. grades on the wall sign -->
+    <nav class="abs sign hot-group" aria-label="Fuel grades">
+      <button class="hot" data-grade="0">REGULAR</button><i></i>
+      <button class="hot" data-grade="1">PREMIUM</button><i></i>
+      <button class="hot" data-grade="2">RACE</button>
+    </nav>
+    <div class="abs gradeTip" id="gradeTip"></div>
+    <div class="abs key" style="left:25%;width:3.2%"></div>
+    <div class="abs key" style="left:28.6%;width:3.3%"></div>
+    <div class="abs key" style="left:32.2%;width:3.5%"></div>
+
+    <!-- 2. taped notes in the window -->
+    <div class="abs note poster pk"><img src="props/poster-knock.webp" alt="No knock. No knob. The fuel filter takes the harsh resonances out, with no knob to set."><i class="glass" aria-hidden="true"></i></div>
+    <div class="abs note poster pl"><img src="props/poster-level.webp" alt="Fill it up. Same level. Auto-level: more GAS, same loudness."><i class="glass" aria-hidden="true"></i></div>
+    <div class="abs note poster ps"><img src="props/poster-start.webp" alt="Start every mix here. GAS 2 goes first on the mix bus."><i class="glass" aria-hidden="true"></i></div>
+    <img class="abs pumpCut" src="props/pump-cut.png" alt=""><i class="abs pumpLit" aria-hidden="true"></i><!-- the pump, back over the notes -->
+
+    <!-- the pump -->
+    <button class="abs pump hot" id="pump" aria-label="Try the real GAS 2 pump"></button>
+    <div class="abs pumpTip">Take it for a spin</div>
+
+    <!-- 3. radio player -->
+    <button class="abs radio hot" id="radio" aria-label="Play the GAS 2 demo on the radio">
+      <span class="glow"></span>
+      <span class="dial"><span>ORIGINAL</span><span>GAS 2</span><i class="ptr"></i></span>
+    </button>
+    <div class="abs radioCap" id="radioCap">Tap the radio</div>
+
+    <!-- 4. mailbox, the poster above it points at it -->
+    <button class="abs mp hot" id="mailPoster" aria-label="Mail me the keys: get GAS 2 by email"><img id="mpImg" src="props/poster-mail-1.webp" alt=""></button>
+    <button class="abs mail hot" id="mail" aria-label="Get GAS 2 by email">
+      <span class="tkt"></span><img src="props/mailbox.png" alt=""><span class="plate">GAS 2</span>
+    </button>
+
+    <!-- 5. chalkboard -->
+    <div class="abs chalk" aria-label="Today's prices: Regular 0.00, Premium 0.00, Race 0.00">
+      <img src="props/chalkboard.png" alt="">
+      <div class="txt"><div class="h">TODAY'S<br>PRICES</div>
+        <div class="p"><span>REGULAR</span><span>0.00</span></div>
+        <div class="p"><span>PREMIUM</span><span>0.00</span></div>
+        <div class="p"><span>RACE</span><span>0.00</span></div>
+      </div>
+    </div>
+
+    <!-- readings -->
+    <section class="abs rd" aria-label="GAS 2">
+      <i class="scw" style="--a:13deg;left:1.2cqw;top:1.2cqw"></i><i class="scw" style="--a:-7deg;right:1.2cqw;top:1.2cqw"></i>
+      <i class="scw" style="--a:19deg;left:1.2cqw;bottom:1.2cqw"></i><i class="scw" style="--a:-24deg;right:1.2cqw;bottom:1.2cqw"></i>
+      <div class="ti"><h1 class="n" style="margin:0" aria-label="GAS 2">GAS<span class="two">2</span></h1><div class="free">FREE</div>
+        <div class="price" aria-label="Price per gallon: $0.00, free"><span class="pl">FREE · PER GALLON</span>
+          <span class="reels" aria-hidden="true"><b>$</b><i class="reel" data-to="0"></i><b>.</b><i class="reel" data-to="0"></i><i class="reel" data-to="0"></i></span></div></div>
+      <p class="lead">Thicker, smoother, glued master.</p>
+      <button class="cta" id="cta">⤓ Download FREE</button>
+      <div class="scr">Fill it up.</div>
+    </section>
+  </div>
+  </div>
+</main>
+<!-- phones: after the walk, the main action again, so nobody scrolls back to the sky to act (PHONE · WALK) -->
+<section class="endband" id="endband" aria-label="Download GAS 2"><button class="cta" id="cta2">⤓ Download FREE</button><div class="scr">Fill it up.</div></section>
+<footer><span>RevAudio</span><span>Store · Downloads · About · Support</span><span class="phoneOpts">Phone options: <a href="phone-swipe.html">Swipe</a> · <a href="phone-walk.html">Walk</a> · <a href="phone-stack.html">Stack</a></span></footer>
+
+<div class="veil" id="veil" role="dialog" aria-modal="true" aria-label="Get GAS 2">
+  <form class="ticket" id="ticket" autocomplete="on">
+    <div class="tk">
+      <button type="button" class="x" data-close aria-label="Close">×</button>
+      <h2>SERVICE TICKET</h2><div class="no">No. 0002 · REVAUDIO STATION</div>
+      <hr>
+      <div class="row"><span>GAS 2 · ALL THREE GRADES</span><span>1</span></div>
+      <div class="row"><span>FUEL FILTER</span><span>INCL.</span></div>
+      <hr class="dbl">
+      <div class="row tot"><span>TOTAL</span><span>$0.00</span></div>
+      <label for="em">YOUR EMAIL</label>
+      <input id="em" type="email" required placeholder="you@studio.com">
+      <div class="fine">We email you the download link. No licence key, no card. (Mockup: nothing is sent.)</div>
+      <div class="stamp">SENT</div>
+    </div>
+    <button class="go" type="submit">
+      <i class="perf" aria-hidden="true"></i>
+      <svg class="snip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.1 15.9M14.5 14.5 20 20M8.1 8.1 12 12"/></svg>
+      <span class="go-face">
+        <span class="go-no" aria-hidden="true">CUSTOMER COPY · No. 0002</span>
+        <span class="go-l">MAIL ME THE KEYS</span>
+        <svg class="go-arr" viewBox="0 0 30 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 9h25M19 2l8 7-8 7"/></svg>
+      </span>
+    </button>
+  </form>
+</div>
+<div class="veil" id="plugVeil" role="dialog" aria-modal="true" aria-label="The GAS 2 plugin">
+  <iframe class="plug" title="GAS 2 plugin" data-src="http://127.0.0.1:4461/index.html"></iframe>
+</div>
+<div class="bench-note" data-bench-ignore>B · WORKING COPY · final frame v17 · audio = real GAS 2 renders, made at build</div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+  // grades: the wall sign drives the pump's keys (copy from docs/BRIEF.md, verify before publishing)
+  const G = [
+    'REGULAR · smooth, warm, rounded · for mixes that are already good',
+    'PREMIUM · thick lows, clear mids, silky air, glued · the signature',
+    'RACE · punchy, bright, forward · for loud modern mixes'
+  ];
+  let grade = 1;
+  const setGrade = i => {
+    grade = i; $$('.sign button').forEach((b, k) => b.classList.toggle('on', k === i));
+    $$('.key').forEach((k, n) => k.classList.toggle('on', n === i));
+  };
+  $$('.sign button').forEach((b, i) => {
+    b.onmouseenter = b.onfocus = () => { $('#gradeTip').textContent = G[i]; $('#gradeTip').classList.add('show'); };
+    b.onmouseleave = b.onblur = () => $('#gradeTip').classList.remove('show');
+    b.onclick = () => setGrade(i);
+  });
+  setGrade(1);
+
+  // radio: first tap = ON AIR (original), next taps flip ORIGINAL <-> GAS 2; long state shown in the caption
+  const radio = $('#radio'), cap = $('#radioCap');
+  radio.onclick = () => {
+    if (!radio.classList.contains('on')) { radio.classList.add('on'); cap.innerHTML = 'On air: <em>ORIGINAL</em> · tap for GAS 2'; return; }
+    radio.classList.toggle('b');
+    const b = radio.classList.contains('b');
+    cap.innerHTML = `On air: <em>${b ? 'GAS 2 · ' + ['REGULAR', 'PREMIUM', 'RACE'][grade] : 'ORIGINAL'}</em> · tap to switch`;
+  };
+
+  // mailbox + CTA -> service ticket
+  const veil = $('#veil'), tk = $('#ticket');
+  const open = v => { v.classList.add('open'); if (v === veil) setTimeout(() => $('#em').focus(), 200); };
+  const close = () => $$('.veil').forEach(v => v.classList.remove('open'));
+  // a fresh ticket each time: the torn stub snaps back without animating
+  $('#mail').onclick = $('#mailPoster').onclick = $('#cta').onclick = () => { tk.classList.add('nofx'); tk.classList.remove('sent'); void tk.offsetWidth; tk.classList.remove('nofx'); open(veil); };
+  tk.onsubmit = e => { e.preventDefault(); tk.classList.add('sent'); };
+  $$('.veil').forEach(v => v.addEventListener('click', e => { if (e.target === v || e.target.hasAttribute('data-close')) close(); }));
+  addEventListener('keydown', e => e.key === 'Escape' && close());
+
+  // pump -> the real plugin UI (served from the GAS2 repo)
+  $('#pump').onclick = () => { const f = $('.plug'); if (!f.src) f.src = f.dataset.src; open($('#plugVeil')); };
+})();
+</script>
+<button class="tuneBtn" id="tuneBtn" data-bench-ignore title="Tune this section (T)">TUNE</button>
+<div class="tune" id="tune" data-bench-ignore aria-label="Tune the readings">
+  <h4>Readings</h4>
+  <div class="row looks" id="t-look"><button data-look="0">Now</button><button data-look="a">Neon</button><button data-look="b">Enamel</button><button data-look="c">Badge</button></div>
+  <label>X %<input type="range" id="t-rdx" min="55" max="75" step=".5"><output></output></label>
+  <label>Y nudge<input type="range" id="t-rdy" min="-25" max="25" step=".5"><output></output></label>
+  <label>Size<input type="range" id="t-rds" min=".7" max="1.3" step=".01"><output></output></label>
+  <div class="row"><button id="t-reset">Reset</button><button id="t-copy">Copy</button></div>
+  <h4 style="margin-top:14px">Shadow behind the readings</h4>
+  <div class="row ng" id="t-rs"><label><input type="checkbox" data-rs="hug">Hug</label><label><input type="checkbox" data-rs="focus">Focus</label><label><input type="checkbox" data-rs="dusk">Dusk</label><label><input type="checkbox" data-rs="circle">Old circle</label></div>
+  <h4 style="margin-top:14px">Notes on the glass</h4>
+  <div class="row ng" id="t-ng"><label><input type="checkbox" data-ng="shadow">Shadow</label><label><input type="checkbox" data-ng="grade">Grade</label><label><input type="checkbox" data-ng="glass">Glass</label><label><input type="checkbox" data-ng="tape">Tape</label></div>
+  <h4 style="margin-top:14px">Mail poster</h4>
+  <div class="row looks" id="t-mp"><button data-mp="1">Red 1</button><button data-mp="2">Red 2</button><button data-mp="3">Yel 1</button><button data-mp="4">Yel 2</button></div>
+</div>
+<script>
+// TUNE → Mail poster: the 4 options on the wall; ?mp=1-4 wins (screenshots), else the last pick
+(() => {
+  const K = 'gas2page-b:mp', img = document.getElementById('mpImg');
+  const set = n => { img.src = `props/poster-mail-${n}.webp`; try { localStorage.setItem(K, n); } catch {}
+    document.querySelectorAll('#t-mp button').forEach(b => b.style.borderColor = b.dataset.mp === n ? '#e8c878' : ''); };
+  document.querySelectorAll('#t-mp button').forEach(b => b.onclick = () => set(b.dataset.mp));
+  let n = new URLSearchParams(location.search).get('mp'); if (!n) try { n = localStorage.getItem(K); } catch {}
+  set(/^[1-4]$/.test(n || '') ? n : '1');
+})();
+</script>
+<script>
+(() => {
+  // NOTES ON THE GLASS layers: body classes ng-shadow / ng-grade / ng-glass / ng-tape, all on by default; ?ng=1010 wins (screenshots)
+  const NG = 'gas2page-b:ng', NGK = ['shadow', 'grade', 'glass', 'tape']; let ng = { shadow: 1, grade: 1, glass: 1, tape: 1 };
+  try { Object.assign(ng, JSON.parse(localStorage.getItem(NG) || '{}')); } catch {}
+  const ngq = new URLSearchParams(location.search).get('ng'); if (/^[01]{4}$/.test(ngq || '')) NGK.forEach((k, i) => ng[k] = +ngq[i]);
+  const ngApply = () => { NGK.forEach(k => document.body.classList.toggle('ng-' + k, !!ng[k])); document.querySelectorAll('#t-ng input').forEach(i => i.checked = !!ng[i.dataset.ng]); try { localStorage.setItem(NG, JSON.stringify(ng)); } catch {} };
+  document.querySelectorAll('#t-ng input').forEach(i => i.onchange = () => { ng[i.dataset.ng] = i.checked ? 1 : 0; ngApply(); });
+  ngApply();
+  // READINGS SHADOW layers: body classes rs-hug / rs-focus / rs-dusk (on) + rs-circle (the old scrim, off); ?rs=1110 wins (screenshots)
+  const RS = 'gas2page-b:rs', RSK = ['hug', 'focus', 'dusk', 'circle']; let rs = { hug: 1, focus: 1, dusk: 1, circle: 0 };
+  try { Object.assign(rs, JSON.parse(localStorage.getItem(RS) || '{}')); } catch {}
+  const rsq = new URLSearchParams(location.search).get('rs'); if (/^[01]{4}$/.test(rsq || '')) RSK.forEach((k, i) => rs[k] = +rsq[i]);
+  const rsApply = () => { RSK.forEach(k => document.body.classList.toggle('rs-' + k, !!rs[k])); document.querySelectorAll('#t-rs input').forEach(i => i.checked = !!rs[i.dataset.rs]); try { localStorage.setItem(RS, JSON.stringify(rs)); } catch {} };
+  document.querySelectorAll('#t-rs input').forEach(i => i.onchange = () => { rs[i.dataset.rs] = i.checked ? 1 : 0; rsApply(); });
+  rsApply();
+  const D = { rdx: 64.5, rdy: 0, rds: 1 }, K = 'gas2page-b:tune2'; // tune2 = composition 2's own start (2026-10-23)
+  let v = { ...D }; try { Object.assign(v, JSON.parse(localStorage.getItem(K) || '{}')); } catch {}
+  const rd = document.querySelector('.rd'), panel = document.getElementById('tune');
+  const apply = () => {
+    for (const k in D) { rd.style.setProperty('--' + k, v[k]); const i = document.getElementById('t-' + k); i.value = v[k]; i.nextElementSibling.textContent = v[k]; }
+    try { localStorage.setItem(K, JSON.stringify(v)); } catch {}
+  };
+  for (const k in D) document.getElementById('t-' + k).oninput = e => { v[k] = +e.target.value; apply(); };
+  const toggle = () => panel.classList.toggle('open');
+  document.getElementById('tuneBtn').onclick = toggle;
+  addEventListener('keydown', e => { if ((e.key === 't' || e.key === 'T') && !/INPUT|TEXTAREA/.test(e.target.tagName)) toggle(); });
+  document.getElementById('t-reset').onclick = () => { v = { ...D }; apply(); };
+  // LOOK: ?look=a|b|c|0 wins (screenshots), else the last pick; B rolls the price counter back to 0.00 on every pick
+  const LK = 'gas2page-b:look', reels = [...document.querySelectorAll('.reel')];
+  reels.forEach(r => { const s = document.createElement('span'); s.innerHTML = Array.from({ length: 30 }, (_, k) => `<em>${k % 10}</em>`).join(''); r.appendChild(s); });
+  const roll = () => reels.forEach((r, k) => {
+    const s = r.firstChild; s.style.transition = 'none'; s.style.setProperty('--i', 1 + Math.floor(Math.random() * 9)); s.offsetHeight;
+    s.style.transition = ''; s.style.setProperty('--d', (1.5 + (reels.length - 1 - k) * .45) + 's');
+    s.style.setProperty('--i', 20 + +r.dataset.to); // the reflow above committed the start digit, so this one transitions
+  });
+  const setLook = l => {
+    document.body.dataset.look = l; try { localStorage.setItem(LK, l); } catch {}
+    document.querySelectorAll('#t-look button').forEach(b => b.style.borderColor = b.dataset.look === l ? '#e8c878' : '');
+    if (l === 'b') setTimeout(roll, 500);
+  };
+  document.querySelectorAll('#t-look button').forEach(b => b.onclick = () => setLook(b.dataset.look));
+  let l0 = new URLSearchParams(location.search).get('look'); if (!l0) try { l0 = localStorage.getItem(LK); } catch {}
+  setLook(/^[0abc]$/.test(l0 || '') ? l0 : '0');
+  document.getElementById('t-copy').onclick = () => { const t = JSON.stringify({ section: 'readings', look: document.body.dataset.look, ...v }); try { navigator.clipboard.writeText(t); } catch {} document.getElementById('t-copy').textContent = 'Copied'; setTimeout(() => document.getElementById('t-copy').textContent = 'Copy', 1200); };
+  apply();
+})();
+</script>
+<script>
+// ?bench = the shared RevAudio bench harness on THIS page (law book: bench the live page, not a copy).
+// bench.js here is a symlink to revaudio-shared/tools/bench/bench.js; &panel=min starts its panel collapsed.
+// Dan's 2026-10-22 13:58 + 14:10 exports are folded into this file: park the browser's stored copy ONCE so it never applies twice
+try { const K = 'bench:page-b.html', A = 'gas2page-b:folded', T = '2026-10-22-14-10';
+  if (localStorage.getItem(A) !== T) { const d = localStorage.getItem(K); if (d) localStorage.setItem(K + ':folded-' + T, d); localStorage.removeItem(K); localStorage.setItem(A, T); } } catch {}
+if (/[?&]bench\b/.test(location.search)) {
+  document.documentElement.classList.add('benching');
+  const s = document.createElement('script'); s.src = 'bench.js'; document.body.appendChild(s);
+}
+</script>
+<script>
+// TUNE → Spotlight: the light on the pump + the notes' fade. ?spot=0 = all off (A/B screenshots); COPY = the numbers to bake
+(() => {
+  const D = { light: .3, pump: 1.04, shadow: .3, fade: .15 }, K = 'gas2page-b:spot3'; // spot3 = light on the pump only (Dan 2026-10-23)
+  const S = [['light', 'Light', 0, 1, .01], ['pump', 'Pump', 1, 1.3, .01], ['shadow', 'Shadow', 0, 1, .01], ['fade', 'Fade', 0, 1, .01]];
+  let v = { ...D }, on = 1; try { Object.assign(v, JSON.parse(localStorage.getItem(K) || '{}')); } catch {}
+  const q = new URLSearchParams(location.search).get('spot'); if (q === '0') on = 0;
+  const sc = document.getElementById('scene'), box = document.createElement('div');
+  box.innerHTML = '<h4 style="margin-top:14px">Spotlight</h4><div class="row ng"><label><input type="checkbox" id="sp-on">Light on</label></div>'
+    + S.map(([k, n, a, b, st]) => `<label>${n}<input type="range" id="sp-${k}" min="${a}" max="${b}" step="${st}"><output></output></label>`).join('')
+    + '<div class="row"><button id="sp-reset">Reset</button><button id="sp-copy">Copy</button></div>';
+  document.getElementById('tune').appendChild(box);
+  const apply = () => {
+    const x = on ? v : { light: 0, pump: 1, shadow: 0, fade: 0 };
+    sc.style.setProperty('--sp-l', x.light);
+    sc.style.setProperty('--sp-b', x.pump); sc.style.setProperty('--sp-k', 1 + (x.pump - 1) * .5); sc.style.setProperty('--sp-s', x.shadow);
+    sc.style.setProperty('--nf-o', 1 - .3 * x.fade); sc.style.setProperty('--nf-b', .86 - .16 * x.fade);
+    document.getElementById('sp-on').checked = !!on;
+    S.forEach(([k]) => { const i = document.getElementById('sp-' + k); i.value = v[k]; i.nextElementSibling.textContent = v[k]; });
+    try { localStorage.setItem(K, JSON.stringify(v)); } catch {}
+  };
+  S.forEach(([k]) => document.getElementById('sp-' + k).oninput = e => { v[k] = +e.target.value; apply(); });
+  document.getElementById('sp-on').onchange = e => { on = e.target.checked ? 1 : 0; apply(); };
+  document.getElementById('sp-reset').onclick = () => { v = { ...D }; on = 1; apply(); };
+  document.getElementById('sp-copy').onclick = e => { try { navigator.clipboard.writeText(JSON.stringify({ section: 'spotlight', ...v })); } catch {} e.target.textContent = 'Copied'; setTimeout(() => e.target.textContent = 'Copy', 1200); };
+  apply();
+})();
+</script>
+<script>
+/* ═══ PHONE · WALK ═══ the camera: page scroll -> the scene's x. Holds are flat (the camera stops dead), the glides
+   between them ease in and out (sine), reduced motion cuts at the middle of each glide. One cached measure (re-taken on
+   resize), one scrollY read per frame, nothing else read in the loop. Phones only (<= 760px). */
+(() => {
+  const mq = matchMedia('(max-width: 760px)'), rm = matchMedia('(prefers-reduced-motion: reduce)');
+  const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+  const stage = $('#stage'), pin = $('#pin'), scene = $('#scene'), rd = $('.rd'), tip = $('#gradeTip');
+  const caps = [$('#radioCap'), $('.pumpTip')];
+  // the walk in screens of scroll: hold, glide, hold, glide, hold, glide, hold (the track is 3 screens: CSS .stage)
+  const SEG = [.15, .6, .3, .6, .3, .6, .45];
+  // the four holds, as fractions of the scene: c = the camera's centre, [a, b] = the span that must stay in frame,
+  // r = the frame's right edge stays left of it if it can (so a poster isn't left as a sliver at the edge)
+  const STOPS = [
+    { c: 1 },                              // the readings in the sky: the right end
+    { c: .595, a: .383, b: .68 },          // the store front: the right pane's posters whole + MAIL ME THE KEYS + the box + the chalkboard
+    { c: .35, a: .213, b: .488, r: .5245 },// the lit pump + the right pane's posters (no red sliver of the mail poster)
+    { c: 0 },                              // the radio on its bench + the left pane's poster: the left end
+  ];
+  let on = false, M = null, raf = 0, frozen = false, last = {};
+  const ease = t => .5 - .5 * Math.cos(Math.PI * t);
+  const sm = (a, b, v) => { const t = Math.min(1, Math.max(0, (v - a) / (b - a))); return t * t * (3 - 2 * t); };
+
+  const measure = () => {
+    stage.classList.remove('nowalk');
+    let W = scene.offsetWidth, vw = pin.offsetWidth;
+    if (W - vw < vw * .25) { stage.classList.add('nowalk'); W = scene.offsetWidth; vw = pin.offsetWidth; }
+    const H = pin.offsetHeight, D = Math.max(0, stage.offsetHeight - H), top = stage.getBoundingClientRect().top + scrollY, max = Math.max(0, W - vw);
+    const xs = STOPS.map(s => { let x = s.c * W - vw / 2;
+      if (s.r != null) x = Math.min(x, s.r * W - vw);
+      if (s.b != null) x = Math.max(x, s.b * W - vw); if (s.a != null) x = Math.min(x, s.a * W);
+      return Math.round(Math.min(max, Math.max(0, x))); });
+    const tot = SEG.reduce((a, b) => a + b); let acc = 0; const ss = SEG.map(v => acc += v / tot * D);
+    M = { top, D, W, vw, xs, ss, cap: caps.map(c => [c.offsetLeft, c.offsetLeft + c.offsetWidth]) };
+    window.gas2Walk.M = M;
+  };
+  // local scroll s -> { x: the camera, g: where along the walk, 0 (sky) .. 3 (radio) }
+  const camAt = s => {
+    const { xs, ss } = M; let k = 0, s0 = 0;
+    while (k < ss.length && s > ss[k]) s0 = ss[k++];
+    if (k >= ss.length) return { x: xs[3], g: 3 };
+    const n = k >> 1;
+    if (!(k & 1)) return { x: xs[n], g: n };                     // a hold: dead still
+    const t = (s - s0) / (ss[k] - s0), e = rm.matches ? +(t >= .5) : ease(t);
+    return { x: xs[n] + (xs[n + 1] - xs[n]) * e, g: n + e };
+  };
+  const put = (el, k, v, fn) => { if (last[k] !== v) { last[k] = v; fn(el, v); } };
+  const frame = () => {
+    raf = 0; if (!on || !M || frozen) return;
+    const c = camAt(Math.min(M.D, Math.max(0, scrollY - M.top))), x = Math.round(c.x * 100) / 100;
+    window.gas2Walk.x = x;
+    put(scene, 'x', x, (el, v) => el.style.transform = `translate3d(${-v}px, 0, 0)`);
+    const o = Math.round((1 - sm(.3, .9, c.g)) * 1000) / 1000;       // the readings slide, then fade before the store front
+    put(rd, 'o', o, (el, v) => { el.style.opacity = v; el.classList.toggle('gone', v < .4); });
+    caps.forEach((el, i) => { const [l, r] = M.cap[i], cut = Math.max(0, x - l) + Math.max(0, r - (x + M.vw));
+      put(el, 'c' + i, Math.round((1 - sm(0, 24, cut)) * 100) / 100, (e, v) => e.style.setProperty('--vis', v)); });
+  };
+  const kick = () => { if (!raf) raf = requestAnimationFrame(frame); };
+  window.gas2Walk = { frame, get on() { return on; } };
+
+  // will-change only while the track is on screen
+  const io = 'IntersectionObserver' in window && new IntersectionObserver(es => es.forEach(e => scene.classList.toggle('walking', on && e.isIntersecting)));
+  const set = () => {
+    on = mq.matches; last = {};
+    if (on) { measure(); frame(); io && io.observe(stage); }
+    else { io && io.unobserve(stage); scene.classList.remove('walking'); stage.classList.remove('nowalk');
+      scene.style.transform = rd.style.opacity = tip.style.left = ''; rd.classList.remove('gone'); caps.forEach(c => c.style.removeProperty('--vis')); }
+  };
+  addEventListener('scroll', kick, { passive: true });
+  let rz = 0; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (on) { last = {}; measure(); frame(); } }, 60); });
+  (mq.addEventListener ? mq.addEventListener('change', set) : mq.addListener(set));
+  set();
+  addEventListener('load', () => on && (measure(), frame()));
+
+  // grades: a tap picks AND shows its line for 2.4 s (iOS doesn't focus a tapped button), kept inside the frame
+  let tipT = 0;
+  $$('.sign button').forEach(b => b.addEventListener('click', () => {
+    if (!on) return;
+    b.onfocus(); clearTimeout(tipT); tipT = setTimeout(() => tip.classList.remove('show'), 2400);
+    const cx = b.parentNode.offsetLeft + b.offsetLeft + b.offsetWidth / 2, w = tip.offsetWidth / 2 + 12, x = window.gas2Walk.x || 0;
+    tip.style.left = Math.min(Math.max(cx, x + w), x + M.vw - w) + 'px';
+  }));
+  // the signature lights with the button under the thumb
+  const lit = (btn, box) => btn.addEventListener('pointerdown', () => { box.classList.add('lit'); clearTimeout(box.litT); box.litT = setTimeout(() => box.classList.remove('lit'), 700); });
+  lit($('#cta'), rd); lit($('#cta2'), $('#endband'));
+  $('#cta2').addEventListener('click', () => $('#cta').onclick());
+
+  // a veil open = the camera holds where the tap was; closing puts the page back where it was (iOS scrolls the page to
+  // show a focused input, which would walk the camera behind the ticket)
+  let savedY = null;
+  const watch = () => {
+    const open = !!$('.veil.open');
+    if (open && savedY === null) { savedY = scrollY; frozen = true; }
+    else if (!open && savedY !== null) { const y = savedY; savedY = null; if (on && Math.abs(scrollY - y) > 1) scrollTo(0, y); frozen = false; kick(); }
+  };
+  const mo = new MutationObserver(watch);
+  const observe = () => $$('.veil').forEach(v => mo.observe(v, { attributes: true, attributeFilter: ['class'] }));
+  observe(); document.addEventListener('DOMContentLoaded', observe); // the radio's close-up veil is built by radio.js (defer)
+})();
+</script>
+</body>
+</html>

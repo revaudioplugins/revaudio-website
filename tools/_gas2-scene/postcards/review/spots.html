@@ -1,0 +1,409 @@
+<title>GAS 2 End Spots</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Oswald:wght@500;600&display=swap">
+<style>
+/* The review bench (Dan 2026-10-29: "i really like the bench, save that style for future work"). One section per screen,
+   in the order a visitor meets them: the screen on the left, its notes on the right (stacked on a phone). One dark look
+   on purpose; the notes box is the one light thing, ruled card stock in pen ink. The content lives in CFG + SECTIONS in
+   the script; the look and the mechanics stay as they are. */
+:root {
+  --ground: #100d0a; --panel: #18130f; --rule: #2e261f; --fg: #efe9df; --dim: #a99f90;
+  --honey: #f2be4a; --on-honey: #1a1208; --red: #e0694c; --ok: #9fc07c; --on-ok: #13200b;
+  --stock: #efe5cc; --ink: #24304d; --ink-rule: rgba(36, 48, 77, .17); --ink-dim: rgba(36, 48, 77, .72);
+  --display: Oswald, "Arial Narrow", "Helvetica Neue", sans-serif;
+  --body: Barlow, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --fw: 402; --fh: 714;                                   /* the screen, set from CFG.frame */
+  color-scheme: dark;
+}
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+[hidden] { display: none !important; }
+*, *::before, *::after { box-sizing: border-box; }
+body { background: var(--ground); color: var(--fg); font: 16px/1.5 var(--body); -webkit-font-smoothing: antialiased; }
+.wrap { max-width: 1040px; margin: 0 auto; padding-block: 40px 72px; background: var(--ground); color: var(--fg);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.label { margin: 0; font: 500 12px/1.2 var(--display); letter-spacing: .16em; text-transform: uppercase; color: var(--honey); }
+h1, h2 { margin: 0; font-family: var(--display); font-weight: 600; text-transform: uppercase; letter-spacing: .01em; text-wrap: balance; }
+h1 { font-size: clamp(40px, 8vw, 60px); line-height: .95; }
+h2 { font-size: 30px; line-height: 1; }
+
+/* ── the head: what this is, how to use it, where the notes go, and a jump list ── */
+.top { display: grid; gap: 16px; padding-bottom: 30px; border-bottom: 1px solid var(--rule); }
+.lede { margin: 0; max-width: 60ch; font-size: 18px; }
+.tips { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; max-width: 64ch; color: var(--dim); }
+.tips b { color: var(--fg); font-weight: 600; }
+.conn { margin: 0; display: flex; gap: 10px; align-items: baseline; font-size: 15px; color: var(--dim); }
+.conn::before { content: ""; flex: none; width: 9px; height: 9px; border-radius: 50%; background: var(--dim); transform: translateY(-1px); }
+.conn[data-s="ok"]::before { background: var(--ok); }
+.conn[data-s="local"]::before { background: var(--red); }
+.index { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 0; padding: 0; list-style: none; }
+.chip { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid var(--rule); border-radius: 999px;
+  color: var(--fg); text-decoration: none; font: 500 13px/1 var(--display); letter-spacing: .08em; text-transform: uppercase; }
+.chip:hover { border-color: var(--dim); }
+.chip .dot { width: 8px; height: 8px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--dim); }
+.chip.note .dot { background: var(--honey); box-shadow: none; }
+.chip.ok .dot { background: var(--ok); box-shadow: none; }
+.progress { margin: 0; font: 500 13px/1 var(--display); letter-spacing: .1em; text-transform: uppercase; color: var(--dim); }
+
+/* ── one screen ── */
+.sc { display: grid; gap: 22px; padding-block: 44px; border-bottom: 1px solid var(--rule); scroll-margin-top: 8px; }
+.shot { display: grid; gap: 10px; justify-items: center; }
+.phone { position: relative; width: min(100%, 360px); aspect-ratio: var(--fw) / var(--fh); max-width: 100%; border-radius: 22px; overflow: hidden;
+  background: #0b0907; box-shadow: 0 0 0 1px var(--rule), 0 26px 50px -26px #000; cursor: crosshair; }
+.phone img { display: block; width: 100%; height: 100%; object-fit: cover; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.phone.live { cursor: auto; box-shadow: 0 0 0 2px var(--honey), 0 26px 50px -26px #000; }
+.phone.live img, .phone.live .pins { visibility: hidden; }
+.phone iframe { position: absolute; left: 0; top: 0; width: calc(var(--fw) * 1px); height: calc(var(--fh) * 1px); border: 0;
+  transform: scale(var(--k, 1)); transform-origin: 0 0; }
+.pins { position: absolute; inset: 0; pointer-events: none; }
+.pin { position: absolute; width: 28px; height: 28px; padding: 0; transform: translate(-50%, -50%); pointer-events: auto; cursor: pointer;
+  border: 2px solid var(--ground); border-radius: 50%; background: var(--honey); color: var(--on-honey);
+  font: 600 14px/24px var(--display); text-align: center; box-shadow: 0 3px 8px rgba(0, 0, 0, .6); }
+.shot-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; width: min(100%, 360px); }
+.q { margin-left: auto; font: 12px/1 var(--mono); color: var(--dim); }
+.hint { margin: 0; width: min(100%, 360px); font-size: 14px; color: var(--dim); }
+.btn { min-height: 40px; padding: 0 14px; border: 1px solid var(--honey); border-radius: 10px; background: transparent; color: var(--honey);
+  font: 600 13px/1 var(--display); letter-spacing: .1em; text-transform: uppercase; cursor: pointer; }
+.btn.solid { background: var(--honey); color: var(--on-honey); }
+.btn:focus-visible, .chip:focus-visible, .pin:focus-visible, .notes:focus-visible { outline: 2px solid var(--honey); outline-offset: 3px; }
+
+.side { display: grid; gap: 16px; align-content: start; min-width: 0; }
+.parts { margin: 0; padding: 0; list-style: none; display: grid; gap: 7px; max-width: 64ch; color: var(--dim); }
+.parts b { color: var(--fg); font-weight: 600; margin-right: 4px; }
+.tip { margin: 0; max-width: 64ch; }
+.tip span { margin-right: 8px; font: 600 12px/1 var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--honey); }
+.ask { margin: 0; padding: 12px 14px 14px; display: grid; gap: 10px; border: 1px solid var(--rule); border-radius: 12px; }
+.ask legend { padding: 0 6px; }
+.seg { display: flex; flex-wrap: wrap; gap: 8px; }
+.seg .btn[aria-pressed="true"] { background: var(--honey); color: var(--on-honey); }
+
+/* the last round, under the screen it was about: the note as written, then what changed */
+.was { margin: 0; padding: 14px 16px; display: grid; gap: 8px; max-width: 64ch; border: 1px solid var(--rule); border-left: 3px solid var(--honey);
+  border-radius: 4px 12px 12px 4px; background: var(--panel); }
+.was q { quotes: none; white-space: pre-line; color: var(--fg); font-style: italic; }
+.was ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 5px; color: var(--dim); }
+.was li { display: grid; grid-template-columns: 22px minmax(0, 1fr); }
+.was li::before { content: "✓"; color: var(--ok); font-weight: 600; }
+
+/* the notes: the back of a postcard, ruled, in pen */
+.notes { display: block; width: 100%; min-height: 176px; resize: vertical; margin: 0; padding: 12px 16px; border: 0; border-radius: 4px;
+  background-color: var(--stock); background-image: linear-gradient(transparent calc(100% - 1px), var(--ink-rule) 0);
+  background-size: 100% 1.6em; background-position: 0 12px; background-attachment: local;
+  color: var(--ink); font: 17px/1.6 var(--body); box-shadow: 0 14px 30px -20px #000; }
+.notes::placeholder { color: var(--ink-dim); }
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+.ok-btn { border-color: var(--rule); color: var(--fg); }
+.ok-btn[aria-pressed="true"] { border-color: var(--ok); background: var(--ok); color: var(--on-ok); }
+.save { font-size: 14px; color: var(--dim); }
+.save[data-s="error"] { color: var(--red); }
+
+@media (min-width: 820px) {
+  .sc { grid-template-columns: 300px minmax(0, 1fr); gap: 48px; align-items: start; }
+  .sc.wide { grid-template-columns: minmax(0, 1fr); }
+  .shot { justify-items: start; }
+  .phone, .shot-bar, .hint { width: 300px; }
+}
+/* desktop screens (CFG.frame wider than tall): the screen takes the row, the notes go under it */
+.sc.land { grid-template-columns: minmax(0, 1fr); }
+.sc.land .phone { width: 100%; max-width: 960px; border-radius: 10px; }
+.sc.land .shot-bar, .sc.land .hint { width: 100%; max-width: 960px; }
+
+/* ── the foot: the way out ── */
+.foot { display: grid; gap: 14px; padding-top: 40px; }
+.foot p { margin: 0; max-width: 62ch; }
+.foot .small { font-size: 14px; color: var(--dim); }
+/* ── side by side (Dan 2026-10-31: "show them all to me in a bench side by side"): one column per spot, a row to scan in
+   one look; under 1100px the row scrolls sideways inside itself, a spot per swipe. The pick sits under the row ── */
+.wrap { max-width: 1360px; }
+#screens { --n: 5; position: relative; display: grid; grid-auto-flow: column; grid-auto-columns: min(80vw, 300px); gap: 20px; overflow-x: auto;
+  overscroll-behavior-x: contain; scroll-snap-type: x mandatory; padding-block: 32px 18px; border-bottom: 1px solid var(--rule); }
+#screens .sc { grid-template-columns: minmax(0, 1fr); gap: 18px; padding-block: 0; border-bottom: 0; align-content: start; scroll-snap-align: start; }
+#screens .shot { justify-items: stretch; }
+#screens .phone, #screens .shot-bar, #screens .hint { width: 100%; }
+#screens h2 { font-size: 26px; }
+#screens .notes { min-height: 132px; }
+@media (min-width: 1100px) { #screens { grid-auto-flow: row; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); overflow: visible; } }
+#dump { width: 100%; min-height: 240px; padding: 12px; border: 1px solid var(--rule); border-radius: 8px; background: var(--panel); color: var(--fg); font: 13px/1.5 var(--mono); }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <h1 id="title">Thing review</h1>
+    <p class="lede" id="lede"></p>
+    <ul class="tips">
+      <li><b>Pin a spot:</b> tap a picture. A numbered pin drops and your note starts with its number.</li>
+      <li class="tip-live"><b>▶ Live</b> runs the real end page in the frame. Inside it, ↺ The postcards again deals the cards back: you land on the first card with that spot behind it and can flick through to the end.</li>
+      <li><b>Nothing to change?</b> Tap ✓ Looks right.</li>
+    </ul>
+    <p class="conn" id="conn" data-s="wait">Connecting…</p>
+    <nav aria-label="Screens"><ul class="index" id="index"></ul></nav>
+    <p class="progress" id="progress"></p>
+  </header>
+
+  <main id="screens"></main>
+  <div id="more"></div>
+
+  <footer class="foot">
+    <h2>Done?</h2>
+    <p>Tell me in the chat. I read every note straight from this page.</p>
+    <div class="row"><button class="btn" type="button" id="copy">Copy all notes</button><span class="save" id="copied" role="status"></span></div>
+    <p class="small">The copy is for pasting to me if the line at the top says your notes stay in this browser.</p>
+    <label class="sr" for="dump">All notes as text</label>
+    <textarea id="dump" readonly hidden></textarea>
+  </footer>
+</div>
+
+<script>
+(() => {
+  // ── what this page reviews. Shots: shots/<id>.webp at CFG.frame (shoot.cjs). Live: CFG.live + '#' + q ('' = none) ──
+  const CFG = {
+    title: 'GAS 2 End Spots', thing: 'the GAS 2 phone page’s end page', build: 'ad8c371',
+    key: 'gas2-end-spots',               // this browser's copy: one key per review page
+    frame: [402, 714],                   // the screen in CSS px (a phone: Safari's visible viewport on an iPhone 17 Pro)
+    live: 'live.html',
+    round: 1,                            // round 2+: fresh boxes, the last round's note + what changed under each screen
+    lede: 'The GAS 2 phone page’s end page five ways, side by side: the sky you signed off, then four spots with the pump in them. Shots from the iPhone 17 Pro Simulator, build ad8c371. Behind the cards, each spot shows blurred. Write under each one; your pick goes at the bottom.',
+  };
+  const SECTIONS = [                     // side by side, the signed-off one first
+    { id: 'sky', short: 'Now · Sky', kick: 'Signed off', title: 'The sky', q: 'card=7', parts: [
+      ['In the frame', 'the canopy’s corner and its lamp, the desert at dusk. No pump.'],
+      ['The words', 'in the open sky, as you signed them off.']] },
+    { id: 'a', short: 'A Station', kick: 'Spot A', title: 'Station front', q: 'card=7&spot=a', parts: [
+      ['In the frame', 'the radio, the pump and the barrel in front of the lit window.'],
+      ['The words', 'in a night sky above the roof.']] },
+    { id: 'b', short: 'B Pump', kick: 'Spot B', title: 'Pump close', q: 'card=7&spot=b', parts: [
+      ['In the frame', 'the pump big on the bottom edge, the radio and the barrel cut at the sides.'],
+      ['The words', 'in the night above it; ↺ sits over the knobs.']] },
+    { id: 'c', short: 'C Desert', kick: 'Spot C', title: 'Pump + desert', q: 'card=7&spot=c', parts: [
+      ['In the frame', 'the pump at the left, the desert sunset at the right, the canopy’s edge and both lamps.'],
+      ['The words', 'in the night above the roof.']] },
+    { id: 'd', short: 'D Low', kick: 'Spot D', title: 'Button low', q: 'card=7&spot=d', parts: [
+      ['In the frame', 'the station across the top: radio, pump, barrel, a strip of desert.'],
+      ['The words', 'below it on the dark lot, the button in thumb reach.']] },
+    { id: 'overall', short: 'Your pick', kick: 'Your pick', title: 'Which one?', frame: false,
+      ask: { q: 'Which one becomes the end page?', choices: { sky: 'Keep the sky', a: 'A Station front', b: 'B Pump close', c: 'C Pump + desert', d: 'D Button low' } },
+      placeholder: 'Anything to shift in the one you pick: closer, lower, more sky, more pump.' },
+  ];
+
+  const SEC = Object.fromEntries(SECTIONS.map((s) => [s.id, s]));
+  const R = CFG.round > 1 ? `-r${CFG.round}` : '';
+  const COLL = 'notes' + R, KEY = CFG.key + R;
+  const [FW, FH] = CFG.frame, LAND = FW > FH;
+  document.documentElement.style.setProperty('--fw', FW); document.documentElement.style.setProperty('--fh', FH);
+  const $ = (s, el) => (el || document).querySelector(s);
+  const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  const circ = (n) => (n >= 1 && n <= 20 ? String.fromCodePoint(0x245f + n) : `(${n})`);   // ① … ⑳
+  const blank = () => ({ text: '', ok: false, pins: [], choice: '', updatedAt: '' });
+  const norm = (d, S) => ({
+    text: typeof d.text === 'string' ? d.text : '', ok: d.ok === true,
+    pins: Array.isArray(d.pins) ? d.pins.filter((p) => p && [p.n, p.x, p.y].every(Number.isFinite)).map((p) => ({ n: p.n, x: p.x, y: p.y })) : [],
+    choice: S && S.ask && S.ask.choices[d.choice] ? d.choice : '', updatedAt: typeof d.updatedAt === 'string' ? d.updatedAt : '' });
+  const has = (s) => !!(s && (s.text.trim() || s.ok || s.choice || s.pins.length));
+
+  // ── the head ──
+  document.title = CFG.title;
+  $('#title').textContent = CFG.title;
+  $('#lede').textContent = CFG.lede || (CFG.round > 1
+    ? `Round ${CFG.round} of ${CFG.thing} (build ${CFG.build}). Under each screen: your last note and what changed. Write what’s still off.`
+    : `Every screen of ${CFG.thing} (build ${CFG.build}), in the order a visitor sees it. Write your notes under each one.`);
+  if (!CFG.live) $('.tip-live').hidden = true;
+
+  // ── state: this browser first (instant, and the fallback), then the page's store, which Claude reads ──
+  const state = {};
+  try { const raw = JSON.parse(localStorage.getItem(KEY) || '{}'); for (const id in raw) if (SEC[id] && raw[id]) state[id] = norm(raw[id], SEC[id]); } catch (e) {}
+  const st = (id) => state[id] || (state[id] = blank());
+  const saveLocal = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} };
+
+  // ── build the page ──
+  const ask = (S) => `<fieldset class="ask"><legend>${esc(S.ask.q)}</legend>
+    <div class="seg">${Object.entries(S.ask.choices).map(([k, v]) => `<button class="btn" type="button" data-choice="${esc(k)}" aria-pressed="false">${esc(v)}</button>`).join('')}</div></fieldset>`;
+  const was = (S) => `<div class="was">${S.was ? `<p class="label">Round ${CFG.round - 1} · your note</p><q>${esc(S.was)}</q>` : ''}
+    ${S.did && S.did.length ? `<p class="label">What changed</p><ul>${S.did.map((d) => `<li>${esc(d)}</li>`).join('')}</ul>` : ''}</div>`;
+  const card = (S) => `
+    <section class="sc${S.frame === false ? ' wide' : LAND ? ' land' : ''}" id="${S.id}" aria-labelledby="h-${S.id}">
+      ${S.frame === false ? '' : `<div class="shot">
+        <div class="phone" data-hash="${esc(S.q || '')}">
+          <img src="shots/${S.id}.webp" alt="${esc(S.kick)}, ${esc(S.title)}, as it shows on screen" width="${FW}" height="${FH}" draggable="false">
+          <div class="pins"></div>
+        </div>
+        <div class="shot-bar">${CFG.live ? '<button class="btn solid go" type="button">▶ Live</button><button class="btn again" type="button" hidden>↺ Restart</button>' : ''}${S.q ? `<code class="q">?${esc(S.q)}</code>` : ''}</div>
+        <p class="hint">Tap the picture to pin a spot.</p>
+      </div>`}
+      <div class="side">
+        <p class="label">${S.kick}</p>
+        <h2 id="h-${S.id}">${S.title}</h2>
+        ${S.parts ? `<ul class="parts">${S.parts.map(([a, b]) => `<li><b>${a}</b> ${b}</li>`).join('')}</ul>` : ''}
+        ${S.tip ? `<p class="tip"><span>Try it</span>${S.tip}</p>` : ''}
+        ${CFG.round > 1 && (S.was || (S.did && S.did.length)) ? was(S) : ''}
+        ${S.ask ? ask(S) : ''}
+        <label class="sr" for="n-${S.id}">Notes on ${S.title}</label>
+        <textarea class="notes" id="n-${S.id}" dir="auto" rows="6" placeholder="${S.placeholder || 'What to change here. Tap the picture to pin a spot first.'}"></textarea>
+        <div class="row">${S.frame === false ? '' : '<button class="btn ok-btn" type="button" aria-pressed="false">✓ Looks right</button>'}<span class="save" role="status"></span></div>
+      </div>
+    </section>`;
+  $('#screens').innerHTML = SECTIONS.filter((S) => S.frame !== false).map(card).join('');
+  $('#more').innerHTML = SECTIONS.filter((S) => S.frame === false).map(card).join('');
+  $('#screens').style.setProperty('--n', SECTIONS.filter((S) => S.frame !== false).length);
+  $('#index').innerHTML = SECTIONS.map((S) => `<li><a class="chip" href="#${S.id}" data-id="${S.id}"><i class="dot" aria-hidden="true"></i>${S.short}</a></li>`).join('');
+
+  const size = (ta) => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; };
+  function paint(id) {
+    const el = document.getElementById(id), s = st(id);
+    const okb = $('.ok-btn', el); if (okb) okb.setAttribute('aria-pressed', String(s.ok));
+    el.querySelectorAll('[data-choice]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const box = $('.pins', el);
+    if (box) box.replaceChildren(...s.pins.map((p) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'pin'; b.dataset.n = p.n; b.textContent = p.n; b.title = 'Tap to remove';
+      b.setAttribute('aria-label', `Pin ${p.n}, tap to remove`);
+      b.style.left = (p.x * 100).toFixed(1) + '%'; b.style.top = (p.y * 100).toFixed(1) + '%';
+      return b;
+    }));
+  }
+  function fill(id) { const ta = document.getElementById('n-' + id); ta.value = st(id).text; size(ta); paint(id); }
+  function renderIndex() {
+    let n = 0;
+    SECTIONS.forEach((S) => {
+      const s = state[S.id], c = $(`[data-id="${S.id}"]`, $('#index'));
+      const note = !!(s && (s.text.trim() || s.pins.length || s.choice)), ok = !!(s && s.ok);
+      c.classList.toggle('note', note); c.classList.toggle('ok', ok && !note);
+      if (note || ok) n++;
+    });
+    $('#progress').textContent = `${n} of ${SECTIONS.length} done`;
+  }
+
+  // ── saving: every change goes to this browser at once and to the store after a pause in typing ──
+  let db = null;
+  const timers = {}, writing = {}, again = {};
+  const SAY = { local: 'Saved in this browser only', saving: 'Saving…', saved: 'Saved', error: 'Not saved for Claude. It is kept in this browser: use Copy all notes.' };
+  const status = (id, s) => { const el = $(`#${id} .save`); el.dataset.s = s; el.textContent = SAY[s] || ''; };
+  function touch(id, wait) {
+    st(id).updatedAt = new Date().toISOString();
+    saveLocal(); renderIndex();
+    clearTimeout(timers[id]); timers[id] = 0;
+    if (!db) { status(id, 'local'); return; }
+    status(id, 'saving');
+    timers[id] = setTimeout(() => { timers[id] = 0; push(id); }, wait);
+  }
+  function flush(id) { if (timers[id]) { clearTimeout(timers[id]); timers[id] = 0; push(id); } }
+  async function push(id, retry) {
+    if (!db) return;
+    if (writing[id]) { again[id] = true; return; }
+    writing[id] = true; status(id, 'saving');
+    const s = st(id), S = SEC[id];
+    try {
+      await db.doc(COLL + '/' + id).set({ screen: `${S.kick} · ${S.title}`, text: s.text, ok: s.ok, pins: s.pins, choice: s.choice, updatedAt: s.updatedAt });
+      status(id, 'saved');
+    } catch (e) {
+      writing[id] = false;
+      if (e && e.code === 'unavailable' && !retry) { setTimeout(() => push(id, true), 600 + Math.random() * 900); return; }
+      status(id, 'error'); return;
+    }
+    writing[id] = false;
+    if (again[id]) { again[id] = false; push(id); }
+  }
+  const busy = (id) => document.activeElement === document.getElementById('n-' + id) || !!timers[id] || !!writing[id];
+  function conn(s) {
+    const el = $('#conn'); el.dataset.s = s;
+    el.textContent = s === 'ok' ? 'Your notes save to this page as you type. I read them from here.'
+      : 'This view can’t save to the page, so your notes stay in this browser. When you’re done, use Copy all notes at the bottom.';
+  }
+  async function connect() {
+    const c = window.claude;
+    try { db = c && typeof c.use === 'function' ? await c.use('db') : null; } catch (e) { db = null; }
+    if (!db) { conn('local'); SECTIONS.forEach((S) => has(state[S.id]) && status(S.id, 'local')); return; }
+    conn('ok');
+    let first = true;
+    db.collection(COLL).onSnapshot((snap) => {
+      const seen = new Set();
+      snap.docs.forEach((d) => {
+        if (!SEC[d.id]) return;
+        seen.add(d.id);
+        if (d.metadata.hasPendingWrites) return;
+        const r = norm(d.data() || {}, SEC[d.id]), l = state[d.id];
+        if (l && l.updatedAt > r.updatedAt) { if (first) push(d.id); return; }    // typed here while it was away
+        if (l && l.updatedAt === r.updatedAt) { if (first) status(d.id, 'saved'); return; }
+        if (busy(d.id)) return;
+        state[d.id] = r; fill(d.id); status(d.id, 'saved');                        // written on another device
+      });
+      if (first) { first = false; for (const id in state) if (!seen.has(id) && has(state[id])) push(id); }
+      saveLocal(); renderIndex();
+    }, () => { db = null; conn('local'); });
+  }
+
+  // ── live: the real page in the frame, one at a time ──
+  let current = null;
+  const fit = (ph) => ph.style.setProperty('--k', (ph.clientWidth / FW).toFixed(4));
+  const ro = new ResizeObserver((es) => es.forEach((e) => fit(e.target)));
+  function live(ph) {
+    if (current && current !== ph) still(current);
+    const old = $('iframe', ph); if (old) old.remove();
+    const f = document.createElement('iframe');
+    f.title = `${CFG.thing}, live`; f.allow = 'autoplay'; f.src = CFG.live + '#' + ph.dataset.hash;
+    ph.append(f); ph.classList.add('live'); current = ph; fit(ph);
+    const shot = ph.parentElement;
+    $('.go', shot).textContent = '■ Picture'; $('.again', shot).hidden = false; $('.hint', shot).hidden = true;
+  }
+  function still(ph) {
+    const f = $('iframe', ph); if (f) f.remove();
+    ph.classList.remove('live'); if (current === ph) current = null;
+    const shot = ph.parentElement;
+    $('.go', shot).textContent = '▶ Live'; $('.again', shot).hidden = true; $('.hint', shot).hidden = false;
+  }
+
+  // ── wire each screen ──
+  SECTIONS.forEach((S) => {
+    const el = document.getElementById(S.id), ta = $('textarea', el), ph = $('.phone', el);
+    fill(S.id);
+    ta.addEventListener('input', () => { st(S.id).text = ta.value; size(ta); touch(S.id, 800); });
+    ta.addEventListener('blur', () => flush(S.id));
+    const okb = $('.ok-btn', el);
+    if (okb) okb.addEventListener('click', () => { const s = st(S.id); s.ok = !s.ok; paint(S.id); touch(S.id, 0); });
+    el.querySelectorAll('[data-choice]').forEach((b) => b.addEventListener('click', () => {
+      const s = st(S.id); s.choice = s.choice === b.dataset.choice ? '' : b.dataset.choice; paint(S.id); touch(S.id, 0);
+    }));
+    if (!ph) return;
+    ro.observe(ph);
+    ph.addEventListener('click', (e) => {
+      if (ph.classList.contains('live')) return;
+      const s = st(S.id), pin = e.target.closest('.pin');
+      if (pin) { s.pins = s.pins.filter((p) => p.n !== +pin.dataset.n); paint(S.id); touch(S.id, 0); return; }
+      const r = ph.getBoundingClientRect();
+      const x = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)), y = Math.min(1, Math.max(0, (e.clientY - r.top) / r.height));
+      const n = s.pins.reduce((m, p) => Math.max(m, p.n), 0) + 1;
+      s.pins.push({ n, x: +x.toFixed(3), y: +y.toFixed(3) });
+      const v = ta.value.replace(/\s+$/, '');
+      ta.value = (v ? v + '\n' : '') + circ(n) + ' ';
+      s.text = ta.value; size(ta); paint(S.id); touch(S.id, 0);
+      ta.focus({ preventScroll: true }); ta.setSelectionRange(ta.value.length, ta.value.length);
+    });
+    const go = $('.go', el);
+    if (go) {
+      go.addEventListener('click', () => (ph.classList.contains('live') ? still(ph) : live(ph)));
+      $('.again', el).addEventListener('click', () => live(ph));
+    }
+  });
+  renderIndex();
+  SECTIONS.forEach((S) => has(state[S.id]) && status(S.id, 'local'));
+  connect();
+
+  // ── the way out: everything as text ──
+  function dump() {
+    const out = [`${CFG.title}${CFG.round > 1 ? ` · round ${CFG.round}` : ''} · build ${CFG.build} · ${new Date().toLocaleString()}`, ''];
+    SECTIONS.forEach((S) => {
+      const s = st(S.id);
+      out.push(`== ${S.kick} · ${S.title}${S.q ? ` (?${S.q})` : ''} ==${s.ok ? '  ✓ looks right' : ''}`);
+      if (s.choice) out.push(`${S.ask.q} ${S.ask.choices[s.choice]}`);
+      if (s.pins.length) out.push('Pins: ' + s.pins.map((p) => `${circ(p.n)} ${Math.round(p.x * 100)}% across, ${Math.round(p.y * 100)}% down`).join(' · '));
+      out.push(s.text.trim() || '(no note)', '');
+    });
+    return out.join('\n');
+  }
+  $('#copy').addEventListener('click', () => {
+    const t = dump(), box = $('#dump'), said = $('#copied');
+    const manual = () => { box.hidden = false; box.value = t; size(box); box.focus(); box.select(); said.textContent = 'Select the text below and copy it.'; };
+    try { navigator.clipboard.writeText(t).then(() => { said.textContent = 'Copied. Paste it to me in the chat.'; }, manual); } catch (e) { manual(); }
+  });
+})();
+</script>

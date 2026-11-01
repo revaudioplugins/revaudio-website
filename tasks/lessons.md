@@ -181,3 +181,122 @@ an idle timer shorter than that fires before Lenis moved; wait while `lenis.isSc
    they could not show it. After "apply ww bench", measure the wall's bottom against the screen on the real page at
    1141x636, 1280x665 and a short phone, and give any size that grows a height term the way the names have one
    (`min(slider, room / rows ...)`), so the pick holds wherever there is room and yields where there is none.
+
+## 2026-10-19 — overlap checks: measure the GLYPHS, and keep pseudo-elements out of :is()
+1. "Does the title hit the checker strip?" An element box answers wrong: `#d-hear-h` is a full-width block, so its box
+   overlaps everything on its row at every width. Measure the text itself (`range.selectNodeContents(h)`,
+   `range.getBoundingClientRect()`) against the other part's box, at a sweep of widths: the #hear checker really did
+   run under LET'S DRIFT. up to ~770 px, not only on phones as the screenshot suggested.
+2. `:is(.a::after, .b .c)` is invalid (pseudo-elements are not allowed inside `:is()` / `:where()`), and the browser
+   drops the WHOLE rule with no build error. Write a pseudo-element selector out in full, once per rule.
+
+## 2026-10-19 — a ghost layer blinds scrollWidth: measure the lit text
+The LCD's ghost cells are an absolutely positioned `::before` inside the coach cell (`overflow: hidden`). An absolute
+child counts toward scrollable overflow, so `scrollWidth > clientWidth` turned true for EVERY coach line at every
+width (verify-hear.cjs's coachClipped said "clipped" everywhere, a blind metric). Measure the lit text instead:
+`range.selectNodeContents(el)` -> its right edge vs the cell's right edge, plus a control string that must fail
+(coachfit.cjs). The real check then found the one true clip: 2-6 px at 360, fixed with letter-spacing 0.
+
+## 2026-10-26 — bench files, font fallbacks and WebKit: three traps from the #hear LCD work
+1. `bench/assets/` is gitignored (big AI originals). A bench's own crops / fonts put there never reach git, and a
+   partner gets a bench with broken images. Give each bench its own folder (`bench/drift-lcd/`, `bench/drift-play/`)
+   and check `git status --short bench/` shows the files before the commit.
+2. A Playwright screenshot waits for web fonts, so it can never show a `font-display: swap` fallback. To judge the
+   fallback, block the font request and capture through CDP (`Page.captureScreenshot`), which does not wait.
+3. playwright-core 1.63 asks for `webkit-2359`; laptop 1 has `webkit-2336`. Launch it with
+   `executablePath: %LOCALAPPDATA%/ms-playwright/webkit-2336/Playwright.exe` instead of downloading. Windows WebKit has no
+   `AudioContext`, so the #hear player stays on its no-audio path there: WebKit checks the look, not the sound.
+
+## 2026-10-28 — a hand-tuning bench over the real page: Lenis eats the wheel
+The #hear section bench drags and resizes parts inside same-origin iframes of the built /drift page. Wheel-to-resize
+scrolled the frame instead, even with `preventDefault` in a `{ passive: false }` listener: the site's smooth scroller
+(Lenis, `src/lib/motion.ts`) scrolls the page from its own wheel listener. Lenis skips anything inside
+`[data-lenis-prevent]`, so the bench sets that attribute on `#hear` while EDIT is on (and stops propagation, or the
+VOLUME knob's own wheel handler turns it too). Moves ride on the CSS `translate` property and sizes on `scale`, added to
+the part's own translate read with the tune style disabled, so the page never reflows under the hand.
+
+## 2026-10-20 - a bench value tuned at laptop widths can break narrower ones
+
+The GAS lab bench (real /gas in 1366-1920 px frames) gave a fixed `margin-bottom: -7.625rem` that pulls the
+width-scaled <gas-mixer> up under the "Hear it" line. At a 1000 px window the mixer is smaller, so the same pull ran the
+console over the line and the note onto the plate. Rule: after baking a bench offset that works against a component
+that scales with the width, check the narrowest desktop width (~1000 px) too; scale the offset with the width
+(`max(<tuned>, -<n>vw)`) so the tuned look stays exact where it was tuned.
+
+## 2026-10-22 - A component dropped into someone else's page: prefix EVERY class
+
+- The GAS 2 radio's tuning knob (`.rp-knob.tune`) rendered 0 x 0: page-b's own TUNE panel is `.tune { display: none }`.
+  Generic names (`tune`, `vol`, `on`, `open`, `key`) collide with the host page's CSS. Every class of a player that
+  lives in another writer's page carries its prefix (`rp-`), states included where the host styles them; check an
+  invisible part with `getBoundingClientRect()` first (0 x 0 = a host rule, not your code).
+
+## 2026-10-23 — GAS 2 page mockup (`danavivi-a3`): checking a page Dan views in Safari
+- A gradient layer that starts at a hard element edge shows as a "cut": the Dusk layer's top/bottom band had no
+  horizontal fade. My Chromium screenshots missed it by eye; a column-luminance scan across the band found it (a step of
+  ~9 at the layer's left edge). Rule: before showing any overlay / shadow layer, scan luminance across it (or the darkening
+  ratio against a layers-off render), and mask every layer so it fades out on all sides.
+- Never `screencapture` after activating Safari: it steals focus while Dan types and captured his editor instead of the
+  page. Rule: check Safari rendering offscreen with `wksnap` (`revaudio-shared/tools/wksnap/wksnap.swift`, built into the
+  scratchpad). It does not render `backdrop-filter`, so those layers need Chromium + Dan's eye.
+- A live-page bench (`?bench`) keeps its deltas in localStorage, so after an export is folded into the source they apply
+  on top again (doubled offsets). Rule: park the stored copy once behind a stamp (page-b's loader, `gas2page-b:folded`), and
+  set that stamp in probes that inject deltas, or the probe's fresh profile parks them too.
+- New TUNE defaults do nothing for a viewer whose localStorage already holds the old values. Rule: a new composition gets a
+  new storage key (`gas2page-b:tune2`).
+- Same day, the second half of it: equal specificity loses to the host's LATER stylesheet. The radio's `<link>` sits
+  above page-b's own `<style>`, so `.rp-veil { background }` lost to the page's `.veil { background }` (0.62, not 0.86 /
+  0.93) and nobody saw it for two rounds. Style a shared base class as `.veil.rp-veil`, and check a component's key
+  rules with `getComputedStyle` in the host page, not by reading the CSS.
+
+## 2026-10-28 - folding a hand-tuned bench layout: positions, not the bench's translates
+The #hear section bench was tuned by hand with CSS `translate` / `scale` on top of the page's flow layout, at one deck
+width (691 px). Copying those translates would hold only at that width: at 1100 px the pair re-centres in a narrower
+step and STOP's +92 px ran into the DRIFT ring. Fold it as layout instead: measure every part's centre on the bench
+(a geometry dump in panel coordinates), place the parts absolutely in the controls box at x = place * --s + a share
+of the deck's spare width (--e = 100% - the tuned width), the edge part pinned to its edge, and step --s down with a
+container query on the deck. Then prove parity by dumping the folded page with the same keys and diffing (here every
+part within 0.5 px), plus an overlap sweep over many widths with a forced-overlap control that must fail.
+
+## 2026-10-30 - pointer capture moves the pointerup's target
+
+GAS 2 postcards (`danavivi-75`): the stack calls `setPointerCapture` on pointerdown, so the matching pointerup arrives
+with `e.target` = the capturing card, never the child under the finger. Round 2's "a tap on the deck doesn't turn the
+card" (`e.target.closest('.deck')` on pointerup) never worked; round 3's check caught it. Rule: keep the pointerdown
+target and test that, and write a check that taps the exact spot.
+
+## 2026-10-30 - a physical object's print doesn't animate
+
+GAS 2 postcards (`danavivi-75`): round 2's "make everything feel much more alive" became arrival pops on every card
+(the lettering popped, seals and postmarks thumped, "Greetings from" wrote itself), a turning sunburst and a
+flickering lamp in a photo. Dan, round 5: "the readings should be glued to the card itself ... physics-wise". Rule:
+on a physical metaphor, life comes from the object and its real mechanisms (the card's flick and curl, the turntable,
+a sticker's corner, light), never from its printed content moving. DESIGN.md §6.
+
+## 2026-10-30 - "not smooth": measure frames on a slowed CPU before touching the motion
+
+GAS 2 postcards (`danavivi-75`), Dan: "the card moves are not smooth yet ... everything that moves needs to be smooth".
+Chrome with `Emulation.setCPUThrottlingRate` 4 + a rAF frame log + a `longtask` observer found what eyes alone would not:
+a thrown card left at ~3x the finger's speed (a fixed cubic-bezier over a fixed distance) and a CSS transition held it
+still for a frame or two first; a box-shadow swap on the held card and a depth `scale()` repainted whole cards;
+`new AudioContext()` took 226 ms (4x) while warming the demo (decode on an `OfflineAudioContext` instead; open the
+device on the tap); a 1M-pixel canvas loop blocked 240 ms (slice it, a few ms a frame). Sample the moving element's
+speed per frame around the release to prove there's no jump. DESIGN.md §6.
+
+## 2026-10-30 - two movers on one element: whoever takes it over starts from where it is
+
+GAS 2 postcards (`danavivi-75`, the ponytail pass): a let-go card moves frame by frame in JS while the stack settles in
+CSS. Five paths took a moving card over without reading where it was: ‹ mid-throw (an ~890 px jump), › on its way
+back or while it sprang home, a tap mid-spring (frozen off its place), a layout mid-spring (settled on the wrong
+place), and a flick whose move and lift fell inside one frame (state set only in rAF: a TypeError). Rule: one mover at
+a time; the one taking over stops the other and starts from the pose this frame (the computed transform covers both
+movers); state the release reads is set synchronously. Test each takeover by reading the rect just before and just
+after it, and fire down/move/up in one task for the sub-frame flick (`check.cjs`).
+
+## 2026-10-30 - the iOS keyboard shrinks a viewport-sized page
+
+GAS 2 postcards (`danavivi-75`), Dan on his iPhone (iOS 26), a screenshot of the mail card with the keyboard up: "it's
+not comfortable like this". iOS 26 cut the fixed full-screen page to the ~387 px above the keys, so the stack (sized
+by its container's height) shrank the card to half, and the type with px floors (the input >= 16 px against iOS zoom,
+the tick line >= 12 px) ran into the stamp. check.cjs had listed "the iOS keyboard" as not covered. Rule: on focus,
+keep the card's size and slide it so the field and its button sit over the keys; check it by focusing the input and
+cutting the viewport to the keyboard's leftover (`setViewportSize`), at every phone size.

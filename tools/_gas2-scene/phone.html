@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#120804">
+<title>GAS 2 Phone</title>
+<link rel="icon" href="data:,">
+<style>
+/* GAS 2 page · PHONE (Dan 2026-10-24: "zoom in on a very interesting part of GAS 2, the plugin itself, the player is there,
+   and the whole layout: Fill it up, the email, Download FREE"; then his pick of the summary: the globe + gauge zoomed, the
+   station soft behind, the readings on it. Then "under the Fill it up remove all the page, keep one page, no scroll": one
+   screen, the button opens the service ticket; the player, the posters and the mailbox are out on phones).
+   Not a crop of the desktop photo: the pump is the plugin's own render, baked at 4x (GAS2 bench/pump-lab.html, scale 4),
+   placed in the plugin's base px (one base px = var(--z) here), so the parts sit exactly where the plugin draws them. */
+@font-face { font-family: Bebas; src: url(fonts/bebas.woff2) format("woff2"); }
+@font-face { font-family: Inter; src: url(fonts/inter.woff2) format("woff2"); font-weight: 100 900; }
+@font-face { font-family: Yellowtail; src: url(fonts/yellowtail.woff2) format("woff2"); }
+@font-face { font-family: Marker; src: url(fonts/marker.woff2) format("woff2"); }
+@font-face { font-family: Elite; src: url(fonts/elite.woff2) format("woff2"); }
+@font-face { font-family: Oswald; src: url(fonts/Oswald-Variable.woff2) format("woff2"); font-weight: 200 700; }
+:root {
+  --bg: #120804; --ink: #241a12; --paper: #efe3c2; --parch: #efe3c6; --brass: #e8c878; --honey: #f2be4a; --line: #f6c85d; --oxide: #b8341e;
+  --fg: #efe9df; --muted: #b9b0a2; --dim: #8a8275;
+  --u: min(1vw, 4.8px);                     /* 1 % of the column: the phone's width, capped at a 480 px column */
+  --hug: 0 1px 1px rgba(12, 6, 3, .9), 0 0 6px rgba(12, 6, 3, .6), 0 4px 12px rgba(12, 6, 3, .6);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); -webkit-text-size-adjust: 100%; }
+body { margin: 0; overflow-x: clip; background: var(--bg); color: var(--fg); font: 15px/1.5 Inter, system-ui, sans-serif; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+img { display: block; user-select: none; -webkit-user-drag: none; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+main { position: relative; max-width: 480px; margin: 0 auto; }
+
+/* the station, soft behind: the shop window + its lamp around the pump, out of focus and a stop down (a camera focused
+   close on the pump); it stays put while the page moves over it */
+.bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; background: var(--bg); }   /* clips the blur's -4 % overhang */
+.bg::before { content: ""; position: absolute; inset: -4%; background: url(phone/bg-station.webp) 50% 30% / cover no-repeat; opacity: .9; }
+.bg::after { content: ""; position: absolute; inset: 0;
+  background: radial-gradient(70% 38% at 50% 26%, rgba(255, 190, 110, .14), transparent 70%),
+              linear-gradient(180deg, rgba(18, 8, 4, .25), rgba(18, 8, 4, .1) 30%, rgba(18, 8, 4, .7) 62%, var(--bg) 92%); }
+main > * { position: relative; z-index: 1; }
+
+/* ── the pump: one base px of the plugin = var(--z); every layer sits at its plugin rect minus the body's (60, 29) ── */
+.pump { position: absolute; left: 50%; width: calc(var(--z) * 328); transform: translateX(-50%); }
+.ly { position: absolute; pointer-events: none; left: calc(var(--z) * var(--x)); top: calc(var(--z) * var(--y)); width: calc(var(--z) * var(--w)); height: calc(var(--z) * var(--h)); }
+
+/* 1 · HERO: the globe is the name (the plugin's own header lockup, DESIGN §3), the gauge under it, the readings on it */
+/* the zoom: the body ~118 % of the column wide (its sides run off the screen), unless the screen is too short to hold the
+   globe + the whole gauge + the readings: then the zoom eases off so the gauge is never cut and the button stays in view */
+/* the hero is one screen (Dan 2026-10-24): the pump + the readings as one group, centred in it */
+.hero { height: 100svh; display: flex; flex-direction: column; justify-content: center; }
+.hero { --top: calc(env(safe-area-inset-top, 0px) + max(10px, 2svh) + var(--topd, 0px)); --rdh: 192px;   /* --zk / --topd: bench hooks (1 / 0) */
+  --z: calc(min(calc(var(--u) * 118 / 328), calc((100svh - var(--top) - var(--rdh)) / 396)) * var(--zk, 1)); }
+.hero .shot { position: relative; overflow: hidden; height: calc(var(--top) + var(--z) * 411);
+  -webkit-mask-image: linear-gradient(#000 calc(100% - var(--z) * 20), transparent); mask-image: linear-gradient(#000 calc(100% - var(--z) * 20), transparent); }
+.hero .pump { top: var(--top); height: calc(var(--z) * 411); filter: drop-shadow(0 calc(var(--z) * 6) calc(var(--z) * 18) rgba(8, 4, 2, .55)); }
+.hero .pump > .body { left: 0; top: 0; width: 100%; height: 100%; }
+/* the needle: the plugin's pivot + needle rect, its 270 deg sweep, 100 % straight up. Each needle is a real-size box that
+   turns about the pivot inside it: no zero-size carrier, no filter on a wrapper (Dan's phone painted no needle that way,
+   2026-10-24). The shadow is a second, darkened copy offset down-right on the screen, so the light never rotates. */
+.ndl { position: absolute; inset: 0; pointer-events: none; --a: -135deg; }
+.ndl img { position: absolute; left: calc(var(--z) * 149); top: calc(var(--z) * 211); width: calc(var(--z) * 22); height: calc(var(--z) * 111);
+  transform-origin: calc(var(--z) * 11) calc(var(--z) * 85.76); transform: rotate(var(--a)); transition: transform 1.2s cubic-bezier(.22, 1, .36, 1); }
+.ndl .sh { margin: calc(var(--z) * 2.4) 0 0 calc(var(--z) * 1.6); filter: brightness(0) blur(calc(var(--z) * 1.2)); opacity: .42; }
+.hero .rd { margin-top: calc(var(--z) * -6); padding: 0 16px calc(max(26px, 4svh) + env(safe-area-inset-bottom, 0px)); text-align: center; }
+.lead { margin: 0; font: 400 calc(var(--u) * 6.3)/1.05 Bebas, Oswald, sans-serif; letter-spacing: .05em; color: var(--line); white-space: nowrap; text-shadow: var(--hug); }
+/* the house honey button (DESIGN §4 buttons.css grammar) with the shine; the label in the GAS2 title's Oswald 700 */
+.cta { position: relative; isolation: isolate; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  margin-top: 16px; min-height: 58px; padding: 0 32px; border-radius: 14px; background: #f2be4a; color: #1e1710;
+  font: 700 22px/1 Oswald, sans-serif; letter-spacing: .02em; touch-action: manipulation;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 1), inset 0 -2px 0 hsl(38 85% 34% / .2), 0 1px 0 #5f4311, 0 2px 3px rgb(0 0 0 / .45), 0 14px 26px rgb(0 0 0 / .4);
+  transition: transform .16s, background-color .16s; }
+.cta:active { background: #eab53f; transform: translateY(1px); transition-duration: .08s; }
+.cta::after { content: ""; position: absolute; inset: 0 auto 0 0; z-index: -1; width: 28%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .18), transparent);
+  transform: translateX(-160%) skewX(-20deg); animation: shine 8s ease-in-out 1.2s infinite; pointer-events: none; }
+@keyframes shine { 0% { transform: translateX(-160%) skewX(-20deg); } 17.5%, 100% { transform: translateX(418%) skewX(-20deg); } }
+.scr { margin: 4px 0 0 calc(var(--u) * 24); font: 400 calc(var(--u) * 12)/1 Yellowtail, cursive; color: var(--brass); transform: rotate(-6deg);
+  text-shadow: var(--hug), 0 0 10px rgba(232, 200, 120, .3); transition: color .15s, text-shadow .15s; }
+.rd.lit .scr { color: #fbe0a0; text-shadow: var(--hug), 0 0 8px rgba(255, 216, 140, .55), 0 0 26px rgba(242, 190, 74, .5); }
+
+
+/* 2 · THREE GRADES (Dan 2026-10-26: "how simple the plugin is, three modes, a short line for each"; picked A of two):
+   one screen, three rows, the pump's own grade key (the plugin's render, 4x) + its line, all readable at once.
+   A tap lights that key (one at a time); the lines come from GAS2 docs/BRIEF.md. */
+.grades { min-height: 100svh; display: flex; flex-direction: column; justify-content: center; gap: 26px; padding: 56px 16px 64px; }
+.gh { margin: 0; text-align: center; font: 400 calc(var(--u) * 9.4)/1 Bebas, Oswald, sans-serif; letter-spacing: .05em; color: var(--parch); text-shadow: var(--hug); }
+.gh span { color: var(--line); }
+.rows { display: grid; gap: 18px; }
+.row { display: grid; grid-template-columns: 38% 1fr; gap: 16px; align-items: center; }
+.gk { position: relative; display: block; touch-action: manipulation; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .45)); transition: transform .12s cubic-bezier(.2, .9, .25, 1.25); }
+.gk img { display: block; width: 100%; height: auto; }
+.gk .lit { position: absolute; inset: 0; opacity: 0; transition: opacity .18s; }
+.gk.on .lit { opacity: 1; }
+.gk.on { transform: translateY(2px); }
+.gk:focus-visible { outline: 2px solid var(--honey); outline-offset: 3px; }
+.g3 { margin: 0; font: 400 calc(var(--u) * 6.4)/1.05 Bebas, Oswald, sans-serif; letter-spacing: .05em; color: var(--line); text-shadow: var(--hug); }
+.gp { margin: 4px 0 0; font: 400 16px/1.4 Inter, system-ui, sans-serif; color: #d8cfbf; text-shadow: var(--hug); }
+
+
+/* 3 · HEAR IT (Dan 2026-10-26: "copy the jukebox we have on the GAS page, put it there, phone size, same songs, same
+   everything"): the live /gas page's <gas-mixer> as is (public/gas-mixer, Yoni's web component, its own shadow DOM;
+   under 760 px it builds its pedal toy), with /gas's own title + line. Its box is reserved until it builds. */
+.hear { padding: 40px 16px 56px; text-align: center; }
+.hl { margin: 8px 0 22px; font: 400 calc(var(--u) * 9.6)/1.1 Yellowtail, cursive; color: var(--brass); text-shadow: var(--hug), 0 0 18px rgba(230, 170, 70, .35); }
+.gas-mixer-el { display: block; aspect-ratio: 380 / 922; text-align: left; }
+.gas-mixer-el.ready { aspect-ratio: auto; }
+
+/* service ticket (the mailbox / download form) */
+.veil { position: fixed; inset: 0; background: rgba(8, 5, 3, .62); display: grid; place-items: center; opacity: 0; pointer-events: none; transition: opacity .25s; z-index: 10; padding: 16px; }
+.veil.open { opacity: 1; pointer-events: auto; }
+/* two faces only: Bebas = what the station printed (title, stub, stamp), Elite = what got typed (everything else).
+   The button is the ticket's tear-off stub: perforated, punched at both ends, the honey "customer copy".
+   Hover = it starts to peel, submit = it tears off and drops, then the SENT stamp lands. */
+.ticket { position: relative; width: min(420px, 100%); color: var(--ink); font: 15px/1.5 Elite, ui-monospace, monospace; filter: drop-shadow(0 26px 30px rgba(0,0,0,.5)) drop-shadow(0 2px 2px rgba(0,0,0,.25)); transform: translateY(30px) rotate(-1.2deg); transition: transform .35s cubic-bezier(.2,.9,.25,1.2); }
+.veil.open .ticket { transform: translateY(0) rotate(-1.2deg); }
+.ticket .tk { position: relative; padding: 26px 28px 20px; background: var(--paper) radial-gradient(rgba(120, 90, 50, .08) 1px, transparent 1.5px) 0 0 / 7px 7px;
+  -webkit-mask: radial-gradient(circle 9px at 0 100%, #0000 97%, #000) left / 51% 100% no-repeat, radial-gradient(circle 9px at 100% 100%, #0000 97%, #000) right / 51% 100% no-repeat;
+  mask: radial-gradient(circle 9px at 0 100%, #0000 97%, #000) left / 51% 100% no-repeat, radial-gradient(circle 9px at 100% 100%, #0000 97%, #000) right / 51% 100% no-repeat; }
+.ticket h2 { margin: 0 0 4px; font: 400 26px/1 Bebas; letter-spacing: .08em; color: #a8321c; }
+.ticket .no { font-size: 12px; color: #6b5a40; letter-spacing: .1em; }
+.ticket hr { border: 0; border-top: 1px dashed #8c7a56; margin: 12px 0; }
+.ticket hr.dbl { border-top: 3px double #8c7a56; }
+.ticket .row { display: flex; justify-content: space-between; }
+.ticket .row.tot { font-size: 18px; }
+.ticket label { display: block; margin-top: 16px; font-size: 12px; letter-spacing: .14em; color: #6b5a40; }
+.ticket input { width: 100%; margin-top: 4px; font: 16px Elite, ui-monospace, monospace; color: var(--ink); caret-color: #a8321c; background: transparent; border: 0; border-bottom: 1.5px solid #6b5a40; padding: 6px 2px; outline: none; }
+.ticket input:focus { border-bottom-color: #a8321c; }
+.ticket .fine { margin-top: 12px; font-size: 12px; color: #6b5a40; }
+.ticket .x { position: absolute; top: 10px; right: 12px; font: 22px/1 Elite, ui-monospace, monospace; color: #6b5a40; }
+.ticket .go { position: relative; display: block; width: 100%; text-align: left; color: #1e1710; transform-origin: 0 0; transition: transform .3s cubic-bezier(.3,.7,.3,1.3); }
+.ticket .go::after { content: ""; position: absolute; left: 0; right: 0; bottom: -10px; height: 10px; background: linear-gradient(-45deg, transparent 6px, var(--honey) 0) 0 0 / 12px 10px, linear-gradient(45deg, transparent 6px, var(--honey) 0) 0 0 / 12px 10px; }
+.ticket .go-face { display: grid; grid-template-columns: 1fr auto; align-items: center; column-gap: 12px; padding: 15px 28px 12px; background: var(--honey) radial-gradient(rgba(90, 60, 20, .1) 1px, transparent 1.5px) 0 0 / 7px 7px;
+  -webkit-mask: radial-gradient(circle 9px at 0 0, #0000 97%, #000) left / 51% 100% no-repeat, radial-gradient(circle 9px at 100% 0, #0000 97%, #000) right / 51% 100% no-repeat;
+  mask: radial-gradient(circle 9px at 0 0, #0000 97%, #000) left / 51% 100% no-repeat, radial-gradient(circle 9px at 100% 0, #0000 97%, #000) right / 51% 100% no-repeat; }
+.ticket .go-no { font-size: 11px; letter-spacing: .14em; color: rgba(30, 23, 16, .68); }
+.ticket .go-l { grid-column: 1; font: 400 34px/1 Bebas; letter-spacing: .06em; margin-top: 3px; }
+.ticket .go-arr { grid-column: 2; grid-row: 1 / 3; width: 30px; height: 18px; transition: transform .3s; }
+.ticket .perf, .ticket .snip { z-index: 1; } /* above the masked face (a mask makes its own layer) */
+.ticket .perf { position: absolute; left: 14px; right: 14px; top: -1px; height: 2px; background: repeating-linear-gradient(90deg, rgba(36, 26, 18, .55) 0 5px, transparent 5px 9px); }
+.ticket .snip { position: absolute; left: 24px; top: -10px; width: 20px; height: 20px; color: rgba(36, 26, 18, .75); transition: transform .45s cubic-bezier(.3,.7,.3,1); }
+@media (hover: hover) {
+  .ticket .go:hover { transform: translateY(2px) rotate(1deg); }
+  .ticket .go:hover .snip { transform: translateX(18px); }
+  .ticket .go:hover .go-arr { transform: translateX(4px); }
+}
+.ticket .go:active { transform: translateY(4px) rotate(2deg); }
+.ticket .go:focus-visible { outline: none; }
+.ticket .go:focus-visible .go-l { text-decoration: underline 2px; text-underline-offset: 4px; }
+.ticket.sent .go { transform: translate(8px, 130px) rotate(11deg); opacity: 0; visibility: hidden; pointer-events: none; transition: transform .7s cubic-bezier(.55,0,.85,.4), opacity .4s .3s, visibility 0s .7s; }
+.ticket.nofx .go, .ticket.nofx .stamp { transition: none !important; }
+.stamp { position: absolute; right: 22px; top: 70px; padding: 6px 12px; border: 3px solid #b3261e; color: #b3261e; font: 400 30px/1 Bebas; letter-spacing: .1em; mix-blend-mode: multiply; filter: url(#paint); transform: rotate(-12deg) scale(1.6); opacity: 0; transition: .25s cubic-bezier(.2,.9,.25,1.4); }
+.ticket.sent .stamp { opacity: .85; transform: rotate(-12deg) scale(1); transition-delay: .35s; }
+.ticket { width: min(420px, 100%); }
+#veil { place-items: start center; padding-top: max(16px, 5svh); overflow-y: auto; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="paint"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="4"/><feDisplacementMap in="SourceGraphic" scale="2.2"/></filter>
+</svg>
+<div class="bg" aria-hidden="true"></div>
+<main>
+  <section class="hero" aria-labelledby="name">
+    <h1 class="sr" id="name">GAS 2</h1>
+    <div class="shot">
+      <div class="pump" id="heroPump">
+        <img class="ly body" src="phone/pump-hero.webp" alt="The GAS 2 pump: the globe reads GAS 2, Master Color; under it the AMOUNT gauge">
+        <div class="ndl" id="needle"><img class="sh" src="phone/needle.webp" alt=""><img src="phone/needle.webp" alt=""></div>
+        <img class="ly" style="--x:149;--y:286;--w:22;--h:22" src="phone/hub.webp" alt="">
+        <img class="ly" style="--x:65;--y:202;--w:190;--h:190" src="phone/dialglass.webp" alt="">
+      </div>
+    </div>
+    <div class="rd" id="rd">
+      <p class="lead">Thicker, smoother, glued master.</p>
+      <button class="cta" id="cta" type="button">⤓ Download FREE</button>
+      <div class="scr" aria-hidden="true">Fill it up.</div>
+    </div>
+  </section>
+
+
+  <section class="grades" aria-labelledby="gradesH">
+    <h2 class="gh" id="gradesH">Three grades. <span>Pick one.</span></h2>
+    <div class="rows">
+      <div class="row"><button class="gk" type="button" data-g="0" aria-label="REGULAR" aria-pressed="false"><img src="phone/key0.webp" alt=""><img class="lit" src="phone/key0-lit.webp" alt=""></button><div><p class="g3">Smooth and warm.</p><p class="gp">For mixes that are already good.</p></div></div>
+      <div class="row"><button class="gk on" type="button" data-g="1" aria-label="PREMIUM" aria-pressed="true"><img src="phone/key1.webp" alt=""><img class="lit" src="phone/key1-lit.webp" alt=""></button><div><p class="g3">The signature.</p><p class="gp">Thick lows, clear mids, silky air.</p></div></div>
+      <div class="row"><button class="gk" type="button" data-g="2" aria-label="RACE" aria-pressed="false"><img src="phone/key2.webp" alt=""><img class="lit" src="phone/key2-lit.webp" alt=""></button><div><p class="g3">Punchy and bright.</p><p class="gp">For loud, modern mixes.</p></div></div>
+    </div>
+  </section>
+
+  <section class="hear" id="hear-it" aria-labelledby="hearH">
+    <h2 class="gh" id="hearH">Hear it</h2>
+    <p class="hl">Hit play. Give it gas.</p>
+    <link rel="stylesheet" href="/gas-mixer/fonts.css">
+    <gas-mixer class="gas-mixer-el"></gas-mixer>
+    <script src="/gas-mixer/gas-mixer.js" defer></script>
+  </section>
+</main>
+
+<div class="veil" id="veil" role="dialog" aria-modal="true" aria-label="Get GAS 2">
+  <form class="ticket" id="ticket" autocomplete="on">
+    <div class="tk">
+      <button type="button" class="x" data-close aria-label="Close">×</button>
+      <h2>SERVICE TICKET</h2><div class="no">No. 0002 · REVAUDIO STATION</div>
+      <hr>
+      <div class="row"><span>GAS 2 · ALL THREE GRADES</span><span>1</span></div>
+      <div class="row"><span>FUEL FILTER</span><span>INCL.</span></div>
+      <hr class="dbl">
+      <div class="row tot"><span>TOTAL</span><span>$0.00</span></div>
+      <label for="em">YOUR EMAIL</label>
+      <input id="em" type="email" required placeholder="you@studio.com">
+      <div class="fine">We email you the download link. No licence key, no card. (Mockup: nothing is sent.)</div>
+      <div class="stamp">SENT</div>
+    </div>
+    <button class="go" type="submit">
+      <i class="perf" aria-hidden="true"></i>
+      <svg class="snip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.1 15.9M14.5 14.5 20 20M8.1 8.1 12 12"/></svg>
+      <span class="go-face">
+        <span class="go-no" aria-hidden="true">CUSTOMER COPY · No. 0002</span>
+        <span class="go-l">MAIL ME THE KEYS</span>
+        <svg class="go-arr" viewBox="0 0 30 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 9h25M19 2l8 7-8 7"/></svg>
+      </span>
+    </button>
+  </form>
+</div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // the needle: 100 % straight up, 270 deg of sweep (the plugin's own mapping); the page opens on the plugin's first paint (160 %)
+  const needle = $('#needle');
+  const gauge = pct => needle.style.setProperty('--a', (-135 + pct / 200 * 270).toFixed(2) + 'deg');
+  if (reduce) gauge(160); else setTimeout(() => gauge(160), 450);
+
+  // "Fill it up." lights with the button (phones have no hover)
+  const rd = $('#rd'); let litT = 0;
+  $('#cta').addEventListener('pointerdown', () => { clearTimeout(litT); rd.classList.add('lit'); });
+  addEventListener('pointerup', () => { litT = setTimeout(() => rd.classList.remove('lit'), 500); });
+
+
+  // the grade keys: one lit at a time (the sound of each grade joins when the per-grade renders exist)
+  $$('.gk').forEach(k => k.addEventListener('click', () => $$('.gk').forEach(x => { const on = x === k; x.classList.toggle('on', on); x.setAttribute('aria-pressed', on); })));
+
+  // the service ticket: the button, the MAIL ME THE KEYS poster and the box all open it (a fresh ticket each time)
+  const veil = $('#veil'), tk = $('#ticket');
+  const open = () => { tk.classList.add('nofx'); tk.classList.remove('sent'); void tk.offsetWidth; tk.classList.remove('nofx'); veil.classList.add('open'); setTimeout(() => $('#em').focus({ preventScroll: true }), 250); };
+  const close = () => veil.classList.remove('open');
+  $('#cta').addEventListener('click', open);
+  tk.addEventListener('submit', e => { e.preventDefault(); tk.classList.add('sent'); });
+  veil.addEventListener('click', e => { if (e.target === veil || e.target.closest('[data-close]')) close(); });
+  addEventListener('keydown', e => e.key === 'Escape' && close());
+})();
+</script>
+<script>
+// #bench = the phone tuning bench on THIS page (phone-bench.js, git-excluded): tap, drag, size, turn, SAVE
+if (location.hash === '#bench') { const b = document.createElement('script'); b.src = 'phone-bench.js'; document.body.appendChild(b); }
+</script>
+</body>
+</html>

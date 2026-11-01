@@ -557,9 +557,9 @@ export const driftSurveyMeta = {
     titleHe: 'משוב בטא: DRIFT',
     titleEn: 'DRIFT Beta Feedback',
     introHe:
-      'תודה שבדקת את DRIFT. המשוב הזה קובע אם DRIFT מוכן לשיגור ב-1 בנובמבר, ומזכה אותך בקוד הנחה של $30 על DRIFT. כל שאלה עוזרת. ~7 דקות.',
+      'תודה שבדקת את DRIFT. המשוב הזה קובע אם DRIFT מוכן לשיגור ב-1 בדצמבר, ומזכה אותך ב-DRIFT בחינם: הקוד מגיע מיד. כל שאלה עוזרת. ~7 דקות.',
     introEn:
-      "Thanks for testing DRIFT. This feedback decides if DRIFT is release-ready on Nov 1, and a complete form gets you a $30 off DRIFT code on the spot. Every answer helps. ~7 minutes.",
+      "Thanks for testing DRIFT. This feedback decides if DRIFT is release-ready on Dec 1, and a complete form keeps DRIFT free: your code comes on the spot. Every answer helps. ~7 minutes.",
     requiredHe: 'חובה',
     requiredEn: 'required',
     optionalHe: 'רשות',
@@ -574,8 +574,8 @@ export const driftSurveyMeta = {
     submitEn: 'Submit',
     sendingHe: 'שולח…',
     sendingEn: 'Sending…',
-    thanksHe: 'תודה! המשוב שלך נקלט. קוד ההנחה של $30 על DRIFT בדרך למייל שלך.',
-    thanksEn: "Thank you. Your feedback came through. Your $30 off DRIFT code is on its way to your email.",
+    thanksHe: 'תודה! המשוב שלך נקלט. הקוד שלך ל-DRIFT בחינם בדרך למייל שלך.',
+    thanksEn: "Thank you. Your feedback came through. Your free DRIFT code is on its way to your email.",
     errHe: 'משהו השתבש. נסה/י שוב, או כתוב/כתבי ל-info@revaudio.net.',
     errEn: 'Something went wrong. Try again, or email info@revaudio.net.',
     softHe: 'טופס המשוב ייפתח בקרוב. התשובות שלך עדיין לא נשלחו.',

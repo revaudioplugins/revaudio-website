@@ -1,3 +1,11 @@
+> **Added 2026-10-28 (DRIFT #hear, the engraved wall; the user's picks on `bench/drift-hear-bench.html`):** `hear/`
+> = copies of the bench's picked files in `bench/drift-panel/` (prompts + keying recipe in its `PROMPTS.md`, all
+> gpt-image-2, text-only prompts, no RevAudio art uploaded except the portrait, an edit FROM the wall): `wall.webp`
+> (= panel3, 2560x1024, STREET WALL; 試聴 / 全開-style Japanese checked), `wall-portrait.webp` (= panel3-portrait,
+> 1024x1536, the phone plate), `crack-lcd.webp` (820x750) + `crack-crt.webp` (620x560, glass cracks on black, screen-blended),
+> `fader-cap.webp` (= fader-cap2, 320x170 RGBA) + `fader-plate.webp` (= fader-plate1, 141x720 RGBA), both keyed off chroma
+> green. Served through getImage (DriftHear.astro) as `--hear-*` custom properties.
+
 > **Added 2026-10-14 (homepage word wall, the DRIFT screen wall's frame; Dan: "the frame in DRIFT's vibe, a broken TV
 > frame"):** `tv-broken-1.png` (2364x1738), `tv-broken-2.png` (2544x1844), `tv-broken-3.png` (2388x1838), RGBA, +
 > `tv-broken.json` (each roll's size, bezel and 9-slice corner patches). Generated BLANK by `tools/gen-drift-tv-frame-broken.sh`

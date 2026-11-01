@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>#hear panel bench</title>
+<!--
+  #hear PANEL bench (2026-10-26, laptop 1 user: "the panel that everything sits on is a different panel ... three
+  different panels ... wear out a little, like it went through a crash ... a little Japanese and graffiti").
+  The REAL built /drift page in two frames (desktop 1440, phone 390), the #hear panel's plate swapped live.
+  Plates = gpt-image-2, 2560 x 1024, prompts in bench/drift-panel/PROMPTS.md.
+  Serve: npm run build, then python bench/serve-panel-bench.py -> http://127.0.0.1:8797/bench/drift-panel-bench.html
+-->
+<style>
+:root { color-scheme: dark; --ink: #e9def5; --dim: #9a8bb0; --hot: #ff4fd8; }
+* { box-sizing: border-box; }
+body { margin: 0; background: #0c0811; color: var(--ink); font: 14px/1.45 system-ui, sans-serif; }
+.wrap { max-width: 1500px; margin: 0 auto; padding: 18px 16px 40px; }
+h1 { font: 800 24px/1.1 system-ui; letter-spacing: .02em; margin: 0 0 6px; }
+.lede { color: var(--dim); max-width: 900px; margin: 0 0 14px; }
+.bar { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 10px 12px; margin-bottom: 14px; background: #160f1f; border: 1px solid #2c2138; border-radius: 8px; }
+.bar b { font-size: 12px; letter-spacing: .14em; color: var(--dim); }
+.bar button { font: 700 13px/1 system-ui; color: var(--ink); background: #241a30; border: 1px solid #3a2d4a; border-radius: 6px; padding: 8px 12px; cursor: pointer; }
+.bar button[aria-pressed='true'] { background: var(--hot); border-color: var(--hot); color: #14061a; }
+.bar label { display: flex; align-items: center; gap: 8px; color: var(--dim); font-size: 12px; letter-spacing: .08em; }
+.bar output { color: var(--ink); min-width: 3.2em; font-variant-numeric: tabular-nums; }
+.note { color: var(--dim); margin: 0 0 12px; min-height: 1.4em; }
+.frames { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: start; }
+.cell small { display: block; color: var(--dim); font-size: 12px; letter-spacing: .1em; margin: 0 0 6px; }
+.view { position: relative; overflow: hidden; border-radius: 8px; border: 1px solid #2c2138; background: #000; }
+.view iframe { position: absolute; left: 0; top: 0; border: 0; transform-origin: 0 0; }
+.desk { width: 100%; }
+.phone { width: 330px; }
+@media (max-width: 900px) { .frames { grid-template-columns: minmax(0, 1fr); } .phone { width: 100%; max-width: 360px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>#hear: the panel everything sits on</h1>
+  <p class="lede">The real /drift page, live. Pick a plate; the player works in both frames. Most of the panel is covered by
+  the TV, the LCD and the steps, so what shows is the strip round the title, the edges and the gaps: that is where the
+  graffiti has to read. VEIL = the dark layer the page lays over every plate (today 40 %). PHONE X = which slice of the
+  wide plate a phone shows.</p>
+  <div class="bar" id="bar">
+    <b>PLATE</b>
+    <button data-p="0" aria-pressed="true">0 · TODAY</button>
+    <button data-p="1">1 · 峠 WRECK</button>
+    <button data-p="2">2 · STENCIL</button>
+    <button data-p="3">3 · STREET WALL</button>
+    <label><input type="checkbox" id="stk" checked> CHECKER + 試聴</label>
+    <label>VEIL <input type="range" id="veil" min="0" max="60" step="1"><output id="veilo"></output></label>
+    <label>PHONE X <input type="range" id="px" min="0" max="100" step="1" value="50"><output id="pxo"></output></label>
+  </div>
+  <p class="note" id="note"></p>
+  <div class="frames">
+    <div class="cell"><small>DESKTOP 1440</small><div class="view desk" id="vd"><iframe id="fd" title="desktop 1440" width="1440" height="680"></iframe></div></div>
+    <div class="cell"><small>PHONE 390</small><div class="view phone" id="vp"><iframe id="fp" title="phone 390" width="390" height="760"></iframe></div></div>
+  </div>
+</div>
+<script>
+const PLATES = [
+  { src: null, veil: 40, note: 'Today: the DRIFT steel face cut from the plugin plate, the checker strip and the 試聴 sticker.' },
+  { src: 'drift-panel/panel1.webp', veil: 20, note: '峠 WRECK: crashed on a mountain pass. Magenta ドリフト tag (drift), white 峠 (mountain pass), 限界を超えろ (go past the limit) and 夜の走り屋 (night street racer) down the edges, torn checker sticker, a dented crease, paint scraped to bare steel.' },
+  { src: 'drift-panel/panel2.webp', veil: 20, note: 'STENCIL: cyan stencil 全開 (full throttle) and magenta 試聴 (listening test), gaffer tape, a cracked corner, tyre-rubber marks.' },
+  { src: 'drift-panel/panel3.webp', veil: 20, note: 'STREET WALL: an underpass wall of old tags, white 聴け (listen!) and a magenta ドリフト tag, a scorched heat-blued corner.' },
+];
+const st = { p: 0, veil: 40, stk: true, px: 50 };
+const $ = (id) => document.getElementById(id);
+const css = () => {
+  const P = PLATES[st.p], v = (st.veil / 100).toFixed(2);
+  let s = '#cookie-banner { display: none !important; }\n';
+  if (P.src) s += `.d-panel.d-hear-panel { background: linear-gradient(rgba(12, 5, 18, ${v}), rgba(12, 5, 18, ${v})), url(/bench/${P.src}) 50% 50% / cover, #150a1f !important; }
+@media (max-width: 600px) { .d-panel.d-hear-panel { background-position: 0 0, ${st.px}% 50% !important; } }\n`;
+  else s += `.d-panel.d-hear-panel { background: linear-gradient(rgba(12, 5, 18, ${v}), rgba(12, 5, 18, ${v})), var(--d-img-panel) center / cover, #150a1f !important; }\n`;
+  if (!st.stk) s += '.d-hear-panel > .d-checker, .d-hear-panel > .d-sticker { display: none !important; }\n';
+  return s;
+};
+const apply = () => {
+  for (const f of [$('fd'), $('fp')]) {
+    const d = f.contentDocument; if (!d || !d.head) continue;
+    let el = d.getElementById('panel-bench'); if (!el) { el = d.createElement('style'); el.id = 'panel-bench'; d.head.append(el); }
+    el.textContent = css();
+  }
+  $('veilo').textContent = st.veil + ' %'; $('pxo').textContent = st.px + ' %'; $('note').textContent = PLATES[st.p].note;
+  for (const b of document.querySelectorAll('[data-p]')) b.setAttribute('aria-pressed', String(+b.dataset.p === st.p));
+};
+const fit = () => {
+  for (const [v, f, w, h] of [[$('vd'), $('fd'), 1440, 680], [$('vp'), $('fp'), 390, 760]]) {
+    const k = v.clientWidth / w; f.style.transform = `scale(${k})`; v.style.height = `${Math.round(h * k)}px`;
+  }
+};
+const toHear = (f) => { const d = f.contentDocument, h = d && d.getElementById('hear'); if (h) f.contentWindow.scrollTo(0, h.getBoundingClientRect().top + f.contentWindow.scrollY - 70); };
+for (const f of [$('fd'), $('fp')]) f.addEventListener('load', () => { apply(); setTimeout(() => toHear(f), 400); });
+$('fd').src = '/drift/'; $('fp').src = '/drift/';
+$('bar').addEventListener('click', (e) => { const b = e.target.closest('[data-p]'); if (!b) return; st.p = +b.dataset.p; st.veil = PLATES[st.p].veil; $('veil').value = st.veil; apply(); });
+$('veil').value = st.veil; $('veil').addEventListener('input', (e) => { st.veil = +e.target.value; apply(); });
+$('px').addEventListener('input', (e) => { st.px = +e.target.value; apply(); });
+$('stk').addEventListener('change', (e) => { st.stk = e.target.checked; apply(); });
+addEventListener('resize', fit); fit();
+</script>
+</body>
+</html>

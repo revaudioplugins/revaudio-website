@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DRIFT Start Button — bench</title>
+<!--
+  #hear FLIP control, bench (2026-10-15, Claude Code revaudio-02, Yoni: "switch with 1 push start style button of a drift
+  car. when drift engaged - its lit, when bypassed - unlit. a bench with 5 options").
+  One push toggles: LIT = DRIFT on, DARK = bypass (the original). Each candidate sits in the real step-3 box of the
+  #hear deck, on the page's palette and fonts. Light from the upper left; the lit state is light from inside (a lamp),
+  and engaging fires a short ignition flicker. Serve the worktree root: python -m http.server 8795.
+-->
+<style>
+@font-face{font-family:'Drift Press';src:url(../public/fonts/drift/PressStart2P-Regular.ttf) format('truetype');font-display:block}
+@font-face{font-family:'Drift Orbitron';src:url(../public/fonts/drift/Orbitron-SemiBold.ttf) format('truetype');font-display:block}
+@font-face{font-family:'Drift Oswald';src:url(../public/fonts/drift/Oswald-var.latin.woff2) format('woff2');font-weight:200 700;font-display:block}
+@font-face{font-family:'Drift JP';src:url(../public/fonts/drift/NotoSansJP-var.subset-v2.woff2) format('woff2');font-weight:100 900;font-display:block}
+:root{
+  --d-ink:#07050b; --d-neon:#d23cff; --d-violet:#8a2be2; --d-hot:#ff4fd8; --d-lcd:#f24cf0; --d-crt:#d98bff;
+  --d-crt-glow:rgba(190,90,255,.75); --d-pink-ink:#ffd1f8; --d-white-ink:#f6e8ff; --d-cyan:#5ee7ff; --d-cyan-ink:#c8f6ff;
+  --d-fg:#d9c6ef; --d-fg-dim:#a58cc4;
+  --f-pix:'Drift Press',monospace; --f-badge:'Drift Orbitron',sans-serif; --f-head:'Drift Oswald',Impact,sans-serif; --f-ja:'Drift JP',sans-serif;
+  --snap:cubic-bezier(.2,.9,.25,1.25);
+}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;color:var(--d-fg);font-family:var(--f-badge);
+  background:#09060d url(../src/assets/seasons/drift/plate-tile.png) repeat;background-size:400px auto}
+.wrap{max-width:1240px;margin:0 auto;padding:40px 16px 60px}
+h1{font:700 clamp(30px,4vw,48px)/.95 var(--f-head);text-transform:uppercase;margin:0 0 8px;color:var(--d-white-ink);text-shadow:0 0 3px rgba(255,255,255,.5),0 0 22px rgba(210,60,255,.4)}
+h1 span{color:var(--d-neon);text-shadow:0 0 26px rgba(210,60,255,.75)}
+.lede{color:var(--d-fg-dim);font:400 15px/1.5 system-ui,sans-serif;margin:0 0 26px;max-width:70ch}
+.bar{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 26px}
+.bar button{font:400 10px/1 var(--f-pix);letter-spacing:.08em;padding:12px 14px;border:0;border-radius:5px;cursor:pointer;color:#d9c6ef;
+  background:linear-gradient(180deg,#1a1024,#0e0816);box-shadow:0 0 0 1px rgba(4,2,8,.9),inset 0 1px 0 rgba(255,240,255,.06)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
+
+/* the #hear step-3 box, verbatim look */
+.step{display:flex;flex-direction:column;align-items:center;gap:14px;padding:16px 16px 18px;border-radius:8px;
+  background:linear-gradient(180deg,rgba(14,6,22,.72),rgba(8,3,13,.72));
+  box-shadow:0 0 0 1px rgba(4,2,8,.9),inset 0 1px 0 rgba(255,240,255,.06),inset 0 10px 18px -10px rgba(0,0,0,.7)}
+.cap{align-self:flex-start;display:flex;align-items:center;font:400 12px/1 var(--f-pix);letter-spacing:.14em;color:var(--d-crt);text-shadow:0 0 8px var(--d-crt-glow)}
+.n{display:inline-grid;place-items:center;width:1.75em;height:1.75em;margin-right:.75em;border-radius:3px;color:#16021c;background:var(--d-hot);box-shadow:0 0 12px rgba(255,79,216,.55)}
+.stage{height:168px;display:grid;place-items:center}
+.say{font:400 10px/1.4 var(--f-pix);letter-spacing:.08em;text-align:center;color:#6f5a86;min-height:2.8em}
+.say b{font-weight:400;color:var(--d-white-ink)}
+.on .say b{color:#fff;text-shadow:0 0 8px rgba(255,79,216,.9)}
+.name{font:600 13px/1.3 var(--f-head);text-transform:uppercase;letter-spacing:.06em;color:var(--d-fg);margin-top:2px}
+.name small{display:block;font:400 12px/1.4 system-ui,sans-serif;text-transform:none;letter-spacing:0;color:var(--d-fg-dim)}
+.tag{font:400 9px/1 var(--f-pix);color:#16021c;background:var(--d-hot);padding:3px 5px;border-radius:2px;margin-right:6px;vertical-align:2px}
+
+/* common: a real button, press travels 2-3 px, the lamp is light from inside */
+.pb{position:relative;border:0;padding:0;background:none;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.pb:focus-visible{outline:3px solid var(--d-pink-ink);outline-offset:6px;border-radius:12px}
+@keyframes ignite{0%{opacity:0}12%{opacity:1}20%{opacity:.2}34%{opacity:1}44%{opacity:.45}60%,100%{opacity:1}}
+.pb .lit{opacity:0;transition:opacity .18s ease}
+.on .pb .lit{opacity:1}
+.on.igniting .pb .lit{animation:ignite .42s steps(1,end)}
+@media (prefers-reduced-motion:reduce){.on.igniting .pb .lit{animation:none}}
+
+/* ===== A. OEM ENGINE START STOP: chrome bezel, black glossy face, printed legend, LED ring ===== */
+.A .pb{width:136px;height:136px;border-radius:50%;
+  background:conic-gradient(from 210deg,#f4f0f8,#6e6680 18%,#d8d2df 32%,#3a3441 52%,#c4bdcf 70%,#5c5566 86%,#f4f0f8);
+  box-shadow:0 10px 18px rgba(0,0,0,.7),0 2px 3px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,255,255,.35)}
+.A .well{position:absolute;inset:9px;border-radius:50%;background:#050308;box-shadow:inset 0 3px 6px #000}
+.A .ring{position:absolute;inset:12px;border-radius:50%;border:3px solid #24102c;box-shadow:inset 0 0 6px #000}
+.A .ring.lit{border-color:var(--d-hot);box-shadow:0 0 14px var(--d-hot),inset 0 0 10px rgba(255,79,216,.8)}
+.A .face{position:absolute;inset:18px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  background:radial-gradient(70% 55% at 38% 28%,#3b3346 0%,#16121c 55%,#08060b 100%);
+  box-shadow:inset 0 2px 1px rgba(255,255,255,.12),inset 0 -6px 12px rgba(0,0,0,.8),0 3px 4px rgba(0,0,0,.6);transition:transform .09s var(--snap)}
+.A .pb:active .face{transform:translateY(2px) scale(.985)}
+.A .t1,.A .t3{font:400 8px/1 var(--f-badge);letter-spacing:.24em;color:#8a7d98}
+.A .t2{font:400 18px/1 var(--f-badge);letter-spacing:.16em;margin-left:.16em;color:#a59cb0}
+.A .lgd{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px}
+.A .lgd.lit{position:absolute;inset:0;justify-content:center}
+.A .lgd.lit .t1,.A .lgd.lit .t3{color:#ffd1f8;text-shadow:0 0 6px var(--d-hot)}
+.A .lgd.lit .t2{color:#fff;text-shadow:0 0 4px #fff,0 0 14px var(--d-hot)}
+
+/* ===== B. RACE MUSHROOM: carbon plate, big dome; dark smoked dome off, magenta dome lit from inside on ===== */
+.B .plate{width:156px;height:156px;border-radius:14px;position:relative;
+  background:repeating-linear-gradient(45deg,#16121c 0 4px,#0e0b12 4px 8px),#120e16;
+  box-shadow:0 0 0 1px #000,inset 0 1px 0 rgba(255,255,255,.12),inset 0 -2px 4px rgba(0,0,0,.8),0 10px 18px rgba(0,0,0,.7)}
+.B .plate::before{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(135deg,rgba(255,255,255,.08),transparent 40%)}
+.B .screw{position:absolute;width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#8d8796,#3a3540 60%,#1c1820);box-shadow:0 1px 1px #000}
+.B .screw::after{content:"";position:absolute;left:2px;right:2px;top:5px;height:2px;background:#120e16;transform:rotate(var(--r))}
+.B .pb{position:absolute;left:22px;top:22px;width:112px;height:112px;border-radius:50%;
+  background:radial-gradient(circle at 50% 55%,#1a1420,#08060b 72%);box-shadow:0 0 0 4px #2a2433,0 0 0 6px #0b0910,inset 0 4px 8px #000}
+.B .dome{position:absolute;inset:8px;border-radius:50%;transition:transform .09s var(--snap);
+  background:radial-gradient(60% 50% at 40% 30%,rgba(255,255,255,.28),transparent 60%),radial-gradient(circle at 50% 60%,#3a1a45 0%,#1c0a24 60%,#0d0412 100%);
+  box-shadow:inset 0 -8px 14px rgba(0,0,0,.7),0 6px 10px rgba(0,0,0,.6)}
+.B .dome.lit{background:radial-gradient(60% 50% at 40% 30%,rgba(255,255,255,.55),transparent 60%),radial-gradient(circle at 50% 58%,#ffe3fa 0%,#ff6fe0 28%,#d23cff 62%,#6a1cb4 100%);
+  box-shadow:inset 0 -8px 14px rgba(80,0,90,.55),0 0 26px rgba(255,79,216,.85),0 0 60px rgba(210,60,255,.45)}
+.B .pb:active .dome{transform:translateY(3px) scale(.97)}
+.B .word{position:absolute;inset:0;display:grid;place-items:center;font:400 13px/1 var(--f-pix);letter-spacing:.06em;color:rgba(255,210,255,.28);text-shadow:0 1px 0 rgba(0,0,0,.6);pointer-events:none}
+.B .word.lit{color:#fff;text-shadow:0 0 6px #fff,0 1px 0 rgba(120,0,110,.6)}
+
+/* ===== C. JDM DASH KEY: square smoked-glass keycap, backlit legend + LED bar ===== */
+.C .pb{width:150px;height:110px;border-radius:14px;
+  background:linear-gradient(180deg,#2c2534,#120e16);box-shadow:0 0 0 1px #000,0 10px 16px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.14)}
+.C .key{position:absolute;inset:8px;border-radius:9px;transition:transform .09s var(--snap);
+  background:linear-gradient(180deg,rgba(255,255,255,.08),transparent 38%),linear-gradient(180deg,#1b1521,#0a070d);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18),inset 0 -5px 10px rgba(0,0,0,.75),0 3px 0 #050307}
+.C .pb:active .key{transform:translateY(3px);box-shadow:inset 0 1px 0 rgba(255,255,255,.12),inset 0 -3px 6px rgba(0,0,0,.75),0 0 0 #050307}
+.C .led{position:absolute;left:50%;top:12px;width:44px;height:5px;margin-left:-22px;border-radius:3px;background:#26102c;box-shadow:inset 0 1px 2px #000}
+.C .led.lit{background:var(--d-hot);box-shadow:0 0 10px var(--d-hot),0 0 22px rgba(255,79,216,.6)}
+.C .lg{position:absolute;left:0;right:0;top:32px;display:flex;flex-direction:column;align-items:center;gap:7px}
+.C .lg .w{font:400 22px/1 var(--f-badge);letter-spacing:.18em;margin-left:.18em;color:#4d4258}
+.C .lg .s{font:400 8px/1 var(--f-pix);letter-spacing:.1em;color:#4d4258}
+.C .lg.lit .w{color:#fff;text-shadow:0 0 4px #fff,0 0 14px var(--d-hot),0 0 26px rgba(255,79,216,.6)}
+.C .lg.lit .s{color:var(--d-pink-ink);text-shadow:0 0 6px var(--d-hot)}
+
+/* ===== D. NEON RING: knurled machined bezel, glass face, a neon tube inside ===== */
+.D .pb{width:140px;height:140px;border-radius:50%;
+  background:repeating-conic-gradient(from 0deg,#3a3446 0 4deg,#17131c 4deg 8deg);
+  box-shadow:0 0 0 2px #0b0910,0 10px 18px rgba(0,0,0,.7)}
+.D .pb::before{content:"";position:absolute;inset:0;border-radius:50%;background:radial-gradient(60% 50% at 34% 26%,rgba(255,255,255,.22),transparent 65%)}
+.D .glass{position:absolute;inset:14px;border-radius:50%;transition:transform .09s var(--snap);
+  background:radial-gradient(70% 60% at 38% 30%,#2a1f33,#0b0710 70%);box-shadow:inset 0 4px 10px rgba(0,0,0,.9),0 0 0 2px #050307}
+.D .pb:active .glass{transform:scale(.97)}
+.D .tube{position:absolute;inset:26px;border-radius:50%;border:4px solid #2c1934;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+.D .tube.lit{border-color:#ff9cf0;box-shadow:0 0 6px var(--d-hot),0 0 18px var(--d-hot),0 0 40px rgba(210,60,255,.6),inset 0 0 8px var(--d-hot)}
+.D .gl{position:absolute;inset:14px;border-radius:50%;background:radial-gradient(circle,rgba(255,79,216,.28),transparent 70%)}
+.D .w{position:absolute;inset:0;display:grid;place-items:center;font:400 12px/1 var(--f-pix);letter-spacing:.06em;color:#4d4258}
+.D .w.lit{color:#fff;text-shadow:0 0 5px #fff,0 0 14px var(--d-hot)}
+.D .hl{position:absolute;inset:14px;border-radius:50%;pointer-events:none;background:linear-gradient(160deg,rgba(255,255,255,.16),transparent 35%)}
+
+/* ===== E. MOTORSPORT HEX: rubber hex button in a raised hex bezel, a 5-segment LED arc that lights up in a sweep ===== */
+.E .pb{width:150px;height:150px}
+.E .hex,.E .hexface{position:absolute;clip-path:polygon(25% 3%,75% 3%,99% 50%,75% 97%,25% 97%,1% 50%)}
+.E .hex{inset:0;background:linear-gradient(160deg,#6e6680,#2a2433 45%,#0d0a11);filter:drop-shadow(0 8px 10px rgba(0,0,0,.7))}
+.E .hexface{inset:12px;transition:transform .09s var(--snap);
+  background:radial-gradient(70% 60% at 40% 30%,#2e2836,#141018 70%);box-shadow:inset 0 0 20px #000}
+.E .pb:active .hexface{transform:scale(.96)}
+.E .segs{position:absolute;left:50%;top:34px;width:84px;margin-left:-42px;display:flex;gap:4px;justify-content:center}
+.E .segs i{width:12px;height:7px;border-radius:2px;background:#2a1336;box-shadow:inset 0 1px 2px #000}
+.E .segs i:nth-child(1),.E .segs i:nth-child(5){transform:translateY(5px)}
+.E .segs i:nth-child(2),.E .segs i:nth-child(4){transform:translateY(1px)}
+.on .E .segs i, .E.on .segs i{background:var(--d-hot);box-shadow:0 0 8px var(--d-hot)}
+.E.on .segs i:nth-child(1),.E.on .segs i:nth-child(5){background:var(--d-cyan);box-shadow:0 0 8px var(--d-cyan)}
+.E.on.igniting .segs i{animation:sweep .5s steps(1,end) both}
+.E.on.igniting .segs i:nth-child(1){animation-delay:0s}.E.on.igniting .segs i:nth-child(2){animation-delay:.06s}
+.E.on.igniting .segs i:nth-child(3){animation-delay:.12s}.E.on.igniting .segs i:nth-child(4){animation-delay:.18s}.E.on.igniting .segs i:nth-child(5){animation-delay:.24s}
+@keyframes sweep{0%{background:#2a1336;box-shadow:none}100%{}}
+.E .w{position:absolute;left:0;right:0;top:66px;text-align:center;font:400 22px/1 var(--f-badge);letter-spacing:.14em;margin-left:.14em;color:#4d4258}
+.E .w2{position:absolute;left:0;right:0;top:96px;text-align:center;font:400 7px/1 var(--f-pix);letter-spacing:.12em;color:#3d3447}
+.E.on .w{color:#fff;text-shadow:0 0 4px #fff,0 0 14px var(--d-hot)}
+.E.on .w2{color:var(--d-pink-ink)}
+
+.foot{margin-top:24px;color:var(--d-fg-dim);font:400 13px/1.6 system-ui,sans-serif}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Push to start. <span>Flip DRIFT.</span></h1>
+  <p class="lede">Five push-to-start buttons for step 3 of the #hear player. One push: lit = DRIFT on, dark = the original (bypass).
+    Engaging fires a short ignition flicker. Click any button, or flip them all at once.</p>
+  <div class="bar"><button id="allOn">ALL DRIFT ON</button><button id="allOff">ALL ORIGINAL</button></div>
+
+  <div class="grid" id="grid">
+    <!-- A -->
+    <div class="opt A on" data-opt="A">
+      <div class="step">
+        <span class="cap"><b class="n">3</b>FLIP</span>
+        <div class="stage">
+          <button class="pb" type="button" aria-pressed="true" aria-label="DRIFT on or off">
+            <span class="well"></span><span class="ring"></span><span class="ring lit"></span>
+            <span class="face"><span class="lgd"><span class="t1">ENGINE</span><span class="t2">DRIFT</span><span class="t3">START·STOP</span></span>
+              <span class="lgd lit"><span class="t1">ENGINE</span><span class="t2">DRIFT</span><span class="t3">START·STOP</span></span></span>
+          </button>
+        </div>
+        <div class="say"></div>
+      </div>
+      <div class="name"><span class="tag">A</span>OEM engine start/stop<small>Chrome bezel, black glossy face, printed legend; a magenta LED ring lights up.</small></div>
+    </div>
+    <!-- B -->
+    <div class="opt B on" data-opt="B">
+      <div class="step">
+        <span class="cap"><b class="n">3</b>FLIP</span>
+        <div class="stage">
+          <div class="plate">
+            <span class="screw" style="left:8px;top:8px;--r:13deg"></span><span class="screw" style="right:8px;top:8px;--r:-7deg"></span>
+            <span class="screw" style="left:8px;bottom:8px;--r:19deg"></span><span class="screw" style="right:8px;bottom:8px;--r:-31deg"></span>
+            <button class="pb" type="button" aria-pressed="true" aria-label="DRIFT on or off">
+              <span class="dome"></span><span class="dome lit"></span>
+              <span class="word">DRIFT</span><span class="word lit">DRIFT</span>
+            </button>
+          </div>
+        </div>
+        <div class="say"></div>
+      </div>
+      <div class="name"><span class="tag">B</span>Race mushroom<small>A big dome on a carbon plate: smoked violet when off, glowing magenta from inside when on.</small></div>
+    </div>
+    <!-- C -->
+    <div class="opt C on" data-opt="C">
+      <div class="step">
+        <span class="cap"><b class="n">3</b>FLIP</span>
+        <div class="stage">
+          <button class="pb" type="button" aria-pressed="true" aria-label="DRIFT on or off">
+            <span class="key"><span class="led"></span><span class="led lit"></span>
+              <span class="lg"><span class="w">DRIFT</span><span class="s">PUSH ON / OFF</span></span>
+              <span class="lg lit"><span class="w">DRIFT</span><span class="s">PUSH ON / OFF</span></span></span>
+          </button>
+        </div>
+        <div class="say"></div>
+      </div>
+      <div class="name"><span class="tag">C</span>JDM dash key<small>A square smoked-glass keycap: backlit DRIFT legend + a status LED bar, like a car's own switch row.</small></div>
+    </div>
+    <!-- D -->
+    <div class="opt D on" data-opt="D">
+      <div class="step">
+        <span class="cap"><b class="n">3</b>FLIP</span>
+        <div class="stage">
+          <button class="pb" type="button" aria-pressed="true" aria-label="DRIFT on or off">
+            <span class="glass"><span class="gl lit"></span></span><span class="tube"></span><span class="tube lit"></span>
+            <span class="w">DRIFT</span><span class="w lit">DRIFT</span><span class="hl"></span>
+          </button>
+        </div>
+        <div class="say"></div>
+      </div>
+      <div class="name"><span class="tag">D</span>Neon ring<small>A knurled machined bezel round a glass face; a neon tube inside lights the whole button.</small></div>
+    </div>
+    <!-- E -->
+    <div class="opt E on" data-opt="E">
+      <div class="step">
+        <span class="cap"><b class="n">3</b>FLIP</span>
+        <div class="stage">
+          <button class="pb" type="button" aria-pressed="true" aria-label="DRIFT on or off">
+            <span class="hex"></span><span class="hexface"></span>
+            <span class="segs"><i></i><i></i><i></i><i></i><i></i></span>
+            <span class="w">DRIFT</span><span class="w2">START</span>
+          </button>
+        </div>
+        <div class="say"></div>
+      </div>
+      <div class="name"><span class="tag">E</span>Motorsport hex<small>A rubber hex button in a raised bezel, like a race-wheel button; 5 LEDs sweep on like a starting rev light.</small></div>
+    </div>
+  </div>
+  <p class="foot">Pick a letter (or mix: e.g. "B, with C's LED bar"). The chosen one replaces the ORIGINAL | DRIFT switch in #hear; the screen's
+    DRIFT ON / ORIGINAL tag stays.</p>
+</div>
+<script>
+(() => {
+  const opts = [...document.querySelectorAll('.opt')];
+  let ctx = null;
+  const thunk = (on) => {   // a short, quiet button click (bench only)
+    try { ctx = ctx || new AudioContext(); const sr = ctx.sampleRate, n = sr * .05 | 0, b = ctx.createBuffer(1, n, sr), d = b.getChannelData(0);
+      for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.exp(-i / (n * .06)) * .4 + Math.sin(i / sr * 6.283 * (on ? 160 : 110)) * Math.exp(-i / (n * .2)) * .5;
+      const s = ctx.createBufferSource(), g = ctx.createGain(); g.gain.value = .15; s.buffer = b; s.connect(g).connect(ctx.destination); s.start(); } catch (e) {}
+  };
+  const set = (o, on, fx) => {
+    o.classList.toggle('on', on); o.querySelector('.pb').setAttribute('aria-pressed', on);
+    o.querySelector('.say').innerHTML = on ? 'YOU HEAR: <b>DRIFT</b><br>PUSH FOR THE ORIGINAL' : 'YOU HEAR: <b>ORIGINAL</b><br>PUSH TO START DRIFT';
+    if (on && fx){ o.classList.remove('igniting'); void o.offsetWidth; o.classList.add('igniting'); setTimeout(() => o.classList.remove('igniting'), 700); }
+  };
+  opts.forEach(o => { set(o, true, false); o.querySelector('.pb').addEventListener('click', () => { const on = !o.classList.contains('on'); thunk(on); set(o, on, true); }); });
+  document.getElementById('allOn').onclick = () => opts.forEach(o => set(o, true, true));
+  document.getElementById('allOff').onclick = () => opts.forEach(o => set(o, false, false));
+})();
+</script>
+</body>
+</html>

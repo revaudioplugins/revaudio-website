@@ -1,0 +1,488 @@
+---
+/**
+ * /pit-lane — HIDDEN build uploader (2026-10-21). Linked from nowhere,
+ * noindex, out of the sitemap (astro.config NOINDEX); the admin console's
+ * password is the real lock (the licence worker checks every call).
+ *
+ * Pick the plugin and the platform (Mac / Windows / both), drop the installer
+ * into its slot, tick ONE of:
+ *   Replace current build        the old file is deleted from R2
+ *   This is an entire new build  the old file stays in R2 as the rollback
+ *                                copy
+ * Mac and Windows are independent: "Mac only" touches only the Mac build (Yoni
+ * ships the .exe, Gil the .pkg, for the same plugin, at the same time).
+ * and upload. The file goes straight from this browser into R2 in 50 MB parts
+ * (POST /admin/builds/start, PUT /part x N, POST /complete on the worker),
+ * then the worker repoints that platform at it. Every download surface reads
+ * that pointer, so the same build goes live everywhere at once: /downloads and
+ * the site's popups, the emailed links, the worker's /download portal and the
+ * Paddle /purchase page. "Make live" in the log is the rollback.
+ */
+import '../styles/fonts.css';
+import '../styles/global.css';
+import '../styles/buttons.css';
+import { site } from '../data/site';
+
+// Dev only: PUBLIC_PITLANE_WORKER=http://localhost:8799 points this page at a
+// local `wrangler dev` of the licence worker (simulated R2/KV), never prod R2.
+const worker = (import.meta.env.DEV && import.meta.env.PUBLIC_PITLANE_WORKER) || site.downloadGate.workerUrl;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="referrer" content="no-referrer" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <title>Pit Lane · RevAudio</title>
+  </head>
+  <body>
+    <main class="pl" data-pl data-worker={worker}>
+      <header class="pl-head">
+        <h1>Pit Lane</h1>
+        <p>Ship a build. It goes live on the site&rsquo;s Downloads page, the emailed links, the worker download portal and the Paddle purchase page together.</p>
+        <button type="button" class="pl-link" data-pl-logout hidden>Sign out</button>
+      </header>
+
+      <!-- sign in -->
+      <form class="pl-card pl-login" data-pl-login>
+        <label class="pl-field">
+          <span>Admin password</span>
+          <input type="password" data-pl-pw autocomplete="current-password" required />
+        </label>
+        <button type="submit" class="rv-btn">Sign in</button>
+        <p class="pl-err" data-pl-login-err role="alert"></p>
+      </form>
+
+      <div data-pl-app hidden>
+        <!-- upload -->
+        <form class="pl-card" data-pl-form novalidate>
+          <h2>Upload a build</h2>
+          <div class="pl-row">
+            <label class="pl-field">
+              <span>Plugin</span>
+              <select data-pl-plugin></select>
+            </label>
+            <label class="pl-field">
+              <span>Platform</span>
+              <select data-pl-os>
+                <option value="both">Mac + Windows</option>
+                <option value="mac">Mac only</option>
+                <option value="win">Windows only</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="pl-drops">
+            <div class="pl-drop" data-pl-drop="mac" tabindex="0" role="button" aria-label="Mac build: drop the .pkg here or press to browse">
+              <input type="file" accept=".pkg" data-pl-file hidden />
+              <strong>Mac build</strong>
+              <span class="pl-drop-hint" data-pl-hint>Drag the <b>.pkg</b> here, or click to browse</span>
+              <span class="pl-drop-now" data-pl-now></span>
+              <div class="pl-bar" data-pl-bar hidden><i></i></div>
+              <button type="button" class="pl-link pl-clear" data-pl-clear hidden>Remove</button>
+            </div>
+            <div class="pl-drop" data-pl-drop="win" tabindex="0" role="button" aria-label="Windows build: drop the .exe here or press to browse">
+              <input type="file" accept=".exe" data-pl-file hidden />
+              <strong>Windows build</strong>
+              <span class="pl-drop-hint" data-pl-hint>Drag the <b>.exe</b> here, or click to browse</span>
+              <span class="pl-drop-now" data-pl-now></span>
+              <div class="pl-bar" data-pl-bar hidden><i></i></div>
+              <button type="button" class="pl-link pl-clear" data-pl-clear hidden>Remove</button>
+            </div>
+          </div>
+
+          <div class="pl-modes">
+            <label class="pl-check">
+              <input type="checkbox" data-pl-mode="replace" />
+              <span><b>Replace current build</b><small>The new file goes live and the old one is deleted from R2.</small></span>
+            </label>
+            <label class="pl-check">
+              <input type="checkbox" data-pl-mode="new" />
+              <span><b>This is an entire new build</b><small>The new file goes live; the old one stays in R2 so you can roll back.</small></span>
+            </label>
+          </div>
+
+          <button type="submit" class="rv-btn pl-go" data-pl-go>Upload &amp; go live</button>
+          <p class="pl-err" data-pl-err role="alert"></p>
+          <p class="pl-ok" data-pl-ok role="status"></p>
+        </form>
+
+        <!-- what's live -->
+        <section class="pl-card">
+          <div class="pl-h2row">
+            <h2>Live right now</h2>
+            <button type="button" class="pl-link" data-pl-refresh>Refresh</button>
+          </div>
+          <div class="pl-board" data-pl-board></div>
+          <p class="pl-note">A new build can take up to a minute to reach every region. Replaced files are served instantly.</p>
+        </section>
+
+        <section class="pl-card">
+          <h2>Recent uploads</h2>
+          <ol class="pl-log" data-pl-log></ol>
+        </section>
+      </div>
+    </main>
+
+    <script>
+      type Slot = { platform: string; ext: string; filename: string; key: string | null; size: number; version: string; name: string; uploaded: string } | null;
+      type Plug = { id: string; name: string; platforms: { mac: Slot; win: Slot } };
+      type LogRow = { at: string; platform: string; plugin: string; mode: string; version: string; key: string; size: number; name: string; prevKey: string; removed: string };
+
+      const root = document.querySelector<HTMLElement>('[data-pl]')!;
+      const API = root.dataset.worker + '/admin/builds';
+      const $ = <T extends HTMLElement>(s: string, el: ParentNode = root) => el.querySelector<T>(s)!;
+      const TOKEN_KEY = 'pl:token';
+      const MIN_BYTES = 10 * 1024 * 1024;
+      const PARALLEL = 3;
+
+      let token = '';
+      try { token = sessionStorage.getItem(TOKEN_KEY) || ''; } catch { /* storage blocked: sign in each visit */ }
+      let plugins: Plug[] = [];
+      let uploading = false;
+      const files: Record<'mac' | 'win', File | null> = { mac: null, win: null };
+
+      const mb = (n: number) => (n / 1048576).toFixed(1) + ' MB';
+      const when = (iso: string) => (iso ? new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : '');
+      const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
+
+      async function api(method: string, path: string, body?: unknown, raw?: Blob) {
+        const res = await fetch(API + path, {
+          method,
+          headers: raw ? { Authorization: 'Bearer ' + token } : { Authorization: 'Bearer ' + token, 'content-type': 'application/json' },
+          body: raw ?? (body === undefined ? undefined : JSON.stringify(body)),
+        });
+        const data = await res.json().catch(() => ({ ok: false, error: 'Bad answer from the server (' + res.status + ').' }));
+        if (res.status === 401 && path !== '/login') signedOut('Your session ran out. Sign in again.');
+        return data;
+      }
+
+      // ---- sign in -----------------------------------------------------------
+      const loginForm = $<HTMLFormElement>('[data-pl-login]');
+      const app = $('[data-pl-app]');
+      const logout = $<HTMLButtonElement>('[data-pl-logout]');
+      function signedOut(msg = '') {
+        token = '';
+        try { sessionStorage.removeItem(TOKEN_KEY); } catch { /* */ }
+        app.hidden = true;
+        logout.hidden = true;
+        loginForm.hidden = false;
+        $('[data-pl-login-err]').textContent = msg;
+      }
+      async function signedIn() {
+        loginForm.hidden = true;
+        app.hidden = false;
+        logout.hidden = false;
+        await refresh();
+      }
+      loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const err = $('[data-pl-login-err]');
+        err.textContent = '';
+        const r = await api('POST', '/login', { password: $<HTMLInputElement>('[data-pl-pw]').value }).catch(() => ({ ok: false, error: 'Network error.' }));
+        if (!r.ok) { err.textContent = r.error || 'Sign-in failed.'; return; }
+        token = r.token;
+        try { sessionStorage.setItem(TOKEN_KEY, token); } catch { /* */ }
+        $<HTMLInputElement>('[data-pl-pw]').value = '';
+        signedIn();
+      });
+      logout.addEventListener('click', () => signedOut());
+
+      // ---- status board + log ------------------------------------------------
+      const pluginSel = $<HTMLSelectElement>('[data-pl-plugin]');
+      const osSel = $<HTMLSelectElement>('[data-pl-os]');
+      async function refresh() {
+        const r = await api('GET', '/status').catch(() => ({ ok: false, error: 'Network error.' }));
+        if (!r.ok) { if (token) $('[data-pl-err]').textContent = r.error || 'Could not load the board.'; return; }
+        plugins = r.plugins;
+        const keep = pluginSel.value;
+        pluginSel.innerHTML = plugins.map((p) => `<option value="${p.id}">${esc(p.name)}</option>`).join('');
+        if (keep && plugins.some((p) => p.id === keep)) pluginSel.value = keep;
+        drawBoard();
+        drawLog(r.log as LogRow[]);
+        syncSlots();
+      }
+      function slotLine(s: Slot) {
+        if (!s) return '<span class="pl-dim">no slot</span>';
+        if (!s.key) return '<span class="pl-bad">nothing live</span>';
+        return `<b>${esc(s.name || (s.version ? 'v' + s.version : s.key.split('/').pop()!))}</b> <span class="pl-dim">${mb(s.size)}${s.uploaded ? ' · ' + when(s.uploaded) : ''}</span>`;
+      }
+      function drawBoard() {
+        $('[data-pl-board]').innerHTML = `<table><thead><tr><th>Plugin</th><th>Mac</th><th>Windows</th></tr></thead><tbody>${
+          plugins.map((p) => `<tr><th scope="row">${esc(p.name)}</th><td>${slotLine(p.platforms.mac)}</td><td>${slotLine(p.platforms.win)}</td></tr>`).join('')
+        }</tbody></table>`;
+      }
+      function drawLog(log: LogRow[]) {
+        const servingKeys = new Set(plugins.flatMap((p) => [p.platforms.mac?.key, p.platforms.win?.key]).filter(Boolean));
+        const nameOf = (platform: string) => {
+          const p = plugins.find((x) => x.platforms.mac?.platform === platform || x.platforms.win?.platform === platform);
+          return p ? p.name + (p.platforms.mac?.platform === platform ? ' Mac' : ' Windows') : platform;
+        };
+        $('[data-pl-log]').innerHTML = log.length ? log.map((l) => {
+          const what = l.mode === 'pin' ? 'rolled back to' : l.mode === 'new' ? 'new build' : 'replaced with';
+          // "Make live" for the file this upload pushed aside, when it is still in R2 (a new build keeps it).
+          const back = l.mode === 'new' && l.prevKey && !servingKeys.has(l.prevKey)
+            ? ` <button type="button" class="pl-link" data-pl-pin="${esc(l.platform)}" data-key="${esc(l.prevKey)}">Make the previous build live again</button>` : '';
+          return `<li><b>${esc(nameOf(l.platform))}</b> ${what} ${esc(l.name)} <span class="pl-dim">· ${mb(l.size)} · ${when(l.at)}${l.removed ? ' · deleted ' + esc(l.removed) : ''}</span>${back}</li>`;
+        }).join('') : '<li class="pl-dim">Nothing uploaded from here yet.</li>';
+      }
+      $('[data-pl-refresh]').addEventListener('click', refresh);
+      $('[data-pl-log]').addEventListener('click', async (e) => {
+        const b = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-pl-pin]');
+        if (!b || uploading) return;
+        if (!confirmLive('Roll back', b.dataset.plPin!, 'make the previous build live again')) return;
+        b.disabled = true;
+        const r = await api('POST', '/pin', { platform: b.dataset.plPin, key: b.dataset.key });
+        $('[data-pl-ok]').textContent = r.ok ? 'Rolled back. The previous build is live.' : '';
+        $('[data-pl-err]').textContent = r.ok ? '' : r.error;
+        refresh();
+      });
+      function confirmLive(_verb: string, _platform: string, what: string) {
+        // A deliberate second step before anything customer-facing changes.
+        return window.confirm('This will ' + what + ' for every customer. Go?');
+      }
+
+      // ---- the form ------------------------------------------------------------
+      const drops = Array.from(root.querySelectorAll<HTMLElement>('[data-pl-drop]'));
+      const modeBoxes = Array.from(root.querySelectorAll<HTMLInputElement>('[data-pl-mode]'));
+      const err = $('[data-pl-err]');
+      const ok = $('[data-pl-ok]');
+      const go = $<HTMLButtonElement>('[data-pl-go]');
+
+      const plug = () => plugins.find((p) => p.id === pluginSel.value);
+      const wantOs = (): Array<'mac' | 'win'> => (osSel.value === 'both' ? ['mac', 'win'] : [osSel.value as 'mac' | 'win']);
+
+      // The two ticks are either/or: ticking one clears the other.
+      modeBoxes.forEach((b) => b.addEventListener('change', () => {
+        if (b.checked) modeBoxes.forEach((o) => { if (o !== b) o.checked = false; });
+      }));
+      const mode = () => modeBoxes.find((b) => b.checked)?.dataset.plMode || '';
+
+      function syncSlots() {
+        const p = plug();
+        drops.forEach((d) => {
+          const os = d.dataset.plDrop as 'mac' | 'win';
+          const on = wantOs().includes(os);
+          d.hidden = !on;
+          const slot = p?.platforms[os];
+          $('[data-pl-now]', d).innerHTML = slot && slot.key ? 'Live now: ' + slotLine(slot) : slot ? '<span class="pl-bad">Nothing live yet</span>' : '';
+          drawFile(os);
+        });
+      }
+      pluginSel.addEventListener('change', syncSlots);
+      osSel.addEventListener('change', syncSlots);
+
+      function drawFile(os: 'mac' | 'win') {
+        const d = drops.find((x) => x.dataset.plDrop === os)!;
+        const f = files[os];
+        d.classList.toggle('has-file', !!f);
+        $('[data-pl-hint]', d).innerHTML = f ? `<b>${esc(f.name)}</b> · ${mb(f.size)}` : `Drag the <b>${os === 'mac' ? '.pkg' : '.exe'}</b> here, or click to browse`;
+        $('[data-pl-clear]', d).hidden = !f || uploading;
+      }
+      function takeFile(os: 'mac' | 'win', f: File | undefined) {
+        if (!f || uploading) return;
+        const ext = os === 'mac' ? '.pkg' : '.exe';
+        err.textContent = '';
+        if (!f.name.toLowerCase().endsWith(ext)) { err.textContent = `The ${os === 'mac' ? 'Mac' : 'Windows'} slot takes a ${ext} installer, not ${f.name}.`; return; }
+        if (f.size < MIN_BYTES) { err.textContent = `${f.name} is under 10 MB, which is too small to be a real installer.`; return; }
+        files[os] = f;
+        drawFile(os);
+      }
+      drops.forEach((d) => {
+        const os = d.dataset.plDrop as 'mac' | 'win';
+        const input = $<HTMLInputElement>('[data-pl-file]', d);
+        d.addEventListener('click', (e) => { if (!(e.target as HTMLElement).closest('[data-pl-clear]') && !uploading) input.click(); });
+        d.addEventListener('keydown', (e) => { if ((e.key === 'Enter' || e.key === ' ') && !uploading) { e.preventDefault(); input.click(); } });
+        input.addEventListener('change', () => { takeFile(os, input.files?.[0]); input.value = ''; });
+        d.addEventListener('dragover', (e) => { e.preventDefault(); d.classList.add('is-over'); });
+        d.addEventListener('dragleave', () => d.classList.remove('is-over'));
+        d.addEventListener('drop', (e) => { e.preventDefault(); d.classList.remove('is-over'); takeFile(os, e.dataTransfer?.files[0]); });
+        $('[data-pl-clear]', d).addEventListener('click', () => { files[os] = null; drawFile(os); });
+      });
+      // A file dropped next to a slot must not navigate the tab away mid-session.
+      window.addEventListener('dragover', (e) => e.preventDefault());
+      window.addEventListener('drop', (e) => e.preventDefault());
+      window.addEventListener('beforeunload', (e) => { if (uploading) { e.preventDefault(); e.returnValue = ''; } });
+
+      function bar(os: 'mac' | 'win', frac: number | null, label = '') {
+        const d = drops.find((x) => x.dataset.plDrop === os)!;
+        const b = $('[data-pl-bar]', d);
+        b.hidden = frac === null;
+        if (frac !== null) (b.firstElementChild as HTMLElement).style.width = Math.round(frac * 100) + '%';
+        if (label) $('[data-pl-hint]', d).textContent = label;
+      }
+
+      // One file: start -> parts (PARALLEL at a time, 3 tries each) -> complete.
+      async function uploadOne(os: 'mac' | 'win', slot: NonNullable<Slot>, f: File, m: string) {
+        const s = await api('POST', '/start', { platform: slot.platform, mode: m, fileName: f.name, size: f.size });
+        if (!s.ok) throw new Error(s.error);
+        const partBytes: number = s.partBytes;
+        const count = Math.ceil(f.size / partBytes);
+        const parts: Array<{ partNumber: number; etag: string }> = [];
+        let done = 0;
+        let next = 1;
+        bar(os, 0, `Uploading ${f.name}…`);
+        const worker = async () => {
+          while (next <= count) {
+            const n = next++;
+            const blob = f.slice((n - 1) * partBytes, Math.min(n * partBytes, f.size));
+            let last = '';
+            for (let attempt = 1; attempt <= 3; attempt++) {
+              const r = await api('PUT', `/part?u=${encodeURIComponent(s.uploadId)}&n=${n}`, undefined, blob).catch((e) => ({ ok: false, error: String(e) }));
+              if (r.ok) { parts.push({ partNumber: r.partNumber, etag: r.etag }); last = ''; break; }
+              last = r.error || 'part failed';
+              if (!token) break;
+            }
+            if (last) throw new Error(`Part ${n} of ${count} failed: ${last}`);
+            done += blob.size;
+            bar(os, done / f.size, `Uploading ${f.name}… ${Math.round((done / f.size) * 100)}%`);
+          }
+        };
+        try {
+          await Promise.all(Array.from({ length: Math.min(PARALLEL, count) }, worker));
+        } catch (e) {
+          api('POST', '/abort', { uploadId: s.uploadId }).catch(() => {});
+          throw e;
+        }
+        bar(os, 1, 'Checking and switching it live…');
+        const c = await api('POST', '/complete', { uploadId: s.uploadId, parts });
+        if (!c.ok) throw new Error(c.error);
+        return c;
+      }
+
+      $<HTMLFormElement>('[data-pl-form]').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (uploading) return;
+        err.textContent = '';
+        ok.textContent = '';
+        const p = plug();
+        const m = mode();
+        // Only the platform(s) picked above: Mac only never touches Windows, and back.
+        const oses = wantOs();
+        if (!p) { err.textContent = 'Pick a plugin.'; return; }
+        const missing = oses.filter((os) => !files[os]);
+        if (missing.length) { err.textContent = 'Drop the ' + missing.map((os) => (os === 'mac' ? 'Mac .pkg' : 'Windows .exe')).join(' and the ') + ' first.'; return; }
+        if (!m) { err.textContent = 'Tick Replace current build or This is an entire new build.'; return; }
+        if (m === 'replace' && oses.some((os) => !p.platforms[os]?.key)) { err.textContent = 'There is no live build to replace on that platform. Tick This is an entire new build.'; return; }
+        const label = (m === 'replace' ? 'REPLACE the live ' : 'ship a NEW build of ') + p.name + ' ' + oses.map((os) => (os === 'mac' ? 'Mac' : 'Windows')).join(' + ') + ' (the other platform is not touched)';
+        if (!confirmLive('Upload', '', label)) return;
+
+        uploading = true;
+        go.disabled = true;
+        root.classList.add('is-busy');
+        drops.forEach((d) => drawFile(d.dataset.plDrop as 'mac' | 'win'));
+        const shipped: string[] = [];
+        try {
+          for (const os of oses) {
+            const c = await uploadOne(os, p.platforms[os]!, files[os]!, m);
+            shipped.push(`${os === 'mac' ? 'Mac' : 'Windows'} → ${c.key}${c.removed ? ' (old file deleted)' : c.prevKey ? ' (old file kept for rollback)' : ''}`);
+            bar(os, null, '');
+            files[os] = null;
+          }
+          ok.textContent = `Live: ${p.name}. ${shipped.join(' · ')}`;
+          modeBoxes.forEach((b) => (b.checked = false));
+        } catch (ex) {
+          err.textContent = String((ex as Error).message || ex) + (shipped.length ? ` (already live: ${shipped.join(' · ')})` : '') + ' Nothing else changed.';
+          oses.forEach((os) => bar(os, null, ''));
+        } finally {
+          uploading = false;
+          go.disabled = false;
+          root.classList.remove('is-busy');
+          await refresh();
+        }
+      });
+
+      if (token) signedIn(); else signedOut();
+    </script>
+
+    <style is:global>
+      body { background: var(--bg-0); color: var(--fg); margin: 0; }
+      .pl { max-width: 860px; margin: 0 auto; padding: 2.5rem 16px 5rem; display: flex; flex-direction: column; gap: 1.5rem; }
+      .pl-head { position: relative; }
+      .pl-head h1 { font-family: var(--font-display); font-size: clamp(2.6rem, 6vw, 3.6rem); letter-spacing: 0.12em; color: var(--brass-bright); margin: 0; }
+      .pl-head p { color: var(--fg-dim); margin: 0.4rem 0 0; max-width: 60ch; }
+      .pl-head [data-pl-logout] { position: absolute; top: 0.6rem; right: 0; }
+
+      .pl-card {
+        background: var(--bg-1);
+        border: 1px solid var(--border-bright);
+        border-top: 3px solid var(--brass);
+        border-radius: 12px;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.1rem;
+      }
+      .pl-card[hidden], [data-pl-app][hidden] { display: none; }
+      [data-pl-app] { display: flex; flex-direction: column; gap: 1.5rem; }
+      .pl-card h2 { font-family: var(--font-display); letter-spacing: 0.06em; color: var(--brass-bright); margin: 0; font-size: 1.5rem; }
+      .pl-login { max-width: 380px; }
+      .pl-h2row { display: flex; justify-content: space-between; align-items: baseline; }
+
+      .pl-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+      .pl-field { display: flex; flex-direction: column; gap: 0.35rem; }
+      .pl-field span { font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--fg-dim); }
+      .pl-field em { font-style: normal; text-transform: none; letter-spacing: 0; }
+      .pl-field input, .pl-field select {
+        background: var(--bg-0); border: 1px solid var(--border-bright); border-radius: 6px;
+        color: var(--fg); font-family: var(--font-body); font-size: 1rem; padding: 0.65rem 0.8rem;
+      }
+      .pl-field input:focus-visible, .pl-field select:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 0; }
+
+      .pl-drops { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+      .pl-drop {
+        position: relative;
+        display: flex; flex-direction: column; gap: 0.4rem; align-items: flex-start;
+        min-height: 150px; padding: 1.1rem;
+        border: 2px dashed var(--border-bright); border-radius: 10px;
+        background: var(--bg-0);
+        cursor: pointer;
+        transition: border-color 0.15s, background 0.15s;
+      }
+      .pl-drop[hidden] { display: none; }
+      .pl-drop strong { font-family: var(--font-display); letter-spacing: 0.06em; font-size: 1.25rem; color: var(--fg); }
+      .pl-drop:hover, .pl-drop:focus-visible, .pl-drop.is-over { border-color: var(--brass-bright); background: rgba(255, 170, 60, 0.05); outline: none; }
+      .pl-drop.has-file { border-style: solid; border-color: var(--brass); }
+      .pl-drop-hint { color: var(--fg-dim); font-size: 0.9rem; word-break: break-all; }
+      .pl-drop-hint b { color: var(--fg); }
+      .pl-drop-now { font-size: 0.8rem; color: var(--fg-dim); margin-top: auto; }
+      .pl-clear { position: absolute; top: 0.9rem; right: 0.9rem; }
+      .pl-bar { width: 100%; height: 6px; border-radius: 3px; background: var(--border); overflow: hidden; }
+      .pl-bar[hidden] { display: none; }
+      .pl-bar i { display: block; height: 100%; width: 0; background: var(--brass-bright); transition: width 0.3s; }
+      .is-busy .pl-drop { cursor: progress; }
+
+      .pl-modes { display: flex; flex-direction: column; gap: 0.6rem; }
+      .pl-check { display: flex; gap: 0.6rem; align-items: flex-start; cursor: pointer; }
+      .pl-check input { margin: 0.25rem 0 0; accent-color: var(--brass); width: 1.05rem; height: 1.05rem; flex: none; }
+      .pl-check b { display: block; color: var(--fg); }
+      .pl-check small { display: block; color: var(--fg-dim); font-size: 0.82rem; }
+      .pl-go { align-self: flex-start; }
+
+      .pl-err { margin: 0; min-height: 1.1em; color: var(--oxide-text); font-size: 0.9rem; }
+      .pl-ok { margin: 0; color: var(--brass-bright); font-size: 0.9rem; word-break: break-word; }
+      .pl-ok:empty { display: none; }
+      .pl-note { margin: 0; color: var(--fg-dim); font-size: 0.8rem; }
+
+      .pl-board table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+      .pl-board th, .pl-board td { text-align: left; padding: 0.55rem 0.5rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+      .pl-board thead th { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fg-dim); font-weight: 400; }
+      .pl-dim { color: var(--fg-dim); }
+      .pl-bad { color: var(--oxide-text); }
+      .pl-log { margin: 0; padding-left: 1.2rem; display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.88rem; }
+
+      .pl-link { background: none; border: 0; padding: 0; color: var(--fg-dim); font: inherit; font-size: 0.82rem; text-decoration: underline; cursor: pointer; }
+      .pl-link[hidden] { display: none; }
+      .pl-link:hover { color: var(--brass-bright); }
+      .pl-link:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 2px; }
+
+      @media (max-width: 640px) {
+        .pl-row, .pl-drops { grid-template-columns: 1fr; }
+        .pl-board { overflow-x: auto; }
+      }
+    </style>
+  </body>
+</html>

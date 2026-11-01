@@ -1,0 +1,69 @@
+---
+/**
+ * #pedals — MEET THE FIVE. One slide per strip. Laptop (>= 901 px): a pinned stage, five screens of scroll; the
+ * active pedal swings in on the left, its name burns on in its own lamp colour, and the scroll IS its main knob:
+ * the dial turns, the value reads in real units, and the plugin's own screen for that strip (hosted big,
+ * src/lib/revfx/screens.ts) moves with it. The room's light takes the pedal's colour. Phones: the slides stack,
+ * each knob turns as its slide crosses the screen. pedals.ts runs both.
+ */
+import { getImage } from 'astro:assets';
+import pedPitch from '../../assets/seasons/drift/pedal-pitch.png';
+import pedEcho from '../../assets/seasons/drift/pedal-echo.png';
+import pedVerb from '../../assets/seasons/drift/pedal-reverb.png';
+import pedHalo from '../../assets/seasons/drift/pedal-halo.png';
+import pedGlue from '../../assets/seasons/drift/pedal-glue.png';
+import geo from '../../assets/seasons/drift/rack/rack.json';
+import { pedals } from '../../data/revfx';
+
+const srcs = { pitch: pedPitch, echo: pedEcho, reverb: pedVerb, halo: pedHalo, glue: pedGlue };
+const imgs = await Promise.all(pedals.map((p) => getImage({ src: srcs[p.id], width: 700, format: 'webp', quality: 82 })));
+// the dial's job per strip (the value is formatted client side, pedals.ts FMT); the first read is rendered here
+const knobs = pedals.map((p) => ({ id: p.id, label: p.knob.label, from: p.knob.from, to: p.knob.to, param: p.knob.param, first: p.knob.fmt(p.knob.from) }));
+---
+<section class="rfx-sec rfx-pedals" id="pedals" aria-labelledby="rfx-pedals-h">
+  {/* the seam between the hero and the five: DRIFT's dashed neon rule (.d-rule) + its finish-flag checker (.d-finish),
+      a sticker naming the section (Law 1). The rules draw out from the flag when it scrolls in (init.ts [data-on]). */}
+  <div class="d-wrap rfx-sep" data-rfx-sep aria-hidden="true">
+    <i class="rfx-sep-rule"></i><span class="rfx-sep-flag"></span><b lang="ja">エフェクト</b><span class="rfx-sep-flag"></span><i class="rfx-sep-rule"></i>
+  </div>
+  <div class="d-wrap rfx-pedals-head">
+    <h2 id="rfx-pedals-h" class="d-headline d-headline--row"><span class="l1">Meet the five.</span> <span class="l2">Scroll is the knob.</span></h2>
+  </div>
+  <div class="rfx-pd-track" data-rfx-pd style={`--n:${pedals.length}`}>
+    <div class="rfx-pd-stage">
+      <div class="rfx-pd-room" aria-hidden="true"></div>
+      <ol class="rfx-pd-rail" aria-label="The five effects">
+        {pedals.map((p, i) => <li><button type="button" data-rfx-pd-go={i} style={`--ink:${p.ink};--rgb:${p.rgb}`}><b>0{i + 1}</b><span>{p.name}</span></button></li>)}
+      </ol>
+      {pedals.map((p, i) => (
+        <article class:list={['rfx-pd', { 'is-on': i === 0 }]} id={`p-${p.id}`} data-rfx-slide={p.id} data-i={i}
+          style={`--ink:${p.ink};--rgb:${p.rgb}`} aria-labelledby={`rfx-pd-${p.id}`}>
+          <div class="rfx-pd-ped">
+            <span class="rfx-pd-halo" aria-hidden="true"></span>
+            <img src={imgs[i].src} width="528" height="954" alt={`The RevFX ${p.name} strip`} loading="lazy" decoding="async" />
+          </div>
+          <div class="rfx-pd-body">
+            <p class="rfx-pd-idx" aria-hidden="true"><b>0{i + 1}</b> / 05 <span lang="ja">{p.kana}</span></p>
+            <h3 id={`rfx-pd-${p.id}`} class="rfx-pd-name">{p.name}</h3>
+            <p class="rfx-pd-line">{p.line}</p>
+            <p class="rfx-pd-pitch">{p.pitch}</p>
+            <ul class="rfx-pd-specs" role="list">{p.specs.map((s) => <li>{s}</li>)}</ul>
+            <div class="rfx-pd-live">
+              <div class="rfx-pd-screen">
+                <canvas data-rfx-screen={p.id} width={Math.round(geo.strips[p.id].screen.w)} height={Math.round(geo.strips[p.id].screen.h)}
+                  style={`aspect-ratio:${geo.strips[p.id].screen.w} / ${geo.strips[p.id].screen.h}`} aria-hidden="true"></canvas>
+                <span class="rfx-pd-glass" aria-hidden="true"></span>
+              </div>
+              <div class="rfx-knob" data-rfx-knob={JSON.stringify(knobs[i])} aria-hidden="true">
+                <div class="rfx-knob-ring"><i></i></div>
+                <div class="rfx-knob-cap"><i class="rfx-knob-ptr"></i></div>
+                <p class="rfx-knob-read"><span data-k-label>{p.knob.label}</span><b data-k-val>{knobs[i].first}</b></p>
+              </div>
+            </div>
+            <p class="rfx-pd-hint d-fine" aria-hidden="true">The plugin’s own {p.name.toUpperCase()} screen. Scroll to turn {p.knob.label.toLowerCase()}.</p>
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>

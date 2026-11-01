@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DRIFT #hear LCD — bench</title>
+<!--
+  #hear screen as a real LCD, bench (2026-10-19, Claude Code revaudio-ef, Yoni: "let's design this whole area so it
+  looks like an LCD screen"). The screen today (row 0) is dark violet glass with blurred magenta glow on every
+  readout: that reads CRT/VFD. An LCD does not bloom: crisp ink, unlit cells always faintly there (ghosts), an even
+  backlight, and on a reflective panel the liquid layer casts a 1 px shadow on the backing.
+  Each row = the real screen markup + class names (DriftHear.astro), one modifier class per variant on
+  .d-hear-screen, at the real sizes measured on the built page (desktop 1440: 691 x 179; phone 390: 314 x 127;
+  phone 360: 284 x 127). The guide states cycle like the page (LOADING > PRESS PLAY > PUSH DRIFT > PUSH AGAIN >
+  NOW PLAYING) on the real peaks.json. Under each screen: does every coach line fit beside the tag, and the height.
+  The PICK A TRACK CRT (1x crop of the built page) sits beside each desktop screen: the LCD must read as a
+  different material from it. Serve the worktree root: python -m http.server 8796, open /bench/drift-lcd-bench.html.
+-->
+<style>
+@font-face{font-family:'VT323';src:url(../src/styles/fonts/vt323-latin.woff2) format('woff2');font-display:block}
+@font-face{font-family:'Drift Press';src:url(../public/fonts/drift/PressStart2P-Regular.ttf) format('truetype');font-display:block}
+@font-face{font-family:'Drift Oswald';src:url(../public/fonts/drift/Oswald-var.latin.woff2) format('woff2');font-weight:200 700;font-display:block}
+/* DSEG14 Classic Italic, SIL OFL 1.1 (drift-lcd/DSEG-LICENSE.txt), the same file as RevTune's car-stereo LCD */
+@font-face{font-family:'DSEG14';src:url(drift-lcd/DSEG14Classic-Italic.woff2) format('woff2');font-display:block}
+:root{
+  --d-ink:#07050b; --d-hot:#ff4fd8; --d-lcd:#f24cf0; --d-lcd-hdr:#c73fc4; --d-crt:#d98bff; --d-crt-glow:rgba(190,90,255,.75);
+  --d-cyan:#5ee7ff; --d-cyan-ink:#c8f6ff; --d-white-ink:#f6e8ff; --d-fg:#d9c6ef; --d-fg-dim:#a58cc4;
+  --f-lcd:'VT323',ui-monospace,monospace; --f-pix:'Drift Press',monospace; --f-head:'Drift Oswald',Impact,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;color:var(--d-fg);font:15px/1.5 system-ui,sans-serif;
+  background:#09060d url(../src/assets/seasons/drift/plate-tile.png) repeat;background-size:400px auto}
+.wrap{max-width:1400px;margin:0 auto;padding:28px 16px 60px}
+h1{font:700 clamp(28px,3.4vw,42px)/.95 var(--f-head);text-transform:uppercase;margin:0 0 8px;color:var(--d-white-ink)}
+.lede{max-width:900px;margin:0 0 18px;color:var(--d-fg)}
+.bar{position:sticky;top:0;z-index:20;display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 12px;margin:0 0 20px;
+  background:rgba(9,5,14,.94);border:1px solid rgba(190,90,255,.3);border-radius:8px}
+.bar b{font:400 10px/1 var(--f-pix);letter-spacing:.1em;color:var(--d-crt);margin:0 4px 0 10px}
+.bar b:first-child{margin-left:0}
+.bar button{font:400 18px/1 var(--f-lcd);letter-spacing:.06em;color:var(--d-fg);background:#140a1d;border:1px solid rgba(190,90,255,.35);
+  border-radius:4px;padding:6px 10px 5px;cursor:pointer}
+.bar button[aria-pressed='true']{color:#16021c;background:var(--d-lcd);border-color:var(--d-lcd)}
+.row{margin:0 0 26px;padding:16px;border-radius:10px;background:rgba(8,4,12,.72);box-shadow:0 0 0 1px rgba(190,90,255,.18)}
+.row h2{margin:0 0 4px;font:400 14px/1.3 var(--f-pix);letter-spacing:.08em;color:var(--d-white-ink)}
+.row h2 i{font-style:normal;color:var(--d-lcd)}
+.row p{margin:0 0 12px;max-width:980px;color:var(--d-fg-dim)}
+.shots{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
+.crt{display:block;width:315px;height:auto;border-radius:16px}
+.cell{display:flex;flex-direction:column;gap:6px}
+.cell small{font:400 16px/1 var(--f-lcd);letter-spacing:.05em;color:var(--d-fg-dim)}
+.cell small .ok{color:#7dffb0}.cell small .bad{color:#ff6b8a}
+
+/* ===== THE SCREEN TODAY (drift.css, copied: .d-lcd + .d-lcd--big + .d-screen + the #hear overrides) ===== */
+.d-lcd{position:relative;isolation:isolate;border-radius:5px;box-shadow:0 0 0 1px rgba(4,2,8,.9),0 1px 0 1px rgba(255,240,255,.07)}
+.d-lcd::before{content:'';position:absolute;inset:0;z-index:-1;border-radius:inherit;
+  background:radial-gradient(120% 100% at 50% 40%,#14061f 0%,#0b0314 70%);
+  box-shadow:inset 0 5px 8px rgba(0,0,0,.7),inset 0 -1px 0 rgba(255,240,255,.16),inset 0 -4px 7px rgba(0,0,0,.45)}
+.d-lcd::after{content:'';position:absolute;inset:2px 3px;z-index:2;border-radius:3px;pointer-events:none;opacity:.5;
+  background:radial-gradient(60% 50% at 50% 40%,rgba(255,235,250,.07),transparent 70%),
+    linear-gradient(180deg,rgba(255,255,255,.13),rgba(255,255,255,0) 55%),
+    url(../src/assets/seasons/drift/val_glass.png) center/100% 100%;mix-blend-mode:screen}
+.d-screen{display:flex;flex-direction:column}
+.d-screen-hdr{display:flex;justify-content:space-between;align-items:center;gap:10px;font:400 15px/1 var(--f-lcd);letter-spacing:.12em;color:var(--d-lcd-hdr);text-shadow:0 0 3px rgba(240,70,235,.6)}
+.d-hear-coach{min-width:0;overflow:hidden;white-space:nowrap}
+[data-hear]:not([data-next='']) .d-hear-coach{color:var(--d-lcd);text-shadow:0 0 6px rgba(242,76,240,.85)}
+.d-hear-tag{flex:none;padding:4px 9px 3px;border-radius:3px;color:#16021c;text-shadow:none;background:var(--d-lcd);box-shadow:0 0 12px rgba(242,76,240,.6)}
+[data-ab='before'] .d-hear-tag{color:var(--d-cyan-ink);background:none;box-shadow:inset 0 0 0 1px var(--d-cyan),0 0 10px rgba(94,231,255,.3)}
+.d-screen-title{font:400 26px/1 var(--f-lcd);letter-spacing:.04em;color:var(--d-lcd);text-shadow:0 0 5px rgba(242,76,240,.7)}
+.d-screen-title::before{content:'\25B6\00A0';font-size:.7em}
+.d-screen-row{display:flex;justify-content:space-between;align-items:flex-end;gap:16px}
+.d-screen-t{font:400 18px/1 var(--f-lcd);color:var(--d-lcd);text-shadow:0 0 4px rgba(242,76,240,.6)}
+.d-hear-wave{position:relative}
+.d-hear-wave canvas{display:block;width:100%;height:100%}
+/* the three real sizes (the page does this with media queries; here all three sit side by side) */
+.sz-desk{width:691px;padding:11px 16px 10px;gap:6px}
+.sz-desk .d-hear-coach{font-size:19px}.sz-desk .d-screen-title{font-size:26px}.sz-desk .d-screen-t{font-size:18px}.sz-desk .d-hear-wave{height:74px}
+.sz-phone,.sz-small{padding:8px 12px 7px;gap:4px}
+.sz-phone{width:314px}.sz-small{width:284px}
+:is(.sz-phone,.sz-small) .d-hear-coach{font-size:16px}
+:is(.sz-phone,.sz-small) .d-screen-title{font-size:22px;letter-spacing:.04em}
+:is(.sz-phone,.sz-small) .d-screen-t{font-size:16px}
+:is(.sz-phone,.sz-small) .d-hear-wave{height:40px}
+
+/* ===== shared by the three LCDs: the row heights stay the page's (22 / 26|22 / wave / 18|16), so the panel keeps
+   its height whatever the face; no blur glow anywhere (an LCD does not bloom); an even backlight ===== */
+.lcd .d-screen-hdr{height:22px}
+.lcd.sz-desk .d-screen-title{height:26px;line-height:26px}
+.lcd:is(.sz-phone,.sz-small) .d-screen-title{height:22px;line-height:22px}
+.lcd.sz-desk .d-screen-row{height:18px}
+.lcd:is(.sz-phone,.sz-small) .d-screen-row{height:16px}
+.lcd .d-screen-row{align-items:center}
+
+/* ===== A · DOT MATRIX: a backlit negative LCD, DRIFT magenta; every pixel a square with a 1 px gap, the unlit
+   ones always faintly there; the gap grid lies over the type and the waveform alike (the glass layer), so the
+   letters are built of the same dots as the picture. Keeps today's cyan ORIGINAL / magenta DRIFT ON. ===== */
+.v-dot::before{
+  background:
+    linear-gradient(90deg,#0b0411 1px,transparent 1px) 0 0/3px 3px,
+    linear-gradient(180deg,#0b0411 1px,transparent 1px) 0 0/3px 3px,
+    linear-gradient(180deg,#1a0b24,#150820);}
+.v-dot::after{opacity:1;mix-blend-mode:normal;
+  background:
+    linear-gradient(90deg,rgba(11,4,17,.55) 1px,transparent 1px) 0 1px/3px 3px,
+    linear-gradient(180deg,rgba(11,4,17,.55) 1px,transparent 1px) 0 1px/3px 3px,
+    linear-gradient(180deg,rgba(255,240,255,.07),rgba(255,240,255,0) 40%)}
+.v-dot,.v-dot .d-screen-hdr,.v-dot .d-screen-title,.v-dot .d-screen-t,[data-hear]:not([data-next='']) .v-dot .d-hear-coach{text-shadow:none}
+.v-dot .d-screen-hdr{color:#d070cd}
+[data-hear]:not([data-next='']) .v-dot .d-hear-coach{color:#ff7cf9}
+.v-dot .d-screen-title,.v-dot .d-screen-t{color:#ff7cf9}
+.v-dot .d-hear-tag{position:relative;z-index:3;box-shadow:none;background:#ff7cf9}
+[data-ab='before'] .v-dot .d-hear-tag{box-shadow:inset 0 0 0 1px var(--d-cyan);background:none;color:var(--d-cyan-ink)}
+.v-dot.sz-desk .d-hear-coach{font-size:20px}.v-dot.sz-desk .d-screen-title{font-size:28px}
+
+/* ===== B · SEGMENT: the car-stereo LCD (RevTune's DSEG14 italic), DRIFT magenta. Every character cell shows its
+   unlit segments (ghost '~' behind each lit letter, the colon its own ghost colon); a space is one full cell
+   (word-spacing .616em: DSEG's space is .2em, a cell .816em). Black bezel with a chrome hairline inside the window.
+   The waveform = a bar graph of short segments, every unlit segment there. One ink: ORIGINAL = outlined, DRIFT ON =
+   inverse. ===== */
+.v-seg::before{
+  background:linear-gradient(180deg,#14061a,#10041a);
+  box-shadow:inset 0 0 0 2px #040106,inset 0 0 0 3px rgba(214,200,228,.2),inset 0 5px 8px rgba(0,0,0,.7),inset 0 -4px 7px rgba(0,0,0,.45)}
+.v-seg::after{opacity:1;mix-blend-mode:screen;background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,0) 38%)}
+.v-seg .d-screen-hdr,.v-seg .d-screen-title,.v-seg .d-screen-t,.v-seg .d-hear-tag,[data-hear]:not([data-next='']) .v-seg .d-hear-coach{
+  font-family:'DSEG14',monospace;letter-spacing:.06em;word-spacing:.616em;text-shadow:0 0 1px rgba(255,90,245,.55)}
+.v-seg :is(.d-hear-coach,.d-screen-title,.d-screen-t){position:relative}
+.v-seg .d-hear-coach{flex:1}
+.v-seg :is(.d-hear-coach,.d-screen-t)::before,.v-seg .d-screen-title::after{
+  content:attr(data-g) / '';position:absolute;top:0;left:0;color:rgba(255,90,245,.085);text-shadow:none;pointer-events:none;white-space:nowrap}
+.v-seg .d-hear-coach,.v-seg .d-screen-title,.v-seg .d-screen-t{color:#ff5af5;isolation:isolate}
+.v-seg :is(.d-hear-coach,.d-screen-t)::before,.v-seg .d-screen-title::after{z-index:-1}
+.v-seg .d-screen-hdr{color:#c25ac0}
+.v-seg .d-hear-coach{color:#c25ac0}
+[data-hear]:not([data-next='']) .v-seg .d-hear-coach{color:#ff5af5}
+.v-seg .d-screen-title::before{content:'';display:inline-block;width:.55em;height:.75em;margin:0 .4em 0 0;vertical-align:.08em;background:currentColor;clip-path:polygon(0 0,100% 50%,0 100%)}
+.v-seg .d-screen-title::after{left:.95em}
+.v-seg .d-hear-tag{padding:4px 6px 3px;border-radius:2px;box-shadow:none;background:#ff5af5;color:#14061a;text-shadow:none}
+[data-ab='before'] .v-seg .d-hear-tag{background:none;color:#ff5af5;box-shadow:inset 0 0 0 1px #ff5af5}
+.v-seg.sz-desk .d-hear-coach{font-size:13px}.v-seg.sz-desk .d-screen-title{font-size:18px}.v-seg.sz-desk .d-screen-t{font-size:12px}.v-seg.sz-desk .d-hear-tag{font-size:10px}
+.v-seg:is(.sz-phone,.sz-small) .d-hear-coach{font-size:10.5px}.v-seg:is(.sz-phone,.sz-small) .d-screen-title{font-size:15px}
+.v-seg:is(.sz-phone,.sz-small) .d-screen-t{font-size:11px}.v-seg:is(.sz-phone,.sz-small) .d-hear-tag{font-size:9px}
+.v-seg.sz-small .d-hear-coach{font-size:9.5px}
+
+/* ===== C · REFLECTIVE: a positive LCD, the backing a dim lilac reflector (DRIFT-tinted, not a calculator's
+   green), deep violet ink, and the liquid layer's 1 px shadow on the reflector under every letter and dot. The
+   same pixel grid as A. One ink: ORIGINAL = outlined, DRIFT ON = inverse. Light on a dark page: judge whether it
+   pulls the eye off the DRIFT button. ===== */
+.v-ref::before{
+  background:
+    linear-gradient(90deg,rgba(150,136,166,.55) 1px,transparent 1px) 0 0/3px 3px,
+    linear-gradient(180deg,rgba(150,136,166,.55) 1px,transparent 1px) 0 0/3px 3px,
+    radial-gradient(130% 120% at 50% 30%,#b7abc4 0%,#a397b2 70%,#8e8199 100%);
+  box-shadow:inset 0 5px 8px rgba(20,8,30,.55),inset 0 -1px 0 rgba(255,240,255,.2),inset 0 -4px 7px rgba(20,8,30,.3)}
+.v-ref::after{opacity:1;mix-blend-mode:normal;
+  background:
+    linear-gradient(90deg,rgba(170,158,186,.28) 1px,transparent 1px) 0 1px/3px 3px,
+    linear-gradient(180deg,rgba(170,158,186,.28) 1px,transparent 1px) 0 1px/3px 3px,
+    linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,0) 45%)}
+.v-ref .d-screen-hdr,.v-ref .d-screen-title,.v-ref .d-screen-t,[data-hear]:not([data-next='']) .v-ref .d-hear-coach{
+  color:#1e0a29;text-shadow:1px 1.5px 0 rgba(30,10,41,.22)}
+.v-ref .d-screen-hdr{color:rgba(30,10,41,.66)}
+.v-ref .d-hear-tag{box-shadow:none;background:#2a1236;color:#b3a7c1;text-shadow:none}
+[data-ab='before'] .v-ref .d-hear-tag{background:none;color:#2a1236;box-shadow:inset 0 0 0 1px #2a1236}
+.v-ref.sz-desk .d-hear-coach{font-size:20px}.v-ref.sz-desk .d-screen-title{font-size:28px}
+
+@media (prefers-reduced-motion: reduce){ *{animation:none!important;transition:none!important} }
+</style>
+</head>
+<body data-hear data-next="play" data-ab="before">
+<div class="wrap">
+  <h1>#hear screen as an LCD</h1>
+  <p class="lede">Row 0 is the screen on the page today. A, B and C are three ways to make it a real LCD. Everything runs on its own (the
+  same steps a visitor goes through); the buttons hold one step or change the track. Under each screen: whether every coach line fits
+  beside the tag, and the screen's height (it must stay the page's, so the panel doesn't move).</p>
+  <div class="bar" id="bar">
+    <b>STEP</b>
+    <button data-go="auto" aria-pressed="true">AUTO</button>
+    <button data-go="0">LOADING</button><button data-go="1">PRESS PLAY</button><button data-go="2">PUSH DRIFT</button>
+    <button data-go="3">PUSH AGAIN</button><button data-go="4">NOW PLAYING</button>
+    <b>TRACK</b><span id="tracks"></span>
+  </div>
+  <div id="rows"></div>
+</div>
+
+<template id="screen">
+  <div class="d-lcd d-lcd--big d-screen d-hear-screen">
+    <div class="d-screen-hdr">
+      <span class="d-hear-coach" data-hear-state aria-live="polite">PRESS PLAY</span>
+      <span class="d-hear-tag" data-hear-tag>ORIGINAL</span>
+    </div>
+    <div class="d-screen-title" data-hear-title>VOCALS</div>
+    <div class="d-hear-wave"><canvas data-hear-wave aria-hidden="true"></canvas></div>
+    <div class="d-screen-row">
+      <span class="d-screen-t" data-pan-readout>PAN C</span>
+      <span class="d-screen-t" data-hear-time>00:00 / 00:17</span>
+    </div>
+  </div>
+</template>
+
+<script>
+const VARIANTS = [
+  { key: 'now', cls: '', name: '0 · <i>NOW</i> (the page today)', note: 'Dark violet glass, every readout blurred with magenta glow: reads as a CRT / neon screen, not an LCD.' },
+  { key: 'dot', cls: 'lcd v-dot', name: 'A · <i>DOT MATRIX</i>', note: 'Backlit negative LCD in DRIFT magenta. Square pixels with a 1 px gap over the type and the waveform alike; the unlit pixels always faintly there. Crisp, no glow. Keeps the cyan ORIGINAL / magenta DRIFT ON tags.' },
+  { key: 'seg', cls: 'lcd v-seg', name: 'B · <i>SEGMENT</i> (car stereo)', note: 'The 14-segment car-stereo LCD (RevTune\'s font), magenta. Every character cell shows its unlit segments; the waveform is a segment bar graph. One ink: ORIGINAL outlined, DRIFT ON lit solid. Smaller letters (a segment cell is wide).' },
+  { key: 'ref', cls: 'lcd v-ref', name: 'C · <i>REFLECTIVE</i>', note: 'A positive LCD: dim lilac reflector, deep violet ink, each letter and dot casting its 1 px shadow on the reflector. One ink. A light window on a dark page: judge whether it steals the eye from the DRIFT button.' },
+];
+const SIZES = [
+  { cls: 'sz-desk', label: 'DESKTOP 1440', h: 179 },
+  { cls: 'sz-phone', label: 'PHONE 390', h: 127 },
+  { cls: 'sz-small', label: 'PHONE 360', h: 127 },
+];
+const COACH = ['LOADING', 'PRESS PLAY', 'PUSH DRIFT', 'PUSH AGAIN: ORIGINAL', 'NOW PLAYING'];
+const NEXT = ['wait', 'play', 'drift', 'back', ''];
+const HOLD = [1400, 2600, 3600, 3600, 5200];   // ms per step in AUTO
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// ---- build the rows
+const rowsEl = document.getElementById('rows'), tpl = document.getElementById('screen');
+const screens = [];
+for (const v of VARIANTS) {
+  const row = document.createElement('section'); row.className = 'row';
+  row.innerHTML = `<h2>${v.name}</h2><p>${v.note}</p><div class="shots"></div>`;
+  const shots = row.querySelector('.shots');
+  SIZES.forEach((s, i) => {
+    if (i === 0) { const img = new Image(); img.src = 'drift-lcd/crt-1440.png'; img.className = 'crt'; img.alt = ''; shots.append(img); }
+    const cell = document.createElement('div'); cell.className = 'cell';
+    const scr = tpl.content.firstElementChild.cloneNode(true);
+    scr.className += ` ${v.cls} ${s.cls}`;
+    const info = document.createElement('small');
+    cell.append(scr, info); shots.append(cell);
+    screens.push({ v: v.key, s, scr, info, coach: scr.querySelector('[data-hear-state]'), tag: scr.querySelector('[data-hear-tag]'),
+      title: scr.querySelector('[data-hear-title]'), pan: scr.querySelector('[data-pan-readout]'), time: scr.querySelector('[data-hear-time]'),
+      cv: scr.querySelector('canvas') });
+  });
+  rowsEl.append(row);
+}
+
+// ---- text: B's ghost string (every cell '~', a colon its own ghost colon); LCD settle on change (liquid crystal is slow)
+const ghost = (s) => s.replace(/[^:]/g, '~');
+function setText(o, el, s, pad = 0, settle = false) {
+  if (el.textContent === s) return;
+  el.textContent = s;
+  if (o.v === 'seg') el.dataset.g = ghost(s) + '~'.repeat(pad);
+  if (settle && o.v !== 'now' && !reduce) el.animate([{ opacity: .25 }, { opacity: 1 }], { duration: 170, easing: 'ease-out' });
+}
+
+// ---- state
+let M = null, track = 'vocals', step = 1, auto = true, stepAt = performance.now(), playStart = 0, ab = 'before';
+const fmt = (s) => { s = Math.max(0, Math.floor(s)); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
+function go(i) {
+  step = i; stepAt = performance.now();
+  if (i <= 1) playStart = 0; else if (!playStart) playStart = performance.now();
+  ab = i === 3 ? 'after' : i === 4 ? ab : 'before';
+  document.body.dataset.next = NEXT[i]; document.body.dataset.ab = ab;
+}
+const bar = document.getElementById('bar');
+bar.addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.go === 'auto') { auto = !auto; b.setAttribute('aria-pressed', auto); return; }
+  if (b.dataset.go != null) { auto = false; bar.querySelector('[data-go=auto]').setAttribute('aria-pressed', 'false'); go(+b.dataset.go); }
+  if (b.dataset.track) { track = b.dataset.track; for (const t of bar.querySelectorAll('[data-track]')) t.setAttribute('aria-pressed', t === b); }
+});
+
+// ---- the waveform, one painter per face
+function prep(cv) {
+  const dpr = Math.min(2, devicePixelRatio || 1), w = cv.clientWidth, h = cv.clientHeight;
+  if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+  const g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h); return { g, w, h };
+}
+function peaks() { const info = M.tracks[track], P = ab === 'after' ? info.after : info.before;
+  let mx = 1e-3; for (const v of [info.before, info.after]) for (const x of [...v.L, ...v.R]) mx = Math.max(mx, x); return { P, mx }; }
+function drawNow(o, played) {   // hear.ts draw(), verbatim
+  const { g, w, h } = prep(o.cv), { P, mx } = peaks();
+  const n = P.L.length, bw = w / n, mid = h / 2;
+  g.fillStyle = 'rgba(242,76,240,.25)'; g.fillRect(0, mid, w, 1);
+  for (let pass = 0; pass < 2; pass++) {
+    g.fillStyle = pass ? '#f24cf0' : 'rgba(165,140,196,.38)';
+    g.shadowColor = 'rgba(242,76,240,.85)'; g.shadowBlur = pass ? 5 : 0;
+    for (let i = 0; i < n; i++) {
+      if ((i / n < played) !== (pass === 1)) continue;
+      const x = i * bw, hl = P.L[i] / mx * (mid - 2), hr = P.R[i] / mx * (mid - 2);
+      g.fillRect(x, mid - hl, Math.max(1, bw - .8), hl); g.fillRect(x, mid + 1, Math.max(1, bw - .8), hr);
+    }
+  }
+  g.shadowBlur = 0;
+  if (played >= 0) { g.fillStyle = '#fff0ff'; g.shadowColor = '#ff4fd8'; g.shadowBlur = 8; g.fillRect(played * w - 1, 0, 2, h); g.shadowBlur = 0; }
+}
+// a grid of cells: column pitch px (cell cw), row pitch py (cell ch), first cell at ox/oy; L lights up from the
+// middle, R down; c = { lit, dim, head, ghost?, shade? (the reflector shadow, drawn 1 px right / 1.5 px down) }
+function drawCells(o, played, grid, c) {
+  const { g, w, h } = prep(o.cv), { P, mx } = peaks(), n = P.L.length;
+  const { px, py, cw, ch, ox, oy } = grid;
+  const cols = Math.floor((w - ox - cw) / px) + 1, jm = Math.round((h / 2 - oy) / py);   // rows above jm = L, from jm down = R
+  const up = jm, down = Math.floor((h - oy - ch) / py) + 1 - jm;
+  const head = played >= 0 ? Math.min(cols - 1, Math.floor(played * w / px)) : -1;
+  const cells = [];   // [x, y, colour]
+  for (let i = 0; i < cols; i++) {
+    const b0 = Math.floor(i * px / w * n), b1 = Math.max(b0 + 1, Math.floor((i + 1) * px / w * n));
+    let aL = 0, aR = 0; for (let b = b0; b < Math.min(n, b1); b++) { aL = Math.max(aL, P.L[b]); aR = Math.max(aR, P.R[b]); }
+    const nl = aL / mx > .02 ? Math.max(1, Math.round(aL / mx * up)) : 0, nr = aR / mx > .02 ? Math.max(1, Math.round(aR / mx * down)) : 0;
+    const x = ox + i * px, col = i === head ? c.head : (i * px + cw / 2) / w < played ? c.lit : c.dim;
+    for (let j = 0; j < up; j++) { const y = oy + (jm - 1 - j) * py; cells.push([x, y, i === head || j < nl ? col : c.ghost]); }
+    for (let j = 0; j < down; j++) { const y = oy + (jm + j) * py; cells.push([x, y, i === head || j < nr ? col : c.ghost]); }
+  }
+  if (c.shade) { g.fillStyle = c.shade; for (const [x, y, k] of cells) if (k) g.fillRect(x + 1, y + 1.5, cw, ch); }
+  for (const [x, y, k] of cells) if (k) { g.fillStyle = k; g.fillRect(x, y, cw, ch); }
+}
+// the dot faces share the CSS pixel grid (3 px, gap at 0 mod 3 of the screen box): place the canvas cells on it
+function onGrid(o) {
+  const a = o.scr.getBoundingClientRect(), b = o.cv.getBoundingClientRect();
+  const dx = Math.round(b.left - a.left), dy = Math.round(b.top - a.top);
+  return { px: 3, py: 3, cw: 2, ch: 2, ox: (((1 - dx) % 3) + 3) % 3, oy: (((1 - dy) % 3) + 3) % 3 };
+}
+function segGrid(o) {
+  const w = o.cv.clientWidth, desk = o.s.cls === 'sz-desk', px = desk ? 6 : 4, cw = desk ? 4 : 3;
+  const cols = Math.floor((w + px - cw) / px);
+  return { px, py: 3, cw, ch: 2, ox: Math.floor((w - (cols - 1) * px - cw) / 2), oy: 0 };
+}
+const PAINT = {
+  now: drawNow,
+  dot: (o, p) => drawCells(o, p, onGrid(o), { lit: '#ff7cf9', dim: 'rgba(196,120,200,.42)', head: '#fff0ff' }),
+  seg: (o, p) => drawCells(o, p, segGrid(o), { lit: '#ff5af5', dim: 'rgba(255,90,245,.34)', head: '#ffe6fd', ghost: 'rgba(255,90,245,.075)' }),
+  ref: (o, p) => drawCells(o, p, onGrid(o), { lit: '#2a1236', dim: 'rgba(42,18,54,.32)', head: '#2a1236', shade: 'rgba(42,18,54,.2)' }),
+};
+
+// ---- the loop
+function frame(now) {
+  if (auto && now - stepAt > HOLD[step]) { go(step === 4 ? 1 : step + 1); if (step === 4) { ab = Math.random() < .5 ? 'after' : 'before'; document.body.dataset.ab = ab; } }
+  if (M) {
+    const dur = M.tracks[track].dur, playing = step >= 2, t = playing ? ((now - playStart) / 1000) % dur : 0;
+    const played = playing ? t / dur : -1;
+    const pan = ab === 'after' && playing ? Math.round(Math.sin(now / 900) * 34) : 0;
+    const panS = pan === 0 ? 'PAN C' : `PAN ${pan < 0 ? 'L' : 'R'} ${Math.abs(pan)}`;
+    for (const o of screens) {
+      setText(o, o.coach, COACH[step], 30, true);
+      setText(o, o.tag, ab === 'after' ? 'DRIFT ON' : 'ORIGINAL', 0, true);
+      setText(o, o.title, track.toUpperCase(), 0, true);
+      setText(o, o.pan, panS);
+      setText(o, o.time, `${fmt(t)} / ${fmt(dur)}`);
+      PAINT[o.v](o, played);
+    }
+  }
+  requestAnimationFrame(frame);
+}
+
+// ---- checks: every coach line fits beside the tag (both tag words), and the screen keeps the page's height
+function check() {
+  for (const o of screens) {
+    const keep = [o.coach.textContent, o.tag.textContent], clip = [];
+    for (const tg of ['ORIGINAL', 'DRIFT ON']) { o.tag.textContent = tg;
+      for (const s of COACH) { o.coach.textContent = s; if (o.coach.scrollWidth > o.coach.clientWidth + .5) clip.push(s); } }
+    o.coach.textContent = keep[0]; o.tag.textContent = keep[1];
+    const h = Math.round(o.scr.getBoundingClientRect().height);
+    o.info.innerHTML = `${o.s.label} · height ${h}${h === o.s.h ? ' <span class=ok>= page</span>' : ` <span class=bad>page ${o.s.h}</span>`} · coach ${
+      clip.length ? `<span class=bad>CLIPS: ${[...new Set(clip)].join(', ')}</span>` : '<span class=ok>fits</span>'}`;
+  }
+}
+
+fetch('../public/audio/drift/peaks.json').then((r) => r.json()).then((j) => {
+  M = j;
+  document.getElementById('tracks').innerHTML = Object.keys(M.tracks).map((k) => `<button data-track="${k}" aria-pressed="${k === track}">${k.toUpperCase()}</button>`).join('');
+  go(1);
+  document.fonts.ready.then(() => { check(); requestAnimationFrame(frame); });
+});
+</script>
+</body>
+</html>

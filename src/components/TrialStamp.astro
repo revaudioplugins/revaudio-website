@@ -4,7 +4,7 @@
    relocated by Dan (2026-07-26) into the gap under the product screenshot,
    next to the crane door's checkout box, as a real inline capture row —
    input + button, simple flat-then-3D button (same language as the GAS
-   exit-popup CTA / .btn.primary), no torn-patch art, no worn-ink filter.
+   exit-popup CTA / the button family), no torn-patch art, no worn-ink filter.
 
    Backend: same contract as TrialPlates.astro — POST
    {origin of plugin.trialUrl}/download/register {email, plugin: dlGateId}.
@@ -48,7 +48,7 @@ const registerUrl = new URL(plugin.trialUrl!).origin + '/download/register';
       placeholder="your@email.com"
       aria-label={`Your email, we send the ${plugin.name} download link here`}
     >
-    <button type="submit" class="tc-submit" data-trial-cta-submit aria-label="Get the download link">
+    <button type="submit" class="tc-submit rv-btn" data-trial-cta-submit aria-label="Get the download link">
       <span class="tc-face" data-trial-cta-face>Get it <span class="tc-arrow">&#9656;</span></span>
     </button>
   </form>
@@ -104,37 +104,10 @@ const registerUrl = new URL(plugin.trialUrl!).origin + '/download/register';
     border-color: var(--brass);
   }
 
-  /* the button — flat brass fill, same language as the GAS exit-popup CTA
-     (.eg-cta) / BuyButton's .btn.primary. No gradient, no bevel. */
-  .tc-submit {
-    flex: none;
-    padding: 1.05rem 1.65rem 0.9rem;
-    text-align: center;
-    background: var(--brass);
-    color: var(--bg-0);
-    border: 1px solid transparent;
-    border-radius: 6px;
-    transition: background 0.2s var(--ease), box-shadow 0.2s var(--ease);
-    cursor: pointer;
-    font: inherit;
-  }
-
-  .tc-face {
-    display: block;
-    font-family: var(--font-display);
-    font-size: 1.575rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    white-space: nowrap;
-    line-height: 1;
-  }
-  .tc-arrow { color: var(--bg-1); opacity: 0.7; }
-
-  .tc-submit:hover {
-    background: var(--brass-bright);
-    box-shadow: 0 0 24px rgba(232, 200, 120, 0.35);
-  }
-  .tc-submit:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 2px; }
+  /* the button — the button family's medium brass (buttons.css, Dan
+     2026-10-18), stretched to the email field's height by the row. */
+  .tc-submit { flex: none; }
+  .tc-arrow { opacity: 0.7; }
 
   .tc-status {
     font-family: var(--font-mono);

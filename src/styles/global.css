@@ -304,7 +304,7 @@ html.hc footer.site-footer { background: #000000; }
 /* always-on, unmistakable keyboard ring */
 html.hc :focus-visible { outline: 3px solid var(--brass-bright); outline-offset: 2px; }
 /* underline inline body links so they read without relying on colour alone */
-html.hc main a:not(.btn):not([class*='card']):not([class*='nav']) { text-decoration: underline; }
+html.hc main a:not(.btn):not(.rv-btn):not([class*='card']):not([class*='nav']) { text-decoration: underline; }
 
 /* Keep Tab-focused and anchor-targeted content clear of the sticky nav so
    focus is never hidden behind it.
@@ -705,8 +705,9 @@ nav ul a:hover { color: var(--brass-bright); }
 
 /* Legacy plain-text submit button. Scoped with :not(.panel-hit) so it never
    styles the vintage image-button hotspot — that brass fill was painting a
-   blank gold pill over the "NOTIFY ME" plate. */
-.signup button:not(.panel-hit) {
+   blank gold pill over the "NOTIFY ME" plate — and :not(.rv-btn) so it leaves
+   the button family (buttons.css) alone. */
+.signup button:not(.panel-hit, .rv-btn) {
   background: var(--brass);
   color: var(--bg-0);
   border: none;
@@ -719,7 +720,7 @@ nav ul a:hover { color: var(--brass-bright); }
   transition: background 0.2s var(--ease);
 }
 
-.signup button:not(.panel-hit):hover { background: var(--brass-bright); }
+.signup button:not(.panel-hit, .rv-btn):hover { background: var(--brass-bright); }
 
 @media (max-width: 480px) {
   .signup form { flex-direction: column; }

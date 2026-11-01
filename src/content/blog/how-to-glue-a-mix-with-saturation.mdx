@@ -1,0 +1,129 @@
+---
+title: "How to glue a mix with saturation: shave the peaks, keep the punch"
+seoTitle: "How to Glue a Mix With Saturation (Shave the Peaks)"
+description: "How to glue a mix together with saturation: why rounding off the peaks makes tracks sit as one, saturation vs compression vs soft clipping, and how much to use on the mix bus."
+kicker: "Mixing science"
+pubDate: 2026-10-29
+readMinutes: 7
+---
+{/* DRAFT 2026-10-29. Keywords, in order of weight: how to glue a mix / glue a mix together,
+    mix bus saturation / saturation on the mix bus, saturation vs compression, soft clipping,
+    crest factor, glue compressor. Figure ideas (not built yet): FigSoftKnee (the curve +
+    a drum hit before/after), FigCrest (peak vs body, before/after). */}
+
+Every producer knows the moment. All the tracks are good. The balance is right. And the mix still sounds like eight people playing in eight different rooms.
+
+What's missing is **glue**: the feeling that every part belongs to one record. Engineers chase it with bus compressors, tape, consoles and a long list of plugins. Underneath most of them is one simple move. They shave the tops off the peaks, so the loud moments push on everything else a little, like a band playing in one room.
+
+Saturation is the most direct way to make that move. Here's why it works and how to use it without flattening your mix.
+
+<aside class="readout" aria-label="Short version">
+  <p class="readout-title">The short version</p>
+  <ul>
+    <li>Glue happens when tracks react to each other. On a shared bus, the loud hits bend the whole mix a little.</li>
+    <li>Saturation is a compressor with no attack and no release. It turns down only the tops of the waveform, the instant they happen.</li>
+    <li>Rounding the peaks lowers the crest factor: same punch to the ear, less spike on the meter, more headroom.</li>
+    <li>It also adds the same harmonics to every track on the bus. Shared colour reads as one recording.</li>
+    <li>Shave 1 to 3 dB of peaks on the drum bus or the mix bus. Keep the deep bass out of it.</li>
+    <li>Compare at the same loudness, or you'll pick "louder" and call it "glued".</li>
+  </ul>
+</aside>
+
+## What does "glue" in a mix actually mean?
+
+Glue is not one thing you can point to on a meter. It's what you hear when separate tracks stop sounding separate.
+
+In a real room, sounds affect each other. A loud kick moves air, the drummer leans into the snare, the console and the tape all react to the whole band at once. In a DAW, nothing touches anything. Each track plays in perfect isolation and gets summed with mathematical precision. Clean, yes. But nothing reacts.
+
+To glue a mix together, you put some of that reaction back. A process that works on the **sum** of the tracks does exactly that: when one part gets loud, the processor responds, and every other part feels it too. That's why the classic glue tools all live on buses.
+
+## Peaks and body: what saturation shaves off
+
+Look at any mix up close and you'll see two layers. There's the **body**, the steady energy of vocals, bass, pads and guitars. And there are **peaks** on top: kick and snare hits, consonants, plucks. They last a few milliseconds and often poke well above the body.
+
+The distance between the two is called the **crest factor**: peak level minus average level, in dB. A raw drum bus can have a big one. A finished master has a much smaller one.
+
+A big crest factor isn't bad by itself. Peaks are punch. But when a few transients sit far above everything else, they read as separate events on top of the mix instead of part of it. And they eat your headroom: the limiter at the end has to catch every one of them.
+
+Shave those peaks a little and the hits sink into the track. You still hear the punch, because your ear judges a hit by its start and its body more than by its very top millisecond. But the hit now lives inside the mix.
+
+## How saturation works: a compressor with no clock
+
+A saturator is a curve. Quiet signals go through it almost untouched. As the signal gets louder, the curve bends and gives it less and less gain. It does this to the waveform itself, sample by sample.
+
+Here is a classic soft curve (the tanh shape, a common analog-style saturation curve) at a few input levels:
+
+| Input level | Turned down by |
+|---|---|
+| Quiet (−20 dB) | about 0.03 dB |
+| Medium (−6 dB) | about 0.7 dB |
+| Loud (0 dB) | about 2.4 dB |
+| Hot (+6 dB) | about 6.3 dB |
+
+Quiet parts pass. Loud parts get squeezed, and the louder they are, the harder the squeeze. That's a compressor whose ratio rises with level, which is what engineers mean by a **soft knee**.
+
+The difference is time. A compressor measures level, then turns the gain down with an attack and a release. A saturator has no clock. It acts on each peak the instant it happens and lets go the instant it's gone. That makes it very good at exactly one job: rounding off short spikes without pumping the rest of the mix.
+
+## Why saturation makes a mix sound glued
+
+Three things happen at once when you saturate a bus.
+
+**1. The tracks start reacting to each other.** The curve sees the sum, not the tracks. When the kick and the bass hit together, they push into the curve together, and both get squeezed for that instant. A vocal that rides on top of the snare gets bent a little by the snare. Every part now moves with every other part. That shared movement is the reaction a DAW doesn't give you for free.
+
+**2. Every track gets the same colour.** Bending a waveform adds harmonics: new frequencies at multiples of the notes already there. A symmetric curve (typical of tape) adds odd harmonics. A lopsided one (typical of tubes) adds even ones too. When the same saturator colours every track on the bus, they all share one tonal fingerprint, like they were recorded through the same desk onto the same tape. Shared colour reads as one record.
+
+**3. The peaks stop sticking out.** With the spikes rounded, the hits sink into the body of the mix instead of floating on top of it. The crest factor drops, so you get more headroom for the limiter at the end, and the master gets louder without the limiter working harder.
+
+## Saturation vs compression vs soft clipping
+
+All three turn loud moments down. They differ in how fast and how gently.
+
+- **A glue compressor** works on the level over time. Slow attack lets the hit through, then the release decides how the mix breathes. Great for groove and movement. Wrong settings pump.
+- **Saturation** works on the waveform, instantly, with a gentle curve. No pumping, but it adds harmonics, so too much sounds dirty or fuzzy.
+- **A soft clipper** is saturation with a sharper knee: clean below the threshold, then a quick bend. It shaves peaks with the least colour, until you push it.
+- **A hard clipper** has no knee at all. It chops the top off flat. Fine for very short spikes, harsh on anything longer.
+
+They work well as a team. A light glue compressor sets the groove, saturation shaves and colours the peaks, the limiter catches what's left. Each one takes a little, so none has to take a lot.
+
+## How to glue a mix with saturation: step by step
+
+1. **Start on the drum bus.** Drums carry most of the peaks. Saturate the bus, not every drum track: you want the kick, snare and room to react to each other.
+2. **Set the drive for 1 to 3 dB of shaving on the loudest hits.** If your saturator has a gain reduction or delta view, watch it. If not, listen for the hits getting a little rounder and the room getting a little bigger. Stop there.
+3. **Keep the deep bass out of it.** Saturating the low end makes the bass and kick distort each other and turns the bottom muddy. Use a saturator that leaves the lows clean, or a high-pass on the saturated side if it has one.
+4. **Then try the mix bus.** Same idea, less drive. On the mix bus you want something you feel more than hear. Mix in parallel (20 to 40% wet) if it gets too colourful.
+5. **Try the order both ways.** Saturation before the glue compressor gives the compressor fewer spikes to react to. After it, the saturation catches what the compressor let through. Neither is wrong.
+6. **Match the loudness and bypass.** Saturation makes things louder, and louder always sounds better at first. Turn the output down until bypass and on are the same loudness, then switch. If the mix still sounds more like one record with it on, keep it.
+
+## Does saturation make a mix louder?
+
+Yes, two ways. It raises the level directly, because harmonics add energy. And it lowers the peaks, which leaves room for more level before the limiter. That's why saturation before the limiter is one of the best ways to get a loud master without squashing it (more in [how to make music louder](/blog/how-to-make-music-louder/)).
+
+But that same extra level is a trap during the A/B. Always compare at matched loudness.
+
+## Can saturation ruin a mix?
+
+Too much will. Watch for three signs:
+
+- **The top end gets gritty or fizzy.** Saturation creates high harmonics, and some can fold back down as aliasing (we explain it in [how does a limiter work](/blog/how-does-a-limiter-work/)). Oversampling fixes most of it.
+- **The kick loses its click.** You shaved too much peak. Back the drive off.
+- **The low end gets cloudy.** The bass is going through the curve. Keep the lows clean.
+
+## The checklist
+
+- Glue lives on buses. Saturate the drum bus first, the mix bus second.
+- Shave 1 to 3 dB of peaks, not more.
+- Keep the deep bass out of the curve.
+- Mix in parallel when the colour gets too strong.
+- Gain match and bypass, every time.
+
+<aside class="garage-note">
+  <p><strong>From the garage.</strong> <a href="/gas/">GAS</a> is our free one-knob saturator: one DRIVE knob and three voices, Tube, Tape and Fuzz. Put it on your drum bus, push it until the hits round off, then pull back a notch. It's free, with no trial clock, so try this whole article on your own mix.</p>
+</aside>
+
+<section class="sources" aria-label="Sources">
+  <p class="sources-title">Sources</p>
+  <ul>
+    <li><a href="https://producelikeapro.com/blog/gluing-your-mix/" rel="noopener" target="_blank">Produce Like A Pro: What does gluing your mix together mean?</a></li>
+    <li><a href="https://www.production-expert.com/production-expert-1/why-mix-saturation-is-your-friend" rel="noopener" target="_blank">Production Expert: Why mix saturation is your friend</a></li>
+  </ul>
+</section>

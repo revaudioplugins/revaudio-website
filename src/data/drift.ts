@@ -8,9 +8,9 @@
  * up, the download goes out BY EMAIL on Sat Oct 10 17:00 UTC (never linked on
  * the page). 30 days (Dan 2026-10-08 "its 30 days free" = the plugin's
  * LicenseManager kTrialDays; was 14). After the trial you keep DRIFT one of three ways: free with a
- * qualifying video (creator deal via /affiliate), $39 by filling in the
- * feedback form by Sat Oct 24, or $69 at release on Sun Nov 1. Prices show;
- * nothing is on sale before Nov 1 (no buy button, no checkout, no coupon or
+ * qualifying video (creator deal via /affiliate), free by filling in the
+ * feedback form (Yoni 2026-10-26; was $39) by Fri Nov 20, or $69 at release on Tue Dec 1. Prices show;
+ * nothing is on sale before Dec 1 (no buy button, no checkout, no coupon or
  * discount wording). D2/H1: DRIFT pans the WHOLE sound; the LOW/HIGH CUT band
  * is only where echo, reverb, tremolo and pitch play.
  *
@@ -28,14 +28,15 @@ export const drift = {
   trialOpensIso: '2026-10-10T17:00:00Z',
   trialOpensLabel: 'Sat Oct 10, 17:00 UTC',
   trialOpensDay: 'Sat Oct 10',
-  feedbackClosesLabel: 'Sat Oct 24',
-  releaseLabel: 'Sun Nov 1',
+  feedbackClosesLabel: 'Fri Nov 20',
+  releaseLabel: 'Tue Dec 1',
   trialDays: 30,
   listPriceUsd: 69,
-  driverPriceUsd: 39,
+  /** The feedback route's price: 0 = the form keeps DRIFT free (Yoni 2026-10-26; was 39). */
+  driverPriceUsd: 0,
   showPrices: true,
 
-  /** The $39 route's form. The build refuses phase 'open' until it exists. */
+  /** The feedback route's form. The build refuses phase 'open' until it exists. */
   feedbackFormLive: true,
   /** The beta feedback form (src/pages/drift/feedback.astro); the BETA FEEDBACK key over Apply in #creators. */
   feedbackUrl: '/drift/feedback',
@@ -69,13 +70,13 @@ export const drift = {
    *  Every format string reads this: false takes AAX off the whole page. */
   aaxReady: true,
 
-  /** 'real' = Dan's level-matched before/after bounces in public/audio/drift/
-   *  on the whole-sound build. There is no 'test' value: the browser synth never ships. */
-  demoMode: 'off' as 'off' | 'real',
-  /** false while src/lib/drift/demo.ts still routes only the band and synthesises
-   *  its sound; flip only once it pans the WHOLE signal and plays the <audio>
-   *  bounces (D2/H1). The build refuses demoMode 'real' until then. */
-  demoWholeSound: false,
+  /** 'real' = the #hear test drive (DriftHear.astro + src/lib/drift/hear.ts): Yoni's level-matched
+   *  before/after bounces in public/audio/drift/ (5 tracks, tools/drift-player/prep_audio.py), 2026-10-15.
+   *  There is no 'test' value: the browser synth never ships. */
+  demoMode: 'real' as 'off' | 'real',
+  /** true: hear.ts plays the real whole-sound bounces (DRIFT pans the whole signal in them, D2/H1).
+   *  The build refuses demoMode 'real' without it. */
+  demoWholeSound: true,
   /** Full DRIFT window screenshot (src/assets/seasons/drift/drift-window.png) staged per Decision 19. */
   screenshotReady: false,
   /** FX RANDOMIZE confirmed in the Oct 10 build. */
@@ -100,6 +101,9 @@ export const compatRows = () => [
   { k: 'WIN', v: `${formatsWin()} · 64-bit · needs WebView2` },
   ...(drift.aaxReady ? [] : [{ k: 'PRO TOOLS', v: 'not yet' }]),
 ];
+
+/** The feedback route's value: '$39', or 'FREE' when driverPriceUsd is 0. */
+const driverValue = () => (drift.driverPriceUsd ? `$${drift.driverPriceUsd}` : 'FREE');
 
 /** 'Sat Oct 24' -> 'Oct 24' (the short rows are tighter than #get). */
 export const noDay = (label: string) => label.replace(/^[A-Z][a-z]{2} /, '');
@@ -139,8 +143,8 @@ export function routesFor(phase: DriftPhase = drift.phase): Route[] {
     cond: 'Keep it with the feedback form',
     heroCond: 'Fill the feedback form',
     keepNote: `Form closes ${nb(noDay(drift.feedbackClosesLabel))}`,
-    note: `Fill it in by ${drift.feedbackClosesLabel} and we email you how to keep DRIFT${p ? ` for $${drift.driverPriceUsd}` : ''}.`,
-    value: p ? `$${drift.driverPriceUsd}` : undefined,
+    note: `Fill it in by ${drift.feedbackClosesLabel} and we email you how to keep DRIFT${p ? (drift.driverPriceUsd ? ` for $${drift.driverPriceUsd}` : ' free') : ''}.`,
+    value: p ? driverValue() : undefined,
   };
   const release: Route = {
     id: 'release',
@@ -185,7 +189,7 @@ export function lapFor(phase: DriftPhase = drift.phase): Lap | null {
         what: pre ? 'Trial starts · by email' : 'Trial open · by email',
         chip: p ? { label: 'Today', value: '$0' } : undefined },
       { id: 'check', flag: 'Checkpoint', date: nb(noDay(drift.feedbackClosesLabel)), what: 'Feedback form closes',
-        chip: p ? { label: 'Filled the form', value: `$${drift.driverPriceUsd}` } : undefined },
+        chip: p ? { label: 'Filled the form', value: driverValue() } : undefined },
       { id: 'finish', flag: 'Finish', date: nb(noDay(drift.releaseLabel)), what: 'On sale',
         chip: p ? { label: 'Everyone else', value: `$${drift.listPriceUsd}` } : undefined },
     ],
@@ -299,7 +303,7 @@ export const registerUrlFor = (phase: DriftPhase = drift.phase): string | undefi
 export function assertDriftConfig(checkoutUrl: string | null | undefined): void {
   const fail = (msg: string) => { throw new Error(`[drift.ts] ${msg}`); };
   if (drift.phase === 'open' && !drift.feedbackFormLive)
-    fail("phase 'open' needs feedbackFormLive: the $39 route would point at a form that doesn't exist.");
+    fail("phase 'open' needs feedbackFormLive: the feedback route would point at a form that doesn't exist.");
   if (drift.phase === 'released' && !checkoutUrl)
     fail("phase 'released' needs plugins.ts drift.checkoutUrl.");
   if (drift.phase === 'released' && drift.demoMode !== 'real' && drift.trialAfterRelease !== true)
@@ -307,5 +311,5 @@ export function assertDriftConfig(checkoutUrl: string | null | undefined): void 
   if (drift.demoMode === 'real' && !existsSync('public/audio/drift'))
     fail("demoMode 'real' needs the bounces in public/audio/drift/.");
   if (drift.demoMode === 'real' && !drift.demoWholeSound)
-    fail("demoMode 'real' needs demoWholeSound: demo.ts still pans only the band and synthesises its sound (D2/H1).");
+    fail("demoMode 'real' needs demoWholeSound: the #hear player must play the real whole-sound bounces (D2/H1).");
 }

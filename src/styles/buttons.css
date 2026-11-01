@@ -1,0 +1,247 @@
+/* ── The button family (Dan 2026-10-18: "give all the regular buttons the
+   same love as the GAS button, a bit different per area, same vibe").
+
+   Grammar taken from the /gas CTA (src/pages/gas.astro, baked from Dan's
+   bench), which itself borrows Miri + BeeMatch: ONE warm fill with dark ink
+   words on it, no outline, a lit top edge and a soft darker bottom edge, a
+   1px lip, the house contact shadow plus a long low ambient shadow, sentence
+   case, Inter 700, 4px grid. Hover lifts 1px (mouse only); press drops 1px
+   with a shorter shadow, 80ms in / 160ms out, held >= 120ms by
+   src/lib/press.ts so a quick tap still shows. Alpha math left unclamped on
+   purpose: CSS clamps an out-of-range alpha to 0..1 by itself.
+
+   Use:  class="rv-btn"                       brass, medium (the default)
+         + rv-btn--honey | rv-btn--ghost      tone: free (GAS honey) | second choice
+         + rv-btn--lg | rv-btn--sm | rv-btn--xs  size: 64 | 48 | 40 (medium = 56)
+         + rv-btn--stack                      two lines: .rv-btn__label + .rv-btn__sub
+         + rv-btn--shine                      the faint lamp glint, ONE per page
+   Tones: brass = trial / buy (the site's brass-bright, warmed), honey = a
+   free download (the /gas fill), ghost = the second choice (dark steel, thin
+   brass line, same depth). Medium = 56px; lg 64, sm 48, xs 40.
+   Everything reads the --rb-* custom properties, so a component can nudge
+   one value locally (e.g. a tighter radius) without forking the family.
+   Tuned on /buttonlab (git-excluded): COPY there dumps the token block below.
+   Special parts stay out (crane door, BUY NOW squares, audio toys, DRIFT,
+   image plates, support chat, icon buttons): see DESIGN.md §4. ── */
+
+/* ── TOKENS ── tuned on /buttonlab: its COPY replaces everything from this
+   line down to the END TOKENS line, verbatim. ── */
+.rv-btn {
+  --rb-fill: #e8c878;
+  --rb-fill-h: #eed38f;
+  --rb-fill-p: #dfbd69;
+  --rb-ink: #1e1710;
+  --rb-line: transparent;
+  --rb-top: 1;
+  --rb-edge: 0.2;
+  --rb-lip: #5f4311;
+  --rb-h: 56px;
+  --rb-px: 26px;
+  --rb-fs: 18px;
+  --rb-r: 14px;
+  --rb-gap: 8px;
+  --rb-ay: 32px;
+  --rb-ab: 38px;
+  --rb-aa: 0.25;
+}
+.rv-btn--honey {
+  --rb-fill: #f2be4a;
+  --rb-fill-h: #f6c95e;
+  --rb-fill-p: #eab53f;
+}
+.rv-btn--ghost,
+.rv-btn.is-in-cart {
+  --rb-fill: #1d1916;
+  --rb-fill-h: #2a2420;
+  --rb-fill-p: #14110f;
+  --rb-ink: #e8c878;
+  --rb-line: rgb(201 163 92 / 0.55);
+  --rb-top: 0.08;
+  --rb-edge: 0;
+  --rb-lip: #0b0a09;
+}
+.rv-btn--lg {
+  --rb-h: 64px;
+  --rb-px: 30px;
+  --rb-fs: 20px;
+  --rb-r: 16px;
+  --rb-gap: 10px;
+  --rb-ay: 40px;
+  --rb-ab: 45px;
+}
+.rv-btn--sm {
+  --rb-h: 48px;
+  --rb-px: 20px;
+  --rb-fs: 16px;
+  --rb-r: 12px;
+  --rb-ay: 22px;
+  --rb-ab: 28px;
+}
+.rv-btn--xs {
+  --rb-h: 40px;
+  --rb-px: 16px;
+  --rb-fs: 15px;
+  --rb-r: 10px;
+  --rb-gap: 6px;
+  --rb-ay: 14px;
+  --rb-ab: 20px;
+}
+/* ── END TOKENS ── */
+
+.rv-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--rb-gap);
+  min-height: var(--rb-h);
+  padding: 0 var(--rb-px);
+  background: var(--rb-fill);
+  color: var(--rb-ink);
+  border: 0;
+  border-radius: var(--rb-r);
+  font-family: var(--font-body);
+  font-size: var(--rb-fs);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  text-transform: none;
+  text-decoration: none;
+  text-shadow: none;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  box-shadow:
+    inset 0 0 0 1px var(--rb-line),
+    inset 0 1px 0 rgb(255 255 255 / var(--rb-top)),
+    inset 0 -2px 0 hsl(38 85% 34% / var(--rb-edge)),
+    0 1px 0 var(--rb-lip),
+    0 2px 3px rgb(0 0 0 / 0.45),
+    0 var(--rb-ay) var(--rb-ab) rgb(0 0 0 / var(--rb-aa));
+  transition:
+    transform 160ms var(--ease),
+    box-shadow 160ms var(--ease),
+    background-color 160ms var(--ease),
+    color 160ms var(--ease);
+}
+
+/* ── two lines: the action, then the fine print under it ── */
+.rv-btn--stack {
+  flex-direction: column;
+  gap: 6px;
+  padding-block: 12px;
+}
+.rv-btn__sub {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  opacity: 0.72;
+}
+
+.rv-btn__icon {
+  width: 1.1em;
+  height: 1.1em;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ── states ── */
+/* The global a:hover colour (0,1,1) would recolour <a> buttons, and touch
+   screens keep a sticky :hover after a tap: hold the ink in every case. */
+a.rv-btn:hover { color: var(--rb-ink); }
+@media (hover: hover) {
+  .rv-btn:hover:not(:disabled) {
+    background: var(--rb-fill-h);
+    transform: translateY(-1px);
+    box-shadow:
+      inset 0 0 0 1px var(--rb-line),
+      inset 0 1px 0 rgb(255 255 255 / calc(var(--rb-top) + 0.05)),
+      inset 0 -2px 0 hsl(38 85% 34% / var(--rb-edge)),
+      0 1px 0 var(--rb-lip),
+      0 3px 5px rgb(0 0 0 / 0.45),
+      0 calc(var(--rb-ay) + 4px) calc(var(--rb-ab) + 6px) rgb(0 0 0 / calc(var(--rb-aa) + 0.05));
+    transition-duration: 150ms;
+  }
+}
+.rv-btn:active:not(:disabled),
+.rv-btn.is-pressed:not(:disabled) {
+  background: var(--rb-fill-p);
+  transform: translateY(1px);
+  box-shadow:
+    inset 0 0 0 1px var(--rb-line),
+    inset 0 1px 0 rgb(255 255 255 / calc(var(--rb-top) - 0.15)),
+    inset 0 -1px 0 hsl(38 85% 34% / var(--rb-edge)),
+    0 0 0 var(--rb-lip),
+    0 1px 2px rgb(0 0 0 / 0.45),
+    0 calc(var(--rb-ay) * 0.4) calc(var(--rb-ab) * 0.42) rgb(0 0 0 / calc(var(--rb-aa) - 0.1));
+  transition-duration: 80ms;
+}
+.rv-btn:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 3px;
+}
+.rv-btn:disabled,
+.rv-btn[aria-disabled='true'] {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* ── the shine: a faint band of the bench lamp crossing the fill once every
+   8s, under the words (z-index -1 inside the button's own stacking context).
+   One per page: the page's main action only. ── */
+.rv-btn--shine::after {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  z-index: -1;
+  width: 28%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.18), transparent);
+  transform: translateX(-160%) skewX(-20deg);
+  pointer-events: none;
+  animation: rv-btn-shine 8s ease-in-out 1.2s infinite;
+}
+@keyframes rv-btn-shine {
+  0% { transform: translateX(-160%) skewX(-20deg); }
+  17.5%, 100% { transform: translateX(418%) skewX(-20deg); }
+}
+
+/* The smallest phones: a long label ("Notify me when The AC ships") may
+   wrap rather than push out of its column. */
+@media (max-width: 360px) {
+  .rv-btn {
+    max-width: 100%;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.15;
+    padding-block: 8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rv-btn { transition: background-color 160ms var(--ease), color 160ms var(--ease); }
+  .rv-btn:hover, .rv-btn:active, .rv-btn.is-pressed { transform: none; }
+  .rv-btn--shine::after { display: none; }
+}
+
+html.hc .rv-btn {
+  background: var(--brass);
+  color: #000;
+  box-shadow: none;
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+html.hc .rv-btn--ghost,
+html.hc .rv-btn.is-in-cart {
+  background: #000;
+  color: #fff;
+}
+html.hc .rv-btn--shine::after { display: none; }

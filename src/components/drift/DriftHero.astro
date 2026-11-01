@@ -55,7 +55,7 @@ const [w700, w1000, wMask, cl640, cl920, needle] = await Promise.all([
 ]);
 const cta = ctaFor();
 // the real price, and when it applies (nothing is on sale before release)
-// two set lines under the price: 'ETA' / 'Nov 1' (Dan 10-01, was 'At release')
+// two set lines under the price: 'ETA' / 'Dec 1' (Dan 10-01, was 'At release')
 const priceLabel = drift.phase === 'released' ? ['Price'] : ['ETA', noDay(drift.releaseLabel)];
 ---
 <section class="d-hero d-wrap" aria-labelledby="d-hero-title">
@@ -64,6 +64,10 @@ const priceLabel = drift.phase === 'released' ? ['Price'] : ['ETA', noDay(drift.
       <DriftPanel>
         <h1 id="d-hero-title" class="d-title">DRIFT</h1>
         <p class="d-tagline"><span>Let your sound</span> <span>take the wheel.</span></p>
+        {/* the way to the test drive (2026-10-19), only when #hear renders; drift.css .d-hero-hear */}
+        {drift.demoMode === 'real' && (
+          <a class="d-hero-hear" href="#hear" data-drift-jump><span class="k" aria-hidden="true"></span>Hear it</a>
+        )}
       </DriftPanel>
     </div>
 

@@ -1,0 +1,311 @@
+---
+/**
+ * DRIFT's card in the homepage plugin carousel (PluginShowcase): an arcade
+ * cabinet built from the plugin's own licence window (Dan 2026-10-08: "look
+ * like the licensing screen ... an arcade screen and the plugin is in the
+ * arcade screen with buttons on the arcade", plus a 3D FREE TRIAL button that
+ * is part of the machine). Same 520x470 stage as the other cards.
+ *
+ *   screen = license-crt-plate.png, the plugin's licence CRT (Drift
+ *            assets/arcade/license_crt_plate.png). On its glass, the licence
+ *            screen's own type: "DRIFT ドリフト" title, the DRIFT window
+ *            RUNNING (Dan 2026-10-08 "the plugin works in the background
+ *            there"): public/drift/arcade-run.{webm,mp4}, a 15 s loop of the
+ *            real UI (Drift main 6144b8c served locally, no host, preset Init,
+ *            no race loaded: no F1 names, Decision 19) with a scripted hand on
+ *            the wheel, centre to centre (tools/record-drift-arcade-run.mjs).
+ *            The still under it (its first frame) shows until the video plays,
+ *            and stays for reduced motion. Then the offer in the INSERT KEY style.
+ *            Glass = the licence recipe (scanlines + violet bloom).
+ *   panel  = its own bolted DRIFT panel under the screen (Dan 2026-10-08:
+ *            "keep only this and put free trial under it, in another panel";
+ *            the /drift .d-panel recipe: plugin steel face, sunk well, four
+ *            screws each turned differently) holding the red key (/drift's GET
+ *            IT key, trk_key_rest/press) in a slot: the one red = the action.
+ *            It is the card's only control; the rest of the card is the
+ *            stretched link to /drift.
+ *
+ * Motion: the CRT powers on once when the card is first seen as the centred
+ * slide; while centred, a refresh band rolls down the glass and the cursor
+ * blinks a few times. Reduced motion: none of it.
+ */
+import { Image, getImage } from 'astro:assets';
+import plateSrc from '../../assets/seasons/drift/license-crt-plate.png';
+import windowSrc from '../../assets/showcase/drift-window-init.png';
+import panelSrc from '../../assets/seasons/drift/panel-face.png';
+import screwSrc from '../../assets/seasons/drift/panel-screw.png';
+import keyRestSrc from '../../assets/seasons/drift/cta-key-rest.png';
+import keyPressSrc from '../../assets/seasons/drift/cta-key-press.png';
+import { drift, noDay } from '../../data/drift';
+
+// The offer, per phase (drift.ts is the one source; nothing is on sale before release).
+const OFFER: Record<typeof drift.phase, { status: string; sub: string; key: string }> = {
+  preopen: { status: `${drift.trialDays} days free`, sub: `By email · ${drift.trialOpensDay}`, key: 'Free trial' },
+  open: { status: `${drift.trialDays} days free`, sub: 'By email · open now', key: 'Free trial' },
+  closed: { status: `On sale ${noDay(drift.releaseLabel)}`, sub: 'Trial closed', key: 'Get notified' },
+  released: { status: `$${drift.listPriceUsd}`, sub: 'Out now', key: 'Get DRIFT' },
+};
+const offer = OFFER[drift.phase];
+
+// CSS-painted parts go through the image pipeline like /drift's (no raw PNG from a url()).
+const [plate, panel, keyRest, keyPress, screw] = await Promise.all([
+  getImage({ src: plateSrc, width: 840, format: 'webp', quality: 82 }),
+  getImage({ src: panelSrc, width: 720, format: 'webp', quality: 70 }),
+  getImage({ src: keyRestSrc, width: 600, format: 'webp', quality: 82 }),
+  getImage({ src: keyPressSrc, width: 600, format: 'webp', quality: 82 }),
+  getImage({ src: screwSrc, width: 32, format: 'webp', quality: 85 }),
+]);
+const u = (i: { src: string }) => `url(${i.src})`;
+const vars = `--dc-plate:${u(plate)};--dc-panel:${u(panel)};--dc-key:${u(keyRest)};--dc-key-press:${u(keyPress)};--dc-screw:${u(screw)}`;
+---
+
+<div class="dc" data-drift-card style={vars}>
+  {/* the screen: the licence CRT, the plugin on its glass */}
+  <div class="dc-crt">
+    <div class="dc-glass">
+      <div class="dc-glass-in">
+        <p class="dc-title">DRIFT<span class="dc-kata" lang="ja">ドリフト</span></p>
+        <div class="dc-window">
+          <Image class="dc-still" src={windowSrc} alt="The DRIFT plugin window: the steering wheel over the gauges, BAND SELECT and STEREO IMAGER on the left, the effects and the TRACKS screen on the right"
+            widths={[300, 560, 840]} sizes="258px" format="webp" quality={84} loading="lazy" />
+          <video class="dc-run" data-dc-run muted loop playsinline preload="none" disablepictureinpicture aria-hidden="true" tabindex="-1">
+            <source src="/drift/arcade-run.webm" type="video/webm" />
+            <source src="/drift/arcade-run.mp4" type="video/mp4" />
+          </video>
+        </div>
+        <p class="dc-status">{offer.status}</p>
+        <p class="dc-sub"><span>{offer.sub}</span></p>
+      </div>
+      <div class="dc-refresh" aria-hidden="true"></div>
+    </div>
+  </div>
+
+  {/* the key's own panel, bolted on under the screen */}
+  <div class="dc-panel">
+    <span class="dc-screw tl" aria-hidden="true"></span>
+    <span class="dc-screw tr" aria-hidden="true"></span>
+    <span class="dc-screw bl" aria-hidden="true"></span>
+    <span class="dc-screw br" aria-hidden="true"></span>
+    <span class="dc-slot" aria-hidden="true"></span>
+    <a class="dc-key" href="/drift">{offer.key}</a>
+  </div>
+</div>
+
+<script>
+  /* While the card is the centred slide on screen: the CRT powers on (once) and
+     the plugin runs on it; anywhere else (a peek, scrolled away, hidden tab) the
+     loop pauses. preload="none": nothing downloads until the first play. */
+  const card = document.querySelector<HTMLElement>('[data-drift-card]');
+  const slide = card?.closest<HTMLElement>('[data-slide]');
+  const run = card?.querySelector<HTMLVideoElement>('[data-dc-run]');
+  if (card && slide && run && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    let booted = false;
+    let inView = false;
+    run.addEventListener('playing', () => card.classList.add('dc-running'), { once: true });
+    const sync = () => {
+      const live = inView && !document.hidden && slide.classList.contains('is-current');
+      if (live && !booted) { booted = true; card.classList.add('dc-boot'); }
+      if (live) run.play().catch(() => {});   // autoplay refused = the still stays, nothing breaks
+      else run.pause();
+    };
+    new IntersectionObserver(([e]) => { inView = e.isIntersecting; sync(); }, { threshold: 0.4 }).observe(slide);
+    document.addEventListener('showcase:change', sync);
+    document.addEventListener('visibilitychange', sync);
+  }
+</script>
+
+<style>
+  @font-face {
+    font-family: 'Drift Orbitron';
+    src: url('/fonts/drift/Orbitron-SemiBold.subset.woff2') format('woff2');
+    font-weight: 400 900;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'Drift Press';
+    src: url('/fonts/drift/PressStart2P-Regular.subset.woff2') format('woff2');
+    font-display: swap;
+  }
+
+  /* ---- the card itself: the cabinet body ---------------------------------- */
+  :global(.showcase .sc-slide[data-slug='drift']) {
+    border: 1px solid transparent;
+    background:
+      repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.018) 0 2px, transparent 2px 5px) padding-box,
+      radial-gradient(ellipse 80% 60% at 50% 40%, #1d0a2c 0%, #0f0518 55%, #07040b 100%) padding-box,
+      linear-gradient(180deg, #e58bff 0%, #b23cff 26%, #4b1673 62%, #8a2be2 100%) border-box;
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.55), 0 0 26px rgba(210, 60, 255, 0.22);
+  }
+  :global(.showcase .sc-slide[data-slug='drift'].is-current:hover) {
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.55), 0 0 34px rgba(210, 60, 255, 0.38);
+  }
+  :global(.showcase .sc-slide[data-slug='drift'])::before { content: none; }
+  /* underglow: the cabinet's neon lighting the floor under it */
+  :global(.showcase .sc-slide[data-slug='drift'])::after {
+    content: '';
+    position: absolute;
+    left: 10%;
+    right: 10%;
+    bottom: -34px;
+    height: 44px;
+    background: radial-gradient(ellipse 50% 50% at 50% 30%, rgba(210, 60, 255, 0.5), rgba(138, 43, 226, 0.16) 55%, transparent 75%);
+    filter: blur(6px);
+    pointer-events: none;
+  }
+
+  .dc { position: absolute; inset: 0; }
+  .dc p { margin: 0; }
+
+  /* ---- the screen ---------------------------------------------------------- */
+  /* plate 1188x1090 at 420 wide; glass = the licence window's own opening
+     (138,194 764x591 of its 1040x954 card), kept in % so it rides the plate */
+  .dc-crt {
+    position: absolute; left: 50px; top: 4px; width: 420px; height: 385px;
+    background: var(--dc-plate) center / 100% 100% no-repeat;
+    filter: drop-shadow(0 10px 16px rgba(4, 1, 8, 0.7));
+  }
+  .dc-glass {
+    position: absolute; left: 13.27%; top: 20.34%; width: 73.46%; height: 61.95%;
+    border-radius: 10px; overflow: hidden;
+  }
+  .dc-glass::after {
+    content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 3;
+    background:
+      repeating-linear-gradient(0deg, rgba(4, 1, 8, 0.24) 0 1px, transparent 1px 3px),
+      radial-gradient(90% 80% at 50% 45%, rgba(150, 70, 200, 0.1), rgba(20, 4, 30, 0) 70%),
+      radial-gradient(ellipse 55% 35% at 30% 14%, rgba(255, 255, 255, 0.06), transparent 70%);
+  }
+  .dc-glass-in {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center;
+    /* everything ends above the plate's baked tick ruler (~92% down the glass) */
+    padding-top: 7px;
+    text-align: center;
+  }
+  .dc-title {
+    font: 400 17px/1 'Drift Press', 'Press Start 2P', monospace;
+    letter-spacing: 0.12em;
+    color: #ffd1f8;
+    text-shadow: 0 0 6px #f769e0, 0 0 16px rgba(247, 105, 224, 0.5);
+  }
+  .dc-kata {
+    font: 700 11px/1 'Hiragino Kaku Gothic ProN', 'Yu Gothic UI', Meiryo, sans-serif;
+    letter-spacing: 0.4em;
+    margin-left: 10px;
+    vertical-align: 3px;
+    color: #d98bff;
+    text-shadow: 0 0 8px rgba(190, 90, 255, 0.75);
+  }
+  .dc-window {
+    position: relative; flex: none; width: 258px; height: 136px; margin-top: 6px;   /* 1725x912 */
+    border-radius: 3px; overflow: hidden;
+    /* phosphor: the window glows a little on the tube */
+    filter: saturate(1.1) brightness(1.05) drop-shadow(0 0 8px rgba(190, 90, 255, 0.35));
+  }
+  .dc-still, .dc-run { position: absolute; inset: 0; width: 100%; height: 100%; display: block; object-fit: cover; }
+  .dc-run { opacity: 0; transition: opacity 0.25s ease; }
+  .dc-running .dc-run { opacity: 1; }
+  .dc-status {
+    margin-top: 7px !important;
+    font: 400 14px/1.15 'Drift Press', 'Press Start 2P', monospace;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #fff0fc;
+    text-shadow: 0 0 8px #f769e0, 0 0 22px rgba(247, 105, 224, 0.55), 2px 2px 0 #6d1a60;
+  }
+  .dc-sub {
+    margin-top: 4px !important;
+    font: 400 16px/1 'VT323', ui-monospace, monospace;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #d98bff;
+    text-shadow: 0 0 8px rgba(190, 90, 255, 0.75);
+  }
+  /* the licence screen's cursor: blinks a few times while the card is centred, then rests lit */
+  .dc-sub span::after { content: '\25AE'; margin-left: 0.4em; }
+  :global(.sc-slide.is-current) .dc-sub span::after { animation: dc-blink 1s steps(2, end) 6; }
+  @keyframes dc-blink { 50% { opacity: 0; } }
+
+  /* the refresh band rolling down the tube (centred card only) */
+  .dc-refresh {
+    position: absolute; left: 0; right: 0; top: -30%; height: 30%; z-index: 2; pointer-events: none;
+    background: linear-gradient(180deg, transparent, rgba(217, 139, 255, 0.07) 60%, transparent);
+    opacity: 0;
+  }
+  :global(.sc-slide.is-current) .dc-refresh { animation: dc-roll 6.5s linear infinite; }
+  @keyframes dc-roll {
+    0% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(440%); opacity: 1; }
+  }
+
+  /* power-on: the picture opens from a bright line, once */
+  .dc-boot .dc-glass-in { animation: dc-on 0.55s cubic-bezier(0.2, 0.9, 0.25, 1) both; }
+  @keyframes dc-on {
+    0% { transform: scale(1, 0.006); filter: brightness(4); }
+    45% { transform: scale(1, 0.006); filter: brightness(4); }
+    75% { transform: scale(1, 1.04); filter: brightness(1.6); }
+    100% { transform: none; filter: none; }
+  }
+
+  /* ---- the key panel ------------------------------------------------------ */
+  /* /drift's .d-panel at card scale: the plugin's steel face, sunk into the
+     cabinet (seam + well + inner shade), level with the screen's width */
+  .dc-panel {
+    position: absolute; left: 50px; top: 397px; width: 420px; height: 64px;
+    border-radius: 9px;
+    background: linear-gradient(rgba(12, 5, 18, 0.4), rgba(12, 5, 18, 0.4)), var(--dc-panel) center / cover, #150a1f;
+    box-shadow:
+      0 0 0 1px rgba(4, 2, 8, 0.95),
+      0 0 0 4px #08040d,
+      0 1px 0 4px rgba(255, 240, 255, 0.06),
+      inset 0 14px 20px -10px rgba(0, 0, 0, 0.6),
+      inset 12px 0 20px -12px rgba(0, 0, 0, 0.5),
+      inset 0 -1px 0 rgba(255, 240, 255, 0.07);
+  }
+  .dc-panel > * { position: absolute; }
+  .dc-screw {
+    width: 14px; height: 14px; pointer-events: none;
+    background: var(--dc-screw) center / contain no-repeat;
+    filter: drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.7));
+  }
+  .dc-screw.tl { left: 8px; top: 8px; transform: rotate(13deg); }
+  .dc-screw.tr { right: 8px; top: 8px; transform: rotate(-7deg); }
+  .dc-screw.bl { left: 8px; bottom: 8px; transform: rotate(19deg); }
+  .dc-screw.br { right: 8px; bottom: 8px; transform: rotate(-23deg); }
+
+  /* the key, in its recessed slot */
+  .dc-slot {
+    left: 50%; top: 50%; width: 236px; height: 52px; margin: -24px 0 0 -118px; border-radius: 26px;
+    background: #07040b;
+    box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.9), 0 1px 0 rgba(255, 255, 255, 0.07), 0 0 14px rgba(255, 60, 40, 0.12);
+  }
+  .dc-key {
+    --h: 46px;
+    left: 50%; top: 50%; margin: -24px 0 0 -116px;
+    z-index: 6;   /* over the card's stretched link */
+    box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center;
+    width: 232px; height: var(--h);
+    padding: 0 4px calc(var(--h) * 0.16);
+    border-style: solid; border-color: transparent;
+    border-width: 0 calc(var(--h) * 0.744);
+    border-image-source: var(--dc-key);
+    border-image-slice: 7.04% 13.45% 13.33% fill;
+    border-image-width: 0 calc(var(--h) * 0.744);
+    border-image-repeat: stretch;
+    font: 600 15px/1 'Drift Orbitron', 'Orbitron', var(--font-display);
+    letter-spacing: 0.14em; text-transform: uppercase; text-decoration: none; white-space: nowrap;
+    color: #ffe6df;
+    text-shadow: 0 -1px 0 rgba(80, 0, 0, 0.9), 0 1px 0 rgba(255, 190, 180, 0.3);
+    cursor: pointer;
+    transition: filter 120ms ease;
+  }
+  .dc-key:hover { color: #fff2ee; filter: brightness(1.1) drop-shadow(0 0 10px rgba(255, 70, 50, 0.45)); }
+  .dc-key:active { border-image-source: var(--dc-key-press); padding-top: 6px; filter: brightness(0.96); }
+  .dc-key:focus-visible { outline: 2px solid #ffd1f8; outline-offset: 4px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(.sc-slide.is-current) .dc-sub span::after,
+    :global(.sc-slide.is-current) .dc-refresh { animation: none; }
+    .dc-boot .dc-glass-in { animation: none; }
+  }
+</style>

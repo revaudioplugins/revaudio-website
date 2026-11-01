@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DRIFT #hear PLAY — bench</title>
+<!--
+  #hear step 2 (PLAY / STOP), bench (2026-10-19, Claude Code revaudio-ef, laptop 1 user on a screenshot of the box: "this
+  is the next area that needs love"). What is wrong today (row 0): the "press me next" ring is a flat magenta outline
+  painted around the cap, lit by nothing; the two caps float on the plate with no mount (step 3's DRIFT button sits in
+  a worn chrome bezel, the knob in its LED bars); STOP is filtered to a muddy brown that reads broken, not off.
+  Each row = the real box (trial-plate border-image, the 2 PLAY label, the mm caps) at the measured sizes: desktop
+  1440 = 186 x 184.5, phone 390 = 120.6 x 147.5, phone 360 = 111.4 x 145.8 (on phones step 2's own content sets the
+  row height: the caps column must stay <= 102 px). Step 3 (1x crop of the built page) sits beside it: the craft bar.
+  The guide states cycle like the page: LOADING (nothing breathes) > PRESS PLAY (the cue + key 2 breathe) > playing
+  (PLAY shows it plays) > free play, then STOP. The caps here answer clicks too. Light from the upper left; a lamp
+  lights from inside a part; nothing glows that has no lamp in it. STOP stays an UNLIT dark red (the CTA keeps the
+  one race-red per viewport). Serve the worktree root: python -m http.server 8796, open /bench/drift-play-bench.html.
+-->
+<style>
+@font-face{font-family:'Drift Press';src:url(../public/fonts/drift/PressStart2P-Regular.ttf) format('truetype');font-display:block}
+@font-face{font-family:'Drift Oswald';src:url(../public/fonts/drift/Oswald-var.latin.woff2) format('woff2');font-weight:200 700;font-display:block}
+@font-face{font-family:'VT323';src:url(../src/styles/fonts/vt323-latin.woff2) format('woff2');font-display:block}
+:root{
+  --d-hot:#ff4fd8; --d-crt:#d98bff; --d-crt-glow:rgba(190,90,255,.75); --d-white-ink:#f6e8ff; --d-fg:#d9c6ef; --d-fg-dim:#a58cc4; --d-pink-ink:#ffd1f8;
+  --f-pix:'Drift Press',monospace; --f-head:'Drift Oswald',Impact,sans-serif; --f-lcd:'VT323',monospace;
+  --img-plate:url(../src/assets/seasons/drift/trial-plate.png);
+  --img-green:url(../src/assets/seasons/drift/mm_cap_green.png); --img-red:url(../src/assets/seasons/drift/mm_cap_red.png);
+  --img-led:url(../src/assets/seasons/drift/led_amber_s.png);
+}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;color:var(--d-fg);font:15px/1.5 system-ui,sans-serif;
+  background:#09060d url(../src/assets/seasons/drift/plate-tile.png) repeat;background-size:400px auto}
+.wrap{max-width:1400px;margin:0 auto;padding:28px 16px 60px}
+h1{font:700 clamp(28px,3.4vw,42px)/.95 var(--f-head);text-transform:uppercase;margin:0 0 8px;color:var(--d-white-ink)}
+.lede{max-width:940px;margin:0 0 18px}
+.bar{position:sticky;top:0;z-index:20;display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 12px;margin:0 0 20px;
+  background:rgba(9,5,14,.94);border:1px solid rgba(190,90,255,.3);border-radius:8px}
+.bar b{font:400 10px/1 var(--f-pix);letter-spacing:.1em;color:var(--d-crt);margin:0 4px 0 10px}
+.bar b:first-child{margin-left:0}
+.bar button{font:400 18px/1 var(--f-lcd);letter-spacing:.06em;color:var(--d-fg);background:#140a1d;border:1px solid rgba(190,90,255,.35);border-radius:4px;padding:6px 10px 5px;cursor:pointer}
+.bar button[aria-pressed='true']{color:#16021c;background:#f24cf0;border-color:#f24cf0}
+.bar .now{font:400 18px/1 var(--f-lcd);color:var(--d-white-ink);margin-left:auto}
+.row{margin:0 0 26px;padding:16px;border-radius:10px;background:rgba(8,4,12,.72);box-shadow:0 0 0 1px rgba(190,90,255,.18)}
+.row h2{margin:0 0 4px;font:400 14px/1.3 var(--f-pix);letter-spacing:.08em;color:var(--d-white-ink)}
+.row h2 i{font-style:normal;color:#f24cf0}
+.row p{margin:0 0 14px;max-width:1000px;color:var(--d-fg-dim)}
+.shots{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start}
+.pair{display:flex;gap:10px;align-items:flex-start}
+.pair img{display:block}
+.cell{display:flex;flex-direction:column;gap:8px}
+.cell small{font:400 16px/1 var(--f-lcd);letter-spacing:.05em;color:var(--d-fg-dim)}
+.cell small .ok{color:#7dffb0}.cell small .bad{color:#ff6b8a}
+
+/* ===== the box today (drift.css, copied: .d-hear-step + the #hear step-2 overrides, .d-hear-n, .d-cap) ===== */
+.d-hear-step{position:relative;display:flex;flex-direction:column;gap:6px;border:0 solid transparent;
+  border-image:var(--img-plate) 120 120 120 320 fill / 22px 22px 22px 60px stretch;filter:drop-shadow(0 10px 18px rgba(0,0,0,.55))}
+.d-hear-cap{display:flex;align-items:center;font:400 11px/1 var(--f-pix);letter-spacing:.14em;color:var(--d-crt);text-shadow:0 0 8px var(--d-crt-glow);white-space:nowrap}
+.d-hear-n{display:inline-grid;place-items:center;width:1.75em;height:1.75em;margin-right:.75em;border-radius:3px;font:inherit;color:#16021c;text-shadow:none;
+  background:var(--d-hot);box-shadow:0 0 12px rgba(255,79,216,.55)}
+[data-hear]:not([data-next='']) .d-hear-n{background:rgba(255,79,216,.42);box-shadow:none}
+[data-hear][data-next='play'] [data-step='2'] .d-hear-n{background:var(--d-hot);animation:d-hear-next 1.2s ease-in-out infinite}
+@keyframes d-hear-next{0%,100%{box-shadow:0 0 0 2px rgba(255,79,216,.2)}50%{box-shadow:0 0 0 2px var(--d-hot),0 0 22px rgba(255,79,216,.85)}}
+.d-hear-caps{flex:1;display:flex;justify-content:center;align-items:center}
+.d-cap{position:relative;border:0;padding:0;border-radius:50%;background:center/100% 100% no-repeat;cursor:pointer;
+  filter:drop-shadow(0 3px 4px rgba(0,0,0,.7));transition:transform 90ms cubic-bezier(.2,.9,.25,1.25),filter 120ms ease}
+.d-cap::before{content:'';position:absolute;inset:-4px}
+.d-cap:hover{filter:brightness(1.1) drop-shadow(0 3px 4px rgba(0,0,0,.7));transform:translateY(-1px)}
+.d-cap:active{transform:translateY(4px);filter:brightness(.9)}
+.d-cap:focus-visible{outline:none;box-shadow:inset 0 0 0 3px var(--d-pink-ink),inset 0 0 0 5px rgba(7,5,11,.8)}
+.d-hear-play{background-image:var(--img-green)}
+.d-cap--stop{background-image:var(--img-red)}
+.bars,.led{display:none}
+.v-a .bars,.v-b .led{display:block}
+.v-now .d-hear-mount{display:contents}
+.v-now .d-cap[aria-pressed='true']{filter:brightness(1.15) drop-shadow(0 0 10px rgba(255,255,255,.25));box-shadow:inset 0 0 0 2px rgba(255,240,255,.45),inset 0 0 14px rgba(255,240,255,.35)}
+.v-now .d-cap--stop:not(:active){filter:saturate(.3) brightness(.65) drop-shadow(0 3px 4px rgba(0,0,0,.7))}
+.v-now .d-hear-play::after{content:'';position:absolute;inset:-5px;border-radius:50%;pointer-events:none}
+[data-hear][data-next='play'] .v-now .d-hear-play::after{animation:d-hear-next 1.2s ease-in-out infinite}
+/* sizes (the page: desktop >= 601, phones <= 600, the 360 caption at <= 380) */
+.sz-desk .d-hear-step{width:186px;height:184.5px;padding:14px 22px 16px}
+.sz-desk .d-hear-cap{position:absolute;left:62px;top:14px}
+.sz-desk .d-hear-caps{gap:18px}
+.sz-desk .d-cap{width:62px;height:62px}
+.sz-desk .d-hear-mount,.v-now.sz-desk .d-cap{translate:0 9px}
+:is(.sz-phone,.sz-small) .d-hear-step{padding:10px 12px 12px;border-image-width:16px 16px 16px 40px}
+.sz-phone .d-hear-step{width:120.6px;height:147.5px}
+.sz-small .d-hear-step{width:111.4px;height:145.8px}
+:is(.sz-phone,.sz-small) .d-hear-cap{margin-left:26px;font-size:10px}
+.sz-small .d-hear-cap{font-size:9px;letter-spacing:.08em}
+:is(.sz-phone,.sz-small) .d-hear-caps{flex-direction:column;gap:10px}
+:is(.sz-phone,.sz-small) .d-cap{width:46px;height:46px}
+
+/* ===== shared by A and C: the cap seated in a small chrome bezel, the same worn chrome as step 3's DRIFT button (cool
+   sky on top, warm dash below), a black seat between ring and cap. Same footprint as today's cap (66 / 48 px outer):
+   the cap shrinks inside the ring. ===== */
+.chrome .d-hear-mount{position:relative;display:grid;place-items:center;flex:none;border-radius:50%;
+  background:
+    radial-gradient(circle,transparent 63%,rgba(0,0,0,.5) 65%,transparent 69%),
+    linear-gradient(rgba(150,112,84,.12),rgba(150,112,84,.12)),
+    conic-gradient(from 200deg,#cdc4d8,#5a5068 12%,#a89eb6 22%,#2a2333 36%,#978ca6 50%,#42394f 64%,#bdb3c9 78%,#4c4358 90%,#cdc4d8);
+  box-shadow:0 7px 11px rgba(0,0,0,.7),0 2px 3px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,255,255,.42),inset 0 -2px 3px rgba(0,0,0,.4)}
+.chrome .d-hear-mount::before{content:'';position:absolute;inset:4px;border-radius:50%;background:#050307;box-shadow:inset 0 3px 5px #000,0 1px 0 rgba(255,255,255,.3)}
+.chrome .d-cap{z-index:1}
+.chrome.sz-desk .d-hear-mount{width:66px;height:66px}
+.chrome.sz-desk .d-cap{width:52px;height:52px}
+.chrome.sz-desk .d-hear-caps{gap:10px}
+.chrome:is(.sz-phone,.sz-small) .d-hear-mount{width:48px;height:48px}
+.chrome:is(.sz-phone,.sz-small) .d-cap{width:38px;height:38px}
+.chrome:is(.sz-phone,.sz-small) .d-hear-mount::before{inset:3px}
+.chrome:is(.sz-phone,.sz-small) .d-hear-caps{gap:6px}
+/* an unlit dark-red STOP (real plastic, just off), not a filtered brown */
+.lcd-stop .d-cap--stop:not(:active){filter:brightness(.6) saturate(.75) drop-shadow(0 3px 4px rgba(0,0,0,.7))}
+.lcd-stop .d-cap--stop:not(:active):hover{filter:brightness(.75) saturate(.8) drop-shadow(0 3px 4px rgba(0,0,0,.7))}
+
+/* ===== A · CHROME + BARS: PLAY wears step 3's language, a ring of LED bars round its bezel (the DRIFT button has 40,
+   PLAY 24). Next step = the bars breathe with key 2; playing = the bars burn steady. ===== */
+.v-a .bars{position:absolute;left:50%;top:50%;width:0;height:0;pointer-events:none;--r:39px}
+.v-a:is(.sz-phone,.sz-small) .bars{--r:29px}
+.v-a .bars i{position:absolute;left:-1px;top:calc(-1 * var(--r));width:2px;height:5px;border-radius:1px;background:rgba(242,76,240,.14);
+  transform-origin:1px var(--r);transform:rotate(calc(var(--i) * 15deg));transition:background .25s ease,box-shadow .25s ease}
+.v-a:is(.sz-phone,.sz-small) .bars i{height:4px}
+[data-hear][data-next='play'] .v-a .bars i{animation:bars-breathe 1.2s ease-in-out infinite}
+[data-playing] .v-a .bars i{background:rgb(255,112,247);box-shadow:0 0 4px rgba(242,76,240,.7)}
+@keyframes bars-breathe{0%,100%{background:rgba(242,76,240,.2);box-shadow:none}50%{background:rgb(255,112,247);box-shadow:0 0 5px rgba(242,76,240,.8)}}
+
+/* ===== B · PILOT LAMPS: the caps sit in round wells sunk into the plate (a hole, its lower lip catching the light),
+   and a pilot lamp in a chrome bezel above each (phones: beside). PLAY's lamp is green: next step = it breathes,
+   playing = it burns. STOP's red lamp stays dark. A car-deck / dash transport under the car-stereo LCD. ===== */
+.v-b .d-hear-mount{position:relative;display:grid;place-items:center;flex:none;border-radius:50%;
+  background:radial-gradient(circle at 50% 42%,#020103 0 60%,#0a070d 72%);box-shadow:inset 0 4px 7px #000,inset 0 -1px 0 rgba(255,255,255,.1),0 1px 0 rgba(255,255,255,.12)}
+.v-b.sz-desk .d-hear-mount{width:66px;height:66px}
+.v-b.sz-desk .d-cap{width:56px;height:56px}
+.v-b.sz-desk .d-hear-caps{gap:10px}
+.v-b:is(.sz-phone,.sz-small) .d-hear-mount{width:48px;height:48px}
+.v-b:is(.sz-phone,.sz-small) .d-cap{width:41px;height:41px}
+.v-b:is(.sz-phone,.sz-small) .d-hear-caps{gap:6px}
+.v-b .led{position:absolute;width:16px;height:16px;background:var(--img-led) center/100% 100%;pointer-events:none;transition:filter .25s ease}
+.v-b.sz-desk .led{left:50%;top:-21px;translate:-50% 0}
+.v-b:is(.sz-phone,.sz-small) .led{left:-16px;top:50%;translate:0 -50%;width:12px;height:12px}
+.v-b .m-play .led{filter:hue-rotate(80deg) saturate(1.3) brightness(.38)}
+.v-b .m-stop .led{filter:hue-rotate(-38deg) saturate(1.4) brightness(.38)}
+[data-hear][data-next='play'] .v-b .m-play .led{animation:led-breathe 1.2s ease-in-out infinite}
+[data-playing] .v-b .m-play .led{filter:hue-rotate(80deg) saturate(1.6) brightness(1.7) drop-shadow(0 0 6px rgba(90,255,120,.95))}
+@keyframes led-breathe{0%,100%{filter:hue-rotate(80deg) saturate(1.3) brightness(.45)}50%{filter:hue-rotate(80deg) saturate(1.6) brightness(1.7) drop-shadow(0 0 7px rgba(90,255,120,.95))}}
+
+/* ===== C · LIT CAP: the PLAY cap IS the lamp (an arcade button lit from inside its green plastic): next step = it
+   breathes from within and its light spills on the bezel's inner wall; playing = it burns steady. No ring. ===== */
+.v-c .d-hear-play::after{content:'';position:absolute;inset:0;border-radius:50%;pointer-events:none;opacity:0;mix-blend-mode:screen;
+  background:radial-gradient(circle at 46% 44%,rgba(210,255,200,.95),rgba(80,235,110,.6) 34%,rgba(30,180,70,.25) 58%,transparent 72%);transition:opacity .25s ease}
+.v-c .m-play::after{content:'';position:absolute;inset:4px;border-radius:50%;pointer-events:none;opacity:0;transition:opacity .25s ease;
+  box-shadow:inset 0 0 6px 2px rgba(90,255,120,.75),0 0 0 1px rgba(150,255,160,.35)}
+.sz-phone.v-c .m-play::after,.sz-small.v-c .m-play::after{inset:3px}
+[data-hear][data-next='play'] .v-c :is(.d-hear-play,.m-play)::after{animation:lamp-breathe 1.2s ease-in-out infinite}
+[data-playing] .v-c :is(.d-hear-play,.m-play)::after{opacity:1}
+@keyframes lamp-breathe{0%,100%{opacity:.08}50%{opacity:1}}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation:none!important;transition:none!important}
+  [data-hear][data-next='play'] .v-a .bars i{background:rgb(255,112,247)}
+  [data-hear][data-next='play'] .v-b .m-play .led{filter:hue-rotate(80deg) saturate(1.5) brightness(1.35)}
+  [data-hear][data-next='play'] .v-c :is(.d-hear-play,.m-play)::after{opacity:.8}
+  [data-hear][data-next='play'] .v-now .d-hear-play::after{box-shadow:0 0 0 2px var(--d-hot)}
+}
+</style>
+</head>
+<body data-hear data-next="play">
+<div class="wrap">
+  <h1>#hear step 2: PLAY / STOP</h1>
+  <p class="lede">Row 0 is the box on the page today. A, B and C are three ways to mount the two buttons properly and to say
+  "press PLAY next" with a real light instead of a painted ring. Everything runs on its own (the same steps a visitor goes
+  through); the buttons on top hold one step, and the caps answer clicks. Step 3, as it is on the page, sits beside each
+  desktop box for comparison.</p>
+  <div class="bar" id="bar">
+    <b>STEP</b>
+    <button data-go="auto" aria-pressed="true">AUTO</button>
+    <button data-go="0">LOADING</button><button data-go="1">PRESS PLAY</button><button data-go="2">PLAYING</button>
+    <button data-go="3">FREE PLAY</button><button data-go="4">STOPPED</button>
+    <span class="now" id="now"></span>
+  </div>
+  <div id="rows"></div>
+</div>
+
+<template id="box">
+  <div class="d-hear-step" data-step="2">
+    <span class="d-hear-cap"><b class="d-hear-n">2</b>PLAY</span>
+    <div class="d-hear-caps">
+      <span class="d-hear-mount m-play"><span class="bars" aria-hidden="true"></span><span class="led" aria-hidden="true"></span>
+        <button class="d-cap d-hear-play" type="button" data-hear="play" aria-pressed="false" aria-label="Play"></button></span>
+      <span class="d-hear-mount m-stop"><span class="led" aria-hidden="true"></span>
+        <button class="d-cap d-cap--stop" type="button" data-hear="stop" aria-label="Stop"></button></span>
+    </div>
+  </div>
+</template>
+
+<script>
+const VARIANTS = [
+  { key: 'now', cls: 'v-now', name: '0 · <i>NOW</i> (the page today)', note: 'A flat magenta outline breathes round PLAY (lit by nothing); both caps float on the plate; STOP is filtered to a muddy brown.' },
+  { key: 'a', cls: 'v-a chrome lcd-stop', name: 'A · <i>CHROME + BARS</i>', note: 'Each cap seated in a small worn-chrome bezel, the same metal as step 3\'s DRIFT button. PLAY gets a ring of 24 LED bars, the DRIFT button\'s language: they breathe when PLAY is the next step and burn while it plays. STOP: an unlit dark red.' },
+  { key: 'b', cls: 'v-b lcd-stop', name: 'B · <i>PILOT LAMPS</i>', note: 'The caps sit in round wells sunk into the plate, a pilot lamp in a chrome bezel above each (beside on phones), like a car deck under the LCD. PLAY\'s green lamp breathes when it is next and burns while playing; STOP\'s red lamp stays dark.' },
+  { key: 'c', cls: 'v-c chrome lcd-stop', name: 'C · <i>LIT CAP</i>', note: 'Chrome bezels as in A, no ring at all: the PLAY cap itself is the lamp, lit from inside its green plastic, the light spilling on the bezel. It breathes when PLAY is next and burns while playing.' },
+];
+const SIZES = [
+  { cls: 'sz-desk', label: 'DESKTOP 1440', s3: 'drift-play/s3-1440.png' },
+  { cls: 'sz-phone', label: 'PHONE 390', s3: 'drift-play/s3-390.png' },
+  { cls: 'sz-small', label: 'PHONE 360' },
+];
+// [name, data-next, playing]
+const STEPS = [['LOADING', 'wait', false], ['PRESS PLAY', 'play', false], ['PLAYING (the original)', 'drift', true], ['FREE PLAY', '', true], ['STOPPED', 'play', false]];
+const HOLD = [1400, 3600, 3400, 3000, 2600];
+const rowsEl = document.getElementById('rows'), tpl = document.getElementById('box'), boxes = [];
+for (const v of VARIANTS) {
+  const row = document.createElement('section'); row.className = 'row';
+  row.innerHTML = `<h2>${v.name}</h2><p>${v.note}</p><div class="shots"></div>`;
+  const shots = row.querySelector('.shots');
+  for (const s of SIZES) {
+    const cell = document.createElement('div'); cell.className = 'cell';
+    const pair = document.createElement('div'); pair.className = `pair ${v.cls} ${s.cls}`;
+    const box = tpl.content.firstElementChild.cloneNode(true);
+    const bars = box.querySelector('.bars'); bars.innerHTML = Array.from({ length: 24 }, (_, i) => `<i style="--i:${i}"></i>`).join('');
+    pair.append(box);
+    if (s.s3) { const img = new Image(); img.src = s.s3; img.alt = ''; pair.append(img); }
+    const info = document.createElement('small'); cell.append(pair, info); shots.append(cell);
+    boxes.push({ v, s, box, info });
+  }
+  rowsEl.append(row);
+}
+
+let step = 1, auto = true, at = performance.now();
+function go(i) {
+  step = i; at = performance.now();
+  const [name, next, playing] = STEPS[i];
+  document.body.dataset.next = next; document.body.toggleAttribute('data-playing', playing);
+  for (const b of document.querySelectorAll('.d-hear-play')) b.setAttribute('aria-pressed', String(playing));
+  document.getElementById('now').textContent = name;
+}
+const bar = document.getElementById('bar');
+bar.addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.go === 'auto') { auto = !auto; b.setAttribute('aria-pressed', auto); return; }
+  auto = false; bar.querySelector('[data-go=auto]').setAttribute('aria-pressed', 'false'); go(+b.dataset.go);
+});
+document.addEventListener('click', (e) => {
+  const c = e.target.closest('[data-hear]'); if (!c || c === document.body) return;
+  auto = false; bar.querySelector('[data-go=auto]').setAttribute('aria-pressed', 'false');
+  go(c.dataset.hear === 'play' ? (step === 2 || step === 3 ? step : 2) : 4);
+});
+(function tick(now) { if (auto && now - at > HOLD[step]) go(step === 4 ? 1 : step + 1); requestAnimationFrame(tick); })(performance.now());
+
+// the check: the caps column fits its box (on phones step 2's content sets the row height), and nothing of the mount
+// sticks out of the plate's inner edge
+function check() {
+  for (const o of boxes) {
+    const b = o.box.getBoundingClientRect(), caps = o.box.querySelector('.d-hear-caps');
+    const need = o.box.scrollHeight > o.box.clientHeight + .5;
+    let out = false; for (const m of o.box.querySelectorAll('.d-hear-mount, .d-cap, .led, .bars i')) {
+      const r = m.getBoundingClientRect(); if (!r.width) continue;
+      if (r.left < b.left + 6 || r.right > b.right - 6 || r.top < b.top + 6 || r.bottom > b.bottom - 6) out = true; }
+    o.info.innerHTML = `${o.s.label} · ${need ? '<span class=bad>taller than the box</span>' : '<span class=ok>fits the box</span>'} · ${out ? '<span class=bad>part on the plate edge</span>' : '<span class=ok>inside the plate</span>'}`;
+  }
+}
+go(1);
+document.fonts.ready.then(() => setTimeout(check, 300));
+</script>
+</body>
+</html>

@@ -249,7 +249,8 @@ body.nonotes #arrows{opacity:0}
   background:linear-gradient(180deg,rgba(232,222,190,.95),rgba(212,200,166,.95));box-shadow:0 2px 3px rgba(12,9,6,.45)}
 .notetag:hover{translate:0 -1px}
 /* ===== THE TOY (2026-10-12, Yoni: "like a toy, fun to use"; plan tasks/player-toy-redesign-plan.md) =====
-   "Step on it": one accelerator pedal is the hero. The 3-track mixer below (#wrap) is the hood, closed by default.
+   "Step on it": one accelerator pedal is the hero. The 3-track mixer below (#wrap) is the hood.
+   2026-10-19: the toy is phones only; desktop shows the mixer alone (the desktop arrangement stays, unused).
    Two arrangements of the same parts: desktop (wood 1078 x 610) and phone (wood 358 x 900). Design px, scaled. */
 #box{max-width:1600px;margin:0 auto;position:relative}
 #toyfit{position:relative;margin:0 auto}
@@ -381,9 +382,10 @@ body.phone .thood .tx small{display:none}
 .twell.nextup .rail .mk b{animation:nextup 1.6s ease-in-out infinite;color:#ffdf9e}
 .ttoggle.nextup .lab{animation:nextup 1.6s ease-in-out infinite}
 .toy > :not(#tHalo):not(.tdiv){z-index:1}
-/* the hood: the old 3-track mixer, closed by default */
+/* desktop = the 3-track mixer only, the hood always open (2026-10-19: the toy section came off the desktop page);
+   phones keep the toy, the mixer does not fit them. doFit sets .hood on every non-phone width. */
 body:not(.hood) #wrap{display:none}
-#wrap{margin-top:30px}
+body.hood #toyfit{display:none}
 body.phone #wrap{display:none}
 
 /* PLAY / STOP = XL chrome piano keys (Yoni picked "A" on bench/transport-bench.html, 2026-10-08: the old keys
@@ -907,7 +909,7 @@ function frame(now){
   if (nodes && st.playing) { nodes.mAn.getFloatTimeDomainData(tbuf); let s=0; for (let i=0;i<tbuf.length;i++) s+=tbuf[i]*tbuf[i];
     const d=20*Math.log10(Math.sqrt(s/tbuf.length)+1e-9); target=Math.max(-45,Math.min(45,(d+20)*2.3)); }      // 1/2 = -20 dBFS rms
   vuA += (target-vuA)*(1-Math.exp(-dt/0.1)); vn.style.transform=`rotate(${vuA}deg)`;
-  toyFrame(dt);
+  if (!hood) toyFrame(dt);                                                        // the toy only runs on phones
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
@@ -987,14 +989,6 @@ act($('#tToggle'), toggleBA);
 act($('#tArm'), () => { touch(); st.rl = !st.rl; sfx.clunk(); render(); ensurePlay(); });
 // on the GAS page itself, the sign opens the page's own download step (the email gate) instead of reloading /gas
 $('#tSign').addEventListener('click', e => { const cta = page.querySelector('.gas-cta'); if (cta) { e.preventDefault(); cta.click(); } });
-act($('#tHood'), () => {
-  if (document.body.classList.contains('phone')) return;
-  const open = !document.body.classList.contains('hood');
-  document.body.classList.toggle('hood', open); $('#tHood').setAttribute('aria-expanded', String(open));
-  $('#tHoodTx').textContent = open ? 'CLOSE THE HOOD' : 'OPEN THE HOOD';
-  sfx.clunk(); doFit();
-  if (open) { drawArrows(true); $('#wrap').scrollIntoView({ behavior:'smooth', block:'start' }); }
-});
 
 /* what the LCD says + the one thing to touch next (its light spills onto the walnut behind it) */
 function toyText(){
@@ -1057,6 +1051,7 @@ const PHONE_W = 760;
 function doFit(){
   const W = $('#box').clientWidth, phone = W < PHONE_W;
   document.body.classList.toggle('phone', phone);
+  document.body.classList.toggle('hood', !phone);                 // desktop: the mixer is the player
   if (phone && st.rl) { st.rl = false; render(); }               // no RevLimiter preview on phones
   const TW = phone ? 380 : 1100, ts = phone ? Math.min(1.6, W/380) : Math.min(1, W/1100);
   toystage.style.transform = `scale(${ts})`;

@@ -1,3 +1,4 @@
+import { lcdText } from './lcd';
 /**
  * /drift pan bus. ONE pan value (-1 hard left .. +1 hard right) feeds every
  * display on the page: the two neon rails (the stereo field), the dash PAN
@@ -6,7 +7,7 @@
  * Writers: the wheel (drag / keys), the demo deck (its pan curve), the TRACKS
  * mini GPS (the car's position). The last writer wins, except that the car
  * yields to a hand on the wheel (setHand). Displays only: nothing
- * here makes a sound (demo.ts owns the audio and follows the same value).
+ * here makes a sound (hear.ts, the #hear test drive, owns the audio and writes the pan it measures).
  */
 export type PanSource = 'wheel' | 'demo' | 'tracks' | 'reset';
 type Listener = (pan: number, source: PanSource) => void;
@@ -100,7 +101,7 @@ export function initPanDisplays(root: HTMLElement): void {
     // write on change only (D3, 10-02)
     readouts.forEach((r, i) => {
       const t = r.dataset.panReadout === 'bare' ? txt : `PAN ${txt}`;
-      if (t !== readTxt[i]) { r.textContent = t; readTxt[i] = t; }
+      if (t !== readTxt[i]) { lcdText(r, t); readTxt[i] = t; }   // lcdText: #hear's LCD readout also gets its ghost
     });
   };
   let raf = 0;

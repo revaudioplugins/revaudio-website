@@ -85,7 +85,7 @@ export const site = {
    * DRIFT Beta feedback form (src/pages/drift/feedback.astro). Its own
    * Formspree form (like affiliateFormEndpoint), written by the license
    * worker's POST /drift-feedback (not by the page): it checks every answer,
-   * allows one form per email, mints the $30-off DRIFT code and sends the
+   * allows one form per email, mints the free (100%-off) DRIFT code and sends the
    * team's copy here. Changing the id? Update DRIFT_FB_FORMSPREE in the
    * worker too. While the id is REPLACE_WITH_FORM_ID the page shows an honest
    * "opens shortly" notice and never pretends to capture.
