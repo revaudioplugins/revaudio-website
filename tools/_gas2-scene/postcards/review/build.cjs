@@ -3,7 +3,9 @@
      NODE_PATH=<revaudio-website>/node_modules node build.cjs [base url]
    1. out/live.html - postcards.html as the artifact can serve it: fonts inlined (the artifact CSP only lets Google Fonts
       faces load), the demo audio renamed .mp4 (.m4a is refused at publish), and the state read from the hash too
-      (live.html#card=5&flip), because the artifact's links pass no query string.
+      (live.html#card=5&flip), because the artifact's links pass no query string. Its taxi (taxi/, 2026-11-01): out/taxi/
+      with taxi.js rewritten the same way (the hash, .mp4), and the ride's last step brings the frame back as from the
+      store (the review page's frame can't leave for revaudio.net; on the site it does).
    2. out/shots/<id>.webp - each screen in WebKit at Safari's visible viewport on the iPhone 17 Pro (402 x 714); the record
       playing in Chrome (Playwright's WebKit can't decode the AAC demo).
    3. out/preview.html - index.html in a document skeleton, with links to the scene assets, to try it on localhost. */
@@ -18,7 +20,7 @@ const BASE = process.argv[2] || "http://127.0.0.1:4466/postcards.html";
 const SHOTS = [                       // id, query, wait (ms after fonts): the end page waits for the pop to finish
   ["card-1", "?card=1", 700], ["card-2", "?card=2", 700], ["card-3", "?card=3", 700], ["card-4", "?card=4", 700],
   ["card-5", "?card=5", 700], ["card-5-back", "?card=5&flip", 700], ["card-6", "?card=6", 700],
-  ["end", "?card=7", 2200], ["end-sent", "?card=7&sent", 2200],
+  ["end", "?card=7", 2200], ["end-sent", "?card=7&sent&taxi=park", 4500],   // the taxi loads with the end page's photo, then parks
 ];
 
 // 1 · live.html
@@ -30,6 +32,14 @@ html = html.replace("new URLSearchParams(location.search)", "new URLSearchParams
 if (/url\(fonts\/|\.m4a|URLSearchParams\(location\.search\)/.test(html)) throw new Error("live.html: a rewrite missed");
 fs.mkdirSync(path.join(OUT, "shots"), { recursive: true });
 fs.writeFileSync(path.join(OUT, "live.html"), html);
+let taxi = fs.readFileSync(path.join(SCENE, "taxi/taxi.js"), "utf8");
+taxi = taxi.replace("new URLSearchParams(location.search)", "new URLSearchParams(location.search || location.hash.slice(1))");
+taxi = taxi.replace("n + '.m4a'", "n + '.mp4'");
+taxi = taxi.replace("setTimeout(() => { location.href = STORE; }, leaveAt * 1000);",
+  "setTimeout(() => dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true })), (leaveAt + .6) * 1000);   // the review: back as from the store");
+if (/'\.m4a'|URLSearchParams\(location\.search\)|location\.href = STORE/.test(taxi)) throw new Error("taxi.js: a rewrite missed");   // (its comments name arrive.m4a)
+fs.mkdirSync(path.join(OUT, "taxi"), { recursive: true });
+fs.writeFileSync(path.join(OUT, "taxi/taxi.js"), taxi);
 
 // 3 · preview.html + the links it needs (the artifact gets the same paths through its files map)
 const page = fs.readFileSync(path.join(__dirname, "index.html"), "utf8");
@@ -38,6 +48,9 @@ const link = (to, from) => { const p = path.join(OUT, from); fs.mkdirSync(path.d
 link(path.join(SCENE, "postcards"), "postcards");
 link(path.join(SCENE, "props"), "props");
 for (const s of ["before", "after"]) link(path.join(SCENE, "player/audio", `hiphop_${s}.m4a`), `audio/hiphop_${s}.mp4`);
+link(path.join(SCENE, "taxi/taxi.css"), "taxi/taxi.css");
+link(path.join(SCENE, "taxi/img"), "taxi/img");
+for (const n of ["arrive", "honk", "peel", "leave", "idle"]) link(path.join(SCENE, "taxi/audio", `${n}.m4a`), `taxi/audio/${n}.mp4`);
 
 // 2 · the screens
 (async () => {

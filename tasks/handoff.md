@@ -262,6 +262,15 @@ Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postca
   main's page-b with this taxi.js vs main's own: identical states and parked pixels (Chromium 1141x636, WebKit 1440x900).
   iOS Simulator: parked right; the live store#radio-roulette lands under the nav with its edge lit once. On a merge to
   main, `taxi/**` is an add/add: take this branch's (main's + the phone).
+- Then (Dan: the review page link + "update this bench"): ROUND 11 (`notes-r11`) = version 13 of
+  https://claude.ai/artifact/6zn14ha4qswV1gmCb8v3qG, build `cde5af7`, same URL. End = his spots note verbatim + D;
+  end-sent = "The taxi to the store" (`#card=7&sent&taxi=park`, parked), his taxi note as `taxi/README.md` quotes it;
+  card 1 = the station blur; the rest unchanged. `build.cjs` now writes `out/taxi/` (taxi.js from the hash, .mp4, and
+  the ride's last step comes back as from the store: the review frame can't leave) + links the taxi art/sound; the
+  end-sent shot waits for the park. Published from a scratch dir of real copies (28 files: live.html, 11 shots,
+  taxi/**). Checked locally (Chrome 1280 + WebKit 390): 12 sections by title, pin, note, ✓, ▶ Live on the taxi
+  (parked, red; the ride ends back on the page, the cab gone), one frame at a time, reload, copy, no sideways scroll,
+  0 errors (2 favicon 404s on the local server only); a db probe on `notes-r11` written + deleted.
 - Open (Dan): (1) his word from the phone; more notes go to `notes-r10`;
   (2) painted art still only on his OK;
   (3) per-grade renders (Yoni) before any grade card plays its own sound; (4) later: this as page-b's phone layout;
