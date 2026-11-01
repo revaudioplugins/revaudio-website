@@ -126,6 +126,8 @@
     Dan's mock sits on `b67c76f`, so his session starts from the new tip and writes its own claim. Then Phase 5,
     step F (the Mac pkgs checked first), the persona access fixes (step 13). The user looked at the live site on a
     Mac, 2026-11-01: "looks good". Not seen yet: a real iPhone.
+  - Claim CLOSED 2026-11-01 (`revaudio-67`). The user: the next steps (GAS 2 on the TV, step F, Phase 5) go to Gil or
+    Yoni after the meeting; whoever takes them writes a claim here first. Nothing uncommitted, no server running.
   - Motion on too (Lenis, the glide, GSAP): header PLUGINS glides from the top and with `?plugin=` in the address
     (no reload, parks at 0 / -0.2 px, focus on the heading), a channel change, Try opens the gate; 1280x665 +
     390x844, no errors. Nothing under `src` / `public` is untracked or ignored. No server left running.
