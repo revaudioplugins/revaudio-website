@@ -714,7 +714,7 @@ Steps (the user's picks, 2026-11-01):
       screen, GAS honey / RevLimiter brass, GAS's notice without the trial line, RevLimiter's with it, no page
       errors; no Halloween on home; /downloads renders its picker; `/store?utm_source=x` -> `/?utm_source=x#plugins`;
       `tests/smoke.spec.ts` chromium 21/21. Not run: WebKit / mobile-safari, a real iPhone or Mac Safari.
-- [ ] I. The user's "push": main = the branch (live), then the live check (the TV, a Try, /downloads, console).
+- [x] I. Pushed 2026-11-01 on the user's "push" (main 2eea1f2 -> 3a19a87, fast-forward); the live check passed (handoff).
 - GAS 2 on the TV (Dan via `danavivi-83`, 2026-11-01): AFTER today's deploy, on this branch, hidden until it is
   live; its blockers per that note: a `gas2` gate in the worker, its own product page (not a generated `[slug]`
   one: add `gas2` to OWN_ROUTE first), the signed + notarized download, CATCH10 in Paddle. Its mock was on

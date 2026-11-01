@@ -1,4 +1,4 @@
-## 2026-10-15 — Home LIBRARY: the TV becomes the plugin browser, carousel + Store nav out, branch `feat/home-library` (Claude Code `revaudio-a0`, was `revaudio-a6` before a restart, laptop 1) — IN PROGRESS (user's "go" 2026-10-18)
+## 2026-10-15 — Home LIBRARY: the TV becomes the plugin browser, carousel + Store nav out, branch `feat/home-library` (Claude Code `revaudio-a0`, was `revaudio-a6` before a restart, laptop 1) — PUSHED TO MAIN = LIVE 2026-11-01 (the user: "push"; main `2eea1f2` -> `3a19a87`, a fast-forward)
 - User: one new branch for the home page; a top-right LIBRARY button opens plugin categories on the TV; a category
   turns the glowing words into plugin names + thumbnails; a lit plugin shows a bigger image, a short description,
   "Try it free" (email gate) and a small product-page link; carousel + Store go; later ratings + "you may also like".
@@ -108,7 +108,8 @@
   after step 0's merge (Phase 5 later, its own branch); Halloween off; D9 = the TV's keys join `.rv-btn`; in the
   deploy too: the GAS notice line, DRIFT no longer first (`drift.homeLead` false), the macOS floor in the system
   requirements, the Cloudflare beacon's SPA page views. Review + steps: plan § "Deploy today".
-  - Done (on the branch, pushed to origin/feat/home-library; main and the live site untouched): `22747ef` (b5's
+  - Done, LIVE since 2026-11-01 (the user: "push"; `git push origin feat/home-library:main`, 2eea1f2 -> 3a19a87,
+    43 commits incl. a0's + b5's TV work; rollback = a revert commit, never a force-push): `22747ef` (b5's
     close note, on the user's word), `6d489ba` the merge of origin/main `2eea1f2` (11 conflicts by hand; /downloads
     needs PluginShowcase + DriftCard, so they stay), `01c3f85` Halloween off, `2f75693` the TV's keys = `.rv-btn`,
     `629f72a` the GAS notice, `f3d52eb` DRIFT not first, `3e54d1b` the beacon's `"spa": false`.
@@ -116,8 +117,15 @@
     no errors), /downloads, /store redirect, smoke chromium 21/21. Not run: WebKit, a real iPhone / Mac Safari.
   - Not done: step F (the Mac floor in the system requirements): the shipped pkgs are in R2 and this laptop has no
     wrangler; Radio Roulette's pkg predates the 10.13 rule. Needs `check-macos-floor.py` on each R2 pkg first.
-  - Next: the user's "push" = main gets the branch (live), then the live check. Then GAS 2 on the TV (Dan's note via
-    `danavivi-83`): on this branch after the deploy, hidden until live (blockers in the plan). Open: Phase 5.
+  - Live check 2026-11-01 (Edge, trackers + the worker aborted, no form sent): the new build is served (the beacon's
+    spa false in the HTML), no Halloween, the TV order, PLUGINS + Downloads in the header, GAS's Try opens the gate
+    with the trial-free notice, `/store?utm_source=lc` -> `/?utm_source=lc#plugins` under the live CSP, /downloads +
+    the four product pages 200, no page errors and no CSP errors (only the aborted trackers). Deploy run
+    41313630093 green, the Cloudflare cache purge step green.
+  - Next: GAS 2 on the TV (Dan's note via `danavivi-83`): on this branch, hidden until live (blockers in the plan);
+    Dan's mock sits on `b67c76f`, so his session starts from the new tip and writes its own claim. Then Phase 5,
+    step F (the Mac pkgs checked first), the persona access fixes (step 13). Not run yet: WebKit, a real iPhone /
+    Mac Safari.
   - Motion on too (Lenis, the glide, GSAP): header PLUGINS glides from the top and with `?plugin=` in the address
     (no reload, parks at 0 / -0.2 px, focus on the heading), a channel change, Try opens the gate; 1280x665 +
     390x844, no errors. Nothing under `src` / `public` is untracked or ignored. No server left running.
