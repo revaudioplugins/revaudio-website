@@ -670,6 +670,44 @@ Approved-look pushback (taste, the user decides): hollow unlit names read greyed
 window; the huge names spend half the screen on four plugins; FREE shows one lonely row; facts beside the five
 adjectives (Daniel: "TRUE-PEAK · 8x OS · LUFS METERS"); keep the picture tear off the lit plugin's window.
 
+### Deploy today (2026-11-01, Claude Code `revaudio-67`, laptop 1)
+
+The user: a technical ("backend") review of the TV's links and wiring, then deploy today. Phase 5 waits for its own
+branch; what ships is the TV as it is after step 0.
+
+Review of the branch at `22747ef` (before the merge):
+- `npm run build` green (26 pages). Every internal href / src / srcset / poster in `dist/` resolves (0 broken). The
+  TV links: `/drift`, `/drift#try` (the anchor exists: DriftGetIn), `/gas`, `/radio-roulette`, `/revlimiter`.
+- The TV's gate ids (`revlimiter`, `radioroulette`, `gas` free) are all keys of the worker's `DL_PLUGINS`
+  (RevLimiter origin/main `tools/RevLicenseKeygen/gumroad-worker/src/worker.js:1169`), so none falls back to
+  RevLimiter; the register URL is the worker's `/download/register`. TrialGateModal's trigger contract is the same
+  on main (main only moved its buttons to `.rv-btn` and skips the return leg on `/downloads`).
+- Prices on the TV ($49, $19, Free, Free beta) come from plugins.ts, the product pages' source. The copy checked
+  against the plugins' code: GAS's three voices + its loudness LUT (`GasEngine.h`), Radio Roulette's ten stages +
+  the scan (same as its product page), the 30-day trials.
+- `?cat=` / `?plugin=` from the address are validated (unknown = ALL / ignored); `/store` keeps the query.
+- Merge facts (`git merge-tree`): 11 files conflict (DESIGN.md, astro.config, Footer, Header, PluginCard,
+  PluginShowcase, WordWall, gas, store/index, handoff, lessons). Main's new `/downloads` (in the header) renders
+  `<PluginShowcase mode="downloads" />`, which imports `DriftCard`: both must STAY (the old "keep them deleted"
+  would break the build). PluginCard: only main's /store used it, so it stays deleted.
+- Found: main's Halloween skin ("15% off, code BOO") + page-change scenes are live on Nov 1; Cloudflare Web
+  Analytics may count every TV history change as a page view (phase 4 checked Ads + Meta only); the system
+  requirements say macOS 12+ (the builds' floor is 10.13) and nothing on Apple Silicon; /support's FAQ says "up to
+  two machines" while the EULA says "a reasonable number of installations"; `drift.homeLead` ran "until Nov 1".
+
+Steps (the user's picks, 2026-11-01):
+- [ ] A. Merge origin/main by hand (keep PluginShowcase + DriftCard for /downloads; the Header keeps main's
+      `/downloads` link beside PLUGINS; gas.astro = main's + the one `/#plugins` change; store = the redirect).
+- [ ] B. Halloween off: the `<HalloweenSkin />` mounts and BaseLayout's HalloweenTransition + its fade-in script go
+      (the components stay for next year).
+- [ ] C. D9: the TV's Try + Product page keys join `.rv-btn` (main's `src/styles/buttons.css`).
+- [ ] D. The GAS notice (`TrialGateModal.astro`): a free download never says "before a trial ends".
+- [ ] E. `drift.homeLead` false: DRIFT drops back to its TV slot (third).
+- [ ] F. System requirements: the macOS floor + Apple Silicon, only where the shipped Mac build is checked.
+- [ ] G. The Cloudflare beacon: check its SPA page views; `"spa": false` if the TV's history changes count.
+- [ ] H. Checks on the merged tree: `npm run build`, the link check, `tests/smoke.spec.ts`, the TV + /downloads +
+      /gas in a browser; then the branch to origin, and main only on the user's "push" (= live).
+
 ### Later, each on its own branch
 
 - [ ] Ratings (D4, decided: verified only, after the TV): ask verified users only (after a Paddle purchase, at the end of a trial, weeks after a GAS

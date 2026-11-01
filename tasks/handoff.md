@@ -103,6 +103,11 @@
     `C:\Users\shlik\AppData\Local\Temp\claude\c--Revaudio\9a45622a-182f-481b-ae66-7bfc8dc8c798\scratchpad\`.
   - Lesson: `tasks/lessons.md` 2026-11-01 #1 (a bench pick that grows sizes must be fit-checked on the real page).
   - Claim CLOSED 2026-11-01 (session close). The next session writes its own claim here before editing.
+- Session 2026-11-01 (Claude Code `revaudio-67`, laptop 1). CLAIM: the writer on this worktree. The user: a
+  technical review of the TV's wiring ("LCD" = the TV's screen), then deploy today. Their picks: ship the TV as it is
+  after step 0's merge (Phase 5 later, its own branch); Halloween off; D9 = the TV's keys join `.rv-btn`; in the
+  deploy too: the GAS notice line, DRIFT no longer first (`drift.homeLead` false), the macOS floor in the system
+  requirements, the Cloudflare beacon's SPA page views. Review + steps: plan § "Deploy today".
 - For the user (dashboard, optional): a Cloudflare Redirect Rule `/store*` -> `/#plugins` would make it a real 301;
   the repo page works without it.
 - Found: index.astro's testimonial CTA said "14-day free trial" (the trial is 30 days in both plugins' code); fixed
