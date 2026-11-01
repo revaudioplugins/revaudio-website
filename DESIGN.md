@@ -116,15 +116,16 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
   - The lit plugin (right; every panel in one grid cell, so a swap never moves the page): its window
     (DRIFT's is the live run: it plays only while lit and on screen, never under reduced motion), the
     name + type word, the blurb, the five words as one line (the hot word lit; a line breaks between
-    words, never before a dot), the price (`$49` / `$19` / `Free` / `Free beta`), ONE lit key
+    words, never before a dot), the price (`$49` / `$19` / `Free` / `Free beta`), ONE key
     "Try free for 30 days" (TrialGateModal's email gate with the licence-worker id; GAS "Free download"
-    through the same gate; DRIFT to `/drift#try`) and a small "Product page ->" link. GAS's tall panel
+    through the same gate; DRIFT to `/drift#try`) and a "Product page ->" key. Both keys are the button
+    family (D9, the user 2026-11-01): Try = brass, two lines (honey when free), Product page = small ghost. GAS's tall panel
     stands beside its text (at least `--ww-side-min` 16rem wide, 17 on a small laptop). No Add to cart on
     home: buying stays on the product page.
     - Reading (the user's bench pick of 2026-11-01, option A of three; asked for "sexier and much more
       comfortable to understand"): bigger and bolder, still the house faces. The name in Bebas up to
-      2.7rem; the type word, the five words and "Product page" in Oswald 600; the blurb in Inter 500 at
-      1.1rem, tinted with the channel (`hsl(ch-h 30% 92%)`); the price 2.15rem; the key's label 1.3rem.
+      2.7rem; the type word and the five words in Oswald 600; the blurb in Inter 500 at
+      1.1rem, tinted with the channel (`hsl(ch-h 30% 92%)`); the price 2.15rem.
       Bigger type takes height from the window (it takes what the text leaves): on a tight screen (a
       small laptop to 1200 wide, a phone under 760 tall) the text keeps its look at about its old size,
       and the small laptop keeps the price row on one line (wrapped, DRIFT's window went 195 -> 54 px
@@ -275,7 +276,8 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
   (mouse only); press drops 1px with a shorter shadow, 80ms in / 160ms out, held >= 120ms (`src/lib/press.ts`).
   Tones: **brass** = trial / buy, **honey** = a free download (GAS), **ghost** = the second choice (dark steel,
   thin brass line). Sizes 64 / 56 / 48 / 40. The **shine** (a faint lamp band every 8s) only on the page's ONE
-  main action. Every regular action button uses it; a new one opts in by class, never restyles a copy. Stays out:
+  main action. Every regular action button uses it (the home TV's Try + Product page keys too, D9 2026-11-01); a
+  new one opts in by class, never restyles a copy. Stays out:
   the crane door + BUY NOW squares, the audio toys (demo rack, GAS pedal, station mixer), DRIFT's own world,
   image-plate buttons (SubscribeModal, /beta), the support chat, icon buttons (×, menu, cart, arrows, dots),
   the GAS 2 page's ticket stub (next item). /gas keeps its own copy of the honey CTA (its bench is `/gasctalab`).

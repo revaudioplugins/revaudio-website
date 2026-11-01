@@ -293,18 +293,19 @@ const first = items[0]?.slug ?? '';
             </p>
             <div class="ww-buy">
               {it.price && <span class="ww-price">{it.price}</span>}
+              {/* the button family (buttons.css, D9 2026-11-01): Try = brass (honey when free), Product page = ghost */}
               {it.action && (it.action.href ? (
-                <a class="ww-try" href={it.action.href}>
-                  <span class="ww-try-l">{it.action.label}</span>
-                  {it.action.sub && <span class="ww-try-s">{it.action.sub}</span>}
+                <a class:list={['ww-try rv-btn rv-btn--stack', it.cats.includes('free') && 'rv-btn--honey']} href={it.action.href}>
+                  <span>{it.action.label}</span>
+                  {it.action.sub && <span class="rv-btn__sub">{it.action.sub}</span>}
                 </a>
               ) : (
-                <button type="button" class="ww-try" {...it.action.attrs}>
-                  <span class="ww-try-l">{it.action.label}</span>
-                  {it.action.sub && <span class="ww-try-s">{it.action.sub}</span>}
+                <button type="button" class:list={['ww-try rv-btn rv-btn--stack', it.cats.includes('free') && 'rv-btn--honey']} {...it.action.attrs}>
+                  <span>{it.action.label}</span>
+                  {it.action.sub && <span class="rv-btn__sub">{it.action.sub}</span>}
                 </button>
               ))}
-              <a class="ww-more" href={`/${it.slug}`}><span class="sr-only">{it.name} </span>Product page <span aria-hidden="true">&rarr;</span></a>
+              <a class="ww-more rv-btn rv-btn--ghost rv-btn--sm" href={`/${it.slug}`}><span class="sr-only">{it.name} </span>Product page <span aria-hidden="true">&rarr;</span></a>
             </div>
           </div>
         </article>
@@ -1433,8 +1434,6 @@ const first = items[0]?.slug ?? '';
   }
   .ww-cat:focus-visible,
   .ww-row:focus-visible,
-  .ww-try:focus-visible,
-  .ww-more:focus-visible,
   .ww-back:focus-visible {
     outline: 2px solid var(--ww-ink-hot);
     outline-offset: 3px;
@@ -1659,55 +1658,7 @@ const first = items[0]?.slug ?? '';
     color: var(--ww-ink-hot);
     text-shadow: 0 0 8px var(--ww-glow);
   }
-  /* the one action: lit in the channel's phosphor, dark type (the menu's inverse video, as a key) */
-  .ww-try {
-    appearance: none;
-    display: inline-grid;
-    justify-items: start;
-    gap: 0.15rem;
-    margin: 0;
-    padding: 0.62rem 1.15rem 0.6rem;
-    border: 0;
-    border-radius: 4px;
-    background: var(--ww-ink-hot);
-    color: var(--ww-ink-on);
-    text-align: left;
-    text-decoration: none;
-    cursor: pointer;
-    box-shadow: 0 0 18px var(--ww-glow), 0 1px 0 rgba(0, 0, 0, 0.6);
-    transition: filter 120ms cubic-bezier(0.2, 0.9, 0.25, 1.25), transform 120ms cubic-bezier(0.2, 0.9, 0.25, 1.25);
-  }
-  .ww-try-l {
-    font-family: var(--font-display);
-    font-size: 1.3rem;
-    line-height: 1;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-  .ww-try-s {
-    font-family: var(--font-mono);
-    font-size: 0.74rem;
-    letter-spacing: 0.08em;
-    opacity: 0.92;
-  }
-  @media (hover: hover) {
-    .ww-try:hover { filter: brightness(1.1); transform: translateY(-1px); }
-  }
-  .ww-try:active { transform: translateY(1px); }
-  .ww-more {
-    font-family: 'Oswald', sans-serif;
-    font-weight: 600;
-    font-size: 1rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ww-ink);
-    text-decoration: none;
-    border-bottom: 1px solid transparent;
-    padding-block: 0.3rem;
-  }
-  @media (hover: hover) {
-    .ww-more:hover { color: var(--ww-ink-hot); border-bottom-color: currentColor; }
-  }
+  /* .ww-try + .ww-more: the button family's look (buttons.css, D9 2026-11-01); placement only here */
 
   /* ==========================================================================
      INK. On the wood: brass, the lit one oxide (the old stencil). On the
@@ -2158,13 +2109,10 @@ const first = items[0]?.slug ?? '';
     .ww[data-ww-lib='on'] .ww-tag-ask { font-size: 1.6rem; }
     .ww-cat { font-size: 1.52rem; padding: 0.3rem 0.55rem 0.16rem; }
     .ww-price { font-size: 1.75rem; }
-    .ww-try-l { font-size: 1.12rem; }
-    .ww-more { font-size: 0.86rem; }
   }
   @media (max-width: 860px) and (max-height: 760px) {
     .ww-pname { font-size: 1.75rem; }
     .ww-price { font-size: 1.9rem; }
-    .ww-try-l { font-size: 1.15rem; }
   }
   @media (min-width: 861px) and (max-width: 1200px), (max-width: 860px) and (max-height: 760px) {
     .ww-blurb { font-size: 1rem; line-height: 1.4; }
