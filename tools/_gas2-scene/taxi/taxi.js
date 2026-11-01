@@ -9,7 +9,8 @@
    Two pages, one cab (2026-11-01): page-b (its #scene, #stage, the #ticket form + #veil) and the phone's postcards.html
    ([data-taxi-scene] = the frame's own box, [data-taxi-stage] = the end page; it fires gas2:mailed with { roll } inside
    the stamp's tap and gas2:reset when the postcards are dealt again). README "On the phone".
-   Dev: ?taxi=park shows it parked, ?taxi=bench adds the size / place bench, ?store=<url> sends the ride elsewhere. */
+   Dev: ?taxi=park shows it parked, ?taxi=arrive rolls it in by itself (silent), ?taxi=bench adds the size / place bench,
+   ?store=<url> sends the ride elsewhere. */
 (() => {
   const Q = new URLSearchParams(location.search);
   const STORE = (() => {                               // ?store= is for a local review only, and only to an http(s) page:
@@ -290,17 +291,23 @@
       { duration: 900 + Math.random() * 300, easing: 'cubic-bezier(.15,.6,.3,1)', fill: 'forwards' });
   }
 
-  // ── the page's Download FREE turns over to a red "To the store" while the cab waits (Dan, 2026-10-31) ──
+  // ── the page's Download FREE turns over to a red "To the store" while the cab waits (Dan, 2026-10-31). A stage with
+  //    data-taxi-flip="hard" turns it harder and faster (the phone, Dan 2026-11-01: "I want it to flip harder faster"):
+  //    a deeper turn in about half the time that lands with a snap (the house switch-lever curve) ──
   const cta = document.getElementById('cta'), ctaHTML = cta ? cta.innerHTML : '';
+  const HARD = stage.dataset.taxiFlip === 'hard';
   let red = false;
   function turn(on) {
     if (!cta || red === on) return;
     red = on;
     const swap = () => { cta.classList.toggle('tx-red', on); cta.innerHTML = on ? 'To the store' : ctaHTML; };
     if (still()) { swap(); return; }
-    const P = 'perspective(700px) ';
-    cta.animate([{ transform: P + 'rotateY(0deg)' }, { transform: P + 'rotateY(90deg)' }], { duration: 240, easing: 'cubic-bezier(.55,0,.9,.4)' })
-      .onfinish = () => { swap(); cta.animate([{ transform: P + 'rotateY(-90deg)' }, { transform: P + 'rotateY(0deg)' }], { duration: 460, easing: 'cubic-bezier(.2,.9,.25,1.12)' }); };
+    const P = HARD ? 'perspective(400px) ' : 'perspective(700px) ';
+    cta.animate([{ transform: P + 'rotateY(0deg)' }, { transform: P + 'rotateY(90deg)' }], { duration: HARD ? 120 : 240, easing: HARD ? 'cubic-bezier(.7,0,1,.6)' : 'cubic-bezier(.55,0,.9,.4)' })
+      .onfinish = () => { swap(); cta.animate(HARD
+        ? [{ transform: P + 'rotateY(-90deg)' }, { transform: P + 'rotateY(0deg) scale(1.08)', offset: .6 }, { transform: P + 'rotateY(0deg) scale(1)' }]
+        : [{ transform: P + 'rotateY(-90deg)' }, { transform: P + 'rotateY(0deg)' }],
+        { duration: HARD ? 280 : 460, easing: HARD ? 'cubic-bezier(0.2, 0.9, 0.25, 1.25)' : 'cubic-bezier(.2,.9,.25,1.12)' }); };
   }
   // red, it rides: caught before the page's own click (which opens the service ticket)
   document.addEventListener('click', e => {
@@ -342,6 +349,7 @@
 
   if (Q.get('taxi') === 'park' || Q.get('taxi') === 'bench') park();
   if (Q.get('taxi') === 'bench') bench();
+  if (Q.get('taxi') === 'arrive') rollT = setTimeout(arrive, 1200);   // a review: it rolls in by itself (silent: no tap has unlocked the sound)
 
   // ── ?taxi=bench: size and place the parked cab by eye; COPY = the numbers to bake into taxi.css ──
   function bench() {

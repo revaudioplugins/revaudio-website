@@ -47,14 +47,13 @@ async function drag(p, dx, dy, ms, hold, after = 650) {   // a finger-like drag 
           const r = (s) => { const b = document.querySelector(s).getBoundingClientRect(); return [Math.round(b.left), Math.round(b.top), Math.round(b.right), Math.round(b.bottom)]; };
           const op = (s) => getComputedStyle(document.querySelector(s)).opacity;
           const tx = document.querySelector(".tx"), hit = (x, y) => { const el = document.elementFromPoint(x, y); return el ? el.className : ""; };
-          const car = tx && !tx.hidden ? r(".tx-car") : null, no = car ? r(".tx-no") : null;
+          const car = tx && !tx.hidden ? r(".tx-car") : null;
           return { sw: document.documentElement.scrollWidth, iw: innerWidth, ih: innerHeight, rd: r(".rd"), n: r(".rd .n"), cta: r(".rd .cta"), bar: r(".endbar"),
                    ended: document.getElementById("desk").classList.contains("ended"), end: op(".end"), ti: op(".rd .ti"), scr: op(".rd .scr"),
                    gas2px: parseFloat(getComputedStyle(document.querySelector(".rd .n")).fontSize), label: document.querySelector(".rd .cta").innerText.trim(),
                    red: document.querySelector(".rd .cta").classList.contains("tx-red"), here: document.documentElement.classList.contains("tx-here"),
-                   car, cap: car ? r(".tx-cap") : null, no,
-                   // a thumb on Not now (14 px above and below its words) and on the cab's body land on them
-                   noTap: no ? [hit((no[0] + no[2]) / 2, no[1] - 12), hit((no[0] + no[2]) / 2, no[3] + 12)] : null,
+                   // no HOP IN · NOT NOW on the phone (Dan, round 11: "remove it"); a thumb on the cab's body lands on it
+                   car, cap: car ? getComputedStyle(document.querySelector(".tx-cap")).display : null,
                    carTap: car ? hit(Math.min(innerWidth - 4, car[0] + (car[2] - car[0]) * .75), car[1] + (car[3] - car[1]) * .6) : null,
                    // the end page's spot (D, Dan 2026-11-01): GAS2 hangs under the station, clear of the pump's plinth (frame y 830)
                    spot: document.getElementById("desk").dataset.spot || "", pump: (() => { const v = document.querySelector(".vista").getBoundingClientRect(); return Math.round(v.top + v.height * 830 / 1024); })() };
@@ -62,7 +61,7 @@ async function drag(p, dx, dy, ms, hold, after = 650) {   // a finger-like drag 
         const pass = e.ended && e.end === "1" && e.ti === "1" && e.scr === "1" && e.sw <= e.iw && e.rd[0] >= 0 && e.rd[2] <= e.iw && e.n[1] >= 0 && e.cta[3] < e.bar[1] &&
           (!e.spot || e.n[1] >= e.pump) &&
           (cab ? e.label === "To the store" && e.red && !e.here && e.car && e.car[3] <= e.n[1] && e.car[0] + .513 * (e.car[2] - e.car[0]) <= 1 && e.car[2] <= e.iw &&
-                 e.cap[0] >= 0 && e.cap[1] >= 0 && e.cap[2] <= e.iw && e.noTap.every((c) => c === "tx-no") && e.carTap === "tx-hit"
+                 e.cap === "none" && e.carTap === "tx-hit"
            : q.endsWith("sent") ? e.label === "✓ Keys in the mail" && !e.red && !e.car
            : e.label === "⤓ Download FREE" && !e.car);
         out.layout.push({ size: `${w}x${h}`, q, pass, m: e });
@@ -246,15 +245,12 @@ async function drag(p, dx, dy, ms, hold, after = 650) {   // a finger-like drag 
   ok("nothing is sent (no request besides assets)", netMail === 0, netMail);
   if (SHOTS) await p.screenshot({ path: `${SHOTS}/flow-sent.png` });
   // the taxi (taxi/, Dan 2026-11-01: the laptop page's, here too): it rolls in once the end page is up and parks in front
-  // of the station, the ✓ turns over to a red "To the store"; Not now = it drives off and the button turns back
+  // of the station, the ✓ turns over to a red "To the store" (no Not now here: The postcards again sends it off)
   await p.waitForFunction(() => document.querySelector(".tx-cap.tx-on") && document.querySelector(".rd .cta.tx-red"), null, { timeout: 8000 }).catch(() => {});
   const cab = () => p.evaluate(() => ({ shown: !document.querySelector(".tx").hidden, cta: document.querySelector(".rd .cta").innerText.trim(), red: document.querySelector(".rd .cta").classList.contains("tx-red") }));
   const cab1 = await cab();
   ok("after mailing the taxi pulls up in front of the station, the button turns over to a red To the store", cab1.shown && cab1.red && cab1.cta === "To the store", cab1);
   if (SHOTS) await p.screenshot({ path: `${SHOTS}/flow-taxi.png` });
-  await p.click(".tx-no"); await p.waitForTimeout(2900);
-  const cab2 = await cab();
-  ok("Not now: it drives off, the button turns back to ✓ Keys in the mail", !cab2.shown && !cab2.red && cab2.cta === "✓ Keys in the mail", cab2);
   await p.click("#again"); await p.waitForTimeout(1200);
   const re = await p.evaluate(() => ({ cur: window.gas2Postcards.cur, ended: document.getElementById("desk").classList.contains("ended"), sent: document.getElementById("desk").classList.contains("sent"),
     o6: getComputedStyle(document.querySelectorAll(".pc")[5]).opacity, top: document.querySelector(".pc.top").getBoundingClientRect().left,

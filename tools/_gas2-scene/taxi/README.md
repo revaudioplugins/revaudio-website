@@ -49,7 +49,7 @@ the script listens to the service ticket's own `submit` (page-b stamps SENT firs
 The sound pans with the car (Web Audio, a StereoPanner per voice). Sound starts only after a tap (the ticket's submit is
 that tap); the four files are fetched with the page (140 KB) and decoded on the first submit.
 
-Dev: `?taxi=park` shows it parked at load; `?taxi=bench` adds a panel (top left) to size and place it by eye (Size =
+Dev: `?taxi=park` shows it parked at load; `?taxi=arrive` rolls it in by itself 1.2 s after load (silent: no tap); `?taxi=bench` adds a panel (top left) to size and place it by eye (Size =
 its length in cqw, Stop = where its left end parks, Lift; ▶ Arrive replays the roll-in with sound; COPY = the three
 numbers for `taxi.css`); `?drone=0` skips the drone intro.
 
@@ -68,7 +68,10 @@ Dan: the laptop page's taxi on the phone page too, in place of its railway ticke
   canvas follows the stage's own box (iOS can settle a page under its toolbar without a resize event).
 - The phone's stop: page-b's 105 cqw / -53.8 cqw (spot D's frame starts at the screen's left edge, so the driver is just
   past it too), the tyres on the forecourt just under the pump's plinth (`.txscene .tx { bottom: 17% }`, frame y 850),
-  GAS2 right under them; the caption held 16 px inside the screen, Not now a 44 px tap. ✓ Keys in the mail turns over.
+  GAS2 right under them. No HOP IN · NOT NOW there (Dan, round 11 of the phone's review: "remove it"): the cab waits;
+  The postcards again sends it off. ✓ Keys in the mail turns over harder and faster (Dan: "I want it to flip harder
+  faster"): `data-taxi-flip="hard"` on the stage = 120 + 280 ms, a deeper turn, a punch and the house snap curve;
+  page-b keeps its 240 + 460 ms quarter turns.
 - The phone loads taxi.js with the end page's photo (from HEAR IT on: ~0.7 MB of art + sound), never on its first card.
 - Checked: the postcards' check.cjs (the parked cab at five phone sizes, the ride, Not now, The postcards again, a tap on
   the cab and on the button = the store), the iOS Simulator (parked; revaudio.net/store#radio-roulette lands its card
