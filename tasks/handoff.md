@@ -282,6 +282,19 @@ Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postca
   size of the download free"), `94f2621`: taxi.js puts the red label in `.tx-label`; the phone lays an unseen "⤓ Download
   FREE" under it in one grid cell, so red = that box to the pixel (WebKit + Chrome, three sizes; check.cjs asserts it at
   five: 47 + 40 pass). page-b identical. ROUND 13 (`notes-r13`) = version 15, same URL, that note + what changed.
+- Then (Dan: "summon a tester ... technical UX and backend"): one Opus tester agent ran the phone page end to end
+  (WebKit at five sizes, real Chrome with sound, 4x CPU throttle, Slow 3G, races, bfcache, a11y; scripts + results in
+  the session scratchpad `tester/`): smooth (60 fps on almost every motion at 4x), no blockers, 3 majors, all three
+  confirmed here. On Dan's "fix", `a788990` (taxi.js + postcards.html): a stamp before taxi.js was in lost the cab
+  (now `window.gas2Mailed` + `window.gas2AC` from the tap, replayed on load); a slow line sent a lone tyre (now the
+  cab waits for its decoded art; 6 s past its time with none, no cab: the button turns red straight to the store);
+  Back replayed the squeal (now `pagehide` stops every sound); plus: the reset clears the ride's timers + dust, a
+  hidden page stops the engine + suspends the audio, a resize re-measures the cab, the stack holds still after an
+  accepted stamp, the store is `/store/#radio-roulette`. The tester's scenarios rerun clean (G1, E, I, Slow 3G,
+  hidden, stamp then ‹/›/flick, Back with bfcache: -12 dBFS tail -> one -42 dBFS blip); check.cjs 47 + 40 pass;
+  page-b identical. ROUND 14 (`notes-r14`) = version 16, same URL (build `a788990`). Left for Dan (not fixed): small
+  text + the hint over the cards at 375x553, a11y names/announcements, the cab's faint focus ring, the first record
+  tap's ~0.25 s freeze (Chrome on a Mac), the HEAR IT demo audio (1.75 MB) fetched at card 4, Esc = the cab gone.
 - Open (Dan): (1) his word from the phone; more notes go to `notes-r10`;
   (2) painted art still only on his OK;
   (3) per-grade renders (Yoni) before any grade card plays its own sound; (4) later: this as page-b's phone layout;

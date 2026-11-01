@@ -112,6 +112,10 @@ Dan's concept (2026-10-29): a stack of 1950s "Greetings from GAS 2" postcards, p
   - [ ] e. ✓ check.cjs 47 + 40 (the cab parks, the red button, Not now turns it back, a tap on the cab = the store URL, no
         errors); ✓ iOS Simulator; ✓ the store landing (`revaudio.net/store#radio-roulette`) on the Simulator; open: Dan's
         iPhone with sound (a Wi-Fi URL from this Mac, on his OK).
+- [x] 32. Dan's notes on the taxi (rounds 11-12): no HOP IN · NOT NOW, a harder faster flip, red = Download FREE size.
+- [x] 33. A tester agent's run (Dan's ask): 3 majors + 5 quick fixes done on his "fix" (`a788990`); round 14 up.
+- [ ] 34. Left for Dan: small text + hint at 375x553, a11y names/announcements, the cab's focus ring, the record's
+        first-tap freeze, the demo audio fetched at card 4, Esc = the cab gone (handoff, the tester's run).
 
 # GAS 2 drone descent (branch `feat/gas2-drone`, 2026-10-28, revaudio-59) — SCENE + BENCH BUILT, art next
 
