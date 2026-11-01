@@ -78,7 +78,7 @@ const gateNames = Object.fromEntries(plugins.map((p) => [dlGateId(p), p.name]));
         <input type="checkbox" data-tg-consent />
         <span>Also send me new-plugin drops and demo codes (optional)</span>
       </label>
-      <p class="tg-notice">We'll send a few short emails about getting started, and a heads-up before a trial ends. Unsubscribe anytime.</p>
+      <p class="tg-notice" data-tg-notice>We'll send a few short emails about getting started, and a heads-up before a trial ends. Unsubscribe anytime.</p>
     </div>
     <button type="submit" class="tg-submit rv-btn" data-tg-submit>Send my link</button>
     <p class="tg-err" data-tg-err role="alert" aria-live="polite"></p>
@@ -116,6 +116,7 @@ const gateNames = Object.fromEntries(plugins.map((p) => [dlGateId(p), p.name]));
     var form = modal.querySelector('[data-tg-form]');
     var email = modal.querySelector('[data-tg-email]');
     var submit = modal.querySelector('[data-tg-submit]');
+    var notice = modal.querySelector('[data-tg-notice]');
     var err = modal.querySelector('[data-tg-err]');
     var status = modal.querySelector('[data-tg-status]');
     var ready = modal.querySelector('[data-tg-ready]');
@@ -183,6 +184,10 @@ const gateNames = Object.fromEntries(plugins.map((p) => [dlGateId(p), p.name]));
       sub.textContent = free
         ? 'Free forever. Full version, no trial clock, no credit card. Enter your email and your download link lands in your inbox.'
         : 'Download 30 days free first, full version, no credit card. Enter your email and your download link lands in your inbox.';
+      // a free download has no trial to end
+      notice.textContent = free
+        ? "We'll send a few short emails about getting started. Unsubscribe anytime."
+        : "We'll send a few short emails about getting started, and a heads-up before a trial ends. Unsubscribe anytime.";
       form.hidden = false;
       status.hidden = true;
       ready.hidden = true;
