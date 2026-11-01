@@ -98,6 +98,10 @@ async function drag(p, dx, dy, ms, hold, after = 650) {   // a finger-like drag 
     }
     await p.context().close();
   }
+  // red, the button keeps the Download FREE size (Dan, round 12): the same box at every size
+  const box = (size, q) => { const l = out.layout.find((x) => x.size === size && x.q === q); return l && l.m.cta; };
+  const sameBtn = SIZES.map(([w, h]) => { const a = box(`${w}x${h}`, "?card=7"), b = box(`${w}x${h}`, "?card=7&sent&taxi=park"); return { size: `${w}x${h}`, free: a, red: b }; });
+  ok("red To the store = the Download FREE button's size and place, at every phone size", sameBtn.every((s) => s.free && s.red && s.free.every((v, i) => Math.abs(v - s.red[i]) <= 1)), sameBtn);
 
   // ── the stack: flick, spring back, buttons, keys, the last card stays ──
   const p = await page(wk, 402, 714);

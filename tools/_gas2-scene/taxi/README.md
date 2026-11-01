@@ -72,6 +72,8 @@ Dan: the laptop page's taxi on the phone page too, in place of its railway ticke
   The postcards again sends it off. ✓ Keys in the mail turns over harder and faster (Dan: "I want it to flip harder
   faster"): `data-taxi-flip="hard"` on the stage = 120 + 280 ms, a deeper turn, a punch and the house snap curve;
   page-b keeps its 240 + 460 ms quarter turns.
+  Red, the phone's button keeps the Download FREE size (Dan, round 12): taxi.js puts the red label in `.tx-label`, and
+  the phone lays an unseen "⤓ Download FREE" under it in one grid cell, so the button sizes to that (page-b unchanged).
 - The phone loads taxi.js with the end page's photo (from HEAR IT on: ~0.7 MB of art + sound), never on its first card.
 - Checked: the postcards' check.cjs (the parked cab at five phone sizes, the ride, Not now, The postcards again, a tap on
   the cab and on the button = the store), the iOS Simulator (parked; revaudio.net/store#radio-roulette lands its card

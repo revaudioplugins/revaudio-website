@@ -300,7 +300,11 @@
   function turn(on) {
     if (!cta || red === on) return;
     red = on;
-    const swap = () => { cta.classList.toggle('tx-red', on); cta.innerHTML = on ? 'To the store' : ctaHTML; };
+    const swap = () => {                                // the red label in its own span: a page can size the button by it
+      cta.classList.toggle('tx-red', on);
+      if (on) { const l = document.createElement('span'); l.className = 'tx-label'; l.textContent = 'To the store'; cta.replaceChildren(l); }
+      else cta.innerHTML = ctaHTML;
+    };
     if (still()) { swap(); return; }
     const P = HARD ? 'perspective(400px) ' : 'perspective(700px) ';
     cta.animate([{ transform: P + 'rotateY(0deg)' }, { transform: P + 'rotateY(90deg)' }], { duration: HARD ? 120 : 240, easing: HARD ? 'cubic-bezier(.7,0,1,.6)' : 'cubic-bezier(.55,0,.9,.4)' })
