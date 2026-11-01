@@ -13,6 +13,12 @@ Files: `tools/_gas2-scene/page-b.html` (the `#ticket` form and its `.ticket .ck*
   1141x636); MAIL ME THE KEYS without Terms = the browser's "check this box", no SENT; ticked = SENT, the cab parks, the
   button turns "To the store"; 0 page errors. Not checked: the phone page (`postcards.html` has its own email card, no
   boxes yet), a real iPhone.
+- Round 2 (Dan, same day: "the HOP IN reading over the taxi, I don't want it"): `.tx-cap { display: none }` in page-b's
+  own CSS, as the phone did (round 11, `3378948`); `taxi/**` untouched. The cab waits, Esc still sends it off (checked,
+  Chromium + WebKit). His "commits that aren't there": checked every GAS 2 branch (`feat/gas2-taxi`, `-postcards`,
+  `-drone`, `-phone`, `-page`, `-page-s2`) line by line against `origin/main`: nothing missing; HOP IN was off on the
+  phone only. Phone-only, still open for the laptop: the harder, faster red flip and the red button keeping the
+  Download FREE size.
 - Next: Dan's look at http://127.0.0.1:4465/page-b.html (server from this worktree's `tools/_gas2-scene`); then the
   phone page's boxes (owner `danavivi-83 [76660c]`'s postcards) and the merge to main, on his word.
 
