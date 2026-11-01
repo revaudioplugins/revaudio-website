@@ -225,9 +225,11 @@
         ${x} .wwb-n { font-style: normal; font-family: 'WWB Seg', monospace; font-size: 0.74rem; letter-spacing: 0.05em; color: var(--ww-ink); opacity: 0.9; }
         ${x} .ww-list { position: relative; }
         ${x} .wwb-step2 { position: absolute; top: -0.2rem; left: 0; translate: 0 -100%; pointer-events: none; }
-        ${x} .wwb-step3 { margin-top: 0.2rem; }
+        /* step 3 = a corner badge on the TRY key: a row of its own took ~40 px from the window on a small laptop */
+        ${x} .ww-try { position: relative; }
+        ${x} .wwb-step3 { position: absolute; top: 0; left: 0; translate: -45% -45%; pointer-events: none; }
+        ${x} .wwb-step3 b { background: var(--ww-ink-on); color: var(--ww-ink-hot); box-shadow: 0 0 0 2px var(--ww-ink-hot), 0 0 12px var(--ww-glow); }
         ${SMALL} { ${x} .wwb-hint, ${x} .wwb-step { font-size: 0.56rem; } ${x} .ww-cat { font-size: 0.94rem; padding: 0.4rem 0.5rem 0.38rem 0.42rem; } }
-        @media (min-width: 861px) { ${x} { --ww-side-min: 16rem; } } /* the step 3 chip beside GAS's tall window */
         ${PHONE} {
           ${x} .wwb-hint { padding: 0 0 0.45rem; border-right: 0; border-bottom: 2px dashed hsl(var(--ww-on-h) 70% 60% / 0.7); }
           ${x} .wwb-hint, ${x} .wwb-step { font-size: 0.62rem; }
@@ -294,10 +296,17 @@
         }`)(M('c')),
     },
   };
-  // GAS's tall window keeps its text beside it: bigger type there stretched the TV past the screen (1280x665: 548 ->
-  // 734 px), so on a laptop that text gets a wider column and a smaller blurb
-  const FIT = (x, blurb) => `@media (min-width: 861px) { ${x} { --ww-side-min: 16rem; }
-      ${x} .ww-panel.is-portrait .ww-blurb { font-size: ${blurb}; } ${x} .ww-panel.is-portrait .ww-price { font-size: 1.8rem; } }`;
+  // Bigger type costs the window its height (the window takes what the text leaves). Measured fixes, 2026-11-01:
+  // - GAS's tall window keeps its text beside it, so on a laptop that text gets a wider column (1280x665: the TV went
+  //   548 -> 734 px tall without it);
+  // - a tight screen (a small laptop, 1141x636; a short phone, 375x667 / 360x740) has no glass to spare: the text keeps
+  //   its look but steps down to about NOW's size (`tight`), and on the small laptop the price row stays one line
+  //   (wrapped, DRIFT's window went 195 -> 54 px tall).
+  const FIT = (x, tight, more) => `@media (min-width: 861px) { ${x} { --ww-side-min: 16rem; } }
+      ${SMALL} { ${x} { --ww-side-min: 17rem; } ${x} .ww-price { font-size: 1.75rem; } ${x} .ww-try-l { font-size: 1.12rem; }
+        ${x} .ww-more { font-size: ${more}; } ${tight} }
+      @media (max-width: 860px) and (max-height: 760px) { ${x} .ww-pname { font-size: 1.75rem; } ${x} .ww-price { font-size: 1.9rem; }
+        ${x} .ww-try-l { font-size: 1.15rem; } ${tight} }`;
   const READING = {
     a: ((x) => `
       ${x} .ww-pname { font-size: clamp(1.9rem, 2.8vw, 2.7rem); }
@@ -307,24 +316,24 @@
       ${x} .ww-price { font-size: 2.15rem; }
       ${x} .ww-try-l { font-size: 1.3rem; } ${x} .ww-try-s { font-size: 0.74rem; opacity: 0.92; }
       ${x} .ww-more { font-family: 'Oswald', sans-serif; font-weight: 600; font-size: 1rem; letter-spacing: 0.1em; }
-      ${FIT(x, '0.98rem')}
-      ${PHONE} { ${x} .ww-blurb { font-size: 1.06rem; } }`)(R('a')),
+      ${PHONE} { ${x} .ww-blurb { font-size: 1.06rem; } }
+      ${FIT(x, `${x} .ww-blurb { font-size: 1rem; line-height: 1.4; } ${x} .ww-pwords { font-size: 0.9rem; }`, '0.86rem')}`)(R('a')),
     b: ((x) => `
       ${x} .ww-pname { font-size: clamp(1.9rem, 2.8vw, 2.7rem); }
       ${x} :is(.ww-ptype, .ww-pwords, .ww-more) { font-family: 'WWB Mono', monospace; font-size: 0.98rem; letter-spacing: 0.1em; opacity: 1; }
       ${x} .ww-blurb { font-family: 'WWB Mono', monospace; font-size: 1.06rem; line-height: 1.45; color: var(--ww-ink-text); opacity: 1; text-shadow: 0 0 8px var(--ww-glow); }
       ${x} .ww-price { font-size: 2.15rem; }
       ${x} .ww-try-l { font-size: 1.3rem; } ${x} .ww-try-s { font-family: 'WWB Mono', monospace; font-size: 0.8rem; opacity: 0.92; }
-      ${FIT(x, '0.94rem')}
-      ${PHONE} { ${x} .ww-blurb { font-size: 1.02rem; } }`)(R('b')),
+      ${PHONE} { ${x} .ww-blurb { font-size: 1.02rem; } }
+      ${FIT(x, `${x} .ww-blurb { font-size: 0.98rem; line-height: 1.38; } ${x} :is(.ww-ptype, .ww-pwords) { font-size: 0.88rem; }`, '0.86rem')}`)(R('b')),
     c: ((x) => `
       ${x} .ww-pname { font-size: clamp(1.9rem, 2.8vw, 2.7rem); }
       ${x} :is(.ww-ptype, .ww-pwords, .ww-more) { font-family: 'VT323', monospace; font-size: 1.3rem; letter-spacing: 0.08em; opacity: 1; }
       ${x} .ww-blurb { font-family: 'VT323', monospace; font-size: 1.45rem; line-height: 1.12; color: var(--ww-ink-text); opacity: 1; text-shadow: 0 0 8px var(--ww-glow); }
       ${x} .ww-price { font-size: 2.15rem; }
       ${x} .ww-try-l { font-size: 1.3rem; } ${x} .ww-try-s { font-family: 'VT323', monospace; font-size: 1.05rem; letter-spacing: 0.04em; opacity: 0.92; }
-      ${FIT(x, '1.28rem')}
-      ${PHONE} { ${x} .ww-blurb { font-size: 1.42rem; } }`)(R('c')),
+      ${PHONE} { ${x} .ww-blurb { font-size: 1.42rem; } }
+      ${FIT(x, `${x} .ww-blurb { font-size: 1.3rem; line-height: 1.06; } ${x} :is(.ww-ptype, .ww-pwords) { font-size: 1.12rem; letter-spacing: 0.05em; }`, '1.08rem')}`)(R('c')),
   };
 
   let st = { bg: null, frame: null, dir: null, view: 'both', pview: 'list', size: { laptop: 0, phone: 0 }, cur: {}, menu: 'now', reading: 'now' };
@@ -409,7 +418,7 @@
   }
 
   // the menu line + reading look in one frame: the CSS, the wall's two switches, and the bench-only elements (the hint,
-  // a count per category, DRIFT's step 2 + 3 chips), all .wwb-x so a switch back to NOW leaves the page as built
+  // a count per category, DRIFT's step 2 chip and step 3 badge), all .wwb-x so a switch back to NOW leaves the page as built
   function dressLook(f) {
     const doc = stages[f].ready && stages[f].iframe.contentDocument;
     const wallEl = doc && doc.querySelector(WALL);
@@ -432,7 +441,7 @@
     });
     if (m.steps) {
       wallEl.querySelector('.ww-list').appendChild(mk('li', 'wwb-step wwb-step2', '<b>2</b><span>PICK A PLUGIN</span>'));
-      wallEl.querySelectorAll('.ww-panel .ww-buy').forEach((buy) => buy.before(mk('p', 'wwb-step wwb-step3', '<b>3</b><span>TRY IT FREE</span>')));
+      wallEl.querySelectorAll('.ww-panel .ww-try').forEach((t) => t.appendChild(mk('span', 'wwb-step wwb-step3', '<b>3</b>')));
     }
   }
   const dressAll = () => ['laptop', 'phone'].forEach(dressLook);
