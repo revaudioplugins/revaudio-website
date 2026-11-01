@@ -167,3 +167,8 @@ an idle timer shorter than that fires before Lenis moved; wait while `lenis.isSc
    Restart the wait at the first look that finds it on show again, and gate every trigger (the clock, a change's
    landing, the bench) on the one "on show and lit" test: a pick while the tube was still lighting tore 320 ms
    before it was lit. Test the arrival, not only the steady state: every earlier check scrolled to the TV first.
+7. Headless timing checks are load-sensitive on laptop 1: with Ableton Live and a media player running, headless
+   WebKit's frame gap went from ~180 ms to 230-386 ms (Chromium ~26 to ~55 ms) and 11-19 of motioncheck's
+   first-frame checks failed. The component of the commit before failed the same checks in the same hour, so it
+   was the machine, not the change. Before calling a timing FAIL a regression, run the previous commit as a control
+   in the same hour and compare the frame gaps the check prints; re-run on an idle machine for the record.

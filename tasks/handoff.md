@@ -26,8 +26,8 @@
   the user looked at TUNE and found "appears, then slides" + "a different direction for each plugin" odd, and wanted
   it shorter; so GEAR CHANGE is gone and the one motion is smaller, shorter and always the same way (fade and travel
   as one tween, 12 px / 340 ms, ~0.55 s click to rest; `--ww-mv-*`; the bench's RISE / DROP picks the way): commits
-  `63841e4` + `0431ee7` (the control runs), local only; the shared wiki rule is `a953ccb` in revaudio-shared, local
-  too (that clone was ahead 3 / behind 6: at push time one merge, not `pull --rebase`). Checks + controls in the plan.
+  `63841e4` + `0431ee7` (the control runs), local only; the shared wiki rule `a953ccb` went out with another
+  session's push of revaudio-shared (on origin/main, checked 2026-10-19). Checks + controls in the plan.
   A fresh bench window was opened on the Samsung 2026-10-19 (any older bench tab shares `wwbench:v1`: close it).
   Step 3b, same day (the user, after a look on the phone: the reading suffered "because of the pixels"): the
   scanlines + grille moved onto the glass, under the text and the pictures (the user's pick A of a comparison
@@ -47,6 +47,33 @@
   after the phone check (the Wi-Fi is a Public profile). Next: the user's look (the phone, the bench: RISE vs DROP,
   the glitches), COPY SETTINGS + "apply ww bench" if anything changes, the build checks (step 4), the phone
   slow-network fix if OKed (step 4b), the user's look (iPhone / Mac Safari), then "push".
+- Session close 2026-10-19 (`revaudio-a0`, laptop 1). State: `feat/home-library` clean in the worktree, local only
+  (no origin branch), 24 commits ahead of origin/main and 39 behind. This session's commits: `63841e4`, `0431ee7`,
+  `efe6643` (4d step 3), `706efa0` (3b), `1ce4007` + `9ca613b` (4e). revaudio-shared: `4cfa2b6` (Law 5) + `e8f10a4`
+  (§3 exception) local, the clone 3 ahead / 0 behind origin/main (the third is another session's `50e39a6`, Yoni's
+  DRIFT email: it goes out with any push). Nothing of this session's is uncommitted besides this entry and
+  lessons.md #7 (the shared clone's modified / untracked files are other sessions').
+  - Unverified: the user has not looked at 4d step 3 (RISE vs DROP), 3b or 4e yet (last signal: the glitch plan
+    approved); WebKit's motioncheck first-frame checks failed under load (lessons.md 2026-10-19 #7; the old code
+    failed the same), owed on an idle machine with step 4; iPhone / Mac Safari never seen.
+  - Running on laptop 1: `astro dev --port 4392 --host 127.0.0.1` (the bench, http://127.0.0.1:4392/__wwbench),
+    PID 55744, stop with `Stop-Process -Id 55744`; `astro preview --host 0.0.0.0 --port 4393` (the phone link
+    http://10.0.0.103:4393/, serves the 17:36 build of `9ca613b`), PID 70616, Public Wi-Fi profile: stop it after
+    the phone check with `Stop-Process -Id 70616`.
+  - Next session decides: (1) the user's look: the phone (reload the link), the bench (Ctrl+R; RISE vs DROP;
+    ▶ NAME / PICTURE / SCREEN; "On a channel change" at 1 + ▶ CHANNEL; SLOW x4), COPY SETTINGS + "apply ww bench"
+    if anything changes; (2) step 4b (the phone's slow network) needs the user's OK; (3) BEFORE "push": merge
+    origin/main into the branch by hand (one merge, merge-base `141d400`, 39 commits). 13 files changed on both
+    sides: DESIGN.md, Cart, CookieBanner, MobileBuyBar, WordWall, `src/data/plugins.ts`, `[slug]`, gas, index,
+    store/index, tasks/handoff.md, and PluginCard + PluginShowcase (deleted here, edited on main: keep them
+    deleted). Main's `0ab2c4b` (Dan 2026-10-18: one button family, `src/styles/buttons.css` `.rv-btn`, "every
+    regular action button uses it") is not on the branch, and the TV's Try / Product page keys don't use it: ask
+    the user whether they join the family or stay part of the object (like the audio toys) before porting. Then
+    re-run the checks + build, then "push" (= live); (4) step 4 (the build checks, filmed) + iPhone / Mac Safari.
+  - The check scripts live only in this session's scratchpad on laptop 1:
+    `C:\Users\shlik\AppData\Local\Temp\claude\c--Revaudio\74573275-0f44-45db-97c3-a134cca05d4d\scratchpad\`
+    (`glitchcheck.mjs`, `motioncheck.mjs`, `glowcheck.mjs`, `readcheck.mjs`, `benchsmoke.mjs`, `slowphone.mjs`); a
+    new session gets another scratchpad, so copy them from there (or into the repo if the user wants them kept).
 - For the user (dashboard, optional): a Cloudflare Redirect Rule `/store*` -> `/#plugins` would make it a real 301;
   the repo page works without it.
 - Found: index.astro's testimonial CTA said "14-day free trial" (the trial is 30 days in both plugins' code); fixed
