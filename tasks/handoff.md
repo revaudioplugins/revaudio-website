@@ -1,4 +1,4 @@
-## 2026-11-01 — GAS 2 player: Yoni's new renders, all 4 stations level-matched at -16 LUFS (Claude Code `revaudio-b5 [44f41c]`, laptop 2) — BRANCH `gas2-player-audio`, not on main
+## 2026-11-01 — GAS 2 player: Yoni's new renders, all 4 stations level-matched at -16 LUFS (Claude Code `revaudio-b5 [44f41c]`, laptop 2) — ON MAIN `a447d82` (fast-forward 2026-11-01, Yoni: "push it to the page so dan can see it"; tools/ is not in the Astro build, so nothing changed on the live site)
 - User (Yoni): new renders in `Downloads/Gas player` (bypass + gas2 per station: hip hop, pop, electronic, rock), "update - level match all".
 - `player/tools/prep_audio.py` per station (alignment lag 0 on all 4). Each pair matched to the same LUFS, then one shared
   target for every station. TARGET -11 -> -16 LUFS: the hip hop bypass render peaks -0.16 dBFS at -15 LUFS, so -16 is the
@@ -7,7 +7,7 @@
 - ELECTRONIC gets real files (was the placeholder): `radio.js` PH + `placeholder_*.m4a` removed. The phone page's HEAR IT
   card plays the hip hop pair, so it follows.
 - Open: the HIP HOP caption still prints PREMIUM 140 (the 10-23 render's settings): Yoni to confirm the new render's
-  grade/amount. Merge to main waits for the user's word (a website main push = a live deploy).
+  grade/amount.
 
 ## 2026-10-15 — Home LIBRARY: the TV becomes the plugin browser, carousel + Store nav out, branch `feat/home-library` (Claude Code `revaudio-a0`, was `revaudio-a6` before a restart, laptop 1) — PUSHED TO MAIN = LIVE 2026-11-01 (the user: "push"; main `2eea1f2` -> `3a19a87`, a fast-forward)
 - User: one new branch for the home page; a top-right LIBRARY button opens plugin categories on the TV; a category
