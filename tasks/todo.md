@@ -90,8 +90,13 @@ Dan's concept (2026-10-29): a stack of 1950s "Greetings from GAS 2" postcards, p
       spots with the pump in them): `?spot=a-d` frames the end page (and the blurred frame behind the cards) elsewhere;
       no spot = the signed-off sky, pixel-identical. A the station front, B the pump close, C the pump + the desert,
       D the station on top with the button low; A-C put the readings in a navy night above the roof. check.cjs 42 + 35 pass.
-- [ ] 30. Dan picks a spot (or a tweak): it becomes the default; then place the after-mailing ticket for it (in A-C it
-      lands on the pump's globe, in D it falls below the screen).
+- [x] 30. Dan picked D (2026-11-01): the default end page (`?spot=sky` = the sky, pixel-identical); the readings hang by
+      their top under the station; after mailing the line + Fill it up. step aside, the ticket comes up under the ✓.
+      check.cjs 42 + 35 pass (+ GAS2 under the pump's plinth, the ticket between the ✓ and the endbar).
+- [ ] 31. The laptop page's taxi on the phone (Dan, via `danavivi-a5`, 2026-11-01; `taxi/` on main `ddd0ebc`): after
+      mailing the cab pulls up in front of the station, the button turns to red "To the store"; it replaces the ticket.
+      Phone size + stop for D (`?taxi=bench`), the audio unlocked in the stamp's tap (iOS), thumb-sized taps; iOS
+      Simulator, then Dan's iPhone with sound; the store landing on a phone. page-b keeps working.
 
 # GAS 2 drone descent (branch `feat/gas2-drone`, 2026-10-28, revaudio-59) — SCENE + BENCH BUILT, art next
 

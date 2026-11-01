@@ -48,10 +48,13 @@ async function drag(p, dx, dy, ms, hold, after = 650) {   // a finger-like drag 
           return { sw: document.documentElement.scrollWidth, iw: innerWidth, ih: innerHeight, rd: r(".rd"), n: r(".rd .n"), cta: r(".rd .cta"), bar: r(".endbar"),
                    ended: document.getElementById("desk").classList.contains("ended"), end: op(".end"), ti: op(".rd .ti"), scr: op(".rd .scr"),
                    gas2px: parseFloat(getComputedStyle(document.querySelector(".rd .n")).fontSize), label: document.querySelector(".rd .cta").innerText.trim(),
-                   ticket: getComputedStyle(tk).display === "none" ? null : r("#toSite .tk"), href: tk.href };
+                   ticket: getComputedStyle(tk).display === "none" ? null : r("#toSite .tk"), href: tk.href,
+                   // the end page's spot (D, Dan 2026-11-01): GAS2 hangs under the station, clear of the pump's plinth (frame y 830)
+                   spot: document.getElementById("desk").dataset.spot || "", pump: (() => { const v = document.querySelector(".vista").getBoundingClientRect(); return Math.round(v.top + v.height * 830 / 1024); })() };
         });
         const pass = e.ended && e.end === "1" && e.ti === "1" && e.scr === "1" && e.sw <= e.iw && e.rd[0] >= 0 && e.rd[2] <= e.iw && e.n[1] >= 0 && e.cta[3] < e.bar[1] &&
-          (q.endsWith("sent") ? e.label === "✓ Keys in the mail" && e.ticket && e.ticket[0] >= 0 && e.ticket[2] <= e.iw && e.ticket[3] < e.bar[1] && e.href === "https://revaudio.net/store"
+          (!e.spot || e.n[1] >= e.pump) &&
+          (q.endsWith("sent") ? e.label === "✓ Keys in the mail" && e.ticket && e.ticket[0] >= 0 && e.ticket[2] <= e.iw && e.ticket[1] >= e.cta[3] && e.ticket[3] < e.bar[1] && e.href === "https://revaudio.net/store"
                               : e.label === "⤓ Download FREE" && !e.ticket);
         out.layout.push({ size: `${w}x${h}`, q, pass, m: e });
         if (SHOTS) await p.screenshot({ path: `${SHOTS}/${w}x${h}-${q.replace(/[?&=]/g, "")}.png` });

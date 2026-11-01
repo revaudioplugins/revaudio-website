@@ -1,6 +1,6 @@
 ## 2026-10-29 — GAS 2 page: the PHONE page as POSTCARDS (Claude Code `danavivi-75`, Dan's Mac) — BRANCH `feat/gas2-postcards`, pushed (not main)
 
-Claim: OPEN `danavivi-83` (took the postcards over 2026-10-31 from `danavivi-75`, no longer running: the end page's scene spots, phone only). Round 9 (motion on Dan's iPhone) BUILT + checked, then a ponytail pass (`205661d`) and the keyboard slide-up (`6c91731`); the review page = round 10 (version 12, build `6c91731`); the branch tracks `origin/feat/gas2-postcards` (pushed on Dan's "commit everything and push it"; not main, no deploy). Branched from `origin/feat/gas2-drone` @ `4fc6ddd` (no upstream set, so a bare push
+Claim: OPEN `danavivi-83` (took the postcards over 2026-10-31 from `danavivi-75`, no longer running: the end page's scene spots, phone only; D picked 2026-11-01). Round 9 (motion on Dan's iPhone) BUILT + checked, then a ponytail pass (`205661d`) and the keyboard slide-up (`6c91731`); the review page = round 10 (version 12, build `6c91731`); the branch tracks `origin/feat/gas2-postcards` (pushed on Dan's "commit everything and push it"; not main, no deploy). Branched from `origin/feat/gas2-drone` @ `4fc6ddd` (no upstream set, so a bare push
 can't reach the drone branch); `revaudio-59` keeps writing `feat/gas2-drone`, so this branch stays out of its files.
 Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postcards/**`; one README line pair; the
 "GAS 2 phone POSTCARDS" section on top of `tasks/todo.md`; this entry. Read only: `page-b.html` (copy, ticket), `fonts/`,
@@ -237,12 +237,20 @@ Files (mine): NEW `tools/_gas2-scene/postcards.html` + `tools/_gas2-scene/postca
   the right spot, one frame at a time, reload keeps it, copy, 0 errors (a favicon 404 on the local server only). Fixed on
   the way: the hidden `.sr` labels escaped the scrolling row and widened the page at 390 (`#screens` is positioned now).
   On claude.ai a db probe written, listed and deleted.
+- Then (Dan 2026-11-01 in chat: "Spot D"; the bench's `notes` stayed empty): D is the end page. No `?spot` = D;
+  `?spot=sky` = the sky as signed off, pixel-identical to `32e25ae`'s default (the same 15 shots; the one diff = the
+  card-6 mailbox again). A-C are out of `SPOTS` (they live in the bench and in `32e25ae`). The readings now hang by
+  their top (r = .4027 of the screen height = where D put them at 402x714, to 0.1 px), so GAS2 clears the pump's
+  plinth (frame y 830) at every height: it touched it at 375x553 before. After mailing, D has no room under Fill it up.
+  (the station above): the line and Fill it up. step aside and the ticket comes up under ✓ Keys in the mail. check.cjs
+  now also asserts GAS2 under the plinth and the ticket between the ✓ and the endbar: 42 steps + 35 layouts pass,
+  0 errors. Landscape phones (852x393) aren't designed, sky or D: both overlap there.
 - Open (Dan): (1) his word from the phone; more notes go to `notes-r10`;
   (2) painted art still only on his OK;
   (3) per-grade renders (Yoni) before any grade card plays its own sound; (4) later: this as page-b's phone layout;
-  (5) his pick of the end page's spot (A-D, or a tweak; the spots bench, `notes`): it then becomes the default, and the after-mailing ticket gets
-  a place for it (with `?spot` it lands on the pump's globe in A-C and below the screen in D; unchanged without);
-  a real night sky above the roof (outpainted) instead of the gradient would be art spend, his OK first.
+  (5) next: the laptop page's taxi on the phone too (Dan's ask, handed over by `danavivi-a5` 2026-11-01: source
+  `tools/_gas2-scene/taxi/` on main `ddd0ebc`, its README = the spec; `taxi/**` passes to `danavivi-83`, generalised,
+  page-b kept working). On the phone it takes the ticket's job: the red "To the store" button + the cab.
 
 ## 2026-10-28 — GAS 2 page: the drone intro, from scratch (Claude Code `revaudio-59`, laptop 1) — BRANCH `feat/gas2-drone`
 

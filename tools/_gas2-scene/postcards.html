@@ -21,7 +21,8 @@
      needle, the song starts as it lands (postcards/tools/make-deck.py draws the deck's body).
      Round 4 (same day): the keys rendered as ivory piano keys, the sticker, TURN IT OVER in HEAR IT's letters. Then
      (Dan: "the readings should be glued to the card itself, physics-wise"): nothing printed moves on its own any more.
-     2026-10-31 (Dan): ?spot=a-d frames the end page on the pump instead of the sky, spots for him to pick from. -->
+     2026-10-31 (Dan): spots of the frame with the pump in them for the end page, four on a bench; 2026-11-01 he picked
+     D: the station on top, the readings hanging under it on the dark lot. ?spot=sky = the sky right of the canopy. -->
 <style>
 @font-face { font-family: Bebas; src: url(fonts/bebas.woff2) format("woff2"); }
 @font-face { font-family: Inter; src: url(fonts/inter.woff2) format("woff2"); font-weight: 100 900; }
@@ -49,8 +50,8 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .sky { position: absolute; inset: 0; z-index: -1;
   --vig: radial-gradient(120% 70% at 50% 108%, rgba(11, 9, 7, .82), transparent 70%), radial-gradient(90% 60% at 50% 42%, transparent 40%, rgba(8, 6, 4, .55));
   background: var(--vig), url(postcards/img/dusk.webp) right center / cover; }
-/* ?spot= (JS place(), Dan 2026-10-31: other spots of the frame for the end page, the pump in them): the blurred frame
-   moves with the sharp one; an edge left inside the screen fades into the night (--cm): the frame's own top-of-sky navy */
+/* the end page's spot (JS place(); D, Dan's pick 2026-11-01, the station on top): the blurred frame moves with the sharp
+   one; an edge left inside the screen fades into the night (--cm): the frame's own top-of-sky navy. ?spot=sky: as above */
 .desk[data-spot] .sky { overflow: hidden; background: linear-gradient(#0e1b2d, #0b0907 64%); }
 .desk[data-spot] .sky::before { content: ""; position: absolute; left: var(--cl); top: var(--ct); width: var(--cw); height: var(--ch);
   background: url(postcards/img/dusk.webp) 0 0 / 100% 100%; -webkit-mask-image: var(--cm); mask-image: var(--cm); -webkit-mask-composite: source-in; mask-composite: intersect; }
@@ -341,7 +342,9 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
    pop out and everything"): the last card goes, the lens pulls focus from the cards onto the open sky right of the
    canopy, and page-b's readings stand in it, popping out as they do after the drone lands. The readings below are
    page-b's composition 2 + the premium shadow (HUG, FOCUS, DUSK), sized by the same 3:2 scene (cqw) so they keep the
-   desktop's proportions; on a phone the column is centred in the screen (page-b: x 64.5 %). ── */
+   desktop's proportions; on a phone the column is centred in the screen (page-b: x 64.5 %).
+   Since 2026-11-01 (Dan's pick of the spots bench: D) the lens pulls focus onto the station instead, the readings hanging
+   under it on the dark lot; ?spot=sky = the sky, as it was. ── */
 .end { position: absolute; inset: 0; z-index: 0; overflow: hidden; opacity: 0; visibility: hidden; touch-action: pan-y pinch-zoom;   /* a sideways swipe is ours */
   transition: opacity .9s var(--ease-settle), visibility 0s .9s; }
 .desk.ended .end { opacity: 1; visibility: visible; transition: opacity .9s var(--ease-settle); }
@@ -355,7 +358,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .desk[data-spot] .view .vista { inset: auto; left: var(--vl); top: var(--vt); width: var(--cw); height: var(--ch);   /* ?spot=: px from JS place() */
   -webkit-mask-image: var(--cm); mask-image: var(--cm); -webkit-mask-composite: source-in; mask-composite: intersect; }
 .desk[data-spot] .view .dusk { left: calc(var(--vl) + var(--cw) * .58); top: var(--vt); width: calc(var(--cw) * .42); height: var(--ch); }
-.desk[data-spot] .rd { top: var(--ry); }
+.desk[data-spot] .rd { top: var(--ry); transform: none; }   /* hung by its top: just under the station at every height */
 .rd { position: absolute; top: 50%; right: calc(50vw - 15.5cqw); width: 31cqw; transform: translateY(-50%); text-align: center; isolation: isolate; }
 .rd::before { content: ""; position: absolute; inset: -9% -13% -10% -13%; z-index: -1; background: rgba(12, 6, 3, .15);
   -webkit-backdrop-filter: blur(.32cqw) brightness(.84) saturate(.9); backdrop-filter: blur(.32cqw) brightness(.84) saturate(.9);
@@ -390,6 +393,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .rd .ticket { position: absolute; left: 50%; top: calc(100% + max(14px, 1.4cqw)); display: none; translate: -40% 0; rotate: -4deg; text-decoration: none;
   filter: drop-shadow(0 .5cqw .6cqw rgba(0, 0, 0, .5)); -webkit-tap-highlight-color: transparent; }
 .desk.sent .rd .ticket { display: block; animation: sway 5s 2.4s ease-in-out infinite; }
+.desk[data-spot].sent .rd .lead, .desk[data-spot].sent .rd .scr { display: none; }   /* D: the station above leaves no room under Fill it up., so the ticket comes up under the ✓ */
 @keyframes sway { 50% { rotate: -1.5deg; } }
 .ticket .tk { display: grid; justify-items: center; gap: max(4px, .4cqw); padding: 16px 26px;   /* the printed rule sits 6px in: 8px+ clear of the words */
   background: linear-gradient(180deg, #f6ecd2, #eadbb6); color: #8f2717; text-transform: uppercase; white-space: nowrap;
@@ -633,7 +637,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   </div>
   <div class="box" id="box" aria-hidden="true"><img src="props/mailbox.png" alt=""></div>
 
-  <!-- the end: the right side of the desktop page (page-b's readings, in the sky right of the canopy) -->
+  <!-- the end: the station (spot D) with page-b's readings under it; ?spot=sky = the sky right of the canopy -->
   <section class="end" id="end" aria-label="GAS 2">
     <div class="view">
       <i class="vista" role="img" aria-label="The desert at dusk, seen from under the station's canopy"></i>
@@ -1285,18 +1289,16 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   cur = start;
   if (q.has('flip')) turn(true, true);
   if (start === N && q.has('sent')) { desk.classList.add('sent'); $('sentNote').textContent = 'Sent to you@studio.com · Mockup: nothing was sent.'; }
-  // ── ?spot= (Dan, 2026-10-31, phone only: "let's try different spots of the background image from the scene for the end
-  //    page", spots with the pump in them): the end page frames another part of the frame, the blurred one behind the
-  //    cards with it, so the focus pull still lines up; no spot = the sky right of the canopy, as signed off.
+  // ── the end page's spot (Dan, 2026-10-31, phone only: "let's try different spots of the background image from the scene
+  //    for the end page", spots with the pump in them; 2026-11-01 he picked D of the four on the spots bench, the others
+  //    are in git 32e25ae): the end page frames another part of the frame, the blurred one behind the cards with it, so
+  //    the focus pull still lines up; ?spot=sky = the sky right of the canopy, as signed off 2026-10-29.
   //    z = zoom (1 = the frame's height fills the screen), at = a point of the frame (px of 1536 x 1024) that lands on the
-  //    screen at to (0-1), r = the readings' middle (0-1 of the screen height); or ?spot=z,x,y,tx,ty,r to try one ──
+  //    screen at to (0-1), r = the readings' top (0-1 of the screen height); or ?spot=z,x,y,tx,ty,r to try one ──
   const SPOTS = {
-    a: { z: .58, at: [462, 1024], to: [.5, 1], r: .27 },       // the station front (radio, pump, barrel), the readings in the night above
-    b: { z: .75, at: [462, 830], to: [.5, .99], r: .27 },      // the pump close, standing on the bottom of the screen
-    c: { z: .58, at: [250, 1024], to: [0, 1], r: .27 },        // the pump at the left, the open desert at the right
-    d: { z: .48, at: [462, 0], to: [.5, 0], r: .64 },          // the station on top, the readings below on the dark lot (the button low)
+    d: { z: .48, at: [462, 0], to: [.5, 0], r: .4027 },        // the station on top, the readings hanging under it on the dark lot
   };
-  const sp = q.get('spot') || '', n = sp.split(',').map(Number);
+  const sp = q.get('spot') || 'd', n = sp.split(',').map(Number);
   const spot = SPOTS[sp] || (n.length === 6 && n.every(isFinite) ? { z: n[0], at: [n[1], n[2]], to: [n[3], n[4]], r: n[5] } : null);
   function place() {
     const end = $('end'), W = end.clientWidth, H = end.clientHeight, s = spot.z * Math.max(H / 1024, W / 1536);
