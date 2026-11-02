@@ -991,11 +991,18 @@ footer .footer-social svg { width: 20px; height: 20px; display: block; }
     gap: var(--space-4);
     padding-top: var(--space-5);
   }
-  /* Phone: four headings don't fit one row at a readable size, so 2x2, the
-     right-hand pair flush with the right edge (their drawers open leftward). */
-  footer .footer-cols { grid-template-columns: repeat(2, max-content); row-gap: var(--space-2); }
-  footer .footer-col:nth-child(even) { justify-self: end; }
-  footer .footer-cols.is-folding .footer-col:nth-child(even) .footer-drawer { left: auto; right: -16px; }
+  /* Phone (Yoni 2026-11-02): all four headings stay on one row; smaller
+     type, tracking and caret make them fit a 360px screen. The right-hand
+     pair's drawers open leftward so they stay on screen. */
+  footer .footer-cols { column-gap: var(--space-2); }
+  footer .footer-col-title { font-size: 0.8125rem; letter-spacing: 0.05em; }
+  footer .footer-col-btn { gap: 0.35em; }
+  footer .footer-cols.is-folding .footer-col-arr { width: 8px; height: 5px; }
+  footer .footer-cols.is-folding .footer-col:nth-child(n+3) .footer-drawer { left: auto; right: -16px; }
+}
+@media (max-width: 400px) {
+  footer .footer-cols { column-gap: 6px; }
+  footer .footer-col-title { font-size: var(--text-xs); letter-spacing: 0.03em; }
 }
 
 /* plugin detail page */
@@ -1158,16 +1165,6 @@ footer .footer-social svg { width: 20px; height: 20px; display: block; }
 .hit-subscribe { top: 28%; left: 12%; width: 76%; height: 44%; }
 .hit-submit    { top: 27%; left: 14%; width: 72%; height: 46%; }
 
-/* Phones: at the page end the footer fills the screen under the header, its
-   head right under the nav (Dan 2026-10-06, same as /drift). Links sit at the
-   bottom; any spare height stays inside the footer, above them. lvh = the
-   screen with Safari's bars tucked away. --site-nav-h is the nav's real
-   height, published by Header.astro. */
-@media (max-width: 600px) {
-  footer.site-footer {
-    min-height: calc(100vh - var(--site-nav-h, var(--nav-h)));
-    min-height: calc(100lvh - var(--site-nav-h, var(--nav-h)));
-    display: flex; flex-direction: column; justify-content: flex-end;
-  }
-  footer.site-footer > .container { width: 100%; }   /* a flex item: keep the block width */
-}
+/* Phones: the footer used to fill one screen under the header (Dan
+   2026-10-06). Dropped 2026-11-02 (Yoni): with the categories folded that
+   screen was empty, so the footer is now as tight on a phone as on desktop. */

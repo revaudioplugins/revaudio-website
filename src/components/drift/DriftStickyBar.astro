@@ -73,17 +73,8 @@ const cta = ctaFor();
     :global(body footer.site-footer.site-footer) { padding-bottom: calc(var(--space-5) + env(safe-area-inset-bottom, 0px)); }
     :global(html) { scroll-padding-bottom: calc(var(--d-sb-h) + 16px); }
   }
-  /* phones: at the page end the footer fills the screen under the header (its head right under the nav, Dan 10-05);
-     the links sit at the bottom and any spare height stays inside the footer, above them. lvh = the screen with
-     Safari's bars tucked away: with them out, the footer's empty top just runs on under the header */
-  @media (max-width: 600px) {
-    :global(body footer.site-footer.site-footer) {
-      min-height: calc(100vh - var(--d-nav-h, 44px));
-      min-height: calc(100lvh - var(--d-nav-h, 44px));
-      display: flex; flex-direction: column; justify-content: flex-end;
-    }
-    :global(body footer.site-footer.site-footer > .container) { width: 100%; }   /* a flex item: keep the block width */
-  }
+  /* phones: the footer used to fill the screen under the header here (Dan 10-05); dropped 2026-11-02 with the folded
+     footer categories (Yoni), same as global.css */
   .d-stickybar .d-cta--bar { --h: 48px; width: 100%; }
   @media (min-width: 600px) {
     .d-stickybar { align-items: center; }
