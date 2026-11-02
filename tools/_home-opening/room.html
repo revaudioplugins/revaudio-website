@@ -63,13 +63,13 @@
   .bench-head { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 8px; padding: 12px 0 10px; background: rgba(12,10,8,.97);
     border-bottom: 1px solid #2a231d; }
   .bench-head b { font: 400 20px/1 "Bebas Neue"; letter-spacing: .1em; color: var(--brass-bright); }
-  .bench-head .tag { font: 600 9.5px/1 Inter, sans-serif; letter-spacing: .06em; padding: 5px 7px; border-radius: 999px; background: rgba(40,70,40,.9);
+  .bench-head .tag { font: 600 9.5px/1 Inter, sans-serif; letter-spacing: .06em; padding: 6px 9px; border-radius: 999px; background: rgba(40,70,40,.9);
     border: 1px solid #4f8a4f; color: #d6ffd6; }
   .bench-head .chip { margin-left: auto; }
-  .chip { appearance: none; border: 1px solid #3a3027; background: rgba(20,16,13,.9); color: #cfc6b8; padding: 7px 10px; border-radius: 999px; cursor: pointer;
+  .chip { appearance: none; border: 1px solid #3a3027; background: rgba(20,16,13,.9); color: #cfc6b8; padding: 8px 12px; border-radius: 999px; cursor: pointer;
     font: 600 11px/1 Inter, sans-serif; letter-spacing: .03em; }
   .chip[aria-pressed="true"] { background: #e8c878; color: #1a140e; border-color: #e8c878; }
-  .bench h3 { margin: 14px 0 6px; font: 400 15px/1 "Bebas Neue"; letter-spacing: .08em; color: var(--brass-bright); }
+  .bench h2 { margin: 14px 0 6px; font: 400 15px/1 "Bebas Neue"; letter-spacing: .08em; color: var(--brass-bright); }
   .bench label { display: grid; grid-template-columns: 1fr 56px; gap: 2px 8px; margin: 6px 0; }
   .bench input[type=range] { grid-column: 1 / -1; width: 100%; accent-color: #e8c878; }
   .bench output { text-align: right; color: #f3e6cf; font-variant-numeric: tabular-nums; }
@@ -79,11 +79,11 @@
 
   .slots-panel { position: fixed; left: 12px; top: 12px; bottom: 12px; width: min(600px, calc(100vw - var(--bench-w) - 36px)); z-index: 71; overflow: auto;
     background: rgba(12,10,8,.97); border: 1px solid #3a3027; border-radius: 10px; padding: 12px 14px; font: 12px/1.35 Inter, sans-serif; color: #d8cfc2; }
-  .slots-panel h3 { margin: 0 0 6px; font: 400 16px/1 "Bebas Neue"; letter-spacing: .08em; color: var(--brass-bright); }
+  .slots-panel h2 { margin: 0 0 6px; font: 400 16px/1 "Bebas Neue"; letter-spacing: .08em; color: var(--brass-bright); }
   .slots-panel .note { color: #a89f92; margin: 4px 0 8px; }
   .slots-panel .row { display: flex; gap: 6px; margin-top: 10px; }
   .slots { width: 100%; border-collapse: collapse; font-size: 11px; }
-  .slots td, .slots th { border-bottom: 1px solid #2a231d; padding: 4px; text-align: left; vertical-align: top; }
+  .slots td, .slots th { border-bottom: 1px solid #2a231d; padding: 6px 8px; text-align: left; vertical-align: top; }
   .slots th { color: #e8c878; font-weight: 600; }
   .slots .m { color: #b7a8ff; } .slots .g { color: #ffb27a; }
 </style>
@@ -134,7 +134,7 @@
   </div>
 </aside>
 <div class="slots-panel" id="slotsPanel" hidden>
-  <h3>Slots: one Higgsfield image each</h3>
+  <h2>Slots: one Higgsfield image each</h2>
   <div class="note">Sizes in metres (width along the wall × height × depth). Music in violet, garage in orange.</div>
   <div id="slotsBody"></div>
   <div class="row">
@@ -653,7 +653,7 @@ const SLIDERS = [
 function buildTune() {
   const body = $('tuneBody'); body.innerHTML = '';
   for (const row of SLIDERS) {
-    if (row.length === 1) { const h = document.createElement('h3'); h.textContent = row[0]; body.appendChild(h); continue; }
+    if (row.length === 1) { const h = document.createElement('h2'); h.textContent = row[0]; body.appendChild(h); continue; }
     const [k, label, min, max, step] = row;
     const l = document.createElement('label');
     l.innerHTML = `<span>${label}</span><output>${S[k]}</output><input type="range" min="${min}" max="${max}" step="${step}" value="${S[k]}">`;
