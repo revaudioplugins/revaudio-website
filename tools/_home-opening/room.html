@@ -75,6 +75,7 @@
   .bench output { text-align: right; color: #f3e6cf; font-variant-numeric: tabular-nums; }
   .bench .row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
   .bench .note { color: #a89f92; margin: 8px 0 2px; }
+  .bench select { background: #1a1511; color: #eee; border: 1px solid #3a3027; border-radius: 6px; padding: 5px 6px; font: 12px Inter, sans-serif; }
   .bench .walk { margin-top: 12px; padding: 8px 10px 4px; border: 1px solid #3a3027; border-radius: 8px; background: rgba(232,200,120,.05); }
 
   .slots-panel { position: fixed; left: 12px; top: 12px; bottom: 12px; width: min(600px, calc(100vw - var(--bench-w) - 36px)); z-index: 71; overflow: auto;
@@ -120,6 +121,7 @@
     <button class="chip" data-flag="wire">Neon wireframe</button>
     <button class="chip" data-flag="mirror">Mirror floor</button>
     <button class="chip" data-flag="readB">Big line</button>
+    <button class="chip" data-flag="engine">Engine on</button>
   </div>
   <label class="walk"><span>Walk position</span><output id="walkOut">0 %</output><input id="walkIn" type="range" min="0" max="1" step="0.001" value="0"></label>
   <div class="row">
@@ -160,6 +162,9 @@ const DEF = {
   tvStart: 5,                            // TV width on the first screen, % of the screen width (Dan's pick)
   walkLen: 220, ease: 2.0, feel: 0.35,   // scroll length (% screen); in-out power; 0 = steady metres, 1 = the TV grows steadily
   sway: 1, neon: 1, lamps: 1, tvGlow: 1, bloom: 0.9, fog: 0.035, dust: 1,
+  // the car side-on, nose out through the open roll-up door in the right wall, engine off, on a low lift (Dan 2026-11-02)
+  carZ: 0.55, carOut: 0.5, carYaw: 0, liftType: 'scissor', liftH: 0.35, engine: 0,
+  doorW: 3.4, doorH: 2.8, doorOpen: 0.92, outside: 1,
   labels: 1, wire: 0, mirror: 1, readB: 0, snap: 1, bench: 0,
 };
 const KEY = 'hoRoom:v1';
@@ -223,6 +228,33 @@ function floorTex(roomW) {
   for (let y = 0; y < 8; y += 1) g.fillRect(128 - 0.025 * px, y * py, 0.05 * px, 0.5 * py);
   const t = new THREE.CanvasTexture(c); t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; return t;
 }
+function slatTex() {
+  // a roll-up door's ribbed steel, one 0.6 m tall stretch
+  const c = document.createElement('canvas'); c.width = 64; c.height = 256;
+  const g = c.getContext('2d'); g.fillStyle = '#56535a'; g.fillRect(0, 0, 64, 256);
+  for (let y = 0; y < 256; y += 32) {
+    g.fillStyle = 'rgba(0,0,0,.55)'; g.fillRect(0, y, 64, 4);
+    g.fillStyle = 'rgba(255,255,255,.12)'; g.fillRect(0, y + 4, 64, 3);
+  }
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+function nightTex() {
+  // the night beyond the door: a deep blue sky, a low city glow on the horizon, a street lamp
+  const c = document.createElement('canvas'); c.width = 1024; c.height = 512;
+  const g = c.getContext('2d'), r = rng(91);
+  const sky = g.createLinearGradient(0, 0, 0, 512);
+  sky.addColorStop(0, '#04050b'); sky.addColorStop(0.62, '#121a38'); sky.addColorStop(0.7, '#2a2238'); sky.addColorStop(0.71, '#0b0c12'); sky.addColorStop(1, '#07080b');
+  g.fillStyle = sky; g.fillRect(0, 0, 1024, 512);
+  for (let i = 0; i < 140; i++) { // far windows and street lights on the horizon
+    const x = r() * 1024, y = 330 + r() * 30, a = 0.3 + r() * 0.6;
+    g.fillStyle = r() < 0.7 ? `rgba(255,190,120,${a})` : `rgba(170,200,255,${a})`; g.fillRect(x, y, 2 + r() * 3, 2 + r() * 2);
+  }
+  g.fillStyle = '#05060a'; g.fillRect(610, 120, 7, 245); g.fillRect(560, 118, 56, 6); // the lamp post
+  const glow = g.createRadialGradient(566, 128, 0, 566, 128, 70);
+  glow.addColorStop(0, 'rgba(255,214,150,1)'); glow.addColorStop(0.15, 'rgba(255,170,90,.55)'); glow.addColorStop(1, 'rgba(255,150,70,0)');
+  g.fillStyle = glow; g.fillRect(490, 50, 160, 160);
+  const t = new THREE.CanvasTexture(c); t.wrapS = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; return t; // tiles: a street with a lamp every 32 m
+}
 function labelSprite(text, cat, k = 1) {
   const c = document.createElement('canvas'); c.width = 640; c.height = 112;
   const g = c.getContext('2d');
@@ -280,7 +312,7 @@ const SIDE = [
   { id: 'R01', cat: 'garage', label: 'Parts-store shelf: exhausts, filters, oil', side: 1, f: 0.9, w: 2.4, h: 2.5, d: 0.5 },
   { id: 'R02', cat: 'music', label: 'Guitar combo amp', side: 1, f: 0.825, w: 0.65, h: 0.75, d: 0.35 },
   { id: 'R03', cat: 'music', label: 'Guitar (hanging)', side: 1, f: 0.825, w: 0.38, h: 1.05, d: 0.08, y: 1.95 },
-  { id: 'R04', cat: 'garage', label: 'Wall shelf: helmets, wheels', side: 1, f: 0.6, w: 3.6, h: 0.6, d: 0.4, y: 2.95 },
+  { id: 'R04', cat: 'garage', label: 'Wall shelf: helmets, wheels', side: 1, f: 0.71, w: 2.6, h: 0.6, d: 0.4, y: 2.95 },
   { id: 'R05', cat: 'garage', label: 'Red tool chest', side: 1, f: 0.44, w: 0.8, h: 1.0, d: 0.5 },
   { id: 'R06', cat: 'music', label: 'Compressor rack (VU meters)', side: 1, f: 0.44, w: 0.6, h: 0.9, d: 0.48, y: 1.45 },
   { id: 'R07', cat: 'garage', label: 'Parts bench (carb on a stand)', side: 1, f: 0.345, w: 2.2, h: 0.92, d: 0.7 },
@@ -311,12 +343,15 @@ function createRoom() {
   R.nearMat = new THREE.MeshStandardMaterial({ map: concreteTex('#342e33', 41), roughness: 0.93 });
   const plane = (sx, sy, mat) => new THREE.Mesh(new THREE.PlaneGeometry(1, 1, sx, sy), mat);
   R.left = plane(24, 6, R.wallMat); R.left.rotation.y = Math.PI / 2;
-  R.right = plane(24, 6, R.wallMat); R.right.rotation.y = -Math.PI / 2;
+  R.rightParts = [0, 1, 2].map(() => { // the right wall: three pieces round the garage door's opening
+    const m = new THREE.MeshStandardMaterial({ map: R.wallMat.map.clone(), roughness: 0.93 }); m.map.needsUpdate = true;
+    const w = plane(12, 6, m); w.rotation.y = -Math.PI / 2; return w;
+  });
   R.ceil = plane(6, 24, R.ceilMat); R.ceil.rotation.x = Math.PI / 2;
   R.end = plane(8, 6, R.endMat);
   R.near = plane(1, 1, R.nearMat); R.near.rotation.y = Math.PI;
-  R.surfaces = [R.left, R.right, R.ceil, R.end];
-  scene.add(R.left, R.right, R.ceil, R.end, R.near);
+  R.surfaces = [R.left, ...R.rightParts, R.ceil, R.end];
+  scene.add(R.left, ...R.rightParts, R.ceil, R.end, R.near);
 
   // the floor: a half-res mirror under a dark glaze with the lane lines
   R.mirror = new Reflector(new THREE.PlaneGeometry(1, 1), { clipBias: 0.003, textureWidth: 512, textureHeight: 512, color: 0x8a8590 });
@@ -364,22 +399,64 @@ function createRoom() {
     scene.add(mesh); return mesh;
   };
   R.labels = [];
-  R.props = SIDE.map((s) => { const mesh = block(s, s.d, s.h, s.w), label = labelSprite(`${s.id} · ${s.label}`, s.cat); scene.add(label); R.labels.push(label); return { s, mesh, label }; });
+  R.props = SIDE.map((s) => { const mesh = block(s, s.d, s.h, s.w), label = labelSprite(`${s.id} · ${s.label}`, s.cat); label.userData.show = () => mesh.visible; scene.add(label); R.labels.push(label); return { s, mesh, label }; });
   R.ends = END.map((s) => { const mesh = block(s, s.w, s.h, s.d), label = labelSprite(`${s.id} · ${s.label}`, s.cat, 0.6); scene.add(label); R.labels.push(label); return { s, mesh, label }; });
 
-  // the car: a JDM coupe along the right wall, rear to the camera, tail-lights on
+  // the car: a JDM coupe side-on, nose out through the open door (right of the screen), engine off, on a low lift
   R.car = new THREE.Group();
-  const bx = (w, h, d, x, y, z) => { const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), R.mats.garage); b.position.set(x, y, z); b.add(new THREE.LineSegments(new THREE.EdgesGeometry(b.geometry), R.edgeMats.garage)); R.car.add(b); };
-  bx(1.85, 0.72, 4.4, 0, 0.56, 0); bx(1.45, 0.5, 2.0, 0, 1.17, 0.25);
+  const bx = (grp, w, h, d, x, y, z, mat = R.mats.garage) => { const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); b.position.set(x, y, z); b.add(new THREE.LineSegments(new THREE.EdgesGeometry(b.geometry), R.edgeMats.garage)); grp.add(b); return b; };
+  bx(R.car, 1.85, 0.72, 4.4, 0, 0.56, 0); bx(R.car, 1.45, 0.5, 2.0, 0, 1.17, 0.25);
   const wheelMat = new THREE.MeshStandardMaterial({ color: 0x1a181c, roughness: 0.8 });
   for (const [wx, wz] of [[-0.86, -1.4], [0.86, -1.4], [-0.86, 1.4], [0.86, 1.4]]) {
     const wh = new THREE.Mesh(new THREE.CylinderGeometry(0.33, 0.33, 0.24, 20), wheelMat); wh.rotation.z = Math.PI / 2; wh.position.set(wx, 0.33, wz); R.car.add(wh);
   }
-  const tailMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(1.6, 0.12, 0.08), toneMapped: false });
-  for (const tx of [-0.62, 0.62]) { const t = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.09, 0.03), tailMat); t.position.set(tx, 0.74, 2.215); R.car.add(t); }
-  R.tail = new THREE.PointLight(0xff2a1a, 4, 4, 2);
-  R.carLabel = labelSprite('CAR · JDM coupe, rear three-quarter', 'garage'); R.labels.push(R.carLabel);
-  scene.add(R.car, R.tail, R.carLabel);
+  R.tailMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(0.22, 0.03, 0.03), toneMapped: false });
+  for (const tx of [-0.62, 0.62]) { const t = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.09, 0.03), R.tailMat); t.position.set(tx, 0.74, 2.215); R.car.add(t); }
+  R.tail = new THREE.PointLight(0xff2a1a, 0, 4, 2);
+  R.carLabel = labelSprite('CAR · JDM coupe, side-on, nose out the door', 'garage'); R.labels.push(R.carLabel);
+  // the lift under it: a low scissor lift, or four jack stands (bench: Lift)
+  R.scissor = new THREE.Group();
+  bx(R.scissor, 1.5, 0.06, 3.4, 0, 0.03, 0, R.steel);
+  R.scissorPads = [-0.62, 0.62].map((x) => bx(R.scissor, 0.32, 0.07, 3.6, x, 0, 0, R.steel));
+  R.scissorArms = [];
+  for (const x of [-0.62, 0.62]) for (const sg of [1, -1]) { const a = bx(R.scissor, 0.08, 0.08, 1, x, 0, 0, R.steel); a.userData.s = sg; R.scissorArms.push(a); }
+  R.stands = new THREE.Group();
+  R.standParts = [[-0.72, -1.25], [0.72, -1.25], [-0.72, 1.25], [0.72, 1.25]].map(([x, z]) => {
+    const st = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.17, 1, 4), R.steel); st.position.set(x, 0, z); R.stands.add(st); return st;
+  });
+  R.liftLabel = labelSprite('LIFT · under the car', 'garage', 0.75); R.liftLabel.userData.show = () => R.scissor.visible || R.stands.visible; R.labels.push(R.liftLabel);
+  scene.add(R.car, R.tail, R.carLabel, R.scissor, R.stands, R.liftLabel);
+
+  // the roll-up garage door in the right wall, rolled up but for a strip; the night outside, its cool light falling in
+  R.slat = slatTex();
+  R.curtain = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshStandardMaterial({ map: R.slat, roughness: 0.55, metalness: 0.5, side: THREE.DoubleSide }));
+  R.curtain.rotation.y = -Math.PI / 2;
+  R.drum = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.42, 1), R.steel); // the hood the door rolls into
+  R.rails = [0, 1].map(() => new THREE.Mesh(new THREE.BoxGeometry(0.1, 1, 0.08), R.steel));
+  R.doorLabel = labelSprite('DOOR · roll-up garage door, open', 'garage'); R.labels.push(R.doorLabel);
+  R.outGround = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshStandardMaterial({ map: concreteTex('#191b21', 53, 10), roughness: 0.65, metalness: 0.2 }));
+  R.outGround.rotation.x = -Math.PI / 2;
+  // from the aisle you look through the door at a slant, far along the street: the night runs 160 m and ignores the room's haze
+  R.backdrop = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: nightTex(), toneMapped: false, fog: false }));
+  R.backdrop.rotation.y = -Math.PI / 2;
+  R.outLight = new THREE.SpotLight(0x7f9cff, 60, 16, Math.PI / 4, 0.6, 2);
+  R.outLabel = labelSprite('OUTSIDE · the night through the door', 'surface'); R.labels.push(R.outLabel);
+  // seen almost edge-on from the aisle, the door reads by its light: the opening glows night-blue, a pool of it on the floor
+  const softTex = (() => {
+    const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d');
+    const gr = g.createRadialGradient(64, 64, 0, 64, 64, 64); gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = gr; g.fillRect(0, 0, 128, 128); return new THREE.CanvasTexture(c);
+  })();
+  const airTex = (() => {
+    const c = document.createElement('canvas'); c.width = 4; c.height = 128; const g = c.getContext('2d');
+    const gr = g.createLinearGradient(0, 0, 0, 128); gr.addColorStop(0, 'rgba(255,255,255,0.35)'); gr.addColorStop(1, 'rgba(255,255,255,1)');
+    g.fillStyle = gr; g.fillRect(0, 0, 4, 128); return new THREE.CanvasTexture(c);
+  })();
+  const additive = (map) => new THREE.MeshBasicMaterial({ map, color: 0x5a7fd6, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false });
+  R.doorAir = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), additive(airTex)); R.doorAir.rotation.y = -Math.PI / 2;
+  R.pool = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), additive(softTex)); R.pool.rotation.x = -Math.PI / 2;
+  scene.add(R.doorAir, R.pool);
+  scene.add(R.curtain, R.drum, ...R.rails, R.doorLabel, R.outGround, R.backdrop, R.outLight, R.outLight.target, R.outLabel);
 
   // the REVAUDIO neon from a truss over the aisle
   R.signMat = new THREE.MeshBasicMaterial({ map: signTex(), transparent: true, depthWrite: false, toneMapped: false, side: THREE.DoubleSide });
@@ -412,7 +489,6 @@ function createRoom() {
 function arrange() {
   const Wd = S.roomW, H = S.roomH, Lr = L.roomLen, span = L.span;
   R.left.scale.set(Lr, H, 1); R.left.position.set(-Wd / 2, H / 2, Lr / 2);
-  R.right.scale.set(Lr, H, 1); R.right.position.set(Wd / 2, H / 2, Lr / 2);
   R.ceil.scale.set(Wd, Lr, 1); R.ceil.position.set(0, H, Lr / 2);
   R.end.scale.set(Wd, H, 1); R.end.position.set(0, H / 2, 0);
   R.near.scale.set(Wd, H, 1); R.near.position.set(0, H / 2, Lr);
@@ -440,9 +516,51 @@ function arrange() {
     const s = p.s, y = s.ty != null ? S.tvY + s.ty : (s.y ?? s.h / 2), z = (s.front || 0) + s.d / 2;
     p.mesh.position.set(s.x, y, z); p.label.position.set(s.x, y + s.h / 2 + 0.16, z + 0.2); p.pos = [s.x, y, z];
   }
-  const carZ = 0.55 * span, carX = Wd / 2 - 1.2;
-  R.car.position.set(carX, 0, carZ); R.tail.position.set(carX, 0.8, carZ + 2.7); R.carLabel.position.set(carX - 0.4, 1.75, carZ + 1.6);
-  R.carPos = [carX, 0.71, carZ];
+  // the car side-on through the door: carOut 0 = all inside, 0.5 = half out, 1 = all outside
+  const carZ = S.carZ * span, carX = Wd / 2 + (S.carOut - 0.5) * 4.4;
+  const yaw = -Math.PI / 2 + THREE.MathUtils.degToRad(S.carYaw);   // nose to +x: the right wall, the right of the screen
+  const lift = S.liftType === 'none' ? 0 : S.liftH;
+  R.car.position.set(carX, lift, carZ); R.car.rotation.y = yaw;
+  for (const g of [R.scissor, R.stands]) { g.position.set(carX, 0, carZ); g.rotation.y = yaw; }
+  R.scissor.visible = S.liftType === 'scissor' && lift > 0.01; R.stands.visible = S.liftType === 'stands' && lift > 0.01;
+  const armLen = Math.hypot(2.8, lift), ang = Math.atan2(lift, 2.8);
+  for (const a of R.scissorArms) { a.scale.z = armLen; a.rotation.x = a.userData.s * ang; a.position.y = lift / 2; }
+  for (const pd of R.scissorPads) pd.position.y = Math.max(0.035, lift - 0.035);
+  for (const st of R.standParts) { st.scale.y = Math.max(0.01, lift); st.position.y = lift / 2; }
+  R.car.updateMatrixWorld(); R.tail.position.copy(R.car.localToWorld(new THREE.Vector3(0, 0.74, 2.7)));
+  R.carLabel.position.set(carX - 1.0, lift + 1.75, carZ + 1.2); R.liftLabel.position.set(carX - 1.0, 0.3, carZ + 1.3);
+  R.carPos = [carX, lift + 0.71, carZ];
+  // the door's opening in the right wall, centred on the car
+  const doorH = Math.min(S.doorH, H - 0.4);
+  const z0 = clamp(carZ - S.doorW / 2, 0.2, Lr - 0.6), z1 = clamp(carZ + S.doorW / 2, z0 + 0.2, Lr - 0.2), dz = (z0 + z1) / 2, dw = z1 - z0;
+  const [ra, rb, rt] = R.rightParts;
+  ra.scale.set(z0, H, 1); ra.position.set(Wd / 2, H / 2, z0 / 2); ra.material.map.repeat.set(z0 / 2.5, H / 2.5);
+  rb.scale.set(Lr - z1, H, 1); rb.position.set(Wd / 2, H / 2, (z1 + Lr) / 2); rb.material.map.repeat.set((Lr - z1) / 2.5, H / 2.5);
+  rt.scale.set(dw, H - doorH, 1); rt.position.set(Wd / 2, (doorH + H) / 2, dz); rt.material.map.repeat.set(dw / 2.5, (H - doorH) / 2.5);
+  const curtH = doorH * (1 - S.doorOpen);
+  R.curtain.visible = curtH > 0.01;
+  R.curtain.scale.set(dw, Math.max(0.01, curtH), 1); R.curtain.position.set(Wd / 2 - 0.03, doorH - curtH / 2, dz);
+  R.slat.repeat.set(1, Math.max(0.2, curtH) / 0.6);
+  R.drum.scale.z = dw; R.drum.position.set(Wd / 2 - 0.24, Math.min(doorH + 0.24, H - 0.25), dz);
+  R.rails[0].scale.y = R.rails[1].scale.y = doorH;
+  R.rails[0].position.set(Wd / 2 - 0.05, doorH / 2, z0 + 0.04); R.rails[1].position.set(Wd / 2 - 0.05, doorH / 2, z1 - 0.04);
+  R.doorLabel.position.set(Wd / 2 - 0.5, Math.min(doorH + 0.75, H - 0.15), dz + 0.8);
+  R.outGround.scale.set(40, 160, 1); R.outGround.position.set(Wd / 2 + 20, -0.002, dz - 50);
+  R.backdrop.scale.set(160, 12, 1); R.backdrop.position.set(Wd / 2 + 40, 4.5, dz - 50); R.backdrop.material.map.repeat.set(5, 1);
+  R.outLight.position.set(Wd / 2 + 3.5, doorH + 0.8, dz); R.outLight.target.position.set(Wd / 2 - 2.5, 0, dz);
+  R.outLight.intensity = 60 * S.outside;
+  R.doorAir.scale.set(dw - 0.16, doorH - curtH, 1); R.doorAir.position.set(Wd / 2 + 0.05, (doorH - curtH) / 2, dz);
+  R.doorAir.material.opacity = 0.22 * S.outside;
+  R.pool.scale.set(3.4, dw + 1.2, 1); R.pool.position.set(Wd / 2 - 1.5, 0.012, dz);
+  R.pool.material.opacity = 0.32 * S.outside;
+  R.outLabel.position.set(Wd / 2 + 2.5, 2.2, dz);
+  // anything on the right wall where the opening now is steps aside
+  for (const p of R.props) {
+    if (p.s.side !== 1) continue;
+    const pz = p.pos[2], bottom = p.pos[1] - p.s.h / 2;
+    p.mesh.visible = !(pz + p.s.w / 2 > z0 - 0.1 && pz - p.s.w / 2 < z1 + 0.1 && bottom < doorH);
+  }
+  syncLabels();
   const signZ = 0.62 * span, signY = Math.min(3.0, H - 0.95), top = H - 0.42, bottom = signY + 0.36;
   R.sign.position.set(0, signY, signZ); R.signLight.position.set(0, signY - 0.4, signZ + 0.3); R.signPos = [0, signY, signZ];
   for (const w of R.wires) { const len = Math.max(0.05, top - bottom); w.scale.y = len; w.position.set(w.userData.x, bottom + len / 2, signZ); }
@@ -460,6 +578,7 @@ function placeTv() {
   t.line.position.set(0, S.tvY, front + 0.002);
   t.glow.position.set(0, S.tvY, 1.5);
 }
+function syncLabels() { for (const lb of R.labels) lb.visible = !!S.labels && (!lb.userData.show || lb.userData.show()); }
 function applyFlags() {
   const wire = !!S.wire;
   for (const m of Object.values(R.mats)) m.visible = !wire;
@@ -467,8 +586,10 @@ function applyFlags() {
   R.edgeMats.music.color.setRGB(...(wire ? [1.6, 1.0, 2.6] : [0.75, 0.55, 1.0]));
   R.edgeMats.garage.color.setRGB(...(wire ? [2.6, 1.4, 0.7] : [1.0, 0.6, 0.32]));
   for (const s of R.surfaces) s.material.wireframe = wire;
-  for (const lb of R.labels) lb.visible = !!S.labels;
+  syncLabels();
   R.mirror.visible = !!S.mirror;
+  const on = !!S.engine; // engine off by default (Dan): dark tail-lights
+  R.tailMat.color.setRGB(...(on ? [1.6, 0.12, 0.08] : [0.22, 0.03, 0.03])); R.tail.intensity = on ? 4 : 0;
   document.querySelectorAll('[data-flag]').forEach((b) => b.setAttribute('aria-pressed', S[b.dataset.flag] ? 'true' : 'false'));
 }
 
@@ -646,6 +767,13 @@ const SLIDERS = [
   ['feel', 'Walk feel: steady metres ↔ steady TV growth', 0, 1, 0.05], ['sway', 'Camera sway', 0, 3, 0.05],
   ['The TV'],
   ['tvW', 'TV width (m)', 0.5, 2.5, 0.05], ['tvY', 'TV centre height (m)', 0.8, 2.6, 0.05],
+  ['The car + the door'],
+  ['carZ', 'Car: along the room', 0.2, 0.85, 0.01], ['carOut', 'Car: through the door (0 in · 1 out)', 0, 1, 0.01],
+  ['carYaw', 'Car: angle (°)', -30, 30, 1],
+  ['liftType', 'Lift', { scissor: 'Low scissor lift', stands: 'Jack stands', none: 'No lift (on the floor)' }],
+  ['liftH', 'Lift height (m)', 0, 0.9, 0.01],
+  ['doorW', 'Door width (m)', 2.4, 4.8, 0.05], ['doorH', 'Door height (m)', 2.0, 3.8, 0.05],
+  ['doorOpen', 'Door open', 0, 1, 0.01], ['outside', 'Outside light', 0, 3, 0.05],
   ['Light'],
   ['neon', 'Neon strips', 0, 3, 0.05], ['lamps', 'Amber lamps', 0, 3, 0.05], ['tvGlow', 'TV glow', 0, 3, 0.05],
   ['bloom', 'Glow (bloom)', 0, 2.5, 0.05], ['fog', 'Haze', 0, 0.1, 0.002], ['dust', 'Dust', 0, 3, 0.05],
@@ -654,6 +782,14 @@ function buildTune() {
   const body = $('tuneBody'); body.innerHTML = '';
   for (const row of SLIDERS) {
     if (row.length === 1) { const h = document.createElement('h2'); h.textContent = row[0]; body.appendChild(h); continue; }
+    if (row.length === 3) { // a choice
+      const [k, label, opts] = row, l = document.createElement('label'), sel = document.createElement('select');
+      l.innerHTML = `<span>${label}</span><output></output>`;
+      for (const [v, t] of Object.entries(opts)) { const o = document.createElement('option'); o.value = v; o.textContent = t; o.selected = S[k] === v; sel.appendChild(o); }
+      sel.style.gridColumn = '1 / -1';
+      sel.addEventListener('change', () => { S[k] = sel.value; save(); arrange(); buildSlotsIfOpen(); });
+      l.appendChild(sel); body.appendChild(l); continue;
+    }
     const [k, label, min, max, step] = row;
     const l = document.createElement('label');
     l.innerHTML = `<span>${label}</span><output>${S[k]}</output><input type="range" min="${min}" max="${max}" step="${step}" value="${S[k]}">`;
@@ -686,11 +822,15 @@ function slotList() {
   for (const p of R.ends) out.push({ id: p.s.id, cat: p.s.cat, label: p.s.label, size: [p.s.w, p.s.h, p.s.d], pos: p.pos.map((v) => +v.toFixed(2)),
     need: 'Cut-out, straight-on from the aisle (the far end), transparent background' });
   R.lamps.forEach((lp, i) => out.push({ id: `LAMP${i + 1}`, cat: 'garage', label: 'Hanging work lamp', size: [0.56, 0.3, 0.56], need: 'Cut-out, slightly from below, lit bulb' }));
-  out.push({ id: 'CAR', cat: 'garage', label: 'JDM coupe (no badges)', size: [4.4, 1.42, 1.85], pos: R.carPos.map((v) => +v.toFixed(2)), need: 'Cut-out, rear three-quarter from the aisle, tail-lights on, transparent background' });
+  out.push({ id: 'CAR', cat: 'garage', label: 'JDM coupe (no badges), side-on', size: [4.4, 1.42, 1.85], pos: R.carPos.map((v) => +v.toFixed(2)), need: 'Cut-out, side view, nose to the right, engine off, transparent background' });
+  if (S.liftType !== 'none') out.push({ id: 'LIFT', cat: 'garage', label: S.liftType === 'stands' ? 'Jack stands (four)' : 'Low scissor lift', size: [3.6, S.liftH, 1.5], need: 'Cut-out, side view, transparent background' });
+  out.push({ id: 'DOOR', cat: 'garage', label: 'Roll-up garage door, rolled up but for a strip', size: [S.doorW, S.doorH], need: 'Seamless steel slat strip + the roll housing, straight-on' });
+  out.push({ id: 'OUTSIDE', cat: 'surface', label: 'The night outside the door', size: [S.doorW + 26, 10], need: 'Wide night backdrop: a street, a lamp, distant city glow' });
   out.push({ id: 'SIGN', cat: 'brand', label: 'REVAUDIO neon', size: [3.1, 0.75], pos: R.signPos.map((v) => +v.toFixed(2)), need: 'Drawn in code (an AI neon word is unreliable), or a neon cut-out' });
   out.push({ id: 'TV', cat: 'brand', label: 'The live TV', size: [S.tvW], need: 'No image: the live site TV' });
   return out;
 }
+const buildSlotsIfOpen = () => { if (!$('slotsPanel').hidden) buildSlots(); };
 function buildSlots() {
   const list = slotList();
   const rows = list.map((s) => {

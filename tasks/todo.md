@@ -9,7 +9,10 @@ lock-in hand-off is reused, its room is not. Dan: plan with him first, then one 
 - Look: photoreal, graded with DRIFT's violet/magenta neon + amber lamps (house law: photographic realism).
 - The TV at the far end: about 5 % of the screen width (~55 px on a 1141 laptop), so the walk-in is ~20x.
 - Layout: music gear and garage gear mixed on both walls.
-- Car: a JDM coupe parked midway along one side; the camera passes beside it.
+- Car: a JDM coupe parked midway along one side; the camera passes beside it. Then (Dan, same day): side-on, nose to
+  the right of the screen, half out through an open roll-up garage door in the right wall, on a low scissor lift,
+  engine off; the night outside. All on the bench (car along / through the door / angle, lift type + height, door
+  width / height / open, outside light, Engine on).
 - Brand: a REVAUDIO neon from the first ceiling truss, near the camera (proposed, Dan sees it in step 1).
 - Engine: Three.js, a real 3D room (Dan 2026-11-02, over CSS 3D planes).
 - Final art: Higgsfield cut-outs standing in the 3D room + textured wall strips (over one big image + depth, or an AI
