@@ -1,6 +1,8 @@
 ## 2026-11-02 — Home: TV first, old hero + closing trial section out (Claude Code `revaudio-3d [bbecad]`, laptop 1) — ON MAIN + LIVE (pushed 2026-11-02 on the user's word "Push to main commit and deploy")
 
-Claim: OPEN `revaudio-3d`. Files: `src/pages/index.astro`, `DESIGN.md` (§7), `tasks/handoff.md` (this entry).
+Claim: CLOSED 2026-11-02 `revaudio-3d` (laptop 1). Handed to the user's Mac session for the polish round below:
+that session writes its own claim (name from ListAgents) here before editing. Files touched: `src/pages/index.astro`,
+`DESIGN.md` (§7), `tasks/handoff.md`.
 - User: the gauge hero ("Engineered, Then Tuned.") and the closing "Hear it on your own mix" section are the old
   site; remove both, so the TV is the first thing on screen. Polish comes next.
 - Done: `index.astro` = sr-only h1 + WordWall + DAWStrip + Testimonial + PressLogos + EmailCapture. The hero
@@ -10,10 +12,18 @@ Claim: OPEN `revaudio-3d`. Files: `src/pages/index.astro`, `DESIGN.md` (§7), `t
 - Checks (astro preview, Chromium, 1280x665 + 390x844): build green (30 pages); TV top = nav bottom (41 / 58 px),
   TV = exactly one screen; one h1; no console errors except the CF beacon CORS on localhost; a small wheel scroll is
   not pulled back; `/#plugins` from `/revlimiter` parks the TV under the nav.
-- Polish owed (user's next round): (1) the TV's frame art waits for the window load event (built for below the
-  fold), so the first ~0.5 s shows the TV without its bezel; (2) the cookie banner now covers the TV's lower part
-  on a first visit; (3) phone: the list is centred in a full-screen TV, a big empty band above the categories.
 - Pushed to main (fast-forward) on the user's word, 2026-11-02; the Pages deploy carries it live. Phone and laptop are the same page.
+- NEXT (Mac, polish round; the user picks the order, nothing decided yet). Pointers, laptop 1 checks of 2026-11-02:
+  1. Phone: the TV is one screen tall (`.ww[data-ww-bg='screen']` min-height 100svh, `align-content: center`,
+     `WordWall.astro` ~line 2006), and the phone list is shorter than that, so a big empty band sits above
+     "PICK A CATEGORY" (and below the list). Seen live at 390x844.
+  2. Cookie banner (`CookieBanner.astro`, `position: fixed; bottom: 0`) covers the TV's lower part on a first visit,
+     laptop and phone. It used to sit over the hero.
+  3. The TV's frame (bezel) art waits for the window load event (`WordWall.astro` ~line 381: "not before the page's
+     own load ... must not race the top"), written when the TV sat below the hero. It IS the top now, so the first
+     ~0.5 s shows the TV without its bezel (the CRT power-on now fires on load too).
+  Rules: website = `wiki website`; a push to main is a live deploy (only on the user's word; `[skip ci]` in the
+  pushed HEAD's message for a docs-only push). Verify each change at 1280x665 and 390x844 before asking to push.
 
 ## 2026-11-02 — Junk Formspree sign-ups closed: no Formspree URL in any page, every form posts to the license worker (Claude Code `revaudio-a3 [e27bc5]`, laptop 2) — LIVE + CLAIM CLOSED 2026-11-02 (old forms disabled; new forms: spam filter OFF, Workflow emails info@; real-shape test mails for both arrived)
 - User (Yoni): Formspree "New submission on RevAudio Newsletter" mails at info@ with an EMPTY email, source `drift-trial`, "submitted a form on null". Asked for mandatory fields; picked the server-side block instead (no new fields).
