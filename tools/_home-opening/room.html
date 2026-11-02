@@ -171,20 +171,22 @@ import { Reflector } from 'three/addons/objects/Reflector.js';
 const DEF = {
   roomW: 6.5, roomH: 4.4,                // the room, metres (its length follows the walk: layoutCamera)
   floor: 'concrete', floorShine: 0.3,    // a real garage floor (Dan 2026-11-02), not a mirror
+  floorLines: 0,                         // painted lanes: off, "it doesn't look like a road, it's a garage" (Dan 11-03)
+  acoustics: 1, woodTone: 0.5,           // the studio: slat panels, diffusers, bass traps, a cloud (Dan 11-03)
   mess: 0.6, messSeed: 1,                // how much clutter, and which scatter of it
   lens: 32,                              // vertical field of view, degrees (phones get 18 more)
   tvW: 1.1, tvY: 1.55,                   // the TV: width, centre height (metres)
   tvStart: 5,                            // TV width on the first screen, % of the screen width (Dan's pick)
   walkLen: 220, ease: 2.0, feel: 0.35,   // scroll length (% screen); in-out power; 0 = steady metres, 1 = the TV grows steadily
   sway: 1, neon: 1, lamps: 1, tvGlow: 1, bloom: 0.9, fog: 0.035, dust: 1,
-  ledStrip: 1, rackLeds: 1, screens: 1,  // the room alive: the floor LED strips, the racks' LEDs + VU, the CRT monitors
+  ledStrip: 0, rackLeds: 1, screens: 1,  // the room alive: aisle LED strips (off: they read as a road), the racks' LEDs + VU, the CRT monitors
   // the car side-on, nose out through the open roll-up door in the right wall, engine off, on a low lift (Dan 2026-11-02)
   carZ: 0.55, carOut: 0.5, carYaw: 0, liftType: 'scissor', liftH: 0.35, engine: 0,
   doorW: 3.4, doorH: 2.8, doorOpen: 0.92, outside: 1,
   // the REVAUDIO neon: off the aisle (Dan 2026-11-02: "not in your face"), then on the end wall, right of the TV (11-03)
   signWall: 'endRight', signF: 0.5, signX: 1.9, signY: 3.55,  // the wall in front of you, top right (Dan 11-03)
   signScale: 1.125, signTilt: -4,        // 50 % bigger, hung a little crooked on two wires (Dan 11-03)
-  ver: 3,                                // settings version: 2 moved the sign to the end wall, 3 made it bigger + crooked
+  ver: 4,                                // settings version: 2 moved the sign to the end wall, 3 made it bigger + crooked, 4 took the road off the floor
   labels: 1, wire: 0, readB: 0, snap: 1, bench: 0, edit: 0,
   moves: {},                             // per-object moves from the move tool: { id: { f, x, y, side, s, r } }
 };
@@ -199,6 +201,7 @@ delete S.roomLen; delete S.mirror; // older benches stored these
 const sv = Object.keys(stored).length ? (stored.ver || 1) : DEF.ver;
 if (sv < 2) Object.assign(S, { signWall: DEF.signWall, signX: DEF.signX, signY: DEF.signY });
 if (sv < 3) Object.assign(S, { signScale: DEF.signScale, signTilt: DEF.signTilt });
+if (sv < 4) Object.assign(S, { floorLines: 0, ledStrip: 0 });
 S.ver = DEF.ver;
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
 
@@ -298,6 +301,23 @@ function laneTex(roomW, glaze) {
     for (let y = 0; y < 8; y++) g.fillRect(128 - 0.025 * px, y * py, 0.05 * px, 0.5 * py);
   });
 }
+// a 0.6 m wide stretch of wooden acoustic slats over dark felt
+const woodSlatTex = () => canvasTex(256, 256, (g, w, h) => {
+  const r = rng(61);
+  g.fillStyle = '#120d0a'; g.fillRect(0, 0, w, h);
+  for (let x = 2; x < w; x += 32) {
+    const b = 128 + r() * 34;
+    g.fillStyle = `rgb(${b | 0},${(b * 0.66) | 0},${(b * 0.4) | 0})`; g.fillRect(x, 0, 22, h);
+    for (let i = 0; i < 26; i++) { g.fillStyle = `rgba(55,32,18,${0.08 + r() * 0.14})`; g.fillRect(x + r() * 22, 0, 1 + r() * 2, h); }
+  }
+  noise(g, w, h, 10, 62);
+});
+const woodTex = () => canvasTex(64, 64, (g, w, h) => {
+  const r = rng(64); g.fillStyle = '#93623b'; g.fillRect(0, 0, w, h);
+  for (let i = 0; i < 18; i++) { g.fillStyle = `rgba(60,34,18,${0.1 + r() * 0.15})`; g.fillRect(0, r() * h, w, 1 + r() * 2); }
+  noise(g, w, h, 12, 65);
+});
+const fabricTex = () => canvasTex(128, 128, (g, w, h) => { g.fillStyle = '#2b2521'; g.fillRect(0, 0, w, h); noise(g, w, h, 20, 66); });
 const slatTex = () => canvasTex(64, 256, (g) => {
   g.fillStyle = '#56535a'; g.fillRect(0, 0, 64, 256);
   for (let y = 0; y < 256; y += 32) { g.fillStyle = 'rgba(0,0,0,.55)'; g.fillRect(0, y, 64, 4); g.fillStyle = 'rgba(255,255,255,.12)'; g.fillRect(0, y + 4, 64, 3); }
@@ -328,7 +348,7 @@ function labelSprite(text, cat, k = 1) {
     g.font = '600 34px Inter, sans-serif';
     const w = Math.min(620, g.measureText(text).width + 40);
     g.fillStyle = 'rgba(10,8,12,0.78)'; g.beginPath(); g.roundRect((640 - w) / 2, 20, w, 72, 14); g.fill();
-    g.fillStyle = cat === 'music' ? '#c9b8ff' : cat === 'garage' ? '#ffc08f' : cat === 'pic' ? '#9df0d3' : '#e8e2d6';
+    g.fillStyle = cat === 'music' ? '#c9b8ff' : cat === 'garage' ? '#ffc08f' : cat === 'pic' ? '#9df0d3' : cat === 'studio' ? '#f2cf9a' : '#e8e2d6';
     g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(text, 320, 57);
   }, false);
   const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, transparent: true, depthWrite: false, fog: false }));
@@ -408,6 +428,18 @@ const END = [
 const PROPS = [
   { id: 'E07', cat: 'music', label: 'Small drum kit: kick, snare, hi-hat (faces right)', build: 'kit', x: -1.85, z: 1.05, rot: Math.PI / 2, top: 1.1, size: [1.0, 1.0, 0.7] },
   { id: 'E08', cat: 'music', label: 'Drum throne, pushed back to the left (someone just got up)', build: 'throne', x: -0.6, z: 1.65, rot: 0, top: 0.72, size: [0.45, 0.6, 0.45] },
+];
+// the studio (Dan 2026-11-03: "make it feel like a studio as well"): bass traps in the far corners, a cloud over the desk,
+// skyline diffusers on the far wall and flanking the desk (the first reflections), wooden slat panels high on both walls
+const ACOUSTIC = [
+  { id: 'A01', type: 'trap', label: 'Bass trap, far left corner', side: -1, mount: 'floor' },
+  { id: 'A02', type: 'trap', label: 'Bass trap, far right corner', side: 1, mount: 'floor' },
+  { id: 'A03', type: 'cloud', label: 'Ceiling cloud over the desk', x: 0, z: 1.7, drop: 0.6, w: 2.2, d: 1.4, mount: 'floor' },
+  { id: 'A04', type: 'diffuser', label: 'Skyline diffuser, far wall', mount: 'end', x: -2.3, y: 3.3, w: 0.9, h: 0.6 },
+  { id: 'A05', type: 'diffuser', label: 'Skyline diffuser by the desk', mount: 'wall', side: -1, f: 0.07, y: 1.95, w: 0.9, h: 0.6 },
+  { id: 'A06', type: 'diffuser', label: 'Skyline diffuser by the desk', mount: 'wall', side: 1, f: 0.07, y: 1.95, w: 0.9, h: 0.6 },
+  ...[[-1, 0.12], [1, 0.12], [-1, 0.3], [1, 0.3], [-1, 0.5], [1, 0.5], [-1, 0.68], [-1, 0.86], [1, 0.86]].map(([side, f], i) =>
+    ({ id: 'A' + String(7 + i).padStart(2, '0'), type: 'slat', label: 'Wooden slat panel', mount: 'wall', side, f, y: 3.45, w: 1.3, h: 0.75 })),
 ];
 // pictures we already have (Dan: "more pictures from the GAS 2 page, a reference to future plugins"): framed on the walls
 const POSTERS = [
@@ -511,6 +543,17 @@ function createRoom() {
   for (const s of END) addItem({ kind: 'end', id: s.id, s, obj: block(s.cat, s.w, s.h, s.d), mount: 'end' }, `${s.id} · ${s.label}`, s.cat, 0.6);
 
   for (const s of PROPS) addItem({ kind: 'prop', id: s.id, s, obj: s.build === 'kit' ? drumKit() : drumThrone(), mount: 'floor' }, `${s.id} · ${s.label}`, s.cat, 0.6);
+
+  // the studio's acoustic treatment, in real depth: wood and fabric take the room's light
+  R.slatT = woodSlatTex(); R.slatT.repeat.set(1.3 / 0.6, 1);
+  R.acMats = {
+    slat: new THREE.MeshStandardMaterial({ map: R.slatT, roughness: 0.7 }),
+    block: new THREE.MeshStandardMaterial({ map: woodTex(), roughness: 0.65 }),
+    board: new THREE.MeshStandardMaterial({ color: 0x3a2618, roughness: 0.8 }),
+    fabric: new THREE.MeshStandardMaterial({ map: fabricTex(), roughness: 0.95 }),
+  };
+  R.acEdge = new THREE.LineBasicMaterial({ color: new THREE.Color(1.0, 0.72, 0.42), transparent: true, opacity: 0.35, toneMapped: false });
+  ACOUSTIC.forEach((s, i) => addItem({ kind: 'acoustic', id: s.id, s, obj: acousticPiece(s, i), mount: s.mount, order: i }, `${s.id} · ${s.label}`, 'studio', 0.6));
 
   // the pictures, framed (a little self-light so they read in the dark, like a lit poster)
   const frameMat = new THREE.MeshStandardMaterial({ color: 0x1c1a19, roughness: 0.6, metalness: 0.3 });
@@ -674,6 +717,29 @@ function drumThrone() {
   part(new THREE.CylinderGeometry(0.24, 0.24, 0.02, 3), R.steel, 0.01);          // a three-legged base
   return g;
 }
+// an acoustic piece, built facing +z with its back at z = 0 (so it sits on a wall); traps and clouds are centred
+function acousticPiece(s, i) {
+  const edge = (m) => { m.add(new THREE.LineSegments(new THREE.EdgesGeometry(m.geometry, 35), R.acEdge)); return m; };
+  if (s.type === 'trap') return edge(new THREE.Mesh(new THREE.BoxGeometry(0.62, 1, 0.62), R.acMats.fabric)); // set at 45 in a corner: a prism
+  if (s.type === 'cloud') {
+    const g = new THREE.Group();
+    g.add(edge(new THREE.Mesh(new THREE.BoxGeometry(s.w, 0.1, s.d), R.acMats.fabric)));
+    const frame = edge(new THREE.Mesh(new THREE.BoxGeometry(s.w + 0.06, 0.04, s.d + 0.06), R.acMats.block)); frame.position.y = 0.06; g.add(frame);
+    return g;
+  }
+  if (s.type === 'slat') { const m = edge(new THREE.Mesh(new THREE.BoxGeometry(s.w, s.h, 0.06), R.acMats.slat)); m.position.z = 0.03; const g = new THREE.Group(); g.add(m); return g; }
+  // a skyline diffuser: a board of wooden blocks at stepped depths
+  const g = new THREE.Group(), cell = 0.075, cols = Math.round(s.w / cell), rows = Math.round(s.h / cell), r = rng(300 + i);
+  const board = new THREE.Mesh(new THREE.BoxGeometry(s.w + 0.04, s.h + 0.04, 0.02), R.acMats.board); board.position.z = 0.01; g.add(edge(board));
+  const blocks = new THREE.InstancedMesh(new THREE.BoxGeometry(cell * 0.94, cell * 0.94, 1), R.acMats.block, cols * rows);
+  let n = 0;
+  for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
+    const depth = 0.02 + Math.floor(r() * 7) * 0.025;
+    blocks.setMatrixAt(n++, new THREE.Matrix4().compose(new THREE.Vector3(-s.w / 2 + (x + 0.5) * cell, -s.h / 2 + (y + 0.5) * cell, 0.02 + depth / 2), new THREE.Quaternion(), new THREE.Vector3(1, 1, depth)));
+  }
+  g.add(blocks);
+  return g;
+}
 function buildMess() {
   for (const m of R.mess) { scene.remove(m.mesh); }
   const r = rng(1000 + S.messSeed);
@@ -699,7 +765,7 @@ function arrange() {
 
   // the floor
   const mirror = S.floor === 'mirror';
-  R.floor.visible = !mirror; R.mirror.visible = R.glaze.visible = mirror; R.lanes.visible = S.floor === 'concrete';
+  R.floor.visible = !mirror; R.mirror.visible = R.glaze.visible = mirror; R.lanes.visible = S.floor === 'concrete' && !!S.floorLines;
   const ft = R.floorTex[S.floor] || R.floorTex.concrete;
   if (R.floorMat.map !== ft) { R.floorMat.map = ft; R.floorMat.needsUpdate = true; }
   const tile = S.floor === 'checker' ? 4.8 : 4;
@@ -765,6 +831,8 @@ function arrange() {
   R.pool.material.opacity = 0.32 * S.outside;
   R.outLabel.position.set(Wd / 2 + 2.5, 2.2, dz);
 
+  // the wood's tone: dark walnut to light oak
+  for (const m of [R.acMats.slat, R.acMats.block]) m.color.setScalar(0.45 + 1.0 * S.woodTone);
   // every movable thing: its place from its table row, then the move tool's override
   for (const it of R.items) if (it.kind !== 'car') placeItem(it);
   placeLeds();
@@ -802,6 +870,25 @@ function placeItem(it) {
     const s = it.s, x = ov.x ?? s.x, z = ov.f != null ? ov.f * span : s.z, y = ov.y ?? 0;
     it.obj.position.set(x, y, z); it.obj.scale.setScalar(k); it.obj.rotation.y = s.rot + turn;
     lb.position.set(x, y + s.top * k + 0.18, z + 0.15);
+  } else if (it.kind === 'acoustic') {
+    const s = it.s, H = S.roomH, show = it.order < Math.round(S.acoustics * ACOUSTIC.length);
+    let x, y, z, ry = 0, top;
+    if (s.type === 'trap') {
+      const side = ov.side ?? s.side; x = ov.x ?? side * Wd / 2; z = ov.f != null ? ov.f * span : 0; y = H / 2;
+      it.obj.scale.set(k, H, k); ry = Math.PI / 4; top = H - 0.3; it.side = side;
+    } else if (s.type === 'cloud') {
+      x = ov.x ?? s.x; z = ov.f != null ? ov.f * span : s.z; y = ov.y ?? H - s.drop; it.obj.scale.setScalar(k); top = y + 0.15;
+    } else if (it.mount === 'end') {
+      x = ov.x ?? s.x; y = ov.y ?? s.y; z = 0.001; it.obj.scale.setScalar(k); top = y + s.h * k / 2;
+    } else {
+      const side = ov.side ?? s.side; x = side * (Wd / 2 - 0.001); y = ov.y ?? s.y; z = (ov.f ?? s.f) * span;
+      ry = faceFor(side); it.obj.scale.setScalar(k); top = y + s.h * k / 2; it.side = side;
+    }
+    it.obj.position.set(x, y, z); it.obj.rotation.y = ry + turn;
+    // nothing hangs over the garage door's opening or its roll hood (unless you put it there)
+    const half = (s.w || 0.6) * k / 2, bottom = s.type === 'trap' ? 0 : y - (s.h || 0.1) * k / 2;
+    it.obj.visible = show && (moved || !((it.side === 1) && R.door && z + half > R.door.z0 - 0.1 && z - half < R.door.z1 + 0.1 && bottom < R.door.h + 0.5));
+    lb.position.set(x - (it.side || 0) * 0.4, top + 0.2, z + (it.mount === 'end' ? 0.2 : 0));
   } else if (it.kind === 'poster') {
     const s = it.s, img = it.tex.image, aspect = img && img.width ? img.width / img.height : 0.7;
     const h = s.h * k, w = h * aspect, side = ov.side ?? s.side;
@@ -896,7 +983,8 @@ function placeTv() {
 function syncLabels() { for (const lb of R.labels) lb.visible = !!S.labels && (!lb.userData.show || lb.userData.show()); }
 function applyFlags() {
   const wire = !!S.wire;
-  for (const m of [...Object.values(R.mats), ...Object.values(R.messMats)]) m.visible = !wire;
+  for (const m of [...Object.values(R.mats), ...Object.values(R.messMats), ...Object.values(R.acMats)]) m.visible = !wire;
+  R.acEdge.opacity = wire ? 1 : 0.35; R.acEdge.color.setRGB(...(wire ? [2.4, 1.7, 0.9] : [1.0, 0.72, 0.42]));
   for (const m of Object.values(R.edgeMats)) m.opacity = wire ? 1 : 0.35;
   R.edgeMats.music.color.setRGB(...(wire ? [1.6, 1.0, 2.6] : [0.75, 0.55, 1.0]));
   R.edgeMats.garage.color.setRGB(...(wire ? [2.6, 1.4, 0.7] : [1.0, 0.6, 0.32]));
@@ -1213,7 +1301,7 @@ function fillSel(valuesOnly = false) {
     body.appendChild(l);
   }
   const flip = $('selFlip');
-  flip.hidden = it.kind === 'car' || it.kind === 'end' || it.kind === 'prop';
+  flip.hidden = it.kind === 'car' || it.kind === 'end' || it.kind === 'prop' || (it.kind === 'acoustic' && it.mount !== 'wall' && it.s.type !== 'trap');
   flip.textContent = it.kind === 'sign' ? `Where: ${SIGN_WHERE[S.signWall] || S.signWall}` : 'Other wall';
 }
 $('selFlip').addEventListener('click', () => {
@@ -1249,7 +1337,10 @@ const SLIDERS = [
   ['The room'],
   ['roomW', 'Width (m)', 4, 10, 0.1], ['roomH', 'Height (m)', 3, 6.5, 0.1],
   ['floor', 'Floor', { concrete: 'Worn garage concrete', checker: 'Checker tiles', mirror: 'Glossy mirror (the old one)' }],
-  ['floorShine', 'Floor shine', 0, 1, 0.01], ['mess', 'Mess', 0, 1, 0.01],
+  ['floorShine', 'Floor shine', 0, 1, 0.01], ['floorLines', 'Floor lines', { 0: 'None (a garage, not a road)', 1: 'Painted lanes' }],
+  ['mess', 'Mess', 0, 1, 0.01],
+  ['The studio'],
+  ['acoustics', 'Acoustic treatment', 0, 1, 0.01], ['woodTone', 'Wood tone (walnut ↔ oak)', 0, 1, 0.01],
   ['The camera'],
   ['lens', 'Lens: vertical view (°)', 18, 70, 1], ['tvStart', 'TV on the first screen (% width)', 2, 15, 0.5],
   ['walkLen', 'Scroll length (% screen)', 100, 600, 10], ['ease', 'Ease (in-out power)', 1, 4, 0.1],
@@ -1281,8 +1372,8 @@ function buildTune() {
     if (row.length === 3) { // a choice
       const [k, label] = row, opts = row[2] || (k === 'signWall' ? SIGN_WHERE : {}), l = document.createElement('label'), sel = document.createElement('select');
       l.innerHTML = `<span>${label}</span><output></output>`;
-      for (const [v, t] of Object.entries(opts)) { const o = document.createElement('option'); o.value = v; o.textContent = t; o.selected = S[k] === v; sel.appendChild(o); }
-      sel.addEventListener('change', () => { S[k] = sel.value; if (k === 'signWall') { signSide(); buildTune(); } save(); arrange(); if (R.selected) fillSel(); });
+      for (const [v, t] of Object.entries(opts)) { const o = document.createElement('option'); o.value = v; o.textContent = t; o.selected = String(S[k]) === v; sel.appendChild(o); }
+      sel.addEventListener('change', () => { S[k] = /^\d+$/.test(sel.value) ? +sel.value : sel.value; if (k === 'signWall') { signSide(); buildTune(); } save(); arrange(); if (R.selected) fillSel(); });
       l.appendChild(sel); body.appendChild(l); continue;
     }
     const [k, label, min, max, step] = row;
@@ -1317,6 +1408,8 @@ function slotList() {
     if (it.kind === 'side') out.push({ id: it.id, cat: it.s.cat, label: it.s.label, size: [it.s.w, it.s.h, it.s.d], pos, need: `Cut-out, seen from the aisle (${(it.side || it.s.side) < 0 ? 'left' : 'right'} wall), transparent background` });
     if (it.kind === 'end') out.push({ id: it.id, cat: it.s.cat, label: it.s.label, size: [it.s.w, it.s.h, it.s.d], pos, need: 'Cut-out, straight-on from the aisle (the far end), transparent background' });
     if (it.kind === 'prop') out.push({ id: it.id, cat: it.s.cat, label: it.s.label, size: it.s.size, pos, need: 'Cut-out, three-quarter from the aisle, transparent background' });
+    if (it.kind === 'acoustic') out.push({ id: it.id, cat: 'studio', label: it.s.label, size: it.s.type === 'trap' ? [0.62, S.roomH] : it.s.type === 'cloud' ? [it.s.w, it.s.d] : [it.s.w, it.s.h], pos,
+      need: it.s.type === 'slat' || it.s.type === 'diffuser' ? 'Built in code (wood); or a straight-on wood texture' : 'Built in code (fabric); or a fabric texture' });
     if (it.kind === 'poster') out.push({ id: it.id, cat: 'pic', label: it.s.label, size: [it.s.h], pos, need: `We have it: assets/pics/${it.s.pic}.webp (no credits)` });
     if (it.kind === 'monitor') out.push({ id: it.id, cat: 'music', label: it.s.label, size: [it.s.w * 1.18, it.s.w * 0.75, 0.42], pos, need: `CRT body cut-out; the screen shows assets/pics/${it.s.pic}.webp (we have it)` });
   }
@@ -1335,7 +1428,7 @@ const buildSlotsIfOpen = () => { if (!$('slotsPanel').hidden) buildSlots(); };
 function buildSlots() {
   const list = slotList();
   const rows = list.map((s) => {
-    const cls = s.cat === 'music' ? 'm' : s.cat === 'garage' ? 'g' : s.cat === 'pic' ? 'p' : '';
+    const cls = s.cat === 'music' ? 'm' : s.cat === 'garage' || s.cat === 'studio' ? 'g' : s.cat === 'pic' ? 'p' : '';
     return `<tr><td class="${cls}">${s.id}</td><td>${s.label}</td><td>${s.size.map((v) => +(+v).toFixed(2)).join(' × ')}</td><td>${s.need}</td></tr>`;
   }).join('');
   const n = list.filter((s) => s.cat === 'music' || s.cat === 'garage' || s.cat === 'surface').reduce((a, s) => a + (s.id === 'MESS' ? R.messTypes.length : 1), 0);
