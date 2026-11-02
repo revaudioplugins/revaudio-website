@@ -1,4 +1,4 @@
-# Home opening: the long garage (Dan 2026-11-02, danavivi-7a) — PLAN, step 1 (the first image)
+# Home opening: the long garage (Dan 2026-11-02, danavivi-7a) — PLAN, step 1 (the 3D skeleton)
 
 Dan (2026-11-02): the first screen = a long rectangular room (מלבן) packed with detail: guitars, synths, garage
 tools, a car; at the far end a small TV; scrolling walks down the room to it and locks into the live TV (the LCD).
@@ -11,17 +11,21 @@ lock-in hand-off is reused, its room is not. Dan: plan with him first, then one 
 - Layout: music gear and garage gear mixed on both walls.
 - Car: a JDM coupe parked midway along one side; the camera passes beside it.
 - Brand: a REVAUDIO neon from the first ceiling truss, near the camera (proposed, Dan sees it in step 1).
+- Engine: Three.js, a real 3D room (Dan 2026-11-02, over CSS 3D planes).
+- Final art: Higgsfield cut-outs standing in the 3D room + textured wall strips (over one big image + depth, or an AI
+  fly-through video). Higgsfield: 250 credits (Lite) on 2026-11-02.
 
 ## Steps
-- [ ] 1. The first image. ⏸ Blocked 2026-11-02: OpenAI key expired, Higgsfield 0 credits. Prompt:
-      `tools/_home-opening/gen/long-room.txt`. 2-4 versions (Nano Banana Pro 4K 16:9, cost-checked first; or gpt-image-2
-      1536x1024 for look tests) -> Dan picks one.
-- [ ] 2. The walk-in, decided on the picked image: (a) nested images toward the TV (each the centre of the one before,
-      outpainted) or (b) a fly-through video scrubbed by the scroll. Plan + Dan's pick.
-- [ ] 3. Slight movement in the first image (haze, neon hum, LEDs / VU meters): plan + pick.
-- [ ] 4. The readings in the scene: plan + pick (the first prototype's A / B / C are the starting options).
-- [ ] 5. The phone version: its own portrait room.
-- [ ] 6. Into the site (`index.astro` + a new component, the live TV at the lock, reduced motion, weight), DESIGN.md
+- [ ] 1. The 3D skeleton, no credits: `tools/_home-opening/room.html`. The room as a real box; a grey labelled block
+      per future image (music + garage mixed on both walls, the coupe midway right, the REVAUDIO neon on the first
+      truss); real light (neon strips + glow, amber lamps, haze, a glossy floor); the live TV at ~5 % at the far end;
+      scroll = the walk, locking onto the live TV (the first prototype's hand-off); sliders + a neon-wireframe toggle.
+      Dan looks, tunes, picks.
+- [ ] 2. The slot list out of the skeleton: each prop / wall's size, angle and light = its Higgsfield prompt
+      (cut-out, transparent background). Plan + Dan's OK.
+- [ ] 3. Higgsfield art per slot, cost-checked per batch (RULE 0), dropped into the skeleton one by one.
+- [ ] 4. Movement, the readings, the phone version: each planned with Dan first.
+- [ ] 5. Into the site (`index.astro` + a new component, the live TV at the lock, reduced motion, weight), DESIGN.md
       §0 + §7; main only on Dan's word (= live).
 
 # GAS 2 on the front page: in the LCD screen (Dan 2026-11-01, danavivi-83) — PLAN, waits for the LCD screen
