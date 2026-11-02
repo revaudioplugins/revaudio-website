@@ -372,10 +372,10 @@ and place whatever the new label says (same day: "To the store" the same size as
 
 ## 7. Hero + glanceability
 
-THE hero is the gauge medallion with "Engineered, Then Tuned." over it. One glance: brass tach,
-red sweep under the headline, "Boutique plugins" above. Everything below is the walk through the
-garage: the plugin TV, the sign, the clipboard, the door. No second hero, no metric grid, no
-card grid.
+THE first screen is the plugin TV (2026-11-02, the user's call: the gauge medallion with "Engineered,
+Then Tuned." and the closing "Hear it on your own mix" trial section were the old site and came out).
+The TV sits right under the nav and fills one screen; the page's h1 is visually hidden. No hero above
+it, no metric grid, no card grid.
 
 **Product-page hero = "the readings" (canon: the GAS 2 page, composition 2; Dan 2026-10-23: "I love you
 so much", "this is amazing"; `tools/_gas2-scene/page-b.html` on `feat/gas2-page`).** The vibe to repeat:

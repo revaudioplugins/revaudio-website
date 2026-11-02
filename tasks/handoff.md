@@ -1,3 +1,20 @@
+## 2026-11-02 — Home: TV first, old hero + closing trial section out (Claude Code `revaudio-3d [bbecad]`, laptop 1) — ON BRANCH `feat/home-tv-first`, not on main
+
+Claim: OPEN `revaudio-3d`. Files: `src/pages/index.astro`, `DESIGN.md` (§7), `tasks/handoff.md` (this entry).
+- User: the gauge hero ("Engineered, Then Tuned.") and the closing "Hear it on your own mix" section are the old
+  site; remove both, so the TV is the first thing on screen. Polish comes next.
+- Done: `index.astro` = sr-only h1 + WordWall + DAWStrip + Testimonial + PressLogos + EmailCapture. The hero
+  markup, its GSAP script, its CSS, the hero-wall preloads and the closing CTA are gone. Kept on disk (unused by the
+  page now): `src/assets/hero/*`, `src/lib/gauge-geometry.ts`, `bench/hero-text-bench.html`,
+  `revedit.overrides.json` hero entries. `global.css` `.hero` stays (product pages).
+- Checks (astro preview, Chromium, 1280x665 + 390x844): build green (30 pages); TV top = nav bottom (41 / 58 px),
+  TV = exactly one screen; one h1; no console errors except the CF beacon CORS on localhost; a small wheel scroll is
+  not pulled back; `/#plugins` from `/revlimiter` parks the TV under the nav.
+- Polish owed (user's next round): (1) the TV's frame art waits for the window load event (built for below the
+  fold), so the first ~0.5 s shows the TV without its bezel; (2) the cookie banner now covers the TV's lower part
+  on a first visit; (3) phone: the list is centred in a full-screen TV, a big empty band above the categories.
+- Push to main = live deploy: waits for the user's word.
+
 ## 2026-11-02 — Junk Formspree sign-ups closed: no Formspree URL in any page, every form posts to the license worker (Claude Code `revaudio-a3 [e27bc5]`, laptop 2) — LIVE + CLAIM CLOSED 2026-11-02 (old forms disabled; new forms: spam filter OFF, Workflow emails info@; real-shape test mails for both arrived)
 - User (Yoni): Formspree "New submission on RevAudio Newsletter" mails at info@ with an EMPTY email, source `drift-trial`, "submitted a form on null". Asked for mandatory fields; picked the server-side block instead (no new fields).
 - Cause: the 7 sign-up forms' no-JS `action` printed `formspree.io/f/maqzlgwa` (affiliate: `mykrwolg`). A script posted straight to it (no Referer = "null", empty email): our worker never saw it.
