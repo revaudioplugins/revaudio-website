@@ -1,3 +1,29 @@
+# Home opening: the long garage (Dan 2026-11-02, danavivi-7a) — PLAN, step 1 (the first image)
+
+Dan (2026-11-02): the first screen = a long rectangular room (מלבן) packed with detail: guitars, synths, garage
+tools, a car; at the far end a small TV; scrolling walks down the room to it and locks into the live TV (the LCD).
+Restarted from scratch after the first prototype (`tools/_home-opening/`, one wall + a zoom, commit `f35fdf0`): its
+lock-in hand-off is reused, its room is not. Dan: plan with him first, then one piece at a time, shown before the next.
+
+## Decisions (Dan's picks, 2026-11-02)
+- Look: photoreal, graded with DRIFT's violet/magenta neon + amber lamps (house law: photographic realism).
+- The TV at the far end: about 5 % of the screen width (~55 px on a 1141 laptop), so the walk-in is ~20x.
+- Layout: music gear and garage gear mixed on both walls.
+- Car: a JDM coupe parked midway along one side; the camera passes beside it.
+- Brand: a REVAUDIO neon from the first ceiling truss, near the camera (proposed, Dan sees it in step 1).
+
+## Steps
+- [ ] 1. The first image. ⏸ Blocked 2026-11-02: OpenAI key expired, Higgsfield 0 credits. Prompt:
+      `tools/_home-opening/gen/long-room.txt`. 2-4 versions (Nano Banana Pro 4K 16:9, cost-checked first; or gpt-image-2
+      1536x1024 for look tests) -> Dan picks one.
+- [ ] 2. The walk-in, decided on the picked image: (a) nested images toward the TV (each the centre of the one before,
+      outpainted) or (b) a fly-through video scrubbed by the scroll. Plan + Dan's pick.
+- [ ] 3. Slight movement in the first image (haze, neon hum, LEDs / VU meters): plan + pick.
+- [ ] 4. The readings in the scene: plan + pick (the first prototype's A / B / C are the starting options).
+- [ ] 5. The phone version: its own portrait room.
+- [ ] 6. Into the site (`index.astro` + a new component, the live TV at the lock, reduced motion, weight), DESIGN.md
+      §0 + §7; main only on Dan's word (= live).
+
 # GAS 2 on the front page: in the LCD screen (Dan 2026-11-01, danavivi-83) — PLAN, waits for the LCD screen
 
 Dan (2026-11-01): "where do we put gas 2 ... in the front page. Like I think it should be in the LCD screen that we do

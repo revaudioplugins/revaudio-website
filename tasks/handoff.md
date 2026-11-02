@@ -2,7 +2,7 @@
 
 Claim: OPEN `danavivi-7a` (Dan's Mac). This is the Mac polish round the TV-first entry below handed over; it replaces that
 entry's "no hero above the TV" (DESIGN.md §7) on Dan's word. Files now: `tools/_home-opening/**` (new prototype, not in the
-build), `tasks/handoff.md` (this entry). Later, only after Dan picks: `src/pages/index.astro`, a new
+build), `tasks/handoff.md` (this entry), `tasks/todo.md` (the plan, top). Later, only after Dan picks: `src/pages/index.astro`, a new
 `src/components/HomeOpening.astro`, `DESIGN.md` §0 + §7, and `src/components/WordWall.astro` for the power-on / lock hand-off only.
 - User (Dan): the first screen = a wide scene of a garage that is also a studio (guitars, synths, compressors, speakers
   among car tools, parts shelves and a car), retro-cyber LCD and vintage like DRIFT, slightly moving. Scroll = the camera
@@ -10,6 +10,9 @@ build), `tasks/handoff.md` (this entry). Later, only after Dan picks: `src/pages
 - Art is blocked: Higgsfield shows 0 credits (free plan) and the OpenAI key in `~/.zsh/openai.zsh` answers "expired".
   The prototype runs on a stand-in plate (RevAmp's `garage-classic.jpg`); the real plate's prompt + script are in
   `tools/_home-opening/gen/`.
+- Later the same day: the prototype (commit `f35fdf0`, old concept: one wall + a zoom) showed the mechanics; Dan then
+  restarted the concept (a long rectangular room packed with gear, a small TV at the far end) and asked to plan it
+  with him first. His picks + the steps: `tasks/todo.md` top. Step 1 (the first image) waits on a key or credits.
 
 ## 2026-11-02 — Footer: categories fold into drawers (Claude Code `revaudio-3b [a4cb6d]`, laptop 2) — ON MAIN + LIVE: merged `--no-ff` 2026-11-02 by Claude Code `revaudio-0c [571e5c]` (laptop 1) on Dan's word "push it to main and merge" (Yoni had approved by pushing the branch)
 
