@@ -4,8 +4,8 @@
  * link to the licence worker's /download portal; that portal stays live and
  * untouched (Paddle's post-purchase flow and old emails still use it).
  *
- *   1. pick   the homepage plugin carousel in mode="downloads" (PluginShowcase):
- *             a press on the centred card fires `downloads:pick` {slug}.
+ *   1. pick   a grid of plugin cards with a search box (2026-11-02, replaced
+ *             the homepage carousel here): a press on a card opens the panel.
  *   2. email  the same email gate as every popup: POST {email, plugin,
  *             marketing, from:'downloads'} to the worker's /download/register,
  *             so the same emails go out (the download link in direct mode, the
@@ -16,31 +16,75 @@
  *             Mac / Windows buttons: POST /download {plugin, os, gate} mints a
  *             15-minute /dl link and the worker streams the build from R2 —
  *             whatever /pit-lane last shipped for that platform.
- * The panel follows the carousel once a plugin has been picked. ?p=<slug>
- * deep-links straight to a plugin.
+ * ?p=<slug> deep-links straight to a plugin.
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
-import PluginShowcase from '../components/PluginShowcase.astro';
+import { Image } from 'astro:assets';
 import { bySlug, dlGateId, trialConversionValueUsd } from '../data/plugins';
 import { site } from '../data/site';
 import { revfx } from '../data/revfx';
+import { pluginImage } from '../lib/images';
 
-// Same list and order as PluginShowcase's DL_ORDER.
+// What the worker's /download/register can send (DL_PLUGINS + DL_PORTAL_ORDER
+// in the licence worker). RevFX joins once revfx.gateWired.
 const DL_SLUGS = ['drift', 'revlimiter', 'gas', 'radio-roulette', ...(revfx.gateWired ? ['revfx'] : [])];
 const info = Object.fromEntries(DL_SLUGS.map((slug) => {
   const p = bySlug(slug)!;
   return [slug, { gate: dlGateId(p), name: p.name, free: !!p.isFree, value: trialConversionValueUsd(p) || 0 }];
 }));
+const cards = DL_SLUGS.map((slug) => {
+  const p = bySlug(slug)!;
+  const type = p.library?.typeWord || p.category;
+  return {
+    slug,
+    name: p.library?.name || p.name,   // DRIFT in capitals, as on the home TV
+    type,
+    tagline: p.tagline,
+    shot: pluginImage(p.heroImage),
+    tag: p.isFree ? 'Free forever' : '30 days free',
+    free: !!p.isFree,
+    // What the search box matches against.
+    search: [p.name, type, p.category, p.tagline, p.oneLiner, p.isFree ? 'free' : 'trial'].join(' ').toLowerCase(),
+  };
+});
 ---
 
 <BaseLayout
   title="Downloads"
   description="Download RevAudio plugins: full-version 30-day trials and free plugins, sent straight to your inbox."
 >
-  <PluginShowcase mode="downloads" />
+  <section class="dlg" aria-labelledby="dlg-title">
+    <h1 class="dlg-heading" id="dlg-title">Downloads</h1>
+    <label class="dlg-search">
+      <span class="sr-only">Search plugins</span>
+      <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" /><path d="M13 13l4.5 4.5" /></svg>
+      <input type="search" data-dlg-q placeholder="Search plugins: limiter, saturation, free…" autocomplete="off" spellcheck="false" />
+    </label>
+    <ul class="dlg-grid" data-dlg-grid>
+      {cards.map((c) => (
+        <li class="dlg-item" data-dlg-item data-search={c.search}>
+          <button type="button" class="dlg-card" data-dl-pick={c.slug} aria-pressed="false">
+            <span class="dlg-shot">
+              {c.shot && <Image src={c.shot} alt="" widths={[320, 640]} sizes="(max-width: 640px) 90vw, 320px" loading="lazy" />}
+            </span>
+            <span class="dlg-body">
+              <span class="dlg-name">{c.name}</span>
+              <span class="dlg-type">{c.type}</span>
+              <span class="dlg-tagline">{c.tagline}</span>
+              <span class="dlg-foot">
+                <span class:list={['dlg-tag', { 'is-free': c.free }]}>{c.tag}</span>
+                <span class="dlg-go">Download &darr;</span>
+              </span>
+            </span>
+          </button>
+        </li>
+      ))}
+    </ul>
+    <p class="dlg-empty" data-dlg-empty role="status" aria-live="polite" hidden></p>
+  </section>
 
   <section class="dlp" data-dlp data-worker={site.downloadGate.workerUrl} data-info={JSON.stringify(info)} aria-label="Get your download">
-    <p class="dlp-hint" data-dlp-hint>Pick a plugin, then <strong>press its card</strong>.</p>
+    <p class="dlp-hint" data-dlp-hint><strong>Pick a plugin</strong> to get its download.</p>
 
     <div class="dlp-card" data-dlp-card hidden tabindex="-1">
       <p class="dlp-kicker" data-dlp-kicker>Free 30-day trial</p>
@@ -144,7 +188,7 @@ const info = Object.fromEntries(DL_SLUGS.map((slug) => {
       .then((d) => { if (d && d.ok) { manuals = d.manuals || {}; if (picked) render(); } })
       .catch(() => { /* no manual links, the downloads still work */ });
 
-    let slug = document.querySelector<HTMLElement>('[data-showcase] .sc-slide.is-current')?.dataset.slug || Object.keys(info)[0];
+    let slug = Object.keys(info)[0];
     let picked = false;
     let inFlight = false;
     let dlInFlight = false;
@@ -211,6 +255,9 @@ const info = Object.fromEntries(DL_SLUGS.map((slug) => {
       if (!info[nextSlug]) return;
       slug = nextSlug;
       picked = true;
+      document.querySelectorAll<HTMLElement>('[data-dl-pick]').forEach((b) => {
+        b.setAttribute('aria-pressed', String(b.dataset.dlPick === slug));
+      });
       hint.hidden = true;
       card.hidden = false;
       render();
@@ -223,13 +270,27 @@ const info = Object.fromEntries(DL_SLUGS.map((slug) => {
       target?.focus({ preventScroll: true });
     }
 
-    document.addEventListener('downloads:pick', (e) => open((e as CustomEvent).detail?.slug, true));
-    // Once something is picked, the panel follows the carousel.
-    document.addEventListener('showcase:change', (e) => {
-      const s = (e as CustomEvent).detail?.slug;
-      if (!info[s]) return;
-      slug = s;
-      if (picked) render();
+    document.querySelectorAll<HTMLElement>('[data-dl-pick]').forEach((b) => {
+      b.addEventListener('click', () => open(b.dataset.dlPick || '', true));
+    });
+
+    // ---- search: filter the cards as you type -------------------------------
+    const q = document.querySelector<HTMLInputElement>('[data-dlg-q]');
+    const items = Array.from(document.querySelectorAll<HTMLElement>('[data-dlg-item]'));
+    const empty = document.querySelector<HTMLElement>('[data-dlg-empty]');
+    q?.addEventListener('input', () => {
+      const words = q.value.toLowerCase().split(/\s+/).filter(Boolean);
+      let shown = 0;
+      items.forEach((it) => {
+        const hay = it.dataset.search || '';
+        const hit = words.every((wd) => hay.includes(wd));
+        it.hidden = !hit;
+        if (hit) shown++;
+      });
+      if (empty) {
+        empty.hidden = shown > 0;
+        empty.textContent = shown ? '' : 'No plugin matches “' + q.value.trim() + '”.';
+      }
     });
 
     // ---- email -> /download/register (the popups' exact request) ----------
@@ -377,16 +438,118 @@ const info = Object.fromEntries(DL_SLUGS.map((slug) => {
       const want = searchQ.get('p') || '';
       arrive = info[want] ? want : slugByGate[want] || '';
     }
-    if (arrive) {
-      // Parked for the carousel too, in case its script runs after this one.
-      (window as unknown as { __showcaseGoto?: string }).__showcaseGoto = arrive;
-      document.dispatchEvent(new CustomEvent('showcase:goto', { detail: { slug: arrive } }));
-      open(arrive, true);
-    }
+    if (arrive) open(arrive, true);
   }
 </script>
 
 <style>
+  .dlg {
+    width: min(1100px, 100%);
+    margin: 0 auto;
+    padding: 1rem 1rem 2.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+  }
+  .dlg-heading {
+    font-family: var(--font-display);
+    font-size: clamp(3.2rem, 7vw, 4.8rem);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--fg);
+    text-align: center;
+    margin: 0;
+    padding-top: 0.5rem;
+  }
+
+  .dlg-search {
+    position: relative;
+    width: min(520px, 100%);
+  }
+  .dlg-search svg {
+    position: absolute;
+    left: 0.9rem;
+    top: 50%;
+    width: 18px;
+    height: 18px;
+    transform: translateY(-50%);
+    fill: none;
+    stroke: var(--fg-dim);
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    pointer-events: none;
+  }
+  .dlg-search input {
+    width: 100%;
+    box-sizing: border-box;
+    background: var(--bg-1);
+    border: 1px solid var(--border-bright);
+    border-radius: 999px;
+    color: var(--fg);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    padding: 0.75rem 1rem 0.75rem 2.6rem;
+  }
+  .dlg-search input::placeholder { color: var(--fg-faint); }
+  .dlg-search input:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 0; border-color: var(--brass-dark); }
+
+  .dlg-grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1rem;
+  }
+  .dlg-item[hidden] { display: none; }
+  .dlg-card {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    text-align: left;
+    background: var(--bg-1);
+    color: var(--fg);
+    border: 1px solid var(--border-bright);
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    font: inherit;
+    transition: border-color 0.2s var(--ease), transform 0.2s var(--ease);
+  }
+  .dlg-card:hover { border-color: var(--brass-dark); transform: translateY(-2px); }
+  .dlg-card:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 2px; }
+  .dlg-card[aria-pressed='true'] { border-color: var(--brass); box-shadow: inset 0 3px 0 var(--brass); }
+  @media (prefers-reduced-motion: reduce) { .dlg-card:hover { transform: none; } }
+
+  .dlg-shot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 16 / 9;
+    min-height: 0;
+    overflow: hidden;
+    padding: 0.75rem;
+    background: var(--bg-0);
+    border-bottom: 1px solid var(--border);
+  }
+  .dlg-shot :global(img) { display: block; width: 100%; height: 100%; object-fit: contain; }
+
+  .dlg-body { display: flex; flex-direction: column; gap: 0.3rem; flex: 1; padding: 1rem 1.1rem 1.1rem; }
+  .dlg-name { font-family: var(--font-display); font-size: 1.9rem; letter-spacing: 0.04em; line-height: 1; color: var(--brass-bright); }
+  .dlg-type { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--fg-dim); }
+  .dlg-tagline { font-size: 0.9rem; color: var(--fg); margin-top: 0.25rem; }
+  .dlg-foot { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-top: auto; padding-top: 0.9rem; }
+  .dlg-tag { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--oxide-text); }
+  .dlg-tag.is-free { color: var(--brass); }
+  .dlg-go { font-size: 0.85rem; color: var(--brass-bright); }
+
+  .dlg-empty { margin: 0; color: var(--fg-dim); font-size: 0.95rem; }
+  .dlg-empty[hidden] { display: none; }
+
   .dlp {
     display: flex;
     flex-direction: column;
