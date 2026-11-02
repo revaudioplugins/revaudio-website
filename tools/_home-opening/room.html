@@ -67,10 +67,12 @@
   .bench-head b { font: 400 20px/1 "Bebas Neue"; letter-spacing: .1em; color: var(--brass-bright); }
   .bench-head .tag { font: 600 9.5px/1 Inter, sans-serif; letter-spacing: .06em; padding: 8px 12px; border-radius: 999px; background: rgba(40,70,40,.9);
     border: 1px solid #4f8a4f; color: #d6ffd6; }
-  .bench-head .chip { margin-left: auto; }
   .chip { appearance: none; border: 1px solid #3a3027; background: rgba(20,16,13,.9); color: #cfc6b8; padding: 8px 12px; border-radius: 999px; cursor: pointer;
     font: 600 11px/1 Inter, sans-serif; letter-spacing: .03em; }
   .chip[aria-pressed="true"] { background: #e8c878; color: #1a140e; border-color: #e8c878; }
+  .chip:disabled { opacity: .35; cursor: default; }
+  .bench-head .grow { flex: 1; }
+  .bench-head .icon { padding: 7px 10px; font-size: 13px; }
   .bench h2 { margin: 14px 0 6px; font: 400 15px/1 "Bebas Neue"; letter-spacing: .08em; color: var(--brass-bright); }
   .bench label { display: grid; grid-template-columns: 1fr 56px; gap: 2px 8px; margin: 6px 0; }
   .bench input[type=range] { grid-column: 1 / -1; width: 100%; accent-color: #e8c878; }
@@ -117,7 +119,9 @@
 <button class="bench-open" id="benchOpen" aria-label="Open the bench">⚙ Bench</button>
 <aside class="bench" id="bench" aria-label="Bench" data-lenis-prevent hidden>
   <div class="bench-head">
-    <b>Bench</b><span class="tag" title="Grey blocks only: no Higgsfield credits spent">SKELETON · NO CREDITS</span>
+    <b>Bench</b><span class="tag" title="Grey blocks only: no Higgsfield credits spent">SKELETON · NO CREDITS</span><span class="grow"></span>
+    <button class="chip icon" id="btnUndo" aria-label="Undo" title="Undo (⌘Z)" disabled>↶</button>
+    <button class="chip icon" id="btnRedo" aria-label="Redo" title="Redo (⇧⌘Z)" disabled>↷</button>
     <button class="chip" id="benchClose" aria-label="Hide the bench">Hide ›</button>
   </div>
   <div class="row">
@@ -204,7 +208,19 @@ if (sv < 3) Object.assign(S, { signScale: DEF.signScale, signTilt: DEF.signTilt 
 if (sv < 4) Object.assign(S, { floorLines: 0, ledStrip: 0 });
 if (sv < 5) for (const id of ['L19', 'E02', 'E03', 'E05', 'E06', 'E08', 'A08', 'L12', 'R01']) delete S.moves[id]; // baked into the tables; L19 was dragged 100 m off
 S.ver = DEF.ver;
-const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+// undo / redo: every saved change is one step (a whole slider or object drag, a toggle, a reset); view state is not
+const UNDO_SKIP = new Set(['bench', 'edit']);
+let hist = null, histAt = 0, restoring = false;
+const snapshot = () => JSON.stringify(S, (k, v) => (UNDO_SKIP.has(k) ? undefined : v));
+function remember() {
+  if (!hist || restoring) return;
+  const snap = snapshot();
+  if (snap === hist[histAt]) return;
+  hist = hist.slice(0, histAt + 1); hist.push(snap);
+  if (hist.length > 200) hist.shift();
+  histAt = hist.length - 1; undoUi();
+}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} remember(); };
 
 // the live TV, captured per screen size (r = the bezel's corner radius, px)
 const CAPS = [
@@ -1458,9 +1474,27 @@ const copy = async (btn, txt, label) => {
 };
 $('btnCopy').addEventListener('click', () => { const { bench, edit, ...rest } = S; copy($('btnCopy'), JSON.stringify(rest, null, 1), 'Copy settings'); });
 $('btnCopySlots').addEventListener('click', () => copy($('btnCopySlots'), JSON.stringify(slotList(), null, 1), 'Copy slot list (JSON)'));
+function restoreSnap(snap) {
+  restoring = true;
+  const o = JSON.parse(snap), seed = S.messSeed;
+  Object.assign(S, o); S.moves = o.moves || {};
+  if (S.messSeed !== seed) buildMess();
+  save(); layoutCamera(); arrange(); applyFlags();
+  if (S.bench) buildTune();
+  if (R.selected) fillSel();
+  restoring = false; undoUi();
+}
+function undo() { if (hist && histAt > 0) restoreSnap(hist[--histAt]); }
+function redo() { if (hist && histAt < hist.length - 1) restoreSnap(hist[++histAt]); }
+function undoUi() { $('btnUndo').disabled = !(hist && histAt > 0); $('btnRedo').disabled = !(hist && histAt < hist.length - 1); }
+$('btnUndo').addEventListener('click', undo);
+$('btnRedo').addEventListener('click', redo);
 addEventListener('keydown', (ev) => {
-  if (ev.target.closest && ev.target.closest('input, select, textarea')) return;
   const k = ev.key.toLowerCase();
+  // undo / redo work even with a fader focused (a dragged slider keeps the focus)
+  if ((ev.metaKey || ev.ctrlKey) && k === 'z') { ev.preventDefault(); if (ev.shiftKey) redo(); else undo(); return; }
+  if ((ev.metaKey || ev.ctrlKey) && k === 'y') { ev.preventDefault(); redo(); return; }
+  if (ev.target.closest && ev.target.closest('input, select, textarea')) return;
   if (k === 't') setBench(!S.bench);
   if (k === 'm') document.querySelector('[data-flag="edit"]').click();
   if (k === 'l') { S.labels = S.labels ? 0 : 1; save(); applyFlags(); }
@@ -1477,6 +1511,7 @@ createRoom();
 resize();
 applyFlags();
 setBench(!!S.bench);
+hist = [snapshot()]; histAt = 0; undoUi(); // the room as it opened is the first step
 // the pictures arrive after the first layout: re-place them once each lands (their size follows the image's shape)
 for (const it of R.items) if (it.tex) { const img = it.tex.image; if (!img || !img.width) it.tex.onUpdate = () => { it.tex.onUpdate = null; arrange(); }; }
 t0 = performance.now();
