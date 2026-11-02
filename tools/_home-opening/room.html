@@ -115,7 +115,7 @@
 </main>
 
 <button class="bench-open" id="benchOpen" aria-label="Open the bench">⚙ Bench</button>
-<aside class="bench" id="bench" aria-label="Bench" hidden>
+<aside class="bench" id="bench" aria-label="Bench" data-lenis-prevent hidden>
   <div class="bench-head">
     <b>Bench</b><span class="tag" title="Grey blocks only: no Higgsfield credits spent">SKELETON · NO CREDITS</span>
     <button class="chip" id="benchClose" aria-label="Hide the bench">Hide ›</button>
@@ -148,7 +148,7 @@
     <button class="chip" id="btnReset">Reset</button>
   </div>
 </aside>
-<div class="slots-panel" id="slotsPanel" hidden>
+<div class="slots-panel" id="slotsPanel" data-lenis-prevent hidden>
   <h2>Slots: one Higgsfield image each</h2>
   <div class="note">Sizes in metres (width along the wall × height × depth). Music in violet, garage in orange, pictures we already have in green.</div>
   <div id="slotsBody"></div>
@@ -169,25 +169,25 @@ import { Reflector } from 'three/addons/objects/Reflector.js';
 
 // ---------- settings (the bench; COPY SETTINGS bakes them) ----------
 const DEF = {
-  roomW: 6.5, roomH: 4.4,                // the room, metres (its length follows the walk: layoutCamera)
-  floor: 'concrete', floorShine: 0.3,    // a real garage floor (Dan 2026-11-02), not a mirror
+  roomW: 6.3, roomH: 4.1,                // the room, metres (its length follows the walk: layoutCamera); Dan's bench 11-03
+  floor: 'concrete', floorShine: 0.61,   // a real garage floor (Dan 2026-11-02), not a mirror
   floorLines: 0,                         // painted lanes: off, "it doesn't look like a road, it's a garage" (Dan 11-03)
   acoustics: 1, woodTone: 0.5,           // the studio: slat panels, diffusers, bass traps, a cloud (Dan 11-03)
-  mess: 0.6, messSeed: 1,                // how much clutter, and which scatter of it
-  lens: 32,                              // vertical field of view, degrees (phones get 18 more)
-  tvW: 1.1, tvY: 1.55,                   // the TV: width, centre height (metres)
+  mess: 0.27, messSeed: 1,               // how much clutter, and which scatter of it
+  lens: 38,                              // vertical field of view, degrees (phones get 18 more)
+  tvW: 1.4, tvY: 1.6,                    // the TV: width, centre height (metres)
   tvStart: 5,                            // TV width on the first screen, % of the screen width (Dan's pick)
-  walkLen: 220, ease: 2.0, feel: 0.35,   // scroll length (% screen); in-out power; 0 = steady metres, 1 = the TV grows steadily
-  sway: 1, neon: 1, lamps: 1, tvGlow: 1, bloom: 0.9, fog: 0.035, dust: 1,
+  walkLen: 390, ease: 2.8, feel: 0.7,    // scroll length (% screen); in-out power; 0 = steady metres, 1 = the TV grows steadily
+  sway: 0, neon: 1, lamps: 1, tvGlow: 1, bloom: 0.9, fog: 0.035, dust: 1,
   ledStrip: 0, rackLeds: 1, screens: 1,  // the room alive: aisle LED strips (off: they read as a road), the racks' LEDs + VU, the CRT monitors
   // the car side-on, nose out through the open roll-up door in the right wall, engine off, on a low lift (Dan 2026-11-02)
-  carZ: 0.55, carOut: 0.5, carYaw: 0, liftType: 'scissor', liftH: 0.35, engine: 0,
+  carZ: 0.55, carOut: 0.5, carYaw: 0, liftType: 'scissor', liftH: 0.35, engine: 1,
   doorW: 3.4, doorH: 2.8, doorOpen: 0.92, outside: 1,
   // the REVAUDIO neon: off the aisle (Dan 2026-11-02: "not in your face"), then on the end wall, right of the TV (11-03)
   signWall: 'endRight', signF: 0.5, signX: 1.9, signY: 3.55,  // the wall in front of you, top right (Dan 11-03)
   signScale: 1.125, signTilt: -4,        // 50 % bigger, hung a little crooked on two wires (Dan 11-03)
-  ver: 4,                                // settings version: 2 moved the sign to the end wall, 3 made it bigger + crooked, 4 took the road off the floor
-  labels: 1, wire: 0, readB: 0, snap: 1, bench: 0, edit: 0,
+  ver: 5,                                // settings version (5 = Dan's bench of 11-03 baked): 2 moved the sign to the end wall, 3 made it bigger + crooked, 4 took the road off the floor
+  labels: 1, wire: 0, readB: 1, snap: 1, bench: 0, edit: 0,
   moves: {},                             // per-object moves from the move tool: { id: { f, x, y, side, s, r } }
 };
 const KEY = 'hoRoom:v1';
@@ -202,6 +202,7 @@ const sv = Object.keys(stored).length ? (stored.ver || 1) : DEF.ver;
 if (sv < 2) Object.assign(S, { signWall: DEF.signWall, signX: DEF.signX, signY: DEF.signY });
 if (sv < 3) Object.assign(S, { signScale: DEF.signScale, signTilt: DEF.signTilt });
 if (sv < 4) Object.assign(S, { floorLines: 0, ledStrip: 0 });
+if (sv < 5) for (const id of ['L19', 'E02', 'E03', 'E05', 'E06', 'E08', 'A08', 'L12', 'R01']) delete S.moves[id]; // baked into the tables; L19 was dragged 100 m off
 S.ver = DEF.ver;
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
 
@@ -417,17 +418,17 @@ const SIDE = [
 // the far end: a mix station round the TV (x across the room, d out from the end wall; ty = height from the TV's centre)
 const END = [
   { id: 'E01', cat: 'music', label: 'Mixing desk under the TV', x: 0, w: 2.4, h: 0.85, d: 0.85, leds: 1 },
-  { id: 'E02', cat: 'music', label: 'Studio monitor', x: -1.15, w: 0.34, h: 0.52, d: 0.32, ty: -0.05, front: 0.55 },
-  { id: 'E03', cat: 'music', label: 'Studio monitor', x: 1.15, w: 0.34, h: 0.52, d: 0.32, ty: -0.05, front: 0.55 },
+  { id: 'E02', cat: 'music', label: 'Studio monitor', x: -0.97, w: 0.34, h: 0.52, d: 0.32, ty: -0.05, front: 0.55 },
+  { id: 'E03', cat: 'music', label: 'Studio monitor', x: 1.03, w: 0.34, h: 0.52, d: 0.32, ty: -0.05, front: 0.55 },
   { id: 'E04', cat: 'music', label: 'Synth on the desk', x: 0.55, w: 0.9, h: 0.12, d: 0.36, y: 0.91, front: 0.4 },
-  { id: 'E05', cat: 'garage', label: 'Pegboard: spanners, cables', x: -2.2, w: 1.6, h: 1.5, d: 0.05, ty: 0.2 },
-  { id: 'E06', cat: 'garage', label: 'Shelf: oil cans, tape reels', x: 2.2, w: 1.6, h: 0.5, d: 0.35, ty: 0.6 },
+  { id: 'E05', cat: 'garage', label: 'Pegboard: spanners, cables', x: -2.34, w: 1.6, h: 1.5, d: 0.05, ty: 0.05 },
+  { id: 'E06', cat: 'garage', label: 'Shelf: oil cans, tape reels', x: 1.68, w: 1.6, h: 0.5, d: 0.35, ty: 0.75 },
 ];
 // shaped props at the far end (Dan 2026-11-03): a small kit left of the desk facing right, a drum throne in front of the TV.
 // x across the room, z out from the end wall (absolute, so they stay by the desk), rot = which way they face
 const PROPS = [
   { id: 'E07', cat: 'music', label: 'Small drum kit: kick, snare, hi-hat (faces right)', build: 'kit', x: -1.85, z: 1.05, rot: Math.PI / 2, top: 1.1, size: [1.0, 1.0, 0.7] },
-  { id: 'E08', cat: 'music', label: 'Drum throne, pushed back to the left (someone just got up)', build: 'throne', x: -0.6, z: 1.65, rot: 0, top: 0.72, size: [0.45, 0.6, 0.45] },
+  { id: 'E08', cat: 'music', label: 'Drum throne, pushed back to the left (someone just got up)', build: 'throne', x: -0.65, z: 2.0, rot: -0.4, top: 0.72, size: [0.45, 0.6, 0.45] },
 ];
 // the studio (Dan 2026-11-03: "make it feel like a studio as well"): bass traps in the far corners, a cloud over the desk,
 // skyline diffusers on the far wall and flanking the desk (the first reflections), wooden slat panels high on both walls
@@ -1191,9 +1192,9 @@ let drag = null;
 // rate (ALONG metres per metre of drag), up / down is height. End-wall things follow the cursor; floor things too.
 const ALONG = 3;
 function dragPlane(it) {
+  // always a plane facing the camera: a far thing on the floor is seen at a slant too (an L19 went 100 m off)
   const p = it.obj.getWorldPosition(new THREE.Vector3());
-  if (it.kind === 'sign' || it.mount === 'wall' || it.mount === 'end') return new THREE.Plane(new THREE.Vector3(0, 0, 1), -p.z);
-  return new THREE.Plane(new THREE.Vector3(0, 1, 0), -p.y);
+  return new THREE.Plane(new THREE.Vector3(0, 0, 1), -p.z);
 }
 function dragTo(it, pos0, d) {
   const p = pos0.clone();
@@ -1202,10 +1203,11 @@ function dragTo(it, pos0, d) {
     const side = it.kind === 'sign' ? (S.signWall === 'right' ? 1 : -1) : (it.side || it.s.side || -1);
     p.z += side * d.x * ALONG; p.y += d.y;   // left wall: right = deeper; right wall: left = deeper
   } else if (it.mount === 'end') { p.x += d.x; p.y += d.y; }
-  else { p.x += d.x; p.z += d.z; }
+  else { p.x += d.x; p.z -= d.y * ALONG; }   // floor things: left / right across, up = deeper into the room
   moveTo(it, p);
 }
 function moveTo(it, pos) {
+  pos.z = clamp(pos.z, 0.2, L.roomLen - 0.3); pos.y = clamp(pos.y, 0, S.roomH - 0.1); pos.x = clamp(pos.x, -S.roomW / 2, S.roomW / 2); // inside the room
   const span = L.span, ov = (S.moves[it.id] ||= {});
   if (it.kind === 'sign') {
     if (signOnEnd()) { S.signX = clamp(pos.x, -S.roomW / 2, S.roomW / 2); S.signWall = S.signX < 0 ? 'endLeft' : 'endRight'; }

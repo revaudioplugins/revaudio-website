@@ -335,3 +335,7 @@ holds the canvas and its overlays; the WebGL buffer keeps its size) and give the
 scene once and let a slider only re-place it (scale/position in an `arrange()`), re-make GPU buffers only on a window
 resize; seed any random texture or scatter so it never changes under a slider. Checked: a 2 s lens-slider sweep in
 Chromium ran at p95 9.2 ms a frame, max 9.4 ms.
+- Addendum 2026-11-03 (Dan: "I can't scroll down in the bench, I scroll the page"): Lenis takes every wheel on the
+  page, so a bench panel with `overflow: auto` never scrolls. Put `data-lenis-prevent` on every scrollable panel
+  (bench, slot list). And a drag tool must keep things inside the room: a floor drag on a far object, seen at a slant,
+  threw L19 about 100 m through the far wall; drag on a plane facing the camera and clamp to the room.
