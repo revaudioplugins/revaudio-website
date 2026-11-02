@@ -181,16 +181,20 @@ const DEF = {
   // the car side-on, nose out through the open roll-up door in the right wall, engine off, on a low lift (Dan 2026-11-02)
   carZ: 0.55, carOut: 0.5, carYaw: 0, liftType: 'scissor', liftH: 0.35, engine: 0,
   doorW: 3.4, doorH: 2.8, doorOpen: 0.92, outside: 1,
-  // the REVAUDIO neon: off the aisle, high on the left wall (Dan 2026-11-02: "not in your face")
-  signWall: 'left', signF: 0.5, signY: 3.2, signScale: 1,
+  // the REVAUDIO neon: off the aisle (Dan 2026-11-02: "not in your face"), then on the end wall, right of the TV (11-03)
+  signWall: 'endRight', signF: 0.5, signX: 1.9, signY: 3.55, signScale: 0.75, // the wall in front of you, top right (Dan 11-03)
+  ver: 2,                                // settings version: 2 moved the sign to the end wall
   labels: 1, wire: 0, readB: 0, snap: 1, bench: 0, edit: 0,
   moves: {},                             // per-object moves from the move tool: { id: { f, x, y, side, s, r } }
 };
 const KEY = 'hoRoom:v1';
 const S = { ...DEF, moves: {} };
-try { Object.assign(S, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) {}
+let stored = {};
+try { stored = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) {}
+Object.assign(S, stored);
 if (!S.moves || typeof S.moves !== 'object') S.moves = {};
 delete S.roomLen; delete S.mirror; // older benches stored these
+if (Object.keys(stored).length && (stored.ver || 1) < 2) Object.assign(S, { signWall: DEF.signWall, signX: DEF.signX, signY: DEF.signY, signScale: DEF.signScale, ver: 2 }); // Dan's 11-03 move reaches a saved bench
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
 
 // the live TV, captured per screen size (r = the bezel's corner radius, px)
@@ -741,6 +745,7 @@ function arrange() {
 const inDoor = (z, halfW, bottom) => R.door && z + halfW > R.door.z0 - 0.1 && z - halfW < R.door.z1 + 0.1 && bottom < R.door.h;
 // facing: a plane's front is +z; on the left wall it turns to face +x, on the right -x
 const faceFor = (side) => side < 0 ? Math.PI / 2 : side > 0 ? -Math.PI / 2 : 0;
+const signOnEnd = () => S.signWall === 'endLeft' || S.signWall === 'endRight';
 function placeItem(it) {
   const Wd = S.roomW, span = L.span, ov = S.moves[it.id] || {}, moved = !!S.moves[it.id];
   const k = ov.s ?? 1, turn = deg(ov.r ?? 0), lb = it.label;
@@ -781,7 +786,10 @@ function placeItem(it) {
   } else if (it.kind === 'sign') {
     const H = S.roomH, k2 = S.signScale, z = S.signF * span, y = Math.min(S.signY, H - 0.55 - 0.375 * k2);
     it.obj.scale.setScalar(k2);
-    if (S.signWall === 'aisle') {
+    if (signOnEnd()) { // on the end wall beside the TV, kept inside the wall
+      const x = clamp(S.signX, -Wd / 2 + 1.55 * k2, Wd / 2 - 1.55 * k2);
+      it.obj.position.set(x, y, 0.06); it.obj.rotation.y = 0; R.signLight.position.set(x, y - 0.3, 0.6);
+    } else if (S.signWall === 'aisle') {
       it.obj.position.set(0, y, z); it.obj.rotation.y = 0; R.signLight.position.set(0, y - 0.4, z + 0.3);
     } else {
       const side = S.signWall === 'right' ? 1 : -1;
@@ -1053,7 +1061,8 @@ function dragPlane(it) {
 }
 function dragTo(it, pos0, d) {
   const p = pos0.clone();
-  if (it.kind === 'sign' || it.mount === 'wall') {
+  if (it.kind === 'sign' && signOnEnd()) { p.x += d.x; p.y += d.y; }
+  else if (it.kind === 'sign' || it.mount === 'wall') {
     const side = it.kind === 'sign' ? (S.signWall === 'right' ? 1 : -1) : (it.side || it.s.side || -1);
     p.z += side * d.x * ALONG; p.y += d.y;   // left wall: right = deeper; right wall: left = deeper
   } else if (it.mount === 'end') { p.x += d.x; p.y += d.y; }
@@ -1062,7 +1071,11 @@ function dragTo(it, pos0, d) {
 }
 function moveTo(it, pos) {
   const span = L.span, ov = (S.moves[it.id] ||= {});
-  if (it.kind === 'sign') { S.signF = clamp(pos.z / span, 0, 1.08); S.signY = clamp(pos.y, 0.6, S.roomH - 0.6); delete S.moves[it.id]; return; }
+  if (it.kind === 'sign') {
+    if (signOnEnd()) { S.signX = clamp(pos.x, -S.roomW / 2, S.roomW / 2); S.signWall = S.signX < 0 ? 'endLeft' : 'endRight'; }
+    else S.signF = clamp(pos.z / span, 0, 1.08);
+    S.signY = clamp(pos.y, 0.6, S.roomH - 0.6); delete S.moves[it.id]; return;
+  }
   if (it.kind === 'car') {
     delete S.moves[it.id];
     S.carZ = clamp(pos.z / span, 0.1, 0.95); S.carOut = clamp((pos.x - (S.roomW / 2 - 2.2)) / 4.4, 0, 1); return;
@@ -1114,7 +1127,8 @@ function selRows(it) {
   const span = L.span, W2 = S.roomW / 2, H = S.roomH, ov = () => (S.moves[it.id] ||= {});
   const pos = it.obj.position, sc = () => S.moves[it.id]?.s ?? 1, rt = () => S.moves[it.id]?.r ?? 0;
   if (it.kind === 'sign') return [
-    ['Along the room', () => S.signF, (v) => { S.signF = v; }, 0, 1.08, 0.005],
+    signOnEnd() ? ['Across (m)', () => S.signX, (v) => { S.signX = v; S.signWall = v < 0 ? 'endLeft' : 'endRight'; }, -W2, W2, 0.01]
+      : ['Along the room', () => S.signF, (v) => { S.signF = v; }, 0, 1.08, 0.005],
     ['Height (m)', () => S.signY, (v) => { S.signY = v; }, 0.6, H - 0.6, 0.01],
     ['Size', () => S.signScale, (v) => { S.signScale = v; }, 0.4, 2, 0.01],
   ];
@@ -1151,24 +1165,24 @@ function fillSel(valuesOnly = false) {
   }
   const flip = $('selFlip');
   flip.hidden = it.kind === 'car' || it.kind === 'end';
-  flip.textContent = it.kind === 'sign' ? `Wall: ${S.signWall === 'aisle' ? 'over the aisle' : S.signWall}` : 'Other wall';
+  flip.textContent = it.kind === 'sign' ? `Where: ${SIGN_WHERE[S.signWall] || S.signWall}` : 'Other wall';
 }
 $('selFlip').addEventListener('click', () => {
   const it = R.selected; if (!it) return;
-  if (it.kind === 'sign') S.signWall = { left: 'right', right: 'aisle', aisle: 'left' }[S.signWall] || 'left';
+  if (it.kind === 'sign') { S.signWall = { left: 'right', right: 'aisle', aisle: 'endLeft', endLeft: 'endRight', endRight: 'left' }[S.signWall] || 'endRight'; signSide(); }
   else { const ov = (S.moves[it.id] ||= {}); ov.side = -(it.side || it.s.side || -1); delete ov.x; }
   save(); arrange(); fillSel();
 });
 $('selReset').addEventListener('click', () => {
   const it = R.selected; if (!it) return;
-  if (it.kind === 'sign') Object.assign(S, { signWall: DEF.signWall, signF: DEF.signF, signY: DEF.signY, signScale: DEF.signScale });
+  if (it.kind === 'sign') Object.assign(S, { signWall: DEF.signWall, signF: DEF.signF, signX: DEF.signX, signY: DEF.signY, signScale: DEF.signScale });
   else if (it.kind === 'car') Object.assign(S, { carZ: DEF.carZ, carOut: DEF.carOut, carYaw: DEF.carYaw });
   else delete S.moves[it.id];
   save(); arrange(); fillSel();
 });
 $('selDone').addEventListener('click', () => select(null));
 $('movesReset').addEventListener('click', () => {
-  S.moves = {}; Object.assign(S, { signWall: DEF.signWall, signF: DEF.signF, signY: DEF.signY, signScale: DEF.signScale, carZ: DEF.carZ, carOut: DEF.carOut, carYaw: DEF.carYaw });
+  S.moves = {}; Object.assign(S, { signWall: DEF.signWall, signF: DEF.signF, signX: DEF.signX, signY: DEF.signY, signScale: DEF.signScale, carZ: DEF.carZ, carOut: DEF.carOut, carYaw: DEF.carYaw });
   save(); arrange(); if (R.selected) fillSel();
 });
 
@@ -1179,6 +1193,9 @@ function raf(now) {
 }
 
 // ---------- the bench ----------
+const SIGN_WHERE = { endRight: 'End wall, right of the TV', endLeft: 'End wall, left of the TV', left: 'Left wall', right: 'Right wall', aisle: 'Over the aisle' };
+// the end-wall choices pick a side of the TV: the Across value follows
+function signSide() { if (S.signWall === 'endLeft') S.signX = -Math.abs(S.signX); if (S.signWall === 'endRight') S.signX = Math.abs(S.signX); }
 const SLIDERS = [
   ['The room'],
   ['roomW', 'Width (m)', 4, 10, 0.1], ['roomH', 'Height (m)', 3, 6.5, 0.1],
@@ -1191,8 +1208,9 @@ const SLIDERS = [
   ['The TV'],
   ['tvW', 'TV width (m)', 0.5, 2.5, 0.05], ['tvY', 'TV centre height (m)', 0.8, 2.6, 0.05],
   ['The REVAUDIO sign'],
-  ['signWall', 'Where', { left: 'Left wall', right: 'Right wall', aisle: 'Over the aisle' }],
-  ['signF', 'Along the room', 0, 1.08, 0.005], ['signY', 'Height (m)', 0.8, 4.2, 0.01], ['signScale', 'Size', 0.4, 2, 0.01],
+  ['signWall', 'Where', null],
+  ['signX', 'Across (end wall)', -3.2, 3.2, 0.01], ['signF', 'Along the room (side walls, aisle)', 0, 1.08, 0.005],
+  ['signY', 'Height (m)', 0.8, 4.2, 0.01], ['signScale', 'Size', 0.4, 2, 0.01],
   ['The car + the door'],
   ['carZ', 'Car: along the room', 0.1, 0.95, 0.005], ['carOut', 'Car: through the door (0 in · 1 out)', 0, 1, 0.01],
   ['carYaw', 'Car: angle (°)', -30, 30, 1],
@@ -1212,10 +1230,10 @@ function buildTune() {
   for (const row of SLIDERS) {
     if (row.length === 1) { const h = document.createElement('h2'); h.textContent = row[0]; body.appendChild(h); continue; }
     if (row.length === 3) { // a choice
-      const [k, label, opts] = row, l = document.createElement('label'), sel = document.createElement('select');
+      const [k, label] = row, opts = row[2] || (k === 'signWall' ? SIGN_WHERE : {}), l = document.createElement('label'), sel = document.createElement('select');
       l.innerHTML = `<span>${label}</span><output></output>`;
       for (const [v, t] of Object.entries(opts)) { const o = document.createElement('option'); o.value = v; o.textContent = t; o.selected = S[k] === v; sel.appendChild(o); }
-      sel.addEventListener('change', () => { S[k] = sel.value; save(); arrange(); if (R.selected) fillSel(); });
+      sel.addEventListener('change', () => { S[k] = sel.value; if (k === 'signWall') { signSide(); buildTune(); } save(); arrange(); if (R.selected) fillSel(); });
       l.appendChild(sel); body.appendChild(l); continue;
     }
     const [k, label, min, max, step] = row;
