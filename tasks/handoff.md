@@ -1,4 +1,4 @@
-## 2026-11-02 — Footer: categories fold into drawers (Claude Code `revaudio-3b [a4cb6d]`, laptop 2) — LOCAL ONLY, branch `feat/footer-drawers` (worktree `.claude/worktrees/footer-drawers`), NOT pushed (Yoni: fine-tune first, then push + merge with Dan's work)
+## 2026-11-02 — Footer: categories fold into drawers (Claude Code `revaudio-3b [a4cb6d]`, laptop 2) — BRANCH `feat/footer-drawers` PUSHED 2026-11-02 for Dan to see (worktree `.claude/worktrees/footer-drawers`); NOT on main, NOT deployed: merge to main only when Yoni + Dan (all partners) approve
 
 Claim: OPEN `revaudio-3b`. Files: `src/components/Footer.astro`, `src/styles/global.css` (footer block), `src/components/drift/DriftStickyBar.astro` (phone footer rule), `tasks/handoff.md` (this entry).
 - User (Yoni): footer shows only PRODUCTS / SUPPORT / COMPANY / LEGAL; a press opens that category's links in a folding
