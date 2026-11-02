@@ -13,7 +13,12 @@ lock-in hand-off is reused, its room is not. Dan: plan with him first, then one 
   the right of the screen, half out through an open roll-up garage door in the right wall, on a low scissor lift,
   engine off; the night outside. All on the bench (car along / through the door / angle, lift type + height, door
   width / height / open, outside light, Engine on).
-- Brand: a REVAUDIO neon from the first ceiling truss, near the camera (proposed, Dan sees it in step 1).
+- Brand: a REVAUDIO neon from the first ceiling truss, near the camera (proposed). Dan, same day: not in your face, high
+  on the left wall, movable on the bench (left / right wall / over the aisle, along, height, size).
+- Same round (Dan): a real garage floor, not a mirror (worn concrete default; checker tiles + the old mirror on the bench);
+  the GAS 2 posters + a COMING SOON plate (future plugins) framed on the walls, CRT monitors showing plugins; more mess;
+  retro-cyber and alive (aisle LED strips with a pulse to the TV, rack LEDs, VU bars, flickering screens); a move tool
+  (click anything, drag it; sliders for along / across / height / size / turn; per-object moves saved in the settings).
 - Engine: Three.js, a real 3D room (Dan 2026-11-02, over CSS 3D planes).
 - Final art: Higgsfield cut-outs standing in the 3D room + textured wall strips (over one big image + depth, or an AI
   fly-through video). Higgsfield: 250 credits (Lite) on 2026-11-02.
