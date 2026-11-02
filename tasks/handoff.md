@@ -1,18 +1,33 @@
-## 2026-11-02 — Home opening: a garage-studio scene, the camera zooms into the TV (Claude Code `danavivi-7a [9ae241]`, Dan's Mac) — IN PROGRESS on branch `feat/home-opening`, not pushed
+## 2026-11-03 — Home opening: the long garage, an ACTIVE PROJECT (Claude Code `danavivi-4e [b36252]`, Dan's Mac; continues `danavivi-7a [9ae241]`) — on branch `feat/home-opening`, pushed, not on main
 
-Claim: OPEN `danavivi-7a` (Dan's Mac). This is the Mac polish round the TV-first entry below handed over; it replaces that
-entry's "no hero above the TV" (DESIGN.md §7) on Dan's word. Files now: `tools/_home-opening/**` (new prototype, not in the
-build), `tasks/handoff.md` (this entry), `tasks/todo.md` (the plan, top). Later, only after Dan picks: `src/pages/index.astro`, a new
-`src/components/HomeOpening.astro`, `DESIGN.md` §0 + §7, and `src/components/WordWall.astro` for the power-on / lock hand-off only.
-- User (Dan): the first screen = a wide scene of a garage that is also a studio (guitars, synths, compressors, speakers
-  among car tools, parts shelves and a car), retro-cyber LCD and vintage like DRIFT, slightly moving. Scroll = the camera
-  closes in on the TV in the middle of the room and locks into the LCD (the live TV). He wants options for the scene's reading.
-- Art is blocked: Higgsfield shows 0 credits (free plan) and the OpenAI key in `~/.zsh/openai.zsh` answers "expired".
-  The prototype runs on a stand-in plate (RevAmp's `garage-classic.jpg`); the real plate's prompt + script are in
-  `tools/_home-opening/gen/`.
-- Later the same day: the prototype (commit `f35fdf0`, old concept: one wall + a zoom) showed the mechanics; Dan then
-  restarted the concept (a long rectangular room packed with gear, a small TV at the far end) and asked to plan it
-  with him first. His picks + the steps: `tasks/todo.md` top. Step 1 (the first image) waits on a key or credits.
+Claim: OPEN `danavivi-4e` (Dan's Mac); taken over from `danavivi-7a` (closed) on 2026-11-03. Dan, 2026-11-03: "this is a
+project we start working on now, from now on": the long garage is a standing project of the site, not a one-off hero. It
+replaces the TV-first entry's "no hero above the TV" (DESIGN.md §7) on Dan's word. Files: `tools/_home-opening/**` (not in
+the build), `tasks/handoff.md` (this entry), `tasks/todo.md` (the plan, top), `DESIGN.md` §7 (the living-set rule). Later,
+only after Dan picks: `src/pages/index.astro`, a new `src/components/HomeOpening.astro`, `DESIGN.md` §0, and
+`src/components/WordWall.astro` for the power-on / lock hand-off only.
+- The rule (Dan 2026-11-03, `DESIGN.md` §7): the room is a permanent living set, re-dressed for seasons (Halloween,
+  Black Friday, Christmas), plugins, bundles and work in progress by moving / adding / swapping things, never rebuilt.
+  Anything new gets bench controls.
+- Built: `tools/_home-opening/room.html`, a Three.js room, no credits spent. Grey labelled blocks = the future Higgsfield
+  cut-outs (☰ Slots lists them); scroll walks down the aisle and locks onto the live TV (the hand-off of the first
+  prototype, `tools/_home-opening/index.html`, commit `f35fdf0`, kept for reference). Dressed so far: the coupe side-on on
+  a scissor lift, half out through a roll-up door onto a night street; the REVAUDIO neon top right of the end wall, hung
+  crooked on two wires; the GAS 2 posters + a COMING SOON plate; CRT monitors (RevFX, DRIFT, RevLimiter, Radio
+  Roulette); seeded mess; living lights; studio acoustics (slat panels, skyline diffusers, bass traps, a cloud); a small
+  drum kit and a throne pushed back left; the desk 0.7 m out, both studio monitors on floor stands, toed in.
+- The bench (⚙ Bench or T): Walk position, a section per part, Move things (M: drag anything, sliders per object),
+  undo / redo (⌘Z / ⇧⌘Z), Copy settings. Settings Dan pastes back are baked into `DEF` as the defaults (two so far).
+- Run: from the worktree root `python3 -m http.server 4471 --bind 127.0.0.1`, then open
+  `http://127.0.0.1:4471/tools/_home-opening/room.html`. Dan's Mac worktree: `.claude/worktrees/home-opening`. Another
+  laptop: `git fetch origin && git checkout feat/home-opening`.
+- Checks (2026-11-03, `danavivi-4e`, commit `e9bed19`): Chrome 1312x734, walk 60 / 76 / 90 / 100 %: the desk slides out
+  under the frame, the stands flank the TV, nothing covers the lock; no console errors on a tracked reload.
+- Art: Higgsfield has 250 credits (Lite, 2026-11-02), none spent; the OpenAI key in `~/.zsh/openai.zsh` answered
+  "expired" (2026-11-02). Each batch waits on the slot plan (todo step 2) and a cost check.
+- Open with Dan: plan the skins (todo step 1b); a "just got up" cue on the throne (headphones or sticks), offered, not
+  answered.
+- Next: Dan's pick: "plan the skins", or the next dressing round on the bench.
 
 ## 2026-11-02 — Footer: categories fold into drawers (Claude Code `revaudio-3b [a4cb6d]`, laptop 2) — ON MAIN + LIVE: merged `--no-ff` 2026-11-02 by Claude Code `revaudio-0c [571e5c]` (laptop 1) on Dan's word "push it to main and merge" (Yoni had approved by pushing the branch)
 

@@ -1,4 +1,4 @@
-# Home opening: the long garage (Dan 2026-11-02, danavivi-7a) — PLAN, step 1 (the 3D skeleton)
+# Home opening: the long garage (Dan 2026-11-02, danavivi-7a; danavivi-4e from 2026-11-03) — ACTIVE PROJECT (Dan 2026-11-03: "from now on"); step 1 built, dressed with Dan round by round
 
 Dan (2026-11-02): the first screen = a long rectangular room (מלבן) packed with detail: guitars, synths, garage
 tools, a car; at the far end a small TV; scrolling walks down the room to it and locks into the live TV (the LCD).
@@ -23,15 +23,21 @@ lock-in hand-off is reused, its room is not. Dan: plan with him first, then one 
 - The room is a permanent living set (Dan 2026-11-03): re-dressed for seasons (Halloween, Black Friday, Christmas),
   products, bundles and work in progress by moving / adding / swapping things, never by rebuilding it. Contents =
   data (base room + skins) the engine places and the bench edits. DESIGN.md §7 carries the rule.
+- Dressing rounds (Dan 2026-11-03): the neon on the end wall, top right of the TV, 50 % bigger, hung crooked on two
+  wires; the road look off the floor (lane lines + aisle LED strips off, kept on the bench); studio acoustics (wooden
+  slat panels, skyline diffusers, bass traps, a cloud); a small drum kit (kick, snare, hi-hat) left of the desk facing
+  right + a throne pushed back left ("someone just got up"); the desk 0.7 m out with both monitors on floor stands;
+  undo / redo on the bench; two of his benches baked in as the defaults.
 - Final art: Higgsfield cut-outs standing in the 3D room + textured wall strips (over one big image + depth, or an AI
   fly-through video). Higgsfield: 250 credits (Lite) on 2026-11-02.
 
 ## Steps
-- [ ] 1. The 3D skeleton, no credits: `tools/_home-opening/room.html`. The room as a real box; a grey labelled block
+- [x] 1. The 3D skeleton, no credits: `tools/_home-opening/room.html`. The room as a real box; a grey labelled block
       per future image (music + garage mixed on both walls, the coupe midway right, the REVAUDIO neon on the first
       truss); real light (neon strips + glow, amber lamps, haze, a glossy floor); the live TV at ~5 % at the far end;
       scroll = the walk, locking onto the live TV (the first prototype's hand-off); sliders + a neon-wireframe toggle.
-      Dan looks, tunes, picks.
+      Built 2026-11-02; Dan keeps dressing and tuning it on the bench (Decisions above).
+- [ ] 1a. Offered 2026-11-03, not answered: a "just got up" cue on the throne (headphones or sticks).
 - [ ] 1b. The room as data: a base manifest + skins (season / product / bundle / work in progress) that the engine reads
       and the bench edits, adds to and exports; plan it with Dan first.
 - [ ] 2. The slot list out of the skeleton: each prop / wall's size, angle and light = its Higgsfield prompt
