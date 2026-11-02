@@ -50,16 +50,14 @@ export const site = {
   cfBeaconToken: '5d066ad6e2f04d18b87dafcbcb5e8d33',
 
   /**
-   * Formspree endpoint for newsletter capture (bottom EmailCapture section +
-   * the hero subscribe modal). GO-LIVE: create a free form at
-   * https://formspree.io and replace the REPLACE_WITH_FORM_ID token. While the
-   * token is in place, forms show an honest "goes live shortly" notice and
-   * never pretend to capture.
-   * One submission per email: JS submits go through the license worker's
-   * /form-once relay, which forwards to this form. Changing the id? Update
-   * FORM_ONCE in the license worker too.
+   * Formspree (newsletter, affiliate, DRIFT feedback): the form ids live ONLY in
+   * the license worker's secrets (FORMSPREE_NEWSLETTER / _AFFILIATE /
+   * _DRIFT_FB). Every form posts to the worker (`/form-once?form=<name>`, with
+   * or without JS; DRIFT feedback to `/drift-feedback`), which checks the
+   * address and relays. Never print a Formspree URL in a page again: until
+   * 2026-11-02 the sign-up forms' no-JS `action` did, and bots posted junk
+   * (empty emails) straight to it, past every check.
    */
-  formspreeEndpoint: 'https://formspree.io/f/maqzlgwa',
 
   /**
    * RevLimiter Beta feedback form (src/pages/beta.astro). The form POSTs each
@@ -80,31 +78,6 @@ export const site = {
     workerUrl: 'https://revlimiter-beta.revaudio.workers.dev/submit',
     betaAccessCode: 'REVBETA',
   },
-
-  /**
-   * DRIFT Beta feedback form (src/pages/drift/feedback.astro). Its own
-   * Formspree form (like affiliateFormEndpoint), written by the license
-   * worker's POST /drift-feedback (not by the page): it checks every answer,
-   * allows one form per email, mints the free (100%-off) DRIFT code and sends the
-   * team's copy here. Changing the id? Update DRIFT_FB_FORMSPREE in the
-   * worker too. While the id is REPLACE_WITH_FORM_ID the page shows an honest
-   * "opens shortly" notice and never pretends to capture.
-   */
-  driftFeedbackFormEndpoint: 'https://formspree.io/f/xgaowgkb',
-
-  /**
-   * Affiliate Program application form (src/pages/affiliate.astro). Separate
-   * Formspree form from the newsletter one — different data, different
-   * destination. GO-LIVE: create a free form at https://formspree.io (log in
-   * with / add info@revaudio.net as a notification recipient, since that's
-   * where applications need manual review), then replace the
-   * REPLACE_WITH_FORM_ID token below. While the token is in place, the form
-   * shows an honest "applications open shortly" notice and never pretends to
-   * capture.
-   * One application per email: same /form-once relay as formspreeEndpoint
-   * (keep FORM_ONCE in the license worker in sync).
-   */
-  affiliateFormEndpoint: 'https://formspree.io/f/mykrwolg',
 
   /**
    * Download email gate — the license worker behind every download popup on

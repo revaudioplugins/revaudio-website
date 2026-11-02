@@ -4,17 +4,17 @@ import submitImg from '../assets/ui/btn-submit.png';
 import submitPressed from '../assets/ui/btn-submit-pressed.png';
 import { site } from '../data/site';
 /**
- * Subscribe popup: name (optional) + email, submitted to the shared Formspree
- * endpoint (src/data/site.ts — same GO-LIVE token as EmailCapture).
+ * Subscribe popup: name (optional) + email, submitted to the license worker's
+ * /form-once relay (same as EmailCapture).
  * Render once per page. Any element with [data-subscribe-open] opens it
  * (event delegation, so triggers can live anywhere in the page).
  * Close: × button, backdrop click, Escape. Page scroll locks while open
  * (Cart.astro pattern). Entrance is motion-ok-gated CSS — reduced-motion and
  * no-JS-pre-hide users get an instant, fully usable dialog.
  */
-const endpoint = site.formspreeEndpoint;
-// JS submits go through the license worker's one-per-email relay (see EmailCapture).
+// JS and no-JS submits both go through the license worker's relay (see EmailCapture).
 const onceUrl = site.downloadGate.workerUrl + '/form-once';
+const endpoint = onceUrl + '?form=newsletter';
 ---
 
 <dialog class="sub-modal" data-sub-modal aria-label="Subscribe to the newsletter">

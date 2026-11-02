@@ -2,10 +2,10 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { site } from '../data/site';
 
-const endpoint = site.affiliateFormEndpoint;
-// JS submits go through the license worker's one-per-email relay (it forwards
-// to the same Formspree form); `action` stays the no-JS fallback.
+// JS and no-JS submits both go through the license worker's one-per-email
+// relay, which holds the Formspree id (never print it in a page).
 const onceUrl = site.downloadGate.workerUrl + '/form-once';
+const endpoint = onceUrl + '?form=affiliate';
 ---
 
 <BaseLayout

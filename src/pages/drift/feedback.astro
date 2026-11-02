@@ -14,7 +14,7 @@
  * a real answer), allows ONE form per email, and on a complete form mints the
  * tester's free (100%-off, Yoni 2026-10-26), one-use, DRIFT-only Paddle code: shown here and emailed.
  * The team's copy (every answer under its question + the code) goes to
- * Formspree (site.driftFeedbackFormEndpoint) from the worker. Incomplete or
+ * Formspree (the worker's FORMSPREE_DRIFT_FB secret) from the worker. Incomplete or
  * filler answers come back as {missing, weak} ids and light up here.
  * The worker's question list (DRIFT_FB_Q in worker.js) is generated from
  * beta-survey.ts: change a question, regenerate it there too.
@@ -67,8 +67,8 @@ const TEXT_MAX = 2000;
 
 const clientConfig = {
   url: site.downloadGate.workerUrl + '/drift-feedback',
-  // Build-time placeholder still in the Formspree id ⇒ not wired yet.
-  wired: !site.driftFeedbackFormEndpoint.includes('REPLACE_WITH_FORM_ID'),
+  // The worker holds the Formspree id (secret FORMSPREE_DRIFT_FB); the page only needs its URL.
+  wired: true,
   t: {
     err: ui.errEn,
     soft: ui.softEn,
