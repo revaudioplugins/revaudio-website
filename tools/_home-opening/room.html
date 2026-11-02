@@ -433,10 +433,11 @@ const SIDE = [
 ];
 // the far end: a mix station round the TV (x across the room, d out from the end wall; ty = height from the TV's centre)
 const END = [
-  { id: 'E01', cat: 'music', label: 'Mixing desk under the TV', x: 0, w: 2.4, h: 0.85, d: 0.85, leds: 1 },
-  { id: 'E02', cat: 'music', label: 'Studio monitor', x: -0.97, w: 0.34, h: 0.52, d: 0.32, ty: -0.05, front: 0.55 },
-  { id: 'E03', cat: 'music', label: 'Studio monitor', x: 1.03, w: 0.34, h: 0.52, d: 0.32, ty: -0.05, front: 0.55 },
-  { id: 'E04', cat: 'music', label: 'Synth on the desk', x: 0.55, w: 0.9, h: 0.12, d: 0.36, y: 0.91, front: 0.4 },
+  // Dan 11-03: the desk out toward the visitor, the two studio monitors on floor stands behind it, toed in to the chair
+  { id: 'E01', cat: 'music', label: 'Mixing desk', x: 0, w: 2.4, h: 0.85, d: 0.85, front: 0.7, leds: 1 },
+  { id: 'E02', cat: 'music', label: 'Studio monitor on a stand', x: -0.97, w: 0.34, h: 0.52, d: 0.32, ty: -0.05, front: 0.3, stand: 1, toe: 0.4 },
+  { id: 'E03', cat: 'music', label: 'Studio monitor on a stand', x: 1.03, w: 0.34, h: 0.52, d: 0.32, ty: -0.05, front: 0.3, stand: 1, toe: -0.4 },
+  { id: 'E04', cat: 'music', label: 'Synth on the desk', x: 0.55, w: 0.9, h: 0.12, d: 0.36, y: 0.91, front: 1.1 },
   { id: 'E05', cat: 'garage', label: 'Pegboard: spanners, cables', x: -2.34, w: 1.6, h: 1.5, d: 0.05, ty: 0.05 },
   { id: 'E06', cat: 'garage', label: 'Shelf: oil cans, tape reels', x: 1.68, w: 1.6, h: 0.5, d: 0.35, ty: 0.75 },
 ];
@@ -444,7 +445,7 @@ const END = [
 // x across the room, z out from the end wall (absolute, so they stay by the desk), rot = which way they face
 const PROPS = [
   { id: 'E07', cat: 'music', label: 'Small drum kit: kick, snare, hi-hat (faces right)', build: 'kit', x: -1.85, z: 1.05, rot: Math.PI / 2, top: 1.1, size: [1.0, 1.0, 0.7] },
-  { id: 'E08', cat: 'music', label: 'Drum throne, pushed back to the left (someone just got up)', build: 'throne', x: -0.65, z: 2.0, rot: -0.4, top: 0.72, size: [0.45, 0.6, 0.45] },
+  { id: 'E08', cat: 'music', label: 'Drum throne, pushed back to the left (someone just got up)', build: 'throne', x: -0.65, z: 2.4, rot: -0.4, top: 0.72, size: [0.45, 0.6, 0.45] },
 ];
 // the studio (Dan 2026-11-03: "make it feel like a studio as well"): bass traps in the far corners, a cloud over the desk,
 // skyline diffusers on the far wall and flanking the desk (the first reflections), wooden slat panels high on both walls
@@ -471,7 +472,7 @@ const POSTERS = [
 const MONITORS = [
   { id: 'M01', pic: 'scr-revfx', label: 'CRT monitor: RevFX', side: -1, f: 0.6, base: 0.92, w: 0.56 },
   { id: 'M02', pic: 'scr-drift', label: 'CRT monitor: DRIFT', side: 1, f: 0.36, base: 0.92, w: 0.5 },
-  { id: 'M03', pic: 'scr-revlimiter', label: 'CRT monitor: RevLimiter', side: 0, x: -0.75, z: 0.5, base: 0.85, w: 0.44 },
+  { id: 'M03', pic: 'scr-revlimiter', label: 'CRT monitor: RevLimiter', side: 0, x: -0.75, z: 1.05, base: 0.85, w: 0.44 },
   { id: 'M04', pic: 'scr-radio', label: 'CRT monitor: Radio Roulette', side: 1, f: 0.44, base: 1.9, w: 0.42 },
 ];
 
@@ -557,7 +558,10 @@ function createRoom() {
     scene.add(it.label); R.labels.push(it.label); R.items.push(it); return it;
   };
   for (const s of SIDE) addItem({ kind: 'side', id: s.id, s, obj: block(s.cat, s.d, s.h, s.w), mount: s.y && s.d <= 0.15 ? 'wall' : 'floor' }, `${s.id} · ${s.label}`, s.cat);
-  for (const s of END) addItem({ kind: 'end', id: s.id, s, obj: block(s.cat, s.w, s.h, s.d), mount: 'end' }, `${s.id} · ${s.label}`, s.cat, 0.6);
+  for (const s of END) {
+    const it = addItem({ kind: 'end', id: s.id, s, obj: block(s.cat, s.w, s.h, s.d), mount: 'end' }, `${s.id} · ${s.label}`, s.cat, 0.6);
+    if (s.stand) { it.stand = speakerStand(); it.obj.add(it.stand); }
+  }
 
   for (const s of PROPS) addItem({ kind: 'prop', id: s.id, s, obj: s.build === 'kit' ? drumKit() : drumThrone(), mount: 'floor' }, `${s.id} · ${s.label}`, s.cat, 0.6);
 
@@ -709,6 +713,13 @@ function createRoom() {
   R.selBox = new THREE.BoxHelper(undefined, 0xffe08a); R.selBox.material.depthTest = false; R.selBox.material.toneMapped = false; R.selBox.visible = false; R.selBox.renderOrder = 20;
   R.hoverBox = new THREE.BoxHelper(undefined, 0x9c8550); R.hoverBox.material.depthTest = false; R.hoverBox.visible = false; R.hoverBox.renderOrder = 19;
   scene.add(R.selBox, R.hoverBox);
+}
+// a speaker stand: a top plate under the monitor, a post, a base plate; placeItem stretches the post to the floor
+function speakerStand() {
+  const g = new THREE.Group(), steel = R.steel;
+  const part = (geo) => { const m = new THREE.Mesh(geo, steel); m.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo, 35), R.edgeMats.music)); g.add(m); return m; };
+  g.userData = { top: part(new THREE.BoxGeometry(0.26, 0.02, 0.22)), post: part(new THREE.CylinderGeometry(0.025, 0.025, 1, 10)), base: part(new THREE.BoxGeometry(0.34, 0.03, 0.34)) };
+  return g;
 }
 // a drum kit, built facing +z (the way the drummer looks); the drummer's left is +x here
 function drumKit() {
@@ -881,7 +892,11 @@ function placeItem(it) {
     lb.position.set(x - side * 0.35, y + s.h * k / 2 + 0.22, z);
   } else if (it.kind === 'end') {
     const s = it.s, y = ov.y ?? (s.ty != null ? S.tvY + s.ty : (s.y ?? s.h / 2)), x = ov.x ?? s.x, z = (s.front || 0) + s.d * k / 2;
-    it.obj.position.set(x, y, z); it.obj.scale.setScalar(k); it.obj.rotation.y = turn;
+    it.obj.position.set(x, y, z); it.obj.scale.setScalar(k); it.obj.rotation.y = (s.toe || 0) + turn;
+    if (it.stand) { // the stand reaches the floor whatever the height (in the block's own units)
+      const { top, post, base } = it.stand.userData, len = Math.max(0.02, (y - s.h * k / 2) / k);
+      top.position.y = -s.h / 2 - 0.01; post.scale.y = len; post.position.y = -s.h / 2 - len / 2; base.position.y = -s.h / 2 - len + 0.015;
+    }
     lb.position.set(x, y + s.h * k / 2 + 0.16, z + 0.2);
   } else if (it.kind === 'prop') {
     const s = it.s, x = ov.x ?? s.x, z = ov.f != null ? ov.f * span : s.z, y = ov.y ?? 0;
@@ -984,7 +999,7 @@ function placeMess() {
   R.mess.forEach((m, i) => {
     const z = 0.6 + m.u * (span * 0.98 - 0.6), x = m.side * (Wd / 2 - 0.3 - m.depth * 1.05);
     const nearCar = Math.abs(x - cx) < 2.4 && Math.abs(z - cz) < 1.25;
-    const nearTv = Math.abs(x) < 1.5 && z < 1.4;
+    const nearTv = Math.abs(x) < 1.6 && z < 2.9; // the desk, the stands and the throne
     m.mesh.visible = i < show && !nearCar && !nearTv && !(m.side === 1 && inDoor(z, 0.4, 0));
     m.mesh.position.set(x, m.t.y, z);
     if (m.t.flat) m.mesh.rotation.set(-Math.PI / 2, 0, m.rot); else m.mesh.rotation.set(0, m.rot, 0); // flat things lie on the floor
