@@ -377,6 +377,19 @@ Then Tuned." and the closing "Hear it on your own mix" trial section were the ol
 The TV sits right under the nav and fills one screen; the page's h1 is visually hidden. No hero above
 it, no metric grid, no card grid.
 
+**Coming (branch `feat/home-opening`, not on main yet): the long garage, a living set (Dan 2026-11-02 / 11-03).**
+The first screen becomes a long 3D garage that is also a studio (music gear and car gear mixed, a JDM coupe half out
+through an open roll-up door, GAS 2 posters, CRT monitors, mess, neon, cyan aisle LEDs); the scroll walks down the
+aisle and locks onto the live TV at the far end. When it lands it replaces "no hero above it" here. The rule that
+holds from now on, in Dan's words "everything is dynamic in that room":
+- The room is permanent and gets re-dressed, never rebuilt: seasonal skins (Halloween, Black Friday, Christmas), the
+  plugins and bundles on sale, what's being built (teasers, COMING SOON).
+- Its contents are data (props, posters, screens, signs, the car, lights, colours, the readings), a base room plus
+  skins, placed by one engine; a new plugin, season or bundle is new data, not new scene code.
+- The bench (`tools/_home-opening/room.html`, T) is its editor: Move things, sliders, the slot list. Anything added
+  gets bench controls and lands in the saved / copied settings.
+- Art is one image per slot (cut-outs), so any piece can be swapped on its own.
+
 **Product-page hero = "the readings" (canon: the GAS 2 page, composition 2; Dan 2026-10-23: "I love you
 so much", "this is amazing"; `tools/_gas2-scene/page-b.html` on `feat/gas2-page`).** The vibe to repeat:
 - **Fill the open space.** One centred column sized to the scene's empty area (GAS 2: the dusk sky right

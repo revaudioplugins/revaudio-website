@@ -20,6 +20,9 @@ lock-in hand-off is reused, its room is not. Dan: plan with him first, then one 
   retro-cyber and alive (aisle LED strips with a pulse to the TV, rack LEDs, VU bars, flickering screens); a move tool
   (click anything, drag it; sliders for along / across / height / size / turn; per-object moves saved in the settings).
 - Engine: Three.js, a real 3D room (Dan 2026-11-02, over CSS 3D planes).
+- The room is a permanent living set (Dan 2026-11-03): re-dressed for seasons (Halloween, Black Friday, Christmas),
+  products, bundles and work in progress by moving / adding / swapping things, never by rebuilding it. Contents =
+  data (base room + skins) the engine places and the bench edits. DESIGN.md §7 carries the rule.
 - Final art: Higgsfield cut-outs standing in the 3D room + textured wall strips (over one big image + depth, or an AI
   fly-through video). Higgsfield: 250 credits (Lite) on 2026-11-02.
 
@@ -29,6 +32,8 @@ lock-in hand-off is reused, its room is not. Dan: plan with him first, then one 
       truss); real light (neon strips + glow, amber lamps, haze, a glossy floor); the live TV at ~5 % at the far end;
       scroll = the walk, locking onto the live TV (the first prototype's hand-off); sliders + a neon-wireframe toggle.
       Dan looks, tunes, picks.
+- [ ] 1b. The room as data: a base manifest + skins (season / product / bundle / work in progress) that the engine reads
+      and the bench edits, adds to and exports; plan it with Dan first.
 - [ ] 2. The slot list out of the skeleton: each prop / wall's size, angle and light = its Higgsfield prompt
       (cut-out, transparent background). Plan + Dan's OK.
 - [ ] 3. Higgsfield art per slot, cost-checked per batch (RULE 0), dropped into the skeleton one by one.
