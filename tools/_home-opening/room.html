@@ -182,8 +182,9 @@ const DEF = {
   carZ: 0.55, carOut: 0.5, carYaw: 0, liftType: 'scissor', liftH: 0.35, engine: 0,
   doorW: 3.4, doorH: 2.8, doorOpen: 0.92, outside: 1,
   // the REVAUDIO neon: off the aisle (Dan 2026-11-02: "not in your face"), then on the end wall, right of the TV (11-03)
-  signWall: 'endRight', signF: 0.5, signX: 1.9, signY: 3.55, signScale: 0.75, // the wall in front of you, top right (Dan 11-03)
-  ver: 2,                                // settings version: 2 moved the sign to the end wall
+  signWall: 'endRight', signF: 0.5, signX: 1.9, signY: 3.55,  // the wall in front of you, top right (Dan 11-03)
+  signScale: 1.125, signTilt: -4,        // 50 % bigger, hung a little crooked on two wires (Dan 11-03)
+  ver: 3,                                // settings version: 2 moved the sign to the end wall, 3 made it bigger + crooked
   labels: 1, wire: 0, readB: 0, snap: 1, bench: 0, edit: 0,
   moves: {},                             // per-object moves from the move tool: { id: { f, x, y, side, s, r } }
 };
@@ -194,7 +195,11 @@ try { stored = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) 
 Object.assign(S, stored);
 if (!S.moves || typeof S.moves !== 'object') S.moves = {};
 delete S.roomLen; delete S.mirror; // older benches stored these
-if (Object.keys(stored).length && (stored.ver || 1) < 2) Object.assign(S, { signWall: DEF.signWall, signX: DEF.signX, signY: DEF.signY, signScale: DEF.signScale, ver: 2 }); // Dan's 11-03 move reaches a saved bench
+// Dan's changes reach a bench saved before them, once
+const sv = Object.keys(stored).length ? (stored.ver || 1) : DEF.ver;
+if (sv < 2) Object.assign(S, { signWall: DEF.signWall, signX: DEF.signX, signY: DEF.signY });
+if (sv < 3) Object.assign(S, { signScale: DEF.signScale, signTilt: DEF.signTilt });
+S.ver = DEF.ver;
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
 
 // the live TV, captured per screen size (r = the bezel's corner radius, px)
@@ -795,8 +800,15 @@ function placeItem(it) {
       const side = S.signWall === 'right' ? 1 : -1;
       it.obj.position.set(side * (Wd / 2 - 0.06), y, z); it.obj.rotation.y = faceFor(side); R.signLight.position.set(side * (Wd / 2 - 0.6), y - 0.2, z);
     }
-    const top = H - 0.42, bottom = y + 0.37 * k2, len = Math.max(0.05, top - bottom);
-    for (const w of R.wires) { w.visible = S.signWall === 'aisle'; w.scale.y = len; w.position.set(w.userData.x * k2, bottom + len / 2, z); }
+    // hung a little crooked: a tilt in its own plane, and two wires from its top corners up to the ceiling (one longer)
+    const tilt = deg(S.signTilt), hang = signOnEnd() || S.signWall === 'aisle', ceilY = signOnEnd() ? H : H - 0.42;
+    it.obj.rotation.z = tilt;
+    for (const w of R.wires) {
+      const lx = w.userData.x * k2, ly = 0.36 * k2;
+      const bx = it.obj.position.x + lx * Math.cos(tilt) - ly * Math.sin(tilt), by = it.obj.position.y + lx * Math.sin(tilt) + ly * Math.cos(tilt);
+      const len = Math.max(0.05, ceilY - by);
+      w.visible = hang; w.scale.y = len; w.position.set(bx, by + len / 2, it.obj.position.z - 0.01);
+    }
     R.signPos = [it.obj.position.x, y, z];
   }
 }
@@ -1131,6 +1143,7 @@ function selRows(it) {
       : ['Along the room', () => S.signF, (v) => { S.signF = v; }, 0, 1.08, 0.005],
     ['Height (m)', () => S.signY, (v) => { S.signY = v; }, 0.6, H - 0.6, 0.01],
     ['Size', () => S.signScale, (v) => { S.signScale = v; }, 0.4, 2, 0.01],
+    ['Tilt (°)', () => S.signTilt, (v) => { S.signTilt = v; }, -15, 15, 0.5],
   ];
   if (it.kind === 'car') return [
     ['Along the room', () => S.carZ, (v) => { S.carZ = v; }, 0.1, 0.95, 0.005],
@@ -1175,14 +1188,14 @@ $('selFlip').addEventListener('click', () => {
 });
 $('selReset').addEventListener('click', () => {
   const it = R.selected; if (!it) return;
-  if (it.kind === 'sign') Object.assign(S, { signWall: DEF.signWall, signF: DEF.signF, signX: DEF.signX, signY: DEF.signY, signScale: DEF.signScale });
+  if (it.kind === 'sign') Object.assign(S, { signWall: DEF.signWall, signF: DEF.signF, signX: DEF.signX, signY: DEF.signY, signScale: DEF.signScale, signTilt: DEF.signTilt });
   else if (it.kind === 'car') Object.assign(S, { carZ: DEF.carZ, carOut: DEF.carOut, carYaw: DEF.carYaw });
   else delete S.moves[it.id];
   save(); arrange(); fillSel();
 });
 $('selDone').addEventListener('click', () => select(null));
 $('movesReset').addEventListener('click', () => {
-  S.moves = {}; Object.assign(S, { signWall: DEF.signWall, signF: DEF.signF, signX: DEF.signX, signY: DEF.signY, signScale: DEF.signScale, carZ: DEF.carZ, carOut: DEF.carOut, carYaw: DEF.carYaw });
+  S.moves = {}; Object.assign(S, { signWall: DEF.signWall, signF: DEF.signF, signX: DEF.signX, signY: DEF.signY, signScale: DEF.signScale, signTilt: DEF.signTilt, carZ: DEF.carZ, carOut: DEF.carOut, carYaw: DEF.carYaw });
   save(); arrange(); if (R.selected) fillSel();
 });
 
@@ -1210,7 +1223,7 @@ const SLIDERS = [
   ['The REVAUDIO sign'],
   ['signWall', 'Where', null],
   ['signX', 'Across (end wall)', -3.2, 3.2, 0.01], ['signF', 'Along the room (side walls, aisle)', 0, 1.08, 0.005],
-  ['signY', 'Height (m)', 0.8, 4.2, 0.01], ['signScale', 'Size', 0.4, 2, 0.01],
+  ['signY', 'Height (m)', 0.8, 4.2, 0.01], ['signScale', 'Size', 0.4, 2, 0.01], ['signTilt', 'Tilt (°): hung crooked', -15, 15, 0.5],
   ['The car + the door'],
   ['carZ', 'Car: along the room', 0.1, 0.95, 0.005], ['carOut', 'Car: through the door (0 in · 1 out)', 0, 1, 0.01],
   ['carYaw', 'Car: angle (°)', -30, 30, 1],
