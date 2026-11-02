@@ -8,10 +8,10 @@ const year = new Date().getFullYear();
    headings are what stop the repetition reading as a duplicate nav bar.
    `legal` links open the in-page modal (delegated handler in Cart.astro);
    the href stays a real page so no-JS and new-tab still work.
-   Two clusters (2026-09-04, Dan): Products+Support anchor the left edge,
-   Company+Legal the right. The space between them IS the separation — no
-   divider rule, and the clusters stay side-by-side down to phone widths. */
-const leftColumns = [
+   Folding drawers (2026-11-02, Yoni): only the four headings show; a press
+   flips that column's links open, the Radio Roulette favourites drawer
+   (hinged, springy settle). Without JS the lists stay open in place. */
+const columns = [
   {
     title: 'Products',
     links: [
@@ -27,9 +27,6 @@ const leftColumns = [
       { label: 'Contact', href: '/contact' },
     ],
   },
-];
-
-const rightColumns = [
   {
     title: 'Company',
     links: [
@@ -85,30 +82,32 @@ const socials = [
 
 <footer class="site-footer" role="contentinfo">
   <div class="container">
-    <nav class="footer-cols" aria-label="Footer navigation">
-      {[leftColumns, rightColumns].map((group) => (
-        <div class="footer-group">
-          {group.map((col) => (
-            <div class="footer-col">
-              <h2 class="footer-col-title">{col.title}</h2>
-              <ul>
-                {col.links.map((link) => (
-                  <li>
-                    <a
-                      href={link.href}
-                      data-open-legal={link.legal}
-                      data-cookie-settings={link.cookieSettings ? '' : undefined}
-                      target={link.external ? '_blank' : undefined}
-                      rel={link.external ? 'noopener noreferrer' : undefined}
-                    >{link.label}</a>
-                  </li>
-                ))}
-              </ul>
-              {/* The high-contrast switch lives under Legal, after the
-                  Accessibility link — the statement page points here. */}
-              {col.title === 'Legal' && <A11yToggle />}
-            </div>
-          ))}
+    <nav class="footer-cols" aria-label="Footer navigation" data-footer-drawers>
+      {columns.map((col, i) => (
+        <div class="footer-col">
+          <h2 class="footer-col-title">
+            <button type="button" class="footer-col-btn" aria-expanded="false" aria-controls={`footer-drawer-${i}`}>
+              {col.title}<svg class="footer-col-arr" viewBox="0 0 10 6" aria-hidden="true" focusable="false"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            </button>
+          </h2>
+          <div class="footer-drawer" id={`footer-drawer-${i}`}>
+            <ul>
+              {col.links.map((link) => (
+                <li>
+                  <a
+                    href={link.href}
+                    data-open-legal={link.legal}
+                    data-cookie-settings={link.cookieSettings ? '' : undefined}
+                    target={link.external ? '_blank' : undefined}
+                    rel={link.external ? 'noopener noreferrer' : undefined}
+                  >{link.label}</a>
+                </li>
+              ))}
+            </ul>
+            {/* The high-contrast switch lives under Legal, after the
+                Accessibility link — the statement page points here. */}
+            {col.title === 'Legal' && <A11yToggle />}
+          </div>
         </div>
       ))}
     </nav>
@@ -132,3 +131,44 @@ const socials = [
     </div>
   </div>
 </footer>
+
+<script>
+  /* One drawer open at a time. Closes on a second press, a press outside,
+     Escape (focus back on its heading), a link inside (legal + cookie links
+     open in-page overlays) and keyboard focus leaving the column. */
+  const nav = document.querySelector<HTMLElement>('[data-footer-drawers]');
+  if (nav) {
+    nav.classList.add('is-folding');
+    const btns = Array.from(nav.querySelectorAll<HTMLButtonElement>('.footer-col-btn'));
+    const isOpen = (b: HTMLButtonElement) => b.getAttribute('aria-expanded') === 'true';
+    const setOpen = (b: HTMLButtonElement, open: boolean) => {
+      b.setAttribute('aria-expanded', String(open));
+      b.closest('.footer-col')?.classList.toggle('open', open);
+    };
+    const closeAll = (except?: HTMLButtonElement) => btns.forEach((b) => b !== except && setOpen(b, false));
+
+    btns.forEach((b) => {
+      b.addEventListener('click', () => {
+        const open = !isOpen(b);
+        closeAll(b);
+        setOpen(b, open);
+      });
+      const col = b.closest('.footer-col');
+      col?.addEventListener('focusout', (e) => {
+        const to = (e as FocusEvent).relatedTarget as Node | null;
+        if (to && !col.contains(to)) setOpen(b, false);
+      });
+    });
+    nav.addEventListener('click', (e) => {
+      if ((e.target as Element).closest('.footer-drawer a')) closeAll();
+    });
+    document.addEventListener('click', (e) => {
+      if (!nav.contains(e.target as Node)) closeAll();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape') return;
+      const open = btns.find(isOpen);
+      if (open) { setOpen(open, false); open.focus(); }
+    });
+  }
+</script>

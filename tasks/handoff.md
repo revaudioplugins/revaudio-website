@@ -1,3 +1,22 @@
+## 2026-11-02 — Footer: categories fold into drawers (Claude Code `revaudio-3b [a4cb6d]`, laptop 2) — ON MAIN + LIVE: merged `--no-ff` 2026-11-02 by Claude Code `revaudio-0c [571e5c]` (laptop 1) on Dan's word "push it to main and merge" (Yoni had approved by pushing the branch)
+
+Claim: CLOSED 2026-11-02 (`revaudio-3b`'s work merged by `revaudio-0c`; a fine-tune round writes a new claim). Files: `src/components/Footer.astro`, `src/styles/global.css` (footer block), `src/components/drift/DriftStickyBar.astro` (phone footer rule), `tasks/handoff.md` (this entry).
+- User (Yoni): footer shows only PRODUCTS / SUPPORT / COMPANY / LEGAL; a press opens that category's links in a folding
+  menu in the style of Radio Roulette's favourites drawer; categories tight on the bottom, no wasted space.
+- Done: one flat row of 4 heading buttons (aria-expanded/aria-controls) + a drawer each. Drawer = RR `#favList` copied
+  (dark lacquer gradient, glass rim at 55 %, rotateX hinge, cubic-bezier(.34,1.35,.64,1) 0.34 s settle, brass chevron,
+  brass divider before HIGH CONTRAST), turned upside down: hinged at its bottom edge, it flips UP (footer = page end).
+  One open at a time; closes on 2nd press, outside press, Escape (focus back), a link press, focus leaving. No JS =
+  lists open in place (`.is-folding` is added by the script). HC skin + reduced motion covered. Phone: all 4 on one row
+  (Yoni), smaller type at <=560 and again at <=400; the right pair's drawers open leftward. Footer: desktop 140 px
+  (was ~500), phone 205-221 px (was a full screen).
+- Checks: `astro build` green; Playwright Chrome 1440x800 / 390x844 / 360x740: every drawer inside the viewport, no
+  horizontal scroll, Escape closes, no page errors.
+- Yoni said yes: Dan's 2026-10-06 phone rule (footer min-height = one screen) is dropped in global.css AND its copy in
+  DriftStickyBar.astro (/drift). Dan told at merge time (2026-11-02).
+- Merge check (laptop 1, 2026-11-02): `npm run build` green on the merge result before the push.
+- Open for fine-tune: drawer direction (up) and speed.
+
 ## 2026-11-02 — Home: TV first, old hero + closing trial section out (Claude Code `revaudio-3d [bbecad]`, laptop 1) — ON MAIN + LIVE (pushed 2026-11-02 on the user's word "Push to main commit and deploy")
 
 Claim: CLOSED 2026-11-02 `revaudio-3d` (laptop 1). Handed to the user's Mac session for the polish round below:

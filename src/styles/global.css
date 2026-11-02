@@ -729,33 +729,20 @@ nav ul a:hover { color: var(--brass-bright); }
 /* footer */
 footer.site-footer {
   border-top: 1px solid var(--border);
-  padding: var(--space-6) 0 var(--space-5);
+  padding: var(--space-5) 0 var(--space-4);
   background: rgba(11, 10, 9, 0.55); /* translucent: the smoke reads through */
 }
 
-/* Site map as one four-track grid (2026-09-07, Dan). It used to be two
-   clusters pinned to the container edges by space-between, which on a wide
-   screen opened a ~670px hole in the middle — wider than all four columns
-   together, so the footer read as two unrelated blocks instead of one site
-   map. Even tracks put every heading on the same rhythm and spread the air
-   between the columns rather than pooling it in the centre.
-   The .footer-group wrappers stay in the markup (they still do the work on a
-   phone) but drop out of the box tree here, so their columns become direct
-   children of this grid. */
+/* Site map = one row of four headings (2026-11-02, Yoni: "tight, without lots
+   of space"). Content-sized tracks with space-between, so the first heading
+   and the last land on the container edges, the same edges as the wordmark
+   and socials in the bar below. Each heading is a button that folds its
+   links open in a drawer (below, .is-folding). */
 footer .footer-cols {
   display: grid;
-  /* Content-sized tracks with space-between, not four equal fr: equal tracks
-     left the last column's text ending ~100px short of the rule, so the block
-     read as unanchored against the bottom bar, whose wordmark and socials do
-     sit on the container edges. This way the first heading and the last link
-     land on those same two edges. */
   grid-template-columns: repeat(4, max-content);
   justify-content: space-between;
-  gap: var(--space-6) var(--space-8);
-}
-
-footer .footer-group {
-  display: contents;
+  gap: var(--space-4) var(--space-8);
 }
 
 footer .footer-col {
@@ -772,6 +759,150 @@ footer .footer-col-title {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--brass-bright);
+}
+
+footer .footer-col-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55em;
+  padding: 0.25rem 0;
+  background: none;
+  border: 0;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  cursor: default;
+}
+footer .footer-col-btn:focus-visible { outline: 3px solid var(--brass-bright); outline-offset: 3px; }
+/* The caret only exists while the drawers fold (JS on); without JS the
+   heading is a plain label over its open list. */
+footer .footer-col-arr { display: none; }
+
+/* ── Folding drawers: the Radio Roulette favourites drawer (plugin
+   Source/ui/public/index.html, #favList), turned upside down because the
+   footer is the bottom of the page: hinged at its BOTTOM edge, it flips up
+   off the heading with the same springy settle and the same dark lacquer
+   pane + glass rim. Only on .is-folding (Footer.astro's script), so without
+   JS the lists stay open in place. ── */
+footer .footer-cols.is-folding .footer-col-title { margin: 0; }
+footer .footer-cols.is-folding .footer-col {
+  position: relative;
+  perspective: 900px;
+}
+footer .footer-cols.is-folding .footer-col-btn { cursor: pointer; transition: color 0.2s var(--ease); }
+footer .footer-cols.is-folding .footer-col-btn:hover,
+footer .footer-cols.is-folding .open .footer-col-btn { color: #f2e2bc; }
+footer .footer-cols.is-folding .footer-col-arr {
+  display: block;
+  width: 10px;
+  height: 6px;
+  color: #c89a48;
+  transform: rotate(180deg);
+  transition: transform 0.15s;
+}
+footer .footer-cols.is-folding .open .footer-col-arr { transform: rotate(0deg); }
+
+footer .footer-cols.is-folding .footer-drawer {
+  position: absolute;
+  z-index: 30;
+  bottom: calc(100% + 6px);
+  /* Drawer pad + item pad = 16px: the item text lines up with the heading. */
+  left: -16px;
+  width: max-content;
+  min-width: calc(100% + 32px);
+  max-width: calc(100vw - 2 * var(--space-4));
+  padding: 8px;
+  border-radius: 7px;
+  background: linear-gradient(180deg, #16100a 0%, #120b06 45%, #0c0703 100%);
+  filter: drop-shadow(0 -6px 16px rgba(0, 0, 0, 0.55));
+  transform-origin: 50% calc(100% + 6px);
+  transform: rotateX(88deg);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    transform 0.34s cubic-bezier(0.34, 1.35, 0.64, 1),
+    opacity 0.13s ease 0.02s,
+    visibility 0s linear 0.34s;
+}
+footer .footer-cols.is-folding .open .footer-drawer {
+  transform: rotateX(0deg);
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition:
+    transform 0.34s cubic-bezier(0.34, 1.35, 0.64, 1),
+    opacity 0.1s ease,
+    visibility 0s;
+}
+/* The column on the right edge opens leftward so it never leaves the page. */
+footer .footer-cols.is-folding .footer-col:last-child .footer-drawer { left: auto; right: -16px; }
+
+/* Glass rim (RR bench blend 55%): catchlight, inner shade, dark seam. */
+footer .footer-cols.is-folding .footer-drawer::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 9px;
+  pointer-events: none;
+  opacity: 0.55;
+  box-shadow:
+    inset 0 2px 3px rgba(255, 255, 255, 0.42),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.7),
+    inset 0 0 10px rgba(255, 240, 200, 0.18),
+    0 2px 5px rgba(0, 0, 0, 0.85),
+    0 0 0 2px rgba(16, 11, 7, 0.65),
+    0 0 10px 3px rgba(0, 0, 0, 0.55);
+}
+
+footer .footer-cols.is-folding .footer-drawer a {
+  display: block;
+  padding: 5px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  color: rgba(228, 206, 164, 0.88);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.85);
+  transition: background 0.15s, color 0.15s;
+}
+footer .footer-cols.is-folding .footer-drawer a:hover,
+footer .footer-cols.is-folding .footer-drawer a:focus-visible {
+  background: rgba(200, 154, 72, 0.12);
+  color: #f2e2bc;
+}
+footer .footer-cols.is-folding .footer-drawer a:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: -2px; }
+
+/* High-contrast switch in the Legal drawer: one more row under a brass
+   divider (RR #favDivider). */
+footer .footer-cols.is-folding .footer-drawer .hc-switch {
+  position: relative;
+  display: flex;
+  width: 100%;
+  margin-top: 13px;
+  padding: 5px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  color: rgba(228, 206, 164, 0.88);
+}
+footer .footer-cols.is-folding .footer-drawer .hc-switch:hover { background: rgba(200, 154, 72, 0.12); color: #f2e2bc; }
+footer .footer-cols.is-folding .footer-drawer .hc-switch::before {
+  content: "";
+  position: absolute;
+  top: -7px;
+  left: 2px;
+  right: 2px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(200, 154, 72, 0.4), transparent);
+}
+
+html.hc footer .footer-cols.is-folding .footer-drawer { background: #000000; border: 1px solid var(--border); filter: none; }
+html.hc footer .footer-cols.is-folding .footer-drawer::after { display: none; }
+html.hc footer .footer-cols.is-folding .footer-drawer a,
+html.hc footer .footer-cols.is-folding .footer-drawer .hc-switch { color: var(--fg); text-shadow: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  footer .footer-cols.is-folding .footer-drawer,
+  footer .footer-cols.is-folding .open .footer-drawer { transform: none; }
 }
 
 /* gap is reset because the generic flex-column `ul` rule sets 32px, which put
@@ -798,6 +929,8 @@ footer .footer-cols a {
 
 @media (pointer: coarse) {
   footer .footer-cols a { min-height: 44px; padding: 0.5rem 0; }
+  footer .footer-col-btn { min-height: 44px; }
+  footer .footer-cols.is-folding .footer-drawer a { display: flex; align-items: center; padding: 0.5rem 8px; }
 }
 
 /* Bottom bar — brand + copyright left, socials right. No nav or legal links
@@ -808,7 +941,7 @@ footer .footer-bar {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
-  margin-top: var(--space-5);
+  margin-top: var(--space-4);
   padding-top: var(--space-3);
   border-top: 1px solid var(--border);
   color: var(--fg-faint);
@@ -845,15 +978,7 @@ footer .footer-social svg { width: 20px; height: 20px; display: block; }
    clearance here; the FAB now slides off while the footer is in view
    (CartFab.astro), so the footer keeps its own bottom pad. */
 @media (max-width: 900px) {
-  footer.site-footer { padding-bottom: calc(var(--space-5) + env(safe-area-inset-bottom)); }
-  /* Four tracks here would be narrower than the high-contrast switch, so fold
-     the site map to 2x2 and keep the reading order. Equal tracks rather than
-     space-between, which across only two columns would reopen the same hole
-     in the middle. */
-  footer .footer-cols {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    justify-content: start;
-  }
+  footer.site-footer { padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom)); }
 }
 
 @media (max-width: 560px) {
@@ -866,26 +991,18 @@ footer .footer-social svg { width: 20px; height: 20px; display: block; }
     gap: var(--space-4);
     padding-top: var(--space-5);
   }
-  /* Below this the two clusters can't sit side by side without one of their
-     columns wrapping, so stack them flush left instead of leaving
-     space-between to strand them at opposite edges. */
-  /* Phone (2026-09-07, Dan): the clusters go back to being real boxes so each
-     one owns a row, laid out 2-up. The second row is flipped so Legal takes
-     the left slot Company held and Company moves right, under Support. */
-  footer .footer-cols {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-  }
-  footer .footer-group {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    width: 100%;
-    gap: var(--space-5) var(--space-6);
-  }
-  footer .footer-group:last-child .footer-col:first-child { order: 2; }
-  /* The high-contrast switch is wider than half the container; its own phone
-     layout lives in A11yToggle.astro, where the scoped rules can reach it. */
+  /* Phone (Yoni 2026-11-02): all four headings stay on one row; smaller
+     type, tracking and caret make them fit a 360px screen. The right-hand
+     pair's drawers open leftward so they stay on screen. */
+  footer .footer-cols { column-gap: var(--space-2); }
+  footer .footer-col-title { font-size: 0.8125rem; letter-spacing: 0.05em; }
+  footer .footer-col-btn { gap: 0.35em; }
+  footer .footer-cols.is-folding .footer-col-arr { width: 8px; height: 5px; }
+  footer .footer-cols.is-folding .footer-col:nth-child(n+3) .footer-drawer { left: auto; right: -16px; }
+}
+@media (max-width: 400px) {
+  footer .footer-cols { column-gap: 6px; }
+  footer .footer-col-title { font-size: var(--text-xs); letter-spacing: 0.03em; }
 }
 
 /* plugin detail page */
@@ -1048,16 +1165,6 @@ footer .footer-social svg { width: 20px; height: 20px; display: block; }
 .hit-subscribe { top: 28%; left: 12%; width: 76%; height: 44%; }
 .hit-submit    { top: 27%; left: 14%; width: 72%; height: 46%; }
 
-/* Phones: at the page end the footer fills the screen under the header, its
-   head right under the nav (Dan 2026-10-06, same as /drift). Links sit at the
-   bottom; any spare height stays inside the footer, above them. lvh = the
-   screen with Safari's bars tucked away. --site-nav-h is the nav's real
-   height, published by Header.astro. */
-@media (max-width: 600px) {
-  footer.site-footer {
-    min-height: calc(100vh - var(--site-nav-h, var(--nav-h)));
-    min-height: calc(100lvh - var(--site-nav-h, var(--nav-h)));
-    display: flex; flex-direction: column; justify-content: flex-end;
-  }
-  footer.site-footer > .container { width: 100%; }   /* a flex item: keep the block width */
-}
+/* Phones: the footer used to fill one screen under the header (Dan
+   2026-10-06). Dropped 2026-11-02 (Yoni): with the categories folded that
+   screen was empty, so the footer is now as tight on a phone as on desktop. */
