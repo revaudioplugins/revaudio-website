@@ -8,7 +8,9 @@
      labelled block for every future Higgsfield image; scrolling walks down the aisle and locks onto the live TV.
      No credits spent. Not in the Astro build (tools/). Serve the worktree root:
      python3 -m http.server <port> --bind 127.0.0.1  ->  /tools/_home-opening/room.html
-     Keys: H hides the dock, T the tuning panel, L the labels, W the neon wireframe. Three.js r170 is vendored (MIT). -->
+     The bench (T) shrinks the page beside it so the whole room stays in view; every slider moves the room live
+     (the room is built once, a slider only re-places it). Keys: T bench, L labels, W neon wireframe.
+     Three.js r170 is vendored (MIT). -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&family=Yellowtail&display=swap" rel="stylesheet">
@@ -16,15 +18,27 @@
   { "imports": { "three": "./vendor/three/build/three.module.min.js", "three/addons/": "./vendor/three/examples/jsm/" } }
 </script>
 <style>
-  :root { --bg-0: #0b0a09; --fg: #efe9df; --brass-bright: #e8c878; --honey: #f6c85d; --nav-h: 41px; --vh: 100vh; --walk-px: 220vh; --tv-r: 34px; }
+  :root { --bg-0: #0b0a09; --fg: #efe9df; --brass-bright: #e8c878; --honey: #f6c85d;
+    --nav-h: 41px; --vh: 100vh; --vw: 100vw; --walk-px: 220vh; --tv-r: 34px; --sx: 0px; --sy: 0px; --sk: 1; --bench-w: 330px; }
   * { box-sizing: border-box; }
   html, body { margin: 0; background: var(--bg-0); color: var(--fg); font-family: Inter, system-ui, sans-serif; }
   html.lenis, html.lenis body { height: auto; }
   .lenis.lenis-smooth { scroll-behavior: auto !important; }
   .nav { position: fixed; inset: 0 0 auto 0; height: var(--nav-h); z-index: 50; background: #0b0a09; }
-  .nav img { display: block; width: 100%; height: 100%; }
+  .nav img, .stage-nav img { display: block; width: 100%; height: 100%; }
   .opening { position: relative; height: calc(var(--vh) + var(--walk-px)); }
-  .cam { position: sticky; top: 0; height: var(--vh); overflow: hidden; background: #060509; }
+  .cam { position: sticky; top: 0; height: var(--vh); overflow: hidden; background: #060509; transition: background .35s; }
+
+  /* the page as the visitor sees it; with the bench open it shrinks beside it, whole */
+  .stage { position: absolute; left: 0; top: 0; width: var(--vw); height: var(--vh); overflow: hidden; transform-origin: 0 0;
+    transition: transform .4s cubic-bezier(.22,1,.36,1), border-radius .4s, box-shadow .4s; }
+  .stage-nav { position: absolute; inset: 0 0 auto 0; height: var(--nav-h); z-index: 5; display: none; background: #0b0a09; }
+  body.bench-on .cam { background: #0d0b0a; }
+  body.bench-on .stage { transform: translate(var(--sx), var(--sy)) scale(var(--sk)); border-radius: 8px;
+    box-shadow: 0 0 0 1px #3a3027, 0 24px 60px rgba(0,0,0,.65); }
+  body.bench-on .nav { display: none; }
+  body.bench-on .stage-nav { display: block; }
+
   #gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
   #gl.is-hot { cursor: pointer; }
   .tv-live { position: absolute; left: 0; top: var(--nav-h); width: 100%; height: calc(var(--vh) - var(--nav-h)); display: block;
@@ -40,23 +54,36 @@
     transform: rotate(-6deg); text-shadow: 0 2px 3px rgba(0,0,0,.8); }
   .below img { display: block; width: 100%; height: auto; }
 
-  .dock { position: fixed; left: 12px; bottom: 12px; z-index: 60; display: flex; gap: 6px; flex-wrap: wrap; max-width: calc(100vw - 24px);
-    font: 600 11px/1 Inter, sans-serif; letter-spacing: .04em; }
-  .dock[hidden], .panel[hidden] { display: none; }
-  .chip { appearance: none; border: 1px solid #3a3027; background: rgba(14,11,9,.9); color: #cfc6b8; padding: 8px 10px; border-radius: 999px; cursor: pointer; }
+  /* the bench */
+  .bench-open { position: fixed; right: 14px; bottom: 14px; z-index: 70; appearance: none; border: 1px solid #3a3027; border-radius: 999px;
+    background: rgba(14,11,9,.92); color: #e8dccb; font: 600 12px/1 Inter, sans-serif; letter-spacing: .04em; padding: 10px 14px; cursor: pointer; }
+  .bench-open[hidden], .bench[hidden], .slots-panel[hidden] { display: none; }
+  .bench { position: fixed; right: 12px; top: 12px; bottom: 12px; width: var(--bench-w); z-index: 70; overflow: auto; overscroll-behavior: contain;
+    background: rgba(12,10,8,.97); border: 1px solid #3a3027; border-radius: 10px; padding: 0 14px 14px; font: 12px/1.35 Inter, sans-serif; color: #d8cfc2; }
+  .bench-head { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 8px; padding: 12px 0 10px; background: rgba(12,10,8,.97);
+    border-bottom: 1px solid #2a231d; }
+  .bench-head b { font: 400 20px/1 "Bebas Neue"; letter-spacing: .1em; color: var(--brass-bright); }
+  .bench-head .tag { font: 600 9.5px/1 Inter, sans-serif; letter-spacing: .06em; padding: 5px 7px; border-radius: 999px; background: rgba(40,70,40,.9);
+    border: 1px solid #4f8a4f; color: #d6ffd6; }
+  .bench-head .chip { margin-left: auto; }
+  .chip { appearance: none; border: 1px solid #3a3027; background: rgba(20,16,13,.9); color: #cfc6b8; padding: 7px 10px; border-radius: 999px; cursor: pointer;
+    font: 600 11px/1 Inter, sans-serif; letter-spacing: .03em; }
   .chip[aria-pressed="true"] { background: #e8c878; color: #1a140e; border-color: #e8c878; }
-  .chip.tag { cursor: default; background: rgba(40,70,40,.9); border-color: #4f8a4f; color: #d6ffd6; }
-  .panel { position: fixed; right: 12px; bottom: 12px; top: calc(var(--nav-h) + 12px); z-index: 61; width: 300px; overflow: auto;
-    background: rgba(12,10,8,.95); border: 1px solid #3a3027; border-radius: 10px; padding: 12px 14px; font: 12px/1.35 Inter, sans-serif; color: #d8cfc2; }
-  .panel.wide { width: min(560px, calc(100vw - 24px)); }
-  .panel h3 { margin: 10px 0 6px; font: 400 15px/1 "Bebas Neue"; letter-spacing: .08em; color: var(--brass-bright); }
-  .panel label { display: grid; grid-template-columns: 1fr 56px; gap: 2px 8px; margin: 6px 0; }
-  .panel input[type=range] { grid-column: 1 / -1; width: 100%; accent-color: #e8c878; }
-  .panel output { text-align: right; color: #f3e6cf; font-variant-numeric: tabular-nums; }
-  .panel .row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
-  .panel .note { color: #a89f92; margin: 4px 0 8px; }
+  .bench h3 { margin: 14px 0 6px; font: 400 15px/1 "Bebas Neue"; letter-spacing: .08em; color: var(--brass-bright); }
+  .bench label { display: grid; grid-template-columns: 1fr 56px; gap: 2px 8px; margin: 6px 0; }
+  .bench input[type=range] { grid-column: 1 / -1; width: 100%; accent-color: #e8c878; }
+  .bench output { text-align: right; color: #f3e6cf; font-variant-numeric: tabular-nums; }
+  .bench .row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+  .bench .note { color: #a89f92; margin: 8px 0 2px; }
+  .bench .walk { margin-top: 12px; padding: 8px 10px 4px; border: 1px solid #3a3027; border-radius: 8px; background: rgba(232,200,120,.05); }
+
+  .slots-panel { position: fixed; left: 12px; top: 12px; bottom: 12px; width: min(600px, calc(100vw - var(--bench-w) - 36px)); z-index: 71; overflow: auto;
+    background: rgba(12,10,8,.97); border: 1px solid #3a3027; border-radius: 10px; padding: 12px 14px; font: 12px/1.35 Inter, sans-serif; color: #d8cfc2; }
+  .slots-panel h3 { margin: 0 0 6px; font: 400 16px/1 "Bebas Neue"; letter-spacing: .08em; color: var(--brass-bright); }
+  .slots-panel .note { color: #a89f92; margin: 4px 0 8px; }
+  .slots-panel .row { display: flex; gap: 6px; margin-top: 10px; }
   .slots { width: 100%; border-collapse: collapse; font-size: 11px; }
-  .slots td, .slots th { border-bottom: 1px solid #2a231d; padding: 4px 4px; text-align: left; vertical-align: top; }
+  .slots td, .slots th { border-bottom: 1px solid #2a231d; padding: 4px; text-align: left; vertical-align: top; }
   .slots th { color: #e8c878; font-weight: 600; }
   .slots .m { color: #b7a8ff; } .slots .g { color: #ffb27a; }
 </style>
@@ -67,45 +94,52 @@
   <h1 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">RevAudio, boutique audio plugins</h1>
   <section class="opening" aria-label="The RevAudio garage">
     <div class="cam">
-      <canvas id="gl" aria-hidden="true"></canvas>
-      <img class="tv-live" id="tvLive" src="assets/tv-1141x636.webp" alt="The plugin TV">
-      <div class="read-b" id="readB">
-        <p class="rb-kick">REVAUDIO · BOUTIQUE AUDIO PLUGINS</p>
-        <p class="rb-head">Built like <em>cars.</em></p>
-        <span class="rb-sig">Step inside.</span>
+      <div class="stage" id="stage">
+        <canvas id="gl" aria-hidden="true"></canvas>
+        <img class="tv-live" id="tvLive" src="assets/tv-1141x636.webp" alt="The plugin TV">
+        <div class="read-b" id="readB">
+          <p class="rb-kick">REVAUDIO · BOUTIQUE AUDIO PLUGINS</p>
+          <p class="rb-head">Built like <em>cars.</em></p>
+          <span class="rb-sig">Step inside.</span>
+        </div>
+        <div class="stage-nav"><img id="stageNavImg" src="assets/nav-1141.webp" alt=""></div>
       </div>
     </div>
   </section>
   <div class="below"><img id="belowImg" src="assets/below-1141.webp" alt="The rest of the home page"></div>
 </main>
 
-<div class="dock" id="dock">
-  <span class="chip tag" title="Grey blocks only: no Higgsfield credits spent">SKELETON · NO CREDITS</span>
-  <button class="chip" data-flag="labels">Labels</button>
-  <button class="chip" data-flag="wire">Neon wireframe</button>
-  <button class="chip" data-flag="mirror">Mirror floor</button>
-  <button class="chip" data-flag="readB">Big line</button>
-  <button class="chip" id="btnIntro">↺ Intro</button>
-  <button class="chip" id="btnTune">⚙ Tune</button>
-  <button class="chip" id="btnSlots">☰ Slots</button>
-</div>
-
-<div class="panel" id="tune" hidden>
+<button class="bench-open" id="benchOpen" aria-label="Open the bench">⚙ Bench</button>
+<aside class="bench" id="bench" aria-label="Bench" hidden>
+  <div class="bench-head">
+    <b>Bench</b><span class="tag" title="Grey blocks only: no Higgsfield credits spent">SKELETON · NO CREDITS</span>
+    <button class="chip" id="benchClose" aria-label="Hide the bench">Hide ›</button>
+  </div>
+  <div class="row">
+    <button class="chip" data-flag="labels">Labels</button>
+    <button class="chip" data-flag="wire">Neon wireframe</button>
+    <button class="chip" data-flag="mirror">Mirror floor</button>
+    <button class="chip" data-flag="readB">Big line</button>
+  </div>
+  <label class="walk"><span>Walk position</span><output id="walkOut">0 %</output><input id="walkIn" type="range" min="0" max="1" step="0.001" value="0"></label>
+  <div class="row">
+    <button class="chip" id="btnIntro">↺ Intro</button>
+    <button class="chip" id="btnSlots">☰ Slots</button>
+  </div>
   <div class="note" id="tuneNote"></div>
   <div id="tuneBody"></div>
   <div class="row">
     <button class="chip" id="btnCopy">Copy settings</button>
     <button class="chip" id="btnReset">Reset</button>
-    <button class="chip" data-close="tune">Close</button>
   </div>
-</div>
-<div class="panel wide" id="slotsPanel" hidden>
+</aside>
+<div class="slots-panel" id="slotsPanel" hidden>
   <h3>Slots: one Higgsfield image each</h3>
   <div class="note">Sizes in metres (width along the wall × height × depth). Music in violet, garage in orange.</div>
   <div id="slotsBody"></div>
   <div class="row">
     <button class="chip" id="btnCopySlots">Copy slot list (JSON)</button>
-    <button class="chip" data-close="slotsPanel">Close</button>
+    <button class="chip" id="btnSlotsClose">Close</button>
   </div>
 </div>
 
@@ -118,28 +152,28 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { Reflector } from 'three/addons/objects/Reflector.js';
 
-// ---------- settings (Tune panel; COPY SETTINGS bakes them) ----------
+// ---------- settings (the bench; COPY SETTINGS bakes them) ----------
 const DEF = {
-  roomW: 6.5, roomH: 4.4,                // the room, metres (its length follows the walk: see layout)
-  lens: 32,                              // vertical field of view, degrees
+  roomW: 6.5, roomH: 4.4,                // the room, metres (its length follows the walk: layoutCamera)
+  lens: 32,                              // vertical field of view, degrees (phones get 18 more)
   tvW: 1.1, tvY: 1.55,                   // the TV: width, centre height (metres)
   tvStart: 5,                            // TV width on the first screen, % of the screen width (Dan's pick)
-  walkLen: 220, ease: 2.0, feel: 0.35,    // scroll length (% screen); in-out power; 0 = steady metres, 1 = the TV grows steadily
+  walkLen: 220, ease: 2.0, feel: 0.35,   // scroll length (% screen); in-out power; 0 = steady metres, 1 = the TV grows steadily
   sway: 1, neon: 1, lamps: 1, tvGlow: 1, bloom: 0.9, fog: 0.035, dust: 1,
-  labels: 1, wire: 0, mirror: 1, readB: 0, snap: 1,
+  labels: 1, wire: 0, mirror: 1, readB: 0, snap: 1, bench: 0,
 };
-const REBUILD = new Set(['roomW', 'roomH', 'tvW', 'tvY', 'lens', 'tvStart']);
 const KEY = 'hoRoom:v1';
 const S = { ...DEF };
 try { Object.assign(S, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) {}
+delete S.roomLen; // an older bench stored it; the length follows the walk now
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
 
-// the live TV, captured per screen size (glass inset unused here; r = the bezel's corner radius, px)
+// the live TV, captured per screen size (r = the bezel's corner radius, px)
 const CAPS = [
   { w: 1141, nav: 41, tag: '1141x636', navW: 1141, r: 34 },
   { w: 1440, nav: 41, tag: '1440x900', navW: 1440, r: 34 },
   { w: 1920, nav: 41, tag: '1920x1080', navW: 1920, r: 34 },
-  { w: 390, nav: 58, tag: '390x844', navW: 390, r: 12, phone: true },
+  { w: 390, nav: 58, tag: '390x844', navW: 390, r: 12 },
 ];
 const pickCap = (vw) => vw < 760 ? CAPS[3] : CAPS.slice(0, 3).reduce((a, c) => Math.abs(c.w - vw) < Math.abs(a.w - vw) ? c : a);
 
@@ -148,6 +182,7 @@ const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 const smooth = (a, b, v) => { const t = clamp((v - a) / (b - a)); return t * t * (3 - 2 * t); };
 const easeIO = (t, k) => t < 0.5 ? Math.pow(2 * t, k) / 2 : 1 - Math.pow(2 * (1 - t), k) / 2;
 const hash = (n) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+const rng = (seed) => () => { seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 // ---------- renderer ----------
@@ -156,21 +191,24 @@ const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPrefere
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.NoToneMapping; // the TV's pixels must come out as captured at the lock
 const camera = new THREE.PerspectiveCamera(S.lens, 1, 0.05, 200);
-const renderPass = new RenderPass(new THREE.Scene(), camera);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x060509);
+scene.fog = new THREE.FogExp2(0x0b0812, S.fog);
 const composer = new EffectComposer(renderer);
 const bloomPass = new UnrealBloomPass(new THREE.Vector2(512, 512), S.bloom, 0.55, 0.9);
-composer.addPass(renderPass); composer.addPass(bloomPass); composer.addPass(new OutputPass());
+composer.addPass(new RenderPass(scene, camera)); composer.addPass(bloomPass); composer.addPass(new OutputPass());
 
-let cap = null, scene = null, W = {}; // W = the built world
-const L = {};                          // layout numbers
+let cap = null;
+const L = {};      // layout numbers
+const R = {};      // the room's parts, made once
 const tvImg = new Image();
 
-// ---------- small canvas textures ----------
-function concreteTex(base, amount = 16) {
+// ---------- small canvas textures (seeded, so a texture never changes under a slider) ----------
+function concreteTex(base, seed, amount = 16) {
   const c = document.createElement('canvas'); c.width = c.height = 256;
   const g = c.getContext('2d'); g.fillStyle = base; g.fillRect(0, 0, 256, 256);
-  const im = g.getImageData(0, 0, 256, 256), d = im.data;
-  for (let i = 0; i < d.length; i += 4) { const n = (Math.random() - 0.5) * amount; d[i] += n; d[i + 1] += n; d[i + 2] += n; }
+  const im = g.getImageData(0, 0, 256, 256), d = im.data, r = rng(seed);
+  for (let i = 0; i < d.length; i += 4) { const n = (r() - 0.5) * amount; d[i] += n; d[i + 1] += n; d[i + 2] += n; }
   g.putImageData(im, 0, 0);
   const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; return t;
 }
@@ -185,7 +223,7 @@ function floorTex(roomW) {
   for (let y = 0; y < 8; y += 1) g.fillRect(128 - 0.025 * px, y * py, 0.05 * px, 0.5 * py);
   const t = new THREE.CanvasTexture(c); t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; return t;
 }
-function labelSprite(text, cat) {
+function labelSprite(text, cat, k = 1) {
   const c = document.createElement('canvas'); c.width = 640; c.height = 112;
   const g = c.getContext('2d');
   g.font = '600 34px Inter, sans-serif';
@@ -195,319 +233,299 @@ function labelSprite(text, cat) {
   g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(text, 320, 57);
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
   const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, transparent: true, depthWrite: false, fog: false }));
-  sp.scale.set(1.3, 0.23, 1); sp.renderOrder = 10;
+  sp.scale.set(1.3 * k, 0.23 * k, 1); sp.renderOrder = 10;
   return sp;
 }
 function signTex() {
   const c = document.createElement('canvas'); c.width = 1400; c.height = 340;
   const g = c.getContext('2d');
-  g.font = '400 250px "Bebas Neue", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.lineJoin = 'round';
+  g.font = '400 250px "Bebas Neue", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
   g.shadowColor = 'rgba(255,90,40,0.9)'; g.shadowBlur = 40;
   g.strokeStyle = '#ff5a2a'; g.lineWidth = 16; g.strokeText('REVAUDIO', 700, 180);
   g.shadowBlur = 0; g.strokeStyle = '#ffd9c4'; g.lineWidth = 5; g.strokeText('REVAUDIO', 700, 180);
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
 }
-function tvTexture() {
+function applyTvTexture() {
   // the captured live TV with the bezel's round corners cut out
-  if (!tvImg.complete || !tvImg.naturalWidth) return null;
+  if (!R.tv || !tvImg.complete || !tvImg.naturalWidth) return;
   const c = document.createElement('canvas'); c.width = tvImg.naturalWidth; c.height = tvImg.naturalHeight;
-  const g = c.getContext('2d'), k = c.width / innerWidth;
+  const g = c.getContext('2d'), k = c.width / cap.w;
   g.beginPath(); g.roundRect(0, 0, c.width, c.height, cap.r * k); g.clip(); g.drawImage(tvImg, 0, 0);
-  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
-  t.anisotropy = renderer.capabilities.getMaxAnisotropy(); return t;
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  R.tv.faceMat.map?.dispose?.(); R.tv.faceMat.map = t; R.tv.faceMat.needsUpdate = true;
 }
 
-// ---------- the slots: every block here becomes one Higgsfield image (step 2's slot list) ----------
-// side -1 = left wall, 1 = right wall; z = metres from the end wall (the TV's wall) along the room; w along the wall.
-function slotTable(span) {
-  const z = (f) => +(f * span).toFixed(2); // f = share of the stretch from the end wall to 4 m in front of the camera
-  return [
-    { id: 'L01', cat: 'garage', label: 'Pegboard: wrenches, spanners', side: -1, z: z(0.89), w: 3.2, h: 1.6, d: 0.05, y: 1.9 },
-    { id: 'L02', cat: 'music', label: 'Guitar (hanging)', side: -1, z: z(0.915), w: 0.38, h: 1.05, d: 0.08, y: 1.8, on: 0.05 },
-    { id: 'L03', cat: 'music', label: 'Guitar (hanging)', side: -1, z: z(0.87), w: 0.38, h: 1.05, d: 0.08, y: 1.8, on: 0.05 },
-    { id: 'L04', cat: 'music', label: 'Amp stack (head + 4x12)', side: -1, z: z(0.82), w: 0.8, h: 1.55, d: 0.42 },
-    { id: 'L05', cat: 'garage', label: 'Red tool chest', side: -1, z: z(0.74), w: 0.8, h: 1.0, d: 0.5 },
-    { id: 'L06', cat: 'music', label: 'Compressor rack (VU meters)', side: -1, z: z(0.74), w: 0.6, h: 0.9, d: 0.48, y: 1.45 },
-    { id: 'L07', cat: 'garage', label: 'Red tool chest', side: -1, z: z(0.685), w: 0.8, h: 1.0, d: 0.5 },
-    { id: 'L08', cat: 'music', label: 'EQ rack (VU meters)', side: -1, z: z(0.685), w: 0.6, h: 0.75, d: 0.48, y: 1.375 },
-    { id: 'L09', cat: 'garage', label: 'Workbench (vice, soldering)', side: -1, z: z(0.58), w: 2.6, h: 0.92, d: 0.75 },
-    { id: 'L10', cat: 'music', label: 'Synth (keys)', side: -1, z: z(0.6), w: 1.0, h: 0.14, d: 0.42, y: 0.99 },
-    { id: 'L11', cat: 'music', label: 'Drum machine', side: -1, z: z(0.55), w: 0.5, h: 0.12, d: 0.34, y: 0.98 },
-    { id: 'L12', cat: 'garage', label: 'Parts shelf: pistons, plugs, carbs', side: -1, z: z(0.58), w: 2.6, h: 0.9, d: 0.35, y: 2.45 },
-    { id: 'L13', cat: 'music', label: 'Studio monitor (on stand)', side: -1, z: z(0.455), w: 0.45, h: 0.7, d: 0.4, y: 1.35 },
-    { id: 'L14', cat: 'music', label: 'Studio monitor (on stand)', side: -1, z: z(0.41), w: 0.45, h: 0.7, d: 0.4, y: 1.35 },
-    { id: 'L15', cat: 'garage', label: 'Tyre rack', side: -1, z: z(0.33), w: 1.0, h: 1.7, d: 0.65 },
-    { id: 'L16', cat: 'music', label: 'Reel-to-reel tape machine', side: -1, z: z(0.25), w: 0.7, h: 1.25, d: 0.55 },
-    { id: 'L17', cat: 'garage', label: 'Pegboard: screwdrivers, hoses', side: -1, z: z(0.155), w: 2.6, h: 1.5, d: 0.05, y: 1.85 },
-    { id: 'L18', cat: 'music', label: 'Bass (hanging)', side: -1, z: z(0.17), w: 0.38, h: 1.15, d: 0.08, y: 1.8, on: 0.05 },
-    { id: 'R01', cat: 'garage', label: 'Parts-store shelf: exhausts, filters, oil', side: 1, z: z(0.9), w: 2.4, h: 2.5, d: 0.5 },
-    { id: 'R02', cat: 'music', label: 'Guitar combo amp', side: 1, z: z(0.825), w: 0.65, h: 0.75, d: 0.35 },
-    { id: 'R03', cat: 'music', label: 'Guitar (hanging)', side: 1, z: z(0.825), w: 0.38, h: 1.05, d: 0.08, y: 1.95 },
-    { id: 'R04', cat: 'garage', label: 'Wall shelf: helmets, wheels', side: 1, z: z(0.6), w: 3.6, h: 0.6, d: 0.4, y: 2.95 },
-    { id: 'R05', cat: 'garage', label: 'Red tool chest', side: 1, z: z(0.44), w: 0.8, h: 1.0, d: 0.5 },
-    { id: 'R06', cat: 'music', label: 'Compressor rack (VU meters)', side: 1, z: z(0.44), w: 0.6, h: 0.9, d: 0.48, y: 1.45 },
-    { id: 'R07', cat: 'garage', label: 'Parts bench (carb on a stand)', side: 1, z: z(0.345), w: 2.2, h: 0.92, d: 0.7 },
-    { id: 'R08', cat: 'music', label: 'Modular synth', side: 1, z: z(0.33), w: 0.8, h: 0.5, d: 0.25, y: 1.17 },
-    { id: 'R09', cat: 'garage', label: 'Pegboard: tools', side: 1, z: z(0.345), w: 2.2, h: 1.4, d: 0.05, y: 2.05 },
-    { id: 'R10', cat: 'music', label: 'Guitar (hanging)', side: 1, z: z(0.36), w: 0.38, h: 1.05, d: 0.08, y: 2.05, on: 0.05 },
-    { id: 'R11', cat: 'music', label: 'PA speaker stack', side: 1, z: z(0.22), w: 0.9, h: 1.6, d: 0.6 },
-    { id: 'R12', cat: 'garage', label: 'Rolling tool cabinet', side: 1, z: z(0.135), w: 1.2, h: 1.1, d: 0.55 },
-    { id: 'L19', cat: 'music', label: 'Guitar rack (five guitars)', side: -1, z: z(0.065), w: 1.3, h: 1.1, d: 0.5 },
-    { id: 'R13', cat: 'garage', label: 'Tyre stack', side: 1, z: z(0.06), w: 0.75, h: 1.2, d: 0.75 },
-  ];
-}
-// the far end: a mix station round the TV (x across the room, d out from the end wall)
-function endTable() {
-  const y = S.tvY;
-  return [
-    { id: 'E01', cat: 'music', label: 'Mixing desk under the TV', x: 0, w: 2.4, h: 0.85, d: 0.85 },
-    { id: 'E02', cat: 'music', label: 'Studio monitor', x: -1.15, w: 0.34, h: 0.52, d: 0.32, y: y - 0.05, front: 0.55 },
-    { id: 'E03', cat: 'music', label: 'Studio monitor', x: 1.15, w: 0.34, h: 0.52, d: 0.32, y: y - 0.05, front: 0.55 },
-    { id: 'E04', cat: 'music', label: 'Synth on the desk', x: 0.55, w: 0.9, h: 0.12, d: 0.36, y: 0.91, front: 0.4 },
-    { id: 'E05', cat: 'garage', label: 'Pegboard: spanners, cables', x: -2.2, w: 1.6, h: 1.5, d: 0.05, y: y + 0.2 },
-    { id: 'E06', cat: 'garage', label: 'Shelf: oil cans, tape reels', x: 2.2, w: 1.6, h: 0.5, d: 0.35, y: y + 0.6 },
-  ];
-}
+// ---------- the slots: every block becomes one Higgsfield image (step 2's slot list) ----------
+// side -1 = left wall, 1 = right wall; f = share of the stretch from the end wall to 4 m in front of the camera; w along the wall.
+const SIDE = [
+  { id: 'L01', cat: 'garage', label: 'Pegboard: wrenches, spanners', side: -1, f: 0.89, w: 3.2, h: 1.6, d: 0.05, y: 1.9 },
+  { id: 'L02', cat: 'music', label: 'Guitar (hanging)', side: -1, f: 0.915, w: 0.38, h: 1.05, d: 0.08, y: 1.8, on: 0.05 },
+  { id: 'L03', cat: 'music', label: 'Guitar (hanging)', side: -1, f: 0.87, w: 0.38, h: 1.05, d: 0.08, y: 1.8, on: 0.05 },
+  { id: 'L04', cat: 'music', label: 'Amp stack (head + 4x12)', side: -1, f: 0.82, w: 0.8, h: 1.55, d: 0.42 },
+  { id: 'L05', cat: 'garage', label: 'Red tool chest', side: -1, f: 0.74, w: 0.8, h: 1.0, d: 0.5 },
+  { id: 'L06', cat: 'music', label: 'Compressor rack (VU meters)', side: -1, f: 0.74, w: 0.6, h: 0.9, d: 0.48, y: 1.45 },
+  { id: 'L07', cat: 'garage', label: 'Red tool chest', side: -1, f: 0.685, w: 0.8, h: 1.0, d: 0.5 },
+  { id: 'L08', cat: 'music', label: 'EQ rack (VU meters)', side: -1, f: 0.685, w: 0.6, h: 0.75, d: 0.48, y: 1.375 },
+  { id: 'L09', cat: 'garage', label: 'Workbench (vice, soldering)', side: -1, f: 0.58, w: 2.6, h: 0.92, d: 0.75 },
+  { id: 'L10', cat: 'music', label: 'Synth (keys)', side: -1, f: 0.6, w: 1.0, h: 0.14, d: 0.42, y: 0.99 },
+  { id: 'L11', cat: 'music', label: 'Drum machine', side: -1, f: 0.55, w: 0.5, h: 0.12, d: 0.34, y: 0.98 },
+  { id: 'L12', cat: 'garage', label: 'Parts shelf: pistons, plugs, carbs', side: -1, f: 0.58, w: 2.6, h: 0.9, d: 0.35, y: 2.45 },
+  { id: 'L13', cat: 'music', label: 'Studio monitor (on stand)', side: -1, f: 0.455, w: 0.45, h: 0.7, d: 0.4, y: 1.35 },
+  { id: 'L14', cat: 'music', label: 'Studio monitor (on stand)', side: -1, f: 0.41, w: 0.45, h: 0.7, d: 0.4, y: 1.35 },
+  { id: 'L15', cat: 'garage', label: 'Tyre rack', side: -1, f: 0.33, w: 1.0, h: 1.7, d: 0.65 },
+  { id: 'L16', cat: 'music', label: 'Reel-to-reel tape machine', side: -1, f: 0.25, w: 0.7, h: 1.25, d: 0.55 },
+  { id: 'L17', cat: 'garage', label: 'Pegboard: screwdrivers, hoses', side: -1, f: 0.155, w: 2.6, h: 1.5, d: 0.05, y: 1.85 },
+  { id: 'L18', cat: 'music', label: 'Bass (hanging)', side: -1, f: 0.17, w: 0.38, h: 1.15, d: 0.08, y: 1.8, on: 0.05 },
+  { id: 'L19', cat: 'music', label: 'Guitar rack (five guitars)', side: -1, f: 0.065, w: 1.3, h: 1.1, d: 0.5 },
+  { id: 'R01', cat: 'garage', label: 'Parts-store shelf: exhausts, filters, oil', side: 1, f: 0.9, w: 2.4, h: 2.5, d: 0.5 },
+  { id: 'R02', cat: 'music', label: 'Guitar combo amp', side: 1, f: 0.825, w: 0.65, h: 0.75, d: 0.35 },
+  { id: 'R03', cat: 'music', label: 'Guitar (hanging)', side: 1, f: 0.825, w: 0.38, h: 1.05, d: 0.08, y: 1.95 },
+  { id: 'R04', cat: 'garage', label: 'Wall shelf: helmets, wheels', side: 1, f: 0.6, w: 3.6, h: 0.6, d: 0.4, y: 2.95 },
+  { id: 'R05', cat: 'garage', label: 'Red tool chest', side: 1, f: 0.44, w: 0.8, h: 1.0, d: 0.5 },
+  { id: 'R06', cat: 'music', label: 'Compressor rack (VU meters)', side: 1, f: 0.44, w: 0.6, h: 0.9, d: 0.48, y: 1.45 },
+  { id: 'R07', cat: 'garage', label: 'Parts bench (carb on a stand)', side: 1, f: 0.345, w: 2.2, h: 0.92, d: 0.7 },
+  { id: 'R08', cat: 'music', label: 'Modular synth', side: 1, f: 0.33, w: 0.8, h: 0.5, d: 0.25, y: 1.17 },
+  { id: 'R09', cat: 'garage', label: 'Pegboard: tools', side: 1, f: 0.345, w: 2.2, h: 1.4, d: 0.05, y: 2.05 },
+  { id: 'R10', cat: 'music', label: 'Guitar (hanging)', side: 1, f: 0.36, w: 0.38, h: 1.05, d: 0.08, y: 2.05, on: 0.05 },
+  { id: 'R11', cat: 'music', label: 'PA speaker stack', side: 1, f: 0.22, w: 0.9, h: 1.6, d: 0.6 },
+  { id: 'R12', cat: 'garage', label: 'Rolling tool cabinet', side: 1, f: 0.135, w: 1.2, h: 1.1, d: 0.55 },
+  { id: 'R13', cat: 'garage', label: 'Tyre stack', side: 1, f: 0.06, w: 0.75, h: 1.2, d: 0.75 },
+];
+// the far end: a mix station round the TV (x across the room, d out from the end wall; ty = height from the TV's centre)
+const END = [
+  { id: 'E01', cat: 'music', label: 'Mixing desk under the TV', x: 0, w: 2.4, h: 0.85, d: 0.85 },
+  { id: 'E02', cat: 'music', label: 'Studio monitor', x: -1.15, w: 0.34, h: 0.52, d: 0.32, ty: -0.05, front: 0.55 },
+  { id: 'E03', cat: 'music', label: 'Studio monitor', x: 1.15, w: 0.34, h: 0.52, d: 0.32, ty: -0.05, front: 0.55 },
+  { id: 'E04', cat: 'music', label: 'Synth on the desk', x: 0.55, w: 0.9, h: 0.12, d: 0.36, y: 0.91, front: 0.4 },
+  { id: 'E05', cat: 'garage', label: 'Pegboard: spanners, cables', x: -2.2, w: 1.6, h: 1.5, d: 0.05, ty: 0.2 },
+  { id: 'E06', cat: 'garage', label: 'Shelf: oil cans, tape reels', x: 2.2, w: 1.6, h: 0.5, d: 0.35, ty: 0.6 },
+];
 
-// ---------- build the room ----------
-function disposeScene(sc) {
-  sc.traverse((o) => {
-    o.geometry?.dispose?.();
-    const ms = Array.isArray(o.material) ? o.material : o.material ? [o.material] : [];
-    for (const m of ms) { for (const k of ['map', 'alphaMap']) m[k]?.dispose?.(); m.dispose?.(); }
-    if (o.isReflector) o.getRenderTarget?.().dispose?.();
-  });
-}
-function build() {
-  if (scene) disposeScene(scene);
-  scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x060509);
-  scene.fog = new THREE.FogExp2(0x0b0812, S.fog);
-  renderPass.scene = scene;
-  const Wd = S.roomW, H = S.roomH, Lr = L.roomLen;
-  W = { props: [], labels: [], neonMats: [], neonLights: [], lampLights: [], lampMats: [], slots: [] };
-
+// ---------- make the room once ----------
+function createRoom() {
   scene.add(new THREE.HemisphereLight(0x46346e, 0x0b0907, 0.42));
 
-  // walls, ceiling, end wall, near wall
-  const wallMat = new THREE.MeshStandardMaterial({ map: concreteTex('#3b3439'), roughness: 0.93 });
-  wallMat.map.repeat.set(Lr / 2.5, H / 2.5);
-  const ceilMat = new THREE.MeshStandardMaterial({ map: concreteTex('#211d24'), roughness: 0.95 });
-  const endMat = new THREE.MeshStandardMaterial({ map: concreteTex('#342e33'), roughness: 0.93 });
-  const plane = (w, h, sx, sy, mat) => new THREE.Mesh(new THREE.PlaneGeometry(w, h, sx, sy), mat);
-  const left = plane(Lr, H, Math.round(Lr), 6, wallMat); left.rotation.y = Math.PI / 2; left.position.set(-Wd / 2, H / 2, Lr / 2);
-  const right = plane(Lr, H, Math.round(Lr), 6, wallMat); right.rotation.y = -Math.PI / 2; right.position.set(Wd / 2, H / 2, Lr / 2);
-  const ceil = plane(Wd, Lr, 6, Math.round(Lr), ceilMat); ceil.rotation.x = Math.PI / 2; ceil.position.set(0, H, Lr / 2);
-  const end = plane(Wd, H, 8, 6, endMat); end.position.set(0, H / 2, 0);
-  const near = plane(Wd, H, 1, 1, endMat); near.rotation.y = Math.PI; near.position.set(0, H / 2, Lr);
-  W.surfaces = [left, right, ceil, end];
-  scene.add(left, right, ceil, end, near);
-  W.slots.push(
-    { id: 'WALL-L', cat: 'surface', kind: 'texture', label: 'Left wall strip', size: [Lr, H], need: 'Seamless straight-on wall strip (brick / concrete with cables, pipes)' },
-    { id: 'WALL-R', cat: 'surface', kind: 'texture', label: 'Right wall strip', size: [Lr, H], need: 'Seamless straight-on wall strip' },
-    { id: 'CEIL', cat: 'surface', kind: 'texture', label: 'Ceiling', size: [Wd, Lr], need: 'Seamless ceiling tile (corrugated metal, cable trays)' },
-    { id: 'FLOOR', cat: 'surface', kind: 'texture', label: 'Floor', size: [Wd, Lr], need: 'Seamless glossy concrete tile (stains, oil marks)' },
-    { id: 'END', cat: 'surface', kind: 'texture', label: 'End wall', size: [Wd, H], need: 'Straight-on end wall behind the TV' },
-  );
+  R.wallMat = new THREE.MeshStandardMaterial({ map: concreteTex('#3b3439', 11), roughness: 0.93 });
+  R.ceilMat = new THREE.MeshStandardMaterial({ map: concreteTex('#211d24', 23), roughness: 0.95 });
+  R.endMat = new THREE.MeshStandardMaterial({ map: concreteTex('#342e33', 37), roughness: 0.93 });
+  R.nearMat = new THREE.MeshStandardMaterial({ map: concreteTex('#342e33', 41), roughness: 0.93 });
+  const plane = (sx, sy, mat) => new THREE.Mesh(new THREE.PlaneGeometry(1, 1, sx, sy), mat);
+  R.left = plane(24, 6, R.wallMat); R.left.rotation.y = Math.PI / 2;
+  R.right = plane(24, 6, R.wallMat); R.right.rotation.y = -Math.PI / 2;
+  R.ceil = plane(6, 24, R.ceilMat); R.ceil.rotation.x = Math.PI / 2;
+  R.end = plane(8, 6, R.endMat);
+  R.near = plane(1, 1, R.nearMat); R.near.rotation.y = Math.PI;
+  R.surfaces = [R.left, R.right, R.ceil, R.end];
+  scene.add(R.left, R.right, R.ceil, R.end, R.near);
 
   // the floor: a half-res mirror under a dark glaze with the lane lines
-  const fg = new THREE.PlaneGeometry(Wd, Lr);
-  const dpr = renderer.getPixelRatio();
-  const mirror = new Reflector(fg, { clipBias: 0.003, textureWidth: Math.round(innerWidth * dpr * 0.5), textureHeight: Math.round(innerHeight * dpr * 0.5), color: 0x8a8590 });
-  mirror.rotation.x = -Math.PI / 2; mirror.position.set(0, 0, Lr / 2);
-  const ft = floorTex(Wd); ft.repeat.set(1, Lr / 8);
-  const glaze = new THREE.Mesh(new THREE.PlaneGeometry(Wd, Lr), new THREE.MeshStandardMaterial({ map: ft, transparent: true, roughness: 0.6 }));
-  glaze.rotation.x = -Math.PI / 2; glaze.position.set(0, 0.003, Lr / 2);
-  W.mirror = mirror; W.glaze = glaze;
-  scene.add(mirror, glaze);
+  R.mirror = new Reflector(new THREE.PlaneGeometry(1, 1), { clipBias: 0.003, textureWidth: 512, textureHeight: 512, color: 0x8a8590 });
+  R.mirror.rotation.x = -Math.PI / 2;
+  R.glazeMat = new THREE.MeshStandardMaterial({ transparent: true, roughness: 0.6 });
+  R.glaze = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), R.glazeMat); R.glaze.rotation.x = -Math.PI / 2;
+  scene.add(R.mirror, R.glaze);
 
-  // trusses
-  const steel = new THREE.MeshStandardMaterial({ color: 0x2b2930, metalness: 0.6, roughness: 0.45 });
-  for (let z = 2; z < Lr - 0.5; z += 3.2) {
-    const t = new THREE.Mesh(new THREE.BoxGeometry(Wd, 0.16, 0.16), steel); t.position.set(0, H - 0.42, z); scene.add(t);
-  }
+  R.steel = new THREE.MeshStandardMaterial({ color: 0x2b2930, metalness: 0.6, roughness: 0.45 });
+  R.trusses = Array.from({ length: 24 }, () => { const t = new THREE.Mesh(new THREE.BoxGeometry(1, 0.16, 0.16), R.steel); scene.add(t); return t; });
 
-  // neon strips, full length: violet left, magenta right (+ a light every 6 m)
-  for (const [x, rgb] of [[-1.55, [0.62, 0.3, 1.0]], [1.55, [1.0, 0.22, 0.62]]]) {
-    const m = new THREE.MeshBasicMaterial({ color: new THREE.Color(...rgb), toneMapped: false });
-    m.userData.base = new THREE.Color(...rgb);
-    const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.024, 0.024, Lr - 1, 10), m);
-    tube.rotation.x = Math.PI / 2; tube.position.set(x, H - 0.2, Lr / 2); scene.add(tube); W.neonMats.push(m);
-    for (let z = 3; z < Lr; z += 6) {
-      const pl = new THREE.PointLight(new THREE.Color(...rgb), 18, 10, 2); pl.position.set(x, H - 0.45, z); scene.add(pl); W.neonLights.push(pl);
-    }
-  }
+  // neon strips the full length: violet left, magenta right, each with six lights
+  R.neon = [[-1, [0.62, 0.3, 1.0]], [1, [1.0, 0.22, 0.62]]].map(([side, rgb]) => {
+    const mat = new THREE.MeshBasicMaterial({ color: new THREE.Color(...rgb), toneMapped: false });
+    mat.userData.base = new THREE.Color(...rgb);
+    const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.024, 0.024, 1, 10), mat); tube.rotation.x = Math.PI / 2; scene.add(tube);
+    const lights = Array.from({ length: 6 }, () => { const l = new THREE.PointLight(new THREE.Color(...rgb), 11, 10, 2); scene.add(l); return l; });
+    return { side, mat, tube, lights };
+  });
 
   // hanging amber lamps over the aisle
-  for (const f of [0.78, 0.5, 0.2]) {
-    const z = f * L.span;
+  R.lamps = [0.92, 0.55, 0.2].map((f) => {
     const shade = new THREE.Mesh(new THREE.ConeGeometry(0.28, 0.24, 20, 1, true), new THREE.MeshStandardMaterial({ color: 0x2a2620, side: THREE.DoubleSide, metalness: 0.5, roughness: 0.5 }));
-    shade.position.set(0, H - 1.0, z);
     const bulbMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(1, 0.66, 0.3), toneMapped: false });
     bulbMat.userData.base = new THREE.Color(1, 0.66, 0.3);
-    const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.07, 12, 8), bulbMat); bulb.position.set(0, H - 1.13, z);
-    const cord = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.6), steel); cord.position.set(0, H - 0.6, z);
-    const pl = new THREE.PointLight(0xffa04a, 22, 9, 2); pl.position.set(0, H - 1.25, z);
-    scene.add(shade, bulb, cord, pl); W.lampLights.push(pl); W.lampMats.push(bulbMat);
-    W.slots.push({ id: `LAMP${W.lampLights.length}`, cat: 'garage', kind: 'cutout', label: 'Hanging work lamp', size: [0.56, 0.3, 0.56], need: 'Cut-out, slightly from below, lit bulb' });
-  }
+    const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.07, 12, 8), bulbMat);
+    const cord = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.6), R.steel);
+    const light = new THREE.PointLight(0xffa04a, 16, 9, 2);
+    scene.add(shade, bulb, cord, light);
+    return { f, shade, bulb, bulbMat, cord, light };
+  });
 
   // the props: a grey block per slot, edges for the wireframe look, a label
-  const mats = {
+  R.mats = {
     music: new THREE.MeshStandardMaterial({ color: 0x6c7192, roughness: 0.72, metalness: 0.1 }),
     garage: new THREE.MeshStandardMaterial({ color: 0x8c7a66, roughness: 0.72, metalness: 0.1 }),
   };
-  const edgeMats = {
+  R.edgeMats = {
     music: new THREE.LineBasicMaterial({ color: new THREE.Color(0.75, 0.55, 1.0), transparent: true, opacity: 0.35, toneMapped: false }),
     garage: new THREE.LineBasicMaterial({ color: new THREE.Color(1.0, 0.6, 0.32), transparent: true, opacity: 0.35, toneMapped: false }),
   };
-  for (const s of slotTable(L.span)) {
-    const geo = new THREE.BoxGeometry(s.d, s.h, s.w);
-    const mesh = new THREE.Mesh(geo, mats[s.cat]);
-    const x = s.side * (Wd / 2 - s.d / 2 - (s.on || 0));
-    const y = s.y ?? s.h / 2;
-    mesh.position.set(x, y, s.z);
-    const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geo), edgeMats[s.cat]);
-    mesh.add(edges);
-    scene.add(mesh); W.props.push(mesh);
-    const lb = labelSprite(`${s.id} · ${s.label}`, s.cat);
-    lb.position.set(x - s.side * 0.35, y + s.h / 2 + 0.22, s.z);
-    scene.add(lb); W.labels.push(lb);
-    W.slots.push({ id: s.id, cat: s.cat, kind: 'cutout', label: s.label, size: [s.w, s.h, s.d], pos: [+x.toFixed(2), +y.toFixed(2), s.z],
-      need: `Cut-out, seen from the aisle (${s.side < 0 ? 'left' : 'right'} wall), transparent background` });
-  }
-  for (const s of endTable()) {
-    const geo = new THREE.BoxGeometry(s.w, s.h, s.d);
-    const mesh = new THREE.Mesh(geo, mats[s.cat]);
-    const y = s.y ?? s.h / 2, z = (s.front || 0) + s.d / 2;
-    mesh.position.set(s.x, y, z);
-    mesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo), edgeMats[s.cat]));
-    scene.add(mesh); W.props.push(mesh);
-    const lb = labelSprite(`${s.id} · ${s.label}`, s.cat); lb.position.set(s.x, y + s.h / 2 + 0.16, z + 0.2); lb.scale.multiplyScalar(0.6);
-    scene.add(lb); W.labels.push(lb);
-    W.slots.push({ id: s.id, cat: s.cat, kind: 'cutout', label: s.label, size: [s.w, s.h, s.d], pos: [s.x, +y.toFixed(2), +z.toFixed(2)],
-      need: 'Cut-out, straight-on from the aisle (the far end), transparent background' });
-  }
-  W.mats = mats; W.edgeMats = edgeMats;
+  const block = (s, w, h, d) => {
+    const geo = new THREE.BoxGeometry(w, h, d), mesh = new THREE.Mesh(geo, R.mats[s.cat]);
+    mesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo), R.edgeMats[s.cat]));
+    scene.add(mesh); return mesh;
+  };
+  R.labels = [];
+  R.props = SIDE.map((s) => { const mesh = block(s, s.d, s.h, s.w), label = labelSprite(`${s.id} · ${s.label}`, s.cat); scene.add(label); R.labels.push(label); return { s, mesh, label }; });
+  R.ends = END.map((s) => { const mesh = block(s, s.w, s.h, s.d), label = labelSprite(`${s.id} · ${s.label}`, s.cat, 0.6); scene.add(label); R.labels.push(label); return { s, mesh, label }; });
 
-  // the car: a JDM coupe parked midway along the right wall, rear to the camera, tail-lights on
-  const car = new THREE.Group(), body = mats.garage;
-  const bx = (w, h, d, x, y, z, m = body) => { const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); b.position.set(x, y, z); b.add(new THREE.LineSegments(new THREE.EdgesGeometry(b.geometry), edgeMats.garage)); car.add(b); return b; };
-  bx(1.85, 0.72, 4.4, 0, 0.56, 0);
-  bx(1.45, 0.5, 2.0, 0, 1.17, 0.25);
+  // the car: a JDM coupe along the right wall, rear to the camera, tail-lights on
+  R.car = new THREE.Group();
+  const bx = (w, h, d, x, y, z) => { const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), R.mats.garage); b.position.set(x, y, z); b.add(new THREE.LineSegments(new THREE.EdgesGeometry(b.geometry), R.edgeMats.garage)); R.car.add(b); };
+  bx(1.85, 0.72, 4.4, 0, 0.56, 0); bx(1.45, 0.5, 2.0, 0, 1.17, 0.25);
   const wheelMat = new THREE.MeshStandardMaterial({ color: 0x1a181c, roughness: 0.8 });
   for (const [wx, wz] of [[-0.86, -1.4], [0.86, -1.4], [-0.86, 1.4], [0.86, 1.4]]) {
-    const wh = new THREE.Mesh(new THREE.CylinderGeometry(0.33, 0.33, 0.24, 20), wheelMat); wh.rotation.z = Math.PI / 2; wh.position.set(wx, 0.33, wz); car.add(wh);
+    const wh = new THREE.Mesh(new THREE.CylinderGeometry(0.33, 0.33, 0.24, 20), wheelMat); wh.rotation.z = Math.PI / 2; wh.position.set(wx, 0.33, wz); R.car.add(wh);
   }
   const tailMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(1.6, 0.12, 0.08), toneMapped: false });
-  for (const tx of [-0.62, 0.62]) { const t = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.09, 0.03), tailMat); t.position.set(tx, 0.74, 2.215); car.add(t); }
-  const carZ = 0.55 * L.span, carX = Wd / 2 - 1.2;
-  car.position.set(carX, 0, carZ); scene.add(car); W.car = car;
-  const tl = new THREE.PointLight(0xff2a1a, 4, 4, 2); tl.position.set(carX, 0.8, carZ + 2.7); scene.add(tl);
-  const clb = labelSprite('CAR · JDM coupe, rear three-quarter', 'garage'); clb.position.set(carX - 0.4, 1.75, carZ + 1.6); scene.add(clb); W.labels.push(clb);
-  W.slots.push({ id: 'CAR', cat: 'garage', kind: 'cutout', label: 'JDM coupe (no badges)', size: [4.4, 1.42, 1.85], pos: [+carX.toFixed(2), 0.71, +carZ.toFixed(2)], need: 'Cut-out, rear three-quarter from the aisle, tail-lights on, transparent background' });
+  for (const tx of [-0.62, 0.62]) { const t = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.09, 0.03), tailMat); t.position.set(tx, 0.74, 2.215); R.car.add(t); }
+  R.tail = new THREE.PointLight(0xff2a1a, 4, 4, 2);
+  R.carLabel = labelSprite('CAR · JDM coupe, rear three-quarter', 'garage'); R.labels.push(R.carLabel);
+  scene.add(R.car, R.tail, R.carLabel);
 
-  // the REVAUDIO neon from the truss over the aisle, about a third of the way in
-  const signZ = 0.62 * L.span;
-  const signMat = new THREE.MeshBasicMaterial({ map: signTex(), transparent: true, depthWrite: false, toneMapped: false, side: THREE.DoubleSide });
-  signMat.userData.base = new THREE.Color(1, 1, 1);
-  const sign = new THREE.Mesh(new THREE.PlaneGeometry(3.1, 0.75), signMat); sign.position.set(0, 3.0, signZ); scene.add(sign);
-  for (const wx of [-1.2, 1.2]) { const w = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, H - 3.4), steel); w.position.set(wx, (H + 3.4) / 2, signZ); scene.add(w); }
-  const sl = new THREE.PointLight(0xff5a2a, 12, 7, 2); sl.position.set(0, 2.6, signZ + 0.3); scene.add(sl);
-  W.sign = { mat: signMat, light: sl };
-  W.slots.push({ id: 'SIGN', cat: 'brand', kind: 'code', label: 'REVAUDIO neon', size: [3.1, 0.75], pos: [0, 3.0, +signZ.toFixed(2)], need: 'Drawn in code (an AI neon word is unreliable), or a neon cut-out' });
+  // the REVAUDIO neon from a truss over the aisle
+  R.signMat = new THREE.MeshBasicMaterial({ map: signTex(), transparent: true, depthWrite: false, toneMapped: false, side: THREE.DoubleSide });
+  R.sign = new THREE.Mesh(new THREE.PlaneGeometry(3.1, 0.75), R.signMat);
+  R.wires = [-1.2, 1.2].map((x) => { const w = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, 1), R.steel); w.userData.x = x; scene.add(w); return w; });
+  R.signLight = new THREE.PointLight(0xff5a2a, 12, 7, 2);
+  scene.add(R.sign, R.signLight);
 
-  // the TV on the end wall: a cabinet, the captured live TV as its face, its amber glow
-  const cabMat = new THREE.MeshStandardMaterial({ color: 0x1c1b1d, roughness: 0.6, metalness: 0.2 });
-  const cab = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), cabMat);
-  const faceMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, toneMapped: false, fog: false });
-  const face = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), faceMat);
-  const lineMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(3, 2.6, 2.2), transparent: true, toneMapped: false, fog: false, depthWrite: false });
-  const line = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), lineMat);
-  const glow = new THREE.PointLight(0xff8a3a, 14, 9, 2);
-  scene.add(cab, face, line, glow);
-  W.tv = { cab, face, faceMat, line, lineMat, glow };
-  W.slots.push({ id: 'TV', cat: 'brand', kind: 'live', label: 'The live TV', size: [S.tvW], need: 'No image: the live site TV' });
-  applyTvTexture();
+  // the TV on the end wall: a cabinet, the captured live TV as its face, its amber glow, the power-on line
+  R.tv = {
+    cab: new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ color: 0x1c1b1d, roughness: 0.6, metalness: 0.2 })),
+    faceMat: new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, toneMapped: false, fog: false }),
+    lineMat: new THREE.MeshBasicMaterial({ color: new THREE.Color(3, 2.6, 2.2), transparent: true, toneMapped: false, fog: false, depthWrite: false }),
+    glow: new THREE.PointLight(0xff8a3a, 14, 9, 2),
+  };
+  R.tv.face = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), R.tv.faceMat);
+  R.tv.line = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), R.tv.lineMat);
+  scene.add(R.tv.cab, R.tv.face, R.tv.line, R.tv.glow);
 
-  // dust in the air
-  const N = 700, pos = new Float32Array(N * 3), seed = new Float32Array(N);
-  for (let i = 0; i < N; i++) { pos[i * 3] = (Math.random() - 0.5) * (Wd - 0.6); pos[i * 3 + 1] = 0.2 + Math.random() * (H - 0.5); pos[i * 3 + 2] = 0.8 + Math.random() * (Lr - 1.3); seed[i] = Math.random() * 6.28; }
-  const dg = new THREE.BufferGeometry(); dg.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-  const dm = new THREE.PointsMaterial({ size: 0.02, color: 0xffd2a8, transparent: true, opacity: 0.55, depthWrite: false, blending: THREE.AdditiveBlending });
-  const dust = new THREE.Points(dg, dm); scene.add(dust);
-  W.dust = { pts: dust, base: pos.slice(), seed, mat: dm };
-
-  applyFlags();
-  placeTv();
-  buildSlots();
+  // dust in the air: fixed positions in room units, so a slider stretches them, never re-scatters them
+  const N = 700, r = rng(7);
+  R.dust = { unit: new Float32Array(N * 3), base: new Float32Array(N * 3), seed: new Float32Array(N) };
+  for (let i = 0; i < N; i++) { R.dust.unit[i * 3] = r(); R.dust.unit[i * 3 + 1] = r(); R.dust.unit[i * 3 + 2] = r(); R.dust.seed[i] = r() * 6.28; }
+  const dg = new THREE.BufferGeometry(); dg.setAttribute('position', new THREE.BufferAttribute(new Float32Array(N * 3), 3));
+  R.dust.mat = new THREE.PointsMaterial({ size: 0.02, color: 0xffd2a8, transparent: true, opacity: 0.55, depthWrite: false, blending: THREE.AdditiveBlending });
+  R.dust.pts = new THREE.Points(dg, R.dust.mat); scene.add(R.dust.pts);
 }
-function applyTvTexture() {
-  if (!W.tv) return;
-  const t = tvTexture();
-  if (!t) return;
-  W.tv.faceMat.map?.dispose?.(); W.tv.faceMat.map = t; W.tv.faceMat.needsUpdate = true;
+
+// ---------- place the room from the settings (cheap: runs on every slider move) ----------
+function arrange() {
+  const Wd = S.roomW, H = S.roomH, Lr = L.roomLen, span = L.span;
+  R.left.scale.set(Lr, H, 1); R.left.position.set(-Wd / 2, H / 2, Lr / 2);
+  R.right.scale.set(Lr, H, 1); R.right.position.set(Wd / 2, H / 2, Lr / 2);
+  R.ceil.scale.set(Wd, Lr, 1); R.ceil.position.set(0, H, Lr / 2);
+  R.end.scale.set(Wd, H, 1); R.end.position.set(0, H / 2, 0);
+  R.near.scale.set(Wd, H, 1); R.near.position.set(0, H / 2, Lr);
+  R.wallMat.map.repeat.set(Lr / 2.5, H / 2.5); R.ceilMat.map.repeat.set(Wd / 2.5, Lr / 2.5);
+  R.endMat.map.repeat.set(Wd / 2.5, H / 2.5); R.nearMat.map.repeat.set(Wd / 2.5, H / 2.5);
+  R.mirror.scale.set(Wd, Lr, 1); R.mirror.position.set(0, 0, Lr / 2);
+  if (R.glazeW !== Wd) { R.glazeMat.map?.dispose?.(); R.glazeMat.map = floorTex(Wd); R.glazeMat.needsUpdate = true; R.glazeW = Wd; }
+  R.glazeMat.map.repeat.set(1, Lr / 8);
+  R.glaze.scale.set(Wd, Lr, 1); R.glaze.position.set(0, 0.003, Lr / 2);
+  R.trusses.forEach((t, i) => { const z = 2 + i * 3.2; t.visible = z < Lr - 0.5; t.scale.x = Wd; t.position.set(0, H - 0.42, z); });
+  for (const n of R.neon) {
+    const x = n.side * Math.min(1.55, Wd / 2 - 0.5);
+    n.tube.scale.y = Lr - 1; n.tube.position.set(x, H - 0.2, Lr / 2);
+    n.lights.forEach((l, i) => l.position.set(x, H - 0.45, (i + 0.5) * Lr / 6));
+  }
+  for (const lp of R.lamps) {
+    const z = lp.f * span;
+    lp.shade.position.set(0, H - 1.0, z); lp.bulb.position.set(0, H - 1.13, z); lp.cord.position.set(0, H - 0.6, z); lp.light.position.set(0, H - 1.25, z);
+  }
+  for (const p of R.props) {
+    const s = p.s, x = s.side * (Wd / 2 - s.d / 2 - (s.on || 0)), y = s.y ?? s.h / 2, z = s.f * span;
+    p.mesh.position.set(x, y, z); p.label.position.set(x - s.side * 0.35, y + s.h / 2 + 0.22, z); p.pos = [x, y, z];
+  }
+  for (const p of R.ends) {
+    const s = p.s, y = s.ty != null ? S.tvY + s.ty : (s.y ?? s.h / 2), z = (s.front || 0) + s.d / 2;
+    p.mesh.position.set(s.x, y, z); p.label.position.set(s.x, y + s.h / 2 + 0.16, z + 0.2); p.pos = [s.x, y, z];
+  }
+  const carZ = 0.55 * span, carX = Wd / 2 - 1.2;
+  R.car.position.set(carX, 0, carZ); R.tail.position.set(carX, 0.8, carZ + 2.7); R.carLabel.position.set(carX - 0.4, 1.75, carZ + 1.6);
+  R.carPos = [carX, 0.71, carZ];
+  const signZ = 0.62 * span, signY = Math.min(3.0, H - 0.95), top = H - 0.42, bottom = signY + 0.36;
+  R.sign.position.set(0, signY, signZ); R.signLight.position.set(0, signY - 0.4, signZ + 0.3); R.signPos = [0, signY, signZ];
+  for (const w of R.wires) { const len = Math.max(0.05, top - bottom); w.scale.y = len; w.position.set(w.userData.x, bottom + len / 2, signZ); }
+  placeTv();
+  const u = R.dust.unit, b = R.dust.base;
+  for (let i = 0; i < R.dust.seed.length; i++) {
+    b[i * 3] = (u[i * 3] - 0.5) * (Wd - 0.6); b[i * 3 + 1] = 0.2 + u[i * 3 + 1] * (H - 0.5); b[i * 3 + 2] = 0.8 + u[i * 3 + 2] * (Lr - 1.3);
+  }
+  if (!$('slotsPanel').hidden) buildSlots();
+}
+function placeTv() {
+  const { tvH, front } = L, t = R.tv;
+  t.cab.scale.set(S.tvW * 0.985, tvH * 0.97, 0.44); t.cab.position.set(0, S.tvY, 0.22);
+  t.face.scale.set(S.tvW, tvH, 1); t.face.position.set(0, S.tvY, front);
+  t.line.position.set(0, S.tvY, front + 0.002);
+  t.glow.position.set(0, S.tvY, 1.5);
 }
 function applyFlags() {
-  if (!W.props) return;
   const wire = !!S.wire;
-  for (const m of Object.values(W.mats)) m.visible = !wire;
-  for (const m of Object.values(W.edgeMats)) { m.opacity = wire ? 1 : 0.35; }
-  W.edgeMats.music.color.setRGB(...(wire ? [1.6, 1.0, 2.6] : [0.75, 0.55, 1.0]));
-  W.edgeMats.garage.color.setRGB(...(wire ? [2.6, 1.4, 0.7] : [1.0, 0.6, 0.32]));
-  for (const s of W.surfaces) s.material.wireframe = wire;
-  for (const lb of W.labels) lb.visible = !!S.labels;
-  W.mirror.visible = !!S.mirror;
+  for (const m of Object.values(R.mats)) m.visible = !wire;
+  for (const m of Object.values(R.edgeMats)) m.opacity = wire ? 1 : 0.35;
+  R.edgeMats.music.color.setRGB(...(wire ? [1.6, 1.0, 2.6] : [0.75, 0.55, 1.0]));
+  R.edgeMats.garage.color.setRGB(...(wire ? [2.6, 1.4, 0.7] : [1.0, 0.6, 0.32]));
+  for (const s of R.surfaces) s.material.wireframe = wire;
+  for (const lb of R.labels) lb.visible = !!S.labels;
+  R.mirror.visible = !!S.mirror;
   document.querySelectorAll('[data-flag]').forEach((b) => b.setAttribute('aria-pressed', S[b.dataset.flag] ? 'true' : 'false'));
 }
 
-// ---------- layout: the camera's start and end are worked out from the screen ----------
-function layout() {
+// ---------- layout ----------
+// resize(): only when the window changes (buffers are re-made here, never on a slider)
+function resize() {
   const vw = innerWidth, vh = innerHeight;
+  L.vw = vw; L.vh = vh;
   const c = pickCap(vw);
   if (c !== cap) {
     cap = c;
     tvImg.src = `assets/tv-${c.tag}.webp`;
-    $('tvLive').src = tvImg.src; $('navImg').src = `assets/nav-${c.navW}.webp`; $('belowImg').src = `assets/below-${c.navW}.webp`;
+    $('tvLive').src = tvImg.src;
+    $('navImg').src = $('stageNavImg').src = `assets/nav-${c.navW}.webp`;
+    $('belowImg').src = `assets/below-${c.navW}.webp`;
   }
-  const navH = cap.nav;
   renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.75));
   renderer.setSize(vw, vh, false); composer.setPixelRatio(renderer.getPixelRatio()); composer.setSize(vw, vh);
-  bloomPass.resolution.set(vw / 2, vh / 2);
-  // a portrait phone sees a narrow slice: a wider lens there, and the start size taken from the TV's height
-  const portrait = vw < vh, lens = S.lens + (portrait ? 18 : 0);
+  const dpr = renderer.getPixelRatio();
+  R.mirror.getRenderTarget().setSize(Math.round(vw * dpr * 0.5), Math.round(vh * dpr * 0.5));
+  layoutCamera(); arrange(); benchFit();
+}
+// layoutCamera(): the camera's start and end, worked out from the screen; the room's length follows the walk
+function layoutCamera() {
+  const { vw, vh } = L, navH = cap.nav;
+  const portrait = vw < vh, lens = S.lens + (portrait ? 18 : 0); // a portrait phone sees a narrow slice: a wider lens there
   camera.fov = lens; camera.aspect = vw / vh; camera.updateProjectionMatrix();
   const tv = Math.tan(THREE.MathUtils.degToRad(lens) / 2), th = tv * vw / vh; // tan of half the vertical / horizontal view
   const aspectTV = vw / (vh - navH), tvH = S.tvW / aspectTV, front = 0.46;
-  const dEnd = (S.tvW / 2) / th;                                    // the TV fills the width at the lock
-  const d0want = portrait ? tvH / ((2 * S.tvStart / 100) * 2 * tv)   // phones: the tall TV is 2 x tvStart % of the height
-    : S.tvW / ((S.tvStart / 100) * 2 * th);                         // ... and is tvStart % of the width on the first screen
-  const d0 = d0want;
-  const roomLen = front + d0 + 1.5;                                // the near wall sits 1.5 m behind the camera
-  const wppEnd = 2 * dEnd * tv / vh;                                // metres per pixel on the TV at the lock
-  Object.assign(L, { vw, vh, navH, tv, th, tvH, front, dEnd, d0, roomLen, span: front + d0 - 4, yEnd: S.tvY + (navH / 2) * wppEnd,
+  const dEnd = (S.tvW / 2) / th;                                       // the TV fills the width at the lock
+  const d0 = portrait ? tvH / ((2 * S.tvStart / 100) * 2 * tv)         // phones: the tall TV is 2 x tvStart % of the height
+    : S.tvW / ((S.tvStart / 100) * 2 * th);                            // laptops: tvStart % of the width on the first screen
+  const roomLen = front + d0 + 1.5;                                    // the near wall sits 1.5 m behind the camera
+  const wppEnd = 2 * dEnd * tv / vh;                                   // metres per pixel on the TV at the lock
+  const oldWalk = L.walkPx;
+  Object.assign(L, { navH, tv, th, tvH, front, dEnd, d0, roomLen, span: front + d0 - 4, yEnd: S.tvY + (navH / 2) * wppEnd,
     startPct: S.tvW / (2 * d0 * th) * 100, walkPx: S.walkLen / 100 * vh });
-  placeTv();
   const root = document.documentElement.style;
-  root.setProperty('--nav-h', navH + 'px'); root.setProperty('--vh', vh + 'px');
+  root.setProperty('--nav-h', navH + 'px'); root.setProperty('--vh', vh + 'px'); root.setProperty('--vw', vw + 'px');
   root.setProperty('--walk-px', L.walkPx + 'px'); root.setProperty('--tv-r', cap.r + 'px');
-  // the big line sits under the TV as seen on the first screen
-  const tvBottomPx = vh / 2 + (tvH / 2) / (L.d0 * tv) * (vh / 2);
+  if (oldWalk && Math.abs(oldWalk - L.walkPx) > 0.5) jumpTo(progress * L.walkPx); // a longer walk keeps the visitor where they stood
+  const tvBottomPx = vh / 2 + (tvH / 2) / (d0 * tv) * (vh / 2);
   $('readB').style.top = Math.min(vh * 0.7, tvBottomPx + vh * 0.04) + 'px';
   $('tuneNote').textContent = `TV on the first screen: ${L.startPct.toFixed(1)} % of the width · room ${roomLen.toFixed(1)} m long · walk ${(d0 - dEnd).toFixed(1)} m`;
 }
-function placeTv() {
-  const { tvH, front } = L;
-  if (W.tv) {
-    W.tv.cab.scale.set(S.tvW * 0.985, tvH * 0.97, 0.44); W.tv.cab.position.set(0, S.tvY, 0.22);
-    W.tv.face.scale.set(S.tvW, tvH, 1); W.tv.face.position.set(0, S.tvY, front);
-    W.tv.line.position.set(0, S.tvY, front + 0.002);
-    W.tv.glow.position.set(0, S.tvY, 1.5);
-  }
+// the bench open: the whole page shrinks into the space beside it
+function benchFit() {
+  const gap = 12, bw = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--bench-w')) || 330;
+  const aw = L.vw - bw - gap * 3, ah = L.vh - gap * 2;
+  const k = Math.max(0.2, Math.min(aw / L.vw, ah / L.vh));
+  const root = document.documentElement.style;
+  root.setProperty('--sk', k.toFixed(4));
+  root.setProperty('--sx', (gap + (aw - L.vw * k) / 2).toFixed(1) + 'px');
+  root.setProperty('--sy', ((L.vh - L.vh * k) / 2).toFixed(1) + 'px');
 }
 
-// ---------- intro + per-frame ----------
+// ---------- intro + per frame ----------
 let t0 = performance.now();
 const INTRO = { neon: [150, 1050], lamps: [450, 1150], sign: [800, 1500], tv: [1250, 1950], read: [1750, 2550] };
 const env = (t, [a, b]) => clamp((t - a) / (b - a));
@@ -516,10 +534,8 @@ function flicker(t, win, salt) {
   const k = env(t, win);
   return k >= 1 ? 1 : k <= 0 ? 0 : (hash(Math.floor(t / 55) + salt) < k * k * 1.2 ? 1 : 0.05);
 }
-let progress = 0, lastFrame = 0;
-const _c = new THREE.Color();
+let progress = 0, walkDrag = false;
 function frame(now) {
-  if (!scene || !W.tv) return;
   const t = now - t0;
   const e = easeIO(clamp(progress), S.ease), far = 1 - e;
   const locked = progress >= 0.999;
@@ -538,33 +554,30 @@ function frame(now) {
   // light: the strips buzz on, the lamps warm up, the sign, then the tube opens
   const hum = 1 + 0.03 * Math.sin(now * 0.004) + (hash(Math.floor(now / 90)) > 0.988 ? -0.3 : 0);
   const neonK = flicker(t, INTRO.neon, 3) * S.neon * hum;
-  for (const m of W.neonMats) m.color.copy(m.userData.base).multiplyScalar(2.6 * neonK);
-  for (const l of W.neonLights) l.intensity = 11 * neonK;
+  for (const n of R.neon) { n.mat.color.copy(n.mat.userData.base).multiplyScalar(2.6 * neonK); for (const l of n.lights) l.intensity = 11 * neonK; }
   const lampK = smooth(0, 1, env(t, INTRO.lamps)) * S.lamps;
-  for (const l of W.lampLights) l.intensity = 16 * lampK;
-  for (const m of W.lampMats) m.color.copy(m.userData.base).multiplyScalar(0.2 + 2.8 * lampK);
+  for (const lp of R.lamps) { lp.light.intensity = 16 * lampK; lp.bulbMat.color.copy(lp.bulbMat.userData.base).multiplyScalar(0.2 + 2.8 * lampK); }
   const signK = flicker(t, INTRO.sign, 11) * hum;
-  W.sign.mat.color.setScalar(0.08 + 1.3 * signK); W.sign.light.intensity = 12 * signK;
+  R.signMat.color.setScalar(0.08 + 1.3 * signK); R.signLight.intensity = 12 * signK;
   const tk = reduced ? 1 : env(t, INTRO.tv), open = smooth(0.18, 0.62, tk);
-  W.tv.faceMat.color.setScalar(locked ? 1 : 0.03 + 0.97 * open);
-  W.tv.glow.intensity = 14 * S.tvGlow * open * (1 + 0.05 * Math.sin(now * 0.0019)) * far;
+  R.tv.faceMat.color.setScalar(locked ? 1 : 0.03 + 0.97 * open);
+  R.tv.glow.intensity = 14 * S.tvGlow * open * (1 + 0.05 * Math.sin(now * 0.0019)) * far;
   const la = tk >= 1 ? 0 : 1 - smooth(0.35, 0.75, tk);
-  W.tv.lineMat.opacity = la;
-  W.tv.line.visible = la > 0.001;
-  W.tv.line.scale.set(S.tvW * clamp(tk / 0.18), 0.006 + L.tvH * open * 0.3, 1);
+  R.tv.lineMat.opacity = la; R.tv.line.visible = la > 0.001;
+  R.tv.line.scale.set(S.tvW * clamp(tk / 0.18), 0.006 + L.tvH * open * 0.3, 1);
 
   // haze, glow and dust leave by the lock so the TV lands clean
   scene.fog.density = S.fog * far;
-  bloomPass.strength = S.bloom * Math.pow(far, 2);
-  W.dust.mat.opacity = 0.55 * S.dust * Math.pow(far, 1.2);
-  if (!reduced && S.dust > 0) {
-    const p = W.dust.pts.geometry.attributes.position, b = W.dust.base, sd = W.dust.seed;
-    for (let i = 0; i < sd.length; i++) {
-      p.array[i * 3] = b[i * 3] + Math.sin(now * 0.00021 + sd[i]) * 0.12;
-      p.array[i * 3 + 1] = b[i * 3 + 1] + Math.sin(now * 0.00017 + sd[i] * 1.7) * 0.08;
-    }
-    p.needsUpdate = true;
+  bloomPass.strength = S.bloom * far * far;
+  R.dust.mat.opacity = 0.55 * S.dust * Math.pow(far, 1.2);
+  R.dust.pts.visible = S.dust > 0;
+  const p = R.dust.pts.geometry.attributes.position, b = R.dust.base, sd = R.dust.seed, mv = reduced ? 0 : 1;
+  for (let i = 0; i < sd.length; i++) {
+    p.array[i * 3] = b[i * 3] + mv * Math.sin(now * 0.00021 + sd[i]) * 0.12;
+    p.array[i * 3 + 1] = b[i * 3 + 1] + mv * Math.sin(now * 0.00017 + sd[i] * 1.7) * 0.08;
+    p.array[i * 3 + 2] = b[i * 3 + 2];
   }
+  p.needsUpdate = true;
 
   // the big line comes in after the tube and leaves as the walk starts
   const rb = $('readB');
@@ -574,9 +587,9 @@ function frame(now) {
     rb.style.opacity = (readIn * leave).toFixed(3);
     rb.style.transform = `translateY(${(1 - readIn) * 14 - (1 - leave) * 24}px)`;
   }
+  if (!walkDrag) { $('walkIn').value = progress; $('walkOut').textContent = Math.round(progress * 100) + ' %'; }
 
-  if (!locked) composer.render();
-  lastFrame = now;
+  if (!locked || document.body.classList.contains('bench-on')) composer.render();
 }
 
 // ---------- scroll: Lenis like the site; a half walk finishes the way the visitor was going ----------
@@ -584,31 +597,35 @@ history.scrollRestoration = 'manual';
 scrollTo(0, 0);
 let lenis = null, lastScrollAt = 0, lastDir = 1, armed = false, touching = false;
 if (window.Lenis && !reduced) lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
+function jumpTo(y) {
+  if (lenis) { lenis.resize(); lenis.scrollTo(y, { immediate: true, force: true }); } else scrollTo(0, y);
+}
 function readScroll() {
   const y = lenis ? lenis.scroll : scrollY, prev = progress;
   progress = clamp(y / L.walkPx);
   if (progress !== prev) { lastDir = progress > prev ? 1 : -1; lastScrollAt = performance.now(); }
   if (progress > 0.01 && performance.now() - t0 < INTRO.read[1]) t0 = performance.now() - INTRO.read[1];
 }
-addEventListener('wheel', () => { armed = true; }, { passive: true });
-addEventListener('touchstart', () => { touching = true; armed = true; }, { passive: true });
+addEventListener('wheel', (ev) => { if (!ev.target.closest('.bench, .slots-panel')) armed = true; }, { passive: true });
+addEventListener('touchstart', (ev) => { if (!ev.target.closest('.bench, .slots-panel')) { touching = true; armed = true; } }, { passive: true });
 addEventListener('touchend', () => { touching = false; lastScrollAt = performance.now(); }, { passive: true });
-addEventListener('keydown', (ev) => { if (['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', ' ', 'Home', 'End'].includes(ev.key)) armed = true; });
+addEventListener('keydown', (ev) => { if (!ev.target.closest('input, select, textarea') && ['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', ' ', 'Home', 'End'].includes(ev.key)) armed = true; });
 const glideTo = (y, dur) => lenis ? lenis.scrollTo(y, { duration: dur, easing: (x) => 1 - Math.pow(1 - x, 4) }) : scrollTo({ top: y, behavior: reduced ? 'auto' : 'smooth' });
 function snapCheck(now) {
-  if (!S.snap || !armed || touching || now - lastScrollAt < 170) return;
+  if (!S.snap || !armed || touching || walkDrag || now - lastScrollAt < 170) return;
   if (progress <= 0.001 || progress >= 0.999) { armed = false; return; }
   const target = (lastDir > 0 ? progress > 0.06 : progress > 0.94) ? 1 : 0;
   armed = false;
   glideTo(target * L.walkPx, 0.8 + 1.0 * Math.abs(target - progress));
 }
-// a click on the far TV walks you there
+// a click on the far TV walks you there (the stage may be shrunk beside the bench)
 const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
 function overTv(ev) {
-  if (!W.tv || progress > 0.6) return false;
-  ndc.set(ev.clientX / innerWidth * 2 - 1, -(ev.clientY / innerHeight) * 2 + 1);
+  if (progress > 0.6) return false;
+  const r = $('stage').getBoundingClientRect();
+  ndc.set((ev.clientX - r.left) / r.width * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1);
   ray.setFromCamera(ndc, camera);
-  return ray.intersectObject(W.tv.face).length > 0;
+  return ray.intersectObject(R.tv.face).length > 0;
 }
 canvas.addEventListener('pointermove', (ev) => canvas.classList.toggle('is-hot', overTv(ev)));
 canvas.addEventListener('click', (ev) => { if (overTv(ev)) glideTo(L.walkPx, 2.4); });
@@ -619,7 +636,7 @@ function raf(now) {
   requestAnimationFrame(raf);
 }
 
-// ---------- panels ----------
+// ---------- the bench ----------
 const SLIDERS = [
   ['The room'],
   ['roomW', 'Width (m)', 4, 10, 0.1], ['roomH', 'Height (m)', 3, 6.5, 0.1],
@@ -633,7 +650,6 @@ const SLIDERS = [
   ['neon', 'Neon strips', 0, 3, 0.05], ['lamps', 'Amber lamps', 0, 3, 0.05], ['tvGlow', 'TV glow', 0, 3, 0.05],
   ['bloom', 'Glow (bloom)', 0, 2.5, 0.05], ['fog', 'Haze', 0, 0.1, 0.002], ['dust', 'Dust', 0, 3, 0.05],
 ];
-let rebuildTimer = 0;
 function buildTune() {
   const body = $('tuneBody'); body.innerHTML = '';
   for (const row of SLIDERS) {
@@ -642,10 +658,8 @@ function buildTune() {
     const l = document.createElement('label');
     l.innerHTML = `<span>${label}</span><output>${S[k]}</output><input type="range" min="${min}" max="${max}" step="${step}" value="${S[k]}">`;
     const inp = l.querySelector('input'), out = l.querySelector('output');
-    inp.addEventListener('input', () => {
-      S[k] = +inp.value; out.textContent = inp.value; save();
-      if (REBUILD.has(k)) { clearTimeout(rebuildTimer); rebuildTimer = setTimeout(rebuild, 120); } else layout();
-    });
+    inp.addEventListener('input', () => { S[k] = +inp.value; out.textContent = inp.value; layoutCamera(); arrange(); });
+    inp.addEventListener('change', save);
     body.appendChild(l);
   }
   const sn = document.createElement('label');
@@ -653,44 +667,74 @@ function buildTune() {
   sn.querySelector('input').addEventListener('change', (ev) => { S.snap = ev.target.checked ? 1 : 0; save(); });
   body.appendChild(sn);
 }
+function setBench(open) {
+  S.bench = open ? 1 : 0; save();
+  document.body.classList.toggle('bench-on', open);
+  $('bench').hidden = !open; $('benchOpen').hidden = open;
+  if (open) { buildTune(); benchFit(); } else $('slotsPanel').hidden = true;
+}
+function slotList() {
+  const out = [
+    { id: 'WALL-L', cat: 'surface', label: 'Left wall strip', size: [L.roomLen, S.roomH], need: 'Seamless straight-on wall strip (brick / concrete with cables, pipes)' },
+    { id: 'WALL-R', cat: 'surface', label: 'Right wall strip', size: [L.roomLen, S.roomH], need: 'Seamless straight-on wall strip' },
+    { id: 'CEIL', cat: 'surface', label: 'Ceiling', size: [S.roomW, L.roomLen], need: 'Seamless ceiling tile (corrugated metal, cable trays)' },
+    { id: 'FLOOR', cat: 'surface', label: 'Floor', size: [S.roomW, L.roomLen], need: 'Seamless glossy concrete tile (stains, oil marks)' },
+    { id: 'END', cat: 'surface', label: 'End wall', size: [S.roomW, S.roomH], need: 'Straight-on end wall behind the TV' },
+  ];
+  for (const p of R.props) out.push({ id: p.s.id, cat: p.s.cat, label: p.s.label, size: [p.s.w, p.s.h, p.s.d], pos: p.pos.map((v) => +v.toFixed(2)),
+    need: `Cut-out, seen from the aisle (${p.s.side < 0 ? 'left' : 'right'} wall), transparent background` });
+  for (const p of R.ends) out.push({ id: p.s.id, cat: p.s.cat, label: p.s.label, size: [p.s.w, p.s.h, p.s.d], pos: p.pos.map((v) => +v.toFixed(2)),
+    need: 'Cut-out, straight-on from the aisle (the far end), transparent background' });
+  R.lamps.forEach((lp, i) => out.push({ id: `LAMP${i + 1}`, cat: 'garage', label: 'Hanging work lamp', size: [0.56, 0.3, 0.56], need: 'Cut-out, slightly from below, lit bulb' }));
+  out.push({ id: 'CAR', cat: 'garage', label: 'JDM coupe (no badges)', size: [4.4, 1.42, 1.85], pos: R.carPos.map((v) => +v.toFixed(2)), need: 'Cut-out, rear three-quarter from the aisle, tail-lights on, transparent background' });
+  out.push({ id: 'SIGN', cat: 'brand', label: 'REVAUDIO neon', size: [3.1, 0.75], pos: R.signPos.map((v) => +v.toFixed(2)), need: 'Drawn in code (an AI neon word is unreliable), or a neon cut-out' });
+  out.push({ id: 'TV', cat: 'brand', label: 'The live TV', size: [S.tvW], need: 'No image: the live site TV' });
+  return out;
+}
 function buildSlots() {
-  const rows = W.slots.map((s) => {
+  const list = slotList();
+  const rows = list.map((s) => {
     const cls = s.cat === 'music' ? 'm' : s.cat === 'garage' ? 'g' : '';
     return `<tr><td class="${cls}">${s.id}</td><td>${s.label}</td><td>${s.size.map((v) => +(+v).toFixed(2)).join(' × ')}</td><td>${s.need}</td></tr>`;
   }).join('');
-  const n = W.slots.filter((s) => s.kind === 'cutout' || s.kind === 'texture').length;
+  const n = list.filter((s) => s.cat !== 'brand').length;
   $('slotsBody').innerHTML = `<div class="note">${n} images to make (cut-outs + surfaces); the sign is code, the TV is live.</div>` +
     `<table class="slots"><thead><tr><th>Slot</th><th>What</th><th>Size (m)</th><th>The image</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
-const togglePanel = (id) => { const p = $(id); p.hidden = !p.hidden; if (!p.hidden && id === 'tune') buildTune(); };
 document.querySelectorAll('[data-flag]').forEach((b) => b.addEventListener('click', () => { const k = b.dataset.flag; S[k] = S[k] ? 0 : 1; save(); applyFlags(); }));
-document.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', () => togglePanel(b.dataset.close)));
-$('btnTune').addEventListener('click', () => togglePanel('tune'));
-$('btnSlots').addEventListener('click', () => togglePanel('slotsPanel'));
-$('btnIntro').addEventListener('click', () => { glideTo(0, 0.01); t0 = performance.now() + 120; });
-$('btnReset').addEventListener('click', () => { Object.assign(S, DEF); save(); rebuild(); buildTune(); });
+$('benchOpen').addEventListener('click', () => setBench(true));
+$('benchClose').addEventListener('click', () => setBench(false));
+$('btnSlots').addEventListener('click', () => { const p = $('slotsPanel'); p.hidden = !p.hidden; if (!p.hidden) buildSlots(); });
+$('btnSlotsClose').addEventListener('click', () => { $('slotsPanel').hidden = true; });
+$('btnIntro').addEventListener('click', () => { jumpTo(0); t0 = performance.now() + 120; });
+$('btnReset').addEventListener('click', () => { Object.assign(S, DEF, { bench: 1 }); save(); layoutCamera(); arrange(); applyFlags(); buildTune(); });
+const walkIn = $('walkIn');
+walkIn.addEventListener('pointerdown', () => { walkDrag = true; armed = false; });
+addEventListener('pointerup', () => { walkDrag = false; });
+walkIn.addEventListener('input', () => { jumpTo(+walkIn.value * L.walkPx); $('walkOut').textContent = Math.round(+walkIn.value * 100) + ' %'; });
 const copy = async (btn, txt, label) => {
   try { await navigator.clipboard.writeText(txt); btn.textContent = 'Copied ✓'; } catch (e) { prompt('Copy:', txt); }
   setTimeout(() => { btn.textContent = label; }, 1600);
 };
-$('btnCopy').addEventListener('click', () => copy($('btnCopy'), JSON.stringify(S, null, 1), 'Copy settings'));
-$('btnCopySlots').addEventListener('click', () => copy($('btnCopySlots'), JSON.stringify(W.slots, null, 1), 'Copy slot list (JSON)'));
+$('btnCopy').addEventListener('click', () => { const { bench, ...rest } = S; copy($('btnCopy'), JSON.stringify(rest, null, 1), 'Copy settings'); });
+$('btnCopySlots').addEventListener('click', () => copy($('btnCopySlots'), JSON.stringify(slotList(), null, 1), 'Copy slot list (JSON)'));
 addEventListener('keydown', (ev) => {
   if (ev.target.closest && ev.target.closest('input, select, textarea')) return;
   const k = ev.key.toLowerCase();
-  if (k === 'h') $('dock').hidden = !$('dock').hidden;
-  if (k === 't') togglePanel('tune');
+  if (k === 't') setBench(!S.bench);
   if (k === 'l') { S.labels = S.labels ? 0 : 1; save(); applyFlags(); }
   if (k === 'w') { S.wire = S.wire ? 0 : 1; save(); applyFlags(); }
 });
 let resizeTimer = 0;
-const rebuild = () => { layout(); build(); };
-addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(rebuild, 150); });
+addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(resize, 120); });
 tvImg.addEventListener('load', applyTvTexture);
 
-// fonts first (the sign and the labels are drawn with them), then the room
+// fonts first (the sign and the labels are drawn with them), then the room, once
 await Promise.race([Promise.all([document.fonts.load('400 64px "Bebas Neue"'), document.fonts.load('600 34px Inter')]), new Promise((r) => setTimeout(r, 1500))]);
-rebuild();
+createRoom();
+resize();
+applyFlags();
+setBench(!!S.bench);
 t0 = performance.now();
 requestAnimationFrame(raf);
 </script>

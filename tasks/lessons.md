@@ -321,3 +321,17 @@ cutting the viewport to the keyboard's leftover (`setViewportSize`), at every ph
   silently does nothing (a click still works). `draggable="false"` + `-webkit-user-drag:none` + a pointercancel handler.
 - Gain ramps scheduled while the AudioContext is still suspended (first click) can be read back mid-ramp (0.65)
   when playback starts. When nothing is playing, set the gain directly (setValueAtTime); ramp only while live.
+
+## 2026-11-02 - a tuning bench must never cover what it tunes, nor rebuild the scene on a slider (`danavivi-7a`)
+
+The long-garage 3D skeleton (`tools/_home-opening/room.html`). Dan: the sliders panel sat over the side of the room
+("I can't see the whole room"), and moving a slider was "a bit glitchy, I can't see in real time what's going on".
+Cause of the second: every room slider rebuilt the whole Three.js scene (disposed and re-made every mesh, light,
+canvas texture and the mirror's render target), debounced 120 ms, so nothing moved while dragging and the
+random-noise textures and dust re-scattered on each rebuild.
+
+Rule: (1) with the bench open, shrink the whole page into the space beside it (one CSS transform on a stage that
+holds the canvas and its overlays; the WebGL buffer keeps its size) and give the bench a Hide button; (2) build a
+scene once and let a slider only re-place it (scale/position in an `arrange()`), re-make GPU buffers only on a window
+resize; seed any random texture or scatter so it never changes under a slider. Checked: a 2 s lens-slider sweep in
+Chromium ran at p95 9.2 ms a frame, max 9.4 ms.
