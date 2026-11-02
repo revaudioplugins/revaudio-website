@@ -14,7 +14,12 @@ Claim: CLOSED 2026-11-02 (`revaudio-3b`'s work merged by `revaudio-0c`; a fine-t
   horizontal scroll, Escape closes, no page errors.
 - Yoni said yes: Dan's 2026-10-06 phone rule (footer min-height = one screen) is dropped in global.css AND its copy in
   DriftStickyBar.astro (/drift). Dan told at merge time (2026-11-02).
-- Merge check (laptop 1, 2026-11-02): `npm run build` green on the merge result before the push.
+- Merge check (laptop 1, 2026-11-02): `npm run build` green on the merge result before the push. Pushed `4067c58..744b240`;
+  Deploy run 41480191165 = success, Smoke test 41480191052 = success; live revaudio.net HTML carries
+  `footer-drawer-0..3`. Not done: phone/desktop eyeball of the live footer; branch `feat/footer-drawers` kept on origin
+  (delete only on the user's word; its worktree is on laptop 2).
+- Loose end (not this session's): untracked root `HANDOFF.md` in the laptop 1 clone = a 2026-09-06 `/gas` session note
+  ("fold into tasks/handoff.md or delete once read"); left untouched, the user decides.
 - Open for fine-tune: drawer direction (up) and speed.
 
 ## 2026-11-02 — Home: TV first, old hero + closing trial section out (Claude Code `revaudio-3d [bbecad]`, laptop 1) — ON MAIN + LIVE (pushed 2026-11-02 on the user's word "Push to main commit and deploy")
