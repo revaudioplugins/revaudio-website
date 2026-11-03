@@ -75,7 +75,19 @@ only after Dan picks: `src/pages/index.astro`, a new `src/components/HomeOpening
   56 credits at medium or 159 at high, one take each. Each batch waits on Dan's yes after its cost (RULE 0).
 - Open with Dan: plan the skins (todo step 1b); a "just got up" cue on the throne (headphones or sticks), offered, not
   answered.
-- Next: Dan walks the film. Then the phone version (a 9:16 film), and weight for the site step (todo 5).
+- Film fixes after Dan's walk (2026-11-03: "a lot of glitches when you move around the walkthrough, like glitches of
+  other scenes, and also the LCD screen is not the same, it's a different LCD screen"). The films were clean (no frame
+  spikes); the glitches were the page: a seeking video reads readyState 1 (30 of 30 scroll frames, measured), the old
+  code hid the film and the smeared painted room flashed through. Now: a film counts as loaded once ('loadeddata');
+  every loaded film sits on its frame for the TV size, the idle one parked on its edge (the switch is the same picture);
+  one seek in flight per film; the zoom and the LCD follow the frame on screen (requestVideoFrameCallback). The LCD: the
+  live capture for the screen (pickCap) rides on the film's TV, tracked every 2nd frame back from each film's last frame
+  (`r` in FILM: centre x, y, width every 4th frame, film px), covering it in the live page's shape and easing onto the
+  live TV's own spot by the lock; the film box is placed in whole pixels. The page opens on the first keyframe as the
+  video's poster (no bare set at load); the big line waits hidden for the script. Checks (real Chrome): wheel down and
+  back up recorded, 0 flashes, 0 frames without a film; the frame before the lock vs the live TV: 0.00 % of pixels at
+  1312x734, 1141x636, 1920x1080 (was 21 % at 1141); no page errors.
+- Next: Dan walks the film again. Then the phone version (a 9:16 film), and weight for the site step (todo 5).
 
 ## 2026-11-02 — Footer: categories fold into drawers (Claude Code `revaudio-3b [a4cb6d]`, laptop 2) — ON MAIN + LIVE: merged `--no-ff` 2026-11-02 by Claude Code `revaudio-0c [571e5c]` (laptop 1) on Dan's word "push it to main and merge" (Yoni had approved by pushing the branch)
 

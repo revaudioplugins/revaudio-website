@@ -43,8 +43,11 @@
   #gl.is-hot { cursor: pointer; }
   body.editing #gl { cursor: grab; }
   body.editing #gl.is-dragging { cursor: grabbing; }
-  .film { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0; pointer-events: none; transform-origin: 50% 52%; }
-  .film.is-on { opacity: 1; }
+  /* the walk film: a 16:9 box covering the stage, its video, and the live LCD tracked onto the film's TV */
+  .film-box { position: absolute; opacity: 0; pointer-events: none; } /* placed in whole pixels by placeFilm */
+  .film-box.is-on { opacity: 1; }
+  .film-box video { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .film-lcd { position: absolute; display: block; }
   /* ?capture: the bare set for the painter, no page chrome */
   body.capture .nav, body.capture .stage-nav, body.capture .read-b, body.capture #benchOpen { display: none !important; }
   .tv-live { position: absolute; left: 0; top: var(--nav-h); width: 100%; height: calc(var(--vh) - var(--nav-h)); display: block;
@@ -52,7 +55,7 @@
   /* fades in (out at once): the film's TV is the 1920 page, the live one follows the screen's own layout */
   .tv-live.is-on { opacity: 1; transition: opacity .45s ease-out; }
 
-  .read-b { position: absolute; left: 0; right: 0; text-align: center; pointer-events: none; padding: 0 16px; }
+  .read-b { position: absolute; left: 0; right: 0; text-align: center; pointer-events: none; padding: 0 16px; opacity: 0; } /* the script fades it in */
   .rb-kick { margin: 0 0 .35em; font: 600 clamp(11px, 1.05vw, 15px)/1 Inter, sans-serif; letter-spacing: .32em; color: var(--brass-bright); }
   .rb-head { margin: 0; font: 400 clamp(54px, 8.6vw, 156px)/.86 "Bebas Neue", sans-serif; letter-spacing: .02em; color: #efe3c6;
     filter: drop-shadow(0 1px 0 rgba(0,0,0,.9)) drop-shadow(0 0 14px rgba(0,0,0,.75)) drop-shadow(0 10px 18px rgba(0,0,0,.6)); }
@@ -507,21 +510,36 @@ const PAINT = {
 // see the room in its best form") ----------
 // The walk is filmed between painted keyframes (Kling 3.0 with a start and an end frame), so every step is one whole
 // picture; the 3D room stays the set the keyframes are painted from. A stretch with no film shows the painted room.
-// Each film's frames are picked by the TV's size, so the TV grows on the walk's own curve whatever pace the model chose.
-// tv = the TV's share of the frame width at every 4th frame, measured (centre crops against the film's first frame early
-// on, its last frame later; the mid keyframe's TV is 0.1175 of the width). The last film ends on the lock: the full width.
+// Each film's frames are picked by the TV's size, so the TV grows on the walk's own curve whatever pace the model chose,
+// and the live LCD is laid over the film's TV (Dan 11-03: the film's TV was "a different LCD screen": a painted copy of
+// the 1920 page). r = the film's TV face every 4th frame: centre x, centre y, width, in film pixels (1920 x 1080; the
+// face is 1920 / 1039, the 1920 page). Tracked back from each film's last frame (the lock: the face fills the width under
+// the nav); where the TV is small the widths come from the zoom measures (the tracker reads ~7 % small there).
 const FILM = {
-  dir: 'assets/skins/default/film/', fps: 24, step: 4,
+  dir: 'assets/skins/default/film/', fps: 24, step: 4, face: 1920 / 1039,
   segs: [
-    { file: 'walk-a', tv: [0.045, 0.045, 0.045, 0.0454, 0.0472, 0.0472, 0.0472, 0.0472, 0.0472, 0.0477, 0.0477, 0.0482, 0.0506,
-      0.0517, 0.0522, 0.0527, 0.0527, 0.0543, 0.0548, 0.0554, 0.0559, 0.0559, 0.0559, 0.0559, 0.057, 0.0576,
-      0.0582, 0.0593, 0.0605, 0.0623, 0.063, 0.063, 0.063, 0.0642, 0.0662, 0.0668, 0.0688, 0.0702, 0.0716,
-      0.0738, 0.076, 0.0775, 0.0791, 0.0815, 0.0831, 0.0848, 0.0873, 0.0891, 0.0917, 0.0936, 0.0954, 0.0983,
-      0.1003, 0.1023, 0.1043, 0.1064, 0.1085, 0.1107, 0.1129, 0.1152, 0.1175] },
-    { file: 'walk-b', tv: [0.1175, 0.1179, 0.1184, 0.1193, 0.1197, 0.1206, 0.1215, 0.1224, 0.1233, 0.1252, 0.1256, 0.128, 0.1304,
-      0.1314, 0.1384, 0.1415, 0.1447, 0.1447, 0.148, 0.1536, 0.1594, 0.1673, 0.1762, 0.1863, 0.2015, 0.2187,
-      0.2347, 0.2401, 0.2499, 0.2655, 0.2819, 0.3117, 0.3588, 0.4048, 0.4567, 0.505, 0.6174, 0.669, 0.7106,
-      0.7548, 0.8017, 0.8515, 0.8864, 0.9228, 0.9415, 0.9606, 0.9801, 1, 1] },
+    { file: 'walk-a', poster: 'assets/skins/default/keys/walk-000.webp', r: [961.1, 536.1, 86.4, 961.1, 536.1, 86.4, 961.1, 536.1, 86.4, 961.1, 536.1, 87.2, 960.8, 535.9, 90.6, 960.5,
+      535.7, 90.6, 960.3, 535.6, 90.6, 960.3, 535.6, 90.6, 960.7, 535.4, 90.6, 961.2, 535.1, 91.6, 961.2, 535.0, 91.6,
+      960.9, 534.8, 92.5, 960.6, 534.3, 97.2, 960.5, 533.8, 99.3, 960.4, 533.6, 100.2, 960.2, 533.2, 101.2, 960.2,
+      533.1, 101.2, 960.5, 532.8, 104.3, 960.8, 532.6, 105.2, 960.7, 532.5, 106.4, 960.9, 532.1, 107.3, 960.8, 531.6,
+      107.3, 960.8, 531.1, 107.3, 960.7, 530.7, 107.3, 960.2, 530.2, 109.4, 959.7, 530.0, 110.6, 959.8, 529.6, 111.7,
+      959.8, 529.2, 113.9, 959.4, 528.5, 116.2, 959.2, 527.9, 119.6, 959.0, 527.1, 121.0, 958.9, 526.3, 121.0, 958.8,
+      525.5, 121.0, 958.9, 525.1, 123.3, 958.8, 524.6, 127.1, 958.5, 524.2, 128.3, 958.1, 524.0, 132.1, 957.9, 523.7,
+      134.8, 957.6, 523.2, 137.5, 957.4, 522.7, 141.7, 957.1, 522.2, 145.9, 956.8, 521.7, 148.8, 956.7, 521.2, 151.9,
+      956.5, 520.8, 156.5, 956.5, 520.2, 159.6, 956.5, 519.3, 162.8, 956.4, 518.4, 167.6, 956.2, 517.4, 171.1, 956.0,
+      516.4, 176.1, 955.8, 515.5, 179.7, 955.6, 514.3, 183.2, 955.5, 513.1, 188.7, 955.5, 511.9, 192.6, 955.4, 510.6,
+      196.4, 955.5, 509.3, 200.3, 955.5, 508.3, 204.3, 955.5, 507.2, 208.3, 955.5, 506.0, 212.5, 955.5, 504.9, 216.8,
+      955.5, 503.9, 221.2, 955.5, 503.3, 225.6] },
+    { file: 'walk-b', r: [955.5, 502.4, 225.6, 955.2, 502.5, 226.4, 954.7, 502.5, 227.3, 954.7, 502.7, 229.1, 955.0, 502.7, 229.8, 955.0,
+      502.7, 231.6, 955.0, 502.9, 233.3, 955.4, 503.2, 235.0, 955.2, 503.5, 236.7, 955.2, 503.7, 240.4, 955.5, 503.9,
+      241.2, 955.5, 504.1, 245.8, 955.4, 504.2, 250.4, 955.3, 504.4, 252.3, 955.0, 504.5, 265.7, 955.0, 504.6, 271.7,
+      955.1, 504.7, 277.8, 954.9, 504.9, 277.8, 954.7, 505.3, 284.2, 954.7, 505.7, 294.9, 954.5, 506.0, 306.0, 954.2,
+      506.3, 321.2, 953.8, 506.9, 338.3, 953.7, 507.3, 357.7, 953.0, 508.3, 386.9, 952.2, 509.6, 416.4, 952.1, 511.1,
+      453.3, 952.6, 512.5, 497.9, 954.5, 514.5, 540.6, 953.1, 515.3, 581.2, 951.4, 515.4, 617.1, 950.5, 518.1, 682.3,
+      958.2, 523.1, 785.5, 955.8, 527.2, 880.9, 955.6, 530.6, 970.3, 955.6, 534.0, 1060.2, 955.6, 536.8, 1154.7,
+      956.3, 539.8, 1251.2, 956.3, 542.6, 1348.0, 956.4, 545.6, 1449.2, 958.2, 548.8, 1539.3, 960.0, 551.5, 1625.1,
+      960.0, 554.3, 1701.9, 960.0, 555.8, 1771.8, 960.0, 557.3, 1818.5, 960.0, 558.9, 1866.5, 960.0, 560.5, 1893.1,
+      960.0, 560.5, 1908.5, 960.0, 560.5, 1920.0] },
   ],
 };
 
@@ -1263,23 +1281,53 @@ function tvShare(p) {
   const w0 = S.tvStart / 100, e = easeIO(clamp(p), S.ease);
   return w0 / ((1 + (w0 - 1) * e) * (1 - S.feel) + Math.pow(w0, e) * S.feel);
 }
-// a film's frame showing the TV at share w or just under (the earliest where it holds still), and that frame's own share
-// (the gap is made up by scaling)
-function filmAt(sg, w) {
-  const v = sg.tv; let i = 0;
-  while (i < v.length - 1 && v[i + 1] < w * (1 - 1e-6)) i++;
-  const f = i < v.length - 1 && v[i + 1] > v[i] ? clamp((w - v[i]) / (v[i + 1] - v[i])) : 0;
-  const frame = Math.floor((i + f) * FILM.step + 1e-6), j = frame / FILM.step, i0 = Math.min(v.length - 1, Math.floor(j)), i1 = Math.min(v.length - 1, i0 + 1);
-  return { t: (frame + 0.5) / FILM.fps, w: v[i0] + (v[i1] - v[i0]) * (j - i0) };
+// a film's TV face at frame n (between samples): centre x, y and width in film pixels
+function filmRect(f, n) {
+  const r = f.r, last = r.length / 3 - 1, k = clamp(n / FILM.step, 0, last), i0 = Math.floor(k), i1 = Math.min(last, i0 + 1), u = k - i0;
+  const at = (j) => r[i0 * 3 + j] + (r[i1 * 3 + j] - r[i0 * 3 + j]) * u;
+  return { cx: at(0), cy: at(1), w: at(2) };
 }
-function initFilm() { // a muted video per stretch, over the 3D room and under the TV, the big line and the nav
+// a film's frame with the TV at share w of the width or just under (the earliest where it holds still); out of the
+// film's stretch, its edge frame toward w
+function filmFrame(f, w) {
+  const n = f.r.length / 3, ws = (i) => f.r[i * 3 + 2] / 1920; let i = 0;
+  while (i < n - 1 && ws(i + 1) < w * (1 - 1e-6)) i++;
+  const u = i < n - 1 && ws(i + 1) > ws(i) ? clamp((w - ws(i)) / (ws(i + 1) - ws(i))) : 0;
+  return Math.floor((i + u) * FILM.step + 1e-6);
+}
+// the shown film at the frame actually on screen: scaled up about its TV the last bit to the walk's TV size (a lagging
+// seek is bridged the same way, at most 25 %); the live LCD over its TV, covering it in the live page's shape and easing
+// onto the live TV's own spot by the lock, so the hand-off is the same picture
+function placeFilm(f, tw) {
+  const rc = filmRect(f, f.shown), e = smooth(0.85, 1, tw);
+  const bw = Math.round(Math.max(L.vw, L.vh * 16 / 9)), bh = Math.round(bw * 9 / 16), k = bw / 1920; // the film covering the stage
+  const bs = f.box.style, bl = Math.round((L.vw - bw) / 2), bt = Math.round((L.vh - bh) / 2);         // whole pixels: no blur on the LCD
+  if (bs.width !== bw + 'px') Object.assign(bs, { width: bw + 'px', height: bh + 'px', left: bl + 'px', top: bt + 'px' });
+  f.box.style.transformOrigin = `${(rc.cx / 19.2).toFixed(3)}% ${(rc.cy / 10.8).toFixed(3)}%`;
+  f.box.style.transform = `scale(${(1 + (clamp(tw * 1920 / rc.w, 1, 1.25) - 1) * (1 - e)).toFixed(4)})`; // none by the lock
+  const [cw, ch] = cap.tag.split('x').map(Number), a = cw / (ch - cap.nav), ow = Math.max(rc.w, rc.w / FILM.face * a), oh = ow / a;
+  const lx = -bl, ly = L.navH - bt;
+  const W = ow * k + (L.vw - ow * k) * e, H = oh * k + (L.vh - L.navH - oh * k) * e;
+  const st = f.lcd.style;
+  st.left = ((rc.cx - ow / 2) * k * (1 - e) + lx * e) + 'px'; st.top = ((rc.cy - oh / 2) * k * (1 - e) + ly * e) + 'px';
+  st.width = W + 'px'; st.height = H + 'px'; st.borderRadius = (cap.r * W / L.vw).toFixed(2) + 'px';
+  if (f.lcd.src !== $('tvLive').src) f.lcd.src = $('tvLive').src;
+}
+function initFilm() { // per film: a 16:9 box over the 3D room (under the TV, the big line and the nav): its video, the live LCD
   R.film = FILM.segs.map((sg) => {
-    const v = Object.assign(document.createElement('video'), { muted: true, playsInline: true, preload: 'auto' });
-    v.className = 'film'; v.setAttribute('aria-hidden', 'true'); $('gl').after(v);
+    const box = document.createElement('div'), v = Object.assign(document.createElement('video'), { muted: true, playsInline: true, preload: 'auto' });
+    if (sg.poster) v.poster = sg.poster; // its first frame as a still until it loads: the page opens on the painting, never the bare set
+    const lcd = Object.assign(document.createElement('img'), { className: 'film-lcd', alt: '', src: $('tvLive').src });
+    box.className = 'film-box'; box.setAttribute('aria-hidden', 'true'); box.append(v, lcd); $('gl').after(box);
+    const f = { ...sg, box, v, lcd, ready: false, want: 0, asked: -1, shown: 0 };
+    v.addEventListener('loadeddata', () => { f.ready = true; });
+    // the frame actually on screen: the zoom and the LCD follow it, never the seek they asked for
+    if (v.requestVideoFrameCallback) { const tick = (now, md) => { f.shown = Math.round(md.mediaTime * FILM.fps); v.requestVideoFrameCallback(tick); }; v.requestVideoFrameCallback(tick); }
+    else v.addEventListener('seeked', () => { f.shown = Math.round(v.currentTime * FILM.fps - 0.5); });
     // whole into memory first: scrubbing seeks every frame, and a blob seeks on any server (python's has no byte ranges)
     fetch(`${FILM.dir}${sg.file}.mp4`).then((r) => (r.ok ? r.blob() : Promise.reject(r.status))).then((bl) => { v.src = URL.createObjectURL(bl); })
       .catch((e) => console.warn('film missing:', sg.file, e));
-    return { ...sg, v };
+    return f;
   });
 }
 function frame(now) {
@@ -1358,18 +1406,18 @@ function frame(now) {
   }
   if (!walkDrag) { $('walkIn').value = progress; $('walkOut').textContent = Math.round(progress * 100) + ' %'; }
 
-  // the film (Film; off while moving things): the frame with the TV at the walk's size, scaled up the last bit about the
-  // TV; the last film whose first frame is not past it. Films still loading leave the painted room
-  const tw = tvShare(progress), films = S.film && !S.edit ? (R.film || []).filter((f) => f.v.readyState >= 2) : [];
-  const sg = films.filter((f) => f.tv[0] <= tw * 1.001).pop() || (films[0]?.tv[0] > tw ? films[0] : null);
-  for (const f of R.film || []) f.v.classList.toggle('is-on', f === sg);
-  if (sg) {
-    const at = filmAt(sg, tw);
-    if (Math.abs(sg.v.currentTime - at.t) > 0.004) sg.v.currentTime = at.t;
-    sg.v.style.transform = `scale(${Math.max(1, tw / at.w).toFixed(4)})`;
-  }
+  // the film (Film; off while moving things). Every loaded film sits on its frame for this TV size, the one not in use
+  // parked on its edge toward it, so a switch is the same picture (Dan 11-03: "glitches of other scenes": a seeking video
+  // read as not ready and let the painted room through). One seek at a time per film, the latest wanted frame next: a
+  // seek asked every frame never lands while the wheel turns
+  const tw = tvShare(progress), films = S.film && !S.edit ? (R.film || []).filter((f) => f.ready) : [];
+  for (const f of films) { f.want = filmFrame(f, tw); if (!f.v.seeking && f.want !== f.asked) { f.asked = f.want; f.v.currentTime = (f.want + 0.5) / FILM.fps; } }
+  const first = R.film?.[0], posterUp = S.film && !S.edit && first?.poster && !first.ready && tw <= first.r[first.r.length - 1] / 1920;
+  R.filmShown = films.filter((f) => f.r[2] / 1920 <= tw * 1.001).pop() || films[0] || (posterUp ? first : null);
+  for (const f of R.film || []) f.box.classList.toggle('is-on', f === R.filmShown);
+  if (R.filmShown) placeFilm(R.filmShown, tw);
   if (R.paintOn && R.shotsStale) { R.shotsStale = false; placeShots(); }
-  if ((!locked || document.body.classList.contains('bench-on')) && !sg) composer.render();
+  if ((!locked || document.body.classList.contains('bench-on')) && !R.filmShown) composer.render();
 }
 
 // ---------- scroll: Lenis like the site; a half walk finishes the way the visitor was going ----------

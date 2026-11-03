@@ -373,3 +373,18 @@ model (Kling 3.0 pro: 17.5 credits / 10 s), and drive the frame by the TV's size
 - A scrubbed video must seek: python's http.server has no byte ranges, so `video.currentTime` snaps back to 0. Load the
   film whole as a blob (fetch -> createObjectURL). Playwright's bundled Chromium has no H.264: test in `channel: 'chrome'`.
 - The hand-off: the film bakes one page size into its last frame; the live TV follows the screen. Fade the live TV in.
+
+## 2026-11-03 - a scrubbed film flickers if visibility follows readyState; the live screen rides on the film (`danavivi-4e`)
+
+Dan, walking the film: "glitches of other scenes" and "it's a different LCD screen". The films had no bad frames; the
+page did it. While a video seeks, readyState reads 1 (every scroll frame, measured), so `readyState >= 2` hid the film
+and the 3D room behind flashed through.
+- Mark a film loaded once ('loadeddata') and never drop it mid-seek. Keep every film on its frame for the position, the
+  idle one parked on its edge toward it, so switching is the same picture. One seek in flight per video (issue the next
+  when `seeking` is false), or a wheel spin aborts every seek and the picture freezes. Drive anything laid over the film
+  from requestVideoFrameCallback's mediaTime (the frame on screen), never the seek you asked for.
+- A film bakes one page size into its TV. Lay the live screen over the film's TV instead, tracked per frame (template
+  match back from the last frame, where its place is known), in the live page's shape, easing onto the live element's
+  own spot at the hand-off. Place the film box in whole pixels: a half-pixel box blurs the overlaid text.
+- Open on the first keyframe (video poster), never on the 3D set; and a `const` named like one already in that function
+  is a SyntaxError that stops the whole module (the walk froze at 0).
