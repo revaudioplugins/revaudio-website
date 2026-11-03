@@ -389,10 +389,13 @@ holds from now on, in Dan's words "everything is dynamic in that room":
 - The bench (`tools/_home-opening/room.html`, T) is its editor: Move things, sliders, the slot list. Anything added
   gets bench controls and lands in the saved / copied settings.
 - Art is painted whole, never collaged (Dan 2026-11-03, on per-slot cut-outs: "it feels like a 2D and it doesn't feel
-  like a whole room ... much more glued and whole, and 3D, and real. Less images"). GPT Image paints the set as the
-  walk sees it from a few spots and each painting is projected back onto the 3D set (the GAS 2 drone's recipe); the
-  live TV, the CRT screens and the posters stay real pixels. A skin is a new set of paintings; moving things means
-  repainting the shots that see them.
+  like a whole room ... much more glued and whole, and 3D, and real. Less images"), and the visitor walks a FILM of it
+  (Dan, same day, on paintings projected back onto the 3D set: "smeared and broken apart while I walk"; "in every step I
+  will see the room in its best form"). GPT Image paints keyframes from the 3D set (the start, mid-walk, the lock = the
+  live TV); a video model films the walk between them (Kling 3.0, start + end frame); scroll picks each frame by the
+  TV's size, so the walk keeps its tuned curve and lands exactly on the live TV. Real pixels win where text matters (the
+  posters are composited into the keyframes; the TV hand-off is live). A skin = new keyframes + new films; the 3D set
+  and the bench stay the source they are painted from.
 
 **Product-page hero = "the readings" (canon: the GAS 2 page, composition 2; Dan 2026-10-23: "I love you
 so much", "this is amazing"; `tools/_gas2-scene/page-b.html` on `feat/gas2-page`).** The vibe to repeat:

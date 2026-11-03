@@ -51,9 +51,21 @@ only after Dan picks: `src/pages/index.astro`, a new `src/components/HomeOpening
   the CRTs M02 / M04 hide while painted (the painter merged P05 into P03's poster and put helmets where P06 hung); the
   CRT screens read better painted. `PAINT.live` / `PAINT.drop` hold the choices; `?live=` tries others, `?expose`
   hands the room to inspection scripts. Checks: no page errors or WebGL warnings; walk 0-100 % re-rendered.
-- Next (waits on Dan's yes, about 17 credits): 4 more shots at about 30 / 45 / 55 / 65 % (14 / 8 / 4.3 / 2.3 m from the
-  TV; the walk moves slowly at first), each painted from the room as it already looks from there (the painted render
-  with the bare set in its holes), so the shots agree.
+- THE WALK IS A FILM now (Dan 2026-11-03, after the projected paintings: "it's still have a smear look ... smeared and
+  broken apart while I walk ... if it will cost credits, it's okay ... in every step I will see the room in its best
+  form. ... the vibe itself is amazing"). Keyframes (`assets/skins/default/keys/`): walk-000 = the first painting with
+  the real posters composited in (homography, lit by the painting); walk-050 = painted by GPT Image 2.5 from the room as
+  already painted at 50 % with the bare set in its holes (4.25 credits); walk-100 = the lock, the live TV as rendered at
+  1920x1080 (no paint). Films (`assets/skins/default/film/`, Kling 3.0 pro, 1080p 24 fps, start + end frame, sound off):
+  walk-a 10 s 000 -> 050 (17.5 credits), walk-b 8 s 050 -> 100 (14 credits; it reaches the lock at 7.8 s). Re-encoded
+  x264 CRF 24, keyframe every 4 frames (SSIM 0.978 / 0.985 to the source; 9.6 + 6.8 MB). `FILM` in room.html: each film's
+  frames are picked by the TV's share of the frame width (`tv` tables measured every 4th frame, centre crops against the
+  film's first frame early, its last frame late), so the TV grows on the walk's tuned curve (`tvShare`) and the frame
+  just under is scaled up the last bit (at most ~3 %). Films load whole as blobs (python's server has no byte ranges, so
+  a plain src never seeks). The live TV fades in at the lock (.45 s): the film's TV is the 1920 page, the live one
+  follows the screen (on 1141 the layouts differ, 21 % of pixels). Bench: Film on/off (off while Move things); stretches
+  with no film show the painted room. Checks: real Chrome (Playwright channel chrome) 1141x636 + 1920x1080, walk 0-100 %:
+  frame 0 at 0, the lock frame at 100 %, no page errors. Credits: 198 left (2026-11-03).
 - Art: Higgsfield had 250 credits (Lite, 2026-11-02); 16.25 spent on 2026-11-03 (the cut-out test 12 + proof shot 1 4.25); the OpenAI key in
   `~/.zsh/openai.zsh` answered "expired" (2026-11-02). Prices (2026-11-03, `get_cost`, nothing submitted): GPT Image
   2.5 with its own transparent background, 2k: 1 credit medium, 2.75 high (1k low 0.25; 4k high 4.25); Seedream 5 Pro
@@ -63,7 +75,7 @@ only after Dan picks: `src/pages/index.astro`, a new `src/components/HomeOpening
   56 credits at medium or 159 at high, one take each. Each batch waits on Dan's yes after its cost (RULE 0).
 - Open with Dan: plan the skins (todo step 1b); a "just got up" cue on the throne (headphones or sticks), offered, not
   answered.
-- Next: Dan's yes on the 4 more shots (above), or notes on the fixes.
+- Next: Dan walks the film. Then the phone version (a 9:16 film), and weight for the site step (todo 5).
 
 ## 2026-11-02 — Footer: categories fold into drawers (Claude Code `revaudio-3b [a4cb6d]`, laptop 2) — ON MAIN + LIVE: merged `--no-ff` 2026-11-02 by Claude Code `revaudio-0c [571e5c]` (laptop 1) on Dan's word "push it to main and merge" (Yoni had approved by pushing the branch)
 

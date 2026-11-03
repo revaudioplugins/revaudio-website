@@ -46,8 +46,9 @@ lock-in hand-off is reused, its room is not. Dan: plan with him first, then one 
       (cut-out, transparent background). Plan + Dan's OK.
 - [ ] 3. The default skin, painted (cost-checked per shot, RULE 0). Cut-out test 2026-11-03 (12 credits) read 2D and
       was dropped. Proof shot 1 done 2026-11-03 (walk 0, 4.25 credits): one real photo to ~20 % of the walk. Next, on
-      Dan's yes: 4 more shots (~30 / 45 / 55 / 65 %, ~17 credits), each painted from the room as it already looks there.
-      Done 2026-11-03 (free): soft hole fill, real posters onto their painted twins, items the painter left out hidden.
+      Dan's yes: 4 more shots. Done 2026-11-03 (free): soft hole fill, real posters onto their painted twins.
+      Then (Dan: projected paintings "smeared and broken apart"; credits OK): the walk became a FILM between painted
+      keyframes (Kling 3.0, 2 films, 35.75 credits), framed by the TV's size. Next: Dan's walk; a 9:16 phone film.
 - [ ] 4. Movement, the readings, the phone version: each planned with Dan first.
 - [ ] 5. Into the site (`index.astro` + a new component, the live TV at the lock, reduced motion, weight), DESIGN.md
       §0 + §7; main only on Dan's word (= live).

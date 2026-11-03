@@ -359,3 +359,17 @@ painter adds (a Marshall script, a drum badge) are cleaned out before the pictur
   onto the painted spot (rays through the painted corners onto its wall, cover-fit), and hide real items the painting
   left out; a real screen floating beside its painted monitor reads worse than the painted one. A flat dark hole reads
   as a missing piece; a soft, darkened blur of the painting reads as shadow.
+
+## 2026-11-03 - a walk through painted projections smears; film it between painted keyframes (`danavivi-4e`)
+
+Projecting one painting (or several) back onto block proxies holds only near the projector: as the camera walks,
+whatever the blocks don't model stretches, splits or goes missing. Dan: "smeared and broken apart while I walk ...
+in every step I will see the room in its best form." Rule: paint keyframes from the 3D set (each new one painted from
+the room as already painted there, so they agree), then film the walk between them with a start + end frame video
+model (Kling 3.0 pro: 17.5 credits / 10 s), and drive the frame by the TV's size, never by time.
+- A model's pace between keyframes is its own (Kling eased in, rushed the last push to the TV, then held). Measure the
+  TV share per frame (centre crops against the first frame early on, the last frame late; each method fails at the
+  other end) and pick frames by it; scale the frame just under up the last few %.
+- A scrubbed video must seek: python's http.server has no byte ranges, so `video.currentTime` snaps back to 0. Load the
+  film whole as a blob (fetch -> createObjectURL). Playwright's bundled Chromium has no H.264: test in `channel: 'chrome'`.
+- The hand-off: the film bakes one page size into its last frame; the live TV follows the screen. Fade the live TV in.
