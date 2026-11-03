@@ -1,4 +1,4 @@
-## 2026-11-03 — Review form: text gate on every open box + role multi-select (Claude Code, laptop 2) — worker DEPLOYED 2026-11-03 (stamp ad6d9f5, live probe: weak caught, 2 roles OK); site COMMITTED, NOT PUSHED (waits for "push")
+## 2026-11-03 — Review form: text gate on every open box + role multi-select (Claude Code, laptop 2) — worker DEPLOYED 2026-11-03 (stamp ad6d9f5, live probe: weak caught, 2 roles OK); site PUSHED TO MAIN on Yoni's "push" 2026-11-03 = LIVE
 
 Claim: CLOSED 2026-11-03. Files: `src/data/review-survey.ts`, `src/pages/review.astro`, `tasks/handoff.md` (this entry).
 - Yoni: every open text box gets the DRIFT beta form's "does this make sense" gate; "Your main role" allows several picks.
