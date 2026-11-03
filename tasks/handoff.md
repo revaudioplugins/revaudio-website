@@ -23,9 +23,10 @@ Claim: CLOSED 2026-11-03. Files: `src/data/review-survey.ts`, `src/pages/review.
   A local `astro preview` may still listen on port 4391 (PID 45496): `Stop-Process -Id 45496`.
 - GAS 2 added to the review picker (Yoni 2026-11-03: released tomorrow, 2026-11-04): `REVIEW_PLUGINS` + the home TV's
   picture and channel colour (14 / 58); picker 5 across, on phones the 5th cube centred under the 2x2. Free = no price
-  question. Worker `70c074b` on RevLimiter main (accepts `gas2`, test passes). Checked locally at 1280x800 + 390x844 (no
+  question. Worker `70c074b` DEPLOYED 2026-11-03 (stamp commit `03b189d`; live probe: a `gas2` review reaches the text gate,
+nothing minted). Checked locally at 1280x800 + 390x844 (no
   sideways scroll; picking GAS 2 opens the form named GAS 2, price question hidden). Deploy the worker BEFORE pushing the
-  site: the live worker answers `gas2` with "bad request".
+  site: the live worker answered `gas2` with "bad request". Site PUSHED TO MAIN on Yoni's "push" 2026-11-03 = LIVE.
 - RevLimiter repo `tasks/handoff.md` NOT updated: the main checkout holds another session's uncommitted edit of it;
   this entry is the record for the worker change.
 
