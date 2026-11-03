@@ -54,6 +54,7 @@ const clientConfig = {
     previewNote: ui.previewNote,
     err: ui.err,
     requiredMissing: ui.requiredMissing,
+    weak: ui.weak,
     sending: ui.sending,
   },
   questions: questions.map((q) => ({
@@ -445,9 +446,13 @@ const clientConfig = {
         } else if (j && j.error === 'already_reviewed') {
           show(t.alreadyReviewed.replace('{p}', pick().name));
         } else if (j && j.error === 'incomplete' && Array.isArray(j.missing)) {
-          // the worker's own check found a gap the page missed: mark it, as the page does
-          j.missing.forEach((id) => document.getElementById('q-' + id)?.classList.add('invalid'));
-          show(t.requiredMissing);
+          // the worker's own check: a gap the page missed, or a filled box that doesn't read like an answer
+          // (a follow-up's id lights up its question's block)
+          const miss = j.missing, weak = Array.isArray(j.weak) ? j.weak : [];
+          const qEl = (id) => document.getElementById('q-' + id) || document.getElementById('reveal-' + id)?.closest('.q');
+          [...miss, ...weak].forEach((id) => qEl(id)?.classList.add('invalid'));
+          show([miss.length && t.requiredMissing, weak.length && t.weak].filter(Boolean).join(' '));
+          qEl(miss[0] || weak[0])?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         } else {
           // a sentence from the worker (bad address, too many from this network) is shown as is; codes are not
           const msg = j && typeof j.error === 'string' && j.error.includes(' ') ? j.error : t.err;

@@ -73,6 +73,8 @@ export const reviewMeta = {
     err: 'Something went wrong. Try again, or email info@revaudio.net.',
     alreadyReviewed: 'You already reviewed {p} with this email. Thank you! Pick another plugin to review it too.',
     requiredMissing: 'Some required questions are unanswered (highlighted).',
+    // the worker's text gate (driftFbTextOk, the DRIFT beta form's): a filled box must read like a real answer
+    weak: "Some answers don't read like a real answer (highlighted). Tell us a bit more, or clear the optional ones.",
     fairness: 'Everyone who finishes gets the code. Your score never changes that.',
   },
 } as const;
@@ -95,9 +97,10 @@ export const questions: Question[] = [
   {
     id: 'role',
     section: 'about',
-    type: 'single',
+    // multi since 2026-11-03 (Yoni: a producer can be a mixing engineer too); the worker still takes an old page's lone string
+    type: 'multi',
     required: true,
-    en: 'Your main role',
+    en: 'Your main role (select all that apply)',
     choices: [
       { code: 'producer', en: 'Producer' },
       { code: 'mixing_engineer', en: 'Mixing engineer' },

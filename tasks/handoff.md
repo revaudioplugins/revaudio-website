@@ -1,3 +1,18 @@
+## 2026-11-03 — Review form: text gate on every open box + role multi-select (Claude Code, laptop 2) — COMMITTED, NOT PUSHED (site push = live deploy, waits for Yoni's word)
+
+Claim: CLOSED 2026-11-03. Files: `src/data/review-survey.ts`, `src/pages/review.astro`, `tasks/handoff.md` (this entry).
+- Yoni: every open text box gets the DRIFT beta form's "does this make sense" gate; "Your main role" allows several picks.
+- Done: worker (RevLimiter repo `ad6d9f5`, on main, NOT deployed) judges every filled box with `driftFbTextOk` and
+  answers `{error:"incomplete", weak:[ids]}`; the gate itself got stricter (keyboard-row runs of 5, 5+ letter words with
+  no vowel, one word 3x). Page: `role` = multi; a `weak` reply lights the boxes (a follow-up lights its question) +
+  `ui.weak` message.
+- ORDER MATTERS: deploy the worker FIRST (`wrangler deploy` from `tools/RevLicenseKeygen/gumroad-worker`), then push
+  the site. The live worker reads `role` as a single pick: the new page's list would come back "unanswered". The new
+  worker still takes an old page's lone string, so worker-first is safe.
+- Checks: `node test/test_review.mjs` all pass (19 new gate checks), `test_drift_feedback.mjs` ALL PASS, 16 real
+  sentences + 9 plugin names not rejected; build green; Chromium: two roles post as a list, a mocked weak reply lights
+  `q-install_result` + `q-loved_most` with the message.
+
 ## 2026-11-03 — GAS + GAS 2 free downloads: the marketing box is REQUIRED (Claude Code, Gil's Mac) — PUSHED TO MAIN on Gil's word "push to main"
 
 - Gil: "I want that checkbox to be mandatory in order to download Gas and Gas 2 both from the LCD and from the product pages".
