@@ -29,7 +29,8 @@ const path = Astro.url.pathname.replace(/\/$/, '');
 // /revfx: one ask too, the trial, and nothing is on sale for a code to discount (2026-10-14).
 // /drift: the season page has ONE ask, the beta (review Decision 17); /drift/feedback: testers mid-form (Dan 10-08).
 // /buy/<slug>: an email buy link lands with the cart open; its one ask is checkout.
-const excluded = path === '/thank-you' || path === '/drift' || path === '/revfx' || path.startsWith('/drift/') || path.startsWith('/buy/');
+// /review: the page's own ask is the review, which earns its own 10% code (2026-11-03).
+const excluded = path === '/thank-you' || path === '/review' || path === '/drift' || path === '/revfx' || path.startsWith('/drift/') || path.startsWith('/buy/');
 ---
 
 {!excluded && (

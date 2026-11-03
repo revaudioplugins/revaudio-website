@@ -80,6 +80,17 @@ export const site = {
   },
 
   /**
+   * Review form (src/pages/review.astro, questions in review-survey.ts). POSTs
+   * the answers to the licence worker's `/review` route, which checks them,
+   * mints the reviewer's ONE 10% site-wide Paddle code (one per email, ever;
+   * 60 days) and emails it. Empty `workerUrl` = preview mode: the page shows
+   * its thank-you screen with a "nothing was sent" note and posts nothing.
+   */
+  review: {
+    workerUrl: '',
+  },
+
+  /**
    * Download email gate — the license worker behind every download popup on
    * the site (TrialGateModal triggers in BuyButton / BuyButtonCrane /
    * CraneDropZone / MobileBuyBar / ExitIntentPopup; TrialPlates
