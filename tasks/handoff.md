@@ -26,8 +26,13 @@ only after Dan picks: `src/pages/index.astro`, a new `src/components/HomeOpening
   laptop: `git fetch origin && git checkout feat/home-opening`.
 - Checks (2026-11-03, `danavivi-4e`, commit `e9bed19`): Chrome 1312x734, walk 60 / 76 / 90 / 100 %: the desk slides out
   under the frame, the stands flank the TV, nothing covers the lock; no console errors on a tracked reload.
-- Art: Higgsfield has 250 credits (Lite, 2026-11-02), none spent; the OpenAI key in `~/.zsh/openai.zsh` answered
-  "expired" (2026-11-02). Each batch waits on the slot plan (todo step 2) and a cost check.
+- Art: Higgsfield has 250 credits (Lite, 2026-11-02), none spent (checked 2026-11-03); the OpenAI key in
+  `~/.zsh/openai.zsh` answered "expired" (2026-11-02). Prices (2026-11-03, `get_cost`, nothing submitted): GPT Image
+  2.5 with its own transparent background, 2k: 1 credit medium, 2.75 high (1k low 0.25; 4k high 4.25); Seedream 5 Pro
+  2k + background removal 2.5; Nano Banana Pro 2k 2 (no transparency). The default skin (Dan 2026-11-03: "make first
+  the default skin") = the room's 71 image slots, 55 unique images when look-alikes share one (3 tool chests, 4
+  guitars -> 2, 4 studio monitors, 2 compressor racks, 4 CRT bodies, 3 lamps, 4 pegboards -> 2, both side walls): about
+  56 credits at medium or 159 at high, one take each. Each batch waits on Dan's yes after its cost (RULE 0).
 - Open with Dan: plan the skins (todo step 1b); a "just got up" cue on the throne (headphones or sticks), offered, not
   answered.
 - Next: Dan's pick: "plan the skins", or the next dressing round on the bench.
