@@ -39,6 +39,7 @@ import { Image, getImage } from 'astro:assets';
 import GarageWall from './GarageWall.astro';
 import rlImg from '../assets/plugins/revlimiter-hero.png';
 import gasImg from '../assets/plugins/gas-hero.png';
+import gas2Img from '../assets/plugins/gas2-hero.jpg';
 import rrImg from '../assets/plugins/radioroulette-hero.png';
 import driftImg from '../assets/showcase/drift-window-init.png';
 import brokenMeta from '../assets/seasons/drift/tv-broken.json';
@@ -134,6 +135,7 @@ const WINDOWS: Record<string, { img: ImageMetadata; portrait?: boolean }> = {
   drift: { img: driftImg },
   revlimiter: { img: rlImg },
   gas: { img: gasImg, portrait: true },
+  gas2: { img: gas2Img, portrait: true },
   'radio-roulette': { img: rrImg },
 };
 type Item = {
@@ -1716,12 +1718,13 @@ const first = items[0]?.slug ?? '';
      changing channels"; his pick: each plugin its own screen colour. Hue +
      saturation (unitless %) from the plugin's own UI: RevLimiter amber (its
      gauge + LCDs; kept well clear of race-red, the homepage's one red is
-     .hh-redline), GAS brass gold, Radio Roulette the dial glass's pale warm
+     .hh-redline), GAS brass gold, GAS 2 its pump's oxide red-orange, Radio Roulette the dial glass's pale warm
      cream, DRIFT violet (its screen stays /drift's own tube). A plugin with no
      channel here plays in neutral cream. */
   .ww {
     --ww-ch-revlimiter-h: 26;      --ww-ch-revlimiter-s: 78;
     --ww-ch-gas-h: 46;             --ww-ch-gas-s: 62;
+    --ww-ch-gas2-h: 14;            --ww-ch-gas2-s: 58;
     --ww-ch-radio-roulette-h: 38;  --ww-ch-radio-roulette-s: 28;
     --ww-ch-drift-h: 280;          --ww-ch-drift-s: 70;
     --ww-on-h: 38;
@@ -1730,10 +1733,12 @@ const first = items[0]?.slug ?? '';
   .ww-panel { --ww-ch-h: 38; --ww-ch-s: 28; }
   .ww-panel[data-ww-panel='revlimiter'] { --ww-ch-h: var(--ww-ch-revlimiter-h); --ww-ch-s: var(--ww-ch-revlimiter-s); }
   .ww-panel[data-ww-panel='gas'] { --ww-ch-h: var(--ww-ch-gas-h); --ww-ch-s: var(--ww-ch-gas-s); }
+  .ww-panel[data-ww-panel='gas2'] { --ww-ch-h: var(--ww-ch-gas2-h); --ww-ch-s: var(--ww-ch-gas2-s); }
   .ww-panel[data-ww-panel='radio-roulette'] { --ww-ch-h: var(--ww-ch-radio-roulette-h); --ww-ch-s: var(--ww-ch-radio-roulette-s); }
   .ww-panel[data-ww-panel='drift'] { --ww-ch-h: var(--ww-ch-drift-h); --ww-ch-s: var(--ww-ch-drift-s); }
   .ww[data-ww-on='revlimiter'] { --ww-on-h: var(--ww-ch-revlimiter-h); --ww-on-s: var(--ww-ch-revlimiter-s); }
   .ww[data-ww-on='gas'] { --ww-on-h: var(--ww-ch-gas-h); --ww-on-s: var(--ww-ch-gas-s); }
+  .ww[data-ww-on='gas2'] { --ww-on-h: var(--ww-ch-gas2-h); --ww-on-s: var(--ww-ch-gas2-s); }
   .ww[data-ww-on='radio-roulette'] { --ww-on-h: var(--ww-ch-radio-roulette-h); --ww-on-s: var(--ww-ch-radio-roulette-s); }
   .ww[data-ww-on='drift'] { --ww-on-h: var(--ww-ch-drift-h); --ww-on-s: var(--ww-ch-drift-s); }
 

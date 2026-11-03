@@ -27,7 +27,7 @@ import { pluginImage } from '../lib/images';
 
 // What the worker's /download/register can send (DL_PLUGINS + DL_PORTAL_ORDER
 // in the licence worker). RevFX joins once revfx.gateWired.
-const DL_SLUGS = ['drift', 'revlimiter', 'gas', 'radio-roulette', ...(revfx.gateWired ? ['revfx'] : [])];
+const DL_SLUGS = ['drift', 'revlimiter', 'gas2', 'gas', 'radio-roulette',...(revfx.gateWired ? ['revfx'] : [])];
 const info = Object.fromEntries(DL_SLUGS.map((slug) => {
   const p = bySlug(slug)!;
   return [slug, { gate: dlGateId(p), name: p.name, free: !!p.isFree, value: trialConversionValueUsd(p) || 0 }];
@@ -140,6 +140,8 @@ const cards = DL_SLUGS.map((slug) => {
       <!-- The plugin's owner's manual, in every state: the worker's /manual/<gate id> (the latest /pit-lane upload),
            listed by its GET /manuals. A plugin with none shows nothing. -->
       <a class="dlp-manual" data-dlp-manual href="#" target="_blank" rel="noopener" hidden>Owner&rsquo;s manual (PDF) &rarr;</a>
+      <!-- The plugin's own page (GAS 2: Dan's station page at /gas2). -->
+      <a class="dlp-manual dlp-page" data-dlp-page href="/"></a>
     </div>
 
     <p class="dlp-foot">
@@ -182,6 +184,7 @@ const cards = DL_SLUGS.map((slug) => {
     const dlErr = $('[data-dlp-dl-err]');
     const mobile = $('[data-dlp-mobile]');
     const manual = $<HTMLAnchorElement>('[data-dlp-manual]');
+    const pageLink = $<HTMLAnchorElement>('[data-dlp-page]');
     let manuals: Record<string, string> = {};
     fetch(worker + '/manuals')
       .then((r) => r.json())
@@ -232,6 +235,8 @@ const cards = DL_SLUGS.map((slug) => {
       const m = manuals[p.gate];
       manual.hidden = !m;
       if (m) manual.href = m;
+      pageLink.href = '/' + slug;
+      pageLink.textContent = p.name + ' page \u2192';
       if (gate) {
         sub.textContent = 'Full version, no key needed. Pick your platform. The installer lands in your browser’s Downloads folder. Grab both if you work on two machines.';
         resetDlButtons();
@@ -658,6 +663,8 @@ const cards = DL_SLUGS.map((slug) => {
 
   .dlp-manual { display: inline-block; margin-top: 1rem; font-size: 0.88rem; color: var(--brass-bright); text-decoration: underline; text-underline-offset: 3px; }
   .dlp-manual[hidden] { display: none; }
+  .dlp-page { margin-left: 1.25rem; }
+  .dlp-manual[hidden] + .dlp-page { margin-left: 0; }
   .dlp-manual:hover { color: var(--fg); }
   .dlp-manual:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 2px; }
 
