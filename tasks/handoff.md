@@ -1,8 +1,8 @@
-## 2026-11-03 — Review form: text gate on every open box + role multi-select (Claude Code, laptop 2) — COMMITTED, NOT PUSHED (site push = live deploy, waits for Yoni's word)
+## 2026-11-03 — Review form: text gate on every open box + role multi-select (Claude Code, laptop 2) — worker DEPLOYED 2026-11-03 (stamp ad6d9f5, live probe: weak caught, 2 roles OK); site COMMITTED, NOT PUSHED (waits for "push")
 
 Claim: CLOSED 2026-11-03. Files: `src/data/review-survey.ts`, `src/pages/review.astro`, `tasks/handoff.md` (this entry).
 - Yoni: every open text box gets the DRIFT beta form's "does this make sense" gate; "Your main role" allows several picks.
-- Done: worker (RevLimiter repo `ad6d9f5`, on main, NOT deployed) judges every filled box with `driftFbTextOk` and
+- Done: worker (RevLimiter repo `ad6d9f5`, deployed, stamp commit `c70614a`) judges every filled box with `driftFbTextOk` and
   answers `{error:"incomplete", weak:[ids]}`; the gate itself got stricter (keyboard-row runs of 5, 5+ letter words with
   no vowel, one word 3x). Page: `role` = multi; a `weak` reply lights the boxes (a follow-up lights its question) +
   `ui.weak` message.
