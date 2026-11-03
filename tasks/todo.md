@@ -44,6 +44,8 @@ lock-in hand-off is reused, its room is not. Dan: plan with him first, then one 
 - [ ] 2. The slot list out of the skeleton: each prop / wall's size, angle and light = its Higgsfield prompt
       (cut-out, transparent background). Plan + Dan's OK.
 - [ ] 3. Higgsfield art per slot, cost-checked per batch (RULE 0), dropped into the skeleton one by one.
+      Default skin first (Dan 2026-11-03). Test round done 2026-11-03 (12 credits): the car, L01, L04, L05 (+ the
+      medium chest on L07, R05 mirrored) in `SKIN`; medium reads like high in the room. Next: the other ~50 images.
 - [ ] 4. Movement, the readings, the phone version: each planned with Dan first.
 - [ ] 5. Into the site (`index.astro` + a new component, the live TV at the lock, reduced motion, weight), DESIGN.md
       §0 + §7; main only on Dan's word (= live).

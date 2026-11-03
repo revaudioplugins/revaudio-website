@@ -26,7 +26,14 @@ only after Dan picks: `src/pages/index.astro`, a new `src/components/HomeOpening
   laptop: `git fetch origin && git checkout feat/home-opening`.
 - Checks (2026-11-03, `danavivi-4e`, commit `e9bed19`): Chrome 1312x734, walk 60 / 76 / 90 / 100 %: the desk slides out
   under the frame, the stands flank the TV, nothing covers the lock; no console errors on a tracked reload.
-- Art: Higgsfield has 250 credits (Lite, 2026-11-02), none spent (checked 2026-11-03); the OpenAI key in
+- Default skin, test round (2026-11-03, Dan: "yes, generate the test"; 12 credits spent, 238 left): GPT Image 2.5,
+  transparent, 2k: the car, pegboard L01, amp stack L04 and tool chest L05 at high, the same chest at medium on L07
+  (beside L05); R05 shares L05's image, mirrored. In the room the medium chest reads the same as the high one, so the
+  rest can go at medium. Built: `SKIN` in `room.html` + `assets/skins/default/*.webp` (edge colours bled into the clear
+  area, cropped, at most 2048 px), a plane inside each slot's block (the block hides, the move tool still grabs it), the
+  bench's Art toggle; a slot's LEDs / VU hide under its art. Checks: Playwright 1141x636, walk 0-55 %, art on / off,
+  no page errors. Weight: about 2.4 MB for the five, so the site step (todo 5) needs smaller files per slot.
+- Art: Higgsfield had 250 credits (Lite, 2026-11-02), none spent before the test round; the OpenAI key in
   `~/.zsh/openai.zsh` answered "expired" (2026-11-02). Prices (2026-11-03, `get_cost`, nothing submitted): GPT Image
   2.5 with its own transparent background, 2k: 1 credit medium, 2.75 high (1k low 0.25; 4k high 4.25); Seedream 5 Pro
   2k + background removal 2.5; Nano Banana Pro 2k 2 (no transparency). The default skin (Dan 2026-11-03: "make first

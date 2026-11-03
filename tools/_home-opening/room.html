@@ -129,6 +129,7 @@
     <button class="chip" data-flag="wire">Neon wireframe</button>
     <button class="chip" data-flag="readB">Big line</button>
     <button class="chip" data-flag="engine">Engine on</button>
+    <button class="chip" data-flag="art">Art</button>
   </div>
   <label class="box"><span>Walk position</span><output id="walkOut">0 %</output><input id="walkIn" type="range" min="0" max="1" step="0.001" value="0"></label>
   <div class="box">
@@ -191,7 +192,7 @@ const DEF = {
   signWall: 'endRight', signF: 0.73, signX: 2.44, signY: 3.32,  // the wall in front of you, top right (Dan 11-03)
   signScale: 1.59, signTilt: 2,          // 50 % bigger, hung a little crooked on two wires (Dan 11-03)
   ver: 6,                                // settings version (5 = Dan's bench of 11-03 baked, 6 = his third, with the pegboard move): 2 moved the sign to the end wall, 3 made it bigger + crooked, 4 took the road off the floor
-  labels: 1, wire: 0, readB: 1, snap: 1, bench: 0, edit: 0,
+  labels: 1, wire: 0, readB: 1, snap: 1, art: 1, bench: 0, edit: 0,  // art: the default skin's images over the blocks
   moves: {},                             // per-object moves from the move tool: { id: { f, x, y, side, s, r } }
 };
 const KEY = 'hoRoom:v1';
@@ -477,6 +478,15 @@ const MONITORS = [
   { id: 'M04', pic: 'scr-radio', label: 'CRT monitor: Radio Roulette', side: 1, f: 0.44, base: 1.9, w: 0.42 },
 ];
 
+// ---------- the default skin: one Higgsfield image per slot, over its grey block (Dan 2026-11-03: "make first the default skin") ----------
+// Standing things are shot three-quarter as if on the left wall (front to the right) and mirrored on the right wall;
+// wall-flat things straight-on; the car side-on, nose right. A slot without art keeps its block; a skin swaps single slots.
+const SKIN = {
+  dir: 'assets/skins/default/',
+  // the test round (11-03, 12 credits): L07 wears the medium-quality chest beside L05's high one; R05 shares L05's, mirrored
+  art: { CAR: 'CAR', L01: 'L01', L04: 'L04', L05: 'L05', L07: 'L05-medium', R05: 'L05' },
+};
+
 // ---------- make the room once ----------
 function createRoom() {
   scene.add(new THREE.HemisphereLight(0x46346e, 0x0b0907, 0.42));
@@ -710,6 +720,23 @@ function createRoom() {
   R.dust.mat = new THREE.PointsMaterial({ size: 0.02, color: 0xffd2a8, transparent: true, opacity: 0.55, depthWrite: false, blending: THREE.AdditiveBlending });
   R.dust.pts = new THREE.Points(dg, R.dust.mat); scene.add(R.dust.pts);
 
+  // the default skin's art (SKIN): a plane inside each slot's block; applyFlags hides the block while the art shows
+  R.hideMat = new THREE.MeshBasicMaterial({ visible: false });
+  const artTex = {};
+  const loadArt = (name) => {
+    const flip = new THREE.Texture(); flip.repeat.x = -1; flip.offset.x = 1; // the right wall's copy, mirrored (one upload)
+    const t = loader.load(`${SKIN.dir}${name}.webp`, (tx) => { flip.source = tx.source; flip.needsUpdate = true; arrange(); });
+    for (const x of [t, flip]) { x.colorSpace = THREE.SRGBColorSpace; x.anisotropy = 8; }
+    t.userData.flip = flip; return t;
+  };
+  for (const [id, name] of Object.entries(SKIN.art)) {
+    const it = R.items.find((x) => x.id === id);
+    if (!it) continue;
+    it.artTex = artTex[name] ||= loadArt(name);
+    it.art = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshStandardMaterial({ map: it.artTex, roughness: 0.85, transparent: true, alphaTest: 0.02 }));
+    it.obj.add(it.art);
+  }
+
   // the move tool's highlight boxes
   R.selBox = new THREE.BoxHelper(undefined, 0xffe08a); R.selBox.material.depthTest = false; R.selBox.material.toneMapped = false; R.selBox.visible = false; R.selBox.renderOrder = 20;
   R.hoverBox = new THREE.BoxHelper(undefined, 0x9c8550); R.hoverBox.material.depthTest = false; R.hoverBox.visible = false; R.hoverBox.renderOrder = 19;
@@ -824,7 +851,7 @@ function arrange() {
   const carZ = S.carZ * span, carX = Wd / 2 + (S.carOut - 0.5) * 4.4;
   const yaw = -Math.PI / 2 + deg(S.carYaw);   // nose to +x: the right wall, the right of the screen
   const lift = S.liftType === 'none' ? 0 : S.liftH;
-  R.car.position.set(carX, lift, carZ); R.car.rotation.y = yaw;
+  R.car.position.set(carX, lift, carZ); R.car.rotation.y = yaw; fitArt(R.carItem);
   for (const g of [R.scissor, R.stands]) { g.position.set(carX, 0, carZ); g.rotation.y = yaw; }
   R.scissor.visible = S.liftType === 'scissor' && lift > 0.01; R.stands.visible = S.liftType === 'stands' && lift > 0.01;
   const armLen = Math.hypot(2.8, lift), ang = Math.atan2(lift, 2.8);
@@ -880,6 +907,17 @@ const inDoor = (z, halfW, bottom) => R.door && z + halfW > R.door.z0 - 0.1 && z 
 // facing: a plane's front is +z; on the left wall it turns to face +x, on the right -x
 const faceFor = (side) => side < 0 ? Math.PI / 2 : side > 0 ? -Math.PI / 2 : 0;
 const signOnEnd = () => S.signWall === 'endLeft' || S.signWall === 'endRight';
+// a slot's art plane, in its block's own units: wall-flat things lie on the wall facing the aisle; standing things face
+// the walk with their wall edge on the wall (mirrored on the right wall); the car's profile lies along its near side
+function fitArt(it) {
+  const p = it.art; if (!p) return;
+  const img = it.artTex.image, s = it.s;
+  if (it.kind === 'car') { const h = 4.4 / (img && img.width ? img.width / img.height : 3.4); p.scale.set(4.4, h, 1); p.position.set(0.95, h / 2, 0); p.rotation.y = Math.PI / 2; return; }
+  const w = s.h * (img && img.width ? img.width / img.height : s.w / s.h), side = it.side, flat = it.mount === 'wall';
+  p.scale.set(w, s.h, 1); p.rotation.y = flat ? faceFor(side) : 0;
+  p.position.set(flat ? -side * (s.d / 2 + 0.004) : side * (s.d / 2 - w / 2), 0, 0);
+  p.material.map = side > 0 && !flat ? it.artTex.userData.flip : it.artTex;
+}
 function placeItem(it) {
   const Wd = S.roomW, span = L.span, ov = S.moves[it.id] || {}, moved = !!S.moves[it.id];
   const k = ov.s ?? 1, turn = deg(ov.r ?? 0), lb = it.label;
@@ -891,6 +929,7 @@ function placeItem(it) {
     // anything on the right wall where the door's opening is steps aside (unless you put it there)
     it.obj.visible = moved || !(side === 1 && inDoor(z, s.w * k / 2, y - s.h * k / 2));
     lb.position.set(x - side * 0.35, y + s.h * k / 2 + 0.22, z);
+    fitArt(it);
   } else if (it.kind === 'end') {
     const s = it.s, y = ov.y ?? (s.ty != null ? S.tvY + s.ty : (s.y ?? s.h / 2)), x = ov.x ?? s.x, z = (s.front || 0) + s.d * k / 2;
     it.obj.position.set(x, y, z); it.obj.scale.setScalar(k); it.obj.rotation.y = (s.toe || 0) + turn;
@@ -980,7 +1019,7 @@ function faceOf(it) {
 function placeLeds() {
   const hosts = R.leds.userData.hosts;
   hosts.forEach((it, hi) => {
-    const f = faceOf(it), vis = it.obj.visible;
+    const f = faceOf(it), vis = it.obj.visible && !it.art?.visible; // a slot's art carries its own lights
     for (let i = 0; i < 8; i++) {
       _p.copy(f.c).addScaledVector(f.ax, (-0.42 + (i % 4) * 0.1) * Math.min(1, f.w)).add(new THREE.Vector3(0, f.h * 0.32 - Math.floor(i / 4) * 0.06, 0));
       _e.set(0, f.rotY, 0); _q.setFromEuler(_e); _s.setScalar(vis ? 1 : 0);
@@ -991,7 +1030,7 @@ function placeLeds() {
   for (const m of R.vus) {
     const it = m.userData.host, f = faceOf(it);
     m.position.copy(f.c).addScaledVector(f.ax, (m.userData.i ? 0.12 : -0.12) * Math.min(1, f.w)).add(new THREE.Vector3(0, -f.h * 0.05, 0));
-    m.rotation.set(0, f.rotY, 0); m.userData.w = Math.min(0.2, f.w * 0.3); m.visible = it.obj.visible;
+    m.rotation.set(0, f.rotY, 0); m.userData.w = Math.min(0.2, f.w * 0.3); m.visible = it.obj.visible && !it.art?.visible;
   }
 }
 function placeMess() {
@@ -1022,6 +1061,16 @@ function applyFlags() {
   R.edgeMats.music.color.setRGB(...(wire ? [1.6, 1.0, 2.6] : [0.75, 0.55, 1.0]));
   R.edgeMats.garage.color.setRGB(...(wire ? [2.6, 1.4, 0.7] : [1.0, 0.6, 0.32]));
   for (const s of R.surfaces) s.material.wireframe = wire;
+  const art = !!S.art && !wire; // the default skin over the blocks (Art); the wireframe shows the bare blocks
+  for (const it of R.items) if (it.art) {
+    it.art.visible = art;
+    for (const m of it.kind === 'car' ? it.obj.children : [it.obj]) {
+      if (m === it.art || !m.isMesh) continue;
+      m.userData.mat ||= m.material; m.material = art ? R.hideMat : m.userData.mat;
+      for (const e of m.children) if (e.isLineSegments) e.visible = !art;
+    }
+  }
+  placeLeds();
   syncLabels();
   const on = !!S.engine; // engine off by default (Dan): dark tail-lights
   R.tailMat.color.setRGB(...(on ? [1.6, 0.12, 0.08] : [0.22, 0.03, 0.03])); R.tail.intensity = on ? 4 : 0;
@@ -1463,10 +1512,10 @@ function buildSlots() {
   const list = slotList();
   const rows = list.map((s) => {
     const cls = s.cat === 'music' ? 'm' : s.cat === 'garage' || s.cat === 'studio' ? 'g' : s.cat === 'pic' ? 'p' : '';
-    return `<tr><td class="${cls}">${s.id}</td><td>${s.label}</td><td>${s.size.map((v) => +(+v).toFixed(2)).join(' × ')}</td><td>${s.need}</td></tr>`;
+    return `<tr><td class="${cls}">${s.id}</td><td>${s.label}</td><td>${s.size.map((v) => +(+v).toFixed(2)).join(' × ')}</td><td>${SKIN.art[s.id] ? `✓ Made (default skin): ${SKIN.art[s.id]}.webp` : s.need}</td></tr>`;
   }).join('');
-  const n = list.filter((s) => s.cat === 'music' || s.cat === 'garage' || s.cat === 'surface').reduce((a, s) => a + (s.id === 'MESS' ? R.messTypes.length : 1), 0);
-  $('slotsBody').innerHTML = `<div class="note">${n} images to make (cut-outs + surfaces); the pictures we already have, the sign and the lights are code, the TV is live.</div>` +
+  const n = list.filter((s) => (s.cat === 'music' || s.cat === 'garage' || s.cat === 'surface') && !SKIN.art[s.id]).reduce((a, s) => a + (s.id === 'MESS' ? R.messTypes.length : 1), 0);
+  $('slotsBody').innerHTML = `<div class="note">${n} images to make, ${Object.keys(SKIN.art).length} made (cut-outs + surfaces); the pictures we already have, the sign and the lights are code, the TV is live.</div>` +
     `<table class="slots"><thead><tr><th>Slot</th><th>What</th><th>Size (m)</th><th>The image</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 document.querySelectorAll('[data-flag]').forEach((b) => b.addEventListener('click', () => {
