@@ -60,34 +60,17 @@ export const site = {
    */
 
   /**
-   * RevLimiter Beta feedback form (src/pages/beta.astro). The form POSTs each
-   * response to a Cloudflare Worker (revlimiter-beta) that stores it in D1 — a
-   * separate worker from the license service. The URL is public by design (it
-   * ships in the page); the worker re-validates the beta code + survey version,
-   * and reads are gated behind a separate admin token the worker never exposes.
-   *
-   * GO-LIVE: deploy the worker (see ~/projects/revaudio/revbeta-dashboard/worker/),
-   * then paste its `/submit` URL below. While `workerUrl` is empty the form shows
-   * an honest "opens shortly" notice and never pretends to capture.
-   *
-   * `betaAccessCode`: shared code printed in the invite email; the form checks it
-   * client-side AND the worker re-checks it server-side. '' disables the gate
-   * (keep it in sync with the worker's BETA_CODE var).
-   */
-  betaFeedback: {
-    workerUrl: 'https://revlimiter-beta.revaudio.workers.dev/submit',
-    betaAccessCode: 'REVBETA',
-  },
-
-  /**
-   * Review form (src/pages/review.astro, questions in review-survey.ts). POSTs
-   * the answers to the licence worker's `/review` route, which checks them,
-   * mints the reviewer's ONE 10% site-wide Paddle code (one per email, ever;
-   * 60 days) and emails it. Empty `workerUrl` = preview mode: the page shows
-   * its thank-you screen with a "nothing was sent" note and posts nothing.
+   * Review form (src/pages/review.astro, questions in review-survey.ts; it
+   * replaced RevBeta 2026-11-03). POSTs the answers to the licence worker's
+   * `/review` route (worker.js handleReview), which checks them against its
+   * REVIEW_Q table (generated from review-survey.ts: change a question there,
+   * regenerate it), mints the reviewer's ONE 10% site-wide Paddle code (one
+   * per email, ever; 60 days) and emails it, never to the page. Empty
+   * `workerUrl` = preview mode: the end screen with a "nothing was sent" note,
+   * no POST.
    */
   review: {
-    workerUrl: '',
+    workerUrl: 'https://revlimiter-license.revaudio.workers.dev/review',
   },
 
   /**

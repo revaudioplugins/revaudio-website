@@ -48,9 +48,11 @@ const clientConfig = {
   words: ratingWords,
   t: {
     thanksBody: ui.thanksBody,
+    thanksPending: ui.thanksPending,
+    thanksHad: ui.thanksHad,
+    alreadyReviewed: ui.alreadyReviewed,
     previewNote: ui.previewNote,
     err: ui.err,
-    already: ui.already,
     requiredMissing: ui.requiredMissing,
     sending: ui.sending,
   },
@@ -362,11 +364,11 @@ const clientConfig = {
       status.hidden = false;
       status.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-    function done(email, preview) {
+    function done(email, preview, body = t.thanksBody) {
       form.hidden = true;
       status.hidden = true;
       const box = document.querySelector('.rv-done');
-      box.querySelector('.rv-done-body').textContent = t.thanksBody.replace('{email}', email);
+      box.querySelector('.rv-done-body').textContent = body.replace('{email}', email);
       const note = box.querySelector('.rv-done-note');
       note.hidden = !preview;
       note.textContent = t.previewNote;
@@ -438,8 +440,19 @@ const clientConfig = {
           body: JSON.stringify(payload),
         });
         const j = await res.json().catch(() => null);
-        if (res.ok && j && j.ok) done(email, false);
-        else show(j && j.already ? t.already : (j && j.error) || t.err);
+        if (res.ok && j && j.ok) {
+          done(email, false, j.had_code ? t.thanksHad : j.pending ? t.thanksPending : t.thanksBody);
+        } else if (j && j.error === 'already_reviewed') {
+          show(t.alreadyReviewed.replace('{p}', pick().name));
+        } else if (j && j.error === 'incomplete' && Array.isArray(j.missing)) {
+          // the worker's own check found a gap the page missed: mark it, as the page does
+          j.missing.forEach((id) => document.getElementById('q-' + id)?.classList.add('invalid'));
+          show(t.requiredMissing);
+        } else {
+          // a sentence from the worker (bad address, too many from this network) is shown as is; codes are not
+          const msg = j && typeof j.error === 'string' && j.error.includes(' ') ? j.error : t.err;
+          show(msg);
+        }
       } catch {
         show(t.err);
       } finally {
