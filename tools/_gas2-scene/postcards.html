@@ -621,7 +621,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
             <label for="em"><span>TO</span><input id="em" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" enterkeyhint="send" placeholder="your email" required></label>
             <p class="err" id="err" role="alert" hidden>That email looks off. Check it and try again.</p>
           </div>
-          <label class="opt"><input type="checkbox" id="mk" name="marketing"><i class="tick" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 13l5 5L21 4"/></svg></i><span>Also send me new-plugin drops and demo codes (optional)</span></label>
+          <label class="opt"><input type="checkbox" id="mk" name="marketing"><i class="tick" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 13l5 5L21 4"/></svg></i><span>Send me new-plugin drops and demo codes</span></label><!-- required: Gil 2026-11-03 -->
           <button class="send" type="submit" aria-label="Email me the download files"><span class="ink" aria-hidden="true"><span class="s1">RevAudio station</span><span class="s2">Email me the download files</span><span class="s3" id="sdate">★ Free ★</span></span></button>
         </form>
         <i class="age" aria-hidden="true"></i>
@@ -1207,7 +1207,9 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   function posting() { return send.disabled && cur === N - 1; }  // stamped, on its way into the box: the stack holds still
   const replay = (el, cls) => { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); };
   $('sdate').textContent = `★ ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })} ★`;   // the dater: today
+  const errText = err.textContent;
   em.addEventListener('input', () => { err.hidden = true; });
+  $('mk').addEventListener('change', () => { err.hidden = true; });
   // typing the address (Dan, 2026-10-30, on his iPhone: the keyboard shrank the card to half and the tick line ran into the
   // stamp; his pick: "the card slides up"): the card keeps its size and slides up till the TO line, the tick box and the
   // stamp sit just over the keys; ‹ › and the mailbox step aside till the keyboard goes
@@ -1234,7 +1236,8 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     e.preventDefault();
     if (send.disabled) return;
     const v = em.value.trim();
-    if (!v || !em.checkValidity()) { err.hidden = false; replay(send, 'nope'); em.focus(); return; }
+    if (!v || !em.checkValidity()) { err.textContent = errText; err.hidden = false; replay(send, 'nope'); em.focus(); return; }
+    if (!$('mk').checked) { err.textContent = 'Tick the box to get the download files.'; err.hidden = false; replay(send, 'nope'); return; }
     em.blur();
     mailing = register(v);                                       // posted now; the end page reads the answer
     send.disabled = true; replay(send, 'thump'); replay(cards[N - 1], 'jolt');   // the stamp comes down, the ink takes

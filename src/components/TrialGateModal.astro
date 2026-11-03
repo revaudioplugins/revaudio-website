@@ -67,8 +67,10 @@ const gateNames = Object.fromEntries(plugins.map((p) => [dlGateId(p), p.name]));
     </label>
     <!-- honeypot: real users never fill this; bots do -->
     <input type="text" name="_gotcha" class="tg-hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
-    <!-- Marketing consent: UNCHECKED by default (Soundtoys pattern) — the
-         download never depends on it; ticking it is a real, separate yes.
+    <!-- Marketing consent: UNCHECKED by default (Soundtoys pattern). A paid
+         trial never depends on it; the FREE downloads (GAS, GAS 2) require it
+         (Gil 2026-11-03: "mandatory in order to download Gas and Gas 2"), so
+         open() makes it required and drops "(optional)" for them.
          Posted as {marketing}; the license worker stores it with this exact
          wording (MARKETING_CONSENT_TEXT in worker.js), so change both together.
          The notice under it tells people about the service emails before the
@@ -76,7 +78,7 @@ const gateNames = Object.fromEntries(plugins.map((p) => [dlGateId(p), p.name]));
     <div class="tg-consent-block">
       <label class="tg-consent">
         <input type="checkbox" data-tg-consent />
-        <span>Also send me new-plugin drops and demo codes (optional)</span>
+        <span data-tg-consent-text>Also send me new-plugin drops and demo codes (optional)</span>
       </label>
       <p class="tg-notice" data-tg-notice>We'll send a few short emails about getting started, and a heads-up before a trial ends. Unsubscribe anytime.</p>
     </div>
@@ -117,6 +119,9 @@ const gateNames = Object.fromEntries(plugins.map((p) => [dlGateId(p), p.name]));
     var email = modal.querySelector('[data-tg-email]');
     var submit = modal.querySelector('[data-tg-submit]');
     var notice = modal.querySelector('[data-tg-notice]');
+    var consentBox = modal.querySelector('[data-tg-consent]');
+    var consentText = modal.querySelector('[data-tg-consent-text]');
+    consentBox.addEventListener('change', function () { if (consentBox.checked) err.textContent = ''; });
     var err = modal.querySelector('[data-tg-err]');
     var status = modal.querySelector('[data-tg-status]');
     var ready = modal.querySelector('[data-tg-ready]');
@@ -185,6 +190,12 @@ const gateNames = Object.fromEntries(plugins.map((p) => [dlGateId(p), p.name]));
         ? 'Free forever. Full version, no trial clock, no credit card. Enter your email and your download link lands in your inbox.'
         : 'Download 30 days free first, full version, no credit card. Enter your email and your download link lands in your inbox.';
       // a free download has no trial to end
+      // the free downloads need the marketing yes (Gil 2026-11-03); a paid trial keeps it optional
+      consentBox.required = free;
+      consentBox.checked = false;
+      consentText.textContent = free
+        ? 'Send me new-plugin drops and demo codes'
+        : 'Also send me new-plugin drops and demo codes (optional)';
       notice.textContent = free
         ? "We'll send a few short emails about getting started. Unsubscribe anytime."
         : "We'll send a few short emails about getting started, and a heads-up before a trial ends. Unsubscribe anytime.";
@@ -263,6 +274,11 @@ const gateNames = Object.fromEntries(plugins.map((p) => [dlGateId(p), p.name]));
         email.focus();
         return;
       }
+      if (consentBox.required && !consentBox.checked) {
+        err.textContent = 'Tick the box to get your download.';
+        consentBox.focus();
+        return;
+      }
       if (!registerUrl) {
         err.textContent = '';
         form.hidden = true;
@@ -273,7 +289,7 @@ const gateNames = Object.fromEntries(plugins.map((p) => [dlGateId(p), p.name]));
       inFlight = true;
       submit.disabled = true;
       err.textContent = '';
-      var consent = modal.querySelector('[data-tg-consent]');
+      var consent = consentBox;
       // How the person reached us (Cart.astro's 'ra-src' note: channel +
       // campaign / referring host, no click ids), stored on the trial lead.
       var regBody = { email: v, plugin: pluginSlug, marketing: !!(consent && consent.checked) };

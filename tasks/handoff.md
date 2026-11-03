@@ -1,3 +1,16 @@
+## 2026-11-03 — GAS + GAS 2 free downloads: the marketing box is REQUIRED (Claude Code, Gil's Mac) — PUSHED TO MAIN on Gil's word "push to main"
+
+- Gil: "I want that checkbox to be mandatory in order to download Gas and Gas 2 both from the LCD and from the product pages".
+- TrialGateModal: a free download (`data-gate-free` = GAS, GAS 2: the TV + /gas) makes the box required, label without
+  "(optional)"; unticked = "Tick the box to get your download.", nothing posted. Paid trials unchanged (optional).
+  /gas2 laptop ticket: `required` (the browser's check, as Terms); /gas2 phone postcard: its own check + error line.
+  Dan's files (`page-b.html`, `postcards.html`) touched only on those lines.
+- Not changed: /downloads (still optional there; Gil to say). The worker's MARKETING_CONSENT_TEXT still stores
+  "... (optional)" (RevLimiter repo, not touched). Gil told: GDPR treats consent made a condition of a download as not
+  freely given (EU leads' marketing consent is weak); his call.
+- Checks: build green; Chromium, worker stubbed: unticked = 0 posts on all 3 forms, ticked = marketing:true; RevLimiter
+  trial still posts unticked.
+
 ## 2026-11-03 — GAS 2 on the site: downloads card, home TV, Dan's page at /gas2 (Claude Code, Gil's Mac) — PUSHED TO MAIN on Gil's word "push and deploy to main"
 
 - Gil: GAS 2 as a card on /downloads and on the home TV (All, its categories), each linking to Dan's GAS 2 page.
