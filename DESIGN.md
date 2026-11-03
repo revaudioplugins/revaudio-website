@@ -91,6 +91,13 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
 - Garage wall (`GarageWall.astro`): `wall-wood.png` tile 512px, brass rail `wall-rail.png` top +
   bottom (`--rail-h` 30px, 22px at 480px and below), rail cast shadow, `data-drift-y` 24px parallax
   on the wood, warm top light + 38% scrim. Same wall as the product pages' `.garage-wall`.
+- Review TV (`<WordWall mode="review" />` on `/review`, Yoni 2026-11-03: "the exact behaviour, including the
+  panels and all"). The home TV itself as the review page's plugin picker, never a look-alike: same set, glass,
+  channels, glitches, panels, phone panes. Differences only: no categories; a laptop's mouse resting on a plugin
+  tunes it in (70 ms rest, the SKIM rule for a sweep); the panel's buy row is one "Review <plugin>" button; no
+  scroll lock or `/#plugins` glide; list thumbnails whole (no 16:10 crop: Yoni, "make sure pictures are not
+  cut"); Radio Roulette's window is `radioroulette-hero-cut.png`, cut along its chrome (fitted superellipse
+  corners, transparent outside; Yoni: "crop it precisely"), its edge glow as drop-shadow filters on the shape.
 - Plugin TV (`WordWall.astro`, `#plugins`; branch feat/home-library, built 2026-10-18; the user: switching
   between the plugins lives in the TV, only there, only on home). One broken CRT set on the garage wall
   (Dan 2026-10-14: "every plugin on the TV, only the screen changes, like changing channels"). The

@@ -57,7 +57,6 @@ export const reviewMeta = {
     title: 'Review a plugin',
     intro:
       'Tell us how it really went, good and bad. Finish the review and we email you a 10% code for any RevAudio plugin. About 4 minutes.',
-    pickTitle: 'Pick your plugin',
     required: 'required',
     optional: 'optional',
     other: 'Other',

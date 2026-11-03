@@ -1,10 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { Image } from 'astro:assets';
-import rlImg from '../assets/plugins/revlimiter-hero.png';
-import gasImg from '../assets/plugins/gas-hero.png';
-import rrImg from '../assets/plugins/radioroulette-hero.png';
-import driftImg from '../assets/showcase/drift-window-init.png';
+import WordWall from '../components/WordWall.astro';
 import { site } from '../data/site';
 import { plugins, fmtPrice } from '../data/plugins';
 import { tvName } from '../data/library';
@@ -12,20 +8,12 @@ import { sections, questions, reviewMeta, ratingWords, REVIEW_PLUGINS } from '..
 
 const ui = reviewMeta.ui;
 
-// The plugin windows, the same pictures the home TV shows (WordWall.astro).
-const WINDOWS: Record<string, { img: ImageMetadata; portrait?: boolean }> = {
-  revlimiter: { img: rlImg },
-  drift: { img: driftImg },
-  'radio-roulette': { img: rrImg },
-  gas: { img: gasImg, portrait: true },
-};
-
 const picks = REVIEW_PLUGINS.map((slug) => {
   const p = plugins.find((x) => x.slug === slug);
   if (!p) throw new Error(`review: no plugin "${slug}" in plugins.ts`);
   // a price only when it sells today (DRIFT's free beta and GAS have none, so the price question is skipped)
   const price = p.status === 'live' && !p.isFree && p.introPriceUsd != null ? fmtPrice(p.introPriceUsd) : '';
-  return { slug, name: tvName(p), type: p.library?.typeWord ?? '', price, ...WINDOWS[slug] };
+  return { slug, name: tvName(p), price };
 });
 
 // `{p}` = the picked plugin's name, `{price}` = its price: the script fills both in
@@ -57,45 +45,34 @@ const clientConfig = {
 ---
 
 <BaseLayout title="Review a Plugin" description="Review a RevAudio plugin and get a 10% code for any plugin." index={false}>
-  <div class="rv-wrap">
+  <header class="rv-head container">
+    <h1 class="rv-title">{ui.title}</h1>
+    <p class="rv-intro">{ui.intro}</p>
+  </header>
+
+  {/* the picker: the home TV itself (WordWall mode="review"): hover a plugin to tune it in, "Review <plugin>" picks */}
+  <WordWall mode="review" />
+  <noscript><p class="rv-intro container">This form needs JavaScript. Or email your review to info@revaudio.net.</p></noscript>
+
+  <div class="rv-wrap" id="rv-form-wrap" hidden>
     <div class="container">
       <div id="review-root" class="rv-card">
-        <h1 class="rv-title">{ui.title}</h1>
-        <p class="rv-intro">{ui.intro}</p>
-
         <form id="rv-form" novalidate>
           <!-- honeypot: real users never fill this; bots do -->
           <input type="text" name="_gotcha" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
 
-          {/* ── step 0: the plugin ── */}
-          <section class="sec pick-sec" id="q-plugin">
-            {/* the home TV's look (WordWall.astro): bezel, phosphor glass in the picked plugin's channel colour,
-                scanlines, stencil names that fill and glow when lit */}
-            <div class="tv">
-              <div class="tv-glass">
-                <h2 class="tv-title" id="pick-title">{ui.pickTitle} <span aria-hidden="true">&#9656;</span></h2>
-                <div class="picks" role="radiogroup" aria-labelledby="pick-title">
-                  {picks.map((p) => (
-                    <label class="pick">
-                      <input class="vh" type="radio" name="plugin" value={p.slug} />
-                      <span class="pick-img" aria-hidden="true">
-                        <Image src={p.img} alt="" width={p.portrait ? 160 : 360} widths={p.portrait ? [80, 160] : [180, 360]} sizes={p.portrait ? '80px' : '(max-width: 640px) 40vw, 170px'} format="webp" quality={80} />
-                      </span>
-                      <span class="pick-name">{p.name}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            </div>
-            <noscript><p class="q-help">This form needs JavaScript. Or email your review to info@revaudio.net.</p></noscript>
-          </section>
+          {/* the pick, set by the TV (ww:review): the form reads it like any answer */}
+          <fieldset class="vh" id="q-plugin" aria-hidden="true">
+            {picks.map((p) => <input type="radio" name="plugin" value={p.slug} tabindex="-1" />)}
+          </fieldset>
 
           {/* ── the rest opens once a plugin is picked ── */}
           <div class="after-pick" hidden>
-            <div class="rv-progress" aria-hidden="true">
-              <span class="rv-progress-name" data-pn>the plugin</span>
-              <span class="rv-progress-bar"><span class="rv-progress-fill"></span></span>
-              <span class="rv-progress-count">0 / 0</span>
+            <div class="rv-progress">
+              <span class="rv-progress-name" data-pn aria-hidden="true">the plugin</span>
+              <span class="rv-progress-bar" aria-hidden="true"><span class="rv-progress-fill"></span></span>
+              <span class="rv-progress-count" aria-hidden="true">0 / 0</span>
+              <button type="button" class="rv-change" data-rv-change>Change</button>
             </div>
 
             {sections.map((sec, si) => (
@@ -255,6 +232,7 @@ const clientConfig = {
     const form = document.getElementById('rv-form');
     const status = document.querySelector('.rv-status');
     const after = form.querySelector('.after-pick');
+    const wrap = document.getElementById('rv-form-wrap');
     const t = CFG.t;
     const wired = !!CFG.workerUrl;
     const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -291,13 +269,21 @@ const clientConfig = {
         document.querySelectorAll('[data-pn]').forEach((el) => (el.textContent = p.name));
         document.querySelectorAll('[data-price]').forEach((el) => (el.textContent = p.price));
         form.querySelectorAll('[data-paid-only]').forEach((el) => (el.hidden = !p.price));
-        document.getElementById('q-plugin').classList.remove('invalid');
-        const first = after.hidden;
         after.hidden = false;
+        wrap.hidden = false;
         progress();
-        if (first) after.querySelector('.sec')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }),
     );
+    document.addEventListener('ww:review', (e) => {
+      const r = form.querySelector(`input[name="plugin"][value="${e.detail?.slug}"]`);
+      if (!r) return;
+      r.checked = true;
+      r.dispatchEvent(new Event('change'));
+    });
+    // "Change": back up to the TV
+    form.querySelector('[data-rv-change]')?.addEventListener('click', () =>
+      document.getElementById('review-tv')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
 
     // ── reveals: "other" + follow-ups ─────────────────────────────────────
     const revealers = {};
@@ -379,10 +365,7 @@ const clientConfig = {
       // honeypot: pretend it worked, send nothing
       if (form.querySelector('[name="_gotcha"]').value) return done(email, false);
 
-      if (!pick()) {
-        document.getElementById('q-plugin').classList.add('invalid');
-        return show(t.requiredMissing);
-      }
+      if (!pick()) return; // the form shows only after a pick
       const missing = CFG.questions.filter((q) => q.required && live(q) && !answered(q));
       if (missing.length) {
         missing.forEach((q) => document.getElementById('q-' + q.id)?.classList.add('invalid'));
@@ -445,9 +428,15 @@ const clientConfig = {
   </script>
 
   <style>
+    .rv-head {
+      text-align: center;
+      padding-top: calc(var(--nav-h) + var(--sale-h) + clamp(1.5rem, 4vw, 2.75rem));
+      padding-bottom: clamp(0.25rem, 1.5vw, 0.75rem);
+    }
+    .rv-head .rv-intro { margin-inline: auto; }
     .rv-wrap {
-      padding-block: clamp(1.5rem, 4vw, 3rem) clamp(3rem, 8vw, 5rem);
-      padding-top: calc(var(--nav-h) + var(--sale-h) + clamp(1.5rem, 4vw, 3rem));
+      padding-block: clamp(2rem, 5vw, 3.5rem) clamp(3rem, 8vw, 5rem);
+      scroll-margin-top: calc(var(--nav-h) + var(--sale-h));
     }
     .rv-card {
       max-width: 760px;
@@ -484,119 +473,6 @@ const clientConfig = {
     .sec-n { font-family: var(--font-mono); font-size: 0.75rem; color: var(--fg-faint); letter-spacing: 0.08em; }
     .sec-n::before { content: '0'; }
 
-    /* ── plugin picker: a TV screen (colours and glow from WordWall.astro's channel tokens) ── */
-    .tv {
-      --h: 38;
-      --s: 28;
-      --gs: min(100%, calc(var(--s) * 1% + 20%));
-      --ink: hsl(var(--h) min(100%, calc(var(--s) * 1% + 25%)) 66%);
-      --ink-hot: hsl(var(--h) min(100%, calc(var(--s) * 1% + 30%)) 74%);
-      --ink-text: hsl(var(--h) 35% 90%);
-      --glow: hsl(var(--h) var(--gs) 58% / 0.45);
-      --glow-hot: hsl(var(--h) var(--gs) 58% / 0.6);
-      --glow-soft: hsl(var(--h) var(--gs) 58% / 0.3);
-      --edge: hsl(var(--h) var(--gs) 58% / 0.35);
-      padding: 10px;
-      border-radius: 20px;
-      background: linear-gradient(180deg, #24201c, #100e0c);
-      box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.07),
-        inset 0 -1px 0 rgba(0, 0, 0, 0.6),
-        0 20px 40px -22px rgba(0, 0, 0, 0.9);
-    }
-    /* the channel follows the pick, as on the home TV */
-    .tv:has(input[value='revlimiter']:checked) { --h: 26; --s: 78; }
-    .tv:has(input[value='gas']:checked) { --h: 46; --s: 62; }
-    .tv:has(input[value='radio-roulette']:checked) { --h: 38; --s: 28; }
-    .tv:has(input[value='drift']:checked) { --h: 280; --s: 70; }
-    .tv-glass {
-      position: relative;
-      isolation: isolate;
-      overflow: hidden;
-      border-radius: 12px;
-      padding: clamp(1.1rem, 3vw, 1.6rem) clamp(0.8rem, 2.5vw, 1.4rem) clamp(1.2rem, 3vw, 1.7rem);
-      /* the TV's glow gradient, its x1.37 phosphor brightness baked into the lightness */
-      background: radial-gradient(ellipse 62% 80% at 50% 46%,
-        hsl(var(--h) calc(var(--s) * 1%) 25%) 0%,
-        hsl(var(--h) calc(var(--s) * 1%) 15%) 40%,
-        hsl(var(--h) calc(var(--s) * 1%) 7%) 76%,
-        hsl(var(--h) calc(var(--s) * 1%) 3%) 100%);
-      box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.75), inset 0 0 0 1px rgba(0, 0, 0, 0.8);
-    }
-    /* scanlines + aperture grille on the glass, under the content */
-    .tv-glass::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      z-index: -1;
-      pointer-events: none;
-      background:
-        repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.2) 0 1px, transparent 1px 3px),
-        repeating-linear-gradient(90deg, rgba(255, 40, 90, 0.05) 0 1px, rgba(40, 255, 140, 0.035) 1px 2px, rgba(70, 90, 255, 0.05) 2px 3px);
-    }
-    .tv-title {
-      margin: 0 0 1.2rem;
-      text-align: center;
-      font-family: var(--font-display);
-      font-size: clamp(1.25rem, 2.6vw, 1.6rem);
-      font-weight: 400;
-      letter-spacing: 0.04em;
-      color: var(--ink-text);
-      text-shadow: 0 0 12px var(--glow);
-    }
-    .tv-title span { color: var(--ink-hot); }
-    .picks { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(0.5rem, 2vw, 1rem); }
-    .pick {
-      display: grid;
-      justify-items: center;
-      align-content: start;
-      gap: 0.7rem;
-      padding: 0.5rem 0.25rem;
-      border-radius: 8px;
-      cursor: pointer;
-      text-align: center;
-    }
-    .pick:has(:focus-visible) { outline: 2px solid var(--ink-hot); outline-offset: 2px; }
-    /* one box height for all: wide windows fill its width, GAS (tall) its height; nothing is cropped */
-    .pick-img { display: flex; align-items: center; justify-content: center; width: 100%; height: clamp(5rem, 11vw, 6.6rem); }
-    .pick-img :global(img) {
-      display: block;
-      width: auto;
-      height: auto;
-      max-width: 100%;
-      max-height: 100%;
-      border-radius: 3px;
-      opacity: 0.72;
-      box-shadow: 0 0 0 1px var(--edge);
-      transition: opacity 120ms ease, box-shadow 120ms ease;
-    }
-    /* the name: stencil on the glass, outlined in the channel's phosphor, the lit one filled */
-    .pick-name {
-      font-family: var(--font-display);
-      font-size: clamp(1.2rem, 2.3vw, 1.55rem);
-      line-height: 0.95;
-      letter-spacing: 0.03em;
-      text-transform: uppercase;
-      text-wrap: balance;
-      color: transparent;
-      -webkit-text-stroke: 1.2px var(--ink);
-      opacity: 0.85;
-      filter: drop-shadow(0 0 6px var(--glow));
-      transition: color 120ms cubic-bezier(0.2, 0.9, 0.25, 1.25), opacity 120ms ease, -webkit-text-stroke-color 120ms ease;
-    }
-    @media (hover: hover) {
-      .pick:hover .pick-name { opacity: 1; -webkit-text-stroke-color: var(--ink-hot); }
-      .pick:hover .pick-img :global(img) { opacity: 1; }
-    }
-    .pick:has(:checked) .pick-name {
-      opacity: 1;
-      color: var(--ink-hot);
-      -webkit-text-stroke-color: var(--ink-hot);
-      filter: drop-shadow(0 0 10px var(--glow-hot)) drop-shadow(0 0 26px var(--glow-soft));
-    }
-    .pick:has(:checked) .pick-img :global(img) { opacity: 1; box-shadow: 0 0 0 1px var(--ink-hot), 0 0 18px var(--glow); }
-    #q-plugin.invalid .tv { outline: 1px solid var(--redline); outline-offset: 4px; }
-
     /* ── progress strip: sticks under the nav ── */
     .rv-progress {
       position: sticky;
@@ -605,16 +481,29 @@ const clientConfig = {
       display: flex;
       align-items: center;
       gap: 0.75rem;
-      margin: 1.75rem calc(-1 * clamp(1.25rem, 4vw, 2.5rem)) 0;
+      /* the card's top edge: the strip opens the form */
+      margin: calc(-1 * clamp(1.25rem, 4vw, 2.5rem)) calc(-1 * clamp(1.25rem, 4vw, 2.5rem)) 0;
+      border-radius: 14px 14px 0 0;
       padding: 0.6rem clamp(1.25rem, 4vw, 2.5rem);
       background: color-mix(in srgb, var(--bg-1) 92%, transparent);
       backdrop-filter: blur(6px);
-      border-block: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
     }
     .rv-progress-name { font-family: var(--font-display); font-size: 1.05rem; color: var(--brass-bright); letter-spacing: 0.03em; white-space: nowrap; }
     .rv-progress-bar { flex: 1; height: 4px; border-radius: 4px; background: var(--bg-3, #222); overflow: hidden; }
     .rv-progress-fill { display: block; height: 100%; background: var(--brass); transform: scaleX(0); transform-origin: left; transition: transform 0.25s var(--ease); }
     .rv-progress-count { font-family: var(--font-mono); font-size: 0.75rem; color: var(--fg-dim); font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .rv-change {
+      border: 1px solid var(--border-bright);
+      border-radius: 999px;
+      background: none;
+      color: var(--fg-dim);
+      font: inherit;
+      font-size: 0.75rem;
+      padding: 0.2rem 0.65rem;
+      cursor: pointer;
+    }
+    .rv-change:hover { color: var(--fg); border-color: var(--brass-dark); }
 
     /* ── questions (as the beta form) ── */
     .q { margin-bottom: 1.6rem; scroll-margin-top: calc(var(--nav-h) + var(--sale-h) + 4rem); }
@@ -736,7 +625,7 @@ const clientConfig = {
     .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
     /* the real radios / checkboxes behind the pills, bars and cards: hidden, still focusable */
     .vh { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
-    .pick, .opt, .seg, .rate-seg { position: relative; }
+    .opt, .seg, .rate-seg { position: relative; }
     .rv-submit { display: flex; justify-content: center; margin-top: 1rem; }
 
     .rv-status { margin: 1.5rem auto 0; max-width: 540px; text-align: center; font-size: 0.95rem; color: var(--redline); }
@@ -750,7 +639,6 @@ const clientConfig = {
     .rv-done-link { display: inline-block; margin-top: 1.5rem; color: var(--brass); font-size: 0.9rem; }
 
     @media (max-width: 640px) {
-      .picks { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 1.1rem; }
       .rate { flex-direction: column; align-items: stretch; }
       .rate-read { order: -1; }
       .rate-bar { flex: none; height: 5rem; gap: 0.25rem; }
@@ -763,7 +651,7 @@ const clientConfig = {
       .rv-submit .rv-btn { width: 100%; }
     }
     @media (prefers-reduced-motion: reduce) {
-      .pick-name, .pick-img :global(img), .rate-led, .rv-progress-fill { transition: none; }
+      .rate-led, .rv-progress-fill { transition: none; }
     }
   </style>
 </BaseLayout>
