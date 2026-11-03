@@ -17,7 +17,10 @@ only after Dan picks: `src/pages/index.astro`, a new `src/components/HomeOpening
   Roulette); seeded mess; living lights; studio acoustics (slat panels, skyline diffusers, bass traps, a cloud); a small
   drum kit and a throne pushed back left; the desk 0.7 m out, both studio monitors on floor stands, toed in.
 - The bench (⚙ Bench or T): Walk position, a section per part, Move things (M: drag anything, sliders per object),
-  undo / redo (⌘Z / ⇧⌘Z), Copy settings. Settings Dan pastes back are baked into `DEF` as the defaults (two so far).
+  undo / redo (⌘Z / ⇧⌘Z), Copy settings. Settings Dan pastes back are baked into `DEF` as the defaults (three so far;
+  a baked move goes into its item's row, and a `ver` bump clears it from saved benches). The third (settings `ver` 6):
+  a fresh visit renders his bench (Playwright 1141x636, walk 0 / 60 / 100 %: 0.91 / 0.31 / 0.00 % of pixels differ,
+  only the sway and the dust), no page errors.
 - Run: from the worktree root `python3 -m http.server 4471 --bind 127.0.0.1`, then open
   `http://127.0.0.1:4471/tools/_home-opening/room.html`. Dan's Mac worktree: `.claude/worktrees/home-opening`. Another
   laptop: `git fetch origin && git checkout feat/home-opening`.

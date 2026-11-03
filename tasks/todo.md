@@ -27,7 +27,8 @@ lock-in hand-off is reused, its room is not. Dan: plan with him first, then one 
   wires; the road look off the floor (lane lines + aisle LED strips off, kept on the bench); studio acoustics (wooden
   slat panels, skyline diffusers, bass traps, a cloud); a small drum kit (kick, snare, hi-hat) left of the desk facing
   right + a throne pushed back left ("someone just got up"); the desk 0.7 m out with both monitors on floor stands;
-  undo / redo on the bench; two of his benches baked in as the defaults.
+  undo / redo on the bench; three of his benches baked in as the defaults (the third: a wider, taller room 7.6 x 4.6 m,
+  lens 49, a 360 % walk, TV glow 2.5, the pegboard a little toward the start of the walk).
 - Final art: Higgsfield cut-outs standing in the 3D room + textured wall strips (over one big image + depth, or an AI
   fly-through video). Higgsfield: 250 credits (Lite) on 2026-11-02.
 
