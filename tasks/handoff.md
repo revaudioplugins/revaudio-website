@@ -87,6 +87,26 @@ only after Dan picks: `src/pages/index.astro`, a new `src/components/HomeOpening
   video's poster (no bare set at load); the big line waits hidden for the script. Checks (real Chrome): wheel down and
   back up recorded, 0 flashes, 0 frames without a film; the frame before the lock vs the live TV: 0.00 % of pixels at
   1312x734, 1141x636, 1920x1080 (was 21 % at 1141); no page errors.
+- ONE SHOT now (Dan 2026-11-03, scrubbing the two films: "the sceane changes in the middles items move around", "in the
+  skelton there was redio rullet and drift and revlimiter around the gradge sudnnly they disapear ... lets fix it so it
+  will be one seamless shot", "lets make it on the best side"). Cause: walk-050 was painted apart from walk-000, so
+  Kling morphed one room into the other between them, and both paintings had dropped the plugin CRTs. Now the walk is
+  ONE film repainted from the 3D set's own walk: `film-kit/render.mjs` renders the bare set's walk (240 frames, even
+  pace on screen, reduced motion), Kling 3.0 Omni Edit (pro, 1080p, 20 credits) repaints it with walk-000 as the look,
+  frame for frame (film frame n = set frame n, measured). It took the painting's look and its contents too (the CRTs
+  were gone again; TV and posters sat right), so `film-kit/comp.py` pasted the set's own monitors back into every frame
+  and a second Omni Edit pass (20 credits) made them real. `FILM` holds the film's camera per frame and the corners of
+  the TV face and each CRT screen in the world: the TV rect per frame comes from them (no tracking), and each CRT gets
+  its plugin's picture laid on with CSS matrix3d (`.film-scr`, still data: a new plugin = a new picture). Files:
+  `assets/skins/default/film/walk.mp4` + `walk-000.webp` (the poster); walk-a / walk-b and `keys/` removed (in git
+  history at `7e94155`). Recipe: `tools/_home-opening/film-kit/README.md`. Encode: x264 CRF 24, keyframe every 4
+  (SSIM 0.985, 8.6 MB). Checks (real Chrome, 2026-11-03): one film on screen at every step; the live CRT screens land
+  on the film's monitors to the pixel (RevFX, DRIFT, Radio Roulette, RevLimiter, 3x zoom); a wheel scroll down and back
+  recorded: 0 flashes, 0 steps without the film; the frame before the lock vs the live TV: 0.05 / 0.06 / 0.02 / 0.01 %
+  of pixels at 1312, 1141, 1920, 1440 wide; 390x844 runs; no page errors (the one 404 is the dev server's favicon).
+  Credits: 40 this round (two Omni Edit passes; the first, `k1`, kept as the look), 158 left. Not perfect: the CRT
+  cases came out as flat dark boxes (the second pass kept the pasted shapes), and Radio Roulette's, high on the right,
+  stands off the film's shelving for a moment as it leaves the frame (the film's shelf isn't where the set's is).
 - Next: Dan walks the film again. Then the phone version (a 9:16 film), and weight for the site step (todo 5).
 
 ## 2026-11-02 — Footer: categories fold into drawers (Claude Code `revaudio-3b [a4cb6d]`, laptop 2) — ON MAIN + LIVE: merged `--no-ff` 2026-11-02 by Claude Code `revaudio-0c [571e5c]` (laptop 1) on Dan's word "push it to main and merge" (Yoni had approved by pushing the branch)

@@ -388,3 +388,20 @@ and the 3D room behind flashed through.
   own spot at the hand-off. Place the film box in whole pixels: a half-pixel box blurs the overlaid text.
 - Open on the first keyframe (video poster), never on the 3D set; and a `const` named like one already in that function
   is a SyntaxError that stops the whole module (the walk froze at 0).
+
+## 2026-11-03 - films between separately painted keyframes morph; repaint the 3D set's own walk as one shot (`danavivi-4e`)
+
+Dan, scrubbing the two-film walk: "the sceane changes in the middles items move around", and "in the skelton there was
+redio rullet and drift and revlimiter around the gradge sudnnly they disapear". Two paintings of the same set don't
+agree on what stands where; a start + end frame model bridges them by morphing, and a painter drops what it doesn't
+read (the CRTs became racks and helmets).
+- Make the walk one shot from the set: render the 3D set's walk (capture mode, reduced motion, frames spaced for an even
+  pace on screen) and repaint the whole clip with a video edit model (Kling 3.0 Omni Edit pro, 20 credits / 10 s, 1080p,
+  frame for frame: its frame n is the set's frame n). Every object stays put, and the set's own camera says where each
+  live thing sits in every frame: no tracking, the live screens are laid on with CSS matrix3d from projected corners.
+- An image reference wins over the source video where they disagree: the edit took the painting's look (good) and its
+  contents too (the CRTs vanished again, the posters and TV stayed). Put the set's own objects into the film first
+  (paste the set's monitors where a render with and without them differs, kept to each monitor's box: the neon hum
+  differs everywhere else) and run a local edit pass that makes them real.
+- Phase correlation of a blockout against its repaint is noise (peaks 0.01-0.06); match frames by edge correlation
+  near the end, where the TV dominates (0.8-0.9 at the right index).

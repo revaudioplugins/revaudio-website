@@ -391,11 +391,14 @@ holds from now on, in Dan's words "everything is dynamic in that room":
 - Art is painted whole, never collaged (Dan 2026-11-03, on per-slot cut-outs: "it feels like a 2D and it doesn't feel
   like a whole room ... much more glued and whole, and 3D, and real. Less images"), and the visitor walks a FILM of it
   (Dan, same day, on paintings projected back onto the 3D set: "smeared and broken apart while I walk"; "in every step I
-  will see the room in its best form"). GPT Image paints keyframes from the 3D set (the start, mid-walk, the lock = the
-  live TV); a video model films the walk between them (Kling 3.0, start + end frame); scroll picks each frame by the
-  TV's size, so the walk keeps its tuned curve and lands exactly on the live TV. Real pixels win where text matters (the
-  posters are composited into the keyframes; the TV hand-off is live). A skin = new keyframes + new films; the 3D set
-  and the bench stay the source they are painted from.
+  will see the room in its best form"). The film is ONE shot repainted from the 3D set's own walk (a video edit model,
+  Kling 3.0 Omni Edit, with the painting as its look), never films between separately painted keyframes (Dan, same day:
+  "the sceane changes in the middles items move around"). So it keeps the set's camera and every object's place frame
+  by frame: the live things ride on it from the set (the LCD on the TV, each CRT its plugin's picture) and scroll picks
+  each frame by the TV's size, so the walk keeps its tuned curve and lands exactly on the live TV. The things the room is
+  for (the plugins' CRTs, the posters) must be in the film where the set has them: an image reference wins over the
+  set where they disagree (the paintings had dropped DRIFT, Radio Roulette and RevLimiter), so the set's own objects go
+  into the film first. A skin = a new film from the set; the 3D set and the bench stay the source.
 
 **Product-page hero = "the readings" (canon: the GAS 2 page, composition 2; Dan 2026-10-23: "I love you
 so much", "this is amazing"; `tools/_gas2-scene/page-b.html` on `feat/gas2-page`).** The vibe to repeat:

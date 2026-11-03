@@ -48,7 +48,10 @@ lock-in hand-off is reused, its room is not. Dan: plan with him first, then one 
       was dropped. Proof shot 1 done 2026-11-03 (walk 0, 4.25 credits): one real photo to ~20 % of the walk. Next, on
       Dan's yes: 4 more shots. Done 2026-11-03 (free): soft hole fill, real posters onto their painted twins.
       Then (Dan: projected paintings "smeared and broken apart"; credits OK): the walk became a FILM between painted
-      keyframes (Kling 3.0, 2 films, 35.75 credits), framed by the TV's size. Next: Dan's walk; a 9:16 phone film.
+      keyframes (Kling 3.0, 2 films, 35.75 credits), framed by the TV's size. Then (Dan: "the sceane changes in the
+      middles items move around", the plugin CRTs gone; "one seamless shot"): ONE film repainted from the 3D set's own
+      walk (Kling 3.0 Omni Edit, 2 passes, 40 credits), the plugin CRTs back in place with live screens on them.
+      Next: Dan's walk; a 9:16 phone film.
 - [ ] 4. Movement, the readings, the phone version: each planned with Dan first.
 - [ ] 5. Into the site (`index.astro` + a new component, the live TV at the lock, reduced motion, weight), DESIGN.md
       §0 + §7; main only on Dan's word (= live).
