@@ -354,3 +354,8 @@ painter adds (a Marshall script, a drum badge) are cleaned out before the pictur
 - Also: three.js calls `texture.onUpdate` inside a render, so whatever hangs on it (here `arrange()`) runs mid-render.
   Never render from there: the projectors' depth pass threw "location is not from the associated program". Mark it
   stale and redo it before the next frame.
+- Addendum (same day, Dan: a real poster "sits on another mail me the key poster"): the painter moves, merges and
+  drops things. Check every real face against its painted twin (draw the 3D outline on the painting): move the real one
+  onto the painted spot (rays through the painted corners onto its wall, cover-fit), and hide real items the painting
+  left out; a real screen floating beside its painted monitor reads worse than the painted one. A flat dark hole reads
+  as a missing piece; a soft, darkened blur of the painting reads as shadow.

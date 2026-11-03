@@ -42,8 +42,18 @@ only after Dan picks: `src/pages/index.astro`, a new `src/components/HomeOpening
   kick-drum badge, headstock decals). Checks: Playwright 1920x1080 at walk 0 gives back the painting (2.82 % of pixels
   differ, the live posters / screens / TV); 1141x636 walk 0-100 %, no page errors or WebGL warnings. Reads as one real
   photo to about 20 % of the walk; beyond it the far end softens and spots no painting saw go dark.
-- Next (waits on Dan's yes, about 12.75 credits): 3 more shots along the walk (about 30 / 55 / 80 %), each painted from
-  the room as it already looks from there (the painted render with the bare set in its holes), so the shots agree.
+- Fixes after Dan's look (2026-11-03: "some elements starting to stretch out and there is missing pieces"; a real poster
+  "sits on another mail me the key poster ... whoever looks better and looks more glued to the picture use it"):
+  measured with `?paintdbg` (magenta = no painting sees it, red = stretched past its pixels) over 15 walk spots. Holes
+  start at ~15 % (behind the car, the aisle sides of gear, the ceiling over the camera); past ~55 % the end wall is
+  magnified. Now: holes take a soft, shadowed blur of the painting (no grey blocks); real posters P01-P04 sit exactly on
+  their painted twins (P03 and P04 moved: rays cast through the painted corners onto the wall, cover-fit); P05, P06 and
+  the CRTs M02 / M04 hide while painted (the painter merged P05 into P03's poster and put helmets where P06 hung); the
+  CRT screens read better painted. `PAINT.live` / `PAINT.drop` hold the choices; `?live=` tries others, `?expose`
+  hands the room to inspection scripts. Checks: no page errors or WebGL warnings; walk 0-100 % re-rendered.
+- Next (waits on Dan's yes, about 17 credits): 4 more shots at about 30 / 45 / 55 / 65 % (14 / 8 / 4.3 / 2.3 m from the
+  TV; the walk moves slowly at first), each painted from the room as it already looks from there (the painted render
+  with the bare set in its holes), so the shots agree.
 - Art: Higgsfield had 250 credits (Lite, 2026-11-02); 16.25 spent on 2026-11-03 (the cut-out test 12 + proof shot 1 4.25); the OpenAI key in
   `~/.zsh/openai.zsh` answered "expired" (2026-11-02). Prices (2026-11-03, `get_cost`, nothing submitted): GPT Image
   2.5 with its own transparent background, 2k: 1 credit medium, 2.75 high (1k low 0.25; 4k high 4.25); Seedream 5 Pro
@@ -53,7 +63,7 @@ only after Dan picks: `src/pages/index.astro`, a new `src/components/HomeOpening
   56 credits at medium or 159 at high, one take each. Each batch waits on Dan's yes after its cost (RULE 0).
 - Open with Dan: plan the skins (todo step 1b); a "just got up" cue on the throne (headphones or sticks), offered, not
   answered.
-- Next: Dan's yes on the 3 more shots (above), or notes on proof shot 1.
+- Next: Dan's yes on the 4 more shots (above), or notes on the fixes.
 
 ## 2026-11-02 — Footer: categories fold into drawers (Claude Code `revaudio-3b [a4cb6d]`, laptop 2) — ON MAIN + LIVE: merged `--no-ff` 2026-11-02 by Claude Code `revaudio-0c [571e5c]` (laptop 1) on Dan's word "push it to main and merge" (Yoni had approved by pushing the branch)
 
