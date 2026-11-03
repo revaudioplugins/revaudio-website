@@ -146,6 +146,7 @@ type Item = {
   img: ImageMetadata;
   alt: string;
   portrait?: boolean;
+  thumbTall: boolean; // narrower than the list's 16:10 slot: the thumbnail fits its height, else its width
   blurb: string;
   price: string;
   action: TvAction | null;
@@ -161,6 +162,7 @@ const items: Item[] = tvPlugins()
     img: WINDOWS[p.slug].img,
     alt: p.library!.alt,
     portrait: WINDOWS[p.slug].portrait,
+    thumbTall: dims(WINDOWS[p.slug].img).width / dims(WINDOWS[p.slug].img).height < 1.6,
     blurb: p.library!.blurb,
     price: priceLine(p),
     action: tryAction(p),
@@ -217,8 +219,8 @@ const first = items[0]?.slug ?? '';
             id={`ww-tab-${it.slug}`}
             data-ww-pick={it.slug}
           >
-            <span class:list={['ww-thumb', { 'is-portrait': it.portrait }]} aria-hidden="true">
-              <Image src={it.img} alt="" width={320} widths={[160, 320]} sizes="(max-width: 860px) 4.5rem, 10rem" format="webp" quality={80} loading="lazy" />
+            <span class:list={['ww-thumb', { 'is-tall': it.thumbTall }]} aria-hidden="true">
+              <Image src={it.img} alt="" width={320} widths={[160, 320]} sizes="(max-width: 860px) 6rem, 10rem" format="webp" quality={80} loading="lazy" />
             </span>
             <span class="ww-rtext">
               <span class="ww-name">{it.name}</span>
@@ -1458,9 +1460,8 @@ const first = items[0]?.slug ?? '';
     display: grid;
     /* the thumbnail fits the room's height too, as the name does (16:10; 1.15rem = the row's padding + its share of the
        gaps): at 9.8rem four rows were 21 px too tall for a 1280x665 screen, 45 px for 1141x636 */
-    grid-template-columns:
-      min(calc(var(--ww-thumb-w) * 1rem), calc((var(--ww-main, 30rem) / var(--ww-rows, 4) - 1.15rem) * 1.6))
-      minmax(0, 1fr) auto;
+    --ww-thumb-col: min(calc(var(--ww-thumb-w) * 1rem), calc((var(--ww-main, 30rem) / var(--ww-rows, 4) - 1.15rem) * 1.6));
+    grid-template-columns: var(--ww-thumb-col) minmax(0, 1fr) auto;
     align-items: center;
     column-gap: 1rem;
     padding: 0.3rem 0.4rem 0.3rem 0;
@@ -1469,23 +1470,32 @@ const first = items[0]?.slug ?? '';
     text-decoration: none;
     -webkit-tap-highlight-color: transparent;
   }
+  /* the whole plugin, never cropped or letterboxed (Dan 2026-11-03: Radio Roulette was cut, GAS had black bars left
+     and right): a wide window fills the slot's width, a tall one its height, centred on the bare glass; the edge and
+     the glow sit on the picture itself */
   .ww-thumb {
-    display: block;
+    display: grid;
+    place-items: center;
     aspect-ratio: 16 / 10;
-    border-radius: 3px;
-    overflow: hidden;
     opacity: var(--ww-dim);
-    box-shadow: 0 0 0 1px var(--ww-edge);
-    transition: opacity 120ms ease, box-shadow 120ms ease;
+    transition: opacity 120ms ease;
   }
   .ww-thumb :global(img) {
     display: block;
     width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: 50% 30%;
+    height: auto;
+    border-radius: 3px;
+    box-shadow: 0 0 0 1px var(--ww-edge);
+    transition:
+      transform 180ms cubic-bezier(0.2, 0.9, 0.25, 1.25),
+      box-shadow 180ms ease,
+      filter 180ms ease;
   }
-  .ww-thumb.is-portrait :global(img) { object-fit: contain; background: #050406; }
+  /* the slot's height as a length: a percent height doesn't resolve against an aspect-ratio box here */
+  .ww-thumb.is-tall :global(img) { width: auto; height: calc(var(--ww-thumb-col) / 1.6); }
+  /* the plates baked on near-black with rounded bezels: the panel's own arcs (.ww-ui below) */
+  .ww-row[data-ww-pick='gas'] .ww-thumb :global(img) { border-radius: 11% / 7.4%; }
+  .ww-row[data-ww-pick='radio-roulette'] .ww-thumb :global(img) { border-radius: 9% 9% 10.6% 10.6% / 16.2% 16.2% 19% 19%; }
   .ww-rtext { display: grid; gap: 0.3rem; min-width: 0; }
   /* the name: stencil on the glass, outlined in the channel's phosphor, the lit one filled */
   .ww-name {
@@ -1508,7 +1518,8 @@ const first = items[0]?.slug ?? '';
     transition:
       color 120ms cubic-bezier(0.2, 0.9, 0.25, 1.25),
       opacity 120ms cubic-bezier(0.2, 0.9, 0.25, 1.25),
-      -webkit-text-stroke-color 120ms cubic-bezier(0.2, 0.9, 0.25, 1.25);
+      -webkit-text-stroke-color 120ms cubic-bezier(0.2, 0.9, 0.25, 1.25),
+      filter 160ms ease;
   }
   .ww-type {
     font-family: var(--font-mono);
@@ -1519,9 +1530,23 @@ const first = items[0]?.slug ?? '';
     opacity: 0.7;
   }
   .ww-rprice { display: none; }
+  /* the pointer on a plugin warms it up, short of lit (Dan 2026-11-03: the old hover only brightened the outline,
+     "gas2 is not hovering"): the name glows with a faint fill, the picture comes forward with a hot edge. The lit
+     rules below win where both set a value */
   @media (hover: hover) {
-    .ww-row:hover .ww-name { opacity: 1; -webkit-text-stroke-color: var(--ww-ink-hot); }
+    .ww-row:hover .ww-name {
+      opacity: 1;
+      color: color-mix(in srgb, var(--ww-ink-hot) 40%, transparent);
+      -webkit-text-stroke-color: var(--ww-ink-hot);
+      filter: drop-shadow(0 0 10px var(--ww-glow-hot)) drop-shadow(0 0 22px var(--ww-glow-soft));
+    }
+    .ww-row:hover .ww-type { opacity: 1; }
     .ww-row:hover .ww-thumb { opacity: 1; }
+    .ww-row:hover .ww-thumb :global(img) {
+      transform: scale(1.06);
+      filter: brightness(1.12);
+      box-shadow: 0 0 0 1px var(--ww-ink-hot), 0 0 22px var(--ww-glow-hot);
+    }
   }
   .ww-row.is-lit .ww-name {
     opacity: 1;
@@ -1529,10 +1554,8 @@ const first = items[0]?.slug ?? '';
     -webkit-text-stroke-color: var(--ww-ink-hot);
     filter: drop-shadow(0 0 10px var(--ww-glow-hot)) drop-shadow(0 0 26px var(--ww-glow-soft));
   }
-  .ww-row.is-lit .ww-thumb {
-    opacity: 1;
-    box-shadow: 0 0 0 1px var(--ww-ink-hot), 0 0 18px var(--ww-glow);
-  }
+  .ww-row.is-lit .ww-thumb { opacity: 1; }
+  .ww-row.is-lit .ww-thumb :global(img) { box-shadow: 0 0 0 1px var(--ww-ink-hot), 0 0 18px var(--ww-glow); }
   .ww-row.is-lit .ww-type { opacity: 1; }
   /* a category change: the plugins that stay come up one after another (on the row: the reveal owns the li) */
   .ww-list.is-swapping .ww-item:not([hidden]) .ww-row {
@@ -1632,6 +1655,12 @@ const first = items[0]?.slug ?? '';
     line-height: 1.45;
     color: hsl(var(--ww-ch-h) 30% 92%);
     text-shadow: 0 0 10px var(--ww-glow-faint);
+  }
+  /* on the screen the blurb is phosphor too (Dan 2026-11-03: it read as plain white web text, the one thing on the
+     glass that didn't glow): the channel's tint, a tight glow round the letters and a wide soft one */
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-blurb {
+    color: hsl(var(--ww-ch-h) min(100%, calc(var(--ww-ch-s) * 1% + 10%)) 82%);
+    text-shadow: 0 0 6px var(--ww-glow), 0 0 20px var(--ww-glow-soft);
   }
   /* the five words, now one small line: what the sound does */
   .ww-pwords {
@@ -1894,15 +1923,17 @@ const first = items[0]?.slug ?? '';
     --ww-frame-size: 0.25;  /* CSS px per cut pixel, desktop */
     --ww-frame-gap: 0px;    /* garage wood showing around the set (laptop and up) */
     --ww-frame-g: var(--ww-frame-gap);
+    --ww-out: max(2.5vw, 50vw - 720px); /* --maxw's margin: .ww's edge from the screen's (the frame spans the screen) */
     /* the side gutter (--maxw's margin + .ww's padding-inline) minus the wood and 6 px, over the roll's side bezel */
-    --ww-frame-cap: calc(max(2px, max(2.5vw, 50vw - 720px) + clamp(1rem, 4vw, 2.5rem) - var(--ww-frame-g) - 6px) / max(var(--wf-zl), var(--wf-zr)));
+    --ww-frame-cap: calc(max(2px, var(--ww-out) + clamp(1rem, 4vw, 2.5rem) - var(--ww-frame-g) - 6px) / max(var(--wf-zl), var(--wf-zr)));
     --ww-frame-u: min(calc(var(--ww-frame-size) * 1px), var(--ww-frame-cap));
   }
   @media (max-width: 900px) {
     /* phones: a ~20 px gutter has no room for wood round the set */
     .ww {
       --ww-frame-g: 0px;
-      --ww-frame-cap: calc((1vw + clamp(1rem, 4vw, 2.5rem) - 4px) / max(var(--wf-zl), var(--wf-zr)));
+      --ww-out: 1vw;
+      --ww-frame-cap: calc((var(--ww-out) + clamp(1rem, 4vw, 2.5rem) - 4px) / max(var(--wf-zl), var(--wf-zr)));
     }
   }
   .ww[data-ww-frame='1'] {
@@ -2002,6 +2033,13 @@ const first = items[0]?.slug ?? '';
   .ww[data-ww-bg='screen']:not([data-ww-frame='rails']) {
     --ww-bez-t: calc(var(--ww-frame-g) + var(--wf-zt) * var(--ww-frame-u));
     --ww-bez-b: calc(var(--ww-frame-g) + var(--wf-zb) * var(--ww-frame-u));
+    /* the sides clear the bezel by a breath too (Dan 2026-11-03: the content ran 7 px from the glass at 1141, 4 px
+       on a phone, into the opening's rounded corners) */
+    --ww-breath-x: clamp(12px, 2vw, 28px);
+    padding-inline: max(
+      clamp(1rem, 4vw, 2.5rem),
+      calc(var(--ww-frame-g) + max(var(--wf-zl), var(--wf-zr)) * var(--ww-frame-u) - var(--ww-out) + var(--ww-breath-x))
+    );
   }
   @supports (height: 100svh) {
     .ww[data-ww-bg='screen'] {
@@ -2048,7 +2086,7 @@ const first = items[0]?.slug ?? '';
       padding-bottom: 2.5rem;
       grid-template-columns: minmax(0, 1fr);
       grid-template-areas: 'osd' 'list';
-      --ww-thumb-w: 4.6;
+      --ww-thumb-w: 6;
       --ww-osd-h: 4.6rem; /* two rows of keys */
     }
     .ww[data-ww-view='panel'] { grid-template-areas: 'panel'; }
@@ -2129,6 +2167,17 @@ const first = items[0]?.slug ?? '';
     @media (max-width: 860px) {
       .ww[data-ww-bg='screen'] {
         --ww-info-h: 15rem; /* back + name + blurb + words + price + key + link (measured, 390) */
+        /* the screen starts full (Dan 2026-11-03): centred, a 390x844 phone showed ~140 px of bare glass over the
+           menu and over the back key. The menu sits at the top; the list takes the glass left under it and spaces
+           its rows over it, one slot per plugin on the TV, so a category with fewer keeps the same spacing from the
+           top instead of spreading two rows over the whole glass */
+        align-content: start;
+      }
+      .ww[data-ww-bg='screen']:not([data-ww-view='panel']) { grid-template-rows: auto 1fr; }
+      .ww[data-ww-bg='screen'] .ww-list {
+        align-self: stretch;
+        grid-template-rows: repeat(var(--ww-rows, 5), auto);
+        align-content: space-evenly;
       }
       .ww[data-ww-bg='screen'] .ww-panel:not(.is-portrait) .ww-ui :global(img),
       .ww[data-ww-bg='screen'] .ww-panel:not(.is-portrait) .ww-ui video {
@@ -2145,6 +2194,7 @@ const first = items[0]?.slug ?? '';
   @media (prefers-reduced-motion: reduce) {
     .ww-name,
     .ww-thumb,
+    .ww-thumb :global(img),
     .ww-panel,
     .ww-screen,
     .ww-screen-fx,

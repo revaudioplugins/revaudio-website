@@ -9,6 +9,26 @@ Claim: CLOSED 2026-11-04. Files: `tools/gas2page/integration.mjs` (siteBar), `sr
   `CATCH10` + 6 (10%, site-wide, one use, 60 days), ONE per email ever, emailed only. Tests: `test/test_catch.mjs`.
 - Open: archive the shared `CATCH10` discount in Paddle (Gil).
 
+## 2026-11-03 — Home TV polish: thumbnails whole, a real hover, edges, the phone's top, the blurb's glow (Claude Code `danavivi-a4 [76d06a]`, Dan's Mac) — BRANCH `feat/tv-polish`, not on main
+
+Claim: OPEN `danavivi-a4`. Files: `src/components/WordWall.astro` (CSS + the thumbnail markup), `tasks/handoff.md` (this entry).
+Dan, 2026-11-03 ("polish the LCD" = the home TV): the phone's empty top, the description glowing on the glass, the tight
+laptop edges, every plugin shown whole in the list (Radio Roulette was cropped, GAS had black bars left and right) and
+a hover that shows (GAS 2 "is not hovering": measured, every row's hover only brightened the outline).
+- Built (`WordWall.astro`): thumbnails = the whole plugin (a wide window fills the 16:10 slot's width, a tall one
+  its height via `--ww-thumb-col / 1.6`: a percent height did not resolve there), the edge + glow on the picture,
+  GAS / Radio Roulette clipped to their bezel arcs; hover = the picture scales 1.06 with a hot edge, the name glows
+  with a 40 % fill (lit stays filled); the blurb on the screen takes the channel tint + glow; side padding clears
+  the bezel by `--ww-breath-x` (new `--ww-out` = .ww's edge from the screen's, also used by `--ww-frame-cap`);
+  phones: the menu at the top, thumbnails 6rem, the rows spaced over the glass, one slot per plugin
+  (`--ww-rows`) so a 2-plugin category keeps the ALL spacing. `DESIGN.md` §4 TV list: the rule.
+- Checks (local dev, Playwright Chrome + WebKit): content to glass 22 / 23 px at 1141x636 (was 7 / 8), 28 at
+  1440x900 (was 14), 12 on phones (was 4); the TV still fits one screen at 1141x636, 1280x720, 1440x900,
+  1920x1080, 390x844, 375x667, 360x740, 430x932; no horizontal scroll, no page errors; no name hits its price
+  on phones; `?cat=free` checked on phone + laptop. `npm run build` green (31 pages). Not checked: a real
+  iPhone / Safari window, high-contrast mode.
+- Next: Dan looks at it locally; main only on his push word.
+
 ## 2026-11-03 — Review form: text gate on every open box + role multi-select (Claude Code, laptop 2) — worker DEPLOYED 2026-11-03 (stamp ad6d9f5, live probe: weak caught, 2 roles OK); site PUSHED TO MAIN on Yoni's "push" 2026-11-03 = LIVE
 
 Claim: CLOSED 2026-11-03. Files: `src/data/review-survey.ts`, `src/pages/review.astro`, `tasks/handoff.md` (this entry).

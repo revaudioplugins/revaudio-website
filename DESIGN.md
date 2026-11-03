@@ -111,8 +111,14 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
     only once the script runs; without it the title is a plain PLUGINS (the heading keeps "Plugins" for a
     screen reader either way). One row on every laptop from 1141 (smaller there), wrapping on phones.
   - List (left, `--ww-list-share` 46 % of the screen): one row per plugin = a window thumbnail
-    (`--ww-thumb-w` 9.8rem, 4.6 on phones; less on a short laptop: it fits the room's height for four
-    rows as the names do), the name in the stencil the five words used to be (Bebas, outlined in the
+    (`--ww-thumb-w` 9.8rem, 6 on phones; less on a short laptop: it fits the room's height for four
+    rows as the names do). The thumbnail shows the WHOLE plugin, never cropped or letterboxed (Dan
+    2026-11-03: Radio Roulette was cut, GAS had black bars): a wide window fills the slot's width, a tall one
+    its height, on the bare glass, the plates clipped to their own bezel arcs. Hover (laptop) must SHOW: the
+    picture comes forward with a hot edge, the name glows with a faint fill, short of lit. The content
+    clears the bezel on every side by a breath (`--ww-breath-x`); on phones the menu sits at the top and the
+    rows space out over the glass, one slot per plugin (Dan 2026-11-03: no bare glass over the menu).
+    The name in the stencil the five words used to be (Bebas, outlined in the
     channel's phosphor, `--ww-dim` 1 = the unlit ones at full strength, the lit one filled + glowing) and
     a plain type word ("one-knob saturator"). All names share one size: min(`--ww-name-max` 5.5rem, what
     the column fits, what the room's height fits for four rows). Values: the user's bench pick of
