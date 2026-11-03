@@ -399,6 +399,8 @@ holds from now on, in Dan's words "everything is dynamic in that room":
   for (the plugins' CRTs, the posters) must be in the film where the set has them: an image reference wins over the
   set where they disagree (the paintings had dropped DRIFT, Radio Roulette and RevLimiter), so the set's own objects go
   into the film first. A skin = a new film from the set; the 3D set and the bench stay the source.
+  For now the room is the bare 3D set again (Dan 2026-11-03, after the one-shot film: "lets go back to the skelton
+  this is not what i want"); the painted room and the film stay as the bench's Painted / Film switches, off.
 
 **Product-page hero = "the readings" (canon: the GAS 2 page, composition 2; Dan 2026-10-23: "I love you
 so much", "this is amazing"; `tools/_gas2-scene/page-b.html` on `feat/gas2-page`).** The vibe to repeat:

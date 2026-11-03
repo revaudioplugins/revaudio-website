@@ -107,7 +107,14 @@ only after Dan picks: `src/pages/index.astro`, a new `src/components/HomeOpening
   Credits: 40 this round (two Omni Edit passes; the first, `k1`, kept as the look), 158 left. Not perfect: the CRT
   cases came out as flat dark boxes (the second pass kept the pasted shapes), and Radio Roulette's, high on the right,
   stands off the film's shelving for a moment as it leaves the frame (the film's shelf isn't where the set's is).
-- Next: Dan walks the film again. Then the phone version (a 9:16 film), and weight for the site step (todo 5).
+- BACK TO THE SKELETON (Dan 2026-11-03, after the one-shot film: "lets go back to the skelton this is not what i
+  want"). The bare 3D set is the room again: Painted and Film are off by default (`DEF`, settings ver 7 turns them off
+  on saved benches too), the posters P03 / P04 are back on his bench's spots (P03 f 0.36, y 2.45, h 0.8; P04 x -1.45,
+  y 3.0, h 0.85), and the painting and the film load only once their bench chip is on (`wakeArt`), so a visit fetches
+  neither. Kept, switchable: `PAINT`, `FILM`, `film-kit/`, the assets. Checks (real Chrome 1312x734): a fresh visit and a
+  ver-6 bench with both on open on the bare set, no art requested, walk 0 / 35 / 60 / 100 % (the CRTs with their
+  plugins, the lock on the live TV), no page errors; the Film chip still loads and plays the film.
+- Next: ask Dan what he didn't want in the painted room / film, before any more art (no credits until then).
 
 ## 2026-11-02 — Footer: categories fold into drawers (Claude Code `revaudio-3b [a4cb6d]`, laptop 2) — ON MAIN + LIVE: merged `--no-ff` 2026-11-02 by Claude Code `revaudio-0c [571e5c]` (laptop 1) on Dan's word "push it to main and merge" (Yoni had approved by pushing the branch)
 

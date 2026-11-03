@@ -51,7 +51,8 @@ lock-in hand-off is reused, its room is not. Dan: plan with him first, then one 
       keyframes (Kling 3.0, 2 films, 35.75 credits), framed by the TV's size. Then (Dan: "the sceane changes in the
       middles items move around", the plugin CRTs gone; "one seamless shot"): ONE film repainted from the 3D set's own
       walk (Kling 3.0 Omni Edit, 2 passes, 40 credits), the plugin CRTs back in place with live screens on them.
-      Next: Dan's walk; a 9:16 phone film.
+      Then Dan: "lets go back to the skelton this is not what i want": the bare set is the room again (Painted / Film
+      off by default, kept as bench switches). Next: what he didn't want, before more art.
 - [ ] 4. Movement, the readings, the phone version: each planned with Dan first.
 - [ ] 5. Into the site (`index.astro` + a new component, the live TV at the lock, reduced motion, weight), DESIGN.md
       §0 + §7; main only on Dan's word (= live).
