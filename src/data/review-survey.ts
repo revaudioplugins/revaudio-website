@@ -47,7 +47,7 @@ export interface Section {
 }
 
 /** The plugins a visitor can review, in picker order. A slug must be a plugin in plugins.ts. Add one as it ships. */
-export const REVIEW_PLUGINS = ['revlimiter', 'drift', 'radio-roulette', 'gas'] as const;
+export const REVIEW_PLUGINS = ['revlimiter', 'drift', 'radio-roulette', 'gas', 'gas2'] as const;
 
 export const reviewMeta = {
   version: 1,

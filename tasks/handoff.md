@@ -6,12 +6,28 @@ Claim: CLOSED 2026-11-03. Files: `src/data/review-survey.ts`, `src/pages/review.
   answers `{error:"incomplete", weak:[ids]}`; the gate itself got stricter (keyboard-row runs of 5, 5+ letter words with
   no vowel, one word 3x). Page: `role` = multi; a `weak` reply lights the boxes (a follow-up lights its question) +
   `ui.weak` message.
-- ORDER MATTERS: deploy the worker FIRST (`wrangler deploy` from `tools/RevLicenseKeygen/gumroad-worker`), then push
-  the site. The live worker reads `role` as a single pick: the new page's list would come back "unanswered". The new
-  worker still takes an old page's lone string, so worker-first is safe.
+- Order used (and why): worker deployed FIRST via the gated `deploy.ps1` (never bare `wrangler deploy`), then the site
+  pushed. The old worker read `role` as a single pick, so the new page's list would have come back "unanswered"; the
+  new worker still takes an old page's lone string.
 - Checks: `node test/test_review.mjs` all pass (19 new gate checks), `test_drift_feedback.mjs` ALL PASS, 16 real
   sentences + 9 plugin names not rejected; build green; Chromium: two roles post as a list, a mocked weak reply lights
-  `q-install_result` + `q-loved_most` with the message.
+  `q-install_result` + `q-loved_most` with the message. Live: POST /review with gibberish -> `weak:["loved_most"]`,
+  nothing minted; revaudio.net/review/ (incl. the CF-cached copy) serves role checkboxes + the weak message.
+- Gotcha: the push's head commit carried `[skip ci]`, so Pages skipped the whole push; deployed by hand with
+  `gh workflow run deploy.yml --ref main` (run 41677977988, success). Never end a site push on a `[skip ci]` commit.
+- Unverified: no real person has sent a full review through the live page since (only the worker probe + the local
+  mocked browser run). The DRIFT feedback form shares `driftFbTextOk`, so it got the stricter gate too (tests pass).
+- Cleanup (laptop 2): `C:\RevAudio\Plugins\RevLimiter-reviewgate` = half-removed worktree leftover (Windows lock), safe to
+  delete; `C:\RevAudio\Plugins\RevLimiter-deploy` = worktree on branch `deploy-review-gate` (= origin/main `c70614a`),
+  remove with `git -C C:/RevAudio/Plugins/RevLimiter worktree remove ../RevLimiter-deploy` + `git branch -d deploy-review-gate`.
+  A local `astro preview` may still listen on port 4391 (PID 45496): `Stop-Process -Id 45496`.
+- GAS 2 added to the review picker (Yoni 2026-11-03: released tomorrow, 2026-11-04): `REVIEW_PLUGINS` + the home TV's
+  picture and channel colour (14 / 58); picker 5 across, on phones the 5th cube centred under the 2x2. Free = no price
+  question. Worker `70c074b` on RevLimiter main (accepts `gas2`, test passes). Checked locally at 1280x800 + 390x844 (no
+  sideways scroll; picking GAS 2 opens the form named GAS 2, price question hidden). Deploy the worker BEFORE pushing the
+  site: the live worker answers `gas2` with "bad request".
+- RevLimiter repo `tasks/handoff.md` NOT updated: the main checkout holds another session's uncommitted edit of it;
+  this entry is the record for the worker change.
 
 ## 2026-11-03 — GAS + GAS 2 free downloads: the marketing box is REQUIRED (Claude Code, Gil's Mac) — PUSHED TO MAIN on Gil's word "push to main"
 
