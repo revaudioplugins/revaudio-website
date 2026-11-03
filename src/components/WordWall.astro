@@ -33,36 +33,18 @@
    Tune on the dev bench /__wwbench (tools/wwbench): every tunable is a --ww-*
    custom property on .ww. Reduced motion: a quick fade on a change, no
    stagger, no power-on, no glitches, the poster instead of the run. html.hc:
-   a plain list.
-
-   mode="review" (/review, 2026-11-03, Yoni: "the exact behaviour, including
-   the panels and all"): the same set, glass, channel changes, glitches and
-   panels, as the review page's plugin picker. Differences, all behind
-   data-ww-mode="review": no categories (the review plugins only,
-   REVIEW_PLUGINS); on a laptop a mouse resting on a plugin lights it (the
-   SKIM rule keeps a fast sweep dark until it stops) and a click picks it; the
-   panel's buy row is one "Review <plugin>" button; no scroll lock and no
-   "/#plugins" glide. A pick fires `ww:review` {slug} on the wall (bubbles). */
+   a plain list. */
 import { existsSync, statSync } from 'node:fs';
 import { Image, getImage } from 'astro:assets';
 import GarageWall from './GarageWall.astro';
 import rlImg from '../assets/plugins/revlimiter-hero.png';
 import gasImg from '../assets/plugins/gas-hero.png';
 import rrImg from '../assets/plugins/radioroulette-hero.png';
-// review mode: the same window cut along its own chrome outline, transparent outside (fitted to the rim, 2026-11-03)
-import rrCutImg from '../assets/plugins/radioroulette-hero-cut.png';
 import driftImg from '../assets/showcase/drift-window-init.png';
 import brokenMeta from '../assets/seasons/drift/tv-broken.json';
 import { drift } from '../data/drift';
 import { tvPlugins, tvCats, catsOf, tvName, priceLine, tryAction, type TvAction } from '../data/library';
 import type { LibraryWord } from '../data/plugins';
-import { REVIEW_PLUGINS } from '../data/review-survey';
-
-interface Props {
-  /** 'review': the /review page's plugin picker (see the header). Default: the home TV. */
-  mode?: 'home' | 'review';
-}
-const review = Astro.props.mode === 'review';
 
 /* What the whole wall is: the garage wood, or one TV every plugin plays on
    (Dan 2026-10-14). Lives on .ww. The bench can flip it. */
@@ -152,7 +134,7 @@ const WINDOWS: Record<string, { img: ImageMetadata; portrait?: boolean }> = {
   drift: { img: driftImg },
   revlimiter: { img: rlImg },
   gas: { img: gasImg, portrait: true },
-  'radio-roulette': { img: review ? rrCutImg : rrImg },
+  'radio-roulette': { img: rrImg },
 };
 type Item = {
   slug: string;
@@ -168,7 +150,7 @@ type Item = {
   cats: string[];
 };
 const items: Item[] = tvPlugins()
-  .filter((p) => WINDOWS[p.slug] && p.library && (!review || (REVIEW_PLUGINS as readonly string[]).includes(p.slug)))
+  .filter((p) => WINDOWS[p.slug] && p.library)
   .map((p) => ({
     slug: p.slug,
     name: tvName(p),
@@ -182,15 +164,14 @@ const items: Item[] = tvPlugins()
     action: tryAction(p),
     cats: catsOf(p),
   }));
-const cats = review ? [] : tvCats(tvPlugins().filter((p) => items.some((it) => it.slug === p.slug)));
+const cats = tvCats(tvPlugins().filter((p) => items.some((it) => it.slug === p.slug)));
 const first = items[0]?.slug ?? '';
 ---
 
-<GarageWall id={review ? 'review-tv' : 'plugins'} ariaLabel={review ? 'Pick the plugin to review' : 'RevAudio plugins'}>
+<GarageWall id="plugins" ariaLabel="RevAudio plugins">
   <div
     class="ww"
     data-wordwall
-    data-ww-mode={review ? 'review' : undefined}
     data-ww-bg={WALL_BG}
     data-ww-frame={WALL_FRAME}
     data-ww-art={wallArt}
@@ -209,7 +190,7 @@ const first = items[0]?.slug ?? '';
     <div class="ww-osd">
       {/* "Plugins" without the script; with it the keys work, so the title asks for a pick (the heading keeps
           "Plugins" for a screen reader) */}
-      <h2 class="ww-tag" tabindex="-1"><span class="ww-tag-name">{review ? 'Review' : 'Plugins'}</span>{' '}<span class="ww-tag-ask">{review ? 'Pick your plugin' : 'Pick a category'}<i aria-hidden="true">▸</i></span></h2>
+      <h2 class="ww-tag" tabindex="-1"><span class="ww-tag-name">Plugins</span>{' '}<span class="ww-tag-ask">Pick a category<i aria-hidden="true">▸</i></span></h2>
       <div class="ww-cats" role="group" aria-label="Categories">
         {cats.map((c, k) => (
           <button
@@ -310,14 +291,6 @@ const first = items[0]?.slug ?? '';
                 <Fragment><span class="ww-pw-i"><span class:list={['ww-pw', { 'is-hot': x.hot }]}>{x.w}</span>{k < it.words.length - 1 && <span class="ww-pw-dot" aria-hidden="true"> ·</span>}</span>{k < it.words.length - 1 && ' '}</Fragment>
               ))}
             </p>
-            {review ? (
-              <div class="ww-buy">
-                <button type="button" class="ww-try rv-btn rv-btn--stack" data-ww-review={it.slug}>
-                  <span>Review {it.name}</span>
-                  <span class="rv-btn__sub">10% code when you finish</span>
-                </button>
-              </div>
-            ) : (
             <div class="ww-buy">
               {it.price && <span class="ww-price">{it.price}</span>}
               {/* the button family (buttons.css, D9 2026-11-01): Try = brass (honey when free), Product page = ghost */}
@@ -334,7 +307,6 @@ const first = items[0]?.slug ?? '';
               ))}
               <a class="ww-more rv-btn rv-btn--ghost rv-btn--sm" href={`/${it.slug}`}><span class="sr-only">{it.name} </span>Product page <span aria-hidden="true">&rarr;</span></a>
             </div>
-            )}
           </div>
         </article>
       );
@@ -357,7 +329,6 @@ const first = items[0]?.slug ?? '';
     const phone = window.matchMedia('(max-width: 860px)');
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
     const slugOf = (el: HTMLElement) => el.dataset.wwPanel ?? el.dataset.wwPick ?? el.dataset.wwItem ?? '';
-    const reviewMode = wall.dataset.wwMode === 'review'; // /review's picker (the header)
 
     /* The TV's art, late and lean (checker S4): the frame and DRIFT's poster
        load once the page has loaded and the wall is a screen away, each in
@@ -1088,11 +1059,6 @@ const first = items[0]?.slug ?? '';
     };
     light(lit, false); // the tabs' starting state
 
-    // review mode: the page takes the pick from here
-    const reviewPick = (slug: string) => {
-      if (slug) wall.dispatchEvent(new CustomEvent('ww:review', { detail: { slug }, bubbles: true }));
-    };
-
     // pick a category: its plugins stay (one after another), the lit one stays if it is in it, else the first lights
     const setCat = (c: string, announce = true, move = announce) => {
       if (!catBtns.some((b) => b.dataset.wwCat === c)) c = 'all';
@@ -1180,7 +1146,6 @@ const first = items[0]?.slug ?? '';
       } else {
         urlDue = true;
         light(slug);
-        if (reviewMode) reviewPick(slug); // a laptop's click on a plugin picks it
       }
     });
     list?.addEventListener('keydown', (e) => {
@@ -1201,22 +1166,6 @@ const first = items[0]?.slug ?? '';
       light(slugOf(on[n]));
       on[n].focus();
     });
-    /* review mode: a mouse resting on a plugin lights it (a laptop; phones open the pane on a tap, as at home). A
-       short rest first, so a pointer crossing the list on its way elsewhere changes nothing; a fast sweep that does
-       light several is the SKIM rule's (the glass stays dark until the last one). */
-    if (reviewMode) {
-      let hoverT = 0;
-      rows.forEach((a) => {
-        a.addEventListener('pointerenter', (e) => {
-          if (e.pointerType !== 'mouse' || phone.matches) return;
-          clearTimeout(hoverT);
-          hoverT = window.setTimeout(() => light(slugOf(a)), 70);
-        });
-        a.addEventListener('pointerleave', () => clearTimeout(hoverT));
-      });
-      wall.querySelectorAll<HTMLButtonElement>('[data-ww-review]').forEach((b) =>
-        b.addEventListener('click', () => reviewPick(b.dataset.wwReview ?? '')));
-    }
     wall.querySelectorAll<HTMLButtonElement>('[data-ww-back]').forEach((b) => b.addEventListener('click', () => {
       if (history.state?.wwView === 'panel') {
         backKey = true; // popstate lands the list, the open run backwards
@@ -1256,7 +1205,7 @@ const first = items[0]?.slug ?? '';
        moved it. */
     document.addEventListener('click', (e) => {
       const a = (e.target as Element | null)?.closest('a[href="/#plugins"]');
-      if (!a || !section || reviewMode || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      if (!a || !section || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
       e.preventDefault();
       e.stopPropagation();
       a.closest('dialog')?.close(); // the cart drawer
@@ -1313,7 +1262,7 @@ const first = items[0]?.slug ?? '';
        its top stopped within --ww-snap-zone % of the screen from the nav. The
        target is worked out then, never cached. Lenis glides it there; under
        reduced motion there is no Lenis and no lock. */
-    if (section && !reviewMode) {
+    if (section) {
       let armed = false;
       let touching = false;
       let idle = 0;
@@ -1635,32 +1584,6 @@ const first = items[0]?.slug ?? '';
      circular at every size */
   .ww-panel[data-ww-panel='gas'] .ww-ui :global(img) { border-radius: 11% / 7.4%; }
   .ww-panel[data-ww-panel='radio-roulette'] .ww-ui :global(img) { border-radius: 9% 9% 10.6% 10.6% / 16.2% 16.2% 19% 19%; }
-  /* review mode: every window whole in the list (no 16:10 crop), the ring on the picture itself; Radio Roulette's
-     window is cut to its own outline, so it gets no box ring and no clip, its edge and shadow follow the shape */
-  .ww[data-ww-mode='review'] .ww-thumb { display: flex; align-items: center; justify-content: center; overflow: visible; box-shadow: none; }
-  .ww[data-ww-mode='review'] .ww-thumb :global(img) {
-    width: auto;
-    height: auto;
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    border-radius: 3px;
-    box-shadow: 0 0 0 1px var(--ww-edge);
-    transition: box-shadow 120ms ease, filter 120ms ease;
-  }
-  .ww[data-ww-mode='review'] .ww-row.is-lit .ww-thumb { box-shadow: none; }
-  .ww[data-ww-mode='review'] .ww-row.is-lit .ww-thumb :global(img) { box-shadow: 0 0 0 1px var(--ww-ink-hot), 0 0 18px var(--ww-glow); }
-  .ww[data-ww-mode='review'] [data-ww-item='radio-roulette'] .ww-thumb :global(img) { box-shadow: none; border-radius: 0; filter: drop-shadow(0 0 1px var(--ww-edge)); }
-  .ww[data-ww-mode='review'] [data-ww-item='radio-roulette'] .ww-row.is-lit .ww-thumb :global(img) { box-shadow: none; filter: drop-shadow(0 0 1px var(--ww-ink-hot)) drop-shadow(0 0 9px var(--ww-glow)); }
-  .ww[data-ww-mode='review'] .ww-panel[data-ww-panel='radio-roulette'] .ww-ui :global(img) { border-radius: 0; }
-  /* ...and on the screen its phosphor edge, glow and drop follow that outline (the screen rule below, as filters) */
-  :global(html:not(.hc)) .ww[data-ww-mode='review'][data-ww-bg='screen'] > .ww-panel[data-ww-panel='radio-roulette'] .ww-ui :global(img) {
-    box-shadow: none;
-    filter:
-      drop-shadow(0 0 1px hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.55))
-      drop-shadow(0 0 18px hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.22))
-      drop-shadow(0 18px 20px rgba(0, 0, 0, 0.55));
-  }
   /* GAS's window is one tall knob panel: it stands beside its text instead of over it */
   .ww-panel.is-portrait {
     grid-template-columns: auto minmax(0, 1fr);

@@ -1,6 +1,11 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import WordWall from '../components/WordWall.astro';
+import { Image } from 'astro:assets';
+import rlImg from '../assets/plugins/revlimiter-hero.png';
+import gasImg from '../assets/plugins/gas-hero.png';
+// cut along its own chrome outline, transparent outside (2026-11-03)
+import rrImg from '../assets/plugins/radioroulette-hero-cut.png';
+import driftImg from '../assets/showcase/drift-window-init.png';
 import { site } from '../data/site';
 import { plugins, fmtPrice } from '../data/plugins';
 import { tvName } from '../data/library';
@@ -8,12 +13,28 @@ import { sections, questions, reviewMeta, ratingWords, REVIEW_PLUGINS } from '..
 
 const ui = reviewMeta.ui;
 
+// The plugin windows (the home TV's pictures; Radio Roulette's cut to its outline) and each plugin's channel colour,
+// hue + saturation, the same numbers as the home TV's --ww-ch-<slug>-h / -s (WordWall.astro).
+const CHANNEL: Record<string, [number, number]> = {
+  revlimiter: [26, 78],
+  drift: [280, 70],
+  'radio-roulette': [38, 28],
+  gas: [46, 62],
+};
+const WINDOWS: Record<string, { img: ImageMetadata; portrait?: boolean; cut?: boolean }> = {
+  revlimiter: { img: rlImg },
+  drift: { img: driftImg },
+  'radio-roulette': { img: rrImg, cut: true },
+  gas: { img: gasImg, portrait: true },
+};
+
 const picks = REVIEW_PLUGINS.map((slug) => {
   const p = plugins.find((x) => x.slug === slug);
   if (!p) throw new Error(`review: no plugin "${slug}" in plugins.ts`);
   // a price only when it sells today (DRIFT's free beta and GAS have none, so the price question is skipped)
   const price = p.status === 'live' && !p.isFree && p.introPriceUsd != null ? fmtPrice(p.introPriceUsd) : '';
-  return { slug, name: tvName(p), price };
+  const [h, sat] = CHANNEL[slug] ?? [38, 28];
+  return { slug, name: tvName(p), price, h, sat, ...WINDOWS[slug] };
 });
 
 // `{p}` = the picked plugin's name, `{price}` = its price: the script fills both in
@@ -45,34 +66,40 @@ const clientConfig = {
 ---
 
 <BaseLayout title="Review a Plugin" description="Review a RevAudio plugin and get a 10% code for any plugin." index={false}>
-  <header class="rv-head container">
-    <h1 class="rv-title">{ui.title}</h1>
-    <p class="rv-intro">{ui.intro}</p>
-  </header>
-
-  {/* the picker: the home TV itself (WordWall mode="review"): hover a plugin to tune it in, "Review <plugin>" picks */}
-  <WordWall mode="review" />
-  <noscript><p class="rv-intro container">This form needs JavaScript. Or email your review to info@revaudio.net.</p></noscript>
-
-  <div class="rv-wrap" id="rv-form-wrap" hidden>
+  <div class="rv-wrap">
     <div class="container">
       <div id="review-root" class="rv-card">
+        <h1 class="rv-title">{ui.title}</h1>
+        <p class="rv-intro">{ui.intro}</p>
+
         <form id="rv-form" novalidate>
           <!-- honeypot: real users never fill this; bots do -->
           <input type="text" name="_gotcha" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
 
-          {/* the pick, set by the TV (ww:review): the form reads it like any answer */}
-          <fieldset class="vh" id="q-plugin" aria-hidden="true">
-            {picks.map((p) => <input type="radio" name="plugin" value={p.slug} tabindex="-1" />)}
-          </fieldset>
+          {/* ── step 0: the plugin ── */}
+          <section class="sec pick-sec" id="q-plugin">
+            <h2 class="pick-title" id="pick-title">{ui.pickTitle}</h2>
+            {/* one small screen per plugin: hover tunes it in (its channel colour + a glitch), a click picks it */}
+            <div class="cubes" role="radiogroup" aria-labelledby="pick-title">
+              {picks.map((p) => (
+                <label class:list={['cube', { 'is-cut': p.cut }]} style={`--h:${p.h};--s:${p.sat}`}>
+                  <input class="vh" type="radio" name="plugin" value={p.slug} />
+                  <span class="cube-img" aria-hidden="true">
+                    <Image src={p.img} alt="" width={p.portrait ? 200 : 400} widths={p.portrait ? [100, 200] : [200, 400]} sizes={p.portrait ? '90px' : '(max-width: 640px) 40vw, 180px'} format="webp" quality={82} />
+                  </span>
+                  <span class="cube-name">{p.name}</span>
+                </label>
+              ))}
+            </div>
+            <noscript><p class="q-help">This form needs JavaScript. Or email your review to info@revaudio.net.</p></noscript>
+          </section>
 
           {/* ── the rest opens once a plugin is picked ── */}
           <div class="after-pick" hidden>
-            <div class="rv-progress">
-              <span class="rv-progress-name" data-pn aria-hidden="true">the plugin</span>
-              <span class="rv-progress-bar" aria-hidden="true"><span class="rv-progress-fill"></span></span>
-              <span class="rv-progress-count" aria-hidden="true">0 / 0</span>
-              <button type="button" class="rv-change" data-rv-change>Change</button>
+            <div class="rv-progress" aria-hidden="true">
+              <span class="rv-progress-name" data-pn>the plugin</span>
+              <span class="rv-progress-bar"><span class="rv-progress-fill"></span></span>
+              <span class="rv-progress-count">0 / 0</span>
             </div>
 
             {sections.map((sec, si) => (
@@ -232,7 +259,6 @@ const clientConfig = {
     const form = document.getElementById('rv-form');
     const status = document.querySelector('.rv-status');
     const after = form.querySelector('.after-pick');
-    const wrap = document.getElementById('rv-form-wrap');
     const t = CFG.t;
     const wired = !!CFG.workerUrl;
     const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -269,21 +295,13 @@ const clientConfig = {
         document.querySelectorAll('[data-pn]').forEach((el) => (el.textContent = p.name));
         document.querySelectorAll('[data-price]').forEach((el) => (el.textContent = p.price));
         form.querySelectorAll('[data-paid-only]').forEach((el) => (el.hidden = !p.price));
+        document.getElementById('q-plugin').classList.remove('invalid');
+        const first = after.hidden;
         after.hidden = false;
-        wrap.hidden = false;
         progress();
-        wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (first) after.querySelector('.sec')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }),
     );
-    document.addEventListener('ww:review', (e) => {
-      const r = form.querySelector(`input[name="plugin"][value="${e.detail?.slug}"]`);
-      if (!r) return;
-      r.checked = true;
-      r.dispatchEvent(new Event('change'));
-    });
-    // "Change": back up to the TV
-    form.querySelector('[data-rv-change]')?.addEventListener('click', () =>
-      document.getElementById('review-tv')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
 
     // ── reveals: "other" + follow-ups ─────────────────────────────────────
     const revealers = {};
@@ -365,7 +383,10 @@ const clientConfig = {
       // honeypot: pretend it worked, send nothing
       if (form.querySelector('[name="_gotcha"]').value) return done(email, false);
 
-      if (!pick()) return; // the form shows only after a pick
+      if (!pick()) {
+        document.getElementById('q-plugin').classList.add('invalid');
+        return show(t.requiredMissing);
+      }
       const missing = CFG.questions.filter((q) => q.required && live(q) && !answered(q));
       if (missing.length) {
         missing.forEach((q) => document.getElementById('q-' + q.id)?.classList.add('invalid'));
@@ -428,15 +449,9 @@ const clientConfig = {
   </script>
 
   <style>
-    .rv-head {
-      text-align: center;
-      padding-top: calc(var(--nav-h) + var(--sale-h) + clamp(1.5rem, 4vw, 2.75rem));
-      padding-bottom: clamp(0.25rem, 1.5vw, 0.75rem);
-    }
-    .rv-head .rv-intro { margin-inline: auto; }
     .rv-wrap {
-      padding-block: clamp(2rem, 5vw, 3.5rem) clamp(3rem, 8vw, 5rem);
-      scroll-margin-top: calc(var(--nav-h) + var(--sale-h));
+      padding-block: clamp(1.5rem, 4vw, 3rem) clamp(3rem, 8vw, 5rem);
+      padding-top: calc(var(--nav-h) + var(--sale-h) + clamp(1.5rem, 4vw, 3rem));
     }
     .rv-card {
       max-width: 760px;
@@ -473,6 +488,145 @@ const clientConfig = {
     .sec-n { font-family: var(--font-mono); font-size: 0.75rem; color: var(--fg-faint); letter-spacing: 0.08em; }
     .sec-n::before { content: '0'; }
 
+    /* ── plugin picker: four small screens. At rest a dark glass; hover tunes one in: its channel colour (the home
+       TV's numbers) fades up, the picture and the glass glitch once, the name lights; the picked one stays lit ── */
+    .pick-sec { margin-top: 1.75rem; }
+    .pick-title {
+      margin: 0 0 1rem;
+      font-family: var(--font-display);
+      font-size: var(--text-xl);
+      font-weight: 400;
+      letter-spacing: 0.02em;
+      color: var(--fg);
+    }
+    .cubes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(0.6rem, 1.8vw, 0.9rem); }
+    .cube {
+      --gs: min(100%, calc(var(--s) * 1% + 20%));
+      --ink: hsl(var(--h) min(100%, calc(var(--s) * 1% + 25%)) 66%);
+      --ink-hot: hsl(var(--h) min(100%, calc(var(--s) * 1% + 30%)) 74%);
+      --glow: hsl(var(--h) var(--gs) 58% / 0.45);
+      --glow-hot: hsl(var(--h) var(--gs) 58% / 0.6);
+      --edge: hsl(var(--h) var(--gs) 58% / 0.35);
+      position: relative;
+      isolation: isolate;
+      overflow: hidden;
+      aspect-ratio: 1;
+      display: grid;
+      grid-template-rows: minmax(0, 1fr) auto;
+      gap: 0.6rem;
+      padding: 0.9rem 0.75rem 0.85rem;
+      border-radius: 14px;
+      border: 1px solid var(--border-bright);
+      background: radial-gradient(ellipse 70% 75% at 50% 42%, #1d1a17 0%, #110f0d 55%, #080706 100%);
+      box-shadow: inset 0 0 28px rgba(0, 0, 0, 0.7);
+      cursor: pointer;
+      transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+    }
+    /* the channel's glow: a layer that fades in (a gradient can't transition) */
+    .cube::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: -2;
+      background: radial-gradient(ellipse 70% 75% at 50% 42%,
+        hsl(var(--h) calc(var(--s) * 1%) 24%) 0%,
+        hsl(var(--h) calc(var(--s) * 1%) 13%) 45%,
+        hsl(var(--h) calc(var(--s) * 1%) 5%) 80%,
+        hsl(var(--h) calc(var(--s) * 1%) 2%) 100%);
+      opacity: 0;
+      transition: opacity 220ms ease;
+    }
+    /* the glass: scanlines + aperture grille, and the hum bar parked above (it rolls down once on a glitch) */
+    .cube::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      background:
+        repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.22) 0 1px, transparent 1px 3px),
+        repeating-linear-gradient(90deg, rgba(255, 40, 90, 0.05) 0 1px, rgba(40, 255, 140, 0.035) 1px 2px, rgba(70, 90, 255, 0.05) 2px 3px),
+        linear-gradient(transparent, rgba(255, 255, 255, 0.09) 50%, transparent) 0 -30% / 100% 22% no-repeat;
+    }
+    .cube:has(:focus-visible) { outline: 2px solid var(--ink-hot); outline-offset: 3px; }
+    /* the picture whole, at its own shape */
+    .cube-img { display: flex; align-items: center; justify-content: center; min-height: 0; }
+    .cube-img :global(img) {
+      display: block;
+      width: auto;
+      height: auto;
+      max-width: 100%;
+      max-height: 100%;
+      border-radius: 3px;
+      opacity: 0.62;
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06);
+      transition: opacity 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+    }
+    .cube.is-cut .cube-img :global(img) { border-radius: 0; box-shadow: none; }
+    /* the name only: stencil, outlined at rest, lit in the channel's phosphor */
+    .cube-name {
+      text-align: center;
+      font-family: var(--font-display);
+      font-size: clamp(1.1rem, 2.1vw, 1.4rem);
+      line-height: 0.95;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      text-wrap: balance;
+      color: transparent;
+      -webkit-text-stroke: 1.1px var(--fg-dim);
+      transition: color 140ms ease, -webkit-text-stroke-color 140ms ease, filter 140ms ease;
+    }
+
+    /* tuned in: hover (a mouse) or the pick */
+    @media (hover: hover) {
+      .cube:hover { border-color: var(--edge); transform: translateY(-2px); }
+      .cube:hover::before { opacity: 1; }
+      .cube:hover .cube-img :global(img) { opacity: 1; box-shadow: 0 0 0 1px var(--edge); }
+      .cube.is-cut:hover .cube-img :global(img) { box-shadow: none; filter: drop-shadow(0 0 1px var(--edge)); }
+      .cube:hover .cube-name { -webkit-text-stroke-color: var(--ink-hot); filter: drop-shadow(0 0 6px var(--glow)); }
+    }
+    .cube:has(:checked) {
+      border-color: var(--ink-hot);
+      box-shadow: inset 0 0 28px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--ink-hot), 0 12px 30px -14px var(--glow-hot);
+    }
+    .cube:has(:checked)::before { opacity: 1; }
+    .cube:has(:checked) .cube-img :global(img) { opacity: 1; box-shadow: 0 0 0 1px var(--ink-hot), 0 0 16px var(--glow); }
+    .cube.is-cut:has(:checked) .cube-img :global(img) { box-shadow: none; filter: drop-shadow(0 0 1px var(--ink-hot)) drop-shadow(0 0 8px var(--glow)); }
+    .cube:has(:checked) .cube-name {
+      color: var(--ink-hot);
+      -webkit-text-stroke-color: var(--ink-hot);
+      filter: drop-shadow(0 0 8px var(--glow-hot)) drop-shadow(0 0 20px var(--glow));
+    }
+    #q-plugin.invalid .cubes { outline: 1px solid var(--redline); outline-offset: 6px; border-radius: 14px; }
+
+    /* the glitch, once as it tunes in: the picture jumps and tears sideways, the glass flickers, the hum bar rolls */
+    @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+      .cube:hover { animation: cube-flicker 420ms steps(1, end) 1; }
+      .cube:hover .cube-img :global(img) { animation: cube-jump 340ms steps(1, end) 1; }
+      .cube:hover::after { animation: cube-roll 700ms linear 1; }
+    }
+    @keyframes cube-jump {
+      0% { transform: translateX(0); }
+      10% { transform: translateX(-5px) skewX(-4deg); }
+      22% { transform: translateX(4px); clip-path: inset(0 0 52% 0); }
+      30% { transform: translateX(-2px); clip-path: inset(38% 0 0 0); }
+      42% { transform: translateX(2px) skewX(3deg); clip-path: none; }
+      56% { transform: translateX(-1px); }
+      70%, 100% { transform: none; }
+    }
+    @keyframes cube-flicker {
+      0% { filter: brightness(1); }
+      12% { filter: brightness(1.55) contrast(1.1); }
+      24% { filter: brightness(0.7); }
+      38% { filter: brightness(1.25); }
+      52% { filter: brightness(0.9); }
+      66%, 100% { filter: none; }
+    }
+    @keyframes cube-roll {
+      from { background-position: 0 0, 0 0, 0 -30%; }
+      to { background-position: 0 0, 0 0, 0 130%; }
+    }
+
     /* ── progress strip: sticks under the nav ── */
     .rv-progress {
       position: sticky;
@@ -481,29 +635,16 @@ const clientConfig = {
       display: flex;
       align-items: center;
       gap: 0.75rem;
-      /* the card's top edge: the strip opens the form */
-      margin: calc(-1 * clamp(1.25rem, 4vw, 2.5rem)) calc(-1 * clamp(1.25rem, 4vw, 2.5rem)) 0;
-      border-radius: 14px 14px 0 0;
+      margin: 1.75rem calc(-1 * clamp(1.25rem, 4vw, 2.5rem)) 0;
       padding: 0.6rem clamp(1.25rem, 4vw, 2.5rem);
       background: color-mix(in srgb, var(--bg-1) 92%, transparent);
       backdrop-filter: blur(6px);
-      border-bottom: 1px solid var(--border);
+      border-block: 1px solid var(--border);
     }
     .rv-progress-name { font-family: var(--font-display); font-size: 1.05rem; color: var(--brass-bright); letter-spacing: 0.03em; white-space: nowrap; }
     .rv-progress-bar { flex: 1; height: 4px; border-radius: 4px; background: var(--bg-3, #222); overflow: hidden; }
     .rv-progress-fill { display: block; height: 100%; background: var(--brass); transform: scaleX(0); transform-origin: left; transition: transform 0.25s var(--ease); }
     .rv-progress-count { font-family: var(--font-mono); font-size: 0.75rem; color: var(--fg-dim); font-variant-numeric: tabular-nums; white-space: nowrap; }
-    .rv-change {
-      border: 1px solid var(--border-bright);
-      border-radius: 999px;
-      background: none;
-      color: var(--fg-dim);
-      font: inherit;
-      font-size: 0.75rem;
-      padding: 0.2rem 0.65rem;
-      cursor: pointer;
-    }
-    .rv-change:hover { color: var(--fg); border-color: var(--brass-dark); }
 
     /* ── questions (as the beta form) ── */
     .q { margin-bottom: 1.6rem; scroll-margin-top: calc(var(--nav-h) + var(--sale-h) + 4rem); }
@@ -639,6 +780,7 @@ const clientConfig = {
     .rv-done-link { display: inline-block; margin-top: 1.5rem; color: var(--brass); font-size: 0.9rem; }
 
     @media (max-width: 640px) {
+      .cubes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .rate { flex-direction: column; align-items: stretch; }
       .rate-read { order: -1; }
       .rate-bar { flex: none; height: 5rem; gap: 0.25rem; }
@@ -651,7 +793,7 @@ const clientConfig = {
       .rv-submit .rv-btn { width: 100%; }
     }
     @media (prefers-reduced-motion: reduce) {
-      .rate-led, .rv-progress-fill { transition: none; }
+      .cube, .cube::before, .cube-name, .cube-img :global(img), .rate-led, .rv-progress-fill { transition: none; }
     }
   </style>
 </BaseLayout>
