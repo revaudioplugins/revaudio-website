@@ -339,3 +339,18 @@ Chromium ran at p95 9.2 ms a frame, max 9.4 ms.
   page, so a bench panel with `overflow: auto` never scrolls. Put `data-lenis-prevent` on every scrollable panel
   (bench, slot list). And a drag tool must keep things inside the room: a floor drag on a far object, seen at a slant,
   threw L19 about 100 m through the far wall; drag on a plane facing the camera and clamp to the room.
+
+## 2026-11-03 - a room collaged from cut-outs reads 2D: paint the whole view and project it (`danavivi-4e`)
+
+The long garage's first Higgsfield art: five photo cut-outs (car, pegboard, amp, tool chests) on planes in their slots.
+Dan: "it feels like a 2D and it doesn't feel like a whole room ... I wanted to feel like much more glued and whole, and
+3D, and real. Less images." Each cut-out brings its own light, edges and angle and never sits in the room; a wall
+item's picture also covered what hung on it (the wrench pegboard behind the guitars).
+
+Rule: paint the whole set from the walk's own camera (GPT Image 2.5, the bare-set render as its reference: 0 px shift
+measured, 3840x2160) and project the painting back onto the set with a depth test per projector; more spots along the
+walk cover what one painting can't see. Product faces (TV, CRT screens, posters) stay live pixels, and brand marks the
+painter adds (a Marshall script, a drum badge) are cleaned out before the picture ships.
+- Also: three.js calls `texture.onUpdate` inside a render, so whatever hangs on it (here `arrange()`) runs mid-render.
+  Never render from there: the projectors' depth pass threw "location is not from the associated program". Mark it
+  stale and redo it before the next frame.

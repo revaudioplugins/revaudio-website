@@ -9,8 +9,8 @@ only after Dan picks: `src/pages/index.astro`, a new `src/components/HomeOpening
 - The rule (Dan 2026-11-03, `DESIGN.md` §7): the room is a permanent living set, re-dressed for seasons (Halloween,
   Black Friday, Christmas), plugins, bundles and work in progress by moving / adding / swapping things, never rebuilt.
   Anything new gets bench controls.
-- Built: `tools/_home-opening/room.html`, a Three.js room, no credits spent. Grey labelled blocks = the future Higgsfield
-  cut-outs (☰ Slots lists them); scroll walks down the aisle and locks onto the live TV (the hand-off of the first
+- Built: `tools/_home-opening/room.html`, a Three.js room, no credits spent. Grey labelled blocks = the set the paintings are
+  projected on (☰ Slots lists them); scroll walks down the aisle and locks onto the live TV (the hand-off of the first
   prototype, `tools/_home-opening/index.html`, commit `f35fdf0`, kept for reference). Dressed so far: the coupe side-on on
   a scissor lift, half out through a roll-up door onto a night street; the REVAUDIO neon top right of the end wall, hung
   crooked on two wires; the GAS 2 posters + a COMING SOON plate; CRT monitors (RevFX, DRIFT, RevLimiter, Radio
@@ -26,14 +26,25 @@ only after Dan picks: `src/pages/index.astro`, a new `src/components/HomeOpening
   laptop: `git fetch origin && git checkout feat/home-opening`.
 - Checks (2026-11-03, `danavivi-4e`, commit `e9bed19`): Chrome 1312x734, walk 60 / 76 / 90 / 100 %: the desk slides out
   under the frame, the stands flank the TV, nothing covers the lock; no console errors on a tracked reload.
-- Default skin, test round (2026-11-03, Dan: "yes, generate the test"; 12 credits spent, 238 left): GPT Image 2.5,
-  transparent, 2k: the car, pegboard L01, amp stack L04 and tool chest L05 at high, the same chest at medium on L07
-  (beside L05); R05 shares L05's image, mirrored. In the room the medium chest reads the same as the high one, so the
-  rest can go at medium. Built: `SKIN` in `room.html` + `assets/skins/default/*.webp` (edge colours bled into the clear
-  area, cropped, at most 2048 px), a plane inside each slot's block (the block hides, the move tool still grabs it), the
-  bench's Art toggle; a slot's LEDs / VU hide under its art. Checks: Playwright 1141x636, walk 0-55 %, art on / off,
-  no page errors. Weight: about 2.4 MB for the five, so the site step (todo 5) needs smaller files per slot.
-- Art: Higgsfield had 250 credits (Lite, 2026-11-02), none spent before the test round; the OpenAI key in
+- The default skin is a PAINTED room (Dan 2026-11-03). The cut-out test (12 credits: car, pegboard, amp, chests as
+  planes in their slots) read 2D, Dan: "it doesn't feel like a whole room ... much more glued and whole, and 3D, and
+  real. Less images"; he picked "Painted 3D room" over real 3D models (Tripo 9 / Meshy 38 credits each). Cut-out code
+  and images removed (in git history at `2979ef6`). Also on his word: the guitars got the start of the left wall, the
+  wrench pegboard L01 moved over the workbench (f 0.58, y 1.5).
+- How it works (`PAINT` in `room.html`, the GAS 2 drone's recipe): `?capture=<walk 0..1>` renders the bare set from that
+  spot at 1920x1080 (no sway, labels, line, dust, edges, chrome); GPT Image 2.5 repaints it (16:9, 4k, high, 4.25
+  credits; the render as `image_references`); the painting goes back onto the set from that camera, depth-tested per
+  projector (`placeShots`, a depth picture each, redone before the next frame after any re-layout, never mid-render);
+  every surface takes the sharpest painting that sees it. Live pixels stay: the TV, the CRT screens, the posters. While
+  painted the set lays out for 16:9 (`PAINT.aspect`) so the paintings line up on any laptop. Bench: Painted (on/off).
+- Proof shot 1 (2026-11-03, 4.25 credits, 233.75 left): `assets/skins/default/paint/walk-000.webp`, painted from walk 0;
+  0 px shift against its render; brand marks the painter added were cleaned locally (a Marshall script on the 4x12, a
+  kick-drum badge, headstock decals). Checks: Playwright 1920x1080 at walk 0 gives back the painting (2.82 % of pixels
+  differ, the live posters / screens / TV); 1141x636 walk 0-100 %, no page errors or WebGL warnings. Reads as one real
+  photo to about 20 % of the walk; beyond it the far end softens and spots no painting saw go dark.
+- Next (waits on Dan's yes, about 12.75 credits): 3 more shots along the walk (about 30 / 55 / 80 %), each painted from
+  the room as it already looks from there (the painted render with the bare set in its holes), so the shots agree.
+- Art: Higgsfield had 250 credits (Lite, 2026-11-02); 16.25 spent on 2026-11-03 (the cut-out test 12 + proof shot 1 4.25); the OpenAI key in
   `~/.zsh/openai.zsh` answered "expired" (2026-11-02). Prices (2026-11-03, `get_cost`, nothing submitted): GPT Image
   2.5 with its own transparent background, 2k: 1 credit medium, 2.75 high (1k low 0.25; 4k high 4.25); Seedream 5 Pro
   2k + background removal 2.5; Nano Banana Pro 2k 2 (no transparency). The default skin (Dan 2026-11-03: "make first
@@ -42,7 +53,7 @@ only after Dan picks: `src/pages/index.astro`, a new `src/components/HomeOpening
   56 credits at medium or 159 at high, one take each. Each batch waits on Dan's yes after its cost (RULE 0).
 - Open with Dan: plan the skins (todo step 1b); a "just got up" cue on the throne (headphones or sticks), offered, not
   answered.
-- Next: Dan's pick: "plan the skins", or the next dressing round on the bench.
+- Next: Dan's yes on the 3 more shots (above), or notes on proof shot 1.
 
 ## 2026-11-02 — Footer: categories fold into drawers (Claude Code `revaudio-3b [a4cb6d]`, laptop 2) — ON MAIN + LIVE: merged `--no-ff` 2026-11-02 by Claude Code `revaudio-0c [571e5c]` (laptop 1) on Dan's word "push it to main and merge" (Yoni had approved by pushing the branch)
 

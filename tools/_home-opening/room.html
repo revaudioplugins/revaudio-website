@@ -43,6 +43,8 @@
   #gl.is-hot { cursor: pointer; }
   body.editing #gl { cursor: grab; }
   body.editing #gl.is-dragging { cursor: grabbing; }
+  /* ?capture: the bare set for the painter, no page chrome */
+  body.capture .nav, body.capture .stage-nav, body.capture .read-b, body.capture #benchOpen { display: none !important; }
   .tv-live { position: absolute; left: 0; top: var(--nav-h); width: 100%; height: calc(var(--vh) - var(--nav-h)); display: block;
     opacity: 0; border-radius: var(--tv-r); pointer-events: none; }
   .tv-live.is-on { opacity: 1; }
@@ -129,7 +131,7 @@
     <button class="chip" data-flag="wire">Neon wireframe</button>
     <button class="chip" data-flag="readB">Big line</button>
     <button class="chip" data-flag="engine">Engine on</button>
-    <button class="chip" data-flag="art">Art</button>
+    <button class="chip" data-flag="paint">Painted</button>
   </div>
   <label class="box"><span>Walk position</span><output id="walkOut">0 %</output><input id="walkIn" type="range" min="0" max="1" step="0.001" value="0"></label>
   <div class="box">
@@ -192,10 +194,12 @@ const DEF = {
   signWall: 'endRight', signF: 0.73, signX: 2.44, signY: 3.32,  // the wall in front of you, top right (Dan 11-03)
   signScale: 1.59, signTilt: 2,          // 50 % bigger, hung a little crooked on two wires (Dan 11-03)
   ver: 6,                                // settings version (5 = Dan's bench of 11-03 baked, 6 = his third, with the pegboard move): 2 moved the sign to the end wall, 3 made it bigger + crooked, 4 took the road off the floor
-  labels: 1, wire: 0, readB: 1, snap: 1, art: 1, bench: 0, edit: 0,  // art: the default skin's images over the blocks
+  labels: 1, wire: 0, readB: 1, snap: 1, paint: 1, bench: 0, edit: 0,  // paint: the painted room over the bare set
   moves: {},                             // per-object moves from the move tool: { id: { f, x, y, side, s, r } }
 };
 const KEY = 'hoRoom:v1';
+// ?capture=<walk 0..1>: the bare set from that spot for the painter (Playwright at 1920x1080); nothing is saved
+const CAPTURE = new URLSearchParams(location.search).get('capture');
 const S = { ...DEF, moves: {} };
 let stored = {};
 try { stored = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) {}
@@ -210,6 +214,7 @@ if (sv < 4) Object.assign(S, { floorLines: 0, ledStrip: 0 });
 if (sv < 5) for (const id of ['L19', 'E02', 'E03', 'E05', 'E06', 'E08', 'A08', 'L12', 'R01']) delete S.moves[id]; // baked into the tables; L19 was dragged 100 m off
 if (sv < 6) delete S.moves.L01; // baked into its row
 S.ver = DEF.ver;
+if (CAPTURE != null) Object.assign(S, { sway: 0, labels: 0, readB: 0, dust: 0, bench: 0, edit: 0, paint: 0 }); // the bare set for the painter
 // undo / redo: every saved change is one step (a whole slider or object drag, a toggle, a reset); view state is not
 const UNDO_SKIP = new Set(['bench', 'edit']);
 let hist = null, histAt = 0, restoring = false;
@@ -222,7 +227,7 @@ function remember() {
   if (hist.length > 200) hist.shift();
   histAt = hist.length - 1; undoUi();
 }
-const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} remember(); };
+const save = () => { if (CAPTURE != null) return; try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} remember(); };
 
 // the live TV, captured per screen size (r = the bezel's corner radius, px)
 const CAPS = [
@@ -393,7 +398,8 @@ function applyTvTexture() {
 // ---------- the slots: every block becomes one Higgsfield image (step 2's slot list) ----------
 // side -1 = left wall, 1 = right wall; f = share of the stretch from the end wall to 4 m in front of the camera; w along the wall.
 const SIDE = [
-  { id: 'L01', cat: 'garage', label: 'Pegboard: wrenches, spanners', side: -1, f: 0.912, w: 3.2, h: 1.6, d: 0.05, y: 1.9 },
+  // Dan 11-03: the guitars get the start of the left wall; the wrenches hang over the workbench, under the parts shelf
+  { id: 'L01', cat: 'garage', label: 'Pegboard: wrenches, spanners', side: -1, f: 0.58, w: 2.6, h: 1.0, d: 0.05, y: 1.5 },
   { id: 'L02', cat: 'music', label: 'Guitar (hanging)', side: -1, f: 0.915, w: 0.38, h: 1.05, d: 0.08, y: 1.8, on: 0.05 },
   { id: 'L03', cat: 'music', label: 'Guitar (hanging)', side: -1, f: 0.87, w: 0.38, h: 1.05, d: 0.08, y: 1.8, on: 0.05 },
   { id: 'L04', cat: 'music', label: 'Amp stack (head + 4x12)', side: -1, f: 0.82, w: 0.8, h: 1.55, d: 0.42, leds: 1 },
@@ -478,13 +484,15 @@ const MONITORS = [
   { id: 'M04', pic: 'scr-radio', label: 'CRT monitor: Radio Roulette', side: 1, f: 0.44, base: 1.9, w: 0.42 },
 ];
 
-// ---------- the default skin: one Higgsfield image per slot, over its grey block (Dan 2026-11-03: "make first the default skin") ----------
-// Standing things are shot three-quarter as if on the left wall (front to the right) and mirrored on the right wall;
-// wall-flat things straight-on; the car side-on, nose right. A slot without art keeps its block; a skin swaps single slots.
-const SKIN = {
-  dir: 'assets/skins/default/',
-  // the test round (11-03, 12 credits): L07 wears the medium-quality chest beside L05's high one; R05 shares L05's, mirrored
-  art: { CAR: 'CAR', L01: 'L01', L04: 'L04', L05: 'L05', L07: 'L05-medium', R05: 'L05' },
+// ---------- the painted room, the default skin (Dan 2026-11-03: "glued and whole, and 3D, and real", over cut-outs) ----------
+// GPT Image paints the set as the walk sees it from a few spots (its shapes kept exactly); each painting goes back onto the
+// set like a slide projector and every surface takes the sharpest painting that sees it (the GAS 2 drone's recipe,
+// tools/_gas2-scene/flight). The live TV, the CRT screens and the posters stay real pixels. Painted, the set is laid out
+// for a 16:9 screen so the paintings line up on any laptop; moving things or a room slider needs a repaint.
+const PAINT = {
+  dir: 'assets/skins/default/paint/',
+  aspect: 16 / 9,
+  shots: [{ at: 0, file: 'walk-000' }],   // where on the walk (0..1) each painting was made from, and its picture
 };
 
 // ---------- make the room once ----------
@@ -592,7 +600,7 @@ function createRoom() {
   for (const s of POSTERS) {
     const tex = picture(s.pic), g = new THREE.Group();
     const mat = new THREE.MeshStandardMaterial({ map: tex, emissiveMap: tex, emissive: 0xffffff, emissiveIntensity: 0.3, roughness: 0.85 });
-    const pic = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), mat); pic.position.z = 0.018;
+    const pic = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), mat); pic.position.z = 0.018; pic.userData.live = true; // real pixels, never painted
     const frame = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 0.03), frameMat);
     g.add(frame, pic); g.userData.pic = pic; g.userData.frame = frame;
     tex.onUpdate = null;
@@ -609,7 +617,7 @@ function createRoom() {
     const smat = new THREE.MeshBasicMaterial({ map: tex, toneMapped: false }); smat.userData.k = 1;
     const screen = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), smat);
     const lines = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: R.scan, transparent: true, depthWrite: false, toneMapped: false }));
-    g.add(body, screen, lines); g.userData = { body, screen, lines };
+    g.add(body, screen, lines); g.userData = { body, screen, lines }; screen.userData.live = lines.userData.live = true;
     R.screenMats.push(smat);
     addItem({ kind: 'monitor', id: s.id, s, obj: g, mount: 'floor', tex }, `${s.id} · ${s.label}`, 'pic', 0.7);
   }
@@ -687,7 +695,7 @@ function createRoom() {
     lineMat: new THREE.MeshBasicMaterial({ color: new THREE.Color(3, 2.6, 2.2), transparent: true, toneMapped: false, fog: false, depthWrite: false }),
     glow: new THREE.PointLight(0xff8a3a, 14, 9, 2),
   };
-  R.tv.face = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), R.tv.faceMat);
+  R.tv.face = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), R.tv.faceMat); R.tv.face.userData.live = true;
   R.tv.line = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), R.tv.lineMat);
   scene.add(R.tv.cab, R.tv.face, R.tv.line, R.tv.glow);
 
@@ -719,23 +727,6 @@ function createRoom() {
   const dg = new THREE.BufferGeometry(); dg.setAttribute('position', new THREE.BufferAttribute(new Float32Array(N * 3), 3));
   R.dust.mat = new THREE.PointsMaterial({ size: 0.02, color: 0xffd2a8, transparent: true, opacity: 0.55, depthWrite: false, blending: THREE.AdditiveBlending });
   R.dust.pts = new THREE.Points(dg, R.dust.mat); scene.add(R.dust.pts);
-
-  // the default skin's art (SKIN): a plane inside each slot's block; applyFlags hides the block while the art shows
-  R.hideMat = new THREE.MeshBasicMaterial({ visible: false });
-  const artTex = {};
-  const loadArt = (name) => {
-    const flip = new THREE.Texture(); flip.repeat.x = -1; flip.offset.x = 1; // the right wall's copy, mirrored (one upload)
-    const t = loader.load(`${SKIN.dir}${name}.webp`, (tx) => { flip.source = tx.source; flip.needsUpdate = true; arrange(); });
-    for (const x of [t, flip]) { x.colorSpace = THREE.SRGBColorSpace; x.anisotropy = 8; }
-    t.userData.flip = flip; return t;
-  };
-  for (const [id, name] of Object.entries(SKIN.art)) {
-    const it = R.items.find((x) => x.id === id);
-    if (!it) continue;
-    it.artTex = artTex[name] ||= loadArt(name);
-    it.art = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshStandardMaterial({ map: it.artTex, roughness: 0.85, transparent: true, alphaTest: 0.02 }));
-    it.obj.add(it.art);
-  }
 
   // the move tool's highlight boxes
   R.selBox = new THREE.BoxHelper(undefined, 0xffe08a); R.selBox.material.depthTest = false; R.selBox.material.toneMapped = false; R.selBox.visible = false; R.selBox.renderOrder = 20;
@@ -851,7 +842,7 @@ function arrange() {
   const carZ = S.carZ * span, carX = Wd / 2 + (S.carOut - 0.5) * 4.4;
   const yaw = -Math.PI / 2 + deg(S.carYaw);   // nose to +x: the right wall, the right of the screen
   const lift = S.liftType === 'none' ? 0 : S.liftH;
-  R.car.position.set(carX, lift, carZ); R.car.rotation.y = yaw; fitArt(R.carItem);
+  R.car.position.set(carX, lift, carZ); R.car.rotation.y = yaw;
   for (const g of [R.scissor, R.stands]) { g.position.set(carX, 0, carZ); g.rotation.y = yaw; }
   R.scissor.visible = S.liftType === 'scissor' && lift > 0.01; R.stands.visible = S.liftType === 'stands' && lift > 0.01;
   const armLen = Math.hypot(2.8, lift), ang = Math.atan2(lift, 2.8);
@@ -866,9 +857,9 @@ function arrange() {
   const z0 = clamp(carZ - S.doorW / 2, 0.2, Lr - 0.6), z1 = clamp(carZ + S.doorW / 2, z0 + 0.2, Lr - 0.2), dz = (z0 + z1) / 2, dw = z1 - z0;
   R.door = { z0, z1, h: doorH };
   const [ra, rb, rt] = R.rightParts;
-  ra.scale.set(z0, H, 1); ra.position.set(Wd / 2, H / 2, z0 / 2); ra.material.map.repeat.set(z0 / 2.5, H / 2.5);
-  rb.scale.set(Lr - z1, H, 1); rb.position.set(Wd / 2, H / 2, (z1 + Lr) / 2); rb.material.map.repeat.set((Lr - z1) / 2.5, H / 2.5);
-  rt.scale.set(dw, H - doorH, 1); rt.position.set(Wd / 2, (doorH + H) / 2, dz); rt.material.map.repeat.set(dw / 2.5, (H - doorH) / 2.5);
+  ra.scale.set(z0, H, 1); ra.position.set(Wd / 2, H / 2, z0 / 2); own(ra).map.repeat.set(z0 / 2.5, H / 2.5);
+  rb.scale.set(Lr - z1, H, 1); rb.position.set(Wd / 2, H / 2, (z1 + Lr) / 2); own(rb).map.repeat.set((Lr - z1) / 2.5, H / 2.5);
+  rt.scale.set(dw, H - doorH, 1); rt.position.set(Wd / 2, (doorH + H) / 2, dz); own(rt).map.repeat.set(dw / 2.5, (H - doorH) / 2.5);
   const curtH = doorH * (1 - S.doorOpen);
   R.curtain.visible = curtH > 0.01;
   R.curtain.scale.set(dw, Math.max(0.01, curtH), 1); R.curtain.position.set(Wd / 2 - 0.03, doorH - curtH / 2, dz);
@@ -878,13 +869,13 @@ function arrange() {
   R.rails[0].position.set(Wd / 2 - 0.05, doorH / 2, z0 + 0.04); R.rails[1].position.set(Wd / 2 - 0.05, doorH / 2, z1 - 0.04);
   R.doorLabel.position.set(Wd / 2 - 0.5, Math.min(doorH + 0.75, H - 0.15), dz + 0.8);
   R.outGround.scale.set(40, 160, 1); R.outGround.position.set(Wd / 2 + 20, -0.002, dz - 50);
-  R.backdrop.scale.set(160, 12, 1); R.backdrop.position.set(Wd / 2 + 40, 4.5, dz - 50); R.backdrop.material.map.repeat.set(5, 1);
+  R.backdrop.scale.set(160, 12, 1); R.backdrop.position.set(Wd / 2 + 40, 4.5, dz - 50); own(R.backdrop).map.repeat.set(5, 1);
   R.outLight.position.set(Wd / 2 + 3.5, doorH + 0.8, dz); R.outLight.target.position.set(Wd / 2 - 2.5, 0, dz);
   R.outLight.intensity = 60 * S.outside;
   R.doorAir.scale.set(dw - 0.16, doorH - curtH, 1); R.doorAir.position.set(Wd / 2 + 0.05, (doorH - curtH) / 2, dz);
-  R.doorAir.material.opacity = 0.22 * S.outside;
+  own(R.doorAir).opacity = 0.22 * S.outside;
   R.pool.scale.set(3.4, dw + 1.2, 1); R.pool.position.set(Wd / 2 - 1.5, 0.012, dz);
-  R.pool.material.opacity = 0.32 * S.outside;
+  own(R.pool).opacity = 0.32 * S.outside;
   R.outLabel.position.set(Wd / 2 + 2.5, 2.2, dz);
 
   // the wood's tone: dark walnut to light oak
@@ -902,22 +893,12 @@ function arrange() {
   syncLabels();
   if (R.selected) { R.selBox.setFromObject(R.selected.obj); }
   if (!$('slotsPanel').hidden) buildSlots();
+  R.shotsStale = true; // the projectors look again before the next frame (never from here: arrange can run mid-render)
 }
 const inDoor = (z, halfW, bottom) => R.door && z + halfW > R.door.z0 - 0.1 && z - halfW < R.door.z1 + 0.1 && bottom < R.door.h;
 // facing: a plane's front is +z; on the left wall it turns to face +x, on the right -x
 const faceFor = (side) => side < 0 ? Math.PI / 2 : side > 0 ? -Math.PI / 2 : 0;
 const signOnEnd = () => S.signWall === 'endLeft' || S.signWall === 'endRight';
-// a slot's art plane, in its block's own units: wall-flat things lie on the wall facing the aisle; standing things face
-// the walk with their wall edge on the wall (mirrored on the right wall); the car's profile lies along its near side
-function fitArt(it) {
-  const p = it.art; if (!p) return;
-  const img = it.artTex.image, s = it.s;
-  if (it.kind === 'car') { const h = 4.4 / (img && img.width ? img.width / img.height : 3.4); p.scale.set(4.4, h, 1); p.position.set(0.95, h / 2, 0); p.rotation.y = Math.PI / 2; return; }
-  const w = s.h * (img && img.width ? img.width / img.height : s.w / s.h), side = it.side, flat = it.mount === 'wall';
-  p.scale.set(w, s.h, 1); p.rotation.y = flat ? faceFor(side) : 0;
-  p.position.set(flat ? -side * (s.d / 2 + 0.004) : side * (s.d / 2 - w / 2), 0, 0);
-  p.material.map = side > 0 && !flat ? it.artTex.userData.flip : it.artTex;
-}
 function placeItem(it) {
   const Wd = S.roomW, span = L.span, ov = S.moves[it.id] || {}, moved = !!S.moves[it.id];
   const k = ov.s ?? 1, turn = deg(ov.r ?? 0), lb = it.label;
@@ -929,7 +910,6 @@ function placeItem(it) {
     // anything on the right wall where the door's opening is steps aside (unless you put it there)
     it.obj.visible = moved || !(side === 1 && inDoor(z, s.w * k / 2, y - s.h * k / 2));
     lb.position.set(x - side * 0.35, y + s.h * k / 2 + 0.22, z);
-    fitArt(it);
   } else if (it.kind === 'end') {
     const s = it.s, y = ov.y ?? (s.ty != null ? S.tvY + s.ty : (s.y ?? s.h / 2)), x = ov.x ?? s.x, z = (s.front || 0) + s.d * k / 2;
     it.obj.position.set(x, y, z); it.obj.scale.setScalar(k); it.obj.rotation.y = (s.toe || 0) + turn;
@@ -1019,7 +999,7 @@ function faceOf(it) {
 function placeLeds() {
   const hosts = R.leds.userData.hosts;
   hosts.forEach((it, hi) => {
-    const f = faceOf(it), vis = it.obj.visible && !it.art?.visible; // a slot's art carries its own lights
+    const f = faceOf(it), vis = it.obj.visible;
     for (let i = 0; i < 8; i++) {
       _p.copy(f.c).addScaledVector(f.ax, (-0.42 + (i % 4) * 0.1) * Math.min(1, f.w)).add(new THREE.Vector3(0, f.h * 0.32 - Math.floor(i / 4) * 0.06, 0));
       _e.set(0, f.rotY, 0); _q.setFromEuler(_e); _s.setScalar(vis ? 1 : 0);
@@ -1030,7 +1010,7 @@ function placeLeds() {
   for (const m of R.vus) {
     const it = m.userData.host, f = faceOf(it);
     m.position.copy(f.c).addScaledVector(f.ax, (m.userData.i ? 0.12 : -0.12) * Math.min(1, f.w)).add(new THREE.Vector3(0, -f.h * 0.05, 0));
-    m.rotation.set(0, f.rotY, 0); m.userData.w = Math.min(0.2, f.w * 0.3); m.visible = it.obj.visible && !it.art?.visible;
+    m.rotation.set(0, f.rotY, 0); m.userData.w = Math.min(0.2, f.w * 0.3); m.visible = it.obj.visible;
   }
 }
 function placeMess() {
@@ -1060,17 +1040,8 @@ function applyFlags() {
   for (const m of Object.values(R.edgeMats)) m.opacity = wire ? 1 : 0.35;
   R.edgeMats.music.color.setRGB(...(wire ? [1.6, 1.0, 2.6] : [0.75, 0.55, 1.0]));
   R.edgeMats.garage.color.setRGB(...(wire ? [2.6, 1.4, 0.7] : [1.0, 0.6, 0.32]));
-  for (const s of R.surfaces) s.material.wireframe = wire;
-  const art = !!S.art && !wire; // the default skin over the blocks (Art); the wireframe shows the bare blocks
-  for (const it of R.items) if (it.art) {
-    it.art.visible = art;
-    for (const m of it.kind === 'car' ? it.obj.children : [it.obj]) {
-      if (m === it.art || !m.isMesh) continue;
-      m.userData.mat ||= m.material; m.material = art ? R.hideMat : m.userData.mat;
-      for (const e of m.children) if (e.isLineSegments) e.visible = !art;
-    }
-  }
-  placeLeds();
+  for (const s of R.surfaces) own(s).wireframe = wire;
+  setPaint(!!S.paint && !wire && !!R.paint); // the painted room (Painted); the wireframe shows the bare set
   syncLabels();
   const on = !!S.engine; // engine off by default (Dan): dark tail-lights
   R.tailMat.color.setRGB(...(on ? [1.6, 0.12, 0.08] : [0.22, 0.03, 0.03])); R.tail.intensity = on ? 4 : 0;
@@ -1079,6 +1050,101 @@ function applyFlags() {
   $('editNote').textContent = S.edit ? 'Click a thing in the room and drag it: wall things slide along the wall, floor things across the floor.'
     : 'Turn on, then click anything in the room and drag it.';
   document.querySelectorAll('[data-flag]').forEach((b) => b.setAttribute('aria-pressed', S[b.dataset.flag] ? 'true' : 'false'));
+}
+
+// ---------- the painted room: each painting projected back onto the set (PAINT) ----------
+const PAINT_NEAR = 0.1, PAINT_FAR = 260;
+const PAINT_VERT = /* glsl */`
+varying vec3 vW; varying vec3 vN;
+void main() {
+  mat4 m = modelMatrix;
+  #ifdef USE_INSTANCING
+    m = m * instanceMatrix;
+  #endif
+  vec4 w = m * vec4(position, 1.0);
+  vW = w.xyz; vN = normalize(mat3(m) * normal);
+  gl_Position = projectionMatrix * viewMatrix * w;
+}`;
+// a painting's weight on a point: inside its frame (feathered over the outer 8 %), not hidden from its projector (its
+// depth picture), sharper where it sees the surface square and close; a camera standing ON a projector sees it exactly
+const paintFrag = (n) => /* glsl */`
+#include <common>
+#include <packing>
+uniform sampler2D tP[${n}]; uniform sampler2D tD[${n}];
+uniform mat4 mP[${n}]; uniform vec3 pP[${n}]; uniform float fP[${n}];
+varying vec3 vW; varying vec3 vN;
+float weight(vec4 c, vec2 uv, sampler2D depth, vec3 p, float f) {
+  if (c.w <= 0.0 || any(lessThan(uv, vec2(0.0))) || any(greaterThan(uv, vec2(1.0)))) return 0.0;
+  float seen = -perspectiveDepthToViewZ(texture2D(depth, uv).r, ${PAINT_NEAR.toFixed(2)}, ${PAINT_FAR.toFixed(1)});
+  if (c.w > seen + 0.03 + 0.012 * c.w) return 0.0;
+  vec2 e = min(uv, 1.0 - uv) / 0.08;
+  vec3 d = p - vW; float L = length(d);
+  return max(0.02, smoothstep(0.0, 1.0, min(e.x, e.y))) * f * max(dot(normalize(vN), d / L), 0.02) / L;
+}
+void main() {
+  vec3 col = vec3(0.0); float ws = 0.0;
+  ${Array.from({ length: n }, (_, i) => `{ vec4 c = mP[${i}] * vec4(vW, 1.0); vec2 uv = c.xy / max(c.w, 1e-4) * 0.5 + 0.5;
+    float w = weight(c, uv, tD[${i}], pP[${i}], fP[${i}]); col += texture2D(tP[${i}], uv).rgb * w; ws += w; }`).join('\n  ')}
+  gl_FragColor = vec4(ws > 0.0 ? col / ws : vec3(0.03, 0.026, 0.035), 1.0); // what no painting saw stays in the dark
+  #include <colorspace_fragment>
+}`;
+function shotCam(at) { // the walk's camera at that spot, without sway, on a 16:9 screen: its painting was made from here
+  const tv = Math.tan(deg(S.lens) / 2), dEnd = (S.tvW / 2) / (tv * PAINT.aspect), e = easeIO(clamp(at), S.ease);
+  const dLin = L.d0 + (dEnd - L.d0) * e, dGeo = L.d0 * Math.pow(dEnd / L.d0, e), d = dLin * (1 - S.feel) + dGeo * S.feel;
+  const cam = new THREE.PerspectiveCamera(S.lens, PAINT.aspect, PAINT_NEAR, PAINT_FAR);
+  cam.position.set(0, S.tvY + (L.yEnd - S.tvY) * e, L.front + d); cam.updateMatrixWorld();
+  return cam;
+}
+function initPaint() { // the paintings load; the room turns painted once they are all in
+  let left = PAINT.shots.length;
+  const shots = PAINT.shots.map((sh) => {
+    const t = loader.load(`${PAINT.dir}${sh.file}.webp`, () => { if (--left === 0) paintReady(shots); }, undefined, () => console.warn('painting missing:', sh.file));
+    t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    return { ...sh, t, rt: new THREE.WebGLRenderTarget(2048, 1152, { depthTexture: new THREE.DepthTexture(2048, 1152) }) };
+  });
+}
+function paintReady(shots) {
+  const u = { tP: { value: shots.map((s) => s.t) }, tD: { value: shots.map((s) => s.rt.depthTexture) },
+    mP: { value: shots.map(() => new THREE.Matrix4()) }, pP: { value: shots.map(() => new THREE.Vector3()) }, fP: { value: shots.map(() => 1) } };
+  // one of each for plain and instanced meshes (sharing one between the two trips WebGL); the paint pair shares its uniforms
+  const paint = () => new THREE.ShaderMaterial({ uniforms: u, vertexShader: PAINT_VERT, fragmentShader: paintFrag(shots.length) });
+  const depth = () => new THREE.MeshBasicMaterial({ colorWrite: false, side: THREE.DoubleSide });
+  R.paint = { shots, u, mat: paint(), matI: paint(), depth: depth(), depthI: depth() };
+  R.hideMat = new THREE.MeshBasicMaterial({ visible: false });
+  applyFlags();
+}
+const own = (o) => o.userData.mat0 || o.material; // a mesh's own material, also while the paint shader stands in
+// painted: every solid surface takes the projector shader, glows and the lit-up bits hide (the paintings carry them),
+// the live pixels (TV, CRT screens, posters) stay; the set lays out for 16:9 and the projectors look again
+function setPaint(on) {
+  if (!!R.paintOn === on) return;
+  R.paintOn = on;
+  const hide = new Set([R.leds, ...R.vus]);
+  scene.traverse((o) => {
+    if (!o.isMesh || o.userData.live) return;
+    const m0 = o.userData.mat0 ||= o.material;
+    o.material = !on ? m0 : hide.has(o) || m0.transparent || m0.blending === THREE.AdditiveBlending ? R.hideMat : o.isInstancedMesh ? R.paint.matI : R.paint.mat;
+  });
+  for (const m of [...Object.values(R.edgeMats), R.acEdge]) m.visible = !on;
+  layoutCamera(); arrange();
+}
+// each projector where its painting was made from, and what it sees from there (a depth picture, like a shadow map)
+function placeShots() {
+  const P = R.paint, off = [], swap = [];
+  scene.traverse((o) => {
+    if (!o.visible) return;
+    if (o.isPoints || o.isLine || o.isSprite || o.material === R.hideMat) { o.visible = false; off.push(o); }
+    else if (o.isMesh) { swap.push([o, o.material]); o.material = o.isInstancedMesh ? P.depthI : P.depth; }
+  });
+  P.shots.forEach((sh, i) => {
+    const cam = shotCam(sh.at);
+    P.u.mP.value[i].multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse); P.u.pP.value[i].copy(cam.position);
+    P.u.fP.value[i] = (sh.t.image ? sh.t.image.height : 2160) / 2 / Math.tan(deg(S.lens) / 2);
+    renderer.setRenderTarget(sh.rt); renderer.clear(); renderer.render(scene, cam);
+  });
+  renderer.setRenderTarget(null);
+  for (const [o, m] of swap) o.material = m;
+  for (const o of off) o.visible = true;
 }
 
 // ---------- layout ----------
@@ -1109,7 +1175,7 @@ function layoutCamera() {
   const aspectTV = vw / (vh - navH), tvH = S.tvW / aspectTV, front = 0.46;
   const dEnd = (S.tvW / 2) / th;                                       // the TV fills the width at the lock
   const d0 = portrait ? tvH / ((2 * S.tvStart / 100) * 2 * tv)         // phones: the tall TV is 2 x tvStart % of the height
-    : S.tvW / ((S.tvStart / 100) * 2 * th);                            // laptops: tvStart % of the width on the first screen
+    : S.tvW / ((S.tvStart / 100) * 2 * tv * (R.paintOn ? PAINT.aspect : vw / vh)); // laptops: tvStart % of the width on the first screen (painted: of a 16:9 one)
   const roomLen = front + d0 + 1.5;                                    // the near wall sits 1.5 m behind the camera
   const wppEnd = 2 * dEnd * tv / vh;                                   // metres per pixel on the TV at the lock
   const oldWalk = L.walkPx;
@@ -1202,7 +1268,7 @@ function frame(now) {
 
   // haze, glow and dust leave by the lock so the TV lands clean
   scene.fog.density = S.fog * far;
-  bloomPass.strength = S.bloom * far * far;
+  bloomPass.strength = R.paintOn ? 0 : S.bloom * far * far; // the paintings carry their own glow
   R.dust.mat.opacity = 0.55 * S.dust * Math.pow(far, 1.2);
   R.dust.pts.visible = S.dust > 0;
   const p = R.dust.pts.geometry.attributes.position, b = R.dust.base, sd = R.dust.seed;
@@ -1223,6 +1289,7 @@ function frame(now) {
   }
   if (!walkDrag) { $('walkIn').value = progress; $('walkOut').textContent = Math.round(progress * 100) + ' %'; }
 
+  if (R.paintOn && R.shotsStale) { R.shotsStale = false; placeShots(); }
   if (!locked || document.body.classList.contains('bench-on')) composer.render();
 }
 
@@ -1512,10 +1579,10 @@ function buildSlots() {
   const list = slotList();
   const rows = list.map((s) => {
     const cls = s.cat === 'music' ? 'm' : s.cat === 'garage' || s.cat === 'studio' ? 'g' : s.cat === 'pic' ? 'p' : '';
-    return `<tr><td class="${cls}">${s.id}</td><td>${s.label}</td><td>${s.size.map((v) => +(+v).toFixed(2)).join(' × ')}</td><td>${SKIN.art[s.id] ? `✓ Made (default skin): ${SKIN.art[s.id]}.webp` : s.need}</td></tr>`;
+    return `<tr><td class="${cls}">${s.id}</td><td>${s.label}</td><td>${s.size.map((v) => +(+v).toFixed(2)).join(' × ')}</td><td>${s.need}</td></tr>`;
   }).join('');
-  const n = list.filter((s) => (s.cat === 'music' || s.cat === 'garage' || s.cat === 'surface') && !SKIN.art[s.id]).reduce((a, s) => a + (s.id === 'MESS' ? R.messTypes.length : 1), 0);
-  $('slotsBody').innerHTML = `<div class="note">${n} images to make, ${Object.keys(SKIN.art).length} made (cut-outs + surfaces); the pictures we already have, the sign and the lights are code, the TV is live.</div>` +
+  const n = list.filter((s) => s.cat === 'music' || s.cat === 'garage' || s.cat === 'surface').reduce((a, s) => a + (s.id === 'MESS' ? R.messTypes.length : 1), 0);
+  $('slotsBody').innerHTML = `<div class="note">${n} images to make (cut-outs + surfaces); the pictures we already have, the sign and the lights are code, the TV is live.</div>` +
     `<table class="slots"><thead><tr><th>Slot</th><th>What</th><th>Size (m)</th><th>The image</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 document.querySelectorAll('[data-flag]').forEach((b) => b.addEventListener('click', () => {
@@ -1576,6 +1643,8 @@ createRoom();
 resize();
 applyFlags();
 setBench(!!S.bench);
+if (CAPTURE != null) { document.body.classList.add('capture'); for (const m of [...Object.values(R.edgeMats), R.acEdge]) m.visible = false; jumpTo(+CAPTURE * L.walkPx); }
+else initPaint();
 hist = [snapshot()]; histAt = 0; undoUi(); // the room as it opened is the first step
 // the pictures arrive after the first layout: re-place them once each lands (their size follows the image's shape)
 for (const it of R.items) if (it.tex) { const img = it.tex.image; if (!img || !img.width) it.tex.onUpdate = () => { it.tex.onUpdate = null; arrange(); }; }

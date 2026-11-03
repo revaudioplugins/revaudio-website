@@ -388,7 +388,11 @@ holds from now on, in Dan's words "everything is dynamic in that room":
   skins, placed by one engine; a new plugin, season or bundle is new data, not new scene code.
 - The bench (`tools/_home-opening/room.html`, T) is its editor: Move things, sliders, the slot list. Anything added
   gets bench controls and lands in the saved / copied settings.
-- Art is one image per slot (cut-outs), so any piece can be swapped on its own.
+- Art is painted whole, never collaged (Dan 2026-11-03, on per-slot cut-outs: "it feels like a 2D and it doesn't feel
+  like a whole room ... much more glued and whole, and 3D, and real. Less images"). GPT Image paints the set as the
+  walk sees it from a few spots and each painting is projected back onto the 3D set (the GAS 2 drone's recipe); the
+  live TV, the CRT screens and the posters stay real pixels. A skin is a new set of paintings; moving things means
+  repainting the shots that see them.
 
 **Product-page hero = "the readings" (canon: the GAS 2 page, composition 2; Dan 2026-10-23: "I love you
 so much", "this is amazing"; `tools/_gas2-scene/page-b.html` on `feat/gas2-page`).** The vibe to repeat:

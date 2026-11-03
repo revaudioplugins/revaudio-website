@@ -29,8 +29,9 @@ lock-in hand-off is reused, its room is not. Dan: plan with him first, then one 
   right + a throne pushed back left ("someone just got up"); the desk 0.7 m out with both monitors on floor stands;
   undo / redo on the bench; three of his benches baked in as the defaults (the third: a wider, taller room 7.6 x 4.6 m,
   lens 49, a 360 % walk, TV glow 2.5, the pegboard a little toward the start of the walk).
-- Final art: Higgsfield cut-outs standing in the 3D room + textured wall strips (over one big image + depth, or an AI
-  fly-through video). Higgsfield: 250 credits (Lite) on 2026-11-02.
+- Final art: a PAINTED room (Dan 2026-11-03, over cut-outs that "feel like a 2D"): GPT Image paints the bare set from
+  spots along the walk, each painting projected back onto the set (the GAS 2 drone's recipe); TV, CRT screens and
+  posters stay live pixels. Higgsfield: 250 credits (Lite) on 2026-11-02; 233.75 left on 2026-11-03.
 
 ## Steps
 - [x] 1. The 3D skeleton, no credits: `tools/_home-opening/room.html`. The room as a real box; a grey labelled block
@@ -43,9 +44,9 @@ lock-in hand-off is reused, its room is not. Dan: plan with him first, then one 
       and the bench edits, adds to and exports; plan it with Dan first.
 - [ ] 2. The slot list out of the skeleton: each prop / wall's size, angle and light = its Higgsfield prompt
       (cut-out, transparent background). Plan + Dan's OK.
-- [ ] 3. Higgsfield art per slot, cost-checked per batch (RULE 0), dropped into the skeleton one by one.
-      Default skin first (Dan 2026-11-03). Test round done 2026-11-03 (12 credits): the car, L01, L04, L05 (+ the
-      medium chest on L07, R05 mirrored) in `SKIN`; medium reads like high in the room. Next: the other ~50 images.
+- [ ] 3. The default skin, painted (cost-checked per shot, RULE 0). Cut-out test 2026-11-03 (12 credits) read 2D and
+      was dropped. Proof shot 1 done 2026-11-03 (walk 0, 4.25 credits): one real photo to ~20 % of the walk. Next, on
+      Dan's yes: 3 more shots (~30 / 55 / 80 %, ~12.75 credits), each painted from the room as it already looks there.
 - [ ] 4. Movement, the readings, the phone version: each planned with Dan first.
 - [ ] 5. Into the site (`index.astro` + a new component, the live TV at the lock, reduced motion, weight), DESIGN.md
       §0 + §7; main only on Dan's word (= live).
