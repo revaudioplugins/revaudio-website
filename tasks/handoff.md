@@ -1,3 +1,17 @@
+## 2026-11-03 — GAS 2 on the site: downloads card, home TV, Dan's page at /gas2 (Claude Code, Gil's Mac) — PUSHED TO MAIN on Gil's word "push and deploy to main"
+
+- Gil: GAS 2 as a card on /downloads and on the home TV (All, its categories), each linking to Dan's GAS 2 page.
+- Done: `plugins.ts` gas2 entry (free, worker id `gas2`, TV copy, cats Mastering + Saturation + Free; picture = the
+  GAS 2 manual's pump, `src/assets/plugins/gas2-hero.jpg`). TV order (Gil): RevLimiter, GAS, GAS 2, DRIFT, Radio
+  Roulette. /downloads: the card + a "<plugin> page" link in the download box. `tools/gas2page/integration.mjs` serves
+  `tools/_gas2-scene` at /gas2/ (page-b on a laptop, postcards under 760 px), copied at build: the scene stays the one
+  source; edits there go live with the next deploy. The Review page's picker lists GAS 2 too (same TV list).
+- Checks: build green; Chromium 1280x665 + 390x844: TV, each category's order, /downloads, /gas2/ (laptop + phone), no
+  page errors.
+- Open (from todo "GAS 2 on the front page" step 4, live as of this push): CATCH10 not confirmed in Paddle (the drone
+  intro's car hands it out); the pump click opens a 127.0.0.1:4461 iframe (nothing on the web); page weight ~21 MB
+  (audio lazy); Safari <= 15 breaks the scene (no cqw).
+
 ## 2026-11-03 — Review page: RevBeta becomes "Review" (any plugin, 1-10 rating, 10% code by email) (Claude Code `revaudio-63 [975b3a]`, laptop 2) — ON MAIN + LIVE (pushed 2026-11-03 on Yoni's "push", fast-forward from `feat/review`); worker `/review` LIVE since 2026-11-03 (deployed)
 
 Claim: CLOSED 2026-11-03 (`revaudio-63`). Files: `src/pages/review.astro` (new), `src/data/review-survey.ts` (new), `src/data/site.ts` (`review` block), `src/components/Footer.astro` (RevBeta -> Review), `src/components/WelcomeDiscountPopup.astro` + `ExitIntentPopup.astro` (skip `/review`), `src/assets/plugins/radioroulette-hero-cut.png` (new), `DESIGN.md` (Review picker entry), `src/pages/beta.astro` (now a hop to /review), `src/components/legal/PrivacyContent.astro` + `src/data/legal.ts` (reviews named, 2026-11-03), `astro.config.mjs` (NOINDEX /review/), `tasks/handoff.md` (this entry).
