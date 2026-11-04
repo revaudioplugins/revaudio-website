@@ -38,7 +38,21 @@ Decisions (Dan, rounds 1-2, 2026-11-04):
 Steps:
 - [x] Plan page, rounds 1 + 2 answered (2026-11-04).
 - [x] The car questions (gloss black, Supra-inspired, no badges), 2026-11-04.
-- [ ] Blind-spot review of the plan (agent), then round 3 on the plan page with its findings.
+- [x] Blind-spot review of the plan (agent, 2026-11-04; its main claims re-checked by hand). Blockers: the room
+      stretches with the screen (19.9 m at 1141x636, 22.1 m at 1440x900, 22.8 m on a 390x844 phone where the TV is
+      1.4 x 2.8 m: `layoutCamera`), so a Blender room needs one size in metres; baked light can't follow swaps,
+      removals, flicker or bench moves (light in layers instead). High: the live CSP (a Cloudflare rule) blocks the
+      3D decoders (no `'wasm-unsafe-eval'`, no blob: workers / images); no home for big files (repo ~0.5 GB; R2
+      proposed); "every plugin at every step" can't pass (side-wall CRTs are behind the camera near the end); the far
+      end skips the risks and the painting is the 3 Nov room (7.6 x 4.6 m, lens 49); Black Friday / Cyber Monday on
+      main (27-30 Nov, countdown + a TV intro); the power-on flicker (55 ms steps, ~9 flashes/s; WCAG 2.3.1 allows
+      3); the 6 % scroll snap; phones see ~27 deg across; look-alikes and asset licences. Round 3 on the plan page:
+      findings, corrections and 14 questions (db `answers/round-3`).
+- [ ] Round 3 answered. Proposed order (pending Dan): 1 look lock + look spec + what-should-be-visible table;
+      2 foundations (the room in metres, one slot file, light layers, R2, a CSP test, the Blender export); 3 a cheap
+      whole-room look pass on the grey blocks, then the far end + the phone camera path; 4 zones; 5 into the page
+      (flicker <= 3/s, reduced motion, a skip link, a crash fallback, budgets; behind a switch, live after 1 Dec);
+      6 the swap / remove test.
 - [ ] 1. Look lock: Dan pins what he loved on the painting (a review page).
 - [ ] 2. The skeleton exported to Blender (geometry, slot names, camera walk, lights); parity check against the
       bench. (Blender itself: installed 2026-11-04.)

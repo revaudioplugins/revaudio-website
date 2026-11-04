@@ -130,8 +130,10 @@ only after Dan picks: `src/pages/index.astro`, a new `src/components/HomeOpening
   a bake-off team with researchers, critics and automatic checks; the far end is the test corner; Blender 5.2.3 LTS
   installed on Dan's Mac (brew cask); a blind-spot agent is reviewing the plan. The car: Supra-inspired, no badges,
   gloss black (his reference photo kept local only, `tools/_home-opening/refs/`, git-excluded).
-- Next: round 3 on the plan page (the blind spots), then the look lock (Dan pins the painting), then the Blender
-  export.
+- Blind-spot review done (2026-11-04): 2 blockers (the room stretches with the screen; baked light can't follow
+  swaps) + high items, all in `tasks/todo.md` "The rebuild"; DESIGN.md §7's film rule replaced by the rebuild rule.
+  Round 3 is on the plan page (14 questions, db `answers/round-3`).
+- Next: read Dan's round 3, then the look lock (Dan pins the painting) and the foundations (the room in metres first).
 
 ## 2026-11-02 — Footer: categories fold into drawers (Claude Code `revaudio-3b [a4cb6d]`, laptop 2) — ON MAIN + LIVE: merged `--no-ff` 2026-11-02 by Claude Code `revaudio-0c [571e5c]` (laptop 1) on Dan's word "push it to main and merge" (Yoni had approved by pushing the branch)
 

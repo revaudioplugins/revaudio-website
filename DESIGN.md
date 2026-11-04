@@ -388,17 +388,16 @@ holds from now on, in Dan's words "everything is dynamic in that room":
   skins, placed by one engine; a new plugin, season or bundle is new data, not new scene code.
 - The bench (`tools/_home-opening/room.html`, T) is its editor: Move things, sliders, the slot list. Anything added
   gets bench controls and lands in the saved / copied settings.
-- Art is painted whole, never collaged (Dan 2026-11-03, on per-slot cut-outs: "it feels like a 2D and it doesn't feel
-  like a whole room ... much more glued and whole, and 3D, and real. Less images"), and the visitor walks a FILM of it
-  (Dan, same day, on paintings projected back onto the 3D set: "smeared and broken apart while I walk"; "in every step I
-  will see the room in its best form"). The film is ONE shot repainted from the 3D set's own walk (a video edit model,
-  Kling 3.0 Omni Edit, with the painting as its look), never films between separately painted keyframes (Dan, same day:
-  "the sceane changes in the middles items move around"). So it keeps the set's camera and every object's place frame
-  by frame: the live things ride on it from the set (the LCD on the TV, each CRT its plugin's picture) and scroll picks
-  each frame by the TV's size, so the walk keeps its tuned curve and lands exactly on the live TV. The things the room is
-  for (the plugins' CRTs, the posters) must be in the film where the set has them: an image reference wins over the
-  set where they disagree (the paintings had dropped DRIFT, Radio Roulette and RevLimiter), so the set's own objects go
-  into the film first. A skin = a new film from the set; the 3D set and the bench stay the source.
+- The room is built for real in 3D, never painted over (Dan 2026-11-04, after the 3 Nov art: per-slot cut-outs "feel
+  like a 2D", the painting projected back onto the set "smeared and broken apart while I walk", the AI repaints swapped
+  the plugins' CRTs for props of their own, and the film was soft and flipped to a still mid-scroll). Every pixel is
+  rendered from the 3D room and its camera; AI makes single objects, textures and posters, never whole frames; one way
+  of showing the walk from the first step to the TV, no film, no switching. The first painted shot
+  (`tools/_home-opening/assets/skins/default/paint/walk-000.webp`) is the look reference for light, colour, grime and
+  mood, not for layout (it was painted in the 3 Nov room). The plugins' CRTs, the live TV and the posters are live
+  pictures the room carries, and the must-stay list is checked wherever each is in view. The room keeps moving (sway,
+  dust, flicker, the car idling), so its light is built in layers that stay live. Plan, decisions and the blind-spot
+  review: `tasks/todo.md`, "The rebuild"; the plan page linked there.
   For now the room is the bare 3D set again (Dan 2026-11-03, after the one-shot film: "lets go back to the skelton
   this is not what i want"); the painted room and the film stay as the bench's Painted / Film switches, off.
 
