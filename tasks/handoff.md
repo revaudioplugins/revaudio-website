@@ -36,6 +36,12 @@ Claim: OPEN, Claude Code (Dan's Mac), worktree `.claude/worktrees/lcd-polish`. F
   1920x1080 / 390x844 / 375x667 / 360x740 / 430x932 x 5 channels: keys inside the column and on screen, no sideways
   scroll, no page errors; hc keeps the button family; `npm run build` green (32 pages). `/__wwkeys`'s "Today" frame
   now shows A. Not checked: a real iPhone / Safari window.
+- LIVE: merge `069d5ac` pushed to main 2026-11-04; Pages deploy run 41846343673 success (started by the push, no
+  hand run needed). revaudio.net (WebKit, 1141x636 + 390x844): Try / Product page = option A (3 px, phosphor fill),
+  no sideways scroll, no page errors. Smoke run 41846343899 still running when this was written; smoke on main
+  already failed at 7176953 and 73c697b, before this merge: `/store` now redirects to `/plugins/`
+  (40c9e43, the BF/CM skins) while tests/smoke.spec.ts still waits for `/?utm_source=smoke#plugins`. Not this
+  entry's files: the owner of 40c9e43 decides which one is right.
 - Next: the pictures bench (COPY SETTINGS, then "apply ww bench"), still on `feat/lcd-polish`.
 
 ## 2026-11-04 — GAS 2 postcards: no shaking when the end page scrolls to the footer (Claude Code `danavivi-c2 [ca2821]`, Dan's Mac) — PUSHED TO MAIN 2026-11-04 on Dan's word "push to main" (from `fix/gas2-end-scroll`)
