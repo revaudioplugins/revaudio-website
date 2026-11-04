@@ -133,7 +133,13 @@ only after Dan picks: `src/pages/index.astro`, a new `src/components/HomeOpening
 - Blind-spot review done (2026-11-04): 2 blockers (the room stretches with the screen; baked light can't follow
   swaps) + high items, all in `tasks/todo.md` "The rebuild"; DESIGN.md §7's film rule replaced by the rebuild rule.
   Round 3 is on the plan page (14 questions, db `answers/round-3`).
-- Next: read Dan's round 3, then the look lock (Dan pins the painting) and the foundations (the room in metres first).
+- Round 3 answered (2026-11-04): live **Nov 19** as the default homepage, to half the visitors (A/B), before the
+  Black Friday countdown; v1 = real light + materials everywhere, real models at the far end, entrance and car; fixed
+  metres; a phone team; Dan's team models the car; R2; flicker <= 3/s; snap off by default. Full list + the schedule:
+  `tasks/todo.md`, "The rebuild". Researchers R1 (references, props list, free models, licences) and R2 (the live-3D
+  recipe) running; outputs land in `tools/_home-opening/refs/` (git-ignored).
+- Next: the foundations (the room in fixed metres first), then round 4 on the plan page (look lock + references +
+  the props pick) when R1 reports. Owed: tell Gil (his countdown + TV intro vs the room on Nov 19).
 
 ## 2026-11-02 — Footer: categories fold into drawers (Claude Code `revaudio-3b [a4cb6d]`, laptop 2) — ON MAIN + LIVE: merged `--no-ff` 2026-11-02 by Claude Code `revaudio-0c [571e5c]` (laptop 1) on Dan's word "push it to main and merge" (Yoni had approved by pushing the branch)
 

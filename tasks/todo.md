@@ -48,11 +48,34 @@ Steps:
       main (27-30 Nov, countdown + a TV intro); the power-on flicker (55 ms steps, ~9 flashes/s; WCAG 2.3.1 allows
       3); the 6 % scroll snap; phones see ~27 deg across; look-alikes and asset licences. Round 3 on the plan page:
       findings, corrections and 14 questions (db `answers/round-3`).
-- [ ] Round 3 answered. Proposed order (pending Dan): 1 look lock + look spec + what-should-be-visible table;
-      2 foundations (the room in metres, one slot file, light layers, R2, a CSP test, the Blender export); 3 a cheap
-      whole-room look pass on the grey blocks, then the far end + the phone camera path; 4 zones; 5 into the page
-      (flicker <= 3/s, reduced motion, a skip link, a crash fallback, budgets; behind a switch, live after 1 Dec);
-      6 the swap / remove test.
+- [x] Round 3 answered (2026-11-04) + four follow-ups in chat. Decisions:
+      - The room is the DEFAULT homepage, not a skin. Live on **Nov 19**, before the Black Friday countdown (Nov 20),
+        to half the visitors (A/B test = how we tell if it sells).
+      - v1 = real light and materials everywhere; real models at the far end, the entrance and the car; the other
+        props stay dressed simple shapes until after Black Friday.
+      - One fixed size in metres; overnight re-bakes are fine; re-bakes run on Dan's Mac (Claude).
+      - Phones: their own portrait camera path, and a phone team (phone designer + phone tester, Opus) working with
+        everyone else.
+      - Look: today's room; the painting is the mood reference. The room is its own era: "new with hints of
+        elements from the past, like the GAS 2 vibe, a vintage retro garage / music studio", from real garages and
+        real messy retro studios. More elements go into the skeleton: Claude proposes a list, Dan picks.
+      - The car: Dan's team models it in Blender (they are 3D artists), Claude helps; the Supra signatures (round quad
+        taillights, hoop wing) are made our own.
+      - Plugins visible wherever each is in view; the landing is the TV. Shipped 3D files on Cloudflare R2.
+      - Flicker at most 3 flashes a second. The scroll snap is off by default, kept as a bench option.
+- [ ] Researchers running (2026-11-04, Opus): R1 = real references (board in `tools/_home-opening/refs/board/`),
+      the new-props list, free model sources, a licence log; R2 = the live-3D recipe (light layers, compression,
+      phone budget, CSP, R2, parity, the splat check) in `refs/tech-recipe.md`. Both git-ignored.
+- [ ] Tell Gil: the room goes live Nov 19 as the homepage (A/B); his Black Friday countdown (from Nov 20) and the TV
+      intro must work with it (the walk lands on the TV, which carries the live page).
+- Schedule to Nov 19 (tight; checkpoint Nov 12: if the look pass isn't at the bar, v1 = look + light only):
+  - Nov 4-6: foundations (the room in metres + one slot file, the light-layer design, tone mapping, a CSP test, R2);
+    round 4 page = the look lock (pins on the painting) + the reference board + the props pick.
+  - Nov 6-9: the whole-room look pass; the Blender export + bake pipeline; the far-end bake-off (testers, critics).
+  - Nov 9-14: real models at the far end and the entrance; the car (Dan's team); the phone path (phone team).
+  - Nov 14-17: into the homepage behind a switch + the A/B split; CSP + R2 live set-up (Dan's OK); flicker,
+    reduced motion, a skip link, the crash fallback; all checks.
+  - Nov 18: Dan's sign-off. Nov 19: live to half the visitors (a push to main = live, Dan's word).
 - [ ] 1. Look lock: Dan pins what he loved on the painting (a review page).
 - [ ] 2. The skeleton exported to Blender (geometry, slot names, camera walk, lights); parity check against the
       bench. (Blender itself: installed 2026-11-04.)
