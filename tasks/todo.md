@@ -76,7 +76,14 @@ Steps:
   - Nov 14-17: into the homepage behind a switch + the A/B split; CSP + R2 live set-up (Dan's OK); flicker,
     reduced motion, a skip link, the crash fallback; all checks.
   - Nov 18: Dan's sign-off. Nov 19: live to half the visitors (a push to main = live, Dan's word).
-- [ ] 1. Look lock: Dan pins what he loved on the painting (a review page).
+- [x] R1 (2026-11-04, spot-checked): 32 real references with licences (`tools/_home-opening/refs/board/`, git-ignored),
+      45 new props N01-N45 by zone (`refs/props.md`), free model sources (`refs/models.md`), a licence log
+      (`refs/licence-log.md`). Traps: Fab's Standard licence forbids assets visitors can extract (live 3D sends the
+      files), so only CC0 / CC BY there; CC BY needs a credits page; generic shapes only. R1 slipped once: its first two
+      requests to the Wikimedia Commons / Openverse APIs carried Dan's email in a header (told Dan).
+- [ ] 1. Look lock: the review page https://claude.ai/artifact/Bh4iT4GHQox8ZD97nie5UU (db `notes`: the painting + 3
+      close-ups to pin, 32 references with Love it / Some of it / Not this) and Round 4 on the plan page (the props
+      pick, db `answers/round-4`). Then: the look spec + the what-should-be-visible table.
 - [x] Foundation 1 (2026-11-04): the room has ONE size in metres (`roomL` 19.9 m, `tvH` 0.73 m, both on the bench);
       only the camera adapts per screen: it starts 1.5 m in front of the near wall and ends where the TV face covers
       the screen below the nav (width or height, whichever fits first). The live page sits on the part of the TV face

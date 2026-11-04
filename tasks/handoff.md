@@ -138,8 +138,13 @@ only after Dan picks: `src/pages/index.astro`, a new `src/components/HomeOpening
   metres; a phone team; Dan's team models the car; R2; flicker <= 3/s; snap off by default. Full list + the schedule:
   `tasks/todo.md`, "The rebuild". Researchers R1 (references, props list, free models, licences) and R2 (the live-3D
   recipe) running; outputs land in `tools/_home-opening/refs/` (git-ignored).
-- Next: the foundations (the room in fixed metres first), then round 4 on the plan page (look lock + references +
-  the props pick) when R1 reports. Owed: tell Gil (his countdown + TV intro vs the room on Nov 19).
+- Done 2026-11-04 (`danavivi-09`): the room in fixed metres (`2ff3026`); flicker <= 2.5 flashes/s + the snap off by
+  default (`7cff959`); R2's recipe (`tools/_home-opening/tech-recipe.md`); R1's references, props, models and licences
+  (`tools/_home-opening/refs/`, git-ignored). Look lock page: https://claude.ai/artifact/Bh4iT4GHQox8ZD97nie5UU; props
+  pick = Round 4 on the plan page.
+- Next: read Dan's look lock (db `notes`) + round 4 (`answers/round-4`); write the look spec and the visibility table;
+  then the slot file + the Blender export. Owed: tell Gil (his countdown + TV intro vs the room on Nov 19); Dan's OK for
+  the R2 bucket / `assets.revaudio.net` / the three CSP additions (test locally first).
 
 ## 2026-11-02 — Footer: categories fold into drawers (Claude Code `revaudio-3b [a4cb6d]`, laptop 2) — ON MAIN + LIVE: merged `--no-ff` 2026-11-02 by Claude Code `revaudio-0c [571e5c]` (laptop 1) on Dan's word "push it to main and merge" (Yoni had approved by pushing the branch)
 
