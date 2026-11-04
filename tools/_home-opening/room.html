@@ -204,8 +204,8 @@ const DEF = {
   // the REVAUDIO neon: off the aisle (Dan 2026-11-02: "not in your face"), then on the end wall, right of the TV (11-03)
   signWall: 'endRight', signF: 0.52, signX: 3.2, signY: 3.02,  // the wall in front of you, top right (Dan 11-03, placed 11-04)
   signScale: 1.21, signTilt: 2.5,        // hung a little crooked on two wires (Dan 11-03; sized 11-04)
-  ver: 7,                                // settings version (5 = Dan's bench of 11-03 baked, 6 = his third, with the pegboard move, 7 = back to the bare set; his bench of 11-04 needed no bump): 2 moved the sign to the end wall, 3 made it bigger + crooked, 4 took the road off the floor
-  labels: 1, wire: 0, readB: 1, snap: 1, paint: 0, film: 0, bench: 0, edit: 0,  // paint: the painted room over the bare set; film: the walk film over both
+  ver: 8,                                // settings version (5 = Dan's bench of 11-03 baked, 6 = his third, with the pegboard move, 7 = back to the bare set; his bench of 11-04 needed no bump; 8 = the snap off): 2 moved the sign to the end wall, 3 made it bigger + crooked, 4 took the road off the floor
+  labels: 1, wire: 0, readB: 1, snap: 0, paint: 0, film: 0, bench: 0, edit: 0,  // paint: the painted room over the bare set; film: the walk film over both; snap: free scrolling by default, the snap stays a bench option (Dan 2026-11-04)
   // (both off, Dan 2026-11-03 after the one-shot film: "lets go back to the skelton this is not what i want")
   moves: {},                             // per-object moves from the move tool: { id: { f, x, y, side, s, r } }
 };
@@ -227,6 +227,7 @@ if (sv < 4) Object.assign(S, { floorLines: 0, ledStrip: 0 });
 if (sv < 5) for (const id of ['L19', 'E02', 'E03', 'E05', 'E06', 'E08', 'A08', 'L12', 'R01']) delete S.moves[id]; // baked into the tables; L19 was dragged 100 m off
 if (sv < 6) delete S.moves.L01; // baked into its row
 if (sv < 7) Object.assign(S, { paint: 0, film: 0 }); // the bare set is the room again
+if (sv < 8) S.snap = 0; // free scrolling by default (Dan 2026-11-04); the bench can turn the snap back on
 S.ver = DEF.ver;
 if (CAPTURE != null) Object.assign(S, { sway: 0, labels: 0, readB: 0, dust: 0, bench: 0, edit: 0, paint: CAPTURE_PAINTED ? 1 : 0 }); // the set for the painter
 // undo / redo: every saved change is one step (a whole slider or object drag, a toggle, a reset); view state is not
@@ -1296,7 +1297,8 @@ const env = (t, [a, b]) => clamp((t - a) / (b - a));
 function flicker(t, win, salt) {
   if (reduced) return 1;
   const k = env(t, win);
-  return k >= 1 ? 1 : k <= 0 ? 0 : (hash(Math.floor(t / 55) + salt) < k * k * 1.2 ? 1 : 0.05);
+  // 200 ms steps: the whole room changes at most 5 times a second, at most 2.5 flashes (WCAG 2.3.1 allows 3; Dan 2026-11-04)
+  return k >= 1 ? 1 : k <= 0 ? 0 : (hash(Math.floor(t / 200) + salt) < k * k * 1.2 ? 1 : 0.05);
 }
 const LED_RGB = [[0.25, 2.2, 0.6], [2.4, 1.3, 0.2], [2.4, 0.25, 0.2], [0.3, 1.6, 2.4]];
 const _c = new THREE.Color();

@@ -84,8 +84,22 @@ Steps:
       renders as before (0.00-0.05 % of pixels, walk 0 / 60 %); the room is 19.9 m at 1141x636, 1440x900, 1920x1080 and
       390x844; the last 3D frame vs the live TV: 0.60 % at 1141, 0.38 % at 1440 (both unchanged), 1.90 % on the phone
       (was 19.08 %); no page errors.
+- [x] R2's live-3D recipe (2026-11-04, its claims about our code re-checked): `tools/_home-opening/tech-recipe.md`.
+      It implies: each light group baked alone in Blender, three groups per 8-bit KTX2 (R/G/B), mixed live by one
+      shared uniform (colour x flicker), a swap re-bakes only its slot; AgX in both; the TV / CRT screens drawn after
+      tone mapping; glTF + meshopt + KTX2 (no Draco, textures as separate files) on R2 at `assets.revaudio.net`
+      (hashed, immutable, a CORS rule); three CSP additions (`'wasm-unsafe-eval'`, `worker-src 'self' blob:`, the R2
+      origin) = production changes, Dan's OK first; phones get their own tier (DPR <= 2, <= 100 MB of textures),
+      a crash-loop marker falls back to a still, a pause button (WCAG 2.2.2), reduced motion = a still; the first
+      paint is a still of the room per breakpoint (the LCP). Also: room.html vendors three r170 while the site pins
+      0.185.1, and room.html loads Google Fonts, which the live CSP blocks (the site self-hosts the same fonts).
+      Splats: not in v1.
+- [x] Round 3 quick fixes (2026-11-04): the power-on flicker steps 200 ms (at most 2.5 flashes a second, was up to
+      7.5); the scroll snap off by default (settings ver 8), still a bench option.
 - [ ] 2. The skeleton exported to Blender (geometry, slot names, camera walk, lights); parity check against the
       bench. (Blender itself: installed 2026-11-04.)
+- [ ] Owed Dan's OK (production): an R2 bucket + `assets.revaudio.net`, its cache / CORS rules, the three CSP
+      additions. Test locally first, with the live CSP served by a local server.
 - [ ] Research: assets + the car; live-3D techniques + the splat check.
 - [ ] 3. The far-end corner built once, shown live (A) and pre-rendered (B); checks + critics; Dan picks.
 - [ ] 4. The rest, zone by zone: entrance + car, workbench wall, studio corner.
