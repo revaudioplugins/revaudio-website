@@ -1,0 +1,429 @@
+---
+// Black Friday / Cyber Monday 2026: the offer strip over the nav, site-wide.
+// It holds the page down instead of floating over it (the home TV fills the
+// screen, so a prop over it would hide a plugin: why Halloween's BOO came off).
+// Both phases render; html[data-sale] (set pre-paint in BaseLayout) shows one
+// and sets --sale-h, which the nav and every page already lay out with.
+//   bf: "lights out in the garage". A steel roll-up door slat, lit by one work
+//       lamp; the offer is a stamped plate, the code a brass key tag.
+//   cm: "diagnostic mode". The same strip is a scan tool's screen: phosphor
+//       type is allowed to glow here because a lit screen is a lamp (DESIGN §2).
+//   soon: the week before Black Friday, home page only (html[data-sale-soon],
+//       BaseLayout): the same slat, "Black Friday in" and the odometer. At zero
+//       the clock below swaps it for the Black Friday bar, no reload.
+// Click the code to copy it. The countdown is to the real end (no extensions).
+import { salePhases, saleBundleCount, saleBundleUrl } from '../data/sale';
+const bf = salePhases.find((p) => p.id === 'bf')!;
+const cm = salePhases.find((p) => p.id === 'cm')!;
+const clock = JSON.stringify(salePhases.map((p) => ({ id: p.id, start: p.start, end: p.end })));
+---
+
+<div class="ss" data-sale-strip data-clock={clock}>
+  {/* ── the week before: the door slat counts down to Black Friday ── */}
+  <section class="ss-bar ss-soon" aria-label="Countdown to Black Friday">
+    <span class="ss-lamp" aria-hidden="true"></span>
+    <span class="ss-soon-kicker">Black Friday in</span>
+    <span class="ss-odo" aria-hidden="true" data-sale-count="soon"></span>
+    <span class="ss-soon-line">{bf.pct}% off everything · Nov 27</span>
+    <span class="sr-only">Black Friday starts Friday, November 27, 00:00 Pacific: {bf.pct}% off everything.</span>
+  </section>
+
+  {/* ── Black Friday: the door slat ── */}
+  <section class="ss-bar ss-bf" aria-label={`${bf.name} sale`}>
+    <span class="ss-lamp" aria-hidden="true"></span>
+    <span class="ss-bf-kicker">Black Friday</span>
+    <span class="ss-plate"><b>{bf.pct}%</b> off <span class="ss-wide">everything</span></span>
+    <button type="button" class="ss-tag" data-sale-code={bf.code} aria-label={`Copy code ${bf.code}`}>
+      <span class="ss-tag-hole" aria-hidden="true"></span>
+      <span class="ss-tag-with">code</span>
+      <span class="ss-tag-code">{bf.code}</span>
+      <span class="ss-copied" aria-live="polite" data-sale-copied></span>
+    </button>
+    <a class="ss-bundle" href={saleBundleUrl}>All {saleBundleCount} plugins <b>${bf.bundleUsd}</b><span aria-hidden="true"> →</span></a>
+    <span class="ss-ends">
+      <span class="ss-ends-label">Ends in</span>
+      <span class="ss-odo" aria-hidden="true" data-sale-count="bf"></span>
+      <span class="sr-only">Ends {bf.endLabel}</span>
+    </span>
+  </section>
+
+  {/* ── Cyber Monday: the scan tool's screen ── */}
+  <section class="ss-bar ss-cm" aria-label={`${cm.name} sale`}>
+    <span class="ss-scan" aria-hidden="true"><i></i>OBD-II</span>
+    <span class="ss-cm-kicker">Cyber Monday<span class="ss-cursor" aria-hidden="true"></span></span>
+    <span class="ss-cm-item"><span aria-hidden="true">&gt; </span>{cm.pct}% off <span class="ss-wide">everything</span></span>
+    <button type="button" class="ss-cm-code" data-sale-code={cm.code} aria-label={`Copy code ${cm.code}`}>
+      <span class="ss-cm-with">code</span> <span class="ss-cm-chip">{cm.code}</span>
+      <span class="ss-copied" aria-live="polite" data-sale-copied></span>
+    </button>
+    <a class="ss-cm-item ss-bundle" href={saleBundleUrl}>All {saleBundleCount} plugins ${cm.bundleUsd}<span aria-hidden="true"> →</span></a>
+    <span class="ss-cm-item ss-ends">
+      <span class="ss-ends-label">Ends in</span>
+      <span class="ss-cm-count" aria-hidden="true" data-sale-count="cm"></span>
+      <span class="sr-only">Ends {cm.endLabel}</span>
+    </span>
+  </section>
+</div>
+
+<script>
+  const strip = document.querySelector<HTMLElement>('[data-sale-strip]');
+  const html = document.documentElement;
+  if (strip) {
+    type P = { id: string; start: string; end: string };
+    const phases = (JSON.parse(strip.dataset.clock || '[]') as P[]).map((p) => ({ id: p.id, start: Date.parse(p.start), end: Date.parse(p.end) }));
+    const preview = html.dataset.salePreview === '1';
+    const pad = (n: number) => String(n).padStart(2, '0');
+
+    // The odometer: one window per unit; the day window drops away on the last day.
+    // Phones get hours and minutes only, with their units ("62h 59m").
+    const fmt = (ms: number, short: boolean) => {
+      const s = Math.max(0, Math.floor(ms / 1000));
+      const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+      return { d, parts: short ? [`${h + d * 24}h`, `${pad(m)}m`] : [pad(h), pad(m), pad(sec)] };
+    };
+    // A dev preview before the sale runs the clock as if it were 09:00 PT on the
+    // phase's first day, so the countdown can be seen ticking.
+    // A preview of the week before runs it as if Black Friday were 6 days, 14 hours away.
+    const previewed = preview ? phases.find((p) => p.id === html.dataset.sale) : null;
+    const bfStart = phases.find((p) => p.id === 'bf')!.start;
+    const skew = previewed && (Date.now() < previewed.start || Date.now() >= previewed.end) ? previewed.start + 9 * 3600e3 - Date.now()
+      : preview && html.dataset.saleSoon && Date.now() < bfStart - 7 * 86400e3 ? bfStart - (6 * 86400e3 + 14 * 3600e3 + 3 * 60e3 + 22e3) - Date.now()
+      : 0;
+    const render = () => {
+      const now = Date.now() + skew;
+      const live = phases.find((p) => now >= p.start && now < p.end);
+      // A real phase change at midnight PT: swap the skin in place (the week-before bar
+      // gives way to Black Friday). A dev preview stays put.
+      if (!preview) {
+        if (live) { html.dataset.sale = live.id; delete html.dataset.saleSoon; }
+        else delete html.dataset.sale;
+      }
+      const phone = innerWidth <= 720;
+      if (!html.dataset.sale && html.dataset.saleSoon) {
+        const s = Math.max(0, Math.floor((bfStart - now) / 1000));
+        const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60);
+        const units = [`${d}d`, `${pad(h)}h`, `${pad(m)}m`].concat(phone ? [] : [`${pad(s % 60)}s`]);
+        strip.querySelectorAll<HTMLElement>('[data-sale-count="soon"]').forEach((el) => { el.innerHTML = units.map((u) => `<span>${u}</span>`).join(''); });
+        return;
+      }
+      const shown = phases.find((p) => p.id === html.dataset.sale);
+      if (!shown) return;
+      const left = shown.end - now;
+      const t = fmt(left, phone);
+      strip.querySelectorAll<HTMLElement>(`[data-sale-count="${shown.id}"]`).forEach((el) => {
+        if (shown.id === 'bf') {
+          const units = (t.d && !phone ? [`${t.d}d`] : []).concat(t.parts);
+          el.innerHTML = units.map((u) => `<span>${u}</span>`).join('');
+        } else {
+          el.textContent = phone ? t.parts.join(' ') : (t.d ? `${t.d}D ` : '') + t.parts.join(':');
+        }
+      });
+    };
+    render();
+    setInterval(render, 1000);
+
+    strip.querySelectorAll<HTMLButtonElement>('[data-sale-code]').forEach((btn) => {
+      const note = btn.querySelector<HTMLElement>('[data-sale-copied]');
+      let t = 0;
+      btn.addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText(btn.dataset.saleCode || ''); } catch { return; }
+        if (note) note.textContent = 'Copied';
+        btn.classList.add('is-copied');
+        clearTimeout(t);
+        t = window.setTimeout(() => { btn.classList.remove('is-copied'); if (note) note.textContent = ''; }, 1600);
+      });
+    });
+  }
+</script>
+
+<style>
+  @font-face {
+    font-family: 'VT323';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(../styles/fonts/vt323-latin.woff2) format('woff2');
+  }
+
+  :global(html[data-sale]), :global(html[data-sale-soon]) { --sale-h: 46px; }
+  @media (max-width: 720px) { :global(html[data-sale]), :global(html[data-sale-soon]) { --sale-h: 42px; } }
+
+  .ss { display: none; }
+  :global(html[data-sale]) .ss,
+  :global(html[data-sale-soon]) .ss {
+    display: block;
+    position: sticky;
+    top: 0;
+    z-index: 51; /* over nav.site-nav (50) */
+    height: var(--sale-h);
+  }
+  .ss-bar { display: none; height: 100%; }
+  :global(html[data-sale='bf']) .ss-bf,
+  :global(html[data-sale='cm']) .ss-cm,
+  :global(html[data-sale-soon]:not([data-sale])) .ss-soon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(0.8rem, 2.2vw, 2rem);
+    padding: 0 1rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .ss a { text-decoration: none; }
+  :where(.ss button) { font: inherit; text-transform: inherit; letter-spacing: inherit; border: 0; background: none; padding: 0; cursor: copy; color: inherit; -webkit-tap-highlight-color: transparent; }
+  .ss-copied {
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    translate: -50% 4px;
+    font: 600 0.58rem/1 var(--font-mono);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--brass-bright);
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+  }
+  .is-copied .ss-copied { opacity: 1; }
+
+  /* ── Black Friday: a roll-up door slat in the dark, one work lamp on it ── */
+  .ss-bf, .ss-soon {
+    background:
+      radial-gradient(38% 240% at 3% 50%, rgba(255, 172, 84, 0.34), rgba(255, 150, 60, 0.1) 40%, transparent 75%),
+      repeating-linear-gradient(180deg, #26211c 0 2px, #191613 2px 4px, #110f0d 4px 6px, #1f1b17 6px 15px);
+    border-bottom: 1px solid #070606;
+    box-shadow: inset 0 1px 0 rgba(232, 200, 120, 0.08), 0 6px 14px -6px rgba(0, 0, 0, 0.9);
+    color: var(--fg);
+  }
+  /* the lamp's cage at the left end, the light on the slat comes from here */
+  .ss-lamp {
+    position: absolute;
+    left: clamp(10px, 3vw, 46px);
+    top: 50%;
+    width: 16px;
+    height: 22px;
+    translate: 0 -50%;
+    border-radius: 7px 7px 5px 5px;
+    background:
+      repeating-linear-gradient(90deg, transparent 0 3px, #3b3128 3px 4.4px),
+      radial-gradient(circle at 50% 55%, #fff1cf, #ffc165 45%, #c7731f 80%);
+    box-shadow: 0 0 10px 3px rgba(255, 170, 70, 0.55), 0 0 30px 10px rgba(255, 150, 60, 0.18);
+  }
+  .ss-bf-kicker {
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    letter-spacing: 0.14em;
+    color: var(--brass);
+    text-shadow: var(--engrave, 0 1px 0 rgba(0, 0, 0, 0.8));
+    white-space: nowrap;
+    margin-left: clamp(1.4rem, 3vw, 2.6rem);
+  }
+  .ss-soon-kicker {
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    letter-spacing: 0.14em;
+    color: var(--brass);
+    text-shadow: var(--engrave, 0 1px 0 rgba(0, 0, 0, 0.8));
+    white-space: nowrap;
+  }
+  .ss-soon-line {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    letter-spacing: 0.1em;
+    color: var(--fg);
+    white-space: nowrap;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.8);
+  }
+  /* the stamped plate: enamel, a pressed rim, two bolts */
+  .ss-plate {
+    position: relative;
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    line-height: 1;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: #1d1916;
+    padding: 0.32rem 1.25rem 0.26rem;
+    border-radius: 4px;
+    background: linear-gradient(180deg, #f1e6cb, #dccfae 70%, #cfc09b);
+    box-shadow:
+      inset 0 0 0 2px #efe3c6, inset 0 0 0 3.5px #9c8c66, inset 0 1px 2px 4px rgba(255, 255, 255, 0.25),
+      0 2px 0 #6e5f42, 0 4px 8px rgba(0, 0, 0, 0.7);
+    text-shadow: 0 1px 0 rgba(255, 248, 230, 0.7), 0 -1px 0 rgba(70, 55, 35, 0.35);
+    rotate: -1.2deg;
+  }
+  .ss-plate b { font-weight: 400; color: var(--oxide); }
+  .ss-plate::before, .ss-plate::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 6px;
+    height: 6px;
+    translate: 0 -50%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #d8d4cc, #76726a 70%);
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+  }
+  .ss-plate::before { left: 6px; }
+  .ss-plate::after { right: 6px; }
+  /* the code: a brass key tag hung on the slat */
+  .ss-tag {
+    position: relative;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.45em;
+    padding: 0.3rem 0.85rem 0.26rem 1.55rem;
+    border-radius: 999px 6px 6px 999px;
+    background: linear-gradient(180deg, var(--brass-bright), var(--brass) 45%, var(--brass-dark));
+    color: #1d1916;
+    box-shadow: inset 0 1px 0 rgba(255, 240, 200, 0.6), 0 2px 6px rgba(0, 0, 0, 0.7);
+    transform-origin: 10px 50%;
+    transition: rotate 0.12s cubic-bezier(0.2, 0.9, 0.25, 1.25);
+  }
+  .ss-tag:hover { rotate: -4deg; }
+  .ss-tag-hole {
+    position: absolute;
+    left: 0.55rem;
+    top: 50%;
+    width: 7px;
+    height: 7px;
+    translate: 0 -50%;
+    border-radius: 50%;
+    background: #110f0d;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.9), 0 1px 0 rgba(255, 240, 200, 0.5);
+  }
+  .ss-tag-with { font: 600 0.6rem/1 var(--font-mono); letter-spacing: 0.24em; text-transform: uppercase; opacity: 0.75; }
+  .ss-tag-code { font-family: var(--font-display); font-size: 1.2rem; line-height: 1; letter-spacing: 0.12em; text-shadow: 0 1px 0 rgba(255, 240, 200, 0.55); }
+  .ss-tag:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 3px; }
+  .ss-bf .ss-bundle {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    letter-spacing: 0.1em;
+    color: var(--fg);
+    white-space: nowrap;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.8);
+    border-bottom: 1px solid rgba(201, 163, 92, 0.45);
+  }
+  .ss-bf .ss-bundle b { font-weight: 400; color: var(--brass-bright); }
+  .ss-bf .ss-bundle:hover { color: var(--brass-bright); border-bottom-color: var(--brass-bright); }
+  .ss-ends { display: inline-flex; align-items: center; gap: 0.55rem; white-space: nowrap; }
+  .ss-ends-label { font: 600 0.6rem/1 var(--font-mono); letter-spacing: 0.28em; text-transform: uppercase; color: var(--fg-dim); }
+  /* odometer drums: each unit in its own dark window */
+  .ss-odo { display: inline-flex; gap: 3px; }
+  .ss-odo :global(span) {
+    min-width: 1.75em;
+    padding: 0.2rem 0.3rem 0.16rem;
+    text-align: center;
+    font: 600 0.82rem/1 var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    color: var(--brass-bright);
+    background: linear-gradient(180deg, #050504, #1a1613 50%, #050504);
+    border-radius: 2px;
+    box-shadow: inset 0 0 0 1px rgba(201, 163, 92, 0.25), inset 0 3px 4px rgba(0, 0, 0, 0.9);
+  }
+
+  /* ── Cyber Monday: the scan tool's screen ── */
+  .ss-cm {
+    --ph: #79f2b0;
+    --ph-dim: #3fae78;
+    background:
+      radial-gradient(70% 220% at 50% 50%, rgba(60, 220, 150, 0.1), transparent 70%),
+      linear-gradient(180deg, #0a1612, #06100c);
+    border-bottom: 1px solid #2c4a3b;
+    box-shadow: inset 0 0 0 1px rgba(121, 242, 176, 0.08), inset 0 0 18px rgba(0, 0, 0, 0.8), 0 6px 14px -6px rgba(0, 0, 0, 0.9);
+    font-family: 'VT323', var(--font-mono);
+    font-size: 1.4rem;
+    line-height: 1;
+    color: var(--ph);
+    text-shadow: 0 0 6px rgba(121, 242, 176, 0.55), 0 0 1px rgba(200, 255, 225, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  /* scanlines, and one slow roll down the glass */
+  .ss-cm::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(180deg, transparent 0 40%, rgba(121, 242, 176, 0.06) 50%, transparent 60% 100%) 0 0 / 100% 300% no-repeat,
+      repeating-linear-gradient(180deg, rgba(0, 0, 0, 0.32) 0 1px, transparent 1px 3px);
+    animation: ss-roll 6s linear infinite;
+  }
+  .ss-cm-kicker { color: #c8ffe1; white-space: nowrap; margin-left: clamp(1.4rem, 3vw, 2.6rem); }
+  /* the scan tool's own badge at the left end: a moulded label and its power LED */
+  .ss-scan {
+    position: absolute;
+    left: clamp(10px, 3vw, 46px);
+    top: 50%;
+    translate: 0 -50%;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.2rem 0.45rem;
+    border-radius: 3px;
+    background: linear-gradient(180deg, #1d2420, #0d1210);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 1px 2px rgba(0, 0, 0, 0.8);
+    font: 600 0.55rem/1 var(--font-mono);
+    letter-spacing: 0.22em;
+    color: #8fa39a;
+    text-shadow: none;
+  }
+  .ss-scan i { width: 6px; height: 6px; border-radius: 50%; background: #79f2b0; box-shadow: 0 0 6px 2px rgba(121, 242, 176, 0.6); }
+  .ss-cursor { display: inline-block; width: 0.5em; height: 0.8em; margin-left: 0.15em; translate: 0 0.08em; background: var(--ph); box-shadow: 0 0 6px rgba(121, 242, 176, 0.7); animation: ss-blink 1.05s steps(1) infinite; }
+  .ss-cm-item { white-space: nowrap; }
+  .ss-cm .ss-bundle { color: var(--ph); border-bottom: 1px dashed var(--ph-dim); }
+  .ss-cm .ss-bundle:hover { color: #c8ffe1; }
+  .ss-cm-code { position: relative; white-space: nowrap; }
+  .ss-cm-with { color: var(--ph-dim); }
+  .ss-cm-chip {
+    display: inline-block;
+    padding: 0.08em 0.4em 0.02em;
+    color: #06100c;
+    background: var(--ph);
+    text-shadow: none;
+    box-shadow: 0 0 10px rgba(121, 242, 176, 0.55);
+  }
+  .ss-cm-code:hover .ss-cm-chip { background: #c8ffe1; }
+  .ss-cm-code:focus-visible { outline: 2px solid var(--ph); outline-offset: 3px; }
+  .ss-cm .ss-ends-label { font: inherit; letter-spacing: inherit; color: var(--ph-dim); }
+  .ss-cm-count { font-variant-numeric: tabular-nums; }
+
+  @keyframes ss-blink { 50% { opacity: 0; } }
+  @keyframes ss-roll { from { background-position: 0 100%, 0 0; } to { background-position: 0 -200%, 0 0; } }
+
+  /* ── narrower: the kicker and the bundle line go first ── */
+  @media (max-width: 1080px) {
+    .ss-wide { display: none; }
+  }
+  @media (max-width: 900px) {
+    .ss-bf-kicker, .ss-cm-kicker, .ss-bundle { display: none; }
+  }
+  @media (max-width: 720px) {
+    :global(html[data-sale='bf']) .ss-bf, :global(html[data-sale='cm']) .ss-cm, :global(html[data-sale-soon]) .ss-soon { gap: 0.6rem; padding: 0 0.6rem; }
+    .ss-soon-kicker { font-size: 1.05rem; }
+    .ss-soon-line { display: none; }
+    .ss-lamp, .ss-scan { display: none; }
+    .ss-plate { font-size: 1.05rem; padding: 0.28rem 0.95rem 0.22rem; }
+    .ss-tag-code { font-size: 1.02rem; }
+    .ss-tag-with { display: none; }
+    .ss-tag { padding-left: 1.3rem; }
+    .ss-ends-label { display: none; }
+    .ss-odo :global(span) { font-size: 0.72rem; }
+    .ss-cm { font-size: 1.15rem; }
+    .ss-cm-with { display: none; }
+  }
+  @media (max-width: 360px) {
+    .ss-plate::before, .ss-plate::after { display: none; }
+    .ss-plate { padding: 0.28rem 0.6rem 0.22rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ss-cm::after, .ss-cursor { animation: none; }
+    .ss-tag { transition: none; }
+  }
+
+  :global(html.hc) .ss-bf, :global(html.hc) .ss-cm { background: var(--bg-0); box-shadow: none; text-shadow: none; }
+  :global(html.hc) .ss-cm::after, :global(html.hc) .ss-lamp, :global(html.hc) .ss-scan { display: none; }
+</style>

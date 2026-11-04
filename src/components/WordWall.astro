@@ -1191,8 +1191,8 @@ const first = items[0]?.slug ?? '';
        showing; up, the TV's top edge tucks <1px under the nav's hairline. */
     const landY = (off: number) => Math.ceil(window.scrollY + off);
 
-    /* "/#plugins" links on home (the header's PLUGINS, the footer, the cart's
-       "Explore the plugins", the closing CTA) glide to the TV instead of
+    /* Links to the TV on the TV's own page (home's closing CTA "/#plugins"; on /plugins, the
+       header's PLUGINS, the footer, the cart's "Explore the plugins") glide to the TV instead of
        navigating: with ?cat= in the address the link would load the page
        again, and the browser's own jump would fire popstate (a channel change).
        Lenis listens on window and ignores preventDefault, so the click stops
@@ -1206,7 +1206,9 @@ const first = items[0]?.slug ?? '';
        scroll. Focus moves into the TV, as the browser's own jump would have
        moved it. */
     document.addEventListener('click', (e) => {
-      const a = (e.target as Element | null)?.closest('a[href="/#plugins"]');
+      const a = (e.target as Element | null)?.closest('a[href="/#plugins"], a[href="/plugins"]');
+      // "/plugins" from home is a real page change (the plugins page has no hero)
+      if (a?.getAttribute('href') === '/plugins' && location.pathname.replace(/\/$/, '') !== '/plugins') return;
       if (!a || !section || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
       e.preventDefault();
       e.stopPropagation();
@@ -1967,8 +1969,8 @@ const first = items[0]?.slug ?? '';
     box-shadow: none;
   }
 
-  /* The anchor: /#plugins from another page (the header's PLUGINS, the
-     product pages' breadcrumb, the /store redirect) is the browser's own
+  /* The anchor: /#plugins from another page (home's closing CTA, old links)
+     is the browser's own
      jump, and it must park the TV where the scroll lock and the script's
      glide park it: exactly under the nav. global.css pads every anchor jump
      by --nav-h + 0.75rem (html scroll-padding-top, for focus); this takes
@@ -1988,7 +1990,7 @@ const first = items[0]?.slug ?? '';
      not height: whatever still can't fit grows the TV instead of clipping
      (and the lock then leaves it alone). The scroll lock is in the script. */
   .ww {
-    --ww-nav: var(--site-nav-h, var(--nav-h));
+    --ww-nav: calc(var(--site-nav-h, var(--nav-h)) + var(--sale-h, 0px)); /* + the BF/CM strip while it's up */
     --ww-breath: 15px;         /* glass showing above and below the content */
     --ww-snap-zone: 30;        /* the lock catches when the TV's top stops within this % of the screen */
     --ww-bez-t: var(--rail-h); /* the opening's top / bottom edge, from the wall's inner box */

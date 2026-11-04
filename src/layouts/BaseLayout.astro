@@ -14,10 +14,21 @@ import CookieBanner from '../components/CookieBanner.astro';
 import ExitIntentPopup from '../components/ExitIntentPopup.astro';
 import WelcomeDiscountPopup from '../components/WelcomeDiscountPopup.astro';
 import TrialGateModal from '../components/TrialGateModal.astro';
+import SaleStrip from '../components/SaleStrip.astro';
+import SaleTransition from '../components/SaleTransition.astro';
+import SaleIntro from '../components/SaleIntro.astro';
+import { salePhases, saleSoonFrom } from '../data/sale';
 import { site } from '../data/site';
 
 // Privacy-friendly analytics: only in production, only once a beacon token is set.
 const analyticsOn = import.meta.env.PROD && !!site.cfBeaconToken;
+
+// Black Friday / Cyber Monday 2026 gate (src/data/sale.ts): the instants the head
+// script compares the clock with; ?sale=bf|cm|off previews in dev only.
+const saleClock = salePhases.map((p) => [p.id, Date.parse(p.start), Date.parse(p.end)]);
+// the week before: the home page's "Black Friday in…" countdown (html[data-sale-soon])
+const saleSoon = [Date.parse(saleSoonFrom), Date.parse(salePhases[0].start)];
+const salePreviewOk = import.meta.env.DEV;
 
 interface Props {
   title: string;
@@ -94,6 +105,33 @@ const canonical = new URL(Astro.url.pathname, Astro.site).href;
       } catch (e) {}
     </script>
 
+    {/* Black Friday / Cyber Monday 2026: pick the live phase before first paint so
+        the strip (SaleStrip) and --sale-h are in place on the first frame, no
+        layout jump. Then the arrival half of a page-change scene (SaleTransition):
+        only honoured if fresh and for the phase still on. */}
+    <script is:inline define:vars={{ saleClock, saleSoon, salePreviewOk }}>
+      try {
+        var sH = document.documentElement, sNow = Date.now(), sPick = null;
+        for (var i = 0; i < saleClock.length; i++)
+          if (sNow >= saleClock[i][1] && sNow < saleClock[i][2]) sPick = saleClock[i][0];
+        // the week before Black Friday: the countdown bar, home page only
+        var sHome = location.pathname === '/' || location.pathname === '/index.html';
+        var sSoon = sHome && sNow >= saleSoon[0] && sNow < saleSoon[1];
+        if (salePreviewOk) {
+          var sQ = new URLSearchParams(location.search).get('sale');
+          if (sQ === 'off') sessionStorage.removeItem('sale-preview');
+          else if (sQ === 'bf' || sQ === 'cm' || sQ === 'soon') sessionStorage.setItem('sale-preview', sQ);
+          var sP = sessionStorage.getItem('sale-preview');
+          if (sP) { sPick = sP === 'soon' ? null : sP; sSoon = sP === 'soon' && sHome; sH.dataset.salePreview = '1'; }
+        }
+        if (sPick) sH.dataset.sale = sPick;
+        else if (sSoon) sH.dataset.saleSoon = '1';
+        var sA = sessionStorage.getItem('ss-arrive');
+        sessionStorage.removeItem('ss-arrive');
+        if (sA && sPick && sA.split(':')[0] === sPick && sNow - +sA.split(':')[1] < 5000) sH.classList.add('ss-arrive');
+      } catch (e) {}
+    </script>
+
     {/* Cloudflare Web Analytics. No SRI: CF rotates beacon.min.js and ships it
         without a published hash, so a pinned integrity would break on update.
         Token is a public beacon id, not a secret. spa false: the beacon counts every
@@ -112,6 +150,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site).href;
   </head>
   <body>
     <a href="#main-content" class="skip-link">Skip to main content</a>
+    <SaleStrip />
     {/* the smoke: two drifting haze plates + veil, fixed behind the page (src/lib/haze.ts) */}
     <div class="haze" data-haze aria-hidden="true">
       <div class="haze-plate h1" data-haze-1></div>
@@ -129,6 +168,8 @@ const canonical = new URL(Astro.url.pathname, Astro.site).href;
     <ExitIntentPopup />
     <WelcomeDiscountPopup />
     <TrialGateModal />
+    <SaleTransition />
+    <SaleIntro />
     <script>
       import { initMotion } from '../lib/motion';
       import { initHaze } from '../lib/haze';

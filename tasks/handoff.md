@@ -73,6 +73,25 @@ Claim: CLOSED 2026-11-03 (`revaudio-63`). Files: `src/pages/review.astro` (new),
   - Checks: the page's real payload (captured in the browser, every question type incl. Other / follow-ups / N/A / news tick) through the worker's real handler locally: `{ok:true,sent:true}`, team mail with every answer, code mail, news relay, 3 KV keys. Page replies tested in the browser (already / incomplete -> q-os + q-vs_goto marked / rate sentence / busy -> generic / had_code end screen). `/beta?utm_source=invite` -> `/review/?utm_source=invite`. Build green.
   - GO-LIVE ORDER: (1) DONE 2026-11-03 (Yoni: "deploy"): worker `/review` LIVE, stamp `da4a8a0 @ 2026-11-03T09:11:56Z`, version `c88934c4`, live probes OK (RevLimiter handoff); (2) DONE 2026-11-03 (Yoni: "push"): `feat/review` fast-forwarded to main (Pages deploy); (3) DONE 2026-11-03: Yoni's real review from info@revaudio.net (Radio Roulette): code mail + team mail arrived ("it works"); the test code `REVIEWJ7B2UE` (`dsc_01m6gbx0nemcd0bdct3spmg6s6`) archived in Paddle by Yoni. KV `reviewcode:info@revaudio.net` stays (info@ used its one code: a re-test from info@ gets no code).
 - Next: Yoni's look/questions round on the preview -> worker `/review` route -> wire `workerUrl` -> `/beta` redirect -> push on the user's word.
+## 2026-11-02 — BF/CM 2026 skins (Claude Code, Gil's Mac) — ON BRANCH `feat/bfcm-skins`, not on main
+
+- Home = Dan's TV-first page (`bcb00b0`), unchanged. The hero came back for a while on this branch and is out again
+  (Gil: a new header is in the works; the skins don't depend on it). DESIGN.md §7 = TV-first.
+- Skins switch on by themselves from `src/data/sale.ts` (US Pacific). Dev preview: `?sale=soon|bf|cm|off`.
+  - `SaleStrip.astro` (BaseLayout): the bar over the nav via `--sale-h` (WordWall's `--ww-nav` adds it).
+    soon = "Black Friday in" countdown, home page only, Nov 20 00:00 PT until BF; bf = Nov 27 to Nov 30;
+    cm = Nov 30 to Dec 1. On an open page the bar swaps at midnight PT, no reload.
+  - `SaleIntro.astro` (BaseLayout): home loads only, once per phase per browser (every load in a preview): the TV
+    (WordWall's cabinet roll 2) flies in, powers on, the offer comes up in the TV's type; X / Esc / outside click /
+    "See the plugins" powers it off onto the TV.
+  - `SaleTransition.astro` (BaseLayout): BF door, CM boot between pages.
+  - Checked with Playwright's clock: soon -> bf at 00:00 PT Nov 27 on an open page; cm -> off at Dec 1; nothing Nov 19;
+    no countdown bar off the home page.
+- `/plugins` (Gil): the same TV-only page at its own address (made while home had the hero; kept for the new header).
+  Header PLUGINS, footer, cart, product breadcrumb, GAS fallback, `/store` redirect and the sale's links point there.
+- Open: codes `REDLINE` / `CYBER40` are placeholders (plan decision 7); no Paddle bundle product yet (the bundle line
+  points at `/plugins`); OBDTune leaves `saleBundlePlugins` on Nov 22 if not released.
+- Push to main = live deploy: waits for the user's word.
 
 ## 2026-11-02 — Footer: categories fold into drawers (Claude Code `revaudio-3b [a4cb6d]`, laptop 2) — ON MAIN + LIVE: merged `--no-ff` 2026-11-02 by Claude Code `revaudio-0c [571e5c]` (laptop 1) on Dan's word "push it to main and merge" (Yoni had approved by pushing the branch)
 

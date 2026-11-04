@@ -1,0 +1,212 @@
+---
+// Black Friday / Cyber Monday 2026 page change, site-wide (mounted in BaseLayout),
+// only while html[data-sale] is set. Same rules as HalloweenTransition: internal
+// links only; skipped for new-tab/modified clicks, downloads, hash jumps, other
+// origins, reduced motion and html.hc.
+//   bf: the roll-up door slams down (with its bounce), and on the next page it
+//       rolls back up. The arrival half is painted by html.ss-arrive in
+//       BaseLayout's head, so the new page never flashes before the door.
+//   cm: the scan tool boots: a phosphor line opens to a screen that reads the
+//       route, "OK", and the next page fades up out of the dark screen.
+const SLATS = 14;
+---
+
+<div class="st" data-st aria-hidden="true">
+  <div class="st-door">
+    {Array.from({ length: SLATS }).map(() => <span class="st-slat"></span>)}
+    <span class="st-paint">Black Friday</span>
+    <span class="st-handle"></span>
+  </div>
+  <div class="st-boot">
+    <div class="st-line"></div>
+    <p class="st-text"><span data-st-route></span><span class="st-ok">OK</span></p>
+  </div>
+</div>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-st]');
+  if (root) {
+    document.body.appendChild(root);
+    const html = document.documentElement;
+    const FX = { bf: 760, cm: 900 } as const;
+    const HOLD = 60;
+    let busy = false;
+
+    const play = (href: string, path: string) => {
+      const fx = html.dataset.sale as keyof typeof FX;
+      busy = true;
+      const hint = document.createElement('link');
+      hint.rel = 'prefetch';
+      hint.href = href;
+      document.head.appendChild(hint);
+      const route = root.querySelector<HTMLElement>('[data-st-route]');
+      if (route) route.textContent = `> SCAN ${path.replace(/\/$/, '') || '/HOME'} ... `;
+      root.dataset.play = fx;
+      setTimeout(() => {
+        try { sessionStorage.setItem('ss-arrive', `${fx}:${Date.now()}`); } catch {}
+        location.href = href;
+      }, FX[fx] + HOLD);
+    };
+
+    document.addEventListener('click', (e) => {
+      const fx = html.dataset.sale;
+      if (!fx || !(fx in FX)) return;
+      if (busy || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches || html.classList.contains('hc')) return;
+      const a = (e.target as Element | null)?.closest?.('a[href]') as HTMLAnchorElement | null;
+      if (!a || a.hasAttribute('download') || (a.target && a.target !== '_self')) return;
+      const url = new URL(a.href, location.href);
+      if (url.origin !== location.origin || !/^https?:$/.test(url.protocol)) return;
+      if (url.pathname === location.pathname && url.search === location.search) return;
+      e.preventDefault();
+      play(url.href, url.pathname.toUpperCase());
+    });
+
+    // The arrival half (set pre-paint in BaseLayout): let it play, then clear.
+    if (html.classList.contains('ss-arrive')) setTimeout(() => html.classList.remove('ss-arrive'), 760);
+
+    addEventListener('pageshow', (e) => {
+      if (e.persisted) { busy = false; delete root.dataset.play; html.classList.remove('ss-arrive'); }
+    });
+  }
+</script>
+
+<style>
+  .st {
+    position: fixed;
+    inset: 0;
+    z-index: 9500;
+    pointer-events: none;
+    overflow: hidden;
+    visibility: hidden;
+  }
+  .st[data-play] { visibility: visible; pointer-events: auto; cursor: progress; }
+  .st-door, .st-boot { display: none; position: absolute; inset: 0; }
+  .st[data-play='bf'] .st-door, .st[data-play='cm'] .st-boot { display: block; }
+
+  /* ── the door: slats, lit from the lamp at top left, painted stencil, handle ── */
+  .st-door {
+    display: none;
+    flex-direction: column;
+    background: #110f0d;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.85);
+    translate: 0 -101%;
+  }
+  .st[data-play='bf'] .st-door { display: flex; animation: st-slam 760ms both; }
+  .st-slat {
+    flex: 1;
+    background:
+      linear-gradient(180deg, #2b251f 0%, #1d1915 18%, #15120f 70%, #0c0a09 100%);
+    border-bottom: 1px solid #070606;
+  }
+  .st-door::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(70% 90% at 8% 0%, rgba(255, 170, 80, 0.2), transparent 60%);
+  }
+  .st-paint {
+    position: absolute;
+    left: 50%;
+    top: 46%;
+    translate: -50% -50%;
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 11vw, 10rem);
+    letter-spacing: 0.12em;
+    white-space: nowrap;
+    color: transparent;
+    -webkit-text-stroke: 2px rgba(201, 163, 92, 0.6);
+    text-shadow: 0 0 1px rgba(0, 0, 0, 0.6);
+  }
+  .st-handle {
+    position: absolute;
+    left: 50%;
+    bottom: 3.5%;
+    width: clamp(90px, 12vw, 160px);
+    height: 12px;
+    translate: -50% 0;
+    border-radius: 6px;
+    background: linear-gradient(180deg, var(--chrome), var(--chrome-dark));
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.8);
+  }
+
+  /* ── the scan tool boots ── */
+  .st-boot { background: #06100c; }
+  .st-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 2px;
+    translate: 0 -50%;
+    background: #79f2b0;
+    box-shadow: 0 0 18px 4px rgba(121, 242, 176, 0.55);
+    transform-origin: 50% 50%;
+    animation: st-power 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .st-boot::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(180deg, rgba(0, 0, 0, 0.35) 0 1px, transparent 1px 3px);
+  }
+  .st-text {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    translate: -50% 0.9rem;
+    margin: 0;
+    font-family: 'VT323', var(--font-mono);
+    font-size: clamp(1.3rem, 3vw, 2.2rem);
+    color: #79f2b0;
+    text-shadow: 0 0 8px rgba(121, 242, 176, 0.6);
+    white-space: nowrap;
+    opacity: 0;
+    animation: st-text 900ms steps(1) both;
+  }
+  .st-ok { color: #c8ffe1; opacity: 0; animation: st-ok 900ms steps(1) both; }
+
+  /* ── the arrival half on the next page (class set pre-paint in BaseLayout) ── */
+  :global(html.ss-arrive[data-sale='bf'] body::after) {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 2147483000;
+    pointer-events: none;
+    background:
+      radial-gradient(70% 90% at 8% 0%, rgba(255, 170, 80, 0.18), transparent 60%),
+      repeating-linear-gradient(180deg, #2b251f 0, #1d1915 calc(100vh / 14 * 0.18), #15120f calc(100vh / 14 * 0.7), #0c0a09 calc(100vh / 14 - 1px), #070606 calc(100vh / 14 - 1px) calc(100vh / 14));
+    animation: st-rollup 620ms cubic-bezier(0.55, 0, 0.35, 1) 60ms both;
+  }
+  :global(html.ss-arrive[data-sale='cm'] body::after) {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 2147483000;
+    pointer-events: none;
+    background: #06100c;
+    animation: st-unfade 380ms cubic-bezier(0.25, 0.1, 0.25, 1) 40ms both;
+  }
+
+  /* falls fast, hits, bounces twice on its rubber seal */
+  @keyframes st-slam {
+    0%   { translate: 0 -101%; animation-timing-function: cubic-bezier(0.55, 0, 0.9, 0.5); }
+    62%  { translate: 0 0; animation-timing-function: cubic-bezier(0.2, 0.7, 0.4, 1); }
+    74%  { translate: 0 -3.5%; animation-timing-function: cubic-bezier(0.6, 0, 0.9, 0.5); }
+    85%  { translate: 0 0; animation-timing-function: cubic-bezier(0.2, 0.7, 0.4, 1); }
+    92%  { translate: 0 -0.9%; }
+    100% { translate: 0 0; }
+  }
+  @keyframes st-rollup { from { translate: 0 0; } to { translate: 0 -101%; } }
+  @keyframes st-power {
+    0%   { scale: 0 1; opacity: 1; }
+    30%  { scale: 1 1; opacity: 1; }
+    45%  { scale: 1 1; opacity: 0.25; }
+    100% { scale: 1 1; opacity: 0.25; }
+  }
+  @keyframes st-text { 0%, 34% { opacity: 0; } 35%, 100% { opacity: 1; } }
+  @keyframes st-ok { 0%, 70% { opacity: 0; } 71%, 100% { opacity: 1; } }
+  @keyframes st-unfade { from { opacity: 1; } to { opacity: 0; } }
+
+  :global(html.hc) .st { display: none; }
+</style>
