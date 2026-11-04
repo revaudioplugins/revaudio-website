@@ -3,8 +3,8 @@
    One source: the scene stays where Dan's sessions edit it; this copies what the two pages load into dist/gas2/ at
    build time (and serves the same files from the dev server), so the site never carries a stale second copy.
 
-     /gas2/                 page-b.html (the laptop page); a phone-width window goes on to postcards.html
-     /gas2/postcards.html   the phone page
+     /gas2/                 page-b.html (the laptop page); a phone goes on to postcards.html (PHONE below)
+     /gas2/postcards.html   the phone page; a laptop goes back to /gas2/
      /gas2/<asset>          fonts/, frames/, props/, player/, taxi/, drone/, postcards/img/ (no tools, reviews, notes)
 
    Both pages keep their relative URLs (player/radio.js, fonts/...), so they must be served from /gas2/ WITH the slash:
@@ -22,8 +22,11 @@ const SKIP = /(^|\/)(tools|review|README\.md|\.gitignore|bench\.js|cam-bench\.js
 
 const TITLE = 'GAS 2 · Free master-bus color plugin · RevAudio';
 const DESC = 'GAS 2: a free master-bus color plugin. One GAS dial, three grades of fuel. Thicker, smoother, glued master.';
-// the laptop page is a 3:2 scene; under this width the postcards are the page (the same line as the phone layouts)
-const PHONE_MQ = '(max-width: 760px)';
+// The laptop page is a 3:2 scene; a phone gets the postcards. A phone = a window under 760 px (the same line as the phone
+// layouts) OR a touch screen whose short side is a phone's: a phone turned sideways (844 px wide) or in "desktop site"
+// mode (980 px) still gets the postcards (Yoni 2026-11-04: revaudio.net/gas2 is published, every phone must open it).
+// Tablets (short side 768+) keep the laptop page. Both pages run the same test, so they never bounce.
+const PHONE = `(matchMedia('(max-width: 760px)').matches || (matchMedia('(pointer: coarse)').matches && Math.min(screen.width, screen.height) <= 560))`;
 
 // Served as /gas2 (no slash: a host that does not redirect, like `astro preview`), every relative URL would miss the
 // folder (/fonts/... 404, the scene loads bare). Before any of them loads, the page puts the slash back.
@@ -97,9 +100,10 @@ const withParts = (html, { bar = '', foot = '' } = {}) =>
 async function page(name, parts) {
   const html = withParts(await readFile(join(SCENE, name), 'utf8'), parts);
   if (name === 'page-b.html') {
-    return head(html, `\n<link rel="canonical" href="https://revaudio.net/gas2/">\n<script>if (matchMedia('${PHONE_MQ}').matches) location.replace('postcards.html' + location.search + location.hash);</script>`);
+    return head(html, `\n<link rel="canonical" href="https://revaudio.net/gas2/">\n<script>if ${PHONE} location.replace('postcards.html' + location.search + location.hash);</script>`);
   }
-  return head(html, `\n<link rel="canonical" href="https://revaudio.net/gas2/">`);
+  // a postcards link shared from a phone opens the laptop page on a laptop
+  return head(html, `\n<link rel="canonical" href="https://revaudio.net/gas2/">\n<script>if (!${PHONE}) location.replace('./' + location.search + location.hash);</script>`);
 }
 
 const TYPES = {

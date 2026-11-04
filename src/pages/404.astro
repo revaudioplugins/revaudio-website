@@ -1,0 +1,30 @@
+---
+/* 404 — GitHub Pages serves this for any unknown URL. Paths are case-sensitive there, so a typed or printed
+   revaudio.net/GAS2 (or /Gas2, /RevLimiter) used to land on GitHub's bare 404. Every route on the site is
+   lowercase: a path with a capital letter is sent once to its lowercase twin (Yoni 2026-11-04, /gas2 is
+   published). An all-lowercase miss stays here, so it can never loop. */
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Page not found" description="This page doesn't exist on RevAudio." index={false}>
+  <script is:inline>
+    (() => {
+      const p = location.pathname, low = p.toLowerCase();
+      if (low !== p) location.replace(low + location.search + location.hash);
+    })();
+  </script>
+  <section class="lost">
+    <div class="container">
+      <p class="kicker">404</p>
+      <h1>Wrong turn.</h1>
+      <p class="lede">This road doesn't go anywhere. Head back to the <a href="/">garage</a> or browse the <a href="/downloads">plugins</a>.</p>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .lost { padding: clamp(80px, 18vh, 200px) 0; text-align: center; }
+  .lost .container > * { margin-inline: auto; text-align: center; }
+  .kicker { letter-spacing: 0.3em; opacity: 0.7; }
+  .lede a { text-decoration: underline; }
+</style>
