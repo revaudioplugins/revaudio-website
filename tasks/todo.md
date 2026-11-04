@@ -29,16 +29,19 @@ Decisions (Dan, rounds 1-2, 2026-11-04):
   agent reviews the whole plan (Dan's ask).
 - Test corner: the far end (desk, plugin CRTs, TV). Phones: the same room, lighter. Credits: up to 40 for the test
   phase. Blender on Dan's Mac: yes. Night by default; a skin may change the time. The look lock comes before the critics.
-- Car: Dan's reference = a black Supra MK4 (A80) photo, "black math" (matte? to confirm); badges and exact shape vs an
-  unbadged Supra-inspired coupe: to confirm (trademark). The photo is third-party: kept local only in
-  `tools/_home-opening/refs/` (git-excluded), a reference, never shipped or textured from.
+- Car (Dan 2026-11-04): Supra-inspired, no badges, gloss black like his reference (a black Supra MK4 / A80 photo): big
+  rear wing, round quad taillights, deep-dish wheels, a RevAudio plate, the shape slightly ours; no Toyota or Supra
+  marks (trademark). The photo is third-party: kept local only in `tools/_home-opening/refs/` (git-excluded), a
+  reference, never shipped or textured from.
+- Blender 5.2.3 LTS installed on Dan's Mac (brew cask, 2026-11-04).
 
 Steps:
 - [x] Plan page, rounds 1 + 2 answered (2026-11-04).
-- [ ] Blind-spot review of the plan (agent), then round 3 on the plan page: its findings + the car questions.
+- [x] The car questions (gloss black, Supra-inspired, no badges), 2026-11-04.
+- [ ] Blind-spot review of the plan (agent), then round 3 on the plan page with its findings.
 - [ ] 1. Look lock: Dan pins what he loved on the painting (a review page).
-- [ ] 2. Blender installed; the skeleton exported to Blender (geometry, slot names, camera walk, lights); parity
-      check against the bench.
+- [ ] 2. The skeleton exported to Blender (geometry, slot names, camera walk, lights); parity check against the
+      bench. (Blender itself: installed 2026-11-04.)
 - [ ] Research: assets + the car; live-3D techniques + the splat check.
 - [ ] 3. The far-end corner built once, shown live (A) and pre-rendered (B); checks + critics; Dan picks.
 - [ ] 4. The rest, zone by zone: entrance + car, workbench wall, studio corner.

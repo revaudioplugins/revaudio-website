@@ -127,10 +127,11 @@ only after Dan picks: `src/pages/index.astro`, a new `src/components/HomeOpening
   shot. The plan, as a page with his answers (db `answers/round-1`, `answers/round-2`):
   https://claude.ai/artifact/ByhrvCC1RwY3pzi9izrHun. Decisions and steps: `tasks/todo.md` top, "The rebuild". In
   short: every pixel from the real 3D room, AI makes objects not frames; the room must keep moving (live 3D favoured);
-  a bake-off team with researchers, critics and automatic checks; the far end is the test corner; Blender is being
-  installed on Dan's Mac (brew cask); a blind-spot agent is reviewing the plan.
-- Next: round 3 on the plan page (the blind spots + the car questions: matte or gloss black, badges or not), then the
-  look lock (Dan pins the painting), then the Blender export.
+  a bake-off team with researchers, critics and automatic checks; the far end is the test corner; Blender 5.2.3 LTS
+  installed on Dan's Mac (brew cask); a blind-spot agent is reviewing the plan. The car: Supra-inspired, no badges,
+  gloss black (his reference photo kept local only, `tools/_home-opening/refs/`, git-excluded).
+- Next: round 3 on the plan page (the blind spots), then the look lock (Dan pins the painting), then the Blender
+  export.
 
 ## 2026-11-02 — Footer: categories fold into drawers (Claude Code `revaudio-3b [a4cb6d]`, laptop 2) — ON MAIN + LIVE: merged `--no-ff` 2026-11-02 by Claude Code `revaudio-0c [571e5c]` (laptop 1) on Dan's word "push it to main and merge" (Yoni had approved by pushing the branch)
 
