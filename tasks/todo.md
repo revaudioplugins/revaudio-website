@@ -77,6 +77,13 @@ Steps:
     reduced motion, a skip link, the crash fallback; all checks.
   - Nov 18: Dan's sign-off. Nov 19: live to half the visitors (a push to main = live, Dan's word).
 - [ ] 1. Look lock: Dan pins what he loved on the painting (a review page).
+- [x] Foundation 1 (2026-11-04): the room has ONE size in metres (`roomL` 19.9 m, `tvH` 0.73 m, both on the bench);
+      only the camera adapts per screen: it starts 1.5 m in front of the near wall and ends where the TV face covers
+      the screen below the nav (width or height, whichever fits first). The live page sits on the part of the TV face
+      that screen shows at the lock, so the hand-off lines up. Checks (Playwright Chrome): Dan's laptop 1141x636
+      renders as before (0.00-0.05 % of pixels, walk 0 / 60 %); the room is 19.9 m at 1141x636, 1440x900, 1920x1080 and
+      390x844; the last 3D frame vs the live TV: 0.60 % at 1141, 0.38 % at 1440 (both unchanged), 1.90 % on the phone
+      (was 19.08 %); no page errors.
 - [ ] 2. The skeleton exported to Blender (geometry, slot names, camera walk, lights); parity check against the
       bench. (Blender itself: installed 2026-11-04.)
 - [ ] Research: assets + the car; live-3D techniques + the splat check.

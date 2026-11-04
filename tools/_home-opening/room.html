@@ -192,8 +192,9 @@ const DEF = {
   acoustics: 1, woodTone: 0.55,          // the studio: slat panels, diffusers, bass traps, a cloud (Dan 11-03)
   mess: 0.6, messSeed: 1,                // how much clutter, and which scatter of it
   lens: 37,                              // vertical field of view, degrees (phones get 18 more)
-  tvW: 1.4, tvY: 1.6,                    // the TV: width, centre height (metres)
-  tvStart: 6.5,                          // TV width on the first screen, % of the screen width (Dan's pick)
+  tvW: 1.4, tvY: 1.6, tvH: 0.73,         // the TV: width, centre height, height (metres, one size on every screen)
+  roomL: 19.9,                           // the room's length (metres): one size, only the camera adapts to the screen (Dan 2026-11-04)
+  tvStart: 6.5,                          // TV width on the first screen, % of the screen width: the film only now (the room's length sets the start)
   walkLen: 370, ease: 2.8, feel: 0.4,    // scroll length (% screen); in-out power; 0 = steady metres, 1 = the TV grows steadily
   sway: 0.4, neon: 0.35, lamps: 1, tvGlow: 0.85, bloom: 0.9, fog: 0.034, dust: 0.45,
   ledStrip: 0, rackLeds: 0.2, screens: 1.4,  // the room alive: aisle LED strips (off: they read as a road), the racks' LEDs + VU, the CRT monitors
@@ -1102,7 +1103,7 @@ function placeMess() {
 function placeTv() {
   const { tvH, front } = L, t = R.tv;
   t.cab.scale.set(S.tvW * 0.985, tvH * 0.97, 0.44); t.cab.position.set(0, S.tvY, 0.22);
-  t.face.scale.set(S.tvW, tvH, 1); t.face.position.set(0, S.tvY, front);
+  t.face.scale.set(L.faceW, L.faceH, 1); t.face.position.set(0, S.tvY, front);
   t.line.position.set(0, S.tvY, front + 0.002);
   t.glow.position.set(0, S.tvY, 1.5);
 }
@@ -1251,20 +1252,23 @@ function resize() {
   R.mirror.getRenderTarget().setSize(Math.round(vw * dpr * 0.5), Math.round(vh * dpr * 0.5));
   layoutCamera(); arrange(); benchFit();
 }
-// layoutCamera(): the camera's start and end, worked out from the screen; the room's length follows the walk
+// layoutCamera(): the camera's start and end on this screen. The room has one size in metres (Dan 2026-11-04: a room
+// built and lit in Blender can't stretch per screen); only the camera adapts
 function layoutCamera() {
   const { vw, vh } = L, navH = cap.nav;
   const portrait = vw < vh, lens = S.lens + (portrait ? 18 : 0); // a portrait phone sees a narrow slice: a wider lens there
   camera.fov = lens; camera.aspect = vw / vh; camera.updateProjectionMatrix();
   const tv = Math.tan(deg(lens) / 2), th = tv * vw / vh; // tan of half the vertical / horizontal view
-  const aspectTV = vw / (vh - navH), tvH = S.tvW / aspectTV, front = 0.46;
-  const dEnd = (S.tvW / 2) / th;                                       // the TV fills the width at the lock
-  const d0 = portrait ? tvH / ((2 * S.tvStart / 100) * 2 * tv)         // phones: the tall TV is 2 x tvStart % of the height
-    : S.tvW / ((S.tvStart / 100) * 2 * tv * (R.paintOn ? PAINT.aspect : vw / vh)); // laptops: tvStart % of the width on the first screen (painted: of a 16:9 one)
-  const roomLen = front + d0 + 1.5;                                    // the near wall sits 1.5 m behind the camera
+  const aspectTV = vw / (vh - navH), tvH = S.tvH, front = 0.46;
+  // the lock: the TV face covers the screen below the nav; the side that fits first decides, the other runs past the edges
+  const dEnd = aspectTV >= S.tvW / tvH ? (S.tvW / 2) / th : tvH * vh / (2 * tv * (vh - navH));
+  const roomLen = S.roomL, d0 = roomLen - front - 1.5;                 // the near wall sits 1.5 m behind the camera
   const wppEnd = 2 * dEnd * tv / vh;                                   // metres per pixel on the TV at the lock
   const oldWalk = L.walkPx;
-  Object.assign(L, { navH, tv, th, tvH, front, dEnd, d0, roomLen, span: front + d0 - 4, yEnd: S.tvY + (navH / 2) * wppEnd,
+  // the live page on the TV: the part of the face this screen shows at the lock (its shape), so the hand-off lines up;
+  // the TV's own black screen shows past it
+  const faceW = aspectTV >= S.tvW / tvH ? S.tvW : tvH * aspectTV, faceH = faceW / aspectTV;
+  Object.assign(L, { navH, tv, th, tvH, faceW, faceH, front, dEnd, d0, roomLen, span: front + d0 - 4, yEnd: S.tvY + (navH / 2) * wppEnd,
     startPct: S.tvW / (2 * d0 * th) * 100, walkPx: S.walkLen / 100 * vh });
   const root = document.documentElement.style;
   root.setProperty('--nav-h', navH + 'px'); root.setProperty('--vh', vh + 'px'); root.setProperty('--vw', vw + 'px');
@@ -1272,7 +1276,7 @@ function layoutCamera() {
   if (oldWalk && Math.abs(oldWalk - L.walkPx) > 0.5) jumpTo(progress * L.walkPx); // a longer walk keeps the visitor where they stood
   const tvBottomPx = vh / 2 + (tvH / 2) / (d0 * tv) * (vh / 2);
   $('readB').style.top = Math.min(vh * 0.7, tvBottomPx + vh * 0.04) + 'px';
-  $('tuneNote').textContent = `TV on the first screen: ${L.startPct.toFixed(1)} % of the width · room ${roomLen.toFixed(1)} m long · walk ${(d0 - dEnd).toFixed(1)} m`;
+  $('tuneNote').textContent = `Room ${roomLen.toFixed(1)} m long · TV on the first screen: ${L.startPct.toFixed(1)} % of the width · walk ${(d0 - dEnd).toFixed(1)} m`;
 }
 // the bench open: the whole page shrinks into the space beside it
 function benchFit() {
@@ -1664,18 +1668,18 @@ const SIGN_WHERE = { endRight: 'End wall, right of the TV', endLeft: 'End wall, 
 function signSide() { if (S.signWall === 'endLeft') S.signX = -Math.abs(S.signX); if (S.signWall === 'endRight') S.signX = Math.abs(S.signX); }
 const SLIDERS = [
   ['The room'],
-  ['roomW', 'Width (m)', 4, 10, 0.1], ['roomH', 'Height (m)', 3, 6.5, 0.1],
+  ['roomW', 'Width (m)', 4, 10, 0.1], ['roomH', 'Height (m)', 3, 6.5, 0.1], ['roomL', 'Length (m)', 10, 30, 0.1],
   ['floor', 'Floor', { concrete: 'Worn garage concrete', checker: 'Checker tiles', mirror: 'Glossy mirror (the old one)' }],
   ['floorShine', 'Floor shine', 0, 1, 0.01], ['floorLines', 'Floor lines', { 0: 'None (a garage, not a road)', 1: 'Painted lanes' }],
   ['mess', 'Mess', 0, 1, 0.01],
   ['The studio'],
   ['acoustics', 'Acoustic treatment', 0, 1, 0.01], ['woodTone', 'Wood tone (walnut ↔ oak)', 0, 1, 0.01],
   ['The camera'],
-  ['lens', 'Lens: vertical view (°)', 18, 70, 1], ['tvStart', 'TV on the first screen (% width)', 2, 15, 0.5],
+  ['lens', 'Lens: vertical view (°)', 18, 70, 1],
   ['walkLen', 'Scroll length (% screen)', 100, 600, 10], ['ease', 'Ease (in-out power)', 1, 4, 0.1],
   ['feel', 'Walk feel: steady metres ↔ steady TV growth', 0, 1, 0.05], ['sway', 'Camera sway', 0, 3, 0.05],
   ['The TV'],
-  ['tvW', 'TV width (m)', 0.5, 2.5, 0.05], ['tvY', 'TV centre height (m)', 0.8, 2.6, 0.05],
+  ['tvW', 'TV width (m)', 0.5, 2.5, 0.05], ['tvH', 'TV height (m)', 0.3, 1.6, 0.01], ['tvY', 'TV centre height (m)', 0.8, 2.6, 0.05],
   ['The REVAUDIO sign'],
   ['signWall', 'Where', null],
   ['signX', 'Across (end wall)', -3.2, 3.2, 0.01], ['signF', 'Along the room (side walls, aisle)', 0, 1.08, 0.005],
