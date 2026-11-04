@@ -1,3 +1,29 @@
+## 2026-11-04 — Home TV ("the LCD") polish: two benches, keys + pictures (Claude Code, Dan's Mac) — branch `feat/lcd-polish`, PUSHED TO MAIN 2026-11-04 on Dan's word "push to main" (merge onto main)
+
+Claim: OPEN, Claude Code (Dan's Mac), worktree `.claude/worktrees/lcd-polish`. Files: `tools/wwbench/wwkeys.html` (new),
+`tools/wwbench/integration.mjs`, `tools/wwbench/wwbench.html`, `src/components/WordWall.astro`, this entry.
+- Dan's notes (review bench https://claude.ai/artifact/GiWdMBTrxJ69m3iocGJRo1, round 1): the Try key "is not fitting the
+  LCD screen, I want it to feel like it's part of the LCD screen, give me 3 different options on a bench"; the Product
+  page key the same; overall "get deep into the small details of how the plugins look on the screen, a bench for that".
+- `/__wwkeys` (dev only): the real TV four times, today's keys + A inverse video (the ALL chip's language) / B cursor
+  menu (the names' stencil, a blinking cursor) / C OSD bar (price + keys in one framed strip, corner ticks). Each option
+  is a <style> dropped into its frame; channel buttons, Laptop 1141 / 1440 / Phone, a readout of the rows and the
+  window height each one leaves. Picking one reverses D9 (the button family on the TV keys) for the TV only.
+- `/__wwbench` "Pictures on the glass": window edge, glow, glow reach, shadow under it, corners, brightness / colour /
+  contrast, thumbnail corners, lit glow, hover grow + light, glass reflection, tube curve; FIT / 1:1 / x2 on the laptop
+  frame. WordWall.astro: those values are --ww-pic-* / --ww-thumb-* / --ww-scr-glare / -curve with today's numbers.
+  Zero-pixel diff vs main at the defaults (22 reduced-motion shots, WebKit + Chromium, 1141x636 + 390x844, every
+  plugin + a hover). The light sliders are bench-only: an identity filter repainted the window (up to 58 levels), so
+  the filter goes in only once a value is baked off 1. `npm run build` green (32 pages).
+- KEYS = A (Dan 2026-11-04, "commit A", on the pick page https://claude.ai/artifact/Ud7jvQJi3e9a4QcFKtoEha):
+  WordWall.astro carries option A's CSS on the screen only (html.hc and `WALL_BG = 'wood'` keep D9); DESIGN.md §4
+  TV + the button family line say so. Checks: 38 reduced-motion shots (WebKit + Chromium; 1141x636, 1440x900,
+  390x844; 5 channels + hover on each key) pixel-identical to the bench's A; 1141x636 / 1280x720 / 1440x900 /
+  1920x1080 / 390x844 / 375x667 / 360x740 / 430x932 x 5 channels: keys inside the column and on screen, no sideways
+  scroll, no page errors; hc keeps the button family; `npm run build` green (32 pages). `/__wwkeys`'s "Today" frame
+  now shows A. Not checked: a real iPhone / Safari window.
+- Next: the pictures bench (COPY SETTINGS, then "apply ww bench"), still on `feat/lcd-polish`.
+
 ## 2026-11-04 — GAS 2 postcards: no shaking when the end page scrolls to the footer (Claude Code `danavivi-c2 [ca2821]`, Dan's Mac) — PUSHED TO MAIN 2026-11-04 on Dan's word "push to main" (from `fix/gas2-end-scroll`)
 
 Claim: CLOSED 2026-11-04 `danavivi-c2`. Files: `tools/_gas2-scene/postcards.html`, `DESIGN.md`, this entry.

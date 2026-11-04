@@ -302,7 +302,8 @@ const first = items[0]?.slug ?? '';
             </p>
             <div class="ww-buy">
               {it.price && <span class="ww-price">{it.price}</span>}
-              {/* the button family (buttons.css, D9 2026-11-01): Try = brass (honey when free), Product page = ghost */}
+              {/* the button family (buttons.css, D9 2026-11-01): Try = brass (honey when free), Product page = ghost;
+                  on the screen both are restyled as light on the glass (option A, 2026-11-04, in the CSS) */}
               {it.action && (it.action.href ? (
                 <a class:list={['ww-try rv-btn rv-btn--stack', it.cats.includes('free') && 'rv-btn--honey']} href={it.action.href}>
                   <span>{it.action.label}</span>
@@ -1342,6 +1343,22 @@ const first = items[0]?.slug ?? '';
     --ww-name-max: 5.5;   /* rem: the biggest a plugin name gets */
     --ww-thumb-w: 9.8;    /* rem: the thumbnail's width in the list */
     --ww-dim: 1;          /* the unlit names and thumbnails: how much they show */
+    /* the plugins' pictures on the glass (Dan 2026-11-04: "the small details of how the plugins look on the screen";
+       /__wwbench, "Pictures"). The lit window: */
+    --ww-pic-r: 6;          /* px: its corners (GAS / Radio Roulette keep their bezel arcs, GAS 2 has none) */
+    --ww-pic-ring: 0.4;     /* its phosphor edge, alpha (the screen wall) */
+    --ww-pic-glow: 0.22;    /* its glow on the glass, alpha */
+    --ww-pic-glow-px: 36;   /* px: how far the glow reaches */
+    --ww-pic-drop: 0.55;    /* the dark drop under it, alpha */
+    --ww-pic-bright: 1;     /* its light: brightness, colour (saturation), contrast. Read by the bench only: even at 1
+                               a filter repaints the picture, so the filter goes in only with a value baked off 1 */
+    --ww-pic-sat: 1;
+    --ww-pic-con: 1;
+    /* the list's thumbnails: */
+    --ww-thumb-r: 3;            /* px: corners */
+    --ww-thumb-glow-px: 18;     /* px: the lit one's glow */
+    --ww-thumb-hover-k: 1.06;   /* the pointer on a row: the picture comes forward this much */
+    --ww-thumb-hover-light: 1.12;
     --ww-row-gap: clamp(0.9rem, 2.4vh, 1.75rem);
     display: grid;
     grid-template-columns: minmax(0, calc(var(--ww-list-share) * 1%)) minmax(0, 1fr);
@@ -1489,7 +1506,7 @@ const first = items[0]?.slug ?? '';
     display: block;
     width: 100%;
     height: auto;
-    border-radius: 3px;
+    border-radius: calc(var(--ww-thumb-r) * 1px);
     box-shadow: 0 0 0 1px var(--ww-edge);
     transition:
       transform 180ms cubic-bezier(0.2, 0.9, 0.25, 1.25),
@@ -1548,8 +1565,8 @@ const first = items[0]?.slug ?? '';
     .ww-row:hover .ww-type { opacity: 1; }
     .ww-row:hover .ww-thumb { opacity: 1; }
     .ww-row:hover .ww-thumb :global(img) {
-      transform: scale(1.06);
-      filter: brightness(1.12);
+      transform: scale(var(--ww-thumb-hover-k));
+      filter: brightness(var(--ww-thumb-hover-light));
       box-shadow: 0 0 0 1px var(--ww-ink-hot), 0 0 22px var(--ww-glow-hot);
     }
   }
@@ -1560,7 +1577,7 @@ const first = items[0]?.slug ?? '';
     filter: drop-shadow(0 0 10px var(--ww-glow-hot)) drop-shadow(0 0 26px var(--ww-glow-soft));
   }
   .ww-row.is-lit .ww-thumb { opacity: 1; }
-  .ww-row.is-lit .ww-thumb :global(img) { box-shadow: 0 0 0 1px var(--ww-ink-hot), 0 0 18px var(--ww-glow); }
+  .ww-row.is-lit .ww-thumb :global(img) { box-shadow: 0 0 0 1px var(--ww-ink-hot), 0 0 calc(var(--ww-thumb-glow-px) * 1px) var(--ww-glow); }
   /* a FLOATING object (design-language §3b): nothing rectangular round its silhouette, at rest, hovered or lit; its
      own baked shadow is its edge */
   .ww-row .ww-thumb.is-float :global(img),
@@ -1606,7 +1623,7 @@ const first = items[0]?.slug ?? '';
     display: block;
     width: 100%;
     height: auto;
-    border-radius: 6px;
+    border-radius: calc(var(--ww-pic-r) * 1px);
     box-shadow: 0 1px 0 0 #000, 0 24px 48px rgba(0, 0, 0, 0.55);
   }
   /* the box is there before the picture: a lazy window that arrives late never pushes the text down */
@@ -1704,7 +1721,75 @@ const first = items[0]?.slug ?? '';
     color: var(--ww-ink-hot);
     text-shadow: 0 0 8px var(--ww-glow);
   }
-  /* .ww-try + .ww-more: the button family's look (buttons.css, D9 2026-11-01); placement only here */
+  /* .ww-try + .ww-more: the button family's look (buttons.css, D9 2026-11-01); placement only here. On the screen they
+     are light on the glass instead (Dan 2026-11-04, option A of /__wwkeys: the Try key "is not fitting the LCD screen,
+     I want it to feel like it's part of the LCD screen"): inverse video, the lit ALL key's language. Try = a block of
+     the channel's phosphor with dark words, Product page = a phosphor outline; no plate, depth or lift. Hover
+     brightens, a press dims like the tube. High contrast (html.hc) and the wood wall keep the button family. */
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy { gap: 0.6rem 1rem; }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy :is(.ww-try, .ww-more) {
+    min-height: 0;
+    background: none;
+    font-weight: 400;
+    text-transform: uppercase;
+    overflow: visible;
+    isolation: auto;
+    transform: none;
+    transition: color 120ms ease, background-color 120ms ease, box-shadow 160ms ease, filter 120ms ease;
+  }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy :is(.ww-try, .ww-more):is(:hover, :active, .is-pressed) { transform: none; }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy :is(.ww-try, .ww-more):focus-visible { outline: 2px solid var(--ww-ink-hot); outline-offset: 4px; }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-try {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
+    padding: 0.52rem 0.95rem 0.44rem;
+    border-radius: 3px;
+    background-color: var(--ww-ink-hot);
+    background-image: linear-gradient(180deg, rgb(255 255 255 / 0.16), rgb(255 255 255 / 0) 60%);
+    color: var(--ww-ink-on);
+    font-family: var(--font-display);
+    font-size: 1.62rem;
+    line-height: 0.9;
+    letter-spacing: 0.05em;
+    box-shadow: 0 0 0 1px var(--ww-ink-hot), 0 0 22px var(--ww-glow-hot), 0 0 52px var(--ww-glow-soft);
+  }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-try .rv-btn__sub {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 600;
+    font-size: 0.66rem;
+    letter-spacing: 0.16em;
+    line-height: 1;
+    opacity: 0.72;
+  }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-try:hover {
+    color: var(--ww-ink-on);
+    background-color: hsl(var(--ww-ch-h) min(100%, calc(var(--ww-ch-s) * 1% + 34%)) 83%);
+    box-shadow: 0 0 0 1px hsl(var(--ww-ch-h) min(100%, calc(var(--ww-ch-s) * 1% + 34%)) 83%), 0 0 30px var(--ww-glow-hot), 0 0 70px var(--ww-glow-soft);
+  }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-try:is(:active, .is-pressed) {
+    filter: brightness(0.78);
+    box-shadow: 0 0 0 1px var(--ww-ink-hot), 0 0 10px var(--ww-glow);
+    transition-duration: 60ms;
+  }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-more {
+    padding: 0.6rem 0.9rem 0.5rem;
+    border-radius: 3px;
+    color: var(--ww-ink);
+    font-family: var(--font-display);
+    font-size: 1.32rem;
+    line-height: 0.9;
+    letter-spacing: 0.06em;
+    text-shadow: 0 0 9px var(--ww-glow);
+    box-shadow: inset 0 0 0 1.5px var(--ww-ink), inset 0 0 14px var(--ww-glow-faint), 0 0 14px var(--ww-glow-soft);
+  }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-more [aria-hidden] { font-family: var(--font-body); font-weight: 700; font-size: 0.72em; vertical-align: 0.08em; }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-more:hover {
+    color: var(--ww-ink-hot);
+    background-color: hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.14);
+    box-shadow: inset 0 0 0 1.5px var(--ww-ink-hot), inset 0 0 18px var(--ww-glow-soft), 0 0 20px var(--ww-glow);
+  }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-more:is(:active, .is-pressed) { background-color: hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.28); transition-duration: 60ms; }
 
   /* ==========================================================================
      INK. On the wood: brass, the lit one oxide (the old stencil). On the
@@ -1752,9 +1837,9 @@ const first = items[0]?.slug ?? '';
   :global(html:not(.hc)) .ww[data-ww-bg='screen'] > .ww-panel .ww-ui :global(img),
   :global(html:not(.hc)) .ww[data-ww-bg='screen'] > .ww-panel .ww-ui video {
     box-shadow:
-      0 0 0 1px hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.4),
-      0 0 36px hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.22),
-      0 18px 40px rgba(0, 0, 0, 0.55);
+      0 0 0 1px hsl(var(--ww-ch-h) var(--ww-gs) 58% / var(--ww-pic-ring)),
+      0 0 calc(var(--ww-pic-glow-px) * 1px) hsl(var(--ww-ch-h) var(--ww-gs) 58% / var(--ww-pic-glow)),
+      0 18px 40px rgba(0, 0, 0, var(--ww-pic-drop));
   }
 
   /* ---- THE CHANNELS -------------------------------------------------------
@@ -1800,6 +1885,8 @@ const first = items[0]?.slug ?? '';
   .ww {
     --ww-scr-bright: 1.37;  /* phosphor glow */
     --ww-scr-scan: 0.2;     /* scanline darkness on the glass (under the text and the pictures) */
+    --ww-scr-glare: 1;      /* the glass's reflection over everything, x today's */
+    --ww-scr-curve: 0.6;    /* the tube's curved falloff: how dark the glass gets towards its edges */
   }
   .ww-screen,
   .ww-screen-fx {
@@ -1859,9 +1946,9 @@ const first = items[0]?.slug ?? '';
   .ww-screen-fx {
     z-index: 2; /* over the content: it is on the screen (smooth light only: nothing here crosses a letter) */
     background:
-      linear-gradient(158deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.02) 16%, transparent 30%), /* glass reflection */
-      radial-gradient(ellipse 70% 22% at 50% 0%, rgba(255, 255, 255, 0.05), transparent 70%),                 /* the glass catching the room light */
-      radial-gradient(130% 120% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.6) 100%);                        /* tube curvature */
+      linear-gradient(158deg, rgba(255, 255, 255, calc(0.07 * var(--ww-scr-glare))) 0%, rgba(255, 255, 255, calc(0.02 * var(--ww-scr-glare))) 16%, transparent 30%), /* glass reflection */
+      radial-gradient(ellipse 70% 22% at 50% 0%, rgba(255, 255, 255, calc(0.05 * var(--ww-scr-glare))), transparent 70%),                 /* the glass catching the room light */
+      radial-gradient(130% 120% at 50% 50%, transparent 55%, rgba(0, 0, 0, var(--ww-scr-curve)) 100%);                        /* tube curvature */
     box-shadow:
       inset 0 3px 0 #040206, inset 0 -3px 0 #040206, /* the screen's seat under the rails */
       inset 0 0 0 1px rgba(190, 90, 255, 0.22);
