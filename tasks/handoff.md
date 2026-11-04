@@ -1,3 +1,16 @@
+## 2026-11-04 — Home TV Phase 5 "The TV sells": try, download and the product page on the screen (Claude Code `danavivi-4c [c74148]`, Dan's Mac) — IN PROGRESS on `feat/tv-sells`
+
+Claim: OPEN 2026-11-04 `danavivi-4c`. Branch `feat/tv-sells` (worktree `.claude/worktrees/tv-sells`, off main `8e3e567`).
+Files: `src/components/WordWall.astro`, `src/components/TrialGateModal.astro` (+ one new shared sign-up module),
+`src/components/WelcomeDiscountPopup.astro`, `src/components/ExitIntentPopup.astro`, `tasks/home-library-plan.md`
+(§ Phase 5), this entry. The worker side (step 4, RevLimiter repo) gets its own claim there when it starts.
+- Dan: go on Phase 5 (2026-11-04). Plan, pros / cons / risks and his picks: `tasks/home-library-plan.md` § Phase 5
+  ("The user's go and picks (2026-11-04)") and the claude.ai page "The TV Sells".
+- Picks: free downloads keep both boxes required (as live); the second key stays "Product page ->"; no "glitches off"
+  switch (glitches stay off under reduced motion, high contrast and forced colours).
+- Next: step 00 (the baseline, emails per 1,000 home-page visitors) needs live numbers (the worker's leads + the
+  Cloudflare visit counts); then steps 1-10 in the plan's order. Nothing pushed to main; main = live on Dan's word.
+
 ## 2026-11-04 — GAS 2 postcards: the end page scrolls as one page, the footer under it (Claude Code `danavivi-c2 [ca2821]`, Dan's Mac) — PUSHED TO MAIN 2026-11-04 on Dan's word "perfect push to main" (from `fix/gas2-end-flow`)
 
 Claim: CLOSED 2026-11-04 `danavivi-c2`. Files: `tools/_gas2-scene/postcards.html`, `DESIGN.md`, this entry.
