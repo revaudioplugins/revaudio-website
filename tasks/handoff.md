@@ -1,6 +1,6 @@
-## 2026-11-04 — GAS 2 postcards: the end page scrolls as one page, the footer under it (Claude Code `danavivi-c2 [ca2821]`, Dan's Mac) — BRANCH `fix/gas2-end-flow`, waiting for Dan's push word
+## 2026-11-04 — GAS 2 postcards: the end page scrolls as one page, the footer under it (Claude Code `danavivi-c2 [ca2821]`, Dan's Mac) — PUSHED TO MAIN 2026-11-04 on Dan's word "perfect push to main" (from `fix/gas2-end-flow`)
 
-Claim: OPEN `danavivi-c2`. Files: `tools/_gas2-scene/postcards.html`, `DESIGN.md`, this entry.
+Claim: CLOSED 2026-11-04 `danavivi-c2`. Files: `tools/_gas2-scene/postcards.html`, `DESIGN.md`, this entry.
 - Dan, on his iPhone after `f3735ae` (the held height) went live: still not smooth; "try a different attitude": scroll
   down to the footer without it coming up over the page.
 - Built: at the end, `html.at-end .desk` = `position: absolute` at the px height it came up with (`--end-h`, measured
