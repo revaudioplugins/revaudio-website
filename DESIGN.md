@@ -118,6 +118,10 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
     picture comes forward with a hot edge, the name glows with a faint fill, short of lit. The content
     clears the bezel on every side by a breath (`--ww-breath-x`); on phones the menu sits at the top and the
     rows space out over the glass, one slot per plugin (Dan 2026-11-03: no bare glass over the menu).
+    A FLOATING plugin (design-language §3b; GAS 2) plays on the TV as it opens in a session: the object
+    alone, cut on its outline, its hose faded, the house shadow baked under it, nothing rectangular round
+    it in the list or the window (Dan 2026-11-04: "gas2 to actually be hovering like in the real plugin").
+    The picture is shot from the plugin's own page (`WINDOWS[slug].float` in WordWall.astro).
     The name in the stencil the five words used to be (Bebas, outlined in the
     channel's phosphor, `--ww-dim` 1 = the unlit ones at full strength, the lit one filled + glowing) and
     a plain type word ("one-knob saturator"). All names share one size: min(`--ww-name-max` 5.5rem, what

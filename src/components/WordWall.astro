@@ -39,7 +39,10 @@ import { Image, getImage } from 'astro:assets';
 import GarageWall from './GarageWall.astro';
 import rlImg from '../assets/plugins/revlimiter-hero.png';
 import gasImg from '../assets/plugins/gas-hero.png';
-import gas2Img from '../assets/plugins/gas2-hero.jpg';
+/* GAS 2 FLOATING, as the plugin shows by default (Dan 2026-11-03: "gas2 to actually be hovering like in the real
+   plugin"): the real page (GAS2 Source/ui/public) shot on a clear ground in rv-float with the hose faded
+   (GAS2.hose(true)), the house FLOATING shadow baked under it (53 deg, 30 / 24 / .50 + 5 / 4 / .55, rgb(12,9,6)) */
+import gas2Img from '../assets/plugins/gas2-float.png';
 import rrImg from '../assets/plugins/radioroulette-hero.png';
 import driftImg from '../assets/showcase/drift-window-init.png';
 import brokenMeta from '../assets/seasons/drift/tv-broken.json';
@@ -131,11 +134,11 @@ const noJsArt = [
 
 /* The plugins on the TV (library.ts: a `library` entry AND live or an open
    trial; DRIFT first while drift.homeLead) and each one's window. */
-const WINDOWS: Record<string, { img: ImageMetadata; portrait?: boolean }> = {
+const WINDOWS: Record<string, { img: ImageMetadata; portrait?: boolean; float?: boolean }> = {
   drift: { img: driftImg },
   revlimiter: { img: rlImg },
   gas: { img: gasImg, portrait: true },
-  gas2: { img: gas2Img, portrait: true },
+  gas2: { img: gas2Img, portrait: true, float: true }, // float: the object alone, its own shadow, no frame round it
   'radio-roulette': { img: rrImg },
 };
 type Item = {
@@ -146,6 +149,7 @@ type Item = {
   img: ImageMetadata;
   alt: string;
   portrait?: boolean;
+  float?: boolean;
   thumbTall: boolean; // narrower than the list's 16:10 slot: the thumbnail fits its height, else its width
   blurb: string;
   price: string;
@@ -162,6 +166,7 @@ const items: Item[] = tvPlugins()
     img: WINDOWS[p.slug].img,
     alt: p.library!.alt,
     portrait: WINDOWS[p.slug].portrait,
+    float: WINDOWS[p.slug].float,
     thumbTall: dims(WINDOWS[p.slug].img).width / dims(WINDOWS[p.slug].img).height < 1.6,
     blurb: p.library!.blurb,
     price: priceLine(p),
@@ -219,7 +224,7 @@ const first = items[0]?.slug ?? '';
             id={`ww-tab-${it.slug}`}
             data-ww-pick={it.slug}
           >
-            <span class:list={['ww-thumb', { 'is-tall': it.thumbTall }]} aria-hidden="true">
+            <span class:list={['ww-thumb', { 'is-tall': it.thumbTall, 'is-float': it.float }]} aria-hidden="true">
               <Image src={it.img} alt="" width={320} widths={[160, 320]} sizes="(max-width: 860px) 6rem, 10rem" format="webp" quality={80} loading="lazy" />
             </span>
             <span class="ww-rtext">
@@ -239,7 +244,7 @@ const first = items[0]?.slug ?? '';
       const media = dims(isDrift && posterCuts && wallPosterSrc ? wallPosterSrc : it.img);
       return (
         <article
-          class:list={['ww-panel', { 'is-active': i === 0, 'is-portrait': it.portrait }]}
+          class:list={['ww-panel', { 'is-active': i === 0, 'is-portrait': it.portrait, 'is-float': it.float }]}
           style={`--ww-ar:${(media.width / media.height).toFixed(4)}`}
           id={`ww-ch-${it.slug}`}
           data-ww-panel={it.slug}
@@ -1556,6 +1561,11 @@ const first = items[0]?.slug ?? '';
   }
   .ww-row.is-lit .ww-thumb { opacity: 1; }
   .ww-row.is-lit .ww-thumb :global(img) { box-shadow: 0 0 0 1px var(--ww-ink-hot), 0 0 18px var(--ww-glow); }
+  /* a FLOATING object (design-language §3b): nothing rectangular round its silhouette, at rest, hovered or lit; its
+     own baked shadow is its edge */
+  .ww-row .ww-thumb.is-float :global(img),
+  .ww-row:hover .ww-thumb.is-float :global(img),
+  .ww-row.is-lit .ww-thumb.is-float :global(img) { box-shadow: none; border-radius: 0; }
   .ww-row.is-lit .ww-type { opacity: 1; }
   /* a category change: the plugins that stay come up one after another (on the row: the reveal owns the li) */
   .ww-list.is-swapping .ww-item:not([hidden]) .ww-row {
@@ -1617,6 +1627,9 @@ const first = items[0]?.slug ?? '';
     align-items: center;
     column-gap: clamp(1.25rem, 3vw, 2.5rem);
   }
+  /* the floating pump stands on the glass by itself: no window edge, no corner clip, no drop under a box */
+  .ww-panel.is-float .ww-ui :global(img),
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] > .ww-panel.is-float .ww-ui :global(img) { box-shadow: none; border-radius: 0; }
   /* a set height (not max-height): with width auto, a max-height has no box until the picture loads */
   .ww-panel.is-portrait .ww-ui :global(img) {
     width: auto;

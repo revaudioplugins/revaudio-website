@@ -27,6 +27,15 @@ a hover that shows (GAS 2 "is not hovering": measured, every row's hover only br
   1920x1080, 390x844, 375x667, 360x740, 430x932; no horizontal scroll, no page errors; no name hits its price
   on phones; `?cat=free` checked on phone + laptop. `npm run build` green (31 pages). Not checked: a real
   iPhone / Safari window, high-contrast mode.
+- GAS 2 FLOATING (Dan 2026-11-04: "I want gas2 to actually be hovering like in the real plugin" = the plugin's
+  default FLOATING look, not a mouse hover): new `src/assets/plugins/gas2-float.png` (896x1683 RGBA) replaces
+  `gas2-hero.jpg` on the TV only (plugins.ts + review.astro keep the jpg). Made from the real page, GAS2 `main`
+  `52668ab`: serve `GAS2/Source/ui/public`, Playwright 440x800 at DPR 2, add `html.rv-float`, clear the page
+  background, `GAS2.hose(true)` (the hose faded along its length), `omitBackground` shot; then the house FLOATING
+  shadow baked under it with PIL (53 deg; far 30 / sigma 24 / .50, contact 5 / 4 / .55; rgb(12,9,6); scale 2),
+  cropped at alpha > 3. `WINDOWS.gas2.float` -> `.is-float` on the thumb and the panel: no edge ring, no corner
+  clip, no box shadow. Checks: 1141x636, 1440x900, 390x844 (list + panel) fit one screen, no page errors; the
+  built webp cuts keep alpha; `npm run build` green.
 - Next: Dan looks at it locally; main only on his push word.
 
 ## 2026-11-03 — Review form: text gate on every open box + role multi-select (Claude Code, laptop 2) — worker DEPLOYED 2026-11-03 (stamp ad6d9f5, live probe: weak caught, 2 roles OK); site PUSHED TO MAIN on Yoni's "push" 2026-11-03 = LIVE
