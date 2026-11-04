@@ -84,6 +84,12 @@ Steps:
 - [ ] 1. Look lock: the review page https://claude.ai/artifact/Bh4iT4GHQox8ZD97nie5UU (db `notes`: the painting + 3
       close-ups to pin, 32 references with Love it / Some of it / Not this) and Round 4 on the plan page (the props
       pick, db `answers/round-4`). Then: the look spec + the what-should-be-visible table.
+      - [x] Look lock answered (2026-11-04): Love it on 28 of 32 references, Some of it on 01 / 02 / 26 / 32, none
+            rejected, no pins on the painting; on 01 "can we get more references on it"; overall: "I want it to feel
+            like we making plugins". The look spec (the critics' rulebook): `tools/_home-opening/look-spec.md`; the
+            board's sources: `look-board.json`. R1 is finding more references like 01 + "we make plugins here"
+            references and props (W01...), to add to round 4 and to a look-lock round 2.
+      - [ ] Round 4 (the props) answered.
 - [x] Foundation 1 (2026-11-04): the room has ONE size in metres (`roomL` 19.9 m, `tvH` 0.73 m, both on the bench);
       only the camera adapts per screen: it starts 1.5 m in front of the near wall and ends where the TV face covers
       the screen below the nav (width or height, whichever fits first). The live page sits on the part of the TV face
