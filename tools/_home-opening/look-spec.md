@@ -19,12 +19,15 @@ everywhere.
   music studio", from "real garages and real cool retro messy studios".
 - Look lock (4 Nov): Love it on 28 of 32 references; Some of it on 01, 02, 26, 32; none rejected; more references
   like 01 asked for.
+- Look lock round 2 (4 Nov): Love it on 33-37, 39, 41, 42 (open garages at night, light spilling out, a car half out)
+  and on 45-52 (pedal and amp benches, schematics on the wall, a home lab at night, a DIY synth, breadboards); Some of
+  it on 38, 43, 44; **Not this: 40** (the view from inside a car looking out). So: no shots from inside the car.
 
 ## Light: the most important part
 
 - Night. The base is black: whole walls may sit in shadow (10). Light comes from things in the room: amber pendant
   lamps (29, 30), bench and task lamps (08, 10, 12, 13), the neon (09, 20, 21), screens and CRTs (26), lit props (the
-  pump globe 16, ON AIR 27), and the street through the door (01, 04).
+  pump globe 16, ON AIR 27), and the street through the door (01, 04, 33-37, 42).
 - The colour pair: violet / magenta neon with amber tungsten practicals (09, 20, 21). Teal and blue only from the
   night outside and from screens (04, 13, 26).
 - Pools of light with deep falloff; haze carries it near the door and the lamps (04); bloom only on emitters.
@@ -51,8 +54,9 @@ everywhere.
 
 ## "We make plugins here"
 
-- The plugins are the point: their CRT screens (must stay), a plugin being built on the bench, sketches and
-  schematics pinned up, test gear (a scope with a live trace, 23), boxes and prototypes, a covered COMING SOON object.
+- The plugins are the point: their CRT screens (must stay), a plugin being built on the bench (46, 52), sketches and
+  schematics pinned up (48), test gear with live traces (23, 50, 51), pedal and amp benches (45, 47), a home lab lit by
+  one lamp and a screen (49), boxes and prototypes, a covered COMING SOON object.
 - Our names and marks only (RevAudio, RevLimiter, DRIFT, Radio Roulette, RevFX, GAS 2). No third-party brands or
   famous product shapes. Honest: no fake awards, press or testimonials.
 

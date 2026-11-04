@@ -94,7 +94,8 @@ Steps:
             gold record R19 as a possible fake award (honesty rule): a question in round 4. Look-lock round 2 (db
             `notes-r2`) carries the 20 new references.
       - [ ] Round 4 (the props, now with group 8 "We make plugins here" + the R19 question) answered.
-      - [ ] Look-lock round 2 answered.
+      - [x] Look-lock round 2 answered (2026-11-04): Love it on 16 of 20, Some of it on 38 / 43 / 44, Not this on 40
+            (inside a car looking out). Folded into `look-spec.md`.
 - [x] Foundation 1 (2026-11-04): the room has ONE size in metres (`roomL` 19.9 m, `tvH` 0.73 m, both on the bench);
       only the camera adapts per screen: it starts 1.5 m in front of the near wall and ends where the TV face covers
       the screen below the nav (width or height, whichever fits first). The live page sits on the part of the TV face
