@@ -134,8 +134,13 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
     name + type word, the blurb, the five words as one line (the hot word lit; a line breaks between
     words, never before a dot), the price (`$49` / `$19` / `Free` / `Free beta`), ONE key
     "Try free for 30 days" (TrialGateModal's email gate with the licence-worker id; GAS "Free download"
-    through the same gate; DRIFT to `/drift#try`) and a "Product page ->" key. Both keys are the button
-    family (D9, the user 2026-11-01): Try = brass, two lines (honey when free), Product page = small ghost. GAS's tall panel
+    through the same gate; DRIFT to `/drift#try`) and a "Product page ->" key. On the screen both keys are
+    light on the glass, inverse video like the lit ALL key (the user's pick 2026-11-04, option A of three on
+    `/__wwkeys`: the Try key "is not fitting the LCD screen, I want it to feel like it's part of the LCD
+    screen"): Try = a block of the channel's phosphor with dark words, two lines; Product page = a phosphor
+    outline; no plate, depth or lift. That replaces D9 on the TV only; off the screen (high contrast, or
+    `WALL_BG = 'wood'`) they
+    stay the button family (D9, the user 2026-11-01): Try = brass (honey when free), Product page = small ghost. GAS's tall panel
     stands beside its text (at least `--ww-side-min` 16rem wide, 17 on a small laptop). No Add to cart on
     home: buying stays on the product page.
     - Reading (the user's bench pick of 2026-11-01, option A of three; asked for "sexier and much more
@@ -292,7 +297,8 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
   (mouse only); press drops 1px with a shorter shadow, 80ms in / 160ms out, held >= 120ms (`src/lib/press.ts`).
   Tones: **brass** = trial / buy, **honey** = a free download (GAS), **ghost** = the second choice (dark steel,
   thin brass line). Sizes 64 / 56 / 48 / 40. The **shine** (a faint lamp band every 8s) only on the page's ONE
-  main action. Every regular action button uses it (the home TV's Try + Product page keys too, D9 2026-11-01); a
+  main action. Every regular action button uses it (the home TV's keys only off the screen: on it they are
+  light on the glass, the user 2026-11-04, §4 TV); a
   new one opts in by class, never restyles a copy. Stays out:
   the crane door + BUY NOW squares, the audio toys (demo rack, GAS pedal, station mixer), DRIFT's own world,
   image-plate buttons (SubscribeModal, /beta), the support chat, icon buttons (×, menu, cart, arrows, dots),

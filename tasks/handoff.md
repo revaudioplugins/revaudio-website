@@ -15,7 +15,14 @@ Claim: OPEN, Claude Code (Dan's Mac), worktree `.claude/worktrees/lcd-polish`. F
   Zero-pixel diff vs main at the defaults (22 reduced-motion shots, WebKit + Chromium, 1141x636 + 390x844, every
   plugin + a hover). The light sliders are bench-only: an identity filter repainted the window (up to 58 levels), so
   the filter goes in only once a value is baked off 1. `npm run build` green (32 pages).
-- Next: Dan picks A / B / C (or a mix) and tunes the pictures, then "apply ww bench" -> bake + DESIGN.md §4 (D9 note).
+- KEYS = A (Dan 2026-11-04, "commit A", on the pick page https://claude.ai/artifact/Ud7jvQJi3e9a4QcFKtoEha):
+  WordWall.astro carries option A's CSS on the screen only (html.hc and `WALL_BG = 'wood'` keep D9); DESIGN.md §4
+  TV + the button family line say so. Checks: 38 reduced-motion shots (WebKit + Chromium; 1141x636, 1440x900,
+  390x844; 5 channels + hover on each key) pixel-identical to the bench's A; 1141x636 / 1280x720 / 1440x900 /
+  1920x1080 / 390x844 / 375x667 / 360x740 / 430x932 x 5 channels: keys inside the column and on screen, no sideways
+  scroll, no page errors; hc keeps the button family; `npm run build` green (32 pages). `/__wwkeys`'s "Today" frame
+  now shows A. Not checked: a real iPhone / Safari window.
+- Next: the pictures bench (COPY SETTINGS, then "apply ww bench"); then Dan's word to merge to main (= live).
 
 ## 2026-11-04 — GAS 2 page: the site's top bar + the caught car emails a personal CATCH10 code (Claude Code, Gil's Mac) — PUSHED TO MAIN 2026-11-04 on Gil's word; worker `/catch` DEPLOYED first (RevLimiter `f33d350`, stamp commit `2f6cc5e`)
 
