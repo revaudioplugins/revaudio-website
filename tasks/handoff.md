@@ -14,6 +14,12 @@ Files: `src/components/WordWall.astro`, `src/components/TrialGateModal.astro` (+
   claims checked (code, logs, screenshots; demo loudness re-measured: RevLimiter "after" peaks +0.8 dBFS) -> 20
   proposals on the claude.ai page "TV Walk Review" (`https://claude.ai/artifact/4ki5viNoSkZtvtrTnkfhVJ`, picks in its
   db `review/picks`). Waiting for Dan's picks; approved ones fold into § Phase 5 before the build.
+- Dan's picks on the walk (2026-11-04): IN P01 P03 P04 P05 P06 P07 P09 P10 P12 P13 P14, OUT the rest (detail:
+  `tasks/home-library-plan.md` § Phase 5, "The test-visitor walk and Dan's picks"). Files added to this claim:
+  `src/components/CookieBanner.astro`, `src/data/plugins.ts` (GAS / GAS 2 lines, DRIFT's categories and deal), the
+  DRIFT sign-up (`src/components/drift/DriftCapture.astro`, `src/lib/drift/capture.ts`).
+- Collision: `feat/lcd-polish` (OPEN, another session) owns the TV keys in `WordWall.astro`; this build touches
+  WordWall only after that branch is on main.
 - Next: step 00 (the baseline, emails per 1,000 home-page visitors) needs live numbers (the worker's leads + the
   Cloudflare visit counts); then steps 1-10 in the plan's order. Nothing pushed to main; main = live on Dan's word.
 

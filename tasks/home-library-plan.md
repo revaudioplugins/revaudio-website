@@ -663,6 +663,24 @@ re-checked against main, with its pros / cons / risks and these picks, is the cl
 - New D-C, a "glitches off" switch for WCAG 2.2.2: NO SWITCH. The user: "when user use the contrast accessibility
   then the glitches are off" = the gate stays reduced motion + high contrast, plus forced colours (step 2).
 
+The test-visitor walk and Dan's picks on it (2026-11-04, `danavivi-4c`). 4 agents walked today's TV on a local copy
+(Noa iPhone, Priya Android, Marcus Mac Safari 1141, Walter keyboard + 150 % + High Contrast); 55 findings -> 20
+proposals on "TV Walk Review" (`https://claude.ai/artifact/4ki5viNoSkZtvtrTnkfhVJ`, db `review/picks`). Picks:
+- IN: P01 after Send, a "what happens next" screen, MINIMAL, in the screen's two fonts (Dan: "minimal explanation with
+  2 fonts use"); P03 the 10 % pop-up never interrupts the TV (step 7, also never from a keyboard scroll, focus returns);
+  P04 the cookie banner stops hiding the TV (slim on phones, keys scroll clear, no focus grab, the cookie still under
+  reduce-motion; Decline stays as big as Accept); P05 DRIFT's deal = "Try the free Beta", its sign-up gets the optional
+  newsletter box, and its key follows the TV-keys design of `feat/lcd-polish` (Dan: "go along with a different session
+  that designs the buttons"); P06 required boxes say so up front, each error at its field; P07 High Contrast keeps the
+  picked category / plugin marked and keys bordered; P09 `?plugin=` opens the plugin's panel on phones too; P10 the
+  categories one Tab stop with arrows, Escape closes a plugin; P12 one line on what happens when the trial ends (from
+  the plugin's code); P13 GAS / GAS 2 one "use it on" line each; P14 DRIFT also under MODULATION and CREATIVE (Dan: "we
+  still don't have a plugin for vocal that is actually for vocal").
+- OUT (skipped): P02 the facts strip on the TV (= step 8 is OUT now), P08 the cart button, P11 Apple Silicon, P15 the
+  first screen, P16 the demo's +0.8 dB peak, P17 EULA vs site, P18 product-page fixes, P19 the GAS 2 page, P20 HEAR IT.
+- Order (collision): `feat/lcd-polish` (another session, OPEN claim) rewrites the TV's keys in `WordWall.astro` and
+  waits for Dan's merge word; this build's WordWall steps wait for it to land on main.
+
 #### The menu line and the reading (done 2026-11-01, `revaudio-b5`)
 
 The user, on the category line: "more visible, different fonts ... understand exactly what he needs to do", the
