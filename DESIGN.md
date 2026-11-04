@@ -457,6 +457,13 @@ picked from four spots on a bench): a portrait crop can't hold the pump and the 
 pump go on top and the readings hang under them on the dark ground, their top just under the pump's base at every
 screen height. The blur behind the cards is the same spot, so the focus pull lands on it.
 
+A scene page is still a page of the site (the GAS 2 postcards, Dan 2026-11-04, review round 15): the site's top bar never
+covers it (the scene starts under the bar's measured height), and the site's real footer is under it on every platform,
+reached by scrolling (page-b: under the scene once the drone has landed; the phone: under the end page; the cards
+themselves never scroll). Where the cards are is told by six pilot lamps, the top card's lit, not by "n / 6" and arrows:
+the flick is the way through, the lamps only say where you are (a tap walks there). A stamp that sends is small enough to
+read as one thing to press and inked in full: across the whole card it read as decoration.
+
 ## 9. Do's & don'ts
 
 - DO keep every claim checkable against the plugin source. The five words describe the intent of

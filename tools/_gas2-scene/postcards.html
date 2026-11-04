@@ -8,7 +8,7 @@
 <link rel="icon" href="data:,">
 <!-- GAS 2 page, PHONE (Dan 2026-10-29, "Postcards"): a stack of 1950s "Greetings from GAS 2" postcards in the station
      world. Card 1 = the real pump in front of the station; flick away REGULAR / PREMIUM / RACE; HEAR IT turns over
-     (a turntable on the back); the last card is a postcard back: the email on the address lines, dropped in the mailbox.
+     (a turntable on the back); the last card is a postcard back: the email on the address lines, stamped and posted.
      DESIGN.md §7 (phones): rebuilt for portrait, the station only as a soft backdrop, never a crop as the page.
      The end (Dan, same day): the last card goes and the lens pulls focus onto the right side of the desktop page, where
      page-b's readings pop out as after the drone lands. Assets + how they were made: postcards/tools/. ?card=1-6 opens on
@@ -49,7 +49,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 
 /* ── the lot at dusk, out of focus: you stand at the station holding the cards. The same frame as the end page, framed
    the same way (cover, right-aligned), so when the last card goes the lens pulls focus onto it ── */
-.desk { position: fixed; inset: 0; display: grid; grid-template-rows: 1fr auto; padding-top: env(safe-area-inset-top); }
+.desk { position: fixed; inset: 0; display: grid; grid-template-rows: 1fr auto; padding-top: max(env(safe-area-inset-top), var(--site-bar-h, 0px)); }   /* under the site's top bar (its height: tools/gas2page; Dan, round 15: it hid the cards' tops) */
 .sky { position: absolute; inset: 0; z-index: -1;
   --vig: radial-gradient(120% 70% at 50% 108%, rgba(11, 9, 7, .82), transparent 70%), radial-gradient(90% 60% at 50% 42%, transparent 40%, rgba(8, 6, 4, .55));
   background: var(--vig), url(postcards/img/dusk.webp) right center / cover; }
@@ -68,7 +68,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .table { position: relative; z-index: 1; container-type: size; display: grid; place-items: center; min-height: 0; }  /* over .end: the last card flies off over the scene */
 .stack { --cw: min(90cqw, calc((100cqh - 24px) / 1.55), 420px); position: relative; width: var(--cw); height: calc(var(--cw) * 1.55);
   transition: translate .4s var(--ease-settle); }   /* the slide while typing the address (JS fit()) */
-.desk.typing .ctl, .desk.typing .box { opacity: 0; pointer-events: none; }
+.desk.typing .ctl { opacity: 0; pointer-events: none; }
 
 /* ── one postcard: linen stock, a hair of edge wear, a soft shadow on the card under it ── */
 .pc { position: absolute; inset: 0; container-type: size; border-radius: 4px; color: var(--ink); background: var(--stock);
@@ -283,10 +283,10 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .pc-hear .back .turn svg { width: 3.9cqw; height: 3.9cqw; }
 .pc-hear .back .turn span { position: absolute; top: calc(50% + 5cqw); font: 600 2.2cqw/1 Oswald; letter-spacing: .2em; color: rgba(38, 34, 30, .8); text-shadow: 0 .12cqw 0 rgba(255, 255, 255, .5); }
 
-/* ── 6 · the postcard back: the address lines take the email, MAIL ME THE KEYS drops it in the box ── */
+/* ── 6 · the postcard back: the address lines take the email, the stamp posts it ── */
 .pc-mail .pchead { position: absolute; left: 7cqw; right: 7cqw; top: 6cqw; padding-bottom: 2.6cqw; border-bottom: 1px solid rgba(36, 26, 18, .5);
   text-align: center; font: 500 4.4cqw/1 Elite, ui-monospace, monospace; letter-spacing: .55em; color: var(--ink); z-index: 2; }
-.mtitle { position: absolute; left: 7cqw; top: 19cqw; margin: 0; font: 700 9.4cqw/.94 Oswald; text-transform: uppercase; color: var(--red); z-index: 2; }
+.mtitle { position: absolute; left: 7cqw; top: 19cqw; margin: 0; font: 700 7cqw/.94 Oswald; text-transform: uppercase; color: var(--red); z-index: 2; }
 .msub { position: absolute; left: 7cqw; top: 39.5cqw; margin: 0; font: 500 3.6cqw/1.3 Inter; color: var(--ink-2); z-index: 2; }
 .stamp { position: absolute; right: 7cqw; top: 17.5cqw; width: 24cqw; height: 28cqw; padding: 1.9cqw; z-index: 2; transform: rotate(2deg);
   background: url(postcards/img/stamp.webp) center / cover content-box, #f4ecd8;
@@ -314,14 +314,15 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .opt .tick path { fill: none; stroke: var(--pen); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 27; stroke-dashoffset: 27; transition: stroke-dashoffset .3s ease-out; }
 .opt input:checked + .tick path { stroke-dashoffset: 0; }   /* ticked in pen */
 .opt input:focus-visible + .tick { outline: 2px solid var(--honey); outline-offset: 2px; }
-/* MAIL ME THE KEYS (Dan, round 2: "a stamp like a train stamp, not like a button"): a station dater in red ink with
-   today's date; a tap stamps it (it lands, the ink takes, the card jumps), then the card goes in the box */
-.send { position: absolute; left: 7cqw; right: 7cqw; top: 74cqh; z-index: 6; display: flex; justify-content: center; min-height: 44px; color: #b0321f; }
+/* EMAIL ME THE DOWNLOAD FILES (Dan, round 2: "a stamp like a train stamp, not like a button"): a station dater in red ink
+   with today's date; a tap stamps it (it lands, the ink takes, the card jumps), then the card is posted. Round 15: smaller
+   (two lines, no longer across the whole card) and in full ink, so it reads as the thing to tap */
+.send { position: absolute; left: 7cqw; right: 7cqw; top: 74cqh; z-index: 6; display: flex; justify-content: center; min-height: 44px; color: var(--red); }
 .send .ink { display: grid; justify-items: center; gap: 1cqw; padding: 2.4cqw 5cqw 2.2cqw; rotate: -3.5deg; text-transform: uppercase; white-space: nowrap;
-  border: .8cqw solid currentColor; border-radius: 2.4cqw; outline: .35cqw solid currentColor; outline-offset: -1.9cqw; mix-blend-mode: multiply; opacity: .88;
+  border: .8cqw solid currentColor; border-radius: 2.4cqw; outline: .35cqw solid currentColor; outline-offset: -1.9cqw; mix-blend-mode: multiply;
   -webkit-mask: url(postcards/img/ink.webp) 0 0 / 100% 100%; mask: url(postcards/img/ink.webp) 0 0 / 100% 100%; }
 .send .s1, .send .s3 { font: 600 max(9px, 2.6cqw)/1 Oswald; letter-spacing: .26em; }
-.send .s2 { font: 700 max(20px, 7.2cqw)/.92 Oswald; letter-spacing: .025em; }
+.send .s2 { font: 700 max(18px, 6cqw)/.92 Oswald; letter-spacing: .025em; }
 .send:active .ink { scale: .97; }
 .send.thump .ink { animation: thump .34s cubic-bezier(.3, 1.4, .5, 1) both; }
 @keyframes thump { 0% { scale: 1.22; opacity: .25; } 55% { scale: .95; opacity: 1; } 100% { scale: 1; opacity: 1; } }
@@ -330,16 +331,11 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .pc-mail.jolt { animation: jolt .3s ease-out; }
 @keyframes jolt { 35% { translate: 0 .5cqw; } }
 
-/* the mailbox: up from the bottom of the screen while the last card is on top (it takes the counter's place); the card
-   goes in through the lid */
-.box { position: absolute; left: 50%; bottom: 0; width: min(31vw, 132px); z-index: 4; pointer-events: none;
-  transform: translate(-50%, 110%); transition: transform .6s var(--ease-settle); }
-.desk.mailing .count { opacity: 0; pointer-events: none; }
-.box img { display: block; width: 100%; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .6)); }
-.box.up { transform: translate(-50%, 46%); }
-.box.full { transform: translate(-50%, 18%); }
-.box.gulp { animation: gulp .45s var(--ease-snap); }
-@keyframes gulp { 40% { transform: translate(-50%, 21%) scale(1.04, .97); } }
+/* the site's footer (tools/gas2page puts it after the page; Dan, round 15): under the end page, reached by scrolling down.
+   The cards never scroll; the end page lets the page go */
+html.at-end { overflow-y: auto; }
+html.at-end body { height: auto; overflow: visible; }
+#site-foot { margin-top: calc(100dvh - var(--site-bar-h, 0px)); background: var(--bg); }
 
 /* ── the end (Dan 2026-10-29: "in the end page the user will reach the right side of the desktop page, the words will
    pop out and everything"): the last card goes, the lens pulls focus from the cards onto the open sky right of the
@@ -413,27 +409,28 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .endbar p { display: none; }
 .desk.sent .endbar p { display: block; }
 
-/* ── page chrome under the stack: back · n / 6 · next ── */
-.ctl { position: relative; z-index: 5; display: grid; grid-template-columns: 44px auto 44px; justify-content: center; align-items: center; column-gap: 22px;
-  padding: 8px 0 calc(12px + env(safe-area-inset-bottom)); }
-.ctl .nav { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; color: var(--brass-bright);
-  box-shadow: inset 0 0 0 1.5px rgba(201, 163, 92, .7); background: rgba(20, 14, 9, .45); transition: opacity .25s, transform .12s; }
-.ctl .nav:active { transform: scale(.94); }
-.ctl .nav:disabled { opacity: .28; cursor: default; }
-.ctl .nav svg { width: 18px; height: 18px; }
-.count { min-width: 64px; text-align: center; font: 600 14px/1 Oswald; letter-spacing: .2em; color: var(--fg); }
-.count b { font-weight: 700; color: var(--brass-bright); }
-.hint { position: absolute; left: 0; right: 0; bottom: 100%; margin: 0 0 2px; text-align: center; font: 500 13px/1.2 Inter; color: var(--fg-dim);
+/* ── page chrome under the stack: six pilot lamps (Dan, round 15: dots for "1 / 6" and the arrows, high-end; his pick of
+   three: the pump's pilot light). The card on top lights its lamp: it warms up quick and cools slow; a tap walks there ── */
+.ctl { position: relative; z-index: 5; display: grid; justify-items: center; padding: 4px 0 calc(8px + env(safe-area-inset-bottom)); }
+.lamps { display: flex; }
+.pl { width: 26px; height: 28px; display: grid; place-items: center; }
+.pl i { width: 8px; height: 8px; border-radius: 50%; background: radial-gradient(circle at 36% 30%, #5a4630, #1e160e 72%);
+  box-shadow: 0 0 0 1.5px #2a1f14, 0 0 0 2.5px rgba(201, 163, 92, .5), inset 0 -1px 1px rgba(0, 0, 0, .6);
+  transition: background .7s, box-shadow .7s; }
+.pl[aria-current] i { background: radial-gradient(circle at 36% 30%, #fff3d2, #ffc25a 40%, #e8741c 82%);
+  box-shadow: 0 0 0 1.5px #2a1f14, 0 0 0 2.5px rgba(232, 196, 120, .8), 0 0 7px 1px rgba(255, 138, 46, .75), 0 0 18px 4px rgba(255, 138, 46, .28);
+  transition-duration: .22s; }
+.hint { margin: 0; text-align: center; font: 500 13px/1.2 Inter; color: var(--fg-dim);
   letter-spacing: .02em; transition: opacity .4s; }
-.hint.gone { opacity: 0; }
+.hint.gone { opacity: 0; }   /* its line stays: a row that folded away would resize the stack mid-flick */
 :focus-visible { outline: 2px solid var(--honey); outline-offset: 3px; }
 .addr input:focus-visible { outline: none; }
 
 @media (prefers-reduced-motion: reduce) {
-  .pc.nudge, .pc-hear.top:not(.flipped) .curl, .box.gulp, .rd .cta::after, .g-pre.top .badge::after,
+  .pc.nudge, .pc-hear.top:not(.flipped) .curl, .rd .cta::after, .g-pre.top .badge::after,
   .send.thump .ink, .send.nope .ink, .pc-mail.jolt, .loading .pilot.on,
   .pc-hear.flipped.top .sticker, .pc-hear.flipped.top .sticker .sk::after { animation: none !important; }
-  .box, .end, .opt .tick path { transition-duration: .01s !important; transition-delay: 0s !important; }
+  .end, .opt .tick path { transition-duration: .01s !important; transition-delay: 0s !important; }
 }
 </style>
 </head>
@@ -622,13 +619,12 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
             <p class="err" id="err" role="alert" hidden>That email looks off. Check it and try again.</p>
           </div>
           <label class="opt"><input type="checkbox" id="mk" name="marketing"><i class="tick" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 13l5 5L21 4"/></svg></i><span>Send me new-plugin drops and demo codes</span></label><!-- required: Gil 2026-11-03 -->
-          <button class="send" type="submit" aria-label="Email me the download files"><span class="ink" aria-hidden="true"><span class="s1">RevAudio station</span><span class="s2">Email me the download files</span><span class="s3" id="sdate">★ Free ★</span></span></button>
+          <button class="send" type="submit" aria-label="Email me the download files"><span class="ink" aria-hidden="true"><span class="s1">RevAudio station</span><span class="s2">Email me the<br>download files</span><span class="s3" id="sdate">★ Free ★</span></span></button>
         </form>
         <i class="age" aria-hidden="true"></i>
       </article>
     </section>
   </div>
-  <div class="box" id="box" aria-hidden="true"><img src="props/mailbox.png" alt=""></div>
 
   <!-- the end: the station (spot D) with page-b's readings under it; ?spot=sky = the sky right of the canopy -->
   <section class="end" id="end" aria-label="GAS 2" data-taxi-stage data-taxi-flip="hard">
@@ -651,9 +647,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 
   <nav class="ctl" aria-label="Postcards">
     <p class="hint" id="hint">Flick left: the next card · right: back</p>
-    <button class="nav" type="button" id="prev" aria-label="Previous card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
-    <span class="count" aria-hidden="true"><b id="num">1</b> / 6</span>
-    <button class="nav" type="button" id="next" aria-label="Next card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+    <div class="lamps" id="lamps"></div>
   </nav>
   <p class="sr" id="live" aria-live="polite"></p>
 </main>
@@ -662,13 +656,20 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 (() => {
   const $ = (id) => document.getElementById(id);
   const desk = $('desk'), stack = $('stack'), cards = [...stack.querySelectorAll('.pc')], N = cards.length;
-  const hear = $('hear'), box = $('box'), hint = $('hint');
+  const hear = $('hear'), hint = $('hint');
   // reduce = the phone asks for less motion: nothing moves by itself (dust, glints, the idle record, the hint's wiggle, the
   // end page's pops), but what the visitor's own hand does still moves, calmer (Dan, 2026-10-30, on his iPhone: no card moved)
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches, Z = reduce ? 1.6 : 1;   // Z: more damping, no bounce
   // each card lies a little crooked, like a real stack; the top one straightens most of the way
   const LIE = [[-1.1, 0], [1.8, 3], [-1.6, -2], [2.3, 2], [-2, -3], [1.2, 1]];
   const NAMES = ['Greetings from GAS 2', 'Regular', 'Premium', 'Race', 'Hear it', 'Email me the download files'];
+  const lamps = NAMES.map((name, i) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'pl'; b.setAttribute('aria-label', `Card ${i + 1} of ${N}: ${name}`);
+    b.append(document.createElement('i')); b.addEventListener('click', () => walk(i));
+    return b;
+  });
+  $('lamps').append(...lamps);
   let cur = 0, touched = false;
 
   // ── the stack settling (Dan, 2026-10-30: "everything that moves needs to be smooth"): a damped spring baked into CSS
@@ -761,11 +762,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
       c.style.transform = rest(i, d);
       c.style.opacity = '';
     });
-    $('num').textContent = Math.min(cur + 1, N);
-    $('prev').disabled = cur === 0;
-    $('next').disabled = cur === N;
-    box.classList.toggle('up', cur === N - 1);
-    desk.classList.toggle('mailing', cur === N - 1);
+    lamps.forEach((l, i) => (i === cur ? l.setAttribute('aria-current', 'step') : l.removeAttribute('aria-current')));
     if (cur >= 3) idle(() => { audio.warm().catch(() => {}); deck.press(); });   // decode the demo, cut the record, before HEAR IT comes up
     if (cur >= 4) idle(() => { document.querySelector('.view').classList.add('warm'); taxi(); });   // and the end page's photo + its taxi
     deck.power(cards[cur] === hear && hear.classList.contains('flipped'));   // the deck runs only while its back is up
@@ -782,6 +779,8 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   function ending(on, anim) {
     if (on === desk.classList.contains('ended')) return;
     desk.classList.toggle('ended', on);
+    document.documentElement.classList.toggle('at-end', on);   // the site's footer is under the end page only
+    if (!on) scrollTo(0, 0);
     $('end').inert = !on;
     if (!on || !anim || reduce) return;
     const rd = $('rd'), EASE = 'cubic-bezier(.2, 1, .3, 1)', T = 380;
@@ -829,6 +828,13 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     layout(true); say();
   }
   function quiet() { if (!touched) { touched = true; hint.classList.add('gone'); } }
+  let walking = 0;
+  function walk(to) {                                            // a lamp's tap: card by card, as if flicked; a newer tap takes over
+    clearTimeout(walking); quiet();
+    const dir = Math.sign(to - cur);
+    const step = () => { const was = cur; if ((to - cur) * dir <= 0 || posting()) return; (dir > 0 ? next : prev)(); if (cur !== was) walking = setTimeout(step, 140); };
+    step();
+  }
 
   // ── drag: the card follows the finger, turning about where it was held; a fast flick or a long drag throws it.
   //    Left to right is back (Dan, 2026-10-30): the card before comes in from the left under the finger ──
@@ -1212,7 +1218,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   $('mk').addEventListener('change', () => { err.hidden = true; });
   // typing the address (Dan, 2026-10-30, on his iPhone: the keyboard shrank the card to half and the tick line ran into the
   // stamp; his pick: "the card slides up"): the card keeps its size and slides up till the TO line, the tick box and the
-  // stamp sit just over the keys; ‹ › and the mailbox step aside till the keyboard goes
+  // stamp sit just over the keys; the lamps step aside till the keyboard goes
   const vv = window.visualViewport, high = () => (vv ? vv.height : innerHeight);
   let h0 = 0;                                                    // the screen's height before the keyboard
   function fit() {
@@ -1263,23 +1269,16 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
       .then((d) => (d && d.ok ? '' : (d && d.error) || 'Something went wrong. Tap Again and try once more.'))
       .catch(() => 'Network hiccup. Tap Again and try once more.');
   }
-  function drop(v) {
+  function drop(v) {                                             // posted: the card drops out of the bottom of the screen
     const c = cards[N - 1];
-    box.classList.add('full');
-    const cr = c.getBoundingClientRect(), br = box.getBoundingClientRect();
-    const s = br.width * .6 / cr.width;
-    const tx = br.left + br.width / 2 - (cr.left + cr.width / 2), ty = br.top + br.height * .2 - (cr.top + cr.height / 2) - (box.classList.contains('up') ? br.height * .28 : 0);
-    c.style.transition = 'transform .72s cubic-bezier(.55,0,.35,1), opacity .25s .58s';
-    c.style.transform = `translate3d(${tx}px, ${ty + cr.height * s * .5}px, 0) rotate(-3deg) scale(${s})`;
+    c.style.transition = 'transform .72s cubic-bezier(.55,0,.35,1), opacity .25s .5s';
+    c.style.transform = `translate3d(0, ${innerHeight - c.getBoundingClientRect().top}px, 0) rotate(-3deg) scale(.6)`;
     c.style.opacity = '0';
-    $('prev').disabled = $('next').disabled = true;
-    setTimeout(() => { box.classList.remove('gulp'); void box.offsetWidth; box.classList.add('gulp'); }, 760);
-    setTimeout(() => {                                           // the box swallows it, then the end page: "✓ Files in your inbox"
+    setTimeout(() => {                                           // then the end page: "✓ Files in your inbox"
       desk.classList.add('sent');
       $('sentNote').textContent = `Sending to ${v}…`;
       const sent = mailing;
       sent.then((no) => { if (mailing === sent) $('sentNote').textContent = no || `Sent to ${v}. Check your inbox.`; });
-      box.classList.remove('full');
       cur = N; layout(true);
       $('live').textContent = `Emailing the download files to ${v}. GAS 2. Thicker, smoother, glued master.`;
     }, 1150);
@@ -1287,7 +1286,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   $('cta').addEventListener('click', () => { if (!desk.classList.contains('sent')) prev(); });   // ⤓ Download FREE = the mail card comes back
   $('again').addEventListener('click', () => {                  // the postcards dealt back onto the table, bottom card first
     window.gas2Mailed = null; document.dispatchEvent(new Event('gas2:reset'));   // the taxi goes with the end page
-    mailing = null; desk.classList.remove('sent'); $('sentNote').textContent = ''; box.classList.remove('full', 'gulp');
+    mailing = null; desk.classList.remove('sent'); $('sentNote').textContent = '';
     em.value = ''; err.hidden = true; turn(false, true);
     $('mk').checked = false; send.disabled = false; send.classList.remove('thump', 'nope'); cards[N - 1].classList.remove('jolt');
     cards.forEach((c, i) => { c.style.transition = 'none'; c.style.opacity = ''; c.style.visibility = 'visible'; c._gone = null;
@@ -1297,8 +1296,6 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   });
 
   // ── buttons + keys ──
-  $('next').addEventListener('click', () => { quiet(); next(); });
-  $('prev').addEventListener('click', prev);
   document.addEventListener('keydown', (e) => {
     if (e.target.closest && e.target.closest('input')) return;
     if (e.key === 'ArrowRight' || e.key === 'PageDown') { quiet(); next(); e.preventDefault(); }

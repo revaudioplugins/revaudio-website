@@ -1,3 +1,24 @@
+## 2026-11-04 — GAS 2 page, round 16 of the postcards review: dots, the stamp, no mailbox, the site footer (Claude Code `danavivi-c2 [ca2821]`, Dan's Mac) — BRANCH `feat/gas2-r16`, not pushed
+
+Claim: OPEN `danavivi-c2`. Takes the postcards over from `danavivi-83` (claim 2026-10-29 entry; that session is not running).
+Files: `tools/_gas2-scene/postcards.html`, `tools/gas2page/integration.mjs`, this entry.
+Dan's round-15 notes (review artifact `notes-r15`): the site's top bar hides the top of every card; "1 / 6" + the arrows
+-> dots, high-end (his pick: pilot lamps); card 6: a smaller, clearer stamp, no mailbox, the title clear of the stamp
+(his pick: fit it beside); a footer on the phone's end page, reached by scrolling, and on every platform.
+- Built (`postcards.html`): `.desk` padding-top = max(safe area, `--site-bar-h`); `.ctl` = the hint line + six pilot
+  lamps (`.pl`, `aria-current` on the top card's; a tap = `walk()`, card by card, a newer tap takes over); no mailbox
+  (`.box`, `props/mailbox.png` unused here now): a stamped card drops out of the bottom; the stamp in two lines, full
+  ink, `--red`; `.mtitle` 7cqw beside the stamp; `html.at-end` lets the end page scroll to `#site-foot`.
+- Built (`integration.mjs`): `siteParts()` = the bar + the real Footer from the built `/terms/`, both through one
+  `shadow()` helper; the bar sets `--site-bar-h`; the footer's drawers wired, its contrast switch + scripts left out,
+  hidden during page-b's drone (`html.dr-on`); page-b's own one-line mock `<footer>` is dropped in the site copy.
+- `postcards/tools/check.cjs`: the lamps for ‹ ›, and the stamp's POST mocked (it posted for real since `abfed71`, so a
+  run of main's check would send to the live worker); the "Keys in the mail" / "nothing is sent" lines were stale.
+- Checks: `check.cjs` ALL PASS (47 steps, 40 layouts, 0 errors) on the scene; main's own check fails 7 (the stale
+  lines). `npm run build` green; built `/gas2/` (WebKit 402x714): the hop to the postcards, bar over nothing, the
+  footer drawers open/close, The postcards again scrolls back up; page-b (Chrome 1440x900): no footer over the drone,
+  one footer after landing. 0 page errors. Not checked: a real iPhone / Safari.
+
 ## 2026-11-04 — GAS 2 page: the site's top bar + the caught car emails a personal CATCH10 code (Claude Code, Gil's Mac) — PUSHED TO MAIN 2026-11-04 on Gil's word; worker `/catch` DEPLOYED first (RevLimiter `f33d350`, stamp commit `2f6cc5e`)
 
 Claim: CLOSED 2026-11-04. Files: `tools/gas2page/integration.mjs` (siteBar), `src/components/Cart.astro` (`?cart=open`),
