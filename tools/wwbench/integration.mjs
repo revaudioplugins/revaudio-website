@@ -17,7 +17,11 @@
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
-const PAGE = fileURLToPath(new URL('./wwbench.html', import.meta.url));
+/* /__wwkeys (Dan 2026-11-04): the TV's Try + Product page keys, today beside three on-screen options, on the real page */
+const PAGES = {
+  __wwbench: fileURLToPath(new URL('./wwbench.html', import.meta.url)),
+  __wwkeys: fileURLToPath(new URL('./wwkeys.html', import.meta.url)),
+};
 
 export default function wwbench() {
   return {
@@ -32,10 +36,11 @@ export default function wwbench() {
                 name: 'wwbench-server',
                 configureServer(server) {
                   server.middlewares.use(async (req, res, next) => {
-                    if (!/^\/__wwbench\/?$/.test((req.url || '').split('?')[0])) return next();
+                    const m = /^\/(__wwbench|__wwkeys)\/?$/.exec((req.url || '').split('?')[0]);
+                    if (!m) return next();
                     res.setHeader('Content-Type', 'text/html; charset=utf-8');
                     try {
-                      res.end(await readFile(PAGE, 'utf8'));
+                      res.end(await readFile(PAGES[m[1]], 'utf8'));
                     } catch (e) {
                       res.statusCode = 500;
                       res.end(`wwbench: ${e && e.message}`);

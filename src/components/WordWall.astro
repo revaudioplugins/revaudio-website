@@ -1342,6 +1342,22 @@ const first = items[0]?.slug ?? '';
     --ww-name-max: 5.5;   /* rem: the biggest a plugin name gets */
     --ww-thumb-w: 9.8;    /* rem: the thumbnail's width in the list */
     --ww-dim: 1;          /* the unlit names and thumbnails: how much they show */
+    /* the plugins' pictures on the glass (Dan 2026-11-04: "the small details of how the plugins look on the screen";
+       /__wwbench, "Pictures"). The lit window: */
+    --ww-pic-r: 6;          /* px: its corners (GAS / Radio Roulette keep their bezel arcs, GAS 2 has none) */
+    --ww-pic-ring: 0.4;     /* its phosphor edge, alpha (the screen wall) */
+    --ww-pic-glow: 0.22;    /* its glow on the glass, alpha */
+    --ww-pic-glow-px: 36;   /* px: how far the glow reaches */
+    --ww-pic-drop: 0.55;    /* the dark drop under it, alpha */
+    --ww-pic-bright: 1;     /* its light: brightness, colour (saturation), contrast. Read by the bench only: even at 1
+                               a filter repaints the picture, so the filter goes in only with a value baked off 1 */
+    --ww-pic-sat: 1;
+    --ww-pic-con: 1;
+    /* the list's thumbnails: */
+    --ww-thumb-r: 3;            /* px: corners */
+    --ww-thumb-glow-px: 18;     /* px: the lit one's glow */
+    --ww-thumb-hover-k: 1.06;   /* the pointer on a row: the picture comes forward this much */
+    --ww-thumb-hover-light: 1.12;
     --ww-row-gap: clamp(0.9rem, 2.4vh, 1.75rem);
     display: grid;
     grid-template-columns: minmax(0, calc(var(--ww-list-share) * 1%)) minmax(0, 1fr);
@@ -1489,7 +1505,7 @@ const first = items[0]?.slug ?? '';
     display: block;
     width: 100%;
     height: auto;
-    border-radius: 3px;
+    border-radius: calc(var(--ww-thumb-r) * 1px);
     box-shadow: 0 0 0 1px var(--ww-edge);
     transition:
       transform 180ms cubic-bezier(0.2, 0.9, 0.25, 1.25),
@@ -1548,8 +1564,8 @@ const first = items[0]?.slug ?? '';
     .ww-row:hover .ww-type { opacity: 1; }
     .ww-row:hover .ww-thumb { opacity: 1; }
     .ww-row:hover .ww-thumb :global(img) {
-      transform: scale(1.06);
-      filter: brightness(1.12);
+      transform: scale(var(--ww-thumb-hover-k));
+      filter: brightness(var(--ww-thumb-hover-light));
       box-shadow: 0 0 0 1px var(--ww-ink-hot), 0 0 22px var(--ww-glow-hot);
     }
   }
@@ -1560,7 +1576,7 @@ const first = items[0]?.slug ?? '';
     filter: drop-shadow(0 0 10px var(--ww-glow-hot)) drop-shadow(0 0 26px var(--ww-glow-soft));
   }
   .ww-row.is-lit .ww-thumb { opacity: 1; }
-  .ww-row.is-lit .ww-thumb :global(img) { box-shadow: 0 0 0 1px var(--ww-ink-hot), 0 0 18px var(--ww-glow); }
+  .ww-row.is-lit .ww-thumb :global(img) { box-shadow: 0 0 0 1px var(--ww-ink-hot), 0 0 calc(var(--ww-thumb-glow-px) * 1px) var(--ww-glow); }
   /* a FLOATING object (design-language §3b): nothing rectangular round its silhouette, at rest, hovered or lit; its
      own baked shadow is its edge */
   .ww-row .ww-thumb.is-float :global(img),
@@ -1606,7 +1622,7 @@ const first = items[0]?.slug ?? '';
     display: block;
     width: 100%;
     height: auto;
-    border-radius: 6px;
+    border-radius: calc(var(--ww-pic-r) * 1px);
     box-shadow: 0 1px 0 0 #000, 0 24px 48px rgba(0, 0, 0, 0.55);
   }
   /* the box is there before the picture: a lazy window that arrives late never pushes the text down */
@@ -1752,9 +1768,9 @@ const first = items[0]?.slug ?? '';
   :global(html:not(.hc)) .ww[data-ww-bg='screen'] > .ww-panel .ww-ui :global(img),
   :global(html:not(.hc)) .ww[data-ww-bg='screen'] > .ww-panel .ww-ui video {
     box-shadow:
-      0 0 0 1px hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.4),
-      0 0 36px hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.22),
-      0 18px 40px rgba(0, 0, 0, 0.55);
+      0 0 0 1px hsl(var(--ww-ch-h) var(--ww-gs) 58% / var(--ww-pic-ring)),
+      0 0 calc(var(--ww-pic-glow-px) * 1px) hsl(var(--ww-ch-h) var(--ww-gs) 58% / var(--ww-pic-glow)),
+      0 18px 40px rgba(0, 0, 0, var(--ww-pic-drop));
   }
 
   /* ---- THE CHANNELS -------------------------------------------------------
@@ -1800,6 +1816,8 @@ const first = items[0]?.slug ?? '';
   .ww {
     --ww-scr-bright: 1.37;  /* phosphor glow */
     --ww-scr-scan: 0.2;     /* scanline darkness on the glass (under the text and the pictures) */
+    --ww-scr-glare: 1;      /* the glass's reflection over everything, x today's */
+    --ww-scr-curve: 0.6;    /* the tube's curved falloff: how dark the glass gets towards its edges */
   }
   .ww-screen,
   .ww-screen-fx {
@@ -1859,9 +1877,9 @@ const first = items[0]?.slug ?? '';
   .ww-screen-fx {
     z-index: 2; /* over the content: it is on the screen (smooth light only: nothing here crosses a letter) */
     background:
-      linear-gradient(158deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.02) 16%, transparent 30%), /* glass reflection */
-      radial-gradient(ellipse 70% 22% at 50% 0%, rgba(255, 255, 255, 0.05), transparent 70%),                 /* the glass catching the room light */
-      radial-gradient(130% 120% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.6) 100%);                        /* tube curvature */
+      linear-gradient(158deg, rgba(255, 255, 255, calc(0.07 * var(--ww-scr-glare))) 0%, rgba(255, 255, 255, calc(0.02 * var(--ww-scr-glare))) 16%, transparent 30%), /* glass reflection */
+      radial-gradient(ellipse 70% 22% at 50% 0%, rgba(255, 255, 255, calc(0.05 * var(--ww-scr-glare))), transparent 70%),                 /* the glass catching the room light */
+      radial-gradient(130% 120% at 50% 50%, transparent 55%, rgba(0, 0, 0, var(--ww-scr-curve)) 100%);                        /* tube curvature */
     box-shadow:
       inset 0 3px 0 #040206, inset 0 -3px 0 #040206, /* the screen's seat under the rails */
       inset 0 0 0 1px rgba(190, 90, 255, 0.22);
