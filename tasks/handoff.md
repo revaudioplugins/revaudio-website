@@ -1,6 +1,6 @@
-## 2026-11-04 — GAS 2 page, round 16 of the postcards review: dots, the stamp, no mailbox, the site footer (Claude Code `danavivi-c2 [ca2821]`, Dan's Mac) — BRANCH `feat/gas2-r16`, not pushed
+## 2026-11-04 — GAS 2 page, round 16 of the postcards review: dots, the stamp, no mailbox, the site footer (Claude Code `danavivi-c2 [ca2821]`, Dan's Mac) — PUSHED TO MAIN 2026-11-04 on Dan's word "push to main" (fast-forward from `feat/gas2-r16`)
 
-Claim: OPEN `danavivi-c2`. Takes the postcards over from `danavivi-83` (claim 2026-10-29 entry; that session is not running).
+Claim: CLOSED 2026-11-04 `danavivi-c2`. Took the postcards over from `danavivi-83` (claim 2026-10-29 entry; that session is not running).
 Files: `tools/_gas2-scene/postcards.html`, `tools/gas2page/integration.mjs`, this entry.
 Dan's round-15 notes (review artifact `notes-r15`): the site's top bar hides the top of every card; "1 / 6" + the arrows
 -> dots, high-end (his pick: pilot lamps); card 6: a smaller, clearer stamp, no mailbox, the title clear of the stamp
