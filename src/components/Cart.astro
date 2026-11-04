@@ -532,6 +532,11 @@ for (const p of plugins) {
       if (typeof drawer.showModal === 'function') drawer.showModal(); else drawer.setAttribute('open', '');
       lock();
     }
+    // ?cart=open: a page without the drawer (the GAS 2 page's top bar) sends its cart button here.
+    if (new URLSearchParams(location.search).get('cart') === 'open') {
+      history.replaceState(history.state, '', location.pathname + location.hash);
+      setTimeout(openDrawer, 0);
+    }
 
     function checkoutMap() {
       var el = document.querySelector('[data-checkout-map]');
