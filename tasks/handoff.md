@@ -121,7 +121,16 @@ only after Dan picks: `src/pages/index.astro`, a new `src/components/HomeOpening
   (1.21) and moved (f 0.52, x 3.2, y 3.02, tilt 2.5). No moves, so `ver` stays 7. Checks (Playwright Chromium 1141x636): a
   fresh visit's settings equal his pasted bench key for key; with sway and dust frozen (`?capture`) walk 0 / 60 % differ by
   0.05 / 0.00 % of pixels; live walk 0 / 60 / 100 % no page or console errors.
-- Next: ask Dan what he didn't want in the painted room / film, before any more art (no credits until then).
+- The rebuild plan (2026-11-04, `danavivi-09`). Dan said what went wrong: the cut-outs read 2D, the projected painting
+  smeared, the painter removed the plugins (Radio Roulette top right, RevLimiter on the desk), the film was low quality,
+  flipped to a picture mid-scroll and glitched; "I don't know why we went through a film". He loved the first painted
+  shot. The plan, as a page with his answers (db `answers/round-1`, `answers/round-2`):
+  https://claude.ai/artifact/ByhrvCC1RwY3pzi9izrHun. Decisions and steps: `tasks/todo.md` top, "The rebuild". In
+  short: every pixel from the real 3D room, AI makes objects not frames; the room must keep moving (live 3D favoured);
+  a bake-off team with researchers, critics and automatic checks; the far end is the test corner; Blender is being
+  installed on Dan's Mac (brew cask); a blind-spot agent is reviewing the plan.
+- Next: round 3 on the plan page (the blind spots + the car questions: matte or gloss black, badges or not), then the
+  look lock (Dan pins the painting), then the Blender export.
 
 ## 2026-11-02 — Footer: categories fold into drawers (Claude Code `revaudio-3b [a4cb6d]`, laptop 2) — ON MAIN + LIVE: merged `--no-ff` 2026-11-02 by Claude Code `revaudio-0c [571e5c]` (laptop 1) on Dan's word "push it to main and merge" (Yoni had approved by pushing the branch)
 

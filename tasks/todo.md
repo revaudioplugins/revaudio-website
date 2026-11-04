@@ -5,6 +5,46 @@ tools, a car; at the far end a small TV; scrolling walks down the room to it and
 Restarted from scratch after the first prototype (`tools/_home-opening/`, one wall + a zoom, commit `f35fdf0`): its
 lock-in hand-off is reused, its room is not. Dan: plan with him first, then one piece at a time, shown before the next.
 
+## The rebuild (Dan 2026-11-04, `danavivi-09`): real 3D, AI makes objects, never frames
+Why: the 3 Nov art failed. Cut-outs read flat; the projected painting smeared as the camera moved; the AI repaints
+swapped the plugin CRTs for props and garbled poster text; the film was 1080p-soft and flipped to a still mid-scroll.
+Dan loved the first painted shot (`assets/skins/default/paint/walk-000.webp`): it is the look reference. Plan page
+(rounds 1 + 2 answered, answers in its db `answers/round-1`, `answers/round-2`):
+https://claude.ai/artifact/ByhrvCC1RwY3pzi9izrHun
+
+Decisions (Dan, rounds 1-2, 2026-11-04):
+- Every pixel is rendered from the real 3D room; AI only makes single objects / textures / posters. One delivery mode
+  for the whole walk, no film, no switching.
+- Must stay, checked on every render: RevLimiter's CRT on the desk, Radio Roulette's CRT high right, DRIFT's CRT, the
+  live TV, the REVAUDIO neon, the coupe on its lift half out the door, the drum kit + throne, the studio corner.
+  RevFX's CRT and the GAS 2 posters + COMING SOON plate stay too, removable "smartly without changing the whole
+  room" (a slot removal, part of the swap test).
+- The room must keep moving (sway, dust, flicker, the car idling): live 3D (way A) is the favourite; pre-rendered (B)
+  stays in the bake-off as the true-light quality bar. Splat world (C): research only.
+- Tests = automatic checks on every version: plugins present at every walk step, no flashes scrolling down and up,
+  sharp at 1920 / 1440 / 1141 + iPhone, matches the bench, swap / remove test, size + speed.
+- Team: the bake-off + 2 researchers (assets + the car; live-3D techniques + the splat check). Builder = the main
+  session; Tester A (live) + Tester B (pre-rendered) on Opus; critics: look (Fable), walk, Dan's-eye, devil's advocate,
+  web (Opus); a fixer (Fable). Up to 2 fix rounds; Dan sees what passed, with the critics' notes. First a blind-spot
+  agent reviews the whole plan (Dan's ask).
+- Test corner: the far end (desk, plugin CRTs, TV). Phones: the same room, lighter. Credits: up to 40 for the test
+  phase. Blender on Dan's Mac: yes. Night by default; a skin may change the time. The look lock comes before the critics.
+- Car: Dan's reference = a black Supra MK4 (A80) photo, "black math" (matte? to confirm); badges and exact shape vs an
+  unbadged Supra-inspired coupe: to confirm (trademark). The photo is third-party: kept local only in
+  `tools/_home-opening/refs/` (git-excluded), a reference, never shipped or textured from.
+
+Steps:
+- [x] Plan page, rounds 1 + 2 answered (2026-11-04).
+- [ ] Blind-spot review of the plan (agent), then round 3 on the plan page: its findings + the car questions.
+- [ ] 1. Look lock: Dan pins what he loved on the painting (a review page).
+- [ ] 2. Blender installed; the skeleton exported to Blender (geometry, slot names, camera walk, lights); parity
+      check against the bench.
+- [ ] Research: assets + the car; live-3D techniques + the splat check.
+- [ ] 3. The far-end corner built once, shown live (A) and pre-rendered (B); checks + critics; Dan picks.
+- [ ] 4. The rest, zone by zone: entrance + car, workbench wall, studio corner.
+- [ ] 5. Into the page, with the checks.
+- [ ] 6. A test skin: swap one object and remove one (RevFX or a poster), end to end.
+
 ## Decisions (Dan's picks, 2026-11-02)
 - Look: photoreal, graded with DRIFT's violet/magenta neon + amber lamps (house law: photographic realism).
 - The TV at the far end: about 5 % of the screen width (~55 px on a 1141 laptop), so the walk-in is ~20x.
@@ -42,9 +82,9 @@ lock-in hand-off is reused, its room is not. Dan: plan with him first, then one 
 - [ ] 1a. Offered 2026-11-03, not answered: a "just got up" cue on the throne (headphones or sticks).
 - [ ] 1b. The room as data: a base manifest + skins (season / product / bundle / work in progress) that the engine reads
       and the bench edits, adds to and exports; plan it with Dan first.
-- [ ] 2. The slot list out of the skeleton: each prop / wall's size, angle and light = its Higgsfield prompt
-      (cut-out, transparent background). Plan + Dan's OK.
-- [ ] 3. The default skin, painted (cost-checked per shot, RULE 0). Cut-out test 2026-11-03 (12 credits) read 2D and
+- [ ] 2. SUPERSEDED 2026-11-04 by the rebuild (top). The slot list out of the skeleton: each prop / wall's size, angle
+      and light = its Higgsfield prompt (cut-out, transparent background). Plan + Dan's OK.
+- [ ] 3. SUPERSEDED 2026-11-04 by the rebuild (top). The default skin, painted (cost-checked per shot, RULE 0). Cut-out test 2026-11-03 (12 credits) read 2D and
       was dropped. Proof shot 1 done 2026-11-03 (walk 0, 4.25 credits): one real photo to ~20 % of the walk. Next, on
       Dan's yes: 4 more shots. Done 2026-11-03 (free): soft hole fill, real posters onto their painted twins.
       Then (Dan: projected paintings "smeared and broken apart"; credits OK): the walk became a FILM between painted
