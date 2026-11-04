@@ -1,6 +1,6 @@
-## 2026-11-04 — GAS 2 postcards: no shaking when the end page scrolls to the footer (Claude Code `danavivi-c2 [ca2821]`, Dan's Mac) — BRANCH `fix/gas2-end-scroll`, waiting for Dan's push word
+## 2026-11-04 — GAS 2 postcards: no shaking when the end page scrolls to the footer (Claude Code `danavivi-c2 [ca2821]`, Dan's Mac) — PUSHED TO MAIN 2026-11-04 on Dan's word "push to main" (from `fix/gas2-end-scroll`)
 
-Claim: OPEN `danavivi-c2`. Files: `tools/_gas2-scene/postcards.html`, `DESIGN.md`, this entry.
+Claim: CLOSED 2026-11-04 `danavivi-c2`. Files: `tools/_gas2-scene/postcards.html`, `DESIGN.md`, this entry.
 - Dan, on his iPhone after the round-16 push: scrolling the end page to the footer "shaking". Cause, reproduced in
   WebKit by growing the viewport 714 -> 790 in steps (= Safari's toolbar folding as you scroll): the fixed end page
   is sized by the screen, so every step re-placed the scene (the station 514 -> 569 px wide, GAS2 +30 px, the button
