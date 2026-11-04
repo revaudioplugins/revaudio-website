@@ -332,9 +332,12 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 @keyframes jolt { 35% { translate: 0 .5cqw; } }
 
 /* the site's footer (tools/gas2page puts it after the page; Dan, round 15): under the end page, reached by scrolling down.
-   The cards never scroll; the end page lets the page go */
+   The cards never scroll. At the end the page scrolls as one, like any page: the end page goes up and the footer follows
+   it (Dan 2026-11-04, on his iPhone: the footer sliding up over a still end page shook the page). So the end page leaves
+   the screen's fixed layer for the page, at the height it came up with (JS keepEnd) */
 html.at-end { overflow-y: auto; }
 html.at-end body { height: auto; overflow: visible; }
+html.at-end .desk { position: absolute; bottom: auto; height: var(--end-h); }
 #site-foot { margin-top: calc(var(--end-h, 100svh) - var(--site-bar-h, 0px)); background: var(--bg); }   /* --end-h: JS keepEnd() */
 
 /* ── the end (Dan 2026-10-29: "in the end page the user will reach the right side of the desktop page, the words will
@@ -779,9 +782,9 @@ html.at-end body { height: auto; overflow: visible; }
   function ending(on, anim) {
     if (on === desk.classList.contains('ended')) return;
     desk.classList.toggle('ended', on);
-    document.documentElement.classList.toggle('at-end', on);   // the site's footer is under the end page only
     if (!on) scrollTo(0, 0);
-    keepEnd();
+    keepEnd(on);                                                 // its height first: html.at-end sizes the end page by it
+    document.documentElement.classList.toggle('at-end', on);   // the site's footer is under the end page only
     $('end').inert = !on;
     if (!on || !anim || reduce) return;
     const rd = $('rd'), EASE = 'cubic-bezier(.2, 1, .3, 1)', T = 380;
@@ -798,20 +801,17 @@ html.at-end body { height: auto; overflow: visible; }
     go(rd.querySelector('.scr'), fast, 380, 350);
   }
 
-  // the footer under the end page (Dan, 2026-11-04, on his iPhone: scrolling to it "shaking"): the scroll folds Safari's
-  // toolbar, the screen grows a few px a frame, and the end page, sized by the screen, was laid out again every frame (the
-  // station scaled, GAS2 and the button slid, the footer was pushed back down). Once the page scrolls, the end page keeps
-  // the height it had at the top; back at the top, or turned (a new width), it follows the screen again
-  let heldW = 0, endH = '';
-  function keepEnd() {
-    const on = document.documentElement.classList.contains('at-end') && scrollY > 0;
-    if (!on || innerWidth !== heldW) { desk.style.height = ''; heldW = 0; }
-    if (on && !heldW) { desk.style.height = `${desk.offsetHeight}px`; heldW = innerWidth; }
-    const h = `${desk.offsetHeight}px`;
-    if (h !== endH) document.documentElement.style.setProperty('--end-h', endH = h);
+  // the end page's height while it scrolls to the footer (Dan, 2026-11-04, on his iPhone: "shaking"): the scroll folds
+  // Safari's toolbar and the screen grows a few px a frame, so a page sized by the screen would be laid out again every
+  // frame. It keeps the px height it came up with; only a turned phone (a new width) measures again
+  let endW = 0;
+  function keepEnd(on) {                                         // on: entering (true) or leaving (false) the end; none: a resize
+    if (on === false) { endW = 0; return; }
+    if (on !== true && (!endW || innerWidth === endW)) return;
+    document.documentElement.style.setProperty('--end-h', `${on ? desk.offsetHeight : innerHeight}px`);
+    endW = innerWidth;
   }
-  addEventListener('scroll', keepEnd, { passive: true });
-  addEventListener('resize', keepEnd);
+  addEventListener('resize', () => keepEnd());
 
   // ── throw the top card off the table (any direction), the next one settles up; after the last one, the end ──
   const away = (c) => () => {                                    // landed off the table: unseen till it's called back
