@@ -1,6 +1,7 @@
 ## 2026-11-03 — Home opening: the long garage, an ACTIVE PROJECT (Claude Code `danavivi-4e [b36252]`, Dan's Mac; continues `danavivi-7a [9ae241]`) — on branch `feat/home-opening`, pushed, not on main
 
-Claim: OPEN `danavivi-4e` (Dan's Mac); taken over from `danavivi-7a` (closed) on 2026-11-03. Dan, 2026-11-03: "this is a
+Claim: OPEN `danavivi-09 [fb47f7]` (Dan's Mac); taken over from `danavivi-4e` on 2026-11-04 (Dan reopened the room in a new
+session), which took it from `danavivi-7a` (closed) on 2026-11-03. Dan, 2026-11-03: "this is a
 project we start working on now, from now on": the long garage is a standing project of the site, not a one-off hero. It
 replaces the TV-first entry's "no hero above the TV" (DESIGN.md §7) on Dan's word. Files: `tools/_home-opening/**` (not in
 the build), `tasks/handoff.md` (this entry), `tasks/todo.md` (the plan, top), `DESIGN.md` §7 (the living-set rule). Later,
@@ -114,6 +115,12 @@ only after Dan picks: `src/pages/index.astro`, a new `src/components/HomeOpening
   neither. Kept, switchable: `PAINT`, `FILM`, `film-kit/`, the assets. Checks (real Chrome 1312x734): a fresh visit and a
   ver-6 bench with both on open on the bare set, no art requested, walk 0 / 35 / 60 / 100 % (the CRTs with their
   plugins, the lock on the live TV), no page errors; the Film chip still loads and plays the film.
+- Dan's bench of 2026-11-04 (`danavivi-09`), on the bare set, baked into `DEF`: a tighter room (6.8 x 4.3 m), lens 49 → 37,
+  TV a touch bigger on the first screen (tvStart 6.5), calmer (sway 0.4, rack LEDs 0.2, TV glow 0.85) and hazier (fog
+  0.034), lamps full, CRTs brighter (1.4), the car level (yaw 0) on a higher lift (0.61) under a wider door, the neon smaller
+  (1.21) and moved (f 0.52, x 3.2, y 3.02, tilt 2.5). No moves, so `ver` stays 7. Checks (Playwright Chromium 1141x636): a
+  fresh visit's settings equal his pasted bench key for key; with sway and dust frozen (`?capture`) walk 0 / 60 % differ by
+  0.05 / 0.00 % of pixels; live walk 0 / 60 / 100 % no page or console errors.
 - Next: ask Dan what he didn't want in the painted room / film, before any more art (no credits until then).
 
 ## 2026-11-02 — Footer: categories fold into drawers (Claude Code `revaudio-3b [a4cb6d]`, laptop 2) — ON MAIN + LIVE: merged `--no-ff` 2026-11-02 by Claude Code `revaudio-0c [571e5c]` (laptop 1) on Dan's word "push it to main and merge" (Yoni had approved by pushing the branch)
