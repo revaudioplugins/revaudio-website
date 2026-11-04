@@ -1,3 +1,14 @@
+## 2026-11-04 — GAS 2 page: the site's top bar + the caught car emails a personal CATCH10 code (Claude Code, Gil's Mac) — PUSHED TO MAIN 2026-11-04 on Gil's word; worker `/catch` DEPLOYED first (RevLimiter `f33d350`, stamp commit `2f6cc5e`)
+
+Claim: CLOSED 2026-11-04. Files: `tools/gas2page/integration.mjs` (siteBar), `src/components/Cart.astro` (`?cart=open`),
+`tools/_gas2-scene/page-b.html` (the coupon ticket), `tools/_gas2-scene/drone/README.md`, this entry.
+- Gil: /gas2 had no way out but a download -> the site's real top bar on page-b and the postcards: taken at build (and per
+  dev request) from the built `/terms/` page with its stylesheets, inside a shadow root (no CSS either way); its cart
+  button goes to `/?cart=open`.
+- Gil: CATCH10 was one shared code -> everyone gets one, once. The ticket asks for an email; the worker's `/catch` mints
+  `CATCH10` + 6 (10%, site-wide, one use, 60 days), ONE per email ever, emailed only. Tests: `test/test_catch.mjs`.
+- Open: archive the shared `CATCH10` discount in Paddle (Gil).
+
 ## 2026-11-03 — Review form: text gate on every open box + role multi-select (Claude Code, laptop 2) — worker DEPLOYED 2026-11-03 (stamp ad6d9f5, live probe: weak caught, 2 roles OK); site PUSHED TO MAIN on Yoni's "push" 2026-11-03 = LIVE
 
 Claim: CLOSED 2026-11-03. Files: `src/data/review-survey.ts`, `src/pages/review.astro`, `tasks/handoff.md` (this entry).
@@ -73,7 +84,7 @@ Claim: CLOSED 2026-11-03 (`revaudio-63`). Files: `src/pages/review.astro` (new),
   - Checks: the page's real payload (captured in the browser, every question type incl. Other / follow-ups / N/A / news tick) through the worker's real handler locally: `{ok:true,sent:true}`, team mail with every answer, code mail, news relay, 3 KV keys. Page replies tested in the browser (already / incomplete -> q-os + q-vs_goto marked / rate sentence / busy -> generic / had_code end screen). `/beta?utm_source=invite` -> `/review/?utm_source=invite`. Build green.
   - GO-LIVE ORDER: (1) DONE 2026-11-03 (Yoni: "deploy"): worker `/review` LIVE, stamp `da4a8a0 @ 2026-11-03T09:11:56Z`, version `c88934c4`, live probes OK (RevLimiter handoff); (2) DONE 2026-11-03 (Yoni: "push"): `feat/review` fast-forwarded to main (Pages deploy); (3) DONE 2026-11-03: Yoni's real review from info@revaudio.net (Radio Roulette): code mail + team mail arrived ("it works"); the test code `REVIEWJ7B2UE` (`dsc_01m6gbx0nemcd0bdct3spmg6s6`) archived in Paddle by Yoni. KV `reviewcode:info@revaudio.net` stays (info@ used its one code: a re-test from info@ gets no code).
 - Next: Yoni's look/questions round on the preview -> worker `/review` route -> wire `workerUrl` -> `/beta` redirect -> push on the user's word.
-## 2026-11-02 — BF/CM 2026 skins (Claude Code, Gil's Mac) — ON BRANCH `feat/bfcm-skins`, not on main
+## 2026-11-02 — BF/CM 2026 skins (Claude Code, Gil's Mac) — PUSHED TO MAIN 2026-11-04 on Gil's word (squash of `feat/bfcm-skins`); dormant until Nov 20 00:00 PT
 
 - Home = Dan's TV-first page (`bcb00b0`), unchanged. The hero came back for a while on this branch and is out again
   (Gil: a new header is in the works; the skins don't depend on it). DESIGN.md §7 = TV-first.
