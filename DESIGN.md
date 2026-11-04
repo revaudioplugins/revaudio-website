@@ -463,6 +463,9 @@ reached by scrolling (page-b: under the scene once the drone has landed; the pho
 themselves never scroll). Where the cards are is told by six pilot lamps, the top card's lit, not by "n / 6" and arrows:
 the flick is the way through, the lamps only say where you are (a tap walks there). A stamp that sends is small enough to
 read as one thing to press and inked in full: across the whole card it read as decoration.
+A phone page that scrolls holds still while it scrolls (Dan 2026-11-04, the footer under the end page "shaking"):
+Safari folds its toolbar as you scroll, so the screen grows a few px a frame; anything sized by the screen must keep the
+size it had at the top until the page is back there, or the scene rescales and the content fights the finger.
 
 ## 9. Do's & don'ts
 

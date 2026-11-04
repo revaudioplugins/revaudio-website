@@ -1,3 +1,17 @@
+## 2026-11-04 — GAS 2 postcards: no shaking when the end page scrolls to the footer (Claude Code `danavivi-c2 [ca2821]`, Dan's Mac) — BRANCH `fix/gas2-end-scroll`, waiting for Dan's push word
+
+Claim: OPEN `danavivi-c2`. Files: `tools/_gas2-scene/postcards.html`, `DESIGN.md`, this entry.
+- Dan, on his iPhone after the round-16 push: scrolling the end page to the footer "shaking". Cause, reproduced in
+  WebKit by growing the viewport 714 -> 790 in steps (= Safari's toolbar folding as you scroll): the fixed end page
+  is sized by the screen, so every step re-placed the scene (the station 514 -> 569 px wide, GAS2 +30 px, the button
+  +54 px) and the footer's 100dvh spacer pushed it back down 76 px against the finger.
+- Fix: `keepEnd()` — once the end page scrolls, `.desk` keeps the px height it had at the top (a new width, i.e. a
+  turned phone, measures again; back at the top it follows the screen); the footer's spacer = that height (`--end-h`).
+- Checks: the stepped scroll with the toolbar folding: 0 moves of the scene, the footer moves exactly with the scroll
+  (live main before the fix: 9 jumps in the same test); back at the top, turned, The postcards again: as before;
+  `check.cjs` ALL PASS (47 steps, 40 layouts); `npm run build` green. Not checked: a real iPhone (the Simulator can't
+  be scrolled from here).
+
 ## 2026-11-04 — GAS 2 page, round 16 of the postcards review: dots, the stamp, no mailbox, the site footer (Claude Code `danavivi-c2 [ca2821]`, Dan's Mac) — PUSHED TO MAIN 2026-11-04 on Dan's word "push to main" (fast-forward from `feat/gas2-r16`)
 
 Claim: CLOSED 2026-11-04 `danavivi-c2`. Took the postcards over from `danavivi-83` (claim 2026-10-29 entry; that session is not running).
