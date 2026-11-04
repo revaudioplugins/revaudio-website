@@ -18,6 +18,9 @@ Dan's round-15 notes (review artifact `notes-r15`): the site's top bar hides the
   lines). `npm run build` green; built `/gas2/` (WebKit 402x714): the hop to the postcards, bar over nothing, the
   footer drawers open/close, The postcards again scrolls back up; page-b (Chrome 1440x900): no footer over the drone,
   one footer after landing. 0 page errors. Not checked: a real iPhone / Safari.
+- Round 16 (notes-r16): the hint -> "Swipe for the next card" in tracked Oswald caps, soft brass (Dan: shorter, clearer,
+  another font; his pick of three). The bench's card-6 question ("Drop me in the box" with no mailbox) got no answer:
+  kept. check.cjs ALL PASS (47 steps, 40 layouts); build green.
 
 ## 2026-11-04 — GAS 2 page: the site's top bar + the caught car emails a personal CATCH10 code (Claude Code, Gil's Mac) — PUSHED TO MAIN 2026-11-04 on Gil's word; worker `/catch` DEPLOYED first (RevLimiter `f33d350`, stamp commit `2f6cc5e`)
 
