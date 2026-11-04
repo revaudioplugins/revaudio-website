@@ -1,3 +1,17 @@
+## 2026-11-04 — GAS 2 postcards: the end page scrolls as one page, the footer under it (Claude Code `danavivi-c2 [ca2821]`, Dan's Mac) — BRANCH `fix/gas2-end-flow`, waiting for Dan's push word
+
+Claim: OPEN `danavivi-c2`. Files: `tools/_gas2-scene/postcards.html`, `DESIGN.md`, this entry.
+- Dan, on his iPhone after `f3735ae` (the held height) went live: still not smooth; "try a different attitude": scroll
+  down to the footer without it coming up over the page.
+- Built: at the end, `html.at-end .desk` = `position: absolute` at the px height it came up with (`--end-h`, measured
+  while still fixed; only a new width measures again), so the end page and the footer scroll together as one page under
+  the sticky bar; no scroll listener any more. Leaving (The postcards again / Download FREE) scrolls to the top, then
+  the desk is fixed again.
+- Checks: built `/gas2/`, WebKit 402x714, 12 px steps down with the viewport growing 714 -> 790 and back up: 0 moves in
+  page coordinates (scene, GAS2, button, footer), the footer starts at the end page's bottom; turned phone re-measures;
+  `check.cjs` ALL PASS (47 steps, 40 layouts); build green. Not checked: a real iPhone. Known: a `?card=7` deep link on
+  an iPhone that first lays out at the full screen keeps that height (review links only; visitors arrive by flicking).
+
 ## 2026-11-04 — Home TV ("the LCD") polish: two benches, keys + pictures (Claude Code, Dan's Mac) — branch `feat/lcd-polish`, PUSHED TO MAIN 2026-11-04 on Dan's word "push to main" (merge onto main)
 
 Claim: OPEN, Claude Code (Dan's Mac), worktree `.claude/worktrees/lcd-polish`. Files: `tools/wwbench/wwkeys.html` (new),
