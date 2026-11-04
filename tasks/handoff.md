@@ -8,6 +8,12 @@ Files: `src/components/WordWall.astro`, `src/components/TrialGateModal.astro` (+
   ("The user's go and picks (2026-11-04)") and the claude.ai page "The TV Sells".
 - Picks: free downloads keep both boxes required (as live); the second key stays "Product page ->"; no "glitches off"
   switch (glitches stay off under reduced motion, high contrast and forced colours).
+- Test-visitor walk FIRST (Dan 2026-11-04: "his work should be first" -> the RevTasks walkthrough process): 4 agents
+  (Noa iPhone + Priya Android on Sonnet, Marcus Mac Safari 1141 + Walter keyboard / 150 % / High Contrast on Opus) walked
+  today's TV on a local copy (dev :4480, every off-localhost request blocked, sign-ups faked). 55 findings, headline
+  claims checked (code, logs, screenshots; demo loudness re-measured: RevLimiter "after" peaks +0.8 dBFS) -> 20
+  proposals on the claude.ai page "TV Walk Review" (`https://claude.ai/artifact/4ki5viNoSkZtvtrTnkfhVJ`, picks in its
+  db `review/picks`). Waiting for Dan's picks; approved ones fold into § Phase 5 before the build.
 - Next: step 00 (the baseline, emails per 1,000 home-page visitors) needs live numbers (the worker's leads + the
   Cloudflare visit counts); then steps 1-10 in the plan's order. Nothing pushed to main; main = live on Dan's word.
 
