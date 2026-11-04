@@ -650,6 +650,19 @@ The user's decisions after the round (2026-11-01):
   and step 11 (HEAR IT on the TV) are OUT.
 - Still open: D7 (the second key's words), D9 (`.rv-btn`).
 
+The user's go and picks (2026-11-04, Claude Code on Dan's Mac, branch `feat/tv-sells` off main `8e3e567`). The plan,
+re-checked against main, with its pros / cons / risks and these picks, is the claude.ai page "The TV Sells"
+(`https://claude.ai/artifact/JoGaRHmU16xQGq14UiBKPc`; picks in its db, `bench/picks`).
+- Done on main since 11-01, so out of this build: step 1 (the reading = Inter tinted, glow on the glass), D9 (the
+  keys in `.rv-btn`), the "Product page ->" key (part of step 5), the GAS notice; step 0 (the merge) is moot, the TV
+  is on main.
+- D-new (Gil, 11-03, live: GAS + GAS 2 downloads need the marketing box ticked): MATCH WHAT IS LIVE. Free plugins:
+  terms box AND marketing box required; trials: terms required, marketing optional.
+- D7: keep "Product page ->" (today's words). Step 5 still makes the picture, the name and the lit row lead there.
+- New step 00 (from the research): record the baseline, emails per 1,000 home-page visitors, before the push.
+- New D-C, a "glitches off" switch for WCAG 2.2.2: NO SWITCH. The user: "when user use the contrast accessibility
+  then the glitches are off" = the gate stays reduced motion + high contrast, plus forced colours (step 2).
+
 #### The menu line and the reading (done 2026-11-01, `revaudio-b5`)
 
 The user, on the category line: "more visible, different fonts ... understand exactly what he needs to do", the
