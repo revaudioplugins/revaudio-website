@@ -89,7 +89,12 @@ Steps:
             like we making plugins". The look spec (the critics' rulebook): `tools/_home-opening/look-spec.md`; the
             board's sources: `look-board.json`. R1 is finding more references like 01 + "we make plugins here"
             references and props (W01...), to add to round 4 and to a look-lock round 2.
-      - [ ] Round 4 (the props) answered.
+      - [x] R1 round 2 (2026-11-04): board 33-52 (33-42 more like 01; 43-52 where gear gets made), workshop props
+            W01-W11 (`tools/_home-opening/props-workshop.md`; the first list is `props-candidates.md`). R1 flagged the
+            gold record R19 as a possible fake award (honesty rule): a question in round 4. Look-lock round 2 (db
+            `notes-r2`) carries the 20 new references.
+      - [ ] Round 4 (the props, now with group 8 "We make plugins here" + the R19 question) answered.
+      - [ ] Look-lock round 2 answered.
 - [x] Foundation 1 (2026-11-04): the room has ONE size in metres (`roomL` 19.9 m, `tvH` 0.73 m, both on the bench);
       only the camera adapts per screen: it starts 1.5 m in front of the near wall and ends where the TV face covers
       the screen below the nav (width or height, whichever fits first). The live page sits on the part of the TV face
