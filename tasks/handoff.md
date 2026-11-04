@@ -9,9 +9,9 @@ Claim: CLOSED 2026-11-04. Files: `tools/gas2page/integration.mjs` (siteBar), `sr
   `CATCH10` + 6 (10%, site-wide, one use, 60 days), ONE per email ever, emailed only. Tests: `test/test_catch.mjs`.
 - Open: archive the shared `CATCH10` discount in Paddle (Gil).
 
-## 2026-11-03 — Home TV polish: thumbnails whole, a real hover, edges, the phone's top, the blurb's glow (Claude Code `danavivi-a4 [76d06a]`, Dan's Mac) — BRANCH `feat/tv-polish`, not on main
+## 2026-11-03 — Home TV polish: thumbnails whole, a real hover, edges, the phone's top, the blurb's glow (Claude Code `danavivi-a4 [76d06a]`, Dan's Mac) — PUSHED TO MAIN 2026-11-04 on Dan's word "push to main" (fast-forward from `feat/tv-polish`)
 
-Claim: OPEN `danavivi-a4`. Files: `src/components/WordWall.astro` (CSS + the thumbnail markup), `tasks/handoff.md` (this entry).
+Claim: CLOSED 2026-11-04 `danavivi-a4`. Files: `src/components/WordWall.astro` (CSS + the thumbnail markup), `tasks/handoff.md` (this entry).
 Dan, 2026-11-03 ("polish the LCD" = the home TV): the phone's empty top, the description glowing on the glass, the tight
 laptop edges, every plugin shown whole in the list (Radio Roulette was cropped, GAS had black bars left and right) and
 a hover that shows (GAS 2 "is not hovering": measured, every row's hover only brightened the outline).
@@ -36,7 +36,7 @@ a hover that shows (GAS 2 "is not hovering": measured, every row's hover only br
   cropped at alpha > 3. `WINDOWS.gas2.float` -> `.is-float` on the thumb and the panel: no edge ring, no corner
   clip, no box shadow. Checks: 1141x636, 1440x900, 390x844 (list + panel) fit one screen, no page errors; the
   built webp cuts keep alpha; `npm run build` green.
-- Next: Dan looks at it locally; main only on his push word.
+- Next: nothing owed. Not checked: a real iPhone / Safari window, high-contrast mode.
 
 ## 2026-11-03 — Review form: text gate on every open box + role multi-select (Claude Code, laptop 2) — worker DEPLOYED 2026-11-03 (stamp ad6d9f5, live probe: weak caught, 2 roles OK); site PUSHED TO MAIN on Yoni's "push" 2026-11-03 = LIVE
 
