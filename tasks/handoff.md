@@ -58,7 +58,16 @@ Claim: OPEN `revaudio-0d`. Files: `src/components/revfx/RfxHear.astro` (new), `s
 - Round 8 (Yoni: "make the engage / bypass button not a stomp switch ... like for drift bypass button"): /drift's push-to-start (drift.css .d-start + #hear's raised cap) in RevFX purple, REVFX / ENGAGE, at the head of the STOMP plate beside the board; step 3 = PUSH REVFX, coach PUSH REVFX / PUSH AGAIN: BYPASS, headline "Plug in. Push it." (was Stomp it). Switch + LED photos retired. Screw test PASS, fit + names clear at 11 widths, click-through clean, build green.
 - Round 9 (Yoni: "make the shades of the colors of the titanium panels like the shades of color of the pedals"): OpenAI credits ran OUT (credit_balance_exhausted), so the plates were retinted locally (`tools/revfx-player/retint.py`): the heat tint now runs HALO green -> GLUE cyan -> PITCH ice -> REVERB violet -> ECHO pink; metal, edges and screws untouched. Screw test PASS, build green.
 - Round 10 (Yoni: "i dont see the colors it looks the same" = a stale dev image: same file name, no content hash; then "30% less in your face"): the retint fixed (a clipped block of blues had all gone violet, pink was 0 %; now the five ~12-25 % each), INTENSITY .7, output named plate-pedal-<LOOK>-*.jpg (LOOK v2) so a browser can't keep an old plate. Screw test PASS, build green.
-- Next: Yoni's look + his sounds. Branch only; main (= live deploy) waits for his "push".
+- Round 11, "last run" (Yoni: "glue everything nicely to a real life look, buttons, cables, connectors ... not just
+  floating"): ONE top-left light (every shadow down-right; a soft-light falloff over the case), the caps in chrome
+  bezels in bored holes, the REVFX button in a machined seat ring, the jack nuts on seat rings, the LCD in a machined
+  cutout, the cable runs off the patchbay and UNDER the next plate (no mid-air fade), contact shadows under the pedals
+  and the board, the picked input shown physically (no highlight box). STOP kept desaturated (the CTA red rule).
+  Screw / fit / names checks PASS, click-through clean, build green. Panel 473 laptop, 530 phone.
+- STATE for whoever picks this up: everything is on `feat/revfx-hear` (worktree ../revaudio-website-rfxhear); the
+  sounds are still PLACEHOLDERS (/drift's bounces, peaks.json placeholder: true); the OpenAI credits ran out
+  2026-11-05 (top up before more generated assets).
+- Next: Yoni's sounds (tools/revfx-player/prep_audio.py) + his "push" for main (= live deploy).
 
 ## 2026-11-04 — GAS 2 postcards: the end page scrolls as one page, the footer under it (Claude Code `danavivi-c2 [ca2821]`, Dan's Mac) — PUSHED TO MAIN 2026-11-04 on Dan's word "perfect push to main" (from `fix/gas2-end-flow`)
 

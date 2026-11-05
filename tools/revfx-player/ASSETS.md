@@ -52,4 +52,7 @@ Rules learned:
 - Plates that must fit any box: a PHOTO plate (wear + screws baked in) 9-sliced with `stretch` (not `round`), the slice
   just past the screws, the border width = the screw zone, so content can never reach a screw. A texture + CSS bevels
   + screw layers read flat ("dull"); the wear has to be in the photo.
+- "Floating" = shadows that disagree. One key light for the whole rig (shadows all down-right), and every part
+  sitting IN something (a bore, a seat ring, a machined cutout; a cable that goes under the next plate instead of
+  fading out) glue CSS-placed photos into one object.
 - The fader is /drift's (`src/assets/seasons/drift/hear/fader-*.webp`), so the site keeps one fader.
