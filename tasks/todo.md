@@ -99,6 +99,14 @@ Steps:
             and the mic stands come in pairs), placed where R1 suggested, then de-overlapped by a script with wall
             pieces kept on the wall and bench pieces on their bench: 0 overlaps with any other slot (Playwright,
             2026-11-05). Dan arranges them on the bench (Move things) and pastes back his settings.
+- [x] Three room designers (Dan 2026-11-05: "summon 3 agents that specialize in 3D room design ... the user should have
+      a wow effect ... a plugin company that references cars"; Opus, each alone): A film production designer, B real
+      garage-studio builder, C brand-experience designer. Kit: `tools/_home-opening/layout-kit/` (brief, catalogue,
+      start layout, render.mjs, check.mjs). Their layouts: `tools/_home-opening/layouts/{a,b,c}.json` + rationales;
+      walk any one live with `room.html?layout=a` (view only, nothing saved). Re-checked by hand: each 0 collisions
+      (today's room had 10), every must-stay in frame at the first screen, no page errors. The bench:
+      https://claude.ai/artifact/YTT5fJ86prxUDucxfMCSSc (db `notes`).
+- [ ] Dan picks (one layout, or parts of each); bake it into DEF.
       - [x] Look-lock round 2 answered (2026-11-04): Love it on 16 of 20, Some of it on 38 / 43 / 44, Not this on 40
             (inside a car looking out). Folded into `look-spec.md`.
 - [x] Foundation 1 (2026-11-04): the room has ONE size in metres (`roomL` 19.9 m, `tvH` 0.73 m, both on the bench);
