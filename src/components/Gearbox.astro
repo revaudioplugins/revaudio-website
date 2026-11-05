@@ -130,11 +130,13 @@ const geo = JSON.stringify({ gates: GEO.gates.map(([x, y]) => [x / GEO.w, y / GE
   /* the TV gives the gearbox's top strip room in the first screen (laptops; WordWall's --ww-nav reads it):
      the console is min(100vw - 2rem, 1300px) wide, its strip ends at 150 / 3072 of that, + the section's top pad */
   @media (min-width: 861px) {
-    :root {
-      --gb-peek: calc(min(100vw - 2rem, 1300px) * 0.0488 + 10px);
-      /* the TV's list counts its gaps too: with 7 channels (the mock catalog) the rows ran ~110 px past the room */
-      --ww-fit-extra: calc(clamp(0.35rem, 1.4vh, 0.9rem) + 0.25rem);
-    }
+    /* the TV's list counts its gaps too: with 7 channels (the mock catalog) the rows ran ~110 px past the room */
+    :root { --ww-fit-extra: calc(clamp(0.35rem, 1.4vh, 0.9rem) + 0.25rem); }
+  }
+  /* the peek needs a tall enough screen: at 1141 x 636 it left the TV's pictures a few px tall, so a short laptop keeps
+     the whole first screen for the TV and the gearbox starts right under it */
+  @media (min-width: 861px) and (min-height: 760px) {
+    :root { --gb-peek: calc(min(100vw - 2rem, 1300px) * 0.0488 + 10px); }
   }
 </style>
 

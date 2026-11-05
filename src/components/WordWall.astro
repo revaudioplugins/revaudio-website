@@ -1839,6 +1839,23 @@ const first = items[0]?.slug ?? '';
     box-shadow: 0 0 0 1px var(--ww-ink-hot), 0 0 22px var(--ww-glow-hot), 0 0 52px var(--ww-glow-soft);
   }
   :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-add:is(:active, .is-pressed) { filter: brightness(0.78); transition-duration: 60ms; }
+  /* with the bundle key the four keys stay on one line (Yoni 2026-11-05: "keep those buttons in one line"): on a
+     laptop the row tightens a step instead of wrapping Product page under it; phones keep wrapping */
+  @media (min-width: 861px) {
+    :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy:has(.ww-add) { flex-wrap: nowrap; gap: 0.7rem; }
+    :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy:has(.ww-add) .ww-price { font-size: 1.9rem; }
+    :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy:has(.ww-add) .ww-try { font-size: 1.36rem; padding: 0.46rem 0.8rem 0.4rem; white-space: nowrap; }
+    :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy:has(.ww-add) :is(.ww-add, .ww-more) { font-size: 1.12rem; padding: 0.55rem 0.72rem 0.45rem; white-space: nowrap; flex: none; }
+  }
+  /* a small laptop's panel (~475 px at 1141, ~560 at 1280) can't hold the price and three keys: the price goes over
+     them, the keys tighten one more step and still share one line */
+  @media (min-width: 861px) and (max-width: 1366px) {
+    :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy:has(.ww-add) { flex-wrap: wrap; gap: 0.35rem 0.5rem; }
+    :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy:has(.ww-add) .ww-price { flex-basis: 100%; font-size: 1.7rem; }
+    :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy:has(.ww-add) .ww-try { font-size: 1.18rem; padding: 0.42rem 0.7rem 0.36rem; }
+    :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy:has(.ww-add) .ww-try .rv-btn__sub { font-size: 0.56rem; letter-spacing: 0.12em; }
+    :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy:has(.ww-add) :is(.ww-add, .ww-more) { font-size: 0.98rem; padding: 0.5rem 0.6rem 0.4rem; }
+  }
   .ww-mock {
     margin-left: 0.4rem;
     font-family: var(--font-mono);

@@ -14,6 +14,9 @@ Claim: OPEN `revaudio-98`. Files: `src/components/Gearbox.astro` (new), `src/dat
   stamps, dial numbers, work order and price on it (DESIGN.md §4 "The gearbox"). Laptop: the console's top strip peeks
   into the first screen (`--gb-peek`; `--ww-fit-extra` lets the TV's 7 rows fit). Phone: photo + paper work order + a
   bottom bar. State in localStorage `ra-gearbox`. Gears (draft): 2 = -20 %, 3 = -30 %, 4+ = -40 %.
+- Yoni (round 2): "keep those buttons in one line": with the bundle key the TV's keys share one line on every laptop
+  (checked 1141-1920: one line, inside the glass); up to 1366 px wide the price sits over them and the keys tighten a
+  step. The peek is on only for screens >= 760 px tall (1141 x 636 squeezed the TV's pictures to a few px).
 - MOCKS: `bundle.ts BUNDLE_MOCK` = dev server (or PUBLIC_BUNDLE_MOCK=1) only: DRIFT $69, RevFX $19, OBDTune $15 (RevFX +
   OBDTune also appear as TV channels there). Production build checked: /plugins carries keys for RevLimiter + Radio
   Roulette only, home none, no mock channel.
