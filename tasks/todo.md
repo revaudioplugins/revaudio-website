@@ -93,7 +93,12 @@ Steps:
             W01-W11 (`tools/_home-opening/props-workshop.md`; the first list is `props-candidates.md`). R1 flagged the
             gold record R19 as a possible fake award (honesty rule): a question in round 4. Look-lock round 2 (db
             `notes-r2`) carries the 20 new references.
-      - [ ] Round 4 (the props, now with group 8 "We make plugins here" + the R19 question) answered.
+      - [x] Round 4 answered (2026-11-05): 47 props ticked (N01-N13, N15-N18, N20, N22-N26, N28-N36, N39-N43, N45,
+            W01-W07, W09, W10; left out N14, N19, N21, N27, N37, N38, N44, W08, W11); the gold record R19 becomes a framed
+            print of our first faceplate. All 47 are slots in the skeleton (`room.html` SIDE + END, 49 rows: the rugs
+            and the mic stands come in pairs), placed where R1 suggested, then de-overlapped by a script with wall
+            pieces kept on the wall and bench pieces on their bench: 0 overlaps with any other slot (Playwright,
+            2026-11-05). Dan arranges them on the bench (Move things) and pastes back his settings.
       - [x] Look-lock round 2 answered (2026-11-04): Love it on 16 of 20, Some of it on 38 / 43 / 44, Not this on 40
             (inside a car looking out). Folded into `look-spec.md`.
 - [x] Foundation 1 (2026-11-04): the room has ONE size in metres (`roomL` 19.9 m, `tvH` 0.73 m, both on the bench);
