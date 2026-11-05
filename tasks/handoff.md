@@ -142,8 +142,13 @@ only after Dan picks: `src/pages/index.astro`, a new `src/components/HomeOpening
   default (`7cff959`); R2's recipe (`tools/_home-opening/tech-recipe.md`); R1's references, props, models and licences
   (`tools/_home-opening/refs/`, git-ignored). Look lock page: https://claude.ai/artifact/Bh4iT4GHQox8ZD97nie5UU; props
   pick = Round 4 on the plan page.
-- Next: read Dan's look lock (db `notes`) + round 4 (`answers/round-4`); write the look spec and the visibility table;
-  then the slot file + the Blender export. Owed: tell Gil (his countdown + TV intro vs the room on Nov 19); Dan's OK for
+- 2026-11-05 (`danavivi-09`): look lock + props answered (`look-spec.md`; 47 props as slots); three room designers
+  (A film, B garage-studio, C brand experience; `layouts/`, kit `layout-kit/`); Dan picked "B + A's moves", baked in as
+  the room (settings ver 9). Benches: look lock https://claude.ai/artifact/Bh4iT4GHQox8ZD97nie5UU, layouts
+  https://claude.ai/artifact/YTT5fJ86prxUDucxfMCSSc.
+- Next: the foundations left: one slot file (base rows + the layout's moves) that the bench and Blender both read, the
+  light-layer design, the Blender export + parity check; then the whole-room look pass. Owed: tell Gil; Dan's OK for
+  R2 / `assets.revaudio.net` / the CSP additions. Owed: tell Gil (his countdown + TV intro vs the room on Nov 19); Dan's OK for
   the R2 bucket / `assets.revaudio.net` / the three CSP additions (test locally first).
 
 ## 2026-11-02 — Footer: categories fold into drawers (Claude Code `revaudio-3b [a4cb6d]`, laptop 2) — ON MAIN + LIVE: merged `--no-ff` 2026-11-02 by Claude Code `revaudio-0c [571e5c]` (laptop 1) on Dan's word "push it to main and merge" (Yoni had approved by pushing the branch)

@@ -21,7 +21,7 @@ onto it.
 
 ## What you can change (exactly what the bench changes)
 
-A layout is one JSON object, the bench's "Copy settings" format. Start from `start-layout.json` (Dan's room today).
+A layout is one JSON object, the bench's "Copy settings" format. Start from `start-layout.json` (the room today: since 2026-11-05 designer B + A’s moves).
 
 1. **Settings** (`catalog.json` → `settings`, each with its range): the room's width / height / length, floor,
    mess, acoustics, wood tone, lens, walk length / ease / feel, sway, the TV's size and height, the REVAUDIO neon's

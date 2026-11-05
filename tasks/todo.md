@@ -109,7 +109,10 @@ Steps:
 - [x] Dan's pick (2026-11-05): "B + A's moves" = B's zoned garage + A's 4.6 m ceiling, A's brighter street (outside 3.0)
       and 3.5 m door, the lens at 43; the five ceiling-hung props raised 0.6 m with the ceiling. `layouts/b-plus-a.json`:
       0 collisions, every must-stay in frame, no errors. Bench round 2 (same URL, db `notes-r2`).
-- [ ] Dan's yes on round 2, then bake `b-plus-a` into DEF (and the slot rows) as the room's defaults.
+- [x] Baked (Dan 2026-11-05: "nice next step commit"): `b-plus-a` is the room's DEF (24 settings + 101 per-object moves
+      in `DEF.moves`; settings ver 9 opens the new room on every saved bench once). Checks (Playwright Chrome 1141x636):
+      a fresh visit vs `?layout=b-plus-a`: 0.00 % / 0.01 % of pixels at walk 0 / 50 %; an old ver-7 bench migrates;
+      0 collisions; no page errors. The layout kit's start layout + catalogue regenerated from it.
       - [x] Look-lock round 2 answered (2026-11-04): Love it on 16 of 20, Some of it on 38 / 43 / 44, Not this on 40
             (inside a car looking out). Folded into `look-spec.md`.
 - [x] Foundation 1 (2026-11-04): the room has ONE size in metres (`roomL` 19.9 m, `tvH` 0.73 m, both on the bench);
