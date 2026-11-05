@@ -33,6 +33,11 @@ Claim: OPEN `revaudio-0d`. Files: `src/components/revfx/RfxHear.astro` (new), `s
   this round (~$4). Not checked: real iPhone / Safari (Windows WebKit has no AudioContext headless).
 - Shared side fix: `shared/tools/openai/image.ps1` + `edit.ps1` defaulted to the retired gpt-image-1 (broken for
   everyone); now gpt-image-1.5 + `-Model`, pushed to revaudio-shared main `fb386f3`.
+- Round 3 (Yoni: remove "the line out and the out connector, no need"; "make the bypass stomp more realistic it looks
+  toyish"): OUT jack + the TRUE BYPASS loop removed; the loose chrome switch is now a worn 1590B A/B looper pedal
+  (`looper.png`, gpt-image-1.5, 2 rolls, roll 1 picked), as tall as the five, the whole pedal = the button, its LED lit
+  in its own bezel, a patch cable into PITCH. Fit at 10 widths (no overlap, no sideways scroll), click-through
+  1440/1141/390/360 clean, build green. stomp.png + led.png deleted.
 - Next: Yoni's look + his sounds. Branch only; main (= live deploy) waits for his "push".
 
 ## 2026-11-04 — GAS 2 postcards: the end page scrolls as one page, the footer under it (Claude Code `danavivi-c2 [ca2821]`, Dan's Mac) — PUSHED TO MAIN 2026-11-04 on Dan's word "perfect push to main" (from `fix/gas2-end-flow`)
