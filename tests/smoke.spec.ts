@@ -73,11 +73,12 @@ test('the home TV lists the plugins, each row a live product page', async ({ pag
   }
 });
 
-test('/store sends visitors to the home TV and keeps the query string', async ({ page }) => {
-  // GitHub Pages has no 301: /store is a redirect page. The query string
-  // (utm / gclid) must survive, the cart reads it on the home page.
+test('/store sends visitors to the plugins page and keeps the query string', async ({ page }) => {
+  // GitHub Pages has no 301: /store is a redirect page, to the TV on /plugins
+  // since 2026-11-02. The query string (utm / gclid) must survive, the cart
+  // reads it there.
   await page.goto('/store?utm_source=smoke', { waitUntil: 'commit' });
-  await page.waitForURL(/\/\?utm_source=smoke#plugins$/, { waitUntil: 'domcontentloaded' });
+  await page.waitForURL(/\/plugins\/?\?utm_source=smoke$/, { waitUntil: 'domcontentloaded' });
   await expect(page.locator('#plugins')).toBeAttached();
 });
 
