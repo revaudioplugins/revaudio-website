@@ -230,11 +230,13 @@
 [data-rfx-hear]:is([data-next='stomp'], [data-next='back']) [data-step='3'] .rfx-hear-n { background: var(--d-neon); animation: rfx-hear-next 1.2s ease-in-out infinite; }
 [data-rfx-hear][data-next='play'] .rfx-hear-play { animation: rfx-hear-next 1.2s ease-in-out infinite; border-radius: 50%; }
 
-/* ---- 1 · PLUG IN: the patchbay plate (bay.jpg 9-sliced: the corner screws keep their size), four printed rows */
+/* ---- 1 · PLUG IN: the patchbay plate (bay.jpg 9-sliced with STRETCH: the corner screws keep their size and place, the
+   worn edges stretch along their length, the middle fills; the 2026-11-05 seams came from `round`). Its border is the
+   screw zone (--rail = --sc-box, tested by tools: nothing may enter it). Four printed rows. */
 .rfx-hear-bay {
-  display: flex; flex-direction: column; gap: 8px; padding: 22px 22px 18px 24px;
-  background: var(--rfx-bay) center / 100% 100% no-repeat;   /* bay.jpg 0.67:1 = the laptop strip; tablets + phones: bay-wide */
-  border-radius: 4px;
+  --rail: 24px; --sc-box: var(--rail);
+  display: flex; flex-direction: column; gap: 8px; padding: 0 2px 0 4px;
+  border: var(--rail) solid transparent; border-image: var(--rfx-bay) 110 fill / var(--rail) stretch;
   box-shadow: 0 6px 10px rgba(0, 0, 0, .65), 0 1px 2px rgba(0, 0, 0, .8);
 }
 .rfx-jacks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; flex: 1; }
@@ -268,32 +270,22 @@
 .rfx-jack-plug img { display: block; height: 100%; width: auto; max-width: none; }
 .rfx-jack[aria-pressed='true'] .rfx-jack-plug { opacity: 1; translate: 0 0; }
 
-/* THE PLATES: every section sits on a titanium plate (titanium.jpg, its violet-blue heat tint; each plate shows its own
-   patch of the sheet, --tx / --ty, so the tint wanders), darkened a touch, machined edges (a light top bevel, a dark
-   seam, a lift shadow onto the tolex) and four real screws (screw.png) in its corners. */
+/* THE PLATES: every section sits on its own photo plate: burnt titanium (gold / bronze / magenta / cobalt heat tint)
+   with the patchbay plate's wear (edges worn to bare metal, chips, scratches) and a screw in each corner. plate-w.jpg
+   2:1, plate-s 1:1, plate-t 1:2 (the nearest shape per box keeps the stretch small), 9-sliced like the patchbay. The
+   border (--rail) IS the screw zone (--sc-box for the overlap test); content lives inside it. A soft inner shade keeps
+   the lettering readable on the brightest tint. */
 .rfx-plate {
-  --tx: 30%; --ty: 50%; --sc: 10px; --sc-in: 6px;
-  position: relative; isolation: isolate; border-radius: 4px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(0, 0, 0, .22)),
-    linear-gradient(rgba(12, 10, 16, .4), rgba(12, 10, 16, .4)),
-    var(--rfx-ti) var(--tx) var(--ty) / 1100px auto, #3b3a41;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, .85), inset 0 1px 0 rgba(255, 255, 255, .3), inset 0 -1px 0 rgba(0, 0, 0, .6),
-    inset 1px 0 0 rgba(255, 255, 255, .1), inset -1px 0 0 rgba(0, 0, 0, .35), 0 5px 9px rgba(0, 0, 0, .6);
+  --rail: 18px; --sc-box: var(--rail); --plate: var(--rfx-plate-w); --slice: 94;
+  position: relative; isolation: isolate;
+  border: var(--rail) solid transparent; border-image: var(--plate) var(--slice) fill / var(--rail) stretch;
+  box-shadow: 0 6px 10px rgba(0, 0, 0, .6), 0 1px 2px rgba(0, 0, 0, .85);
 }
-.rfx-plate::after {
-  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: inherit;
-  background:
-    var(--rfx-screw) left var(--sc-in) top var(--sc-in) / var(--sc) no-repeat,
-    var(--rfx-screw) right var(--sc-in) top var(--sc-in) / var(--sc) no-repeat,
-    var(--rfx-screw) left var(--sc-in) bottom var(--sc-in) / var(--sc) no-repeat,
-    var(--rfx-screw) right var(--sc-in) bottom var(--sc-in) / var(--sc) no-repeat;
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .85));
-}
-.rfx-plate--scr { --tx: 8%; --ty: 30%; padding: 12px 24px; }
-.rfx-hear-step--play { --tx: 72%; --ty: 70%; }
-.rfx-hear-step--stomp { --tx: 50%; --ty: 45%; }
-.rfx-hear-vol { --tx: 95%; --ty: 20%; }
+.rfx-plate::before { content: ''; position: absolute; inset: calc(var(--rail) * -1); z-index: -1; pointer-events: none;
+  background: radial-gradient(closest-side, rgba(8, 6, 12, .34) 55%, rgba(8, 6, 12, 0) 100%); }
+.rfx-plate--sq { --plate: var(--rfx-plate-s); --slice: 78; }
+.rfx-plate--tall { --plate: var(--rfx-plate-t); --slice: 94; }
+.rfx-plate--scr { padding: 0; }
 
 /* ---- the deck */
 .rfx-hear-deck { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
@@ -334,7 +326,7 @@
 
 /* ---- the rig: 2 PLAY · 3 STOMP (the board) · VOLUME, each in a shallow well cut into the tolex */
 .rfx-hear-rig { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; flex: 1; }
-.rfx-hear-step, .rfx-hear-vol { display: flex; flex-direction: column; gap: 9px; padding: 11px 22px 12px; }
+.rfx-hear-step, .rfx-hear-vol { display: flex; flex-direction: column; gap: 9px; padding: 0 4px 2px; }
 .rfx-hear-step--stomp { container-type: inline-size; min-width: 0; }
 .rfx-hear-caps { display: flex; align-items: center; justify-content: center; gap: 12px; flex: 1; }
 .rfx-hear-caps .d-cap { width: 54px; height: 54px; }
@@ -360,8 +352,8 @@
 /* the footswitch (fsw-up / fsw-down.png share one frame: the washer + nut stay, only the cap moves) under its LED. It
    latches: popped up on BYPASS, held down on REVFX; while the foot is on it (.is-down) it shows down whatever the state,
    so a stomp off goes down and then pops up on release. The guide breathes as a soft purple light round the switch. */
-.rfx-stomp { --tx: 62%; --ty: 35%; --sc: 7px; --sc-in: 4px; z-index: 3; flex: none; width: calc(var(--pm) * 1.34); display: flex; flex-direction: column;
-  align-items: center; gap: calc(var(--pm) * .08); padding: calc(var(--pm) * .14) calc(var(--pm) * .12) calc(var(--pm) * .1); }
+.rfx-stomp { --rail: calc(var(--pm) * .17); z-index: 3; flex: none; width: calc(var(--pm) * 1.34); display: flex; flex-direction: column;
+  align-items: center; gap: calc(var(--pm) * .06); padding: 0; }
 .rfx-stomp-led { position: relative; width: calc(var(--pm) * .3); aspect-ratio: 1; }
 .rfx-stomp-led img { position: absolute; inset: 0; width: 100%; height: 100%; -webkit-user-drag: none; }
 .rfx-stomp-led .lit { opacity: 0; transition: opacity .06s ease; }
@@ -398,7 +390,7 @@
 [data-ab='after'] .rfx-peds-mini > li:not(.is-out) { animation: rfx-pp-stomp .34s cubic-bezier(.3, 1.5, .5, 1) both; animation-delay: calc(var(--i) * 90ms); }
 @keyframes rfx-pp-stomp { 0% { transform: none; } 35% { transform: translateY(2px) scale(1.03, .96); } 100% { transform: none; } }
 /* VOLUME: /drift's fader photos (its plate + cap), the fill in RevFX purple in the plate's slot */
-.rfx-hear-vol { --sc: 7px; --sc-in: 4px; align-items: center; gap: 6px; padding: 18px 14px 18px; }   /* the narrow plate: small screws, the readout clear of them */
+.rfx-hear-vol { --rail: 14px; align-items: center; gap: 6px; padding: 4px 2px 0; }   /* the narrow plate: a thinner rail */
 .rfx-hear-vol .rfx-vol-slot { --fad: var(--d-neon); --fad-rgb: var(--d-neon-rgb); width: 40px; flex: 1; min-height: 70px; margin: 4px 0 8px; }
 .rfx-hear-vol .rfx-vol-slot::before { display: none; }
 .rfx-vol-plate { position: absolute; left: 50%; top: -8px; bottom: -8px; width: 22px; translate: -50% 0; pointer-events: none;
@@ -413,16 +405,16 @@
 @media (min-width: 1024px) and (max-width: 1240px) {
   .rfx-hear-board { --fix: 62px; --pgk: .4; }
   .rfx-hear-caps .d-cap { width: 46px; height: 46px; }
-  .rfx-hear-step--play { padding-inline: 12px; }
 }
 /* ---- tablets + phones: one column, the jacks in a row of four, the board on its own row, PLAY + VOLUME under it */
 @media (max-width: 1023px) {
   .rfx-hear-panel { background-image: var(--rfx-panel-t); }
   .rfx-hear-rig { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'stomp stomp' 'play vol'; }
   .rfx-hear-step--stomp { grid-area: stomp; }
-  .rfx-hear-step--play { grid-area: play; flex-direction: row; align-items: center; justify-content: space-between; padding: 10px 22px; }
+  .rfx-hear-step--play { grid-area: play; flex-direction: row; align-items: center; justify-content: space-between; padding: 0 6px; }
+  .rfx-plate--sq.rfx-hear-step--play, .rfx-plate--tall.rfx-hear-vol { --plate: var(--rfx-plate-w); --slice: 94; }   /* wide here */
   .rfx-hear-step--play .rfx-hear-caps { flex: none; }
-  .rfx-hear-vol { grid-area: vol; flex-direction: row; padding: 6px 20px; }
+  .rfx-hear-vol { grid-area: vol; flex-direction: row; padding: 0 6px; }
   .rfx-hear-vol .rfx-vol-slot { width: 34px; min-height: 0; height: 56px; flex: none; margin: 6px 0; }
   .rfx-jacks { flex-direction: row; }
   .rfx-jacks li { border-top: 0; box-shadow: none; border-left: 1px solid rgba(0, 0, 0, .55); }
@@ -432,35 +424,33 @@
   .rfx-jack-no { display: none; }
   .rfx-jack-nm { font-size: 13px; letter-spacing: .04em; }
   .rfx-jack-plug { width: var(--ph); -webkit-mask: none; mask: none; overflow: hidden; }   /* the head only: no room for the cable */
-  .rfx-hear-bay { background-image: var(--rfx-bay-w); padding: 12px 16px 10px; }
   .rfx-jack[aria-pressed='true'] { background: radial-gradient(70% 90% at 50% 40%, rgba(var(--d-neon-rgb), .2), transparent); }
 }
 /* ---- phones */
 @media (max-width: 600px) {
-  .rfx-hear-panel { padding: 24px 22px; }
-  .rfx-hear { gap: 10px; }
-  .rfx-hear-bay { gap: 6px; padding: 10px 12px 8px; }
+  .rfx-hear-panel { padding: 20px 18px; }
+  .rfx-hear { gap: 8px; }
+  .rfx-hear-bay { --rail: 14px; gap: 4px; padding: 0; }
   .rfx-hear-cap { font-size: 9px; letter-spacing: .08em; }
   .rfx-jack { --sock: 30px; }
   .rfx-jack-nm { font-size: 10.5px; letter-spacing: .02em; }
-  .rfx-hear-screen { --seg-col: 4; --seg-bar: 3; padding: 9px 11px 8px; gap: 6px; }
+  .rfx-hear-screen { --seg-col: 4; --seg-bar: 3; padding: 8px 10px 7px; gap: 5px; }
   .rfx-scr-coach { font-size: 10px; }
   .rfx-scr-title { height: 20px; font-size: 14px; line-height: 20px; }
   .rfx-scr-t { font-size: 10px; }
   .rfx-scr-tag { font-size: 8px; }
-  .rfx-scr-wave { height: 44px; }
+  .rfx-scr-wave { height: 38px; }
   .rfx-hear-screen [data-hear-chain] { display: none; }
   .rfx-scr-row { justify-content: flex-end; }
-  .rfx-hear-rig { gap: 8px; }
-  .rfx-hear-step--play { padding: 10px 18px; }
-  .rfx-plate { --sc: 8px; --sc-in: 5px; }
-  .rfx-plate--scr { padding: 9px 16px; }
-  .rfx-stomp { --sc: 6px; --sc-in: 3px; }
-  .rfx-hear-caps .d-cap { width: 46px; height: 46px; }
-  .rfx-hear-vol { padding: 6px 16px; }
-  .rfx-hear-vol .rfx-vol-slot { height: 52px; }
-  .rfx-hear-step { padding: 10px 14px 10px; gap: 8px; }
-  .rfx-hear-board { --fix: 52px; --pgk: .2; gap: 8px; padding: 12px 8px 14px; background-image: var(--rfx-board-m); }
+  .rfx-hear-rig { gap: 6px; }
+  .rfx-hear-deck { gap: 8px; }
+  .rfx-plate { --rail: 12px; }
+  .rfx-stomp { --rail: calc(var(--pm) * .17); }
+  .rfx-hear-caps .d-cap { width: 42px; height: 42px; }
+  .rfx-hear-vol { --rail: 12px; padding: 0 4px; }
+  .rfx-hear-vol .rfx-vol-slot { height: 46px; margin: 4px 0; }
+  .rfx-hear-step { padding: 0 2px 2px; gap: 8px; }
+  .rfx-hear-board { --fix: 48px; --pgk: .2; gap: 8px; padding: 10px 8px 11px; background-image: var(--rfx-board-m); }
   .rfx-pm-nm { font-size: 7px; letter-spacing: .01em; }
 }
 @media (max-width: 380px) { .rfx-scr-coach { font-size: 9px; letter-spacing: 0; } .rfx-jack-nm { font-size: 9.5px; } }

@@ -14,10 +14,10 @@
  *               (revfx.ts ink / rgb), the LED goes purple and the screen's waveform wears the five colours.
  *
  * Assets (src/assets/seasons/revfx/hear/, OpenAI 2026-11-05, tools/revfx-player/ASSETS.md): panel-wide / -tall.jpg (the
- * tolex flight case, laptop / phone), bay.jpg / bay-wide.jpg (the patchbay plate), board-wide / -mid.jpg (pedalboard
- * carpet + rails), titanium.jpg + screw.png (every section's plate, Yoni 2026-11-05: "metal panels on each section
- * ... titanium vibe with a bit of the titanium color effect"), jack / plug / patch / fsw-up / fsw-down / led /
- * led-lit .png (true-alpha cutouts). The fader is /drift's (hear/fader-*.webp). A track lights only the pedals its bounce
+ * tolex flight case, laptop / phone), bay.jpg (the patchbay plate), board-wide / -mid.jpg (pedalboard
+ * carpet + rails), plate-w / -s / -t.jpg (every section's plate: burnt titanium with the patchbay plate's wear and
+ * corner screws, 2:1 / 1:1 / 1:2, Yoni 2026-11-05: "the effect ... when titanium is burned", "the wear should be like
+ * the left panel"), jack / plug / patch / fsw-up / fsw-down / led / led-lit .png (true-alpha cutouts). The fader is /drift's (hear/fader-*.webp). A track lights only the pedals its bounce
  * used (revfx.ts hearTracks.on).
  *
  * The sounds: public/audio/revfx/<id>-before.m4a (dry, level-matched) + <id>-after.m4a (RevFX) + peaks.json,
@@ -39,7 +39,6 @@ import faderPlateSrc from '../../assets/seasons/drift/hear/fader-plate.webp';
 import panelWideSrc from '../../assets/seasons/revfx/hear/panel-wide.jpg';
 import panelTallSrc from '../../assets/seasons/revfx/hear/panel-tall.jpg';
 import baySrc from '../../assets/seasons/revfx/hear/bay.jpg';
-import bayWideSrc from '../../assets/seasons/revfx/hear/bay-wide.jpg';
 import boardWideSrc from '../../assets/seasons/revfx/hear/board-wide.jpg';
 import boardMidSrc from '../../assets/seasons/revfx/hear/board-mid.jpg';
 import jackSrc from '../../assets/seasons/revfx/hear/jack.png';
@@ -48,8 +47,9 @@ import patchSrc from '../../assets/seasons/revfx/hear/patch.png';
 import fswUpSrc from '../../assets/seasons/revfx/hear/fsw-up.png';
 import fswDnSrc from '../../assets/seasons/revfx/hear/fsw-down.png';
 import ledSrc from '../../assets/seasons/revfx/hear/led.png';
-import screwSrc from '../../assets/seasons/revfx/hear/screw.png';
-import tiSrc from '../../assets/seasons/revfx/hear/titanium.jpg';
+import plateWSrc from '../../assets/seasons/revfx/hear/plate-w.jpg';
+import plateSSrc from '../../assets/seasons/revfx/hear/plate-s.jpg';
+import plateTSrc from '../../assets/seasons/revfx/hear/plate-t.jpg';
 import ledLitSrc from '../../assets/seasons/revfx/hear/led-lit.png';
 import { pedals, hearTracks } from '../../data/revfx';
 
@@ -62,17 +62,18 @@ const BOARD = ['pitch', 'echo', 'halo', 'reverb', 'glue'] as const;
 const srcs = { pitch: pedPitch, echo: pedEcho, reverb: pedVerb, halo: pedHalo, glue: pedGlue };
 const webp = (src: ImageMetadata, width: number, quality = 82) => getImage({ src, width, format: 'webp', quality });
 const board = await Promise.all(BOARD.map(async (id) => ({ p: pedals.find((x) => x.id === id)!, img: await webp(srcs[id], 180, 80) })));
-const [g, r, jack, plug, patch, fswUp, fswDn, led, ledLit, screw, ti, fadCap, fadPlate, panelW, panelT, bay, bayW, boardW, boardM] = await Promise.all([
+const [g, r, jack, plug, patch, fswUp, fswDn, led, ledLit, plateW, plateS, plateT, fadCap, fadPlate, panelW, panelT, bay, boardW, boardM] = await Promise.all([
   webp(capGreen, 136), webp(capRed, 136),
   webp(jackSrc, 120, 85), webp(plugSrc, 480, 85), webp(patchSrc, 320, 85), webp(fswUpSrc, 150, 85), webp(fswDnSrc, 150, 85),
-  webp(ledSrc, 64, 85), webp(ledLitSrc, 64, 85), webp(screwSrc, 48, 85), webp(tiSrc, 1600, 72), webp(faderCapSrc, 120, 85), webp(faderPlateSrc, 70, 85),
-  webp(panelWideSrc, 1800, 62), webp(panelTallSrc, 760, 64), webp(baySrc, 600, 76), webp(bayWideSrc, 900, 76),
+  webp(ledSrc, 64, 85), webp(ledLitSrc, 64, 85), webp(plateWSrc, 1600, 78), webp(plateSSrc, 800, 78), webp(plateTSrc, 800, 78), webp(faderCapSrc, 120, 85), webp(faderPlateSrc, 70, 85),
+  webp(panelWideSrc, 1800, 62), webp(panelTallSrc, 760, 64), webp(baySrc, 1017, 78),
   webp(boardWideSrc, 1200, 76), webp(boardMidSrc, 800, 76),
 ]);
 const u = (i: { src: string }) => `url(${i.src})`;
-// each plate was made at the ratio it shows at (laptop / phone), so it is stretched 100% x 100%, never 9-sliced
-const vars = [`--rfx-panel-w:${u(panelW)}`, `--rfx-panel-t:${u(panelT)}`, `--rfx-bay:${u(bay)}`, `--rfx-bay-w:${u(bayW)}`,
-  `--rfx-board-w:${u(boardW)}`, `--rfx-board-m:${u(boardM)}`, `--rfx-ti:${u(ti)}`, `--rfx-screw:${u(screw)}`, `--rfx-fad-cap:${u(fadCap)}`, `--rfx-fad-plate:${u(fadPlate)}`].join(';');
+// the case + the boards were made at the ratio they show at, so they stretch 100% x 100%; the section plates + the
+// patchbay are 9-sliced (fixed corners = the screws, stretched edges, filled middle), so they fit any box
+const vars = [`--rfx-panel-w:${u(panelW)}`, `--rfx-panel-t:${u(panelT)}`, `--rfx-bay:${u(bay)}`,
+  `--rfx-board-w:${u(boardW)}`, `--rfx-board-m:${u(boardM)}`, `--rfx-plate-w:${u(plateW)}`, `--rfx-plate-s:${u(plateS)}`, `--rfx-plate-t:${u(plateT)}`, `--rfx-fad-cap:${u(fadCap)}`, `--rfx-fad-plate:${u(fadPlate)}`].join(';');
 
 const first = hearTracks[0];
 const clock0 = `00:00 / ${fmt(peaks.tracks[first.id].dur)}`;
@@ -131,7 +132,7 @@ const chainTxt = 'TRUE BYPASS';
 
           <div class="rfx-hear-rig">
             <!-- 2 · play: /drift's arcade caps -->
-            <div class="rfx-plate rfx-hear-step rfx-hear-step--play" data-step="2">
+            <div class="rfx-plate rfx-plate--sq rfx-hear-step rfx-hear-step--play" data-step="2">
               <p class="rfx-hear-cap"><b class="rfx-hear-n">2</b>PLAY</p>
               <div class="rfx-hear-caps">
                 <button class="d-cap rfx-hear-play" type="button" data-hear="play" aria-pressed="false" aria-label="Play"
@@ -148,7 +149,7 @@ const chainTxt = 'TRUE BYPASS';
               <div class="rfx-hear-board">
                 <!-- the footswitch: an aged nickel 3PDT (fsw-up / fsw-down.png, one frame: only the cap moves) with its LED. It
                      latches like a real pedal: popped up on BYPASS, pushed down and held while RevFX is on -->
-                <div class="rfx-plate rfx-stomp" data-hear-stomp-box>
+                <div class="rfx-plate rfx-plate--sq rfx-stomp" data-hear-stomp-box>
                   <span class="rfx-stomp-led" aria-hidden="true">
                     <img src={led.src} width="64" height="64" alt="" decoding="async" draggable="false" />
                     <img class="lit" src={ledLit.src} width="64" height="64" alt="" decoding="async" draggable="false" />
@@ -173,7 +174,7 @@ const chainTxt = 'TRUE BYPASS';
             </div>
 
             <!-- volume: /drift's fader (faders.ts behaviour, its plate + cap photos) -->
-            <div class="rfx-plate rfx-hear-vol">
+            <div class="rfx-plate rfx-plate--tall rfx-hear-vol">
               <div class="d-fad-slot rfx-vol-slot" role="slider" tabindex="0" data-hear-vol aria-label="Volume" aria-orientation="vertical"
                 aria-valuemin="0" aria-valuemax="100" aria-valuenow="80" aria-valuetext="VOLUME 80">
                 <span class="rfx-vol-plate" aria-hidden="true"></span>

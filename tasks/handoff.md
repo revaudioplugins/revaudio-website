@@ -48,6 +48,12 @@ Claim: OPEN `revaudio-0d`. Files: `src/components/revfx/RfxHear.astro` (new), `s
   ~8 deg (pressed = masked edit, base pixel-identical); every section (screen, PLAY, STOMP, VOLUME) + the switch on
   titanium plates (titanium.jpg heat tint, 4 screw.png corners, CSS bevels). Fit at 10 widths clean, click-through
   clean, build green. 7 more OpenAI images.
+- Round 6 (Yoni: "the panels are dull ... the effect ... when titanium is burned ... higher petina and wear ... the
+  screws are fighting with the data ... tighten everything"; "the wear should be like the left panel"): plates are now
+  photos (burnt titanium + the patchbay plate's wear + corner screws, 2:1 / 1:1 / 1:2), 9-sliced with stretch; the
+  border = the screw zone; the patchbay 9-sliced the same way (bay-wide gone). Screw test PASS at 10 widths x 2 states
+  (control-probed), fit clean, laptop panel 476 (DRIFT 484), phone 538 (DRIFT 547), click-through clean, build green.
+  Checks saved in tools/revfx-player/checks/. 5 more OpenAI images.
 - Next: Yoni's look + his sounds. Branch only; main (= live deploy) waits for his "push".
 
 ## 2026-11-04 — GAS 2 postcards: the end page scrolls as one page, the footer under it (Claude Code `danavivi-c2 [ca2821]`, Dan's Mac) — PUSHED TO MAIN 2026-11-04 on Dan's word "perfect push to main" (from `fix/gas2-end-flow`)
