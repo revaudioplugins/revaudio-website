@@ -321,3 +321,7 @@ cutting the viewport to the keyboard's leftover (`setViewportSize`), at every ph
   silently does nothing (a click still works). `draggable="false"` + `-webkit-user-drag:none` + a pointercancel handler.
 - Gain ramps scheduled while the AudioContext is still suspended (first click) can be read back mid-ramp (0.65)
   when playback starts. When nothing is playing, set the gain directly (setValueAtTime); ramp only while live.
+- A new section's classes collide with the page's own (2026-11-05, /revfx #rfx-hear): `.rfx-board` already named the
+  hero pedalboard, so the player's board rules (flex, padding, a background photo) landed on the hero too, and a
+  `querySelector('.rfx-board')` check measured the wrong element. Prefix every class with the section
+  (`.rfx-hear-*`) and grep the page CSS + components for each new name before using it.

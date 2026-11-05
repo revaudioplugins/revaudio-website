@@ -21,7 +21,7 @@ export function initHear(): void {
   if (!root) return;
   const q = <T extends Element>(s: string) => root.querySelector<T>(s);
   const jacks = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-hear-track]'));
-  const peds = Array.from(root.querySelectorAll<HTMLElement>('.rfx-path-peds > li'));
+  const peds = Array.from(root.querySelectorAll<HTMLElement>('.rfx-peds-mini > li'));
   const playBtn = q<HTMLButtonElement>('[data-hear="play"]');
   const stopBtn = q<HTMLButtonElement>('[data-hear="stop"]');
   const stompBox = q<HTMLElement>('[data-hear-stomp-box]');
@@ -33,7 +33,6 @@ export function initHear(): void {
   const stateEl = q<HTMLElement>('[data-hear-state]');
   const timeEl = q<HTMLElement>('[data-hear-time]');
   const chainEl = q<HTMLElement>('[data-hear-chain]');
-  const inEl = q<HTMLElement>('[data-hear-in]');
   const cv = q<HTMLCanvasElement>('[data-hear-wave]');
   if (!playBtn || !stopBtn || !cv || !jacks.length) return;
   const g = cv.getContext('2d')!;
@@ -151,7 +150,6 @@ export function initHear(): void {
     root.dataset.next = n;
     const chain = st.after ? peds.filter((p) => on.has(p.dataset.fx!)).map((p) => SHORT[p.dataset.fx!]).join('-') || 'DRY' : 'TRUE BYPASS';
     const name = jack()?.dataset.name ?? '';
-    if (inEl) inEl.textContent = name;
     // words settle in like liquid crystal (a short fade-in); the running numbers just change
     for (const [el, s] of [[title, name], [tag, st.after ? 'REVFX ON' : 'BYPASS'], [stateEl, COACH[n]], [chainEl, chain]] as const)
       if (el && lcdText(el, s) && !still.matches) el.animate([{ opacity: .25 }, { opacity: 1 }], { duration: 170, easing: 'ease-out' });

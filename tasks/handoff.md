@@ -18,6 +18,21 @@ Claim: OPEN `revaudio-0d`. Files: `src/components/revfx/RfxHear.astro` (new), `s
   stomp back, guide states right at every step, no page errors, no sideways scroll, no clipped labels; `npm run build`
   green (33 pages). WebKit on Windows headless has no AudioContext (same as /drift's player), so play is untested
   there; layout only. Not checked: a real iPhone / Safari, reduced-motion by eye.
+- Round 1 commit `a3cfdc4` (CSS-drawn parts). Round 2 (Yoni: "the size ... similar to the drift ab size ... use open
+  ai to create highly realistic and cool vintage 90's vibe assets - make it tight - easy to understand - smooth"):
+  panel 1180x452 at 1440 (DRIFT's #hear 1180x484; was 692), 547 on a 390 phone (DRIFT 547). Path + stomp merged into
+  ONE board row: footswitch + LED (an A/B looper) -> the five joined by patch cables -> OUT, TRUE BYPASS loop under them.
+  All hardware = OpenAI photos (`src/assets/seasons/revfx/hear/`, prompts + picks in `tools/revfx-player/ASSETS.md`):
+  tolex flight case, patchbay plate, pedalboard, 1/4" jack, right-angle plug + tweed cable, patch cable, 3PDT
+  footswitch, LED off/lit; the fader = /drift's photos. Plates made at their display ratio (gpt-image-2 custom sizes)
+  and stretched; 9-slicing left seams. Pedal size follows the board's width (container query). Tablets (<= 1023)
+  stack like the phone. Class clash found + fixed: `.rfx-board` was the hero's (tasks/lessons.md).
+- Round 2 checks (own headless Chromium): fit at 1440/1280/1141/1000/901/768/600/430/390/360 (no overlap, no
+  sideways scroll); the click-through at 1440/1141/390/360 (guide states right, no page errors); hero screenshot
+  unchanged; `npm run build` green (33 pages); player images ~600 KB on a laptop (case 202 KB). ~22 OpenAI images
+  this round (~$4). Not checked: real iPhone / Safari (Windows WebKit has no AudioContext headless).
+- Shared side fix: `shared/tools/openai/image.ps1` + `edit.ps1` defaulted to the retired gpt-image-1 (broken for
+  everyone); now gpt-image-1.5 + `-Model`, pushed to revaudio-shared main `fb386f3`.
 - Next: Yoni's look + his sounds. Branch only; main (= live deploy) waits for his "push".
 
 ## 2026-11-04 — GAS 2 postcards: the end page scrolls as one page, the footer under it (Claude Code `danavivi-c2 [ca2821]`, Dan's Mac) — PUSHED TO MAIN 2026-11-04 on Dan's word "perfect push to main" (from `fix/gas2-end-flow`)
