@@ -229,6 +229,16 @@ if (sv < 6) delete S.moves.L01; // baked into its row
 if (sv < 7) Object.assign(S, { paint: 0, film: 0 }); // the bare set is the room again
 if (sv < 8) S.snap = 0; // free scrolling by default (Dan 2026-11-04); the bench can turn the snap back on
 S.ver = DEF.ver;
+// ?layout=<name>: a proposed layout (layouts/<name>.json, the bench's Copy-settings format) over the defaults, to walk
+// and compare; this browser's saved bench is left alone and nothing is saved
+const LAYOUT = new URLSearchParams(location.search).get('layout');
+if (LAYOUT && /^[\w-]+$/.test(LAYOUT)) {
+  try {
+    const j = await (await fetch(`layouts/${LAYOUT}.json`, { cache: 'no-store' })).json();
+    for (const k of Object.keys(S)) delete S[k];
+    Object.assign(S, DEF, j, { moves: j.moves && typeof j.moves === 'object' ? j.moves : {}, ver: DEF.ver, bench: 0, edit: 0 });
+  } catch (e) { console.warn('layout missing:', LAYOUT, e); }
+}
 if (CAPTURE != null) Object.assign(S, { sway: 0, labels: 0, readB: 0, dust: 0, bench: 0, edit: 0, paint: CAPTURE_PAINTED ? 1 : 0 }); // the set for the painter
 // undo / redo: every saved change is one step (a whole slider or object drag, a toggle, a reset); view state is not
 const UNDO_SKIP = new Set(['bench', 'edit']);
@@ -242,7 +252,7 @@ function remember() {
   if (hist.length > 200) hist.shift();
   histAt = hist.length - 1; undoUi();
 }
-const save = () => { if (CAPTURE != null) return; try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} remember(); };
+const save = () => { if (CAPTURE != null) return; if (LAYOUT) { remember(); return; } try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} remember(); };
 
 // the live TV, captured per screen size (r = the bezel's corner radius, px)
 const CAPS = [

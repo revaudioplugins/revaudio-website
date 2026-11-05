@@ -1,0 +1,2990 @@
+{
+ "note": "Every object in the room today. size_m / center_m in world metres: x across (0 = the aisle, - = left wall), y up, z out from the far end wall (the TV at z 0, the camera starts at z 18.40). f_now = z / 14.40 (the move field f). moves = the per-object fields the bench can change.",
+ "L": {
+  "span": 14.399999999999999,
+  "roomLen": 19.9,
+  "d0": 17.939999999999998,
+  "front": 0.46
+ },
+ "settings": [
+  {
+   "key": "roomW",
+   "label": "Width (m)",
+   "group": "The room",
+   "min": 4,
+   "max": 10,
+   "step": 0.1
+  },
+  {
+   "key": "roomH",
+   "label": "Height (m)",
+   "group": "The room",
+   "min": 3,
+   "max": 6.5,
+   "step": 0.1
+  },
+  {
+   "key": "roomL",
+   "label": "Length (m)",
+   "group": "The room",
+   "min": 10,
+   "max": 30,
+   "step": 0.1
+  },
+  {
+   "key": "floor",
+   "label": "Floor",
+   "group": "The room",
+   "options": "{ concrete: 'Worn garage concrete', checker: 'Checker tiles', mirror: 'Glossy mirror (the old one)' }"
+  },
+  {
+   "key": "floorShine",
+   "label": "Floor shine",
+   "group": "The room",
+   "min": 0,
+   "max": 1,
+   "step": 0.01
+  },
+  {
+   "key": "floorLines",
+   "label": "Floor lines",
+   "group": "The room",
+   "options": "{ 0: 'None (a garage, not a road)', 1: 'Painted lanes' }"
+  },
+  {
+   "key": "mess",
+   "label": "Mess",
+   "group": "The room",
+   "min": 0,
+   "max": 1,
+   "step": 0.01
+  },
+  {
+   "key": "acoustics",
+   "label": "Acoustic treatment",
+   "group": "The studio",
+   "min": 0,
+   "max": 1,
+   "step": 0.01
+  },
+  {
+   "key": "woodTone",
+   "label": "Wood tone (walnut ↔ oak)",
+   "group": "The studio",
+   "min": 0,
+   "max": 1,
+   "step": 0.01
+  },
+  {
+   "key": "lens",
+   "label": "Lens: vertical view (°)",
+   "group": "The camera",
+   "min": 18,
+   "max": 70,
+   "step": 1
+  },
+  {
+   "key": "walkLen",
+   "label": "Scroll length (% screen)",
+   "group": "The camera",
+   "min": 100,
+   "max": 600,
+   "step": 10
+  },
+  {
+   "key": "ease",
+   "label": "Ease (in-out power)",
+   "group": "The camera",
+   "min": 1,
+   "max": 4,
+   "step": 0.1
+  },
+  {
+   "key": "feel",
+   "label": "Walk feel: steady metres ↔ steady TV growth",
+   "group": "The camera",
+   "min": 0,
+   "max": 1,
+   "step": 0.05
+  },
+  {
+   "key": "sway",
+   "label": "Camera sway",
+   "group": "The camera",
+   "min": 0,
+   "max": 3,
+   "step": 0.05
+  },
+  {
+   "key": "tvW",
+   "label": "TV width (m)",
+   "group": "The TV",
+   "min": 0.5,
+   "max": 2.5,
+   "step": 0.05
+  },
+  {
+   "key": "tvH",
+   "label": "TV height (m)",
+   "group": "The TV",
+   "min": 0.3,
+   "max": 1.6,
+   "step": 0.01
+  },
+  {
+   "key": "tvY",
+   "label": "TV centre height (m)",
+   "group": "The TV",
+   "min": 0.8,
+   "max": 2.6,
+   "step": 0.05
+  },
+  {
+   "key": "signWall",
+   "label": "Where",
+   "group": "The REVAUDIO sign",
+   "options": "{ endRight, endLeft, left, right, aisle }"
+  },
+  {
+   "key": "signX",
+   "label": "Across (end wall)",
+   "group": "The REVAUDIO sign",
+   "min": -3.2,
+   "max": 3.2,
+   "step": 0.01
+  },
+  {
+   "key": "signF",
+   "label": "Along the room (side walls, aisle)",
+   "group": "The REVAUDIO sign",
+   "min": 0,
+   "max": 1.08,
+   "step": 0.005
+  },
+  {
+   "key": "signY",
+   "label": "Height (m)",
+   "group": "The REVAUDIO sign",
+   "min": 0.8,
+   "max": 4.2,
+   "step": 0.01
+  },
+  {
+   "key": "signScale",
+   "label": "Size",
+   "group": "The REVAUDIO sign",
+   "min": 0.4,
+   "max": 2,
+   "step": 0.01
+  },
+  {
+   "key": "signTilt",
+   "label": "Tilt (°): hung crooked",
+   "group": "The REVAUDIO sign",
+   "min": -15,
+   "max": 15,
+   "step": 0.5
+  },
+  {
+   "key": "carZ",
+   "label": "Car: along the room",
+   "group": "The car + the door",
+   "min": 0.1,
+   "max": 0.95,
+   "step": 0.005
+  },
+  {
+   "key": "carOut",
+   "label": "Car: through the door (0 in · 1 out)",
+   "group": "The car + the door",
+   "min": 0,
+   "max": 1,
+   "step": 0.01
+  },
+  {
+   "key": "carYaw",
+   "label": "Car: angle (°)",
+   "group": "The car + the door",
+   "min": -30,
+   "max": 30,
+   "step": 1
+  },
+  {
+   "key": "liftType",
+   "label": "Lift",
+   "group": "The car + the door",
+   "options": "{ scissor: 'Low scissor lift', stands: 'Jack stands', none: 'No lift (on the floor)' }"
+  },
+  {
+   "key": "liftH",
+   "label": "Lift height (m)",
+   "group": "The car + the door",
+   "min": 0,
+   "max": 0.9,
+   "step": 0.01
+  },
+  {
+   "key": "doorW",
+   "label": "Door width (m)",
+   "group": "The car + the door",
+   "min": 2.4,
+   "max": 4.8,
+   "step": 0.05
+  },
+  {
+   "key": "doorH",
+   "label": "Door height (m)",
+   "group": "The car + the door",
+   "min": 2,
+   "max": 3.8,
+   "step": 0.05
+  },
+  {
+   "key": "doorOpen",
+   "label": "Door open",
+   "group": "The car + the door",
+   "min": 0,
+   "max": 1,
+   "step": 0.01
+  },
+  {
+   "key": "outside",
+   "label": "Outside light",
+   "group": "The car + the door",
+   "min": 0,
+   "max": 3,
+   "step": 0.05
+  },
+  {
+   "key": "ledStrip",
+   "label": "Floor LED strips",
+   "group": "Alive",
+   "min": 0,
+   "max": 2.5,
+   "step": 0.05
+  },
+  {
+   "key": "rackLeds",
+   "label": "Rack LEDs + VU meters",
+   "group": "Alive",
+   "min": 0,
+   "max": 2.5,
+   "step": 0.05
+  },
+  {
+   "key": "screens",
+   "label": "Monitor screens",
+   "group": "Alive",
+   "min": 0,
+   "max": 2,
+   "step": 0.05
+  },
+  {
+   "key": "neon",
+   "label": "Neon strips",
+   "group": "Alive",
+   "min": 0,
+   "max": 3,
+   "step": 0.05
+  },
+  {
+   "key": "lamps",
+   "label": "Amber lamps",
+   "group": "Light",
+   "min": 0,
+   "max": 3,
+   "step": 0.05
+  },
+  {
+   "key": "tvGlow",
+   "label": "TV glow",
+   "group": "Light",
+   "min": 0,
+   "max": 3,
+   "step": 0.05
+  },
+  {
+   "key": "bloom",
+   "label": "Glow (bloom)",
+   "group": "Light",
+   "min": 0,
+   "max": 2.5,
+   "step": 0.05
+  },
+  {
+   "key": "fog",
+   "label": "Haze",
+   "group": "Light",
+   "min": 0,
+   "max": 0.1,
+   "step": 0.002
+  },
+  {
+   "key": "dust",
+   "label": "Dust",
+   "group": "Light",
+   "min": 0,
+   "max": 3,
+   "step": 0.05
+  }
+ ],
+ "items": [
+  {
+   "id": "L01",
+   "kind": "side",
+   "mount": "wall",
+   "label": "Pegboard: wrenches, spanners",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    0.05,
+    1,
+    2.6
+   ],
+   "center_m": [
+    -3.37,
+    1.5,
+    8.35
+   ],
+   "f_now": 0.58,
+   "side": -1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "L02",
+   "kind": "side",
+   "mount": "wall",
+   "label": "Guitar (hanging)",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.08,
+    1.05,
+    0.38
+   ],
+   "center_m": [
+    -3.31,
+    1.8,
+    13.18
+   ],
+   "f_now": 0.91,
+   "side": -1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "L03",
+   "kind": "side",
+   "mount": "wall",
+   "label": "Guitar (hanging)",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.08,
+    1.05,
+    0.38
+   ],
+   "center_m": [
+    -3.31,
+    1.8,
+    12.53
+   ],
+   "f_now": 0.87,
+   "side": -1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "L04",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Amp stack (head + 4x12)",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.42,
+    1.55,
+    0.8
+   ],
+   "center_m": [
+    -3.19,
+    0.77,
+    11.81
+   ],
+   "f_now": 0.82,
+   "side": -1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "L05",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Red tool chest",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    0.5,
+    1,
+    0.8
+   ],
+   "center_m": [
+    -3.15,
+    0.5,
+    10.66
+   ],
+   "f_now": 0.74,
+   "side": -1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "L06",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Compressor rack (VU meters)",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.48,
+    0.9,
+    0.6
+   ],
+   "center_m": [
+    -3.16,
+    1.45,
+    10.66
+   ],
+   "f_now": 0.74,
+   "side": -1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "L07",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Red tool chest",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    0.5,
+    1,
+    0.8
+   ],
+   "center_m": [
+    -3.15,
+    0.5,
+    9.86
+   ],
+   "f_now": 0.69,
+   "side": -1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "L08",
+   "kind": "side",
+   "mount": "floor",
+   "label": "EQ rack (VU meters)",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.48,
+    0.75,
+    0.6
+   ],
+   "center_m": [
+    -3.16,
+    1.38,
+    9.86
+   ],
+   "f_now": 0.69,
+   "side": -1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "L09",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Workbench (vice, soldering)",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    0.75,
+    0.92,
+    2.6
+   ],
+   "center_m": [
+    -3.02,
+    0.46,
+    8.35
+   ],
+   "f_now": 0.58,
+   "side": -1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "L10",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Synth (keys)",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.42,
+    0.14,
+    1
+   ],
+   "center_m": [
+    -3.19,
+    0.99,
+    8.64
+   ],
+   "f_now": 0.6,
+   "side": -1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "L11",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Drum machine",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.34,
+    0.12,
+    0.5
+   ],
+   "center_m": [
+    -3.23,
+    0.98,
+    7.92
+   ],
+   "f_now": 0.55,
+   "side": -1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "L12",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Parts shelf: pistons, plugs, carbs",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    0.35,
+    0.9,
+    2.6
+   ],
+   "center_m": [
+    -3.22,
+    2.45,
+    8.35
+   ],
+   "f_now": 0.58,
+   "side": -1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "L13",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Studio monitor (on stand)",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.4,
+    0.7,
+    0.45
+   ],
+   "center_m": [
+    -3.2,
+    1.35,
+    6.55
+   ],
+   "f_now": 0.46,
+   "side": -1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "L14",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Studio monitor (on stand)",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.4,
+    0.7,
+    0.45
+   ],
+   "center_m": [
+    -3.2,
+    1.35,
+    5.9
+   ],
+   "f_now": 0.41,
+   "side": -1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "L15",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Tyre rack",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    0.65,
+    1.7,
+    1
+   ],
+   "center_m": [
+    -3.07,
+    0.85,
+    4.75
+   ],
+   "f_now": 0.33,
+   "side": -1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "L16",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Reel-to-reel tape machine",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.55,
+    1.25,
+    0.7
+   ],
+   "center_m": [
+    -3.12,
+    0.63,
+    3.6
+   ],
+   "f_now": 0.25,
+   "side": -1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "L17",
+   "kind": "side",
+   "mount": "wall",
+   "label": "Pegboard: screwdrivers, hoses",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    0.05,
+    1.5,
+    2.6
+   ],
+   "center_m": [
+    -3.37,
+    1.85,
+    2.23
+   ],
+   "f_now": 0.16,
+   "side": -1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "L18",
+   "kind": "side",
+   "mount": "wall",
+   "label": "Bass (hanging)",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.08,
+    1.15,
+    0.38
+   ],
+   "center_m": [
+    -3.31,
+    1.8,
+    2.45
+   ],
+   "f_now": 0.17,
+   "side": -1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "L19",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Guitar rack (five guitars)",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.5,
+    1.1,
+    1.3
+   ],
+   "center_m": [
+    -3.15,
+    0.55,
+    0.94
+   ],
+   "f_now": 0.07,
+   "side": -1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "R01",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Parts-store shelf: exhausts, filters, oil",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    0.5,
+    2.5,
+    2.4
+   ],
+   "center_m": [
+    3.15,
+    1.25,
+    12.96
+   ],
+   "f_now": 0.9,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": false
+  },
+  {
+   "id": "R02",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Guitar combo amp",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.35,
+    0.75,
+    0.65
+   ],
+   "center_m": [
+    3.23,
+    0.38,
+    11.88
+   ],
+   "f_now": 0.83,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": false
+  },
+  {
+   "id": "R03",
+   "kind": "side",
+   "mount": "wall",
+   "label": "Guitar (hanging)",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.08,
+    1.05,
+    0.38
+   ],
+   "center_m": [
+    3.36,
+    1.95,
+    11.88
+   ],
+   "f_now": 0.83,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": false
+  },
+  {
+   "id": "R04",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Wall shelf: helmets, wheels",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    0.4,
+    0.6,
+    2.6
+   ],
+   "center_m": [
+    3.2,
+    2.95,
+    10.22
+   ],
+   "f_now": 0.71,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "R05",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Red tool chest",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    0.5,
+    1,
+    0.8
+   ],
+   "center_m": [
+    3.15,
+    0.5,
+    6.34
+   ],
+   "f_now": 0.44,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "R06",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Compressor rack (VU meters)",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.48,
+    0.9,
+    0.6
+   ],
+   "center_m": [
+    3.16,
+    1.45,
+    6.34
+   ],
+   "f_now": 0.44,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "R07",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Parts bench (carb on a stand)",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    0.7,
+    0.92,
+    2.2
+   ],
+   "center_m": [
+    3.05,
+    0.46,
+    4.97
+   ],
+   "f_now": 0.35,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "R08",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Modular synth",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.25,
+    0.5,
+    0.8
+   ],
+   "center_m": [
+    3.28,
+    1.17,
+    4.75
+   ],
+   "f_now": 0.33,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "R09",
+   "kind": "side",
+   "mount": "wall",
+   "label": "Pegboard: tools",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    0.05,
+    1.4,
+    2.2
+   ],
+   "center_m": [
+    3.38,
+    2.05,
+    4.97
+   ],
+   "f_now": 0.35,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "R10",
+   "kind": "side",
+   "mount": "wall",
+   "label": "Guitar (hanging)",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.08,
+    1.05,
+    0.38
+   ],
+   "center_m": [
+    3.31,
+    2.05,
+    5.18
+   ],
+   "f_now": 0.36,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "R11",
+   "kind": "side",
+   "mount": "floor",
+   "label": "PA speaker stack",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.6,
+    1.6,
+    0.9
+   ],
+   "center_m": [
+    3.1,
+    0.8,
+    3.17
+   ],
+   "f_now": 0.22,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "R12",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Rolling tool cabinet",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    0.55,
+    1.1,
+    1.2
+   ],
+   "center_m": [
+    3.13,
+    0.55,
+    1.94
+   ],
+   "f_now": 0.14,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "R13",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Tyre stack",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    0.75,
+    1.2,
+    0.75
+   ],
+   "center_m": [
+    3.03,
+    0.6,
+    0.86
+   ],
+   "f_now": 0.06,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "R14",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Engine block on a stand",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    0.7,
+    1,
+    0.8
+   ],
+   "center_m": [
+    3.05,
+    0.5,
+    9.65
+   ],
+   "f_now": 0.67,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "R15",
+   "kind": "side",
+   "mount": "wall",
+   "label": "Rims on the wall",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    0.12,
+    0.6,
+    1.2
+   ],
+   "center_m": [
+    3.34,
+    1.9,
+    9.65
+   ],
+   "f_now": 0.67,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "R16",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Drum kit",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    1.1,
+    1.1,
+    1.5
+   ],
+   "center_m": [
+    2.85,
+    0.55,
+    10.58
+   ],
+   "f_now": 0.74,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "R17",
+   "kind": "side",
+   "mount": "wall",
+   "label": "Exhaust pipes (hung)",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    0.12,
+    0.35,
+    1.6
+   ],
+   "center_m": [
+    3.34,
+    2.15,
+    10.73
+   ],
+   "f_now": 0.75,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "R18",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Bass amp cabinet",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.5,
+    1.2,
+    0.6
+   ],
+   "center_m": [
+    3.15,
+    0.6,
+    11.38
+   ],
+   "f_now": 0.79,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": false
+  },
+  {
+   "id": "R19",
+   "kind": "side",
+   "mount": "wall",
+   "label": "Framed print of our first faceplate",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.06,
+    0.5,
+    0.6
+   ],
+   "center_m": [
+    3.37,
+    1.7,
+    11.45
+   ],
+   "f_now": 0.8,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": false
+  },
+  {
+   "id": "N01",
+   "kind": "side",
+   "mount": "wall",
+   "label": "Caged trouble light into the car (sways)",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    0.12,
+    0.35,
+    0.12
+   ],
+   "center_m": [
+    1.4,
+    1.35,
+    12.6
+   ],
+   "f_now": 0.87,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "N02",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Twin-tube shop light, one tube dying",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    0.25,
+    0.1,
+    1.25
+   ],
+   "center_m": [
+    2.2,
+    3.75,
+    13.75
+   ],
+   "f_now": 0.96,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "N03",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Floor jack + creeper by the lift",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    0.5,
+    0.2,
+    1
+   ],
+   "center_m": [
+    0.95,
+    0.1,
+    13.03
+   ],
+   "f_now": 0.9,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "N04",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Engine hoist, hook (sways)",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    1.4,
+    1.9,
+    0.9
+   ],
+   "center_m": [
+    2.7,
+    0.95,
+    8.57
+   ],
+   "f_now": 0.6,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "N05",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Air compressor, yellow hose (needle)",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    0.5,
+    1.2,
+    0.5
+   ],
+   "center_m": [
+    -3.15,
+    0.6,
+    12.82
+   ],
+   "f_now": 0.89,
+   "side": -1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "N06",
+   "kind": "side",
+   "mount": "floor",
+   "label": "GAS 2 hazard drum (chevrons)",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    0.6,
+    0.9,
+    0.6
+   ],
+   "center_m": [
+    1.15,
+    0.45,
+    11.45
+   ],
+   "f_now": 0.8,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "N07",
+   "kind": "side",
+   "mount": "floor",
+   "label": "GAS 2 pump by the door (globe lit)",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    0.4,
+    2,
+    0.45
+   ],
+   "center_m": [
+    2.75,
+    1,
+    11.59
+   ],
+   "f_now": 0.81,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "N08",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Vending machine, our \"GAS 2 FUEL\" label",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    0.75,
+    1.8,
+    0.85
+   ],
+   "center_m": [
+    -3.02,
+    0.9,
+    13.82
+   ],
+   "f_now": 0.96,
+   "side": -1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "N09",
+   "kind": "side",
+   "mount": "floor",
+   "label": "A-frame chalkboard: this week’s message",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    0.9,
+    1.5,
+    0.76
+   ],
+   "center_m": [
+    0.55,
+    0.75,
+    12.17
+   ],
+   "f_now": 0.85,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "N10",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Fire extinguisher, first-aid box, door pendant",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    0.2,
+    0.6,
+    0.35
+   ],
+   "center_m": [
+    3.25,
+    1.15,
+    11.52
+   ],
+   "f_now": 0.8,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "N11",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Oil drip pan + stain under the car",
+   "cat": "garage",
+   "flat": true,
+   "size_m": [
+    0.6,
+    0.05,
+    0.6
+   ],
+   "center_m": [
+    2.4,
+    0.03,
+    13.68
+   ],
+   "f_now": 0.95,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "N12",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Clamp-on task lamp over the bench",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    0.3,
+    0.5,
+    0.3
+   ],
+   "center_m": [
+    -2.95,
+    1.45,
+    9.07
+   ],
+   "f_now": 0.63,
+   "side": -1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "N13",
+   "kind": "side",
+   "mount": "wall",
+   "label": "Corkboard: gig flyers, photos, a calendar",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    0.03,
+    0.8,
+    1.2
+   ],
+   "center_m": [
+    -3.38,
+    2.3,
+    10.3
+   ],
+   "f_now": 0.72,
+   "side": -1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "N15",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Bench grinder + drill press",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    0.4,
+    0.42,
+    0.5
+   ],
+   "center_m": [
+    3.2,
+    1.13,
+    5.7
+   ],
+   "f_now": 0.4,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "N16",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Guitar mid-repair on the test desk",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.35,
+    0.12,
+    1
+   ],
+   "center_m": [
+    -2.97,
+    0.81,
+    5.9
+   ],
+   "f_now": 0.41,
+   "side": -1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "N17",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Pedalboard: RevAudio pedals, cable spaghetti",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.35,
+    0.1,
+    0.7
+   ],
+   "center_m": [
+    -2.65,
+    0.05,
+    11.81
+   ],
+   "f_now": 0.82,
+   "side": -1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "N18",
+   "kind": "side",
+   "mount": "wall",
+   "label": "Coiled cables on wall hooks",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.1,
+    0.6,
+    0.6
+   ],
+   "center_m": [
+    -3.29,
+    1.6,
+    1.8
+   ],
+   "f_now": 0.13,
+   "side": -1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "N22",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Road cases, stencilled lids (stacked)",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.6,
+    1.2,
+    1
+   ],
+   "center_m": [
+    2.2,
+    0.6,
+    3.82
+   ],
+   "f_now": 0.27,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "N23",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Worn couch with a throw",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.9,
+    0.85,
+    2
+   ],
+   "center_m": [
+    2.2,
+    0.43,
+    5.33
+   ],
+   "f_now": 0.37,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "N24",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Worn round rug under the drums",
+   "cat": "music",
+   "flat": true,
+   "size_m": [
+    2,
+    0.02,
+    2
+   ],
+   "center_m": [
+    2.3,
+    0.01,
+    10.58
+   ],
+   "f_now": 0.74,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "N25",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Filing cabinet, a drawer half open",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    0.62,
+    1.3,
+    0.47
+   ],
+   "center_m": [
+    2.49,
+    0.65,
+    1.73
+   ],
+   "f_now": 0.12,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "N26",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Boom mic stand by the drum kit",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.6,
+    1.6,
+    0.6
+   ],
+   "center_m": [
+    1.9,
+    0.8,
+    9.94
+   ],
+   "f_now": 0.69,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "N28",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Mini fridge covered in stickers",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    0.5,
+    0.85,
+    0.5
+   ],
+   "center_m": [
+    -3.15,
+    0.43,
+    2.74
+   ],
+   "f_now": 0.19,
+   "side": -1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "N29",
+   "kind": "side",
+   "mount": "wall",
+   "label": "Moving blankets on a rail (DIY treatment)",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.05,
+    1.5,
+    1.4
+   ],
+   "center_m": [
+    3.3,
+    2.5,
+    2.45
+   ],
+   "f_now": 0.17,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "N39",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Traffic light (slow red, amber, green)",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    0.3,
+    0.95,
+    0.3
+   ],
+   "center_m": [
+    0,
+    3.55,
+    5.47
+   ],
+   "f_now": 0.38,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "N40",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Slow ceiling fan (sweeping shadows)",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    1.46,
+    0.5,
+    1.46
+   ],
+   "center_m": [
+    -0.6,
+    3.95,
+    3.17
+   ],
+   "f_now": 0.22,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "N41",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Chain hoist on a truss (sways)",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    0.2,
+    1.5,
+    0.3
+   ],
+   "center_m": [
+    2.2,
+    3.4,
+    12.96
+   ],
+   "f_now": 0.9,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "N42",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Cable trays + hanging cords along the trusses",
+   "cat": "garage",
+   "flat": true,
+   "size_m": [
+    0.3,
+    0.08,
+    12
+   ],
+   "center_m": [
+    -1.7,
+    4.1,
+    7.2
+   ],
+   "f_now": 0.5,
+   "side": -1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "N43",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Floor decals: oil stains, tyre marks, a drain",
+   "cat": "garage",
+   "flat": true,
+   "size_m": [
+    1.8,
+    0.01,
+    2.5
+   ],
+   "center_m": [
+    1.2,
+    0.01,
+    12.96
+   ],
+   "f_now": 0.9,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "N45",
+   "kind": "side",
+   "mount": "wall",
+   "label": "Extension reel + cords to the desk",
+   "cat": "garage",
+   "flat": true,
+   "size_m": [
+    0.12,
+    0.03,
+    6
+   ],
+   "center_m": [
+    -2.85,
+    0.02,
+    5.04
+   ],
+   "f_now": 0.35,
+   "side": -1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "W01",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Test-gear tower: scope, generator, meter",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.4,
+    0.6,
+    0.5
+   ],
+   "center_m": [
+    -3.1,
+    1.22,
+    7.2
+   ],
+   "f_now": 0.5,
+   "side": -1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "W02",
+   "kind": "side",
+   "mount": "floor",
+   "label": "The plugin’s real object, mid-build (RPM gauge)",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    0.35,
+    0.25,
+    0.3
+   ],
+   "center_m": [
+    -2.92,
+    1.05,
+    9.3
+   ],
+   "f_now": 0.65,
+   "side": -1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "W03",
+   "kind": "side",
+   "mount": "wall",
+   "label": "Sketch + signal-flow wall (our UIs)",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    0.03,
+    0.9,
+    1.4
+   ],
+   "center_m": [
+    -3.38,
+    2.25,
+    6.19
+   ],
+   "f_now": 0.43,
+   "side": -1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "W04",
+   "kind": "side",
+   "mount": "wall",
+   "label": "Parts bins: KNOBS, FADERS, VU METERS",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    0.15,
+    0.6,
+    0.9
+   ],
+   "center_m": [
+    -3.32,
+    2.45,
+    4.1
+   ],
+   "f_now": 0.28,
+   "side": -1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "W05",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Solder station + fume extractor (smoke wisp)",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    0.3,
+    0.18,
+    0.3
+   ],
+   "center_m": [
+    -2.8,
+    1.01,
+    7.7
+   ],
+   "f_now": 0.54,
+   "side": -1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "W06",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Pedal-builder’s corner on the parts bench",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    0.4,
+    0.2,
+    0.6
+   ],
+   "center_m": [
+    3.2,
+    1.02,
+    4.03
+   ],
+   "f_now": 0.28,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "W07",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Test-drive desk: DAW + code screens",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.7,
+    0.75,
+    1.4
+   ],
+   "center_m": [
+    -3.05,
+    0.38,
+    6.19
+   ],
+   "f_now": 0.43,
+   "side": -1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "W09",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Build board: SKETCH, BENCH, DSP, TEST",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    0.6,
+    1.8,
+    1.2
+   ],
+   "center_m": [
+    3.1,
+    0.9,
+    7.42
+   ],
+   "f_now": 0.52,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "W10",
+   "kind": "side",
+   "mount": "floor",
+   "label": "Repair shelf: a dash radio, a tube radio",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.35,
+    0.4,
+    1.2
+   ],
+   "center_m": [
+    3.23,
+    2.3,
+    8.06
+   ],
+   "f_now": 0.56,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "E01",
+   "kind": "end",
+   "mount": "end",
+   "label": "Mixing desk",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    2.4,
+    0.85,
+    0.85
+   ],
+   "center_m": [
+    0,
+    0.43,
+    1.13
+   ],
+   "f_now": 0.08,
+   "side": null,
+   "moves": "x, y, s, r",
+   "visible": true
+  },
+  {
+   "id": "E02",
+   "kind": "end",
+   "mount": "end",
+   "label": "Studio monitor on a stand",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.45,
+    1.81,
+    0.45
+   ],
+   "center_m": [
+    -0.97,
+    0.9,
+    0.46
+   ],
+   "f_now": 0.03,
+   "side": null,
+   "moves": "x, y, s, r",
+   "visible": true
+  },
+  {
+   "id": "E03",
+   "kind": "end",
+   "mount": "end",
+   "label": "Studio monitor on a stand",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.45,
+    1.81,
+    0.45
+   ],
+   "center_m": [
+    1.03,
+    0.9,
+    0.46
+   ],
+   "f_now": 0.03,
+   "side": null,
+   "moves": "x, y, s, r",
+   "visible": true
+  },
+  {
+   "id": "E04",
+   "kind": "end",
+   "mount": "end",
+   "label": "Synth on the desk",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.9,
+    0.12,
+    0.36
+   ],
+   "center_m": [
+    0.55,
+    0.91,
+    1.28
+   ],
+   "f_now": 0.09,
+   "side": null,
+   "moves": "x, y, s, r",
+   "visible": true
+  },
+  {
+   "id": "E05",
+   "kind": "end",
+   "mount": "end",
+   "label": "Pegboard: spanners, cables",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    1.6,
+    1.5,
+    0.05
+   ],
+   "center_m": [
+    -2.34,
+    1.65,
+    0.03
+   ],
+   "f_now": 0,
+   "side": null,
+   "moves": "x, y, s, r",
+   "visible": true
+  },
+  {
+   "id": "E06",
+   "kind": "end",
+   "mount": "end",
+   "label": "Shelf: oil cans, tape reels",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    1.6,
+    0.5,
+    0.35
+   ],
+   "center_m": [
+    1.68,
+    2.35,
+    0.18
+   ],
+   "f_now": 0.01,
+   "side": null,
+   "moves": "x, y, s, r",
+   "visible": true
+  },
+  {
+   "id": "N20",
+   "kind": "end",
+   "mount": "end",
+   "label": "GAS 2 pump-globe lamp (lit)",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    0.4,
+    0.45,
+    0.4
+   ],
+   "center_m": [
+    1.3,
+    2.83,
+    0.25
+   ],
+   "f_now": 0.02,
+   "side": null,
+   "moves": "x, y, s, r",
+   "visible": true
+  },
+  {
+   "id": "N24B",
+   "kind": "end",
+   "mount": "end",
+   "label": "Worn rug under the desk",
+   "cat": "music",
+   "flat": true,
+   "size_m": [
+    2.4,
+    0.02,
+    1.7
+   ],
+   "center_m": [
+    -0.4,
+    0.01,
+    1.4
+   ],
+   "f_now": 0.1,
+   "side": null,
+   "moves": "x, y, s, r",
+   "visible": true
+  },
+  {
+   "id": "N26B",
+   "kind": "end",
+   "mount": "end",
+   "label": "Boom mic stand by the small kit",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.6,
+    1.6,
+    0.6
+   ],
+   "center_m": [
+    -1.25,
+    0.8,
+    1.9
+   ],
+   "f_now": 0.13,
+   "side": null,
+   "moves": "x, y, s, r",
+   "visible": true
+  },
+  {
+   "id": "N30",
+   "kind": "end",
+   "mount": "end",
+   "label": "Pedestal fan (spins, turns)",
+   "cat": "garage",
+   "flat": false,
+   "size_m": [
+    0.45,
+    1.3,
+    0.45
+   ],
+   "center_m": [
+    -2.75,
+    0.65,
+    2.23
+   ],
+   "f_now": 0.15,
+   "side": null,
+   "moves": "x, y, s, r",
+   "visible": true
+  },
+  {
+   "id": "N31",
+   "kind": "end",
+   "mount": "end",
+   "label": "Vinyl crate + turntable on a low cabinet",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.8,
+    0.7,
+    0.45
+   ],
+   "center_m": [
+    2,
+    0.35,
+    0.32
+   ],
+   "f_now": 0.02,
+   "side": null,
+   "moves": "x, y, s, r",
+   "visible": true
+  },
+  {
+   "id": "N32",
+   "kind": "end",
+   "mount": "end",
+   "label": "Tube radio, dial glowing (GAS 2’s radio)",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.45,
+    0.3,
+    0.25
+   ],
+   "center_m": [
+    2.15,
+    2.75,
+    0.21
+   ],
+   "f_now": 0.01,
+   "side": null,
+   "moves": "x, y, s, r",
+   "visible": true
+  },
+  {
+   "id": "N33",
+   "kind": "end",
+   "mount": "end",
+   "label": "Oscilloscope, live green trace",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.35,
+    0.25,
+    0.4
+   ],
+   "center_m": [
+    -0.3,
+    0.98,
+    1
+   ],
+   "f_now": 0.07,
+   "side": null,
+   "moves": "x, y, s, r",
+   "visible": true
+  },
+  {
+   "id": "N34",
+   "kind": "end",
+   "mount": "end",
+   "label": "Desk chair, pushed back (someone just got up)",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.65,
+    1,
+    0.65
+   ],
+   "center_m": [
+    0.3,
+    0.5,
+    2.08
+   ],
+   "f_now": 0.14,
+   "side": null,
+   "moves": "x, y, s, r",
+   "visible": true
+  },
+  {
+   "id": "N35",
+   "kind": "end",
+   "mount": "end",
+   "label": "Headphones + a mug on the desk",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.35,
+    0.12,
+    0.25
+   ],
+   "center_m": [
+    -0.35,
+    0.91,
+    1.33
+   ],
+   "f_now": 0.09,
+   "side": null,
+   "moves": "x, y, s, r",
+   "visible": true
+  },
+  {
+   "id": "N36",
+   "kind": "end",
+   "mount": "end",
+   "label": "ON AIR sign (lights at the lock)",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.6,
+    0.2,
+    0.12
+   ],
+   "center_m": [
+    -0.85,
+    2.5,
+    0.06
+   ],
+   "f_now": 0,
+   "side": null,
+   "moves": "x, y, s, r",
+   "visible": true
+  },
+  {
+   "id": "E07",
+   "kind": "prop",
+   "mount": "floor",
+   "label": "Small drum kit: kick, snare, hi-hat (faces right)",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.66,
+    0.96,
+    1.02
+   ],
+   "center_m": [
+    -1.88,
+    0.48,
+    0.8
+   ],
+   "f_now": 0.07,
+   "side": null,
+   "moves": "f, x, y, s, r",
+   "visible": true
+  },
+  {
+   "id": "E08",
+   "kind": "prop",
+   "mount": "floor",
+   "label": "Drum throne, pushed back to the left (someone just got up)",
+   "cat": "music",
+   "flat": false,
+   "size_m": [
+    0.53,
+    0.62,
+    0.55
+   ],
+   "center_m": [
+    -0.67,
+    0.31,
+    2.43
+   ],
+   "f_now": 0.17,
+   "side": null,
+   "moves": "f, x, y, s, r",
+   "visible": true
+  },
+  {
+   "id": "A01",
+   "kind": "acoustic",
+   "mount": "floor",
+   "label": "Bass trap, far left corner",
+   "flat": false,
+   "size_m": [
+    0.88,
+    4.3,
+    0.88
+   ],
+   "center_m": [
+    -3.4,
+    2.15,
+    0
+   ],
+   "f_now": 0,
+   "side": -1,
+   "moves": "f, x, y, s, r",
+   "visible": true
+  },
+  {
+   "id": "A02",
+   "kind": "acoustic",
+   "mount": "floor",
+   "label": "Bass trap, far right corner",
+   "flat": false,
+   "size_m": [
+    0.88,
+    4.3,
+    0.88
+   ],
+   "center_m": [
+    3.4,
+    2.15,
+    0
+   ],
+   "f_now": 0,
+   "side": 1,
+   "moves": "f, x, y, s, r",
+   "visible": true
+  },
+  {
+   "id": "A03",
+   "kind": "acoustic",
+   "mount": "floor",
+   "label": "Ceiling cloud over the desk",
+   "flat": false,
+   "size_m": [
+    2.26,
+    0.13,
+    1.46
+   ],
+   "center_m": [
+    0,
+    3.71,
+    1.7
+   ],
+   "f_now": 0.12,
+   "side": null,
+   "moves": "f, x, y, s, r",
+   "visible": true
+  },
+  {
+   "id": "A04",
+   "kind": "acoustic",
+   "mount": "end",
+   "label": "Skyline diffuser, far wall",
+   "flat": false,
+   "size_m": [
+    0.94,
+    0.64,
+    1
+   ],
+   "center_m": [
+    -2.3,
+    3.3,
+    0
+   ],
+   "f_now": 0,
+   "side": null,
+   "moves": "x, y, s, r",
+   "visible": true
+  },
+  {
+   "id": "A05",
+   "kind": "acoustic",
+   "mount": "wall",
+   "label": "Skyline diffuser by the desk",
+   "flat": false,
+   "size_m": [
+    1,
+    0.64,
+    0.94
+   ],
+   "center_m": [
+    -3.4,
+    1.95,
+    1.01
+   ],
+   "f_now": 0.07,
+   "side": -1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "A06",
+   "kind": "acoustic",
+   "mount": "wall",
+   "label": "Skyline diffuser by the desk",
+   "flat": false,
+   "size_m": [
+    1,
+    0.64,
+    0.94
+   ],
+   "center_m": [
+    3.4,
+    1.95,
+    1.01
+   ],
+   "f_now": 0.07,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "A07",
+   "kind": "acoustic",
+   "mount": "wall",
+   "label": "Wooden slat panel",
+   "flat": false,
+   "size_m": [
+    0.06,
+    0.75,
+    1.3
+   ],
+   "center_m": [
+    -3.37,
+    3.45,
+    1.73
+   ],
+   "f_now": 0.12,
+   "side": -1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "A08",
+   "kind": "acoustic",
+   "mount": "wall",
+   "label": "Wooden slat panel",
+   "flat": false,
+   "size_m": [
+    0.06,
+    0.75,
+    1.3
+   ],
+   "center_m": [
+    3.37,
+    3.45,
+    1.73
+   ],
+   "f_now": 0.12,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "A09",
+   "kind": "acoustic",
+   "mount": "wall",
+   "label": "Wooden slat panel",
+   "flat": false,
+   "size_m": [
+    0.06,
+    0.75,
+    1.3
+   ],
+   "center_m": [
+    -3.37,
+    3.45,
+    4.32
+   ],
+   "f_now": 0.3,
+   "side": -1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "A10",
+   "kind": "acoustic",
+   "mount": "wall",
+   "label": "Wooden slat panel",
+   "flat": false,
+   "size_m": [
+    0.06,
+    0.75,
+    1.3
+   ],
+   "center_m": [
+    3.37,
+    3.45,
+    4.32
+   ],
+   "f_now": 0.3,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "A11",
+   "kind": "acoustic",
+   "mount": "wall",
+   "label": "Wooden slat panel",
+   "flat": false,
+   "size_m": [
+    0.06,
+    0.75,
+    1.3
+   ],
+   "center_m": [
+    -3.37,
+    3.45,
+    7.2
+   ],
+   "f_now": 0.5,
+   "side": -1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "A12",
+   "kind": "acoustic",
+   "mount": "wall",
+   "label": "Wooden slat panel",
+   "flat": false,
+   "size_m": [
+    0.06,
+    0.75,
+    1.3
+   ],
+   "center_m": [
+    3.37,
+    3.45,
+    7.2
+   ],
+   "f_now": 0.5,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "A13",
+   "kind": "acoustic",
+   "mount": "wall",
+   "label": "Wooden slat panel",
+   "flat": false,
+   "size_m": [
+    0.06,
+    0.75,
+    1.3
+   ],
+   "center_m": [
+    -3.37,
+    3.45,
+    9.79
+   ],
+   "f_now": 0.68,
+   "side": -1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "A14",
+   "kind": "acoustic",
+   "mount": "wall",
+   "label": "Wooden slat panel",
+   "flat": false,
+   "size_m": [
+    0.06,
+    0.75,
+    1.3
+   ],
+   "center_m": [
+    -3.37,
+    3.45,
+    12.38
+   ],
+   "f_now": 0.86,
+   "side": -1,
+   "moves": "f, x, y, s, r, side",
+   "visible": true
+  },
+  {
+   "id": "A15",
+   "kind": "acoustic",
+   "mount": "wall",
+   "label": "Wooden slat panel",
+   "flat": false,
+   "size_m": [
+    0.06,
+    0.75,
+    1.3
+   ],
+   "center_m": [
+    3.37,
+    3.45,
+    12.38
+   ],
+   "f_now": 0.86,
+   "side": 1,
+   "moves": "f, x, y, s, r, side",
+   "visible": false
+  },
+  {
+   "id": "P01",
+   "kind": "poster",
+   "mount": "wall",
+   "label": "GAS 2 poster: No knock. No knob.",
+   "flat": false,
+   "size_m": [
+    0.03,
+    1.06,
+    0.73
+   ],
+   "center_m": [
+    -3.37,
+    2.45,
+    11.23
+   ],
+   "f_now": 0.78,
+   "side": -1,
+   "moves": "f, x, y, s, side",
+   "visible": true
+  },
+  {
+   "id": "P02",
+   "kind": "poster",
+   "mount": "wall",
+   "label": "GAS 2 poster: Fill it up.",
+   "flat": false,
+   "size_m": [
+    0.03,
+    0.81,
+    1.18
+   ],
+   "center_m": [
+    3.37,
+    2.5,
+    3.17
+   ],
+   "f_now": 0.22,
+   "side": 1,
+   "moves": "f, x, y, s, side",
+   "visible": true
+  },
+  {
+   "id": "P03",
+   "kind": "poster",
+   "mount": "wall",
+   "label": "GAS 2 poster: Start every mix here.",
+   "flat": false,
+   "size_m": [
+    0.03,
+    0.86,
+    1.26
+   ],
+   "center_m": [
+    -3.37,
+    2.45,
+    5.18
+   ],
+   "f_now": 0.36,
+   "side": -1,
+   "moves": "f, x, y, s, side",
+   "visible": true
+  },
+  {
+   "id": "P04",
+   "kind": "poster",
+   "mount": "end",
+   "label": "GAS 2 poster: Mail me the keys.",
+   "flat": false,
+   "size_m": [
+    0.63,
+    0.91,
+    0.03
+   ],
+   "center_m": [
+    -1.45,
+    3,
+    0.03
+   ],
+   "f_now": 0,
+   "side": 0,
+   "moves": "x, y, s",
+   "visible": true
+  },
+  {
+   "id": "P05",
+   "kind": "poster",
+   "mount": "wall",
+   "label": "GAS 2: the pump",
+   "flat": false,
+   "size_m": [
+    0.03,
+    1.01,
+    0.58
+   ],
+   "center_m": [
+    -3.37,
+    2.5,
+    6.77
+   ],
+   "f_now": 0.47,
+   "side": -1,
+   "moves": "f, x, y, s, side",
+   "visible": true
+  },
+  {
+   "id": "P06",
+   "kind": "poster",
+   "mount": "wall",
+   "label": "COMING SOON plate (future plugins)",
+   "flat": false,
+   "size_m": [
+    0.03,
+    0.56,
+    0.79
+   ],
+   "center_m": [
+    3.37,
+    2.45,
+    6.34
+   ],
+   "f_now": 0.44,
+   "side": 1,
+   "moves": "f, x, y, s, side",
+   "visible": true
+  },
+  {
+   "id": "M01",
+   "kind": "monitor",
+   "mount": "floor",
+   "label": "CRT monitor: RevFX",
+   "flat": false,
+   "size_m": [
+    0.76,
+    0.37,
+    0.76
+   ],
+   "center_m": [
+    -3.13,
+    1.1,
+    8.49
+   ],
+   "f_now": 0.6,
+   "side": -1,
+   "moves": "f, x, y, s, r",
+   "visible": true
+  },
+  {
+   "id": "M02",
+   "kind": "monitor",
+   "mount": "floor",
+   "label": "CRT monitor: DRIFT",
+   "flat": false,
+   "size_m": [
+    0.71,
+    0.37,
+    0.71
+   ],
+   "center_m": [
+    3.13,
+    1.1,
+    5.04
+   ],
+   "f_now": 0.36,
+   "side": 1,
+   "moves": "f, x, y, s, r",
+   "visible": true
+  },
+  {
+   "id": "M03",
+   "kind": "monitor",
+   "mount": "floor",
+   "label": "CRT monitor: RevLimiter",
+   "flat": false,
+   "size_m": [
+    0.52,
+    0.3,
+    0.43
+   ],
+   "center_m": [
+    -0.75,
+    1,
+    0.84
+   ],
+   "f_now": 0.07,
+   "side": 0,
+   "moves": "f, x, y, s, r",
+   "visible": true
+  },
+  {
+   "id": "M04",
+   "kind": "monitor",
+   "mount": "floor",
+   "label": "CRT monitor: Radio Roulette",
+   "flat": false,
+   "size_m": [
+    0.65,
+    0.33,
+    0.65
+   ],
+   "center_m": [
+    3.13,
+    2.06,
+    6.19
+   ],
+   "f_now": 0.44,
+   "side": 1,
+   "moves": "f, x, y, s, r",
+   "visible": true
+  },
+  {
+   "id": "CAR",
+   "kind": "car",
+   "mount": "floor",
+   "label": "JDM coupe",
+   "flat": false,
+   "size_m": [
+    4.43,
+    1.42,
+    1.96
+   ],
+   "center_m": [
+    3.39,
+    1.32,
+    13.68
+   ],
+   "f_now": 0.95,
+   "side": null,
+   "moves": "bench car sliders (carZ, carOut, carYaw, liftType, liftH)",
+   "visible": true
+  },
+  {
+   "id": "SIGN",
+   "kind": "sign",
+   "mount": "wall",
+   "label": "REVAUDIO neon",
+   "flat": false,
+   "size_m": [
+    3.79,
+    1.07,
+    0
+   ],
+   "center_m": [
+    1.52,
+    3.02,
+    0.06
+   ],
+   "f_now": 0,
+   "side": null,
+   "moves": "bench sign sliders (signWall, signF, signX, signY, signScale, signTilt)",
+   "visible": true
+  }
+ ]
+}
