@@ -277,8 +277,9 @@ export function captureCopyFor(phase: DriftPhase = drift.phase): CaptureCopy | n
         source: 'drift-trial',
         ok: "You're in. Download on its way by email.",
         already: askUs,
-        fine: `Download by email. Open it on a computer. You join our list · unsubscribe anytime.`,
-        fineShort: `By email · Mac / PC. You join our list · unsubscribe anytime.`,
+        // the list is the form's own optional box now (DriftConsent, TV walk P05), not part of the trial
+        fine: `Download by email. Open it on a computer.`,
+        fineShort: `By email · Mac / PC.`,
       };
     case 'closed':
       return {

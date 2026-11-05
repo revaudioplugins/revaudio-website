@@ -13,6 +13,7 @@
  * Dan 10-01 cut the micro lines under the key; the list line came back as one
  * tiny consent line (the sign-up joins the newsletter list).
  */
+import DriftConsent from './DriftConsent.astro';
 import { site } from '../../data/site';
 import { drift, captureCopyFor, registerUrlFor } from '../../data/drift';
 
@@ -42,12 +43,14 @@ const keyLabel = drift.phase === 'preopen' || drift.phase === 'open' ? `Get it: 
     <!-- honeypot: real users never fill this; bots do -->
     <input type="text" name="_gotcha" class="d-hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
     <button type="submit" class="d-cta d-stamp-key" aria-label={keyLabel}><span data-face>Get it <span class="d-stamp-arrow" aria-hidden="true">&#9656;</span></span></button>
+    {registerUrl && <DriftConsent />}
   </form>
   <p class="d-capture-status" role="status" aria-live="polite" tabindex="-1"></p>
   <!-- phone only (hidden ≥601): capture.ts reveals it after a first sign-up, as in #try -->
   {drift.creatorDealOpen && <a class="d-capture-next" href="#creators" hidden>Keep it free with a video ›</a>}
-  <!-- consent: the sign-up joins the newsletter list, so it is said at the point of capture (Dan 10-01, option a) -->
-  <p class="d-stamp-fine">You join our list · unsubscribe anytime</p>
+  <!-- consent: a notify-me sign-up joins the newsletter list, so it is said at the point of capture (Dan 10-01,
+       option a); a trial sign-up asks with its own box instead (DriftConsent, TV walk P05) -->
+  {!registerUrl && <p class="d-stamp-fine">You join our list · unsubscribe anytime</p>}
   <!-- phone only (drift.css swaps it in ≤600): the full fine line, verbatim captureCopyFor().fine (Dan 10-02, F3) -->
   <p class="d-stamp-fine d-stamp-fine--ph">{copy.fineShort}</p>
 </div>

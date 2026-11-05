@@ -22,7 +22,9 @@
  *
  * Three states, one dialog:
  *   1. form  — email capture (the trigger path above).
- *   2. sent  — "check your inbox".
+ *   2. sent  — "check your inbox": the address, on a phone "open it on your
+ *              Mac or PC", Resend and Wrong email? Minimal, two faces only (the
+ *              display title + body text; Dan 2026-11-04, TV walk P01).
  *   3. ready — Mac + Windows buttons. Remembered per plugin in localStorage
  *              for the token's 24h life, so closing the dialog / reloading /
  *              re-clicking the CTA reopens the buttons, not the email form.
@@ -63,8 +65,11 @@ const gateNames = Object.fromEntries(plugins.map((p) => [dlGateId(p), p.name]));
   <form class="tg-form" data-tg-form novalidate>
     <label class="tg-field">
       <span>Email</span>
-      <input type="email" data-tg-email name="email" placeholder="you@studio.com" required autocomplete="email" />
+      <input type="email" data-tg-email name="email" placeholder="you@studio.com" required autocomplete="email" aria-describedby="tg-email-err" />
     </label>
+    <!-- Each error sits at its own field (TV walk P06): at 200 % zoom one line
+         under the send key fell below the dialog's edge. -->
+    <p class="tg-ferr" id="tg-email-err" data-tg-email-err role="alert" aria-live="polite"></p>
     <!-- honeypot: real users never fill this; bots do -->
     <input type="text" name="_gotcha" class="tg-hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
     <!-- Marketing consent: UNCHECKED by default (Soundtoys pattern). A paid
@@ -77,15 +82,26 @@ const gateNames = Object.fromEntries(plugins.map((p) => [dlGateId(p), p.name]));
          address is taken (UK soft opt-in and Israel §30A(ג) both need that). -->
     <div class="tg-consent-block">
       <label class="tg-consent">
-        <input type="checkbox" data-tg-consent />
+        <input type="checkbox" data-tg-consent aria-describedby="tg-consent-err" />
         <span data-tg-consent-text>Also send me new-plugin drops and demo codes (optional)</span>
       </label>
+      <p class="tg-ferr" id="tg-consent-err" data-tg-consent-err role="alert" aria-live="polite"></p>
       <p class="tg-notice" data-tg-notice>We'll send a few short emails about getting started, and a heads-up before a trial ends. Unsubscribe anytime.</p>
     </div>
     <button type="submit" class="tg-submit rv-btn" data-tg-submit>Send my link</button>
     <p class="tg-err" data-tg-err role="alert" aria-live="polite"></p>
   </form>
   <p class="tg-status" data-tg-status role="status" aria-live="polite" hidden></p>
+  <div class="tg-sent" data-tg-sent hidden>
+    <p>Sent to <b data-tg-sent-to></b>.</p>
+    <p data-tg-sent-desk hidden>Open it on your Mac or PC to install.</p>
+    <p class="tg-sent-act">
+      <button type="button" data-tg-resend>Resend</button>
+      <span aria-hidden="true">&middot;</span>
+      <button type="button" data-tg-wrong>Wrong email?</button>
+    </p>
+    <p class="tg-sent-msg" data-tg-sent-msg role="status" aria-live="polite"></p>
+  </div>
   <div class="tg-ready" data-tg-ready hidden>
     <div class="tg-dl-row" data-tg-dl-row>
       <button type="button" class="tg-dl rv-btn rv-btn--ghost rv-btn--stack" data-tg-dl="mac">
@@ -121,9 +137,24 @@ const gateNames = Object.fromEntries(plugins.map((p) => [dlGateId(p), p.name]));
     var notice = modal.querySelector('[data-tg-notice]');
     var consentBox = modal.querySelector('[data-tg-consent]');
     var consentText = modal.querySelector('[data-tg-consent-text]');
-    consentBox.addEventListener('change', function () { if (consentBox.checked) err.textContent = ''; });
+    var emailErr = modal.querySelector('[data-tg-email-err]');
+    var consentErr = modal.querySelector('[data-tg-consent-err]');
+    function fieldErr(input, line, text) {
+      line.textContent = text;
+      if (text) input.setAttribute('aria-invalid', 'true'); else input.removeAttribute('aria-invalid');
+    }
+    consentBox.addEventListener('change', function () { if (consentBox.checked) fieldErr(consentBox, consentErr, ''); });
+    email.addEventListener('input', function () { fieldErr(email, emailErr, ''); });
     var err = modal.querySelector('[data-tg-err]');
     var status = modal.querySelector('[data-tg-status]');
+    var sent = modal.querySelector('[data-tg-sent]');
+    var sentTo = modal.querySelector('[data-tg-sent-to]');
+    var sentDesk = modal.querySelector('[data-tg-sent-desk]');
+    var sentMsg = modal.querySelector('[data-tg-sent-msg]');
+    var resendBtn = modal.querySelector('[data-tg-resend]');
+    var wrongBtn = modal.querySelector('[data-tg-wrong]');
+    var formTitle = '';
+    var lastBody = null;
     var ready = modal.querySelector('[data-tg-ready]');
     var dlErr = modal.querySelector('[data-tg-dl-err]');
     var dlRow = modal.querySelector('[data-tg-dl-row]');
@@ -183,19 +214,28 @@ const gateNames = Object.fromEntries(plugins.map((p) => [dlGateId(p), p.name]));
       // "Checkout's under construction" retired 2026-08-03 — checkout is live
       // again; this modal is now purely the trial/free-download email gate.
       kicker.textContent = 'Free 30-day trial';
-      title.textContent = free
+      formTitle = free
         ? name + ' is free. Grab it'
         : 'Take the free ' + name + ' trial';
+      title.textContent = formTitle;
+      // The paid trial says when the 30 days start and what day 31 does (TV walk P12): RevLimiter, Radio
+      // Roulette and DRIFT count from the first launch, then pass the sound through untouched, no DSP, no
+      // beep, no silence, until a key goes in (their LicenseManager + processBlock licence gate, read 2026-11-05).
       sub.textContent = free
         ? 'Free forever. Full version, no trial clock, no credit card. Enter your email and your download link lands in your inbox.'
-        : 'Download 30 days free first, full version, no credit card. Enter your email and your download link lands in your inbox.';
+        : 'Full version, no credit card. The 30 days start the first time you open it; after that your sound passes through untouched until you add a key.';
+      sub.hidden = false;
       // a free download has no trial to end
-      // the free downloads need the marketing yes (Gil 2026-11-03); a paid trial keeps it optional
+      // the free downloads need the marketing yes (Gil 2026-11-03); a paid trial keeps it optional.
+      // Required says so up front, not only after a refused Send (TV walk P06).
       consentBox.required = free;
       consentBox.checked = false;
       consentText.textContent = free
-        ? 'Send me new-plugin drops and demo codes'
+        ? 'Send me new-plugin drops and demo codes (required)'
         : 'Also send me new-plugin drops and demo codes (optional)';
+      fieldErr(email, emailErr, '');
+      fieldErr(consentBox, consentErr, '');
+      sent.hidden = true;
       notice.textContent = free
         ? "We'll send a few short emails about getting started. Unsubscribe anytime."
         : "We'll send a few short emails about getting started, and a heads-up before a trial ends. Unsubscribe anytime.";
@@ -220,8 +260,10 @@ const gateNames = Object.fromEntries(plugins.map((p) => [dlGateId(p), p.name]));
       kicker.hidden = false;
       kicker.textContent = 'Email verified';
       title.textContent = 'Download ' + name;
+      sub.hidden = false;
       form.hidden = true;
       status.hidden = true;
+      sent.hidden = true;
       ready.hidden = false;
       dlErr.textContent = '';
       dlNote.hidden = true;
@@ -270,12 +312,12 @@ const gateNames = Object.fromEntries(plugins.map((p) => [dlGateId(p), p.name]));
       if (inFlight) return;
       var v = email.value.trim();
       if (!EMAIL_RE.test(v)) {
-        err.textContent = 'That doesn’t look like an email.';
+        fieldErr(email, emailErr, v ? 'That doesn’t look like an email.' : 'Enter your email.');
         email.focus();
         return;
       }
       if (consentBox.required && !consentBox.checked) {
-        err.textContent = 'Tick the box to get your download.';
+        fieldErr(consentBox, consentErr, 'Tick the box to get your download.');
         consentBox.focus();
         return;
       }
@@ -294,32 +336,74 @@ const gateNames = Object.fromEntries(plugins.map((p) => [dlGateId(p), p.name]));
       // campaign / referring host, no click ids), stored on the trial lead.
       var regBody = { email: v, plugin: pluginSlug, marketing: !!(consent && consent.checked) };
       try { if (window.raSaleSource) Object.assign(regBody, window.raSaleSource()); } catch (e) {}
+      register(regBody, function (data) {
+        if (data && data.ok) {
+          lastBody = regBody;
+          showSent(v);
+          // Registration really happened — lets listeners (the exit popup's
+          // "already got it" suppression) key off the true success moment
+          // instead of a CTA click that might be abandoned at this form.
+          document.dispatchEvent(new CustomEvent('tg:registered', { detail: { plugin: pluginSlug } }));
+        } else {
+          err.textContent = (data && data.error) || 'Something went wrong. Try again.';
+        }
+      }, function () {
+        err.textContent = 'Network hiccup. Try again in a moment.';
+      }, function () {
+        inFlight = false;
+        submit.disabled = false;
+      });
+    });
+
+    function register(body, done, failed, always) {
       fetch(registerUrl, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(regBody),
+        body: JSON.stringify(body),
       })
         .then(function (res) { return res.json(); })
-        .then(function (data) {
-          if (data && data.ok) {
-            form.hidden = true;
-            status.textContent = 'Check your inbox. We sent the download link to ' + v + '. Not there in a minute? Look in Promotions or Spam.';
-            status.hidden = false;
-            // Registration really happened — lets listeners (the exit popup's
-            // "already got it" suppression) key off the true success moment
-            // instead of a CTA click that might be abandoned at this form.
-            document.dispatchEvent(new CustomEvent('tg:registered', { detail: { plugin: pluginSlug } }));
-          } else {
-            err.textContent = (data && data.error) || 'Something went wrong. Try again.';
-          }
-        })
-        .catch(function () {
-          err.textContent = 'Network hiccup. Try again in a moment.';
-        })
-        .finally(function () {
-          inFlight = false;
-          submit.disabled = false;
-        });
+        .then(done, failed)
+        .finally(always);
+    }
+
+    // State 2: the title says it, one line says where, a phone gets one line more.
+    function showSent(addr) {
+      form.hidden = true;
+      kicker.hidden = true;
+      sub.hidden = true;
+      title.textContent = 'Check your inbox';
+      sentTo.textContent = addr;
+      var coarse = false;
+      try { coarse = window.matchMedia('(pointer: coarse)').matches; } catch (e) {}
+      sentDesk.hidden = !coarse;
+      sentMsg.textContent = '';
+      sent.hidden = false;
+      title.setAttribute('tabindex', '-1');
+      title.focus();
+    }
+    resendBtn.addEventListener('click', function () {
+      if (inFlight || !lastBody) return;
+      inFlight = true;
+      resendBtn.disabled = true;
+      sentMsg.textContent = 'Sending…';
+      register(lastBody, function (data) {
+        sentMsg.textContent = data && data.ok ? 'Sent again. Look in Promotions or Spam too.' : ((data && data.error) || 'Something went wrong. Try again.');
+      }, function () {
+        sentMsg.textContent = 'Network hiccup. Try again in a moment.';
+      }, function () {
+        inFlight = false;
+        resendBtn.disabled = false;
+      });
+    });
+    wrongBtn.addEventListener('click', function () {
+      sent.hidden = true;
+      title.removeAttribute('tabindex');
+      title.textContent = formTitle;
+      kicker.hidden = submit.classList.contains('rv-btn--honey');
+      sub.hidden = false;
+      form.hidden = false;
+      email.focus();
+      email.select();
     });
 
     // ---- state 3: the download buttons -------------------------------------
@@ -388,9 +472,11 @@ const gateNames = Object.fromEntries(plugins.map((p) => [dlGateId(p), p.name]));
             gateToken = '';
             btn.disabled = false;
             ready.hidden = true;
+            sent.hidden = true;
             form.hidden = false;
             kicker.hidden = true;
-            title.textContent = 'That link expired';
+            formTitle = 'That link expired';
+            title.textContent = formTitle;
             sub.textContent = 'Verify links are good for 24 hours. Enter your email and we’ll send a fresh one.';
             email.value = '';
             email.disabled = false;
@@ -549,6 +635,28 @@ const gateNames = Object.fromEntries(plugins.map((p) => [dlGateId(p), p.name]));
   .tg-submit { display: flex; width: 100%; }
 
   .tg-err { min-height: 1.1em; margin: 0; font-size: 0.8rem; color: var(--oxide-text); }
+  /* a field's own error, right under it; takes no room while empty */
+  .tg-ferr { margin: -0.6rem 0 0; font-size: 0.82rem; color: var(--oxide-text); }
+  .tg-ferr:empty { display: none; }
+  .tg-consent-block .tg-ferr { margin: 0; }
+  .tg-field input[aria-invalid='true'] { border-color: var(--oxide-text); }
+
+  /* state 2, "check your inbox": the display title + plain body text, nothing else (Dan: two faces) */
+  .tg-sent { display: grid; gap: 0.5rem; font-family: var(--font-body); font-size: 0.95rem; }
+  .tg-sent[hidden] { display: none; }
+  .tg-sent p { margin: 0; }
+  .tg-sent b { color: var(--brass-bright); font-weight: 600; overflow-wrap: anywhere; }
+  .tg-sent [hidden] { display: none; }
+  .tg-sent-act { color: var(--fg-dim); font-size: 0.85rem; margin-top: 0.5rem !important; }
+  .tg-sent-act button {
+    font: inherit; color: var(--fg-dim); background: none; border: 0; padding: 0.25rem 0; min-height: 24px;
+    text-decoration: underline; cursor: pointer;
+  }
+  .tg-sent-act button:hover { color: var(--brass-bright); }
+  .tg-sent-act button:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 2px; }
+  .tg-sent-msg { color: var(--fg-dim); font-size: 0.85rem; }
+  .tg-sent-msg:empty { display: none; }
+  .tg-modal h2:focus { outline: none; }
 
   .tg-status { margin: 0; font-size: 0.95rem; text-align: center; color: var(--brass-bright); }
 

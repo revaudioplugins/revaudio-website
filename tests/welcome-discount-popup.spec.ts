@@ -17,14 +17,25 @@ async function primePage(page: Page) {
   await expect(page.locator('body')).toBeVisible();
 }
 
-async function scrollPastThreshold(page: Page) {
-  // Component arms 2s after load, then fires past 35% scroll progress.
+async function scrollPastThreshold(page: Page, share = 1) {
+  // Component arms 2s after load, then fires past 35% scroll progress, but never over the home TV in view
+  // (popup-guard.ts, TV walk P03): the home page is short, so at 50 % the TV still fills ~40 % of a laptop
+  // screen. The bottom of the page has it out of view.
   await page.waitForTimeout(2100);
-  await page.evaluate(() => {
+  await page.evaluate((s) => {
     const doc = document.documentElement;
-    window.scrollTo(0, (doc.scrollHeight - doc.clientHeight) * 0.5);
-  });
+    window.scrollTo(0, (doc.scrollHeight - doc.clientHeight) * s);
+  }, share);
 }
+
+test('popup stays closed while the home TV is in view', async ({ page }, info) => {
+  // the laptop's geometry: on a phone the page runs longer, so 50 % already has the TV out of view
+  test.skip(info.project.name !== 'chromium', 'laptop geometry');
+  await primePage(page);
+  await scrollPastThreshold(page, 0.5);
+  await page.waitForTimeout(1200);
+  await expect(page.locator('[data-welcome10]')).not.toHaveAttribute('open', '');
+});
 
 // The site is cross-origin from the license Worker, so every POST the browser
 // sends there is preceded by a real CORS preflight (OPTIONS). A route.fulfill

@@ -102,15 +102,21 @@
       if (edgeGtag) window.gtag('consent', 'update', consent('denied'));
     }
 
-    function showBanner() {
+    // TV walk P04 (Dan 2026-11-04): on its own the banner no longer takes the keyboard cursor (it sat on Accept
+    // All, and the first Tab left the page); only the footer's "Cookie settings" link, a request, moves focus in.
+    // While it shows, scroll-padding keeps whatever gets focus clear of it (the TV's keys were hidden behind it).
+    function showBanner(asked) {
       banner.hidden = false;
-      requestAnimationFrame(function () { banner.classList.add('cb--visible'); });
-      // Move focus to the banner for a11y
+      requestAnimationFrame(function () {
+        banner.classList.add('cb--visible');
+        document.documentElement.style.scrollPaddingBottom = banner.offsetHeight + 'px';
+      });
       var acceptBtn = document.getElementById('cookie-accept');
-      if (acceptBtn) acceptBtn.focus();
+      if (asked && acceptBtn) acceptBtn.focus();
     }
 
     function hideBanner() {
+      document.documentElement.style.scrollPaddingBottom = '';
       banner.classList.remove('cb--visible');
       banner.addEventListener('transitionend', function hide() {
         banner.hidden = true;
@@ -173,7 +179,7 @@
       var link = e.target && e.target.closest && e.target.closest('[data-cookie-settings]');
       if (!link) return;
       e.preventDefault();
-      showBanner();
+      showBanner(true);
     });
   })();
 </script>
@@ -198,8 +204,9 @@
     transform: translateY(0);
   }
 
+  /* slim (TV walk P04): it covered the TV's price and keys at 1141x636 */
   .cb-inner {
-    padding: 1.1rem 2.5rem;
+    padding: 0.6rem 2.5rem;
     display: grid;
     grid-template-columns: 1fr auto;
     align-items: center;
@@ -216,7 +223,7 @@
   .cb-title {
     flex-shrink: 0;
     font-family: var(--font-display);
-    font-size: 2rem;
+    font-size: 1.5rem;
     letter-spacing: 0.08em;
     color: var(--brass-bright);
     margin-left: 200px;
@@ -236,6 +243,8 @@
     60%        { transform: rotate(6deg) scale(1.02); }
     75%        { transform: rotate(-3deg) scale(1); }
   }
+  /* reduce-motion means the cookie too (TV walk P04: it wobbled forever under it) */
+  @media (prefers-reduced-motion: reduce) { .cb-emoji { animation: none; } }
 
   .cb-body {
     flex: 1;
@@ -264,6 +273,12 @@
 
   /* Desktop shows the full copy; the short line is phone-only. */
   .cb-short { display: none; }
+  /* A short laptop screen (1141x636 = Dan's Safari) gets the short line too: the full copy wrapped to five lines
+     and the banner sat on the TV's price and keys (TV walk P04). */
+  @media (min-width: 601px) and (max-height: 820px) {
+    .cb-full { display: none; }
+    .cb-short { display: inline; }
+  }
 
   /* Original small-screen stack (601–640px unchanged from before Phase B). */
   @media (max-width: 640px) {
@@ -299,13 +314,9 @@
       align-items: flex-start;
       gap: 0.2rem;
     }
-    /* Title first, then the short line — reads as a compact sheet header. */
-    .cb-title {
-      order: -1;
-      margin-left: 0;
-      font-size: 1.15rem;
-      letter-spacing: 0.06em;
-    }
+    /* Slim (TV walk P04): the short line says it, so the title goes (it took the bottom third of a phone,
+       over the TV's keys); 44px tap targets. */
+    .cb-title { display: none; }
     .cb-full { display: none; }
     .cb-short { display: inline; }
     .cb-body { font-size: 0.78rem; line-height: 1.4; }
@@ -314,9 +325,8 @@
       grid-template-columns: 1fr 1fr;
       gap: 0.6rem;
     }
-    /* ≥44px tap targets: one family step up (48px). */
     .cb-btn {
-      --rb-h: 48px;
+      --rb-h: 44px;
       --rb-px: 16px;
       --rb-fs: 16px;
       --rb-r: 12px;

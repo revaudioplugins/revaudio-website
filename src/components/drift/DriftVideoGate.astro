@@ -6,6 +6,7 @@
  * Used by the laptop player (DriftKeep .d-kv-end) and the phone sheet (DriftVideoSheet). `id` keeps the field's
  * label unique per copy.
  */
+import DriftConsent from './DriftConsent.astro';
 import { site } from '../../data/site';
 import { drift, captureCopyFor, registerUrlFor } from '../../data/drift';
 interface Props { id: string; againAttr: string }
@@ -28,9 +29,10 @@ const registerUrl = registerUrlFor();   // open phase: the form posts the trial 
         <input type="hidden" name="source" value={gate.source} />
         <input type="text" name="_gotcha" class="d-hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
         <button type="submit" class="d-keep-key"><span data-face>Get it <span class="d-keep-arrow" aria-hidden="true">&#9654;</span></span></button>
+        {registerUrl && <DriftConsent />}
       </form>
       <p class="d-capture-status" role="status" aria-live="polite" tabindex="-1"></p>
-      <p class="d-keep-consent">Open it on a computer · You join our list · unsubscribe anytime</p>
+      <p class="d-keep-consent">{registerUrl ? 'Open it on a computer' : 'Open it on a computer · You join our list · unsubscribe anytime'}</p>
     </div>
     <button type="button" class="d-cr-again d-vend-again" {...{ [againAttr]: '' }}>&#8635; Watch again</button>
   </div>

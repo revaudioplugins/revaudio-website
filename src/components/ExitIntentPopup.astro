@@ -68,6 +68,7 @@ const excluded = path === '/gas' || path === '/thank-you' || path === '/review' 
 )}
 
 <script>
+  import { popupMayOpen, openWithFocusBack } from '../lib/popup-guard';
   const modal = document.querySelector<HTMLDialogElement>('[data-exit-gas]');
   if (modal && !window.matchMedia('(pointer: coarse)').matches) {
     const KEY = 'ra-exit-gas';
@@ -138,6 +139,7 @@ const excluded = path === '/gas' || path === '/thank-you' || path === '/review' 
       // Grace delay: an accidental graze of the edge re-enters within 100ms
       // and cancels (Ouibounce's delay + mouseenter-cancel pattern).
       graceTimer = window.setTimeout(() => {
+        if (!popupMayOpen()) return; // never over the TV in view or in use (TV walk P03)
         fired = true;
         html.removeEventListener('mouseleave', onLeave);
         html.removeEventListener('mouseenter', onEnter);
@@ -146,6 +148,7 @@ const excluded = path === '/gas' || path === '/thank-you' || path === '/review' 
           sessionStorage.setItem(SESSION_KEY, '1');
           sessionStorage.setItem(SHARED_SESSION_KEY, '1');
         } catch (err) {}
+        openWithFocusBack(modal);
         modal.showModal();
         html.style.overflow = 'hidden';
         modal.focus(); // focus the dialog, not the CTA — no aggressive focus grab

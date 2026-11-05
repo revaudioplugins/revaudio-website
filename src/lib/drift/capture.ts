@@ -69,11 +69,13 @@ export function initCaptures(): void {
         let j: { ok?: boolean; already?: boolean; error?: string } | null;
         if (form.dataset.registerUrl && !fields._gotcha) {
           // Open phase: the worker's email gate sends the download now (Yoni 2026-10-10: preopen's
-          // /form-once only filed the address, so nobody got a mail). The form says "You join our list",
-          // so that consent goes along as marketing, and the list relay still runs in the background.
-          const res = await postJson(form.dataset.registerUrl, { email: fields.email, plugin: form.dataset.plugin, marketing: true });
+          // /form-once only filed the address, so nobody got a mail). The list is a separate yes (TV walk
+          // P05, Dan 2026-11-04): only a ticked DriftConsent box sends marketing and runs the list relay.
+          const consent = form.querySelector<HTMLInputElement>('[data-drift-consent]');
+          const marketing = !!consent?.checked;
+          const res = await postJson(form.dataset.registerUrl, { email: fields.email, plugin: form.dataset.plugin, marketing });
           j = await res.json().catch(() => null);
-          if (j && j.ok) postJson(form.dataset.onceUrl!, { form: 'newsletter', ...fields }).catch(() => { /* list join is best-effort */ });
+          if (j && j.ok && marketing) postJson(form.dataset.onceUrl!, { form: 'newsletter', ...fields }).catch(() => { /* list join is best-effort */ });
         } else {
           const res = await postJson(form.dataset.onceUrl!, { form: 'newsletter', ...fields });
           j = await res.json().catch(() => null);

@@ -60,6 +60,7 @@ const excluded = path === '/thank-you' || path === '/review' || path === '/drift
 )}
 
 <script>
+  import { popupMayOpen, openWithFocusBack } from '../lib/popup-guard';
   const modal = document.querySelector<HTMLDialogElement>('[data-welcome10]');
   if (modal) {
     const KEY = 'ra-welcome10';
@@ -120,12 +121,14 @@ const excluded = path === '/thank-you' || path === '/review' || path === '/drift
         if (fired || suppressed()) return;
         if (document.querySelector('dialog[open]')) return; // never stack dialogs
         if (scrollProgress() < SCROLL_THRESHOLD) return;
+        if (!popupMayOpen()) return; // the TV in view or in use, or a keyboard scroll: a later scroll may try again
         fired = true;
         window.removeEventListener('scroll', onScroll);
         try {
           sessionStorage.setItem(SESSION_KEY, '1');
           sessionStorage.setItem(SHARED_SESSION_KEY, '1');
         } catch (e) {}
+        openWithFocusBack(modal);
         modal.showModal();
         html.style.overflow = 'hidden';
         modal.focus();

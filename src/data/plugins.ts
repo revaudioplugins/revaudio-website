@@ -479,7 +479,7 @@ export const plugins: Plugin[] = [
         { w: 'Raw',    o: 0.5 },
       ],
       blurb:
-        'One DRIVE knob, three voices: Tube, Tape, Fuzz. Turn it and the character changes, never the volume. Free, and it stays free.',
+        'For any single track. One DRIVE knob, three voices: Tube, Tape, Fuzz. Turn it and the character changes, never the volume. Free, and it stays free.',
       alt: 'GAS plugin window: one DRIVE knob with the Tube, Tape and Fuzz selector and the heat lamp',
     },
   },
@@ -534,7 +534,7 @@ export const plugins: Plugin[] = [
         { w: 'Rich',   o: 0.5 },
       ],
       blurb:
-        'Thicker, smoother, glued master. One GAS dial, three grades of fuel, and the level stays matched. Free, and it stays free.',
+        'For the whole mix, on the master bus: thicker, smoother, glued. One GAS dial, three grades of fuel, and the level stays matched. Free, and it stays free.',
       alt: 'GAS 2 plugin window: a vintage gas pump with the AMOUNT gauge, the LUFS counter, the Regular, Premium and Race keys and the IN and OUT dials',
     },
   },
@@ -578,7 +578,7 @@ export const plugins: Plugin[] = [
     // Vocals: DRIFT's place is the last stop of a vocal chain (Dan 2026-10-07). Words = what a panner does.
     // The window is rendered from Drift main 6144b8c (preset Init, no race loaded: no F1 names, Decision 19).
     library: {
-      cats: ['vocals', 'modulation', 'creative'],
+      cats: ['modulation', 'creative'],
       typeWord: 'stereo panner',
       words: [
         { w: 'Moving',  o: 0.5 },

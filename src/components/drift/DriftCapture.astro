@@ -20,6 +20,7 @@
  * JS posts {form:'newsletter', email, source, _gotcha} to the worker's
  * /form-once; without JS the form posts to Formspree.
  */
+import DriftConsent from './DriftConsent.astro';
 import { site } from '../../data/site';
 import { drift, ctaFor, captureCopyFor, registerUrlFor } from '../../data/drift';
 
@@ -50,6 +51,7 @@ const keyLabel = (drift.phase === 'preopen' || drift.phase === 'open') && cta.la
       <input type="text" name="_gotcha" class="d-hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
       <button type="submit" class="d-cta d-stamp-key" aria-label={keyLabel}><span data-face>{cta.label} <span class="d-stamp-arrow" aria-hidden="true">&#9656;</span></span></button>
     </div>
+    {registerUrl && <DriftConsent />}
   </form>
   <p class="d-cta-fine d-fine"><span class="d-fine-full">{ctaFor().action === 'capture' && <span class="d-get-chip">Nothing to pay today.</span>} {copy.fine}</span><span class="d-fine-ph">{copy.fineShort}</span></p>
   <!-- the live region is always in the tree (drift.css hides it while empty), so the first message is announced -->

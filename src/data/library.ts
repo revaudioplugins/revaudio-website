@@ -113,7 +113,8 @@ export function tryAction(p: Plugin): TvAction | null {
     return { label: `Try free for ${PAID_TRIAL_DAYS} days`, sub: 'Full version · no credit card', attrs: gate(false) };
   }
   if (p.slug === 'drift' && p.trialOpen && (drift.phase === 'open' || drift.phase === 'preopen')) {
-    return { label: `Try free for ${drift.trialDays} days`, sub: 'Download by email', href: '/drift#try' };
+    // one phrase for the deal, beside the price line's 'Free beta' (TV walk P05, Dan 2026-11-04: "Try the free Beta")
+    return { label: 'Try the free beta', sub: 'Download by email', href: '/drift#try' };
   }
   return null;
 }

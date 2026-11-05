@@ -20,6 +20,29 @@ Files: `src/components/WordWall.astro`, `src/components/TrialGateModal.astro` (+
   DRIFT sign-up (`src/components/drift/DriftCapture.astro`, `src/lib/drift/capture.ts`).
 - Collision: `feat/lcd-polish` (OPEN, another session) owns the TV keys in `WordWall.astro`; this build touches
   WordWall only after that branch is on main.
+- BUILT 2026-11-05, the parts outside WordWall (Dan's "start"): P01 + P06 `TrialGateModal.astro` (the sent state =
+  the display title "Check your inbox" + "Sent to <address>." + on touch "Open it on your Mac or PC to install." +
+  Resend / Wrong email?, focus on the title; each error at its field with aria-invalid; the free box says
+  "(required)" up front); P12 the paid sub + `TrialPlates.astro`: "The 30 days start the first time you open it;
+  after that your sound passes through untouched until you add a key" (RevLimiter / Radio Roulette / DRIFT:
+  LicenseManager 30 days from first launch, processBlock dry-through, read 2026-11-05); P03 new
+  `src/lib/popup-guard.ts` in WelcomeDiscountPopup + ExitIntentPopup (not while the TV shows >= 25 % of the view,
+  holds focus, within 20 s of a TV press / key, or 1.5 s after any key; focus goes back on close); P04
+  `CookieBanner.astro` (no focus grab on its own, scroll-padding while up, slimmer, the short line on laptops <= 820
+  px tall, no title on phones, the cookie still under reduce-motion); P05 new `drift/DriftConsent.astro` in the four
+  DRIFT trial forms + `capture.ts` (marketing = the box; the list relay only when ticked) + the open phase's fine
+  lines without "You join our list", the TV key "Try the free beta" (`library.ts`); P13 GAS "For any single track."
+  / GAS 2 "For the whole mix, on the master bus: ..." (`plugins.ts` blurbs); P14 DRIFT's cats = modulation +
+  creative, so VOCALS leaves the TV (Dan: no real vocal plugin yet).
+- Checks 2026-11-05 (dev :4480, every live request blocked): `npm run build` green (32 pages); Chromium 1141x636 +
+  390x844: focus stays on BODY at load, banner 61 px at 1141x636 (TV's Try key clear) and 102 px at 1440x900 (clear),
+  categories ALL MASTERING SATURATION MODULATION CREATIVE FREE; empty Send = "Enter your email." at the field; sent
+  state + Resend + Wrong email work; GAS 2's box refuses unticked with the error at the box; 60 Tabs past the TV = no
+  10 % pop-up, a wheel scroll to the bottom = the pop-up; DRIFT: unticked = marketing:false and no /form-once, ticked
+  = marketing:true + /form-once. Playwright: welcome-discount-popup + trial-gate-mobile 21 passed, 1 skipped (the new
+  "stays closed while the TV is in view" test is laptop-only); `smoke.spec.ts` fails 3, none from this work: /store
+  (the test still expects `/?...#plugins`, /store goes to /plugins since 11-02) on both projects, and /drift on
+  mobile-safari (WebKit's own video "placard" icons). Not checked: a real iPhone / Safari, the DRIFT box by Dan's eye.
 - Next: step 00 (the baseline, emails per 1,000 home-page visitors) needs live numbers (the worker's leads + the
   Cloudflare visit counts); then steps 1-10 in the plan's order. Nothing pushed to main; main = live on Dan's word.
 
