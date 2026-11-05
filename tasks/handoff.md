@@ -1,3 +1,25 @@
+## 2026-11-05 — /revfx before/after player: "Plug in. Stomp it." (Claude Code `revaudio-0d [61a467]`, Yoni's laptop 2) — branch `feat/revfx-hear`, worktree `../revaudio-website-rfxhear`
+
+Claim: OPEN `revaudio-0d`. Files: `src/components/revfx/RfxHear.astro` (new), `src/lib/revfx/hear.ts` (new),
+`src/lib/revfx/init.ts`, `src/pages/revfx.astro`, `src/styles/revfx.css` (new #hear block only), `src/data/revfx.ts`
+(hearTracks only), `public/audio/revfx/**` (new), `tools/revfx-player/prep_audio.py` (new), this entry.
+- Yoni: "create the before after player for revfx ... maybe the layout of the drift ab player can work here ... 4 sounds
+  - vocal, instruments, drums, lead. use placeholders for sounds ... full creative freedom". Placement: under the hero.
+- Built: `#rfx-hear` "Plug in. Stomp it." under the hero. 1 PLUG IN (four input jacks, the plug + a lit cord on the
+  picked one), the segment LCD (coach / BYPASS-REVFX ON tag / name / waveform / chain + clock), the signal path (IN, the
+  five pedals on a board, OUT; the TRUE BYPASS wire under them: lit + pulsing on BYPASS, the FX wire on REVFX, pedals
+  light in chain order in their own inks), 2 PLAY (/drift's caps), 3 STOMP (CSS chrome footswitch + purple LED),
+  VOLUME (/drift's fader). Engine = a copy of /drift's hear.ts without the pan bus (DRIFT untouched). Guide: PRESS PLAY
+  -> STOMP IT -> STOMP AGAIN: BYPASS -> NOW PLAYING. `revfx.ts hearTracks[].on` = the pedals a bounce used (all five now).
+- SOUNDS = PLACEHOLDERS: /drift's bounces copied (vocal <- vocals, instruments <- keys, drums <- perc, lead <- synth),
+  peaks.json `"placeholder": true`. Real swap: Yoni's `<name> dry.wav` + `<name> revfx.wav` per track, then
+  `python tools/revfx-player/prep_audio.py "<folder>"` (level-matches the louder side DOWN, pads, AAC 160k, peaks).
+- Checks (dev server, own headless Chromium, 1440x900 / 1141x636 / 390x844 / 360x740): play -> stomp -> pick DRUMS ->
+  stomp back, guide states right at every step, no page errors, no sideways scroll, no clipped labels; `npm run build`
+  green (33 pages). WebKit on Windows headless has no AudioContext (same as /drift's player), so play is untested
+  there; layout only. Not checked: a real iPhone / Safari, reduced-motion by eye.
+- Next: Yoni's look + his sounds. Branch only; main (= live deploy) waits for his "push".
+
 ## 2026-11-04 — GAS 2 postcards: the end page scrolls as one page, the footer under it (Claude Code `danavivi-c2 [ca2821]`, Dan's Mac) — PUSHED TO MAIN 2026-11-04 on Dan's word "perfect push to main" (from `fix/gas2-end-flow`)
 
 Claim: CLOSED 2026-11-04 `danavivi-c2`. Files: `tools/_gas2-scene/postcards.html`, `DESIGN.md`, this entry.

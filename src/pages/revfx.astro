@@ -5,7 +5,8 @@
  * sections on top (src/styles/revfx.css, .rfx-*). Its own route like /drift and /gas; NOT in plugins.ts yet, so
  * the store, the homepage carousel and the word wall are unchanged until RevFX is added there.
  *
- * Order (Gil 2026-10-19): hero (pedalboard + trial + the dice deck) · #pedals (meet the five, scroll is the knob) ·
+ * Order (Gil 2026-10-19): hero (pedalboard + trial + the dice deck) · #rfx-hear (the before/after player, Yoni
+ * 2026-11-05) · #pedals (meet the five, scroll is the knob) ·
  * #get (compat + trial/buy). The live-rack, snapshots and same-rack sections went that day.
  * State + copy: src/data/revfx.ts (phase, price, trial wiring); assertRevfxConfig() fails the build on a phase the
  * page can't honour.
@@ -13,6 +14,7 @@
 import { getImage } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import RfxHero from '../components/revfx/RfxHero.astro';
+import RfxHear from '../components/revfx/RfxHear.astro';
 import RfxPedals from '../components/revfx/RfxPedals.astro';
 import RfxGet from '../components/revfx/RfxGet.astro';
 import { revfx, assertRevfxConfig, formatsMac } from '../data/revfx';
@@ -53,6 +55,7 @@ const imgVars = [
 >
   <div class="drift-page rfx-page" data-rfx-page style={imgVars}>
     <RfxHero />
+    <RfxHear />
     <RfxPedals />
     <RfxGet />
   </div>

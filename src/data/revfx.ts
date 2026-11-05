@@ -84,6 +84,19 @@ export const pedals = [
 
 export type PedalId = (typeof pedals)[number]['id'];
 
+/** #hear, the before/after player (RfxHear.astro): one dry + one RevFX bounce per track in public/audio/revfx/
+ *  (tools/revfx-player/prep_audio.py). Until Yoni's bounces land, the files are /drift's sounds as stand-ins
+ *  (peaks.json "placeholder": true; the page shows nothing different, so swap them before RevFX is listed).
+ *  on = the pedals that bounce used: only those light on the player's board when RevFX is stomped on (all five
+ *  until the real bounces say otherwise). */
+const ALL: readonly PedalId[] = ['pitch', 'echo', 'halo', 'reverb', 'glue'];
+export const hearTracks: readonly { id: string; label: string; on: readonly PedalId[] }[] = [
+  { id: 'vocal', label: 'VOCAL', on: ALL },
+  { id: 'instruments', label: 'INSTRUMENTS', on: ALL },
+  { id: 'drums', label: 'DRUMS', on: ALL },
+  { id: 'lead', label: 'LEAD', on: ALL },
+];
+
 /** Where the sign-up forms post: the worker's /download/register once it knows RevFX, else undefined (the
  *  /form-once list relay only). */
 export const registerUrl = (): string | undefined =>

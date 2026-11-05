@@ -1,0 +1,158 @@
+---
+/**
+ * #rfx-hear — the before/after player, right under the hero (Yoni 2026-11-05: "the before after player for revfx ...
+ * maybe the layout of the drift ab player can work here ... 4 sounds - vocal, instruments, drums, lead").
+ * /drift's #hear (DriftHear.astro) in RevFX's own parts: one panel, three numbered steps, the same guide.
+ *
+ *   1 PLUG IN   four input jacks; the plug jumps to the one you pick and its cord lights.
+ *   2 PLAY      the arcade caps (/drift's).
+ *   3 STOMP     a chrome footswitch: BYPASS <-> REVFX.
+ *
+ * The idea is the signal path (a pedalboard's own picture of before / after): under the screen the five pedals stand
+ * on a board between IN and OUT, with a TRUE BYPASS wire running under them. Bypassed, the signal (a pulse on the
+ * wire) skips the board and the pedals sit dark; stomped, it runs through the pedals and each one lights in chain
+ * order, in its own lamp colour (revfx.ts ink / rgb). The screen's waveform wears the same five colours while
+ * RevFX is on and goes grey on BYPASS. A track lights only the pedals its bounce used (revfx.ts hearTracks.on).
+ *
+ * The sounds: public/audio/revfx/<id>-before.m4a (dry, level-matched) + <id>-after.m4a (RevFX) + peaks.json,
+ * made by tools/revfx-player/prep_audio.py. PLACEHOLDERS today (/drift's bounces under RevFX's names).
+ * Engine: src/lib/revfx/hear.ts (both versions run in sync; the flip is a 12 ms crossfade).
+ */
+import { readFileSync } from 'node:fs';
+import { getImage } from 'astro:assets';
+import DriftPanel from '../drift/DriftPanel.astro';
+import { ghost } from '../../lib/drift/lcd';
+import capGreen from '../../assets/seasons/drift/mm_cap_green.png';
+import capRed from '../../assets/seasons/drift/mm_cap_red.png';
+import pedPitch from '../../assets/seasons/drift/pedal-pitch.png';
+import pedEcho from '../../assets/seasons/drift/pedal-echo.png';
+import pedVerb from '../../assets/seasons/drift/pedal-reverb.png';
+import pedHalo from '../../assets/seasons/drift/pedal-halo.png';
+import pedGlue from '../../assets/seasons/drift/pedal-glue.png';
+import { pedals, hearTracks } from '../../data/revfx';
+
+type Peaks = { dur: number };
+const peaks = JSON.parse(readFileSync('public/audio/revfx/peaks.json', 'utf8')) as { tracks: Record<string, Peaks> };
+const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+
+// the board's order = the hero board's (RfxHero.astro BOARD), so the page shows one chain
+const BOARD = ['pitch', 'echo', 'halo', 'reverb', 'glue'] as const;
+const srcs = { pitch: pedPitch, echo: pedEcho, reverb: pedVerb, halo: pedHalo, glue: pedGlue };
+const board = await Promise.all(BOARD.map(async (id) => ({
+  p: pedals.find((x) => x.id === id)!,
+  img: await getImage({ src: srcs[id], width: 200, format: 'webp', quality: 80 }),
+})));
+const [g, r] = await Promise.all([capGreen, capRed].map((src) => getImage({ src, width: 136, format: 'webp', quality: 82 })));
+
+const first = hearTracks[0];
+const clock0 = `00:00 / ${fmt(peaks.tracks[first.id].dur)}`;
+const chainTxt = 'TRUE BYPASS';
+---
+<section class="rfx-sec rfx-hear-sec" id="rfx-hear" aria-labelledby="rfx-hear-h"
+  data-rfx-hear data-next="play" data-ab="before" data-inks={JSON.stringify(board.map(({ p }) => p.ink))}>
+  <div class="d-wrap">
+    <div class="rfx-hear-head">
+      <h2 id="rfx-hear-h" class="d-headline d-headline--row"><span class="l1">Plug in.</span> <span class="l2">Stomp it.</span></h2>
+    </div>
+
+    <DriftPanel class="rfx-hear-panel" checker={false}>
+      <div class="rfx-hear">
+        <!-- 1 · plug in: four input jacks on a steel strip; the picked one wears the plug, its cord runs off to the right -->
+        <div class="rfx-hear-bay" data-step="1">
+          <p class="rfx-hear-cap"><b class="rfx-hear-n">1</b>PLUG IN</p>
+          <ul class="rfx-jacks" role="list">
+            {hearTracks.map((t, i) => (
+              <li>
+                <button class="rfx-jack" type="button" data-hear-track={t.id} data-name={t.label} data-on={t.on.join(' ')}
+                  aria-pressed={i === 0 ? 'true' : 'false'} aria-label={`${t.label.toLowerCase()} track`}>
+                  <span class="rfx-jack-sock" aria-hidden="true"><span class="rfx-jack-plug"><i class="rfx-jack-cord"></i></span></span>
+                  <span class="rfx-jack-txt">
+                    <span class="rfx-jack-no" aria-hidden="true">IN {i + 1}</span>
+                    <span class="rfx-jack-nm">{t.label}</span>
+                  </span>
+                  <span class="rfx-jack-len" aria-hidden="true">{fmt(peaks.tracks[t.id].dur)}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div class="rfx-hear-deck">
+          <!-- the screen: a segment LCD (DSEG14, /drift's #hear face). data-g = each readout's unlit segments -->
+          <div class="rfx-hear-screen">
+            <div class="rfx-scr-hdr">
+              <span class="rfx-scr-coach" data-hear-state aria-live="polite" data-g={ghost('PRESS PLAY')}>PRESS PLAY</span>
+              <span class="rfx-scr-tag" data-hear-tag>BYPASS</span>
+            </div>
+            <div class="rfx-scr-title" data-hear-title data-g={ghost(first.label)}>{first.label}</div>
+            <div class="rfx-scr-wave"><canvas data-hear-wave aria-hidden="true"></canvas></div>
+            <div class="rfx-scr-row">
+              <span class="rfx-scr-t" data-hear-chain data-g={ghost(chainTxt)}>{chainTxt}</span>
+              <span class="rfx-scr-t" data-hear-time data-g={ghost(clock0)}>{clock0}</span>
+            </div>
+          </div>
+
+          <!-- the signal path: IN, the five on their board, OUT; the FX wire through them, the TRUE BYPASS wire under
+               them. [data-ab] on the section picks the lit one; a pedal the track doesn't use stays dark (.is-out) -->
+          <div class="rfx-path" aria-hidden="true">
+            <span class="rfx-path-io rfx-path-io--in"><i></i><b>IN</b><em data-hear-in>{first.label}</em></span>
+            <div class="rfx-path-board">
+              <span class="rfx-wire rfx-wire--fx"></span>
+              <span class="rfx-wire rfx-wire--bp"><b>TRUE BYPASS</b></span>
+              <span class="rfx-wire-drop rfx-wire-drop--in"></span><span class="rfx-wire-drop rfx-wire-drop--out"></span>
+              <ol class="rfx-path-peds">
+                {board.map(({ p, img }, i) => (
+                  <li data-fx={p.id} style={`--i:${i};--rgb:${p.rgb};--ink:${p.ink}`}>
+                    <span class="rfx-pp-pool"></span>
+                    <img src={img.src} width="528" height="954" alt="" loading="lazy" decoding="async" />
+                    <span class="rfx-pp-led"></span>
+                    <span class="rfx-pp-nm">{p.name}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+            <span class="rfx-path-io rfx-path-io--out"><i></i><b>OUT</b></span>
+          </div>
+
+          <div class="rfx-hear-controls">
+            <!-- 2 · play: /drift's arcade caps -->
+            <div class="rfx-hear-step" data-step="2">
+              <p class="rfx-hear-cap"><b class="rfx-hear-n">2</b>PLAY</p>
+              <div class="rfx-hear-caps">
+                <button class="d-cap rfx-hear-play" type="button" data-hear="play" aria-pressed="false" aria-label="Play"
+                  style={`background-image:url(${g.src})`}></button>
+                <button class="d-cap d-cap--stop" type="button" data-hear="stop" aria-label="Stop"
+                  style={`background-image:url(${r.src})`}></button>
+              </div>
+            </div>
+            <!-- 3 · stomp: the footswitch (hex nut + domed chrome cap) with its status lamp; BYPASS / REVFX either side,
+                 the one you hear lit -->
+            <div class="rfx-hear-step rfx-hear-step--stomp" data-step="3">
+              <p class="rfx-hear-cap"><b class="rfx-hear-n">3</b>STOMP</p>
+              <div class="rfx-stomp" data-hear-stomp-box>
+                <span class="rfx-stomp-side rfx-stomp-side--bp" aria-hidden="true">BYPASS</span>
+                <div class="rfx-stomp-unit">
+                  <span class="rfx-stomp-led" aria-hidden="true"></span>
+                  <button class="rfx-stomp-sw" type="button" data-hear-stomp aria-pressed="false"
+                    aria-label="RevFX footswitch. Off: you hear the dry sound. Stomp to hear RevFX.">
+                    <span class="rfx-stomp-nut"></span><span class="rfx-stomp-cap"></span>
+                  </button>
+                </div>
+                <span class="rfx-stomp-side rfx-stomp-side--fx" aria-hidden="true">REVFX</span>
+              </div>
+            </div>
+            <!-- volume: /drift's fader (faders.ts + drift.css .d-fad-*), slimmer, in RevFX's purple -->
+            <div class="rfx-hear-vol">
+              <div class="d-fad-slot rfx-vol-slot" role="slider" tabindex="0" data-hear-vol aria-label="Volume" aria-orientation="vertical"
+                aria-valuemin="0" aria-valuemax="100" aria-valuenow="80" aria-valuetext="VOLUME 80">
+                <span class="d-fad-fill" style="height:80.00%"></span>
+                <span class="d-fad-thumb" style="bottom:80.00%"></span>
+              </div>
+              <span class="rfx-vol-read" data-hear-vol-read>VOL 80</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </DriftPanel>
+  </div>
+</section>
