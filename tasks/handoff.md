@@ -64,6 +64,7 @@ Claim: OPEN `revaudio-0d`. Files: `src/components/revfx/RfxHear.astro` (new), `s
   cutout, the cable runs off the patchbay and UNDER the next plate (no mid-air fade), contact shadows under the pedals
   and the board, the picked input shown physically (no highlight box). STOP kept desaturated (the CTA red rule).
   Screw / fit / names checks PASS, click-through clean, build green. Panel 473 laptop, 530 phone.
+- Round 12 (Yoni: "when i press the stop and the play the buttons go off of their setting area"): drift.css's arcade cap motion (hover -1 px, press +4 px) pushed the caps out of their bezels; seated caps now never slide, they press INTO the bore (scale .94, darker). checks/press.cjs (hover + held press at 1440 / 390; control-probed: the old 4 px drop fails it) PASS.
 - STATE for whoever picks this up: everything is on `feat/revfx-hear` (worktree ../revaudio-website-rfxhear); the
   sounds are still PLACEHOLDERS (/drift's bounces, peaks.json placeholder: true); the OpenAI credits ran out
   2026-11-05 (top up before more generated assets).

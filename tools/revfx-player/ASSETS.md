@@ -32,7 +32,8 @@ crop on round parts, one shared crop box for the two LED states).
 The REVFX button is no asset: /drift's CSS push-to-start (drift.css `.d-start`) in RevFX purple (Yoni: "make the
 engage / bypass button not a stomp switch ... like for drift"); the switch photos (`gen-assets-3..6`) were retired.
 
-Checks also: `node tools/revfx-player/checks/names.cjs` (the pedal names never closer than 4 px).
+Checks also: `node tools/revfx-player/checks/names.cjs` (the pedal names never closer than 4 px) and
+`checks/press.cjs` (a held-down or hovered cap stays centred in its bezel).
 
 Retint: `python -I tools/revfx-player/retint.py <folder with plate-w/-s/-t.png>` (the OpenAI originals live in the
 session scratchpad; keep a copy before re-running). OpenAI credits ran out 2026-11-05, so this pass is local.
