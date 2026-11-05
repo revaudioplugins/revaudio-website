@@ -268,6 +268,33 @@
 .rfx-jack-plug img { display: block; height: 100%; width: auto; max-width: none; }
 .rfx-jack[aria-pressed='true'] .rfx-jack-plug { opacity: 1; translate: 0 0; }
 
+/* THE PLATES: every section sits on a titanium plate (titanium.jpg, its violet-blue heat tint; each plate shows its own
+   patch of the sheet, --tx / --ty, so the tint wanders), darkened a touch, machined edges (a light top bevel, a dark
+   seam, a lift shadow onto the tolex) and four real screws (screw.png) in its corners. */
+.rfx-plate {
+  --tx: 30%; --ty: 50%; --sc: 10px; --sc-in: 6px;
+  position: relative; isolation: isolate; border-radius: 4px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(0, 0, 0, .22)),
+    linear-gradient(rgba(12, 10, 16, .4), rgba(12, 10, 16, .4)),
+    var(--rfx-ti) var(--tx) var(--ty) / 1100px auto, #3b3a41;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .85), inset 0 1px 0 rgba(255, 255, 255, .3), inset 0 -1px 0 rgba(0, 0, 0, .6),
+    inset 1px 0 0 rgba(255, 255, 255, .1), inset -1px 0 0 rgba(0, 0, 0, .35), 0 5px 9px rgba(0, 0, 0, .6);
+}
+.rfx-plate::after {
+  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: inherit;
+  background:
+    var(--rfx-screw) left var(--sc-in) top var(--sc-in) / var(--sc) no-repeat,
+    var(--rfx-screw) right var(--sc-in) top var(--sc-in) / var(--sc) no-repeat,
+    var(--rfx-screw) left var(--sc-in) bottom var(--sc-in) / var(--sc) no-repeat,
+    var(--rfx-screw) right var(--sc-in) bottom var(--sc-in) / var(--sc) no-repeat;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .85));
+}
+.rfx-plate--scr { --tx: 8%; --ty: 30%; padding: 12px 24px; }
+.rfx-hear-step--play { --tx: 72%; --ty: 70%; }
+.rfx-hear-step--stomp { --tx: 50%; --ty: 45%; }
+.rfx-hear-vol { --tx: 95%; --ty: 20%; }
+
 /* ---- the deck */
 .rfx-hear-deck { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 
@@ -307,12 +334,7 @@
 
 /* ---- the rig: 2 PLAY · 3 STOMP (the board) · VOLUME, each in a shallow well cut into the tolex */
 .rfx-hear-rig { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; flex: 1; }
-.rfx-hear-step, .rfx-hear-vol {
-  display: flex; flex-direction: column; gap: 9px; padding: 10px 12px 10px; border-radius: 6px;
-  background: rgba(5, 4, 7, .55);
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, .7), 0 1px 0 1px rgba(255, 255, 255, .05), inset 0 8px 14px -8px rgba(0, 0, 0, .9);
-}
-.rfx-hear-step--play { padding-inline: 16px; }
+.rfx-hear-step, .rfx-hear-vol { display: flex; flex-direction: column; gap: 9px; padding: 11px 22px 12px; }
 .rfx-hear-step--stomp { container-type: inline-size; min-width: 0; }
 .rfx-hear-caps { display: flex; align-items: center; justify-content: center; gap: 12px; flex: 1; }
 .rfx-hear-caps .d-cap { width: 54px; height: 54px; }
@@ -323,10 +345,10 @@
 
 /* the pedalboard: board-wide.jpg (3:1, laptop; phones board-mid.jpg 2.1:1) = carpet + the two aluminium rails (5 % each) */
 .rfx-hear-board {
-  /* the footswitch (1.25 pedals wide), the five and their gaps fill what the padding leaves (100cqw = the STOMP well's
-     width): pedal = (well - --fix) / (6.25 + 5 x --pgk), gap = pedal x --pgk */
-  --fix: 66px; --pgk: .5;
-  --pm: clamp(28px, calc((100cqw - var(--fix)) / (6.25 + 5 * var(--pgk))), 56px);   /* a mini pedal's width */
+  /* the switch plate (1.34 pedals wide), the five and their gaps fill what the padding leaves (100cqw = the STOMP
+     plate's width): pedal = (plate - --fix) / (6.34 + 5 x --pgk), gap = pedal x --pgk */
+  --fix: 86px; --pgk: .5;
+  --pm: clamp(28px, calc((100cqw - var(--fix)) / (6.34 + 5 * var(--pgk))), 56px);   /* a mini pedal's width */
   --pg: calc(var(--pm) * var(--pgk));        /* the gap between two pedals (a patch cable spans it) */
   --mid: calc(var(--pm) * .9);               /* the board's signal line (patch cables, jacks, the switch) from the top */
   position: relative; flex: 1; display: flex; align-items: flex-start; justify-content: center; gap: var(--pg);
@@ -338,8 +360,8 @@
 /* the footswitch (fsw-up / fsw-down.png share one frame: the washer + nut stay, only the cap moves) under its LED. It
    latches: popped up on BYPASS, held down on REVFX; while the foot is on it (.is-down) it shows down whatever the state,
    so a stomp off goes down and then pops up on release. The guide breathes as a soft purple light round the switch. */
-.rfx-stomp { position: relative; z-index: 3; flex: none; width: calc(var(--pm) * 1.25); display: flex; flex-direction: column; align-items: center;
-  gap: calc(var(--pm) * .12); padding-top: calc(var(--pm) * .22); }
+.rfx-stomp { --tx: 62%; --ty: 35%; --sc: 7px; --sc-in: 4px; z-index: 3; flex: none; width: calc(var(--pm) * 1.34); display: flex; flex-direction: column;
+  align-items: center; gap: calc(var(--pm) * .08); padding: calc(var(--pm) * .14) calc(var(--pm) * .12) calc(var(--pm) * .1); }
 .rfx-stomp-led { position: relative; width: calc(var(--pm) * .3); aspect-ratio: 1; }
 .rfx-stomp-led img { position: absolute; inset: 0; width: 100%; height: 100%; -webkit-user-drag: none; }
 .rfx-stomp-led .lit { opacity: 0; transition: opacity .06s ease; }
@@ -376,7 +398,7 @@
 [data-ab='after'] .rfx-peds-mini > li:not(.is-out) { animation: rfx-pp-stomp .34s cubic-bezier(.3, 1.5, .5, 1) both; animation-delay: calc(var(--i) * 90ms); }
 @keyframes rfx-pp-stomp { 0% { transform: none; } 35% { transform: translateY(2px) scale(1.03, .96); } 100% { transform: none; } }
 /* VOLUME: /drift's fader photos (its plate + cap), the fill in RevFX purple in the plate's slot */
-.rfx-hear-vol { align-items: center; gap: 6px; padding: 10px 8px 8px; }
+.rfx-hear-vol { --sc: 7px; --sc-in: 4px; align-items: center; gap: 6px; padding: 18px 14px 18px; }   /* the narrow plate: small screws, the readout clear of them */
 .rfx-hear-vol .rfx-vol-slot { --fad: var(--d-neon); --fad-rgb: var(--d-neon-rgb); width: 40px; flex: 1; min-height: 70px; margin: 4px 0 8px; }
 .rfx-hear-vol .rfx-vol-slot::before { display: none; }
 .rfx-vol-plate { position: absolute; left: 50%; top: -8px; bottom: -8px; width: 22px; translate: -50% 0; pointer-events: none;
@@ -398,9 +420,9 @@
   .rfx-hear-panel { background-image: var(--rfx-panel-t); }
   .rfx-hear-rig { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'stomp stomp' 'play vol'; }
   .rfx-hear-step--stomp { grid-area: stomp; }
-  .rfx-hear-step--play { grid-area: play; flex-direction: row; align-items: center; justify-content: space-between; padding: 8px 14px; }
+  .rfx-hear-step--play { grid-area: play; flex-direction: row; align-items: center; justify-content: space-between; padding: 10px 22px; }
   .rfx-hear-step--play .rfx-hear-caps { flex: none; }
-  .rfx-hear-vol { grid-area: vol; flex-direction: row; padding: 6px 12px; }
+  .rfx-hear-vol { grid-area: vol; flex-direction: row; padding: 6px 20px; }
   .rfx-hear-vol .rfx-vol-slot { width: 34px; min-height: 0; height: 56px; flex: none; margin: 6px 0; }
   .rfx-jacks { flex-direction: row; }
   .rfx-jacks li { border-top: 0; box-shadow: none; border-left: 1px solid rgba(0, 0, 0, .55); }
@@ -430,12 +452,15 @@
   .rfx-hear-screen [data-hear-chain] { display: none; }
   .rfx-scr-row { justify-content: flex-end; }
   .rfx-hear-rig { gap: 8px; }
-  .rfx-hear-step--play { padding: 8px 12px; }
+  .rfx-hear-step--play { padding: 10px 18px; }
+  .rfx-plate { --sc: 8px; --sc-in: 5px; }
+  .rfx-plate--scr { padding: 9px 16px; }
+  .rfx-stomp { --sc: 6px; --sc-in: 3px; }
   .rfx-hear-caps .d-cap { width: 46px; height: 46px; }
-  .rfx-hear-vol { padding: 6px 10px; }
+  .rfx-hear-vol { padding: 6px 16px; }
   .rfx-hear-vol .rfx-vol-slot { height: 52px; }
-  .rfx-hear-step { padding: 8px 8px 8px; gap: 8px; }
-  .rfx-hear-board { --fix: 40px; --pgk: .2; gap: 8px; padding: 12px 8px 14px; background-image: var(--rfx-board-m); }
+  .rfx-hear-step { padding: 10px 14px 10px; gap: 8px; }
+  .rfx-hear-board { --fix: 52px; --pgk: .2; gap: 8px; padding: 12px 8px 14px; background-image: var(--rfx-board-m); }
   .rfx-pm-nm { font-size: 7px; letter-spacing: .01em; }
 }
 @media (max-width: 380px) { .rfx-scr-coach { font-size: 9px; letter-spacing: 0; } .rfx-jack-nm { font-size: 9.5px; } }

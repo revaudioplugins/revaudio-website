@@ -43,6 +43,11 @@ Claim: OPEN `revaudio-0d`. Files: `src/components/revfx/RfxHear.astro` (new), `s
   (`fsw-up/fsw-down.png`, near top-down, the pressed photo aligned on the washer so only the cap moves) + the LED above
   it. Latches: up on BYPASS, down + LED lit on REVFX; down while the foot is on it either way. Fit at 10 widths clean,
   click-through clean, build green. 6 more OpenAI images.
+- Round 5 (Yoni: the switch "too much on a side view ... more from upper angle, still make some angle"; "metal panels
+  on each section including the stomp switch"; "titanium vibe with a bit of the titanium color effect"): new switch at
+  ~8 deg (pressed = masked edit, base pixel-identical); every section (screen, PLAY, STOMP, VOLUME) + the switch on
+  titanium plates (titanium.jpg heat tint, 4 screw.png corners, CSS bevels). Fit at 10 widths clean, click-through
+  clean, build green. 7 more OpenAI images.
 - Next: Yoni's look + his sounds. Branch only; main (= live deploy) waits for his "push".
 
 ## 2026-11-04 — GAS 2 postcards: the end page scrolls as one page, the footer under it (Claude Code `danavivi-c2 [ca2821]`, Dan's Mac) — PUSHED TO MAIN 2026-11-04 on Dan's word "perfect push to main" (from `fix/gas2-end-flow`)
