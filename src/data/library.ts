@@ -10,6 +10,7 @@
 import { plugins, dlGateId, fmtPrice, type Plugin, type LibraryCatId } from './plugins';
 import { drift } from './drift';
 import { site } from './site';
+import { mockTvPlugins, isMockPrice, MOCK_PRICES } from './bundle';
 
 export interface LibraryCat {
   id: LibraryCatId | 'all';
@@ -45,13 +46,16 @@ const onTv = (p: Plugin) => !!p.library && (p.status === 'live' || !!p.trialOpen
  *  slide until Nov 1"), then drops back to its slot here. A plugin missing from the list goes last. */
 const TV_ORDER = ['revlimiter', 'gas', 'gas2', 'drift', 'radio-roulette'];
 
-export function tvPlugins(): Plugin[] {
+/** `withMocks`: + the gearbox's mock channels (RevFX, OBDTune; bundle.ts, dev server only), asked for by /plugins. */
+export function tvPlugins(withMocks = false): Plugin[] {
   const rank = (p: Plugin) => {
     if (drift.homeLead && p.slug === 'drift') return -1;
     const i = TV_ORDER.indexOf(p.slug);
     return i === -1 ? TV_ORDER.length : i;
   };
-  return plugins.filter(onTv).sort((a, b) => rank(a) - rank(b));
+  const mocks = withMocks ? mockTvPlugins() : [];
+  const real = plugins.filter(onTv).filter((p) => !mocks.some((m) => m.slug === p.slug));
+  return [...real.sort((a, b) => rank(a) - rank(b)), ...mocks];
 }
 
 /** A plugin's categories on the TV: its own, plus Free when it is free (`isFree` is the one source of "free"). */
@@ -74,6 +78,7 @@ export const PAID_TRIAL_DAYS = 30;
  *  its button (drift.ts phase; the page never guesses the phase from the clock). */
 export function priceLine(p: Plugin): string {
   if (p.isFree) return 'Free';
+  if (isMockPrice(p.slug)) return fmtPrice(MOCK_PRICES[p.slug]);
   if (p.status === 'live' && p.introPriceUsd != null) return fmtPrice(p.introPriceUsd);
   if (p.slug === 'drift') return drift.phase === 'preopen' || drift.phase === 'open' ? 'Free beta' : `On sale ${drift.releaseLabel}`;
   return '';

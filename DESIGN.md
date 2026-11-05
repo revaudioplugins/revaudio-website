@@ -26,6 +26,7 @@ MAPPING TABLE (every visible part of the site maps to something you could touch 
 | the "goes with every vehicle" sign | DAW strip                                   | compatibility                            |
 | the pit-crew clipboard             | EmailCapture ("Join the pit crew")          | newsletter                               |
 | the steel roller door, half up     | closing CTA                                 | leave with the trial                     |
+| the car console under the TV      | the gearbox (`Gearbox.astro`, `/plugins`)    | build a bundle: more plugins = a higher gear = more off |
 
 Plain language instructs, the metaphor only orients (PRODUCT.md): every CTA says what it does in
 words ("Start your 30-day free trial"); the garage never has to be decoded.
@@ -142,7 +143,8 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
     `WALL_BG = 'wood'`) they
     stay the button family (D9, the user 2026-11-01): Try = brass (honey when free), Product page = small ghost. GAS's tall panel
     stands beside its text (at least `--ww-side-min` 16rem wide, 17 on a small laptop). No Add to cart on
-    home: buying stays on the product page.
+    home: buying stays on the product page. On `/plugins` the TV carries one more key, "+ Add to bundle", for the
+    gearbox under it (Yoni 2026-11-05, below); home's TV stays without it (`<WordWall bundle />` opts in).
     - Reading (the user's bench pick of 2026-11-01, option A of three; asked for "sexier and much more
       comfortable to understand"): bigger and bolder, still the house faces. The name in Bebas up to
       2.7rem; the type word and the five words in Oswald 600; the blurb in Inter 500 at
@@ -310,6 +312,23 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
   with a scissors mark, a punched hole at each end, the honey "customer copy" (honey = a free download) with the
   ticket's zigzag edge. Hover = it starts to peel and the scissors slide along the line; submit = it tears off
   and drops, then the SENT stamp lands in rubber-stamp ink.
+- **The gearbox** (`Gearbox.astro` + `src/data/bundle.ts`, `/plugins` only, branch `feat/gearbox-bundle`, Yoni
+  2026-11-05; structure: claude.ai artifact 5QpmHNjZy5JCLCKgbXsH1i). Build a bundle: each paid plugin added from the TV
+  moves the shift knob up a gear (1 plugin = 1st, 2 = 2nd -20%, 3 = 3rd -30%, 4+ = TOP -40%: draft numbers). ONE
+  photograph (gpt-image-2, `tools/gearbox`): a walnut + crackle-steel console, an empty H gate, a needle-less tach, a
+  blank work order on a clip, four shift-light lenses + a smoked gear window on the top strip. On it, only what moves
+  or changes: the knob (seen from above, green-screen shot keyed out, house shadow down-right) runs through neutral
+  like a real stick, 120 ms a leg, the snap on the last; the needle (keyed) turns UNDER the photo's own hub cap
+  (cut from the photo), 450 ms ease-out, -96 to +96 deg = 0 to 40 % off; the lamps light from inside their own lenses
+  (screen blend + spill), all four flash at TOP; the gear in the window in VT323 amber. Printed, stamped or typed, never
+  pasted: the gate's stamps paint-filled in oxide (the gear the knob is in in cream), the dial's numbers in ink
+  (multiply), the work order in the paper's language (Bebas printed header, Special Elite typed lines, the gear as a
+  rubber stamp that lands, beside the sum, never over a number), the price and the next-gear line painted on the top
+  strip. Laptop: the top strip peeks into the first screen under the TV (`--gb-peek`, which WordWall's `--ww-nav`
+  takes off the TV), so every add answers in view; the plugin's picture flies from the key to its lamp. Phone: the
+  photo, the work order under it as paper, a bar on the bottom edge with the photo's own lenses (the cart button rides
+  above it, as on /drift). The TV's key "+ Add to bundle" = the Product page key's phosphor outline drawn as a double
+  line; in the bundle it lights in inverse video ("In your bundle ✓"), and the row's name gets an inverse "IN" tag.
 - DAW strip, EmailCapture, SubscribeModal, TrialGateModal: unchanged house parts. (The coverflow
   showcase left the home page with feat/home-library: the TV is the one place to browse. It stays only on
   `/downloads`, as that page's picker, `mode="downloads"`.)

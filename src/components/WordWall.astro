@@ -45,6 +45,9 @@ import gasImg from '../assets/plugins/gas-hero.png';
 import gas2Img from '../assets/plugins/gas2-float.png';
 import rrImg from '../assets/plugins/radioroulette-hero.png';
 import driftImg from '../assets/showcase/drift-window-init.png';
+import revfxImg from '../assets/plugins/revfx-hero.png';
+import obdImg from '../assets/plugins/obdtune-mock.jpg'; // the gearbox's mock channel (bundle.ts, dev only)
+import { bundlePrice, isMockPrice } from '../data/bundle';
 import brokenMeta from '../assets/seasons/drift/tv-broken.json';
 import { drift } from '../data/drift';
 import { tvPlugins, tvCats, catsOf, tvName, priceLine, tryAction, type TvAction } from '../data/library';
@@ -140,6 +143,8 @@ const WINDOWS: Record<string, { img: ImageMetadata; portrait?: boolean; float?: 
   gas: { img: gasImg, portrait: true },
   gas2: { img: gas2Img, portrait: true, float: true }, // float: the object alone, its own shadow, no frame round it
   'radio-roulette': { img: rrImg },
+  revfx: { img: revfxImg }, // on the TV only as a gearbox mock channel for now (bundle.ts)
+  obdtune: { img: obdImg },
 };
 type Item = {
   slug: string;
@@ -155,8 +160,14 @@ type Item = {
   price: string;
   action: TvAction | null;
   cats: string[];
+  /** What it counts for in the gearbox (bundle.ts), null = it can't go in (free / not on sale). */
+  bundle: number | null;
+  mock: boolean;
 };
-const items: Item[] = tvPlugins()
+/** /plugins passes `bundle`: the TV gets the gearbox's "+ Add to bundle" keys (and, in a dev server, its mock
+ *  channels). Home has no gearbox, so its TV stays as it was. */
+const { bundle: withBundle = false } = Astro.props as { bundle?: boolean };
+const items: Item[] = tvPlugins(withBundle)
   .filter((p) => WINDOWS[p.slug] && p.library)
   .map((p) => ({
     slug: p.slug,
@@ -172,8 +183,10 @@ const items: Item[] = tvPlugins()
     price: priceLine(p),
     action: tryAction(p),
     cats: catsOf(p),
+    bundle: withBundle ? bundlePrice(p) : null,
+    mock: withBundle && isMockPrice(p.slug),
   }));
-const cats = tvCats(tvPlugins().filter((p) => items.some((it) => it.slug === p.slug)));
+const cats = tvCats(tvPlugins(withBundle).filter((p) => items.some((it) => it.slug === p.slug)));
 const first = items[0]?.slug ?? '';
 ---
 
@@ -228,7 +241,7 @@ const first = items[0]?.slug ?? '';
               <Image src={it.img} alt="" width={320} widths={[160, 320]} sizes="(max-width: 860px) 6rem, 10rem" format="webp" quality={80} loading="lazy" />
             </span>
             <span class="ww-rtext">
-              <span class="ww-name">{it.name}</span>
+              <span class="ww-name">{it.name}{it.bundle != null && <span class="ww-rin" data-gb-rin hidden>In</span>}</span>
               <span class="ww-type">{it.type}</span>
             </span>
             {it.price && <span class="ww-rprice">{it.price}</span>}
@@ -301,7 +314,7 @@ const first = items[0]?.slug ?? '';
               ))}
             </p>
             <div class="ww-buy">
-              {it.price && <span class="ww-price">{it.price}</span>}
+              {it.price && <span class="ww-price">{it.price}{it.mock && <small class="ww-mock">mock</small>}</span>}
               {/* the button family (buttons.css, D9 2026-11-01): Try = brass (honey when free), Product page = ghost;
                   on the screen both are restyled as light on the glass (option A, 2026-11-04, in the CSS) */}
               {it.action && (it.action.href ? (
@@ -315,6 +328,12 @@ const first = items[0]?.slug ?? '';
                   {it.action.sub && <span class="rv-btn__sub">{it.action.sub}</span>}
                 </button>
               ))}
+              {/* the gearbox (Gearbox.astro): puts this plugin in the bundle; pressed again takes it out */}
+              {it.bundle != null && (
+                <button type="button" class="ww-add rv-btn rv-btn--ghost rv-btn--sm" data-gb-add={it.slug} data-gb-name={it.name} data-gb-price={it.bundle} aria-pressed="false">
+                  <span class="ww-add-off"><span aria-hidden="true">+</span> Add to bundle</span><span class="ww-add-on">In your bundle <span aria-hidden="true">&#10003;</span></span>
+                </button>
+              )}
               <a class="ww-more rv-btn rv-btn--ghost rv-btn--sm" href={`/${it.slug}`}><span class="sr-only">{it.name} </span>Product page <span aria-hidden="true">&rarr;</span></a>
             </div>
           </div>
@@ -1482,7 +1501,7 @@ const first = items[0]?.slug ?? '';
     display: grid;
     /* the thumbnail fits the room's height too, as the name does (16:10; 1.15rem = the row's padding + its share of the
        gaps): at 9.8rem four rows were 21 px too tall for a 1280x665 screen, 45 px for 1141x636 */
-    --ww-thumb-col: min(calc(var(--ww-thumb-w) * 1rem), calc((var(--ww-main, 30rem) / var(--ww-rows, 4) - 1.15rem) * 1.6));
+    --ww-thumb-col: min(calc(var(--ww-thumb-w) * 1rem), calc((var(--ww-main, 30rem) / var(--ww-rows, 4) - 1.15rem - var(--ww-fit-extra, 0px)) * 1.6));
     grid-template-columns: var(--ww-thumb-col) minmax(0, 1fr) auto;
     align-items: center;
     column-gap: 1rem;
@@ -1527,7 +1546,7 @@ const first = items[0]?.slug ?? '';
     font-size: min(
       calc(var(--ww-name-max) * 1rem),
       calc((100cqi - var(--ww-thumb-w) * 1rem - 1.5rem) / 6.4),
-      max(1.5rem, calc((var(--ww-main, 30rem) / var(--ww-rows, 4) - 1.9rem) / 0.95)) /* every row fits the room's height */
+      max(1.5rem, calc((var(--ww-main, 30rem) / var(--ww-rows, 4) - 1.9rem - var(--ww-fit-extra, 0px)) / 0.95)) /* every row fits the room's height; --ww-fit-extra (0 unless a page sets it, Gearbox.astro on /plugins) adds the list's gap per row, which a long list needs */
     );
     line-height: 0.95;
     letter-spacing: 0.03em;
@@ -1727,7 +1746,7 @@ const first = items[0]?.slug ?? '';
      the channel's phosphor with dark words, Product page = a phosphor outline; no plate, depth or lift. Hover
      brightens, a press dims like the tube. High contrast (html.hc) and the wood wall keep the button family. */
   :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy { gap: 0.6rem 1rem; }
-  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy :is(.ww-try, .ww-more) {
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy :is(.ww-try, .ww-more, .ww-add) {
     min-height: 0;
     background: none;
     font-weight: 400;
@@ -1737,8 +1756,8 @@ const first = items[0]?.slug ?? '';
     transform: none;
     transition: color 120ms ease, background-color 120ms ease, box-shadow 160ms ease, filter 120ms ease;
   }
-  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy :is(.ww-try, .ww-more):is(:hover, :active, .is-pressed) { transform: none; }
-  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy :is(.ww-try, .ww-more):focus-visible { outline: 2px solid var(--ww-ink-hot); outline-offset: 4px; }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy :is(.ww-try, .ww-more, .ww-add):is(:hover, :active, .is-pressed) { transform: none; }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy :is(.ww-try, .ww-more, .ww-add):focus-visible { outline: 2px solid var(--ww-ink-hot); outline-offset: 4px; }
   :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-try {
     flex-direction: column;
     align-items: flex-start;
@@ -1790,6 +1809,63 @@ const first = items[0]?.slug ?? '';
     box-shadow: inset 0 0 0 1.5px var(--ww-ink-hot), inset 0 0 18px var(--ww-glow-soft), 0 0 20px var(--ww-glow);
   }
   :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-more:is(:active, .is-pressed) { background-color: hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.28); transition-duration: 60ms; }
+
+  /* + Add to bundle (the gearbox, Yoni 2026-11-05): the Product page key's phosphor outline, drawn twice as a
+     double line so it reads as the third kind of key; in the bundle it lights up in inverse video like Try */
+  .ww-add-on { display: none; }
+  .ww-add[aria-pressed='true'] .ww-add-off { display: none; }
+  .ww-add[aria-pressed='true'] .ww-add-on { display: inline; }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-add {
+    padding: 0.6rem 0.9rem 0.5rem;
+    border-radius: 3px;
+    color: var(--ww-ink-hot);
+    font-family: var(--font-display);
+    font-size: 1.32rem;
+    line-height: 0.9;
+    letter-spacing: 0.06em;
+    text-shadow: 0 0 9px var(--ww-glow);
+    box-shadow: inset 0 0 0 1.5px var(--ww-ink-hot), inset 0 0 0 3.5px hsl(var(--ww-ch-h) var(--ww-gs) 8% / 0.9), inset 0 0 0 4.5px var(--ww-ink), 0 0 16px var(--ww-glow-soft);
+    cursor: pointer;
+  }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-add:hover {
+    background-color: hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.14);
+    box-shadow: inset 0 0 0 1.5px var(--ww-ink-hot), inset 0 0 0 3.5px hsl(var(--ww-ch-h) var(--ww-gs) 8% / 0.9), inset 0 0 0 4.5px var(--ww-ink-hot), 0 0 22px var(--ww-glow);
+  }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-add[aria-pressed='true'] {
+    color: var(--ww-ink-on);
+    text-shadow: none;
+    background-color: var(--ww-ink-hot);
+    background-image: linear-gradient(180deg, rgb(255 255 255 / 0.16), rgb(255 255 255 / 0) 60%);
+    box-shadow: 0 0 0 1px var(--ww-ink-hot), 0 0 22px var(--ww-glow-hot), 0 0 52px var(--ww-glow-soft);
+  }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-add:is(:active, .is-pressed) { filter: brightness(0.78); transition-duration: 60ms; }
+  .ww-mock {
+    margin-left: 0.4rem;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    vertical-align: 0.6em;
+    opacity: 0.6;
+    text-shadow: none;
+  }
+  /* In: the plugin is in the bundle (the row's name gets a small inverse-video tag, the ALL key's language) */
+  .ww-rin {
+    display: inline-block;
+    margin-left: 0.5rem;
+    padding: 0.18em 0.4em 0.08em;
+    border-radius: 2px;
+    background: var(--ww-ink-hot);
+    color: var(--ww-ink-on);
+    -webkit-text-stroke: 0;
+    font-family: var(--font-display);
+    font-size: max(0.7rem, 0.32em);
+    letter-spacing: 0.12em;
+    line-height: 1;
+    vertical-align: 0.9em;
+    text-shadow: none;
+  }
+  .ww-rin[hidden] { display: none; }
 
   /* ==========================================================================
      INK. On the wood: brass, the lit one oxide (the old stencil). On the
@@ -2121,7 +2197,7 @@ const first = items[0]?.slug ?? '';
      not height: whatever still can't fit grows the TV instead of clipping
      (and the lock then leaves it alone). The scroll lock is in the script. */
   .ww {
-    --ww-nav: calc(var(--site-nav-h, var(--nav-h)) + var(--sale-h, 0px)); /* + the BF/CM strip while it's up */
+    --ww-nav: calc(var(--site-nav-h, var(--nav-h)) + var(--sale-h, 0px) + var(--gb-peek, 0px)); /* + the BF/CM strip while it's up, + the gearbox's top strip on /plugins (Gearbox.astro) */
     --ww-breath: 15px;         /* glass showing above and below the content */
     --ww-snap-zone: 30;        /* the lock catches when the TV's top stops within this % of the screen */
     --ww-bez-t: var(--rail-h); /* the opening's top / bottom edge, from the wall's inner box */

@@ -1,3 +1,32 @@
+## 2026-11-05 — THE GEARBOX: build-a-bundle on /plugins, local only (Claude Code `revaudio-98 [c55986]`, Yoni's laptop 2) — branch `feat/gearbox-bundle` (worktree `C:/RevAudio/Website/revaudio-website-gearbox`), NOT on main, nothing deployed
+
+Claim: OPEN `revaudio-98`. Files: `src/components/Gearbox.astro` (new), `src/data/bundle.ts` (new), `src/assets/gearbox/*`
+(new), `src/assets/plugins/obdtune-mock.jpg` (new), `tools/gearbox/{gen.ps1,process_art.py}` (new),
+`src/components/WordWall.astro`, `src/data/library.ts`, `src/pages/plugins.astro`, `DESIGN.md`, `.gitignore`, this entry.
+- Yoni: a bundle builder on the plugins page (not the product pages) that feels like a game; "lets go gear box", structure
+  first (claude.ai artifact 5QpmHNjZy5JCLCKgbXsH1i), then "a real based page to be local ... all the assets with openai
+  ... elegant and sexy and vintage patina ... make the page tight"; mock prices RevFX $19, OBDTune $15, DRIFT $69.
+- Checked first: Gil had NOT started a bundle builder. Related: his BF/CM skins promise a fixed all-plugins bundle $69 / $74
+  pointing at /plugins with no Paddle bundle product yet (`src/data/sale.ts`); the July `tasks/checkout-bundle-*` docs are
+  the old store's GAS-free promo, superseded.
+- Built: the TV on /plugins (`<WordWall bundle />`; home's TV unchanged) gets "+ Add to bundle" on each paid channel; the
+  gearbox under the TV = ONE gpt-image-2 photograph of a car console with the knob, needle, hub cap, lamps, gear window,
+  stamps, dial numbers, work order and price on it (DESIGN.md §4 "The gearbox"). Laptop: the console's top strip peeks
+  into the first screen (`--gb-peek`; `--ww-fit-extra` lets the TV's 7 rows fit). Phone: photo + paper work order + a
+  bottom bar. State in localStorage `ra-gearbox`. Gears (draft): 2 = -20 %, 3 = -30 %, 4+ = -40 %.
+- MOCKS: `bundle.ts BUNDLE_MOCK` = dev server (or PUBLIC_BUNDLE_MOCK=1) only: DRIFT $69, RevFX $19, OBDTune $15 (RevFX +
+  OBDTune also appear as TV channels there). Production build checked: /plugins carries keys for RevLimiter + Radio
+  Roulette only, home none, no mock channel.
+- Checks: `astro build` green; Playwright (Edge) at 1440x900 + 390x844: adds move the knob / lamps / needle / work order,
+  the strip shows in the first screen, no page errors (the only 403 = the dev toolbar through the node_modules junction).
+  Not checked: Safari / a real phone, 1141x636, high contrast, keyboard-only walk.
+- Art: `tools/gearbox/gen.ps1` (gpt-image-2; gpt-image-1 is retired and gpt-image-2 has no transparent output, so the
+  knob + needle are green-screen shots keyed by `process_art.py`). Raw originals in `tools/gearbox/raw/` (gitignored,
+  laptop 2 only). Cost ~$1.5.
+- NOT wired: checkout. "Continue to payment" says it's a mock. Open for Yoni / Dan / Gil: the gears' numbers, the Paddle
+  route (tier codes vs a worker-made transaction), stacking with personal codes and the BF/CM sale, whether TOP gear with
+  everything = Gil's $69 BF bundle, real RevFX / DRIFT prices, what OBDTune is.
+
 ## 2026-11-04 — GAS 2 postcards: the end page scrolls as one page, the footer under it (Claude Code `danavivi-c2 [ca2821]`, Dan's Mac) — PUSHED TO MAIN 2026-11-04 on Dan's word "perfect push to main" (from `fix/gas2-end-flow`)
 
 Claim: CLOSED 2026-11-04 `danavivi-c2`. Files: `tools/_gas2-scene/postcards.html`, `DESIGN.md`, this entry.

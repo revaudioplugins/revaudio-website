@@ -1,0 +1,676 @@
+---
+/**
+ * THE GEARBOX (Yoni 2026-11-05): build a bundle on /plugins. Each paid plugin added from the TV (its "+ Add to
+ * bundle" key, WordWall.astro) moves the shift knob up a gear, lights a shift lamp and swings the needle; the work
+ * order on the clipboard lists the bundle and the price. Data, gears and the photo's geometry: src/data/bundle.ts.
+ *
+ * ONE photograph (design-language Law 2): tools/gearbox/raw/console-a.png (gpt-image-2), cut by process_art.py. The
+ * parts that move sit on it: the knob and the needle (green-screen shots keyed out), the hub cap over the needle (cut
+ * from the photo itself), the lamps lit from inside (light on the photo's own lenses). Everything else is printed,
+ * stamped or typed onto the photo's surfaces.
+ *
+ * Laptop: the console's top strip (lamps, gear window, price, payment key) peeks into the first screen under the TV
+ * (--gb-peek, read by WordWall's --ww-nav), so every add answers where the visitor is looking. Phone: the console
+ * photo, the work order below it, and a bar on the bottom edge with the same lamps.
+ *
+ * State: the bundle lives in this browser (localStorage `ra-gearbox`). Checkout is NOT wired: Paddle route + the
+ * gears' numbers wait for Dan's and Gil's word (bundle.ts).
+ */
+import { Image, getImage } from 'astro:assets';
+import consoleImg from '../assets/gearbox/console.jpg';
+import knobImg from '../assets/gearbox/knob.png';
+import needleImg from '../assets/gearbox/needle.png';
+import hubImg from '../assets/gearbox/hub.png';
+import { GEARS, GEO, BUNDLE_MOCK } from '../data/bundle';
+
+const X = (v: number) => `${((v / GEO.w) * 100).toFixed(3)}%`;
+const Y = (v: number) => `${((v / GEO.h) * 100).toFixed(3)}%`;
+const box = (r: { x: number; y: number; w: number; h: number }) =>
+  `left:${X(r.x)};top:${Y(r.y)};width:${X(r.w)};height:${Y(r.h)}`;
+
+const { tach } = GEO;
+const angleOf = (pct: number) => tach.arc0 + (pct / 40) * (tach.arc1 - tach.arc0);
+const dialNums = [0, 10, 20, 30, 40].map((v) => {
+  const a = (angleOf(v) * Math.PI) / 180;
+  return { v, x: tach.cx + tach.numR * Math.sin(a), y: tach.cy - tach.numR * Math.cos(a) };
+});
+const stampText = [
+  ['1', ''],
+  ['2', '−20%'],
+  ['3', '−30%'],
+  ['TOP', '−40%'],
+];
+// the bar's lamps (phones) show the photo's own lenses: the photo as a background, cropped to each lens
+const barPhoto = await getImage({ src: consoleImg, width: 1280, format: 'webp', quality: 80 });
+const lens = (cx: number, cy: number) => {
+  const d = GEO.lampR * 2;
+  return `background-image:url(${barPhoto.src});background-size:${((GEO.w / d) * 100).toFixed(1)}% auto;background-position:${(((cx - GEO.lampR) / (GEO.w - d)) * 100).toFixed(3)}% ${(((cy - GEO.lampR) / (GEO.h - d)) * 100).toFixed(3)}%`;
+};
+const lampColor = ['g', 'g', 'a', 'r'];
+const geo = JSON.stringify({ gates: GEO.gates.map(([x, y]) => [x / GEO.w, y / GEO.h]), arc0: tach.arc0, arc1: tach.arc1 });
+---
+
+<section class="gb" id="gearbox" data-gearbox data-gb-gears={JSON.stringify(GEARS)} data-gb-geo={geo} data-gb-mock={BUNDLE_MOCK ? '1' : undefined} aria-labelledby="gb-title">
+  <h2 id="gb-title" class="sr-only">The gearbox: build a bundle, save up to 40 percent</h2>
+  <p class="sr-only" aria-live="polite" data-gb-say></p>
+
+  <div class="gb-rig">
+    <div class="gb-console">
+      <Image
+        class="gb-photo"
+        src={consoleImg}
+        alt="The gearbox: a walnut and steel car console with a shift gate, a savings gauge, four shift lights and a work order on a clipboard"
+        widths={[800, 1280, 1920, 2560]}
+        sizes="(max-width: 1340px) calc(100vw - 2rem), 1300px"
+        format="webp"
+        quality={84}
+        loading="eager"
+      />
+
+      {/* the shift lights: lit from inside the photo's own lenses, one per plugin */}
+      {GEO.lamps.map(([x, y], i) => (
+        <i class="gb-lamp" data-c={lampColor[i]} data-gb-lamp={i} style={`left:${X(x)};top:${Y(y)};width:${X(GEO.lampR * 2)}`} aria-hidden="true"></i>
+      ))}
+      {/* the gear window: smoked glass, the gear lit behind it */}
+      <div class="gb-win" style={box(GEO.gearWin)} aria-hidden="true"><span data-gb-win>N</span></div>
+
+      {/* the shift gate: what each gear takes off, stamped into the plate */}
+      {GEO.stamps.map(([x, y], i) => (
+        <button type="button" class="gb-stamp" data-gb-gate={i + 1} style={`left:${X(x)};top:${Y(y)}`} aria-label={`${GEARS[i + 1].name}${GEARS[i + 1].pct ? `: ${GEARS[i + 1].pct}% off` : ''}`}>
+          <b>{stampText[i][0]}</b>{stampText[i][1] && <small>{stampText[i][1]}</small>}
+        </button>
+      ))}
+      <div class="gb-knob" data-gb-knob style={`left:${X(GEO.gates[0][0])};top:${Y(GEO.gates[0][1])};width:${X(GEO.knobD)}`} aria-hidden="true">
+        <Image src={knobImg} alt="" width={220} densities={[1, 2]} format="webp" quality={88} loading="eager" />
+      </div>
+
+      {/* the tach: percent off, printed on the dial; the needle turns under the photo's own hub cap */}
+      {dialNums.map((n) => (
+        <span class="gb-num" style={`left:${X(n.x)};top:${Y(n.y)}`} aria-hidden="true">{n.v}</span>
+      ))}
+      <span class="gb-dial-l" style={`left:${X(tach.cx)};top:${Y(tach.cy + 112)}`} aria-hidden="true">% off</span>
+      <span class="gb-dial-save" data-gb-dialsave style={`left:${X(tach.cx)};top:${Y(tach.cy + 168)}`} aria-hidden="true"></span>
+      <div class="gb-needle" data-gb-needle style={`left:${X(tach.cx)};top:${Y(tach.cy)};height:${Y(tach.needleR / 0.8)}`} aria-hidden="true">
+        <Image src={needleImg} alt="" width={40} densities={[1, 2]} format="webp" quality={90} loading="eager" />
+      </div>
+      <Image class="gb-hub" src={hubImg} alt="" width={50} densities={[1, 2]} format="webp" quality={90} style={`left:${X(tach.cx)};top:${Y(tach.cy)};width:${X(tach.hubR * 2)}`} aria-hidden="true" />
+    </div>
+
+    {/* the top strip: what's next, the price and the way to pay (painted on the steel) */}
+    <div class="gb-strip" style={box(GEO.strip)}>
+      <p class="gb-next" data-gb-next>Pick 2 plugins and save 20%.</p>
+      <div class="gb-pay">
+        <p class="gb-total"><span class="gb-total-l">You pay</span> <b data-gb-pay>$0</b> <span class="gb-save" data-gb-save></span></p>
+        <button type="button" class="gb-paykey rv-btn rv-btn--sm" data-gb-checkout disabled>Continue to payment</button>
+      </div>
+    </div>
+
+    {/* the work order on the clipboard: printed header, typed lines, the gear stamped on */}
+    <div class="gb-paper" style={box(GEO.paper)}>
+      <p class="gb-wo-h"><span>Work order</span><span class="gb-wo-no">RevAudio garage</span></p>
+      <ol class="gb-rows" data-gb-rows></ol>
+      <dl class="gb-sum" data-gb-sum></dl>
+      <span class="gb-ink" data-gb-ink hidden></span>
+      <p class="gb-note" data-gb-note hidden></p>
+    </div>
+  </div>
+
+  {/* phones: the same lamps on a bar along the bottom edge; a tap brings up the gearbox */}
+  <button type="button" class="gb-bar" data-gb-bar aria-controls="gearbox">
+    <span class="gb-bar-lamps">
+      {GEO.lamps.map(([x, y], i) => <i class="gb-lamp gb-bar-lamp" data-c={lampColor[i]} data-gb-lamp={i} style={lens(x, y)}></i>)}
+    </span>
+    <span class="gb-bar-win" data-gb-win>N</span>
+    <span class="gb-bar-money"><b data-gb-pay>$0</b><small data-gb-barline>Bundle 2+ plugins, save 20%</small></span>
+    <span class="gb-bar-go">Bundle <span aria-hidden="true">&#9662;</span></span>
+  </button>
+</section>
+
+<style is:global>
+  /* the TV gives the gearbox's top strip room in the first screen (laptops; WordWall's --ww-nav reads it):
+     the console is min(100vw - 2rem, 1300px) wide, its strip ends at 150 / 3072 of that, + the section's top pad */
+  @media (min-width: 861px) {
+    :root {
+      --gb-peek: calc(min(100vw - 2rem, 1300px) * 0.0488 + 10px);
+      /* the TV's list counts its gaps too: with 7 channels (the mock catalog) the rows ran ~110 px past the room */
+      --ww-fit-extra: calc(clamp(0.35rem, 1.4vh, 0.9rem) + 0.25rem);
+    }
+  }
+</style>
+
+<style>
+  .gb {
+    --u: calc(100cqw / 3072); /* one pixel of the photo (resolved inside .gb-rig, the container) */
+    --ink-paint: #d8cbaa;
+    --ink-print: #2b2018;
+    --ink-type: #3a2c20;
+    --ink-stamp: #9c3518;
+    padding: 10px 1rem 2.5rem;
+    background:
+      radial-gradient(120% 90% at 30% 0%, rgb(255 214 150 / 0.06), transparent 60%),
+      var(--bg-0);
+  }
+  .gb-rig {
+    position: relative;
+    max-width: 1300px;
+    margin-inline: auto;
+    container-type: inline-size;
+  }
+  .gb-console {
+    position: relative;
+    aspect-ratio: 3072 / 1024;
+    border-radius: calc(26 * var(--u));
+    box-shadow: 0 2px 0 rgb(0 0 0 / 0.6), 0 18px 40px rgb(0 0 0 / 0.55), 0 40px 90px rgb(0 0 0 / 0.35);
+  }
+  .gb-photo {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    user-select: none;
+  }
+  .gb-console > :not(.gb-photo),
+  .gb-strip,
+  .gb-paper { position: absolute; }
+
+  /* ---- shift lights: the lens lit from inside (core + the glass's colour), the spill leaks onto the strip ---- */
+  .gb-lamp {
+    aspect-ratio: 1;
+    border-radius: 50%;
+    translate: -50% -50%;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 160ms ease-out;
+    --lc: 120 230 150;
+  }
+  .gb-lamp[data-c='a'] { --lc: 255 190 70; }
+  .gb-lamp[data-c='r'] { --lc: 255 70 40; }
+  .gb-console .gb-lamp {
+    background: radial-gradient(circle at 42% 38%, rgb(255 250 230 / 0.95) 0 12%, rgb(var(--lc) / 0.85) 34%, rgb(var(--lc) / 0.25) 62%, transparent 72%);
+    mix-blend-mode: screen;
+    box-shadow: 0 0 calc(30 * var(--u)) calc(6 * var(--u)) rgb(var(--lc) / 0.45), 0 0 calc(90 * var(--u)) calc(14 * var(--u)) rgb(var(--lc) / 0.18);
+  }
+  .gb-lamp.is-on { opacity: 1; }
+  .gb[data-gb-flash] .gb-lamp.is-on { animation: gb-flash 180ms steps(1, end) 6 alternate; }
+  @keyframes gb-flash { 50% { opacity: 0.15; } }
+
+  /* ---- gear window ---- */
+  .gb-win {
+    display: grid;
+    place-items: center;
+    font-family: 'VT323', var(--font-mono);
+    font-size: calc(64 * var(--u));
+    line-height: 1;
+    letter-spacing: 0.14em;
+    color: rgb(255 176 70);
+    text-shadow: 0 0 calc(10 * var(--u)) rgb(255 150 40 / 0.85), 0 0 calc(26 * var(--u)) rgb(255 120 30 / 0.45);
+    pointer-events: none;
+  }
+  .gb-win span { translate: 0 calc(3 * var(--u)); }
+  .gb[data-gb-n='0'] .gb-win { color: rgb(255 176 70 / 0.32); text-shadow: none; }
+
+  /* ---- the stamps on the gate plate (pressed into the chrome) ---- */
+  .gb-stamp {
+    translate: -50% -50%;
+    display: grid;
+    justify-items: center;
+    gap: calc(4 * var(--u));
+    padding: calc(6 * var(--u));
+    background: none;
+    border: 0;
+    cursor: pointer;
+    color: rgb(150 52 22 / 0.92);
+    text-shadow: 0 calc(2 * var(--u)) 0 rgb(255 248 230 / 0.4), 0 calc(-2 * var(--u)) 0 rgb(0 0 0 / 0.45);
+    font-family: var(--font-display);
+    line-height: 0.9;
+    transition: color 160ms ease, opacity 160ms ease;
+  }
+  .gb-stamp b { font-weight: 400; font-size: calc(70 * var(--u)); letter-spacing: 0.04em; }
+  .gb-stamp small { font-family: 'Oswald', var(--font-display); font-weight: 600; font-size: calc(30 * var(--u)); letter-spacing: 0.06em; }
+  .gb-stamp.is-soon { opacity: 0.4; }
+  .gb-stamp.is-here { color: #f1e6c8; text-shadow: 0 calc(-2 * var(--u)) 0 rgb(0 0 0 / 0.55), 0 calc(2 * var(--u)) 0 rgb(255 255 255 / 0.25); }
+  .gb-stamp:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 2px; border-radius: 4px; }
+
+  /* ---- the knob (seen from above): contact shadow + a long soft one, away from the lamp (upper left) ---- */
+  .gb-knob {
+    translate: -50% -50%;
+    aspect-ratio: 1;
+    pointer-events: none;
+    filter: drop-shadow(calc(6 * var(--u)) calc(9 * var(--u)) calc(5 * var(--u)) rgb(12 9 6 / 0.75)) drop-shadow(calc(22 * var(--u)) calc(30 * var(--u)) calc(26 * var(--u)) rgb(12 9 6 / 0.5));
+  }
+  .gb-knob :global(img) { width: 100%; height: auto; display: block; }
+
+  /* ---- the tach ---- */
+  .gb-num, .gb-dial-l, .gb-dial-save {
+    translate: -50% -50%;
+    pointer-events: none;
+    color: var(--ink-print);
+    mix-blend-mode: multiply;
+    white-space: nowrap;
+  }
+  .gb-num { font-family: var(--font-display); font-size: calc(46 * var(--u)); letter-spacing: 0.03em; opacity: 0.85; }
+  .gb-dial-l { font-family: 'Oswald', var(--font-display); font-weight: 600; font-size: calc(26 * var(--u)); letter-spacing: 0.3em; text-transform: uppercase; opacity: 0.7; }
+  .gb-dial-save { font-family: 'Special Elite', var(--font-mono); font-size: calc(34 * var(--u)); color: #7a2a12; opacity: 0.9; }
+  .gb-needle {
+    aspect-ratio: 48 / 600;
+    translate: -50% -80%;
+    transform-origin: 50% 80%;
+    rotate: -96deg;
+    transition: rotate 450ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    pointer-events: none;
+    filter: drop-shadow(calc(5 * var(--u)) calc(7 * var(--u)) calc(4 * var(--u)) rgb(12 9 6 / 0.45));
+  }
+  .gb-needle :global(img) { width: 100%; height: 100%; display: block; }
+  .gb-hub { translate: -50% -50%; aspect-ratio: 1; height: auto; pointer-events: none; }
+
+  /* ---- the top strip: painted on the black crackle steel ---- */
+  .gb-strip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: calc(40 * var(--u));
+    padding-inline: calc(30 * var(--u)) calc(14 * var(--u));
+    color: var(--ink-paint);
+    text-shadow: 0 1px 0 rgb(0 0 0 / 0.8), 0 -1px 0 rgb(255 240 210 / 0.08);
+  }
+  .gb-next {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: calc(48 * var(--u));
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.92;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .gb-next :global(b) { color: var(--brass-bright); font-weight: 400; }
+  .gb-pay { display: flex; align-items: center; gap: calc(34 * var(--u)); flex: none; }
+  .gb-total { margin: 0; display: flex; align-items: baseline; gap: calc(16 * var(--u)); white-space: nowrap; }
+  .gb-total-l { font-family: 'Oswald', var(--font-display); font-weight: 600; font-size: calc(24 * var(--u)); letter-spacing: 0.3em; text-transform: uppercase; opacity: 0.7; }
+  .gb-total b { font-family: var(--font-display); font-weight: 400; font-size: calc(74 * var(--u)); letter-spacing: 0.03em; line-height: 0.9; color: #efe3c6; font-variant-numeric: tabular-nums; }
+  .gb-save { font-family: 'Oswald', var(--font-display); font-weight: 600; font-size: calc(28 * var(--u)); letter-spacing: 0.08em; color: var(--brass-bright); }
+  .gb-paykey { flex: none; }
+
+  /* ---- the work order: printed (Bebas), typed (Special Elite), stamped (the gear) ---- */
+  .gb-paper {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    gap: calc(10 * var(--u));
+    padding: calc(14 * var(--u)) calc(20 * var(--u)) calc(16 * var(--u));
+    color: var(--ink-type);
+    font-family: 'Special Elite', var(--font-mono);
+    font-size: calc(30 * var(--u));
+    line-height: 1.25;
+  }
+  .gb-paper > * { mix-blend-mode: multiply; }
+  .gb-wo-h {
+    margin: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: calc(3 * var(--u)) solid rgb(43 32 24 / 0.55);
+    padding-bottom: calc(6 * var(--u));
+    font-family: var(--font-display);
+    font-size: calc(46 * var(--u));
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-print);
+  }
+  .gb-wo-no { font-size: calc(24 * var(--u)); letter-spacing: 0.22em; opacity: 0.65; }
+  .gb-rows { list-style: none; margin: 0; padding: 0; display: grid; align-content: start; gap: calc(2 * var(--u)); }
+  .gb-rows :global(.gb-row) { display: grid; grid-template-columns: 1fr auto calc(40 * var(--u)); gap: calc(10 * var(--u)); align-items: baseline; }
+  .gb-rows :global(.gb-row-n) { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .gb-rows :global(.gb-row-n::after) { content: ' ....................................'; opacity: 0.35; }
+  .gb-rows :global(.gb-row-p) { font-variant-numeric: tabular-nums; }
+  .gb-rows :global(.gb-row.is-next) { color: #7a2a12; opacity: 0.8; }
+  .gb-rows :global(.gb-row.is-next .gb-row-n::after) { content: ''; }
+  .gb-rows :global(.gb-x) {
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    opacity: 0.5;
+    cursor: pointer;
+    justify-self: end;
+  }
+  .gb-rows :global(.gb-x:hover), .gb-rows :global(.gb-x:focus-visible) { opacity: 1; color: #7a2a12; }
+  .gb-sum { margin: 0; width: 54%; justify-self: end; display: grid; grid-template-columns: 1fr auto; column-gap: calc(12 * var(--u)); border-top: calc(2 * var(--u)) dashed rgb(43 32 24 / 0.45); padding-top: calc(6 * var(--u)); }
+  .gb-sum :global(dt), .gb-sum :global(dd) { margin: 0; }
+  .gb-sum :global(dd) { text-align: right; font-variant-numeric: tabular-nums; }
+  .gb-sum :global(s) { opacity: 0.55; }
+  .gb-sum :global(.gb-due) { font-family: var(--font-display); font-size: calc(46 * var(--u)); line-height: 1; letter-spacing: 0.06em; color: var(--ink-print); }
+  .gb-ink {
+    position: absolute;
+    left: calc(22 * var(--u));
+    bottom: calc(34 * var(--u));
+    padding: calc(6 * var(--u)) calc(14 * var(--u)) calc(2 * var(--u));
+    border: calc(5 * var(--u)) double var(--ink-stamp);
+    border-radius: calc(8 * var(--u));
+    color: var(--ink-stamp);
+    font-family: var(--font-display);
+    font-size: calc(36 * var(--u));
+    letter-spacing: 0.1em;
+    line-height: 1;
+    rotate: -9deg;
+    opacity: 0.78;
+    mix-blend-mode: multiply;
+    pointer-events: none;
+    /* rubber stamps never ink evenly */
+    mask-image: repeating-linear-gradient(97deg, #000 0 7px, rgb(0 0 0 / 0.72) 7px 9px, #000 9px 15px), radial-gradient(circle at 70% 40%, rgb(0 0 0 / 0.75), #000 70%);
+    mask-composite: intersect;
+  }
+  .gb-ink.is-landing { animation: gb-stamp 220ms cubic-bezier(0.2, 0.9, 0.25, 1.25); }
+  @keyframes gb-stamp { from { scale: 1.5; opacity: 0; } to { scale: 1; opacity: 0.78; } }
+  .gb-note { position: absolute; left: calc(20 * var(--u)); right: calc(20 * var(--u)); bottom: calc(-46 * var(--u)); margin: 0; font-family: var(--font-body); font-size: 12px; color: var(--fg-dim); mix-blend-mode: normal; text-align: right; }
+
+  /* ---- the ghost: the plugin's picture flying from the TV key to its lamp ---- */
+  :global(.gb-ghost) {
+    position: fixed;
+    z-index: 90;
+    pointer-events: none;
+    border-radius: 4px;
+    box-shadow: 0 0 0 1px rgb(232 200 120 / 0.8), 0 10px 26px rgb(0 0 0 / 0.5);
+    object-fit: cover;
+  }
+
+  /* ---- phones: the console up top, the work order and the price under it, the bar on the bottom edge ---- */
+  .gb-bar { display: none; }
+  @media (max-width: 860px) {
+    .gb { padding: 1.25rem 1rem 6rem; }
+    .gb-stamp small, .gb-dial-l, .gb-dial-save, .gb-num { display: none; }
+    .gb-strip, .gb-paper { position: static; inset: auto !important; width: auto !important; height: auto !important; }
+    .gb-strip {
+      order: 3;
+      margin-top: 0.75rem;
+      padding: 0.75rem 0.9rem;
+      flex-wrap: wrap;
+      gap: 0.6rem 1rem;
+      border-radius: 8px;
+      background: linear-gradient(180deg, #2a2520, #191613 60%, #121010);
+      box-shadow: inset 0 1px 0 rgb(255 240 210 / 0.08), 0 10px 24px rgb(0 0 0 / 0.5);
+    }
+    .gb-next { font-size: 1.05rem; white-space: normal; }
+    .gb-pay { width: 100%; flex-wrap: wrap; justify-content: space-between; gap: 0.6rem 0.75rem; }
+    .gb-paykey { width: 100%; }
+    .gb-total-l { font-size: 0.62rem; }
+    .gb-total b { font-size: 1.9rem; }
+    .gb-save { font-size: 0.8rem; }
+    .gb-paper {
+      margin-top: 0.75rem;
+      padding: 0.9rem 1rem 1rem;
+      gap: 0.5rem;
+      font-size: 0.95rem;
+      border-radius: 4px;
+      background:
+        radial-gradient(140% 90% at 20% 0%, rgb(255 246 220 / 0.35), transparent 60%),
+        linear-gradient(170deg, #d9c49a, #c9b185 55%, #b89d70);
+      box-shadow: 0 1px 0 rgb(255 240 210 / 0.25) inset, 0 10px 24px rgb(0 0 0 / 0.5);
+      position: relative;
+    }
+    .gb-wo-h { font-size: 1.35rem; }
+    .gb-wo-no { font-size: 0.7rem; }
+    .gb-sum :global(.gb-due) { font-size: 1.35rem; }
+    .gb-ink { font-size: 1.1rem; bottom: 1.1rem; left: 0.9rem; border-width: 3px; }
+    .gb-note { position: static; text-align: left; }
+    .gb-rig { display: flex; flex-direction: column; }
+    .gb-bar {
+      display: grid;
+      grid-template-columns: auto auto 1fr auto;
+      align-items: center;
+      gap: 0.7rem;
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 60;
+      padding: 0.55rem 1rem calc(0.55rem + env(safe-area-inset-bottom, 0px));
+      border: 0;
+      border-top: 1px solid #3a332c;
+      background: linear-gradient(180deg, #2a2520, #171411);
+      box-shadow: 0 -10px 24px rgb(0 0 0 / 0.45);
+      color: var(--fg);
+      text-align: left;
+      font: inherit;
+      cursor: pointer;
+    }
+    .gb-bar-lamps { display: flex; gap: 6px; }
+    .gb-bar-lamp {
+      position: relative;
+      width: 18px;
+      opacity: 1;
+      translate: none;
+      box-shadow: 0 0 0 1px rgb(0 0 0 / 0.6);
+    }
+    .gb-bar-lamp::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      opacity: 0;
+      transition: opacity 160ms ease-out;
+      background: radial-gradient(circle at 42% 38%, rgb(255 250 230 / 0.95) 0 14%, rgb(var(--lc) / 0.85) 38%, rgb(var(--lc) / 0.2) 70%);
+      mix-blend-mode: screen;
+      box-shadow: 0 0 10px 2px rgb(var(--lc) / 0.5);
+    }
+    .gb-bar-lamp.is-on::after { opacity: 1; }
+    .gb[data-gb-flash] .gb-bar-lamp.is-on { animation: none; }
+    .gb[data-gb-flash] .gb-bar-lamp.is-on::after { animation: gb-flash 180ms steps(1, end) 6 alternate; }
+    .gb-bar-win {
+      min-width: 2.6rem;
+      padding: 0.15rem 0.35rem 0;
+      border-radius: 3px;
+      text-align: center;
+      background: linear-gradient(180deg, #0f0c0a, #1d1814);
+      box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.9), 0 0 0 1px #4a4038;
+      font-family: 'VT323', var(--font-mono);
+      font-size: 1.45rem;
+      line-height: 1.05;
+      color: rgb(255 176 70);
+      text-shadow: 0 0 8px rgb(255 150 40 / 0.8);
+    }
+    .gb[data-gb-n='0'] .gb-bar-win { color: rgb(255 176 70 / 0.35); text-shadow: none; }
+    .gb-bar-money { display: grid; line-height: 1.1; min-width: 0; }
+    .gb-bar-money b { font-family: var(--font-display); font-weight: 400; font-size: 1.35rem; letter-spacing: 0.03em; }
+    .gb-bar-money small { font-size: 0.72rem; color: var(--brass-bright); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .gb-bar-go { font-family: 'Oswald', var(--font-display); font-weight: 600; font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--brass); }
+  }
+  /* the cart button (CartFab, <=700 px) rides just above the bar, as on /drift (DriftStickyBar) */
+  @media (max-width: 700px) {
+    :global(body .cart-fab.cart-fab) { bottom: calc(16px + 62px + env(safe-area-inset-bottom, 0px)); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .gb-needle, .gb-lamp, .gb-bar-lamp::after { transition: none; }
+    .gb[data-gb-flash] .gb-lamp.is-on, .gb[data-gb-flash] .gb-bar-lamp.is-on::after, .gb-ink.is-landing { animation: none; }
+  }
+</style>
+
+<script>
+  type Gear = { id: string; name: string; win: string; min: number; pct: number };
+  const root = document.querySelector<HTMLElement>('[data-gearbox]');
+  if (root) {
+    const GEARS: Gear[] = JSON.parse(root.dataset.gbGears || '[]');
+    const GEO: { gates: [number, number][]; arc0: number; arc1: number } = JSON.parse(root.dataset.gbGeo || '{}');
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const KEY = 'ra-gearbox';
+    const $ = <T extends Element = HTMLElement>(s: string) => root.querySelector<T>(s);
+    const $$ = <T extends Element = HTMLElement>(s: string) => Array.from(root.querySelectorAll<T>(s));
+
+    // the catalog = every "+ Add to bundle" key on the TV (one per paid plugin)
+    const addKeys = () => Array.from(document.querySelectorAll<HTMLButtonElement>('[data-gb-add]'));
+    const catalog = new Map<string, { name: string; price: number }>();
+    addKeys().forEach((k) => catalog.set(k.dataset.gbAdd!, { name: k.dataset.gbName || '', price: +(k.dataset.gbPrice || 0) }));
+    const avail = catalog.size;
+
+    let bundle: string[] = [];
+    try { bundle = (JSON.parse(localStorage.getItem(KEY) || '[]') as string[]).filter((s) => catalog.has(s)); } catch { bundle = []; }
+    const save = () => { try { localStorage.setItem(KEY, JSON.stringify(bundle)); } catch { /* private window: this visit only */ } };
+
+    const gearOf = (n: number) => GEARS[Math.min(n, GEARS.length - 1)];
+    const money = (v: number) => '$' + (Number.isInteger(v) ? String(v) : v.toFixed(2));
+    const totals = () => {
+      const list = bundle.reduce((s, slug) => s + (catalog.get(slug)?.price ?? 0), 0);
+      const pct = gearOf(bundle.length).pct;
+      const pay = Math.round(list * (100 - pct)) / 100;
+      return { list, pct, pay, save: Math.round((list - pay) * 100) / 100 };
+    };
+    const nextLine = (n: number) => {
+      if (n === 0) return 'Pick 2 plugins and save <b>20%</b>';
+      if (n >= GEARS.length - 1) return '<b>TOP gear.</b> The best price on the site';
+      if (n >= avail) return "That's every paid plugin for now";
+      const g = GEARS[n + 1];
+      return `Add 1 more: <b>${g.name}, ${g.pct}% off</b>`;
+    };
+
+    // ---- the knob: through neutral, like a real stick (2 -> N -> 3), house snap on the last leg ----
+    const knob = $('[data-gb-knob]');
+    let gNow = 0;
+    const at = (i: number) => ({ left: `${(GEO.gates[i][0] * 100).toFixed(3)}%`, top: `${(GEO.gates[i][1] * 100).toFixed(3)}%` });
+    function moveKnob(g: number) {
+      if (!knob) return;
+      const from = gNow; gNow = g;
+      Object.assign(knob.style, at(g));
+      if (reduce || from === g || !knob.animate) return;
+      const midY = GEO.gates[0][1];
+      const a = GEO.gates[from], b = GEO.gates[g];
+      const pts: [number, number][] = [a];
+      if (a[0] !== b[0] || (from !== 0 && g !== 0)) { pts.push([a[0], midY], [b[0], midY]); }
+      pts.push(b);
+      const path = pts.filter((p, i) => i === 0 || p[0] !== pts[i - 1][0] || p[1] !== pts[i - 1][1]);
+      const n = path.length;
+      knob.animate(
+        path.map((p, i) => ({
+          left: `${(p[0] * 100).toFixed(3)}%`, top: `${(p[1] * 100).toFixed(3)}%`,
+          offset: n === 1 ? 1 : i / (n - 1),
+          easing: i === n - 2 ? 'cubic-bezier(.2,.9,.25,1.25)' : 'ease-in-out',
+        })),
+        { duration: 120 * (n - 1) + 120 },
+      );
+    }
+
+    const say = $('[data-gb-say]');
+    const ink = $('[data-gb-ink]');
+    const note = $('[data-gb-note]');
+    let lastGear = -1;
+
+    function render(prevN: number) {
+      const n = bundle.length, g = gearOf(n), gi = Math.min(n, GEARS.length - 1), T = totals();
+      root!.dataset.gbN = String(n);
+      // TV keys + row tags
+      addKeys().forEach((k) => k.setAttribute('aria-pressed', bundle.includes(k.dataset.gbAdd!) ? 'true' : 'false'));
+      document.querySelectorAll<HTMLElement>('[data-ww-item]').forEach((li) => {
+        const tag = li.querySelector<HTMLElement>('[data-gb-rin]');
+        if (tag) tag.hidden = !bundle.includes(li.dataset.wwItem!);
+      });
+      // lamps, gear window, needle, knob
+      $$('[data-gb-lamp]').forEach((l) => l.classList.toggle('is-on', +l.dataset.gbLamp! < Math.min(n, 4)));
+      if (gi === GEARS.length - 1 && prevN < GEARS.length - 1 && !reduce) {
+        root!.removeAttribute('data-gb-flash'); void root!.offsetWidth; root!.setAttribute('data-gb-flash', '');
+        setTimeout(() => root!.removeAttribute('data-gb-flash'), 1200);
+      }
+      $$('[data-gb-win]').forEach((w) => { w.textContent = g.win; });
+      const needle = $('[data-gb-needle]');
+      if (needle) needle.style.rotate = `${GEO.arc0 + (T.pct / 40) * (GEO.arc1 - GEO.arc0)}deg`;
+      moveKnob(gi);
+      $$('[data-gb-gate]').forEach((s) => {
+        const k = +s.dataset.gbGate!;
+        s.classList.toggle('is-soon', GEARS[k].min > avail);
+        s.classList.toggle('is-here', k === gi);
+      });
+      const dialSave = $('[data-gb-dialsave]');
+      if (dialSave) dialSave.textContent = T.save ? `save ${money(T.save)}` : '';
+      // strip
+      const next = $('[data-gb-next]'); if (next) next.innerHTML = nextLine(n);
+      $$('[data-gb-pay]').forEach((p) => { p.textContent = money(T.pay); });
+      const sv = $('[data-gb-save]'); if (sv) sv.textContent = T.save ? `save ${money(T.save)}` : '';
+      const bl = $('[data-gb-barline]');
+      if (bl) bl.textContent = n === 0 ? 'Bundle 2+ plugins, save 20%' : T.save ? `${g.name} · save ${money(T.save)}` : nextLine(n).replace(/<[^>]+>/g, '');
+      const pk = $<HTMLButtonElement>('[data-gb-checkout]'); if (pk) pk.disabled = n === 0;
+      // the work order
+      const rows = $('[data-gb-rows]');
+      if (rows) {
+        const lines = bundle.map((slug, i) => {
+          const c = catalog.get(slug)!;
+          return `<li class="gb-row"><span class="gb-row-n">${i + 1}. ${c.name}</span><span class="gb-row-p">${money(c.price)}</span><button type="button" class="gb-x" data-gb-rm="${slug}" aria-label="Take ${c.name} out">&times;</button></li>`;
+        });
+        if (n < avail && n < GEARS.length - 1) {
+          const ng = GEARS[n + 1];
+          lines.push(`<li class="gb-row is-next"><span class="gb-row-n">${n + 1}. ____________ ${ng.pct ? `&rarr; ${ng.win} gear &minus;${ng.pct}%` : '&larr; pick one on the TV'}</span><span></span><span></span></li>`);
+        }
+        rows.innerHTML = lines.join('');
+      }
+      const sum = $('[data-gb-sum]');
+      if (sum) {
+        sum.innerHTML = n
+          ? `<dt>Parts</dt><dd>${T.pct ? `<s>${money(T.list)}</s>` : money(T.list)}</dd>` +
+            (T.pct ? `<dt>${g.name}</dt><dd>&minus;${T.pct}%</dd>` : '') +
+            `<dt class="gb-due">Due</dt><dd class="gb-due">${money(T.pay)}</dd>`
+          : `<dt>Nothing on the order yet</dt><dd>$0</dd>`;
+      }
+      if (ink) {
+        ink.hidden = T.pct === 0;
+        ink.textContent = `${g.win} gear · −${T.pct}%`;
+        if (gi !== lastGear && T.pct && !reduce && lastGear !== -1) { ink.classList.remove('is-landing'); void ink.offsetWidth; ink.classList.add('is-landing'); }
+      }
+      lastGear = gi;
+    }
+
+    function fly(fromEl: Element | null, slug: string) {
+      if (reduce || !fromEl || !document.body.animate) return;
+      const phone = matchMedia('(max-width: 860px)').matches;
+      const lamps = $$(phone ? '.gb-bar-lamp' : '.gb-console .gb-lamp');
+      const target = lamps[Math.min(bundle.length, 4) - 1] ?? lamps[lamps.length - 1];
+      const src = document.querySelector<HTMLImageElement>(`[data-ww-item="${slug}"] .ww-thumb img`);
+      if (!target || !src) return;
+      const a = fromEl.getBoundingClientRect(), b = target.getBoundingClientRect();
+      if (b.bottom < 0 || b.top > innerHeight) return; // the lamp is off screen: the lamp itself lights, nothing flies
+      const g = document.createElement('img');
+      g.className = 'gb-ghost';
+      g.src = src.currentSrc || src.src;
+      g.alt = '';
+      const w = 96, h = 60;
+      Object.assign(g.style, { left: `${a.left + a.width / 2 - w / 2}px`, top: `${a.top + a.height / 2 - h / 2}px`, width: `${w}px`, height: `${h}px` });
+      document.body.appendChild(g);
+      const dx = b.left + b.width / 2 - (a.left + a.width / 2), dy = b.top + b.height / 2 - (a.top + a.height / 2);
+      g.animate(
+        [{ transform: 'none', opacity: 1 }, { transform: `translate(${dx}px, ${dy}px) scale(0.18)`, opacity: 0.2 }],
+        { duration: 560, easing: 'cubic-bezier(.22,1,.36,1)' },
+      ).onfinish = () => g.remove();
+    }
+
+    function toggle(slug: string, from: Element | null) {
+      const prevN = bundle.length, i = bundle.indexOf(slug), c = catalog.get(slug);
+      if (!c) return;
+      if (i >= 0) bundle.splice(i, 1); else bundle.push(slug);
+      save();
+      render(prevN);
+      const g = gearOf(bundle.length), T = totals();
+      if (say) say.textContent = `${c.name} ${i >= 0 ? 'taken out' : 'added'}. ${g.name}${T.pct ? `, ${T.pct}% off` : ''}. You pay ${money(T.pay)}.`;
+      if (i < 0) fly(from, slug);
+    }
+
+    document.addEventListener('click', (e) => {
+      const t = e.target as Element;
+      const add = t.closest<HTMLElement>('[data-gb-add]');
+      if (add) { toggle(add.dataset.gbAdd!, add); return; }
+      const rm = t.closest<HTMLElement>('[data-gb-rm]');
+      if (rm) { toggle(rm.dataset.gbRm!, null); return; }
+    });
+    $$('[data-gb-gate]').forEach((s) => s.addEventListener('click', () => {
+      const g = GEARS[+s.dataset.gbGate!];
+      const next = $('[data-gb-next]');
+      if (next) next.innerHTML = g.pct ? `<b>${g.name}</b>: ${g.min}${g.min === 4 ? '+' : ''} plugins, ${g.pct}% off` : `<b>1st gear</b>: one plugin, full price`;
+    }));
+    $('[data-gb-checkout]')?.addEventListener('click', () => {
+      if (!note) return;
+      note.hidden = false;
+      note.textContent = root.dataset.gbMock ? 'Mock: checkout gets wired after the gears are signed off.' : 'Checkout is coming soon.';
+    });
+    $('[data-gb-bar]')?.addEventListener('click', () => {
+      $('.gb-rig')?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+    });
+
+    render(0);
+  }
+</script>
