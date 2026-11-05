@@ -321,3 +321,12 @@ cutting the viewport to the keyboard's leftover (`setViewportSize`), at every ph
   silently does nothing (a click still works). `draggable="false"` + `-webkit-user-drag:none` + a pointercancel handler.
 - Gain ramps scheduled while the AudioContext is still suspended (first click) can be read back mid-ramp (0.65)
   when playback starts. When nothing is playing, set the gain directly (setValueAtTime); ramp only while live.
+
+## 2026-11-05 - a route change carries its smoke test; check the smoke run, not only the deploy
+
+`/store` moved to `/plugins` (40c9e43) while `tests/smoke.spec.ts` still waited for `/?utm_source=smoke#plugins`, so
+Smoke went red on every site push for a day and two sessions shipped past it (they checked only the Pages deploy).
+1. A commit that moves a route or a redirect updates its smoke test in the same commit.
+2. After a site push: `gh run list --limit 2` shows Deploy AND Smoke test; read both conclusions before calling it live.
+3. Mac WebKit against the dev server hangs the same way as the 2026-10-14 Windows note: `load` and
+   `document.fonts.ready` can stall a Playwright run (2026-11-04), so race fonts.ready with a ~5 s timeout there too.

@@ -12,10 +12,11 @@ Claim: CLOSED 2026-11-04 `danavivi-c2`. Files: `tools/_gas2-scene/postcards.html
   `check.cjs` ALL PASS (47 steps, 40 layouts); build green. Not checked: a real iPhone. Known: a `?card=7` deep link on
   an iPhone that first lays out at the full screen keeps that height (review links only; visitors arrive by flicking).
 
-## 2026-11-04 — Home TV ("the LCD") polish: two benches, keys + pictures (Claude Code, Dan's Mac) — branch `feat/lcd-polish`, PUSHED TO MAIN 2026-11-04 on Dan's word "push to main" (merge onto main)
+## 2026-11-04 — Home TV ("the LCD") polish: two benches, keys + pictures (Claude Code `danavivi-4f [ed951e]`, Dan's Mac) — branch `feat/lcd-polish`, PUSHED TO MAIN 2026-11-04 on Dan's word "push to main" (merge onto main)
 
-Claim: OPEN, Claude Code (Dan's Mac), worktree `.claude/worktrees/lcd-polish`. Files: `tools/wwbench/wwkeys.html` (new),
-`tools/wwbench/integration.mjs`, `tools/wwbench/wwbench.html`, `src/components/WordWall.astro`, this entry.
+Claim: CLOSED 2026-11-05 `danavivi-4f [ed951e]` (it carried on the session Dan closed by mistake, transcript
+`a0d54622`, from its A/B/C step). Files: `tools/wwbench/wwkeys.html` (new), `tools/wwbench/integration.mjs`,
+`tools/wwbench/wwbench.html`, `src/components/WordWall.astro`, `DESIGN.md` §4, `tests/smoke.spec.ts` (the /store test), this entry.
 - Dan's notes (review bench https://claude.ai/artifact/GiWdMBTrxJ69m3iocGJRo1, round 1): the Try key "is not fitting the
   LCD screen, I want it to feel like it's part of the LCD screen, give me 3 different options on a bench"; the Product
   page key the same; overall "get deep into the small details of how the plugins look on the screen, a bench for that".
@@ -38,11 +39,19 @@ Claim: OPEN, Claude Code (Dan's Mac), worktree `.claude/worktrees/lcd-polish`. F
   now shows A. Not checked: a real iPhone / Safari window.
 - LIVE: merge `069d5ac` pushed to main 2026-11-04; Pages deploy run 41846343673 success (started by the push, no
   hand run needed). revaudio.net (WebKit, 1141x636 + 390x844): Try / Product page = option A (3 px, phosphor fill),
-  no sideways scroll, no page errors. Smoke run 41846343899 still running when this was written; smoke on main
-  already failed at 7176953 and 73c697b, before this merge: `/store` now redirects to `/plugins/`
-  (40c9e43, the BF/CM skins) while tests/smoke.spec.ts still waits for `/?utm_source=smoke#plugins`. Not this
-  entry's files: the owner of 40c9e43 decides which one is right.
-- Next: the pictures bench (COPY SETTINGS, then "apply ww bench"), still on `feat/lcd-polish`.
+  no sideways scroll, no page errors.
+- SMOKE GREEN again (Dan 2026-11-05 "fix it", then "push to main"): the smoke test failed on main since 7176953
+  because `/store` goes to the TV on `/plugins` (since 2026-11-02; 40c9e43) while the test waited for
+  `/?utm_source=smoke#plugins`. `6ce626a` makes the test wait for `/plugins?utm_source=smoke` (site unchanged).
+  Local chromium + mobile-safari pass; on main: smoke run 42019338698 68 passed, deploy 42019338710 success.
+- Unverified: a real iPhone / Safari window with the new keys; Dan has not looked at the live TV himself since A went up.
+- Running: the dev server on 127.0.0.1:4512 (this worktree, PID 83451, log
+  `/private/tmp/claude-501/-Users-danavivi/a0d54622-9069-4e06-a247-e477f0bb5a76/scratchpad/dev-4512.log`); stop with
+  `kill 83451`.
+- Open for Dan: (1) the pictures bench `/__wwbench` "Pictures on the glass": tune, COPY SETTINGS, "apply ww bench"
+  (bake into WordWall.astro, then a push needs his word); (2) `/__wwkeys` is spent: its "Today" frame now IS A and the
+  A frame doubles it; keep as a record or remove it (dev-only, never built).
+- Next: the pictures bench, on `feat/lcd-polish` (= main `6ce626a` at close).
 
 ## 2026-11-04 — GAS 2 postcards: no shaking when the end page scrolls to the footer (Claude Code `danavivi-c2 [ca2821]`, Dan's Mac) — PUSHED TO MAIN 2026-11-04 on Dan's word "push to main" (from `fix/gas2-end-scroll`)
 
