@@ -95,8 +95,9 @@ export const GEO = {
   lampR: 30,
   /** The smoked-glass gear window beside them. */
   gearWin: { x: 820, y: 62, w: 242, h: 70 },
-  /** The empty strip to the right: the price and the payment key. */
-  strip: { x: 1130, y: 40, w: 1840, h: 104 },
+  /** The empty strip to the right: the price and the payment key. Centred on the lamps' line (y 93); it ends as far
+   *  from the frame's right edge (x ~3032) as the first lamp starts from its left edge (~163 px). */
+  strip: { x: 1130, y: 52, w: 1739, h: 82 },
   /** The top strip's bottom edge: what peeks into the first screen under the TV. */
   stripBottom: 150,
   /** The knob's centre at each gate: N, 1, 2, 3, TOP. The slots: x 460 / 743, y 260-760; the cross bar y 500. */

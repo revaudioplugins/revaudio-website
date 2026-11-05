@@ -77,7 +77,7 @@ const geo = JSON.stringify({ gates: GEO.gates.map(([x, y]) => [x / GEO.w, y / GE
       {/* the shift gate: what each gear takes off, stamped into the plate */}
       {GEO.stamps.map(([x, y], i) => (
         <button type="button" class="gb-stamp" data-gb-gate={i + 1} style={`left:${X(x)};top:${Y(y)}`} aria-label={`${GEARS[i + 1].name}${GEARS[i + 1].pct ? `: ${GEARS[i + 1].pct}% off` : ''}`}>
-          <b>{stampText[i][0]}</b>{stampText[i][1] && <small>{stampText[i][1]}</small>}
+          <b>{stampText[i][0]}</b>{stampText[i][1] ? <small>{stampText[i][1]}</small> : <small class="gb-blank" aria-hidden="true">−0%</small>}
         </button>
       ))}
       <div class="gb-knob" data-gb-knob style={`left:${X(GEO.gates[0][0])};top:${Y(GEO.gates[0][1])};width:${X(GEO.knobD)}`} aria-hidden="true">
@@ -208,7 +208,7 @@ const geo = JSON.stringify({ gates: GEO.gates.map(([x, y]) => [x / GEO.w, y / GE
     text-shadow: 0 0 calc(10 * var(--u)) rgb(255 150 40 / 0.85), 0 0 calc(26 * var(--u)) rgb(255 120 30 / 0.45);
     pointer-events: none;
   }
-  .gb-win span { translate: 0 calc(3 * var(--u)); }
+  .gb-win span { translate: 0 calc(-4 * var(--u)); }
   .gb[data-gb-n='0'] .gb-win { color: rgb(255 176 70 / 0.32); text-shadow: none; }
 
   /* ---- the stamps on the gate plate (pressed into the chrome) ---- */
@@ -229,6 +229,7 @@ const geo = JSON.stringify({ gates: GEO.gates.map(([x, y]) => [x / GEO.w, y / GE
   }
   .gb-stamp b { font-weight: 400; font-size: calc(70 * var(--u)); letter-spacing: 0.04em; }
   .gb-stamp small { font-family: 'Oswald', var(--font-display); font-weight: 600; font-size: calc(30 * var(--u)); letter-spacing: 0.06em; }
+  .gb-stamp .gb-blank { visibility: hidden; }
   .gb-stamp.is-soon { opacity: 0.4; }
   .gb-stamp.is-here { color: #f1e6c8; text-shadow: 0 calc(-2 * var(--u)) 0 rgb(0 0 0 / 0.55), 0 calc(2 * var(--u)) 0 rgb(255 255 255 / 0.25); }
   .gb-stamp:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 2px; border-radius: 4px; }
@@ -271,7 +272,7 @@ const geo = JSON.stringify({ gates: GEO.gates.map(([x, y]) => [x / GEO.w, y / GE
     align-items: center;
     justify-content: space-between;
     gap: calc(40 * var(--u));
-    padding-inline: calc(30 * var(--u)) calc(14 * var(--u));
+    padding-inline: calc(30 * var(--u)) 0;
     color: var(--ink-paint);
     text-shadow: 0 1px 0 rgb(0 0 0 / 0.8), 0 -1px 0 rgb(255 240 210 / 0.08);
   }
@@ -292,7 +293,17 @@ const geo = JSON.stringify({ gates: GEO.gates.map(([x, y]) => [x / GEO.w, y / GE
   .gb-total-l { font-family: 'Oswald', var(--font-display); font-weight: 600; font-size: calc(24 * var(--u)); letter-spacing: 0.3em; text-transform: uppercase; opacity: 0.7; }
   .gb-total b { font-family: var(--font-display); font-weight: 400; font-size: calc(74 * var(--u)); letter-spacing: 0.03em; line-height: 0.9; color: #efe3c6; font-variant-numeric: tabular-nums; }
   .gb-save { font-family: 'Oswald', var(--font-display); font-weight: 600; font-size: calc(28 * var(--u)); letter-spacing: 0.08em; color: var(--brass-bright); }
-  .gb-paykey { flex: none; }
+  /* the payment key: the house brass button (buttons.css) sized to the strip, never past its edges */
+  .gb-paykey {
+    flex: none;
+    --rb-h: calc(82 * var(--u));
+    --rb-px: calc(40 * var(--u));
+    --rb-fs: max(12px, calc(31 * var(--u)));
+    --rb-r: calc(12 * var(--u));
+    --rb-ay: calc(6 * var(--u));
+    --rb-ab: calc(12 * var(--u));
+    height: var(--rb-h);
+  }
 
   /* ---- the work order: printed (Bebas), typed (Special Elite), stamped (the gear) ---- */
   .gb-paper {
@@ -396,7 +407,10 @@ const geo = JSON.stringify({ gates: GEO.gates.map(([x, y]) => [x / GEO.w, y / GE
     .gb-next { font-size: 1.05rem; white-space: normal; }
     .gb-pay { width: 100%; flex-wrap: wrap; justify-content: space-between; gap: 0.6rem 0.75rem; }
     .gb-paykey { width: 100%; }
+    .gb-total { gap: 0.55rem; }
     .gb-total-l { font-size: 0.62rem; }
+    .gb-paykey { --rb-h: 48px; --rb-px: 20px; --rb-fs: 16px; --rb-r: 12px; --rb-ay: 22px; --rb-ab: 28px; }
+    .gb-rows :global(.gb-row) { grid-template-columns: 1fr auto 1.4rem; column-gap: 0.5rem; }
     .gb-total b { font-size: 1.9rem; }
     .gb-save { font-size: 0.8rem; }
     .gb-paper {
@@ -587,7 +601,7 @@ const geo = JSON.stringify({ gates: GEO.gates.map(([x, y]) => [x / GEO.w, y / GE
       $$('[data-gb-pay]').forEach((p) => { p.textContent = money(T.pay); });
       const sv = $('[data-gb-save]'); if (sv) sv.textContent = T.save ? `save ${money(T.save)}` : '';
       const bl = $('[data-gb-barline]');
-      if (bl) bl.textContent = n === 0 ? 'Bundle 2+ plugins, save 20%' : T.save ? `${g.name} · save ${money(T.save)}` : nextLine(n).replace(/<[^>]+>/g, '');
+      if (bl) bl.textContent = n === 0 ? 'Bundle 2+, save 20%' : T.save ? `you save ${money(T.save)}` : `1 more: −${GEARS[Math.min(n + 1, GEARS.length - 1)].pct}%`;
       const pk = $<HTMLButtonElement>('[data-gb-checkout]'); if (pk) pk.disabled = n === 0;
       // the work order
       const rows = $('[data-gb-rows]');
