@@ -17,8 +17,8 @@ OpenAI (`shared/tools/openai/`). Files: `src/assets/seasons/revfx/hear/`.
 | `led-lit.png` | chrome LED bezel lit violet | gpt-image-1.5 edit | laid on the looper's bezel (centre 50 % / 14.15 %, 26.4 % wide) |
 
 Prompts: `gen-assets-1.ps1` (8 assets x 2 rolls), `gen-assets-2.ps1` (the plates again at their display ratios,
-reference-guided) and `gen-assets-3.ps1` (the bypass pedal; the first loose chrome switch + gear washer "looks toyish",
-Yoni: a footswitch reads real only when it is mounted in a pedal). Both write next to themselves; crop / size with the numbers in the component (alpha bbox, square
+reference-guided) and `gen-assets-3.ps1` (the bypass pedal: Yoni said the first loose chrome switch "looks toyish"; a
+footswitch reads real once it is mounted in a pedal). Each writes next to itself; crop / size with the numbers in the component (alpha bbox, square
 crop on round parts, one shared crop box for the two LED states).
 
 Rules learned:
