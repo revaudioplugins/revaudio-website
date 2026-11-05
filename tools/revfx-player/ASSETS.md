@@ -13,11 +13,8 @@ OpenAI (`shared/tools/openai/`). Files: `src/assets/seasons/revfx/hear/`.
 | `jack.png` | 1/4" jack socket, front-on, true alpha | gpt-image-1.5 (`jack-2`) | the 4 inputs |
 | `plug.png` | right-angle plug from the front + purple tweed cable | gpt-image-1.5 (`plug-1`) | the picked input |
 | `patch.png` | pancake patch cable, top-down | gpt-image-1.5 (`patch-1`) | between the five |
-| `fsw-up.png` / `fsw-down.png` | aged nickel 3PDT footswitch with patina, ~8 deg off overhead, popped up / pressed | gpt-image-1.5 (`gen-assets-6.ps1`, roll 2); down = a MASKED edit of up (only a circle over the cap repaints) composited back into up's pixels, so the washer + nut never move | the STOMP switch: up = BYPASS, down = REVFX (it latches) |
 | `titanium.jpg` | dark satin titanium sheet with a soft violet-blue heat-tint band + a touch of gold (2:1) | gpt-image-2 (`gen-assets-7.ps1`, roll 2) | every section's plate (screen, PLAY, STOMP, VOLUME, the switch plate), each showing its own patch of the sheet |
 | `screw.png` | Phillips pan-head screw, aged nickel, top-down | gpt-image-1.5 (`gen-assets-6.ps1`, roll 1) | the 4 corners of every plate |
-| `led.png` | chrome LED bezel, off | gpt-image-1.5 | above the switch |
-| `led-lit.png` | the same bezel lit violet (an edit, same crop) | gpt-image-1.5 edit | above the switch, REVFX on |
 
 Prompts: `gen-assets-1.ps1` (8 assets x 2 rolls), `gen-assets-2.ps1` (the plates again at their display ratios,
 reference-guided) `gen-assets-3.ps1` (a looper pedal: Yoni said the first shiny chrome switch "looks toyish"; then "its the whole pedal, i
@@ -31,6 +28,11 @@ Checks (need the dev server on :4399): `node tools/revfx-player/checks/screws.cj
 everything inside it, 10 widths, BYPASS + REVFX; control-probed: a planted element in a corner fails at all 10) and
 `node tools/revfx-player/checks/fit.cjs` (switch / pedals / board fit, panel height, sideways scroll). Each writes next to itself; crop / size with the numbers in the component (alpha bbox, square
 crop on round parts, one shared crop box for the two LED states).
+
+The REVFX button is no asset: /drift's CSS push-to-start (drift.css `.d-start`) in RevFX purple (Yoni: "make the
+engage / bypass button not a stomp switch ... like for drift"); the switch photos (`gen-assets-3..6`) were retired.
+
+Checks also: `node tools/revfx-player/checks/names.cjs` (the pedal names never closer than 4 px).
 
 Rules learned:
 - `gpt-image-1` is retired. `gpt-image-2` = best realism, opaque only, no `input_fidelity`, custom sizes up to 3:1.

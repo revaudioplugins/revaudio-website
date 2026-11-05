@@ -5,11 +5,11 @@ import { initFader } from '../drift/faders';
  * #rfx-hear, the before/after player (RfxHear.astro). /drift's engine (src/lib/drift/hear.ts) without the pan bus:
  * <id>-before.m4a (dry, level-matched) and <id>-after.m4a (RevFX), padded PAD s on both sides so the loop seam never
  * lands on the AAC priming gap (tools/revfx-player/prep_audio.py). One track in memory at a time (the iPhone rule).
- * Both versions run in sync; BYPASS / REVFX is a 12 ms crossfade, so the stomp is instant and fair.
+ * Both versions run in sync; BYPASS / REVFX is a 12 ms crossfade, so the flip is instant and fair.
  *
  * The guide, as on /drift: root[data-next] names the step to take next (CSS breathes that step's key and control,
- * the LCD's coach cell says it): 'play' -> 'stomp' (dry plays, never stomped) -> 'back' (RevFX plays, not yet
- * stomped back off) -> '' (heard both: free play); 'wait' while the sound loads. Stomping before PLAY starts in RevFX.
+ * the LCD's coach cell says it): 'play' -> 'stomp' (dry plays, REVFX never pushed) -> 'back' (RevFX plays, not yet
+ * pushed back off) -> '' (heard both: free play); 'wait' while the sound loads. Pushing REVFX before PLAY starts in RevFX.
  */
 const BASE = '/audio/revfx/';
 type Lr = { L: number[]; R: number[] };
@@ -42,7 +42,7 @@ export function initHear(): void {
   let didOn = false, didOff = false;
   type Next = 'wait' | 'play' | 'stomp' | 'back' | '';
   const next = (): Next => st.loading ? 'wait' : !st.playing ? 'play' : !st.after && !didOn ? 'stomp' : st.after && !didOff ? 'back' : '';
-  const COACH: Record<Next, string> = { wait: 'LOADING', play: 'PRESS PLAY', stomp: 'STOMP IT', back: 'STOMP AGAIN: BYPASS', '': 'NOW PLAYING' };
+  const COACH: Record<Next, string> = { wait: 'LOADING', play: 'PRESS PLAY', stomp: 'PUSH REVFX', back: 'PUSH AGAIN: BYPASS', '': 'NOW PLAYING' };
   let M: Manifest | null = null;
   const manifest = fetch(`${BASE}peaks.json`).then((r) => r.json() as Promise<Manifest>).then((m) => { M = m; paintUi(); draw(); return m; });
 
@@ -96,6 +96,14 @@ export function initHear(): void {
     if (!t) return;
     start(keepAt % t.dur);
     st.playing = true; paintUi(); loop();
+    if (st.after) strike();   // the sound is here: the tube strikes
+  };
+  // the neon strike (/drift's: two flickers, then steady; drift.css d-start-strike)
+  let strikeT = 0;
+  const strike = () => {
+    if (!stompBox) return;
+    stompBox.classList.remove('is-striking'); void stompBox.offsetWidth; stompBox.classList.add('is-striking');
+    clearTimeout(strikeT); strikeT = window.setTimeout(() => stompBox.classList.remove('is-striking'), 600);
   };
   const stop = () => { stopSources(); st.playing = false; paintUi(); draw(); };
   const pick = (id: string) => {
@@ -112,24 +120,17 @@ export function initHear(): void {
     if (after) didOn = true; else if (didOn) didOff = true;
     paintUi(); draw();
     if (srcs && ctx) { const now = ctx.currentTime; srcs.gA.gain.setTargetAtTime(after ? 1 : 0, now, .012); srcs.gB.gain.setTargetAtTime(after ? 0 : 1, now, .012); }
+    if (after && st.playing && !st.loading) strike();
   };
   playBtn.addEventListener('click', () => { if (!st.playing) void play(); });
   stopBtn.addEventListener('click', stop);
   jacks.forEach((b) => b.addEventListener('click', () => pick(b.dataset.hearTrack!)));
-  // the footswitch: one stomp toggles RevFX; stomping it on while stopped also starts the music (in RevFX).
-  // .is-down = the cap travels while the foot is on it (pointer), and once on a key press
+  // push to engage: one push toggles RevFX; pushing it on while stopped also starts the music (in RevFX)
   stompBtn?.addEventListener('click', () => {
     if (st.loading) return;
     const on = !st.after; flip(on);
     if (on && !st.playing) void play();
   });
-  if (stompBox && stompBtn) {
-    const up = () => stompBox.classList.remove('is-down');
-    stompBtn.addEventListener('pointerdown', () => stompBox.classList.add('is-down'));
-    for (const ev of ['pointerup', 'pointerleave', 'pointercancel'] as const) stompBtn.addEventListener(ev, up);
-    stompBtn.addEventListener('keydown', (e) => { if (e.key === ' ' || e.key === 'Enter') stompBox.classList.add('is-down'); });
-    stompBtn.addEventListener('keyup', up);
-  }
 
   // ---- paint
   const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
@@ -141,7 +142,8 @@ export function initHear(): void {
     const on = new Set((jack()?.dataset.on ?? '').split(' ').filter(Boolean));
     peds.forEach((p) => p.classList.toggle('is-out', !on.has(p.dataset.fx!)));
     stompBtn?.setAttribute('aria-pressed', String(st.after));
-    stompBtn?.setAttribute('aria-label', st.after ? 'RevFX footswitch. On: you hear RevFX. Stomp for the dry sound.' : 'RevFX footswitch. Off: you hear the dry sound. Stomp to hear RevFX.');
+    stompBtn?.setAttribute('aria-label', st.after ? 'REVFX. Lit: you hear RevFX. Push for the dry sound.' : 'REVFX. Dark: you hear the dry sound. Push to engage RevFX.');
+    stompBox?.setAttribute('data-on', st.after ? 'after' : 'before');
     stompBox?.toggleAttribute('data-loading', st.loading);
     root.dataset.ab = st.after ? 'after' : 'before';
     playBtn!.setAttribute('aria-pressed', String(st.playing));

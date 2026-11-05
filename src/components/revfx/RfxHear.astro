@@ -8,16 +8,17 @@
  *
  *   1 PLUG IN   a patchbay plate with four 1/4" jacks; the picked one wears the right-angle plug, its cable runs on.
  *   2 PLAY      the arcade caps (/drift's).
- *   3 STOMP     the pedalboard: an aged nickel 3PDT footswitch + its LED first on the board (it latches: up on BYPASS,
- *               held down on REVFX, Yoni 2026-11-05), then the five pedals joined by patch cables (OUT and the TRUE BYPASS loop went, Yoni 2026-11-05: "no need").
- *               Bypassed, the pedals sit dark; stomped, they light in chain order in their own lamp colours
- *               (revfx.ts ink / rgb), the LED goes purple and the screen's waveform wears the five colours.
+ *   3 PUSH      /drift's push-to-start in RevFX purple (REVFX / ENGAGE; Yoni 2026-11-05: "make the engage / bypass button
+ *               not a stomp switch ... like for drift"), lit = RevFX, dark = the dry sound; then the five pedals
+ *               joined by patch cables (OUT and the TRUE BYPASS loop went, Yoni 2026-11-05: "no need").
+ *               Bypassed, the pedals sit dark; pushed, they light in chain order in their own lamp colours
+ *               (revfx.ts ink / rgb), the tube strikes and the screen's waveform wears the five colours.
  *
  * Assets (src/assets/seasons/revfx/hear/, OpenAI 2026-11-05, tools/revfx-player/ASSETS.md): panel-wide / -tall.jpg (the
  * tolex flight case, laptop / phone), board-wide / -mid.jpg (pedalboard
  * carpet + rails), plate-w / -s / -t.jpg (every section's plate: burnt titanium with the patchbay plate's wear and
  * corner screws, 2:1 / 1:1 / 1:2, Yoni 2026-11-05: "the effect ... when titanium is burned", "the wear should be like
- * the left panel"), jack / plug / patch / fsw-up / fsw-down / led / led-lit .png (true-alpha cutouts). The fader is /drift's (hear/fader-*.webp). A track lights only the pedals its bounce
+ * the left panel"), jack / plug / patch .png (true-alpha cutouts). The fader is /drift's (hear/fader-*.webp). A track lights only the pedals its bounce
  * used (revfx.ts hearTracks.on).
  *
  * The sounds: public/audio/revfx/<id>-before.m4a (dry, level-matched) + <id>-after.m4a (RevFX) + peaks.json,
@@ -43,13 +44,9 @@ import boardMidSrc from '../../assets/seasons/revfx/hear/board-mid.jpg';
 import jackSrc from '../../assets/seasons/revfx/hear/jack.png';
 import plugSrc from '../../assets/seasons/revfx/hear/plug.png';
 import patchSrc from '../../assets/seasons/revfx/hear/patch.png';
-import fswUpSrc from '../../assets/seasons/revfx/hear/fsw-up.png';
-import fswDnSrc from '../../assets/seasons/revfx/hear/fsw-down.png';
-import ledSrc from '../../assets/seasons/revfx/hear/led.png';
 import plateWSrc from '../../assets/seasons/revfx/hear/plate-w.jpg';
 import plateSSrc from '../../assets/seasons/revfx/hear/plate-s.jpg';
 import plateTSrc from '../../assets/seasons/revfx/hear/plate-t.jpg';
-import ledLitSrc from '../../assets/seasons/revfx/hear/led-lit.png';
 import { pedals, hearTracks } from '../../data/revfx';
 
 type Peaks = { dur: number };
@@ -61,10 +58,10 @@ const BOARD = ['pitch', 'echo', 'halo', 'reverb', 'glue'] as const;
 const srcs = { pitch: pedPitch, echo: pedEcho, reverb: pedVerb, halo: pedHalo, glue: pedGlue };
 const webp = (src: ImageMetadata, width: number, quality = 82) => getImage({ src, width, format: 'webp', quality });
 const board = await Promise.all(BOARD.map(async (id) => ({ p: pedals.find((x) => x.id === id)!, img: await webp(srcs[id], 180, 80) })));
-const [g, r, jack, plug, patch, fswUp, fswDn, led, ledLit, plateW, plateS, plateT, fadCap, fadPlate, panelW, panelT, boardW, boardM] = await Promise.all([
+const [g, r, jack, plug, patch, plateW, plateS, plateT, fadCap, fadPlate, panelW, panelT, boardW, boardM] = await Promise.all([
   webp(capGreen, 136), webp(capRed, 136),
-  webp(jackSrc, 120, 85), webp(plugSrc, 480, 85), webp(patchSrc, 320, 85), webp(fswUpSrc, 150, 85), webp(fswDnSrc, 150, 85),
-  webp(ledSrc, 64, 85), webp(ledLitSrc, 64, 85), webp(plateWSrc, 1600, 78), webp(plateSSrc, 800, 78), webp(plateTSrc, 800, 78), webp(faderCapSrc, 120, 85), webp(faderPlateSrc, 70, 85),
+  webp(jackSrc, 120, 85), webp(plugSrc, 480, 85), webp(patchSrc, 320, 85),
+  webp(plateWSrc, 1600, 78), webp(plateSSrc, 800, 78), webp(plateTSrc, 800, 78), webp(faderCapSrc, 120, 85), webp(faderPlateSrc, 70, 85),
   webp(panelWideSrc, 1800, 62), webp(panelTallSrc, 760, 64),
   webp(boardWideSrc, 1200, 76), webp(boardMidSrc, 800, 76),
 ]);
@@ -82,7 +79,7 @@ const chainTxt = 'TRUE BYPASS';
   data-rfx-hear data-next="play" data-ab="before" data-inks={JSON.stringify(board.map(({ p }) => p.ink))}>
   <div class="d-wrap">
     <div class="rfx-hear-head">
-      <h2 id="rfx-hear-h" class="d-headline d-headline--row"><span class="l1">Plug in.</span> <span class="l2">Stomp it.</span></h2>
+      <h2 id="rfx-hear-h" class="d-headline d-headline--row"><span class="l1">Plug in.</span> <span class="l2">Push it.</span></h2>
     </div>
 
     <!-- the flight case: tolex face, aluminium rails and ball corners -->
@@ -142,24 +139,27 @@ const chainTxt = 'TRUE BYPASS';
               </div>
             </div>
 
-            <!-- 3 · stomp: the pedalboard. [data-ab] on the section picks the lit route; a pedal the track doesn't use
-                 stays dark (.is-out) -->
+            <!-- 3 · push REVFX: /drift's push-to-start (drift.css .d-start: the knurled chrome bezel, the 40 bars that chase
+                 while the sound loads, the neon tube that strikes on) in RevFX's purple (revfx.css #rfx-hear .rfx-start),
+                 then the pedalboard. [data-ab] on the section picks what lights; a pedal the track doesn't use stays dark -->
             <div class="rfx-plate rfx-hear-step rfx-hear-step--stomp" data-step="3">
-              <p class="rfx-hear-cap"><b class="rfx-hear-n">3</b>STOMP<span class="rfx-hear-ab" aria-hidden="true"><i>BYPASS</i><i>REVFX</i></span></p>
-              <div class="rfx-hear-board">
-                <!-- the footswitch: an aged nickel 3PDT (fsw-up / fsw-down.png, one frame: only the cap moves) with its LED. It
-                     latches like a real pedal: popped up on BYPASS, pushed down and held while RevFX is on -->
-                <div class="rfx-plate rfx-plate--sq rfx-stomp" data-hear-stomp-box>
-                  <span class="rfx-stomp-led" aria-hidden="true">
-                    <img src={led.src} width="64" height="64" alt="" decoding="async" draggable="false" />
-                    <img class="lit" src={ledLit.src} width="64" height="64" alt="" decoding="async" draggable="false" />
-                  </span>
-                  <button class="rfx-stomp-sw" type="button" data-hear-stomp aria-pressed="false"
-                    aria-label="RevFX footswitch. Off: you hear the dry sound. Stomp to hear RevFX.">
-                    <img class="up" src={fswUp.src} width="150" height="150" alt="" decoding="async" draggable="false" />
-                    <img class="dn" src={fswDn.src} width="150" height="150" alt="" decoding="async" draggable="false" />
-                  </button>
+              <p class="rfx-hear-cap"><b class="rfx-hear-n">3</b>PUSH REVFX<span class="rfx-hear-ab" aria-hidden="true"><i>BYPASS</i><i>REVFX</i></span></p>
+              <div class="rfx-hear-stomprow">
+                <div class="d-start rfx-start" data-hear-stomp-box data-on="before">
+                  <div class="d-start-in">
+                    <span class="d-start-ticks" aria-hidden="true">{Array.from({ length: 40 }, (_, i) => <i style={`--i:${i}`}></i>)}</span>
+                    <button class="d-start-pb" type="button" data-hear-stomp aria-pressed="false" aria-label="REVFX. Dark: you hear the dry sound. Push to engage RevFX.">
+                      <span class="d-start-knurl"></span><span class="d-start-wear"></span><span class="d-start-seat"></span>
+                      <span class="d-start-tube"></span><span class="d-start-tube lit"></span>
+                      <span class="d-start-lens"><span class="d-start-bloom lit"></span></span>
+                      <span class="d-start-lg"><span class="w">REVFX</span><span class="s">ENGAGE</span></span>
+                      <span class="d-start-lg lit"><span class="w">REVFX</span><span class="s">ENGAGE</span></span>
+                      <span class="d-start-spill lit"></span>
+                    </button>
+                  </div>
                 </div>
+                <div class="rfx-board-wrap">
+              <div class="rfx-hear-board">
                 <ol class="rfx-peds-mini" aria-hidden="true">
                   {board.map(({ p, img }, i) => (
                     <li data-fx={p.id} style={`--i:${i};--rgb:${p.rgb};--ink:${p.ink}`}>
@@ -170,6 +170,8 @@ const chainTxt = 'TRUE BYPASS';
                     </li>
                   ))}
                 </ol>
+              </div>
+                </div>
               </div>
             </div>
 

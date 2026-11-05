@@ -322,7 +322,7 @@
 /* ---- the rig: 2 PLAY · 3 STOMP (the board) · VOLUME, each in a shallow well cut into the tolex */
 .rfx-hear-rig { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; flex: 1; }
 .rfx-hear-step, .rfx-hear-vol { display: flex; flex-direction: column; gap: 9px; padding: 0 4px 2px; }
-.rfx-hear-step--stomp { container-type: inline-size; min-width: 0; }
+.rfx-hear-step--stomp { min-width: 0; }
 .rfx-hear-caps { display: flex; align-items: center; justify-content: center; gap: 12px; flex: 1; }
 .rfx-hear-caps .d-cap { width: 54px; height: 54px; }
 .rfx-hear-ab { margin-left: auto; display: flex; gap: 12px; font-size: 9px; letter-spacing: .12em; }
@@ -332,10 +332,10 @@
 
 /* the pedalboard: board-wide.jpg (3:1, laptop; phones board-mid.jpg 2.1:1) = carpet + the two aluminium rails (5 % each) */
 .rfx-hear-board {
-  /* the switch plate (1.34 pedals wide), the five and their gaps fill what the padding leaves (100cqw = the STOMP
-     plate's width): pedal = (plate - --fix) / (6.34 + 5 x --pgk), gap = pedal x --pgk */
-  --fix: 86px; --pgk: .5;
-  --pm: clamp(28px, calc((100cqw - var(--fix)) / (6.34 + 5 * var(--pgk))), 56px);   /* a mini pedal's width */
+  /* the five and their gaps fill what the board's padding leaves (100cqw = .rfx-board-wrap, the room right of the
+     REVFX button): pedal = (room - --fix) / (5 + 4 x --pgk), gap = pedal x --pgk */
+  --fix: 30px; --pgk: .5;
+  --pm: clamp(24px, calc((100cqw - var(--fix)) / (5 + 4 * var(--pgk))), 56px);   /* a mini pedal's width */
   --pg: calc(var(--pm) * var(--pgk));        /* the gap between two pedals (a patch cable spans it) */
   --mid: calc(var(--pm) * .9);               /* the board's signal line (patch cables, jacks, the switch) from the top */
   position: relative; flex: 1; display: flex; align-items: flex-start; justify-content: center; gap: var(--pg);
@@ -344,30 +344,49 @@
   border-radius: 3px;
   box-shadow: 0 8px 12px -4px rgba(0, 0, 0, .7);
 }
-/* the footswitch (fsw-up / fsw-down.png share one frame: the washer + nut stay, only the cap moves) under its LED. It
-   latches: popped up on BYPASS, held down on REVFX; while the foot is on it (.is-down) it shows down whatever the state,
-   so a stomp off goes down and then pops up on release. The guide breathes as a soft purple light round the switch. */
-.rfx-stomp { --rail: calc(var(--pm) * .17); z-index: 3; flex: none; width: calc(var(--pm) * 1.34); display: flex; flex-direction: column;
-  align-items: center; gap: calc(var(--pm) * .06); padding: 0; }
-.rfx-stomp-led { position: relative; width: calc(var(--pm) * .3); aspect-ratio: 1; }
-.rfx-stomp-led img { position: absolute; inset: 0; width: 100%; height: 100%; -webkit-user-drag: none; }
-.rfx-stomp-led .lit { opacity: 0; transition: opacity .06s ease; }
-.rfx-stomp-led::after { content: ''; position: absolute; inset: -80%; border-radius: 50%; pointer-events: none; opacity: 0; transition: opacity .06s ease;
-  background: radial-gradient(closest-side, rgba(var(--d-neon-rgb), .5), transparent); }
-[data-ab='after'] .rfx-stomp-led .lit, [data-ab='after'] .rfx-stomp-led::after { opacity: 1; }
-.rfx-stomp[data-loading] .rfx-stomp-led .lit { animation: rfx-led-wait .5s steps(1, end) infinite; }
-@keyframes rfx-led-wait { 50% { opacity: 1; } }
-.rfx-stomp-sw { position: relative; display: block; width: 100%; aspect-ratio: 1; border: 0; padding: 0; background: none; cursor: pointer; border-radius: 50%; -webkit-tap-highlight-color: transparent; }
-.rfx-stomp-sw img { position: absolute; inset: 0; width: 100%; height: 100%; -webkit-user-drag: none; user-select: none;
-  filter: drop-shadow(0 4px 4px rgba(0, 0, 0, .8)) drop-shadow(0 1px 1px rgba(0, 0, 0, .9)); }
-.rfx-stomp-sw .dn { opacity: 0; }
-[data-ab='after'] .rfx-stomp-sw .dn, .rfx-stomp.is-down .rfx-stomp-sw .dn { opacity: 1; }
-[data-ab='after'] .rfx-stomp-sw .up, .rfx-stomp.is-down .rfx-stomp-sw .up { opacity: 0; }
-.rfx-stomp.is-down .rfx-stomp-sw img { translate: 0 1px; }
-.rfx-stomp-sw:hover img { filter: drop-shadow(0 4px 4px rgba(0, 0, 0, .8)) drop-shadow(0 1px 1px rgba(0, 0, 0, .9)) brightness(1.08); }
-@keyframes rfx-fsw-next { 0%, 100% { box-shadow: 0 0 0 0 rgba(var(--d-neon-rgb), 0); } 50% { box-shadow: 0 0 14px 3px rgba(var(--d-neon-rgb), .55); } }
-[data-rfx-hear]:is([data-next='stomp'], [data-next='back']) .rfx-stomp:not(.is-down) .rfx-stomp-sw { animation: rfx-fsw-next 1.2s ease-in-out infinite; }
-.drift-page .rfx-stomp-sw:focus-visible { outline: 2px solid var(--d-pink-ink); outline-offset: 4px; border-radius: 50%; }
+/* REVFX = /drift's push-to-start (drift.css .d-start, built at 204 px, scaled by --k) with /drift #hear's raised cap
+   (the lens stands proud, goes down 1.5 px when pushed), in RevFX's purple instead of DRIFT's magenta. Lit (data-on
+   after) = RevFX; dark = the dry sound; the 40 bars chase while the sound loads; the tube strikes when it plays
+   (.is-striking, hear.ts). The guide breathes as a ring on the bezel. */
+.rfx-hear-stomprow { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0; }
+.rfx-board-wrap { flex: 1; min-width: 0; container-type: inline-size; display: flex; }
+#rfx-hear .rfx-start { --k: .6; flex: none; margin: 0; }
+#rfx-hear .rfx-start:not([data-on='after']):not([data-loading]) .d-start-ticks i { background: rgba(var(--d-neon-rgb), .3); }
+#rfx-hear .rfx-start[data-on='after'] .d-start-ticks i { background: #e7a6ff; box-shadow: 0 0 5px rgba(var(--d-neon-rgb), .75); }
+#rfx-hear .rfx-start[data-loading] .d-start-ticks i { animation-name: rfx-start-chase; }
+@keyframes rfx-start-chase { 0% { background: #fbf0ff; box-shadow: 0 0 8px var(--d-neon), 0 0 16px rgba(var(--d-neon-rgb), .85); } 25% { background: rgba(var(--d-neon-rgb), .75); box-shadow: 0 0 6px rgba(var(--d-neon-rgb), .6); } 70%, 100% { background: rgba(var(--d-neon-rgb), .12); box-shadow: none; } }
+#rfx-hear .rfx-start:not([data-on='after']) .d-start-lg.lit { opacity: .3; }
+#rfx-hear .rfx-start::before { content: ''; position: absolute; inset: 4%; border-radius: 50%; pointer-events: none; opacity: 0; transition: opacity .3s ease;
+  box-shadow: 0 0 34px 12px rgba(var(--d-neon-rgb), .32); }
+#rfx-hear .rfx-start[data-on='after']:not([data-loading])::before { opacity: 1; }
+#rfx-hear .rfx-start .d-start-tube.lit { border-color: #fbf0ff;
+  box-shadow: 0 0 0 1.5px #e08cff, inset 0 0 0 1.5px #e08cff, 0 0 8px 2px rgba(var(--d-neon-rgb), .95), inset 0 0 8px 2px rgba(var(--d-neon-rgb), .75),
+    0 0 26px 6px rgba(var(--d-neon-rgb), .55), inset 0 0 24px 4px rgba(var(--d-neon-rgb), .35); }
+#rfx-hear .rfx-start .d-start-tube:not(.lit) { border-color: #26173a; }
+#rfx-hear .rfx-start .d-start-bloom { background: radial-gradient(circle, rgba(var(--d-neon-rgb), .34), rgba(var(--d-neon-rgb), .08) 55%, transparent 72%); }
+#rfx-hear .rfx-start .d-start-spill { background: radial-gradient(circle, transparent 52%, rgba(var(--d-neon-rgb), .3) 62%, transparent 76%); }
+#rfx-hear .rfx-start .d-start-lg.lit .w { color: #fff; text-shadow: 0 0 3px #fff, 0 0 12px rgba(var(--d-neon-rgb), .95), 0 0 24px rgba(var(--d-neon-rgb), .5); }
+#rfx-hear .rfx-start .d-start-lg.lit .s { color: #ecd2ff; text-shadow: 0 0 8px rgba(var(--d-neon-rgb), .9); }
+#rfx-hear .rfx-start .d-start-lg .w { font-size: 15px; letter-spacing: .16em; margin-left: .16em; }
+#rfx-hear .rfx-start .d-start-seat { inset: 18px; }
+#rfx-hear .rfx-start .d-start-tube { inset: 21px; }
+#rfx-hear .rfx-start :is(.d-start-lens, .d-start-lg) { inset: 27px; }
+#rfx-hear .rfx-start .d-start-lens { transition: transform .08s ease-out, box-shadow .08s ease-out;
+  background: radial-gradient(115% 95% at 34% 22%, #3f3550 0%, #201a2c 38%, #0e0a16 72%, #060409 100%);
+  box-shadow: 0 5px 7px rgba(0, 0, 0, .85), 0 1px 2px rgba(0, 0, 0, .95), inset 0 2px 0 rgba(255, 255, 255, .22), inset 0 0 0 1px rgba(0, 0, 0, .85),
+    inset 0 -5px 7px rgba(0, 0, 0, .75), inset 3px 0 6px -2px rgba(255, 255, 255, .05); }
+#rfx-hear .rfx-start .d-start-lens::before { content: ''; position: absolute; inset: 0; border-radius: 50%; pointer-events: none; z-index: 1;
+  background: radial-gradient(34% 17% at 37% 15%, rgba(255, 255, 255, .34), rgba(255, 255, 255, .08) 62%, transparent 75%),
+    radial-gradient(closest-side, transparent 88%, rgba(255, 255, 255, .07) 96%, transparent 100%); }
+#rfx-hear .rfx-start .d-start-lg { transition: transform .08s ease-out; }
+#rfx-hear .rfx-start .d-start-pb:active :is(.d-start-lens, .d-start-lg) { transform: translateY(1.5px) scale(.965); }
+#rfx-hear .rfx-start .d-start-pb:active .d-start-lens { box-shadow: 0 1px 1px rgba(0, 0, 0, .95), inset 0 1px 0 rgba(255, 255, 255, .12), inset 0 0 0 1px rgba(0, 0, 0, .85),
+    inset 0 -2px 4px rgba(0, 0, 0, .75), inset 0 5px 9px rgba(0, 0, 0, .6); }
+#rfx-hear .rfx-start .d-start-pb:active .d-start-lens::before { opacity: .55; }
+@media (hover: hover) { #rfx-hear .rfx-start .d-start-pb:hover:not(:active) .d-start-lens { box-shadow: 0 5px 7px rgba(0, 0, 0, .85), 0 1px 2px rgba(0, 0, 0, .95),
+    inset 0 2px 0 rgba(255, 255, 255, .32), inset 0 0 0 1px rgba(0, 0, 0, .85), inset 0 -5px 7px rgba(0, 0, 0, .75), inset 3px 0 6px -2px rgba(255, 255, 255, .08); } }
+.drift-page #rfx-hear .rfx-start .d-start-pb:focus-visible { outline: 2px solid var(--d-pink-ink); outline-offset: 10px; border-radius: 50%; }
+[data-rfx-hear]:is([data-next='stomp'], [data-next='back']) .rfx-start::after { animation: rfx-hear-next 1.2s ease-in-out infinite; }
 /* the five, joined by patch cables (patch.png, its plugs tucked under the pedals either side) */
 .rfx-peds-mini { position: relative; z-index: 2; flex: none; list-style: none; margin: 0; padding: 0; display: flex; justify-content: center; gap: var(--pg); }
 .rfx-peds-mini > li { position: relative; flex: none; width: var(--pm); min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 5px; }
@@ -398,7 +417,10 @@
 
 /* ---- narrow laptops: a smaller switch + caps leave the five their room */
 @media (min-width: 1024px) and (max-width: 1240px) {
-  .rfx-hear-board { --fix: 62px; --pgk: .4; }
+  .rfx-hear-board { --fix: 28px; --pgk: .5; }
+  #rfx-hear .rfx-start { --k: .44; }
+  .rfx-hear-stomprow { gap: 10px; }
+  .rfx-pm-nm { font-size: 8px; letter-spacing: .02em; }
   .rfx-hear-caps .d-cap { width: 46px; height: 46px; }
 }
 /* ---- tablets + phones: one column, the jacks in a row of four, the board on its own row, PLAY + VOLUME under it */
@@ -406,6 +428,7 @@
   .rfx-hear-panel { background-image: var(--rfx-panel-t); }
   .rfx-hear-rig { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'stomp stomp' 'play vol'; }
   .rfx-hear-step--stomp { grid-area: stomp; }
+  #rfx-hear .rfx-start { --k: .62; }
   .rfx-hear-step--play { grid-area: play; flex-direction: row; align-items: center; justify-content: space-between; padding: 0 6px; }
   .rfx-plate--sq.rfx-hear-step--play, .rfx-plate--tall:is(.rfx-hear-vol, .rfx-hear-bay) { --plate: var(--rfx-plate-w); --slice: 94; }   /* wide here */
   .rfx-hear-step--play .rfx-hear-caps { flex: none; }
@@ -440,19 +463,21 @@
   .rfx-hear-rig { gap: 6px; }
   .rfx-hear-deck { gap: 8px; }
   .rfx-plate { --rail: 12px; }
-  .rfx-stomp { --rail: calc(var(--pm) * .17); }
+  #rfx-hear .rfx-start { --k: .42; }
+  .rfx-hear-stomprow { gap: 8px; }
   .rfx-hear-caps .d-cap { width: 42px; height: 42px; }
   .rfx-hear-vol { --rail: 12px; padding: 0 4px; }
   .rfx-hear-vol .rfx-vol-slot { height: 46px; margin: 4px 0; }
   .rfx-hear-step { padding: 0 2px 2px; gap: 8px; }
-  .rfx-hear-board { --fix: 48px; --pgk: .2; gap: 8px; padding: 10px 8px 11px; background-image: var(--rfx-board-m); }
+  .rfx-hear-board { --fix: 20px; --pgk: .2; gap: 8px; padding: 10px 8px 11px; background-image: var(--rfx-board-m); }
   .rfx-pm-nm { font-size: 7px; letter-spacing: .01em; }
 }
-@media (max-width: 380px) { .rfx-scr-coach { font-size: 9px; letter-spacing: 0; } .rfx-jack-nm { font-size: 9.5px; } }
+@media (max-width: 380px) { .rfx-scr-coach { font-size: 9px; letter-spacing: 0; } .rfx-jack-nm { font-size: 9.5px; } #rfx-hear .rfx-start { --k: .38; } }
 
 @media (prefers-reduced-motion: reduce) {
   .rfx-hear-sec *, .rfx-hear-sec *::before, .rfx-hear-sec *::after { animation: none !important; }
   .rfx-peds-mini > li :is(.rfx-pm-ped, .rfx-pm-pool, .rfx-pm-nm) { transition-delay: 0s !important; }
+  #rfx-hear .rfx-start .lit { animation: none !important; }
 }
 html.hc .rfx-hear-sec :is(.rfx-pm-nm, .rfx-hear-ab i, .rfx-scr-title) { text-shadow: none; }
 
