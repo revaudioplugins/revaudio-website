@@ -230,15 +230,10 @@
 [data-rfx-hear]:is([data-next='stomp'], [data-next='back']) [data-step='3'] .rfx-hear-n { background: var(--d-neon); animation: rfx-hear-next 1.2s ease-in-out infinite; }
 [data-rfx-hear][data-next='play'] .rfx-hear-play { animation: rfx-hear-next 1.2s ease-in-out infinite; border-radius: 50%; }
 
-/* ---- 1 · PLUG IN: the patchbay plate (bay.jpg 9-sliced with STRETCH: the corner screws keep their size and place, the
-   worn edges stretch along their length, the middle fills; the 2026-11-05 seams came from `round`). Its border is the
-   screw zone (--rail = --sc-box, tested by tools: nothing may enter it). Four printed rows. */
-.rfx-hear-bay {
-  --rail: 24px; --sc-box: var(--rail);
-  display: flex; flex-direction: column; gap: 8px; padding: 0 2px 0 4px;
-  border: var(--rail) solid transparent; border-image: var(--rfx-bay) 110 fill / var(--rail) stretch;
-  box-shadow: 0 6px 10px rgba(0, 0, 0, .65), 0 1px 2px rgba(0, 0, 0, .8);
-}
+/* ---- 1 · PLUG IN: the patchbay, a burnt titanium plate like every section (.rfx-plate: plate-t on laptops, plate-w on
+   tablets + phones; Yoni 2026-11-05 "do the left panel also with the titanium"; its black anodized bay.jpg retired).
+   Four printed rows. */
+.rfx-hear-bay { display: flex; flex-direction: column; gap: 8px; padding: 0 2px 0 4px; }
 .rfx-jacks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; flex: 1; }
 .rfx-jacks li { flex: 1; display: flex; border-top: 1px solid rgba(0, 0, 0, .55); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .05); }
 .rfx-jacks li:first-child { border-top: 0; box-shadow: none; }
@@ -246,15 +241,15 @@
   --sock: 42px;
   flex: 1; position: relative; display: grid; grid-template-columns: minmax(0, 1fr) var(--sock); align-items: center; gap: 10px;
   min-height: 52px; padding: 4px 2px 4px 8px; border: 0; border-radius: 4px; cursor: pointer; text-align: left; background: none;
-  color: rgba(225, 214, 240, .62); transition: color .14s ease, background-color .14s ease;
+  color: rgba(232, 224, 244, .74); transition: color .14s ease, background-color .14s ease;
 }
 .rfx-jack:hover { color: #f3ecff; background: rgba(255, 255, 255, .03); }
 .rfx-jack[aria-pressed='true'] { color: #fff; background: linear-gradient(90deg, rgba(var(--d-neon-rgb), .16), rgba(var(--d-neon-rgb), 0) 80%); }
 .rfx-jack-txt { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .rfx-jack-no { font: 400 8px/1 var(--d-f-pix); letter-spacing: .1em; color: rgba(225, 214, 240, .45); }
 .rfx-jack[aria-pressed='true'] .rfx-jack-no { color: var(--d-hot); text-shadow: var(--d-glow-pink); }
-/* silkscreen: white paint on the anodizing (a print, so no glow) */
-.rfx-jack-nm { font: 600 clamp(16px, 1.4vw, 19px)/1 var(--d-f-head); letter-spacing: .07em; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-shadow: 0 1px 0 rgba(0, 0, 0, .7); }
+/* silkscreen: white paint on the titanium (a print, so no glow; the soft dark edge keeps it readable on the tint) */
+.rfx-jack-nm { font: 600 clamp(16px, 1.4vw, 19px)/1 var(--d-f-head); letter-spacing: .07em; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-shadow: 0 1px 1px rgba(0, 0, 0, .85), 0 0 6px rgba(0, 0, 0, .35); }
 .rfx-jack-sock { position: relative; width: var(--sock); height: var(--sock); }
 .rfx-jack-nut { display: block; width: 100%; height: 100%; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .7)); }
 /* the right-angle plug (plug.png: its round head = the image's left square, the cable runs on to the right): the head
@@ -412,7 +407,7 @@
   .rfx-hear-rig { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'stomp stomp' 'play vol'; }
   .rfx-hear-step--stomp { grid-area: stomp; }
   .rfx-hear-step--play { grid-area: play; flex-direction: row; align-items: center; justify-content: space-between; padding: 0 6px; }
-  .rfx-plate--sq.rfx-hear-step--play, .rfx-plate--tall.rfx-hear-vol { --plate: var(--rfx-plate-w); --slice: 94; }   /* wide here */
+  .rfx-plate--sq.rfx-hear-step--play, .rfx-plate--tall:is(.rfx-hear-vol, .rfx-hear-bay) { --plate: var(--rfx-plate-w); --slice: 94; }   /* wide here */
   .rfx-hear-step--play .rfx-hear-caps { flex: none; }
   .rfx-hear-vol { grid-area: vol; flex-direction: row; padding: 0 6px; }
   .rfx-hear-vol .rfx-vol-slot { width: 34px; min-height: 0; height: 56px; flex: none; margin: 6px 0; }
@@ -430,7 +425,7 @@
 @media (max-width: 600px) {
   .rfx-hear-panel { padding: 20px 18px; }
   .rfx-hear { gap: 8px; }
-  .rfx-hear-bay { --rail: 14px; gap: 4px; padding: 0; }
+  .rfx-hear-bay { gap: 4px; padding: 0; }
   .rfx-hear-cap { font-size: 9px; letter-spacing: .08em; }
   .rfx-jack { --sock: 30px; }
   .rfx-jack-nm { font-size: 10.5px; letter-spacing: .02em; }

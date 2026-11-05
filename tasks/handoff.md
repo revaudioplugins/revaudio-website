@@ -54,6 +54,7 @@ Claim: OPEN `revaudio-0d`. Files: `src/components/revfx/RfxHear.astro` (new), `s
   border = the screw zone; the patchbay 9-sliced the same way (bay-wide gone). Screw test PASS at 10 widths x 2 states
   (control-probed), fit clean, laptop panel 476 (DRIFT 484), phone 538 (DRIFT 547), click-through clean, build green.
   Checks saved in tools/revfx-player/checks/. 5 more OpenAI images.
+- Round 7 (Yoni: "good job! do the left panel also with the titanium"): the patchbay is a burnt titanium .rfx-plate (plate-t on laptops, plate-w below 1024); bay.jpg retired. Screw test PASS, fit clean, build green.
 - Next: Yoni's look + his sounds. Branch only; main (= live deploy) waits for his "push".
 
 ## 2026-11-04 — GAS 2 postcards: the end page scrolls as one page, the footer under it (Claude Code `danavivi-c2 [ca2821]`, Dan's Mac) — PUSHED TO MAIN 2026-11-04 on Dan's word "perfect push to main" (from `fix/gas2-end-flow`)

@@ -8,7 +8,7 @@ OpenAI (`shared/tools/openai/`). Files: `src/assets/seasons/revfx/hear/`.
 |---|---|---|---|
 | `panel-wide.jpg` | tolex flight-case face, aluminium rails, ball corners (2560x1008 = 2.54:1) | gpt-image-2, edit from roll-1 `panel-2` | laptop panel, stretched 100 % x 100 % |
 | `panel-tall.jpg` | the same case, portrait (1024x1616 = 0.63:1) | gpt-image-2, edit | tablets + phones |
-| `bay.jpg` | black anodized patchbay plate, 4 screws (0.67:1); Yoni's wear benchmark ("the left panel which looks amazing") | gpt-image-2 (roll-1 `bay-1`) | PLUG IN at every width, 9-sliced (slice 110) |
+| (`bay-1`, scratchpad only) | black anodized patchbay plate: Yoni's wear benchmark ("the left panel which looks amazing"); the wear reference for the plates. Its `bay.jpg` was retired when the patchbay became titanium too ("do the left panel also with the titanium") | gpt-image-2 | - |
 | `board-wide.jpg` / `board-mid.jpg` | pedalboard loop-carpet + 2 riveted rails (3:1 / 2.1:1) | gpt-image-2, edit from `board-1` | the STOMP board, laptop / phone |
 | `jack.png` | 1/4" jack socket, front-on, true alpha | gpt-image-1.5 (`jack-2`) | the 4 inputs |
 | `plug.png` | right-angle plug from the front + purple tweed cable | gpt-image-1.5 (`plug-1`) | the picked input |

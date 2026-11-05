@@ -14,7 +14,7 @@
  *               (revfx.ts ink / rgb), the LED goes purple and the screen's waveform wears the five colours.
  *
  * Assets (src/assets/seasons/revfx/hear/, OpenAI 2026-11-05, tools/revfx-player/ASSETS.md): panel-wide / -tall.jpg (the
- * tolex flight case, laptop / phone), bay.jpg (the patchbay plate), board-wide / -mid.jpg (pedalboard
+ * tolex flight case, laptop / phone), board-wide / -mid.jpg (pedalboard
  * carpet + rails), plate-w / -s / -t.jpg (every section's plate: burnt titanium with the patchbay plate's wear and
  * corner screws, 2:1 / 1:1 / 1:2, Yoni 2026-11-05: "the effect ... when titanium is burned", "the wear should be like
  * the left panel"), jack / plug / patch / fsw-up / fsw-down / led / led-lit .png (true-alpha cutouts). The fader is /drift's (hear/fader-*.webp). A track lights only the pedals its bounce
@@ -38,7 +38,6 @@ import faderCapSrc from '../../assets/seasons/drift/hear/fader-cap.webp';
 import faderPlateSrc from '../../assets/seasons/drift/hear/fader-plate.webp';
 import panelWideSrc from '../../assets/seasons/revfx/hear/panel-wide.jpg';
 import panelTallSrc from '../../assets/seasons/revfx/hear/panel-tall.jpg';
-import baySrc from '../../assets/seasons/revfx/hear/bay.jpg';
 import boardWideSrc from '../../assets/seasons/revfx/hear/board-wide.jpg';
 import boardMidSrc from '../../assets/seasons/revfx/hear/board-mid.jpg';
 import jackSrc from '../../assets/seasons/revfx/hear/jack.png';
@@ -62,17 +61,17 @@ const BOARD = ['pitch', 'echo', 'halo', 'reverb', 'glue'] as const;
 const srcs = { pitch: pedPitch, echo: pedEcho, reverb: pedVerb, halo: pedHalo, glue: pedGlue };
 const webp = (src: ImageMetadata, width: number, quality = 82) => getImage({ src, width, format: 'webp', quality });
 const board = await Promise.all(BOARD.map(async (id) => ({ p: pedals.find((x) => x.id === id)!, img: await webp(srcs[id], 180, 80) })));
-const [g, r, jack, plug, patch, fswUp, fswDn, led, ledLit, plateW, plateS, plateT, fadCap, fadPlate, panelW, panelT, bay, boardW, boardM] = await Promise.all([
+const [g, r, jack, plug, patch, fswUp, fswDn, led, ledLit, plateW, plateS, plateT, fadCap, fadPlate, panelW, panelT, boardW, boardM] = await Promise.all([
   webp(capGreen, 136), webp(capRed, 136),
   webp(jackSrc, 120, 85), webp(plugSrc, 480, 85), webp(patchSrc, 320, 85), webp(fswUpSrc, 150, 85), webp(fswDnSrc, 150, 85),
   webp(ledSrc, 64, 85), webp(ledLitSrc, 64, 85), webp(plateWSrc, 1600, 78), webp(plateSSrc, 800, 78), webp(plateTSrc, 800, 78), webp(faderCapSrc, 120, 85), webp(faderPlateSrc, 70, 85),
-  webp(panelWideSrc, 1800, 62), webp(panelTallSrc, 760, 64), webp(baySrc, 1017, 78),
+  webp(panelWideSrc, 1800, 62), webp(panelTallSrc, 760, 64),
   webp(boardWideSrc, 1200, 76), webp(boardMidSrc, 800, 76),
 ]);
 const u = (i: { src: string }) => `url(${i.src})`;
-// the case + the boards were made at the ratio they show at, so they stretch 100% x 100%; the section plates + the
-// patchbay are 9-sliced (fixed corners = the screws, stretched edges, filled middle), so they fit any box
-const vars = [`--rfx-panel-w:${u(panelW)}`, `--rfx-panel-t:${u(panelT)}`, `--rfx-bay:${u(bay)}`,
+// the case + the boards were made at the ratio they show at, so they stretch 100% x 100%; the section plates (the
+// patchbay too) are 9-sliced (fixed corners = the screws, stretched edges, filled middle), so they fit any box
+const vars = [`--rfx-panel-w:${u(panelW)}`, `--rfx-panel-t:${u(panelT)}`,
   `--rfx-board-w:${u(boardW)}`, `--rfx-board-m:${u(boardM)}`, `--rfx-plate-w:${u(plateW)}`, `--rfx-plate-s:${u(plateS)}`, `--rfx-plate-t:${u(plateT)}`, `--rfx-fad-cap:${u(fadCap)}`, `--rfx-fad-plate:${u(fadPlate)}`].join(';');
 
 const first = hearTracks[0];
@@ -89,9 +88,10 @@ const chainTxt = 'TRUE BYPASS';
     <!-- the flight case: tolex face, aluminium rails and ball corners -->
     <div class="rfx-hear-panel">
       <div class="rfx-hear">
-        <!-- 1 · plug in: the patchbay plate; the socket at each row's right end, the picked one wears the plug (the length
+        <!-- 1 · plug in: the patchbay, a burnt titanium plate like the rest (Yoni 2026-11-05: "do the left panel also
+             with the titanium"); the socket at each row's right end, the picked one wears the plug (the length
              is on the screen) -->
-        <div class="rfx-hear-bay" data-step="1">
+        <div class="rfx-plate rfx-plate--tall rfx-hear-bay" data-step="1">
           <p class="rfx-hear-cap"><b class="rfx-hear-n">1</b>PLUG IN</p>
           <ul class="rfx-jacks" role="list">
             {hearTracks.map((t, i) => (
