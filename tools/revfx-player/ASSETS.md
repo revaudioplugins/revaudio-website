@@ -13,12 +13,15 @@ OpenAI (`shared/tools/openai/`). Files: `src/assets/seasons/revfx/hear/`.
 | `jack.png` | 1/4" jack socket, front-on, true alpha | gpt-image-1.5 (`jack-2`) | the 4 inputs |
 | `plug.png` | right-angle plug from the front + purple tweed cable | gpt-image-1.5 (`plug-1`) | the picked input |
 | `patch.png` | pancake patch cable, top-down | gpt-image-1.5 (`patch-1`) | between the five |
-| `looper.png` | worn black-hammertone 1590B A/B looper pedal with its 3PDT switch + LED hole, top-down (0.742:1 with its side jacks) | gpt-image-1.5 (`gen-assets-3.ps1`, roll 1) | the STOMP switch: the whole pedal is the button |
-| `led-lit.png` | chrome LED bezel lit violet | gpt-image-1.5 edit | laid on the looper's bezel (centre 50 % / 14.15 %, 26.4 % wide) |
+| `fsw-up.png` / `fsw-down.png` | aged nickel 3PDT footswitch with patina, near top-down, popped up / pressed (down = an edit of up, scaled + placed on the washer so only the cap moves) | gpt-image-1.5 (`gen-assets-5.ps1`, roll 3) | the STOMP switch: up = BYPASS, down = REVFX (it latches) |
+| `led.png` | chrome LED bezel, off | gpt-image-1.5 | above the switch |
+| `led-lit.png` | the same bezel lit violet (an edit, same crop) | gpt-image-1.5 edit | above the switch, REVFX on |
 
 Prompts: `gen-assets-1.ps1` (8 assets x 2 rolls), `gen-assets-2.ps1` (the plates again at their display ratios,
-reference-guided) and `gen-assets-3.ps1` (the bypass pedal: Yoni said the first loose chrome switch "looks toyish"; a
-footswitch reads real once it is mounted in a pedal). Each writes next to itself; crop / size with the numbers in the component (alpha bbox, square
+reference-guided) `gen-assets-3.ps1` (a looper pedal: Yoni said the first shiny chrome switch "looks toyish"; then "its the whole pedal, i
+meant just the switch ... a bit of petina ... when pressed make it stay pressed and when bypassed make it pop out"),
+`gen-assets-4.ps1` (the switch at ~45 deg: too side-on for the flat board) and `gen-assets-5.ps1` (the pick: near
+top-down + its pressed edit). Each writes next to itself; crop / size with the numbers in the component (alpha bbox, square
 crop on round parts, one shared crop box for the two LED states).
 
 Rules learned:

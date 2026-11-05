@@ -38,6 +38,11 @@ Claim: OPEN `revaudio-0d`. Files: `src/components/revfx/RfxHear.astro` (new), `s
   (`looper.png`, gpt-image-1.5, 2 rolls, roll 1 picked), as tall as the five, the whole pedal = the button, its LED lit
   in its own bezel, a patch cable into PITCH. Fit at 10 widths (no overlap, no sideways scroll), click-through
   1440/1141/390/360 clean, build green. stomp.png + led.png deleted.
+- Round 4 (Yoni: "the stomp is not good - its the whole pedal, i meant just the switch - ... a bit of petina, when
+  pressed make it stay pressed and when bypassed make it pop out"): looper pedal out; an aged nickel 3PDT footswitch
+  (`fsw-up/fsw-down.png`, near top-down, the pressed photo aligned on the washer so only the cap moves) + the LED above
+  it. Latches: up on BYPASS, down + LED lit on REVFX; down while the foot is on it either way. Fit at 10 widths clean,
+  click-through clean, build green. 6 more OpenAI images.
 - Next: Yoni's look + his sounds. Branch only; main (= live deploy) waits for his "push".
 
 ## 2026-11-04 — GAS 2 postcards: the end page scrolls as one page, the footer under it (Claude Code `danavivi-c2 [ca2821]`, Dan's Mac) — PUSHED TO MAIN 2026-11-04 on Dan's word "perfect push to main" (from `fix/gas2-end-flow`)

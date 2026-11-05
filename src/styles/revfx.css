@@ -323,10 +323,10 @@
 
 /* the pedalboard: board-wide.jpg (3:1, laptop; phones board-mid.jpg 2.1:1) = carpet + the two aluminium rails (5 % each) */
 .rfx-hear-board {
-  /* the bypass box (1.34 pedals wide), the five and their gaps fill what the padding leaves (100cqw = the STOMP well's
-     width): pedal = (well - --fix) / (6.34 + 5 x --pgk), gap = pedal x --pgk */
+  /* the footswitch (1.25 pedals wide), the five and their gaps fill what the padding leaves (100cqw = the STOMP well's
+     width): pedal = (well - --fix) / (6.25 + 5 x --pgk), gap = pedal x --pgk */
   --fix: 66px; --pgk: .5;
-  --pm: clamp(28px, calc((100cqw - var(--fix)) / (6.34 + 5 * var(--pgk))), 56px);   /* a mini pedal's width */
+  --pm: clamp(28px, calc((100cqw - var(--fix)) / (6.25 + 5 * var(--pgk))), 56px);   /* a mini pedal's width */
   --pg: calc(var(--pm) * var(--pgk));        /* the gap between two pedals (a patch cable spans it) */
   --mid: calc(var(--pm) * .9);               /* the board's signal line (patch cables, jacks, the switch) from the top */
   position: relative; flex: 1; display: flex; align-items: flex-start; justify-content: center; gap: var(--pg);
@@ -335,27 +335,30 @@
   border-radius: 3px;
   box-shadow: 0 8px 12px -4px rgba(0, 0, 0, .7);
 }
-/* the bypass box (looper.png, 0.742:1 with its side jacks): as tall as the five, the whole pedal is the switch. The LED
-   = led-lit.png laid exactly on the photo's bezel (scan: centre 50 % / 14.15 %, ring 26.4 % of the width); the switch
-   travels a hair while the foot is on it (.is-down). The guide breathes as a soft purple light round the pedal. */
-.rfx-stomp { position: relative; z-index: 1; flex: none; width: calc(var(--pm) * 1.807 * .742); }   /* under the five: its cable tucks under PITCH */
-.rfx-stomp-sw { position: relative; z-index: 2; display: block; width: 100%; border: 0; padding: 0; background: none; cursor: pointer; border-radius: 6px; -webkit-tap-highlight-color: transparent; }
-.rfx-byp { display: block; width: 100%; height: auto; -webkit-user-drag: none; user-select: none;
-  filter: drop-shadow(0 5px 5px rgba(0, 0, 0, .8)); transition: transform 70ms ease, filter 70ms ease; }
-.rfx-stomp-sw:hover .rfx-byp { filter: drop-shadow(0 5px 5px rgba(0, 0, 0, .8)) brightness(1.08); }
-.rfx-stomp.is-down .rfx-byp { transform: translateY(1px) scale(.992); filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .9)) brightness(.9); }
-.rfx-byp-led { position: absolute; left: 50%; top: 14.15%; width: 26.4%; height: auto; translate: -50% -50%; pointer-events: none; opacity: 0;
-  -webkit-user-drag: none; transition: opacity .08s ease; }
-.rfx-stomp-sw::after { content: ''; position: absolute; left: 50%; top: 14.15%; width: 70%; aspect-ratio: 1; translate: -50% -50%; border-radius: 50%;
-  pointer-events: none; opacity: 0; transition: opacity .1s ease; background: radial-gradient(closest-side, rgba(var(--d-neon-rgb), .45), transparent); }
-[data-ab='after'] .rfx-byp-led, [data-ab='after'] .rfx-stomp-sw::after { opacity: 1; }
-.rfx-stomp[data-loading] .rfx-byp-led { animation: rfx-led-wait .5s steps(1, end) infinite; }
+/* the footswitch (fsw-up / fsw-down.png share one frame: the washer + nut stay, only the cap moves) under its LED. It
+   latches: popped up on BYPASS, held down on REVFX; while the foot is on it (.is-down) it shows down whatever the state,
+   so a stomp off goes down and then pops up on release. The guide breathes as a soft purple light round the switch. */
+.rfx-stomp { position: relative; z-index: 3; flex: none; width: calc(var(--pm) * 1.25); display: flex; flex-direction: column; align-items: center;
+  gap: calc(var(--pm) * .12); padding-top: calc(var(--pm) * .22); }
+.rfx-stomp-led { position: relative; width: calc(var(--pm) * .3); aspect-ratio: 1; }
+.rfx-stomp-led img { position: absolute; inset: 0; width: 100%; height: 100%; -webkit-user-drag: none; }
+.rfx-stomp-led .lit { opacity: 0; transition: opacity .06s ease; }
+.rfx-stomp-led::after { content: ''; position: absolute; inset: -80%; border-radius: 50%; pointer-events: none; opacity: 0; transition: opacity .06s ease;
+  background: radial-gradient(closest-side, rgba(var(--d-neon-rgb), .5), transparent); }
+[data-ab='after'] .rfx-stomp-led .lit, [data-ab='after'] .rfx-stomp-led::after { opacity: 1; }
+.rfx-stomp[data-loading] .rfx-stomp-led .lit { animation: rfx-led-wait .5s steps(1, end) infinite; }
 @keyframes rfx-led-wait { 50% { opacity: 1; } }
-@keyframes rfx-byp-next { 0%, 100% { filter: drop-shadow(0 5px 5px rgba(0, 0, 0, .8)); } 50% { filter: drop-shadow(0 5px 5px rgba(0, 0, 0, .8)) drop-shadow(0 0 9px rgba(var(--d-neon-rgb), .75)); } }
-[data-rfx-hear]:is([data-next='stomp'], [data-next='back']) .rfx-stomp:not(.is-down) .rfx-byp { animation: rfx-byp-next 1.2s ease-in-out infinite; }
-.drift-page .rfx-stomp-sw:focus-visible { outline: 2px solid var(--d-pink-ink); outline-offset: 4px; border-radius: 6px; }
-/* its right jack (44 % down the photo) into PITCH */
-.rfx-patch--byp { left: 84%; top: calc(var(--pm) * 1.807 * .44 - 5px); }
+.rfx-stomp-sw { position: relative; display: block; width: 100%; aspect-ratio: 1; border: 0; padding: 0; background: none; cursor: pointer; border-radius: 50%; -webkit-tap-highlight-color: transparent; }
+.rfx-stomp-sw img { position: absolute; inset: 0; width: 100%; height: 100%; -webkit-user-drag: none; user-select: none;
+  filter: drop-shadow(0 4px 4px rgba(0, 0, 0, .8)) drop-shadow(0 1px 1px rgba(0, 0, 0, .9)); }
+.rfx-stomp-sw .dn { opacity: 0; }
+[data-ab='after'] .rfx-stomp-sw .dn, .rfx-stomp.is-down .rfx-stomp-sw .dn { opacity: 1; }
+[data-ab='after'] .rfx-stomp-sw .up, .rfx-stomp.is-down .rfx-stomp-sw .up { opacity: 0; }
+.rfx-stomp.is-down .rfx-stomp-sw img { translate: 0 1px; }
+.rfx-stomp-sw:hover img { filter: drop-shadow(0 4px 4px rgba(0, 0, 0, .8)) drop-shadow(0 1px 1px rgba(0, 0, 0, .9)) brightness(1.08); }
+@keyframes rfx-fsw-next { 0%, 100% { box-shadow: 0 0 0 0 rgba(var(--d-neon-rgb), 0); } 50% { box-shadow: 0 0 14px 3px rgba(var(--d-neon-rgb), .55); } }
+[data-rfx-hear]:is([data-next='stomp'], [data-next='back']) .rfx-stomp:not(.is-down) .rfx-stomp-sw { animation: rfx-fsw-next 1.2s ease-in-out infinite; }
+.drift-page .rfx-stomp-sw:focus-visible { outline: 2px solid var(--d-pink-ink); outline-offset: 4px; border-radius: 50%; }
 /* the five, joined by patch cables (patch.png, its plugs tucked under the pedals either side) */
 .rfx-peds-mini { position: relative; z-index: 2; flex: none; list-style: none; margin: 0; padding: 0; display: flex; justify-content: center; gap: var(--pg); }
 .rfx-peds-mini > li { position: relative; flex: none; width: var(--pm); min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 5px; }
