@@ -1,4 +1,4 @@
-| `plate-w.jpg` / `plate-s.jpg` / `plate-t.jpg` | burnt titanium, its heat tint RETINTED to the five pedal colours (HALO green, GLUE cyan, PITCH ice blue, REVERB violet, ECHO pink: `retint.py`, run on the gpt-image-2 originals; Yoni: "like the shades of color of the pedals") with the patchbay plate's wear + a screw in each corner, 2:1 / 1:1 / 1:2 | gpt-image-2 edits with 2 refs: `bay-1` (wear, screws) + `tib-1` (burnt colour) (`gen-assets-9.ps1`; the sheet: `gen-assets-8.ps1`) | every section's plate, 9-sliced (slice 94 / 78 / 94 px; the border = the screw zone) |
+| `plate-pedal-v2-w/-s/-t.jpg` | burnt titanium, its heat tint RETINTED to the five pedal colours (HALO green, GLUE cyan, PITCH ice blue, REVERB violet, ECHO pink: `retint.py`, run on the gpt-image-2 originals; Yoni: "like the shades of color of the pedals") with the patchbay plate's wear + a screw in each corner, 2:1 / 1:1 / 1:2 | gpt-image-2 edits with 2 refs: `bay-1` (wear, screws) + `tib-1` (burnt colour) (`gen-assets-9.ps1`; the sheet: `gen-assets-8.ps1`) | every section's plate, 9-sliced (slice 94 / 78 / 94 px; the border = the screw zone) |
 # RevFX #rfx-hear assets (2026-11-05, Claude Code `revaudio-0d`)
 
 The before/after player on /revfx (`src/components/revfx/RfxHear.astro`) is built from photo-real 90s gear made with
@@ -38,6 +38,8 @@ Retint: `python -I tools/revfx-player/retint.py <folder with plate-w/-s/-t.png>`
 session scratchpad; keep a copy before re-running). OpenAI credits ran out 2026-11-05, so this pass is local.
 
 Rules learned:
+- A changed image under the SAME file name stays stale in the browser on the dev server (no content hash in the
+  /_image URL): every new look gets a new name (retint.py LOOK).
 - A heat-tint recolour that keeps a photo real: move only the HUE of the tinted pixels (blend in by saturation, so grey
   metal, worn silver edges and screws stay put), give every target colour an equal plateau of the tint's own area,
   and lift a neon colour's value (a dark pink on dark metal reads violet).
