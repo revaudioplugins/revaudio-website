@@ -181,8 +181,11 @@ Steps:
                   6 6 2 5 6 9 4 ("the light is no longer the problem, the blocks are"); their last two small fixes
                   (`53d80b2`) and the player's round-2 engine fixes (`1ca1ec4`: Safari's neon + floor speckles, the
                   first-visit intro) are in. Details: `tasks/handoff.md` top entry.
-            - [ ] Dan's notes on the review page https://claude.ai/artifact/RrYfJ7Z8AbXJCTsTc9KHLz (db `notes`; four
-                  questions: the ceiling neon, the door view, the red chests, the far walls), then apply them.
+            - [x] Dan's four picks (2026-11-08), made on the picks page https://claude.ai/artifact/2gr2wkJyrM5jey7URePq81
+                  (each option rendered, db `notes`; the review page RrYfJ7Z8AbXJCTsTc9KHLz got none): the ceiling neon
+                  one step up (`DEF.neon` 0.26 → 0.38, settings ver 13); the door dark as now, the chests worn as now,
+                  the far walls violet-wine as now. His question: can the light change later? Yes: live now (the bench),
+                  and after the bake each light group's colour and level stay live (tech-recipe §1).
       - [ ] The player (Dan 2026-11-08: "an agent that plays with the result on the website and gives feedback to the
             builders"; approved the same day): a live tester on Opus, a standing member from this round on. It plays
             the room like a visitor in real engines (WebKit at Dan's 1141x636, Chrome 1141 / 1440 / 1920, the iOS

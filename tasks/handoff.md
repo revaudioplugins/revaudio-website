@@ -176,12 +176,16 @@ only after Dan picks: `src/pages/index.astro`, a new `src/components/HomeOpening
   7 7 4 5 7 8 7 · 6 7 4 6 7 9 6 · 6 7 3 6 7 9 6 · 6 6 2 5 6 9 4 (round 1: 5 5 3 4 6 8 5 · 4 4 3 5 5 9 4 · 5 5 3 5 6 9 5 ·
   4 4 2 4 5 9 3). Their verdict: the light is no longer the problem, the blocks are; mess, plugins and glued wait for
   the real models (step 3 the desk + chair, then the kit; step 4 the car, Dan's team).
-- Dan's review page (notes in its db, collection `notes`): https://claude.ai/artifact/RrYfJ7Z8AbXJCTsTc9KHLz. Four
-  questions there: the ceiling neon (quiet / saturated like the painting / a step up), the view out the door (dark / a
-  street lamp + blue night / with the car in step 4), the red tool chests (worn / glossy enamel / mixed), the far
-  half's walls (violet-wine / warmer umber, the violet up on the ceiling / halfway).
-- Open, not done on purpose: the critics' remaining LOOK notes wait for Dan's answers (pale tubes whose violet lands on
-  the walls, the door's navy void, flat cream globes and shade, the black E06 shelf, COMING SOON's contrast). A cold
+- Dan's review page (notes in its db, collection `notes`): https://claude.ai/artifact/RrYfJ7Z8AbXJCTsTc9KHLz (no notes
+  came back). His four picks came from the picks page https://claude.ai/artifact/2gr2wkJyrM5jey7URePq81 (each option
+  rendered as a still, A / B / C flip in place; db `notes`; the option renders were page patches through `?expose`,
+  script `options.mjs` in the session scratchpad): the ceiling neon ONE STEP UP (`DEF.neon` 0.38, settings ver 13);
+  the door DARK as now (C, the street with the car in step 4, was not picked: a street lamp is open for later), the red
+  chests WORN as now, the far walls VIOLET-WINE as now. His note: "will I be able to change the light in the room in
+  the future": yes, live on the bench today, and after the bake each light group's colour and level stay one live
+  uniform (tech-recipe §1); moving or adding a light re-bakes its group.
+- Open, not done on purpose: the critics' remaining LOOK notes that Dan's picks didn't settle (flat cream globes and
+  shade, the black E06 shelf, COMING SOON's contrast; the door's navy void and the walls' wine are his picks now). A cold
   first visit waits ~5.5 s on a dark page (textures + shader compiles; the homepage step's still picture covers it);
   1440x900 runs 51-53 fps (the baked light layers fix it); in WebKit the arrow keys don't scroll (the hidden bench
   aside), Space / PageDown can pass the TV, a hidden tab's return jumps one frame (the page step). 🔴 The phone: the web
