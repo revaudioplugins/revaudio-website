@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>TV Bench · Sent</title>
+<!-- The TV's "Check your inbox", three looks on the REAL dev homepage (Dan 2026-11-08 on the TV Sells bench: "make it
+     bigger and change the design for this, lets ask our self how it will come on the screen, how it will look with the
+     vibe of the brand, go deep"). One same-origin iframe of the TV; the bench signs up in it for real, with the frame's
+     fetch answering {ok:true} (NOTHING IS SENT), then lays the picked look over the sent screen and plays its entrance
+     (tools/wwbench/wwsent-looks.js, also used for the review page's shots). Pick in chat: A, B or C.
+     Dev only (integration.mjs bails outside `astro dev`). -->
+<style>
+  :root { --bg: #0d0a12; --panel: #17121f; --line: #2c2338; --ink: #efe8f6; --dim: #a597b8; --acc: #d23cff; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.35 -apple-system, system-ui, sans-serif; }
+  header { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--line); flex-wrap: wrap; position: sticky; top: 0; z-index: 3; background: var(--bg); }
+  header h1 { margin: 0 8px 0 0; font-size: 14px; letter-spacing: .1em; text-transform: uppercase; }
+  button { background: #221a2d; color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; font: inherit; cursor: pointer; }
+  button:hover { background: #2d2340; }
+  button:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
+  .seg { display: inline-flex; flex-wrap: wrap; }
+  .seg button { border-radius: 0; margin-left: -1px; padding: 6px 10px; }
+  .seg button:first-child { border-radius: 8px 0 0 8px; margin-left: 0; }
+  .seg button:last-child { border-radius: 0 8px 8px 0; }
+  .seg button[aria-pressed='true'] { background: var(--acc); border-color: var(--acc); color: #1a0322; font-weight: 700; }
+  .lbl { color: var(--dim); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+  main { padding: 16px; display: grid; gap: 10px; justify-items: center; }
+  .line { margin: 0; color: var(--dim); max-width: 80ch; text-align: center; min-height: 2.7em; }
+  .vp { position: relative; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: #050307; }
+  .vp iframe { position: absolute; left: 0; top: 0; border: 0; transform-origin: 0 0; background: #050307; }
+</style>
+</head>
+<body>
+<header>
+  <h1>TV bench · Sent</h1>
+  <span class="lbl">Look</span><span class="seg" id="look"></span>
+  <span class="lbl">Channel</span><span class="seg" id="chan"></span>
+  <span class="lbl">Screen</span>
+  <span class="seg" id="size"><button type="button" data-v="1141x636" title="Dan's laptop: Safari's visible viewport at 115 %">Laptop 1141</button><button type="button" data-v="402x714" title="Safari's visible viewport on an iPhone 17 Pro">Phone 402</button></span>
+  <span class="lbl">Speed</span><span class="seg" id="slow"><button type="button" data-v="1">×1</button><button type="button" data-v="4">×4 slow</button></span>
+  <button type="button" id="replay">▶ Replay</button>
+</header>
+<main>
+  <p class="line" id="line"></p>
+  <div class="vp" id="vp"><iframe id="tv" title="The home TV, signed up"></iframe></div>
+</main>
+<script src="/__wwsent/looks.js"></script>
+<script>
+(() => {
+  const KEY = 'wwsent:v1';
+  const CHANS = [['revlimiter', 'RevLimiter'], ['gas', 'GAS'], ['gas2', 'GAS 2'], ['drift', 'DRIFT'], ['radio-roulette', 'Radio Roulette']];
+  let st = { look: 'a', chan: 'revlimiter', size: '1141x636', slow: '1' };
+  try { Object.assign(st, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) {}
+  try { localStorage.setItem('ra-cookie-consent', 'declined'); } catch (e) {} // the same origin: no banner in the frame
+  const $ = (s) => document.querySelector(s);
+  const tv = $('#tv'), vp = $('#vp');
+  const seg = (el, items, k) => { el.innerHTML = items.map(([v, t]) => `<button type="button" data-v="${v}">${t}</button>`).join(''); };
+  seg($('#look'), Object.entries(WWSENT.LOOKS).map(([k, l]) => [k, `${k.toUpperCase()} · ${l.name}`]));
+  seg($('#chan'), CHANS);
+  const paint = () => {
+    for (const [id, k] of [['look', 'look'], ['chan', 'chan'], ['size', 'size'], ['slow', 'slow']])
+      document.querySelectorAll(`#${id} button`).forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === st[k])));
+    $('#line').textContent = `${st.look.toUpperCase()} · ${WWSENT.LOOKS[st.look].line}`;
+    try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {}
+  };
+  const fitFrame = () => {
+    const [w, h] = st.size.split('x').map(Number);
+    const k = Math.min(1, (window.innerWidth - 32) / w, (window.innerHeight - 150) / h);
+    Object.assign(tv.style, { width: `${w}px`, height: `${h}px`, transform: `scale(${k})` });
+    Object.assign(vp.style, { width: `${Math.round(w * k)}px`, height: `${Math.round(h * k)}px` });
+  };
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  async function until(fn, tries = 60) { for (let i = 0; i < tries; i++) { const v = fn(); if (v) return v; await wait(100); } return null; }
+  let lastDoc = null;
+  // sign up in the frame for real (the frame's fetch answers {ok:true}), then the look
+  async function run() {
+    const win = tv.contentWindow, doc = tv.contentDocument;
+    const panel = await until(() => doc.querySelector(`[data-ww-panel="${st.chan}"].is-active`));
+    if (!panel) return;
+    win.fetch = () => Promise.resolve(new win.Response('{"ok":true}', { status: 200, headers: { 'content-type': 'application/json' } }));
+    const wall = doc.querySelector('[data-wordwall]');
+    const nav = parseFloat(win.getComputedStyle(doc.documentElement).getPropertyValue('--site-nav-h')) || 44;
+    win.scrollTo(0, Math.ceil(win.scrollY + wall.getBoundingClientRect().top - nav));
+    await wait(400);
+    panel.querySelector('.ww-try').click();
+    const form = await until(() => panel.querySelector('.ws:not([hidden]) [data-ws-form]'));
+    form.querySelector('.ws-field').value = 'dan@studio.com';
+    form.querySelector('[data-ws-terms]').checked = true;
+    const news = form.querySelector('[data-ws-news]');
+    if (news.required) news.checked = true;
+    await wait(500);
+    form.requestSubmit();
+    await until(() => panel.querySelector('.ws.is-sent'));
+    lastDoc = doc;
+    show();
+  }
+  function show() {
+    const doc = lastDoc;
+    if (!doc) return;
+    const p = doc.querySelector('.ww-panel.is-active');
+    const f = p.querySelector('[data-ws-form]');
+    const rows = [...doc.querySelectorAll('[data-ww-pick]')];
+    const d = { name: p.querySelector('.ww-pname').textContent.trim(), kind: f.dataset.onceUrl ? 'beta' : p.querySelector('[data-ws-news]').required ? 'free' : 'trial',
+      days: 30, addr: 'dan@studio.com', ch: rows.findIndex((r) => r.dataset.wwPick === p.dataset.wwPanel) + 1 };
+    WWSENT.apply(doc, st.look, d, Number(st.slow));
+  }
+  function load() { lastDoc = null; fitFrame(); tv.src = `/?plugin=${encodeURIComponent(st.chan)}`; }
+  tv.addEventListener('load', () => { setTimeout(run, 1800); });
+  const on = (id, k, reload) => $(id).addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    st[k] = b.dataset.v; paint();
+    if (reload) load(); else show();
+  });
+  on('#look', 'look', false); on('#chan', 'chan', true); on('#size', 'size', true); on('#slow', 'slow', false);
+  $('#replay').addEventListener('click', show);
+  window.addEventListener('resize', fitFrame);
+  paint();
+  load();
+})();
+</script>
+</body>
+</html>

@@ -539,7 +539,7 @@ Steps (each one checked before the next):
         check drift.ts' phase and `gateWired` after the merge.
       - Phone keyboard: the TV is one screen tall with a scroll lock; while the field has focus the lock stands down
         and the form slides up over the keys (the pattern on `feat/gas2-postcards`, 2026-10-30).
-- [ ] 4. The download on the screen (D5). A = no worker change: the TV takes the sign-up, the email link still lands
+- [x] 4. The download on the screen (D5). A = no worker change: the TV takes the sign-up, the email link still lands
       on the product page with its Mac / Windows buttons. B = a small worker change (RevLimiter repo, live worker,
       `wrangler deploy` on the user's word): the form sends `from: "tv"`, the verify link returns to
       `/?plugin=<slug>#dl=...&p=...` (like `r=dl`), and the TV opens on that plugin with Mac / Windows keys on its
@@ -554,6 +554,8 @@ Steps (each one checked before the next):
       open the TV, which starts the download on its screen (a worker change); C = the keys right after Send
       (= the sales plan's open 2.2 "download before the email", a worker change; 2.1: 51 % of RevLimiter
       trial sign-ups never download).
+      DECIDED 2026-11-08, Dan on the TV Sells bench: A. The email stays the download; no worker change. Step 4 is
+      closed.
 - [x] 5. BUILT 2026-11-08 (`danavivi-c4`): the picture (a link laid over it, `aria-hidden`, no Tab stop) and the
       name (a link in the heading, no Tab stop) go to the product page; the pointer on either lights the
       Product page key's hover; on a laptop the lit row clicked again goes there (never a double click's

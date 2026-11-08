@@ -163,13 +163,16 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
       (and Esc) on its row, the deal line, the paid trial's 30-day line, YOUR EMAIL in a phosphor outline,
       the terms box (required, D6; Terms & Conditions + Licence terms outside its label), the newsletter box
       (optional on a trial, required on a free download, the worker's exact words), Send my link (the lit
-      Try key's inverse video; the button family off the screen), the notice + Privacy. Then "Check your
-      inbox", Sent to <address>, on a touch screen "Open it on your Mac or PC to install.", Resend ·
-      Wrong email? (P01). The screen's two faces only (Bebas, Inter); each refusal at its field in one red
+      Try key's inverse video; the button family off the screen), the notice + Privacy (one line on a laptop:
+      "Setup tips and a trial-end reminder. Unsubscribe anytime." / free + beta "A few setup tips. Unsubscribe
+      anytime.", Dan 2026-11-08). Then "Check your inbox", Sent to <address>, on a touch screen "Open it on your
+      Mac or PC to install.", "Not there in a minute? Look in Promotions or Spam." (the site's sign-ups since
+      2026-10-29), Resend · Wrong email? (P01). Its new look waits for Dan's pick of three on `/__wwsent`. The screen's two faces only (Bebas, Inter); each refusal at its field in one red
       the channels never take (hsl 352 100% 76%), the focus on the first. While it is open: no glitch at
       all, no pop-up, no snap, DRIFT's run paused; another channel puts the plugin back. A plugin verified
       in the last 24 h still gets TrialGateModal's Mac / Windows keys. The download itself is in the email
-      (the licence worker's Phase 3 switch, on since 2026-10-01: Mac / Windows buttons -> its /get page).
+      (the licence worker's Phase 3 switch, on since 2026-10-01: Mac / Windows buttons -> its /get page; Dan
+      2026-11-08: keep it so, step 4 = A, no worker change).
       No JS: Try keeps the pop-up / DRIFT's link. Forced colours: the real checkboxes.
   - Channels (Dan's pick: each plugin its own screen colour): one hue + saturation per plugin on `.ww`
     (`--ww-ch-<slug>-h` / `-s`): RevLimiter amber 26 / 78 (kept above ~20 so it never reads as
@@ -254,7 +257,9 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
   - Phones + small tablets (<= 860px): one pane at a time. The menu, then full-width rows (thumbnail,
     name, type word, the price on the right); a tap opens the lit plugin as its own view (a history
     entry, a "‹ All plugins" key); Back returns to the list with the focus on its row. Escape in a pane =
-    ‹ All plugins (P10). A shared link (`/?plugin=drift`, on arrival) opens that plugin's pane, never the
+    ‹ All plugins (P10). Product page sits on its own row, centred, at the foot of the glass the text leaves
+    (Dan 2026-11-08: "center it and lower it down"; `fit()` sets `--ww-lift` and never counts it as text, so
+    the picture keeps its size; no glass to spare = right under the price). A shared link (`/?plugin=drift`, on arrival) opens that plugin's pane, never the
     list (P09, 2026-11-08); its ‹ All plugins goes to the list, and the browser's Back leaves the way the
     visitor came (no entry is pushed at load: Chrome's Back skips one pushed without a tap anyway).
   - Keyboard (P10, 2026-11-08): the categories are one Tab stop (a toolbar, the stop on the pick); the

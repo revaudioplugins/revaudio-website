@@ -140,8 +140,29 @@ Files: `src/components/WordWall.astro`, `src/components/TrialGateModal.astro` (+
   sign-up form / refused / sent, GAS free, DRIFT beta, phone link + pane + form, phone refused + sent, High Contrast
   TV + sign-up, keyboard, step 4, overall). Notes in its db `notes/<section id>`; the step 4 pick = `notes/step4`
   choice a / b / c. Shots: session scratchpad `rv2/` (`shoot-tvsells.cjs` via walk.cjs).
-- Next: Dan's re-pick for step 4 (A / B' / C, above; on the bench too); his notes on the bench; step 00's baseline
-  before any push to main. Left in the plan: step 7 (checks at the 9 sizes), P (persona walk). Nothing on main;
+- Dan's notes on round 1 (2026-11-08, `notes/*` in the bench's db): every screen ✓; step 4 = **A** (the email stays
+  the download, no worker change: step 4 closed). Notes: the form's notice shorter; "Check your inbox" bigger and
+  redesigned ("how it will come on the screen ... the vibe of the brand ... go deep"), centred on a phone; the
+  phone pane's Product page "center it and lower it down"; "how we fix the overlap over here? in general" (the
+  site header over the TV's top bezel on a phone).
+- BUILT for round 2 (2026-11-08): the TV's notice = one line ("Setup tips and a trial-end reminder. Unsubscribe
+  anytime." / free + beta "A few setup tips. Unsubscribe anytime."); the spam line ("Not there in a minute? Look in
+  Promotions or Spam.", live on the site's sign-ups since 10-29) on the TV's sent screen AND back in
+  TrialGateModal's (the 11-05 P01 rebuild had dropped it there); phones: Product page on its own row, centred, at
+  the foot of the glass (`fit()` sets `--ww-lift`, subtracted from the text measure: pictures and TV height
+  unchanged on 360x740 / 375x667 / 402x714 / 430x932, stable on a re-measure; GAS's tall picture leaves none).
+  "Check your inbox": three looks, `tools/wwbench/wwsent-looks.js` (A On air: a station card, giant INBOX, a
+  news lower-third, a vertical-hold roll in; B Redline: a phosphor rev counter, the needle bounces off the
+  limiter, SENT; C Channel 00: the set's OSD number, a SENDING bar that fills, the steps as menu rows), the same
+  words (3 steps, the address, the spam line), each centred on a phone; live on `/__wwsent` (dev only, the real
+  TV signs up with its fetch faked). The overlap, measured: parked, the TV's frame runs 30 px under the frosted
+  bar on a 402x714 iPhone (38 on the 1141 laptop) with the same 30 / 38 px of page under it, so parking one bezel
+  lower fits the whole set exactly (asked on the bench; the header itself is another file, not this claim).
+- Round 2 of the bench: same page, `notes-r2/<id>` (form, sent-a / -phone, sent-b / -phone, sent-c / -phone, pick
+  = the look a / b / c / mix, phone, overlap = park / hide / solid / keep, overall). Shots + clips: session
+  scratchpad `rv2/` (`shoot-sent.cjs` frames by WAAPI currentTime, `shoot-r2.cjs`).
+- Next: Dan's round-2 notes: the sent look (then build it into `WordWall.astro`, the TV's GSAP + --ww-mv-* times),
+  the overlap fix; step 00's baseline before any push to main. Left in the plan: step 7 (checks at the 9 sizes), P (persona walk). Nothing on main;
   main = live on Dan's word.
 
 ## 2026-11-04 — GAS 2 postcards: the end page scrolls as one page, the footer under it (Claude Code `danavivi-c2 [ca2821]`, Dan's Mac) — PUSHED TO MAIN 2026-11-04 on Dan's word "perfect push to main" (from `fix/gas2-end-flow`)

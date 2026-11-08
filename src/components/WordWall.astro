@@ -177,20 +177,21 @@ const items: Item[] = tvPlugins()
 const cats = tvCats(tvPlugins().filter((p) => items.some((it) => it.slug === p.slug)));
 /* The sign-up on the screen (Phase 5 step 3; Dan 2026-11-08: look A, "Channel page", of /__wwsignup): its words per
    kind. TrialGateModal's own words; the newsletter line is the licence worker's MARKETING_CONSENT_TEXT (change both
-   together); the paid trial's second line is P12's (the plugins' LicenseManager + processBlock, read 2026-11-05). */
+   together); the paid trial's second line is P12's (the plugins' LicenseManager + processBlock, read 2026-11-05). The
+   notice is the modal's, shortened (Dan 2026-11-08, the TV Sells bench: "lets make this shorter if we can"). */
 const signupCopy = (s: TvSignup, name: string) =>
   s.kind === 'free'
     ? { t1: `${name}: free download`, t2: 'Free forever · full version · Mac + Windows', p12: '',
         news: 'Send me new-plugin drops and demo codes', newsReq: true,
-        notice: "We'll send a few short emails about getting started. Unsubscribe anytime." }
+        notice: 'A few setup tips. Unsubscribe anytime.' }
     : s.kind === 'beta'
       ? { t1: `Try the ${name} free beta`, t2: 'Free beta · download by email', p12: '',
           news: 'Also send me new-plugin drops and demo codes', newsReq: false,
-          notice: "We'll send a few short emails about getting started. Unsubscribe anytime." }
+          notice: 'A few setup tips. Unsubscribe anytime.' }
       : { t1: `Try ${name} free`, t2: `${PAID_TRIAL_DAYS} days · full version · no credit card`,
           p12: `The ${PAID_TRIAL_DAYS} days start the first time you open it; after that your sound passes through untouched until you add a key.`,
           news: 'Also send me new-plugin drops and demo codes', newsReq: false,
-          notice: "We'll send a few short emails about getting started, and a heads-up before a trial ends. Unsubscribe anytime." };
+          notice: 'Setup tips and a trial-end reminder. Unsubscribe anytime.' };
 const first = items[0]?.slug ?? '';
 ---
 
@@ -386,6 +387,7 @@ const first = items[0]?.slug ?? '';
                 <h3 class="ws-st" data-ws-step tabindex="-1">Check your inbox</h3>
                 <p class="ws-to" data-ws-step>Sent to <b data-ws-to></b>.</p>
                 <p class="ws-desk" data-ws-step data-ws-desk hidden>Open it on your Mac or PC to install.</p>
+                <p class="ws-spam" data-ws-step>Not there in a minute? Look in Promotions or Spam.</p>
                 <p class="ws-act" data-ws-step><button type="button" data-ws-resend>Resend</button><span aria-hidden="true"> · </span><button type="button" data-ws-wrong>Wrong email?</button></p>
                 <p class="ws-msg" role="status" aria-live="polite" data-ws-msg></p>
               </div>
@@ -549,8 +551,18 @@ const first = items[0]?.slug ?? '';
         const fig = p.querySelector<HTMLElement>('.ww-ui');
         // a closed panel on a phone (display:none): measured when it opens; one signing up shows no window
         if (!fig || !p.offsetParent || p.classList.contains('is-signing')) return;
-        const rest = Math.ceil(tall(p) - tall(fig)) + 1;
+        // a phone's pane: Product page drops to the foot of the glass the text leaves (Dan 2026-11-08, the TV Sells
+        // bench: "center it and lower it down"; a short phone has none to spare, so it stays under the price row).
+        // The drop is never text: it is taken off before the measure, and gone off a phone's pane.
+        const lifted = phone.matches && wall.dataset.wwView === 'panel';
+        if (!lifted) p.style.removeProperty('--ww-lift');
+        const lift = lifted ? parseFloat(p.style.getPropertyValue('--ww-lift')) || 0 : 0;
+        const rest = Math.ceil(tall(p) - tall(fig) - lift) + 1;
         if (rest > 1) p.style.setProperty('--ww-info-h', `${rest}px`);
+        if (!lifted) return;
+        const cs = getComputedStyle(wall);
+        const room = wall.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+        p.style.setProperty('--ww-lift', `${Math.max(0, Math.floor(room - (tall(p) - lift)))}px`);
       });
     };
     // a text box resized (the font landing, a resize): measure next frame (writing inside the observer's own
@@ -2307,6 +2319,7 @@ const first = items[0]?.slug ?? '';
   .ws-to { font: 500 1.08rem/1.4 var(--font-body); }
   .ws-to b { color: var(--ww-ink-hot); font-weight: 600; overflow-wrap: anywhere; }
   .ws-desk { font: 500 1rem/1.4 var(--font-body); }
+  .ws-spam { font: 500 0.9rem/1.4 var(--font-body); color: hsl(var(--ww-ch-h) 24% 80%); }
   .ws-act { font: 600 0.95rem/1 var(--font-body); color: var(--ww-ink); }
   .ws-act button {
     appearance: none;
@@ -2780,6 +2793,15 @@ const first = items[0]?.slug ?? '';
     .ww-info { gap: 0.55rem; }
     .ww-blurb { font-size: 1.06rem; }
     .ww-buy { gap: 0.6rem 1rem; }
+    /* Product page: its own row, centred, at the foot of the glass (fit() sets --ww-lift; Dan 2026-11-08) */
+    .ww[data-ww-lib='on'] .ww-buy {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      justify-self: stretch;
+      align-items: center;
+    }
+    .ww[data-ww-lib='on'] .ww-buy .ww-try { justify-self: start; }
+    .ww[data-ww-lib='on'] .ww-buy .ww-more { grid-column: 1 / -1; justify-self: center; margin-top: var(--ww-lift, 0px); }
   }
   /* A tight screen (a small laptop, 1141x636; a short phone, 375x667 / 360x740) has no glass to spare: the window
      takes the height the text leaves it, so the text keeps its look but steps down to about its old size. The small

@@ -23,7 +23,10 @@ const PAGES = {
   __wwkeys: fileURLToPath(new URL('./wwkeys.html', import.meta.url)),
   /* /__wwsignup (Dan 2026-11-08, Phase 5 step 2): three looks for the sign-up on the TV's screen, on the real page */
   __wwsignup: fileURLToPath(new URL('./wwsignup.html', import.meta.url)),
+  /* /__wwsent (Dan 2026-11-08, the TV Sells bench): three looks for "Check your inbox", on the real page */
+  __wwsent: fileURLToPath(new URL('./wwsent.html', import.meta.url)),
 };
+const LOOKS_JS = fileURLToPath(new URL('./wwsent-looks.js', import.meta.url));
 
 export default function wwbench() {
   return {
@@ -38,7 +41,12 @@ export default function wwbench() {
                 name: 'wwbench-server',
                 configureServer(server) {
                   server.middlewares.use(async (req, res, next) => {
-                    const m = /^\/(__wwbench|__wwkeys|__wwsignup)\/?$/.exec((req.url || '').split('?')[0]);
+                    if ((req.url || '').split('?')[0] === '/__wwsent/looks.js') {
+                      res.setHeader('Content-Type', 'text/javascript; charset=utf-8');
+                      res.end(await readFile(LOOKS_JS, 'utf8').catch((e) => `console.error(${JSON.stringify(String(e))})`));
+                      return;
+                    }
+                    const m = /^\/(__wwbench|__wwkeys|__wwsignup|__wwsent)\/?$/.exec((req.url || '').split('?')[0]);
                     if (!m) return next();
                     res.setHeader('Content-Type', 'text/html; charset=utf-8');
                     try {
