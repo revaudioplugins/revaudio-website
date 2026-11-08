@@ -64,8 +64,18 @@ Files: `src/components/WordWall.astro`, `src/components/TrialGateModal.astro` (+
   `.ww { --ww-gl-min-s: .3 !important; ... }` (the scoped rule outranks a plain `.ww`). Never the Playwright MCP
   browser for parallel agents (one shared browser).
 - Open, waiting for Dan (asked in chat 2026-11-05..08, no answer yet):
-  1. Step 2's look: a bench of 2-3 looks for the on-screen sign-up first (recommended, he has not picked) or build
-     straight in the TV's style.
+  1. Step 2's look: Dan 2026-11-08 "start with a bench of 2-3 looks" -> BUILT (`danavivi-c4`, `a4984ee`):
+     `/__wwsignup` (`tools/wwbench/wwsignup.html`, dev only) = the real TV x3, the Try key taken over in each frame
+     (capture click; TrialGateModal never opens; the bench's Send never touches the network), the same sign-up
+     markup (email, terms box required + its two links outside the label, newsletter optional / required on free,
+     notice + Privacy, Send, Back + Esc, then "Check your inbox" + Resend / Wrong email?), states Before Try / Form /
+     Errors / Sent, a readout (size, room on the glass, the TV vs the window, smallest type). A Channel page (the
+     pane turns into the sign-up, Bebas + Inter), B Set-up menu (a framed menu over the dimmed picture), C Typed
+     prompt (typed lines, mono prompts, the picture as an inset). WebKit 1141x636: A fits every case (refused Send
+     on RevLimiter fills the glass exactly), B runs the TV 11 px past the window (RevLimiter refused), C 4 px (GAS
+     refused); phones 390x844 all fit. Pick page "TV Sign-up Looks" https://claude.ai/artifact/Rm8ZajbFuNgJTT5VDvtDia
+     (review-bench, db `notes/<id>`, the pick = `notes/overall` choice a / b / c / mix). Recommended: A. Waiting for
+     Dan's pick; then build it into WordWall + the shared sign-up module (plan step 3).
   2. VOCALS: P14's note read as "DRIFT out of VOCALS" (it was already in MODULATION + CREATIVE), so VOCALS is gone
      from the TV on this branch. Not confirmed by Dan; one line in `plugins.ts` to undo.
   3. TrialGateModal's 3 px brass top line on a rounded box (`.tg-modal` border-top, since `fbe4ac79` 2026-07-26):
