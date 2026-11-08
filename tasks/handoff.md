@@ -52,6 +52,28 @@ Files: `src/components/WordWall.astro`, `src/components/TrialGateModal.astro` (+
   through the TV's own variables): left alone = only reading glitches on `.ww-pname` / `.ww-blurb` / the lit
   `.ww-name`; the pointer on the panel = none of those; read-after 20 s = none in the first 6 s; forced colours = none;
   reduced motion = none.
+- How to test (for the next session): `npx astro dev --port 4480 --host 127.0.0.1` in this worktree, then drive it
+  only through `tools/tv-walk/walk.cjs` (one Playwright browser per run; profiles noa iPhone WebKit 393x659, priya
+  Pixel 7, marcus WebKit 1141x636, walter 960x600 at 1.5x + forced colours + reduced motion, smoke 1280x800; every
+  request off 127.0.0.1 blocked, the sign-up POSTs `/download/register` + `/form-once` answered with a fake ok and
+  logged). Shots / logs: `$TV_WALK_OUT` (default the system temp `tv-walk/`). `tools/tv-walk/BRIEF.md` = the brief
+  the 4 test visitors walked with (a re-walk after step 2 can reuse it). Glitch checks: inject
+  `.ww { --ww-gl-min-s: .3 !important; ... }` (the scoped rule outranks a plain `.ww`). Never the Playwright MCP
+  browser for parallel agents (one shared browser).
+- Open, waiting for Dan (asked in chat 2026-11-05..08, no answer yet):
+  1. Step 2's look: a bench of 2-3 looks for the on-screen sign-up first (recommended, he has not picked) or build
+     straight in the TV's style.
+  2. VOCALS: P14's note read as "DRIFT out of VOCALS" (it was already in MODULATION + CREATIVE), so VOCALS is gone
+     from the TV on this branch. Not confirmed by Dan; one line in `plugins.ts` to undo.
+  3. TrialGateModal's 3 px brass top line on a rounded box (`.tg-modal` border-top, since `fbe4ac79` 2026-07-26):
+     the impeccable hook flags it; keep (then `ignore-value` it) or remove. Not touched.
+  4. Step 00's baseline: Dan reads 2 numbers before the push (home-page visits and download sign-ups, last 4
+     weeks; Cloudflare Web Analytics + the licence worker's admin leads page). Never read with prod secrets.
+  5. `.claude/worktrees/home-library` (detached at `b67c76f`, 3 days old) holds another session's UNCOMMITTED
+     edits to `WordWall.astro`: not this claim's, left alone; tell Dan before anything touches that worktree.
+- Pushes: this branch needs a force-push after the rebases (auto mode denies `--force-with-lease`; Dan runs
+  `! git -C ~/projects/revaudio/revaudio-website/.claude/worktrees/tv-sells push --force-with-lease origin feat/tv-sells`).
+  The shared law commit `15b1bc5` IS on revaudio-shared main.
 - Next: step 00 (the baseline, emails per 1,000 home-page visitors) needs live numbers (the worker's leads + the
   Cloudflare visit counts); then steps 1-10 in the plan's order. Nothing pushed to main; main = live on Dan's word.
 
