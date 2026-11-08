@@ -222,8 +222,12 @@ Steps:
             0 / 0.3 / 0.6 / 0.8 / 0.97; real shadows + bounce. Speed: B = A (15.4 vs 16.7 ms at 1080p, the 17 live lights
             still draw highlights); `&spec=0` fast B is 3-5x faster but loses the wet-floor highlights and 20-43 % of
             the light. KTX2 packs ~10 MB GPU (PNG 40.6). One-slot re-bake = one command (`bake/room-bake.sh <id>`, 110 s).
-            ⏸ Dan to pick which B goes into the bake-off: full / fast / the mix (fast + wet-floor highlights, not built;
-            my pick). Sheet: `look/step3/bake/room/shots/sheet.png`.
+            Dan: "go with you" = the mix. Phase 3 (2026-11-09, uncommitted in `home-bake`, on `61965d0`, 251 meshes
+            baked incl. the monitors + kit): B mix = fast everywhere, live highlights on the floor only, + a "gleam"
+            (the bake fed back as an even sheen, 0.6; `&gleam=0` = as briefed). 1080p walk 0.6: A 16.6 ms, B mix 6.3
+            (2.6x); walk 0: 24.3 vs 13.2 (1.8x): passes the 1.5x rule. Light B mix / A 0.83-1.04 (as briefed 0.66-0.79).
+            Fixed: a resize gave the floor back its live material. ⏸ Dan picks A / B mix / C no gleam on
+            https://claude.ai/artifact/1GRRy48eP1KF5ravRmVK2Q (db `notes`, doc `w097`). Then: merge the block + `bake/`.
       - [x] Scout task 3 (2026-11-08): monitors M1 black / M2 vintage + stands, kits K1 burgundy / K2 wood + throne,
             all ours from code. Dan's picks (bench https://claude.ai/artifact/VXYLrHfwRhy2oPMNg5UQGP, his chat
             message "black + wood"; the bench had B ticked for the monitors, the chat line wins): M1 + K2. In the room:
