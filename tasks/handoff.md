@@ -1,7 +1,8 @@
 ## 2026-11-04 — Home TV Phase 5 "The TV sells": try, download and the product page on the screen (Claude Code `danavivi-4c [c74148]`, Dan's Mac) — IN PROGRESS on `feat/tv-sells`
 
-Claim: HANDED OVER 2026-11-08 by `danavivi-4c` (closed, on Dan's "close") to the next session Dan opens for step 2:
-it takes this claim over under its own name, same branch and worktree. Branch `feat/tv-sells` (worktree
+Claim: TAKEN 2026-11-08 by Claude Code `danavivi-c4 [a99c19]` (Dan's Mac) for step 2, the sign-up on the screen:
+a bench of 2-3 looks first (`tools/wwbench/wwsignup.html` -> `/__wwsignup`, dev only). Handed over by `danavivi-4c`
+(closed, on Dan's "close"); same branch and worktree. Branch `feat/tv-sells` (worktree
 `.claude/worktrees/tv-sells`, now on main `747e059`; pushed, `12ac04f` and this close).
 Files: `src/components/WordWall.astro`, `src/components/TrialGateModal.astro` (+ one new shared sign-up module),
 `src/components/WelcomeDiscountPopup.astro`, `src/components/ExitIntentPopup.astro`, `tasks/home-library-plan.md`

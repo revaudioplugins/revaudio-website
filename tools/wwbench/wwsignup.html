@@ -1,0 +1,688 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>TV Bench · Sign-up</title>
+<!-- TV sign-up bench (Home TV Phase 5 step 2, Dan 2026-11-08: "a bench of 2-3 looks" for the sign-up ON the screen;
+     the plan: tasks/home-library-plan.md § Phase 5, step 3 "Try on the screen, no pop-up"). Three same-origin iframes of
+     the REAL dev homepage; in each one the bench takes over the Try key (a capture-phase click, so TrialGateModal never
+     opens) and lays the same sign-up into the lit plugin's pane: the email, the terms box (required, D6), the newsletter
+     box (optional on trials, required on the free downloads), the notice + Privacy, Send my link, Back (and Esc); after
+     Send, "Check your inbox" (TV walk P01). The three differ only in their <style> (and where the picture goes):
+       A Channel page: the pane turns into the sign-up, the picture goes; the set's two faces (Bebas + Inter).
+       B Set-up menu:  the picture stays, dimmed, and a framed set-up menu opens over the pane.
+       C Typed prompt: the set types the form line by line; the picture shrinks to a small inset beside the title.
+     NOTHING IS SENT: the bench's Send never calls the network (the frames are the dev page; the worker is never
+     reached). State buttons put every frame in Form / Errors / Sent; Back and Try in a frame run the real motion.
+     Pick in chat ("A", or "A with B's frame"). Dev only (integration.mjs bails outside `astro dev`). -->
+<style>
+  :root { --bg: #0d0a12; --panel: #17121f; --line: #2c2338; --ink: #efe8f6; --dim: #a597b8; --acc: #d23cff; --warn: #ffb35c; --ok: #7be3a0; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.35 -apple-system, system-ui, sans-serif; }
+  header { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--line); flex-wrap: wrap; position: sticky; top: 0; z-index: 3; background: var(--bg); }
+  header h1 { margin: 0 8px 0 0; font-size: 14px; letter-spacing: .1em; text-transform: uppercase; }
+  button { background: #221a2d; color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; font: inherit; cursor: pointer; }
+  button:hover { background: #2d2340; }
+  .seg { display: inline-flex; flex-wrap: wrap; }
+  .seg button { border-radius: 0; margin-left: -1px; padding: 6px 10px; }
+  .seg button:first-child { border-radius: 8px 0 0 8px; margin-left: 0; }
+  .seg button:last-child { border-radius: 0 8px 8px 0; }
+  .seg button.on { background: var(--acc); border-color: var(--acc); color: #1a0322; font-weight: 700; }
+  .lbl { color: var(--dim); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+  .spacer { flex: 1; }
+  .pick { color: var(--dim); font-size: 13px; }
+  .pick b { color: var(--ink); }
+  main { display: grid; grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr)); gap: 18px; padding: 16px; }
+  .card { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+  .card[hidden] { display: none; }
+  .head { display: flex; align-items: baseline; gap: 10px; }
+  .badge { flex: none; display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 6px; background: var(--acc); color: #1a0322; font-weight: 800; }
+  .head h2 { margin: 0; font-size: 15px; letter-spacing: .04em; }
+  .head .zoom { margin-left: auto; padding: 4px 10px; font-size: 12px; }
+  .line { margin: 0; color: var(--dim); font-size: 13px; max-width: 70ch; min-height: calc(4 * 1.35em); }
+  .vp { position: relative; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: #050307; }
+  .vp iframe { position: absolute; left: 0; top: 0; border: 0; transform-origin: 0 0; background: #050307; }
+  .read { margin: 0; font: 12px/1.4 ui-monospace, Menlo, monospace; color: var(--dim); }
+  .read .bad { color: var(--warn); }
+  .read .good { color: var(--ok); }
+</style>
+</head>
+<body>
+<header>
+  <h1>TV bench · Sign-up</h1>
+  <span class="lbl">Channel</span>
+  <span class="seg" id="chan" title="Light a plugin in all three TVs"></span>
+  <span class="lbl">Screen</span>
+  <span class="seg" id="size" title="The window the three TVs are shown in">
+    <button data-s="1141x636" title="Dan's laptop: Safari's visible viewport at 115 %">Laptop 1141</button><button data-s="1440x900">Laptop 1440</button><button data-s="390x844">Phone</button>
+  </span>
+  <span class="lbl">State</span>
+  <span class="seg" id="state" title="Put every TV in this state">
+    <button data-st="plugin" title="The plugin, before Try">Before Try</button><button data-st="form">Form</button><button data-st="errors" title="Send pressed with a bad email and the terms box empty">Errors</button><button data-st="sent">Sent</button>
+  </span>
+  <button id="replay" type="button" title="Back to the plugin, then Try again, with the motion">▶ Try</button>
+  <span class="spacer"></span>
+  <span class="pick">Type, tick, Send, Back, Esc: it is the real page (<b>nothing is sent</b>). Then tell Claude <b>A</b>, <b>B</b> or <b>C</b>.</span>
+</header>
+<main id="cards"></main>
+<script>
+(() => {
+  const KEY = 'wwsignup:v1';
+  const WALL = '[data-wordwall]';
+
+  /* ---- the sign-up, the same markup in all three looks (only the CSS differs) ---------------------------------- */
+  const esc = (s) => String(s).replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch]);
+  // the copy follows the plugin: a paid trial, a free download (GAS, GAS 2) or DRIFT's beta (TrialGateModal's words,
+  // the worker's MARKETING_CONSENT_TEXT for the newsletter box, P12's line for the paid trial)
+  function copyFor(d) {
+    if (d.free) return {
+      t1: `${d.name}: free download`, t2: 'Free forever · full version · Mac + Windows', p12: '',
+      news: 'Send me new-plugin drops and demo codes', newsReq: true,
+      notice: "We'll send a few short emails about getting started. Unsubscribe anytime.",
+    };
+    if (d.beta) return {
+      t1: `Try the ${d.name} free beta`, t2: 'Free beta · full version · download by email', p12: '',
+      news: 'Also send me new-plugin drops and demo codes', newsReq: false,
+      notice: "We'll send a few short emails about getting started. Unsubscribe anytime.",
+    };
+    return {
+      t1: `Try ${d.name} free`, t2: '30 days · full version · no credit card',
+      p12: 'The 30 days start the first time you open it; after that your sound passes through untouched until you add a key.',
+      news: 'Also send me new-plugin drops and demo codes', newsReq: false,
+      notice: "We'll send a few short emails about getting started, and a heads-up before a trial ends. Unsubscribe anytime.",
+    };
+  }
+  function markup(d) {
+    const k = copyFor(d), id = (s) => `ws-${s}-${d.slug}`;
+    return `
+      <div class="ws-head" data-ws-step>
+        <h3 class="ws-title" id="${id('t')}" tabindex="-1">${esc(k.t1)}</h3>
+        <button type="button" class="ws-back" data-ws-back>Back</button>
+        <p class="ws-t2">${esc(k.t2)}</p>
+        ${k.p12 ? `<p class="ws-p12">${esc(k.p12)}</p>` : ''}
+      </div>
+      <form class="ws-form" data-ws-form novalidate aria-labelledby="${id('t')}">
+        <div class="ws-line ws-line--email" data-ws-step data-first>
+          <label class="ws-lbl" for="${id('email')}">Your email</label>
+          <input class="ws-field" id="${id('email')}" type="email" name="email" placeholder="you@studio.com" autocomplete="email" required aria-describedby="${id('email-err')}">
+          <p class="ws-err" id="${id('email-err')}" role="alert"></p>
+        </div>
+        <input type="text" name="_gotcha" class="ws-hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <div class="ws-line ws-line--terms" data-ws-step>
+          <span class="ws-lbl" aria-hidden="true">Terms</span>
+          <div class="ws-box">
+            <span class="ws-cb"><input type="checkbox" id="${id('terms')}" required aria-describedby="${id('terms-err')}"><span class="ws-cbx" aria-hidden="true"></span></span>
+            <span class="ws-boxtext"><label for="${id('terms')}">I agree to the terms <span class="ws-req">(required)</span></label>:
+              <a href="/terms" target="_blank" rel="noopener">Terms &amp; Conditions</a> · <a href="/eula" target="_blank" rel="noopener">Licence terms</a></span>
+          </div>
+          <p class="ws-err" id="${id('terms-err')}" role="alert"></p>
+        </div>
+        <div class="ws-line ws-line--news" data-ws-step>
+          <span class="ws-lbl" aria-hidden="true">News</span>
+          <div class="ws-box">
+            <span class="ws-cb"><input type="checkbox" id="${id('news')}" ${k.newsReq ? 'required' : ''} aria-describedby="${id('news-err')}"><span class="ws-cbx" aria-hidden="true"></span></span>
+            <span class="ws-boxtext"><label for="${id('news')}">${esc(k.news)} <span class="ws-req">${k.newsReq ? '(required)' : '(optional)'}</span></label></span>
+          </div>
+          <p class="ws-err" id="${id('news-err')}" role="alert"></p>
+        </div>
+        <div class="ws-line ws-line--send" data-ws-step>
+          <button type="submit" class="ws-send" data-ws-send>Send my link</button>
+        </div>
+        <p class="ws-notice" data-ws-step>${esc(k.notice)} <a href="/privacy" target="_blank" rel="noopener">Privacy</a></p>
+        <div class="ws-foot" data-ws-step aria-hidden="true"><span class="ws-hint">Esc</span></div>
+      </form>
+      <div class="ws-sent" data-ws-sent hidden>
+        <h3 class="ws-st" data-ws-step tabindex="-1">Check your inbox</h3>
+        <p class="ws-to" data-ws-step>Sent to <b data-ws-to></b>.</p>
+        <p class="ws-desk" data-ws-step data-ws-desk hidden>Open it on your Mac or PC to install.</p>
+        <p class="ws-act" data-ws-step><button type="button" data-ws-resend>Resend</button><span aria-hidden="true"> · </span><button type="button" data-ws-wrong>Wrong email?</button></p>
+        <p class="ws-msg" role="status" aria-live="polite" data-ws-msg></p>
+        <div class="ws-foot" data-ws-step aria-hidden="true"><span class="ws-hint">Esc</span></div>
+      </div>`;
+  }
+
+  /* ---- CSS: what all three share, then each look ---------------------------------------------------------------
+     Specificity: WordWall's rules are Astro-scoped (a [data-astro-cid] per class), so the panel rules here carry a long
+     prefix to outrank them; the sign-up's own elements are new (no scoped rule reaches them). */
+  const W = 'html .ww[data-wordwall]';
+  const S = `${W} .ww-panel.is-active.is-signing[data-ww-panel]`; // the lit panel while it signs someone up
+  const Q = `${W} .ws`;
+  const BASE = `
+#cookie-banner { display: none !important; }
+${Q} { --ws-bad: hsl(352 100% 76%); display: none; min-width: 0; color: var(--ww-ink-text); font-family: var(--font-body); text-align: left; }
+${S} > .ws { display: grid; }
+${Q} [hidden], ${Q}[hidden] { display: none !important; }
+${S} > .ww-back { display: none !important; }
+/* sent: one title, "Check your inbox" (P01: minimal); Back stays */
+${Q}.is-sent :is(.ws-title, .ws-t2, .ws-p12) { display: none; }
+${Q} :is(h3, p) { margin: 0; }
+${Q} button { font: inherit; color: inherit; background: none; border: 0; padding: 0; margin: 0; cursor: pointer; min-height: 0; box-shadow: none; text-transform: none; letter-spacing: normal; }
+${Q} a { color: var(--ww-ink-hot); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .18em; }
+${Q} a:hover { text-shadow: 0 0 8px var(--ww-glow); }
+${Q} :is(a, button, input):focus-visible { outline: 2px solid var(--ww-ink-hot); outline-offset: 3px; }
+${Q} .ws-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+${Q} .ws-title:focus, ${Q} .ws-st:focus { outline: none; }
+${Q} .ws-field { width: 100%; min-width: 0; margin: 0; color: var(--ww-ink-text); caret-color: var(--ww-ink-hot); font: 500 1.05rem/1.25 var(--font-body); -webkit-appearance: none; appearance: none; }
+${Q} .ws-field::placeholder { color: hsl(var(--ww-ch-h) 22% 62%); opacity: 1; }
+${Q} .ws-field[aria-invalid='true'] { box-shadow: inset 0 0 0 2px var(--ws-bad) !important; }
+${Q} .ws-box { display: flex; align-items: flex-start; gap: .65rem; min-width: 0; }
+${Q} .ws-boxtext { font: 500 .94rem/1.4 var(--font-body); padding-top: .12rem; min-width: 0; }
+${Q} .ws-boxtext label { cursor: pointer; }
+${Q} .ws-req { color: var(--ww-ink); }
+/* the real checkbox sits invisible over the drawn one (24 px target), so a click, a tap and Space all reach it */
+${Q} .ws-cb { position: relative; flex: none; width: 1.5rem; height: 1.5rem; display: grid; place-items: center; }
+${Q} .ws-cb input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+${Q} .ws-cb input:focus-visible { outline: none; }
+${Q} .ws-cb input:focus-visible + .ws-cbx { outline: 2px solid var(--ww-ink-hot); outline-offset: 3px; }
+${Q} .ws-cb input[aria-invalid='true'] + .ws-cbx { box-shadow: inset 0 0 0 2px var(--ws-bad); }
+${Q} .ws-err { display: flex; gap: .45rem; align-items: baseline; color: var(--ws-bad); font: 600 .88rem/1.3 var(--font-body); }
+${Q} .ws-err:empty { display: none; }
+${Q} .ws-err::before { content: '!'; flex: none; display: inline-grid; place-items: center; width: 1.1em; height: 1.1em; border-radius: 2px; background: var(--ws-bad); color: #1c0509; font: 800 .8em/1 var(--font-body); translate: 0 .12em; }
+${Q} .ws-notice { font: 500 .84rem/1.45 var(--font-body); color: hsl(var(--ww-ch-h) 24% 80%); max-width: 36rem; }
+${Q} .ws-msg { font: 500 .9rem/1.35 var(--font-body); color: var(--ww-ink-text); }
+${Q} .ws-msg:empty { display: none; }
+${Q} .ws-send[disabled] { cursor: progress; filter: brightness(.8); }
+/* the motion: the channel change's own (DESIGN.md §4): out 4 px up in 120 ms, in from below in reading order */
+@keyframes ws-out { to { opacity: 0; transform: translateY(calc(var(--ww-mv-dir, 1) * -4px)); } }
+@keyframes ws-in { from { opacity: 0; transform: translateY(calc(var(--ww-mv-dir, 1) * var(--ws-from, 6) * 1px)); } to { opacity: 1; transform: none; } }
+${W} .ww-panel.ws-leaving > :is(.ww-ui, .ww-info) { animation: ws-out calc(var(--ww-mv-out-ms, 120) * 1ms) cubic-bezier(.32, 0, .67, 0) forwards; }
+${W} .ww-panel.ws-coming > :is(.ww-ui, .ww-info) { animation: ws-in calc(var(--ww-mv-text-ms, 340) * 1ms) cubic-bezier(.215, .61, .355, 1) both; }
+${W} .ww-panel.ws-coming > .ww-info { animation-delay: 60ms; }
+${W} .ws.ws-entering [data-ws-step] { animation: ws-in calc(var(--ww-mv-text-ms, 340) * 1ms) cubic-bezier(.215, .61, .355, 1) both; animation-delay: calc((var(--ww-mv-text-at-ms, 40) + var(--i, 0) * var(--ww-mv-text-gap-ms, 20) * 2) * 1ms); }
+${W} .ws.ws-going { animation: ws-out calc(var(--ww-mv-out-ms, 120) * 1ms) cubic-bezier(.32, 0, .67, 0) forwards; }
+@media (prefers-reduced-motion: reduce) {
+  @keyframes ws-in { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes ws-out { to { opacity: 0; } }
+  ${W} .ws.ws-entering [data-ws-step] { animation-duration: 120ms; animation-delay: 0ms; }
+}
+`;
+
+  /* A · Channel page: the pane becomes the sign-up, the picture goes; Bebas + Inter only (P01's two faces) */
+  const CSS_A = BASE + `
+${S} { grid-template-columns: minmax(0, 1fr) !important; align-content: center; }
+${S} > :is(.ww-ui, .ww-info) { display: none !important; }
+${Q} { gap: .8rem; justify-items: start; width: 100%; max-width: 34rem; }
+${Q} .ws-foot { display: none; }
+${Q} .ws-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 1rem; row-gap: .3rem; width: 100%; align-items: baseline; }
+${Q} .ws-title { font: 400 clamp(1.8rem, 2.6vw, 2.6rem)/1 var(--font-display); letter-spacing: .05em; text-transform: uppercase; color: var(--ww-ink-hot); text-shadow: 0 0 8px var(--ww-glow); }
+${Q} .ws-back { grid-column: 2; grid-row: 1; justify-self: end; font: 600 .82rem/1 var(--font-body) !important; letter-spacing: .14em !important; text-transform: uppercase !important; color: var(--ww-ink) !important; padding: .45rem 0 !important; }
+${Q} .ws-back::before { content: '\\2039  '; white-space: pre; font-size: 1.3em; line-height: .6; }
+${Q} .ws-back:hover { color: var(--ww-ink-hot) !important; }
+${Q} .ws-t2 { grid-column: 1 / -1; font: 600 .82rem/1.3 var(--font-body); letter-spacing: .13em; text-transform: uppercase; color: var(--ww-ink); }
+${Q} .ws-p12 { grid-column: 1 / -1; font: 500 .9rem/1.4 var(--font-body); color: hsl(var(--ww-ch-h) 26% 84%); max-width: 34rem; }
+${Q} .ws-form { display: grid; gap: .7rem; width: 100%; }
+${Q} .ws-line { display: grid; gap: .35rem; min-width: 0; }
+${Q} .ws-line--terms .ws-lbl, ${Q} .ws-line--news .ws-lbl { display: none; }
+${Q} .ws-line--email .ws-lbl { font: 600 .82rem/1 var(--font-body); letter-spacing: .13em; text-transform: uppercase; color: var(--ww-ink); }
+${Q} .ws-field { padding: .68rem .85rem; border: 0; border-radius: 3px; background: hsl(var(--ww-ch-h) 45% 6% / .6); box-shadow: inset 0 0 0 1.5px var(--ww-ink), 0 0 12px var(--ww-glow-soft); }
+${Q} .ws-field:focus { outline: none; box-shadow: inset 0 0 0 2px var(--ww-ink-hot), 0 0 18px var(--ww-glow); }
+${Q} .ws-cbx { width: 1.15rem; height: 1.15rem; border-radius: 2px; box-shadow: inset 0 0 0 1.5px var(--ww-ink), 0 0 8px var(--ww-glow-faint); }
+${Q} .ws-cb input:checked + .ws-cbx { background: var(--ww-ink-hot); box-shadow: 0 0 10px var(--ww-glow-hot); }
+${Q} .ws-cb input:checked + .ws-cbx::before { content: ''; display: block; width: 100%; height: 100%; background: var(--ww-ink-on); clip-path: polygon(18% 52%, 30% 40%, 43% 54%, 72% 24%, 84% 36%, 43% 77%); }
+${Q} .ws-line--send { margin-top: .15rem; }
+${Q} .ws-send {
+  padding: .55rem 1.15rem .45rem !important; border-radius: 3px !important;
+  background: var(--ww-ink-hot) linear-gradient(180deg, rgb(255 255 255 / .16), rgb(255 255 255 / 0) 60%) !important; color: var(--ww-ink-on) !important;
+  font: 400 1.55rem/.95 var(--font-display) !important; letter-spacing: .05em !important; text-transform: uppercase !important;
+  box-shadow: 0 0 0 1px var(--ww-ink-hot), 0 0 22px var(--ww-glow-hot), 0 0 52px var(--ww-glow-soft) !important;
+}
+${Q} .ws-send:hover { background-color: hsl(var(--ww-ch-h) min(100%, calc(var(--ww-ch-s) * 1% + 34%)) 83%) !important; }
+${Q} .ws-send:focus-visible { outline-offset: 4px; }
+${Q} .ws-sent { display: grid; gap: .65rem; justify-items: start; }
+${Q} .ws-st { font: 400 clamp(2.2rem, 3.4vw, 3.2rem)/1 var(--font-display); letter-spacing: .05em; text-transform: uppercase; color: var(--ww-ink-hot); text-shadow: 0 0 10px var(--ww-glow-hot), 0 0 26px var(--ww-glow-soft); }
+${Q} .ws-to { font: 500 1.08rem/1.4 var(--font-body); }
+${Q} .ws-to b { color: var(--ww-ink-hot); font-weight: 600; }
+${Q} .ws-desk { font: 500 1rem/1.4 var(--font-body); }
+${Q} .ws-act { font: 600 .95rem/1 var(--font-body); color: var(--ww-ink); }
+${Q} .ws-act button { color: var(--ww-ink-hot); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .2em; padding: .3rem 0; }
+`;
+
+  /* B · Set-up menu: the picture stays, dimmed; a framed menu opens over the pane (the set's own menu, over the
+     programme) */
+  const CSS_B = BASE + `
+/* every part keeps its own cell under the menu (auto-placement would push them into new tracks round it) */
+${S} > .ww-ui { grid-area: 1 / 1; filter: brightness(.28) saturate(.55); transition: filter 300ms ease; }
+${S} > .ww-info { grid-area: 2 / 1; visibility: hidden; }
+${S}.is-portrait > .ww-info { grid-area: 1 / 2; }
+@media (max-width: 860px) { ${S}.is-portrait > .ww-info { grid-area: 2 / 1; } }
+${Q} {
+  --ws-line: hsl(var(--ww-ch-h) var(--ww-gs) 52%);
+  position: relative; z-index: 2; grid-column: 1 / -1; align-self: center; justify-self: center; width: min(100%, 30rem); gap: 0;
+  border: 1.5px solid var(--ws-line); border-radius: 2px;
+  background: hsl(var(--ww-ch-h) 45% 6% / .88);
+  box-shadow: 0 0 18px var(--ww-glow-soft), inset 0 0 22px hsl(var(--ww-ch-h) var(--ww-gs) 58% / .12);
+}
+${Q}::before {
+  content: ''; position: absolute; inset: -6px; pointer-events: none;
+  background:
+    linear-gradient(var(--ww-ink-hot), var(--ww-ink-hot)) 0 0 / 10px 2px, linear-gradient(var(--ww-ink-hot), var(--ww-ink-hot)) 0 0 / 2px 10px,
+    linear-gradient(var(--ww-ink-hot), var(--ww-ink-hot)) 100% 0 / 10px 2px, linear-gradient(var(--ww-ink-hot), var(--ww-ink-hot)) 100% 0 / 2px 10px,
+    linear-gradient(var(--ww-ink-hot), var(--ww-ink-hot)) 0 100% / 10px 2px, linear-gradient(var(--ww-ink-hot), var(--ww-ink-hot)) 0 100% / 2px 10px,
+    linear-gradient(var(--ww-ink-hot), var(--ww-ink-hot)) 100% 100% / 10px 2px, linear-gradient(var(--ww-ink-hot), var(--ww-ink-hot)) 100% 100% / 2px 10px;
+  background-repeat: no-repeat; filter: drop-shadow(0 0 4px var(--ww-glow-hot));
+}
+${Q} .ws-head { display: grid; grid-template-columns: minmax(0, 1fr); }
+${Q} .ws-title { padding: .5rem .9rem .38rem; background: var(--ww-ink-hot); color: var(--ww-ink-on); font: 400 1.5rem/1 var(--font-display); letter-spacing: .05em; text-transform: uppercase; box-shadow: 0 0 22px var(--ww-glow-hot); }
+${Q} .ws-back { display: none; }
+${Q} .ws-t2 { padding: .55rem .9rem 0; font: 600 .82rem/1.3 'Oswald', sans-serif; letter-spacing: .14em; text-transform: uppercase; color: var(--ww-ink); }
+${Q} .ws-p12 { padding: .25rem .9rem .5rem; font: 500 .86rem/1.4 var(--font-body); color: hsl(var(--ww-ch-h) 26% 84%); }
+${Q} .ws-form { display: grid; }
+${Q} .ws-line { position: relative; display: grid; grid-template-columns: 5.4rem minmax(0, 1fr); align-items: center; column-gap: .7rem; row-gap: .3rem; padding: .5rem .9rem .5rem 1.6rem; border-top: 1px solid hsl(var(--ww-ch-h) var(--ww-gs) 52% / .28); }
+${Q} .ws-line .ws-err { grid-column: 2; }
+${Q} .ws-lbl { font: 600 .82rem/1 'Oswald', sans-serif; letter-spacing: .12em; text-transform: uppercase; color: var(--ww-ink); align-self: center; white-space: nowrap; }
+${Q} .ws-line--terms .ws-lbl, ${Q} .ws-line--news .ws-lbl { align-self: start; padding-top: .42rem; }
+${Q} .ws-line::before {
+  content: ''; position: absolute; left: .7rem; top: 1.02rem; width: 0; height: 0; border-style: solid; border-width: .28rem 0 .28rem .48rem;
+  border-color: transparent transparent transparent var(--ww-ink-hot); filter: drop-shadow(0 0 5px var(--ww-glow-hot)); visibility: hidden;
+}
+${Q} .ws-line:focus-within::before, ${Q}:not(:has(.ws-line:focus-within)) .ws-line[data-first]::before { visibility: visible; }
+${Q} .ws-field { padding: .32rem 0 .3rem; border: 0; border-radius: 0; background: none; box-shadow: inset 0 -1.5px 0 var(--ww-ink); }
+${Q} .ws-field:focus { outline: none; box-shadow: inset 0 -2px 0 var(--ww-ink-hot); }
+${Q} .ws-field[aria-invalid='true'] { box-shadow: inset 0 -2px 0 var(--ws-bad) !important; }
+${Q} .ws-cbx { width: 1.1rem; height: 1.1rem; box-shadow: inset 0 0 0 1.5px var(--ww-ink); }
+${Q} .ws-cb input:checked + .ws-cbx { background: var(--ww-ink-hot); box-shadow: 0 0 10px var(--ww-glow-hot); }
+${Q} .ws-cb input:checked + .ws-cbx::before { content: ''; display: block; width: 100%; height: 100%; background: var(--ww-ink-on); clip-path: polygon(18% 52%, 30% 40%, 43% 54%, 72% 24%, 84% 36%, 43% 77%); }
+${Q} .ws-boxtext { font-size: .9rem; }
+${Q} .ws-line--send { grid-template-columns: minmax(0, 1fr); padding-top: .65rem; padding-bottom: .65rem; }
+${Q} .ws-line--send::before { top: 1.25rem; }
+${Q} .ws-line--send:has(.ws-send:hover)::before { visibility: visible; }
+${Q} .ws-send {
+  justify-self: stretch; text-align: left; padding: .48rem .8rem .38rem !important;
+  background: var(--ww-ink-hot) !important; color: var(--ww-ink-on) !important;
+  font: 400 1.4rem/1 var(--font-display) !important; letter-spacing: .05em !important; text-transform: uppercase !important;
+  box-shadow: 0 0 22px var(--ww-glow-hot) !important;
+}
+${Q} .ws-send:hover { background-color: hsl(var(--ww-ch-h) min(100%, calc(var(--ww-ch-s) * 1% + 34%)) 83%) !important; }
+${Q} .ws-send:focus-visible { outline-color: var(--ww-ink-on); outline-offset: -5px; }
+${Q} .ws-notice { padding: 0 .9rem .6rem 1.6rem; font-size: .82rem; }
+${Q} .ws-foot { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .38rem .9rem .34rem; border-top: 1.5px solid var(--ws-line); font: 600 .82rem/1 'Oswald', sans-serif; letter-spacing: .16em; text-transform: uppercase; color: var(--ww-ink); }
+${Q} .ws-foot .ws-hint::before { content: 'Back: '; }
+${Q} .ws-sent { display: grid; }
+${Q} .ws-st { padding: .5rem .9rem .38rem; background: var(--ww-ink-hot); color: var(--ww-ink-on); font: 400 1.5rem/1 var(--font-display); letter-spacing: .05em; text-transform: uppercase; }
+${Q} .ws-sent > p { padding: .55rem .9rem 0 1.6rem; }
+${Q} .ws-to { font: 500 1.02rem/1.4 var(--font-body); }
+${Q} .ws-to b { color: var(--ww-ink-hot); font-weight: 600; }
+${Q} .ws-desk { font: 500 .95rem/1.4 var(--font-body); }
+${Q} .ws-act { padding-bottom: .65rem !important; font: 600 .82rem/1 'Oswald', sans-serif; letter-spacing: .14em; text-transform: uppercase; color: var(--ww-ink); }
+${Q} .ws-act button { color: var(--ww-ink-hot); padding: .35rem .1rem; font: 400 1.25rem/1 var(--font-display); letter-spacing: .05em; text-transform: uppercase; }
+${Q} .ws-act button:hover { text-shadow: 0 0 10px var(--ww-glow-hot); }
+${Q} .ws-msg { padding: 0 .9rem .5rem 1.6rem; }
+/* phones: the menu's labels go over their lines (a label column left the boxes' words ~150 px) */
+@media (max-width: 860px) {
+  ${Q} .ws-line { grid-template-columns: minmax(0, 1fr); }
+  ${Q} .ws-line .ws-err { grid-column: 1; }
+  ${Q} .ws-line::before { top: .62rem; }
+  ${Q} .ws-line--terms .ws-lbl, ${Q} .ws-line--news .ws-lbl { padding-top: 0; }
+}
+/* the box rises as one, then its lines */
+${W} .ws.ws-entering { animation: ws-in calc(var(--ww-mv-text-ms, 340) * 1ms) cubic-bezier(.215, .61, .355, 1) both; --ws-from: 12; }
+`;
+
+  /* C · Typed prompt: the set types the sign-up line by line; the picture shrinks to an inset beside the title.
+     The prompts in the house mono, the legal lines and the notice plain (Inter), the title Bebas */
+  const CSS_C = BASE + `
+${S} { grid-template-columns: minmax(0, 1fr) clamp(7.5rem, 32%, 12rem) !important; grid-template-areas: 'head pip' 'body body' !important; align-content: center; column-gap: 1.1rem !important; row-gap: .75rem !important; }
+${S} > .ww-info { display: none !important; }
+${S} > .ww-ui { grid-area: pip; align-self: start; justify-self: stretch; width: auto !important; margin: 0; padding: 3px; box-shadow: 0 0 0 1.5px var(--ww-ink), 0 0 14px var(--ww-glow-soft); }
+${S} > .ww-ui :is(img, video) { width: 100% !important; height: auto !important; max-width: none !important; border-radius: 0 !important; box-shadow: none !important; }
+${S}.is-portrait > .ww-ui { justify-self: end; }
+${S}.is-portrait > .ww-ui :is(img, video) { width: auto !important; height: 8.5rem !important; }
+${S}.is-float > .ww-ui { box-shadow: none; padding: 0; }
+${S} > .ws { display: contents; }
+${Q} .ws-head { grid-area: head; display: grid; row-gap: .35rem; align-content: start; min-width: 0; }
+${Q} .ws-form, ${Q} .ws-sent { grid-area: body; display: grid; gap: .6rem; min-width: 0; max-width: 34rem; }
+${Q} .ws-back { order: -1; justify-self: start; font: 600 .82rem/1 var(--font-mono) !important; letter-spacing: .16em !important; text-transform: uppercase !important; color: var(--ww-ink) !important; padding: .3rem 0 !important; }
+${Q} .ws-back::before { content: '\\2039 '; white-space: pre; font-size: 1.3em; line-height: .6; }
+${Q} .ws-back:hover { color: var(--ww-ink-hot) !important; }
+${Q} .ws-title { font: 400 clamp(1.7rem, 2.5vw, 2.5rem)/1 var(--font-display); letter-spacing: .05em; text-transform: uppercase; color: var(--ww-ink-hot); text-shadow: 0 0 8px var(--ww-glow); }
+${Q} .ws-title::after { content: ''; display: inline-block; width: .42em; height: .72em; margin-left: .12em; background: var(--ww-ink-hot); box-shadow: 0 0 8px var(--ww-glow-hot); vertical-align: -.02em; animation: ws-blink 1.1s steps(1, end) infinite; }
+@keyframes ws-blink { 0%, 58% { opacity: 1; } 60%, 100% { opacity: 0; } }
+${Q} :is(.ws-t2, .ws-lbl, .ws-p12)::before { content: '> '; white-space: pre; color: var(--ww-ink-hot); }
+${Q} .ws-t2 { font: 600 .82rem/1.35 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--ww-ink); }
+${Q} .ws-p12 { font: 500 .86rem/1.4 var(--font-body); color: hsl(var(--ww-ch-h) 26% 84%); }
+${Q} .ws-p12::before { font-family: var(--font-mono); }
+${Q} .ws-line { display: grid; gap: .3rem; min-width: 0; }
+${Q} .ws-line--terms .ws-lbl, ${Q} .ws-line--news .ws-lbl { display: none; }
+${Q} .ws-lbl { font: 600 .82rem/1.2 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ww-ink); }
+${Q} .ws-field { padding: .3rem 0 .32rem; border: 0; border-radius: 0; background: none; box-shadow: inset 0 -2px 0 var(--ww-ink); color: var(--ww-ink-hot); font: 500 1.08rem/1.2 var(--font-mono); caret-shape: block; }
+${Q} .ws-field:focus { outline: none; box-shadow: inset 0 -2px 0 var(--ww-ink-hot), 0 6px 10px -8px var(--ww-glow-hot); }
+${Q} .ws-field[aria-invalid='true'] { box-shadow: inset 0 -2px 0 var(--ws-bad) !important; }
+${Q} .ws-cbx { width: auto; height: auto; font: 700 .95rem/1 var(--font-mono); color: var(--ww-ink); white-space: pre; }
+${Q} .ws-cbx::before { content: '[ ]'; }
+${Q} .ws-cb input:checked + .ws-cbx { color: var(--ww-ink-hot); text-shadow: 0 0 8px var(--ww-glow-hot); }
+${Q} .ws-cb input:checked + .ws-cbx::before { content: '[x]'; }
+${Q} .ws-cb input[aria-invalid='true'] + .ws-cbx { box-shadow: none; color: var(--ws-bad); }
+${Q} .ws-cb { width: 2.1rem; justify-items: start; }
+${Q} .ws-box { gap: .35rem; }
+${Q} .ws-boxtext { font-size: .92rem; }
+${Q} .ws-line--send { margin-top: .1rem; }
+${Q} .ws-send {
+  justify-self: start; padding: .58rem 1rem .54rem !important; border-radius: 0 !important;
+  background: var(--ww-ink-hot) !important; color: var(--ww-ink-on) !important;
+  font: 700 .95rem/1 var(--font-mono) !important; letter-spacing: .12em !important; text-transform: uppercase !important;
+  box-shadow: 0 0 22px var(--ww-glow-hot) !important;
+}
+${Q} .ws-send::before { content: '[ '; white-space: pre; }
+${Q} .ws-send::after { content: ' \\25B8 ]'; white-space: pre; }
+${Q} .ws-send:hover { background-color: hsl(var(--ww-ch-h) min(100%, calc(var(--ww-ch-s) * 1% + 34%)) 83%) !important; }
+${Q} .ws-send:focus-visible { outline-offset: 4px; }
+${Q} .ws-foot { display: none; }
+${Q} .ws-st { font: 400 clamp(2rem, 3vw, 3rem)/1 var(--font-display); letter-spacing: .05em; text-transform: uppercase; color: var(--ww-ink-hot); text-shadow: 0 0 10px var(--ww-glow-hot), 0 0 26px var(--ww-glow-soft); }
+${Q} .ws-st::after { content: ''; display: inline-block; width: .42em; height: .72em; margin-left: .12em; background: var(--ww-ink-hot); vertical-align: -.02em; animation: ws-blink 1.1s steps(1, end) infinite; }
+${Q} :is(.ws-to, .ws-desk)::before { content: '> '; white-space: pre; font-family: var(--font-mono); color: var(--ww-ink-hot); }
+${Q} .ws-to { font: 500 1.05rem/1.4 var(--font-body); }
+${Q} .ws-to b { color: var(--ww-ink-hot); font: 600 1rem/1.4 var(--font-mono); }
+${Q} .ws-desk { font: 500 .98rem/1.4 var(--font-body); }
+${Q} .ws-act { display: flex; flex-wrap: wrap; gap: .6rem; }
+${Q} .ws-act > span { display: none; }
+${Q} .ws-act button { padding: .45rem .7rem !important; box-shadow: inset 0 0 0 1.5px var(--ww-ink) !important; color: var(--ww-ink-hot) !important; font: 700 .84rem/1 var(--font-mono) !important; letter-spacing: .1em !important; text-transform: uppercase !important; }
+${Q} .ws-act button:hover { box-shadow: inset 0 0 0 1.5px var(--ww-ink-hot), 0 0 12px var(--ww-glow-soft) !important; }
+/* typed: each line wipes on left to right in steps, one after another (the picture fades in as the inset) */
+@keyframes ws-type { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+${W} .ws.ws-entering [data-ws-step] { animation: ws-type 300ms steps(16, end) both; animation-delay: calc(60ms + var(--i, 0) * 110ms); }
+@media (prefers-reduced-motion: reduce) {
+  ${Q} :is(.ws-title, .ws-st)::after { animation: none; }
+  ${W} .ws.ws-entering [data-ws-step] { animation: ws-in 120ms ease both; animation-delay: 0ms; }
+}
+`;
+
+  const OPTS = [
+    { id: 'a', badge: 'A', name: 'Channel page', css: CSS_A, ui: 'hide',
+      line: 'The pane changes channel to the sign-up: the picture goes, the form takes the whole pane. Two faces only (Bebas + Inter, P01). The field a phosphor outline, the boxes lit squares, Send = the lit Try key\'s inverse video. Most room and the plainest read; the plugin stays named in the title, its picture leaves.' },
+    { id: 'b', badge: 'B', name: 'Set-up menu', css: CSS_B, ui: 'dim',
+      line: 'Try = pressing MENU on the remote: the picture stays on the glass, dimmed, and the set\'s own framed menu opens over the pane (corner ticks, an inverse title bar, a ▸ on the line you are on, BACK: ESC in the footer). The most "part of the TV". Costs: a box over the picture (Law 6 says no floating panels; a set\'s menu IS the object\'s own), labels in Oswald = a third face.' },
+    { id: 'c', badge: 'C', name: 'Typed prompt', css: CSS_C, ui: 'pip',
+      line: 'The set types the sign-up line by line (each line wipes on, ~0.1 s apart), a block cursor after the title; prompts and keys in the house mono, the legal lines and notice plain. The picture shrinks to a small inset beside the title, so the plugin stays in view (DRIFT\'s run keeps playing). Most playful; the test visitors found mono toy-like on a $49 tool.' },
+  ];
+
+  const st = Object.assign({ slug: '', size: '1141x636', zoom: '', state: 'form' }, (() => { try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { return {}; } })());
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} };
+  // the frames share this origin's storage: decline the cookie banner once so it never covers the TV
+  try { if (!localStorage.getItem('ra-cookie-consent')) localStorage.setItem('ra-cookie-consent', 'declined'); } catch (e) {}
+
+  const box = document.getElementById('cards');
+  box.innerHTML = OPTS.map((o) => `
+    <section class="card" data-o="${o.id}">
+      <div class="head"><span class="badge">${o.badge}</span><h2>${o.name}</h2><button class="zoom" type="button">Zoom</button></div>
+      <p class="line">${o.line}</p>
+      <div class="vp"><iframe title="Homepage TV, sign-up ${o.name}"></iframe></div>
+      <p class="read">…</p>
+    </section>`).join('');
+  const cards = OPTS.map((o) => ({ o, el: box.querySelector(`[data-o="${o.id}"]`) }));
+  cards.forEach((c) => { c.frame = c.el.querySelector('iframe'); c.read = c.el.querySelector('.read'); });
+
+  const dims = () => st.size.split('x').map(Number);
+  const phone = () => dims()[0] < dims()[1];
+  function layout() {
+    const [W0, H] = dims();
+    const one = !!st.zoom;
+    cards.forEach((c) => (c.el.hidden = one && c.o.id !== st.zoom));
+    box.style.setProperty('--cols', one ? 1 : phone() ? 3 : 2);
+    requestAnimationFrame(() => cards.forEach((c) => {
+      if (c.el.hidden) return;
+      const vp = c.el.querySelector('.vp');
+      const k = Math.min(1, vp.clientWidth / W0);
+      vp.style.height = `${Math.round(H * k)}px`;
+      Object.assign(c.frame.style, { width: `${W0}px`, height: `${H}px`, transform: `scale(${k})` });
+      c.el.querySelector('.zoom').textContent = one ? 'Back to all three' : 'Zoom';
+    }));
+  }
+
+  /* ---- the sign-up in one frame ------------------------------------------------------------------------------ */
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  const reduced = (c) => { try { return c.frame.contentWindow.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
+  const later = (c, ms) => new Promise((r) => c.frame.contentWindow.setTimeout(r, reduced(c) ? Math.min(ms, 80) : ms));
+
+  function infoOf(panel) {
+    const tr = panel.querySelector('.ww-try');
+    const slug = panel.dataset.wwPanel;
+    return {
+      slug,
+      name: (panel.querySelector('.ww-pname') || {}).textContent?.trim() || slug,
+      free: !!tr && (tr.hasAttribute('data-gate-free') || /free download/i.test(tr.textContent)),
+      beta: slug === 'drift',
+      portrait: panel.classList.contains('is-portrait'),
+    };
+  }
+  function steps(ws) { ws.querySelectorAll('[data-ws-step]').forEach((n, i) => n.style.setProperty('--i', i)); }
+
+  async function open(c, { focus = false, anim = true } = {}) {
+    const doc = c.doc; if (!doc) return;
+    const panel = doc.querySelector('.ww-panel.is-active:not(.is-leaving)');
+    if (!panel || !panel.querySelector('.ww-try')) { c.sign = null; return; }
+    if (c.sign && c.sign.panel === panel && panel.classList.contains('is-signing')) return;
+    if (c.sign) closeNow(c);
+    const d = infoOf(panel);
+    const ws = doc.createElement('section');
+    ws.className = 'ws';
+    ws.setAttribute('aria-label', `Sign up for ${d.name}`);
+    ws.innerHTML = markup(d);
+    // B: one row for a portrait panel (window beside text), two for the rest (window over text)
+    if (c.o.ui === 'dim') ws.style.gridRow = d.portrait && !phone() ? '1' : '1 / span 2';
+    const sign = (c.sign = { panel, ws, d, last: '' });
+    steps(ws);
+    wireForm(c, sign);
+    if (anim) {
+      panel.classList.add('ws-leaving');
+      await later(c, 130);
+      if (c.sign !== sign) return;
+      panel.classList.remove('ws-leaving');
+      ws.classList.add('ws-entering');
+      if (c.o.ui === 'pip') panel.classList.add('ws-coming'); // the inset fades in as the lines type
+    }
+    panel.appendChild(ws);
+    panel.classList.add('is-signing');
+    if (focus) ws.querySelector('.ws-field').focus({ preventScroll: true });
+    if (anim) { await later(c, 1300); ws.classList.remove('ws-entering'); panel.classList.remove('ws-coming'); }
+    measureSoon(c);
+  }
+  function closeNow(c) {
+    const s = c.sign; if (!s) return;
+    s.ws.remove();
+    s.panel.classList.remove('is-signing', 'ws-leaving', 'ws-coming');
+    c.sign = null;
+  }
+  async function close(c, { anim = true, focus = true } = {}) {
+    const s = c.sign; if (!s) return;
+    if (anim) { s.ws.classList.add('ws-going'); await later(c, 130); }
+    if (c.sign !== s) return;
+    closeNow(c);
+    if (anim) { s.panel.classList.add('ws-coming'); later(c, 500).then(() => s.panel.classList.remove('ws-coming')); }
+    const tr = s.panel.querySelector('.ww-try');
+    if (focus && tr) tr.focus({ preventScroll: true });
+    measureSoon(c);
+  }
+
+  function wireForm(c, s) {
+    const ws = s.ws, q = (sel) => ws.querySelector(sel);
+    const form = q('[data-ws-form]'), email = q('.ws-field'), send = q('[data-ws-send]');
+    const terms = q('.ws-line--terms input'), news = q('.ws-line--news input');
+    const errOf = (input) => ws.querySelector('#' + input.getAttribute('aria-describedby'));
+    const setErr = (input, text) => {
+      errOf(input).textContent = text;
+      if (text) input.setAttribute('aria-invalid', 'true'); else input.removeAttribute('aria-invalid');
+    };
+    email.addEventListener('input', () => setErr(email, ''));
+    terms.addEventListener('change', () => terms.checked && setErr(terms, ''));
+    news.addEventListener('change', () => news.checked && setErr(news, ''));
+    q('[data-ws-back]').addEventListener('click', () => close(c));
+    // every refusal at once, each at its own field; the focus goes to the first (P06)
+    s.validate = () => {
+      const v = email.value.trim();
+      const bad = [];
+      setErr(email, EMAIL_RE.test(v) ? '' : v ? 'That doesn’t look like an email.' : 'Enter your email.');
+      if (!EMAIL_RE.test(v)) bad.push(email);
+      setErr(terms, terms.checked ? '' : 'Tick the box to agree to the terms.');
+      if (!terms.checked) bad.push(terms);
+      setErr(news, news.required && !news.checked ? 'Tick the box to get your download.' : '');
+      if (news.required && !news.checked) bad.push(news);
+      return bad;
+    };
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const bad = s.validate();
+      if (bad.length) { bad[0].focus({ preventScroll: true }); measureSoon(c); return; }
+      send.disabled = true; send.textContent = 'Sending…';
+      await later(c, 650); // NOTHING IS SENT: the bench stands in for the worker's answer
+      if (c.sign !== s) return;
+      showSent(c, s, email.value.trim(), true);
+    });
+    q('[data-ws-resend]').addEventListener('click', async (e) => {
+      const msg = q('[data-ws-msg]'); e.currentTarget.disabled = true; msg.textContent = 'Sending…';
+      await later(c, 600);
+      msg.textContent = 'Sent again. Look in Promotions or Spam too.'; e.currentTarget.disabled = false;
+    });
+    q('[data-ws-wrong]').addEventListener('click', () => {
+      q('[data-ws-sent]').hidden = true; form.hidden = false; q('[data-ws-msg]').textContent = ''; ws.classList.remove('is-sent');
+      send.disabled = false; send.textContent = 'Send my link';
+      email.focus(); email.select(); measureSoon(c);
+    });
+  }
+  function showSent(c, s, addr, focus) {
+    const ws = s.ws;
+    ws.querySelector('[data-ws-form]').hidden = true;
+    const sent = ws.querySelector('[data-ws-sent]');
+    ws.querySelector('[data-ws-to]').textContent = addr;
+    ws.querySelector('[data-ws-desk]').hidden = !phone();
+    sent.hidden = false;
+    ws.classList.add('is-sent');
+    // the new lines come on like the form's did
+    ws.classList.remove('ws-entering'); void ws.offsetWidth; ws.classList.add('ws-entering');
+    c.frame.contentWindow.setTimeout(() => ws.classList.remove('ws-entering'), 1100);
+    if (focus) ws.querySelector('.ws-st').focus({ preventScroll: true });
+    measureSoon(c);
+  }
+  // the bench's State buttons: no motion, no focus (a frame must not take the focus from the bench)
+  async function setState(c, state) {
+    if (state === 'plugin') { await close(c, { anim: false, focus: false }); return; }
+    await open(c, { anim: false });
+    const s = c.sign; if (!s) { measureSoon(c); return; }
+    const ws = s.ws, email = ws.querySelector('.ws-field');
+    ws.querySelector('[data-ws-form]').hidden = false;
+    ws.querySelector('[data-ws-sent]').hidden = true;
+    ws.classList.remove('is-sent');
+    ws.querySelectorAll('.ws-err').forEach((n) => (n.textContent = ''));
+    ws.querySelectorAll('[aria-invalid]').forEach((n) => n.removeAttribute('aria-invalid'));
+    ws.querySelectorAll('input[type=checkbox]').forEach((n) => (n.checked = false));
+    email.value = '';
+    if (state === 'errors') { email.value = 'dan@studio'; s.validate(); }
+    if (state === 'sent') { email.value = 'dan@studio.com'; ws.querySelector('.ws-line--terms input').checked = true; showSent(c, s, email.value, false); ws.classList.remove('ws-entering'); }
+    measureSoon(c);
+  }
+
+  /* ---- frames ------------------------------------------------------------------------------------------------ */
+  function send(c, type, detail) {
+    const win = c.frame.contentWindow, wallEl = win && win.document.querySelector(WALL);
+    if (wallEl) wallEl.dispatchEvent(new win.CustomEvent(type, { detail }));
+  }
+  function wire(c) {
+    const doc = c.doc = c.frame.contentDocument, win = c.frame.contentWindow;
+    const s = doc.createElement('style');
+    s.id = 'wwsignup';
+    s.textContent = c.o.css;
+    doc.head.appendChild(s);
+    // Try: the on-screen sign-up instead of TrialGateModal / DRIFT's link (capture on the window: before the page's own)
+    win.addEventListener('click', (e) => {
+      const t = e.target.closest && e.target.closest('.ww-panel .ww-try');
+      if (!t || e.button !== 0 || e.metaKey || e.ctrlKey) return;
+      e.preventDefault(); e.stopImmediatePropagation();
+      open(c, { focus: true });
+    }, true);
+    win.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape' || !c.sign) return;
+      e.preventDefault(); e.stopImmediatePropagation();
+      close(c);
+    }, true);
+    // another channel: the sign-up leaves with its plugin
+    new win.MutationObserver(() => { if (c.sign && !c.sign.panel.classList.contains('is-active')) closeNow(c); })
+      .observe(doc.querySelector(WALL), { subtree: true, attributes: true, attributeFilter: ['class'] });
+    if (!document.querySelector('#chan button')) buildChannels(doc);
+    light(c);
+  }
+  function waitFor(c, tries = 0) {
+    const doc = c.frame.contentDocument;
+    const wallEl = doc && doc.location.href !== 'about:blank' && doc.querySelector(WALL);
+    const ok = wallEl && wallEl.dataset.wwLib === 'on';
+    if (ok && doc !== c.old) return wire(c);
+    if (tries < 200) setTimeout(() => waitFor(c, tries + 1), 150);
+  }
+  function load() {
+    cards.forEach((c) => {
+      c.old = c.frame.contentDocument; c.doc = null; c.sign = null;
+      c.frame.src = '/' + (st.slug ? `?plugin=${encodeURIComponent(st.slug)}` : '');
+      waitFor(c);
+    });
+    layout();
+  }
+  function buildChannels(doc) {
+    const slugs = [...doc.querySelectorAll('[data-ww-pick]')].map((a) => a.getAttribute('href').replace(/^\//, ''));
+    const names = [...doc.querySelectorAll('[data-ww-pick] .ww-name')].map((n) => n.textContent.trim());
+    if (!st.slug) st.slug = slugs[0];
+    document.getElementById('chan').innerHTML = slugs.map((s, i) => `<button type="button" data-slug="${s}">${names[i] || s}</button>`).join('');
+    document.querySelectorAll('#chan button').forEach((b) => (b.onclick = () => { st.slug = b.dataset.slug; save(); cards.forEach(light); paint(); }));
+    paint();
+  }
+  function light(c) {
+    if (c.sign) closeNow(c);
+    const wallEl = c.doc && c.doc.querySelector(WALL);
+    if (wallEl) c.wallH = wallEl.getBoundingClientRect().height; // the TV's own height, to see if a sign-up grows it
+    send(c, 'ww:select', { slug: st.slug, ...(phone() ? { view: 'panel' } : {}) });
+    // the channel change takes ~0.6 s (and a phone's pane its slide): then the state
+    setTimeout(() => setState(c, st.state), 900);
+  }
+
+  /* ---- what each look costs: its size, whether it stays on the glass, the smallest type ----------------------- */
+  const timers = new Map();
+  function measureSoon(c) { clearTimeout(timers.get(c)); timers.set(c, setTimeout(() => measure(c), 450)); }
+  function measure(c) {
+    const doc = c.doc; if (!doc) return;
+    const win = c.frame.contentWindow;
+    const s = c.sign;
+    if (!s) { c.read.textContent = st.state === 'plugin' ? 'the plugin, as today (press its Try)' : 'no sign-up on this channel'; return; }
+    const wall = doc.querySelector(WALL);
+    const wr = wall.getBoundingClientRect(), cs = win.getComputedStyle(wall);
+    const glassBottom = wr.bottom - parseFloat(cs.paddingBottom), glassTop = wr.top + parseFloat(cs.paddingTop);
+    // the sign-up's own box: its frame (B) and every line it shows, C's inset too (a grid cell can be shorter than
+    // what overflows it, so the cells' rects are not enough)
+    const parts = [s.ws, ...s.ws.querySelectorAll('[data-ws-step]'), ...(c.o.ui === 'pip' ? [s.panel.querySelector('.ww-ui')] : [])]
+      .filter((n) => n && n.getClientRects().length).map((n) => n.getBoundingClientRect()).filter((q) => q.width > 4 && q.height > 0);
+    const r = parts.reduce((u, q) => ({ left: Math.min(u.left, q.left), top: Math.min(u.top, q.top), right: Math.max(u.right, q.right), bottom: Math.max(u.bottom, q.bottom) }),
+      { left: Infinity, top: Infinity, right: -Infinity, bottom: -Infinity });
+    r.width = r.right - r.left; r.height = r.bottom - r.top;
+    const sendEl = s.ws.querySelector(s.ws.querySelector('[data-ws-sent]').hidden ? '.ws-send' : '.ws-act');
+    const sr = sendEl.getBoundingClientRect();
+    let small = 99;
+    s.ws.querySelectorAll('h3, p, label, a, button, .ws-field, .ws-lbl, .ws-t2').forEach((n) => {
+      if (!n.offsetParent || !n.textContent.trim() && !n.matches('.ws-field')) return;
+      const f = parseFloat(win.getComputedStyle(n).fontSize); if (f < small) small = f;
+    });
+    const over = Math.round(r.bottom - glassBottom), under = Math.round(glassTop - r.top);
+    const fit = over > 0 ? `<span class="bad">${over} px past the glass</span>` : under > 0 ? `<span class="bad">${under} px over the top</span>` : `<span class="good">on the glass</span> (${Math.round(glassBottom - r.bottom)} px spare)`;
+    // the TV is one screen tall: a sign-up that grows it pushes its bottom past the window
+    const grew = Math.round(wr.height - (c.wallH || wr.height)), past = Math.round(wr.bottom - win.innerHeight);
+    const tall = past > 1 ? ` · <span class="bad">the TV runs ${past} px past the window</span>` : grew > 1 ? ` · <span class="bad">the TV grows ${grew} px</span>` : '';
+    const fold = sr.bottom > win.innerHeight ? ` · <span class="bad">${sendEl.classList.contains('ws-send') ? 'Send' : 'Resend'} ${Math.round(sr.bottom - win.innerHeight)} px below the window</span>` : '';
+    c.read.innerHTML = `sign-up ${Math.round(r.width)}×${Math.round(r.height)} px · ${fit}${tall}${fold} · smallest type ${small.toFixed(1)} px`;
+  }
+
+  function paint() {
+    document.querySelectorAll('#chan button').forEach((b) => b.classList.toggle('on', b.dataset.slug === st.slug));
+    document.querySelectorAll('#size button').forEach((b) => b.classList.toggle('on', b.dataset.s === st.size));
+    document.querySelectorAll('#state button').forEach((b) => b.classList.toggle('on', b.dataset.st === st.state));
+  }
+  document.querySelectorAll('#size button').forEach((b) => (b.onclick = () => { st.size = b.dataset.s; save(); paint(); load(); }));
+  document.querySelectorAll('#state button').forEach((b) => (b.onclick = () => { st.state = b.dataset.st; save(); paint(); cards.forEach((c) => setState(c, st.state)); }));
+  document.getElementById('replay').onclick = () => cards.forEach(async (c) => {
+    await close(c, { anim: false, focus: false });
+    setTimeout(() => open(c, { anim: true }), 350);
+  });
+  cards.forEach((c) => (c.el.querySelector('.zoom').onclick = () => { st.zoom = st.zoom ? '' : c.o.id; save(); layout(); cards.forEach(measureSoon); }));
+  addEventListener('resize', layout);
+  paint();
+  load();
+})();
+</script>
+</body>
+</html>
