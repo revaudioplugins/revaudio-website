@@ -216,10 +216,14 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
     - A channel change lands with a short tear about one time in three (`--ww-gl-chg-chance` .33), only
       once its picture is in place and the tube is lit: the change's motion never changes, and the next
       pick stops it. The first light is not a change (a cold `?plugin=` cuts, never tears).
-    - Never on what is read (the menu, the lit name, the blurb, the price, the keys, the links), never on
-      what the pointer is on or the focus is in. Stepped (`steps(1, end)`), `translate` + `filter` only
+    - The reading, rarely (Dan 2026-11-01, Phase 5: "the reading should glitch too", over the test
+      visitors' "name only"): the lit name (the panel's, and the lit row's on a laptop) or the blurb jumps
+      like a name, `--ww-gl-read-chance` .25 of the picks, and only once the plugin has been on the glass
+      `--ww-gl-read-after-s` 20 s; never with the pointer on or the focus in its panel.
+    - Never on the menu, the five words, the price, the keys, the links or a form, never on what the
+      pointer is on or the focus is in. Stepped (`steps(1, end)`), `translate` + `filter` only
       (never transform or opacity: the motion's), nothing left behind. No noise, no snow. Off under
-      reduced motion, high contrast, the wood wall, a hidden tab, the TV off screen and before the
+      reduced motion, high contrast, forced colours (Windows High Contrast), the wood wall, a hidden tab, the TV off screen and before the
       power-on, and the wait starts over once the TV is on show again: a visitor who glides in from the
       top (the PLUGINS chip) gets a full 12-25 s before the first, never one as the tube lights (it used to
       come any time 0-25 s after). The times are read when they come due, so the bench's sliders take

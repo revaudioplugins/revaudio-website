@@ -43,6 +43,15 @@ Files: `src/components/WordWall.astro`, `src/components/TrialGateModal.astro` (+
   "stays closed while the TV is in view" test is laptop-only); `smoke.spec.ts` fails 3, none from this work: /store
   (the test still expects `/?...#plugins`, /store goes to /plugins since 11-02) on both projects, and /drift on
   mobile-safari (WebKit's own video "placard" icons). Not checked: a real iPhone / Safari, the DRIFT box by Dan's eye.
+- 2026-11-08: rebased on main `747e059` (lcd-polish's TV keys A are live: WordWall is free). Step 1 BUILT
+  (`WordWall.astro`): the reading glitches, rarely: `glRead()` = the lit panel's name, its blurb and the lit row's
+  name, `--ww-gl-read-chance` .25 of the idle picks, only after `--ww-gl-read-after-s` 20 s on the glass, never with
+  the pointer on or the focus in its panel; every glitch now also off under forced colours. DESIGN.md §4 says so;
+  design-language §3's exception got the same line in `revaudio-shared` (commit `15b1bc5` in a detached temp worktree,
+  NOT PUSHED: auto mode denied the push to shared main; Dan's `!` line). Checks (dev :4480, glitch times shortened
+  through the TV's own variables): left alone = only reading glitches on `.ww-pname` / `.ww-blurb` / the lit
+  `.ww-name`; the pointer on the panel = none of those; read-after 20 s = none in the first 6 s; forced colours = none;
+  reduced motion = none.
 - Next: step 00 (the baseline, emails per 1,000 home-page visitors) needs live numbers (the worker's leads + the
   Cloudflare visit counts); then steps 1-10 in the plan's order. Nothing pushed to main; main = live on Dan's word.
 

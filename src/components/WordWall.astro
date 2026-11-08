@@ -824,11 +824,15 @@ const first = items[0]?.slug ?? '';
        few px with a red / cyan fringe (the house glitch of DRIFT's creators, far smaller), a band of the lit plugin's
        picture tears sideways (a canvas over it copies the picture's own pixels, DRIFT's run included; a picture with
        nothing to copy yet jolts whole), or the whole screen flickers / rolls a band of light down the glass (under
-       the text, like the lines). Never on what is read (the blurb, the price, the keys, the links, the menu, the lit
-       name), never on what the pointer is on or the focus is in; touching the TV stops one at once. A channel change
+       the text, like the lines). The reading too, rarely (Dan 2026-11-01, Phase 5: "the reading should glitch too"):
+       the lit name or the blurb jumps the same way, --ww-gl-read-chance of the picks, and only once the plugin has
+       been on the glass --ww-gl-read-after-s. Never the price, the five words, the keys, the links or the menu,
+       never on what the pointer is on or the focus is in (for the reading: anywhere in its panel); touching the TV
+       stops one at once. A channel change
        lands with a short tear now and then (--ww-gl-chg-chance), once its picture is in place: the change's motion
        never changes, and the next pick stops it. Stepped, translate + filter only (never transform or opacity: the
-       motion's), nothing left behind. No noise, no snow (2026-10-18). Off under reduced motion, high contrast, the
+       motion's), nothing left behind. No noise, no snow (2026-10-18). Off under reduced motion, high contrast, forced
+       colours (Windows High Contrast: the walk of 11-01 counted 8 in 12 s there), the
        wood wall, a hidden tab, the TV off screen and before its power-on, and the wait starts over once it is on
        show again (a visitor gliding in gets the full wait, never one as the tube lights). The times are read when
        they come due (the bench's sliders take within 2 s). */
@@ -845,7 +849,9 @@ const first = items[0]?.slug ?? '';
     let glTouched = -Infinity; // the last time the TV was touched
     let glFrom = performance.now(); // when this wait began...
     let glU = Math.random(); // ...and where between the shortest and the longest it ends
-    const glShown = () => !reduced.matches && !still() && wall.dataset.wwPower === 'on'; // on show, its tube lit
+    let glLit = performance.now(); // when the plugin on the glass came on (the reading waits --ww-gl-read-after-s)
+    const forced = window.matchMedia('(forced-colors: active)');
+    const glShown = () => !reduced.matches && !forced.matches && !still() && wall.dataset.wwPower === 'on'; // on show, its tube lit
     const glOk = () => glShown() && stage === 'rest';
     const glStop = () => {
       const off = glOff;
@@ -990,14 +996,24 @@ const first = items[0]?.slug ?? '';
       const m = p ? mediaOf(p) : null;
       return (m instanceof HTMLImageElement || m instanceof HTMLVideoElement) && m.getClientRects().length > 0 && !m.matches(':hover') ? m : null;
     };
-    // one glitch now: 'name', 'picture', 'screen' (a flicker or a roll), 'flicker' or 'roll'
+    // the reading that may glitch: the lit plugin's name (its panel's and, on a laptop, the lit row's) and its
+    // blurb, once it has been on the glass a while, and never with the pointer on or the focus in its panel
+    const glRead = () => {
+      const p = onGlass === LIST ? null : panelOf(onGlass);
+      if (!p || p.matches(':hover, :focus-within')) return [];
+      if (performance.now() - glLit < Math.max(0, glN('--ww-gl-read-after-s', 20)) * 1000) return [];
+      const row = rows.find((a) => a.classList.contains('is-lit') && !a.matches(':hover, :focus-within'));
+      return [p.querySelector<HTMLElement>('.ww-pname'), p.querySelector<HTMLElement>('.ww-blurb'), row?.querySelector<HTMLElement>('.ww-name')]
+        .filter((el): el is HTMLElement => !!el && el.getClientRects().length > 0);
+    };
+    // one glitch now: 'name', 'read', 'picture', 'screen' (a flicker or a roll), 'flicker' or 'roll'
     const glitch = (kind: string, idle: boolean) => {
       const px = Math.max(0, glN('--ww-gl-px', 3));
       const ms = Math.max(16, glN('--ww-gl-ms', 150));
-      if (kind === 'name') {
-        const names = glNames();
-        const el = names[Math.floor(Math.random() * names.length)];
-        if (el) glPlay('name', ms, idle, () => glJump(el, px, ms));
+      if (kind === 'name' || kind === 'read') {
+        const els = kind === 'read' ? glRead() : glNames();
+        const el = els[Math.floor(Math.random() * els.length)];
+        if (el) glPlay(kind, ms, idle, () => glJump(el, px, ms));
       } else if (kind === 'picture') {
         const m = glPic();
         if (m && glCopy(m)) glPlay('tear', ms, idle, () => glTear(m, px, ms));
@@ -1009,6 +1025,7 @@ const first = items[0]?.slug ?? '';
     };
     // by itself: what is on show decides (a phone's list: a name or the screen; its plugin: the picture or the screen)
     const glPick = () => {
+      if (Math.random() < glN('--ww-gl-read-chance', 0.25) && glRead().length) return 'read'; // rarely, the reading
       const kinds = ['screen'];
       if (glNames().length) kinds.push('name');
       if (glPic()) kinds.push('picture');
@@ -1045,6 +1062,7 @@ const first = items[0]?.slug ?? '';
     ['pointerdown', 'pointermove', 'touchstart', 'wheel', 'keydown', 'focusin'].forEach((t) => wall.addEventListener(t, glTouch, { passive: true }));
     // a change landed: now and then its picture locks in with a short tear (never while it travels)
     const landed = () => {
+      glLit = performance.now();
       rest();
       if (onGlass !== LIST && glOk() && Math.random() < glN('--ww-gl-chg-chance', 0.33)) glitch('picture', false);
     };
@@ -2000,6 +2018,8 @@ const first = items[0]?.slug ?? '';
     --ww-gl-roll-ms: 900;     /* a band of light rolling down the glass... */
     --ww-gl-roll-light: 0.1;  /* ...and the light it adds (white, at its middle) */
     --ww-gl-chg-chance: 0.33; /* a channel change landing with a short tear: 0 = never, 1 = every time */
+    --ww-gl-read-chance: 0.25; /* the share of the glitches that take the reading (the lit name or the blurb) */
+    --ww-gl-read-after-s: 20; /* ...and only once the plugin has been on the glass this long */
   }
   /* the tear: a canvas over the lit plugin's picture while a band of it tears (the script lays it there) */
   .ww > :global(.ww-gl-tear) {
