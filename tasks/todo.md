@@ -193,6 +193,14 @@ Steps:
             stills can't show (findings.json with repros). Runs every round after the fixer, before Dan sees it; the
             main session verifies each finding before a fix. Briefs: `tools/_home-opening/team/player-brief.md`
             (and the critics' `critic-brief.md` beside it).
+- [ ] 2 + 3 (Dan 2026-11-08: "go"; roster approved, CC0 models only for v1, the phone team started alongside).
+      Team: the main session builds the export + parity and integrates; phase 1 = an asset scout (Opus: CC0 desk +
+      chair candidates from Poly Haven, licence log, logo check, web-size glb, in-room stills for Dan's pick) and a
+      bake engineer (Opus, worktree `home-bake`: the Blender bake per light group, the 8-bit packing, the three.js
+      combine, the units / π parity on a test wall); the phone team (Opus: a phone designer in worktree `home-phone`,
+      the phone tier + portrait camera options for Dan; a phone tester: today's baseline on WebKit 390x844 + the iOS
+      Simulator, then the designer's build). Phase 2, once A and B exist: the player, the 5 critics, the fixer.
+      Three.js's loaders vendored (GLTFLoader, KTX2Loader + basis, meshopt decoder, GLTFExporter; 0.185.1, MIT).
 - [ ] 2. The skeleton exported to Blender (geometry, slot names, camera walk, lights); parity check against the
       bench. (Blender itself: installed 2026-11-04.)
 - [ ] Owed Dan's OK (production): an R2 bucket + `assets.revaudio.net`, its cache / CORS rules, the three CSP
