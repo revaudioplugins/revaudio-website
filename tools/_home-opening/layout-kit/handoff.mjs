@@ -53,7 +53,7 @@ for (const [w, h] of [[1141, 636], [1440, 900], [1920, 1080], [390, 844]]) {
     fs.writeFileSync(path.join(out, `handoff-${w}x${h}-live.png`), b);
     fs.writeFileSync(path.join(out, `handoff-${w}x${h}-diff.png`), Buffer.from(r.png, 'base64'));
   }
-  console.log(`${w}x${h}`.padEnd(10), `${r.pct.toFixed(2)} % of pixels differ (> ${tol})`, errors.length ? errors : 'no page errors');
+  console.log('%s %s', `${w}x${h}`.padEnd(10), `${r.pct.toFixed(2)} % of pixels differ (> ${tol})`, errors.length ? errors : 'no page errors');
   await ctx.close();
 }
 await browser.close();
