@@ -66,6 +66,10 @@ when you finish.
   Dan's laptop. Look at every still you make.
 - `node layout-kit/check.mjs <layout.json>`: collisions, and how big each must-stay piece is on screen at walk
   0 / 35 / 70 / 100 % (`out of frame` or `WxHpx`).
+- For the builder, after the room itself changes: `node layout-kit/handoff.mjs [layout.json] [--out <dir>]` (the TV
+  hand-off: the walk's last 3D frame against the live TV at 1141 / 1440 / 1920 / phone; baseline 2026-11-08: 1.05 /
+  0.68 / 0.45 / 2.57 % of pixels differ by more than 24, all on sharp edges, from resampling) and
+  `node layout-kit/catalog.mjs` (regenerates `catalog.json` + `start-layout.json`).
 
 ## What to hand in (in your own folder only)
 

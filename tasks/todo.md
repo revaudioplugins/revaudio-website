@@ -148,8 +148,11 @@ Steps:
         contact shadows / AO; MSAA (the composer's target has none today).
       - The critics team (decisions above) scores the renders on the look spec's 7 lines (7+ each, up to 2 fix rounds);
         then Dan sees what passed, with their notes.
-      - Checks: `layout-kit/check.mjs` (must-stays at walk 0 / 35 / 70 / 100 %), the TV hand-off diff, no page errors,
-        the frame rate on Dan's laptop.
+      - Checks: `layout-kit/check.mjs` (must-stays at walk 0 / 35 / 70 / 100 %); `layout-kit/handoff.mjs` (the TV
+        hand-off; baseline 2026-11-08: 1.05 / 0.68 / 0.45 / 2.57 % of pixels at 1141 / 1440 / 1920 / phone differ by
+        more than 24, all on sharp edges, from resampling; the look pass must not raise it); no page errors; the frame
+        rate on Dan's laptop.
+      - Downloads (texture sets etc.): a plain user agent (`RevAudio-research/1.0`), never Dan's email (R1 slipped once).
 - [ ] 2. The skeleton exported to Blender (geometry, slot names, camera walk, lights); parity check against the
       bench. (Blender itself: installed 2026-11-04.)
 - [ ] Owed Dan's OK (production): an R2 bucket + `assets.revaudio.net`, its cache / CORS rules, the three CSP
