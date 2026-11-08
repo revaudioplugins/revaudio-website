@@ -197,7 +197,7 @@ Steps:
   lets set up only the laptop then we work on the phone". The same-room-lighter plan is dropped: the phone designer was
   stopped mid-check, its unfinished phone tier parked on branch `look/home-phone` (`f909ce0`, pushed; room.html +99/-17,
   `assets/pbr/phone/`); the phone tester's baseline stays as reference (its PH-02 address-bar fix and the still-first
-  plan help laptops too). v1 = laptop / desktop; phones keep today's homepage until their own scene (to confirm with Dan).
+  plan help laptops too). v1 = laptop / desktop; phones keep today's homepage until their own scene (Dan: yes, 2026-11-08).
 - [ ] 2 + 3 (Dan 2026-11-08: "go"; roster approved, CC0 models only for v1, the phone team started alongside).
       Team: the main session builds the export + parity and integrates; phase 1 = an asset scout (Opus: CC0 desk +
       chair candidates from Poly Haven, licence log, logo check, web-size glb, in-room stills for Dan's pick) and a
