@@ -15,6 +15,7 @@
      exact pixels), lamp shadows, a wet floor, the room's own reflections; the bench's Look chip shows the blocks again. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<style>html, body { background: #0b0a09; }</style> <!-- dark from the first paint, before the fonts' stylesheet (Safari painted white) -->
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&family=Yellowtail&display=swap" rel="stylesheet">
 <script type="importmap">
   { "imports": { "three": "./vendor/three/build/three.module.min.js", "three/addons/": "./vendor/three/examples/jsm/" } }
@@ -60,7 +61,7 @@
   /* fades in (out at once): the film's TV is the 1920 page, the live one follows the screen's own layout */
   .tv-live.is-on { opacity: 1; transition: opacity .45s ease-out; }
 
-  .read-b { position: absolute; left: 0; right: 0; text-align: center; pointer-events: none; padding: 0 16px; opacity: 0; } /* the script fades it in */
+  .read-b { position: absolute; left: 0; right: 0; text-align: center; pointer-events: none; padding: 0 16px; opacity: 0; will-change: opacity; } /* the script fades it in (its own layer: Safari redrew its shadows as the fade crossed 0 or 1) */
   .rb-kick { margin: 0 0 .35em; font: 600 clamp(11px, 1.05vw, 15px)/1 Inter, sans-serif; letter-spacing: .32em; color: var(--brass-bright); }
   .rb-head { margin: 0; font: 400 clamp(54px, 8.6vw, 156px)/.86 "Bebas Neue", sans-serif; letter-spacing: .02em; color: #efe3c6;
     filter: drop-shadow(0 1px 0 rgba(0,0,0,.9)) drop-shadow(0 0 14px rgba(0,0,0,.75)) drop-shadow(0 10px 18px rgba(0,0,0,.6)); }
@@ -553,11 +554,14 @@ function labelSprite(text, cat, k = 1) {
   sp.scale.set(1.3 * k, 0.23 * k, 1); sp.renderOrder = 10; sp.userData.k = k;
   return sp;
 }
+// the REVAUDIO neon, drawn on black and added onto the wall (R.signMat): its glow laid by hand in wide, faint strokes,
+// the same in every engine (Safari draws shadowBlur twice as heavy, and a see-through canvas uploads speckled there)
 const signTex = () => canvasTex(1400, 340, (g) => {
+  g.fillStyle = '#000'; g.fillRect(0, 0, 1400, 340);
   g.font = '400 250px "Bebas Neue", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
-  g.shadowColor = 'rgba(255,90,40,0.9)'; g.shadowBlur = 40;
+  g.strokeStyle = 'rgba(255,90,40,0.05)'; for (let i = 9; i >= 1; i--) { g.lineWidth = 16 + i * 9; g.strokeText('REVAUDIO', 700, 180); }
   g.strokeStyle = '#ff5a2a'; g.lineWidth = 16; g.strokeText('REVAUDIO', 700, 180);
-  g.shadowBlur = 0; g.strokeStyle = '#ffd9c4'; g.lineWidth = 5; g.strokeText('REVAUDIO', 700, 180);
+  g.strokeStyle = '#ffd9c4'; g.lineWidth = 5; g.strokeText('REVAUDIO', 700, 180);
 }, false);
 function applyTvTexture() {
   // the captured live TV with the bezel's round corners cut out
@@ -948,12 +952,16 @@ const PATCHES = (() => {
       }
     }
   }), { colorSpace: THREE.NoColorSpace });
-  const rough = Object.assign(canvasTex(256, 256, (g, w, h) => {
+  // (two maps: the roughness opaque, the specular share alone in the other's alpha; in one map the low alpha left the
+  // roughness speckled after Safari's upload)
+  const fromWet = (px) => Object.assign(canvasTex(256, 256, (g, w, h) => {
     g.drawImage(wet.image, 0, 0); const im = g.getImageData(0, 0, w, h), d = im.data;
-    for (let i = 0; i < d.length; i += 4) { const k = d[i] / 255; d[i] = d[i + 1] = d[i + 2] = Math.round(255 * (0.75 - 0.53 * k)); d[i + 3] = Math.round(255 * (0.12 + 0.88 * k)); }
+    for (let i = 0; i < d.length; i += 4) px(d, i, d[i] / 255);
     g.putImageData(im, 0, 0);
   }), { colorSpace: THREE.NoColorSpace });
-  return { wet, rough };
+  const rough = fromWet((d, i, k) => { d[i] = d[i + 1] = d[i + 2] = Math.round(255 * (0.75 - 0.53 * k)); d[i + 3] = 255; });
+  const spec = fromWet((d, i, k) => { d[i] = d[i + 1] = d[i + 2] = 255; d[i + 3] = Math.round(255 * (0.12 + 0.88 * k)); });
+  return { wet, rough, spec };
 })();
 
 // ---------- make the room once ----------
@@ -985,7 +993,7 @@ function createRoom() {
   R.floorMats = {
     // dark sealed concrete (physical, for its specular map): the pools are the lamps' highlights and reflections in the wet
     // patches, not a lit grey; the dry stretches between them keep a quarter of the specular
-    concrete: new THREE.MeshPhysicalMaterial({ ...pbr('floor'), roughnessMap: PATCHES.rough, specularIntensityMap: PATCHES.rough, color: 0x3c3c3a, roughness: 1, envMapIntensity: 0.4 }),
+    concrete: new THREE.MeshPhysicalMaterial({ ...pbr('floor'), roughnessMap: PATCHES.rough, specularIntensityMap: PATCHES.spec, color: 0x3c3c3a, roughness: 1, envMapIntensity: 0.4 }),
     checker: new THREE.MeshStandardMaterial({ map: checkerTex(), roughness: 0.7, metalness: 0.08 }),
   };
   R.floorMat = R.floorMats.concrete;
@@ -1188,15 +1196,17 @@ function createRoom() {
   R.outLight = new THREE.SpotLight(0x5c6ab4, 60, 16, Math.PI / 4, 0.6, 2);
   R.outLabel = labelSprite('OUTSIDE · the night through the door', 'surface'); R.labels.push(R.outLabel);
   // seen almost edge-on from the aisle, the door reads by its light: the opening glows night-blue, a pool of it on the floor
-  const softTex = canvasTex(128, 128, (g) => { const gr = g.createRadialGradient(64, 64, 0, 64, 64, 64); gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, 128, 128); }, false);
-  const airTex = canvasTex(4, 128, (g) => { const gr = g.createLinearGradient(0, 0, 0, 128); gr.addColorStop(0, 'rgba(255,255,255,0.35)'); gr.addColorStop(1, 'rgba(255,255,255,1)'); g.fillStyle = gr; g.fillRect(0, 0, 4, 128); }, false);
+  // (their falloffs are opaque, white to black, and added: a see-through canvas gradient uploads speckled in Safari)
+  const softTex = canvasTex(128, 128, (g) => { const gr = g.createRadialGradient(64, 64, 0, 64, 64, 64); gr.addColorStop(0, '#fff'); gr.addColorStop(1, '#000'); g.fillStyle = gr; g.fillRect(0, 0, 128, 128); }, false);
+  const airTex = canvasTex(4, 128, (g) => { const gr = g.createLinearGradient(0, 0, 0, 128); gr.addColorStop(0, '#595959'); gr.addColorStop(1, '#fff'); g.fillStyle = gr; g.fillRect(0, 0, 4, 128); }, false);
+  softTex.colorSpace = airTex.colorSpace = THREE.NoColorSpace; // weights, not colours
   const additive = (map) => new THREE.MeshBasicMaterial({ map, color: 0x5c6ab4, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }); // the street light's own colour
   R.doorAir = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), additive(airTex)); R.doorAir.rotation.y = -Math.PI / 2;
   R.pool = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), additive(softTex)); R.pool.rotation.x = -Math.PI / 2;
   scene.add(R.curtain, R.drum, ...R.rails, R.doorLabel, R.outGround, R.backdrop, R.outLight, R.outLight.target, R.outLabel, R.doorAir, R.pool);
 
   // the REVAUDIO neon: on a wall (or over the aisle), movable
-  R.signMat = new THREE.MeshBasicMaterial({ map: signTex(), transparent: true, depthWrite: false, toneMapped: false, side: THREE.DoubleSide });
+  R.signMat = new THREE.MeshBasicMaterial({ map: signTex(), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false, side: THREE.DoubleSide });
   R.sign = new THREE.Mesh(new THREE.PlaneGeometry(3.1, 0.75), R.signMat);
   R.signItem = { kind: 'sign', id: 'SIGN', s: { label: 'REVAUDIO neon' }, obj: R.sign, mount: 'wall' };
   R.sign.userData.item = R.signItem; R.items.push(R.signItem);
@@ -1390,7 +1400,7 @@ function arrange() {
   rep(R.floorMat, Wd / tile, Lr / tile);
   // the patches on the concrete's roughness in the WET layer's world mapping (xz / 7): the plane's u runs x / Wd + 0.5, its
   // v from z = Lr (0) down to 0 (1). Shine scales the patches' 0.22-0.75 (x 1 at Dan's 0.62); the checker keeps its own
-  PATCHES.rough.repeat.set(Wd / 7, -Lr / 7); PATCHES.rough.offset.set(-0.5 * Wd / 7, Lr / 7);
+  for (const t of [PATCHES.rough, PATCHES.spec]) { t.repeat.set(Wd / 7, -Lr / 7); t.offset.set(-0.5 * Wd / 7, Lr / 7); }
   R.floorMat.roughness = R.floorMat === R.floorMats.concrete ? (1 - S.floorShine) / 0.38 : 1 - 0.8 * S.floorShine;
   R.wet.visible = S.floor === 'concrete' && S.floorShine > 0;
   R.wet.material.uniforms.uK.value = 9 * S.floorShine;
@@ -2392,8 +2402,11 @@ for (const it of R.items) if (it.tex) { const img = it.tex.image; if (!img || !i
 // second and a half, and the lights jumped from dim to full in one frame); the stall sits on the dark page instead. Then
 // the first probe capture: the textures are in, the lights at their final levels (a picture landing later recaptures)
 for (const t of [...Object.values(PBR).flatMap((set) => Object.values(set)), ...Object.values(PICS)]) renderer.initTexture(t); // after the clones: one upload per map
+renderer.setRenderTarget(composer.readBuffer); // the room draws into the composer's target: its shaders differ from the canvas's
 await renderer.compileAsync(scene, camera);
+renderer.setRenderTarget(null);
 updateProbe(); R.probe.due = 0;
+t0 = performance.now(); frame(t0); // one dark first frame: the glow, the finish and the floor's mirror compile before the clock starts
 t0 = performance.now();
 requestAnimationFrame(raf);
 </script>
