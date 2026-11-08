@@ -209,11 +209,11 @@ const DEF = {
   // the REVAUDIO neon: off the aisle (Dan 2026-11-02: "not in your face"), then on the end wall, right of the TV (11-03)
   signWall: 'endLeft', signF: 0.52, signX: -1.62, signY: 2.95,  // the wall in front of you, top right (Dan 11-03, placed 11-04)
   signScale: 1.15, signTilt: -2,        // hung a little crooked on two wires (Dan 11-03; sized 11-04)
-  ver: 10,                               // settings version (5 = Dan's bench of 11-03 baked, 6 = his third, with the pegboard move, 7 = back to the bare set; his bench of 11-04 needed no bump; 8 = the snap off; 9 = B + A's moves as the room; 10 = the look pass): 2 moved the sign to the end wall, 3 made it bigger + crooked, 4 took the road off the floor
+  ver: 11,                               // settings version (5 = Dan's bench of 11-03 baked, 6 = his third, with the pegboard move, 7 = back to the bare set; his bench of 11-04 needed no bump; 8 = the snap off; 9 = B + A's moves as the room; 10 = the look pass, 11 = its first fix round): 2 moved the sign to the end wall, 3 made it bigger + crooked, 4 took the road off the floor
   // the look pass (2026-11-08, todo 1b): real materials and night light on the same set (Skeleton = the grey labelled
   // blocks); tone = the tone mapping (AgX), exposure its exposure; probe = how much the room shows in its own shiny
   // things (chrome, paint, the floor); shafts = the haze under the lamps
-  look: 1, tone: 'agx', exposure: 1, shadows: 1, probe: 1, shafts: 0.5,
+  look: 1, tone: 'agx', exposure: 1, shadows: 1, probe: 1, shafts: 0.9,
   labels: 0, wire: 0, readB: 1, snap: 0, paint: 0, film: 0, bench: 0, edit: 0,  // paint: the painted room over the bare set; film: the walk film over both; snap: free scrolling by default, the snap stays a bench option (Dan 2026-11-04)
   // (both off, Dan 2026-11-03 after the one-shot film: "lets go back to the skelton this is not what i want")
   // per-object moves from the move tool: { id: { f, x, y, side, s, r } }; Dan's pick of 2026-11-05 (layouts/b-plus-a.json)
@@ -341,6 +341,7 @@ if (sv < 7) Object.assign(S, { paint: 0, film: 0 }); // the bare set is the room
 if (sv < 8) S.snap = 0; // free scrolling by default (Dan 2026-11-04); the bench can turn the snap back on
 if (sv < 9) { for (const k of Object.keys(S)) delete S[k]; Object.assign(S, DEF, { moves: structuredClone(DEF.moves) }); } // the room is B + A's moves now (Dan 2026-11-05)
 if (sv < 10) Object.assign(S, { look: 1, labels: 0 }); // the look pass: real materials, no slot labels
+if (sv < 11) S.shafts = DEF.shafts; // the look's first fix round: more light in the haze under the lamps
 S.ver = DEF.ver;
 // ?layout=<name>: a proposed layout (layouts/<name>.json, the bench's Copy-settings format) over the defaults, to walk
 // and compare; this browser's saved bench is left alone and nothing is saved
@@ -387,7 +388,7 @@ const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 // ---------- renderer ----------
 const canvas = $('gl');
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' }); // the composer's target has the MSAA; only the finish quad reaches the canvas
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.NoToneMapping; // the finish pass tone-maps the room; the TV's pixels come out as captured
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap;
@@ -425,12 +426,14 @@ const FINISH = {
 };
 // half floats with 4x MSAA (the edges of a room full of thin things), the glow, the finish
 const composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 }));
-const bloomPass = new UnrealBloomPass(new THREE.Vector2(512, 512), S.bloom, 0.55, 0.9);
+const bloomPass = new UnrealBloomPass(new THREE.Vector2(512, 512), S.bloom, 0.32, 0.9);
 keepAlpha(bloomPass.blendMaterial, true);
+bloomPass.blendMaterial.blendSrc = THREE.OneFactor; // its glow is premultiplied: x its alpha again squared the halos (the alpha factors still keep the frame's)
 const finishPass = new ShaderPass(FINISH);
+finishPass.needsSwap = false; // it draws to the canvas; a swap after it kept a second MSAA half-float target alive
 composer.addPass(new RenderPass(scene, camera)); composer.addPass(bloomPass); composer.addPass(finishPass);
 const loader = new THREE.TextureLoader();
-const picture = (name) => { const t = loader.load(`assets/pics/${name}.webp`); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; };
+const picture = (name) => PICS[name]; // the posters and the CRT screens, preloaded with the texture sets (loadTextures)
 
 let cap = null;
 const L = {};      // layout numbers
@@ -517,11 +520,12 @@ const slatTex = () => canvasTex(64, 256, (g) => {
   for (let y = 0; y < 256; y += 32) { g.fillStyle = 'rgba(0,0,0,.55)'; g.fillRect(0, y, 64, 4); g.fillStyle = 'rgba(255,255,255,.12)'; g.fillRect(0, y + 4, 64, 3); }
 });
 function nightTex() {
-  // the night beyond the door: a deep blue sky, a low city glow on the horizon, a street lamp (tiles: a lamp every 32 m)
+  // the night beyond the door: a deep indigo sky (the painting's night, not a periwinkle), a low city glow on the horizon,
+  // a street lamp (tiles: a lamp every 32 m)
   const t = canvasTex(1024, 512, (g) => {
     const r = rng(91);
     const sky = g.createLinearGradient(0, 0, 0, 512);
-    sky.addColorStop(0, '#04050b'); sky.addColorStop(0.62, '#121a38'); sky.addColorStop(0.7, '#2a2238'); sky.addColorStop(0.71, '#0b0c12'); sky.addColorStop(1, '#07080b');
+    sky.addColorStop(0, '#06061c'); sky.addColorStop(0.62, '#1a1a78'); sky.addColorStop(0.7, '#302880'); sky.addColorStop(0.71, '#0d0d1e'); sky.addColorStop(1, '#08080f');
     g.fillStyle = sky; g.fillRect(0, 0, 1024, 512);
     for (let i = 0; i < 140; i++) { const a = 0.3 + r() * 0.6; g.fillStyle = r() < 0.7 ? `rgba(255,190,120,${a})` : `rgba(170,200,255,${a})`; g.fillRect(r() * 1024, 330 + r() * 30, 2 + r() * 3, 2 + r() * 2); }
     g.fillStyle = '#05060a'; g.fillRect(610, 120, 7, 245); g.fillRect(560, 118, 56, 6);
@@ -566,24 +570,36 @@ function applyTvTexture() {
 }
 
 // ---------- the look: CC0 texture sets (assets/pbr: col, nrm, arm = AO / roughness / metalness; refs/licence-log.md) ----------
+// every file once, before the room is built (a load per material uploaded the same map up to 7 times, and a picture
+// landing mid-intro re-placed its frame and recaptured the probe); pbr() hands out clones, which share the one upload and
+// carry their own repeat. steel has only a colour map: its bumps and wear are enamel's
+const PBR = {}, PICS = {};
+async function loadTextures() {
+  const one = (url, fix) => new Promise((done) => { fix(loader.load(url, done, undefined, () => { console.warn('texture missing:', url); done(); })); });
+  const sets = ['floor', 'wall', 'shutter', 'wood', 'plate', 'carpet', 'rust', 'enamel', 'tolex', 'fabric', 'rubber', 'cardboard']
+    .flatMap((k) => ['col', 'nrm', 'arm'].map((m) => [k, m])).concat([['steel', 'col']]);
+  await Promise.all([
+    ...sets.map(([k, m]) => one(`assets/pbr/${k}_${m}.webp`, (t) => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 8; if (m === 'col') t.colorSpace = THREE.SRGBColorSpace; (PBR[k] ||= {})[m] = t; })),
+    ...[...POSTERS, ...MONITORS].map((s) => one(`assets/pics/${s.pic}.webp`, (t) => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; PICS[s.pic] = t; })),
+  ]);
+}
 function pbr(key, rep = 1, nrmKey = key) {
-  const load = (k, m) => { const t = loader.load(`assets/pbr/${k}_${m}.webp`); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 8; t.repeat.setScalar(rep); return t; };
-  const map = load(key, 'col'); map.colorSpace = THREE.SRGBColorSpace;
-  const arm = load(nrmKey, 'arm');
-  return { map, normalMap: load(nrmKey, 'nrm'), aoMap: arm, roughnessMap: arm, metalnessMap: arm };
+  const tex = (k, m) => { const t = PBR[k][m].clone(); t.repeat.setScalar(rep); return t; };
+  const arm = tex(nrmKey, 'arm');
+  return { map: tex(key, 'col'), normalMap: tex(nrmKey, 'nrm'), aoMap: arm, roughnessMap: arm, metalnessMap: arm };
 }
 const rep = (m, u, v) => { for (const k of ['map', 'normalMap', 'aoMap']) m[k]?.repeat.set(u, v); }; // the arm map serves ao, roughness, metalness
 // one material per kind of thing; texture coordinates are in metres (metricUV), tile = metres per repeat
 const KINDS = {
-  enamel:    { tex: 'enamel', tile: 0.9, color: 0xa8a8a8, metalness: 1, shiny: 1 },    // red tool chests, scratched to the metal
+  enamel:    { tex: 'enamel', tile: 0.45, color: 0xa8a8a8, metalness: 0.6, shiny: 0.6 }, // red tool chests, scratched to the metal (at full metal the chips mirrored a dark room: black blots)
   steel:     { tex: 'steel', nrm: 'enamel', tile: 0.9, color: 0x5c5c64, metalness: 1, shiny: 0.4 }, // painted steel: shelves, frames, stands
-  gear:      { tex: 'steel', nrm: 'enamel', tile: 0.5, color: 0x26262c, metalness: 1, roughness: 0.75, shiny: 1 }, // black faceplates
-  cream:     { tex: 'steel', nrm: 'enamel', tile: 0.9, color: 0xe2d8c0, metalness: 1, shiny: 1 },  // painted appliances
+  gear:      { tex: 'steel', nrm: 'enamel', tile: 0.5, color: 0x56565e, metalness: 0, roughness: 0.5, shiny: 1 }, // black painted faceplates (as a near-black metal they reflected nothing: the far end's murk)
+  cream:     { tex: 'steel', nrm: 'enamel', tile: 0.9, color: 0xb0a68e, metalness: 1, shiny: 1 },  // painted appliances
   chrome:    { color: 0xd9dde4, metalness: 1, roughness: 0.14, shiny: 1 },
   brass:     { color: 0xc9a35c, metalness: 1, roughness: 0.32, shiny: 1 },             // cymbals
   wood:      { tex: 'wood', tile: 1.2, color: 0xffffff },
   lacquer:   { tex: 'wood', tile: 1.2, color: 0x9a6a62, roughness: 0.35 },              // guitar bodies, drum shells
-  tolex:     { tex: 'tolex', tile: 0.35, color: 0xb0a89e },                              // amps, cabinets, road cases
+  tolex:     { tex: 'tolex', tile: 0.35, color: 0xb0a89e, roughness: 0.55 },             // amps, cabinets, road cases (black vinyl: it catches the lamps)
   fabric:    { tex: 'fabric', tile: 0.3, color: 0x7a6a5e },
   carpet:    { tex: 'carpet', tile: 0.9 },
   rubber:    { tex: 'rubber', tile: 0.4, color: 0x707070 },
@@ -591,7 +607,7 @@ const KINDS = {
   rust:      { tex: 'rust', tile: 1.0, color: 0x7a6e66, metalness: 1, shiny: 1 },
   plate:     { tex: 'plate', tile: 0.45, color: 0x8a8a8a, metalness: 1, shiny: 1 },    // diamond plate
   plastic:   { color: 0x3a3733, roughness: 0.5 },                                       // CRT cases
-  paper:     { color: 0xcfc6b4, roughness: 0.92 },
+  paper:     { color: 0x9a9282, roughness: 0.92 },                                      // (any lighter, it reads as blank white cards)
   shelf:     { tex: 'wood', tile: 1.2, color: 0x2e2824, roughness: 0.9 },              // open shelving: its contents in shadow
   chalk:     { color: 0x1d211f, roughness: 0.95 },
   oil:       { color: 0x060606, roughness: 0.06, transparent: true, opacity: 0.55, depthWrite: false }, // a fresh stain
@@ -632,20 +648,21 @@ const LOOK = {
   N05: 'enamel', N06: 'rust', N07: 'enamel', N08: 'enamel', N09: 'chalk', N10: 'enamel', N11: 'steel', N12: 'steel',
   N13: 'cardboard', N15: 'steel', N16: 'lacquer', N17: 'gear', N18: 'rubber', N22: 'tolex', N23: 'fabric', N24: 'carpet',
   N25: 'steel', N26: 'steel', N28: 'cream', N29: 'fabric', N39: 'steel', N40: 'steel', N42: 'steel', N43: 'oil',
-  N45: 'rubber', W01: 'gear', W02: 'chrome', W03: 'paper', W04: 'shelf', W05: 'gear', W06: 'gear', W07: 'wood',
-  W09: 'paper', W10: 'shelf', E01: 'gear', E02: 'tolex', E03: 'tolex', E04: 'gear', E05: 'pegboard', E06: 'shelf',
+  N45: 'rubber', W01: 'gear', W02: 'chrome', W03: 'cardboard', W04: 'shelf', W05: 'gear', W06: 'gear', W07: 'wood',
+  W09: 'cardboard', W10: 'shelf', E01: 'gear', E02: 'tolex', E03: 'tolex', E04: 'gear', E05: 'pegboard', E06: 'shelf',
   N24B: 'carpet', N26B: 'steel', N30: 'steel', N31: 'wood', N32: 'wood', N33: 'gear', N34: 'tolex', N35: 'gear',
 };
 const MESS_LOOK = { cardboard: 'cardboard', rust: 'enamel', paint: 'steel', oil: 'rust', rubber: 'rubber', paper: 'paper', case: 'tolex' };
-// (only three of them light the room live: each live light costs every pixel)
+// (only three of them light the room live: each live light costs every pixel, ~1.7 ms at 2 MP; the globes glow past the
+// bloom's threshold, so N20 reads lit without one)
 const LIT = {
-  N01: { color: 0xffd09a, glow: 3, cd: 1.5, globe: 0.05 }, // the caged trouble light, into the car
-  N02: { color: 0xdbe6ff, glow: 1.6, cd: 4, tube: 1 },     // the twin-tube shop light, one tube dying
-  N07: { color: 0xffc27a, glow: 1.6, globe: 0.15 },         // the GAS 2 pump's globe
-  N08: { color: 0xcfe0ff, glow: 0.18 },                    // the vending machine's front
-  N12: { color: 0xffa04a, glow: 3, cd: 1.5, globe: 0.06 }, // the clamp lamp over the bench
-  N20: { color: 0xffc27a, glow: 1.6, globe: 0.2, only: 1 }, // the GAS 2 globe lamp at the far end: the globe is the slot
-  N36: { color: 0xff3020, glow: 0.35 },                    // ON AIR, dim until the lock
+  N01: { color: 0xffb050, glow: 5, cd: 1.5, globe: 0.05 },  // the caged trouble light, into the car
+  N02: { color: 0xffd2a0, glow: 0.6, cd: 2.5, tube: 1 },    // the twin-tube shop light, one tube dying (warm white: on the palette)
+  N07: { color: 0xffb050, glow: 5, globe: 0.15 },           // the GAS 2 pump's globe
+  N08: { color: 0xcfe0ff, glow: 0.08 },                     // the vending machine's front
+  N12: { color: 0xffa04a, glow: 5, cd: 1.5, globe: 0.06 },  // the clamp lamp over the bench
+  N20: { color: 0xffb050, glow: 5, globe: 0.2, only: 1 },   // the GAS 2 globe lamp at the far end: the globe is the slot
+  N36: { color: 0xff3020, glow: 0.5, text: 'ON AIR' },      // ON AIR, its words drawn (textMat), dim until the lock
 };
 // pegboard: brown hardboard with its grid of holes (drawn, no texture set)
 const pegTex = () => canvasTex(256, 256, (g) => {
@@ -653,6 +670,27 @@ const pegTex = () => canvasTex(256, 256, (g) => {
   g.fillStyle = '#120c08'; for (let y = 8; y < 256; y += 16) for (let x = 8; x < 256; x += 16) { g.beginPath(); g.arc(x, y, 2.6, 0, 6.28); g.fill(); }
 });
 KINDS.pegboard = { map: Object.assign(pegTex(), { repeat: new THREE.Vector2(2.5, 2.5) }), roughness: 0.85, color: 0x9a8a7a }; // 16 holes per 0.4 m
+// the oil decal (N43, 2.5 x 1.8 m): blotches, not a dark rectangle; stain ellipses like the floor's, white where it's wet.
+// A block's UVs are metric and centred, so one picture over a face = repeat 1 / size, offset 0.5, clamped
+KINDS.oil.alphaMap = Object.assign(canvasTex(500, 360, (g, w, h) => {
+  const r = rng(43); g.fillStyle = '#000'; g.fillRect(0, 0, w, h);
+  for (let i = 0; i < 9; i++) {
+    const x = 70 + r() * (w - 140), y = 60 + r() * (h - 120);
+    for (let k = 0; k < 6; k++) { g.fillStyle = `rgba(255,255,255,${0.3 + r() * 0.5})`; g.beginPath(); g.ellipse(x + (r() - 0.5) * 80, y + (r() - 0.5) * 60, 18 + r() * 60, 12 + r() * 40, r() * 3.14, 0, 6.28); g.fill(); }
+  }
+}, false), { colorSpace: THREE.NoColorSpace, repeat: new THREE.Vector2(1 / 2.5, 1 / 1.8), offset: new THREE.Vector2(0.5, 0.5) });
+// a lit sign (ON AIR): its words in red on a near-black plate, over the block's front face the same way (the box's
+// groups: +x -x +y -y +z -z, the words on +z only); dim until the lock
+const textMat = (lit, w, h) => {
+  const t = canvasTex(600, Math.round(600 * h / w), (g, cw, ch) => {
+    g.fillStyle = '#000'; g.fillRect(0, 0, cw, ch);
+    g.font = `400 ${Math.round(ch * 0.84)}px "Bebas Neue", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillStyle = '#ff2a14'; g.fillText(lit.text, cw / 2, ch * 0.54);
+  }, false);
+  t.repeat.set(1 / w, 1 / h); t.offset.set(0.5, 0.5);
+  const plate = new THREE.MeshStandardMaterial({ color: 0x141414, roughness: 0.5 });
+  return [plate, plate, plate, plate, new THREE.MeshStandardMaterial({ color: 0x141414, roughness: 0.5, emissiveMap: t, emissive: 0xffffff, emissiveIntensity: lit.glow }), plate];
+};
 
 // ---------- the slots: every block becomes one Higgsfield image (step 2's slot list) ----------
 // side -1 = left wall, 1 = right wall; f = share of the stretch from the end wall to 4 m in front of the camera; w along the wall.
@@ -878,20 +916,33 @@ const WET = {
     uniform mat4 textureMatrix; varying vec4 vUv; varying vec3 vW;
     void main() { vUv = textureMatrix * vec4(position, 1.0); vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`,
   fragmentShader: /* glsl */`
-    uniform sampler2D tDiffuse, tArm, tNrm; uniform float uTile, uK, uFog; varying vec4 vUv; varying vec3 vW;
+    uniform sampler2D tDiffuse, tWet, tNrm; uniform float uTile, uK, uFog; varying vec4 vUv; varying vec3 vW;
     void main() {
       vec2 tu = vW.xz / uTile;
-      float rough = texture2D(tArm, tu).g;
+      float wet = texture2D(tWet, vW.xz / 7.0).r; // sealed and oily patches shine, the dusty stretches between hardly
       vec2 bump = texture2D(tNrm, tu).xy * 2.0 - 1.0;
       vec2 uv = vUv.xy / vUv.w + bump * 0.008;
       vec3 acc = vec3(0.0); float ws = 0.0;
-      for (int i = -6; i <= 6; i++) { float w = exp(-float(i * i) / 14.0); acc += textureLod(tDiffuse, uv + vec2(0.0, float(i) * 0.009), 1.4).rgb * w; ws += w; }
+      for (int i = -6; i <= 6; i++) { float w = exp(-float(i * i) / 14.0); acc += textureLod(tDiffuse, uv + vec2(0.0, float(i) * 0.009), 0.7).rgb * w; ws += w; }
       vec3 V = normalize(cameraPosition - vW); float d = length(cameraPosition - vW);
       float fres = 0.04 + 0.96 * pow(1.0 - clamp(V.y, 0.0, 1.0), 5.0);
-      float wet = smoothstep(0.9, 0.4, rough);
-      gl_FragColor = vec4(acc / ws * fres * uK * mix(0.25, 1.0, wet) * exp(-uFog * uFog * d * d), 1.0);
+      vec3 refl = pow(max(acc / ws, 0.0), vec3(1.35)); // the lamps and tubes reflect hot, the dim room hardly (the painting's pools)
+      gl_FragColor = vec4(refl * fres * uK * mix(0.08, 1.0, wet) * exp(-uFog * uFog * d * d), 1.0);
     }`,
 };
+// where the floor shines (tWet, one 7 m tile): the CC0 floor's roughness map is flat (0.62-0.66 everywhere), so the sealed
+// and oily patches are drawn, soft blotches either way from a mid grey, each drawn at the tile's wrapped offsets too (no seam)
+const wetTex = () => Object.assign(canvasTex(256, 256, (g, w, h) => {
+  const r = rng(88); g.fillStyle = '#262626'; g.fillRect(0, 0, w, h);
+  for (let i = 0; i < 26; i++) {
+    const x = r() * w, y = r() * h, rad = 30 + r() * 70, wet = r() < 0.55, a = 0.45 + r() * 0.5;
+    for (const dx of [-w, 0, w]) for (const dy of [-h, 0, h]) {
+      const gr = g.createRadialGradient(x + dx, y + dy, 0, x + dx, y + dy, rad);
+      gr.addColorStop(0, wet ? `rgba(255,255,255,${a})` : `rgba(0,0,0,${a})`); gr.addColorStop(1, wet ? 'rgba(255,255,255,0)' : 'rgba(0,0,0,0)');
+      g.fillStyle = gr; g.fillRect(x + dx - rad, y + dy - rad, rad * 2, rad * 2);
+    }
+  }
+}), { colorSpace: THREE.NoColorSpace });
 
 // ---------- make the room once ----------
 function createRoom() {
@@ -904,11 +955,11 @@ function createRoom() {
   // the shell: sooty painted concrete (Poly Haven painted_concrete, its colour taken out, tinted near black); each
   // surface its own textures, so each repeats by its own size
   const shell = (tint) => new THREE.MeshStandardMaterial({ ...pbr('wall'), color: tint, roughness: 1, envMapIntensity: 0.5 });
-  R.wallMat = shell(0x6a6268); R.ceilMat = shell(0x3a363c); R.endMat = shell(0x5e575c); R.nearMat = shell(0x5e575c);
+  R.wallMat = shell(0x67625b); R.ceilMat = shell(0x3a3733); R.endMat = shell(0x5c5751); R.nearMat = shell(0x5c5751); // warm charcoal, not lavender
   const plane = (sx, sy, mat) => new THREE.Mesh(new THREE.PlaneGeometry(1, 1, sx, sy), mat);
   R.left = plane(24, 6, R.wallMat); R.left.rotation.y = Math.PI / 2;
   R.rightParts = [0, 1, 2].map(() => { // the right wall: three pieces round the garage door's opening
-    const w = plane(12, 6, shell(0x6a6268)); w.rotation.y = -Math.PI / 2; return w;
+    const w = plane(12, 6, shell(0x67625b)); w.rotation.y = -Math.PI / 2; return w;
   });
   R.ceil = plane(6, 24, R.ceilMat); R.ceil.rotation.x = Math.PI / 2;
   R.end = plane(8, 6, R.endMat);
@@ -920,7 +971,7 @@ function createRoom() {
   // the floor: sealed garage concrete (Poly Haven garage_floor, darkened) with a long soft wet reflection on top (R.wet),
   // or retro checker tiles (painted lanes on the concrete), or the old mirror under a glaze
   R.floorMats = {
-    concrete: new THREE.MeshStandardMaterial({ ...pbr('floor'), color: 0x5a5552, roughness: 0.7, envMapIntensity: 0.4 }),
+    concrete: new THREE.MeshStandardMaterial({ ...pbr('floor'), color: 0x5a5a58, roughness: 0.7, envMapIntensity: 0.4 }), // grey: the lamps make it amber, not pink
     checker: new THREE.MeshStandardMaterial({ map: checkerTex(), roughness: 0.7, metalness: 0.08 }),
   };
   R.floorMat = R.floorMats.concrete;
@@ -928,10 +979,10 @@ function createRoom() {
   // the wet sheen: the room mirrored in the floor, softened down the screen into long streaks, broken by the concrete
   // (its own roughness and bumps), stronger at a grazing look; added over the concrete
   R.wet = new Reflector(new THREE.PlaneGeometry(1, 1), { clipBias: 0.003, textureWidth: 512, textureHeight: 512, multisample: 0, shader: WET });
-  R.wet.rotation.x = -Math.PI / 2;
+  R.wet.rotation.x = -Math.PI / 2; R.wet.renderOrder = 1; // under the contact shadows (2), whatever the distance
   { const t = R.wet.getRenderTarget().texture; t.generateMipmaps = true; t.minFilter = THREE.LinearMipmapLinearFilter; }
   const wf = pbr('floor');
-  Object.assign(R.wet.material.uniforms, { tArm: { value: wf.aoMap }, tNrm: { value: wf.normalMap }, uTile: { value: 3 }, uK: { value: 0.6 }, uFog: { value: 0 } });
+  Object.assign(R.wet.material.uniforms, { tWet: { value: wetTex() }, tNrm: { value: wf.normalMap }, uTile: { value: 3 }, uK: { value: 0.6 }, uFog: { value: 0 } });
   keepAlpha(Object.assign(R.wet.material, { transparent: true, depthWrite: false }), true);
   scene.add(R.wet);
   R.lanesMat = new THREE.MeshStandardMaterial({ transparent: true, roughness: 0.6, depthWrite: false });
@@ -947,7 +998,7 @@ function createRoom() {
 
   // neon strips the full length: violet left, magenta right, each with three lights (every live light is paid on every
   // pixel: the baked light layers will carry the rest, tech-recipe.md)
-  R.neon = [[-1, [0.62, 0.3, 1.0]], [1, [1.0, 0.22, 0.62]]].map(([side, rgb]) => {
+  R.neon = [[-1, [0.55, 0.15, 1.0]], [1, [1.0, 0.12, 0.6]]].map(([side, rgb]) => { // saturated: AgX whitens a bright tube
     const mat = new THREE.MeshBasicMaterial({ color: new THREE.Color(...rgb), toneMapped: false });
     mat.userData.base = new THREE.Color(...rgb);
     const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.024, 0.024, 1, 10), mat); tube.rotation.x = Math.PI / 2; scene.add(tube);
@@ -969,15 +1020,16 @@ function createRoom() {
       void main() { float edge = pow(abs(dot(normalize(vN), normalize(vV))), 2.0); gl_FragColor = vec4(uColor * uK * edge * vY * vY, 1.0); }`,
     transparent: true, depthWrite: false, side: THREE.DoubleSide,
   }), true);
-  R.lamps = [0.92, 0.55, 0.2].map((f) => {
+  // (the fourth hangs over the desk, between the end wall and the ceiling cloud: its cord at z 0.86 m, the cloud from 1.0)
+  R.lamps = [0.92, 0.55, 0.2, 0.06].map((f) => {
     const shade = new THREE.Mesh(new THREE.ConeGeometry(0.28, 0.24, 24, 1, true), new THREE.MeshStandardMaterial({ color: 0x1c221f, side: THREE.FrontSide, metalness: 0.7, roughness: 0.4 }));
-    const inner = new THREE.Mesh(new THREE.ConeGeometry(0.275, 0.235, 24, 1, true), new THREE.MeshStandardMaterial({ color: 0x8a7a66, emissive: 0xffb070, emissiveIntensity: 0.6, side: THREE.BackSide }));
+    const inner = new THREE.Mesh(new THREE.ConeGeometry(0.275, 0.235, 24, 1, true), new THREE.MeshStandardMaterial({ color: 0x8a7a66, emissive: 0xffb070, emissiveIntensity: 2.0, side: THREE.BackSide })); // an amber shade round a small hot centre
     shade.add(inner);
-    const bulbMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(1, 0.66, 0.3), toneMapped: false });
-    bulbMat.userData.base = new THREE.Color(1, 0.66, 0.3);
+    const bulbMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(1, 0.55, 0.22), toneMapped: false }); // deep amber: AgX whitens a bright, saturated emitter
+    bulbMat.userData.base = new THREE.Color(1, 0.55, 0.22);
     const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.07, 12, 8), bulbMat);
     const cord = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.6), R.steel);
-    const light = new THREE.SpotLight(0xffa04a, 16, 0, deg(62), 0.75, 2);
+    const light = new THREE.SpotLight(0xffa04a, 16, 0, deg(42), 0.5, 2); // tighter pools, like the painting's
     light.castShadow = true; light.shadow.mapSize.set(1024, 1024); light.shadow.bias = -0.0004; light.shadow.normalBias = 0.03;
     light.shadow.camera.near = 0.2; light.shadow.camera.far = 14;
     const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 1.9, 1, 32, 1, true), R.shaftMat);
@@ -998,7 +1050,7 @@ function createRoom() {
   // glows and lights the room (LIT: a point light inside, a globe on top)
   const block = (cat, w, h, d, id) => {
     const geo = bevelBox(w, h, d), lit = LIT[id];
-    const mesh = dress(new THREE.Mesh(geo, R.mats[cat]), R.mats[cat], lit?.only ? R.noMat : lit && !lit.globe ? litMat(LOOK[id], lit) : kindMat(LOOK[id]));
+    const mesh = dress(new THREE.Mesh(geo, R.mats[cat]), R.mats[cat], lit?.only ? R.noMat : lit?.text ? textMat(lit, w, h) : lit && !lit.globe ? litMat(LOOK[id], lit) : kindMat(LOOK[id]));
     mesh.castShadow = mesh.receiveShadow = !(KINDS[LOOK[id]] || {}).transparent;
     mesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo, 35), R.edgeMats[cat]));
     const gy = lit?.only ? 0 : h / 2 + (lit?.globe || 0);
@@ -1036,7 +1088,7 @@ function createRoom() {
   const frameMat = new THREE.MeshStandardMaterial({ color: 0x1c1a19, roughness: 0.6, metalness: 0.3 });
   for (const s of POSTERS) {
     const tex = picture(s.pic), g = new THREE.Group();
-    const mat = new THREE.MeshStandardMaterial({ map: tex, emissiveMap: tex, emissive: 0xffffff, emissiveIntensity: 0.3, roughness: 0.85 });
+    const mat = new THREE.MeshStandardMaterial({ map: tex, emissiveMap: tex, emissive: 0xffffff, emissiveIntensity: 0.12, roughness: 0.85 });
     const pic = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), mat); pic.position.z = 0.018; pic.userData.live = true; // real pixels, never painted
     const frame = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 0.03), frameMat);
     g.add(frame, pic); g.userData.pic = pic; g.userData.frame = frame;
@@ -1075,9 +1127,9 @@ function createRoom() {
   };
   // gloss black paint (Dan 2026-11-04: like his reference): a clear coat over a black metallic base, so it carries the
   // room's neon and lamps (the probe); the cabin dark glass. The shape stays the block until Dan's team models the car
-  const paint = new THREE.MeshPhysicalMaterial({ color: 0x0b0b0e, metalness: 0.55, roughness: 0.32, clearcoat: 1, clearcoatRoughness: 0.12 });
+  const paint = new THREE.MeshPhysicalMaterial({ color: 0x0b0b0e, metalness: 0.55, roughness: 0.32, clearcoat: 1, clearcoatRoughness: 0.2 });
   const glass = new THREE.MeshPhysicalMaterial({ color: 0x050608, metalness: 0, roughness: 0.1, clearcoat: 1, clearcoatRoughness: 0.1 });
-  SHINY.add(paint).add(glass).add(R.steel);
+  SHINY.add(paint).add(glass).add(R.steel); paint.userData.env = 0.4; // the block's flat sides mirrored the whole room
   bx(R.car, 1.85, 0.72, 4.4, 0, 0.56, 0, R.mats.garage, paint, 0.16); bx(R.car, 1.45, 0.5, 2.0, 0, 1.17, 0.25, R.mats.garage, glass, 0.12);
   const wheelMat = new THREE.MeshStandardMaterial({ color: 0x1a181c, roughness: 0.8 }), rimGeo = new THREE.CylinderGeometry(0.21, 0.21, 0.02, 24);
   for (const [wx, wz] of [[-0.86, -1.4], [0.86, -1.4], [-0.86, 1.4], [0.86, 1.4]]) {
@@ -1085,7 +1137,7 @@ function createRoom() {
     wh.rotation.z = Math.PI / 2; wh.position.set(wx, 0.33, wz); wh.castShadow = true; R.car.add(wh);
     const rim = dress(new THREE.Mesh(rimGeo, wheelMat), wheelMat, kindMat('chrome')); rim.position.y = Math.sign(wx) * 0.121; wh.add(rim); // the deep dish, on the outside
   }
-  R.tailMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(0.22, 0.03, 0.03), toneMapped: false });
+  R.tailMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(0.1, 0.008, 0.008), toneMapped: false });
   for (const tx of [-0.62, 0.62]) { const t = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.09, 0.03), R.tailMat); t.position.set(tx, 0.74, 2.215); R.car.add(t); }
   R.tail = new THREE.PointLight(0xff2a1a, 0, 4, 2);
   R.carItem = { kind: 'car', id: 'CAR', s: { label: 'JDM coupe' }, obj: R.car, mount: 'floor' };
@@ -1117,12 +1169,12 @@ function createRoom() {
   // from the aisle you look through the door at a slant, far along the street: the night runs 160 m and ignores the room's haze
   R.backdrop = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: nightTex(), toneMapped: false, fog: false }));
   R.backdrop.rotation.y = -Math.PI / 2;
-  R.outLight = new THREE.SpotLight(0x7f9cff, 60, 16, Math.PI / 4, 0.6, 2);
+  R.outLight = new THREE.SpotLight(0x5c6ab4, 60, 16, Math.PI / 4, 0.6, 2);
   R.outLabel = labelSprite('OUTSIDE · the night through the door', 'surface'); R.labels.push(R.outLabel);
   // seen almost edge-on from the aisle, the door reads by its light: the opening glows night-blue, a pool of it on the floor
   const softTex = canvasTex(128, 128, (g) => { const gr = g.createRadialGradient(64, 64, 0, 64, 64, 64); gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, 128, 128); }, false);
   const airTex = canvasTex(4, 128, (g) => { const gr = g.createLinearGradient(0, 0, 0, 128); gr.addColorStop(0, 'rgba(255,255,255,0.35)'); gr.addColorStop(1, 'rgba(255,255,255,1)'); g.fillStyle = gr; g.fillRect(0, 0, 4, 128); }, false);
-  const additive = (map) => new THREE.MeshBasicMaterial({ map, color: 0x5a7fd6, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false });
+  const additive = (map) => new THREE.MeshBasicMaterial({ map, color: 0x5c6ab4, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }); // the street light's own colour
   R.doorAir = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), additive(airTex)); R.doorAir.rotation.y = -Math.PI / 2;
   R.pool = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), additive(softTex)); R.pool.rotation.x = -Math.PI / 2;
   scene.add(R.curtain, R.drum, ...R.rails, R.doorLabel, R.outGround, R.backdrop, R.outLight, R.outLight.target, R.outLabel, R.doorAir, R.pool);
@@ -1133,7 +1185,7 @@ function createRoom() {
   R.signItem = { kind: 'sign', id: 'SIGN', s: { label: 'REVAUDIO neon' }, obj: R.sign, mount: 'wall' };
   R.sign.userData.item = R.signItem; R.items.push(R.signItem);
   R.wires = [-1.2, 1.2].map((x) => { const w = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, 1), R.steel); w.userData.x = x; scene.add(w); return w; });
-  R.signLight = new THREE.PointLight(0xff5a2a, 12, 7, 2);
+  R.signLight = new THREE.PointLight(0xff7a3a, 12, 7, 2);
   scene.add(R.sign, R.signLight);
 
   // the TV on the end wall: a cabinet, the captured live TV as its face, its amber glow, the power-on line
@@ -1143,11 +1195,15 @@ function createRoom() {
     faceMat: Object.assign(new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, toneMapped: false, fog: false }), { blending: THREE.CustomBlending,
       blendSrc: THREE.SrcAlphaFactor, blendDst: THREE.OneMinusSrcAlphaFactor, blendSrcAlpha: THREE.ZeroFactor, blendDstAlpha: THREE.OneMinusSrcAlphaFactor }),
     lineMat: new THREE.MeshBasicMaterial({ color: new THREE.Color(3, 2.6, 2.2), transparent: true, toneMapped: false, fog: false, depthWrite: false }),
-    glow: new THREE.PointLight(0xff8a3a, 14, 9, 2),
+    glow: new THREE.PointLight(0xffa860, 14, 9, 2),
+    // a violet bias round the cabinet: a glow card on the wall behind it, hidden where the cabinet stands (a point light
+    // there cost every pixel ~1.7 ms; the baked light layers carry such things, tech-recipe.md)
+    haloMat: new THREE.MeshBasicMaterial({ map: softTex, color: 0x8040e0, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }),
   };
   R.tv.face = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), R.tv.faceMat); R.tv.face.userData.live = true;
   R.tv.line = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), R.tv.lineMat);
-  scene.add(R.tv.cab, R.tv.face, R.tv.line, R.tv.glow);
+  R.tv.halo = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), R.tv.haloMat);
+  scene.add(R.tv.cab, R.tv.face, R.tv.line, R.tv.glow, R.tv.halo);
 
   // the mess: crates, toolboxes, cans, drums, tyres, cable coils, papers, cones, a guitar case, scattered along the walls
   R.messMats = {
@@ -1185,8 +1241,10 @@ function createRoom() {
 
   // the street's light falls in through the door and the car casts it across the floor
   R.outLight.castShadow = true; R.outLight.shadow.mapSize.set(1024, 1024); R.outLight.shadow.bias = -0.0004; R.outLight.shadow.normalBias = 0.03;
-  // solid lit things cast and take shadows (the shell only takes them); see-through things keep the frame's alpha (FINISH)
-  const shellParts = new Set([...R.surfaces, R.near, R.floor, R.outGround]);
+  R.outLight.shadow.camera.near = 1; R.outLight.shadow.camera.far = 30;
+  // solid lit things cast and take shadows (the shell only takes them, but for the right wall's pieces: the street's light
+  // comes in through the door only); see-through things keep the frame's alpha (FINISH)
+  const shellParts = new Set([R.left, R.ceil, R.end, R.near, R.floor, R.outGround]);
   scene.traverse((o) => {
     const m = o.material; if (!m || Array.isArray(m)) return;
     if (o.isMesh && (m.isMeshStandardMaterial) && !m.transparent) { o.receiveShadow = true; if (!shellParts.has(o)) o.castShadow = true; }
@@ -1194,8 +1252,12 @@ function createRoom() {
   });
   // the room's own reflection (a probe in the aisle, redrawn after the intro and after things move): chrome, the car's
   // paint and the floor catch the neon and the lamps
-  R.probe = { rt: new THREE.WebGLCubeRenderTarget(256, { type: THREE.HalfFloatType }), pmrem: new THREE.PMREMGenerator(renderer), env: null, due: performance.now() + 2800 };
+  R.probe = { rt: new THREE.WebGLCubeRenderTarget(256, { type: THREE.HalfFloatType }), pmrem: new THREE.PMREMGenerator(renderer), due: 0 };
   R.probe.cam = new THREE.CubeCamera(0.1, 80, R.probe.rt);
+  // one PMREM for the room's life (black until the first capture, at boot), on every shiny thing from the start: an
+  // envMap given later recompiled their shaders and popped the reflections in. updateProbe redraws it in place
+  R.probe.env = R.probe.pmrem.fromCubemap(R.probe.rt.texture);
+  for (const m of SHINY) m.envMap = R.probe.env.texture;
   // a soft shadow pressed under everything that stands on the floor (contact shadow), sized to its footprint
   R.blobTex = canvasTex(128, 128, (g) => {
     const im = g.createImageData(128, 128);
@@ -1208,18 +1270,20 @@ function createRoom() {
   R.blobTex.colorSpace = THREE.NoColorSpace;
   R.blobMat = keepAlpha(new THREE.MeshBasicMaterial({ color: 0x000000, alphaMap: R.blobTex, transparent: true, opacity: 0.6, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 }));
 }
-// the probe: the room seen from the aisle, without the things that aren't surfaces (labels, dust, haze, the wet sheen)
+// the probe: the room seen from the aisle, without the things that aren't surfaces (labels, dust, haze, the wet sheen),
+// its lights at their full levels (a capture during the intro would bake a dark room; frame sets its own levels after)
 function updateProbe() {
   const P = R.probe, hide = [R.dust.pts, R.wet, R.selBox, R.hoverBox, ...R.labels, ...R.lamps.map((l) => l.shaft)].filter((o) => o.visible);
   for (const o of hide) o.visible = false;
+  lightRoom(S.neon, 1, 1, 1, 1 - easeIO(clamp(progress), S.ease), performance.now());
   P.cam.position.set(0, 1.8, L.span * 0.55); P.cam.update(renderer, scene);
   for (const o of hide) o.visible = true;
-  P.env?.dispose(); P.env = P.pmrem.fromCubemap(P.rt.texture);
-  for (const m of SHINY) { m.envMap = P.env.texture; m.needsUpdate = true; }
+  P.pmrem.fromCubemap(P.rt.texture, P.env);
+  for (const m of SHINY) if (m.envMap !== P.env.texture) { m.envMap = P.env.texture; m.needsUpdate = true; } // a shiny thing made later
 }
 // a contact shadow under a thing standing on the floor (w across its x, d across its z, turned with it)
 function placeBlob(it, w, d, x, z, yaw, on) {
-  if (!it.blob) { it.blob = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), R.blobMat); it.blob.rotation.order = 'YXZ'; it.blob.rotation.x = -Math.PI / 2; scene.add(it.blob); }
+  if (!it.blob) { it.blob = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), R.blobMat); it.blob.rotation.order = 'YXZ'; it.blob.rotation.x = -Math.PI / 2; it.blob.renderOrder = 2; scene.add(it.blob); } // over the wet sheen (1), whatever the distance
   it.blob.visible = on && !!S.look && !S.wire && it.obj.visible;
   it.blob.scale.set(w * 1.3 + 0.25, d * 1.3 + 0.25, 1); it.blob.position.set(x, 0.004, z); it.blob.rotation.y = yaw;
 }
@@ -1308,9 +1372,9 @@ function arrange() {
   R.floorMat = R.floor.material = R.floorMats[S.floor] || R.floorMats.concrete;
   const tile = S.floor === 'checker' ? 4.8 : 3; // the concrete texture stretched to 3 m: no repeat seen down the 20 m
   rep(R.floorMat, Wd / tile, Lr / tile);
-  R.floorMat.roughness = 1 - 0.55 * S.floorShine;
+  R.floorMat.roughness = 1 - 0.8 * S.floorShine;
   R.wet.visible = S.floor === 'concrete' && S.floorShine > 0;
-  R.wet.material.uniforms.uK.value = 2.2 * S.floorShine;
+  R.wet.material.uniforms.uK.value = 5.5 * S.floorShine;
   for (const m of [R.floor, R.lanes, R.mirror, R.glaze, R.wet]) { m.scale.set(Wd, Lr, 1); m.position.set(0, m === R.lanes || m === R.glaze ? 0.003 : m === R.wet ? 0.002 : 0, Lr / 2); }
   if (R.laneW !== Wd) {
     R.lanesMat.map?.dispose?.(); R.lanesMat.map = laneTex(Wd, false); R.lanesMat.needsUpdate = true;
@@ -1322,7 +1386,7 @@ function arrange() {
   for (const n of R.neon) {
     const x = n.side * Math.min(1.55, Wd / 2 - 0.5);
     n.tube.scale.y = Lr - 1; n.tube.position.set(x, H - 0.2, Lr / 2);
-    n.lights.forEach((l, i) => l.position.set(x, H - 0.45, (i + 0.5) * Lr / n.lights.length));
+    n.lights.forEach((l, i) => l.position.set(x, H - 0.7, (i + 0.25) * Lr / n.lights.length)); // the first near the end wall; a little under the tube, so the ceiling takes its colour evenly, not as hot spots
   }
   for (const st of R.strips) { st.scale.set(0.05, Lr - 0.4, 1); st.position.set(st.userData.side * Math.min(1.4, Wd / 2 - 1.6), 0.006, Lr / 2); }
   R.pulse.repeat.set(1, Lr / 12);
@@ -1369,11 +1433,11 @@ function arrange() {
   if (R.lookOn) R.outLight.position.set(Wd / 2 + 7, doorH + 2.2, dz); else R.outLight.position.set(Wd / 2 + 3.5, doorH + 0.8, dz);
   R.outLight.target.position.set(Wd / 2 - 2.5, 0, dz);
   R.outLight.distance = R.lookOn ? 0 : 16;
-  R.outLight.intensity = (R.lookOn ? 70 : 60) * S.outside;
+  R.outLight.intensity = (R.lookOn ? 45 : 60) * S.outside; // its spill through the door reads, but isn't the brightest thing
   R.doorAir.scale.set(dw - 0.16, doorH - curtH, 1); R.doorAir.position.set(Wd / 2 + 0.05, (doorH - curtH) / 2, dz);
-  own(R.doorAir).opacity = 0.22 * S.outside;
-  R.pool.scale.set(3.4, dw + 1.2, 1); R.pool.position.set(Wd / 2 - 1.5, 0.012, dz);
-  own(R.pool).opacity = 0.32 * S.outside;
+  own(R.doorAir).opacity = 0.025 * S.outside; // faint (it read as a bright card): the street light itself does the work
+  R.pool.scale.set(5.1, dw + 1.2, 1); R.pool.position.set(Wd / 2 - 2.35, 0.012, dz);
+  own(R.pool).opacity = 0.06 * S.outside;
   R.outLabel.position.set(Wd / 2 + 2.5, 2.2, dz);
 
   // the wood's tone: dark walnut to light oak
@@ -1534,6 +1598,7 @@ function placeTv() {
   t.face.scale.set(L.faceW, L.faceH, 1); t.face.position.set(0, S.tvY, front);
   t.line.position.set(0, S.tvY, front + 0.002);
   t.glow.position.set(0, S.tvY, 1.1);
+  t.halo.position.set(0, S.tvY, 0.012); t.halo.scale.set(S.tvW * 2.8, S.tvW * 1.6, 1); // a wide, faint ellipse round the cabinet
 }
 function syncLabels() { for (const lb of R.labels) lb.visible = !!S.labels && (!lb.userData.show || lb.userData.show()); }
 function applyFlags() {
@@ -1553,13 +1618,17 @@ function applyFlags() {
     for (const m of R.mess) set(m.mesh, m.mesh.userData.mats[look ? 1 : 0]);
     arrange(); // the contact shadows
   }
-  R.hemi.intensity = look ? 0.12 : 0.42;
+  // the fill: in the look a little more of it, warm and grey (the far end sank into red-black), and the night outside
+  // darker and more indigo (it read as a flat periwinkle card); the skeleton keeps its own
+  // (r185's lights are physical: a hemisphere's lux is colour x intensity, so these dark hues need ~4 to be felt at all)
+  R.hemi.intensity = look ? 4 : 0.42; R.hemi.color.set(look ? 0x3a3450 : 0x46346e); R.hemi.groundColor.set(look ? 0x1a1210 : 0x0b0907);
+  own(R.backdrop).color.set(look ? 0x7878ff : 0xffffff);
   if (renderer.shadowMap.enabled !== !!S.shadows) { renderer.shadowMap.enabled = !!S.shadows; scene.traverse((o) => { if (o.material?.isMaterial) o.material.needsUpdate = true; }); }
   setPaint(!!S.paint && !wire && !!R.paint); // the painted room (Painted); the wireframe shows the bare set
   for (const m of [...Object.values(R.edgeMats), R.acEdge]) m.visible = !look && !R.paintOn;
   syncLabels();
   const on = !!S.engine; // engine off by default (Dan): dark tail-lights
-  R.tailMat.color.setRGB(...(on ? [1.6, 0.12, 0.08] : [0.22, 0.03, 0.03])); R.tail.intensity = on ? 4 : 0; R.tail.visible = on;
+  R.tailMat.color.setRGB(...(on ? [1.6, 0.12, 0.08] : [0.1, 0.008, 0.008])); R.tail.intensity = on ? 4 : 0; R.tail.visible = on; // off: deep red, not salmon
   document.body.classList.toggle('editing', !!S.edit);
   if (!S.edit) { R.hoverBox.visible = false; }
   $('editNote').textContent = S.edit ? 'Click a thing in the room and drag it: wall things slide along the wall, floor things across the floor.'
@@ -1686,11 +1755,11 @@ function resize() {
     $('navImg').src = $('stageNavImg').src = `assets/nav-${c.navW}.webp`;
     $('belowImg').src = `assets/below-${c.navW}.webp`;
   }
-  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.75));
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.75, Math.sqrt(3.7e6 / (vw * vh)))); // the recipe's laptop budget: a 3.7 MP drawing buffer at most
   renderer.setSize(vw, vh, false); composer.setPixelRatio(renderer.getPixelRatio()); composer.setSize(vw, vh);
   const dpr = renderer.getPixelRatio();
   R.mirror.getRenderTarget().setSize(Math.round(vw * dpr * 0.5), Math.round(vh * dpr * 0.5));
-  R.wet.getRenderTarget().setSize(Math.round(vw * dpr * 0.35), Math.round(vh * dpr * 0.35)); // it's softened anyway
+  R.wet.getRenderTarget().setSize(Math.round(vw * dpr * 0.28), Math.round(vh * dpr * 0.28)); // it's softened anyway
   layoutCamera(); arrange(); benchFit();
 }
 // layoutCamera(): the camera's start and end on this screen. The room has one size in metres (Dan 2026-11-04: a room
@@ -1828,6 +1897,20 @@ function initFilm() { // per film: a 16:9 box over the 3D room (under the TV, th
     return f;
   });
 }
+// the room's light levels from the intro's envelopes (the neon, the lamps' warm-up, the sign, the TV's power-on) and how
+// far the walk still has to go; the probe calls it with everything at 1 for its capture. The look's levels are for AgX
+// at exposure 1: the emitters burn bright but keep their colour, the room takes a share
+function lightRoom(neonK, warm, signK, open, far, now) {
+  const lampK = warm * S.lamps;
+  for (const n of R.neon) { n.mat.color.copy(n.mat.userData.base).multiplyScalar(7 * neonK); for (const l of n.lights) l.intensity = 30 * neonK; }
+  for (const lp of R.lamps) { lp.light.intensity = 80 * lampK; lp.bulbMat.color.copy(lp.bulbMat.userData.base).multiplyScalar(0.3 + 3.2 * lampK); } // the pools are the room's main light, like the painting's
+  R.shaftMat.uniforms.uK.value = 0.05 * S.shafts * lampK * far;
+  for (const l of R.propLights || []) l.intensity = l.userData.cd * warm * (!reduced && l.parent.userData.item?.id === 'N02' && hash(Math.floor(now / 400) + 9) > 0.93 ? 0.55 : 1); // one tube dying
+  R.signMat.color.setScalar(0.08 + 1.4 * signK); R.signLight.intensity = 6 * signK;
+  R.tv.glow.intensity = 3 * S.tvGlow * open * (reduced ? 1 : 1 + 0.05 * Math.sin(now * 0.0019)) * far;
+  R.tv.haloMat.opacity = 0.25 * open;
+  for (const m of SHINY) m.envMapIntensity = S.probe * (m.userData.env ?? 1) * warm; // the reflections come up with the lamps
+}
 function frame(now) {
   const t = now - t0;
   const e = easeIO(clamp(progress), S.ease), far = 1 - e;
@@ -1844,19 +1927,15 @@ function frame(now) {
   camera.rotation.set(amp * 0.004 * Math.sin(now * 0.00023), amp * 0.006 * Math.sin(now * 0.00019 + 1.3), amp * 0.002 * Math.sin(now * 0.00031));
 
   // light: the strips buzz on, the lamps warm up, the sign, then the tube opens
-  const hum = 1 + 0.03 * Math.sin(now * 0.004) + (hash(Math.floor(now / 90)) > 0.988 ? -0.3 : 0);
+  // (reduced motion: the room settles and holds still, no hum, stutter or dying tube)
+  const hum = reduced ? 1 : 1 + 0.03 * Math.sin(now * 0.004) + (hash(Math.floor(now / 90)) > 0.988 ? -0.3 : 0);
   const neonK = flicker(t, INTRO.neon, 3) * S.neon * hum;
-  // (the look's light levels are for AgX at exposure 1: the tubes burn bright, the room takes a share)
-  for (const n of R.neon) { n.mat.color.copy(n.mat.userData.base).multiplyScalar(14 * neonK); for (const l of n.lights) l.intensity = 21 * neonK; }
   const warm = smooth(0, 1, env(t, INTRO.lamps)), lampK = warm * S.lamps;
-  for (const lp of R.lamps) { lp.light.intensity = 26 * lampK; lp.bulbMat.color.copy(lp.bulbMat.userData.base).multiplyScalar(0.3 + 9 * lampK); }
-  R.shaftMat.uniforms.uK.value = 0.05 * S.shafts * lampK * far;
-  for (const l of R.propLights || []) l.intensity = l.userData.cd * warm * (l.parent.userData.item?.id === 'N02' && hash(Math.floor(now / 400) + 9) > 0.93 ? 0.55 : 1); // one tube dying
-  const signK = flicker(t, INTRO.sign, 11) * hum * (hash(Math.floor(now / 140) + 5) > 0.994 ? 0.25 : 1); // an old sign: a rare stutter
-  R.signMat.color.setScalar(0.08 + 2.2 * signK); R.signLight.intensity = 3 * signK;
+  const signK = flicker(t, INTRO.sign, 11) * hum * (!reduced && hash(Math.floor(now / 140) + 5) > 0.994 ? 0.25 : 1); // an old sign: a rare stutter
   const tk = reduced ? 1 : env(t, INTRO.tv), open = smooth(0.18, 0.62, tk);
+  if (R.probe.due && now > R.probe.due) { R.probe.due = 0; updateProbe(); } // (its capture lights the room fully: before this frame's levels)
+  lightRoom(neonK, warm, signK, open, far, now);
   R.tv.faceMat.color.setScalar(locked ? 1 : 0.03 + 0.97 * open);
-  R.tv.glow.intensity = 3 * S.tvGlow * open * (1 + 0.05 * Math.sin(now * 0.0019)) * far;
   const la = tk >= 1 ? 0 : 1 - smooth(0.35, 0.75, tk);
   R.tv.lineMat.opacity = la; R.tv.line.visible = la > 0.001;
   R.tv.line.scale.set(S.tvW * clamp(tk / 0.18), 0.006 + L.tvH * open * 0.3, 1);
@@ -1881,7 +1960,7 @@ function frame(now) {
   for (const sm of R.screenMats) {
     const glitch = still && hash(Math.floor(now / 110) + sm.id) > 0.985;
     // the screens' exact pixels (FINISH) at the default (screens 1.8); the slider dims or pushes them
-    sm.color.setScalar(S.screens / 1.8 * (0.94 + 0.06 * hash(Math.floor(now / 70) + sm.id)) * (0.15 + 0.85 * warm) * (glitch ? 1.2 : 1));
+    sm.color.setScalar(S.screens / 1.8 * (still ? 0.94 + 0.06 * hash(Math.floor(now / 70) + sm.id) : 1) * (0.15 + 0.85 * warm) * (glitch ? 1.2 : 1));
     if (sm.map) sm.map.offset.x = glitch ? 0.02 : 0;
   }
 
@@ -1889,9 +1968,7 @@ function frame(now) {
   scene.fog.density = S.fog * far;
   R.wet.material.uniforms.uFog.value = scene.fog.density;
   finishPass.uniforms.uTone.value = TONES[S.tone] ?? 1; finishPass.uniforms.toneMappingExposure.value = renderer.toneMappingExposure = S.exposure;
-  for (const m of SHINY) m.envMapIntensity = S.probe * (m.userData.env ?? 1);
-  if (R.probe.due && now > R.probe.due) { R.probe.due = 0; updateProbe(); }
-  bloomPass.strength = R.paintOn ? 0 : S.bloom * (R.lookOn ? 0.45 : 1) * far * far; // the paintings carry their own glow
+  bloomPass.strength = R.paintOn ? 0 : S.bloom * (R.lookOn ? 0.3 : 1) * far * far; // the paintings carry their own glow
   bloomPass.threshold = R.lookOn ? 1.6 : 0.9; // in the look only real emitters glow: tubes, bulbs, screens
   R.dust.mat.opacity = 0.55 * S.dust * Math.pow(far, 1.2);
   R.dust.pts.visible = S.dust > 0;
@@ -2280,8 +2357,8 @@ let resizeTimer = 0;
 addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(resize, 120); });
 tvImg.addEventListener('load', applyTvTexture);
 
-// fonts first (the sign and the labels are drawn with them), then the room, once
-await Promise.race([Promise.all([document.fonts.load('400 64px "Bebas Neue"'), document.fonts.load('600 34px Inter')]), new Promise((r) => setTimeout(r, 1500))]);
+// fonts first (the sign and the labels are drawn with them) and every texture, then the room, once
+await Promise.all([Promise.race([Promise.all([document.fonts.load('400 64px "Bebas Neue"'), document.fonts.load('600 34px Inter')]), new Promise((r) => setTimeout(r, 1500))]), loadTextures()]);
 createRoom();
 resize();
 applyFlags();
@@ -2292,6 +2369,12 @@ wakeArt();
 hist = [snapshot()]; histAt = 0; undoUi(); // the room as it opened is the first step
 // the pictures arrive after the first layout: re-place them once each lands (their size follows the image's shape)
 for (const it of R.items) if (it.tex) { const img = it.tex.image; if (!img || !img.width) it.tex.onUpdate = () => { it.tex.onUpdate = null; arrange(); }; }
+// the maps go up to the GPU and the shaders compile before the intro's clock starts (on first use they froze its first
+// second and a half, and the lights jumped from dim to full in one frame); the stall sits on the dark page instead. Then
+// the first probe capture: the textures are in, the lights at their final levels (a picture landing later recaptures)
+for (const t of [...Object.values(PBR).flatMap((set) => Object.values(set)), ...Object.values(PICS)]) renderer.initTexture(t); // after the clones: one upload per map
+await renderer.compileAsync(scene, camera);
+updateProbe(); R.probe.due = 0;
 t0 = performance.now();
 requestAnimationFrame(raf);
 </script>
