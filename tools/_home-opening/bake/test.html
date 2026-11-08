@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bake Test Room</title>
+<!-- Route B's engine on the phase-1 test room (bake/README in the hand-back). Serve the worktree root:
+     python3 -m http.server 4493 --bind 127.0.0.1  ->  /tools/_home-opening/bake/test.html
+     The room's light is two baked groups (G1 amber lamp, G2 violet tube) in one 8-bit PNG, mixed live by one uniform
+     (lightmaps.js); the finish is room.html's (AgX in a finish pass, exposure 1, no bloom here: Blender has none).
+     Query: g1=, g2= (each group's intensity, 1 = as baked), c1=, c2= (its colour, hex, read as sRGB),
+     mode=bake | live (G1 as a live three.js PointLight at the glTF's W/4pi candela x live=, no bake) | perf (bake vs
+     live lights: live G1 + 3 point lights along the tube, like room.html's neon), w=, h= (canvas px, default 1141 x 636),
+     ui=0 (no dials), exposure=, finish=blender (Blender 5.2's exact AgX from a LUT instead of three.js's AgX). -->
+<script type="importmap">
+  { "imports": { "three": "../vendor/three/build/three.module.min.js", "three/addons/": "../vendor/three/examples/jsm/" } }
+</script>
+<style>
+  :root { --bg: #0b0a09; --fg: #efe9df; --line: #3a332c; }
+  @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) { --bg: #0b0a09; --fg: #efe9df; } }
+  html, body { margin: 0; background: var(--bg); color: var(--fg); font: 13px/1.4 Inter, system-ui, sans-serif; }
+  canvas { display: block; }
+  .dials { position: fixed; right: 12px; top: 12px; background: rgba(11, 10, 9, .82); border: 1px solid var(--line);
+    border-radius: 8px; padding: 10px 12px; display: grid; gap: 8px; min-width: 220px; }
+  .dials label { display: grid; grid-template-columns: 70px 1fr 40px 28px; align-items: center; gap: 6px; }
+  .dials input[type=color] { width: 28px; height: 20px; padding: 0; border: 0; background: none; }
+  .dials output { font-variant-numeric: tabular-nums; text-align: right; }
+  .dials .note { opacity: .65; font-size: 11px; }
+</style>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<div class="dials" id="dials" hidden></div>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { BakedLight, LIVE_PER_WATT } from './lightmaps.js';
+
+const Q = new URLSearchParams(location.search);
+const num = (k, d) => (Q.has(k) ? parseFloat(Q.get(k)) : d);
+const MODE = Q.get('mode') || 'bake';
+const W = num('w', 1141), H = num('h', 636);
+
+// ---------- renderer + finish: room.html's (FINISH copied verbatim; no bloom pass) ----------
+const canvas = document.getElementById('gl');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance', preserveDrawingBuffer: Q.has('shot') });
+renderer.setPixelRatio(1);
+renderer.setSize(W, H);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.NoToneMapping; // the finish pass tone-maps the room
+renderer.shadowMap.enabled = MODE !== 'bake'; renderer.shadowMap.type = THREE.PCFShadowMap;
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x000000);
+// room.html's FINISH, with one branch added: uTone 4 = Blender 5.2's own AgX from a 3D LUT (agx_lut.py; ?finish=blender).
+// Three.js's AgX (uTone 1, room.html's) is Filament's port and renders mid-tones brighter than Blender's (parity test).
+const FINISH = {
+  uniforms: { tDiffuse: { value: null }, toneMappingExposure: { value: 1 }, uTone: { value: 1 }, tLut: { value: null }, uLutN: { value: 48 } },
+  vertexShader: /* glsl */`varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+  fragmentShader: /* glsl */`
+    uniform sampler2D tDiffuse; uniform float uTone; varying vec2 vUv;
+    uniform highp sampler3D tLut; uniform float uLutN;
+    #include <tonemapping_pars_fragment>
+    void main() {
+      vec4 c = texture2D(tDiffuse, vUv);
+      vec3 room;
+      if (uTone > 3.5) { // Blender AgX: log2 shaper over AgX's range, the LUT gives sRGB display codes
+        vec3 sh = clamp((log2(max(c.rgb * toneMappingExposure, vec3(exp2(-12.47393)))) + 12.47393) / 16.5, 0.0, 1.0);
+        room = texture(tLut, sh * ((uLutN - 1.0) / uLutN) + 0.5 / uLutN).rgb;
+      } else {
+        room = uTone < 0.5 ? clamp(c.rgb * toneMappingExposure, 0.0, 1.0) : uTone < 1.5 ? AgXToneMapping(c.rgb)
+          : uTone < 2.5 ? NeutralToneMapping(c.rgb) : ACESFilmicToneMapping(c.rgb);
+        room = sRGBTransferOETF(vec4(room, 1.0)).rgb;
+      }
+      room += (fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453) - 0.5) / 255.0;
+      vec3 screen = sRGBTransferOETF(vec4(clamp(c.rgb, 0.0, 1.0), 1.0)).rgb;
+      gl_FragColor = vec4(mix(screen, room, clamp(c.a, 0.0, 1.0)), 1.0);
+    }`,
+};
+async function blenderAgxLut(url, n = 48) {
+  const u16 = new Uint16Array(await (await fetch(url)).arrayBuffer());
+  const data = new Uint16Array(n * n * n * 4);
+  for (let i = 0, j = 0; i < u16.length; i += 3, j += 4) {
+    data[j] = THREE.DataUtils.toHalfFloat(u16[i] / 65535); data[j + 1] = THREE.DataUtils.toHalfFloat(u16[i + 1] / 65535);
+    data[j + 2] = THREE.DataUtils.toHalfFloat(u16[i + 2] / 65535); data[j + 3] = THREE.DataUtils.toHalfFloat(1);
+  }
+  const t = new THREE.Data3DTexture(data, n, n, n);
+  Object.assign(t, { format: THREE.RGBAFormat, type: THREE.HalfFloatType, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter,
+    wrapS: THREE.ClampToEdgeWrapping, wrapT: THREE.ClampToEdgeWrapping, wrapR: THREE.ClampToEdgeWrapping, unpackAlignment: 1 });
+  t.needsUpdate = true;
+  return t;
+}
+const composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 }));
+composer.setPixelRatio(1);
+composer.setSize(W, H);
+const finishPass = new ShaderPass(FINISH);
+finishPass.needsSwap = false;
+finishPass.uniforms.toneMappingExposure.value = num('exposure', 1);
+finishPass.uniforms.tLut.value = await blenderAgxLut('./test-room/agx-blender-48.bin'); // (bound always: a sampler must have a texture)
+if (Q.get('finish') === 'blender') finishPass.uniforms.uTone.value = 4;
+
+// ---------- the room ----------
+const gltf = await new GLTFLoader().loadAsync('./test-room/test-room.gltf');
+scene.add(gltf.scene);
+const camera = gltf.cameras[0];
+camera.aspect = W / H; camera.updateProjectionMatrix();
+composer.addPass(new RenderPass(scene, camera)); composer.addPass(finishPass);
+
+const lamp = [];
+gltf.scene.traverse((o) => { if (o.isLight) lamp.push(o); });
+const bake = await BakedLight.load('./test-room/');
+window.bake = bake;
+
+if (MODE === 'perf') gltf.scene.traverse((o) => { if (o.isMesh) o.userData.liveMat = o.material.clone(); }); // unbaked twins
+if (MODE === 'bake' || MODE === 'perf') {
+  bake.apply(gltf.scene);
+  gltf.scene.traverse((o) => { if (o.isMesh) o.userData.bakeMat = o.material; });
+  for (const l of lamp) l.visible = false; // the glTF's light is baked in
+}
+// G1 as a live light: the glTF carries W / 4 pi (Unitless); live= scales it (the factor the parity test settles)
+const liveK = num('live', 1);
+for (const l of lamp) {
+  l.userData.cd = l.intensity;
+  l.intensity *= liveK;
+  l.castShadow = true; l.shadow.mapSize.set(1024, 1024); l.shadow.bias = -0.0005; l.shadow.normalBias = 0.02;
+  l.shadow.camera.near = 0.05; l.shadow.camera.far = 12;
+}
+gltf.scene.traverse((o) => { if (o.isMesh) o.castShadow = o.receiveShadow = true; });
+
+// perf: the same room lit live instead (G1 live + the tube as 3 point lights, like room.html's neon strips)
+const perfLive = [];
+if (MODE === 'perf') {
+  const tube = gltf.scene.getObjectByName('NeonTube');
+  const box = new THREE.Box3().setFromObject(tube), c = box.getCenter(new THREE.Vector3()), s = box.getSize(new THREE.Vector3());
+  const along = s.x > s.z ? new THREE.Vector3(s.x / 3, 0, 0) : new THREE.Vector3(0, 0, s.z / 3);
+  for (let i = -1; i <= 1; i++) {
+    const l = new THREE.PointLight(new THREE.Color(0.55, 0.15, 1.0), 1, 0, 2);
+    l.position.copy(c).addScaledVector(along, i); l.visible = false; scene.add(l); perfLive.push(l);
+  }
+}
+
+// ---------- the dials: g<k> = group k's intensity, c<k> its colour ----------
+const dials = bake.groups.map((g, i) => {
+  const k = i + 1;
+  const color = Q.has('c' + k) ? new THREE.Color('#' + Q.get('c' + k)) : new THREE.Color().setRGB(...g.color, THREE.LinearSRGBColorSpace);
+  return { g, color, intensity: num('g' + k, 1) };
+});
+const tubeMats = new Set();
+gltf.scene.traverse((o) => { if (o.isMesh && o.userData.light_group) tubeMats.add(o.material); });
+for (const m of tubeMats) m.userData.base = m.emissiveIntensity;
+function applyDials() {
+  for (const d of dials) bake.setGroup(d.g.name, d.color, d.intensity);
+  // the emitters' own glow and the live light follow their group's dial too
+  gltf.scene.traverse((o) => {
+    const dl = dials.find((d) => d.g.name === o.userData.light_group);
+    if (!dl) return;
+    if (o.isMesh) { o.material.emissive.copy(dl.color); o.material.emissiveIntensity = o.material.userData.base * dl.intensity; }
+    if (o.isLight) { o.color.copy(dl.color); o.intensity = o.userData.cd * liveK * dl.intensity; }
+  });
+}
+applyDials();
+if (Q.get('ui') !== '0') {
+  const el = document.getElementById('dials'); el.hidden = false;
+  el.innerHTML = dials.map((d, i) => `<label>${d.g.name.replace('_', ' ')}<input type="range" min="0" max="2" step="0.01" value="${d.intensity}" data-i="${i}"><output>${d.intensity.toFixed(2)}</output><input type="color" value="#${d.color.getHexString()}" data-c="${i}"></label>`).join('')
+    + `<div class="note">${MODE} · one shared uniform · ${bake.materials.size} materials</div>`;
+  el.addEventListener('input', (e) => {
+    const t = e.target;
+    if (t.dataset.i) { dials[t.dataset.i].intensity = +t.value; t.nextElementSibling.value = (+t.value).toFixed(2); }
+    if (t.dataset.c) dials[t.dataset.c].color.set(t.value);
+    applyDials(); draw();
+  });
+}
+
+function draw() { composer.render(); }
+draw();
+
+// ---------- hooks for the parity / perf runner (bake/parity.mjs) ----------
+// the scene-linear frame (before the finish), as float32 RGBA, rows bottom-up (WebGL's order)
+window.__raw = () => {
+  const rt = new THREE.WebGLRenderTarget(W, H, { type: THREE.FloatType });
+  renderer.setRenderTarget(rt); renderer.render(scene, camera); renderer.setRenderTarget(null);
+  const px = new Float32Array(W * H * 4);
+  renderer.readRenderTargetPixels(rt, 0, 0, W, H, px);
+  rt.dispose(); draw();
+  const u8 = new Uint8Array(px.buffer); let s = '';
+  for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000));
+  return btoa(s);
+};
+window.__shot = () => { draw(); return canvas.toDataURL('image/png'); };
+// ms per frame: n frames, each forced to finish (1 px read-back), after a warm-up
+// variant: 'bake' (the packed groups, no lights) | 'live' (G1 + its shadow + 3 tube lights, shadows drawn once, like
+// room.html's autoUpdate = false) | 'unlit' (the same materials with no light at all: the floor both are measured from)
+window.__perf = (n = 120, variant = 'bake') => {
+  const live = variant === 'live';
+  for (const l of lamp) l.visible = live;
+  for (const l of perfLive) { l.visible = live; l.intensity = 11 * dials[1].intensity; }
+  gltf.scene.traverse((o) => { if (o.isMesh && o.userData.liveMat) o.material = variant === 'bake' ? o.userData.bakeMat : o.userData.liveMat; });
+  renderer.shadowMap.autoUpdate = false; renderer.shadowMap.needsUpdate = true;
+  const gl = renderer.getContext(), one = new Uint8Array(4);
+  const frame = () => { composer.render(); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, one); };
+  for (let i = 0; i < 20; i++) frame();
+  const t = performance.now();
+  for (let i = 0; i < n; i++) frame();
+  return (performance.now() - t) / n;
+};
+window.__info = () => {
+  const gl = renderer.getContext(), dbg = gl.getExtension('WEBGL_debug_renderer_info');
+  return { gpu: dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER), programs: renderer.info.programs.length,
+    materials: bake.materials.size, uv1: !!gltf.scene.getObjectByName('Room')?.children?.[0]?.geometry?.attributes?.uv1 || !!gltf.scene.getObjectByName('Room')?.geometry?.attributes?.uv1,
+    uniform: bake.uniform.value.map((v) => v.toArray()), packs: bake.manifest.packs, mode: MODE };
+};
+window.__ready = true;
+</script>
+</body>
+</html>

@@ -2475,6 +2475,22 @@ resize();
 applyFlags();
 const modelMaps = await loadModels(); // before the uploads and compiles below, so a model never pops in mid-intro
 setBench(!!S.bench);
+// ===== BAKED LIGHT: route B (bake engineer, 2026-11-08; bake/lightmaps.js, bake/room/*) ================================
+// ?light=baked: the static room lit by its baked light groups, mixed live by one uniform; the live lights stay for what
+// moves or is a screen (the car, the TV face, the CRT screens) and, on baked surfaces, only for their highlights
+// (&spec=0: no live light on baked surfaces at all, the fast variant; &spec=mix: that, but the floor keeps its live
+// highlights, the wet pools; the fast path's gleam: &gleam=<k>, 0 = none). Without the query nothing here runs.
+if (new URLSearchParams(location.search).get('light') === 'baked') {
+  const { BakedRoom } = await import('./bake/lightmaps.js');
+  const bq = new URLSearchParams(location.search); // &packs=ktx2: the UASTC packs instead of the PNGs
+  const baked = await BakedRoom.attach({ R, scene, SHINY, renderer, base: './bake/room/', spec: { 0: false, mix: 'mix' }[bq.get('spec')] ?? true, ktx2: bq.get('packs') === 'ktx2', ...(bq.has('gleam') && { gleamK: +bq.get('gleam') }) });
+  const live = lightRoom;
+  lightRoom = (...a) => { live(...a); baked.update(); }; // the dials follow lightRoom()'s live levels: one uniform write a frame
+  renderer.shadowMap.needsUpdate = true;
+  window.__baked = baked;
+  console.info('baked light:', baked.stats.baked, 'meshes baked;', baked.stats.missing.length, 'not in the bake,', baked.stats.changed.length, 'changed since (re-bake their slots):', [...baked.stats.missing, ...baked.stats.changed].join(' '));
+}
+// ===== end BAKED LIGHT ===================================================================================================
 if (new URLSearchParams(location.search).has('expose')) window.__room = { R, camera, L, S, walkDist, arrange, go: (p) => jumpTo(p * L.walkPx) }; // inspection and render scripts only
 if (CAPTURE != null) { document.body.classList.add('capture'); for (const m of [...Object.values(R.edgeMats), R.acEdge]) m.visible = false; jumpTo(+CAPTURE * L.walkPx); }
 wakeArt();
