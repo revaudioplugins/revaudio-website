@@ -209,7 +209,9 @@ Steps:
             room baked per group in Cycles, packed 8-bit, mixed live in three.js: within 0.5 % of Cycles on the walls
             (target 2 %); the baked map goes in x pi; a live PointLight at W / 4 pi = its baked self (factor 1).
             three.js's AgX ≠ Blender 5.2's (mid-grey 128 vs 118): room.html keeps three.js's (the approved look; A
-            and B both use it); a Blender-AgX LUT stays a tool. KTX2 needs `brew install ktx-software` (Dan's OK).
+            and B both use it); a Blender-AgX LUT stays a tool. KTX2: Dan OK'd it (2026-11-08); KTX-Software 4.4.2
+            (Khronos' signed + notarized Darwin-arm64 .pkg from GitHub, not in Homebrew) unpacked user-local, no sudo,
+            not on PATH: `~/.local/ktx-software/4.4.2/bin/{ktx,toktx,ktxinfo,ktx2check}`.
             Phase 2 running: the whole room's static light baked, `?light=baked` in room.html.
       - [x] Phone tester baseline (2026-11-08): `look/step3/phone-test/report.md` + findings.json (14). GPU ~422 MB
             vs the 100 MB budget (PH-01, the designer's); the address bar threw readers back to the TV (PH-02, fixed
