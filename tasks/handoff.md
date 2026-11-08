@@ -1,7 +1,8 @@
 ## 2026-11-03 — Home opening: the long garage, an ACTIVE PROJECT (Claude Code `danavivi-4e [b36252]`, Dan's Mac; continues `danavivi-7a [9ae241]`) — on branch `feat/home-opening`, pushed, not on main
 
-Claim: OPEN `danavivi-09 [fb47f7]` (Dan's Mac); taken over from `danavivi-4e` on 2026-11-04 (Dan reopened the room in a new
-session), which took it from `danavivi-7a` (closed) on 2026-11-03. Dan, 2026-11-03: "this is a
+Claim: OPEN `danavivi-20 [c417bc]` (Dan's Mac); taken over from `danavivi-09` on 2026-11-08 (Dan: "take the claim from
+danavivi-09, then go", for the look pass), which took it from `danavivi-4e` on 2026-11-04, which took it from `danavivi-7a`
+(closed) on 2026-11-03. Dan, 2026-11-03: "this is a
 project we start working on now, from now on": the long garage is a standing project of the site, not a one-off hero. It
 replaces the TV-first entry's "no hero above the TV" (DESIGN.md §7) on Dan's word. Files: `tools/_home-opening/**` (not in
 the build), `tasks/handoff.md` (this entry), `tasks/todo.md` (the plan, top), `DESIGN.md` §7 (the living-set rule). Later,

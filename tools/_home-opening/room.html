@@ -10,7 +10,9 @@
      python3 -m http.server <port> --bind 127.0.0.1  ->  /tools/_home-opening/room.html
      The bench (T) shrinks the page beside it so the whole room stays in view; every slider moves the room live
      (the room is built once, a slider only re-places it). Move things (M): click anything in the room and drag it.
-     Keys: T bench, M move things, L labels, W neon wireframe. Three.js r170 is vendored (MIT). -->
+     Keys: T bench, M move things, L labels, W neon wireframe. Three.js 0.185.1 is vendored (MIT), the site's own pin.
+     The look pass (2026-11-08): CC0 materials (assets/pbr), AgX on the room only (the TV and CRT screens keep their
+     exact pixels), lamp shadows, a wet floor, the room's own reflections; the bench's Look chip shows the blocks again. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&family=Yellowtail&display=swap" rel="stylesheet">
@@ -130,12 +132,13 @@
 <button class="bench-open" id="benchOpen" aria-label="Open the bench">⚙ Bench</button>
 <aside class="bench" id="bench" aria-label="Bench" data-lenis-prevent hidden>
   <div class="bench-head">
-    <b>Bench</b><span class="tag" title="Grey blocks only: no Higgsfield credits spent">SKELETON · NO CREDITS</span><span class="grow"></span>
+    <b>Bench</b><span class="tag" title="The 3D set with CC0 materials (assets/pbr): no credits spent">LOOK PASS · NO CREDITS</span><span class="grow"></span>
     <button class="chip icon" id="btnUndo" aria-label="Undo" title="Undo (⌘Z)" disabled>↶</button>
     <button class="chip icon" id="btnRedo" aria-label="Redo" title="Redo (⇧⌘Z)" disabled>↷</button>
     <button class="chip" id="benchClose" aria-label="Hide the bench">Hide ›</button>
   </div>
   <div class="row">
+    <button class="chip" data-flag="look" title="Real materials and night light; off = the grey outlined blocks">Look</button>
     <button class="chip" data-flag="labels">Labels</button>
     <button class="chip" data-flag="wire">Neon wireframe</button>
     <button class="chip" data-flag="readB">Big line</button>
@@ -181,8 +184,9 @@ import * as THREE from 'three';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
-import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { Reflector } from 'three/addons/objects/Reflector.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 
 // ---------- settings (the bench; COPY SETTINGS bakes them) ----------
 const DEF = {
@@ -205,8 +209,12 @@ const DEF = {
   // the REVAUDIO neon: off the aisle (Dan 2026-11-02: "not in your face"), then on the end wall, right of the TV (11-03)
   signWall: 'endLeft', signF: 0.52, signX: -1.62, signY: 2.95,  // the wall in front of you, top right (Dan 11-03, placed 11-04)
   signScale: 1.15, signTilt: -2,        // hung a little crooked on two wires (Dan 11-03; sized 11-04)
-  ver: 9,                                // settings version (5 = Dan's bench of 11-03 baked, 6 = his third, with the pegboard move, 7 = back to the bare set; his bench of 11-04 needed no bump; 8 = the snap off; 9 = B + A's moves as the room): 2 moved the sign to the end wall, 3 made it bigger + crooked, 4 took the road off the floor
-  labels: 1, wire: 0, readB: 1, snap: 0, paint: 0, film: 0, bench: 0, edit: 0,  // paint: the painted room over the bare set; film: the walk film over both; snap: free scrolling by default, the snap stays a bench option (Dan 2026-11-04)
+  ver: 10,                               // settings version (5 = Dan's bench of 11-03 baked, 6 = his third, with the pegboard move, 7 = back to the bare set; his bench of 11-04 needed no bump; 8 = the snap off; 9 = B + A's moves as the room; 10 = the look pass): 2 moved the sign to the end wall, 3 made it bigger + crooked, 4 took the road off the floor
+  // the look pass (2026-11-08, todo 1b): real materials and night light on the same set (Skeleton = the grey labelled
+  // blocks); tone = the tone mapping (AgX), exposure its exposure; probe = how much the room shows in its own shiny
+  // things (chrome, paint, the floor); shafts = the haze under the lamps
+  look: 1, tone: 'agx', exposure: 1, shadows: 1, probe: 1, shafts: 0.5,
+  labels: 0, wire: 0, readB: 1, snap: 0, paint: 0, film: 0, bench: 0, edit: 0,  // paint: the painted room over the bare set; film: the walk film over both; snap: free scrolling by default, the snap stays a bench option (Dan 2026-11-04)
   // (both off, Dan 2026-11-03 after the one-shot film: "lets go back to the skelton this is not what i want")
   // per-object moves from the move tool: { id: { f, x, y, side, s, r } }; Dan's pick of 2026-11-05 (layouts/b-plus-a.json)
   moves: {
@@ -332,6 +340,7 @@ if (sv < 6) delete S.moves.L01; // baked into its row
 if (sv < 7) Object.assign(S, { paint: 0, film: 0 }); // the bare set is the room again
 if (sv < 8) S.snap = 0; // free scrolling by default (Dan 2026-11-04); the bench can turn the snap back on
 if (sv < 9) { for (const k of Object.keys(S)) delete S[k]; Object.assign(S, DEF, { moves: structuredClone(DEF.moves) }); } // the room is B + A's moves now (Dan 2026-11-05)
+if (sv < 10) Object.assign(S, { look: 1, labels: 0 }); // the look pass: real materials, no slot labels
 S.ver = DEF.ver;
 // ?layout=<name>: a proposed layout (layouts/<name>.json, the bench's Copy-settings format) over the defaults, to walk
 // and compare; this browser's saved bench is left alone and nothing is saved
@@ -380,14 +389,46 @@ const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const canvas = $('gl');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
 renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.toneMapping = THREE.NoToneMapping; // the TV's pixels must come out as captured at the lock
+renderer.toneMapping = THREE.NoToneMapping; // the finish pass tone-maps the room; the TV's pixels come out as captured
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap;
+renderer.shadowMap.autoUpdate = false; // the lights hang still: the shadows are redrawn only when things move (arrange)
 const camera = new THREE.PerspectiveCamera(S.lens, 1, 0.05, 260);
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x060509);
 scene.fog = new THREE.FogExp2(0x0b0812, S.fog);
-const composer = new EffectComposer(renderer);
+// The frame's alpha says what gets tone-mapped: the room writes 1, the live screens (the TV face, the CRT screens) 0, and
+// anything see-through leaves it as it was (keepAlpha), so the screens keep their exact pixels under the room's AgX.
+function keepAlpha(m, add = m.blending === THREE.AdditiveBlending) {
+  return Object.assign(m, { blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.SrcAlphaFactor,
+    blendDst: add ? THREE.OneFactor : THREE.OneMinusSrcAlphaFactor, blendSrcAlpha: THREE.ZeroFactor, blendDstAlpha: THREE.OneFactor });
+}
+function liveScreen(m) { // an opaque screen: its pixels skip the tone mapping
+  m.onBeforeCompile = (sh) => { sh.fragmentShader = sh.fragmentShader.replace('#include <dithering_fragment>', '#include <dithering_fragment>\n\tgl_FragColor.a = 0.0;'); };
+  return m;
+}
+// the finish: the room tone-mapped (bench: tone, exposure) and dithered against banding in the dark; the screens as they are
+const TONES = { none: 0, agx: 1, neutral: 2, aces: 3 };
+const FINISH = {
+  uniforms: { tDiffuse: { value: null }, toneMappingExposure: { value: 1 }, uTone: { value: 1 } },
+  vertexShader: /* glsl */`varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+  fragmentShader: /* glsl */`
+    uniform sampler2D tDiffuse; uniform float uTone; varying vec2 vUv;
+    #include <tonemapping_pars_fragment>
+    void main() {
+      vec4 c = texture2D(tDiffuse, vUv);
+      vec3 room = uTone < 0.5 ? clamp(c.rgb * toneMappingExposure, 0.0, 1.0) : uTone < 1.5 ? AgXToneMapping(c.rgb)
+        : uTone < 2.5 ? NeutralToneMapping(c.rgb) : ACESFilmicToneMapping(c.rgb);
+      room = sRGBTransferOETF(vec4(room, 1.0)).rgb + (fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453) - 0.5) / 255.0;
+      vec3 screen = sRGBTransferOETF(vec4(clamp(c.rgb, 0.0, 1.0), 1.0)).rgb;
+      gl_FragColor = vec4(mix(screen, room, clamp(c.a, 0.0, 1.0)), 1.0);
+    }`,
+};
+// half floats with 4x MSAA (the edges of a room full of thin things), the glow, the finish
+const composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 }));
 const bloomPass = new UnrealBloomPass(new THREE.Vector2(512, 512), S.bloom, 0.55, 0.9);
-composer.addPass(new RenderPass(scene, camera)); composer.addPass(bloomPass); composer.addPass(new OutputPass());
+keepAlpha(bloomPass.blendMaterial, true);
+const finishPass = new ShaderPass(FINISH);
+composer.addPass(new RenderPass(scene, camera)); composer.addPass(bloomPass); composer.addPass(finishPass);
 const loader = new THREE.TextureLoader();
 const picture = (name) => { const t = loader.load(`assets/pics/${name}.webp`); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; };
 
@@ -523,6 +564,95 @@ function applyTvTexture() {
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = renderer.capabilities.getMaxAnisotropy();
   R.tv.faceMat.map?.dispose?.(); R.tv.faceMat.map = t; R.tv.faceMat.needsUpdate = true;
 }
+
+// ---------- the look: CC0 texture sets (assets/pbr: col, nrm, arm = AO / roughness / metalness; refs/licence-log.md) ----------
+function pbr(key, rep = 1, nrmKey = key) {
+  const load = (k, m) => { const t = loader.load(`assets/pbr/${k}_${m}.webp`); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 8; t.repeat.setScalar(rep); return t; };
+  const map = load(key, 'col'); map.colorSpace = THREE.SRGBColorSpace;
+  const arm = load(nrmKey, 'arm');
+  return { map, normalMap: load(nrmKey, 'nrm'), aoMap: arm, roughnessMap: arm, metalnessMap: arm };
+}
+const rep = (m, u, v) => { for (const k of ['map', 'normalMap', 'aoMap']) m[k]?.repeat.set(u, v); }; // the arm map serves ao, roughness, metalness
+// one material per kind of thing; texture coordinates are in metres (metricUV), tile = metres per repeat
+const KINDS = {
+  enamel:    { tex: 'enamel', tile: 0.9, color: 0xa8a8a8, metalness: 1, shiny: 1 },    // red tool chests, scratched to the metal
+  steel:     { tex: 'steel', nrm: 'enamel', tile: 0.9, color: 0x5c5c64, metalness: 1, shiny: 0.4 }, // painted steel: shelves, frames, stands
+  gear:      { tex: 'steel', nrm: 'enamel', tile: 0.5, color: 0x26262c, metalness: 1, roughness: 0.75, shiny: 1 }, // black faceplates
+  cream:     { tex: 'steel', nrm: 'enamel', tile: 0.9, color: 0xe2d8c0, metalness: 1, shiny: 1 },  // painted appliances
+  chrome:    { color: 0xd9dde4, metalness: 1, roughness: 0.14, shiny: 1 },
+  brass:     { color: 0xc9a35c, metalness: 1, roughness: 0.32, shiny: 1 },             // cymbals
+  wood:      { tex: 'wood', tile: 1.2, color: 0xffffff },
+  lacquer:   { tex: 'wood', tile: 1.2, color: 0x9a6a62, roughness: 0.35 },              // guitar bodies, drum shells
+  tolex:     { tex: 'tolex', tile: 0.35, color: 0xb0a89e },                              // amps, cabinets, road cases
+  fabric:    { tex: 'fabric', tile: 0.3, color: 0x7a6a5e },
+  carpet:    { tex: 'carpet', tile: 0.9 },
+  rubber:    { tex: 'rubber', tile: 0.4, color: 0x707070 },
+  cardboard: { tex: 'cardboard', tile: 0.7 },
+  rust:      { tex: 'rust', tile: 1.0, color: 0x7a6e66, metalness: 1, shiny: 1 },
+  plate:     { tex: 'plate', tile: 0.45, color: 0x8a8a8a, metalness: 1, shiny: 1 },    // diamond plate
+  plastic:   { color: 0x3a3733, roughness: 0.5 },                                       // CRT cases
+  paper:     { color: 0xcfc6b4, roughness: 0.92 },
+  shelf:     { tex: 'wood', tile: 1.2, color: 0x2e2824, roughness: 0.9 },              // open shelving: its contents in shadow
+  chalk:     { color: 0x1d211f, roughness: 0.95 },
+  oil:       { color: 0x060606, roughness: 0.06, transparent: true, opacity: 0.55, depthWrite: false }, // a fresh stain
+};
+const kindMats = {};
+// the room's own reflection (R.probe) goes only on shiny things: metal, paint, glass. On matte things it would add the
+// lamps' and the neon's light a second time (their lights already light the room)
+const SHINY = new Set();
+function kindMat(kind) {
+  if (kindMats[kind]) return kindMats[kind];
+  const { tex, nrm, tile = 1, shiny, ...o } = KINDS[kind] || KINDS.steel;
+  const m = new THREE.MeshStandardMaterial({ roughness: 1, metalness: 0, ...(tex ? pbr(tex, 1 / tile, nrm || tex) : {}), ...o });
+  if (o.transparent) keepAlpha(m);
+  if (shiny) { SHINY.add(m); m.userData.env = shiny; }
+  return (kindMats[kind] = m);
+}
+// texture coordinates in metres, projected along each face's normal (a box of any size gets the same texel size)
+function metricUV(geo) {
+  const p = geo.attributes.position, n = geo.attributes.normal, uv = new Float32Array(p.count * 2);
+  for (let i = 0; i < p.count; i++) {
+    const ax = Math.abs(n.getX(i)), ay = Math.abs(n.getY(i)), az = Math.abs(n.getZ(i));
+    const [u, v] = ax >= ay && ax >= az ? [p.getZ(i), p.getY(i)] : ay >= az ? [p.getX(i), p.getZ(i)] : [p.getX(i), p.getY(i)];
+    uv[i * 2] = u; uv[i * 2 + 1] = v;
+  }
+  geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); return geo;
+}
+// a box with worn, rounded edges (bevel 1.5 cm or less on thin things), in metres
+function litMat(kind, lit) { const m = kindMat(kind).clone(); m.emissive = new THREE.Color(lit.color); m.emissiveIntensity = lit.glow; return m; }
+const bevelBox = (w, h, d, r = 0.015) => metricUV(new RoundedBoxGeometry(w, h, d, 2, Math.min(r, w * 0.3, h * 0.3, d * 0.3)));
+// the slots' kinds, and the ones that give off light (lit: colour, glow, a light's candela; globe = a lit globe or bulb
+// of that radius on top, the block then its body; only = the globe alone, in the block's place)
+const LOOK = {
+  L01: 'pegboard', L02: 'lacquer', L03: 'lacquer', L04: 'tolex', L05: 'enamel', L06: 'gear', L07: 'enamel', L08: 'gear',
+  L09: 'wood', L10: 'gear', L11: 'gear', L12: 'shelf', L13: 'tolex', L14: 'tolex', L15: 'rubber', L16: 'gear',
+  L17: 'pegboard', L18: 'lacquer', L19: 'wood', R01: 'shelf', R02: 'tolex', R03: 'lacquer', R04: 'shelf', R05: 'enamel',
+  R06: 'gear', R07: 'wood', R08: 'gear', R09: 'pegboard', R10: 'lacquer', R11: 'tolex', R12: 'enamel', R13: 'rubber',
+  R14: 'rust', R15: 'chrome', R16: 'lacquer', R17: 'chrome', R18: 'tolex', R19: 'paper', N03: 'enamel', N04: 'enamel',
+  N05: 'enamel', N06: 'rust', N07: 'enamel', N08: 'enamel', N09: 'chalk', N10: 'enamel', N11: 'steel', N12: 'steel',
+  N13: 'cardboard', N15: 'steel', N16: 'lacquer', N17: 'gear', N18: 'rubber', N22: 'tolex', N23: 'fabric', N24: 'carpet',
+  N25: 'steel', N26: 'steel', N28: 'cream', N29: 'fabric', N39: 'steel', N40: 'steel', N42: 'steel', N43: 'oil',
+  N45: 'rubber', W01: 'gear', W02: 'chrome', W03: 'paper', W04: 'shelf', W05: 'gear', W06: 'gear', W07: 'wood',
+  W09: 'paper', W10: 'shelf', E01: 'gear', E02: 'tolex', E03: 'tolex', E04: 'gear', E05: 'pegboard', E06: 'shelf',
+  N24B: 'carpet', N26B: 'steel', N30: 'steel', N31: 'wood', N32: 'wood', N33: 'gear', N34: 'tolex', N35: 'gear',
+};
+const MESS_LOOK = { cardboard: 'cardboard', rust: 'enamel', paint: 'steel', oil: 'rust', rubber: 'rubber', paper: 'paper', case: 'tolex' };
+// (only three of them light the room live: each live light costs every pixel)
+const LIT = {
+  N01: { color: 0xffd09a, glow: 3, cd: 1.5, globe: 0.05 }, // the caged trouble light, into the car
+  N02: { color: 0xdbe6ff, glow: 1.6, cd: 4, tube: 1 },     // the twin-tube shop light, one tube dying
+  N07: { color: 0xffc27a, glow: 1.6, globe: 0.15 },         // the GAS 2 pump's globe
+  N08: { color: 0xcfe0ff, glow: 0.18 },                    // the vending machine's front
+  N12: { color: 0xffa04a, glow: 3, cd: 1.5, globe: 0.06 }, // the clamp lamp over the bench
+  N20: { color: 0xffc27a, glow: 1.6, globe: 0.2, only: 1 }, // the GAS 2 globe lamp at the far end: the globe is the slot
+  N36: { color: 0xff3020, glow: 0.35 },                    // ON AIR, dim until the lock
+};
+// pegboard: brown hardboard with its grid of holes (drawn, no texture set)
+const pegTex = () => canvasTex(256, 256, (g) => {
+  g.fillStyle = '#6e4e33'; g.fillRect(0, 0, 256, 256); noise(g, 256, 256, 14, 71);
+  g.fillStyle = '#120c08'; for (let y = 8; y < 256; y += 16) for (let x = 8; x < 256; x += 16) { g.beginPath(); g.arc(x, y, 2.6, 0, 6.28); g.fill(); }
+});
+KINDS.pegboard = { map: Object.assign(pegTex(), { repeat: new THREE.Vector2(2.5, 2.5) }), roughness: 0.85, color: 0x9a8a7a }; // 16 holes per 0.4 m
 
 // ---------- the slots: every block becomes one Higgsfield image (step 2's slot list) ----------
 // side -1 = left wall, 1 = right wall; f = share of the stretch from the end wall to 4 m in front of the camera; w along the wall.
@@ -738,30 +868,72 @@ const FILM = {
   },
 };
 
+// the floor's wet sheen (R.wet, a Reflector): the mirrored room, sampled soft (a mip) and stretched down the screen into
+// streaks, nudged by the concrete's bumps, kept where the concrete is sealed or oily (its roughness), more at a grazing
+// look (Fresnel), fading into the haze like the floor under it
+const WET = {
+  name: 'WetConcrete',
+  uniforms: { color: { value: null }, tDiffuse: { value: null }, textureMatrix: { value: null } },
+  vertexShader: /* glsl */`
+    uniform mat4 textureMatrix; varying vec4 vUv; varying vec3 vW;
+    void main() { vUv = textureMatrix * vec4(position, 1.0); vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`,
+  fragmentShader: /* glsl */`
+    uniform sampler2D tDiffuse, tArm, tNrm; uniform float uTile, uK, uFog; varying vec4 vUv; varying vec3 vW;
+    void main() {
+      vec2 tu = vW.xz / uTile;
+      float rough = texture2D(tArm, tu).g;
+      vec2 bump = texture2D(tNrm, tu).xy * 2.0 - 1.0;
+      vec2 uv = vUv.xy / vUv.w + bump * 0.008;
+      vec3 acc = vec3(0.0); float ws = 0.0;
+      for (int i = -6; i <= 6; i++) { float w = exp(-float(i * i) / 14.0); acc += textureLod(tDiffuse, uv + vec2(0.0, float(i) * 0.009), 1.4).rgb * w; ws += w; }
+      vec3 V = normalize(cameraPosition - vW); float d = length(cameraPosition - vW);
+      float fres = 0.04 + 0.96 * pow(1.0 - clamp(V.y, 0.0, 1.0), 5.0);
+      float wet = smoothstep(0.9, 0.4, rough);
+      gl_FragColor = vec4(acc / ws * fres * uK * mix(0.25, 1.0, wet) * exp(-uFog * uFog * d * d), 1.0);
+    }`,
+};
+
 // ---------- make the room once ----------
 function createRoom() {
-  scene.add(new THREE.HemisphereLight(0x46346e, 0x0b0907, 0.42));
+  R.hemi = new THREE.HemisphereLight(0x46346e, 0x0b0907, 0.42); scene.add(R.hemi);
+  R.dress = [];   // [mesh, skeleton material, look material]: Skeleton / Look swaps them (applyFlags)
+  const dress = (mesh, skel, look) => { R.dress.push([mesh, skel, look]); return mesh; };
+  R.dressOf = dress;
+  R.noMat = new THREE.MeshBasicMaterial({ visible: false }); // a slot shown by its parts only
 
-  R.wallMat = new THREE.MeshStandardMaterial({ map: concreteTex('#3b3439', 11), roughness: 0.93 });
-  R.ceilMat = new THREE.MeshStandardMaterial({ map: concreteTex('#211d24', 23), roughness: 0.95 });
-  R.endMat = new THREE.MeshStandardMaterial({ map: concreteTex('#342e33', 37), roughness: 0.93 });
-  R.nearMat = new THREE.MeshStandardMaterial({ map: concreteTex('#342e33', 41), roughness: 0.93 });
+  // the shell: sooty painted concrete (Poly Haven painted_concrete, its colour taken out, tinted near black); each
+  // surface its own textures, so each repeats by its own size
+  const shell = (tint) => new THREE.MeshStandardMaterial({ ...pbr('wall'), color: tint, roughness: 1, envMapIntensity: 0.5 });
+  R.wallMat = shell(0x6a6268); R.ceilMat = shell(0x3a363c); R.endMat = shell(0x5e575c); R.nearMat = shell(0x5e575c);
   const plane = (sx, sy, mat) => new THREE.Mesh(new THREE.PlaneGeometry(1, 1, sx, sy), mat);
   R.left = plane(24, 6, R.wallMat); R.left.rotation.y = Math.PI / 2;
   R.rightParts = [0, 1, 2].map(() => { // the right wall: three pieces round the garage door's opening
-    const m = new THREE.MeshStandardMaterial({ map: R.wallMat.map.clone(), roughness: 0.93 }); m.map.needsUpdate = true;
-    const w = plane(12, 6, m); w.rotation.y = -Math.PI / 2; return w;
+    const w = plane(12, 6, shell(0x6a6268)); w.rotation.y = -Math.PI / 2; return w;
   });
   R.ceil = plane(6, 24, R.ceilMat); R.ceil.rotation.x = Math.PI / 2;
   R.end = plane(8, 6, R.endMat);
   R.near = plane(1, 1, R.nearMat); R.near.rotation.y = Math.PI;
   R.surfaces = [R.left, ...R.rightParts, R.ceil, R.end];
+  for (const s of [...R.surfaces, R.near]) s.receiveShadow = true;
   scene.add(R.left, ...R.rightParts, R.ceil, R.end, R.near);
 
-  // the floor: worn garage concrete or retro checker tiles (painted lanes on the concrete), or the old mirror under a glaze
-  R.floorTex = { concrete: garageFloorTex(), checker: checkerTex() };
-  R.floorMat = new THREE.MeshStandardMaterial({ roughness: 0.7, metalness: 0.08 });
-  R.floor = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), R.floorMat); R.floor.rotation.x = -Math.PI / 2;
+  // the floor: sealed garage concrete (Poly Haven garage_floor, darkened) with a long soft wet reflection on top (R.wet),
+  // or retro checker tiles (painted lanes on the concrete), or the old mirror under a glaze
+  R.floorMats = {
+    concrete: new THREE.MeshStandardMaterial({ ...pbr('floor'), color: 0x5a5552, roughness: 0.7, envMapIntensity: 0.4 }),
+    checker: new THREE.MeshStandardMaterial({ map: checkerTex(), roughness: 0.7, metalness: 0.08 }),
+  };
+  R.floorMat = R.floorMats.concrete;
+  R.floor = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), R.floorMat); R.floor.rotation.x = -Math.PI / 2; R.floor.receiveShadow = true;
+  // the wet sheen: the room mirrored in the floor, softened down the screen into long streaks, broken by the concrete
+  // (its own roughness and bumps), stronger at a grazing look; added over the concrete
+  R.wet = new Reflector(new THREE.PlaneGeometry(1, 1), { clipBias: 0.003, textureWidth: 512, textureHeight: 512, multisample: 0, shader: WET });
+  R.wet.rotation.x = -Math.PI / 2;
+  { const t = R.wet.getRenderTarget().texture; t.generateMipmaps = true; t.minFilter = THREE.LinearMipmapLinearFilter; }
+  const wf = pbr('floor');
+  Object.assign(R.wet.material.uniforms, { tArm: { value: wf.aoMap }, tNrm: { value: wf.normalMap }, uTile: { value: 3 }, uK: { value: 0.6 }, uFog: { value: 0 } });
+  keepAlpha(Object.assign(R.wet.material, { transparent: true, depthWrite: false }), true);
+  scene.add(R.wet);
   R.lanesMat = new THREE.MeshStandardMaterial({ transparent: true, roughness: 0.6, depthWrite: false });
   R.lanes = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), R.lanesMat); R.lanes.rotation.x = -Math.PI / 2;
   R.mirror = new Reflector(new THREE.PlaneGeometry(1, 1), { clipBias: 0.003, textureWidth: 512, textureHeight: 512, color: 0x8a8590 });
@@ -770,15 +942,16 @@ function createRoom() {
   R.glaze = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), R.glazeMat); R.glaze.rotation.x = -Math.PI / 2;
   scene.add(R.floor, R.lanes, R.mirror, R.glaze);
 
-  R.steel = new THREE.MeshStandardMaterial({ color: 0x2b2930, metalness: 0.6, roughness: 0.45 });
-  R.trusses = Array.from({ length: 24 }, () => { const t = new THREE.Mesh(new THREE.BoxGeometry(1, 0.16, 0.16), R.steel); scene.add(t); return t; });
+  R.steel = new THREE.MeshStandardMaterial({ ...pbr('steel', 1 / 0.9, 'enamel'), color: 0x3a3a42, metalness: 1, roughness: 1 }); // painted steel, worn
+  R.trusses = Array.from({ length: 24 }, () => { const t = new THREE.Mesh(new THREE.BoxGeometry(1, 0.16, 0.16), R.steel); t.castShadow = true; scene.add(t); return t; });
 
-  // neon strips the full length: violet left, magenta right, each with six lights
+  // neon strips the full length: violet left, magenta right, each with three lights (every live light is paid on every
+  // pixel: the baked light layers will carry the rest, tech-recipe.md)
   R.neon = [[-1, [0.62, 0.3, 1.0]], [1, [1.0, 0.22, 0.62]]].map(([side, rgb]) => {
     const mat = new THREE.MeshBasicMaterial({ color: new THREE.Color(...rgb), toneMapped: false });
     mat.userData.base = new THREE.Color(...rgb);
     const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.024, 0.024, 1, 10), mat); tube.rotation.x = Math.PI / 2; scene.add(tube);
-    const lights = Array.from({ length: 6 }, () => { const l = new THREE.PointLight(new THREE.Color(...rgb), 11, 10, 2); scene.add(l); return l; });
+    const lights = Array.from({ length: 3 }, () => { const l = new THREE.PointLight(new THREE.Color(...rgb), 11, 0, 2); scene.add(l); return l; });
     return { side, mat, tube, lights };
   });
   // cyan LED strips along both edges of the aisle, a pulse running toward the TV (retro-cyber, and it leads the eye)
@@ -786,16 +959,30 @@ function createRoom() {
   R.stripMat = new THREE.MeshBasicMaterial({ map: R.pulse, color: new THREE.Color(0.2, 0.9, 1.0), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false });
   R.strips = [-1, 1].map((side) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), R.stripMat); m.rotation.x = -Math.PI / 2; m.userData.side = side; scene.add(m); return m; });
 
-  // hanging amber lamps over the aisle
+  // hanging amber lamps over the aisle: a dark enamel shade lit inside, a bulb, a cone of light down with real shadows,
+  // and the haze it lights (a soft cone, bench: shafts)
+  R.shaftMat = keepAlpha(new THREE.ShaderMaterial({
+    uniforms: { uColor: { value: new THREE.Color(1, 0.62, 0.3) }, uK: { value: 0 } },
+    vertexShader: /* glsl */`varying vec3 vN; varying vec3 vV; varying float vY;
+      void main() { vec4 w = modelMatrix * vec4(position, 1.0); vN = normalize(mat3(modelMatrix) * normal); vV = normalize(cameraPosition - w.xyz); vY = uv.y; gl_Position = projectionMatrix * viewMatrix * w; }`,
+    fragmentShader: /* glsl */`uniform vec3 uColor; uniform float uK; varying vec3 vN; varying vec3 vV; varying float vY;
+      void main() { float edge = pow(abs(dot(normalize(vN), normalize(vV))), 2.0); gl_FragColor = vec4(uColor * uK * edge * vY * vY, 1.0); }`,
+    transparent: true, depthWrite: false, side: THREE.DoubleSide,
+  }), true);
   R.lamps = [0.92, 0.55, 0.2].map((f) => {
-    const shade = new THREE.Mesh(new THREE.ConeGeometry(0.28, 0.24, 20, 1, true), new THREE.MeshStandardMaterial({ color: 0x2a2620, side: THREE.DoubleSide, metalness: 0.5, roughness: 0.5 }));
+    const shade = new THREE.Mesh(new THREE.ConeGeometry(0.28, 0.24, 24, 1, true), new THREE.MeshStandardMaterial({ color: 0x1c221f, side: THREE.FrontSide, metalness: 0.7, roughness: 0.4 }));
+    const inner = new THREE.Mesh(new THREE.ConeGeometry(0.275, 0.235, 24, 1, true), new THREE.MeshStandardMaterial({ color: 0x8a7a66, emissive: 0xffb070, emissiveIntensity: 0.6, side: THREE.BackSide }));
+    shade.add(inner);
     const bulbMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(1, 0.66, 0.3), toneMapped: false });
     bulbMat.userData.base = new THREE.Color(1, 0.66, 0.3);
     const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.07, 12, 8), bulbMat);
     const cord = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.6), R.steel);
-    const light = new THREE.PointLight(0xffa04a, 16, 9, 2);
-    scene.add(shade, bulb, cord, light);
-    return { f, shade, bulb, bulbMat, cord, light };
+    const light = new THREE.SpotLight(0xffa04a, 16, 0, deg(62), 0.75, 2);
+    light.castShadow = true; light.shadow.mapSize.set(1024, 1024); light.shadow.bias = -0.0004; light.shadow.normalBias = 0.03;
+    light.shadow.camera.near = 0.2; light.shadow.camera.far = 14;
+    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 1.9, 1, 32, 1, true), R.shaftMat);
+    scene.add(shade, bulb, cord, light, light.target, shaft);
+    return { f, shade, bulb, bulbMat, cord, light, shaft };
   });
 
   // the props: a grey block per slot, edges for the wireframe look, a label
@@ -807,9 +994,16 @@ function createRoom() {
     music: new THREE.LineBasicMaterial({ color: new THREE.Color(0.75, 0.55, 1.0), transparent: true, opacity: 0.35, toneMapped: false }),
     garage: new THREE.LineBasicMaterial({ color: new THREE.Color(1.0, 0.6, 0.32), transparent: true, opacity: 0.35, toneMapped: false }),
   };
-  const block = (cat, w, h, d) => {
-    const geo = new THREE.BoxGeometry(w, h, d), mesh = new THREE.Mesh(geo, R.mats[cat]);
-    mesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo), R.edgeMats[cat]));
+  // a slot's block: worn rounded edges; grey + outlined in the skeleton, its kind's material in the look (LOOK); a lit one
+  // glows and lights the room (LIT: a point light inside, a globe on top)
+  const block = (cat, w, h, d, id) => {
+    const geo = bevelBox(w, h, d), lit = LIT[id];
+    const mesh = dress(new THREE.Mesh(geo, R.mats[cat]), R.mats[cat], lit?.only ? R.noMat : lit && !lit.globe ? litMat(LOOK[id], lit) : kindMat(LOOK[id]));
+    mesh.castShadow = mesh.receiveShadow = !(KINDS[LOOK[id]] || {}).transparent;
+    mesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo, 35), R.edgeMats[cat]));
+    const gy = lit?.only ? 0 : h / 2 + (lit?.globe || 0);
+    if (lit?.globe) { const g = new THREE.Mesh(new THREE.SphereGeometry(lit.globe, 20, 14), litMat('paper', lit)); g.position.y = gy; mesh.add(g); }
+    if (lit?.cd) { const l = new THREE.PointLight(lit.color, lit.cd, 0, 2); l.position.y = lit.globe ? gy : 0; l.userData.cd = lit.cd; mesh.add(l); (R.propLights ||= []).push(l); }
     return mesh;
   };
   R.labels = [];
@@ -819,9 +1013,9 @@ function createRoom() {
     it.label = labelSprite(labelText, cat, k); it.label.userData.show = () => it.obj.visible;
     scene.add(it.label); R.labels.push(it.label); R.items.push(it); return it;
   };
-  for (const s of SIDE) addItem({ kind: 'side', id: s.id, s, obj: block(s.cat, s.d, s.h, s.w), mount: s.y && s.d <= 0.15 ? 'wall' : 'floor' }, `${s.id} · ${s.label}`, s.cat);
+  for (const s of SIDE) addItem({ kind: 'side', id: s.id, s, obj: block(s.cat, s.d, s.h, s.w, s.id), mount: s.y && s.d <= 0.15 ? 'wall' : 'floor' }, `${s.id} · ${s.label}`, s.cat);
   for (const s of END) {
-    const it = addItem({ kind: 'end', id: s.id, s, obj: block(s.cat, s.w, s.h, s.d), mount: 'end' }, `${s.id} · ${s.label}`, s.cat, 0.6);
+    const it = addItem({ kind: 'end', id: s.id, s, obj: block(s.cat, s.w, s.h, s.d, s.id), mount: 'end' }, `${s.id} · ${s.label}`, s.cat, 0.6);
     if (s.stand) { it.stand = speakerStand(); it.obj.add(it.stand); }
   }
 
@@ -852,14 +1046,14 @@ function createRoom() {
   // the CRT monitors: a body, the plugin on its screen (self-lit), rolling scanlines
   R.scan = scanTex();
   R.screenMats = [];
-  const crtMat = new THREE.MeshStandardMaterial({ color: 0x24222a, roughness: 0.55, metalness: 0.15 });
+  const crtMat = new THREE.MeshStandardMaterial({ color: 0x24222a, roughness: 0.55, metalness: 0.15 }), crtGeo = metricUV(new RoundedBoxGeometry(1, 1, 1, 2, 0.06));
   for (const s of MONITORS) {
     const tex = picture(s.pic), g = new THREE.Group();
-    const body = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), crtMat);
-    body.add(new THREE.LineSegments(new THREE.EdgesGeometry(body.geometry), R.edgeMats.music));
-    const smat = new THREE.MeshBasicMaterial({ map: tex, toneMapped: false }); smat.userData.k = 1;
+    const body = dress(new THREE.Mesh(crtGeo, crtMat), crtMat, kindMat('plastic')); body.castShadow = body.receiveShadow = true;
+    body.add(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1, 1, 1)), R.edgeMats.music));
+    const smat = liveScreen(new THREE.MeshBasicMaterial({ map: tex, toneMapped: false })); smat.userData.k = 1; // exact pixels (FINISH)
     const screen = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), smat);
-    const lines = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: R.scan, transparent: true, depthWrite: false, toneMapped: false }));
+    const lines = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), keepAlpha(new THREE.MeshBasicMaterial({ map: R.scan, transparent: true, depthWrite: false, toneMapped: false })));
     g.add(body, screen, lines); g.userData = { body, screen, lines }; screen.userData.live = lines.userData.live = true;
     R.screenMats.push(smat);
     addItem({ kind: 'monitor', id: s.id, s, obj: g, mount: 'floor', tex }, `${s.id} · ${s.label}`, 'pic', 0.7);
@@ -875,11 +1069,21 @@ function createRoom() {
 
   // the car: a JDM coupe side-on, nose out through the open door (right of the screen), engine off, on a low lift
   R.car = new THREE.Group();
-  const bx = (grp, w, h, d, x, y, z, mat = R.mats.garage) => { const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); b.position.set(x, y, z); b.add(new THREE.LineSegments(new THREE.EdgesGeometry(b.geometry), R.edgeMats.garage)); grp.add(b); return b; };
-  bx(R.car, 1.85, 0.72, 4.4, 0, 0.56, 0); bx(R.car, 1.45, 0.5, 2.0, 0, 1.17, 0.25);
-  const wheelMat = new THREE.MeshStandardMaterial({ color: 0x1a181c, roughness: 0.8 });
+  const bx = (grp, w, h, d, x, y, z, mat = R.mats.garage, look = mat, r = 0.015) => {
+    const b = dress(new THREE.Mesh(bevelBox(w, h, d, r), mat), mat, look); b.position.set(x, y, z); b.castShadow = b.receiveShadow = true;
+    b.add(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(w, h, d)), R.edgeMats.garage)); grp.add(b); return b;
+  };
+  // gloss black paint (Dan 2026-11-04: like his reference): a clear coat over a black metallic base, so it carries the
+  // room's neon and lamps (the probe); the cabin dark glass. The shape stays the block until Dan's team models the car
+  const paint = new THREE.MeshPhysicalMaterial({ color: 0x0b0b0e, metalness: 0.55, roughness: 0.32, clearcoat: 1, clearcoatRoughness: 0.12 });
+  const glass = new THREE.MeshPhysicalMaterial({ color: 0x050608, metalness: 0, roughness: 0.1, clearcoat: 1, clearcoatRoughness: 0.1 });
+  SHINY.add(paint).add(glass).add(R.steel);
+  bx(R.car, 1.85, 0.72, 4.4, 0, 0.56, 0, R.mats.garage, paint, 0.16); bx(R.car, 1.45, 0.5, 2.0, 0, 1.17, 0.25, R.mats.garage, glass, 0.12);
+  const wheelMat = new THREE.MeshStandardMaterial({ color: 0x1a181c, roughness: 0.8 }), rimGeo = new THREE.CylinderGeometry(0.21, 0.21, 0.02, 24);
   for (const [wx, wz] of [[-0.86, -1.4], [0.86, -1.4], [-0.86, 1.4], [0.86, 1.4]]) {
-    const wh = new THREE.Mesh(new THREE.CylinderGeometry(0.33, 0.33, 0.24, 20), wheelMat); wh.rotation.z = Math.PI / 2; wh.position.set(wx, 0.33, wz); R.car.add(wh);
+    const wh = dress(new THREE.Mesh(metricUV(new THREE.CylinderGeometry(0.33, 0.33, 0.24, 28)), wheelMat), wheelMat, kindMat('rubber'));
+    wh.rotation.z = Math.PI / 2; wh.position.set(wx, 0.33, wz); wh.castShadow = true; R.car.add(wh);
+    const rim = dress(new THREE.Mesh(rimGeo, wheelMat), wheelMat, kindMat('chrome')); rim.position.y = Math.sign(wx) * 0.121; wh.add(rim); // the deep dish, on the outside
   }
   R.tailMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(0.22, 0.03, 0.03), toneMapped: false });
   for (const tx of [-0.62, 0.62]) { const t = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.09, 0.03), R.tailMat); t.position.set(tx, 0.74, 2.215); R.car.add(t); }
@@ -890,7 +1094,7 @@ function createRoom() {
   // the lift under it: a low scissor lift, or four jack stands (bench: Lift)
   R.scissor = new THREE.Group();
   bx(R.scissor, 1.5, 0.06, 3.4, 0, 0.03, 0, R.steel);
-  R.scissorPads = [-0.62, 0.62].map((x) => bx(R.scissor, 0.32, 0.07, 3.6, x, 0, 0, R.steel));
+  R.scissorPads = [-0.62, 0.62].map((x) => bx(R.scissor, 0.32, 0.07, 3.6, x, 0, 0, R.steel, kindMat('plate')));
   R.scissorArms = [];
   for (const x of [-0.62, 0.62]) for (const sg of [1, -1]) { const a = bx(R.scissor, 0.08, 0.08, 1, x, 0, 0, R.steel); a.userData.s = sg; R.scissorArms.push(a); }
   R.stands = new THREE.Group();
@@ -902,7 +1106,8 @@ function createRoom() {
 
   // the roll-up garage door in the right wall, rolled up but for a strip; the night outside, its cool light falling in
   R.slat = slatTex();
-  R.curtain = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshStandardMaterial({ map: R.slat, roughness: 0.55, metalness: 0.5, side: THREE.DoubleSide }));
+  R.curtain = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshStandardMaterial({ ...pbr('shutter'), color: 0x8a8a90, roughness: 1, metalness: 1, side: THREE.DoubleSide }));
+  R.curtain.castShadow = R.curtain.receiveShadow = true;
   R.curtain.rotation.y = -Math.PI / 2;
   R.drum = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.42, 1), R.steel); // the hood the door rolls into
   R.rails = [0, 1].map(() => new THREE.Mesh(new THREE.BoxGeometry(0.1, 1, 0.08), R.steel));
@@ -933,8 +1138,10 @@ function createRoom() {
 
   // the TV on the end wall: a cabinet, the captured live TV as its face, its amber glow, the power-on line
   R.tv = {
-    cab: new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ color: 0x1c1b1d, roughness: 0.6, metalness: 0.2 })),
-    faceMat: new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, toneMapped: false, fog: false }),
+    cab: new THREE.Mesh(metricUV(new RoundedBoxGeometry(1, 1, 1, 2, 0.04)), new THREE.MeshStandardMaterial({ color: 0x1c1b1d, roughness: 0.6, metalness: 0.2 })),
+    // its face: the live page's exact pixels (alpha 0 inside the bezel's corners, FINISH), see-through at the corners
+    faceMat: Object.assign(new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, toneMapped: false, fog: false }), { blending: THREE.CustomBlending,
+      blendSrc: THREE.SrcAlphaFactor, blendDst: THREE.OneMinusSrcAlphaFactor, blendSrcAlpha: THREE.ZeroFactor, blendDstAlpha: THREE.OneMinusSrcAlphaFactor }),
     lineMat: new THREE.MeshBasicMaterial({ color: new THREE.Color(3, 2.6, 2.2), transparent: true, toneMapped: false, fog: false, depthWrite: false }),
     glow: new THREE.PointLight(0xff8a3a, 14, 9, 2),
   };
@@ -975,6 +1182,46 @@ function createRoom() {
   R.selBox = new THREE.BoxHelper(undefined, 0xffe08a); R.selBox.material.depthTest = false; R.selBox.material.toneMapped = false; R.selBox.visible = false; R.selBox.renderOrder = 20;
   R.hoverBox = new THREE.BoxHelper(undefined, 0x9c8550); R.hoverBox.material.depthTest = false; R.hoverBox.visible = false; R.hoverBox.renderOrder = 19;
   scene.add(R.selBox, R.hoverBox);
+
+  // the street's light falls in through the door and the car casts it across the floor
+  R.outLight.castShadow = true; R.outLight.shadow.mapSize.set(1024, 1024); R.outLight.shadow.bias = -0.0004; R.outLight.shadow.normalBias = 0.03;
+  // solid lit things cast and take shadows (the shell only takes them); see-through things keep the frame's alpha (FINISH)
+  const shellParts = new Set([...R.surfaces, R.near, R.floor, R.outGround]);
+  scene.traverse((o) => {
+    const m = o.material; if (!m || Array.isArray(m)) return;
+    if (o.isMesh && (m.isMeshStandardMaterial) && !m.transparent) { o.receiveShadow = true; if (!shellParts.has(o)) o.castShadow = true; }
+    if (m !== R.tv.faceMat && m.blending !== THREE.CustomBlending && (m.transparent || m.blending === THREE.AdditiveBlending)) keepAlpha(m);
+  });
+  // the room's own reflection (a probe in the aisle, redrawn after the intro and after things move): chrome, the car's
+  // paint and the floor catch the neon and the lamps
+  R.probe = { rt: new THREE.WebGLCubeRenderTarget(256, { type: THREE.HalfFloatType }), pmrem: new THREE.PMREMGenerator(renderer), env: null, due: performance.now() + 2800 };
+  R.probe.cam = new THREE.CubeCamera(0.1, 80, R.probe.rt);
+  // a soft shadow pressed under everything that stands on the floor (contact shadow), sized to its footprint
+  R.blobTex = canvasTex(128, 128, (g) => {
+    const im = g.createImageData(128, 128);
+    for (let y = 0; y < 128; y++) for (let x = 0; x < 128; x++) {
+      const dx = Math.max(Math.abs(x - 63.5) - 34, 0), dy = Math.max(Math.abs(y - 63.5) - 34, 0), a = 1 - smooth(0, 28, Math.hypot(dx, dy));
+      const i = (y * 128 + x) * 4; im.data[i] = im.data[i + 1] = im.data[i + 2] = a * 255; im.data[i + 3] = 255;
+    }
+    g.putImageData(im, 0, 0);
+  }, false);
+  R.blobTex.colorSpace = THREE.NoColorSpace;
+  R.blobMat = keepAlpha(new THREE.MeshBasicMaterial({ color: 0x000000, alphaMap: R.blobTex, transparent: true, opacity: 0.6, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 }));
+}
+// the probe: the room seen from the aisle, without the things that aren't surfaces (labels, dust, haze, the wet sheen)
+function updateProbe() {
+  const P = R.probe, hide = [R.dust.pts, R.wet, R.selBox, R.hoverBox, ...R.labels, ...R.lamps.map((l) => l.shaft)].filter((o) => o.visible);
+  for (const o of hide) o.visible = false;
+  P.cam.position.set(0, 1.8, L.span * 0.55); P.cam.update(renderer, scene);
+  for (const o of hide) o.visible = true;
+  P.env?.dispose(); P.env = P.pmrem.fromCubemap(P.rt.texture);
+  for (const m of SHINY) { m.envMap = P.env.texture; m.needsUpdate = true; }
+}
+// a contact shadow under a thing standing on the floor (w across its x, d across its z, turned with it)
+function placeBlob(it, w, d, x, z, yaw, on) {
+  if (!it.blob) { it.blob = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), R.blobMat); it.blob.rotation.order = 'YXZ'; it.blob.rotation.x = -Math.PI / 2; scene.add(it.blob); }
+  it.blob.visible = on && !!S.look && !S.wire && it.obj.visible;
+  it.blob.scale.set(w * 1.3 + 0.25, d * 1.3 + 0.25, 1); it.blob.position.set(x, 0.004, z); it.blob.rotation.y = yaw;
 }
 // a speaker stand: a top plate under the monitor, a post, a base plate; placeItem stretches the post to the floor
 function speakerStand() {
@@ -986,25 +1233,25 @@ function speakerStand() {
 // a drum kit, built facing +z (the way the drummer looks); the drummer's left is +x here
 function drumKit() {
   const g = new THREE.Group();
-  const part = (geo, mat, x, y, z, rx = 0) => {
-    const p = new THREE.Mesh(geo, mat); p.position.set(x, y, z); p.rotation.x = rx;
+  const part = (geo, mat, x, y, z, rx = 0, look = mat) => {
+    const p = R.dressOf(new THREE.Mesh(metricUV(geo), mat), mat, look); p.position.set(x, y, z); p.rotation.x = rx; p.castShadow = p.receiveShadow = true;
     p.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo, 35), R.edgeMats.music)); g.add(p); return p;
   };
-  const shell = R.mats.music, metal = R.steel;
-  part(new THREE.CylinderGeometry(0.26, 0.26, 0.36, 24), shell, 0, 0.26, 0.12, Math.PI / 2);      // the kick, on its side
-  part(new THREE.CylinderGeometry(0.18, 0.18, 0.14, 22), shell, 0.3, 0.62, -0.12);               // the snare
-  part(new THREE.CylinderGeometry(0.012, 0.012, 0.55, 6), metal, 0.3, 0.28, -0.12);               // its stand
-  part(new THREE.CylinderGeometry(0.18, 0.18, 0.012, 24), metal, 0.58, 0.92, -0.18);              // the hi-hat: two cymbals
-  part(new THREE.CylinderGeometry(0.18, 0.18, 0.012, 24), metal, 0.58, 0.95, -0.18);
-  part(new THREE.CylinderGeometry(0.012, 0.012, 0.94, 6), metal, 0.58, 0.47, -0.18);              // its stand
+  const shell = R.mats.music, metal = R.steel, lacquer = kindMat('lacquer'), chrome = kindMat('chrome'), brass = kindMat('brass');
+  part(new THREE.CylinderGeometry(0.26, 0.26, 0.36, 24), shell, 0, 0.26, 0.12, Math.PI / 2, lacquer);      // the kick, on its side
+  part(new THREE.CylinderGeometry(0.18, 0.18, 0.14, 22), shell, 0.3, 0.62, -0.12, 0, lacquer);            // the snare
+  part(new THREE.CylinderGeometry(0.012, 0.012, 0.55, 6), metal, 0.3, 0.28, -0.12, 0, chrome);              // its stand
+  part(new THREE.CylinderGeometry(0.18, 0.18, 0.012, 24), metal, 0.58, 0.92, -0.18, 0, brass);             // the hi-hat: two cymbals
+  part(new THREE.CylinderGeometry(0.18, 0.18, 0.012, 24), metal, 0.58, 0.95, -0.18, 0, brass);
+  part(new THREE.CylinderGeometry(0.012, 0.012, 0.94, 6), metal, 0.58, 0.47, -0.18, 0, chrome);             // its stand
   return g;
 }
 function drumThrone() {
   const g = new THREE.Group();
-  const part = (geo, mat, y) => { const p = new THREE.Mesh(geo, mat); p.position.y = y; p.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo, 35), R.edgeMats.music)); g.add(p); };
-  part(new THREE.CylinderGeometry(0.19, 0.19, 0.09, 24), R.mats.music, 0.57);   // the round seat
-  part(new THREE.CylinderGeometry(0.022, 0.022, 0.5, 8), R.steel, 0.29);         // the post
-  part(new THREE.CylinderGeometry(0.24, 0.24, 0.02, 3), R.steel, 0.01);          // a three-legged base
+  const part = (geo, mat, y, look = mat) => { const p = R.dressOf(new THREE.Mesh(metricUV(geo), mat), mat, look); p.position.y = y; p.castShadow = p.receiveShadow = true; p.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo, 35), R.edgeMats.music)); g.add(p); };
+  part(new THREE.CylinderGeometry(0.19, 0.19, 0.09, 24), R.mats.music, 0.57, kindMat('tolex'));   // the round seat
+  part(new THREE.CylinderGeometry(0.022, 0.022, 0.5, 8), R.steel, 0.29, kindMat('chrome'));         // the post
+  part(new THREE.CylinderGeometry(0.24, 0.24, 0.02, 3), R.steel, 0.01);                             // a three-legged base
   return g;
 }
 // an acoustic piece, built facing +z with its back at z = 0 (so it sits on a wall); traps and clouds are centred
@@ -1035,7 +1282,9 @@ function buildMess() {
   const r = rng(1000 + S.messSeed);
   R.mess = Array.from({ length: 64 }, () => {
     const t = R.messTypes[Math.floor(r() * R.messTypes.length)];
-    const mesh = new THREE.Mesh(t.geo, R.messMats[t.mat]);
+    if (!t.geo.userData.metric) { metricUV(t.geo); t.geo.userData.metric = 1; }
+    const mats = [R.messMats[t.mat], MESS_LOOK[t.mat] ? kindMat(MESS_LOOK[t.mat]) : R.messMats[t.mat]];
+    const mesh = new THREE.Mesh(t.geo, mats[S.look && !S.wire ? 1 : 0]); mesh.userData.mats = mats; mesh.castShadow = mesh.receiveShadow = true;
     if (!t.geo.userData.edges) t.geo.userData.edges = new THREE.EdgesGeometry(t.geo, 35); // round things: outline, not every facet
     mesh.add(new THREE.LineSegments(t.geo.userData.edges, R.edgeMats.garage));
     scene.add(mesh);
@@ -1050,18 +1299,19 @@ function arrange() {
   R.ceil.scale.set(Wd, Lr, 1); R.ceil.position.set(0, H, Lr / 2);
   R.end.scale.set(Wd, H, 1); R.end.position.set(0, H / 2, 0);
   R.near.scale.set(Wd, H, 1); R.near.position.set(0, H / 2, Lr);
-  R.wallMat.map.repeat.set(Lr / 2.5, H / 2.5); R.ceilMat.map.repeat.set(Wd / 2.5, Lr / 2.5);
-  R.endMat.map.repeat.set(Wd / 2.5, H / 2.5); R.nearMat.map.repeat.set(Wd / 2.5, H / 2.5);
+  const WT = 2; // the wall texture covers 2 m
+  rep(R.wallMat, Lr / WT, H / WT); rep(R.ceilMat, Wd / WT, Lr / WT); rep(R.endMat, Wd / WT, H / WT); rep(R.nearMat, Wd / WT, H / WT);
 
   // the floor
   const mirror = S.floor === 'mirror';
   R.floor.visible = !mirror; R.mirror.visible = R.glaze.visible = mirror; R.lanes.visible = S.floor === 'concrete' && !!S.floorLines;
-  const ft = R.floorTex[S.floor] || R.floorTex.concrete;
-  if (R.floorMat.map !== ft) { R.floorMat.map = ft; R.floorMat.needsUpdate = true; }
-  const tile = S.floor === 'checker' ? 4.8 : 4;
-  ft.repeat.set(Wd / tile, Lr / tile);
-  R.floorMat.roughness = 1 - 0.6 * S.floorShine;
-  for (const m of [R.floor, R.lanes, R.mirror, R.glaze]) { m.scale.set(Wd, Lr, 1); m.position.set(0, m === R.lanes || m === R.glaze ? 0.003 : 0, Lr / 2); }
+  R.floorMat = R.floor.material = R.floorMats[S.floor] || R.floorMats.concrete;
+  const tile = S.floor === 'checker' ? 4.8 : 3; // the concrete texture stretched to 3 m: no repeat seen down the 20 m
+  rep(R.floorMat, Wd / tile, Lr / tile);
+  R.floorMat.roughness = 1 - 0.55 * S.floorShine;
+  R.wet.visible = S.floor === 'concrete' && S.floorShine > 0;
+  R.wet.material.uniforms.uK.value = 2.2 * S.floorShine;
+  for (const m of [R.floor, R.lanes, R.mirror, R.glaze, R.wet]) { m.scale.set(Wd, Lr, 1); m.position.set(0, m === R.lanes || m === R.glaze ? 0.003 : m === R.wet ? 0.002 : 0, Lr / 2); }
   if (R.laneW !== Wd) {
     R.lanesMat.map?.dispose?.(); R.lanesMat.map = laneTex(Wd, false); R.lanesMat.needsUpdate = true;
     R.glazeMat.map?.dispose?.(); R.glazeMat.map = laneTex(Wd, true); R.glazeMat.needsUpdate = true; R.laneW = Wd;
@@ -1072,13 +1322,15 @@ function arrange() {
   for (const n of R.neon) {
     const x = n.side * Math.min(1.55, Wd / 2 - 0.5);
     n.tube.scale.y = Lr - 1; n.tube.position.set(x, H - 0.2, Lr / 2);
-    n.lights.forEach((l, i) => l.position.set(x, H - 0.45, (i + 0.5) * Lr / 6));
+    n.lights.forEach((l, i) => l.position.set(x, H - 0.45, (i + 0.5) * Lr / n.lights.length));
   }
   for (const st of R.strips) { st.scale.set(0.05, Lr - 0.4, 1); st.position.set(st.userData.side * Math.min(1.4, Wd / 2 - 1.6), 0.006, Lr / 2); }
   R.pulse.repeat.set(1, Lr / 12);
   for (const lp of R.lamps) {
     const z = lp.f * span;
-    lp.shade.position.set(0, H - 1.0, z); lp.bulb.position.set(0, H - 1.13, z); lp.cord.position.set(0, H - 0.6, z); lp.light.position.set(0, H - 1.25, z);
+    lp.shade.position.set(0, H - 1.0, z); lp.bulb.position.set(0, H - 1.13, z); lp.cord.position.set(0, H - 0.6, z); lp.light.position.set(0, H - 1.13, z);
+    lp.light.target.position.set(0, 0, z);
+    const sh = H - 1.12; lp.shaft.scale.set(1, sh, 1); lp.shaft.position.set(0, sh / 2, z);
   }
 
   // the car side-on through the door: carOut 0 = all inside, 0.5 = half out, 1 = all outside
@@ -1100,21 +1352,24 @@ function arrange() {
   const z0 = clamp(carZ - S.doorW / 2, 0.2, Lr - 0.6), z1 = clamp(carZ + S.doorW / 2, z0 + 0.2, Lr - 0.2), dz = (z0 + z1) / 2, dw = z1 - z0;
   R.door = { z0, z1, h: doorH };
   const [ra, rb, rt] = R.rightParts;
-  ra.scale.set(z0, H, 1); ra.position.set(Wd / 2, H / 2, z0 / 2); own(ra).map.repeat.set(z0 / 2.5, H / 2.5);
-  rb.scale.set(Lr - z1, H, 1); rb.position.set(Wd / 2, H / 2, (z1 + Lr) / 2); own(rb).map.repeat.set((Lr - z1) / 2.5, H / 2.5);
-  rt.scale.set(dw, H - doorH, 1); rt.position.set(Wd / 2, (doorH + H) / 2, dz); own(rt).map.repeat.set(dw / 2.5, (H - doorH) / 2.5);
+  ra.scale.set(z0, H, 1); ra.position.set(Wd / 2, H / 2, z0 / 2); rep(own(ra), z0 / WT, H / WT);
+  rb.scale.set(Lr - z1, H, 1); rb.position.set(Wd / 2, H / 2, (z1 + Lr) / 2); rep(own(rb), (Lr - z1) / WT, H / WT);
+  rt.scale.set(dw, H - doorH, 1); rt.position.set(Wd / 2, (doorH + H) / 2, dz); rep(own(rt), dw / WT, (H - doorH) / WT);
   const curtH = doorH * (1 - S.doorOpen);
   R.curtain.visible = curtH > 0.01;
   R.curtain.scale.set(dw, Math.max(0.01, curtH), 1); R.curtain.position.set(Wd / 2 - 0.03, doorH - curtH / 2, dz);
-  R.slat.repeat.set(1, Math.max(0.2, curtH) / 0.6);
+  rep(own(R.curtain), dw / 2, Math.max(0.2, curtH) / 2); // the shutter texture covers 2 m
   R.drum.scale.z = dw; R.drum.position.set(Wd / 2 - 0.24, Math.min(doorH + 0.24, H - 0.25), dz);
   R.rails[0].scale.y = R.rails[1].scale.y = doorH;
   R.rails[0].position.set(Wd / 2 - 0.05, doorH / 2, z0 + 0.04); R.rails[1].position.set(Wd / 2 - 0.05, doorH / 2, z1 - 0.04);
   R.doorLabel.position.set(Wd / 2 - 0.5, Math.min(doorH + 0.75, H - 0.15), dz + 0.8);
   R.outGround.scale.set(40, 160, 1); R.outGround.position.set(Wd / 2 + 20, -0.002, dz - 50);
   R.backdrop.scale.set(160, 12, 1); R.backdrop.position.set(Wd / 2 + 40, 4.5, dz - 50); own(R.backdrop).map.repeat.set(5, 1);
-  R.outLight.position.set(Wd / 2 + 3.5, doorH + 0.8, dz); R.outLight.target.position.set(Wd / 2 - 2.5, 0, dz);
-  R.outLight.intensity = 60 * S.outside;
+  // the street lamp: in the look further out and higher (close by, it burned white flares into the car's paint)
+  if (R.lookOn) R.outLight.position.set(Wd / 2 + 7, doorH + 2.2, dz); else R.outLight.position.set(Wd / 2 + 3.5, doorH + 0.8, dz);
+  R.outLight.target.position.set(Wd / 2 - 2.5, 0, dz);
+  R.outLight.distance = R.lookOn ? 0 : 16;
+  R.outLight.intensity = (R.lookOn ? 70 : 60) * S.outside;
   R.doorAir.scale.set(dw - 0.16, doorH - curtH, 1); R.doorAir.position.set(Wd / 2 + 0.05, (doorH - curtH) / 2, dz);
   own(R.doorAir).opacity = 0.22 * S.outside;
   R.pool.scale.set(3.4, dw + 1.2, 1); R.pool.position.set(Wd / 2 - 1.5, 0.012, dz);
@@ -1137,6 +1392,8 @@ function arrange() {
   if (R.selected) { R.selBox.setFromObject(R.selected.obj); }
   if (!$('slotsPanel').hidden) buildSlots();
   R.shotsStale = true; // the projectors look again before the next frame (never from here: arrange can run mid-render)
+  R.probe.due = Math.max(R.probe.due, performance.now() + 350); // the reflections catch up once things stop moving
+  renderer.shadowMap.needsUpdate = true;
 }
 const inDoor = (z, halfW, bottom) => R.door && z + halfW > R.door.z0 - 0.1 && z - halfW < R.door.z1 + 0.1 && bottom < R.door.h;
 // facing: a plane's front is +z; on the left wall it turns to face +x, on the right -x
@@ -1153,6 +1410,7 @@ function placeItem(it) {
     // anything on the right wall where the door's opening is steps aside (unless you put it there, or it stands off the wall)
     it.obj.visible = moved || s.x != null || !(side === 1 && inDoor(z, s.w * k / 2, y - s.h * k / 2));
     lb.position.set(x - side * 0.35, y + s.h * k / 2 + 0.22, z);
+    placeBlob(it, s.d * k, s.w * k, x, z, turn, !s.flat && y - s.h * k / 2 < 0.05);
   } else if (it.kind === 'end') {
     const s = it.s, y = ov.y ?? (s.ty != null ? S.tvY + s.ty : (s.y ?? s.h / 2)), x = ov.x ?? s.x, z = (s.front || 0) + s.d * k / 2;
     it.obj.position.set(x, y, z); it.obj.scale.setScalar(k); it.obj.rotation.y = (s.toe || 0) + turn;
@@ -1161,10 +1419,12 @@ function placeItem(it) {
       top.position.y = -s.h / 2 - 0.01; post.scale.y = len; post.position.y = -s.h / 2 - len / 2; base.position.y = -s.h / 2 - len + 0.015;
     }
     lb.position.set(x, y + s.h * k / 2 + 0.16, z + 0.2);
+    placeBlob(it, s.w * k, s.d * k, x, z, it.obj.rotation.y, !s.flat && y - s.h * k / 2 < 0.05);
   } else if (it.kind === 'prop') {
     const s = it.s, x = ov.x ?? s.x, z = ov.f != null ? ov.f * span : s.z, y = ov.y ?? 0;
     it.obj.position.set(x, y, z); it.obj.scale.setScalar(k); it.obj.rotation.y = s.rot + turn;
     lb.position.set(x, y + s.top * k + 0.18, z + 0.15);
+    placeBlob(it, s.size[0] * k, s.size[2] * k, x, z, it.obj.rotation.y, y < 0.05);
   } else if (it.kind === 'acoustic') {
     const s = it.s, H = S.roomH, show = it.order < Math.round(S.acoustics * ACOUSTIC.length);
     let x, y, z, ry = 0, top;
@@ -1273,7 +1533,7 @@ function placeTv() {
   t.cab.scale.set(S.tvW * 0.985, tvH * 0.97, 0.44); t.cab.position.set(0, S.tvY, 0.22);
   t.face.scale.set(L.faceW, L.faceH, 1); t.face.position.set(0, S.tvY, front);
   t.line.position.set(0, S.tvY, front + 0.002);
-  t.glow.position.set(0, S.tvY, 1.5);
+  t.glow.position.set(0, S.tvY, 1.1);
 }
 function syncLabels() { for (const lb of R.labels) lb.visible = !!S.labels && (!lb.userData.show || lb.userData.show()); }
 function applyFlags() {
@@ -1284,10 +1544,22 @@ function applyFlags() {
   R.edgeMats.music.color.setRGB(...(wire ? [1.6, 1.0, 2.6] : [0.75, 0.55, 1.0]));
   R.edgeMats.garage.color.setRGB(...(wire ? [2.6, 1.4, 0.7] : [1.0, 0.6, 0.32]));
   for (const s of R.surfaces) own(s).wireframe = wire;
+  // Look: each thing in its own material, no outlines; Skeleton (or the wireframe): the grey outlined blocks
+  const look = !!S.look && !wire;
+  if (R.lookOn !== look) {
+    R.lookOn = look;
+    const set = (o, m) => { if (o.userData.mat0) o.userData.mat0 = m; if (!R.paintOn) o.material = m; };
+    for (const [o, skel, lk] of R.dress) set(o, look ? lk : skel);
+    for (const m of R.mess) set(m.mesh, m.mesh.userData.mats[look ? 1 : 0]);
+    arrange(); // the contact shadows
+  }
+  R.hemi.intensity = look ? 0.12 : 0.42;
+  if (renderer.shadowMap.enabled !== !!S.shadows) { renderer.shadowMap.enabled = !!S.shadows; scene.traverse((o) => { if (o.material?.isMaterial) o.material.needsUpdate = true; }); }
   setPaint(!!S.paint && !wire && !!R.paint); // the painted room (Painted); the wireframe shows the bare set
+  for (const m of [...Object.values(R.edgeMats), R.acEdge]) m.visible = !look && !R.paintOn;
   syncLabels();
   const on = !!S.engine; // engine off by default (Dan): dark tail-lights
-  R.tailMat.color.setRGB(...(on ? [1.6, 0.12, 0.08] : [0.22, 0.03, 0.03])); R.tail.intensity = on ? 4 : 0;
+  R.tailMat.color.setRGB(...(on ? [1.6, 0.12, 0.08] : [0.22, 0.03, 0.03])); R.tail.intensity = on ? 4 : 0; R.tail.visible = on;
   document.body.classList.toggle('editing', !!S.edit);
   if (!S.edit) { R.hoverBox.visible = false; }
   $('editNote').textContent = S.edit ? 'Click a thing in the room and drag it: wall things slide along the wall, floor things across the floor.'
@@ -1418,6 +1690,7 @@ function resize() {
   renderer.setSize(vw, vh, false); composer.setPixelRatio(renderer.getPixelRatio()); composer.setSize(vw, vh);
   const dpr = renderer.getPixelRatio();
   R.mirror.getRenderTarget().setSize(Math.round(vw * dpr * 0.5), Math.round(vh * dpr * 0.5));
+  R.wet.getRenderTarget().setSize(Math.round(vw * dpr * 0.35), Math.round(vh * dpr * 0.35)); // it's softened anyway
   layoutCamera(); arrange(); benchFit();
 }
 // layoutCamera(): the camera's start and end on this screen. The room has one size in metres (Dan 2026-11-04: a room
@@ -1573,14 +1846,17 @@ function frame(now) {
   // light: the strips buzz on, the lamps warm up, the sign, then the tube opens
   const hum = 1 + 0.03 * Math.sin(now * 0.004) + (hash(Math.floor(now / 90)) > 0.988 ? -0.3 : 0);
   const neonK = flicker(t, INTRO.neon, 3) * S.neon * hum;
-  for (const n of R.neon) { n.mat.color.copy(n.mat.userData.base).multiplyScalar(2.6 * neonK); for (const l of n.lights) l.intensity = 11 * neonK; }
-  const lampK = smooth(0, 1, env(t, INTRO.lamps)) * S.lamps;
-  for (const lp of R.lamps) { lp.light.intensity = 16 * lampK; lp.bulbMat.color.copy(lp.bulbMat.userData.base).multiplyScalar(0.2 + 2.8 * lampK); }
+  // (the look's light levels are for AgX at exposure 1: the tubes burn bright, the room takes a share)
+  for (const n of R.neon) { n.mat.color.copy(n.mat.userData.base).multiplyScalar(14 * neonK); for (const l of n.lights) l.intensity = 21 * neonK; }
+  const warm = smooth(0, 1, env(t, INTRO.lamps)), lampK = warm * S.lamps;
+  for (const lp of R.lamps) { lp.light.intensity = 26 * lampK; lp.bulbMat.color.copy(lp.bulbMat.userData.base).multiplyScalar(0.3 + 9 * lampK); }
+  R.shaftMat.uniforms.uK.value = 0.05 * S.shafts * lampK * far;
+  for (const l of R.propLights || []) l.intensity = l.userData.cd * warm * (l.parent.userData.item?.id === 'N02' && hash(Math.floor(now / 400) + 9) > 0.93 ? 0.55 : 1); // one tube dying
   const signK = flicker(t, INTRO.sign, 11) * hum * (hash(Math.floor(now / 140) + 5) > 0.994 ? 0.25 : 1); // an old sign: a rare stutter
-  R.signMat.color.setScalar(0.08 + 1.3 * signK); R.signLight.intensity = 12 * signK;
+  R.signMat.color.setScalar(0.08 + 2.2 * signK); R.signLight.intensity = 3 * signK;
   const tk = reduced ? 1 : env(t, INTRO.tv), open = smooth(0.18, 0.62, tk);
   R.tv.faceMat.color.setScalar(locked ? 1 : 0.03 + 0.97 * open);
-  R.tv.glow.intensity = 14 * S.tvGlow * open * (1 + 0.05 * Math.sin(now * 0.0019)) * far;
+  R.tv.glow.intensity = 3 * S.tvGlow * open * (1 + 0.05 * Math.sin(now * 0.0019)) * far;
   const la = tk >= 1 ? 0 : 1 - smooth(0.35, 0.75, tk);
   R.tv.lineMat.opacity = la; R.tv.line.visible = la > 0.001;
   R.tv.line.scale.set(S.tvW * clamp(tk / 0.18), 0.006 + L.tvH * open * 0.3, 1);
@@ -1604,13 +1880,19 @@ function frame(now) {
   R.scan.offset.y = roll;
   for (const sm of R.screenMats) {
     const glitch = still && hash(Math.floor(now / 110) + sm.id) > 0.985;
-    sm.color.setScalar((0.25 + 1.0 * S.screens * (0.94 + 0.06 * hash(Math.floor(now / 70) + sm.id))) * (0.15 + 0.85 * lampK) * (glitch ? 1.6 : 1));
+    // the screens' exact pixels (FINISH) at the default (screens 1.8); the slider dims or pushes them
+    sm.color.setScalar(S.screens / 1.8 * (0.94 + 0.06 * hash(Math.floor(now / 70) + sm.id)) * (0.15 + 0.85 * warm) * (glitch ? 1.2 : 1));
     if (sm.map) sm.map.offset.x = glitch ? 0.02 : 0;
   }
 
   // haze, glow and dust leave by the lock so the TV lands clean
   scene.fog.density = S.fog * far;
-  bloomPass.strength = R.paintOn ? 0 : S.bloom * far * far; // the paintings carry their own glow
+  R.wet.material.uniforms.uFog.value = scene.fog.density;
+  finishPass.uniforms.uTone.value = TONES[S.tone] ?? 1; finishPass.uniforms.toneMappingExposure.value = renderer.toneMappingExposure = S.exposure;
+  for (const m of SHINY) m.envMapIntensity = S.probe * (m.userData.env ?? 1);
+  if (R.probe.due && now > R.probe.due) { R.probe.due = 0; updateProbe(); }
+  bloomPass.strength = R.paintOn ? 0 : S.bloom * (R.lookOn ? 0.45 : 1) * far * far; // the paintings carry their own glow
+  bloomPass.threshold = R.lookOn ? 1.6 : 0.9; // in the look only real emitters glow: tubes, bulbs, screens
   R.dust.mat.opacity = 0.55 * S.dust * Math.pow(far, 1.2);
   R.dust.pts.visible = S.dust > 0;
   const p = R.dust.pts.geometry.attributes.position, b = R.dust.base, sd = R.dust.seed;
@@ -1863,6 +2145,10 @@ const SLIDERS = [
   ['Alive'],
   ['ledStrip', 'Floor LED strips', 0, 2.5, 0.05], ['rackLeds', 'Rack LEDs + VU meters', 0, 2.5, 0.05], ['screens', 'Monitor screens', 0, 2, 0.05],
   ['neon', 'Neon strips', 0, 3, 0.05],
+  ['The look'],
+  ['tone', 'Tone mapping', { agx: 'AgX (Blender’s, the default)', neutral: 'Khronos Neutral (brand-true colours)', aces: 'ACES filmic', none: 'None (clipped)' }],
+  ['exposure', 'Exposure', 0.3, 3, 0.05], ['shadows', 'Shadows', { 1: 'On', 0: 'Off' }],
+  ['probe', 'Reflections (the room in shiny things)', 0, 2, 0.05], ['shafts', 'Light in the haze under the lamps', 0, 3, 0.05],
   ['Light'],
   ['lamps', 'Amber lamps', 0, 3, 0.05], ['tvGlow', 'TV glow', 0, 3, 0.05],
   ['bloom', 'Glow (bloom)', 0, 2.5, 0.05], ['fog', 'Haze', 0, 0.1, 0.002], ['dust', 'Dust', 0, 3, 0.05],
@@ -1875,7 +2161,7 @@ function buildTune() {
       const [k, label] = row, opts = row[2] || (k === 'signWall' ? SIGN_WHERE : {}), l = document.createElement('label'), sel = document.createElement('select');
       l.innerHTML = `<span>${label}</span><output></output>`;
       for (const [v, t] of Object.entries(opts)) { const o = document.createElement('option'); o.value = v; o.textContent = t; o.selected = String(S[k]) === v; sel.appendChild(o); }
-      sel.addEventListener('change', () => { S[k] = /^\d+$/.test(sel.value) ? +sel.value : sel.value; if (k === 'signWall') { signSide(); buildTune(); } save(); arrange(); if (R.selected) fillSel(); });
+      sel.addEventListener('change', () => { S[k] = /^\d+$/.test(sel.value) ? +sel.value : sel.value; if (k === 'signWall') { signSide(); buildTune(); } save(); arrange(); applyFlags(); if (R.selected) fillSel(); });
       l.appendChild(sel); body.appendChild(l); continue;
     }
     const [k, label, min, max, step] = row;
