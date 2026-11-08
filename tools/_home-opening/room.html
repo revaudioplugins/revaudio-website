@@ -56,6 +56,9 @@
     background-image: repeating-linear-gradient(rgba(0, 0, 0, .22) 0 1px, transparent 1px 3px), var(--pic); background-size: 100% 100%; }
   /* ?capture: the bare set for the painter, no page chrome */
   body.capture .nav, body.capture .stage-nav, body.capture .read-b, body.capture #benchOpen { display: none !important; }
+  /* the picture first (a slow connection): the room's own still under the page, shown only if the 3D takes over 0.9 s */
+  .still { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; pointer-events: none; transition: opacity 0.45s ease; }
+  .still.is-on { opacity: 1; }
   .tv-live { position: absolute; left: 0; top: var(--nav-h); width: 100%; height: calc(var(--vh) - var(--nav-h)); display: block;
     opacity: 0; border-radius: var(--tv-r); pointer-events: none; }
   /* fades in (out at once): the film's TV is the 1920 page, the live one follows the screen's own layout */
@@ -117,6 +120,9 @@
     <div class="cam">
       <div class="stage" id="stage">
         <canvas id="gl" aria-hidden="true"></canvas>
+        <img class="still" id="still" src="assets/still/room-2560.webp" alt="" fetchpriority="high" decoding="async">
+        <script>/* a fast visit never sees it (the intro plays); a slow one gets the room's picture instead of a dark page */
+          if (!/[?&]capture=/.test(location.search)) setTimeout(() => { const s = document.getElementById('still'); if (s && !s.dataset.done) s.classList.add('is-on'); }, 900);</script>
         <img class="tv-live" id="tvLive" src="assets/tv-1141x636.webp" alt="The plugin TV">
         <div class="read-b" id="readB">
           <p class="rb-kick">REVAUDIO · BOUTIQUE AUDIO PLUGINS</p>
@@ -2265,6 +2271,7 @@ $('movesReset').addEventListener('click', () => {
 function raf(now) {
   if (lenis) lenis.raf(now);
   readScroll(); snapCheck(now); frame(now);
+  if (R.still && progress < 0.02) { const s = R.still; R.still = null; s.classList.remove('is-on'); setTimeout(() => s.remove(), 500); } // the 3D over the picture
   requestAnimationFrame(raf);
 }
 
@@ -2458,6 +2465,10 @@ renderer.setRenderTarget(null);
 updateProbe(); R.probe.due = 0;
 t0 = performance.now(); frame(t0); // one dark first frame: the glow, the finish and the floor's mirror compile before the clock starts
 t0 = performance.now();
+// the picture first: if it showed (a slow load), the room comes up at full light, no intro, and fades in over it once the
+// visitor is at the start of the walk (never a swap mid-walk: Dan's rule since the film); if it didn't, it goes
+const still = $('still'); still.dataset.done = '1';
+if (still.classList.contains('is-on')) { R.still = still; t0 -= INTRO.read[1]; } else still.remove();
 requestAnimationFrame(raf);
 </script>
 </body>
