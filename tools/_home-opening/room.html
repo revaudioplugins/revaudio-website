@@ -675,6 +675,7 @@ const LIT = {
 // labels, the skeleton). yaw: turns the file's front to the slot's. ?model=<slot>:<assets/models/...glb>[:yaw] previews
 // one without editing this (render scripts, Dan's picks)
 const MODELS = {
+  E01: { src: 'assets/models/studio-desk.glb', fit: 'height' },        // Dan's pick (11-08): the studio desk, racks built in (ours, from code)
   N34: { src: 'assets/models/office-chair.glb', yaw: Math.PI + 0.45 }, // Dan's pick (11-08): faces the desk, pushed back and turned away a little
 };
 for (const q of new URLSearchParams(location.search).getAll('model')) {
@@ -686,10 +687,11 @@ async function loadModels() {
   if (!ids.length) return [];
   const [{ GLTFLoader }, { MeshoptDecoder }] = await Promise.all([import('three/addons/loaders/GLTFLoader.js'), import('three/addons/libs/meshopt_decoder.module.js')]);
   const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder), maps = [];
+  R.modelGlow = [];
   await Promise.all(ids.map(async (id) => {
     const it = R.items.find((x) => x.id === id), m = MODELS[id];
     let g; try { g = (await loader.loadAsync(m.src)).scene; } catch (e) { console.warn('model', id, m.src, e.message); return; } // the block stays
-    g.rotation.y = m.yaw; g.updateMatrixWorld(true);
+    g.rotation.y = m.yaw || 0; g.updateMatrixWorld(true);
     const box = new THREE.Box3().setFromObject(g, true), size = box.getSize(new THREE.Vector3()), c = box.getCenter(new THREE.Vector3());
     it.obj.geometry.computeBoundingBox(); const bb = it.obj.geometry.boundingBox, slot = bb.getSize(new THREE.Vector3());
     const k = m.fit === 'height' ? slot.y / size.y : Math.min(slot.x / size.x, slot.y / size.y, slot.z / size.z);
@@ -700,6 +702,7 @@ async function loadModels() {
       o.castShadow = o.receiveShadow = true;
       for (const mt of [o.material].flat()) {
         for (const t of ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap', 'emissiveMap']) if (mt[t]) maps.push(mt[t]);
+        if (mt.emissive && mt.emissive.getHex() && !R.modelGlow.some((g) => g.m === mt)) R.modelGlow.push({ m: mt, k: mt.emissiveIntensity }); // meters and LEDs power on with the room
         if (mt.metalness > 0.3 || mt.roughness < 0.5) { mt.envMap = R.probe.env.texture; mt.userData.env ??= 1; SHINY.add(mt); } // the room's own reflection, on shiny parts only
       }
     });
@@ -1984,6 +1987,7 @@ function lightRoom(neonK, warm, signK, open, far, now) {
   R.tv.glow.intensity = 3 * S.tvGlow * open * (reduced ? 1 : 1 + 0.05 * Math.sin(now * 0.0019)) * far;
   R.tv.haloMat.opacity = 0.1 * open;
   for (const m of SHINY) m.envMapIntensity = S.probe * (m.userData.env ?? 1) * warm; // the reflections come up with the lamps
+  for (const g of R.modelGlow || []) g.m.emissiveIntensity = g.k * warm;                  // a model's meters and LEDs too
 }
 function frame(now) {
   const t = now - t0;
