@@ -27,6 +27,7 @@ export function popupMayOpen(): boolean {
   const el = tv();
   if (!el) return true;
   if (el.contains(document.activeElement)) return false;
+  if (el.querySelector('.is-signing')) return false; // the TV's sign-up is open (WordWall, Phase 5 step 3)
   if (now - lastTv < QUIET_MS) return false;
   const r = el.getBoundingClientRect();
   const seen = Math.max(0, Math.min(r.bottom, window.innerHeight) - Math.max(r.top, 0));

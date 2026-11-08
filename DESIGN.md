@@ -133,8 +133,8 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
     (DRIFT's is the live run: it plays only while lit and on screen, never under reduced motion), the
     name + type word, the blurb, the five words as one line (the hot word lit; a line breaks between
     words, never before a dot), the price (`$49` / `$19` / `Free` / `Free beta`), ONE key
-    "Try free for 30 days" (TrialGateModal's email gate with the licence-worker id; GAS "Free download"
-    through the same gate; DRIFT to `/drift#try`) and a "Product page ->" key. On the screen both keys are
+    "Try free for 30 days" (the sign-up on the screen below, with the licence-worker id; GAS "Free download"
+    the same; DRIFT's "Try the free beta" too, `/drift#try` without JS) and a "Product page ->" key. On the screen both keys are
     light on the glass, inverse video like the lit ALL key (the user's pick 2026-11-04, option A of three on
     `/__wwkeys`: the Try key "is not fitting the LCD screen, I want it to feel like it's part of the LCD
     screen"): Try = a block of the channel's phosphor with dark words, two lines; Product page = a phosphor
@@ -151,6 +151,21 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
       small laptop to 1200 wide, a phone under 760 tall) the text keeps its look at about its old size,
       and the small laptop keeps the price row on one line (wrapped, DRIFT's window went 195 -> 54 px
       tall). The two mono readings (Share Tech Mono, VT323) read more like a screen but less easily.
+    - Try, on the screen (Phase 5 step 3; the user's pick 2026-11-08, look A "Channel page" of three on
+      `/__wwsignup`, over B a set-up menu over the dimmed picture and C a typed prompt): with the script, Try
+      never opens a pop-up or leaves the TV. The lit plugin's pane turns into its sign-up the way a channel
+      changes (the window and the reading step off, the form comes on in reading order, the --ww-mv-* times):
+      TRY <NAME> FREE (GAS / GAS 2 "<NAME>: FREE DOWNLOAD", DRIFT "TRY THE DRIFT FREE BETA") with ‹ BACK
+      (and Esc) on its row, the deal line, the paid trial's 30-day line, YOUR EMAIL in a phosphor outline,
+      the terms box (required, D6; Terms & Conditions + Licence terms outside its label), the newsletter box
+      (optional on a trial, required on a free download, the worker's exact words), Send my link (the lit
+      Try key's inverse video; the button family off the screen), the notice + Privacy. Then "Check your
+      inbox", Sent to <address>, on a touch screen "Open it on your Mac or PC to install.", Resend ·
+      Wrong email? (P01). The screen's two faces only (Bebas, Inter); each refusal at its field in one red
+      the channels never take (hsl 352 100% 76%), the focus on the first. While it is open: no glitch at
+      all, no pop-up, no snap, DRIFT's run paused; another channel puts the plugin back. A plugin verified
+      in the last 24 h still gets TrialGateModal's Mac / Windows keys (until step 4 puts them on the
+      screen). No JS: Try keeps the pop-up / DRIFT's link. Forced colours: the real checkboxes.
   - Channels (Dan's pick: each plugin its own screen colour): one hue + saturation per plugin on `.ww`
     (`--ww-ch-<slug>-h` / `-s`): RevLimiter amber 26 / 78 (kept above ~20 so it never reads as
     race-red), GAS brass gold 46 / 62, Radio Roulette warm dial-glass cream 38 / 28, DRIFT violet

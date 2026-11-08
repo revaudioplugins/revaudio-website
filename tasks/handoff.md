@@ -74,8 +74,8 @@ Files: `src/components/WordWall.astro`, `src/components/TrialGateModal.astro` (+
      prompt (typed lines, mono prompts, the picture as an inset). WebKit 1141x636: A fits every case (refused Send
      on RevLimiter fills the glass exactly), B runs the TV 11 px past the window (RevLimiter refused), C 4 px (GAS
      refused); phones 390x844 all fit. Pick page "TV Sign-up Looks" https://claude.ai/artifact/Rm8ZajbFuNgJTT5VDvtDia
-     (review-bench, db `notes/<id>`, the pick = `notes/overall` choice a / b / c / mix). Recommended: A. Waiting for
-     Dan's pick; then build it into WordWall + the shared sign-up module (plan step 3).
+     (review-bench, db `notes/<id>`, the pick = `notes/overall` choice a / b / c / mix). Dan: "A" (chat,
+     2026-11-08; the page's db held only an empty pin line). BUILT the same day, see "Step 2 BUILT" below.
   2. VOCALS: P14's note read as "DRIFT out of VOCALS" (it was already in MODULATION + CREATIVE), so VOCALS is gone
      from the TV on this branch. Not confirmed by Dan; one line in `plugins.ts` to undo.
   3. TrialGateModal's 3 px brass top line on a rounded box (`.tg-modal` border-top, since `fbe4ac79` 2026-07-26):
@@ -84,11 +84,35 @@ Files: `src/components/WordWall.astro`, `src/components/TrialGateModal.astro` (+
      weeks; Cloudflare Web Analytics + the licence worker's admin leads page). Never read with prod secrets.
   5. `.claude/worktrees/home-library` (detached at `b67c76f`, 3 days old) holds another session's UNCOMMITTED
      edits to `WordWall.astro`: not this claim's, left alone; tell Dan before anything touches that worktree.
-- Pushes: this branch needs a force-push after the rebases (auto mode denies `--force-with-lease`; Dan runs
-  `! git -C ~/projects/revaudio/revaudio-website/.claude/worktrees/tv-sells push --force-with-lease origin feat/tv-sells`).
-  The shared law commit `15b1bc5` IS on revaudio-shared main.
-- Next: step 00 (the baseline, emails per 1,000 home-page visitors) needs live numbers (the worker's leads + the
-  Cloudflare visit counts); then steps 1-10 in the plan's order. Nothing pushed to main; main = live on Dan's word.
+- Step 2 BUILT 2026-11-08 (`danavivi-c4`, Dan's "A"): Try signs up ON the screen (plan step 3). `WordWall.astro`: a
+  `<section class="ws" data-ws hidden>` per panel with a `TvAction.signup` (RevLimiter, Radio Roulette = trial; GAS,
+  GAS 2 = free, newsletter required; DRIFT = beta, + `/form-once` {form:'newsletter', email, source:'drift-trial'}
+  only when its box is ticked), look A's CSS (scoped; Send = the Try key's light, `rv-btn` off the screen; forced
+  colours = the real checkboxes), the script (open / close with the --ww-mv-* motion, Esc, Back, refusals at their
+  fields, Sent / Resend / Wrong email?, a filled honeypot = the sent screen and no POST; glOk + fit + the snap stand
+  down while signing; another channel / a phone's list resets it; DRIFT's run paused). A gate token saved in the
+  last 24 h lets the click through to TrialGateModal's Mac / Windows keys (step 4 brings them onto the screen).
+  `src/lib/signup.ts` (new): EMAIL_RE, postJson, withSource, announce (`tg:registered`), the `tg:gate:` store; the
+  modal now imports them (its behaviour unchanged). `popup-guard.ts`: no pop-up while `.is-signing`. DESIGN.md §4.
+- Checks 2026-11-08 (dev :4480 via `tools/tv-walk/walk.cjs`, every live request blocked, the POSTs faked): marcus
+  (WebKit 1141x636), walter (960x600 1.5x, forced colours, reduced motion), noa (iPhone WebKit): Try = the form, no
+  pop-up, focus in the field; empty Send = "Enter your email." + "Tick the box to agree to the terms."; GAS refuses
+  without the newsletter box; the register body = the modal's ({email, plugin, marketing, src_ch, src_via});
+  DRIFT ticked = register marketing:true + /form-once; Sent focuses the title, the touch line on the iPhone only;
+  Wrong email? selects the address; Esc / Back = the plugin, focus on Try; a channel change resets it. Glitches with
+  the times shortened: 11 in 7 s with the plugin on the glass, 0 in 7 s with the sign-up open. The TV stays inside
+  the window at 1141x636 (604 / 636 with both errors) and on the iPhone; at 960x600 (150 % zoom) the refused form
+  runs the TV 48 px past (it was 1 px past before Try). The product page's pop-up after the move: Send -> "Check
+  your inbox", one `tg:registered`, the same body. `npm run build` green (33 pages). Playwright: `tv-signup.spec.ts`
+  (new, worker mocked) 4 passed (chromium + mobile-safari); trial-gate-mobile, welcome-discount-popup, smoke:
+  66 passed, 1 skipped, 1 failed = smoke /drift on mobile-safari (WebKit's video placard icons, known, not this work).
+  Not checked: a real iPhone (keyboard over the form), NVDA / VoiceOver, Dan's eye on the built TV.
+- Pushes: the branch is in sync with origin (normal pushes work again). The shared law commit `15b1bc5` IS on
+  revaudio-shared main.
+- Next: Dan looks at the built sign-up (dev :4480, `/?plugin=revlimiter`, Try); then step 4 (D5 = B: the verify
+  link returns to the TV with Mac / Windows keys on the screen; a licence-worker change in the RevLimiter repo, its
+  own claim, `wrangler deploy` only on Dan's word) and step 00's baseline before any push to main. Nothing on
+  main; main = live on Dan's word.
 
 ## 2026-11-04 — GAS 2 postcards: the end page scrolls as one page, the footer under it (Claude Code `danavivi-c2 [ca2821]`, Dan's Mac) — PUSHED TO MAIN 2026-11-04 on Dan's word "perfect push to main" (from `fix/gas2-end-flow`)
 

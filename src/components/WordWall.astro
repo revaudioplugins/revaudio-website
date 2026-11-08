@@ -13,8 +13,9 @@
        lit one is filled;
      - the lit plugin, right: its window (DRIFT's is the live run), the name,
        the short description, the five words as one small line, the price,
-       "Try free for N days" (TrialGateModal's email gate; DRIFT: its own
-       page's sign-up) and a small "Product page" link.
+       "Try free for N days" (its sign-up on the screen, in the panel's own
+       pane: Phase 5 step 3; TrialGateModal / DRIFT's page without JS) and a
+       small "Product page" link.
    Lighting a plugin is a channel change: the screen takes that plugin's
    phosphor colour (--ww-ch-<slug>-h / -s) and the plugins swap by motion
    alone, the old one off the glass before the new one comes on, always the
@@ -47,7 +48,7 @@ import rrImg from '../assets/plugins/radioroulette-hero.png';
 import driftImg from '../assets/showcase/drift-window-init.png';
 import brokenMeta from '../assets/seasons/drift/tv-broken.json';
 import { drift } from '../data/drift';
-import { tvPlugins, tvCats, catsOf, tvName, priceLine, tryAction, type TvAction } from '../data/library';
+import { tvPlugins, tvCats, catsOf, tvName, priceLine, tryAction, PAID_TRIAL_DAYS, type TvAction, type TvSignup } from '../data/library';
 import type { LibraryWord } from '../data/plugins';
 
 /* What the whole wall is: the garage wood, or one TV every plugin plays on
@@ -174,6 +175,22 @@ const items: Item[] = tvPlugins()
     cats: catsOf(p),
   }));
 const cats = tvCats(tvPlugins().filter((p) => items.some((it) => it.slug === p.slug)));
+/* The sign-up on the screen (Phase 5 step 3; Dan 2026-11-08: look A, "Channel page", of /__wwsignup): its words per
+   kind. TrialGateModal's own words; the newsletter line is the licence worker's MARKETING_CONSENT_TEXT (change both
+   together); the paid trial's second line is P12's (the plugins' LicenseManager + processBlock, read 2026-11-05). */
+const signupCopy = (s: TvSignup, name: string) =>
+  s.kind === 'free'
+    ? { t1: `${name}: free download`, t2: 'Free forever · full version · Mac + Windows', p12: '',
+        news: 'Send me new-plugin drops and demo codes', newsReq: true,
+        notice: "We'll send a few short emails about getting started. Unsubscribe anytime." }
+    : s.kind === 'beta'
+      ? { t1: `Try the ${name} free beta`, t2: 'Free beta · download by email', p12: '',
+          news: 'Also send me new-plugin drops and demo codes', newsReq: false,
+          notice: "We'll send a few short emails about getting started. Unsubscribe anytime." }
+      : { t1: `Try ${name} free`, t2: `${PAID_TRIAL_DAYS} days · full version · no credit card`,
+          p12: `The ${PAID_TRIAL_DAYS} days start the first time you open it; after that your sound passes through untouched until you add a key.`,
+          news: 'Also send me new-plugin drops and demo codes', newsReq: false,
+          notice: "We'll send a few short emails about getting started, and a heads-up before a trial ends. Unsubscribe anytime." };
 const first = items[0]?.slug ?? '';
 ---
 
@@ -318,6 +335,59 @@ const first = items[0]?.slug ?? '';
               <a class="ww-more rv-btn rv-btn--ghost rv-btn--sm" href={`/${it.slug}`}><span class="sr-only">{it.name} </span>Product page <span aria-hidden="true">&rarr;</span></a>
             </div>
           </div>
+          {/* Try, on the screen: the pane turns into this (the script; hidden without it, where Try keeps its pop-up
+              or its link) */}
+          {it.action?.signup && ((s, k) => (
+            <section class="ws" data-ws hidden aria-labelledby={`ws-t-${it.slug}`}>
+              <div class="ws-head" data-ws-step>
+                <h3 class="ws-title" id={`ws-t-${it.slug}`} tabindex="-1">{k.t1}</h3>
+                <button type="button" class="ws-back" data-ws-back>Back<span class="sr-only"> to {it.name}</span></button>
+                <p class="ws-t2">{k.t2}</p>
+                {k.p12 && <p class="ws-p12">{k.p12}</p>}
+              </div>
+              <form class="ws-form" data-ws-form novalidate aria-labelledby={`ws-t-${it.slug}`} data-plugin={s.plugin}
+                data-register-url={s.registerUrl} data-once-url={s.onceUrl} data-source={s.source}>
+                <div class="ws-line" data-ws-step>
+                  <label class="ws-lbl" for={`ws-email-${it.slug}`}>Your email</label>
+                  <input class="ws-field" id={`ws-email-${it.slug}`} type="email" name="email" placeholder="you@studio.com"
+                    autocomplete="email" required aria-describedby={`ws-email-err-${it.slug}`} />
+                  <p class="ws-err" id={`ws-email-err-${it.slug}`} role="alert"></p>
+                </div>
+                {/* real people never fill this; bots do */}
+                <input type="text" name="_gotcha" class="ws-hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+                {/* D6 (the user 2026-11-01): a required terms box; the links outside its label, Privacy in the notice */}
+                <div class="ws-line" data-ws-step>
+                  <div class="ws-box">
+                    <span class="ws-cb"><input type="checkbox" id={`ws-terms-${it.slug}`} data-ws-terms required
+                      aria-describedby={`ws-terms-err-${it.slug}`} /><span class="ws-cbx" aria-hidden="true"></span></span>
+                    <span class="ws-boxtext"><label for={`ws-terms-${it.slug}`}>I agree to the terms <span class="ws-req">(required)</span></label>:
+                      <a href="/terms" target="_blank" rel="noopener">Terms &amp; Conditions</a> · <a href="/eula" target="_blank" rel="noopener">Licence terms</a></span>
+                  </div>
+                  <p class="ws-err" id={`ws-terms-err-${it.slug}`} role="alert"></p>
+                </div>
+                <div class="ws-line" data-ws-step>
+                  <div class="ws-box">
+                    <span class="ws-cb"><input type="checkbox" id={`ws-news-${it.slug}`} data-ws-news required={k.newsReq}
+                      aria-describedby={`ws-news-err-${it.slug}`} /><span class="ws-cbx" aria-hidden="true"></span></span>
+                    <span class="ws-boxtext"><label for={`ws-news-${it.slug}`}>{k.news} <span class="ws-req">{k.newsReq ? '(required)' : '(optional)'}</span></label></span>
+                  </div>
+                  <p class="ws-err" id={`ws-news-err-${it.slug}`} role="alert"></p>
+                </div>
+                <div class="ws-line ws-line--send" data-ws-step>
+                  <button type="submit" class:list={['ws-send rv-btn', s.kind === 'free' && 'rv-btn--honey']} data-ws-send>Send my link</button>
+                  <p class="ws-err" data-ws-err role="alert"></p>
+                </div>
+                <p class="ws-notice" data-ws-step>{k.notice} <a href="/privacy" target="_blank" rel="noopener">Privacy</a></p>
+              </form>
+              <div class="ws-sent" data-ws-sent hidden>
+                <h3 class="ws-st" data-ws-step tabindex="-1">Check your inbox</h3>
+                <p class="ws-to" data-ws-step>Sent to <b data-ws-to></b>.</p>
+                <p class="ws-desk" data-ws-step data-ws-desk hidden>Open it on your Mac or PC to install.</p>
+                <p class="ws-act" data-ws-step><button type="button" data-ws-resend>Resend</button><span aria-hidden="true"> · </span><button type="button" data-ws-wrong>Wrong email?</button></p>
+                <p class="ws-msg" role="status" aria-live="polite" data-ws-msg></p>
+              </div>
+            </section>
+          ))(it.action.signup, signupCopy(it.action.signup, it.name))}
         </article>
       );
     })}
@@ -326,6 +396,7 @@ const first = items[0]?.slug ?? '';
 
 <script>
   import { lenis, DUR_ANCHOR, gsap } from '../lib/motion'; // the house scroller (null under reduced motion) + GSAP
+  import { EMAIL_RE, postJson, withSource, announce, loadGate } from '../lib/signup'; // the sign-up, shared with TrialGateModal
 
   const wall = document.querySelector<HTMLElement>('[data-wordwall]');
   if (wall) {
@@ -469,7 +540,8 @@ const first = items[0]?.slug ?? '';
       if (osdEl?.offsetParent) wall.style.setProperty('--ww-osd-h', `${Math.ceil(tall(osdEl))}px`);
       panels.forEach((p) => {
         const fig = p.querySelector<HTMLElement>('.ww-ui');
-        if (!fig || !p.offsetParent) return; // a closed panel on a phone (display:none): measured when it opens
+        // a closed panel on a phone (display:none): measured when it opens; one signing up shows no window
+        if (!fig || !p.offsetParent || p.classList.contains('is-signing')) return;
         const rest = Math.ceil(tall(p) - tall(fig)) + 1;
         if (rest > 1) p.style.setProperty('--ww-info-h', `${rest}px`);
       });
@@ -610,10 +682,200 @@ const first = items[0]?.slug ?? '';
       glowRun = gsap.to(k, { c: 1, d: 1, duration: sec(ms), ease: 'power1.inOut', onUpdate: paint, onComplete: calm });
     };
 
+    /* ── Try, on the screen (Phase 5 step 3; Dan 2026-11-08 picked look A, "Channel page", of /__wwsignup) ──────
+       The Try key turns the lit plugin's pane into its sign-up: the picture and the text step off the glass the way a
+       channel leaves (--ww-mv-out-*), the form comes on the way the text does (--ww-mv-text-*); ‹ Back or Esc runs it
+       back, the focus on Try. TrialGateModal's worker call (lib/signup.ts); a plugin verified in the last 24 h still
+       gets the modal's Mac / Windows keys (step 4 brings them onto the screen). DRIFT: the same form, then the list
+       relay only when its box is ticked (capture.ts' contract, TV walk P05). While one is open: no glitch (glOk), no
+       pop-up (popup-guard), no snap (the lock below), DRIFT's run paused. Another channel, or a phone's way back to
+       the list, puts the plugin back at once; what was typed stays. */
+    const signOf = (p: HTMLElement) => p.querySelector<HTMLElement>('[data-ws]');
+    const signing = () => panels.find((p) => p.classList.contains('is-signing')) ?? null;
+    const signParts = (p: HTMLElement) => Array.from(p.querySelectorAll<HTMLElement>(':scope > .ww-ui, :scope > .ww-info'));
+    const signSteps = (box: HTMLElement) => Array.from(box.querySelectorAll<HTMLElement>('[data-ws-step]')).filter((n) => n.getClientRects().length > 0);
+    let signRun: { kill: () => unknown } | null = null; // the sign-up's own motion under way
+    // in reading order, from a few px the way the motion runs (dir 1 = rising into place), as the text comes on
+    const signIn = (els: HTMLElement[], m: ReturnType<typeof moves>, at: number) =>
+      gsap.fromTo(els, { opacity: 0, y: m.dir * m.textPx }, {
+        opacity: 1, y: 0, duration: sec(m.textMs), ease: 'power3.out', stagger: sec(m.textGap), delay: sec(at), clearProps: 'transform,opacity',
+      });
+    const signSet = (p: HTMLElement, box: HTMLElement, on: boolean) => {
+      p.classList.toggle('is-signing', on);
+      box.hidden = !on;
+      if (runEl && p.contains(runEl)) { if (on) runEl.pause(); else syncRun(); }
+    };
+    // at once: the plugin back on its pane
+    const signReset = (p: HTMLElement) => {
+      const box = signOf(p);
+      if (!box || !p.classList.contains('is-signing')) return;
+      signRun?.kill();
+      signRun = null;
+      gsap.set([...signParts(p), box, ...Array.from(box.querySelectorAll<HTMLElement>('[data-ws-step]'))], { clearProps: 'transform,opacity' });
+      signSet(p, box, false);
+    };
+    const signOpen = (p: HTMLElement) => {
+      const box = signOf(p);
+      if (!box || p.classList.contains('is-signing')) return;
+      glStop();
+      signRun?.kill();
+      const m = moves();
+      const swap = () => {
+        gsap.set(signParts(p), { clearProps: 'transform,opacity' });
+        signSet(p, box, true);
+        box.querySelector<HTMLElement>(box.classList.contains('is-sent') ? '.ws-st' : '.ws-field')?.focus({ preventScroll: true });
+      };
+      if (still()) { swap(); return; }
+      signRun = gsap.to(signParts(p), {
+        opacity: 0, y: -m.dir * m.outPx, duration: sec(m.outMs), ease: 'power2.in',
+        onComplete: () => { swap(); signRun = signIn(signSteps(box), m, m.textAt); },
+      });
+    };
+    const signClose = (p: HTMLElement) => {
+      const box = signOf(p);
+      if (!box || !p.classList.contains('is-signing')) return;
+      signRun?.kill();
+      const m = moves();
+      const back = () => {
+        gsap.set([box, ...Array.from(box.querySelectorAll<HTMLElement>('[data-ws-step]'))], { clearProps: 'transform,opacity' });
+        signSet(p, box, false);
+        p.querySelector<HTMLElement>('.ww-try')?.focus({ preventScroll: true });
+      };
+      if (still()) { back(); return; }
+      signRun = gsap.to(box, {
+        opacity: 0, y: -m.dir * m.outPx, duration: sec(m.outMs), ease: 'power2.in',
+        onComplete: () => { back(); signRun = signIn(signParts(p), m, 0); },
+      });
+    };
+    panels.forEach((p) => {
+      const box = signOf(p);
+      const form = box?.querySelector<HTMLFormElement>('[data-ws-form]');
+      if (!box || !form) return;
+      const one = <T extends HTMLElement>(sel: string) => box.querySelector<T>(sel)!;
+      const field = one<HTMLInputElement>('.ws-field');
+      const terms = one<HTMLInputElement>('[data-ws-terms]');
+      const news = one<HTMLInputElement>('[data-ws-news]');
+      const trap = one<HTMLInputElement>('.ws-hp');
+      const send = one<HTMLButtonElement>('[data-ws-send]');
+      const err = one<HTMLElement>('[data-ws-err]');
+      const sent = one<HTMLElement>('[data-ws-sent]');
+      const msg = one<HTMLElement>('[data-ws-msg]');
+      const fd = form.dataset;
+      // each refusal at its own field (TV walk P06), worded, aria-invalid on the field
+      const mark = (input: HTMLInputElement, text: string) => {
+        const line = document.getElementById(input.getAttribute('aria-describedby') ?? '');
+        if (line) line.textContent = text;
+        if (text) input.setAttribute('aria-invalid', 'true');
+        else input.removeAttribute('aria-invalid');
+      };
+      field.addEventListener('input', () => mark(field, ''));
+      [terms, news].forEach((b) => b.addEventListener('change', () => { if (b.checked) mark(b, ''); }));
+      one<HTMLButtonElement>('[data-ws-back]').addEventListener('click', () => signClose(p));
+      type Body = { email: string; plugin: string; marketing: boolean };
+      let last: Body | null = null;
+      let busy = false;
+      // the worker mails the link; DRIFT's list relay follows a ticked box only (best effort, as on /drift)
+      const post = async (body: Body) => {
+        const j = await postJson(fd.registerUrl!, body);
+        if (j?.ok && body.marketing && fd.onceUrl) {
+          fetch(fd.onceUrl, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, keepalive: true,
+            body: JSON.stringify({ form: 'newsletter', email: body.email, source: fd.source }),
+          }).catch(() => { /* the list join is best-effort */ });
+        }
+        return j;
+      };
+      // P01: one title, where it went, on a touch screen where to open it, Resend / Wrong email?
+      const showSent = (addr: string) => {
+        form.hidden = true;
+        box.classList.add('is-sent');
+        one<HTMLElement>('[data-ws-to]').textContent = addr;
+        one<HTMLElement>('[data-ws-desk]').hidden = !window.matchMedia('(pointer: coarse)').matches;
+        msg.textContent = '';
+        sent.hidden = false;
+        one<HTMLElement>('.ws-st').focus({ preventScroll: true });
+        if (!still()) { signRun?.kill(); signRun = signIn(signSteps(sent), moves(), 0); }
+      };
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (busy) return;
+        const v = field.value.trim();
+        const okEmail = EMAIL_RE.test(v);
+        const newsMissing = news.required && !news.checked;
+        mark(field, okEmail ? '' : v ? 'That doesn’t look like an email.' : 'Enter your email.');
+        mark(terms, terms.checked ? '' : 'Tick the box to agree to the terms.');
+        mark(news, newsMissing ? 'Tick the box to get your download.' : '');
+        const first = !okEmail ? field : !terms.checked ? terms : newsMissing ? news : null;
+        if (first) { first.focus(); return; }
+        err.textContent = '';
+        if (trap.value) { showSent(v); return; } // a bot: nothing is sent, the same screen
+        busy = true;
+        send.disabled = true;
+        send.textContent = 'Sending…';
+        const body = withSource({ email: v, plugin: fd.plugin!, marketing: news.checked });
+        let ok = false;
+        try {
+          const j = await post(body);
+          ok = !!j?.ok;
+          if (ok) { last = body; showSent(v); announce(body.plugin); }
+          else err.textContent = j?.error || 'Something went wrong. Try again.';
+        } catch (x) {
+          err.textContent = 'Network hiccup. Try again in a moment.';
+        }
+        busy = false;
+        send.disabled = false;
+        send.textContent = 'Send my link';
+        if (!ok) send.focus({ preventScroll: true }); // a disabled key dropped the focus
+      });
+      one<HTMLButtonElement>('[data-ws-resend]').addEventListener('click', async (e) => {
+        const b = e.currentTarget as HTMLButtonElement;
+        if (busy || !last) return;
+        busy = true;
+        b.disabled = true;
+        msg.textContent = 'Sending…';
+        try {
+          const j = await post(last);
+          msg.textContent = j?.ok ? 'Sent again. Look in Promotions or Spam too.' : j?.error || 'Something went wrong. Try again.';
+        } catch (x) {
+          msg.textContent = 'Network hiccup. Try again in a moment.';
+        }
+        busy = false;
+        b.disabled = false;
+      });
+      one<HTMLButtonElement>('[data-ws-wrong]').addEventListener('click', () => {
+        sent.hidden = true;
+        box.classList.remove('is-sent');
+        form.hidden = false;
+        msg.textContent = '';
+        field.focus();
+        field.select();
+      });
+    });
+    // Try: the sign-up on the screen, never TrialGateModal's pop-up (its listener is on the document, after this one)
+    wall.addEventListener('click', (e) => {
+      const key = (e.target as Element | null)?.closest<HTMLElement>('.ww-panel .ww-try');
+      const p = key?.closest<HTMLElement>('[data-ww-panel]');
+      if (!key || !p || !signOf(p) || p.classList.contains('is-leaving')) return;
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return; // a modified click: DRIFT's link opens in a tab
+      const gate = key.dataset.pluginSlug;
+      if (gate && loadGate(gate)) return; // verified in the last 24 h: the modal's Mac / Windows keys (step 4: here)
+      e.preventDefault();
+      e.stopPropagation();
+      signOpen(p);
+    });
+    wall.addEventListener('keydown', (e) => {
+      const p = e.key === 'Escape' ? signing() : null;
+      if (!p) return;
+      e.preventDefault();
+      e.stopPropagation();
+      signClose(p);
+    });
+
     // the glass's DOM as the pick wants it: the lit plugin's panel up (the rest hidden), its colour, a phone's view
     const apply = () => {
       panels.forEach((p) => {
         const on = slugOf(p) === lit;
+        if (!on || (phone.matches && viewWant === 'list')) signReset(p); // another channel / a phone's list
         p.classList.toggle('is-active', on);
         p.classList.remove('is-leaving');
         p.inert = false;
@@ -852,7 +1114,7 @@ const first = items[0]?.slug ?? '';
     let glLit = performance.now(); // when the plugin on the glass came on (the reading waits --ww-gl-read-after-s)
     const forced = window.matchMedia('(forced-colors: active)');
     const glShown = () => !reduced.matches && !forced.matches && !still() && wall.dataset.wwPower === 'on'; // on show, its tube lit
-    const glOk = () => glShown() && stage === 'rest';
+    const glOk = () => glShown() && stage === 'rest' && !signing(); // nothing at all while a sign-up is open
     const glStop = () => {
       const off = glOff;
       glOff = null;
@@ -1299,6 +1561,7 @@ const first = items[0]?.slug ?? '';
       let startY = 0; // scrollY when this gesture began
       const trySnap = () => {
         if (touching) return; // touchend asks again
+        if (signing()) { armed = false; return; } // a sign-up is open (a phone's keyboard may be up): the lock stands down
         // Lenis is still gliding (a slow frame rate can outlast the 160 ms idle): not idle yet, ask again
         if (lenis?.isScrolling === 'smooth') { later(); return; }
         armed = false;
@@ -1808,6 +2071,200 @@ const first = items[0]?.slug ?? '';
     box-shadow: inset 0 0 0 1.5px var(--ww-ink-hot), inset 0 0 18px var(--ww-glow-soft), 0 0 20px var(--ww-glow);
   }
   :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-more:is(:active, .is-pressed) { background-color: hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.28); transition-duration: 60ms; }
+
+  /* ---- Try, on the screen (Phase 5 step 3; Dan 2026-11-08: look A, "Channel page", of /__wwsignup) ----
+     The pane turns into the sign-up: the window and the reading go, the form takes the pane. The screen's two faces
+     (Bebas for the titles and Send, Inter for the rest; P01), the channel's phosphor through the --ww-* inks, so high
+     contrast and the wood wall get theirs. Send is the Try key's light on the glass; off the screen (html.hc, the
+     wood) it is the button family, as the TV's keys. Forced colours: the real checkboxes, borders kept. */
+  .ww-panel.is-signing,
+  .ww-panel.is-portrait.is-signing { grid-template-columns: minmax(0, 1fr); }
+  .ww-panel.is-signing > :is(.ww-ui, .ww-info) { display: none; }
+  .ww[data-ww-lib='on'] .ww-panel.is-signing > .ww-back { display: none; }
+  .ws {
+    --ws-bad: hsl(352 100% 76%); /* a refusal: a red the channels never take (RevLimiter's amber sits at 26) */
+    display: grid;
+    gap: 0.8rem;
+    justify-items: start;
+    width: 100%;
+    max-width: 34rem;
+    min-width: 0;
+    color: var(--ww-ink-text);
+    font-family: var(--font-body);
+  }
+  .ws[hidden],
+  .ws [hidden] { display: none !important; }
+  .ws :is(h3, p) { margin: 0; }
+  .ws a { color: var(--ww-ink-hot); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
+  .ws a:hover { text-shadow: 0 0 8px var(--ww-glow); }
+  .ws :is(a, button):focus-visible { outline: 2px solid var(--ww-ink-hot); outline-offset: 3px; }
+  .ws-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 1rem;
+    row-gap: 0.3rem;
+    width: 100%;
+    align-items: baseline;
+  }
+  .ws-title,
+  .ws-st {
+    font-family: var(--font-display);
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ww-ink-hot);
+    text-wrap: balance;
+  }
+  .ws-title { font-size: clamp(1.8rem, 2.6vw, 2.6rem); text-shadow: 0 0 8px var(--ww-glow); }
+  .ws-title:focus,
+  .ws-st:focus { outline: none; }
+  .ws-back {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    appearance: none;
+    margin: 0;
+    padding: 0.45rem 0;
+    border: 0;
+    background: none;
+    font: 600 0.82rem/1 var(--font-body);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ww-ink);
+    cursor: pointer;
+  }
+  .ws-back::before { content: '\2039'; margin-right: 0.5em; font-size: 1.3em; line-height: 0.6; }
+  .ws-back:hover { color: var(--ww-ink-hot); }
+  .ws-t2 {
+    grid-column: 1 / -1;
+    font: 600 0.82rem/1.3 var(--font-body);
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--ww-ink);
+  }
+  .ws-p12 { grid-column: 1 / -1; max-width: 34rem; font: 500 0.9rem/1.4 var(--font-body); color: hsl(var(--ww-ch-h) 26% 84%); }
+  .ws-form { display: grid; gap: 0.7rem; width: 100%; }
+  .ws-line { display: grid; gap: 0.35rem; min-width: 0; }
+  .ws-line--send { margin-top: 0.15rem; justify-items: start; }
+  .ws-lbl { font: 600 0.82rem/1 var(--font-body); letter-spacing: 0.13em; text-transform: uppercase; color: var(--ww-ink); }
+  /* 1.05rem: 16 px or more, so an iPhone never zooms in on the field */
+  .ws-field {
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    padding: 0.6rem 0.8rem;
+    border: 1.5px solid var(--ww-ink);
+    border-radius: 3px;
+    background: hsl(var(--ww-ch-h) 45% 6% / 0.6);
+    box-shadow: 0 0 12px var(--ww-glow-soft);
+    color: var(--ww-ink-text);
+    caret-color: var(--ww-ink-hot);
+    font: 500 1.05rem/1.25 var(--font-body);
+    appearance: none;
+  }
+  .ws-field::placeholder { color: hsl(var(--ww-ch-h) 22% 62%); opacity: 1; }
+  .ws-field:focus { outline: 2px solid transparent; outline-offset: 2px; border-color: var(--ww-ink-hot); box-shadow: 0 0 0 1px var(--ww-ink-hot), 0 0 18px var(--ww-glow); }
+  .ws-field[aria-invalid='true'] { border-color: var(--ws-bad); box-shadow: 0 0 0 1px var(--ws-bad); }
+  .ws-box { display: flex; align-items: flex-start; gap: 0.65rem; min-width: 0; }
+  .ws-boxtext { min-width: 0; padding-top: 0.12rem; font: 500 0.94rem/1.4 var(--font-body); }
+  .ws-boxtext label { cursor: pointer; }
+  .ws-req { color: var(--ww-ink); }
+  /* the real checkbox lies over the drawn one (a 24 px target): a click, a tap and Space all reach it */
+  .ws-cb { position: relative; flex: none; display: grid; place-items: center; width: 1.5rem; height: 1.5rem; }
+  .ws-cb input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+  .ws-cbx { width: 1.15rem; height: 1.15rem; border: 1.5px solid var(--ww-ink); border-radius: 2px; box-shadow: 0 0 8px var(--ww-glow-faint); }
+  .ws-cb input:checked + .ws-cbx { border-color: var(--ww-ink-hot); background: var(--ww-ink-hot); box-shadow: 0 0 10px var(--ww-glow-hot); }
+  .ws-cb input:checked + .ws-cbx::before {
+    content: '';
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: var(--ww-ink-on);
+    clip-path: polygon(18% 52%, 30% 40%, 43% 54%, 72% 24%, 84% 36%, 43% 77%);
+  }
+  .ws-cb input:focus-visible + .ws-cbx { outline: 2px solid var(--ww-ink-hot); outline-offset: 3px; }
+  .ws-cb input[aria-invalid='true'] + .ws-cbx { border-color: var(--ws-bad); box-shadow: 0 0 0 1px var(--ws-bad); }
+  @media (forced-colors: active) {
+    .ws-cb input { opacity: 1; }
+    .ws-cbx { display: none; }
+  }
+  .ws-err { display: flex; gap: 0.45rem; align-items: baseline; color: var(--ws-bad); font: 600 0.88rem/1.3 var(--font-body); }
+  .ws-err:empty { display: none; }
+  .ws-err::before {
+    content: '!';
+    flex: none;
+    display: inline-grid;
+    place-items: center;
+    width: 1.1em;
+    height: 1.1em;
+    border-radius: 2px;
+    background: var(--ws-bad);
+    color: #1c0509;
+    font: 800 0.8em/1 var(--font-body);
+    transform: translateY(0.12em);
+  }
+  .ws-notice { max-width: 36rem; font: 500 0.84rem/1.45 var(--font-body); color: hsl(var(--ww-ch-h) 24% 80%); }
+  .ws-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+  /* Send: the lit Try key's light on the glass (inverse video); a clear border shows only under forced colours */
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ws-send {
+    min-height: 0;
+    padding: 0.55rem 1.15rem 0.45rem;
+    border: 1.5px solid transparent;
+    border-radius: 3px;
+    background-color: var(--ww-ink-hot);
+    background-image: linear-gradient(180deg, rgb(255 255 255 / 0.16), rgb(255 255 255 / 0) 60%);
+    color: var(--ww-ink-on);
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 1.55rem;
+    line-height: 0.95;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    overflow: visible;
+    isolation: auto;
+    transform: none;
+    box-shadow: 0 0 0 1px var(--ww-ink-hot), 0 0 22px var(--ww-glow-hot), 0 0 52px var(--ww-glow-soft);
+    transition: color 120ms ease, background-color 120ms ease, box-shadow 160ms ease, filter 120ms ease;
+  }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ws-send:hover:not(:disabled) {
+    color: var(--ww-ink-on);
+    background-color: hsl(var(--ww-ch-h) min(100%, calc(var(--ww-ch-s) * 1% + 34%)) 83%);
+    box-shadow: 0 0 0 1px hsl(var(--ww-ch-h) min(100%, calc(var(--ww-ch-s) * 1% + 34%)) 83%), 0 0 30px var(--ww-glow-hot), 0 0 70px var(--ww-glow-soft);
+    transform: none;
+  }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ws-send:is(:active, .is-pressed):not(:disabled) {
+    filter: brightness(0.78);
+    box-shadow: 0 0 0 1px var(--ww-ink-hot), 0 0 10px var(--ww-glow);
+    transform: none;
+    transition-duration: 60ms;
+  }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ws-send:focus-visible { outline: 2px solid var(--ww-ink-hot); outline-offset: 4px; }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ws-send:disabled { opacity: 1; filter: brightness(0.82); cursor: progress; }
+  /* after Send (P01): one title, where it went, Resend / Wrong email? */
+  .ws.is-sent :is(.ws-title, .ws-t2, .ws-p12) { display: none; }
+  .ws-sent { display: grid; gap: 0.65rem; justify-items: start; }
+  .ws-st { font-size: clamp(2.2rem, 3.4vw, 3.2rem); text-shadow: 0 0 10px var(--ww-glow-hot), 0 0 26px var(--ww-glow-soft); }
+  .ws-to { font: 500 1.08rem/1.4 var(--font-body); }
+  .ws-to b { color: var(--ww-ink-hot); font-weight: 600; overflow-wrap: anywhere; }
+  .ws-desk { font: 500 1rem/1.4 var(--font-body); }
+  .ws-act { font: 600 0.95rem/1 var(--font-body); color: var(--ww-ink); }
+  .ws-act button {
+    appearance: none;
+    margin: 0;
+    padding: 0.3rem 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    color: var(--ww-ink-hot);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+    cursor: pointer;
+  }
+  .ws-act button:disabled { cursor: progress; }
+  .ws-msg { font: 500 0.9rem/1.35 var(--font-body); }
+  .ws-msg:empty { display: none; }
 
   /* ==========================================================================
      INK. On the wood: brass, the lit one oxide (the old stencil). On the

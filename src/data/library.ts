@@ -8,7 +8,7 @@
  * data attribute, never by importing this file.
  */
 import { plugins, dlGateId, fmtPrice, type Plugin, type LibraryCatId } from './plugins';
-import { drift } from './drift';
+import { drift, registerUrlFor, captureCopyFor } from './drift';
 import { site } from './site';
 
 export interface LibraryCat {
@@ -87,6 +87,21 @@ export interface TvAction {
   sub?: string;
   href?: string;
   attrs?: Record<string, string | true>;
+  /** The sign-up on the TV's screen (Phase 5 step 3): what the Try key opens in the lit plugin's pane instead of
+   *  TrialGateModal / the link out. Absent = the key does what `href` / `attrs` say. */
+  signup?: TvSignup;
+}
+
+/** One sign-up on the screen: a paid trial, a free download (the newsletter yes required, Gil 2026-11-03) or DRIFT's
+ *  beta (DRIFT's own contract, capture.ts: register, then the list relay only when its box is ticked). */
+export interface TvSignup {
+  kind: 'trial' | 'free' | 'beta';
+  /** The licence worker's plugin id (dlGateId / drift.gateId). */
+  plugin: string;
+  registerUrl: string;
+  /** DRIFT: the one-per-email list relay and the source it files under. */
+  onceUrl?: string;
+  source?: string;
 }
 
 const registerUrl = site.downloadGate.workerUrl + '/download/register';
@@ -106,15 +121,23 @@ export function tryAction(p: Plugin): TvAction | null {
   if (p.isFree) {
     if (!p.downloadUrl) return null;
     return p.trialGateActive
-      ? { label: 'Free download', sub: 'Mac + Windows', attrs: gate(true) }
+      ? { label: 'Free download', sub: 'Mac + Windows', attrs: gate(true), signup: { kind: 'free', plugin: dlGateId(p), registerUrl } }
       : { label: 'Free download', sub: 'Mac + Windows', href: p.downloadUrl };
   }
   if (p.status === 'live') {
-    return { label: `Try free for ${PAID_TRIAL_DAYS} days`, sub: 'Full version · no credit card', attrs: gate(false) };
+    return {
+      label: `Try free for ${PAID_TRIAL_DAYS} days`, sub: 'Full version · no credit card', attrs: gate(false),
+      signup: { kind: 'trial', plugin: dlGateId(p), registerUrl },
+    };
   }
   if (p.slug === 'drift' && p.trialOpen && (drift.phase === 'open' || drift.phase === 'preopen')) {
-    // one phrase for the deal, beside the price line's 'Free beta' (TV walk P05, Dan 2026-11-04: "Try the free Beta")
-    return { label: 'Try the free beta', sub: 'Download by email', href: '/drift#try' };
+    // one phrase for the deal, beside the price line's 'Free beta' (TV walk P05, Dan 2026-11-04: "Try the free Beta").
+    // The link stays for no JS and a modified click; with the worker wired (the open phase) the TV signs up on screen
+    const reg = registerUrlFor();
+    return {
+      label: 'Try the free beta', sub: 'Download by email', href: '/drift#try',
+      ...(reg ? { signup: { kind: 'beta' as const, plugin: drift.gateId, registerUrl: reg, onceUrl: site.downloadGate.workerUrl + '/form-once', source: captureCopyFor()?.source } } : {}),
+    };
   }
   return null;
 }

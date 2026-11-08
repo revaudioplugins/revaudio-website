@@ -526,7 +526,7 @@ Steps (each one checked before the next):
       picker: the same 3 px jump + red / cyan fringe, ~150 ms, on the same 12-25 s clock once left alone. Never: on
       the open form, a field, a key, what has focus or the pointer, while typing; off under reduced motion / high
       contrast (as today).
-- [ ] 3. Try on the screen, no pop-up. The Try key turns the lit plugin's text column (phone: its pane) into the
+- [x] 3. (BUILT 2026-11-08, `danavivi-c4`: look A of `/__wwsignup`; the note "The sign-up on the screen" below the picks.) Try on the screen, no pop-up. The Try key turns the lit plugin's text column (phone: its pane) into the
       set's own sign-up screen, in the screen's type:
       - TRY <NAME> FREE · 30 DAYS (GAS: FREE DOWNLOAD), the email field;
       - [ ] I agree to the Terms of Use and the EULA (new, required; links open in a new tab) (D6);
@@ -680,6 +680,16 @@ proposals on "TV Walk Review" (`https://claude.ai/artifact/4ki5viNoSkZtvtrTnkfhV
   first screen, P16 the demo's +0.8 dB peak, P17 EULA vs site, P18 product-page fixes, P19 the GAS 2 page, P20 HEAR IT.
 - Order (collision): `feat/lcd-polish` (another session, OPEN claim) rewrites the TV's keys in `WordWall.astro` and
   waits for Dan's merge word; this build's WordWall steps wait for it to land on main.
+
+The sign-up on the screen (step 3; "step 2" in the 11-04 numbering), 2026-11-08, `danavivi-c4`. Dan: a bench of 2-3
+looks first -> `/__wwsignup` (three looks on the real TV) + the pick page "TV Sign-up Looks"
+(`https://claude.ai/artifact/Rm8ZajbFuNgJTT5VDvtDia`) -> Dan: "A" (Channel page: the pane turns into the sign-up, the
+screen's two faces). Built: `WordWall.astro` (the form per panel, its CSS, the script), `src/lib/signup.ts` (the register
+call + the 24 h gate store, now shared with `TrialGateModal.astro`), `library.ts` (`TvAction.signup`: trial / free /
+beta), `popup-guard.ts` (no pop-up while a sign-up is open), `tests/tv-signup.spec.ts`, DESIGN.md §4. Not in it: the
+Try key's sub-line "link by email" (the persona note; the keys stay as Dan approved them on 11-04), the download keys
+on the screen (step 4, a worker change), the terms tick sent to the worker (the worker stores no such field; step 4's
+worker change can add it).
 
 #### The menu line and the reading (done 2026-11-01, `revaudio-b5`)
 

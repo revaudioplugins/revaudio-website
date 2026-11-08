@@ -123,8 +123,9 @@ const gateNames = Object.fromEntries(plugins.map((p) => [dlGateId(p), p.name]));
 </dialog>
 
 <script>
+  // the register call and the 24 h gate store are shared with the home TV's sign-up on the screen (lib/signup.ts)
+  import { EMAIL_RE, postJson, withSource, announce, saveGate, loadGate, clearGate } from '../lib/signup';
   (function () {
-    var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
     var modal = document.querySelector('[data-tg-modal]');
     if (!modal) return;
     var html = document.documentElement;
@@ -179,21 +180,7 @@ const gateNames = Object.fromEntries(plugins.map((p) => [dlGateId(p), p.name]));
     // "Download free" again → email form → "verify again" loop (GAS bug,
     // 2026-09-06). The token is the worker's 24h DL_RETURN_TTL envelope, so it
     // is remembered for the same 24h per plugin; a `locked` answer from the
-    // worker wipes it. localStorage, guarded — private mode may throw.
-    var GATE_TTL_MS = 24 * 3600 * 1000;
-    function gateKey(id) { return 'tg:gate:' + id; }
-    function saveGate(id, gate) {
-      try { localStorage.setItem(gateKey(id), JSON.stringify({ gate: gate, exp: Date.now() + GATE_TTL_MS })); } catch (e) {}
-    }
-    function loadGate(id) {
-      try {
-        var rec = JSON.parse(localStorage.getItem(gateKey(id)) || 'null');
-        if (rec && rec.gate && rec.exp > Date.now()) return rec.gate;
-        if (rec) localStorage.removeItem(gateKey(id));
-      } catch (e) {}
-      return '';
-    }
-    function clearGate(id) { try { localStorage.removeItem(gateKey(id)); } catch (e) {} }
+    // worker wipes it. saveGate / loadGate / clearGate: lib/signup.ts.
 
     function show() {
       if (typeof modal.showModal === 'function') modal.showModal(); else modal.setAttribute('open', '');
@@ -332,18 +319,13 @@ const gateNames = Object.fromEntries(plugins.map((p) => [dlGateId(p), p.name]));
       submit.disabled = true;
       err.textContent = '';
       var consent = consentBox;
-      // How the person reached us (Cart.astro's 'ra-src' note: channel +
-      // campaign / referring host, no click ids), stored on the trial lead.
-      var regBody = { email: v, plugin: pluginSlug, marketing: !!(consent && consent.checked) };
-      try { if (window.raSaleSource) Object.assign(regBody, window.raSaleSource()); } catch (e) {}
+      // + how the person reached us, stored on the trial lead (withSource)
+      var regBody = withSource({ email: v, plugin: pluginSlug, marketing: !!(consent && consent.checked) });
       register(regBody, function (data) {
         if (data && data.ok) {
           lastBody = regBody;
           showSent(v);
-          // Registration really happened — lets listeners (the exit popup's
-          // "already got it" suppression) key off the true success moment
-          // instead of a CTA click that might be abandoned at this form.
-          document.dispatchEvent(new CustomEvent('tg:registered', { detail: { plugin: pluginSlug } }));
+          announce(pluginSlug); // the registration really happened (tg:registered)
         } else {
           err.textContent = (data && data.error) || 'Something went wrong. Try again.';
         }
@@ -356,14 +338,7 @@ const gateNames = Object.fromEntries(plugins.map((p) => [dlGateId(p), p.name]));
     });
 
     function register(body, done, failed, always) {
-      fetch(registerUrl, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(body),
-      })
-        .then(function (res) { return res.json(); })
-        .then(done, failed)
-        .finally(always);
+      postJson(registerUrl, body).then(done, failed).finally(always);
     }
 
     // State 2: the title says it, one line says where, a phone gets one line more.
