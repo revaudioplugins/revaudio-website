@@ -674,7 +674,9 @@ const LIT = {
 // shape kept ('height': to the slot's height, for a desk whose top carries gear); the block stays the slot (moves,
 // labels, the skeleton). yaw: turns the file's front to the slot's. ?model=<slot>:<assets/models/...glb>[:yaw] previews
 // one without editing this (render scripts, Dan's picks)
-const MODELS = {};
+const MODELS = {
+  N34: { src: 'assets/models/office-chair.glb', yaw: Math.PI + 0.45 }, // Dan's pick (11-08): faces the desk, pushed back and turned away a little
+};
 for (const q of new URLSearchParams(location.search).getAll('model')) {
   const [id, src, yaw, fit] = q.split(':');
   if (/^assets\/models\/[\w\-/.]+\.glb$/.test(src || '') && !src.includes('..')) MODELS[id] = { src, yaw: +yaw || 0, fit };
