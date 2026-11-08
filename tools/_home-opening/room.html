@@ -670,6 +670,44 @@ const LIT = {
   N20: { color: 0xffb050, glow: 5, globe: 0.2, only: 1 },   // the GAS 2 globe lamp at the far end: the globe is the slot
   N36: { color: 0xff3020, glow: 0.5, text: 'ON AIR' },      // ON AIR, its words drawn (textMat), dim until the lock
 };
+// real models in their slots (step 3): a model stands in for its block in the look, scaled into the slot's box with its
+// shape kept ('height': to the slot's height, for a desk whose top carries gear); the block stays the slot (moves,
+// labels, the skeleton). yaw: turns the file's front to the slot's. ?model=<slot>:<assets/models/...glb>[:yaw] previews
+// one without editing this (render scripts, Dan's picks)
+const MODELS = {};
+for (const q of new URLSearchParams(location.search).getAll('model')) {
+  const [id, src, yaw, fit] = q.split(':');
+  if (/^assets\/models\/[\w\-/.]+\.glb$/.test(src || '') && !src.includes('..')) MODELS[id] = { src, yaw: +yaw || 0, fit };
+}
+async function loadModels() {
+  const ids = Object.keys(MODELS).filter((id) => R.items.some((it) => it.id === id));
+  if (!ids.length) return [];
+  const [{ GLTFLoader }, { MeshoptDecoder }] = await Promise.all([import('three/addons/loaders/GLTFLoader.js'), import('three/addons/libs/meshopt_decoder.module.js')]);
+  const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder), maps = [];
+  await Promise.all(ids.map(async (id) => {
+    const it = R.items.find((x) => x.id === id), m = MODELS[id];
+    let g; try { g = (await loader.loadAsync(m.src)).scene; } catch (e) { console.warn('model', id, m.src, e.message); return; } // the block stays
+    g.rotation.y = m.yaw; g.updateMatrixWorld(true);
+    const box = new THREE.Box3().setFromObject(g, true), size = box.getSize(new THREE.Vector3()), c = box.getCenter(new THREE.Vector3());
+    it.obj.geometry.computeBoundingBox(); const bb = it.obj.geometry.boundingBox, slot = bb.getSize(new THREE.Vector3());
+    const k = m.fit === 'height' ? slot.y / size.y : Math.min(slot.x / size.x, slot.y / size.y, slot.z / size.z);
+    g.position.set(-c.x, -box.min.y, -c.z); // centred on the footprint, standing on the slot's floor
+    const wrap = new THREE.Group(); wrap.add(g); wrap.scale.setScalar(k); wrap.position.y = bb.min.y;
+    g.traverse((o) => {
+      if (!o.isMesh) return;
+      o.castShadow = o.receiveShadow = true;
+      for (const mt of [o.material].flat()) {
+        for (const t of ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap', 'emissiveMap']) if (mt[t]) maps.push(mt[t]);
+        if (mt.metalness > 0.3 || mt.roughness < 0.5) { mt.envMap = R.probe.env.texture; mt.userData.env ??= 1; SHINY.add(mt); } // the room's own reflection, on shiny parts only
+      }
+    });
+    it.obj.add(wrap); it.model = wrap;
+    const d = R.dress.find((x) => x[0] === it.obj); if (d) d[2] = R.noMat;
+    if (R.lookOn) it.obj.material = R.noMat;
+  }));
+  applyFlags(); arrange(); // the look shows the models; their shadows drawn once
+  return maps;
+}
 // pegboard: brown hardboard with its grid of holes (drawn, no texture set)
 const pegTex = () => canvasTex(256, 256, (g) => {
   g.fillStyle = '#6e4e33'; g.fillRect(0, 0, 256, 256); noise(g, 256, 256, 14, 71);
@@ -1597,7 +1635,7 @@ function faceOf(it) {
 function placeLeds() {
   const hosts = R.leds.userData.hosts;
   hosts.forEach((it, hi) => {
-    const f = faceOf(it), vis = it.obj.visible;
+    const f = faceOf(it), vis = it.obj.visible && !(it.model && R.lookOn); // a real model has its own front
     for (let i = 0; i < 8; i++) {
       _p.copy(f.c).addScaledVector(f.ax, (-0.42 + (i % 4) * 0.1) * Math.min(1, f.w)).add(new THREE.Vector3(0, f.h * 0.32 - Math.floor(i / 4) * 0.06, 0));
       _e.set(0, f.rotY, 0); _q.setFromEuler(_e); _s.setScalar(vis ? 1 : 0);
@@ -1608,7 +1646,7 @@ function placeLeds() {
   for (const m of R.vus) {
     const it = m.userData.host, f = faceOf(it);
     m.position.copy(f.c).addScaledVector(f.ax, (m.userData.i ? 0.12 : -0.12) * Math.min(1, f.w)).add(new THREE.Vector3(0, -f.h * 0.05, 0));
-    m.rotation.set(0, f.rotY, 0); m.userData.w = Math.min(0.2, f.w * 0.3); m.visible = it.obj.visible;
+    m.rotation.set(0, f.rotY, 0); m.userData.w = Math.min(0.2, f.w * 0.3); m.visible = it.obj.visible && !(it.model && R.lookOn);
   }
 }
 function placeMess() {
@@ -1649,6 +1687,7 @@ function applyFlags() {
     for (const m of R.mess) set(m.mesh, m.mesh.userData.mats[look ? 1 : 0]);
     arrange(); // the contact shadows
   }
+  for (const it of R.items) if (it.model) it.model.visible = look; // a real model in the look, its block in the skeleton
   // the fill: in the look a little more of it, warm and grey (the far end sank into red-black), and the night outside
   // darker and more indigo (it read as a flat periwinkle card); the skeleton keeps its own
   // (r185's lights are physical: a hemisphere's lux is colour x intensity, so these dark hues need ~4 to be felt at all)
@@ -2393,6 +2432,7 @@ await Promise.all([Promise.race([Promise.all([document.fonts.load('400 64px "Beb
 createRoom();
 resize();
 applyFlags();
+const modelMaps = await loadModels(); // before the uploads and compiles below, so a model never pops in mid-intro
 setBench(!!S.bench);
 if (new URLSearchParams(location.search).has('expose')) window.__room = { R, camera, L, S, walkDist, arrange, go: (p) => jumpTo(p * L.walkPx) }; // inspection and render scripts only
 if (CAPTURE != null) { document.body.classList.add('capture'); for (const m of [...Object.values(R.edgeMats), R.acEdge]) m.visible = false; jumpTo(+CAPTURE * L.walkPx); }
@@ -2403,7 +2443,7 @@ for (const it of R.items) if (it.tex) { const img = it.tex.image; if (!img || !i
 // the maps go up to the GPU and the shaders compile before the intro's clock starts (on first use they froze its first
 // second and a half, and the lights jumped from dim to full in one frame); the stall sits on the dark page instead. Then
 // the first probe capture: the textures are in, the lights at their final levels (a picture landing later recaptures)
-for (const t of [...Object.values(PBR).flatMap((set) => Object.values(set)), ...Object.values(PICS)]) renderer.initTexture(t); // after the clones: one upload per map
+for (const t of [...Object.values(PBR).flatMap((set) => Object.values(set)), ...Object.values(PICS), ...modelMaps]) renderer.initTexture(t); // after the clones: one upload per map
 renderer.setRenderTarget(composer.readBuffer); // the room draws into the composer's target: its shaders differ from the canvas's
 await renderer.compileAsync(scene, camera);
 renderer.setRenderTarget(null);
