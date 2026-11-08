@@ -201,6 +201,21 @@ Steps:
       the phone tier + portrait camera options for Dan; a phone tester: today's baseline on WebKit 390x844 + the iOS
       Simulator, then the designer's build). Phase 2, once A and B exist: the player, the 5 critics, the fixer.
       Three.js's loaders vendored (GLTFLoader, KTX2Loader + basis, meshopt decoder, GLTFExporter; 0.185.1, MIT).
+      - [x] Scout (2026-11-08): 3 desks + 4 chairs, CC0 (Poly Haven; the office chair OpenGameArt CC0, re-checked by
+            curl), web glbs + in-room stills, report in the scratchpad (`look/step3/scout/report.md`); the barber
+            chair's maker name painted out. Dan's pick page: https://claude.ai/artifact/APfKbkPMUCp8frWewVCXxG (db
+            `notes`). The licence-log rows go in once he picks.
+      - [x] Bake engineer phase 1 (2026-11-08, worktree `home-bake`, `tools/_home-opening/bake/`, uncommitted): a test
+            room baked per group in Cycles, packed 8-bit, mixed live in three.js: within 0.5 % of Cycles on the walls
+            (target 2 %); the baked map goes in x pi; a live PointLight at W / 4 pi = its baked self (factor 1).
+            three.js's AgX ≠ Blender 5.2's (mid-grey 128 vs 118): room.html keeps three.js's (the approved look; A
+            and B both use it); a Blender-AgX LUT stays a tool. KTX2 needs `brew install ktx-software` (Dan's OK).
+            Phase 2 running: the whole room's static light baked, `?light=baked` in room.html.
+      - [x] Phone tester baseline (2026-11-08): `look/step3/phone-test/report.md` + findings.json (14). GPU ~422 MB
+            vs the 100 MB budget (PH-01, the designer's); the address bar threw readers back to the TV (PH-02, fixed
+            `a145e15`); 43.5 s black at 1.6 Mbps (PH-03: a still first, after Dan's portrait camera pick); a fling skips
+            the lock (PH-04, in the camera options); the Simulator draws the amber light 12-32 % darker (PH-05, re-test).
+      - [ ] Model loader in room.html (`9093b8a`): `MODELS` + `?model=<slot>:<assets/models/x.glb>[:yaw][:height]`.
 - [x] 2. The skeleton exported to Blender (geometry, slot names, camera walk, lights); parity check against the
       bench. (Blender itself: installed 2026-11-04.) Done 2026-11-08: `tools/_home-opening/blender/export.mjs` (the
       page's own scene through GLTFExporter, from a copy frozen in one tick; slots named by id with their kind, lights
