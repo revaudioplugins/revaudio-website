@@ -153,6 +153,26 @@ Steps:
         more than 24, all on sharp edges, from resampling; the look pass must not raise it); no page errors; the frame
         rate on Dan's laptop.
       - Downloads (texture sets etc.): a plain user agent (`RevAudio-research/1.0`), never Dan's email (R1 slipped once).
+      - [x] Part 1 built (2026-11-08, `danavivi-20`, commit `04d8285`): three.js 0.185.1 vendored (the site's pin; r170
+            vs r185 renders within 0.3 % of pixels); 13 CC0 sets in `assets/pbr/` (`SOURCES.md`); `KINDS` + `LOOK` (a
+            kind per slot), `LIT` (lit props); AgX in a finish pass, the screens marked in the frame's alpha (hand-off
+            1.05 / 0.68 / 0.45 / 2.57 %, = the baseline); 4x MSAA; lamp spotlights with shadows (redrawn only on
+            moves); the wet sheen (`WET`, a Reflector); the probe on shiny kinds only (on matte ones it counted the
+            lights twice); contact shadows; haze under the lamps; bench: Look chip + "The look" (tone, exposure,
+            shadows, reflections, haze), settings ver 10 (look on, labels off). 80 fps at the door, 110-146 toward the
+            TV (M1 Max, DPR 2; live lights are the cost: 3 per neon strip, 3 prop lamps). 0 overlaps, no page errors.
+      - [ ] Critics round 1, fixes, Dan's look. Round 1 scores (look / walk / Dan's-eye / devil, lines 1-7): 5 5 3 4 6 8 5
+            · 4 4 3 5 5 9 4 · 5 5 3 5 6 9 5 · 4 4 2 4 5 9 3. All four agree: past 40 % of the walk the violet + amber
+            pair dies into red-black murk; the door is a flat bright-blue card; bulbs and tubes burn white; the lit
+            globes read as paper discs; the floor lacks amber pools and contrast; the reflections pop in ~3 s after
+            load. MODEL (later steps): the car, the drum kits, the mess.
+      - [ ] The player (Dan 2026-11-08: "an agent that plays with the result on the website and gives feedback to the
+            builders"; approved the same day): a live tester on Opus, a standing member from this round on. It plays
+            the room like a visitor in real engines (WebKit at Dan's 1141x636, Chrome 1141 / 1440 / 1920, the iOS
+            Simulator via `?capture=`), records video, and reports motion, loading, input and engine problems the
+            stills can't show (findings.json with repros). Runs every round after the fixer, before Dan sees it; the
+            main session verifies each finding before a fix. Briefs: `tools/_home-opening/team/player-brief.md`
+            (and the critics' `critic-brief.md` beside it).
 - [ ] 2. The skeleton exported to Blender (geometry, slot names, camera walk, lights); parity check against the
       bench. (Blender itself: installed 2026-11-04.)
 - [ ] Owed Dan's OK (production): an R2 bucket + `assets.revaudio.net`, its cache / CORS rules, the three CSP
