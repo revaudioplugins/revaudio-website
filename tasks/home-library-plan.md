@@ -546,10 +546,23 @@ Steps (each one checked before the next):
       screen. C = instant: the keys show on the screen right after the email, the email still sends a copy; needs a
       worker change that skips the verify, and fake emails then get the download and miss the trial emails (the
       trial clock is in the plugin). Recommended: B.
-- [ ] 5. The way deeper. A second key beside Try, same family, outlined not lit (D7: "SEE + HEAR IT ->" or
+      2026-11-08 (`danavivi-c4`), before building: B's premise is gone. The licence worker's Phase 3 switch
+      (KV `campaign:direct-dl` = "on" since 2026-10-01, `revaudio-shared/plans/2026-10-01-followup-v2/`) makes
+      the sign-up email itself the download (Mac / Windows buttons -> the worker's `/get` page) for all five
+      plugins (every `DL_PLUGINS` entry is `wired`), so no verify link comes back to the site at all: A = today
+      (with `/get` instead of the product page). Waiting for Dan's re-pick: A as is; B' the email's buttons
+      open the TV, which starts the download on its screen (a worker change); C = the keys right after Send
+      (= the sales plan's open 2.2 "download before the email", a worker change; 2.1: 51 % of RevLimiter
+      trial sign-ups never download).
+- [x] 5. BUILT 2026-11-08 (`danavivi-c4`): the picture (a link laid over it, `aria-hidden`, no Tab stop) and the
+      name (a link in the heading, no Tab stop) go to the product page; the pointer on either lights the
+      Product page key's hover; on a laptop the lit row clicked again goes there (never a double click's
+      second click, Enter or Space; with the sign-up open it puts the plugin back). The way deeper. A second key beside Try, same family, outlined not lit (D7: "SEE + HEAR IT ->" or
       "FULL DETAILS ->"); the picture and the name link to the product page too (a modified click still opens a tab).
       Phone: the key full width under Try.
-- [ ] 6. Phone: no empty glass above "‹ All plugins" when a plugin's pane opens.
+- [x] 6. Phone: no empty glass above "‹ All plugins" when a plugin's pane opens. Done on main 2026-11-03 ("the
+      screen starts full", `align-content: start`); checked 2026-11-08 on 390x844: 15 px above the key for all
+      five. The spare glass is now under the keys (RevLimiter ~203 px, DRIFT 142, Radio Roulette 124).
 - [ ] 7. Checks: Chromium + WebKit at the 9 sizes; the form by keyboard and screen reader; the form's posts blocked
       in every automated test (never the live worker); `npm run build`; the user's look (bench, phone, iPhone
       keyboard); then "push" (= live).
@@ -673,7 +686,7 @@ proposals on "TV Walk Review" (`https://claude.ai/artifact/4ki5viNoSkZtvtrTnkfhV
   newsletter box, and its key follows the TV-keys design of `feat/lcd-polish` (Dan: "go along with a different session
   that designs the buttons"); P06 required boxes say so up front, each error at its field; P07 High Contrast keeps the
   picked category / plugin marked and keys bordered; P09 `?plugin=` opens the plugin's panel on phones too; P10 the
-  categories one Tab stop with arrows, Escape closes a plugin; P12 one line on what happens when the trial ends (from
+  categories one Tab stop with arrows, Escape closes a plugin (P07, P09, P10 BUILT 2026-11-08, `danavivi-c4`); P12 one line on what happens when the trial ends (from
   the plugin's code); P13 GAS / GAS 2 one "use it on" line each; P14 DRIFT also under MODULATION and CREATIVE (Dan: "we
   still don't have a plugin for vocal that is actually for vocal").
 - OUT (skipped): P02 the facts strip on the TV (= step 8 is OUT now), P08 the cart button, P11 Apple Silicon, P15 the

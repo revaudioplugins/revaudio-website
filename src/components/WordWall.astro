@@ -304,10 +304,13 @@ const first = items[0]?.slug ?? '';
                 loading="lazy"
               />
             )}
+            {/* step 5: the picture leads to the product page too, a link laid over it (the picture keeps its own
+                description; one Tab stop per panel stays "Product page", so this one is the pointer's only) */}
+            <a class="ww-to ww-to-pic" href={`/${it.slug}`} tabindex="-1" aria-hidden="true"></a>
           </figure>
           <div class="ww-info">
             <div class="ww-phead">
-              <h3 class="ww-pname" id={`ww-pn-${it.slug}`} tabindex="-1">{it.name}</h3>
+              <h3 class="ww-pname" id={`ww-pn-${it.slug}`} tabindex="-1"><a class="ww-to" href={`/${it.slug}`} tabindex="-1">{it.name}</a></h3>
               <p class="ww-ptype">{it.type}</p>
             </div>
             <p class="ww-blurb">{it.blurb}</p>
@@ -507,6 +510,10 @@ const first = items[0]?.slug ?? '';
         p.setAttribute('aria-labelledby', `ww-tab-${slugOf(p)}`);
       });
     }
+    // P10 (TV walk): the categories are one Tab stop, as the plugin list is (setCat keeps the stop on the pick); the
+    // arrows move along them and pick (below)
+    const catBar = wall.querySelector<HTMLElement>('.ww-cats');
+    catBar?.setAttribute('role', 'toolbar');
     wall.dataset.wwLib = 'on'; // the categories + the phone's Back show from here (CSS)
 
     /* DRIFT's live window plays only while its panel is at rest on the glass
@@ -686,10 +693,10 @@ const first = items[0]?.slug ?? '';
        The Try key turns the lit plugin's pane into its sign-up: the picture and the text step off the glass the way a
        channel leaves (--ww-mv-out-*), the form comes on the way the text does (--ww-mv-text-*); ‹ Back or Esc runs it
        back, the focus on Try. TrialGateModal's worker call (lib/signup.ts); a plugin verified in the last 24 h still
-       gets the modal's Mac / Windows keys (step 4 brings them onto the screen). DRIFT: the same form, then the list
-       relay only when its box is ticked (capture.ts' contract, TV walk P05). While one is open: no glitch (glOk), no
-       pop-up (popup-guard), no snap (the lock below), DRIFT's run paused. Another channel, or a phone's way back to
-       the list, puts the plugin back at once; what was typed stays. */
+       gets the modal's Mac / Windows keys (the email itself is the download now: step 4 waits on a re-pick). DRIFT: the
+       same form, then the list relay only when its box is ticked (capture.ts' contract, TV walk P05). While one is
+       open: no glitch (glOk), no pop-up (popup-guard), no snap (the lock below), DRIFT's run paused. Another channel,
+       or a phone's way back to the list, puts the plugin back at once; what was typed stays. */
     const signOf = (p: HTMLElement) => p.querySelector<HTMLElement>('[data-ws]');
     const signing = () => panels.find((p) => p.classList.contains('is-signing')) ?? null;
     const signParts = (p: HTMLElement) => Array.from(p.querySelectorAll<HTMLElement>(':scope > .ww-ui, :scope > .ww-info'));
@@ -858,17 +865,26 @@ const first = items[0]?.slug ?? '';
       if (!key || !p || !signOf(p) || p.classList.contains('is-leaving')) return;
       if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return; // a modified click: DRIFT's link opens in a tab
       const gate = key.dataset.pluginSlug;
-      if (gate && loadGate(gate)) return; // verified in the last 24 h: the modal's Mac / Windows keys (step 4: here)
+      if (gate && loadGate(gate)) return; // verified in the last 24 h: the modal's Mac / Windows keys
       e.preventDefault();
       e.stopPropagation();
       signOpen(p);
     });
     wall.addEventListener('keydown', (e) => {
-      const p = e.key === 'Escape' ? signing() : null;
-      if (!p) return;
+      if (e.key !== 'Escape') return;
+      const p = signing();
+      if (p) {
+        e.preventDefault();
+        e.stopPropagation();
+        signClose(p);
+        return;
+      }
+      // P10 (TV walk): in a phone's pane (a zoomed laptop too) Escape goes back to the list, as ‹ All plugins does
+      if (!phone.matches || wall.dataset.wwView !== 'panel') return;
+      const back = panels.find((x) => slugOf(x) === lit)?.querySelector<HTMLButtonElement>('[data-ww-back]');
+      if (!back) return;
       e.preventDefault();
-      e.stopPropagation();
-      signClose(p);
+      back.click();
     });
 
     // the glass's DOM as the pick wants it: the lit plugin's panel up (the rest hidden), its colour, a phone's view
@@ -1354,7 +1370,10 @@ const first = items[0]?.slug ?? '';
       if (!catBtns.some((b) => b.dataset.wwCat === c)) c = 'all';
       const changed = c !== cat;
       cat = c;
-      catBtns.forEach((b) => b.setAttribute('aria-pressed', b.dataset.wwCat === c ? 'true' : 'false'));
+      catBtns.forEach((b) => {
+        b.setAttribute('aria-pressed', b.dataset.wwCat === c ? 'true' : 'false');
+        b.tabIndex = b.dataset.wwCat === c ? 0 : -1; // P10: the one Tab stop is the pick
+      });
       let k = 0;
       items.forEach((li) => {
         li.hidden = !inCat(li, c);
@@ -1401,7 +1420,13 @@ const first = items[0]?.slug ?? '';
     // nav = Back / Forward (announce, move focus with the view); move = the glass may move there
     const fromUrl = (nav: boolean, move = nav) => {
       const q = new URLSearchParams(window.location.search);
-      viewWant = phone.matches && history.state?.wwView === 'panel' ? 'panel' : 'list'; // first: one go covers both
+      // P09 (TV walk): a shared link (?plugin=, on arrival: the entry has no view of its own yet) opens that plugin's
+      // pane on a phone too. Its ‹ All plugins key goes to the list; the entry stays the arrival's, so the browser's
+      // Back leaves the way the visitor came (an entry pushed at load would be skipped by Chrome's Back anyway).
+      const st = history.state?.wwView;
+      const qCat = catBtns.some((b) => b.dataset.wwCat === q.get(P_CAT)) ? q.get(P_CAT)! : 'all';
+      const deep = !nav && st === undefined && items.some((li) => slugOf(li) === q.get(P_PLUGIN) && inCat(li, qCat));
+      viewWant = phone.matches && (st === 'panel' || deep) ? 'panel' : 'list'; // first: one go covers both
       focusView = nav && viewWant !== wall.dataset.wwView; // focus follows the pane that opened
       const mv = move && (!phone.matches || backKey); // a phone moves on its own Back key only (the rest cuts)
       backKey = false;
@@ -1420,12 +1445,34 @@ const first = items[0]?.slug ?? '';
       setCat(c);
       writeUrl('push');
     }));
+    catBar?.addEventListener('keydown', (e) => {
+      const b = (e.target as Element | null)?.closest<HTMLButtonElement>('[data-ww-cat]');
+      const k = b ? catBtns.indexOf(b) : -1;
+      if (k < 0) return;
+      let n = -1;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') n = (k + 1) % catBtns.length;
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') n = (k - 1 + catBtns.length) % catBtns.length;
+      else if (e.key === 'Home') n = 0;
+      else if (e.key === 'End') n = catBtns.length - 1;
+      if (n < 0) return;
+      e.preventDefault(); // the arrows used to scroll the page
+      if (e.repeat) return; // held: one step per press (each pick swaps the list, maybe the channel)
+      catBtns[n].focus();
+      catBtns[n].click(); // the pick as a click: its history entry, its words for a screen reader
+    });
 
     list?.addEventListener('click', (e) => {
       const a = (e.target as Element | null)?.closest<HTMLAnchorElement>('[data-ww-pick]');
       if (!a || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-      e.preventDefault();
       const slug = slugOf(a);
+      // step 5: on a laptop the lit row clicked again is its product page (the link's own way). Never a double
+      // click's second click (one pick would leave the page), never a key (a tab: Enter / Space keep lighting), and
+      // with its sign-up open the click puts the plugin back instead.
+      const again = !phone.matches && slug === lit;
+      if (again && e.detail === 1 && !signing()) return;
+      e.preventDefault();
+      const open = again ? signing() : null;
+      if (open) { signClose(open); return; }
       if (phone.matches) {
         // the pane opens: the list slides out, then the plugin comes on
         viewWant = 'panel';
@@ -1898,7 +1945,11 @@ const first = items[0]?.slug ?? '';
   .ww[data-ww-bg='screen'] .ww-panel { transition: none; }
   .ww-panel.is-leaving { pointer-events: none; }
   .ww-back { display: none; }
-  .ww-ui { margin: 0; min-width: 0; }
+  .ww-ui { position: relative; margin: 0; min-width: 0; }
+  /* step 5: the picture and the name lead to the product page: links in the screen's own look (no link colour) */
+  .ww-to-pic { position: absolute; inset: 0; border-radius: calc(var(--ww-pic-r) * 1px); }
+  .ww-pname .ww-to,
+  .ww-pname .ww-to:hover { color: inherit; }
   .ww-ui :global(img),
   .ww-ui video {
     display: block;
@@ -2071,6 +2122,14 @@ const first = items[0]?.slug ?? '';
     box-shadow: inset 0 0 0 1.5px var(--ww-ink-hot), inset 0 0 18px var(--ww-glow-soft), 0 0 20px var(--ww-glow);
   }
   :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-more:is(:active, .is-pressed) { background-color: hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.28); transition-duration: 60ms; }
+  /* the pointer on the picture or the name: the key it leads to answers (step 5), a mouse only (a tap leaves at once) */
+  @media (hover: hover) {
+    :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel:has(.ww-to:hover) .ww-buy .ww-more {
+      color: var(--ww-ink-hot);
+      background-color: hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.14);
+      box-shadow: inset 0 0 0 1.5px var(--ww-ink-hot), inset 0 0 18px var(--ww-glow-soft), 0 0 20px var(--ww-glow);
+    }
+  }
 
   /* ---- Try, on the screen (Phase 5 step 3; Dan 2026-11-08: look A, "Channel page", of /__wwsignup) ----
      The pane turns into the sign-up: the window and the reading go, the form takes the pane. The screen's two faces
@@ -2793,4 +2852,20 @@ const first = items[0]?.slug ?? '';
   :global(html.hc) .ww-row.is-lit .ww-name { color: var(--oxide-text); }
   :global(html.hc) .ww-thumb { opacity: 1; }
   :global(html.hc) :is(.ww-tag, .ww-tag-ask, .ww-cat, .ww-pname, .ww-blurb, .ww-pw, .ww-price) { text-shadow: none; }
+
+  /* P07 (TV walk, Walter): Windows High Contrast (forced colours) drops the fills, shadows and glows that mark the
+     picks and draw the keys. The picked category and the lit plugin keep an outline and a ▶ (silent for a screen
+     reader: aria-pressed / aria-selected say it); every key on the TV keeps a border, in the OS's colours. The site's
+     own high contrast marks the lit plugin by its colour only, so the ▶ there too. */
+  @media (forced-colors: active) {
+    .ww-cat[aria-pressed='true'] { outline: 2px solid Highlight; outline-offset: 2px; }
+    .ww-row.is-lit { outline: 2px solid Highlight; outline-offset: -2px; }
+    .ww-row.is-lit .ww-name { filter: none; } /* the OS keeps filters: the lit name's orange glow stayed */
+    .ww-cat[aria-pressed='true']::before,
+    .ww-row.is-lit .ww-name::before { content: '\25B6\FE0E\00A0'; content: '\25B6\FE0E\00A0' / ''; }
+    .ww-panel .ww-buy :is(.ww-try, .ww-more),
+    :global(html) .ww[data-ww-bg] .ws :is(.ws-send, .ws-back, [data-ws-resend], [data-ws-wrong]),
+    .ww[data-ww-lib='on'] .ww-back { border: 2px solid ButtonText; }
+  }
+  :global(html.hc) .ww-row.is-lit .ww-name::before { content: '\25B6\FE0E\00A0'; content: '\25B6\FE0E\00A0' / ''; }
 </style>

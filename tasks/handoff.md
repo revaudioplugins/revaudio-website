@@ -109,10 +109,35 @@ Files: `src/components/WordWall.astro`, `src/components/TrialGateModal.astro` (+
   Not checked: a real iPhone (keyboard over the form), NVDA / VoiceOver, Dan's eye on the built TV.
 - Pushes: the branch is in sync with origin (normal pushes work again). The shared law commit `15b1bc5` IS on
   revaudio-shared main.
-- Next: Dan looks at the built sign-up (dev :4480, `/?plugin=revlimiter`, Try); then step 4 (D5 = B: the verify
-  link returns to the TV with Mac / Windows keys on the screen; a licence-worker change in the RevLimiter repo, its
-  own claim, `wrangler deploy` only on Dan's word) and step 00's baseline before any push to main. Nothing on
-  main; main = live on Dan's word.
+- Step 4 STOPPED before any code (2026-11-08): D5 B's premise is gone. The licence worker's Phase 3 switch (KV
+  `campaign:direct-dl` = "on" since 2026-10-01, recorded in `revaudio-shared/plans/2026-10-01-followup-v2/`; prod
+  KV not read) mails the download itself (Mac / Windows buttons -> the worker's `/get?os=&t=`, 7-day token) for all
+  five plugins, so no verify link returns to the site. Options for Dan: A as is (the email is the download);
+  B' the email's buttons open the TV, which starts the download on its screen; C the keys right after Send (= the
+  sales plan's open 2.2 "download before the email"). B' and C are licence-worker changes (RevLimiter repo, own
+  claim, `wrangler deploy` on Dan's word).
+- BUILT 2026-11-08 meanwhile (`WordWall.astro`, decided items, no new look): step 5 (the picture = a link laid over
+  it, `aria-hidden`, no Tab stop; the name = a link in its heading, no Tab stop; the pointer on either lights the
+  Product page key's hover; a laptop's lit row clicked again = its product page, never a double click's second
+  click / Enter / Space, with the sign-up open it closes it); P09 (a `?plugin=` arrival opens that plugin's pane on
+  a phone; ‹ All plugins -> the list; no history entry pushed at load); P10 (the categories = a toolbar, one Tab
+  stop on the pick, arrows / Home / End pick; Escape in a phone pane = ‹ All plugins); P07 (forced colours: the
+  picked category + lit row keep an outline + a silent ▶, the lit name loses its glow, every key a 2 px border;
+  `html.hc`: the ▶ on the lit row). Step 6 was already done on main 11-03 (checked: 15 px above ‹ All plugins on
+  390x844). New `tests/tv-sells.spec.ts`. DESIGN.md §4, the plan's steps 4-6.
+- Checks 2026-11-08 (dev :4480 via `tools/tv-walk/walk.cjs`, every live request blocked): marcus (WebKit 1141x636):
+  picture / name -> /revlimiter, lit row again -> /gas, double click / Enter / Space stay, the lit row while
+  signing closes the form, Cmd-click the picture = a new tab; the hover lights Product page. noa (iPhone WebKit):
+  a row tap opens the pane, the picture / name -> /gas; `/?plugin=drift` = DRIFT's pane, no focus grab, ‹ All
+  plugins -> list, reload keeps each view, `?plugin=nope` / a plugin outside `?cat=` = the list. smoke (Chromium
+  1280): one category Tab stop, Tab -> the lit row, the arrows pick without scrolling; 700x760: Escape -> the list,
+  the focus on its row; Escape in the sign-up closes the form first. walter (forced colours): the outlines, the
+  ▶, 2 px borders on Try / Product page / Send. `npm run build` green (33 pages). Playwright: tv-sells + tv-signup
+  10 passed, 4 skipped (per-project); smoke + pop-up suites 66 passed, 1 skipped, 1 failed = smoke /drift on
+  mobile-safari (WebKit's video placard icons, known). Not checked: a real iPhone, NVDA / VoiceOver.
+- Next: Dan's re-pick for step 4 (A / B' / C, above); his look at the built TV (dev :4480); step 00's baseline
+  before any push to main. Left in the plan: step 7 (checks at the 9 sizes), P (persona walk). Nothing on main;
+  main = live on Dan's word.
 
 ## 2026-11-04 — GAS 2 postcards: the end page scrolls as one page, the footer under it (Claude Code `danavivi-c2 [ca2821]`, Dan's Mac) — PUSHED TO MAIN 2026-11-04 on Dan's word "perfect push to main" (from `fix/gas2-end-flow`)
 

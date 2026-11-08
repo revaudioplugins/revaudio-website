@@ -142,7 +142,11 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
     `WALL_BG = 'wood'`) they
     stay the button family (D9, the user 2026-11-01): Try = brass (honey when free), Product page = small ghost. GAS's tall panel
     stands beside its text (at least `--ww-side-min` 16rem wide, 17 on a small laptop). No Add to cart on
-    home: buying stays on the product page.
+    home: buying stays on the product page. The picture and the name lead to the product page too (Phase 5
+    step 5, D7 2026-11-04: real links, so a modified click opens a tab; one Tab stop per panel stays
+    "Product page", the two are the pointer's only); the pointer on either lights the Product page key's
+    hover. On a laptop the lit row clicked again is its product page; a double click's second click, Enter
+    and Space never leave (a row is a tab), and with the sign-up open the click puts the plugin back.
     - Reading (the user's bench pick of 2026-11-01, option A of three; asked for "sexier and much more
       comfortable to understand"): bigger and bolder, still the house faces. The name in Bebas up to
       2.7rem; the type word and the five words in Oswald 600; the blurb in Inter 500 at
@@ -164,8 +168,9 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
       Wrong email? (P01). The screen's two faces only (Bebas, Inter); each refusal at its field in one red
       the channels never take (hsl 352 100% 76%), the focus on the first. While it is open: no glitch at
       all, no pop-up, no snap, DRIFT's run paused; another channel puts the plugin back. A plugin verified
-      in the last 24 h still gets TrialGateModal's Mac / Windows keys (until step 4 puts them on the
-      screen). No JS: Try keeps the pop-up / DRIFT's link. Forced colours: the real checkboxes.
+      in the last 24 h still gets TrialGateModal's Mac / Windows keys. The download itself is in the email
+      (the licence worker's Phase 3 switch, on since 2026-10-01: Mac / Windows buttons -> its /get page).
+      No JS: Try keeps the pop-up / DRIFT's link. Forced colours: the real checkboxes.
   - Channels (Dan's pick: each plugin its own screen colour): one hue + saturation per plugin on `.ww`
     (`--ww-ch-<slug>-h` / `-s`): RevLimiter amber 26 / 78 (kept above ~20 so it never reads as
     race-red), GAS brass gold 46 / 62, Radio Roulette warm dial-glass cream 38 / 28, DRIFT violet
@@ -248,7 +253,17 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
     for the cart; the trial gate's `#dl=...&p=` return link, which is why the TV never uses `p`).
   - Phones + small tablets (<= 860px): one pane at a time. The menu, then full-width rows (thumbnail,
     name, type word, the price on the right); a tap opens the lit plugin as its own view (a history
-    entry, a "‹ All plugins" key); Back returns to the list with the focus on its row.
+    entry, a "‹ All plugins" key); Back returns to the list with the focus on its row. Escape in a pane =
+    ‹ All plugins (P10). A shared link (`/?plugin=drift`, on arrival) opens that plugin's pane, never the
+    list (P09, 2026-11-08); its ‹ All plugins goes to the list, and the browser's Back leaves the way the
+    visitor came (no entry is pushed at load: Chrome's Back skips one pushed without a tap anyway).
+  - Keyboard (P10, 2026-11-08): the categories are one Tab stop (a toolbar, the stop on the pick); the
+    arrows / Home / End move along them and pick, as the plugin list's do (one history entry per pick, as
+    a click; a held arrow steps once).
+  - Windows High Contrast (forced colours; P07, 2026-11-08): the picked category and the lit row keep an
+    outline (Highlight) and a ▶ (silent for a screen reader), the lit name loses its glow, and every key
+    (Try, Product page, Send my link, Back, Resend, Wrong email?, ‹ All plugins) keeps a 2 px border. The
+    site's own high contrast (`html.hc`) marks the lit row by colour, so the ▶ there too.
   - `WALL_BG` (built 'screen' | 'wood'): /drift's digital screen (the keep-it TV's phosphor tube) full
     bleed behind the content: the scanlines + grille ON the glass (`.ww-screen::after`), UNDER the text and
     the pictures; only the glass's smooth light (reflection, room light, curvature) lies over everything
