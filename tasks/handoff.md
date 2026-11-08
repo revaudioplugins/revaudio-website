@@ -146,10 +146,11 @@ only after Dan picks: `src/pages/index.astro`, a new `src/components/HomeOpening
   (A film, B garage-studio, C brand experience; `layouts/`, kit `layout-kit/`); Dan picked "B + A's moves", baked in as
   the room (settings ver 9). Benches: look lock https://claude.ai/artifact/Bh4iT4GHQox8ZD97nie5UU, layouts
   https://claude.ai/artifact/YTT5fJ86prxUDucxfMCSSc.
-- Next: the foundations left: one slot file (base rows + the layout's moves) that the bench and Blender both read, the
-  light-layer design, the Blender export + parity check; then the whole-room look pass. Owed: tell Gil; Dan's OK for
-  R2 / `assets.revaudio.net` / the CSP additions. Owed: tell Gil (his countdown + TV intro vs the room on Nov 19); Dan's OK for
-  the R2 bucket / `assets.revaudio.net` / the three CSP additions (test locally first).
+- Next (Dan 2026-11-05: "look pass", over "Blender first"): the whole-room look pass in `room.html`, planned in
+  `tasks/todo.md` (The rebuild, item 1b); then the foundations (one slot file that the bench and Blender both read, the
+  light layers, the Blender export + parity check). Schedule: the plan had the look pass on Nov 6-9 and a checkpoint on
+  Nov 12 (below the bar → v1 = look + light only); live Nov 19. Owed: tell Gil (his countdown + TV intro vs the room on
+  Nov 19); Dan's OK for the R2 bucket / `assets.revaudio.net` / the three CSP additions (test locally first).
 
 ## 2026-11-02 — Footer: categories fold into drawers (Claude Code `revaudio-3b [a4cb6d]`, laptop 2) — ON MAIN + LIVE: merged `--no-ff` 2026-11-02 by Claude Code `revaudio-0c [571e5c]` (laptop 1) on Dan's word "push it to main and merge" (Yoni had approved by pushing the branch)
 

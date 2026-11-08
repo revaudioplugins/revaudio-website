@@ -134,6 +134,22 @@ Steps:
       Splats: not in v1.
 - [x] Round 3 quick fixes (2026-11-04): the power-on flicker steps 200 ms (at most 2.5 flashes a second, was up to
       7.5); the scroll snap off by default (settings ver 8), still a bench option.
+- [ ] 1b. The whole-room look pass (Dan 2026-11-05: "look pass", picked over "Blender first"), in `room.html`, before
+      the Blender export. To `look-spec.md`, with the painting as the mood:
+      - Real materials for the shell (sealed concrete floor with oil stains and a long soft reflection, sooty walls,
+        the ceiling, steel trusses, the ribbed door) from CC0 PBR sets (Poly Haven / ambientCG, each logged in
+        `refs/licence-log.md`), and one material per kind of slot (red enamel chests, chrome, wood, amp tolex, fabric,
+        cardboard, rubber) with bevelled edges; no slot labels or wire edges in the look view.
+      - AgX tone mapping (exposure on the bench); the TV face and the CRT screens drawn after it, untouched. Today the
+        composer (RenderPass → UnrealBloomPass → OutputPass) tone-maps the whole frame in OutputPass, so a material's
+        `toneMapped: false` won't protect them. The hand-off to the live TV must stay ≈ 0.6 % of pixels at 1141x636.
+      - Night light: shadows from the amber lamps (none today), pools with deep falloff, the neon + amber pair, the
+        street through the door; a probe of the room itself as the environment, so chrome and the car catch the neon;
+        contact shadows / AO; MSAA (the composer's target has none today).
+      - The critics team (decisions above) scores the renders on the look spec's 7 lines (7+ each, up to 2 fix rounds);
+        then Dan sees what passed, with their notes.
+      - Checks: `layout-kit/check.mjs` (must-stays at walk 0 / 35 / 70 / 100 %), the TV hand-off diff, no page errors,
+        the frame rate on Dan's laptop.
 - [ ] 2. The skeleton exported to Blender (geometry, slot names, camera walk, lights); parity check against the
       bench. (Blender itself: installed 2026-11-04.)
 - [ ] Owed Dan's OK (production): an R2 bucket + `assets.revaudio.net`, its cache / CORS rules, the three CSP
