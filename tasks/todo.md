@@ -193,6 +193,11 @@ Steps:
             stills can't show (findings.json with repros). Runs every round after the fixer, before Dan sees it; the
             main session verifies each finding before a fix. Briefs: `tools/_home-opening/team/player-brief.md`
             (and the critics' `critic-brief.md` beside it).
+- 🔁 PHONES (Dan 2026-11-08, later the same evening): "taking the phone to a different scene and a different vibe ...
+  lets set up only the laptop then we work on the phone". The same-room-lighter plan is dropped: the phone designer was
+  stopped mid-check, its unfinished phone tier parked on branch `look/home-phone` (`f909ce0`, pushed; room.html +99/-17,
+  `assets/pbr/phone/`); the phone tester's baseline stays as reference (its PH-02 address-bar fix and the still-first
+  plan help laptops too). v1 = laptop / desktop; phones keep today's homepage until their own scene (to confirm with Dan).
 - [ ] 2 + 3 (Dan 2026-11-08: "go"; roster approved, CC0 models only for v1, the phone team started alongside).
       Team: the main session builds the export + parity and integrates; phase 1 = an asset scout (Opus: CC0 desk +
       chair candidates from Poly Haven, licence log, logo check, web-size glb, in-room stills for Dan's pick) and a
@@ -203,7 +208,7 @@ Steps:
       Three.js's loaders vendored (GLTFLoader, KTX2Loader + basis, meshopt decoder, GLTFExporter; 0.185.1, MIT).
       - [x] Scout (2026-11-08): 3 desks + 4 chairs, CC0 (Poly Haven; the office chair OpenGameArt CC0, re-checked by
             curl), web glbs + in-room stills, report in the scratchpad (`look/step3/scout/report.md`); the barber
-            chair's maker name painted out. Dan's pick page: https://claude.ai/artifact/APfKbkPMUCp8frWewVCXxG (db
+            chair's maker name painted out. Dan's pick page (round 2: two studio desks with racks built in, V1 / V2, built from code by the scout): https://claude.ai/artifact/APfKbkPMUCp8frWewVCXxG (db
             `notes`). The licence-log rows go in once he picks.
       - [x] Bake engineer phase 1 (2026-11-08, worktree `home-bake`, `tools/_home-opening/bake/`, uncommitted): a test
             room baked per group in Cycles, packed 8-bit, mixed live in three.js: within 0.5 % of Cycles on the walls
