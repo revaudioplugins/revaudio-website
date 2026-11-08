@@ -258,6 +258,15 @@ Steps:
 - [ ] Research: assets + the car; live-3D techniques + the splat check.
 - [ ] 3. The far-end corner built once, shown live (A) and pre-rendered (B); checks + critics; Dan picks.
 - [ ] 4. The rest, zone by zone: entrance + car, workbench wall, studio corner.
+      Dan (2026-11-09): "not yet, we need to finish it" = the room before the homepage. Finish-list bench:
+      https://claude.ai/artifact/LKA2p4zQACEx8odCn1vZqq (db `notes`). His 28 pins on the first screen (walk 0),
+      matched to slots by a ray through each pin (`look/step4/finish/pins-w0.png`):
+      - Car side: CAR, the lift arms + N03 jack (the pink block), the wood block under the car, N06 hazard drum,
+        R17 exhaust pipes, W10 repair shelf, R06 compressor rack, N02 shop light, the open door's roller box.
+      - Left wall: L12 parts shelf, N12 clamp lamp, W01 test-gear tower, W02 RPM gauge mid-build, W05 solder
+        station, L09 workbench, R14 engine block, W09 build board, W07 test-drive desk, W03 sketch wall, N13 corkboard.
+      - Overhead: N39 traffic light, N41 chain hoist, A03 ceiling cloud.
+      - Far end: E05 pegboard, M03 the RevLimiter CRT, floor clutter by the kit.
 - [ ] 5. Into the page, with the checks.
 - [ ] 6. A test skin: swap one object and remove one (RevFX or a poster), end to end.
 
