@@ -226,8 +226,11 @@ Steps:
             baked incl. the monitors + kit): B mix = fast everywhere, live highlights on the floor only, + a "gleam"
             (the bake fed back as an even sheen, 0.6; `&gleam=0` = as briefed). 1080p walk 0.6: A 16.6 ms, B mix 6.3
             (2.6x); walk 0: 24.3 vs 13.2 (1.8x): passes the 1.5x rule. Light B mix / A 0.83-1.04 (as briefed 0.66-0.79).
-            Fixed: a resize gave the floor back its live material. ⏸ Dan picks A / B mix / C no gleam on
-            https://claude.ai/artifact/1GRRy48eP1KF5ravRmVK2Q (db `notes`, doc `w097`). Then: merge the block + `bake/`.
+            Fixed: a resize gave the floor back its live material. Light picks page:
+            https://claude.ai/artifact/1GRRy48eP1KF5ravRmVK2Q. **Dan (2026-11-09): "today" = A, the live light.**
+            The bake is parked: code on branch `look/home-bake` (`fa4dbaf`), packs not committed (`bake/room-bake.sh`
+            rebuilds them, ~4 min). No A/B split on the homepage for the light. Weak laptops: watch fps in the
+            critics' round (the monitors' 11 materials each = the first merge pass if needed).
       - [x] Scout task 3 (2026-11-08): monitors M1 black / M2 vintage + stands, kits K1 burgundy / K2 wood + throne,
             all ours from code. Dan's picks (bench https://claude.ai/artifact/VXYLrHfwRhy2oPMNg5UQGP, his chat
             message "black + wood"; the bench had B ticked for the monitors, the chat line wins): M1 + K2. In the room:
