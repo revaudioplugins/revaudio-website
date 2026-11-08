@@ -217,7 +217,21 @@ Steps:
             and B both use it); a Blender-AgX LUT stays a tool. KTX2: Dan OK'd it (2026-11-08); KTX-Software 4.4.2
             (Khronos' signed + notarized Darwin-arm64 .pkg from GitHub, not in Homebrew) unpacked user-local, no sudo,
             not on PATH: `~/.local/ktx-software/4.4.2/bin/{ktx,toktx,ktxinfo,ktx2check}`.
-            Phase 2 running: the whole room's static light baked, `?light=baked` in room.html.
+            Phase 2 done (2026-11-09, still uncommitted in `home-bake`): the whole room baked per group incl. E01 + N34,
+            `?light=baked` = one fenced block after `setBench` (applies to `be853d1`); B/A light 0.98-1.00 at walk
+            0 / 0.3 / 0.6 / 0.8 / 0.97; real shadows + bounce. Speed: B = A (15.4 vs 16.7 ms at 1080p, the 17 live lights
+            still draw highlights); `&spec=0` fast B is 3-5x faster but loses the wet-floor highlights and 20-43 % of
+            the light. KTX2 packs ~10 MB GPU (PNG 40.6). One-slot re-bake = one command (`bake/room-bake.sh <id>`, 110 s).
+            ⏸ Dan to pick which B goes into the bake-off: full / fast / the mix (fast + wet-floor highlights, not built;
+            my pick). Sheet: `look/step3/bake/room/shots/sheet.png`.
+      - [x] Scout task 3 (2026-11-08): monitors M1 black / M2 vintage + stands, kits K1 burgundy / K2 wood + throne,
+            all ours from code. Dan's picks (bench https://claude.ai/artifact/VXYLrHfwRhy2oPMNg5UQGP, his chat
+            message "black + wood"; the bench had B ticked for the monitors, the chat line wins): M1 + K2. In the room:
+            `MODELS` E02 / E03 (+ `stand`, stretched by placeItem) and E07 / E08 through a new prop branch (a group of
+            drawn parts: the model at real size, centred where the drawn parts stood, so the kit keeps Dan's spot).
+            Checks: hand-off 1.05 / 0.68 / 0.45 / 2.57 % (= baseline), 0 overlaps, 0 errors. ⚠️ fps (interleaved,
+            DPR 2, load ~14): walk 0.3 50 → 47, walk 0.6 66 → 59-60; the monitors carry 11 materials each (a merge
+            pass per material later if the critics' round says so).
       - [x] Phone tester baseline (2026-11-08): `look/step3/phone-test/report.md` + findings.json (14). GPU ~422 MB
             vs the 100 MB budget (PH-01, the designer's); the address bar threw readers back to the TV (PH-02, fixed
             `a145e15`); 43.5 s black at 1.6 Mbps (PH-03: a still first, after Dan's portrait camera pick); a fling skips

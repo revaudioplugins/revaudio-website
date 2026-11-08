@@ -683,6 +683,10 @@ const LIT = {
 const MODELS = {
   E01: { src: 'assets/models/studio-desk.glb', fit: 'height' },        // Dan's pick (11-08): the studio desk, racks built in (ours, from code)
   N34: { src: 'assets/models/office-chair.glb', yaw: Math.PI + 0.45 }, // Dan's pick (11-08): faces the desk, pushed back and turned away a little
+  E02: { src: 'assets/models/studio-monitor.glb', stand: 'assets/models/monitor-stand.glb' }, // Dan's pick (11-08): black monitors on black floor stands (ours, from code)
+  E03: { src: 'assets/models/studio-monitor.glb', stand: 'assets/models/monitor-stand.glb' },
+  E07: { src: 'assets/models/drum-kit.glb' },    // Dan's pick (11-08): the natural-wood kit (ours, from code), where today's drawn kit stands
+  E08: { src: 'assets/models/drum-throne.glb' }, // its stool, still pushed back
 };
 for (const q of new URLSearchParams(location.search).getAll('model')) {
   const [id, src, yaw, fit] = q.split(':');
@@ -699,11 +703,19 @@ async function loadModels() {
     let g; try { g = (await loader.loadAsync(m.src)).scene; } catch (e) { console.warn('model', id, m.src, e.message); return; } // the block stays
     g.rotation.y = m.yaw || 0; g.updateMatrixWorld(true);
     const box = new THREE.Box3().setFromObject(g, true), size = box.getSize(new THREE.Vector3()), c = box.getCenter(new THREE.Vector3());
-    it.obj.geometry.computeBoundingBox(); const bb = it.obj.geometry.boundingBox, slot = bb.getSize(new THREE.Vector3());
-    const k = m.fit === 'height' ? slot.y / size.y : Math.min(slot.x / size.x, slot.y / size.y, slot.z / size.z);
     g.position.set(-c.x, -box.min.y, -c.z); // centred on the footprint, standing on the slot's floor
-    const wrap = new THREE.Group(); wrap.add(g); wrap.scale.setScalar(k); wrap.position.y = bb.min.y;
-    g.traverse((o) => {
+    const wrap = new THREE.Group(); wrap.add(g);
+    if (it.obj.geometry) { // a block: the model fills its slot
+      it.obj.geometry.computeBoundingBox(); const bb = it.obj.geometry.boundingBox, slot = bb.getSize(new THREE.Vector3());
+      wrap.scale.setScalar(m.fit === 'height' ? slot.y / size.y : Math.min(slot.x / size.x, slot.y / size.y, slot.z / size.z));
+      wrap.position.y = bb.min.y;
+    } else { // a prop (the drum kit, the throne) is a group of drawn parts: the model takes their place at its real size
+      it.obj.updateMatrixWorld(true); const inv = it.obj.matrixWorld.clone().invert(), pb = new THREE.Box3();
+      it.parts = [...it.obj.children];
+      for (const p of it.parts) pb.union(new THREE.Box3().setFromObject(p, true).applyMatrix4(inv));
+      const pc = pb.getCenter(new THREE.Vector3()); wrap.position.set(pc.x, 0, pc.z); // where the drawn parts stood (Dan's placement)
+    }
+    const dress = (root) => root.traverse((o) => {
       if (!o.isMesh) return;
       o.castShadow = o.receiveShadow = true;
       for (const mt of [o.material].flat()) {
@@ -712,9 +724,19 @@ async function loadModels() {
         if (mt.metalness > 0.3 || mt.roughness < 0.5) { mt.envMap = R.probe.env.texture; mt.userData.env ??= 1; SHINY.add(mt); } // the room's own reflection, on shiny parts only
       }
     });
+    dress(g);
+    if (m.stand && it.stand) { // a monitor's floor stand: origin on the floor, stretched to it in placeItem like the drawn one
+      try {
+        const st = (await loader.loadAsync(m.stand)).scene;
+        st.userData.h = new THREE.Box3().setFromObject(st, true).max.y; dress(st);
+        it.obj.add(st); it.standModel = st; it.parts = [it.stand];
+      } catch (e) { console.warn('stand', id, m.stand, e.message); } // the drawn stand stays
+    }
     it.obj.add(wrap); it.model = wrap;
-    const d = R.dress.find((x) => x[0] === it.obj); if (d) d[2] = R.noMat;
-    if (R.lookOn) it.obj.material = R.noMat;
+    if (it.obj.geometry) {
+      const d = R.dress.find((x) => x[0] === it.obj); if (d) d[2] = R.noMat;
+      if (R.lookOn) it.obj.material = R.noMat;
+    }
   }));
   applyFlags(); arrange(); // the look shows the models; their shadows drawn once
   return maps;
@@ -1561,6 +1583,7 @@ function placeItem(it) {
     if (it.stand) { // the stand reaches the floor whatever the height (in the block's own units)
       const { top, post, base } = it.stand.userData, len = Math.max(0.02, (y - s.h * k / 2) / k);
       top.position.y = -s.h / 2 - 0.01; post.scale.y = len; post.position.y = -s.h / 2 - len / 2; base.position.y = -s.h / 2 - len + 0.015;
+      const sm = it.standModel; if (sm) { sm.scale.y = len / sm.userData.h; sm.position.y = -s.h / 2 - len; }
     }
     lb.position.set(x, y + s.h * k / 2 + 0.16, z + 0.2);
     placeBlob(it, s.w * k, s.d * k, x, z, it.obj.rotation.y, !s.flat && y - s.h * k / 2 < 0.05);
@@ -1698,7 +1721,10 @@ function applyFlags() {
     for (const m of R.mess) set(m.mesh, m.mesh.userData.mats[look ? 1 : 0]);
     arrange(); // the contact shadows
   }
-  for (const it of R.items) if (it.model) it.model.visible = look; // a real model in the look, its block in the skeleton
+  for (const it of R.items) if (it.model) { // a real model in the look, its block (or drawn parts, stand) in the skeleton
+    it.model.visible = look; if (it.standModel) it.standModel.visible = look;
+    for (const p of it.parts || []) p.visible = !look;
+  }
   // the fill: in the look a little more of it, warm and grey (the far end sank into red-black), and the night outside
   // darker and more indigo (it read as a flat periwinkle card); the skeleton keeps its own
   // (r185's lights are physical: a hemisphere's lux is colour x intensity, so these dark hues need ~4 to be felt at all)
