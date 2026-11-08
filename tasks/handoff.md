@@ -152,6 +152,41 @@ only after Dan picks: `src/pages/index.astro`, a new `src/components/HomeOpening
   light layers, the Blender export + parity check). Schedule: the plan had the look pass on Nov 6-9 and a checkpoint on
   Nov 12 (below the bar → v1 = look + light only); live Nov 19. Owed: tell Gil (his countdown + TV intro vs the room on
   Nov 19); Dan's OK for the R2 bucket / `assets.revaudio.net` / the three CSP additions (test locally first).
+- THE LOOK PASS (2026-11-08, `danavivi-20`, todo 1b): built, two fix rounds, final scoring, Dan's review page. Commits:
+  `04d8285` part 1 · `c681970` round-1 scores + team briefs · `b49e968` fix round 1 · `43f149e` fix round 2 · `53d80b2`
+  the final critics' two fixes · `1ca1ec4` the player's round-2 engine fixes. In `room.html`: three.js 0.185.1 vendored
+  (the site's pin); 13 CC0 texture sets in `assets/pbr/` (`SOURCES.md`; also `refs/licence-log.md`), preloaded once;
+  `KINDS` / `LOOK` (a material kind per slot) and `LIT` (lit props); `FINISH` = AgX on the room only, the TV face and the
+  CRT screens (and the tail lights) keep exact pixels through a frame-alpha marker (`keepAlpha`, `liveScreen`); 4x MSAA;
+  4 pendant spotlights with shadows (static maps, redrawn on moves; the desk one at 40 %); `WET` (a Reflector sheen) +
+  `PATCHES` driving the floor's own roughness and specular; the room's probe on shiny kinds only; contact shadows; haze
+  under the lamps; `lightRoom()` holds every light level; the intro starts only after uploads + shader compiles. Bench:
+  "The look" (tone mapping, exposure, shadows, reflections, haze) + a Look chip (off = the grey blocks). Settings ver 11.
+- The team ran as planned (round 1: critics → the fixer on Fable in its own worktree → round 2 → final scoring), plus
+  THE PLAYER (Dan 2026-11-08: "an agent that plays with the result on the website and gives feedback to the builders";
+  approved the same day): a live tester on Opus in WebKit + Chrome, every round, before Dan sees it. Briefs:
+  `tools/_home-opening/team/`. Its finds that only a live run shows: the intro froze then jumped (texture uploads, then
+  shaders compiled for the canvas instead of the composer's target), the probe popped in at 3.4 s, reduced motion still
+  flickered, and in Safari the REVAUDIO neon drew as a glowing card (shadowBlur) and see-through canvas gradients
+  uploaded speckled (confetti on the floor). All fixed and re-measured.
+- Checks at `1ca1ec4`: hand-off 1.05 / 0.68 / 0.45 / 2.57 % (= the baseline); 0 overlaps; 69 / 68 / 95 / 133 fps at
+  walk 0 / 0.3 / 0.6 / 0.9 (M1 Max, 1141x636 DPR 2); no console errors in WebKit; a cold first visit links 46 of 46
+  shaders before the intro, whose lights rise over ~1 s in both engines.
+- Final scores (look / walk / Dan's-eye / devil's advocate; mood, light, mess, plugins, must-stays, no brands, glued):
+  7 7 4 5 7 8 7 · 6 7 4 6 7 9 6 · 6 7 3 6 7 9 6 · 6 6 2 5 6 9 4 (round 1: 5 5 3 4 6 8 5 · 4 4 3 5 5 9 4 · 5 5 3 5 6 9 5 ·
+  4 4 2 4 5 9 3). Their verdict: the light is no longer the problem, the blocks are; mess, plugins and glued wait for
+  the real models (step 3 the desk + chair, then the kit; step 4 the car, Dan's team).
+- Dan's review page (notes in its db, collection `notes`): https://claude.ai/artifact/RrYfJ7Z8AbXJCTsTc9KHLz. Four
+  questions there: the ceiling neon (quiet / saturated like the painting / a step up), the view out the door (dark / a
+  street lamp + blue night / with the car in step 4), the red tool chests (worn / glossy enamel / mixed), the far
+  half's walls (violet-wine / warmer umber, the violet up on the ceiling / halfway).
+- Open, not done on purpose: the critics' remaining LOOK notes wait for Dan's answers (pale tubes whose violet lands on
+  the walls, the door's navy void, flat cream globes and shade, the black E06 shelf, COMING SOON's contrast). A cold
+  first visit waits ~5.5 s on a dark page (textures + shader compiles; the homepage step's still picture covers it);
+  1440x900 runs 51-53 fps (the baked light layers fix it); in WebKit the arrow keys don't scroll (the hidden bench
+  aside), Space / PageDown can pass the TV, a hidden tab's return jumps one frame (the page step). 🔴 The phone: the web
+  critic estimates ~700 MB of GPU memory on an iPhone vs the recipe's 100 MB (its own tier: KTX2, no MSAA, 1K) before
+  Nov 19. Next: Dan's notes on the page → apply → then step 2 (Blender export) or 3 (far-end models) per the plan.
 
 ## 2026-11-02 — Footer: categories fold into drawers (Claude Code `revaudio-3b [a4cb6d]`, laptop 2) — ON MAIN + LIVE: merged `--no-ff` 2026-11-02 by Claude Code `revaudio-0c [571e5c]` (laptop 1) on Dan's word "push it to main and merge" (Yoni had approved by pushing the branch)
 

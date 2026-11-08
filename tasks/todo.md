@@ -177,7 +177,12 @@ Steps:
                   the desk pendant at 40 %), black gear kept dark with a sheen (the fixer had lifted it 3x: cardboard),
                   tail lights as exact pixels. Checks: hand-off 1.05 / 0.68 / 0.45 / 2.57 %; 0 overlaps; blacks under
                   0.002 at walk 0 / 50 / 60: 7.2 / 13.1 / 13.2 % (painting 7.5); 70 / 68 / 96 / 133 fps (M1 Max, DPR 2).
-            - [ ] Final scoring (the four look critics + the player, round 2), then Dan's review page.
+            - [x] Final scoring (2026-11-08): look / walk / Dan's-eye / devil 7 7 4 5 7 8 7 · 6 7 4 6 7 9 6 · 6 7 3 6 7 9 6 ·
+                  6 6 2 5 6 9 4 ("the light is no longer the problem, the blocks are"); their last two small fixes
+                  (`53d80b2`) and the player's round-2 engine fixes (`1ca1ec4`: Safari's neon + floor speckles, the
+                  first-visit intro) are in. Details: `tasks/handoff.md` top entry.
+            - [ ] Dan's notes on the review page https://claude.ai/artifact/RrYfJ7Z8AbXJCTsTc9KHLz (db `notes`; four
+                  questions: the ceiling neon, the door view, the red chests, the far walls), then apply them.
       - [ ] The player (Dan 2026-11-08: "an agent that plays with the result on the website and gives feedback to the
             builders"; approved the same day): a live tester on Opus, a standing member from this round on. It plays
             the room like a visitor in real engines (WebKit at Dan's 1141x636, Chrome 1141 / 1440 / 1920, the iOS
