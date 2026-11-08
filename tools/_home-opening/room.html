@@ -192,14 +192,14 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 // ---------- settings (the bench; COPY SETTINGS bakes them) ----------
 const DEF = {
   // Dan's pick of 2026-11-05: designer B's working garage with A's moves (layouts/b-plus-a.json), baked in as the room
-  roomW: 6.8, roomH: 4.6,                // the room, metres (its length follows the walk: layoutCamera); Dan's bench 11-04
-  floor: 'concrete', floorShine: 0.62,    // a real garage floor (Dan 2026-11-02), not a mirror
+  roomW: 6.7, roomH: 4.6,                // the room, metres (its length follows the walk: layoutCamera); Dan's bench 11-04, width 11-08
+  floor: 'concrete', floorShine: 0.79,    // a real garage floor (Dan 2026-11-02), not a mirror; wetter on his bench of 11-08
   floorLines: 0,                         // painted lanes: off, "it doesn't look like a road, it's a garage" (Dan 11-03)
   acoustics: 1, woodTone: 0.4,          // the studio: slat panels, diffusers, bass traps, a cloud (Dan 11-03)
-  mess: 0.6, messSeed: 1,                // how much clutter, and which scatter of it
+  mess: 0.61, messSeed: 1,               // how much clutter, and which scatter of it
   lens: 43,                              // vertical field of view, degrees (phones get 18 more)
   tvW: 1.4, tvY: 1.6, tvH: 0.73,         // the TV: width, centre height, height (metres, one size on every screen)
-  roomL: 19.9,                           // the room's length (metres): one size, only the camera adapts to the screen (Dan 2026-11-04)
+  roomL: 20.9,                           // the room's length (metres): one size, only the camera adapts to the screen (Dan 2026-11-04; 20.9 on his bench of 11-08)
   tvStart: 6.5,                          // TV width on the first screen, % of the screen width: the film only now (the room's length sets the start)
   walkLen: 370, ease: 2.8, feel: 0.4,    // scroll length (% screen); in-out power; 0 = steady metres, 1 = the TV grows steadily
   sway: 0.4, neon: 0.26, lamps: 1.4, tvGlow: 1.25, bloom: 1.1, fog: 0.036, dust: 0.5,
@@ -210,7 +210,7 @@ const DEF = {
   // the REVAUDIO neon: off the aisle (Dan 2026-11-02: "not in your face"), then on the end wall, right of the TV (11-03)
   signWall: 'endLeft', signF: 0.52, signX: -1.62, signY: 2.95,  // the wall in front of you, top right (Dan 11-03, placed 11-04)
   signScale: 1.15, signTilt: -2,        // hung a little crooked on two wires (Dan 11-03; sized 11-04)
-  ver: 11,                               // settings version (5 = Dan's bench of 11-03 baked, 6 = his third, with the pegboard move, 7 = back to the bare set; his bench of 11-04 needed no bump; 8 = the snap off; 9 = B + A's moves as the room; 10 = the look pass, 11 = its first fix round): 2 moved the sign to the end wall, 3 made it bigger + crooked, 4 took the road off the floor
+  ver: 12,                               // settings version (5 = Dan's bench of 11-03 baked, 6 = his third, with the pegboard move, 7 = back to the bare set; his bench of 11-04 needed no bump; 8 = the snap off; 9 = B + A's moves as the room; 10 = the look pass, 11 = its first fix round, 12 = his bench of 11-08 + two nudges): 2 moved the sign to the end wall, 3 made it bigger + crooked, 4 took the road off the floor
   // the look pass (2026-11-08, todo 1b): real materials and night light on the same set (Skeleton = the grey labelled
   // blocks); tone = the tone mapping (AgX), exposure its exposure; probe = how much the room shows in its own shiny
   // things (chrome, paint, the floor); shafts = the haze under the lamps
@@ -219,7 +219,7 @@ const DEF = {
   // (both off, Dan 2026-11-03 after the one-shot film: "lets go back to the skelton this is not what i want")
   // per-object moves from the move tool: { id: { f, x, y, side, s, r } }; Dan's pick of 2026-11-05 (layouts/b-plus-a.json)
   moves: {
-    "M03": {"f": 0.0825, "x": -0.8, "s": 1.15},
+    "M03": {"f": 0.0771, "x": -0.8, "s": 1.15},  // f kept its spot on the desk when the room grew to 20.9 m (11-08)
     "N26B": {"x": -2.2, "s": 0.8},
     "N30": {"x": 2.2, "s": 0.85},
     "N36": {"x": 0.55, "y": 2.45},
@@ -241,7 +241,7 @@ const DEF = {
     "W03": {"f": 0.441, "y": 2.25},
     "L13": {"f": 0.4062, "y": 1.03, "s": 0.8},
     "L14": {"f": 0.4757, "y": 1.03, "s": 0.8},
-    "N16": {"f": 0.441, "x": -2.9},
+    "N16": {"f": 0.441, "x": -2.84},  // clear of the monitors on stands in the 6.7 m room (11-08)
     "P03": {"f": 0.441, "y": 3.2},
     "W09": {"f": 0.5347, "side": -1},
     "P06": {"f": 0.5347, "y": 2.3, "s": 1.2, "side": -1},
@@ -343,6 +343,7 @@ if (sv < 8) S.snap = 0; // free scrolling by default (Dan 2026-11-04); the bench
 if (sv < 9) { for (const k of Object.keys(S)) delete S[k]; Object.assign(S, DEF, { moves: structuredClone(DEF.moves) }); } // the room is B + A's moves now (Dan 2026-11-05)
 if (sv < 10) Object.assign(S, { look: 1, labels: 0 }); // the look pass: real materials, no slot labels
 if (sv < 11) S.shafts = DEF.shafts; // the look's first fix round: more light in the haze under the lamps
+if (sv < 12) for (const id of ['M03', 'N16']) S.moves[id] = { ...DEF.moves[id] }; // nudged clear in Dan's 6.7 x 20.9 m room (11-08)
 S.ver = DEF.ver;
 // ?layout=<name>: a proposed layout (layouts/<name>.json, the bench's Copy-settings format) over the defaults, to walk
 // and compare; this browser's saved bench is left alone and nothing is saved
