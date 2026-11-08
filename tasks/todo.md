@@ -166,6 +166,18 @@ Steps:
             pair dies into red-black murk; the door is a flat bright-blue card; bulbs and tubes burn white; the lit
             globes read as paper discs; the floor lacks amber pools and contrast; the reflections pop in ~3 s after
             load. MODEL (later steps): the car, the drum kits, the mess.
+            - [x] Fix round 1 (`b49e968`, the fixer on Fable in its own worktree, merged by the main session): the web
+                  critic's code bugs (bloom squared by its premultiplied blend, a second MSAA target, every map uploaded
+                  up to 7 times ≈ 490 MB, canvas MSAA, the probe on a timer) and the player's (the intro froze 1.1-1.4 s
+                  on uploads and jumped dim → full, reduced motion still flickered, 4 MP at 1440x900); look: emitters
+                  keep their colour, a 4th pendant over the desk, violet carried to the far end, an indigo night with the
+                  right wall shadowing the street light, ON AIR lettered, `lightRoom()` holds the light levels.
+            - [x] Fix round 2 (`43f149e`): the fill neutral (round 1's violet fill washed the room lavender), the TV's
+                  violet a halo not a wall, the wet patches drive the floor's own roughness + specular (lamps 130 cd,
+                  the desk pendant at 40 %), black gear kept dark with a sheen (the fixer had lifted it 3x: cardboard),
+                  tail lights as exact pixels. Checks: hand-off 1.05 / 0.68 / 0.45 / 2.57 %; 0 overlaps; blacks under
+                  0.002 at walk 0 / 50 / 60: 7.2 / 13.1 / 13.2 % (painting 7.5); 70 / 68 / 96 / 133 fps (M1 Max, DPR 2).
+            - [ ] Final scoring (the four look critics + the player, round 2), then Dan's review page.
       - [ ] The player (Dan 2026-11-08: "an agent that plays with the result on the website and gives feedback to the
             builders"; approved the same day): a live tester on Opus, a standing member from this round on. It plays
             the room like a visitor in real engines (WebKit at Dan's 1141x636, Chrome 1141 / 1440 / 1920, the iOS
