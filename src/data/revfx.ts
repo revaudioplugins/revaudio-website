@@ -28,10 +28,11 @@ export const revfx = {
    *  post to /download/register, which emails the download at once (Yoni 2026-11-09) */
   gateWired: true,
   gateId: 'revfx',
-  /** RevFX 1.2.0 ships Mac only (packaging/ = the Mac pipeline; no PACE wcguid yet, so no AAX) */
-  aaxReady: false,
+  /** RevFX 1.3.9 (2026-11-08): the notarized Mac pkg installs VST3 + AU + PACE-signed AAX. Windows waits on an
+   *  Authenticode-signed installer (RevFX packaging/signed/README.md), so winReady stays false until it ships. */
+  aaxReady: true,
   winReady: false,
-  version: '1.2.0',
+  version: '1.3.9',
   /** true = RevFX shows in the homepage carousel and the store; false = only the /revfx page is live (Gil 2026-10-18:
    *  "keep the page link live for now") */
   listed: false,

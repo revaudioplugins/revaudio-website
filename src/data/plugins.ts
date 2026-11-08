@@ -626,8 +626,8 @@ export const plugins: Plugin[] = [
       { name: 'Four snapshots', desc: 'Hold to save, click to recall. FX Scene is automatable, so your DAW can switch them.' },
     ],
     audioDemos: [],
-    // RevFX 1.2.0: Mac universal, macOS 10.13 floor (CMakeLists.txt); no AAX (no PACE wcguid yet), no Windows build yet.
-    systemReq: { ...baseSystemReq, os: 'macOS 10.13+ (Apple silicon + Intel)', formats: 'VST3 + AU on Mac' },
+    // RevFX 1.3.9: Mac universal, macOS 10.13 floor (CMakeLists.txt), PACE-signed AAX in the pkg; no Windows build yet.
+    systemReq: { ...baseSystemReq, os: 'macOS 10.13+ (Apple silicon + Intel)', formats: 'VST3 + AU + AAX on Mac' },
     reviewsCount: 0,
     reviewsAvg: 0,
   },
