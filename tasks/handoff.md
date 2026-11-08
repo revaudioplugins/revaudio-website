@@ -1,6 +1,8 @@
 ## 2026-11-04 — Home TV Phase 5 "The TV sells": try, download and the product page on the screen (Claude Code `danavivi-4c [c74148]`, Dan's Mac) — IN PROGRESS on `feat/tv-sells`
 
-Claim: OPEN 2026-11-04 `danavivi-4c`. Branch `feat/tv-sells` (worktree `.claude/worktrees/tv-sells`, off main `8e3e567`).
+Claim: HANDED OVER 2026-11-08 by `danavivi-4c` (closed, on Dan's "close") to the next session Dan opens for step 2:
+it takes this claim over under its own name, same branch and worktree. Branch `feat/tv-sells` (worktree
+`.claude/worktrees/tv-sells`, now on main `747e059`; pushed, `12ac04f` and this close).
 Files: `src/components/WordWall.astro`, `src/components/TrialGateModal.astro` (+ one new shared sign-up module),
 `src/components/WelcomeDiscountPopup.astro`, `src/components/ExitIntentPopup.astro`, `tasks/home-library-plan.md`
 (§ Phase 5), this entry. The worker side (step 4, RevLimiter repo) gets its own claim there when it starts.
