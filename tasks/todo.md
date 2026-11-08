@@ -201,8 +201,15 @@ Steps:
       the phone tier + portrait camera options for Dan; a phone tester: today's baseline on WebKit 390x844 + the iOS
       Simulator, then the designer's build). Phase 2, once A and B exist: the player, the 5 critics, the fixer.
       Three.js's loaders vendored (GLTFLoader, KTX2Loader + basis, meshopt decoder, GLTFExporter; 0.185.1, MIT).
-- [ ] 2. The skeleton exported to Blender (geometry, slot names, camera walk, lights); parity check against the
-      bench. (Blender itself: installed 2026-11-04.)
+- [x] 2. The skeleton exported to Blender (geometry, slot names, camera walk, lights); parity check against the
+      bench. (Blender itself: installed 2026-11-04.) Done 2026-11-08: `tools/_home-opening/blender/export.mjs` (the
+      page's own scene through GLTFExporter, from a copy frozen in one tick; slots named by id with their kind, lights
+      named + grouped neonL / neonR / lamps / tv / sign / door / props / car, the hemisphere fill in the sidecar only;
+      materials without maps; `room-meta.json`: the walk camera at 5 stations x 4 screens, every slot's box corners
+      projected by three.js) → `blender/build.py` (glTF Unitless lights, a collection per light group, the 20 walk
+      cameras, the parity check). Parity: 122 slots, max 0.001 px at every station on 1141 / 1440 / 1920 / 390x844
+      (pass < 0.5 px); a Workbench render overlays the three.js still edge for edge. room.glb 3.6 MB; no page errors.
+      Next in Blender: the light units on a test wall (the bake engineer's parity), then the far-end corner's bake.
 - [ ] Owed Dan's OK (production): an R2 bucket + `assets.revaudio.net`, its cache / CORS rules, the three CSP
       additions. Test locally first, with the live CSP served by a local server.
 - [ ] Research: assets + the car; live-3D techniques + the splat check.
