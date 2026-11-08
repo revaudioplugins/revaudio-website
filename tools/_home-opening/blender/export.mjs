@@ -122,4 +122,4 @@ fs.writeFileSync(path.join(out, 'room.glb'), Buffer.from(r.glb, 'base64'));
 fs.writeFileSync(path.join(out, 'room-meta.json'), JSON.stringify(meta));
 const allErrs = [...errs, ...Object.values(meta.screens).flatMap((s) => s.errors)];
 console.log(`${Object.keys(r.markers).length} slots, ${r.lights.length} lights, ${r.broken.length} left out (transform not a number)${r.broken.length ? ': ' + JSON.stringify(r.broken) : ''}; page errors: ${allErrs.length ? allErrs.join(' | ') : 'none'}`);
-console.log(path.join(out, 'room.glb'), (fs.statSync(path.join(out, 'room.glb')).size / 1e6).toFixed(1) + ' MB');
+console.log('%s %s MB', path.join(out, 'room.glb'), (fs.statSync(path.join(out, 'room.glb')).size / 1e6).toFixed(1));
