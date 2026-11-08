@@ -1853,7 +1853,9 @@ function layoutCamera() {
   const root = document.documentElement.style;
   root.setProperty('--nav-h', navH + 'px'); root.setProperty('--vh', vh + 'px'); root.setProperty('--vw', vw + 'px');
   root.setProperty('--walk-px', L.walkPx + 'px'); root.setProperty('--tv-r', cap.r + 'px');
-  if (oldWalk && Math.abs(oldWalk - L.walkPx) > 0.5) jumpTo(progress * L.walkPx); // a longer walk keeps the visitor where they stood
+  // a longer walk keeps the visitor where they stood; one reading the page below keeps their place in it (a phone's
+  // address bar changes the height mid-read: the capped progress threw them back up to the TV)
+  if (oldWalk && Math.abs(oldWalk - L.walkPx) > 0.5) { const y = lenis ? lenis.scroll : scrollY; jumpTo(y > oldWalk ? y - oldWalk + L.walkPx : progress * L.walkPx); }
   const tvBottomPx = vh / 2 + (tvH / 2) / (d0 * tv) * (vh / 2);
   $('readB').style.top = Math.min(vh * 0.7, tvBottomPx + vh * 0.04) + 'px';
   $('tuneNote').textContent = `Room ${roomLen.toFixed(1)} m long · TV on the first screen: ${L.startPct.toFixed(1)} % of the width · walk ${(d0 - dEnd).toFixed(1)} m`;
