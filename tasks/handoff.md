@@ -135,7 +135,12 @@ Files: `src/components/WordWall.astro`, `src/components/TrialGateModal.astro` (+
   ▶, 2 px borders on Try / Product page / Send. `npm run build` green (33 pages). Playwright: tv-sells + tv-signup
   10 passed, 4 skipped (per-project); smoke + pop-up suites 66 passed, 1 skipped, 1 failed = smoke /drift on
   mobile-safari (WebKit's video placard icons, known). Not checked: a real iPhone, NVDA / VoiceOver.
-- Next: Dan's re-pick for step 4 (A / B' / C, above); his look at the built TV (dev :4480); step 00's baseline
+- Review bench for Dan (2026-11-08, his "open bench"): "TV Sells Review"
+  `https://claude.ai/artifact/Sspr4WHuymJU9LA9xTh8Lg` (review-bench, 13 sections: laptop TV + step 5 hover, the
+  sign-up form / refused / sent, GAS free, DRIFT beta, phone link + pane + form, phone refused + sent, High Contrast
+  TV + sign-up, keyboard, step 4, overall). Notes in its db `notes/<section id>`; the step 4 pick = `notes/step4`
+  choice a / b / c. Shots: session scratchpad `rv2/` (`shoot-tvsells.cjs` via walk.cjs).
+- Next: Dan's re-pick for step 4 (A / B' / C, above; on the bench too); his notes on the bench; step 00's baseline
   before any push to main. Left in the plan: step 7 (checks at the 9 sizes), P (persona walk). Nothing on main;
   main = live on Dan's word.
 
