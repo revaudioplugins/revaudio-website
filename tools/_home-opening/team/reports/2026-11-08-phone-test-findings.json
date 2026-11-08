@@ -1,0 +1,197 @@
+[
+ {
+  "id": "PH-01",
+  "severity": "blocker",
+  "engine": "WebKit (Playwright) + Chrome Android emulation",
+  "viewport": "390x844 DPR3 (renderer DPR 1.75 = 682x1477), 402x714, 412x915",
+  "what": "GPU memory is about 4x the phone budget: textures 367 MB + renderbuffers 55 MB = ~422 MB tracked (budget: textures <= 100 MB). Breakdown at 390x844: 37 PBR maps uncompressed RGBA8 with mips = 245 MB (34 x 1024^2 = 181 MB, 3 floor maps at 2048^2 = 64 MB, over the 1024 px limit); 5 shadowed SpotLights x 1024^2 (colour + DEPTH24) = 40 MB; composer 4x MSAA RGBA16F colour 31 MB + MSAA depth 15 MB + resolve 8 MB + depth 4 MB; bloom mips + 2 Reflectors ~ 8 MB; env probe cube 256 RGBA16F 3 MB + PMREM 768x1024 RGBA16F x2 = 12 MB; 10 posters/CRT pictures 28 MB; TV picture 1170x2361 (over 1024) 14 MB; canvas textures ~9 MB. Plus the drawing buffer (~8-12 MB, not tracked). 94 GL textures; no file is uploaded twice (pbr() clones share one upload). iOS kills a tab with no JS signal well below this (tech-recipe section 5).",
+  "repro": "node /private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/scripts/probe.mjs wk390 (also wk402, ch412). It wraps WebGL2 texStorage2D/texImage2D/renderbufferStorage(Multisample) in an init script and opens http://127.0.0.1:4495/tools/_home-opening/room.html?expose; renderer = window.__room.R.probe.pmrem._renderer.",
+  "evidence": [
+   "/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/data/probe-wk390.json",
+   "/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/data/probe-wk402.json",
+   "/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/data/probe-ch412.json"
+  ],
+  "suggestion": "Phone tier: KTX2/ASTC (or at least 512^2 maps, floor 1024^2) = ~6x less per map; drop or share nrm/arm maps on small props; 0-1 shadow maps at 512; no MSAA (or 2x, 8-bit) on phones; probe at 128 or baked; posters/CRTs at 512; TV picture capped at 1024 px tall; budget check in CI using this tracker."
+ },
+ {
+  "id": "PH-02",
+  "severity": "blocker",
+  "engine": "WebKit 402x714 and Chrome 412x915 (both)",
+  "viewport": "402x714, 412x915",
+  "what": "Reading the page below the TV, any viewport-height change (the address bar showing or hiding as you scroll) throws the visitor back up to the TV lock: WebKit scrollY 3784 -> 2419, Chrome 4643 -> 3164. resize() -> layoutCamera() changes walkPx (370 % of innerHeight) and calls jumpTo(progress * walkPx) with progress clamped to 1; the page height (calc(var(--vh) + var(--walk-px))) also shifts by ~4.7x the bar's height.",
+  "repro": "node /private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/scripts/barbelow.mjs: open http://127.0.0.1:4495/tools/_home-opening/room.html?expose, wait 3.5 s, scrollTo(walkPx + 1.6 screens), then setViewportSize(height - 60): scrollY jumps back to the lock.",
+  "evidence": [
+   "/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/data/barbelow.json",
+   "/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/shots/barbelow-wk402-a.png",
+   "/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/shots/barbelow-wk402-b.png",
+   "/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/data/touch-ch412.json"
+  ],
+  "suggestion": "On touch devices size the walk from a stable height (the large viewport: lvh / the first innerHeight, re-measured only on width or orientation change); never jumpTo when progress >= 1 (keep the offset past the lock); rebuild buffers only when the width changes."
+ },
+ {
+  "id": "PH-03",
+  "severity": "blocker",
+  "engine": "Chrome Android emulation (CDP Network.emulateNetworkConditions, cache off)",
+  "viewport": "412x915 DPR 2.625",
+  "what": "On a slow phone network (1.6 Mbps / 150 ms) the visitor sees a black page for 43.5 s (first frame at 43.5 s, intro over ~46 s); at 10 Mbps / 80 ms 7.3 s (intro over 9.9 s); local 0.6 s (WebKit 0.7 s). Everything is fetched before the first frame: 8.36 MB in 72 requests (budget: files <= 6 MB): PBR maps 5.8 MB, posters/CRTs 1.0 MB, three.js 0.8 MB (served uncompressed here), site pictures 0.66 MB, room.html 183 KB, fonts 75 KB. There is no still in front yet (recipe section 3: the LCP is a still the room renders of itself).",
+  "repro": "node /private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/scripts/load.mjs ch412 slow (and '10m', 'none'): screenshots every 2 s, bytes from CDP loadingFinished.",
+  "evidence": [
+   "/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/data/load-ch412-slow.json",
+   "/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/data/load-ch412-10m.json",
+   "/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/data/load-ch412-none.json",
+   "/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/shots/_load-slow-strip.png"
+  ],
+  "suggestion": "Ship the phone still first (<= 120 KB, fetchpriority high); load only what walk 0 needs before the crossfade; phone texture set as in PH-01 brings the bytes under 6 MB."
+ },
+ {
+  "id": "PH-04",
+  "severity": "major",
+  "engine": "Chrome Android emulation (CDP Input.synthesizeScrollGesture, touch, momentum on)",
+  "viewport": "412x915",
+  "what": "One fling crosses the whole walk and lands 1257 px into the page below (scrollY 0 -> 4643, walkPx 3386): the garage goes by in under a second (the camera moves ~1 m per frame) and the TV lock is skipped. Snap is off by default (Dan 2026-11-04), so nothing catches the lock on touch.",
+  "repro": "node /private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/scripts/touch.mjs ch412, step 'one fling (-1500 px @6000, momentum on)'.",
+  "evidence": [
+   "/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/data/touch-ch412.json",
+   "/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/shots/touch-ch412-after-fling.png"
+  ],
+  "suggestion": "Touch only: a soft catch at the lock (stop momentum at walkPx once, e.g. a scroll-snap point or a one-time clamp when a fling crosses it), keeping free scrolling for the wheel."
+ },
+ {
+  "id": "PH-05",
+  "severity": "major",
+  "engine": "iOS Simulator Safari (iPhone 17 Pro, iOS 26.5) vs Playwright WebKit",
+  "viewport": "402x714",
+  "what": "The Simulator's Safari loses much of the amber light: frames 12-15 % darker at walk 0 and 0.35 (the floor pools under the pendants and the warm wash go blue-violet), 32 % darker at 0.7 (the TV/desk amber glow on the panel behind the TV and on the desk is gone), 4 % at 0.97 (the TV face is exact pixels). Same framing, same build. The look spec's colour pair (violet with amber tungsten) is half lost there. Cause not isolated: candidates are the 5 shadowed SpotLights (PCF depth compare on iOS Metal), the warm PointLights (TV glow, prop lights) or the env probe (half-float cube + PMREM) rendering dark.",
+  "repro": "xcrun simctl openurl B0B0F88C-95BB-40DA-B292-A73157B50757 'http://127.0.0.1:4495/tools/_home-opening/room.html?capture=0.7', wait 9 s, xcrun simctl io <UDID> screenshot; compare with node /private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/scripts/capture.mjs wk402 (SETTLE=7000).",
+  "evidence": [
+   "/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/sheet.png",
+   "/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/shots/_wk-vs-sim-0.7.png",
+   "/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/shots/_wk-vs-sim-0.png",
+   "/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/sim/sim-cap-0.7.png"
+  ],
+  "suggestion": "Re-shoot the Simulator with a layouts/<name>.json that turns shadows off, then one with the probe off, to find the culprit; check on Dan's iPhone. Baked light (recipe section 1) removes the dependency."
+ },
+ {
+  "id": "PH-06",
+  "severity": "major",
+  "engine": "WebKit (Playwright), confirmed in the Simulator stills",
+  "viewport": "402x714 and 390x844 (portrait, lens 43 + 18 = 61 deg)",
+  "what": "Portrait sees a narrow slice (horizontal half-angle ~18 deg vs ~35 deg on 16:9): a side-wall thing is in frame only while it is >= 9 m ahead, so every side-wall must-stay is seen only far off and tiny, then leaves the frame. At walk 0 (CSS px): RevLimiter CRT 20x12, Radio Roulette 42x19, DRIFT 51x23, RevFX 8 % in frame, the coupe 22 % in frame (a black shape with tail lights cut by the right edge), drum kit 25x33, posters 8-20 px wide, COMING SOON 17x39. By 0.35 DRIFT, RevFX, Radio Roulette, COMING SOON and the pump are out; by 0.7 only the TV wall is left (neon cut to its 'U'). No CRT plugin screen is ever legible; the neon is legible at 0 and 0.35 (113-157 px wide); 'Mail me the keys' is the only poster that reads.",
+  "repro": "node /private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/scripts/mustsee.mjs wk402 wk390 (projects each must-stay's bounding box at walk 0/0.35/0.7/0.97); stills: node /private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/scripts/capture.mjs wk402.",
+  "evidence": [
+   "/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/data/mustsee.json",
+   "/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/shots/wk402-cap-0.png",
+   "/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/shots/wk402-cap-0.35.png",
+   "/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/shots/_zoom-cap0-endwall.png"
+  ],
+  "suggestion": "Portrait camera options: yaw toward each side wall as it passes (a slight look-left / look-right path), or a portrait layout that brings the CRTs and the coupe nearer the aisle; at least one CRT screen >= ~150 CSS px wide at some walk point."
+ },
+ {
+  "id": "PH-07",
+  "severity": "major",
+  "engine": "WebKit + Chrome (draw calls counted by the WebGL wrapper)",
+  "viewport": "390x844, 402x714, 412x915",
+  "what": "The phone pays the full laptop frame: 520-556 draw calls a frame at walk 0 (72-79k triangles), 330-395 at 0.35, 81-84 at 0.7, 66 at 0.97; 749 meshes, 226 materials, 46 shader programs, 18 lights (5 shadowed); 4x MSAA half-float + bloom + 2 Reflectors (each re-draws the room). On the Mac's M1 Max (shared with other agents): 58-60 fps everywhere when quieter; under load average ~80, walk 0 dropped to 25-40 fps while 0.7 held 37-50 (re-measured twice). Says nothing exact about an iPhone, but walk 0 is the heavy point.",
+  "repro": "node /private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/scripts/probe.mjs wk390; node /private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/scripts/fpsab.mjs (alternates 0 and 0.7).",
+  "evidence": [
+   "/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/data/probe-wk390.json",
+   "/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/data/fps-ab.json",
+   "/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/data/misc.json"
+  ],
+  "suggestion": "Phone tier: merge/instance the mess and acoustic panels, drop the second Reflector, no MSAA, fewer live lights; target < 150 draws at walk 0."
+ },
+ {
+  "id": "PH-08",
+  "severity": "major",
+  "engine": "WebKit 402x714 (scrollTo in half-screen steps)",
+  "viewport": "402x714",
+  "what": "The first swipe looks like nothing happened: half a screen of scroll moves the camera 0.46 m (2.5 % of the 18.3 m walk) and leaves the big line at 99 %; a whole screen 2.9 m. Then screens 1 to 2.5 cover 13.5 m and the last 1.2 screens only 1.8 m. On a phone, one natural flick is about a screen, so it reads as stuck, then a rush.",
+  "repro": "node /private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/scripts/firstswipe.mjs (camera z per half screen: 19.4, 18.94, 16.47, 11.78, 6.19, 2.94, 1.53, 1.13).",
+  "evidence": [
+   "/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/data/firstswipe.json",
+   "/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/shots/swipe-wk402-0.5.png",
+   "/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/shots/swipe-wk402-1.5.png"
+  ],
+  "suggestion": "A phone ease (lower power than 2.8) or a shorter phone walk, so the first half screen visibly moves and fades the line."
+ },
+ {
+  "id": "PH-09",
+  "severity": "minor",
+  "engine": "Chrome Android emulation, Simulator Safari",
+  "viewport": "412x915, 402x714",
+  "what": "Phones first download the laptop pictures named in the HTML (tv-1141x636.webp 335 KB, nav-1141, below-1141: ~418 KB) before resize() swaps in the 390 set; until the JS runs, the laptop nav shows squeezed into the phone width (43 s on the slow network; ~2 s in the Simulator).",
+  "repro": "node /private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/scripts/load.mjs ch412 none -> 'site' list; Simulator: openurl http://127.0.0.1:4495/tools/_home-opening/room.html, screenshots every 0.6 s.",
+  "evidence": [
+   "/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/data/load-ch412-none.json",
+   "/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/shots/load-ch412-slow-05.png",
+   "/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/sim/_sim-load-strip.png"
+  ],
+  "suggestion": "<picture>/srcset (or media queries) for the nav, TV and below pictures so the browser picks the phone file before JS."
+ },
+ {
+  "id": "PH-10",
+  "severity": "minor",
+  "engine": "WebKit 402x714 DPR3",
+  "viewport": "402x714 (iPhone 17 Pro's visible Safari viewport)",
+  "what": "At the lock, the 390x844 TV picture (aspect 0.496) is stretched into a 402x656 box (0.613, object-fit: fill): the page on the TV is squashed ~19 % vertically (letters wide and flat, bezel corners distorted). 412x915 is 3 % the other way. The hand-off itself stays clean (2.18 %) because the 3D face squashes the same way.",
+  "repro": "node /private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/scripts/handoff-phone.mjs wk402 -> tv.boxAspect vs naturalAspect.",
+  "evidence": [
+   "/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/data/handoff-phone.json",
+   "/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/handoff/wk402-1.png",
+   "/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/handoff/_lock-strip.png"
+  ],
+  "suggestion": "In production the live TV is the real page, so match the 3D face to the phone's real aspect (crop, not stretch: object-fit cover / a face sized to the screen)."
+ },
+ {
+  "id": "PH-11",
+  "severity": "minor",
+  "engine": "Chrome Android emulation, WebKit",
+  "viewport": "412x915 <-> 915x412; 402x714 <-> 402x794",
+  "what": "Every resize rebuilds all buffers (composer MSAA, reflectors) and re-lays the camera: rotation costs one frozen frame of 433-483 ms each way (Chrome on the Mac); ten quick address-bar toggles gave 9 frames over 50 ms (max 72 ms) in WebKit and re-allocate ~46 MB of MSAA each time (a memory spike on iOS). The walk position is kept (0.5 -> 0.5; after 10 toggles 0.500 -> 0.497).",
+  "repro": "node /private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/scripts/touch.mjs ch412 (rotation steps, 'long' frames); node /private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/scripts/misc.mjs (A: toggles).",
+  "evidence": [
+   "/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/data/touch-ch412.json",
+   "/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/data/misc.json",
+   "/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/shots/touch-ch412-landscape-0.5.png"
+  ],
+  "suggestion": "Ignore height-only changes on touch (see PH-02); on rotation, resize the canvas but keep the render targets when the new size fits."
+ },
+ {
+  "id": "PH-12",
+  "severity": "minor",
+  "engine": "WebKit, Simulator",
+  "viewport": "402x714, 390x844",
+  "what": "Portrait TV: the face shows only the portrait slice of the page, so from 0.35 to 0.7 the 'TV' is a 128x209 px upright screen on a wide brown panel: it reads as a phone propped on a box, not a TV.",
+  "repro": "http://127.0.0.1:4495/tools/_home-opening/room.html?capture=0.7 at 402x714",
+  "evidence": [
+   "/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/shots/wk402-live-0.7.png",
+   "/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/sim/sim-cap-0.7.png"
+  ],
+  "suggestion": "Show the full 16:9 TV with its own dark glass and the page inside it until late in the walk, or frame the TV as a portrait monitor on purpose."
+ },
+ {
+  "id": "PH-13",
+  "severity": "minor",
+  "engine": "WebKit (three.js inventory)",
+  "viewport": "390x844",
+  "what": "124 slot-label canvases (640x112, labels off) are drawn at boot and never shown: ~35 MB of canvas memory on the CPU side, which iOS counts against the tab.",
+  "repro": "node /private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/scripts/probe.mjs wk390 -> inv.sources where url = 'canvas' and 640x112.",
+  "evidence": [
+   "/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/data/probe-wk390.json"
+  ],
+  "suggestion": "Create the labels lazily (only when the bench's Labels chip is on)."
+ },
+ {
+  "id": "PH-14",
+  "severity": "minor",
+  "engine": "iOS Simulator Safari (cold launch)",
+  "viewport": "402x714",
+  "what": "White frame before the first paint (~1 s), then dark. Likely Safari's own cold-launch blank; the Google Fonts stylesheet in <head> is render-blocking and third-party, which can stretch it on a slow network.",
+  "repro": "xcrun simctl terminate <UDID> com.apple.mobilesafari; openurl http://127.0.0.1:4495/tools/_home-opening/room.html; screenshots every 0.6 s.",
+  "evidence": [
+   "/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/sim/sim-load-4.png",
+   "/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/scratchpad/look/step3/phone-test/sim/_sim-load-strip.png"
+  ],
+  "suggestion": "Self-host the three fonts with font-display: swap (the site's own fonts) so nothing third-party blocks the first dark paint; check on the device."
+ }
+]

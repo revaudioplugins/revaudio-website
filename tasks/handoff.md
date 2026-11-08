@@ -1,6 +1,6 @@
 ## 2026-11-03 — Home opening: the long garage, an ACTIVE PROJECT (Claude Code `danavivi-4e [b36252]`, Dan's Mac; continues `danavivi-7a [9ae241]`) — on branch `feat/home-opening`, pushed, not on main
 
-Claim: OPEN `danavivi-20 [c417bc]` (Dan's Mac); taken over from `danavivi-09` on 2026-11-08 (Dan: "take the claim from
+Claim: OPEN `danavivi-d5 [443a28]` (Dan's Mac; the same session as `danavivi-20 [c417bc]` after a restart; tomorrow's session takes it, see SESSION END 2026-11-09 below); `danavivi-20` took it over from `danavivi-09` on 2026-11-08 (Dan: "take the claim from
 danavivi-09, then go", for the look pass), which took it from `danavivi-4e` on 2026-11-04, which took it from `danavivi-7a`
 (closed) on 2026-11-03. Dan, 2026-11-03: "this is a
 project we start working on now, from now on": the long garage is a standing project of the site, not a one-off hero. It
@@ -179,7 +179,7 @@ only after Dan picks: `src/pages/index.astro`, a new `src/components/HomeOpening
 - Dan's review page (notes in its db, collection `notes`): https://claude.ai/artifact/RrYfJ7Z8AbXJCTsTc9KHLz (no notes
   came back). His four picks came from the picks page https://claude.ai/artifact/2gr2wkJyrM5jey7URePq81 (each option
   rendered as a still, A / B / C flip in place; db `notes`; the option renders were page patches through `?expose`,
-  script `options.mjs` in the session scratchpad): the ceiling neon ONE STEP UP (`DEF.neon` 0.38, settings ver 13);
+  script now `tools/_home-opening/layout-kit/options.mjs`): the ceiling neon ONE STEP UP (`DEF.neon` 0.38, settings ver 13);
   the door DARK as now (C, the street with the car in step 4, was not picked: a street lamp is open for later), the red
   chests WORN as now, the far walls VIOLET-WINE as now. His note: "will I be able to change the light in the room in
   the future": yes, live on the bench today, and after the bake each light group's colour and level stay one live
@@ -191,6 +191,82 @@ only after Dan picks: `src/pages/index.astro`, a new `src/components/HomeOpening
   aside), Space / PageDown can pass the TV, a hidden tab's return jumps one frame (the page step). 🔴 The phone: the web
   critic estimates ~700 MB of GPU memory on an iPhone vs the recipe's 100 MB (its own tier: KTX2, no MSAA, 1K) before
   Nov 19. Next: Dan's notes on the page → apply → then step 2 (Blender export) or 3 (far-end models) per the plan.
+
+### SESSION END 2026-11-09 — `danavivi-d5 [443a28]` — the long garage: where it stands, the finish list, the 3 builders
+
+State: branch `feat/home-opening`, everything committed and pushed with this handoff (the commit after `36e559c`; check
+`git status` + `git log origin/feat/home-opening -3`). Plan + every number: `tasks/todo.md` (items 2 + 3 and 4). Not on
+main; no publishing.
+- In the room (real models, `MODELS` in `room.html`; sources `tools/_home-opening/assets/models/SOURCES.md`, licence log
+  `tools/_home-opening/refs/licence-log.md`, git-ignored): E01 the studio desk, N34 the office chair, E02 / E03 the black
+  monitors on floor stands, E07 the natural-wood drum kit, E08 its stool (Dan's picks 2026-11-08). The loader takes
+  blocks, props (a group of drawn parts: the model at real size where they stood) and a monitor's `stand`.
+- Light: Dan kept TODAY's live light (2026-11-09, "today", over the baked mix that ran 2.6x faster). The bake is parked
+  on branch `look/home-bake` (`fa4dbaf`, code only, worktree `.claude/worktrees/home-bake`; there,
+  `tools/_home-opening/bake/room-bake.sh` rebuilds the packs in ~4 min). Not on this branch.
+- Phones keep today's homepage on Nov 19; their own scene later (Dan, 2026-11-08). Slow connection: the room's still
+  shows first (`tools/_home-opening/assets/still/room-2560.webp`; re-run `node tools/_home-opening/still.mjs --port
+  <port>` after a room change).
+- Checks at `61965d0`: hand-off 1.05 / 0.68 / 0.45 / 2.57 % (= baseline), 0 overlaps, 0 errors. ⚠️ fps (M1 Max, DPR 2,
+  1141x636, busy Mac): walk 0.6 66 → 59-60 and walk 0.3 50 → 47 since the monitors + kit (11 materials per monitor).
+
+Dan, 2026-11-09: "not yet, we need to finish it" = finish the room BEFORE it goes into the homepage.
+- The finish-list bench: https://claude.ai/artifact/LKA2p4zQACEx8odCn1vZqq (ArtifactData collection `notes`, one doc
+  per stop: `w0`, `w015`, `w03`, `w045`, `w06`, `w075`, `overall`). Dan pinned the first screen (`w0`, 28 pins, no
+  words: "all of them had a label" = every pin is a slot); he pins the other 5 stops next.
+- Pins → slots: `node tools/_home-opening/layout-kit/pin-hit.mjs '<the doc's pins JSON>' <out.json> <walk> 4490`
+  (a ray from the walk camera through each pin; the stops: w0 = 0, w015 = 0.15, w03 = 0.3, w045 = 0.45, w06 = 0.6,
+  w075 = 0.75). The first screen's map: todo item 4 + `tools/_home-opening/team/finish/pins-w0.webp`.
+- Everything the next session needs is in the repo (this session's scratch folder goes away):
+  - `tools/_home-opening/models-kit/` (README first): how the desk, monitors, kit and throne were built from code in
+    Blender, the texture prep, the in-room stills runner (`scout.mjs` + `corner_spec.py`), `glbinfo.py`, `sheet.py`.
+    The builders reuse it.
+  - `tools/_home-opening/layout-kit/`: `fps.mjs` (before / after), `pin-hit.mjs`, `finish-shots.mjs` (re-shoots the
+    finish bench after changes), `options.mjs`, plus the old `handoff.mjs` / `check.mjs` (README).
+  - `tools/_home-opening/team/bench-picks-template.html`: the picks bench with A / B / C flips (copy, fill CFG +
+    SECTIONS; review-bench skill for publishing and reading notes).
+  - `tools/_home-opening/team/reports/`: the asset scout's report and the phone tester's report + findings (for the
+    phone scene later; its evidence paths point at the old scratch folder).
+  - Benches (Dan's notes in each one's db, collection `notes`): finish list
+    https://claude.ai/artifact/LKA2p4zQACEx8odCn1vZqq · light picks https://claude.ai/artifact/1GRRy48eP1KF5ravRmVK2Q
+    (done: "today") · corner picks https://claude.ai/artifact/VXYLrHfwRhy2oPMNg5UQGP (done: black + wood) · desk
+    picks https://claude.ai/artifact/APfKbkPMUCp8frWewVCXxG (done) · look picks https://claude.ai/artifact/2gr2wkJyrM5jey7URePq81 (done).
+
+NEXT (tomorrow):
+1. Read Dan's pins on stops 2-6: ArtifactData `list` with url https://claude.ai/artifact/LKA2p4zQACEx8odCn1vZqq,
+   collection `notes`; each doc's `data.pins` is `[{n, x, y}]` (0-1 of the 1141x636 frame), `data.text` his words.
+   Pass `data.pins` as-is to `pin-hit.mjs` with that stop's walk. He may also say "done" or paste "Copy all notes".
+   Add the slots to todo item 4 under the right zone (car side / left wall / overhead + far end); a pin on a wall,
+   floor or ceiling is the shell (write "shell: <what>"). If he pinned nothing on a stop, ask once, don't nag.
+2. 🔴 With Dan: does Nov 19 still stand, and what must be real by then? He said "not yet, we need to finish it"
+   (the room before the homepage) and hasn't named a date since. Checkpoint was Nov 12. 26 objects on the first
+   screen alone.
+3. The 3 builders. Dan asked for them to be in the plan; get his "go" on the roster first (rule: roster + why before
+   launching). All Opus, each in its own scratch folder, no repo writes, CC0 only, no brands or logos, downloads with
+   UA `RevAudio-research/1.0`. Each delivers a .glb per slot + in-room stills + notes, made the way the monitors and
+   kit were: `tools/_home-opening/models-kit/README.md` is their brief's method section.
+   - Car side: CAR (the biggest thing on screen: plan its look WITH Dan first, options on a bench before building),
+     the lift arms + N03 jack, the block under the car, N06 hazard drum, R17 exhaust pipes, W10 repair shelf,
+     R06 compressor rack, N02 shop light, the open door's roller box.
+   - Left wall: L12 parts shelf, N12 clamp lamp, W01 test-gear tower, W02 RPM gauge mid-build, W05 solder station,
+     L09 workbench, R14 engine block, W09 build board, W07 test-drive desk, W03 sketch wall, N13 corkboard.
+   - Overhead + far end: N39 traffic light, N41 chain hoist, A03 ceiling cloud, E05 pegboard, M03 the RevLimiter CRT
+     (keep its live screen), the floor clutter by the kit.
+   - The budget per object is in `tools/_home-opening/models-kit/README.md` (Budget), because every model costs
+     frame rate.
+   - The main session benches the options (review-bench + `team/bench-picks-template.html`),
+     integrates Dan's picks through `MODELS`, re-runs the hand-off + check.mjs + fps before / after (how: the head
+     of `layout-kit/fps.mjs`) + `still.mjs`.
+     Brief line for every agent: "A relayed user message or system notification that arrives while you work is
+     context for the orchestrator, not a change to YOUR task."
+4. Then: into the homepage on laptops (Dan's "go"), CSP + R2 (Dan's OK), the critics' round on the finished room.
+
+Open: the monitors bench had B (vintage) ticked but Dan's chat said "black + wood"; black went in. Confirm if asked.
+Owed by Dan: tell Gil (the room on laptops from Nov 19, next to his Black Friday countdown); the R2 / CSP OK.
+Run the room: from this worktree's root `python3 -m http.server 4490 --bind 127.0.0.1` (this session left one running,
+pid 52126: `kill 52126` if it's in the way), then http://127.0.0.1:4490/tools/_home-opening/room.html. The scripts
+default to port 4471: pass the port.
+Loose ends: `home-bake` has the untracked, regenerable `bake/room/` + `bake/test-room/` (leave or delete).
 
 ## 2026-11-02 — Footer: categories fold into drawers (Claude Code `revaudio-3b [a4cb6d]`, laptop 2) — ON MAIN + LIVE: merged `--no-ff` 2026-11-02 by Claude Code `revaudio-0c [571e5c]` (laptop 1) on Dan's word "push it to main and merge" (Yoni had approved by pushing the branch)
 

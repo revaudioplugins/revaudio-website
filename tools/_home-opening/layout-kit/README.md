@@ -70,6 +70,11 @@ when you finish.
   hand-off: the walk's last 3D frame against the live TV at 1141 / 1440 / 1920 / phone; baseline 2026-11-08: 1.05 /
   0.68 / 0.45 / 2.57 % of pixels differ by more than 24, all on sharp edges, from resampling) and
   `node layout-kit/catalog.mjs` (regenerates `catalog.json` + `start-layout.json`).
+- Also for the builder (2026-11-09): `fps.mjs [WxH] [dpr] [query] [port] [page]` (frame rate at walk 0 / 0.3 / 0.6 /
+  0.9; before / after in turns against `room-prev.html`, see its head); `pin-hit.mjs '<pins>' <out.json> [walk] [port]`
+  (the slot under each pin of a review bench); `finish-shots.mjs <out-dir> [port]` (the walk's stills + the biggest
+  still-drawn slots in each); `options.mjs <out-dir> <spec.json>` (option stills through a page patch, for a picks
+  bench). The models' own kit: `../models-kit/README.md`.
 
 ## What to hand in (in your own folder only)
 

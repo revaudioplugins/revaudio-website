@@ -207,7 +207,7 @@ Steps:
       Simulator, then the designer's build). Phase 2, once A and B exist: the player, the 5 critics, the fixer.
       Three.js's loaders vendored (GLTFLoader, KTX2Loader + basis, meshopt decoder, GLTFExporter; 0.185.1, MIT).
       - [x] Scout (2026-11-08): 3 desks + 4 chairs, CC0 (Poly Haven; the office chair OpenGameArt CC0, re-checked by
-            curl), web glbs + in-room stills, report in the scratchpad (`look/step3/scout/report.md`); the barber
+            curl), web glbs + in-room stills, report: `tools/_home-opening/team/reports/2026-11-08-asset-scout.md`; the barber
             chair's maker name painted out. Dan's pick page (round 2: two studio desks with racks built in, V1 / V2, built from code by the scout): https://claude.ai/artifact/APfKbkPMUCp8frWewVCXxG (db
             `notes`). The licence-log rows go in once he picks.
       - [x] Bake engineer phase 1 (2026-11-08, worktree `home-bake`, `tools/_home-opening/bake/`, uncommitted): a test
@@ -239,7 +239,7 @@ Steps:
             Checks: hand-off 1.05 / 0.68 / 0.45 / 2.57 % (= baseline), 0 overlaps, 0 errors. ⚠️ fps (interleaved,
             DPR 2, load ~14): walk 0.3 50 → 47, walk 0.6 66 → 59-60; the monitors carry 11 materials each (a merge
             pass per material later if the critics' round says so).
-      - [x] Phone tester baseline (2026-11-08): `look/step3/phone-test/report.md` + findings.json (14). GPU ~422 MB
+      - [x] Phone tester baseline (2026-11-08): `tools/_home-opening/team/reports/2026-11-08-phone-test.md` + `-findings.json` (14). GPU ~422 MB
             vs the 100 MB budget (PH-01, the designer's); the address bar threw readers back to the TV (PH-02, fixed
             `a145e15`); 43.5 s black at 1.6 Mbps (PH-03: a still first, after Dan's portrait camera pick); a fling skips
             the lock (PH-04, in the camera options); the Simulator draws the amber light 12-32 % darker (PH-05, re-test).
@@ -260,13 +260,17 @@ Steps:
 - [ ] 4. The rest, zone by zone: entrance + car, workbench wall, studio corner.
       Dan (2026-11-09): "not yet, we need to finish it" = the room before the homepage. Finish-list bench:
       https://claude.ai/artifact/LKA2p4zQACEx8odCn1vZqq (db `notes`). His 28 pins on the first screen (walk 0),
-      matched to slots by a ray through each pin (`look/step4/finish/pins-w0.png`):
+      matched to slots by a ray through each pin (`layout-kit/pin-hit.mjs`; map: `team/finish/pins-w0.webp`):
       - Car side: CAR, the lift arms + N03 jack (the pink block), the wood block under the car, N06 hazard drum,
         R17 exhaust pipes, W10 repair shelf, R06 compressor rack, N02 shop light, the open door's roller box.
       - Left wall: L12 parts shelf, N12 clamp lamp, W01 test-gear tower, W02 RPM gauge mid-build, W05 solder
         station, L09 workbench, R14 engine block, W09 build board, W07 test-drive desk, W03 sketch wall, N13 corkboard.
       - Overhead: N39 traffic light, N41 chain hoist, A03 ceiling cloud.
       - Far end: E05 pegboard, M03 the RevLimiter CRT, floor clutter by the kit.
+      - Next: Dan pins stops 2-6 (same bench); then the 3 builders (all Opus): car side / left wall / overhead + far
+        end, each list above. ⏸ Dan's "go" on that roster first (he asked for it in the plan, 2026-11-09, not yet
+        launched). Method + budget: `tools/_home-opening/models-kit/README.md`. The car's look is planned with Dan on
+        a bench before it's built. Open: does Nov 19 still stand (he hasn't said since "finish it")?
 - [ ] 5. Into the page, with the checks.
 - [ ] 6. A test skin: swap one object and remove one (RevFX or a poster), end to end.
 
