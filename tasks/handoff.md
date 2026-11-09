@@ -232,6 +232,12 @@ Dan, 2026-11-09: "not yet, we need to finish it" = finish the room BEFORE it goe
     (done: "today") · corner picks https://claude.ai/artifact/VXYLrHfwRhy2oPMNg5UQGP (done: black + wood) · desk
     picks https://claude.ai/artifact/APfKbkPMUCp8frWewVCXxG (done) · look picks https://claude.ai/artifact/2gr2wkJyrM5jey7URePq81 (done).
 
+UPDATE 2026-11-09 (later the same night): Dan: "build as many objects as possible by the 19th, most important first,
+let's start" → Nov 19 stands. The 3 builders were LAUNCHED from this session (brief + lists in
+`tools/_home-opening/team/builders/`; loop in todo item 4). If this session is gone, their deliveries are in the
+scratchpad folders named there; a new session starts its own builders from the same brief, skipping slots already in
+`MODELS`. Reused already: L13, L14, R16. So step 3 below is running; steps 1 and 2 still stand.
+
 NEXT (tomorrow):
 1. Read Dan's pins on stops 2-6: ArtifactData `list` with url https://claude.ai/artifact/LKA2p4zQACEx8odCn1vZqq,
    collection `notes`; each doc's `data.pins` is `[{n, x, y}]` (0-1 of the 1141x636 frame), `data.text` his words.

@@ -270,7 +270,19 @@ Steps:
       - Next: Dan pins stops 2-6 (same bench); then the 3 builders (all Opus): car side / left wall / overhead + far
         end, each list above. ⏸ Dan's "go" on that roster first (he asked for it in the plan, 2026-11-09, not yet
         launched). Method + budget: `tools/_home-opening/models-kit/README.md`. The car's look is planned with Dan on
-        a bench before it's built. Open: does Nov 19 still stand (he hasn't said since "finish it")?
+        a bench before it's built.
+      - **Dan (2026-11-09): "let's build as many objects as possible by the 19th, from the most important to the
+        least important. Let's start."** = Nov 19 stands; the scope is whatever is real by then, in priority order
+        (his pins x1.6, then the share of the walk's screen; `layout-kit/finish-shots.mjs` + the ranking in
+        `team/builders/*-LIST.md`). Skipped as already fine: the neon sign, posters, slat panels, floor decals, rugs,
+        cable trays. Not seen on the walk (behind the start): R01, R04, R11-R13, N04, N05, N08-N10, N22, N25, L10.
+      - [x] Reuse (2026-11-09, `3659350`): L13 + L14 = the studio monitors, R16 = the wood kit (yaw pi/2); a file used
+            by several slots loads once (shared geometry + materials).
+      - [ ] The 3 builders, launched 2026-11-09 (Opus): car side (port 4492), left wall (4493), far end + overhead
+            (4495). Brief + lists: `tools/_home-opening/team/builders/`. Their folders: the session scratchpad
+            `look/step4/builders/<car|left|far>/candidates/<ID>/` (glb + notes.txt + 2 stills). Loop: a batch of ~5
+            comes back → check the stills + glbinfo → `assets/models/` + SOURCES + licence log + `MODELS` → handoff /
+            check / fps → a bench for Dan (✓ or a note; the car = an A / B / C pick) → resume that builder.
 - [ ] 5. Into the page, with the checks.
 - [ ] 6. A test skin: swap one object and remove one (RevFX or a poster), end to end.
 
