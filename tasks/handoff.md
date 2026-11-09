@@ -222,7 +222,16 @@ Files: `src/components/WordWall.astro`, `src/components/TrialGateModal.astro` (+
   lcd", the 3 px pixel mesh, dark gaps both ways; 10-09 "the pixel vibe darkens it" -> lift). Round 2 (Version 2,
   `notes-r2/<id>`, build `f00a014`): A / B / C each with the mesh (.22) over the picture only, the picture x1.12
   brighter, C's scanlines gone; per look the laptop, a blown-up close-up, three phones.
-- Next: Dan's pick on the Inside the TV bench (round 2) -> build it in WordWall (bake the grade into the TV's copies if A or C:
+- Round 2 notes (`notes-r2`): a pin on GAS 2's pump (A on a phone) "should be hovering" = GAS 2 keeps floating as
+  today; overall "I want all the plugin should have small and pixlated anumtetion inside". His picks (asked in the
+  chat): **the plugin running** (each plugin's real UI recorded in motion, small and pixelated) + **look A**.
+  Round 3 (Version 3, `notes-r3`, build `16613c2`): RevLimiter only, its real UI (Revlimiter/Source/ui/public, served
+  on :8787) recorded by `tools/tv-anim/record-revlimiter.mjs` (Playwright's fake clock steps the page; a periodic
+  120 BPM mix on its `meters` event -> one seamless 4 s loop, 60 frames at 15 fps), cut to 194 x 94 (2 x 2 px,
+  145 KB) and 129 x 62 (3 x 3, 87 KB) animated WebP; on the TV: image-rendering pixelated, the mesh one cell per
+  source pixel, look A's grade + feather. Bench frames in `tools/wwbench/anim/` (untracked, regenerable).
+- Next: Dan's pixel size on the Inside the TV bench (round 3) -> record GAS, Radio Roulette (both have browser demos),
+  DRIFT (its wall run, pixelated), GAS 2 (its pump floating, animated, alpha) -> build it in WordWall (bake the grade into the TV's copies if A or C:
   no live SVG filter in production), then the thumbnails; then the header that slides away; TV Sells round 4 notes;
   step 00's baseline before any push to main. Left in the plan: step 7 (checks at the 9 sizes), P (persona walk).
   Nothing on main; main = live on Dan's word.
