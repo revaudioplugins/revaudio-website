@@ -7,7 +7,16 @@ Claim: OPEN `revaudio-2f` (took over `revaudio-0d`'s claim below, same files, + 
   a roll while stopped starts playing in RevFX.
 - Fix (Yoni: "you misplaced the pedals in the top there overlapping"): the player reused the hero's class
   `.rfx-board-wrap`, so its `container-type: inline-size; display: flex` shrank the hero board to 13 px and the pedals
-  spilled over the REVFX card. The player's wrapper is now `.rfx-hear-board-wrap`.
+  spilled over the REVFX card. The player's wrapper is now `.rfx-hear-board-wrap` (`ef5838f`).
+- Built (the die): hero's die + scene CRT + chain removed (`deck.ts` deleted, its CSS gone; the catch line stays).
+  Player step 4 ROLL IT (`.rfx-hear-top`: beside the LCD from 701 px, a strip under it up to 700). hear.ts: a roll =
+  one of the other 3 presets (the next one picked + loaded ahead), REVFX on, crossfade at the same loop spot, starts
+  playing when stopped; new track = random preset; LCD title = preset name, chain line = its order; the board takes
+  its order (FLIP) and lights its pedals; coach ROLL THE DICE after the A/B. Data: `src/data/revfx-presets.json` +
+  peaks.json `presets[]`, both from `tools/revfx-player/prep_audio.py` (now reads Yoni's preset .xml too).
+- Checks: build green; LCD lines fit 360-1440; click-through + 40 rolls 0 repeats (repo `tasks/todo.md` Review).
+- STATE: placeholders (16 scene names, /drift's bounces). Next: Yoni's 20 wav + 16 xml -> `prep_audio.py "<folder>"`,
+  listen to the swap, then his "push" for main (= live deploy). Open: photo die or keep the neon one.
 
 ## 2026-11-05 — /revfx before/after player: "Plug in. Stomp it." (Claude Code `revaudio-0d [61a467]`, Yoni's laptop 2) — branch `feat/revfx-hear`, worktree `../revaudio-website-rfxhear`
 

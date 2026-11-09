@@ -1,33 +1,87 @@
-"""RevFX #hear player (src/components/revfx/RfxHear.astro): the bounces -> level-matched, padded AAC + baked peaks.
+"""RevFX #hear player (src/components/revfx/RfxHear.astro): the bounces + Yoni's presets -> level-matched, padded AAC,
+baked peaks and the preset list the die rolls through.
 
   python tools/revfx-player/prep_audio.py "C:/path/to/revfx-bounces"     the real sounds
   python tools/revfx-player/prep_audio.py --placeholder                   stand-ins from /drift's bounces
 
-In (real):  <src>/<name> dry.wav + <name> revfx.wav for each track below (same length, same start; any sample rate).
-Out:        public/audio/revfx/<id>-before.m4a (dry), <id>-after.m4a (RevFX)   AAC 160k (house setting)
-            public/audio/revfx/peaks.json   per track: loop length, the trim applied, L/R peaks of both versions
+In (real), per track below (same length, same start; any sample rate):
+            <src>/<name> dry.wav            the dry bounce
+            <src>/<name> 1.wav .. 4.wav     the same bounce through RevFX preset 1..4
+            <src>/<name> 1.xml .. 4.xml     those presets, as RevFX saved them (%APPDATA%/RevAudio/RevFX/Presets/)
+Out:        public/audio/revfx/<id>-before.m4a (dry), <id>-p1.m4a .. <id>-p4.m4a (RevFX)   AAC 160k (house setting)
+            public/audio/revfx/peaks.json   per track: loop length, the trims, L/R peaks of every version
+            src/data/revfx-presets.json     per track: each preset's name, the pedals it uses, its chain order
+
+The die (src/lib/revfx/hear.ts) only ever plays these 4 per track: it looks random to the visitor, but every roll is
+a preset Yoni made (Yoni 2026-11-09: "only for the user its random").
 
 Same rules as tools/drift-player/prep_audio.py (the /drift player, kept in step on purpose):
-Level match (honest A/B): a louder file always sounds "better", so whichever side is LOUDER is turned DOWN to the
-other's integrated loudness (EBU R128). Down, never up: raising a file could push its peaks past 0 dBFS. RevFX can
-come back louder (glue makeup, reverb tail) or quieter, so unlike DRIFT either side may be the one trimmed.
+Level match (honest A/B): a louder file always sounds "better", so all five versions of a track come DOWN to the
+quietest one's integrated loudness (EBU R128). Down, never up: raising a file could push its peaks past 0 dBFS.
 Padding: AAC adds encoder delay, so every file is the loop + PAD seconds on both sides taken from the loop itself;
 the player loops the window [PAD, PAD + dur] and the seam never lands on a priming gap.
 
+Preset .xml -> the page (RevFX Source/PresetManager.cpp writes <RevFXPreset name=...><Param id= value=/>):
+  on    = BYP_<fx> is 0 and <fx>_MIX > 0 (PITCH also needs PITCH_ST or FORMANT_ST off 0: at 0 st it does nothing)
+  order = PITCH / ECHO / REVERB / HALO by their ORD_* slot, GLUE COMP before slot ORD_GLUE (4 = last), as
+          PluginProcessor.cpp's MODULAR FX CHAIN builds it
+
 --placeholder: copies /drift's finished files under RevFX's ids (vocal <- vocals, instruments <- keys, drums <- perc,
-lead <- synth) and marks peaks.json "placeholder": true. DRIFT, not RevFX, is what you hear: swap before launch.
+lead <- synth), every preset plays <id>-after.m4a, the preset names are the dice engine's scene names, and both
+JSON files say "placeholder": true. DRIFT, not RevFX, is what you hear: swap before launch.
 """
 import json, os, re, shutil, subprocess, sys
+import xml.etree.ElementTree as ET
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 OUT = os.path.join(ROOT, 'public', 'audio', 'revfx')
-SR, PAD, BINS = 48000, 0.25, 176
-TRACKS = [  # id, dry file, RevFX file (without .wav), the /drift stand-in
-    ('vocal', 'vocal dry', 'vocal revfx', 'vocals'),
-    ('instruments', 'instruments dry', 'instruments revfx', 'keys'),
-    ('drums', 'drums dry', 'drums revfx', 'perc'),
-    ('lead', 'lead dry', 'lead revfx', 'synth'),
+PRESETS = os.path.join(ROOT, 'src', 'data', 'revfx-presets.json')
+SR, PAD, BINS, N = 48000, 0.25, 176, 4
+TRACKS = [  # id, the bounce's file name stem, the /drift stand-in
+    ('vocal', 'vocal', 'vocals'),
+    ('instruments', 'instruments', 'keys'),
+    ('drums', 'drums', 'perc'),
+    ('lead', 'lead', 'synth'),
 ]
+# the page's pedal ids <- RevFX's parameter stems (HALO's order slot is still called ORD_TREM: it replaced TREMOLO)
+FX = {'pitch': ('PITCH', 'ORD_PITCH'), 'echo': ('DLY', 'ORD_ECHO'), 'reverb': ('VERB', 'ORD_VERB'), 'halo': ('HALO', 'ORD_TREM')}
+BYP = {'pitch': 'BYP_PITCH', 'echo': 'BYP_DLY', 'reverb': 'BYP_VERB', 'halo': 'BYP_HALO', 'glue': 'BYP_GLUE'}
+
+
+def read_preset(path):
+    root = ET.parse(path).getroot()
+    p = {e.get('id'): float(e.get('value')) for e in root.iter('Param')}
+    mix = {'pitch': 'PITCH_MIX', 'echo': 'DLY_MIX', 'reverb': 'VERB_MIX', 'halo': 'HALO_MIX', 'glue': 'GLUE_MIX'}
+    on = [fx for fx in BYP if p.get(BYP[fx], 0) < .5 and p.get(mix[fx], 0) > .001]
+    if 'pitch' in on and abs(p.get('PITCH_ST', 0)) < .01 and abs(p.get('FORMANT_ST', 0)) < .01:
+        on.remove('pitch')
+    four = sorted(FX, key=lambda fx: p.get(FX[fx][1], 0))
+    four.insert(min(4, max(0, round(p.get('ORD_GLUE', 4)))), 'glue')
+    return {'name': (root.get('name') or os.path.splitext(os.path.basename(path))[0]).strip().upper(),
+            'on': [fx for fx in four if fx in on], 'order': four}
+
+
+# stand-in presets: the plugin's own dice scene names (src/lib/drift/fxv/drift-randomizer.js), plausible pedals
+def _ph(name, on, order):
+    return {'name': name, 'on': [x for x in order if x in on], 'order': order}
+PLACEHOLDER_PRESETS = {
+    'vocal': [_ph('DOUBLE', 'pitch halo glue', ['halo', 'pitch', 'echo', 'reverb', 'glue']),
+              _ph('SPACE', 'echo reverb glue', ['glue', 'echo', 'reverb', 'pitch', 'halo']),
+              _ph('SLAPBACK', 'echo glue', ['echo', 'glue', 'pitch', 'halo', 'reverb']),
+              _ph('ANGEL WINGS', 'pitch halo reverb glue', ['pitch', 'halo', 'reverb', 'echo', 'glue'])],
+    'instruments': [_ph('SHEEN', 'halo reverb glue', ['halo', 'reverb', 'pitch', 'echo', 'glue']),
+                    _ph('WIDE PING', 'echo halo glue', ['echo', 'halo', 'glue', 'pitch', 'reverb']),
+                    _ph('DREAM', 'pitch echo reverb halo glue', ['pitch', 'echo', 'halo', 'reverb', 'glue']),
+                    _ph('VELVET', 'halo reverb glue', ['glue', 'halo', 'reverb', 'pitch', 'echo'])],
+    'drums': [_ph('BIG ROOM', 'reverb glue', ['glue', 'reverb', 'pitch', 'echo', 'halo']),
+              _ph('TRIPLET GROOVE', 'echo glue', ['echo', 'glue', 'pitch', 'halo', 'reverb']),
+              _ph('BROKEN MACHINE', 'pitch echo glue', ['pitch', 'echo', 'glue', 'halo', 'reverb']),
+              _ph('HAUNTED', 'pitch reverb glue', ['reverb', 'pitch', 'glue', 'echo', 'halo'])],
+    'lead': [_ph('NIGHT DRIVE', 'echo reverb halo glue', ['halo', 'echo', 'reverb', 'pitch', 'glue']),
+             _ph('OCTAVE', 'pitch glue', ['pitch', 'glue', 'echo', 'halo', 'reverb']),
+             _ph('SPACE WARP', 'pitch echo reverb glue', ['pitch', 'echo', 'reverb', 'glue', 'halo']),
+             _ph('ALIEN RADIO', 'pitch echo halo glue', ['echo', 'pitch', 'halo', 'glue', 'reverb'])],
+}
 
 
 def placeholder():
@@ -36,12 +90,14 @@ def placeholder():
         drift = json.load(f)
     os.makedirs(OUT, exist_ok=True)
     manifest = {'pad': drift['pad'], 'sr': drift['sr'], 'bins': drift['bins'], 'placeholder': True, 'tracks': {}}
-    for tid, _, _, stand in TRACKS:
+    for tid, _, stand in TRACKS:
         for v in ('before', 'after'):
             shutil.copyfile(os.path.join(src, f'{stand}-{v}.m4a'), os.path.join(OUT, f'{tid}-{v}.m4a'))
-        manifest['tracks'][tid] = drift['tracks'][stand]
+        t = drift['tracks'][stand]
+        manifest['tracks'][tid] = {'dur': t['dur'], 'trimDb': t.get('trimDb', 0), 'before': t['before'],
+                                   'presets': [{'file': f'{tid}-after', 'trimDb': 0, **t['after']} for _ in range(N)]}
         print(f'{tid:12s} <- drift/{stand}')
-    return manifest
+    return manifest, {'placeholder': True, 'tracks': PLACEHOLDER_PRESETS}
 
 
 def real(src):
@@ -73,28 +129,47 @@ def real(src):
 
     os.makedirs(OUT, exist_ok=True)
     manifest = {'pad': PAD, 'sr': SR, 'bins': BINS, 'tracks': {}}
-    for tid, dry, wet, _ in TRACKS:
-        fo, fw = os.path.join(src, dry + '.wav'), os.path.join(src, wet + '.wav')
-        a, b = read(fo), read(fw)
-        assert len(a) == len(b), f'{tid}: dry and RevFX lengths differ ({len(a)} vs {len(b)}): bounce both the same length'
-        d = lufs(fw) - lufs(fo)                      # > 0: RevFX is louder
-        trimB, trimA = min(-d, 0.0), min(d, 0.0)     # the louder one comes down; the other is untouched
-        b *= 10 ** (trimB / 20); a *= 10 ** (trimA / 20)
-        write(a, f'{tid}-before.m4a'); write(b, f'{tid}-after.m4a')
-        manifest['tracks'][tid] = {'dur': len(a) / SR, 'trimDb': round(trimA, 2), 'trimAfterDb': round(trimB, 2),
-                                   'before': peaks(a), 'after': peaks(b)}
-        print(f'{tid:12s} {len(a)/SR:6.2f}s  dry {trimA:+.1f} dB  revfx {trimB:+.1f} dB  '
-              f'peaks dry {20*np.log10(np.abs(a).max()):+.1f} revfx {20*np.log10(np.abs(b).max()):+.1f} dBFS')
-    return manifest
+    presets = {'tracks': {}}
+    for tid, stem, _ in TRACKS:
+        paths = [os.path.join(src, f'{stem} dry.wav')] + [os.path.join(src, f'{stem} {k}.wav') for k in range(1, N + 1)]
+        xmls = [os.path.join(src, f'{stem} {k}.xml') for k in range(1, N + 1)]
+        missing = [p for p in paths + xmls if not os.path.isfile(p)]
+        assert not missing, f'{tid}: missing ' + ', '.join(os.path.basename(p) for p in missing)
+        audio = [read(p) for p in paths]
+        assert len({len(a) for a in audio}) == 1, f'{tid}: the 5 bounces differ in length ({[len(a) for a in audio]}): bounce all the same length'
+        loud = [lufs(p) for p in paths]
+        target = min(loud)                                     # all five come down to the quietest
+        trims = [target - l for l in loud]
+        for a, t in zip(audio, trims):
+            a *= 10 ** (t / 20)
+        write(audio[0], f'{tid}-before.m4a')
+        for k in range(1, N + 1):
+            write(audio[k], f'{tid}-p{k}.m4a')
+        manifest['tracks'][tid] = {'dur': len(audio[0]) / SR, 'trimDb': round(trims[0], 2), 'before': peaks(audio[0]),
+                                   'presets': [{'file': f'{tid}-p{k}', 'trimDb': round(trims[k], 2), **peaks(audio[k])}
+                                               for k in range(1, N + 1)]}
+        presets['tracks'][tid] = [read_preset(x) for x in xmls]
+        print(f'{tid:12s} {len(audio[0])/SR:6.2f}s  {target:.1f} LUFS  trims ' + ' '.join(f'{t:+.1f}' for t in trims)
+              + '  peaks ' + ' '.join(f'{20*np.log10(max(np.abs(a).max(), 1e-9)):+.1f}' for a in audio) + ' dBFS')
+        for p in presets['tracks'][tid]:
+            print(f'{"":12s} {p["name"]:20s} {" > ".join(x.upper() for x in p["order"])}   on: {" ".join(p["on"]) or "none"}')
+    return manifest, presets
 
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
         sys.exit(__doc__)
-    manifest = placeholder() if sys.argv[1] == '--placeholder' else real(sys.argv[1])
+    manifest, presets = placeholder() if sys.argv[1] == '--placeholder' else real(sys.argv[1])
     with open(os.path.join(OUT, 'peaks.json'), 'w') as f:
         json.dump(manifest, f, separators=(',', ':'))
+    with open(PRESETS, 'w') as f:
+        json.dump(presets, f, indent=1)
+    if not manifest.get('placeholder'):   # the stand-ins' after files go once the real presets are in
+        for tid, _, _ in TRACKS:
+            old = os.path.join(OUT, f'{tid}-after.m4a')
+            if os.path.isfile(old):
+                os.remove(old)
     files = [x for x in os.listdir(OUT) if x.endswith('.m4a')]
     size = sum(os.path.getsize(os.path.join(OUT, x)) for x in files)
-    print(f'wrote {OUT}: {len(files)} m4a {size/1e6:.1f} MB + peaks.json'
+    print(f'wrote {OUT}: {len(files)} m4a {size/1e6:.1f} MB + peaks.json, {PRESETS}'
           f'{" (PLACEHOLDER: /drift sounds)" if manifest.get("placeholder") else ""}')

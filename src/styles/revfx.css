@@ -91,11 +91,6 @@
 }
 .rfx-board[data-live="on"] .rfx-ped img { animation-play-state: running; }
 @keyframes rfx-bob { 50% { translate: 0 -5px; } }
-/* a pedal the dice sat out (deck.ts): the plugin's bypass look, its lamp pool off */
-.rfx-peds > li .rfx-ped-pool, .rfx-peds > li .rfx-ped-name { transition: opacity 400ms ease, filter 400ms ease; }
-.rfx-peds > li.is-off .rfx-ped img { filter: saturate(.15) brightness(.42) drop-shadow(0 18px 18px rgba(0, 0, 0, .7)); }
-.rfx-peds > li.is-off .rfx-ped-pool { opacity: .08 !important; animation: none !important; }
-.rfx-peds > li.is-off .rfx-ped-name { opacity: .35; filter: saturate(.2); }
 .rfx-ped:hover img, .rfx-ped:focus-visible img { transform: translateY(-14px) scale(1.04); filter: drop-shadow(0 26px 22px rgba(0, 0, 0, .7)) drop-shadow(0 0 18px rgba(var(--rgb), .55)); }
 /* the lamp pool on the floor under each pedal: lights when it lands */
 .rfx-ped-pool {
@@ -235,7 +230,8 @@
 @keyframes rfx-hear-next { 0%, 100% { box-shadow: 0 0 0 2px rgba(var(--d-neon-rgb), .2); } 50% { box-shadow: 0 0 0 2px var(--d-neon), 0 0 22px rgba(var(--d-neon-rgb), .85); } }
 [data-rfx-hear]:not([data-next='']) .rfx-hear-n { background: rgba(var(--d-neon-rgb), .4); box-shadow: none; }
 [data-rfx-hear][data-next='play'] [data-step='2'] .rfx-hear-n,
-[data-rfx-hear]:is([data-next='stomp'], [data-next='back']) [data-step='3'] .rfx-hear-n { background: var(--d-neon); animation: rfx-hear-next 1.2s ease-in-out infinite; }
+[data-rfx-hear]:is([data-next='stomp'], [data-next='back']) [data-step='3'] .rfx-hear-n,
+[data-rfx-hear][data-next='roll'] [data-step='4'] .rfx-hear-n { background: var(--d-neon); animation: rfx-hear-next 1.2s ease-in-out infinite; }
 [data-rfx-hear][data-next='play'] .rfx-hear-play { animation: rfx-hear-next 1.2s ease-in-out infinite; border-radius: 50%; }
 
 /* ---- 1 · PLUG IN: the patchbay, a burnt titanium plate like every section (.rfx-plate: plate-t on laptops, plate-w on
@@ -330,6 +326,48 @@
 .rfx-scr-wave { position: relative; z-index: 1; height: clamp(48px, 4.4vw, 60px); }
 .rfx-scr-wave canvas { display: block; width: 100%; height: 100%; }
 
+/* ---- the top row: the screen, and 4 ROLL IT beside it (the die sits next to the screen it changes) */
+.rfx-hear-top { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; }
+.rfx-hear-step--roll { --s: 62px; width: 150px; }
+/* the die (the hero's neon die, moved here 2026-11-09): it rests ON the plate (no idle bob: nothing moves just to be
+   alive), its contact shadow down-right of it (the panel's one top-left light); a roll throws it up and it lands */
+.rfx-die-btn {
+  position: relative; flex: 1; display: grid; place-items: center; min-height: calc(var(--s) * 1.3); padding: 0;
+  border: 0; border-radius: 10px; background: none; cursor: pointer; perspective: 500px;
+}
+.rfx-die {
+  --rx: -22deg; --ry: 32deg;
+  position: relative; display: block; width: var(--s); height: var(--s); transform-style: preserve-3d;
+  transform: rotateX(var(--rx)) rotateY(var(--ry)); transition: transform 1100ms cubic-bezier(.17, .84, .26, 1.02);
+}
+.rfx-die-shadow {
+  position: absolute; left: 50%; top: 50%; width: calc(var(--s) * 1.2); height: calc(var(--s) * .36); pointer-events: none;
+  translate: calc(-50% + 7px) calc(var(--s) * .42); border-radius: 50%; background: radial-gradient(closest-side, rgba(0, 0, 0, .78), rgba(0, 0, 0, 0));
+}
+.rfx-die-btn.is-thrown .rfx-die { animation: rfx-throw 1100ms cubic-bezier(.2, .7, .3, 1) both; }
+.rfx-die-btn.is-thrown .rfx-die-shadow { animation: rfx-throw-sh 1100ms cubic-bezier(.2, .7, .3, 1) both; }
+@keyframes rfx-throw { 0% { translate: 0 0; } 30% { translate: 0 calc(var(--s) * -.6); } 62% { translate: 0 1px; } 76% { translate: 0 calc(var(--s) * -.12); } 100% { translate: 0 0; } }
+@keyframes rfx-throw-sh { 30% { scale: .5; opacity: .3; } 62% { scale: 1; opacity: 1; } 76% { scale: .85; opacity: .8; } }
+.rfx-die-f {
+  position: absolute; inset: 0; display: grid; grid-template: repeat(3, 1fr) / repeat(3, 1fr); padding: 14%; gap: 4%;
+  border-radius: 18%; backface-visibility: hidden;
+  background: radial-gradient(circle at 30% 25%, #2b1238, #12061a 75%);
+  box-shadow: inset 0 0 0 2px rgba(255, 95, 216, .85), inset 0 0 14px rgba(255, 95, 216, .35), 0 0 12px rgba(255, 95, 216, .3);
+}
+.rfx-die-f i { border-radius: 50%; }
+.rfx-die-f i.on { background: #ffd6f6; box-shadow: 0 0 6px #ff5fd8, 0 0 2px #fff; }
+.rfx-die-f.f1 { transform: translateZ(calc(var(--s) / 2)); }
+.rfx-die-f.f6 { transform: rotateY(180deg) translateZ(calc(var(--s) / 2)); }
+.rfx-die-f.f2 { transform: rotateY(90deg) translateZ(calc(var(--s) / 2)); }
+.rfx-die-f.f5 { transform: rotateY(-90deg) translateZ(calc(var(--s) / 2)); }
+.rfx-die-f.f3 { transform: rotateX(90deg) translateZ(calc(var(--s) / 2)); }
+.rfx-die-f.f4 { transform: rotateX(-90deg) translateZ(calc(var(--s) / 2)); }
+@media (hover: hover) { .rfx-die-btn:hover .rfx-die { --rx: -32deg; } }
+.rfx-die-btn:focus-visible { outline: 3px solid var(--d-pink-ink); outline-offset: 2px; }
+/* the guide: when ROLL IT is next, the pips breathe from inside (the die is the lamp, no ring painted round it) */
+@keyframes rfx-pip-next { 50% { background: #fff; box-shadow: 0 0 12px #ff5fd8, 0 0 22px rgba(255, 95, 216, .8), 0 0 2px #fff; } }
+[data-rfx-hear][data-next='roll'] .rfx-die-f i.on { animation: rfx-pip-next 1.2s ease-in-out infinite; }
+
 /* ---- the rig: 2 PLAY · 3 STOMP (the board) · VOLUME, each in a shallow well cut into the tolex */
 .rfx-hear-rig { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; flex: 1; }
 .rfx-hear-step, .rfx-hear-vol { display: flex; flex-direction: column; gap: 9px; padding: 0 4px 2px; }
@@ -423,6 +461,8 @@
   border-radius: 50%; pointer-events: none; background: radial-gradient(closest-side, rgba(0, 0, 0, .8), transparent); }
 .rfx-patch { position: absolute; z-index: 1; left: 62%; top: calc(var(--mid) - 5px); width: calc(var(--pm) * .76 + var(--pg)); height: auto; pointer-events: none;
   filter: drop-shadow(2px 3px 2px rgba(0, 0, 0, .8)); }
+/* every pedal carries its cable to the next; the last one in the chain (a preset reorders the board) has none */
+.rfx-peds-mini > li:last-child .rfx-patch { display: none; }
 .rfx-pm-pool { position: absolute; left: -45%; right: -45%; top: 55%; height: 40%; border-radius: 50%; z-index: 0; pointer-events: none;
   background: radial-gradient(closest-side, rgba(var(--rgb), .6), rgba(var(--rgb), .12) 60%, transparent); filter: blur(5px); opacity: 0; transition: opacity .3s ease; }
 .rfx-pm-nm { font: 600 clamp(8px, .75vw, 10px)/1 var(--d-f-head); letter-spacing: .07em; text-transform: uppercase; white-space: nowrap; color: rgba(225, 214, 240, .38); transition: color .2s ease, text-shadow .2s ease; }
@@ -446,6 +486,7 @@
 
 /* ---- narrow laptops: a smaller switch + caps leave the five their room */
 @media (min-width: 1024px) and (max-width: 1240px) {
+  .rfx-hear-step--roll { --s: 54px; width: 128px; }
   .rfx-hear-board { --fix: 28px; --pgk: .5; }
   #rfx-hear .rfx-start { --k: .44; }
   .rfx-hear-stomprow { gap: 10px; }
@@ -472,6 +513,13 @@
   .rfx-jack-nm { font-size: 13px; letter-spacing: .04em; }
   .rfx-jack-plug { width: var(--ph); -webkit-mask: none; mask: none; overflow: hidden; }   /* the head only: no room for the cable */
 }
+/* ---- under 700 px the LCD's lines no longer fit beside ROLL IT (PUSH AGAIN: BYPASS needs 182 px at 610): ROLL IT
+   becomes a strip under the screen, the die on the right */
+@media (max-width: 700px) {
+  .rfx-hear-top { grid-template-columns: minmax(0, 1fr); }
+  .rfx-hear-step--roll { --s: 44px; --plate: var(--rfx-plate-w); --slice: 94; width: auto; flex-direction: row; align-items: center; justify-content: space-between; padding: 0 6px; }
+  .rfx-hear-step--roll .rfx-die-btn { flex: none; width: calc(var(--s) * 2.2); min-height: calc(var(--s) * 1.5); }
+}
 /* ---- phones */
 @media (max-width: 600px) {
   .rfx-hear-panel { padding: 20px 18px; }
@@ -490,6 +538,8 @@
   .rfx-scr-row { justify-content: flex-end; }
   .rfx-hear-rig { gap: 6px; }
   .rfx-hear-deck { gap: 8px; }
+  .rfx-hear-top { gap: 6px; }
+  .rfx-hear-step--roll { --s: 36px; }
   .rfx-plate { --rail: 12px; }
   #rfx-hear .rfx-start { --k: .42; }
   .rfx-hear-stomprow { gap: 8px; }
@@ -670,81 +720,6 @@ html.hc .rfx-hear-sec :is(.rfx-pm-nm, .rfx-hear-ab i, .rfx-scr-title) { text-sha
 }
 
 /* --------------------------------------------------------------------------
-   THE DICE DECK (in the hero since 2026-10-19; the #rack, #scenes and #drift sections went)
-   -------------------------------------------------------------------------- */
-/* the deck: the die + the scene CRT, under the hero's catch line */
-.rfx-deck { display: grid; gap: 22px; align-items: center; margin-top: clamp(26px, 3vw, 40px); }
-.rfx-hero .rfx-deck { order: 7; width: min(100%, 1040px); align-self: center; margin-top: 0; }   /* after the catch line at every width (drift.css orders the hero's parts below 1100 px: trial 4, catch 6) */
-@media (min-width: 760px) { .rfx-deck { grid-template-columns: auto minmax(0, 1fr); gap: 34px; } }
-.rfx-die-btn {
-  --s: clamp(78px, 8vw, 104px);
-  justify-self: center; display: grid; justify-items: center; gap: 16px; padding: 14px 18px 10px; border: 0; background: none; cursor: pointer;
-  perspective: 600px;
-}
-.rfx-die {
-  --rx: -22deg; --ry: 32deg;
-  position: relative; display: block; width: var(--s); height: var(--s); transform-style: preserve-3d;
-  transform: rotateX(var(--rx)) rotateY(var(--ry)); transition: transform 1100ms cubic-bezier(.17, .84, .26, 1.02);
-  animation: rfx-idle 6s ease-in-out infinite;
-}
-.rfx-die-btn.is-thrown .rfx-die { animation: rfx-throw 1100ms cubic-bezier(.2, .7, .3, 1) both; }
-@keyframes rfx-idle { 50% { translate: 0 -6px; } }
-@keyframes rfx-throw { 0% { translate: 0 0; } 30% { translate: 0 -46px; } 62% { translate: 0 2px; } 76% { translate: 0 -10px; } 100% { translate: 0 0; } }
-.rfx-die-f {
-  position: absolute; inset: 0; display: grid; grid-template: repeat(3, 1fr) / repeat(3, 1fr); padding: 14%; gap: 4%;
-  border-radius: 18%; backface-visibility: hidden;
-  background: radial-gradient(circle at 30% 25%, #2b1238, #12061a 75%);
-  box-shadow: inset 0 0 0 2px rgba(255, 95, 216, .85), inset 0 0 18px rgba(255, 95, 216, .35), 0 0 16px rgba(255, 95, 216, .35);
-}
-.rfx-die-f i { border-radius: 50%; }
-.rfx-die-f i.on { background: #ffd6f6; box-shadow: 0 0 8px #ff5fd8, 0 0 2px #fff; }
-.rfx-die-f.f1 { transform: translateZ(calc(var(--s) / 2)); }
-.rfx-die-f.f6 { transform: rotateY(180deg) translateZ(calc(var(--s) / 2)); }
-.rfx-die-f.f2 { transform: rotateY(90deg) translateZ(calc(var(--s) / 2)); }
-.rfx-die-f.f5 { transform: rotateY(-90deg) translateZ(calc(var(--s) / 2)); }
-.rfx-die-f.f3 { transform: rotateX(90deg) translateZ(calc(var(--s) / 2)); }
-.rfx-die-f.f4 { transform: rotateX(-90deg) translateZ(calc(var(--s) / 2)); }
-.rfx-die-txt { font: 400 clamp(22px, 2.2vw, 28px)/1 var(--d-f-chip); letter-spacing: .06em; color: #ffd23b; text-shadow: 2px 2px 0 #7a1e5c, 0 0 14px rgba(255, 210, 59, .45); transform: rotate(-4deg); transition: transform 160ms cubic-bezier(.2, .9, .25, 1.25); }
-.rfx-die-btn:hover .rfx-die-txt { transform: rotate(-4deg) scale(1.08); }
-.rfx-die-btn:hover .rfx-die { --rx: -32deg; }
-.rfx-die-btn:focus-visible { outline: 3px solid var(--d-pink-ink); outline-offset: 4px; border-radius: 12px; }
-
-.rfx-crt {
-  position: relative; overflow: hidden; padding: 20px clamp(18px, 2.4vw, 30px) 18px; border-radius: 16px;
-  background: radial-gradient(120% 140% at 50% 0%, #2a0d36, #12051a 70%);
-  box-shadow: 0 0 0 1px #000, 0 0 0 7px #0b0711, 0 0 0 8px rgba(255, 240, 255, .06), inset 0 0 40px rgba(0, 0, 0, .65), 0 0 40px rgba(190, 90, 255, .14);
-}
-.rfx-crt::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(0, 0, 0, .22) 0 1px, transparent 1px 3px); }
-.rfx-crt.is-hit { animation: rfx-crt-hit 380ms steps(2, end); }
-@keyframes rfx-crt-hit { 0% { filter: brightness(2) saturate(.3); } 40% { filter: brightness(.6) hue-rotate(40deg); transform: translateX(3px) skewX(-2deg); } 100% { filter: none; transform: none; } }
-.rfx-crt-top { display: flex; justify-content: space-between; gap: 12px; font: 400 9px/1 var(--d-f-pix); letter-spacing: .1em; color: rgba(231, 184, 255, .6); }
-.rfx-crt-x { color: #ffa630; text-shadow: 0 0 8px rgba(255, 166, 48, .9); animation: rfx-blink 900ms steps(2, start) infinite; }
-@keyframes rfx-blink { 50% { opacity: .2; } }
-.drift-page .rfx-crt-name {
-  margin: 12px 0 8px; min-height: 1.1em; font: 400 clamp(20px, 2.6vw, 34px)/1.1 var(--d-f-pix); letter-spacing: .02em; color: #fff2fc;
-  text-shadow: 0 0 10px rgba(255, 95, 216, .9), 0 0 30px rgba(255, 95, 216, .45); word-break: break-word;
-}
-.rfx-crt.is-x .rfx-crt-name { color: #ffe1b5; text-shadow: 0 0 10px rgba(255, 166, 48, .95), 0 0 30px rgba(255, 166, 48, .45); }
-.rfx-crt-blurb { min-height: 1.4em; font: 400 clamp(18px, 1.6vw, 22px)/1.3 var(--d-f-lcd); color: var(--d-crt); letter-spacing: .02em; }
-/* the signal chain, IN -> OUT */
-.rfx-chain { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 0; margin: 18px 0 0; padding: 0; list-style: none; position: relative; z-index: 1; }
-.rfx-chain > li { position: relative; display: flex; align-items: center; }
-.rfx-chain > li + li::before { content: ''; width: clamp(10px, 1.6vw, 22px); height: 2px; background: linear-gradient(90deg, rgba(255, 95, 216, .25), rgba(255, 95, 216, .9)); box-shadow: 0 0 6px rgba(255, 95, 216, .6); }
-.rfx-chain-io { font: 400 9px/1 var(--d-f-pix); color: var(--d-pink-ink); padding: 7px 7px; border-radius: 4px; box-shadow: inset 0 0 0 1px rgba(var(--d-neon-rgb), .5); }
-.rfx-chain-fx > span:first-of-type {
-  padding: 7px 11px 6px; border-radius: 4px; font: 700 13px/1 var(--d-f-head); text-transform: uppercase; letter-spacing: .05em; color: var(--ink);
-  background: rgba(var(--rgb), .1); box-shadow: inset 0 0 0 1px rgba(var(--rgb), .6), 0 0 12px rgba(var(--rgb), .25); transition: opacity 300ms ease, filter 300ms ease;
-}
-.rfx-chain-fx.is-off > span:first-of-type { opacity: .38; filter: saturate(.2); box-shadow: inset 0 0 0 1px rgba(var(--rgb), .25); text-decoration: line-through; text-decoration-thickness: 1px; }
-.rfx-chain-mv { display: inline-flex; margin-left: 2px; }
-.rfx-chain-mv button { width: 20px; height: 26px; padding: 0; border: 0; border-radius: 3px; background: rgba(255, 255, 255, .04); color: var(--d-fg-dim); font: 700 15px/1 var(--d-f-head); cursor: pointer; }
-.rfx-chain-mv button:hover { color: var(--d-white-ink); background: rgba(var(--rgb), .2); }
-@media (hover: hover) and (min-width: 601px) {
-  .rfx-chain-mv { position: absolute; left: 50%; top: 100%; translate: -50% 2px; opacity: 0; transition: opacity 160ms ease; }
-  .rfx-chain-fx:hover .rfx-chain-mv, .rfx-chain-fx:focus-within .rfx-chain-mv { opacity: 1; }
-  .rfx-chain { padding-bottom: 26px; }
-}
-/* --------------------------------------------------------------------------
    #get + the phone sticky bar
    -------------------------------------------------------------------------- */
 .rfx-stamp--stack { gap: 12px; }
@@ -778,4 +753,4 @@ html.hc .rfx-hear-sec :is(.rfx-pm-nm, .rfx-hear-ab i, .rfx-scr-title) { text-sha
   .rfx-title span, .rfx-ped img, .rfx-die, .rfx-pd.is-on .rfx-pd-name { animation: none !important; }
   .rfx-pd .rfx-pd-ped, .rfx-pd .rfx-pd-body > *, .rfx-die { transition: none !important; }
 }
-html.hc .rfx-page .rfx-pd-name, html.hc .rfx-page .rfx-crt-name { text-shadow: none; }
+html.hc .rfx-page .rfx-pd-name { text-shadow: none; }

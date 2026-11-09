@@ -13,17 +13,20 @@
  *               joined by patch cables (OUT and the TRUE BYPASS loop went, Yoni 2026-11-05: "no need").
  *               Bypassed, the pedals sit dark; pushed, they light in chain order in their own lamp colours
  *               (revfx.ts ink / rgb), the tube strikes and the screen's waveform wears the five colours.
+ *   4 ROLL IT   the die (moved down from the hero, Yoni 2026-11-09), beside the screen: a roll plays one of the
+ *               track's 4 presets Yoni made (random for the visitor), REVFX on, at the same spot in the loop; the
+ *               screen shows its name, the board takes its order and lights the pedals it uses.
  *
  * Assets (src/assets/seasons/revfx/hear/, OpenAI 2026-11-05, tools/revfx-player/ASSETS.md): panel-wide / -tall.jpg (the
  * tolex flight case, laptop / phone), board-wide / -mid.jpg (pedalboard
  * carpet + rails), plate-w / -s / -t.jpg (every section's plate: burnt titanium with the patchbay plate's wear and
  * corner screws, 2:1 / 1:1 / 1:2, Yoni 2026-11-05: "the effect ... when titanium is burned", "the wear should be like
- * the left panel"), jack / plug / patch .png (true-alpha cutouts). The fader is /drift's (hear/fader-*.webp). A track lights only the pedals its bounce
- * used (revfx.ts hearTracks.on).
+ * the left panel"), jack / plug / patch .png (true-alpha cutouts). The fader is /drift's (hear/fader-*.webp).
  *
- * The sounds: public/audio/revfx/<id>-before.m4a (dry, level-matched) + <id>-after.m4a (RevFX) + peaks.json,
- * made by tools/revfx-player/prep_audio.py. PLACEHOLDERS today (/drift's bounces under RevFX's names).
- * Engine: src/lib/revfx/hear.ts (both versions run in sync; the flip is a 12 ms crossfade).
+ * The sounds: public/audio/revfx/<id>-before.m4a (dry) + <id>-p1..p4.m4a (the 4 presets), all level-matched, +
+ * peaks.json; the presets' names / pedals / order in src/data/revfx-presets.json. Both made by
+ * tools/revfx-player/prep_audio.py. PLACEHOLDERS today (/drift's bounces, the dice engine's scene names).
+ * Engine: src/lib/revfx/hear.ts (dry and RevFX run in sync; the flip and a roll are 12 ms crossfades).
  */
 import { readFileSync } from 'node:fs';
 import { getImage } from 'astro:assets';
@@ -47,7 +50,7 @@ import patchSrc from '../../assets/seasons/revfx/hear/patch.png';
 import plateWSrc from '../../assets/seasons/revfx/hear/plate-pedal-v2-w.jpg';
 import plateSSrc from '../../assets/seasons/revfx/hear/plate-pedal-v2-s.jpg';
 import plateTSrc from '../../assets/seasons/revfx/hear/plate-pedal-v2-t.jpg';
-import { pedals, hearTracks } from '../../data/revfx';
+import { pedals, hearTracks, hearPresets } from '../../data/revfx';
 
 type Peaks = { dur: number };
 const peaks = JSON.parse(readFileSync('public/audio/revfx/peaks.json', 'utf8')) as { tracks: Record<string, Peaks> };
@@ -72,11 +75,14 @@ const vars = [`--rfx-panel-w:${u(panelW)}`, `--rfx-panel-t:${u(panelT)}`,
   `--rfx-board-w:${u(boardW)}`, `--rfx-board-m:${u(boardM)}`, `--rfx-plate-w:${u(plateW)}`, `--rfx-plate-s:${u(plateS)}`, `--rfx-plate-t:${u(plateT)}`, `--rfx-fad-cap:${u(fadCap)}`, `--rfx-fad-plate:${u(fadPlate)}`].join(';');
 
 const first = hearTracks[0];
+// the die's six faces: pips on a 3x3 grid (index 0-8)
+const PIPS = [[4], [0, 8], [0, 4, 8], [0, 2, 6, 8], [0, 2, 4, 6, 8], [0, 2, 3, 5, 6, 8]];
+const firstPreset = hearPresets[first.id][0].name;
 const clock0 = `00:00 / ${fmt(peaks.tracks[first.id].dur)}`;
 const chainTxt = 'TRUE BYPASS';
 ---
 <section class="rfx-sec rfx-hear-sec" id="rfx-hear" aria-labelledby="rfx-hear-h" style={vars}
-  data-rfx-hear data-next="play" data-ab="before" data-inks={JSON.stringify(board.map(({ p }) => p.ink))}>
+  data-rfx-hear data-next="play" data-ab="before">
   <div class="d-wrap">
     <div class="rfx-hear-head">
       <h2 id="rfx-hear-h" class="d-headline d-headline--row"><span class="l1">Plug in.</span> <span class="l2">Push it.</span></h2>
@@ -93,7 +99,7 @@ const chainTxt = 'TRUE BYPASS';
           <ul class="rfx-jacks" role="list">
             {hearTracks.map((t, i) => (
               <li>
-                <button class="rfx-jack" type="button" data-hear-track={t.id} data-name={t.label} data-on={t.on.join(' ')}
+                <button class="rfx-jack" type="button" data-hear-track={t.id} data-name={t.label}
                   aria-pressed={i === 0 ? 'true' : 'false'} aria-label={`${t.label.toLowerCase()} track`}>
                   <span class="rfx-jack-txt">
                     <span class="rfx-jack-no" aria-hidden="true">IN {i + 1}</span>
@@ -110,6 +116,7 @@ const chainTxt = 'TRUE BYPASS';
         </div>
 
         <div class="rfx-hear-deck">
+          <div class="rfx-hear-top">
           <!-- the screen: a segment LCD (DSEG14, /drift's #hear face) in its titanium plate. data-g = each readout's unlit
                segments -->
           <div class="rfx-plate rfx-plate--scr">
@@ -118,7 +125,7 @@ const chainTxt = 'TRUE BYPASS';
               <span class="rfx-scr-coach" data-hear-state aria-live="polite" data-g={ghost('PRESS PLAY')}>PRESS PLAY</span>
               <span class="rfx-scr-tag" data-hear-tag>BYPASS</span>
             </div>
-            <div class="rfx-scr-title" data-hear-title data-g={ghost(first.label)}>{first.label}</div>
+            <div class="rfx-scr-title" data-hear-title data-g={ghost(firstPreset)}>{firstPreset}</div>
             <div class="rfx-scr-wave"><canvas data-hear-wave aria-hidden="true"></canvas></div>
             <div class="rfx-scr-row">
               <span class="rfx-scr-t" data-hear-chain data-g={ghost(chainTxt)}>{chainTxt}</span>
@@ -126,6 +133,19 @@ const chainTxt = 'TRUE BYPASS';
             </div>
           </div>
           </div>
+
+          <!-- 4 · roll it: the die (the hero's, moved here 2026-11-09) on its own plate beside the screen it changes -->
+          <div class="rfx-plate rfx-plate--sq rfx-hear-step rfx-hear-step--roll" data-step="4">
+            <p class="rfx-hear-cap"><b class="rfx-hear-n">4</b>ROLL IT</p>
+            <button type="button" class="rfx-die-btn" data-hear-die aria-label="Roll the dice: a random RevFX preset">
+              <span class="rfx-die-shadow" aria-hidden="true"></span>
+              <span class="rfx-die" data-hear-cube aria-hidden="true">
+                {PIPS.map((f, i) => <span class={`rfx-die-f f${i + 1}`}>{Array.from({ length: 9 }, (_, k) => <i class={f.includes(k) ? 'on' : ''}></i>)}</span>)}
+              </span>
+            </button>
+          </div>
+          </div>
+          <p class="d-sr" aria-live="polite" data-hear-say></p>
 
           <div class="rfx-hear-rig">
             <!-- 2 · play: /drift's arcade caps, each seated in a chrome bezel in a hole bored through the plate -->
@@ -163,7 +183,7 @@ const chainTxt = 'TRUE BYPASS';
                 <ol class="rfx-peds-mini" aria-hidden="true">
                   {board.map(({ p, img }, i) => (
                     <li data-fx={p.id} style={`--i:${i};--rgb:${p.rgb};--ink:${p.ink}`}>
-                      {i < board.length - 1 && <img class="rfx-patch" src={patch.src} width="320" height="66" alt="" decoding="async" />}
+                      <img class="rfx-patch" src={patch.src} width="320" height="66" alt="" decoding="async" />
                       <span class="rfx-pm-pool"></span>
                       <img class="rfx-pm-ped" src={img.src} width="528" height="954" alt="" loading="lazy" decoding="async" />
                       <span class="rfx-pm-nm">{p.name}</span>

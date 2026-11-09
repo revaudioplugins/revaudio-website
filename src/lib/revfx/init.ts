@@ -3,7 +3,6 @@ import { initCaptures } from '../drift/capture';
 import { lenis } from '../motion';
 import { initHero } from './hero';
 import { initPedals } from './pedals';
-import { initDeck } from './deck';
 import { initHear } from './hear';
 
 export function initRevfx(): void {
@@ -11,7 +10,6 @@ export function initRevfx(): void {
   initCaptures();
   const pedals = initPedals();
   initHero((i) => pedals?.goTo(i));
-  initDeck();
   initHear();
   initJumps();
   initSticky();

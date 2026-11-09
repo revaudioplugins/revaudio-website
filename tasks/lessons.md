@@ -325,3 +325,13 @@ cutting the viewport to the keyboard's leftover (`setViewportSize`), at every ph
   hero pedalboard, so the player's board rules (flex, padding, a background photo) landed on the hero too, and a
   `querySelector('.rfx-board')` check measured the wrong element. Prefix every class with the section
   (`.rfx-hear-*`) and grep the page CSS + components for each new name before using it.
+
+## 2026-11-09 - a new section never reuses another section's class name
+
+The /revfx player (#rfx-hear) named its board wrapper `.rfx-board-wrap`, the hero's class. The player's
+`container-type: inline-size; display: flex` then applied to the hero too and shrank the hero board to 13 px: the
+pedals spilled over the REVFX title plate (Yoni: "you misplaced the pedals in the top there overlapping").
+
+Rule: a new section's classes carry the section's own prefix (`.rfx-hear-*`). Before adding a class, grep the page's
+stylesheet and components for it. After any CSS change on a page with several sections, screenshot the whole page
+against the live one, not only the section you changed.

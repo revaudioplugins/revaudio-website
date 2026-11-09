@@ -15,6 +15,7 @@
  *     shows the buy key next to the trial (the build refuses 'released' without them).
  */
 import { site } from './site';
+import presetsJson from './revfx-presets.json';
 
 export type RevfxPhase = 'trial' | 'released';
 
@@ -84,17 +85,18 @@ export const pedals = [
 
 export type PedalId = (typeof pedals)[number]['id'];
 
-/** #hear, the before/after player (RfxHear.astro): one dry + one RevFX bounce per track in public/audio/revfx/
- *  (tools/revfx-player/prep_audio.py). Until Yoni's bounces land, the files are /drift's sounds as stand-ins
- *  (peaks.json "placeholder": true; the page shows nothing different, so swap them before RevFX is listed).
- *  on = the pedals that bounce used: only those light on the player's board when RevFX is stomped on (all five
- *  until the real bounces say otherwise). */
-const ALL: readonly PedalId[] = ['pitch', 'echo', 'halo', 'reverb', 'glue'];
-export const hearTracks: readonly { id: string; label: string; on: readonly PedalId[] }[] = [
-  { id: 'vocal', label: 'VOCAL', on: ALL },
-  { id: 'instruments', label: 'INSTRUMENTS', on: ALL },
-  { id: 'drums', label: 'DRUMS', on: ALL },
-  { id: 'lead', label: 'LEAD', on: ALL },
+/** #hear, the before/after player (RfxHear.astro): per track one dry bounce + the same bounce through 4 RevFX presets
+ *  Yoni made, in public/audio/revfx/ (tools/revfx-player/prep_audio.py, which also writes revfx-presets.json from his
+ *  preset .xml files). The die picks one of the 4 at random: random for the visitor, every roll a preset Yoni chose
+ *  (Yoni 2026-11-09). Until his bounces land, the sounds are /drift's and the names the dice engine's scenes
+ *  (both JSON files "placeholder": true; the page shows nothing different, so swap them before RevFX is listed). */
+export type HearPreset = { name: string; on: PedalId[]; order: PedalId[] };
+export const hearPresets = presetsJson.tracks as Record<string, HearPreset[]>;
+export const hearTracks: readonly { id: string; label: string }[] = [
+  { id: 'vocal', label: 'VOCAL' },
+  { id: 'instruments', label: 'INSTRUMENTS' },
+  { id: 'drums', label: 'DRUMS' },
+  { id: 'lead', label: 'LEAD' },
 ];
 
 /** Where the sign-up forms post: the worker's /download/register once it knows RevFX, else undefined (the
