@@ -161,9 +161,24 @@ Files: `src/components/WordWall.astro`, `src/components/TrialGateModal.astro` (+
 - Round 2 of the bench: same page, `notes-r2/<id>` (form, sent-a / -phone, sent-b / -phone, sent-c / -phone, pick
   = the look a / b / c / mix, phone, overlap = park / hide / solid / keep, overall). Shots + clips: session
   scratchpad `rv2/` (`shoot-sent.cjs` frames by WAAPI currentTime, `shoot-r2.cjs`).
-- Next: Dan's round-2 notes: the sent look (then build it into `WordWall.astro`, the TV's GSAP + --ww-mv-* times),
-  the overlap fix; step 00's baseline before any push to main. Left in the plan: step 7 (checks at the 9 sizes), P (persona walk). Nothing on main;
-  main = live on Dan's word.
+- Dan's notes on round 2 (2026-11-09, `notes-r2/*`): all on look A, laptop (pins ① on INBOX, ② level with the
+  list's first row, ③ on the Sent to bar): "the headline should be where the ②" and "this all section will be
+  glitching in instead of coming like this". No pick, no overlap answer, no other notes (the form box holds a
+  stray "①", no pin, no words).
+- BUILT for round 3 (2026-11-09, `103ccab`, bench only, `wwsent-looks.js`): A's headline leads, on a laptop its top
+  level with the list's first row (apply() measures `--xa-level`; BACK floats top right; checked 1141x636,
+  1280x800, 1440x900, 1920x1080: equal tops); the channel bug moved to the bottom-right corner (level with the
+  last row); the Sent to bar, the steps and the foot glitch in (the TV's own glitch, ~20 px, red / cyan fringe,
+  stepped, one lock flash), the headline keeps its roll, the bug blinks on last (~1.5 s in all). Phones: the same,
+  centred, room kept for the bug (no touch on 360x740 to 430x932). Found + fixed: a stepped WAAPI animation can end
+  a hair short of 1 (1.46 - 1.04 s) and hold its frame before last (the flash stuck, the bug stayed dark): the last
+  two keyframes are now alike. B and C untouched (their `steps(1, end)` blinks are 2-state only: fix if picked).
+- Round 3 of the bench: same page (Version 3), `notes-r3/<id>` (sent-a, sent-a-phone, pick = a / b / c / mix,
+  overlap = park / hide / solid / keep, overall). Shots + clips: session scratchpad `rv3/` (`shoot-r3.cjs`,
+  `mk-r3.py`), copied into `rv2/shots/` (round 2's page kept as `rv2/index-r2.html`).
+- Next: Dan's round-3 notes: the pick (then build it into `WordWall.astro`, the TV's GSAP + --ww-mv-* times; look A
+  needs the list-level measure in `fit()`), the overlap fix; step 00's baseline before any push to main. Left in
+  the plan: step 7 (checks at the 9 sizes), P (persona walk). Nothing on main; main = live on Dan's word.
 
 ## 2026-11-04 — GAS 2 postcards: the end page scrolls as one page, the footer under it (Claude Code `danavivi-c2 [ca2821]`, Dan's Mac) — PUSHED TO MAIN 2026-11-04 on Dan's word "perfect push to main" (from `fix/gas2-end-flow`)
 
