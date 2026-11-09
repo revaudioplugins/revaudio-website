@@ -93,7 +93,9 @@
   const CSS = `
   /* ---- all three: over the real sent screen ---- */
   .ws[data-look].is-sent { max-width: none; }
-  .ws[data-look] .ws-sent > :is(.ws-st, .ws-to, .ws-desk, .ws-spam) { display: none !important; }
+  /* A is built into the TV (Dan picked it 2026-11-09): the bench hides the built card too, so B, C and this A
+     prototype still draw on their own */
+  .ws[data-look] .ws-sent > :is(.ws-st, .ws-to, .ws-desk, .ws-spam, .ws-tw, .ws-steps, .ws-foot, .ws-bug) { display: none !important; }
   .ws[data-look] .ws-sent:not([hidden]) { display: block; }
   .wsx { --x-red: hsl(354 92% 58%); display: grid; gap: 0.95rem; justify-items: start; font-family: var(--font-body); color: var(--ww-ink); }
   .wsx p, .wsx h3, .wsx ol { margin: 0; }

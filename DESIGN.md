@@ -165,11 +165,18 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
       (optional on a trial, required on a free download, the worker's exact words), Send my link (the lit
       Try key's inverse video; the button family off the screen), the notice + Privacy (one line on a laptop:
       "Setup tips and a trial-end reminder. Unsubscribe anytime." / free + beta "A few setup tips. Unsubscribe
-      anytime.", Dan 2026-11-08). Then "Check your inbox", Sent to <address>, on a touch screen "Open it on your
-      Mac or PC to install.", "Not there in a minute? Look in Promotions or Spam." (the site's sign-ups since
-      2026-10-29), Resend · Wrong email? (P01). Its new look waits for Dan's pick on `/__wwsent`; look A as of round 3 (Dan 2026-11-09): on a
-      laptop the headline leads, its top level with the list's first row; the section under it glitches in (the
-      TV's own glitch, bigger); the channel bug in the bottom-right corner. The screen's two faces only (Bebas, Inter); each refusal at its field in one red
+      anytime.", Dan 2026-11-08). After Send, "Check your inbox" is a station card (look A "On air" of
+      `/__wwsent`, Dan's pick 2026-11-09, round 3 of the TV Sells bench): CHECK YOUR over a giant INBOX, "Sent
+      to <address>" as a news lower-third (on the glass the Send key's inverse video cut at an angle; plain off
+      it), three numbered steps (open the email on a Mac or PC; pick Mac or Windows; open the plugin, its third
+      line per kind), "Not there in a minute? Look in Promotions or Spam." (the site's sign-ups since 2026-10-29),
+      Resend · Wrong email? (P01), and the channel's bug (NAME + CH n) in the bottom-right corner, where a
+      station's bug sits. A laptop: the headline's top level with the list's first row ("the headline should be
+      where the ②"; `levelSent` measures `--ws-level`), BACK floats top right, the bug level with the last row.
+      A phone: centred in the glass, room kept for the bug. It comes on in ~1.5 s: the headline rolls up and
+      locks (a CRT's vertical hold), the rows under it glitch in (the TV's own glitch, ~20 px, red / cyan,
+      stepped; "this all section will be glitching in"), the bug blinks on last; none under reduced motion,
+      forced colours or a still TV. html.hc: no glow, a plain address line, no bug. The screen's two faces only (Bebas, Inter); each refusal at its field in one red
       the channels never take (hsl 352 100% 76%), the focus on the first. While it is open: no glitch at
       all, no pop-up, no snap, DRIFT's run paused; another channel puts the plugin back. A plugin verified
       in the last 24 h still gets TrialGateModal's Mac / Windows keys. The download itself is in the email

@@ -57,6 +57,37 @@ test('Try signs up on the screen, not in a pop-up', async ({ page }) => {
   await expect(pane.locator('.ww-try')).toBeFocused();
 });
 
+// look A, "On air" (Dan 2026-11-09): the headline, the address, three steps per kind, the foot, the channel's bug;
+// on a laptop the headline starts level with the list's first row; the bug never touches the foot
+test('the sent screen is the station card', async ({ page }, info) => {
+  await mockWorker(page);
+  const pane = await openPane(page, 'revlimiter');
+  await pane.locator('.ww-try').click();
+  await pane.locator('.ws-field').fill('dan@studio.com');
+  await pane.locator('[data-ws-terms]').check();
+  await pane.locator('[data-ws-send]').click();
+  await expect(pane.locator('.ws-st')).toBeFocused();
+  await expect(pane.locator('.ws-steps li')).toHaveText([
+    'Open the email on your Mac or PC',
+    'Pick Mac or Windows: the download starts',
+    'Open RevLimiter in your DAW: the 30 days start then',
+  ]);
+  await expect(pane.locator('.ws-bug i')).toHaveText('CH 1');
+  // the entrance lands (~1.5 s) and lets go: nothing left animating on the card
+  await expect.poll(() => pane.locator('[data-ws-sent]').evaluate((el) => el.getAnimations({ subtree: true }).length), { timeout: 4000 }).toBe(0);
+  const box = await pane.evaluate((p) => {
+    const t = (el: Element | null) => el!.getBoundingClientRect();
+    return {
+      name: t(document.querySelector('.ww-item:not([hidden]) .ww-name')).top,
+      hl: t(p.querySelector('.ws-st')).top,
+      foot: t(p.querySelector('.ws-foot')).bottom,
+      bug: t(p.querySelector('.ws-bug')).top,
+    };
+  });
+  if (info.project.name !== 'mobile-safari') expect(Math.abs(box.hl - box.name)).toBeLessThanOrEqual(2);
+  expect(box.bug).toBeGreaterThan(box.foot);
+});
+
 test('a free download needs the newsletter yes', async ({ page }) => {
   const posts = await mockWorker(page);
   const pane = await openPane(page, 'gas');
@@ -69,5 +100,6 @@ test('a free download needs the newsletter yes', async ({ page }) => {
   await pane.locator('[data-ws-news]').check();
   await pane.locator('[data-ws-send]').click();
   await expect(pane.locator('.ws-st')).toBeVisible();
+  await expect(pane.locator('.ws-steps li').last()).toHaveText('Open GAS in your DAW. It’s yours to keep.');
   expect(posts[0].body).toMatchObject({ plugin: 'gas', marketing: true });
 });

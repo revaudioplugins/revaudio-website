@@ -178,20 +178,22 @@ const cats = tvCats(tvPlugins().filter((p) => items.some((it) => it.slug === p.s
 /* The sign-up on the screen (Phase 5 step 3; Dan 2026-11-08: look A, "Channel page", of /__wwsignup): its words per
    kind. TrialGateModal's own words; the newsletter line is the licence worker's MARKETING_CONSENT_TEXT (change both
    together); the paid trial's second line is P12's (the plugins' LicenseManager + processBlock, read 2026-11-05). The
-   notice is the modal's, shortened (Dan 2026-11-08, the TV Sells bench: "lets make this shorter if we can"). */
+   notice is the modal's, shortened (Dan 2026-11-08, the TV Sells bench: "lets make this shorter if we can"). `last`:
+   the sent screen's third step (look A, Dan 2026-11-09). */
 const signupCopy = (s: TvSignup, name: string) =>
   s.kind === 'free'
     ? { t1: `${name}: free download`, t2: 'Free forever · full version · Mac + Windows', p12: '',
         news: 'Send me new-plugin drops and demo codes', newsReq: true,
-        notice: 'A few setup tips. Unsubscribe anytime.' }
+        notice: 'A few setup tips. Unsubscribe anytime.', last: `Open ${name} in your DAW. It’s yours to keep.` }
     : s.kind === 'beta'
       ? { t1: `Try the ${name} free beta`, t2: 'Free beta · download by email', p12: '',
           news: 'Also send me new-plugin drops and demo codes', newsReq: false,
-          notice: 'A few setup tips. Unsubscribe anytime.' }
+          notice: 'A few setup tips. Unsubscribe anytime.', last: `Open ${name} in your DAW.` }
       : { t1: `Try ${name} free`, t2: `${PAID_TRIAL_DAYS} days · full version · no credit card`,
           p12: `The ${PAID_TRIAL_DAYS} days start the first time you open it; after that your sound passes through untouched until you add a key.`,
           news: 'Also send me new-plugin drops and demo codes', newsReq: false,
-          notice: 'Setup tips and a trial-end reminder. Unsubscribe anytime.' };
+          notice: 'Setup tips and a trial-end reminder. Unsubscribe anytime.',
+          last: `Open ${name} in your DAW: the ${PAID_TRIAL_DAYS} days start then` };
 const first = items[0]?.slug ?? '';
 ---
 
@@ -383,13 +385,23 @@ const first = items[0]?.slug ?? '';
                 </div>
                 <p class="ws-notice" data-ws-step>{k.notice} <a href="/privacy" target="_blank" rel="noopener">Privacy</a></p>
               </form>
+              {/* after Send: "Check your inbox" as a station card (look A, "On air", Dan 2026-11-09 on the TV Sells
+                  bench): the headline, the address in a news lower-third, the three steps, the foot, the channel's bug
+                  in the corner. data-ws-gl: the rows that glitch in */}
               <div class="ws-sent" data-ws-sent hidden>
-                <h3 class="ws-st" data-ws-step tabindex="-1">Check your inbox</h3>
-                <p class="ws-to" data-ws-step>Sent to <b data-ws-to></b>.</p>
-                <p class="ws-desk" data-ws-step data-ws-desk hidden>Open it on your Mac or PC to install.</p>
-                <p class="ws-spam" data-ws-step>Not there in a minute? Look in Promotions or Spam.</p>
-                <p class="ws-act" data-ws-step><button type="button" data-ws-resend>Resend</button><span aria-hidden="true"> · </span><button type="button" data-ws-wrong>Wrong email?</button></p>
-                <p class="ws-msg" role="status" aria-live="polite" data-ws-msg></p>
+                <h3 class="ws-st" tabindex="-1"><span class="ws-st-k">Check your</span> inbox</h3>
+                <div class="ws-tw" data-ws-gl><p class="ws-third"><span class="ws-third-k">Sent to</span> <b data-ws-to></b></p></div>
+                <ol class="ws-steps">
+                  <li data-ws-gl>Open the email on your Mac or PC</li>
+                  <li data-ws-gl>Pick Mac or Windows: the download starts</li>
+                  <li data-ws-gl>{k.last}</li>
+                </ol>
+                <div class="ws-foot">
+                  <p class="ws-spam" data-ws-gl>Not there in a minute? Look in Promotions or Spam.</p>
+                  <p class="ws-act" data-ws-gl><button type="button" data-ws-resend>Resend</button><span aria-hidden="true"> · </span><button type="button" data-ws-wrong>Wrong email?</button></p>
+                  <p class="ws-msg" role="status" aria-live="polite" data-ws-msg></p>
+                </div>
+                <p class="ws-bug" aria-hidden="true"><span>{it.name}</span> <i>CH {i + 1}</i></p>
               </div>
             </section>
           ))(it.action.signup, signupCopy(it.action.signup, it.name))}
@@ -549,8 +561,10 @@ const first = items[0]?.slug ?? '';
       if (osdEl?.offsetParent) wall.style.setProperty('--ww-osd-h', `${Math.ceil(tall(osdEl))}px`);
       panels.forEach((p) => {
         const fig = p.querySelector<HTMLElement>('.ww-ui');
-        // a closed panel on a phone (display:none): measured when it opens; one signing up shows no window
-        if (!fig || !p.offsetParent || p.classList.contains('is-signing')) return;
+        // one signing up shows no window (its sent screen keeps level with the list); a closed panel on a phone
+        // (display:none): measured when it opens
+        if (p.classList.contains('is-signing')) { levelSent(p); return; }
+        if (!fig || !p.offsetParent) return;
         // a phone's pane: Product page drops to the foot of the glass the text leaves (Dan 2026-11-08, the TV Sells
         // bench: "center it and lower it down"; a short phone has none to spare, so it stays under the price row).
         // The drop is never text: it is taken off before the measure, and gone off a phone's pane.
@@ -571,7 +585,7 @@ const first = items[0]?.slug ?? '';
     if ('ResizeObserver' in window) {
       const ro = new ResizeObserver(() => { cancelAnimationFrame(fitRaf); fitRaf = requestAnimationFrame(fit); });
       if (osdEl) ro.observe(osdEl);
-      wall.querySelectorAll<HTMLElement>('.ww-info').forEach((el) => ro.observe(el));
+      wall.querySelectorAll<HTMLElement>('.ww-info, [data-ws-sent]').forEach((el) => ro.observe(el));
     }
 
     /* Changing channel: motion only (the user 2026-10-18, after the static: "no noise at all, just motion"; plan
@@ -719,6 +733,63 @@ const first = items[0]?.slug ?? '';
       gsap.fromTo(els, { opacity: 0, y: m.dir * m.textPx }, {
         opacity: 1, y: 0, duration: sec(m.textMs), ease: 'power3.out', stagger: sec(m.textGap), delay: sec(at), clearProps: 'transform,opacity',
       });
+    /* After Send: "Check your inbox" comes on as a station card (look A, "On air", of /__wwsent; Dan 2026-11-09 on
+       the TV Sells bench: "this all section will be glitching in instead of coming like this"). The headline rolls
+       up and locks, a CRT's vertical hold, the tube flaring as it does; the rows under it glitch in with the TV's own
+       glitch (glJump's red / cyan fringe, sideways in steps) at the size of a fault you notice (~20 px for 420 ms;
+       the idle one is 3 px for 150 ms), each row torn its own way, some blinking off once, then one flash as they
+       lock; the channel's bug blinks on last. About 1.5 s, the times of the bench Dan picked. Stepped keyframes hold
+       till the next; the last two are alike, since a clock can end a hair short of 1 and a step then holds the one
+       before last (caught on the bench). All of it is cancelled once it lands (the CSS is the rest) or when the
+       sign-up goes. */
+    const sentIn = (sent: HTMLElement, m: ReturnType<typeof moves>) => {
+      const all: Animation[] = [];
+      const an = (el: Element | null, frames: Keyframe[], o: KeyframeAnimationOptions) => { if (el) all.push(el.animate(frames, { fill: 'both', ...o })); };
+      const reach = Math.round(sent.offsetHeight * 0.46) * m.dir; // as far as the whole card rolled on the bench
+      an(sent.querySelector('.ws-st'), [
+        { transform: `translateY(${reach}px)`, opacity: 0, filter: 'brightness(2.2) blur(1.5px)' },
+        { offset: 0.55, transform: `translateY(${Math.round(-reach * 0.09)}px)`, opacity: 1, filter: 'brightness(1.5) blur(0.6px)' },
+        { offset: 0.78, transform: `translateY(${Math.round(reach * 0.026)}px)`, filter: 'brightness(1.15) blur(0px)' },
+        { transform: 'none', opacity: 1, filter: 'none' },
+      ], { duration: 560, easing: 'cubic-bezier(.25,.9,.3,1)' });
+      const s = 'steps(1, end)';
+      const fr = (dx: number, c: string) => `drop-shadow(${dx.toFixed(1)}px 0px 0px ${c})`;
+      const amp = [22, -15, 19, -26, 12, -18], lag = [0, 30, 10, 50, 20, 40], blink = [0, 1, 0, 1, 1, 0];
+      sent.querySelectorAll('[data-ws-gl]').forEach((el, i) => {
+        const a = amp[i % 6];
+        an(el, [
+          { opacity: 0, translate: `${a}px 0px`, filter: fr(0, RED), easing: s },
+          { offset: 0.14, opacity: 1, translate: `${a}px 0px`, filter: fr(-0.4 * a, RED), easing: s },
+          { offset: 0.3, opacity: blink[i % 6] ? 0 : 1, translate: `${-0.5 * a}px 0px`, filter: fr(0.3 * a, CYAN), easing: s },
+          { offset: 0.46, opacity: 1, translate: `${-0.6 * a}px 0px`, filter: fr(0.4 * a, CYAN), easing: s },
+          { offset: 0.64, opacity: 1, translate: `${0.3 * a}px 0px`, filter: fr(-3, RED), easing: s },
+          { offset: 0.8, opacity: 1, translate: '0px 0px', filter: 'brightness(1.45)', easing: s },
+          { offset: 0.92, opacity: 1, translate: '0px 0px', filter: 'none', easing: s },
+          { opacity: 1, translate: '0px 0px', filter: 'none' },
+        ], { duration: 420, delay: 520 + lag[i % 6] });
+      });
+      an(sent.querySelector('.ws-bug'), [
+        { opacity: 0, easing: s }, { offset: 0.3, opacity: 1, easing: s }, { offset: 0.5, opacity: 0.15, easing: s },
+        { offset: 0.7, opacity: 1, easing: s }, { opacity: 1 },
+      ], { duration: 420, delay: 1040 });
+      const kill = () => all.forEach((a) => a.cancel());
+      Promise.all(all.map((a) => a.finished)).then(kill, () => { /* cancelled: nothing left */ });
+      return { kill };
+    };
+    // the sent screen on a laptop starts level with the list's first row, its name (Dan 2026-11-09: "the headline
+    // should be where the ②"; both Bebas at line-height 1 and about one size, so the boxes' tops are the caps'
+    // tops). The box is measured, never moved (its headline moves as it comes on); phones centre it instead.
+    const levelSent = (p: HTMLElement) => {
+      const box = signOf(p);
+      if (!box) return;
+      const name = list?.querySelector<HTMLElement>('.ww-item:not([hidden]) .ww-name');
+      if (phone.matches || !name || !box.classList.contains('is-sent') || !p.classList.contains('is-signing')) {
+        box.style.removeProperty('--ws-level');
+        return;
+      }
+      const dy = name.getBoundingClientRect().top - box.getBoundingClientRect().top;
+      box.style.setProperty('--ws-level', `${Math.max(0, Math.round(dy))}px`);
+    };
     const signSet = (p: HTMLElement, box: HTMLElement, on: boolean) => {
       p.classList.toggle('is-signing', on);
       box.hidden = !on;
@@ -739,15 +810,18 @@ const first = items[0]?.slug ?? '';
       glStop();
       signRun?.kill();
       const m = moves();
+      const sentBox = box.classList.contains('is-sent') ? box.querySelector<HTMLElement>('[data-ws-sent]') : null;
       const swap = () => {
         gsap.set(signParts(p), { clearProps: 'transform,opacity' });
         signSet(p, box, true);
-        box.querySelector<HTMLElement>(box.classList.contains('is-sent') ? '.ws-st' : '.ws-field')?.focus({ preventScroll: true });
+        levelSent(p);
+        box.querySelector<HTMLElement>(sentBox ? '.ws-st' : '.ws-field')?.focus({ preventScroll: true });
       };
       if (still()) { swap(); return; }
       signRun = gsap.to(signParts(p), {
         opacity: 0, y: -m.dir * m.outPx, duration: sec(m.outMs), ease: 'power2.in',
-        onComplete: () => { swap(); signRun = signIn(signSteps(box), m, m.textAt); },
+        // a sign-up already sent opens on its sent screen, which comes on again (none under reduced motion)
+        onComplete: () => { swap(); signRun = sentBox ? (m.q || forced.matches ? null : sentIn(sentBox, m)) : signIn(signSteps(box), m, m.textAt); },
       });
     };
     const signClose = (p: HTMLElement) => {
@@ -804,16 +878,17 @@ const first = items[0]?.slug ?? '';
         }
         return j;
       };
-      // P01: one title, where it went, on a touch screen where to open it, Resend / Wrong email?
+      // P01 + look A: the station card (the headline, where it went, the three steps, Resend / Wrong email?)
       const showSent = (addr: string) => {
         form.hidden = true;
         box.classList.add('is-sent');
         one<HTMLElement>('[data-ws-to]').textContent = addr;
-        one<HTMLElement>('[data-ws-desk]').hidden = !window.matchMedia('(pointer: coarse)').matches;
         msg.textContent = '';
         sent.hidden = false;
+        levelSent(p);
         one<HTMLElement>('.ws-st').focus({ preventScroll: true });
-        if (!still()) { signRun?.kill(); signRun = signIn(signSteps(sent), moves(), 0); }
+        signRun?.kill();
+        signRun = still() || reduced.matches || forced.matches ? null : sentIn(sent, moves());
       };
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -862,8 +937,11 @@ const first = items[0]?.slug ?? '';
         b.disabled = false;
       });
       one<HTMLButtonElement>('[data-ws-wrong]').addEventListener('click', () => {
+        signRun?.kill();
+        signRun = null;
         sent.hidden = true;
         box.classList.remove('is-sent');
+        box.style.removeProperty('--ws-level');
         form.hidden = false;
         msg.textContent = '';
         field.focus();
@@ -2177,17 +2255,17 @@ const first = items[0]?.slug ?? '';
     width: 100%;
     align-items: baseline;
   }
-  .ws-title,
-  .ws-st {
+  .ws-title {
     font-family: var(--font-display);
     font-weight: 400;
+    font-size: clamp(1.8rem, 2.6vw, 2.6rem);
     line-height: 1;
     letter-spacing: 0.05em;
     text-transform: uppercase;
     color: var(--ww-ink-hot);
     text-wrap: balance;
+    text-shadow: 0 0 8px var(--ww-glow);
   }
-  .ws-title { font-size: clamp(1.8rem, 2.6vw, 2.6rem); text-shadow: 0 0 8px var(--ww-glow); }
   .ws-title:focus,
   .ws-st:focus { outline: none; }
   .ws-back {
@@ -2312,14 +2390,60 @@ const first = items[0]?.slug ?? '';
   }
   :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ws-send:focus-visible { outline: 2px solid var(--ww-ink-hot); outline-offset: 4px; }
   :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ws-send:disabled { opacity: 1; filter: brightness(0.82); cursor: progress; }
-  /* after Send (P01): one title, where it went, Resend / Wrong email? */
+  /* after Send (P01, then look A "On air" of /__wwsent, Dan 2026-11-09 on the TV Sells bench): a station card. The
+     headline (CHECK YOUR over a giant INBOX), the address in a news lower-third (on the glass the Send key's inverse
+     video, cut at an angle; plain off it), the three steps in numbered boxes, the foot, and the channel's bug in the
+     bottom-right corner, where a station's bug sits (BACK holds the top right). A laptop: the headline starts level
+     with the list's first row (--ws-level, levelSent: "the headline should be where the ②"), BACK floats, the pane
+     keeps the glass's height so the bug has its corner. A phone: centred in the glass, room kept for the bug. */
   .ws.is-sent :is(.ws-title, .ws-t2, .ws-p12) { display: none; }
-  .ws-sent { display: grid; gap: 0.65rem; justify-items: start; }
-  .ws-st { font-size: clamp(2.2rem, 3.4vw, 3.2rem); text-shadow: 0 0 10px var(--ww-glow-hot), 0 0 26px var(--ww-glow-soft); }
-  .ws-to { font: 500 1.08rem/1.4 var(--font-body); }
-  .ws-to b { color: var(--ww-ink-hot); font-weight: 600; overflow-wrap: anywhere; }
-  .ws-desk { font: 500 1rem/1.4 var(--font-body); }
-  .ws-spam { font: 500 0.9rem/1.4 var(--font-body); color: hsl(var(--ww-ch-h) 24% 80%); }
+  .ws.is-sent { position: relative; max-width: none; }
+  .ws.is-sent > .ws-sent { justify-self: stretch; }
+  .ws-sent { display: grid; gap: 1.05rem; justify-items: start; min-width: 0; }
+  .ws-st {
+    font: 400 clamp(4.8rem, 8.6vw, 7.4rem)/0.8 var(--font-display);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--ww-ink-hot);
+    text-shadow: 0 0 14px var(--ww-glow), 0 0 44px var(--ww-glow-soft);
+  }
+  .ws-st-k { display: block; margin-bottom: 0.06em; font-size: 0.4em; line-height: 1; letter-spacing: 0.18em; color: var(--ww-ink); text-shadow: 0 0 9px var(--ww-glow); }
+  .ws-tw { max-width: 100%; }
+  .ws-third { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.15rem 0.75rem; max-width: 100%; font: 500 1.04rem/1.25 var(--font-body); color: var(--ww-ink-text); }
+  .ws-third-k { font: 400 1.2rem/1 var(--font-display); letter-spacing: 0.16em; text-transform: uppercase; color: var(--ww-ink); }
+  .ws-third b { font-weight: 700; color: var(--ww-ink-hot); overflow-wrap: anywhere; }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ws-third {
+    padding: 0.6rem 2.3rem 0.52rem 0.95rem;
+    background: var(--ww-ink-hot);
+    color: var(--ww-ink-on);
+    clip-path: polygon(0 0, 100% 0, calc(100% - 1.3rem) 100%, 0 100%);
+  }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ws-third :is(.ws-third-k, b) { color: inherit; }
+  .ws-steps { display: grid; gap: 0.45rem; margin: 0; padding: 0; list-style: none; counter-reset: ws; font: 500 1rem/1.35 var(--font-body); color: hsl(var(--ww-ch-h) 30% 92%); }
+  .ws-steps li { display: grid; grid-template-columns: 1.65rem minmax(0, 1fr); gap: 0.65rem; align-items: baseline; counter-increment: ws; }
+  .ws-steps li::before { content: counter(ws); display: grid; place-items: center; height: 1.6rem; font: 400 1.05rem/1 var(--font-display); color: var(--ww-ink-hot); box-shadow: inset 0 0 0 1.5px var(--ww-ink); }
+  .ws-foot { display: grid; gap: 0.45rem; justify-items: inherit; }
+  .ws-spam { font: 500 0.88rem/1.4 var(--font-body); color: hsl(var(--ww-ch-h) 24% 80%); }
+  .ws-bug { position: absolute; right: 0; bottom: 0; display: inline-flex; align-items: center; gap: 0.6rem; font: 400 1.05rem/1 var(--font-display); letter-spacing: 0.16em; text-transform: uppercase; color: var(--ww-ink); }
+  .ws-bug i { font-style: normal; padding: 0.26rem 0.42rem 0.14rem; background: var(--ww-ink-hot); color: var(--ww-ink-on); letter-spacing: 0.1em; box-shadow: 0 0 14px var(--ww-glow-hot); }
+  .ww:not([data-ww-bg='screen']) .ws-bug,
+  :global(html.hc) .ws-bug { display: none; } /* a station's bug belongs on the glass */
+  :global(html.hc) :is(.ws-st, .ws-st-k) { text-shadow: none; }
+  @media (min-width: 861px) {
+    .ww-panel.is-signing:has(> .ws.is-sent) { align-self: stretch; align-content: stretch; }
+    .ws.is-sent { align-self: stretch; align-content: start; padding-top: var(--ws-level, 0px); }
+    .ws.is-sent > .ws-head { position: absolute; top: 0; right: 0; width: auto; }
+  }
+  @media (max-width: 860px) {
+    .ww[data-ww-view='panel']:has(.ww-panel.is-signing > .ws.is-sent) { grid-template-rows: minmax(0, 1fr); }
+    .ww-panel.is-signing:has(> .ws.is-sent) { align-self: stretch; align-content: stretch; grid-template-rows: minmax(0, 1fr); }
+    .ws.is-sent { align-self: stretch; grid-template-rows: auto minmax(0, 1fr); }
+    .ws.is-sent > .ws-sent { align-self: center; justify-items: center; padding-bottom: 2.6rem; text-align: center; }
+    .ws-st { font-size: clamp(4.4rem, 26vw, 6.4rem); }
+    .ws-third { justify-content: center; }
+    :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ws-third { clip-path: none; padding: 0.6rem 0.95rem 0.52rem; }
+    .ws-steps { justify-self: center; text-align: left; }
+  }
   .ws-act { font: 600 0.95rem/1 var(--font-body); color: var(--ww-ink); }
   .ws-act button {
     appearance: none;

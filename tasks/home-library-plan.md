@@ -533,6 +533,8 @@ Steps (each one checked before the next):
       - [ ] Also send me new-plugin drops and demo codes (optional) (unchecked, the worker's exact words);
       - the service-email notice line; SEND MY LINK; ‹ Back (and Esc) returns to the plugin.
       - On the screen after: sending -> CHECK YOUR INBOX (the address, "wrong email?" goes back to the field).
+        BUILT 2026-11-09 as look A "On air" (Dan's pick after three rounds of the TV Sells bench): a station
+        card, the headline level with the list, the rows glitching in, the bug in the corner (DESIGN.md §4).
       - Same endpoint, honeypot, raSaleSource and `tg:registered` event as the modal. The register + download calls
         move out of TrialGateModal into one small module both use (the modal stays for the product pages).
       - DRIFT: the same on-screen form (plugin `drift`, + `/form-once` as /drift does) instead of the link out;
