@@ -310,6 +310,9 @@ UPDATE 3 2026-11-09 / 11-10 (night): Dan's round-2 notes (db `notes-r2`, pins re
 - The outside through the door: A photo street / B built street / C rainy night (car builder's pick C), patches for A
   and C ready in `look/step4/builders/car/candidates/OUTSIDE/patch/`; Dan picks on bench round 3.
 - guitar.glb has no slot since R10 became the ukulele (kept for now).
+- Bench round 3 for Dan: https://claude.ai/artifact/WbhosKXawqVMvT3xpKo53p (Version 4, build `2c3e473`, ArtifactData
+  collection `notes-r3`): 24 cards, his 12 note cards with a before, the outside A / B / C pick (card 2), 11 new spots.
+  Generator: the scratchpad's `look/step4/round2/r3-page.py`; shots `raw3` / `raw4` (+ `raw4n2`, `raw4b`: N02 held still).
 
 Open: the monitors bench had B (vintage) ticked but Dan's chat said "black + wood"; black went in. Confirm if asked.
 Owed by Dan: tell Gil (the room on laptops from Nov 19, next to his Black Friday countdown); the R2 / CSP OK.
