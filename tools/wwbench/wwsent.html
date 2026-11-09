@@ -80,9 +80,10 @@
     const panel = await until(() => doc.querySelector(`[data-ww-panel="${st.chan}"].is-active`));
     if (!panel) return;
     win.fetch = () => Promise.resolve(new win.Response('{"ok":true}', { status: 200, headers: { 'content-type': 'application/json' } }));
-    const wall = doc.querySelector('[data-wordwall]');
+    // park the whole set under the nav, as the site's lock does (#plugins; never the screen's own box: 30 / 38 px off)
+    const set = doc.querySelector('#plugins');
     const nav = parseFloat(win.getComputedStyle(doc.documentElement).getPropertyValue('--site-nav-h')) || 44;
-    win.scrollTo(0, Math.ceil(win.scrollY + wall.getBoundingClientRect().top - nav));
+    win.scrollTo(0, Math.ceil(win.scrollY + set.getBoundingClientRect().top - nav));
     await wait(400);
     panel.querySelector('.ww-try').click();
     const form = await until(() => panel.querySelector('.ws:not([hidden]) [data-ws-form]'));

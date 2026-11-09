@@ -188,9 +188,20 @@ Files: `src/components/WordWall.astro`, `src/components/TrialGateModal.astro` (+
   bench pixel for pixel, phones (revlimiter / gas / drift), 1440x900, forced colours and html.hc all checked.
 - Round 4 of the bench (Version 4, `notes-r4/<id>`: real-a, real-a-phone, real-a-wide, real-a-hc, overlap = park /
   hide / solid / keep, overall). Shots: scratchpad `rv4/` (`shoot-r4.cjs`), copied into `rv2/shots/`.
-- Next: Dan's round-4 notes; the overlap fix (asked since round 2, no answer yet); step 00's baseline before any
-  push to main. Left in the plan: step 7 (checks at the 9 sizes), P (persona walk). Nothing on main; main = live on
-  Dan's word.
+- The overlap (2026-11-09): Dan picked "the header slides away" on round 4 (`notes-r4/overlap`), then asked for a
+  bench just for it. Finding: there is NO overlap on the site. Its lock parks `#plugins` (the whole set) at
+  `--site-nav-h`: measured on 402x714 + 1141x636, at load, after wheel / arrow-key scrolling and on /plugins, the
+  frame is 0 px under the bar; the iPhone 17 Pro simulator (Safari) shows the same. My shot scripts parked
+  `[data-wordwall]` (the screen's box) instead: 30 / 38 px too high, in every bench shot since round 1
+  (`tasks/lessons.md` 2026-11-09). Fixed in the scratchpad scripts and `tools/wwbench/wwsent.html`; round 4 retaken
+  and republished (TV Sells Version 5). The review-bench skill's template also had a phone overflow with landscape
+  frames (`.group` track); fixed there (`~/.claude/skills/review-bench/template.html`, not in git).
+- Header Overlap bench: https://claude.ai/artifact/SAvcd53bdPMRy3cDYEJfKr (`notes/<id>`: rest-phone, rest-laptop,
+  old, hide-phone (ask: phones / all / no), hide-laptop, overall). The "slides away" clips are a prototype drawn per
+  frame (scroll + the nav's transform), nothing in the site. My pick there: leave the header (site-wide, its own
+  project: the sale bar, the menu, jump links; Header.astro + global.css are outside this claim).
+- Next: Dan's notes on the Header Overlap bench + TV Sells round 4; step 00's baseline before any push to main. Left
+  in the plan: step 7 (checks at the 9 sizes), P (persona walk). Nothing on main; main = live on Dan's word.
 
 ## 2026-11-04 — GAS 2 postcards: the end page scrolls as one page, the footer under it (Claude Code `danavivi-c2 [ca2821]`, Dan's Mac) — PUSHED TO MAIN 2026-11-04 on Dan's word "perfect push to main" (from `fix/gas2-end-flow`)
 

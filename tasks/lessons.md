@@ -330,3 +330,12 @@ Smoke went red on every site push for a day and two sessions shipped past it (th
 2. After a site push: `gh run list --limit 2` shows Deploy AND Smoke test; read both conclusions before calling it live.
 3. Mac WebKit against the dev server hangs the same way as the 2026-10-14 Windows note: `load` and
    `document.fonts.ready` can stall a Playwright run (2026-11-04), so race fonts.ready with a ~5 s timeout there too.
+
+## 2026-11-09 — a shot parks the TV where the site parks it
+- The TV Sells bench shots parked the TV by `[data-wordwall]` (the screen's own box) under the nav: 30 px (phone) /
+  38 px (laptop) higher than the site's lock, which parks the whole set (`#plugins`, the GarageWall section). Every
+  shot hid the frame's top edge under the header; Dan asked "how we fix the overlap", and three rounds went by on a
+  fault the site never had (Header Overlap bench, 2026-11-09: real scrolling + the iPhone simulator, 0 px under).
+- Rule: a shot or bench script parks the TV with the site's own target (`#plugins` top at `--site-nav-h`, as
+  `landY` does), never an inner box. Before raising a layout fault seen in a shot, reproduce it with the site's own
+  behaviour (load, wheel, keys) and measure.
