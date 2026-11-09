@@ -271,11 +271,10 @@ UPDATE 2 2026-11-09 (later): landed since, all pushed on `feat/home-opening`:
 - `3020b60` the car: Dan's pick A, our coupe in gloss black clearcoat ("reflective and shiny"). `c33bbb6` the
   builders' batch 2: 27 more slots real, 55 models load; draw calls at walk 0 / 0.3 / 0.6 / 0.9 = 817 / 744 / 213 / 87.
   `e6325db` much less dust (0.15, settings ver 15).
-- The commit with this note: Dan's room bench of 11-09 baked as the defaults (ver 16). The end wall is rearranged
-  (E05 pegboard, E06 shelf, N20 globe lamp, N32 radio, N36 ON AIR over the TV), plus the L19 guitar rack, the N12 clamp
-  lamp and the neon sign. The big line ("Built like cars.") and the engine (tail-lights) are off, as on his bench.
-  ⏸ His word on whether the line stays off: it is the first screen's headline.
-  Checks: 0 overlaps, hand-off = baseline, 0 errors.
+- `b390917`: Dan's room bench of 11-09 baked as the defaults (ver 16). The end wall is rearranged (E05 pegboard,
+  E06 shelf, N20 globe lamp, N32 radio, N36 ON AIR over the TV), plus the L19 guitar rack, the N12 clamp lamp and the
+  neon sign. Checks: 0 overlaps, hand-off = baseline, 0 errors. His bench also had the big line ("Built like cars.")
+  and the engine (tail-lights) off; asked, he said "bring them back", so both are on again (ver 17).
 - Running: the garage-speed workflow. Dan: "make the page faster without hurting the quality", with options for him to
   pick. Outputs are in this session's scratchpad `look/step5/perf/` (`synth/report.md` when done). Next: a page that
   shows him the options.
