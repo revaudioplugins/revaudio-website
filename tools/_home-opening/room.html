@@ -702,6 +702,15 @@ const MODELS = {
   R07: { src: 'assets/models/parts-bench.glb', yaw: -Math.PI / 2 },
   R09: { src: 'assets/models/pegboard-tools.glb', yaw: -Math.PI / 2 },
   N03: { src: 'assets/models/jack-creeper.glb', yaw: -Math.PI / 2 },
+  // the far end + overhead
+  E05: { src: 'assets/models/pegboard-cables.glb' },
+  E06: { src: 'assets/models/oil-shelf.glb' },
+  N23: { src: 'assets/models/couch.glb', yaw: Math.PI / 2 },
+  A03: { src: 'assets/models/ceiling-cloud.glb' },
+  M01: { src: 'assets/models/crt-casing.glb', crt: true }, // the CRTs: a casing around each live screen
+  M02: { src: 'assets/models/crt-casing.glb', crt: true },
+  M03: { src: 'assets/models/crt-casing.glb', crt: true },
+  M04: { src: 'assets/models/crt-casing.glb', crt: true },
 };
 for (const q of new URLSearchParams(location.search).getAll('model')) {
   const [id, src, yaw, fit] = q.split(':');
@@ -718,9 +727,15 @@ async function loadModels() {
     const it = R.items.find((x) => x.id === id), m = MODELS[id];
     let g; try { g = await get(m.src); } catch (e) { console.warn('model', id, m.src, e.message); return; } // the block stays
     g.rotation.y = m.yaw || 0; g.updateMatrixWorld(true);
+    const wrap = new THREE.Group(); wrap.add(g);
+    if (m.crt) { // a CRT casing around the room's live screen (M01-M04: a group whose origin is the screen's centre); built
+      // for a 0.506 x 0.245 screen with its glass at z 0.2072, so it scales to each screen and the drawn body hides
+      const { body, screen } = it.obj.userData, sx = screen.scale.x / 0.506;
+      wrap.scale.set(sx, screen.scale.y / 0.245, sx); wrap.position.set(0, -0.7 * screen.scale.y, 0.003 - 0.2072 * sx);
+      it.parts = [body];
+    } else {
     const box = new THREE.Box3().setFromObject(g, true), size = box.getSize(new THREE.Vector3()), c = box.getCenter(new THREE.Vector3());
     g.position.set(-c.x, -box.min.y, -c.z); // centred on the footprint, standing on the slot's floor
-    const wrap = new THREE.Group(); wrap.add(g);
     if (it.obj.geometry) { // a block: the model fills its slot
       it.obj.geometry.computeBoundingBox(); const bb = it.obj.geometry.boundingBox, slot = bb.getSize(new THREE.Vector3());
       wrap.scale.setScalar(m.fit === 'height' ? slot.y / size.y : Math.min(slot.x / size.x, slot.y / size.y, slot.z / size.z));
@@ -730,6 +745,7 @@ async function loadModels() {
       it.parts = [...it.obj.children];
       for (const p of it.parts) pb.union(new THREE.Box3().setFromObject(p, true).applyMatrix4(inv));
       const pc = pb.getCenter(new THREE.Vector3()); wrap.position.set(pc.x, 0, pc.z); // where the drawn parts stood (Dan's placement)
+    }
     }
     const dress = (root) => root.traverse((o) => {
       if (!o.isMesh) return;
