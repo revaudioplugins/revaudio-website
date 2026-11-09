@@ -208,7 +208,7 @@ const DEF = {
   roomL: 20.9,                           // the room's length (metres): one size, only the camera adapts to the screen (Dan 2026-11-04; 20.9 on his bench of 11-08)
   tvStart: 6.5,                          // TV width on the first screen, % of the screen width: the film only now (the room's length sets the start)
   walkLen: 370, ease: 2.8, feel: 0.4,    // scroll length (% screen); in-out power; 0 = steady metres, 1 = the TV grows steadily
-  sway: 0.4, neon: 0.38, lamps: 1.4, tvGlow: 1.25, bloom: 1.1, fog: 0.036, dust: 0.5, // neon one step up from 0.26 (Dan's pick, 11-08)
+  sway: 0.4, neon: 0.38, lamps: 1.4, tvGlow: 1.25, bloom: 1.1, fog: 0.036, dust: 0.15, // neon one step up from 0.26 (Dan's pick, 11-08); dust 0.5 -> 0.15 (Dan 11-09: "less dust in the air, much less": 30 % of the specks)
   ledStrip: 0, rackLeds: 1, screens: 1.8,  // the room alive: aisle LED strips (off: they read as a road), the racks' LEDs + VU, the CRT monitors
   // the car side-on, nose out through the open roll-up door in the right wall, engine off, on a low lift (Dan 2026-11-02)
   carZ: 0.82, carOut: 0.5, carYaw: 18, liftType: 'scissor', liftH: 0.68, engine: 1,
@@ -216,7 +216,7 @@ const DEF = {
   // the REVAUDIO neon: off the aisle (Dan 2026-11-02: "not in your face"), then on the end wall, right of the TV (11-03)
   signWall: 'endLeft', signF: 0.52, signX: -1.62, signY: 2.95,  // the wall in front of you, top right (Dan 11-03, placed 11-04)
   signScale: 1.15, signTilt: -2,        // hung a little crooked on two wires (Dan 11-03; sized 11-04)
-  ver: 14,                               // settings version (14 = the drum N06 moved, Dan's build bench of 11-09; 5 = Dan's bench of 11-03 baked, 6 = his third, with the pegboard move, 7 = back to the bare set; his bench of 11-04 needed no bump; 8 = the snap off; 9 = B + A's moves as the room; 10 = the look pass, 11 = its first fix round, 12 = his bench of 11-08 + two nudges, 13 = his neon pick): 2 moved the sign to the end wall, 3 made it bigger + crooked, 4 took the road off the floor
+  ver: 15,                               // settings version (15 = much less dust, Dan 11-09; 14 = the drum N06 moved, Dan's build bench of 11-09; 5 = Dan's bench of 11-03 baked, 6 = his third, with the pegboard move, 7 = back to the bare set; his bench of 11-04 needed no bump; 8 = the snap off; 9 = B + A's moves as the room; 10 = the look pass, 11 = its first fix round, 12 = his bench of 11-08 + two nudges, 13 = his neon pick): 2 moved the sign to the end wall, 3 made it bigger + crooked, 4 took the road off the floor
   // the look pass (2026-11-08, todo 1b): real materials and night light on the same set (Skeleton = the grey labelled
   // blocks); tone = the tone mapping (AgX), exposure its exposure; probe = how much the room shows in its own shiny
   // things (chrome, paint, the floor); shafts = the haze under the lamps
@@ -352,6 +352,7 @@ if (sv < 11) S.shafts = DEF.shafts; // the look's first fix round: more light in
 if (sv < 12) for (const id of ['M03', 'N16']) S.moves[id] = { ...DEF.moves[id] }; // nudged clear in Dan's 6.7 x 20.9 m room (11-08)
 if (sv < 13) S.neon = DEF.neon; // his picks of 11-08: the ceiling neon one step up (the door, chests and walls stay)
 if (sv < 14) S.moves.N06 = { ...DEF.moves.N06 }; // his build bench of 11-09: the GAS 2 drum to his pin
+if (sv < 15) S.dust = DEF.dust; // his note of 11-09: "less dust in the air, much less"
 S.ver = DEF.ver;
 // ?layout=<name>: a proposed layout (layouts/<name>.json, the bench's Copy-settings format) over the defaults, to walk
 // and compare; this browser's saved bench is left alone and nothing is saved
@@ -2146,8 +2147,8 @@ function frame(now) {
   finishPass.uniforms.uTone.value = TONES[S.tone] ?? 1; finishPass.uniforms.toneMappingExposure.value = renderer.toneMappingExposure = S.exposure;
   bloomPass.strength = R.paintOn ? 0 : S.bloom * (R.lookOn ? 0.25 : 1) * far * far; // the paintings carry their own glow
   bloomPass.threshold = R.lookOn ? 1.6 : 0.9; // in the look only real emitters glow: tubes, bulbs, screens
-  R.dust.mat.opacity = 0.55 * S.dust * Math.pow(far, 1.2);
-  R.dust.pts.visible = S.dust > 0;
+  R.dust.mat.opacity = 0.55 * Math.max(S.dust, 0.5) * Math.pow(far, 1.2); // up to 0.5 the slider sets how many specks, above it how bright
+  R.dust.pts.visible = S.dust > 0; R.dust.pts.geometry.setDrawRange(0, Math.round(R.dust.seed.length * Math.min(1, S.dust / 0.5)));
   const p = R.dust.pts.geometry.attributes.position, b = R.dust.base, sd = R.dust.seed;
   for (let i = 0; i < sd.length; i++) {
     p.array[i * 3] = b[i * 3] + still * Math.sin(now * 0.00021 + sd[i]) * 0.12;
