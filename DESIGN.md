@@ -522,8 +522,9 @@ came up with, or it rescales under the finger.
   lines more distortion in the image"): home's broken cabinet (tv-broken-3.png, 9-sliced small, `--tvf-u` px per
   photo pixel) with its green pilot LED, home's glass layers in RevFX violet, and a worse tube than home's: heavy
   scanlines over the picture, red / cyan fringes, a hum bar rolling down, a faint flicker, a small tear every few
-  seconds and a big one + a flash on every roll (`.rfx-tv*`, revfx.css; still under reduced motion). The ask
-  "4 ROLL IT ▸" (Bebas, the number in inverse video) sits OVER the lines, so it reads; the die is the picture; the
+  seconds and a big one + a flash on every roll (`.rfx-tv*`, revfx.css; still under reduced motion). The one
+  word RANDOMIZE (Yoni: "a cool tv theme like text"; was "4 ROLL IT ▸" in Bebas) in a set's on-screen type (VT323,
+  fringed like the tube, burning hotter for four beats when the guide reaches it) sits OVER the lines, so it reads; the die is the picture; the
   glass is the button. Two screens side by side stay two parts: the segment LCD reads the sound, the TV holds the die.
 
 ## 10. History + open questions (for Dan)

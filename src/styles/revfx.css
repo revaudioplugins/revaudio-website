@@ -384,23 +384,18 @@
   box-shadow: inset 0 0 0 1px rgba(190, 90, 255, .22), inset 0 0 18px rgba(0, 0, 0, .8); }
 @media (hover: hover) { .rfx-tv:hover .rfx-tv-glow { filter: brightness(calc(var(--tv-bright) * 1.22)); } }
 .rfx-tv:focus-visible { outline: 2px solid var(--tv-ink-hot); outline-offset: 3px; }
-/* the ask, as the TV's "PICK A CATEGORY ▸": Bebas in the phosphor (fringed like the rest of the tube), the step's
-   number in inverse video (a lit key); over the lines */
-.rfx-tv-ask { position: relative; z-index: 2; display: flex; align-items: center; gap: .35em; white-space: nowrap;
-  font: 400 21px/1 var(--font-display); letter-spacing: .06em; color: var(--tv-ink);
-  text-shadow: 1.2px 0 rgba(255, 40, 90, .55), -1.2px 0 rgba(40, 220, 255, .45), 0 0 10px var(--tv-glow); }
-.rfx-tv-ask b { display: inline-grid; place-items: center; min-width: 1.05em; padding: .12em .18em .02em; border-radius: 2px; font-weight: 400;
-  color: var(--tv-ink-on); background: var(--tv-ink-hot); text-shadow: none;
-  box-shadow: 1.2px 0 rgba(255, 40, 90, .55), -1.2px 0 rgba(40, 220, 255, .45), 0 0 14px var(--tv-glow-hot); }
-.rfx-tv-ask i { font-style: normal; color: var(--tv-ink-hot); }
-/* off the cabinet's rounded top corners: centred, a little down (a strip on phones keeps it left, below) */
-.rfx-tv-ask { justify-content: center; margin-top: 5px; }
-/* the guide: ROLL IT is next = the ask lights (filled, glowing) and its cursor blinks four times, then holds
-   (a blink that never stops fails WCAG 2.2.2, as on the TV) */
-[data-rfx-hear][data-next='roll'] .rfx-tv-ask { color: var(--tv-ink-hot);
-  text-shadow: 1.2px 0 rgba(255, 40, 90, .6), -1.2px 0 rgba(40, 220, 255, .5), 0 0 8px var(--tv-glow-hot), 0 0 22px var(--tv-glow-soft); }
-@keyframes rfx-tv-blink { 50% { opacity: 0; } }
-@media (prefers-reduced-motion: no-preference) { [data-rfx-hear][data-next='roll'] .rfx-tv-ask i { animation: rfx-tv-blink 1.1s steps(1, end) 4; } }
+/* the word: RANDOMIZE in a set's on-screen display (Yoni 2026-11-09: "instead of 4 - roll it, a cool tv theme like
+   text which just says Randomize"): VT323, the chunky raster type of a TV / VCR menu, in the phosphor, fringed red /
+   cyan like the rest of the tube; over the lines so it reads. Centred off the cabinet's rounded corners (left on a
+   phone's strip, below) */
+.rfx-tv-ask { position: relative; z-index: 2; display: flex; align-items: center; justify-content: center; margin-top: 7px; white-space: nowrap;
+  font: 400 25px/1 var(--d-f-lcd); letter-spacing: .08em; color: var(--tv-ink);
+  text-shadow: 1.5px 0 rgba(255, 40, 90, .6), -1.5px 0 rgba(40, 220, 255, .5), 0 0 10px var(--tv-glow); }
+/* the guide: when the die is next, the word burns (hot phosphor, more bloom) */
+[data-rfx-hear][data-next='roll'] .rfx-tv-ask { color: #fbeaff;
+  text-shadow: 1.5px 0 rgba(255, 40, 90, .7), -1.5px 0 rgba(40, 220, 255, .6), 0 0 8px var(--tv-glow-hot), 0 0 22px var(--tv-glow-soft); }
+@media (prefers-reduced-motion: no-preference) { [data-rfx-hear][data-next='roll'] .rfx-tv-ask { animation: rfx-tv-burn 1.2s ease-in-out 4; } }   /* four beats, then it holds (WCAG 2.2.2, as the TV's cursor) */
+@keyframes rfx-tv-burn { 50% { color: var(--tv-ink-hot); } }
 [data-rfx-hear][data-next='roll'] .rfx-tv-glow { filter: brightness(calc(var(--tv-bright) * 1.15)); }
 /* the tube's own faults (a broken set's, design-language §3: its own, small): the hum bar rolls, the glow flickers,
    the picture tears now and then; a roll = a big tear + a flash (the channel changing) */
@@ -563,7 +558,7 @@
 /* ---- narrow laptops: a smaller switch + caps leave the five their room */
 @media (min-width: 1024px) and (max-width: 1240px) {
   .rfx-hear-step--roll { --s: 48px; --tvf-u: .145; width: 170px; }
-  .rfx-tv-ask { font-size: 18px; }
+  .rfx-tv-ask { font-size: 22px; }
   .rfx-hear-board { --fix: 28px; --pgk: .5; }
   #rfx-hear .rfx-start { --k: .44; }
   .rfx-hear-stomprow { gap: 10px; }
@@ -596,8 +591,7 @@
   .rfx-hear-top { grid-template-columns: minmax(0, 1fr); }
   .rfx-hear-step--roll { --s: 40px; --tvf-u: .095; width: auto; height: 100px; }
   .rfx-tv { flex-direction: row; align-items: center; justify-content: space-between; }
-  .rfx-tv-ask { justify-content: flex-start; margin-top: 0; }
-  .rfx-tv-ask { font-size: 26px; }
+  .rfx-tv-ask { justify-content: flex-start; margin-top: 0; font-size: 30px; }
   .rfx-tv-pic { flex: none; width: calc(var(--s) * 1.8); min-height: calc(var(--s) * 1.5); }
 }
 /* ---- phones */
@@ -620,7 +614,7 @@
   .rfx-hear-deck { gap: 8px; }
   .rfx-hear-top { gap: 6px; }
   .rfx-hear-step--roll { --s: 32px; --tvf-u: .085; height: 90px; }
-  .rfx-tv-ask { font-size: 22px; }
+  .rfx-tv-ask { font-size: 26px; }
   .rfx-plate { --rail: 12px; }
   #rfx-hear .rfx-start { --k: .42; }
   .rfx-hear-stomprow { gap: 8px; }
