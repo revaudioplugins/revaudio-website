@@ -1,3 +1,17 @@
+## 2026-11-09 — /revfx trial form sends the download at once (`gateWired: true`) (Claude Code `revaudio-0b [3311c0]`, Yoni's laptop 2) — branch `revfx-gate-on`, NOT on main (waits for Yoni's "push")
+
+Claim: CLOSED 2026-11-09 `revaudio-0b`. Files: `src/data/revfx.ts` (`gateWired` only; `revaudio-2f`'s claim there is `hearTracks` only), this entry.
+- Yoni: a user already on our list got "Already on our list" on the /revfx sign-up and no download. Cause: with
+  `gateWired: false` the RevFX forms posted only to the worker's once-per-email `/form-once`. The worker has known
+  RevFX since `b7e589a` (live 2026-11-08) and both RevFX builds are live in R2, so the gate is on: the forms post to
+  `/download/register` (download email at once, as on /drift); `/form-once` runs in the background only.
+- Paired worker change (RevLimiter repo main `e388699`, NOT deployed yet): trial sign-ups to `/form-once` are logged
+  in KV `triallog:<email>`, no Formspree mail to info@, never "already". Ship order: worker deploy, then this push.
+- Checks: `npm run build` green (33 pages); built /revfx/ has 2 forms with `data-register-url` = the worker's
+  `/download/register` and the ok text "Download on its way by email." Not checked: a real sign-up (after deploy).
+- Open (not touched): `winReady: false` + the fine print "Open it on a Mac", though `revfx-win` is live in R2 since
+  2026-11-09 16:07; the download email offers both.
+
 ## 2026-11-09 — /revfx player: the die moves into the player and rolls Yoni's presets (Claude Code `revaudio-2f [e388a1]`, Yoni's laptop 2) — branch `feat/revfx-hear` — LIVE on main `81922f5` (2026-11-09, Yoni: "push deploy to the revfx page (dont add it to the index just like its now)")
 
 Claim: OPEN `revaudio-2f` (live; open for the preset names) (took over `revaudio-0d`'s claim below, same files, + `src/components/revfx/RfxHero.astro`,
