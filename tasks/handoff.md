@@ -267,6 +267,21 @@ NEXT (tomorrow):
      context for the orchestrator, not a change to YOUR task."
 4. Then: into the homepage on laptops (Dan's "go"), CSP + R2 (Dan's OK), the critics' round on the finished room.
 
+UPDATE 2 2026-11-09 (later): landed since, all pushed on `feat/home-opening`:
+- `3020b60` the car: Dan's pick A, our coupe in gloss black clearcoat ("reflective and shiny"). `c33bbb6` the
+  builders' batch 2: 27 more slots real, 55 models load; draw calls at walk 0 / 0.3 / 0.6 / 0.9 = 817 / 744 / 213 / 87.
+  `e6325db` much less dust (0.15, settings ver 15).
+- The commit with this note: Dan's room bench of 11-09 baked as the defaults (ver 16). The end wall is rearranged
+  (E05 pegboard, E06 shelf, N20 globe lamp, N32 radio, N36 ON AIR over the TV), plus the L19 guitar rack, the N12 clamp
+  lamp and the neon sign. The big line ("Built like cars.") and the engine (tail-lights) are off, as on his bench.
+  ⏸ His word on whether the line stays off: it is the first screen's headline.
+  Checks: 0 overlaps, hand-off = baseline, 0 errors.
+- Running: the garage-speed workflow. Dan: "make the page faster without hurting the quality", with options for him to
+  pick. Outputs are in this session's scratchpad `look/step5/perf/` (`synth/report.md` when done). Next: a page that
+  shows him the options.
+- The 3 builders are idle after batch 2, held for quiet perf measurements; the next batches are in
+  `team/builders/*-LIST.md`.
+
 Open: the monitors bench had B (vintage) ticked but Dan's chat said "black + wood"; black went in. Confirm if asked.
 Owed by Dan: tell Gil (the room on laptops from Nov 19, next to his Black Friday countdown); the R2 / CSP OK.
 Run the room: from this worktree's root `python3 -m http.server 4490 --bind 127.0.0.1` (this session left one running,

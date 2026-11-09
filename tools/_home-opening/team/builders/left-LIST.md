@@ -16,7 +16,7 @@
 11. W03 · Sketch + signal-flow wall (our UIs) · 0.03 x 0.9 x 1.4 · (-3.3, 2.2, 6.8)  [pinned]
 12. W01 · Test-gear tower: scope, generator, meter · 0.4 x 0.6 x 0.5 · (-3.1, 1.2, 12.6)  [pinned]
 13. N13 · Corkboard: gig flyers, photos, a calendar · 0.03 x 0.8 x 1.2 · (-3.3, 3.2, 8.2)  [pinned]; made-up bands only
-14. N12 · Clamp-on task lamp over the bench · 0.3 x 0.62 x 0.3 · (-3.2, 1.6, 13.6)  [pinned]; it is lit
+14. N12 · Clamp-on task lamp over the bench · 0.3 x 0.62 x 0.3 · (-3.15, 1.55, 14.61)  [pinned; Dan moved it 11-09]; it is lit
 15. W02 · The plugin's real object, mid-build (RPM gauge) · 0.35 x 0.25 x 0.3 · (-2.9, 1.1, 13.6)  [pinned]
 16. W05 · Solder station + fume extractor (smoke wisp) · 0.3 x 0.18 x 0.3 · (-2.8, 1.0, 13.1)  [pinned]
 17. N28 · Mini fridge covered in stickers · 0.5 x 0.85 x 0.5 · (-3.1, 0.4, 3.3)

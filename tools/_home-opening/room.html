@@ -211,24 +211,25 @@ const DEF = {
   sway: 0.4, neon: 0.38, lamps: 1.4, tvGlow: 1.25, bloom: 1.1, fog: 0.036, dust: 0.15, // neon one step up from 0.26 (Dan's pick, 11-08); dust 0.5 -> 0.15 (Dan 11-09: "less dust in the air, much less": 30 % of the specks)
   ledStrip: 0, rackLeds: 1, screens: 1.8,  // the room alive: aisle LED strips (off: they read as a road), the racks' LEDs + VU, the CRT monitors
   // the car side-on, nose out through the open roll-up door in the right wall, engine off, on a low lift (Dan 2026-11-02)
-  carZ: 0.82, carOut: 0.5, carYaw: 18, liftType: 'scissor', liftH: 0.68, engine: 1,
+  carZ: 0.82, carOut: 0.5, carYaw: 18, liftType: 'scissor', liftH: 0.68, engine: 0, // engine off again on his room bench of 11-09: dark tail-lights
   doorW: 4, doorH: 3.5, doorOpen: 0.9, outside: 3,
   // the REVAUDIO neon: off the aisle (Dan 2026-11-02: "not in your face"), then on the end wall, right of the TV (11-03)
-  signWall: 'endLeft', signF: 0.52, signX: -1.62, signY: 2.95,  // the wall in front of you, top right (Dan 11-03, placed 11-04)
+  signWall: 'endLeft', signF: 0.52, signX: -1.47, signY: 3.09,  // the wall in front of you, top right (Dan 11-03, placed 11-04, nudged on his room bench of 11-09)
   signScale: 1.15, signTilt: -2,        // hung a little crooked on two wires (Dan 11-03; sized 11-04)
-  ver: 15,                               // settings version (15 = much less dust, Dan 11-09; 14 = the drum N06 moved, Dan's build bench of 11-09; 5 = Dan's bench of 11-03 baked, 6 = his third, with the pegboard move, 7 = back to the bare set; his bench of 11-04 needed no bump; 8 = the snap off; 9 = B + A's moves as the room; 10 = the look pass, 11 = its first fix round, 12 = his bench of 11-08 + two nudges, 13 = his neon pick): 2 moved the sign to the end wall, 3 made it bigger + crooked, 4 took the road off the floor
+  ver: 16,                               // settings version (16 = his room bench of 11-09: the end wall rearranged, the big line + the engine off; 15 = much less dust, Dan 11-09; 14 = the drum N06 moved, Dan's build bench of 11-09; 5 = Dan's bench of 11-03 baked, 6 = his third, with the pegboard move, 7 = back to the bare set; his bench of 11-04 needed no bump; 8 = the snap off; 9 = B + A's moves as the room; 10 = the look pass, 11 = its first fix round, 12 = his bench of 11-08 + two nudges, 13 = his neon pick): 2 moved the sign to the end wall, 3 made it bigger + crooked, 4 took the road off the floor
   // the look pass (2026-11-08, todo 1b): real materials and night light on the same set (Skeleton = the grey labelled
   // blocks); tone = the tone mapping (AgX), exposure its exposure; probe = how much the room shows in its own shiny
   // things (chrome, paint, the floor); shafts = the haze under the lamps
   look: 1, tone: 'agx', exposure: 1, shadows: 1, probe: 1, shafts: 0.9,
-  labels: 0, wire: 0, readB: 1, snap: 0, paint: 0, film: 0, bench: 0, edit: 0,  // paint: the painted room over the bare set; film: the walk film over both; snap: free scrolling by default, the snap stays a bench option (Dan 2026-11-04)
+  labels: 0, wire: 0, readB: 0, snap: 0, paint: 0, film: 0, bench: 0, edit: 0,  // readB: the big line under the TV ("Built like cars."), off on Dan's room bench of 11-09; paint: the painted room over the bare set; film: the walk film over both; snap: free scrolling by default, the snap stays a bench option (Dan 2026-11-04)
   // (both off, Dan 2026-11-03 after the one-shot film: "lets go back to the skelton this is not what i want")
   // per-object moves from the move tool: { id: { f, x, y, side, s, r } }; Dan's pick of 2026-11-05 (layouts/b-plus-a.json)
   moves: {
     "M03": {"f": 0.0771, "x": -0.8, "s": 1.15},  // f kept its spot on the desk when the room grew to 20.9 m (11-08)
     "N26B": {"x": -2.2, "s": 0.8},
     "N30": {"x": 2.2, "s": 0.85},
-    "N36": {"x": 0.55, "y": 2.45},
+    "N36": {"x": -0.01, "y": 2.28},  // ON AIR centred over the TV (Dan's room bench, 11-09)
+    "E05": {"x": -2.05, "y": 1.97}, "E06": {"x": 1.75, "y": 2.2}, "N20": {"x": 0.67, "y": 2.7}, "N32": {"x": 2.32, "y": 2.67}, // the end wall as he set it (11-09)
     "P04": {"x": 2.4, "y": 3.35},
     "A04": {"x": 1.0, "y": 3.4},
     "N23": {"f": 0.1181, "x": -2.95, "side": -1},
@@ -242,7 +243,7 @@ const DEF = {
     "L02": {"f": 0.2465, "y": 2.2},
     "L03": {"f": 0.2812, "y": 2.2},
     "P01": {"f": 0.2639, "y": 3.25},
-    "L19": {"f": 0.3438},
+    "L19": {"f": 0.3353, "x": -3.15},  // Dan 11-09
     "W07": {"f": 0.441},
     "W03": {"f": 0.441, "y": 2.25},
     "L13": {"f": 0.4062, "y": 1.03, "s": 0.8},
@@ -266,7 +267,7 @@ const DEF = {
     "W01": {"f": 0.816},
     "W05": {"f": 0.8507},
     "W02": {"f": 0.8854},
-    "N12": {"f": 0.8854, "x": -3.2, "y": 1.55},
+    "N12": {"f": 0.9484, "x": -3.15, "y": 1.55},  // Dan 11-09
     "L16": {"f": 0.0764, "side": 1},
     "A06": {"y": 2.4},
     "L05": {"f": 0.1354, "side": 1},
@@ -353,6 +354,10 @@ if (sv < 12) for (const id of ['M03', 'N16']) S.moves[id] = { ...DEF.moves[id] }
 if (sv < 13) S.neon = DEF.neon; // his picks of 11-08: the ceiling neon one step up (the door, chests and walls stay)
 if (sv < 14) S.moves.N06 = { ...DEF.moves.N06 }; // his build bench of 11-09: the GAS 2 drum to his pin
 if (sv < 15) S.dust = DEF.dust; // his note of 11-09: "less dust in the air, much less"
+if (sv < 16) { // his room bench of 11-09: the end wall rearranged, the guitar rack + clamp lamp, the sign; the big line + the engine off
+  for (const id of ['E05', 'E06', 'N20', 'N32', 'N36', 'L19', 'N12']) S.moves[id] = { ...DEF.moves[id] };
+  Object.assign(S, { signX: DEF.signX, signY: DEF.signY, engine: DEF.engine, readB: DEF.readB });
+}
 S.ver = DEF.ver;
 // ?layout=<name>: a proposed layout (layouts/<name>.json, the bench's Copy-settings format) over the defaults, to walk
 // and compare; this browser's saved bench is left alone and nothing is saved

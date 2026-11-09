@@ -18,5 +18,8 @@
 14. E04 synth on the desk · N33 oscilloscope (live green trace: casing only) · N35 headphones + a mug · N36 ON AIR sign
     (lit) · N20 GAS 2 pump-globe lamp (lit) · N32 tube radio (dial glowing) · R08 modular synth · R19 framed print of
     our first faceplate · N29 moving blankets on a rail
+    Dan rearranged the end wall on 11-09 (keep his spots): N36 ON AIR over the TV (-0.01, 2.28, 0.06); N20 the globe
+    lamp (0.67, 2.70, 0.25) and N32 the radio (2.32, 2.67, 0.21) hang on the wall with nothing under them, so give
+    each a wall hanger or bracket; E05 the pegboard (-2.05, 1.97) and E06 the shelf (1.75, 2.20) moved too.
 15. A01 / A02 · Bass traps, the far corners · 0.88 x 4.6 x 0.88 · (∓3.4, 2.3, 0)
 Not yours (reused from the room's models): L13 / L14 studio monitors, R16 the right wall's drum kit.

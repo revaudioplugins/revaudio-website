@@ -287,6 +287,10 @@ Steps:
               R09 N03). Bench https://claude.ai/artifact/WbhosKXawqVMvT3xpKo53p (db `notes`): ⏸ Dan picks the CAR
               (A our coupe / B CC0 covered hatchback / C our coupe covered; candidates in the car builder's folder
               `candidates/CAR/`), ✓ or notes on the 12 objects. The car needs `R.tailMat` on its `tail_light` mesh.
+            - Round 2 (2026-11-09): the car = A, glossy (`3020b60`); batch 2 = 27 more slots (`c33bbb6`); much less
+              dust (`e6325db`); Dan's room bench baked (ver 16: the end wall rearranged, L19, N12, the sign; the big
+              line + the engine off as on his bench, ⏸ is the line off on purpose?). Next: the garage-speed options
+              page; the builders' batch 3.
 - [ ] 5. Into the page, with the checks.
 - [ ] 6. A test skin: swap one object and remove one (RevFX or a poster), end to end.
 
