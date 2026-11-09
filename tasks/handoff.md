@@ -1,11 +1,11 @@
-## 2026-11-09 — /revfx trial form sends the download at once (`gateWired: true`) (Claude Code `revaudio-0b [3311c0]`, Yoni's laptop 2) — branch `revfx-gate-on`, NOT on main (waits for Yoni's "push")
+## 2026-11-09 — /revfx trial form sends the download at once (`gateWired: true`) (Claude Code `revaudio-0b [3311c0]`, Yoni's laptop 2) — branch `revfx-gate-on` — PUSHED TO MAIN 2026-11-09 on Yoni's "deploy" (worker deployed first, version `b31a75bd`)
 
 Claim: CLOSED 2026-11-09 `revaudio-0b`. Files: `src/data/revfx.ts` (`gateWired` only; `revaudio-2f`'s claim there is `hearTracks` only), this entry.
 - Yoni: a user already on our list got "Already on our list" on the /revfx sign-up and no download. Cause: with
   `gateWired: false` the RevFX forms posted only to the worker's once-per-email `/form-once`. The worker has known
   RevFX since `b7e589a` (live 2026-11-08) and both RevFX builds are live in R2, so the gate is on: the forms post to
   `/download/register` (download email at once, as on /drift); `/form-once` runs in the background only.
-- Paired worker change (RevLimiter repo main `e388699`, NOT deployed yet): trial sign-ups to `/form-once` are logged
+- Paired worker change (RevLimiter repo main `e388699`, DEPLOYED 2026-11-09, version `b31a75bd`): trial sign-ups to `/form-once` are logged
   in KV `triallog:<email>`, no Formspree mail to info@, never "already". Ship order: worker deploy, then this push.
 - Checks: `npm run build` green (33 pages); built /revfx/ has 2 forms with `data-register-url` = the worker's
   `/download/register` and the ok text "Download on its way by email." Not checked: a real sign-up (after deploy).
