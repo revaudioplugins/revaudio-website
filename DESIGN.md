@@ -167,7 +167,9 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
       "Setup tips and a trial-end reminder. Unsubscribe anytime." / free + beta "A few setup tips. Unsubscribe
       anytime.", Dan 2026-11-08). Then "Check your inbox", Sent to <address>, on a touch screen "Open it on your
       Mac or PC to install.", "Not there in a minute? Look in Promotions or Spam." (the site's sign-ups since
-      2026-10-29), Resend · Wrong email? (P01). Its new look waits for Dan's pick of three on `/__wwsent`. The screen's two faces only (Bebas, Inter); each refusal at its field in one red
+      2026-10-29), Resend · Wrong email? (P01). Its new look waits for Dan's pick on `/__wwsent`; look A as of round 3 (Dan 2026-11-09): on a
+      laptop the headline leads, its top level with the list's first row; the section under it glitches in (the
+      TV's own glitch, bigger); the channel bug in the bottom-right corner. The screen's two faces only (Bebas, Inter); each refusal at its field in one red
       the channels never take (hsl 352 100% 76%), the focus on the first. While it is open: no glitch at
       all, no pop-up, no snap, DRIFT's run paused; another channel puts the plugin back. A plugin verified
       in the last 24 h still gets TrialGateModal's Mac / Windows keys. The download itself is in the email

@@ -6,8 +6,11 @@
    block over the REAL sent screen of the TV's on-screen sign-up (WordWall.astro, .ws.is-sent): the page's own
    headline, address and spam line hide; its Resend / Wrong email? keys move into the look (they keep working). The
    words are the same in all three; what differs is the composition and how it comes on:
-     A On air   a station card: the channel bug, CHECK YOUR over a giant INBOX, the address as a news lower-third that
-                wipes in; the picture rolls in and locks like a CRT's vertical hold.
+     A On air   a station card: CHECK YOUR over a giant INBOX, the address as a news lower-third, the channel bug in
+                the corner. Round 3 (Dan 2026-11-09: "the headline should be where the ②", "this all section will be
+                glitching in"): on a laptop the headline leads, level with the list's first row (apply() measures it);
+                it rolls in and locks like a CRT's vertical hold, the section under it glitches in (the TV's own
+                glitch: rows torn sideways, the red / cyan fringe, in steps), the bug comes on last.
      B Redline  RevAudio's own instrument: a phosphor rev counter; the needle sweeps up, bounces off the limiter
                 (the redline is the threshold) and SENT lights; then the words.
      C Ch 00    the TV changes channel to INBOX: the set's on-screen number, a SENDING bar that fills like the volume
@@ -53,13 +56,13 @@
   const LOOKS = {
     a: {
       name: 'On air',
-      line: 'A station card: the channel bug, CHECK YOUR over a giant INBOX, the address as a news lower-third. It rolls in and locks like a CRT’s vertical hold.',
+      line: 'A station card: CHECK YOUR over a giant INBOX, level with the list, the address as a news lower-third, the channel bug in the corner. The headline rolls in and locks, the section under it glitches in.',
       html: (d, w) => `
-        <p class="xa-bug" data-x><span>${esc(d.name)}</span><i>CH ${d.ch}</i></p>
         <h3 class="xa-hl" data-x tabindex="-1"><span>Check your</span>Inbox</h3>
-        <p class="xa-third" data-x><span class="k">Sent to</span><b>${esc(d.addr)}</b></p>
+        <div class="xa-tw" data-x><p class="xa-third"><span class="k">Sent to</span><b>${esc(d.addr)}</b></p></div>
         <ol class="xa-steps" data-x>${w.steps.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>
-        <div class="x-foot" data-x><p>${esc(w.spam)}</p><div class="x-acts"></div></div>`,
+        <div class="x-foot" data-x><p>${esc(w.spam)}</p><div class="x-acts"></div></div>
+        <p class="xa-bug" aria-hidden="true"><span>${esc(d.name)}</span><i>CH ${d.ch}</i></p>`,
     },
     b: {
       name: 'Redline',
@@ -101,7 +104,9 @@
 
   /* ---- A · On air ---- */
   .wsx-a { gap: 1.05rem; }
-  .xa-bug { display: inline-flex; align-items: center; gap: 0.6rem; font: 400 1.05rem/1 var(--font-display); letter-spacing: 0.16em; text-transform: uppercase; color: var(--ww-ink); }
+  /* the channel bug sits in the screen's corner, where a station's bug sits (bottom right; BACK holds the top right) */
+  .ws.is-sent[data-look='a'] { position: relative; }
+  .xa-bug { position: absolute; right: 0; bottom: 0; display: inline-flex; align-items: center; gap: 0.6rem; font: 400 1.05rem/1 var(--font-display); letter-spacing: 0.16em; text-transform: uppercase; color: var(--ww-ink); }
   .xa-bug i { font-style: normal; padding: 0.26rem 0.42rem 0.14rem; background: var(--ww-ink-hot); color: var(--ww-ink-on); letter-spacing: 0.1em; box-shadow: 0 0 14px var(--ww-glow-hot); }
   .xa-hl { font: 400 clamp(4.8rem, 8.6vw, 7.4rem)/0.8 var(--font-display); letter-spacing: 0.02em; text-transform: uppercase; color: var(--ww-ink-hot); text-shadow: 0 0 14px var(--ww-glow), 0 0 44px var(--ww-glow-soft); }
   .xa-hl span { display: block; margin-bottom: 0.06em; font-size: 0.4em; line-height: 1; letter-spacing: 0.18em; color: var(--ww-ink); text-shadow: 0 0 9px var(--ww-glow); }
@@ -111,6 +116,13 @@
   .xa-steps { display: grid; gap: 0.45rem; padding: 0; list-style: none; counter-reset: xa; font: 500 1rem/1.35 var(--font-body); color: hsl(var(--ww-ch-h) 30% 92%); }
   .xa-steps li { display: grid; grid-template-columns: 1.65rem minmax(0, 1fr); gap: 0.65rem; align-items: baseline; counter-increment: xa; }
   .xa-steps li::before { content: counter(xa); display: grid; place-items: center; height: 1.6rem; font: 400 1.05rem/1 var(--font-display); color: var(--ww-ink-hot); box-shadow: inset 0 0 0 1.5px var(--ww-ink); }
+  /* a laptop: the headline leads, its top level with the list's first row (Dan r2: "where the ②"; apply() measures
+     --xa-level); BACK floats in the top right; the panel keeps the glass's height, so the bug has a corner */
+  @media (min-width: 861px) {
+    .ww-panel.is-signing:has(> .ws.is-sent[data-look='a']) { align-self: stretch; align-content: stretch; }
+    .ws.is-sent[data-look='a'] { align-self: stretch; align-content: start; padding-top: var(--xa-level, 0px); }
+    .ws.is-sent[data-look='a'] > .ws-head { position: absolute; top: 0; right: 0; width: auto; }
+  }
 
   /* ---- B · Redline ---- */
   .wsx-b { gap: 0.75rem; }
@@ -161,6 +173,7 @@
     .wsx .x-acts .ws-act { justify-content: center; }
     .xa-hl { font-size: clamp(4.4rem, 26vw, 6.4rem); }
     .xa-third { clip-path: none; padding: 0.6rem 0.95rem 0.52rem; justify-content: center; }
+    .ws.is-sent[data-look='a'] .ws-sent { padding-bottom: 2.6rem; } /* the bug's corner stays clear on a short phone */
     .xa-steps, .xc-steps { justify-self: center; text-align: left; }
     .xb-hl, .xc-hl { font-size: clamp(2.8rem, 13vw, 3.6rem); }
     .xb-next { max-width: 22rem; }
@@ -178,19 +191,44 @@
     const an = (el, frames, o) => { if (!el) return; const a = el.animate(frames, { fill: 'both', ...o, duration: o.duration * k, delay: (o.delay || 0) * k }); all.push(a); return a; };
     const rise = (els, at, gap = 70) => els.forEach((el, i) => an(el, [{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }], { duration: 320, delay: at + i * gap, easing: 'cubic-bezier(.2,.8,.2,1)' }));
     const q = (s) => root.querySelector(s);
+    // the TV's own glitch as an entrance (WordWall's glJump: sideways in steps, a red then a cyan fringe, the same two
+    // inks), the size of a fault you notice (~20 px over 420 ms; the idle one is 3 px over 150 ms): each row torn its
+    // own way, some blink off once, then it locks with a flash. Stepped (each keyframe holds till the next), and the
+    // last two keyframes alike: the browser's clock can end a hair short of 1 (1.46 s - 1.04 s), which on a step
+    // leaves the one before last up (the flash stayed lit, the bug stayed dark: caught 2026-11-09)
+    const RED = '#ff0033', CYAN = '#00e5ff';
+    const glitchIn = (els, at) => {
+      const amp = [22, -15, 19, -26, 12, -18], lag = [0, 30, 10, 50, 20, 40], blink = [0, 1, 0, 1, 1, 0];
+      const s = 'steps(1, end)', fr = (dx, c) => `drop-shadow(${dx.toFixed(1)}px 0px 0px ${c})`;
+      els.forEach((el, i) => {
+        const a = amp[i % 6];
+        an(el, [
+          { opacity: 0, translate: `${a}px 0px`, filter: fr(0, RED), easing: s },
+          { offset: 0.14, opacity: 1, translate: `${a}px 0px`, filter: fr(-0.4 * a, RED), easing: s },
+          { offset: 0.3, opacity: blink[i % 6] ? 0 : 1, translate: `${-0.5 * a}px 0px`, filter: fr(0.3 * a, CYAN), easing: s },
+          { offset: 0.46, opacity: 1, translate: `${-0.6 * a}px 0px`, filter: fr(0.4 * a, CYAN), easing: s },
+          { offset: 0.64, opacity: 1, translate: `${0.3 * a}px 0px`, filter: fr(-3, RED), easing: s },
+          { offset: 0.8, opacity: 1, translate: '0px 0px', filter: 'brightness(1.45)', easing: s },
+          { offset: 0.92, opacity: 1, translate: '0px 0px', filter: 'none', easing: s },
+          { opacity: 1, translate: '0px 0px', filter: 'none' },
+        ], { duration: 420, delay: at + lag[i % 6] });
+      });
+    };
     if (key === 'a') {
-      // the picture rolls in from below and locks (a CRT's vertical hold), the tube flaring as it does
-      an(root, [
-        { transform: 'translateY(46%)', opacity: 0, filter: 'brightness(2.2) blur(1.5px)' },
-        { transform: 'translateY(-4%)', opacity: 1, filter: 'brightness(1.5) blur(0.6px)', offset: 0.55 },
-        { transform: 'translateY(1.2%)', filter: 'brightness(1.15) blur(0px)', offset: 0.78 },
+      // the headline rolls in from below and locks (a CRT's vertical hold), the tube flaring as it does (as far as the
+      // whole card rolled in round 2)
+      const reach = Math.round(root.offsetHeight * 0.46);
+      an(q('.xa-hl'), [
+        { transform: `translateY(${reach}px)`, opacity: 0, filter: 'brightness(2.2) blur(1.5px)' },
+        { transform: `translateY(${Math.round(-reach * 0.09)}px)`, opacity: 1, filter: 'brightness(1.5) blur(0.6px)', offset: 0.55 },
+        { transform: `translateY(${Math.round(reach * 0.026)}px)`, filter: 'brightness(1.15) blur(0px)', offset: 0.78 },
         { transform: 'none', opacity: 1, filter: 'none' },
       ], { duration: 560, easing: 'cubic-bezier(.25,.9,.3,1)' });
-      an(q('.xa-bug i'), [{ opacity: 0 }, { opacity: 1, offset: 0.5 }, { opacity: 0.2, offset: 0.7 }, { opacity: 1 }], { duration: 420, delay: 420, easing: 'steps(1, end)' });
-      // the lower third wipes in from the left (to its own resting cut: angled on a laptop, square on a phone)
-      const third = q('.xa-third'), cp = win.getComputedStyle(third).clipPath;
-      an(third, [{ clipPath: 'polygon(0 0, 0 0, 0 100%, 0 100%)' }, { clipPath: cp && cp !== 'none' ? cp : 'polygon(0 0, 100% 0, 100% 100%, 0 100%)' }], { duration: 380, delay: 520, easing: 'cubic-bezier(.65,0,.35,1)', fill: 'backwards' });
-      rise([...root.querySelectorAll('.xa-steps li'), q('.x-foot')], 760);
+      // the section under it glitches in (Dan r2: "this all section will be glitching in instead of coming like this")
+      glitchIn([q('.xa-tw'), ...root.querySelectorAll('.xa-steps li'), q('.x-foot > p'), q('.x-acts')], 520);
+      // the station's bug comes on last, in its corner
+      const s = 'steps(1, end)';
+      an(q('.xa-bug'), [{ opacity: 0, easing: s }, { offset: 0.3, opacity: 1, easing: s }, { offset: 0.5, opacity: 0.15, easing: s }, { offset: 0.7, opacity: 1, easing: s }, { opacity: 1 }], { duration: 420, delay: 1040 });
     } else if (key === 'b') {
       const g = q('.xb-gauge');
       an(g, [{ opacity: 0 }, { opacity: 1 }], { duration: 240 });
@@ -237,13 +275,26 @@
     const act = ws.querySelector('.ws-act'), msg = ws.querySelector('.ws-msg');
     if (old) { sent.append(act, msg); old.remove(); }
     ws.dataset.look = key;
+    ws.style.removeProperty('--xa-level');
     const x = doc.createElement('div');
     x.className = 'wsx wsx-' + key;
     x.innerHTML = LOOKS[key].html(d, words(d));
     x.querySelector('.x-acts').append(act, msg);
     sent.prepend(x);
+    if (key === 'a') level(doc, ws, x);
     x.querySelector('h3')?.focus({ preventScroll: true });
     return { root: x, anims: enter(x, key, slow) };
+  }
+
+  // A on a laptop: the headline's top level with the list's first row, its name (both Bebas at line-height 1 and
+  // about one size, so the boxes' tops are the caps' tops); measured before the entrance moves anything
+  function level(doc, ws, x) {
+    if (doc.defaultView.matchMedia('(max-width: 860px)').matches) return;
+    const row = [...doc.querySelectorAll('[data-ww-pick]')].find((r) => r.offsetParent);
+    const name = row?.querySelector('.ww-name'), hl = x.querySelector('.xa-hl');
+    if (!name || !hl) return;
+    const dy = name.getBoundingClientRect().top - hl.getBoundingClientRect().top;
+    ws.style.setProperty('--xa-level', `${Math.max(0, Math.round(dy))}px`);
   }
 
   window.WWSENT = { LOOKS, words, apply, enter, CSS };
