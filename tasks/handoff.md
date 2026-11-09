@@ -1,6 +1,6 @@
-## 2026-11-09 — /revfx player: the die moves into the player and rolls Yoni's presets (Claude Code `revaudio-2f [e388a1]`, Yoni's laptop 2) — branch `feat/revfx-hear`
+## 2026-11-09 — /revfx player: the die moves into the player and rolls Yoni's presets (Claude Code `revaudio-2f [e388a1]`, Yoni's laptop 2) — branch `feat/revfx-hear` — LIVE on main `81922f5` (2026-11-09, Yoni: "push deploy to the revfx page (dont add it to the index just like its now)")
 
-Claim: OPEN `revaudio-2f` (took over `revaudio-0d`'s claim below, same files, + `src/components/revfx/RfxHero.astro`,
+Claim: OPEN `revaudio-2f` (live; open for the preset names) (took over `revaudio-0d`'s claim below, same files, + `src/components/revfx/RfxHero.astro`,
 `src/lib/revfx/deck.ts`). 
 - Yoni: the die really rolls a preset, random only for the visitor: 4 presets per sound (his renders + his RevFX preset
   .xml), a roll picks one of the other 3. Die + scene CRT + chain move from the hero into the player (step 4 ROLL IT);
@@ -34,6 +34,11 @@ Claim: OPEN `revaudio-2f` (took over `revaudio-0d`'s claim below, same files, + 
 - Then (Yoni: "instead of 4 - roll it make a cool tv theme like text which just says Randomize"): the TV says
   RANDOMIZE only, VT323 on-screen type (20 / 17.6 / 24 / 20.8 px after Yoni's "reduce the text size by 20%"), red / cyan fringes, 4 hotter beats when next. The
   LCD's coach still says ROLL THE DICE.
+- DEPLOYED 2026-11-09: origin/main merged into the branch (one conflict, tasks/lessons.md: both kept), build green,
+  pushed `81922f5` to main (fast-forward). Deploy + Smoke test + Clear Cloudflare cache all success. Live checks:
+  hero board 761 px, every /audio/revfx file 200, play + roll + track change work, no page errors. Listing unchanged
+  (only RevFX files differ from main: no plugins.ts / library.ts / astro.config change; /revfx/ stays in the sitemap,
+  no robots meta, not on the home TV, as before). STILL PLACEHOLDER: the 16 preset names / pedals / order.
 
 ## 2026-11-05 — /revfx before/after player: "Plug in. Stomp it." (Claude Code `revaudio-0d [61a467]`, Yoni's laptop 2) — branch `feat/revfx-hear`, worktree `../revaudio-website-rfxhear`
 
