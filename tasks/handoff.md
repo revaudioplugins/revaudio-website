@@ -15,8 +15,14 @@ Claim: OPEN `revaudio-2f` (took over `revaudio-0d`'s claim below, same files, + 
   its order (FLIP) and lights its pedals; coach ROLL THE DICE after the A/B. Data: `src/data/revfx-presets.json` +
   peaks.json `presets[]`, both from `tools/revfx-player/prep_audio.py` (now reads Yoni's preset .xml too).
 - Checks: build green; LCD lines fit 360-1440; click-through + 40 rolls 0 repeats (repo `tasks/todo.md` Review).
-- STATE: placeholders (16 scene names, /drift's bounces). Next: Yoni's 20 wav + 16 xml -> `prep_audio.py "<folder>"`,
-  listen to the swap, then his "push" for main (= live deploy). Open: photo die or keep the neon one.
+- Yoni's sounds IN (2026-11-09, from `C:\shirimmmmmm`: `<track> dry.wav` + `<track> #1..#4.wav`, 48 k stereo; the
+  script now reads those names as they are): 20 m4a, 5.1 MB, the /drift stand-ins gone. All aligned (lag 0 smp vs
+  the dry). Level: all five per track down to the quietest (preset 1 in every track): vocal -16.6, instruments
+  -15.4, drums -15.1, lead -12.9 LUFS. Loop seam jump vs the normal sample step: Lead #4 0.21 vs 0.095, instruments
+  ~2-3x: may tick once per loop, listen.
+- STATE: real sounds, PLACEHOLDER preset names / pedals / order (no .xml came; revfx-presets.json "placeholder":
+  true). Next: Yoni's 16 names + pedals + order (or the .xml), listen to the swap, then his "push" for main (= live
+  deploy). Open: photo die or keep the neon one.
 
 ## 2026-11-05 — /revfx before/after player: "Plug in. Stomp it." (Claude Code `revaudio-0d [61a467]`, Yoni's laptop 2) — branch `feat/revfx-hear`, worktree `../revaudio-website-rfxhear`
 

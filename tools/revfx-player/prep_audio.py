@@ -4,10 +4,13 @@ baked peaks and the preset list the die rolls through.
   python tools/revfx-player/prep_audio.py "C:/path/to/revfx-bounces"     the real sounds
   python tools/revfx-player/prep_audio.py --placeholder                   stand-ins from /drift's bounces
 
-In (real), per track below (same length, same start; any sample rate):
+In (real), per track below (same length, same start; any sample rate; names in any case, "#" optional, the track
+name singular or plural: "vocals #1.wav" = "vocal 1.wav"):
             <src>/<name> dry.wav            the dry bounce
             <src>/<name> 1.wav .. 4.wav     the same bounce through RevFX preset 1..4
-            <src>/<name> 1.xml .. 4.xml     those presets, as RevFX saved them (%APPDATA%/RevAudio/RevFX/Presets/)
+            <src>/<name> 1.xml .. 4.xml     those presets, as RevFX saved them (%APPDATA%/RevAudio/RevFX/Presets/);
+                                            missing = the track keeps its preset names / pedals / order from
+                                            revfx-presets.json and that file says "placeholder": true
 Out:        public/audio/revfx/<id>-before.m4a (dry), <id>-p1.m4a .. <id>-p4.m4a (RevFX)   AAC 160k (house setting)
             public/audio/revfx/peaks.json   per track: loop length, the trims, L/R peaks of every version
             src/data/revfx-presets.json     per track: each preset's name, the pedals it uses, its chain order
@@ -46,6 +49,15 @@ TRACKS = [  # id, the bounce's file name stem, the /drift stand-in
 # the page's pedal ids <- RevFX's parameter stems (HALO's order slot is still called ORD_TREM: it replaced TREMOLO)
 FX = {'pitch': ('PITCH', 'ORD_PITCH'), 'echo': ('DLY', 'ORD_ECHO'), 'reverb': ('VERB', 'ORD_VERB'), 'halo': ('HALO', 'ORD_TREM')}
 BYP = {'pitch': 'BYP_PITCH', 'echo': 'BYP_DLY', 'reverb': 'BYP_VERB', 'halo': 'BYP_HALO', 'glue': 'BYP_GLUE'}
+
+
+def find(src, stem, tag, ext):
+    """<src>/<stem> <tag>.<ext>, forgiving: any case, '#' before the number optional, stem singular or plural."""
+    want = {f'{st} {pre}{tag}.{ext}'.lower() for st in (stem, stem + 's') for pre in ('', '#')}
+    for f in os.listdir(src):
+        if f.lower() in want:
+            return os.path.join(src, f)
+    return None
 
 
 def read_preset(path):
@@ -129,12 +141,15 @@ def real(src):
 
     os.makedirs(OUT, exist_ok=True)
     manifest = {'pad': PAD, 'sr': SR, 'bins': BINS, 'tracks': {}}
+    with open(PRESETS) as f:
+        known = json.load(f)['tracks']                         # what the page shows today, kept where no .xml came
     presets = {'tracks': {}}
     for tid, stem, _ in TRACKS:
-        paths = [os.path.join(src, f'{stem} dry.wav')] + [os.path.join(src, f'{stem} {k}.wav') for k in range(1, N + 1)]
-        xmls = [os.path.join(src, f'{stem} {k}.xml') for k in range(1, N + 1)]
-        missing = [p for p in paths + xmls if not os.path.isfile(p)]
-        assert not missing, f'{tid}: missing ' + ', '.join(os.path.basename(p) for p in missing)
+        tags = ['dry'] + [str(k) for k in range(1, N + 1)]
+        paths = [find(src, stem, t, 'wav') for t in tags]
+        xmls = [find(src, stem, str(k), 'xml') for k in range(1, N + 1)]
+        missing = [f'{stem} {t}.wav' for t, p in zip(tags, paths) if not p]
+        assert not missing, f'{tid}: missing ' + ', '.join(missing)
         audio = [read(p) for p in paths]
         assert len({len(a) for a in audio}) == 1, f'{tid}: the 5 bounces differ in length ({[len(a) for a in audio]}): bounce all the same length'
         loud = [lufs(p) for p in paths]
@@ -148,7 +163,11 @@ def real(src):
         manifest['tracks'][tid] = {'dur': len(audio[0]) / SR, 'trimDb': round(trims[0], 2), 'before': peaks(audio[0]),
                                    'presets': [{'file': f'{tid}-p{k}', 'trimDb': round(trims[k], 2), **peaks(audio[k])}
                                                for k in range(1, N + 1)]}
-        presets['tracks'][tid] = [read_preset(x) for x in xmls]
+        presets['tracks'][tid] = [read_preset(x) if x else known[tid][k] for k, x in enumerate(xmls)]
+        if not all(xmls):
+            presets['placeholder'] = True
+            print(f'{tid:12s} no preset .xml for ' + ', '.join(str(k + 1) for k, x in enumerate(xmls) if not x)
+                  + ': names / pedals / order kept from revfx-presets.json')
         print(f'{tid:12s} {len(audio[0])/SR:6.2f}s  {target:.1f} LUFS  trims ' + ' '.join(f'{t:+.1f}' for t in trims)
               + '  peaks ' + ' '.join(f'{20*np.log10(max(np.abs(a).max(), 1e-9)):+.1f}' for a in audio) + ' dBFS')
         for p in presets['tracks'][tid]:
