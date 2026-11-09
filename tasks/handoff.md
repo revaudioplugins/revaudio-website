@@ -22,7 +22,11 @@ Claim: OPEN `revaudio-2f` (took over `revaudio-0d`'s claim below, same files, + 
   ~2-3x: may tick once per loop, listen.
 - STATE: real sounds, PLACEHOLDER preset names / pedals / order (no .xml came; revfx-presets.json "placeholder":
   true). Next: Yoni's 16 names + pedals + order (or the .xml), listen to the swap, then his "push" for main (= live
-  deploy). Open: photo die or keep the neon one.
+  deploy).
+- ROLL IT = a little TV (Yoni: "turn the cube panel into an lcd screen similar to the website tv"): `.rfx-tv` =
+  WordWall's glass layers in RevFX violet, sunk in the plate, Bebas ask "4 ROLL IT ▸" (lit + 4 blinks when next),
+  the die is the picture, the glass is the button. Plate 172 px laptop / 154 at 1024-1240 / a strip up to 700.
+  DESIGN.md §4 has the rule. That answers the photo-die question (the die is now a picture on a screen).
 
 ## 2026-11-05 — /revfx before/after player: "Plug in. Stomp it." (Claude Code `revaudio-0d [61a467]`, Yoni's laptop 2) — branch `feat/revfx-hear`, worktree `../revaudio-website-rfxhear`
 

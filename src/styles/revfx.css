@@ -328,26 +328,61 @@
 
 /* ---- the top row: the screen, and 4 ROLL IT beside it (the die sits next to the screen it changes) */
 .rfx-hear-top { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; }
-.rfx-hear-step--roll { --s: 62px; width: 150px; }
-/* the die (the hero's neon die, moved here 2026-11-09): it rests ON the plate (no idle bob: nothing moves just to be
-   alive), its contact shadow down-right of it (the panel's one top-left light); a roll throws it up and it lands */
-.rfx-die-btn {
-  position: relative; flex: 1; display: grid; place-items: center; min-height: calc(var(--s) * 1.3); padding: 0;
-  border: 0; border-radius: 10px; background: none; cursor: pointer; perspective: 500px;
+.rfx-hear-step--roll { --s: 58px; width: 172px; display: flex; }   /* the ask "4 ROLL IT ▸" needs ~111 px of glass */
+
+/* 4 ROLL IT = a little TV on its plate (Yoni 2026-11-09: "an lcd screen similar to the website tv"). Home's TV glass,
+   layer for layer (WordWall.astro .ww-screen*): the phosphor tube's glow (DRIFT's violet channel, RevFX's own colour),
+   the scanlines + aperture grille under the picture, the glass reflection + the tube's curved falloff over it (smooth
+   light only, nothing that crosses a letter). Sunk in the plate like the LCD (its bezel shadows). The glass is the
+   button: hover = the tube brightens under the hand. */
+.rfx-tv {
+  --tv-h: 280; --tv-s: 70;
+  --tv-ink: hsl(var(--tv-h) 95% 66%); --tv-ink-hot: hsl(var(--tv-h) 100% 74%); --tv-ink-on: hsl(var(--tv-h) 60% 9%);
+  --tv-glow: hsl(var(--tv-h) 90% 58% / .45); --tv-glow-hot: hsl(var(--tv-h) 90% 58% / .6); --tv-glow-soft: hsl(var(--tv-h) 90% 58% / .3);
+  --tv-bright: 1.37; --tv-scan: .2; --tv-curve: .6;
+  position: relative; flex: 1; display: flex; flex-direction: column; min-width: 0; padding: 10px 10px 8px; border: 0;
+  border-radius: 10px / 12px; overflow: hidden; isolation: isolate; cursor: pointer; text-align: left; background: #040107;
+  box-shadow: 0 0 0 1px rgba(4, 2, 8, .95), 0 0 0 4px #111014, 1px 1px 0 5px rgba(255, 245, 235, .2), -1px -1px 0 5px rgba(0, 0, 0, .55),
+    0 0 6px 6px rgba(0, 0, 0, .35);
 }
+.rfx-tv-glow { position: absolute; inset: 0; z-index: -2; pointer-events: none;
+  background: radial-gradient(ellipse 62% 80% at 50% 46%, #2e1347 0%, #1a0b2c 40%, #0b0414 76%, #040107 100%);
+  filter: brightness(var(--tv-bright)); transition: filter .18s ease; }
+.rfx-tv::before { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, var(--tv-scan)) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(90deg, rgba(255, 40, 90, .05) 0 1px, rgba(40, 255, 140, .035) 1px 2px, rgba(70, 90, 255, .05) 2px 3px); }
+.rfx-tv-fx { position: absolute; inset: 0; z-index: 2; pointer-events: none; border-radius: inherit;
+  background:
+    linear-gradient(158deg, rgba(255, 255, 255, .07) 0%, rgba(255, 255, 255, .02) 16%, transparent 30%),
+    radial-gradient(ellipse 70% 22% at 50% 0%, rgba(255, 255, 255, .05), transparent 70%),
+    radial-gradient(130% 120% at 50% 50%, transparent 55%, rgba(0, 0, 0, var(--tv-curve)) 100%);
+  box-shadow: inset 0 0 0 1px rgba(190, 90, 255, .22), inset 2px 5px 10px rgba(0, 0, 0, .7); }
+@media (hover: hover) { .rfx-tv:hover .rfx-tv-glow { filter: brightness(calc(var(--tv-bright) * 1.22)); } }
+.rfx-tv:focus-visible { outline: 2px solid var(--tv-ink-hot); outline-offset: 3px; }
+/* the ask, as the TV's "PICK A CATEGORY ▸": Bebas in the phosphor, the step's number in inverse video (a lit key) */
+.rfx-tv-ask { position: relative; z-index: 1; display: flex; align-items: center; gap: .35em; white-space: nowrap;
+  font: 400 21px/1 var(--font-display); letter-spacing: .06em; color: var(--tv-ink); text-shadow: 0 0 10px var(--tv-glow); }
+.rfx-tv-ask b { display: inline-grid; place-items: center; min-width: 1.05em; padding: .12em .18em .02em; border-radius: 2px; font-weight: 400;
+  color: var(--tv-ink-on); background: var(--tv-ink-hot); text-shadow: none; box-shadow: 0 0 14px var(--tv-glow-hot); }
+.rfx-tv-ask i { font-style: normal; color: var(--tv-ink-hot); }
+/* the guide: ROLL IT is next = the ask lights (filled, glowing) and its cursor blinks four times, then holds
+   (a blink that never stops fails WCAG 2.2.2, as on the TV) */
+[data-rfx-hear][data-next='roll'] .rfx-tv-ask { color: var(--tv-ink-hot); text-shadow: 0 0 8px var(--tv-glow-hot), 0 0 22px var(--tv-glow-soft); }
+@keyframes rfx-tv-blink { 50% { opacity: 0; } }
+@media (prefers-reduced-motion: no-preference) { [data-rfx-hear][data-next='roll'] .rfx-tv-ask i { animation: rfx-tv-blink 1.1s steps(1, end) 4; } }
+[data-rfx-hear][data-next='roll'] .rfx-tv-glow { filter: brightness(calc(var(--tv-bright) * 1.15)); }
+
+/* the picture: the die (the hero's neon die, moved here 2026-11-09) on the glass. A roll throws it up and it lands
+   (motion as feedback); no idle bob */
+.rfx-tv-pic { position: relative; z-index: 1; flex: 1; display: grid; place-items: center; min-height: calc(var(--s) * 1.3); perspective: 500px; }
 .rfx-die {
   --rx: -22deg; --ry: 32deg;
   position: relative; display: block; width: var(--s); height: var(--s); transform-style: preserve-3d;
   transform: rotateX(var(--rx)) rotateY(var(--ry)); transition: transform 1100ms cubic-bezier(.17, .84, .26, 1.02);
 }
-.rfx-die-shadow {
-  position: absolute; left: 50%; top: 50%; width: calc(var(--s) * 1.2); height: calc(var(--s) * .36); pointer-events: none;
-  translate: calc(-50% + 7px) calc(var(--s) * .42); border-radius: 50%; background: radial-gradient(closest-side, rgba(0, 0, 0, .78), rgba(0, 0, 0, 0));
-}
-.rfx-die-btn.is-thrown .rfx-die { animation: rfx-throw 1100ms cubic-bezier(.2, .7, .3, 1) both; }
-.rfx-die-btn.is-thrown .rfx-die-shadow { animation: rfx-throw-sh 1100ms cubic-bezier(.2, .7, .3, 1) both; }
-@keyframes rfx-throw { 0% { translate: 0 0; } 30% { translate: 0 calc(var(--s) * -.6); } 62% { translate: 0 1px; } 76% { translate: 0 calc(var(--s) * -.12); } 100% { translate: 0 0; } }
-@keyframes rfx-throw-sh { 30% { scale: .5; opacity: .3; } 62% { scale: 1; opacity: 1; } 76% { scale: .85; opacity: .8; } }
+.rfx-tv.is-thrown .rfx-die { animation: rfx-throw 1100ms cubic-bezier(.2, .7, .3, 1) both; }
+@keyframes rfx-throw { 0% { translate: 0 0; } 30% { translate: 0 calc(var(--s) * -.45); } 62% { translate: 0 1px; } 76% { translate: 0 calc(var(--s) * -.1); } 100% { translate: 0 0; } }
 .rfx-die-f {
   position: absolute; inset: 0; display: grid; grid-template: repeat(3, 1fr) / repeat(3, 1fr); padding: 14%; gap: 4%;
   border-radius: 18%; backface-visibility: hidden;
@@ -362,11 +397,7 @@
 .rfx-die-f.f5 { transform: rotateY(-90deg) translateZ(calc(var(--s) / 2)); }
 .rfx-die-f.f3 { transform: rotateX(90deg) translateZ(calc(var(--s) / 2)); }
 .rfx-die-f.f4 { transform: rotateX(-90deg) translateZ(calc(var(--s) / 2)); }
-@media (hover: hover) { .rfx-die-btn:hover .rfx-die { --rx: -32deg; } }
-.rfx-die-btn:focus-visible { outline: 3px solid var(--d-pink-ink); outline-offset: 2px; }
-/* the guide: when ROLL IT is next, the pips breathe from inside (the die is the lamp, no ring painted round it) */
-@keyframes rfx-pip-next { 50% { background: #fff; box-shadow: 0 0 12px #ff5fd8, 0 0 22px rgba(255, 95, 216, .8), 0 0 2px #fff; } }
-[data-rfx-hear][data-next='roll'] .rfx-die-f i.on { animation: rfx-pip-next 1.2s ease-in-out infinite; }
+@media (hover: hover) { .rfx-tv:hover .rfx-die { --rx: -32deg; } }
 
 /* ---- the rig: 2 PLAY · 3 STOMP (the board) · VOLUME, each in a shallow well cut into the tolex */
 .rfx-hear-rig { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; flex: 1; }
@@ -486,7 +517,8 @@
 
 /* ---- narrow laptops: a smaller switch + caps leave the five their room */
 @media (min-width: 1024px) and (max-width: 1240px) {
-  .rfx-hear-step--roll { --s: 54px; width: 128px; }
+  .rfx-hear-step--roll { --s: 50px; width: 154px; }
+  .rfx-tv-ask { font-size: 18px; }
   .rfx-hear-board { --fix: 28px; --pgk: .5; }
   #rfx-hear .rfx-start { --k: .44; }
   .rfx-hear-stomprow { gap: 10px; }
@@ -517,8 +549,10 @@
    becomes a strip under the screen, the die on the right */
 @media (max-width: 700px) {
   .rfx-hear-top { grid-template-columns: minmax(0, 1fr); }
-  .rfx-hear-step--roll { --s: 44px; --plate: var(--rfx-plate-w); --slice: 94; width: auto; flex-direction: row; align-items: center; justify-content: space-between; padding: 0 6px; }
-  .rfx-hear-step--roll .rfx-die-btn { flex: none; width: calc(var(--s) * 2.2); min-height: calc(var(--s) * 1.5); }
+  .rfx-hear-step--roll { --s: 40px; --plate: var(--rfx-plate-w); --slice: 94; width: auto; }
+  .rfx-tv { flex-direction: row; align-items: center; justify-content: space-between; padding: 6px 18px 6px 14px; }
+  .rfx-tv-ask { font-size: 26px; }
+  .rfx-tv-pic { flex: none; width: calc(var(--s) * 1.8); min-height: calc(var(--s) * 1.5); }
 }
 /* ---- phones */
 @media (max-width: 600px) {
@@ -539,7 +573,8 @@
   .rfx-hear-rig { gap: 6px; }
   .rfx-hear-deck { gap: 8px; }
   .rfx-hear-top { gap: 6px; }
-  .rfx-hear-step--roll { --s: 36px; }
+  .rfx-hear-step--roll { --s: 34px; }
+  .rfx-tv-ask { font-size: 22px; }
   .rfx-plate { --rail: 12px; }
   #rfx-hear .rfx-start { --k: .42; }
   .rfx-hear-stomprow { gap: 8px; }
