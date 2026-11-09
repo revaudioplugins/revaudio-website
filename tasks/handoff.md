@@ -200,8 +200,27 @@ Files: `src/components/WordWall.astro`, `src/components/TrialGateModal.astro` (+
   old, hide-phone (ask: phones / all / no), hide-laptop, overall). The "slides away" clips are a prototype drawn per
   frame (scroll + the nav's transform), nothing in the site. My pick there: leave the header (site-wide, its own
   project: the sale bar, the menu, jump links; Header.astro + global.css are outside this claim).
-- Next: Dan's notes on the Header Overlap bench + TV Sells round 4; step 00's baseline before any push to main. Left
-  in the plan: step 7 (checks at the 9 sizes), P (persona walk). Nothing on main; main = live on Dan's word.
+- Dan's notes on the Header Overlap bench (pasted 2026-11-09): every card ✓ looks right (one pin on rest-laptop, no
+  note); the pick: **"The header that slides away: Yes, phones and laptops"** (against my pick). NOT BUILT: it is
+  site-wide. What reads the bar today: global.css (`nav.site-nav` sticky at `--sale-h`, html `scroll-padding-top`),
+  `SaleStrip.astro` (sticky over the nav), DRIFT (`lib/drift/snap.ts` reads the bar's live bottom, fine;
+  `crane.ts`, `init.ts` jumps and `DriftStickyBar` read its height), `lib/revfx/init.ts` jumps, `support.astro`, and the
+  TV's landing (`--site-nav-h`; on home and /plugins it lands at the top, where the bar always shows). No other
+  session holds Header.astro / global.css / the layouts (checked 2026-11-09: no worktree diff, no branch ahead of main
+  on them). Queued: Dan moved to the pictures (below) first.
+- 2026-11-09 Dan: "lets work on the html of the plugins, i want them to be inside the tv and not hovering, lets start
+  with the html and go down to other elements" = the plugins' pictures on the TV, the lit one first, then the list's
+  thumbnails and the rest. What hovers: the drop under the picture, the ring + halo round a hard card, blacks darker
+  than the glass, GAS 2's cut-out pump on its baked shadow (his 2026-11-03 ask, reversed by this one). Round 1 bench,
+  three looks for the lit picture (`tools/wwbench/wwpic-looks.js`, `WWPIC.apply(doc, look)`): A On the tube (half
+  its colour, half the channel's phosphor, blacks = the glass, bloom, edges fading; no lines, his 10-19 pick), B Under
+  the glass (true colours, a dark seat + inner shadow, the glass's sheen), C Phosphor (one colour + fine lines on the
+  picture only). GAS 2 = the pump in its night desert (`gas2-hero.jpg`, the plugin's ROOM) in all three. Laptop
+  (Chromium) + phone (WebKit): the SVG filters render on the pictures and on DRIFT's video in both.
+- Next: Dan's pick on the Inside the TV bench -> build it in WordWall (bake the grade into the TV's copies if A or C:
+  no live SVG filter in production), then the thumbnails; then the header that slides away; TV Sells round 4 notes;
+  step 00's baseline before any push to main. Left in the plan: step 7 (checks at the 9 sizes), P (persona walk).
+  Nothing on main; main = live on Dan's word.
 
 ## 2026-11-04 — GAS 2 postcards: the end page scrolls as one page, the footer under it (Claude Code `danavivi-c2 [ca2821]`, Dan's Mac) — PUSHED TO MAIN 2026-11-04 on Dan's word "perfect push to main" (from `fix/gas2-end-flow`)
 
