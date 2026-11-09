@@ -516,13 +516,15 @@ came up with, or it rescales under the finger.
   (inset shadow only) and read as a gauge; on `bench/drift-hear-bench.html` (DRIFT BTN CAP) it became a raised cap
   (laptop 1 user, 2026-10-28: "i want it to feel more like a button and polish it").
 
-- DO build a small screen that changes the page's sound from home's TV glass, not from a new look. /revfx #rfx-hear
-  step 4 ROLL IT (Yoni 2026-11-09: "turn the cube panel into an lcd screen similar to the website tv"): the plate
-  keeps its screws, its face is a little TV sunk in it like the LCD (`.rfx-tv`, revfx.css): WordWall's layers in
-  RevFX violet (tube glow 280 / 70, scanlines + aperture grille under the picture, glass reflection + curvature
-  over it), the ask "4 ROLL IT ▸" in the TV's Bebas with the number in inverse video, the die as the picture, the
-  whole glass the button (hover brightens the tube). Lit + four cursor blinks when the guide reaches it. Two
-  screens side by side stay two parts: the segment LCD reads the sound, the TV holds the die.
+- DO build a small screen that changes the page's sound as home's TV, cabinet and all. /revfx #rfx-hear step 4
+  ROLL IT (Yoni 2026-11-09: "turn the cube panel into an lcd screen similar to the website tv"; the glass alone in a
+  titanium plate then read too tame: "make the tv more prominent it doesnt look like the tv in the website - more
+  lines more distortion in the image"): home's broken cabinet (tv-broken-3.png, 9-sliced small, `--tvf-u` px per
+  photo pixel) with its green pilot LED, home's glass layers in RevFX violet, and a worse tube than home's: heavy
+  scanlines over the picture, red / cyan fringes, a hum bar rolling down, a faint flicker, a small tear every few
+  seconds and a big one + a flash on every roll (`.rfx-tv*`, revfx.css; still under reduced motion). The ask
+  "4 ROLL IT ▸" (Bebas, the number in inverse video) sits OVER the lines, so it reads; the die is the picture; the
+  glass is the button. Two screens side by side stay two parts: the segment LCD reads the sound, the TV holds the die.
 
 ## 10. History + open questions (for Dan)
 

@@ -27,6 +27,10 @@ Claim: OPEN `revaudio-2f` (took over `revaudio-0d`'s claim below, same files, + 
   WordWall's glass layers in RevFX violet, sunk in the plate, Bebas ask "4 ROLL IT ▸" (lit + 4 blinks when next),
   the die is the picture, the glass is the button. Plate 172 px laptop / 154 at 1024-1240 / a strip up to 700.
   DESIGN.md §4 has the rule. That answers the photo-die question (the die is now a picture on a screen).
+- Then (Yoni: "make the tv more prominent ... more lines more distortion in the image"): the set = home's broken TV
+  cabinet (tv-broken-3.png cut 640 px, 9-sliced at --tvf-u .16 / .145 / .095 / .085) + pilot LED; heavy scanlines
+  over the die, red / cyan fringes, hum bar, flicker, small tear every 5.7 s, big tear + flash on a roll. Panel 192 px
+  laptop / 170 at 1024-1240 / a 100 px strip up to 700 (90 on phones).
 
 ## 2026-11-05 — /revfx before/after player: "Plug in. Stomp it." (Claude Code `revaudio-0d [61a467]`, Yoni's laptop 2) — branch `feat/revfx-hear`, worktree `../revaudio-website-rfxhear`
 
