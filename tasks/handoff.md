@@ -284,6 +284,33 @@ UPDATE 2 2026-11-09 (later): landed since, all pushed on `feat/home-opening`:
 - Bench round 2 for Dan: https://claude.ai/artifact/WbhosKXawqVMvT3xpKo53p (ArtifactData collection `notes-r2`):
   the follow-ups to his 4 notes + batch 2's 27 spots.
 
+UPDATE 3 2026-11-09 / 11-10 (night): Dan's round-2 notes (db `notes-r2`, pins read with the scratchpad's
+`pins-r2.mjs`) + batches 3 and 4, in the room (settings ver 19):
+- Dan's notes, done: N01 (trouble light) out; R.tail's light off (its hotspot on the gloss; the lenses still glow);
+  clutter drums #26 (behind the GAS 2 drum) and #10 (in front of the test desk) out, tyre #4 moved to the tyre rack
+  (`MESS_FIX`, messSeed 1 only); N46 an office chair at the test desk; L13 / L14 face out, s 0.6; N02 -10 %, and on
+  two chains to the ceiling (slot h 0.6, y 4.3; its light at the tubes); N47 a gooseneck lamp on the amp + a light
+  on its face; R15 rims off the pegboard, on the tyre rack (s 0.85); N31 vinyl bigger, forward, N48 a desk lamp
+  lighting the deck; L19 rack 1.75 m out (x -1.4), turned 35 deg to the door, with an acoustic in his pinned cradle;
+  L02 a bass + L20 (natural ash) / L21 two basses on the wall; R03 a banjo, R10 a ukulele (its hanger level with the
+  banjo's); N07 the pump rebuilt polished; N49 headphones on W10 at his pin. Lights: N01 + R.tail out, N47 + N48 in.
+- Batch 3 in: W03 W01 N13 N12 W02 (left), E04 N33 N35 N36 N20 N32 R08 R19 N29 A01 A02 (far), W06 (car), the lamps.
+  Batch 4 in: R18 bass rig (head moved back so R08 rests on it), R02 combo, N41 chain hoist (rocks), N39 traffic
+  light (its lamps cycle red 6 s, green 6 s, amber 2 s: MODELS `cycle`), both slid onto the truss (f 0.5455).
+- Checked: 0 overlaps; the hand-off and the slow-connection still re-run after the room settled. Seven independent
+  judges went over every note and object (scratchpad `verdicts-r3.json`); their partly / fix verdicts were spot-checked
+  and acted on (the rack further out, the amp lamp softer, the headphones off the mug, the rims, the globe at half).
+  N02 "brighter than before" was the round-2 still catching the dying tube mid-flicker: the bench compares both rooms
+  with the flicker held still (reduced motion).
+- Rework queued to the builders (after their current batches): A01/A02 traps darker fabric + a visible frame, N29
+  blankets rebuilt, N20 globe lettering, the scope / headphones / print (far); W01 meter, W02 RevLimiter dial art,
+  W03 stickies, N12's 2x4, N47 a bigger shade (left); W06 lighting (car).
+- Builders' next batches (11-10): left W05 W04 N17 N18 L11; far N28 L17 N42; car N43 N11 N10 N24 N24B N45.
+  The 12 slots at f > 1 (L10 R01 R04 R11 R12 R13 N04 N05 N08 N09 N22 N25) sit behind the camera: not built.
+- The outside through the door: A photo street / B built street / C rainy night (car builder's pick C), patches for A
+  and C ready in `look/step4/builders/car/candidates/OUTSIDE/patch/`; Dan picks on bench round 3.
+- guitar.glb has no slot since R10 became the ukulele (kept for now).
+
 Open: the monitors bench had B (vintage) ticked but Dan's chat said "black + wood"; black went in. Confirm if asked.
 Owed by Dan: tell Gil (the room on laptops from Nov 19, next to his Black Friday countdown); the R2 / CSP OK.
 Run the room: from this worktree's root `python3 -m http.server 4490 --bind 127.0.0.1` (this session left one running,

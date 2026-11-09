@@ -294,6 +294,9 @@ Steps:
               the walk, shot from the room at `ad605fc` (scratchpad `scripts/round2-shots.mjs`). Builders' batch 3
               running (car: N01 W06 + far 11-13; left: 11-15 then 16-20; far: 14 + 15). Next: the garage-speed
               options page.
+            - Round 3 (2026-11-09 / 11-10 night): all of Dan's round-2 notes done in the room (ver 19; list in
+              tasks/handoff.md UPDATE 3) + batch 3 (16 models + 2 lamps + W06) + batch 4 (R18 R02 N41 N39).
+              Open: the outside pick (A / B / C) on bench round 3; the builders' batch 5 + the rework queue.
 - [ ] 5. Into the page, with the checks.
 - [ ] 6. A test skin: swap one object and remove one (RevFX or a poster), end to end.
 
