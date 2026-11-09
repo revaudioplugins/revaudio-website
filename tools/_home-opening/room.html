@@ -708,6 +708,7 @@ const MODELS = {
   E06: { src: 'assets/models/oil-shelf.glb' },
   N23: { src: 'assets/models/couch.glb', yaw: Math.PI / 2 },
   A03: { src: 'assets/models/ceiling-cloud.glb' },
+  CAR: { src: 'assets/models/coupe.glb', yaw: Math.PI, tail: true }, // Dan's pick (11-09): A, our coupe (the glossy build replaces this file)
   M01: { src: 'assets/models/crt-casing.glb', crt: true }, // the CRTs: a casing around each live screen
   M02: { src: 'assets/models/crt-casing.glb', crt: true },
   M03: { src: 'assets/models/crt-casing.glb', crt: true },
@@ -727,6 +728,7 @@ async function loadModels() {
   await Promise.all(ids.map(async (id) => {
     const it = R.items.find((x) => x.id === id), m = MODELS[id];
     let g; try { g = await get(m.src); } catch (e) { console.warn('model', id, m.src, e.message); return; } // the block stays
+    if (m.tail) g.traverse((o) => { if (o.isMesh && /tail_light/.test(o.name + ' ' + ((o.material && o.material.name) || ''))) o.material = R.tailMat; }); // the car's tail lamps: the room's live tail material (lit at the lock)
     g.rotation.y = m.yaw || 0; g.updateMatrixWorld(true);
     const wrap = new THREE.Group(); wrap.add(g);
     if (m.crt) { // a CRT casing around the room's live screen (M01-M04: a group whose origin is the screen's centre); built
@@ -743,7 +745,7 @@ async function loadModels() {
       wrap.position.y = bb.min.y;
     } else { // a prop (the drum kit, the throne) is a group of drawn parts: the model takes their place at its real size
       it.obj.updateMatrixWorld(true); const inv = it.obj.matrixWorld.clone().invert(), pb = new THREE.Box3();
-      it.parts = [...it.obj.children];
+      it.parts = it.obj.children.filter((c) => !c.isLight); // its lights stay the room's
       for (const p of it.parts) pb.union(new THREE.Box3().setFromObject(p, true).applyMatrix4(inv));
       const pc = pb.getCenter(new THREE.Vector3()); wrap.position.set(pc.x, 0, pc.z); // where the drawn parts stood (Dan's placement)
     }
@@ -1768,7 +1770,7 @@ function applyFlags() {
   for (const m of [...Object.values(R.edgeMats), R.acEdge]) m.visible = !look && !R.paintOn;
   syncLabels();
   const on = !!S.engine; // engine off by default (Dan): dark tail-lights
-  R.tailMat.color.setRGB(...(on ? [1.0, 0.04, 0.03] : [0.02, 0.003, 0.002])); R.tail.intensity = on ? 4 : 0; R.tail.visible = on; // exact pixels: lit a deep glowing red, off a dark lens
+  R.tailMat.color.setRGB(...(on ? [1.0, 0.04, 0.03] : [0.02, 0.003, 0.002])); R.tail.intensity = on ? 2.5 : 0; R.tail.visible = on; // exact pixels: lit a deep glowing red, off a dark lens (2.5 since the real coupe: 4 flooded its tail panel)
   document.body.classList.toggle('editing', !!S.edit);
   if (!S.edit) { R.hoverBox.visible = false; }
   $('editNote').textContent = S.edit ? 'Click a thing in the room and drag it: wall things slide along the wall, floor things across the floor.'
