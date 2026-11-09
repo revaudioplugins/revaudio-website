@@ -176,9 +176,21 @@ Files: `src/components/WordWall.astro`, `src/components/TrialGateModal.astro` (+
 - Round 3 of the bench: same page (Version 3), `notes-r3/<id>` (sent-a, sent-a-phone, pick = a / b / c / mix,
   overlap = park / hide / solid / keep, overall). Shots + clips: session scratchpad `rv3/` (`shoot-r3.cjs`,
   `mk-r3.py`), copied into `rv2/shots/` (round 2's page kept as `rv2/index-r2.html`).
-- Next: Dan's round-3 notes: the pick (then build it into `WordWall.astro`, the TV's GSAP + --ww-mv-* times; look A
-  needs the list-level measure in `fit()`), the overlap fix; step 00's baseline before any push to main. Left in
-  the plan: step 7 (checks at the 9 sizes), P (persona walk). Nothing on main; main = live on Dan's word.
+- Dan's pick (2026-11-09, in the chat: "a"; no notes in `notes-r3`): look A.
+- BUILT 2026-11-09 (`d1d6c4b`): "Check your inbox" = look A in `WordWall.astro` (markup in the sign-up's
+  `.ws-sent`: `.ws-st` + `.ws-st-k`, `.ws-tw`/`.ws-third`, `.ws-steps` (third line = `signupCopy().last`), `.ws-foot`,
+  `.ws-bug`; `sentIn()` = the bench's WAAPI entrance, cancelled on landing / when the sign-up goes, none under
+  reduced motion, forced colours or still(); `levelSent()` sets `--ws-level` on show, reopen and in `fit()` (the RO
+  now also watches `[data-ws-sent]`)). The touch-only `ws-desk` line is gone (step 1 says it). html.hc: plain address
+  line, no bug. The bench (`wwsent-looks.js`) hides the built card so B and C still draw. Checks: build green;
+  Playwright tv-sells + tv-signup + trial-gate-mobile + welcome-discount-popup + smoke: 74 passed, 5 skipped, 1
+  failed = the known smoke /drift on mobile-safari (WebKit placard icons); the real TV shot at 1141x636 matches the
+  bench pixel for pixel, phones (revlimiter / gas / drift), 1440x900, forced colours and html.hc all checked.
+- Round 4 of the bench (Version 4, `notes-r4/<id>`: real-a, real-a-phone, real-a-wide, real-a-hc, overlap = park /
+  hide / solid / keep, overall). Shots: scratchpad `rv4/` (`shoot-r4.cjs`), copied into `rv2/shots/`.
+- Next: Dan's round-4 notes; the overlap fix (asked since round 2, no answer yet); step 00's baseline before any
+  push to main. Left in the plan: step 7 (checks at the 9 sizes), P (persona walk). Nothing on main; main = live on
+  Dan's word.
 
 ## 2026-11-04 — GAS 2 postcards: the end page scrolls as one page, the footer under it (Claude Code `danavivi-c2 [ca2821]`, Dan's Mac) — PUSHED TO MAIN 2026-11-04 on Dan's word "perfect push to main" (from `fix/gas2-end-flow`)
 
