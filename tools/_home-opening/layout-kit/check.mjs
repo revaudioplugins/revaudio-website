@@ -34,9 +34,11 @@ const res = await page.evaluate(async (MUST) => {
   const boxes = items.map((it) => [it, box(it.obj)]);
   // a thin board on a wall (a pegboard, a poster, a plate, a slat panel) and the neon may touch what stands in front
   const thin = ([it, b]) => it.id === 'SIGN' || Math.min(b.max[0] - b.min[0], b.max[1] - b.min[1], b.max[2] - b.min[2]) <= 0.06;
+  // a thing that stands ON another by design (its row says sits: '<id>': the monitors and the guitar on the test desk W07)
+  const sits = (a, b) => (a.s && a.s.sits === b.id) || (b.s && b.s.sits === a.id);
   const overlaps = [];
   for (let i = 0; i < boxes.length; i++) for (let j = i + 1; j < boxes.length; j++)
-    if (!thin(boxes[i]) && !thin(boxes[j]) && hit(boxes[i][1], boxes[j][1])) overlaps.push([boxes[i][0].id, boxes[j][0].id]);
+    if (!thin(boxes[i]) && !thin(boxes[j]) && !sits(boxes[i][0], boxes[j][0]) && hit(boxes[i][1], boxes[j][1])) overlaps.push([boxes[i][0].id, boxes[j][0].id]);
   const seen = {};
   for (const p of [0, 0.35, 0.7, 1]) {
     go(p); await new Promise((r) => setTimeout(r, 450)); camera.updateMatrixWorld();

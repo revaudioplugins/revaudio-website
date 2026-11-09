@@ -709,6 +709,34 @@ const MODELS = {
   N23: { src: 'assets/models/couch.glb', yaw: Math.PI / 2 },
   A03: { src: 'assets/models/ceiling-cloud.glb' },
   CAR: { src: 'assets/models/coupe.glb', yaw: Math.PI, tail: true }, // Dan's pick (11-09): A, our coupe (the glossy build replaces this file)
+  // the builders' batch 2 (11-09); left wall +pi/2, right wall -pi/2 (the file's front to the aisle)
+  W07: { src: 'assets/models/test-desk.glb', yaw: Math.PI / 2 },
+  N07: { src: 'assets/models/gas2-pump.glb', yaw: Math.PI / 2 },
+  L19: { src: 'assets/models/guitar-rack.glb', yaw: Math.PI / 2 },
+  L02: { src: 'assets/models/guitar.glb', yaw: Math.PI / 2 },
+  L03: { src: 'assets/models/guitar-black.glb', yaw: Math.PI / 2 },
+  L18: { src: 'assets/models/bass.glb', yaw: Math.PI / 2 },
+  R03: { src: 'assets/models/guitar-black.glb', yaw: -Math.PI / 2 },
+  R10: { src: 'assets/models/guitar.glb', yaw: -Math.PI / 2 },
+  N16: { src: 'assets/models/guitar-repair.glb', yaw: Math.PI / 2 },
+  L07: { src: 'assets/models/tool-chest.glb', yaw: Math.PI / 2 },
+  L05: { src: 'assets/models/tool-chest.glb', yaw: -Math.PI / 2 },
+  R05: { src: 'assets/models/tool-chest.glb', yaw: -Math.PI / 2 },
+  L04: { src: 'assets/models/amp-stack.glb', yaw: Math.PI / 2 },
+  R17: { src: 'assets/models/exhaust-pipes.glb', yaw: -Math.PI / 2 },
+  R06: { src: 'assets/models/vu-rack.glb', yaw: -Math.PI / 2 },
+  L06: { src: 'assets/models/vu-rack.glb', yaw: -Math.PI / 2 },
+  L08: { src: 'assets/models/vu-rack.glb', yaw: Math.PI / 2 },
+  W10: { src: 'assets/models/repair-shelf.glb', yaw: -Math.PI / 2 },
+  N02: { src: 'assets/models/shop-light.glb', yaw: -Math.PI / 2 },
+  R15: { src: 'assets/models/rims-wall.glb', yaw: -Math.PI / 2 },
+  N15: { src: 'assets/models/grinder-drill.glb', yaw: -Math.PI / 2 },
+  N31: { src: 'assets/models/vinyl-cabinet.glb' },
+  N26: { src: 'assets/models/boom-mic-stand.glb', yaw: 2.106 },  // the boom aimed at the right wall's kit
+  N26B: { src: 'assets/models/boom-mic-stand.glb', yaw: 2.058 }, // and at the small kit
+  L16: { src: 'assets/models/reel-to-reel.glb', yaw: -Math.PI / 2, anim: [['reel_L', 'z', 1.2], ['reel_R', 'z', 2.1]] },
+  N40: { src: 'assets/models/ceiling-fan.glb', anim: [['fan_rotor', 'y', 2]] },
+  N30: { src: 'assets/models/pedestal-fan.glb', yaw: -0.5, anim: [['fan_head', 'y', 'osc', [0.7, 0.45]], ['fan_blades', 'z', 12]] },
   M01: { src: 'assets/models/crt-casing.glb', crt: true }, // the CRTs: a casing around each live screen
   M02: { src: 'assets/models/crt-casing.glb', crt: true },
   M03: { src: 'assets/models/crt-casing.glb', crt: true },
@@ -743,6 +771,7 @@ async function loadModels() {
       it.obj.geometry.computeBoundingBox(); const bb = it.obj.geometry.boundingBox, slot = bb.getSize(new THREE.Vector3());
       wrap.scale.setScalar(m.fit === 'height' ? slot.y / size.y : Math.min(slot.x / size.x, slot.y / size.y, slot.z / size.z));
       wrap.position.y = bb.min.y;
+      it.parts = it.obj.children.filter((c) => c.isMesh && !c.isLineSegments); // its drawn extras (a pump's globe) hide with it
     } else { // a prop (the drum kit, the throne) is a group of drawn parts: the model takes their place at its real size
       it.obj.updateMatrixWorld(true); const inv = it.obj.matrixWorld.clone().invert(), pb = new THREE.Box3();
       it.parts = it.obj.children.filter((c) => !c.isLight); // its lights stay the room's
@@ -755,16 +784,17 @@ async function loadModels() {
       o.castShadow = o.receiveShadow = true;
       for (const mt of [o.material].flat()) {
         for (const t of ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap', 'emissiveMap']) if (mt[t]) maps.push(mt[t]);
-        if (mt.emissive && mt.emissive.getHex() && !R.modelGlow.some((g) => g.m === mt)) R.modelGlow.push({ m: mt, k: mt.emissiveIntensity }); // meters and LEDs power on with the room
+        if (mt.emissive && mt.emissive.getHex() && !R.modelGlow.some((g) => g.m === mt)) R.modelGlow.push({ m: mt, k: mt.emissiveIntensity, dying: /tube_dying/.test(mt.name) }); // meters and LEDs power on with the room (N02's dying tube dips with its light)
         if (mt.metalness > 0.3 || mt.roughness < 0.5) { mt.envMap = R.probe.env.texture; mt.userData.env ??= 1; SHINY.add(mt); } // the room's own reflection, on shiny parts only
       }
     });
     dress(g);
+    for (const [name, axis, a, b] of m.anim || []) { const o = g.getObjectByName(name); if (o) (R.modelAnims ||= []).push(a === 'osc' ? { o, axis, amp: b[0], freq: b[1] } : { o, axis, speed: a }); } // fans, reels
     if (m.stand && it.stand) { // a monitor's floor stand: origin on the floor, stretched to it in placeItem like the drawn one
       try {
         const st = await get(m.stand);
         st.userData.h = new THREE.Box3().setFromObject(st, true).max.y; dress(st);
-        it.obj.add(st); it.standModel = st; it.parts = [it.stand];
+        it.obj.add(st); it.standModel = st; (it.parts ||= []).push(it.stand);
       } catch (e) { console.warn('stand', id, m.stand, e.message); } // the drawn stand stays
     }
     it.obj.add(wrap); it.model = wrap;
@@ -809,8 +839,8 @@ const textMat = (lit, w, h) => {
 const SIDE = [
   // Dan 11-03: the guitars get the start of the left wall; the wrenches hang over the workbench, under the parts shelf
   { id: 'L01', cat: 'garage', label: 'Pegboard: wrenches, spanners', side: -1, f: 0.58, w: 2.6, h: 1.0, d: 0.05, y: 1.5 },
-  { id: 'L02', cat: 'music', label: 'Guitar (hanging)', side: -1, f: 0.915, w: 0.38, h: 1.05, d: 0.08, y: 1.8, on: 0.05 },
-  { id: 'L03', cat: 'music', label: 'Guitar (hanging)', side: -1, f: 0.87, w: 0.38, h: 1.05, d: 0.08, y: 1.8, on: 0.05 },
+  { id: 'L02', cat: 'music', label: 'Guitar (hanging)', side: -1, f: 0.915, w: 0.38, h: 1.05, d: 0.08, y: 1.8, on: 0 },
+  { id: 'L03', cat: 'music', label: 'Guitar (hanging)', side: -1, f: 0.87, w: 0.38, h: 1.05, d: 0.08, y: 1.8, on: 0 },
   { id: 'L04', cat: 'music', label: 'Amp stack (head + 4x12)', side: -1, f: 0.82, w: 0.8, h: 1.55, d: 0.42, leds: 1 },
   { id: 'L05', cat: 'garage', label: 'Red tool chest', side: -1, f: 0.74, w: 0.8, h: 1.0, d: 0.5 },
   { id: 'L06', cat: 'music', label: 'Compressor rack (VU meters)', side: -1, f: 0.74, w: 0.6, h: 0.9, d: 0.48, y: 1.45, leds: 1, vu: 1 },
@@ -820,12 +850,12 @@ const SIDE = [
   { id: 'L10', cat: 'music', label: 'Synth (keys)', side: -1, f: 0.6, w: 1.0, h: 0.14, d: 0.42, y: 0.99, leds: 1 },
   { id: 'L11', cat: 'music', label: 'Drum machine', side: -1, f: 0.55, w: 0.5, h: 0.12, d: 0.34, y: 0.98 },
   { id: 'L12', cat: 'garage', label: 'Parts shelf: pistons, plugs, carbs', side: -1, f: 0.58, w: 2.6, h: 0.9, d: 0.35, y: 2.45 },
-  { id: 'L13', cat: 'music', label: 'Studio monitor (on stand)', side: -1, f: 0.455, w: 0.45, h: 0.7, d: 0.4, y: 1.35 },
-  { id: 'L14', cat: 'music', label: 'Studio monitor (on stand)', side: -1, f: 0.41, w: 0.45, h: 0.7, d: 0.4, y: 1.35 },
+  { id: 'L13', cat: 'music', label: 'Studio monitor (on stand)', side: -1, f: 0.455, w: 0.45, h: 0.7, d: 0.4, y: 1.35, sits: 'W07' },
+  { id: 'L14', cat: 'music', label: 'Studio monitor (on stand)', side: -1, f: 0.41, w: 0.45, h: 0.7, d: 0.4, y: 1.35, sits: 'W07' },
   { id: 'L15', cat: 'garage', label: 'Tyre rack', side: -1, f: 0.33, w: 1.0, h: 1.7, d: 0.65 },
   { id: 'L16', cat: 'music', label: 'Reel-to-reel tape machine', side: -1, f: 0.25, w: 0.7, h: 1.25, d: 0.55, vu: 1 },
   { id: 'L17', cat: 'garage', label: 'Pegboard: screwdrivers, hoses', side: -1, f: 0.155, w: 2.6, h: 1.5, d: 0.05, y: 1.85 },
-  { id: 'L18', cat: 'music', label: 'Bass (hanging)', side: -1, f: 0.17, w: 0.38, h: 1.15, d: 0.08, y: 1.8, on: 0.05 },
+  { id: 'L18', cat: 'music', label: 'Bass (hanging)', side: -1, f: 0.17, w: 0.38, h: 1.15, d: 0.08, y: 1.8, on: 0 },
   { id: 'L19', cat: 'music', label: 'Guitar rack (five guitars)', side: -1, f: 0.065, w: 1.3, h: 1.1, d: 0.5 },
   { id: 'R01', cat: 'garage', label: 'Parts-store shelf: exhausts, filters, oil', side: 1, f: 0.9, w: 2.4, h: 2.5, d: 0.5 },
   { id: 'R02', cat: 'music', label: 'Guitar combo amp', side: 1, f: 0.825, w: 0.65, h: 0.75, d: 0.35, leds: 1 },
@@ -836,7 +866,7 @@ const SIDE = [
   { id: 'R07', cat: 'garage', label: 'Parts bench (carb on a stand)', side: 1, f: 0.345, w: 2.2, h: 0.92, d: 0.7 },
   { id: 'R08', cat: 'music', label: 'Modular synth', side: 1, f: 0.33, w: 0.8, h: 0.5, d: 0.25, y: 1.17, leds: 1 },
   { id: 'R09', cat: 'garage', label: 'Pegboard: tools', side: 1, f: 0.345, w: 2.2, h: 1.4, d: 0.05, y: 2.05 },
-  { id: 'R10', cat: 'music', label: 'Guitar (hanging)', side: 1, f: 0.36, w: 0.38, h: 1.05, d: 0.08, y: 2.05, on: 0.05 },
+  { id: 'R10', cat: 'music', label: 'Guitar (hanging)', side: 1, f: 0.36, w: 0.38, h: 1.05, d: 0.08, y: 2.05, on: 0 },
   { id: 'R11', cat: 'music', label: 'PA speaker stack', side: 1, f: 0.22, w: 0.9, h: 1.6, d: 0.6, leds: 1 },
   { id: 'R12', cat: 'garage', label: 'Rolling tool cabinet', side: 1, f: 0.135, w: 1.2, h: 1.1, d: 0.55 },
   { id: 'R13', cat: 'garage', label: 'Tyre stack', side: 1, f: 0.06, w: 0.75, h: 1.2, d: 0.75 },
@@ -863,7 +893,7 @@ const SIDE = [
   { id: 'N12', cat: 'garage', label: 'Clamp-on task lamp over the bench', side: -1, f: 0.63, w: 0.3, h: 0.5, d: 0.3, y: 1.45, on: 0.3 },
   { id: 'N13', cat: 'garage', label: 'Corkboard: gig flyers, photos, a calendar', side: -1, f: 0.715, w: 1.2, h: 0.8, d: 0.03, y: 2.3 },
   { id: 'N15', cat: 'garage', label: 'Bench grinder + drill press', side: 1, f: 0.396, w: 0.5, h: 0.42, d: 0.4, y: 1.13 },
-  { id: 'N16', cat: 'music', label: 'Guitar mid-repair on the test desk', side: -1, f: 0.41, w: 1.0, h: 0.12, d: 0.35, y: 0.81, on: 0.25 },
+  { id: 'N16', cat: 'music', label: 'Guitar mid-repair on the test desk', side: -1, f: 0.41, w: 1.0, h: 0.12, d: 0.35, y: 0.81, on: 0.25, sits: 'W07' },
   { id: 'N17', cat: 'music', label: 'Pedalboard: RevAudio pedals, cable spaghetti', side: -1, f: 0.82, w: 0.7, h: 0.1, d: 0.35, y: 0.05, x: -2.65 },
   { id: 'N18', cat: 'music', label: 'Coiled cables on wall hooks', side: -1, f: 0.125, w: 0.6, h: 0.6, d: 0.1, y: 1.6, on: 0.06 },
   { id: 'N22', cat: 'music', label: 'Road cases, stencilled lids (stacked)', side: 1, f: 0.265, w: 1.0, h: 1.2, d: 0.6, x: 2.2 },
@@ -886,7 +916,7 @@ const SIDE = [
   { id: 'W04', cat: 'garage', label: 'Parts bins: KNOBS, FADERS, VU METERS', side: -1, f: 0.285, w: 0.9, h: 0.6, d: 0.15, y: 2.45 },
   { id: 'W05', cat: 'garage', label: 'Solder station + fume extractor (smoke wisp)', side: -1, f: 0.535, w: 0.3, h: 0.18, d: 0.3, y: 1.01, on: 0.45 },
   { id: 'W06', cat: 'garage', label: 'Pedal-builder’s corner on the parts bench', side: 1, f: 0.28, w: 0.6, h: 0.2, d: 0.4, y: 1.02 },
-  { id: 'W07', cat: 'music', label: 'Test-drive desk: DAW + code screens', side: -1, f: 0.43, w: 1.4, h: 0.75, d: 0.7 },
+  { id: 'W07', cat: 'music', label: 'Test-drive desk: DAW + code screens', side: -1, f: 0.43, w: 1.4, h: 1.055, d: 0.7 },
   { id: 'W09', cat: 'garage', label: 'Build board: SKETCH, BENCH, DSP, TEST', side: 1, f: 0.515, w: 1.2, h: 1.8, d: 0.6 },
   { id: 'W10', cat: 'music', label: 'Repair shelf: a dash radio, a tube radio', side: 1, f: 0.56, w: 1.2, h: 0.4, d: 0.35, y: 2.3 },
 ];
@@ -1613,7 +1643,7 @@ function placeItem(it) {
     lb.position.set(x - side * 0.35, y + s.h * k / 2 + 0.22, z);
     placeBlob(it, s.d * k, s.w * k, x, z, turn, !s.flat && y - s.h * k / 2 < 0.05);
   } else if (it.kind === 'end') {
-    const s = it.s, y = ov.y ?? (s.ty != null ? S.tvY + s.ty : (s.y ?? s.h / 2)), x = ov.x ?? s.x, z = (s.front || 0) + s.d * k / 2;
+    const s = it.s, y = ov.y ?? (s.ty != null ? S.tvY + s.ty : (s.y ?? s.h * k / 2)), x = ov.x ?? s.x, z = (s.front || 0) + s.d * k / 2; // a scaled floor piece stands on the floor (it floated at s.h / 2)
     it.obj.position.set(x, y, z); it.obj.scale.setScalar(k); it.obj.rotation.y = (s.toe || 0) + turn;
     if (it.stand) { // the stand reaches the floor whatever the height (in the block's own units)
       const { top, post, base } = it.stand.userData, len = Math.max(0.02, (y - s.h * k / 2) / k);
@@ -2054,10 +2084,11 @@ function lightRoom(neonK, warm, signK, open, far, now) {
   R.tv.glow.intensity = 3 * S.tvGlow * open * (reduced ? 1 : 1 + 0.05 * Math.sin(now * 0.0019)) * far;
   R.tv.haloMat.opacity = 0.1 * open;
   for (const m of SHINY) m.envMapIntensity = S.probe * (m.userData.env ?? 1) * warm; // the reflections come up with the lamps
-  for (const g of R.modelGlow || []) g.m.emissiveIntensity = g.k * warm;                  // a model's meters and LEDs too
+  for (const g of R.modelGlow || []) g.m.emissiveIntensity = g.k * warm * (g.dying && !reduced && hash(Math.floor(now / 400) + 9) > 0.93 ? 0.55 : 1); // a model's meters and LEDs too
 }
 function frame(now) {
   const t = now - t0;
+  if (!reduced && R.modelAnims) { const dt = Math.min(0.1, (now - (R.animAt || now)) / 1000); for (const a of R.modelAnims) a.o.rotation[a.axis] = a.speed != null ? a.o.rotation[a.axis] + a.speed * dt : a.amp * Math.sin(now / 1000 * a.freq); } R.animAt = now; // the models' fans and reels
   const e = easeIO(clamp(progress), S.ease), far = 1 - e;
   const locked = progress >= 0.999;
   $('tvLive').classList.toggle('is-on', locked);
