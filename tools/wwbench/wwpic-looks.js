@@ -111,6 +111,10 @@
     },
   };
 
+  // A as picked (round 3): GAS 2 stays out of it, the floating pump as today (Dan: "should be hovering")
+  LOOKS.a3 = { ...LOOKS.a, name: 'A, picked', line: 'Look A (Dan\u2019s pick, round 3); GAS 2 floats as today.',
+    css: () => LOOKS.a.css().replace(/> \.ww-panel/g, '> .ww-panel:not(.is-float)') };
+
   function gas2(doc, room) {
     const panel = doc.querySelector('[data-ww-panel="gas2"]');
     const img = panel?.querySelector('.ww-ui img');
@@ -130,17 +134,51 @@
     }
   }
 
-  function apply(doc, key) {
+  /* Round 3 (Dan 2026-11-09: "I want all the plugin should have small and pixlated animation inside"; his picks: the
+     plugin running + look A; GAS 2 "should be hovering"): a plugin's real UI recorded running, shown small and
+     pixelated. anim = { slug, src, n, m }: the picture becomes that loop (n x m source pixels), scaled with hard pixel
+     edges, and the mesh follows its pixels (one cell per source pixel) instead of the 3 px house mesh. */
+  function animate(doc, anim) {
+    doc.getElementById('wwpic-anim')?.remove();
+    if (!anim) return;
+    const img = doc.querySelector(`[data-ww-panel="${anim.slug}"] .ww-ui img`);
+    if (!img) return;
+    // the loop's own pixels are few: hold the box the still picture had, so the loop is scaled up to it
+    if (!img.dataset.wwpicBox) {
+      const r = img.getBoundingClientRect();
+      img.dataset.wwpicBox = `${r.width} ${r.height}`;
+    }
+    const [bw, bh] = img.dataset.wwpicBox.split(' ').map(Number);
+    Object.assign(img.style, { width: `${bw}px`, height: `${bh}px`, maxWidth: 'none' });
+    img.removeAttribute('srcset');
+    img.loading = 'eager';
+    if (img.getAttribute('src') !== anim.src) img.src = anim.src;
+    const css = doc.createElement('style');
+    css.id = 'wwpic-anim';
+    const P = `${SCREEN}[data-ww-panel='${anim.slug}']`;
+    css.textContent = `
+      ${P} .ww-ui img { image-rendering: pixelated; }
+      ${P} .ww-ui::after {
+        background:
+          linear-gradient(90deg, rgba(0, 0, 0, ${anim.cell ?? 0.4}) 0 ${anim.gap ?? 26}%, transparent ${anim.gap ?? 26}%),
+          linear-gradient(180deg, rgba(0, 0, 0, ${anim.cell ?? 0.4}) 0 ${anim.gap ?? 26}%, transparent ${anim.gap ?? 26}%) !important;
+        background-size: calc(100% / ${anim.n}) 100%, 100% calc(100% / ${anim.m}) !important;
+      }`;
+    doc.head.append(css);
+  }
+
+  function apply(doc, key, anim) {
     const look = LOOKS[key];
     doc.getElementById('wwpic-css')?.remove();
     doc.getElementById('wwpic-svg')?.remove();
-    gas2(doc, key !== 'today');
+    animate(doc, anim);
+    gas2(doc, key !== 'today' && key !== 'a3');
     if (!look.css) return;
     const svg = doc.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.id = 'wwpic-svg';
     svg.setAttribute('aria-hidden', 'true');
     svg.setAttribute('style', 'position:absolute;width:0;height:0;overflow:hidden');
-    svg.innerHTML = `<defs>${Object.entries(CH).map(([slug, hs]) => filter(`wwpic-${key}-${slug}`, hs, look.grade)).join('')}</defs>`;
+    svg.innerHTML = `<defs>${Object.entries(CH).map(([slug, hs]) => filter(`wwpic-${key === 'a3' ? 'a' : key}-${slug}`, hs, look.grade)).join('')}</defs>`;
     doc.body.append(svg);
     const css = doc.createElement('style');
     css.id = 'wwpic-css';
