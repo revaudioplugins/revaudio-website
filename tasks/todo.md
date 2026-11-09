@@ -283,6 +283,10 @@ Steps:
             `look/step4/builders/<car|left|far>/candidates/<ID>/` (glb + notes.txt + 2 stills). Loop: a batch of ~5
             comes back → check the stills + glbinfo → `assets/models/` + SOURCES + licence log + `MODELS` → handoff /
             check / fps → a bench for Dan (✓ or a note; the car = an A / B / C pick) → resume that builder.
+            - Round 1 in the room (2026-11-09): left `2c84040` (L09 L12 W09 L01 R14), car side `ed2a16c` (N06 L15 R07
+              R09 N03). Bench https://claude.ai/artifact/WbhosKXawqVMvT3xpKo53p (db `notes`): ⏸ Dan picks the CAR
+              (A our coupe / B CC0 covered hatchback / C our coupe covered; candidates in the car builder's folder
+              `candidates/CAR/`), ✓ or notes on the 12 objects. The car needs `R.tailMat` on its `tail_light` mesh.
 - [ ] 5. Into the page, with the checks.
 - [ ] 6. A test skin: swap one object and remove one (RevFX or a poster), end to end.
 
