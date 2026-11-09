@@ -39,6 +39,9 @@ Claim: OPEN `revaudio-2f` (live; open for the preset names) (took over `revaudio
   hero board 761 px, every /audio/revfx file 200, play + roll + track change work, no page errors. Listing unchanged
   (only RevFX files differ from main: no plugins.ts / library.ts / astro.config change; /revfx/ stays in the sitemap,
   no robots meta, not on the home TV, as before). STILL PLACEHOLDER: the 16 preset names / pedals / order.
+- Then (Yoni: "the volume text ... make a weird jump" at 100): `.rfx-vol-read` keeps the width of "VOL 100"
+  (min-width 7.5em), so the volume plate no longer grows and squeezes the board (it was 348 -> 341 px). LIVE on main
+  `7994430` on his "push"; Deploy + Smoke + cache clear green, live re-measure: nothing moves at 80 / 100 / 99 / MUTE.
 
 ## 2026-11-05 — /revfx before/after player: "Plug in. Stomp it." (Claude Code `revaudio-0d [61a467]`, Yoni's laptop 2) — branch `feat/revfx-hear`, worktree `../revaudio-website-rfxhear`
 
