@@ -289,8 +289,11 @@ Steps:
               `candidates/CAR/`), ✓ or notes on the 12 objects. The car needs `R.tailMat` on its `tail_light` mesh.
             - Round 2 (2026-11-09): the car = A, glossy (`3020b60`); batch 2 = 27 more slots (`c33bbb6`); much less
               dust (`e6325db`); Dan's room bench baked (`b390917`, ver 16: the end wall rearranged, L19, N12, the
-              sign); the big line + the engine back on (ver 17, Dan: "bring them back"). Next: the garage-speed
-              options page; the builders' batch 3.
+              sign); the big line + the engine back on (ver 17, Dan: "bring them back"). Bench round 2 (the same
+              URL, ArtifactData collection `notes-r2`): his 4 notes' follow-ups + batch 2's 27 spots, close up + on
+              the walk, shot from the room at `ad605fc` (scratchpad `scripts/round2-shots.mjs`). Builders' batch 3
+              running (car: N01 W06 + far 11-13; left: 11-15 then 16-20; far: 14 + 15). Next: the garage-speed
+              options page.
 - [ ] 5. Into the page, with the checks.
 - [ ] 6. A test skin: swap one object and remove one (RevFX or a poster), end to end.
 

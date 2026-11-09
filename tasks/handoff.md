@@ -278,8 +278,11 @@ UPDATE 2 2026-11-09 (later): landed since, all pushed on `feat/home-opening`:
 - Running: the garage-speed workflow. Dan: "make the page faster without hurting the quality", with options for him to
   pick. Outputs are in this session's scratchpad `look/step5/perf/` (`synth/report.md` when done). Next: a page that
   shows him the options.
-- The 3 builders are idle after batch 2, held for quiet perf measurements; the next batches are in
-  `team/builders/*-LIST.md`.
+- The 3 builders resumed on batch 3 once the speed team's measurements were done (Blender under `nice`, no fps
+  runs): car = its N01 + W06, then far-list items 11-13; left = items 11-15, then 16-20; far = item 14 (the end-wall
+  group: wall hangers for N20 + N32), then 15.
+- Bench round 2 for Dan: https://claude.ai/artifact/WbhosKXawqVMvT3xpKo53p (ArtifactData collection `notes-r2`):
+  the follow-ups to his 4 notes + batch 2's 27 spots.
 
 Open: the monitors bench had B (vintage) ticked but Dan's chat said "black + wood"; black went in. Confirm if asked.
 Owed by Dan: tell Gil (the room on laptops from Nov 19, next to his Black Friday countdown); the R2 / CSP OK.
