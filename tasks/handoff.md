@@ -217,7 +217,12 @@ Files: `src/components/WordWall.astro`, `src/components/TrialGateModal.astro` (+
   the glass (true colours, a dark seat + inner shadow, the glass's sheen), C Phosphor (one colour + fine lines on the
   picture only). GAS 2 = the pump in its night desert (`gas2-hero.jpg`, the plugin's ROOM) in all three. Laptop
   (Chromium) + phone (WebKit): the SVG filters render on the pictures and on DRIFT's video in both.
-- Next: Dan's pick on the Inside the TV bench -> build it in WordWall (bake the grade into the TV's copies if A or C:
+- Inside the TV bench: https://claude.ai/artifact/1pWQ9anXCcfGbKMjdmPqHQ. Round 1 (`notes/<id>`): Dan picked "None yet",
+  then in the chat "the lines on the html should be like its digital" = his /drift vocabulary (drift.css: "the pixeled
+  lcd", the 3 px pixel mesh, dark gaps both ways; 10-09 "the pixel vibe darkens it" -> lift). Round 2 (Version 2,
+  `notes-r2/<id>`, build `f00a014`): A / B / C each with the mesh (.22) over the picture only, the picture x1.12
+  brighter, C's scanlines gone; per look the laptop, a blown-up close-up, three phones.
+- Next: Dan's pick on the Inside the TV bench (round 2) -> build it in WordWall (bake the grade into the TV's copies if A or C:
   no live SVG filter in production), then the thumbnails; then the header that slides away; TV Sells round 4 notes;
   step 00's baseline before any push to main. Left in the plan: step 7 (checks at the 9 sizes), P (persona walk).
   Nothing on main; main = live on Dan's word.
