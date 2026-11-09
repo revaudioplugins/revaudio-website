@@ -302,10 +302,13 @@ UPDATE 3 2026-11-09 / 11-10 (night): Dan's round-2 notes (db `notes-r2`, pins re
   and acted on (the rack further out, the amp lamp softer, the headphones off the mug, the rims, the globe at half).
   N02 "brighter than before" was the round-2 still catching the dying tube mid-flicker: the bench compares both rooms
   with the flicker held still (reduced motion).
-- Rework queued to the builders (after their current batches): A01/A02 traps darker fabric + a visible frame, N29
-  blankets rebuilt, N20 globe lettering, the scope / headphones / print (far); W01 meter, W02 RevLimiter dial art,
-  W03 stickies, N12's 2x4, N47 a bigger shade (left); W06 lighting (car).
-- Builders' next batches (11-10): left W05 W04 N17 N18 L11; far N28 L17 N42; car N43 N11 N10 N24 N24B N45.
+- Batch 5, the car side (11-10, settings ver 20): N43 floor decals (alpha quads under the wet sheen; moved out from
+  under the lift's plate to x 0.85), N11 drip pan (onto the plate, y 0.085), N10 safety wall (off the walk), N24 / N24B
+  rugs, N45 extension reel (its box stands up: h 0.27). Models' dress: a transparent mesh casts no shadow.
+- Builders' queues (11-10): left W05 W04 N17 N18 L11, then rework W01 meter, W02 RevLimiter dial art, W03 stickies,
+  N12's 2x4, N47 a bigger shade; far N28 L17 N42, then rework N20 globe lettering, E04 scope + headphones, R19 print,
+  N39 traffic light (visors, dark body: the ceiling neon washes it); car W06 rework, then A01/A02 traps (dark fabric,
+  a frame you see) and N29 blankets rebuilt. After the left + far batches every slot in view has a model.
   The 12 slots at f > 1 (L10 R01 R04 R11 R12 R13 N04 N05 N08 N09 N22 N25) sit behind the camera: not built.
 - The outside through the door: A photo street / B built street / C rainy night (car builder's pick C), patches for A
   and C ready in `look/step4/builders/car/candidates/OUTSIDE/patch/`; Dan picks on bench round 3.

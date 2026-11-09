@@ -216,7 +216,7 @@ const DEF = {
   // the REVAUDIO neon: off the aisle (Dan 2026-11-02: "not in your face"), then on the end wall, right of the TV (11-03)
   signWall: 'endLeft', signF: 0.52, signX: -1.47, signY: 3.09,  // the wall in front of you, top right (Dan 11-03, placed 11-04, nudged on his room bench of 11-09)
   signScale: 1.15, signTilt: -2,        // hung a little crooked on two wires (Dan 11-03; sized 11-04)
-  ver: 19,                               // settings version (19 = batch 4 + the round-2 instruments: N02 on chains, N41/N39 onto the truss, the ukulele's hanger level with the banjo's; the round-3 checks: the rack 1.75 m out, the rims on the tyre rack, the sketch wall off the bass, 11-09; 18 = Dan's round-2 build notes, 11-09; 17 = the big line + the engine back on, Dan 11-09; 16 = his room bench of 11-09: the end wall rearranged; 15 = much less dust, Dan 11-09; 14 = the drum N06 moved, Dan's build bench of 11-09; 5 = Dan's bench of 11-03 baked, 6 = his third, with the pegboard move, 7 = back to the bare set; his bench of 11-04 needed no bump; 8 = the snap off; 9 = B + A's moves as the room; 10 = the look pass, 11 = its first fix round, 12 = his bench of 11-08 + two nudges, 13 = his neon pick): 2 moved the sign to the end wall, 3 made it bigger + crooked, 4 took the road off the floor
+  ver: 20,                               // settings version (20 = batch 5, the car side: N43 out from under the lift's plate, N11 onto it, 11-10; 19 = batch 4 + the round-2 instruments: N02 on chains, N41/N39 onto the truss, the ukulele's hanger level with the banjo's; the round-3 checks: the rack 1.75 m out, the rims on the tyre rack, the sketch wall off the bass, 11-09; 18 = Dan's round-2 build notes, 11-09; 17 = the big line + the engine back on, Dan 11-09; 16 = his room bench of 11-09: the end wall rearranged; 15 = much less dust, Dan 11-09; 14 = the drum N06 moved, Dan's build bench of 11-09; 5 = Dan's bench of 11-03 baked, 6 = his third, with the pegboard move, 7 = back to the bare set; his bench of 11-04 needed no bump; 8 = the snap off; 9 = B + A's moves as the room; 10 = the look pass, 11 = its first fix round, 12 = his bench of 11-08 + two nudges, 13 = his neon pick): 2 moved the sign to the end wall, 3 made it bigger + crooked, 4 took the road off the floor
   // the look pass (2026-11-08, todo 1b): real materials and night light on the same set (Skeleton = the grey labelled
   // blocks); tone = the tone mapping (AgX), exposure its exposure; probe = how much the room shows in its own shiny
   // things (chrome, paint, the floor); shafts = the haze under the lamps
@@ -299,8 +299,8 @@ const DEF = {
     "R17": {"f": 0.6215, "y": 2.85},
     "N06": {"f": 0.5723, "x": 2.2}, // Dan 11-09: "move it a bit to 2" (his pin by the parts bench)
     "N03": {"f": 0.8472, "x": 1.6},
-    "N11": {"f": 0.8194, "x": 2.4},
-    "N43": {"f": 0.8472, "x": 2.3, "s": 0.75},
+    "N11": {"f": 0.8194, "x": 2.4, "y": 0.085},
+    "N43": {"f": 0.8472, "x": 0.85, "s": 0.75},
     "N02": {"f": 0.8056, "x": 2.4, "y": 4.3},
     "N39": {"f": 0.5455, "x": -1.3, "y": 3.625},
     "N40": {"f": 0.2708, "x": 1.9, "y": 4.32},
@@ -360,6 +360,7 @@ if (sv < 16) { // his room bench of 11-09: the end wall rearranged, the guitar r
 }
 if (sv < 17) Object.assign(S, { engine: DEF.engine, readB: DEF.readB }); // the big line + the engine back on (Dan 11-09: "bring them back")
 if (sv < 18) for (const id of ['L19', 'L13', 'L14', 'N12', 'R15', 'N31', 'L02']) S.moves[id] = { ...DEF.moves[id] }; // his round-2 build notes (11-09)
+if (sv < 20) for (const id of ['N43', 'N11']) S.moves[id] = { ...DEF.moves[id] }; // batch 5: out from under the lift's plate, and onto it (11-10)
 if (sv < 19) for (const id of ['N02', 'N41', 'N39', 'R10', 'L19', 'R15', 'W03']) S.moves[id] = { ...DEF.moves[id] }; // N02's chains, the truss, the level hangers, the rack further out, the rims on the tyre rack, the sketch wall off the bass (11-09)
 S.ver = DEF.ver;
 // ?layout=<name>: a proposed layout (layouts/<name>.json, the bench's Copy-settings format) over the defaults, to walk
@@ -778,6 +779,14 @@ const MODELS = {
   R02: { src: 'assets/models/combo-amp.glb', yaw: -Math.PI / 2 },
   N41: { src: 'assets/models/chain-hoist.glb', yaw: Math.PI / 2, anim: [['hoist_swing', 'x', 'osc', [0.03, 1.8]]] }, // a slow rock, 3.5 s
   N39: { src: 'assets/models/traffic-light.glb', cycle: [['lamp_red', 6], ['lamp_green', 6], ['lamp_amber', 2]] }, // its lamps in turn (s); red steady in reduced motion
+  // batch 5, the car side (11-10): the floor + the door's safety wall. The decals are alpha quads drawn before the wet
+  // sheen (R.wet, renderOrder 1), so the sheen lies over them; they cast no shadow (dress)
+  N43: { src: 'assets/models/floor-decals.glb', yaw: -Math.PI / 2 }, // oil stain, tyre tracks, a drain, beside the lift
+  N11: { src: 'assets/models/drip-pan.glb', yaw: -Math.PI / 2 },    // on the lift's base plate
+  N10: { src: 'assets/models/safety-wall.glb', yaw: -Math.PI / 2 }, // extinguisher, first-aid box, the door's pendant
+  N24: { src: 'assets/models/rug-round.glb', yaw: -Math.PI / 2 },   // under the drums
+  N24B: { src: 'assets/models/rug-desk.glb' },                      // under the desk
+  N45: { src: 'assets/models/extension-reel.glb', yaw: Math.PI / 2 }, // a standing reel, its cords along the wall to the desk
   M01: { src: 'assets/models/crt-casing.glb', crt: true }, // the CRTs: a casing around each live screen
   M02: { src: 'assets/models/crt-casing.glb', crt: true },
   M03: { src: 'assets/models/crt-casing.glb', crt: true },
@@ -824,7 +833,7 @@ async function loadModels() {
     }
     const dress = (root) => root.traverse((o) => {
       if (!o.isMesh) return;
-      o.castShadow = o.receiveShadow = true;
+      o.receiveShadow = true; o.castShadow = ![o.material].flat().some((mt) => mt.transparent); // a decal or glass casts no box of shadow
       for (const mt of [o.material].flat()) {
         for (const t of ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap', 'emissiveMap']) if (mt[t]) maps.push(mt[t]);
         if (mt.emissive && mt.emissive.getHex() && !R.modelGlow.some((g) => g.m === mt)) R.modelGlow.push({ m: mt, k: mt.emissiveIntensity * (m.glow ?? 1), dying: /tube_dying/.test(mt.name), cyc: cycleOf(m.cycle, mt.name) }); // meters and LEDs power on with the room (N02's dying tube dips with its light)
@@ -953,7 +962,7 @@ const SIDE = [
   { id: 'N41', cat: 'garage', label: 'Chain hoist on a truss (sways)', side: 1, f: 0.9, w: 0.3, h: 1.5, d: 0.2, y: 3.4, x: 2.2 },
   { id: 'N42', cat: 'garage', label: 'Cable trays + hanging cords along the trusses', side: -1, f: 0.5, w: 12, h: 0.08, d: 0.3, y: 4.1, x: -1.7, flat: 1 },
   { id: 'N43', cat: 'garage', label: 'Floor decals: oil stains, tyre marks, a drain', side: 1, f: 0.9, w: 2.5, h: 0.01, d: 1.8, y: 0.006, x: 1.2, flat: 1 },
-  { id: 'N45', cat: 'garage', label: 'Extension reel + cords to the desk', side: -1, f: 0.35, w: 6, h: 0.03, d: 0.12, y: 0.02, x: -2.85, flat: 1 },
+  { id: 'N45', cat: 'garage', label: 'Extension reel + cords to the desk', side: -1, f: 0.35, w: 6, h: 0.27, d: 0.12, y: 0.135, x: -2.85, flat: 1 }, // the box stands up for the reel (11-10)
   // "We make plugins here" (Dan's look-lock note, 2026-11-04: "I want it to feel like we making plugins")
   { id: 'W01', cat: 'music', label: 'Test-gear tower: scope, generator, meter', side: -1, f: 0.5, w: 0.5, h: 0.6, d: 0.4, y: 1.22, x: -3.1 },
   { id: 'W02', cat: 'garage', label: 'The plugin\u2019s real object, mid-build (RPM gauge)', side: -1, f: 0.646, w: 0.3, h: 0.25, d: 0.35, y: 1.05, on: 0.3 },
@@ -1799,7 +1808,7 @@ function placeLeds() {
 }
 // Dan's round-2 notes (11-09) on this scatter (messSeed 1): two oil drums out (behind the GAS 2 drum; in front of the test
 // desk, where a chair stands now), the tyre by the couch moved to the tyre rack
-const MESS_FIX = { seed: 1, off: [26, 10], at: { 4: [2.25, 9.95] } };
+const MESS_FIX = { seed: 1, off: [26, 10, 13, 33, 37], at: { 4: [2.25, 9.95] } }; // 13 / 33 / 37: a case and two cones off the drums' rug (N24, 11-10)
 function placeMess() {
   const Wd = S.roomW, span = L.span, show = Math.round(S.mess * R.mess.length);
   const [cx, , cz] = R.carPos;

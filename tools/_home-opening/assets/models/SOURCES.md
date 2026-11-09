@@ -71,3 +71,9 @@ origin on the floor at the footprint's centre, front on +Z, 1k JPEG textures ins
 | combo-amp.glb | R02, the guitar combo amp | ours: built from code in Blender (car builder: `props.py --what combo`, `amp_tex.py`) | RevAudio | ours | 2026-11-09 | - |
 | chain-hoist.glb | N41, the chain hoist on the truss | ours: built from code in Blender (car builder: `props.py --what hoist`) | RevAudio | ours | 2026-11-09 | sways (`hoist_swing`) |
 | traffic-light.glb | N39, the traffic light | ours: built from code in Blender (car builder: `props.py --what traffic`) | RevAudio | ours | 2026-11-09 | its lamps (`lamp_red`, `lamp_amber`, `lamp_green`) cycle in the room |
+| floor-decals.glb | N43, oil stain, tyre tracks and a drain on the floor beside the lift | ours: built from code in Blender (car builder; the decal painted in code, 1k PNG for its alpha) | RevAudio | ours | 2026-11-10 | moved out from under the lift's plate (x 0.85) |
+| drip-pan.glb | N11, the oil drip pan + its spill, on the lift's plate | ours: built from code in Blender (car builder; the spill painted in code) | RevAudio | ours | 2026-11-10 | - |
+| safety-wall.glb | N10, extinguisher, first-aid box, the door's pendant switch | ours: built from code in Blender (car builder, vertex colours) | RevAudio | ours | 2026-11-10 | no text |
+| rug-round.glb | N24, the worn round rug under the drums | ours: built from code in Blender (car builder; the rug painted in code) | RevAudio | ours | 2026-11-10 | - |
+| rug-desk.glb | N24B, the worn rug under the desk | ours: built from code in Blender (car builder; the rug painted in code, alpha-mask fringes) | RevAudio | ours | 2026-11-10 | - |
+| extension-reel.glb | N45, the extension reel + cords to the desk | ours: built from code in Blender (car builder, vertex colours) | RevAudio | ours | 2026-11-10 | - |
