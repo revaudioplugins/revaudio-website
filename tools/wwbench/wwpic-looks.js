@@ -12,6 +12,10 @@
                      sheen over it, its blacks lifted a touch to the glass.
      C Phosphor      the TV draws it in its one colour, like the names: a duotone from the glass's dark to the hot
                      phosphor, blooming, the edges fading, and fine lines on the picture only.
+   Round 2 (Dan 2026-11-09, round 1 = "None yet", then "the lines on the html should be like its digital"): every look
+   wears the digital lines, the house 3 px pixel mesh of /drift's screens (dark gaps between the pixels, both ways; Dan
+   10-05 "the pixeled lcd ... but not too much"), and the picture is lifted to make up for the mesh's dark (Dan 10-09
+   "the pixel vibe darkens it"). C's TV scanlines are gone.
    GAS 2 in every look: the pump in its night desert (the plugin's ROOM picture, src/assets/plugins/gas2-hero.jpg) in
    place of the floating cut-out. "today" = the TV as it is.
 
@@ -55,30 +59,38 @@
     -webkit-mask-composite: source-in; mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent), linear-gradient(180deg, transparent, #000 7%, #000 93%, transparent);
     mask-composite: intersect;`;
   const perChannel = (look, prop) => Object.keys(CH).map((slug) =>
-    `${SCREEN}[data-ww-panel='${slug}'] .ww-ui :is(img, video) { ${prop}: url(#wwpic-${look}-${slug}) !important; }`).join('\n');
+    `${SCREEN}[data-ww-panel='${slug}'] .ww-ui :is(img, video) { ${prop}: url(#wwpic-${look}-${slug}) brightness(var(--wwpic-lift)) !important; }`).join('\n');
+  // the digital lines: /drift's 3 px pixel mesh (drift.css .d-cam-panel::after), over the picture only
+  const MESH = `repeating-linear-gradient(0deg, rgba(0, 0, 0, var(--wwpic-mesh)) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, var(--wwpic-mesh)) 0 1px, transparent 1px 3px)`;
+  // the figure hugs its picture, so what lies over it (the mesh, B's seat) never runs onto the glass beside it
+  const HUG = `${SCREEN} .ww-ui { --wwpic-mesh: 0.22; --wwpic-lift: 1.12; width: fit-content; max-width: 100%; }`;
 
   const LOOKS = {
     today: { name: 'Today', line: 'The TV as it is: a lit card over the glass, a ring, a halo and a drop under it; GAS 2 a floating pump.' },
     a: {
       name: 'On the tube',
-      line: 'The TV draws it: half its own colour, half the channel’s phosphor, its blacks the glass’s own dark, the highlights blooming, the edges fading into the screen. No drop, no ring.',
+      line: 'The TV draws it: half its own colour, half the channel’s phosphor, its blacks the glass’s own dark, the highlights blooming, the edges fading into the screen, the digital lines over it. No drop, no ring.',
       grade: { k: 0.45, ground: 8, mid: 48, hot: 92, hotSat: 0.55, bloom: 0.3, blur: 7 },
       css: () => `
+        ${HUG}
         ${PIC} { box-shadow: none !important; border-radius: 0 !important; ${FEATHER} }
+        ${SCREEN} .ww-ui::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: ${MESH}; ${FEATHER} }
         ${perChannel('a', 'filter')}`,
     },
     b: {
       name: 'Under the glass',
-      line: 'Its true colours, set behind the glass: a dark seat and an inner shadow round it, the glass’s sheen over it, its blacks lifted a touch to the glass. No drop, no halo.',
+      line: 'Its true colours, set behind the glass: a dark seat and an inner shadow round it, the glass’s sheen over it, its blacks lifted a touch to the glass, the digital lines over it. No drop, no halo.',
       grade: { k: 0, ground: 6, bloom: 0 },
       css: () => `
         ${PIC} { box-shadow: none !important; }
-        ${SCREEN} .ww-ui { --wwpic-r: calc(var(--ww-pic-r) * 1px); width: fit-content; max-width: 100%; }
+        ${HUG}
+        ${SCREEN} .ww-ui { --wwpic-r: calc(var(--ww-pic-r) * 1px); }
         ${SCREEN}[data-ww-panel='gas'] .ww-ui { --wwpic-r: 11% / 7.4%; }
         ${SCREEN}[data-ww-panel='radio-roulette'] .ww-ui { --wwpic-r: 9% 9% 10.6% 10.6% / 16.2% 16.2% 19% 19%; }
         ${SCREEN} .ww-ui::after {
           content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: var(--wwpic-r);
-          background: linear-gradient(158deg, rgba(255, 255, 255, 0.075) 0%, rgba(255, 255, 255, 0.02) 24%, transparent 42%);
+          background: linear-gradient(158deg, rgba(255, 255, 255, 0.075) 0%, rgba(255, 255, 255, 0.02) 24%, transparent 42%), ${MESH};
           box-shadow:
             inset 0 0 0 1px rgba(0, 0, 0, 0.85),
             inset 0 4px 14px rgba(0, 0, 0, 0.6),
@@ -89,15 +101,12 @@
     },
     c: {
       name: 'Phosphor',
-      line: 'The TV draws it in its one colour, like the names: the glass’s dark to the hot phosphor, blooming, the edges fading, fine lines on the picture only.',
+      line: 'The TV draws it in its one colour, like the names: the glass’s dark to the hot phosphor, blooming, the edges fading, the digital lines over it.',
       grade: { k: 1, ground: 7, mid: 46, hot: 92, hotSat: 0.5, bloom: 0.4, blur: 6 },
       css: () => `
+        ${HUG}
         ${PIC} { box-shadow: none !important; border-radius: 0 !important; ${FEATHER} }
-        ${SCREEN} .ww-ui::after {
-          content: ''; position: absolute; inset: 0; pointer-events: none;
-          background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.26) 0 1px, transparent 1px 3px);
-          ${FEATHER}
-        }
+        ${SCREEN} .ww-ui::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: ${MESH}; ${FEATHER} }
         ${perChannel('c', 'filter')}`,
     },
   };
