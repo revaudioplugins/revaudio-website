@@ -216,7 +216,7 @@ const DEF = {
   // the REVAUDIO neon: off the aisle (Dan 2026-11-02: "not in your face"), then on the end wall, right of the TV (11-03)
   signWall: 'endLeft', signF: 0.52, signX: -1.47, signY: 3.09,  // the wall in front of you, top right (Dan 11-03, placed 11-04, nudged on his room bench of 11-09)
   signScale: 1.15, signTilt: -2,        // hung a little crooked on two wires (Dan 11-03; sized 11-04)
-  ver: 20,                               // settings version (20 = batch 5, the car side: N43 out from under the lift's plate, N11 onto it, 11-10; 19 = batch 4 + the round-2 instruments: N02 on chains, N41/N39 onto the truss, the ukulele's hanger level with the banjo's; the round-3 checks: the rack 1.75 m out, the rims on the tyre rack, the sketch wall off the bass, 11-09; 18 = Dan's round-2 build notes, 11-09; 17 = the big line + the engine back on, Dan 11-09; 16 = his room bench of 11-09: the end wall rearranged; 15 = much less dust, Dan 11-09; 14 = the drum N06 moved, Dan's build bench of 11-09; 5 = Dan's bench of 11-03 baked, 6 = his third, with the pegboard move, 7 = back to the bare set; his bench of 11-04 needed no bump; 8 = the snap off; 9 = B + A's moves as the room; 10 = the look pass, 11 = its first fix round, 12 = his bench of 11-08 + two nudges, 13 = his neon pick): 2 moved the sign to the end wall, 3 made it bigger + crooked, 4 took the road off the floor
+  ver: 21,                               // settings version (21 = batch 6, the left wall: N12's box grows for its real 2x4, 11-10; 20 = batch 5, the car side: N43 out from under the lift's plate, N11 onto it, 11-10; 19 = batch 4 + the round-2 instruments: N02 on chains, N41/N39 onto the truss, the ukulele's hanger level with the banjo's; the round-3 checks: the rack 1.75 m out, the rims on the tyre rack, the sketch wall off the bass, 11-09; 18 = Dan's round-2 build notes, 11-09; 17 = the big line + the engine back on, Dan 11-09; 16 = his room bench of 11-09: the end wall rearranged; 15 = much less dust, Dan 11-09; 14 = the drum N06 moved, Dan's build bench of 11-09; 5 = Dan's bench of 11-03 baked, 6 = his third, with the pegboard move, 7 = back to the bare set; his bench of 11-04 needed no bump; 8 = the snap off; 9 = B + A's moves as the room; 10 = the look pass, 11 = its first fix round, 12 = his bench of 11-08 + two nudges, 13 = his neon pick): 2 moved the sign to the end wall, 3 made it bigger + crooked, 4 took the road off the floor
   // the look pass (2026-11-08, todo 1b): real materials and night light on the same set (Skeleton = the grey labelled
   // blocks); tone = the tone mapping (AgX), exposure its exposure; probe = how much the room shows in its own shiny
   // things (chrome, paint, the floor); shafts = the haze under the lamps
@@ -267,7 +267,7 @@ const DEF = {
     "W01": {"f": 0.816},
     "W05": {"f": 0.8507},
     "W02": {"f": 0.8854},
-    "N12": {"f": 0.9484, "x": -3.2, "y": 1.55},  // Dan 11-09 (x -3.2: its clamp's 2x4 on the wall)
+    "N12": {"f": 0.9484, "x": -3.21, "y": 1.55},  // Dan 11-09 (x -3.2: its clamp's 2x4 on the wall)
     "L16": {"f": 0.0764, "side": 1},
     "A06": {"y": 2.4},
     "L05": {"f": 0.1354, "side": 1},
@@ -360,6 +360,7 @@ if (sv < 16) { // his room bench of 11-09: the end wall rearranged, the guitar r
 }
 if (sv < 17) Object.assign(S, { engine: DEF.engine, readB: DEF.readB }); // the big line + the engine back on (Dan 11-09: "bring them back")
 if (sv < 18) for (const id of ['L19', 'L13', 'L14', 'N12', 'R15', 'N31', 'L02']) S.moves[id] = { ...DEF.moves[id] }; // his round-2 build notes (11-09)
+if (sv < 21) S.moves.N12 = { ...DEF.moves.N12 }; // batch 6: the clamp lamp's 2x4 against the wall (11-10)
 if (sv < 20) for (const id of ['N43', 'N11']) S.moves[id] = { ...DEF.moves[id] }; // batch 5: out from under the lift's plate, and onto it (11-10)
 if (sv < 19) for (const id of ['N02', 'N41', 'N39', 'R10', 'L19', 'R15', 'W03']) S.moves[id] = { ...DEF.moves[id] }; // N02's chains, the truss, the level hangers, the rack further out, the rims on the tyre rack, the sketch wall off the bass (11-09)
 S.ver = DEF.ver;
@@ -683,7 +684,7 @@ const LIT = {
   N02: { color: 0xffd2a0, glow: 0.54, cd: 2.25, tube: 1, at: [0, -0.25, 0] }, // the twin-tube shop light, one tube dying (warm white: on the palette); 10 % down (Dan, round 2); its box reaches the ceiling for the chains: the light stays at the fixture's middle (y 4.05) as before, not under the tubes (which lit their undersides: brighter, not dimmer)
   N07: { color: 0xffb050, glow: 5, globe: 0.15 },           // the GAS 2 pump's globe
   N08: { color: 0xcfe0ff, glow: 0.08 },                     // the vending machine's front
-  N12: { color: 0xffa04a, glow: 5, cd: 1.5, globe: 0.06, at: [0.042, 0.089, 0.054] }, // the clamp lamp over the bench (at: its model's bulb)
+  N12: { color: 0xffa04a, glow: 5, cd: 1.5, globe: 0.06, at: [0.04, 0.083, 0.054] }, // the clamp lamp over the bench (at: its model's bulb, in the 0.6 box)
   N47: { color: 0xffa04a, glow: 5, cd: 2.5, at: [0.6, -0.5, -0.33] },    // a lamp on the amp stack, its light on the amp's face (Dan, round 2)
   N48: { color: 0xffa04a, glow: 5, cd: 0.8, at: [-0.5, 0.25, 0.12] },  // a lamp on the vinyl cabinet, its light on the deck (Dan, round 2)
   N20: { color: 0xffb050, glow: 5, globe: 0.2, only: 1 },   // the GAS 2 globe lamp at the far end: the globe is the slot
@@ -787,6 +788,12 @@ const MODELS = {
   N24: { src: 'assets/models/rug-round.glb', yaw: -Math.PI / 2 },   // under the drums
   N24B: { src: 'assets/models/rug-desk.glb' },                      // under the desk
   N45: { src: 'assets/models/extension-reel.glb', yaw: Math.PI / 2 }, // a standing reel, its cords along the wall to the desk
+  // batch 6, the left wall (11-10)
+  W05: { src: 'assets/models/solder-station.glb', yaw: Math.PI / 2, anim: [['smoke_wisp', 'y', 'osc', [0.12, 0.7]]], wisp: 'smoke_wisp' }, // 350 degrees, a fume extractor, its smoke rising (frame)
+  W04: { src: 'assets/models/parts-bins.glb', yaw: Math.PI / 2 },   // KNOBS, FADERS, VU METERS
+  N17: { src: 'assets/models/pedalboard.glb', yaw: Math.PI / 2 },   // our plugins as pedals, footswitches to the aisle
+  N18: { src: 'assets/models/cable-hooks.glb', yaw: Math.PI / 2 },  // coiled cables on a board, flat on the wall
+  L11: { src: 'assets/models/drum-machine.glb', yaw: Math.PI / 2 }, // on the amp head, beside its lamp
   M01: { src: 'assets/models/crt-casing.glb', crt: true }, // the CRTs: a casing around each live screen
   M02: { src: 'assets/models/crt-casing.glb', crt: true },
   M03: { src: 'assets/models/crt-casing.glb', crt: true },
@@ -841,6 +848,7 @@ async function loadModels() {
       }
     });
     dress(g);
+    if (m.wisp) { const o = g.getObjectByName(m.wisp); if (o && o.material && o.material.map) (R.wisps ||= []).push(o.material); } // W05's smoke rises (frame)
     if (m.trace) g.traverse((o) => { if (o.material && o.material.name === m.trace && o.material.emissiveMap) (R.traces ||= []).push(o.material); }); // a scope's trace runs (frame)
     for (const [name, axis, a, b] of m.anim || []) { const o = g.getObjectByName(name); if (o) (R.modelAnims ||= []).push(a === 'osc' ? { o, axis, amp: b[0], freq: b[1] } : { o, axis, speed: a }); } // fans, reels
     if (m.stand && it.stand) { // a monitor's floor stand: origin on the floor, stretched to it in placeItem like the drawn one
@@ -944,12 +952,12 @@ const SIDE = [
   { id: 'N09', cat: 'garage', label: 'A-frame chalkboard: this week’s message', side: 1, f: 0.845, w: 0.76, h: 1.5, d: 0.9, x: 0.55 },
   { id: 'N10', cat: 'garage', label: 'Fire extinguisher, first-aid box, door pendant', side: 1, f: 0.8, w: 0.35, h: 0.6, d: 0.2, y: 1.15, x: 3.25 },
   { id: 'N11', cat: 'garage', label: 'Oil drip pan + stain under the car', side: 1, f: 0.95, w: 0.6, h: 0.05, d: 0.6, y: 0.03, x: 2.4, flat: 1 },
-  { id: 'N12', cat: 'garage', label: 'Clamp-on task lamp over the bench', side: -1, f: 0.63, w: 0.3, h: 0.5, d: 0.3, y: 1.45, on: 0.3 },
+  { id: 'N12', cat: 'garage', label: 'Clamp-on task lamp over the bench', side: -1, f: 0.63, w: 0.6, h: 0.5, d: 0.3, y: 1.45, on: 0.3 }, // 0.6 along the wall: its clamp's real 2x4 (11-10)
   { id: 'N13', cat: 'garage', label: 'Corkboard: gig flyers, photos, a calendar', side: -1, f: 0.715, w: 1.2, h: 0.8, d: 0.03, y: 2.3 },
   { id: 'N15', cat: 'garage', label: 'Bench grinder + drill press', side: 1, f: 0.396, w: 0.5, h: 0.42, d: 0.4, y: 1.13 },
   { id: 'N16', cat: 'music', label: 'Guitar mid-repair on the test desk', side: -1, f: 0.41, w: 1.0, h: 0.12, d: 0.35, y: 0.81, on: 0.25, sits: 'W07' },
   { id: 'N17', cat: 'music', label: 'Pedalboard: RevAudio pedals, cable spaghetti', side: -1, f: 0.82, w: 0.7, h: 0.1, d: 0.35, y: 0.05, x: -2.65 },
-  { id: 'N18', cat: 'music', label: 'Coiled cables on wall hooks', side: -1, f: 0.125, w: 0.6, h: 0.6, d: 0.1, y: 1.6, on: 0.06 },
+  { id: 'N18', cat: 'music', label: 'Coiled cables on wall hooks', side: -1, f: 0.125, w: 0.6, h: 0.6, d: 0.1, y: 1.6, on: 0 }, // its board flat on the wall
   { id: 'N22', cat: 'music', label: 'Road cases, stencilled lids (stacked)', side: 1, f: 0.265, w: 1.0, h: 1.2, d: 0.6, x: 2.2 },
   { id: 'N23', cat: 'music', label: 'Worn couch with a throw', side: 1, f: 0.37, w: 2.0, h: 0.85, d: 0.9, x: 2.2 },
   { id: 'N24', cat: 'music', label: 'Worn round rug under the drums', side: 1, f: 0.735, w: 2.0, h: 0.02, d: 2.0, y: 0.01, x: 2.3, flat: 1 },
@@ -2151,6 +2159,7 @@ function lightRoom(neonK, warm, signK, open, far, now) {
 function frame(now) {
   const t = now - t0;
   if (!reduced) for (const mt of R.traces || []) mt.emissiveMap.offset.x = (now / 1000 * 0.35) % 1; // N33's green trace
+  if (!reduced) for (const mt of R.wisps || []) { mt.map.offset.y = (now / 1000 * 0.35) % 1; mt.opacity = 0.75 + 0.25 * Math.sin(now / 1000 * 1.3); } // W05's smoke wisp rises and breathes
   if (!reduced && R.modelAnims) { const dt = Math.min(0.1, (now - (R.animAt || now)) / 1000); for (const a of R.modelAnims) a.o.rotation[a.axis] = a.speed != null ? a.o.rotation[a.axis] + a.speed * dt : a.amp * Math.sin(now / 1000 * a.freq); } R.animAt = now; // the models' fans and reels
   const e = easeIO(clamp(progress), S.ease), far = 1 - e;
   const locked = progress >= 0.999;

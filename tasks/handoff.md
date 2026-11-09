@@ -305,6 +305,9 @@ UPDATE 3 2026-11-09 / 11-10 (night): Dan's round-2 notes (db `notes-r2`, pins re
 - Batch 5, the car side (11-10, settings ver 20): N43 floor decals (alpha quads under the wet sheen; moved out from
   under the lift's plate to x 0.85), N11 drip pan (onto the plate, y 0.085), N10 safety wall (off the walk), N24 / N24B
   rugs, N45 extension reel (its box stands up: h 0.27). Models' dress: a transparent mesh casts no shadow.
+- Batch 6, the left wall (11-10, settings ver 21): W05 solder station (its smoke scrolls and breathes: MODELS `wisp`),
+  W04 parts bins, N17 pedalboard, N18 cable hooks, L11 drum machine; reworks W01 meter, W02 RevLimiter dial, W03
+  stickies, N12 on its 2x4 (box w 0.6, x -3.21), N47 a bigger shade. Checked: 0 overlaps, 93 models, still re-rendered.
 - Builders' queues (11-10): left W05 W04 N17 N18 L11, then rework W01 meter, W02 RevLimiter dial art, W03 stickies,
   N12's 2x4, N47 a bigger shade; far N28 L17 N42, then rework N20 globe lettering, E04 scope + headphones, R19 print,
   N39 traffic light (visors, dark body: the ceiling neon washes it); car W06 rework, then A01/A02 traps (dark fabric,
