@@ -335,3 +335,12 @@ pedals spilled over the REVFX title plate (Yoni: "you misplaced the pedals in th
 Rule: a new section's classes carry the section's own prefix (`.rfx-hear-*`). Before adding a class, grep the page's
 stylesheet and components for it. After any CSS change on a page with several sections, screenshot the whole page
 against the live one, not only the section you changed.
+
+## 2026-11-05 - a route change carries its smoke test; check the smoke run, not only the deploy
+
+`/store` moved to `/plugins` (40c9e43) while `tests/smoke.spec.ts` still waited for `/?utm_source=smoke#plugins`, so
+Smoke went red on every site push for a day and two sessions shipped past it (they checked only the Pages deploy).
+1. A commit that moves a route or a redirect updates its smoke test in the same commit.
+2. After a site push: `gh run list --limit 2` shows Deploy AND Smoke test; read both conclusions before calling it live.
+3. Mac WebKit against the dev server hangs the same way as the 2026-10-14 Windows note: `load` and
+   `document.fonts.ready` can stall a Playwright run (2026-11-04), so race fonts.ready with a ~5 s timeout there too.
