@@ -1,6 +1,17 @@
+## 2026-11-09 — /revfx player: the die moves into the player and rolls Yoni's presets (Claude Code `revaudio-2f [e388a1]`, Yoni's laptop 2) — branch `feat/revfx-hear`
+
+Claim: OPEN `revaudio-2f` (took over `revaudio-0d`'s claim below, same files, + `src/components/revfx/RfxHero.astro`,
+`src/lib/revfx/deck.ts`). 
+- Yoni: the die really rolls a preset, random only for the visitor: 4 presets per sound (his renders + his RevFX preset
+  .xml), a roll picks one of the other 3. Die + scene CRT + chain move from the hero into the player (step 4 ROLL IT);
+  a roll while stopped starts playing in RevFX.
+- Fix (Yoni: "you misplaced the pedals in the top there overlapping"): the player reused the hero's class
+  `.rfx-board-wrap`, so its `container-type: inline-size; display: flex` shrank the hero board to 13 px and the pedals
+  spilled over the REVFX card. The player's wrapper is now `.rfx-hear-board-wrap`.
+
 ## 2026-11-05 — /revfx before/after player: "Plug in. Stomp it." (Claude Code `revaudio-0d [61a467]`, Yoni's laptop 2) — branch `feat/revfx-hear`, worktree `../revaudio-website-rfxhear`
 
-Claim: OPEN `revaudio-0d`. Files: `src/components/revfx/RfxHear.astro` (new), `src/lib/revfx/hear.ts` (new),
+Claim: HANDED to `revaudio-2f` 2026-11-09 (was OPEN `revaudio-0d`). Files: `src/components/revfx/RfxHear.astro` (new), `src/lib/revfx/hear.ts` (new),
 `src/lib/revfx/init.ts`, `src/pages/revfx.astro`, `src/styles/revfx.css` (new #hear block only), `src/data/revfx.ts`
 (hearTracks only), `public/audio/revfx/**` (new), `tools/revfx-player/prep_audio.py` (new), this entry.
 - Yoni: "create the before after player for revfx ... maybe the layout of the drift ab player can work here ... 4 sounds
