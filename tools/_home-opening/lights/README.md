@@ -8,12 +8,15 @@ first visit of a session; after that soft rises, no flicker).
 ## What the visitor sees
 
 1. Black, then the eyes get used to the dark: the night through the door, the car's red tail lights, the vending
-   machine and the GAS globes (their own circuit), a camera's grain.
-2. The shop light by the door: its ends glow, it tries twice, it strikes.
-3. The violet strip buzzes on, then the magenta one: the room appears (the exposure catches up: a short overexposure).
-4. The four hanging lamps warm up, front to back toward the TV (the trouble light and the clamp lamp with theirs).
-5. The gear: the REVAUDIO sign, the CRTs, the racks' LEDs and meters, the floor strips.
-6. The live room takes over (the same picture), and the TV powers on in 3D. Then the big line.
+   machine and the GAS globes (their own circuit), a faint camera grain (Dan 11-09: less noise).
+2. The TV at the end of the aisle comes on first (Dan 11-09: "the small lcd screen to light up first"): standby, the
+   backlight on a dark panel, the picture; its glow on the end wall, the desk and the wet floor. Its picture is drawn
+   per screen width (`bank-1@1141x636.webp` ...), the one the room's TV will show (CAPS), so the hand-off is the same.
+3. The shop light by the door: its ends glow, it tries twice, it strikes.
+4. The violet strip buzzes on, then the magenta one: the room appears (the exposure catches up: a short overexposure).
+5. The four hanging lamps warm up, front to back toward the TV (the trouble light and the clamp lamp with theirs).
+6. The gear: the REVAUDIO sign, the CRTs, the racks' LEDs and meters, the floor strips.
+7. The live room takes over (the same picture). Then the big line.
 
 ## How it works
 
@@ -22,14 +25,14 @@ first visit of a session; after that soft rises, no flicker).
 - `lights/render.mjs` renders the room at walk 0 with the first k banks on (`room.html?capture=0&lights=k`, k = 0..8;
   the TV off, nothing moving), and `lights/layers.py` turns them into `assets/lights/base.webp` (the dark room) and
   `bank-<k>.webp` (bank k's own light: room k minus the sum so far as encoded, never below 0). 2560x1080, one picture
-  for every laptop like the still (object-fit cover). 9 files, ~345 KB.
+  for every laptop like the still (object-fit cover). 12 files, 390 KB; a visit loads one TV picture, ~357 KB.
 - `lights/lights-on.js` stacks them with `mix-blend-mode: plus-lighter` (light adds: every step is the room as
   rendered) and plays each bank's opacity by its kind. Opacity only, so the compositor plays it while the 3D compiles.
 - room.html reports the load (`loaded(phase)`): textures by count, models by bytes, the GPU uploads by count, the
-  shader compile; `LOADW` = each phase's share of a cold visit (measured). Bank i comes on at (i + 1) / 9.
+  shader compile; `LOADW` = each phase's share of a cold visit (measured). Bank i comes on at (i + 1) / 10.
 - Hand-off: the live room renders its first frame with every bank on and the TV off under the pictures; once the last
-  bank has settled, the pictures fade (0.5 s), the walk unlocks, the TV powers on 0.3 s later, the sway and the dust
-  come in over 2.5 s.
+  bank has settled, the pictures fade (0.5 s), the walk unlocks, the big line comes in 0.4 s later, the sway and the
+  dust come in over 2.5 s.
 - Flashes: one at a time across the room, the next at least 400 ms after (2.5 a second; WCAG 2.3.1 allows 3, the
   room's rule since 11-04). Reduced motion and the second visit of a session: soft rises, no flicker, no flare.
 - The slow-connection still (`#still`, `assets/still/room-2560.webp`) is gone from room.html: the loading screen is the
@@ -51,7 +54,8 @@ A new skin = new pictures from the same script.
 - Two captures of the full room: 0.00 levels apart (the captures are still, so the layers hold only light).
 - The encoded layers added up vs the full room: mean 2.3 levels per channel, +1.25 bias.
 - The hand-off at 1141x636 @2x (under the nav, clear of the bench button): blurred 4 px (light and place) mean 2.9
-  levels, p99 12; sharp mean 4.5 (edge resampling: the pictures are 2560 wide, the live room 2282 device px).
+  levels, p99 12; sharp mean 4.6 (edge resampling: the pictures are 2560 wide, the live room 2282 device px). With
+  the TV first (round 2): the TV shows the same picture in both.
 - A cold first visit at 40 Mbit/s (no cache): phases end at textures 2.2 s, models 5.5 s, uploads 6.7 s, compile 6.9 s;
   the banks came on at 1.0 · 1.5 · 1.9 · 3.1 · 4.0 · 4.7 · 5.0 · 6.1 s, hand-off 7.1 s; no page errors.
 

@@ -13,7 +13,7 @@ const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ?
 const port = arg('port', '4471'), W = +arg('w', 1141), H = +arg('h', 636), DPR = +arg('dpr', 2), MBPS = +arg('mbps', 40);
 const here = path.dirname(fileURLToPath(import.meta.url)), out = arg('out', fs.mkdtempSync(path.join(os.tmpdir(), 'lights-check-')));
 const url = (qs) => `http://127.0.0.1:${port}/tools/_home-opening/room.html${qs}`;
-const browser = await chromium.launch({ channel: 'chrome' });
+const browser = await chromium.launch({ channel: 'chrome', timeout: 300000 }); // (a busy Mac starts Chrome slowly)
 const fresh = () => browser.newContext({ viewport: { width: W, height: H }, deviceScaleFactor: DPR });
 
 // 1. a cold first visit
@@ -48,7 +48,9 @@ const fresh = () => browser.newContext({ viewport: { width: W, height: H }, devi
   await b.waitForFunction(() => window.__lightsReady, null, { timeout: 120000 });
   await b.waitForTimeout(2500); await b.screenshot({ path: path.join(out, 'live.png') });
   console.log(`the hand-off at ${W}x${H} @${DPR}x (${out}):`);
-  execFileSync('python3', ['-I', path.join(here, 'layers.py'), '--diff', path.join(out, 'loader.png'), path.join(out, 'live.png')], { stdio: 'inherit' });
+  // under the nav (the capture hides it), clear of the bench button
+  const band = [41, 200, 45].map((v) => String(v * DPR));
+  execFileSync('python3', ['-I', path.join(here, 'layers.py'), '--diff', path.join(out, 'loader.png'), path.join(out, 'live.png'), ...band], { stdio: 'inherit' });
   await ctx.close();
 }
 await browser.close();

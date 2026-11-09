@@ -134,6 +134,8 @@
           it comes on (lights/lights-on.js): a tube strikes, a neon buzzes on, a bulb warms up, the gear powers on. props =
           the lit props on its circuit (LIT with a light); w = its share of the room's fill (the hemisphere, the reflections) */
           window.LIGHT_BANKS = [
+            { id: 'tv', kind: 'screen', w: 0.15,                   // the TV at the end of the aisle first (Dan 11-09: "the small lcd screen to light up first");
+              caps: ['1141x636', '1440x900', '1920x1080'] },       //   its picture per screen width, the TV's own captures (CAPS): the hand-off shows the same one
             { id: 'shop', kind: 'tube', props: ['N02'] },          // the twin-tube shop light by the door, one tube dying
             { id: 'neonL', kind: 'neon' },                         // the violet strip, left
             { id: 'neonR', kind: 'neon' },                         // the magenta strip, right
@@ -355,6 +357,7 @@ const KEY = 'hoRoom:v1';
 const CAPTURE = new URLSearchParams(location.search).get('capture'), CAPTURE_PAINTED = new URLSearchParams(location.search).has('painted');
 // &lights=<k>: the loading screen's picture of the room with its first k light banks on (BANKS; lights/render.mjs)
 const LIGHTS = CAPTURE != null ? new URLSearchParams(location.search).get('lights') : null;
+const TVCAP = CAPTURE != null ? new URLSearchParams(location.search).get('tvcap') : null; // &tvcap=<CAPS tag>: the TV's picture for that screen width
 const S = { ...DEF, moves: structuredClone(DEF.moves) };
 let stored = {};
 try { stored = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) {}
@@ -1976,7 +1979,7 @@ function placeShots() {
 function resize() {
   const vw = innerWidth, vh = innerHeight;
   L.vw = vw; L.vh = vh;
-  const c = pickCap(vw);
+  const c = (TVCAP && CAPS.find((x) => x.tag === TVCAP)) || pickCap(vw);
   if (c !== cap) {
     cap = c;
     tvImg.src = `assets/tv-${c.tag}.webp`;
@@ -2171,7 +2174,7 @@ function frame(now) {
   const neonK = flicker(t, INTRO.neon, 3) * S.neon * hum;
   const warm = smooth(0, 1, env(t, INTRO.lamps)), lampK = warm * S.lamps;
   const signK = flicker(t, INTRO.sign, 11) * hum * (!reduced && hash(Math.floor(now / 140) + 5) > 0.994 ? 0.25 : 1); // an old sign: a rare stutter
-  const tk = LIGHTS != null ? 0 : reduced ? 1 : env(t, INTRO.tv), open = smooth(0.18, 0.62, tk); // (a light capture: the TV off)
+  const tk = LIGHTS != null ? lv('tv') : reduced ? 1 : env(t, INTRO.tv), open = smooth(0.18, 0.62, tk); // (a light capture: the TV with its bank)
   if (R.probe.due && now > R.probe.due) { R.probe.due = 0; updateProbe(); } // (its capture lights the room fully: before this frame's levels)
   lightRoom(neonK, warm, signK, open, far, now);
   R.tv.faceMat.color.setScalar(locked ? 1 : 0.03 + 0.97 * open);
@@ -2621,12 +2624,12 @@ await renderer.compileAsync(scene, camera);
 renderer.setRenderTarget(null);
 loaded('compile', 1, 1);
 updateProbe(); R.probe.due = 0;
-// the loading screen lit the room bank by bank: the live room opens with every bank on and the TV still to come (the same
-// picture), takes over once the last bank has settled, and the TV powers on a beat later (lights/README.md)
+// the loading screen lit the room bank by bank, the TV first: the live room opens with every bank on (the same picture),
+// takes over once the last bank has settled, and the big line comes in a beat later (lights/README.md)
 const LO = CAPTURE == null ? window.lightsOn : null;
-if (LO) INTRO.neon = INTRO.lamps = INTRO.sign = [-2, -1];
+if (LO) INTRO.neon = INTRO.lamps = INTRO.sign = INTRO.tv = [-2, -1];
 t0 = performance.now(); frame(t0); // one first frame (dark without the loading screen): the glow, the finish and the floor's mirror compile before the clock starts
-if (LO) { await LO.ready(); R.handoffAt = performance.now(); t0 = R.handoffAt - INTRO.tv[0] + 300; LO.handoff(); lenis?.start(); }
+if (LO) { await LO.ready(); R.handoffAt = performance.now(); t0 = R.handoffAt - INTRO.read[0] + 400; LO.handoff(); lenis?.start(); }
 else t0 = performance.now();
 if (LIGHTS != null) { t0 -= 1e5; window.__lightsReady = true; } // a light capture: every envelope done (lights/render.mjs)
 requestAnimationFrame(raf);

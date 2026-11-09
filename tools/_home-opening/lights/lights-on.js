@@ -32,8 +32,10 @@
   };
   const base = pic('base.webp', 'lo-base', true);
   const baseIn = base.decode().catch(() => {});
+  // a bank drawn per screen width (the TV: its picture follows the room's CAPS): the one the room will pick, the nearest
+  const capOf = (caps) => caps.reduce((a, t) => (Math.abs(+t.split('x')[0] - innerWidth) < Math.abs(+a.split('x')[0] - innerWidth) ? t : a));
   const L = banks.map((b, i) => {
-    const el = pic(`bank-${i + 1}.webp`, 'lo-bank');
+    const el = pic(`bank-${i + 1}${b.caps ? '@' + capOf(b.caps) : ''}.webp`, 'lo-bank');
     return { ...b, i, el, dec: el.decode().catch(() => {}), done: null };
   });
   const W = L.reduce((s, b) => s + (b.w ?? 1), 0) || 1;
@@ -45,7 +47,7 @@
     const c = document.createElement('canvas'); c.width = c.height = 192;
     const x = c.getContext('2d'), d = x.createImageData(192, 192);
     for (let i = 0; i < d.data.length; i += 4) {
-      const v = Math.pow(Math.random(), 4) * 70;
+      const v = Math.pow(Math.random(), 5) * 48; // (fine and faint: Dan 11-09, "too much noise in the beginning")
       d.data[i] = v * (0.85 + Math.random() * 0.3); d.data[i + 1] = v * (0.8 + Math.random() * 0.3); d.data[i + 2] = v * (0.95 + Math.random() * 0.35); d.data[i + 3] = 255;
     }
     x.putImageData(d, 0, 0); grain.style.backgroundImage = `url(${c.toDataURL()})`;
@@ -54,7 +56,7 @@
       grain.animate(jumps, { duration: 9 * 70, iterations: Infinity });
     }
   } catch (e) {}
-  const setGrain = () => { grain.style.opacity = (0.75 * Math.pow(1 - lit, 2.2)).toFixed(3); };
+  const setGrain = () => { grain.style.opacity = (0.3 * Math.pow(1 - lit, 2.5)).toFixed(3); };
 
   // the eyes getting used to the dark: the room's shapes come up out of black
   baseIn.then(() => {
@@ -91,6 +93,9 @@
       const f = flashSlot(now + r(0, 80)) - now;
       return { strike: f + 220, flareK: darkK * 0.8, pts: [[0, 0, 'step'], [f, 0, 'step'], [f, 0.5, 'step'], [f + 70, 0.07, 'step'], [f + 220, 0.07, 'step'],
         [f + 220, 0.9, 'ease-out'], [f + 520, 1]] };
+    }
+    if (b.kind === 'screen') { // an LCD: the standby light, the backlight on a dark panel, then the picture comes up
+      return { strike: 480, flareK: 0, pts: [[0, 0, 'step'], [60, 0.1, 'step'], [480, 0.1, 'cubic-bezier(.25,.6,.3,1)'], [900, 1]] };
     }
     if (b.kind === 'gear') { // the gear: the CRTs pop on, the sign buzzes, the LEDs come up
       const f = flashSlot(now) - now;

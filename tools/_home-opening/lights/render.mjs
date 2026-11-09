@@ -14,7 +14,7 @@ const port = arg('port', '4471'), W = 2560, H = 1080, Q = arg('q', '82');
 const here = path.dirname(fileURLToPath(import.meta.url)), out = path.join(here, '..', 'assets', 'lights');
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'lights-'));
 fs.mkdirSync(out, { recursive: true });
-const browser = await chromium.launch({ channel: 'chrome' });
+const browser = await chromium.launch({ channel: 'chrome', timeout: 300000 }); // (a busy Mac starts Chrome slowly)
 const ctx = await browser.newContext({ viewport: { width: W, height: H }, deviceScaleFactor: 1 });
 async function shot(k, file) {
   const page = await ctx.newPage(), errs = [];
@@ -22,18 +22,24 @@ async function shot(k, file) {
   await page.goto(`http://127.0.0.1:${port}/tools/_home-opening/room.html?capture=0&lights=${k}`, { waitUntil: 'load', timeout: 90000 });
   await page.waitForFunction(() => window.__lightsReady, null, { timeout: 90000 });
   await page.waitForTimeout(2500); // the pictures land after the first layout, the probe redraws
-  const n = await page.evaluate(() => window.LIGHT_BANKS.length);
+  const banks = await page.evaluate(() => window.LIGHT_BANKS);
   await page.screenshot({ path: file });
   await page.close();
-  if (errs.length) console.log('  page errors at %d: %s', k, errs.join(' | '));
-  return n;
+  if (errs.length) console.log('  page errors at %s: %s', k, errs.join(' | '));
+  return banks;
 }
-const n = await shot(0, path.join(tmp, 'room-0.png'));
+const banks = await shot(0, path.join(tmp, 'room-0.png')), n = banks.length;
+const caps = Object.fromEntries(banks.map((b, i) => [i + 1, b.caps]).filter(([, c]) => c)); // banks drawn per screen width
 if (process.argv.includes('--check')) {
   await shot(n, path.join(tmp, 'check-a.png')); await shot(n, path.join(tmp, 'check-b.png'));
   execFileSync('python3', ['-I', path.join(here, 'layers.py'), '--diff', path.join(tmp, 'check-a.png'), path.join(tmp, 'check-b.png')], { stdio: 'inherit' });
 }
-for (let k = 1; k <= n; k++) { await shot(k, path.join(tmp, `room-${k}.png`)); process.stdout.write(`  room ${k}/${n}\n`); }
+for (let k = 1; k <= n; k++) {
+  await shot(k, path.join(tmp, `room-${k}.png`)); // the room's own pick at 2560 wide: the chain the later banks build on
+  for (const tag of caps[k] || []) await shot(`${k}&tvcap=${tag}`, path.join(tmp, `room-${k}@${tag}.png`));
+  process.stdout.write(`  room ${k}/${n}\n`);
+}
 await browser.close();
-execFileSync('python3', ['-I', path.join(here, 'layers.py'), tmp, out, String(n), Q], { stdio: 'inherit' });
+for (const f of fs.readdirSync(out)) if (/^(base|bank-\d+(@[\dx]+)?)\.webp$/.test(f)) fs.unlinkSync(path.join(out, f)); // no stale bank left
+execFileSync('python3', ['-I', path.join(here, 'layers.py'), tmp, out, String(n), Q, JSON.stringify(caps)], { stdio: 'inherit' });
 if (!process.argv.includes('--keep')) fs.rmSync(tmp, { recursive: true, force: true }); else console.log('renders kept in', tmp);
