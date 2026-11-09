@@ -34,6 +34,9 @@ material is a draw call, and the monitors' 11 each cost the room ~10 % frame rat
 - Frame rate: the room on Dan's Mac (M1 Max, 1141x636, DPR 2, `layout-kit/fps.mjs`) was 50 / 47 / 60 / 97 fps at
   walk 0 / 0.3 / 0.6 / 0.9 on 2026-11-09. A batch may not take a walk spot more than 10 % below that; if it does,
   merge materials (the monitors' 11 each first) before adding more.
+- The load-proof measure (fps swings with the Mac's load): `layout-kit/drawcalls.mjs` = draw calls + triangles per
+  frame. 2026-11-09 after the left wall's batch 1: 733 / 659 / 199 / 86 calls and 216k / 178k / 53k / 16k triangles at
+  walk 0 / 0.3 / 0.6 / 0.9 (the room alone, before any model: 598 calls, 106k). Keep a batch under ~+40 calls.
 
 ## See it in the room (no repo edits)
 
