@@ -361,8 +361,9 @@ UPDATE 3 2026-11-09 / 11-10 (night): Dan's round-2 notes (db `notes-r2`, pins re
   clearly darker). NOT in the room until he picks a grade. Adopting it: its notes' steps, Oswald 700 must load, and lit
   things outside stay on through the loading screen unless added to `window.LIGHT_BANKS`.
 - Bench round 5 is built (round1/garage-build.html via `r5-page.py c562939`: 8 cards, 26 shots; two checks, 6 findings
-  fixed) but NOT published: the session's account switched to the personal one, which can't open the bench (it belongs to
-  the RevAudio account). Publish from the RevAudio account to the same link with the files map of `shots-r5.json`.
+  fixed). The session's account switched to Dan's personal one, which can't open the old link (RevAudio account,
+  rounds 1-4), so round 5 is on a NEW link, published 11-10: https://claude.ai/artifact/54aorRBcCAvWJTrPHqaPZm
+  (ArtifactData collection `notes-r5`; source the scratchpad's `look/step4/round1/garage-build-r5.html` + `files-r5.json`).
 - Loading screen merged (11-10 evening): `feat/home-lights-on` (danavivi-fa's, Dan approved) = merge `6d9f6cf` (room.html
   auto-merged, no conflicts) + `955074f` (assets/lights re-rendered from the merged room). render.mjs --check: two
   captures 0.00 apart, layers vs the full room mean 3.86 levels, p99 20, 438 KB. check.mjs at 1141x636 @2x: cold 40 Mbit
