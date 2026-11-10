@@ -463,8 +463,10 @@ scratchpad`, ~20 GB with the speed study) can go once round 6 is out: the essent
 `.claude/garage-bench-2026-11-10/` and `.claude/perf-study-2026-11-10/`.
 
 Open: the monitors bench had B (vintage) ticked but Dan's chat said "black + wood"; black went in. Confirm if asked.
-Owed by Dan: send Yoni the CSP message (add `blob:` to img-src and connect-src in the Cloudflare transform rule, by
-hand; then a curl check and one Paddle checkout); tell Gil (the room on laptops from Nov 19, next to his Black Friday
+Owed by Dan: send Yoni the CSP link (three words: `'wasm-unsafe-eval'` in script-src, `blob:` in img-src and
+connect-src; tested 11-10 in Chrome, Safari, Firefox; steps, exact values, check and undo: the shared repo's
+`collaboration/handoffs/2026-11-10-yoni-csp-room/handoff-yoni.md`); when he says done, compare the live header with that page's value byte
+for byte; tell Gil (the room on laptops from Nov 19, next to his Black Friday
 countdown); the finish list's stops 2-6.
 Run the room: from this worktree's root `python3 -m http.server 4490 --bind 127.0.0.1` (this session left one running,
 pid 52126: `kill 52126` if it's in the way), then http://127.0.0.1:4490/tools/_home-opening/room.html. The scripts
