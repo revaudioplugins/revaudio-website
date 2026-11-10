@@ -44,6 +44,7 @@ import gasImg from '../assets/plugins/gas-hero.png';
    (GAS2.hose(true)), the house FLOATING shadow baked under it (53 deg, 30 / 24 / .50 + 5 / 4 / .55, rgb(12,9,6)) */
 import gas2Img from '../assets/plugins/gas2-float.png';
 import rrImg from '../assets/plugins/radioroulette-hero.png';
+import revfxImg from '../assets/plugins/revfx-hero.png';
 import driftImg from '../assets/showcase/drift-window-init.png';
 import brokenMeta from '../assets/seasons/drift/tv-broken.json';
 import { drift } from '../data/drift';
@@ -139,6 +140,7 @@ const WINDOWS: Record<string, { img: ImageMetadata; portrait?: boolean; float?: 
   revlimiter: { img: rlImg },
   gas: { img: gasImg, portrait: true },
   gas2: { img: gas2Img, portrait: true, float: true }, // float: the object alone, its own shadow, no frame round it
+  revfx: { img: revfxImg },
   'radio-roulette': { img: rrImg },
 };
 type Item = {
@@ -1848,7 +1850,7 @@ const first = items[0]?.slug ?? '';
      saturation (unitless %) from the plugin's own UI: RevLimiter amber (its
      gauge + LCDs; kept well clear of race-red, the homepage's one red is
      .hh-redline), GAS brass gold, GAS 2 its pump's oxide red-orange, Radio Roulette the dial glass's pale warm
-     cream, DRIFT violet (its screen stays /drift's own tube). A plugin with no
+     cream, DRIFT violet (its screen stays /drift's own tube), RevFX its rack's neon magenta. A plugin with no
      channel here plays in neutral cream. */
   .ww {
     --ww-ch-revlimiter-h: 26;      --ww-ch-revlimiter-s: 78;
@@ -1856,6 +1858,7 @@ const first = items[0]?.slug ?? '';
     --ww-ch-gas2-h: 14;            --ww-ch-gas2-s: 58;
     --ww-ch-radio-roulette-h: 38;  --ww-ch-radio-roulette-s: 28;
     --ww-ch-drift-h: 280;          --ww-ch-drift-s: 70;
+    --ww-ch-revfx-h: 305;          --ww-ch-revfx-s: 72;
     --ww-on-h: 38;
     --ww-on-s: 28;
   }
@@ -1865,11 +1868,13 @@ const first = items[0]?.slug ?? '';
   .ww-panel[data-ww-panel='gas2'] { --ww-ch-h: var(--ww-ch-gas2-h); --ww-ch-s: var(--ww-ch-gas2-s); }
   .ww-panel[data-ww-panel='radio-roulette'] { --ww-ch-h: var(--ww-ch-radio-roulette-h); --ww-ch-s: var(--ww-ch-radio-roulette-s); }
   .ww-panel[data-ww-panel='drift'] { --ww-ch-h: var(--ww-ch-drift-h); --ww-ch-s: var(--ww-ch-drift-s); }
+  .ww-panel[data-ww-panel='revfx'] { --ww-ch-h: var(--ww-ch-revfx-h); --ww-ch-s: var(--ww-ch-revfx-s); }
   .ww[data-ww-on='revlimiter'] { --ww-on-h: var(--ww-ch-revlimiter-h); --ww-on-s: var(--ww-ch-revlimiter-s); }
   .ww[data-ww-on='gas'] { --ww-on-h: var(--ww-ch-gas-h); --ww-on-s: var(--ww-ch-gas-s); }
   .ww[data-ww-on='gas2'] { --ww-on-h: var(--ww-ch-gas2-h); --ww-on-s: var(--ww-ch-gas2-s); }
   .ww[data-ww-on='radio-roulette'] { --ww-on-h: var(--ww-ch-radio-roulette-h); --ww-on-s: var(--ww-ch-radio-roulette-s); }
   .ww[data-ww-on='drift'] { --ww-on-h: var(--ww-ch-drift-h); --ww-on-s: var(--ww-ch-drift-s); }
+  .ww[data-ww-on='revfx'] { --ww-on-h: var(--ww-ch-revfx-h); --ww-on-s: var(--ww-ch-revfx-s); }
 
   /* ---- THE SCREEN (WALL_BG 'screen') --------------------------------------
      /drift's digital screen (the keep-it TV's phosphor tube, .d-crt.d-keep-

@@ -9,6 +9,7 @@
  */
 import { plugins, dlGateId, fmtPrice, type Plugin, type LibraryCatId } from './plugins';
 import { drift } from './drift';
+import { revfx } from './revfx';
 import { site } from './site';
 
 export interface LibraryCat {
@@ -43,7 +44,7 @@ const onTv = (p: Plugin) => !!p.library && (p.status === 'live' || !!p.trialOpen
 
 /** TV order, after DRIFT: DRIFT goes first while it leads the homepage (drift.homeLead, Dan 2026-10-08, "first
  *  slide until Nov 1"), then drops back to its slot here. A plugin missing from the list goes last. */
-const TV_ORDER = ['revlimiter', 'gas', 'gas2', 'drift', 'radio-roulette'];
+const TV_ORDER = ['revlimiter', 'gas', 'gas2', 'drift', 'revfx', 'radio-roulette'];
 
 export function tvPlugins(): Plugin[] {
   const rank = (p: Plugin) => {
@@ -114,6 +115,11 @@ export function tryAction(p: Plugin): TvAction | null {
   }
   if (p.slug === 'drift' && p.trialOpen && (drift.phase === 'open' || drift.phase === 'preopen')) {
     return { label: `Try free for ${drift.trialDays} days`, sub: 'Download by email', href: '/drift#try' };
+  }
+  // RevFX's open trial (not 'live' yet: no price) opens the same gate as a paid plugin once the worker knows it
+  // (revfx.ts gateWired); the sub says Mac while the Windows installer waits on its signature (winReady).
+  if (p.slug === 'revfx' && p.trialOpen && revfx.gateWired) {
+    return { label: `Try free for ${revfx.trialDays} days`, sub: revfx.winReady ? 'Full version · no credit card' : 'Mac · full version · no credit card', attrs: gate(false) };
   }
   return null;
 }
