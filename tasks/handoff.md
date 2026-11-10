@@ -330,7 +330,8 @@ UPDATE 3 2026-11-09 / 11-10 (night): Dan's round-2 notes (db `notes-r2`, pins re
   top's stickers read from the aisle), L17 v3 (every hose on a visible hook, nothing hidden from the walk), the GAS 2
   lockup on R19 (parchment GAS, oxide 2 + rule) and N20 (GAS 2's own globe lens) (far-2). Builders' queues empty.
 - Floor clutter (11-10): MESS_FIX turns off #27 (a drum in front of N17's pedalboard) and #30 / #0 / #12 (two toolboxes
-  and a crate standing on it): the pedalboard is seen now.
+  and a crate standing on it): the pedalboard is seen now. The bench checks then found #8 / #9 (two black cases by the
+  drums: holes in the floor from the walk, `f0eb2f1`) and #21 (a blank papers sheet behind the board, `da7bd08`): off too.
 - Builders (11-10 night): far-2 is fresh (the far builder's long context kept dropping on the network); left and car
   idle. Every slot in view has a model. The 12 slots at f > 1 (L10 R01 R04 R11 R12 R13 N04 N05 N08 N09 N22 N25) sit
   behind the camera: not built.
@@ -340,6 +341,16 @@ UPDATE 3 2026-11-09 / 11-10 (night): Dan's round-2 notes (db `notes-r2`, pins re
 - Bench round 3 for Dan: https://claude.ai/artifact/WbhosKXawqVMvT3xpKo53p (Version 4, build `2c3e473`, ArtifactData
   collection `notes-r3`): 24 cards, his 12 note cards with a before, the outside A / B / C pick (card 2), 11 new spots.
   Generator: the scratchpad's `look/step4/round2/r3-page.py`; shots `raw3` / `raw4` (+ `raw4n2`, `raw4b`: N02 held still).
+- Bench round 4 for Dan (11-10 morning): the same link (Version 5, build `da7bd08`, ArtifactData collection `notes-r4`).
+  Round 3 was never opened, so it is folded in: 29 cards, his 12 round-2 notes with a before, the outside A / B / C pick
+  (card 2, re-shot in today's room with the car builder's `scout_room.mjs`: the A / C patches no longer apply to
+  room.html, the runtime scout does), every new spot, and card 24's ask (the blue blanket bright, or toned down ~20 % +
+  wear: the toned one is a picture-only variant, `PRE=pre-tone-n29.js`). Three card-vs-picture checks ran first
+  (workflows, a refuter each): 26 findings, then 6, then 1, all fixed (re-shot or reworded; the clutter above).
+  Generator: the scratchpad's `look/step4/round2/r4-page.py <sha>`; shots: `run-b6.sh` (raw-b6 / b6n / b6t / b6o / b6x).
+- Polish list from those checks (not asked on the cards): W05's fume extractor reads as a black box (light its face or
+  show a fan; its card says so); from the hoist's side N39 hangs in front of the sign (clear from the walk); B's sky is a
+  flat block (only if Dan picks B); a black door-side slab at the edge of the car close-up (there since round 2, off the walk).
 
 Open: the monitors bench had B (vintage) ticked but Dan's chat said "black + wood"; black went in. Confirm if asked.
 Owed by Dan: tell Gil (the room on laptops from Nov 19, next to his Black Friday countdown); the R2 / CSP OK.
