@@ -8,20 +8,23 @@ first visit of a session; after that soft rises, no flicker).
 ## What the visitor sees
 
 1. Black, then the eyes get used to the dark: the night through the door, the car's red tail lights, the vending
-   machine and the GAS globes (their own circuit), a faint camera grain (Dan 11-09: less noise).
+   machine and the GAS globes (their own circuit; the one on the end wall a little dimmer, so the TV pops: Dan 11-10),
+   a faint camera grain (Dan 11-09: less noise).
 2. The TV at the end of the aisle comes on first (Dan 11-09: "the small lcd screen to light up first"): standby, the
    backlight on a dark panel, the picture; its glow on the end wall, the desk and the wet floor. Its picture is drawn
    per screen width (`bank-1@1141x636.webp` ...), the one the room's TV will show (CAPS), so the hand-off is the same.
 3. The shop light by the door: its ends glow, it tries twice, it strikes.
 4. The violet strip buzzes on, then the magenta one: the room appears (the exposure catches up: a short overexposure).
-5. The four hanging lamps warm up, front to back toward the TV (the trouble light and the clamp lamp with theirs).
+5. The four hanging lamps warm up, front to back toward the TV (the trouble light and the clamp lamp with theirs; the
+   end wall's GAS globe comes up to full with the last one).
 6. The gear: the REVAUDIO sign, the CRTs, the racks' LEDs and meters, the floor strips.
 7. The live room takes over (the same picture). Then the big line.
 
 ## How it works
 
 - `window.LIGHT_BANKS` (in room.html's stage markup) is the one list: order, id, kind (`tube` / `neon` / `bulb` /
-  `gear`), the lit props on its circuit, its share of the fill (`w`). The 3D reads it too (`BANKS`, `LV`).
+  `gear`), the lit props on its circuit (`props`; `dim` = where they sit before it comes on, 0 = off), its share of
+  the fill (`w`). The 3D reads it too (`BANKS`, `LV`, `PROP_DIM`). The live room always has every bank on.
 - `lights/render.mjs` renders the room at walk 0 with the first k banks on (`room.html?capture=0&lights=k`, k = 0..8;
   the TV off, nothing moving), and `lights/layers.py` turns them into `assets/lights/base.webp` (the dark room) and
   `bank-<k>.webp` (bank k's own light: room k minus the sum so far as encoded, never below 0). 2560x1080, one picture
@@ -63,4 +66,5 @@ A new skin = new pictures from the same script.
 
 - `room.html?lights=demo`: a cold first visit's pace (~5.5 s) whatever the real load, always the full show.
 - `?lights=calm`: the soft version (reduced motion / a second visit). `?lights=hold`: never hands off.
+- `?lights=at3`: held at stage 3 (banks 1..3 on, settled): the review bench's pictures.
 - A real cold visit: DevTools > Network > Disable cache + a throttle, or `check.mjs`.

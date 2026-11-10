@@ -132,7 +132,8 @@
         <script>/* the loading screen (lights/README.md): the dark room's lights come on bank by bank as the page loads, in this
           order, front to back toward the TV. Each bank is one picture rendered from this room (lights/render.mjs); kind = how
           it comes on (lights/lights-on.js): a tube strikes, a neon buzzes on, a bulb warms up, the gear powers on. props =
-          the lit props on its circuit (LIT with a light); w = its share of the room's fill (the hemisphere, the reflections) */
+          the lit props on its circuit (LIT with a light); dim = where those props sit before the bank comes on (0 = off);
+          w = its share of the room's fill (the hemisphere, the reflections) */
           window.LIGHT_BANKS = [
             { id: 'tv', kind: 'screen', w: 0.15,                   // the TV at the end of the aisle first (Dan 11-09: "the small lcd screen to light up first");
               caps: ['1141x636', '1440x900', '1920x1080'] },       //   its picture per screen width, the TV's own captures (CAPS): the hand-off shows the same one
@@ -142,7 +143,9 @@
             { id: 'lamp0', kind: 'bulb', props: ['N01'], w: 1.4 }, // the hanging lamps, front to back; the trouble light into the car
             { id: 'lamp1', kind: 'bulb', props: ['N12'], w: 1.4 }, // the clamp lamp over the bench
             { id: 'lamp2', kind: 'bulb', w: 1.4 },
-            { id: 'lamp3', kind: 'bulb', w: 0.6 },                 // over the desk
+            { id: 'lamp3', kind: 'bulb', props: ['N20'], dim: 0.95, w: 0.6 }, // over the desk; the GAS 2 globe on the end wall comes up
+                                                                   //   with it (Dan 11-10: "dim this light a bit so the tv will pop out"). 95%: its halo is
+                                                                   //   the bloom past its threshold, so 95% halves the halo; 88% and less = a flat disc
             { id: 'gear', kind: 'gear', w: 0.3 },                  // the REVAUDIO sign, the CRTs, the racks' LEDs and meters, the floor strips
           ];</script>
         <script src="lights/lights-on.js"></script>
@@ -721,6 +724,7 @@ const BANKS = window.LIGHT_BANKS || [];
 const LV = Object.fromEntries(BANKS.map((b, i) => [b.id, LIGHTS == null || i < +LIGHTS ? 1 : 0]));
 const PROP_BANK = Object.fromEntries(BANKS.flatMap((b) => (b.props || []).map((id) => [id, b.id])));
 const lv = (id) => LV[id] ?? 1;
+const PROP_DIM = Object.fromEntries(BANKS.flatMap((b) => (b.props || []).map((id) => [id, b.dim ?? 0])));
 const HEMI_DARK = 0.12; // the fill with every bank off: the night outside, enough to make out shapes
 function litFrac() { let s = 0, w = 0; for (const b of BANKS) { s += (b.w ?? 1) * LV[b.id]; w += b.w ?? 1; } return w ? s / w : 1; }
 // the load's progress for the loading screen: each phase's share of a cold first visit (LOADW, measured: lights/README.md),
@@ -2137,12 +2141,13 @@ function initFilm() { // per film: a 16:9 box over the 3D room (under the TV, th
 // full: every bank on whatever the loading screen says (the probe). Each light also takes its bank's level (LV)
 function lightRoom(neonK, warm, signK, open, far, now, full = false) {
   const lampK = warm * S.lamps, b = full ? () => 1 : lv, gear = b('gear');
+  const pk = (id) => { const d = PROP_DIM[id] ?? 0; return d + (1 - d) * b(PROP_BANK[id]); }; // a lit prop: its bank's level, from its dim
   for (const n of R.neon) { const k = neonK * b(n.side < 0 ? 'neonL' : 'neonR'); n.mat.color.copy(n.mat.userData.base).multiplyScalar(7 * k); for (const l of n.lights) l.intensity = 30 * k; }
   R.lamps.forEach((lp, i) => { const on = b('lamp' + i), k = lampK * on; // the pools are the room's main light, like the painting's
     lp.light.intensity = 130 * k * lp.k; lp.bulbMat.color.copy(lp.bulbMat.userData.base).multiplyScalar((0.3 + 3.2 * lampK) * on);
     lp.shaft.material.uniforms.uK.value = 0.05 * S.shafts * k * far; lp.inner.material.emissiveIntensity = 2.0 * on; });
-  for (const g of R.litGlow || []) g.m.emissiveIntensity = g.k * b(PROP_BANK[g.id]); // a lit prop's globe with its light
-  for (const l of R.propLights || []) { const id = l.parent.userData.item?.id; l.intensity = l.userData.cd * warm * b(PROP_BANK[id]) * (!reduced && id === 'N02' && hash(Math.floor(now / 400) + 9) > 0.93 ? 0.55 : 1); } // one tube dying
+  for (const g of R.litGlow || []) g.m.emissiveIntensity = g.k * pk(g.id); // a lit prop's globe with its light
+  for (const l of R.propLights || []) { const id = l.parent.userData.item?.id; l.intensity = l.userData.cd * warm * pk(id) * (!reduced && id === 'N02' && hash(Math.floor(now / 400) + 9) > 0.93 ? 0.55 : 1); } // one tube dying
   R.signMat.color.setScalar((0.08 + 1.4 * signK) * gear); R.signLight.intensity = 6 * signK * gear;
   const fill = full ? 1 : HEMI_DARK + (1 - HEMI_DARK) * litFrac();
   if (R.hemiK != null) R.hemi.intensity = R.hemiK * fill;
