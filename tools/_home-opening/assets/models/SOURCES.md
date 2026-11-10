@@ -1,9 +1,11 @@
 # The real models in the room's slots (step 3, 2026-11-08, `danavivi-20`)
 
-All CC0 (public domain): free to ship and to send to every visitor, no credit line needed (Dan, 2026-11-08: CC0 only
+Every download is CC0 (public domain): free to ship and to send to every visitor, no credit line needed (Dan, 2026-11-08: CC0 only
 for v1). Downloaded with a plain user agent (`RevAudio-research/1.0`) by the asset scout, prepared in Blender (metres,
 origin on the floor at the footprint's centre, front on +Z, 1k JPEG textures inside the .glb). Also logged in
 `refs/licence-log.md` on Dan's Mac (git-ignored). `room.html` places them through `MODELS`.
+Since 2026-11-09 most rows are ours (built from code). Fonts used only to letter a texture are SIL OFL 1.1 or Apache 2.0
+(as each row says); they ship only as pixels, never as a font file.
 
 | file | slot | source | author | licence | checked | changed |
 |---|---|---|---|---|---|---|
@@ -82,6 +84,6 @@ origin on the floor at the footprint's centre, front on +Z, 1k JPEG textures ins
 | pedalboard.glb | N17, the pedalboard: our plugins as pedals, cable spaghetti | ours: built from code (`n17_board.py`, `n17_tex.py`); the pedal faces are RevAudio's own UI screenshots | RevAudio | ours | 2026-11-10 | its LEDs glow |
 | cable-hooks.glb | N18, coiled cables on wall hooks | ours: built from code (`n18_cables.py`); the board is the kit's CC0 wood cell | RevAudio; Poly Haven | ours; CC0 | 2026-11-10 | - |
 | drum-machine.glb | L11, the drum machine on the amp head | ours: built from code (`l11_drum.py`, `l11_tex.py`) | RevAudio | ours | 2026-11-10 | no name, no logo |
-| mini-fridge.glb | N28, the mini fridge covered in stickers | ours: built from code in Blender (far builder: build_n28.py, n28_tex.py); stickers are our own art (RevAudio plate, plugin faces) and made-up band names, lettered in the site's own fonts (Bebas Neue, Oswald, VT323, Yellowtail, Creepster, Special Elite, Rajdhani) | RevAudio; fonts: their designers | ours; fonts as the site ships them (src/styles/fonts.css: SIL OFL 1.1, Yellowtail Apache 2.0) | 2026-11-10 | words rasterised into the texture (no font file in the glb) |
+| mini-fridge.glb | N28, the mini fridge covered in stickers | ours: built from code in Blender (far builder: build_n28.py, n28_tex.py); stickers are our own art (RevAudio plate, plugin faces) and made-up band names (no band or trademark found by those exact names, web search 2026-11-10), lettered in the site's own fonts (Bebas Neue, Oswald, VT323, Yellowtail, Creepster, Special Elite, Rajdhani) | RevAudio; fonts: their designers | ours; fonts SIL OFL 1.1, except Yellowtail and Special Elite (Apache 2.0, per their font files) | 2026-11-10 | words rasterised into the texture (no font file in the glb) |
 | cable-tray.glb | N42, the cable tray and cords along the trusses | ours: built from code in Blender (far builder: build_n42.py, n42_tex.py; v2, builder far-2: build_n42v2.py, n42v2_tex.py) | RevAudio | ours | 2026-11-10 | v2: the cords end in the tray under a matte end cap (no far-end drops), the socket box at z 6.8, darker matte steel (no probe), the hoist-side sag dark grey |
 | pegboard-hoses.glb | L17, the pegboard over the fridge (screwdrivers, hoses) | ours: built from code in Blender (far builder: build_l17v2.py, l17v2_layout.py, l17v2_tex.py); textures drawn by us | RevAudio | ours | 2026-11-10 | v2: its tools only in the gaps round the bass wall in front of it; 59.5 mm deep |
