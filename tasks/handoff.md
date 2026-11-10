@@ -363,9 +363,23 @@ UPDATE 3 2026-11-09 / 11-10 (night): Dan's round-2 notes (db `notes-r2`, pins re
 - Bench round 5 is built (round1/garage-build.html via `r5-page.py c562939`: 8 cards, 26 shots; two checks, 6 findings
   fixed) but NOT published: the session's account switched to the personal one, which can't open the bench (it belongs to
   the RevAudio account). Publish from the RevAudio account to the same link with the files map of `shots-r5.json`.
-- Next: merge `feat/home-lights-on` (danavivi-fa's loading screen, Dan approved; local only) into this branch, run its
-  `lights/render.mjs --port 4471 --check` + `lights/check.mjs --port 4471`, commit assets/lights/. The merged branch
-  carries that session's unpushed commits: push only on Dan's word.
+- Loading screen merged (11-10 evening): `feat/home-lights-on` (danavivi-fa's, Dan approved) = merge `6d9f6cf` (room.html
+  auto-merged, no conflicts) + `955074f` (assets/lights re-rendered from the merged room). render.mjs --check: two
+  captures 0.00 apart, layers vs the full room mean 3.86 levels, p99 20, 438 KB. check.mjs at 1141x636 @2x: cold 40 Mbit
+  hand-off 9.0 s, no page errors; hand-off blurred mean 3.28, p99 14. Overlap check: 0. Both scripts ran on port 4475
+  from scratchpad copies with 900 s timeouts (load average 300+; the stock 90 s wait timed out), because 4471 was the
+  lights-on worktree's own server (it has stopped it since). LOCAL ONLY: the branch now carries that session's
+  commits, so pushing (this handoff included) waits for Dan's word.
+- Speed study (workflow `wf_af3ddb64-681`, 39 agents, prototypes on copies only; the full result is in the scratchpad's
+  `look/step5/perf/speed-result.json`). Options page for Dan, on the personal account: https://claude.ai/artifact/G4Mm7W73m2RJeGiQ2hecqF
+  (ArtifactData collection `picks`, doc = card id: {choice, note}; source `look/step5/perf/page/speed.html`). 🔴 Launch blocker:
+  revaudio.net's CSP (the Cloudflare transform rule) has no `blob:` in img-src / connect-src, so every textured model
+  renders white (checked 11-10 with curl + the study's stills); the port must also self-host Lenis and the fonts
+  (room.html loads them from jsdelivr / Google Fonts, which script-src / font-src refuse). Recommended, same look: O1
+  (that port work) + O4 (bloom added in the final pass) + O3-safe (the floor reflection drawn first), about 7 h.
+  O3-safe's `wetInView()` hunk doesn't apply to HEAD: place it by hand, or the first frame throws and the room freezes.
+  The merged loading screen locks scrolling until the hand-off (`html.lights-loading` overflow hidden + `lenis.stop()`),
+  which should end the "scrolls during loading glide you mid-walk" cause: confirm with the study's wheel test (r-O8/func).
 
 Open: the monitors bench had B (vintage) ticked but Dan's chat said "black + wood"; black went in. Confirm if asked.
 Owed by Dan: tell Gil (the room on laptops from Nov 19, next to his Black Friday countdown); the R2 / CSP OK.
