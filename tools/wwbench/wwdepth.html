@@ -159,7 +159,7 @@
       { k: 'insetPx', label: 'Sunk-in reach', hint: 'px', min: 0, max: 60, step: 1, def: 18, unit: 'px', as: 'css' },
     ] },
     { title: 'In the tube', ctl: [
-      { k: 'scan', label: 'Scanlines on it', hint: 'the tube’s lines over the picture itself (the glass has its own under it, see Whole screen)', min: 0, max: 0.7, step: 0.01, def: 0.14, unit: '', as: 'css' },
+      { k: 'scan', label: 'Extra lines on the picture', hint: 'lines on the picture only, on top of the screen’s (off since the screen’s scanlines run over it, 2026-11-10; it was 0.14)', min: 0, max: 0.7, step: 0.01, def: 0, unit: '', as: 'css' },
       { k: 'scanPx', label: 'Scanline spacing', hint: 'px from one line to the next', min: 2, max: 8, step: 1, def: 3, unit: 'px', as: 'css' },
       { k: 'split', label: 'Colour fringe', hint: 'px the red and the blue drift apart sideways, like an old tube’s convergence', min: 0, max: 4, step: 0.1, def: 0, as: 'filter' },
       { k: 'grain', label: 'Grain', hint: 'moving noise on the picture', min: 0, max: 0.3, step: 0.005, def: 0, as: 'filter' },
@@ -168,7 +168,9 @@
     ] },
     { title: 'Whole screen', note: 'the TV’s own, under and over everything', ctl: [
       { k: '--ww-scr-bright', label: 'Screen glow', hint: 'how lit the tube behind is', min: 0.3, max: 1.8, step: 0.01, as: 'page', show: '×' },
-      { k: '--ww-scr-scan', label: 'Scanlines on the glass', hint: 'under the text and the pictures', min: 0, max: 0.6, step: 0.01, as: 'page' },
+      { k: 'lines', label: 'Scanlines', hint: 'hairlines over the whole screen, the text and the pictures too, one screen pixel thin', min: 0, max: 0.8, step: 0.01, def: 0.3, unit: '', as: 'css' },
+      { k: 'linesDp', label: 'Scanline spacing', hint: 'screen pixels from one line to the next: 2 = packed tight, 6 = today’s spacing on a laptop', min: 2, max: 8, step: 1, def: 3, unit: '', as: 'css' },
+      { k: '--ww-scr-scan', label: 'Today’s scanlines', hint: 'a 1 px line every 3 px, on the glass only, under the text and the pictures (0.2 in the TV today)', min: 0, max: 0.6, step: 0.01, def: 0, as: 'page' },
       { k: '--ww-scr-glare', label: 'Glass reflection', hint: 'the room’s light on the glass, over everything (× today’s)', min: 0, max: 3, step: 0.05, as: 'page', show: '×' },
       { k: '--ww-scr-curve', label: 'Tube curve', hint: 'how dark the glass falls off towards its edges', min: 0, max: 1, step: 0.01, as: 'page' },
     ] },
@@ -187,10 +189,11 @@
   try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s && s.cur) st = Object.assign(st, s); } catch (e) {}
   Object.keys(st.cur).forEach((k) => { if (!byK[k]) delete st.cur[k]; });
   if (!SLUGS.some(([s]) => s === st.slug)) st.slug = 'revlimiter';
+  if (st.v !== 2) { delete st.cur.scan; delete st.cur['--ww-scr-scan']; st.v = 2; }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} };
   let src = null;                 // the page's own --ww-* defaults (read off the laptop frame)
   const chan = { ...CH };         // each channel's phosphor, read off the page
-  const def = (c) => (c.as === 'page' ? (src ? src[c.k] : NaN) : c.def);
+  const def = (c) => (c.as === 'page' ? (c.def ?? (src ? src[c.k] : NaN)) : c.def);
   const val = (k) => (k in st.cur ? st.cur[k] : def(byK[k]));
   const fmt = (c, v) => (+v).toFixed(Math.max(0, -Math.floor(Math.log10(c.step)))) + (c.show || c.unit || '');
   let playing = true;
@@ -570,6 +573,19 @@
       ${float ? '-webkit-mask: var(--wwd-alpha) 0 0 / 100% 100% no-repeat; mask: var(--wwd-alpha) 0 0 / 100% 100% no-repeat;' : MASK(FEATHER)}
     }`;
   };
+  /* the screen's scanlines (Dan 2026-11-10: "too much far from each other ... more close to each other and more
+     packed ... a little bit seen ... everything will glue together"): hairlines, one device px thin on every screen
+     (on 2026-10-19 the 1 px lines went under the text: they crossed every letter and were bands on a phone), a line
+     every --wwd-linesDp device px, over the whole screen: the glass's top layer (.ww-screen-fx) is over the content */
+  const LINES = `
+    ${WALL} { --wwd-dpx: 1px; }
+    @media (min-resolution: 2dppx) { ${WALL} { --wwd-dpx: 0.5px; } }
+    @media (min-resolution: 3dppx) { ${WALL} { --wwd-dpx: 0.3334px; } }
+    ${WALL} .ww-screen-fx::before {
+      content: ''; position: absolute; inset: 0; pointer-events: none;
+      background: repeating-linear-gradient(0deg, rgba(0, 0, 0, var(--wwd-lines)) 0 var(--wwd-dpx),
+        transparent var(--wwd-dpx) calc(var(--wwd-dpx) * var(--wwd-linesDp)));
+    }`;
   // OFF: the pixels as they are (hard edges, no grade, no edges), to compare
   const bareOf = (slug) => `
     ${SEL(slug)} .ww-ui { width: fit-content; max-width: 100%; }
@@ -581,9 +597,9 @@
       if (!stages[f].ready) return;
       const doc = stages[f].doc;
       const vars = ALL.filter((c) => c.as === 'css').map((c) => `--wwd-${c.k}: ${val(c.k)}${c.unit || ''};`).join(' ');
-      const page = ALL.filter((c) => c.as === 'page' && c.k in st.cur).map((c) => `${c.k}: ${st.cur[c.k]} !important;`).join(' ');
+      const page = ALL.filter((c) => c.as === 'page' && (c.k in st.cur || c.def !== undefined)).map((c) => `${c.k}: ${val(c.k)} !important;`).join(' ');
       const rules = SLUGS.map(([slug]) => (st.look === 'on' ? lookOf(slug) : bareOf(slug))).join('\n');
-      doc.getElementById('wwd-live').textContent = `${WALL} { ${vars} ${page} }\n${rules}`;
+      doc.getElementById('wwd-live').textContent = `${WALL} { ${vars} ${page} }\n${LINES}\n${rules}`;
       if (!changed || changed.as === 'filter') doc.getElementById('wwd-svg').innerHTML = `<defs>${SLUGS.map(([slug]) => filterMarkup(slug)).join('')}</defs>`;
     });
     save();
