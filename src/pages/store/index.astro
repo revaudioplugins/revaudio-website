@@ -1,20 +1,20 @@
 ---
 /* /store retired 2026-10-18 (home LIBRARY, D3): every plugin lives in the
-   home page's TV now, so this address sends people there. Old links keep
+   TV, on /plugins since 2026-11-02, so this address sends people there. Old links keep
    working this way (the footer and emails of the past, the licence worker's
    https://revaudio.net/store link).
 
    GitHub Pages can't answer with a 301, so the page does it:
    - a script first: it keeps the query string (utm / gclid / ref reach the
-     cart's attribution on the home page), and replace() leaves no page for
+     cart's attribution on the plugins page), and replace() leaves no page for
      Back to bounce off;
    - a meta refresh when there is no JavaScript;
-   - for search engines a canonical link to the home page + noindex (and
+   - for search engines a canonical link to /plugins + noindex (and
      /store/ sits in astro.config.mjs's NOINDEX, so the sitemap drops it).
    Bare on purpose, no BaseLayout: a hop nobody sees fires no analytics
    page_view, popup or consent banner. A real 301 would be a Cloudflare
    Redirect Rule (dashboard), not this repo. */
-const home = new URL('/', Astro.site).href;
+const plugins = new URL('/plugins', Astro.site).href;
 ---
 
 <!doctype html>
@@ -24,9 +24,9 @@ const home = new URL('/', Astro.site).href;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>RevAudio plugins</title>
     <meta name="robots" content="noindex" />
-    <link rel="canonical" href={home} />
-    <script is:inline>location.replace('/' + location.search + '#plugins');</script>
-    <noscript><meta http-equiv="refresh" content="0; url=/#plugins" /></noscript>
+    <link rel="canonical" href={plugins} />
+    <script is:inline>location.replace('/plugins' + location.search);</script>
+    <noscript><meta http-equiv="refresh" content="0; url=/plugins" /></noscript>
     <style is:inline>
       html { background: #0b0a09; color: #efe9df; font: 16px/1.5 system-ui, sans-serif; }
       body { margin: 0; padding: 3rem 1rem; text-align: center; }
@@ -34,6 +34,6 @@ const home = new URL('/', Astro.site).href;
     </style>
   </head>
   <body>
-    <p><a href="/#plugins">The RevAudio plugins are on the home page &rarr;</a></p>
+    <p><a href="/plugins">The RevAudio plugins &rarr;</a></p>
   </body>
 </html>

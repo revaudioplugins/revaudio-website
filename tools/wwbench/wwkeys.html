@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>TV Bench · Keys</title>
+<!-- TV keys bench (Dan 2026-11-04, on the home TV's review bench: the Try key "is not fitting the LCD screen, I want it
+     to feel like it's part of the LCD screen, give me 3 different options"; the Product page key the same). Four
+     same-origin iframes of the REAL dev homepage: today's keys, then options A / B / C, each one a <style> dropped into
+     its frame (nothing in the page's code changes). The channel buttons light a plugin in all four (ww:select), so every
+     option is seen in every plugin's colour; the readout under each frame says what it costs: rows, width, and how
+     tall the plugin's window is left (on a small laptop the window takes the height the text leaves it). Hover and
+     click the keys: the frames are the real page. Pick in chat ("A", or "A's Try with C's Product page"). -->
+<style>
+  :root { --bg: #0d0a12; --panel: #17121f; --line: #2c2338; --ink: #efe8f6; --dim: #a597b8; --acc: #d23cff; --warn: #ffb35c; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.35 -apple-system, system-ui, sans-serif; }
+  header { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--line); flex-wrap: wrap; position: sticky; top: 0; z-index: 3; background: var(--bg); }
+  header h1 { margin: 0 8px 0 0; font-size: 14px; letter-spacing: .1em; text-transform: uppercase; }
+  button { background: #221a2d; color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; font: inherit; cursor: pointer; }
+  button:hover { background: #2d2340; }
+  .seg { display: inline-flex; flex-wrap: wrap; }
+  .seg button { border-radius: 0; margin-left: -1px; padding: 6px 10px; }
+  .seg button:first-child { border-radius: 8px 0 0 8px; margin-left: 0; }
+  .seg button:last-child { border-radius: 0 8px 8px 0; }
+  .seg button.on { background: var(--acc); border-color: var(--acc); color: #1a0322; font-weight: 700; }
+  .lbl { color: var(--dim); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+  .spacer { flex: 1; }
+  .pick { color: var(--dim); font-size: 13px; }
+  .pick b { color: var(--ink); }
+  main { display: grid; grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr)); gap: 18px; padding: 16px; }
+  .card { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+  .card[hidden] { display: none; }
+  .head { display: flex; align-items: baseline; gap: 10px; }
+  .badge { flex: none; display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 6px; background: #2a2035; font-weight: 800; }
+  .card[data-o='a'] .badge, .card[data-o='b'] .badge, .card[data-o='c'] .badge { background: var(--acc); color: #1a0322; }
+  .head h2 { margin: 0; font-size: 15px; letter-spacing: .04em; }
+  .head .zoom { margin-left: auto; padding: 4px 10px; font-size: 12px; }
+  .line { margin: 0; color: var(--dim); font-size: 13px; max-width: 70ch; min-height: calc(3 * 1.35em); } /* the frames in a row line up */
+  .vp { position: relative; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: #050307; }
+  .vp iframe { position: absolute; left: 0; top: 0; border: 0; transform-origin: 0 0; background: #050307; }
+  .read { margin: 0; font: 12px/1.3 ui-monospace, Menlo, monospace; color: var(--dim); }
+  .read .bad { color: var(--warn); }
+</style>
+</head>
+<body>
+<header>
+  <h1>TV bench · Keys</h1>
+  <span class="lbl">Channel</span>
+  <span class="seg" id="chan" title="Light a plugin in all four TVs"></span>
+  <span class="lbl">Screen</span>
+  <span class="seg" id="size" title="The window the four TVs are shown in">
+    <button data-s="1141x636" title="Dan's laptop: Safari's visible viewport at 115 %">Laptop 1141</button><button data-s="1440x900">Laptop 1440</button><button data-s="390x844">Phone</button>
+  </span>
+  <span class="spacer"></span>
+  <span class="pick">Hover and click the keys: it is the real page. Then tell Claude <b>A</b>, <b>B</b> or <b>C</b>.</span>
+</header>
+<main id="cards"></main>
+<script>
+(() => {
+  const KEY = 'wwkeys:v1';
+  const WALL = '[data-wordwall]';
+  // every option is scoped to the lit plugin's keys on the screen wall; html.hc (high contrast) keeps the button family
+  const P = "html:not(.hc) .ww[data-ww-bg='screen'] .ww-panel .ww-buy";
+  // what all three take away from the button family: the plate, its depth and its lift (light on glass has none)
+  const BASE = `
+${P} :is(.ww-try, .ww-more) {
+  min-height: 0; padding: 0; border-radius: 0; background: none; box-shadow: none;
+  font-weight: 400; letter-spacing: 0; text-transform: uppercase; overflow: visible; isolation: auto; transform: none;
+  transition: color 120ms ease, background-color 120ms ease, box-shadow 160ms ease, filter 120ms ease, -webkit-text-stroke-color 120ms ease;
+}
+${P} :is(.ww-try, .ww-more):is(:hover, :active, .is-pressed) { transform: none; }
+${P} :is(.ww-try, .ww-more):focus-visible { outline: 2px solid var(--ww-ink-hot); outline-offset: 4px; }
+${P} .ww-try .rv-btn__sub { font-family: 'Oswald', sans-serif; font-weight: 600; font-size: .66rem; letter-spacing: .16em; line-height: 1; opacity: .8; }
+${P} .ww-more [aria-hidden] { font-family: var(--font-body); font-weight: 700; font-size: .72em; vertical-align: .08em; }
+`;
+  const OPTS = [
+    { id: 'today', badge: '·', name: 'Today', line: 'The site\'s button family (D9, 11-01): a brass plate and a steel ghost key, with depth, a lip and a shadow cast on the glass.', css: '' },
+    { id: 'a', badge: 'A', name: 'Inverse video', line: 'The keys light the way the picked category (ALL) already does: Try is a block of the channel\'s phosphor with dark words, Product page a phosphor outline. Hover brightens, a press dims like the tube.', css: BASE + `
+${P} { gap: .6rem 1rem; }
+${P} .ww-try {
+  flex-direction: column; align-items: flex-start; gap: .3rem;
+  padding: .52rem .95rem .44rem; border-radius: 3px;
+  background-color: var(--ww-ink-hot);
+  background-image: linear-gradient(180deg, rgb(255 255 255 / .16), rgb(255 255 255 / 0) 60%);
+  color: var(--ww-ink-on);
+  font-family: var(--font-display); font-size: 1.62rem; line-height: .9; letter-spacing: .05em;
+  box-shadow: 0 0 0 1px var(--ww-ink-hot), 0 0 22px var(--ww-glow-hot), 0 0 52px var(--ww-glow-soft);
+}
+${P} .ww-try .rv-btn__sub { opacity: .72; }
+${P} .ww-try:hover {
+  color: var(--ww-ink-on);
+  background-color: hsl(var(--ww-ch-h) min(100%, calc(var(--ww-ch-s) * 1% + 34%)) 83%);
+  box-shadow: 0 0 0 1px hsl(var(--ww-ch-h) min(100%, calc(var(--ww-ch-s) * 1% + 34%)) 83%), 0 0 30px var(--ww-glow-hot), 0 0 70px var(--ww-glow-soft);
+}
+${P} .ww-try:is(:active, .is-pressed) { filter: brightness(.78); box-shadow: 0 0 0 1px var(--ww-ink-hot), 0 0 10px var(--ww-glow); transition-duration: 60ms; }
+${P} .ww-more {
+  padding: .6rem .9rem .5rem; border-radius: 3px;
+  color: var(--ww-ink); font-family: var(--font-display); font-size: 1.32rem; line-height: .9; letter-spacing: .06em;
+  text-shadow: 0 0 9px var(--ww-glow);
+  box-shadow: inset 0 0 0 1.5px var(--ww-ink), inset 0 0 14px var(--ww-glow-faint), 0 0 14px var(--ww-glow-soft);
+}
+${P} .ww-more:hover {
+  color: var(--ww-ink-hot); background-color: hsl(var(--ww-ch-h) var(--ww-gs) 58% / .14);
+  box-shadow: inset 0 0 0 1.5px var(--ww-ink-hot), inset 0 0 18px var(--ww-glow-soft), 0 0 20px var(--ww-glow);
+}
+${P} .ww-more:is(:active, .is-pressed) { background-color: hsl(var(--ww-ch-h) var(--ww-gs) 58% / .28); transition-duration: 60ms; }
+` },
+    { id: 'b', badge: 'B', name: 'Cursor menu', line: 'No boxes: the keys are lines of the set\'s menu in the names\' stencil. Try is lit, Product page an outline like an unlit name, and a blinking cursor sits on Try until the pointer (or Tab) moves it.', css: BASE + `
+/* a menu is a list: the price, then the two lines stacked, the same on every channel (a row wrapped on GAS 2 / DRIFT) */
+${P} { display: grid; grid-template-columns: auto auto; justify-content: start; justify-items: start; align-items: center; column-gap: 1.4rem; row-gap: .5rem; }
+${P} .ww-price { grid-row: span 2; }
+${P} :is(.ww-try, .ww-more) { position: relative; padding: .15rem 0 .1rem 1.05rem; font-family: var(--font-display); font-size: 1.62rem; line-height: .9; letter-spacing: .04em; }
+${P} .ww-more { font-size: 1.3rem; }
+${P} .ww-try { flex-direction: column; align-items: flex-start; gap: .32rem; color: var(--ww-ink-hot); }
+${P} .ww-try > span:first-child { text-shadow: 0 0 10px var(--ww-glow-hot), 0 0 26px var(--ww-glow-soft); }
+${P} .ww-try .rv-btn__sub { color: var(--ww-ink-text); opacity: .7; }
+${P} .ww-try:hover { color: hsl(var(--ww-ch-h) min(100%, calc(var(--ww-ch-s) * 1% + 34%)) 86%); }
+${P} .ww-try:is(:active, .is-pressed) { filter: brightness(1.35); transition-duration: 60ms; }
+${P} .ww-more { color: transparent; -webkit-text-stroke: 1.25px var(--ww-ink); filter: drop-shadow(0 0 6px var(--ww-glow)); }
+${P} .ww-more [aria-hidden] { display: none; }
+${P} .ww-more:hover {
+  color: color-mix(in srgb, var(--ww-ink-hot) 40%, transparent); -webkit-text-stroke-color: var(--ww-ink-hot);
+  filter: drop-shadow(0 0 10px var(--ww-glow-hot)) drop-shadow(0 0 22px var(--ww-glow-soft));
+}
+${P} .ww-more:is(:active, .is-pressed) { color: var(--ww-ink-hot); transition-duration: 60ms; }
+/* the cursor: a crisp triangle (borders, so no font decides its shape), on Try until the pointer or Tab is on Product page */
+${P} :is(.ww-try, .ww-more)::before {
+  content: ''; position: absolute; left: 0; top: .56rem; width: 0; height: 0; /* centred on the first line (Try 1.62rem) */
+  border-style: solid; border-width: .3rem 0 .3rem .52rem; border-color: transparent transparent transparent var(--ww-ink-hot);
+  filter: drop-shadow(0 0 5px var(--ww-glow-hot));
+  visibility: hidden; animation: wwk-blink 1.1s infinite;
+}
+${P} .ww-try::before { visibility: visible; }
+${P}:has(.ww-more:is(:hover, :focus-visible)) .ww-try::before { visibility: hidden; }
+${P} .ww-more:is(:hover, :focus-visible)::before { visibility: visible; }
+${P} .ww-more::before { top: .4rem; } /* its own first line (1.3rem) */
+${P} :is(.ww-try, .ww-more):focus-visible { outline-offset: 6px; }
+@keyframes wwk-blink { 0%, 58% { opacity: 1; } 60%, 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { ${P} :is(.ww-try, .ww-more)::before { animation: none; } }
+` },
+    { id: 'c', badge: 'C', name: 'OSD bar', line: 'The price and both keys become one strip of the set\'s on-screen menu: a phosphor frame with corner ticks, Try the lit segment, Product page the next one. If the row is too narrow, Product page drops under it as the strip\'s footer.', css: BASE + `
+${P} {
+  --wwk-line: hsl(var(--ww-ch-h) var(--ww-gs) 52%);
+  position: relative; display: flex; flex-wrap: wrap; align-items: stretch; gap: 0;
+  margin-top: .6rem;
+  border: 1.5px solid var(--wwk-line); border-radius: 2px;
+  background: hsl(var(--ww-ch-h) 45% 7% / .6);
+  box-shadow: 0 0 18px var(--ww-glow-soft), inset 0 0 22px hsl(var(--ww-ch-h) var(--ww-gs) 58% / .12);
+}
+/* the set-up menu's corner ticks, just outside the frame */
+${P}::before {
+  content: ''; position: absolute; inset: -6px; pointer-events: none;
+  background:
+    linear-gradient(var(--ww-ink-hot), var(--ww-ink-hot)) 0 0 / 10px 2px, linear-gradient(var(--ww-ink-hot), var(--ww-ink-hot)) 0 0 / 2px 10px,
+    linear-gradient(var(--ww-ink-hot), var(--ww-ink-hot)) 100% 0 / 10px 2px, linear-gradient(var(--ww-ink-hot), var(--ww-ink-hot)) 100% 0 / 2px 10px,
+    linear-gradient(var(--ww-ink-hot), var(--ww-ink-hot)) 0 100% / 10px 2px, linear-gradient(var(--ww-ink-hot), var(--ww-ink-hot)) 0 100% / 2px 10px,
+    linear-gradient(var(--ww-ink-hot), var(--ww-ink-hot)) 100% 100% / 10px 2px, linear-gradient(var(--ww-ink-hot), var(--ww-ink-hot)) 100% 100% / 2px 10px;
+  background-repeat: no-repeat;
+  filter: drop-shadow(0 0 4px var(--ww-glow-hot));
+}
+${P} .ww-price { display: flex; align-items: center; padding: .5rem .85rem .36rem; font-size: 1.5rem; }
+${P} .ww-try {
+  flex: 1 1 auto; /* fills its row when Product page has dropped to the footer */
+  flex-direction: column; align-items: flex-start; justify-content: center; gap: .28rem;
+  padding: .5rem 1rem .42rem;
+  background-color: var(--ww-ink-hot); color: var(--ww-ink-on);
+  font-family: var(--font-display); font-size: 1.4rem; line-height: .9; letter-spacing: .05em;
+  box-shadow: 0 0 22px var(--ww-glow-hot);
+}
+${P} .ww-try .rv-btn__sub { opacity: .72; }
+${P} .ww-try:hover { color: var(--ww-ink-on); background-color: hsl(var(--ww-ch-h) min(100%, calc(var(--ww-ch-s) * 1% + 34%)) 83%); box-shadow: 0 0 30px var(--ww-glow-hot); }
+${P} .ww-try:is(:active, .is-pressed) { filter: brightness(.78); transition-duration: 60ms; }
+${P} .ww-more {
+  display: flex; align-items: center; justify-content: center; gap: .4rem; flex: 1 0 auto;
+  padding: .5rem .95rem .4rem;
+  color: var(--ww-ink); font-family: var(--font-display); font-size: 1.18rem; line-height: .9; letter-spacing: .07em;
+  text-shadow: 0 0 8px var(--ww-glow);
+  box-shadow: -1.5px 0 0 var(--wwk-line), 0 -1.5px 0 var(--wwk-line); /* the divider; on a wrap, the footer's top line */
+}
+${P} .ww-more:hover { color: var(--ww-ink-hot); background-color: hsl(var(--ww-ch-h) var(--ww-gs) 58% / .16); }
+${P} .ww-more:is(:active, .is-pressed) { background-color: hsl(var(--ww-ch-h) var(--ww-gs) 58% / .3); transition-duration: 60ms; }
+${P} :is(.ww-try, .ww-more):focus-visible { outline-offset: -5px; }
+${P} .ww-try:focus-visible { outline-color: var(--ww-ink-on); }
+` },
+  ];
+
+  const st = Object.assign({ slug: '', size: '1141x636', zoom: '' }, (() => { try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { return {}; } })());
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} };
+  // the frames share this origin's storage: decline the cookie banner once so it never covers the TV
+  try { if (!localStorage.getItem('ra-cookie-consent')) localStorage.setItem('ra-cookie-consent', 'declined'); } catch (e) {}
+
+  const box = document.getElementById('cards');
+  box.innerHTML = OPTS.map((o) => `
+    <section class="card" data-o="${o.id}">
+      <div class="head"><span class="badge">${o.badge}</span><h2>${o.name}</h2><button class="zoom" type="button">Zoom</button></div>
+      <p class="line">${o.line}</p>
+      <div class="vp"><iframe title="Homepage TV, ${o.name}"></iframe></div>
+      <p class="read">…</p>
+    </section>`).join('');
+  const cards = OPTS.map((o) => ({ o, el: box.querySelector(`[data-o="${o.id}"]`) }));
+  cards.forEach((c) => { c.frame = c.el.querySelector('iframe'); c.read = c.el.querySelector('.read'); });
+
+  const dims = () => st.size.split('x').map(Number);
+  const phone = () => dims()[0] < dims()[1];
+  function layout() {
+    const [W, H] = dims();
+    const one = !!st.zoom;
+    cards.forEach((c) => (c.el.hidden = one && c.o.id !== st.zoom));
+    box.style.setProperty('--cols', one ? 1 : phone() ? 4 : 2);
+    requestAnimationFrame(() => cards.forEach((c) => {
+      if (c.el.hidden) return;
+      const vp = c.el.querySelector('.vp');
+      const k = Math.min(1, vp.clientWidth / W);
+      vp.style.height = `${Math.round(H * k)}px`;
+      Object.assign(c.frame.style, { width: `${W}px`, height: `${H}px`, transform: `scale(${k})` });
+      c.el.querySelector('.zoom').textContent = one ? 'Back to all four' : 'Zoom';
+    }));
+  }
+
+  function send(c, type, detail) {
+    const win = c.frame.contentWindow, wallEl = win && win.document.querySelector(WALL);
+    if (wallEl) wallEl.dispatchEvent(new win.CustomEvent(type, { detail }));
+  }
+  function wire(c) {
+    const doc = c.frame.contentDocument;
+    c.doc = doc;
+    const s = doc.createElement('style');
+    s.id = 'wwkeys';
+    s.textContent = '#cookie-banner { display: none !important; }\n' + c.o.css;
+    doc.head.appendChild(s);
+    if (!document.querySelector('#chan button')) buildChannels(doc);
+    light();
+  }
+  function waitFor(c, tries = 0) {
+    const doc = c.frame.contentDocument;
+    // the TV's script must be running (it sets data-ww-lib), or the phone's 'open the plugin' event falls on nobody
+    const wallEl = doc && doc.location.href !== 'about:blank' && doc.querySelector(WALL);
+    const ok = wallEl && wallEl.dataset.wwLib === 'on';
+    if (ok && doc !== c.old) return wire(c); // never the page the frame is leaving (a size change reloads it)
+    if (tries < 200) setTimeout(() => waitFor(c, tries + 1), 150);
+  }
+  function load() {
+    cards.forEach((c) => {
+      c.old = c.frame.contentDocument;
+      c.doc = null;
+      c.frame.src ='/' + (st.slug ? `?plugin=${encodeURIComponent(st.slug)}` : '');
+      waitFor(c);
+    });
+    layout();
+  }
+
+  // the channels come from the page's own list (library.ts), so the bench follows the data
+  function buildChannels(doc) {
+    const slugs = [...doc.querySelectorAll('[data-ww-pick]')].map((a) => a.getAttribute('href').replace(/^\//, ''));
+    const names = [...doc.querySelectorAll('[data-ww-pick] .ww-name')].map((n) => n.textContent.trim());
+    if (!st.slug) st.slug = slugs[0];
+    document.getElementById('chan').innerHTML = slugs.map((s, i) => `<button type="button" data-slug="${s}">${names[i] || s}</button>`).join('');
+    document.querySelectorAll('#chan button').forEach((b) => (b.onclick = () => { st.slug = b.dataset.slug; save(); cards.forEach(lightOne); paint(); }));
+    paint();
+  }
+  const lightOne = (c) => { send(c, 'ww:select', { slug: st.slug, ...(phone() ? { view: 'panel' } : {}) }); measureSoon(c); };
+  const light = () => cards.forEach(lightOne);
+
+  // what each option costs: rows, width, the room left to the plugin's window, and whether anything leaves the column
+  const timers = new Map();
+  function measureSoon(c) { clearTimeout(timers.get(c)); timers.set(c, setTimeout(() => measure(c), 1100)); }
+  function measure(c) {
+    const doc = c.doc; if (!doc) return;
+    const panel = doc.querySelector('.ww-panel.is-active');
+    const buy = panel && panel.querySelector('.ww-buy'), fig = panel && panel.querySelector('.ww-ui');
+    if (!buy) { c.read.textContent = 'no keys on this screen'; return; }
+    const b = buy.getBoundingClientRect(), p = panel.getBoundingClientRect(), f = fig.getBoundingClientRect();
+    // a row = the parts side by side: a part starts a new one once it sits below the row so far (centring moves tops)
+    let rows = 0, floor = -Infinity;
+    [...buy.children].filter((x) => x.offsetParent).map((x) => x.getBoundingClientRect()).sort((m, n) => m.top - n.top)
+      .forEach((r) => { if (r.top >= floor - 1) rows++; floor = Math.max(r.top >= floor - 1 ? r.bottom : floor, r.bottom); });
+    const out = b.right > p.right + 1;
+    c.read.innerHTML = `keys: ${rows} row${rows > 1 ? 's' : ''} · ${Math.round(b.width)}×${Math.round(b.height)} px · window ${Math.round(f.height)} px tall`
+      + (out ? ' · <span class="bad">past the column</span>' : '');
+  }
+
+  function paint() {
+    document.querySelectorAll('#chan button').forEach((b) => b.classList.toggle('on', b.dataset.slug === st.slug));
+    document.querySelectorAll('#size button').forEach((b) => b.classList.toggle('on', b.dataset.s === st.size));
+  }
+  document.querySelectorAll('#size button').forEach((b) => (b.onclick = () => { st.size = b.dataset.s; save(); paint(); load(); }));
+  cards.forEach((c) => (c.el.querySelector('.zoom').onclick = () => { st.zoom = st.zoom ? '' : c.o.id; save(); layout(); cards.forEach(measureSoon); }));
+  addEventListener('resize', layout);
+  paint();
+  load();
+})();
+</script>
+</body>
+</html>

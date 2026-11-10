@@ -39,6 +39,10 @@ import { Image, getImage } from 'astro:assets';
 import GarageWall from './GarageWall.astro';
 import rlImg from '../assets/plugins/revlimiter-hero.png';
 import gasImg from '../assets/plugins/gas-hero.png';
+/* GAS 2 FLOATING, as the plugin shows by default (Dan 2026-11-03: "gas2 to actually be hovering like in the real
+   plugin"): the real page (GAS2 Source/ui/public) shot on a clear ground in rv-float with the hose faded
+   (GAS2.hose(true)), the house FLOATING shadow baked under it (53 deg, 30 / 24 / .50 + 5 / 4 / .55, rgb(12,9,6)) */
+import gas2Img from '../assets/plugins/gas2-float.png';
 import rrImg from '../assets/plugins/radioroulette-hero.png';
 import driftImg from '../assets/showcase/drift-window-init.png';
 import brokenMeta from '../assets/seasons/drift/tv-broken.json';
@@ -130,10 +134,11 @@ const noJsArt = [
 
 /* The plugins on the TV (library.ts: a `library` entry AND live or an open
    trial; DRIFT first while drift.homeLead) and each one's window. */
-const WINDOWS: Record<string, { img: ImageMetadata; portrait?: boolean }> = {
+const WINDOWS: Record<string, { img: ImageMetadata; portrait?: boolean; float?: boolean }> = {
   drift: { img: driftImg },
   revlimiter: { img: rlImg },
   gas: { img: gasImg, portrait: true },
+  gas2: { img: gas2Img, portrait: true, float: true }, // float: the object alone, its own shadow, no frame round it
   'radio-roulette': { img: rrImg },
 };
 type Item = {
@@ -144,6 +149,8 @@ type Item = {
   img: ImageMetadata;
   alt: string;
   portrait?: boolean;
+  float?: boolean;
+  thumbTall: boolean; // narrower than the list's 16:10 slot: the thumbnail fits its height, else its width
   blurb: string;
   price: string;
   action: TvAction | null;
@@ -159,6 +166,8 @@ const items: Item[] = tvPlugins()
     img: WINDOWS[p.slug].img,
     alt: p.library!.alt,
     portrait: WINDOWS[p.slug].portrait,
+    float: WINDOWS[p.slug].float,
+    thumbTall: dims(WINDOWS[p.slug].img).width / dims(WINDOWS[p.slug].img).height < 1.6,
     blurb: p.library!.blurb,
     price: priceLine(p),
     action: tryAction(p),
@@ -215,8 +224,8 @@ const first = items[0]?.slug ?? '';
             id={`ww-tab-${it.slug}`}
             data-ww-pick={it.slug}
           >
-            <span class:list={['ww-thumb', { 'is-portrait': it.portrait }]} aria-hidden="true">
-              <Image src={it.img} alt="" width={320} widths={[160, 320]} sizes="(max-width: 860px) 4.5rem, 10rem" format="webp" quality={80} loading="lazy" />
+            <span class:list={['ww-thumb', { 'is-tall': it.thumbTall, 'is-float': it.float }]} aria-hidden="true">
+              <Image src={it.img} alt="" width={320} widths={[160, 320]} sizes="(max-width: 860px) 6rem, 10rem" format="webp" quality={80} loading="lazy" />
             </span>
             <span class="ww-rtext">
               <span class="ww-name">{it.name}</span>
@@ -235,7 +244,7 @@ const first = items[0]?.slug ?? '';
       const media = dims(isDrift && posterCuts && wallPosterSrc ? wallPosterSrc : it.img);
       return (
         <article
-          class:list={['ww-panel', { 'is-active': i === 0, 'is-portrait': it.portrait }]}
+          class:list={['ww-panel', { 'is-active': i === 0, 'is-portrait': it.portrait, 'is-float': it.float }]}
           style={`--ww-ar:${(media.width / media.height).toFixed(4)}`}
           id={`ww-ch-${it.slug}`}
           data-ww-panel={it.slug}
@@ -293,7 +302,8 @@ const first = items[0]?.slug ?? '';
             </p>
             <div class="ww-buy">
               {it.price && <span class="ww-price">{it.price}</span>}
-              {/* the button family (buttons.css, D9 2026-11-01): Try = brass (honey when free), Product page = ghost */}
+              {/* the button family (buttons.css, D9 2026-11-01): Try = brass (honey when free), Product page = ghost;
+                  on the screen both are restyled as light on the glass (option A, 2026-11-04, in the CSS) */}
               {it.action && (it.action.href ? (
                 <a class:list={['ww-try rv-btn rv-btn--stack', it.cats.includes('free') && 'rv-btn--honey']} href={it.action.href}>
                   <span>{it.action.label}</span>
@@ -1189,8 +1199,8 @@ const first = items[0]?.slug ?? '';
        showing; up, the TV's top edge tucks <1px under the nav's hairline. */
     const landY = (off: number) => Math.ceil(window.scrollY + off);
 
-    /* "/#plugins" links on home (the header's PLUGINS, the footer, the cart's
-       "Explore the plugins", the closing CTA) glide to the TV instead of
+    /* Links to the TV on the TV's own page (home's closing CTA "/#plugins"; on /plugins, the
+       header's PLUGINS, the footer, the cart's "Explore the plugins") glide to the TV instead of
        navigating: with ?cat= in the address the link would load the page
        again, and the browser's own jump would fire popstate (a channel change).
        Lenis listens on window and ignores preventDefault, so the click stops
@@ -1204,7 +1214,9 @@ const first = items[0]?.slug ?? '';
        scroll. Focus moves into the TV, as the browser's own jump would have
        moved it. */
     document.addEventListener('click', (e) => {
-      const a = (e.target as Element | null)?.closest('a[href="/#plugins"]');
+      const a = (e.target as Element | null)?.closest('a[href="/#plugins"], a[href="/plugins"]');
+      // "/plugins" from home is a real page change (the plugins page has no hero)
+      if (a?.getAttribute('href') === '/plugins' && location.pathname.replace(/\/$/, '') !== '/plugins') return;
       if (!a || !section || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
       e.preventDefault();
       e.stopPropagation();
@@ -1331,6 +1343,22 @@ const first = items[0]?.slug ?? '';
     --ww-name-max: 5.5;   /* rem: the biggest a plugin name gets */
     --ww-thumb-w: 9.8;    /* rem: the thumbnail's width in the list */
     --ww-dim: 1;          /* the unlit names and thumbnails: how much they show */
+    /* the plugins' pictures on the glass (Dan 2026-11-04: "the small details of how the plugins look on the screen";
+       /__wwbench, "Pictures"). The lit window: */
+    --ww-pic-r: 6;          /* px: its corners (GAS / Radio Roulette keep their bezel arcs, GAS 2 has none) */
+    --ww-pic-ring: 0.4;     /* its phosphor edge, alpha (the screen wall) */
+    --ww-pic-glow: 0.22;    /* its glow on the glass, alpha */
+    --ww-pic-glow-px: 36;   /* px: how far the glow reaches */
+    --ww-pic-drop: 0.55;    /* the dark drop under it, alpha */
+    --ww-pic-bright: 1;     /* its light: brightness, colour (saturation), contrast. Read by the bench only: even at 1
+                               a filter repaints the picture, so the filter goes in only with a value baked off 1 */
+    --ww-pic-sat: 1;
+    --ww-pic-con: 1;
+    /* the list's thumbnails: */
+    --ww-thumb-r: 3;            /* px: corners */
+    --ww-thumb-glow-px: 18;     /* px: the lit one's glow */
+    --ww-thumb-hover-k: 1.06;   /* the pointer on a row: the picture comes forward this much */
+    --ww-thumb-hover-light: 1.12;
     --ww-row-gap: clamp(0.9rem, 2.4vh, 1.75rem);
     display: grid;
     grid-template-columns: minmax(0, calc(var(--ww-list-share) * 1%)) minmax(0, 1fr);
@@ -1454,9 +1482,8 @@ const first = items[0]?.slug ?? '';
     display: grid;
     /* the thumbnail fits the room's height too, as the name does (16:10; 1.15rem = the row's padding + its share of the
        gaps): at 9.8rem four rows were 21 px too tall for a 1280x665 screen, 45 px for 1141x636 */
-    grid-template-columns:
-      min(calc(var(--ww-thumb-w) * 1rem), calc((var(--ww-main, 30rem) / var(--ww-rows, 4) - 1.15rem) * 1.6))
-      minmax(0, 1fr) auto;
+    --ww-thumb-col: min(calc(var(--ww-thumb-w) * 1rem), calc((var(--ww-main, 30rem) / var(--ww-rows, 4) - 1.15rem) * 1.6));
+    grid-template-columns: var(--ww-thumb-col) minmax(0, 1fr) auto;
     align-items: center;
     column-gap: 1rem;
     padding: 0.3rem 0.4rem 0.3rem 0;
@@ -1465,23 +1492,32 @@ const first = items[0]?.slug ?? '';
     text-decoration: none;
     -webkit-tap-highlight-color: transparent;
   }
+  /* the whole plugin, never cropped or letterboxed (Dan 2026-11-03: Radio Roulette was cut, GAS had black bars left
+     and right): a wide window fills the slot's width, a tall one its height, centred on the bare glass; the edge and
+     the glow sit on the picture itself */
   .ww-thumb {
-    display: block;
+    display: grid;
+    place-items: center;
     aspect-ratio: 16 / 10;
-    border-radius: 3px;
-    overflow: hidden;
     opacity: var(--ww-dim);
-    box-shadow: 0 0 0 1px var(--ww-edge);
-    transition: opacity 120ms ease, box-shadow 120ms ease;
+    transition: opacity 120ms ease;
   }
   .ww-thumb :global(img) {
     display: block;
     width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: 50% 30%;
+    height: auto;
+    border-radius: calc(var(--ww-thumb-r) * 1px);
+    box-shadow: 0 0 0 1px var(--ww-edge);
+    transition:
+      transform 180ms cubic-bezier(0.2, 0.9, 0.25, 1.25),
+      box-shadow 180ms ease,
+      filter 180ms ease;
   }
-  .ww-thumb.is-portrait :global(img) { object-fit: contain; background: #050406; }
+  /* the slot's height as a length: a percent height doesn't resolve against an aspect-ratio box here */
+  .ww-thumb.is-tall :global(img) { width: auto; height: calc(var(--ww-thumb-col) / 1.6); }
+  /* the plates baked on near-black with rounded bezels: the panel's own arcs (.ww-ui below) */
+  .ww-row[data-ww-pick='gas'] .ww-thumb :global(img) { border-radius: 11% / 7.4%; }
+  .ww-row[data-ww-pick='radio-roulette'] .ww-thumb :global(img) { border-radius: 9% 9% 10.6% 10.6% / 16.2% 16.2% 19% 19%; }
   .ww-rtext { display: grid; gap: 0.3rem; min-width: 0; }
   /* the name: stencil on the glass, outlined in the channel's phosphor, the lit one filled */
   .ww-name {
@@ -1504,7 +1540,8 @@ const first = items[0]?.slug ?? '';
     transition:
       color 120ms cubic-bezier(0.2, 0.9, 0.25, 1.25),
       opacity 120ms cubic-bezier(0.2, 0.9, 0.25, 1.25),
-      -webkit-text-stroke-color 120ms cubic-bezier(0.2, 0.9, 0.25, 1.25);
+      -webkit-text-stroke-color 120ms cubic-bezier(0.2, 0.9, 0.25, 1.25),
+      filter 160ms ease;
   }
   .ww-type {
     font-family: var(--font-mono);
@@ -1515,9 +1552,23 @@ const first = items[0]?.slug ?? '';
     opacity: 0.7;
   }
   .ww-rprice { display: none; }
+  /* the pointer on a plugin warms it up, short of lit (Dan 2026-11-03: the old hover only brightened the outline,
+     "gas2 is not hovering"): the name glows with a faint fill, the picture comes forward with a hot edge. The lit
+     rules below win where both set a value */
   @media (hover: hover) {
-    .ww-row:hover .ww-name { opacity: 1; -webkit-text-stroke-color: var(--ww-ink-hot); }
+    .ww-row:hover .ww-name {
+      opacity: 1;
+      color: color-mix(in srgb, var(--ww-ink-hot) 40%, transparent);
+      -webkit-text-stroke-color: var(--ww-ink-hot);
+      filter: drop-shadow(0 0 10px var(--ww-glow-hot)) drop-shadow(0 0 22px var(--ww-glow-soft));
+    }
+    .ww-row:hover .ww-type { opacity: 1; }
     .ww-row:hover .ww-thumb { opacity: 1; }
+    .ww-row:hover .ww-thumb :global(img) {
+      transform: scale(var(--ww-thumb-hover-k));
+      filter: brightness(var(--ww-thumb-hover-light));
+      box-shadow: 0 0 0 1px var(--ww-ink-hot), 0 0 22px var(--ww-glow-hot);
+    }
   }
   .ww-row.is-lit .ww-name {
     opacity: 1;
@@ -1525,10 +1576,13 @@ const first = items[0]?.slug ?? '';
     -webkit-text-stroke-color: var(--ww-ink-hot);
     filter: drop-shadow(0 0 10px var(--ww-glow-hot)) drop-shadow(0 0 26px var(--ww-glow-soft));
   }
-  .ww-row.is-lit .ww-thumb {
-    opacity: 1;
-    box-shadow: 0 0 0 1px var(--ww-ink-hot), 0 0 18px var(--ww-glow);
-  }
+  .ww-row.is-lit .ww-thumb { opacity: 1; }
+  .ww-row.is-lit .ww-thumb :global(img) { box-shadow: 0 0 0 1px var(--ww-ink-hot), 0 0 calc(var(--ww-thumb-glow-px) * 1px) var(--ww-glow); }
+  /* a FLOATING object (design-language §3b): nothing rectangular round its silhouette, at rest, hovered or lit; its
+     own baked shadow is its edge */
+  .ww-row .ww-thumb.is-float :global(img),
+  .ww-row:hover .ww-thumb.is-float :global(img),
+  .ww-row.is-lit .ww-thumb.is-float :global(img) { box-shadow: none; border-radius: 0; }
   .ww-row.is-lit .ww-type { opacity: 1; }
   /* a category change: the plugins that stay come up one after another (on the row: the reveal owns the li) */
   .ww-list.is-swapping .ww-item:not([hidden]) .ww-row {
@@ -1569,7 +1623,7 @@ const first = items[0]?.slug ?? '';
     display: block;
     width: 100%;
     height: auto;
-    border-radius: 6px;
+    border-radius: calc(var(--ww-pic-r) * 1px);
     box-shadow: 0 1px 0 0 #000, 0 24px 48px rgba(0, 0, 0, 0.55);
   }
   /* the box is there before the picture: a lazy window that arrives late never pushes the text down */
@@ -1590,6 +1644,9 @@ const first = items[0]?.slug ?? '';
     align-items: center;
     column-gap: clamp(1.25rem, 3vw, 2.5rem);
   }
+  /* the floating pump stands on the glass by itself: no window edge, no corner clip, no drop under a box */
+  .ww-panel.is-float .ww-ui :global(img),
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] > .ww-panel.is-float .ww-ui :global(img) { box-shadow: none; border-radius: 0; }
   /* a set height (not max-height): with width auto, a max-height has no box until the picture loads */
   .ww-panel.is-portrait .ww-ui :global(img) {
     width: auto;
@@ -1629,6 +1686,12 @@ const first = items[0]?.slug ?? '';
     color: hsl(var(--ww-ch-h) 30% 92%);
     text-shadow: 0 0 10px var(--ww-glow-faint);
   }
+  /* on the screen the blurb is phosphor too (Dan 2026-11-03: it read as plain white web text, the one thing on the
+     glass that didn't glow): the channel's tint, a tight glow round the letters and a wide soft one */
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-blurb {
+    color: hsl(var(--ww-ch-h) min(100%, calc(var(--ww-ch-s) * 1% + 10%)) 82%);
+    text-shadow: 0 0 6px var(--ww-glow), 0 0 20px var(--ww-glow-soft);
+  }
   /* the five words, now one small line: what the sound does */
   .ww-pwords {
     margin: 0;
@@ -1658,7 +1721,75 @@ const first = items[0]?.slug ?? '';
     color: var(--ww-ink-hot);
     text-shadow: 0 0 8px var(--ww-glow);
   }
-  /* .ww-try + .ww-more: the button family's look (buttons.css, D9 2026-11-01); placement only here */
+  /* .ww-try + .ww-more: the button family's look (buttons.css, D9 2026-11-01); placement only here. On the screen they
+     are light on the glass instead (Dan 2026-11-04, option A of /__wwkeys: the Try key "is not fitting the LCD screen,
+     I want it to feel like it's part of the LCD screen"): inverse video, the lit ALL key's language. Try = a block of
+     the channel's phosphor with dark words, Product page = a phosphor outline; no plate, depth or lift. Hover
+     brightens, a press dims like the tube. High contrast (html.hc) and the wood wall keep the button family. */
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy { gap: 0.6rem 1rem; }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy :is(.ww-try, .ww-more) {
+    min-height: 0;
+    background: none;
+    font-weight: 400;
+    text-transform: uppercase;
+    overflow: visible;
+    isolation: auto;
+    transform: none;
+    transition: color 120ms ease, background-color 120ms ease, box-shadow 160ms ease, filter 120ms ease;
+  }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy :is(.ww-try, .ww-more):is(:hover, :active, .is-pressed) { transform: none; }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy :is(.ww-try, .ww-more):focus-visible { outline: 2px solid var(--ww-ink-hot); outline-offset: 4px; }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-try {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
+    padding: 0.52rem 0.95rem 0.44rem;
+    border-radius: 3px;
+    background-color: var(--ww-ink-hot);
+    background-image: linear-gradient(180deg, rgb(255 255 255 / 0.16), rgb(255 255 255 / 0) 60%);
+    color: var(--ww-ink-on);
+    font-family: var(--font-display);
+    font-size: 1.62rem;
+    line-height: 0.9;
+    letter-spacing: 0.05em;
+    box-shadow: 0 0 0 1px var(--ww-ink-hot), 0 0 22px var(--ww-glow-hot), 0 0 52px var(--ww-glow-soft);
+  }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-try .rv-btn__sub {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 600;
+    font-size: 0.66rem;
+    letter-spacing: 0.16em;
+    line-height: 1;
+    opacity: 0.72;
+  }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-try:hover {
+    color: var(--ww-ink-on);
+    background-color: hsl(var(--ww-ch-h) min(100%, calc(var(--ww-ch-s) * 1% + 34%)) 83%);
+    box-shadow: 0 0 0 1px hsl(var(--ww-ch-h) min(100%, calc(var(--ww-ch-s) * 1% + 34%)) 83%), 0 0 30px var(--ww-glow-hot), 0 0 70px var(--ww-glow-soft);
+  }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-try:is(:active, .is-pressed) {
+    filter: brightness(0.78);
+    box-shadow: 0 0 0 1px var(--ww-ink-hot), 0 0 10px var(--ww-glow);
+    transition-duration: 60ms;
+  }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-more {
+    padding: 0.6rem 0.9rem 0.5rem;
+    border-radius: 3px;
+    color: var(--ww-ink);
+    font-family: var(--font-display);
+    font-size: 1.32rem;
+    line-height: 0.9;
+    letter-spacing: 0.06em;
+    text-shadow: 0 0 9px var(--ww-glow);
+    box-shadow: inset 0 0 0 1.5px var(--ww-ink), inset 0 0 14px var(--ww-glow-faint), 0 0 14px var(--ww-glow-soft);
+  }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-more [aria-hidden] { font-family: var(--font-body); font-weight: 700; font-size: 0.72em; vertical-align: 0.08em; }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-more:hover {
+    color: var(--ww-ink-hot);
+    background-color: hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.14);
+    box-shadow: inset 0 0 0 1.5px var(--ww-ink-hot), inset 0 0 18px var(--ww-glow-soft), 0 0 20px var(--ww-glow);
+  }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-more:is(:active, .is-pressed) { background-color: hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.28); transition-duration: 60ms; }
 
   /* ==========================================================================
      INK. On the wood: brass, the lit one oxide (the old stencil). On the
@@ -1706,9 +1837,9 @@ const first = items[0]?.slug ?? '';
   :global(html:not(.hc)) .ww[data-ww-bg='screen'] > .ww-panel .ww-ui :global(img),
   :global(html:not(.hc)) .ww[data-ww-bg='screen'] > .ww-panel .ww-ui video {
     box-shadow:
-      0 0 0 1px hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.4),
-      0 0 36px hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.22),
-      0 18px 40px rgba(0, 0, 0, 0.55);
+      0 0 0 1px hsl(var(--ww-ch-h) var(--ww-gs) 58% / var(--ww-pic-ring)),
+      0 0 calc(var(--ww-pic-glow-px) * 1px) hsl(var(--ww-ch-h) var(--ww-gs) 58% / var(--ww-pic-glow)),
+      0 18px 40px rgba(0, 0, 0, var(--ww-pic-drop));
   }
 
   /* ---- THE CHANNELS -------------------------------------------------------
@@ -1716,12 +1847,13 @@ const first = items[0]?.slug ?? '';
      changing channels"; his pick: each plugin its own screen colour. Hue +
      saturation (unitless %) from the plugin's own UI: RevLimiter amber (its
      gauge + LCDs; kept well clear of race-red, the homepage's one red is
-     .hh-redline), GAS brass gold, Radio Roulette the dial glass's pale warm
+     .hh-redline), GAS brass gold, GAS 2 its pump's oxide red-orange, Radio Roulette the dial glass's pale warm
      cream, DRIFT violet (its screen stays /drift's own tube). A plugin with no
      channel here plays in neutral cream. */
   .ww {
     --ww-ch-revlimiter-h: 26;      --ww-ch-revlimiter-s: 78;
     --ww-ch-gas-h: 46;             --ww-ch-gas-s: 62;
+    --ww-ch-gas2-h: 14;            --ww-ch-gas2-s: 58;
     --ww-ch-radio-roulette-h: 38;  --ww-ch-radio-roulette-s: 28;
     --ww-ch-drift-h: 280;          --ww-ch-drift-s: 70;
     --ww-on-h: 38;
@@ -1730,10 +1862,12 @@ const first = items[0]?.slug ?? '';
   .ww-panel { --ww-ch-h: 38; --ww-ch-s: 28; }
   .ww-panel[data-ww-panel='revlimiter'] { --ww-ch-h: var(--ww-ch-revlimiter-h); --ww-ch-s: var(--ww-ch-revlimiter-s); }
   .ww-panel[data-ww-panel='gas'] { --ww-ch-h: var(--ww-ch-gas-h); --ww-ch-s: var(--ww-ch-gas-s); }
+  .ww-panel[data-ww-panel='gas2'] { --ww-ch-h: var(--ww-ch-gas2-h); --ww-ch-s: var(--ww-ch-gas2-s); }
   .ww-panel[data-ww-panel='radio-roulette'] { --ww-ch-h: var(--ww-ch-radio-roulette-h); --ww-ch-s: var(--ww-ch-radio-roulette-s); }
   .ww-panel[data-ww-panel='drift'] { --ww-ch-h: var(--ww-ch-drift-h); --ww-ch-s: var(--ww-ch-drift-s); }
   .ww[data-ww-on='revlimiter'] { --ww-on-h: var(--ww-ch-revlimiter-h); --ww-on-s: var(--ww-ch-revlimiter-s); }
   .ww[data-ww-on='gas'] { --ww-on-h: var(--ww-ch-gas-h); --ww-on-s: var(--ww-ch-gas-s); }
+  .ww[data-ww-on='gas2'] { --ww-on-h: var(--ww-ch-gas2-h); --ww-on-s: var(--ww-ch-gas2-s); }
   .ww[data-ww-on='radio-roulette'] { --ww-on-h: var(--ww-ch-radio-roulette-h); --ww-on-s: var(--ww-ch-radio-roulette-s); }
   .ww[data-ww-on='drift'] { --ww-on-h: var(--ww-ch-drift-h); --ww-on-s: var(--ww-ch-drift-s); }
 
@@ -1751,6 +1885,8 @@ const first = items[0]?.slug ?? '';
   .ww {
     --ww-scr-bright: 1.37;  /* phosphor glow */
     --ww-scr-scan: 0.2;     /* scanline darkness on the glass (under the text and the pictures) */
+    --ww-scr-glare: 1;      /* the glass's reflection over everything, x today's */
+    --ww-scr-curve: 0.6;    /* the tube's curved falloff: how dark the glass gets towards its edges */
   }
   .ww-screen,
   .ww-screen-fx {
@@ -1810,9 +1946,9 @@ const first = items[0]?.slug ?? '';
   .ww-screen-fx {
     z-index: 2; /* over the content: it is on the screen (smooth light only: nothing here crosses a letter) */
     background:
-      linear-gradient(158deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.02) 16%, transparent 30%), /* glass reflection */
-      radial-gradient(ellipse 70% 22% at 50% 0%, rgba(255, 255, 255, 0.05), transparent 70%),                 /* the glass catching the room light */
-      radial-gradient(130% 120% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.6) 100%);                        /* tube curvature */
+      linear-gradient(158deg, rgba(255, 255, 255, calc(0.07 * var(--ww-scr-glare))) 0%, rgba(255, 255, 255, calc(0.02 * var(--ww-scr-glare))) 16%, transparent 30%), /* glass reflection */
+      radial-gradient(ellipse 70% 22% at 50% 0%, rgba(255, 255, 255, calc(0.05 * var(--ww-scr-glare))), transparent 70%),                 /* the glass catching the room light */
+      radial-gradient(130% 120% at 50% 50%, transparent 55%, rgba(0, 0, 0, var(--ww-scr-curve)) 100%);                        /* tube curvature */
     box-shadow:
       inset 0 3px 0 #040206, inset 0 -3px 0 #040206, /* the screen's seat under the rails */
       inset 0 0 0 1px rgba(190, 90, 255, 0.22);
@@ -1887,15 +2023,17 @@ const first = items[0]?.slug ?? '';
     --ww-frame-size: 0.25;  /* CSS px per cut pixel, desktop */
     --ww-frame-gap: 0px;    /* garage wood showing around the set (laptop and up) */
     --ww-frame-g: var(--ww-frame-gap);
+    --ww-out: max(2.5vw, 50vw - 720px); /* --maxw's margin: .ww's edge from the screen's (the frame spans the screen) */
     /* the side gutter (--maxw's margin + .ww's padding-inline) minus the wood and 6 px, over the roll's side bezel */
-    --ww-frame-cap: calc(max(2px, max(2.5vw, 50vw - 720px) + clamp(1rem, 4vw, 2.5rem) - var(--ww-frame-g) - 6px) / max(var(--wf-zl), var(--wf-zr)));
+    --ww-frame-cap: calc(max(2px, var(--ww-out) + clamp(1rem, 4vw, 2.5rem) - var(--ww-frame-g) - 6px) / max(var(--wf-zl), var(--wf-zr)));
     --ww-frame-u: min(calc(var(--ww-frame-size) * 1px), var(--ww-frame-cap));
   }
   @media (max-width: 900px) {
     /* phones: a ~20 px gutter has no room for wood round the set */
     .ww {
       --ww-frame-g: 0px;
-      --ww-frame-cap: calc((1vw + clamp(1rem, 4vw, 2.5rem) - 4px) / max(var(--wf-zl), var(--wf-zr)));
+      --ww-out: 1vw;
+      --ww-frame-cap: calc((var(--ww-out) + clamp(1rem, 4vw, 2.5rem) - 4px) / max(var(--wf-zl), var(--wf-zr)));
     }
   }
   .ww[data-ww-frame='1'] {
@@ -1962,8 +2100,8 @@ const first = items[0]?.slug ?? '';
     box-shadow: none;
   }
 
-  /* The anchor: /#plugins from another page (the header's PLUGINS, the
-     product pages' breadcrumb, the /store redirect) is the browser's own
+  /* The anchor: /#plugins from another page (home's closing CTA, old links)
+     is the browser's own
      jump, and it must park the TV where the scroll lock and the script's
      glide park it: exactly under the nav. global.css pads every anchor jump
      by --nav-h + 0.75rem (html scroll-padding-top, for focus); this takes
@@ -1983,7 +2121,7 @@ const first = items[0]?.slug ?? '';
      not height: whatever still can't fit grows the TV instead of clipping
      (and the lock then leaves it alone). The scroll lock is in the script. */
   .ww {
-    --ww-nav: var(--site-nav-h, var(--nav-h));
+    --ww-nav: calc(var(--site-nav-h, var(--nav-h)) + var(--sale-h, 0px)); /* + the BF/CM strip while it's up */
     --ww-breath: 15px;         /* glass showing above and below the content */
     --ww-snap-zone: 30;        /* the lock catches when the TV's top stops within this % of the screen */
     --ww-bez-t: var(--rail-h); /* the opening's top / bottom edge, from the wall's inner box */
@@ -1995,6 +2133,13 @@ const first = items[0]?.slug ?? '';
   .ww[data-ww-bg='screen']:not([data-ww-frame='rails']) {
     --ww-bez-t: calc(var(--ww-frame-g) + var(--wf-zt) * var(--ww-frame-u));
     --ww-bez-b: calc(var(--ww-frame-g) + var(--wf-zb) * var(--ww-frame-u));
+    /* the sides clear the bezel by a breath too (Dan 2026-11-03: the content ran 7 px from the glass at 1141, 4 px
+       on a phone, into the opening's rounded corners) */
+    --ww-breath-x: clamp(12px, 2vw, 28px);
+    padding-inline: max(
+      clamp(1rem, 4vw, 2.5rem),
+      calc(var(--ww-frame-g) + max(var(--wf-zl), var(--wf-zr)) * var(--ww-frame-u) - var(--ww-out) + var(--ww-breath-x))
+    );
   }
   @supports (height: 100svh) {
     .ww[data-ww-bg='screen'] {
@@ -2041,7 +2186,7 @@ const first = items[0]?.slug ?? '';
       padding-bottom: 2.5rem;
       grid-template-columns: minmax(0, 1fr);
       grid-template-areas: 'osd' 'list';
-      --ww-thumb-w: 4.6;
+      --ww-thumb-w: 6;
       --ww-osd-h: 4.6rem; /* two rows of keys */
     }
     .ww[data-ww-view='panel'] { grid-template-areas: 'panel'; }
@@ -2122,6 +2267,17 @@ const first = items[0]?.slug ?? '';
     @media (max-width: 860px) {
       .ww[data-ww-bg='screen'] {
         --ww-info-h: 15rem; /* back + name + blurb + words + price + key + link (measured, 390) */
+        /* the screen starts full (Dan 2026-11-03): centred, a 390x844 phone showed ~140 px of bare glass over the
+           menu and over the back key. The menu sits at the top; the list takes the glass left under it and spaces
+           its rows over it, one slot per plugin on the TV, so a category with fewer keeps the same spacing from the
+           top instead of spreading two rows over the whole glass */
+        align-content: start;
+      }
+      .ww[data-ww-bg='screen']:not([data-ww-view='panel']) { grid-template-rows: auto 1fr; }
+      .ww[data-ww-bg='screen'] .ww-list {
+        align-self: stretch;
+        grid-template-rows: repeat(var(--ww-rows, 5), auto);
+        align-content: space-evenly;
       }
       .ww[data-ww-bg='screen'] .ww-panel:not(.is-portrait) .ww-ui :global(img),
       .ww[data-ww-bg='screen'] .ww-panel:not(.is-portrait) .ww-ui video {
@@ -2138,6 +2294,7 @@ const first = items[0]?.slug ?? '';
   @media (prefers-reduced-motion: reduce) {
     .ww-name,
     .ww-thumb,
+    .ww-thumb :global(img),
     .ww-panel,
     .ww-screen,
     .ww-screen-fx,

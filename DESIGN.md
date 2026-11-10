@@ -91,6 +91,12 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
 - Garage wall (`GarageWall.astro`): `wall-wood.png` tile 512px, brass rail `wall-rail.png` top +
   bottom (`--rail-h` 30px, 22px at 480px and below), rail cast shadow, `data-drift-y` 24px parallax
   on the wood, warm top light + 38% scrim. Same wall as the product pages' `.garage-wall`.
+- Review picker (`/review`, Yoni 2026-11-03): four small square screens ("cubes"), the plugin's picture whole
+  + its name only. NOT the home TV (Yoni: "too much like the actual store ... still it's a different page"; the
+  TV in review mode was built, then dropped the same day). Kept from the TV: each plugin's channel colour (the TV's
+  hue / saturation numbers) fades up on hover, a one-shot glitch as it tunes in (picture jump + tear, glass
+  flicker, the hum bar rolls), the picked one stays lit with its name filled. Radio Roulette's picture =
+  `radioroulette-hero-cut.png`, cut along its chrome (fitted superellipse corners; Yoni: "crop it precisely").
 - Plugin TV (`WordWall.astro`, `#plugins`; branch feat/home-library, built 2026-10-18; the user: switching
   between the plugins lives in the TV, only there, only on home). One broken CRT set on the garage wall
   (Dan 2026-10-14: "every plugin on the TV, only the screen changes, like changing channels"). The
@@ -105,8 +111,18 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
     only once the script runs; without it the title is a plain PLUGINS (the heading keeps "Plugins" for a
     screen reader either way). One row on every laptop from 1141 (smaller there), wrapping on phones.
   - List (left, `--ww-list-share` 46 % of the screen): one row per plugin = a window thumbnail
-    (`--ww-thumb-w` 9.8rem, 4.6 on phones; less on a short laptop: it fits the room's height for four
-    rows as the names do), the name in the stencil the five words used to be (Bebas, outlined in the
+    (`--ww-thumb-w` 9.8rem, 6 on phones; less on a short laptop: it fits the room's height for four
+    rows as the names do). The thumbnail shows the WHOLE plugin, never cropped or letterboxed (Dan
+    2026-11-03: Radio Roulette was cut, GAS had black bars): a wide window fills the slot's width, a tall one
+    its height, on the bare glass, the plates clipped to their own bezel arcs. Hover (laptop) must SHOW: the
+    picture comes forward with a hot edge, the name glows with a faint fill, short of lit. The content
+    clears the bezel on every side by a breath (`--ww-breath-x`); on phones the menu sits at the top and the
+    rows space out over the glass, one slot per plugin (Dan 2026-11-03: no bare glass over the menu).
+    A FLOATING plugin (design-language §3b; GAS 2) plays on the TV as it opens in a session: the object
+    alone, cut on its outline, its hose faded, the house shadow baked under it, nothing rectangular round
+    it in the list or the window (Dan 2026-11-04: "gas2 to actually be hovering like in the real plugin").
+    The picture is shot from the plugin's own page (`WINDOWS[slug].float` in WordWall.astro).
+    The name in the stencil the five words used to be (Bebas, outlined in the
     channel's phosphor, `--ww-dim` 1 = the unlit ones at full strength, the lit one filled + glowing) and
     a plain type word ("one-knob saturator"). All names share one size: min(`--ww-name-max` 5.5rem, what
     the column fits, what the room's height fits for four rows). Values: the user's bench pick of
@@ -118,8 +134,13 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
     name + type word, the blurb, the five words as one line (the hot word lit; a line breaks between
     words, never before a dot), the price (`$49` / `$19` / `Free` / `Free beta`), ONE key
     "Try free for 30 days" (TrialGateModal's email gate with the licence-worker id; GAS "Free download"
-    through the same gate; DRIFT to `/drift#try`) and a "Product page ->" key. Both keys are the button
-    family (D9, the user 2026-11-01): Try = brass, two lines (honey when free), Product page = small ghost. GAS's tall panel
+    through the same gate; DRIFT to `/drift#try`) and a "Product page ->" key. On the screen both keys are
+    light on the glass, inverse video like the lit ALL key (the user's pick 2026-11-04, option A of three on
+    `/__wwkeys`: the Try key "is not fitting the LCD screen, I want it to feel like it's part of the LCD
+    screen"): Try = a block of the channel's phosphor with dark words, two lines; Product page = a phosphor
+    outline; no plate, depth or lift. That replaces D9 on the TV only; off the screen (high contrast, or
+    `WALL_BG = 'wood'`) they
+    stay the button family (D9, the user 2026-11-01): Try = brass (honey when free), Product page = small ghost. GAS's tall panel
     stands beside its text (at least `--ww-side-min` 16rem wide, 17 on a small laptop). No Add to cart on
     home: buying stays on the product page.
     - Reading (the user's bench pick of 2026-11-01, option A of three; asked for "sexier and much more
@@ -276,7 +297,8 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
   (mouse only); press drops 1px with a shorter shadow, 80ms in / 160ms out, held >= 120ms (`src/lib/press.ts`).
   Tones: **brass** = trial / buy, **honey** = a free download (GAS), **ghost** = the second choice (dark steel,
   thin brass line). Sizes 64 / 56 / 48 / 40. The **shine** (a faint lamp band every 8s) only on the page's ONE
-  main action. Every regular action button uses it (the home TV's Try + Product page keys too, D9 2026-11-01); a
+  main action. Every regular action button uses it (the home TV's keys only off the screen: on it they are
+  light on the glass, the user 2026-11-04, §4 TV); a
   new one opts in by class, never restyles a copy. Stays out:
   the crane door + BUY NOW squares, the audio toys (demo rack, GAS pedal, station mixer), DRIFT's own world,
   image-plate buttons (SubscribeModal, /beta), the support chat, icon buttons (×, menu, cart, arrows, dots),
@@ -465,6 +487,17 @@ picked from four spots on a bench): a portrait crop can't hold the pump and the 
 pump go on top and the readings hang under them on the dark ground, their top just under the pump's base at every
 screen height. The blur behind the cards is the same spot, so the focus pull lands on it.
 
+A scene page is still a page of the site (the GAS 2 postcards, Dan 2026-11-04, review round 15): the site's top bar never
+covers it (the scene starts under the bar's measured height), and the site's real footer is under it on every platform,
+reached by scrolling (page-b: under the scene once the drone has landed; the phone: under the end page; the cards
+themselves never scroll). Where the cards are is told by six pilot lamps, the top card's lit, not by "n / 6" and arrows:
+the flick is the way through, the lamps only say where you are (a tap walks there). A stamp that sends is small enough to
+read as one thing to press and inked in full: across the whole card it read as decoration.
+A phone page that scrolls scrolls as one page (Dan 2026-11-04, on his iPhone, the footer under the end page: first
+"shaking", then still "not smooth"): no footer sliding up over a still scene; the end page goes up and the footer follows
+it. Safari folds its toolbar as you scroll, so the screen grows a few px a frame: whatever scrolls keeps the px size it
+came up with, or it rescales under the finger.
+
 ## 9. Do's & don'ts
 
 - DO keep every claim checkable against the plugin source. The five words describe the intent of
@@ -506,6 +539,17 @@ screen height. The blur behind the cards is the same spot, so the focus pull lan
   the cap so both travel in together when pressed. /drift #hear's DRIFT push-start had a dark lens sunk in the bezel
   (inset shadow only) and read as a gauge; on `bench/drift-hear-bench.html` (DRIFT BTN CAP) it became a raised cap
   (laptop 1 user, 2026-10-28: "i want it to feel more like a button and polish it").
+
+- DO build a small screen that changes the page's sound as home's TV, cabinet and all. /revfx #rfx-hear step 4
+  ROLL IT (Yoni 2026-11-09: "turn the cube panel into an lcd screen similar to the website tv"; the glass alone in a
+  titanium plate then read too tame: "make the tv more prominent it doesnt look like the tv in the website - more
+  lines more distortion in the image"): home's broken cabinet (tv-broken-3.png, 9-sliced small, `--tvf-u` px per
+  photo pixel) with its green pilot LED, home's glass layers in RevFX violet, and a worse tube than home's: heavy
+  scanlines over the picture, red / cyan fringes, a hum bar rolling down, a faint flicker, a small tear every few
+  seconds and a big one + a flash on every roll (`.rfx-tv*`, revfx.css; still under reduced motion). The one
+  word RANDOMIZE (Yoni: "a cool tv theme like text"; was "4 ROLL IT ▸" in Bebas) in a set's on-screen type (VT323,
+  fringed like the tube, burning hotter for four beats when the guide reaches it) sits OVER the lines, so it reads; the die is the picture; the
+  glass is the button. Two screens side by side stay two parts: the segment LCD reads the sound, the TV holds the die.
 
 ## 10. History + open questions (for Dan)
 

@@ -99,7 +99,10 @@
   <aside id="controls"></aside>
   <main>
     <section class="stage" data-f="laptop">
-      <div class="bar"><b>Laptop</b> <select data-size></select><span class="note">click the names: they are the real page</span></div>
+      <div class="bar"><b>Laptop</b> <select data-size></select>
+        <span class="seg small" id="zoom" title="Look close: the frame at its real size or twice it, scrolled to the lit plugin's picture (scroll to look round)">
+          <button data-z="0">FIT</button><button data-z="1">1:1</button><button data-z="2">×2</button>
+        </span><span class="note">click the names: they are the real page</span></div>
       <div class="vp"><iframe title="Homepage at laptop size"></iframe></div>
     </section>
     <section class="stage" data-f="phone">
@@ -125,6 +128,25 @@
     { id: 'screen', title: 'Screen', frames: ['laptop', 'phone'], ctl: [
       { p: '--ww-scr-bright', label: 'Screen glow', hint: 'how lit the tube behind is', min: 0.3, max: 1.8, step: 0.01, unit: '×' },
       { p: '--ww-scr-scan', label: 'Scanlines', hint: 'how dark the CRT lines on the glass are (the text and the pictures sit above them)', min: 0, max: 0.6, step: 0.01, unit: '' },
+    ] },
+    /* Dan 2026-11-04: "get deep into the small details of how the plugins look on the screen". The window's light
+       (brightness / colour / contrast) is a filter the page leaves off until it is baked: even at 1 a filter
+       repaints the picture (measured: up to 58 levels on its pixels), so the bench adds it only once one moves */
+    { id: 'pictures', title: 'Pictures on the glass', note: '×2 on the laptop frame to look close', frames: ['laptop', 'phone'], ctl: [
+      { p: '--ww-pic-ring', label: 'Window edge', hint: 'the thin phosphor line round the lit plugin\'s picture (0 = none)', min: 0, max: 1, step: 0.01, unit: '' },
+      { p: '--ww-pic-glow', label: 'Window glow', hint: 'how much the picture lights the glass round it', min: 0, max: 0.8, step: 0.01, unit: '' },
+      { p: '--ww-pic-glow-px', label: 'Glow reach', hint: 'px the glow spreads', min: 0, max: 90, step: 1, unit: '' },
+      { p: '--ww-pic-drop', label: 'Shadow under it', hint: 'the dark drop below the picture, as if it floated off the glass (0 = it sits in the glass)', min: 0, max: 1, step: 0.01, unit: '' },
+      { p: '--ww-pic-r', label: 'Window corners', hint: 'px (GAS and Radio Roulette keep their bezel arcs, GAS 2 has none)', min: 0, max: 24, step: 1, unit: '' },
+      { p: '--ww-pic-bright', label: 'Picture brightness', hint: 'the plugin\'s own light on the tube (bench-only until baked)', min: 0.6, max: 1.4, step: 0.01, unit: '×' },
+      { p: '--ww-pic-sat', label: 'Picture colour', hint: 'saturation: lower = the plugin\'s colours give way to the channel\'s', min: 0, max: 1.6, step: 0.01, unit: '×' },
+      { p: '--ww-pic-con', label: 'Picture contrast', hint: 'a tube crushes blacks and blooms whites a little', min: 0.7, max: 1.4, step: 0.01, unit: '×' },
+      { p: '--ww-thumb-r', label: 'Thumbnail corners', hint: 'px', min: 0, max: 12, step: 0.5, unit: '' },
+      { p: '--ww-thumb-glow-px', label: 'Lit thumbnail glow', hint: 'px of glow round the lit plugin\'s thumbnail', min: 0, max: 50, step: 1, unit: '' },
+      { p: '--ww-thumb-hover-k', label: 'Thumbnail on hover: grow', hint: 'the pointer on a row: how much the picture comes forward (1 = it stays)', min: 1, max: 1.2, step: 0.005, unit: '×' },
+      { p: '--ww-thumb-hover-light', label: 'Thumbnail on hover: light', hint: 'how much it brightens', min: 1, max: 1.4, step: 0.01, unit: '×' },
+      { p: '--ww-scr-glare', label: 'Glass reflection', hint: 'the room\'s light on the glass, over the pictures and the text (× today\'s)', min: 0, max: 3, step: 0.05, unit: '×' },
+      { p: '--ww-scr-curve', label: 'Tube curve', hint: 'how dark the glass falls off towards its edges', min: 0, max: 1, step: 0.01, unit: '' },
     ] },
     { id: 'channels', title: 'Channels: screen colour per plugin', frames: ['laptop', 'phone'], ctl: [
       { p: '--ww-ch-drift-h', label: 'DRIFT colour', hint: 'hue of DRIFT\'s type (its screen stays /drift\'s violet tube): 280 = violet', min: 240, max: 330, step: 1, unit: '' },
@@ -247,6 +269,7 @@
     document.querySelectorAll('#frame button').forEach((b) => b.classList.toggle('on', b.dataset.fr === framev()));
     document.querySelectorAll('#dir button').forEach((b) => b.classList.toggle('on', +b.dataset.dir === dirv()));
     document.querySelectorAll('#view button').forEach((b) => b.classList.toggle('on', b.dataset.v === st.view));
+    document.querySelectorAll('#zoom button').forEach((b) => b.classList.toggle('on', +b.dataset.z === (+st.zoom || 0)));
     document.querySelectorAll('#pview button').forEach((b) => b.classList.toggle('on', b.dataset.pv === st.pview));
     document.querySelectorAll('#cat button').forEach((b) => b.classList.toggle('on', b.dataset.c === cat));
     document.querySelectorAll('#show button').forEach((b) => b.classList.toggle('on', b.dataset.s === lit));
@@ -272,15 +295,28 @@
     }
     if (st.view !== 'phone') {
       const [w, h] = dims('laptop');
-      const k = Math.min(1, (H - bar('laptop')) / h, (W - (phoneW ? phoneW + 14 : 0)) / w);
-      fit('laptop', w, h, k);
-      stages.laptop.s.style.width = Math.max(w * k, 300) + 'px';
+      const room = [W - (phoneW ? phoneW + 14 : 0), H - bar('laptop')];
+      const z = +st.zoom || 0;
+      const k = z || Math.min(1, room[1] / h, room[0] / w);
+      // 1:1 / x2: the frame keeps the room it has and scrolls (a transform counts toward the scroll area)
+      fit('laptop', w, h, k, z ? [Math.min(room[0], w * k), Math.min(room[1], h * k)] : null);
+      stages.laptop.s.style.width = Math.max(z ? Math.min(room[0], w * k) : w * k, 300) + 'px';
+      if (z) setTimeout(lookAtPicture, 60);
     }
   }
-  function fit(f, w, h, k) {
+  function fit(f, w, h, k, box) {
     const { iframe, vp } = stages[f];
     iframe.style.width = w + 'px'; iframe.style.height = h + 'px'; iframe.style.transform = `scale(${k})`;
-    vp.style.width = w * k + 'px'; vp.style.height = h * k + 'px';
+    vp.style.width = (box ? box[0] : w * k) + 'px'; vp.style.height = (box ? box[1] : h * k) + 'px';
+    vp.style.overflow = box ? 'auto' : 'hidden';
+  }
+  // zoomed in: bring the lit plugin's picture to the middle of the laptop frame
+  function lookAtPicture() {
+    const z = +st.zoom || 0, { iframe, vp } = stages.laptop;
+    const el = z && stages.laptop.ready && iframe.contentDocument.querySelector('.ww-panel.is-active .ww-ui');
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    vp.scrollTo({ left: (r.left + r.width / 2) * z - vp.clientWidth / 2, top: (r.top + r.height / 2) * z - vp.clientHeight / 2 });
   }
   addEventListener('resize', layout);
 
@@ -347,7 +383,7 @@
     if (wallEl) wallEl.dispatchEvent(new win.CustomEvent(type, { detail }));
   }
   const each = (fn) => ['laptop', 'phone'].forEach((f) => fn((type, detail) => send(f, type, detail), f));
-  const light = () => { each((g, f) => g('ww:select', { slug: lit, ...(f === 'phone' ? { view: st.pview } : {}) })); syncLit(); paint(); };
+  const light = () => { each((g, f) => g('ww:select', { slug: lit, ...(f === 'phone' ? { view: st.pview } : {}) })); syncLit(); paint(); if (+st.zoom) setTimeout(lookAtPicture, 900); };
   // after a category pick the page may light another plugin (the lit one was not in it): read it back from its lit
   // row (the pick, at once; data-ww-on follows only when the change lands, so it would undo a ▶ CHANNEL mid-change)
   const syncLit = () => { const d = stages.laptop.ready ? stages.laptop.iframe.contentDocument : null; lit = d?.querySelector('[data-ww-pick].is-lit')?.dataset.wwPick || d?.querySelector(WALL)?.dataset.wwOn || lit; };
@@ -368,7 +404,10 @@
       // SLOW x4: every time of the motion, scaled in the frames only (the sliders and COPY keep the real ones)
       if (slow) ALL.filter((c) => /-ms$/.test(c.p)).forEach((c) => { const v = val(c.p); if (Number.isFinite(v)) vals[c.p] = v * 4; });
       const body = Object.keys(vals).map((p) => `${p}: ${vals[p]}${unitOf(p)} !important;`).join(' ');
-      doc.getElementById('wwb-live').textContent = body ? `${WALL} { ${body} }` : '';
+      // the window's light: a filter only once a light slider has left 1 (see the Pictures group)
+      const lightOn = ['--ww-pic-bright', '--ww-pic-sat', '--ww-pic-con'].some((p) => p in vals && +vals[p] !== 1);
+      const lightCss = lightOn ? `\n${WALL} .ww-panel .ww-ui :is(img, video) { filter: brightness(var(--ww-pic-bright)) saturate(var(--ww-pic-sat)) contrast(var(--ww-pic-con)); }` : '';
+      doc.getElementById('wwb-live').textContent = (body ? `${WALL} { ${body} }` : '') + lightCss;
     });
     save();
     paint();
@@ -379,6 +418,7 @@
   document.querySelectorAll('#frame button').forEach((b) => (b.onclick = () => { st.frame = b.dataset.fr; commit(); }));
   document.querySelectorAll('#dir button').forEach((b) => (b.onclick = () => { st.dir = +b.dataset.dir; commit(); nextChannel(); }));
   document.querySelectorAll('#view button').forEach((b) => (b.onclick = () => { st.view = b.dataset.v; save(); layout(); }));
+  document.querySelectorAll('#zoom button').forEach((b) => (b.onclick = () => { st.zoom = +b.dataset.z; save(); layout(); }));
   document.querySelectorAll('#pview button').forEach((b) => (b.onclick = () => { st.pview = b.dataset.pv; save(); send('phone', 'ww:select', { view: st.pview }); paint(); }));
   document.getElementById('replay').onclick = () => each((g) => g('ww:replay'));
   // ▶ CHANNEL: the next plugin the page shows in its category, on both TVs

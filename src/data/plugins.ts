@@ -484,6 +484,61 @@ export const plugins: Plugin[] = [
     },
   },
   {
+    // GAS 2 = a new, separate plugin, not GAS 2.0 (GAS2 repo docs/BRIEF.md). Its page is Dan's station scene
+    // (tools/_gas2-scene: page-b on a laptop, the postcards on a phone), served at /gas2 by tools/gas2page, so it
+    // has its own route like /gas. Free like GAS; the worker's DL_PLUGINS id is 'gas2' (= dlGateId).
+    // Copy checked against the brief: a master-bus color plugin, one GAS dial, three fuel grades, no limiter.
+    slug: 'gas2',
+    name: 'GAS 2',
+    category: 'saturation',
+    tagline: 'Premium fuel for your mix',
+    oneLiner: 'A master-bus color plugin. One GAS dial, three grades of fuel: Regular, Premium, Race.',
+    plainWhat:
+      'A free master-bus plugin: one GAS dial makes a mix thicker, smoother and more glued, and the level stays matched.',
+    longPitch:
+      'GAS 2 goes first on the master bus. One big GAS dial adds weight, glue and saturation, voiced by the fuel grade you pick: Regular, Premium or Race. A hidden fuel filter turns down harsh resonances only while they ring, and the output is level-matched, so every move is judged on color, not volume.',
+    status: 'live',
+    statusLabel: 'Available now',
+    hideStatusPill: true,
+    cardThumbAspect: '880/1600',
+    cardThumbMaxWidthPct: 40,
+    introPriceUsd: null,
+    regularPriceUsd: null,
+    checkoutPaused: false,
+    isFree: true,
+    downloadUrl: GAS_DOWNLOAD_URL,
+    // Same as GAS: the email gate IS the free download's delivery.
+    trialGateActive: true,
+    demoUrl: null,
+    releaseTarget: 'Available now',
+    heroImage: 'gas2-hero.jpg',
+    galleryImages: [],
+    features: [
+      { name: 'One GAS dial', desc: 'Thicker, smoother, glued: tone shape, 3-band glue, saturation and excitation move together on one dial.' },
+      { name: 'Three grades of fuel', desc: 'Regular, Premium and Race voice the color, from a light polish to a hot master.' },
+      { name: 'Hidden fuel filter', desc: 'Narrow resonances are turned down only while they ring, before the color, so the saturation never multiplies harshness.' },
+      { name: 'Auto-level + LUFS', desc: 'The output is level-matched and a short-term LUFS readout sits on the pump.' },
+    ],
+    audioDemos: [],
+    systemReq: baseSystemReq,
+    reviewsCount: 0,
+    reviewsAvg: 0,
+    library: {
+      cats: ['mastering', 'saturation'],
+      typeWord: 'master-bus color',
+      words: [
+        { w: 'Thick',  o: 0.5 },
+        { w: 'Smooth', o: 0.72 },
+        { w: 'Glued',  o: 1, hot: true },
+        { w: 'Warm',   o: 0.72 },
+        { w: 'Rich',   o: 0.5 },
+      ],
+      blurb:
+        'Thicker, smoother, glued master. One GAS dial, three grades of fuel, and the level stays matched. Free, and it stays free.',
+      alt: 'GAS 2 plugin window: a vintage gas pump with the AMOUNT gauge, the LUFS counter, the Regular, Premium and Race keys and the IN and OUT dials',
+    },
+  },
+  {
     slug: 'drift',
     name: 'Drift',
     category: 'panner',

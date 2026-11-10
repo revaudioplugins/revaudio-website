@@ -352,6 +352,43 @@ Steps:
 - [ ] 5. Into the site (`index.astro` + a new component, the live TV at the lock, reduced motion, weight), DESIGN.md
       §0 + §7; main only on Dan's word (= live).
 
+# /revfx player: the die rolls Yoni's presets (Yoni 2026-11-09, revaudio-2f) — branch `feat/revfx-hear`
+
+Yoni: "the dice ... really make a random preset, but only for the user its random. i will create 4 presets to each
+sound of the 4, and when the user clicks the cube ... it will choose random preset from the 4". Picks: the die moves
+from the hero into the player; a roll while stopped starts playing in RevFX.
+
+## Steps
+- [x] 1. Data: `src/data/revfx-presets.json` (per track 4 presets: name, on, order; placeholder = the dice engine's
+      scene names) + `tools/revfx-player/read_presets.py` (RevFX user preset .xml -> that JSON: on = BYP_x 0 and mix > 0,
+      order = ORD_* slots, GLUE at ORD_GLUE).
+- [x] 2. Audio: `prep_audio.py` takes dry + 4 renders per track -> `<id>-before.m4a` + `<id>-p1..p4.m4a`, each preset
+      level-matched to the dry, peaks per preset. Placeholder peaks point every preset at today's `<id>-after.m4a`.
+- [x] 3. Hero: the die, the scene CRT and the chain go (markup, deck.ts, their CSS); the catch line stays.
+- [x] 4. Player: step 4 ROLL IT plate (laptop: beside the LCD; tablet / phone: between PLAY and VOLUME), the die.
+- [x] 5. hear.ts: a roll = one of the other 3 (picked + loaded ahead), REVFX on, in-place crossfade at the same spot,
+      starts playing when stopped; a new track starts on a random preset; LCD title = the preset, chain line = its
+      order; the board lights its pedals and takes its order; coach ROLL THE DICE after the A/B.
+- [x] 6. Checks: build green, click-through 1440 / 1100 / 768 / 390, no repeat in 200 rolls, no click on the swap,
+      hero vs live unchanged above the catch line.
+
+## Review (2026-11-09, revaudio-2f)
+- Built on placeholders: the 16 presets = the dice engine's scene names, every preset of a track plays /drift's bounce.
+  Yoni's files drop in with one command: `python tools/revfx-player/prep_audio.py "<folder>"` (`<name> dry.wav`,
+  `<name> 1.wav`..`4.wav`, `<name> 1.xml`..`4.xml` per track; it checks lengths, level-matches all five down to the
+  quietest, writes the m4a, peaks.json and revfx-presets.json, removes the stand-in `-after` files).
+- Reader tested on `%APPDATA%/RevAudio/RevFX/Presets/try.xml`: on = echo reverb halo glue (pitch at 0 st = off), order
+  pitch > echo > reverb > halo > glue.
+- Layout: ROLL IT beside the LCD from 701 px; up to 700 px a strip under it (beside it, PUSH AGAIN: BYPASS needs
+  182 px and had 168 at 610). Measured with a Range on every LCD line at 360-1440: all fit.
+- Click-through (1440): PRESS PLAY > PUSH REVFX > PUSH AGAIN: BYPASS > ROLL THE DICE > NOW PLAYING; 40 rolls, 0
+  repeats, all 4 presets hit; a new track starts on a random preset; a roll while stopped starts playing in RevFX.
+  Console: only the dev toolbar's 403 (the worktree borrows main's node_modules), none from the page.
+- `npm run build` green. Not checked by ear: the swap is a 12 ms crossfade at the same loop spot (the /drift flip's
+  recipe); with the placeholders every preset is the same file, so the real test is Yoni's renders.
+- Open: the die keeps the hero's neon look (Gil's, live since 10-19), not a photographed part like the player's other
+  hardware; ask Yoni if it should get a photo die.
+
 # GAS 2 on the front page: in the LCD screen (Dan 2026-11-01, danavivi-83) — PLAN, waits for the LCD screen
 
 Dan (2026-11-01): "where do we put gas 2 ... in the front page. Like I think it should be in the LCD screen that we do

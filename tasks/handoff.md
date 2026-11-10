@@ -408,6 +408,365 @@ pid 52126: `kill 52126` if it's in the way), then http://127.0.0.1:4490/tools/_h
 default to port 4471: pass the port.
 Loose ends: `home-bake` has the untracked, regenerable `bake/room/` + `bake/test-room/` (leave or delete).
 
+## 2026-11-09 — /revfx trial form sends the download at once (`gateWired: true`) (Claude Code `revaudio-0b [3311c0]`, Yoni's laptop 2) — branch `revfx-gate-on` — PUSHED TO MAIN 2026-11-09 on Yoni's "deploy" (worker deployed first, version `b31a75bd`)
+
+Claim: CLOSED 2026-11-09 `revaudio-0b`. Files: `src/data/revfx.ts` (`gateWired` only; `revaudio-2f`'s claim there is `hearTracks` only), this entry.
+- Yoni: a user already on our list got "Already on our list" on the /revfx sign-up and no download. Cause: with
+  `gateWired: false` the RevFX forms posted only to the worker's once-per-email `/form-once`. The worker has known
+  RevFX since `b7e589a` (live 2026-11-08) and both RevFX builds are live in R2, so the gate is on: the forms post to
+  `/download/register` (download email at once, as on /drift); `/form-once` runs in the background only.
+- Paired worker change (RevLimiter repo main `e388699`, DEPLOYED 2026-11-09, version `b31a75bd`): trial sign-ups to `/form-once` are logged
+  in KV `triallog:<email>`, no Formspree mail to info@, never "already". Ship order: worker deploy, then this push.
+- Checks: `npm run build` green (33 pages); built /revfx/ has 2 forms with `data-register-url` = the worker's
+  `/download/register` and the ok text "Download on its way by email." Not checked: a real sign-up (after deploy).
+- Open (not touched): `winReady: false` + the fine print "Open it on a Mac", though `revfx-win` is live in R2 since
+  2026-11-09 16:07; the download email offers both.
+
+## 2026-11-09 — /revfx player: the die moves into the player and rolls Yoni's presets (Claude Code `revaudio-2f [e388a1]`, Yoni's laptop 2) — branch `feat/revfx-hear` — LIVE on main `81922f5` (2026-11-09, Yoni: "push deploy to the revfx page (dont add it to the index just like its now)")
+
+Claim: OPEN `revaudio-2f` (live; open for the preset names) (took over `revaudio-0d`'s claim below, same files, + `src/components/revfx/RfxHero.astro`,
+`src/lib/revfx/deck.ts`). 
+- Yoni: the die really rolls a preset, random only for the visitor: 4 presets per sound (his renders + his RevFX preset
+  .xml), a roll picks one of the other 3. Die + scene CRT + chain move from the hero into the player (step 4 ROLL IT);
+  a roll while stopped starts playing in RevFX.
+- Fix (Yoni: "you misplaced the pedals in the top there overlapping"): the player reused the hero's class
+  `.rfx-board-wrap`, so its `container-type: inline-size; display: flex` shrank the hero board to 13 px and the pedals
+  spilled over the REVFX card. The player's wrapper is now `.rfx-hear-board-wrap` (`ef5838f`).
+- Built (the die): hero's die + scene CRT + chain removed (`deck.ts` deleted, its CSS gone; the catch line stays).
+  Player step 4 ROLL IT (`.rfx-hear-top`: beside the LCD from 701 px, a strip under it up to 700). hear.ts: a roll =
+  one of the other 3 presets (the next one picked + loaded ahead), REVFX on, crossfade at the same loop spot, starts
+  playing when stopped; new track = random preset; LCD title = preset name, chain line = its order; the board takes
+  its order (FLIP) and lights its pedals; coach ROLL THE DICE after the A/B. Data: `src/data/revfx-presets.json` +
+  peaks.json `presets[]`, both from `tools/revfx-player/prep_audio.py` (now reads Yoni's preset .xml too).
+- Checks: build green; LCD lines fit 360-1440; click-through + 40 rolls 0 repeats (repo `tasks/todo.md` Review).
+- Yoni's sounds IN (2026-11-09, from `C:\shirimmmmmm`: `<track> dry.wav` + `<track> #1..#4.wav`, 48 k stereo; the
+  script now reads those names as they are): 20 m4a, 5.1 MB, the /drift stand-ins gone. All aligned (lag 0 smp vs
+  the dry). Level: all five per track down to the quietest (preset 1 in every track): vocal -16.6, instruments
+  -15.4, drums -15.1, lead -12.9 LUFS. Loop seam jump vs the normal sample step: Lead #4 0.21 vs 0.095, instruments
+  ~2-3x: may tick once per loop, listen.
+- STATE: real sounds, PLACEHOLDER preset names / pedals / order (no .xml came; revfx-presets.json "placeholder":
+  true). Next: Yoni's 16 names + pedals + order (or the .xml), listen to the swap, then his "push" for main (= live
+  deploy).
+- ROLL IT = a little TV (Yoni: "turn the cube panel into an lcd screen similar to the website tv"): `.rfx-tv` =
+  WordWall's glass layers in RevFX violet, sunk in the plate, Bebas ask "4 ROLL IT ▸" (lit + 4 blinks when next),
+  the die is the picture, the glass is the button. Plate 172 px laptop / 154 at 1024-1240 / a strip up to 700.
+  DESIGN.md §4 has the rule. That answers the photo-die question (the die is now a picture on a screen).
+- Then (Yoni: "make the tv more prominent ... more lines more distortion in the image"): the set = home's broken TV
+  cabinet (tv-broken-3.png cut 640 px, 9-sliced at --tvf-u .16 / .145 / .095 / .085) + pilot LED; heavy scanlines
+  over the die, red / cyan fringes, hum bar, flicker, small tear every 5.7 s, big tear + flash on a roll. Panel 192 px
+  laptop / 170 at 1024-1240 / a 100 px strip up to 700 (90 on phones).
+- Then (Yoni: "instead of 4 - roll it make a cool tv theme like text which just says Randomize"): the TV says
+  RANDOMIZE only, VT323 on-screen type (20 / 17.6 / 24 / 20.8 px after Yoni's "reduce the text size by 20%"), red / cyan fringes, 4 hotter beats when next. The
+  LCD's coach still says ROLL THE DICE.
+- DEPLOYED 2026-11-09: origin/main merged into the branch (one conflict, tasks/lessons.md: both kept), build green,
+  pushed `81922f5` to main (fast-forward). Deploy + Smoke test + Clear Cloudflare cache all success. Live checks:
+  hero board 761 px, every /audio/revfx file 200, play + roll + track change work, no page errors. Listing unchanged
+  (only RevFX files differ from main: no plugins.ts / library.ts / astro.config change; /revfx/ stays in the sitemap,
+  no robots meta, not on the home TV, as before). STILL PLACEHOLDER: the 16 preset names / pedals / order.
+- Then (Yoni: "the volume text ... make a weird jump" at 100): `.rfx-vol-read` keeps the width of "VOL 100"
+  (min-width 7.5em), so the volume plate no longer grows and squeezes the board (it was 348 -> 341 px). LIVE on main
+  `7994430` on his "push"; Deploy + Smoke + cache clear green, live re-measure: nothing moves at 80 / 100 / 99 / MUTE.
+
+## 2026-11-05 — /revfx before/after player: "Plug in. Stomp it." (Claude Code `revaudio-0d [61a467]`, Yoni's laptop 2) — branch `feat/revfx-hear`, worktree `../revaudio-website-rfxhear`
+
+Claim: HANDED to `revaudio-2f` 2026-11-09 (was OPEN `revaudio-0d`). Files: `src/components/revfx/RfxHear.astro` (new), `src/lib/revfx/hear.ts` (new),
+`src/lib/revfx/init.ts`, `src/pages/revfx.astro`, `src/styles/revfx.css` (new #hear block only), `src/data/revfx.ts`
+(hearTracks only), `public/audio/revfx/**` (new), `tools/revfx-player/prep_audio.py` (new), this entry.
+- Yoni: "create the before after player for revfx ... maybe the layout of the drift ab player can work here ... 4 sounds
+  - vocal, instruments, drums, lead. use placeholders for sounds ... full creative freedom". Placement: under the hero.
+- Built: `#rfx-hear` "Plug in. Stomp it." under the hero. 1 PLUG IN (four input jacks, the plug + a lit cord on the
+  picked one), the segment LCD (coach / BYPASS-REVFX ON tag / name / waveform / chain + clock), the signal path (IN, the
+  five pedals on a board, OUT; the TRUE BYPASS wire under them: lit + pulsing on BYPASS, the FX wire on REVFX, pedals
+  light in chain order in their own inks), 2 PLAY (/drift's caps), 3 STOMP (CSS chrome footswitch + purple LED),
+  VOLUME (/drift's fader). Engine = a copy of /drift's hear.ts without the pan bus (DRIFT untouched). Guide: PRESS PLAY
+  -> STOMP IT -> STOMP AGAIN: BYPASS -> NOW PLAYING. `revfx.ts hearTracks[].on` = the pedals a bounce used (all five now).
+- SOUNDS = PLACEHOLDERS: /drift's bounces copied (vocal <- vocals, instruments <- keys, drums <- perc, lead <- synth),
+  peaks.json `"placeholder": true`. Real swap: Yoni's `<name> dry.wav` + `<name> revfx.wav` per track, then
+  `python tools/revfx-player/prep_audio.py "<folder>"` (level-matches the louder side DOWN, pads, AAC 160k, peaks).
+- Checks (dev server, own headless Chromium, 1440x900 / 1141x636 / 390x844 / 360x740): play -> stomp -> pick DRUMS ->
+  stomp back, guide states right at every step, no page errors, no sideways scroll, no clipped labels; `npm run build`
+  green (33 pages). WebKit on Windows headless has no AudioContext (same as /drift's player), so play is untested
+  there; layout only. Not checked: a real iPhone / Safari, reduced-motion by eye.
+- Round 1 commit `a3cfdc4` (CSS-drawn parts). Round 2 (Yoni: "the size ... similar to the drift ab size ... use open
+  ai to create highly realistic and cool vintage 90's vibe assets - make it tight - easy to understand - smooth"):
+  panel 1180x452 at 1440 (DRIFT's #hear 1180x484; was 692), 547 on a 390 phone (DRIFT 547). Path + stomp merged into
+  ONE board row: footswitch + LED (an A/B looper) -> the five joined by patch cables -> OUT, TRUE BYPASS loop under them.
+  All hardware = OpenAI photos (`src/assets/seasons/revfx/hear/`, prompts + picks in `tools/revfx-player/ASSETS.md`):
+  tolex flight case, patchbay plate, pedalboard, 1/4" jack, right-angle plug + tweed cable, patch cable, 3PDT
+  footswitch, LED off/lit; the fader = /drift's photos. Plates made at their display ratio (gpt-image-2 custom sizes)
+  and stretched; 9-slicing left seams. Pedal size follows the board's width (container query). Tablets (<= 1023)
+  stack like the phone. Class clash found + fixed: `.rfx-board` was the hero's (tasks/lessons.md).
+- Round 2 checks (own headless Chromium): fit at 1440/1280/1141/1000/901/768/600/430/390/360 (no overlap, no
+  sideways scroll); the click-through at 1440/1141/390/360 (guide states right, no page errors); hero screenshot
+  unchanged; `npm run build` green (33 pages); player images ~600 KB on a laptop (case 202 KB). ~22 OpenAI images
+  this round (~$4). Not checked: real iPhone / Safari (Windows WebKit has no AudioContext headless).
+- Shared side fix: `shared/tools/openai/image.ps1` + `edit.ps1` defaulted to the retired gpt-image-1 (broken for
+  everyone); now gpt-image-1.5 + `-Model`, pushed to revaudio-shared main `fb386f3`.
+- Round 3 (Yoni: remove "the line out and the out connector, no need"; "make the bypass stomp more realistic it looks
+  toyish"): OUT jack + the TRUE BYPASS loop removed; the loose chrome switch is now a worn 1590B A/B looper pedal
+  (`looper.png`, gpt-image-1.5, 2 rolls, roll 1 picked), as tall as the five, the whole pedal = the button, its LED lit
+  in its own bezel, a patch cable into PITCH. Fit at 10 widths (no overlap, no sideways scroll), click-through
+  1440/1141/390/360 clean, build green. stomp.png + led.png deleted.
+- Round 4 (Yoni: "the stomp is not good - its the whole pedal, i meant just the switch - ... a bit of petina, when
+  pressed make it stay pressed and when bypassed make it pop out"): looper pedal out; an aged nickel 3PDT footswitch
+  (`fsw-up/fsw-down.png`, near top-down, the pressed photo aligned on the washer so only the cap moves) + the LED above
+  it. Latches: up on BYPASS, down + LED lit on REVFX; down while the foot is on it either way. Fit at 10 widths clean,
+  click-through clean, build green. 6 more OpenAI images.
+- Round 5 (Yoni: the switch "too much on a side view ... more from upper angle, still make some angle"; "metal panels
+  on each section including the stomp switch"; "titanium vibe with a bit of the titanium color effect"): new switch at
+  ~8 deg (pressed = masked edit, base pixel-identical); every section (screen, PLAY, STOMP, VOLUME) + the switch on
+  titanium plates (titanium.jpg heat tint, 4 screw.png corners, CSS bevels). Fit at 10 widths clean, click-through
+  clean, build green. 7 more OpenAI images.
+- Round 6 (Yoni: "the panels are dull ... the effect ... when titanium is burned ... higher petina and wear ... the
+  screws are fighting with the data ... tighten everything"; "the wear should be like the left panel"): plates are now
+  photos (burnt titanium + the patchbay plate's wear + corner screws, 2:1 / 1:1 / 1:2), 9-sliced with stretch; the
+  border = the screw zone; the patchbay 9-sliced the same way (bay-wide gone). Screw test PASS at 10 widths x 2 states
+  (control-probed), fit clean, laptop panel 476 (DRIFT 484), phone 538 (DRIFT 547), click-through clean, build green.
+  Checks saved in tools/revfx-player/checks/. 5 more OpenAI images.
+- Round 7 (Yoni: "good job! do the left panel also with the titanium"): the patchbay is a burnt titanium .rfx-plate (plate-t on laptops, plate-w below 1024); bay.jpg retired. Screw test PASS, fit clean, build green.
+- Round 8 (Yoni: "make the engage / bypass button not a stomp switch ... like for drift bypass button"): /drift's push-to-start (drift.css .d-start + #hear's raised cap) in RevFX purple, REVFX / ENGAGE, at the head of the STOMP plate beside the board; step 3 = PUSH REVFX, coach PUSH REVFX / PUSH AGAIN: BYPASS, headline "Plug in. Push it." (was Stomp it). Switch + LED photos retired. Screw test PASS, fit + names clear at 11 widths, click-through clean, build green.
+- Round 9 (Yoni: "make the shades of the colors of the titanium panels like the shades of color of the pedals"): OpenAI credits ran OUT (credit_balance_exhausted), so the plates were retinted locally (`tools/revfx-player/retint.py`): the heat tint now runs HALO green -> GLUE cyan -> PITCH ice -> REVERB violet -> ECHO pink; metal, edges and screws untouched. Screw test PASS, build green.
+- Round 10 (Yoni: "i dont see the colors it looks the same" = a stale dev image: same file name, no content hash; then "30% less in your face"): the retint fixed (a clipped block of blues had all gone violet, pink was 0 %; now the five ~12-25 % each), INTENSITY .7, output named plate-pedal-<LOOK>-*.jpg (LOOK v2) so a browser can't keep an old plate. Screw test PASS, build green.
+- Round 11, "last run" (Yoni: "glue everything nicely to a real life look, buttons, cables, connectors ... not just
+  floating"): ONE top-left light (every shadow down-right; a soft-light falloff over the case), the caps in chrome
+  bezels in bored holes, the REVFX button in a machined seat ring, the jack nuts on seat rings, the LCD in a machined
+  cutout, the cable runs off the patchbay and UNDER the next plate (no mid-air fade), contact shadows under the pedals
+  and the board, the picked input shown physically (no highlight box). STOP kept desaturated (the CTA red rule).
+  Screw / fit / names checks PASS, click-through clean, build green. Panel 473 laptop, 530 phone.
+- Round 12 (Yoni: "when i press the stop and the play the buttons go off of their setting area"): drift.css's arcade cap motion (hover -1 px, press +4 px) pushed the caps out of their bezels; seated caps now never slide, they press INTO the bore (scale .94, darker). checks/press.cjs (hover + held press at 1440 / 390; control-probed: the old 4 px drop fails it) PASS.
+- STATE for whoever picks this up: everything is on `feat/revfx-hear` (worktree ../revaudio-website-rfxhear); the
+  sounds are still PLACEHOLDERS (/drift's bounces, peaks.json placeholder: true); the OpenAI credits ran out
+  2026-11-05 (top up before more generated assets).
+- Next: Yoni's sounds (tools/revfx-player/prep_audio.py) + his "push" for main (= live deploy).
+
+## 2026-11-04 — GAS 2 postcards: the end page scrolls as one page, the footer under it (Claude Code `danavivi-c2 [ca2821]`, Dan's Mac) — PUSHED TO MAIN 2026-11-04 on Dan's word "perfect push to main" (from `fix/gas2-end-flow`)
+
+Claim: CLOSED 2026-11-04 `danavivi-c2`. Files: `tools/_gas2-scene/postcards.html`, `DESIGN.md`, this entry.
+- Dan, on his iPhone after `f3735ae` (the held height) went live: still not smooth; "try a different attitude": scroll
+  down to the footer without it coming up over the page.
+- Built: at the end, `html.at-end .desk` = `position: absolute` at the px height it came up with (`--end-h`, measured
+  while still fixed; only a new width measures again), so the end page and the footer scroll together as one page under
+  the sticky bar; no scroll listener any more. Leaving (The postcards again / Download FREE) scrolls to the top, then
+  the desk is fixed again.
+- Checks: built `/gas2/`, WebKit 402x714, 12 px steps down with the viewport growing 714 -> 790 and back up: 0 moves in
+  page coordinates (scene, GAS2, button, footer), the footer starts at the end page's bottom; turned phone re-measures;
+  `check.cjs` ALL PASS (47 steps, 40 layouts); build green. Not checked: a real iPhone. Known: a `?card=7` deep link on
+  an iPhone that first lays out at the full screen keeps that height (review links only; visitors arrive by flicking).
+
+## 2026-11-04 — Home TV ("the LCD") polish: two benches, keys + pictures (Claude Code `danavivi-4f [ed951e]`, Dan's Mac) — branch `feat/lcd-polish`, PUSHED TO MAIN 2026-11-04 on Dan's word "push to main" (merge onto main)
+
+Claim: CLOSED 2026-11-05 `danavivi-4f [ed951e]` (it carried on the session Dan closed by mistake, transcript
+`a0d54622`, from its A/B/C step). Files: `tools/wwbench/wwkeys.html` (new), `tools/wwbench/integration.mjs`,
+`tools/wwbench/wwbench.html`, `src/components/WordWall.astro`, `DESIGN.md` §4, `tests/smoke.spec.ts` (the /store test), this entry.
+- Dan's notes (review bench https://claude.ai/artifact/GiWdMBTrxJ69m3iocGJRo1, round 1): the Try key "is not fitting the
+  LCD screen, I want it to feel like it's part of the LCD screen, give me 3 different options on a bench"; the Product
+  page key the same; overall "get deep into the small details of how the plugins look on the screen, a bench for that".
+- `/__wwkeys` (dev only): the real TV four times, today's keys + A inverse video (the ALL chip's language) / B cursor
+  menu (the names' stencil, a blinking cursor) / C OSD bar (price + keys in one framed strip, corner ticks). Each option
+  is a <style> dropped into its frame; channel buttons, Laptop 1141 / 1440 / Phone, a readout of the rows and the
+  window height each one leaves. Picking one reverses D9 (the button family on the TV keys) for the TV only.
+- `/__wwbench` "Pictures on the glass": window edge, glow, glow reach, shadow under it, corners, brightness / colour /
+  contrast, thumbnail corners, lit glow, hover grow + light, glass reflection, tube curve; FIT / 1:1 / x2 on the laptop
+  frame. WordWall.astro: those values are --ww-pic-* / --ww-thumb-* / --ww-scr-glare / -curve with today's numbers.
+  Zero-pixel diff vs main at the defaults (22 reduced-motion shots, WebKit + Chromium, 1141x636 + 390x844, every
+  plugin + a hover). The light sliders are bench-only: an identity filter repainted the window (up to 58 levels), so
+  the filter goes in only once a value is baked off 1. `npm run build` green (32 pages).
+- KEYS = A (Dan 2026-11-04, "commit A", on the pick page https://claude.ai/artifact/Ud7jvQJi3e9a4QcFKtoEha):
+  WordWall.astro carries option A's CSS on the screen only (html.hc and `WALL_BG = 'wood'` keep D9); DESIGN.md §4
+  TV + the button family line say so. Checks: 38 reduced-motion shots (WebKit + Chromium; 1141x636, 1440x900,
+  390x844; 5 channels + hover on each key) pixel-identical to the bench's A; 1141x636 / 1280x720 / 1440x900 /
+  1920x1080 / 390x844 / 375x667 / 360x740 / 430x932 x 5 channels: keys inside the column and on screen, no sideways
+  scroll, no page errors; hc keeps the button family; `npm run build` green (32 pages). `/__wwkeys`'s "Today" frame
+  now shows A. Not checked: a real iPhone / Safari window.
+- LIVE: merge `069d5ac` pushed to main 2026-11-04; Pages deploy run 41846343673 success (started by the push, no
+  hand run needed). revaudio.net (WebKit, 1141x636 + 390x844): Try / Product page = option A (3 px, phosphor fill),
+  no sideways scroll, no page errors.
+- SMOKE GREEN again (Dan 2026-11-05 "fix it", then "push to main"): the smoke test failed on main since 7176953
+  because `/store` goes to the TV on `/plugins` (since 2026-11-02; 40c9e43) while the test waited for
+  `/?utm_source=smoke#plugins`. `6ce626a` makes the test wait for `/plugins?utm_source=smoke` (site unchanged).
+  Local chromium + mobile-safari pass; on main: smoke run 42019338698 68 passed, deploy 42019338710 success.
+- Unverified: a real iPhone / Safari window with the new keys; Dan has not looked at the live TV himself since A went up.
+- Running: the dev server on 127.0.0.1:4512 (this worktree, PID 83451, log
+  `/private/tmp/claude-501/-Users-danavivi/a0d54622-9069-4e06-a247-e477f0bb5a76/scratchpad/dev-4512.log`); stop with
+  `kill 83451`.
+- Open for Dan: (1) the pictures bench `/__wwbench` "Pictures on the glass": tune, COPY SETTINGS, "apply ww bench"
+  (bake into WordWall.astro, then a push needs his word); (2) `/__wwkeys` is spent: its "Today" frame now IS A and the
+  A frame doubles it; keep as a record or remove it (dev-only, never built).
+- Next: the pictures bench, on `feat/lcd-polish` (= main `6ce626a` at close).
+
+## 2026-11-04 — GAS 2 postcards: no shaking when the end page scrolls to the footer (Claude Code `danavivi-c2 [ca2821]`, Dan's Mac) — PUSHED TO MAIN 2026-11-04 on Dan's word "push to main" (from `fix/gas2-end-scroll`)
+
+Claim: CLOSED 2026-11-04 `danavivi-c2`. Files: `tools/_gas2-scene/postcards.html`, `DESIGN.md`, this entry.
+- Dan, on his iPhone after the round-16 push: scrolling the end page to the footer "shaking". Cause, reproduced in
+  WebKit by growing the viewport 714 -> 790 in steps (= Safari's toolbar folding as you scroll): the fixed end page
+  is sized by the screen, so every step re-placed the scene (the station 514 -> 569 px wide, GAS2 +30 px, the button
+  +54 px) and the footer's 100dvh spacer pushed it back down 76 px against the finger.
+- Fix: `keepEnd()` — once the end page scrolls, `.desk` keeps the px height it had at the top (a new width, i.e. a
+  turned phone, measures again; back at the top it follows the screen); the footer's spacer = that height (`--end-h`).
+- Checks: the stepped scroll with the toolbar folding: 0 moves of the scene, the footer moves exactly with the scroll
+  (live main before the fix: 9 jumps in the same test); back at the top, turned, The postcards again: as before;
+  `check.cjs` ALL PASS (47 steps, 40 layouts); `npm run build` green. Not checked: a real iPhone (the Simulator can't
+  be scrolled from here).
+
+## 2026-11-04 — GAS 2 page, round 16 of the postcards review: dots, the stamp, no mailbox, the site footer (Claude Code `danavivi-c2 [ca2821]`, Dan's Mac) — PUSHED TO MAIN 2026-11-04 on Dan's word "push to main" (fast-forward from `feat/gas2-r16`)
+
+Claim: CLOSED 2026-11-04 `danavivi-c2`. Took the postcards over from `danavivi-83` (claim 2026-10-29 entry; that session is not running).
+Files: `tools/_gas2-scene/postcards.html`, `tools/gas2page/integration.mjs`, this entry.
+Dan's round-15 notes (review artifact `notes-r15`): the site's top bar hides the top of every card; "1 / 6" + the arrows
+-> dots, high-end (his pick: pilot lamps); card 6: a smaller, clearer stamp, no mailbox, the title clear of the stamp
+(his pick: fit it beside); a footer on the phone's end page, reached by scrolling, and on every platform.
+- Built (`postcards.html`): `.desk` padding-top = max(safe area, `--site-bar-h`); `.ctl` = the hint line + six pilot
+  lamps (`.pl`, `aria-current` on the top card's; a tap = `walk()`, card by card, a newer tap takes over); no mailbox
+  (`.box`, `props/mailbox.png` unused here now): a stamped card drops out of the bottom; the stamp in two lines, full
+  ink, `--red`; `.mtitle` 7cqw beside the stamp; `html.at-end` lets the end page scroll to `#site-foot`.
+- Built (`integration.mjs`): `siteParts()` = the bar + the real Footer from the built `/terms/`, both through one
+  `shadow()` helper; the bar sets `--site-bar-h`; the footer's drawers wired, its contrast switch + scripts left out,
+  hidden during page-b's drone (`html.dr-on`); page-b's own one-line mock `<footer>` is dropped in the site copy.
+- `postcards/tools/check.cjs`: the lamps for ‹ ›, and the stamp's POST mocked (it posted for real since `abfed71`, so a
+  run of main's check would send to the live worker); the "Keys in the mail" / "nothing is sent" lines were stale.
+- Checks: `check.cjs` ALL PASS (47 steps, 40 layouts, 0 errors) on the scene; main's own check fails 7 (the stale
+  lines). `npm run build` green; built `/gas2/` (WebKit 402x714): the hop to the postcards, bar over nothing, the
+  footer drawers open/close, The postcards again scrolls back up; page-b (Chrome 1440x900): no footer over the drone,
+  one footer after landing. 0 page errors. Not checked: a real iPhone / Safari.
+- Round 16 (notes-r16): the hint -> "Swipe for the next card" in tracked Oswald caps, soft brass (Dan: shorter, clearer,
+  another font; his pick of three). The bench's card-6 question ("Drop me in the box" with no mailbox) got no answer:
+  kept. check.cjs ALL PASS (47 steps, 40 layouts); build green.
+
+## 2026-11-04 — GAS 2 page: the site's top bar + the caught car emails a personal CATCH10 code (Claude Code, Gil's Mac) — PUSHED TO MAIN 2026-11-04 on Gil's word; worker `/catch` DEPLOYED first (RevLimiter `f33d350`, stamp commit `2f6cc5e`)
+
+Claim: CLOSED 2026-11-04. Files: `tools/gas2page/integration.mjs` (siteBar), `src/components/Cart.astro` (`?cart=open`),
+`tools/_gas2-scene/page-b.html` (the coupon ticket), `tools/_gas2-scene/drone/README.md`, this entry.
+- Gil: /gas2 had no way out but a download -> the site's real top bar on page-b and the postcards: taken at build (and per
+  dev request) from the built `/terms/` page with its stylesheets, inside a shadow root (no CSS either way); its cart
+  button goes to `/?cart=open`.
+- Gil: CATCH10 was one shared code -> everyone gets one, once. The ticket asks for an email; the worker's `/catch` mints
+  `CATCH10` + 6 (10%, site-wide, one use, 60 days), ONE per email ever, emailed only. Tests: `test/test_catch.mjs`.
+- Open: archive the shared `CATCH10` discount in Paddle (Gil).
+
+## 2026-11-03 — Home TV polish: thumbnails whole, a real hover, edges, the phone's top, the blurb's glow (Claude Code `danavivi-a4 [76d06a]`, Dan's Mac) — PUSHED TO MAIN 2026-11-04 on Dan's word "push to main" (fast-forward from `feat/tv-polish`)
+
+Claim: CLOSED 2026-11-04 `danavivi-a4`. Files: `src/components/WordWall.astro` (CSS + the thumbnail markup), `tasks/handoff.md` (this entry).
+Dan, 2026-11-03 ("polish the LCD" = the home TV): the phone's empty top, the description glowing on the glass, the tight
+laptop edges, every plugin shown whole in the list (Radio Roulette was cropped, GAS had black bars left and right) and
+a hover that shows (GAS 2 "is not hovering": measured, every row's hover only brightened the outline).
+- Built (`WordWall.astro`): thumbnails = the whole plugin (a wide window fills the 16:10 slot's width, a tall one
+  its height via `--ww-thumb-col / 1.6`: a percent height did not resolve there), the edge + glow on the picture,
+  GAS / Radio Roulette clipped to their bezel arcs; hover = the picture scales 1.06 with a hot edge, the name glows
+  with a 40 % fill (lit stays filled); the blurb on the screen takes the channel tint + glow; side padding clears
+  the bezel by `--ww-breath-x` (new `--ww-out` = .ww's edge from the screen's, also used by `--ww-frame-cap`);
+  phones: the menu at the top, thumbnails 6rem, the rows spaced over the glass, one slot per plugin
+  (`--ww-rows`) so a 2-plugin category keeps the ALL spacing. `DESIGN.md` §4 TV list: the rule.
+- Checks (local dev, Playwright Chrome + WebKit): content to glass 22 / 23 px at 1141x636 (was 7 / 8), 28 at
+  1440x900 (was 14), 12 on phones (was 4); the TV still fits one screen at 1141x636, 1280x720, 1440x900,
+  1920x1080, 390x844, 375x667, 360x740, 430x932; no horizontal scroll, no page errors; no name hits its price
+  on phones; `?cat=free` checked on phone + laptop. `npm run build` green (31 pages). Not checked: a real
+  iPhone / Safari window, high-contrast mode.
+- GAS 2 FLOATING (Dan 2026-11-04: "I want gas2 to actually be hovering like in the real plugin" = the plugin's
+  default FLOATING look, not a mouse hover): new `src/assets/plugins/gas2-float.png` (896x1683 RGBA) replaces
+  `gas2-hero.jpg` on the TV only (plugins.ts + review.astro keep the jpg). Made from the real page, GAS2 `main`
+  `52668ab`: serve `GAS2/Source/ui/public`, Playwright 440x800 at DPR 2, add `html.rv-float`, clear the page
+  background, `GAS2.hose(true)` (the hose faded along its length), `omitBackground` shot; then the house FLOATING
+  shadow baked under it with PIL (53 deg; far 30 / sigma 24 / .50, contact 5 / 4 / .55; rgb(12,9,6); scale 2),
+  cropped at alpha > 3. `WINDOWS.gas2.float` -> `.is-float` on the thumb and the panel: no edge ring, no corner
+  clip, no box shadow. Checks: 1141x636, 1440x900, 390x844 (list + panel) fit one screen, no page errors; the
+  built webp cuts keep alpha; `npm run build` green.
+- Next: nothing owed. Not checked: a real iPhone / Safari window, high-contrast mode.
+
+## 2026-11-03 — Review form: text gate on every open box + role multi-select (Claude Code, laptop 2) — worker DEPLOYED 2026-11-03 (stamp ad6d9f5, live probe: weak caught, 2 roles OK); site PUSHED TO MAIN on Yoni's "push" 2026-11-03 = LIVE
+
+Claim: CLOSED 2026-11-03. Files: `src/data/review-survey.ts`, `src/pages/review.astro`, `tasks/handoff.md` (this entry).
+- Yoni: every open text box gets the DRIFT beta form's "does this make sense" gate; "Your main role" allows several picks.
+- Done: worker (RevLimiter repo `ad6d9f5`, deployed, stamp commit `c70614a`) judges every filled box with `driftFbTextOk` and
+  answers `{error:"incomplete", weak:[ids]}`; the gate itself got stricter (keyboard-row runs of 5, 5+ letter words with
+  no vowel, one word 3x). Page: `role` = multi; a `weak` reply lights the boxes (a follow-up lights its question) +
+  `ui.weak` message.
+- Order used (and why): worker deployed FIRST via the gated `deploy.ps1` (never bare `wrangler deploy`), then the site
+  pushed. The old worker read `role` as a single pick, so the new page's list would have come back "unanswered"; the
+  new worker still takes an old page's lone string.
+- Checks: `node test/test_review.mjs` all pass (19 new gate checks), `test_drift_feedback.mjs` ALL PASS, 16 real
+  sentences + 9 plugin names not rejected; build green; Chromium: two roles post as a list, a mocked weak reply lights
+  `q-install_result` + `q-loved_most` with the message. Live: POST /review with gibberish -> `weak:["loved_most"]`,
+  nothing minted; revaudio.net/review/ (incl. the CF-cached copy) serves role checkboxes + the weak message.
+- Gotcha: the push's head commit carried `[skip ci]`, so Pages skipped the whole push; deployed by hand with
+  `gh workflow run deploy.yml --ref main` (run 41677977988, success). Never end a site push on a `[skip ci]` commit.
+- Unverified: no real person has sent a full review through the live page since (only the worker probe + the local
+  mocked browser run). The DRIFT feedback form shares `driftFbTextOk`, so it got the stricter gate too (tests pass).
+- Cleanup (laptop 2): `C:\RevAudio\Plugins\RevLimiter-reviewgate` = half-removed worktree leftover (Windows lock), safe to
+  delete; `C:\RevAudio\Plugins\RevLimiter-deploy` = worktree on branch `deploy-review-gate` (= origin/main `c70614a`),
+  remove with `git -C C:/RevAudio/Plugins/RevLimiter worktree remove ../RevLimiter-deploy` + `git branch -d deploy-review-gate`.
+  A local `astro preview` may still listen on port 4391 (PID 45496): `Stop-Process -Id 45496`.
+- GAS 2 added to the review picker (Yoni 2026-11-03: released tomorrow, 2026-11-04): `REVIEW_PLUGINS` + the home TV's
+  picture and channel colour (14 / 58); picker 5 across, on phones the 5th cube centred under the 2x2. Free = no price
+  question. Worker `70c074b` DEPLOYED 2026-11-03 (stamp commit `03b189d`; live probe: a `gas2` review reaches the text gate,
+nothing minted). Checked locally at 1280x800 + 390x844 (no
+  sideways scroll; picking GAS 2 opens the form named GAS 2, price question hidden). Deploy the worker BEFORE pushing the
+  site: the live worker answered `gas2` with "bad request". Site PUSHED TO MAIN on Yoni's "push" 2026-11-03 = LIVE.
+- RevLimiter repo `tasks/handoff.md` NOT updated: the main checkout holds another session's uncommitted edit of it;
+  this entry is the record for the worker change.
+
+## 2026-11-03 — GAS + GAS 2 free downloads: the marketing box is REQUIRED (Claude Code, Gil's Mac) — PUSHED TO MAIN on Gil's word "push to main"
+
+- Gil: "I want that checkbox to be mandatory in order to download Gas and Gas 2 both from the LCD and from the product pages".
+- TrialGateModal: a free download (`data-gate-free` = GAS, GAS 2: the TV + /gas) makes the box required, label without
+  "(optional)"; unticked = "Tick the box to get your download.", nothing posted. Paid trials unchanged (optional).
+  /gas2 laptop ticket: `required` (the browser's check, as Terms); /gas2 phone postcard: its own check + error line.
+  Dan's files (`page-b.html`, `postcards.html`) touched only on those lines.
+- Not changed: /downloads (still optional there; Gil to say). The worker's MARKETING_CONSENT_TEXT still stores
+  "... (optional)" (RevLimiter repo, not touched). Gil told: GDPR treats consent made a condition of a download as not
+  freely given (EU leads' marketing consent is weak); his call.
+- Checks: build green; Chromium, worker stubbed: unticked = 0 posts on all 3 forms, ticked = marketing:true; RevLimiter
+  trial still posts unticked.
+
+## 2026-11-03 — GAS 2 on the site: downloads card, home TV, Dan's page at /gas2 (Claude Code, Gil's Mac) — PUSHED TO MAIN on Gil's word "push and deploy to main"
+
+- Gil: GAS 2 as a card on /downloads and on the home TV (All, its categories), each linking to Dan's GAS 2 page.
+- Done: `plugins.ts` gas2 entry (free, worker id `gas2`, TV copy, cats Mastering + Saturation + Free; picture = the
+  GAS 2 manual's pump, `src/assets/plugins/gas2-hero.jpg`). TV order (Gil): RevLimiter, GAS, GAS 2, DRIFT, Radio
+  Roulette. /downloads: the card + a "<plugin> page" link in the download box. `tools/gas2page/integration.mjs` serves
+  `tools/_gas2-scene` at /gas2/ (page-b on a laptop, postcards under 760 px), copied at build: the scene stays the one
+  source; edits there go live with the next deploy. The Review page's picker lists GAS 2 too (same TV list).
+- Checks: build green; Chromium 1280x665 + 390x844: TV, each category's order, /downloads, /gas2/ (laptop + phone), no
+  page errors.
+- Open (from todo "GAS 2 on the front page" step 4, live as of this push): CATCH10 not confirmed in Paddle (the drone
+  intro's car hands it out); the pump click opens a 127.0.0.1:4461 iframe (nothing on the web); page weight ~21 MB
+  (audio lazy); Safari <= 15 breaks the scene (no cqw).
+
+## 2026-11-03 — Review page: RevBeta becomes "Review" (any plugin, 1-10 rating, 10% code by email) (Claude Code `revaudio-63 [975b3a]`, laptop 2) — ON MAIN + LIVE (pushed 2026-11-03 on Yoni's "push", fast-forward from `feat/review`); worker `/review` LIVE since 2026-11-03 (deployed)
+
+Claim: CLOSED 2026-11-03 (`revaudio-63`). Files: `src/pages/review.astro` (new), `src/data/review-survey.ts` (new), `src/data/site.ts` (`review` block), `src/components/Footer.astro` (RevBeta -> Review), `src/components/WelcomeDiscountPopup.astro` + `ExitIntentPopup.astro` (skip `/review`), `src/assets/plugins/radioroulette-hero-cut.png` (new), `DESIGN.md` (Review picker entry), `src/pages/beta.astro` (now a hop to /review), `src/components/legal/PrivacyContent.astro` + `src/data/legal.ts` (reviews named, 2026-11-03), `astro.config.mjs` (NOINDEX /review/), `tasks/handoff.md` (this entry).
+- User (Yoni): footer Products > RevBeta becomes Review; first pick the plugin (RevLimiter, DRIFT, Radio Roulette, GAS; more later); the RevLimiter beta skeleton stays, questions made general; last question = a 1-10 rating; finishing emails a 10% site-wide code.
+- Decisions (Yoni 2026-11-03): ONE code per email EVER; code expires after 60 days; build a local mockup first (this branch, worker not wired).
+- Plan: page first (local preview only), then a `/review` route in the licence worker (copy of `/drift-feedback`: check answers, one code per email ever, Paddle 10% single use, 60 days, email the code + a summary to info@, store in KV), then `/beta` -> `/review` redirect. Push / deploy only on the user's word.
+- Done (mockup, 2026-11-03): `/review` = plugin picker (the 4 TV plugins, names via `tvName`) -> 8 sections, 25 questions, 14 required (15 for a priced plugin: the price question shows only for RevLimiter $49 / Radio Roulette $19), 1-10 "rev bar" rating (9-10 red = REDLINE), email + optional news opt-in, sticky progress strip, "Check your inbox" end screen. `site.review.workerUrl = ''` = preview mode (end screen + "nothing was sent", no POST). Both 10% popups skip `/review` (they opened over the form). Payload: `{survey_version, plugin, newsletter, user_agent, email, <question ids>}`.
+- Checks: `astro build` green (`/review/index.html`); Playwright 1280x800 + 390x844: picker, reveals, "No bugs" clears other bugs, GAS/DRIFT hide the price question, progress counts, submit -> end screen, no sideways scroll on the phone.
+- Found, not fixed (old page): `/beta` uses `.vh` and `.tag.opt` but no global `.vh` exists, so its radios may show and its OPTIONAL tag gets the pill style. `/beta` is retired by the redirect, so left alone.
+- Round 2 (Yoni 2026-11-03): no small "Review" kicker (page opens on the big title); the picker = the home TV (bezel, phosphor glass tinted by the picked plugin's TV channel hue via `:has()`, scanlines, outlined stencil names that fill + glow when lit; WordWall.astro's tokens); names only (type words gone); pictures whole at their own aspect in one box height (checked: rendered ratio = natural ratio for all 4); submit = the house `rv-btn rv-btn--lg` ("Send my review"), the old RevLimiter image plate gone. Checked 1280x800 + 390x844.
+- Round 3 (Yoni 2026-11-03: hover changes colour + glitch, "the exact behaviour including the panels and all"; RR "crop it precisely"): the picker IS the home TV, `<WordWall mode="review" />` (all changes behind `data-ww-mode="review"`, home byte-identical in behaviour: checked cats 7, Try 4, Product page 4, RR original + radius). Hover (mouse, laptop) lights after 70 ms; click on a row or "Review <plugin>" fires `ww:review`; the form card shows only after a pick, its strip has "Change" (back to the TV). RR cut: `radioroulette-hero-cut.png` (2523x1369), superellipse corners fitted to the chrome (top R 163/152 n 1.86/1.84, rms < 1 px; bottom R 416/400 n ~5), 1.5 px inset, no fringe at 100 %. Scripts: session scratchpad `rr_cut3.py` (not in the repo). Checked 1280x800 (hover DRIFT -> purple + panel, RR panel clean, Review -> form with $19 question) + 390x844 (list, tap -> pane + Review), build green.
+- Round 4 (Yoni 2026-11-03: the TV is "too much like the actual store", "simple cubes", "no descriptions just the plugin names"): the TV review mode is gone (`WordWall.astro` back to main, `git diff origin/main` empty). Picker = 4 square cubes (2x2 on phones) in the card: picture whole + name; hover fades in the plugin's channel colour (TV numbers) + a one-shot glitch (`cube-jump` / `cube-flicker` / `cube-roll`, off under reduced motion); picked = lit + filled name. RR uses the cut PNG. Checked 1280x800 + 390x844 (rendered ratio = natural for all 4, animations run on hover), build green.
+- Round 5 (Yoni 2026-11-03: "perfect, continue building"): WIRED. `site.review.workerUrl` = the licence worker's `/review` (RevLimiter branch `review-worker` `23d6dd3`, NOT deployed: see the RevLimiter handoff claim). The page handles every answer: sent / pending ("code shortly") / had_code ("one per email, no new code") / already_reviewed / incomplete (marks the ids) / a worker sentence. `/beta` = a bare hop to `/review/` (query kept, like /store); `site.betaFeedback` removed (only the old beta page used it; RevBeta answers stay in the revlimiter-beta worker's D1). Privacy: reviews + the emailed code named, retention line, PRIVACY_LAST_UPDATED 2026-11-03. `/review/` in NOINDEX (sitemap 0 hits).
+  - Checks: the page's real payload (captured in the browser, every question type incl. Other / follow-ups / N/A / news tick) through the worker's real handler locally: `{ok:true,sent:true}`, team mail with every answer, code mail, news relay, 3 KV keys. Page replies tested in the browser (already / incomplete -> q-os + q-vs_goto marked / rate sentence / busy -> generic / had_code end screen). `/beta?utm_source=invite` -> `/review/?utm_source=invite`. Build green.
+  - GO-LIVE ORDER: (1) DONE 2026-11-03 (Yoni: "deploy"): worker `/review` LIVE, stamp `da4a8a0 @ 2026-11-03T09:11:56Z`, version `c88934c4`, live probes OK (RevLimiter handoff); (2) DONE 2026-11-03 (Yoni: "push"): `feat/review` fast-forwarded to main (Pages deploy); (3) DONE 2026-11-03: Yoni's real review from info@revaudio.net (Radio Roulette): code mail + team mail arrived ("it works"); the test code `REVIEWJ7B2UE` (`dsc_01m6gbx0nemcd0bdct3spmg6s6`) archived in Paddle by Yoni. KV `reviewcode:info@revaudio.net` stays (info@ used its one code: a re-test from info@ gets no code).
+- Next: Yoni's look/questions round on the preview -> worker `/review` route -> wire `workerUrl` -> `/beta` redirect -> push on the user's word.
+## 2026-11-02 — BF/CM 2026 skins (Claude Code, Gil's Mac) — PUSHED TO MAIN 2026-11-04 on Gil's word (squash of `feat/bfcm-skins`); dormant until Nov 20 00:00 PT
+
+- Home = Dan's TV-first page (`bcb00b0`), unchanged. The hero came back for a while on this branch and is out again
+  (Gil: a new header is in the works; the skins don't depend on it). DESIGN.md §7 = TV-first.
+- Skins switch on by themselves from `src/data/sale.ts` (US Pacific). Dev preview: `?sale=soon|bf|cm|off`.
+  - `SaleStrip.astro` (BaseLayout): the bar over the nav via `--sale-h` (WordWall's `--ww-nav` adds it).
+    soon = "Black Friday in" countdown, home page only, Nov 20 00:00 PT until BF; bf = Nov 27 to Nov 30;
+    cm = Nov 30 to Dec 1. On an open page the bar swaps at midnight PT, no reload.
+  - `SaleIntro.astro` (BaseLayout): home loads only, once per phase per browser (every load in a preview): the TV
+    (WordWall's cabinet roll 2) flies in, powers on, the offer comes up in the TV's type; X / Esc / outside click /
+    "See the plugins" powers it off onto the TV.
+  - `SaleTransition.astro` (BaseLayout): BF door, CM boot between pages.
+  - Checked with Playwright's clock: soon -> bf at 00:00 PT Nov 27 on an open page; cm -> off at Dec 1; nothing Nov 19;
+    no countdown bar off the home page.
+- `/plugins` (Gil): the same TV-only page at its own address (made while home had the hero; kept for the new header).
+  Header PLUGINS, footer, cart, product breadcrumb, GAS fallback, `/store` redirect and the sale's links point there.
+- Open: codes `REDLINE` / `CYBER40` are placeholders (plan decision 7); no Paddle bundle product yet (the bundle line
+  points at `/plugins`); OBDTune leaves `saleBundlePlugins` on Nov 22 if not released.
+- Push to main = live deploy: waits for the user's word.
+
 ## 2026-11-02 — Footer: categories fold into drawers (Claude Code `revaudio-3b [a4cb6d]`, laptop 2) — ON MAIN + LIVE: merged `--no-ff` 2026-11-02 by Claude Code `revaudio-0c [571e5c]` (laptop 1) on Dan's word "push it to main and merge" (Yoni had approved by pushing the branch)
 
 Claim: CLOSED 2026-11-02 (`revaudio-3b`'s work merged by `revaudio-0c`; a fine-tune round writes a new claim). Files: `src/components/Footer.astro`, `src/styles/global.css` (footer block), `src/components/drift/DriftStickyBar.astro` (phone footer rule), `tasks/handoff.md` (this entry).

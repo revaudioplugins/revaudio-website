@@ -1,0 +1,230 @@
+---
+/**
+ * #rfx-hear — the before/after player, right under the hero (Yoni 2026-11-05: "the before after player for revfx ...
+ * maybe the layout of the drift ab player can work here ... 4 sounds - vocal, instruments, drums, lead").
+ * /drift's #hear (DriftHear.astro) in RevFX's own parts, at /drift's #hear size (v2, Yoni 2026-11-05: "the size
+ * ... similar to the drift ab size", every part a "highly realistic ... vintage 90's" photo asset, "tight - easy to
+ * understand - smooth"):
+ *
+ *   1 PLUG IN   a patchbay plate with four 1/4" jacks; the picked one wears the right-angle plug, its cable runs on.
+ *   2 PLAY      the arcade caps (/drift's).
+ *   3 PUSH      /drift's push-to-start in RevFX purple (REVFX / ENGAGE; Yoni 2026-11-05: "make the engage / bypass button
+ *               not a stomp switch ... like for drift"), lit = RevFX, dark = the dry sound; then the five pedals
+ *               joined by patch cables (OUT and the TRUE BYPASS loop went, Yoni 2026-11-05: "no need").
+ *               Bypassed, the pedals sit dark; pushed, they light in chain order in their own lamp colours
+ *               (revfx.ts ink / rgb), the tube strikes and the screen's waveform wears the five colours.
+ *   4 ROLL IT   the die (moved down from the hero, Yoni 2026-11-09), beside the screen: a roll plays one of the
+ *               track's 4 presets Yoni made (random for the visitor), REVFX on, at the same spot in the loop; the
+ *               screen shows its name, the board takes its order and lights the pedals it uses.
+ *
+ * Assets (src/assets/seasons/revfx/hear/, OpenAI 2026-11-05, tools/revfx-player/ASSETS.md): panel-wide / -tall.jpg (the
+ * tolex flight case, laptop / phone), board-wide / -mid.jpg (pedalboard
+ * carpet + rails), plate-w / -s / -t.jpg (every section's plate: burnt titanium with the patchbay plate's wear and
+ * corner screws, 2:1 / 1:1 / 1:2, Yoni 2026-11-05: "the effect ... when titanium is burned", "the wear should be like
+ * the left panel"), jack / plug / patch .png (true-alpha cutouts). The fader is /drift's (hear/fader-*.webp).
+ *
+ * The sounds: public/audio/revfx/<id>-before.m4a (dry) + <id>-p1..p4.m4a (the 4 presets), all level-matched, +
+ * peaks.json; the presets' names / pedals / order in src/data/revfx-presets.json. Both made by
+ * tools/revfx-player/prep_audio.py. PLACEHOLDERS today (/drift's bounces, the dice engine's scene names).
+ * Engine: src/lib/revfx/hear.ts (dry and RevFX run in sync; the flip and a roll are 12 ms crossfades).
+ */
+import { readFileSync } from 'node:fs';
+import { getImage } from 'astro:assets';
+import { ghost } from '../../lib/drift/lcd';
+import capGreen from '../../assets/seasons/drift/mm_cap_green.png';
+import capRed from '../../assets/seasons/drift/mm_cap_red.png';
+import pedPitch from '../../assets/seasons/drift/pedal-pitch.png';
+import pedEcho from '../../assets/seasons/drift/pedal-echo.png';
+import pedVerb from '../../assets/seasons/drift/pedal-reverb.png';
+import pedHalo from '../../assets/seasons/drift/pedal-halo.png';
+import pedGlue from '../../assets/seasons/drift/pedal-glue.png';
+import faderCapSrc from '../../assets/seasons/drift/hear/fader-cap.webp';
+import faderPlateSrc from '../../assets/seasons/drift/hear/fader-plate.webp';
+import panelWideSrc from '../../assets/seasons/revfx/hear/panel-wide.jpg';
+import panelTallSrc from '../../assets/seasons/revfx/hear/panel-tall.jpg';
+import boardWideSrc from '../../assets/seasons/revfx/hear/board-wide.jpg';
+import boardMidSrc from '../../assets/seasons/revfx/hear/board-mid.jpg';
+import jackSrc from '../../assets/seasons/revfx/hear/jack.png';
+import plugSrc from '../../assets/seasons/revfx/hear/plug.png';
+import patchSrc from '../../assets/seasons/revfx/hear/patch.png';
+import plateWSrc from '../../assets/seasons/revfx/hear/plate-pedal-v2-w.jpg';
+import plateSSrc from '../../assets/seasons/revfx/hear/plate-pedal-v2-s.jpg';
+import plateTSrc from '../../assets/seasons/revfx/hear/plate-pedal-v2-t.jpg';
+import tvFrameSrc from '../../assets/seasons/drift/tv-broken-3.png';
+import tvFrameMeta from '../../assets/seasons/drift/tv-broken.json';
+import { pedals, hearTracks, hearPresets } from '../../data/revfx';
+
+type Peaks = { dur: number };
+const peaks = JSON.parse(readFileSync('public/audio/revfx/peaks.json', 'utf8')) as { tracks: Record<string, Peaks> };
+const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+
+// the board's order = the hero board's (RfxHero.astro BOARD), so the page shows one chain
+const BOARD = ['pitch', 'echo', 'halo', 'reverb', 'glue'] as const;
+const srcs = { pitch: pedPitch, echo: pedEcho, reverb: pedVerb, halo: pedHalo, glue: pedGlue };
+const webp = (src: ImageMetadata, width: number, quality = 82) => getImage({ src, width, format: 'webp', quality });
+const board = await Promise.all(BOARD.map(async (id) => ({ p: pedals.find((x) => x.id === id)!, img: await webp(srcs[id], 180, 80) })));
+const [g, r, jack, plug, patch, plateW, plateS, plateT, fadCap, fadPlate, panelW, panelT, boardW, boardM] = await Promise.all([
+  webp(capGreen, 136), webp(capRed, 136),
+  webp(jackSrc, 120, 85), webp(plugSrc, 480, 85), webp(patchSrc, 320, 85),
+  webp(plateWSrc, 1600, 78), webp(plateSSrc, 800, 78), webp(plateTSrc, 800, 78), webp(faderCapSrc, 120, 85), webp(faderPlateSrc, 70, 85),
+  webp(panelWideSrc, 1800, 62), webp(panelTallSrc, 760, 64),
+  webp(boardWideSrc, 1200, 76), webp(boardMidSrc, 800, 76),
+]);
+const u = (i: { src: string }) => `url(${i.src})`;
+// the case + the boards were made at the ratio they show at, so they stretch 100% x 100%; the section plates (the
+// patchbay too) are 9-sliced (fixed corners = the screws, stretched edges, filled middle), so they fit any box
+const vars = [`--rfx-panel-w:${u(panelW)}`, `--rfx-panel-t:${u(panelT)}`,
+  `--rfx-board-w:${u(boardW)}`, `--rfx-board-m:${u(boardM)}`, `--rfx-plate-w:${u(plateW)}`, `--rfx-plate-s:${u(plateS)}`, `--rfx-plate-t:${u(plateT)}`, `--rfx-fad-cap:${u(fadCap)}`, `--rfx-fad-plate:${u(fadPlate)}`].join(';');
+
+const first = hearTracks[0];
+// the die's six faces: pips on a 3x3 grid (index 0-8)
+const PIPS = [[4], [0, 8], [0, 4, 8], [0, 2, 6, 8], [0, 2, 4, 6, 8], [0, 2, 3, 5, 6, 8]];
+const firstPreset = hearPresets[first.id][0].name;
+// 4 ROLL IT's cabinet = home's broken TV (WordWall.astro, roll 3), cut small: its 9-slice numbers in the cut's pixels,
+// its corner patches + bezel in the photo's pixels (CSS x --tvf-u, the px per photo pixel, per layout in revfx.css)
+const TVF_W = 640, tvm = tvFrameMeta['3'];
+const tvFrame = await getImage({ src: tvFrameSrc, width: TVF_W, format: 'webp', quality: 84 });
+const tvVars = [`--tvf-img:url(${tvFrame.src})`, `--tvf-sl:${tvm.slice.map((n) => Math.round((n * TVF_W) / tvm.w)).join(' ')}`,
+  ...['t', 'r', 'b', 'l'].map((k, i) => `--tvf-${k}:${tvm.slice[i]}`), ...['t', 'r', 'b', 'l'].map((k, i) => `--tvf-z${k}:${tvm.bezel[i]}`)].join(';');
+const clock0 = `00:00 / ${fmt(peaks.tracks[first.id].dur)}`;
+const chainTxt = 'TRUE BYPASS';
+---
+<section class="rfx-sec rfx-hear-sec" id="rfx-hear" aria-labelledby="rfx-hear-h" style={vars}
+  data-rfx-hear data-next="play" data-ab="before">
+  <div class="d-wrap">
+    <div class="rfx-hear-head">
+      <h2 id="rfx-hear-h" class="d-headline d-headline--row"><span class="l1">Plug in.</span> <span class="l2">Push it.</span></h2>
+    </div>
+
+    <!-- the flight case: tolex face, aluminium rails and ball corners -->
+    <div class="rfx-hear-panel">
+      <div class="rfx-hear">
+        <!-- 1 · plug in: the patchbay, a burnt titanium plate like the rest (Yoni 2026-11-05: "do the left panel also
+             with the titanium"); the socket at each row's right end, the picked one wears the plug (the length
+             is on the screen) -->
+        <div class="rfx-plate rfx-plate--tall rfx-hear-bay" data-step="1">
+          <p class="rfx-hear-cap"><b class="rfx-hear-n">1</b>PLUG IN</p>
+          <ul class="rfx-jacks" role="list">
+            {hearTracks.map((t, i) => (
+              <li>
+                <button class="rfx-jack" type="button" data-hear-track={t.id} data-name={t.label}
+                  aria-pressed={i === 0 ? 'true' : 'false'} aria-label={`${t.label.toLowerCase()} track`}>
+                  <span class="rfx-jack-txt">
+                    <span class="rfx-jack-no" aria-hidden="true">IN {i + 1}</span>
+                    <span class="rfx-jack-nm">{t.label}</span>
+                  </span>
+                  <span class="rfx-jack-sock" aria-hidden="true">
+                    <img class="rfx-jack-nut" src={jack.src} width="120" height="120" alt="" decoding="async" />
+                    <span class="rfx-jack-plug"><img src={plug.src} width="480" height="96" alt="" decoding="async" /></span>
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div class="rfx-hear-deck">
+          <div class="rfx-hear-top">
+          <!-- the screen: a segment LCD (DSEG14, /drift's #hear face) in its titanium plate. data-g = each readout's unlit
+               segments -->
+          <div class="rfx-plate rfx-plate--scr">
+          <div class="rfx-hear-screen">
+            <div class="rfx-scr-hdr">
+              <span class="rfx-scr-coach" data-hear-state aria-live="polite" data-g={ghost('PRESS PLAY')}>PRESS PLAY</span>
+              <span class="rfx-scr-tag" data-hear-tag>BYPASS</span>
+            </div>
+            <div class="rfx-scr-title" data-hear-title data-g={ghost(firstPreset)}>{firstPreset}</div>
+            <div class="rfx-scr-wave"><canvas data-hear-wave aria-hidden="true"></canvas></div>
+            <div class="rfx-scr-row">
+              <span class="rfx-scr-t" data-hear-chain data-g={ghost(chainTxt)}>{chainTxt}</span>
+              <span class="rfx-scr-t" data-hear-time data-g={ghost(clock0)}>{clock0}</span>
+            </div>
+          </div>
+          </div>
+
+          <!-- 4 · roll it: a little TV (Yoni 2026-11-09: "turn the cube panel into an lcd screen similar to the website
+               tv", then "more lines more distortion in the image"): home's broken TV cabinet, cut small, round home's
+               TV glass (WordWall.astro) in the RevFX violet, a worse tube than home's (heavy lines, colour fringes, a
+               rolling hum bar, a tear now and then and on every roll); RANDOMIZE in a set's on-screen type over the
+               lines (Yoni: "a cool tv theme like text"), the die is the picture. The glass is the button -->
+          <div class="rfx-tvset rfx-hear-step--roll" data-step="4" style={tvVars}>
+            <button type="button" class="rfx-tv" data-hear-die aria-label="Roll the dice: a random RevFX preset">
+              <span class="rfx-tv-glow" aria-hidden="true"></span>
+              <span class="rfx-tv-ask" aria-hidden="true">RANDOMIZE</span>
+              <span class="rfx-tv-pic" aria-hidden="true">
+                <span class="rfx-die" data-hear-cube>
+                  {PIPS.map((f, i) => <span class={`rfx-die-f f${i + 1}`}>{Array.from({ length: 9 }, (_, k) => <i class={f.includes(k) ? 'on' : ''}></i>)}</span>)}
+                </span>
+              </span>
+              <span class="rfx-tv-lines" aria-hidden="true"></span>
+              <span class="rfx-tv-fx" aria-hidden="true"></span>
+            </button>
+            <span class="rfx-tvset-frame" aria-hidden="true"><span class="rfx-tvset-led"></span></span>
+          </div>
+          </div>
+          <p class="d-sr" aria-live="polite" data-hear-say></p>
+
+          <div class="rfx-hear-rig">
+            <!-- 2 · play: /drift's arcade caps, each seated in a chrome bezel in a hole bored through the plate -->
+            <div class="rfx-plate rfx-plate--sq rfx-hear-step rfx-hear-step--play" data-step="2">
+              <p class="rfx-hear-cap"><b class="rfx-hear-n">2</b>PLAY</p>
+              <div class="rfx-hear-caps">
+                <span class="rfx-bore"><button class="d-cap rfx-hear-play" type="button" data-hear="play" aria-pressed="false" aria-label="Play"
+                  style={`background-image:url(${g.src})`}></button></span>
+                <span class="rfx-bore"><button class="d-cap d-cap--stop" type="button" data-hear="stop" aria-label="Stop"
+                  style={`background-image:url(${r.src})`}></button></span>
+              </div>
+            </div>
+
+            <!-- 3 · push REVFX: /drift's push-to-start (drift.css .d-start: the knurled chrome bezel, the 40 bars that chase
+                 while the sound loads, the neon tube that strikes on) in RevFX's purple (revfx.css #rfx-hear .rfx-start),
+                 then the pedalboard. [data-ab] on the section picks what lights; a pedal the track doesn't use stays dark -->
+            <div class="rfx-plate rfx-hear-step rfx-hear-step--stomp" data-step="3">
+              <p class="rfx-hear-cap"><b class="rfx-hear-n">3</b>PUSH REVFX<span class="rfx-hear-ab" aria-hidden="true"><i>BYPASS</i><i>REVFX</i></span></p>
+              <div class="rfx-hear-stomprow">
+                <div class="d-start rfx-start" data-hear-stomp-box data-on="before">
+                  <div class="d-start-in">
+                    <span class="d-start-ticks" aria-hidden="true">{Array.from({ length: 40 }, (_, i) => <i style={`--i:${i}`}></i>)}</span>
+                    <button class="d-start-pb" type="button" data-hear-stomp aria-pressed="false" aria-label="REVFX. Dark: you hear the dry sound. Push to engage RevFX.">
+                      <span class="d-start-knurl"></span><span class="d-start-wear"></span><span class="d-start-seat"></span>
+                      <span class="d-start-tube"></span><span class="d-start-tube lit"></span>
+                      <span class="d-start-lens"><span class="d-start-bloom lit"></span></span>
+                      <span class="d-start-lg"><span class="w">REVFX</span><span class="s">ENGAGE</span></span>
+                      <span class="d-start-lg lit"><span class="w">REVFX</span><span class="s">ENGAGE</span></span>
+                      <span class="d-start-spill lit"></span>
+                    </button>
+                  </div>
+                </div>
+                <div class="rfx-hear-board-wrap">
+              <div class="rfx-hear-board">
+                <ol class="rfx-peds-mini" aria-hidden="true">
+                  {board.map(({ p, img }, i) => (
+                    <li data-fx={p.id} style={`--i:${i};--rgb:${p.rgb};--ink:${p.ink}`}>
+                      <img class="rfx-patch" src={patch.src} width="320" height="66" alt="" decoding="async" />
+                      <span class="rfx-pm-pool"></span>
+                      <img class="rfx-pm-ped" src={img.src} width="528" height="954" alt="" loading="lazy" decoding="async" />
+                      <span class="rfx-pm-nm">{p.name}</span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- volume: /drift's fader (faders.ts behaviour, its plate + cap photos) -->
+            <div class="rfx-plate rfx-plate--tall rfx-hear-vol">
+              <div class="d-fad-slot rfx-vol-slot" role="slider" tabindex="0" data-hear-vol aria-label="Volume" aria-orientation="vertical"
+                aria-valuemin="0" aria-valuemax="100" aria-valuenow="80" aria-valuetext="VOLUME 80">
+                <span class="rfx-vol-plate" aria-hidden="true"></span>
+                <span class="d-fad-fill" style="height:80.00%"></span>
+                <span class="d-fad-thumb" style="bottom:80.00%"></span>
+              </div>
+              <span class="rfx-vol-read" data-hear-vol-read>VOL 80</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

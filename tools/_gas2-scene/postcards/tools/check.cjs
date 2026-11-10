@@ -15,6 +15,7 @@ const KNOWN = /Decoding failed|EncodingError/;   // Playwright WebKit: no AAC de
 
 async function page(browser, w, h, extra) {
   const ctx = await browser.newContext(Object.assign({ viewport: { width: w, height: h }, deviceScaleFactor: 3, isMobile: true, hasTouch: true }, extra || {}));
+  await ctx.route("**/download/register", (r) => r.fulfill({ contentType: "application/json", body: '{"ok":true}' }));   // the stamp posts for real since 2026-11-01: never from a check
   const p = await ctx.newPage();
   p.on("pageerror", (e) => out.errors.push(`${w}x${h} pageerror ${e.message}`));
   p.on("console", (m) => { if (m.type() === "error" && !KNOWN.test(m.text())) out.errors.push(`${w}x${h} console ${m.text()}`); });
@@ -22,6 +23,8 @@ async function page(browser, w, h, extra) {
 }
 const go = async (p, q) => { await p.goto(BASE + (q || "")); await p.evaluate(() => document.fonts.ready); await p.waitForTimeout(700); };
 const cur = (p) => p.evaluate(() => window.gas2Postcards.cur);
+// a tap on the pilot lamp d cards from the lit one (round 16: the lamps took the place of ‹ 1 / 6 ›)
+const step = (p, d) => p.evaluate((d) => { const ls = [...document.querySelectorAll(".pl")]; ls[ls.findIndex((l) => l.hasAttribute("aria-current")) + d].click(); }, d);
 
 async function drag(p, dx, dy, ms, hold, after = 650) {   // a finger-like drag with the mouse (pointer events)
   const r = await p.evaluate(() => { const b = document.querySelector(".pc.top").getBoundingClientRect(); return { x: b.left + b.width / 2, y: b.top + b.height * .4 }; });
@@ -62,7 +65,7 @@ async function drag(p, dx, dy, ms, hold, after = 650) {   // a finger-like drag 
           (!e.spot || e.n[1] >= e.pump) &&
           (cab ? e.label === "To the store" && e.red && !e.here && e.car && e.car[3] <= e.n[1] && e.car[0] + .513 * (e.car[2] - e.car[0]) <= 1 && e.car[2] <= e.iw &&
                  e.cap === "none" && e.carTap === "tx-hit"
-           : q.endsWith("sent") ? e.label === "✓ Keys in the mail" && !e.red && !e.car
+           : q.endsWith("sent") ? e.label === "✓ Files in your inbox" && !e.red && !e.car
            : e.label === "⤓ Download FREE" && !e.car);
         out.layout.push({ size: `${w}x${h}`, q, pass, m: e });
         if (SHOTS) await p.screenshot({ path: `${SHOTS}/${w}x${h}-${q.replace(/[?&=]/g, "")}.png` });
@@ -106,7 +109,7 @@ async function drag(p, dx, dy, ms, hold, after = 650) {   // a finger-like drag 
   // ── the stack: flick, spring back, buttons, keys, the last card stays ──
   const p = await page(wk, 402, 714);
   await go(p, "");
-  ok("first load = card 1, back disabled", (await cur(p)) === 0 && await p.evaluate(() => document.getElementById("prev").disabled));
+  ok("first load = card 1, its lamp lit", (await cur(p)) === 0 && await p.evaluate(() => document.querySelectorAll(".pl")[0].hasAttribute("aria-current")));
   await drag(p, -40, 4, 400);
   ok("slow short drag springs back", (await cur(p)) === 0);
   await drag(p, -110, 0, 80, 300);
@@ -121,7 +124,7 @@ async function drag(p, dx, dy, ms, hold, after = 650) {   // a finger-like drag 
   ok("a card comes up whole (Dan, 2026-10-30: the readings glued to the card): nothing printed on it pops or moves", moving.length === 0, moving);
   await drag(p, 30, 260, 110);
   ok("flick down throws too", (await cur(p)) === 2);
-  await p.click("#prev"); await p.waitForTimeout(650);
+  await step(p, -1); await p.waitForTimeout(650);
   ok("back brings the last card back", (await cur(p)) === 1);
   await drag(p, 150, 6, 160);                                 // left to right (Dan, 2026-10-30): back
   const b1 = await p.evaluate(() => ({ cur: window.gas2Postcards.cur, top: document.querySelector(".pc.top") === document.querySelectorAll(".pc")[0] }));
@@ -136,31 +139,31 @@ async function drag(p, dx, dy, ms, hold, after = 650) {   // a finger-like drag 
   const jump1 = await p.evaluate(async () => {
     const c = document.querySelectorAll(".pc")[1], x = () => Math.round(c.getBoundingClientRect().left);
     const frames = async (n) => { for (let i = 0; i < n; i++) await new Promise((r) => requestAnimationFrame(r)); };
-    document.getElementById("next").click(); await frames(5);
-    const a = x(); document.getElementById("prev").click(); const b = x();     // called back mid-flight...
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight" })); await frames(5);
+    const a = x(); document.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowLeft" })); const b = x();     // called back mid-flight...
     await frames(5);
-    const c1 = x(); document.getElementById("next").click(); return { a, b, c: c1, d: x() };   // ...and on again on its way back
+    const c1 = x(); document.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight" })); return { a, b, c: c1, d: x() };   // ...and on again on its way back
   });
   await p.waitForTimeout(700);
   ok("back mid-flight, then next on its way back: each time it turns round where it is, no jump", (await cur(p)) === 2 &&
      Math.abs(jump1.b - jump1.a) < 2 && Math.abs(jump1.d - jump1.c) < 2, jump1);
-  await p.click("#prev"); await p.waitForTimeout(700);
+  await step(p, -1); await p.waitForTimeout(700);
   await drag(p, -80, 0, 320, 150, 0);                       // let go still: it springs home...
   await p.mouse.down(); await p.mouse.up(); await p.waitForTimeout(1400);   // ...and a tap on the way (it nudges)
   const home = await p.evaluate(() => { const m = new DOMMatrix(getComputedStyle(document.querySelector(".pc.top")).transform); return { x: +m.m41.toFixed(1), y: +m.m42.toFixed(1) }; });
   ok("a tap while a let-go card springs home doesn't stop it there: it gets home", Math.abs(home.x - .9) < .5 && Math.abs(home.y) < .5, home);
   await drag(p, -80, 0, 320, 150, 0);                       // let go still: it springs home, and next comes before it's there
   const jump2 = await p.evaluate(() => { const c = document.querySelector(".pc.top"), x = () => Math.round(c.getBoundingClientRect().left);
-    const a = x(); document.getElementById("next").click(); return { a, b: x() }; });
+    const a = x(); document.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight" })); return { a, b: x() }; });
   await p.waitForTimeout(700);
   ok("next while a let-go card springs home: it flies from where it is", (await cur(p)) === 2 && Math.abs(jump2.b - jump2.a) < 2, jump2);
-  await p.click("#prev"); await p.waitForTimeout(700);
+  await step(p, -1); await p.waitForTimeout(700);
   await drag(p, -80, 0, 320, 150, 0);
-  await p.evaluate(() => document.getElementById("prev").click());
+  await p.evaluate(() => document.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowLeft" })));
   await p.waitForTimeout(900);
   const under = await p.evaluate(() => ({ cur: window.gas2Postcards.cur, ty: +new DOMMatrix(getComputedStyle(document.querySelectorAll(".pc")[1]).transform).m42.toFixed(1) }));
   ok("back while a let-go card springs home: it settles as the second card, under the one brought back", under.cur === 0 && Math.abs(under.ty - 9) < .6, under);
-  await p.click("#next"); await p.waitForTimeout(700);
+  await step(p, 1); await p.waitForTimeout(700);
   const quick = await p.evaluate(() => new Promise((done) => {   // the finger up before the next frame
     const c = document.querySelector(".pc.top"), r = c.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height * .4;
     c.setPointerCapture = () => {};                         // synthetic events have no pointer to capture
@@ -174,7 +177,7 @@ async function drag(p, dx, dy, ms, hold, after = 650) {   // a finger-like drag 
   const g = await p.evaluate(() => { const c = document.querySelector(".pc.top"), r = c.getBoundingClientRect(), b = c.querySelector(".big").getBoundingClientRect();
     return { key: !!c.querySelector(".key"), mid: +(((b.top + b.bottom) / 2 - r.top) / r.height).toFixed(3), line: getComputedStyle(c.querySelector(".gline")).fontFamily }; });
   ok("grade card (Dan, round 2): no key, the lettering centred, the line in its face", !g.key && Math.abs(g.mid - .5) < .04 && /Oswald/.test(g.line), g);
-  await p.click("#next"); await p.click("#next"); await p.keyboard.press("ArrowRight"); await p.waitForTimeout(650);
+  await step(p, 1); await step(p, 1); await p.keyboard.press("ArrowRight"); await p.waitForTimeout(650);
   ok("next + ArrowRight reach HEAR IT", (await cur(p)) === 4);
 
   // ── HEAR IT turns over (tap on the card, then the Turn back button) ──
@@ -196,15 +199,15 @@ async function drag(p, dx, dy, ms, hold, after = 650) {   // a finger-like drag 
   await p.waitForTimeout(2600);                              // WebKit here can't decode the demo: the arm goes home, the note says so
   await p.click("#hear .back [data-turn]"); await p.waitForTimeout(900);
   ok("Turn back shows the front again", !(await p.evaluate(() => document.getElementById("hear").classList.contains("flipped"))));
-  await p.click("#next"); await p.waitForTimeout(700);
-  ok("card 6 is up, the mailbox with it", (await cur(p)) === 5 && await p.evaluate(() => document.getElementById("box").classList.contains("up")));
+  await step(p, 1); await p.waitForTimeout(700);
+  ok("card 6 is up, its lamp lit", (await cur(p)) === 5 && await p.evaluate(() => document.querySelectorAll(".pl")[5].hasAttribute("aria-current")));
   const grab6 = await p.evaluate(() => { const b = document.querySelector(".pc.top .mtitle").getBoundingClientRect(); return { x: b.left + 10, y: b.top + 10 }; });
   await p.mouse.move(grab6.x, grab6.y); await p.mouse.down();
   for (let i = 1; i <= 8; i++) { await p.mouse.move(grab6.x - 30 * i, grab6.y - 3 * i); await p.waitForTimeout(12); }
   await p.mouse.up(); await p.waitForTimeout(1500);
   const end1 = await p.evaluate(() => ({ cur: window.gas2Postcards.cur, ended: document.getElementById("desk").classList.contains("ended"),
-    ti: getComputedStyle(document.querySelector(".rd .ti")).opacity, ctl: getComputedStyle(document.querySelector(".ctl")).opacity, box: document.getElementById("box").classList.contains("up") }));
-  ok("flicking the last card = the end page, the readings popped, the counter + mailbox gone", end1.cur === 6 && end1.ended && end1.ti === "1" && end1.ctl === "0" && !end1.box, end1);
+    ti: getComputedStyle(document.querySelector(".rd .ti")).opacity, ctl: getComputedStyle(document.querySelector(".ctl")).opacity }));
+  ok("flicking the last card = the end page, the readings popped, the lamps gone", end1.cur === 6 && end1.ended && end1.ti === "1" && end1.ctl === "0", end1);
   await p.mouse.move(120, 360); await p.mouse.down();
   for (let i = 1; i <= 8; i++) { await p.mouse.move(120 + 22 * i, 362); await p.waitForTimeout(14); }
   await p.mouse.up(); await p.waitForTimeout(900);
@@ -243,10 +246,10 @@ async function drag(p, dx, dy, ms, hold, after = 650) {   // a finger-like drag 
   await p.waitForTimeout(2200);
   const sent = await p.evaluate(() => ({ ended: document.getElementById("desk").classList.contains("ended"), sent: document.getElementById("desk").classList.contains("sent"),
     note: document.getElementById("sentNote").textContent, cta: document.querySelector(".rd .cta").innerText.trim(), cardOpacity: getComputedStyle(document.querySelectorAll(".pc")[5]).opacity }));
-  ok("good address: the card goes in the box, then the end page says the keys are in the mail", sent.ended && sent.sent && sent.note.includes("dan@example.com") && sent.cta === "✓ Keys in the mail" && sent.cardOpacity === "0", sent);
+  ok("good address: the card is posted, then the end page says the files are in the inbox", sent.ended && sent.sent && sent.note.includes("dan@example.com") && sent.cta === "✓ Files in your inbox" && sent.cardOpacity === "0", sent);
   await p.keyboard.press("ArrowLeft"); await p.waitForTimeout(300);
   ok("after mailing, back doesn't pull the mailed card out of the box", (await cur(p)) === 6);
-  ok("nothing is sent (no request besides assets)", netMail === 0, netMail);
+  ok("one request besides assets: the address to the licence worker (mocked here)", netMail === 1, netMail);
   if (SHOTS) await p.screenshot({ path: `${SHOTS}/flow-sent.png` });
   // the taxi (taxi/, Dan 2026-11-01: the laptop page's, here too): it rolls in once the end page is up and parks in front
   // of the station, the ✓ turns over to a red "To the store" (no Not now here: The postcards again sends it off)
@@ -295,7 +298,7 @@ async function drag(p, dx, dy, ms, hold, after = 650) {   // a finger-like drag 
   // ── reduced motion: no flight, the same states ──
   const r = await page(wk, 402, 714, { reducedMotion: "reduce" });
   await go(r, "");
-  await r.click("#next"); await r.waitForTimeout(100);
+  await step(r, 1); await r.waitForTimeout(100);
   const rm = { afterNext: await cur(r) };
   await r.goto(BASE + "?card=5"); await r.waitForTimeout(500);
   await r.click("#hear .front [data-turn]"); await r.waitForTimeout(900);

@@ -43,7 +43,7 @@ const onTv = (p: Plugin) => !!p.library && (p.status === 'live' || !!p.trialOpen
 
 /** TV order, after DRIFT: DRIFT goes first while it leads the homepage (drift.homeLead, Dan 2026-10-08, "first
  *  slide until Nov 1"), then drops back to its slot here. A plugin missing from the list goes last. */
-const TV_ORDER = ['revlimiter', 'gas', 'drift', 'radio-roulette'];
+const TV_ORDER = ['revlimiter', 'gas', 'gas2', 'drift', 'radio-roulette'];
 
 export function tvPlugins(): Plugin[] {
   const rank = (p: Plugin) => {

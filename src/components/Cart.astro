@@ -96,7 +96,7 @@ for (const p of plugins) {
   <div class="cd-empty" data-cart-empty>
     <h3>Your next sound starts here.</h3>
     <p>Your cart is empty. Explore the plugins and find your next addition.</p>
-    <a href="/#plugins" class="cd-browse">Explore the plugins <span aria-hidden="true">→</span></a>
+    <a href="/plugins" class="cd-browse">Explore the plugins <span aria-hidden="true">→</span></a>
   </div>
   <ul class="cd-items" data-cart-items aria-label="Plugins in your cart"></ul>
   <div class="cd-foot" data-cart-foot hidden>
@@ -531,6 +531,11 @@ for (const p of plugins) {
       if (!drawer) return;
       if (typeof drawer.showModal === 'function') drawer.showModal(); else drawer.setAttribute('open', '');
       lock();
+    }
+    // ?cart=open: a page without the drawer (the GAS 2 page's top bar) sends its cart button here.
+    if (new URLSearchParams(location.search).get('cart') === 'open') {
+      history.replaceState(history.state, '', location.pathname + location.hash);
+      setTimeout(openDrawer, 0);
     }
 
     function checkoutMap() {

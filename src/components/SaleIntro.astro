@@ -1,0 +1,428 @@
+---
+// Black Friday / Cyber Monday 2026: the first-visit intro (Gil 2026-11-02, in
+// place of the props on the hero wall). On the first page load of a phase, the
+// TV flies in, the tube powers on and the offer comes up on the glass in the
+// home TV's own type (stencil outlined in phosphor, the lit word filled), for
+// about two seconds. The X top-right (or Esc, or a click outside, or "See the
+// plugins") powers it off, and the regular site is there with the strip.
+// Home page loads only (Gil 2026-11-02: not on /plugins, not when "See the
+// plugins" lands somewhere). Once per phase per browser (localStorage); a dev
+// preview (?sale=) shows it on every home load. Same cabinet photo as the home TV (WordWall roll 2), its opening
+// measured in tv-broken.json. Mounted in BaseLayout; inert outside the sale.
+import { Image } from 'astro:assets';
+import frameImg from '../assets/seasons/drift/tv-broken-2.png';
+import frameMeta from '../assets/seasons/drift/tv-broken.json';
+import { salePhases, saleBundlePlugins, saleBundleCount, saleBundleUrl } from '../data/sale';
+
+// the opening in the cabinet, as % of the photo (bezel = top, right, bottom, left in its own pixels)
+const m = frameMeta['2'];
+const [bt, br, bb, bl] = m.bezel;
+const glass = `--si-t:${((bt / m.h) * 100).toFixed(2)}%;--si-r:${((br / m.w) * 100).toFixed(2)}%;--si-b:${((bb / m.h) * 100).toFixed(2)}%;--si-l:${((bl / m.w) * 100).toFixed(2)}%;--si-ar:${m.w} / ${m.h}`;
+const copy = {
+  bf: { kick: 'Black Friday · Nov 27–29' },
+  cm: { kick: 'Cyber Monday · today only' },
+} as const;
+---
+
+<div class="si" data-sale-intro hidden>
+  <div class="si-back" data-si-close></div>
+  {salePhases.map((p) => (
+    <div class={`si-set si-${p.id}`} data-si-phase={p.id} role="dialog" aria-modal="true" aria-label={`${p.name}: ${p.pct}% off everything`} style={glass}>
+      <div class="si-tv">
+        <div class="si-glass">
+          <div class="si-tube">
+            <p class="si-kick si-pop" style="--d:0">{copy[p.id].kick}</p>
+            <p class="si-big si-pop" style="--d:1">{p.pct}% off</p>
+            <p class="si-sub si-pop" style="--d:2">everything</p>
+            <div class="si-row si-pop" style="--d:3">
+              <button type="button" class="si-code" data-sale-code={p.code} aria-label={`Copy code ${p.code}`}>
+                <span class="si-code-with">code</span> <b>{p.code}</b>
+                <span class="si-copied" aria-live="polite" data-sale-copied></span>
+              </button>
+              <span class="si-bundle">All {saleBundleCount} plugins <b>${p.bundleUsd}</b></span>
+            </div>
+            <p class="si-list si-pop" style="--d:4">{saleBundlePlugins.join(' · ')}</p>
+            <p class="si-ends si-pop" style="--d:4">Ends {p.endShort}<span class="sr-only"> ({p.endLabel})</span></p>
+            <a class="si-go si-pop" style="--d:5" href={saleBundleUrl} data-si-close>See the plugins <span aria-hidden="true">→</span></a>
+          </div>
+          <span class="si-fx" aria-hidden="true"></span>
+          <span class="si-power" aria-hidden="true"></span>
+        </div>
+        <Image class="si-frame" src={frameImg} alt="" widths={[800, 1400, 2000]} sizes="min(92vw, 1040px)" format="webp" quality={86} loading="lazy" decoding="async" />
+        <button type="button" class="si-x" data-si-close aria-label="Close the offer and go to the site">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5 L15 15 M15 5 L5 15" /></svg>
+        </button>
+      </div>
+    </div>
+  ))}
+</div>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-sale-intro]');
+  const html = document.documentElement;
+  const phase = html.dataset.sale;
+  const set = phase ? root?.querySelector<HTMLElement>(`[data-si-phase="${phase}"]`) : null;
+  const KEY = `sale-intro-${phase}-2026`;
+  let seen = false;
+  try { seen = localStorage.getItem(KEY) === '1'; } catch {}
+  const preview = html.dataset.salePreview === '1';
+
+  const home = location.pathname === '/' || location.pathname === '/index.html';
+  if (root && set && home && (preview || !seen) && !html.classList.contains('hc')) {
+    document.body.appendChild(root);
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const frame = set.querySelector<HTMLImageElement>('.si-frame');
+    const opener = document.activeElement as HTMLElement | null;
+    let closing = false;
+
+    const open = () => {
+      root.hidden = false;
+      set.classList.add('is-shown');
+      document.documentElement.classList.add('si-lock');
+      void root.offsetWidth;
+      root.classList.add('is-on');
+      try { localStorage.setItem(KEY, '1'); } catch {}
+      // focus the X once it's on screen; a keyboard user can close straight away
+      setTimeout(() => set.querySelector<HTMLElement>('.si-x')?.focus({ preventScroll: true }), still ? 0 : 700);
+    };
+
+    const close = (then?: () => void) => {
+      if (closing) return;
+      closing = true;
+      root.classList.add('is-off');
+      setTimeout(() => {
+        root.hidden = true;
+        root.classList.remove('is-on', 'is-off');
+        document.documentElement.classList.remove('si-lock');
+        opener?.focus?.({ preventScroll: true });
+        then?.();
+      }, still ? 0 : 620);
+    };
+
+    // the cabinet before the flight, so the set never flies in without its bezel (or after 700 ms, whatever comes first)
+    if (frame) frame.loading = 'eager';
+    const ready = frame ? Promise.race([frame.decode().catch(() => {}), new Promise((r) => setTimeout(r, 700))]) : Promise.resolve();
+    ready.then(open);
+
+    root.querySelectorAll<HTMLElement>('[data-si-close]').forEach((el) => {
+      el.addEventListener('click', (e) => {
+        const a = el.closest('a');
+        if (a) {
+          // "See the plugins": power off, then go (the page-change scene stays out of it). With the TV on
+          // this page (the TV-first home), powering off is the whole trip: the TV is right there.
+          e.preventDefault();
+          e.stopPropagation();
+          const tv = document.querySelector<HTMLElement>('section#plugins');
+          close(tv ? () => tv.querySelector<HTMLElement>('.ww-tag')?.focus({ preventScroll: true }) : () => { location.href = a.href; });
+        } else close();
+      });
+    });
+    addEventListener('keydown', (e) => {
+      if (root.hidden) return;
+      if (e.key === 'Escape') close();
+      // keep Tab inside the set while it's up
+      if (e.key === 'Tab') {
+        const f = [...set.querySelectorAll<HTMLElement>('button, a[href]')];
+        const i = f.indexOf(document.activeElement as HTMLElement);
+        if (e.shiftKey && i <= 0) { e.preventDefault(); f[f.length - 1].focus(); }
+        else if (!e.shiftKey && i === f.length - 1) { e.preventDefault(); f[0].focus(); }
+      }
+    });
+
+    set.querySelectorAll<HTMLButtonElement>('[data-sale-code]').forEach((btn) => {
+      const note = btn.querySelector<HTMLElement>('[data-sale-copied]');
+      let t = 0;
+      btn.addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText(btn.dataset.saleCode || ''); } catch { return; }
+        if (note) note.textContent = 'Copied';
+        btn.classList.add('is-copied');
+        clearTimeout(t);
+        t = window.setTimeout(() => { btn.classList.remove('is-copied'); if (note) note.textContent = ''; }, 1600);
+      });
+    });
+  }
+</script>
+
+<style>
+  :global(html.si-lock) { overflow: hidden; }
+  .si[hidden] { display: none; }
+  .si {
+    position: fixed;
+    inset: 0;
+    z-index: 9000; /* over the page, the strip and the popups; under the page-change scenes (9500) */
+    display: grid;
+    place-items: center;
+  }
+  .si-back {
+    position: absolute;
+    inset: 0;
+    background: rgba(7, 6, 5, 0.86);
+    backdrop-filter: blur(6px) saturate(80%);
+    -webkit-backdrop-filter: blur(6px) saturate(80%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  .si.is-on .si-back { opacity: 1; }
+  .si.is-off .si-back { opacity: 0; transition-delay: 0.25s; }
+
+  .si-set { display: none; position: relative; width: min(92vw, 1040px, calc((100svh - 3rem) * 1.38)); }
+  .si-set.is-shown { display: block; }
+  .si-bf { --h: 34; --s: 92; }
+  .si-cm { --h: 152; --s: 72; }
+  .si-set {
+    --ink: hsl(var(--h) calc(var(--s) * 1%) 62%);
+    --ink-hot: hsl(var(--h) calc(var(--s) * 1%) 78%);
+    --ink-text: hsl(var(--h) calc(var(--s) * 0.6%) 70%);
+    --glow: hsl(var(--h) calc(var(--s) * 1%) 55% / 0.55);
+    --glow-soft: hsl(var(--h) calc(var(--s) * 1%) 50% / 0.3);
+  }
+
+  /* ── the set: flies in out of the dark, lands, settles ── */
+  .si-tv { position: relative; aspect-ratio: var(--si-ar); }
+  .si.is-on .si-tv { animation: si-fly 0.75s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .si.is-off .si-tv { animation: si-leave 0.42s cubic-bezier(0.55, 0, 0.9, 0.5) 0.2s both; }
+  .si-frame {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 3;
+    pointer-events: none;
+    filter: drop-shadow(0 30px 50px rgba(0, 0, 0, 0.8));
+  }
+
+  /* ── the glass: the opening in the cabinet ── */
+  .si-glass {
+    position: absolute;
+    top: var(--si-t);
+    right: var(--si-r);
+    bottom: var(--si-b);
+    left: var(--si-l);
+    z-index: 1;
+    overflow: hidden;
+    border-radius: 3%/4%;
+    container-type: inline-size;
+    background: radial-gradient(ellipse 62% 80% at 50% 46%,
+      hsl(var(--h) calc(var(--s) * 1%) 16%) 0%,
+      hsl(var(--h) calc(var(--s) * 1%) 9%) 42%,
+      hsl(var(--h) calc(var(--s) * 1%) 4%) 78%,
+      hsl(var(--h) calc(var(--s) * 1%) 2%) 100%);
+  }
+  /* scanlines under the words, the glass's reflection and curved falloff over them */
+  .si-glass::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.22) 0 1px, transparent 1px 3px);
+  }
+  .si-fx {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse 70% 50% at 30% 8%, rgba(255, 255, 255, 0.07), transparent 60%),
+      radial-gradient(ellipse 100% 100% at 50% 50%, transparent 62%, rgba(0, 0, 0, 0.55) 100%);
+  }
+  /* the tube powering on: a bright line opens to the full screen, then lets go */
+  .si-power {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: hsl(var(--h) 60% 92%);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .si.is-on .si-power { animation: si-power 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.6s both; }
+  .si.is-off .si-power { animation: si-off 0.32s cubic-bezier(0.55, 0, 0.9, 0.5) both; }
+  .si.is-off .si-tube { animation: si-tube-off 0.22s ease-in both; }
+
+  .si-tube {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.4cqi;
+    padding: 4cqi 5cqi;
+    text-align: center;
+  }
+  .si-tube p { margin: 0; }
+
+  /* the words come up one after another, ~2 s in all */
+  .si-pop { opacity: 0; }
+  .si.is-on .si-pop { animation: si-pop 0.42s cubic-bezier(0.2, 0.9, 0.25, 1.25) calc(0.95s + var(--d) * 0.2s) both; }
+
+  .si-kick {
+    font: 600 max(0.62rem, 1.9cqi)/1 var(--font-mono);
+    letter-spacing: 0.4em;
+    padding-left: 0.4em;
+    text-transform: uppercase;
+    color: var(--ink-text);
+  }
+  /* the lit word: filled stencil, like the lit plugin on the home TV */
+  .si-big {
+    font-family: var(--font-display);
+    font-size: 19cqi;
+    line-height: 0.86;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--ink-hot);
+    -webkit-text-stroke: 1.5px var(--ink-hot);
+    filter: drop-shadow(0 0 10px var(--glow)) drop-shadow(0 0 30px var(--glow-soft));
+  }
+  /* the unlit word: the stencil outline only */
+  .si-sub {
+    font-family: var(--font-display);
+    font-size: 7.4cqi;
+    line-height: 0.9;
+    letter-spacing: 0.14em;
+    padding-left: 0.14em;
+    text-transform: uppercase;
+    color: transparent;
+    -webkit-text-stroke: 1.5px var(--ink);
+    filter: drop-shadow(0 0 6px var(--glow));
+  }
+  .si-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 1.2cqi 3cqi;
+    margin-top: 1.2cqi;
+  }
+  .si-code {
+    position: relative;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.5em;
+    padding: 0.32em 0.7em 0.22em;
+    font: inherit;
+    font-family: var(--font-display);
+    font-size: max(1rem, 3.6cqi);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-hot);
+    background: hsl(var(--h) calc(var(--s) * 1%) 50% / 0.08);
+    border: 1.5px dashed var(--ink);
+    border-radius: 4px;
+    cursor: copy;
+  }
+  .si-code b { font-weight: 400; color: hsl(var(--h) 40% 8%); background: var(--ink-hot); padding: 0.06em 0.35em 0; box-shadow: 0 0 14px var(--glow); }
+  .si-code-with { font: 600 0.42em/1 var(--font-mono); letter-spacing: 0.3em; color: var(--ink-text); }
+  .si-code:hover b { background: hsl(var(--h) 90% 88%); }
+  .si-code:focus-visible { outline: 2px solid var(--ink-hot); outline-offset: 4px; }
+  .si-copied {
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    translate: -50% 6px;
+    font: 600 0.6rem/1 var(--font-mono);
+    letter-spacing: 0.3em;
+    color: var(--ink-hot);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .is-copied .si-copied { opacity: 1; }
+  .si-bundle {
+    font-family: var(--font-display);
+    font-size: max(1rem, 3.6cqi);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: transparent;
+    -webkit-text-stroke: 1px var(--ink-hot);
+    filter: drop-shadow(0 0 6px var(--glow));
+  }
+  .si-bundle b { font-weight: 400; color: var(--ink-hot); }
+  .si-list, .si-ends {
+    font: 500 max(0.6rem, 1.55cqi)/1.4 var(--font-mono);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-text);
+    opacity: 0.85;
+  }
+  .si-ends { opacity: 0.7; }
+  .si-go {
+    margin-top: 1cqi;
+    font: 600 max(0.72rem, 1.9cqi)/1 var(--font-mono);
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--ink-hot);
+    text-decoration: none;
+    border-bottom: 1px solid var(--ink);
+    padding-bottom: 0.3em;
+  }
+  .si-go:hover { color: hsl(var(--h) 90% 88%); }
+  .si-go:focus-visible { outline: 2px solid var(--ink-hot); outline-offset: 4px; }
+
+  /* the X: a chrome button on the cabinet's top-right corner */
+  .si-x {
+    position: absolute;
+    top: 1.5%;
+    right: 1.2%;
+    z-index: 4;
+    width: clamp(36px, 4.2vw, 46px);
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    cursor: pointer;
+    background: radial-gradient(circle at 35% 30%, #f0ece4, #a8a39a 55%, #5d5953);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.7), inset 0 -2px 3px rgba(0, 0, 0, 0.35);
+    opacity: 0;
+  }
+  .si.is-on .si-x { animation: si-pop 0.35s cubic-bezier(0.2, 0.9, 0.25, 1.25) 0.75s both; }
+  .si-x svg { width: 42%; fill: none; stroke: #1d1916; stroke-width: 2.6; stroke-linecap: round; }
+  .si-x:hover { background: radial-gradient(circle at 35% 30%, #fff7e6, #c9a35c 55%, #6e5a34); }
+  .si-x:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 3px; }
+
+  @keyframes si-fly {
+    0% { opacity: 0; transform: perspective(1400px) translateY(28vh) translateZ(-900px) rotateX(24deg) rotateZ(-6deg); }
+    60% { opacity: 1; }
+    100% { opacity: 1; transform: none; }
+  }
+  @keyframes si-leave { to { opacity: 0; transform: perspective(1400px) translateY(6vh) scale(0.9); } }
+  @keyframes si-power {
+    0% { opacity: 1; clip-path: inset(49.6% 48% 49.6% 48%); }
+    35% { opacity: 1; clip-path: inset(49.6% 0 49.6% 0); }
+    70% { opacity: 0.85; clip-path: inset(0 0 0 0); }
+    100% { opacity: 0; clip-path: inset(0 0 0 0); }
+  }
+  @keyframes si-off {
+    0% { opacity: 0; clip-path: inset(0 0 0 0); }
+    10% { opacity: 1; clip-path: inset(0 0 0 0); }
+    55% { opacity: 1; clip-path: inset(49.6% 0 49.6% 0); }
+    100% { opacity: 1; clip-path: inset(49.6% 50% 49.6% 50%); }
+  }
+  @keyframes si-tube-off { to { opacity: 0; } }
+  @keyframes si-pop {
+    0% { opacity: 0; transform: translateY(0.4em) scale(0.92); filter: brightness(2.2); }
+    60% { opacity: 1; }
+    100% { opacity: 1; transform: none; }
+  }
+
+  /* narrow screens: the list goes, the rest stays readable */
+  @media (max-width: 600px) {
+    .si-set { width: calc(100vw - 10px); }
+    .si-list { display: none; }
+    .si-tube { gap: 1.6cqi; padding: 2.5cqi 3cqi; }
+    .si-kick { font-size: 0.55rem; letter-spacing: 0.26em; }
+    .si-big { font-size: 20cqi; }
+    .si-sub { font-size: 6.6cqi; -webkit-text-stroke-width: 1px; }
+    .si-row { margin-top: 0.4cqi; gap: 1.6cqi 3cqi; }
+    .si-code, .si-bundle { font-size: 0.92rem; }
+    .si-ends { font-size: 0.55rem; }
+    .si-go { font-size: 0.62rem; letter-spacing: 0.16em; margin-top: 0; }
+    .si-x { top: -2%; right: -1%; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .si.is-on .si-tv, .si.is-off .si-tv, .si.is-on .si-power, .si.is-off .si-power, .si.is-off .si-tube { animation: none; }
+    .si.is-on .si-pop, .si.is-on .si-x { animation: none; opacity: 1; }
+    .si-back { transition: none; }
+  }
+</style>

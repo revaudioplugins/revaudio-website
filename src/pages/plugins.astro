@@ -1,0 +1,34 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import WordWall from '../components/WordWall.astro';
+import TestimonialBlock from '../components/TestimonialBlock.astro';
+import DAWStrip from '../components/DAWStrip.astro';
+import PressLogos from '../components/PressLogos.astro';
+import EmailCapture from '../components/EmailCapture.astro';
+import SubscribeModal from '../components/SubscribeModal.astro';
+---
+
+<BaseLayout title="Plugins">
+  {/* The plugins page (Gil 2026-11-02): the TV first, no hero. The home page
+      keeps the gauge hero with the TV under it; the header's PLUGINS, the
+      footer, the cart and the product pages' breadcrumb come here. This is
+      Dan's TV-first home (bcb00b0) moved to its own address. The page keeps
+      its one h1, hidden, for search engines and screen readers. */}
+  <h1 class="sr-only">RevAudio plugins</h1>
+
+  {/* the TV: every plugin, by category, and the one place to browse them (the carousel and the
+      Store nav item went, branch feat/home-library 2026-10-18) */}
+  <WordWall />
+
+  <DAWStrip />
+  <TestimonialBlock
+    heading="Producers on RevAudio"
+    ctaHref="/revlimiter"
+    ctaLabel="Take RevLimiter for a spin"
+    ctaSub="30-day free trial · no credit card"
+  />
+  <PressLogos />
+  <EmailCapture id="subscribe" />
+
+  <SubscribeModal />
+</BaseLayout>
