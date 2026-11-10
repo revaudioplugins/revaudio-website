@@ -230,11 +230,21 @@ Files: `src/components/WordWall.astro`, `src/components/TrialGateModal.astro` (+
   120 BPM mix on its `meters` event -> one seamless 4 s loop, 60 frames at 15 fps), cut to 194 x 94 (2 x 2 px,
   145 KB) and 129 x 62 (3 x 3, 87 KB) animated WebP; on the TV: image-rendering pixelated, the mesh one cell per
   source pixel, look A's grade + feather. Bench frames in `tools/wwbench/anim/` (untracked, regenerable).
-- Next: Dan's pixel size on the Inside the TV bench (round 3) -> record GAS, Radio Roulette (both have browser demos),
-  DRIFT (its wall run, pixelated), GAS 2 (its pump floating, animated, alpha) -> build it in WordWall (bake the grade into the TV's copies if A or C:
-  no live SVG filter in production), then the thumbnails; then the header that slides away; TV Sells round 4 notes;
-  step 00's baseline before any push to main. Left in the plan: step 7 (checks at the 9 sizes), P (persona walk).
-  Nothing on main; main = live on Dan's word.
+- Round 3 notes (`notes-r3`, 2026-11-10): Dan picked **2 x 2** (194 wide). In the chat: "the revlimiter is just
+  pumping les make it more human and more like real song". Round 4 (Version 4, `notes-r4`, build `a4a6764`): a real
+  song. `tools/tv-anim/song-meters.py` measures the site's RevLimiter demo (`public/audio/revlimiter/revlimiter-before`
+  / `-after.m4a`) into the plugin's own meter fields per 60 Hz tick, with the plugin's ballistics (PluginProcessor.cpp /
+  PluginEditor.cpp): LUFS momentary/short-term from the after (K-weighted), peak holds 300 ms, GR/bands/clip/heat from
+  a limiter model on the real peaks (a raw before/after window diff pinned GR at 7-10 dB: too noisy). Loop = 63.98 s
+  + 9.24 s (4 bars at 103.7 BPM, ends on a short stop; the other two demos are quantized and read as a pump again),
+  556 ticks -> 139 frames at 15 fps; `record-revlimiter.mjs <out> 15 933 <meters.json>`; `cut-webp.py` -> 194 x 94.
+  Weight: 355 KB as animated WebP (q80), 55-75 KB as H.264 (4:2:0 crf 18 / 4:4:4 crf 16), 82 KB VP9 -> production
+  should carry these as video. Cards: laptop q93, close-up and phone q82, `minimize_size` (5-6.5 MB each without it).
+- Next: Dan's notes on round 4 ("Does it move like a real song now?") -> the same for GAS, Radio Roulette (both have
+  browser demos), DRIFT (its wall run, pixelated), GAS 2 (its pump floating, animated, alpha), each to music -> build
+  it in WordWall (bake the grade into the TV's copies: no live SVG filter in production; video, see the weight), then
+  the thumbnails; then the header that slides away; TV Sells round 4 notes; step 00's baseline before any push to
+  main. Left in the plan: step 7 (checks at the 9 sizes), P (persona walk). Nothing on main; main = live on Dan's word.
 
 ## 2026-11-04 — GAS 2 postcards: the end page scrolls as one page, the footer under it (Claude Code `danavivi-c2 [ca2821]`, Dan's Mac) — PUSHED TO MAIN 2026-11-04 on Dan's word "perfect push to main" (from `fix/gas2-end-flow`)
 
