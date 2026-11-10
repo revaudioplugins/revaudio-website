@@ -317,9 +317,9 @@ UPDATE 3 2026-11-09 / 11-10 (night): Dan's round-2 notes (db `notes-r2`, pins re
   GAS 2 print. Room: model textures get 8x anisotropy; dust specks within 2 m of the lens fade out (a point drew as a
   big square up close); a capture holds the dying tube and the sign lit; migrations now run oldest first (append).
 - Batch 7 review (workflow: 4 judges + a refuter each, 17 confirmed, 2 must-fix): N42's far end flares and its cords
-  land on the REVAUDIO sign in the opening frame, and N39's lit lamps read pastel. Both with builder far-2 (N42 v2,
-  N39 v3), then N28's sticker order and the GAS 2 lockup on R19 + N20 (DESIGN.md: Oswald 700, GAS parchment, the 2 and
-  its rule oxide). Deferred polish: N29's grey bunch reads flat and its blue is very clean; N28 is hidden from the
+  land on the REVAUDIO sign in the opening frame (N42 v2 in, 11-10: the cords end in the tray under a matte end cap,
+  nothing over the sign), and N39's lit lamps read pastel (N39 v3 with builder far-2), then N28's sticker order and the
+  GAS 2 lockup on R19 + N20 (DESIGN.md: Oswald 700, GAS parchment, the 2 and its rule oxide). Deferred polish: N29's grey bunch reads flat and its blue is very clean; N28 is hidden from the
   walk; N20's face washes GAS2 out at 0.8 m.
 - Builders (11-10 night): far-2 is fresh (the far builder's long context kept dropping on the network); left and car
   idle. Every slot in view has a model. The 12 slots at f > 1 (L10 R01 R04 R11 R12 R13 N04 N05 N08 N09 N22 N25) sit
