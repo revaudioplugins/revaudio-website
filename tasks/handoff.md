@@ -284,6 +284,74 @@ UPDATE 2 2026-11-09 (later): landed since, all pushed on `feat/home-opening`:
 - Bench round 2 for Dan: https://claude.ai/artifact/WbhosKXawqVMvT3xpKo53p (ArtifactData collection `notes-r2`):
   the follow-ups to his 4 notes + batch 2's 27 spots.
 
+UPDATE 3 2026-11-09 / 11-10 (night): Dan's round-2 notes (db `notes-r2`, pins read with the scratchpad's
+`pins-r2.mjs`) + batches 3 and 4, in the room (settings ver 19):
+- Dan's notes, done: N01 (trouble light) out; R.tail's light off (its hotspot on the gloss; the lenses still glow);
+  clutter drums #26 (behind the GAS 2 drum) and #10 (in front of the test desk) out, tyre #4 moved to the tyre rack
+  (`MESS_FIX`, messSeed 1 only); N46 an office chair at the test desk; L13 / L14 face out, s 0.6; N02 -10 %, and on
+  two chains to the ceiling (slot h 0.6, y 4.3; its light at the tubes); N47 a gooseneck lamp on the amp + a light
+  on its face; R15 rims off the pegboard, on the tyre rack (s 0.85); N31 vinyl bigger, forward, N48 a desk lamp
+  lighting the deck; L19 rack 1.75 m out (x -1.4), turned 35 deg to the door, with an acoustic in his pinned cradle;
+  L02 a bass + L20 (natural ash) / L21 two basses on the wall; R03 a banjo, R10 a ukulele (its hanger level with the
+  banjo's); N07 the pump rebuilt polished; N49 headphones on W10 at his pin. Lights: N01 + R.tail out, N47 + N48 in.
+- Batch 3 in: W03 W01 N13 N12 W02 (left), E04 N33 N35 N36 N20 N32 R08 R19 N29 A01 A02 (far), W06 (car), the lamps.
+  Batch 4 in: R18 bass rig (head moved back so R08 rests on it), R02 combo, N41 chain hoist (rocks), N39 traffic
+  light (its lamps cycle red 6 s, green 6 s, amber 2 s: MODELS `cycle`), both slid onto the truss (f 0.5455).
+- Checked: 0 overlaps; the hand-off and the slow-connection still re-run after the room settled. Seven independent
+  judges went over every note and object (scratchpad `verdicts-r3.json`); their partly / fix verdicts were spot-checked
+  and acted on (the rack further out, the amp lamp softer, the headphones off the mug, the rims, the globe at half).
+  N02 "brighter than before" was the round-2 still catching the dying tube mid-flicker: the bench compares both rooms
+  with the flicker held still (reduced motion).
+- Batch 5, the car side (11-10, settings ver 20): N43 floor decals (alpha quads under the wet sheen; moved out from
+  under the lift's plate to x 0.85), N11 drip pan (onto the plate, y 0.085), N10 safety wall (off the walk), N24 / N24B
+  rugs, N45 extension reel (its box stands up: h 0.27). Models' dress: a transparent mesh casts no shadow.
+- Batch 6, the left wall (11-10, settings ver 21): W05 solder station (its smoke scrolls and breathes: MODELS `wisp`),
+  W04 parts bins, N17 pedalboard, N18 cable hooks, L11 drum machine; reworks W01 meter, W02 RevLimiter dial, W03
+  stickies, N12 on its 2x4 (box w 0.6, x -3.21), N47 a bigger shade. Checked: 0 overlaps, 93 models, still re-rendered.
+- Batch 7, the far end + reworks (11-10, settings ver 22): N28 mini fridge; N42 cable tray hung under the trusses (h
+  1.565, x -2.05, its own height: the designers' y 4.32 was for the flat placeholder; no longer `flat`, so the overlap
+  check sees it); L17 hose pegboard v2 (its tools only in the gaps round the bass wall in front of it; d 0.085, a thin
+  board); N20 globe v2; N39 traffic light v2 (0.4 m along its truss to x -0.9, glow 0.7: out of the left neon's wash);
+  A01/A02 traps v2 (dark fabric, walnut frames); N29 blankets v3 (1.44 m: fits Dan's spot between the ukulele and W10,
+  7 cm up so its hem clears the drum kit's block); the left builder's E04 synth, N33 scope, N35 + N49 headphones, R19
+  GAS 2 print. Room: model textures get 8x anisotropy; dust specks within 2 m of the lens fade out (a point drew as a
+  big square up close); a capture holds the dying tube and the sign lit; migrations now run oldest first (append).
+- Batch 7 review (workflow: 4 judges + a refuter each, 17 confirmed, 2 must-fix): N42's far end flares and its cords
+  land on the REVAUDIO sign in the opening frame (N42 v2 in, 11-10: the cords end in the tray under a matte end cap,
+  nothing over the sign), and N39's lit lamps read pastel (N39 v3 in, 11-10: even saturated lamps, amber yellow-orange,
+  off reads red / amber / green; brighter would need liveScreen on the lamps, untested). Next with far-2: N28's sticker order and the
+  GAS 2 lockup on R19 + N20 (DESIGN.md: Oswald 700, GAS parchment, the 2 and its rule oxide). Deferred polish: N29's grey bunch reads flat and its blue is very clean; N28 is hidden from the
+  walk; N20's face washes GAS2 out at 0.8 m.
+- Review 2 (the late additions + room code, 17 confirmed, 3 must-fix): room fixes in (11-10): the lights hold still in a
+  capture (`steady`: the hum, the dying tube, the sign, N39 holds red), N18's bar on the pegboard's face (on 0.02), labels
+  (R19, N42 under the ceiling), the fonts ledger (Special Elite is Apache 2.0, not OFL), the layout kit regenerated.
+  Model fixes in (11-10): N33 + E04 UV bleed fixed, N49 hung from a hook under W10's plank at its door end (slot moved
+  0.38 m: the tube radio stands under the middle), N35 + N49 yokes as forks (left builder); N28 v2.1 (no sticker cut, the
+  top's stickers read from the aisle), L17 v3 (every hose on a visible hook, nothing hidden from the walk), the GAS 2
+  lockup on R19 (parchment GAS, oxide 2 + rule) and N20 (GAS 2's own globe lens) (far-2). Builders' queues empty.
+- Floor clutter (11-10): MESS_FIX turns off #27 (a drum in front of N17's pedalboard) and #30 / #0 / #12 (two toolboxes
+  and a crate standing on it): the pedalboard is seen now. The bench checks then found #8 / #9 (two black cases by the
+  drums: holes in the floor from the walk, `f0eb2f1`) and #21 (a blank papers sheet behind the board, `da7bd08`): off too.
+- Builders (11-10 night): far-2 is fresh (the far builder's long context kept dropping on the network); left and car
+  idle. Every slot in view has a model. The 12 slots at f > 1 (L10 R01 R04 R11 R12 R13 N04 N05 N08 N09 N22 N25) sit
+  behind the camera: not built.
+- The outside through the door: A photo street / B built street / C rainy night (car builder's pick C), patches for A
+  and C ready in `look/step4/builders/car/candidates/OUTSIDE/patch/`; Dan picks on bench round 3.
+- guitar.glb has no slot since R10 became the ukulele (kept for now).
+- Bench round 3 for Dan: https://claude.ai/artifact/WbhosKXawqVMvT3xpKo53p (Version 4, build `2c3e473`, ArtifactData
+  collection `notes-r3`): 24 cards, his 12 note cards with a before, the outside A / B / C pick (card 2), 11 new spots.
+  Generator: the scratchpad's `look/step4/round2/r3-page.py`; shots `raw3` / `raw4` (+ `raw4n2`, `raw4b`: N02 held still).
+- Bench round 4 for Dan (11-10 morning): the same link (Version 5, build `da7bd08`, ArtifactData collection `notes-r4`).
+  Round 3 was never opened, so it is folded in: 29 cards, his 12 round-2 notes with a before, the outside A / B / C pick
+  (card 2, re-shot in today's room with the car builder's `scout_room.mjs`: the A / C patches no longer apply to
+  room.html, the runtime scout does), every new spot, and card 24's ask (the blue blanket bright, or toned down ~20 % +
+  wear: the toned one is a picture-only variant, `PRE=pre-tone-n29.js`). Three card-vs-picture checks ran first
+  (workflows, a refuter each): 26 findings, then 6, then 1, all fixed (re-shot or reworded; the clutter above).
+  Generator: the scratchpad's `look/step4/round2/r4-page.py <sha>`; shots: `run-b6.sh` (raw-b6 / b6n / b6t / b6o / b6x).
+- Polish list from those checks (not asked on the cards): W05's fume extractor reads as a black box (light its face or
+  show a fan; its card says so); from the hoist's side N39 hangs in front of the sign (clear from the walk); B's sky is a
+  flat block (only if Dan picks B); a black door-side slab at the edge of the car close-up (there since round 2, off the walk).
+
 Open: the monitors bench had B (vintage) ticked but Dan's chat said "black + wood"; black went in. Confirm if asked.
 Owed by Dan: tell Gil (the room on laptops from Nov 19, next to his Black Friday countdown); the R2 / CSP OK.
 Run the room: from this worktree's root `python3 -m http.server 4490 --bind 127.0.0.1` (this session left one running,
