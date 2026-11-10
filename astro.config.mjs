@@ -7,6 +7,7 @@ import gaugebench from './tools/gaugebench/integration.mjs';
 import watchbench from './tools/watchbench/integration.mjs';
 import wwbench from './tools/wwbench/integration.mjs';
 import gas2page from './tools/gas2page/integration.mjs';
+import garagepage from './tools/garagepage/integration.mjs';
 
 // Pages that render noindex stay out of the sitemap too, so Search Console
 // never sees a submitted URL that asks not to be indexed. /buy/<slug>/ are
@@ -23,7 +24,8 @@ export default defineConfig({
   // likewise: /__wwbench.
   // MDX: blog posts (src/content/blog) embed figure components.
   // gas2page: Dan's GAS 2 station page (tools/_gas2-scene) served at /gas2/, in dev and in the build.
-  integrations: [mdx(), sitemap({ filter: (page) => !NOINDEX.some((p) => page.includes(p)) }), bench(), gaugebench(), watchbench(), wwbench(), gas2page(), ...(process.env.EDIT ? [revedit()] : [])],
+  // garagepage: the long garage (tools/_home-opening), unlisted at /garage-9f3c/, in the build only.
+  integrations: [mdx(), sitemap({ filter: (page) => !NOINDEX.some((p) => page.includes(p)) }), bench(), gaugebench(), watchbench(), wwbench(), gas2page(), garagepage(), ...(process.env.EDIT ? [revedit()] : [])],
   build: {
     inlineStylesheets: 'auto',
   },
