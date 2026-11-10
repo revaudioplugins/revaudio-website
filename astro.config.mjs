@@ -6,6 +6,7 @@ import bench from './tools/bench/integration.mjs';
 import gaugebench from './tools/gaugebench/integration.mjs';
 import watchbench from './tools/watchbench/integration.mjs';
 import wwbench from './tools/wwbench/integration.mjs';
+import rfxsound from './tools/rfxsound/integration.mjs';
 import gas2page from './tools/gas2page/integration.mjs';
 
 // Pages that render noindex stay out of the sitemap too, so Search Console
@@ -20,10 +21,10 @@ export default defineConfig({
   // stay inert until a URL asks for them with ?bench / ?gauge — so plain
   // `npm run dev` is unaffected. Watchbench (dev only) is its own page:
   // /__watchbench. Wwbench (dev only, the homepage's plugin TV)
-  // likewise: /__wwbench.
+  // likewise: /__wwbench. Rfxsound (dev only, /revfx's scroll sound): /__rfxsound.
   // MDX: blog posts (src/content/blog) embed figure components.
   // gas2page: Dan's GAS 2 station page (tools/_gas2-scene) served at /gas2/, in dev and in the build.
-  integrations: [mdx(), sitemap({ filter: (page) => !NOINDEX.some((p) => page.includes(p)) }), bench(), gaugebench(), watchbench(), wwbench(), gas2page(), ...(process.env.EDIT ? [revedit()] : [])],
+  integrations: [mdx(), sitemap({ filter: (page) => !NOINDEX.some((p) => page.includes(p)) }), bench(), gaugebench(), watchbench(), wwbench(), rfxsound(), gas2page(), ...(process.env.EDIT ? [revedit()] : [])],
   build: {
     inlineStylesheets: 'auto',
   },

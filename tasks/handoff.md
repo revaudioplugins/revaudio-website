@@ -1,3 +1,20 @@
+## 2026-11-10 — /revfx #pedals: scroll sound, bench first (Claude Code, Yoni's laptop 2) — branch `feat/revfx-scroll-sound`, NOT on main
+
+Claim: OPEN, Claude Code (Yoni's laptop 2), worktree `../revaudio-website-rfxsound`. Files: `src/lib/revfx/scrollsound.ts`
+(new), `tools/rfxsound/integration.mjs` + `rfxsound.html` (new), `astro.config.mjs` (registers it), this entry.
+- Yoni: on MEET THE FIVE ("Scroll is the knob") add subtle sound, really small volume, that follows the knob, e.g. PITCH
+  -12..+12 really pitches something clean; every effect according to its use. "make a bench of this first".
+- Built: the engine (Web Audio, all synthesized, one tempo 120 bpm + one key D): HALO = pad through a 2-line stereo
+  ensemble (SIZE = width + movement), PITCH = keys arpeggio (or a held gliding pad) moved by the readout's semitone,
+  ECHO = one note a bar into a dark ping-pong dotted 8th (FEEDBACK = loop gain), REVERB = a chord a bar into 3
+  generated rooms crossfaded by DECAY, GLUE = a soft four-on-the-floor into a compressor at the readout's THRESHOLD
+  with auto makeup. Bench `/__rfxsound` (dev only): the real /revfx in a frame, SOUND ON, TOUR, KNOB scrub, 01-05,
+  sliders per pedal, out meter, COPY SETTINGS ("apply rfx sound bench"). The page does NOT import the engine yet.
+- Checks (Edge, autoplay flag): each pedal at knob 0 / 100 % plays, no page errors; PITCH spectral centre 194 Hz at
+  -12 st -> 983 Hz at +12 st; peaks -29..-35 dBFS for all five at the defaults. Not checked: by ear, phones.
+- Open for Yoni: the sounds by ear; then how the page turns it on (browsers only allow sound after a click, so the
+  page needs a small SOUND toggle on the stage, off by default) before it goes on /revfx.
+
 ## 2026-11-09 — /revfx trial form sends the download at once (`gateWired: true`) (Claude Code `revaudio-0b [3311c0]`, Yoni's laptop 2) — branch `revfx-gate-on` — PUSHED TO MAIN 2026-11-09 on Yoni's "deploy" (worker deployed first, version `b31a75bd`)
 
 Claim: CLOSED 2026-11-09 `revaudio-0b`. Files: `src/data/revfx.ts` (`gateWired` only; `revaudio-2f`'s claim there is `hearTracks` only), this entry.

@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RevFX scroll sound bench</title>
+<!-- /__rfxsound (tools/rfxsound/integration.mjs, dev only). The frame is the REAL dev /revfx; scroll it like a visitor.
+     The bench reads the pedal on stage + its knob (--t on [data-rfx-knob], written by pedals.ts) and plays
+     src/lib/revfx/scrollsound.ts. COPY SETTINGS when happy and hand it back ("apply rfx sound bench"). -->
+<style>
+  :root { --bg: #0b0910; --panel: #15121c; --line: #2a2436; --ink: #e9e4f4; --dim: #9a91ad; --acc: #c79bff; --on: #6dff9a; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font: 13px/1.35 system-ui, -apple-system, Segoe UI, sans-serif; }
+  body { display: grid; grid-template-columns: 1fr 360px; }
+  main { position: relative; overflow: hidden; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+  .bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .vp { position: relative; overflow: hidden; border: 1px solid var(--line); border-radius: 6px; background: #050307; }
+  .vp iframe { position: absolute; left: 0; top: 0; border: 0; transform-origin: 0 0; }
+  aside { overflow-y: auto; background: var(--panel); border-left: 1px solid var(--line); padding: 14px; }
+  h1 { font-size: 15px; margin: 0 0 2px; letter-spacing: .04em; }
+  h2 { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--acc); margin: 18px 0 6px; border-top: 1px solid var(--line); padding-top: 12px; }
+  h2 small { color: var(--dim); letter-spacing: 0; text-transform: none; font-weight: 400; }
+  p.note { color: var(--dim); margin: 0 0 8px; font-size: 12px; }
+  button, select { background: #221c2e; color: var(--ink); border: 1px solid var(--line); border-radius: 5px; padding: 6px 10px; font: inherit; cursor: pointer; }
+  button:hover { border-color: var(--acc); }
+  button.on { background: var(--acc); color: #120d1a; border-color: var(--acc); }
+  #power { width: 100%; padding: 12px; font-weight: 700; letter-spacing: .12em; font-size: 14px; }
+  #power.on { background: var(--on); border-color: var(--on); color: #06210f; }
+  .row { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; margin: 8px 0; }
+  .row label { font-weight: 600; }
+  .row output { color: var(--acc); font-variant-numeric: tabular-nums; }
+  .row input { grid-column: 1 / -1; width: 100%; accent-color: var(--acc); }
+  .row small { grid-column: 1 / -1; color: var(--dim); font-size: 11px; }
+  .seg { display: flex; gap: 4px; grid-column: 1 / -1; }
+  .seg button { flex: 1; padding: 4px; }
+  .now { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; background: #0d0b12; border: 1px solid var(--line); border-radius: 6px; padding: 10px; margin-top: 10px; }
+  .now b { color: var(--dim); font-weight: 500; }
+  .now span { font-variant-numeric: tabular-nums; }
+  .meter { grid-column: 1 / -1; height: 8px; background: #221c2e; border-radius: 4px; overflow: hidden; position: relative; }
+  .meter i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--on); width: 0; }
+  .meter u { position: absolute; top: 0; bottom: 0; width: 2px; background: #fff; left: 0; }
+  .go { display: flex; gap: 4px; }
+  .go button { flex: 1; padding: 6px 6px; white-space: nowrap; }
+  .grp[data-on] h2 { color: var(--on); }
+  #copied { color: var(--on); margin-left: 6px; }
+</style>
+</head>
+<body>
+<main>
+  <div class="bar">
+    <select id="size" title="Frame size"></select>
+    <button id="tour" title="Scroll the frame through the five slowly, knob 0 to 100 % on each">TOUR</button>
+    <span class="go" id="go"></span>
+    <span style="color:var(--dim)">Scroll inside the frame: it is the real /revfx.</span>
+  </div>
+  <div class="vp" id="vp"><iframe id="frame" title="/revfx at laptop size"></iframe></div>
+</main>
+<aside>
+  <h1>RevFX · scroll sound</h1>
+  <p class="note">The five pedals, heard. Every sound is synthesized (no recordings), one tempo, one key.</p>
+  <button id="power">SOUND ON</button>
+  <div class="now">
+    <b>Pedal</b><span id="n-ped">–</span>
+    <b>Knob</b><span id="n-knob">–</span>
+    <b>On screen</b><span id="n-vis">–</span>
+    <b>Out</b><span id="n-db">–</span>
+    <div class="meter"><i id="m-rms"></i><u id="m-pk"></u></div>
+  </div>
+  <div class="row"><label for="scrub">KNOB <small style="display:inline">(moves the frame's scroll)</small></label><output id="scrub-o"></output>
+    <input id="scrub" type="range" min="0" max="1" step="0.001" value="0"></div>
+  <div id="controls"></div>
+  <h2>Hand it back</h2>
+  <button id="copy">COPY SETTINGS</button> <button id="reset">RESET</button><span id="copied"></span>
+</aside>
+
+<script type="module">
+  import { createScrollSound, SOUND_DEFAULTS } from '/src/lib/revfx/scrollsound.ts';
+  import { pedals } from '/src/data/revfx.ts';
+
+  const KEY = 'rfxsound:v1';
+  const IDS = pedals.map((p) => p.id);
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) {}
+  const snd = createScrollSound(saved || undefined);
+  const S = snd.settings;
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+
+  // ── the controls: [path, label, min, max, step, unit, hint]
+  const G = [
+    { t: 'Whole bed', c: [
+      ['master', 'Volume', -54, -12, 0.5, ' dB', 'the whole bed, before the visitor\'s own volume; -27 dB (default) = a quiet room tone'],
+      ['tone', 'Tone', 1200, 14000, 100, ' Hz', 'master low-pass: lower = softer, further away'],
+      ['idle', 'While resting', 0, 1, 0.01, '%', 'level when the scroll stops: 0 = only while scrolling, 100 % = always while the stage is on screen'],
+      ['hold', 'Hold after scroll', 0.2, 4, 0.1, ' s', 'full level this long after the last scroll'],
+      ['xfade', 'Pedal crossfade', 0.1, 2.5, 0.05, ' s', 'one pedal into the next'],
+      ['bpm', 'Tempo', 80, 140, 1, ' bpm', '120 = the glue screen\'s two hits a second'],
+    ] },
+    { id: 'halo', t: 'Halo · SIZE', c: [
+      ['level.halo', 'Level', -24, 6, 0.5, ' dB'],
+      ['halo.depth', 'Movement', 0.5, 8, 0.1, ' ms', 'delay sweep at SIZE 100 %: more = more chorus shimmer'],
+      ['halo.wet', 'Width', 0, 1.5, 0.01, '', 'ensemble level at SIZE 100 % (the wide part)'],
+    ] },
+    { id: 'pitch', t: 'Pitch · ±12 st', c: [
+      ['level.pitch', 'Level', -24, 6, 0.5, ' dB'],
+      ['pitch.voice', 'Voice', ['keys', 'pad'], null, null, '', 'keys = a soft arpeggio, moved per note · pad = one held note that glides'],
+      ['pitch.glide', 'Glide (pad)', 0, 0.5, 0.01, ' s', 'how long the held note takes to reach the new semitone'],
+    ] },
+    { id: 'echo', t: 'Echo · FEEDBACK', c: [
+      ['level.echo', 'Level', -24, 6, 0.5, ' dB'],
+      ['echo.fbMax', 'Loop at 92 %', 0.5, 0.95, 0.01, '', 'the loop gain when the knob is at the top (safety cap)'],
+      ['echo.dark', 'Tape dark', 900, 8000, 50, ' Hz', 'low-pass inside the loop: lower = each repeat darker'],
+      ['echo.wet', 'Repeats level', 0, 1.2, 0.01, ''],
+    ] },
+    { id: 'reverb', t: 'Reverb · DECAY', c: [
+      ['level.reverb', 'Level', -24, 6, 0.5, ' dB'],
+      ['reverb.long', 'Longest room', 2, 9, 0.1, ' s', 'decay at DECAY 100 % (rebuilds the room on release)'],
+      ['reverb.bright', 'Brightness', 1500, 10000, 100, ' Hz'],
+      ['reverb.wet', 'Wet', 0, 1.5, 0.01, ''],
+    ] },
+    { id: 'glue', t: 'Glue Comp · THRESHOLD', c: [
+      ['level.glue', 'Level', -24, 6, 0.5, ' dB'],
+      ['glue.ratio', 'Ratio', 2, 10, 0.5, ':1', 'the strip has 2:1 / 4:1 / 10:1'],
+      ['glue.makeup', 'Makeup', 0, 1, 0.01, '', '0 = squeezing gets quieter · 1 = full makeup (louder, denser)'],
+      ['glue.hats', 'Hats', 0, 1, 0.01, ''],
+    ] },
+  ];
+  const get = (p) => p.split('.').reduce((o, k) => o[k], S);
+  const put = (p, v) => {
+    const [a, b] = p.split('.');
+    snd.set(b ? { [a]: { ...S[a], [b]: v } } : { [a]: v });
+    save();
+  };
+  const fmt = (c, v) => (c[5] === '%' ? Math.round(v * 100) + '%' : (c[4] < 1 ? (+v).toFixed(c[4] < 0.01 ? 3 : 2) : Math.round(v)) + c[5]);
+  const ctl = document.getElementById('controls');
+  function build() {
+    ctl.innerHTML = '';
+    G.forEach((g) => {
+      const box = document.createElement('div');
+      box.className = 'grp'; if (g.id) box.dataset.g = g.id;
+      box.innerHTML = `<h2>${g.t}</h2>`;
+      g.c.forEach((c) => {
+        const row = document.createElement('div');
+        row.className = 'row';
+        if (Array.isArray(c[2])) {
+          row.innerHTML = `<label>${c[1]}</label><output></output><div class="seg">${c[2].map((o) => `<button data-o="${o}">${o.toUpperCase()}</button>`).join('')}</div>${c[6] ? `<small>${c[6]}</small>` : ''}`;
+          const paint = () => row.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.o === get(c[0])));
+          row.querySelectorAll('button').forEach((b) => b.onclick = () => { put(c[0], b.dataset.o); paint(); });
+          paint();
+        } else {
+          row.innerHTML = `<label>${c[1]}</label><output></output><input type="range" min="${c[2]}" max="${c[3]}" step="${c[4]}">${c[6] ? `<small>${c[6]}</small>` : ''}`;
+          const inp = row.querySelector('input'), out = row.querySelector('output');
+          inp.value = get(c[0]); out.textContent = fmt(c, get(c[0]));
+          // the rooms rebuild on release, not on every pixel of the drag
+          const live = c[0] !== 'reverb.long';
+          inp.oninput = () => { out.textContent = fmt(c, +inp.value); if (live) put(c[0], +inp.value); };
+          inp.onchange = () => put(c[0], +inp.value);
+        }
+        box.appendChild(row);
+      });
+      ctl.appendChild(box);
+    });
+  }
+  build();
+
+  // ── the frame
+  const SIZES = [[1280, 665, 'laptop'], [1141, 636, 'small laptop'], [1440, 900, 'big laptop'], [390, 844, 'phone']];
+  const frame = document.getElementById('frame'), vp = document.getElementById('vp'), sizeSel = document.getElementById('size');
+  SIZES.forEach(([w, h, n], i) => sizeSel.add(new Option(`${w}×${h} · ${n}`, i)));
+  let size = 0;
+  try { size = +(localStorage.getItem(KEY + ':size') || 0); } catch (e) {}
+  sizeSel.value = size;
+  sizeSel.onchange = () => { size = +sizeSel.value; try { localStorage.setItem(KEY + ':size', size); } catch (e) {} layout(); };
+  function layout() {
+    const [w, h] = SIZES[size];
+    const main = document.querySelector('main'), bar = document.querySelector('.bar');
+    const W = main.clientWidth - 24, H = main.clientHeight - 24 - bar.offsetHeight - 8;
+    const k = Math.min(1, W / w, H / h);
+    frame.style.width = w + 'px'; frame.style.height = h + 'px'; frame.style.transform = `scale(${k})`;
+    vp.style.width = w * k + 'px'; vp.style.height = h * k + 'px';
+  }
+  addEventListener('resize', layout);
+  layout();
+
+  // no welcome pop-up / exit pop-up in the frame (session flags, same origin); the cookie banner is hidden on load
+  try { sessionStorage.setItem('ra-popup-shown-s', '1'); sessionStorage.setItem('ra-welcome10-s', '1'); } catch (e) {}
+  frame.src = '/revfx/?rfxsound';
+  let F = null;   // { win, doc, track, slides, knobs, reads }
+  frame.addEventListener('load', () => {
+    const win = frame.contentWindow, doc = win.document;
+    const st = doc.createElement('style');
+    st.textContent = '[data-cookie-banner],.cookie-banner,#cookie-banner{display:none!important}';
+    doc.head.appendChild(st);
+    const track = doc.querySelector('[data-rfx-pd]');
+    if (!track) return;
+    const slides = [...track.querySelectorAll('[data-rfx-slide]')];
+    F = { win, doc, track, slides, knobs: slides.map((s) => s.querySelector('[data-rfx-knob]')), reads: slides.map((s) => s.querySelector('[data-k-val]')) };
+    win.addEventListener('scroll', () => snd.poke(), { passive: true });
+    win.addEventListener('wheel', () => snd.poke(), { passive: true });
+    win.addEventListener('touchmove', () => snd.poke(), { passive: true });
+    setTimeout(() => jump(0, 0, true), 300);
+  });
+
+  // where the page parks slide i with its knob at t (pedals.ts: the knob turns over the middle 80 % of a slide's share)
+  function yFor(i, t) {
+    const { win, track, slides } = F, n = slides.length;
+    const top = track.getBoundingClientRect().top + win.scrollY;
+    return top + ((i + 0.1 + 0.8 * t) / n) * (track.offsetHeight - win.innerHeight);
+  }
+  function jump(i, t, instant) { if (F) { F.win.scrollTo({ top: yFor(i, t), behavior: instant ? 'instant' : 'smooth' }); snd.poke(); } }
+  const go = document.getElementById('go');
+  pedals.forEach((p, i) => { const b = document.createElement('button'); b.textContent = `0${i + 1} ${p.name.split(' ')[0].toUpperCase()}`; b.onclick = () => { stopTour(); jump(i, 0); }; go.appendChild(b); });
+
+  const scrub = document.getElementById('scrub'), scrubO = document.getElementById('scrub-o');
+  let activeI = 0;
+  scrub.oninput = () => { stopTour(); jump(activeI, +scrub.value, true); };
+
+  // TOUR: 6 s a pedal, the knob 0 -> 100 % with a rest at each end, like a slow visitor
+  const tourBtn = document.getElementById('tour');
+  let tour = 0;
+  const stopTour = () => { if (tour) { cancelAnimationFrame(tour); tour = 0; tourBtn.classList.remove('on'); } };
+  tourBtn.onclick = () => {
+    if (tour) return stopTour();
+    if (!F) return;
+    tourBtn.classList.add('on');
+    const n = F.slides.length, per = 6000, t0 = performance.now();
+    const step = (now) => {
+      const x = (now - t0) / per;
+      if (x >= n) return stopTour();
+      const i = Math.floor(x), f = x - i;
+      F.win.scrollTo({ top: yFor(i, Math.max(0, Math.min(1, (f - 0.1) / 0.8))), behavior: 'instant' });
+      snd.poke();
+      tour = requestAnimationFrame(step);
+    };
+    tour = requestAnimationFrame(step);
+  };
+
+  // ── power
+  const power = document.getElementById('power');
+  power.onclick = async () => {
+    if (snd.running) { await snd.stop(); power.textContent = 'SOUND ON'; power.classList.remove('on'); }
+    else { await snd.start(); snd.poke(); power.textContent = 'SOUND OFF'; power.classList.add('on'); }
+  };
+
+  // ── follow the frame every frame: pedal on stage, its knob, how much of the stage shows
+  const lastT = {};
+  const el = (id) => document.getElementById(id);
+  let buf = null, peakHold = -120, peakAt = 0;
+  function follow() {
+    requestAnimationFrame(follow);
+    if (!F) return;
+    const on = F.slides.findIndex((s) => s.classList.contains('is-on'));
+    if (on >= 0) {
+      activeI = on;
+      snd.setActive(IDS[on]);
+      document.querySelectorAll('.grp').forEach((g) => g.toggleAttribute('data-on', g.dataset.g === IDS[on]));
+    }
+    F.knobs.forEach((k, i) => {
+      const t = parseFloat(k.style.getPropertyValue('--t')) || 0;
+      if (lastT[i] === undefined || Math.abs(t - lastT[i]) > 0.0005) { lastT[i] = t; snd.setKnob(IDS[i], t); }
+    });
+    const r = F.track.getBoundingClientRect(), vh = F.win.innerHeight;
+    const vis = Math.max(0, Math.min(r.bottom, vh) - Math.max(r.top, 0)) / vh;
+    snd.setVisible(vis);
+    const t = lastT[activeI] || 0;
+    el('n-ped').textContent = on >= 0 ? `0${on + 1} ${pedals[on].name}` : '–';
+    el('n-knob').textContent = `${F.reads[activeI]?.textContent || ''} · ${Math.round(t * 100)}%`;
+    el('n-vis').textContent = Math.round(vis * 100) + '%';
+    if (document.activeElement !== scrub) { scrub.value = t; }
+    scrubO.textContent = Math.round(t * 100) + '%';
+    const a = snd.analyser;
+    if (a && snd.running) {
+      buf = buf || new Float32Array(a.fftSize);
+      a.getFloatTimeDomainData(buf);
+      let s = 0, pk = 0;
+      for (let i = 0; i < buf.length; i++) { s += buf[i] * buf[i]; pk = Math.max(pk, Math.abs(buf[i])); }
+      const rms = 10 * Math.log10(s / buf.length + 1e-12), pdb = 20 * Math.log10(pk + 1e-9);
+      const now = performance.now();
+      if (pdb > peakHold || now - peakAt > 1500) { peakHold = pdb; peakAt = now; }
+      el('n-db').textContent = `${rms < -90 ? '-∞' : rms.toFixed(1)} dBFS rms · peak ${peakHold < -90 ? '-∞' : peakHold.toFixed(1)}`;
+      const pct = (db) => Math.max(0, Math.min(100, (db + 60) / 60 * 100));
+      el('m-rms').style.width = pct(rms) + '%';
+      el('m-pk').style.left = pct(peakHold) + '%';
+    } else el('n-db').textContent = 'sound off';
+  }
+  requestAnimationFrame(follow);
+
+  // ── hand it back
+  document.getElementById('copy').onclick = async () => {
+    const txt = 'apply rfx sound bench\n' + JSON.stringify(S, null, 2);
+    try { await navigator.clipboard.writeText(txt); el('copied').textContent = 'copied'; } catch (e) { el('copied').textContent = 'copy failed: see console'; console.log(txt); }
+    setTimeout(() => (el('copied').textContent = ''), 2000);
+  };
+  document.getElementById('reset').onclick = () => {
+    snd.set(structuredClone(SOUND_DEFAULTS));
+    try { localStorage.removeItem(KEY); } catch (e) {}
+    build();
+  };
+  window.__rfxsound = snd;   // for a console poke
+</script>
+</body>
+</html>
