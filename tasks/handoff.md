@@ -380,6 +380,10 @@ UPDATE 3 2026-11-09 / 11-10 (night): Dan's round-2 notes (db `notes-r2`, pins re
   O3-safe's `wetInView()` hunk doesn't apply to HEAD: place it by hand, or the first frame throws and the room freezes.
   The merged loading screen locks scrolling until the hand-off (`html.lights-loading` overflow hidden + `lenis.stop()`),
   which should end the "scrolls during loading glide you mid-walk" cause: confirm with the study's wheel test (r-O8/func).
+- SPEED MOVED TO ITS OWN SESSION (Dan, 11-10: on a simulated 1.6 Mbps line "it took way too long": measured, the walk
+  unlocks at 1:53, 22.26 MB in 162 files). Brief: `tools/_home-opening/perf/HANDOFF-2026-11-10.md`; tools and the
+  study's report in `tools/_home-opening/perf/`. The speed session works in its own worktree (`feat/home-speed`) and
+  owns room.html's loading / boot / asset pipeline; `danavivi-d5` keeps the room's content (MODELS, MESS, objects).
 
 Open: the monitors bench had B (vintage) ticked but Dan's chat said "black + wood"; black went in. Confirm if asked.
 Owed by Dan: tell Gil (the room on laptops from Nov 19, next to his Black Friday countdown); the R2 / CSP OK.
