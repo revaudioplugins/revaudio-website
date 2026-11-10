@@ -24,7 +24,8 @@ const res = await page.evaluate(async (MUST) => {
   const { R, camera, go } = window.__room;
   const V = camera.position.constructor;
   const box = (o) => { const b = { min: [1e9, 1e9, 1e9], max: [-1e9, -1e9, -1e9] }; o.updateWorldMatrix(true, true);
-    o.traverse((m) => { if (!m.geometry || m.isLineSegments || m.isSprite) return; if (!m.geometry.boundingBox) m.geometry.computeBoundingBox();
+    o.traverse((m) => { if (!m.geometry || m.isLineSegments || m.isSprite) return; for (let a = m; a && a !== o; a = a.parent) if (a.userData.outOfFit) return; // a part a model hangs out of its block by design (E04's cable)
+      if (!m.geometry.boundingBox) m.geometry.computeBoundingBox();
       const bb = m.geometry.boundingBox, v = new V();
       for (const x of [bb.min.x, bb.max.x]) for (const y of [bb.min.y, bb.max.y]) for (const z of [bb.min.z, bb.max.z]) { v.set(x, y, z).applyMatrix4(m.matrixWorld);
         for (let i = 0; i < 3; i++) { const c = 'xyz'[i]; b.min[i] = Math.min(b.min[i], v[c]); b.max[i] = Math.max(b.max[i], v[c]); } } });

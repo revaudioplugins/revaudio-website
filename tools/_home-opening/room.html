@@ -762,7 +762,7 @@ const MODELS = {
   N13: { src: 'assets/models/corkboard.glb', yaw: Math.PI / 2 },
   N12: { src: 'assets/models/task-lamp.glb', yaw: Math.PI / 2 },
   W02: { src: 'assets/models/rpm-gauge.glb', yaw: Math.PI / 2 },
-  E04: { src: 'assets/models/desk-synth.glb' },
+  E04: { src: 'assets/models/desk-synth.glb', fitNode: 'synth_E04' },  // its patch cable (Dan's round-4 note) runs off the back of the desk: left out of the fit
   N33: { src: 'assets/models/oscilloscope.glb', trace: 'scope_trace' }, // its trace runs: the screen's emissive map scrolls
   N35: { src: 'assets/models/headphones-mug.glb' },
   N36: { src: 'assets/models/on-air-sign.glb' },
@@ -833,6 +833,7 @@ async function loadModels() {
       it.parts = [body];
     } else {
     const box = new THREE.Box3().setFromObject((m.fitNode && g.getObjectByName(m.fitNode)) || g, true), size = box.getSize(new THREE.Vector3()), c = box.getCenter(new THREE.Vector3());
+    if (m.fitNode) for (const ch of g.children) if (ch.name !== m.fitNode && !ch.getObjectByName(m.fitNode)) ch.userData.outOfFit = true; // reaches out of the block by design: the overlap check leaves it out
     g.position.set(-c.x, -box.min.y, -c.z); // centred on the footprint, standing on the slot's floor
     if (it.obj.geometry) { // a block: the model fills its slot
       it.obj.geometry.computeBoundingBox(); const bb = it.obj.geometry.boundingBox, slot = bb.getSize(new THREE.Vector3());
