@@ -14,6 +14,14 @@ Claim: OPEN, Claude Code (Yoni's laptop 2), worktree `../revaudio-website-rfxsou
   -12 st -> 983 Hz at +12 st; peaks -29..-35 dBFS for all five at the defaults. Not checked: by ear, phones.
 - Open for Yoni: the sounds by ear; then how the page turns it on (browsers only allow sound after a click, so the
   page needs a small SOUND toggle on the stage, off by default) before it goes on /revfx.
+- Round 2 (Yoni, same day): "the sounds are off ... sound effects that initiate when the knobs move and not musical
+  parts ... like bells with high freq but not too high, dynamic and fun, also lower volumes by at least 50%". Rebuilt:
+  no loop any more; each detent the knob crosses rings one FM bell (A4..B6 D pentatonic, 12 detents; PITCH = one per
+  semitone, A5 = 0 st) through the pedal's effect at the knob's value; a fast scroll rings a run of up to 3, louder and
+  brighter; a soft two-note chime when a pedal swings in; silent when the scroll rests (tails only). Bench settings
+  key now `rfxsound:v2`. Checks (Edge): sweep 0 -> 100 -> 0 % = 22 bells (12-detent pedals), 48 (PITCH); peaks
+  -41.6 .. -43.9 dBFS at the default -40 dB (first version -28.9 .. -35, so 8-13 dB quieter), 0 % energy under 300 Hz,
+  -120 dB within 1.5 s of the scroll stopping (GLUE), no page errors. Not checked: by ear, phones.
 
 ## 2026-11-09 — /revfx trial form sends the download at once (`gateWired: true`) (Claude Code `revaudio-0b [3311c0]`, Yoni's laptop 2) — branch `revfx-gate-on` — PUSHED TO MAIN 2026-11-09 on Yoni's "deploy" (worker deployed first, version `b31a75bd`)
 

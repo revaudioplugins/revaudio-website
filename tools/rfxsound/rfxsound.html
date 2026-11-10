@@ -57,7 +57,7 @@
 </main>
 <aside>
   <h1>RevFX · scroll sound</h1>
-  <p class="note">The five pedals, heard. Every sound is synthesized (no recordings), one tempo, one key.</p>
+  <p class="note">The knobs ring as they turn: one small bell per detent, through that pedal's effect at the knob's value. Synthesized, no recordings.</p>
   <button id="power">SOUND ON</button>
   <div class="now">
     <b>Pedal</b><span id="n-ped">–</span>
@@ -77,7 +77,7 @@
   import { createScrollSound, SOUND_DEFAULTS } from '/src/lib/revfx/scrollsound.ts';
   import { pedals } from '/src/data/revfx.ts';
 
-  const KEY = 'rfxsound:v1';
+  const KEY = 'rfxsound:v2';   // v2 = the bells (2026-11-10); v1's loop settings don't apply
   const IDS = pedals.map((p) => p.id);
   let saved = null;
   try { saved = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) {}
@@ -87,26 +87,26 @@
 
   // ── the controls: [path, label, min, max, step, unit, hint]
   const G = [
-    { t: 'Whole bed', c: [
-      ['master', 'Volume', -54, -12, 0.5, ' dB', 'the whole bed, before the visitor\'s own volume; -27 dB (default) = a quiet room tone'],
-      ['tone', 'Tone', 1200, 14000, 100, ' Hz', 'master low-pass: lower = softer, further away'],
-      ['idle', 'While resting', 0, 1, 0.01, '%', 'level when the scroll stops: 0 = only while scrolling, 100 % = always while the stage is on screen'],
-      ['hold', 'Hold after scroll', 0.2, 4, 0.1, ' s', 'full level this long after the last scroll'],
-      ['xfade', 'Pedal crossfade', 0.1, 2.5, 0.05, ' s', 'one pedal into the next'],
-      ['bpm', 'Tempo', 80, 140, 1, ' bpm', '120 = the glue screen\'s two hits a second'],
+    { t: 'Everything', c: [
+      ['master', 'Volume', -60, -18, 0.5, ' dB', 'all the bells, before the visitor’s own volume (-40 dB = the default)'],
+      ['tone', 'Tone', 2000, 14000, 100, ' Hz', 'master low-pass: lower = softer, further away'],
+      ['bell.decay', 'Ring', 0.2, 2.5, 0.05, ' s', 'how long one bell rings (high notes ring a little shorter)'],
+      ['bell.bright', 'Strike', 0, 2, 0.01, '', 'how much metal in the hit: 0 = soft sine, 2 = glassy'],
+      ['bell.ratio', 'Bell colour', 1, 5, 0.01, '', '3.5 = a classic bell · 1.4 = a soft chime · 2 = a hollow tone'],
+      ['speed', 'Scroll speed adds', 0, 1, 0.01, '%', 'how much a fast scroll rings louder and brighter'],
+      ['arrive', 'Arrival chime', 0, 1, 0.01, '%', 'two soft notes when a new pedal swings in (0 = off)'],
     ] },
     { id: 'halo', t: 'Halo · SIZE', c: [
       ['level.halo', 'Level', -24, 6, 0.5, ' dB'],
-      ['halo.depth', 'Movement', 0.5, 8, 0.1, ' ms', 'delay sweep at SIZE 100 %: more = more chorus shimmer'],
+      ['halo.depth', 'Shimmer', 0.5, 8, 0.1, ' ms', 'delay sweep at SIZE 100 %: more = more chorus movement'],
       ['halo.wet', 'Width', 0, 1.5, 0.01, '', 'ensemble level at SIZE 100 % (the wide part)'],
     ] },
     { id: 'pitch', t: 'Pitch · ±12 st', c: [
-      ['level.pitch', 'Level', -24, 6, 0.5, ' dB'],
-      ['pitch.voice', 'Voice', ['keys', 'pad'], null, null, '', 'keys = a soft arpeggio, moved per note · pad = one held note that glides'],
-      ['pitch.glide', 'Glide (pad)', 0, 0.5, 0.01, ' s', 'how long the held note takes to reach the new semitone'],
+      ['level.pitch', 'Level', -24, 6, 0.5, ' dB', 'one bell per semitone of the readout, A5 = 0 st (440 Hz at -12, 1760 Hz at +12)'],
     ] },
     { id: 'echo', t: 'Echo · FEEDBACK', c: [
       ['level.echo', 'Level', -24, 6, 0.5, ' dB'],
+      ['echo.time', 'Delay', 0.06, 0.5, 0.005, ' s'],
       ['echo.fbMax', 'Loop at 92 %', 0.5, 0.95, 0.01, '', 'the loop gain when the knob is at the top (safety cap)'],
       ['echo.dark', 'Tape dark', 900, 8000, 50, ' Hz', 'low-pass inside the loop: lower = each repeat darker'],
       ['echo.wet', 'Repeats level', 0, 1.2, 0.01, ''],
@@ -120,8 +120,7 @@
     { id: 'glue', t: 'Glue Comp · THRESHOLD', c: [
       ['level.glue', 'Level', -24, 6, 0.5, ' dB'],
       ['glue.ratio', 'Ratio', 2, 10, 0.5, ':1', 'the strip has 2:1 / 4:1 / 10:1'],
-      ['glue.makeup', 'Makeup', 0, 1, 0.01, '', '0 = squeezing gets quieter · 1 = full makeup (louder, denser)'],
-      ['glue.hats', 'Hats', 0, 1, 0.01, ''],
+      ['glue.makeup', 'Makeup', 0, 1, 0.01, '', '0 = squeezing gets quieter · 1 = full makeup (flatter, longer ring)'],
     ] },
   ];
   const get = (p) => p.split('.').reduce((o, k) => o[k], S);
@@ -194,9 +193,6 @@
     if (!track) return;
     const slides = [...track.querySelectorAll('[data-rfx-slide]')];
     F = { win, doc, track, slides, knobs: slides.map((s) => s.querySelector('[data-rfx-knob]')), reads: slides.map((s) => s.querySelector('[data-k-val]')) };
-    win.addEventListener('scroll', () => snd.poke(), { passive: true });
-    win.addEventListener('wheel', () => snd.poke(), { passive: true });
-    win.addEventListener('touchmove', () => snd.poke(), { passive: true });
     setTimeout(() => jump(0, 0, true), 300);
   });
 
@@ -206,7 +202,7 @@
     const top = track.getBoundingClientRect().top + win.scrollY;
     return top + ((i + 0.1 + 0.8 * t) / n) * (track.offsetHeight - win.innerHeight);
   }
-  function jump(i, t, instant) { if (F) { F.win.scrollTo({ top: yFor(i, t), behavior: instant ? 'instant' : 'smooth' }); snd.poke(); } }
+  function jump(i, t, instant) { if (F) { F.win.scrollTo({ top: yFor(i, t), behavior: instant ? 'instant' : 'smooth' }); } }
   const go = document.getElementById('go');
   pedals.forEach((p, i) => { const b = document.createElement('button'); b.textContent = `0${i + 1} ${p.name.split(' ')[0].toUpperCase()}`; b.onclick = () => { stopTour(); jump(i, 0); }; go.appendChild(b); });
 
@@ -228,7 +224,6 @@
       if (x >= n) return stopTour();
       const i = Math.floor(x), f = x - i;
       F.win.scrollTo({ top: yFor(i, Math.max(0, Math.min(1, (f - 0.1) / 0.8))), behavior: 'instant' });
-      snd.poke();
       tour = requestAnimationFrame(step);
     };
     tour = requestAnimationFrame(step);
@@ -238,7 +233,7 @@
   const power = document.getElementById('power');
   power.onclick = async () => {
     if (snd.running) { await snd.stop(); power.textContent = 'SOUND ON'; power.classList.remove('on'); }
-    else { await snd.start(); snd.poke(); power.textContent = 'SOUND OFF'; power.classList.add('on'); }
+    else { await snd.start(); power.textContent = 'SOUND OFF'; power.classList.add('on'); }
   };
 
   // ── follow the frame every frame: pedal on stage, its knob, how much of the stage shows
