@@ -10,7 +10,8 @@
 // Reduced motion, or the second visit this session (Dan's pick): soft rises, no flicker, no flare.
 // API: lightsOn.progress(p) · lightsOn.ready() -> Promise once every bank is on and settled · lightsOn.handoff()
 // URL: ?lights=demo plays a cold first visit's pace (~5.5 s) whatever the real load, and always the full show;
-//      ?lights=calm the soft version; ?lights=hold never hands off (the check script's picture)
+//      ?lights=calm the soft version; ?lights=hold never hands off (the check script's picture);
+//      ?lights=at3 stops with banks 1..3 on, settled, and never hands off (the review bench's pictures)
 (() => {
   const root = document.getElementById('lights');
   if (!root) return;
@@ -19,7 +20,8 @@
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches, demo = q === 'demo';
   let again = false;
   try { again = sessionStorage.getItem('ra:lightsOn') === '1'; sessionStorage.setItem('ra:lightsOn', '1'); } catch (e) {}
-  const calm = reduced || q === 'calm' || (again && !demo);
+  const at = /^at\d+$/.test(q || '') ? +q.slice(2) : -1; // a frozen stage
+  const calm = reduced || q === 'calm' || at >= 0 || (again && !demo);
   if (!(window.CSS && CSS.supports('mix-blend-mode', 'plus-lighter'))) root.classList.add('no-plus');
   document.documentElement.classList.add('lights-loading');
   const t0 = performance.now(), log = [];
@@ -117,6 +119,7 @@
   // pure progress: bank i comes on when the load passes (i + 1) / (banks + 1)
   let p = 0, fired = 0;
   function progress(x) {
+    if (at >= 0) { while (fired < Math.min(at, L.length)) fire(L[fired++]); return; } // the frozen stage
     if (demo && !progress.real) return; // the demo paces itself
     p = Math.max(p, x);
     while (fired < L.length && p >= (fired + 1) / (L.length + 1) - 1e-6) fire(L[fired++]);
@@ -126,9 +129,11 @@
     const tick = () => { const x = Math.min(1, (performance.now() - t0) / T); progress.real = true; progress(x); progress.real = false; if (x < 1) setTimeout(tick, 50); };
     baseIn.then(tick);
   }
+  if (at >= 0) progress(0);
   let readyCalls = 0;
   function ready() {
     readyCalls++;
+    if (at >= 0) return new Promise(() => {});
     const go = () => { progress.real = true; progress(1); return Promise.all(L.map((b) => b.done)); };
     const wait = demo ? new Promise((r) => { const t = () => (p >= 1 ? r() : setTimeout(t, 50)); t(); }) : Promise.resolve();
     return wait.then(go).then(() => new Promise((r) => setTimeout(r, calm ? 60 : 180))).then(() => {
