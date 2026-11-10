@@ -26,7 +26,7 @@ first visit of a session; after that soft rises, no flicker).
 - `lights/render.mjs` renders the room at walk 0 with the first k banks on (`room.html?capture=0&lights=k`, k = 0..8;
   the TV off, nothing moving), and `lights/layers.py` turns them into `assets/lights/base.webp` (the dark room) and
   `bank-<k>.webp` (bank k's own light: room k minus the sum so far as encoded, never below 0). 2560x1080, one picture
-  for every laptop like the still (object-fit cover). 12 files, 390 KB; a visit loads one TV picture, ~357 KB.
+  for every laptop like the still (object-fit cover). 12 files, 441 KB; a visit loads one TV picture, ~400 KB.
 - `lights/lights-on.js` stacks them with `mix-blend-mode: plus-lighter` (light adds: every step is the room as
   rendered) and plays each bank's opacity by its kind. Opacity only, so the compositor plays it while the 3D compiles.
 - room.html reports the load (`loaded(phase)`): textures by count, models by bytes, the GPU uploads by count, the
@@ -49,6 +49,13 @@ Re-run the pictures (like still.mjs), then the checks:
 
 A new light: put it in a bank (`props`, or a new bank in `LIGHT_BANKS` and its lines in `lightRoom`), re-render.
 A new skin = new pictures from the same script.
+
+## Checks (2026-11-10, real Chrome, the room at 064d8b9)
+
+- Hand-off at 1141x636 @2x: blurred mean 3.3 levels, p99 14; layers vs the full room mean 3.9, p99 20.
+- Cold 40 Mbit/s: textures 2.2 s, models 7.3 s, uploads 8.6 s, compile 8.8 s (the room grew: batches 5-7); the
+  banks at 1.0 · 1.5 · 1.8 · 3.2 · 4.7 · 5.3 · 6.0 · 6.6 · 7.9 s, hand-off 8.8 s; no page errors. (Measured shares
+  0.25 / 0.58 / 0.15 / 0.02 against LOADW's 0.34 / 0.52 / 0.11 / 0.03: close enough, the Mac was loaded.)
 
 ## Checks (2026-11-09, real Chrome)
 
