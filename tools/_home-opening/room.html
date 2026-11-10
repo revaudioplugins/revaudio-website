@@ -695,8 +695,9 @@ const LIT = {
 };
 // real models in their slots (step 3): a model stands in for its block in the look, scaled into the slot's box with its
 // shape kept ('height': to the slot's height, for a desk whose top carries gear); the block stays the slot (moves,
-// labels, the skeleton). yaw: turns the file's front to the slot's. ?model=<slot>:<assets/models/...glb>[:yaw] previews
-// one without editing this (render scripts, Dan's picks)
+// labels, the skeleton). yaw: turns the file's front to the slot's. fitNode: the one node that sets the fit (the rest of the
+// file may reach out of the block: E04's cable). ?model=<slot>:<assets/models/...glb>[:yaw] previews one without editing this
+// (render scripts, Dan's picks)
 const MODELS = {
   E01: { src: 'assets/models/studio-desk.glb', fit: 'height' },        // Dan's pick (11-08): the studio desk, racks built in (ours, from code)
   N34: { src: 'assets/models/office-chair.glb', yaw: Math.PI + 0.45 }, // Dan's pick (11-08): faces the desk, pushed back and turned away a little
@@ -794,7 +795,7 @@ const MODELS = {
   // batch 6, the left wall (11-10)
   W05: { src: 'assets/models/solder-station.glb', yaw: Math.PI / 2, anim: [['smoke_wisp', 'y', 'osc', [0.12, 0.7]]], wisp: 'smoke_wisp' }, // 350 degrees, a fume extractor, its smoke rising (frame)
   W04: { src: 'assets/models/parts-bins.glb', yaw: Math.PI / 2 },   // KNOBS, FADERS, VU METERS
-  N17: { src: 'assets/models/pedalboard.glb', yaw: Math.PI / 2 },   // our plugins as pedals, footswitches to the aisle
+  N17: { src: 'assets/models/pedalboard.glb', yaw: Math.PI / 2 },   // our plugins as pedals, footswitches to the aisle; the front row's first two are RevAmp's GREENLINE + REDLINE (Dan's round-4 pins)
   N18: { src: 'assets/models/cable-hooks.glb', yaw: Math.PI / 2 },  // coiled cables on a board, flat on the wall
   L11: { src: 'assets/models/drum-machine.glb', yaw: Math.PI / 2 }, // on the amp head, beside its lamp
   // batch 7, the far end + overhead (11-10; N20 globe, N39 traffic light and the A01/A02 traps reworked in place)
@@ -831,7 +832,7 @@ async function loadModels() {
       wrap.scale.set(sx, screen.scale.y / 0.245, sx); wrap.position.set(0, -0.7 * screen.scale.y, 0.003 - 0.2072 * sx);
       it.parts = [body];
     } else {
-    const box = new THREE.Box3().setFromObject(g, true), size = box.getSize(new THREE.Vector3()), c = box.getCenter(new THREE.Vector3());
+    const box = new THREE.Box3().setFromObject((m.fitNode && g.getObjectByName(m.fitNode)) || g, true), size = box.getSize(new THREE.Vector3()), c = box.getCenter(new THREE.Vector3());
     g.position.set(-c.x, -box.min.y, -c.z); // centred on the footprint, standing on the slot's floor
     if (it.obj.geometry) { // a block: the model fills its slot
       it.obj.geometry.computeBoundingBox(); const bb = it.obj.geometry.boundingBox, slot = bb.getSize(new THREE.Vector3());
