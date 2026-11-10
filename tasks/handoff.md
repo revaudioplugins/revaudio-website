@@ -351,6 +351,21 @@ UPDATE 3 2026-11-09 / 11-10 (night): Dan's round-2 notes (db `notes-r2`, pins re
 - Polish list from those checks (not asked on the cards): W05's fume extractor reads as a black box (light its face or
   show a fan; its card says so); from the hoist's side N39 hangs in front of the sign (clear from the walk); B's sky is a
   flat block (only if Dan picks B); a black door-side slab at the edge of the car close-up (there since round 2, off the walk).
+- Round 5 (11-10 midday): Dan's round-4 notes (db `notes-r4`: 22 cards ✓, 3 notes, 4 unmarked) built. N29's blue toned
+  down in the model (`064d8b9`: the scratchpad's `tone-glb.py` bakes the recipe he picked from). N17: RevAmp's GREENLINE +
+  REDLINE on his two pins (`4142e38`; an Opus builder, a Sonnet review). E04: a patch cable off the synth's back (`c562939`;
+  Opus build, a Fable fix pass made it thicker and glossy; MODELS `fitNode` keeps it out of the fit and the overlap check
+  skips out-of-fit parts). Pipeline Dan confirmed 11-10: Opus builds, a review, Fable fixes what it flags, then main's gates.
+- The street outside the door: a gas station across the road (his pick of three compositions, in the chat), built from
+  code as a runtime patch (scratchpad `look/step5/street/js/optG.js`, notes.txt there), G1 dark / G2 darker (Fable made G2
+  clearly darker). NOT in the room until he picks a grade. Adopting it: its notes' steps, Oswald 700 must load, and lit
+  things outside stay on through the loading screen unless added to `window.LIGHT_BANKS`.
+- Bench round 5 is built (round1/garage-build.html via `r5-page.py c562939`: 8 cards, 26 shots; two checks, 6 findings
+  fixed) but NOT published: the session's account switched to the personal one, which can't open the bench (it belongs to
+  the RevAudio account). Publish from the RevAudio account to the same link with the files map of `shots-r5.json`.
+- Next: merge `feat/home-lights-on` (danavivi-fa's loading screen, Dan approved; local only) into this branch, run its
+  `lights/render.mjs --port 4471 --check` + `lights/check.mjs --port 4471`, commit assets/lights/. The merged branch
+  carries that session's unpushed commits: push only on Dan's word.
 
 Open: the monitors bench had B (vintage) ticked but Dan's chat said "black + wood"; black went in. Confirm if asked.
 Owed by Dan: tell Gil (the room on laptops from Nov 19, next to his Black Friday countdown); the R2 / CSP OK.
