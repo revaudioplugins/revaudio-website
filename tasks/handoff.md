@@ -364,6 +364,17 @@ UPDATE 3 2026-11-09 / 11-10 (night): Dan's round-2 notes (db `notes-r2`, pins re
   fixed). The session's account switched to Dan's personal one, which can't open the old link (RevAudio account,
   rounds 1-4), so round 5 is on a NEW link, published 11-10: https://claude.ai/artifact/54aorRBcCAvWJTrPHqaPZm
   (ArtifactData collection `notes-r5`; source the scratchpad's `look/step4/round1/garage-build-r5.html` + `files-r5.json`).
+- Round 5 notes (Dan, 11-10; db `notes-r5`, dumped to the scratchpad's `look/step4/round2/notes-r5/`):
+  - outside: G1, and on the price sign "normal free / premium free / race free" -> done: `STREET_GRADE = 'G1'`, the
+    sign's three grades each FrEE in LED segments (street.js drawStreetAtlas, re-rendered street-atlas.webp).
+  - guitars-left: "remove that gtr" x4 -> L18, L02, L21 (bass.glb) and L03 (guitar-black.glb) out; L20 "make it a bass
+    gtr" (today's basses read as guitars) -> a builder.
+  - car: on N03 (the floor jack) "make it a part of the lefter right now it looks wierd"; asked, Dan picked "the lift's
+    own hydraulic power unit" -> a builder.
+  - amp (N17): "all the pedals are from revamp make the pedal borad a revamp board" -> a builder.
+  - desk (E04's cable) ✓ = frozen. Unmarked in rounds 4 and 5 (don't nag): N29 blanket, car floor, end wall.
+  - Builders: workflow `wf_3bb75485-05c` (Dan approved the roster 11-10: Opus builds, a Sonnet review, a Fable fix
+    pass), folders the scratchpad's `look/step6/{n17,l20,n03}/candidates/<ID>/`. Then bench round 6.
 - Loading screen merged (11-10 evening): `feat/home-lights-on` (danavivi-fa's, Dan approved) = merge `6d9f6cf` (room.html
   auto-merged, no conflicts) + `955074f` (assets/lights re-rendered from the merged room). render.mjs --check: two
   captures 0.00 apart, layers vs the full room mean 3.86 levels, p99 20, 438 KB. check.mjs at 1141x636 @2x: cold 40 Mbit

@@ -257,15 +257,12 @@ const DEF = {
     "P04": {"x": 2.4, "y": 3.35},
     "A04": {"x": 1.0, "y": 3.4},
     "N23": {"f": 0.1181, "x": -2.95, "side": -1},
-    "L18": {"f": 0.1424, "y": 2.0},
     "N18": {"f": 0.1771, "y": 1.75},
     "L17": {"f": 0.2118, "y": 2.0, "s": 0.7},
     "N28": {"f": 0.2118},
     "L04": {"f": 0.2639},
     "N17": {"f": 0.2639, "x": -2.62},
     "L11": {"f": 0.2639, "y": 1.61, "x": -3.2},
-    "L02": {"f": 0.2465, "y": 2.26},  // a bass now: 6 cm up, clear of the drum machine (round 2)
-    "L03": {"f": 0.2812, "y": 2.2},
     "P01": {"f": 0.2639, "y": 3.25},
     "L19": {"f": 0.3353, "x": -1.4, "r": -35},  // out from the wall, turned to the door (Dan, round 2: "push the gitar more to the middle", seen from the start)
     "W07": {"f": 0.441},
@@ -358,9 +355,9 @@ const CAPTURE = new URLSearchParams(location.search).get('capture'), CAPTURE_PAI
 // &lights=<k>: the loading screen's picture of the room with its first k light banks on (BANKS; lights/render.mjs)
 const LIGHTS = CAPTURE != null ? new URLSearchParams(location.search).get('lights') : null;
 const TVCAP = CAPTURE != null ? new URLSearchParams(location.search).get('tvcap') : null; // &tvcap=<CAPS tag>: the TV's picture for that screen width
-// the station across the road outside the door (street.js): Dan picks its grade, G1 dark or G2 darker, on bench round 5
-// (card 1); until then today's night. ?street=G1 / ?street=G2 previews one, ?street=none shows today's night
-const STREET_GRADE = null;
+// the station across the road outside the door (street.js), in G1 (dark): Dan's pick on bench round 5, card 1 (11-10).
+// ?street=G2 previews the darker grade, ?street=none today's old night
+const STREET_GRADE = 'G1';
 const STREET = ((q) => (q === 'none' || q === 'off' ? null : q || STREET_GRADE))(new URLSearchParams(location.search).get('street'));
 const S = { ...DEF, moves: structuredClone(DEF.moves) };
 let stored = {};
@@ -704,9 +701,9 @@ const bevelBox = (w, h, d, r = 0.015) => metricUV(new RoundedBoxGeometry(w, h, d
 // the slots' kinds, and the ones that give off light (lit: colour, glow, a light's candela; globe = a lit globe or bulb
 // of that radius on top, the block then its body; only = the globe alone, in the block's place)
 const LOOK = {
-  L01: 'pegboard', L02: 'lacquer', L03: 'lacquer', L04: 'tolex', L05: 'enamel', L06: 'gear', L07: 'enamel', L08: 'gear',
+  L01: 'pegboard', L04: 'tolex', L05: 'enamel', L06: 'gear', L07: 'enamel', L08: 'gear',
   L09: 'wood', L10: 'gear', L11: 'gear', L12: 'shelf', L13: 'tolex', L14: 'tolex', L15: 'rubber', L16: 'gear',
-  L17: 'pegboard', L18: 'lacquer', L19: 'wood', R01: 'shelf', R02: 'tolex', R03: 'lacquer', R04: 'shelf', R05: 'enamel',
+  L17: 'pegboard', L19: 'wood', R01: 'shelf', R02: 'tolex', R03: 'lacquer', R04: 'shelf', R05: 'enamel',
   R06: 'gear', R07: 'wood', R08: 'gear', R09: 'pegboard', R10: 'lacquer', R11: 'tolex', R12: 'enamel', R13: 'rubber',
   R14: 'rust', R15: 'chrome', R16: 'lacquer', R17: 'chrome', R18: 'tolex', R19: 'paper', N03: 'enamel', N04: 'enamel',
   N05: 'enamel', N06: 'rust', N07: 'enamel', N08: 'enamel', N09: 'chalk', N10: 'enamel', N11: 'steel', N12: 'steel',
@@ -715,7 +712,7 @@ const LOOK = {
   N45: 'rubber', W01: 'gear', W02: 'chrome', W03: 'cardboard', W04: 'shelf', W05: 'gear', W06: 'gear', W07: 'wood',
   W09: 'cardboard', W10: 'shelf', E01: 'gear', E02: 'tolex', E03: 'tolex', E04: 'gear', E05: 'pegboard', E06: 'shelf',
   N24B: 'carpet', N26B: 'steel', N30: 'steel', N31: 'wood', N32: 'wood', N33: 'gear', N34: 'tolex', N35: 'gear',
-  L20: 'lacquer', L21: 'lacquer', N46: 'tolex', N47: 'steel', N48: 'steel', N49: 'gear', // Dan's round-2 notes
+  L20: 'lacquer', N46: 'tolex', N47: 'steel', N48: 'steel', N49: 'gear', // Dan's round-2 notes
 };
 const MESS_LOOK = { cardboard: 'cardboard', rust: 'enamel', paint: 'steel', oil: 'rust', rubber: 'rubber', paper: 'paper', case: 'tolex' };
 // (only three of them light the room live: each live light costs every pixel, ~1.7 ms at 2 MP; the globes glow past the
@@ -784,11 +781,7 @@ const MODELS = {
   W07: { src: 'assets/models/test-desk.glb', yaw: Math.PI / 2 },
   N07: { src: 'assets/models/gas2-pump.glb', yaw: Math.PI / 2 },
   L19: { src: 'assets/models/guitar-rack.glb', yaw: Math.PI / 2 },
-  L02: { src: 'assets/models/bass.glb', yaw: Math.PI / 2 },
   L20: { src: 'assets/models/bass-natural.glb', yaw: Math.PI / 2 }, // natural ash, so the two new basses differ
-  L21: { src: 'assets/models/bass.glb', yaw: Math.PI / 2 },
-  L03: { src: 'assets/models/guitar-black.glb', yaw: Math.PI / 2 },
-  L18: { src: 'assets/models/bass.glb', yaw: Math.PI / 2 },
   R03: { src: 'assets/models/banjo.glb', yaw: -Math.PI / 2 },   // Dan, round 2: "make this a bingo"
   R10: { src: 'assets/models/ukulele.glb', yaw: -Math.PI / 2 }, // Dan, round 2: "make this ukilayly"
   N16: { src: 'assets/models/guitar-repair.glb', yaw: Math.PI / 2 },
@@ -854,7 +847,7 @@ const MODELS = {
   L11: { src: 'assets/models/drum-machine.glb', yaw: Math.PI / 2 }, // on the amp head, beside its lamp
   // batch 7, the far end + overhead (11-10; N20 globe, N39 traffic light and the A01/A02 traps reworked in place)
   N28: { src: 'assets/models/mini-fridge.glb', yaw: Math.PI / 2 },    // a cream bar fridge under our stickers
-  L17: { src: 'assets/models/pegboard-hoses.glb', yaw: Math.PI / 2 }, // v2: screwdrivers, a shadow board, hoses, only in the gaps round L02 / L03 / L18, the N18 cable bar and the amp
+  L17: { src: 'assets/models/pegboard-hoses.glb', yaw: Math.PI / 2 }, // v2: screwdrivers, a shadow board, hoses, only in the gaps round L02 / L03 / L18 (which Dan took out on round 5), the N18 cable bar and the amp
   N42: { src: 'assets/models/cable-tray.glb' },                       // the ladder tray along the trusses; v2: the cords end in it under a matte end cap (nothing hangs over the sign), a socket box on its cord at z 6.8
   M01: { src: 'assets/models/crt-casing.glb', crt: true }, // the CRTs: a casing around each live screen
   M02: { src: 'assets/models/crt-casing.glb', crt: true },
@@ -968,10 +961,7 @@ const textMat = (lit, w, h) => {
 const SIDE = [
   // Dan 11-03: the guitars get the start of the left wall; the wrenches hang over the workbench, under the parts shelf
   { id: 'L01', cat: 'garage', label: 'Pegboard: wrenches, spanners', side: -1, f: 0.58, w: 2.6, h: 1.0, d: 0.05, y: 1.5 },
-  { id: 'L02', cat: 'music', label: 'Bass (hanging)', side: -1, f: 0.915, w: 0.38, h: 1.15, d: 0.08, y: 1.8, on: 0 }, // was a guitar (Dan, round 2: "put a bass gar over here")
   { id: 'L20', cat: 'music', label: 'Bass (hanging)', side: -1, f: 0.3455, w: 0.38, h: 1.15, d: 0.08, y: 2.1, on: 0 }, // Dan, round 2: "lets put 2 bass"
-  { id: 'L21', cat: 'music', label: 'Bass (hanging)', side: -1, f: 0.3753, w: 0.38, h: 1.15, d: 0.08, y: 2.1, on: 0 },
-  { id: 'L03', cat: 'music', label: 'Guitar (hanging)', side: -1, f: 0.87, w: 0.38, h: 1.05, d: 0.08, y: 1.8, on: 0 },
   { id: 'L04', cat: 'music', label: 'Amp stack (head + 4x12)', side: -1, f: 0.82, w: 0.8, h: 1.55, d: 0.42, leds: 1 },
   { id: 'L05', cat: 'garage', label: 'Red tool chest', side: -1, f: 0.74, w: 0.8, h: 1.0, d: 0.5 },
   { id: 'L06', cat: 'music', label: 'Compressor rack (VU meters)', side: -1, f: 0.74, w: 0.6, h: 0.9, d: 0.48, y: 1.45, leds: 1, vu: 1 },
@@ -986,7 +976,6 @@ const SIDE = [
   { id: 'L15', cat: 'garage', label: 'Tyre rack', side: -1, f: 0.33, w: 1.0, h: 1.7, d: 0.65 },
   { id: 'L16', cat: 'music', label: 'Reel-to-reel tape machine', side: -1, f: 0.25, w: 0.7, h: 1.25, d: 0.55, vu: 1 },
   { id: 'L17', cat: 'garage', label: 'Pegboard: screwdrivers, hoses', side: -1, f: 0.155, w: 2.6, h: 1.5, d: 0.085, y: 1.85 }, // d 0.085: 59.5 mm at s 0.7, a thin board the bass wall hangs in front of
-  { id: 'L18', cat: 'music', label: 'Bass (hanging)', side: -1, f: 0.17, w: 0.38, h: 1.15, d: 0.08, y: 1.8, on: 0 },
   { id: 'L19', cat: 'music', label: 'Guitar rack (four electrics + an acoustic)', side: -1, f: 0.065, w: 1.3, h: 1.1, d: 0.5 },
   { id: 'R01', cat: 'garage', label: 'Parts-store shelf: exhausts, filters, oil', side: 1, f: 0.9, w: 2.4, h: 2.5, d: 0.5 },
   { id: 'R02', cat: 'music', label: 'Guitar combo amp', side: 1, f: 0.825, w: 0.65, h: 0.75, d: 0.35, leds: 1 },

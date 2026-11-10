@@ -50,7 +50,7 @@ function lockup(g, cx, cy, em, halo = 0) {
   g.restore();
 }
 function seg7(g, x, y, w, h, t, ch) {   // a 7-segment LED digit, top-left (x, y), slanted a little; its dark segments show faintly
-  const on = { 0: 'abcdef', 1: 'bc', 2: 'abged', 3: 'abgcd', 4: 'fgbc', 5: 'afgcd', 6: 'afgedc', 7: 'abc', 8: 'abcdefg', 9: 'abcdfg' }[ch] || '';
+  const on = { 0: 'abcdef', 1: 'bc', 2: 'abged', 3: 'abgcd', 4: 'fgbc', 5: 'afgcd', 6: 'afgedc', 7: 'abc', 8: 'abcdefg', 9: 'abcdfg', F: 'aefg', r: 'eg', E: 'adefg' }[ch] || '';
   const m = h / 2, q = t / 2, bar = (x0, y0, x1, y1, stroke) => { g.beginPath();
     if (y0 === y1) { g.moveTo(x0, y0); g.lineTo(x0 + q, y0 - q); g.lineTo(x1 - q, y0 - q); g.lineTo(x1, y0); g.lineTo(x1 - q, y0 + q); g.lineTo(x0 + q, y0 + q); }
     else { g.moveTo(x0, y0); g.lineTo(x0 + q, y0 + q); g.lineTo(x0 + q, y1 - q); g.lineTo(x0, y1); g.lineTo(x0 - q, y1 - q); g.lineTo(x0 - q, y0 + q); }
@@ -67,17 +67,18 @@ export function drawStreetAtlas(g) {
   g.fillStyle = BG; g.fillRect(0, 0, AT.w, AT.h);
   g.fillStyle = '#ffffff'; g.fillRect(...RG.white);
   lockup(g, 256, 80, 112, 5);   // the fascia's middle: GAS 2 on the dark band (its own stripe glows below it, in geometry)
-  // the price sign: a dark face in a thin warm frame, GAS 2 on top, two prices in LED digits
+  // the price sign: a dark face in a thin warm frame, GAS 2 on top, then its three grades, every one FREE (Dan, round 5:
+  // "normal free / premium free / race free": GAS 2 costs nothing): the grade in parchment, FrEE in LED segments
   const [sx, sy, sw, sh] = RG.sign;
   g.fillStyle = '#0d0b0e'; g.fillRect(sx, sy, sw, sh);
   g.strokeStyle = '#3a2a20'; g.lineWidth = 6; g.strokeRect(sx + 9, sy + 9, sw - 18, sh - 18);
   lockup(g, sx + sw / 2, sy + 112, 140, 6);
   g.fillStyle = '#3a2a20'; g.fillRect(sx + 38, sy + 212, sw - 76, 4);
-  for (const [row, price] of [[0, '349'], [1, '379']]) {
-    const dw = 62, dh = 100, t = 14, gap = 24, dot = 22, x0 = sx + (sw - (3 * dw + 2 * gap + dot)) / 2 + 8, y0 = sy + 246 + row * 126;
-    seg7(g, x0, y0, dw, dh, t, price[0]);
-    g.fillStyle = LED; g.fillRect(x0 + dw + gap / 2 + 2, y0 + dh - 12, 14, 14);
-    seg7(g, x0 + dw + gap + dot, y0, dw, dh, t, price[1]); seg7(g, x0 + 2 * dw + 2 * gap + dot, y0, dw, dh, t, price[2]);
+  for (const [row, grade] of [[0, 'NORMAL'], [1, 'PREMIUM'], [2, 'RACE']]) {
+    const dw = 38, dh = 62, t = 10, gap = 12, y0 = sy + 240 + row * 86, x1 = sx + sw - 30, x0 = x1 - (4 * dw + 3 * gap);
+    g.save(); g.font = '700 31px Oswald'; g.letterSpacing = '1.5px'; g.textAlign = 'left'; g.textBaseline = 'middle';
+    g.fillStyle = '#efe3c6'; g.fillText(grade, sx + 32, y0 + dh / 2 + 1); g.restore();
+    [...'FrEE'].forEach((ch, i) => seg7(g, x0 + i * (dw + gap), y0, dw, dh, t, ch));
   }
 }
 
