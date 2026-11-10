@@ -409,6 +409,24 @@ deploy": nothing on main, no deploy). Today's commits, all pushed: `064d8b9` bla
 `50c52b7` the street (built in, off), `6cbe654` round 5's street (G1, every grade FREE) + four guitars out + layers,
 `b90ec47` main merged; plus handoff commits.
 
+LIVE, unlisted, since 11-10 21:00 (`danavivi-fa`, on Dan's ask for a hidden page to see it load live and on his
+phone): https://revaudio.net/garage-9f3c/ (robots noindex, nofollow; not in the sitemap; nothing links to it).
+origin/main went `3419f07..200a599` as a fast-forward: this branch up to `eca276e` (no SHAs rewritten) + danavivi-fa's
+`8aef421` (the build integration `tools/garagepage/integration.mjs` + 1 line in `astro.config.mjs`), its merge
+`9fb1151` and `200a599` (the room's fonts and Lenis from the site, under the live CSP). Outside the room and tasks/,
+main also got this branch's own `DESIGN.md` and `.impeccable/config.json` changes (no page). Deploy run 42880463423
+succeeded (18:57-19:00 UTC); checked here: the page answers 200 with the noindex tag, the homepage 200. At build time
+the integration copies room.html (as index.html), street.js, lights/lights-on.js, layouts/, vendor/ and assets/ into
+`dist/garage-9f3c/`, swaps Google Fonts and jsDelivr for the site's own @font-face rules and `node_modules/lenis`
+(1.3.23, the same pin), and warns in the build log if a family or host is missing; the dev material stays out. Until
+Yoni's three CSP words land, the live page shows white models (danavivi-fa saw the same 194 drops + the meshopt wasm
+failure on live, and 0 violations under the proposed header in Chrome + iPhone WebKit).
+To update it: merge `feat/home-opening` into main and push (pull --rebase in the same command; main carries 3 commits
+this branch doesn't), ~3 min to live, the workflow purges Cloudflare. Reported by danavivi-fa as Dan's standing OK
+(given in its session, 11-10): commits that change only `tools/_home-opening/` (tasks/ notes ride along) may go to
+main without asking each time; anything else on main (src/, public/, astro.config, the homepage) still waits for his
+word. Dan has not said it to this session: confirm it with him once before the first such push.
+
 NEXT, in order:
 1. Land the three builds of Dan's round-5 notes (workflow `wf_3bb75485-05c`, finished 11-10 around 20:00, its last files 19:59; each had a Sonnet
    review, N03 a Fable fix pass). Lasting copies (git-ignored): `/Users/danavivi/projects/revaudio/revaudio-website/
@@ -430,7 +448,7 @@ NEXT, in order:
      with its `lift_pump.py` (prints the new slot).
    - Then: the overlap check, the loading pictures (`lights/render.mjs --check` + `lights/check.mjs`; copies with
      900 s timeouts for a loaded Mac in `.claude/garage-bench-2026-11-10/lights-run/`, run from the worktree root),
-     commit by path, push.
+     commit by path, push the branch; then the live page (LIVE above).
 2. Bench round 6: the same link as round 5 (https://claude.ai/artifact/54aorRBcCAvWJTrPHqaPZm, personal account; pass
    `url`, collection `notes-r6`). Cards: the street (G1 + the FREE sign: close, first screen, before), the pedals
    (close, near, before), the left wall (four out + the new L20: close, walk, before), N03 (walk 0.15 + its close pose
