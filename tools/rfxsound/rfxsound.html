@@ -81,6 +81,8 @@
   const IDS = pedals.map((p) => p.id);
   let saved = null;
   try { saved = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) {}
+  // round 3 lowered the echo's top loop (0.85 -> 0.72, its tail hung): an untouched old default takes the new one
+  if (saved?.echo?.fbMax === 0.85) saved.echo.fbMax = SOUND_DEFAULTS.echo.fbMax;
   const snd = createScrollSound(saved || undefined);
   const S = snd.settings;
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
@@ -94,6 +96,7 @@
       ['bell.bright', 'Strike', 0, 2, 0.01, '', 'how much metal in the hit: 0 = soft sine, 2 = glassy'],
       ['bell.ratio', 'Bell colour', 1, 5, 0.01, '', '3.5 = a classic bell · 1.4 = a soft chime · 2 = a hollow tone'],
       ['speed', 'Scroll speed adds', 0, 1, 0.01, '%', 'how much a fast scroll rings louder and brighter'],
+      ['weird', 'WEIRDNESS', 0, 1, 0.01, '%', 'how often a ring glitches (stutter, tape stop, pitch blip, reverse, bit-crush, chop, odd metal) and how far bells detune · 0 = clean bells'],
       ['arrive', 'Arrival chime', 0, 1, 0.01, '%', 'two soft notes when a new pedal swings in (0 = off)'],
     ] },
     { id: 'halo', t: 'Halo · SIZE', c: [

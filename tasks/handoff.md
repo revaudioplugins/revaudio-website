@@ -22,6 +22,14 @@ Claim: OPEN, Claude Code (Yoni's laptop 2), worktree `../revaudio-website-rfxsou
   key now `rfxsound:v2`. Checks (Edge): sweep 0 -> 100 -> 0 % = 22 bells (12-detent pedals), 48 (PITCH); peaks
   -41.6 .. -43.9 dBFS at the default -40 dB (first version -28.9 .. -35, so 8-13 dB quieter), 0 % energy under 300 Hz,
   -120 dB within 1.5 s of the scroll stopping (GLUE), no page errors. Not checked: by ear, phones.
+- Round 3 (Yoni): "the feedback of the echo stays stuck. when moving from the other section - silence"; "make the
+  sounds bit more interesting like sudden glitches ... make a knob for weirdness". Built: each pedal has an on-stage
+  gain; leaving a pedal fades its tails out (tc 0.1 s) and the echo's loop drains (feedback 0 off stage); the top
+  loop gain 0.85 -> 0.72 (the bench swaps an untouched saved 0.85). WEIRDNESS 0..1 (default 0.35): a ring glitches
+  with chance weird / 2 (stutter / tape stop / pitch blip / reverse swell / bit-crush / gated chop / odd metal + zip),
+  every bell detunes up to +-25 cents x weird. Checks (Edge): ECHO swept to 92 %, then on to REVERB: -53 dBFS rms
+  on ECHO, -63 at 150 ms, -89 at 300 ms, silent at 600 ms; WEIRDNESS 100 % on all five: glitches fire, peaks
+  -42.5 .. -44.3 dBFS (same as clean); arrival chime HALO -> PITCH plays; no page errors. Not checked: by ear.
 
 ## 2026-11-09 — /revfx trial form sends the download at once (`gateWired: true`) (Claude Code `revaudio-0b [3311c0]`, Yoni's laptop 2) — branch `revfx-gate-on` — PUSHED TO MAIN 2026-11-09 on Yoni's "deploy" (worker deployed first, version `b31a75bd`)
 

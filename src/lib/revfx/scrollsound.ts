@@ -14,7 +14,9 @@
  *   GLUE   THRESHOLD  the ladder into a compressor at the readout's dB (0 .. -32) with auto makeup: lower = the
  *                      ring squeezed flatter and longer
  * A fast scroll rings a short run (up to 3 bells) a little louder and brighter; a new pedal swinging in gets a soft
- * two-note chime. Nothing is a recording: Web Audio oscillators only.
+ * two-note chime; leaving a pedal silences its tails (the echo's loop is drained). WEIRDNESS (0..1) lets a ring
+ * glitch now and then: a stutter, a tape stop, a pitch blip, a reverse swell, a bit-crush, a gated chop or an odd
+ * metal tone, plus a little random detune on every bell. Nothing is a recording: Web Audio oscillators only.
  *
  * Bench stage: tools/rfxsound drives it (/__rfxsound, dev only); the page does not import it yet. Audio can only start
  * from a user gesture, so start() must be called from a click / key handler.
@@ -27,6 +29,7 @@ export interface SoundSettings {
   bell: { decay: number; bright: number; ratio: number };   // ring length s, FM brightness, modulator ratio (3.5 = bell)
   speed: number;    // 0..1, how much a fast scroll adds (louder + brighter)
   arrive: number;   // 0..1, the chime when a pedal swings in (0 = off)
+  weird: number;    // 0..1, how often a ring glitches (and how far bells detune)
   level: Record<PedalId, number>;   // dB trim per pedal
   halo: { depth: number; wet: number };                     // ms of delay sweep at 100 %, ensemble level at 100 %
   echo: { time: number; fbMax: number; dark: number; wet: number };   // delay s, loop gain at 92 %, loop low-pass Hz, repeats level
@@ -37,10 +40,10 @@ export interface SoundSettings {
 export const SOUND_DEFAULTS: SoundSettings = {
   master: -40, tone: 7500,
   bell: { decay: 0.9, bright: 1, ratio: 3.5 },
-  speed: 0.6, arrive: 0.5,
+  speed: 0.6, arrive: 0.5, weird: 0.35,
   level: { halo: 0, pitch: 0, echo: 0, reverb: 0, glue: 0 },
   halo: { depth: 3.5, wet: 0.9 },
-  echo: { time: 0.17, fbMax: 0.85, dark: 3400, wet: 0.7 },
+  echo: { time: 0.17, fbMax: 0.72, dark: 3400, wet: 0.7 },   // 0.72: the top tail dies in ~3 s, not ~10
   reverb: { long: 4, wet: 0.9, bright: 6500 },
   glue: { ratio: 4, makeup: 0.7 },
 };
@@ -56,7 +59,14 @@ const semitone = (t: number) => Math.round(value('pitch', t) * 24 - 12);
 const detent = (id: PedalId, t: number) => (id === 'pitch' ? semitone(t) + 12 : Math.min(LADDER.length - 1, Math.floor(t * LADDER.length)));
 const noteOf = (id: PedalId, d: number) => (id === 'pitch' ? PITCH_BASE * Math.pow(2, (d - 12) / 12) : LADDER[d]);
 
-type Voice = { input: GainNode; trim: GainNode; knob(t: number): void; apply(): void };
+type Voice = {
+  input: GainNode; trim: GainNode; out: GainNode;   // out = on stage (1) or not (0)
+  knob(t: number): void; apply(): void;
+  enter?(): void; leave?(): void;                   // echo: refill / drain its loop
+};
+/** a glitched bell: another modulator ratio, a pitch bend to bend x f over bendT s, a reverse swell, a bit-crush
+ *  (steps), a square gate (Hz), a shorter ring (ringMul) */
+type Glitch = { ratio?: number; bend?: number; bendT?: number; rev?: boolean; crush?: number; gate?: number; ringMul?: number };
 
 export type ScrollSound = ReturnType<typeof createScrollSound>;
 
@@ -77,34 +87,89 @@ export function createScrollSound(init?: Partial<SoundSettings>) {
   // ── the bell ────────────────────────────────────────────────────────────────────────────────────────────────────
   /** FM bell: sine carrier, a sine modulator at an inharmonic ratio whose index falls fast (the strike), and a faint
    *  glassy partial. High notes ring shorter and strike softer, so the top of the ladder never gets sharp. */
-  function bell(dest: AudioNode, at: number, f: number, vel: number, pan: number) {
+  function bell(dest: AudioNode, at: number, f: number, vel: number, pan: number, g: Glitch = {}) {
     const c = ctx!;
     const car = c.createOscillator(), mod = c.createOscillator(), glass = c.createOscillator();
     const idx = c.createGain(), env = c.createGain(), gg = c.createGain(), p = c.createStereoPanner();
+    const ratio = g.ratio ?? S.bell.ratio;
     const tame = Math.min(1, 1100 / f);
     const index = (0.7 + 0.9 * vel) * S.bell.bright * tame;
-    car.frequency.value = f; mod.frequency.value = f * S.bell.ratio; glass.frequency.value = f * 2.76;
-    idx.gain.setValueAtTime(index * f * S.bell.ratio, at);
-    idx.gain.setTargetAtTime(index * 0.08 * f * S.bell.ratio, at, 0.07);
+    const detune = (Math.random() - 0.5) * 50 * S.weird;      // cents
+    [car, mod, glass].forEach((o) => { o.detune.value = detune; });
+    car.frequency.setValueAtTime(f, at); mod.frequency.setValueAtTime(f * ratio, at); glass.frequency.value = f * 2.76;
+    if (g.bend) {
+      const end = at + (g.bendT ?? 0.25);
+      car.frequency.exponentialRampToValueAtTime(f * g.bend, end);
+      mod.frequency.exponentialRampToValueAtTime(f * ratio * g.bend, end);
+    }
+    idx.gain.setValueAtTime(index * f * ratio, at);
+    idx.gain.setTargetAtTime(index * 0.08 * f * ratio, at, 0.07);
     mod.connect(idx).connect(car.frequency);
     gg.gain.setValueAtTime(0.06 * vel * tame, at);
     gg.gain.setTargetAtTime(0, at, 0.05);
     glass.connect(gg).connect(env);
-    car.connect(env).connect(p).connect(dest);
+    car.connect(env);
+    let tail: AudioNode = env;
+    if (g.crush) { const ws = c.createWaveShaper(); ws.curve = crushCurve(g.crush); tail = tail.connect(ws); }
+    let lfo: OscillatorNode | null = null;
+    if (g.gate) {
+      const gate = c.createGain(), depth = c.createGain();
+      lfo = c.createOscillator(); lfo.type = 'square'; lfo.frequency.value = g.gate;
+      gate.gain.value = 0.5; depth.gain.value = 0.5;
+      lfo.connect(depth).connect(gate.gain);
+      tail = tail.connect(gate);
+    }
+    tail.connect(p).connect(dest);
     p.pan.value = Math.max(-1, Math.min(1, pan));
-    const ringS = S.bell.decay * Math.pow(880 / f, 0.35);
+    const ringS = S.bell.decay * Math.pow(880 / f, 0.35) * (g.ringMul ?? 1);
     env.gain.setValueAtTime(0, at);
-    env.gain.linearRampToValueAtTime(0.32 * vel, at + 0.002);
-    env.gain.setTargetAtTime(0, at + 0.002, ringS / 3);
-    const end = at + ringS * 2.5 + 0.1;
-    [car, mod, glass].forEach((o) => { o.start(at); o.stop(end); });
+    if (g.rev) {                                              // swells in, then cuts: a bell played backwards
+      env.gain.linearRampToValueAtTime(0.3 * vel, at + 0.22);
+      env.gain.setTargetAtTime(0, at + 0.22, 0.012);
+    } else {
+      env.gain.linearRampToValueAtTime(0.32 * vel, at + 0.002);
+      env.gain.setTargetAtTime(0, at + 0.002, ringS / 3);
+    }
+    const end = at + (g.rev ? 0.4 : ringS * 2.5 + 0.1) + (g.bendT ?? 0);
+    [car, mod, glass, ...(lfo ? [lfo] : [])].forEach((o) => { o.start(at); o.stop(end); });
+  }
+  const crushCurves = new Map<number, Float32Array>();
+  /** a staircase: the bell squeezed into a few levels (a bit-crusher) */
+  function crushCurve(steps: number): Float32Array {
+    let k = crushCurves.get(steps);
+    if (!k) {
+      k = new Float32Array(1025);
+      for (let i = 0; i < k.length; i++) { const x = (i / 512 - 1) * 3; k[i] = Math.max(-1, Math.min(1, Math.round(x * steps) / steps)) / 3; }
+      crushCurves.set(steps, k);
+    }
+    return k;
+  }
+
+  /** WEIRDNESS: one random glitch in place of a plain bell; returns the time it takes, so a run keeps its spacing */
+  function glitch(dest: AudioNode, at: number, f: number, vel: number, pan: number): number {
+    const r = Math.random(), pick = <T,>(a: T[]) => a[Math.floor(Math.random() * a.length)];
+    if (r < 0.24) {                                           // stutter: the bell retriggered, quick and fading
+      const n = 3 + Math.floor(Math.random() * (2 + 3 * S.weird)), gap = pick([0.032, 0.045, 0.06]);
+      const step = pick([1, 1, Math.pow(2, 1 / 12), Math.pow(2, -2 / 12), 2]);
+      for (let k = 0; k < n; k++) bell(dest, at + k * gap, f * Math.pow(step, k), vel * (1 - k / (n + 1)), k % 2 ? -pan : pan, { ringMul: 0.22 });
+      return n * gap;
+    }
+    if (r < 0.4) { bell(dest, at, f, vel, pan, { bend: 0.3, bendT: 0.35 }); return 0.05; }        // tape stop
+    if (r < 0.54) { bell(dest, at, f, vel, pan, { bend: pick([2, 1.5, 0.5]), bendT: 0.05, ringMul: 0.7 }); return 0.04; }   // pitch blip
+    if (r < 0.68) { bell(dest, at, f, vel * 0.9, pan, { rev: true }); return 0.24; }             // reverse swell
+    if (r < 0.8) { bell(dest, at, f, vel * 0.8, pan, { crush: 2 + Math.floor(Math.random() * 4) }); return 0.03; }   // bit-crush
+    if (r < 0.9) { bell(dest, at, f, vel, pan, { gate: 14 + Math.random() * 28 }); return 0.03; }   // gated chop
+    bell(dest, at, f, vel * 0.85, pan, { ratio: 1.07 + Math.random() * 6 });                       // odd metal
+    bell(dest, at + 0.012, f * 3.1, vel * 0.25, -pan, { bend: 0.25, bendT: 0.04, ringMul: 0.12 });   // + a zip
+    return 0.04;
   }
 
   // ── the five effects (each pedal's bells go through its own) ────────────────────────────────────────────────────
   function shell() {
-    const c = ctx!, input = c.createGain(), trim = c.createGain();
-    trim.connect(bus);
-    return { input, trim };
+    const c = ctx!, input = c.createGain(), trim = c.createGain(), out = c.createGain();
+    out.gain.value = 0;
+    trim.connect(out).connect(bus);
+    return { input, trim, out };
   }
 
   function haloVoice(): Voice {
@@ -146,12 +211,16 @@ export function createScrollSound(init?: Partial<SoundSettings>) {
     L.fb.connect(R.d); R.fb.connect(L.d);               // ping-pong: each side feeds the other
     v.input.connect(L.d);
     wet.connect(v.trim);
-    let fb = 0;
+    let fb = 0, on = false;
     const set = () => {
-      [L, R].forEach((x) => { smooth(x.d.delayTime, S.echo.time, 0.1); smooth(x.lp.frequency, S.echo.dark); smooth(x.fb.gain, Math.min(fb, 0.95) * (S.echo.fbMax / 0.92)); });
+      [L, R].forEach((x) => { smooth(x.d.delayTime, S.echo.time, 0.1); smooth(x.lp.frequency, S.echo.dark); smooth(x.fb.gain, on ? Math.min(fb, 0.95) * (S.echo.fbMax / 0.92) : 0); });
       smooth(wet.gain, S.echo.wet);
     };
-    return { ...v, knob(t) { fb = value('echo', t); set(); }, apply: set };
+    return {
+      ...v, knob(t) { fb = value('echo', t); set(); }, apply: set,
+      enter() { on = true; set(); },
+      leave() { on = false; set(); },   // off stage the loop drains, so no repeat is left circling
+    };
   }
 
   function reverbVoice(): Voice {
@@ -232,7 +301,8 @@ export function createScrollSound(init?: Partial<SoundSettings>) {
     for (let k = run - 1; k >= 0; k--) {
       const d = to - dir * k;
       const pan = (d / top - 0.5) * 0.6 + (Math.random() - 0.5) * 0.2;   // low notes a little left, high a little right
-      bell(voices[id].input, at, noteOf(id, d), vel * (k ? 0.8 : 1), pan);
+      if (!k && Math.random() < S.weird * 0.5) at += glitch(voices[id].input, at, noteOf(id, d), vel, pan);
+      else bell(voices[id].input, at, noteOf(id, d), vel * (k ? 0.8 : 1), pan);
       at += 0.028;
     }
     nextFree = at;
@@ -265,6 +335,7 @@ export function createScrollSound(init?: Partial<SoundSettings>) {
         voices = { halo: haloVoice(), pitch: pitchVoice(), echo: echoVoice(), reverb: reverbVoice(), glue: glueVoice() };
         (Object.keys(voices) as PedalId[]).forEach((id) => voices[id].knob(knobT[id]));
         applyAll();
+        if (active) { voices[active].out.gain.value = 1; voices[active].enter?.(); }
       }
       await ctx.resume();
     },
@@ -275,11 +346,17 @@ export function createScrollSound(init?: Partial<SoundSettings>) {
       await new Promise((r) => setTimeout(r, 350));
       await ctx.suspend();
     },
-    /** the pedal on stage (null = none); a new one swinging in gets a soft chime */
+    /** the pedal on stage (null = none): the one leaving goes quiet (tails cut, the echo's loop drained), a new one
+     *  swinging in gets a soft chime */
     setActive(id: PedalId | null) {
       if (id === active) return;
+      const prev = active;
       active = id;
-      if (!id || !ctx || ctx.state !== 'running' || S.arrive <= 0) return;
+      if (!ctx) return;
+      const now = ctx.currentTime;
+      if (prev) { voices[prev].out.gain.setTargetAtTime(0, now, 0.1); voices[prev].leave?.(); }
+      if (id) { voices[id].out.gain.setTargetAtTime(1, now, 0.01); voices[id].enter?.(); }
+      if (!id || ctx.state !== 'running' || S.arrive <= 0) return;
       const d = detent(id, knobT[id]), at = Math.max(ctx.currentTime + 0.01, nextFree);
       const top = id === 'pitch' ? 24 : LADDER.length - 1;
       const up = Math.min(top, d + (id === 'pitch' ? 7 : 2));   // a fifth above (2 ladder steps = a fifth or so)
