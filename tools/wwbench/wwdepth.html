@@ -8,14 +8,15 @@
 <title>TV Bench · Depth</title>
 <!-- TV bench · Depth (Dan 2026-11-10: "lets create a bench specific for the revlimiter depth in the tv, add every
      parameter in it so i can adjust how the html look in the tv, then we copy the same principle and parameters to the
-     other plugins"). RevLimiter's real screen playing the song loop (tools/tv-anim, 194 x 94 = 2 x 2 px, Dan's pick),
-     inside the REAL dev homepage TV, laptop + phone, in same-origin iframes. Every parameter of how the picture sits in
-     the tube is a slider: the grade (look A: its colour vs the channel's phosphor, blacks, mids, highlights), the
-     glow, the pixels, the edges, the tube (scanlines, fringe, grain, flicker), its size and place, and the screen's own
-     glass. This page drives the frames from outside: one live <style> (the --wwd-* values + the look's rules), one SVG
-     filter (the grade), and the loop's frames, set one by one on the picture (so it can pause and change speed).
-     Nothing in the page's code changes. COPY SETTINGS when happy and hand it back ("apply depth bench"): one set of
-     values, for every plugin. Dev only (integration.mjs bails outside `astro dev`): /__wwdepth -->
+     other plugins"). Every plugin's picture inside the REAL dev homepage TV, laptop + phone, in same-origin iframes:
+     RevLimiter's real screen playing the song loop (tools/tv-anim, 194 x 94 = 2 x 2 px, Dan's pick); GAS, GAS 2,
+     DRIFT and Radio Roulette their pictures today at the same 2 x 2 pixels (DRIFT's video live), until their own loops
+     are recorded. Every parameter of how a picture sits in the tube is a slider, one set for all five: size and place,
+     the grade (look A), glow, pixels, edges, the tube, the screen's own glass, the loop's speed. The defaults are
+     Dan's first COPY SETTINGS (2026-11-10, tools/wwbench/wwdepth-settings.json). This page drives the frames from
+     outside: one live <style> (the --wwd-* values + the look's rules), one SVG filter per channel (the grade), the
+     pictures. Nothing in the page's code changes. COPY SETTINGS -> "apply depth bench". GAS 2 keeps floating (Dan's
+     pin, round 2): the look follows its outline. Dev only (integration.mjs bails outside `astro dev`): /__wwdepth -->
 <style>
   :root { --bg: #0d0a12; --panel: #17121f; --line: #2c2338; --ink: #efe8f6; --dim: #a597b8; --acc: #ff9a3d; --acc-ink: #ffe9d6; }
   * { box-sizing: border-box; }
@@ -31,6 +32,7 @@
   .seg button:first-child { border-radius: 8px 0 0 8px; margin-left: 0; }
   .seg button:last-child { border-radius: 0 8px 8px 0; }
   .seg button.on { background: var(--acc); border-color: var(--acc); color: #261102; font-weight: 700; }
+  .seg button small { font-weight: 400; opacity: .75; }
   button.primary { background: var(--acc); border-color: var(--acc); color: #261102; font-weight: 700; letter-spacing: .04em; }
   button.big { padding: 8px 16px; font-weight: 700; letter-spacing: .06em; min-width: 8.5em; }
   .lbl { color: var(--dim); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
@@ -65,9 +67,9 @@
 <body>
 <header>
   <h1>TV bench · Depth</h1>
-  <span class="lbl">RevLimiter in the tube · the song loop · 2 × 2 pixels</span>
+  <span class="seg" id="chan" title="Light a plugin on both TVs: one set of values for all five"></span>
   <button class="big" id="play" title="Pause on a frame to look close; play again">❚❚ PAUSE</button>
-  <span class="seg" id="look" title="The depth look on, or off (the loop with nothing on it) to compare">
+  <span class="seg" id="look" title="The depth look on, or off (the pixels with nothing on them) to compare">
     <button data-l="on">LOOK ON</button><button data-l="off">OFF</button>
   </span>
   <span class="seg" id="view">
@@ -84,7 +86,7 @@
       <div class="bar"><b>Laptop</b> <select data-size aria-label="Laptop size"></select>
         <span class="seg" id="zoom" title="Look close: the frame at its real size or twice it, scrolled to the picture (scroll to look round)">
           <button data-z="0">FIT</button><button data-z="1">1:1</button><button data-z="2">×2</button>
-        </span></div>
+        </span><span class="note" id="what"></span></div>
       <div class="vp"><iframe title="Homepage at laptop size"></iframe></div>
     </section>
     <section class="stage" data-f="phone">
@@ -98,14 +100,19 @@
 (() => {
   const KEY = 'wwdepth:v1';
   const WALL = '[data-wordwall]';
-  const SLUG = 'revlimiter';
-  const FRAMES = '/tools/wwbench/anim/s194/f_'; // + 000.png ... (tools/tv-anim/cut-webp.py <frames> <webp> 194 15 80 <this dir>)
-  const N = 194, M = 94;                        // the loop's pixels
-  const P = `html:not(.hc) .ww[data-ww-bg='screen'] > .ww-panel[data-ww-panel='${SLUG}']`;
+  const SLUGS = [['revlimiter', 'RevLimiter'], ['gas', 'GAS'], ['gas2', 'GAS 2'], ['drift', 'DRIFT'], ['radio-roulette', 'Radio Roulette']];
+  // each channel's phosphor (WordWall.astro, THE CHANNELS); the page's --ww-ch-<slug>-h / -s win when read
+  const CH = { revlimiter: [26, 78], gas: [46, 62], gas2: [14, 58], 'radio-roulette': [38, 28], drift: [280, 70] };
+  // the recorded loops (tools/tv-anim: cut-webp.py <frames> <webp> 194 15 80 <dir>); the others show their own picture
+  const LOOPS = { revlimiter: { dir: '/tools/wwbench/anim/s194/f_', n: 194, m: 94 } };
+  const PX = 2;                 // css px per picture pixel on the laptop's TV (Dan's 2 x 2)
+  const FLOAT = 'gas2';         // floats on the glass, no window (Dan's pin, round 2: "should be hovering")
+  const SEL = (slug) => `html:not(.hc) .ww[data-ww-bg='screen'] > .ww-panel[data-ww-panel='${slug}']`;
 
-  /* every tunable. k = its key in COPY SETTINGS; css: written as --wwd-<k> on the panel (with its unit); filter: the
-     grade's SVG filter is rebuilt; page: one of WordWall.astro's own --ww-* on the wall (its default read off the page).
-     def = look A as shown on the Inside the TV bench (rounds 3-4) */
+  /* every tunable. k = its key in COPY SETTINGS; css: written as --wwd-<k> on the wall (with its unit); filter: the
+     grades are rebuilt; run: read by the loop; page: one of WordWall.astro's own --ww-* (its default read off the
+     page). def = Dan's first COPY SETTINGS (2026-11-10). Bloom, its reach, where it starts and the speed sat at the
+     ends of their ranges: the ranges are wider now */
   const GROUPS = [
     { title: 'Size and place', ctl: [
       { k: 'scale', label: 'Size', hint: 'the picture in its window: smaller sits further back (the 2 × 2 pixels grow and shrink with it)', min: 0.5, max: 1.3, step: 0.01, def: 1, unit: '', as: 'css', show: '×' },
@@ -113,43 +120,43 @@
       { k: 'y', label: 'Up / down', hint: 'px', min: -80, max: 80, step: 1, def: 0, unit: 'px', as: 'css' },
     ] },
     { title: 'Colour', note: 'how the tube draws it', ctl: [
-      { k: 'mix', label: 'Its colours ↔ the channel’s', hint: '0 = RevLimiter’s own colours, 1 = all the channel’s amber phosphor', min: 0, max: 1, step: 0.01, def: 0.45, as: 'filter' },
+      { k: 'mix', label: 'Its colours ↔ the channel’s', hint: '0 = the plugin’s own colours, 1 = all the channel’s phosphor', min: 0, max: 1, step: 0.01, def: 0.45, as: 'filter' },
       { k: 'ground', label: 'Blacks', hint: 'how light its darkest parts are, in the channel’s colour: the glass’s own dark (0 = black holes in the screen)', min: 0, max: 30, step: 0.5, def: 8, as: 'filter' },
       { k: 'mid', label: 'Mid-tones', hint: 'how bright the middle of its light is, on the channel’s side of the mix', min: 20, max: 75, step: 1, def: 48, as: 'filter' },
       { k: 'hot', label: 'Highlights', hint: 'how bright its brightest parts get, on the channel’s side', min: 55, max: 100, step: 1, def: 92, as: 'filter' },
       { k: 'hotSat', label: 'Highlight colour', hint: '0 = the brightest parts burn white, 1 = they keep the channel’s colour', min: 0, max: 1, step: 0.01, def: 0.55, as: 'filter' },
-      { k: 'lift', label: 'Brightness', hint: 'its light on the tube (the gaps between the pixels darken it)', min: 0.6, max: 1.6, step: 0.01, def: 1.12, unit: '', as: 'css', show: '×' },
-      { k: 'con', label: 'Contrast', hint: 'a tube crushes the blacks and blooms the whites a little', min: 0.6, max: 1.6, step: 0.01, def: 1, unit: '', as: 'css', show: '×' },
+      { k: 'lift', label: 'Brightness', hint: 'its light on the tube (the gaps between the pixels darken it)', min: 0.6, max: 1.8, step: 0.01, def: 1.39, unit: '', as: 'css', show: '×' },
+      { k: 'con', label: 'Contrast', hint: 'a tube crushes the blacks and blooms the whites a little', min: 0.6, max: 1.6, step: 0.01, def: 1.03, unit: '', as: 'css', show: '×' },
       { k: 'sat', label: 'Saturation', hint: '0 = grey, 1 = as the grade leaves it', min: 0, max: 2, step: 0.01, def: 1, unit: '', as: 'css', show: '×' },
     ] },
     { title: 'Glow', ctl: [
-      { k: 'bloom', label: 'Bloom', hint: 'the bright parts glowing into their neighbours (the needle, the readouts, the LEDs)', min: 0, max: 1.5, step: 0.01, def: 0.3, as: 'filter' },
-      { k: 'blur', label: 'Bloom reach', hint: 'how far the bloom spreads, in the picture’s own pixels ×2', min: 0, max: 20, step: 0.5, def: 7, as: 'filter' },
-      { k: 'bloomFrom', label: 'Bloom starts at', hint: 'how bright a part must be to glow (lower = more of it glows)', min: 0.2, max: 0.95, step: 0.01, def: 0.5, as: 'filter' },
-      { k: 'halo', label: 'Light on the glass', hint: 'the picture lighting the glass round it, in the channel’s colour (0 = none)', min: 0, max: 0.8, step: 0.01, def: 0, unit: '', as: 'css' },
-      { k: 'haloPx', label: 'Light reach', hint: 'px', min: 0, max: 140, step: 1, def: 40, unit: 'px', as: 'css' },
+      { k: 'bloom', label: 'Bloom', hint: 'the bright parts glowing into their neighbours (the needle, the readouts, the LEDs)', min: 0, max: 3, step: 0.01, def: 1.5, as: 'filter' },
+      { k: 'blur', label: 'Bloom reach', hint: 'how far the bloom spreads, in the picture’s own pixels ×2', min: 0, max: 40, step: 0.5, def: 19, as: 'filter' },
+      { k: 'bloomFrom', label: 'Bloom starts at', hint: 'how bright a part must be to glow (lower = more of it glows)', min: 0.2, max: 0.99, step: 0.01, def: 0.93, as: 'filter' },
+      { k: 'halo', label: 'Light on the glass', hint: 'the picture lighting the glass round it, in the channel’s colour (0 = none)', min: 0, max: 0.8, step: 0.01, def: 0.25, unit: '', as: 'css' },
+      { k: 'haloPx', label: 'Light reach', hint: 'px', min: 0, max: 140, step: 1, def: 16, unit: 'px', as: 'css' },
     ] },
     { title: 'Pixels', ctl: [
-      { k: 'cell', label: 'Lines between the pixels', hint: 'how dark the gaps round each 2 × 2 pixel are (0 = no gaps)', min: 0, max: 1, step: 0.01, def: 0.4, unit: '', as: 'css' },
-      { k: 'gap', label: 'Line width', hint: '% of each pixel the gap takes', min: 0, max: 60, step: 1, def: 26, unit: '%', as: 'css' },
+      { k: 'cell', label: 'Lines between the pixels', hint: 'how dark the gaps round each 2 × 2 pixel are (0 = no gaps)', min: 0, max: 1, step: 0.01, def: 0.18, unit: '', as: 'css' },
+      { k: 'gap', label: 'Line width', hint: '% of each pixel the gap takes', min: 0, max: 60, step: 1, def: 13, unit: '%', as: 'css' },
       { k: 'focus', label: 'Focus', hint: 'px of blur: 0 = sharp pixels, more = soft, like phosphor dots', min: 0, max: 2, step: 0.05, def: 0, unit: 'px', as: 'css' },
     ] },
     { title: 'Edges', note: 'how it meets the glass', ctl: [
       { k: 'fx', label: 'Fade at the sides', hint: '% of the width that fades into the glass at each side', min: 0, max: 30, step: 0.5, def: 5, unit: '%', as: 'css' },
       { k: 'fy', label: 'Fade top and bottom', hint: '% of the height', min: 0, max: 30, step: 0.5, def: 7, unit: '%', as: 'css' },
       { k: 'r', label: 'Corners', hint: 'px of rounding', min: 0, max: 48, step: 1, def: 0, unit: 'px', as: 'css' },
-      { k: 'vig', label: 'Darker towards its edges', hint: 'the picture falls off to its own edges, like the tube does', min: 0, max: 1, step: 0.01, def: 0, unit: '', as: 'css' },
+      { k: 'vig', label: 'Darker towards its edges', hint: 'the picture falls off to its own edges, like the tube does', min: 0, max: 1, step: 0.01, def: 0.39, unit: '', as: 'css' },
       { k: 'vigIn', label: 'Darkening starts', hint: '% from the middle where it starts', min: 20, max: 95, step: 1, def: 60, unit: '%', as: 'css' },
       { k: 'inset', label: 'Sunk in', hint: 'a shadow inside its edge, as if it sat below the glass', min: 0, max: 1, step: 0.01, def: 0, unit: '', as: 'css' },
       { k: 'insetPx', label: 'Sunk-in reach', hint: 'px', min: 0, max: 60, step: 1, def: 18, unit: 'px', as: 'css' },
     ] },
     { title: 'In the tube', ctl: [
-      { k: 'scan', label: 'Scanlines on it', hint: 'the tube’s lines over the picture itself (the glass has its own under it, see Whole screen)', min: 0, max: 0.7, step: 0.01, def: 0, unit: '', as: 'css' },
+      { k: 'scan', label: 'Scanlines on it', hint: 'the tube’s lines over the picture itself (the glass has its own under it, see Whole screen)', min: 0, max: 0.7, step: 0.01, def: 0.14, unit: '', as: 'css' },
       { k: 'scanPx', label: 'Scanline spacing', hint: 'px from one line to the next', min: 2, max: 8, step: 1, def: 3, unit: 'px', as: 'css' },
       { k: 'split', label: 'Colour fringe', hint: 'px the red and the blue drift apart sideways, like an old tube’s convergence', min: 0, max: 4, step: 0.1, def: 0, as: 'filter' },
       { k: 'grain', label: 'Grain', hint: 'moving noise on the picture', min: 0, max: 0.3, step: 0.005, def: 0, as: 'filter' },
       { k: 'grainSize', label: 'Grain size', hint: 'higher = finer', min: 0.2, max: 1.4, step: 0.05, def: 0.9, as: 'filter' },
-      { k: 'flicker', label: 'Flicker', hint: 'its light wavers a little, frame to frame', min: 0, max: 0.25, step: 0.005, def: 0, as: 'run' },
+      { k: 'flicker', label: 'Flicker', hint: 'its light wavers a little, frame to frame', min: 0, max: 0.25, step: 0.005, def: 0.045, as: 'run' },
     ] },
     { title: 'Whole screen', note: 'the TV’s own, under and over everything', ctl: [
       { k: '--ww-scr-bright', label: 'Screen glow', hint: 'how lit the tube behind is', min: 0.3, max: 1.8, step: 0.01, as: 'page', show: '×' },
@@ -158,7 +165,7 @@
       { k: '--ww-scr-curve', label: 'Tube curve', hint: 'how dark the glass falls off towards its edges', min: 0, max: 1, step: 0.01, as: 'page' },
     ] },
     { title: 'Motion', ctl: [
-      { k: 'speed', label: 'Speed', hint: 'the song loop (1 = real time, 15 frames a second)', min: 0.25, max: 2, step: 0.05, def: 1, as: 'run', show: '×' },
+      { k: 'speed', label: 'Speed', hint: 'a recorded loop (RevLimiter’s song; 1 = real time, 15 frames a second)', min: 0.25, max: 3, step: 0.05, def: 1.8, as: 'run', show: '×' },
     ] },
   ];
   const ALL = GROUPS.flatMap((g) => g.ctl);
@@ -168,45 +175,54 @@
     phone: [[402, 714, 'iPhone 17 Pro'], [390, 844], [375, 667, 'iPhone SE']],
   };
 
-  let st = { view: 'both', size: { laptop: 0, phone: 0 }, zoom: 0, look: 'on', cur: {} };
+  let st = { view: 'both', size: { laptop: 0, phone: 0 }, zoom: 0, look: 'on', slug: 'revlimiter', cur: {} };
   try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s && s.cur) st = Object.assign(st, s); } catch (e) {}
   Object.keys(st.cur).forEach((k) => { if (!byK[k]) delete st.cur[k]; });
+  if (!SLUGS.some(([s]) => s === st.slug)) st.slug = 'revlimiter';
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} };
   let src = null;                 // the page's own --ww-* defaults (read off the laptop frame)
-  let chan = [26, 78];            // RevLimiter's phosphor (read off the page: --ww-ch-revlimiter-h / -s)
+  const chan = { ...CH };         // each channel's phosphor, read off the page
   const def = (c) => (c.as === 'page' ? (src ? src[c.k] : NaN) : c.def);
   const val = (k) => (k in st.cur ? st.cur[k] : def(byK[k]));
   const fmt = (c, v) => (+v).toFixed(Math.max(0, -Math.floor(Math.log10(c.step)))) + (c.show || c.unit || '');
   let playing = true;
+  const dims = {};                // each picture's pixels (n x m), from the laptop's box / 2, shared by both frames
 
   // the frames: no cookie banner, no welcome pop-up (same origin)
   try { localStorage.setItem('ra-cookie-consent', 'declined'); sessionStorage.setItem('ra-popup-shown-s', '1'); sessionStorage.setItem('ra-welcome10-s', '1'); } catch (e) {}
 
-  // ── the loop's frames, loaded once (both documents then take them from the cache)
-  const frames = [];
-  const loadFrames = async () => {
+  // ── the recorded loops' frames, loaded once (both documents then take them from the cache)
+  const loopFrames = {};
+  const loadFrames = async (slug) => {
+    const list = (loopFrames[slug] = []);
     for (let i = 0; i < 1000; i++) {
-      const url = `${FRAMES}${String(i).padStart(3, '0')}.png`;
-      const ok = await new Promise((res) => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = url; });
+      const url = `${LOOPS[slug].dir}${String(i).padStart(3, '0')}.png`;
+      const ok = await new Promise((res) => { const im = new Image(); im.onload = () => res(true); im.onerror = () => res(false); im.src = url; });
       if (!ok) break;
-      frames.push(url);
+      list.push(url);
     }
+    if (!list.length) toast(`No loop frames at ${LOOPS[slug].dir}000.png`);
   };
 
   const stages = {};
   document.querySelectorAll('.stage').forEach((s) => {
     const f = s.dataset.f;
-    stages[f] = { s, f, iframe: s.querySelector('iframe'), vp: s.querySelector('.vp'), size: s.querySelector('[data-size]'), ready: false };
+    stages[f] = { s, f, iframe: s.querySelector('iframe'), vp: s.querySelector('.vp'), size: s.querySelector('[data-size]'), ready: false, media: {}, busy: {} };
     SIZES[f].forEach(([w, h, n], i) => stages[f].size.add(new Option(`${w}×${h}${n ? ' · ' + n : ''}`, i)));
     stages[f].size.value = Math.min(st.size[f] || 0, SIZES[f].length - 1);
-    // a new size = a fresh page (the picture's box is measured on the page as it lays out at that size)
-    stages[f].size.onchange = () => { st.size[f] = +stages[f].size.value; save(); layout(); load(f); };
+    // a new size = a fresh page (each picture's box is measured on the page as it lays out at that size)
+    stages[f].size.onchange = () => {
+      st.size[f] = +stages[f].size.value; save();
+      if (f === 'laptop') Object.keys(dims).forEach((k) => delete dims[k]);
+      layout(); load(f);
+    };
   });
   function load(f) {
     // the document being left stays reachable for a moment after src changes: never wire that one
-    stages[f].old = stages[f].iframe.contentDocument;
-    stages[f].ready = false; stages[f].doc = null; stages[f].img = null;
-    stages[f].iframe.src = `/?plugin=${SLUG}&wwdepth=${f}`;
+    const S = stages[f];
+    S.old = S.iframe.contentDocument;
+    S.ready = false; S.doc = null; S.media = {}; S.busy = {};
+    S.iframe.src = `/?plugin=${st.slug}&wwdepth=${f}`;
     waitFor(f);
   }
 
@@ -230,6 +246,15 @@
       aside.appendChild(row);
     });
   });
+  const chanBox = document.getElementById('chan');
+  SLUGS.forEach(([slug, name]) => {
+    const b = document.createElement('button');
+    b.dataset.s = slug;
+    b.innerHTML = LOOPS[slug] ? `${name} <small>· running</small>` : name;
+    b.title = LOOPS[slug] ? 'its real screen, running' : 'its picture today, at the same 2 × 2 pixels (its own loop is not recorded yet)';
+    b.onclick = () => { st.slug = slug; save(); light(); };
+    chanBox.appendChild(b);
+  });
   function paint() {
     ALL.forEach((c) => {
       const v = val(c.k), inp = c.row.querySelector('input'), out = c.row.querySelector('.val');
@@ -237,10 +262,13 @@
       out.textContent = Number.isFinite(v) ? fmt(c, v) : '…';
       out.classList.toggle('chg', c.k in st.cur && Math.abs(st.cur[c.k] - def(c)) > 1e-6);
     });
+    document.querySelectorAll('#chan button').forEach((b) => b.classList.toggle('on', b.dataset.s === st.slug));
     document.querySelectorAll('#view button').forEach((b) => b.classList.toggle('on', b.dataset.v === st.view));
     document.querySelectorAll('#zoom button').forEach((b) => b.classList.toggle('on', +b.dataset.z === (+st.zoom || 0)));
     document.querySelectorAll('#look button').forEach((b) => b.classList.toggle('on', b.dataset.l === st.look));
     document.getElementById('play').textContent = playing ? '❚❚ PAUSE' : '▶ PLAY';
+    const d = LOOPS[st.slug] || (dims[st.slug] && { n: dims[st.slug][0], m: dims[st.slug][1] });
+    document.getElementById('what').textContent = d ? `${d.n} × ${d.m} pixels${LOOPS[st.slug] ? ', running' : ', its picture today'}` : '';
   }
 
   // ── layout: both frames fit the window; each iframe renders at its real size, scaled down (from wwbench.html)
@@ -250,18 +278,18 @@
     stages.phone.s.hidden = st.view === 'laptop';
     const main = document.querySelector('main');
     const W = main.clientWidth - 24, H = main.clientHeight - 24;
-    const dims = (f) => SIZES[f][st.size[f] || 0];
+    const dimsOf = (f) => SIZES[f][st.size[f] || 0];
     const bar = (f) => stages[f].s.querySelector('.bar').offsetHeight + 8;
     let phoneW = 0;
     if (st.view !== 'laptop') {
-      const [w, h] = dims('phone');
+      const [w, h] = dimsOf('phone');
       const k = Math.min(1, (H - bar('phone')) / h, (st.view === 'phone' ? W : W * 0.3) / w);
       fit('phone', w, h, k);
       phoneW = Math.max(w * k, 200);
       stages.phone.s.style.width = phoneW + 'px';
     }
     if (st.view !== 'phone') {
-      const [w, h] = dims('laptop');
+      const [w, h] = dimsOf('laptop');
       const room = [W - (phoneW ? phoneW + 14 : 0), H - bar('laptop')];
       const z = +st.zoom || 0;
       const k = z || Math.min(1, room[1] / h, room[0] / w);
@@ -278,7 +306,7 @@
   }
   function lookAtPicture() {
     const z = +st.zoom || 0, { iframe, vp } = stages.laptop;
-    const el = z && stages.laptop.ready && iframe.contentDocument.querySelector(`[data-ww-panel='${SLUG}'] .ww-ui`);
+    const el = z && stages.laptop.ready && iframe.contentDocument.querySelector(`[data-ww-panel='${st.slug}'] .ww-ui`);
     if (!el) return;
     const r = el.getBoundingClientRect();
     vp.scrollTo({ left: (r.left + r.width / 2) * z - vp.clientWidth / 2, top: (r.top + r.height / 2) * z - vp.clientHeight / 2 });
@@ -292,9 +320,9 @@
     if (ok && stages[f].doc !== doc) return wire(f);
     if (tries < 200) setTimeout(() => waitFor(f, tries + 1), 150);
   }
-  async function wire(f) {
-    const win = stages[f].iframe.contentWindow, doc = win.document;
-    stages[f].doc = doc;
+  function wire(f) {
+    const S = stages[f], win = S.iframe.contentWindow, doc = win.document;
+    S.doc = doc;
     const wallEl = doc.querySelector(WALL);
     const quiet = doc.createElement('style');
     // no cookie banner; no glitch while tuning (a name jump or a tear would read as part of the look)
@@ -305,24 +333,11 @@
       const cs = win.getComputedStyle(wallEl);
       src = {};
       ALL.filter((c) => c.as === 'page').forEach((c) => (src[c.k] = parseFloat(cs.getPropertyValue(c.k))));
-      const h = parseFloat(cs.getPropertyValue(`--ww-ch-${SLUG}-h`)), s = parseFloat(cs.getPropertyValue(`--ww-ch-${SLUG}-s`));
-      if (Number.isFinite(h) && Number.isFinite(s)) chan = [h, s];
+      SLUGS.forEach(([slug]) => {
+        const h = parseFloat(cs.getPropertyValue(`--ww-ch-${slug}-h`)), s = parseFloat(cs.getPropertyValue(`--ww-ch-${slug}-s`));
+        if (Number.isFinite(h) && Number.isFinite(s)) chan[slug] = [h, s];
+      });
     }
-    // RevLimiter lit (the phone opens its pane), the TV parked under the nav as the site's lock does
-    wallEl.dispatchEvent(new win.CustomEvent('ww:select', { detail: { slug: SLUG, ...(f === 'phone' ? { view: 'panel' } : {}) } }));
-    setTimeout(() => toPlugins(f), 150);
-    // the picture: hold the box the still had (the loop has only 194 px), then the loop's frames go into it
-    const img = await until(() => {
-      const im = doc.querySelector(`[data-ww-panel='${SLUG}'] .ww-ui img`);
-      const r = im && im.complete && im.naturalWidth ? im.getBoundingClientRect() : null;
-      return r && r.width > 40 ? im : null;
-    });
-    if (!img) return toast('The RevLimiter picture did not show in the ' + f + ' frame');
-    const r = img.getBoundingClientRect();
-    Object.assign(img.style, { width: `${r.width}px`, height: `${r.height}px`, maxWidth: 'none' });
-    img.removeAttribute('srcset');
-    img.loading = 'eager';
-    stages[f].img = img;
     const live = doc.createElement('style');
     live.id = 'wwd-live';
     doc.head.appendChild(live);
@@ -331,9 +346,9 @@
     svg.setAttribute('aria-hidden', 'true');
     svg.setAttribute('style', 'position:absolute;width:0;height:0;overflow:hidden');
     doc.body.appendChild(svg);
-    stages[f].ready = true;
+    S.ready = true;
     commit();
-    setTimeout(() => toPlugins(f), 400);
+    lightIn(f);
   }
   async function until(fn, tries = 80) { for (let i = 0; i < tries; i++) { const v = fn(); if (v) return v; await new Promise((r) => setTimeout(r, 120)); } return null; }
   function toPlugins(f) {
@@ -344,8 +359,109 @@
     win.scrollTo({ top: Math.ceil(win.scrollY + sec.getBoundingClientRect().top - nav), behavior: 'instant' });
   }
 
-  // ── the grade (look A, wwpic-looks.js): lift the blacks to the glass's dark -> mix with a duotone of its light ->
-  //    bloom -> colour fringe -> grain. One filter: only RevLimiter is on this bench
+  // ── a channel: lit on both TVs (the phone opens its pane), then its picture made ready (once per page)
+  function light() { paint(); ['laptop', 'phone'].forEach((f) => stages[f].ready && lightIn(f)); if (+st.zoom) setTimeout(lookAtPicture, 900); }
+  function lightIn(f) {
+    const S = stages[f], win = S.iframe.contentWindow, wallEl = S.doc.querySelector(WALL);
+    wallEl.dispatchEvent(new win.CustomEvent('ww:select', { detail: { slug: st.slug, ...(f === 'phone' ? { view: 'panel' } : {}) } }));
+    setTimeout(() => toPlugins(f), 150);
+    prepare(f, st.slug);
+  }
+  // a picture to its pixels: the box it has today is held; a recorded loop plays into it; a still is drawn down to
+  // the box / 2 once; DRIFT's video is drawn down into a canvas every frame
+  async function prepare(f, slug) {
+    const S = stages[f];
+    if (S.media[slug] || S.busy[slug]) return;
+    S.busy[slug] = true;
+    const doc = S.doc;
+    const el = await until(() => {
+      const m = doc.querySelector(`[data-ww-panel='${slug}'] .ww-ui :is(img, video)`);
+      if (!m) return null;
+      const loaded = m.tagName === 'VIDEO' ? m.readyState >= 2 : m.complete && m.naturalWidth > 0;
+      return loaded && m.getBoundingClientRect().width > 40 ? m : null;
+    }, 120);
+    if (!el || S.doc !== doc) { S.busy[slug] = false; return; }
+    if (el.tagName === 'IMG') await el.decode().catch(() => {});
+    const r = await stableRect(el); // the channel change's travel ends before the box is read
+    let n, m;
+    if (LOOPS[slug]) ({ n, m } = LOOPS[slug]);
+    else if (f === 'laptop' || stages.laptop.s.hidden) {
+      n = Math.round(r.width / (f === 'laptop' ? PX : 1.78)); m = Math.round(r.height / (f === 'laptop' ? PX : 1.78));
+      if (f === 'laptop') dims[slug] = [n, m];
+    } else {
+      const d = await until(() => dims[slug], 100);
+      [n, m] = d || [Math.round(r.width / 1.78), Math.round(r.height / 1.78)];
+    }
+    const box = { width: `${r.width}px`, height: `${r.height}px`, maxWidth: 'none' };
+    const panel = el.closest('.ww-panel');
+    let media;
+    if (el.tagName === 'VIDEO') {
+      const cv = doc.createElement('canvas');
+      cv.width = n; cv.height = m;
+      cv.className = 'wwd-video';
+      Object.assign(cv.style, box, { display: 'block' });
+      Object.assign(el.style, { position: 'absolute', inset: '0', opacity: '0', pointerEvents: 'none' });
+      el.after(cv);
+      el.play?.().catch(() => {});
+      media = { kind: 'video', el: cv, video: el, ctx: cv.getContext('2d') };
+    } else {
+      // drawn from the picture on screen first: dropping its srcset starts a new load, and a picture mid-load
+      // draws as nothing
+      const url = LOOPS[slug] ? null : drawDown(doc, el, n, m);
+      Object.assign(el.style, box);
+      el.removeAttribute('srcset');
+      el.loading = 'eager';
+      if (LOOPS[slug]) {
+        if (!loopFrames[slug]) loadFrames(slug);
+        media = { kind: 'loop', el };
+      } else {
+        el.src = url;
+        if (slug === FLOAT) panel.style.setProperty('--wwd-alpha', `url("${url}")`);
+        media = { kind: 'still', el };
+      }
+    }
+    panel.style.setProperty('--wwd-n', n);
+    panel.style.setProperty('--wwd-m', m);
+    S.media[slug] = media;
+    S.busy[slug] = false;
+    paint();
+  }
+  // the box once it stops changing (two reads 120 ms apart agree)
+  async function stableRect(el) {
+    let a = el.getBoundingClientRect();
+    for (let i = 0; i < 30; i++) {
+      await new Promise((r) => setTimeout(r, 120));
+      const b = el.getBoundingClientRect();
+      if (Math.abs(a.width - b.width) < 0.5 && Math.abs(a.height - b.height) < 0.5 && b.width > 40) return b;
+      a = b;
+    }
+    return a;
+  }
+  // a big picture drawn down to n x m in halving steps (one big step would alias), alpha kept
+  function drawDown(doc, img, n, m) {
+    let w = img.naturalWidth, h = img.naturalHeight;
+    let c = doc.createElement('canvas');
+    c.width = w; c.height = h;
+    c.getContext('2d').drawImage(img, 0, 0);
+    while (w / 2 >= n * 1.5) {
+      const c2 = doc.createElement('canvas');
+      w = Math.round(w / 2); h = Math.round(h / 2);
+      c2.width = w; c2.height = h;
+      const x = c2.getContext('2d');
+      x.imageSmoothingQuality = 'high';
+      x.drawImage(c, 0, 0, w, h);
+      c = c2;
+    }
+    const out = doc.createElement('canvas');
+    out.width = n; out.height = m;
+    const x = out.getContext('2d');
+    x.imageSmoothingQuality = 'high';
+    x.drawImage(c, 0, 0, n, m);
+    return out.toDataURL('image/png');
+  }
+
+  // ── the grade (look A): lift the blacks to the glass's dark -> mix with a duotone of its light -> bloom -> colour
+  //    fringe -> grain. One filter per channel (its phosphor)
   const hsl = (h, s, l) => {
     s /= 100; l /= 100;
     const k = (n) => (n + h / 30) % 12, a = s * Math.min(l, 1 - l);
@@ -355,15 +471,16 @@
   const LUM = '0.2126 0.7152 0.0722 0 0 0.2126 0.7152 0.0722 0 0 0.2126 0.7152 0.0722 0 0 0 0 0 1 0';
   const funcs = (per) => ['R', 'G', 'B'].map((c, i) => `<feFunc${c} ${per(i)}/>`).join('');
   let seed = 1;
-  function filterMarkup() {
+  function filterMarkup(slug) {
     const v = (k) => +val(k);
-    const gs = Math.min(100, chan[1] + 20);
-    const g = hsl(chan[0], gs, v('ground')), m = hsl(chan[0], gs, v('mid')), t = hsl(chan[0], gs * v('hotSat'), v('hot'));
+    const [ch, cs] = chan[slug];
+    const gs = Math.min(100, cs + 20);
+    const g = hsl(ch, gs, v('ground')), m = hsl(ch, gs, v('mid')), t = hsl(ch, gs * v('hotSat'), v('hot'));
     const k = v('mix'), bloom = v('bloom'), split = v('split'), grain = v('grain');
     const from = v('bloomFrom');
     const knee = Array.from({ length: 11 }, (_, i) => { const x = i / 10; return x <= from ? 0 : Math.pow((x - from) / (1 - from), 1.5); }).map((n) => n.toFixed(3)).join(' ');
     let out = 'mix';
-    let s = `<filter id="wwd-grade" x="0" y="0" width="1" height="1" color-interpolation-filters="sRGB">
+    let s = `<filter id="wwd-grade-${slug}" x="0" y="0" width="1" height="1" color-interpolation-filters="sRGB">
       <feComponentTransfer in="SourceGraphic" result="lift">${funcs((i) => `type="linear" slope="${(1 - g[i]).toFixed(4)}" intercept="${g[i]}"`)}</feComponentTransfer>
       <feColorMatrix in="SourceGraphic" type="matrix" values="${LUM}" result="lum"/>
       <feComponentTransfer in="lum" result="duo">${funcs((i) => `type="table" tableValues="${g[i]} ${m[i]} ${t[i]}"`)}</feComponentTransfer>
@@ -392,69 +509,82 @@
     return s + '</filter>';
   }
 
-  // ── the look's rules (they read the --wwd-* values; the values go on the panel)
+  // ── the look's rules (they read the --wwd-* values, which go on the wall). GAS 2 floats: no window to fade or
+  //    light round, so its lines, scanlines and darkening follow its outline and its light is a drop-shadow
   const FEATHER = `linear-gradient(90deg, transparent, #000 var(--wwd-fx), #000 calc(100% - var(--wwd-fx)), transparent),
       linear-gradient(180deg, transparent, #000 var(--wwd-fy), #000 calc(100% - var(--wwd-fy)), transparent)`;
-  const LOOK = `
-    ${P} .ww-ui { width: fit-content; max-width: 100%; isolation: isolate; translate: var(--wwd-x) var(--wwd-y); scale: var(--wwd-scale); }
-    ${P} .ww-ui img {
-      box-shadow: none !important; border-radius: var(--wwd-r) !important; image-rendering: pixelated;
-      -webkit-mask-image: ${FEATHER}; -webkit-mask-composite: source-in; mask-image: ${FEATHER}; mask-composite: intersect;
-      filter: url(#wwd-grade) brightness(calc(var(--wwd-lift) * var(--wwd-flk, 1))) contrast(var(--wwd-con)) saturate(var(--wwd-sat)) blur(var(--wwd-focus)) !important;
-    }
-    ${P} .ww-ui::before {
-      content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: var(--wwd-r);
-      box-shadow: 0 0 var(--wwd-haloPx) calc(var(--wwd-haloPx) * 0.15) hsl(var(--ww-ch-h) var(--ww-gs) 58% / var(--wwd-halo));
-    }
-    ${P} .ww-ui::after {
-      content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: var(--wwd-r);
-      background:
+  const MASK = (m) => `-webkit-mask-image: ${m}; -webkit-mask-composite: source-in; mask-image: ${m}; mask-composite: intersect;`;
+  const OVER = `
         linear-gradient(90deg, rgba(0, 0, 0, var(--wwd-cell)) 0 var(--wwd-gap), transparent var(--wwd-gap)),
         linear-gradient(180deg, rgba(0, 0, 0, var(--wwd-cell)) 0 var(--wwd-gap), transparent var(--wwd-gap)),
         repeating-linear-gradient(0deg, rgba(0, 0, 0, var(--wwd-scan)) 0 1px, transparent 1px var(--wwd-scanPx)),
-        radial-gradient(farthest-corner at 50% 50%, transparent var(--wwd-vigIn), rgba(0, 0, 0, var(--wwd-vig)) 100%);
-      background-size: calc(100% / ${N}) 100%, 100% calc(100% / ${M}), auto, auto;
-      box-shadow: inset 0 0 var(--wwd-insetPx) rgba(0, 0, 0, var(--wwd-inset));
-      -webkit-mask-image: ${FEATHER}; -webkit-mask-composite: source-in; mask-image: ${FEATHER}; mask-composite: intersect;
+        radial-gradient(farthest-corner at 50% 50%, transparent var(--wwd-vigIn), rgba(0, 0, 0, var(--wwd-vig)) 100%)`;
+  const lookOf = (slug) => {
+    const P = SEL(slug), float = slug === FLOAT;
+    const light = 'hsl(var(--ww-ch-h) var(--ww-gs) 58% / var(--wwd-halo))';
+    return `
+    ${P} .ww-ui { width: fit-content; max-width: 100%; isolation: isolate; translate: var(--wwd-x) var(--wwd-y); scale: var(--wwd-scale); }
+    ${P} .ww-ui :is(img, canvas) {
+      box-shadow: none !important; border-radius: ${float ? '0' : 'var(--wwd-r)'} !important; image-rendering: pixelated;
+      ${float ? '' : MASK(FEATHER)}
+      filter: url(#wwd-grade-${slug}) brightness(calc(var(--wwd-lift) * var(--wwd-flk, 1))) contrast(var(--wwd-con)) saturate(var(--wwd-sat)) blur(var(--wwd-focus))${float ? ` drop-shadow(0 0 var(--wwd-haloPx) ${light})` : ''} !important;
+    }
+    ${float ? `${P} .ww-ui::before { content: none; }` : `${P} .ww-ui::before {
+      content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: var(--wwd-r);
+      box-shadow: 0 0 var(--wwd-haloPx) calc(var(--wwd-haloPx) * 0.15) ${light};
+    }`}
+    ${P} .ww-ui::after {
+      content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: ${float ? '0' : 'var(--wwd-r)'};
+      background: ${OVER};
+      background-size: calc(100% / var(--wwd-n, 194)) 100%, 100% calc(100% / var(--wwd-m, 94)), auto, auto;
+      box-shadow: ${float ? 'none' : 'inset 0 0 var(--wwd-insetPx) rgba(0, 0, 0, var(--wwd-inset))'};
+      ${float ? '-webkit-mask: var(--wwd-alpha) 0 0 / 100% 100% no-repeat; mask: var(--wwd-alpha) 0 0 / 100% 100% no-repeat;' : MASK(FEATHER)}
     }`;
-  // OFF: the loop as it is (hard pixels, no grade, no edges), to compare
-  const BARE = `
-    ${P} .ww-ui { width: fit-content; max-width: 100%; }
-    ${P} .ww-ui img { box-shadow: none !important; border-radius: 0 !important; image-rendering: pixelated; }`;
+  };
+  // OFF: the pixels as they are (hard edges, no grade, no edges), to compare
+  const bareOf = (slug) => `
+    ${SEL(slug)} .ww-ui { width: fit-content; max-width: 100%; }
+    ${SEL(slug)} .ww-ui :is(img, canvas) { box-shadow: none !important; border-radius: 0 !important; image-rendering: pixelated; }`;
 
-  // ── write the values, the rules and the filter into both frames
+  // ── write the values, the rules and the filters into both frames
   function commit(changed) {
     ['laptop', 'phone'].forEach((f) => {
       if (!stages[f].ready) return;
       const doc = stages[f].doc;
       const vars = ALL.filter((c) => c.as === 'css').map((c) => `--wwd-${c.k}: ${val(c.k)}${c.unit || ''};`).join(' ');
       const page = ALL.filter((c) => c.as === 'page' && c.k in st.cur).map((c) => `${c.k}: ${st.cur[c.k]} !important;`).join(' ');
-      doc.getElementById('wwd-live').textContent = `${P} { ${vars} }\n${page ? `${WALL} { ${page} }` : ''}\n${st.look === 'on' ? LOOK : BARE}`;
-      if (!changed || changed.as === 'filter') doc.getElementById('wwd-svg').innerHTML = `<defs>${filterMarkup()}</defs>`;
+      const rules = SLUGS.map(([slug]) => (st.look === 'on' ? lookOf(slug) : bareOf(slug))).join('\n');
+      doc.getElementById('wwd-live').textContent = `${WALL} { ${vars} ${page} }\n${rules}`;
+      if (!changed || changed.as === 'filter') doc.getElementById('wwd-svg').innerHTML = `<defs>${SLUGS.map(([slug]) => filterMarkup(slug)).join('')}</defs>`;
     });
     save();
     paint();
   }
 
-  // ── the loop: its frames set one by one on the picture in both frames, at 15 a second × Speed
-  let t0 = performance.now(), at = 0, shown = -1;
+  // ── every frame: a recorded loop steps at 15 a second × Speed; DRIFT's video is drawn down; the flicker and the
+  //    grain move with the loop's steps
+  let t0 = performance.now(), at = 0, step = -1;
   function tick(now) {
     requestAnimationFrame(tick);
-    if (!frames.length) return;
     const speed = +val('speed') || 1;
     if (playing) at += (now - t0) * speed;
     t0 = now;
-    const i = Math.floor(at / (1000 / 15)) % frames.length;
-    if (i === shown) return;
-    shown = i;
+    const k = Math.floor(at / (1000 / 15));
+    const stepped = k !== step;
+    step = k;
     const flicker = +val('flicker'), grain = +val('grain');
-    if (grain > 0 && playing) seed = (seed % 997) + 1;
+    if (stepped && grain > 0 && playing) seed = (seed % 997) + 1;
     ['laptop', 'phone'].forEach((f) => {
-      const { img, ready, doc } = stages[f];
-      if (!ready || !img) return;
-      img.src = frames[i];
-      img.style.setProperty('--wwd-flk', flicker > 0 && st.look === 'on' ? (1 - flicker * Math.random()).toFixed(3) : '1');
-      if (grain > 0 && playing) doc.querySelector('#wwd-svg feTurbulence')?.setAttribute('seed', seed);
+      const S = stages[f];
+      if (!S.ready) return;
+      Object.entries(S.media).forEach(([slug, md]) => {
+        if (md.kind === 'video' && playing && md.video.readyState >= 2) md.ctx.drawImage(md.video, 0, 0, md.el.width, md.el.height);
+        if (md.kind === 'video') { if (playing && md.video.paused) md.video.play?.().catch(() => {}); if (!playing && !md.video.paused) md.video.pause(); }
+        if (!stepped) return;
+        if (md.kind === 'loop') { const list = loopFrames[slug]; if (list && list.length) md.el.src = list[k % list.length]; }
+        md.el.style.setProperty('--wwd-flk', flicker > 0 && st.look === 'on' && playing ? (1 - flicker * Math.random()).toFixed(3) : '1');
+      });
+      if (stepped && grain > 0 && playing) S.doc.querySelectorAll('#wwd-svg feTurbulence').forEach((t) => t.setAttribute('seed', seed));
     });
   }
 
@@ -463,8 +593,8 @@
   document.querySelectorAll('#view button').forEach((b) => (b.onclick = () => { st.view = b.dataset.v; save(); layout(); }));
   document.querySelectorAll('#zoom button').forEach((b) => (b.onclick = () => { st.zoom = +b.dataset.z; save(); layout(); }));
   document.getElementById('resetAll').onclick = () => {
-    if (!confirm('Back to look A as it is on the Inside the TV bench? (your bench values are lost)')) return;
-    st.cur = {}; commit(); toast('Back to the defaults');
+    if (!confirm('Back to your first settings (2026-11-10)? (the values you changed since are lost)')) return;
+    st.cur = {}; commit(); toast('Back to your first settings');
   };
 
   // ── hand-back: every value (defaults included), ready to bake
@@ -473,8 +603,8 @@
     ALL.forEach((c) => (values[c.k] = `${+(+val(c.k)).toFixed(4)}${c.unit || ''}`));
     return {
       bench: 'wwdepth',
-      note: 'apply depth bench: one set for every plugin\'s picture in the TV (look A; tuned on RevLimiter\'s song loop, 194 x 94 = 2 x 2 px). The --wwd-* values + the grade go into WordWall.astro (the grade baked per channel: no live SVG filter in production); --ww-scr-* are the TV\'s own defaults in WordWall.astro',
-      date: new Date().toISOString(), look: st.look, channel: [SLUG, ...chan],
+      note: 'apply depth bench: one set for every plugin\'s picture in the TV (look A, 2 x 2 px; RevLimiter running on its song loop, the others their pictures today until their loops are recorded). The --wwd-* values + the grade go into WordWall.astro (the grade baked per channel: no live SVG filter in production); --ww-scr-* are the TV\'s own defaults in WordWall.astro',
+      date: new Date().toISOString(), look: st.look, channel: [st.slug, ...chan[st.slug]],
       values, changed: Object.keys(st.cur).filter((k) => Math.abs(st.cur[k] - def(byK[k])) > 1e-6),
     };
   }
@@ -488,7 +618,6 @@
   function toast(m) { const t = document.getElementById('toast'); t.textContent = m; t.classList.add('on'); clearTimeout(tt); tt = setTimeout(() => t.classList.remove('on'), 2800); }
 
   layout();
-  loadFrames().then(() => { if (!frames.length) toast('No loop frames at ' + FRAMES + '000.png'); });
   load('laptop'); load('phone');
   requestAnimationFrame(tick);
 })();

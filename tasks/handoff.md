@@ -247,7 +247,15 @@ Files: `src/components/WordWall.astro`, `src/components/TrialGateModal.astro` (+
   `cut-webp.py <frames> <webp> 194 15 80 tools/wwbench/anim/s194`) and 36 sliders (size/place, look A's grade, glow,
   pixels, edges, tube, the screen's --ww-scr-*, speed); LOOK ON/OFF, pause, 1:1 / x2. COPY SETTINGS -> "apply depth
   bench" = one set for every plugin: bake into WordWall.astro (the grade per channel, baked: no live SVG filter).
-- Next: Dan's COPY SETTINGS from `/__wwdepth` -> the same for GAS, Radio Roulette (both have
+- Dan's first COPY SETTINGS (2026-11-10 09:56Z) = `tools/wwbench/wwdepth-settings.json` (verbatim), now the bench's
+  defaults: lift 1.39, con 1.03, bloom 1.5 / reach 19 / from 0.93, halo 0.25 / 16 px, pixel lines 0.18 / 13 %,
+  darker edges 0.39, scanlines on it 0.14, flicker 0.045, speed 1.8 (the rest as look A). Bloom, reach, from and
+  speed were at their sliders' ends: ranges widened (3, 40, 0.99, 3). The bench now lights all five with the same set
+  (header channel switch): GAS / Radio Roulette / GAS 2 = their pictures today drawn down to the laptop box / 2
+  (87 x 129, 168 x 94, 87 x 163), DRIFT = its video drawn down live (154 x 82), GAS 2 floats (lines, scanlines and
+  darkening masked by its outline, its light a drop-shadow). Checked Chromium + WebKit, laptop + phone, 0 errors.
+- Next: record GAS (its UI is under `GAS/plugin` or `GAS/bench` on this Mac, not `Source/ui/public`), Radio Roulette,
+  DRIFT, GAS 2 running (each to its own demo audio) -> the same for GAS, Radio Roulette (both have
   browser demos), DRIFT (its wall run, pixelated), GAS 2 (its pump floating, animated, alpha), each to music -> build
   it in WordWall (bake the grade into the TV's copies: no live SVG filter in production; video, see the weight), then
   the thumbnails; then the header that slides away; TV Sells round 4 notes; step 00's baseline before any push to
