@@ -455,3 +455,11 @@ The close-session and wrap skills put a long session note in `<repo>/.handoff-ar
 `.git/info/exclude` (line 35) ignores that folder: a note there stays on the laptop, and `git add` refuses it without
 `-f`. Put the long note beside the work (e.g. `tools/_home-opening/perf/HANDOFF-2026-11-10.md`) and link it from
 `tasks/handoff.md`.
+
+## 2026-11-10 - three's meshopt decoder compiles WebAssembly on import, so a CSP refuses it (`danavivi-d5`)
+
+`import('three/addons/libs/meshopt_decoder.module.js')` calls `WebAssembly.instantiate` as the module loads, even when
+no model uses `EXT_meshopt_compression` (none of the room's 83 did on 11-10). Under a CSP whose `script-src` lacks
+`'wasm-unsafe-eval'`, Chrome, Safari and Firefox each log a violation and an unhandled `CompileError` on every visit.
+Before a page with three goes behind the site's CSP, load it under the live header locally and read every violation
+(the room's test: `.claude/garage-bench-2026-11-10/csp/`, `cspserve.py` + `csptest.cjs`).
