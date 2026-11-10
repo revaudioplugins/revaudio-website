@@ -75,6 +75,9 @@
   <span class="seg" id="view">
     <button data-v="both">Both</button><button data-v="laptop">Laptop</button><button data-v="phone">Phone</button>
   </span>
+  <span class="seg" id="pview" title="The phone shows one pane at a time: the list (the thumbnails) or the lit plugin">
+    <button data-pv="list">PHONE: LIST</button><button data-pv="panel">THE PLUGIN</button>
+  </span>
   <span class="spacer"></span>
   <button class="primary" id="copy">COPY SETTINGS</button>
   <button id="resetAll">RESET</button>
@@ -174,6 +177,10 @@
       { k: '--ww-scr-glare', label: 'Glass reflection', hint: 'the room’s light on the glass, over everything (× today’s)', min: 0, max: 3, step: 0.05, as: 'page', show: '×' },
       { k: '--ww-scr-curve', label: 'Tube curve', hint: 'how dark the glass falls off towards its edges', min: 0, max: 1, step: 0.01, as: 'page' },
     ] },
+    { title: 'Thumbnails', note: 'the list: the same look, small and still', ctl: [
+      { k: 'thumbReach', label: 'Glow size', hint: 'the bloom’s and the light’s reach on a thumbnail, as a share of the big picture’s (a small picture, a small glow)', min: 0, max: 1, step: 0.01, def: 0.3, unit: '', as: 'css' },
+      { k: '--ww-dim', label: 'Unlit thumbnails and names', hint: 'how much the plugins that are not lit show (the TV’s own: the names dim the same)', min: 0.1, max: 1, step: 0.01, as: 'page' },
+    ] },
     { title: 'Motion', ctl: [
       { k: 'speed', label: 'Speed', hint: 'the recorded loops (1 = real time, 15 frames a second)', min: 0.25, max: 3, step: 0.05, def: 1.8, as: 'run', show: '×' },
     ] },
@@ -185,7 +192,7 @@
     phone: [[402, 714, 'iPhone 17 Pro'], [390, 844], [375, 667, 'iPhone SE']],
   };
 
-  let st = { view: 'both', size: { laptop: 0, phone: 0 }, zoom: 0, look: 'on', slug: 'revlimiter', cur: {} };
+  let st = { view: 'both', pview: 'panel', size: { laptop: 0, phone: 0 }, zoom: 0, look: 'on', slug: 'revlimiter', cur: {} };
   try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s && s.cur) st = Object.assign(st, s); } catch (e) {}
   Object.keys(st.cur).forEach((k) => { if (!byK[k]) delete st.cur[k]; });
   if (!SLUGS.some(([s]) => s === st.slug)) st.slug = 'revlimiter';
@@ -277,6 +284,7 @@
     document.querySelectorAll('#view button').forEach((b) => b.classList.toggle('on', b.dataset.v === st.view));
     document.querySelectorAll('#zoom button').forEach((b) => b.classList.toggle('on', +b.dataset.z === (+st.zoom || 0)));
     document.querySelectorAll('#look button').forEach((b) => b.classList.toggle('on', b.dataset.l === st.look));
+    document.querySelectorAll('#pview button').forEach((b) => b.classList.toggle('on', b.dataset.pv === st.pview));
     document.getElementById('play').textContent = playing ? '❚❚ PAUSE' : '▶ PLAY';
     const d = LOOPS[st.slug] || (dims[st.slug] && { n: dims[st.slug][0], m: dims[st.slug][1] });
     document.getElementById('what').textContent = d ? `${d.n} × ${d.m} pixels${LOOPS[st.slug] ? ', running' : ', its picture today'}` : '';
@@ -358,8 +366,10 @@
     svg.setAttribute('style', 'position:absolute;width:0;height:0;overflow:hidden');
     doc.body.appendChild(svg);
     S.ready = true;
+    S.thumbs = false;
     commit();
     lightIn(f);
+    if (f === 'laptop' || st.pview === 'list') setTimeout(() => prepareThumbs(f), 900);
   }
   async function until(fn, tries = 80) { for (let i = 0; i < tries; i++) { const v = fn(); if (v) return v; await new Promise((r) => setTimeout(r, 120)); } return null; }
   function toPlugins(f) {
@@ -374,7 +384,7 @@
   function light() { paint(); ['laptop', 'phone'].forEach((f) => stages[f].ready && lightIn(f)); if (+st.zoom) setTimeout(lookAtPicture, 900); }
   function lightIn(f) {
     const S = stages[f], win = S.iframe.contentWindow, wallEl = S.doc.querySelector(WALL);
-    wallEl.dispatchEvent(new win.CustomEvent('ww:select', { detail: { slug: st.slug, ...(f === 'phone' ? { view: 'panel' } : {}) } }));
+    wallEl.dispatchEvent(new win.CustomEvent('ww:select', { detail: { slug: st.slug, ...(f === 'phone' ? { view: st.pview } : {}) } }));
     setTimeout(() => toPlugins(f), 150);
     prepare(f, st.slug);
   }
@@ -458,6 +468,40 @@
     S.busy[slug] = false;
     paint();
   }
+  /* the list's thumbnails (Dan 2026-11-10, his pick A: "the same look, smaller, still"): each one drawn down to its
+     box / 2 (the same 2 x 2 pixels; the phone reuses the laptop's pixels), put in a holder of its size that carries the
+     look's lines, fade and light (a picture can't hold a pseudo-element), and the hover's grow moves to the holder so
+     the lines grow with it. Unlit rows keep dimming as the TV dims them, with their names (--ww-dim) */
+  const tdims = {};
+  async function prepareThumbs(f) {
+    const S = stages[f], doc = S.doc;
+    if (!S.ready || S.thumbs) return;
+    S.thumbs = true;
+    await doc.fonts?.ready;
+    for (const row of doc.querySelectorAll('.ww-row[data-ww-pick]')) {
+      const slug = row.dataset.wwPick, img = row.querySelector('.ww-thumb img');
+      if (!img || img.closest('.wwd-tw')) continue;
+      img.loading = 'eager';
+      const ok = await until(() => img.complete && img.naturalWidth > 0 && img.getBoundingClientRect().width > 10, 60);
+      if (!ok || S.doc !== doc) { S.thumbs = false; return; }
+      await img.decode().catch(() => {});
+      const r = await stableRect(img);
+      let n = Math.max(4, Math.round(r.width / PX)), m = Math.max(4, Math.round(r.height / PX));
+      if (f === 'laptop') tdims[slug] = [n, m]; else if (tdims[slug]) [n, m] = tdims[slug];
+      const url = drawDown(doc, img, n, m);
+      const tw = doc.createElement('span');
+      tw.className = 'wwd-tw';
+      Object.assign(tw.style, { width: `${r.width}px`, height: `${r.height}px` });
+      tw.style.setProperty('--wwd-n', n);
+      tw.style.setProperty('--wwd-m', m);
+      if (slug === FLOAT) tw.style.setProperty('--wwd-alpha', `url("${url}")`);
+      img.before(tw);
+      tw.appendChild(img);
+      img.removeAttribute('srcset');
+      img.removeAttribute('sizes');
+      img.src = url;
+    }
+  }
   // the box once it stops changing (two reads 120 ms apart agree)
   async function stableRect(el) {
     let a = el.getBoundingClientRect();
@@ -503,7 +547,7 @@
   const LUM = '0.2126 0.7152 0.0722 0 0 0.2126 0.7152 0.0722 0 0 0.2126 0.7152 0.0722 0 0 0 0 0 1 0';
   const funcs = (per) => ['R', 'G', 'B'].map((c, i) => `<feFunc${c} ${per(i)}/>`).join('');
   let seed = 1;
-  function filterMarkup(slug) {
+  function filterMarkup(slug, id = `wwd-grade-${slug}`, reachK = 1) {
     const v = (k) => +val(k);
     const [ch, cs] = chan[slug];
     const gs = Math.min(100, cs + 20);
@@ -512,14 +556,14 @@
     const from = v('bloomFrom');
     const knee = Array.from({ length: 11 }, (_, i) => { const x = i / 10; return x <= from ? 0 : Math.pow((x - from) / (1 - from), 1.5); }).map((n) => n.toFixed(3)).join(' ');
     let out = 'mix';
-    let s = `<filter id="wwd-grade-${slug}" x="0" y="0" width="1" height="1" color-interpolation-filters="sRGB">
+    let s = `<filter id="${id}" x="0" y="0" width="1" height="1" color-interpolation-filters="sRGB">
       <feComponentTransfer in="SourceGraphic" result="lift">${funcs((i) => `type="linear" slope="${(1 - g[i]).toFixed(4)}" intercept="${g[i]}"`)}</feComponentTransfer>
       <feColorMatrix in="SourceGraphic" type="matrix" values="${LUM}" result="lum"/>
       <feComponentTransfer in="lum" result="duo">${funcs((i) => `type="table" tableValues="${g[i]} ${m[i]} ${t[i]}"`)}</feComponentTransfer>
       <feComposite in="duo" in2="lift" operator="arithmetic" k1="0" k2="${k}" k3="${(1 - k).toFixed(3)}" k4="0" result="mix"/>`;
     if (bloom > 0) {
       s += `<feComponentTransfer in="mix" result="hi">${funcs(() => `type="table" tableValues="${knee}"`)}</feComponentTransfer>
-      <feGaussianBlur in="hi" stdDeviation="${v('blur')}" result="glow"/>
+      <feGaussianBlur in="hi" stdDeviation="${(v('blur') * reachK).toFixed(2)}" result="glow"/>
       <feComposite in="glow" in2="mix" operator="arithmetic" k1="0" k2="${bloom}" k3="1" k4="0" result="bloomed"/>`;
       out = 'bloomed';
     }
@@ -586,7 +630,36 @@
       background: repeating-linear-gradient(0deg, rgba(0, 0, 0, var(--wwd-lines)) 0 var(--wwd-dpx),
         transparent var(--wwd-dpx) calc(var(--wwd-dpx) * var(--wwd-linesDp)));
     }`;
+  const thumbOf = (slug) => {
+    const R = `html:not(.hc) .ww[data-ww-bg='screen'] .ww-row[data-ww-pick='${slug}']`, float = slug === FLOAT;
+    const light = `hsl(var(--ww-on-h) calc(var(--ww-on-s) * 1%) 58% / var(--wwd-halo))`;
+    const reach = 'calc(var(--wwd-haloPx) * var(--wwd-thumbReach))';
+    const grade = `url(#wwd-tgrade-${slug}) brightness(calc(var(--wwd-lift) * var(--wwd-thov, 1))) contrast(var(--wwd-con)) saturate(var(--wwd-sat)) blur(var(--wwd-focus))`;
+    return `
+    ${R} .wwd-tw { position: relative; display: block; isolation: isolate; transition: scale 180ms cubic-bezier(0.2, 0.9, 0.25, 1.25); }
+    @media (hover: hover) { ${R}:hover .wwd-tw { scale: var(--ww-thumb-hover-k); --wwd-thov: var(--ww-thumb-hover-light); } }
+    ${R} .wwd-tw img {
+      width: 100% !important; height: 100% !important; max-width: none !important; transform: none !important;
+      box-shadow: none !important; border-radius: ${float ? '0' : 'var(--wwd-r)'} !important; image-rendering: pixelated;
+      ${float ? '' : MASK(FEATHER)}
+      filter: ${grade} !important;
+    }
+    ${float ? `${R}.is-lit .wwd-tw img { filter: ${grade} drop-shadow(0 0 ${reach} ${light}) !important; }` : `${R}.is-lit .wwd-tw::before {
+      content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: var(--wwd-r);
+      box-shadow: 0 0 ${reach} calc(${reach} * 0.15) ${light};
+    }`}
+    ${R} .wwd-tw::after {
+      content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: ${float ? '0' : 'var(--wwd-r)'};
+      background: ${OVER};
+      background-size: calc(100% / var(--wwd-n)) 100%, 100% calc(100% / var(--wwd-m)), auto, auto;
+      box-shadow: ${float ? 'none' : 'inset 0 0 calc(var(--wwd-insetPx) * var(--wwd-thumbReach)) rgba(0, 0, 0, var(--wwd-inset))'};
+      ${float ? '-webkit-mask: var(--wwd-alpha) 0 0 / 100% 100% no-repeat; mask: var(--wwd-alpha) 0 0 / 100% 100% no-repeat;' : MASK(FEATHER)}
+    }`;
+  };
   // OFF: the pixels as they are (hard edges, no grade, no edges), to compare
+  const bareThumb = (slug) => `
+    .ww-row[data-ww-pick='${slug}'] .wwd-tw { display: block; }
+    .ww-row[data-ww-pick='${slug}'] .wwd-tw img { width: 100% !important; height: 100% !important; max-width: none !important; image-rendering: pixelated; }`;
   const bareOf = (slug) => `
     ${SEL(slug)} .ww-ui { width: fit-content; max-width: 100%; }
     ${SEL(slug)} .ww-ui :is(img, canvas) { box-shadow: none !important; border-radius: 0 !important; image-rendering: pixelated; }`;
@@ -598,9 +671,10 @@
       const doc = stages[f].doc;
       const vars = ALL.filter((c) => c.as === 'css').map((c) => `--wwd-${c.k}: ${val(c.k)}${c.unit || ''};`).join(' ');
       const page = ALL.filter((c) => c.as === 'page' && (c.k in st.cur || c.def !== undefined)).map((c) => `${c.k}: ${val(c.k)} !important;`).join(' ');
-      const rules = SLUGS.map(([slug]) => (st.look === 'on' ? lookOf(slug) : bareOf(slug))).join('\n');
+      const rules = SLUGS.map(([slug]) => (st.look === 'on' ? lookOf(slug) + thumbOf(slug) : bareOf(slug) + bareThumb(slug))).join('\n');
       doc.getElementById('wwd-live').textContent = `${WALL} { ${vars} ${page} }\n${LINES}\n${rules}`;
-      if (!changed || changed.as === 'filter') doc.getElementById('wwd-svg').innerHTML = `<defs>${SLUGS.map(([slug]) => filterMarkup(slug)).join('')}</defs>`;
+      if (!changed || changed.as === 'filter' || changed.k === 'thumbReach') doc.getElementById('wwd-svg').innerHTML =
+        `<defs>${SLUGS.map(([slug]) => filterMarkup(slug) + filterMarkup(slug, `wwd-tgrade-${slug}`, +val('thumbReach'))).join('')}</defs>`;
     });
     save();
     paint();
@@ -636,6 +710,13 @@
   document.getElementById('play').onclick = () => { playing = !playing; paint(); };
   document.querySelectorAll('#look button').forEach((b) => (b.onclick = () => { st.look = b.dataset.l; commit(); }));
   document.querySelectorAll('#view button').forEach((b) => (b.onclick = () => { st.view = b.dataset.v; save(); layout(); }));
+  document.querySelectorAll('#pview button').forEach((b) => (b.onclick = () => {
+    st.pview = b.dataset.pv; save(); paint();
+    const S = stages.phone;
+    if (!S.ready) return;
+    S.doc.querySelector(WALL).dispatchEvent(new S.iframe.contentWindow.CustomEvent('ww:select', { detail: { view: st.pview } }));
+    if (st.pview === 'list') setTimeout(() => prepareThumbs('phone'), 700); else prepare('phone', st.slug);
+  }));
   document.querySelectorAll('#zoom button').forEach((b) => (b.onclick = () => { st.zoom = +b.dataset.z; save(); layout(); }));
   document.getElementById('resetAll').onclick = () => {
     if (!confirm('Back to your first settings (2026-11-10)? (the values you changed since are lost)')) return;
