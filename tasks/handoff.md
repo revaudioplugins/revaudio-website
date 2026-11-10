@@ -265,7 +265,17 @@ Files: `src/components/WordWall.astro`, `src/components/TrialGateModal.astro` (+
   at 15 fps (15.7 s). Cut by `cut-webp.py` (new `alpha` mode: GAS 2 keeps its cut-out, trimmed to its outline):
   GAS 87 x 129 (101 KB webp), RR 168 x 94 (106 KB), GAS 2 87 x 173 (173 KB), DRIFT 154 x 81 (386 KB). Frames in
   `tools/wwbench/anim/<slug>/` (untracked). Checked: all five lit in Chromium + WebKit, laptop + phone, 0 errors.
-- Next: Dan's look at all five on `/__wwdepth` -> production: the same for GAS, Radio Roulette (both have
+- Scanlines (Dan 2026-11-10: "too much far from each other ... more packed ... a little bit seen ... everything will
+  glue together"): on the BENCH only (Dan rejected my edit of WordWall.astro: bench first, bake after). Hairlines one
+  device px thin at every density (1px / 0.5px / 0.3334px by min-resolution), a line every 3 device px, alpha 0.3,
+  over everything (`.ww-screen-fx::before`, the glass's top layer); today's under-the-text lines (`--ww-scr-scan`) and
+  the picture's own extra lines off by default (`4c70bf7`). Mind 10-19: lines over the text hurt reading then (1 px
+  every 3 px, bands on a phone).
+- The list's thumbnails (Dan's pick A, "the same look, smaller, still"), on the BENCH (`e0c7767`): drawn down to box / 2
+  (laptop: RevLimiter 51 x 25, GAS 21 x 32, GAS 2 17 x 32, DRIFT 51 x 27, RR 51 x 28; the phone reuses them) in a holder
+  (`.wwd-tw`) carrying the big picture's grade (own channel; glow x `thumbReach` 0.3), lines, fade, edges; unlit dim
+  by `--ww-dim`; lit = light on the glass; hover grows the holder; GAS 2 floats. PHONE: LIST shows them.
+- Next: Dan's look at all five + the thumbnails + the scanlines on `/__wwdepth` -> COPY SETTINGS -> production: the same for GAS, Radio Roulette (both have
   browser demos), DRIFT (its wall run, pixelated), GAS 2 (its pump floating, animated, alpha), each to music -> build
   it in WordWall (bake the grade into the TV's copies: no live SVG filter in production; video, see the weight), then
   the thumbnails; then the header that slides away; TV Sells round 4 notes; step 00's baseline before any push to
