@@ -308,11 +308,22 @@ UPDATE 3 2026-11-09 / 11-10 (night): Dan's round-2 notes (db `notes-r2`, pins re
 - Batch 6, the left wall (11-10, settings ver 21): W05 solder station (its smoke scrolls and breathes: MODELS `wisp`),
   W04 parts bins, N17 pedalboard, N18 cable hooks, L11 drum machine; reworks W01 meter, W02 RevLimiter dial, W03
   stickies, N12 on its 2x4 (box w 0.6, x -3.21), N47 a bigger shade. Checked: 0 overlaps, 93 models, still re-rendered.
-- Builders' queues (11-10): left W05 W04 N17 N18 L11, then rework W01 meter, W02 RevLimiter dial art, W03 stickies,
-  N12's 2x4, N47 a bigger shade; far N28 L17 N42, then rework N20 globe lettering, E04 scope + headphones, R19 print,
-  N39 traffic light (visors, dark body: the ceiling neon washes it); car W06 rework, then A01/A02 traps (dark fabric,
-  a frame you see) and N29 blankets rebuilt. After the left + far batches every slot in view has a model.
-  The 12 slots at f > 1 (L10 R01 R04 R11 R12 R13 N04 N05 N08 N09 N22 N25) sit behind the camera: not built.
+- Batch 7, the far end + reworks (11-10, settings ver 22): N28 mini fridge; N42 cable tray hung under the trusses (h
+  1.565, x -2.05, its own height: the designers' y 4.32 was for the flat placeholder; no longer `flat`, so the overlap
+  check sees it); L17 hose pegboard v2 (its tools only in the gaps round the bass wall in front of it; d 0.085, a thin
+  board); N20 globe v2; N39 traffic light v2 (0.4 m along its truss to x -0.9, glow 0.7: out of the left neon's wash);
+  A01/A02 traps v2 (dark fabric, walnut frames); N29 blankets v3 (1.44 m: fits Dan's spot between the ukulele and W10,
+  7 cm up so its hem clears the drum kit's block); the left builder's E04 synth, N33 scope, N35 + N49 headphones, R19
+  GAS 2 print. Room: model textures get 8x anisotropy; dust specks within 2 m of the lens fade out (a point drew as a
+  big square up close); a capture holds the dying tube and the sign lit; migrations now run oldest first (append).
+- Batch 7 review (workflow: 4 judges + a refuter each, 17 confirmed, 2 must-fix): N42's far end flares and its cords
+  land on the REVAUDIO sign in the opening frame, and N39's lit lamps read pastel. Both with builder far-2 (N42 v2,
+  N39 v3), then N28's sticker order and the GAS 2 lockup on R19 + N20 (DESIGN.md: Oswald 700, GAS parchment, the 2 and
+  its rule oxide). Deferred polish: N29's grey bunch reads flat and its blue is very clean; N28 is hidden from the
+  walk; N20's face washes GAS2 out at 0.8 m.
+- Builders (11-10 night): far-2 is fresh (the far builder's long context kept dropping on the network); left and car
+  idle. Every slot in view has a model. The 12 slots at f > 1 (L10 R01 R04 R11 R12 R13 N04 N05 N08 N09 N22 N25) sit
+  behind the camera: not built.
 - The outside through the door: A photo street / B built street / C rainy night (car builder's pick C), patches for A
   and C ready in `look/step4/builders/car/candidates/OUTSIDE/patch/`; Dan picks on bench round 3.
 - guitar.glb has no slot since R10 became the ukulele (kept for now).
