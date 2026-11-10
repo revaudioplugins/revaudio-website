@@ -325,7 +325,10 @@ UPDATE 3 2026-11-09 / 11-10 (night): Dan's round-2 notes (db `notes-r2`, pins re
 - Review 2 (the late additions + room code, 17 confirmed, 3 must-fix): room fixes in (11-10): the lights hold still in a
   capture (`steady`: the hum, the dying tube, the sign, N39 holds red), N18's bar on the pegboard's face (on 0.02), labels
   (R19, N42 under the ceiling), the fonts ledger (Special Elite is Apache 2.0, not OFL), the layout kit regenerated.
-  Model fixes out: left builder (N33 + E04 UV bleed, N49 readable on a hook, the yokes), far-2 (N28 v2, GAS 2 lockup, L17 v3).
+  Model fixes in (11-10): N33 + E04 UV bleed fixed, N49 hung from a hook under W10's plank at its door end (slot moved
+  0.38 m: the tube radio stands under the middle), N35 + N49 yokes as forks (left builder); N28 v2.1 (no sticker cut, the
+  top's stickers read from the aisle), L17 v3 (every hose on a visible hook, nothing hidden from the walk), the GAS 2
+  lockup on R19 (parchment GAS, oxide 2 + rule) and N20 (GAS 2's own globe lens) (far-2). Builders' queues empty.
 - Builders (11-10 night): far-2 is fresh (the far builder's long context kept dropping on the network); left and car
   idle. Every slot in view has a model. The 12 slots at f > 1 (L10 R01 R04 R11 R12 R13 N04 N05 N08 N09 N22 N25) sit
   behind the camera: not built.
