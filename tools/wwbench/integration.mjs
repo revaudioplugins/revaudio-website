@@ -25,6 +25,8 @@ const PAGES = {
   __wwsignup: fileURLToPath(new URL('./wwsignup.html', import.meta.url)),
   /* /__wwsent (Dan 2026-11-08, the TV Sells bench): three looks for "Check your inbox", on the real page */
   __wwsent: fileURLToPath(new URL('./wwsent.html', import.meta.url)),
+  /* /__wwdepth (Dan 2026-11-10): every parameter of how RevLimiter's picture (its song loop, 2 x 2 px) sits in the tube */
+  __wwdepth: fileURLToPath(new URL('./wwdepth.html', import.meta.url)),
 };
 const LOOKS_JS = fileURLToPath(new URL('./wwsent-looks.js', import.meta.url));
 
@@ -46,7 +48,7 @@ export default function wwbench() {
                       res.end(await readFile(LOOKS_JS, 'utf8').catch((e) => `console.error(${JSON.stringify(String(e))})`));
                       return;
                     }
-                    const m = /^\/(__wwbench|__wwkeys|__wwsignup|__wwsent)\/?$/.exec((req.url || '').split('?')[0]);
+                    const m = /^\/(__wwbench|__wwkeys|__wwsignup|__wwsent|__wwdepth)\/?$/.exec((req.url || '').split('?')[0]);
                     if (!m) return next();
                     res.setHeader('Content-Type', 'text/html; charset=utf-8');
                     try {
