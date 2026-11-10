@@ -429,3 +429,29 @@ Smoke went red on every site push for a day and two sessions shipped past it (th
 2. After a site push: `gh run list --limit 2` shows Deploy AND Smoke test; read both conclusions before calling it live.
 3. Mac WebKit against the dev server hangs the same way as the 2026-10-14 Windows note: `load` and
    `document.fonts.ready` can stall a Playwright run (2026-11-04), so race fonts.ready with a ~5 s timeout there too.
+
+## 2026-11-10 - a render against another worktree's server draws that worktree's room (`danavivi-d5`)
+
+`lights/render.mjs`, `lights/check.mjs` and `street-atlas.mjs` default to port 4471. That day 4471 was another
+session's server for the lights-on worktree, so the first render drew that branch's room, with no error anywhere.
+1. Before pointing a script at a port: `lsof -nP -iTCP:<port> -sTCP:LISTEN` gives the pid, and
+   `lsof -a -p <pid> -d cwd` must show this worktree. Otherwise serve your own
+   (`python3 -m http.server <port> --bind 127.0.0.1` from the worktree root) and pass `--port`.
+2. With builders and Chrome running (load average 300+), the scripts' 90-120 s Playwright waits time out on a page
+   that is fine. Look at `uptime` before debugging; copies with 900 s waits
+   (`.claude/garage-bench-2026-11-10/lights-run/`) finish.
+
+## 2026-11-10 - GitHub Pages gzips the .glb files, so three's progress passes 100 % (`danavivi-d5`)
+
+Pages serves `.glb` gzipped (checked 2026-11-10). three.js's FileLoader takes `total` from `Content-Length`, the
+compressed size, but counts `loaded` in decoded bytes, so a bar driven by `loaded / total` reaches the end early and
+keeps going: in the weak-line simulator the loading screen ran ahead of the download. Weight the bar by sizes known in
+advance (each file's decoded bytes) and clamp it; test through `perf/simserve.py`, which gzips like Pages. The room's
+loading code is the speed session's (`feat/home-speed`).
+
+## 2026-11-10 - on Dan's Mac `.handoff-archive/` never reaches git (`danavivi-d5`)
+
+The close-session and wrap skills put a long session note in `<repo>/.handoff-archive/`, but this clone's
+`.git/info/exclude` (line 35) ignores that folder: a note there stays on the laptop, and `git add` refuses it without
+`-f`. Put the long note beside the work (e.g. `tools/_home-opening/perf/HANDOFF-2026-11-10.md`) and link it from
+`tasks/handoff.md`.

@@ -1,6 +1,6 @@
 ## 2026-11-03 — Home opening: the long garage, an ACTIVE PROJECT (Claude Code `danavivi-4e [b36252]`, Dan's Mac; continues `danavivi-7a [9ae241]`) — on branch `feat/home-opening`, pushed, not on main
 
-Claim: OPEN `danavivi-d5 [443a28]` (Dan's Mac; the same session as `danavivi-20 [c417bc]` after a restart; tomorrow's session takes it, see SESSION END 2026-11-09 below); `danavivi-20` took it over from `danavivi-09` on 2026-11-08 (Dan: "take the claim from
+Claim: OPEN `danavivi-d5 [443a28]` (Dan's Mac; the same session as `danavivi-20 [c417bc]` after a restart; the next session takes it, see SESSION END 2026-11-10 below); `danavivi-20` took it over from `danavivi-09` on 2026-11-08 (Dan: "take the claim from
 danavivi-09, then go", for the look pass), which took it from `danavivi-4e` on 2026-11-04, which took it from `danavivi-7a`
 (closed) on 2026-11-03. Dan, 2026-11-03: "this is a
 project we start working on now, from now on": the long garage is a standing project of the site, not a one-off hero. It
@@ -401,8 +401,71 @@ UPDATE 3 2026-11-09 / 11-10 (night): Dan's round-2 notes (db `notes-r2`, pins re
   "Ask Yoni" (Dan sends Yoni the message); hosting "Let's talk" (R2 pre-compressed: -1.11 MB / 5 % vs Pages' gzip,
   but no 100 GB/month limit); "stuck: Both · lets test it"; real machines "Later".
 
+### SESSION END 2026-11-10 — `danavivi-d5 [443a28]` — round 5 half landed, three builds ready, then bench round 6
+
+State: `feat/home-opening` clean and in sync with origin at `b90ec47` (main merged in, Dan: "merge main do not
+deploy": nothing on main, no deploy). Today's commits, all pushed: `064d8b9` blanket, `4142e38` RevAmp pedals,
+`c562939` synth cable, `6d9f6cf` + `955074f` the loading screen + its layers, `e8ab4d6` the speed brief + simulator,
+`50c52b7` the street (built in, off), `6cbe654` round 5's street (G1, every grade FREE) + four guitars out + layers,
+`b90ec47` main merged; plus handoff commits.
+
+NEXT, in order:
+1. Land the three builds of Dan's round-5 notes (workflow `wf_3bb75485-05c`, finished 11-10 around 20:00, its last files 19:59; each had a Sonnet
+   review, N03 a Fable fix pass). Lasting copies (git-ignored): `/Users/danavivi/projects/revaudio/revaudio-website/
+   .claude/garage-bench-2026-11-10/step6/{n17,l20,n03}/candidates/<ID>/` (glb, notes.txt with the SOURCES row, stills).
+   - N17 `pedalboard.glb`: a RevAmp board, nine RevAmp pedals (GREENLINE, REDLINE kept; CAMSHAFT, CRUISE, TUNNEL,
+     RIMS, WIPERS, MIRAGE, NITRO) + a REVAMP plate; 3,418 tris, 1 material. Replace the file, update its MODELS comment,
+     relabel its slot ("Pedalboard: RevAudio pedals, cable spaghetti" -> a RevAmp board). No slot change. Its notes.txt
+     lists six choices for Dan (e.g. BLUESHIFT / TAILLIGHT left out: 9 letters don't read on a 0.08 m face): put them
+     on the bench card. From the walk the change hardly shows (the red cases and L19 hide the board).
+   - L20 `bass-natural.glb`: a 34-inch 4-string bass in natural ash, 2,452 tris. Replace the file AND move the slot
+     y 2.1 -> 1.75 (at 2.1 the headstock and its four tuners sit under the nav in the close view: then it reads as a
+     guitar again).
+   - N03 `lift-pump.glb` (new file): the lift's hydraulic power unit, the hose into the lift's base plate; 1,884 tris.
+     MODELS `N03: { src: 'assets/models/lift-pump.glb', yaw: Math.PI / 10, fitNode: 'lift_pump' }`; slot
+     `{ id: 'N03', cat: 'garage', label: 'Lift pump unit + hose into the lift', side: 1, f: 0.9418, w: 0.39, h: 1.05,
+     d: 0.467, y: 0.525, x: 1.331 }`; DEF.moves "N03" (`{"f": 0.8472, "x": 1.6}`) removed or set to f 0.9418 / x 1.331,
+     settings ver 22 -> 23 with a migration line; then `records.diff` in its folder (SOURCES.md, refs/licence-log.md,
+     the props lists: `patch -p1 --dry-run` first). The hose fits today's lift only: if the car or lift moves, rebuild
+     with its `lift_pump.py` (prints the new slot).
+   - Then: the overlap check, the loading pictures (`lights/render.mjs --check` + `lights/check.mjs`; copies with
+     900 s timeouts for a loaded Mac in `.claude/garage-bench-2026-11-10/lights-run/`, run from the worktree root),
+     commit by path, push.
+2. Bench round 6: the same link as round 5 (https://claude.ai/artifact/54aorRBcCAvWJTrPHqaPZm, personal account; pass
+   `url`, collection `notes-r6`). Cards: the street (G1 + the FREE sign: close, first screen, before), the pedals
+   (close, near, before), the left wall (four out + the new L20: close, walk, before), N03 (walk 0.15 + its close pose
+   from its notes, before). The kit, copied out of the scratchpad: `.claude/garage-bench-2026-11-10/` (the round-5
+   page + generator `round2/r5-page.py`, its shots, `scripts/round2-shots.mjs` + `round2/spec-b7.json`, Dan's
+   `round2/notes-r5/`). The street's close pose: [0.3, 1.7, 15.2] looking at [7.5, 1.9, 11.0]. Don't re-ask the
+   blanket, the car floor or the end wall (unmarked twice).
+
+Unverified: Dan hasn't seen G1 with the FREE sign in the room yet, nor the left wall without the four guitars; L17's
+pegboard was built with gaps where L02 / L03 / L18 hung: look whether it reads bare now.
+
+Background processes (this session's; nothing else depends on them once round 6 is shot):
+- `python3 -m http.server 4490 --bind 127.0.0.1` (worktree root), pid 52126: the room's server. `kill 52126`.
+- the weak-line simulator, port 4481, pid 98125: Dan's 1.6 Mbps view
+  (http://127.0.0.1:4481/tools/_home-opening/room.html). `pkill -f 'simserve.py.*--port 4481'`.
+- the bench preview server, port 4497, pid 47075 (`--directory` the scratchpad's look/step4/round1). `kill 47075`.
+- port 4495, pid 2535 (cwd this worktree, since 11-10 01:05): owner unknown; leave it unless in the way.
+
+Decide / ask Dan:
+1. Which account: rounds 1-4 (https://claude.ai/artifact/WbhosKXawqVMvT3xpKo53p) and the finish list (stops 2-6 still
+   unpinned, https://claude.ai/artifact/LKA2p4zQACEx8odCn1vZqq) are on the RevAudio account; round 5 and the speed
+   page on Dan's personal one, where this session ran. Keep to the personal one unless he switches back.
+2. Model files no slot uses now: bass.glb, guitar-black.glb, guitar.glb (and jack-creeper.glb once N03 lands). Not
+   loaded; keep or delete is Dan's call.
+3. The speed session (`danavivi-cc`, `feat/home-speed`) merges into this branch on Dan's OK; expect overlap in
+   room.html's loadTextures / loadModels (the street's 11 lines are there too).
+
+Cleanup: this session's scratchpad (`/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/
+scratchpad`, ~20 GB with the speed study) can go once round 6 is out: the essentials are in
+`.claude/garage-bench-2026-11-10/` and `.claude/perf-study-2026-11-10/`.
+
 Open: the monitors bench had B (vintage) ticked but Dan's chat said "black + wood"; black went in. Confirm if asked.
-Owed by Dan: tell Gil (the room on laptops from Nov 19, next to his Black Friday countdown); the R2 / CSP OK.
+Owed by Dan: send Yoni the CSP message (add `blob:` to img-src and connect-src in the Cloudflare transform rule, by
+hand; then a curl check and one Paddle checkout); tell Gil (the room on laptops from Nov 19, next to his Black Friday
+countdown); the finish list's stops 2-6.
 Run the room: from this worktree's root `python3 -m http.server 4490 --bind 127.0.0.1` (this session left one running,
 pid 52126: `kill 52126` if it's in the way), then http://127.0.0.1:4490/tools/_home-opening/room.html. The scripts
 default to port 4471: pass the port.
