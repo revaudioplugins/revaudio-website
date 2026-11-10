@@ -1,14 +1,22 @@
 // RevLimiter's real UI running (served from the Revlimiter repo, no host), for the TV's pixelated animation.
-// Playwright's fake clock steps the page frame by frame, the plugin's own 'meters' event is fed a periodic
-// mix (120 BPM, one 4 s loop = 2 bars), so frame N and frame N + loop are the same picture: a seamless loop.
+// Playwright's fake clock steps the page frame by frame and feeds the plugin's own 'meters' event one tick at a time.
+// Two feeds, both loops (frame N and frame N + loop are the same picture: a seamless loop):
+//   - a real song (Dan 2026-11-10: "the revlimiter is just pumping, make it more human and more like real song"):
+//     tools/tv-anim/song-meters.py measures the site's RevLimiter demo (before = into the plugin, after = out of it)
+//     and writes the meters per 60 Hz tick for one musical loop, already periodic;
+//   - the old synthetic mix (120 BPM, a 4 s loop = 2 bars), when no meters file is given.
 //   1. python3 -m http.server 8787 --bind 127.0.0.1   (in Revlimiter/Source/ui/public; its fonts/ -> Assets symlink)
-//   2. node tools/tv-anim/record-revlimiter.mjs <outDir> [fps=15] [width=933]   -> outDir/f_0000.png ... (one 4 s loop)
-//   3. the TV's cut: each frame down to the pixel size (194 or 129 wide), LANCZOS + a light unsharp, as an animated WebP
+//   2. node tools/tv-anim/record-revlimiter.mjs <outDir> [fps=15] [width=933] [meters.json]   -> outDir/f_0000.png ...
+//   3. the TV's cut: each frame down to the pixel size (194 wide = 2 x 2, Dan's pick), LANCZOS + a light unsharp,
+//      as an animated WebP
 import { webkit } from 'playwright';
 import fs from 'node:fs';
 const OUT = process.argv[2]; const FPS = +(process.argv[3] || 15); const W = +(process.argv[4] || 933);
+const SONG = process.argv[5] ? JSON.parse(fs.readFileSync(process.argv[5], 'utf8')).ticks : null;
 fs.mkdirSync(OUT, { recursive: true });
-const LOOP = 4000, TICK = 1000 / 60;
+const TICK = 1000 / 60, every = Math.round(60 / FPS);
+const LOOP_TICKS = SONG ? SONG.length : 240;   // the song's loop is a whole number of frames (song-meters.py)
+if (LOOP_TICKS % every) throw new Error(`a loop of ${LOOP_TICKS} ticks isn't a whole number of ${FPS} fps frames`);
 const b = await webkit.launch();
 const page = await b.newPage({ viewport: { width: W, height: Math.round(W * 901 / 1866) + 2 }, deviceScaleFactor: 1 });
 const errs = []; page.on('pageerror', (e) => errs.push(String(e).split('\n')[0]));
@@ -47,14 +55,17 @@ await page.evaluate(() => {
     };
   };
 });
-const emit = (ms) => page.evaluate((m) => window.__JUCE__.backend.emitByBackend('meters', JSON.stringify(window.__mix(m))), ms);
-// warm up three loops (the self-test sweep, the needle's inertia, the history strip filling), then record one
-let ms = 0;
-for (; ms < 3 * LOOP; ms += TICK) { await emit(ms); await page.clock.runFor(TICK); }
-const every = Math.round(60 / FPS); let n = 0;
+const emit = (k) => page.evaluate((d) => window.__JUCE__.backend.emitByBackend('meters', JSON.stringify(d.row || window.__mix(d.ms))),
+  SONG ? { row: SONG[k % LOOP_TICKS] } : { ms: k * TICK });
+// warm up (the self-test sweep, the needle's inertia, the 6 s history strip filling: 3 synthetic loops or 2 song
+// loops), then record one loop
+const WARM = (SONG ? 2 : 3) * LOOP_TICKS;
+let k = 0;
+for (; k < WARM; k++) { await emit(k); await page.clock.runFor(TICK); }
+let n = 0;
 const plugin = page.locator('.plugin');
-for (let i = 0; i < (LOOP / 1000) * 60; i++, ms += TICK) {
-  await emit(ms); await page.clock.runFor(TICK);
+for (let i = 0; i < LOOP_TICKS; i++, k++) {
+  await emit(k); await page.clock.runFor(TICK);
   if (i % every === 0) await plugin.screenshot({ path: `${OUT}/f_${String(n++).padStart(4, '0')}.png` });
 }
 console.log('frames', n, 'at', FPS, 'fps;', errs.length ? errs.slice(0, 5) : 'no errors');
