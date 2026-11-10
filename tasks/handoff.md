@@ -240,7 +240,14 @@ Files: `src/components/WordWall.astro`, `src/components/TrialGateModal.astro` (+
   556 ticks -> 139 frames at 15 fps; `record-revlimiter.mjs <out> 15 933 <meters.json>`; `cut-webp.py` -> 194 x 94.
   Weight: 355 KB as animated WebP (q80), 55-75 KB as H.264 (4:2:0 crf 18 / 4:4:4 crf 16), 82 KB VP9 -> production
   should carry these as video. Cards: laptop q93, close-up and phone q82, `minimize_size` (5-6.5 MB each without it).
-- Next: Dan's notes on round 4 ("Does it move like a real song now?") -> the same for GAS, Radio Roulette (both have
+- Round 4: Dan "cool", then (2026-11-10) "lets creat a banch spesfic for the revlimiter depth in the tv, add every
+  parmeter in it so i can djust how the html look in the tv, then we copy the same princible and parmeters to the other
+  plugins". Built `/__wwdepth` (`tools/wwbench/wwdepth.html`, `0b1cce4`, dev only, the wwbench harness): the real
+  homepage TV, laptop + phone, RevLimiter's song loop (frames `tools/wwbench/anim/s194/`, untracked: regenerate with
+  `cut-webp.py <frames> <webp> 194 15 80 tools/wwbench/anim/s194`) and 36 sliders (size/place, look A's grade, glow,
+  pixels, edges, tube, the screen's --ww-scr-*, speed); LOOK ON/OFF, pause, 1:1 / x2. COPY SETTINGS -> "apply depth
+  bench" = one set for every plugin: bake into WordWall.astro (the grade per channel, baked: no live SVG filter).
+- Next: Dan's COPY SETTINGS from `/__wwdepth` -> the same for GAS, Radio Roulette (both have
   browser demos), DRIFT (its wall run, pixelated), GAS 2 (its pump floating, animated, alpha), each to music -> build
   it in WordWall (bake the grade into the TV's copies: no live SVG filter in production; video, see the weight), then
   the thumbnails; then the header that slides away; TV Sells round 4 notes; step 00's baseline before any push to
