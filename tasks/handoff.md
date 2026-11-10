@@ -422,10 +422,16 @@ the integration copies room.html (as index.html), street.js, lights/lights-on.js
 Yoni's three CSP words land, the live page shows white models (danavivi-fa saw the same 194 drops + the meshopt wasm
 failure on live, and 0 violations under the proposed header in Chrome + iPhone WebKit).
 To update it: merge `feat/home-opening` into main and push (pull --rebase in the same command; main carries 3 commits
-this branch doesn't), ~3 min to live, the workflow purges Cloudflare. Reported by danavivi-fa as Dan's standing OK
-(given in its session, 11-10): commits that change only `tools/_home-opening/` (tasks/ notes ride along) may go to
-main without asking each time; anything else on main (src/, public/, astro.config, the homepage) still waits for his
-word. Dan has not said it to this session: confirm it with him once before the first such push.
+this branch doesn't), ~3 min to live, the workflow purges Cloudflare. Dan's standing OK, said to this session
+11-10 ("yes with the limits"; danavivi-fa got the same OK in its session): room changes go to main without asking
+each time, within four limits:
+1. Room files only: after the pull, `git diff --name-only origin/main...HEAD` lists nothing outside
+   `tools/_home-opening/` and `tasks/`. Anything else (src/, public/, astro.config, the homepage) waits for his word.
+2. One push per finished round (models landed + loading pictures checked), never per commit: every push to main runs
+   `purge_everything` on revaudio.net's Cloudflare cache (deploy.yml), so real visitors load cold for a while.
+3. After each push: Deploy and Smoke test both green (`gh run list --limit 2`) and /garage-9f3c/ loads; then send Dan
+   the link + one line on what changed.
+4. It ends when the room becomes the homepage (planned Nov 19): from then on every push to main waits for his word.
 
 NEXT, in order:
 1. Land the three builds of Dan's round-5 notes (workflow `wf_3bb75485-05c`, finished 11-10 around 20:00, its last files 19:59; each had a Sonnet
