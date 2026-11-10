@@ -368,8 +368,8 @@ UPDATE 3 2026-11-09 / 11-10 (night): Dan's round-2 notes (db `notes-r2`, pins re
   captures 0.00 apart, layers vs the full room mean 3.86 levels, p99 20, 438 KB. check.mjs at 1141x636 @2x: cold 40 Mbit
   hand-off 9.0 s, no page errors; hand-off blurred mean 3.28, p99 14. Overlap check: 0. Both scripts ran on port 4475
   from scratchpad copies with 900 s timeouts (load average 300+; the stock 90 s wait timed out), because 4471 was the
-  lights-on worktree's own server (it has stopped it since). LOCAL ONLY: the branch now carries that session's
-  commits, so pushing (this handoff included) waits for Dan's word.
+  lights-on worktree's own server (it has stopped it since). PUSHED 11-10 by danavivi-fa on Dan's word "push"
+  (origin 4e9c1eb..e8ab4d6, a fast-forward).
 - Speed study (workflow `wf_af3ddb64-681`, 39 agents, prototypes on copies only; the full result is in the scratchpad's
   `look/step5/perf/speed-result.json`). Options page for Dan, on the personal account: https://claude.ai/artifact/G4Mm7W73m2RJeGiQ2hecqF
   (ArtifactData collection `picks`, doc = card id: {choice, note}; source `look/step5/perf/page/speed.html`). 🔴 Launch blocker:
@@ -382,8 +382,12 @@ UPDATE 3 2026-11-09 / 11-10 (night): Dan's round-2 notes (db `notes-r2`, pins re
   which should end the "scrolls during loading glide you mid-walk" cause: confirm with the study's wheel test (r-O8/func).
 - SPEED MOVED TO ITS OWN SESSION (Dan, 11-10: on a simulated 1.6 Mbps line "it took way too long": measured, the walk
   unlocks at 1:53, 22.26 MB in 162 files). Brief: `tools/_home-opening/perf/HANDOFF-2026-11-10.md`; tools and the
-  study's report in `tools/_home-opening/perf/`. The speed session works in its own worktree (`feat/home-speed`) and
-  owns room.html's loading / boot / asset pipeline; `danavivi-d5` keeps the room's content (MODELS, MESS, objects).
+  study's report in `tools/_home-opening/perf/`. The speed session is Claude Code `danavivi-cc [172bce]`, in its own
+  worktree (`.claude/worktrees/home-speed`, branch `feat/home-speed`); it owns room.html's loading / boot / asset
+  pipeline; `danavivi-d5` keeps the room's content (MODELS, MESS, objects). Dan's picks (options page, 11-10) went to
+  it: O4, O3-safe, open at the door, a calmer camera, one faint light off, O8, O2, O9 all "Do it"; the CSP edit
+  "Ask Yoni" (Dan sends Yoni the message); hosting "Let's talk" (R2 pre-compressed: -1.11 MB / 5 % vs Pages' gzip,
+  but no 100 GB/month limit); "stuck: Both · lets test it"; real machines "Later".
 
 Open: the monitors bench had B (vintage) ticked but Dan's chat said "black + wood"; black went in. Confirm if asked.
 Owed by Dan: tell Gil (the room on laptops from Nov 19, next to his Black Friday countdown); the R2 / CSP OK.
