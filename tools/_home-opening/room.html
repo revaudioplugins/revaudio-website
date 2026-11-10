@@ -56,9 +56,17 @@
     background-image: repeating-linear-gradient(rgba(0, 0, 0, .22) 0 1px, transparent 1px 3px), var(--pic); background-size: 100% 100%; }
   /* ?capture: the bare set for the painter, no page chrome */
   body.capture .nav, body.capture .stage-nav, body.capture .read-b, body.capture #benchOpen { display: none !important; }
-  /* the picture first (a slow connection): the room's own still under the page, shown only if the 3D takes over 0.9 s */
-  .still { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; pointer-events: none; transition: opacity 0.45s ease; }
-  .still.is-on { opacity: 1; }
+  /* the loading screen (lights/lights-on.js): the dark room and its lights coming on, bank by bank, over the 3D until it
+     takes over; each bank's picture adds its light (plus-lighter). Opacity only: the compositor plays it while the 3D
+     compiles. The page holds still under it */
+  .lights { position: absolute; inset: 0; background: #000; isolation: isolate; overflow: hidden; pointer-events: none; transition: opacity .5s ease; }
+  .lights.is-off { opacity: 0; }
+  .lights img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; will-change: opacity; }
+  .lights .lo-bank, .lights .lo-flare, .lights .lo-grain { mix-blend-mode: plus-lighter; }
+  .lights.no-plus .lo-bank, .lights.no-plus .lo-flare, .lights.no-plus .lo-grain { mix-blend-mode: screen; }
+  .lights .lo-grain { position: absolute; inset: -96px; background-size: 192px 192px; opacity: 0; transition: opacity .9s ease; will-change: transform, opacity; }
+  html.lights-loading, html.lights-loading body { overflow: hidden; }
+  html.lights-loading { scrollbar-gutter: stable; } /* (Windows: the scrollbar's room kept, so the hand-off doesn't re-lay the room) */
   .tv-live { position: absolute; left: 0; top: var(--nav-h); width: 100%; height: calc(var(--vh) - var(--nav-h)); display: block;
     opacity: 0; border-radius: var(--tv-r); pointer-events: none; }
   /* fades in (out at once): the film's TV is the 1920 page, the live one follows the screen's own layout */
@@ -120,9 +128,24 @@
     <div class="cam">
       <div class="stage" id="stage">
         <canvas id="gl" aria-hidden="true"></canvas>
-        <img class="still" id="still" src="assets/still/room-2560.webp" alt="" fetchpriority="high" decoding="async">
-        <script>/* a fast visit never sees it (the intro plays); a slow one gets the room's picture instead of a dark page */
-          if (!/[?&]capture=/.test(location.search)) setTimeout(() => { const s = document.getElementById('still'); if (s && !s.dataset.done) s.classList.add('is-on'); }, 900);</script>
+        <div class="lights" id="lights" data-dir="assets/lights/" aria-hidden="true"></div>
+        <script>/* the loading screen (lights/README.md): the dark room's lights come on bank by bank as the page loads, in this
+          order, front to back toward the TV. Each bank is one picture rendered from this room (lights/render.mjs); kind = how
+          it comes on (lights/lights-on.js): a tube strikes, a neon buzzes on, a bulb warms up, the gear powers on. props =
+          the lit props on its circuit (LIT with a light); w = its share of the room's fill (the hemisphere, the reflections) */
+          window.LIGHT_BANKS = [
+            { id: 'tv', kind: 'screen', w: 0.15,                   // the TV at the end of the aisle first (Dan 11-09: "the small lcd screen to light up first");
+              caps: ['1141x636', '1440x900', '1920x1080'] },       //   its picture per screen width, the TV's own captures (CAPS): the hand-off shows the same one
+            { id: 'shop', kind: 'tube', props: ['N02'] },          // the twin-tube shop light by the door, one tube dying
+            { id: 'neonL', kind: 'neon' },                         // the violet strip, left
+            { id: 'neonR', kind: 'neon' },                         // the magenta strip, right
+            { id: 'lamp0', kind: 'bulb', props: ['N01'], w: 1.4 }, // the hanging lamps, front to back; the trouble light into the car
+            { id: 'lamp1', kind: 'bulb', props: ['N12'], w: 1.4 }, // the clamp lamp over the bench
+            { id: 'lamp2', kind: 'bulb', w: 1.4 },
+            { id: 'lamp3', kind: 'bulb', w: 0.6 },                 // over the desk
+            { id: 'gear', kind: 'gear', w: 0.3 },                  // the REVAUDIO sign, the CRTs, the racks' LEDs and meters, the floor strips
+          ];</script>
+        <script src="lights/lights-on.js"></script>
         <img class="tv-live" id="tvLive" src="assets/tv-1141x636.webp" alt="The plugin TV">
         <div class="read-b" id="readB">
           <p class="rb-kick">REVAUDIO · BOUTIQUE AUDIO PLUGINS</p>
@@ -331,6 +354,9 @@ const KEY = 'hoRoom:v1';
 // ?capture=<walk 0..1>: the bare set from that spot for the painter (Playwright at 1920x1080); nothing is saved.
 // &painted: the room as already painted from there instead (with &paintdbg=holes: what no painting sees, magenta)
 const CAPTURE = new URLSearchParams(location.search).get('capture'), CAPTURE_PAINTED = new URLSearchParams(location.search).has('painted');
+// &lights=<k>: the loading screen's picture of the room with its first k light banks on (BANKS; lights/render.mjs)
+const LIGHTS = CAPTURE != null ? new URLSearchParams(location.search).get('lights') : null;
+const TVCAP = CAPTURE != null ? new URLSearchParams(location.search).get('tvcap') : null; // &tvcap=<CAPS tag>: the TV's picture for that screen width
 const S = { ...DEF, moves: structuredClone(DEF.moves) };
 let stored = {};
 try { stored = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) {}
@@ -407,7 +433,7 @@ const easeIO = (t, k) => t < 0.5 ? Math.pow(2 * t, k) / 2 : 1 - Math.pow(2 * (1 
 const hash = (n) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
 const rng = (seed) => () => { seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
 const deg = THREE.MathUtils.degToRad;
-const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches || LIGHTS != null; // (a light capture holds every moving thing still: its pictures differ by light only)
 const steady = reduced || CAPTURE != null; // the lights hold still in reduced motion and in a capture: a still never catches a flicker, a dip or a lamp mid-cycle
 
 // ---------- renderer ----------
@@ -602,9 +628,10 @@ function applyTvTexture() {
 // carry their own repeat. steel has only a colour map: its bumps and wear are enamel's
 const PBR = {}, PICS = {};
 async function loadTextures() {
-  const one = (url, fix) => new Promise((done) => { fix(loader.load(url, done, undefined, () => { console.warn('texture missing:', url); done(); })); });
+  const one = (url, fix) => new Promise((done) => { const ok = () => { loaded('tex'); done(); }; fix(loader.load(url, ok, undefined, () => { console.warn('texture missing:', url); ok(); })); });
   const sets = ['floor', 'wall', 'shutter', 'wood', 'plate', 'carpet', 'rust', 'enamel', 'tolex', 'fabric', 'rubber', 'cardboard']
     .flatMap((k) => ['col', 'nrm', 'arm'].map((m) => [k, m])).concat([['steel', 'col']]);
+  loadP.tex[1] = sets.length + POSTERS.length + MONITORS.length;
   await Promise.all([
     ...sets.map(([k, m]) => one(`assets/pbr/${k}_${m}.webp`, (t) => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 8; if (m === 'col') t.colorSpace = THREE.SRGBColorSpace; (PBR[k] ||= {})[m] = t; })),
     ...[...POSTERS, ...MONITORS].map((s) => one(`assets/pics/${s.pic}.webp`, (t) => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; PICS[s.pic] = t; })),
@@ -662,7 +689,11 @@ function metricUV(geo) {
   geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); return geo;
 }
 // a box with worn, rounded edges (bevel 1.5 cm or less on thin things), in metres
-function litMat(kind, lit) { const m = kindMat(kind).clone(); m.emissive = new THREE.Color(lit.color); m.emissiveIntensity = lit.glow; return m; }
+function litMat(kind, lit, id) { // (id: its glow follows its light bank, LIGHT_BANKS props)
+  const m = kindMat(kind).clone(); m.emissive = new THREE.Color(lit.color); m.emissiveIntensity = lit.glow;
+  if (id && PROP_BANK[id]) (R.litGlow ||= []).push({ m, id, k: lit.glow });
+  return m;
+}
 const bevelBox = (w, h, d, r = 0.015) => metricUV(new RoundedBoxGeometry(w, h, d, 2, Math.min(r, w * 0.3, h * 0.3, d * 0.3)));
 // the slots' kinds, and the ones that give off light (lit: colour, glow, a light's candela; globe = a lit globe or bulb
 // of that radius on top, the block then its body; only = the globe alone, in the block's place)
@@ -693,6 +724,23 @@ const LIT = {
   N20: { color: 0xffb050, glow: 5, globe: 0.2, only: 1 },   // the GAS 2 globe lamp at the far end: the globe is the slot
   N36: { color: 0xff3020, glow: 0.5, text: 'ON AIR' },      // ON AIR, its words drawn (textMat), dim until the lock
 };
+// the loading screen's light banks (window.LIGHT_BANKS, in the stage markup): LV = each bank's level, 1 = the room as
+// always; a light capture (&lights=k) has the first k on. A bank off takes its share of the fill with it (litFrac)
+const BANKS = window.LIGHT_BANKS || [];
+const LV = Object.fromEntries(BANKS.map((b, i) => [b.id, LIGHTS == null || i < +LIGHTS ? 1 : 0]));
+const PROP_BANK = Object.fromEntries(BANKS.flatMap((b) => (b.props || []).map((id) => [id, b.id])));
+const lv = (id) => LV[id] ?? 1;
+const HEMI_DARK = 0.12; // the fill with every bank off: the night outside, enough to make out shapes
+function litFrac() { let s = 0, w = 0; for (const b of BANKS) { s += (b.w ?? 1) * LV[b.id]; w += b.w ?? 1; } return w ? s / w : 1; }
+// the load's progress for the loading screen: each phase's share of a cold first visit (LOADW, measured: lights/README.md),
+// counted within the phase; a phase's end is a performance mark (lights:<phase>) for the measuring script
+const LOADW = { tex: 0.34, models: 0.52, upload: 0.11, compile: 0.03 }; // (lights/check.mjs, 2026-11-09: a cold visit at 40 Mbit/s, 10 s)
+const loadP = { tex: [0, 0], models: [0, 0], upload: [0, 0], compile: [0, 0] }; // [done, total]
+function loaded(phase, done, total) {
+  const ph = loadP[phase]; if (total != null) ph[1] = total; ph[0] = done ?? ph[0] + 1;
+  if (ph[1] && ph[0] >= ph[1] && !ph.marked) { ph.marked = true; performance.mark('lights:' + phase); }
+  window.lightsOn?.progress(Object.entries(LOADW).reduce((s, [k, w]) => s + w * (loadP[k][1] ? Math.min(1, loadP[k][0] / loadP[k][1]) : 0), 0));
+}
 // real models in their slots (step 3): a model stands in for its block in the look, scaled into the slot's box with its
 // shape kept ('height': to the slot's height, for a desk whose top carries gear); the block stays the slot (moves,
 // labels, the skeleton). yaw: turns the file's front to the slot's. fitNode: the one node that sets the fit (the rest of the
@@ -813,10 +861,15 @@ for (const q of new URLSearchParams(location.search).getAll('model')) {
 }
 async function loadModels() {
   const ids = Object.keys(MODELS).filter((id) => R.items.some((it) => it.id === id));
-  if (!ids.length) return [];
+  if (!ids.length) { loaded('models', 1, 1); return []; }
+  loadP.models[1] = new Set(ids.flatMap((id) => [MODELS[id].src, MODELS[id].stand]).filter(Boolean)).size;
   const [{ GLTFLoader }, { MeshoptDecoder }] = await Promise.all([import('three/addons/loaders/GLTFLoader.js'), import('three/addons/libs/meshopt_decoder.module.js')]);
   const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder), maps = [], files = {};
-  const get = async (src) => (await (files[src] ||= loader.loadAsync(src))).scene.clone(true); // a file used by several slots loads once; copies share its geometry + materials
+  // the loading screen hears each file's bytes as they come (the files load side by side: counting finished ones, the
+  // lights waited and then came in a rush), a file without a length when it lands
+  const got = {}, tell = () => loaded('models', Object.values(got).reduce((s, x) => s + x, 0));
+  const fetchModel = (src) => loader.loadAsync(src, (e) => { if (e.lengthComputable && e.total) { got[src] = 0.95 * e.loaded / e.total; tell(); } }).finally(() => { got[src] = 1; tell(); });
+  const get = async (src) => (await (files[src] ||= fetchModel(src))).scene.clone(true); // a file used by several slots loads once; copies share its geometry + materials
   R.modelGlow = [];
   // a model's lamps in turn (N39's traffic light): [material, seconds] in order -> that lamp's window in the loop
   const cycleOf = (cyc, name) => { if (!cyc) return null; const n = cyc.reduce((s, c) => s + c[1], 0); let a = 0; for (const [nm, d] of cyc) { if (nm === name) return { a, b: a + d, n }; a += d; } return null; };
@@ -852,7 +905,7 @@ async function loadModels() {
       o.receiveShadow = true; o.castShadow = ![o.material].flat().some((mt) => mt.transparent); // a decal or glass casts no box of shadow
       for (const mt of [o.material].flat()) {
         for (const t of ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap', 'emissiveMap']) if (mt[t]) { mt[t].anisotropy = 8; maps.push(mt[t]); } // 8x: stickers and labels stay sharp at the aisle's grazing angles
-        if (mt.emissive && mt.emissive.getHex() && !R.modelGlow.some((g) => g.m === mt)) R.modelGlow.push({ m: mt, k: mt.emissiveIntensity * (m.glow ?? 1), dying: /tube_dying/.test(mt.name), cyc: cycleOf(m.cycle, mt.name) }); // meters and LEDs power on with the room (N02's dying tube dips with its light)
+        if (mt.emissive && mt.emissive.getHex() && !R.modelGlow.some((g) => g.m === mt)) R.modelGlow.push({ m: mt, k: mt.emissiveIntensity * (m.glow ?? 1), dying: /tube_dying/.test(mt.name), cyc: cycleOf(m.cycle, mt.name), id }); // meters and LEDs power on with the room (N02's dying tube dips with its light)
         if (mt.metalness > 0.3 || mt.roughness < 0.5) { mt.envMap = R.probe.env.texture; mt.userData.env ??= 1; SHINY.add(mt); } // the room's own reflection, on shiny parts only
       }
     });
@@ -1268,9 +1321,9 @@ function createRoom() {
     const light = new THREE.SpotLight(0xffa04a, 16, 0, deg(42), 0.5, 2); // tighter pools, like the painting's
     light.castShadow = true; light.shadow.mapSize.set(1024, 1024); light.shadow.bias = -0.0004; light.shadow.normalBias = 0.03;
     light.shadow.camera.near = 0.2; light.shadow.camera.far = 14;
-    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 1.9, 1, 32, 1, true), R.shaftMat);
+    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 1.9, 1, 32, 1, true), R.shaftMat.clone()); // its own copy: its lamp's level
     scene.add(shade, bulb, cord, light, light.target, shaft);
-    return { f, k, shade, bulb, bulbMat, cord, light, shaft };
+    return { f, k, shade, inner, bulb, bulbMat, cord, light, shaft };
   });
 
   // the props: a grey block per slot, edges for the wireframe look, a label
@@ -1286,11 +1339,11 @@ function createRoom() {
   // glows and lights the room (LIT: a point light inside, a globe on top)
   const block = (cat, w, h, d, id) => {
     const geo = bevelBox(w, h, d), lit = LIT[id];
-    const mesh = dress(new THREE.Mesh(geo, R.mats[cat]), R.mats[cat], lit?.only ? R.noMat : lit?.text ? textMat(lit, w, h) : lit && !lit.globe ? litMat(LOOK[id], lit) : kindMat(LOOK[id]));
+    const mesh = dress(new THREE.Mesh(geo, R.mats[cat]), R.mats[cat], lit?.only ? R.noMat : lit?.text ? textMat(lit, w, h) : lit && !lit.globe ? litMat(LOOK[id], lit, id) : kindMat(LOOK[id]));
     mesh.castShadow = mesh.receiveShadow = !(KINDS[LOOK[id]] || {}).transparent;
     mesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo, 35), R.edgeMats[cat]));
     const gy = lit?.only ? 0 : h / 2 + (lit?.globe || 0);
-    if (lit?.globe) { const g = new THREE.Mesh(new THREE.SphereGeometry(lit.globe, 20, 14), litMat('paper', lit)); g.position.y = gy; mesh.add(g); }
+    if (lit?.globe) { const g = new THREE.Mesh(new THREE.SphereGeometry(lit.globe, 20, 14), litMat('paper', lit, id)); g.position.y = gy; mesh.add(g); }
     if (lit?.cd) { const l = new THREE.PointLight(lit.color, lit.cd, 0, 2); l.position.set(...(lit.at || [0, lit.globe ? gy : 0, 0])); l.userData.cd = lit.cd; mesh.add(l); (R.propLights ||= []).push(l); }
     return mesh;
   };
@@ -1518,7 +1571,7 @@ function createRoom() {
 function updateProbe() {
   const P = R.probe, hide = [R.dust.pts, R.wet, R.selBox, R.hoverBox, ...R.labels, ...R.lamps.map((l) => l.shaft)].filter((o) => o.visible);
   for (const o of hide) o.visible = false;
-  lightRoom(S.neon, 1, 1, 1, 1 - easeIO(clamp(progress), S.ease), performance.now());
+  lightRoom(S.neon, 1, 1, 1, 1 - easeIO(clamp(progress), S.ease), performance.now(), true);
   P.cam.position.set(0, 1.8, L.span * 0.55); P.cam.update(renderer, scene);
   for (const o of hide) o.visible = true;
   P.pmrem.fromCubemap(P.rt.texture, P.env);
@@ -1876,7 +1929,7 @@ function applyFlags() {
   // the fill: in the look a little more of it, warm and grey (the far end sank into red-black), and the night outside
   // darker and more indigo (it read as a flat periwinkle card); the skeleton keeps its own
   // (r185's lights are physical: a hemisphere's lux is colour x intensity, so these dark hues need ~4 to be felt at all)
-  R.hemi.intensity = look ? 3.5 : 0.42; R.hemi.color.set(look ? 0x3a3632 : 0x46346e); R.hemi.groundColor.set(look ? 0x1c1712 : 0x0b0907); // neutral-warm: violet only from the strips
+  R.hemiK = R.hemi.intensity = look ? 3.5 : 0.42; R.hemi.color.set(look ? 0x3a3632 : 0x46346e); R.hemi.groundColor.set(look ? 0x1c1712 : 0x0b0907); // neutral-warm: violet only from the strips
   own(R.backdrop).color.set(look ? 0x7878ff : 0xffffff);
   if (renderer.shadowMap.enabled !== !!S.shadows) { renderer.shadowMap.enabled = !!S.shadows; scene.traverse((o) => { if (o.material?.isMaterial) o.material.needsUpdate = true; }); }
   setPaint(!!S.paint && !wire && !!R.paint); // the painted room (Painted); the wireframe shows the bare set
@@ -2002,7 +2055,7 @@ function placeShots() {
 function resize() {
   const vw = innerWidth, vh = innerHeight;
   L.vw = vw; L.vh = vh;
-  const c = pickCap(vw);
+  const c = (TVCAP && CAPS.find((x) => x.tag === TVCAP)) || pickCap(vw);
   if (c !== cap) {
     cap = c;
     tvImg.src = `assets/tv-${c.tag}.webp`;
@@ -2157,17 +2210,22 @@ function initFilm() { // per film: a 16:9 box over the 3D room (under the TV, th
 // the room's light levels from the intro's envelopes (the neon, the lamps' warm-up, the sign, the TV's power-on) and how
 // far the walk still has to go; the probe calls it with everything at 1 for its capture. The look's levels are for AgX
 // at exposure 1: the emitters burn bright but keep their colour, the room takes a share
-function lightRoom(neonK, warm, signK, open, far, now) {
-  const lampK = warm * S.lamps;
-  for (const n of R.neon) { n.mat.color.copy(n.mat.userData.base).multiplyScalar(7 * neonK); for (const l of n.lights) l.intensity = 30 * neonK; }
-  for (const lp of R.lamps) { lp.light.intensity = 130 * lampK * lp.k; lp.bulbMat.color.copy(lp.bulbMat.userData.base).multiplyScalar(0.3 + 3.2 * lampK); } // the pools are the room's main light, like the painting's
-  R.shaftMat.uniforms.uK.value = 0.05 * S.shafts * lampK * far;
-  for (const l of R.propLights || []) l.intensity = l.userData.cd * warm * (!steady && l.parent.userData.item?.id === 'N02' && hash(Math.floor(now / 400) + 9) > 0.93 ? 0.55 : 1); // one tube dying (held lit in a capture: a still never catches it dimmed)
-  R.signMat.color.setScalar(0.08 + 1.4 * signK); R.signLight.intensity = 6 * signK;
+// full: every bank on whatever the loading screen says (the probe). Each light also takes its bank's level (LV)
+function lightRoom(neonK, warm, signK, open, far, now, full = false) {
+  const lampK = warm * S.lamps, b = full ? () => 1 : lv, gear = b('gear');
+  for (const n of R.neon) { const k = neonK * b(n.side < 0 ? 'neonL' : 'neonR'); n.mat.color.copy(n.mat.userData.base).multiplyScalar(7 * k); for (const l of n.lights) l.intensity = 30 * k; }
+  R.lamps.forEach((lp, i) => { const on = b('lamp' + i), k = lampK * on; // the pools are the room's main light, like the painting's
+    lp.light.intensity = 130 * k * lp.k; lp.bulbMat.color.copy(lp.bulbMat.userData.base).multiplyScalar((0.3 + 3.2 * lampK) * on);
+    lp.shaft.material.uniforms.uK.value = 0.05 * S.shafts * k * far; lp.inner.material.emissiveIntensity = 2.0 * on; });
+  for (const g of R.litGlow || []) g.m.emissiveIntensity = g.k * b(PROP_BANK[g.id]); // a lit prop's globe with its light
+  for (const l of R.propLights || []) { const id = l.parent.userData.item?.id; l.intensity = l.userData.cd * warm * b(PROP_BANK[id]) * (!steady && id === 'N02' && hash(Math.floor(now / 400) + 9) > 0.93 ? 0.55 : 1); } // one tube dying (held lit in a capture: a still never catches it dimmed)
+  R.signMat.color.setScalar((0.08 + 1.4 * signK) * gear); R.signLight.intensity = 6 * signK * gear;
+  const fill = full ? 1 : HEMI_DARK + (1 - HEMI_DARK) * litFrac();
+  if (R.hemiK != null) R.hemi.intensity = R.hemiK * fill;
   R.tv.glow.intensity = 3 * S.tvGlow * open * (reduced ? 1 : 1 + 0.05 * Math.sin(now * 0.0019)) * far;
   R.tv.haloMat.opacity = 0.1 * open;
-  for (const m of SHINY) m.envMapIntensity = S.probe * (m.userData.env ?? 1) * warm; // the reflections come up with the lamps
-  for (const g of R.modelGlow || []) { const c = g.cyc, s = c && (now / 1000) % c.n; g.m.emissiveIntensity = g.k * warm * (g.dying && !steady && hash(Math.floor(now / 400) + 9) > 0.93 ? 0.55 : 1) * (!c ? 1 : (steady ? !c.a : s >= c.a && s < c.b) ? 1 : 0.03); } // a model's meters and LEDs too; a traffic light's lamps in turn
+  for (const m of SHINY) m.envMapIntensity = S.probe * (m.userData.env ?? 1) * warm * fill; // the reflections come up with the lamps
+  for (const g of R.modelGlow || []) { const c = g.cyc, s = c && (now / 1000) % c.n; g.m.emissiveIntensity = g.k * warm * b(PROP_BANK[g.id] || 'gear') * (g.dying && !steady && hash(Math.floor(now / 400) + 9) > 0.93 ? 0.55 : 1) * (!c ? 1 : (steady ? !c.a : s >= c.a && s < c.b) ? 1 : 0.03); } // a model's meters and LEDs too (with its bank, or the gear's); a traffic light's lamps in turn
 }
 function frame(now) {
   const t = now - t0;
@@ -2180,7 +2238,8 @@ function frame(now) {
 
   // camera: walkDist (steady metres blended with a steady growth of the TV); sway fades out by the lock
   const d = walkDist(progress);
-  const amp = reduced ? 0 : S.sway * far;
+  const settle = R.handoffAt ? smooth(0, 1, (now - R.handoffAt) / 2500) : 1; // after the loading screen the sway and the dust come in
+  const amp = reduced ? 0 : S.sway * far * settle;
   camera.position.set(
     amp * (0.035 * Math.sin(now * 0.00037) + 0.012 * Math.sin(now * 0.0011 + 1)),
     S.tvY + (L.yEnd - S.tvY) * e + amp * 0.02 * Math.sin(now * 0.00029 + 0.7),
@@ -2193,7 +2252,7 @@ function frame(now) {
   const neonK = flicker(t, INTRO.neon, 3) * S.neon * hum;
   const warm = smooth(0, 1, env(t, INTRO.lamps)), lampK = warm * S.lamps;
   const signK = flicker(t, INTRO.sign, 11) * hum * (!steady && hash(Math.floor(now / 140) + 5) > 0.994 ? 0.25 : 1); // an old sign: a rare stutter (never in a capture)
-  const tk = reduced ? 1 : env(t, INTRO.tv), open = smooth(0.18, 0.62, tk);
+  const tk = LIGHTS != null ? lv('tv') : reduced ? 1 : env(t, INTRO.tv), open = smooth(0.18, 0.62, tk); // (a light capture: the TV with its bank)
   if (R.probe.due && now > R.probe.due) { R.probe.due = 0; updateProbe(); } // (its capture lights the room fully: before this frame's levels)
   lightRoom(neonK, warm, signK, open, far, now);
   R.tv.faceMat.color.setScalar(locked ? 1 : 0.03 + 0.97 * open);
@@ -2202,9 +2261,9 @@ function frame(now) {
   R.tv.line.scale.set(S.tvW * clamp(tk / 0.18), 0.006 + L.tvH * open * 0.3, 1);
 
   // the room alive: the floor strips' pulse runs toward the TV, rack LEDs blink, VU bars bounce, the monitors flicker
-  const alive = lampK * far, still = reduced ? 0 : 1;
+  const alive = lampK * far * lv('gear'), still = reduced ? 0 : 1;
   R.pulse.offset.y = -(now * 0.00009 * still) % 1;
-  R.stripMat.opacity = S.ledStrip * 0.9 * neonK * far;
+  R.stripMat.opacity = S.ledStrip * 0.9 * neonK * far * lv('gear');
   for (let i = 0; i < R.ledN; i++) {
     const rate = 160 + (i % 5) * 70, on = still ? hash(Math.floor(now / rate) * 7.13 + i * 3.7) > 0.45 : (i % 3 !== 0);
     const c = LED_RGB[i % LED_RGB.length], v = (on ? 1 : 0.08) * S.rackLeds * alive;
@@ -2221,7 +2280,7 @@ function frame(now) {
   for (const sm of R.screenMats) {
     const glitch = still && hash(Math.floor(now / 110) + sm.id) > 0.985;
     // the screens' exact pixels (FINISH) at the default (screens 1.8); the slider dims or pushes them
-    sm.color.setScalar(S.screens / 1.8 * (still ? 0.94 + 0.06 * hash(Math.floor(now / 70) + sm.id) : 1) * (0.15 + 0.85 * warm) * (glitch ? 1.2 : 1));
+    sm.color.setScalar(S.screens / 1.8 * (still ? 0.94 + 0.06 * hash(Math.floor(now / 70) + sm.id) : 1) * (0.15 + 0.85 * warm) * lv('gear') * (glitch ? 1.2 : 1));
     if (sm.map) sm.map.offset.x = glitch ? 0.02 : 0;
   }
 
@@ -2231,7 +2290,7 @@ function frame(now) {
   finishPass.uniforms.uTone.value = TONES[S.tone] ?? 1; finishPass.uniforms.toneMappingExposure.value = renderer.toneMappingExposure = S.exposure;
   bloomPass.strength = R.paintOn ? 0 : S.bloom * (R.lookOn ? 0.25 : 1) * far * far; // the paintings carry their own glow
   bloomPass.threshold = R.lookOn ? 1.6 : 0.9; // in the look only real emitters glow: tubes, bulbs, screens
-  R.dust.mat.opacity = 0.55 * Math.max(S.dust, 0.5) * Math.pow(far, 1.2); // up to 0.5 the slider sets how many specks, above it how bright
+  R.dust.mat.opacity = 0.55 * Math.max(S.dust, 0.5) * Math.pow(far, 1.2) * settle; // up to 0.5 the slider sets how many specks, above it how bright
   R.dust.pts.visible = S.dust > 0; R.dust.pts.geometry.setDrawRange(0, Math.round(R.dust.seed.length * Math.min(1, S.dust / 0.5)));
   const p = R.dust.pts.geometry.attributes.position, b = R.dust.base, sd = R.dust.seed;
   for (let i = 0; i < sd.length; i++) {
@@ -2270,6 +2329,7 @@ history.scrollRestoration = 'manual';
 scrollTo(0, 0);
 let lenis = null, lastScrollAt = 0, lastDir = 1, armed = false, touching = false;
 if (window.Lenis && !reduced) lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
+if (lenis && window.lightsOn && CAPTURE == null) lenis.stop(); // the walk waits for the loading screen's hand-off
 function jumpTo(y) {
   if (lenis) { lenis.resize(); lenis.scrollTo(y, { immediate: true, force: true }); } else scrollTo(0, y);
 }
@@ -2448,7 +2508,6 @@ $('movesReset').addEventListener('click', () => {
 function raf(now) {
   if (lenis) lenis.raf(now);
   readScroll(); snapCheck(now); frame(now);
-  if (R.still && progress < 0.02) { const s = R.still; R.still = null; s.classList.remove('is-on'); setTimeout(() => s.remove(), 500); } // the 3D over the picture
   requestAnimationFrame(raf);
 }
 
@@ -2635,17 +2694,22 @@ for (const it of R.items) if (it.tex) { const img = it.tex.image; if (!img || !i
 // the maps go up to the GPU and the shaders compile before the intro's clock starts (on first use they froze its first
 // second and a half, and the lights jumped from dim to full in one frame); the stall sits on the dark page instead. Then
 // the first probe capture: the textures are in, the lights at their final levels (a picture landing later recaptures)
-for (const t of [...Object.values(PBR).flatMap((set) => Object.values(set)), ...Object.values(PICS), ...modelMaps]) renderer.initTexture(t); // after the clones: one upload per map
+const ups = [...Object.values(PBR).flatMap((set) => Object.values(set)), ...Object.values(PICS), ...modelMaps]; // after the clones: one upload per map
+for (let i = 0; i < ups.length; i++) { renderer.initTexture(ups[i]); if (i % 8 === 7) { loaded('upload', i + 1, ups.length); await new Promise((r) => setTimeout(r)); } } // a breath every 8: the loading screen hears it
+loaded('upload', ups.length, ups.length);
 renderer.setRenderTarget(composer.readBuffer); // the room draws into the composer's target: its shaders differ from the canvas's
 await renderer.compileAsync(scene, camera);
 renderer.setRenderTarget(null);
+loaded('compile', 1, 1);
 updateProbe(); R.probe.due = 0;
-t0 = performance.now(); frame(t0); // one dark first frame: the glow, the finish and the floor's mirror compile before the clock starts
-t0 = performance.now();
-// the picture first: if it showed (a slow load), the room comes up at full light, no intro, and fades in over it once the
-// visitor is at the start of the walk (never a swap mid-walk: Dan's rule since the film); if it didn't, it goes
-const still = $('still'); still.dataset.done = '1';
-if (still.classList.contains('is-on')) { R.still = still; t0 -= INTRO.read[1]; } else still.remove();
+// the loading screen lit the room bank by bank, the TV first: the live room opens with every bank on (the same picture),
+// takes over once the last bank has settled, and the big line comes in a beat later (lights/README.md)
+const LO = CAPTURE == null ? window.lightsOn : null;
+if (LO) INTRO.neon = INTRO.lamps = INTRO.sign = INTRO.tv = [-2, -1];
+t0 = performance.now(); frame(t0); // one first frame (dark without the loading screen): the glow, the finish and the floor's mirror compile before the clock starts
+if (LO) { await LO.ready(); R.handoffAt = performance.now(); t0 = R.handoffAt - INTRO.read[0] + 400; LO.handoff(); lenis?.start(); }
+else t0 = performance.now();
+if (LIGHTS != null) { t0 -= 1e5; window.__lightsReady = true; } // a light capture: every envelope done (lights/render.mjs)
 requestAnimationFrame(raf);
 </script>
 </body>
