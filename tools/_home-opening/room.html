@@ -217,6 +217,7 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { Reflector } from 'three/addons/objects/Reflector.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { buildStreet } from './street.js'; // the night outside the door: the station across the road (Dan, round 4)
 
 // ---------- settings (the bench; COPY SETTINGS bakes them) ----------
 const DEF = {
@@ -357,6 +358,10 @@ const CAPTURE = new URLSearchParams(location.search).get('capture'), CAPTURE_PAI
 // &lights=<k>: the loading screen's picture of the room with its first k light banks on (BANKS; lights/render.mjs)
 const LIGHTS = CAPTURE != null ? new URLSearchParams(location.search).get('lights') : null;
 const TVCAP = CAPTURE != null ? new URLSearchParams(location.search).get('tvcap') : null; // &tvcap=<CAPS tag>: the TV's picture for that screen width
+// the station across the road outside the door (street.js): Dan picks its grade, G1 dark or G2 darker, on bench round 5
+// (card 1); until then today's night. ?street=G1 / ?street=G2 previews one, ?street=none shows today's night
+const STREET_GRADE = null;
+const STREET = ((q) => (q === 'none' || q === 'off' ? null : q || STREET_GRADE))(new URLSearchParams(location.search).get('street'));
 const S = { ...DEF, moves: structuredClone(DEF.moves) };
 let stored = {};
 try { stored = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) {}
@@ -631,10 +636,11 @@ async function loadTextures() {
   const one = (url, fix) => new Promise((done) => { const ok = () => { loaded('tex'); done(); }; fix(loader.load(url, ok, undefined, () => { console.warn('texture missing:', url); ok(); })); });
   const sets = ['floor', 'wall', 'shutter', 'wood', 'plate', 'carpet', 'rust', 'enamel', 'tolex', 'fabric', 'rubber', 'cardboard']
     .flatMap((k) => ['col', 'nrm', 'arm'].map((m) => [k, m])).concat([['steel', 'col']]);
-  loadP.tex[1] = sets.length + POSTERS.length + MONITORS.length;
+  loadP.tex[1] = sets.length + POSTERS.length + MONITORS.length + (STREET ? 1 : 0);
   await Promise.all([
     ...sets.map(([k, m]) => one(`assets/pbr/${k}_${m}.webp`, (t) => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 8; if (m === 'col') t.colorSpace = THREE.SRGBColorSpace; (PBR[k] ||= {})[m] = t; })),
     ...[...POSTERS, ...MONITORS].map((s) => one(`assets/pics/${s.pic}.webp`, (t) => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; PICS[s.pic] = t; })),
+    ...(STREET ? [one('assets/pics/street-atlas.webp', (t) => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; PICS.streetAtlas = t; })] : []), // the street's signs (street-atlas.mjs)
   ]);
 }
 function pbr(key, rep = 1, nrmKey = key) {
@@ -1470,6 +1476,8 @@ function createRoom() {
   R.doorAir = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), additive(airTex)); R.doorAir.rotation.y = -Math.PI / 2;
   R.pool = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), additive(softTex)); R.pool.rotation.x = -Math.PI / 2;
   scene.add(R.curtain, R.drum, ...R.rails, R.doorLabel, R.outGround, R.backdrop, R.outLight, R.outLight.target, R.outLabel, R.doorAir, R.pool);
+  // the night outside: the station across the road (street.js), once Dan picks its grade; a throw leaves today's night
+  if (STREET) try { buildStreet(THREE, { R, S, scene, grade: STREET, atlas: PICS.streetAtlas }); } catch (e) { console.warn('street:', e); R.street = null; }
 
   // the REVAUDIO neon: on a wall (or over the aisle), movable
   R.signMat = new THREE.MeshBasicMaterial({ map: signTex(), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false, side: THREE.DoubleSide });
@@ -1728,6 +1736,7 @@ function arrange() {
   R.doorLabel.position.set(Wd / 2 - 0.5, Math.min(doorH + 0.75, H - 0.15), dz + 0.8);
   R.outGround.scale.set(40, 160, 1); R.outGround.position.set(Wd / 2 + 20, -0.002, dz - 50);
   R.backdrop.scale.set(160, 12, 1); R.backdrop.position.set(Wd / 2 + 40, 4.5, dz - 50); own(R.backdrop).map.repeat.set(5, 1);
+  if (R.street) R.street.position.set(Wd / 2, 0, dz); // the station follows the door, like the backdrop
   // the street lamp: in the look further out and higher (close by, it burned white flares into the car's paint)
   if (R.lookOn) R.outLight.position.set(Wd / 2 + 7, doorH + 2.2, dz); else R.outLight.position.set(Wd / 2 + 3.5, doorH + 0.8, dz);
   R.outLight.target.position.set(Wd / 2 - 2.5, 0, dz);
@@ -1933,6 +1942,7 @@ function applyFlags() {
   own(R.backdrop).color.set(look ? 0x7878ff : 0xffffff);
   if (renderer.shadowMap.enabled !== !!S.shadows) { renderer.shadowMap.enabled = !!S.shadows; scene.traverse((o) => { if (o.material?.isMaterial) o.material.needsUpdate = true; }); }
   setPaint(!!S.paint && !wire && !!R.paint); // the painted room (Painted); the wireframe shows the bare set
+  R.street?.userData.sync(); // the station in the look; today's night in the skeleton, the wireframe and the paint
   for (const m of [...Object.values(R.edgeMats), R.acEdge]) m.visible = !look && !R.paintOn;
   syncLabels();
   const on = !!S.engine; // engine off by default (Dan): dark tail-lights
