@@ -9,9 +9,9 @@
 <!-- TV bench · Depth (Dan 2026-11-10: "lets create a bench specific for the revlimiter depth in the tv, add every
      parameter in it so i can adjust how the html look in the tv, then we copy the same principle and parameters to the
      other plugins"). Every plugin's picture inside the REAL dev homepage TV, laptop + phone, in same-origin iframes:
-     RevLimiter's real screen playing the song loop (tools/tv-anim, 194 x 94 = 2 x 2 px, Dan's pick); GAS, GAS 2,
-     DRIFT and Radio Roulette their pictures today at the same 2 x 2 pixels (DRIFT's video live), until their own loops
-     are recorded. Every parameter of how a picture sits in the tube is a slider, one set for all five: size and place,
+     each plugin's real screen running to music at 2 x 2 px (Dan's pick): RevLimiter its song loop (194 x 94), GAS its
+     heat lamp on its demo (87 x 129), GAS 2 its loudness drums, floating (87 x 173), DRIFT its wall run (154 x 81),
+     Radio Roulette its VU on its demo (168 x 94); tools/tv-anim records them ("record them", 2026-11-10). Every parameter of how a picture sits in the tube is a slider, one set for all five: size and place,
      the grade (look A), glow, pixels, edges, the tube, the screen's own glass, the loop's speed. The defaults are
      Dan's first COPY SETTINGS (2026-11-10, tools/wwbench/wwdepth-settings.json). This page drives the frames from
      outside: one live <style> (the --wwd-* values + the look's rules), one SVG filter per channel (the grade), the
@@ -103,8 +103,16 @@
   const SLUGS = [['revlimiter', 'RevLimiter'], ['gas', 'GAS'], ['gas2', 'GAS 2'], ['drift', 'DRIFT'], ['radio-roulette', 'Radio Roulette']];
   // each channel's phosphor (WordWall.astro, THE CHANNELS); the page's --ww-ch-<slug>-h / -s win when read
   const CH = { revlimiter: [26, 78], gas: [46, 62], gas2: [14, 58], 'radio-roulette': [38, 28], drift: [280, 70] };
-  // the recorded loops (tools/tv-anim: cut-webp.py <frames> <webp> 194 15 80 <dir>); the others show their own picture
-  const LOOPS = { revlimiter: { dir: '/tools/wwbench/anim/s194/f_', n: 194, m: 94 } };
+  /* the recorded loops, each plugin's real screen running to music (tools/tv-anim: record-revlimiter.mjs /
+     record-plugin.mjs, then cut-webp.py <frames> <webp> <n> 15 80 <dir>; DRIFT = its wall run): n x m pixels at the
+     laptop's 2 x 2. A plugin without one would show its picture today, drawn down to the same pixels */
+  const LOOPS = {
+    revlimiter: { dir: '/tools/wwbench/anim/s194/f_', n: 194, m: 94 },
+    gas: { dir: '/tools/wwbench/anim/gas/f_', n: 87, m: 129 },
+    gas2: { dir: '/tools/wwbench/anim/gas2/f_', n: 87, m: 173 },
+    drift: { dir: '/tools/wwbench/anim/drift/f_', n: 154, m: 81 },
+    'radio-roulette': { dir: '/tools/wwbench/anim/radio-roulette/f_', n: 168, m: 94 },
+  };
   const PX = 2;                 // css px per picture pixel on the laptop's TV (Dan's 2 x 2)
   const FLOAT = 'gas2';         // floats on the glass, no window (Dan's pin, round 2: "should be hovering")
   const SEL = (slug) => `html:not(.hc) .ww[data-ww-bg='screen'] > .ww-panel[data-ww-panel='${slug}']`;
@@ -165,7 +173,7 @@
       { k: '--ww-scr-curve', label: 'Tube curve', hint: 'how dark the glass falls off towards its edges', min: 0, max: 1, step: 0.01, as: 'page' },
     ] },
     { title: 'Motion', ctl: [
-      { k: 'speed', label: 'Speed', hint: 'a recorded loop (RevLimiter’s song; 1 = real time, 15 frames a second)', min: 0.25, max: 3, step: 0.05, def: 1.8, as: 'run', show: '×' },
+      { k: 'speed', label: 'Speed', hint: 'the recorded loops (1 = real time, 15 frames a second)', min: 0.25, max: 3, step: 0.05, def: 1.8, as: 'run', show: '×' },
     ] },
   ];
   const ALL = GROUPS.flatMap((g) => g.ctl);
@@ -377,12 +385,20 @@
     const el = await until(() => {
       const m = doc.querySelector(`[data-ww-panel='${slug}'] .ww-ui :is(img, video)`);
       if (!m) return null;
-      const loaded = m.tagName === 'VIDEO' ? m.readyState >= 2 : m.complete && m.naturalWidth > 0;
+      // a loop needs only the box (the page sizes it before its picture arrives; the dev server's first pictures
+      // can take 10-15 s); a picture drawn down needs the picture itself
+      const loaded = LOOPS[slug] || (m.tagName === 'VIDEO' ? m.readyState >= 2 : m.complete && m.naturalWidth > 0);
       return loaded && m.getBoundingClientRect().width > 40 ? m : null;
     }, 120);
-    if (!el || S.doc !== doc) { S.busy[slug] = false; return; }
-    if (el.tagName === 'IMG') await el.decode().catch(() => {});
-    const r = await stableRect(el); // the channel change's travel ends before the box is read
+    if (!el || S.doc !== doc) {
+      S.busy[slug] = false;
+      if (S.doc === doc && st.slug === slug) setTimeout(() => prepare(f, slug), 1500); // still the one lit: try again
+      return;
+    }
+    if (el.tagName === 'IMG' && !LOOPS[slug]) await el.decode().catch(() => {});
+    // the box hangs on the text beside it (its height caps the picture): the fonts in first, then the travel ends
+    await doc.fonts?.ready;
+    const r = await stableRect(el);
     let n, m;
     if (LOOPS[slug]) ({ n, m } = LOOPS[slug]);
     else if (f === 'laptop' || stages.laptop.s.hidden) {
@@ -392,10 +408,28 @@
       const d = await until(() => dims[slug], 100);
       [n, m] = d || [Math.round(r.width / 1.78), Math.round(r.height / 1.78)];
     }
-    const box = { width: `${r.width}px`, height: `${r.height}px`, maxWidth: 'none' };
+    // a loop keeps the box's width and takes its own shape (its screen's, which can differ a little from today's picture)
+    const box = { width: `${r.width}px`, height: `${LOOPS[slug] ? (r.width * m) / n : r.height}px`, maxWidth: 'none' };
     const panel = el.closest('.ww-panel');
     let media;
-    if (el.tagName === 'VIDEO') {
+    if (LOOPS[slug]) {
+      let img = el;
+      if (el.tagName === 'VIDEO') { // DRIFT: its loop goes in a picture where the video was
+        img = doc.createElement('img');
+        img.alt = '';
+        img.className = 'wwd-loop';
+        Object.assign(el.style, { position: 'absolute', inset: '0', opacity: '0', pointerEvents: 'none' });
+        el.pause?.();
+        el.after(img);
+      }
+      Object.assign(img.style, box, { display: 'block' });
+      img.removeAttribute('srcset');
+      img.loading = 'eager';
+      img.src = `${LOOPS[slug].dir}000.png`;
+      if (!loopFrames[slug]) loadFrames(slug);
+      if (slug === FLOAT) panel.style.setProperty('--wwd-alpha', `url("${LOOPS[slug].dir}000.png")`);
+      media = { kind: 'loop', el: img };
+    } else if (el.tagName === 'VIDEO') {
       const cv = doc.createElement('canvas');
       cv.width = n; cv.height = m;
       cv.className = 'wwd-video';
@@ -407,18 +441,13 @@
     } else {
       // drawn from the picture on screen first: dropping its srcset starts a new load, and a picture mid-load
       // draws as nothing
-      const url = LOOPS[slug] ? null : drawDown(doc, el, n, m);
+      const url = drawDown(doc, el, n, m);
       Object.assign(el.style, box);
       el.removeAttribute('srcset');
       el.loading = 'eager';
-      if (LOOPS[slug]) {
-        if (!loopFrames[slug]) loadFrames(slug);
-        media = { kind: 'loop', el };
-      } else {
-        el.src = url;
-        if (slug === FLOAT) panel.style.setProperty('--wwd-alpha', `url("${url}")`);
-        media = { kind: 'still', el };
-      }
+      el.src = url;
+      if (slug === FLOAT) panel.style.setProperty('--wwd-alpha', `url("${url}")`);
+      media = { kind: 'still', el };
     }
     panel.style.setProperty('--wwd-n', n);
     panel.style.setProperty('--wwd-m', m);

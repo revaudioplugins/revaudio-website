@@ -175,9 +175,99 @@ def draw(loop, path, title):
                 for i, r in enumerate(loop)], fill=col, width=2)
     im.save(path)
 
+""" The other plugins (Dan 2026-11-10: "record them"): each screen takes one value from its plugin, measured here the
+way the plugin measures it, from that plugin's own demo on the site:
+  gas             'heat' (GasEngine.h): RMS of (wet - dry) over RMS of dry, 200 ms smoothing; the gas-mixer stems at
+                  drive 6 against their dry takes
+  radio-roulette  'level' (PluginEditor.cpp): the output peak, linear (the screen runs its 300 ms ballistics); the
+                  station-mixer stems at station 3
+  gas2            'meters'.lufs: momentary LUFS (the pump's number drums show it); no GAS 2 demo on the site, so the
+                  RevLimiter demo's mix (before), the same phrase as RevLimiter's loop
+  python3 tools/tv-anim/song-meters.py <plugin> findmix <len_s>          (gas / radio-roulette)
+  python3 tools/tv-anim/song-meters.py <plugin> value <start_s> <len_s> <out.json>
+"""
+SITE = Path(__file__).resolve().parents[2] / 'public'
+STEMS = {'gas': ('gas-mixer/audio', ['bass', 'drums', 'instruments'], '6', 'dry'),
+         'radio-roulette': ('station-mixer/audio', ['bass', 'drums', 'guitar', 'keys'], 's3', 'dry')}
+
+def decode_file(path, kweight=False):
+    af = ['-af', KW] if kweight else []
+    raw = subprocess.run(['ffmpeg', '-v', 'error', '-i', str(path), *af, '-f', 'f32le', '-ac', '2', '-ar', str(SR), '-'],
+                         capture_output=True, check=True).stdout
+    return np.frombuffer(raw, dtype=np.float32).reshape(-1, 2).astype(np.float64)
+
+def lag_of(w, d):
+    """samples the take `w` runs behind `d` (cross-correlation over 4 s from 5 s in)"""
+    a, b = w.mean(axis=1)[5 * SR:9 * SR], d.mean(axis=1)[5 * SR:9 * SR]
+    n = 1 << 19
+    c = np.fft.irfft(np.fft.rfft(a, n) * np.conj(np.fft.rfft(b, n)), n)
+    k = int(np.argmax(c))
+    return k - n if k > n // 2 else k
+
+def stem_mix(plugin, take):
+    """the stems summed; a dry take is shifted onto its wet take (the bass dry runs ~52 samples off), or every
+    sample would read as heat"""
+    d, names, wet, dry = STEMS[plugin]
+    xs = []
+    for nm in names:
+        w = decode_file(SITE / d / f'{nm}_{wet}.m4a')
+        if take == 'wet': xs.append(w); continue
+        x = decode_file(SITE / d / f'{nm}_{dry}.m4a')
+        xs.append(np.roll(x, lag_of(w, x), axis=0))
+    n = min(len(x) for x in xs)
+    return sum(x[:n] for x in xs)
+
+def findmix(plugin, L):
+    x = stem_mix(plugin, 'wet')
+    f = flux(x)
+    f = (f - f.mean()) / (f.std() + 1e-9)
+    ac = [(float((f[:-k] * f[k:]).mean()), k / 100) for k in range(30, 101)]
+    beat = max(ac)[1]
+    print(f'  {len(x) / SR:.1f} s; beat ~{beat:.2f} s ({60 / beat:.1f} BPM) -> 4 bars ~{16 * beat:.2f} s')
+    n, res = int(L * 100), []
+    for i in range(0, len(f) - n - 110, 2):
+        res.append((float((f[i:i + 100] * f[i + n:i + n + 100]).mean()) + 0.6 * f[i], i / 100))
+    picked = []
+    for r in sorted(res, reverse=True):
+        if all(abs(r[1] - p[1]) > 2 for p in picked): picked.append(r)
+        if len(picked) == 6: break
+    for sc, t in picked: print(f'  start {t:6.2f}s  score {sc:5.2f}')
+
+def values(plugin, t0, L, out):
+    i0, n = int(round(t0 * SR)), int(round(L * SR))
+    N = int(round(L * TICK_HZ / FRAME_TICKS)) * FRAME_TICKS
+    spt = n / N
+    ends = np.round((np.arange(3 * N) + 1) * spt).astype(int)
+    starts = np.concatenate([[0], ends[:-1]])
+    rows = []
+    if plugin == 'gas2':
+        K = np.concatenate([decode('revlimiter-before', True)[i0:i0 + n]] * 3)
+        for v in lufs(win_ms(K, int(0.4 * SR), ends)): rows.append(round(float(v), 2))
+    else:
+        W = np.concatenate([stem_mix(plugin, 'wet')[i0:i0 + n]] * 3)
+        if plugin == 'radio-roulette':
+            for a, z in zip(starts, ends): rows.append(round(float(min(1.0, np.abs(W[a:z]).max())), 4))
+        else:
+            D = np.concatenate([stem_mix(plugin, 'dry')[i0:i0 + n]] * 3)
+            heat, coef = 0.0, float(np.exp(-spt / (0.2 * SR)))
+            for a, z in zip(starts, ends):
+                w, d = W[a:z:8], D[a:z:8]
+                inst = float(np.sqrt(((w - d) ** 2).sum() / (((d ** 2).sum()) + 1e-9)))
+                heat = coef * heat + (1 - coef) * min(1.0, inst)
+                rows.append(round(heat, 4))
+    loop = rows[N:2 * N]
+    meta = dict(plugin=plugin, start=t0, len=L, ticks=N, tickMs=round(spt / SR * 1000, 3))
+    Path(out).write_text(json.dumps(dict(meta=meta, ticks=loop)))
+    v = np.array(loop)
+    print(json.dumps(meta), f'value min {v.min():.3f} p50 {np.median(v):.3f} max {v.max():.3f}')
+
 if __name__ == '__main__':
     if len(sys.argv) < 4: sys.exit(__doc__)
     if sys.argv[2] == 'find':
         find(sys.argv[1], float(sys.argv[3]))
+    elif sys.argv[2] == 'findmix':
+        findmix(sys.argv[1], float(sys.argv[3]))
+    elif sys.argv[2] == 'value':
+        values(sys.argv[1], float(sys.argv[3]), float(sys.argv[4]), sys.argv[5])
     else:
         meters(sys.argv[1], float(sys.argv[2]), float(sys.argv[3]), sys.argv[4], sys.argv[5] if len(sys.argv) > 5 else None)

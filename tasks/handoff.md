@@ -254,8 +254,18 @@ Files: `src/components/WordWall.astro`, `src/components/TrialGateModal.astro` (+
   (header channel switch): GAS / Radio Roulette / GAS 2 = their pictures today drawn down to the laptop box / 2
   (87 x 129, 168 x 94, 87 x 163), DRIFT = its video drawn down live (154 x 82), GAS 2 floats (lines, scanlines and
   darkening masked by its outline, its light a drop-shadow). Checked Chromium + WebKit, laptop + phone, 0 errors.
-- Next: record GAS (its UI is under `GAS/plugin` or `GAS/bench` on this Mac, not `Source/ui/public`), Radio Roulette,
-  DRIFT, GAS 2 running (each to its own demo audio) -> the same for GAS, Radio Roulette (both have
+- "record them" (2026-11-10): all four recorded, each its real screen to music, in the bench's channel switch.
+  `tools/tv-anim/record-plugin.mjs <gas|radio-roulette|gas2> <values.json> <out>` (each UI served from its repo through
+  Playwright's router; GAS + RR in JUCE mode on JUCE's `check_native_interop.js` stand-in, GAS 2 through
+  `window.GAS_LOOK.meters` with `html.rv-float` on a clear background). Values: `song-meters.py <plugin> value ...`:
+  GAS `heat` = RMS(wet - dry) / RMS(dry), 200 ms (gas-mixer stems drive 6 vs dry; the bass dry runs 52 samples off,
+  aligned first), loop 11.14 s + 6.88 s (4 bars at 139.5 BPM), the lamp lights in the hot half; RR `level` = output
+  peak (station-mixer stems at s3), 10.0 s + 8.0 s (120 BPM); GAS 2 momentary LUFS of the RevLimiter demo's mix, its
+  loop's phrase (no GAS 2 demo on the site), the pump's number drums roll; DRIFT = `public/drift/wall-run-1440.webm`
+  at 15 fps (15.7 s). Cut by `cut-webp.py` (new `alpha` mode: GAS 2 keeps its cut-out, trimmed to its outline):
+  GAS 87 x 129 (101 KB webp), RR 168 x 94 (106 KB), GAS 2 87 x 173 (173 KB), DRIFT 154 x 81 (386 KB). Frames in
+  `tools/wwbench/anim/<slug>/` (untracked). Checked: all five lit in Chromium + WebKit, laptop + phone, 0 errors.
+- Next: Dan's look at all five on `/__wwdepth` -> production: the same for GAS, Radio Roulette (both have
   browser demos), DRIFT (its wall run, pixelated), GAS 2 (its pump floating, animated, alpha), each to music -> build
   it in WordWall (bake the grade into the TV's copies: no live SVG filter in production; video, see the weight), then
   the thumbnails; then the header that slides away; TV Sells round 4 notes; step 00's baseline before any push to
