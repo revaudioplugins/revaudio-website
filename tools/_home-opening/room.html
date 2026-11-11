@@ -485,6 +485,7 @@ finishPass.needsSwap = false; // it draws to the canvas; a swap after it kept a 
 composer.addPass(new RenderPass(scene, camera)); composer.addPass(bloomPass); composer.addPass(finishPass);
 const loader = new THREE.TextureLoader();
 const picture = (name) => PICS[name]; // the posters and the CRT screens, preloaded with the texture sets (loadTextures)
+const isUnit = (s) => !!(MODELS[s.id] && !MODELS[s.id].crt); // a monitor slot that holds its plugin's own object (round 6): no screen, so no screen picture to load
 
 let cap = null;
 const L = {};      // layout numbers
@@ -632,10 +633,10 @@ async function loadTextures() {
   const one = (url, fix) => new Promise((done) => { const ok = () => { loaded('tex'); done(); }; fix(loader.load(url, ok, undefined, () => { console.warn('texture missing:', url); ok(); })); });
   const sets = ['floor', 'wall', 'shutter', 'wood', 'plate', 'carpet', 'rust', 'enamel', 'tolex', 'fabric', 'rubber', 'cardboard']
     .flatMap((k) => ['col', 'nrm', 'arm'].map((m) => [k, m])).concat([['steel', 'col']]);
-  loadP.tex[1] = sets.length + POSTERS.length + MONITORS.length + (STREET ? 1 : 0);
+  loadP.tex[1] = sets.length + POSTERS.length + MONITORS.filter((s) => !isUnit(s)).length + (STREET ? 1 : 0);
   await Promise.all([
     ...sets.map(([k, m]) => one(`assets/pbr/${k}_${m}.webp`, (t) => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 8; if (m === 'col') t.colorSpace = THREE.SRGBColorSpace; (PBR[k] ||= {})[m] = t; })),
-    ...[...POSTERS, ...MONITORS].map((s) => one(`assets/pics/${s.pic}.webp`, (t) => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; PICS[s.pic] = t; })),
+    ...[...POSTERS, ...MONITORS.filter((s) => !isUnit(s))].map((s) => one(`assets/pics/${s.pic}.webp`, (t) => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; PICS[s.pic] = t; })),
     ...(STREET ? [one('assets/pics/street-atlas.webp', (t) => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; PICS.streetAtlas = t; })] : []), // the street's signs (street-atlas.mjs)
   ]);
 }
@@ -716,7 +717,11 @@ const LOOK = {
 // the mess's kinds as real models (Dan 11-11: "all the elements [still plain] I want to build them"): each kind loads
 // once and every piece of it shows a copy where its primitive stands (placeMess keeps them in step); a kind not listed
 // keeps its primitive
-const MESS_MODELS = {};
+const MESS_MODELS = { // round 6, ours from code (the props builder, 11-11)
+  crate: 'assets/models/mess-crate.glb', toolbox: 'assets/models/mess-toolbox.glb', can: 'assets/models/mess-can.glb',
+  drum: 'assets/models/mess-drum.glb', tyre: 'assets/models/mess-tyre.glb', coil: 'assets/models/mess-coil.glb',
+  papers: 'assets/models/mess-papers.glb', cone: 'assets/models/mess-cone.glb', case: 'assets/models/mess-case.glb',
+};
 const MESS_LOOK = { cardboard: 'cardboard', rust: 'enamel', paint: 'steel', oil: 'rust', rubber: 'rubber', paper: 'paper', case: 'tolex' };
 // (only three of them light the room live: each live light costs every pixel, ~1.7 ms at 2 MP; the globes glow past the
 // bloom's threshold, so N20 reads lit without one)
@@ -795,7 +800,7 @@ const MODELS = {
   R17: { src: 'assets/models/exhaust-pipes.glb', yaw: -Math.PI / 2 },
   L06: { src: 'assets/models/vu-rack.glb', yaw: -Math.PI / 2 },
   L08: { src: 'assets/models/vu-rack.glb', yaw: Math.PI / 2 },
-  W10: { src: 'assets/models/repair-shelf.glb', yaw: -Math.PI / 2 },
+  W10: { src: 'assets/models/repair-shelf.glb', yaw: -Math.PI / 2 }, // round 6: the plank and brackets only, its things off (Dan 11-11); the headphones N49 still hang under it
   N02: { src: 'assets/models/shop-light.glb', yaw: -Math.PI / 2, glow: 0.9 }, // 10 % down (Dan, round 2); hung on two chains to the ceiling
   R15: { src: 'assets/models/rims-wall.glb', yaw: -Math.PI / 2 },
   N15: { src: 'assets/models/grinder-drill.glb', yaw: -Math.PI / 2 },
@@ -1053,7 +1058,7 @@ const SIDE = [
   { id: 'N46', cat: 'music', label: 'Desk chair at the test desk (a second work station)', side: -1, f: 0.4416, x: -2.2, w: 0.65, h: 1.0, d: 0.65 }, // where a drum stood (Dan, round 2)
   { id: 'N47', cat: 'music', label: 'Lamp on the amp stack (lit)', side: -1, f: 0.2851, x: -3.05, w: 0.15, h: 0.4, d: 0.15, y: 1.75, sits: 'L04' }, // a gooseneck on the head, beside the drum machine (L11) // Dan, round 2: "put a lamp on top of them"
   { id: 'W09', cat: 'garage', label: 'Build board: SKETCH, BENCH, DSP, TEST', side: 1, f: 0.515, w: 1.2, h: 1.8, d: 0.6 },
-  { id: 'W10', cat: 'music', label: 'Repair shelf: a dash radio, a tube radio', side: 1, f: 0.56, w: 1.2, h: 0.4, d: 0.35, y: 2.3 },
+  { id: 'W10', cat: 'music', label: 'Repair shelf (bare: its radios off, Dan 11-11)', side: 1, f: 0.56, w: 1.2, h: 0.4, d: 0.35, y: 2.3 },
   { id: 'N49', cat: 'music', label: 'Headphones hung under the repair shelf', side: 1, f: 0.4389, x: 3.045, w: 0.11, h: 0.36, d: 0.2, y: 2.285, sits: 'W10' }, // hung from a cup hook under W10's plank at its door end (the tube radio stands under the middle), band up; was lying on the plank, unreadable from the aisle
 ];
 // the far end: a mix station round the TV (x across the room, d out from the end wall; ty = height from the TV's centre)
@@ -1401,7 +1406,7 @@ function createRoom() {
     const tex = picture(s.pic), g = new THREE.Group();
     const body = dress(new THREE.Mesh(crtGeo, crtMat), crtMat, kindMat('plastic')); body.castShadow = body.receiveShadow = true;
     body.add(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1, 1, 1)), R.edgeMats.music));
-    const smat = liveScreen(new THREE.MeshBasicMaterial({ map: tex, toneMapped: false })); smat.userData.k = 1; // exact pixels (FINISH)
+    const smat = liveScreen(new THREE.MeshBasicMaterial({ ...(tex ? { map: tex } : {}), toneMapped: false })); // (a plugin's object in the slot: no picture) smat.userData.k = 1; // exact pixels (FINISH)
     const screen = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), smat);
     const lines = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), keepAlpha(new THREE.MeshBasicMaterial({ map: R.scan, transparent: true, depthWrite: false, toneMapped: false })));
     g.add(body, screen, lines); g.userData = { body, screen, lines }; screen.userData.live = lines.userData.live = true;
@@ -1833,7 +1838,7 @@ function placeItem(it) {
     it.obj.visible = moved || !(side === 1 && inDoor(it.obj.position.z, w / 2, it.obj.position.y - h / 2));
     lb.position.set(it.obj.position.x - side * 0.4, it.obj.position.y + h / 2 + 0.2, it.obj.position.z + (side === 0 ? 0.2 : 0));
   } else if (it.kind === 'monitor') {
-    const s = it.s, img = it.tex.image, aspect = img && img.width ? img.width / img.height : 1.9;
+    const s = it.s, img = it.tex && it.tex.image, aspect = img && img.width ? img.width / img.height : 1.9;
     const w = s.w * k, h = w / aspect, side = ov.side ?? s.side;
     const { body, screen, lines } = it.obj.userData;
     body.scale.set(w * 1.18, h * 1.4, 0.42 * k); body.position.set(0, 0, -0.21 * k);
