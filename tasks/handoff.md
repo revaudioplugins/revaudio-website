@@ -403,11 +403,13 @@ UPDATE 3 2026-11-09 / 11-10 (night): Dan's round-2 notes (db `notes-r2`, pins re
 
 ### SESSION END 2026-11-10 — `danavivi-d5 [443a28]` — round 5 half landed, three builds ready, then bench round 6
 
-State: `feat/home-opening` clean and in sync with origin at `b90ec47` (main merged in, Dan: "merge main do not
-deploy": nothing on main, no deploy). Today's commits, all pushed: `064d8b9` blanket, `4142e38` RevAmp pedals,
+State (closed 11-11 10:50): `feat/home-opening` at `04e995a`, in sync with origin. Main was merged in at `b90ec47`
+(Dan: "merge main do not deploy"); danavivi-fa later put the branch on main (LIVE below), so main holds it up to
+`eca276e` plus 3 commits of its own, and the 2 commits main lacks (`956150c`, `04e995a`) are handoff notes that ride
+along with the next room push. The session's commits, all pushed: `064d8b9` blanket, `4142e38` RevAmp pedals,
 `c562939` synth cable, `6d9f6cf` + `955074f` the loading screen + its layers, `e8ab4d6` the speed brief + simulator,
 `50c52b7` the street (built in, off), `6cbe654` round 5's street (G1, every grade FREE) + four guitars out + layers,
-`b90ec47` main merged; plus handoff commits.
+`b90ec47` main merged; plus handoff and lessons commits up to `04e995a`.
 
 LIVE, unlisted, since 11-10 21:00 (`danavivi-fa`, on Dan's ask for a hidden page to see it load live and on his
 phone): https://revaudio.net/garage-9f3c/ (robots noindex, nofollow; not in the sitemap; nothing links to it).
@@ -463,8 +465,10 @@ NEXT, in order:
    `round2/notes-r5/`). The street's close pose: [0.3, 1.7, 15.2] looking at [7.5, 1.9, 11.0]. Don't re-ask the
    blanket, the car floor or the end wall (unmarked twice).
 
-Unverified: Dan hasn't seen G1 with the FREE sign in the room yet, nor the left wall without the four guitars; L17's
-pegboard was built with gaps where L02 / L03 / L18 hung: look whether it reads bare now.
+Unverified: Dan hasn't said he saw G1 with the FREE sign or the left wall without the four guitars (both are on the
+hidden page, its models white until the CSP fix); L17's pegboard was built with gaps where L02 / L03 / L18 hung: look
+whether it reads bare now. The CSP fix was tested on local servers only (here: room.html in Chrome, WebKit, Firefox;
+danavivi-fa: its site copy in Chrome + iPhone WebKit), never on live: it waits on Yoni.
 
 Background processes (this session's; nothing else depends on them once round 6 is shot):
 - `python3 -m http.server 4490 --bind 127.0.0.1` (worktree root), pid 52126: the room's server. `kill 52126`.
@@ -480,7 +484,9 @@ Decide / ask Dan:
 2. Model files no slot uses now: bass.glb, guitar-black.glb, guitar.glb (and jack-creeper.glb once N03 lands). Not
    loaded; keep or delete is Dan's call.
 3. The speed session (`danavivi-cc`, `feat/home-speed`) merges into this branch on Dan's OK; expect overlap in
-   room.html's loadTextures / loadModels (the street's 11 lines are there too).
+   room.html's loadTextures / loadModels (the street's 11 lines are there too). Main now also builds the hidden page
+   from room.html (danavivi-fa's `tools/garagepage/integration.mjs` swaps its Google Fonts and jsDelivr Lenis for the
+   site's own): a change to how room.html loads fonts or Lenis must keep that swap working (its build log warns if not).
 
 Cleanup: this session's scratchpad (`/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/
 scratchpad`, ~20 GB with the speed study) can go once round 6 is out: the essentials are in
@@ -490,7 +496,8 @@ Open: the monitors bench had B (vintage) ticked but Dan's chat said "black + woo
 Owed by Dan: send Yoni the CSP link (three words: `'wasm-unsafe-eval'` in script-src, `blob:` in img-src and
 connect-src; tested 11-10 in Chrome, Safari, Firefox; steps, exact values, check and undo: the shared repo's
 `collaboration/handoffs/2026-11-10-yoni-csp-room/handoff-yoni.md`); when he says done, compare the live header with that page's value byte
-for byte; tell Gil (the room on laptops from Nov 19, next to his Black Friday
+for byte (the value: `.claude/garage-bench-2026-11-10/csp/csp-prop3-raw.txt`; the local test, `cspserve.py` +
+`csptest.cjs`, sits next to it) and load /garage-9f3c/ (textures, no CSP errors); tell Gil (the room on laptops from Nov 19, next to his Black Friday
 countdown); the finish list's stops 2-6.
 Run the room: from this worktree's root `python3 -m http.server 4490 --bind 127.0.0.1` (this session left one running,
 pid 52126: `kill 52126` if it's in the way), then http://127.0.0.1:4490/tools/_home-opening/room.html. The scripts
