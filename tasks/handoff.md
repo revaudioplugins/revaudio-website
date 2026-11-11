@@ -1,3 +1,41 @@
+## 2026-11-11 — Assets in order: 33 unused files out, versions on static URLs, bench tools dev-only (Claude Code `danavivi-20 [1b9b41]`, Dan's Mac) — branch `chore/asset-order` (`132869b` + `5fb54fa`, base `004c62a`), pushed, NOT on main: waits for Dan's push word
+
+Claim: open on `chore/asset-order` until it is on main. From the asset audit of 2026-11-11 (Dan: "go 2 and 3").
+Files: `tools/assetver/integration.mjs` (new), `astro.config.mjs` (assetver last + `benchdevonly`), `docs/assets.md` (new: where
+a file goes), `README.md` (pointer), 33 deletions: `src/assets/hero/` (all 7), `src/assets/ui/` (14 old button plates +
+`icon-cart`, `toggle-on`), `src/assets/showcase/` (`ac-icon`, `drift-car`, `rev-gauge`), `public/dl/` (3), `public/brand/` (2),
+`public/plate/` (`btn-viewmore`, `card-bolt`, `card-plate`), `public/bench/hero-bench.html`.
+- Removed files: nothing in `src`, `tools`, `tests` names them; no other RevAudio repo loads the `public/` ones (the `dl/`
+  cards were for a portal change that sits unmerged on Revlimiter `origin/portal-card-shots`). The 24 `src/assets` images
+  and the 5 `brand/` + `plate/` files are in `revaudio-kit` under `archive/` (`534a3d1`, `3c245ed`), byte-identical; its
+  sync leaves `archive/` alone. Built site vs the build before the removals: only those files are gone, no file differs.
+- Side effects accepted: root `bench/card-*-test.html` (a card design reverted in June) lose their plate images; the stale
+  branches `feat/conversion-stop-a` and `fs-checkout-local` still expect `public/brand/revaudio-plate-3d*.webp`.
+- Bench tools: `public/bench/{home,layout,drag,studio}-bench.html` stay and work on the dev server; the build deletes
+  `dist/bench/`, so `revaudio.net/bench/…` stops answering after the deploy (Dan: "Dev only"). This replaces the older
+  "master bench, live on prod too" note further down.
+- assetver: the last `astro:build:done` hook puts `?v=<10 hex of sha256>` on URLs into `station-mixer`, `gas-mixer`, `gas2`,
+  `audio`, `fonts`, `drift`, where the URL is written out in a page or in those folders' own CSS/JS: 125 refs in 13 files,
+  96 files. Never touches `_astro/` or `garage-9f3c/` (it throws if they change). A name a script builds at run time, or
+  one that also appears in `_astro`, stays plain everywhere, so no file is fetched under two URLs.
+- Why: GitHub Pages stamps every file with the deploy time, so a returning visitor re-downloads everything outside
+  `/_astro/` after each deploy. With a Cloudflare rule that keeps `?v=` URLs (handoff for Yoni: shared
+  `collaboration/handoffs/2026-11-11-yoni-cache-versioned/handoff-yoni.md`), return visit after a deploy, local, Chromium,
+  laptop: /radio-roulette/ 1.36 -> 0.43 MB, /gas/ 1.01 -> 0.30, /gas2/ 6.77 -> 4.66, /drift/ 0.72 -> 0.37. Without the
+  rule the `?v=` does nothing. First visits are unchanged.
+- Checks: two builds byte-identical; before vs after = 125 insertions of `?v=…` in 13 files and nothing else; Chromium +
+  WebKit at 1440x900@2x and 390x844@3x on `/`, `/revlimiter/`, `/gas/`, `/radio-roulette/`, `/drift/`, `/revfx/`, `/gas2/`:
+  no new failed request or error, no file under two URLs, screenshots within the animation noise; mixers play in
+  Chromium (stems 200). Smoke tests against the local build: 65 pass, 3 fail, the same 3 before the change (a local
+  server redirect on `/support`, WebKit's video-control icons on `/drift`).
+- Not checked: mixer playback in WebKit (never reached "playing" in the test, with or without the change), a real phone,
+  the Cloudflare rule itself, the pages after a real deploy.
+- Not versioned (they keep the 10-minute cache): mixer stems, GAS 2 drone art and three.js, the DRIFT / RevFX demo clips,
+  `fonts/drift/*`: their names are built at run time or sit in `_astro`. Next step if wanted: version those at the source.
+- Known limit: a script that builds a whole file name at run time while a page also writes that file's URL out would
+  fetch it twice. None today.
+- To add a `public/` folder to the versioning: `FOLDERS` in `tools/assetver/integration.mjs` + the Cloudflare rule.
+
 ## 2026-11-11 — Radio Roulette mixer + GAS 2 page: the PNG art as WebP (Claude Code `danavivi-20 [1b9b41]`, Dan's Mac) — PUSHED TO MAIN 2026-11-11 on Dan's word "push to main" (from `perf/webp-mixer-art`, rebased on `8e1d07d`)
 
 Claim: closed 2026-11-11. From the asset audit of 2026-11-11 (Dan: "go 1").
