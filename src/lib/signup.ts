@@ -7,9 +7,16 @@
  */
 export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
-/** POST a JSON body; resolves the worker's JSON answer ({ok, error?}), rejects on a network or non-JSON failure. */
-export const postJson = (url: string, body: object): Promise<{ ok?: boolean; error?: string } | null> =>
-  fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }).then((r) => r.json());
+/** POST a JSON body; resolves the worker's JSON answer ({ok, error?}), rejects on a network or non-JSON failure, and
+ *  after 15 s with no answer (a stalled mobile line left "Sending…" up for good: TV QA N8, 2026-11-11), so both forms
+ *  show their network message and give the key back. */
+export const postJson = (url: string, body: object, ms = 15000): Promise<{ ok?: boolean; error?: string } | null> => {
+  const ctl = new AbortController();
+  const timer = window.setTimeout(() => ctl.abort(), ms);
+  return fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body), signal: ctl.signal })
+    .then((r) => r.json())
+    .finally(() => window.clearTimeout(timer));
+};
 
 /** The body plus how the person reached us (Cart.astro's raSaleSource: channel + campaign / referring host, no click
  *  ids), stored on the trial lead. */

@@ -986,6 +986,17 @@ const first = items[0]?.slug ?? '';
       e.preventDefault();
       back.click();
     });
+    // Esc with the focus outside the TV: Safari never focuses a ticked box (the focus falls to <main>), and a click on
+    // the form's text or the glass leaves it outside too. An open sign-up still closes, unless the key is a pop-up's
+    // (TV QA L4, 2026-11-11)
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape' || e.defaultPrevented) return;
+      if ((e.target as Element | null)?.closest?.('dialog, [role="dialog"], [role="alertdialog"]')) return;
+      const p = signing();
+      if (!p) return;
+      e.preventDefault();
+      signClose(p);
+    });
 
     // the glass's DOM as the pick wants it: the lit plugin's panel up (the rest hidden), its colour, a phone's view
     const apply = () => {
