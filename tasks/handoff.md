@@ -358,8 +358,11 @@ Files: `src/components/WordWall.astro`, `src/components/TrialGateModal.astro` (+
   Open: the loops' sources (`tools/wwbench/anim/`, 50 MB, v2 = 25 MB) are untracked on Dan's Mac only (where to keep
   them: design-assets?); `/__wwdepth` now draws its look over the baked TV (keep it or delete it?); Dan's own look
   on a real iPhone (the Simulator is clean).
-- Next: Dan's look on his Safari + iPhone; then the header that slides away; TV Sells round 4 notes; step 00's
-  baseline before any push to main. Left in the plan: P (persona walk). Nothing on main; main = live on Dan's word.
+- 2026-11-11 Dan looked at the baked TV: **"looks good commit"**. The bake was already committed and pushed
+  (`3fd3b7f`, `3229204` and their handoffs, up to `b173576`); this note is the only new commit. Still his calls: the
+  loops' sources, the `/__wwdepth` bench, DRIFT's old run files (above).
+- Next: the header that slides away; TV Sells round 4 notes; step 00's baseline before any push to main. Left in
+  the plan: P (persona walk). Nothing on main; main = live on Dan's word.
 
 ## 2026-11-04 — GAS 2 postcards: the end page scrolls as one page, the footer under it (Claude Code `danavivi-c2 [ca2821]`, Dan's Mac) — PUSHED TO MAIN 2026-11-04 on Dan's word "perfect push to main" (from `fix/gas2-end-flow`)
 
