@@ -631,7 +631,7 @@ export const plugins: Plugin[] = [
     reviewsCount: 0,
     reviewsAvg: 0,
     library: {
-      cats: ['creative', 'reverb', 'modulation'],
+      cats: ['vocals', 'creative', 'reverb', 'modulation'],
       typeWord: 'multi-effect rack',
       words: [
         { w: 'Wide',     o: 0.5 },
