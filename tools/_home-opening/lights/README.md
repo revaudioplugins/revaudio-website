@@ -42,6 +42,11 @@ first visit of a session; after that soft rises, no flicker).
 
 ## When the room changes
 
+**The rule (Dan 2026-11-11: "lets always chack it if the loeading screen matches the finel page"):** every change that
+shows in the room at walk 0 (a model, a material, the car's look, a light, a moved prop, the TV picture) makes the
+loading pictures stale. Before the room is pushed or shown to Dan as done, `lights/check.mjs` must print PASS (it exits 1
+on FAIL); if it fails, re-render and check again. Never ship a room whose check failed or did not run.
+
 Re-run the pictures (like still.mjs), then the checks:
 
     python3 -m http.server 4471 --bind 127.0.0.1        # from the worktree root
@@ -50,6 +55,13 @@ Re-run the pictures (like still.mjs), then the checks:
 
 A new light: put it in a bank (`props`, or a new bank in `LIGHT_BANKS` and its lines in `lightRoom`), re-render.
 A new skin = new pictures from the same script.
+
+## Checks (2026-11-11, real Chrome, the room with Dan's car look, `5efaf80` + this render)
+
+- Before the render (pictures one round old): blurred mean 4.52, p99 43, worst area 26.9: FAIL (Dan saw it: "the
+  picture not matching the 3d asset in all of the page").
+- After: blurred mean 3.28, p99 15, worst area 12.4 (the wet floor): PASS. The layers vs the full room: mean 4.10, p99 22.
+- The gate's limits (`layers.py --diff ... gate`): blurred mean 3.8, p99 20, worst area of a 16 x 9 grid 17.
 
 ## Checks (2026-11-10, real Chrome, the room at 064d8b9)
 

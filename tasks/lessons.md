@@ -494,3 +494,20 @@ to read through `tail -3`: send it to a log file (one failed `pack.mjs build` ru
   room change) makes `git pull --rebase` refuse, and the repo's hook wants that pull in the same command as every
   push, so nothing pushes until it is committed or thrown away. Render the loading pictures once, last, right before
   the commit that ships them; if one has to sit in the tree, commit it as a marked stopgap.
+
+## 2026-11-11 - The loading screen must match the room: check it every time (`danavivi-ee`)
+
+- Dan, after his car look was baked into the room: "in the loading screen the picture not matching the 3d asset in all
+  of the page. lets always chack it if the loeading screen matches the finel page". The loading pictures
+  (`assets/lights/*.webp`) are renders of the room at walk 0, so ANY change that shows there (a model, a material, the
+  car's look, a light, a moved prop, the TV picture) makes them stale, and the visitor sees one room turn into another
+  at the hand-off. I had baked the look and only noted "the pictures are stale, the next session re-renders": Dan
+  opened the room and saw the mismatch first.
+- The rule: a change to the room is not done, shown to Dan or pushed until `node tools/_home-opening/lights/check.mjs
+  --port <port>` prints PASS (it now exits 1 on FAIL: blurred mean 3.8, p99 20, worst area of a 16 x 9 grid 17). On
+  FAIL: `lights/render.mjs --port <port> --check`, check again, commit the 12 pictures with the change. This replaces
+  "render once, last" for anything Dan will look at: render again whenever the check fails, it costs minutes and no
+  credits.
+- The whole-picture numbers alone miss a small change (one prop is under 1 % of the pixels): the gate also reads the
+  picture area by area. Measured 11-11: stale 4.52 / 43 / 26.9 (FAIL), fresh 3.28 / 15 / 12.4 (PASS; the 12.4 is the
+  wet floor's moving shine).

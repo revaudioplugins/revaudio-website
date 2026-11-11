@@ -2,7 +2,8 @@
 //  1. a cold first visit over a throttled line (--mbps, default 40): when each load phase ends (the LOADW weights in
 //     room.html should match these shares) and when each bank came on; page errors
 //  2. the hand-off: the loading screen's last picture (?lights=hold) vs the live room at the same moment
-//     (?capture=0&lights=<all>: every bank on, the TV off), pixels apart
+//     (?capture=0&lights=<all>: every bank on, the TV off), pixels apart, then PASS / FAIL (exit 1 on FAIL): run it
+//     after every change to the room and before every push of it
 //   node tools/_home-opening/lights/check.mjs --port 4471 [--w 1141 --h 636 --dpr 2] [--mbps 40] [--out dir]
 import { createRequire } from 'module';
 import { execFileSync } from 'child_process';
@@ -50,7 +51,9 @@ const fresh = () => browser.newContext({ viewport: { width: W, height: H }, devi
   console.log(`the hand-off at ${W}x${H} @${DPR}x (${out}):`);
   // under the nav (the capture hides it), clear of the bench button
   const band = [41, 200, 45].map((v) => String(v * DPR));
-  execFileSync('python3', ['-I', path.join(here, 'layers.py'), '--diff', path.join(out, 'loader.png'), path.join(out, 'live.png'), ...band], { stdio: 'inherit' });
+  // the gate (Dan 2026-11-11: always check that the loading screen matches the final page): PASS / FAIL, exit 1 on FAIL
+  try { execFileSync('python3', ['-I', path.join(here, 'layers.py'), '--diff', path.join(out, 'loader.png'), path.join(out, 'live.png'), ...band, 'gate'], { stdio: 'inherit' }); }
+  catch (e) { process.exitCode = 1; }
   await ctx.close();
 }
 await browser.close();
