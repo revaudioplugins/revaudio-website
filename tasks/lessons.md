@@ -479,3 +479,18 @@ Rule: before a size or speed number goes in front of Dan under "same look", run 
 comparison (five walk stops, originals against it, plus a zoom on the glossiest and the thinnest things in the room).
 A number whose look is not checked yet is labelled "estimate, look not checked". And never pipe a check you may need
 to read through `tail -3`: send it to a log file (one failed `pack.mjs build` run lost its error text that way).
+
+## 2026-11-11 - Dan's browser keeps old loading pictures; a render left in the tree blocks the push (`danavivi-cf`)
+
+- `python3 -m http.server` sends no Cache-Control, only Last-Modified, so Chrome and Safari reuse a picture for a
+  while on their own (heuristic freshness). After `lights/render.mjs` re-rendered the loading screen, Dan's reload
+  still showed the old pictures and he asked why the sign wasn't there ("I don't see any sign, any skeleton of a
+  sign"). Serve the room Dan looks at with `Cache-Control: no-store`: an `http.server` subclass that adds the header
+  in `end_headers()` (11-11's: `.claude/garage-bench-2026-11-11/nocache_server.py`, run as
+  `python3 nocache_server.py <port> <worktree root>`). After switching servers, have him hard-reload once (Chrome
+  ⌘⇧R, Safari ⌥⌘R): what is already cached stays. Headless runs on Windows also need HTTP/1.1 keep-alive (shared
+  memory `feedback_bench_server_http11_keepalive`).
+- `lights/render.mjs` writes into `assets/lights/` in place. A render left uncommitted (and stale after the next
+  room change) makes `git pull --rebase` refuse, and the repo's hook wants that pull in the same command as every
+  push, so nothing pushes until it is committed or thrown away. Render the loading pictures once, last, right before
+  the commit that ships them; if one has to sit in the tree, commit it as a marked stopgap.
