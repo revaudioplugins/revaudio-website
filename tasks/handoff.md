@@ -771,6 +771,11 @@ Claim: CLOSED 2026-11-11 `danavivi-ee` (it held `tools/_home-opening/room.html` 
   - A new model file is fine for the live page (the integration copies the whole `assets` folder); new code still goes inline in `room.html`.
   - A car swap shows at walk 0: re-render the loading pictures, `lights/check.mjs` must print PASS.
   - Ask Dan first which cars (his team models them: Supra-inspired, no badges). No model is picked.
+  - **Dan again, same day: "I want the bench will actually like replace cars, and we'll have like saved cars and saved asset".** Three things, none built:
+    - Replace: the picker really swaps the car in the room (the model, its plate, its look), not a preview beside it.
+    - Saved cars: a named list in the bench (a car = its type + its whole look), save / load / rename / delete, and "put this one in the room". Today the bench keeps ONE working look in the browser (`localStorage` `carbench:v1`) and the room has ONE `CAR_LOOK`; presets are fixed in code. Saved cars must live in the repo (a file every laptop and the live page get), not in one browser.
+    - Saved assets: a shelf of the files a car uses, picked from a list instead of typed paths: car models, painted textures (`texSrc`), stickers (`stkSrc`, today only an upload kept in `localStorage` `carbench:pics:v1`, so it never reaches the room: the reason the sticker is "on, no picture"). My reading of "saved asset"; confirm with Dan what belongs on the shelf.
+    - Seam: data files under `tools/_home-opening/assets/` reach the live page (the whole folder is copied); a browser can't write repo files, so "save" = the bench hands the file / the settings over and the session lands it (as Copy settings does today), unless Dan wants a small local save server.
 
 ## 2026-11-09 — /revfx player: the die moves into the player and rolls Yoni's presets (Claude Code `revaudio-2f [e388a1]`, Yoni's laptop 2) — branch `feat/revfx-hear` — LIVE on main `81922f5` (2026-11-09, Yoni: "push deploy to the revfx page (dont add it to the index just like its now)")
 
