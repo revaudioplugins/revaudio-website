@@ -511,3 +511,21 @@ to read through `tail -3`: send it to a log file (one failed `pack.mjs build` ru
 - The whole-picture numbers alone miss a small change (one prop is under 1 % of the pixels): the gate also reads the
   picture area by area. Measured 11-11: stale 4.52 / 43 / 26.9 (FAIL), fresh 3.28 / 15 / 12.4 (PASS; the 12.4 is the
   wet floor's moving shine).
+
+## 2026-11-11 - A bench for a claimed room; a new file the room imports is a dead live page (`danavivi-ee`)
+
+- The room was claimed (`danavivi-cf`, round 6) when Dan asked for a car bench. What worked without touching
+  `room.html`: a second page that runs the real room in a frame (`room.html?expose`), takes `three` from the frame's
+  own realm (`frame.contentWindow.eval("import('three')")`: same instance, same fonts) and moves the room's camera from
+  `scene.onBeforeRender` (the room sets its camera in `frame()`, the hook runs after it and before the draw; put the
+  near plane back in `scene.onAfterRender`). The object is judged in the room's real light, and the owner's file
+  stays the owner's.
+- `tools/garagepage/integration.mjs` (on main) copies a FIXED list to the live page: `room.html`, `street.js`,
+  `lights/lights-on.js`, and the folders `layouts`, `vendor`, `assets`. A new module that `room.html` imports is a 404
+  there, and a failed import kills the whole module script: no room. So room code goes inline in `room.html` (the
+  car's look did, `car-look.js` was folded in), or the integration's list changes in the same push as the import.
+- The coupe has no UVs: anything on it is drawn from the position in the car's frame (`uCarInv * modelMatrix`), never
+  from a texture coordinate. A material's clear coat is cut per pixel after `<lights_physical_fragment>`; keep
+  `material.clearcoat` above 0 (0.001) or three drops the clear-coat code from the program.
+- Auto mode refused this session's first push of the branch (no word from Dan in the session yet) and passed it after
+  his "תריץ תעלה". Do the local work, hand him the one push line, do not look for another way to publish.
