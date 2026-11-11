@@ -37,7 +37,13 @@ const imgs = await Promise.all(board.map(async ({ p }) => ({
         </h1>
         <p class="d-tagline"><span>Five effects.</span> <span>Your order.</span></p>
         <p class="rfx-hero-what">Pitch, echo, reverb, halo and a bus glue comp in one rack.</p>
-        {buyable() && <p class="rfx-hero-price"><b>${revfx.priceUsd}</b> <span>or {revfx.trialDays} days free</span></p>}
+        {buyable() && (
+          <div class="rfx-hero-buy">
+            <p class="rfx-hero-price"><b>${revfx.priceUsd}</b> <span>or {revfx.trialDays} days free</span></p>
+            <button type="button" class="d-cta" data-add-to-cart data-cart-open data-cart-label data-slug="revfx" data-name="RevFX"
+              data-price={revfx.priceUsd}>Buy now</button>
+          </div>
+        )}
       </DriftPanel>
     </div>
 

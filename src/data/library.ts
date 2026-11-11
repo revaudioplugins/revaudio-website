@@ -9,7 +9,7 @@
  */
 import { plugins, dlGateId, fmtPrice, type Plugin, type LibraryCatId } from './plugins';
 import { drift } from './drift';
-import { revfx } from './revfx';
+import { revfx, buyable } from './revfx';
 import { site } from './site';
 
 export interface LibraryCat {
@@ -76,6 +76,7 @@ export const PAID_TRIAL_DAYS = 30;
 export function priceLine(p: Plugin): string {
   if (p.isFree) return 'Free';
   if (p.status === 'live' && p.introPriceUsd != null) return fmtPrice(p.introPriceUsd);
+  if (p.slug === 'revfx' && buyable()) return fmtPrice(revfx.priceUsd);
   if (p.slug === 'drift') return drift.phase === 'preopen' || drift.phase === 'open' ? 'Free beta' : `On sale ${drift.releaseLabel}`;
   return '';
 }
@@ -122,4 +123,15 @@ export function tryAction(p: Plugin): TvAction | null {
     return { label: `Try free for ${revfx.trialDays} days`, sub: revfx.winReady ? 'Full version · no credit card' : 'Mac · full version · no credit card', attrs: gate(false) };
   }
   return null;
+}
+
+/** The TV's add-to-cart key, beside the trial, on every paid plugin the cart can sell (a Paddle price, checkout not
+ *  paused, a price to show; RevFX once revfx.ts is buyable). Cart.astro's delegated [data-add-to-cart] listener does
+ *  the rest: the label turns "In your cart" and a second press opens the drawer (Gil 2026-11-11). */
+export function cartAction(p: Plugin): { price: number } | null {
+  if (p.isFree || !p.paddlePriceId || p.checkoutPaused) return null;
+  if (p.slug === 'revfx') return buyable() ? { price: revfx.priceUsd! } : null;
+  if (p.status !== 'live') return null;
+  const price = p.introPriceUsd ?? p.regularPriceUsd; // the cart catalog's own price (Cart.astro)
+  return price == null ? null : { price };
 }

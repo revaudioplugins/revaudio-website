@@ -611,9 +611,8 @@ export const plugins: Plugin[] = [
     statusLabel: 'Free trial',
     trialOpen: true,
     introPriceUsd: null,
-    regularPriceUsd: null,
-    // The cart's Paddle item. The /revfx buy key shows only once revfx.ts is phase 'released' with priceUsd
-    // (set regularPriceUsd here to the same price then): keep this id equal to revfx.ts paddlePriceId.
+    regularPriceUsd: 19, // = revfx.ts priceUsd (the cart's price; Paddle charges its own $19.00)
+    // The cart's Paddle item: keep this id equal to revfx.ts paddlePriceId.
     paddlePriceId: 'pri_01m5a2rfk2kcb3tpm2j87kfgh9',
     checkoutPaused: false,
     demoUrl: null,
