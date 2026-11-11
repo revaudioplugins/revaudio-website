@@ -506,3 +506,11 @@ Rule: before a size or speed number goes in front of Dan under "same look", run 
 comparison (five walk stops, originals against it, plus a zoom on the glossiest and the thinnest things in the room).
 A number whose look is not checked yet is labelled "estimate, look not checked". And never pipe a check you may need
 to read through `tail -3`: send it to a log file (one failed `pack.mjs build` run lost its error text that way).
+
+## 2026-11-11 — a plugin page shot without its plugin needs the plugin stood in for
+DRIFT's page (and RevFX, its FX view) counts JUCE as present only when the backend lists its relays; otherwise it runs
+in bench mode and every screen reads 0. Standing in only part of the backend misleads: no natives hid RANDOMIZE, one
+native alone made the page wait on the rest (no preset bar, no dice log), and a null licence covered the rack with
+INSERT KEY. Shoot it with the whole stand-in (record-plugin.mjs mockBackend: every relay the page names with its
+DEFAULTS, every native the editor registers, the licence answered) and look at a probe shot before recording.
+A loop whose screens run on their own clocks never closes: shoot a tail past it and crossfade (cut-webp.py xfade=).

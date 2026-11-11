@@ -361,6 +361,21 @@ Files: `src/components/WordWall.astro`, `src/components/TrialGateModal.astro` (+
 - 2026-11-11 Dan looked at the baked TV: **"looks good commit"**. The bake was already committed and pushed
   (`3fd3b7f`, `3229204` and their handoffs, up to `b173576`); this note is the only new commit. Still his calls: the
   loops' sources, the `/__wwdepth` bench, DRIFT's old run files (above).
+- 2026-11-11 MAIN MERGED IN (Dan: "rebase and see the gap" -> his pick "merge main in", `8c3c866`): main was 171
+  commits past our fork (`747e059`, 11-05), we 52 past it. Both sides kept: the design checker's waivers, library.ts's
+  imports, this handoff, the lessons; WordWall keeps the baked TV with main's Add to cart (items, Item type, the
+  pressed rule). RevFX had joined the TV on main (live, $19): Dan's pick **"record its loop"** (`bf44eaa`):
+  `record-plugin.mjs revfx` shoots RevFX's own page (`~/projects/revaudio/RevFX/Source/ui/public`) with a stand-in
+  backend (mockBackend, after Drift `tests/h2_fxview_probe.cjs`: the page's DEFAULTS, RevFX's natives answering null,
+  the host tempo 90, the licence 'activated'; without it the page runs in bench mode, every screen reading 0, and a
+  null licence covers it with INSERT KEY), in use as its product shot (GLUE on, HALO 45 %, PITCH +7), its random
+  faults off; `song-meters.py revfx` = the glue comp's GR at its defaults from the /revfx drum loop (4 bars at 90 BPM
+  inside the file's 0.25 s padding, 160 frames); its other screens run on their own clocks, so 12 frames past the loop
+  blend into its head (`cut-webp.py xfade=12`), frame 0 kept clean; 194 x 91 (RevLimiter's width). Phones: Add to cart
+  under the price beside Try (its own row put Radio Roulette's TV 15 px past 360 x 640, under the docked cart button).
+  Checked: 9 sizes x 6 plugins x Chromium + WebKit (playing, right file, still, names clear, one screen, 0 errors),
+  reduced motion. Kept from main as it is: RevFX's Try opens the email pop-up (the on-screen sign-up's words are
+  unchecked for RevFX: Dan's call). RevFX's frames: `tools/wwbench/anim/v2/revfx` (untracked, with the others).
 - Next: the header that slides away; TV Sells round 4 notes; step 00's baseline before any push to main. Left in
   the plan: P (persona walk). Nothing on main; main = live on Dan's word.
 
