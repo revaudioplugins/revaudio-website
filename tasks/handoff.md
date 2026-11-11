@@ -504,6 +504,86 @@ pid 52126: `kill 52126` if it's in the way), then http://127.0.0.1:4490/tools/_h
 default to port 4471: pass the port.
 Loose ends: `home-bake` has the untracked, regenerable `bake/room/` + `bake/test-room/` (leave or delete).
 
+### 2026-11-11 — `danavivi-cc [172bce]` (the speed session) — direction 1 built on `feat/home-speed`: the models download 4.7 MB lighter, same look — committed, NOT pushed, NOT merged
+
+Claim: OPEN `danavivi-cc [172bce]` (Dan's Mac), worktree `.claude/worktrees/home-speed`, branch `feat/home-speed` (cut from
+`feat/home-opening` at `05e1a09`). Files: `tools/_home-opening/masters/**` (new), `tools/_home-opening/assets/models/*.glb`
+(now built files), `tools/_home-opening/models-kit/pack/**` (new), and two doc lines (`models-kit/README.md` "Into the room"
+step 2, `assets/models/SOURCES.md` intro). `room.html`, `MODELS`, every path and every node name are untouched.
+
+Request (Dan, 11-11, after the directions page https://claude.ai/artifact/4GNk8z5d4NUHhqJYwaxXps): "pull and Build 1" =
+direction 1, "same look, smaller files, for everyone".
+
+**Read this before you add or replace a model** (it changes the flow for every session):
+- The full-size originals now live in `tools/_home-opening/masters/models/` (83 files, a git rename) and `masters/pbr/`
+  (37 copies). They are not served and not copied to the live page (`tools/garagepage/integration.mjs` copies `assets` only).
+- `assets/models/*.glb` are **built** from them by `models-kit/pack/` (pictures inside → WebP, shapes → meshopt). Never edit
+  one by hand: the next pack overwrites it.
+- New or replaced model: put the raw .glb in `masters/models/` (one dropped into `assets/models/` out of habit is moved there
+  by the pack's first step), run `tools/_home-opening/models-kit/pack/pack.sh` (~10 min; Chrome; port 4618 or
+  `KIT_PORT=<free port>`), commit the master, the packed file and `need.json`. After the layout or the walk moves:
+  `./pack.sh check`. Full page: `models-kit/pack/README.md`.
+- Blender (and most tools) cannot open a packed file: open the one in `masters/models/`. `glbinfo.py` reads both.
+- The waiting drops of the builders (N17 `pedalboard.glb` and L20 `bass-natural.glb` replaced, N03 `lift-pump.glb` new, the
+  glossy `coupe.glb`) go in through `masters/models/` + `pack.sh`. When this branch meets a branch that replaced
+  `assets/models/<x>.glb` with a raw file, git reports a conflict on it: take the incoming raw file as
+  `masters/models/<x>.glb`, re-run `pack.sh`, commit what it builds.
+
+What the pack does to a model: every position, triangle and node comes out bit for bit as it went in (the build compares
+them and refuses to write a file that differs); normals are rounded to 12 bits, UVs to 14; colour pictures WebP q85, normal
+and roughness maps q90, the original's bytes kept when WebP isn't smaller; a picture shrinks only by the size levels the
+walk never reads (measured at 41 stops in four windows, half a level of headroom).
+
+Results (measured 11-11, this Mac):
+- Models 22.90 → 12.17 MB on disk; as downloaded (gzip, what the live server sends) 14.11 → 9.44 MB. A cold first visit
+  22.21 → 17.60 MB on the wire, 162 files as before. PBR maps unchanged (5.92 MB).
+- Cold first visit until the room is ready, today → packed (two interleaved passes through `perf/simserve.py`, gzip on,
+  40 ms round trip at 25 Mbps and up, 150 ms below; both passes shown where they differ): 100 Mbps 4.0 → 3.8 s ·
+  50 Mbps 5.7 / 5.6 → 4.9 s · 25 Mbps 9.0 / 8.9 → 7.7 / 7.4 s · 10 Mbps 19.5 / 20.0 → 15.9 / 16.1 s ·
+  5 Mbps 37.4 / 37.5 → 29.8 / 30.2 s · the stress line, 1.6 Mbps: 112.9 / 113.0 → 89.7 s (1:53 → 1:30).
+- Less than the directions page promised for direction 1 (15.2 MB, 77.8 s at 1.6 Mbps). Why: (1) the texture right-size
+  finds only 7 of 237 textures to drop (≈ 0.3 MB, the page expected ~3 MB): the models' maps are read with 8x anisotropic
+  filtering (`room.html` `dress()`), one level finer than the trial assumed, and the ultrawide + tablet windows count;
+  (2) the trial's tighter shape packing changed the picture, so it was dropped (next point).
+- Same look, proven: stills at walk 0 / 0.25 / 0.5 / 0.75 / 0.95 (1141x636 @2x, all lights), originals against packed:
+  mean difference 0.00-0.16 of 255 levels, under 0.01 % of pixels off by more than 24, nothing the eye finds at 6x zoom
+  (two renders of the originals are pixel-identical, so every difference is the pack's). The first recipe failed this test
+  twice and both causes are now excluded by the build: 8-bit normals moved the highlight on the car's paint at the door
+  (car area: mean 1.94 → 0.07 with 12 bits), and snapping positions to a 0.03 mm grid made a lit meter face on the studio
+  desk (`rack_glow`, 0.5 mm over its panel) come out half dark at walk 0.25 (max 181 → 11). Cost of keeping both exact:
+  0.6 MB.
+
+Checks, actual results:
+- `pack.sh check` end to end: `237 right-sized, 0 could shrink, 0 under-sized, 0 not packed, 0 without an original`.
+  The build is repeatable: 13 more runs of `node pack.mjs build`, 12 ended `0 files changed`. One (the first, started
+  the moment the timing run ended) stopped with a Node error whose text was not captured; the files were not touched
+  (the next run: `0 files changed`, `check` passes) and it did not come back in 12 tries. If `pack.sh` stops in the
+  build step, run it again and keep the error text.
+- `lights/check.mjs` (40 Mbit/s): no page errors; the hand-off picture is as far from the room as before (mean 5.20 levels
+  packed, 5.19 today), so `assets/lights/` needs no re-render. Phase shares 0.33 / 0.44 / 0.20 / 0.03 against `LOADW`
+  0.34 / 0.52 / 0.11 / 0.03: left as it is.
+- `layout-kit/check.mjs layout-kit/start-layout.json`: output byte-identical to today's room (no overlaps, same frame sizes).
+- The packed room under the proposed CSP (`csp-prop3`) in Chrome, WebKit 26.5 and Firefox 153: 1339 objects, 282 textures,
+  0 dropped, no errors, the same counts as the originals.
+
+🔴 **Do not put this on main before Yoni's CSP edit is live.** Under today's live policy the meshopt decoder (WebAssembly) is
+blocked: tested 11-11 in Chrome, the packed models do not appear at all (812 objects instead of 1339; today the live page
+shows them without their pictures). The word needed is the one already asked for: `'wasm-unsafe-eval'` in `script-src`
+(with `blob:` in `img-src` and `connect-src`): `collaboration/handoffs/2026-11-10-yoni-csp-room/handoff-yoni.md` in the
+shared repo. The live header on the morning of 11-11 still lacks all three.
+
+Not done / open:
+- Not pushed, not merged: `feat/home-speed` merges into `feat/home-opening` on Dan's OK (the room-only push OK for main was
+  given to other sessions, not this one).
+- Direction 2 (the slow-line safety net) is not built. Other savings not built: the picture quality was not lowered, and
+  the PBR maps were left alone.
+- Not measured: real phones, Safari timings (the timings are Chrome on this Mac through `perf/simserve.py`).
+- `LOADW` not re-tuned (above). The trial builds, stills and timing logs are in this session's scratchpad only
+  (`/private/tmp/claude-501/-Users-danavivi/38d326b1-1855-4bfb-9b05-ed9017ee0743/scratchpad`: `stills6/`, `perf/final.txt`).
+
+Next: Dan looks at the room from this worktree (`python3 -m http.server 4618 --bind 127.0.0.1` at its root, then
+http://127.0.0.1:4618/tools/_home-opening/room.html) and says merge or not; Yoni's CSP edit before any main push.
+
 ## 2026-11-09 — /revfx trial form sends the download at once (`gateWired: true`) (Claude Code `revaudio-0b [3311c0]`, Yoni's laptop 2) — branch `revfx-gate-on` — PUSHED TO MAIN 2026-11-09 on Yoni's "deploy" (worker deployed first, version `b31a75bd`)
 
 Claim: CLOSED 2026-11-09 `revaudio-0b`. Files: `src/data/revfx.ts` (`gateWired` only; `revaudio-2f`'s claim there is `hearTracks` only), this entry.

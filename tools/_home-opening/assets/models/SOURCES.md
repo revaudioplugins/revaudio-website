@@ -6,6 +6,8 @@ origin on the floor at the footprint's centre, front on +Z, 1k JPEG textures ins
 `refs/licence-log.md` on Dan's Mac (git-ignored). `room.html` places them through `MODELS`.
 Since 2026-11-09 most rows are ours (built from code). Fonts used only to letter a texture are SIL OFL 1.1 or Apache 2.0
 (as each row says); they ship only as pixels, never as a font file.
+Since 2026-11-11 the .glb files in this folder are the web-sized copies the pack builds (`models-kit/pack/README.md`:
+WebP pictures, packed shapes); the originals this table describes live in `masters/models/` under the same names.
 
 | file | slot | source | author | licence | checked | changed |
 |---|---|---|---|---|---|---|
