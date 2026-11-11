@@ -807,6 +807,19 @@ const first = items[0]?.slug ?? '';
       gsap.set([...signParts(p), box, ...Array.from(box.querySelectorAll<HTMLElement>('[data-ws-step]'))], { clearProps: 'transform,opacity' });
       signSet(p, box, false);
     };
+    /* A TV taller than the screen (a phone on its side): a pane opened from a lower row stayed at the list's scroll,
+       its top above the screen, and the sign-up's field ended up above it or under the header (TV QA P5, 2026-11-11).
+       inView brings an element's top just under the header when it is off screen; a parked TV never moves. */
+    const navH = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--site-nav-h')) || 44;
+    const inView = (el: Element | null, pad = 0) => {
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      const nav = navH();
+      if (r.top >= nav && r.bottom <= window.innerHeight) return;
+      const y = Math.max(0, Math.round(window.scrollY + r.top - nav - pad));
+      if (lenis) lenis.scrollTo(y, { immediate: true });
+      else window.scrollTo(0, y);
+    };
     const signOpen = (p: HTMLElement) => {
       const box = signOf(p);
       if (!box || p.classList.contains('is-signing')) return;
@@ -818,7 +831,9 @@ const first = items[0]?.slug ?? '';
         gsap.set(signParts(p), { clearProps: 'transform,opacity' });
         signSet(p, box, true);
         levelSent(p);
-        box.querySelector<HTMLElement>(sentBox ? '.ws-st' : '.ws-field')?.focus({ preventScroll: true });
+        const to = box.querySelector<HTMLElement>(sentBox ? '.ws-st' : '.ws-field');
+        to?.focus({ preventScroll: true });
+        inView(to, 16);
       };
       if (still()) { swap(); return; }
       signRun = gsap.to(signParts(p), {
@@ -1541,9 +1556,16 @@ const first = items[0]?.slug ?? '';
       focusView = nav && viewWant !== wall.dataset.wwView; // focus follows the pane that opened
       const mv = move && (!phone.matches || backKey); // a phone moves on its own Back key only (the rest cuts)
       backKey = false;
+      // back from a phone's pane to the list: the plugin just looked at stays lit and goes in the address (the list's
+      // own entry still names the one lit before the pane opened: TV QA P1, 2026-11-11)
+      const was = lit;
+      const keep = nav && phone.matches && wall.dataset.wwView === 'panel' && viewWant === 'list';
       setCat(q.get(P_CAT) ?? 'all', nav, mv);
       const want = q.get(P_PLUGIN);
-      if (want && shown().includes(want)) light(want, mv);
+      if (keep && shown().includes(was)) {
+        if (lit !== was) light(was, mv);
+        writeUrl('replace');
+      } else if (want && shown().includes(want)) light(want, mv);
       go(mv);
     };
     fromUrl(false);
@@ -1591,6 +1613,7 @@ const first = items[0]?.slug ?? '';
         light(slug);
         writeUrl('push', 'panel');
         go(true); // the lit one tapped again opens too
+        if (wall.getBoundingClientRect().top < navH()) inView(wall); // a TV taller than the screen: the pane's top (P5)
       } else {
         urlDue = true;
         light(slug);
@@ -2979,6 +3002,12 @@ const first = items[0]?.slug ?? '';
     .ww-blurb { font-size: 1rem; line-height: 1.4; }
     .ww-pwords { font-size: 0.9rem; }
   }
+  /* 360 px: DRIFT's and Radio Roulette's five words ran 10-12 px over one line, so a dot ended the line, the last word
+     wrapped alone and Radio Roulette's pane grew the TV 20 px past the screen (TV QA P6 + P8, 2026-11-11). A step
+     down keeps every plugin's words on one line */
+  @media (max-width: 374px) {
+    .ww-pwords { font-size: 0.85rem; }
+  }
   @supports (height: 100svh) {
     @media (max-width: 860px) {
       .ww[data-ww-bg='screen'] {
@@ -3048,4 +3077,20 @@ const first = items[0]?.slug ?? '';
     .ww[data-ww-lib='on'] .ww-back { border: 2px solid ButtonText; }
   }
   :global(html.hc) .ww-row.is-lit .ww-name::before { content: '\25B6\FE0E\00A0'; content: '\25B6\FE0E\00A0' / ''; }
+
+  /* Phones: a finger's 44 px on the small keys, the look unchanged: the text keys grow their padding into a negative
+     margin, the boxed one an invisible ring, the boxes' inputs (already invisible) reach out (TV QA P2, 2026-11-11;
+     the gaps to the neighbours measured at 360-393 px: nothing overlaps). The categories stay as they are: two rows
+     3 px apart, 44 px each would overlap. */
+  @media (max-width: 860px) and (pointer: coarse) and (forced-colors: none) {
+    .ww[data-ww-lib='on'] .ww-back,
+    .ws-back { padding-block: calc(0.45rem + 8px); margin-block: -8px; }
+    .ws-back { position: relative; z-index: 1; } /* over the title's line, which painted over its lower reach */
+    .ws-act button { padding-block: calc(0.3rem + 10px); margin-block: -10px; }
+    .ww-pname .ww-to { padding-block: 6px; }
+    /* a size, not insets alone: WebKit sizes a checkbox by its own 12 px when width is auto */
+    .ws-cb input { inset: -10px auto auto -10px; width: calc(100% + 20px); height: calc(100% + 20px); }
+    .ww-panel .ww-buy .ww-more { position: relative; }
+    .ww-panel .ww-buy .ww-more::before { content: ''; position: absolute; inset: -4px 0; }
+  }
 </style>
