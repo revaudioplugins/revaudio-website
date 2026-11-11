@@ -1,6 +1,6 @@
 ## 2026-11-03 — Home opening: the long garage, an ACTIVE PROJECT (Claude Code `danavivi-4e [b36252]`, Dan's Mac; continues `danavivi-7a [9ae241]`) — on branch `feat/home-opening`, pushed, not on main
 
-Claim: OPEN `danavivi-d5 [443a28]` (Dan's Mac; the same session as `danavivi-20 [c417bc]` after a restart; the next session takes it, see SESSION END 2026-11-10 below); `danavivi-20` took it over from `danavivi-09` on 2026-11-08 (Dan: "take the claim from
+Claim: OPEN `danavivi-cf [3dcc55]` (Dan's Mac; took it over 2026-11-11 from `danavivi-d5 [443a28]`, closed, as its SESSION END 2026-11-10 says; round 6: the plugin objects for the CRTs, the props, the TV picture, the sign, see "2026-11-11 round 6" below); `danavivi-d5` was the same session as `danavivi-20 [c417bc]` after a restart; `danavivi-20` took it over from `danavivi-09` on 2026-11-08 (Dan: "take the claim from
 danavivi-09, then go", for the look pass), which took it from `danavivi-4e` on 2026-11-04, which took it from `danavivi-7a`
 (closed) on 2026-11-03. Dan, 2026-11-03: "this is a
 project we start working on now, from now on": the long garage is a standing project of the site, not a one-off hero. It
@@ -616,6 +616,23 @@ Session end 2026-11-11 (rv close, then a second close after the main push):
   browsers of this session are running.
 - After the merge `feat/home-speed` has nothing `feat/home-opening` lacks; work goes on in `feat/home-opening`. A branch cut
   before the merge that replaced a model: see "Read this before you add or replace a model".
+
+### 2026-11-11 round 6 — `danavivi-cf [3dcc55]` (Dan's Mac) — IN PROGRESS: the plugins as objects, the props, the TV picture, the sign
+
+Dan, 11-11: "remove ... the drift on the right table ... the radio roulette on the top compressors and all those near
+the headphones. I want to make a 3D asset out of it ... the rev limiter [on the table] a 3D asset as well ... the rev
+effects on the left ... all the elements [still plain] I want to build them, like the box on the left in the beginning
+of the room, the boxes behind the guitars ... the main TV is not updated to the current TV ... the sign of Rev Audio
+on the left is not in the beginning of the loading screen." His picks (AskUserQuestion, all four the recommended ones):
+clear the compressor rack R06 and W10's shelf items too (the headphones N49 stay on their hook); the plugin objects
+built from code with each plugin's real UI as the face (0 credits); the REVAUDIO sign lit from the loading screen's
+first frame (its own circuit, like the GAS globes); roster: 2 Opus builders (DRIFT + RevFX, Radio Roulette +
+RevLimiter), 1 Sonnet builder (the 9 kinds of mess props + W10 bare), a Sonnet review per batch.
+Plan: M01-M04 become the plugins' objects in the CRTs' spots (M04 on the red chest R05 once R06 is out); the mess's
+9 kinds become models; W10 keeps its plank; the TV / nav / below pictures re-captured from the live homepage (they were
+11-02's: ALL 4, no GAS 2); the 3 waiting builds of round 5 (N17, L20, N03) ride along; then the loading pictures, the
+checks, a bench, and one push to main under Dan's room-only OK.
+Files: `tools/_home-opening/**`, this entry.
 
 ## 2026-11-09 — /revfx trial form sends the download at once (`gateWired: true`) (Claude Code `revaudio-0b [3311c0]`, Yoni's laptop 2) — branch `revfx-gate-on` — PUSHED TO MAIN 2026-11-09 on Yoni's "deploy" (worker deployed first, version `b31a75bd`)
 
