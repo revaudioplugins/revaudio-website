@@ -351,9 +351,13 @@ Files: `src/components/WordWall.astro`, `src/components/TrialGateModal.astro` (+
   off the still's file width (348 px for 252: the tall stills now `height: 100%`). Checked: 9 sizes x 5 plugins x
   Chromium + WebKit (playing, still in, no sideways scroll, one screen, names on top), reduced motion (stills, no
   flicker), 0 errors; Slow 3G phone 773 KB vs 854 KB before, a picture at once / 0.9 s, its loop at 1.9-2.5 s.
+  iOS (Simulator, iPhone 17 Pro, iOS 26.5), `3229204`: GAS 2's pane was EMPTY (iOS gave the aspect-ratio box no
+  width in the phone's shrink-to-fit column: the tall boxes now get a set height `--ww-ph` + the width from it) and
+  a phone fetched the laptop's x4 (iOS skipped `<source media>`: the script picks `data-ww-x2` / `-x4` at the first
+  play). After: GAS 2 + DRIFT cut out and playing on the Simulator, x2; the 9-size sweep clean again.
   Open: the loops' sources (`tools/wwbench/anim/`, 50 MB, v2 = 25 MB) are untracked on Dan's Mac only (where to keep
-  them: design-assets?); `/__wwdepth` now draws its look over the baked TV (keep it or delete it?); iOS Safari check
-  of the masked video + pixelated frames on a real iPhone.
+  them: design-assets?); `/__wwdepth` now draws its look over the baked TV (keep it or delete it?); Dan's own look
+  on a real iPhone (the Simulator is clean).
 - Next: Dan's look on his Safari + iPhone; then the header that slides away; TV Sells round 4 notes; step 00's
   baseline before any push to main. Left in the plan: P (persona walk). Nothing on main; main = live on Dan's word.
 
