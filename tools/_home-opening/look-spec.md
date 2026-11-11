@@ -54,7 +54,8 @@ everywhere.
 
 ## "We make plugins here"
 
-- The plugins are the point: their CRT screens (must stay), a plugin being built on the bench (46, 52), sketches and
+- The plugins are the point: the plugins themselves as real objects, each where its CRT stood (Dan 11-11: the CRT
+  screens came out; RevLimiter, DRIFT, Radio Roulette and RevFX built from code with their real UIs as faces), a plugin being built on the bench (46, 52), sketches and
   schematics pinned up (48), test gear with live traces (23, 50, 51), pedal and amp benches (45, 47), a home lab lit by
   one lamp and a screen (49), boxes and prototypes, a covered COMING SOON object.
 - Our names and marks only (RevAudio, RevLimiter, DRIFT, Radio Roulette, RevFX, GAS 2). No third-party brands or

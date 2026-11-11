@@ -8,14 +8,15 @@ first visit of a session; after that soft rises, no flicker).
 ## What the visitor sees
 
 1. Black, then the eyes get used to the dark: the night through the door, the car's red tail lights, the vending
-   machine and the GAS globes (their own circuit), a faint camera grain (Dan 11-09: less noise).
+   machine and the GAS globes (their own circuit), the REVAUDIO sign (its own circuit too, lit from the first frame:
+   Dan 11-11, "the sign ... is not in the beginning of the loading screen"), a faint camera grain (Dan 11-09: less noise).
 2. The TV at the end of the aisle comes on first (Dan 11-09: "the small lcd screen to light up first"): standby, the
    backlight on a dark panel, the picture; its glow on the end wall, the desk and the wet floor. Its picture is drawn
    per screen width (`bank-1@1141x636.webp` ...), the one the room's TV will show (CAPS), so the hand-off is the same.
 3. The shop light by the door: its ends glow, it tries twice, it strikes.
 4. The violet strip buzzes on, then the magenta one: the room appears (the exposure catches up: a short overexposure).
 5. The four hanging lamps warm up, front to back toward the TV (the trouble light and the clamp lamp with theirs).
-6. The gear: the REVAUDIO sign, the CRTs, the racks' LEDs and meters, the floor strips.
+6. The gear: the plugins' objects (their displays and dials), the racks' LEDs and meters, the floor strips.
 7. The live room takes over (the same picture). Then the big line.
 
 ## How it works
