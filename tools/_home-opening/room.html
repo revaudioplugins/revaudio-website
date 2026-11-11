@@ -240,7 +240,7 @@ const DEF = {
   // the REVAUDIO neon: off the aisle (Dan 2026-11-02: "not in your face"), then on the end wall, right of the TV (11-03)
   signWall: 'endLeft', signF: 0.52, signX: -1.47, signY: 3.09,  // the wall in front of you, top right (Dan 11-03, placed 11-04, nudged on his room bench of 11-09)
   signScale: 1.15, signTilt: -2,        // hung a little crooked on two wires (Dan 11-03; sized 11-04)
-  ver: 25,                               // settings version (25 = the radio up on the shelf W10; 24 = round 6: M03 / M04 hold the plugins' objects, their spots moved; 23 = round 5 landed: N03 the lift's pump on its own row, its move gone (11-11); 22 = batch 7, the far end: N42's tray hangs under the trusses on its own height (h 1.565, x -2.05 clear of the neon's lights); N29's narrower blankets fit Dan's spot (w 1.444, h 2.145, d 0.136); L17's pegboard v2, its tools in the gaps round the bass wall, d 0.085 (a thin board); N39 0.4 m along its truss + glow 0.7 (out of the neon's wash, deeper lamp colour); N18's board on the pegboard's face (on 0.02); N49 hung under W10's plank, 11-10; 21 = batch 6, the left wall: N12's box grows for its real 2x4, 11-10; 20 = batch 5, the car side: N43 out from under the lift's plate, N11 onto it, 11-10; 19 = batch 4 + the round-2 instruments: N02 on chains, N41/N39 onto the truss, the ukulele's hanger level with the banjo's; the round-3 checks: the rack 1.75 m out, the rims on the tyre rack, the sketch wall off the bass, 11-09; 18 = Dan's round-2 build notes, 11-09; 17 = the big line + the engine back on, Dan 11-09; 16 = his room bench of 11-09: the end wall rearranged; 15 = much less dust, Dan 11-09; 14 = the drum N06 moved, Dan's build bench of 11-09; 5 = Dan's bench of 11-03 baked, 6 = his third, with the pegboard move, 7 = back to the bare set; his bench of 11-04 needed no bump; 8 = the snap off; 9 = B + A's moves as the room; 10 = the look pass, 11 = its first fix round, 12 = his bench of 11-08 + two nudges, 13 = his neon pick): 2 moved the sign to the end wall, 3 made it bigger + crooked, 4 took the road off the floor
+  ver: 26,                               // settings version (26 = N26 6 cm out for the plant N50; 25 = the radio up on the shelf W10; 24 = round 6: M03 / M04 hold the plugins' objects, their spots moved; 23 = round 5 landed: N03 the lift's pump on its own row, its move gone (11-11); 22 = batch 7, the far end: N42's tray hangs under the trusses on its own height (h 1.565, x -2.05 clear of the neon's lights); N29's narrower blankets fit Dan's spot (w 1.444, h 2.145, d 0.136); L17's pegboard v2, its tools in the gaps round the bass wall, d 0.085 (a thin board); N39 0.4 m along its truss + glow 0.7 (out of the neon's wash, deeper lamp colour); N18's board on the pegboard's face (on 0.02); N49 hung under W10's plank, 11-10; 21 = batch 6, the left wall: N12's box grows for its real 2x4, 11-10; 20 = batch 5, the car side: N43 out from under the lift's plate, N11 onto it, 11-10; 19 = batch 4 + the round-2 instruments: N02 on chains, N41/N39 onto the truss, the ukulele's hanger level with the banjo's; the round-3 checks: the rack 1.75 m out, the rims on the tyre rack, the sketch wall off the bass, 11-09; 18 = Dan's round-2 build notes, 11-09; 17 = the big line + the engine back on, Dan 11-09; 16 = his room bench of 11-09: the end wall rearranged; 15 = much less dust, Dan 11-09; 14 = the drum N06 moved, Dan's build bench of 11-09; 5 = Dan's bench of 11-03 baked, 6 = his third, with the pegboard move, 7 = back to the bare set; his bench of 11-04 needed no bump; 8 = the snap off; 9 = B + A's moves as the room; 10 = the look pass, 11 = its first fix round, 12 = his bench of 11-08 + two nudges, 13 = his neon pick): 2 moved the sign to the end wall, 3 made it bigger + crooked, 4 took the road off the floor
   // the look pass (2026-11-08, todo 1b): real materials and night light on the same set (Skeleton = the grey labelled
   // blocks); tone = the tone mapping (AgX), exposure its exposure; probe = how much the room shows in its own shiny
   // things (chrome, paint, the floor); shafts = the haze under the lamps
@@ -302,7 +302,7 @@ const DEF = {
     "R16": {"f": 0.3299},
     "N24": {"f": 0.3299, "x": 2.3},
     "N29": {"f": 0.3278, "y": 2.07, "s": 0.9}, // 7 cm up (11-10): the taller v3 set's hem clears the drum kit's block, as his 1.5 m block did
-    "N26": {"f": 0.4062, "x": 2.5, "s": 0.85},
+    "N26": {"f": 0.4062, "x": 2.44, "s": 0.85},  // 6 cm toward the aisle (11-11): clear of the plant N50's vines on the red chest
     "P02": {"f": 0.2083, "y": 2.85},
     "R04": {"f": 1.2847, "y": 2.75, "side": 1},
     "R05": {"f": 0.4132},
@@ -392,6 +392,7 @@ if (sv < 22) delete S.moves.N42; // batch 7: the tray hangs under the trusses at
 if (sv < 23) delete S.moves.N03; // round 5 landed (11-11): the lift's pump unit stands where its row puts it
 if (sv < 24) for (const id of ['M03', 'M04']) S.moves[id] = { ...DEF.moves[id] }; // round 6 (11-11): the plugins' objects on the desk and the red chest
 if (sv < 25) S.moves.M04 = { ...DEF.moves.M04 }; // the radio up on the shelf where the headphones hang (Dan 11-11)
+if (sv < 26) S.moves.N26 = { ...DEF.moves.N26 }; // the boom stand 6 cm out, clear of the plant (11-11)
 // (migrations run oldest first: put a new version's lines at the bottom, so a later one can undo an earlier one)
 S.ver = DEF.ver;
 // ?layout=<name>: a proposed layout (layouts/<name>.json, the bench's Copy-settings format) over the defaults, to walk
@@ -714,6 +715,7 @@ const LOOK = {
   W09: 'cardboard', W10: 'shelf', E01: 'gear', E02: 'tolex', E03: 'tolex', E04: 'gear', E05: 'pegboard', E06: 'shelf',
   N24B: 'carpet', N26B: 'steel', N30: 'steel', N31: 'wood', N32: 'wood', N33: 'gear', N34: 'tolex', N35: 'gear',
   L20: 'lacquer', N46: 'tolex', N47: 'steel', N48: 'steel', N49: 'gear', // Dan's round-2 notes
+  N50: 'fabric', // round 6: the plant (its block only shows if the model can't load)
 };
 // the mess's kinds as real models (Dan 11-11: "all the elements [still plain] I want to build them"): each kind loads
 // once and every piece of it shows a copy where its primitive stands (placeMess keeps them in step); a kind not listed
@@ -861,6 +863,7 @@ const MODELS = {
   N08: { src: 'assets/models/vending-machine.glb', yaw: Math.PI / 2, own: 1, glow: 0.6 }, // our GAS 2 FUEL machine, its sign + bottle window lit dim (vending_glow); own: its own circuit, lit from the first frame like the drawn one (no bank)
   N05: { src: 'assets/models/air-compressor.glb', yaw: Math.PI / 2, anim: [['gauge_needle', 'z', 'osc', [0.05, 0.7]]] }, // its needle quivers about mid-scale (still in reduced motion)
   R01: { src: 'assets/models/parts-store-shelf.glb', yaw: -Math.PI / 2 }, // steel shelving: boxed parts, oil, filters, mufflers (not L12's parts-shelf.glb)
+  N50: { src: 'assets/models/potted-plant.glb', yaw: -Math.PI / 2 }, // a trailing pothos in a terracotta pot on the red chest, its vines over the chest's aisle face (Dan 11-11: "put a plant over there")
   M01: { src: 'assets/models/crt-casing.glb', crt: true }, // the CRTs: a casing around each live screen
   M03: { src: 'assets/models/revlimiter.glb' },     // round 6: RevLimiter as a brass / walnut / oxblood desk console, its real UI the face (Dan 11-11)
   M04: { src: 'assets/models/radio-roulette.glb' }, // round 6: Radio Roulette as a 1950s tabletop radio, its real UI the face (Dan 11-11)
@@ -1064,6 +1067,7 @@ const SIDE = [
   { id: 'W09', cat: 'garage', label: 'Build board: SKETCH, BENCH, DSP, TEST', side: 1, f: 0.515, w: 1.2, h: 1.8, d: 0.6 },
   { id: 'W10', cat: 'music', label: 'Repair shelf (bare: its radios off, Dan 11-11)', side: 1, f: 0.56, w: 1.2, h: 0.4, d: 0.35, y: 2.3 },
   { id: 'N49', cat: 'music', label: 'Headphones hung under the repair shelf', side: 1, f: 0.4389, x: 3.045, w: 0.11, h: 0.36, d: 0.2, y: 2.285, sits: 'W10' }, // hung from a cup hook under W10's plank at its door end (the tube radio stands under the middle), band up; was lying on the plank, unreadable from the aisle
+  { id: 'N50', cat: 'garage', label: 'Potted pothos on the red chest', side: 1, f: 0.3994, w: 0.57, h: 0.753, d: 0.622, y: 1.0715, x: 3.024, sits: 'R05' }, // Dan 11-11: "put a plant over there" (the chest's top, bare since the radio went up to W10); the box = the model's own (vines 0.305 below the pot, 0.39 in front of it), so it fits at scale 1 with its pot at (3.1, 1.0, 6.15)
 ];
 // the far end: a mix station round the TV (x across the room, d out from the end wall; ty = height from the TV's centre)
 const END = [
@@ -1119,7 +1123,7 @@ const POSTERS = [
 const MONITORS = [
   { id: 'M01', pic: 'scr-revfx', label: 'CRT monitor: RevFX', side: -1, f: 0.6, base: 0.92, w: 0.56 },
   { id: 'M03', pic: 'scr-revlimiter', label: 'RevLimiter: the plugin as a desk console', side: 0, x: -0.75, z: 1.05, base: 0.85, w: 0.44 },
-  { id: 'M04', pic: 'scr-radio', label: 'Radio Roulette: the plugin as a 1950s radio', side: 1, f: 0.44, base: 2.497, w: 0.42 }, // on the shelf W10's plank (top 2.497), where the headphones hang (Dan 11-11: "put the radio on the shelf where is the headphones"); the compressor rack R06 is out
+  { id: 'M04', pic: 'scr-radio', label: 'Radio Roulette: the plugin as a 1950s radio', side: 1, f: 0.44, base: 2.497, w: 0.42, sits: 'W10' }, // on the shelf W10's plank (top 2.497), where the headphones hang (Dan 11-11: "put the radio on the shelf where is the headphones"); the compressor rack R06 is out
 ];
 
 // ---------- the painted room, the default skin (Dan 2026-11-03: "glued and whole, and 3D, and real", over cut-outs) ----------
