@@ -37,7 +37,7 @@ await page.evaluate(() => {
   setP('xover_high', Math.log(2500 / 200) / Math.log(16000 / 200));
   const os = document.getElementById('osCombo'); if (os) { os.value = '1'; os.dispatchEvent(new Event('change', { bubbles: true })); }
   const fix = document.createElement('style');
-  fix.textContent = '#swNos .guard-face.back { visibility: hidden !important; } html, body { background: #000 !important; }';
+  fix.textContent = '#swNos .guard-face.back { visibility: hidden !important; } html, body { background: #000 !important; } #cornerGrip { display: none !important; }'; // the window's resize grip is not the plugin
   document.head.appendChild(fix);
   ['undoBtn', 'redoBtn'].forEach((id) => document.getElementById(id)?.classList.add('disabled'));
   // the mix: a kick on every beat (120 BPM), a snare on 2 and 4, a phrase swell over the 2 bars; everything periodic in 4 s

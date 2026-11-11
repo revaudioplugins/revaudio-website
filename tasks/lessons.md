@@ -348,3 +348,12 @@ Smoke went red on every site push for a day and two sessions shipped past it (th
 - Rule: a pixel look scales with the picture: under ~150 px across, keep the picture smooth and carry the look by
   colour and light, not pixels. Draw a smooth copy from the picture's real pixels: `naturalWidth` counts a srcset pick
   for a 2x screen as half (draw from a copy without the srcset).
+
+## 2026-11-11 — a cut-out keeps its glow inside its outline, and is shot the way it floats
+- GAS 2 hovered on the TV bench with "edges ... cut off" (Dan): the grade's bloom blurred the picture's alpha too, so
+  a dark fringe spread round the pump and the filter's region cut it square at the picture's box. And the recording
+  had hidden only the room: the hose ran whole to the 440 px window's edge and the resize grip was in the shot.
+- Rule: an SVG glow on a cut-out ends with `feComposite in2="SourceAlpha" operator="in"` (its light round it is a
+  drop-shadow, which follows the outline). Shoot a floating plugin in its own floating mode (GAS 2: `rv-float` +
+  `GAS2.hose(true)`), on a clear ground, with the window's chrome hidden (resize grips, close buttons, backdrops,
+  mounted shadows): look at frame 0 on a checkerboard before cutting the loop.

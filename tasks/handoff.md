@@ -284,7 +284,19 @@ Files: `src/components/WordWall.astro`, `src/components/TrialGateModal.astro` (+
   **DAN PICKED B** (2026-11-11, "b"): the bench opens on B (state v3); A, C, 2 x 2 stay on the switch to compare.
   Production B = the thumbnail's grade baked into its picture per channel + the one-colour wash as plain CSS
   (`mix-blend-mode: color`, `var(--ww-ink)`, off when lit, half on hover): no live SVG filter.
-- Next: Dan's look at all five + the thumbnails (B) + the scanlines on `/__wwdepth` -> COPY SETTINGS -> production: the same for GAS, Radio Roulette (both have
+- 2026-11-11 Dan: "edges where the gas 2 is hovering, it looks like it's cut off. I want the gas 2 hovering to be
+  perfect, also do that for all the plugins. If you see any like minor details that are not a part of the plugin, then
+  remove them". Causes: the grade's bloom blurred the picture's alpha, a dark fringe cut square at its box (fixed:
+  a hovering picture's grade ends `feComposite in SourceAlpha`; its light round it = the drop-shadow); GAS 2 was shot
+  with its hose whole, cut at the 440 px window, and its resize grip (`#rGrip`) in. Re-shot ALL clean (bench loops
+  `tools/wwbench/anim/v2/<slug>/f_###.png` + `still.png`, untracked, regenerable): `record-plugin.mjs` shoots on a clear
+  ground and hides what isn't the plugin (GAS `.resize-grip`; Radio Roulette `#dash` backdrop, `#stage::before` mounted
+  shadow, `#resizeGrip`; GAS 2 `#room #rGrip #floatX #floatGrab` + `GAS2.hose(true)`, its floating hose fade);
+  `record-revlimiter.mjs` hides `#cornerGrip`; DRIFT (the site's video) cut by `matte.py` (rounded rect 2 4 1438 758
+  r 21); `cut-webp.py ... alpha [crop=] [still=]` (GAS 2 keeps its old box 61,30,440,785: same size, same 2 x 2).
+  Bench: every plugin hovers (PLUGINS: HOVERING / IN THE TUBE switch, GAS 2 hovers either way); thumbnails drawn
+  from the same cut-outs, fitted in the TV's slot. Chromium + WebKit, laptop + phone: clean, no errors. Bench only.
+- Next: Dan's look at all five hovering + the thumbnails (B) + the scanlines on `/__wwdepth` -> COPY SETTINGS -> production: the same for GAS, Radio Roulette (both have
   browser demos), DRIFT (its wall run, pixelated), GAS 2 (its pump floating, animated, alpha), each to music -> build
   it in WordWall (bake the grade into the TV's copies: no live SVG filter in production; video, see the weight), then
   the thumbnails; then the header that slides away; TV Sells round 4 notes; step 00's baseline before any push to

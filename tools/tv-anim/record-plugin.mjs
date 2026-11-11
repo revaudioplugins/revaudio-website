@@ -14,9 +14,14 @@ import path from 'node:path';
 import os from 'node:os';
 
 const R = process.env.REVAUDIO_ROOT || path.join(os.homedir(), 'projects/revaudio'); // the plugins' repos
+/* every plugin is shot cut out, on a clear ground (Dan 2026-11-11: "I want the gas 2 hovering to be perfect, also do
+   that for all the plugins. If you see any like minor details that are not a part of the plugin, then remove them"):
+   css hides what isn't the plugin (the window's resize grip, the room, the dash behind the radio, its mounted shadow) */
+const CLEAR = 'html, body { background: transparent !important; }';
 const PLUGINS = {
   gas: {
-    dir: `${R}/GAS/plugin/Source/ui/public`, vp: [400, 595], el: '.plate', shim: true,
+    dir: `${R}/GAS/plugin/Source/ui/public`, vp: [400, 595], el: '.plate', shim: true, clear: true,
+    css: `${CLEAR} .resize-grip { display: none !important; }`,
     // drive 6 of 10 (the demo's takes), full mix, Tube
     init: () => {
       const set = (id, n) => { try { const s = window.Juce.getSliderState(id); s.setNormalisedValue(n); s.valueChangedEvent?.callListeners?.(); } catch (e) {} };
@@ -25,7 +30,8 @@ const PLUGINS = {
     emit: (v) => window.__JUCE__.backend.emitByBackend('heat', JSON.stringify(v)),
   },
   'radio-roulette': {
-    dir: `${R}/RadioRoulette/Source/ui/public`, vp: [1376, 768], el: '#stage', shim: true,
+    dir: `${R}/RadioRoulette/Source/ui/public`, vp: [1376, 768], el: '#stage', shim: true, clear: true,
+    css: `${CLEAR} #dash { background: none !important; } #stage::before, #resizeGrip { display: none !important; }`,
     // on, full mix, a station dialled in
     init: () => {
       try { const t = window.Juce.getToggleState('POWER'); t.setValue(true); t.valueChangedEvent?.callListeners?.(); } catch (e) {}
@@ -36,8 +42,10 @@ const PLUGINS = {
   },
   gas2: {
     dir: `${R}/GAS2/Source/ui/public`, vp: [440, 800], el: null, shim: false, clear: true,
-    // FLOATING (the pump alone, as on the TV): its own html.rv-float hides the desert room
-    init: () => { document.documentElement.classList.add('rv-float'); },
+    css: `${CLEAR} #room, #rGrip, #floatX, #floatGrab { display: none !important; }`,
+    // FLOATING, as the plugin floats: its own html.rv-float hides the desert room, and its hose fades along its length
+    // (GAS2.hose(true), the floating tail) instead of ending at the window's edge
+    init: () => { document.documentElement.classList.add('rv-float'); window.GAS2?.hose?.(true); },
     emit: (v) => window.GAS_LOOK && window.GAS_LOOK.meters(v),
   },
 };
@@ -66,7 +74,7 @@ await page.goto(`${ORIGIN}/index.html`, { waitUntil: 'load' });
 await page.clock.runFor(1500);
 await page.waitForTimeout(600);
 await page.evaluate(P.init);
-if (P.clear) await page.addStyleTag({ content: 'html, body { background: transparent !important; } #room { display: none !important; }' });
+if (P.css) await page.addStyleTag({ content: P.css });
 await page.clock.runFor(500);
 
 const shoot = (file) => (P.el ? page.locator(P.el).first().screenshot({ path: file, omitBackground: !!P.clear })

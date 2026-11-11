@@ -78,6 +78,9 @@
   <span class="seg" id="pview" title="The phone shows one pane at a time: the list (the thumbnails) or the lit plugin">
     <button data-pv="list">PHONE: LIST</button><button data-pv="panel">THE PLUGIN</button>
   </span>
+  <span class="seg" id="float" title="Every plugin hovering on the glass, cut out (Dan 2026-11-11), or in its window in the tube as before (GAS 2 hovers either way)">
+    <button data-fl="all">PLUGINS: HOVERING</button><button data-fl="tube">IN THE TUBE</button>
+  </span>
   <span class="seg" id="tstyle" title="The list's thumbnails: B is Dan's pick (2026-11-11); A, C and pick A's 2 × 2 pixels stay to compare">
     <button data-t="a">THUMBS: A · SMOOTH</button><button data-t="b">B · ONE COLOUR ✓</button><button data-t="c">C · LINES</button><button data-t="px">2 × 2</button>
   </span>
@@ -113,14 +116,23 @@
      record-plugin.mjs, then cut-webp.py <frames> <webp> <n> 15 80 <dir>; DRIFT = its wall run): n x m pixels at the
      laptop's 2 x 2. A plugin without one would show its picture today, drawn down to the same pixels */
   const LOOPS = {
-    revlimiter: { dir: '/tools/wwbench/anim/s194/f_', n: 194, m: 94 },
-    gas: { dir: '/tools/wwbench/anim/gas/f_', n: 87, m: 129 },
-    gas2: { dir: '/tools/wwbench/anim/gas2/f_', n: 87, m: 173 },
-    drift: { dir: '/tools/wwbench/anim/drift/f_', n: 154, m: 81 },
-    'radio-roulette': { dir: '/tools/wwbench/anim/radio-roulette/f_', n: 168, m: 94 },
+    revlimiter: { dir: '/tools/wwbench/anim/v2/revlimiter/f_', n: 194, m: 94 },
+    gas: { dir: '/tools/wwbench/anim/v2/gas/f_', n: 87, m: 129 },
+    gas2: { dir: '/tools/wwbench/anim/v2/gas2/f_', n: 87, m: 173 },
+    drift: { dir: '/tools/wwbench/anim/v2/drift/f_', n: 154, m: 81 },
+    'radio-roulette': { dir: '/tools/wwbench/anim/v2/radio-roulette/f_', n: 168, m: 93 },
   };
+  /* v2 (Dan 2026-11-11: "I want the gas 2 hovering to be perfect, also do that for all the plugins. If you see any like
+     minor details that are not a part of the plugin, then remove them"): every loop shot cut out, on a clear ground,
+     without the window's resize grip, the room, the dash behind the radio or its mounted shadow (GAS 2's hose fades
+     as it does when it floats); DRIFT, from the site's video, cut out of the page's black with a rounded matte
+     (tools/tv-anim: record-plugin.mjs, record-revlimiter.mjs, matte.py, cut-webp.py ... alpha still=). Each folder's
+     still.png = its first frame, sharp: the list's thumbnail */
+  const STILL = (slug) => LOOPS[slug] && LOOPS[slug].dir.replace(/f_$/, 'still.png');
   const PX = 2;                 // css px per picture pixel on the laptop's TV (Dan's 2 x 2)
   const FLOAT = 'gas2';         // floats on the glass, no window (Dan's pin, round 2: "should be hovering")
+  // all of them hover (Dan 2026-11-11), or the window in the tube (GAS 2 still hovers), to compare
+  const isFloat = (slug) => slug === FLOAT || st.float !== 'tube';
   const SEL = (slug) => `html:not(.hc) .ww[data-ww-bg='screen'] > .ww-panel[data-ww-panel='${slug}']`;
 
   /* every tunable. k = its key in COPY SETTINGS; css: written as --wwd-<k> on the wall (with its unit); filter: the
@@ -200,7 +212,7 @@
     phone: [[402, 714, 'iPhone 17 Pro'], [390, 844], [375, 667, 'iPhone SE']],
   };
 
-  let st = { view: 'both', pview: 'panel', size: { laptop: 0, phone: 0 }, zoom: 0, look: 'on', slug: 'revlimiter', tstyle: 'b', cur: {} };
+  let st = { view: 'both', pview: 'panel', size: { laptop: 0, phone: 0 }, zoom: 0, look: 'on', slug: 'revlimiter', tstyle: 'b', float: 'all', cur: {} };
   try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s && s.cur) st = Object.assign(st, s); } catch (e) {}
   Object.keys(st.cur).forEach((k) => { if (!byK[k]) delete st.cur[k]; });
   if (!SLUGS.some(([s]) => s === st.slug)) st.slug = 'revlimiter';
@@ -296,6 +308,7 @@
     document.querySelectorAll('#look button').forEach((b) => b.classList.toggle('on', b.dataset.l === st.look));
     document.querySelectorAll('#pview button').forEach((b) => b.classList.toggle('on', b.dataset.pv === st.pview));
     document.querySelectorAll('#tstyle button').forEach((b) => b.classList.toggle('on', b.dataset.t === st.tstyle));
+    document.querySelectorAll('#float button').forEach((b) => b.classList.toggle('on', b.dataset.fl === (st.float === 'tube' ? 'tube' : 'all')));
     document.getElementById('play').textContent = playing ? '❚❚ PAUSE' : '▶ PLAY';
     const d = LOOPS[st.slug] || (dims[st.slug] && { n: dims[st.slug][0], m: dims[st.slug][1] });
     document.getElementById('what').textContent = d ? `${d.n} × ${d.m} pixels${LOOPS[st.slug] ? ', running' : ', its picture today'}` : '';
@@ -451,7 +464,7 @@
       img.loading = 'eager';
       img.src = `${LOOPS[slug].dir}000.png`;
       if (!loopFrames[slug]) loadFrames(slug);
-      if (slug === FLOAT) panel.style.setProperty('--wwd-alpha', `url("${LOOPS[slug].dir}000.png")`);
+      panel.style.setProperty('--wwd-alpha', `url("${LOOPS[slug].dir}000.png")`); // a hovering one's outline
       media = { kind: 'loop', el: img };
     } else if (el.tagName === 'VIDEO') {
       const cv = doc.createElement('canvas');
@@ -470,7 +483,7 @@
       el.removeAttribute('srcset');
       el.loading = 'eager';
       el.src = url;
-      if (slug === FLOAT) panel.style.setProperty('--wwd-alpha', `url("${url}")`);
+      panel.style.setProperty('--wwd-alpha', `url("${url}")`);
       media = { kind: 'still', el };
     }
     panel.style.setProperty('--wwd-n', n);
@@ -508,15 +521,20 @@
         return;
       }
       await img.decode().catch(() => {});
-      const r = await stableRect(img);
+      let r = await stableRect(img);
+      /* drawn from the plugin's own cut-out (its loop's first frame, still.png: hovering, nothing that isn't the
+         plugin), fitted in the TV's slot as the TV fits a picture (a wide one as wide as the slot, a tall one as tall);
+         without one, from the picture on screen through a copy without the srcset (naturalWidth counts a picture
+         picked for a 2x screen as half its pixels) */
+      const pic = async (u) => { const p = doc.createElement('img'); p.src = u; await p.decode().catch(() => {}); return p.naturalWidth ? p : null; };
+      const still = STILL(slug) ? await pic(STILL(slug)) : null;
+      const from = still || (await pic(img.currentSrc || img.src)) || img;
+      if (still) {
+        const slot = img.closest('.ww-thumb').getBoundingClientRect(), a = still.naturalWidth / still.naturalHeight;
+        r = a >= slot.width / slot.height ? { width: slot.width, height: slot.width / a } : { width: slot.height * a, height: slot.height };
+      }
       let n = Math.max(4, Math.round(r.width / PX)), m = Math.max(4, Math.round(r.height / PX));
       if (f === 'laptop') tdims[slug] = [n, m]; else if (tdims[slug]) [n, m] = tdims[slug];
-      // drawn from the picture on screen, before its srcset goes (a picture mid-load draws as nothing), through a copy
-      // without the srcset: naturalWidth counts a picture picked for a 2x screen as half its pixels
-      const pic = doc.createElement('img');
-      pic.src = img.currentSrc || img.src;
-      await pic.decode().catch(() => {});
-      const from = pic.naturalWidth ? pic : img;
       const hiCv = drawDownCanvas(doc, from, Math.round(r.width * dpr), Math.round(r.height * dpr));
       const T = { slug, img, dpr, hiCv, px: drawDown(doc, from, n, m), hi: hiCv.toDataURL('image/png') };
       T.tw = doc.createElement('span');
@@ -544,7 +562,7 @@
     Object.values(stages[f].tset || {}).forEach((T) => {
       const url = st.tstyle === 'px' ? T.px : T.hi;
       if (T.img.src !== url) T.img.src = url;
-      if (T.slug === FLOAT) T.tw.style.setProperty('--wwd-alpha', `url("${url}")`);
+      T.tw.style.setProperty('--wwd-alpha', `url("${url}")`);
     });
   }
   // C's lines, drawn again when their sliders move (softness: the edges found again too)
@@ -705,8 +723,13 @@
     if (grain > 0) {
       s += `<feTurbulence type="fractalNoise" baseFrequency="${v('grainSize')}" numOctaves="1" seed="${seed}" result="noise"/>
       <feColorMatrix in="noise" type="matrix" values="0.33 0.33 0.33 0 0  0.33 0.33 0.33 0 0  0.33 0.33 0.33 0 0  0 0 0 0 1" result="ng"/>
-      <feComposite in="${out}" in2="ng" operator="arithmetic" k1="0" k2="1" k3="${(2 * grain).toFixed(3)}" k4="${(-grain).toFixed(3)}"/>`;
+      <feComposite in="${out}" in2="ng" operator="arithmetic" k1="0" k2="1" k3="${(2 * grain).toFixed(3)}" k4="${(-grain).toFixed(3)}" result="grained"/>`;
+      out = 'grained';
     }
+    // a hovering picture keeps its grade inside its outline: the bloom spreads the picture's alpha, which laid a dark
+    // fringe round it, cut square at its box (Dan 2026-11-11: "edges where the gas 2 is hovering, it looks like it's
+    // cut off"). Its light round it is the drop-shadow
+    if (isFloat(slug)) s += `<feComposite in="${out}" in2="SourceAlpha" operator="in"/>`;
     return s + '</filter>';
   }
 
@@ -721,7 +744,7 @@
         repeating-linear-gradient(0deg, rgba(0, 0, 0, var(--wwd-scan)) 0 1px, transparent 1px var(--wwd-scanPx)),
         radial-gradient(farthest-corner at 50% 50%, transparent var(--wwd-vigIn), rgba(0, 0, 0, var(--wwd-vig)) 100%)`;
   const lookOf = (slug) => {
-    const P = SEL(slug), float = slug === FLOAT;
+    const P = SEL(slug), float = isFloat(slug);
     const light = 'hsl(var(--ww-ch-h) var(--ww-gs) 58% / var(--wwd-halo))';
     return `
     ${P} .ww-ui { width: fit-content; max-width: 100%; isolation: isolate; translate: var(--wwd-x) var(--wwd-y); scale: var(--wwd-scale); }
@@ -761,7 +784,7 @@
         radial-gradient(farthest-corner at 50% 50%, transparent var(--wwd-vigIn), rgba(0, 0, 0, var(--wwd-vig)) 100%)`;
   const ALPHA = '-webkit-mask: var(--wwd-alpha) 0 0 / 100% 100% no-repeat; mask: var(--wwd-alpha) 0 0 / 100% 100% no-repeat;';
   const thumbOf = (slug) => {
-    const R = `html:not(.hc) .ww[data-ww-bg='screen'] .ww-row[data-ww-pick='${slug}']`, float = slug === FLOAT, t = st.tstyle;
+    const R = `html:not(.hc) .ww[data-ww-bg='screen'] .ww-row[data-ww-pick='${slug}']`, float = isFloat(slug), t = st.tstyle;
     const light = `hsl(var(--ww-on-h) calc(var(--ww-on-s) * 1%) 58% / var(--wwd-halo))`;
     const reach = 'calc(var(--wwd-haloPx) * var(--wwd-thumbReach))';
     const grade = `url(#wwd-tgrade-${slug}) brightness(calc(var(--wwd-lift) * var(--wwd-thov, 1))) contrast(var(--wwd-con)) saturate(var(--wwd-sat)) blur(var(--wwd-focus))`;
@@ -880,6 +903,8 @@
     if (st.pview === 'list') setTimeout(() => prepareThumbs('phone'), 700); else prepare('phone', st.slug);
   }));
   // a thumbnail design: its pictures into the thumbnails, its rules; zoomed in, the list comes into view
+  // every plugin hovering, or in its window in the tube: the rules and the grades again
+  document.querySelectorAll('#float button').forEach((b) => (b.onclick = () => { st.float = b.dataset.fl; commit(); }));
   document.querySelectorAll('#tstyle button').forEach((b) => (b.onclick = () => {
     st.tstyle = b.dataset.t;
     ['laptop', 'phone'].forEach(applyThumbs);
@@ -901,6 +926,7 @@
       note: 'apply depth bench: one set for every plugin\'s picture in the TV (look A, 2 x 2 px; RevLimiter running on its song loop, the others their pictures today until their loops are recorded). The --wwd-* values + the grade go into WordWall.astro (the grade baked per channel: no live SVG filter in production); --ww-scr-* are the TV\'s own defaults in WordWall.astro',
       date: new Date().toISOString(), look: st.look, channel: [st.slug, ...chan[st.slug]],
       thumbs: { a: 'A smooth', b: 'B one colour unlit, its own lit', c: 'C lines', px: '2 x 2 pixels' }[st.tstyle],
+      plugins: st.float === 'tube' ? 'in the tube (GAS 2 hovering)' : 'all hovering, cut out (tools/wwbench/anim/v2)',
       values, changed: Object.keys(st.cur).filter((k) => Math.abs(st.cur[k] - def(byK[k])) > 1e-6),
     };
   }
