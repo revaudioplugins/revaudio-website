@@ -1,6 +1,6 @@
-## 2026-11-11 — Radio Roulette mixer + GAS 2 page: the PNG art as WebP (Claude Code `danavivi-20 [1b9b41]`, Dan's Mac) — branch `perf/webp-mixer-art`, pushed, NOT on main (waits for Dan's look + his push word)
+## 2026-11-11 — Radio Roulette mixer + GAS 2 page: the PNG art as WebP (Claude Code `danavivi-20 [1b9b41]`, Dan's Mac) — PUSHED TO MAIN 2026-11-11 on Dan's word "push to main" (from `perf/webp-mixer-art`, rebased on `8e1d07d`)
 
-Claim: closed 2026-11-11 (the work is done; the merge is Dan's call). From the asset audit of 2026-11-11 (Dan: "go 1").
+Claim: closed 2026-11-11. From the asset audit of 2026-11-11 (Dan: "go 1").
 Files: `public/station-mixer/img/*` (15 PNG -> WebP), `public/station-mixer/station-mixer.js` (the image names + one
 comment), `tools/station-mixer/webp_pass.py` (new) + `export_component.py` (calls it last), `tools/_gas2-scene/frames/f6-v17.webp`
 + `props/{pump-cut,walk-cut,mailbox,chalkboard}.webp` (new, beside the PNG masters), `tools/_gas2-scene/page-b.html` (8 lines:
