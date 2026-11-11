@@ -81,8 +81,8 @@
   <span class="seg" id="float" title="Every plugin hovering on the glass, cut out (Dan 2026-11-11), or in its window in the tube as before (GAS 2 hovers either way)">
     <button data-fl="all">PLUGINS: HOVERING</button><button data-fl="tube">IN THE TUBE</button>
   </span>
-  <span class="seg" id="tstyle" title="The list's thumbnails: B is Dan's pick (2026-11-11); A, C and pick A's 2 × 2 pixels stay to compare">
-    <button data-t="a">THUMBS: A · SMOOTH</button><button data-t="b">B · ONE COLOUR ✓</button><button data-t="c">C · LINES</button><button data-t="px">2 × 2</button>
+  <span class="seg" id="tstyle" title="The list's thumbnails: A in their own colours is Dan's pick (2026-11-11, after B); B, C and the 2 × 2 pixels stay to compare">
+    <button data-t="a">THUMBS: A · SMOOTH ✓</button><button data-t="b">B · ONE COLOUR</button><button data-t="c">C · LINES</button><button data-t="px">2 × 2</button>
   </span>
   <span class="spacer"></span>
   <button class="primary" id="copy">COPY SETTINGS</button>
@@ -145,9 +145,9 @@
       { k: 'x', label: 'Across', hint: 'px, left / right', min: -80, max: 80, step: 1, def: 0, unit: 'px', as: 'css' },
       { k: 'y', label: 'Up / down', hint: 'px', min: -80, max: 80, step: 1, def: 0, unit: 'px', as: 'css' },
     ] },
-    { title: 'Colour', note: 'how the tube draws it', ctl: [
-      { k: 'mix', label: 'Its colours ↔ the channel’s', hint: '0 = the plugin’s own colours, 1 = all the channel’s phosphor', min: 0, max: 1, step: 0.01, def: 0.45, as: 'filter' },
-      { k: 'ground', label: 'Blacks', hint: 'how light its darkest parts are, in the channel’s colour: the glass’s own dark (0 = black holes in the screen)', min: 0, max: 30, step: 0.5, def: 8, as: 'filter' },
+    { title: 'Colour', note: 'their own colours since 2026-11-11: Mix 0, Blacks 0', ctl: [
+      { k: 'mix', label: 'Its colours ↔ the channel’s', hint: '0 = the plugin’s own colours (Dan 2026-11-11: “lets get the html on there original color”), 1 = all the channel’s phosphor', min: 0, max: 1, step: 0.01, def: 0, as: 'filter' },
+      { k: 'ground', label: 'Blacks', hint: 'its darkest parts lit in the channel’s colour, the glass’s own dark (0 = its own blacks, as the plugin draws them)', min: 0, max: 30, step: 0.5, def: 0, as: 'filter' },
       { k: 'mid', label: 'Mid-tones', hint: 'how bright the middle of its light is, on the channel’s side of the mix', min: 20, max: 75, step: 1, def: 48, as: 'filter' },
       { k: 'hot', label: 'Highlights', hint: 'how bright its brightest parts get, on the channel’s side', min: 55, max: 100, step: 1, def: 92, as: 'filter' },
       { k: 'hotSat', label: 'Highlight colour', hint: '0 = the brightest parts burn white, 1 = they keep the channel’s colour', min: 0, max: 1, step: 0.01, def: 0.55, as: 'filter' },
@@ -219,6 +219,10 @@
   if (!['a', 'b', 'c', 'px'].includes(st.tstyle)) st.tstyle = 'b';
   if (!(st.v >= 2)) { delete st.cur.scan; delete st.cur['--ww-scr-scan']; st.v = 2; }
   if (st.v < 3) { st.tstyle = 'b'; st.v = 3; } // Dan's pick, 2026-11-11: "b" (the others stay to compare)
+  // then (2026-11-11, his shot of the list in the TV's own thumbnails): "lets get the html on there original color but lets
+  // put it under the pixle so it will look like its inside the tv do it to all html's": every picture in its own colours
+  // (the tint's Mix and Blacks to 0), under the pixels and the lines; the thumbnails smooth in their own colours (A)
+  if (st.v < 4) { delete st.cur.mix; delete st.cur.ground; st.tstyle = 'a'; st.v = 4; }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} };
   let src = null;                 // the page's own --ww-* defaults (read off the laptop frame)
   const chan = { ...CH };         // each channel's phosphor, read off the page
@@ -929,7 +933,7 @@
   }));
   document.querySelectorAll('#zoom button').forEach((b) => (b.onclick = () => { st.zoom = +b.dataset.z; save(); layout(); }));
   document.getElementById('resetAll').onclick = () => {
-    if (!confirm('Back to your first settings (2026-11-10)? (the values you changed since are lost)')) return;
+    if (!confirm('Back to your settings (2026-11-10, their own colours since 2026-11-11)? (the values you changed since are lost)')) return;
     st.cur = {}; commit(); toast('Back to your first settings');
   };
 
@@ -939,7 +943,7 @@
     ALL.forEach((c) => (values[c.k] = `${+(+val(c.k)).toFixed(4)}${c.unit || ''}`));
     return {
       bench: 'wwdepth',
-      note: 'apply depth bench: one set for every plugin\'s picture in the TV (look A, 2 x 2 px; RevLimiter running on its song loop, the others their pictures today until their loops are recorded). The --wwd-* values + the grade go into WordWall.astro (the grade baked per channel: no live SVG filter in production); --ww-scr-* are the TV\'s own defaults in WordWall.astro',
+      note: 'apply depth bench: one set for every plugin\'s picture in the TV (each in its own colours: Mix 0, Blacks 0; 2 x 2 px under the pixel grid and the lines; every plugin running its loop, hovering, cut out: tools/wwbench/anim/v2). The --wwd-* values + the grade go into WordWall.astro (the grade baked per channel: no live SVG filter in production); --ww-scr-* are the TV\'s own defaults in WordWall.astro',
       date: new Date().toISOString(), look: st.look, channel: [st.slug, ...chan[st.slug]],
       thumbs: { a: 'A smooth', b: 'B one colour unlit, its own lit', c: 'C lines', px: '2 x 2 pixels' }[st.tstyle],
       plugins: st.float === 'tube' ? 'in the tube (GAS 2 hovering)' : 'all hovering, cut out (tools/wwbench/anim/v2)',

@@ -300,6 +300,12 @@ Files: `src/components/WordWall.astro`, `src/components/TrialGateModal.astro` (+
   only prepared pictures lit from its own buttons, so the TV's still stayed, its look's overlay unmasked (no
   `--wwd-alpha` yet) = the box. Fixed: the bench follows the TV's `data-ww-on` (MutationObserver -> `follow()`: its
   channel, the other TV, the picture), and a hovering overlay is masked out until its outline is known.
+- 2026-11-11 Dan (his shot of the list before the bench had drawn its thumbnails: the TV's own, in their colours,
+  under the lines): "i kinda like the way it looks over here lets get the html on there original color but lets put
+  it under the pixle so it will look like its inside the tv do it to all html's". Every picture in its OWN COLOURS:
+  the tint off (Mix 0, Blacks 0: new defaults, state v4 clears his old two), under the 2 x 2 pixels, the pixel grid
+  and the screen's lines, still hovering; brightness kept at his 1.39 (a lit screen; hues true). Thumbnails: A
+  (smooth, own colours) is the pick now (B's one colour stays on the switch). Bench only.
 - Next: Dan's look at all five hovering + the thumbnails (B) + the scanlines on `/__wwdepth` -> COPY SETTINGS -> production: the same for GAS, Radio Roulette (both have
   browser demos), DRIFT (its wall run, pixelated), GAS 2 (its pump floating, animated, alpha), each to music -> build
   it in WordWall (bake the grade into the TV's copies: no live SVG filter in production; video, see the weight), then
