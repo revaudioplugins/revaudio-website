@@ -15,21 +15,24 @@
  *     shows the buy key next to the trial (the build refuses 'released' without them).
  */
 import { site } from './site';
+import presetsJson from './revfx-presets.json';
 
 export type RevfxPhase = 'trial' | 'released';
 
 export const revfx = {
-  phase: 'trial' as RevfxPhase,
+  phase: 'released' as RevfxPhase, // on sale 2026-11-11 (Gil): the buy key sits over the trial
   trialDays: 30,             // RevFX LicenseManager: REVFX_TRIAL_ENABLED, 30-day silent trial
-  priceUsd: null as number | null,
+  priceUsd: 19 as number | null, // = the Paddle price (pri_01m5…, $19.00 USD, checked 2026-11-11)
   paddlePriceId: 'pri_01m5a2rfk2kcb3tpm2j87kfgh9' as string | null, // Paddle RevFX (2026-10-19); keep equal to plugins.ts revfx
-  /** the licence worker's download gate knows 'revfx' (DL_PLUGINS) */
-  gateWired: false,
+  /** the licence worker's download gate knows 'revfx' (DL_PLUGINS; live since worker b7e589a, 2026-11-08): the forms
+   *  post to /download/register, which emails the download at once (Yoni 2026-11-09) */
+  gateWired: true,
   gateId: 'revfx',
-  /** RevFX 1.2.0 ships Mac only (packaging/ = the Mac pipeline; no PACE wcguid yet, so no AAX) */
-  aaxReady: false,
+  /** RevFX 1.3.9 (2026-11-08): the notarized Mac pkg installs VST3 + AU + PACE-signed AAX. Windows waits on an
+   *  Authenticode-signed installer (RevFX packaging/signed/README.md), so winReady stays false until it ships. */
+  aaxReady: true,
   winReady: false,
-  version: '1.2.0',
+  version: '1.3.9',
   /** true = RevFX shows in the homepage carousel and the store; false = only the /revfx page is live (Gil 2026-10-18:
    *  "keep the page link live for now") */
   listed: false,
@@ -83,6 +86,20 @@ export const pedals = [
 ] as const;
 
 export type PedalId = (typeof pedals)[number]['id'];
+
+/** #hear, the before/after player (RfxHear.astro): per track one dry bounce + the same bounce through 4 RevFX presets
+ *  Yoni made, in public/audio/revfx/ (tools/revfx-player/prep_audio.py, which also writes revfx-presets.json from his
+ *  preset .xml files). The die picks one of the 4 at random: random for the visitor, every roll a preset Yoni chose
+ *  (Yoni 2026-11-09). Until his bounces land, the sounds are /drift's and the names the dice engine's scenes
+ *  (both JSON files "placeholder": true; the page shows nothing different, so swap them before RevFX is listed). */
+export type HearPreset = { name: string; on: PedalId[]; order: PedalId[] };
+export const hearPresets = presetsJson.tracks as Record<string, HearPreset[]>;
+export const hearTracks: readonly { id: string; label: string }[] = [
+  { id: 'vocal', label: 'VOCAL' },
+  { id: 'instruments', label: 'INSTRUMENTS' },
+  { id: 'drums', label: 'DRUMS' },
+  { id: 'lead', label: 'LEAD' },
+];
 
 /** Where the sign-up forms post: the worker's /download/register once it knows RevFX, else undefined (the
  *  /form-once list relay only). */

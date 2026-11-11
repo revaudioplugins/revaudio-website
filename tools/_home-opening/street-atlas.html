@@ -1,0 +1,19 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Street atlas</title>
+<!-- Draws the street's signs (street.js, drawStreetAtlas) with GAS 2's own Oswald (SIL OFL 1.1, the copy in tools/_gas2-scene)
+     and exposes the picture as window.atlasPNG; render it to assets/pics/street-atlas.webp with:
+       node tools/_home-opening/street-atlas.mjs --port <a server of the worktree root>          (Chrome + cwebp -lossless) -->
+<style>
+  @font-face { font-family: 'Oswald'; src: url('../_gas2-scene/fonts/Oswald-Variable.woff2') format('woff2'); font-weight: 200 700; }
+  body { margin: 0; background: #222; }
+</style>
+<canvas id="c" width="1024" height="512"></canvas>
+<script type="module">
+import { drawStreetAtlas, AT } from './street.js';
+await document.fonts.load('700 64px Oswald');
+if (!document.fonts.check('700 64px Oswald')) throw new Error('Oswald 700 did not load');
+const c = document.getElementById('c'); c.width = AT.w; c.height = AT.h;
+drawStreetAtlas(c.getContext('2d'));
+window.atlasPNG = c.toDataURL('image/png');
+</script>

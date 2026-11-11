@@ -17,8 +17,9 @@ import { join, normalize, extname } from 'node:path';
 
 const SCENE = fileURLToPath(new URL('../_gas2-scene/', import.meta.url));
 const DIRS = ['fonts', 'frames', 'props', 'player', 'taxi', 'drone', 'postcards/img'];
-// inside DIRS: the art tools, review pages, notes and dev benches stay out of the site
-const SKIP = /(^|\/)(tools|review|README\.md|\.gitignore|bench\.js|cam-bench\.js)(\/|$)/;
+// inside DIRS: the art tools, review pages, notes and dev benches stay out of the site; so do the PNG masters
+// (frames/f6-v17.png and the props cut from it: the art tools read them, the pages load the .webp beside each)
+const SKIP = /(^|\/)(tools|review|README\.md|\.gitignore|bench\.js|cam-bench\.js)(\/|$)|\.png$/;
 
 const TITLE = 'GAS 2 · Free master-bus color plugin · RevAudio';
 const DESC = 'GAS 2: a free master-bus color plugin. One GAS dial, three grades of fuel. Thicker, smoother, glued master.';

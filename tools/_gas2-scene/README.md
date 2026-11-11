@@ -30,6 +30,13 @@ python -m http.server 4462 --bind 127.0.0.1
 - The drone intro (merged from `feat/gas2-drone` 2026-11-01) — scroll from a hovering drone down into the scene; `?drone=0` skips it,
   `?angle=top|front|right` picks the hover. How it works + its bench: `drone/README.md`.
 
+## PNG masters, WebP on the page
+
+`frames/f6-v17.png` and `props/{pump-cut,walk-cut,mailbox,chalkboard}.png` are the masters: the art tools read them,
+the mockup pages load them, and the site build leaves them out. `page-b.html` loads the `.webp` beside each (2026-11-11:
+the PNGs were 3.5 MB of the page's first visit, the WebPs are 0.5 MB). After changing a master, remake its WebP:
+`python -c "from PIL import Image; Image.open('frames/f6-v17.png').save('frames/f6-v17.webp', quality=90, method=6)"`
+
 ## Who works on what (one writer per file set)
 
 - **The player (the radio, `<!-- 3. radio player -->` block + its `.radio*` / `.dial` CSS): Yoni.** Build it in its own

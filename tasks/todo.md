@@ -1,3 +1,394 @@
+# Home opening: the long garage (Dan 2026-11-02, danavivi-7a; danavivi-4e from 2026-11-03) — ACTIVE PROJECT (Dan 2026-11-03: "from now on"); step 1 built, dressed with Dan round by round
+
+Dan (2026-11-02): the first screen = a long rectangular room (מלבן) packed with detail: guitars, synths, garage
+tools, a car; at the far end a small TV; scrolling walks down the room to it and locks into the live TV (the LCD).
+Restarted from scratch after the first prototype (`tools/_home-opening/`, one wall + a zoom, commit `f35fdf0`): its
+lock-in hand-off is reused, its room is not. Dan: plan with him first, then one piece at a time, shown before the next.
+
+## The rebuild (Dan 2026-11-04, `danavivi-09`): real 3D, AI makes objects, never frames
+Why: the 3 Nov art failed. Cut-outs read flat; the projected painting smeared as the camera moved; the AI repaints
+swapped the plugin CRTs for props and garbled poster text; the film was 1080p-soft and flipped to a still mid-scroll.
+Dan loved the first painted shot (`assets/skins/default/paint/walk-000.webp`): it is the look reference. Plan page
+(rounds 1 + 2 answered, answers in its db `answers/round-1`, `answers/round-2`):
+https://claude.ai/artifact/ByhrvCC1RwY3pzi9izrHun
+
+Decisions (Dan, rounds 1-2, 2026-11-04):
+- Every pixel is rendered from the real 3D room; AI only makes single objects / textures / posters. One delivery mode
+  for the whole walk, no film, no switching.
+- Must stay, checked on every render: RevLimiter's CRT on the desk, Radio Roulette's CRT high right, DRIFT's CRT, the
+  live TV, the REVAUDIO neon, the coupe on its lift half out the door, the drum kit + throne, the studio corner.
+  RevFX's CRT and the GAS 2 posters + COMING SOON plate stay too, removable "smartly without changing the whole
+  room" (a slot removal, part of the swap test).
+- The room must keep moving (sway, dust, flicker, the car idling): live 3D (way A) is the favourite; pre-rendered (B)
+  stays in the bake-off as the true-light quality bar. Splat world (C): research only.
+- Tests = automatic checks on every version: plugins present at every walk step, no flashes scrolling down and up,
+  sharp at 1920 / 1440 / 1141 + iPhone, matches the bench, swap / remove test, size + speed.
+- Team: the bake-off + 2 researchers (assets + the car; live-3D techniques + the splat check). Builder = the main
+  session; Tester A (live) + Tester B (pre-rendered) on Opus; critics: look (Fable), walk, Dan's-eye, devil's advocate,
+  web (Opus); a fixer (Fable). Up to 2 fix rounds; Dan sees what passed, with the critics' notes. First a blind-spot
+  agent reviews the whole plan (Dan's ask).
+- Test corner: the far end (desk, plugin CRTs, TV). Phones: the same room, lighter. Credits: up to 40 for the test
+  phase. Blender on Dan's Mac: yes. Night by default; a skin may change the time. The look lock comes before the critics.
+- Car (Dan 2026-11-04): Supra-inspired, no badges, gloss black like his reference (a black Supra MK4 / A80 photo): big
+  rear wing, round quad taillights, deep-dish wheels, a RevAudio plate, the shape slightly ours; no Toyota or Supra
+  marks (trademark). The photo is third-party: kept local only in `tools/_home-opening/refs/` (git-excluded), a
+  reference, never shipped or textured from.
+- Blender 5.2.3 LTS installed on Dan's Mac (brew cask, 2026-11-04).
+
+Steps:
+- [x] Plan page, rounds 1 + 2 answered (2026-11-04).
+- [x] The car questions (gloss black, Supra-inspired, no badges), 2026-11-04.
+- [x] Blind-spot review of the plan (agent, 2026-11-04; its main claims re-checked by hand). Blockers: the room
+      stretches with the screen (19.9 m at 1141x636, 22.1 m at 1440x900, 22.8 m on a 390x844 phone where the TV is
+      1.4 x 2.8 m: `layoutCamera`), so a Blender room needs one size in metres; baked light can't follow swaps,
+      removals, flicker or bench moves (light in layers instead). High: the live CSP (a Cloudflare rule) blocks the
+      3D decoders (no `'wasm-unsafe-eval'`, no blob: workers / images); no home for big files (repo ~0.5 GB; R2
+      proposed); "every plugin at every step" can't pass (side-wall CRTs are behind the camera near the end); the far
+      end skips the risks and the painting is the 3 Nov room (7.6 x 4.6 m, lens 49); Black Friday / Cyber Monday on
+      main (27-30 Nov, countdown + a TV intro); the power-on flicker (55 ms steps, ~9 flashes/s; WCAG 2.3.1 allows
+      3); the 6 % scroll snap; phones see ~27 deg across; look-alikes and asset licences. Round 3 on the plan page:
+      findings, corrections and 14 questions (db `answers/round-3`).
+- [x] Round 3 answered (2026-11-04) + four follow-ups in chat. Decisions:
+      - The room is the DEFAULT homepage, not a skin. Live on **Nov 19**, before the Black Friday countdown (Nov 20),
+        to half the visitors (A/B test = how we tell if it sells).
+      - v1 = real light and materials everywhere; real models at the far end, the entrance and the car; the other
+        props stay dressed simple shapes until after Black Friday.
+      - One fixed size in metres; overnight re-bakes are fine; re-bakes run on Dan's Mac (Claude).
+      - Phones: their own portrait camera path, and a phone team (phone designer + phone tester, Opus) working with
+        everyone else.
+      - Look: today's room; the painting is the mood reference. The room is its own era: "new with hints of
+        elements from the past, like the GAS 2 vibe, a vintage retro garage / music studio", from real garages and
+        real messy retro studios. More elements go into the skeleton: Claude proposes a list, Dan picks.
+      - The car: Dan's team models it in Blender (they are 3D artists), Claude helps; the Supra signatures (round quad
+        taillights, hoop wing) are made our own.
+      - Plugins visible wherever each is in view; the landing is the TV. Shipped 3D files on Cloudflare R2.
+      - Flicker at most 3 flashes a second. The scroll snap is off by default, kept as a bench option.
+- [ ] Researchers running (2026-11-04, Opus): R1 = real references (board in `tools/_home-opening/refs/board/`),
+      the new-props list, free model sources, a licence log; R2 = the live-3D recipe (light layers, compression,
+      phone budget, CSP, R2, parity, the splat check) in `refs/tech-recipe.md`. Both git-ignored.
+- [ ] Tell Gil: the room goes live Nov 19 as the homepage (A/B); his Black Friday countdown (from Nov 20) and the TV
+      intro must work with it (the walk lands on the TV, which carries the live page).
+- Schedule to Nov 19 (tight; checkpoint Nov 12: if the look pass isn't at the bar, v1 = look + light only):
+  - Nov 4-6: foundations (the room in metres + one slot file, the light-layer design, tone mapping, a CSP test, R2);
+    round 4 page = the look lock (pins on the painting) + the reference board + the props pick.
+  - Nov 6-9: the whole-room look pass; the Blender export + bake pipeline; the far-end bake-off (testers, critics).
+  - Nov 9-14: real models at the far end and the entrance; the car (Dan's team); the phone path (phone team).
+  - Nov 14-17: into the homepage behind a switch + the A/B split; CSP + R2 live set-up (Dan's OK); flicker,
+    reduced motion, a skip link, the crash fallback; all checks.
+  - Nov 18: Dan's sign-off. Nov 19: live to half the visitors (a push to main = live, Dan's word).
+- [x] R1 (2026-11-04, spot-checked): 32 real references with licences (`tools/_home-opening/refs/board/`, git-ignored),
+      45 new props N01-N45 by zone (`refs/props.md`), free model sources (`refs/models.md`), a licence log
+      (`refs/licence-log.md`). Traps: Fab's Standard licence forbids assets visitors can extract (live 3D sends the
+      files), so only CC0 / CC BY there; CC BY needs a credits page; generic shapes only. R1 slipped once: its first two
+      requests to the Wikimedia Commons / Openverse APIs carried Dan's email in a header (told Dan).
+- [ ] 1. Look lock: the review page https://claude.ai/artifact/Bh4iT4GHQox8ZD97nie5UU (db `notes`: the painting + 3
+      close-ups to pin, 32 references with Love it / Some of it / Not this) and Round 4 on the plan page (the props
+      pick, db `answers/round-4`). Then: the look spec + the what-should-be-visible table.
+      - [x] Look lock answered (2026-11-04): Love it on 28 of 32 references, Some of it on 01 / 02 / 26 / 32, none
+            rejected, no pins on the painting; on 01 "can we get more references on it"; overall: "I want it to feel
+            like we making plugins". The look spec (the critics' rulebook): `tools/_home-opening/look-spec.md`; the
+            board's sources: `look-board.json`. R1 is finding more references like 01 + "we make plugins here"
+            references and props (W01...), to add to round 4 and to a look-lock round 2.
+      - [x] R1 round 2 (2026-11-04): board 33-52 (33-42 more like 01; 43-52 where gear gets made), workshop props
+            W01-W11 (`tools/_home-opening/props-workshop.md`; the first list is `props-candidates.md`). R1 flagged the
+            gold record R19 as a possible fake award (honesty rule): a question in round 4. Look-lock round 2 (db
+            `notes-r2`) carries the 20 new references.
+      - [x] Round 4 answered (2026-11-05): 47 props ticked (N01-N13, N15-N18, N20, N22-N26, N28-N36, N39-N43, N45,
+            W01-W07, W09, W10; left out N14, N19, N21, N27, N37, N38, N44, W08, W11); the gold record R19 becomes a framed
+            print of our first faceplate. All 47 are slots in the skeleton (`room.html` SIDE + END, 49 rows: the rugs
+            and the mic stands come in pairs), placed where R1 suggested, then de-overlapped by a script with wall
+            pieces kept on the wall and bench pieces on their bench: 0 overlaps with any other slot (Playwright,
+            2026-11-05). Dan arranges them on the bench (Move things) and pastes back his settings.
+- [x] Three room designers (Dan 2026-11-05: "summon 3 agents that specialize in 3D room design ... the user should have
+      a wow effect ... a plugin company that references cars"; Opus, each alone): A film production designer, B real
+      garage-studio builder, C brand-experience designer. Kit: `tools/_home-opening/layout-kit/` (brief, catalogue,
+      start layout, render.mjs, check.mjs). Their layouts: `tools/_home-opening/layouts/{a,b,c}.json` + rationales;
+      walk any one live with `room.html?layout=a` (view only, nothing saved). Re-checked by hand: each 0 collisions
+      (today's room had 10), every must-stay in frame at the first screen, no page errors. The bench:
+      https://claude.ai/artifact/YTT5fJ86prxUDucxfMCSSc (db `notes`).
+- [x] Dan's pick (2026-11-05): "B + A's moves" = B's zoned garage + A's 4.6 m ceiling, A's brighter street (outside 3.0)
+      and 3.5 m door, the lens at 43; the five ceiling-hung props raised 0.6 m with the ceiling. `layouts/b-plus-a.json`:
+      0 collisions, every must-stay in frame, no errors. Bench round 2 (same URL, db `notes-r2`).
+- [x] Baked (Dan 2026-11-05: "nice next step commit"): `b-plus-a` is the room's DEF (24 settings + 101 per-object moves
+      in `DEF.moves`; settings ver 9 opens the new room on every saved bench once). Checks (Playwright Chrome 1141x636):
+      a fresh visit vs `?layout=b-plus-a`: 0.00 % / 0.01 % of pixels at walk 0 / 50 %; an old ver-7 bench migrates;
+      0 collisions; no page errors. The layout kit's start layout + catalogue regenerated from it.
+      - [x] Look-lock round 2 answered (2026-11-04): Love it on 16 of 20, Some of it on 38 / 43 / 44, Not this on 40
+            (inside a car looking out). Folded into `look-spec.md`.
+- [x] Foundation 1 (2026-11-04): the room has ONE size in metres (`roomL` 19.9 m, `tvH` 0.73 m, both on the bench);
+      only the camera adapts per screen: it starts 1.5 m in front of the near wall and ends where the TV face covers
+      the screen below the nav (width or height, whichever fits first). The live page sits on the part of the TV face
+      that screen shows at the lock, so the hand-off lines up. Checks (Playwright Chrome): Dan's laptop 1141x636
+      renders as before (0.00-0.05 % of pixels, walk 0 / 60 %); the room is 19.9 m at 1141x636, 1440x900, 1920x1080 and
+      390x844; the last 3D frame vs the live TV: 0.60 % at 1141, 0.38 % at 1440 (both unchanged), 1.90 % on the phone
+      (was 19.08 %); no page errors.
+- [x] R2's live-3D recipe (2026-11-04, its claims about our code re-checked): `tools/_home-opening/tech-recipe.md`.
+      It implies: each light group baked alone in Blender, three groups per 8-bit KTX2 (R/G/B), mixed live by one
+      shared uniform (colour x flicker), a swap re-bakes only its slot; AgX in both; the TV / CRT screens drawn after
+      tone mapping; glTF + meshopt + KTX2 (no Draco, textures as separate files) on R2 at `assets.revaudio.net`
+      (hashed, immutable, a CORS rule); three CSP additions (`'wasm-unsafe-eval'`, `worker-src 'self' blob:`, the R2
+      origin) = production changes, Dan's OK first; phones get their own tier (DPR <= 2, <= 100 MB of textures),
+      a crash-loop marker falls back to a still, a pause button (WCAG 2.2.2), reduced motion = a still; the first
+      paint is a still of the room per breakpoint (the LCP). Also: room.html vendors three r170 while the site pins
+      0.185.1, and room.html loads Google Fonts, which the live CSP blocks (the site self-hosts the same fonts).
+      Splats: not in v1.
+- [x] Round 3 quick fixes (2026-11-04): the power-on flicker steps 200 ms (at most 2.5 flashes a second, was up to
+      7.5); the scroll snap off by default (settings ver 8), still a bench option.
+- [ ] 1b. The whole-room look pass (Dan 2026-11-05: "look pass", picked over "Blender first"), in `room.html`, before
+      the Blender export. To `look-spec.md`, with the painting as the mood:
+      - Real materials for the shell (sealed concrete floor with oil stains and a long soft reflection, sooty walls,
+        the ceiling, steel trusses, the ribbed door) from CC0 PBR sets (Poly Haven / ambientCG, each logged in
+        `refs/licence-log.md`), and one material per kind of slot (red enamel chests, chrome, wood, amp tolex, fabric,
+        cardboard, rubber) with bevelled edges; no slot labels or wire edges in the look view.
+      - AgX tone mapping (exposure on the bench); the TV face and the CRT screens drawn after it, untouched. Today the
+        composer (RenderPass → UnrealBloomPass → OutputPass) tone-maps the whole frame in OutputPass, so a material's
+        `toneMapped: false` won't protect them. The hand-off to the live TV must stay ≈ 0.6 % of pixels at 1141x636.
+      - Night light: shadows from the amber lamps (none today), pools with deep falloff, the neon + amber pair, the
+        street through the door; a probe of the room itself as the environment, so chrome and the car catch the neon;
+        contact shadows / AO; MSAA (the composer's target has none today).
+      - The critics team (decisions above) scores the renders on the look spec's 7 lines (7+ each, up to 2 fix rounds);
+        then Dan sees what passed, with their notes.
+      - Checks: `layout-kit/check.mjs` (must-stays at walk 0 / 35 / 70 / 100 %); `layout-kit/handoff.mjs` (the TV
+        hand-off; baseline 2026-11-08: 1.05 / 0.68 / 0.45 / 2.57 % of pixels at 1141 / 1440 / 1920 / phone differ by
+        more than 24, all on sharp edges, from resampling; the look pass must not raise it); no page errors; the frame
+        rate on Dan's laptop.
+      - Downloads (texture sets etc.): a plain user agent (`RevAudio-research/1.0`), never Dan's email (R1 slipped once).
+      - [x] Part 1 built (2026-11-08, `danavivi-20`, commit `04d8285`): three.js 0.185.1 vendored (the site's pin; r170
+            vs r185 renders within 0.3 % of pixels); 13 CC0 sets in `assets/pbr/` (`SOURCES.md`); `KINDS` + `LOOK` (a
+            kind per slot), `LIT` (lit props); AgX in a finish pass, the screens marked in the frame's alpha (hand-off
+            1.05 / 0.68 / 0.45 / 2.57 %, = the baseline); 4x MSAA; lamp spotlights with shadows (redrawn only on
+            moves); the wet sheen (`WET`, a Reflector); the probe on shiny kinds only (on matte ones it counted the
+            lights twice); contact shadows; haze under the lamps; bench: Look chip + "The look" (tone, exposure,
+            shadows, reflections, haze), settings ver 10 (look on, labels off). 80 fps at the door, 110-146 toward the
+            TV (M1 Max, DPR 2; live lights are the cost: 3 per neon strip, 3 prop lamps). 0 overlaps, no page errors.
+      - [ ] Critics round 1, fixes, Dan's look. Round 1 scores (look / walk / Dan's-eye / devil, lines 1-7): 5 5 3 4 6 8 5
+            · 4 4 3 5 5 9 4 · 5 5 3 5 6 9 5 · 4 4 2 4 5 9 3. All four agree: past 40 % of the walk the violet + amber
+            pair dies into red-black murk; the door is a flat bright-blue card; bulbs and tubes burn white; the lit
+            globes read as paper discs; the floor lacks amber pools and contrast; the reflections pop in ~3 s after
+            load. MODEL (later steps): the car, the drum kits, the mess.
+            - [x] Fix round 1 (`b49e968`, the fixer on Fable in its own worktree, merged by the main session): the web
+                  critic's code bugs (bloom squared by its premultiplied blend, a second MSAA target, every map uploaded
+                  up to 7 times ≈ 490 MB, canvas MSAA, the probe on a timer) and the player's (the intro froze 1.1-1.4 s
+                  on uploads and jumped dim → full, reduced motion still flickered, 4 MP at 1440x900); look: emitters
+                  keep their colour, a 4th pendant over the desk, violet carried to the far end, an indigo night with the
+                  right wall shadowing the street light, ON AIR lettered, `lightRoom()` holds the light levels.
+            - [x] Fix round 2 (`43f149e`): the fill neutral (round 1's violet fill washed the room lavender), the TV's
+                  violet a halo not a wall, the wet patches drive the floor's own roughness + specular (lamps 130 cd,
+                  the desk pendant at 40 %), black gear kept dark with a sheen (the fixer had lifted it 3x: cardboard),
+                  tail lights as exact pixels. Checks: hand-off 1.05 / 0.68 / 0.45 / 2.57 %; 0 overlaps; blacks under
+                  0.002 at walk 0 / 50 / 60: 7.2 / 13.1 / 13.2 % (painting 7.5); 70 / 68 / 96 / 133 fps (M1 Max, DPR 2).
+            - [x] Final scoring (2026-11-08): look / walk / Dan's-eye / devil 7 7 4 5 7 8 7 · 6 7 4 6 7 9 6 · 6 7 3 6 7 9 6 ·
+                  6 6 2 5 6 9 4 ("the light is no longer the problem, the blocks are"); their last two small fixes
+                  (`53d80b2`) and the player's round-2 engine fixes (`1ca1ec4`: Safari's neon + floor speckles, the
+                  first-visit intro) are in. Details: `tasks/handoff.md` top entry.
+            - [x] Dan's four picks (2026-11-08), made on the picks page https://claude.ai/artifact/2gr2wkJyrM5jey7URePq81
+                  (each option rendered, db `notes`; the review page RrYfJ7Z8AbXJCTsTc9KHLz got none): the ceiling neon
+                  one step up (`DEF.neon` 0.26 → 0.38, settings ver 13); the door dark as now, the chests worn as now,
+                  the far walls violet-wine as now. His question: can the light change later? Yes: live now (the bench),
+                  and after the bake each light group's colour and level stay live (tech-recipe §1).
+      - [ ] The player (Dan 2026-11-08: "an agent that plays with the result on the website and gives feedback to the
+            builders"; approved the same day): a live tester on Opus, a standing member from this round on. It plays
+            the room like a visitor in real engines (WebKit at Dan's 1141x636, Chrome 1141 / 1440 / 1920, the iOS
+            Simulator via `?capture=`), records video, and reports motion, loading, input and engine problems the
+            stills can't show (findings.json with repros). Runs every round after the fixer, before Dan sees it; the
+            main session verifies each finding before a fix. Briefs: `tools/_home-opening/team/player-brief.md`
+            (and the critics' `critic-brief.md` beside it).
+- 🔁 PHONES (Dan 2026-11-08, later the same evening): "taking the phone to a different scene and a different vibe ...
+  lets set up only the laptop then we work on the phone". The same-room-lighter plan is dropped: the phone designer was
+  stopped mid-check, its unfinished phone tier parked on branch `look/home-phone` (`f909ce0`, pushed; room.html +99/-17,
+  `assets/pbr/phone/`); the phone tester's baseline stays as reference (its PH-02 address-bar fix and the still-first
+  plan help laptops too). v1 = laptop / desktop; phones keep today's homepage until their own scene (Dan: yes, 2026-11-08).
+- [ ] 2 + 3 (Dan 2026-11-08: "go"; roster approved, CC0 models only for v1, the phone team started alongside).
+      Team: the main session builds the export + parity and integrates; phase 1 = an asset scout (Opus: CC0 desk +
+      chair candidates from Poly Haven, licence log, logo check, web-size glb, in-room stills for Dan's pick) and a
+      bake engineer (Opus, worktree `home-bake`: the Blender bake per light group, the 8-bit packing, the three.js
+      combine, the units / π parity on a test wall); the phone team (Opus: a phone designer in worktree `home-phone`,
+      the phone tier + portrait camera options for Dan; a phone tester: today's baseline on WebKit 390x844 + the iOS
+      Simulator, then the designer's build). Phase 2, once A and B exist: the player, the 5 critics, the fixer.
+      Three.js's loaders vendored (GLTFLoader, KTX2Loader + basis, meshopt decoder, GLTFExporter; 0.185.1, MIT).
+      - [x] Scout (2026-11-08): 3 desks + 4 chairs, CC0 (Poly Haven; the office chair OpenGameArt CC0, re-checked by
+            curl), web glbs + in-room stills, report: `tools/_home-opening/team/reports/2026-11-08-asset-scout.md`; the barber
+            chair's maker name painted out. Dan's pick page (round 2: two studio desks with racks built in, V1 / V2, built from code by the scout): https://claude.ai/artifact/APfKbkPMUCp8frWewVCXxG (db
+            `notes`). The licence-log rows go in once he picks.
+      - [x] Bake engineer phase 1 (2026-11-08, worktree `home-bake`, `tools/_home-opening/bake/`, uncommitted): a test
+            room baked per group in Cycles, packed 8-bit, mixed live in three.js: within 0.5 % of Cycles on the walls
+            (target 2 %); the baked map goes in x pi; a live PointLight at W / 4 pi = its baked self (factor 1).
+            three.js's AgX ≠ Blender 5.2's (mid-grey 128 vs 118): room.html keeps three.js's (the approved look; A
+            and B both use it); a Blender-AgX LUT stays a tool. KTX2: Dan OK'd it (2026-11-08); KTX-Software 4.4.2
+            (Khronos' signed + notarized Darwin-arm64 .pkg from GitHub, not in Homebrew) unpacked user-local, no sudo,
+            not on PATH: `~/.local/ktx-software/4.4.2/bin/{ktx,toktx,ktxinfo,ktx2check}`.
+            Phase 2 done (2026-11-09, still uncommitted in `home-bake`): the whole room baked per group incl. E01 + N34,
+            `?light=baked` = one fenced block after `setBench` (applies to `be853d1`); B/A light 0.98-1.00 at walk
+            0 / 0.3 / 0.6 / 0.8 / 0.97; real shadows + bounce. Speed: B = A (15.4 vs 16.7 ms at 1080p, the 17 live lights
+            still draw highlights); `&spec=0` fast B is 3-5x faster but loses the wet-floor highlights and 20-43 % of
+            the light. KTX2 packs ~10 MB GPU (PNG 40.6). One-slot re-bake = one command (`bake/room-bake.sh <id>`, 110 s).
+            Dan: "go with you" = the mix. Phase 3 (2026-11-09, uncommitted in `home-bake`, on `61965d0`, 251 meshes
+            baked incl. the monitors + kit): B mix = fast everywhere, live highlights on the floor only, + a "gleam"
+            (the bake fed back as an even sheen, 0.6; `&gleam=0` = as briefed). 1080p walk 0.6: A 16.6 ms, B mix 6.3
+            (2.6x); walk 0: 24.3 vs 13.2 (1.8x): passes the 1.5x rule. Light B mix / A 0.83-1.04 (as briefed 0.66-0.79).
+            Fixed: a resize gave the floor back its live material. Light picks page:
+            https://claude.ai/artifact/1GRRy48eP1KF5ravRmVK2Q. **Dan (2026-11-09): "today" = A, the live light.**
+            The bake is parked: code on branch `look/home-bake` (`fa4dbaf`), packs not committed (`bake/room-bake.sh`
+            rebuilds them, ~4 min). No A/B split on the homepage for the light. Weak laptops: watch fps in the
+            critics' round (the monitors' 11 materials each = the first merge pass if needed).
+      - [x] Scout task 3 (2026-11-08): monitors M1 black / M2 vintage + stands, kits K1 burgundy / K2 wood + throne,
+            all ours from code. Dan's picks (bench https://claude.ai/artifact/VXYLrHfwRhy2oPMNg5UQGP, his chat
+            message "black + wood"; the bench had B ticked for the monitors, the chat line wins): M1 + K2. In the room:
+            `MODELS` E02 / E03 (+ `stand`, stretched by placeItem) and E07 / E08 through a new prop branch (a group of
+            drawn parts: the model at real size, centred where the drawn parts stood, so the kit keeps Dan's spot).
+            Checks: hand-off 1.05 / 0.68 / 0.45 / 2.57 % (= baseline), 0 overlaps, 0 errors. ⚠️ fps (interleaved,
+            DPR 2, load ~14): walk 0.3 50 → 47, walk 0.6 66 → 59-60; the monitors carry 11 materials each (a merge
+            pass per material later if the critics' round says so).
+      - [x] Phone tester baseline (2026-11-08): `tools/_home-opening/team/reports/2026-11-08-phone-test.md` + `-findings.json` (14). GPU ~422 MB
+            vs the 100 MB budget (PH-01, the designer's); the address bar threw readers back to the TV (PH-02, fixed
+            `a145e15`); 43.5 s black at 1.6 Mbps (PH-03: a still first, after Dan's portrait camera pick); a fling skips
+            the lock (PH-04, in the camera options); the Simulator draws the amber light 12-32 % darker (PH-05, re-test).
+      - [ ] Model loader in room.html (`9093b8a`): `MODELS` + `?model=<slot>:<assets/models/x.glb>[:yaw][:height]`.
+- [x] 2. The skeleton exported to Blender (geometry, slot names, camera walk, lights); parity check against the
+      bench. (Blender itself: installed 2026-11-04.) Done 2026-11-08: `tools/_home-opening/blender/export.mjs` (the
+      page's own scene through GLTFExporter, from a copy frozen in one tick; slots named by id with their kind, lights
+      named + grouped neonL / neonR / lamps / tv / sign / door / props / car, the hemisphere fill in the sidecar only;
+      materials without maps; `room-meta.json`: the walk camera at 5 stations x 4 screens, every slot's box corners
+      projected by three.js) → `blender/build.py` (glTF Unitless lights, a collection per light group, the 20 walk
+      cameras, the parity check). Parity: 122 slots, max 0.001 px at every station on 1141 / 1440 / 1920 / 390x844
+      (pass < 0.5 px); a Workbench render overlays the three.js still edge for edge. room.glb 3.6 MB; no page errors.
+      Next in Blender: the light units on a test wall (the bake engineer's parity), then the far-end corner's bake.
+- [ ] Owed Dan's OK (production): an R2 bucket + `assets.revaudio.net`, its cache / CORS rules, the three CSP
+      additions. Test locally first, with the live CSP served by a local server.
+- [ ] Research: assets + the car; live-3D techniques + the splat check.
+- [ ] 3. The far-end corner built once, shown live (A) and pre-rendered (B); checks + critics; Dan picks.
+- [ ] 4. The rest, zone by zone: entrance + car, workbench wall, studio corner.
+      Dan (2026-11-09): "not yet, we need to finish it" = the room before the homepage. Finish-list bench:
+      https://claude.ai/artifact/LKA2p4zQACEx8odCn1vZqq (db `notes`). His 28 pins on the first screen (walk 0),
+      matched to slots by a ray through each pin (`layout-kit/pin-hit.mjs`; map: `team/finish/pins-w0.webp`):
+      - Car side: CAR, the lift arms + N03 jack (the pink block), the wood block under the car, N06 hazard drum,
+        R17 exhaust pipes, W10 repair shelf, R06 compressor rack, N02 shop light, the open door's roller box.
+      - Left wall: L12 parts shelf, N12 clamp lamp, W01 test-gear tower, W02 RPM gauge mid-build, W05 solder
+        station, L09 workbench, R14 engine block, W09 build board, W07 test-drive desk, W03 sketch wall, N13 corkboard.
+      - Overhead: N39 traffic light, N41 chain hoist, A03 ceiling cloud.
+      - Far end: E05 pegboard, M03 the RevLimiter CRT, floor clutter by the kit.
+      - Next: Dan pins stops 2-6 (same bench); then the 3 builders (all Opus): car side / left wall / overhead + far
+        end, each list above. ⏸ Dan's "go" on that roster first (he asked for it in the plan, 2026-11-09, not yet
+        launched). Method + budget: `tools/_home-opening/models-kit/README.md`. The car's look is planned with Dan on
+        a bench before it's built.
+      - **Dan (2026-11-09): "let's build as many objects as possible by the 19th, from the most important to the
+        least important. Let's start."** = Nov 19 stands; the scope is whatever is real by then, in priority order
+        (his pins x1.6, then the share of the walk's screen; `layout-kit/finish-shots.mjs` + the ranking in
+        `team/builders/*-LIST.md`). Skipped as already fine: the neon sign, posters, slat panels, floor decals, rugs,
+        cable trays. Not seen on the walk (behind the start): R01, R04, R11-R13, N04, N05, N08-N10, N22, N25, L10.
+      - [x] Reuse (2026-11-09, `3659350`): L13 + L14 = the studio monitors, R16 = the wood kit (yaw pi/2); a file used
+            by several slots loads once (shared geometry + materials).
+      - [ ] The 3 builders, launched 2026-11-09 (Opus): car side (port 4492), left wall (4493), far end + overhead
+            (4495). Brief + lists: `tools/_home-opening/team/builders/`. Their folders: the session scratchpad
+            `look/step4/builders/<car|left|far>/candidates/<ID>/` (glb + notes.txt + 2 stills). Loop: a batch of ~5
+            comes back → check the stills + glbinfo → `assets/models/` + SOURCES + licence log + `MODELS` → handoff /
+            check / fps → a bench for Dan (✓ or a note; the car = an A / B / C pick) → resume that builder.
+            - Round 1 in the room (2026-11-09): left `2c84040` (L09 L12 W09 L01 R14), car side `ed2a16c` (N06 L15 R07
+              R09 N03). Bench https://claude.ai/artifact/WbhosKXawqVMvT3xpKo53p (db `notes`): ⏸ Dan picks the CAR
+              (A our coupe / B CC0 covered hatchback / C our coupe covered; candidates in the car builder's folder
+              `candidates/CAR/`), ✓ or notes on the 12 objects. The car needs `R.tailMat` on its `tail_light` mesh.
+            - Round 2 (2026-11-09): the car = A, glossy (`3020b60`); batch 2 = 27 more slots (`c33bbb6`); much less
+              dust (`e6325db`); Dan's room bench baked (`b390917`, ver 16: the end wall rearranged, L19, N12, the
+              sign); the big line + the engine back on (ver 17, Dan: "bring them back"). Bench round 2 (the same
+              URL, ArtifactData collection `notes-r2`): his 4 notes' follow-ups + batch 2's 27 spots, close up + on
+              the walk, shot from the room at `ad605fc` (scratchpad `scripts/round2-shots.mjs`). Builders' batch 3
+              running (car: N01 W06 + far 11-13; left: 11-15 then 16-20; far: 14 + 15). Next: the garage-speed
+              options page.
+            - Round 3 (2026-11-09 / 11-10 night): all of Dan's round-2 notes done in the room (ver 19; list in
+              tasks/handoff.md UPDATE 3) + batch 3 (16 models + 2 lamps + W06) + batch 4 (R18 R02 N41 N39).
+              Open: the outside pick (A / B / C) on bench round 3; the builders' batch 5 + the rework queue.
+- [ ] 5. Into the page, with the checks.
+- [ ] 6. A test skin: swap one object and remove one (RevFX or a poster), end to end.
+
+## Decisions (Dan's picks, 2026-11-02)
+- Look: photoreal, graded with DRIFT's violet/magenta neon + amber lamps (house law: photographic realism).
+- The TV at the far end: about 5 % of the screen width (~55 px on a 1141 laptop), so the walk-in is ~20x.
+- Layout: music gear and garage gear mixed on both walls.
+- Car: a JDM coupe parked midway along one side; the camera passes beside it. Then (Dan, same day): side-on, nose to
+  the right of the screen, half out through an open roll-up garage door in the right wall, on a low scissor lift,
+  engine off; the night outside. All on the bench (car along / through the door / angle, lift type + height, door
+  width / height / open, outside light, Engine on).
+- Brand: a REVAUDIO neon from the first ceiling truss, near the camera (proposed). Dan, same day: not in your face, high
+  on the left wall, movable on the bench (left / right wall / over the aisle, along, height, size).
+- Same round (Dan): a real garage floor, not a mirror (worn concrete default; checker tiles + the old mirror on the bench);
+  the GAS 2 posters + a COMING SOON plate (future plugins) framed on the walls, CRT monitors showing plugins; more mess;
+  retro-cyber and alive (aisle LED strips with a pulse to the TV, rack LEDs, VU bars, flickering screens); a move tool
+  (click anything, drag it; sliders for along / across / height / size / turn; per-object moves saved in the settings).
+- Engine: Three.js, a real 3D room (Dan 2026-11-02, over CSS 3D planes).
+- The room is a permanent living set (Dan 2026-11-03): re-dressed for seasons (Halloween, Black Friday, Christmas),
+  products, bundles and work in progress by moving / adding / swapping things, never by rebuilding it. Contents =
+  data (base room + skins) the engine places and the bench edits. DESIGN.md §7 carries the rule.
+- Dressing rounds (Dan 2026-11-03): the neon on the end wall, top right of the TV, 50 % bigger, hung crooked on two
+  wires; the road look off the floor (lane lines + aisle LED strips off, kept on the bench); studio acoustics (wooden
+  slat panels, skyline diffusers, bass traps, a cloud); a small drum kit (kick, snare, hi-hat) left of the desk facing
+  right + a throne pushed back left ("someone just got up"); the desk 0.7 m out with both monitors on floor stands;
+  undo / redo on the bench; three of his benches baked in as the defaults (the third: a wider, taller room 7.6 x 4.6 m,
+  lens 49, a 360 % walk, TV glow 2.5, the pegboard a little toward the start of the walk).
+- Final art: a PAINTED room (Dan 2026-11-03, over cut-outs that "feel like a 2D"): GPT Image paints the bare set from
+  spots along the walk, each painting projected back onto the set (the GAS 2 drone's recipe); TV, CRT screens and
+  posters stay live pixels. Higgsfield: 250 credits (Lite) on 2026-11-02; 233.75 left on 2026-11-03.
+
+## Steps
+- [x] 1. The 3D skeleton, no credits: `tools/_home-opening/room.html`. The room as a real box; a grey labelled block
+      per future image (music + garage mixed on both walls, the coupe midway right, the REVAUDIO neon on the first
+      truss); real light (neon strips + glow, amber lamps, haze, a glossy floor); the live TV at ~5 % at the far end;
+      scroll = the walk, locking onto the live TV (the first prototype's hand-off); sliders + a neon-wireframe toggle.
+      Built 2026-11-02; Dan keeps dressing and tuning it on the bench (Decisions above).
+- [ ] 1a. Offered 2026-11-03, not answered: a "just got up" cue on the throne (headphones or sticks).
+- [ ] 1b. The room as data: a base manifest + skins (season / product / bundle / work in progress) that the engine reads
+      and the bench edits, adds to and exports; plan it with Dan first.
+- [ ] 2. SUPERSEDED 2026-11-04 by the rebuild (top). The slot list out of the skeleton: each prop / wall's size, angle
+      and light = its Higgsfield prompt (cut-out, transparent background). Plan + Dan's OK.
+- [ ] 3. SUPERSEDED 2026-11-04 by the rebuild (top). The default skin, painted (cost-checked per shot, RULE 0). Cut-out test 2026-11-03 (12 credits) read 2D and
+      was dropped. Proof shot 1 done 2026-11-03 (walk 0, 4.25 credits): one real photo to ~20 % of the walk. Next, on
+      Dan's yes: 4 more shots. Done 2026-11-03 (free): soft hole fill, real posters onto their painted twins.
+      Then (Dan: projected paintings "smeared and broken apart"; credits OK): the walk became a FILM between painted
+      keyframes (Kling 3.0, 2 films, 35.75 credits), framed by the TV's size. Then (Dan: "the sceane changes in the
+      middles items move around", the plugin CRTs gone; "one seamless shot"): ONE film repainted from the 3D set's own
+      walk (Kling 3.0 Omni Edit, 2 passes, 40 credits), the plugin CRTs back in place with live screens on them.
+      Then Dan: "lets go back to the skelton this is not what i want": the bare set is the room again (Painted / Film
+      off by default, kept as bench switches). Next: what he didn't want, before more art.
+- [ ] 4. Movement, the readings, the phone version: each planned with Dan first.
+- [ ] 5. Into the site (`index.astro` + a new component, the live TV at the lock, reduced motion, weight), DESIGN.md
+      §0 + §7; main only on Dan's word (= live).
+
+# /revfx player: the die rolls Yoni's presets (Yoni 2026-11-09, revaudio-2f) — branch `feat/revfx-hear`
+
+Yoni: "the dice ... really make a random preset, but only for the user its random. i will create 4 presets to each
+sound of the 4, and when the user clicks the cube ... it will choose random preset from the 4". Picks: the die moves
+from the hero into the player; a roll while stopped starts playing in RevFX.
+
+## Steps
+- [x] 1. Data: `src/data/revfx-presets.json` (per track 4 presets: name, on, order; placeholder = the dice engine's
+      scene names) + `tools/revfx-player/read_presets.py` (RevFX user preset .xml -> that JSON: on = BYP_x 0 and mix > 0,
+      order = ORD_* slots, GLUE at ORD_GLUE).
+- [x] 2. Audio: `prep_audio.py` takes dry + 4 renders per track -> `<id>-before.m4a` + `<id>-p1..p4.m4a`, each preset
+      level-matched to the dry, peaks per preset. Placeholder peaks point every preset at today's `<id>-after.m4a`.
+- [x] 3. Hero: the die, the scene CRT and the chain go (markup, deck.ts, their CSS); the catch line stays.
+- [x] 4. Player: step 4 ROLL IT plate (laptop: beside the LCD; tablet / phone: between PLAY and VOLUME), the die.
+- [x] 5. hear.ts: a roll = one of the other 3 (picked + loaded ahead), REVFX on, in-place crossfade at the same spot,
+      starts playing when stopped; a new track starts on a random preset; LCD title = the preset, chain line = its
+      order; the board lights its pedals and takes its order; coach ROLL THE DICE after the A/B.
+- [x] 6. Checks: build green, click-through 1440 / 1100 / 768 / 390, no repeat in 200 rolls, no click on the swap,
+      hero vs live unchanged above the catch line.
+
+## Review (2026-11-09, revaudio-2f)
+- Built on placeholders: the 16 presets = the dice engine's scene names, every preset of a track plays /drift's bounce.
+  Yoni's files drop in with one command: `python tools/revfx-player/prep_audio.py "<folder>"` (`<name> dry.wav`,
+  `<name> 1.wav`..`4.wav`, `<name> 1.xml`..`4.xml` per track; it checks lengths, level-matches all five down to the
+  quietest, writes the m4a, peaks.json and revfx-presets.json, removes the stand-in `-after` files).
+- Reader tested on `%APPDATA%/RevAudio/RevFX/Presets/try.xml`: on = echo reverb halo glue (pitch at 0 st = off), order
+  pitch > echo > reverb > halo > glue.
+- Layout: ROLL IT beside the LCD from 701 px; up to 700 px a strip under it (beside it, PUSH AGAIN: BYPASS needs
+  182 px and had 168 at 610). Measured with a Range on every LCD line at 360-1440: all fit.
+- Click-through (1440): PRESS PLAY > PUSH REVFX > PUSH AGAIN: BYPASS > ROLL THE DICE > NOW PLAYING; 40 rolls, 0
+  repeats, all 4 presets hit; a new track starts on a random preset; a roll while stopped starts playing in RevFX.
+  Console: only the dev toolbar's 403 (the worktree borrows main's node_modules), none from the page.
+- `npm run build` green. Not checked by ear: the swap is a 12 ms crossfade at the same loop spot (the /drift flip's
+  recipe); with the placeholders every preset is the same file, so the real test is Yoni's renders.
+- Open: the die keeps the hero's neon look (Gil's, live since 10-19), not a photographed part like the player's other
+  hardware; ask Yoni if it should get a photo die.
+
 # GAS 2 on the front page: in the LCD screen (Dan 2026-11-01, danavivi-83) — PLAN, waits for the LCD screen
 
 Dan (2026-11-01): "where do we put gas 2 ... in the front page. Like I think it should be in the LCD screen that we do

@@ -322,6 +322,105 @@ cutting the viewport to the keyboard's leftover (`setViewportSize`), at every ph
 - Gain ramps scheduled while the AudioContext is still suspended (first click) can be read back mid-ramp (0.65)
   when playback starts. When nothing is playing, set the gain directly (setValueAtTime); ramp only while live.
 
+## 2026-11-02 - a tuning bench must never cover what it tunes, nor rebuild the scene on a slider (`danavivi-7a`)
+
+The long-garage 3D skeleton (`tools/_home-opening/room.html`). Dan: the sliders panel sat over the side of the room
+("I can't see the whole room"), and moving a slider was "a bit glitchy, I can't see in real time what's going on".
+Cause of the second: every room slider rebuilt the whole Three.js scene (disposed and re-made every mesh, light,
+canvas texture and the mirror's render target), debounced 120 ms, so nothing moved while dragging and the
+random-noise textures and dust re-scattered on each rebuild.
+
+Rule: (1) with the bench open, shrink the whole page into the space beside it (one CSS transform on a stage that
+holds the canvas and its overlays; the WebGL buffer keeps its size) and give the bench a Hide button; (2) build a
+scene once and let a slider only re-place it (scale/position in an `arrange()`), re-make GPU buffers only on a window
+resize; seed any random texture or scatter so it never changes under a slider. Checked: a 2 s lens-slider sweep in
+Chromium ran at p95 9.2 ms a frame, max 9.4 ms.
+- Addendum 2026-11-03 (Dan: "I can't scroll down in the bench, I scroll the page"): Lenis takes every wheel on the
+  page, so a bench panel with `overflow: auto` never scrolls. Put `data-lenis-prevent` on every scrollable panel
+  (bench, slot list). And a drag tool must keep things inside the room: a floor drag on a far object, seen at a slant,
+  threw L19 about 100 m through the far wall; drag on a plane facing the camera and clamp to the room.
+
+## 2026-11-03 - a room collaged from cut-outs reads 2D: paint the whole view and project it (`danavivi-4e`)
+
+The long garage's first Higgsfield art: five photo cut-outs (car, pegboard, amp, tool chests) on planes in their slots.
+Dan: "it feels like a 2D and it doesn't feel like a whole room ... I wanted to feel like much more glued and whole, and
+3D, and real. Less images." Each cut-out brings its own light, edges and angle and never sits in the room; a wall
+item's picture also covered what hung on it (the wrench pegboard behind the guitars).
+
+Rule: paint the whole set from the walk's own camera (GPT Image 2.5, the bare-set render as its reference: 0 px shift
+measured, 3840x2160) and project the painting back onto the set with a depth test per projector; more spots along the
+walk cover what one painting can't see. Product faces (TV, CRT screens, posters) stay live pixels, and brand marks the
+painter adds (a Marshall script, a drum badge) are cleaned out before the picture ships.
+- Also: three.js calls `texture.onUpdate` inside a render, so whatever hangs on it (here `arrange()`) runs mid-render.
+  Never render from there: the projectors' depth pass threw "location is not from the associated program". Mark it
+  stale and redo it before the next frame.
+- Addendum (same day, Dan: a real poster "sits on another mail me the key poster"): the painter moves, merges and
+  drops things. Check every real face against its painted twin (draw the 3D outline on the painting): move the real one
+  onto the painted spot (rays through the painted corners onto its wall, cover-fit), and hide real items the painting
+  left out; a real screen floating beside its painted monitor reads worse than the painted one. A flat dark hole reads
+  as a missing piece; a soft, darkened blur of the painting reads as shadow.
+
+## 2026-11-03 - a walk through painted projections smears; film it between painted keyframes (`danavivi-4e`)
+
+Projecting one painting (or several) back onto block proxies holds only near the projector: as the camera walks,
+whatever the blocks don't model stretches, splits or goes missing. Dan: "smeared and broken apart while I walk ...
+in every step I will see the room in its best form." Rule: paint keyframes from the 3D set (each new one painted from
+the room as already painted there, so they agree), then film the walk between them with a start + end frame video
+model (Kling 3.0 pro: 17.5 credits / 10 s), and drive the frame by the TV's size, never by time.
+- A model's pace between keyframes is its own (Kling eased in, rushed the last push to the TV, then held). Measure the
+  TV share per frame (centre crops against the first frame early on, the last frame late; each method fails at the
+  other end) and pick frames by it; scale the frame just under up the last few %.
+- A scrubbed video must seek: python's http.server has no byte ranges, so `video.currentTime` snaps back to 0. Load the
+  film whole as a blob (fetch -> createObjectURL). Playwright's bundled Chromium has no H.264: test in `channel: 'chrome'`.
+- The hand-off: the film bakes one page size into its last frame; the live TV follows the screen. Fade the live TV in.
+
+## 2026-11-03 - a scrubbed film flickers if visibility follows readyState; the live screen rides on the film (`danavivi-4e`)
+
+Dan, walking the film: "glitches of other scenes" and "it's a different LCD screen". The films had no bad frames; the
+page did it. While a video seeks, readyState reads 1 (every scroll frame, measured), so `readyState >= 2` hid the film
+and the 3D room behind flashed through.
+- Mark a film loaded once ('loadeddata') and never drop it mid-seek. Keep every film on its frame for the position, the
+  idle one parked on its edge toward it, so switching is the same picture. One seek in flight per video (issue the next
+  when `seeking` is false), or a wheel spin aborts every seek and the picture freezes. Drive anything laid over the film
+  from requestVideoFrameCallback's mediaTime (the frame on screen), never the seek you asked for.
+- A film bakes one page size into its TV. Lay the live screen over the film's TV instead, tracked per frame (template
+  match back from the last frame, where its place is known), in the live page's shape, easing onto the live element's
+  own spot at the hand-off. Place the film box in whole pixels: a half-pixel box blurs the overlaid text.
+- Open on the first keyframe (video poster), never on the 3D set; and a `const` named like one already in that function
+  is a SyntaxError that stops the whole module (the walk froze at 0).
+
+## 2026-11-03 - films between separately painted keyframes morph; repaint the 3D set's own walk as one shot (`danavivi-4e`)
+
+Dan, scrubbing the two-film walk: "the sceane changes in the middles items move around", and "in the skelton there was
+redio rullet and drift and revlimiter around the gradge sudnnly they disapear". Two paintings of the same set don't
+agree on what stands where; a start + end frame model bridges them by morphing, and a painter drops what it doesn't
+read (the CRTs became racks and helmets).
+- Make the walk one shot from the set: render the 3D set's walk (capture mode, reduced motion, frames spaced for an even
+  pace on screen) and repaint the whole clip with a video edit model (Kling 3.0 Omni Edit pro, 20 credits / 10 s, 1080p,
+  frame for frame: its frame n is the set's frame n). Every object stays put, and the set's own camera says where each
+  live thing sits in every frame: no tracking, the live screens are laid on with CSS matrix3d from projected corners.
+- An image reference wins over the source video where they disagree: the edit took the painting's look (good) and its
+  contents too (the CRTs vanished again, the posters and TV stayed). Put the set's own objects into the film first
+  (paste the set's monitors where a render with and without them differs, kept to each monitor's box: the neon hum
+  differs everywhere else) and run a local edit pass that makes them real.
+- Phase correlation of a blockout against its repaint is noise (peaks 0.01-0.06); match frames by edge correlation
+  near the end, where the TV dominates (0.8-0.9 at the right index).
+
+- A new section's classes collide with the page's own (2026-11-05, /revfx #rfx-hear): `.rfx-board` already named the
+  hero pedalboard, so the player's board rules (flex, padding, a background photo) landed on the hero too, and a
+  `querySelector('.rfx-board')` check measured the wrong element. Prefix every class with the section
+  (`.rfx-hear-*`) and grep the page CSS + components for each new name before using it.
+
+## 2026-11-09 - a new section never reuses another section's class name
+
+The /revfx player (#rfx-hear) named its board wrapper `.rfx-board-wrap`, the hero's class. The player's
+`container-type: inline-size; display: flex` then applied to the hero too and shrank the hero board to 13 px: the
+pedals spilled over the REVFX title plate (Yoni: "you misplaced the pedals in the top there overlapping").
+
+Rule: a new section's classes carry the section's own prefix (`.rfx-hear-*`). Before adding a class, grep the page's
+stylesheet and components for it. After any CSS change on a page with several sections, screenshot the whole page
+against the live one, not only the section you changed.
+
 ## 2026-11-05 - a route change carries its smoke test; check the smoke run, not only the deploy
 
 `/store` moved to `/plugins` (40c9e43) while `tests/smoke.spec.ts` still waited for `/?utm_source=smoke#plugins`, so
@@ -357,3 +456,53 @@ Smoke went red on every site push for a day and two sessions shipped past it (th
   drop-shadow, which follows the outline). Shoot a floating plugin in its own floating mode (GAS 2: `rv-float` +
   `GAS2.hose(true)`), on a clear ground, with the window's chrome hidden (resize grips, close buttons, backdrops,
   mounted shadows): look at frame 0 on a checkerboard before cutting the loop.
+
+## 2026-11-10 - a render against another worktree's server draws that worktree's room (`danavivi-d5`)
+
+`lights/render.mjs`, `lights/check.mjs` and `street-atlas.mjs` default to port 4471. That day 4471 was another
+session's server for the lights-on worktree, so the first render drew that branch's room, with no error anywhere.
+1. Before pointing a script at a port: `lsof -nP -iTCP:<port> -sTCP:LISTEN` gives the pid, and
+   `lsof -a -p <pid> -d cwd` must show this worktree. Otherwise serve your own
+   (`python3 -m http.server <port> --bind 127.0.0.1` from the worktree root) and pass `--port`.
+2. With builders and Chrome running (load average 300+), the scripts' 90-120 s Playwright waits time out on a page
+   that is fine. Look at `uptime` before debugging; copies with 900 s waits
+   (`.claude/garage-bench-2026-11-10/lights-run/`) finish.
+
+## 2026-11-10 - GitHub Pages gzips the .glb files, so three's progress passes 100 % (`danavivi-d5`)
+
+Pages serves `.glb` gzipped (checked 2026-11-10). three.js's FileLoader takes `total` from `Content-Length`, the
+compressed size, but counts `loaded` in decoded bytes, so a bar driven by `loaded / total` reaches the end early and
+keeps going: in the weak-line simulator the loading screen ran ahead of the download. Weight the bar by sizes known in
+advance (each file's decoded bytes) and clamp it; test through `perf/simserve.py`, which gzips like Pages. The room's
+loading code is the speed session's (`feat/home-speed`).
+
+## 2026-11-10 - on Dan's Mac `.handoff-archive/` never reaches git (`danavivi-d5`)
+
+The close-session and wrap skills put a long session note in `<repo>/.handoff-archive/`, but this clone's
+`.git/info/exclude` (line 35) ignores that folder: a note there stays on the laptop, and `git add` refuses it without
+`-f`. Put the long note beside the work (e.g. `tools/_home-opening/perf/HANDOFF-2026-11-10.md`) and link it from
+`tasks/handoff.md`.
+
+## 2026-11-10 - three's meshopt decoder compiles WebAssembly on import, so a CSP refuses it (`danavivi-d5`)
+
+`import('three/addons/libs/meshopt_decoder.module.js')` calls `WebAssembly.instantiate` as the module loads, even when
+no model uses `EXT_meshopt_compression` (none of the room's 83 did on 11-10). Under a CSP whose `script-src` lacks
+`'wasm-unsafe-eval'`, Chrome, Safari and Firefox each log a violation and an unhandled `CompileError` on every visit.
+Before a page with three goes behind the site's CSP, load it under the live header locally and read every violation
+(the room's test: `.claude/garage-bench-2026-11-10/csp/`, `cspserve.py` + `csptest.cjs`).
+
+## 2026-11-11 - packing the room's models: what changes the picture, and a trial number is not a promise (`danavivi-cc`)
+
+Direction 1 went on the directions page as "same look, 15.2 MB"; the real build is 17.6 MB. The trial's number was
+measured, its look was not: the stills comparison ran only on the real build, and there the trial's recipe failed twice.
+- meshopt's FILTER mode stores normals at 8 bits: on glossy paint (the coupe, clearcoat) the highlight moves. 12 bits
+  with mode QUANTIZE is invisible (car area: mean difference 1.94 → 0.07 of 255 levels).
+- Rounding positions (even to 0.03 mm) reorders faces that sit a hair apart: the studio desk's lit meter face is 0.5 mm
+  over its panel and came out half dark. The pack keeps positions and triangles bit for bit and checks it.
+- Texture right-size finds little here: `dress()` reads the models' maps with 8x anisotropy, so the walk needs about one
+  size level more than a plain "pixels on screen" estimate (7 of 237 textures could drop, ≈ 0.3 MB).
+
+Rule: before a size or speed number goes in front of Dan under "same look", run that exact recipe through the stills
+comparison (five walk stops, originals against it, plus a zoom on the glossiest and the thinnest things in the room).
+A number whose look is not checked yet is labelled "estimate, look not checked". And never pipe a check you may need
+to read through `tail -3`: send it to a log file (one failed `pack.mjs build` run lost its error text that way).

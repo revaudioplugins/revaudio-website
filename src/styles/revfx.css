@@ -56,6 +56,9 @@
 @keyframes rfx-tube { 0% { opacity: .08; } 12% { opacity: 1; } 18% { opacity: .2; } 26% { opacity: 1; } 34% { opacity: .5; } 40%, 100% { opacity: 1; } }
 .rfx-hero-what { margin-top: 16px !important; max-width: 36ch; font: 400 clamp(15px, 1.15vw, 17px) / 1.55 var(--font-body, Inter, sans-serif); color: var(--d-fg); }
 .rfx-hero-price { margin-top: 16px !important; font: 600 15px/1 var(--d-f-head); text-transform: uppercase; letter-spacing: .05em; color: var(--d-fg-dim); }
+.rfx-hero-buy { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-top: 16px; }
+.rfx-hero-buy .rfx-hero-price { margin-top: 0 !important; }
+.rfx-hero-buy .d-cta { --h: 48px; min-width: 0; }
 .rfx-hero-price b { font: 600 40px/1 var(--d-f-badge); color: var(--d-white-ink); text-shadow: var(--d-glow-1); margin-right: 8px; }
 
 /* the board: a floor in perspective, five pedals in an arc, a patch cable IN -> OUT */
@@ -91,11 +94,6 @@
 }
 .rfx-board[data-live="on"] .rfx-ped img { animation-play-state: running; }
 @keyframes rfx-bob { 50% { translate: 0 -5px; } }
-/* a pedal the dice sat out (deck.ts): the plugin's bypass look, its lamp pool off */
-.rfx-peds > li .rfx-ped-pool, .rfx-peds > li .rfx-ped-name { transition: opacity 400ms ease, filter 400ms ease; }
-.rfx-peds > li.is-off .rfx-ped img { filter: saturate(.15) brightness(.42) drop-shadow(0 18px 18px rgba(0, 0, 0, .7)); }
-.rfx-peds > li.is-off .rfx-ped-pool { opacity: .08 !important; animation: none !important; }
-.rfx-peds > li.is-off .rfx-ped-name { opacity: .35; filter: saturate(.2); }
 .rfx-ped:hover img, .rfx-ped:focus-visible img { transform: translateY(-14px) scale(1.04); filter: drop-shadow(0 26px 22px rgba(0, 0, 0, .7)) drop-shadow(0 0 18px rgba(var(--rgb), .55)); }
 /* the lamp pool on the floor under each pedal: lights when it lands */
 .rfx-ped-pool {
@@ -194,6 +192,452 @@
   .rfx-page .rfx-hero-trial .d-stamp-label { margin-top: 0; }
   .rfx-page .rfx-hero-trial .d-stamp-fine { display: block; margin-top: 2px; text-align: center; font-size: 11px; }
 }
+
+/* --------------------------------------------------------------------------
+   #rfx-hear — the before/after player (RfxHear.astro + src/lib/revfx/hear.ts; Yoni 2026-11-05), v2: /drift's #hear
+   size (1180 x ~484 on a laptop) and real 90s hardware photos (src/assets/seasons/revfx/hear/, the section's
+   --rfx-* image properties). Steps: 1 plug in (patchbay) · 2 play · 3 stomp (the pedalboard: footswitch + LED, then
+   the five). Lamps only glow: the LED, a pedal's pool, the screen. [data-ab] = what you hear, [data-next] = the guide, [data-playing].
+   -------------------------------------------------------------------------- */
+.rfx-hear-sec { padding-top: clamp(40px, 5vw, 64px); --rfx-bp: #cbbcff; --rfx-bp-rgb: 203, 188, 255; }
+.rfx-hear-head { margin-bottom: 18px; }
+.rfx-hear-head h2.d-headline { margin: 0; }
+
+/* the flight case: panel-wide.jpg (made at 2.54:1 = the laptop panel; phones: panel-tall.jpg at 0.63:1), stretched to
+   the box, so the rails, rivets and ball corners stay true. Padding clears the rails (~2.9 % of the width). */
+.rfx-hear-panel {
+  position: relative; padding: 36px 38px;
+  background: var(--rfx-panel-w) center / 100% 100% no-repeat, #0b0a0d;
+  border-radius: 6px;
+  box-shadow: 8px 20px 34px rgba(0, 0, 0, .6), 2px 3px 5px rgba(0, 0, 0, .7);
+}
+/* GLUE (2026-11-05, Yoni: "glue everything ... to a real life look ... not just floating"): ONE light for the whole rig,
+   a key from the top-left. Every shadow falls down-right (x > 0, y > 0); the case gets the key's falloff on top of
+   everything (soft-light, so lamps keep their colour); every part sits IN something: a bore, a seat, a cutout. */
+.rfx-hear-panel::after {
+  content: ''; position: absolute; inset: 0; z-index: 6; pointer-events: none; border-radius: inherit; mix-blend-mode: soft-light;
+  background: radial-gradient(90% 80% at 8% 0%, rgba(255, 248, 236, .22), transparent 60%),
+    radial-gradient(110% 90% at 100% 100%, rgba(0, 0, 0, .42), transparent 62%);
+}
+.rfx-hear { display: grid; gap: 20px; align-items: stretch; }
+@media (min-width: 1024px) { .rfx-hear { grid-template-columns: minmax(230px, 270fr) minmax(0, 810fr); } }
+
+.rfx-hear-cap { display: flex; align-items: center; white-space: nowrap; font: 400 11px/1 var(--d-f-pix); letter-spacing: .14em; color: #e9dcff; text-shadow: 0 1px 0 rgba(0, 0, 0, .8); }
+.rfx-hear-n {
+  display: inline-grid; place-items: center; width: 1.8em; height: 1.8em; margin-right: .7em; border-radius: 3px;
+  font: inherit; color: #16021c; text-shadow: none; background: var(--d-neon); box-shadow: 0 0 12px rgba(var(--d-neon-rgb), .55);
+}
+
+/* THE GUIDE (hear.ts next()): the next thing to touch breathes, and so does its step's key; the other keys rest dim
+   until both sides were heard ([data-next=''] = free play) */
+@keyframes rfx-hear-next { 0%, 100% { box-shadow: 0 0 0 2px rgba(var(--d-neon-rgb), .2); } 50% { box-shadow: 0 0 0 2px var(--d-neon), 0 0 22px rgba(var(--d-neon-rgb), .85); } }
+[data-rfx-hear]:not([data-next='']) .rfx-hear-n { background: rgba(var(--d-neon-rgb), .4); box-shadow: none; }
+[data-rfx-hear][data-next='play'] [data-step='2'] .rfx-hear-n,
+[data-rfx-hear]:is([data-next='stomp'], [data-next='back']) [data-step='3'] .rfx-hear-n,
+[data-rfx-hear][data-next='roll'] [data-step='4'] .rfx-hear-n { background: var(--d-neon); animation: rfx-hear-next 1.2s ease-in-out infinite; }
+[data-rfx-hear][data-next='play'] .rfx-hear-play { animation: rfx-hear-next 1.2s ease-in-out infinite; border-radius: 50%; }
+
+/* ---- 1 · PLUG IN: the patchbay, a burnt titanium plate like every section (.rfx-plate: plate-t on laptops, plate-w on
+   tablets + phones; Yoni 2026-11-05 "do the left panel also with the titanium"; its black anodized bay.jpg retired).
+   Four printed rows. */
+.rfx-hear-bay { display: flex; flex-direction: column; gap: 8px; padding: 0 2px 0 4px; }
+.rfx-jacks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; flex: 1; }
+.rfx-jacks li { flex: 1; display: flex; border-top: 1px solid rgba(0, 0, 0, .55); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .05); }
+.rfx-jacks li:first-child { border-top: 0; box-shadow: none; }
+.rfx-jack {
+  --sock: 42px;
+  flex: 1; position: relative; display: grid; grid-template-columns: minmax(0, 1fr) var(--sock); align-items: center; gap: 10px;
+  min-height: 52px; padding: 4px 2px 4px 8px; border: 0; border-radius: 4px; cursor: pointer; text-align: left; background: none;
+  color: rgba(232, 224, 244, .74); transition: color .14s ease, background-color .14s ease;
+}
+.rfx-jack:hover { color: #f3ecff; background: rgba(255, 255, 255, .03); }
+.rfx-jack[aria-pressed='true'] { color: #fff; }
+.rfx-jack[aria-pressed='true'] .rfx-jack-nm { text-shadow: 0 1px 1px rgba(0, 0, 0, .85), 0 0 10px rgba(255, 255, 255, .25); }
+.rfx-jack-txt { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.rfx-jack-no { font: 400 8px/1 var(--d-f-pix); letter-spacing: .1em; color: rgba(225, 214, 240, .45); }
+.rfx-jack[aria-pressed='true'] .rfx-jack-no { color: var(--d-hot); text-shadow: var(--d-glow-pink); }
+/* silkscreen: white paint on the titanium (a print, so no glow; the soft dark edge keeps it readable on the tint) */
+.rfx-jack-nm { font: 600 clamp(16px, 1.4vw, 19px)/1 var(--d-f-head); letter-spacing: .07em; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-shadow: 0 1px 1px rgba(0, 0, 0, .85), 0 0 6px rgba(0, 0, 0, .35); }
+.rfx-jack-sock { position: relative; isolation: isolate; width: var(--sock); height: var(--sock); }
+.rfx-jack-sock::before { content: ''; position: absolute; inset: -7%; z-index: -1; border-radius: 50%; translate: 1px 2px;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, .7) 70%, rgba(0, 0, 0, .3) 86%, transparent 100%); }
+.rfx-jack-nut { display: block; width: 100%; height: 100%; filter: drop-shadow(2px 3px 2px rgba(0, 0, 0, .75)) drop-shadow(0 0 1px rgba(0, 0, 0, .9)); }
+/* the right-angle plug (plug.png: its round head = the image's left square, the cable runs on to the right): the head
+   sits on the socket, the cable leaves the plate toward the deck and fades out there */
+.rfx-jack-plug {
+  --ph: calc(var(--sock) * .7);
+  position: absolute; z-index: 2; left: calc(50% - var(--ph) / 2); top: calc(50% - var(--ph) / 2); height: var(--ph); width: calc(var(--ph) * 4.6);   /* runs on under the next plate (that plate paints over it) */
+  pointer-events: none; opacity: 0; translate: 10px 0;
+  filter: drop-shadow(3px 5px 3px rgba(0, 0, 0, .7)) drop-shadow(1px 1px 1px rgba(0, 0, 0, .8));
+  transition: opacity .14s ease, translate .22s cubic-bezier(.3, 1.5, .5, 1);
+}
+.rfx-jack-plug img { display: block; height: 100%; width: auto; max-width: none; }
+.rfx-jack[aria-pressed='true'] .rfx-jack-plug { opacity: 1; translate: 0 0; }
+
+/* THE PLATES: every section sits on its own photo plate: burnt titanium (gold / bronze / magenta / cobalt heat tint)
+   with the patchbay plate's wear (edges worn to bare metal, chips, scratches) and a screw in each corner. plate-w.jpg
+   2:1, plate-s 1:1, plate-t 1:2 (the nearest shape per box keeps the stretch small), 9-sliced like the patchbay. The
+   border (--rail) IS the screw zone (--sc-box for the overlap test); content lives inside it. A soft inner shade keeps
+   the lettering readable on the brightest tint. */
+.rfx-plate {
+  --rail: 18px; --sc-box: var(--rail); --plate: var(--rfx-plate-w); --slice: 94;
+  position: relative; isolation: isolate;
+  border: var(--rail) solid transparent; border-image: var(--plate) var(--slice) fill / var(--rail) stretch;
+  box-shadow: 4px 7px 11px rgba(0, 0, 0, .6), 1px 2px 2px rgba(0, 0, 0, .85);
+}
+.rfx-plate::before { content: ''; position: absolute; inset: calc(var(--rail) * -1); z-index: -1; pointer-events: none;
+  background: radial-gradient(closest-side, rgba(8, 6, 12, .34) 55%, rgba(8, 6, 12, 0) 100%); }
+.rfx-plate--sq { --plate: var(--rfx-plate-s); --slice: 78; }
+.rfx-plate--tall { --plate: var(--rfx-plate-t); --slice: 94; }
+.rfx-plate--scr { padding: 0; }
+
+/* ---- the deck */
+.rfx-hear-deck { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+
+/* the screen: a segment LCD (DSEG14, /drift's #hear face) sunk in the tolex behind a bezel ring. Text = --seg-ink,
+   each readout's ghost (data-g) under it; the waveform: --seg-bp on BYPASS, the five pedal inks on REVFX (hear.ts) */
+.rfx-hear-screen {
+  --seg-col: 6; --seg-bar: 4; --seg-ink: #ece0ff; --seg-dimt: #9d8cb8; --seg-ghost: rgba(225, 205, 255, .07); --seg-head: #ffffff;
+  --seg-bp: #bfb3d6; --seg-dim-a: .3;
+  position: relative; display: flex; flex-direction: column; gap: 7px; padding: 11px 16px 9px; border-radius: 6px; overflow: hidden;
+  background: radial-gradient(120% 100% at 50% 35%, #130a1e 0%, #08040e 75%);
+  box-shadow: 0 0 0 1px rgba(4, 2, 8, .95), 0 0 0 4px #111014, 1px 1px 0 5px rgba(255, 245, 235, .2), -1px -1px 0 5px rgba(0, 0, 0, .55),
+    0 0 6px 6px rgba(0, 0, 0, .35),
+    inset 0 0 0 2px #040106, inset 3px 8px 12px rgba(0, 0, 0, .85), inset -1px -3px 6px rgba(0, 0, 0, .45);
+}
+.rfx-hear-screen::after { content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .07), rgba(255, 255, 255, 0) 38%); }
+.rfx-hear-screen::before { content: ''; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .35s ease;
+  background: linear-gradient(90deg, rgba(168, 200, 255, .1), rgba(255, 79, 216, .1), rgba(77, 255, 138, .08), rgba(196, 139, 255, .1), rgba(111, 232, 255, .1)); }
+[data-ab='after'] .rfx-hear-screen::before { opacity: 1; }
+.rfx-scr-hdr, .rfx-scr-row { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.rfx-scr-hdr { height: 20px; }
+.rfx-scr-row { height: 16px; }
+.rfx-hear-screen :is(.rfx-scr-coach, .rfx-scr-title, .rfx-scr-t, .rfx-scr-tag) { font-family: var(--d-f-seg); letter-spacing: .06em; word-spacing: .616em; white-space: nowrap; }
+.rfx-scr-coach { flex: 1; min-width: 0; overflow: hidden; font-size: 12px; color: var(--seg-dimt); transition: color .12s ease; }
+[data-rfx-hear]:not([data-next='']) .rfx-scr-coach { color: var(--seg-ink); text-shadow: 0 0 2px rgba(236, 224, 255, .6); }
+.rfx-scr-title { z-index: 1; height: 22px; font-size: 16px; line-height: 22px; color: var(--seg-ink); text-shadow: 0 0 2px rgba(236, 224, 255, .55); }
+.rfx-scr-t { font-size: 11px; color: var(--seg-ink); }
+.rfx-scr-tag { flex: none; padding: 4px 6px 3px; border-radius: 2px; font-size: 9px; color: var(--seg-bp); box-shadow: inset 0 0 0 1px var(--seg-bp); transition: color .15s, background-color .15s, box-shadow .15s; }
+[data-ab='after'] .rfx-scr-tag { color: #12061a; background: var(--d-neon); box-shadow: 0 0 12px rgba(var(--d-neon-rgb), .7); }
+[data-ab='after'] .rfx-hear-screen [data-hear-chain] { color: #fff; text-shadow: 0 0 6px rgba(var(--d-neon-rgb), .9); }
+.rfx-hear-screen :is(.rfx-scr-coach, .rfx-scr-title, .rfx-scr-t) { position: relative; isolation: isolate; }
+.rfx-hear-screen :is(.rfx-scr-coach, .rfx-scr-title, .rfx-scr-t)::before {
+  content: attr(data-g); position: absolute; left: 0; top: 0; z-index: -1; white-space: nowrap; color: var(--seg-ghost); text-shadow: none;
+}
+.rfx-hear-screen .rfx-scr-coach::before { content: attr(data-g) '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~' / ''; }
+.rfx-scr-wave { position: relative; z-index: 1; height: clamp(48px, 4.4vw, 60px); }
+.rfx-scr-wave canvas { display: block; width: 100%; height: 100%; }
+
+/* ---- the top row: the screen, and 4 ROLL IT beside it (the die sits next to the screen it changes) */
+.rfx-hear-top { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; }
+.rfx-hear-step--roll { --s: 58px; --tvf-u: .16; width: 192px; }   /* the ask "4 ROLL IT ▸" needs ~111 px of glass */
+
+/* 4 ROLL IT = a little TV (Yoni 2026-11-09: "an lcd screen similar to the website tv", then "make the tv more
+   prominent ... more lines more distortion in the image").
+   THE SET: home's broken TV cabinet (WordWall.astro .ww-frame: tv-broken-3.png, 9-sliced the same way, the corner
+   patches + bezel scaled by --tvf-u = CSS px per photo pixel), its green pilot LED in the chin, the glass under the
+   bezel's middle. It stands in the flight case like the plates do (their shadow).
+   THE GLASS: home's layers in RevFX violet (tube glow, grille, reflection + curvature) on a worse tube than home's:
+   heavy scanlines OVER the picture, the picture's colours fringing red / cyan, a slow hum bar rolling down, a faint
+   flicker, a small tear every few seconds, a big one on a roll. The ask sits OVER the lines (it is read; Law 5).
+   Reduced motion: the glass holds still. */
+.rfx-tvset { position: relative; isolation: isolate; filter: drop-shadow(4px 7px 8px rgba(0, 0, 0, .6)) drop-shadow(1px 2px 2px rgba(0, 0, 0, .85)); }
+.rfx-tvset-frame {
+  position: absolute; inset: 0; z-index: 3; pointer-events: none;
+  border: 0 solid transparent;
+  border-image: var(--tvf-img) var(--tvf-sl) / calc(var(--tvf-t) * var(--tvf-u) * 1px) calc(var(--tvf-r) * var(--tvf-u) * 1px)
+    calc(var(--tvf-b) * var(--tvf-u) * 1px) calc(var(--tvf-l) * var(--tvf-u) * 1px) round;
+}
+.rfx-tvset-led {
+  position: absolute; right: calc(var(--tvf-r) * var(--tvf-u) * 1px + 6px); bottom: calc(var(--tvf-zb) * var(--tvf-u) * .5px);
+  width: 5px; aspect-ratio: 1; translate: 0 50%; border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #d2f7df 0 18%, #4fbf82 45%, #1f7a4d 100%);
+  box-shadow: 0 0 5px 1px rgba(79, 191, 130, .75), 0 0 12px 2px rgba(79, 191, 130, .3);
+}
+.rfx-tv {
+  --tv-h: 280; --tv-s: 70;
+  --tv-ink: hsl(var(--tv-h) 95% 66%); --tv-ink-hot: hsl(var(--tv-h) 100% 74%); --tv-ink-on: hsl(var(--tv-h) 60% 9%);
+  --tv-glow: hsl(var(--tv-h) 90% 58% / .45); --tv-glow-hot: hsl(var(--tv-h) 90% 58% / .6); --tv-glow-soft: hsl(var(--tv-h) 90% 58% / .3);
+  --tv-bright: 1.45; --tv-scan: .5; --tv-curve: .75;
+  /* the glass runs from the bezel's middle; what's on it clears the bezel by a breath */
+  position: absolute; z-index: 1; display: flex; flex-direction: column; min-width: 0; border: 0; cursor: pointer; text-align: left;
+  top: calc(var(--tvf-zt) * var(--tvf-u) * .5px); right: calc(var(--tvf-zr) * var(--tvf-u) * .5px);
+  bottom: calc(var(--tvf-zb) * var(--tvf-u) * .5px); left: calc(var(--tvf-zl) * var(--tvf-u) * .5px);
+  padding: calc(var(--tvf-zt) * var(--tvf-u) * .5px + 7px) calc(var(--tvf-zr) * var(--tvf-u) * .5px + 7px)
+    calc(var(--tvf-zb) * var(--tvf-u) * .5px + 5px) calc(var(--tvf-zl) * var(--tvf-u) * .5px + 7px);
+  border-radius: 14% / 16%; overflow: hidden; isolation: isolate; background: #040107;
+}
+.rfx-tv-glow { position: absolute; inset: 0; z-index: -2; pointer-events: none;
+  background: radial-gradient(ellipse 62% 80% at 50% 46%, #33154f 0%, #1c0c30 40%, #0b0414 76%, #040107 100%);
+  filter: brightness(var(--tv-bright)); transition: filter .18s ease; }
+/* the grille stays under everything (as on home) */
+.rfx-tv::before { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: repeating-linear-gradient(90deg, rgba(255, 40, 90, .08) 0 1px, rgba(40, 255, 140, .05) 1px 2px, rgba(70, 90, 255, .08) 2px 3px); }
+/* the lines, over the picture: heavy scanlines + the hum bar rolling down */
+.rfx-tv-lines { position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background:
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, var(--tv-scan)) 0 1.5px, rgba(255, 255, 255, .025) 1.5px 2px, transparent 2px 3.5px),
+    linear-gradient(transparent, hsl(var(--tv-h) 90% 80% / .09) 40%, rgba(255, 255, 255, .13) 50%, hsl(var(--tv-h) 90% 80% / .09) 60%, transparent) 0 -40% / 100% 34% no-repeat; }
+.rfx-tv-fx { position: absolute; inset: 0; z-index: 3; pointer-events: none; border-radius: inherit;
+  background:
+    linear-gradient(158deg, rgba(255, 255, 255, .09) 0%, rgba(255, 255, 255, .025) 16%, transparent 30%),
+    radial-gradient(ellipse 70% 22% at 50% 0%, rgba(255, 255, 255, .06), transparent 70%),
+    radial-gradient(120% 115% at 50% 50%, transparent 50%, rgba(0, 0, 0, var(--tv-curve)) 100%);
+  box-shadow: inset 0 0 0 1px rgba(190, 90, 255, .22), inset 0 0 18px rgba(0, 0, 0, .8); }
+@media (hover: hover) { .rfx-tv:hover .rfx-tv-glow { filter: brightness(calc(var(--tv-bright) * 1.22)); } }
+.rfx-tv:focus-visible { outline: 2px solid var(--tv-ink-hot); outline-offset: 3px; }
+/* the word: RANDOMIZE in a set's on-screen display (Yoni 2026-11-09: "instead of 4 - roll it, a cool tv theme like
+   text which just says Randomize"): VT323, the chunky raster type of a TV / VCR menu, in the phosphor, fringed red /
+   cyan like the rest of the tube; over the lines so it reads. Centred off the cabinet's rounded corners (left on a
+   phone's strip, below) */
+.rfx-tv-ask { position: relative; z-index: 2; display: flex; align-items: center; justify-content: center; margin-top: 7px; white-space: nowrap;
+  font: 400 20px/1 var(--d-f-lcd); letter-spacing: .08em; color: var(--tv-ink);
+  text-shadow: 1.5px 0 rgba(255, 40, 90, .6), -1.5px 0 rgba(40, 220, 255, .5), 0 0 10px var(--tv-glow); }
+/* the guide: when the die is next, the word burns (hot phosphor, more bloom) */
+[data-rfx-hear][data-next='roll'] .rfx-tv-ask { color: #fbeaff;
+  text-shadow: 1.5px 0 rgba(255, 40, 90, .7), -1.5px 0 rgba(40, 220, 255, .6), 0 0 8px var(--tv-glow-hot), 0 0 22px var(--tv-glow-soft); }
+@media (prefers-reduced-motion: no-preference) { [data-rfx-hear][data-next='roll'] .rfx-tv-ask { animation: rfx-tv-burn 1.2s ease-in-out 4; } }   /* four beats, then it holds (WCAG 2.2.2, as the TV's cursor) */
+@keyframes rfx-tv-burn { 50% { color: var(--tv-ink-hot); } }
+[data-rfx-hear][data-next='roll'] .rfx-tv-glow { filter: brightness(calc(var(--tv-bright) * 1.15)); }
+/* the tube's own faults (a broken set's, design-language §3: its own, small): the hum bar rolls, the glow flickers,
+   the picture tears now and then; a roll = a big tear + a flash (the channel changing) */
+@media (prefers-reduced-motion: no-preference) {
+  .rfx-tv-lines { animation: rfx-tv-roll 7s linear infinite; }
+  .rfx-tv-glow { animation: rfx-tv-flicker 4.3s steps(1, end) infinite; }
+  .rfx-tv-pic { animation: rfx-tv-tear 5.7s steps(1, end) infinite; }
+  .rfx-tv.is-thrown .rfx-tv-pic { animation: rfx-tv-tear-big 420ms steps(1, end); }
+  .rfx-tv.is-thrown .rfx-tv-glow { animation: rfx-tv-flash 420ms ease-out; }
+}
+@keyframes rfx-tv-roll { from { background-position: 0 0, 0 -40%; } to { background-position: 0 0, 0 140%; } }
+@keyframes rfx-tv-flicker { 0% { opacity: 1; } 31% { opacity: .9; } 33% { opacity: 1; } 71% { opacity: .94; } 72% { opacity: 1; } }
+@keyframes rfx-tv-tear { 0%, 90% { transform: none; } 91% { transform: translateX(3px) skewX(-7deg); } 93% { transform: translateX(-2px) skewX(4deg); } 95% { transform: none; } }
+@keyframes rfx-tv-tear-big { 0% { transform: translateX(-6px) skewX(12deg) scaleY(1.04); } 25% { transform: translateX(5px) skewX(-9deg); } 50% { transform: translateX(-3px) skewX(5deg); } 75% { transform: translateX(1px); } 100% { transform: none; } }
+@keyframes rfx-tv-flash { 0% { filter: brightness(2.6) saturate(.5); } 100% { filter: brightness(var(--tv-bright)); } }
+
+/* the picture: the die (the hero's neon die, moved here 2026-11-09) on the glass. A roll throws it up and it lands
+   (motion as feedback); no idle bob */
+.rfx-tv-pic { position: relative; z-index: 0; flex: 1; display: grid; place-items: center; min-height: calc(var(--s) * 1.2); perspective: 500px;
+  filter: drop-shadow(2px 0 0 rgba(255, 30, 80, .6)) drop-shadow(-2px 0 0 rgba(30, 220, 255, .5)); }   /* the tube's colour fringes */
+.rfx-die {
+  --rx: -22deg; --ry: 32deg;
+  position: relative; display: block; width: var(--s); height: var(--s); transform-style: preserve-3d;
+  transform: rotateX(var(--rx)) rotateY(var(--ry)); transition: transform 1100ms cubic-bezier(.17, .84, .26, 1.02);
+}
+.rfx-tv.is-thrown .rfx-die { animation: rfx-throw 1100ms cubic-bezier(.2, .7, .3, 1) both; }
+@keyframes rfx-throw { 0% { translate: 0 0; } 30% { translate: 0 calc(var(--s) * -.45); } 62% { translate: 0 1px; } 76% { translate: 0 calc(var(--s) * -.1); } 100% { translate: 0 0; } }
+.rfx-die-f {
+  position: absolute; inset: 0; display: grid; grid-template: repeat(3, 1fr) / repeat(3, 1fr); padding: 14%; gap: 4%;
+  border-radius: 18%; backface-visibility: hidden;
+  background: radial-gradient(circle at 30% 25%, #2b1238, #12061a 75%);
+  box-shadow: inset 0 0 0 2px rgba(255, 95, 216, .85), inset 0 0 14px rgba(255, 95, 216, .35), 0 0 12px rgba(255, 95, 216, .3);
+}
+.rfx-die-f i { border-radius: 50%; }
+.rfx-die-f i.on { background: #ffd6f6; box-shadow: 0 0 6px #ff5fd8, 0 0 2px #fff; }
+.rfx-die-f.f1 { transform: translateZ(calc(var(--s) / 2)); }
+.rfx-die-f.f6 { transform: rotateY(180deg) translateZ(calc(var(--s) / 2)); }
+.rfx-die-f.f2 { transform: rotateY(90deg) translateZ(calc(var(--s) / 2)); }
+.rfx-die-f.f5 { transform: rotateY(-90deg) translateZ(calc(var(--s) / 2)); }
+.rfx-die-f.f3 { transform: rotateX(90deg) translateZ(calc(var(--s) / 2)); }
+.rfx-die-f.f4 { transform: rotateX(-90deg) translateZ(calc(var(--s) / 2)); }
+@media (hover: hover) { .rfx-tv:hover .rfx-die { --rx: -32deg; } }
+
+/* ---- the rig: 2 PLAY · 3 STOMP (the board) · VOLUME, each in a shallow well cut into the tolex */
+.rfx-hear-rig { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; flex: 1; }
+.rfx-hear-step, .rfx-hear-vol { display: flex; flex-direction: column; gap: 9px; padding: 0 4px 2px; }
+.rfx-hear-step--stomp { min-width: 0; }
+.rfx-hear-caps { display: flex; align-items: center; justify-content: center; gap: 12px; flex: 1; }
+.rfx-hear-caps .d-cap { width: 54px; height: 54px; filter: drop-shadow(2px 3px 2px rgba(0, 0, 0, .75)); }
+/* STOP stays desaturated at rest (drift.css: the CTA is the one race-red per viewport); the shadow follows the light */
+.rfx-hear-caps .d-cap--stop:not(:active) { filter: saturate(.3) brightness(.65) drop-shadow(2px 3px 2px rgba(0, 0, 0, .75)); }
+.rfx-hear-caps .d-cap--stop:not(:active):hover { filter: saturate(.3) brightness(.8) drop-shadow(2px 3px 2px rgba(0, 0, 0, .75)); }
+.rfx-hear-caps .d-cap:active { filter: brightness(.9) drop-shadow(1px 1px 1px rgba(0, 0, 0, .8)); }
+/* seated in a bezel, a cap never slides (drift.css lifts it 1 px on hover and drops it 4 px on press, which pushed it
+   out of its seat, Yoni 2026-11-05): it stays centred and presses INTO the bore, a touch smaller and darker */
+.rfx-bore .d-cap, .rfx-bore .d-cap:hover { transform: none; }
+.rfx-bore .d-cap:active { transform: scale(.94); }
+.rfx-bore .d-cap--stop:active { filter: saturate(.3) brightness(.55) drop-shadow(1px 1px 1px rgba(0, 0, 0, .8)); }
+.rfx-bore { --b: 5px; display: inline-grid; place-items: center; padding: var(--b); border-radius: 50%;
+  background: radial-gradient(closest-side, #020103 calc(100% - var(--b) - 1px), transparent calc(100% - var(--b))),
+    conic-gradient(from 215deg, #b9b2c4, #3b3542 22%, #8b8496 40%, #221e27 62%, #a49cb0 82%, #b9b2c4);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .7), 2px 3px 4px rgba(0, 0, 0, .6), 0 0 0 1px rgba(0, 0, 0, .45); }
+.rfx-hear-ab { margin-left: auto; display: flex; gap: 12px; font-size: 9px; letter-spacing: .12em; }
+.rfx-hear-ab i { font-style: normal; color: rgba(225, 214, 240, .35); transition: color .2s ease, text-shadow .2s ease; }
+[data-ab='before'] .rfx-hear-ab i:first-child { color: var(--rfx-bp); text-shadow: 0 0 8px rgba(var(--rfx-bp-rgb), .6); }
+[data-ab='after'] .rfx-hear-ab i:last-child { color: var(--d-neon); text-shadow: var(--d-glow-2); }
+
+/* the pedalboard: board-wide.jpg (3:1, laptop; phones board-mid.jpg 2.1:1) = carpet + the two aluminium rails (5 % each) */
+.rfx-hear-board {
+  /* the five and their gaps fill what the board's padding leaves (100cqw = .rfx-hear-board-wrap, the room right of the
+     REVFX button): pedal = (room - --fix) / (5 + 4 x --pgk), gap = pedal x --pgk */
+  --fix: 30px; --pgk: .5;
+  --pm: clamp(24px, calc((100cqw - var(--fix)) / (5 + 4 * var(--pgk))), 56px);   /* a mini pedal's width */
+  --pg: calc(var(--pm) * var(--pgk));        /* the gap between two pedals (a patch cable spans it) */
+  --mid: calc(var(--pm) * .9);               /* the board's signal line (patch cables, jacks, the switch) from the top */
+  position: relative; flex: 1; display: flex; align-items: flex-start; justify-content: center; gap: var(--pg);
+  padding: 14px 12px 16px;
+  background: var(--rfx-board-w) center / 100% 100% no-repeat;
+  border-radius: 3px;
+  box-shadow: 4px 7px 10px rgba(0, 0, 0, .7), 1px 2px 2px rgba(0, 0, 0, .9);
+}
+/* REVFX = /drift's push-to-start (drift.css .d-start, built at 204 px, scaled by --k) with /drift #hear's raised cap
+   (the lens stands proud, goes down 1.5 px when pushed), in RevFX's purple instead of DRIFT's magenta. Lit (data-on
+   after) = RevFX; dark = the dry sound; the 40 bars chase while the sound loads; the tube strikes when it plays
+   (.is-striking, hear.ts). The guide breathes as a ring on the bezel. */
+.rfx-hear-stomprow { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0; }
+.rfx-hear-board-wrap { position: relative; z-index: 1; flex: 1; min-width: 0; container-type: inline-size; display: flex; }
+#rfx-hear .rfx-start { --k: .6; flex: none; margin: 0; }
+#rfx-hear .rfx-start .d-start-in::before { content: ''; position: absolute; left: 50%; top: 50%; width: 164px; height: 164px; translate: -50% -50%; border-radius: 50%;
+  pointer-events: none; background: radial-gradient(closest-side, rgba(0, 0, 0, .75) 88%, rgba(0, 0, 0, .35) 94%, rgba(255, 245, 235, .1) 97%, transparent 100%); }
+#rfx-hear .rfx-start .d-start-pb { box-shadow: 6px 12px 18px rgba(0, 0, 0, .7), 2px 3px 4px rgba(0, 0, 0, .6), inset 0 0 0 1px rgba(255, 255, 255, .45), inset 0 -2px 3px rgba(0, 0, 0, .4); }
+#rfx-hear .rfx-start:not([data-on='after']):not([data-loading]) .d-start-ticks i { background: rgba(var(--d-neon-rgb), .3); }
+#rfx-hear .rfx-start[data-on='after'] .d-start-ticks i { background: #e7a6ff; box-shadow: 0 0 5px rgba(var(--d-neon-rgb), .75); }
+#rfx-hear .rfx-start[data-loading] .d-start-ticks i { animation-name: rfx-start-chase; }
+@keyframes rfx-start-chase { 0% { background: #fbf0ff; box-shadow: 0 0 8px var(--d-neon), 0 0 16px rgba(var(--d-neon-rgb), .85); } 25% { background: rgba(var(--d-neon-rgb), .75); box-shadow: 0 0 6px rgba(var(--d-neon-rgb), .6); } 70%, 100% { background: rgba(var(--d-neon-rgb), .12); box-shadow: none; } }
+#rfx-hear .rfx-start:not([data-on='after']) .d-start-lg.lit { opacity: .3; }
+#rfx-hear .rfx-start::before { content: ''; position: absolute; inset: 4%; border-radius: 50%; pointer-events: none; opacity: 0; transition: opacity .3s ease;
+  box-shadow: 0 0 34px 12px rgba(var(--d-neon-rgb), .32); }
+#rfx-hear .rfx-start[data-on='after']:not([data-loading])::before { opacity: 1; }
+#rfx-hear .rfx-start .d-start-tube.lit { border-color: #fbf0ff;
+  box-shadow: 0 0 0 1.5px #e08cff, inset 0 0 0 1.5px #e08cff, 0 0 8px 2px rgba(var(--d-neon-rgb), .95), inset 0 0 8px 2px rgba(var(--d-neon-rgb), .75),
+    0 0 26px 6px rgba(var(--d-neon-rgb), .55), inset 0 0 24px 4px rgba(var(--d-neon-rgb), .35); }
+#rfx-hear .rfx-start .d-start-tube:not(.lit) { border-color: #26173a; }
+#rfx-hear .rfx-start .d-start-bloom { background: radial-gradient(circle, rgba(var(--d-neon-rgb), .34), rgba(var(--d-neon-rgb), .08) 55%, transparent 72%); }
+#rfx-hear .rfx-start .d-start-spill { background: radial-gradient(circle, transparent 52%, rgba(var(--d-neon-rgb), .3) 62%, transparent 76%); }
+#rfx-hear .rfx-start .d-start-lg.lit .w { color: #fff; text-shadow: 0 0 3px #fff, 0 0 12px rgba(var(--d-neon-rgb), .95), 0 0 24px rgba(var(--d-neon-rgb), .5); }
+#rfx-hear .rfx-start .d-start-lg.lit .s { color: #ecd2ff; text-shadow: 0 0 8px rgba(var(--d-neon-rgb), .9); }
+#rfx-hear .rfx-start .d-start-lg .w { font-size: 15px; letter-spacing: .16em; margin-left: .16em; }
+#rfx-hear .rfx-start .d-start-seat { inset: 18px; }
+#rfx-hear .rfx-start .d-start-tube { inset: 21px; }
+#rfx-hear .rfx-start :is(.d-start-lens, .d-start-lg) { inset: 27px; }
+#rfx-hear .rfx-start .d-start-lens { transition: transform .08s ease-out, box-shadow .08s ease-out;
+  background: radial-gradient(115% 95% at 34% 22%, #3f3550 0%, #201a2c 38%, #0e0a16 72%, #060409 100%);
+  box-shadow: 0 5px 7px rgba(0, 0, 0, .85), 0 1px 2px rgba(0, 0, 0, .95), inset 0 2px 0 rgba(255, 255, 255, .22), inset 0 0 0 1px rgba(0, 0, 0, .85),
+    inset 0 -5px 7px rgba(0, 0, 0, .75), inset 3px 0 6px -2px rgba(255, 255, 255, .05); }
+#rfx-hear .rfx-start .d-start-lens::before { content: ''; position: absolute; inset: 0; border-radius: 50%; pointer-events: none; z-index: 1;
+  background: radial-gradient(34% 17% at 37% 15%, rgba(255, 255, 255, .34), rgba(255, 255, 255, .08) 62%, transparent 75%),
+    radial-gradient(closest-side, transparent 88%, rgba(255, 255, 255, .07) 96%, transparent 100%); }
+#rfx-hear .rfx-start .d-start-lg { transition: transform .08s ease-out; }
+#rfx-hear .rfx-start .d-start-pb:active :is(.d-start-lens, .d-start-lg) { transform: translateY(1.5px) scale(.965); }
+#rfx-hear .rfx-start .d-start-pb:active .d-start-lens { box-shadow: 0 1px 1px rgba(0, 0, 0, .95), inset 0 1px 0 rgba(255, 255, 255, .12), inset 0 0 0 1px rgba(0, 0, 0, .85),
+    inset 0 -2px 4px rgba(0, 0, 0, .75), inset 0 5px 9px rgba(0, 0, 0, .6); }
+#rfx-hear .rfx-start .d-start-pb:active .d-start-lens::before { opacity: .55; }
+@media (hover: hover) { #rfx-hear .rfx-start .d-start-pb:hover:not(:active) .d-start-lens { box-shadow: 0 5px 7px rgba(0, 0, 0, .85), 0 1px 2px rgba(0, 0, 0, .95),
+    inset 0 2px 0 rgba(255, 255, 255, .32), inset 0 0 0 1px rgba(0, 0, 0, .85), inset 0 -5px 7px rgba(0, 0, 0, .75), inset 3px 0 6px -2px rgba(255, 255, 255, .08); } }
+.drift-page #rfx-hear .rfx-start .d-start-pb:focus-visible { outline: 2px solid var(--d-pink-ink); outline-offset: 10px; border-radius: 50%; }
+[data-rfx-hear]:is([data-next='stomp'], [data-next='back']) .rfx-start::after { animation: rfx-hear-next 1.2s ease-in-out infinite; }
+/* the five, joined by patch cables (patch.png, its plugs tucked under the pedals either side) */
+.rfx-peds-mini { position: relative; z-index: 2; flex: none; list-style: none; margin: 0; padding: 0; display: flex; justify-content: center; gap: var(--pg); }
+.rfx-peds-mini > li { position: relative; flex: none; width: var(--pm); min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+.rfx-pm-ped { position: relative; z-index: 2; display: block; width: 100%; height: auto;
+  filter: saturate(.15) brightness(.42) drop-shadow(3px 5px 4px rgba(0, 0, 0, .8)); transition: filter .3s ease; }
+.rfx-peds-mini > li::after { content: ''; position: absolute; z-index: 1; left: 6%; right: -6%; top: calc(var(--pm) * 1.807 - 5px); height: 9px;
+  border-radius: 50%; pointer-events: none; background: radial-gradient(closest-side, rgba(0, 0, 0, .8), transparent); }
+.rfx-patch { position: absolute; z-index: 1; left: 62%; top: calc(var(--mid) - 5px); width: calc(var(--pm) * .76 + var(--pg)); height: auto; pointer-events: none;
+  filter: drop-shadow(2px 3px 2px rgba(0, 0, 0, .8)); }
+/* every pedal carries its cable to the next; the last one in the chain (a preset reorders the board) has none */
+.rfx-peds-mini > li:last-child .rfx-patch { display: none; }
+.rfx-pm-pool { position: absolute; left: -45%; right: -45%; top: 55%; height: 40%; border-radius: 50%; z-index: 0; pointer-events: none;
+  background: radial-gradient(closest-side, rgba(var(--rgb), .6), rgba(var(--rgb), .12) 60%, transparent); filter: blur(5px); opacity: 0; transition: opacity .3s ease; }
+.rfx-pm-nm { font: 600 clamp(8px, .75vw, 10px)/1 var(--d-f-head); letter-spacing: .07em; text-transform: uppercase; white-space: nowrap; color: rgba(225, 214, 240, .38); transition: color .2s ease, text-shadow .2s ease; }
+[data-ab='after'] .rfx-peds-mini > li:not(.is-out) :is(.rfx-pm-ped, .rfx-pm-pool, .rfx-pm-nm) { transition-delay: calc(var(--i) * 90ms); }
+[data-ab='after'] .rfx-peds-mini > li:not(.is-out) .rfx-pm-ped { filter: drop-shadow(3px 5px 4px rgba(0, 0, 0, .8)) drop-shadow(0 0 8px rgba(var(--rgb), .5)); }
+[data-ab='after'] .rfx-peds-mini > li:not(.is-out) .rfx-pm-pool { opacity: .95; }
+[data-ab='after'] .rfx-peds-mini > li:not(.is-out) .rfx-pm-nm { color: var(--ink); text-shadow: 0 0 8px rgba(var(--rgb), .7); }
+[data-ab='after'] .rfx-peds-mini > li:not(.is-out) { animation: rfx-pp-stomp .34s cubic-bezier(.3, 1.5, .5, 1) both; animation-delay: calc(var(--i) * 90ms); }
+@keyframes rfx-pp-stomp { 0% { transform: none; } 35% { transform: translateY(2px) scale(1.03, .96); } 100% { transform: none; } }
+/* VOLUME: /drift's fader photos (its plate + cap), the fill in RevFX purple in the plate's slot */
+.rfx-hear-vol { --rail: 14px; align-items: center; gap: 6px; padding: 4px 2px 0; }   /* the narrow plate: a thinner rail */
+.rfx-hear-vol .rfx-vol-slot { --fad: var(--d-neon); --fad-rgb: var(--d-neon-rgb); width: 40px; flex: 1; min-height: 70px; margin: 4px 0 8px; }
+.rfx-hear-vol .rfx-vol-slot::before { display: none; }
+.rfx-vol-plate { position: absolute; left: 50%; top: -8px; bottom: -8px; width: 22px; translate: -50% 0; pointer-events: none;
+  background: var(--rfx-fad-plate) center / 100% 100% no-repeat; filter: drop-shadow(2px 3px 2px rgba(0, 0, 0, .85)); }
+.rfx-hear-vol .d-fad-fill { width: 3px; border-radius: 2px; }
+.rfx-hear-vol .d-fad-thumb { width: 38px; height: 20px; border-radius: 0; box-shadow: none;
+  background: var(--rfx-fad-cap) center / 100% 100% no-repeat; filter: drop-shadow(3px 5px 3px rgba(0, 0, 0, .75)); }
+.rfx-hear-vol .d-fad-thumb::after { display: none; }
+.rfx-vol-read { font: 400 7px/1 var(--d-f-pix); letter-spacing: .06em; color: #e9dcff; white-space: nowrap;
+  min-width: 7.5em; text-align: center; }   /* as wide as "VOL 100" at every value, so 100 or MUTE never pushes the board (Yoni 2026-11-09: "a weird jump") */
+
+/* ---- narrow laptops: a smaller switch + caps leave the five their room */
+@media (min-width: 1024px) and (max-width: 1240px) {
+  .rfx-hear-step--roll { --s: 48px; --tvf-u: .145; width: 170px; }
+  .rfx-tv-ask { font-size: 17.6px; }
+  .rfx-hear-board { --fix: 28px; --pgk: .5; }
+  #rfx-hear .rfx-start { --k: .44; }
+  .rfx-hear-stomprow { gap: 10px; }
+  .rfx-pm-nm { font-size: 8px; letter-spacing: .02em; }
+  .rfx-hear-caps .d-cap { width: 46px; height: 46px; }
+}
+/* ---- tablets + phones: one column, the jacks in a row of four, the board on its own row, PLAY + VOLUME under it */
+@media (max-width: 1023px) {
+  .rfx-hear-panel { background-image: var(--rfx-panel-t); }
+  .rfx-hear-rig { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'stomp stomp' 'play vol'; }
+  .rfx-hear-step--stomp { grid-area: stomp; }
+  #rfx-hear .rfx-start { --k: .62; }
+  .rfx-hear-step--play { grid-area: play; flex-direction: row; align-items: center; justify-content: space-between; padding: 0 6px; }
+  .rfx-plate--sq.rfx-hear-step--play, .rfx-plate--tall:is(.rfx-hear-vol, .rfx-hear-bay) { --plate: var(--rfx-plate-w); --slice: 94; }   /* wide here */
+  .rfx-hear-step--play .rfx-hear-caps { flex: none; }
+  .rfx-hear-vol { grid-area: vol; flex-direction: row; padding: 0 6px; }
+  .rfx-hear-vol .rfx-vol-slot { width: 34px; min-height: 0; height: 56px; flex: none; margin: 6px 0; }
+  .rfx-jacks { flex-direction: row; }
+  .rfx-jacks li { border-top: 0; box-shadow: none; border-left: 1px solid rgba(0, 0, 0, .55); }
+  .rfx-jacks li:first-child { border-left: 0; }
+  .rfx-jack { --sock: 34px; display: flex; flex-direction: column-reverse; align-items: center; justify-content: center; gap: 6px; padding: 6px 2px; min-height: 0; text-align: center; }
+  .rfx-jack-txt { align-items: center; }
+  .rfx-jack-no { display: none; }
+  .rfx-jack-nm { font-size: 13px; letter-spacing: .04em; }
+  .rfx-jack-plug { width: var(--ph); -webkit-mask: none; mask: none; overflow: hidden; }   /* the head only: no room for the cable */
+}
+/* ---- under 700 px the LCD's lines no longer fit beside ROLL IT (PUSH AGAIN: BYPASS needs 182 px at 610): ROLL IT
+   becomes a strip under the screen, the die on the right */
+@media (max-width: 700px) {
+  .rfx-hear-top { grid-template-columns: minmax(0, 1fr); }
+  .rfx-hear-step--roll { --s: 40px; --tvf-u: .095; width: auto; height: 100px; }
+  .rfx-tv { flex-direction: row; align-items: center; justify-content: space-between; }
+  .rfx-tv-ask { justify-content: flex-start; margin-top: 0; font-size: 24px; }
+  .rfx-tv-pic { flex: none; width: calc(var(--s) * 1.8); min-height: calc(var(--s) * 1.5); }
+}
+/* ---- phones */
+@media (max-width: 600px) {
+  .rfx-hear-panel { padding: 20px 18px; }
+  .rfx-hear { gap: 8px; }
+  .rfx-hear-bay { gap: 4px; padding: 0; }
+  .rfx-hear-cap { font-size: 9px; letter-spacing: .08em; }
+  .rfx-jack { --sock: 30px; }
+  .rfx-jack-nm { font-size: 10.5px; letter-spacing: .02em; }
+  .rfx-hear-screen { --seg-col: 4; --seg-bar: 3; padding: 8px 10px 7px; gap: 5px; }
+  .rfx-scr-coach { font-size: 10px; }
+  .rfx-scr-title { height: 20px; font-size: 14px; line-height: 20px; }
+  .rfx-scr-t { font-size: 10px; }
+  .rfx-scr-tag { font-size: 8px; }
+  .rfx-scr-wave { height: 38px; }
+  .rfx-hear-screen [data-hear-chain] { display: none; }
+  .rfx-scr-row { justify-content: flex-end; }
+  .rfx-hear-rig { gap: 6px; }
+  .rfx-hear-deck { gap: 8px; }
+  .rfx-hear-top { gap: 6px; }
+  .rfx-hear-step--roll { --s: 32px; --tvf-u: .085; height: 90px; }
+  .rfx-tv-ask { font-size: 20.8px; }
+  .rfx-plate { --rail: 12px; }
+  #rfx-hear .rfx-start { --k: .42; }
+  .rfx-hear-stomprow { gap: 8px; }
+  .rfx-hear-caps .d-cap { width: 42px; height: 42px; }
+  .rfx-bore { --b: 4px; }
+  .rfx-hear-vol { --rail: 12px; padding: 0 4px; }
+  .rfx-hear-vol .rfx-vol-slot { height: 46px; margin: 4px 0; }
+  .rfx-hear-step { padding: 0 2px 2px; gap: 8px; }
+  .rfx-hear-board { --fix: 20px; --pgk: .2; gap: 8px; padding: 10px 8px 11px; background-image: var(--rfx-board-m); }
+  .rfx-pm-nm { font-size: 7px; letter-spacing: .01em; }
+}
+@media (max-width: 380px) { .rfx-scr-coach { font-size: 9px; letter-spacing: 0; } .rfx-jack-nm { font-size: 9.5px; } #rfx-hear .rfx-start { --k: .38; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .rfx-hear-sec *, .rfx-hear-sec *::before, .rfx-hear-sec *::after { animation: none !important; }
+  .rfx-peds-mini > li :is(.rfx-pm-ped, .rfx-pm-pool, .rfx-pm-nm) { transition-delay: 0s !important; }
+  #rfx-hear .rfx-start .lit { animation: none !important; }
+}
+html.hc .rfx-hear-sec :is(.rfx-pm-nm, .rfx-hear-ab i, .rfx-scr-title) { text-shadow: none; }
 
 /* --------------------------------------------------------------------------
    #pedals — MEET THE FIVE
@@ -355,81 +799,6 @@
 }
 
 /* --------------------------------------------------------------------------
-   THE DICE DECK (in the hero since 2026-10-19; the #rack, #scenes and #drift sections went)
-   -------------------------------------------------------------------------- */
-/* the deck: the die + the scene CRT, under the hero's catch line */
-.rfx-deck { display: grid; gap: 22px; align-items: center; margin-top: clamp(26px, 3vw, 40px); }
-.rfx-hero .rfx-deck { order: 7; width: min(100%, 1040px); align-self: center; margin-top: 0; }   /* after the catch line at every width (drift.css orders the hero's parts below 1100 px: trial 4, catch 6) */
-@media (min-width: 760px) { .rfx-deck { grid-template-columns: auto minmax(0, 1fr); gap: 34px; } }
-.rfx-die-btn {
-  --s: clamp(78px, 8vw, 104px);
-  justify-self: center; display: grid; justify-items: center; gap: 16px; padding: 14px 18px 10px; border: 0; background: none; cursor: pointer;
-  perspective: 600px;
-}
-.rfx-die {
-  --rx: -22deg; --ry: 32deg;
-  position: relative; display: block; width: var(--s); height: var(--s); transform-style: preserve-3d;
-  transform: rotateX(var(--rx)) rotateY(var(--ry)); transition: transform 1100ms cubic-bezier(.17, .84, .26, 1.02);
-  animation: rfx-idle 6s ease-in-out infinite;
-}
-.rfx-die-btn.is-thrown .rfx-die { animation: rfx-throw 1100ms cubic-bezier(.2, .7, .3, 1) both; }
-@keyframes rfx-idle { 50% { translate: 0 -6px; } }
-@keyframes rfx-throw { 0% { translate: 0 0; } 30% { translate: 0 -46px; } 62% { translate: 0 2px; } 76% { translate: 0 -10px; } 100% { translate: 0 0; } }
-.rfx-die-f {
-  position: absolute; inset: 0; display: grid; grid-template: repeat(3, 1fr) / repeat(3, 1fr); padding: 14%; gap: 4%;
-  border-radius: 18%; backface-visibility: hidden;
-  background: radial-gradient(circle at 30% 25%, #2b1238, #12061a 75%);
-  box-shadow: inset 0 0 0 2px rgba(255, 95, 216, .85), inset 0 0 18px rgba(255, 95, 216, .35), 0 0 16px rgba(255, 95, 216, .35);
-}
-.rfx-die-f i { border-radius: 50%; }
-.rfx-die-f i.on { background: #ffd6f6; box-shadow: 0 0 8px #ff5fd8, 0 0 2px #fff; }
-.rfx-die-f.f1 { transform: translateZ(calc(var(--s) / 2)); }
-.rfx-die-f.f6 { transform: rotateY(180deg) translateZ(calc(var(--s) / 2)); }
-.rfx-die-f.f2 { transform: rotateY(90deg) translateZ(calc(var(--s) / 2)); }
-.rfx-die-f.f5 { transform: rotateY(-90deg) translateZ(calc(var(--s) / 2)); }
-.rfx-die-f.f3 { transform: rotateX(90deg) translateZ(calc(var(--s) / 2)); }
-.rfx-die-f.f4 { transform: rotateX(-90deg) translateZ(calc(var(--s) / 2)); }
-.rfx-die-txt { font: 400 clamp(22px, 2.2vw, 28px)/1 var(--d-f-chip); letter-spacing: .06em; color: #ffd23b; text-shadow: 2px 2px 0 #7a1e5c, 0 0 14px rgba(255, 210, 59, .45); transform: rotate(-4deg); transition: transform 160ms cubic-bezier(.2, .9, .25, 1.25); }
-.rfx-die-btn:hover .rfx-die-txt { transform: rotate(-4deg) scale(1.08); }
-.rfx-die-btn:hover .rfx-die { --rx: -32deg; }
-.rfx-die-btn:focus-visible { outline: 3px solid var(--d-pink-ink); outline-offset: 4px; border-radius: 12px; }
-
-.rfx-crt {
-  position: relative; overflow: hidden; padding: 20px clamp(18px, 2.4vw, 30px) 18px; border-radius: 16px;
-  background: radial-gradient(120% 140% at 50% 0%, #2a0d36, #12051a 70%);
-  box-shadow: 0 0 0 1px #000, 0 0 0 7px #0b0711, 0 0 0 8px rgba(255, 240, 255, .06), inset 0 0 40px rgba(0, 0, 0, .65), 0 0 40px rgba(190, 90, 255, .14);
-}
-.rfx-crt::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(0, 0, 0, .22) 0 1px, transparent 1px 3px); }
-.rfx-crt.is-hit { animation: rfx-crt-hit 380ms steps(2, end); }
-@keyframes rfx-crt-hit { 0% { filter: brightness(2) saturate(.3); } 40% { filter: brightness(.6) hue-rotate(40deg); transform: translateX(3px) skewX(-2deg); } 100% { filter: none; transform: none; } }
-.rfx-crt-top { display: flex; justify-content: space-between; gap: 12px; font: 400 9px/1 var(--d-f-pix); letter-spacing: .1em; color: rgba(231, 184, 255, .6); }
-.rfx-crt-x { color: #ffa630; text-shadow: 0 0 8px rgba(255, 166, 48, .9); animation: rfx-blink 900ms steps(2, start) infinite; }
-@keyframes rfx-blink { 50% { opacity: .2; } }
-.drift-page .rfx-crt-name {
-  margin: 12px 0 8px; min-height: 1.1em; font: 400 clamp(20px, 2.6vw, 34px)/1.1 var(--d-f-pix); letter-spacing: .02em; color: #fff2fc;
-  text-shadow: 0 0 10px rgba(255, 95, 216, .9), 0 0 30px rgba(255, 95, 216, .45); word-break: break-word;
-}
-.rfx-crt.is-x .rfx-crt-name { color: #ffe1b5; text-shadow: 0 0 10px rgba(255, 166, 48, .95), 0 0 30px rgba(255, 166, 48, .45); }
-.rfx-crt-blurb { min-height: 1.4em; font: 400 clamp(18px, 1.6vw, 22px)/1.3 var(--d-f-lcd); color: var(--d-crt); letter-spacing: .02em; }
-/* the signal chain, IN -> OUT */
-.rfx-chain { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 0; margin: 18px 0 0; padding: 0; list-style: none; position: relative; z-index: 1; }
-.rfx-chain > li { position: relative; display: flex; align-items: center; }
-.rfx-chain > li + li::before { content: ''; width: clamp(10px, 1.6vw, 22px); height: 2px; background: linear-gradient(90deg, rgba(255, 95, 216, .25), rgba(255, 95, 216, .9)); box-shadow: 0 0 6px rgba(255, 95, 216, .6); }
-.rfx-chain-io { font: 400 9px/1 var(--d-f-pix); color: var(--d-pink-ink); padding: 7px 7px; border-radius: 4px; box-shadow: inset 0 0 0 1px rgba(var(--d-neon-rgb), .5); }
-.rfx-chain-fx > span:first-of-type {
-  padding: 7px 11px 6px; border-radius: 4px; font: 700 13px/1 var(--d-f-head); text-transform: uppercase; letter-spacing: .05em; color: var(--ink);
-  background: rgba(var(--rgb), .1); box-shadow: inset 0 0 0 1px rgba(var(--rgb), .6), 0 0 12px rgba(var(--rgb), .25); transition: opacity 300ms ease, filter 300ms ease;
-}
-.rfx-chain-fx.is-off > span:first-of-type { opacity: .38; filter: saturate(.2); box-shadow: inset 0 0 0 1px rgba(var(--rgb), .25); text-decoration: line-through; text-decoration-thickness: 1px; }
-.rfx-chain-mv { display: inline-flex; margin-left: 2px; }
-.rfx-chain-mv button { width: 20px; height: 26px; padding: 0; border: 0; border-radius: 3px; background: rgba(255, 255, 255, .04); color: var(--d-fg-dim); font: 700 15px/1 var(--d-f-head); cursor: pointer; }
-.rfx-chain-mv button:hover { color: var(--d-white-ink); background: rgba(var(--rgb), .2); }
-@media (hover: hover) and (min-width: 601px) {
-  .rfx-chain-mv { position: absolute; left: 50%; top: 100%; translate: -50% 2px; opacity: 0; transition: opacity 160ms ease; }
-  .rfx-chain-fx:hover .rfx-chain-mv, .rfx-chain-fx:focus-within .rfx-chain-mv { opacity: 1; }
-  .rfx-chain { padding-bottom: 26px; }
-}
-/* --------------------------------------------------------------------------
    #get + the phone sticky bar
    -------------------------------------------------------------------------- */
 .rfx-stamp--stack { gap: 12px; }
@@ -463,4 +832,4 @@
   .rfx-title span, .rfx-ped img, .rfx-die, .rfx-pd.is-on .rfx-pd-name { animation: none !important; }
   .rfx-pd .rfx-pd-ped, .rfx-pd .rfx-pd-body > *, .rfx-die { transition: none !important; }
 }
-html.hc .rfx-page .rfx-pd-name, html.hc .rfx-page .rfx-crt-name { text-shadow: none; }
+html.hc .rfx-page .rfx-pd-name { text-shadow: none; }

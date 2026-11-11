@@ -447,6 +447,30 @@ Then Tuned." and the closing "Hear it on your own mix" trial section were the ol
 The TV sits right under the nav and fills one screen; the page's h1 is visually hidden. No hero above
 it, no metric grid, no card grid.
 
+**Coming (branch `feat/home-opening`, not on main yet): the long garage, a living set (Dan 2026-11-02 / 11-03).**
+The first screen becomes a long 3D garage that is also a studio (music gear and car gear mixed, a JDM coupe half out
+through an open roll-up door, GAS 2 posters, CRT monitors, mess, neon, cyan aisle LEDs); the scroll walks down the
+aisle and locks onto the live TV at the far end. When it lands it replaces "no hero above it" here. The rule that
+holds from now on, in Dan's words "everything is dynamic in that room":
+- The room is permanent and gets re-dressed, never rebuilt: seasonal skins (Halloween, Black Friday, Christmas), the
+  plugins and bundles on sale, what's being built (teasers, COMING SOON).
+- Its contents are data (props, posters, screens, signs, the car, lights, colours, the readings), a base room plus
+  skins, placed by one engine; a new plugin, season or bundle is new data, not new scene code.
+- The bench (`tools/_home-opening/room.html`, T) is its editor: Move things, sliders, the slot list. Anything added
+  gets bench controls and lands in the saved / copied settings.
+- The room is built for real in 3D, never painted over (Dan 2026-11-04, after the 3 Nov art: per-slot cut-outs "feel
+  like a 2D", the painting projected back onto the set "smeared and broken apart while I walk", the AI repaints swapped
+  the plugins' CRTs for props of their own, and the film was soft and flipped to a still mid-scroll). Every pixel is
+  rendered from the 3D room and its camera; AI makes single objects, textures and posters, never whole frames; one way
+  of showing the walk from the first step to the TV, no film, no switching. The first painted shot
+  (`tools/_home-opening/assets/skins/default/paint/walk-000.webp`) is the look reference for light, colour, grime and
+  mood, not for layout (it was painted in the 3 Nov room). The plugins' CRTs, the live TV and the posters are live
+  pictures the room carries, and the must-stay list is checked wherever each is in view. The room keeps moving (sway,
+  dust, flicker, the car idling), so its light is built in layers that stay live. Plan, decisions and the blind-spot
+  review: `tasks/todo.md`, "The rebuild"; the plan page linked there.
+  For now the room is the bare 3D set again (Dan 2026-11-03, after the one-shot film: "lets go back to the skelton
+  this is not what i want"); the painted room and the film stay as the bench's Painted / Film switches, off.
+
 **Product-page hero = "the readings" (canon: the GAS 2 page, composition 2; Dan 2026-10-23: "I love you
 so much", "this is amazing"; `tools/_gas2-scene/page-b.html` on `feat/gas2-page`).** The vibe to repeat:
 - **Fill the open space.** One centred column sized to the scene's empty area (GAS 2: the dusk sky right
@@ -563,6 +587,17 @@ came up with, or it rescales under the finger.
   the cap so both travel in together when pressed. /drift #hear's DRIFT push-start had a dark lens sunk in the bezel
   (inset shadow only) and read as a gauge; on `bench/drift-hear-bench.html` (DRIFT BTN CAP) it became a raised cap
   (laptop 1 user, 2026-10-28: "i want it to feel more like a button and polish it").
+
+- DO build a small screen that changes the page's sound as home's TV, cabinet and all. /revfx #rfx-hear step 4
+  ROLL IT (Yoni 2026-11-09: "turn the cube panel into an lcd screen similar to the website tv"; the glass alone in a
+  titanium plate then read too tame: "make the tv more prominent it doesnt look like the tv in the website - more
+  lines more distortion in the image"): home's broken cabinet (tv-broken-3.png, 9-sliced small, `--tvf-u` px per
+  photo pixel) with its green pilot LED, home's glass layers in RevFX violet, and a worse tube than home's: heavy
+  scanlines over the picture, red / cyan fringes, a hum bar rolling down, a faint flicker, a small tear every few
+  seconds and a big one + a flash on every roll (`.rfx-tv*`, revfx.css; still under reduced motion). The one
+  word RANDOMIZE (Yoni: "a cool tv theme like text"; was "4 ROLL IT ▸" in Bebas) in a set's on-screen type (VT323,
+  fringed like the tube, burning hotter for four beats when the guide reaches it) sits OVER the lines, so it reads; the die is the picture; the
+  glass is the button. Two screens side by side stay two parts: the segment LCD reads the sound, the TV holds the die.
 
 ## 10. History + open questions (for Dan)
 

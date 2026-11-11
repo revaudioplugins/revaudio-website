@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Garage Opening</title>
+<!-- Home opening prototype (Dan 2026-11-02): a wide garage-studio scene; scrolling walks the camera into the
+     TV until it locks into the live TV. Not in the Astro build (tools/). Serve the worktree root:
+     python3 -m http.server <port> --bind 127.0.0.1  ->  /tools/_home-opening/
+     Keys: H hides the dock, T opens the tuning panel. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&family=VT323&family=Yellowtail&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-0: #0b0a09; --fg: #efe9df; --fg-dim: #8a8275; --brass: #c9a35c; --brass-bright: #e8c878; --honey: #f6c85d;
+    --nav-h: 41px; --vh: 100vh; --zoom-px: 140vh;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg-0); color: var(--fg); font-family: Inter, system-ui, sans-serif; }
+  html.lenis, html.lenis body { height: auto; }
+  .lenis.lenis-smooth { scroll-behavior: auto !important; }
+
+  .nav { position: fixed; inset: 0 0 auto 0; height: var(--nav-h); z-index: 50; background: #0b0a09; }
+  .nav img { display: block; width: 100%; height: 100%; }
+
+  .opening { position: relative; height: calc(var(--vh) + var(--zoom-px)); }
+  .cam { position: sticky; top: 0; height: var(--vh); overflow: hidden; background: #050404; }
+  #scene { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+  /* the real TV takes over at the lock: same rect as the canvas drew it, so the hand-off is invisible */
+  .tv-live { position: absolute; left: 0; top: var(--nav-h); width: 100%; height: calc(var(--vh) - var(--nav-h)); display: block; opacity: 0;
+    border-radius: var(--tv-r, 34px); }
+  .tv-live.is-on { opacity: 1; }
+  .tv-hit { position: absolute; left: 0; top: 0; transform-origin: 0 0; cursor: pointer; border-radius: 6%;
+    appearance: none; margin: 0; padding: 0; border: 0; background: transparent; }
+  .tv-hit:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 4px; }
+
+  /* the LCD skin over the whole room: sub-pixel stripes + scanlines, gone by the lock */
+  .lcd-skin { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: overlay;
+    background:
+      repeating-linear-gradient(90deg, rgba(255,40,40,.5) 0 1px, rgba(40,255,90,.45) 1px 2px, rgba(60,90,255,.5) 2px 3px),
+      repeating-linear-gradient(0deg, rgba(0,0,0,.55) 0 1px, transparent 1px 3px); }
+  .grain { position: absolute; inset: -50%; pointer-events: none; mix-blend-mode: overlay; opacity: .4; }
+
+  /* READING B: the big line in the open floor under the TV (DESIGN §7 "the readings") */
+  .read-b { position: absolute; left: 0; right: 0; text-align: center; pointer-events: none; padding: 0 16px; }
+  .rb-kick { margin: 0 0 .35em; font: 600 clamp(11px, 1.05vw, 15px)/1 "VT323", monospace; letter-spacing: .32em; color: var(--brass-bright);
+    text-shadow: 0 0 10px rgba(255,170,80,.45); }
+  .rb-head { margin: 0; font: 400 clamp(54px, 8.6vw, 156px)/.86 "Bebas Neue", sans-serif; letter-spacing: .02em; color: #efe3c6;
+    filter: drop-shadow(0 1px 0 rgba(0,0,0,.9)) drop-shadow(0 0 14px rgba(0,0,0,.75)) drop-shadow(0 10px 18px rgba(0,0,0,.6)); }
+  .rb-head em { font-style: normal; color: #ff8a3c; }
+  .rb-sig { display: inline-block; margin: .05em 0 0 22%; font: 400 clamp(24px, 2.7vw, 44px)/1 "Yellowtail", cursive; color: var(--honey);
+    transform: rotate(-6deg); text-shadow: 0 0 14px rgba(246,200,93,.55), 0 2px 3px rgba(0,0,0,.8); }
+
+  /* READING C: a car-stereo LCD readout, top left under the nav */
+  .read-c { position: absolute; left: clamp(12px, 2.4vw, 36px); pointer-events: none; }
+  .lcd { position: relative; padding: 10px 14px 9px; min-width: min(430px, 86vw); border-radius: 6px;
+    background: linear-gradient(180deg, #120d08, #0a0705); border: 1px solid #2a221b;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.03), inset 0 10px 24px rgba(0,0,0,.6), 0 10px 26px rgba(0,0,0,.55); overflow: hidden; }
+  .lcd::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,.35) 0 1px, transparent 1px 3px),
+                repeating-linear-gradient(90deg, rgba(0,0,0,.25) 0 1px, transparent 1px 3px); }
+  .lcd-row { position: relative; font: 400 clamp(22px, 2.1vw, 30px)/1.02 "VT323", monospace; letter-spacing: .06em; color: #ffb25c;
+    text-shadow: 0 0 6px rgba(255,150,60,.9), 0 0 18px rgba(255,120,40,.45); white-space: nowrap; }
+  .lcd-row.sm { font-size: clamp(16px, 1.45vw, 21px); color: #ffcf8a; opacity: .92; }
+  .lcd-row.cue { font-size: clamp(15px, 1.3vw, 19px); color: #9dffcf; text-shadow: 0 0 6px rgba(120,255,190,.8); margin-top: 4px; }
+  .lcd-ghost { position: absolute; inset: 0; color: rgba(255,170,90,.07); text-shadow: none; }
+  .lcd-cur { animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .below img { display: block; width: 100%; height: auto; }
+
+  /* prototype controls */
+  .dock { position: fixed; left: 12px; bottom: 12px; z-index: 60; display: flex; gap: 6px; flex-wrap: wrap; max-width: calc(100vw - 24px);
+    font: 600 11px/1 Inter, sans-serif; letter-spacing: .06em; }
+  .dock[hidden], .tune[hidden] { display: none; }
+  .chip { appearance: none; border: 1px solid #3a3027; background: rgba(14,11,9,.88); color: #cfc6b8; padding: 8px 10px; border-radius: 999px; cursor: pointer;
+    backdrop-filter: blur(6px); }
+  .chip[aria-pressed="true"] { background: #e8c878; color: #1a140e; border-color: #e8c878; }
+  .chip.tag { cursor: default; background: rgba(120,30,20,.85); border-color: #a3402a; color: #ffd7c4; }
+  .tune { position: fixed; right: 12px; bottom: 12px; top: calc(var(--nav-h) + 12px); z-index: 61; width: 290px; overflow: auto;
+    background: rgba(12,10,8,.94); border: 1px solid #3a3027; border-radius: 10px; padding: 12px 14px; font: 12px/1.3 Inter, sans-serif; color: #d8cfc2; }
+  .tune h3 { margin: 10px 0 6px; font: 400 15px/1 "Bebas Neue"; letter-spacing: .08em; color: var(--brass-bright); }
+  .tune label { display: grid; grid-template-columns: 1fr 52px; gap: 2px 8px; margin: 6px 0; }
+  .tune input[type=range] { grid-column: 1 / -1; width: 100%; accent-color: #e8c878; }
+  .tune output { text-align: right; color: #f3e6cf; font-variant-numeric: tabular-nums; }
+  .tune .row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+  .tune select { width: 100%; background: #1a1511; color: #eee; border: 1px solid #3a3027; border-radius: 6px; padding: 4px; }
+</style>
+</head>
+<body>
+<div class="nav"><img id="navImg" src="assets/nav-1141.webp" alt=""></div>
+
+<main>
+  <h1 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">RevAudio, boutique audio plugins</h1>
+  <section class="opening" id="opening" aria-label="The RevAudio garage">
+    <div class="cam">
+      <canvas id="scene" aria-hidden="true"></canvas>
+      <img class="tv-live" id="tvLive" src="assets/tv-1141x636.webp" alt="The plugin TV">
+      <button class="tv-hit" id="tvHit" aria-label="Walk up to the TV: the plugins"></button>
+      <div class="lcd-skin" id="lcdSkin"></div>
+      <canvas class="grain" id="grain" width="160" height="160" aria-hidden="true"></canvas>
+
+      <div class="read-b" id="readB">
+        <p class="rb-kick">REVAUDIO · BOUTIQUE AUDIO PLUGINS</p>
+        <p class="rb-head">Built like <em>cars.</em></p>
+        <span class="rb-sig">Step inside.</span>
+      </div>
+
+      <div class="read-c" id="readC">
+        <div class="lcd">
+          <div class="lcd-row"><span class="lcd-ghost">88888888888888888888888888</span><span id="lcd1"></span></div>
+          <div class="lcd-row sm"><span class="lcd-ghost">8888888888888888888888888888888</span><span id="lcd2"></span></div>
+          <div class="lcd-row cue"><span id="lcd3"></span><span class="lcd-cur">█</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <div class="below"><img id="belowImg" src="assets/below-1141.webp" alt="The rest of the home page (DAW strip, testimonials, pit crew, footer)"></div>
+</main>
+
+<div class="dock" id="dock">
+  <span class="chip tag" title="The room is a stand-in until the real garage-studio plate is generated">STAND-IN PLATE</span>
+  <button class="chip" data-read="readA" aria-pressed="true">A · LED sign</button>
+  <button class="chip" data-read="readB" aria-pressed="true">B · Big line</button>
+  <button class="chip" data-read="readC" aria-pressed="false">C · LCD readout</button>
+  <button class="chip" id="btnIntro">↺ Intro</button>
+  <button class="chip" id="btnTune">⚙ Tune</button>
+</div>
+
+<div class="tune" id="tune" hidden>
+  <div id="tuneBody"></div>
+  <div class="row">
+    <button class="chip" id="btnCopy">Copy settings</button>
+    <button class="chip" id="btnReset">Reset</button>
+    <button class="chip" id="btnClose">Close</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.3.23/dist/lenis.min.js" integrity="sha384-iiCtod6ZId6zT42Bar9EFXNKZh8X4VliWYWFOuY3/t1AxCvLejXExXcbluoc57CJ" crossorigin="anonymous"></script>
+<script>
+(() => {
+  // ---------- settings (the Tune panel; COPY SETTINGS bakes them) ----------
+  const DEF = {
+    zoomLen: 140,   // scroll length of the walk-in, % of the screen height
+    ease: 2.2,      // in-out power of the walk-in
+    f: 0.28,        // TV width as a share of the room (laptop): smaller = the TV starts further away
+    fh: 0.42,       // TV height cap as a share of the room (phones: the TV is tall there)
+    uc: 0.56, vc: 0.52,  // where the TV sits in the room plate (0..1)
+    frameX: 0, frameY: -0.35, // nudge the wide shot inside the room's slack (-1..1)
+    breath: 1, haze: 0.6, dust: 1, lcd: 0.28, grain: 0.5, tvGlow: 1, neon: 1, snap: 1,
+    led: 'amber', readA: 1, readB: 1, readC: 0,
+  };
+  const KEY = 'hoBench:v1';
+  const S = { ...DEF };
+  try { Object.assign(S, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) {}
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+
+  // ---------- the room plate (stand-in: RevAmp's garage-classic; the real plate replaces this block) ----------
+  const PLATE = {
+    src: 'assets/plate-standin.webp', w: 1536, h: 1024,
+    neon: { u: 0.589, v: 0.184, rw: 0.20, rh: 0.065, rgb: [255, 70, 40] },
+    lamp: { u: 0.241, v: 0.362, r: 0.07, rgb: [255, 196, 120] },
+    board: { u: 0.589, v: 0.285, w: 0.33, h: 0.052 }, // the LED ticker under the neon (reading A)
+    floorV: 0.77,
+  };
+
+  // the live TV, captured per screen size (glass = the CRT opening inside the bezel, px)
+  const CAPS = [
+    { w: 1141, h: 636, nav: 41, tag: '1141x636', navW: 1141, glass: [61.5, 38.5, 61, 67], r: 34, gr: 24 },
+    { w: 1440, h: 900, nav: 41, tag: '1440x900', navW: 1440, glass: [61.5, 38.5, 61, 67], r: 34, gr: 24 },
+    { w: 1920, h: 1080, nav: 41, tag: '1920x1080', navW: 1920, glass: [61.5, 38.5, 61, 67], r: 34, gr: 24 },
+    { w: 390, h: 844, nav: 58, tag: '390x844', navW: 390, glass: [15.9, 10, 15.8, 17.3], r: 12, gr: 8, phone: true },
+  ];
+
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const $ = (id) => document.getElementById(id);
+  const cv = $('scene'), ctx = cv.getContext('2d');
+  const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+  const smooth = (a, b, v) => { const t = clamp((v - a) / (b - a)); return t * t * (3 - 2 * t); };
+  const easeIO = (t, k) => t < 0.5 ? Math.pow(2 * t, k) / 2 : 1 - Math.pow(2 * (1 - t), k) / 2;
+  const hash = (n) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+
+  const img = (src) => { const i = new Image(); i.decoding = 'async'; i.src = src; return i; };
+  const plateImg = img(PLATE.src);
+  const haze1 = img('../../public/bg/haze1.webp'), haze2 = img('../../public/bg/haze2.webp');
+  let cap = null, tvImg = null;
+
+  // ---------- layout ----------
+  const L = {};
+  function pickCap(vw) {
+    if (vw < 760) return CAPS[3];
+    return CAPS.slice(0, 3).reduce((a, c) => Math.abs(c.w - vw) < Math.abs(a.w - vw) ? c : a);
+  }
+  function layout() {
+    const vw = innerWidth, vh = innerHeight;
+    const c = pickCap(vw);
+    if (c !== cap) {
+      cap = c;
+      tvImg = img(`assets/tv-${c.tag}.webp`);
+      $('tvLive').src = tvImg.src;
+      $('navImg').src = `assets/nav-${c.navW}.webp`;
+      $('belowImg').src = `assets/below-${c.navW}.webp`;
+    }
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    cv.width = Math.round(vw * dpr); cv.height = Math.round(vh * dpr);
+    const navH = cap.nav;
+    const tv = { x: 0, y: navH, w: vw, h: vh - navH };
+    const aspect = PLATE.w / PLATE.h;
+    const pw = Math.max(tv.w / S.f, (tv.h / S.fh) * aspect), ph = pw / aspect;
+    const plate = { w: pw, h: ph, x: tv.x + tv.w / 2 - S.uc * pw, y: tv.y + tv.h / 2 - S.vc * ph };
+    const s0 = Math.max(vw / pw, vh / ph) * 1.03;
+    const hw = vw / 2 / s0, hh = vh / 2 / s0;
+    const minX = plate.x + hw, maxX = plate.x + pw - hw, minY = plate.y + hh, maxY = plate.y + ph - hh;
+    const cx = plate.x + pw / 2, cy = plate.y + ph / 2;
+    const F0x = clamp(cx + S.frameX * (maxX - minX) / 2, minX, maxX);
+    const F0y = clamp(cy + S.frameY * (maxY - minY) / 2, minY, maxY);
+    Object.assign(L, { vw, vh, dpr, navH, tv, plate, s0, F0x, F0y, F1x: vw / 2, F1y: vh / 2, zoomPx: S.zoomLen / 100 * vh });
+    const root = document.documentElement.style;
+    root.setProperty('--nav-h', navH + 'px');
+    root.setProperty('--tv-r', cap.r + 'px');
+    root.setProperty('--vh', vh + 'px');
+    root.setProperty('--zoom-px', L.zoomPx + 'px');
+    boardSetup();
+  }
+
+  // ---------- camera: a zoom whose window shrinks steadily onto the TV; breathing scales with distance ----------
+  function camera(p, t) {
+    const e = easeIO(clamp(p), S.ease);
+    const s = L.s0 * Math.pow(1 / L.s0, e);
+    const g = (1 / L.s0 - 1 / s) / (1 / L.s0 - 1);
+    let fx = L.F0x + (L.F1x - L.F0x) * g, fy = L.F0y + (L.F1y - L.F0y) * g;
+    const amp = reduced ? 0 : S.breath * (1 - e);
+    fx += amp * (Math.sin(t * 0.00021) * 6 + Math.sin(t * 0.00047 + 1.3) * 2.4) / s;
+    fy += amp * (Math.sin(t * 0.00017 + 0.7) * 4 + Math.sin(t * 0.00039 + 2.1) * 1.6) / s;
+    const sb = s * (1 + amp * 0.005 * Math.sin(t * 0.00013));
+    return { e, s: sb, fx, fy };
+  }
+  const toX = (c, x) => (x - c.fx) * c.s + L.vw / 2;
+  const toY = (c, y) => (y - c.fy) * c.s + L.vh / 2;
+  const plateU = (u) => L.plate.x + u * L.plate.w, plateV = (v) => L.plate.y + v * L.plate.h;
+
+  // ---------- intro: the lamp, the neon buzzing on, the tube opening, the sign, the readings ----------
+  let t0 = performance.now();
+  const INTRO = { lamp: [150, 700], neon: [600, 1450], tv: [1150, 1900], board: [1650, 2300], read: [1900, 2700] };
+  const env = (t, [a, b]) => clamp((t - a) / (b - a));
+  function introState(t) {
+    if (reduced) return { lamp: 1, neon: 1, tv: 1, board: 1, read: 1 };
+    const k = env(t, INTRO.neon);
+    const neon = k >= 1 ? 1 : k <= 0 ? 0 : (hash(Math.floor(t / 55)) < k * k * 1.2 ? 1 : 0.06);
+    const lk = env(t, INTRO.lamp);
+    const lamp = lk * (lk < 1 && hash(Math.floor(t / 70) + 9) < 0.18 ? 0.6 : 1);
+    return { lamp, neon, tv: env(t, INTRO.tv), board: env(t, INTRO.board), read: env(t, INTRO.read) };
+  }
+
+  // ---------- reading A: the LED ticker board (5x7 font, one column per dot) ----------
+  const FONT = {
+    A:[0x7C,0x12,0x11,0x12,0x7C],B:[0x7F,0x49,0x49,0x49,0x36],C:[0x3E,0x41,0x41,0x41,0x22],D:[0x7F,0x41,0x41,0x22,0x1C],
+    E:[0x7F,0x49,0x49,0x49,0x41],F:[0x7F,0x09,0x09,0x09,0x01],G:[0x3E,0x41,0x49,0x49,0x7A],H:[0x7F,0x08,0x08,0x08,0x7F],
+    I:[0x00,0x41,0x7F,0x41,0x00],J:[0x20,0x40,0x41,0x3F,0x01],K:[0x7F,0x08,0x14,0x22,0x41],L:[0x7F,0x40,0x40,0x40,0x40],
+    M:[0x7F,0x02,0x0C,0x02,0x7F],N:[0x7F,0x04,0x08,0x10,0x7F],O:[0x3E,0x41,0x41,0x41,0x3E],P:[0x7F,0x09,0x09,0x09,0x06],
+    Q:[0x3E,0x41,0x51,0x21,0x5E],R:[0x7F,0x09,0x19,0x29,0x46],S:[0x46,0x49,0x49,0x49,0x31],T:[0x01,0x01,0x7F,0x01,0x01],
+    U:[0x3F,0x40,0x40,0x40,0x3F],V:[0x1F,0x20,0x40,0x20,0x1F],W:[0x3F,0x40,0x38,0x40,0x3F],X:[0x63,0x14,0x08,0x14,0x63],
+    Y:[0x07,0x08,0x70,0x08,0x07],Z:[0x61,0x51,0x49,0x45,0x43],
+    0:[0x3E,0x51,0x49,0x45,0x3E],1:[0x00,0x42,0x7F,0x40,0x00],2:[0x42,0x61,0x51,0x49,0x46],3:[0x21,0x41,0x45,0x4B,0x31],
+    4:[0x18,0x14,0x12,0x7F,0x10],5:[0x27,0x45,0x45,0x45,0x39],6:[0x3C,0x4A,0x49,0x49,0x30],7:[0x01,0x71,0x09,0x05,0x03],
+    8:[0x36,0x49,0x49,0x49,0x36],9:[0x06,0x49,0x49,0x29,0x1E],
+    ' ':[0,0,0,0,0],'&':[0x36,0x49,0x55,0x22,0x50],'$':[0x24,0x2A,0x7F,0x2A,0x12],'-':[0x08,0x08,0x08,0x08,0x08],
+    '.':[0x00,0x60,0x60,0x00,0x00],',':[0x00,0x50,0x30,0x00,0x00],'!':[0x00,0x00,0x5F,0x00,0x00],"'":[0x00,0x00,0x07,0x00,0x00],
+    '/':[0x20,0x10,0x08,0x04,0x02],':':[0x00,0x36,0x36,0x00,0x00],'◆':[0x08,0x1C,0x3E,0x1C,0x08],'·':[0x00,0x00,0x18,0x18,0x00],
+  };
+  const TICKER = 'REVAUDIO  ◆  BOUTIQUE AUDIO PLUGINS  ◆  BUILT LIKE CARS  ◆  PARTS & SERVICE FOR YOUR MIX  ◆  OPEN LATE  ◆  ';
+  const tickCols = [];
+  for (const ch of TICKER) { const g = FONT[ch] || FONT[' ']; tickCols.push(...g, 0); }
+  const LED = { amber: [255, 138, 46], violet: [214, 92, 255], red: [255, 58, 46] };
+  const board = { cv: document.createElement('canvas'), cols: 0, rows: 9, pitch: 12, lastKey: '' };
+  function boardSetup() {
+    const b = PLATE.board, wpx = b.w * L.plate.w, hpx = b.h * L.plate.h;
+    board.cols = Math.max(24, Math.round(board.rows * wpx / hpx));
+    board.cv.width = board.cols * board.pitch + 24; board.cv.height = board.rows * board.pitch + 24;
+    board.lastKey = '';
+  }
+  function boardDraw(t, power) {
+    const speed = reduced ? 0 : 16; // dots per second
+    const off = Math.floor(t / 1000 * speed) % tickCols.length;
+    const sweep = Math.floor(power * board.cols);
+    const key = off + '|' + sweep + '|' + S.led;
+    if (key === board.lastKey) return;
+    board.lastKey = key;
+    const b = board.cv.getContext('2d'), P = board.pitch, [r, g, bl] = LED[S.led] || LED.amber;
+    b.clearRect(0, 0, board.cv.width, board.cv.height);
+    b.fillStyle = '#0a0706'; b.fillRect(0, 0, board.cv.width, board.cv.height);
+    for (let x = 0; x < board.cols; x++) {
+      const col = tickCols[(off + x) % tickCols.length];
+      for (let y = 0; y < board.rows; y++) {
+        const lit = x < sweep && y >= 1 && y <= 7 && (col >> (y - 1)) & 1;
+        const cx = 12 + x * P + P / 2, cy = 12 + y * P + P / 2;
+        b.beginPath(); b.arc(cx, cy, P * 0.36, 0, Math.PI * 2);
+        if (lit) { b.shadowColor = `rgba(${r},${g},${bl},.9)`; b.shadowBlur = 10; b.fillStyle = `rgb(${Math.min(255, r + 40)},${Math.min(255, g + 60)},${Math.min(255, bl + 50)})`; }
+        else { b.shadowBlur = 0; b.fillStyle = `rgba(${r},${g},${bl},.09)`; }
+        b.fill();
+      }
+    }
+    b.shadowBlur = 0;
+  }
+
+  // ---------- dust: depth-scattered motes; near ones fly past as the camera walks in ----------
+  const DUST = Array.from({ length: 110 }, (_, i) => ({
+    x: (hash(i * 3.1) - 0.5) * 1.3, y: (hash(i * 7.7) - 0.5) * 1.2, z: Math.pow(hash(i * 1.9), 1.6),
+    r: 0.6 + hash(i * 5.3) * 1.6, ph: hash(i * 9.1) * 6.28, sp: 0.4 + hash(i * 2.2),
+  }));
+
+  // ---------- grain ----------
+  const gcv = $('grain'), gctx = gcv.getContext('2d'), gdata = gctx.createImageData(160, 160);
+  let grainT = 0;
+  function grainTick(t) {
+    if (t - grainT < 80) return; grainT = t;
+    const d = gdata.data;
+    for (let i = 0; i < d.length; i += 4) { const v = (Math.random() * 255) | 0; d[i] = d[i + 1] = d[i + 2] = v; d[i + 3] = 255; }
+    gctx.putImageData(gdata, 0, 0);
+  }
+
+  // ---------- frame ----------
+  let progress = 0;
+  function radial(x, y, rx, ry, rgb, a) {
+    ctx.save(); ctx.translate(x, y); ctx.scale(1, ry / rx);
+    const gr = ctx.createRadialGradient(0, 0, 0, 0, 0, rx);
+    gr.addColorStop(0, `rgba(${rgb},${a})`); gr.addColorStop(0.45, `rgba(${rgb},${a * 0.35})`); gr.addColorStop(1, `rgba(${rgb},0)`);
+    ctx.fillStyle = gr; ctx.fillRect(-rx, -rx, rx * 2, rx * 2); ctx.restore();
+  }
+  function frame(now) {
+    const t = now - t0;
+    if (!L.vw) return;
+    const I = introState(t);
+    const c = camera(progress, now);
+    const e = c.e, far = 1 - e;
+    const { vw, vh, dpr } = L;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+    ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
+    ctx.fillStyle = '#050404'; ctx.fillRect(0, 0, vw, vh);
+
+    // the room
+    const X = toX(c, L.plate.x), Y = toY(c, L.plate.y), W = L.plate.w * c.s, H = L.plate.h * c.s;
+    if (plateImg.complete && plateImg.naturalWidth) ctx.drawImage(plateImg, X, Y, W, H);
+
+    // the room's own light: dark until the lamp, neon off-mask until it buzzes on
+    const room = 0.18 + 0.82 * Math.max(I.lamp, I.neon * 0.85);
+    const N = PLATE.neon, nx = toX(c, plateU(N.u)), ny = toY(c, plateV(N.v)), nrw = N.rw * W, nrh = N.rh * H;
+    if (I.neon < 1) { ctx.globalCompositeOperation = 'multiply'; radial(nx, ny, nrw * 1.25, nrh * 2.4, '8,6,5', 0.97 * (1 - I.neon)); }
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = `rgba(5,4,4,${1 - room})`; ctx.fillRect(0, 0, vw, vh);
+
+    // light spill (screen): the neon's buzz, the lamp, the TV's phosphor on the wall and floor
+    ctx.globalCompositeOperation = 'screen';
+    const hum = 1 + 0.035 * Math.sin(now * 0.0045) + (hash(Math.floor(now / 90)) > 0.985 ? -0.25 : 0);
+    if (I.neon > 0) radial(nx, ny, nrw * 1.6, nrh * 3.2, N.rgb.join(','), 0.42 * S.neon * I.neon * hum);
+    const Lp = PLATE.lamp;
+    if (I.lamp > 0) radial(toX(c, plateU(Lp.u)), toY(c, plateV(Lp.v)), Lp.r * W, Lp.r * W, Lp.rgb.join(','), 0.32 * I.lamp);
+    const tvx = toX(c, L.tv.x), tvy = toY(c, L.tv.y), tvw = L.tv.w * c.s, tvh = L.tv.h * c.s;
+    const tvOn = smooth(0.15, 0.65, I.tv);
+    const breathe = 1 + 0.05 * Math.sin(now * 0.0019) + 0.03 * Math.sin(now * 0.0071);
+    if (tvOn > 0) {
+      radial(tvx + tvw / 2, tvy + tvh / 2, tvw * 0.95, tvh * 1.45, '255,140,60', 0.30 * S.tvGlow * tvOn * breathe * far);
+      radial(tvx + tvw / 2, toY(c, plateV(PLATE.floorV)), tvw * 1.1, tvh * 0.32, '255,130,50', 0.20 * S.tvGlow * tvOn * breathe * far);
+    }
+
+    // reading A: the LED ticker on the wall
+    if (S.readA) {
+      ctx.globalCompositeOperation = 'source-over';
+      const B = PLATE.board, bx = toX(c, plateU(B.u - B.w / 2)), by = toY(c, plateV(B.v - B.h / 2)), bw = B.w * W, bh = B.h * H;
+      boardDraw(t, I.board);
+      ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillRect(bx - bh * 0.12, by + bh * 0.08, bw + bh * 0.24, bh * 1.12); // contact shadow
+      ctx.fillStyle = '#1b1612'; ctx.fillRect(bx - bh * 0.1, by - bh * 0.1, bw + bh * 0.2, bh * 1.2);  // the frame
+      ctx.globalAlpha = room; ctx.drawImage(board.cv, bx, by, bw, bh); ctx.globalAlpha = 1;
+      if (I.board > 0) { ctx.globalCompositeOperation = 'screen'; radial(bx + bw / 2, by + bh / 2, bw * 0.62, bh * 2.2, (LED[S.led] || LED.amber).join(','), 0.16 * I.board); }
+    }
+
+    // the TV: drawn by the canvas until the lock (a scaled image downsamples cleanly here), then the real one
+    ctx.globalCompositeOperation = 'source-over';
+    const locked = progress >= 0.999;
+    $('tvLive').classList.toggle('is-on', locked);
+    if (!locked && tvImg && tvImg.complete && tvImg.naturalWidth) {
+      const k = c.s, R = cap.r * k;
+      ctx.save();
+      ctx.shadowColor = 'rgba(0,0,0,.75)'; ctx.shadowBlur = 60 * k; ctx.shadowOffsetY = 26 * k;
+      ctx.beginPath(); ctx.roundRect(tvx, tvy, tvw, tvh, R); ctx.fillStyle = '#0c0a09'; ctx.fill();
+      ctx.restore();
+      ctx.save(); ctx.beginPath(); ctx.roundRect(tvx, tvy, tvw, tvh, R); ctx.clip();
+      ctx.drawImage(tvImg, tvx, tvy, tvw, tvh);
+      // the tube opening: black glass parts from a bright line
+      const [gl, gt, gr, gb] = cap.glass.map((v) => v * k);
+      const gx = tvx + gl, gy = tvy + gt, gw = tvw - gl - gr, gh = tvh - gt - gb;
+      if (I.tv < 1) {
+        const open = smooth(0.18, 0.62, I.tv), half = gh / 2;
+        ctx.save(); ctx.beginPath(); ctx.roundRect(gx, gy, gw, gh, cap.gr * k); ctx.clip();
+        ctx.fillStyle = '#070606';
+        ctx.fillRect(gx, gy - half * open, gw, half);
+        ctx.fillRect(gx, gy + half + half * open, gw, half);
+        const lineW = gw * clamp(I.tv / 0.18), la = (1 - smooth(0.35, 0.75, I.tv));
+        ctx.globalCompositeOperation = 'screen';
+        ctx.fillStyle = `rgba(255,236,210,${la})`;
+        ctx.fillRect(gx + (gw - lineW) / 2, gy + half - Math.max(1, 1.5 * k) - half * open * 0.15, lineW, Math.max(2, 3 * k) + half * open * 0.3);
+        ctx.fillStyle = `rgba(255,220,180,${0.35 * open * la})`; ctx.fillRect(gx, gy, gw, gh);
+        ctx.restore();
+      }
+      // the room's light falling off over the set (top warm, bottom darker), gone at the lock
+      const gd = ctx.createLinearGradient(0, tvy, 0, tvy + tvh);
+      gd.addColorStop(0, `rgba(0,0,0,${0.10 * far})`); gd.addColorStop(1, `rgba(0,0,0,${0.32 * far})`);
+      ctx.fillStyle = gd; ctx.fillRect(tvx, tvy, tvw, tvh);
+      ctx.restore();
+    }
+
+    // haze in front, dust in the air, the lens's vignette: all gone by the lock
+    ctx.globalCompositeOperation = 'screen';
+    if (S.haze > 0 && far > 0.001) {
+      const d1x = Math.sin(now * 0.00011) * 40, d1y = Math.cos(now * 0.00009) * 25;
+      const d2x = Math.cos(now * 0.00007) * 55, d2y = Math.sin(now * 0.00013) * 30;
+      ctx.globalAlpha = S.haze * 0.16 * far * room;
+      if (haze1.complete && haze1.naturalWidth) ctx.drawImage(haze1, -80 + d1x, -60 + d1y, vw + 160, vh + 120);
+      ctx.globalAlpha = S.haze * 0.10 * far * room;
+      if (haze2.complete && haze2.naturalWidth) ctx.drawImage(haze2, -90 + d2x, -70 + d2y, vw + 180, vh + 140);
+      ctx.globalAlpha = 1;
+    }
+    if (S.dust > 0 && far > 0.001) {
+      ctx.globalCompositeOperation = 'lighter';
+      const ccx = tvx + tvw / 2, ccy = tvy + tvh / 2, zr = c.s / L.s0;
+      for (const d of DUST) {
+        const k = Math.pow(zr, 0.3 + 1.7 * d.z);
+        const wob = reduced ? 0 : 1;
+        const px = ccx + (d.x * vw + wob * Math.sin(now * 0.00023 * d.sp + d.ph) * 18) * k;
+        const py = ccy + (d.y * vh + wob * (Math.cos(now * 0.00017 * d.sp + d.ph) * 14 - ((now * 0.004 * d.sp) % 80))) * k;
+        if (px < -40 || px > vw + 40 || py < -40 || py > vh + 40) continue;
+        const r = d.r * (0.6 + 1.6 * d.z) * Math.sqrt(k);
+        const a = S.dust * 0.22 * (0.35 + 0.65 * d.z) * Math.pow(far, 1.3) * room;
+        const gr = ctx.createRadialGradient(px, py, 0, px, py, r * 2.2);
+        gr.addColorStop(0, `rgba(255,214,170,${a})`); gr.addColorStop(1, 'rgba(255,214,170,0)');
+        ctx.fillStyle = gr; ctx.fillRect(px - r * 2.2, py - r * 2.2, r * 4.4, r * 4.4);
+      }
+    }
+    ctx.globalCompositeOperation = 'source-over';
+    if (far > 0.001) {
+      const vg = ctx.createRadialGradient(vw / 2, vh / 2, Math.min(vw, vh) * 0.35, vw / 2, vh / 2, Math.hypot(vw, vh) * 0.62);
+      vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, `rgba(0,0,0,${0.6 * far})`);
+      ctx.fillStyle = vg; ctx.fillRect(0, 0, vw, vh);
+    }
+
+    // DOM layers that follow the camera
+    const hit = $('tvHit');
+    hit.style.width = L.tv.w + 'px'; hit.style.height = L.tv.h + 'px';
+    hit.style.transform = `translate(${tvx}px,${tvy}px) scale(${c.s})`;
+    hit.style.display = e > 0.6 ? 'none' : '';
+    $('lcdSkin').style.opacity = (S.lcd * Math.pow(far, 1.2) * room).toFixed(3);
+    $('grain').style.opacity = (S.grain * 0.5 * far).toFixed(3);
+    grainTick(now);
+
+    // readings B and C leave as the walk starts; they come in after the tube lights
+    const leave = 1 - smooth(0, 0.22, e);
+    const readIn = smooth(0, 1, I.read);
+    const rb = $('readB');
+    rb.style.display = S.readB ? '' : 'none';
+    if (S.readB) {
+      const tvBottom0 = L.lastTvBottom0 ?? (vh * 0.62);
+      rb.style.top = Math.min(vh - rb.offsetHeight - vh * 0.04, tvBottom0 + vh * 0.035) + 'px';
+      rb.style.opacity = (readIn * leave).toFixed(3);
+      rb.style.transform = `translateY(${(1 - readIn) * 14 - (1 - leave) * 24}px)`;
+    }
+    const rc = $('readC');
+    rc.style.display = S.readC ? '' : 'none';
+    if (S.readC) {
+      rc.style.top = (L.navH + 16) + 'px';
+      rc.style.opacity = (smooth(0, 0.3, I.read) * leave).toFixed(3);
+      lcdType(t);
+    }
+    if (progress === 0) L.lastTvBottom0 = tvy + tvh;
+  }
+
+  // reading C types itself in like a stereo display
+  const LCD = ['REVAUDIO ▸ CUSTOM SOUND SHOP', 'PARTS & SERVICE FOR YOUR MIX', 'SCROLL ▼ TO PULL IN'];
+  function lcdType(t) {
+    const start = INTRO.read[0];
+    const n = reduced ? 99 : Math.max(0, Math.floor((t - start) / 38));
+    let left = n;
+    ['lcd1', 'lcd2', 'lcd3'].forEach((id, i) => { const s = LCD[i]; const k = clamp(left, 0, s.length); $(id).textContent = s.slice(0, k); left -= s.length; });
+  }
+
+  // ---------- scroll: Lenis like the site; a stop mid-walk finishes the way the visitor was going ----------
+  history.scrollRestoration = 'manual';
+  scrollTo(0, 0);
+  let lenis = null, lastScrollAt = 0, lastDir = 1, armed = false, touching = false;
+  if (window.Lenis && !reduced) lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
+  const readScroll = () => {
+    const y = lenis ? lenis.scroll : scrollY;
+    const prev = progress;
+    progress = clamp(y / L.zoomPx);
+    if (progress !== prev) { lastDir = progress > prev ? 1 : -1; lastScrollAt = performance.now(); }
+    if (progress > 0.01 && performance.now() - t0 < INTRO.read[1]) t0 = performance.now() - INTRO.read[1]; // a scroll skips the intro
+  };
+  addEventListener('wheel', () => { armed = true; }, { passive: true });
+  addEventListener('touchstart', () => { touching = true; armed = true; }, { passive: true });
+  addEventListener('touchend', () => { touching = false; lastScrollAt = performance.now(); }, { passive: true });
+  addEventListener('keydown', (ev) => { if (['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', ' ', 'Home', 'End'].includes(ev.key)) armed = true; });
+  const glideTo = (y, dur) => lenis ? lenis.scrollTo(y, { duration: dur, easing: (x) => 1 - Math.pow(1 - x, 4) }) : scrollTo({ top: y, behavior: reduced ? 'auto' : 'smooth' });
+  function snapCheck(now) {
+    if (!S.snap || !armed || touching || now - lastScrollAt < 170) return;
+    if (progress <= 0.001 || progress >= 0.999) { armed = false; return; }
+    const forward = lastDir > 0 ? progress > 0.06 : progress > 0.94;
+    const target = forward ? 1 : 0;
+    armed = false;
+    glideTo(target * L.zoomPx, 0.7 + 0.8 * Math.abs(target - progress));
+  }
+  $('tvHit').addEventListener('click', () => glideTo(L.zoomPx, 1.8));
+
+  function raf(now) {
+    if (lenis) lenis.raf(now);
+    readScroll();
+    snapCheck(now);
+    frame(now);
+    requestAnimationFrame(raf);
+  }
+
+  // ---------- prototype controls ----------
+  const SLIDERS = [
+    ['The walk-in'],
+    ['zoomLen', 'Scroll length (% screen)', 60, 320, 5],
+    ['ease', 'Ease (in-out power)', 1, 4, 0.1],
+    ['f', 'TV size in the wide shot', 0.14, 0.5, 0.01],
+    ['frameX', 'Wide shot: pan', -1, 1, 0.05],
+    ['frameY', 'Wide shot: tilt', -1, 1, 0.05],
+    ['The TV in the room'],
+    ['uc', 'TV spot: across', 0.2, 0.8, 0.005],
+    ['vc', 'TV spot: height', 0.2, 0.8, 0.005],
+    ['fh', 'TV height cap (phones)', 0.25, 0.7, 0.01],
+    ['Life'],
+    ['breath', 'Camera breathing', 0, 2.5, 0.05],
+    ['haze', 'Haze', 0, 2, 0.05],
+    ['dust', 'Dust in the air', 0, 2.5, 0.05],
+    ['neon', 'Neon glow', 0, 2, 0.05],
+    ['tvGlow', 'TV glow on the room', 0, 2.5, 0.05],
+    ['lcd', 'LCD skin on the room', 0, 1, 0.01],
+    ['grain', 'Film grain', 0, 1.5, 0.05],
+  ];
+  function buildTune() {
+    const body = $('tuneBody'); body.innerHTML = '';
+    for (const row of SLIDERS) {
+      if (row.length === 1) { const h = document.createElement('h3'); h.textContent = row[0]; body.appendChild(h); continue; }
+      const [k, label, min, max, step] = row;
+      const l = document.createElement('label');
+      l.innerHTML = `<span>${label}</span><output>${S[k]}</output><input type="range" min="${min}" max="${max}" step="${step}" value="${S[k]}">`;
+      const inp = l.querySelector('input'), out = l.querySelector('output');
+      inp.addEventListener('input', () => { S[k] = +inp.value; out.textContent = inp.value; save(); layout(); });
+      body.appendChild(l);
+    }
+    const h = document.createElement('h3'); h.textContent = 'LED sign colour'; body.appendChild(h);
+    const sel = document.createElement('select');
+    for (const k of Object.keys(LED)) { const o = document.createElement('option'); o.value = o.textContent = k; o.selected = S.led === k; sel.appendChild(o); }
+    sel.addEventListener('change', () => { S.led = sel.value; save(); });
+    body.appendChild(sel);
+    const sn = document.createElement('label');
+    sn.innerHTML = `<span>Finish a half walk (snap)</span><output></output><input type="checkbox" ${S.snap ? 'checked' : ''} style="grid-column:2">`;
+    sn.querySelector('input').addEventListener('change', (ev) => { S.snap = ev.target.checked ? 1 : 0; save(); });
+    body.appendChild(sn);
+  }
+  document.querySelectorAll('[data-read]').forEach((b) => {
+    const k = b.dataset.read; b.setAttribute('aria-pressed', S[k] ? 'true' : 'false');
+    b.addEventListener('click', () => { S[k] = S[k] ? 0 : 1; b.setAttribute('aria-pressed', S[k] ? 'true' : 'false'); save(); });
+  });
+  $('btnIntro').addEventListener('click', () => { glideTo(0, 0.01); t0 = performance.now() + 120; });
+  const toggleTune = () => { const tn = $('tune'); tn.hidden = !tn.hidden; if (!tn.hidden) buildTune(); };
+  $('btnTune').addEventListener('click', toggleTune);
+  $('btnClose').addEventListener('click', toggleTune);
+  $('btnReset').addEventListener('click', () => { Object.assign(S, DEF); save(); layout(); buildTune(); document.querySelectorAll('[data-read]').forEach((b) => b.setAttribute('aria-pressed', S[b.dataset.read] ? 'true' : 'false')); });
+  $('btnCopy').addEventListener('click', async () => {
+    const txt = JSON.stringify(S, null, 1);
+    try { await navigator.clipboard.writeText(txt); $('btnCopy').textContent = 'Copied ✓'; }
+    catch (e) { prompt('Copy the settings:', txt); }
+    setTimeout(() => { $('btnCopy').textContent = 'Copy settings'; }, 1600);
+  });
+  addEventListener('keydown', (ev) => {
+    if (ev.target.closest && ev.target.closest('input, select, textarea')) return;
+    if (ev.key === 'h' || ev.key === 'H') $('dock').hidden = !$('dock').hidden;
+    if (ev.key === 't' || ev.key === 'T') toggleTune();
+  });
+
+  addEventListener('resize', layout);
+  layout();
+  requestAnimationFrame(raf);
+})();
+</script>
+</body>
+</html>
