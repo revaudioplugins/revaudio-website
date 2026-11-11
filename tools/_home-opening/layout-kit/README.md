@@ -42,8 +42,8 @@ A layout is one JSON object, the bench's "Copy settings" format. Start from `sta
 
 ## The rules
 
-- Must stay, each where it can be seen along the walk: the four plugin CRT monitors M01 RevFX, M02 DRIFT, M03
-  RevLimiter (on the desk), M04 Radio Roulette (high on the right); the live TV at the end; the REVAUDIO neon; the
+- Must stay, each where it can be seen along the walk: the plugins M01 RevFX, M03 RevLimiter (on the desk),
+  M04 Radio Roulette (on the red chest, right) (CRTs until round 6, their own objects since; M02 DRIFT out, Dan 11-11); the live TV at the end; the REVAUDIO neon; the
   car on its lift, half out the roll-up door; the drum kit and throne; the studio corner; the GAS 2 posters and the
   COMING SOON plate.
 - No collisions: `check.mjs` must report `overlaps: []`. Rugs and decals may lie under things; thin wall boards

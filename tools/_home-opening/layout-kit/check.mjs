@@ -19,7 +19,7 @@ const page = await ctx.newPage(); const errors = []; page.on('pageerror', (e) =>
 await page.goto(`http://127.0.0.1:${port}/tools/_home-opening/room.html?expose`, { waitUntil: 'networkidle' });
 await page.waitForFunction(() => window.__room, null, { timeout: 20000 });
 await page.waitForTimeout(800);
-const MUST = ['M01', 'M02', 'M03', 'M04', 'SIGN', 'CAR', 'E07', 'E08', 'R16', 'P01', 'P02', 'P03', 'P04', 'P06'];
+const MUST = ['M01', 'M03', 'M04', 'SIGN', 'CAR', 'E07', 'E08', 'R16', 'P01', 'P02', 'P03', 'P04', 'P06'];
 const res = await page.evaluate(async (MUST) => {
   const { R, camera, go } = window.__room;
   const V = camera.position.constructor;

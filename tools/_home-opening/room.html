@@ -310,7 +310,6 @@ const DEF = {
     "W10": {"f": 0.4132, "y": 2.6},
     "R07": {"f": 0.5243},
     "R09": {"f": 0.5243},
-    "M02": {"f": 0.4847, "x": 2.81, "s": 1.15},
     "W06": {"f": 0.5313},
     "N15": {"f": 0.5764},
     "R15": {"f": 0.6438, "y": 1.98, "s": 0.85},  // off the tool pegboard, over the tyre rack (Dan, round 2: "put them somewhere else")
@@ -861,7 +860,6 @@ const MODELS = {
   N05: { src: 'assets/models/air-compressor.glb', yaw: Math.PI / 2, anim: [['gauge_needle', 'z', 'osc', [0.05, 0.7]]] }, // its needle quivers about mid-scale (still in reduced motion)
   R01: { src: 'assets/models/parts-store-shelf.glb', yaw: -Math.PI / 2 }, // steel shelving: boxed parts, oil, filters, mufflers (not L12's parts-shelf.glb)
   M01: { src: 'assets/models/crt-casing.glb', crt: true }, // the CRTs: a casing around each live screen
-  M02: { src: 'assets/models/crt-casing.glb', crt: true },
   M03: { src: 'assets/models/crt-casing.glb', crt: true },
   M04: { src: 'assets/models/crt-casing.glb', crt: true },
 };
@@ -1114,10 +1112,10 @@ const POSTERS = [
   { id: 'P05', pic: 'gas2-pump', label: 'GAS 2: the pump', side: -1, f: 0.47, y: 2.5, h: 0.95 },
   { id: 'P06', pic: 'coming-soon', label: 'COMING SOON plate (future plugins)', side: 1, f: 0.44, y: 2.45, h: 0.5 },
 ];
-// CRT monitors on the benches, each showing a plugin (the room alive; DRIFT and RevFX are the next ones)
+// CRT monitors on the benches, each showing a plugin; since round 6 each holds its plugin's own object instead (Dan 11-11),
+// and DRIFT's (M02, on the right wall's parts bench) is gone with no object in its place (Dan: "dont need to build drift object")
 const MONITORS = [
   { id: 'M01', pic: 'scr-revfx', label: 'CRT monitor: RevFX', side: -1, f: 0.6, base: 0.92, w: 0.56 },
-  { id: 'M02', pic: 'scr-drift', label: 'CRT monitor: DRIFT', side: 1, f: 0.36, base: 0.92, w: 0.5 },
   { id: 'M03', pic: 'scr-revlimiter', label: 'CRT monitor: RevLimiter', side: 0, x: -0.75, z: 1.05, base: 0.85, w: 0.44 },
   { id: 'M04', pic: 'scr-radio', label: 'CRT monitor: Radio Roulette', side: 1, f: 0.44, base: 1.0, w: 0.42 }, // on the red chest R05 since the compressor rack R06 went (Dan 11-11)
 ];
@@ -1133,7 +1131,7 @@ const PAINT = {
   shots: [{ at: 0, file: 'walk-000' }],   // where on the walk (0..1) each painting was made from, and its picture
   // Dan 11-03, on a real poster over its painted twin: "whoever looks better and looks more glued to the picture, use it"
   live: ['P01', 'P02', 'P03', 'P04'],    // real pixels over their painted twins (the TV always); the CRT screens read better painted
-  drop: ['P05', 'P06', 'M02', 'M04'],    // not in the paintings (the painter merged P05 into P03's poster, put helmets where P06 hung)
+  drop: ['P05', 'P06', 'M04'],    // not in the paintings (the painter merged P05 into P03's poster, put helmets where P06 hung)
 };
 { const q = new URLSearchParams(location.search).get('live'); if (q != null) PAINT.live = q.split(',').filter(Boolean); } // ?live=P04,M03: try others
 // ---------- the walk film (Dan 2026-11-03: projected paintings smear "and broken apart while I walk"; "in every step I will
