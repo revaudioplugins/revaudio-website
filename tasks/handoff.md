@@ -306,6 +306,13 @@ Files: `src/components/WordWall.astro`, `src/components/TrialGateModal.astro` (+
   the tint off (Mix 0, Blacks 0: new defaults, state v4 clears his old two), under the 2 x 2 pixels, the pixel grid
   and the screen's lines, still hovering; brightness kept at his 1.39 (a lit screen; hues true). Thumbnails: A
   (smooth, own colours) is the pick now (B's one colour stays on the switch). Bench only.
+  **DECIDED** (Dan 2026-11-11, "perfect lets commit to it"): this bench look is the TV's look (`3f23020`): every
+  plugin running in its own colours, 2 x 2 pixels + pixel grid + the screen's lines, hovering cut out (v2 loops);
+  thumbnails A from the cut-out stills. Bake plan (on his COPY SETTINGS + "bake"; feat/tv-sells, never main):
+  each loop as an animated WebP at its pixel size (alpha; drawn up with `image-rendering: pixelated`; ~0.1-0.4 MB
+  each, only the lit one loads), its brightness + bloom baked into the frames (no live SVG filter), the pixel grid,
+  edges and lines in CSS, the halo a drop-shadow, the thumbnails = the stills; then weigh the page on a phone
+  connection and check the 9 sizes before any push to main.
 - Next: Dan's look at all five hovering + the thumbnails (B) + the scanlines on `/__wwdepth` -> COPY SETTINGS -> production: the same for GAS, Radio Roulette (both have
   browser demos), DRIFT (its wall run, pixelated), GAS 2 (its pump floating, animated, alpha), each to music -> build
   it in WordWall (bake the grade into the TV's copies: no live SVG filter in production; video, see the weight), then
