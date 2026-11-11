@@ -764,6 +764,13 @@ Claim: CLOSED 2026-11-11 `danavivi-ee` (it held `tools/_home-opening/room.html` 
   - Processes: this session's server (4481) is stopped. Still running, `danavivi-cf`'s: `nocache_server.py` on 4641 (pid 32988), Dan's local room and bench.
   - Lasting copies (git-ignored): `.claude/car-bench-2026-11-11/` in the main checkout: `bench.mjs` (bench shots: settings + view per shot), `check.mjs` (the bench's controls + fps, Chrome / WebKit), `roomcheck.mjs` (the room with the look: fps, Engine off), `tv.mjs` (loader vs room TV per width), `probe.mjs` (the car's parts and materials).
   - Not started (Dan said "go" to the reminders, then "rvclose"): round 6's NEXT 1-3 above (M03's colours, the pack, then render + check). Also open: the car look on a phone; the sticker (on, no picture); the design hook's Inter waiver for `car-bench.html` did not persist (auto mode blocked `impeccable hooks ignore-value`), Dan has the line.
+- **Dan's word after the close (11-11), for the next car session:** "it's important to me that next time we will work on a car, then we'll have that bench and we can change the car as well, the type of the car". So: any car work starts in `car-bench.html`, never by hand in `room.html`; and the bench's first new control is the car's TYPE (a picker that swaps the model in the room, live). Not built. What is tied to the coupe today, so the next session knows the seams:
+  - One model, hard-wired: `CAR: { src: 'assets/models/coupe.glb', yaw, tail, plate: { at } }` in room.html's model list. A type = that record per car (file, yaw, the plate's place on its tail, tail lamps yes / no).
+  - The look finds its parts by material NAME: `CAR_ROLES = { paint, black, glass, metal, plate, plate_bolt }`. Another model needs its materials named so, or a name map per type; a part with no role gets no look. `.claude/car-bench-2026-11-11/probe.mjs` (main checkout) lists a model's parts and materials.
+  - The stripes, the door number and the sticker sit in metres in the car's own frame, so their places are per type; `CAR_LOOK` becomes one look per type, and Copy settings must carry the type.
+  - A new model file is fine for the live page (the integration copies the whole `assets` folder); new code still goes inline in `room.html`.
+  - A car swap shows at walk 0: re-render the loading pictures, `lights/check.mjs` must print PASS.
+  - Ask Dan first which cars (his team models them: Supra-inspired, no badges). No model is picked.
 
 ## 2026-11-09 — /revfx player: the die moves into the player and rolls Yoni's presets (Claude Code `revaudio-2f [e388a1]`, Yoni's laptop 2) — branch `feat/revfx-hear` — LIVE on main `81922f5` (2026-11-09, Yoni: "push deploy to the revfx page (dont add it to the index just like its now)")
 
