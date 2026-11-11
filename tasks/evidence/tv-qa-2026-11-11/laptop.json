@@ -1,0 +1,260 @@
+{
+  "lane": "laptop",
+  "summary": "On laptops the TV works and is really clickable in Chromium and WebKit at 1141, 1280, 1440, 1728 and 860: every category, row, key, link, the on-screen sign-up (all five plugins, every worker answer), deep links, Back/Forward and the cart to Paddle behave as specified. Two major layout problems: at 1280x665 the TV is 12 px taller than the screen, so the one-screen lock never parks it, and at 860x1000 the first-visit cookie banner (325-366 px tall) covers two rows and an open pane's Try and PRODUCT PAGE keys. Smaller: Space on DRIFT's link-key scrolls the page away; in Safari, Esc stops closing the sign-up once a box has been ticked with the mouse.",
+  "tested": [
+    "Cookie banner, laptop sizes (1141/1280/1440/1728, both engines): covers no TV key or row; Decline hides it without grabbing focus",
+    "All 10 engine x size combos: TV parked under the nav, no sideways scroll (scrollWidth = clientWidth), no TV text clipped or past the glass (lit pane, sign-up, sent screen), every category, row, Try, PRODUCT PAGE, picture link and name link passes a 5-point elementFromPoint hit test",
+    "One screen exactly at 1141x636, 1440x789, 1728x992, 860x1000 (section = room, 0 px over); after a real wheel into the snap zone the lock lands the TV under the nav at all four (2/2 per engine)",
+    "Categories, both engines, all sizes: ALL 5 / MASTERING 2 / SATURATION 2 / MODULATION 1 / CREATIVE 2 / FREE 2, counts = rows shown in TV order; the lit plugin stays if in the category, else the first lights; pane = plugins.ts; ?cat= pushed; the live region says \"Mastering: 2 plugins\" etc.; ALL brings all five back",
+    "Rows: hover warms the name and the thumbnail (hand cursor: Chromium computes pointer; WebKit computes auto for any link and draws the hand itself); a click lights it and the pane (picture loaded, name, type, blurb, five words, price, key label + sub-line, three links) matches plugins.ts for all five; ?plugin= replaced, not pushed",
+    "A double click on an unlit row lights it and never leaves; the lit row clicked once -> its product page; Cmd+click on a lit or unlit row -> a new tab, the TV unchanged",
+    "Picture, name and PRODUCT PAGE -> /revlimiter, /gas, /gas2/, /drift, /radio-roulette (page titles checked); Cmd+click on each -> a new tab; the pointer on the picture or the name lights PRODUCT PAGE's hover",
+    "tablet-860 (phone layout): a row click opens its pane (history entry, focus to the name), browser Back shuts it, ‹ All plugins returns to the list with focus on the row, Cmd+click opens a tab without opening the pane",
+    "Sign-up, all five plugins, both engines, 1280 + 860: opens on the screen, focus in the email field; empty -> \"Enter your email.\" + the terms error, aria-invalid; a bad address -> \"That doesn't look like an email.\"; terms unticked blocks (focus to the box); GAS / GAS 2's newsletter box is required (plan D-new) and blocks; 0 posts while blocked; Esc and ‹ Back return to the plugin with focus on Try, the typed address kept; Terms / Licence / Privacy open new tabs",
+    "Posts: one POST /download/register per send, email trimmed, plugin = revlimiter / gas / gas2 / drift / radioroulette, marketing = the box (RevLimiter false, the others true), + src_ch / src_via; DRIFT with the box ticked also posts /form-once {form: newsletter, source: drift-trial}",
+    "Sent screen: CHECK YOUR INBOX with the address, focus on its heading; Resend posts again (\"Sent again...\"); Wrong email? returns to the field, focused; fits at all 10 combos (a trial and a free plugin)",
+    "Worker answers: fail -> its error text under Send, address kept, Send re-enabled and focused (the kit's fake text is \"invalid_email\"; the live worker answers in words); slow -> \"Sending...\" + disabled, a double + a third click = 1 post, then the sent screen; down -> \"Network hiccup. Try again in a moment.\", address kept; a double click on Send with an instant answer = 1 post",
+    "Another channel while signing puts the plugin back (typed address kept); the lit row clicked while signing closes the sign-up instead of leaving",
+    "Glitches: none in 35 s with a sign-up open; 4 in 75 s idle per engine, none on the hovered row, the focused category, a key, the price or the words",
+    "Cart, Chromium + WebKit at 1141 / 1280 / 860: the round cart button is display:none above 700 px (phones only, not testable here); the header cart shows the empty tip on hover, opens the drawer (modal, focus inside, page scroll locked) and closes by x, Esc and an outside click (focus back on the icon in Chromium; WebKit returns it to body as Safari never focused the button)",
+    "Checkout: refused without the terms tick (error, no Paddle call); with it Paddle.Checkout.open {items: [RevLimiter pri_01m18vcv5f42cdbv5bzxhm94n1 x1], customData terms_accepted, terms_version 2026-10-07, src}; RevLimiter + Radio Roulette checked out from the home page's header cart -> both price ids, badge 2",
+    "Deep links /?plugin= for all five light that plugin (860: its pane opens); an unknown slug -> RevLimiter, no error; ?cat=free&plugin=gas2, ?cat=bogus and ?cat=mastering&plugin=drift handled sensibly",
+    "Back / Forward walk the categories (Back to \"/\" keeps the last plugin lit); a reload keeps category + plugin; Back from a product page (key, lit row, picture) returns to the same plugin and the TV still works (a row click, Try)",
+    "bfcache: not exercisable here - headless Playwright never restores a page (Chromium NotRestoredReasons \"masked\", even with interception off behind a dead proxy and the bfcache switch on; WebKit the same), so every Back was a back_forward reload; those came back right",
+    "Keyboard (both engines, 1141 / 1280 / 860; WebKit with Option+Tab, see L5): Tab order category bar (1 stop) -> lit row (1 stop) -> Try -> PRODUCT PAGE -> out of the TV, no trap; a visible focus ring on every stop and in the form; arrows / Home / End on categories and rows; Enter / Space on a row light it, never leave, no page scroll; Try by Enter and Space; form order field -> terms -> Terms -> Licence -> newsletter -> Send -> Privacy; Space ticks; Esc back to Try; Enter on PRODUCT PAGE leaves; 860: Enter on a row opens its pane, focus to the name",
+    "The 10 % welcome pop-up never opened over the TV (a row clicked, then a wheel scroll past it; 25 s with the TV in view)",
+    "No page errors in any run apart from WebKit's s2 run (L10, flaky); console clean apart from the kit's blocked requests and WebKit's font-preload warnings; local 404s only from GAS 2's first load (L7)",
+    "Caveat: other lanes shared the preview server; some s2 / s5 steps timed out under that load (Back loads > 30 s, settles > 20 s) and passed on re-run; the page jumps seen in the first s1 run were traced to Playwright's own retry-scroll (scroll before the click event, no scroll call by the page, the key hittable throughout)"
+  ],
+  "findings": [
+    {
+      "id": "L1",
+      "severity": "major",
+      "title": "1280x665: the TV is 12 px taller than the screen, so the one-screen lock never parks it",
+      "where": "chromium + webkit, laptop-1280 (1141, 1440, 1728, 860 fit exactly)",
+      "steps": [
+        "Open / at 1280x665, Decline cookies; any plugin lit",
+        "Measure #plugins: 636 px tall under a 41 px nav (624 px of screen)",
+        "Scroll 260 px past the TV, then wheel up until its top is 100-130 px under the nav (inside the 30 % snap zone) and let go"
+      ],
+      "expected": "One screen exactly (section = 100svh - nav, as at 1141/1440/1728/860) and the lock lands the TV under the nav (1141 / 1440 / 1728 / 860: lands at 0, 2/2 per engine)",
+      "actual": "The plugin list is 448 px against the 436.5 px room (--ww-main): 5 rows x 82.3 px + 4 x 9.3 px gaps. The section runs 12 px past the screen (the rail under the TV is cut), the lock bails on its fit test and the TV stays 100-120 px up with PICK A CATEGORY and the category row under the nav (4/4 per engine, two s7 runs). Same 636 px with every plugin lit and in both engines.",
+      "evidence": [
+        "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/shots/001-webkit-laptop-1280-s7-after-wheel.png",
+        "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/shots/001-chromium-laptop-1280-s7-after-wheel.png",
+        "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/shots/001-webkit-laptop-1141-s7-after-wheel.png",
+        "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/results/s7-lock-chromium-laptop-1280.json",
+        "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/results/s7-lock-webkit-laptop-1280.json",
+        "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/results/s7-lock.json",
+        "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/results/s1-layout-run2.json"
+      ],
+      "repro": "4/4 per engine (two s7 runs) + every s1 run (section 636 vs 624)",
+      "code_ref": "src/components/WordWall.astro:1948 (the name's height cap) and :1711 (the lock's fit test)",
+      "fix_idea": "At 1280 the names are width-bound (51.2 px, under the 59.9 px height cap), so the cap never binds. The cap assumes 1.9rem of per-row overhead; the real overhead is ~43 px (type line 19.2 + 4.8 inner gap + 9.6 row padding + 9.3 list gap). About 2.7rem (or taking the list gap out of --ww-main / --ww-rows) makes the cap bind: 5 rows come to ~426 px."
+    },
+    {
+      "id": "L2",
+      "severity": "major",
+      "title": "860x1000: the first-visit cookie banner is 325-366 px tall and covers DRIFT, Radio Roulette and an open pane's Try + PRODUCT PAGE keys",
+      "where": "chromium + webkit, tablet-860 (860x1000); laptop sizes are clear",
+      "steps": [
+        "First visit at 860x1000 (no cookie choice yet), wait for the banner",
+        "Hit-test the plugin rows; click GAS (its pane opens) and hit-test its keys"
+      ],
+      "expected": "TV walk P04: the banner stops hiding the TV (slim, no TV key under it)",
+      "actual": "The full copy shows (the short line only switches on for heights <= 820 px) and is squeezed into a 125-136 px column beside the title's fixed 200 px left margin: 17 lines, the banner's top at 635-675 px. Covered: the DRIFT and Radio Roulette rows; in GAS's pane the five words, the price, FREE DOWNLOAD (y 675-729) and PRODUCT PAGE (y 905-942). All work again after Decline / Accept.",
+      "evidence": [
+        "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/shots/001-webkit-tablet-860-s11-860-banner-list.png",
+        "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/shots/002-webkit-tablet-860-s11-860-banner-pane.png",
+        "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/shots/001-chromium-tablet-860-s11-860-banner-list.png",
+        "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/shots/002-chromium-tablet-860-s11-860-banner-pane.png",
+        "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/results/s11-banner860.json"
+      ],
+      "repro": "2/2 per engine (s11) + both s1 runs",
+      "code_ref": "src/components/CookieBanner.astro:229 (.cb-title margin-left: 200px) and :278 (the short line by height only)",
+      "fix_idea": "Drop the 200 px title margin below ~1100 px wide (or stack title / text / keys as the <= 640 px layout does) and switch to the short line by width as well as height."
+    },
+    {
+      "id": "L3",
+      "severity": "minor",
+      "title": "Space on DRIFT's TRY THE FREE BETA key scrolls the page ~510-570 px instead of opening its sign-up",
+      "where": "chromium + webkit, laptop-1280 + laptop-1141 (the key is the same link at every size)",
+      "steps": [
+        "Light DRIFT",
+        "Tab (Safari: Option+Tab) to TRY THE FREE BETA",
+        "Press Space"
+      ],
+      "expected": "As the other four Try keys (buttons): Space opens the sign-up on the screen",
+      "actual": "The key is <a href=\"/drift#try\"> styled as a button: Space does the browser's page-down (509-569 px), the TV leaves the screen with the focused key under the nav. Enter works (opens the on-screen sign-up).",
+      "evidence": [
+        "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/shots/001-webkit-laptop-1280-s12-drift-try-focused.png",
+        "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/shots/002-webkit-laptop-1280-s12-drift-after-space.png",
+        "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/shots/002-chromium-laptop-1280-s12-drift-after-space.png",
+        "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/results/s12-evidence.json",
+        "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/results/s6-keyboard.json"
+      ],
+      "repro": "8/8 (s6: 2 sizes x 2 engines; s12: 2 runs x 2 engines)",
+      "code_ref": "src/data/library.ts:138 (href: '/drift#try') -> src/components/WordWall.astro:330-334 (rendered as <a>)",
+      "fix_idea": "With the sign-up on the screen, give the link role=\"button\" and open it on Space (keydown \" \" -> preventDefault + click), or render a <button> and keep the link for no-JS."
+    },
+    {
+      "id": "L4",
+      "severity": "minor",
+      "title": "Safari: once a box is ticked with the mouse, Esc no longer closes the sign-up (both engines after a click on the form's text or the glass)",
+      "where": "webkit laptop-1280 + laptop-1141 (box ticks); chromium + webkit (a click on the notice text or the glass beside the form)",
+      "steps": [
+        "Open any Try sign-up",
+        "Type an email, tick I agree to the terms with the mouse (or click its label)",
+        "Press Esc"
+      ],
+      "expected": "Esc puts the plugin back (spec: \"‹ Back and Esc back to the plugin\")",
+      "actual": "WebKit never focuses a checkbox on click: focus lands on <main>, outside the TV, and the TV's Esc listener (on .ww) never hears the key, so the sign-up stays open (‹ Back still works). The terms tick is required, so in Safari Esc fails in nearly every real sign-up. Chromium focuses the box (Esc works) but fails the same way after a click on the notice text or the glass.",
+      "evidence": [
+        "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/shots/003-webkit-laptop-1280-s12-esc-after-tick.png",
+        "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/results/s10-esc.json",
+        "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/results/s10-esc-laptop-1141.json",
+        "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/results/s12-evidence.json"
+      ],
+      "repro": "2/2 (1280 + 1141, s10) + 2/2 (s12)",
+      "code_ref": "src/components/WordWall.astro:963 (keydown on the wall only)",
+      "fix_idea": "Listen for Escape on document while a sign-up is open (skip when a dialog is open), or give the sign-up box tabindex=\"-1\" so clicks inside it keep focus in the TV."
+    },
+    {
+      "id": "L5",
+      "severity": "nit",
+      "title": "Safari's default Tab reaches the categories and the plugin list but skips Try and PRODUCT PAGE",
+      "where": "webkit (laptop-1280, laptop-1141, tablet-860), Safari's default keyboard setting",
+      "steps": [
+        "Tab (no Option) from the top of the page through the TV"
+      ],
+      "expected": "Every TV control reachable (Option+Tab is)",
+      "actual": "Plain Tab: ALL -> the lit row -> out of the TV (footer email). The categories and rows carry tabindex=0 from the script, so Safari stops on them; Try (button) and PRODUCT PAGE (link) have none and Safari skips them. Option+Tab: ALL -> row -> Try -> PRODUCT PAGE, all with a visible ring.",
+      "evidence": [
+        "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/results/s6-keyboard.json"
+      ],
+      "repro": "3/3 (webkit sizes)",
+      "code_ref": "src/components/WordWall.astro:1448 and :1465 (tabIndex set) vs :330-341 (the keys)",
+      "fix_idea": "Optional (Safari's own rule): tabindex=\"0\" on .ww-try / .ww-more makes plain Tab reach them too."
+    },
+    {
+      "id": "L6",
+      "severity": "nit",
+      "title": "1141x636 (the owner's Safari window): \"Licence terms\" breaks across two lines in the sign-up's terms line",
+      "where": "chromium + webkit, laptop-1141, all five sign-ups",
+      "steps": [
+        "At 1141x636 open any Try sign-up"
+      ],
+      "expected": "The two link names stay whole",
+      "actual": "\"Licence\" ends line 1, \"terms\" starts line 2 (one link in two pieces); both pieces work.",
+      "evidence": [
+        "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/shots/004-webkit-laptop-1141-s1-form-revlimiter.png",
+        "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/shots/004-chromium-laptop-1141-s1-form-revlimiter.png"
+      ],
+      "repro": "2/2 (both s1 runs, both engines)",
+      "code_ref": "src/components/WordWall.astro:370",
+      "fix_idea": "white-space: nowrap on the two links."
+    },
+    {
+      "id": "L7",
+      "severity": "nit",
+      "title": "Every way to GAS 2's page links /gas2, which only lands at /gas2/ after an extra hop",
+      "where": "chromium + webkit, all sizes (row, picture, name, PRODUCT PAGE)",
+      "steps": [
+        "Light GAS 2, click PRODUCT PAGE (or the picture / the name / the lit row)"
+      ],
+      "expected": "The product page in one load",
+      "actual": "Lands on /gas2/ (\"GAS 2 · Free master-bus color plugin\"), but via /gas2: the page loads there first and location.replace()s itself to /gas2/ (GitHub Pages would 301 instead). The first load at /gas2 asks for 7 relative assets from the wrong folder (Chromium: 404s for /taxi/taxi.css, /player/radio.css, /drone/drone.css, /frames/f6-v17.png, ...; WebKit cancels them when the replace lands). The four other product pages are one load.",
+      "evidence": [
+        "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/results/s2-nav-chromium.json",
+        "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/results/s2-nav-webkit.json",
+        "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/results/r15-gas2drone-webkit.json"
+      ],
+      "repro": "2/2 (every GAS 2 navigation in s2, both engines; r15 in WebKit)",
+      "code_ref": "src/components/WordWall.astro:243, :312, :316, :341 (href /${it.slug})",
+      "fix_idea": "Link GAS 2 as /gas2/ (a per-plugin href)."
+    },
+    {
+      "id": "L8",
+      "severity": "nit",
+      "title": "Outside the TV: the product page's BUY NOW square never stops swaying (13-33 px sideways), a moving target for the cart step",
+      "where": "chromium + webkit, /revlimiter and /radio-roulette at laptop sizes (seen while getting an item into the cart)",
+      "steps": [
+        "Open /revlimiter, scroll BUY NOW into view, wait 4 s, track its box for 3 s"
+      ],
+      "expected": "A key at rest once it has landed",
+      "actual": "Its box keeps moving 13-17 px (Chromium) / 30-33 px (WebKit) sideways and ~2 px up/down, 7 s after load; Playwright never finds it stable in WebKit (a forced click works and adds the item). Possibly the crane door's intended sway: for the product page's owner to judge.",
+      "evidence": [
+        "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/results/r12-crane.jsonl",
+        "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/results/s4-cart-webkit-laptop-1280.json"
+      ],
+      "repro": "2/2",
+      "code_ref": "src/components/BuyButtonCrane.astro (.rc-buysq)"
+    },
+    {
+      "id": "L9",
+      "severity": "nit",
+      "title": "Flaky: once, a double click on an unlit row left the old plugin lit",
+      "where": "chromium laptop-1440, during a heavily loaded run",
+      "steps": [
+        "Radio Roulette lit, two Cmd+clicks on rows (new tabs), then a double click on RevLimiter's row"
+      ],
+      "expected": "RevLimiter lights, the page stays",
+      "actual": "Radio Roulette stayed lit (the page stayed on /). 1 of ~30 double clicks in s2; 0/8 on a targeted re-run (r13-dbl.cjs).",
+      "evidence": [
+        "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/results/s2-nav-chromium.json"
+      ],
+      "repro": "flaky (1 of ~30; 0/8 re-run)"
+    },
+    {
+      "id": "L10",
+      "severity": "nit",
+      "title": "Flaky, outside the TV: in one WebKit run every visit to GAS 2's product page logged \"[drone] Importing a module script failed\" (the drone intro fell back to the plain page), plus 1-4 uncaught \"TypeError: Load failed\" page errors per size",
+      "where": "webkit, the s2 run (all five sizes, under the shared preview load); GAS 2's product page /gas2/",
+      "steps": [
+        "Through s2's sequence: Cmd+click tabs, then GAS 2's product page by the lit row, the picture, the name and PRODUCT PAGE, Back 600 ms after each arrival"
+      ],
+      "expected": "No errors; the drone intro loads (it does in every re-run)",
+      "actual": "Console \"[drone] TypeError: Importing a module script failed.\" 4 / 4 / 4 / 3 / 3 times at 1280 / 1141 / 1440 / 1728 / 860 (= the GAS 2 visits per size) and page errors \"TypeError: Load failed\" 4 / 4 / 2 / 1 / 1 (no stack, source not pinned). Not seen again in 42 targeted visits: r14 (30 product-page round trips, 6 to GAS 2), r15 (8 GAS 2 visits, 0.6-8 s stays, from the TV and typed /gas2 and /gas2/, every drone module 200), r16 (a GAS 2 tab opened and closed first, as s2 does: 0/2). drone.js catches the failed import and shows the page without the intro, so a visitor sees no break. Chromium: none.",
+      "evidence": [
+        "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/results/s2-nav-webkit.json",
+        "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/results/r14-loadfailed-webkit.json",
+        "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/results/r15-gas2drone-webkit.json",
+        "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/results/r16-tabclose-webkit.json"
+      ],
+      "repro": "flaky (1 run; 0/42 targeted re-runs)",
+      "code_ref": "dist/gas2/drone/drone.js:58 (built page: import(run.js).catch -> console.error('[drone]'))"
+    }
+  ],
+  "scripts": [
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/lane.cjs",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/dump-expected.mjs",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/s1-layout.cjs",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/s2-nav.cjs",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/s3-signup.cjs",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/s4-cart.cjs",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/s5-history.cjs",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/s6-keyboard.cjs",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/s7-lock.cjs",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/s8-glitch.cjs",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/s9-popup.cjs",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/s10-esc.cjs",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/s11-banner860.cjs",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/s12-evidence.cjs",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/probe-bfcache.cjs",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/probe-bfcache2.cjs",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/probe-bfcache3.cjs",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/probe-bfcache4.cjs",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/probe-hover.cjs",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/r3-height.cjs",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/r9-rowbox.cjs",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/r10-gas2scroll.cjs",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/r11-afterback.cjs",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/r12-crane.cjs",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/r13-dbl.cjs",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/r14-loadfailed.cjs",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/r15-gas2drone.cjs",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/r16-tabclose.cjs",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/sum-s2.cjs",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/laptop/make-findings.cjs"
+  ]
+}

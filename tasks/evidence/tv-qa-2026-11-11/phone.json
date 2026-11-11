@@ -1,0 +1,232 @@
+{
+ "lane": "phone",
+ "summary": "On phones (WebKit + Chromium, 360-393 px) every plugin opens, every Try / Free download sign-up validates, posts the right body once and shows CHECK YOUR INBOX, PRODUCT PAGE / picture / name reach the right product page, deep links work, the scroll lock never traps and no page errors were seen. No blockers or majors: the most visible issues are the wrong plugin lit after coming back from a pane (after any category pick), sub-44 px targets (categories, ‹ ALL PLUGINS, PRODUCT PAGE, form controls) and the first-visit cookie banner over the TV's bottom keys; the rest are placement issues on short or sideways phones.",
+ "tested": [
+  "Cold open on all 8 configs (webkit + chromium x 360/375/390/393): the list shows, PICK A CATEGORY with ALL 5 pressed, 5 rows in order RevLimiter, GAS, GAS 2, DRIFT, Radio Roulette; no page errors, no local 4xx/5xx on home",
+  "Categories by tap: MASTERING 2 (RevLimiter, GAS 2), SATURATION 2 (GAS, GAS 2), MODULATION 1 (DRIFT), CREATIVE 2 (DRIFT, Radio Roulette), FREE 2 (GAS, GAS 2), ALL brings all 5 back; counts match; the category row wraps to two lines without cutting at every width",
+  "Each row tap opens its own pane on all 8 configs: the right picture (file + alt; DRIFT's video), name, type word, blurb, five words, price ($49 / Free / Free / Free beta / $19), key text + sub-line, PRODUCT PAGE / picture / name links to /<slug>",
+  "‹ ALL PLUGINS returns to the list with the category kept (SATURATION stays SATURATION); the browser's Back from a pane returns to the list, Forward reopens the pane, further Backs walk back through category picks; the browser's Back with the sign-up open closes it and keeps the typed email",
+  "Sign-up on all 5 plugins x both engines: Try / Free download turns the pane into the form (keys and ‹ ALL PLUGINS hidden), focus on the email field; empty -> 'Enter your email.', bad -> 'That doesn’t look like an email.', terms unticked blocks, GAS / GAS 2's required newsletter box blocks ('Tick the box to get your download.'); no post on any refusal; aria-invalid set, focus to the first bad field",
+  "Tapping the terms label ticks the box; ‹ BACK returns to the plugin with focus on Try, and reopening keeps the email and ticks",
+  "Post bodies: /download/register {email, plugin: revlimiter | gas | gas2 | drift | radioroulette, marketing (true for GAS/GAS 2, DRIFT when ticked, false otherwise), src_ch, src_via}; DRIFT with its box ticked also posts /form-once {form: newsletter, email, source: drift-trial}",
+  "CHECK YOUR INBOX shows the address, three steps, Resend (posts once more, 'Sent again…'), Wrong email? (form back, field focused with the address); ‹ BACK stays on the sent screen",
+  "A double tap on SEND MY LINK posts once; worker slow: 'Sending…' + disabled, extra taps ignored, one post, success after 4 s; worker fail: its message under the key, key live again, retry posts; worker down: 'Network hiccup. Try again in a moment.'; Resend with the network down shows the same in the status line",
+  "No glitch while the sign-up is open (the bench hook's name/read/picture/screen glitches all refused)",
+  "Scroll lock by touch (chromium: real CDP touch gestures; webkit: touch + pointer events around a native scroll): from the parked TV the page swipes down to the footer with no pull-back or trap, swiping back up lands the TV under the nav, a short swipe started on the rows or a pane scrolls the page and opens nothing; the lock stands down while the sign-up is open and is back after it closes",
+  "Layout: the TV is exactly one screen under the nav for the list and every pane at all 8 configs (except P6), no sideways scroll anywhere on the page (portrait and landscape), no cut or overflowing text in the TV",
+  "Cart button: 48x48, opens the drawer (full screen on phones, so no outside to tap), focus moves to its × (44x44), the page behind is locked; × and Escape close it and unlock (chromium returns focus to the button, webkit to the page as Safari does); 'Explore the plugins' closes it and goes to /plugins",
+  "Deep links on phones (both engines, 360 + 390): /?plugin=revlimiter | gas | gas2 | drift | radio-roulette open that pane with the TV in view; /?plugin=nope and /?plugin=DRIFT show the list with no error; /?cat=free&plugin=gas2 opens GAS 2 under FREE; /?cat=modulation&plugin=gas shows MODULATION (GAS ignored); ‹ ALL PLUGINS -> list; the browser's Back leaves the way the visitor came",
+  "PRODUCT PAGE →, the picture and the name each land on the right product page for all 5 (15 taps per engine; GAS 2 goes /gas2 -> /gas2/ -> postcards.html on a phone), and the browser's Back returns to the TV on the same plugin's pane",
+  "Landscape 664x390 and 852x393: list, panes and sign-up work with page scrolling (the TV grows past the screen by design), turning the phone with a pane open keeps the pane, no sideways scroll"
+ ],
+ "findings": [
+  {
+   "id": "P1",
+   "severity": "minor",
+   "title": "Coming back from a pane lights and focuses the wrong plugin (the one lit before), after any category pick or a deep-link arrival",
+   "where": "webkit + chromium, phone-360/375/390/393 (all 8 configs in p2; repro at 390)",
+   "steps": [
+    "Cold open /, tap FREE (GAS lights, URL /?cat=free&plugin=gas)",
+    "Tap the GAS 2 row: GAS 2's pane opens (URL /?cat=free&plugin=gas2)",
+    "Tap ‹ ALL PLUGINS (or the browser's Back)",
+    "Also: open /?plugin=revlimiter, tap ‹ ALL PLUGINS, tap Radio Roulette, press the browser's Back"
+   ],
+   "expected": "The list comes back with the plugin the visitor just looked at (GAS 2 / Radio Roulette) still lit, focused and in the address",
+   "actual": "GAS is lit (filled name, framed thumbnail, the screen turns GAS's gold), keyboard focus lands on the GAS row and the URL says ?cat=free&plugin=gas; in the deep-link case RevLimiter is lit/focused instead of Radio Roulette. Without a prior category tap (URL /) it is right, so it hits anyone who picks a category first",
+   "evidence": [
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/phone/shots/001-webkit-phone-390-repro-wronglit-backkey.png",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/phone/shots/001-chromium-phone-390-repro-wronglit-backkey.png",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/phone/shots/006-webkit-phone-390-p2-back-keeps-cat.png"
+   ],
+   "repro": "2/2 per engine (plus 8/8 configs in p2, 3/3 more in Chromium)",
+   "code_ref": "src/components/WordWall.astro:1532-1537 (a category tap pushes ?plugin=<lit then>), :1571 (a row pushes the pane entry on top), :1599 (‹ All plugins = history.back()), :1525 (popstate re-lights the older entry's ?plugin=)",
+   "fix_idea": "Before writeUrl('push','panel') on a phone row tap, writeUrl('replace') so the list entry underneath carries the newly lit plugin (or keep `lit` in fromUrl when a pane entry pops back to a list entry)"
+  },
+  {
+   "id": "P2",
+   "severity": "minor",
+   "title": "Many tap targets are under 44 x 44 CSS px (categories 31 px tall, ‹ ALL PLUGINS 28 px, PRODUCT PAGE 37 px, the form's controls 24-42 px)",
+   "where": "webkit + chromium, all four phone sizes (same CSS sizes everywhere)",
+   "steps": [
+    "Measure every key on the list, a pane, the sign-up and CHECK YOUR INBOX (repro.cjs targets)"
+   ],
+   "expected": "Every key, row, category, back link and the cart button at least 44 x 44, no overlap between neighbours",
+   "actual": "Pass: rows 334x72-74, Try / Free download 176-230x54, cart button 48x48, cart × 44x44. Under 44: categories ALL 52x30.6, MASTERING 108x30.6, SATURATION 113x30.6, MODULATION 116x30.6, CREATIVE 93x30.6, FREE 61x30.6 (two lines only 3 px apart); ‹ ALL PLUGINS 126-128x28-29; the plugin-name link 37-173x33-36; PRODUCT PAGE → 160x36.6; the sign-up's ‹ BACK 61x27.5; terms / newsletter checkboxes 24x24 (labels 18 px lines); Terms & Conditions / Licence terms / Privacy links 16-19 px lines; SEND MY LINK 158x42.2; Resend 55x24.8 and Wrong email? 100x24.8 side by side. No overlaps between neighbours (the cart button over a row: P7)",
+   "evidence": [
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/phone/shots/004-webkit-phone-390-p1-list.png",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/phone/shots/001-webkit-phone-390-p2-pane-revlimiter.png",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/phone/shots/001-webkit-phone-390-p3-revlimiter-form.png",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/phone/shots/004-webkit-phone-390-p3-gas-sent.png"
+   ],
+   "repro": "2/2 per engine",
+   "code_ref": "src/components/WordWall.astro:2870 (.ww-cat phone padding), :2897-2913 (.ww-back), :2152-2154 + :2197-2199 (min-height:0 drops the rv-btn--sm 48 px on the screen), :2271-2285 (.ws-back), :2323 (.ws-cb 1.5rem), :2359-2378 (.ws-send), :2448-2460 (.ws-act buttons)",
+   "fix_idea": "On phones give the categories / back links / Product page key min-height 44px (or padding), and enlarge the checkbox hit area (the plan chose 24 px for the boxes, so that one may be a deliberate call)"
+  },
+  {
+   "id": "P3",
+   "severity": "minor",
+   "title": "First visit: the cookie banner covers the bottom of the TV (Radio Roulette's row, PRODUCT PAGE, part of Try)",
+   "where": "webkit + chromium, all four phone sizes (banner 115 px tall)",
+   "steps": [
+    "Open / in a fresh browser, wait for the cookie banner",
+    "Look at the list, then tap RevLimiter and look at its pane"
+   ],
+   "expected": "Nothing on the TV hidden under the banner (P04: slim on phones, keys clear of it)",
+   "actual": "List: Radio Roulette's row is 67 of 74 px under the banner (its centre not tappable). Pane: PRODUCT PAGE → fully under the banner at every size; Try's lower edge 2 px under at 390 and 12 px at 360 (price too at 360). A short swipe or answering the banner clears it; nothing is lost",
+   "evidence": [
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/phone/shots/001-webkit-phone-390-p1-cold-banner.png",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/phone/shots/002-webkit-phone-360-p1-banner-pane.png",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/phone/shots/001-chromium-phone-390-repro-banner-pane.png"
+   ],
+   "repro": "2/2 per engine (plus all 8 configs in p1)",
+   "code_ref": "src/components/CookieBanner.astro:108-113 (showBanner: scroll-padding-bottom only helps focus scrolling, not a finger)",
+   "fix_idea": "A slimmer phone banner (one line + two keys), or reserve its height at the TV's bottom while it shows"
+  },
+  {
+   "id": "P4",
+   "severity": "minor",
+   "title": "Paid-trial sign-ups put the email field low: on short phones its lower edge sits under where an iPhone keyboard rises",
+   "where": "webkit (iPhone keyboard ~336 px): Radio Roulette at 360/375/390, RevLimiter at 360; chromium (Pixel keyboard ~300 px) clear at every size",
+   "steps": [
+    "Tap Radio Roulette (or RevLimiter at 360x640), tap TRY FREE FOR 30 DAYS",
+    "The form opens, the email field gets focus; compare its box with the keyboard's top (innerHeight - 336)"
+   ],
+   "expected": "The field stays visible above the keyboard without the browser having to scroll (the plan: the form slides up so the keyboard never hides the field)",
+   "actual": "The form does not move on focus; the field sits under the title + 30 DAYS line + the 3-line trial note. Radio Roulette: field 296-339 px vs keyboard top 328 (390x664), 304 (360x640), 331 (375x667); RevLimiter at 360x640: 270-313 vs 304. GAS / GAS 2 / DRIFT forms clear (field 188-274). Safari normally scrolls a focused field into view (the lock stands down while the form is open), so this needs a real-iPhone check before calling it worse",
+   "evidence": [
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/phone/shots/001-webkit-phone-390-p3-radio-roulette-form.png",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/phone/shots/001-webkit-phone-360-p3-revlimiter-form.png"
+   ],
+   "repro": "2/2 (full flow + geometry run; 360 re-measured)",
+   "code_ref": "src/components/WordWall.astro:818 (focus with preventScroll), :349-353 + :2250-2295 (title, t2, p12 above the field)",
+   "fix_idea": "On phones put the field right under the title (the 30-day note below the boxes), or scroll the field near the top when it gets focus"
+  },
+  {
+   "id": "P5",
+   "severity": "minor",
+   "title": "Landscape: a lower plugin's pane opens scrolled past its top, and its sign-up opens with the email field above the screen / under the header",
+   "where": "webkit + chromium, 664x390 and 852x393 (phone-390 / phone-393 turned)",
+   "steps": [
+    "Turn the phone sideways, swipe until Radio Roulette's row shows, tap it",
+    "Swipe until Try shows, tap it"
+   ],
+   "expected": "The pane opens at its top (‹ ALL PLUGINS, picture, name) and the email field shows below the header",
+   "actual": "The pane opens at the same scroll: ‹ ALL PLUGINS at y -113 to -139 and most of the picture above the screen. After Try the field is at -8..34 / -26..16 (chromium, above the screen) or 39..82 (webkit, under the 41-58 px fixed header). DRIFT (4th row) is fine. Usable after scrolling back up; the TV is taller than a landscape screen (568 vs 332 px), as designed",
+   "evidence": [
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/phone/shots/001-webkit-phone-390-p8c-radio-roulette-pane-r1.png",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/phone/shots/002-webkit-phone-390-p8c-radio-roulette-form-r1.png",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/phone/shots/002-chromium-phone-390-p8c-radio-roulette-form-r1.png",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/phone/shots/005-chromium-phone-390-p8-form-gas.png"
+   ],
+   "repro": "2/2 per engine and size",
+   "code_ref": "src/components/WordWall.astro:1566-1572 (a phone row opens the pane without bringing the TV back under the nav), :818 (focus with preventScroll)",
+   "fix_idea": "When a phone pane or the sign-up opens and the TV's top is above the nav line, scroll it to landY (the lock's own target)"
+  },
+  {
+   "id": "P6",
+   "severity": "minor",
+   "title": "360x640: Radio Roulette's pane makes the TV 20 px taller than the screen (bottom bezel below the fold) and the scroll lock then stops landing",
+   "where": "webkit + chromium, phone-360 (Radio Roulette only; every other pane and size is exactly one screen)",
+   "steps": [
+    "At 360x640 tap Radio Roulette",
+    "Measure the TV; swipe the page 100 px down, then 40 px back towards the TV"
+   ],
+   "expected": "The TV one screen tall (582 px) with the pane inside; the lock lands it",
+   "actual": "TV 602-603 px (the picture already at its 8rem = 128 px floor); the bezel's bottom is cut by the fold; the lock skips a TV taller than the screen, so after the swipe back it stays 56 px off (webkit) instead of landing",
+   "evidence": [
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/phone/shots/005-webkit-phone-360-p2-pane-radio-roulette.png",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/phone/shots/001-webkit-phone-360-repro-rr360.png"
+   ],
+   "repro": "2/2 per engine (height); lock 2/2 in webkit (chromium's swipe overshot the 30 % zone, inconclusive)",
+   "code_ref": "src/components/WordWall.astro:2964-2970 (max(8rem, ...) picture floor), :1711 (the lock skips a TV taller than the screen)",
+   "fix_idea": "Let the picture go below 8rem on short phones, or trim the pane (the two-line name + type) at <= 640 px tall"
+  },
+  {
+   "id": "P7",
+   "severity": "nit",
+   "title": "The round cart button sits on the list's last row: a tap on Radio Roulette's lower-left corner opens the cart",
+   "where": "webkit + chromium, phone-360/375/390 (not 393)",
+   "steps": [
+    "Cold open the list",
+    "Tap Radio Roulette's row at its lower-left (x 34, y 612 at 390)"
+   ],
+   "expected": "The row opens Radio Roulette",
+   "actual": "The cart drawer opens; the button covers 36 x 15-18 px of the row (its thumbnail). It never covers a pane's keys. Dan skipped P08 (the cart button) on 11-04, so this may be accepted",
+   "evidence": [
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/phone/shots/004-chromium-phone-360-p1-list.png",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/phone/shots/001-webkit-phone-390-repro-fab-over-row.png"
+   ],
+   "repro": "2/2 per engine",
+   "code_ref": "src/components/CartFab.astro:24-31 (fixed bottom-left, 48 px, 16 px in)",
+   "fix_idea": "Leave room under the TV's last row on phones, or lift the button while the TV is parked"
+  },
+  {
+   "id": "P8",
+   "severity": "nit",
+   "title": "The five words wrap with a dangling dot at 360 px (\"WIDE ·\" / \"ALIVE\", \"WEIRD ·\" / \"ALIVE\")",
+   "where": "webkit + chromium, phone-360 (DRIFT, Radio Roulette); 375+ fit on one line",
+   "steps": [
+    "At 360x640 open DRIFT or Radio Roulette"
+   ],
+   "expected": "The separator never ends a line",
+   "actual": "The first line ends on \"·\", the last word wraps alone",
+   "evidence": [
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/phone/shots/004-webkit-phone-360-p2-pane-drift.png",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/phone/shots/005-webkit-phone-360-p2-pane-radio-roulette.png"
+   ],
+   "repro": "2/2 per engine",
+   "code_ref": "src/components/WordWall.astro:323 (the dot inside the word's inline item)",
+   "fix_idea": "Put the dot before the next word (\"· ALIVE\"), or hide a line-ending dot"
+  },
+  {
+   "id": "P9",
+   "severity": "nit",
+   "title": "Spec check: the phone pane's Try key is not full width",
+   "where": "webkit + chromium, all phone sizes",
+   "steps": [
+    "Open any plugin's pane on a phone"
+   ],
+   "expected": "Brief: TRY FREE FOR 30 DAYS / FREE DOWNLOAD full width, PRODUCT PAGE → under it",
+   "actual": "Try sits beside the price (176-230 px wide, left), PRODUCT PAGE → centred below at the glass's foot (160 px). The code cites Dan's 11-08 bench pick (\"center it and lower it down\"), so likely intended; flagging only because the brief says full width",
+   "evidence": [
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/phone/shots/001-webkit-phone-390-p2-pane-revlimiter.png"
+   ],
+   "repro": "2/2",
+   "code_ref": "src/components/WordWall.astro:2920-2928"
+  },
+  {
+   "id": "P10",
+   "severity": "nit",
+   "title": "Flaky: one tap timed out (30 s) in the category -> pane -> back flow",
+   "where": "chromium phone-390, 1 of 7 runs of repro.cjs wrongLit",
+   "steps": [
+    "repro.cjs wrongLit, first Chromium run"
+   ],
+   "expected": "Each tap lands within a second",
+   "actual": "locator.tap timed out once (element never became tappable for Playwright); no screenshot was taken on that run; not seen in 6 more runs with failure capture on. Other QA lanes were running browsers at the same time, so likely load",
+   "evidence": [],
+   "repro": "flaky (1/7)"
+  }
+ ],
+ "scripts": [
+  "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/phone/lib.cjs",
+  "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/phone/p1-cold.cjs",
+  "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/phone/p2-panes.cjs",
+  "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/phone/p3-signup.cjs (GEOM=1 for the field position at every size)",
+  "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/phone/p4-worker.cjs",
+  "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/phone/p5-scroll.cjs",
+  "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/phone/p6-cart.cjs",
+  "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/phone/p7-deeplinks.cjs",
+  "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/phone/p8-landscape.cjs",
+  "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/phone/p8b-landscape-form.cjs",
+  "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/phone/p8c-landscape-lowrow.cjs",
+  "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/phone/p9-product.cjs",
+  "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/phone/p9b-gas2-back.cjs",
+  "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/phone/repro.cjs"
+ ],
+ "notes": [
+  "Kit effects ignored: the fake worker's error text 'invalid_email' (the real worker sends sentences), blocked externals; local 404s of /player/radio.css etc. came only from astro preview serving /gas2 without its trailing slash (GitHub Pages 301s it), before the page's own redirect.",
+  "WebKit cannot synthesize a real touch scroll here: its swipes are touch + pointer events around a native scroll; a first version without pointer events let the 10 % pop-up open over the page (the pop-up guard watches pointerdown), so treat WebKit scroll results as simulated.",
+  "Keyboard positions are estimates (iPhone ~336 px, Pixel ~300 px); headless browsers show no keyboard. The device lane should confirm P4."
+ ]
+}

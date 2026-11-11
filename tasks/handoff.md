@@ -313,6 +313,13 @@ Files: `src/components/WordWall.astro`, `src/components/TrialGateModal.astro` (+
   each, only the lit one loads), its brightness + bloom baked into the frames (no live SVG filter), the pixel grid,
   edges and lines in CSS, the halo a drop-shadow, the thumbnails = the stills; then weigh the page on a phone
   connection and check the 9 sizes before any push to main.
+- 2026-11-11 QA (Dan: "summon agents to test and check the home tv ... real world and real internet ... all the
+  buttons work"; roster approved): 3 Opus testers on the production build (laptop / phone / slow networks) + main's
+  Simulator check. 0 blockers, 7 majors, 14 minors, 12 nits; every major re-checked by main. Report + the three
+  findings files: `tasks/evidence/tv-qa-2026-11-11/`. Fix bundles waiting for Dan's pick: (1) the TV out of the
+  site's reveal pre-hide + no-JS fallbacks (N1 N2 N3 N5 N9 N10); (2) laptop pictures load when lit + a placeholder
+  (N4 N6); (3) fit at 1280x665 (L1); (4) the cookie banner (L2 P3 N11); (5) phone polish (P1 P2 P5-P8); (6) keys
+  (L3 Space on DRIFT's key, L4 Esc in Safari, N8 stuck Sending).
 - Next: Dan's look at all five hovering + the thumbnails (B) + the scanlines on `/__wwdepth` -> COPY SETTINGS -> production: the same for GAS, Radio Roulette (both have
   browser demos), DRIFT (its wall run, pixelated), GAS 2 (its pump floating, animated, alpha), each to music -> build
   it in WordWall (bake the grade into the TV's copies: no live SVG filter in production; video, see the weight), then

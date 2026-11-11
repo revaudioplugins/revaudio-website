@@ -1,0 +1,1900 @@
+{
+ "lane": "internet",
+ "summary": "On a real slow line the TV is an empty glowing screen until its ~74 KB script arrives (slow-3G phone: painted 2.7 s, list 9.9 s; fast 3G 0.9 -> 3.0 s; slow-3G laptop: list 16.4 s, picture 21 s), and in that window its invisible rows are live links (a tap leaves for a product page) and the laptop's Try key is dead; a failed script chunk leaves the TV empty for good. Laptops also fetch all five plugin pictures up front (1.24 MB vs 0.46 MB on a phone). Once loaded, taps, quick switching, the sign-up (slow / down) and Back behave; the numbers are the site's own files only (third parties aborted by the kit).",
+ "metrics": {
+  "how_measured": [
+   "Every run = its own fresh Playwright browser (cold cache) through ../helper.cjs; numbers are medians of 3 runs unless \"runs\" says otherwise; page clock = ms from navigation start.",
+   "The site's own files only: the kit aborts every third party at once (cdn.paddle.com/paddle/v2/paddle.js and static.cloudflareinsights.com/beacon.min.js on every load; after \"Accept All\" the page would also load connect.facebook.net fbevents.js and googletagmanager.com gtag.js). What a slow third party does: metrics.third_party and finding N7.",
+   "Chromium throttling = DevTools presets (calibrated below); it shares the line evenly between requests and ignores HTTP/2 priorities, so the script's arrival on slow 3G is pessimistic (with ideal priorities the HTML + CSS + fonts + script, ~210 KB, need ~4.5-5.5 s). WebKit: 150 ms per request, no bandwidth cap.",
+   "The preview server gzips like GitHub Pages but sends Cache-Control: no-cache and Vary: Origin. Playwright routing disables the HTTP cache and Chromium runs with bfcache off, so Back was measured both under the kit and with the kit's route dropped (back3.cjs: other hosts fail DNS, nothing leaves the Mac). bfcache itself could not be exercised: even a control page reports notRestoredReasons \"masked\" in this headless Chromium.",
+   "The Mac was heavily loaded by the other lanes (load average 18 -> 140 during the runs): CPU-bound numbers (long tasks) vary; one 12 s long task on a laptop fast-3G run did not reproduce and is left out.",
+   "Phone CLS: Chrome's mobile emulation flags the shifts as \"after input\" although nothing was touched (probe-input.cjs), so it reports ~0; cls.all_shifts is the real-phone score."
+  ],
+  "calibration_290662_byte_file": {
+   "c-none": {
+    "ms": 8,
+    "bytes": 290662,
+    "kbps": 290662,
+    "errors": []
+   },
+   "c-slow3g-cpu4": {
+    "ms": 6216,
+    "bytes": 290662,
+    "kbps": 374,
+    "errors": []
+   },
+   "c-fast3g-cpu4": {
+    "ms": 1614,
+    "bytes": 290662,
+    "kbps": 1441,
+    "errors": []
+   },
+   "c-4g-cpu1": {
+    "ms": 324,
+    "bytes": 290662,
+    "kbps": 7177,
+    "errors": []
+   },
+   "w-lat150": {
+    "ms": 157,
+    "bytes": 290662,
+    "kbps": 14811,
+    "errors": []
+   }
+  },
+  "profiles": {
+   "laptop-1280 c-4g-cpu1": {
+    "runs": 3,
+    "median_ms": {
+     "first_paint_fcp": 308,
+     "tv_painted": 264,
+     "tv_script_ready_taps_work": 503,
+     "list_rows_shown": 1116,
+     "thumbnails_in_view_loaded": 754,
+     "lit_picture_shown_and_loaded": 1194,
+     "first_screen_complete": 1194,
+     "tv_cabinet_frame_up": 1437,
+     "cookie_banner_up": 1074,
+     "dom_content_loaded": 497,
+     "load_event": 1156,
+     "lcp": 484,
+     "empty_tv_window": 853
+    },
+    "lcp_element": "div.wall-wood",
+    "cls": {
+     "reported_by_chrome": 0.031,
+     "all_shifts": 0.031,
+     "shifts_run1": [
+      {
+       "t": 416,
+       "v": 0.0018,
+       "moved": [
+        "a.ww-more.rv-btn.rv-btn--ghost @panel:revlimiter \"RevLimiter Product p",
+        "span.ww-pw @panel:revlimiter \"Deep\"",
+        "p.ww-ptype @panel:revlimiter \"mastering limiter\""
+       ]
+      },
+      {
+       "t": 496,
+       "v": 0.0117,
+       "moved": [
+        "article#ww-ch-revlimiter.ww-panel.is-active[data-ww-panel=revlimiter]",
+        "ul.ww-list[data-ww-list][data-reveal-group]",
+        "button.ww-try.rv-btn.rv-btn--stack @panel:revlimiter \"Try free for 30 ",
+        "a.ww-more.rv-btn.rv-btn--ghost @panel:revlimiter \"RevLimiter Product p",
+        "span.ww-frame-led"
+       ]
+      },
+      {
+       "t": 509,
+       "v": 0.0176,
+       "moved": [
+        "article#ww-ch-revlimiter.ww-panel.is-active[data-ww-panel=revlimiter]",
+        "ul.ww-list[data-ww-list][data-reveal-group]",
+        "figure.ww-ui.revealed[data-reveal=card] @panel:revlimiter",
+        "button.ww-try.rv-btn.rv-btn--stack @panel:revlimiter \"Try free for 30 ",
+        "li.ww-item.revealed[data-ww-item=revlimiter][data-ww-cats=mastering][d"
+       ]
+      }
+     ]
+    },
+    "long_tasks": {
+     "count": 0,
+     "max_ms": 0,
+     "total_ms": 0
+    },
+    "weight": {
+     "first_screen_kb": 1240,
+     "first_screen_requests": 32,
+     "after_30s_idle_kb": 1240,
+     "after_30s_idle_requests": 32,
+     "biggest_10": [
+      {
+       "file": "/_astro/radioroulette-hero.BDFF2-vp_Z2ckpsp.webp",
+       "kb": 198.1,
+       "done_ms": 1164,
+       "needed_first_screen": "NO (a hidden panel's picture)"
+      },
+      {
+       "file": "/_astro/gas2-float.hUJyn_nE_jlaP2.webp",
+       "kb": 156.8,
+       "done_ms": 1080,
+       "needed_first_screen": "NO (a hidden panel's picture)"
+      },
+      {
+       "file": "/_astro/gas-hero.C_DCLqQZ_Z1uhNXG.webp",
+       "kb": 151.7,
+       "done_ms": 1076,
+       "needed_first_screen": "NO (a hidden panel's picture)"
+      },
+      {
+       "file": "/_astro/revlimiter-hero.jedrpsy4_1En3El.webp",
+       "kb": 135,
+       "done_ms": 1094,
+       "needed_first_screen": "yes (the lit picture)"
+      },
+      {
+       "file": "/_astro/tv-broken-2.Cp-bEdTA_1PvopN.avif",
+       "kb": 111.3,
+       "done_ms": 1398,
+       "needed_first_screen": "art (the TV cabinet, put up late by design)"
+      },
+      {
+       "file": "/_astro/hoisted.De0NW6Lt.js",
+       "kb": 60.9,
+       "done_ms": 462,
+       "needed_first_screen": "yes (the TV is hidden and inert until it runs)"
+      },
+      {
+       "file": "/_astro/drift-window-wall.Dzzi3xT1_Z8dRSi.avif",
+       "kb": 49.4,
+       "done_ms": 1341,
+       "needed_first_screen": "no (DRIFT poster, DRIFT not lit)"
+      },
+      {
+       "file": "/_astro/inter-latin.Dx4kXJAl.woff2",
+       "kb": 47.1,
+       "done_ms": 263,
+       "needed_first_screen": "yes (preloaded fonts)"
+      },
+      {
+       "file": "/",
+       "kb": 38.2,
+       "done_ms": 109,
+       "needed_first_screen": "yes (the page)"
+      },
+      {
+       "file": "/bg/haze2.webp",
+       "kb": 36.3,
+       "done_ms": 373,
+       "needed_first_screen": "no (smoke plates at 10-16 % opacity)"
+      }
+     ]
+    }
+   },
+   "laptop-1280 c-fast3g-cpu4": {
+    "runs": 3,
+    "median_ms": {
+     "first_paint_fcp": 1076,
+     "tv_painted": 1053,
+     "tv_script_ready_taps_work": 2924,
+     "list_rows_shown": 3492,
+     "thumbnails_in_view_loaded": 3790,
+     "lit_picture_shown_and_loaded": 5530,
+     "first_screen_complete": 5530,
+     "tv_cabinet_frame_up": 7112,
+     "cookie_banner_up": 1885,
+     "dom_content_loaded": 2923,
+     "load_event": 6634,
+     "lcp": 1964,
+     "empty_tv_window": 2439
+    },
+    "lcp_element": "div.wall-wood",
+    "cls": {
+     "reported_by_chrome": 0.0299,
+     "all_shifts": 0.0299,
+     "shifts_run1": [
+      {
+       "t": 1013,
+       "v": 0.0002,
+       "moved": [
+        "div.nav-right"
+       ]
+      },
+      {
+       "t": 1828,
+       "v": 0.0018,
+       "moved": [
+        "a.ww-more.rv-btn.rv-btn--ghost @panel:revlimiter \"RevLimiter Product p",
+        "span.ww-pw @panel:revlimiter \"Deep\"",
+        "p.ww-ptype @panel:revlimiter \"mastering limiter\""
+       ]
+      },
+      {
+       "t": 2487,
+       "v": 0.0117,
+       "moved": [
+        "article#ww-ch-revlimiter.ww-panel.is-active[data-ww-panel=revlimiter]",
+        "ul.ww-list[data-ww-list][data-reveal-group]",
+        "button.ww-try.rv-btn.rv-btn--stack @panel:revlimiter \"Try free for 30 ",
+        "a.ww-more.rv-btn.rv-btn--ghost @panel:revlimiter \"RevLimiter Product p",
+        "span.ww-frame-led"
+       ]
+      },
+      {
+       "t": 2515,
+       "v": 0.0183,
+       "moved": [
+        "article#ww-ch-revlimiter.ww-panel.is-active[data-ww-panel=revlimiter]",
+        "ul.ww-list[data-ww-list][data-reveal-group]",
+        "figure.ww-ui.revealed[data-reveal=card] @panel:revlimiter",
+        "button.ww-try.rv-btn.rv-btn--stack @panel:revlimiter \"Try free for 30 ",
+        "li.ww-item.revealed[data-ww-item=revlimiter][data-ww-cats=mastering][d"
+       ]
+      }
+     ]
+    },
+    "long_tasks": {
+     "count": 4,
+     "max_ms": 251,
+     "total_ms": 485
+    },
+    "weight": {
+     "first_screen_kb": 723,
+     "first_screen_requests": 28,
+     "after_30s_idle_kb": 1240,
+     "after_30s_idle_requests": 32,
+     "biggest_10": [
+      {
+       "file": "/_astro/radioroulette-hero.BDFF2-vp_Z2ckpsp.webp",
+       "kb": 198.1,
+       "done_ms": 6247,
+       "needed_first_screen": "NO (a hidden panel's picture)"
+      },
+      {
+       "file": "/_astro/gas2-float.hUJyn_nE_jlaP2.webp",
+       "kb": 156.8,
+       "done_ms": 5597,
+       "needed_first_screen": "NO (a hidden panel's picture)"
+      },
+      {
+       "file": "/_astro/gas-hero.C_DCLqQZ_Z1uhNXG.webp",
+       "kb": 151.7,
+       "done_ms": 5532,
+       "needed_first_screen": "NO (a hidden panel's picture)"
+      },
+      {
+       "file": "/_astro/revlimiter-hero.jedrpsy4_1En3El.webp",
+       "kb": 135,
+       "done_ms": 5075,
+       "needed_first_screen": "yes (the lit picture)"
+      },
+      {
+       "file": "/_astro/tv-broken-2.Cp-bEdTA_1PvopN.avif",
+       "kb": 111.3,
+       "done_ms": 6655,
+       "needed_first_screen": "art (the TV cabinet, put up late by design)"
+      },
+      {
+       "file": "/_astro/hoisted.De0NW6Lt.js",
+       "kb": 60.9,
+       "done_ms": 2396,
+       "needed_first_screen": "yes (the TV is hidden and inert until it runs)"
+      },
+      {
+       "file": "/_astro/drift-window-wall.Dzzi3xT1_Z8dRSi.avif",
+       "kb": 49.4,
+       "done_ms": 6336,
+       "needed_first_screen": "no (DRIFT poster, DRIFT not lit)"
+      },
+      {
+       "file": "/_astro/inter-latin.Dx4kXJAl.woff2",
+       "kb": 47.1,
+       "done_ms": 1076,
+       "needed_first_screen": "yes (preloaded fonts)"
+      },
+      {
+       "file": "/",
+       "kb": 38.2,
+       "done_ms": 415,
+       "needed_first_screen": "yes (the page)"
+      },
+      {
+       "file": "/bg/haze2.webp",
+       "kb": 36.3,
+       "done_ms": 1872,
+       "needed_first_screen": "no (smoke plates at 10-16 % opacity)"
+      }
+     ]
+    }
+   },
+   "laptop-1280 c-slow3g-cpu4": {
+    "runs": 3,
+    "median_ms": {
+     "first_paint_fcp": 2676,
+     "tv_painted": 2821,
+     "tv_script_ready_taps_work": 15685,
+     "list_rows_shown": 16408,
+     "thumbnails_in_view_loaded": 10103,
+     "lit_picture_shown_and_loaded": 20983,
+     "first_screen_complete": 20983,
+     "tv_cabinet_frame_up": 26341,
+     "cookie_banner_up": 3664,
+     "dom_content_loaded": 15681,
+     "load_event": 26280,
+     "lcp": 6148,
+     "empty_tv_window": 13579
+    },
+    "lcp_element": "div.wall-wood",
+    "cls": {
+     "reported_by_chrome": 0.0301,
+     "all_shifts": 0.0301,
+     "shifts_run1": [
+      {
+       "t": 5803,
+       "v": 0.0003,
+       "moved": [
+        "div.nav-right",
+        "span.cb-short \"We use cookies to improve your\""
+       ]
+      },
+      {
+       "t": 6048,
+       "v": 0.0018,
+       "moved": [
+        "a.ww-more.rv-btn.rv-btn--ghost @panel:revlimiter \"RevLimiter Product p",
+        "span.ww-pw @panel:revlimiter \"Deep\"",
+        "p.ww-ptype @panel:revlimiter \"mastering limiter\""
+       ]
+      },
+      {
+       "t": 15622,
+       "v": 0.0117,
+       "moved": [
+        "article#ww-ch-revlimiter.ww-panel.is-active[data-ww-panel=revlimiter]",
+        "ul.ww-list[data-ww-list][data-reveal-group]",
+        "button.ww-try.rv-btn.rv-btn--stack @panel:revlimiter \"Try free for 30 ",
+        "a.ww-more.rv-btn.rv-btn--ghost @panel:revlimiter \"RevLimiter Product p",
+        "span.ww-frame-led"
+       ]
+      },
+      {
+       "t": 15663,
+       "v": 0.0184,
+       "moved": [
+        "article#ww-ch-revlimiter.ww-panel.is-active[data-ww-panel=revlimiter]",
+        "ul.ww-list[data-ww-list][data-reveal-group]",
+        "figure.ww-ui.revealed[data-reveal=card] @panel:revlimiter",
+        "button.ww-try.rv-btn.rv-btn--stack @panel:revlimiter \"Try free for 30 ",
+        "li.ww-item.revealed[data-ww-item=revlimiter][data-ww-cats=mastering][d"
+       ]
+      }
+     ]
+    },
+    "long_tasks": {
+     "count": 3,
+     "max_ms": 187,
+     "total_ms": 462
+    },
+    "weight": {
+     "first_screen_kb": 571,
+     "first_screen_requests": 27,
+     "after_30s_idle_kb": 1240,
+     "after_30s_idle_requests": 32,
+     "biggest_10": [
+      {
+       "file": "/_astro/radioroulette-hero.BDFF2-vp_Z2ckpsp.webp",
+       "kb": 198.1,
+       "done_ms": 25823,
+       "needed_first_screen": "NO (a hidden panel's picture)"
+      },
+      {
+       "file": "/_astro/gas2-float.hUJyn_nE_jlaP2.webp",
+       "kb": 156.8,
+       "done_ms": 24068,
+       "needed_first_screen": "NO (a hidden panel's picture)"
+      },
+      {
+       "file": "/_astro/gas-hero.C_DCLqQZ_Z1uhNXG.webp",
+       "kb": 151.7,
+       "done_ms": 23011,
+       "needed_first_screen": "NO (a hidden panel's picture)"
+      },
+      {
+       "file": "/_astro/revlimiter-hero.jedrpsy4_1En3El.webp",
+       "kb": 135,
+       "done_ms": 20864,
+       "needed_first_screen": "yes (the lit picture)"
+      },
+      {
+       "file": "/_astro/tv-broken-2.Cp-bEdTA_1PvopN.avif",
+       "kb": 111.3,
+       "done_ms": 26293,
+       "needed_first_screen": "art (the TV cabinet, put up late by design)"
+      },
+      {
+       "file": "/_astro/hoisted.De0NW6Lt.js",
+       "kb": 60.9,
+       "done_ms": 15435,
+       "needed_first_screen": "yes (the TV is hidden and inert until it runs)"
+      },
+      {
+       "file": "/_astro/drift-window-wall.Dzzi3xT1_Z8dRSi.avif",
+       "kb": 49.4,
+       "done_ms": 24125,
+       "needed_first_screen": "no (DRIFT poster, DRIFT not lit)"
+      },
+      {
+       "file": "/_astro/inter-latin.Dx4kXJAl.woff2",
+       "kb": 47.1,
+       "done_ms": 5777,
+       "needed_first_screen": "yes (preloaded fonts)"
+      },
+      {
+       "file": "/",
+       "kb": 38.2,
+       "done_ms": 2582,
+       "needed_first_screen": "yes (the page)"
+      },
+      {
+       "file": "/bg/haze2.webp",
+       "kb": 36.3,
+       "done_ms": 6723,
+       "needed_first_screen": "no (smoke plates at 10-16 % opacity)"
+      }
+     ]
+    }
+   },
+   "laptop-1280 w-lat150": {
+    "runs": 1,
+    "median_ms": {
+     "first_paint_fcp": 413,
+     "tv_painted": 500,
+     "tv_script_ready_taps_work": 720,
+     "list_rows_shown": 1305,
+     "thumbnails_in_view_loaded": 761,
+     "lit_picture_shown_and_loaded": 1085,
+     "first_screen_complete": 1305,
+     "tv_cabinet_frame_up": 3905,
+     "cookie_banner_up": 1216,
+     "dom_content_loaded": 638,
+     "load_event": 3539,
+     "lcp": 1052,
+     "empty_tv_window": 805
+    },
+    "lcp_element": "div.wall-wood",
+    "cls": {
+     "reported_by_chrome": 0,
+     "all_shifts": 0,
+     "shifts_run1": []
+    },
+    "long_tasks": {
+     "count": 0,
+     "max_ms": 0,
+     "total_ms": 0
+    },
+    "weight": {
+     "first_screen_kb": 1139,
+     "first_screen_requests": 32,
+     "after_30s_idle_kb": 1300,
+     "after_30s_idle_requests": 34,
+     "biggest_10": [
+      {
+       "file": "/_astro/radioroulette-hero.BDFF2-vp_Z2ckpsp.webp",
+       "kb": 198.1,
+       "done_ms": 748,
+       "needed_first_screen": "NO (a hidden panel's picture)"
+      },
+      {
+       "file": "/_astro/gas2-float.hUJyn_nE_jlaP2.webp",
+       "kb": 156.8,
+       "done_ms": 748,
+       "needed_first_screen": "NO (a hidden panel's picture)"
+      },
+      {
+       "file": "/_astro/gas-hero.C_DCLqQZ_Z1uhNXG.webp",
+       "kb": 151.7,
+       "done_ms": 747,
+       "needed_first_screen": "NO (a hidden panel's picture)"
+      },
+      {
+       "file": "/_astro/revlimiter-hero.jedrpsy4_1En3El.webp",
+       "kb": 135,
+       "done_ms": 746,
+       "needed_first_screen": "yes (the lit picture)"
+      },
+      {
+       "file": "/_astro/tv-broken-2.Cp-bEdTA_1PvopN.avif",
+       "kb": 111.3,
+       "done_ms": 3724,
+       "needed_first_screen": "art (the TV cabinet, put up late by design)"
+      },
+      {
+       "file": "/_astro/hoisted.De0NW6Lt.js",
+       "kb": 60.9,
+       "done_ms": 532,
+       "needed_first_screen": "yes (the TV is hidden and inert until it runs)"
+      },
+      {
+       "file": "/_astro/drift-window-wall.Dzzi3xT1_Z8dRSi.avif",
+       "kb": 49.4,
+       "done_ms": 3723,
+       "needed_first_screen": "no (DRIFT poster, DRIFT not lit)"
+      },
+      {
+       "file": "/_astro/inter-latin.Dx4kXJAl.woff2",
+       "kb": 47.1,
+       "done_ms": 343,
+       "needed_first_screen": "yes (preloaded fonts)"
+      },
+      {
+       "file": "/_astro/inter-latin.Dx4kXJAl.woff2",
+       "kb": 47.1,
+       "done_ms": 669,
+       "needed_first_screen": "yes (preloaded fonts)"
+      },
+      {
+       "file": "/",
+       "kb": 38.2,
+       "done_ms": 186,
+       "needed_first_screen": "yes (the page)"
+      }
+     ]
+    }
+   },
+   "phone-390 c-4g-cpu1": {
+    "runs": 3,
+    "median_ms": {
+     "first_paint_fcp": 272,
+     "tv_painted": 260,
+     "tv_script_ready_taps_work": 509,
+     "list_rows_shown": 1118,
+     "thumbnails_in_view_loaded": 559,
+     "first_screen_complete": 1118,
+     "tv_cabinet_frame_up": 718,
+     "cookie_banner_up": 1038,
+     "dom_content_loaded": 504,
+     "load_event": 591,
+     "lcp": 424,
+     "empty_tv_window": 858
+    },
+    "lcp_element": "div.wall-wood",
+    "cls": {
+     "reported_by_chrome": 0,
+     "all_shifts": 0.0774,
+     "note": "Chrome's mobile emulation flags these shifts as after input (none happened): all_shifts is what a real phone would score",
+     "shifts_run1": [
+      {
+       "t": 507,
+       "v": 0.074,
+       "moved": [
+        "ul.ww-list[data-ww-list][data-reveal-group]"
+       ]
+      },
+      {
+       "t": 595,
+       "v": 0.0034,
+       "moved": [
+        "ul.ww-list[data-ww-list][data-reveal-group]",
+        "button.ww-cat[data-ww-cat=modulation] \"Modulation1\"",
+        "button.ww-cat[data-ww-cat=creative] \"Creative2\"",
+        "button.ww-cat[data-ww-cat=free] \"Free2\""
+       ]
+      }
+     ]
+    },
+    "long_tasks": {
+     "count": 0,
+     "max_ms": 0,
+     "total_ms": 0
+    },
+    "weight": {
+     "first_screen_kb": 456,
+     "first_screen_requests": 27,
+     "after_30s_idle_kb": 456,
+     "after_30s_idle_requests": 27,
+     "biggest_10": [
+      {
+       "file": "/_astro/hoisted.De0NW6Lt.js",
+       "kb": 60.9,
+       "done_ms": 461,
+       "needed_first_screen": "yes (the TV is hidden and inert until it runs)"
+      },
+      {
+       "file": "/_astro/inter-latin.Dx4kXJAl.woff2",
+       "kb": 47.1,
+       "done_ms": 260,
+       "needed_first_screen": "yes (preloaded fonts)"
+      },
+      {
+       "file": "/",
+       "kb": 38.2,
+       "done_ms": 111,
+       "needed_first_screen": "yes (the page)"
+      },
+      {
+       "file": "/bg/haze2.webp",
+       "kb": 36.3,
+       "done_ms": 384,
+       "needed_first_screen": "no (smoke plates at 10-16 % opacity)"
+      },
+      {
+       "file": "/_astro/gas2-float.hUJyn_nE_Z11L8d0.webp",
+       "kb": 32.6,
+       "done_ms": 550,
+       "needed_first_screen": "yes (a list thumbnail)"
+      },
+      {
+       "file": "/bg/haze1.webp",
+       "kb": 29.4,
+       "done_ms": 363,
+       "needed_first_screen": "no (smoke plates at 10-16 % opacity)"
+      },
+      {
+       "file": "/_astro/wall-wood.CSAz_Gh1_ZrgW7N.webp",
+       "kb": 25,
+       "done_ms": 400,
+       "needed_first_screen": "yes (the wall round the TV)"
+      },
+      {
+       "file": "/_astro/oswald-latin.9AWb_KF-.woff2",
+       "kb": 21,
+       "done_ms": 597,
+       "needed_first_screen": "no (only the ▸ glyph Bebas lacks)"
+      },
+      {
+       "file": "/_astro/tv-broken-2.Cp-bEdTA_1GX3ub.avif",
+       "kb": 20.4,
+       "done_ms": 688,
+       "needed_first_screen": "art (the TV cabinet, put up late by design)"
+      },
+      {
+       "file": "/_astro/vt323-latin.wDgJuOC9.woff2",
+       "kb": 17.5,
+       "done_ms": 392,
+       "needed_first_screen": "no (the DAW strip under the TV)"
+      }
+     ]
+    }
+   },
+   "phone-390 c-fast3g-cpu4": {
+    "runs": 3,
+    "median_ms": {
+     "first_paint_fcp": 936,
+     "tv_painted": 916,
+     "tv_script_ready_taps_work": 2674,
+     "list_rows_shown": 3000,
+     "thumbnails_in_view_loaded": 2626,
+     "first_screen_complete": 3000,
+     "tv_cabinet_frame_up": 3305,
+     "cookie_banner_up": 1721,
+     "dom_content_loaded": 2666,
+     "load_event": 2933,
+     "lcp": 1724,
+     "empty_tv_window": 2071
+    },
+    "lcp_element": "div.wall-wood",
+    "cls": {
+     "reported_by_chrome": 0,
+     "all_shifts": 0.0777,
+     "note": "Chrome's mobile emulation flags these shifts as after input (none happened): all_shifts is what a real phone would score",
+     "shifts_run1": [
+      {
+       "t": 2620,
+       "v": 0.074,
+       "moved": [
+        "ul.ww-list[data-ww-list][data-reveal-group]"
+       ]
+      },
+      {
+       "t": 2959,
+       "v": 0.0037,
+       "moved": [
+        "ul.ww-list[data-ww-list][data-reveal-group]",
+        "button.ww-cat[data-ww-cat=modulation] \"Modulation1\"",
+        "button.ww-cat[data-ww-cat=creative] \"Creative2\"",
+        "button.ww-cat[data-ww-cat=free] \"Free2\""
+       ]
+      }
+     ]
+    },
+    "long_tasks": {
+     "count": 2,
+     "max_ms": 274,
+     "total_ms": 337
+    },
+    "weight": {
+     "first_screen_kb": 456,
+     "first_screen_requests": 27,
+     "after_30s_idle_kb": 456,
+     "after_30s_idle_requests": 27,
+     "biggest_10": [
+      {
+       "file": "/_astro/hoisted.De0NW6Lt.js",
+       "kb": 60.9,
+       "done_ms": 2340,
+       "needed_first_screen": "yes (the TV is hidden and inert until it runs)"
+      },
+      {
+       "file": "/_astro/inter-latin.Dx4kXJAl.woff2",
+       "kb": 47.1,
+       "done_ms": 978,
+       "needed_first_screen": "yes (preloaded fonts)"
+      },
+      {
+       "file": "/",
+       "kb": 38.2,
+       "done_ms": 473,
+       "needed_first_screen": "yes (the page)"
+      },
+      {
+       "file": "/bg/haze2.webp",
+       "kb": 36.3,
+       "done_ms": 1805,
+       "needed_first_screen": "no (smoke plates at 10-16 % opacity)"
+      },
+      {
+       "file": "/_astro/gas2-float.hUJyn_nE_Z11L8d0.webp",
+       "kb": 32.6,
+       "done_ms": 2628,
+       "needed_first_screen": "yes (a list thumbnail)"
+      },
+      {
+       "file": "/bg/haze1.webp",
+       "kb": 29.4,
+       "done_ms": 1690,
+       "needed_first_screen": "no (smoke plates at 10-16 % opacity)"
+      },
+      {
+       "file": "/_astro/wall-wood.CSAz_Gh1_ZrgW7N.webp",
+       "kb": 25,
+       "done_ms": 1702,
+       "needed_first_screen": "yes (the wall round the TV)"
+      },
+      {
+       "file": "/_astro/oswald-latin.9AWb_KF-.woff2",
+       "kb": 21,
+       "done_ms": 2958,
+       "needed_first_screen": "no (only the ▸ glyph Bebas lacks)"
+      },
+      {
+       "file": "/_astro/tv-broken-2.Cp-bEdTA_1GX3ub.avif",
+       "kb": 20.4,
+       "done_ms": 3261,
+       "needed_first_screen": "art (the TV cabinet, put up late by design)"
+      },
+      {
+       "file": "/_astro/vt323-latin.wDgJuOC9.woff2",
+       "kb": 17.5,
+       "done_ms": 1805,
+       "needed_first_screen": "no (the DAW strip under the TV)"
+      }
+     ]
+    }
+   },
+   "phone-390 c-slow3g-cpu4": {
+    "runs": 3,
+    "median_ms": {
+     "first_paint_fcp": 2684,
+     "tv_painted": 2749,
+     "tv_script_ready_taps_work": 9595,
+     "list_rows_shown": 9918,
+     "thumbnails_in_view_loaded": 8637,
+     "first_screen_complete": 9918,
+     "tv_cabinet_frame_up": 11462,
+     "cookie_banner_up": 3543,
+     "dom_content_loaded": 9592,
+     "load_event": 10409,
+     "lcp": 5976,
+     "empty_tv_window": 7193
+    },
+    "lcp_element": "div.wall-wood",
+    "cls": {
+     "reported_by_chrome": 0.0037,
+     "all_shifts": 0.0777,
+     "note": "Chrome's mobile emulation flags these shifts as after input (none happened): all_shifts is what a real phone would score",
+     "shifts_run1": [
+      {
+       "t": 9585,
+       "v": 0.074,
+       "moved": [
+        "ul.ww-list[data-ww-list][data-reveal-group]"
+       ]
+      },
+      {
+       "t": 10445,
+       "v": 0.0037,
+       "moved": [
+        "ul.ww-list[data-ww-list][data-reveal-group]",
+        "button.ww-cat[data-ww-cat=modulation] \"Modulation1\"",
+        "button.ww-cat[data-ww-cat=creative] \"Creative2\"",
+        "button.ww-cat[data-ww-cat=free] \"Free2\""
+       ]
+      }
+     ]
+    },
+    "long_tasks": {
+     "count": 2,
+     "max_ms": 293,
+     "total_ms": 393
+    },
+    "weight": {
+     "first_screen_kb": 414,
+     "first_screen_requests": 25,
+     "after_30s_idle_kb": 456,
+     "after_30s_idle_requests": 27,
+     "biggest_10": [
+      {
+       "file": "/_astro/hoisted.De0NW6Lt.js",
+       "kb": 60.9,
+       "done_ms": 9280,
+       "needed_first_screen": "yes (the TV is hidden and inert until it runs)"
+      },
+      {
+       "file": "/_astro/inter-latin.Dx4kXJAl.woff2",
+       "kb": 47.1,
+       "done_ms": 5611,
+       "needed_first_screen": "yes (preloaded fonts)"
+      },
+      {
+       "file": "/",
+       "kb": 38.2,
+       "done_ms": 2551,
+       "needed_first_screen": "yes (the page)"
+      },
+      {
+       "file": "/bg/haze2.webp",
+       "kb": 36.3,
+       "done_ms": 6790,
+       "needed_first_screen": "no (smoke plates at 10-16 % opacity)"
+      },
+      {
+       "file": "/_astro/gas2-float.hUJyn_nE_Z11L8d0.webp",
+       "kb": 32.6,
+       "done_ms": 8614,
+       "needed_first_screen": "yes (a list thumbnail)"
+      },
+      {
+       "file": "/bg/haze1.webp",
+       "kb": 29.4,
+       "done_ms": 6243,
+       "needed_first_screen": "no (smoke plates at 10-16 % opacity)"
+      },
+      {
+       "file": "/_astro/wall-wood.CSAz_Gh1_ZrgW7N.webp",
+       "kb": 25,
+       "done_ms": 5956,
+       "needed_first_screen": "yes (the wall round the TV)"
+      },
+      {
+       "file": "/_astro/oswald-latin.9AWb_KF-.woff2",
+       "kb": 21,
+       "done_ms": 10559,
+       "needed_first_screen": "no (only the ▸ glyph Bebas lacks)"
+      },
+      {
+       "file": "/_astro/tv-broken-2.Cp-bEdTA_1GX3ub.avif",
+       "kb": 20.4,
+       "done_ms": 11407,
+       "needed_first_screen": "art (the TV cabinet, put up late by design)"
+      },
+      {
+       "file": "/_astro/vt323-latin.wDgJuOC9.woff2",
+       "kb": 17.5,
+       "done_ms": 5565,
+       "needed_first_screen": "no (the DAW strip under the TV)"
+      }
+     ]
+    }
+   },
+   "phone-390 w-lat150": {
+    "runs": 3,
+    "median_ms": {
+     "first_paint_fcp": 393,
+     "tv_painted": 485,
+     "tv_script_ready_taps_work": 670,
+     "list_rows_shown": 1209,
+     "thumbnails_in_view_loaded": 687,
+     "first_screen_complete": 1209,
+     "tv_cabinet_frame_up": 3785,
+     "cookie_banner_up": 1209,
+     "dom_content_loaded": 649,
+     "load_event": 3525,
+     "lcp": 812,
+     "empty_tv_window": 710
+    },
+    "lcp_element": "div.wall-wood",
+    "cls": {
+     "reported_by_chrome": 0,
+     "all_shifts": 0,
+     "shifts_run1": []
+    },
+    "long_tasks": {
+     "count": 0,
+     "max_ms": 0,
+     "total_ms": 0
+    },
+    "weight": {
+     "first_screen_kb": 496,
+     "first_screen_requests": 28,
+     "after_30s_idle_kb": 517,
+     "after_30s_idle_requests": 29,
+     "biggest_10": [
+      {
+       "file": "/_astro/hoisted.De0NW6Lt.js",
+       "kb": 60.9,
+       "done_ms": 561,
+       "needed_first_screen": "yes (the TV is hidden and inert until it runs)"
+      },
+      {
+       "file": "/_astro/inter-latin.Dx4kXJAl.woff2",
+       "kb": 47.1,
+       "done_ms": 335,
+       "needed_first_screen": "yes (preloaded fonts)"
+      },
+      {
+       "file": "/_astro/inter-latin.Dx4kXJAl.woff2",
+       "kb": 47.1,
+       "done_ms": 559,
+       "needed_first_screen": "yes (preloaded fonts)"
+      },
+      {
+       "file": "/",
+       "kb": 38.2,
+       "done_ms": 181,
+       "needed_first_screen": "yes (the page)"
+      },
+      {
+       "file": "/bg/haze2.webp",
+       "kb": 36.3,
+       "done_ms": 510,
+       "needed_first_screen": "no (smoke plates at 10-16 % opacity)"
+      },
+      {
+       "file": "/_astro/gas2-float.hUJyn_nE_Z11L8d0.webp",
+       "kb": 32.6,
+       "done_ms": 581,
+       "needed_first_screen": "yes (a list thumbnail)"
+      },
+      {
+       "file": "/bg/haze1.webp",
+       "kb": 29.4,
+       "done_ms": 510,
+       "needed_first_screen": "no (smoke plates at 10-16 % opacity)"
+      },
+      {
+       "file": "/_astro/wall-wood.CSAz_Gh1_ZrgW7N.webp",
+       "kb": 25,
+       "done_ms": 574,
+       "needed_first_screen": "yes (the wall round the TV)"
+      },
+      {
+       "file": "/_astro/oswald-latin.9AWb_KF-.woff2",
+       "kb": 21,
+       "done_ms": 790,
+       "needed_first_screen": "no (only the ▸ glyph Bebas lacks)"
+      },
+      {
+       "file": "/_astro/tv-broken-2.Cp-bEdTA_1GX3ub.avif",
+       "kb": 20.4,
+       "done_ms": 3733,
+       "needed_first_screen": "art (the TV cabinet, put up late by design)"
+      }
+     ]
+    }
+   }
+  },
+  "what_a_visitor_sees_slow3g": {
+   "phone-390": {
+    "1 s": "blank (first paint 2.7 s)",
+    "3 s": "the TV glass with only \"PLUGINS\"; the cookie banner arrives at 3.5 s",
+    "6 s": "the same empty glass",
+    "10 s": "categories + the five rows with thumbnails; no cabinet yet",
+    "20 s": "complete, cabinet up (11.5 s)"
+   },
+   "laptop-1280": {
+    "1 s": "blank",
+    "3 s": "TV glass + RevLimiter's name, blurb, $49, Try and Product page; no list, no picture",
+    "6 s": "the same + cookie banner",
+    "10 s": "the same",
+    "20 s": "list up (16.4 s); RevLimiter's picture half drawn (complete 21 s); cabinet at 26.3 s"
+   },
+   "shots": [
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/shots/002-chromium-phone-390-c-slow3g-cpu4-r1-at3s.png",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/shots/003-chromium-phone-390-c-slow3g-cpu4-r1-at6s.png",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/shots/004-chromium-phone-390-c-slow3g-cpu4-r1-at10s.png",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/shots/005-chromium-phone-390-c-slow3g-cpu4-r1-at20s.png",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/shots/003-chromium-laptop-1280-c-slow3g-cpu4-r1-at6s.png",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/shots/005-chromium-laptop-1280-c-slow3g-cpu4-r1-at20s.png"
+   ]
+  },
+  "taps_during_load": {
+   "note": "row = GAS's row (phone: should open its pane; laptop: should light it); try = the lit plugin's Try key on a laptop. 2 cold runs per time.",
+   "laptop-1280-c-fast3g-cpu4-try": {
+    "2000 ms": [
+     "NOTHING happened",
+     "NOTHING happened"
+    ],
+    "4000 ms": [
+     "OK (sign-up opened in 375 ms)",
+     "OK (sign-up opened in 405 ms)"
+    ],
+    "7000 ms": [
+     "OK (sign-up opened in 291 ms)",
+     "OK (sign-up opened in 204 ms)"
+    ]
+   },
+   "laptop-1280-c-slow3g-cpu4-row": {
+    "1000 ms": [
+     "nothing to tap yet",
+     "nothing to tap yet"
+    ],
+    "3000 ms": [
+     "LEFT the TV -> /gas",
+     "LEFT the TV -> /gas"
+    ],
+    "6000 ms": [
+     "LEFT the TV -> /gas",
+     "LEFT the TV -> /gas"
+    ],
+    "10000 ms": [
+     "LEFT the TV -> /gas",
+     "LEFT the TV -> /gas"
+    ],
+    "13000 ms": [
+     "LEFT the TV -> /gas",
+     "LEFT the TV -> /gas"
+    ]
+   },
+   "laptop-1280-c-slow3g-cpu4-try": {
+    "3000 ms": [
+     "NOTHING happened",
+     "NOTHING happened"
+    ],
+    "6000 ms": [
+     "NOTHING happened",
+     "NOTHING happened"
+    ],
+    "10000 ms": [
+     "NOTHING happened",
+     "NOTHING happened"
+    ],
+    "13000 ms": [
+     "NOTHING happened",
+     "NOTHING happened"
+    ]
+   },
+   "phone-390-c-4g-cpu1-row": {
+    "400 ms": [
+     "LEFT the TV -> /gas",
+     "LEFT the TV -> /gas"
+    ],
+    "1000 ms": [
+     "OK (GAS pane opened in 705 ms)",
+     "OK (GAS pane opened in 366 ms)"
+    ],
+    "3000 ms": [
+     "OK (GAS pane opened in 420 ms)",
+     "OK (GAS pane opened in 544 ms)"
+    ]
+   },
+   "phone-390-c-fast3g-cpu4-row": {
+    "1000 ms": [
+     "LEFT the TV -> /gas",
+     "LEFT the TV -> /gas"
+    ],
+    "2000 ms": [
+     "LEFT the TV -> /gas",
+     "LEFT the TV -> /gas"
+    ],
+    "3000 ms": [
+     "OK (GAS pane opened in 581 ms)",
+     "OK (GAS pane opened in 576 ms)"
+    ],
+    "6000 ms": [
+     "OK (GAS pane opened in 574 ms)",
+     "OK (GAS pane opened in 575 ms)"
+    ]
+   },
+   "phone-390-c-slow3g-cpu4-row-rm": {
+    "3000 ms": [
+     "LEFT the TV -> /gas",
+     "LEFT the TV -> /gas"
+    ],
+    "6000 ms": [
+     "LEFT the TV -> /gas",
+     "LEFT the TV -> /gas"
+    ]
+   },
+   "phone-390-c-slow3g-cpu4-row": {
+    "1000 ms": [
+     "nothing to tap yet",
+     "nothing to tap yet"
+    ],
+    "3000 ms": [
+     "LEFT the TV -> /gas",
+     "LEFT the TV -> /gas"
+    ],
+    "6000 ms": [
+     "LEFT the TV -> /gas",
+     "LEFT the TV -> /gas"
+    ],
+    "8000 ms": [
+     "LEFT the TV -> /gas",
+     "LEFT the TV -> /gas"
+    ],
+    "10000 ms": [
+     "OK (GAS pane opened in 522 ms)",
+     "OK (GAS pane opened in 534 ms)"
+    ]
+   },
+   "phone-390-w-lat150-row": {
+    "300 ms": [
+     "nothing to tap yet",
+     "nothing to tap yet"
+    ],
+    "600 ms": [
+     "NOTHING happened",
+     "LEFT the TV -> /gas"
+    ],
+    "1000 ms": [
+     "OK (GAS pane opened in 615 ms)",
+     "OK (GAS pane opened in 337 ms)"
+    ]
+   }
+  },
+  "sign_up": {
+   "note": "Send, then a second tap 150 ms later (a double tap). worker down: posts 3 = Send + the second tap (the first had already failed in ~0.1-0.3 s, so it is a retry) + one explicit retry 9 s later; nothing reached a worker. hang: the worker never answers (25 s window).",
+   "laptop-1280-c-slow3g-cpu4-slow-revlimiter": [
+    {
+     "form_in_ms": 834,
+     "posts": 1,
+     "sending_shown_after_ms": 115,
+     "result_after_ms": 4244,
+     "end": {
+      "key": "Send my link",
+      "disabled": false,
+      "errors": [],
+      "sent_screen": true,
+      "email_kept": "qa-internet@example.com"
+     },
+     "retry": null
+    }
+   ],
+   "phone-390-c-4g-cpu1-slow-revlimiter": [
+    {
+     "form_in_ms": 169,
+     "posts": 1,
+     "sending_shown_after_ms": 103,
+     "result_after_ms": 4110,
+     "end": {
+      "key": "Send my link",
+      "disabled": false,
+      "errors": [],
+      "sent_screen": true,
+      "email_kept": "qa-internet@example.com"
+     },
+     "retry": null
+    }
+   ],
+   "phone-390-c-slow3g-cpu4-down-revlimiter": [
+    {
+     "form_in_ms": 1067,
+     "posts": 3,
+     "sending_shown_after_ms": 135,
+     "result_after_ms": 304,
+     "end": {
+      "key": "Send my link",
+      "disabled": false,
+      "errors": [
+       "Network hiccup. Try again in a moment."
+      ],
+      "sent_screen": false,
+      "email_kept": "qa-internet@example.com"
+     },
+     "retry": {
+      "posts": 1,
+      "errors": [
+       "Network hiccup. Try again in a moment."
+      ]
+     }
+    },
+    {
+     "form_in_ms": 1074,
+     "posts": 3,
+     "sending_shown_after_ms": 119,
+     "result_after_ms": 242,
+     "end": {
+      "key": "Send my link",
+      "disabled": false,
+      "errors": [
+       "Network hiccup. Try again in a moment."
+      ],
+      "sent_screen": false,
+      "email_kept": "qa-internet@example.com"
+     },
+     "retry": {
+      "posts": 1,
+      "errors": [
+       "Network hiccup. Try again in a moment."
+      ]
+     }
+    }
+   ],
+   "phone-390-c-slow3g-cpu4-hang-revlimiter": [
+    {
+     "form_in_ms": 1026,
+     "posts": 1,
+     "sending_shown_after_ms": 101,
+     "result_after_ms": null,
+     "end": {
+      "key": "Sending…",
+      "disabled": true,
+      "errors": [],
+      "sent_screen": false,
+      "email_kept": "qa-internet@example.com"
+     },
+     "retry": null
+    },
+    {
+     "form_in_ms": 608,
+     "posts": 1,
+     "sending_shown_after_ms": 97,
+     "result_after_ms": null,
+     "end": {
+      "key": "Sending…",
+      "disabled": true,
+      "errors": [],
+      "sent_screen": false,
+      "email_kept": "qa-internet@example.com"
+     },
+     "retry": null
+    }
+   ],
+   "phone-390-c-slow3g-cpu4-slow-revlimiter": [
+    {
+     "form_in_ms": 701,
+     "posts": 1,
+     "sending_shown_after_ms": 287,
+     "result_after_ms": 4420,
+     "end": {
+      "key": "Send my link",
+      "disabled": false,
+      "errors": [],
+      "sent_screen": true,
+      "email_kept": "qa-internet@example.com"
+     },
+     "retry": null
+    },
+    {
+     "form_in_ms": 1049,
+     "posts": 1,
+     "sending_shown_after_ms": 148,
+     "result_after_ms": 4284,
+     "end": {
+      "key": "Send my link",
+      "disabled": false,
+      "errors": [],
+      "sent_screen": true,
+      "email_kept": "qa-internet@example.com"
+     },
+     "retry": null
+    }
+   ],
+   "phone-390-w-lat150-down-revlimiter": [
+    {
+     "form_in_ms": 173,
+     "posts": 3,
+     "sending_shown_after_ms": null,
+     "result_after_ms": 92,
+     "end": {
+      "key": "Send my link",
+      "disabled": false,
+      "errors": [
+       "Network hiccup. Try again in a moment."
+      ],
+      "sent_screen": false,
+      "email_kept": "qa-internet@example.com"
+     },
+     "retry": {
+      "posts": 1,
+      "errors": [
+       "Network hiccup. Try again in a moment."
+      ]
+     }
+    },
+    {
+     "form_in_ms": 188,
+     "posts": 3,
+     "sending_shown_after_ms": null,
+     "result_after_ms": 99,
+     "end": {
+      "key": "Send my link",
+      "disabled": false,
+      "errors": [
+       "Network hiccup. Try again in a moment."
+      ],
+      "sent_screen": false,
+      "email_kept": "qa-internet@example.com"
+     },
+     "retry": {
+      "posts": 1,
+      "errors": [
+       "Network hiccup. Try again in a moment."
+      ]
+     }
+    }
+   ],
+   "phone-390-w-lat150-slow-revlimiter": [
+    {
+     "form_in_ms": 198,
+     "posts": 1,
+     "sending_shown_after_ms": 107,
+     "result_after_ms": 4121,
+     "end": {
+      "key": "Send my link",
+      "disabled": false,
+      "errors": [],
+      "sent_screen": true,
+      "email_kept": "qa-internet@example.com"
+     },
+     "retry": null
+    },
+    {
+     "form_in_ms": 167,
+     "posts": 1,
+     "sending_shown_after_ms": 99,
+     "result_after_ms": 4170,
+     "end": {
+      "key": "Send my link",
+      "disabled": false,
+      "errors": [],
+      "sent_screen": true,
+      "email_kept": "qa-internet@example.com"
+     },
+     "retry": null
+    }
+   ]
+  },
+  "back_with_http_cache": {
+   "phone-390 slow3g (RevLimiter pane, Product page, Back)": [
+    {
+     "tv_right_at_ms": 1500,
+     "after": {
+      "d": 25000,
+      "t": 25002,
+      "rs": "complete",
+      "script": true,
+      "view": "panel",
+      "on": "revlimiter",
+      "paneOp": 1,
+      "rowsOp": 0,
+      "sy": 0,
+      "tvTop": 88,
+      "nav": "back_forward",
+      "tapSy": "0",
+      "leftSy": "0",
+      "shows": [
+       [
+        "pageshow",
+        1352,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "tv_right_at_ms": 1500,
+     "after": {
+      "d": 25000,
+      "t": 25000,
+      "rs": "complete",
+      "script": true,
+      "view": "panel",
+      "on": "revlimiter",
+      "paneOp": 1,
+      "rowsOp": 0,
+      "sy": 0,
+      "tvTop": 88,
+      "nav": "back_forward",
+      "tapSy": "0",
+      "leftSy": "0",
+      "shows": [
+       [
+        "pageshow",
+        1418,
+        false
+       ]
+      ]
+     }
+    }
+   ],
+   "laptop-1280 slow3g (GAS lit, Product page, Back)": [
+    {
+     "first": {
+      "d": 500,
+      "t": 736,
+      "rs": "loading",
+      "script": false,
+      "view": "list",
+      "on": "revlimiter",
+      "paneOp": 1,
+      "rowsOp": 0,
+      "sy": 0,
+      "tvTop": 79,
+      "nav": "back_forward",
+      "tapSy": "0",
+      "leftSy": "0",
+      "shows": []
+     },
+     "tv_right_at_ms": 1500
+    },
+    {
+     "first": {
+      "d": 500,
+      "t": 1862,
+      "rs": "loading",
+      "script": false,
+      "view": null,
+      "on": null,
+      "paneOp": null,
+      "rowsOp": null,
+      "sy": 0,
+      "tvTop": null,
+      "nav": "back_forward",
+      "tapSy": "0",
+      "leftSy": "0",
+      "shows": []
+     },
+     "tv_right_at_ms": 3000
+    }
+   ]
+  },
+  "third_party": [
+   {
+    "variant": "kit",
+    "k": 1,
+    "script": 706,
+    "rows": 1293,
+    "dcl": 702,
+    "load": 796,
+    "frame": 1012,
+    "tv": 328
+   },
+   {
+    "variant": "beacon",
+    "k": 1,
+    "script": 6155,
+    "rows": 6760,
+    "dcl": 6150,
+    "load": 6236,
+    "frame": 6360,
+    "tv": 265
+   },
+   {
+    "variant": "paddle",
+    "k": 1,
+    "script": 534,
+    "rows": 1156,
+    "dcl": 6121,
+    "load": 6123,
+    "frame": 3826,
+    "tv": 260
+   },
+   {
+    "variant": "kit",
+    "k": 2,
+    "script": 550,
+    "rows": 1128,
+    "dcl": 546,
+    "load": 641,
+    "frame": 782,
+    "tv": 298
+   },
+   {
+    "variant": "beacon",
+    "k": 2,
+    "script": 6154,
+    "rows": 6769,
+    "dcl": 6149,
+    "load": 6248,
+    "frame": 6415,
+    "tv": 272
+   },
+   {
+    "variant": "paddle",
+    "k": 2,
+    "script": 620,
+    "rows": 1203,
+    "dcl": 6111,
+    "load": 6112,
+    "frame": 3721,
+    "tv": 272
+   }
+  ],
+  "failed_script_chunk": {
+   "phone_abort": [
+    {
+     "motionOk": true,
+     "script": false,
+     "rowsOpacity": [
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "picOpacity": 0,
+     "frameUp": true,
+     "tap_left_to": [
+      "/gas"
+     ]
+    },
+    {
+     "motionOk": true,
+     "script": false,
+     "rowsOpacity": [
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "picOpacity": 0,
+     "frameUp": true,
+     "tap_left_to": [
+      "/gas"
+     ]
+    }
+   ],
+   "laptop_404": [
+    {
+     "motionOk": true,
+     "script": false,
+     "rowsOpacity": [
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "picOpacity": 0,
+     "frameUp": true,
+     "tap_left_to": [
+      "/gas"
+     ],
+     "try": {
+      "signing": false,
+      "dialog": false,
+      "urlSame": true
+     }
+    },
+    {
+     "motionOk": true,
+     "script": false,
+     "rowsOpacity": [
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "picOpacity": 0,
+     "frameUp": true,
+     "tap_left_to": [
+      "/gas"
+     ],
+     "try": {
+      "signing": false,
+      "dialog": false,
+      "urlSame": true
+     }
+    }
+   ]
+  }
+ },
+ "tested": [
+  "Throttling really applies (a 290,662-byte file): slow 3G 6.2 s, fast 3G 1.6 s, 4G 0.32 s (the DevTools presets), WebKit +150 ms per request.",
+  "No page errors and no 4xx/5xx from the site in any run (the only 404s are the ones forced in N5); console: only the two aborted third parties.",
+  "Once the script has run, a tap on a row opens its pane in 0.34-0.70 s on every phone profile; a laptop click on Try opens the sign-up in 0.2-0.4 s; the phone's Try opens it in 0.6-1.1 s on slow 3G + 4x CPU.",
+  "Quick switching while pictures load (laptop GAS -> Radio Roulette -> GAS 2, phone GAS -> DRIFT -> Radio Roulette, ~250 ms apart, slow 3G): never two plugins on the glass, never a picture on the wrong plugin, the last pick wins, lit row = panel = ?plugin=.",
+  "DRIFT's video never loads up front (preload none); on a phone none of the five big pictures load until a pane opens (one per pane).",
+  "Sign-up, worker slow (4 s): \"Sending...\" within 0.1-0.3 s, the second tap of a double tap sends nothing (1 post), \"Check your inbox\" with the address after ~4.1-4.4 s (phone slow 3G, WebKit, laptop).",
+  "Sign-up, worker down: \"Network hiccup. Try again in a moment.\" within ~0.1-0.3 s, the email kept, the key back; each retry posts once.",
+  "Back from a product page with the browser's HTTP cache (slow 3G phone): the TV comes back with RevLimiter's pane open, lit, scroll where it was, in ~1.5 s; 4G ~0.5 s; WebKit ~1 s (under the kit, which disables the cache, a slow-3G Back is a full re-download and takes > 9 s: harness only).",
+  "Fonts: font-display swap, both faces preloaded; Bebas lands before the first paint on slow 3G (2.3 s vs 2.7 s); Inter's swap at ~5.6 s moves the laptop's lit text a few px (shift 0.0018); nothing in the phone's TV uses Inter before its script. No unstyled flash (the CSS blocks rendering).",
+  "CLS under 0.1 everywhere: phone 0.078 (the category bar appearing at script time pushes the still-hidden list 78 px down), laptop 0.03. LCP (the wood wall behind the TV): phone 0.42 s 4G, 1.7 s fast 3G, 6.0 s slow 3G; laptop 0.48 / 1.96 / 6.1 s.",
+  "Long tasks on a 4x-slowed phone: 2, max ~290 ms (module start) and ~190 ms (cabinet up); none at 1x.",
+  "The cookie banner never arrives after the list (up at 1.0 / 1.7 / 3.5 s, before or with it), so it never lands under a finger aimed at a row.",
+  "WebKit's double download of the two preloaded fonts here comes from the preview server's \"Vary: Origin\": with \"Vary: Accept-Encoding\" (GitHub Pages' header) the preload is reused (2/2), so not a site issue."
+ ],
+ "findings": [
+  {
+   "id": "N1",
+   "severity": "major",
+   "title": "The TV is an empty screen until its JavaScript arrives: the site-wide reveal pre-hide keeps the rows (and on a laptop the lit picture) invisible",
+   "where": "chromium + webkit, every profile; phone-390 and laptop-1280 (worst on slow 3G)",
+   "steps": [
+    "Cold load / on slow 3G + 4x CPU at 390x664 (Chromium)",
+    "Watch the TV from its first paint (screenshots at 3, 6, 10 s); repeat at fast 3G, 4G, WebKit and at 1280x665"
+   ],
+   "expected": "The plugin list (and on a laptop the lit plugin's picture) is on the glass as soon as the TV paints; the script only adds behaviour.",
+   "actual": "html.motion-ok [data-reveal-item]:not(.revealed){opacity:0} hides the five rows, and data-reveal=\"card\" hides the laptop's lit picture, until the hoisted module runs initReveals. That module is an 11 KB file which then imports a 62 KB chunk (no modulepreload, so the chunk is only requested after the first file arrives, ~3 s on slow 3G). Medians: phone slow 3G: TV painted 2.75 s, list shown 9.9 s (7.2 s of glowing glass with only \"PLUGINS\"; the thumbnails are loaded at 8.6 s but hidden); fast 3G 0.92 -> 3.0 s; 4G 0.26 -> 1.12 s; WebKit 150 ms 0.49 -> 1.21 s. Laptop slow 3G: rows 16.4 s, lit picture 21.0 s (13.6 s showing only RevLimiter's text and keys); laptop fast 3G: rows 3.5 s, picture 5.5 s. Control: with reduced motion (no pre-hide) the same slow-3G list is on show at 2.8 s.",
+   "evidence": [
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/shots/002-chromium-phone-390-c-slow3g-cpu4-r1-at3s.png",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/shots/003-chromium-phone-390-c-slow3g-cpu4-r1-at6s.png",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/shots/004-chromium-phone-390-c-slow3g-cpu4-r1-at10s.png",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/shots/003-chromium-laptop-1280-c-slow3g-cpu4-r1-at6s.png",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/metrics.json"
+   ],
+   "repro": "3/3 per profile (2/2 for the reduced-motion control)",
+   "code_ref": "src/styles/global.css:93-94; src/components/WordWall.astro:238,240,275; src/layouts/BaseLayout.astro:86-91,173-189; src/lib/reveal.ts:42,113",
+   "fix_idea": "Keep the TV out of the reveal pre-hide (it has its own power-on), or give the pre-hide a CSS-only time-out; add <link rel=\"modulepreload\"> for the shared chunk; load the below-the-TV bytes (N13) after it."
+  },
+  {
+   "id": "N2",
+   "severity": "major",
+   "title": "A tap on the empty TV while it loads leaves for a product page (the invisible rows are live links)",
+   "where": "chromium phone-390 slow 3G / fast 3G / 4G, laptop-1280 slow 3G; webkit phone-390 (150 ms) once in 2",
+   "steps": [
+    "Cold load on slow 3G at 390x664",
+    "At 3 s, 6 s or 8 s (TV painted, script not there yet) tap where GAS's row sits: the glass looks empty"
+   ],
+   "expected": "Nothing happens, or the TV takes the tap once ready; never a page change from something the visitor cannot see.",
+   "actual": "Until the script turns them into tabs the rows are plain <a href=\"/gas\"> links, and opacity 0 does not stop a tap: the browser opens /gas. Phone slow 3G: 3, 6, 8 s -> /gas; 10 s -> GAS's pane opens (0.52 s). Fast 3G: 1, 2 s -> /gas; 3 s OK. 4G: 0.4 s -> /gas; 1 s OK. Laptop slow 3G: 3, 6, 10, 13 s -> /gas (script at 15.7 s). WebKit 150 ms: at ~0.6-1.0 s once /gas, once nothing. (With reduced motion the rows are visible from 2.8 s and act as links: expected.)",
+   "evidence": [
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/shots/001-chromium-phone-390-tap-c-slow3g-cpu4-row-at3s.png",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/shots/001-chromium-phone-390-tap-c-slow3g-cpu4-row-at8s.png",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/shots/001-chromium-laptop-1280-tap-c-slow3g-cpu4-row-at10s.png",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/taps-phone-390-c-slow3g-cpu4-row.json"
+   ],
+   "repro": "2/2 at every listed time",
+   "code_ref": "src/components/WordWall.astro:241-246 (rows are links), 1554-1577 (the click handler that makes them tabs)",
+   "fix_idea": "Same root as N1: show the rows from the first paint (a link that is seen may act as one), or keep them pointer-events:none while they are hidden."
+  },
+  {
+   "id": "N3",
+   "severity": "major",
+   "title": "Laptop: the Try key is on show from the first paint but does nothing until the script lands",
+   "where": "chromium laptop-1280, slow 3G and fast 3G (+4x CPU)",
+   "steps": [
+    "Cold load at 1280x665 on slow 3G",
+    "Click \"TRY FREE FOR 30 DAYS\" at 3, 6, 10 or 13 s"
+   ],
+   "expected": "The sign-up opens, or the key is not offered until it works.",
+   "actual": "Try is a <button type=\"button\"> whose only listeners live in the module: no sign-up, no pop-up, nothing. Slow 3G: dead at 3/6/10/13 s (script median 15.7 s, so ~13 s of a dead main key); fast 3G: dead at 2 s, opens the sign-up at 4 s (script median 2.9 s). Phones are not affected (their keys are in the pane the script opens). After a failed script chunk (N5) it stays dead.",
+   "evidence": [
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/shots/001-chromium-laptop-1280-tap-c-slow3g-cpu4-try-at6s.png",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/shots/001-chromium-laptop-1280-tap-c-fast3g-cpu4-try-at2s.png",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/taps-laptop-1280-c-slow3g-cpu4-try.json"
+   ],
+   "repro": "2/2 at each time",
+   "code_ref": "src/components/WordWall.astro:336-339, 951-962; src/data/library.ts:113-131",
+   "fix_idea": "Give Try a no-script destination (e.g. a link to the product page's trial) that the script takes over, or show it only once the TV is ready."
+  },
+  {
+   "id": "N4",
+   "severity": "major",
+   "title": "Laptop: all five plugin pictures load up front, the hidden panels' too, and starve the TV on a slow line",
+   "where": "chromium + webkit laptop-1280, every profile",
+   "steps": [
+    "Cold load at 1280x665 on slow 3G, no interaction",
+    "Watch the requests"
+   ],
+   "expected": "Only the lit plugin's picture for the first screen; the others after the power-on (warm(), as the code intends) or when lit.",
+   "actual": "Inactive panels are hidden with opacity:0 + visibility:hidden in the same grid cell, so their loading=\"lazy\" pictures count as on screen and start at the first paint (2.8 s): GAS 152 KB, GAS 2 157 KB, Radio Roulette 198 KB (507 KB hidden) next to RevLimiter's 135 KB; DRIFT's poster (49 KB) follows at the power-on. 1240 KB in 30 s on a laptop vs 456 KB on a phone. On slow 3G they share the line with the script and the lit picture: script 15.7 s (phone 9.6 s), RevLimiter's picture half drawn at 20 s and complete at 21.0 s, cabinet 26.3 s. WebKit fetches them too (all at 0.75 s). DRIFT's video is not fetched up front (preload none): good.",
+   "evidence": [
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/shots/005-chromium-laptop-1280-c-slow3g-cpu4-r1-at20s.png",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/tl-laptop-1280-c-slow3g-cpu4-r1.json",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/tl-laptop-1280-w-lat150-r1.json"
+   ],
+   "repro": "3/3 slow 3G, 3/3 4G, 3/3 fast 3G, 1/1 WebKit",
+   "code_ref": "src/components/WordWall.astro:2016-2031 (panel hide), 296-308 (Image loading=lazy), 1163-1178 (warm)",
+   "fix_idea": "display:none (or content-visibility:hidden) for the panels not on the glass, or give their <img> its src only in warm() / light(): about 0.5 MB less on every desktop first load."
+  },
+  {
+   "id": "N5",
+   "severity": "major",
+   "title": "If the TV's script chunk fails to load, the TV stays empty for good",
+   "where": "chromium phone-390 + laptop-1280 (4G), the 62 KB chunk aborted / 404",
+   "steps": [
+    "Load / with /_astro/hoisted.De0NW6Lt.js failing (a dropped mobile request, or a page cached from before a deploy asking for a chunk the deploy removed)",
+    "Look at the TV after 8 s; tap a row; on a laptop click Try"
+   ],
+   "expected": "The TV falls back to its no-script look (a visible list of links) within a few seconds.",
+   "actual": "The inline head script has already set html.motion-ok, and the 2.5 s reveal fallback lives in the same failed module: rows and the lit picture stay at opacity 0 for good (only \"PLUGINS\" on the glass), a tap on the empty glass opens /gas, the laptop's Try does nothing. Nothing tells the visitor anything went wrong.",
+   "evidence": [
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/shots/001-chromium-phone-390-failjs-abort-c-4g-cpu1-at8s.png",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/shots/001-chromium-laptop-1280-failjs-404-c-4g-cpu1-at8s.png",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/failjs-phone-390-c-4g-cpu1-abort.json"
+   ],
+   "repro": "2/2 phone (abort), 2/2 laptop (404)",
+   "code_ref": "src/layouts/BaseLayout.astro:86-91; src/lib/reveal.ts:42,113",
+   "fix_idea": "A CSS-only time-out on the pre-hide (an animation that reveals after ~3 s), or drop motion-ok from an inline timer if the module has not started by then."
+  },
+  {
+   "id": "N6",
+   "severity": "minor",
+   "title": "Lighting a plugin on a slow line: its window stays blank or half drawn for seconds (no placeholder)",
+   "where": "chromium phone-390 + laptop-1280, slow 3G + 4x CPU",
+   "steps": [
+    "Slow 3G; wait until the list is up (~10 s phone, ~16 s laptop)",
+    "Tap GAS 2 or DRIFT (phone), click GAS (laptop)"
+   ],
+   "expected": "Something in the window at once: the row's thumbnail (already loaded) blurred, or a placeholder.",
+   "actual": "The pane comes on in 0.5-0.8 s with an empty window. Phone GAS 2: bare glass until the picture completes at +4.5-4.8 s. Phone DRIFT: an empty dark box until its poster at +3.3 s, the run playing at +4.1 s. Laptop GAS: only the top half drawn, complete at +6.1-6.7 s. No broken-image icons. Quick switching stayed clean (see tested).",
+   "evidence": [
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/shots/002-chromium-phone-390-light-c-slow3g-cpu4-gas2--1500ms.png",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/shots/002-chromium-phone-390-light-c-slow3g-cpu4-drift--1500ms.png",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/shots/002-chromium-laptop-1280-light-c-slow3g-cpu4-gas--1500ms.png"
+   ],
+   "repro": "2/2 each",
+   "code_ref": "src/components/WordWall.astro:1077-1089 (the newcomer waits at most 150 ms for its decode)",
+   "fix_idea": "Put the row's loaded thumbnail behind the window as its placeholder; or a lighter first cut when navigator.connection says the line is slow."
+  },
+  {
+   "id": "N7",
+   "severity": "minor",
+   "title": "A slow analytics beacon holds back the whole TV (it runs before the TV's script)",
+   "where": "chromium phone-390 4G; the third parties answered locally after 6 s",
+   "steps": [
+    "Answer static.cloudflareinsights.com/beacon.min.js after 6 s (the kit normally aborts it at once)",
+    "Load /"
+   ],
+   "expected": "The TV never waits for analytics.",
+   "actual": "The beacon is a <script defer> in the head BEFORE the TV's module; deferred and module scripts run in document order, so the TV's script ran at 6.15 s instead of ~0.55 s and the list showed at 6.8 s. paddle.js (defer, after the module) does not hold the TV, but holds DOMContentLoaded / load until it arrives, so the cabinet waited for its 3 s fallback (3.7 s instead of 0.8 s).",
+   "evidence": [
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/thirdparty-phone-390-c-4g-cpu1-6000.json"
+   ],
+   "repro": "2/2",
+   "code_ref": "src/layouts/BaseLayout.astro:140-146",
+   "fix_idea": "async on the beacon (or move it to the end of the body)."
+  },
+  {
+   "id": "N8",
+   "severity": "minor",
+   "title": "Sign-up on a stalled line: \"Sending...\" forever, and still stuck after Back and Try again",
+   "where": "chromium phone-390, slow 3G (+ 4G for the reopen); the worker never answers",
+   "steps": [
+    "Open RevLimiter's pane, Try, type an email, tick the terms, Send",
+    "The licence worker never answers (a stalled mobile connection)",
+    "Wait 25 s; then tap Back and Try again"
+   ],
+   "expected": "After ~15 s the \"Network hiccup\" message and the key back, so the visitor can try again.",
+   "actual": "postJson has no time-out: after 25 s the key still reads \"SENDING...\" and is disabled, with no message. Back and Try again reopens the form still \"SENDING...\" and disabled (the busy flag is per form); a tap does nothing (one post in total). Only a reload frees it.",
+   "evidence": [
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/shots/002-chromium-phone-390-signup-c-slow3g-cpu4-hang-result.png",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/shots/001-chromium-phone-390-hang-reopened.png",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/signup-phone-390-c-slow3g-cpu4-hang-revlimiter.json"
+   ],
+   "repro": "2/2 (slow 3G), 2/2 (reopen, 4G)",
+   "code_ref": "src/lib/signup.ts:11-12; src/components/WordWall.astro:869, 893-923",
+   "fix_idea": "An AbortController time-out (~15 s) in postJson; on time-out show the \"Network hiccup\" line and re-enable the key."
+  },
+  {
+   "id": "N9",
+   "severity": "minor",
+   "title": "Laptop: a link to one plugin shows RevLimiter until the script runs, and its keys lead to RevLimiter",
+   "where": "chromium laptop-1280 slow 3G (and every Back / reload on a laptop, briefly)",
+   "steps": [
+    "Open /?plugin=gas cold on slow 3G (a shared link; also where Back from a product page lands)",
+    "At 4.5 s look at the lit panel; click \"Product page ->\""
+   ],
+   "expected": "GAS is lit from the first paint (or nothing is lit until the script).",
+   "actual": "The HTML always lights the first plugin and ?plugin= is applied by the module: at 4.5 s the TV shows RevLimiter (name, $49, Try, Product page) and Product page opens /revlimiter. It stays wrong until the script (median 15.7 s slow 3G, 2.9 s fast 3G); on Back with the HTTP cache RevLimiter shows for ~0.5-1 s before GAS. Phones show the list first, so they are not affected.",
+   "evidence": [
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/shots/001-chromium-laptop-1280-deeplink-c-slow3g-cpu4-gas-at4-5s.png",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/deeplink-laptop-1280-c-slow3g-cpu4-gas.json"
+   ],
+   "repro": "2/2",
+   "code_ref": "src/components/WordWall.astro:242,267 (first plugin lit in the HTML), 1511-1528 (fromUrl in the module)",
+   "fix_idea": "A few inline lines right after the TV markup that read ?plugin= and move is-active / is-lit / data-ww-on before the first paint."
+  },
+  {
+   "id": "N10",
+   "severity": "minor",
+   "title": "When the script lands late, the already-lit glass blacks out and powers on again",
+   "where": "chromium phone-390 slow 3G (every profile, shorter)",
+   "steps": [
+    "Cold load on slow 3G",
+    "Watch the glass when the list appears (~9.5 s)"
+   ],
+   "expected": "The power-on plays on arrival, or not at all once the TV has been on show.",
+   "actual": "The glass glows from the first paint (2.7 s). When the script arrives it arms the power-on (glow opacity 0) at 9.53 s, then plays the 700 ms CRT turn-on: a ~150 ms black-out and a re-light ~7 s after the visitor started looking (glow per frame: 1.00 -> 0.00 at 9532 ms -> powering 9684 ms -> on 10452 ms). On 4G the same happens ~0.25 s after the first paint.",
+   "evidence": [
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/probe-power.json"
+   ],
+   "repro": "2/2",
+   "code_ref": "src/components/WordWall.astro:1651-1670, 2629-2639",
+   "fix_idea": "Go straight to \"on\" when the TV has already been painted for more than ~0.5 s, or arm the power-on from the first paint."
+  },
+  {
+   "id": "N11",
+   "severity": "minor",
+   "title": "First visit on a 390x664 phone: the cookie banner covers the last row and every pane's Product page key",
+   "where": "chromium phone-390, every profile",
+   "steps": [
+    "First visit (no cookie choice yet)",
+    "Look at the list, then open any plugin's pane"
+   ],
+   "expected": "The TV's keys reachable without answering the banner (P04: slim on phones, keys clear).",
+   "actual": "The banner (115 px, y 549-664) is up at 1.0 / 1.7 / 3.5 s on 4G / fast 3G / slow 3G: never late, it arrives before or with the list. But it stays over the TV: Radio Roulette's row 67 of 74 px under it (its centre covered); in all five panes \"Product page ->\" (y 582-619) is hidden completely and Try's bottom 2-22 px. scroll-padding-bottom only helps keyboard focus.",
+   "evidence": [
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/shots/004-chromium-phone-390-c-slow3g-cpu4-r1-at10s.png",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/shots/002-chromium-phone-390-light-c-slow3g-cpu4-gas2--1500ms.png",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/probe-banner.out"
+   ],
+   "repro": "2/2",
+   "code_ref": "src/components/CookieBanner.astro:108-119, 149",
+   "fix_idea": "A one-line banner on phones while the TV is in view, or the pane's keys lifted clear of it."
+  },
+  {
+   "id": "N12",
+   "severity": "nit",
+   "title": "The TV's cabinet pops in late (WebKit ~3.8 s even on a quick line)",
+   "where": "chromium slow 3G; webkit phone-390 + laptop-1280 at 150 ms",
+   "steps": [
+    "Cold load",
+    "Note when the cabinet frame appears around the glass"
+   ],
+   "expected": "The cabinet with or soon after the TV.",
+   "actual": "The frame waits for the load event (or the first scroll, or 3 s after the script). Phone slow 3G 11.5 s (1.5 s after the list), laptop slow 3G 26.3 s. WebKit fires load ~3.5 s in on a quick line (Chromium 4G: 0.6 s), so the cabinet comes at 3.8 s there; not DRIFT's video and not the blocked third parties (both ruled out), cause not found: worth a look on a real iPhone.",
+   "evidence": [
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/shots/004-chromium-phone-390-c-slow3g-cpu4-r1-at10s.png",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/shots/004-webkit-phone-390-w-lat150-r1-at10s.png",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/probe-wkvideo.cjs",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/probe-wkabort.cjs"
+   ],
+   "repro": "3/3",
+   "code_ref": "src/components/WordWall.astro:479-497",
+   "fix_idea": "Start the frame on DOMContentLoaded + the IntersectionObserver instead of load, or shorten the 3 s fallback."
+  },
+  {
+   "id": "N13",
+   "severity": "nit",
+   "title": "Bytes that are not for the first screen load with it and share the line with the TV's script",
+   "where": "every profile (numbers: chromium phone-390 slow 3G)",
+   "steps": [
+    "Cold load on slow 3G",
+    "Read the request list before the script lands (9.6 s)"
+   ],
+   "expected": "The first seconds of a slow line spent on the TV.",
+   "actual": "Before the TV's script: the haze plates 66 KB (smoke at 10-16 % opacity), VT323 18 KB (only the DAW strip under the TV), Oswald 21 KB (pulled only by the \"▸\" after \"Pick a category\", which Bebas lacks; in WebKit the ▸ is blank until it lands), the subscribe pop-up's pressed-button image 11 KB (requested at 0.6 s), DAW logos 5 KB: ~120 KB, ~2.4 s of a slow-3G line next to the TV's ~74 KB of script. GAS 2's list thumbnail is 33 KB, 2-3x the other four.",
+   "evidence": [
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/tl-phone-390-c-slow3g-cpu4-r1.json",
+    "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/probe-fonts.cjs"
+   ],
+   "repro": "3/3",
+   "code_ref": "src/styles/global.css:36, 155-156; src/components/WordWall.astro:222; src/components/SubscribeModal.astro:3-4",
+   "fix_idea": "Load the haze plates and the pop-up's art after load; take Oswald out of --font-display (or give Bebas the ▸); a lighter GAS 2 thumbnail."
+  }
+ ],
+ "scripts": [
+  "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/lib.cjs",
+  "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/calib.cjs",
+  "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/timeline.cjs",
+  "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/metrics.cjs",
+  "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/taps.cjs",
+  "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/light.cjs",
+  "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/signup.cjs",
+  "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/hang-reopen.cjs",
+  "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/back.cjs",
+  "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/back2.cjs",
+  "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/back3.cjs",
+  "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/deeplink.cjs",
+  "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/failjs.cjs",
+  "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/thirdparty.cjs",
+  "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/probe-power.cjs",
+  "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/probe-banner.cjs",
+  "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/probe-fonts.cjs",
+  "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/probe-input.cjs",
+  "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/probe-bfcache.cjs",
+  "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/probe-wkload.cjs",
+  "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/probe-wkvideo.cjs",
+  "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/probe-wkabort.cjs",
+  "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/probe-wkfonts.cjs",
+  "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/report.cjs",
+  "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/batchA.sh",
+  "/private/tmp/claude-501/-Users-danavivi/1be1ada2-cab5-409b-9b41-2958b202818b/scratchpad/qa/internet/batchB.sh"
+ ]
+}
