@@ -1,6 +1,6 @@
 ## 2026-11-03 — Home opening: the long garage, an ACTIVE PROJECT (Claude Code `danavivi-4e [b36252]`, Dan's Mac; continues `danavivi-7a [9ae241]`) — on branch `feat/home-opening`, pushed, not on main
 
-Claim: OPEN `danavivi-cf [3dcc55]` (Dan's Mac; took it over 2026-11-11 from `danavivi-d5 [443a28]`, closed, as its SESSION END 2026-11-10 says; round 6: the plugin objects for the CRTs, the props, the TV picture, the sign, see "2026-11-11 round 6" below); `danavivi-d5` was the same session as `danavivi-20 [c417bc]` after a restart; `danavivi-20` took it over from `danavivi-09` on 2026-11-08 (Dan: "take the claim from
+Claim: CLOSED 2026-11-11 `danavivi-cf [3dcc55]` at its SESSION END (round 6 mostly landed, see "SESSION END 2026-11-11 — `danavivi-cf`" below: the next session takes it over) (Dan's Mac; took it over 2026-11-11 from `danavivi-d5 [443a28]`, closed, as its SESSION END 2026-11-10 says; round 6: the plugin objects for the CRTs, the props, the TV picture, the sign, see "2026-11-11 round 6" below); `danavivi-d5` was the same session as `danavivi-20 [c417bc]` after a restart; `danavivi-20` took it over from `danavivi-09` on 2026-11-08 (Dan: "take the claim from
 danavivi-09, then go", for the look pass), which took it from `danavivi-4e` on 2026-11-04, which took it from `danavivi-7a`
 (closed) on 2026-11-03. Dan, 2026-11-03: "this is a
 project we start working on now, from now on": the long garage is a standing project of the site, not a one-off hero. It
@@ -617,7 +617,7 @@ Session end 2026-11-11 (rv close, then a second close after the main push):
 - After the merge `feat/home-speed` has nothing `feat/home-opening` lacks; work goes on in `feat/home-opening`. A branch cut
   before the merge that replaced a model: see "Read this before you add or replace a model".
 
-### 2026-11-11 round 6 — `danavivi-cf [3dcc55]` (Dan's Mac) — IN PROGRESS: the plugins as objects, the props, the TV picture, the sign
+### 2026-11-11 round 6 — `danavivi-cf [3dcc55]` (Dan's Mac) — mostly landed (state: SESSION END 2026-11-11 below): the plugins as objects, the props, the TV picture, the sign, the plate
 
 Dan, 11-11: "remove ... the drift on the right table ... the radio roulette on the top compressors and all those near
 the headphones. I want to make a 3D asset out of it ... the rev limiter [on the table] a 3D asset as well ... the rev
@@ -642,13 +642,97 @@ Then (Dan): "lets put the radio on the shelf where is the headphones" (M04 on W1
 re-rendered after them (uncommitted, stale again after 7c49ce8; re-render once the fixes land).
 Reviews (Workflow, 3 lenses + 3 skeptics per finding): props `wf_7d79ec52-688` done: crate, drum, papers, case, W10
 ship; coil (rebuild, dark rubber), tyre (OD 0.66), cone (black base), can (lid rings, plain band) back to the props
-builder; the room's mess spots fixed + check.mjs tests the mess (7c49ce8, local, not pushed). Heroes (M01 M03 M04
-SIGN) `wf_37a22192-28b` running. Seen by me: the neon's black electrode boots read as a strike-through at walk 0.
+builder, landed (a8ee864); the room's mess spots fixed + check.mjs tests the mess (7c49ce8). Heroes (M01 M03 M04
+SIGN) `wf_37a22192-28b` done: M01, M04 and SIGN ship; M03 needs its colours fixed (below). Seen by me: the neon's
+black electrode boots read as a strike-through at walk 0 (the review passed the sign: Dan judges).
 Dan, 11-11: "there is an asset of a license plate in one of the Rev Audio folders ... Let's put it in the back of
 the car" -> design-assets `3d-assets/revaudio-plate/revaudio-plate-1.0.0.glb` (145k tris, 16 MB: a Higgsfield
 image_to_3d build of our own art); builder B bakes a room copy (~2k tris, 1k maps) and measures its spot on the
-coupe's tail (R.car local frame); the RevLimiter plate beside it is the other option.
+coupe's tail (R.car local frame); the RevLimiter plate beside it is the other option. Landed (923dc37); Dan: "nice".
 Files: `tools/_home-opening/**`, this entry.
+
+### SESSION END 2026-11-11 — `danavivi-cf [3dcc55]` — round 6 mostly landed; left: M03's colours, the pack, the loading pictures, the bench, the push
+
+State at session end: `feat/home-opening` PUSHED to origin on Dan's "push branch" (11-11), with the stopgap loading
+pictures and this entry; main untouched. Against origin/main: the branch has its round-6 commits main lacks, main 4
+the branch lacks.
+This session's commits: `e279e0f` claim · `9c68426` TV / nav / below pictures re-captured from the live homepage
+(new `tvcap.mjs`) · `1dac589` part 1: the sign on its own circuit, R06 out, the plugin-object and mess-model hooks,
+round 5 landed · `97e4f87` part 2: the mess's nine kinds as models, W10 bare · `347f2b7` part 3: N08 vending
+machine, N05 compressor, R01 parts-store shelf · `cde1913` M02 DRIFT out · `cd13d99` loading pictures · `3f135b8` M04
+Radio Roulette + M03 RevLimiter objects · `07fb24f` the radio up on W10 · `3ffc279` N50 the plant · `8155f0b` M01
+RevFX lunchbox + the 3D neon · `7c49ce8` the mess clear of the furniture + check.mjs tests the mess · `a8ee864` the
+props review's model fixes · `923dc37` the RevAudio plate on the coupe's tail.
+- `tools/_home-opening/assets/lights/*.webp` (12, the loading screen) committed as a STOPGAP (Dan: "push branch"):
+  rendered 15:51 after `8155f0b`, so slightly stale (before the mess moves, the props fixes and the plate, which shows
+  at walk 0). Re-render them once, last, after M03 + the pack and before main (NEXT 4).
+- Lasting copies (git-ignored; the scratchpad dies with the session): `/Users/danavivi/projects/revaudio/
+  revaudio-website/.claude/garage-bench-2026-11-11/`: the briefs, the three builders' `candidates/` + `work/` (scripts,
+  notes, stills), `look/` (pose.mjs, mbox.mjs, lightcap.mjs, loadseq.mjs, messvis.mjs/.py, messfree.mjs, depth.mjs),
+  `nocache_server.py`, both reviews' full JSON (`reviews/`), M03's hue tool + its reference still
+  (`review-heroes-m03/`), `sign-old-vs-new-loading.png`, `plate-in-room.png`.
+
+Unverified:
+- Dan's last open question, the sign in the loading screen ("I don't see any sign, any skeleton of a sign"): his
+  browser kept the old pictures; the local server now sends no-store. He hasn't said whether he sees it now (asked:
+  hard-reload with `?lights=demo`). The loading pictures now carry the 3D glass (base.webp: the first light).
+- Dan saw the plate ("nice"). Not seen by Dan: the RevFX lunchbox, the 3D neon, the props' fixes, the moved mess.
+- The neon, my own look: on every letter a 40 mm gap with black electrode boots on the raceway's line; in the
+  loading picture they read as a dashed strike-through (`sign-old-vs-new-loading.png`, 3x). The three-lens review
+  passed the sign ("reads REVAUDIO ... in the dark loading frame"). Dan judges on the bench.
+- The pack has not run: 22 raw files served (7.86 MB), the four heroes among them.
+
+Background processes:
+- `python3 nocache_server.py` (worktree root, Cache-Control: no-store), port 4641, pid 32988: Dan's local room
+  http://127.0.0.1:4641/tools/_home-opening/room.html. `kill 32988`.
+- `python3 -m http.server 4652` (the scratchpad's plate viewer), pid 56004: nothing needs it. `kill 56004`.
+- Both workflows are done; the three builders (A `a43ebdf684cb1ceed`, B `a9b2aa24849fc26ea`, props
+  `a523c8d41ab6d72d4`) are idle and reachable only from this session: a new session spawns a fresh builder with the
+  brief (lasting copy) and points it at the old builder's `work/`.
+
+NEXT, in order:
+1. M03 RevLimiter's colours (the heroes review's one confirmed model finding, 3 of 3): in the room its gold on black
+   renders rose-copper on maroon, salmon on top, right under the TV's gold RevLimiter card. The recipe:
+   `reviews/heroes-review-wf_37a22192-28b.json`, synth.perPiece M03.modelFixes. In short, change the model's colours,
+   not the desk light. Brass yellower at the same brightness: (206,160,84) -> (206,180,78), (150,110,52) ->
+   (150,130,50), (182,138,70) -> (182,159,68). The face picture's brass pixels +10° hue and its darks neutralised
+   (`prep_tex.py`). The top deck black satin leather (the June look). The lip quilt (92,22,26) -> (60,12,22). Toggle
+   bushings black. Keep the footprint 0.58 x 0.385, height 0.293, origin, node names, 4 materials. Builder B's
+   scripts: `b-plugB/work/prep_tex.py`, `build_rl.py`. Pass at walk 0.7 (1141x636, `review-heroes-m03/
+   skeptic-2-2-tools/hue.py`, boxes gauges 165,530,280,636 · topdeck 100,505,370,525 · tvcard 573,246,729,322): the
+   gauges' sat-top-5% hue >= 30° (today 23), the top deck black or burgundy (today salmon (168,77,61)).
+2. Land M03 into BOTH `masters/models/revlimiter.glb` and `assets/models/revlimiter.glb`: pack.sh's adopt step
+   moves raw assets/ copies onto masters/, so a stale raw copy would overwrite the new master.
+3. Pack: `cd tools/_home-opening/models-kit/pack && KIT_PORT=<free port> ./pack.sh` (~10 min), then
+   `./pack.sh check` (exit 0). The review expects the heroes 3.36 -> about 1.49 MB. Commit the masters, the packed
+   files and need.json by path.
+4. Loading pictures: `node tools/_home-opening/lights/render.mjs --port 4641 --check`, then `lights/check.mjs --port
+   4641` (today: hand-off blurred mean 3.40 p99 15; layers vs room mean 4.14 p99 22; README baseline 3.3 / 14 and
+   3.9 / 20). Then `layout-kit/check.mjs layout-kit/start-layout.json --port 4641` (0 overlaps; the drum listed as
+   tucked), `layout-kit/handoff.mjs` (baseline 1.05 / 0.68 / 0.45 / 2.57 %), drawcalls.mjs + fps.mjs (the heroes add
+   42 draw calls at walk 0: act only if walk-0 fps drops more than 10 %).
+5. The bench for Dan (`review-bench` skill; round 5's link https://claude.ai/artifact/54aorRBcCAvWJTrPHqaPZm,
+   personal account, pass `url`, collection `notes-r6`): the plugin objects (M01, M03, M04 on W10), the neon (+ the
+   strike-through question), the props, the plant N50, the plate, the TV picture, the loading screen.
+6. Push: the branch (`git pull --rebase && git push`), then main under Dan's standing room-only OK (the four limits
+   in SESSION END 2026-11-10 above): Deploy + Smoke test green, /garage-9f3c/ loads, Dan gets the link + one line.
+
+Decide / ask Dan:
+1. The neon's electrode boots: keep (the review passed them) or rebuild with each letter's gap at its foot, off the
+   raceway's line (builder A's `sign.py`).
+2. The neon's bare raceway (review nit): it runs 0.53 m past each end of the word to reach the room's wire points.
+   Shorter = a rebuild + the room's wires moved to ±0.85 + the cord re-aimed; or keep.
+3. The sign's size in the loading screen (~130 px wide at 1141): bigger or closer? Asked 11-11, no answer.
+4. A cone in the scatter: none shows (33 off since 11-10). Low priority.
+5. Unused model files: crt-casing.glb, vu-rack.glb, jack-creeper.glb, bass.glb, guitar-black.glb, guitar.glb (+ the
+   never-landed DRIFT pod, `b-plugA/candidates/M02/`): keep or delete.
+
+Suggested commits (after the steps): `feat(garage): RevLimiter's console in brass and black (review fix)`
+(masters + assets revlimiter.glb, SOURCES.md) · `perf(garage): pack round 6's models` (masters/models, assets/models,
+models-kit/pack/need.json) · `feat(garage): loading pictures for round 6` (assets/lights/*.webp) · the handoff.
+
+Cleanup: the review's optional SIGN early-fetch line in loadModels (tidies the load order, nothing visible).
+Memory written: none (all of it is this repo's state, here).
 
 ## 2026-11-09 — /revfx trial form sends the download at once (`gateWired: true`) (Claude Code `revaudio-0b [3311c0]`, Yoni's laptop 2) — branch `revfx-gate-on` — PUSHED TO MAIN 2026-11-09 on Yoni's "deploy" (worker deployed first, version `b31a75bd`)
 
