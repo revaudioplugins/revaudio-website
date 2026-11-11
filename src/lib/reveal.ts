@@ -52,6 +52,16 @@ function thawTransitions(els: Element[]): void {
 
 export function initReveals(): void {
   if (reducedMotion()) return;
+  /* A slow line: global.css starts showing the gated content itself 2.5 s after
+     it painted. Starting after that, show it all now with no entrances, so
+     nothing fades in twice (TV QA N1, 2026-11-11). Either way, reveal-ready
+     ends that CSS fallback. */
+  if (performance.now() > REVEAL_FALLBACK_MS) {
+    forceRevealAll();
+    document.documentElement.classList.add('reveal-ready');
+    return;
+  }
+  document.documentElement.classList.add('reveal-ready');
 
   document.querySelectorAll<HTMLElement>('[data-reveal]').forEach((el) => {
     const variant = VARIANTS[el.dataset.reveal || 'default'] ?? VARIANTS.default;

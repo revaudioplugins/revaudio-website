@@ -89,9 +89,18 @@ html.lenis, html.lenis body { height: auto; }
 .lenis.lenis-stopped { overflow: hidden; }
 
 /* Reveal pre-hide (src/lib/reveal.ts). Only under html.motion-ok — the inline
-   head gate in BaseLayout — so no-JS and reduced-motion get static content. */
+   head gate in BaseLayout — so no-JS and reduced-motion get static content.
+   Hidden is not tappable either (an unseen TV row was a live link). If the
+   script hasn't started 2.5 s in (a slow line, a chunk that never loads), the
+   CSS shows it all itself; reveal.ts adds html.reveal-ready as it starts, which
+   ends this (TV QA N1 / N2 / N5, 2026-11-11). */
 html.motion-ok [data-reveal]:not(.revealed),
-html.motion-ok [data-reveal-item]:not(.revealed) { opacity: 0; }
+html.motion-ok [data-reveal-item]:not(.revealed) { opacity: 0; pointer-events: none; }
+html.motion-ok:not(.reveal-ready) [data-reveal]:not(.revealed),
+html.motion-ok:not(.reveal-ready) [data-reveal-item]:not(.revealed) {
+  animation: rv-reveal-fallback 0.4s ease-out 2.5s forwards;
+}
+@keyframes rv-reveal-fallback { to { opacity: 1; pointer-events: auto; } }
 
 /* Split headlines (src/lib/splittext.ts) hide until their words sit masked —
    kills the visible-then-hidden flash on above-fold headlines while fonts

@@ -326,17 +326,20 @@ const first = items[0]?.slug ?? '';
             <div class="ww-buy">
               {it.price && <span class="ww-price">{it.price}</span>}
               {/* the button family (buttons.css, D9 2026-11-01): Try = brass (honey when free), Product page = ghost;
-                  on the screen both are restyled as light on the glass (option A, 2026-11-04, in the CSS) */}
+                  on the screen both are restyled as light on the glass (option A, 2026-11-04, in the CSS). Try is
+                  always a link: the gated ones go to their product page until the script makes them the sign-up,
+                  so the key works on a slow line or with no script (a <button> was dead until then: TV QA N3,
+                  2026-11-11); Space presses it (the script) */}
               {it.action && (it.action.href ? (
                 <a class:list={['ww-try rv-btn rv-btn--stack', it.cats.includes('free') && 'rv-btn--honey']} href={it.action.href}>
                   <span>{it.action.label}</span>
                   {it.action.sub && <span class="rv-btn__sub">{it.action.sub}</span>}
                 </a>
               ) : (
-                <button type="button" class:list={['ww-try rv-btn rv-btn--stack', it.cats.includes('free') && 'rv-btn--honey']} {...it.action.attrs}>
+                <a class:list={['ww-try rv-btn rv-btn--stack', it.cats.includes('free') && 'rv-btn--honey']} href={`/${it.slug}`} {...it.action.attrs}>
                   <span>{it.action.label}</span>
                   {it.action.sub && <span class="rv-btn__sub">{it.action.sub}</span>}
-                </button>
+                </a>
               ))}
               <a class="ww-more rv-btn rv-btn--ghost rv-btn--sm" href={`/${it.slug}`}><span class="sr-only">{it.name} </span>Product page <span aria-hidden="true">&rarr;</span></a>
             </div>
@@ -961,6 +964,13 @@ const first = items[0]?.slug ?? '';
       signOpen(p);
     });
     wall.addEventListener('keydown', (e) => {
+      // Try is a link dressed as a key (it works before the script): Space presses it, as it would a button (TV QA L3)
+      const t = e.target as HTMLElement | null;
+      if (e.key === ' ' && t?.matches('a.ww-try')) {
+        e.preventDefault();
+        if (!e.repeat) t.click();
+        return;
+      }
       if (e.key !== 'Escape') return;
       const p = signing();
       if (p) {
@@ -1659,12 +1669,17 @@ const first = items[0]?.slug ?? '';
       window.setTimeout(() => (wall.dataset.wwPower = 'on'), 750);
     };
     if (!reduced.matches) {
-      wall.dataset.wwPower = 'armed';
+      /* Already on show: on a slow line the CSS turns the glass on by itself 2.5 s in (below); a script that lands
+         after that, with the TV on screen, leaves it lit, with no black-out and second turn-on (TV QA N10, 2026-11-11) */
+      const glow = wall.querySelector<HTMLElement>('.ww-screen-glow');
+      const box = wall.getBoundingClientRect();
+      const onShow = !!glow && getComputedStyle(glow).opacity !== '0' && box.top < innerHeight * 0.8 && box.bottom > 0;
+      wall.dataset.wwPower = onShow ? 'on' : 'armed';
       // same line as the reveal lib's trigger (top 80%)
       new IntersectionObserver(([e], io) => {
         if (!e.isIntersecting) return;
         io.disconnect();
-        window.setTimeout(powerOn, 120);
+        if (!onShow) window.setTimeout(powerOn, 120);
         window.setTimeout(warm, 1200); // the other windows, once the tube is lit
       }, { rootMargin: '0px 0px -20% 0px' }).observe(wall);
     }
@@ -1739,7 +1754,7 @@ const first = items[0]?.slug ?? '';
       window.addEventListener('touchcancel', lift, { passive: true });
       window.addEventListener('keydown', (e) => {
         const t = e.target as HTMLElement | null;
-        if (SCROLL_KEYS.has(e.key) && !t?.closest('input, textarea, select, [contenteditable], [role="tab"]')) arm();
+        if (!e.defaultPrevented && SCROLL_KEYS.has(e.key) && !t?.closest('input, textarea, select, [contenteditable], [role="tab"]')) arm();
       });
       // a smooth wheel or a flick keeps scrolling after the input stops: wait it out
       window.addEventListener('scroll', () => { if (armed) later(); }, { passive: true });
@@ -2631,6 +2646,14 @@ const first = items[0]?.slug ?? '';
   .ww[data-ww-power='armed'] .ww-screen-glow { opacity: 0; }
   .ww[data-ww-power='powering'] .ww-screen-glow {
     animation: ww-scr-on 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  /* Before the script (motion allowed) the glass waits dark, as armed. If the script hasn't started 2.5 s in (a slow
+     line, a chunk that never loads) the CSS turns it on, as global.css then shows the rows (TV QA N1 / N10,
+     2026-11-11). Only the script's own power state ends it (not reveal.ts's html.reveal-ready, which can come first:
+     the script reads this glass to know whether the TV has been on show) */
+  :global(html.motion-ok:not(.hc)) .ww:not([data-ww-power]) .ww-screen-glow {
+    opacity: 0;
+    animation: ww-scr-on 700ms cubic-bezier(0.22, 1, 0.36, 1) 2.5s forwards;
   }
   @keyframes ww-scr-on {
     0%   { opacity: 1; transform: scale(1, 0.004); filter: brightness(calc(var(--ww-scr-bright) * 6)); }

@@ -136,10 +136,12 @@ const canonical = new URL(Astro.url.pathname, Astro.site).href;
         without a published hash, so a pinned integrity would break on update.
         Token is a public beacon id, not a secret. spa false: the beacon counts every
         history change (query included) as a page view, so each click on the home
-        TV (?cat= / ?plugin=) was one; this site is multi-page. */}
+        TV (?cat= / ?plugin=) was one; this site is multi-page. async, not defer:
+        deferred scripts run in page order, so a slow beacon held back the page's
+        own script and the TV with it (TV QA N7, 2026-11-11). */}
     {analyticsOn && (
       <script
-        defer
+        async
         src="https://static.cloudflareinsights.com/beacon.min.js"
         data-cf-beacon={`{"token": "${site.cfBeaconToken}", "spa": false}`}
       ></script>
