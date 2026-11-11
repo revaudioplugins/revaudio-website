@@ -637,6 +637,17 @@ revaudio sign what about it?" -> his pick: build the REVAUDIO neon as a real 3D 
 outlines, a rail, standoffs, blockouts; the RevFX builder takes it after M01). Also built on his "all the elements":
 the door's last plain slots that wide screens see (N08 vending machine on its own circuit, N05 compressor, R01
 parts-store shelf); the never-seen slots behind the walk's first camera (L10 R04 R11 R12 R13 N04 N09 N22 N25) left plain.
+Then (Dan): "lets put the radio on the shelf where is the headphones" (M04 on W10, 07fb24f); "Put a plant over there"
+(N50 pothos on the red chest R05, 3ffc279). RevFX's lunchbox + the 3D neon landed (8155f0b); loading pictures
+re-rendered after them (uncommitted, stale again after 7c49ce8; re-render once the fixes land).
+Reviews (Workflow, 3 lenses + 3 skeptics per finding): props `wf_7d79ec52-688` done: crate, drum, papers, case, W10
+ship; coil (rebuild, dark rubber), tyre (OD 0.66), cone (black base), can (lid rings, plain band) back to the props
+builder; the room's mess spots fixed + check.mjs tests the mess (7c49ce8, local, not pushed). Heroes (M01 M03 M04
+SIGN) `wf_37a22192-28b` running. Seen by me: the neon's black electrode boots read as a strike-through at walk 0.
+Dan, 11-11: "there is an asset of a license plate in one of the Rev Audio folders ... Let's put it in the back of
+the car" -> design-assets `3d-assets/revaudio-plate/revaudio-plate-1.0.0.glb` (145k tris, 16 MB: a Higgsfield
+image_to_3d build of our own art); builder B bakes a room copy (~2k tris, 1k maps) and measures its spot on the
+coupe's tail (R.car local frame); the RevLimiter plate beside it is the other option.
 Files: `tools/_home-opening/**`, this entry.
 
 ## 2026-11-09 — /revfx trial form sends the download at once (`gateWired: true`) (Claude Code `revaudio-0b [3311c0]`, Yoni's laptop 2) — branch `revfx-gate-on` — PUSHED TO MAIN 2026-11-09 on Yoni's "deploy" (worker deployed first, version `b31a75bd`)
