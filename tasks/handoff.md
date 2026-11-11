@@ -333,11 +333,29 @@ Files: `src/components/WordWall.astro`, `src/components/TrialGateModal.astro` (+
   window loads on a slow line: a look for the bench); N9 (a laptop deep link shows RevLimiter until the script);
   P7 (cart button over the last row: Dan skipped P08); at 393x852 DRIFT's and RR's words wrap (1rem there); P4 needs a
   real iPhone. The CSS fallback also ends entrances on a page whose script starts after 2.5 s (dev server included).
-- Next: Dan's look at all five hovering + the thumbnails (B) + the scanlines on `/__wwdepth` -> COPY SETTINGS -> production: the same for GAS, Radio Roulette (both have
-  browser demos), DRIFT (its wall run, pixelated), GAS 2 (its pump floating, animated, alpha), each to music -> build
-  it in WordWall (bake the grade into the TV's copies: no live SVG filter in production; video, see the weight), then
-  the thumbnails; then the header that slides away; TV Sells round 4 notes; step 00's baseline before any push to
-  main. Left in the plan: step 7 (checks at the 9 sizes), P (persona walk). Nothing on main; main = live on Dan's word.
+- 2026-11-11 BAKED (Dan: "bake" + his COPY SETTINGS, `tools/tv-anim/wwdepth-settings-2026-11-11.json`): `3fd3b7f`.
+  `tools/tv-anim/bake-tv.py <settings> [--stills] [slug]` grades each v2 loop as the bench did (knee bloom, lift,
+  contrast; Mix 0) into `public/tv/`: `<slug>-x4.mp4` / `-x2.mp4` (H.264, 27 fps, colour on black; the page masks it
+  with the still's alpha: an animated WebP weighed 3-9x more), `-still.webp` (frame 0 + outline), `-halo.webp` (the
+  blurred outline as a mask: the channel's colour stays live; a drop-shadow on the playing video would redraw every
+  frame), `-thumb.webp` (A); sizes in `src/data/tv-bake.json`; a missing file fails the build. WordWall: `.ww-pic`
+  box (2 x 2 px a picture pixel at 1141) = still + video + link; the grid, darkening, halo (::before/::after) and a
+  stepped opacity flicker in CSS; hairlines over the whole screen (`.ww-screen-fx::before`, one device px);
+  `--ww-scr-scan` 0. Every panel plays its own loop when seated + in view (was DRIFT only); `is-run` hides the still
+  (no double soft edges). DRIFT's old run + poster code gone (its files `public/drift/wall-run-*`, 4.6 MB, and
+  `drift-window-wall.png` are now unused: Dan's call to delete). Dan's two calls on the comparison page
+  (https://claude.ai/artifact/HxDFoH43JKSJmhrBMLwCxk): the bench's **1.3 zoom was a mistake, "take it back"** (the
+  bench measured boxes after its own zoom: 4 of 5 showed at 1.69) -> `--ww-pic-scale: 1`; **words and menus on top**
+  of the picture (z-index 1). Kept his x -20px (on phones it puts 6-8 px of the wide ones under the frame's edge).
+  Fixes on the way: the still downloaded twice (img + CSS mask: `crossorigin` on the img); WebKit sized GAS's column
+  off the still's file width (348 px for 252: the tall stills now `height: 100%`). Checked: 9 sizes x 5 plugins x
+  Chromium + WebKit (playing, still in, no sideways scroll, one screen, names on top), reduced motion (stills, no
+  flicker), 0 errors; Slow 3G phone 773 KB vs 854 KB before, a picture at once / 0.9 s, its loop at 1.9-2.5 s.
+  Open: the loops' sources (`tools/wwbench/anim/`, 50 MB, v2 = 25 MB) are untracked on Dan's Mac only (where to keep
+  them: design-assets?); `/__wwdepth` now draws its look over the baked TV (keep it or delete it?); iOS Safari check
+  of the masked video + pixelated frames on a real iPhone.
+- Next: Dan's look on his Safari + iPhone; then the header that slides away; TV Sells round 4 notes; step 00's
+  baseline before any push to main. Left in the plan: P (persona walk). Nothing on main; main = live on Dan's word.
 
 ## 2026-11-04 — GAS 2 postcards: the end page scrolls as one page, the footer under it (Claude Code `danavivi-c2 [ca2821]`, Dan's Mac) — PUSHED TO MAIN 2026-11-04 on Dan's word "perfect push to main" (from `fix/gas2-end-flow`)
 
