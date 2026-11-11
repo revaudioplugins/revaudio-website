@@ -1994,8 +1994,12 @@ const first = items[0]?.slug ?? '';
     font-size: min(
       calc(var(--ww-name-max) * 1rem),
       calc((100cqi - var(--ww-thumb-w) * 1rem - 1.5rem) / 6.4),
-      max(1.5rem, calc((var(--ww-main, 30rem) / var(--ww-rows, 4) - 1.9rem) / 0.95)) /* every row fits the room's height */
+      max(1.5rem, calc((var(--ww-main, 30rem) / var(--ww-rows, 4) - 2.6rem) / 0.95)) /* every row fits the room's height */
     );
+    /* 2.6rem = a row's own height past its name: the type line, the gap under the name, the row's padding and its
+       share of the list's gaps (was 1.9rem, which never bound: at 1280 x 665 the width-sized names made the list 12 px
+       taller than the room and the TV a screen and a bit: TV QA L1, 2026-11-11). Binds only there of the 9 sizes:
+       1280 x 665's names 51 -> 48 px; 1141, 1440, 1728, 860 and the phones measure under it, unchanged */
     line-height: 0.95;
     letter-spacing: 0.03em;
     text-transform: uppercase;
