@@ -195,6 +195,19 @@ const signupCopy = (s: TvSignup, name: string) =>
           notice: 'Setup tips and a trial-end reminder. Unsubscribe anytime.',
           last: `Open ${name} in your DAW: the ${PAID_TRIAL_DAYS} days start then` };
 const first = items[0]?.slug ?? '';
+/* Each window's picture, worked out here so the hidden ones can wait (TV QA N4, 2026-11-11). Only the first (lit)
+   window gets its src; the others carry theirs in data-ww-src / data-ww-srcset until the script lights them or warms
+   them after the power-on. Hidden by visibility, a lazy picture still counted as on screen: all five loaded at the
+   first paint, +507 KB on a laptop on the line the TV's script needed. No script = only the first window shows. */
+const pics = await Promise.all(items.map((it) => (it.slug === 'drift' && posterCuts && wallPosterSrc ? null : getImage({
+  src: it.img,
+  width: 1400,
+  widths: [400, 640, 960, 1400],
+  // portrait: a set height (24rem phones, 30rem laptop) at 1600:2380
+  sizes: it.portrait ? '(max-width: 860px) 260px, 324px' : '(max-width: 860px) 92vw, 48vw',
+  format: 'webp',
+  quality: 86,
+}))));
 ---
 
 <GarageWall id="plugins" ariaLabel="RevAudio plugins">
@@ -292,19 +305,19 @@ const first = items[0]?.slug ?? '';
                 <source src="/drift/wall-run-1440.webm" type="video/webm" />
                 <source src="/drift/wall-run-1440.mp4" type="video/mp4" />
               </video>
-            ) : (
-              <Image
-                src={it.img}
+            ) : pics[i] && (
+              <img
+                src={i === 0 ? pics[i].src : undefined}
+                srcset={i === 0 ? pics[i].srcSet.attribute : undefined}
+                data-ww-src={i === 0 ? undefined : pics[i].src}
+                data-ww-srcset={i === 0 ? undefined : pics[i].srcSet.attribute}
                 alt={it.alt}
-                width={1400}
-                widths={[400, 640, 960, 1400]}
-                sizes={it.portrait
-                  /* a set height (24rem phones, 30rem laptop) at 1600:2380 */
-                  ? '(max-width: 860px) 260px, 324px'
-                  : '(max-width: 860px) 92vw, 48vw'}
-                format="webp"
-                quality={86}
+                sizes={it.portrait ? '(max-width: 860px) 260px, 324px' : '(max-width: 860px) 92vw, 48vw'}
                 loading="lazy"
+                fetchpriority={i === 0 ? 'high' : undefined}
+                width={pics[i].attributes.width}
+                height={pics[i].attributes.height}
+                decoding="async"
               />
             )}
             {/* step 5: the picture leads to the product page too, a link laid over it (the picture keeps its own
@@ -615,6 +628,15 @@ const first = items[0]?.slug ?? '';
     const wasEl = wall.querySelector<HTMLElement>('.ww-screen-was');
     const panelOf = (s: string) => panels.find((p) => slugOf(p) === s) ?? null;
     const mediaOf = (p: HTMLElement) => p.querySelector<HTMLElement>('.ww-ui img, .ww-ui video');
+    // a hidden window's picture gets its address when it comes on or is warmed (the markup holds it back: N4)
+    const fill = (p: HTMLElement) => {
+      const img = mediaOf(p);
+      if (!(img instanceof HTMLImageElement) || !img.dataset.wwSrc) return;
+      img.srcset = img.dataset.wwSrcset ?? '';
+      img.src = img.dataset.wwSrc;
+      delete img.dataset.wwSrc;
+      delete img.dataset.wwSrcset;
+    };
     const textOf = (p: HTMLElement) => Array.from(p.querySelectorAll<HTMLElement>('.ww-phead, .ww-blurb, .ww-pwords, .ww-buy'));
     const listParts = () => [osdEl, list].filter((el): el is HTMLElement => !!el);
     // what a scene moves: its panel (an exit moves it whole) and the parts an entrance moves one by one
@@ -1206,6 +1228,7 @@ const first = items[0]?.slug ?? '';
         .map((p) => ({ p, d: Math.abs(s.indexOf(slugOf(p)) - k) }))
         .sort((a, b) => a.d - b.d)
         .forEach(({ p }) => {
+          fill(p);
           const img = mediaOf(p);
           if (!(img instanceof HTMLImageElement)) return;
           img.loading = 'eager';
@@ -1475,6 +1498,7 @@ const first = items[0]?.slug ?? '';
     const light = (slug: string, move = true) => {
       const next = panelOf(slug);
       if (!next) return;
+      fill(next);
       const was = lit;
       lit = slug;
       rows.forEach((a) => {
