@@ -339,3 +339,12 @@ Smoke went red on every site push for a day and two sessions shipped past it (th
 - Rule: a shot or bench script parks the TV with the site's own target (`#plugins` top at `--site-nav-h`, as
   `landY` does), never an inner box. Before raising a layout fault seen in a shot, reproduce it with the site's own
   behaviour (load, wheel, keys) and measure.
+
+## 2026-11-11 — pixel art needs pixels: small pictures stay smooth
+- The TV's list thumbnails got the big picture's 2 x 2 pixels (Dan's pick A, "the same look, smaller, still"): at a
+  ~100 px thumbnail that is ~50 pixels across, plus the pixel grid and the fade, and Dan saw grain ("it dosent look
+  good that the tumbnail ... are grainy"). Three designs on the bench, he picked B: smooth, the screen's one colour
+  while unlit, its own colours when lit.
+- Rule: a pixel look scales with the picture: under ~150 px across, keep the picture smooth and carry the look by
+  colour and light, not pixels. Draw a smooth copy from the picture's real pixels: `naturalWidth` counts a srcset pick
+  for a 2x screen as half (draw from a copy without the srcset).

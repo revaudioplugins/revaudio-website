@@ -280,8 +280,11 @@ Files: `src/components/WordWall.astro`, `src/components/TrialGateModal.astro` (+
   unlit (`mix-blend-mode: color` of `--ww-ink`), own colours lit; C a line drawing in `--ww-ink` (Sobel on the
   lifted light, glow baked, padded past the box), the lit one fills in; 2 x 2 to compare). Smooth = drawn at box x the
   screen's density from the real srcset pixels (`naturalWidth` halves a 2x pick). Sliders: B One colour, C Lines /
-  softness / glow / lines on the lit one. My pick: B. COPY SETTINGS carries `thumbs`. Bench only.
-- Next: Dan's pick of A / B / C, then his look at all five + the thumbnails + the scanlines on `/__wwdepth` -> COPY SETTINGS -> production: the same for GAS, Radio Roulette (both have
+  softness / glow / lines on the lit one. COPY SETTINGS carries `thumbs`. Bench only (`3ecba08`).
+  **DAN PICKED B** (2026-11-11, "b"): the bench opens on B (state v3); A, C, 2 x 2 stay on the switch to compare.
+  Production B = the thumbnail's grade baked into its picture per channel + the one-colour wash as plain CSS
+  (`mix-blend-mode: color`, `var(--ww-ink)`, off when lit, half on hover): no live SVG filter.
+- Next: Dan's look at all five + the thumbnails (B) + the scanlines on `/__wwdepth` -> COPY SETTINGS -> production: the same for GAS, Radio Roulette (both have
   browser demos), DRIFT (its wall run, pixelated), GAS 2 (its pump floating, animated, alpha), each to music -> build
   it in WordWall (bake the grade into the TV's copies: no live SVG filter in production; video, see the weight), then
   the thumbnails; then the header that slides away; TV Sells round 4 notes; step 00's baseline before any push to

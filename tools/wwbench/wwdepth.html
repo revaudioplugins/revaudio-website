@@ -78,8 +78,8 @@
   <span class="seg" id="pview" title="The phone shows one pane at a time: the list (the thumbnails) or the lit plugin">
     <button data-pv="list">PHONE: LIST</button><button data-pv="panel">THE PLUGIN</button>
   </span>
-  <span class="seg" id="tstyle" title="The list's thumbnails: three designs to compare (and pick A's 2 × 2 pixels, the grainy one)">
-    <button data-t="a">THUMBS: A · SMOOTH</button><button data-t="b">B · ONE COLOUR</button><button data-t="c">C · LINES</button><button data-t="px">2 × 2</button>
+  <span class="seg" id="tstyle" title="The list's thumbnails: B is Dan's pick (2026-11-11); A, C and pick A's 2 × 2 pixels stay to compare">
+    <button data-t="a">THUMBS: A · SMOOTH</button><button data-t="b">B · ONE COLOUR ✓</button><button data-t="c">C · LINES</button><button data-t="px">2 × 2</button>
   </span>
   <span class="spacer"></span>
   <button class="primary" id="copy">COPY SETTINGS</button>
@@ -205,7 +205,8 @@
   Object.keys(st.cur).forEach((k) => { if (!byK[k]) delete st.cur[k]; });
   if (!SLUGS.some(([s]) => s === st.slug)) st.slug = 'revlimiter';
   if (!['a', 'b', 'c', 'px'].includes(st.tstyle)) st.tstyle = 'b';
-  if (st.v !== 2) { delete st.cur.scan; delete st.cur['--ww-scr-scan']; st.v = 2; }
+  if (!(st.v >= 2)) { delete st.cur.scan; delete st.cur['--ww-scr-scan']; st.v = 2; }
+  if (st.v < 3) { st.tstyle = 'b'; st.v = 3; } // Dan's pick, 2026-11-11: "b" (the others stay to compare)
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} };
   let src = null;                 // the page's own --ww-* defaults (read off the laptop frame)
   const chan = { ...CH };         // each channel's phosphor, read off the page
