@@ -463,3 +463,19 @@ no model uses `EXT_meshopt_compression` (none of the room's 83 did on 11-10). Un
 `'wasm-unsafe-eval'`, Chrome, Safari and Firefox each log a violation and an unhandled `CompileError` on every visit.
 Before a page with three goes behind the site's CSP, load it under the live header locally and read every violation
 (the room's test: `.claude/garage-bench-2026-11-10/csp/`, `cspserve.py` + `csptest.cjs`).
+
+## 2026-11-11 - packing the room's models: what changes the picture, and a trial number is not a promise (`danavivi-cc`)
+
+Direction 1 went on the directions page as "same look, 15.2 MB"; the real build is 17.6 MB. The trial's number was
+measured, its look was not: the stills comparison ran only on the real build, and there the trial's recipe failed twice.
+- meshopt's FILTER mode stores normals at 8 bits: on glossy paint (the coupe, clearcoat) the highlight moves. 12 bits
+  with mode QUANTIZE is invisible (car area: mean difference 1.94 → 0.07 of 255 levels).
+- Rounding positions (even to 0.03 mm) reorders faces that sit a hair apart: the studio desk's lit meter face is 0.5 mm
+  over its panel and came out half dark. The pack keeps positions and triangles bit for bit and checks it.
+- Texture right-size finds little here: `dress()` reads the models' maps with 8x anisotropy, so the walk needs about one
+  size level more than a plain "pixels on screen" estimate (7 of 237 textures could drop, ≈ 0.3 MB).
+
+Rule: before a size or speed number goes in front of Dan under "same look", run that exact recipe through the stills
+comparison (five walk stops, originals against it, plus a zoom on the glossiest and the thinnest things in the room).
+A number whose look is not checked yet is labelled "estimate, look not checked". And never pipe a check you may need
+to read through `tail -3`: send it to a log file (one failed `pack.mjs build` run lost its error text that way).
