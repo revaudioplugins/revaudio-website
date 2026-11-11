@@ -570,7 +570,12 @@ Checks, actual results:
 blocked: tested 11-11 in Chrome, the packed models do not appear at all (812 objects instead of 1339; today the live page
 shows them without their pictures). The word needed is the one already asked for: `'wasm-unsafe-eval'` in `script-src`
 (with `blob:` in `img-src` and `connect-src`): `collaboration/handoffs/2026-11-10-yoni-csp-room/handoff-yoni.md` in the
-shared repo. The live header on the morning of 11-11 still lacks all three.
+shared repo. The live header on the morning of 11-11 still lacked all three.
+**Update 11-11 12:34: the edit is live** (Yoni + `revaudio-bf`, shared `collaboration/STATUS.md`): the header on
+https://revaudio.net/garage-9f3c/ now carries `'wasm-unsafe-eval'` in `script-src` and `blob:` in `img-src` and
+`connect-src` (read with `curl -sI`). The blocker is gone. Still unchecked: the packed room on the live domain itself;
+after a merge to main open /garage-9f3c/ and confirm no CSP errors and textured models (locally it passed under the
+proposed policy, see Checks).
 
 Not done / open:
 - Pushed to `origin/feat/home-speed` (`36fd9eb` + the close-out commit), not merged: it merges into `feat/home-opening` on Dan's OK (the room-only push OK for main was
@@ -582,7 +587,7 @@ Not done / open:
   (`/private/tmp/claude-501/-Users-danavivi/38d326b1-1855-4bfb-9b05-ed9017ee0743/scratchpad`: `stills6/`, `perf/final.txt`).
 
 Next: Dan looks at the room from this worktree (`python3 -m http.server 4618 --bind 127.0.0.1` at its root, then
-http://127.0.0.1:4618/tools/_home-opening/room.html) and says merge or not; Yoni's CSP edit before any main push.
+http://127.0.0.1:4618/tools/_home-opening/room.html) and says merge or not. The CSP edit it needed is live since 11-11 (above).
 
 Session end 2026-11-11 (rv close):
 - Dan's last word on the build: none yet. He got the report (numbers, the three before/after pictures, the CSP warning)
