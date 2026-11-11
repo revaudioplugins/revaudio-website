@@ -240,7 +240,7 @@ const DEF = {
   // the REVAUDIO neon: off the aisle (Dan 2026-11-02: "not in your face"), then on the end wall, right of the TV (11-03)
   signWall: 'endLeft', signF: 0.52, signX: -1.47, signY: 3.09,  // the wall in front of you, top right (Dan 11-03, placed 11-04, nudged on his room bench of 11-09)
   signScale: 1.15, signTilt: -2,        // hung a little crooked on two wires (Dan 11-03; sized 11-04)
-  ver: 26,                               // settings version (26 = N26 6 cm out for the plant N50; 25 = the radio up on the shelf W10; 24 = round 6: M03 / M04 hold the plugins' objects, their spots moved; 23 = round 5 landed: N03 the lift's pump on its own row, its move gone (11-11); 22 = batch 7, the far end: N42's tray hangs under the trusses on its own height (h 1.565, x -2.05 clear of the neon's lights); N29's narrower blankets fit Dan's spot (w 1.444, h 2.145, d 0.136); L17's pegboard v2, its tools in the gaps round the bass wall, d 0.085 (a thin board); N39 0.4 m along its truss + glow 0.7 (out of the neon's wash, deeper lamp colour); N18's board on the pegboard's face (on 0.02); N49 hung under W10's plank, 11-10; 21 = batch 6, the left wall: N12's box grows for its real 2x4, 11-10; 20 = batch 5, the car side: N43 out from under the lift's plate, N11 onto it, 11-10; 19 = batch 4 + the round-2 instruments: N02 on chains, N41/N39 onto the truss, the ukulele's hanger level with the banjo's; the round-3 checks: the rack 1.75 m out, the rims on the tyre rack, the sketch wall off the bass, 11-09; 18 = Dan's round-2 build notes, 11-09; 17 = the big line + the engine back on, Dan 11-09; 16 = his room bench of 11-09: the end wall rearranged; 15 = much less dust, Dan 11-09; 14 = the drum N06 moved, Dan's build bench of 11-09; 5 = Dan's bench of 11-03 baked, 6 = his third, with the pegboard move, 7 = back to the bare set; his bench of 11-04 needed no bump; 8 = the snap off; 9 = B + A's moves as the room; 10 = the look pass, 11 = its first fix round, 12 = his bench of 11-08 + two nudges, 13 = his neon pick): 2 moved the sign to the end wall, 3 made it bigger + crooked, 4 took the road off the floor
+  ver: 27,                               // settings version (27 = RevFX's lunchbox on L09; 26 = N26 6 cm out for the plant N50; 25 = the radio up on the shelf W10; 24 = round 6: M03 / M04 hold the plugins' objects, their spots moved; 23 = round 5 landed: N03 the lift's pump on its own row, its move gone (11-11); 22 = batch 7, the far end: N42's tray hangs under the trusses on its own height (h 1.565, x -2.05 clear of the neon's lights); N29's narrower blankets fit Dan's spot (w 1.444, h 2.145, d 0.136); L17's pegboard v2, its tools in the gaps round the bass wall, d 0.085 (a thin board); N39 0.4 m along its truss + glow 0.7 (out of the neon's wash, deeper lamp colour); N18's board on the pegboard's face (on 0.02); N49 hung under W10's plank, 11-10; 21 = batch 6, the left wall: N12's box grows for its real 2x4, 11-10; 20 = batch 5, the car side: N43 out from under the lift's plate, N11 onto it, 11-10; 19 = batch 4 + the round-2 instruments: N02 on chains, N41/N39 onto the truss, the ukulele's hanger level with the banjo's; the round-3 checks: the rack 1.75 m out, the rims on the tyre rack, the sketch wall off the bass, 11-09; 18 = Dan's round-2 build notes, 11-09; 17 = the big line + the engine back on, Dan 11-09; 16 = his room bench of 11-09: the end wall rearranged; 15 = much less dust, Dan 11-09; 14 = the drum N06 moved, Dan's build bench of 11-09; 5 = Dan's bench of 11-03 baked, 6 = his third, with the pegboard move, 7 = back to the bare set; his bench of 11-04 needed no bump; 8 = the snap off; 9 = B + A's moves as the room; 10 = the look pass, 11 = its first fix round, 12 = his bench of 11-08 + two nudges, 13 = his neon pick): 2 moved the sign to the end wall, 3 made it bigger + crooked, 4 took the road off the floor
   // the look pass (2026-11-08, todo 1b): real materials and night light on the same set (Skeleton = the grey labelled
   // blocks); tone = the tone mapping (AgX), exposure its exposure; probe = how much the room shows in its own shiny
   // things (chrome, paint, the floor); shafts = the haze under the lamps
@@ -284,7 +284,7 @@ const DEF = {
     "L09": {"f": 0.8299},
     "L01": {"f": 0.8299},
     "L12": {"f": 0.8299},
-    "M01": {"f": 0.7778, "x": -2.81, "s": 1.1},
+    "M01": {"f": 0.7695, "x": -2.975},  // round 6: RevFX's lunchbox on the bench L09 (at the CRT's -2.81 it hung 11 cm over the edge and the test gear hid PITCH)
     "W01": {"f": 0.816},
     "W05": {"f": 0.8507},
     "W02": {"f": 0.8854},
@@ -393,6 +393,7 @@ if (sv < 23) delete S.moves.N03; // round 5 landed (11-11): the lift's pump unit
 if (sv < 24) for (const id of ['M03', 'M04']) S.moves[id] = { ...DEF.moves[id] }; // round 6 (11-11): the plugins' objects on the desk and the red chest
 if (sv < 25) S.moves.M04 = { ...DEF.moves.M04 }; // the radio up on the shelf where the headphones hang (Dan 11-11)
 if (sv < 26) S.moves.N26 = { ...DEF.moves.N26 }; // the boom stand 6 cm out, clear of the plant (11-11)
+if (sv < 27) S.moves.M01 = { ...DEF.moves.M01 }; // RevFX's lunchbox on the bench (11-11)
 // (migrations run oldest first: put a new version's lines at the bottom, so a later one can undo an earlier one)
 S.ver = DEF.ver;
 // ?layout=<name>: a proposed layout (layouts/<name>.json, the bench's Copy-settings format) over the defaults, to walk
@@ -609,10 +610,11 @@ function labelSprite(text, cat, k = 1) {
 }
 // the REVAUDIO neon, drawn on black and added onto the wall (R.signMat): its glow laid by hand in wide, faint strokes,
 // the same in every engine (Safari draws shadowBlur twice as heavy, and a see-through canvas uploads speckled there)
-const signTex = () => canvasTex(1400, 340, (g) => {
+const signTex = (halo) => canvasTex(1400, 340, (g) => { // halo: only the glow round the tubes (the 3D glass draws the tubes, round 6)
   g.fillStyle = '#000'; g.fillRect(0, 0, 1400, 340);
   g.font = '400 250px "Bebas Neue", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
   g.strokeStyle = 'rgba(255,90,40,0.05)'; for (let i = 9; i >= 1; i--) { g.lineWidth = 16 + i * 9; g.strokeText('REVAUDIO', 700, 180); }
+  if (halo) return;
   g.strokeStyle = '#ff5a2a'; g.lineWidth = 16; g.strokeText('REVAUDIO', 700, 180);
   g.strokeStyle = '#ffd9c4'; g.lineWidth = 5; g.strokeText('REVAUDIO', 700, 180);
 }, false);
@@ -720,6 +722,7 @@ const LOOK = {
 // the mess's kinds as real models (Dan 11-11: "all the elements [still plain] I want to build them"): each kind loads
 // once and every piece of it shows a copy where its primitive stands (placeMess keeps them in step); a kind not listed
 // keeps its primitive
+const SIGN_MODEL = 'assets/models/revaudio-neon.glb'; // the REVAUDIO neon's glass, rail and transformer (round 6, builder A; sign.py)
 const MESS_MODELS = { // round 6, ours from code (the props builder, 11-11)
   crate: 'assets/models/mess-crate.glb', toolbox: 'assets/models/mess-toolbox.glb', can: 'assets/models/mess-can.glb',
   drum: 'assets/models/mess-drum.glb', tyre: 'assets/models/mess-tyre.glb', coil: 'assets/models/mess-coil.glb',
@@ -864,7 +867,7 @@ const MODELS = {
   N05: { src: 'assets/models/air-compressor.glb', yaw: Math.PI / 2, anim: [['gauge_needle', 'z', 'osc', [0.05, 0.7]]] }, // its needle quivers about mid-scale (still in reduced motion)
   R01: { src: 'assets/models/parts-store-shelf.glb', yaw: -Math.PI / 2 }, // steel shelving: boxed parts, oil, filters, mufflers (not L12's parts-shelf.glb)
   N50: { src: 'assets/models/potted-plant.glb', yaw: -Math.PI / 2 }, // a trailing pothos in a terracotta pot on the red chest, its vines over the chest's aisle face (Dan 11-11: "put a plant over there")
-  M01: { src: 'assets/models/crt-casing.glb', crt: true }, // the CRTs: a casing around each live screen
+  M01: { src: 'assets/models/revfx-lunchbox.glb' }, // round 6: RevFX as a five-module lunchbox, its real UI the face (Dan 11-11; the CRTs are gone: crt-casing.glb unused)
   M03: { src: 'assets/models/revlimiter.glb' },     // round 6: RevLimiter as a brass / walnut / oxblood desk console, its real UI the face (Dan 11-11)
   M04: { src: 'assets/models/radio-roulette.glb' }, // round 6: Radio Roulette as a 1950s tabletop radio, its real UI the face (Dan 11-11)
 };
@@ -875,7 +878,7 @@ for (const q of new URLSearchParams(location.search).getAll('model')) {
 async function loadModels() {
   const ids = Object.keys(MODELS).filter((id) => R.items.some((it) => it.id === id));
   if (!ids.length) { loaded('models', 1, 1); return []; }
-  loadP.models[1] = new Set([...ids.flatMap((id) => [MODELS[id].src, MODELS[id].stand]), ...Object.values(MESS_MODELS)].filter(Boolean)).size;
+  loadP.models[1] = new Set([...ids.flatMap((id) => [MODELS[id].src, MODELS[id].stand]), ...Object.values(MESS_MODELS), SIGN_MODEL].filter(Boolean)).size;
   const [{ GLTFLoader }, { MeshoptDecoder }] = await Promise.all([import('three/addons/loaders/GLTFLoader.js'), import('three/addons/libs/meshopt_decoder.module.js')]);
   const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder), maps = [], files = {};
   // the loading screen hears each file's bytes as they come (the files load side by side: counting finished ones, the
@@ -952,6 +955,14 @@ async function loadModels() {
     R.messModel[k] = g;
   }));
   messModels();
+  // the REVAUDIO neon's glass (round 6, Dan 11-11: a real 3D neon): hung on the drawn plane, in its frame, which keeps only
+  // the halo; the glass on the sign's own circuit (lightRoom)
+  try {
+    const sg = await get(SIGN_MODEL);
+    sg.traverse((o) => { if (!o.isMesh) return; o.receiveShadow = true;
+      for (const mt of [o.material].flat()) { if (mt.name === 'neon_glow') { R.signGlow = mt; mt.userData.k = mt.emissiveIntensity; } else o.castShadow = true; } });
+    R.sign.add(sg); R.signMat.map.dispose(); R.signMat.map = signTex(true); R.signMat.needsUpdate = true;
+  } catch (e) { console.warn('sign', SIGN_MODEL, e.message); } // the drawn sign stays
   applyFlags(); arrange(); // the look shows the models; their shadows drawn once
   return maps;
 }
@@ -1121,7 +1132,7 @@ const POSTERS = [
 // CRT monitors on the benches, each showing a plugin; since round 6 each holds its plugin's own object instead (Dan 11-11),
 // and DRIFT's (M02, on the right wall's parts bench) is gone with no object in its place (Dan: "dont need to build drift object")
 const MONITORS = [
-  { id: 'M01', pic: 'scr-revfx', label: 'CRT monitor: RevFX', side: -1, f: 0.6, base: 0.92, w: 0.56 },
+  { id: 'M01', pic: 'scr-revfx', label: 'RevFX: the plugin as a five-module lunchbox', side: -1, f: 0.6, base: 0.92, w: 0.56 },
   { id: 'M03', pic: 'scr-revlimiter', label: 'RevLimiter: the plugin as a desk console', side: 0, x: -0.75, z: 1.05, base: 0.85, w: 0.44 },
   { id: 'M04', pic: 'scr-radio', label: 'Radio Roulette: the plugin as a 1950s radio', side: 1, f: 0.44, base: 2.497, w: 0.42, sits: 'W10' }, // on the shelf W10's plank (top 2.497), where the headphones hang (Dan 11-11: "put the radio on the shelf where is the headphones"); the compressor rack R06 is out
 ];
@@ -2249,7 +2260,7 @@ function lightRoom(neonK, warm, signK, open, far, now, full = false) {
     lp.shaft.material.uniforms.uK.value = 0.05 * S.shafts * k * far; lp.inner.material.emissiveIntensity = 2.0 * on; });
   for (const g of R.litGlow || []) g.m.emissiveIntensity = g.k * b(PROP_BANK[g.id]); // a lit prop's globe with its light
   for (const l of R.propLights || []) { const id = l.parent.userData.item?.id; l.intensity = l.userData.cd * warm * b(PROP_BANK[id]) * (!steady && id === 'N02' && hash(Math.floor(now / 400) + 9) > 0.93 ? 0.55 : 1); } // one tube dying (held lit in a capture: a still never catches it dimmed)
-  R.signMat.color.setScalar(0.08 + 1.4 * signK); R.signLight.intensity = 6 * signK; // the sign: its own circuit, lit from the loading screen's first frame like the GAS globes (Dan 11-11), not the gear bank
+  R.signMat.color.setScalar(0.08 + 1.4 * signK); R.signLight.intensity = 6 * signK; if (R.signGlow) R.signGlow.emissiveIntensity = R.signGlow.userData.k * (0.08 + 1.4 * signK) / 1.48; // the sign: its own circuit, lit from the loading screen's first frame like the GAS globes (Dan 11-11), not the gear bank
   const fill = full ? 1 : HEMI_DARK + (1 - HEMI_DARK) * litFrac();
   if (R.hemiK != null) R.hemi.intensity = R.hemiK * fill;
   R.tv.glow.intensity = 3 * S.tvGlow * open * (reduced ? 1 : 1 + 0.05 * Math.sin(now * 0.0019)) * far;
