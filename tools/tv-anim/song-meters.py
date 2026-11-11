@@ -183,6 +183,8 @@ way the plugin measures it, from that plugin's own demo on the site:
                   station-mixer stems at station 3
   gas2            'meters'.lufs: momentary LUFS (the pump's number drums show it); no GAS 2 demo on the site, so the
                   RevLimiter demo's mix (before), the same phrase as RevLimiter's loop
+  revfx           'gluegr' (PluginEditor.cpp): the GLUE COMP's gain reduction in dB, the most since the last tick, at
+                  its defaults (glue_gr); the /revfx player's drum loop (before), 4 bars at 90 BPM, the whole file
   python3 tools/tv-anim/song-meters.py <plugin> findmix <len_s>          (gas / radio-roulette)
   python3 tools/tv-anim/song-meters.py <plugin> value <start_s> <len_s> <out.json>
 """
@@ -233,6 +235,26 @@ def findmix(plugin, L):
         if len(picked) == 6: break
     for sc, t in picked: print(f'  start {t:6.2f}s  score {sc:5.2f}')
 
+def glue_gr(x):
+    """RevFX's GLUE COMP at its defaults (RevFX Source/GlueComp.h, PluginProcessor.cpp): threshold -10 dB, 2:1 with a
+    10 dB soft knee, attack 10 ms, AUTO release (a 100 ms branch and a slow one that charges in ~400 ms and lets go in
+    1.6 s; the larger wins), the envelope smooth-decoupled on the GR in dB. The detector is the stereo power mean (its
+    true-peak points are left out); worked on the loudest of every 4 samples. Returns the GR per 4 samples."""
+    pw = (x[:, 0] ** 2 + x[:, 1] ** 2) / 2
+    n = len(pw) // 4 * 4
+    over = 10 * np.log10(pw[:n].reshape(-1, 4).max(axis=1) + 1e-12) + 10.0
+    gs = np.where(over <= -5, 0.0, np.where(over >= 5, over / 2, (over + 5) ** 2 / 40))
+    a = lambda ms: float(np.exp(-1 / (ms / 1000 * SR / 4)))
+    aA, aF, aC, aS = a(10), a(100), a(400), a(1600)
+    yA = yF = yS = 0.0
+    out = np.empty_like(gs)
+    for i, g in enumerate(gs.tolist()):
+        yF = max(g, aF * yF + (1 - aF) * g)
+        yS = aC * yS + (1 - aC) * g if g > yS else aS * yS + (1 - aS) * g
+        yA = aA * yA + (1 - aA) * max(yF, yS)
+        out[i] = yA
+    return out
+
 def values(plugin, t0, L, out):
     i0, n = int(round(t0 * SR)), int(round(L * SR))
     N = int(round(L * TICK_HZ / FRAME_TICKS)) * FRAME_TICKS
@@ -240,7 +262,12 @@ def values(plugin, t0, L, out):
     ends = np.round((np.arange(3 * N) + 1) * spt).astype(int)
     starts = np.concatenate([[0], ends[:-1]])
     rows = []
-    if plugin == 'gas2':
+    if plugin == 'revfx':
+        x = decode_file(SITE / 'audio/revfx/drums-before.m4a')
+        if len(x) < i0 + n: raise SystemExit(f'the drum loop is {len(x) / SR:.4f} s: a {L} s loop from {t0} s runs past it')
+        g = glue_gr(np.concatenate([x[i0:i0 + n]] * 3))
+        for a, z in zip(starts, ends): rows.append(round(float(g[a // 4:max(a // 4 + 1, z // 4)].max()), 2))
+    elif plugin == 'gas2':
         K = np.concatenate([decode('revlimiter-before', True)[i0:i0 + n]] * 3)
         for v in lufs(win_ms(K, int(0.4 * SR), ends)): rows.append(round(float(v), 2))
     else:

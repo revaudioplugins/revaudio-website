@@ -120,6 +120,7 @@ const TV: Record<string, { portrait?: boolean; was?: number }> = {
   revlimiter: {},
   gas: { portrait: true, was: 1600 / 2380 },
   gas2: { portrait: true, was: 896 / 1683 },
+  revfx: {}, // its own loop, shot for the merge with main (record-plugin.mjs revfx; Dan 2026-11-11 "record its loop")
   'radio-roulette': {},
 };
 const TV_FILES = ['x4.mp4', 'x2.mp4', 'still.webp', 'halo.webp', 'thumb.webp'];
@@ -3095,6 +3096,13 @@ const first = items[0]?.slug ?? '';
     }
     .ww[data-ww-lib='on'] .ww-buy .ww-try { justify-self: start; }
     .ww[data-ww-lib='on'] .ww-buy .ww-more { grid-column: 1 / -1; justify-self: center; margin-top: var(--ww-lift, 0px); }
+    /* a paid plugin's Add to cart (main, Gil 2026-11-11) under its price, beside Try: no row of its own (a third row
+       put Radio Roulette's TV 15 px past a 360 x 640 screen) and clear of the cart button docked bottom-left */
+    .ww[data-ww-lib='on'] .ww-buy:has(.ww-cart) { grid-template-areas: 'price try' 'cart try' 'more more'; }
+    .ww[data-ww-lib='on'] .ww-buy:has(.ww-cart) .ww-price { grid-area: price; align-self: end; }
+    .ww[data-ww-lib='on'] .ww-buy:has(.ww-cart) .ww-try { grid-area: try; }
+    .ww[data-ww-lib='on'] .ww-buy .ww-cart { grid-area: cart; align-self: start; justify-self: start; }
+    .ww[data-ww-lib='on'] .ww-buy:has(.ww-cart) .ww-more { grid-area: more; }
   }
   /* A tight screen (a small laptop, 1141x636; a short phone, 375x667 / 360x740) has no glass to spare: the window
      takes the height the text leaves it, so the text keeps its look but steps down to about its old size. The small

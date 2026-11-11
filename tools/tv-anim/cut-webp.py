@@ -7,7 +7,9 @@ pngDir (optional) also keeps the small frames as PNGs (the bench sets them one b
 flat (default) lays transparent corners on black (the plates' own ground); alpha keeps the cut-out (every plugin
 hovers, Dan 2026-11-11) and trims every frame to the outline of all of them, or to crop= (GAS 2 keeps its old box,
 so its pump keeps its size and its 2 x 2 pixels). still= keeps the first frame, cut to its own outline, at that width
-(the list's thumbnail, drawn from the same cut-out)."""
+(the list's thumbnail, drawn from the same cut-out). xfade=K: a loop that never closes by itself (RevFX's screens run
+on their own clocks): the last K frames were shot past its end (record-plugin.mjs `tail`); they blend into its first K,
+which then move to its end, so the loop closes and frame 0 (the still) is a clean shot."""
 import sys, os, glob
 from PIL import Image, ImageFilter
 src, out = sys.argv[1], sys.argv[2]
@@ -19,6 +21,9 @@ ALPHA = len(sys.argv) > 7 and sys.argv[7] == 'alpha'
 opts = dict(a.split('=', 1) for a in sys.argv[8:] if '=' in a)
 files = sorted(glob.glob(os.path.join(src, 'f_*.png')))
 ims = [Image.open(f).convert('RGBA') for f in files]
+if 'xfade' in opts:
+    K = int(opts['xfade']); N = len(ims) - K
+    ims = ims[K:N] + [Image.blend(ims[N + i], ims[i], (i + 1) / (K + 1)) for i in range(K)]
 if ALPHA:  # one crop for every frame: the outline of all of them
     boxes = [im.getchannel('A').getbbox() for im in ims]
     box = (min(b[0] for b in boxes), min(b[1] for b in boxes), max(b[2] for b in boxes), max(b[3] for b in boxes))
