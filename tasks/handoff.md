@@ -748,7 +748,7 @@ Claim: CLOSED 2026-11-09 `revaudio-0b`. Files: `src/data/revfx.ts` (`gateWired` 
 - Open (not touched): `winReady: false` + the fine print "Open it on a Mac", though `revfx-win` is live in R2 since
   2026-11-09 16:07; the download email offers both.
 
-## 2026-11-11 — The car's bench + Dan's car look baked into the room (Claude Code `danavivi-ee [6acc6f]`, Dan's Mac) — on `feat/home-opening`, LOCAL: 2 commits not pushed (auto mode blocked this session's push; Dan pushes the branch), not on main
+## 2026-11-11 — The car's bench + Dan's car look baked into the room (Claude Code `danavivi-ee [6acc6f]`, Dan's Mac) — on `feat/home-opening`, PUSHED 2026-11-11 on Dan's word (`5efaf80`), not on main
 
 Claim: CLOSED 2026-11-11 `danavivi-ee` (it held `tools/_home-opening/room.html` for the car look only, after `danavivi-cf`'s claim closed; the room's round 6 NEXT list above is untouched and still the next session's). Files: `tools/_home-opening/room.html` (one block + two lines), `tools/_home-opening/car-bench.html` (new), this entry.
 - Dan, 11-11: "a bench for the car ... control over wear, texture and other". His picks (AskUserQuestion): wear drawn by code, live, plus a slot for a painted texture; in the bench too: paint + lacquer, glass / chrome / wheels, decals, lamps + plate. He tuned it and pasted his settings the same day.
