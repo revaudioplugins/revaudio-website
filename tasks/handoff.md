@@ -748,6 +748,17 @@ Claim: CLOSED 2026-11-09 `revaudio-0b`. Files: `src/data/revfx.ts` (`gateWired` 
 - Open (not touched): `winReady: false` + the fine print "Open it on a Mac", though `revfx-win` is live in R2 since
   2026-11-09 16:07; the download email offers both.
 
+## 2026-11-11 — The car's bench: wear, texture, paint, decals (Claude Code `danavivi-ee [6acc6f]`, Dan's Mac) — branch `feat/car-bench` (off `feat/home-opening` `923dc37`), local, not pushed
+
+Claim: OPEN `danavivi-ee`, waiting on Dan's settings. Files: `tools/_home-opening/car-look.js`, `tools/_home-opening/car-bench.html` (both new), this entry. `room.html` is NOT touched (the room session `danavivi-cf` holds it, round 6).
+- Dan, 11-11: "a bench for the car ... control over wear, texture and other". His picks (AskUserQuestion): wear drawn by code, live, plus a slot for a painted texture; in the bench too: paint + lacquer, glass / chrome / wheels, decals, lamps + plate.
+- `car-look.js`: the coupe's look as one settings object (`CAR_DEF`, 65 keys). The coupe has no UVs and flat colours, so the wear is drawn in its materials' shaders from the position in the car's own frame (`onBeforeCompile` on paint / black / glass / metal / plate): dust, mud, rain streaks, wash swirls, scratches, stone chips, peeling lacquer, rust (pitting on the chrome), metal flake, a painted picture from three sides, stripes, a door number, a sticker, the tail lamps, the plate. At `CAR_DEF` every layer is 0 = today's car.
+- `car-bench.html`: runs the real room in a frame (`room.html?expose`) and drives the car through the module, so the car is judged in the room's light. Close-up (orbit, wheel zoom, Clear view = a near plane that hides what stands in front) or Visitor's view (the room's camera + walk). Presets, undo / redo, Hold: today's car, Copy settings. The bench's work light is never part of the look.
+- Run: from this worktree's root `python3 -m http.server 4481 --bind 127.0.0.1` -> `http://127.0.0.1:4481/tools/_home-opening/car-bench.html`.
+- Checks (Playwright, 1141x636): real Chrome and WebKit, no page errors (the one 404 is the dev server's favicon), 60 / 55-58 fps with every layer on; presets, undo / redo, hold, copy, reload and reset behave.
+- Next: Dan tunes and pastes his settings. The bake (after round 6 lands, by the room's owner or on Dan's word): `room.html` imports `createCarLook`, `set(<his settings>)` once, `tick()` each frame before the render (3 lines, in the module's header); a painted texture or sticker he picks goes into `assets/`. Check before the bake that `tools/garagepage/integration.mjs` (main) does not copy `car-bench.html` to the live page.
+- Not done: the nose has no head lamps to light (the model has none); wheels and chrome share one material, tyres and trim another, so they tune together.
+
 ## 2026-11-09 — /revfx player: the die moves into the player and rolls Yoni's presets (Claude Code `revaudio-2f [e388a1]`, Yoni's laptop 2) — branch `feat/revfx-hear` — LIVE on main `81922f5` (2026-11-09, Yoni: "push deploy to the revfx page (dont add it to the index just like its now)")
 
 Claim: OPEN `revaudio-2f` (live; open for the preset names) (took over `revaudio-0d`'s claim below, same files, + `src/components/revfx/RfxHero.astro`,

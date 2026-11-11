@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Car Bench</title>
+<!-- The car's bench (Dan 2026-11-11: "a bench for the car ... control over wear, texture and other"). It runs the REAL
+     room (room.html?expose, untouched) in a frame, so the car is judged in the room's own light and reflections, and
+     drives the coupe's look through car-look.js (the same module the room will import when a look is baked).
+     Close-up: drag to orbit, wheel to zoom, shift-drag to slide. Visitor's view: the room's own camera and walk.
+     Copy settings -> paste to Claude -> baked as the car's look in the room. Not in the Astro build (tools/).
+     Serve the worktree root:  python3 -m http.server <port> --bind 127.0.0.1  ->  /tools/_home-opening/car-bench.html -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --brass: #e8c878; --line: #3a3027; --ink: #d8cfc2; --dim: #a89f92; --panel: 348px; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #0b0a09; color: var(--ink); font: 13px/1.35 Inter, system-ui, sans-serif; overflow: hidden; }
+  .view { position: fixed; left: 0; top: 0; bottom: 0; right: var(--panel); }
+  .view iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: #0b0a09; }
+  .pad { position: absolute; inset: 0; cursor: grab; touch-action: none; }
+  .pad.is-drag { cursor: grabbing; }
+  body.walk .pad { display: none; }
+  .hud { position: absolute; left: 12px; top: 12px; right: 12px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; pointer-events: none; }
+  .hud > * { pointer-events: auto; }
+  .hud .sep { width: 1px; height: 22px; background: var(--line); margin: 0 2px; }
+  .hint { position: absolute; left: 12px; bottom: 12px; padding: 7px 11px; border-radius: 999px; background: rgba(12,10,8,.82); color: var(--dim); font-size: 12px; pointer-events: none; }
+  .wait { position: absolute; inset: 0; display: grid; place-items: center; background: #0b0a09; color: var(--dim); font: 400 22px/1 "Bebas Neue", sans-serif; letter-spacing: .12em; transition: opacity .5s; }
+  .wait.gone { opacity: 0; pointer-events: none; }
+  .group { display: contents; }
+  body.walk .only-close, body:not(.walk) .only-walk { display: none; }
+  body.walk .hud { top: auto; bottom: 12px; } /* the site's nav owns the top of the visitor's view */
+  .walkbox { display: flex; align-items: center; gap: 8px; padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; background: rgba(20,16,13,.9); }
+  .walkbox input { width: 150px; accent-color: var(--brass); }
+
+  .chip { appearance: none; border: 1px solid var(--line); background: rgba(20,16,13,.9); color: #cfc6b8; padding: 8px 12px; border-radius: 999px; cursor: pointer;
+    font: 600 12px/1 Inter, sans-serif; letter-spacing: .02em; white-space: nowrap; }
+  .chip:hover { border-color: #6b5a44; }
+  .chip[aria-pressed="true"] { background: var(--brass); color: #1a140e; border-color: var(--brass); }
+  .chip:disabled { opacity: .35; cursor: default; }
+  .chip:focus-visible, summary:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+
+  .bench { position: fixed; right: 0; top: 0; bottom: 0; width: var(--panel); overflow: auto; overscroll-behavior: contain; padding: 0 14px 20px;
+    background: rgba(12,10,8,.97); border-left: 1px solid var(--line); }
+  .bench-head { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 6px; padding: 12px 0 10px; background: rgba(12,10,8,.97); border-bottom: 1px solid #2a231d; }
+  .bench-head b { font: 400 20px/1 "Bebas Neue", sans-serif; letter-spacing: .1em; color: var(--brass); }
+  .bench-head .grow { flex: 1; }
+  .bench-head .icon { padding: 7px 10px; font-size: 13px; }
+  .row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+  .note { color: var(--dim); margin: 8px 0 2px; }
+  details { border-bottom: 1px solid #2a231d; }
+  summary { list-style: none; display: flex; align-items: center; gap: 8px; padding: 12px 0 10px; cursor: pointer; font: 400 16px/1 "Bebas Neue", sans-serif; letter-spacing: .08em; color: var(--brass); }
+  summary::-webkit-details-marker { display: none; }
+  summary::before { content: '+'; width: 10px; color: var(--dim); font: 600 13px/1 Inter, sans-serif; }
+  details[open] > summary::before { content: '–'; }
+  summary .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--brass); visibility: hidden; }
+  summary.is-set .dot { visibility: visible; }
+  summary .grow { flex: 1; }
+  summary .mini { padding: 5px 9px; font-size: 12px; letter-spacing: 0; visibility: hidden; }
+  summary.is-set .mini { visibility: visible; }
+  .body { padding: 0 0 12px; }
+  .body h3 { margin: 14px 0 2px; font: 700 12px/1 Inter, sans-serif; letter-spacing: .12em; text-transform: uppercase; color: var(--dim); }
+  label.f { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; margin: 7px 0; align-items: center; }
+  label.f input[type=range] { grid-column: 1 / -1; width: 100%; accent-color: var(--brass); margin: 2px 0 0; }
+  label.f output { text-align: right; color: #f3e6cf; font-variant-numeric: tabular-nums; }
+  label.f.is-set > span:first-child { color: #f6e2b0; }
+  label.f input[type=color] { width: 44px; height: 24px; padding: 0; border: 1px solid var(--line); border-radius: 6px; background: none; cursor: pointer; }
+  label.f input[type=text], label.f select { background: #1a1511; color: #eee; border: 1px solid var(--line); border-radius: 6px; padding: 7px 9px; font: 13px Inter, sans-serif; }
+  label.f input[type=text] { width: 86px; text-align: right; }
+  label.f select { max-width: 190px; }
+  .pic { display: flex; gap: 6px; align-items: center; margin: 7px 0; }
+  .pic select { flex: 1; min-width: 0; background: #1a1511; color: #eee; border: 1px solid var(--line); border-radius: 6px; padding: 7px 9px; font: 13px Inter, sans-serif; }
+  .pic .thumb { width: 34px; height: 34px; border-radius: 6px; border: 1px solid var(--line); background: #1a1511 center / cover no-repeat; flex: none; }
+  .out { width: 100%; height: 110px; margin-top: 8px; background: #14100d; color: #cfc6b8; border: 1px solid var(--line); border-radius: 8px; padding: 8px; font: 12px/1.4 ui-monospace, Menlo, monospace; resize: vertical; }
+  .out[hidden] { display: none; }
+</style>
+</head>
+<body>
+<div class="view">
+  <iframe id="room" src="room.html?expose" title="The long garage"></iframe>
+  <div class="pad" id="pad"></div>
+  <div class="hud">
+    <button class="chip" data-mode="close" aria-pressed="true">Close-up</button>
+    <button class="chip" data-mode="walk" aria-pressed="false">Visitor's view</button>
+    <span class="sep"></span>
+    <span class="only-close group">
+      <button class="chip" data-angle="aisle">Aisle side</button>
+      <button class="chip" data-angle="tail34">Tail ¾</button>
+      <button class="chip" data-angle="tail">Tail</button>
+      <button class="chip" data-angle="nose34">Nose ¾</button>
+      <button class="chip" data-angle="top">Top</button>
+      <button class="chip" data-angle="far">Far side</button>
+      <button class="chip" id="spin" aria-pressed="false">Spin</button>
+      <button class="chip" id="clear" aria-pressed="true" title="Hides whatever stands between the camera and the car (shelves, walls). The light and the reflections stay the room's.">Clear view</button>
+    </span>
+    <span class="only-walk walkbox"><span>Walk</span><input id="walk" type="range" min="0" max="1" step="0.001" value="0" aria-label="Walk position"><output id="walkOut">0 %</output></span>
+  </div>
+  <div class="hint only-close">Drag = turn · wheel = zoom · shift-drag = slide</div>
+  <div class="wait" id="wait">Lights coming on…</div>
+</div>
+
+<aside class="bench" id="bench" aria-label="Car bench">
+  <div class="bench-head">
+    <b>Car bench</b><span class="grow"></span>
+    <button class="chip icon" id="undo" aria-label="Undo" title="Undo (⌘Z)" disabled>↶</button>
+    <button class="chip icon" id="redo" aria-label="Redo" title="Redo (⇧⌘Z)" disabled>↷</button>
+    <button class="chip" id="orig" title="Hold to see the car as it is in the room today">Hold: today's car</button>
+  </div>
+  <div class="note">Starting points. Each one sets the wear and the decals, never the paint colour.</div>
+  <div class="row" id="presets"></div>
+  <div id="sections"></div>
+  <div class="row">
+    <button class="chip" id="copy">Copy settings</button>
+    <button class="chip" id="reset">Reset all</button>
+  </div>
+  <textarea class="out" id="out" readonly hidden aria-label="The copied settings"></textarea>
+  <div class="note">Copy settings, paste them to Claude: they get baked as the car's look in the room.</div>
+</aside>
+
+<script type="module">
+// ---------- the controls: [key, label, min, max, step] · 'color' · 'text' · ['select', options] · ['pic', quick fills] ----------
+const SIDES = [[0, 'Both sides'], [1, 'Aisle side'], [2, 'Far side']];
+const UI = [
+  { h: 'Wear', open: true, rows: [
+    ['wear', 'All wear (master)', 0, 1.5, 0.01], ['seed', 'Shuffle the pattern', 0, 20, 0.1], ['grain', 'Pattern size (small · large)', 0.3, 3, 0.01, (v) => (1 / v).toFixed(2) + '×'],
+    'Dirt',
+    ['dust', 'Dust', 0, 1, 0.01], ['dustCol', 'Dust colour', 'color'],
+    ['mud', 'Mud and road grime', 0, 1, 0.01], ['mudH', 'Mud: how high (m)', 0.1, 1.3, 0.01], ['mudCol', 'Mud colour', 'color'],
+    ['streaks', 'Rain streaks down the sides', 0, 1, 0.01],
+    'Paint damage',
+    ['swirls', 'Wash swirls (hazy reflections)', 0, 1, 0.01], ['scratches', 'Scratches to the primer', 0, 1, 0.01], ['chips', 'Stone chips (nose and sills)', 0, 1, 0.01],
+    ['fade', 'Lacquer peeling / sun fade', 0, 1, 0.01], ['rust', 'Rust', 0, 1, 0.01], ['rustCol', 'Rust colour', 'color'],
+  ] },
+  { h: 'Paint', open: true, rows: [
+    ['paintCol', 'Colour', 'color'], ['paintRough', 'Paint: mirror · matte', 0, 1, 0.01], ['paintMetal', 'Metallic', 0, 1, 0.01],
+    ['coat', 'Lacquer (clear coat)', 0, 1, 0.01], ['coatRough', 'Lacquer: sharp · soft', 0, 0.6, 0.005], ['paintEnv', 'Reflections of the room', 0, 5, 0.05],
+    'Metal flake',
+    ['flake', 'Flake', 0, 1, 0.01], ['flakeSize', 'Flake size (mm)', 0.4, 5, 0.1], ['flakeCol', 'Flake colour', 'color'],
+  ] },
+  { h: 'Painted texture', note: 'A picture laid over the paint from three sides (the coupe has no unwrap). Pick one of the room\'s materials or drop your own; a Higgsfield texture goes here later.', rows: [
+    ['texSrc', 'Picture', ['pic', [['', 'None'], ['assets/pbr/rust_col.webp', 'Rust (room material)'], ['assets/pbr/enamel_col.webp', 'Enamel (room material)'], ['assets/pbr/steel_col.webp', 'Steel (room material)'], ['assets/pbr/plate_col.webp', 'Tread plate (room material)'], ['assets/pbr/fabric_col.webp', 'Fabric (room material)']]]],
+    ['texAmt', 'How much', 0, 1, 0.01], ['texScale', 'Size (repeats per metre)', 0.2, 6, 0.05],
+    ['texMode', 'Blend', ['select', [[0, 'Paint over'], [1, 'Lighten (screen)'], [2, 'Darken (multiply)']]]], ['texMatte', 'Under the lacquer · raw', 0, 1, 0.01],
+  ] },
+  { h: 'Decals', rows: [
+    'Stripes over the top',
+    ['stripe', 'Stripes', 0, 1, 0.01], ['stripeW', 'Width (m)', 0.02, 0.5, 0.005], ['stripeGap', 'Gap (0 = one stripe)', 0, 0.4, 0.005], ['stripeX', 'Off centre (m)', -0.8, 0.8, 0.01], ['stripeCol', 'Stripe colour', 'color'],
+    'Door number',
+    ['num', 'Number', 0, 1, 0.01], ['numText', 'Digits', 'text'], ['numZ', 'Along the car (m)', -2, 2, 0.01], ['numY', 'Height (m)', 0.2, 1.1, 0.01], ['numSize', 'Size (m)', 0.15, 1, 0.01],
+    ['numBg', 'Roundel colour', 'color'], ['numFg', 'Digit colour', 'color'], ['numSide', 'Where', ['select', SIDES]],
+    'Sticker',
+    ['stkSrc', 'Picture', ['pic', [['', 'None'], ['../../src/assets/brand/revaudio-plate.png', 'RevAudio plate art'], ['../../public/favicon.png', 'RevAudio mark']]]],
+    ['stk', 'Sticker', 0, 1, 0.01], ['stkZ', 'Along the car (m)', -2.2, 2.2, 0.01], ['stkY', 'Height, or across on top (m)', -1, 1.2, 0.01], ['stkSize', 'Size (m)', 0.05, 1.5, 0.01], ['stkRot', 'Turn (°)', -180, 180, 1],
+    ['stkSide', 'Where', ['select', [...SIDES, [3, 'On top']]]],
+    'All decals',
+    ['decalWear', 'Worn and chipped decals', 0, 1, 0.01],
+  ] },
+  { h: 'Glass', rows: [
+    ['glassCol', 'Tint', 'color'], ['glassRough', 'Clear · frosted', 0, 0.6, 0.005], ['glassEnv', 'Reflections of the room', 0, 5, 0.05], ['glassWear', 'Wear on the glass', 0, 1.5, 0.01],
+  ] },
+  { h: 'Chrome and wheels', rows: [
+    ['chromeCol', 'Metal colour', 'color'], ['chromeRough', 'Polished · brushed', 0, 1, 0.01], ['chromeEnv', 'Reflections of the room', 0, 5, 0.05], ['chromeWear', 'Wear on the metal (rust = pitting)', 0, 1.5, 0.01],
+  ] },
+  { h: 'Trim and tyres', rows: [
+    ['trimCol', 'Colour', 'color'], ['trimRough', 'Satin · dry rubber', 0.1, 1, 0.01], ['trimWear', 'Wear on trim and tyres (fade = greyed)', 0, 1.5, 0.01],
+  ] },
+  { h: 'Lamps and plate', rows: [
+    ['tail', 'Tail lamps (0 off · 1 as in the room)', 0, 2.5, 0.01], ['tailCol', 'Tail lamp colour', 'color'],
+    ['plate', 'RevAudio plate', ['select', [[1, 'On'], [0, 'Off']]]], ['plateWear', 'Wear on the plate', 0, 1.5, 0.01],
+  ] },
+  { h: 'Bench light', benchOnly: true, note: 'Only for looking closer. Not part of the look, never baked.', rows: [
+    ['_work', 'Work light on the camera', 0, 1, 0.01],
+  ] },
+];
+const WEAR0 = { wear: 1, dust: 0, mud: 0, mudH: 0.45, streaks: 0, swirls: 0, scratches: 0, chips: 0, fade: 0, rust: 0, stripe: 0, num: 0, decalWear: 0, trimWear: 1, glassWear: 1, chromeWear: 1, plateWear: 1 };
+const PRESETS = [
+  ['Showroom', {}],
+  ['Daily driver', { dust: 0.2, swirls: 0.55, chips: 0.25, streaks: 0.18, mud: 0.14, mudH: 0.3 }],
+  ['Track day', { mud: 0.32, mudH: 0.5, chips: 0.65, swirls: 0.35, dust: 0.08, stripe: 1, num: 1, decalWear: 0.12 }],
+  ['Barn find', { dust: 0.85, fade: 0.5, rust: 0.3, streaks: 0.55, swirls: 0.6, chips: 0.3, mud: 0.1 }],
+  ['Rat', { rust: 0.72, fade: 0.8, scratches: 0.6, chips: 0.7, mud: 0.28, dust: 0.3, swirls: 0.8, streaks: 0.35, decalWear: 0.6 }],
+];
+
+// ---------- the room, then the look ----------
+const $ = (id) => document.getElementById(id), frame = $('room');
+const KEY = 'carbench:v1', PICS = 'carbench:pics:v1';
+await new Promise((ok) => { const t = setInterval(() => { try { if (frame.contentWindow.__room) { clearInterval(t); ok(); } } catch (e) {} }, 100); });
+const fw = frame.contentWindow, room = fw.__room, { R, camera } = room;
+const T = await fw.eval("import('three')"), { createCarLook, CAR_DEF } = await fw.eval("import('./car-look.js?v=" + Date.now() + "')"); // in the room's own realm: its three, its fonts
+const look = createCarLook({ car: R.car, tailMat: R.tailMat });
+const scene = R.car.parent;
+{ const st = fw.document.createElement('style'); // the bench's own chrome off; the room's page furniture out of a close-up
+  st.textContent = '.bench-open{display:none!important} html.car-close .read-b, html.car-close .nav, html.car-close .stage-nav{visibility:hidden!important}';
+  fw.document.head.append(st); }
+
+const DEF = { ...CAR_DEF, _work: 0 }, isPic = (v) => typeof v === 'string' && v.startsWith('data:');
+let S = { ...DEF }, names = {};
+try { Object.assign(S, JSON.parse(localStorage.getItem(KEY) || '{}')); const p = JSON.parse(localStorage.getItem(PICS) || '{}'); names = p.names || {}; for (const k of ['texSrc', 'stkSrc']) if (p[k]) S[k] = p[k]; } catch (e) {}
+for (const k of Object.keys(S)) if (!(k in DEF)) delete S[k];
+const save = () => { // dropped pictures are kept apart: a big one may not fit, the settings always do
+  const flat = { ...S }, pics = { names }; for (const k of ['texSrc', 'stkSrc']) if (isPic(flat[k])) { pics[k] = flat[k]; flat[k] = ''; }
+  try { localStorage.setItem(KEY, JSON.stringify(flat)); } catch (e) {}
+  try { localStorage.setItem(PICS, JSON.stringify(pics)); } catch (e) { try { localStorage.removeItem(PICS); } catch (e2) {} }
+};
+let holding = false;
+const apply = () => { look.set(holding ? CAR_DEF : S); work.intensity = holding ? 0 : S._work * 22; R.probe.due = Math.max(R.probe.due, fw.performance.now() + 350); }; // the room's reflections of the car catch up
+const work = new T.PointLight(0xfff3e2, 0, 14, 2); scene.add(work);
+
+// undo / redo: one step per finished gesture
+const hist = [JSON.stringify(S)]; let at = 0;
+const mark = () => { const j = JSON.stringify(S); if (j === hist[at]) return; hist.length = at + 1; hist.push(j); if (hist.length > 80) hist.shift(); at = hist.length - 1; save(); syncHist(); };
+const syncHist = () => { $('undo').disabled = at <= 0; $('redo').disabled = at >= hist.length - 1; };
+const step = (d) => { const n = at + d; if (n < 0 || n >= hist.length) return; at = n; S = JSON.parse(hist[at]); save(); apply(); paint(); syncHist(); };
+$('undo').addEventListener('click', () => step(-1)); $('redo').addEventListener('click', () => step(1));
+addEventListener('keydown', (e) => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z' && e.target.type !== 'text' && e.target.tagName !== 'TEXTAREA') { e.preventDefault(); step(e.shiftKey ? 1 : -1); } });
+
+// ---------- the panel ----------
+const el = (tag, cls, txt) => { const n = document.createElement(tag); if (cls) n.className = cls; if (txt != null) n.textContent = txt; return n; };
+const fmt = (v, stepv) => (+v).toFixed(stepv >= 1 ? 0 : stepv >= 0.1 ? 1 : stepv >= 0.01 ? 2 : 3);
+const painters = [];
+const paint = () => painters.forEach((f) => f());
+for (const sec of UI) {
+  const d = el('details'), sum = el('summary'), body = el('div', 'body'); d.open = !!sec.open;
+  const keys = sec.rows.filter((r) => Array.isArray(r)).map((r) => r[0]);
+  const rst = el('button', 'chip mini', 'Reset'); rst.type = 'button';
+  sum.append(el('span', '', sec.h), el('span', 'dot'), el('span', 'grow'), rst); d.append(sum, body);
+  rst.addEventListener('click', (e) => { e.preventDefault(); for (const k of keys) S[k] = DEF[k]; apply(); paint(); mark(); });
+  if (sec.note) body.append(el('div', 'note', sec.note));
+  for (const r of sec.rows) {
+    if (typeof r === 'string') { body.append(el('h3', '', r)); continue; }
+    const [key, label, a, b, stepv, show] = r, lab = el('label', 'f'), name = el('span', '', label); lab.append(name);
+    const changed = () => { apply(); paint(); };
+    if (a === 'color') {
+      const inp = el('input'); inp.type = 'color'; lab.append(inp);
+      inp.addEventListener('input', () => { S[key] = inp.value; changed(); }); inp.addEventListener('change', mark);
+      painters.push(() => { inp.value = S[key]; lab.classList.toggle('is-set', S[key] !== DEF[key]); });
+    } else if (a === 'text') {
+      const inp = el('input'); inp.type = 'text'; inp.maxLength = 3; lab.append(inp);
+      inp.addEventListener('input', () => { S[key] = inp.value; apply(); lab.classList.toggle('is-set', S[key] !== DEF[key]); }); inp.addEventListener('change', mark);
+      painters.push(() => { if (document.activeElement !== inp) inp.value = S[key]; lab.classList.toggle('is-set', S[key] !== DEF[key]); });
+    } else if (Array.isArray(a) && a[0] === 'select') {
+      const sel = el('select'); for (const [v, t] of a[1]) { const o = el('option', '', t); o.value = v; sel.append(o); } lab.append(sel);
+      sel.addEventListener('change', () => { S[key] = +sel.value; changed(); mark(); });
+      painters.push(() => { sel.value = S[key]; lab.classList.toggle('is-set', S[key] !== DEF[key]); });
+    } else if (Array.isArray(a) && a[0] === 'pic') { // a picture slot: a quick fill, or a file (dropped on the row or chosen)
+      const box = el('div', 'pic'), thumb = el('span', 'thumb'), sel = el('select'), file = el('input'); file.type = 'file'; file.accept = 'image/*'; file.hidden = true;
+      for (const [v, t] of a[1]) { const o = el('option', '', t); o.value = v; sel.append(o); }
+      const mine = el('option', '', 'Your picture…'); mine.value = '__file'; sel.append(mine);
+      sel.setAttribute('aria-label', sec.h + ' picture'); box.append(thumb, sel, file); body.append(box);
+      const take = (f) => { if (!f || !/^image\//.test(f.type)) return; const rd = new FileReader(); rd.onload = () => { S[key] = rd.result; names[key] = f.name; const amt = key === 'texSrc' ? 'texAmt' : 'stk'; if (!S[amt]) S[amt] = key === 'texSrc' ? 0.6 : 1; changed(); mark(); }; rd.readAsDataURL(f); };
+      sel.addEventListener('change', () => { if (sel.value === '__file') { file.click(); paint(); return; } S[key] = sel.value; const amt = key === 'texSrc' ? 'texAmt' : 'stk'; if (sel.value && !S[amt]) S[amt] = key === 'texSrc' ? 0.6 : 1; changed(); mark(); });
+      file.addEventListener('change', () => { take(file.files[0]); file.value = ''; });
+      box.addEventListener('dragover', (e) => e.preventDefault()); box.addEventListener('drop', (e) => { e.preventDefault(); take(e.dataTransfer.files[0]); });
+      painters.push(() => { const v = S[key]; mine.textContent = isPic(v) ? 'Yours: ' + (names[key] || 'picture') : 'Your picture… (or drop one here)'; sel.value = isPic(v) ? '__file' : v;
+        thumb.style.backgroundImage = v ? `url("${v}")` : 'none'; });
+      continue;
+    } else {
+      const out = el('output'), inp = el('input'); inp.type = 'range'; inp.min = a; inp.max = b; inp.step = stepv; lab.append(out, inp);
+      inp.addEventListener('input', () => { S[key] = +inp.value; changed(); }); inp.addEventListener('change', mark);
+      inp.addEventListener('dblclick', () => { S[key] = DEF[key]; changed(); mark(); }); inp.title = 'Double-click: back to today\'s value';
+      painters.push(() => { inp.value = S[key]; out.textContent = show ? show(S[key]) : fmt(S[key], stepv); lab.classList.toggle('is-set', S[key] !== DEF[key]); });
+    }
+    body.append(lab);
+  }
+  painters.push(() => sum.classList.toggle('is-set', keys.some((k) => S[k] !== DEF[k])));
+  $('sections').append(d);
+}
+for (const [name, vals] of PRESETS) {
+  const b = el('button', 'chip', name); b.type = 'button';
+  b.addEventListener('click', () => { Object.assign(S, WEAR0, vals); apply(); paint(); mark(); });
+  $('presets').append(b);
+}
+$('reset').addEventListener('click', () => { S = { ...DEF }; names = {}; apply(); paint(); mark(); });
+$('copy').addEventListener('click', async () => {
+  const flat = { ...S }; delete flat._work;
+  for (const k of ['texSrc', 'stkSrc']) if (isPic(flat[k])) flat[k] = '<your picture: ' + (names[k] || 'send the file') + '>';
+  const txt = JSON.stringify(flat, null, 1), out = $('out'); out.hidden = false; out.value = txt;
+  try { await navigator.clipboard.writeText(txt); $('copy').textContent = 'Copied ✓'; } catch (e) { out.select(); $('copy').textContent = 'Select all + copy ↓'; }
+  setTimeout(() => { $('copy').textContent = 'Copy settings'; }, 1600);
+});
+{ const b = $('orig'), on = (v) => { holding = v; b.setAttribute('aria-pressed', v); apply(); };
+  b.addEventListener('pointerdown', () => on(true)); for (const ev of ['pointerup', 'pointerleave', 'blur']) b.addEventListener(ev, () => holding && on(false));
+  b.addEventListener('keydown', (e) => { if ((e.key === ' ' || e.key === 'Enter') && !holding) on(true); }); b.addEventListener('keyup', () => holding && on(false)); }
+
+// ---------- the view: a close-up camera around the car, or the visitor's own ----------
+const ANG = { aisle: [90, 8, 6.4], tail34: [48, 13, 6.2], tail: [0, 9, 5.2], nose34: [138, 13, 6.2], top: [90, 74, 6.6], far: [-90, 8, 6.4] };
+const V = { mode: 'close', az: 48, el: 13, dist: 6.2, tz: 0, ty: 0.62, spin: false, clear: true };
+try { Object.assign(V, JSON.parse(sessionStorage.getItem('carbench:view') || '{}')); } catch (e) {}
+const keepView = () => { try { sessionStorage.setItem('carbench:view', JSON.stringify(V)); } catch (e) {} };
+const _t = new T.Vector3(), _o = new T.Vector3(); let lastNow = 0; const near0 = camera.near;
+scene.onAfterRender = (r, s, cam) => { if (cam === camera && cam.near !== near0) { cam.near = near0; cam.updateProjectionMatrix(); } }; // the room's own camera maths see its own lens
+scene.onBeforeRender = (r, s, cam) => { // the room has set its camera for this frame; a close-up puts it around the car instead
+  if (cam !== camera) return;
+  look.tick();
+  if (V.mode === 'close') {
+    const now = fw.performance.now(); if (V.spin) V.az += Math.min(0.1, (now - lastNow) / 1000) * 14; lastNow = now;
+    const az = V.az * Math.PI / 180, elv = V.el * Math.PI / 180;
+    R.car.localToWorld(_t.set(0, V.ty, V.tz));
+    _o.set(Math.sin(az) * Math.cos(elv), Math.sin(elv), Math.cos(az) * Math.cos(elv)).transformDirection(R.car.matrixWorld).multiplyScalar(V.dist);
+    cam.position.copy(_t).add(_o); cam.lookAt(_t); cam.updateMatrixWorld(true);
+    if (V.clear) { cam.near = Math.max(near0, V.dist - 2.9); cam.updateProjectionMatrix(); } // nothing between the camera and the car
+  }
+  work.position.copy(cam.position);
+};
+const setMode = (m) => { V.mode = m; document.body.classList.toggle('walk', m === 'walk'); fw.document.documentElement.classList.toggle('car-close', m === 'close');
+  document.querySelectorAll('[data-mode]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.mode === m));
+  if (m === 'close') { room.go(0); $('walk').value = 0; $('walkOut').textContent = '0 %'; } keepView(); };
+document.querySelectorAll('[data-mode]').forEach((b) => b.addEventListener('click', () => setMode(b.dataset.mode)));
+document.querySelectorAll('[data-angle]').forEach((b) => b.addEventListener('click', () => { [V.az, V.el, V.dist] = ANG[b.dataset.angle]; V.tz = 0; V.ty = 0.62; keepView(); }));
+$('spin').addEventListener('click', () => { V.spin = !V.spin; $('spin').setAttribute('aria-pressed', V.spin); keepView(); });
+$('clear').addEventListener('click', () => { V.clear = !V.clear; $('clear').setAttribute('aria-pressed', V.clear); keepView(); });
+$('walk').addEventListener('input', () => { room.go(+$('walk').value); $('walkOut').textContent = Math.round($('walk').value * 100) + ' %'; });
+{ const pad = $('pad'); let drag = null;
+  pad.addEventListener('pointerdown', (e) => { drag = { x: e.clientX, y: e.clientY }; pad.setPointerCapture(e.pointerId); pad.classList.add('is-drag'); });
+  pad.addEventListener('pointermove', (e) => { if (!drag) return; const dx = e.clientX - drag.x, dy = e.clientY - drag.y; drag = { x: e.clientX, y: e.clientY };
+    if (e.shiftKey) { const s = Math.sin(V.az * Math.PI / 180) >= 0 ? 1 : -1; V.tz = Math.max(-2.3, Math.min(2.3, V.tz + s * dx * V.dist * 0.0016)); V.ty = Math.max(0, Math.min(1.5, V.ty + dy * V.dist * 0.0016)); }
+    else { V.az -= dx * 0.35; V.el = Math.max(-4, Math.min(86, V.el + dy * 0.3)); } });
+  const up = () => { if (drag) { drag = null; pad.classList.remove('is-drag'); keepView(); } };
+  pad.addEventListener('pointerup', up); pad.addEventListener('pointercancel', up);
+  pad.addEventListener('wheel', (e) => { e.preventDefault(); V.dist = Math.max(0.7, Math.min(11, V.dist * Math.exp(e.deltaY * 0.0012))); keepView(); }, { passive: false }); }
+
+$('spin').setAttribute('aria-pressed', V.spin); $('clear').setAttribute('aria-pressed', V.clear);
+apply(); paint(); syncHist(); setMode(V.mode);
+setTimeout(() => $('wait').classList.add('gone'), 300);
+window.__carbench = { look, V, get S() { return S; }, set: (o) => { Object.assign(S, o); apply(); paint(); mark(); } }; // for check scripts
+</script>
+</body>
+</html>
