@@ -285,10 +285,20 @@ const first = items[0]?.slug ?? '';
                 fetchpriority={i === 0 ? 'high' : undefined}
                 decoding="async"
               />
-              <video class="ww-run" data-ww-run muted loop playsinline preload="none" disablepictureinpicture aria-hidden="true">
-                <source src={`/tv/${it.slug}-x2.mp4`} type="video/mp4" media="(max-width: 860px)" />
-                <source src={`/tv/${it.slug}-x4.mp4`} type="video/mp4" />
-              </video>
+              {/* its file (x2 phone, x4 laptop) is picked by the script at its first play: iOS Safari skipped a
+                  <source media> and gave a phone the laptop's (2026-11-11) */}
+              <video
+                class="ww-run"
+                data-ww-run
+                data-ww-x2={`/tv/${it.slug}-x2.mp4`}
+                data-ww-x4={`/tv/${it.slug}-x4.mp4`}
+                muted
+                loop
+                playsinline
+                preload="none"
+                disablepictureinpicture
+                aria-hidden="true"
+              ></video>
               <a class="ww-to ww-to-pic" href={`/${it.slug}`} tabindex="-1" aria-hidden="true"></a>
             </span>
           </figure>
@@ -524,8 +534,10 @@ const first = items[0]?.slug ?? '';
       panels.forEach((p) => {
         const v = runOf(p);
         if (!v) return;
-        if (seated === slugOf(p) && runsInView.has(v) && !document.hidden) v.play().catch(() => {});
-        else if (!v.paused) v.pause();
+        if (seated === slugOf(p) && runsInView.has(v) && !document.hidden) {
+          if (!v.getAttribute('src')) v.src = (phone.matches ? v.dataset.wwX2 : v.dataset.wwX4) ?? ''; // once, this screen's
+          v.play().catch(() => {});
+        } else if (!v.paused) v.pause();
       });
     };
     const runIo = new IntersectionObserver((entries) => {
@@ -2146,15 +2158,16 @@ const first = items[0]?.slug ?? '';
     align-items: center;
     column-gap: clamp(1.25rem, 3vw, 2.5rem);
   }
-  /* a set height (not max-height): with width auto, a max-height has no box until the picture loads. x --ww-tall:
-     the bench kept each old picture's width (the frontmatter's TV) */
+  /* a set height (--ww-ph) and the width worked out from it, both given: iOS Safari gave a box sized by its own
+     aspect-ratio NO width in the phone's shrink-to-fit column (GAS 2 empty, 2026-11-11), and WebKit sized the laptop's
+     column off the still's file (348 px for GAS's 252). x --ww-tall: the bench kept each old picture's width (the
+     frontmatter's TV) */
   .ww-panel.is-portrait .ww-pic {
-    width: auto;
-    max-width: 100%;
-    height: calc(clamp(18rem, 40vw, 30rem) * var(--ww-tall, 1));
+    --ww-ph: calc(clamp(18rem, 40vw, 30rem) * var(--ww-tall, 1));
+    width: calc(var(--ww-ph) * var(--ww-ar));
+    height: var(--ww-ph);
   }
-  /* its still from that height: WebKit sized the column off a width-led still's own file (348 px for GAS's 252) */
-  .ww-panel.is-portrait .ww-still { width: auto; height: 100%; }
+  .ww-panel.is-portrait .ww-still { width: 100%; height: 100%; }
 
   .ww-info { display: grid; gap: 0.6rem; justify-items: start; max-width: 40rem; }
   .ww-phead { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.25rem 0.9rem; }
@@ -2975,7 +2988,8 @@ const first = items[0]?.slug ?? '';
          tall, and the TV outgrew the screen. The panel is the container (cqi); a browser without container units
          drops the second height and keeps the first. */
       .ww[data-ww-bg='screen'] .ww-panel.is-portrait { container-type: inline-size; }
-      /* x --ww-tall as the set height above; the width's cap needs none (it is the loop's own shape) */
+      /* x --ww-tall as the set height above; the width's cap needs none (it is the loop's own shape). Height and
+         width each twice: a browser without container units keeps the first (a custom property can't fall back) */
       .ww[data-ww-bg='screen'] .ww-panel.is-portrait .ww-pic {
         height: calc(min(clamp(18rem, 40vw, 30rem), var(--ww-main)) * var(--ww-tall, 1));
         height: min(
@@ -2983,6 +2997,12 @@ const first = items[0]?.slug ?? '';
           calc(var(--ww-main) * var(--ww-tall, 1)),
           calc((100cqi - var(--ww-side-min) - clamp(1.25rem, 3vw, 2.5rem)) / var(--ww-ar))
         );
+        width: calc(min(clamp(18rem, 40vw, 30rem), var(--ww-main)) * var(--ww-tall, 1) * var(--ww-ar));
+        width: calc(min(
+          calc(clamp(18rem, 40vw, 30rem) * var(--ww-tall, 1)),
+          calc(var(--ww-main) * var(--ww-tall, 1)),
+          calc((100cqi - var(--ww-side-min) - clamp(1.25rem, 3vw, 2.5rem)) / var(--ww-ar))
+        ) * var(--ww-ar));
       }
     }
   }
@@ -3112,7 +3132,7 @@ const first = items[0]?.slug ?? '';
         margin-inline: auto;
       }
       .ww[data-ww-bg='screen'] .ww-panel.is-portrait .ww-pic {
-        height: calc(max(8rem, min(24rem, calc(var(--ww-room) - var(--ww-info-h)))) * var(--ww-tall, 1));
+        --ww-ph: calc(max(8rem, min(24rem, calc(var(--ww-room) - var(--ww-info-h)))) * var(--ww-tall, 1));
         margin-inline: auto;
       }
     }
