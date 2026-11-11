@@ -600,17 +600,20 @@ https://revaudio.net/garage-9f3c/ and, if he wants the slow lines faster, direct
 This entry's update sits on `feat/home-speed` / `feat/home-opening` only: it rides to main with the next room push (a
 handoff-only push to main would run a deploy and a full Cloudflare purge for nothing).
 
-Session end 2026-11-11 (rv close):
-- Dan's last word on the build: none yet. He got the report (numbers, the three before/after pictures, the CSP warning)
-  and closed the session; he has not looked at the built room and has not said merge.
+Session end 2026-11-11 (rv close, then a second close after the main push):
+- Dan's words on the build, in order: "marge" (into `feat/home-opening`), "push to main", "send and sonnet - to marge to
+  main". He got the live-check report and closed the session. He has not said he looked at the live room himself, and
+  has not answered on direction 2.
 - Stopped on Dan's word at close (both ports are free; Dan also confirmed the CSP edit is active). They were: `python3 -m http.server` on 127.0.0.1:4618 (pid 39650, this
   worktree's root = the packed room) and on 127.0.0.1:4619 (pid 54424, a scratchpad copy of the originals = today's
   room). `pack.sh` uses 4618 by default, or `KIT_PORT=<port>`.
 - The scratchpad is under `/private/tmp` and does not survive a restart: the stills and `perf/final.txt` are evidence
   only, every number that matters is written above.
-- Git at close: the worktree is clean; `feat/home-speed` = `origin/feat/home-opening` (`05e1a09`) + this session's
-  commits, 0 behind it. `origin/main` has three commits this branch lacks (`8aef421`, `9fb1151`, `200a599`: the unlisted
-  /garage-9f3c/ page and its fonts, another session's). Untouched by this session: every other branch and worktree.
+- Git at the second close: `feat/home-speed` = `origin/feat/home-speed` = `origin/feat/home-opening` = `04d2b66` plus the one commit
+  that carries this block (0 ahead, 0 behind). `origin/main` = `833f632`: it holds everything here except `04d2b66` (the handoff note of the main push,
+  kept off main on purpose) and this block's last edit. The builders' local `home-opening` worktree was not touched
+  after the first fast-forward: it is behind origin by the handoff commits until its next pull. No servers and no test
+  browsers of this session are running.
 - After the merge `feat/home-speed` has nothing `feat/home-opening` lacks; work goes on in `feat/home-opening`. A branch cut
   before the merge that replaced a model: see "Read this before you add or replace a model".
 
