@@ -6,10 +6,10 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Car Bench</title>
 <!-- The car's bench (Dan 2026-11-11: "a bench for the car ... control over wear, texture and other"). It runs the REAL
-     room (room.html?expose, untouched) in a frame, so the car is judged in the room's own light and reflections, and
-     drives the coupe's look through car-look.js (the same module the room will import when a look is baked).
+     room (room.html?expose) in a frame, so the car is judged in the room's own light and reflections, and drives
+     the room's own car look (R.carLook: CAR_DEF / CAR_LOOK / createCarLook in room.html). It opens on the room's car.
      Close-up: drag to orbit, wheel to zoom, shift-drag to slide. Visitor's view: the room's own camera and walk.
-     Copy settings -> paste to Claude -> baked as the car's look in the room. Not in the Astro build (tools/).
+     Copy settings -> paste to Claude -> baked as CAR_LOOK in room.html. Not in the Astro build (tools/).
      Serve the worktree root:  python3 -m http.server <port> --bind 127.0.0.1  ->  /tools/_home-opening/car-bench.html -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -106,9 +106,9 @@
     <b>Car bench</b><span class="grow"></span>
     <button class="chip icon" id="undo" aria-label="Undo" title="Undo (⌘Z)" disabled>↶</button>
     <button class="chip icon" id="redo" aria-label="Redo" title="Redo (⇧⌘Z)" disabled>↷</button>
-    <button class="chip" id="orig" title="Hold to see the car as it is in the room today">Hold: today's car</button>
+    <button class="chip" id="orig" title="Hold to see the car as it is in the room today (the last baked look)">Hold: today's car</button>
   </div>
-  <div class="note">Starting points. Each one sets the wear and the decals, never the paint colour.</div>
+  <div class="note">Starting points. Each one sets the wear, the stripes and the number, never the paint or the wheels.</div>
   <div class="row" id="presets"></div>
   <div id="sections"></div>
   <div class="row">
@@ -174,7 +174,7 @@ const UI = [
     ['_work', 'Work light on the camera', 0, 1, 0.01],
   ] },
 ];
-const WEAR0 = { wear: 1, dust: 0, mud: 0, mudH: 0.45, streaks: 0, swirls: 0, scratches: 0, chips: 0, fade: 0, rust: 0, stripe: 0, num: 0, decalWear: 0, trimWear: 1, glassWear: 1, chromeWear: 1, plateWear: 1 };
+const WEAR0 = { wear: 1, seed: 1, dust: 0, mud: 0, mudH: 0.45, streaks: 0, swirls: 0, scratches: 0, chips: 0, fade: 0, rust: 0, stripe: 0, num: 0, decalWear: 0, trimWear: 1, glassWear: 1, chromeWear: 1, plateWear: 1 };
 const PRESETS = [
   ['Showroom', {}],
   ['Daily driver', { dust: 0.2, swirls: 0.55, chips: 0.25, streaks: 0.18, mud: 0.14, mudH: 0.3 }],
@@ -188,14 +188,14 @@ const $ = (id) => document.getElementById(id), frame = $('room');
 const KEY = 'carbench:v1', PICS = 'carbench:pics:v1';
 await new Promise((ok) => { const t = setInterval(() => { try { if (frame.contentWindow.__room) { clearInterval(t); ok(); } } catch (e) {} }, 100); });
 const fw = frame.contentWindow, room = fw.__room, { R, camera } = room;
-const T = await fw.eval("import('three')"), { createCarLook, CAR_DEF } = await fw.eval("import('./car-look.js?v=" + Date.now() + "')"); // in the room's own realm: its three, its fonts
-const look = createCarLook({ car: R.car, tailMat: R.tailMat });
+const T = await fw.eval("import('three')"); // the room's own three (its realm), for the bench's work light
+const look = R.carLook, CAR_LOOK = look.LOOK; // the room's car: what "today's car", the dots and Reset go back to
 const scene = R.car.parent;
 { const st = fw.document.createElement('style'); // the bench's own chrome off; the room's page furniture out of a close-up
   st.textContent = '.bench-open{display:none!important} html.car-close .read-b, html.car-close .nav, html.car-close .stage-nav{visibility:hidden!important}';
   fw.document.head.append(st); }
 
-const DEF = { ...CAR_DEF, _work: 0 }, isPic = (v) => typeof v === 'string' && v.startsWith('data:');
+const DEF = { ...CAR_LOOK, _work: 0 }, isPic = (v) => typeof v === 'string' && v.startsWith('data:');
 let S = { ...DEF }, names = {};
 try { Object.assign(S, JSON.parse(localStorage.getItem(KEY) || '{}')); const p = JSON.parse(localStorage.getItem(PICS) || '{}'); names = p.names || {}; for (const k of ['texSrc', 'stkSrc']) if (p[k]) S[k] = p[k]; } catch (e) {}
 for (const k of Object.keys(S)) if (!(k in DEF)) delete S[k];
@@ -205,7 +205,7 @@ const save = () => { // dropped pictures are kept apart: a big one may not fit, 
   try { localStorage.setItem(PICS, JSON.stringify(pics)); } catch (e) { try { localStorage.removeItem(PICS); } catch (e2) {} }
 };
 let holding = false;
-const apply = () => { look.set(holding ? CAR_DEF : S); work.intensity = holding ? 0 : S._work * 22; R.probe.due = Math.max(R.probe.due, fw.performance.now() + 350); }; // the room's reflections of the car catch up
+const apply = () => { look.set(holding ? CAR_LOOK : S); work.intensity = holding ? 0 : S._work * 22; R.probe.due = Math.max(R.probe.due, fw.performance.now() + 350); }; // the room's reflections of the car catch up
 const work = new T.PointLight(0xfff3e2, 0, 14, 2); scene.add(work);
 
 // undo / redo: one step per finished gesture
@@ -293,7 +293,6 @@ const _t = new T.Vector3(), _o = new T.Vector3(); let lastNow = 0; const near0 =
 scene.onAfterRender = (r, s, cam) => { if (cam === camera && cam.near !== near0) { cam.near = near0; cam.updateProjectionMatrix(); } }; // the room's own camera maths see its own lens
 scene.onBeforeRender = (r, s, cam) => { // the room has set its camera for this frame; a close-up puts it around the car instead
   if (cam !== camera) return;
-  look.tick();
   if (V.mode === 'close') {
     const now = fw.performance.now(); if (V.spin) V.az += Math.min(0.1, (now - lastNow) / 1000) * 14; lastNow = now;
     const az = V.az * Math.PI / 180, elv = V.el * Math.PI / 180;
