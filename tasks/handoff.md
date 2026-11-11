@@ -1,3 +1,25 @@
+## 2026-11-11 — Radio Roulette mixer + GAS 2 page: the PNG art as WebP (Claude Code `danavivi-20 [1b9b41]`, Dan's Mac) — branch `perf/webp-mixer-art`, pushed, NOT on main (waits for Dan's look + his push word)
+
+Claim: closed 2026-11-11 (the work is done; the merge is Dan's call). From the asset audit of 2026-11-11 (Dan: "go 1").
+Files: `public/station-mixer/img/*` (15 PNG -> WebP), `public/station-mixer/station-mixer.js` (the image names + one
+comment), `tools/station-mixer/webp_pass.py` (new) + `export_component.py` (calls it last), `tools/_gas2-scene/frames/f6-v17.webp`
++ `props/{pump-cut,walk-cut,mailbox,chalkboard}.webp` (new, beside the PNG masters), `tools/_gas2-scene/page-b.html` (8 lines:
+the names), `tools/_gas2-scene/README.md`, `tools/gas2page/integration.mjs` (the build leaves `.png` out of /gas2/).
+- Why: both pages shipped raw PNGs from outside the image pipeline. First visit, cold cache, Chrome, local build:
+  /radio-roulette/ 6.02 -> 1.90 MB (laptop), 5.91 -> 1.78 MB (phone); /gas2/ laptop 9.57 -> 6.22 MB. The GAS 2 phone
+  page (postcards) is byte-identical.
+- Radio Roulette: quality 88, method 6 (the GAS mixer exporter's setting), same pixel sizes. `public/station-mixer/` is
+  generated: a re-export (laptop with `bench/assets/station-mixer/`) now ends with the same pass, so the PNGs don't come
+  back. The exporter was not run here (no bench sources on this Mac); the pass was run on the committed output.
+- GAS 2: quality 90 (the scene's `land.webp` setting). The PNGs stay as masters (the player / postcards art tools read
+  `f6-v17.png` and `pump-cut.png`; the mockup pages load them). After changing a master, remake its WebP (scene README).
+- Checks: build clean; Playwright Chromium + WebKit, 1280x665 @2x, 1440x900 @2x, 390x844 @3x: no 404, no page errors,
+  every mixer image loads; before / after pixel compare (same-build noise floor 0): mixer mean 0.7-1.0 of 255, max 25;
+  /gas2/ mean 1.9-2.4, 2 % of pixels over 8, max 49. Not checked: Dan's eye, a real phone, the drone intro
+  (`?drone=0` was used), the mixer exporter end to end.
+- Old URLs: `/station-mixer/img/*.png` and `/gas2/{frames,props}/*.png` stop existing on the site. Nothing in the site,
+  the licence worker or the plugin sources on this Mac links to them.
+
 ## 2026-11-03 — Home opening: the long garage, an ACTIVE PROJECT (Claude Code `danavivi-4e [b36252]`, Dan's Mac; continues `danavivi-7a [9ae241]`) — on branch `feat/home-opening`, pushed, not on main
 
 Claim: OPEN `danavivi-d5 [443a28]` (Dan's Mac; the same session as `danavivi-20 [c417bc]` after a restart; the next session takes it, see SESSION END 2026-11-10 below); `danavivi-20` took it over from `danavivi-09` on 2026-11-08 (Dan: "take the claim from
