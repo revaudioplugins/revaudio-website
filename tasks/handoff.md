@@ -296,6 +296,10 @@ Files: `src/components/WordWall.astro`, `src/components/TrialGateModal.astro` (+
   r 21); `cut-webp.py ... alpha [crop=] [still=]` (GAS 2 keeps its old box 61,30,440,785: same size, same 2 x 2).
   Bench: every plugin hovers (PLUGINS: HOVERING / IN THE TUBE switch, GAS 2 hovers either way); thumbnails drawn
   from the same cut-outs, fitted in the TV's slot. Chromium + WebKit, laptop + phone: clean, no errors. Bench only.
+- 2026-11-11 Dan's shot ("look"): GAS 2 in a dark box again = GAS 2 lit by clicking its row IN the TV: the bench
+  only prepared pictures lit from its own buttons, so the TV's still stayed, its look's overlay unmasked (no
+  `--wwd-alpha` yet) = the box. Fixed: the bench follows the TV's `data-ww-on` (MutationObserver -> `follow()`: its
+  channel, the other TV, the picture), and a hovering overlay is masked out until its outline is known.
 - Next: Dan's look at all five hovering + the thumbnails (B) + the scanlines on `/__wwdepth` -> COPY SETTINGS -> production: the same for GAS, Radio Roulette (both have
   browser demos), DRIFT (its wall run, pixelated), GAS 2 (its pump floating, animated, alpha), each to music -> build
   it in WordWall (bake the grade into the TV's copies: no live SVG filter in production; video, see the weight), then

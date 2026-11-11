@@ -393,6 +393,9 @@
     S.thumbs = false;
     commit();
     lightIn(f);
+    // a plugin lit from inside the TV (its row clicked) gets its picture made ready too (Dan 2026-11-11, "look": GAS 2
+    // lit that way kept the TV's still, under the look's lines with no outline: a dark box)
+    new win.MutationObserver(() => follow(f, wallEl.dataset.wwOn)).observe(wallEl, { attributes: true, attributeFilter: ['data-ww-on'] });
     if (f === 'laptop' || st.pview === 'list') setTimeout(() => prepareThumbs(f), 900);
   }
   async function until(fn, tries = 80) { for (let i = 0; i < tries; i++) { const v = fn(); if (v) return v; await new Promise((r) => setTimeout(r, 120)); } return null; }
@@ -406,6 +409,17 @@
 
   // ── a channel: lit on both TVs (the phone opens its pane), then its picture made ready (once per page)
   function light() { paint(); ['laptop', 'phone'].forEach((f) => stages[f].ready && lightIn(f)); if (+st.zoom) setTimeout(lookAtPicture, 900); }
+  // the TV lit a plugin itself: the bench's channel follows, the other TV lights the same one (the TV that was clicked
+  // keeps its own pane: the phone opened the plugin's), and the picture is made ready
+  function follow(f, slug) {
+    if (!SLUGS.some(([s]) => s === slug)) return;
+    if (slug !== st.slug) {
+      st.slug = slug; save(); paint();
+      const o = f === 'laptop' ? 'phone' : 'laptop';
+      if (stages[o].ready) lightIn(o);
+    }
+    prepare(f, slug);
+  }
   function lightIn(f) {
     const S = stages[f], win = S.iframe.contentWindow, wallEl = S.doc.querySelector(WALL);
     wallEl.dispatchEvent(new win.CustomEvent('ww:select', { detail: { slug: st.slug, ...(f === 'phone' ? { view: st.pview } : {}) } }));
@@ -762,7 +776,7 @@
       background: ${OVER};
       background-size: calc(100% / var(--wwd-n, 194)) 100%, 100% calc(100% / var(--wwd-m, 94)), auto, auto;
       box-shadow: ${float ? 'none' : 'inset 0 0 var(--wwd-insetPx) rgba(0, 0, 0, var(--wwd-inset))'};
-      ${float ? '-webkit-mask: var(--wwd-alpha) 0 0 / 100% 100% no-repeat; mask: var(--wwd-alpha) 0 0 / 100% 100% no-repeat;' : MASK(FEATHER)}
+      ${float ? ALPHA : MASK(FEATHER)}
     }`;
   };
   /* the screen's scanlines (Dan 2026-11-10: "too much far from each other ... more close to each other and more
@@ -782,7 +796,9 @@
   const SOFT = `
         repeating-linear-gradient(0deg, rgba(0, 0, 0, var(--wwd-scan)) 0 1px, transparent 1px var(--wwd-scanPx)),
         radial-gradient(farthest-corner at 50% 50%, transparent var(--wwd-vigIn), rgba(0, 0, 0, var(--wwd-vig)) 100%)`;
-  const ALPHA = '-webkit-mask: var(--wwd-alpha) 0 0 / 100% 100% no-repeat; mask: var(--wwd-alpha) 0 0 / 100% 100% no-repeat;';
+  // a hovering picture's own lines, darkening and wash follow its outline: nothing at all until its outline is known
+  const ALPHA = '-webkit-mask: var(--wwd-alpha, linear-gradient(transparent, transparent)) 0 0 / 100% 100% no-repeat; ' +
+    'mask: var(--wwd-alpha, linear-gradient(transparent, transparent)) 0 0 / 100% 100% no-repeat;';
   const thumbOf = (slug) => {
     const R = `html:not(.hc) .ww[data-ww-bg='screen'] .ww-row[data-ww-pick='${slug}']`, float = isFloat(slug), t = st.tstyle;
     const light = `hsl(var(--ww-on-h) calc(var(--ww-on-s) * 1%) 58% / var(--wwd-halo))`;
