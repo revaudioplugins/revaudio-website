@@ -320,6 +320,19 @@ Files: `src/components/WordWall.astro`, `src/components/TrialGateModal.astro` (+
   site's reveal pre-hide + no-JS fallbacks (N1 N2 N3 N5 N9 N10); (2) laptop pictures load when lit + a placeholder
   (N4 N6); (3) fit at 1280x665 (L1); (4) the cookie banner (L2 P3 N11); (5) phone polish (P1 P2 P5-P8); (6) keys
   (L3 Space on DRIFT's key, L4 Esc in Safari, N8 stuck Sending).
+- 2026-11-11 QA fixes (Dan: "fix it"), all on feat/tv-sells, each re-tested on the production build (Chromium +
+  WebKit; scripts in the session scratchpad `qa/fix/`): `1ae018d` slow line (reveal pre-hide not tappable + a CSS
+  fallback at 2.5 s, `html.reveal-ready`; the glass waits dark and turns itself on; Try is a link until the script;
+  beacon async: N1 N2 N3 N5 N7 N10 L3) · `f210410` keys (Esc from outside the TV, postJson 15 s time-out: L4 N8) ·
+  `a3a97a4` phone (Back keeps the pane's plugin, 44 px reach, landscape lands the pane / field, the words one line
+  under 375: P1 P2 P5 P6 P8) · `d967a74` 1280x665 one screen (name cap 2.6rem; only that size changes: L1) ·
+  `a20d7d3` cookie banner slim at 641-1100 px (short line, no 200 px margin: L2) · `7d7ad4a` hidden windows'
+  pictures wait for the script (`data-ww-src`, `fill()`: N4). Final sweep: 9 sizes x 2 engines + iOS Simulator
+  (iPhone 17 Pro, a deep-linked pane): 0 errors. Open, Dan's call: the phone cookie banner still covers Radio
+  Roulette's row and a pane's Product page (P3 N11: slimmer = new words or smaller keys); N6 (a placeholder while a
+  window loads on a slow line: a look for the bench); N9 (a laptop deep link shows RevLimiter until the script);
+  P7 (cart button over the last row: Dan skipped P08); at 393x852 DRIFT's and RR's words wrap (1rem there); P4 needs a
+  real iPhone. The CSS fallback also ends entrances on a page whose script starts after 2.5 s (dev server included).
 - Next: Dan's look at all five hovering + the thumbnails (B) + the scanlines on `/__wwdepth` -> COPY SETTINGS -> production: the same for GAS, Radio Roulette (both have
   browser demos), DRIFT (its wall run, pixelated), GAS 2 (its pump floating, animated, alpha), each to music -> build
   it in WordWall (bake the grade into the TV's copies: no live SVG filter in production; video, see the weight), then
