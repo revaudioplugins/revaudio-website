@@ -504,7 +504,7 @@ pid 52126: `kill 52126` if it's in the way), then http://127.0.0.1:4490/tools/_h
 default to port 4471: pass the port.
 Loose ends: `home-bake` has the untracked, regenerable `bake/room/` + `bake/test-room/` (leave or delete).
 
-### 2026-11-11 — `danavivi-cc [172bce]` (the speed session) — direction 1 built on `feat/home-speed`: the models download 4.7 MB lighter, same look — pushed as `origin/feat/home-speed`, NOT merged
+### 2026-11-11 — `danavivi-cc [172bce]` (the speed session) — direction 1 built on `feat/home-speed`: the models download 4.7 MB lighter, same look — MERGED into `feat/home-opening` 2026-11-11 on Dan's word, NOT on main
 
 Claim: CLOSED 2026-11-11 (rv close); it was `danavivi-cc [172bce]` (Dan's Mac), worktree `.claude/worktrees/home-speed`, branch `feat/home-speed` (cut from
 `feat/home-opening` at `05e1a09`). Files: `tools/_home-opening/masters/**` (new), `tools/_home-opening/assets/models/*.glb`
@@ -578,8 +578,9 @@ after a merge to main open /garage-9f3c/ and confirm no CSP errors and textured 
 proposed policy, see Checks).
 
 Not done / open:
-- Pushed to `origin/feat/home-speed` (`36fd9eb` + the close-out commit), not merged: it merges into `feat/home-opening` on Dan's OK (the room-only push OK for main was
-  given to other sessions, not this one).
+- Merged into `feat/home-opening` on Dan's word ("marge", 11-11 after the close): a fast-forward from `05e1a09`, pushed to
+  origin. Not on main: the room-only push OK for main was given to other sessions, not this one, and Dan has not seen
+  the built room yet.
 - Direction 2 (the slow-line safety net) is not built. Other savings not built: the picture quality was not lowered, and
   the PBR maps were left alone.
 - Not measured: real phones, Safari timings (the timings are Chrome on this Mac through `perf/simserve.py`).
@@ -587,7 +588,8 @@ Not done / open:
   (`/private/tmp/claude-501/-Users-danavivi/38d326b1-1855-4bfb-9b05-ed9017ee0743/scratchpad`: `stills6/`, `perf/final.txt`).
 
 Next: Dan looks at the room from this worktree (`python3 -m http.server 4618 --bind 127.0.0.1` at its root, then
-http://127.0.0.1:4618/tools/_home-opening/room.html) and says merge or not. The CSP edit it needed is live since 11-11 (above).
+http://127.0.0.1:4618/tools/_home-opening/room.html) (he said merge before looking). Then main, on his word; the first thing after that deploy: open
+https://revaudio.net/garage-9f3c/ and confirm textured models and no CSP errors. The CSP edit is live since 11-11 (above).
 
 Session end 2026-11-11 (rv close):
 - Dan's last word on the build: none yet. He got the report (numbers, the three before/after pictures, the CSP warning)
@@ -600,8 +602,8 @@ Session end 2026-11-11 (rv close):
 - Git at close: the worktree is clean; `feat/home-speed` = `origin/feat/home-opening` (`05e1a09`) + this session's
   commits, 0 behind it. `origin/main` has three commits this branch lacks (`8aef421`, `9fb1151`, `200a599`: the unlisted
   /garage-9f3c/ page and its fonts, another session's). Untouched by this session: every other branch and worktree.
-- When the builders' branch moves on before the merge: rebase or merge as usual; only `assets/models/*.glb` can conflict
-  (see "Read this before you add or replace a model").
+- After the merge `feat/home-speed` has nothing `feat/home-opening` lacks; work goes on in `feat/home-opening`. A branch cut
+  before the merge that replaced a model: see "Read this before you add or replace a model".
 
 ## 2026-11-09 — /revfx trial form sends the download at once (`gateWired: true`) (Claude Code `revaudio-0b [3311c0]`, Yoni's laptop 2) — branch `revfx-gate-on` — PUSHED TO MAIN 2026-11-09 on Yoni's "deploy" (worker deployed first, version `b31a75bd`)
 
