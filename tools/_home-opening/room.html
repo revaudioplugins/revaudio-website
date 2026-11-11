@@ -1921,19 +1921,20 @@ function placeLeds() {
 }
 // Dan's round-2 notes (11-09) on this scatter (messSeed 1): two oil drums out (behind the GAS 2 drum; in front of the test
 // desk, where a chair stands now), the tyre by the couch moved to the tyre rack
-const MESS_FIX = { seed: 1, off: [26, 10, 13, 33, 37, 27, 30, 0, 12, 21, 8, 9], at: { 4: [2.25, 9.95] } }; // 13 / 33 / 37: a case and two cones off the drums' rug (N24, 11-10); 27 / 30 / 0 / 12 / 21: a drum in front of N17's pedalboard, two toolboxes + a crate standing on it, and a blank sheet of papers behind it (11-10); 8 / 9: two black cases in the dark corner by the drums, which read as holes in the floor from the walk (11-10)
+const MESS_FIX = { seed: 1, off: [26, 10, 13, 33, 37, 27, 30, 0, 12, 21, 8, 9, 17, 6, 24], at: { 4: [2.25, 9.95], 15: [-2.05, 11.55], 25: [2.62, 2.31], 32: [-2.88, 7.08, 93], 36: [-2.19, 9.58, 85] } }; // 13 / 33 / 37: a case and two cones off the drums' rug (N24, 11-10); 27 / 30 / 0 / 12 / 21: a drum in front of N17's pedalboard, two toolboxes + a crate standing on it, and a blank sheet of papers behind it (11-10); 8 / 9: two black cases in the dark corner by the drums, which read as holes in the floor from the walk (11-10); 17: a toolbox inside the couch N23, no clear spot near it; 6 / 24: a tyre through the test desk W07's leg under the crate 32, a case through the parts bench R07 behind the GAS barrel, both all but hidden from the walk; 15: a coil out from under the tyre 29; 25: the can out of the red chest L05's bottom drawer; 32: the crate squared up under the test desk, off its leg; 36: the case turned along the wall, off the engine hoist R14's leg (11-11, the props' real models)
 function placeMess() {
   const Wd = S.roomW, span = L.span, show = Math.round(S.mess * R.mess.length);
   const [cx, , cz] = R.carPos;
   R.mess.forEach((m, i) => {
     let z = 0.6 + m.u * (span * 0.98 - 0.6), x = m.side * (Wd / 2 - 0.3 - m.depth * 1.05);
     const fix = S.messSeed === MESS_FIX.seed ? MESS_FIX : null, at = fix && fix.at[i]; if (at) [x, z] = at;
+    const rot = at && at[2] != null ? at[2] * Math.PI / 180 : m.rot; // a fixed spot may turn the piece too ([x, z, degrees])
     const nearCar = Math.abs(x - cx) < 2.4 && Math.abs(z - cz) < 1.25;
     const nearTv = Math.abs(x) < 1.6 && z < 2.9; // the desk, the stands and the throne
     m.mesh.visible = i < show && !(fix && fix.off.includes(i)) && (!!at || (!nearCar && !nearTv && !(m.side === 1 && inDoor(z, 0.4, 0))));
     m.mesh.position.set(x, m.t.y, z);
-    if (m.t.flat) m.mesh.rotation.set(-Math.PI / 2, 0, m.rot); else m.mesh.rotation.set(0, m.rot, 0); // flat things lie on the floor
-    if (m.model) { m.model.visible = m.mesh.visible && !!R.lookOn; m.mesh.visible &&= !R.lookOn; m.model.position.set(x, 0, z); m.model.rotation.set(0, m.rot, 0); } // its model: built lying as it lies, origin on the floor
+    if (m.t.flat) m.mesh.rotation.set(-Math.PI / 2, 0, rot); else m.mesh.rotation.set(0, rot, 0); // flat things lie on the floor
+    if (m.model) { m.model.visible = m.mesh.visible && !!R.lookOn; m.mesh.visible &&= !R.lookOn; m.model.position.set(x, 0, z); m.model.rotation.set(0, rot, 0); } // its model: built lying as it lies, origin on the floor
   });
 }
 function placeTv() {
