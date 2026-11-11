@@ -790,7 +790,7 @@ const MODELS = {
   E06: { src: 'assets/models/oil-shelf.glb' },
   N23: { src: 'assets/models/couch.glb', yaw: Math.PI / 2 },
   A03: { src: 'assets/models/ceiling-cloud.glb' },
-  CAR: { src: 'assets/models/coupe.glb', yaw: Math.PI, tail: true }, // Dan's pick (11-09): A, our coupe (the glossy build replaces this file)
+  CAR: { src: 'assets/models/coupe.glb', yaw: Math.PI, tail: true, plate: { src: 'assets/models/revaudio-plate.glb', at: [0, 0.5385, 2.18] } }, // Dan's pick (11-09): A, our coupe (the glossy build replaces this file); the RevAudio plate on its tail's plate panel (Dan 11-11), `at` in the car's own frame R.car (re-measure it if the coupe is rebuilt)
   // the builders' batch 2 (11-09); left wall +pi/2, right wall -pi/2 (the file's front to the aisle)
   W07: { src: 'assets/models/test-desk.glb', yaw: Math.PI / 2 },
   N07: { src: 'assets/models/gas2-pump.glb', yaw: Math.PI / 2 },
@@ -878,7 +878,7 @@ for (const q of new URLSearchParams(location.search).getAll('model')) {
 async function loadModels() {
   const ids = Object.keys(MODELS).filter((id) => R.items.some((it) => it.id === id));
   if (!ids.length) { loaded('models', 1, 1); return []; }
-  loadP.models[1] = new Set([...ids.flatMap((id) => [MODELS[id].src, MODELS[id].stand]), ...Object.values(MESS_MODELS), SIGN_MODEL].filter(Boolean)).size;
+  loadP.models[1] = new Set([...ids.flatMap((id) => [MODELS[id].src, MODELS[id].stand, MODELS[id].plate && MODELS[id].plate.src]), ...Object.values(MESS_MODELS), SIGN_MODEL].filter(Boolean)).size;
   const [{ GLTFLoader }, { MeshoptDecoder }] = await Promise.all([import('three/addons/loaders/GLTFLoader.js'), import('three/addons/libs/meshopt_decoder.module.js')]);
   const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder), maps = [], files = {};
   // the loading screen hears each file's bytes as they come (the files load side by side: counting finished ones, the
@@ -939,6 +939,9 @@ async function loadModels() {
       } catch (e) { console.warn('stand', id, m.stand, e.message); } // the drawn stand stays
     }
     it.obj.add(wrap); it.model = wrap;
+    if (m.plate) try { // the car's number plate: hung at its spot in the car's frame, then carried by the model (it shows and hides with it)
+      const pl = await get(m.plate.src); dress(pl); pl.position.fromArray(m.plate.at); it.obj.add(pl); it.obj.updateMatrixWorld(true); wrap.attach(pl);
+    } catch (e) { console.warn('plate', m.plate.src, e.message); }
     if (it.obj.geometry) {
       const d = R.dress.find((x) => x[0] === it.obj); if (d) d[2] = R.noMat;
       if (R.lookOn) it.obj.material = R.noMat;
