@@ -11,7 +11,7 @@
      - the plugins, left: each name in the glowing stencil the five words
        used to be, with a small window thumbnail and a plain type word; the
        lit one is filled;
-     - the lit plugin, right: its window (DRIFT's is the live run), the name,
+     - the lit plugin, right: its window (its loop, playing), the name,
        the short description, the five words as one small line, the price,
        "Try free for N days" (its sign-up on the screen, in the panel's own
        pane: Phase 5 step 3; TrialGateModal / DRIFT's page without JS) and a
@@ -33,21 +33,13 @@
    the words describe what the plugin is built to do, not measured results.
    Tune on the dev bench /__wwbench (tools/wwbench): every tunable is a --ww-*
    custom property on .ww. Reduced motion: a quick fade on a change, no
-   stagger, no power-on, no glitches, the poster instead of the run. html.hc:
+   stagger, no power-on, no glitches, the still instead of the loop. html.hc:
    a plain list. */
 import { existsSync, statSync } from 'node:fs';
-import { Image, getImage } from 'astro:assets';
+import { getImage } from 'astro:assets';
 import GarageWall from './GarageWall.astro';
-import rlImg from '../assets/plugins/revlimiter-hero.png';
-import gasImg from '../assets/plugins/gas-hero.png';
-/* GAS 2 FLOATING, as the plugin shows by default (Dan 2026-11-03: "gas2 to actually be hovering like in the real
-   plugin"): the real page (GAS2 Source/ui/public) shot on a clear ground in rv-float with the hose faded
-   (GAS2.hose(true)), the house FLOATING shadow baked under it (53 deg, 30 / 24 / .50 + 5 / 4 / .55, rgb(12,9,6)) */
-import gas2Img from '../assets/plugins/gas2-float.png';
-import rrImg from '../assets/plugins/radioroulette-hero.png';
-import driftImg from '../assets/showcase/drift-window-init.png';
 import brokenMeta from '../assets/seasons/drift/tv-broken.json';
-import { drift } from '../data/drift';
+import tvBake from '../data/tv-bake.json';
 import { tvPlugins, tvCats, catsOf, tvName, priceLine, tryAction, PAID_TRIAL_DAYS, type TvAction, type TvSignup } from '../data/library';
 import type { LibraryWord } from '../data/plugins';
 
@@ -55,21 +47,7 @@ import type { LibraryWord } from '../data/plugins';
    (Dan 2026-10-14). Lives on .ww. The bench can flip it. */
 const WALL_BG: 'wood' | 'screen' = 'screen';
 
-/* The live window: an HD run of DRIFT (1440 desktop / 800 phone) with its
-   first frame as the poster. Only when every file is on disk; otherwise the
-   panel keeps the still screenshot (no placeholder video, no fake). */
-const wallPosterSrc = Object.values(
-  import.meta.glob<{ default: ImageMetadata }>('../assets/showcase/drift-window-wall.png', { eager: true }),
-)[0]?.default;
-const WALL_RUN = ['wall-run-1440.webm', 'wall-run-1440.mp4', 'wall-run-800.webm', 'wall-run-800.mp4'];
-const wallRunReady = !!wallPosterSrc && WALL_RUN.every((f) => existsSync(`public/drift/${f}`));
-// While DRIFT leads, a missing run fails the BUILD (CI included) instead of
-// quietly shipping the still: the path is cwd-relative (repo root, as
-// `npm run build` and withastro/action run it).
-if (drift.homeLead && !wallRunReady) {
-  throw new Error(`WordWall: DRIFT's live window is missing (src/assets/showcase/drift-window-wall.png + public/drift/${WALL_RUN.join(', ')}). Build from the repo root, or restore the files.`);
-}
-/* The TV's art loads late and lean (checker S4, 2026-10-15: the frame + the
+/* The TV's frame loads late and lean (checker S4, 2026-10-15: the frame + DRIFT's
    poster were 380 KB of every first load, the laptop cut on phones too): it
    waits until the wall is a screen away, then the script below puts up the
    smallest cut that is still pixel-sharp on that screen, in AVIF where the
@@ -77,19 +55,13 @@ if (drift.homeLead && !wallRunReady) {
    the bytes), else WebP. 1400 stays the top cut, as before. A cut =
    [width, avif, webp] (+ the frame's slices in that cut's pixels). */
 const FRAME_CUTS = [640, 960, 1400];
-const POSTER_CUTS = [800, 1100, 1400];
 type Cut = [number, string, string, string?];
 const cut = async (src: ImageMetadata, width: number, q: { avif: number; webp: number }, v = ''): Promise<Cut> => [
   width,
   (await getImage({ src, width, format: 'avif', quality: q.avif })).src + v,
   (await getImage({ src, width, format: 'webp', quality: q.webp })).src + v,
 ];
-const posterCuts = wallRunReady && wallPosterSrc
-  ? await Promise.all(POSTER_CUTS.map((w) => cut(wallPosterSrc, w, { avif: 50, webp: 82 })))
-  : null;
 const top = (cuts: Cut[]) => cuts[cuts.length - 1];
-// a size off an imported image without copying the raw file into dist (reading .width straight off the import does)
-const dims = (m: ImageMetadata) => (m as ImageMetadata & { clone?: ImageMetadata }).clone ?? m;
 /* The TV's frame (Dan 2026-10-14: "a broken TV frame", then "more neutral"):
    a beat-up CRT cabinet front 9-sliced around the whole screen, in place of
    the brass rails. Three rolls (tools/gen-drift-tv-frame-broken.sh +
@@ -123,57 +95,75 @@ const frameVars = frameRolls.map(({ n, m, cuts }) => [
 // what the script needs to pick a cut; the roll's width turns --ww-frame-u into its pixels
 const wallArt = JSON.stringify({
   frame: Object.fromEntries(frameRolls.map(({ n, m, cuts }) => [n, { w: m.w, cuts }])),
-  poster: posterCuts,
 });
-// no JavaScript: the top WebP cuts, as before the lazy load. The video never plays without JS, so its background is the
-// picture; Chromium forces its controls on when scripting is off, and their grey panel would hide it
+// no JavaScript: the top WebP cuts, as before the lazy load; the loops never play without it, so the stills stay
 const noJsArt = [
   ...frameRolls.map(({ n, cuts }) => `.ww[data-wordwall]{--wf${n}-img:url(${top(cuts)[2]}) !important}`),
-  posterCuts ? `video[data-ww-run]{background:var(--bg-1) url(${top(posterCuts)[2]}) center / cover no-repeat}` : '',
-  posterCuts ? `video[data-ww-run]::-webkit-media-controls{display:none !important}` : '',
+  'video[data-ww-run]{display:none}',
 ].join('');
 
-/* The plugins on the TV (library.ts: a `library` entry AND live or an open
-   trial; DRIFT first while drift.homeLead) and each one's window. */
-const WINDOWS: Record<string, { img: ImageMetadata; portrait?: boolean; float?: boolean }> = {
-  drift: { img: driftImg },
-  revlimiter: { img: rlImg },
-  gas: { img: gasImg, portrait: true },
-  gas2: { img: gas2Img, portrait: true, float: true }, // float: the object alone, its own shadow, no frame round it
-  'radio-roulette': { img: rrImg },
+/* The plugins on the TV (library.ts: a `library` entry AND live or an open trial), each playing its loop, baked
+   (Dan 2026-11-11: "bake", with his COPY SETTINGS from the depth bench /__wwdepth: "perfect lets commit to it").
+   tools/tv-anim/bake-tv.py grades each recorded loop (tools/wwbench/anim/v2: the plugin hovering, cut out) as the
+   bench did live, into public/tv/:
+     <slug>-x4.mp4 / -x2.mp4  the loop (laptop / phone), its colour on black: the still's outline cuts it out
+     <slug>-still.webp        its first frame with its outline: the picture until the loop runs (and with reduced
+                              motion or no script), and the outline the loop, the pixel grid and the darkening follow
+     <slug>-halo.webp         the light round it: the outline blurred, the channel's colour shown through it
+     <slug>-thumb.webp        the list's thumbnail
+   src/data/tv-bake.json: each loop's size in picture pixels (n x m; 2 x 2 CSS px a pixel on Dan's laptop). A
+   missing file fails the build (cwd-relative: the repo root, as `npm run build` and withastro/action run it).
+   `portrait`: one tall picture standing beside its text. `was`: its old picture's shape: the bench kept each old
+   picture's width and gave it its loop's shape, so a tall one's set height grows by was / the loop's (GAS 2 6%). */
+const TV: Record<string, { portrait?: boolean; was?: number }> = {
+  drift: {},
+  revlimiter: {},
+  gas: { portrait: true, was: 1600 / 2380 },
+  gas2: { portrait: true, was: 896 / 1683 },
+  'radio-roulette': {},
 };
+const TV_FILES = ['x4.mp4', 'x2.mp4', 'still.webp', 'halo.webp', 'thumb.webp'];
+const baked = tvBake.plugins as Record<string, { n: number; m: number; frames: number }>;
 type Item = {
   slug: string;
   name: string;
   type: string;
   words: LibraryWord[];
-  img: ImageMetadata;
   alt: string;
   portrait?: boolean;
-  float?: boolean;
-  thumbTall: boolean; // narrower than the list's 16:10 slot: the thumbnail fits its height, else its width
+  n: number; // the loop's size in picture pixels
+  m: number;
+  tall: number; // a tall picture's set height x this
   blurb: string;
   price: string;
   action: TvAction | null;
   cats: string[];
 };
 const items: Item[] = tvPlugins()
-  .filter((p) => WINDOWS[p.slug] && p.library)
-  .map((p) => ({
-    slug: p.slug,
-    name: tvName(p),
-    type: p.library!.typeWord,
-    words: p.library!.words,
-    img: WINDOWS[p.slug].img,
-    alt: p.library!.alt,
-    portrait: WINDOWS[p.slug].portrait,
-    float: WINDOWS[p.slug].float,
-    thumbTall: dims(WINDOWS[p.slug].img).width / dims(WINDOWS[p.slug].img).height < 1.6,
-    blurb: p.library!.blurb,
-    price: priceLine(p),
-    action: tryAction(p),
-    cats: catsOf(p),
-  }));
+  .filter((p) => TV[p.slug] && p.library)
+  .map((p) => {
+    const miss = TV_FILES.filter((f) => !existsSync(`public/tv/${p.slug}-${f}`));
+    if (!baked[p.slug] || miss.length) {
+      throw new Error(`WordWall: ${p.slug}'s TV loop is not baked (${baked[p.slug] ? `public/tv/${p.slug}-{${miss.join(',')}}` : 'not in src/data/tv-bake.json'}): python3 tools/tv-anim/bake-tv.py ${tvBake.settings} ${p.slug}. Build from the repo root.`);
+    }
+    const { n, m } = baked[p.slug];
+    const was = TV[p.slug].was;
+    return {
+      slug: p.slug,
+      name: tvName(p),
+      type: p.library!.typeWord,
+      words: p.library!.words,
+      alt: p.library!.alt,
+      portrait: TV[p.slug].portrait,
+      n,
+      m,
+      tall: was ? was / (n / m) : 1,
+      blurb: p.library!.blurb,
+      price: priceLine(p),
+      action: tryAction(p),
+      cats: catsOf(p),
+    };
+  });
 const cats = tvCats(tvPlugins().filter((p) => items.some((it) => it.slug === p.slug)));
 /* The sign-up on the screen (Phase 5 step 3; Dan 2026-11-08: look A, "Channel page", of /__wwsignup): its words per
    kind. TrialGateModal's own words; the newsletter line is the licence worker's MARKETING_CONSENT_TEXT (change both
@@ -195,19 +185,6 @@ const signupCopy = (s: TvSignup, name: string) =>
           notice: 'Setup tips and a trial-end reminder. Unsubscribe anytime.',
           last: `Open ${name} in your DAW: the ${PAID_TRIAL_DAYS} days start then` };
 const first = items[0]?.slug ?? '';
-/* Each window's picture, worked out here so the hidden ones can wait (TV QA N4, 2026-11-11). Only the first (lit)
-   window gets its src; the others carry theirs in data-ww-src / data-ww-srcset until the script lights them or warms
-   them after the power-on. Hidden by visibility, a lazy picture still counted as on screen: all five loaded at the
-   first paint, +507 KB on a laptop on the line the TV's script needed. No script = only the first window shows. */
-const pics = await Promise.all(items.map((it) => (it.slug === 'drift' && posterCuts && wallPosterSrc ? null : getImage({
-  src: it.img,
-  width: 1400,
-  widths: [400, 640, 960, 1400],
-  // portrait: a set height (24rem phones, 30rem laptop) at 1600:2380
-  sizes: it.portrait ? '(max-width: 860px) 260px, 324px' : '(max-width: 860px) 92vw, 48vw',
-  format: 'webp',
-  quality: 86,
-}))));
 ---
 
 <GarageWall id="plugins" ariaLabel="RevAudio plugins">
@@ -219,7 +196,7 @@ const pics = await Promise.all(items.map((it) => (it.slug === 'drift' && posterC
     data-ww-art={wallArt}
     data-ww-on={first}
     data-ww-view="list"
-    style={`${frameVars};--ww-rows:${items.length}`}
+    style={`${frameVars};--ww-rows:${items.length};--ww-halo-pad:${tvBake.haloPad}`}
   >
     <noscript><style is:inline set:html={noJsArt}></style></noscript>
     {/* the set: the lit tube behind everything (the last channel's glow fading over the new one), the glass over it,
@@ -257,8 +234,8 @@ const pics = await Promise.all(items.map((it) => (it.slug === 'drift' && posterC
             id={`ww-tab-${it.slug}`}
             data-ww-pick={it.slug}
           >
-            <span class:list={['ww-thumb', { 'is-tall': it.thumbTall, 'is-float': it.float }]} aria-hidden="true">
-              <Image src={it.img} alt="" width={320} widths={[160, 320]} sizes="(max-width: 860px) 6rem, 10rem" format="webp" quality={80} loading="lazy" />
+            <span class="ww-thumb" aria-hidden="true">
+              <img src={`/tv/${it.slug}-thumb.webp`} alt="" width="320" height="200" loading="lazy" decoding="async" />
             </span>
             <span class="ww-rtext">
               <span class="ww-name">{it.name}</span>
@@ -272,13 +249,16 @@ const pics = await Promise.all(items.map((it) => (it.slug === 'drift' && posterC
 
     {/* the lit plugin: one panel per plugin, stacked in one cell (swapping never shifts the page) */}
     {items.map((it, i) => {
-      const isDrift = it.slug === 'drift';
-      // the window's width / height: the panel caps the window's width by the room's height (CSS --ww-ar)
-      const media = dims(isDrift && posterCuts && wallPosterSrc ? wallPosterSrc : it.img);
+      /* its picture's files. A hidden window's wait for the script (TV QA N4, 2026-11-11: hidden by visibility, a lazy
+         picture still counted as on screen and all five loaded at the first paint), the masks with them (a mask's
+         picture loads as a background does): the script fills them in as the window comes on, or is warmed after the
+         power-on. No script = only the first window shows */
+      const still = `/tv/${it.slug}-still.webp`;
+      const masks = `--ww-pic:url(${still});--ww-halo-img:url(/tv/${it.slug}-halo.webp)`;
       return (
         <article
-          class:list={['ww-panel', { 'is-active': i === 0, 'is-portrait': it.portrait, 'is-float': it.float }]}
-          style={`--ww-ar:${(media.width / media.height).toFixed(4)}`}
+          class:list={['ww-panel', { 'is-active': i === 0, 'is-portrait': it.portrait }]}
+          style={`--ww-ar:${(it.n / it.m).toFixed(4)};--ww-n:${it.n};--ww-m:${it.m}${it.tall !== 1 ? `;--ww-tall:${it.tall.toFixed(4)}` : ''}`}
           id={`ww-ch-${it.slug}`}
           data-ww-panel={it.slug}
           aria-labelledby={`ww-pn-${it.slug}`}
@@ -286,43 +266,31 @@ const pics = await Promise.all(items.map((it) => (it.slug === 'drift' && posterC
         >
           <button type="button" class="ww-back" data-ww-back>All plugins</button>
           <figure class="ww-ui" {...(i === 0 ? { 'data-reveal': 'card' } : {})}>
-            {isDrift && posterCuts && wallPosterSrc ? (
-              <video
-                class="ww-run"
-                data-ww-run
-                muted
-                loop
-                playsinline
-                preload="none"
-                disablepictureinpicture
-                width={media.width}
-                height={media.height}
-                role="img"
-                aria-label={it.alt}
-              >
-                <source src="/drift/wall-run-800.webm" type="video/webm" media="(max-width: 860px)" />
-                <source src="/drift/wall-run-800.mp4" type="video/mp4" media="(max-width: 860px)" />
-                <source src="/drift/wall-run-1440.webm" type="video/webm" />
-                <source src="/drift/wall-run-1440.mp4" type="video/mp4" />
-              </video>
-            ) : pics[i] && (
+            {/* the picture's box, what a channel change moves: the still, and the loop over it once it plays (the
+                script), cut out by the still's outline; the light round it, the pixel grid and the darkening are the
+                box's own layers (CSS). Step 5: the picture leads to the product page too, a link laid over it (the
+                picture keeps its own description; one Tab stop per panel stays "Product page", so this one is the
+                pointer's only) */}
+            <span class="ww-pic" style={i === 0 ? masks : undefined} data-ww-style={i === 0 ? undefined : masks}>
+              {/* crossorigin: fetched as the masks fetch it (CORS), so the browser downloads it once, not twice */}
               <img
-                src={i === 0 ? pics[i].src : undefined}
-                srcset={i === 0 ? pics[i].srcSet.attribute : undefined}
-                data-ww-src={i === 0 ? undefined : pics[i].src}
-                data-ww-srcset={i === 0 ? undefined : pics[i].srcSet.attribute}
+                class="ww-still"
+                src={i === 0 ? still : undefined}
+                data-ww-src={i === 0 ? undefined : still}
+                crossorigin="anonymous"
                 alt={it.alt}
-                sizes={it.portrait ? '(max-width: 860px) 260px, 324px' : '(max-width: 860px) 92vw, 48vw'}
+                width={it.n * 4}
+                height={it.m * 4}
                 loading="lazy"
                 fetchpriority={i === 0 ? 'high' : undefined}
-                width={pics[i].attributes.width}
-                height={pics[i].attributes.height}
                 decoding="async"
               />
-            )}
-            {/* step 5: the picture leads to the product page too, a link laid over it (the picture keeps its own
-                description; one Tab stop per panel stays "Product page", so this one is the pointer's only) */}
-            <a class="ww-to ww-to-pic" href={`/${it.slug}`} tabindex="-1" aria-hidden="true"></a>
+              <video class="ww-run" data-ww-run muted loop playsinline preload="none" disablepictureinpicture aria-hidden="true">
+                <source src={`/tv/${it.slug}-x2.mp4`} type="video/mp4" media="(max-width: 860px)" />
+                <source src={`/tv/${it.slug}-x4.mp4`} type="video/mp4" />
+              </video>
+              <a class="ww-to ww-to-pic" href={`/${it.slug}`} tabindex="-1" aria-hidden="true"></a>
+            </span>
           </figure>
           <div class="ww-info">
             <div class="ww-phead">
@@ -444,16 +412,15 @@ const pics = await Promise.all(items.map((it) => (it.slug === 'drift' && posterC
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
     const slugOf = (el: HTMLElement) => el.dataset.wwPanel ?? el.dataset.wwPick ?? el.dataset.wwItem ?? '';
 
-    /* The TV's art, late and lean (checker S4): the frame and DRIFT's poster
-       load once the page has loaded and the wall is a screen away, each in
-       the smallest cut that is still pixel-sharp here (frame: the roll's
-       pixels x --ww-frame-u x DPR, u read off the frame's padding; poster:
-       the window's width x DPR), AVIF when this browser decodes it, else
+    /* The TV's art, late and lean (checker S4): the frame loads once the
+       page has loaded and the wall is a screen away, in the smallest cut that
+       is still pixel-sharp here (the roll's pixels x --ww-frame-u x DPR, u
+       read off the frame's padding), AVIF when this browser decodes it, else
        WebP. A cut is decoded before it goes up (no half-painted bezel) and
        never swapped for a smaller one (resize, rotate, the bench's roll
        switch only upgrade). No JS: the <noscript> style puts the top WebP up. */
     type Cut = [number, string, string, string?]; // width, avif, webp, the frame's slices in this cut's pixels
-    const art = JSON.parse(wall.dataset.wwArt || '{}') as { frame?: Record<string, { w: number; cuts: Cut[] }>; poster?: Cut[] | null };
+    const art = JSON.parse(wall.dataset.wwArt || '{}') as { frame?: Record<string, { w: number; cuts: Cut[] }> };
     let avifOk: Promise<boolean> | null = null;
     const avif = () => (avifOk ??= new Promise<boolean>((done) => {
       const probe = new Image(); // a 1x1 AVIF
@@ -473,7 +440,6 @@ const pics = await Promise.all(items.map((it) => (it.slug === 'drift' && posterC
       if (up[slot] === c[0]) apply(url); // a wider cut asked for meanwhile wins
     };
     const frameEl = wall.querySelector<HTMLElement>('.ww-frame');
-    const runEl = wall.querySelector<HTMLVideoElement>('video[data-ww-run]');
     let near = false;
     const dress = () => {
       if (!near) return;
@@ -489,8 +455,6 @@ const pics = await Promise.all(items.map((it) => (it.slug === 'drift' && posterC
           wall.style.setProperty(`--wf${n}-sl`, c[3] ?? '');
         });
       }
-      const w = runEl?.getBoundingClientRect().width ?? 0; // 0 while its panel is display:none (phones): showing it asks again
-      if (runEl && art.poster && w > 0) put('poster', pick(art.poster, w * dpr), (url) => { runEl.poster = url; });
     };
     // not before the page's own load (on a phone the wall starts a quarter screen below the fold: it must not race
     // the top), the first scroll or 3 s, whichever comes first (a stalled video can hold the load event back for good)
@@ -546,22 +510,35 @@ const pics = await Promise.all(items.map((it) => (it.slug === 'drift' && posterC
     catBar?.setAttribute('role', 'toolbar');
     wall.dataset.wwLib = 'on'; // the categories + the phone's Back show from here (CSS)
 
-    /* DRIFT's live window plays only while its panel is at rest on the glass
+    /* Each plugin's loop plays only while its panel is at rest on the glass
        (never while it comes on or leaves: it starts once seated), on screen
-       (a quarter of it), the tab is visible and motion is allowed; autoplay
-       refused = the poster stays. */
-    let runInView = false;
+       (a quarter of it), the tab is visible and motion is allowed; every other
+       loop waits, paused. Its first frame up (.is-run), the still under it
+       goes (the two together would double its soft edges). Autoplay refused,
+       or reduced motion = the still stays. */
+    const runOf = (p: HTMLElement | null) => p?.querySelector<HTMLVideoElement>('video[data-ww-run]') ?? null;
+    const runsInView = new Set<Element>();
     let seated = ''; // the plugin at rest on the glass ('' while the glass changes, or a phone shows its list)
     const syncRun = () => {
-      if (!runEl || reduced.matches) return;
-      const live = runInView && seated === 'drift' && !document.hidden;
-      if (live) runEl.play().catch(() => {});
-      else if (!runEl.paused) runEl.pause();
+      if (reduced.matches) return;
+      panels.forEach((p) => {
+        const v = runOf(p);
+        if (!v) return;
+        if (seated === slugOf(p) && runsInView.has(v) && !document.hidden) v.play().catch(() => {});
+        else if (!v.paused) v.pause();
+      });
     };
-    if (runEl) {
-      new IntersectionObserver(([e]) => { runInView = e.isIntersecting; syncRun(); }, { threshold: 0.25 }).observe(runEl);
-      document.addEventListener('visibilitychange', syncRun);
-    }
+    const runIo = new IntersectionObserver((entries) => {
+      entries.forEach((e) => { if (e.isIntersecting) runsInView.add(e.target); else runsInView.delete(e.target); });
+      syncRun();
+    }, { threshold: 0.25 });
+    panels.forEach((p) => {
+      const v = runOf(p);
+      if (!v) return;
+      runIo.observe(v);
+      v.addEventListener('playing', () => v.parentElement?.classList.add('is-run'), { once: true });
+    });
+    document.addEventListener('visibilitychange', syncRun);
 
     /* One screen, exactly: the window takes the height its panel's text leaves it. CSS sizes it off --ww-osd-h (the
        menu) and --ww-info-h (the panel minus its window: the Back key on phones, the text, the gaps); their CSS values
@@ -627,15 +604,21 @@ const pics = await Promise.all(items.map((it) => (it.slug === 'drift' && posterC
     const glowEl = wall.querySelector<HTMLElement>('.ww-screen-glow');
     const wasEl = wall.querySelector<HTMLElement>('.ww-screen-was');
     const panelOf = (s: string) => panels.find((p) => slugOf(p) === s) ?? null;
-    const mediaOf = (p: HTMLElement) => p.querySelector<HTMLElement>('.ww-ui img, .ww-ui video');
-    // a hidden window's picture gets its address when it comes on or is warmed (the markup holds it back: N4)
+    const mediaOf = (p: HTMLElement) => p.querySelector<HTMLElement>('.ww-pic'); // the picture's box: what moves
+    const stillOf = (p: HTMLElement) => p.querySelector<HTMLImageElement>('img.ww-still');
+    // a hidden window's picture gets its address (and its box its masks) when it comes on or is warmed (the markup
+    // holds them back: N4)
     const fill = (p: HTMLElement) => {
-      const img = mediaOf(p);
-      if (!(img instanceof HTMLImageElement) || !img.dataset.wwSrc) return;
-      img.srcset = img.dataset.wwSrcset ?? '';
-      img.src = img.dataset.wwSrc;
-      delete img.dataset.wwSrc;
-      delete img.dataset.wwSrcset;
+      const box = mediaOf(p);
+      const img = stillOf(p);
+      if (box?.dataset.wwStyle) {
+        box.style.cssText += `;${box.dataset.wwStyle}`;
+        delete box.dataset.wwStyle;
+      }
+      if (img?.dataset.wwSrc) {
+        img.src = img.dataset.wwSrc;
+        delete img.dataset.wwSrc;
+      }
     };
     const textOf = (p: HTMLElement) => Array.from(p.querySelectorAll<HTMLElement>('.ww-phead, .ww-blurb, .ww-pwords, .ww-buy'));
     const listParts = () => [osdEl, list].filter((el): el is HTMLElement => !!el);
@@ -818,7 +801,8 @@ const pics = await Promise.all(items.map((it) => (it.slug === 'drift' && posterC
     const signSet = (p: HTMLElement, box: HTMLElement, on: boolean) => {
       p.classList.toggle('is-signing', on);
       box.hidden = !on;
-      if (runEl && p.contains(runEl)) { if (on) runEl.pause(); else syncRun(); }
+      if (on) runOf(p)?.pause();
+      else syncRun();
     };
     // at once: the plugin back on its pane
     const signReset = (p: HTMLElement) => {
@@ -1118,9 +1102,10 @@ const pics = await Promise.all(items.map((it) => (it.slug === 'drift' && posterC
     const left = () => {
       run = null;
       stage = 'gap';
-      if (onGlass === 'drift' && runEl) {
-        runEl.pause();
-        try { runEl.currentTime = 0; } catch (e) { /* not loaded: it starts at 0 anyway */ }
+      const v = onGlass === LIST ? null : runOf(panelOf(onGlass));
+      if (v) {
+        v.pause();
+        try { v.currentTime = 0; } catch (e) { /* not loaded: it starts at 0 anyway */ }
       }
       plan();
     };
@@ -1137,8 +1122,8 @@ const pics = await Promise.all(items.map((it) => (it.slug === 'drift' && posterC
       if (sceneWant() === onGlass) { back(); return; }
       // the newcomer's window decoded first (a moment at most): a picture never comes on half painted
       const np = sceneWant() === LIST ? null : panelOf(lit);
-      const img = np ? mediaOf(np) : null;
-      if (img instanceof HTMLImageElement) {
+      const img = np ? stillOf(np) : null;
+      if (img) {
         img.loading = 'eager';
         await Promise.race([img.decode().catch(() => {}), new Promise((r) => window.setTimeout(r, 150))]);
         if (t !== ticket || stage !== 'gap') return; // a newer pick took over meanwhile
@@ -1229,8 +1214,8 @@ const pics = await Promise.all(items.map((it) => (it.slug === 'drift' && posterC
         .sort((a, b) => a.d - b.d)
         .forEach(({ p }) => {
           fill(p);
-          const img = mediaOf(p);
-          if (!(img instanceof HTMLImageElement)) return;
+          const img = stillOf(p);
+          if (!img) return;
           img.loading = 'eager';
           img.decode().catch(() => {});
         });
@@ -1314,7 +1299,7 @@ const pics = await Promise.all(items.map((it) => (it.slug === 'drift' && posterC
       ], { duration: ms, id: 'ww-gl' });
       return () => a.cancel();
     };
-    // the picture has pixels to copy (DRIFT's run: once a frame is up)
+    // the picture has pixels to copy
     const glCopy = (m: HTMLImageElement | HTMLVideoElement) =>
       m instanceof HTMLVideoElement ? m.readyState >= 2 && m.videoWidth > 0 : m.complete && m.naturalWidth > 0;
     // a band or two of the picture torn sideways and tinted, three or four steps, on a canvas laid over it (the
@@ -1358,6 +1343,7 @@ const pics = await Promise.all(items.map((it) => (it.slug === 'drift' && posterC
       c.width = Math.max(1, Math.round(r.width * dpr));
       c.height = Math.max(1, Math.round(r.height * dpr));
       ctx.setTransform(c.width / w, 0, 0, c.height / h, 0, 0); // drawn in CSS px
+      ctx.imageSmoothingEnabled = getComputedStyle(m).imageRendering !== 'pixelated'; // the TV's pixels stay square
       // the picture's px under the canvas: object-fit fill / cover / contain, centred
       const fit = getComputedStyle(m).objectFit;
       const s = fit === 'cover' ? Math.max(w / nw, h / nh) : fit === 'contain' || fit === 'scale-down' ? Math.min(w / nw, h / nh) : 0;
@@ -1420,8 +1406,8 @@ const pics = await Promise.all(items.map((it) => (it.slug === 'drift' && posterC
       .filter((el): el is HTMLElement => !!el);
     const glPic = () => {
       const p = onGlass === LIST ? null : panelOf(onGlass);
-      const m = p ? mediaOf(p) : null;
-      return (m instanceof HTMLImageElement || m instanceof HTMLVideoElement) && m.getClientRects().length > 0 && !m.matches(':hover') ? m : null;
+      const m = p ? stillOf(p) : null; // the still (the loop's frames have no outline to tear along)
+      return m && m.getClientRects().length > 0 && !m.matches(':hover') ? m : null;
     };
     // the reading that may glitch: the lit plugin's name (its panel's and, on a laptop, the lit row's) and its
     // blurb, once it has been on the glass a while, and never with the pointer on or the focus in its panel
@@ -1508,8 +1494,8 @@ const pics = await Promise.all(items.map((it) => (it.slug === 'drift' && posterC
         a.tabIndex = on ? 0 : -1;
       });
       if (slug === was) return;
-      const img = mediaOf(next);
-      if (img instanceof HTMLImageElement) img.loading = 'eager'; // its window on its way while the old one leaves
+      const img = stillOf(next);
+      if (img) img.loading = 'eager'; // its window on its way while the old one leaves
       lastPick = performance.now();
       go(move);
     };
@@ -1834,20 +1820,23 @@ const pics = await Promise.all(items.map((it) => (it.slug === 'drift' && posterC
     --ww-name-max: 5.5;   /* rem: the biggest a plugin name gets */
     --ww-thumb-w: 9.8;    /* rem: the thumbnail's width in the list */
     --ww-dim: 1;          /* the unlit names and thumbnails: how much they show */
-    /* the plugins' pictures on the glass (Dan 2026-11-04: "the small details of how the plugins look on the screen";
-       /__wwbench, "Pictures"). The lit window: */
-    --ww-pic-r: 6;          /* px: its corners (GAS / Radio Roulette keep their bezel arcs, GAS 2 has none) */
-    --ww-pic-ring: 0.4;     /* its phosphor edge, alpha (the screen wall) */
-    --ww-pic-glow: 0.22;    /* its glow on the glass, alpha */
-    --ww-pic-glow-px: 36;   /* px: how far the glow reaches */
-    --ww-pic-drop: 0.55;    /* the dark drop under it, alpha */
-    --ww-pic-bright: 1;     /* its light: brightness, colour (saturation), contrast. Read by the bench only: even at 1
-                               a filter repaints the picture, so the filter goes in only with a value baked off 1 */
-    --ww-pic-sat: 1;
-    --ww-pic-con: 1;
+    /* the plugins' pictures on the glass: Dan's depth bench (/__wwdepth, 2026-11-11, "perfect lets commit to it";
+       tools/tv-anim/wwdepth-settings-2026-11-11.json). Each plays its loop, cut out, hovering; its grade (the bloom,
+       the light, the contrast) and its loop's speed are baked into public/tv (tools/tv-anim/bake-tv.py). The rest: */
+    --ww-pic-scale: 1;      /* the picture, x its box (round its centre). The bench's 1.3 went (Dan 2026-11-11: "the
+                               zoom that i did was a mistake take it back"): the bench had measured each box after its
+                               own zoom and zoomed it again, so 4 of 5 showed at 1.69 */
+    --ww-pic-x: -20px;      /* ...and moved */
+    --ww-pic-y: 0px;
+    --ww-pic-cell: 0.18;    /* the pixel grid on it: its dark lines, alpha */
+    --ww-pic-gap: 13%;      /* ...and their width, of a picture pixel */
+    --ww-pic-vig: 0.39;     /* it darkens towards its edges: alpha at its corners */
+    --ww-pic-vig-in: 60%;   /* ...from (0 = its centre, 100% = its corners) */
+    --ww-halo: 0.25;        /* the light round it in its channel's colour, alpha (its reach, 16 px, is baked) */
+    --ww-lines: 0.58;       /* the screen's hairlines, over everything: alpha */
+    --ww-lines-dp: 3;       /* ...one device px thin, one every this many device px */
     /* the list's thumbnails: */
-    --ww-thumb-r: 3;            /* px: corners */
-    --ww-thumb-glow-px: 18;     /* px: the lit one's glow */
+    --ww-thumb-reach: 0.49;     /* the lit one's light: the picture's reach (16 px) x this */
     --ww-thumb-hover-k: 1.06;   /* the pointer on a row: the picture comes forward this much */
     --ww-thumb-hover-light: 1.12;
     --ww-row-gap: clamp(0.9rem, 2.4vh, 1.75rem);
@@ -1861,6 +1850,12 @@ const pics = await Promise.all(items.map((it) => (it.slug === 'drift' && posterC
   .ww-osd { grid-area: osd; }
   .ww-list { grid-area: list; }
   .ww-panel { grid-area: panel; }
+  /* the words and the menus over the plugin's picture wherever they meet (its light, its move left: Dan 2026-11-11,
+     "words and menu on top", as a TV draws its on-screen menu over the picture); under the glass's light and lines (2) */
+  .ww-osd,
+  .ww-list,
+  .ww-info,
+  .ww-back { position: relative; z-index: 1; }
 
   /* ---- the on-screen menu ---- */
   .ww-osd {
@@ -1984,8 +1979,9 @@ const pics = await Promise.all(items.map((it) => (it.slug === 'drift' && posterC
     -webkit-tap-highlight-color: transparent;
   }
   /* the whole plugin, never cropped or letterboxed (Dan 2026-11-03: Radio Roulette was cut, GAS had black bars left
-     and right): a wide window fills the slot's width, a tall one its height, centred on the bare glass; the edge and
-     the glow sit on the picture itself */
+     and right): baked in its 16:10 slot (tools/tv-anim/bake-tv.py, the depth bench's thumbnails A: its own grade and
+     darkening, cut out, a wide one as wide as the slot, a tall one as tall), on the bare glass. Hovering, like the
+     big picture: nothing rectangular round it */
   .ww-thumb {
     display: grid;
     place-items: center;
@@ -1997,18 +1993,10 @@ const pics = await Promise.all(items.map((it) => (it.slug === 'drift' && posterC
     display: block;
     width: 100%;
     height: auto;
-    border-radius: calc(var(--ww-thumb-r) * 1px);
-    box-shadow: 0 0 0 1px var(--ww-edge);
     transition:
       transform 180ms cubic-bezier(0.2, 0.9, 0.25, 1.25),
-      box-shadow 180ms ease,
       filter 180ms ease;
   }
-  /* the slot's height as a length: a percent height doesn't resolve against an aspect-ratio box here */
-  .ww-thumb.is-tall :global(img) { width: auto; height: calc(var(--ww-thumb-col) / 1.6); }
-  /* the plates baked on near-black with rounded bezels: the panel's own arcs (.ww-ui below) */
-  .ww-row[data-ww-pick='gas'] .ww-thumb :global(img) { border-radius: 11% / 7.4%; }
-  .ww-row[data-ww-pick='radio-roulette'] .ww-thumb :global(img) { border-radius: 9% 9% 10.6% 10.6% / 16.2% 16.2% 19% 19%; }
   .ww-rtext { display: grid; gap: 0.3rem; min-width: 0; }
   /* the name: stencil on the glass, outlined in the channel's phosphor, the lit one filled */
   .ww-name {
@@ -2062,7 +2050,6 @@ const pics = await Promise.all(items.map((it) => (it.slug === 'drift' && posterC
     .ww-row:hover .ww-thumb :global(img) {
       transform: scale(var(--ww-thumb-hover-k));
       filter: brightness(var(--ww-thumb-hover-light));
-      box-shadow: 0 0 0 1px var(--ww-ink-hot), 0 0 22px var(--ww-glow-hot);
     }
   }
   .ww-row.is-lit .ww-name {
@@ -2072,12 +2059,16 @@ const pics = await Promise.all(items.map((it) => (it.slug === 'drift' && posterC
     filter: drop-shadow(0 0 10px var(--ww-glow-hot)) drop-shadow(0 0 26px var(--ww-glow-soft));
   }
   .ww-row.is-lit .ww-thumb { opacity: 1; }
-  .ww-row.is-lit .ww-thumb :global(img) { box-shadow: 0 0 0 1px var(--ww-ink-hot), 0 0 calc(var(--ww-thumb-glow-px) * 1px) var(--ww-glow); }
-  /* a FLOATING object (design-language §3b): nothing rectangular round its silhouette, at rest, hovered or lit; its
-     own baked shadow is its edge */
-  .ww-row .ww-thumb.is-float :global(img),
-  .ww-row:hover .ww-thumb.is-float :global(img),
-  .ww-row.is-lit .ww-thumb.is-float :global(img) { box-shadow: none; border-radius: 0; }
+  /* the lit one lit round in its channel's colour, as the big picture is (on the screen) */
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-row.is-lit .ww-thumb :global(img) {
+    --ww-thumb-light: drop-shadow(0 0 calc(16px * var(--ww-thumb-reach)) hsl(var(--ww-on-h) calc(var(--ww-on-s) * 1%) 58% / var(--ww-halo)));
+    filter: var(--ww-thumb-light);
+  }
+  @media (hover: hover) {
+    :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-row.is-lit:hover .ww-thumb :global(img) {
+      filter: brightness(var(--ww-thumb-hover-light)) var(--ww-thumb-light);
+    }
+  }
   .ww-row.is-lit .ww-type { opacity: 1; }
   /* a category change: the plugins that stay come up one after another (on the row: the reveal owns the li) */
   .ww-list.is-swapping .ww-item:not([hidden]) .ww-row {
@@ -2114,44 +2105,56 @@ const pics = await Promise.all(items.map((it) => (it.slug === 'drift' && posterC
   .ww-back { display: none; }
   .ww-ui { position: relative; margin: 0; min-width: 0; }
   /* step 5: the picture and the name lead to the product page: links in the screen's own look (no link colour) */
-  .ww-to-pic { position: absolute; inset: 0; border-radius: calc(var(--ww-pic-r) * 1px); }
+  .ww-to-pic { position: absolute; inset: 0; }
   .ww-pname .ww-to,
   .ww-pname .ww-to:hover { color: inherit; }
-  .ww-ui :global(img),
-  .ww-ui video {
+  /* the picture's box: the plugin alone, hovering, as its loop was recorded (no window edge, no corners, no drop
+     under a box). It is there before the picture, in the loop's own shape: a window that arrives late never pushes
+     the text down. Its pixels stay square */
+  .ww-pic {
+    position: relative;
+    display: block;
+    isolation: isolate;
+    width: 100%;
+    aspect-ratio: var(--ww-ar);
+  }
+  .ww-still {
     display: block;
     width: 100%;
     height: auto;
-    border-radius: calc(var(--ww-pic-r) * 1px);
-    box-shadow: 0 1px 0 0 #000, 0 24px 48px rgba(0, 0, 0, 0.55);
+    image-rendering: pixelated;
   }
-  /* the box is there before the picture: a lazy window that arrives late never pushes the text down */
-  .ww-ui :global(img) { aspect-ratio: var(--ww-ar); }
-  .ww-ui video {
-    aspect-ratio: 1725 / 912;
-    object-fit: cover;
-    background-color: var(--bg-1);
+  /* the loop over its still, cut out by the still's outline (nothing shows before the still's address is in); its
+     first frame up, the still under it goes (.is-run, the script) */
+  .ww-run {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+    image-rendering: pixelated;
+    opacity: 0;
+    pointer-events: none;
+    -webkit-mask: var(--ww-pic, linear-gradient(transparent, transparent)) 0 0 / 100% 100% no-repeat;
+    mask: var(--ww-pic, linear-gradient(transparent, transparent)) 0 0 / 100% 100% no-repeat;
   }
-  /* the plates are baked on a near-black ground with rounded bezels: clip to the bezel's own arc (radii measured off
-     the PNGs: GAS ~170px of 1600x2380, Radio Roulette ~220 top / ~260 bottom of 2546x1415); percent radii stay
-     circular at every size */
-  .ww-panel[data-ww-panel='gas'] .ww-ui :global(img) { border-radius: 11% / 7.4%; }
-  .ww-panel[data-ww-panel='radio-roulette'] .ww-ui :global(img) { border-radius: 9% 9% 10.6% 10.6% / 16.2% 16.2% 19% 19%; }
+  .ww-pic.is-run .ww-run { opacity: 1; }
+  .ww-pic.is-run .ww-still { opacity: 0; }
   /* GAS's window is one tall knob panel: it stands beside its text instead of over it */
   .ww-panel.is-portrait {
     grid-template-columns: auto minmax(0, 1fr);
     align-items: center;
     column-gap: clamp(1.25rem, 3vw, 2.5rem);
   }
-  /* the floating pump stands on the glass by itself: no window edge, no corner clip, no drop under a box */
-  .ww-panel.is-float .ww-ui :global(img),
-  :global(html:not(.hc)) .ww[data-ww-bg='screen'] > .ww-panel.is-float .ww-ui :global(img) { box-shadow: none; border-radius: 0; }
-  /* a set height (not max-height): with width auto, a max-height has no box until the picture loads */
-  .ww-panel.is-portrait .ww-ui :global(img) {
+  /* a set height (not max-height): with width auto, a max-height has no box until the picture loads. x --ww-tall:
+     the bench kept each old picture's width (the frontmatter's TV) */
+  .ww-panel.is-portrait .ww-pic {
     width: auto;
     max-width: 100%;
-    height: clamp(18rem, 40vw, 30rem);
+    height: calc(clamp(18rem, 40vw, 30rem) * var(--ww-tall, 1));
   }
+  /* its still from that height: WebKit sized the column off a width-led still's own file (348 px for GAS's 252) */
+  .ww-panel.is-portrait .ww-still { width: auto; height: 100%; }
 
   .ww-info { display: grid; gap: 0.6rem; justify-items: start; max-width: 40rem; }
   .ww-phead { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.25rem 0.9rem; }
@@ -2581,13 +2584,50 @@ const pics = await Promise.all(items.map((it) => (it.slug === 'drift' && posterC
     --ww-glow-soft: hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.3);
     --ww-glow-faint: hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.3);
   }
-  /* the window on the screen: a lit picture with a phosphor edge, not a drop on wood */
-  :global(html:not(.hc)) .ww[data-ww-bg='screen'] > .ww-panel .ww-ui :global(img),
-  :global(html:not(.hc)) .ww[data-ww-bg='screen'] > .ww-panel .ww-ui video {
-    box-shadow:
-      0 0 0 1px hsl(var(--ww-ch-h) var(--ww-gs) 58% / var(--ww-pic-ring)),
-      0 0 calc(var(--ww-pic-glow-px) * 1px) hsl(var(--ww-ch-h) var(--ww-gs) 58% / var(--ww-pic-glow)),
-      0 18px 40px rgba(0, 0, 0, var(--ww-pic-drop));
+  /* the plugin on the screen (Dan's depth bench, 2026-11-11): bigger than its box and moved (--ww-pic-*), lit round in
+     its own channel's colour (::before: its outline blurred, baked: the colour stays live), under the screen's pixel
+     grid, one cell a picture pixel, and darkening towards its edges (::after), both cut by its outline; while it
+     plays its light wavers a little, frame to frame (the bench's Flicker 0.045: brightness x 1 - 0.045 x a random
+     draw, 27 a second; here as the loop's opacity over the dark glass, the same to the eye) */
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] > .ww-panel .ww-pic {
+    translate: var(--ww-pic-x) var(--ww-pic-y);
+    scale: var(--ww-pic-scale);
+  }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] > .ww-panel .ww-pic::before {
+    content: '';
+    position: absolute;
+    inset: calc(-100% * var(--ww-halo-pad) / var(--ww-m)) calc(-100% * var(--ww-halo-pad) / var(--ww-n));
+    z-index: -1;
+    pointer-events: none;
+    background: hsl(var(--ww-ch-h) var(--ww-gs) 58% / var(--ww-halo));
+    -webkit-mask: var(--ww-halo-img, linear-gradient(transparent, transparent)) 0 0 / 100% 100% no-repeat;
+    mask: var(--ww-halo-img, linear-gradient(transparent, transparent)) 0 0 / 100% 100% no-repeat;
+  }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] > .ww-panel .ww-pic::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(90deg, rgba(0, 0, 0, var(--ww-pic-cell)) 0 var(--ww-pic-gap), transparent var(--ww-pic-gap)),
+      linear-gradient(180deg, rgba(0, 0, 0, var(--ww-pic-cell)) 0 var(--ww-pic-gap), transparent var(--ww-pic-gap)),
+      radial-gradient(farthest-corner at 50% 50%, transparent var(--ww-pic-vig-in), rgba(0, 0, 0, var(--ww-pic-vig)) 100%);
+    background-size: calc(100% / var(--ww-n)) 100%, 100% calc(100% / var(--ww-m)), auto;
+    -webkit-mask: var(--ww-pic, linear-gradient(transparent, transparent)) 0 0 / 100% 100% no-repeat;
+    mask: var(--ww-pic, linear-gradient(transparent, transparent)) 0 0 / 100% 100% no-repeat;
+  }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] > .ww-panel .ww-pic.is-run .ww-run {
+    animation: ww-flicker 1148ms steps(1, end) infinite;
+  }
+  @keyframes ww-flicker {
+    0% { opacity: 0.98; } 3.226% { opacity: 0.975; } 6.452% { opacity: 0.958; } 9.677% { opacity: 0.979; }
+    12.903% { opacity: 0.977; } 16.129% { opacity: 0.974; } 19.355% { opacity: 0.992; } 22.581% { opacity: 0.977; }
+    25.806% { opacity: 0.972; } 29.032% { opacity: 0.964; } 32.258% { opacity: 0.996; } 35.484% { opacity: 0.986; }
+    38.71% { opacity: 0.996; } 41.935% { opacity: 0.964; } 45.161% { opacity: 0.969; } 48.387% { opacity: 0.998; }
+    51.613% { opacity: 0.956; } 54.839% { opacity: 0.957; } 58.065% { opacity: 0.971; } 61.29% { opacity: 0.972; }
+    64.516% { opacity: 0.993; } 67.742% { opacity: 0.999; } 70.968% { opacity: 0.976; } 74.194% { opacity: 0.997; }
+    77.419% { opacity: 0.991; } 80.645% { opacity: 0.989; } 83.871% { opacity: 0.999; } 87.097% { opacity: 0.979; }
+    90.323% { opacity: 0.98; } 93.548% { opacity: 0.962; } 96.774% { opacity: 0.977; } 100% { opacity: 0.98; }
   }
 
   /* ---- THE CHANNELS -------------------------------------------------------
@@ -2624,15 +2664,18 @@ const pics = await Promise.all(items.map((it) => (it.slug === 'drift' && posterC
      screen): dark glass lit from the centre with scanlines + aperture grille
      ON the glass, UNDER everything on it, and the glass's reflection + curved
      falloff OVER everything, so the menu, the names and the window read as ON
-     the screen. The lines stay off what is read (the user 2026-10-19: the
-     reading suffered "because of the pixels"): over the text, a 1 px line
-     every 3 px crossed every letter, and on a phone (3 device px per CSS px)
-     each was a band; the plugin's picture is clean too (the user's pick). The
-     layers sit on .ww, outside the panels, so a panel's fade never traps them
-     in its stacking context. */
+     the screen. Its lines are hairlines over everything (Dan 2026-11-10/11,
+     the depth bench: "more close to each other and more packed ... a little
+     bit seen ... everything will glue together"; --ww-lines): one DEVICE px
+     thin. On 2026-10-19 the user's reading suffered "because of the pixels":
+     1 CSS px lines every 3 px crossed every letter, and on a phone (3 device
+     px per CSS px) each was a band, so they went under the text; the old
+     lines on the glass stay at 0 (--ww-scr-scan). The layers sit on .ww,
+     outside the panels, so a panel's fade never traps them in its stacking
+     context. */
   .ww {
     --ww-scr-bright: 1.37;  /* phosphor glow */
-    --ww-scr-scan: 0.2;     /* scanline darkness on the glass (under the text and the pictures) */
+    --ww-scr-scan: 0;       /* scanline darkness on the glass, under the text and the pictures (the hairlines took over) */
     --ww-scr-glare: 1;      /* the glass's reflection over everything, x today's */
     --ww-scr-curve: 0.6;    /* the tube's curved falloff: how dark the glass gets towards its edges */
   }
@@ -2692,7 +2735,7 @@ const pics = await Promise.all(items.map((it) => (it.slug === 'drift' && posterC
     to   { background-position: 0 0, 0 0, 0 120%; }
   }
   .ww-screen-fx {
-    z-index: 2; /* over the content: it is on the screen (smooth light only: nothing here crosses a letter) */
+    z-index: 2; /* over the content: it is on the screen (smooth light, and the hairlines, one device px) */
     background:
       linear-gradient(158deg, rgba(255, 255, 255, calc(0.07 * var(--ww-scr-glare))) 0%, rgba(255, 255, 255, calc(0.02 * var(--ww-scr-glare))) 16%, transparent 30%), /* glass reflection */
       radial-gradient(ellipse 70% 22% at 50% 0%, rgba(255, 255, 255, calc(0.05 * var(--ww-scr-glare))), transparent 70%),                 /* the glass catching the room light */
@@ -2702,6 +2745,18 @@ const pics = await Promise.all(items.map((it) => (it.slug === 'drift' && posterC
       inset 0 0 0 1px rgba(190, 90, 255, 0.22);
   }
   .ww[data-ww-bg='screen'] > :is(.ww-screen, .ww-screen-fx) { opacity: 1; }
+  /* the hairlines: a device px is 1 CSS px, half of one on a 2x screen, a third on a 3x one */
+  .ww { --ww-dpx: 1px; }
+  @media (min-resolution: 2dppx), (-webkit-min-device-pixel-ratio: 2) { .ww { --ww-dpx: 0.5px; } }
+  @media (min-resolution: 3dppx), (-webkit-min-device-pixel-ratio: 3) { .ww { --ww-dpx: 0.3334px; } }
+  .ww-screen-fx::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(0deg, rgba(0, 0, 0, var(--ww-lines)) 0 var(--ww-dpx),
+      transparent var(--ww-dpx) calc(var(--ww-dpx) * var(--ww-lines-dp)));
+  }
 
   /* Power-on (the script arms it the first time the TV comes into view): dark
      glass, then a bright line that opens into the picture; the LED lights with it */
@@ -2912,8 +2967,7 @@ const pics = await Promise.all(items.map((it) => (it.slug === 'drift' && posterC
     }
     @media (min-width: 861px) {
       /* the window: as wide as its column, unless that makes it taller than the room left over by its text */
-      .ww[data-ww-bg='screen'] .ww-panel:not(.is-portrait) .ww-ui :global(img),
-      .ww[data-ww-bg='screen'] .ww-panel:not(.is-portrait) .ww-ui video {
+      .ww[data-ww-bg='screen'] .ww-panel:not(.is-portrait) .ww-pic {
         max-width: calc((var(--ww-main) - var(--ww-info-h)) * var(--ww-ar, 2));
       }
       /* GAS's tall window yields width before the text beside it gets narrower than --ww-side-min: with the list
@@ -2921,11 +2975,12 @@ const pics = await Promise.all(items.map((it) => (it.slug === 'drift' && posterC
          tall, and the TV outgrew the screen. The panel is the container (cqi); a browser without container units
          drops the second height and keeps the first. */
       .ww[data-ww-bg='screen'] .ww-panel.is-portrait { container-type: inline-size; }
-      .ww[data-ww-bg='screen'] .ww-panel.is-portrait .ww-ui :global(img) {
-        height: min(clamp(18rem, 40vw, 30rem), var(--ww-main));
+      /* x --ww-tall as the set height above; the width's cap needs none (it is the loop's own shape) */
+      .ww[data-ww-bg='screen'] .ww-panel.is-portrait .ww-pic {
+        height: calc(min(clamp(18rem, 40vw, 30rem), var(--ww-main)) * var(--ww-tall, 1));
         height: min(
-          clamp(18rem, 40vw, 30rem),
-          var(--ww-main),
+          calc(clamp(18rem, 40vw, 30rem) * var(--ww-tall, 1)),
+          calc(var(--ww-main) * var(--ww-tall, 1)),
           calc((100cqi - var(--ww-side-min) - clamp(1.25rem, 3vw, 2.5rem)) / var(--ww-ar))
         );
       }
@@ -3052,13 +3107,12 @@ const pics = await Promise.all(items.map((it) => (it.slug === 'drift' && posterC
         grid-template-rows: repeat(var(--ww-rows, 5), auto);
         align-content: space-evenly;
       }
-      .ww[data-ww-bg='screen'] .ww-panel:not(.is-portrait) .ww-ui :global(img),
-      .ww[data-ww-bg='screen'] .ww-panel:not(.is-portrait) .ww-ui video {
+      .ww[data-ww-bg='screen'] .ww-panel:not(.is-portrait) .ww-pic {
         max-width: calc(max(8rem, var(--ww-room) - var(--ww-info-h)) * var(--ww-ar, 2));
         margin-inline: auto;
       }
-      .ww[data-ww-bg='screen'] .ww-panel.is-portrait .ww-ui :global(img) {
-        height: max(8rem, min(24rem, calc(var(--ww-room) - var(--ww-info-h))));
+      .ww[data-ww-bg='screen'] .ww-panel.is-portrait .ww-pic {
+        height: calc(max(8rem, min(24rem, calc(var(--ww-room) - var(--ww-info-h)))) * var(--ww-tall, 1));
         margin-inline: auto;
       }
     }
@@ -3072,6 +3126,7 @@ const pics = await Promise.all(items.map((it) => (it.slug === 'drift' && posterC
     .ww-screen,
     .ww-screen-fx,
     .ww-frame { transition: none; }
+    .ww-run { animation: none !important; } /* the loops never play here; nor does their flicker */
     .ww-list.is-swapping .ww-item:not([hidden]) .ww-row { animation: none; }
   }
 
