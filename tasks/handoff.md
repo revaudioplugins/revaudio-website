@@ -275,7 +275,13 @@ Files: `src/components/WordWall.astro`, `src/components/TrialGateModal.astro` (+
   (laptop: RevLimiter 51 x 25, GAS 21 x 32, GAS 2 17 x 32, DRIFT 51 x 27, RR 51 x 28; the phone reuses them) in a holder
   (`.wwd-tw`) carrying the big picture's grade (own channel; glow x `thumbReach` 0.3), lines, fade, edges; unlit dim
   by `--ww-dim`; lit = light on the glass; hover grows the holder; GAS 2 floats. PHONE: LIST shows them.
-- Next: Dan's look at all five + the thumbnails + the scanlines on `/__wwdepth` -> COPY SETTINGS -> production: the same for GAS, Radio Roulette (both have
+- 2026-11-11 Dan: "it dosent look good that the tumbnail ... are grainy" (2 x 2 at ~100 px = ~50 pixels across) ->
+  "show me all three": a THUMBS switch on the bench (A smooth = the big picture's look; B the screen's one colour
+  unlit (`mix-blend-mode: color` of `--ww-ink`), own colours lit; C a line drawing in `--ww-ink` (Sobel on the
+  lifted light, glow baked, padded past the box), the lit one fills in; 2 x 2 to compare). Smooth = drawn at box x the
+  screen's density from the real srcset pixels (`naturalWidth` halves a 2x pick). Sliders: B One colour, C Lines /
+  softness / glow / lines on the lit one. My pick: B. COPY SETTINGS carries `thumbs`. Bench only.
+- Next: Dan's pick of A / B / C, then his look at all five + the thumbnails + the scanlines on `/__wwdepth` -> COPY SETTINGS -> production: the same for GAS, Radio Roulette (both have
   browser demos), DRIFT (its wall run, pixelated), GAS 2 (its pump floating, animated, alpha), each to music -> build
   it in WordWall (bake the grade into the TV's copies: no live SVG filter in production; video, see the weight), then
   the thumbnails; then the header that slides away; TV Sells round 4 notes; step 00's baseline before any push to

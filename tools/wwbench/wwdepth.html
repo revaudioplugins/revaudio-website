@@ -78,6 +78,9 @@
   <span class="seg" id="pview" title="The phone shows one pane at a time: the list (the thumbnails) or the lit plugin">
     <button data-pv="list">PHONE: LIST</button><button data-pv="panel">THE PLUGIN</button>
   </span>
+  <span class="seg" id="tstyle" title="The list's thumbnails: three designs to compare (and pick A's 2 × 2 pixels, the grainy one)">
+    <button data-t="a">THUMBS: A · SMOOTH</button><button data-t="b">B · ONE COLOUR</button><button data-t="c">C · LINES</button><button data-t="px">2 × 2</button>
+  </span>
   <span class="spacer"></span>
   <button class="primary" id="copy">COPY SETTINGS</button>
   <button id="resetAll">RESET</button>
@@ -177,9 +180,14 @@
       { k: '--ww-scr-glare', label: 'Glass reflection', hint: 'the room’s light on the glass, over everything (× today’s)', min: 0, max: 3, step: 0.05, as: 'page', show: '×' },
       { k: '--ww-scr-curve', label: 'Tube curve', hint: 'how dark the glass falls off towards its edges', min: 0, max: 1, step: 0.01, as: 'page' },
     ] },
-    { title: 'Thumbnails', note: 'the list: the same look, small and still', ctl: [
+    { title: 'Thumbnails', note: 'the list: THUMBS in the header picks the design', ctl: [
       { k: 'thumbReach', label: 'Glow size', hint: 'the bloom’s and the light’s reach on a thumbnail, as a share of the big picture’s (a small picture, a small glow)', min: 0, max: 1, step: 0.01, def: 0.3, unit: '', as: 'css' },
       { k: '--ww-dim', label: 'Unlit thumbnails and names', hint: 'how much the plugins that are not lit show (the TV’s own: the names dim the same)', min: 0.1, max: 1, step: 0.01, as: 'page' },
+      { k: 'tMono', label: 'B · One colour', hint: 'how much of the screen’s colour covers the unlit thumbnails (1 = one colour, 0 = their own colours)', min: 0, max: 1, step: 0.01, def: 1, unit: '', as: 'css' },
+      { k: 'tDetail', label: 'C · Lines', hint: 'how much of each plugin is drawn: low = its outline and its big parts, high = every edge', min: 0.03, max: 0.35, step: 0.01, def: 0.14, as: 'thumb' },
+      { k: 'tSoft', label: 'C · Line softness', hint: 'the picture softened before its edges are found: higher = thicker, calmer lines', min: 0.2, max: 2, step: 0.05, def: 0.6, as: 'thumb' },
+      { k: 'tGlow', label: 'C · Line glow', hint: 'the glow round the lines (the names’ outlines glow the same way)', min: 0, max: 1, step: 0.01, def: 0.5, as: 'thumb' },
+      { k: 'tLit', label: 'C · Lines on the lit one', hint: 'how much of the lines stays over the lit plugin’s picture', min: 0, max: 1, step: 0.01, def: 0.3, unit: '', as: 'css' },
     ] },
     { title: 'Motion', ctl: [
       { k: 'speed', label: 'Speed', hint: 'the recorded loops (1 = real time, 15 frames a second)', min: 0.25, max: 3, step: 0.05, def: 1.8, as: 'run', show: '×' },
@@ -192,10 +200,11 @@
     phone: [[402, 714, 'iPhone 17 Pro'], [390, 844], [375, 667, 'iPhone SE']],
   };
 
-  let st = { view: 'both', pview: 'panel', size: { laptop: 0, phone: 0 }, zoom: 0, look: 'on', slug: 'revlimiter', cur: {} };
+  let st = { view: 'both', pview: 'panel', size: { laptop: 0, phone: 0 }, zoom: 0, look: 'on', slug: 'revlimiter', tstyle: 'b', cur: {} };
   try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s && s.cur) st = Object.assign(st, s); } catch (e) {}
   Object.keys(st.cur).forEach((k) => { if (!byK[k]) delete st.cur[k]; });
   if (!SLUGS.some(([s]) => s === st.slug)) st.slug = 'revlimiter';
+  if (!['a', 'b', 'c', 'px'].includes(st.tstyle)) st.tstyle = 'b';
   if (st.v !== 2) { delete st.cur.scan; delete st.cur['--ww-scr-scan']; st.v = 2; }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} };
   let src = null;                 // the page's own --ww-* defaults (read off the laptop frame)
@@ -225,7 +234,7 @@
   const stages = {};
   document.querySelectorAll('.stage').forEach((s) => {
     const f = s.dataset.f;
-    stages[f] = { s, f, iframe: s.querySelector('iframe'), vp: s.querySelector('.vp'), size: s.querySelector('[data-size]'), ready: false, media: {}, busy: {} };
+    stages[f] = { s, f, iframe: s.querySelector('iframe'), vp: s.querySelector('.vp'), size: s.querySelector('[data-size]'), ready: false, media: {}, busy: {}, tset: {} };
     SIZES[f].forEach(([w, h, n], i) => stages[f].size.add(new Option(`${w}×${h}${n ? ' · ' + n : ''}`, i)));
     stages[f].size.value = Math.min(st.size[f] || 0, SIZES[f].length - 1);
     // a new size = a fresh page (each picture's box is measured on the page as it lays out at that size)
@@ -239,7 +248,7 @@
     // the document being left stays reachable for a moment after src changes: never wire that one
     const S = stages[f];
     S.old = S.iframe.contentDocument;
-    S.ready = false; S.doc = null; S.media = {}; S.busy = {};
+    S.ready = false; S.doc = null; S.media = {}; S.busy = {}; S.tset = {};
     S.iframe.src = `/?plugin=${st.slug}&wwdepth=${f}`;
     waitFor(f);
   }
@@ -285,6 +294,7 @@
     document.querySelectorAll('#zoom button').forEach((b) => b.classList.toggle('on', +b.dataset.z === (+st.zoom || 0)));
     document.querySelectorAll('#look button').forEach((b) => b.classList.toggle('on', b.dataset.l === st.look));
     document.querySelectorAll('#pview button').forEach((b) => b.classList.toggle('on', b.dataset.pv === st.pview));
+    document.querySelectorAll('#tstyle button').forEach((b) => b.classList.toggle('on', b.dataset.t === st.tstyle));
     document.getElementById('play').textContent = playing ? '❚❚ PAUSE' : '▶ PLAY';
     const d = LOOPS[st.slug] || (dims[st.slug] && { n: dims[st.slug][0], m: dims[st.slug][1] });
     document.getElementById('what').textContent = d ? `${d.n} × ${d.m} pixels${LOOPS[st.slug] ? ', running' : ', its picture today'}` : '';
@@ -323,9 +333,9 @@
     vp.style.width = (box ? box[0] : w * k) + 'px'; vp.style.height = (box ? box[1] : h * k) + 'px';
     vp.style.overflow = box ? 'auto' : 'hidden';
   }
-  function lookAtPicture() {
+  function lookAtPicture(sel) {
     const z = +st.zoom || 0, { iframe, vp } = stages.laptop;
-    const el = z && stages.laptop.ready && iframe.contentDocument.querySelector(`[data-ww-panel='${st.slug}'] .ww-ui`);
+    const el = z && stages.laptop.ready && iframe.contentDocument.querySelector(sel || `[data-ww-panel='${st.slug}'] .ww-ui`);
     if (!el) return;
     const r = el.getBoundingClientRect();
     vp.scrollTo({ left: (r.left + r.width / 2) * z - vp.clientWidth / 2, top: (r.top + r.height / 2) * z - vp.clientHeight / 2 });
@@ -468,40 +478,90 @@
     S.busy[slug] = false;
     paint();
   }
-  /* the list's thumbnails (Dan 2026-11-10, his pick A: "the same look, smaller, still"): each one drawn down to its
-     box / 2 (the same 2 x 2 pixels; the phone reuses the laptop's pixels), put in a holder of its size that carries the
-     look's lines, fade and light (a picture can't hold a pseudo-element), and the hover's grow moves to the holder so
-     the lines grow with it. Unlit rows keep dimming as the TV dims them, with their names (--ww-dim) */
+  /* the list's thumbnails. Dan 2026-11-10 picked A ("the same look, smaller, still"), then 2026-11-11: "it dosent look
+     good that the tumbnail ... are grainy": at a thumbnail's size the 2 x 2 pixels are only ~50 across, all grain.
+     Three designs to compare (THUMBS in the header): A smooth, the big picture's look; B the screen's one colour while
+     unlit (like the outlined names), its own colours when lit (like the name filling in); C a line drawing in the
+     screen's colour, the lit one filling in; and 2 x 2, pick A's pixels (the phone reuses the laptop's). Each thumbnail
+     gets all three pictures once: drawn down to its box / 2, to its box at the screen's density, and as lines. It sits
+     in a holder (the hover's grow and the lit one's light) round an inner box (the fade, B's colour, C's lines): a
+     picture can't hold a pseudo-element. Unlit rows keep dimming as the TV dims them, with their names (--ww-dim) */
   const tdims = {};
   async function prepareThumbs(f) {
     const S = stages[f], doc = S.doc;
-    if (!S.ready || S.thumbs) return;
+    if (!S.ready || S.thumbs || (f === 'phone' && st.pview !== 'list')) return;
     S.thumbs = true;
+    // the phone's list: the page's own link (?plugin=) can open the plugin's pane after the bench asked for the list
+    if (f === 'phone') doc.querySelector(WALL).dispatchEvent(new S.iframe.contentWindow.CustomEvent('ww:select', { detail: { view: 'list' } }));
     await doc.fonts?.ready;
+    const dpr = Math.min(3, Math.max(1, S.iframe.contentWindow.devicePixelRatio || 1));
     for (const row of doc.querySelectorAll('.ww-row[data-ww-pick]')) {
       const slug = row.dataset.wwPick, img = row.querySelector('.ww-thumb img');
       if (!img || img.closest('.wwd-tw')) continue;
       img.loading = 'eager';
       const ok = await until(() => img.complete && img.naturalWidth > 0 && img.getBoundingClientRect().width > 10, 60);
-      if (!ok || S.doc !== doc) { S.thumbs = false; return; }
+      if (!ok || S.doc !== doc) {
+        // the dev server's first pictures can take 10-15 s: the rest are done on the next try
+        S.thumbs = false;
+        if (S.doc === doc) setTimeout(() => prepareThumbs(f), 1500);
+        return;
+      }
       await img.decode().catch(() => {});
       const r = await stableRect(img);
       let n = Math.max(4, Math.round(r.width / PX)), m = Math.max(4, Math.round(r.height / PX));
       if (f === 'laptop') tdims[slug] = [n, m]; else if (tdims[slug]) [n, m] = tdims[slug];
-      const url = drawDown(doc, img, n, m);
-      const tw = doc.createElement('span');
-      tw.className = 'wwd-tw';
-      Object.assign(tw.style, { width: `${r.width}px`, height: `${r.height}px` });
-      tw.style.setProperty('--wwd-n', n);
-      tw.style.setProperty('--wwd-m', m);
-      if (slug === FLOAT) tw.style.setProperty('--wwd-alpha', `url("${url}")`);
-      img.before(tw);
-      tw.appendChild(img);
+      // drawn from the picture on screen, before its srcset goes (a picture mid-load draws as nothing), through a copy
+      // without the srcset: naturalWidth counts a picture picked for a 2x screen as half its pixels
+      const pic = doc.createElement('img');
+      pic.src = img.currentSrc || img.src;
+      await pic.decode().catch(() => {});
+      const from = pic.naturalWidth ? pic : img;
+      const hiCv = drawDownCanvas(doc, from, Math.round(r.width * dpr), Math.round(r.height * dpr));
+      const T = { slug, img, dpr, hiCv, px: drawDown(doc, from, n, m), hi: hiCv.toDataURL('image/png') };
+      T.tw = doc.createElement('span');
+      T.tw.className = 'wwd-tw';
+      T.tw.dataset.src = `${from.naturalWidth}x${from.naturalHeight}`; // the picture it was drawn from (sharp enough?)
+      Object.assign(T.tw.style, { width: `${r.width}px`, height: `${r.height}px` });
+      T.tw.style.setProperty('--wwd-n', n);
+      T.tw.style.setProperty('--wwd-m', m);
+      const ti = doc.createElement('span');
+      ti.className = 'wwd-ti';
+      T.tl = doc.createElement('i');
+      T.tl.className = 'wwd-tl';
+      img.before(T.tw);
+      T.tw.appendChild(ti);
+      ti.append(img, T.tl);
       img.removeAttribute('srcset');
       img.removeAttribute('sizes');
-      img.src = url;
+      S.tset[slug] = T;
     }
+    bakeLines(f, true);
+    applyThumbs(f);
   }
+  // the style's picture into each thumbnail (2 x 2: the pixels; the others: the smooth one)
+  function applyThumbs(f) {
+    Object.values(stages[f].tset || {}).forEach((T) => {
+      const url = st.tstyle === 'px' ? T.px : T.hi;
+      if (T.img.src !== url) T.img.src = url;
+      if (T.slug === FLOAT) T.tw.style.setProperty('--wwd-alpha', `url("${url}")`);
+    });
+  }
+  // C's lines, drawn again when their sliders move (softness: the edges found again too)
+  function bakeLines(f, soft) {
+    const S = stages[f];
+    if (!S.doc) return;
+    Object.values(S.tset || {}).forEach((T) => {
+      if (soft || !T.G) T.G = gradOf(T.hiCv, +val('tSoft') * T.dpr, T.dpr);
+      T.tl.style.setProperty('--wwd-tline', `url("${lineURL(S.doc, T.G, +val('tDetail'), +val('tGlow'))}")`);
+      T.tl.style.setProperty('--wwd-tlin', `${(-T.G.pad / T.dpr).toFixed(2)}px`);
+    });
+  }
+  let lineT, lineSoft = false;
+  const relines = (soft) => {
+    lineSoft = lineSoft || soft;
+    clearTimeout(lineT);
+    lineT = setTimeout(() => { ['laptop', 'phone'].forEach((f) => bakeLines(f, lineSoft)); lineSoft = false; }, 60);
+  };
   // the box once it stops changing (two reads 120 ms apart agree)
   async function stableRect(el) {
     let a = el.getBoundingClientRect();
@@ -514,7 +574,8 @@
     return a;
   }
   // a big picture drawn down to n x m in halving steps (one big step would alias), alpha kept
-  function drawDown(doc, img, n, m) {
+  function drawDown(doc, img, n, m) { return drawDownCanvas(doc, img, n, m).toDataURL('image/png'); }
+  function drawDownCanvas(doc, img, n, m) {
     let w = img.naturalWidth, h = img.naturalHeight;
     let c = doc.createElement('canvas');
     c.width = w; c.height = h;
@@ -533,7 +594,70 @@
     const x = out.getContext('2d');
     x.imageSmoothingQuality = 'high';
     x.drawImage(c, 0, 0, n, m);
-    return out.toDataURL('image/png');
+    return out;
+  }
+
+  /* C's line drawing: the picture's edges found on its light (Sobel), softened first so the lines stay calm. The
+     picture sits on black, so its outline is an edge too: the lines' picture is padded and reaches past the box. The
+     strongest tDetail share of the box is kept, a glow added round it; white lines, the CSS colours them */
+  function blurF(src, W, H, sig) {
+    if (sig < 0.3) return src;
+    const r = Math.ceil(sig * 2.5), k = new Float32Array(2 * r + 1);
+    let sum = 0;
+    for (let i = -r; i <= r; i++) sum += (k[i + r] = Math.exp(-(i * i) / (2 * sig * sig)));
+    k.forEach((v, i) => (k[i] = v / sum));
+    const tmp = new Float32Array(W * H), out = new Float32Array(W * H);
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      let a = 0;
+      for (let i = -r; i <= r; i++) { const xx = x + i; if (xx >= 0 && xx < W) a += src[y * W + xx] * k[i + r]; }
+      tmp[y * W + x] = a;
+    }
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      let a = 0;
+      for (let i = -r; i <= r; i++) { const yy = y + i; if (yy >= 0 && yy < H) a += tmp[yy * W + x] * k[i + r]; }
+      out[y * W + x] = a;
+    }
+    return out;
+  }
+  function gradOf(cv, sig, dpr) {
+    const w = cv.width, h = cv.height, gsig = 1.5 * dpr; // the glow: 1.5 css px
+    const pad = Math.ceil(sig * 2.5) + Math.ceil(gsig * 3) + 2, W = w + 2 * pad, H = h + 2 * pad;
+    const d = cv.getContext('2d').getImageData(0, 0, w, h).data;
+    let L = new Float32Array(W * H);
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const i = (y * w + x) * 4;
+      // the darks lifted (a dark plate on black, DRIFT's, still has an outline)
+      L[(y + pad) * W + x + pad] = Math.pow((0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2]) / 255, 0.55) * (d[i + 3] / 255);
+    }
+    L = blurF(L, W, H, sig);
+    const g = new Float32Array(W * H);
+    for (let y = 1; y < H - 1; y++) for (let x = 1; x < W - 1; x++) {
+      const o = y * W + x;
+      const gx = L[o - W + 1] + 2 * L[o + 1] + L[o + W + 1] - L[o - W - 1] - 2 * L[o - 1] - L[o + W - 1];
+      const gy = L[o + W - 1] + 2 * L[o + W] + L[o + W + 1] - L[o - W - 1] - 2 * L[o - W] - L[o - W + 1];
+      g[o] = Math.hypot(gx, gy);
+    }
+    return { g, W, H, w, h, pad, gsig };
+  }
+  function lineURL(doc, G, detail, glow) {
+    const { g, W, H, w, h, pad, gsig } = G;
+    const inside = new Float32Array(w * h);
+    for (let y = 0; y < h; y++) inside.set(g.subarray((y + pad) * W + pad, (y + pad) * W + pad + w), y * w);
+    inside.sort();
+    const t = Math.max(1e-3, inside[Math.min(inside.length - 1, Math.floor(inside.length * (1 - detail)))]);
+    const a = new Float32Array(W * H);
+    for (let i = 0; i < a.length; i++) a[i] = Math.min(1, Math.max(0, (g[i] - t * 0.75) / (t * 0.5)));
+    const gl = glow > 0 ? blurF(a, W, H, gsig) : null;
+    const cv = doc.createElement('canvas');
+    cv.width = W; cv.height = H;
+    const x = cv.getContext('2d'), im = x.createImageData(W, H);
+    for (let i = 0; i < a.length; i++) {
+      const v = gl ? 1 - (1 - a[i]) * (1 - Math.min(1, gl[i] * glow * 2.2)) : a[i];
+      im.data[4 * i] = im.data[4 * i + 1] = im.data[4 * i + 2] = 255;
+      im.data[4 * i + 3] = Math.round(v * 255);
+    }
+    x.putImageData(im, 0, 0);
+    return cv.toDataURL('image/png');
   }
 
   // ── the grade (look A): lift the blacks to the glass's dark -> mix with a duotone of its light -> bloom -> colour
@@ -630,36 +754,72 @@
       background: repeating-linear-gradient(0deg, rgba(0, 0, 0, var(--wwd-lines)) 0 var(--wwd-dpx),
         transparent var(--wwd-dpx) calc(var(--wwd-dpx) * var(--wwd-linesDp)));
     }`;
+  // A and B: the picture's own darkening and lines, no pixel grid
+  const SOFT = `
+        repeating-linear-gradient(0deg, rgba(0, 0, 0, var(--wwd-scan)) 0 1px, transparent 1px var(--wwd-scanPx)),
+        radial-gradient(farthest-corner at 50% 50%, transparent var(--wwd-vigIn), rgba(0, 0, 0, var(--wwd-vig)) 100%)`;
+  const ALPHA = '-webkit-mask: var(--wwd-alpha) 0 0 / 100% 100% no-repeat; mask: var(--wwd-alpha) 0 0 / 100% 100% no-repeat;';
   const thumbOf = (slug) => {
-    const R = `html:not(.hc) .ww[data-ww-bg='screen'] .ww-row[data-ww-pick='${slug}']`, float = slug === FLOAT;
+    const R = `html:not(.hc) .ww[data-ww-bg='screen'] .ww-row[data-ww-pick='${slug}']`, float = slug === FLOAT, t = st.tstyle;
     const light = `hsl(var(--ww-on-h) calc(var(--ww-on-s) * 1%) 58% / var(--wwd-halo))`;
     const reach = 'calc(var(--wwd-haloPx) * var(--wwd-thumbReach))';
     const grade = `url(#wwd-tgrade-${slug}) brightness(calc(var(--wwd-lift) * var(--wwd-thov, 1))) contrast(var(--wwd-con)) saturate(var(--wwd-sat)) blur(var(--wwd-focus))`;
-    return `
+    const rad = float ? '0' : 'var(--wwd-r)';
+    let css = `
     ${R} .wwd-tw { position: relative; display: block; isolation: isolate; transition: scale 180ms cubic-bezier(0.2, 0.9, 0.25, 1.25); }
     @media (hover: hover) { ${R}:hover .wwd-tw { scale: var(--ww-thumb-hover-k); --wwd-thov: var(--ww-thumb-hover-light); } }
-    ${R} .wwd-tw img {
-      width: 100% !important; height: 100% !important; max-width: none !important; transform: none !important;
-      box-shadow: none !important; border-radius: ${float ? '0' : 'var(--wwd-r)'} !important; image-rendering: pixelated;
-      ${float ? '' : MASK(FEATHER)}
+    ${R} .wwd-ti { position: relative; display: block; width: 100%; height: 100%; isolation: isolate; border-radius: ${rad}; ${float || t === 'c' ? '' : MASK(FEATHER)} }
+    ${R} .wwd-ti img {
+      display: block; width: 100% !important; height: 100% !important; max-width: none !important; transform: none !important;
+      box-shadow: none !important; border-radius: ${rad} !important; image-rendering: ${t === 'px' ? 'pixelated' : 'auto'};
       filter: ${grade} !important;
     }
-    ${float ? `${R}.is-lit .wwd-tw img { filter: ${grade} drop-shadow(0 0 ${reach} ${light}) !important; }` : `${R}.is-lit .wwd-tw::before {
+    ${float ? `${R}.is-lit .wwd-ti img { filter: ${grade} drop-shadow(0 0 ${reach} ${light}) !important; }` : `${R} .wwd-tw::before {
       content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: var(--wwd-r);
-      box-shadow: 0 0 ${reach} calc(${reach} * 0.15) ${light};
-    }`}
-    ${R} .wwd-tw::after {
-      content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: ${float ? '0' : 'var(--wwd-r)'};
-      background: ${OVER};
-      background-size: calc(100% / var(--wwd-n)) 100%, 100% calc(100% / var(--wwd-m)), auto, auto;
+      box-shadow: 0 0 ${reach} calc(${reach} * 0.15) ${light}; opacity: 0; transition: opacity 200ms ease;
+    }
+    ${R}.is-lit .wwd-tw::before { opacity: 1; }`}`;
+    // the picture's darkening and edges (2 x 2: its pixel grid too)
+    if (t !== 'c') css += `
+    ${R} .wwd-ti::after {
+      content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none; border-radius: ${rad};
+      background: ${t === 'px' ? OVER : SOFT};
+      ${t === 'px' ? 'background-size: calc(100% / var(--wwd-n)) 100%, 100% calc(100% / var(--wwd-m)), auto, auto;' : ''}
       box-shadow: ${float ? 'none' : 'inset 0 0 calc(var(--wwd-insetPx) * var(--wwd-thumbReach)) rgba(0, 0, 0, var(--wwd-inset))'};
-      ${float ? '-webkit-mask: var(--wwd-alpha) 0 0 / 100% 100% no-repeat; mask: var(--wwd-alpha) 0 0 / 100% 100% no-repeat;' : MASK(FEATHER)}
+      ${float ? ALPHA : ''}
     }`;
+    // B: the screen's one colour over the unlit ones (their light kept, their colours gone); half under the pointer;
+    // gone on the lit one
+    if (t === 'b') css += `
+    ${R} .wwd-ti::before {
+      content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; border-radius: ${rad};
+      background: var(--ww-ink); mix-blend-mode: color; opacity: var(--wwd-tMono); transition: opacity 200ms ease;
+      ${float ? ALPHA : ''}
+    }
+    @media (hover: hover) { ${R}:hover .wwd-ti::before { opacity: calc(var(--wwd-tMono) * 0.5); } }
+    ${R}.is-lit .wwd-ti::before { opacity: 0; }`;
+    // C: lines only, in the screen's colour (the names' outlines); the pointer shows a little of the picture; the lit
+    // one fills in, its lines hot and faint over it
+    css += t === 'c' ? `
+    ${R} .wwd-ti img { opacity: 0; transition: opacity 220ms ease; ${float ? '' : MASK(FEATHER)} }
+    @media (hover: hover) { ${R}:hover .wwd-ti img { opacity: 0.3; } }
+    ${R}.is-lit .wwd-ti img { opacity: 1; }
+    ${R} .wwd-tl {
+      display: block; position: absolute; inset: var(--wwd-tlin, 0); z-index: 3; pointer-events: none; background: var(--ww-ink);
+      -webkit-mask: var(--wwd-tline) 0 0 / 100% 100% no-repeat; mask: var(--wwd-tline) 0 0 / 100% 100% no-repeat;
+      transition: opacity 220ms ease;
+    }
+    @media (hover: hover) { ${R}:hover .wwd-tl { background: var(--ww-ink-hot); } }
+    ${R}.is-lit .wwd-tl { background: var(--ww-ink-hot); opacity: var(--wwd-tLit); }` : `
+    ${R} .wwd-tl { display: none; }`;
+    return css;
   };
-  // OFF: the pixels as they are (hard edges, no grade, no edges), to compare
+  // OFF: the picture as it is (no grade, no edges), to compare
   const bareThumb = (slug) => `
     .ww-row[data-ww-pick='${slug}'] .wwd-tw { display: block; }
-    .ww-row[data-ww-pick='${slug}'] .wwd-tw img { width: 100% !important; height: 100% !important; max-width: none !important; image-rendering: pixelated; }`;
+    .ww-row[data-ww-pick='${slug}'] .wwd-ti { display: block; width: 100%; height: 100%; }
+    .ww-row[data-ww-pick='${slug}'] .wwd-ti img { display: block; width: 100% !important; height: 100% !important; max-width: none !important; image-rendering: ${st.tstyle === 'px' ? 'pixelated' : 'auto'}; }
+    .ww-row[data-ww-pick='${slug}'] .wwd-tl { display: none; }`;
   const bareOf = (slug) => `
     ${SEL(slug)} .ww-ui { width: fit-content; max-width: 100%; }
     ${SEL(slug)} .ww-ui :is(img, canvas) { box-shadow: none !important; border-radius: 0 !important; image-rendering: pixelated; }`;
@@ -676,6 +836,7 @@
       if (!changed || changed.as === 'filter' || changed.k === 'thumbReach') doc.getElementById('wwd-svg').innerHTML =
         `<defs>${SLUGS.map(([slug]) => filterMarkup(slug) + filterMarkup(slug, `wwd-tgrade-${slug}`, +val('thumbReach'))).join('')}</defs>`;
     });
+    if (changed && changed.as === 'thumb') relines(changed.k === 'tSoft');
     save();
     paint();
   }
@@ -717,6 +878,13 @@
     S.doc.querySelector(WALL).dispatchEvent(new S.iframe.contentWindow.CustomEvent('ww:select', { detail: { view: st.pview } }));
     if (st.pview === 'list') setTimeout(() => prepareThumbs('phone'), 700); else prepare('phone', st.slug);
   }));
+  // a thumbnail design: its pictures into the thumbnails, its rules; zoomed in, the list comes into view
+  document.querySelectorAll('#tstyle button').forEach((b) => (b.onclick = () => {
+    st.tstyle = b.dataset.t;
+    ['laptop', 'phone'].forEach(applyThumbs);
+    commit();
+    if (+st.zoom) lookAtPicture('.ww-row.is-lit .ww-thumb');
+  }));
   document.querySelectorAll('#zoom button').forEach((b) => (b.onclick = () => { st.zoom = +b.dataset.z; save(); layout(); }));
   document.getElementById('resetAll').onclick = () => {
     if (!confirm('Back to your first settings (2026-11-10)? (the values you changed since are lost)')) return;
@@ -731,6 +899,7 @@
       bench: 'wwdepth',
       note: 'apply depth bench: one set for every plugin\'s picture in the TV (look A, 2 x 2 px; RevLimiter running on its song loop, the others their pictures today until their loops are recorded). The --wwd-* values + the grade go into WordWall.astro (the grade baked per channel: no live SVG filter in production); --ww-scr-* are the TV\'s own defaults in WordWall.astro',
       date: new Date().toISOString(), look: st.look, channel: [st.slug, ...chan[st.slug]],
+      thumbs: { a: 'A smooth', b: 'B one colour unlit, its own lit', c: 'C lines', px: '2 x 2 pixels' }[st.tstyle],
       values, changed: Object.keys(st.cur).filter((k) => Math.abs(st.cur[k] - def(byK[k])) > 1e-6),
     };
   }
