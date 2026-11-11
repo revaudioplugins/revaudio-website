@@ -632,6 +632,11 @@ Plan: M01-M04 become the plugins' objects in the CRTs' spots (M04 on the red che
 9 kinds become models; W10 keeps its plank; the TV / nav / below pictures re-captured from the live homepage (they were
 11-02's: ALL 4, no GAS 2); the 3 waiting builds of round 5 (N17, L20, N03) ride along; then the loading pictures, the
 checks, a bench, and one push to main under Dan's room-only OK.
+Later the same day (Dan): "dont need to build drift object" -> M02 removed, no object in its place (cde1913); "the
+revaudio sign what about it?" -> his pick: build the REVAUDIO neon as a real 3D neon sign (tubes along Bebas Neue's
+outlines, a rail, standoffs, blockouts; the RevFX builder takes it after M01). Also built on his "all the elements":
+the door's last plain slots that wide screens see (N08 vending machine on its own circuit, N05 compressor, R01
+parts-store shelf); the never-seen slots behind the walk's first camera (L10 R04 R11 R12 R13 N04 N09 N22 N25) left plain.
 Files: `tools/_home-opening/**`, this entry.
 
 ## 2026-11-09 — /revfx trial form sends the download at once (`gateWired: true`) (Claude Code `revaudio-0b [3311c0]`, Yoni's laptop 2) — branch `revfx-gate-on` — PUSHED TO MAIN 2026-11-09 on Yoni's "deploy" (worker deployed first, version `b31a75bd`)
