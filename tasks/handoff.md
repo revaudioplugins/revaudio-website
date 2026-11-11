@@ -504,7 +504,7 @@ pid 52126: `kill 52126` if it's in the way), then http://127.0.0.1:4490/tools/_h
 default to port 4471: pass the port.
 Loose ends: `home-bake` has the untracked, regenerable `bake/room/` + `bake/test-room/` (leave or delete).
 
-### 2026-11-11 — `danavivi-cc [172bce]` (the speed session) — direction 1 built on `feat/home-speed`: the models download 4.7 MB lighter, same look — MERGED into `feat/home-opening` 2026-11-11 on Dan's word, NOT on main
+### 2026-11-11 — `danavivi-cc [172bce]` (the speed session) — direction 1 built on `feat/home-speed`: the models download 4.7 MB lighter, same look — MERGED into `feat/home-opening` and PUSHED TO MAIN 2026-11-11 on Dan's word, live and checked
 
 Claim: CLOSED 2026-11-11 (rv close); it was `danavivi-cc [172bce]` (Dan's Mac), worktree `.claude/worktrees/home-speed`, branch `feat/home-speed` (cut from
 `feat/home-opening` at `05e1a09`). Files: `tools/_home-opening/masters/**` (new), `tools/_home-opening/assets/models/*.glb`
@@ -573,14 +573,21 @@ shows them without their pictures). The word needed is the one already asked for
 shared repo. The live header on the morning of 11-11 still lacked all three.
 **Update 11-11 12:34: the edit is live** (Yoni + `revaudio-bf`, shared `collaboration/STATUS.md`): the header on
 https://revaudio.net/garage-9f3c/ now carries `'wasm-unsafe-eval'` in `script-src` and `blob:` in `img-src` and
-`connect-src` (read with `curl -sI`). The blocker is gone. Still unchecked: the packed room on the live domain itself;
-after a merge to main open /garage-9f3c/ and confirm no CSP errors and textured models (locally it passed under the
-proposed policy, see Checks).
+`connect-src` (read with `curl -sI`). The blocker is gone. Checked on the live domain after the main push (11-11, below):
+no CSP errors, every model textured.
 
 Not done / open:
 - Merged into `feat/home-opening` on Dan's word ("marge", 11-11 after the close): a fast-forward from `05e1a09`, pushed to
-  origin. Not on main: the room-only push OK for main was given to other sessions, not this one, and Dan has not seen
-  the built room yet.
+  origin.
+- **On main, live** (Dan, 11-11: "push to main", then "send and sonnet - to marge to main"): a Sonnet subagent merged
+  `origin/feat/home-opening` into `origin/main` with `--no-ff` in this worktree, merge commit `833f632`, pushed
+  `200a599..833f632`. Deploy to GitHub Pages run 43007936331 and Smoke test run 43007936347: both success. The merge
+  touches only `tools/_home-opening/**` and `tasks/**` (215 files).
+- Live check by this session after the deploy, https://revaudio.net/garage-9f3c/?expose&capture=0 in Chrome 157 and
+  WebKit 26.5 (Playwright, headless): 1339 objects, 708 meshes, 282 textures, 0 empty, 0 dropped, 0 CSP violations,
+  no page errors, in both: the same counts as the local packed room. The live `assets/models/coupe.glb` is the packed
+  file (363,052 bytes); `masters/` is not on the live site (404), as intended. Not checked on live: Firefox, a real
+  phone, a look by eye at the walk (Dan's).
 - Direction 2 (the slow-line safety net) is not built. Other savings not built: the picture quality was not lowered, and
   the PBR maps were left alone.
 - Not measured: real phones, Safari timings (the timings are Chrome on this Mac through `perf/simserve.py`).
@@ -588,8 +595,10 @@ Not done / open:
   (`/private/tmp/claude-501/-Users-danavivi/38d326b1-1855-4bfb-9b05-ed9017ee0743/scratchpad`: `stills6/`, `perf/final.txt`).
 
 Next: Dan looks at the room from this worktree (`python3 -m http.server 4618 --bind 127.0.0.1` at its root, then
-http://127.0.0.1:4618/tools/_home-opening/room.html) (he said merge before looking). Then main, on his word; the first thing after that deploy: open
-https://revaudio.net/garage-9f3c/ and confirm textured models and no CSP errors. The CSP edit is live since 11-11 (above).
+http://127.0.0.1:4618/tools/_home-opening/room.html) (he said merge before looking). Main: done 11-11, live check passed (above). What is left is Dan's own look at
+https://revaudio.net/garage-9f3c/ and, if he wants the slow lines faster, direction 2.
+This entry's update sits on `feat/home-speed` / `feat/home-opening` only: it rides to main with the next room push (a
+handoff-only push to main would run a deploy and a full Cloudflare purge for nothing).
 
 Session end 2026-11-11 (rv close):
 - Dan's last word on the build: none yet. He got the report (numbers, the three before/after pictures, the CSP warning)
