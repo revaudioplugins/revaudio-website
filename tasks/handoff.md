@@ -592,9 +592,9 @@ http://127.0.0.1:4618/tools/_home-opening/room.html) and says merge or not. The 
 Session end 2026-11-11 (rv close):
 - Dan's last word on the build: none yet. He got the report (numbers, the three before/after pictures, the CSP warning)
   and closed the session; he has not looked at the built room and has not said merge.
-- Still running on Dan's Mac, both mine, safe to stop: `python3 -m http.server` on 127.0.0.1:4618 (pid 39650, this
+- Stopped on Dan's word at close (both ports are free; Dan also confirmed the CSP edit is active). They were: `python3 -m http.server` on 127.0.0.1:4618 (pid 39650, this
   worktree's root = the packed room) and on 127.0.0.1:4619 (pid 54424, a scratchpad copy of the originals = today's
-  room). `kill 39650 54424`. `pack.sh` wants 4618 free, or `KIT_PORT=<port>`.
+  room). `pack.sh` uses 4618 by default, or `KIT_PORT=<port>`.
 - The scratchpad is under `/private/tmp` and does not survive a restart: the stills and `perf/final.txt` are evidence
   only, every number that matters is written above.
 - Git at close: the worktree is clean; `feat/home-speed` = `origin/feat/home-opening` (`05e1a09`) + this session's
