@@ -856,6 +856,10 @@ const MODELS = {
   N28: { src: 'assets/models/mini-fridge.glb', yaw: Math.PI / 2 },    // a cream bar fridge under our stickers
   L17: { src: 'assets/models/pegboard-hoses.glb', yaw: Math.PI / 2 }, // v2: screwdrivers, a shadow board, hoses, only in the gaps round L02 / L03 / L18 (which Dan took out on round 5), the N18 cable bar and the amp
   N42: { src: 'assets/models/cable-tray.glb' },                       // the ladder tray along the trusses; v2: the cords end in it under a matte end cap (nothing hangs over the sign), a socket box on its cord at z 6.8
+  // round 6 (11-11): the plain slots by the door that wide screens see at the walk's start (Dan: "all the elements ... I want to build them")
+  N08: { src: 'assets/models/vending-machine.glb', yaw: Math.PI / 2, own: 1, glow: 0.6 }, // our GAS 2 FUEL machine, its sign + bottle window lit dim (vending_glow); own: its own circuit, lit from the first frame like the drawn one (no bank)
+  N05: { src: 'assets/models/air-compressor.glb', yaw: Math.PI / 2, anim: [['gauge_needle', 'z', 'osc', [0.05, 0.7]]] }, // its needle quivers about mid-scale (still in reduced motion)
+  R01: { src: 'assets/models/parts-store-shelf.glb', yaw: -Math.PI / 2 }, // steel shelving: boxed parts, oil, filters, mufflers (not L12's parts-shelf.glb)
   M01: { src: 'assets/models/crt-casing.glb', crt: true }, // the CRTs: a casing around each live screen
   M02: { src: 'assets/models/crt-casing.glb', crt: true },
   M03: { src: 'assets/models/crt-casing.glb', crt: true },
@@ -913,7 +917,7 @@ async function loadModels() {
       o.receiveShadow = true; o.castShadow = ![o.material].flat().some((mt) => mt.transparent); // a decal or glass casts no box of shadow
       for (const mt of [o.material].flat()) {
         for (const t of ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap', 'emissiveMap']) if (mt[t]) { mt[t].anisotropy = 8; maps.push(mt[t]); } // 8x: stickers and labels stay sharp at the aisle's grazing angles
-        if (mt.emissive && mt.emissive.getHex() && !R.modelGlow.some((g) => g.m === mt)) R.modelGlow.push({ m: mt, k: mt.emissiveIntensity * (m.glow ?? 1), dying: /tube_dying/.test(mt.name), cyc: cycleOf(m.cycle, mt.name), id }); // meters and LEDs power on with the room (N02's dying tube dips with its light)
+        if (mt.emissive && mt.emissive.getHex() && !R.modelGlow.some((g) => g.m === mt)) R.modelGlow.push({ m: mt, k: mt.emissiveIntensity * (m.glow ?? 1), dying: /tube_dying/.test(mt.name), cyc: cycleOf(m.cycle, mt.name), id, own: !!m.own }); // meters and LEDs power on with the room (N02's dying tube dips with its light)
         if (mt.metalness > 0.3 || mt.roughness < 0.5) { mt.envMap = R.probe.env.texture; mt.userData.env ??= 1; SHINY.add(mt); } // the room's own reflection, on shiny parts only
       }
     });
@@ -2247,7 +2251,7 @@ function lightRoom(neonK, warm, signK, open, far, now, full = false) {
   R.tv.glow.intensity = 3 * S.tvGlow * open * (reduced ? 1 : 1 + 0.05 * Math.sin(now * 0.0019)) * far;
   R.tv.haloMat.opacity = 0.1 * open;
   for (const m of SHINY) m.envMapIntensity = S.probe * (m.userData.env ?? 1) * warm * fill; // the reflections come up with the lamps
-  for (const g of R.modelGlow || []) { const c = g.cyc, s = c && (now / 1000) % c.n; g.m.emissiveIntensity = g.k * warm * b(PROP_BANK[g.id] || 'gear') * (g.dying && !steady && hash(Math.floor(now / 400) + 9) > 0.93 ? 0.55 : 1) * (!c ? 1 : (steady ? !c.a : s >= c.a && s < c.b) ? 1 : 0.03); } // a model's meters and LEDs too (with its bank, or the gear's); a traffic light's lamps in turn
+  for (const g of R.modelGlow || []) { const c = g.cyc, s = c && (now / 1000) % c.n; g.m.emissiveIntensity = g.k * warm * b(PROP_BANK[g.id] || (g.own ? 'own' : 'gear')) * (g.dying && !steady && hash(Math.floor(now / 400) + 9) > 0.93 ? 0.55 : 1) * (!c ? 1 : (steady ? !c.a : s >= c.a && s < c.b) ? 1 : 0.03); } // a model's meters and LEDs too (with its bank, or the gear's); a traffic light's lamps in turn
 }
 function frame(now) {
   const t = now - t0;
