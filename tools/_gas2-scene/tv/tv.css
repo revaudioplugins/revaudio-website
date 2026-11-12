@@ -5,7 +5,7 @@
    a tenth of its width, in cqw of the photo) and big in the theater, so every size below is in em or % of the art. */
 
 /* ── the set ── */
-.tv { position: absolute; left: 67.4%; top: 67.6%; font-size: 1cqw; z-index: 2; } /* 10em = 10 % of the photo's width; left / top = the cabinet's corner */
+.tv { position: absolute; left: 67.4%; top: 67.6%; width: 10em; font-size: 1cqw; z-index: 2; } /* 10em = 10 % of the photo's width; left / top = the cabinet's corner */
 .tv.away .tvCab, .tv.away .tvSpill, .tv.away .tvCap { visibility: hidden; } /* in the theater: the legs stay on the porch */
 .tvSet { display: block; width: 10em; position: relative; cursor: pointer; transition: transform .35s cubic-bezier(.2, .9, .25, 1.25);
   filter: brightness(.8) sepia(.1) contrast(1.04); } /* the dusk grade the mailbox and chalkboard take */
@@ -34,7 +34,7 @@
 .tvSet.on .tvSpill { opacity: 1; animation: tvFlick 2.4s steps(6) infinite; }
 @keyframes tvFlick { 30% { opacity: .75; } 55% { opacity: 1; } 80% { opacity: .85; } }
 
-.tvCap { position: absolute; left: 0; width: 10em; top: calc(100% + 3.6em); text-align: center; font: 600 max(11px, .78em) Oswald, sans-serif; letter-spacing: .2em;
+.tvCap { position: absolute; left: 0; right: 0; padding-left: .2em; top: calc(100% + 3.6em); /* the set's width; the pad evens out the letter-spacing after the last letter */ text-align: center; font: 600 max(11px, .78em) Oswald, sans-serif; letter-spacing: .2em;
   text-transform: uppercase; color: var(--paper, #efe3c2); text-shadow: 0 1px 3px #000; pointer-events: none; white-space: nowrap; opacity: 0; transition: opacity .25s; }
 .tv:hover .tvCap, .tvSet:focus-visible + .tvCap { opacity: 1; }
 
