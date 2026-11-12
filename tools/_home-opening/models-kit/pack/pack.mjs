@@ -76,9 +76,18 @@ async function need(files) {
   for (const f of list(path.join(MASTERS, 'models'), '.glb')) {
     for (const t of (await read(path.join(MASTERS, 'models', f))).getRoot().listTextures()) {
       const [w, h] = await dims(t.getImage()), label = `models/${f}/${t.getName()}`;
-      rows.push({ label, w, h, bytes: t.getImage().byteLength, q: q.get(label) ?? null });
+      rows.push({ label, w, h, bytes: t.getImage().byteLength, q: null });
     }
   }
+  // a second file on a slot (the car's plate, attached to the CAR slot) is measured under the slot's model: a picture
+  // the slot's model lacks goes to the one master that has a picture of that name
+  for (const [lab, v] of [...q]) {
+    if (rows.some((r) => r.label === lab)) continue;
+    const name = lab.split('/').pop(), hits = rows.filter((r) => r.label.split('/').pop() === name);
+    if (hits.length !== 1) continue;
+    q.delete(lab); q.set(hits[0].label, Math.min(q.get(hits[0].label) ?? Infinity, v));
+  }
+  for (const r of rows) r.q = q.get(r.label) ?? null;
   for (const f of list(path.join(MASTERS, 'pbr'), '.webp')) {
     const b = fs.readFileSync(path.join(MASTERS, 'pbr', f)), [w, h] = await dims(b);
     rows.push({ label: `pbr/${f}`, w, h, bytes: b.length, q: q.get(`pbr/${f}`) ?? null });
