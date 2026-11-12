@@ -17,10 +17,10 @@
 
   const BARS = `<span class="tvBars" aria-hidden="true"><span class="top">${'<i></i>'.repeat(7)}</span><span class="mid">${'<i></i>'.repeat(7)}</span><span class="low">${'<i></i>'.repeat(5)}</span>
     <span class="tvPlate">GAS <b>2</b> TV<small>Please stand by</small></span></span>`;
-  const IMG = DIR + 'img/';
-  const set = (legs) => `<span class="tvCab"><span class="tvScreen">${VIDEO ? '' : BARS}<img class="tvGlass" src="${IMG}tv-glass.webp" alt="" draggable="false"></span>
-      <img class="tvArt" src="${IMG}tv-cab.webp" alt="" draggable="false"></span>
-    ${legs ? `<img class="tvLegs" src="${IMG}tv-legs.webp" alt="" draggable="false"><i class="tvShadow"></i><i class="tvSpill"></i>` : ''}`;
+  const IMG = DIR + 'img/', ART = '?v=2';            // bump ART when the art in img/ changes: the build can't version names this script writes
+  const set = (legs) => `<span class="tvCab"><span class="tvScreen">${VIDEO ? '' : BARS}<img class="tvGlass" src="${IMG}tv-glass.webp${ART}" alt="" draggable="false"></span>
+      <img class="tvArt" src="${IMG}tv-cab.webp${ART}" alt="" draggable="false"></span>
+    ${legs ? `<img class="tvLegs" src="${IMG}tv-legs.webp${ART}" alt="" draggable="false"><i class="tvShadow"></i><i class="tvSpill"></i>` : ''}`;
 
   // ── the small set, in the scene ──
   const tv = document.createElement('div');
