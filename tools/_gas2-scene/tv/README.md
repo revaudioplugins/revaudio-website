@@ -1,8 +1,15 @@
 # The TV on the porch (GAS 2 laptop page)
 
 A 1950s set on splayed legs, right of the chalkboard under the porch lamp (Gil 2026-11-12; reference: a walnut-framed,
-cream-faced retro TV with a grille under the screen and tapered legs). Drawn in CSS, no art files: `tv.css` + `tv.js`,
-wired into `page-b.html` with one `<link>` + `<script>` line. The script adds the set to `#scene` and the theater to `<body>`.
+cream-faced retro TV with a grille under the screen and tapered legs). `tv.css` + `tv.js`, wired into `page-b.html` with one
+`<link>` + `<script>` line. The script adds the set to `#scene` and the theater to `<body>`.
+
+The art (`img/`): a photo made in Higgsfield (Nano Banana Pro, Gil's TV photo for the shape + the scene frame for the
+grit and the dusk light, on mid-gray, background removed), cut in two at the cabinet's bottom edge (row 1226 of 1462 x 1736):
+`tv-cab` (the glass is a hole: the picture plays behind the real bezel) and `tv-legs` (they stay on the porch when the
+cabinet flies to the front). `tv-glass` = the glass's own light, laid back over the picture. The PNGs are the masters
+(full size); the page loads the `.webp` (1200 / 600 wide); the build skips `.png`. The hole and the screen box in
+`tv.css` are in % of the cabinet art: re-measure them if the art changes.
 
 - In the scene: the video plays muted on a loop while the set is on screen (paused off screen, and for reduced motion).
 - Click / Enter: the cabinet lifts off its legs to the front (the room darkens), the video starts from the top with sound.

@@ -17,10 +17,10 @@
 
   const BARS = `<span class="tvBars" aria-hidden="true"><span class="top">${'<i></i>'.repeat(7)}</span><span class="mid">${'<i></i>'.repeat(7)}</span><span class="low">${'<i></i>'.repeat(5)}</span>
     <span class="tvPlate">GAS <b>2</b> TV<small>Please stand by</small></span></span>`;
-  const set = (legs) => `<span class="tvCab"><i class="tvWood l"></i><i class="tvWood r"></i><span class="tvFace">
-      <span class="tvTube"><span class="tvScreen">${VIDEO ? '' : BARS}<i class="tvGlass"></i></span></span>
-      <span class="tvRow"><i class="tvBtn"></i></span><span class="tvGrille"></span></span></span>
-    ${legs ? '<span class="tvLegs" aria-hidden="true"><i class="b1"></i><i class="b2"></i><i class="f1"></i><i class="f2"></i></span><i class="tvShadow"></i><i class="tvSpill"></i>' : ''}`;
+  const IMG = DIR + 'img/';
+  const set = (legs) => `<span class="tvCab"><span class="tvScreen">${VIDEO ? '' : BARS}<img class="tvGlass" src="${IMG}tv-glass.webp" alt="" draggable="false"></span>
+      <img class="tvArt" src="${IMG}tv-cab.webp" alt="" draggable="false"></span>
+    ${legs ? `<img class="tvLegs" src="${IMG}tv-legs.webp" alt="" draggable="false"><i class="tvShadow"></i><i class="tvSpill"></i>` : ''}`;
 
   // ── the small set, in the scene ──
   const tv = document.createElement('div');
