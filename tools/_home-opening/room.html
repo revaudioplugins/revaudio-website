@@ -875,16 +875,49 @@ for (const q of new URLSearchParams(location.search).getAll('model')) {
   const [id, src, yaw, fit] = q.split(':');
   if (/^assets\/models\/[\w\-/.]+\.glb$/.test(src || '') && !src.includes('..')) MODELS[id] = { src, yaw: +yaw || 0, fit };
 }
+// the models' bytes start the moment the textures are in (they waited for the fonts and the room as well before), and
+// each file is parsed as it lands, while the room is built; loadModels places them at the same point as before, so
+// nothing enters the room earlier. Started alongside the textures instead, they took the textures' line and the room
+// waited for them (measured 11-11: 1 s slower at 50 Mbit/s).
+// The loading screen hears each file's bytes as they come (the files load side by side: counting finished ones, the
+// lights waited and then came in a rush), a file without a length when it lands; capped below 1, as gzip makes the
+// decoded bytes outrun Content-Length
+const modelBytes = {}, modelFiles = {}, got = {}, tellModels = () => loaded('models', Object.values(got).reduce((s, x) => s + x, 0));
+let gltfKit = null; // the loader and the meshopt decoder, fetched with the models
+function prefetchModels() {
+  gltfKit = Promise.all([import('three/addons/loaders/GLTFLoader.js'), import('three/addons/libs/meshopt_decoder.module.js')]);
+  const srcs = new Set([...Object.values(MODELS).flatMap((m) => [m.src, m.stand, m.plate && m.plate.src]), ...Object.values(MESS_MODELS), SIGN_MODEL].filter(Boolean));
+  loadP.models[1] = srcs.size;
+  for (const src of srcs) modelBytes[src] = (async () => {
+    const res = await fetch(src, { priority: 'low' });
+    if (!res.ok) throw new Error(`${res.status} ${src}`);
+    const total = +res.headers.get('content-length'), reader = res.body.getReader(), parts = [];
+    let n = 0;
+    for (;;) {
+      const { done, value } = await reader.read(); if (done) break;
+      parts.push(value); n += value.length;
+      if (total) { got[src] = Math.min(0.95, 0.95 * n / total); tellModels(); }
+    }
+    const buf = new Uint8Array(n); let o = 0; for (const p of parts) { buf.set(p, o); o += p.length; }
+    return buf.buffer;
+  })();
+  for (const p of Object.values(modelBytes)) p.catch(() => {}); // a failed prefetch loads again in loadModels (and warns there)
+  const parser = gltfKit.then(([{ GLTFLoader }, { MeshoptDecoder }]) => new GLTFLoader().setMeshoptDecoder(MeshoptDecoder));
+  for (const src of srcs) {
+    modelFiles[src] = Promise.all([parser, modelBytes[src]]).then(([loader, buf]) => loader.parseAsync(buf, src.replace(/[^/]*$/, '')));
+    modelFiles[src].catch(() => {});
+  }
+}
 async function loadModels() {
+  if (!gltfKit) prefetchModels();
   const ids = Object.keys(MODELS).filter((id) => R.items.some((it) => it.id === id));
   if (!ids.length) { loaded('models', 1, 1); return []; }
   loadP.models[1] = new Set([...ids.flatMap((id) => [MODELS[id].src, MODELS[id].stand, MODELS[id].plate && MODELS[id].plate.src]), ...Object.values(MESS_MODELS), SIGN_MODEL].filter(Boolean)).size;
-  const [{ GLTFLoader }, { MeshoptDecoder }] = await Promise.all([import('three/addons/loaders/GLTFLoader.js'), import('three/addons/libs/meshopt_decoder.module.js')]);
+  const [{ GLTFLoader }, { MeshoptDecoder }] = await gltfKit;
   const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder), maps = [], files = {};
-  // the loading screen hears each file's bytes as they come (the files load side by side: counting finished ones, the
-  // lights waited and then came in a rush), a file without a length when it lands
-  const got = {}, tell = () => loaded('models', Object.values(got).reduce((s, x) => s + x, 0));
-  const fetchModel = (src) => loader.loadAsync(src, (e) => { if (e.lengthComputable && e.total) { got[src] = 0.95 * e.loaded / e.total; tell(); } }).finally(() => { got[src] = 1; tell(); });
+  const fetchModel = (src) => (modelFiles[src] || Promise.reject()).catch(
+    () => loader.loadAsync(src, (e) => { if (e.lengthComputable && e.total) { got[src] = 0.95 * e.loaded / e.total; tellModels(); } }))
+    .finally(() => { got[src] = 1; tellModels(); });
   const get = async (src) => (await (files[src] ||= fetchModel(src))).scene.clone(true); // a file used by several slots loads once; copies share its geometry + materials
   R.modelGlow = [];
   // a model's lamps in turn (N39's traffic light): [material, seconds] in order -> that lamp's window in the loop
@@ -2724,8 +2757,9 @@ let resizeTimer = 0;
 addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(resize, 120); });
 tvImg.addEventListener('load', applyTvTexture);
 
-// fonts first (the sign and the labels are drawn with them) and every texture, then the room, once
-await Promise.all([Promise.race([Promise.all([document.fonts.load('400 64px "Bebas Neue"'), document.fonts.load('600 34px Inter')]), new Promise((r) => setTimeout(r, 1500))]), loadTextures()]);
+// fonts first (the sign and the labels are drawn with them) and every texture, then the room, once; the models' bytes
+// come down as soon as the textures are in (prefetchModels)
+await Promise.all([Promise.race([Promise.all([document.fonts.load('400 64px "Bebas Neue"'), document.fonts.load('600 34px Inter')]), new Promise((r) => setTimeout(r, 1500))]), loadTextures().then(prefetchModels)]);
 createRoom();
 resize();
 applyFlags();
@@ -3019,6 +3053,10 @@ function createCarLook({ car, tailMat }) {
   return { set, tick, DEF: CAR_DEF, LOOK: CAR_LOOK, uniforms: U, materials: M, get plate() { return plateRoot; } };
 }
 
+// the textures and pictures go up to the GPU while the models still download (they waited for the last model before);
+// the models' own maps follow below, after loadModels
+const upsEarly = [...Object.values(PBR).flatMap((set) => Object.values(set)), ...Object.values(PICS)];
+for (let i = 0; i < upsEarly.length; i++) { renderer.initTexture(upsEarly[i]); if (i % 8 === 7) await new Promise((r) => setTimeout(r)); }
 const modelMaps = await loadModels(); // before the uploads and compiles below, so a model never pops in mid-intro
 R.carLook = createCarLook({ car: R.car, tailMat: R.tailMat }); // the coupe's materials are in: their look (CAR_LOOK)
 setBench(!!S.bench);
@@ -3031,9 +3069,9 @@ for (const it of R.items) if (it.tex) { const img = it.tex.image; if (!img || !i
 // the maps go up to the GPU and the shaders compile before the intro's clock starts (on first use they froze its first
 // second and a half, and the lights jumped from dim to full in one frame); the stall sits on the dark page instead. Then
 // the first probe capture: the textures are in, the lights at their final levels (a picture landing later recaptures)
-const ups = [...Object.values(PBR).flatMap((set) => Object.values(set)), ...Object.values(PICS), ...modelMaps]; // after the clones: one upload per map
-for (let i = 0; i < ups.length; i++) { renderer.initTexture(ups[i]); if (i % 8 === 7) { loaded('upload', i + 1, ups.length); await new Promise((r) => setTimeout(r)); } } // a breath every 8: the loading screen hears it
-loaded('upload', ups.length, ups.length);
+const ups = modelMaps, nUp = upsEarly.length + ups.length; // after the clones: one upload per map (the textures and pictures went up above)
+for (let i = 0; i < ups.length; i++) { renderer.initTexture(ups[i]); if (i % 8 === 7) { loaded('upload', upsEarly.length + i + 1, nUp); await new Promise((r) => setTimeout(r)); } } // a breath every 8: the loading screen hears it
+loaded('upload', nUp, nUp);
 renderer.setRenderTarget(composer.readBuffer); // the room draws into the composer's target: its shaders differ from the canvas's
 await renderer.compileAsync(scene, camera);
 renderer.setRenderTarget(null);
