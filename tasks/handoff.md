@@ -1,10 +1,19 @@
-## 2026-11-11 — Assets in order: 33 unused files out, versions on static URLs, bench tools dev-only (Claude Code `danavivi-20 [1b9b41]`, Dan's Mac) — branch `chore/asset-order` (`132869b` + `5fb54fa`, base `004c62a`), pushed, NOT on main: waits for Dan's push word
+## 2026-11-11 — Assets in order: 33 unused files out, versions on static URLs, bench tools dev-only (Claude Code `danavivi-20 [1b9b41]`, Dan's Mac) — ON MAIN 2026-11-12 on Dan's word "push to main" (`132869b` + `5fb54fa` + `8d42e64`, fast-forward from `004c62a`); deploy + smoke green
 
-Claim: open on `chore/asset-order` until it is on main. From the asset audit of 2026-11-11 (Dan: "go 2 and 3").
+Claim: closed 2026-11-12. From the asset audit of 2026-11-11 (Dan: "go 2 and 3").
 Files: `tools/assetver/integration.mjs` (new), `astro.config.mjs` (assetver last + `benchdevonly`), `docs/assets.md` (new: where
 a file goes), `README.md` (pointer), 33 deletions: `src/assets/hero/` (all 7), `src/assets/ui/` (14 old button plates +
 `icon-cart`, `toggle-on`), `src/assets/showcase/` (`ac-icon`, `drift-car`, `rev-gauge`), `public/dl/` (3), `public/brand/` (2),
 `public/plate/` (`btn-viewmore`, `card-bolt`, `card-plate`), `public/bench/hero-bench.html`.
+- Live 2026-11-12: Deploy to GitHub Pages run 43209914344 and Smoke test run 43209914228, both success. On revaudio.net:
+  `/`, `/revlimiter/`, `/gas/`, `/gas2/`, `/drift/`, `/revfx/`, `/radio-roulette/`, `/plugins/` answer 200; `?v=` is in the live
+  HTML (unique URLs: `/radio-roulette/` 2, `/gas/` 2, `/gas2/` 7, `/drift/` 9; the rest sit in the folders' CSS); versioned
+  URLs answer 200 with `cache-control: max-age=600` (the Cloudflare rule is not in yet); the removed files answer 404
+  (`/bench/home-bench.html`, `/bench/hero-bench.html`, `/brand/revaudio-plate-3d.webp`, `/plate/card-plate.jpg`,
+  `/plate/btn-viewmore.png`, the three `/dl/` cards); `/plate/arm-mount-v3*.png` 200; Chromium 1440x900 on `/`, `/gas/`,
+  `/gas2/`, `/radio-roulette/`, `/drift/`: no response >= 400 and no failed request on revaudio.net.
+- Open: Yoni's Cloudflare rule (until it exists the `?v=` does nothing). This Mac's worktree `.claude/worktrees/webp-art`
+  no longer exists; the remote branches `chore/asset-order` and `perf/webp-mixer-art` remain until Dan says to delete them.
 - Removed files: nothing in `src`, `tools`, `tests` names them; no other RevAudio repo loads the `public/` ones (the `dl/`
   cards were for a portal change that sits unmerged on Revlimiter `origin/portal-card-shots`). The 24 `src/assets` images
   and the 5 `brand/` + `plate/` files are in `revaudio-kit` under `archive/` (`534a3d1`, `3c245ed`), byte-identical; its
@@ -29,7 +38,7 @@ a file goes), `README.md` (pointer), 33 deletions: `src/assets/hero/` (all 7), `
   Chromium (stems 200). Smoke tests against the local build: 65 pass, 3 fail, the same 3 before the change (a local
   server redirect on `/support`, WebKit's video-control icons on `/drift`).
 - Not checked: mixer playback in WebKit (never reached "playing" in the test, with or without the change), a real phone,
-  the Cloudflare rule itself, the pages after a real deploy.
+  the Cloudflare rule itself (not in place yet).
 - Not versioned (they keep the 10-minute cache): mixer stems, GAS 2 drone art and three.js, the DRIFT / RevFX demo clips,
   `fonts/drift/*`: their names are built at run time or sit in `_astro`. Next step if wanted: version those at the source.
 - Known limit: a script that builds a whole file name at run time while a page also writes that file's URL out would
