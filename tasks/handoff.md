@@ -1,3 +1,16 @@
+## 2026-11-15 — Review: RevFX joins the plugin picker (Claude Code `revaudio-fc`, Yoni's laptop 2) — branch `review-revfx`, NOT ON MAIN (waits for Yoni's "push", AFTER the worker deploy)
+
+Claim: CLOSED 2026-11-15 `revaudio-fc`. Files: `src/data/review-survey.ts` (`REVIEW_PLUGINS` + `revfx`), `src/pages/review.astro`, this entry.
+- Yoni: "lets add revfx to the review page in the website".
+- RevFX = the home TV's picture (`revfx-hero.png`) and channel colour (305 / 72). Its price comes from `revfx.ts` (`buyable()`, $19), as the TV's
+  price line does: plugins.ts keeps it `in-development` with no `introPriceUsd`, so the old rule would have skipped the "At $19" question.
+- Picker: 6 across from 900 px (names a size smaller there: `clamp(0.95rem, 1.4vw, 1.1rem)`), 3 x 2 from 641-899 px, 2 x 3 on phones (unchanged).
+- Checks (local build, Chromium, 320-1920 px): `astro build` clean; every name fits its cube at 10 widths; every picture gets enough pixels for
+  its slot, except landscape at exactly 640 px (462 needed, 400 served), the same on the live page today; price question: RevLimiter $49,
+  Radio Roulette $19, RevFX $19, DRIFT / GAS / GAS 2 hidden; no page errors (the CF beacon fails from localhost, as always).
+- Go-live order: RevLimiter worker deploy FIRST (branch `review-revfx` there, `REVIEW_PLUGINS` + revfx), then this push. The other way round,
+  every RevFX review gets "bad request". After both: one real RevFX review -> code mail + team copy "Review: RevFX n/10".
+
 ## 2026-11-11 — Assets in order: 33 unused files out, versions on static URLs, bench tools dev-only (Claude Code `danavivi-20 [1b9b41]`, Dan's Mac) — ON MAIN 2026-11-12 on Dan's word "push to main" (`132869b` + `5fb54fa` + `8d42e64`, fast-forward from `004c62a`); deploy + smoke green
 
 Claim: closed 2026-11-12. From the asset audit of 2026-11-11 (Dan: "go 2 and 3").
