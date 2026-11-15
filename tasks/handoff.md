@@ -1,4 +1,7 @@
-## 2026-11-15 — Review: RevFX joins the plugin picker (Claude Code `revaudio-fc`, Yoni's laptop 2) — branch `review-revfx`, NOT ON MAIN (waits for Yoni's "push", AFTER the worker deploy)
+## 2026-11-15 — Review: RevFX joins the plugin picker (Claude Code `revaudio-fc`, Yoni's laptop 2) — LIVE ON MAIN 2026-11-15 on Yoni's word "push" (`a0e0fdb` + `1a884b9`, fast-forward from `1b4bc34`); head was `[skip ci]`, so the
+deploy was dispatched by hand: run 43720976072 success (build, deploy, Cloudflare cache clear). Live check on revaudio.net/review/ (Chromium):
+6 columns at 1280, 2 at 390; price question RevLimiter $49, Radio Roulette $19, RevFX $19, the free three hidden; no page errors.
+Not done: a real RevFX review (code mail + team copy) - the worker side was probed live with an empty form only.
 
 Claim: CLOSED 2026-11-15 `revaudio-fc`. Files: `src/data/review-survey.ts` (`REVIEW_PLUGINS` + `revfx`), `src/pages/review.astro`, this entry.
 - Yoni: "lets add revfx to the review page in the website".
