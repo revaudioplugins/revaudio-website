@@ -1000,6 +1000,7 @@ async function loadModels() {
     R.sign.add(sg); R.signMat.map.dispose(); R.signMat.map = signTex(true); R.signMat.needsUpdate = true;
   } catch (e) { console.warn('sign', SIGN_MODEL, e.message); } // the drawn sign stays
   applyFlags(); arrange(); // the look shows the models; their shadows drawn once
+  for (const src in modelFiles) { delete modelFiles[src]; delete modelBytes[src]; } // the room has its copies: let the downloads go (they stayed in memory for the whole visit, 38 MB)
   return maps;
 }
 // pegboard: brown hardboard with its grid of holes (drawn, no texture set)
