@@ -8,7 +8,7 @@ Claim: CLOSED 2026-11-15 `revaudio-fc`. Files: `src/data/review-survey.ts` (`REV
 - Checks (local build, Chromium, 320-1920 px): `astro build` clean; every name fits its cube at 10 widths; every picture gets enough pixels for
   its slot, except landscape at exactly 640 px (462 needed, 400 served), the same on the live page today; price question: RevLimiter $49,
   Radio Roulette $19, RevFX $19, DRIFT / GAS / GAS 2 hidden; no page errors (the CF beacon fails from localhost, as always).
-- Go-live order: RevLimiter worker deploy FIRST (branch `review-revfx` there, `REVIEW_PLUGINS` + revfx), then this push. The other way round,
+- Go-live order: RevLimiter worker deploy FIRST (DONE 2026-11-15, stamp `16f609b`, live probe: RevFX accepted), then this push. The other way round,
   every RevFX review gets "bad request". After both: one real RevFX review -> code mail + team copy "Review: RevFX n/10".
 
 ## 2026-11-11 — Assets in order: 33 unused files out, versions on static URLs, bench tools dev-only (Claude Code `danavivi-20 [1b9b41]`, Dan's Mac) — ON MAIN 2026-11-12 on Dan's word "push to main" (`132869b` + `5fb54fa` + `8d42e64`, fast-forward from `004c62a`); deploy + smoke green
