@@ -1,3 +1,46 @@
+## 2026-11-15 — The long garage: Gil's faster first load KEPT (PR #33), plus one line that lets the model downloads go (Claude Code `Garage load-speed branch review [c19840]`, Dan's Mac) — on `feat/home-opening`, PUSHED 2026-11-15 on Dan's word ("keep gil"), not on main
+
+Claim: CLOSED 2026-11-15, opened the same day. Files: `tools/_home-opening/room.html` (one line at the end of
+`loadModels()`), `tasks/handoff.md` (this entry).
+
+Request (Dan, 2026-11-15, on Gil's note): compare `perf/home-opening-load` with `feat/home-opening` and keep the better
+one. Dan's answer after the results: "keep gil".
+
+- Done: `feat/home-opening` fast-forwarded `2380642` -> `17c3620` (Gil's three commits exactly as pushed; GitHub shows
+  PR #33 as merged). On top, `02e021c`: `loadModels()` empties the early download's two lists (`modelFiles`,
+  `modelBytes`) once the models are placed.
+- **⚠️ Read this before the phone cut (`feat/phone-dive`, `?dive`) merges this branch.** `prefetchModels()` starts before
+  `createRoom()` and downloads every `MODELS` row, the mess models and the sign, and it merges with no conflict. The
+  `?dive` filter lives inside `loadModels()`, so after a merge the phone still downloads everything: in a test merge 100
+  model requests instead of 30, 54 MB held instead of 8, ready at 12.0 s instead of 6.5 s on 10 Mbit/s, with no error
+  or warning. When merging: for `DIVE` skip `prefetchModels()` and the early `initTexture` loop, or hand
+  `prefetchModels` the kept list. Expect 2 conflicts: the first lines of `loadModels()` and the `const ups` upload loop.
+- Speed, time until the room is ready (Chrome 1141x636 @2, cold first visits, the versions taking turns; Gil's sooner in
+  all 42 pairs of two methods: the team's `perf/simserve.py`, and an HTTP/2 server with Chrome's line limiter):
+  135 Mbit/s (the world's median home line, Ookla, September 2026) 3.83 -> 3.59 s · 50 Mbit/s 6.17 -> 4.56 s ·
+  25 Mbit/s 9.59 -> 7.45 s · 10 Mbit/s 20.69 -> 16.88 s · processor slowed 4x 8.39 -> 7.97 s · 4 Mbit/s 48.7 -> 40.5 s.
+  Download 23.19 -> 19.75 MB, the same 175 files. Gil's table holds. On a fast line the room now stands ready about
+  half a second before the hand-off: the loading lights' own pacing (`lights/lights-on.js`, one flash per 0.4 s) is the
+  limit there, not the download (read from the code and the idle frames, not tested by shortening the lights).
+- Look: the same. Motion frozen, 14 walk stops: at most 0.05 of 255 mean difference; `lights/check.mjs` PASS on both
+  (3.28 / 3.31). A rebuild of all 102 models from `masters/` gives the committed files byte for byte.
+- The fix's checks (the committed file): data held after loading 53.6 -> 14.7 MB (15.2 MB before the early download);
+  97 model files, each asked for once; the same 94 models, 64 mess pieces and sign; a download that fails once still
+  recovers; Playwright WebKit loads clean; `lights/check.mjs` PASS (3.28); stills at five walk stops match;
+  50 Mbit/s 4.5 s with and without.
+- Left open in Gil's change, all small: the neon's colour strip `neon_core` went from PNG to WebP for one byte and its
+  glow shifted slightly (keep the PNG); a failed early download is fetched again without a console line; a host that
+  sends models without `Content-Length` makes the loading lights wait about 1 s; the picture is no longer identical from
+  one load to the next (a few dozen pixels at the car's tail lamp: the models can be read before the room is built,
+  which changes the draw order where two surfaces touch).
+- Found on the way, the same before and after: a font file that fails to download stops the 3D room from starting
+  (`document.fonts.load` rejects in the boot line; a slow font is fine); about 2 MB of PBR sets (carpet, fabric, rust,
+  cardboard) are downloaded and shown on nothing since round 6.
+- Not measured: real Safari, a phone, Windows, a weak graphics chip, the live host.
+- Raw results on Dan's Mac: `.claude/perf-compare-2026-11-15/` (git-ignored).
+- Next: Dan's own look in Safari. The live unlisted page still serves the older room from main; main waits for Dan's
+  word.
+
 ## 2026-11-03 — Home opening: the long garage, an ACTIVE PROJECT (Claude Code `danavivi-4e [b36252]`, Dan's Mac; continues `danavivi-7a [9ae241]`) — on branch `feat/home-opening`, pushed, not on main
 
 Claim: CLOSED 2026-11-11 `danavivi-cf [3dcc55]` at its SESSION END (round 6 mostly landed, see "SESSION END 2026-11-11 — `danavivi-cf`" below: the next session takes it over) (Dan's Mac; took it over 2026-11-11 from `danavivi-d5 [443a28]`, closed, as its SESSION END 2026-11-10 says; round 6: the plugin objects for the CRTs, the props, the TV picture, the sign, see "2026-11-11 round 6" below); `danavivi-d5` was the same session as `danavivi-20 [c417bc]` after a restart; `danavivi-20` took it over from `danavivi-09` on 2026-11-08 (Dan: "take the claim from
