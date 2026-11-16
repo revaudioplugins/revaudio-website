@@ -24,9 +24,9 @@ export async function dress({ R, scene, liveScreen, shiny, glowOf, model }) {
   const benchIt = R.items.find((i) => i.id === 'R07' && i.obj); if (!benchIt) return null;
   scene.updateMatrixWorld(true);
   const bb = new THREE.Box3().setFromObject(benchIt.obj), O = { x: bb.min.x - 2.65, z: bb.min.z - 6.974 }, plank = benchIt.obj.getObjectByName('bench_1'), TOP = plank ? new THREE.Box3().setFromObject(plank).max.y : bb.max.y;
-  let look = 'brass';
+  let look = 'brass';   // Dan's pick, 2026-11-16 (shop and radio stay reachable with ?look=; only the shown look is ever built)
 
-  // ---- the phone: the site's phone capture as its screen, in a body built three ways to pick from (?look=brass|shop|radio; ?looks = buttons on the picture) ----
+  // ---- the phone: the site's phone capture as its screen, in a body built three ways (?look=brass|shop|radio; ?looks = buttons on the picture); BRASS is Dan's pick (2026-11-16) ----
   // Every look keeps the screen where it is (the lock's sums stand on it): only what lies round it changes. Parts round the screen may stand proud of it, never over it.
   const S = SET.screen, phone = new THREE.Group(), shell = new THREE.Group();
   const LOOKS = {};
@@ -311,7 +311,7 @@ export async function dress({ R, scene, liveScreen, shiny, glowOf, model }) {
     cord(scene, [e0, V(e0.x - 0.08, F + 0.002, e0.z - 0.03), W(1.72, F + 0.002, 8.42), W(1.6, F + 0.002, 8.75), W(1.69, F + 0.002, 9.1), W(1.58, F + 0.002, 9.45), W(1.66, F + 0.002, 9.85), W(1.6, F + 0.002, 10.3)], 0.0055, orange, 120);
   }
 
-  // ---- the second fan: the room's own ceiling fan again, over the bench (N40 stays where it hangs) ----
+  // ---- the second fan: the room's own ceiling fan again, over the bench (N40 stays where it hangs). Dan's pick 2026-11-16: a second fan, NOT moving N40 ----
   let fan2 = null;
   {
     const src = R.items.find((i) => i.id === 'N40');
