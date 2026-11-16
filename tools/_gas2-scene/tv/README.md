@@ -19,8 +19,10 @@ cabinet flies to the front). `tv-glass` = the glass's own light, laid back over 
 
 ## Putting the video in
 
-1. Save it as `tv/video/gas2.mp4` (H.264 + AAC, 16:9, `-movflags +faststart`; aim for under ~15 MB at 1080p).
-   Optional: its first frame as `tv/video/gas2-poster.webp`.
-2. In `tv.js` set `VIDEO = 'video/gas2.mp4'` (and `POSTER`). The build copies `tv/` to `/gas2/tv/`.
+In: `tv/video/gas2.mp4` is "GAS 2 - Ad - attention producers (16x9)" (Gil, 2026-11-16): 22 s, re-encoded from the
+60 MB 1080p master to 1280x720 H.264 ~2.6 Mbps + AAC 128k, fast start, 7.5 MB. `gas2-poster.webp` is its frame at 0.5 s.
+
+To swap it: save the new clip over `tv/video/gas2.mp4` (H.264 + AAC, 16:9, fast start, keep it under ~10 MB) and its
+poster over `gas2-poster.webp`, then bump the `?v=` on `VIDEO` and `POSTER` in `tv.js`. The build copies `tv/` to `/gas2/tv/`.
 
 Try a clip before wiring it in: `page-b.html?tvvideo=<url>` (local server only). `?tv=open` opens the theater on load.

@@ -3,14 +3,14 @@
    a click (or Enter) lifts the cabinet off its legs to the front of the page and plays the video from the top with sound,
    with play / pause, a seek bar, mute, full screen and close. Esc, the close button or a click beside the set puts it back
    on its legs, silent again. The radio stops while the TV has the sound.
-   No video yet: VIDEO is empty, so the screen shows a stand-by card (colour bars) in both sizes.
+   The clip: video/gas2.mp4 (the GAS 2 ad, 22 s, 720p). With VIDEO empty the screen shows a stand-by card (colour bars).
    Dev: ?tv=open opens the theater on load; ?tvvideo=<url> plays a clip before it is wired in (127.0.0.1 / localhost only). */
 (() => {
   const Q = new URLSearchParams(location.search), LOCAL = /^(127\.0\.0\.1|localhost)$/.test(location.hostname);
   const DIR = document.currentScript.src.replace(/[^/]*$/, '');
   // the clip, H.264 MP4, relative to this folder (e.g. 'video/gas2.mp4'); ?tvvideo=<url> tries one on a local server only
-  const VIDEO = (LOCAL && Q.get('tvvideo')) || '';
-  const POSTER = '';                                  // optional: its first frame as a .webp, shown until the clip loads
+  const VIDEO = (LOCAL && Q.get('tvvideo')) || 'video/gas2.mp4?v=1';  // bump ?v= when the clip changes, like ART below
+  const POSTER = 'video/gas2-poster.webp?v=1';        // a frame of it, shown until the clip loads
   const scene = document.getElementById('scene');
   if (!scene) return;
   const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
