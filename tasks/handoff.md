@@ -1,6 +1,6 @@
 ## 2026-11-15 — The long garage: Gil's faster first load KEPT (PR #33), plus one line that lets the model downloads go (Claude Code `Garage load-speed branch review [c19840]`, Dan's Mac) — on `feat/home-opening`, PUSHED 2026-11-15 on Dan's word ("keep gil"); MERGED TO MAIN 2026-11-16 on Dan's word ("lets commit and marge to main")
 
-Claim: CLOSED 2026-11-15, opened the same day. Files: `tools/_home-opening/room.html` (one line at the end of
+Claim: CLOSED 2026-11-16 at rv close (opened 2026-11-15; merged to main 2026-11-16). Files: `tools/_home-opening/room.html` (one line at the end of
 `loadModels()`), `tasks/handoff.md` (this entry).
 
 Request (Dan, 2026-11-15, on Gil's note): compare `perf/home-opening-load` with `feat/home-opening` and keep the better
@@ -38,9 +38,17 @@ one. Dan's answer after the results: "keep gil".
   cardboard) are downloaded and shown on nothing since round 6.
 - Not measured: real Safari, a phone, Windows, a weak graphics chip, the live host.
 - Raw results on Dan's Mac: `.claude/perf-compare-2026-11-15/` (git-ignored).
-- Merged into main on 2026-11-16 (a `--no-ff` merge of `feat/home-opening` @ `2736e6b`; this file was the only conflict,
-  both sides kept). The unlisted `/garage-9f3c/` serves this room once that deploy finishes.
-- Next: Dan's own look in Safari and on a phone, on the live unlisted page.
+- Merged into main on 2026-11-16: `8745067`, a `--no-ff` merge of `feat/home-opening` @ `2736e6b` (this file was the only
+  conflict, both sides kept). Built first in a temp worktree (`npm ci`, `npm run build`): the built `/garage-9f3c/` opened
+  in Chrome with 94 models, 97 model requests, no page errors; `lights/check.mjs` PASS. Deploy run 43851370710 success
+  (Cloudflare cache clear passed), Smoke test 43851370712 success (68 passed). Live: `/garage-9f3c/` serves the fix and
+  the early download; Chrome, 3 visits: 94 models, no page errors. Live timing NOT measured: Dan's Mac's line ran at
+  2-6 Mbit/s that hour and the room was ready with its last byte (35-56 s).
+- `feat/home-opening` (`2736e6b`) is now an ancestor of main. Next garage work can start from it or from main.
+- ⚠️ Not done: the phone-cut session (`feat/phone-dive`) has not been told about `prefetchModels` (the warning above). Dan
+  holds a note to paste into it; a direct message from this session was refused by auto mode.
+- Next: Dan's own look at https://revaudio.net/garage-9f3c/ in Safari and on a phone.
+
 ## 2026-11-15 — Review: RevFX joins the plugin picker (Claude Code `revaudio-fc`, Yoni's laptop 2) — LIVE ON MAIN 2026-11-15 on Yoni's word "push" (`a0e0fdb` + `1a884b9`, fast-forward from `1b4bc34`); head was `[skip ci]`, so the
 deploy was dispatched by hand: run 43720976072 success (build, deploy, Cloudflare cache clear). Live check on revaudio.net/review/ (Chromium):
 6 columns at 1280, 2 at 390; price question RevLimiter $49, Radio Roulette $19, RevFX $19, the free three hidden; no page errors.

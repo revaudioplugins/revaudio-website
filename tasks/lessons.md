@@ -529,3 +529,18 @@ to read through `tail -3`: send it to a log file (one failed `pack.mjs build` ru
   `material.clearcoat` above 0 (0.001) or three drops the clear-coat code from the program.
 - Auto mode refused this session's first push of the branch (no word from Dan in the session yet) and passed it after
   his "תריץ תעלה". Do the local work, hand him the one push line, do not look for another way to publish.
+
+## 2026-11-16 - Timing the room: warm up, pair, and read the line first (`Garage load-speed branch review`)
+
+- One cold visit is not a timing. While comparing Gil's PR #33 the first visit after a pause, or on a busy Mac, came out
+  2 to 3 times slower than the rest (7.3 s against 3.8 s; 11.2 s against 3.4 s). The method that held: one discarded
+  warm-up of each version, then pairs A B B A, and a gain counts only when every pair agrees and the two ranges do not
+  touch. Two methods (`perf/simserve.py`, and an HTTP/2 server with Chrome's own limiter) agreed within 0.25 s.
+- A live time from Dan's Mac measures his line first. On 11-16 cached files from revaudio.net came at 2-6 Mbit/s and the
+  live room was ready with its last byte (35-56 s for 19.8 MB). Before reading a live number, curl one cached model
+  (`curl -s -o /dev/null -H 'Accept-Encoding: gzip' -w '%{speed_download}' https://revaudio.net/garage-9f3c/assets/models/couch.glb`).
+- The main checkout's `node_modules` lacks `@astrojs/mdx`, so `npm run build` fails there ("Cannot find module
+  '@astrojs/mdx'"). Build a merge in a temp worktree with its own `npm ci` (about 1 min) instead of linking that folder.
+- A load-path change can break another branch with no conflict at all: `prefetchModels()` starts before `createRoom()`
+  and merges cleanly into the phone cut, whose filter lives later, in `loadModels()` (test merge: 100 model requests
+  instead of 30). After a merge that touches the boot line, count the `.glb` requests of every page that filters.
