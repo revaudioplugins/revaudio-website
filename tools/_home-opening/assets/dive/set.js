@@ -18,9 +18,9 @@ const SET = {
   screen: { w: 0.0693, h: 0.15, nav: 58 / 844, t: 0.009 },
 };
 
-// R, scene: the room's; liveScreen(material): a screen whose pixels the finishing pass leaves alone; shiny(material): takes the room's reflection, up with its lamps;
+// R, scene: the room's; model(name): a copy of assets/models/<name>.glb through the room's own loader (its files are shared, not fetched twice); liveScreen(material): a screen whose pixels the finishing pass leaves alone; shiny(material): takes the room's reflection, up with its lamps;
 // glowOf(material): a pilot light that comes on with the room's gear. Returns what the phone page needs, or null when the room has no parts bench.
-export async function dress({ R, scene, liveScreen, shiny, glowOf }) {
+export async function dress({ R, scene, liveScreen, shiny, glowOf, model }) {
   const benchIt = R.items.find((i) => i.id === 'R07' && i.obj); if (!benchIt) return null;
   scene.updateMatrixWorld(true);
   const bb = new THREE.Box3().setFromObject(benchIt.obj), O = { x: bb.min.x - 2.65, z: bb.min.z - 6.974 }, plank = benchIt.obj.getObjectByName('bench_1'), TOP = plank ? new THREE.Box3().setFromObject(plank).max.y : bb.max.y;
@@ -139,7 +139,7 @@ export async function dress({ R, scene, liveScreen, shiny, glowOf }) {
   }
 
   // ---- things added to the room for this opening: all of them the room's own models, re-used ----
-  const gltf = async (name) => (await new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).loadAsync('assets/models/' + name + '.glb')).scene;
+  const gltf = model || (async (name) => (await new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).loadAsync('assets/models/' + name + '.glb')).scene);
   const pm = (o) => { const m = o.isMaterial ? o : new THREE.MeshStandardMaterial(o); if (m.metalness > 0.3 || m.roughness < 0.5) shiny(m); return m; }; // the room's own reflection, on shiny parts only (as its own things have)
   const add = (to, geo, m, x, y, z, rot) => { const o = new THREE.Mesh(geo, m); o.position.set(x, y, z); if (rot) o.rotation.set(...rot); o.castShadow = o.receiveShadow = true; to.add(o); return o; };
   const cord = (to, pts, r, m, seg = 48) => add(to, new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts.map((q) => (q.isVector3 ? q : V(...q)))), seg, r, 6), m, 0, 0, 0);
