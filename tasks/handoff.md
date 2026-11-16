@@ -45,8 +45,8 @@ one. Dan's answer after the results: "keep gil".
   the early download; Chrome, 3 visits: 94 models, no page errors. Live timing NOT measured: Dan's Mac's line ran at
   2-6 Mbit/s that hour and the room was ready with its last byte (35-56 s).
 - `feat/home-opening` (`2736e6b`) is now an ancestor of main. Next garage work can start from it or from main.
-- ⚠️ Not done: the phone-cut session (`feat/phone-dive`) has not been told about `prefetchModels` (the warning above). Dan
-  holds a note to paste into it; a direct message from this session was refused by auto mode.
+- The phone-cut session (`feat/phone-dive`, "Garage 3D phone page") got the `prefetchModels` warning on 2026-11-16: Dan
+  pasted the note into it (his word "pasted"; a direct message from this session had been refused by auto mode).
 - Next: Dan's own look at https://revaudio.net/garage-9f3c/ in Safari and on a phone.
 
 ## 2026-11-15 — Review: RevFX joins the plugin picker (Claude Code `revaudio-fc`, Yoni's laptop 2) — LIVE ON MAIN 2026-11-15 on Yoni's word "push" (`a0e0fdb` + `1a884b9`, fast-forward from `1b4bc34`); head was `[skip ci]`, so the
