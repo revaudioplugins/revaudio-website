@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Phone Dive</title>
+<!-- The phone's opening, a PROTOTYPE (Dan 2026-11-15): the same garage from a camera above a ceiling fan, looking
+     straight down at a phone tossed on the parts bench (R07); scroll takes the camera down into the phone, and its
+     screen becomes the phone site. It runs the REAL room (room.html?capture=0&expose) in a frame, the way car-bench.html
+     does, so room.html is not touched: the phone, the second fan and the camera exist only on this page.
+     Stand-ins, not decisions: the phone's look, the second fan (the room's own fan N40 stays where Dan put it), the
+     numbers in DIVE. Not in the Astro build and not copied to the live /garage-9f3c/ (tools/garagepage's file list).
+     Serve the worktree root with no-store, then open /tools/_home-opening/phone-dive.html
+       ?rec        a recording: no smoothing, window.__dive.set(p) places the camera, the fans hold the angle asked
+       ?p=0.5      open at that point of the dive
+       ?full       the whole room instead of its phone cut (room.html ?dive), to compare the two
+       ?auto       the dive plays itself, down and back (?auto=14: seconds one way)
+       ?debug      the scroll's numbers on the picture
+       ?look=shop  the phone's look: brass | shop | radio; ?looks = the three as buttons on the picture
+       ?abc        the three versions of the turn as buttons (Dan picked B) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root { --bg: #0b0a09; --ink: #d8cfc2; --dim: #a89f92; --brass: #e8c878; --line: #3a3027; --vh: 100vh; --dive: 320; --hold: 16; }
+  /* the LARGE viewport: when a phone's browser bars slide away mid-scroll the picture already covers what they uncover,
+     and nothing about the page's height changes under the thumb (svh left a strip under the picture; dvh re-sized the 3D mid-scroll) */
+  @supports (height: 100lvh) { :root { --vh: 100lvh; } }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); font: 13px/1.4 "IBM Plex Mono", ui-monospace, Menlo, monospace; }
+  /* the dive is the page's scroll: a tall track, the picture pinned in it */
+  /* the track: the dive, then a short hold with the landed screen still pinned (the site's picture settles on it before anything slides) */
+  .track { height: calc(var(--vh) * (1 + (var(--dive) + var(--hold)) / 100)); }
+  .stage { position: sticky; top: 0; height: var(--vh); display: grid; place-items: center; overflow: hidden; }
+  .box { position: relative; width: 100vw; height: var(--vh); overflow: hidden; background: #000; container-type: size; }
+  /* on a laptop: a phone-sized window in the middle, the bench beside it */
+  @media (min-width: 700px) {
+    .box { height: min(calc(var(--vh) - 40px), 844px); width: auto; aspect-ratio: 390 / 844; border-radius: 26px; outline: 1px solid var(--line); outline-offset: 5px; }
+  }
+  .box iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: #000; pointer-events: none; }
+  .shield { position: absolute; inset: 0; } /* a thumb on the picture lands on this page, never on the room's own document in the frame */
+  .dbg { position: absolute; left: 12px; top: calc(12px + env(safe-area-inset-top, 0px)); padding: 8px 10px; border-radius: 6px; background: rgba(0,0,0,.72); color: #fff; font: 500 12px/1.4 "IBM Plex Mono", monospace; white-space: pre; pointer-events: none; }
+  /* the hand-over: the phone site itself (its capture here), over the 3D phone's screen at the lock */
+  .live { position: absolute; inset: 0; overflow: hidden; opacity: 0; pointer-events: none; background: #0b0a09; } /* (its opacity is the script's: no timed fade to be caught mid-way by a fast thumb) */
+  /* the site's page as the 3D screen shows it at the lock: its top on the picture's top, as wide as the picture (or as tall, on a window narrower than the phone) */
+  .live .sheet { position: absolute; top: 0; left: 50%; width: max(100cqw, 100cqh * 390 / 844); transform: translateX(-50%); }
+  .live img { display: block; width: 100%; height: auto; }
+  /* the first picture: the opening frame as the room draws it (assets/dive/open-390.webp, rendered from this page at 0 %),
+     so the visitor sees the garage from above at once and the live room takes over on the same picture */
+  .wait { position: absolute; inset: 0; background: #0b0a09 url(assets/dive/open-390.webp) center / cover no-repeat; transition: opacity .7s ease; }
+  .wait span { position: absolute; left: 16px; right: 16px; bottom: calc(22px + env(safe-area-inset-bottom, 0px)); text-align: center; color: var(--ink); font: 500 13px/1 "IBM Plex Mono", monospace; letter-spacing: .08em; text-shadow: 0 1px 6px #000; }
+  .wait.gone { opacity: 0; pointer-events: none; }
+  .after { min-height: 60vh; display: grid; place-items: center; padding: 40px 20px; color: var(--dim); text-align: center; border-top: 1px solid var(--line); }
+
+  .bench { position: fixed; left: 16px; bottom: 16px; width: 320px; max-height: calc(100vh - 32px); overflow: auto; padding: 12px 14px 14px; border: 1px solid var(--line); border-radius: 10px; background: rgba(12,10,8,.94); display: none; }
+  @media (min-width: 1000px) { .bench { display: block; } }
+  .bench b { display: block; font: 400 20px/1 "Bebas Neue", sans-serif; letter-spacing: .1em; color: var(--brass); margin-bottom: 8px; }
+  .bench label { display: flex; justify-content: space-between; color: var(--dim); margin-top: 8px; }
+  .bench input[type=range] { width: 100%; accent-color: var(--brass); }
+  .bench .row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+  /* the three versions of the turn, on the picture itself: phones only (the laptop has the bench), never in a recording */
+  .abc { position: absolute; left: 0; right: 0; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; }
+  .abc[hidden] { display: none; }
+  .abc .chip { padding: 15px 12px; font-size: 13px; }
+  @media (min-width: 1000px) { .abc { display: none; } }
+  .chip { appearance: none; border: 1px solid var(--line); background: rgba(20,16,13,.9); color: #cfc6b8; padding: 9px 14px; border-radius: 999px; cursor: pointer; font: 500 12px/1 "IBM Plex Mono", monospace; }
+  .chip:hover { border-color: #6b5a44; }
+  .chip[aria-pressed="true"] { background: var(--brass); color: #1a140e; border-color: var(--brass); }
+  .chip:focus-visible, input:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+  .bench p { margin: 10px 0 0; color: var(--dim); }
+</style>
+</head>
+<body>
+<div class="track" id="track">
+  <div class="stage">
+    <div class="box" id="box">
+      <iframe id="room" title="The garage, from above" tabindex="-1"></iframe>
+      <div class="shield" aria-hidden="true"></div>
+      <div class="live" id="live" aria-hidden="true"><div class="sheet"><img src="assets/nav-390.webp" alt=""><img src="assets/tv-390x844.webp" alt=""></div></div>
+      <div class="dbg" id="dbg" hidden></div>
+      <nav class="abc" id="looks" aria-label="Look of the phone" hidden>
+        <button class="chip" type="button" data-look="brass">1 · Brass</button>
+        <button class="chip" type="button" data-look="shop">2 · Bumper</button>
+        <button class="chip" type="button" data-look="radio">3 · Radio</button>
+      </nav>
+      <nav class="abc" id="abc" aria-label="Version of the turn">
+        <button class="chip" type="button" data-set="1,0.25">A · With fan</button>
+        <button class="chip" type="button" data-set="0,0.25">B · Gentle</button>
+        <button class="chip" type="button" data-set="-1,0.25">C · Against</button>
+      </nav>
+      <div class="wait" id="wait"><span id="waitNote">Opening the garage…</span></div>
+    </div>
+  </div>
+</div>
+<div class="after">The phone site carries on from here.<br>(Prototype: this is where the real page scrolls.)</div>
+
+<aside class="bench" aria-label="Dive bench">
+  <b>PHONE DIVE</b>
+  <label for="scrub"><span>Dive</span><span id="pv">0 %</span></label>
+  <input id="scrub" type="range" min="0" max="1000" value="0" aria-label="Dive position">
+  <div class="row">
+    <button class="chip" id="toTop" type="button">Top</button>
+    <button class="chip" id="toLock" type="button">Lock</button>
+    <button class="chip" id="fanChip" type="button" aria-pressed="true">Fan</button>
+  </div>
+  <label for="turns"><span>Turns on the way down</span><span id="turnsV"></span></label>
+  <input id="turns" type="range" min="-2" max="2" step="1" aria-label="Whole turns on the way down">
+  <label for="swing"><span>Swing round the phone</span><span id="swingV"></span></label>
+  <input id="swing" type="range" min="0" max="0.6" step="0.05" aria-label="Swing round the phone, metres">
+  <label for="len"><span>Scroll length</span><span id="lenV"></span></label>
+  <input id="len" type="range" min="250" max="800" step="10" aria-label="Scroll length, percent of the screen">
+  <div class="row">
+    <button class="chip" type="button" data-set="0,0">Straight</button>
+    <button class="chip" type="button" data-set="1,0">Corkscrew</button>
+    <button class="chip" type="button" data-set="1,0.25">Spiral</button>
+    <button class="chip" type="button" data-set="-1,0.25">Other way</button>
+    <button class="chip" id="copy" type="button">Copy settings</button>
+  </div>
+  <p id="read">Scroll the page, or drag the slider.</p>
+</aside>
+
+<script type="module">
+// ---- the dive, as numbers (metres, the room's axes: x across, y up, z from the TV wall) ----
+const DIVE = {
+  start: { x: 2.54, y: 6.2, z: 7.5, fov: 44 },       // above the ceiling (4.6) and the fan (4.07..4.57), straight down
+  from: 0.12,                                        // where on that way down the page OPENS (Dan 2026-11-15, on a Simulator screenshot: "I want the room to start from here"): 5.7 m up, the bench already in view, the fan's hub at the top left with one blade crossing. 0 = from the very top (6.2 m)
+  over: 4.75,                                        // by this height the camera is over the phone (clear of the blades' circle)
+  turns: 0,                                          // Dan's pick 2026-11-15, on his iPhone: B, the gentle one (0 = only the phone's own 62 deg, spread over the whole way down; A was 1, C was -1). whole turns the picture makes on the way down, in the fan's own direction (+) or against it (-), on top of the phone's own 62 deg: the close-in is a corkscrew (Dan 2026-11-15: "in a rotative motion ... slowly")
+  swing: 0.25,                                       // metres: under the fan the camera also circles the phone's axis by this much, so the bench swings round the phone (0 = it turns on the spot)
+  len: 405,                                          // the scroll the dive takes, % of the screen's height (the longer, the slower)
+  lockFov: 40, ease: 1.7, feel: 0.62,                // feel: 0 = steady metres, 1 = the phone grows steadily (the room's walk uses the same blend)
+};
+const Q = new URLSearchParams(location.search), REC = Q.has('rec');
+for (const k of ['turns', 'swing', 'len']) if (Q.has(k) && isFinite(+Q.get(k))) DIVE[k] = +Q.get(k);
+DIVE.turns = Math.round(DIVE.turns); // whole turns only: the picture has to end square with the phone // ?turns=-1&swing=0&len=400: a version by its link (a phone has no bench)
+document.documentElement.style.setProperty('--dive', DIVE.len);
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $ = (id) => document.getElementById(id);
+const frame = $('room'), box = $('box');
+// the room in its phone cut (room.html ?dive: only what this camera sees is loaded); ?full = the whole room, to compare
+frame.src = 'room.html?capture=0&expose' + (Q.has('full') ? '' : '&dive');
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const smooth = (a, b, v) => { const t = clamp((v - a) / (b - a)); return t * t * (3 - 2 * t); };
+const easeIO = (t, k) => (t < 0.5 ? Math.pow(2 * t, k) / 2 : 1 - Math.pow(2 * (1 - t), k) / 2);
+
+// if the room never arrives (no WebGL, a crash, a dead connection), the page says so instead of sitting on its picture
+const giveUp = setTimeout(() => { if (!window.__dive) $('waitNote').textContent = 'The garage did not open on this device.'; }, 45000);
+// the room, once its page has built it
+const w = await new Promise((res) => { const tick = () => (frame.contentWindow && frame.contentWindow.__room ? res(frame.contentWindow) : setTimeout(tick, 120)); tick(); });
+const { R, camera } = w.__room, THREE = R.set.THREE; w.__three = { THREE }; // the room's own three.js (one copy, the frame's); __three: for the check scripts
+for (const el of [w.document.documentElement, w.document.body]) { el.style.overflow = 'hidden'; el.style.height = '100%'; el.style.touchAction = 'none'; } // the room's own walk is not this page's scroll: its document stays put
+let scene = R.ceil; while (scene.parent) scene = scene.parent;
+const V = (x, y, z) => new THREE.Vector3(x, y, z);
+
+// ---- the phone, its light, the guitar, the deck, the amp and the second fan are the ROOM's (assets/dive/set.js: the laptop walk has them too). This page aims its camera at the phone. ----
+const SETR = R.set, S = SETR.screen, phone = SETR.phone, fan2 = SETR.fan2; DIVE.phone = SETR.place;
+const setLook = (name) => { if (!SETR.looks.includes(name)) return; if (name !== SETR.look) SETR.setLook(name); DIVE.look = name; for (const b of document.querySelectorAll('[data-look]')) b.setAttribute('aria-pressed', String(b.dataset.look === name)); };
+setLook(SETR.looks.includes(Q.get('look')) ? Q.get('look') : SETR.look); // ?look=brass|shop|radio
+if (REC) R.modelAnims = (R.modelAnims || []).filter((a) => a.o !== SETR.platter && a.o !== fan2?.userData.rotor); // a recording turns the fan itself (set) and holds the record still
+w.__room.arrange(); // the shadows once more, with the phone in them
+
+// ---- the camera: this page's, not the walk's (the room's frame keeps setting its aisle camera: those two calls go quiet) ----
+camera.position.set = () => camera.position; camera.rotation.set = () => camera.rotation;
+const C = phone.position.clone().addScaledVector(V(0, 1, 0).applyQuaternion(phone.quaternion), S.t + 0.0006); // the middle of the screen, on its glass
+const nPhone = V(0, 1, 0).applyQuaternion(phone.quaternion), upPhone = V(0, 0, -1).applyQuaternion(phone.quaternion);
+const look = (dir, up) => new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().lookAt(dir, V(0, 0, 0), up)); // a camera at dir, looking at the origin
+const RS = w.__room.S, bloom0 = RS.bloom; // the room's glow: it goes as the screen fills the picture, as it does at the room's own TV
+const qPhone = look(nPhone, upPhone), FAN_FLOOR = 3.9; // (the fan's lowest part is at 4.07 m: under this the camera is free to circle)
+function pose(p) {
+  p = DIVE.from + (1 - DIVE.from) * p; // the page's 0..1 is the way down from its opening frame
+  const D = DIVE, e = reduced ? p : easeIO(clamp(p), D.ease), asp = box.clientWidth / box.clientHeight;
+  // the lock: the screen covers the picture, whatever the window's shape
+  const th = Math.tan(D.lockFov / 2 * Math.PI / 180), hEnd = Math.min(S.h / 2 / th, S.w / 2 / (th * asp)) * 0.9995, h0 = D.start.y - C.y;
+  // ... from its TOP: a browser window is shorter than the phone's screen, and the site's page starts at its top (centred, the 3D screen sat 70-90 px off the page that replaced it)
+  const cLock = C.clone().addScaledVector(upPhone, Math.max(0, S.h / 2 - hEnd * th * 1.0005)); // (a hair past the top edge, as at the sides: never a sliver of bezel)
+  const h = (h0 + (hEnd - h0) * e) * (1 - D.feel) + h0 * Math.pow(hEnd / h0, e) * D.feel, y = C.y + h;
+  const k = 1 - smooth(D.start.y, D.over, y); // 1 above the ceiling, 0 once over the phone
+  // the turn: from the first move to just before the lock, one even corkscrew that ends square with the phone
+  const still = reduced ? 0 : 1, aEnd = (D.phone.yaw + 360 * D.turns * still) * Math.PI / 180, a = aEnd * smooth(0.02, 0.965, p);
+  // the swing: under the fan the camera circles the phone's axis as it turns, and closes onto it by the end
+  const r = D.swing * still * smooth(FAN_FLOOR, FAN_FLOOR - 0.9, y) * (1 - smooth(0.5, 0.95, p)), ph = a + 0.9;
+  const pos = V(C.x + k * (D.start.x - C.x) + r * Math.cos(ph), y, C.z + k * (D.start.z - C.z) + r * Math.sin(ph));
+  // straight down above the ceiling; once over the phone it looks at the phone, and at the end along the phone's own axis
+  const tip = smooth(0.8, 0.995, p);
+  const n = V(0, 1, 0).lerp(pos.clone().sub(C).normalize(), 1 - k).lerp(nPhone, tip).normalize();
+  pos.lerp(cLock.addScaledVector(nPhone, h), tip);
+  RS.bloom = bloom0 * (1 - tip) * (1 - tip);
+  camera.position.x = pos.x; camera.position.y = pos.y; camera.position.z = pos.z;
+  camera.quaternion.copy(look(n, V(-Math.sin(a), 0, -Math.cos(a)))).slerp(qPhone, tip);
+  camera.fov = D.start.fov + (D.lockFov - D.start.fov) * e; camera.aspect = asp; camera.updateProjectionMatrix();
+  R.ceil.visible = false; // (already unseen from above: its face looks down)
+  return { y: camera.position.y, a: a * 180 / Math.PI, aEnd: aEnd * 180 / Math.PI };
+}
+
+// ---- scroll drives it ----
+// The lengths come from the page itself (the pinned picture's real travel), never from the window: a phone's bars sliding away change the window, not the track.
+const stageEl = document.querySelector('.stage'), trackEl = $('track'), cssN = (k) => +getComputedStyle(document.documentElement).getPropertyValue(k);
+let diveLen = 1, holdLen = 1;
+const measure = () => { const all = trackEl.offsetHeight - stageEl.offsetHeight, d = cssN('--dive'), h = cssN('--hold'); diveLen = Math.max(1, all * d / (d + h)); holdLen = Math.max(1, all - diveLen); };
+const walkPx = () => diveLen;
+let target = 0, shown = -1, hold = 0; // hold: how far the scroll is through the pinned rest after the landing, 0..1
+const readScroll = () => { target = clamp(scrollY / diveLen); hold = clamp((scrollY - diveLen) / holdLen); };
+measure();
+addEventListener('scroll', readScroll, { passive: true }); addEventListener('resize', () => { measure(); readScroll(); }); // (no jump to the target here: on a phone "resize" is the bars moving, mid-scroll)
+const scrub = $('scrub');
+scrub.addEventListener('input', () => scrollTo({ top: scrub.value / 1000 * walkPx(), behavior: 'auto' }));
+$('toTop').addEventListener('click', () => scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' }));
+$('toLock').addEventListener('click', () => scrollTo({ top: walkPx(), behavior: reduced ? 'auto' : 'smooth' }));
+$('fanChip').addEventListener('click', (ev) => { if (!fan2) return; fan2.visible = !fan2.visible; ev.currentTarget.setAttribute('aria-pressed', String(fan2.visible)); });
+// the move's numbers: sliders, four ready versions, Copy settings (paste them to Claude to make them the page's own)
+const ui = { turns: [$('turns'), $('turnsV'), (v) => (v > 0 ? '+' : '') + v], swing: [$('swing'), $('swingV'), (v) => v.toFixed(2) + ' m'], len: [$('len'), $('lenV'), (v) => v + ' %'] };
+const showUi = () => { for (const [k, [inp, out, fmt]] of Object.entries(ui)) { inp.value = DIVE[k]; out.textContent = fmt(DIVE[k]); } for (const b of document.querySelectorAll('[data-set]')) b.setAttribute('aria-pressed', String(b.dataset.set === DIVE.turns + ',' + DIVE.swing)); };
+for (const [k, [inp]] of Object.entries(ui)) inp.addEventListener('input', () => {
+  const at = target; DIVE[k] = +inp.value;
+  if (k === 'len') { document.documentElement.style.setProperty('--dive', DIVE.len); measure(); scrollTo(0, at * walkPx()); } // the same point of the dive, on the new length
+  showUi(); shown = -1;
+});
+for (const b of document.querySelectorAll('[data-set]')) b.addEventListener('click', () => { [DIVE.turns, DIVE.swing] = b.dataset.set.split(',').map(Number); showUi(); shown = -1; });
+$('copy').addEventListener('click', async (ev) => { const txt = JSON.stringify({ turns: DIVE.turns, swing: DIVE.swing, len: DIVE.len }); try { await navigator.clipboard.writeText(txt); ev.currentTarget.textContent = 'Copied'; } catch { $('read').textContent = txt; } });
+showUi();
+for (const b of document.querySelectorAll('[data-look]')) b.addEventListener('click', () => { setLook(b.dataset.look); w.__room.arrange(); shown = -1; }); // (arrange: the room's shadows are drawn once, so once more for the new body)
+$('looks').hidden = REC || !Q.has('looks'); // ?looks: the three looks as buttons on the picture
+if (REC || !Q.has('abc')) $('abc').hidden = true; // Dan picked B: the buttons are off the picture, ?abc brings them back to compare
+// The hand-over. Once the dive has landed the site's picture comes on over the 3D screen (the same pixels by then), and the room stops drawing under it:
+// a page that scrolls on must not pay for a 3D room nobody sees.
+const liveEl = $('live'), render0 = w.__room.composer.render.bind(w.__room.composer); let liveK = 0, liveSet = -1;
+w.__room.composer.render = (...a) => { if (liveK < 1) render0(...a); };
+function draw(p, dt = 0.016) {
+  const st = pose(p); shown = p;
+  const landed = p >= 0.9995;
+  liveK = !landed ? Math.max(0, liveK - dt / 0.1) : REC || hold > 0.35 ? 1 : Math.min(1, liveK + dt / 0.12); // (a fling through the hold: on at once, never caught half-way)
+  if (Q.has('nolive')) liveK = 0; // (a check's switch: the 3D screen alone at the lock, to compare with the site's picture)
+  if (liveK !== liveSet) liveEl.style.opacity = liveSet = liveK;
+  if (document.activeElement !== scrub) scrub.value = Math.round(p * 1000);
+  $('pv').textContent = Math.round(p * 100) + ' %';
+  $('read').textContent = `camera ${st.y.toFixed(2)} m up · turned ${Math.round(st.a)}° of ${Math.round(st.aEnd)}°`;
+}
+if (Q.has('p')) scrollTo(0, clamp(+Q.get('p')) * walkPx());
+if (Q.has('auto')) { // ?auto (or ?auto=14: seconds one way): the page scrolls itself down the dive, rests on the phone, comes back
+  const T = (+Q.get('auto') || 12) * 1000, t0 = performance.now() + 2500;
+  const run = (now) => { const t = Math.max(0, now - t0) % (2 * T + 4000), u = t < T ? t / T : t < T + 2000 ? 1 : t < 2 * T + 2000 ? 1 - (t - T - 2000) / T : 0; scrollTo(0, (0.6 * u + 0.4 * u * u * (3 - 2 * u)) * walkPx()); requestAnimationFrame(run); };
+  requestAnimationFrame(run);
+}
+if (Q.has('debug')) { $('dbg').hidden = false; setInterval(() => { $('dbg').textContent = `page scroll ${Math.round(scrollY)} of ${Math.round(walkPx())}\nframe scroll ${Math.round(w.scrollY)}\ndive ${Math.round(shown * 100)} %  camera ${camera.position.y.toFixed(2)} m\nscreen ${innerWidth} x ${innerHeight}`; }, 200); }
+readScroll(); draw(REC ? 0 : target);
+// A thumb's scroll is already smooth (the browser eases its momentum), so on touch the picture follows it almost directly; a mouse wheel comes in steps and gets more easing.
+// Either way the landing is exact: the nearer the scroll is to the end of the dive, the less the picture may trail it, and at the end not at all,
+// so the pinned picture never starts to slide away with the dive still on its way (measured before: up to 35 frames and a fifth of the dive).
+const TAU = matchMedia('(pointer: coarse)').matches ? 0.045 : 0.11; let lastT = 0;
+function raf(now) {
+  const dt = clamp((now - lastT) / 1000, 0.004, 0.1); lastT = now;
+  if (!REC) {
+    let next = reduced || shown < 0 ? target : shown + (target - shown) * (1 - Math.exp(-dt / TAU));
+    if (next < target) next = Math.max(next, target - (1 - target) * 0.5);
+    draw(Math.abs(next - target) < 0.0004 ? target : next, dt);
+  }
+  requestAnimationFrame(raf);
+}
+requestAnimationFrame(raf);
+// a recording places the camera itself, and the fans by the clock it gives (seconds)
+clearTimeout(giveUp);
+window.__dive = { DIVE, get p() { return shown; }, get t() { return target; }, get end() { return diveLen; }, look: (n) => { setLook(n); w.__room.arrange(); shown = -1; }, set: (p, sec) => { draw(clamp(p)); if (sec != null) for (const a of [...(R.modelAnims || [])]) if (a.o.name === 'fan_rotor') a.o.rotation.y = sec * 2; if (sec != null && fan2?.userData.rotor) fan2.userData.rotor.rotation.y = sec * 2 + 0.6; }, ready: true };
+// the live room takes over from the first picture once it has drawn a few frames of its own, its fan where the picture has it
+if (!REC && fan2?.userData.rotor) fan2.userData.rotor.rotation.y = 1.4; // (the picture was taken with set(0, 0.4): 0.4 s x 2 rad/s + 0.6)
+await new Promise((res) => { let n = 0; const tick = () => (++n > 12 ? res() : w.requestAnimationFrame(tick)); w.requestAnimationFrame(tick); });
+$('wait').classList.add('gone');
+</script>
+</body>
+</html>

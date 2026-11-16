@@ -355,7 +355,12 @@ const TVCAP = CAPTURE != null ? new URLSearchParams(location.search).get('tvcap'
 // the station across the road outside the door (street.js), in G1 (dark): Dan's pick on bench round 5, card 1 (11-10).
 // ?street=G2 previews the darker grade, ?street=none today's old night
 const STREET_GRADE = 'G1';
-const STREET = ((q) => (q === 'none' || q === 'off' ? null : q || STREET_GRADE))(new URLSearchParams(location.search).get('street'));
+// ?dive: the PHONE's cut of this room (phone-dive.html: a camera above a ceiling fan, coming down onto the parts bench).
+// The same room and the same data, but only what that camera can see is loaded and drawn: the models whose slots touch
+// `keep` (metres on the floor: x from..to, z from..to), the small texture set, one shadowed lamp, no mirror pass, no
+// multisampling, a 1.3 MP picture. Without ?dive nothing here runs: the laptop room is as it was.
+const DIVE = new URLSearchParams(location.search).has('dive') ? { keep: { x: [0.95, 3.9], z: [4.5, 10.5] }, always: ['N40'], pbr: 'assets/pbr/phone/', pic: 384, mp: 1.3e6, dpr: 2, lamps: [0.55, 0.2], shadow: 0.55 } : null;
+const STREET = DIVE ? null : ((q) => (q === 'none' || q === 'off' ? null : q || STREET_GRADE))(new URLSearchParams(location.search).get('street'));
 const S = { ...DEF, moves: structuredClone(DEF.moves) };
 let stored = {};
 try { stored = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) {}
@@ -479,7 +484,7 @@ const FINISH = {
     }`,
 };
 // half floats with 4x MSAA (the edges of a room full of thin things), the glow, the finish
-const composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 }));
+const composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: DIVE ? 0 : 4 }));
 const bloomPass = new UnrealBloomPass(new THREE.Vector2(512, 512), S.bloom, 0.32, 0.9);
 keepAlpha(bloomPass.blendMaterial, true);
 bloomPass.blendMaterial.blendSrc = THREE.OneFactor; // its glow is premultiplied: x its alpha again squared the halos (the alpha factors still keep the frame's)
@@ -597,7 +602,7 @@ const pulseTex = () => canvasTex(4, 256, (g) => { // a bright pulse on a dim str
 });
 const scanTex = () => canvasTex(4, 64, (g) => { g.fillStyle = 'rgba(0,0,0,0)'; g.clearRect(0, 0, 4, 64); for (let y = 0; y < 64; y += 4) { g.fillStyle = 'rgba(0,0,0,0.55)'; g.fillRect(0, y, 4, 2); } });
 function labelSprite(text, cat, k = 1) {
-  const t = canvasTex(640, 112, (g) => {
+  const t = DIVE ? canvasTex(4, 4, () => {}, false) : canvasTex(640, 112, (g) => { // (the phone's cut never shows a label: no 124 canvases to hold)
     g.font = '600 34px Inter, sans-serif';
     const w = Math.min(620, g.measureText(text).width + 40);
     g.fillStyle = 'rgba(10,8,12,0.78)'; g.beginPath(); g.roundRect((640 - w) / 2, 20, w, 72, 14); g.fill();
@@ -639,10 +644,15 @@ async function loadTextures() {
     .flatMap((k) => ['col', 'nrm', 'arm'].map((m) => [k, m])).concat([['steel', 'col']]);
   loadP.tex[1] = sets.length + POSTERS.length + MONITORS.filter((s) => !isUnit(s)).length + (STREET ? 1 : 0);
   await Promise.all([
-    ...sets.map(([k, m]) => one(`assets/pbr/${k}_${m}.webp`, (t) => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 8; if (m === 'col') t.colorSpace = THREE.SRGBColorSpace; (PBR[k] ||= {})[m] = t; })),
-    ...[...POSTERS, ...MONITORS.filter((s) => !isUnit(s))].map((s) => one(`assets/pics/${s.pic}.webp`, (t) => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; PICS[s.pic] = t; })),
+    ...sets.map(([k, m]) => one(`${DIVE ? DIVE.pbr : 'assets/pbr/'}${k}_${m}.webp`, (t) => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 8; if (m === 'col') t.colorSpace = THREE.SRGBColorSpace; (PBR[k] ||= {})[m] = t; })),
+    ...[...POSTERS, ...MONITORS.filter((s) => !isUnit(s))].map((s) => {
+      if (DIVE) { const z = (S.moves[s.id]?.f ?? s.f ?? -9) * (S.roomL - 5.5); // ?dive: a picture off the dive's patch is never fetched (z = f x the room's span)
+        if (!(s.side === 1 && z > DIVE.keep.z[0] - 1 && z < DIVE.keep.z[1] + 1)) { PICS[s.pic] = Object.assign(canvasTex(2, 2, (g) => { g.fillStyle = '#141210'; g.fillRect(0, 0, 2, 2); }, false), { colorSpace: THREE.SRGBColorSpace }); loaded('tex'); return null; } }
+      return one(`assets/pics/${s.pic}.webp`, (t) => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; PICS[s.pic] = t; }); }),
     ...(STREET ? [one('assets/pics/street-atlas.webp', (t) => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; PICS.streetAtlas = t; })] : []), // the street's signs (street-atlas.mjs)
   ]);
+  if (DIVE) for (const t of Object.values(PICS)) { const im = t.image; if (!im || Math.max(im.width, im.height) <= DIVE.pic) continue; // ?dive: no poster over 384 px on the GPU
+    const k = DIVE.pic / Math.max(im.width, im.height), c = document.createElement('canvas'); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); t.image = c; t.needsUpdate = true; }
 }
 function pbr(key, rep = 1, nrmKey = key) {
   const tex = (k, m) => { const t = PBR[k][m].clone(); t.repeat.setScalar(rep); return t; };
@@ -876,9 +886,13 @@ for (const q of new URLSearchParams(location.search).getAll('model')) {
   if (/^assets\/models\/[\w\-/.]+\.glb$/.test(src || '') && !src.includes('..')) MODELS[id] = { src, yaw: +yaw || 0, fit };
 }
 async function loadModels() {
-  const ids = Object.keys(MODELS).filter((id) => R.items.some((it) => it.id === id));
+  if (DIVE) { // the slots that touch the dive's patch of floor stay; the rest are never fetched and never drawn (arrange hides them)
+    scene.updateMatrixWorld(true); const b = new THREE.Box3(), K = DIVE.keep;
+    R.diveKeep = new Set(R.items.filter((it) => { if (DIVE.always.includes(it.id)) return true; b.setFromObject(it.obj); return !b.isEmpty() && b.max.x >= K.x[0] && b.min.x <= K.x[1] && b.max.z >= K.z[0] && b.min.z <= K.z[1]; }).map((it) => it.id));
+  }
+  const ids = Object.keys(MODELS).filter((id) => R.items.some((it) => it.id === id) && (!DIVE || R.diveKeep.has(id)));
   if (!ids.length) { loaded('models', 1, 1); return []; }
-  loadP.models[1] = new Set([...ids.flatMap((id) => [MODELS[id].src, MODELS[id].stand, MODELS[id].plate && MODELS[id].plate.src]), ...Object.values(MESS_MODELS), SIGN_MODEL].filter(Boolean)).size;
+  loadP.models[1] = new Set([...ids.flatMap((id) => [MODELS[id].src, MODELS[id].stand, MODELS[id].plate && MODELS[id].plate.src]), ...Object.values(MESS_MODELS), !DIVE && SIGN_MODEL].filter(Boolean)).size;
   const [{ GLTFLoader }, { MeshoptDecoder }] = await Promise.all([import('three/addons/loaders/GLTFLoader.js'), import('three/addons/libs/meshopt_decoder.module.js')]);
   const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder), maps = [], files = {};
   // the loading screen hears each file's bytes as they come (the files load side by side: counting finished ones, the
@@ -922,7 +936,8 @@ async function loadModels() {
       if (!o.isMesh) return;
       o.receiveShadow = true; o.castShadow = ![o.material].flat().some((mt) => mt.transparent); // a decal or glass casts no box of shadow
       for (const mt of [o.material].flat()) {
-        for (const t of ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap', 'emissiveMap']) if (mt[t]) { mt[t].anisotropy = 8; maps.push(mt[t]); } // 8x: stickers and labels stay sharp at the aisle's grazing angles
+        for (const t of ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap', 'emissiveMap']) if (mt[t]) { mt[t].anisotropy = 8; maps.push(mt[t]); // 8x: stickers and labels stay sharp at the aisle's grazing angles
+          const im = DIVE && mt[t].image; if (im && Math.max(im.width, im.height) > 512) { const k = 512 / Math.max(im.width, im.height), c = document.createElement('canvas'); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); mt[t].image = c; mt[t].needsUpdate = true; } } // ?dive: a model's maps at 512 px (a 1024 map is 5.6 MB of a phone's memory, 4x this)
         if (mt.emissive && mt.emissive.getHex() && !R.modelGlow.some((g) => g.m === mt)) R.modelGlow.push({ m: mt, k: mt.emissiveIntensity * (m.glow ?? 1), dying: /tube_dying/.test(mt.name), cyc: cycleOf(m.cycle, mt.name), id, own: !!m.own }); // meters and LEDs power on with the room (N02's dying tube dips with its light)
         if (mt.metalness > 0.3 || mt.roughness < 0.5) { mt.envMap = R.probe.env.texture; mt.userData.env ??= 1; SHINY.add(mt); } // the room's own reflection, on shiny parts only
       }
@@ -952,7 +967,8 @@ async function loadModels() {
     let g; try { g = await get(src); } catch (e) { console.warn('mess', k, src, e.message); return; } // the primitive stays
     g.traverse((o) => { if (!o.isMesh) return; o.castShadow = o.receiveShadow = true;
       for (const mt of [o.material].flat()) {
-        for (const t of ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap']) if (mt[t]) { mt[t].anisotropy = 8; maps.push(mt[t]); }
+        for (const t of ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap']) if (mt[t]) { mt[t].anisotropy = 8; maps.push(mt[t]);
+          const im = DIVE && mt[t].image; if (im && Math.max(im.width, im.height) > 512) { const q = 512 / Math.max(im.width, im.height), c = document.createElement('canvas'); c.width = Math.round(im.width * q); c.height = Math.round(im.height * q); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); mt[t].image = c; mt[t].needsUpdate = true; } } // ?dive: 512 px, as the slots' models
         if (mt.metalness > 0.3 || mt.roughness < 0.5) { mt.envMap = R.probe.env.texture; mt.userData.env ??= 1; SHINY.add(mt); }
       } });
     R.messModel[k] = g;
@@ -960,7 +976,7 @@ async function loadModels() {
   messModels();
   // the REVAUDIO neon's glass (round 6, Dan 11-11: a real 3D neon): hung on the drawn plane, in its frame, which keeps only
   // the halo; the glass on the sign's own circuit (lightRoom)
-  try {
+  if (!DIVE) try {
     const sg = await get(SIGN_MODEL);
     sg.traverse((o) => { if (!o.isMesh) return; o.receiveShadow = true;
       for (const mt of [o.material].flat()) { if (mt.name === 'neon_glow') { R.signGlow = mt; mt.userData.k = mt.emissiveIntensity; } else o.castShadow = true; } });
@@ -1355,10 +1371,11 @@ function createRoom() {
     const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.07, 12, 8), bulbMat);
     const cord = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.6), R.steel);
     const light = new THREE.SpotLight(0xffa04a, 16, 0, deg(42), 0.5, 2); // tighter pools, like the painting's
-    light.castShadow = true; light.shadow.mapSize.set(1024, 1024); light.shadow.bias = -0.0004; light.shadow.normalBias = 0.03;
+    light.castShadow = !DIVE || f === DIVE.shadow; light.shadow.mapSize.set(1024, 1024); light.shadow.bias = -0.0004; light.shadow.normalBias = 0.03;
     light.shadow.camera.near = 0.2; light.shadow.camera.far = 14;
     const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 1.9, 1, 32, 1, true), R.shaftMat.clone()); // its own copy: its lamp's level
     scene.add(shade, bulb, cord, light, light.target, shaft);
+    if (DIVE && !DIVE.lamps.includes(f)) for (const o of [shade, bulb, cord, light, shaft]) o.visible = false; // (?dive: the lamps whose pools the camera never sees)
     return { f, k, shade, inner, bulb, bulbMat, cord, light, shaft };
   });
 
@@ -1574,7 +1591,7 @@ function createRoom() {
   scene.add(R.selBox, R.hoverBox);
 
   // the street's light falls in through the door and the car casts it across the floor
-  R.outLight.castShadow = true; R.outLight.shadow.mapSize.set(1024, 1024); R.outLight.shadow.bias = -0.0004; R.outLight.shadow.normalBias = 0.03;
+  R.outLight.castShadow = !DIVE; if (DIVE) R.outLight.visible = false; R.outLight.shadow.mapSize.set(1024, 1024); R.outLight.shadow.bias = -0.0004; R.outLight.shadow.normalBias = 0.03;
   R.outLight.shadow.camera.near = 1; R.outLight.shadow.camera.far = 30;
   // solid lit things cast and take shadows (the shell only takes them, but for the right wall's pieces: the street's light
   // comes in through the door only); see-through things keep the frame's alpha (FINISH)
@@ -1713,7 +1730,7 @@ function arrange() {
   // v from z = Lr (0) down to 0 (1). Shine scales the patches' 0.22-0.75 (x 1 at Dan's 0.62); the checker keeps its own
   for (const t of [PATCHES.rough, PATCHES.spec]) { t.repeat.set(Wd / 7, -Lr / 7); t.offset.set(-0.5 * Wd / 7, Lr / 7); }
   R.floorMat.roughness = R.floorMat === R.floorMats.concrete ? (1 - S.floorShine) / 0.38 : 1 - 0.8 * S.floorShine;
-  R.wet.visible = S.floor === 'concrete' && S.floorShine > 0;
+  R.wet.visible = !DIVE && S.floor === 'concrete' && S.floorShine > 0; // (?dive: the floor's mirror draws the room a second time every frame)
   R.wet.material.uniforms.uK.value = 9 * S.floorShine;
   for (const m of [R.floor, R.lanes, R.mirror, R.glaze, R.wet]) { m.scale.set(Wd, Lr, 1); m.position.set(0, m === R.lanes || m === R.glaze ? 0.003 : m === R.wet ? 0.002 : 0, Lr / 2); }
   if (R.laneW !== Wd) {
@@ -1798,6 +1815,7 @@ function arrange() {
   if (!$('slotsPanel').hidden) buildSlots();
   R.shotsStale = true; // the projectors look again before the next frame (never from here: arrange can run mid-render)
   R.probe.due = Math.max(R.probe.due, performance.now() + 350); // the reflections catch up once things stop moving
+  if (DIVE && R.diveKeep) { for (const it of R.items) if (!R.diveKeep.has(it.id)) { it.obj.visible = false; if (it.blob) it.blob.visible = false; } if (R.car) R.car.visible = false; if (R.sign) R.sign.visible = false; if (R.tv) for (const o of [R.tv.cab, R.tv.face, R.tv.line, R.tv.glow]) if (o) o.visible = false; }
   renderer.shadowMap.needsUpdate = true;
 }
 const inDoor = (z, halfW, bottom) => R.door && z + halfW > R.door.z0 - 0.1 && z - halfW < R.door.z1 + 0.1 && bottom < R.door.h;
@@ -2106,9 +2124,9 @@ function resize() {
     tvImg.src = `assets/tv-${c.tag}.webp`;
     $('tvLive').src = tvImg.src;
     $('navImg').src = $('stageNavImg').src = `assets/nav-${c.navW}.webp`;
-    $('belowImg').src = `assets/below-${c.navW}.webp`;
+    if (!DIVE) $('belowImg').src = `assets/below-${c.navW}.webp`;
   }
-  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.75, Math.sqrt(3.7e6 / (vw * vh)))); // the recipe's laptop budget: a 3.7 MP drawing buffer at most
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, DIVE ? DIVE.dpr : 1.75, Math.sqrt((DIVE ? DIVE.mp : 3.7e6) / (vw * vh)))); // the recipe's laptop budget: a 3.7 MP drawing buffer at most
   renderer.setSize(vw, vh, false); composer.setPixelRatio(renderer.getPixelRatio()); composer.setSize(vw, vh);
   const dpr = renderer.getPixelRatio();
   R.mirror.getRenderTarget().setSize(Math.round(vw * dpr * 0.5), Math.round(vh * dpr * 0.5));
@@ -3020,9 +3038,12 @@ function createCarLook({ car, tailMat }) {
 }
 
 const modelMaps = await loadModels(); // before the uploads and compiles below, so a model never pops in mid-intro
+// the things on and round the parts bench (the phone, the opened guitar, the deck on the GAS drum and its amp, a second fan): one file for the laptop walk and
+// the phone's opening, because it is one garage (Dan 2026-11-15). assets/dive/set.js
+R.set = await (await import('./assets/dive/set.js')).dress({ R, scene, liveScreen, shiny: (m) => SHINY.add(m), glowOf: (m) => (R.modelGlow ||= []).push({ m, k: m.emissiveIntensity }) });
 R.carLook = createCarLook({ car: R.car, tailMat: R.tailMat }); // the coupe's materials are in: their look (CAR_LOOK)
 setBench(!!S.bench);
-if (new URLSearchParams(location.search).has('expose')) window.__room = { R, camera, L, S, walkDist, arrange, go: (p) => jumpTo(p * L.walkPx) }; // inspection and render scripts only
+if (new URLSearchParams(location.search).has('expose')) window.__room = { R, camera, L, S, walkDist, arrange, go: (p) => jumpTo(p * L.walkPx), renderer, composer }; // inspection and render scripts only
 if (CAPTURE != null) { document.body.classList.add('capture'); for (const m of [...Object.values(R.edgeMats), R.acEdge]) m.visible = false; jumpTo(+CAPTURE * L.walkPx); }
 wakeArt();
 hist = [snapshot()]; histAt = 0; undoUi(); // the room as it opened is the first step
@@ -3031,7 +3052,7 @@ for (const it of R.items) if (it.tex) { const img = it.tex.image; if (!img || !i
 // the maps go up to the GPU and the shaders compile before the intro's clock starts (on first use they froze its first
 // second and a half, and the lights jumped from dim to full in one frame); the stall sits on the dark page instead. Then
 // the first probe capture: the textures are in, the lights at their final levels (a picture landing later recaptures)
-const ups = [...Object.values(PBR).flatMap((set) => Object.values(set)), ...Object.values(PICS), ...modelMaps]; // after the clones: one upload per map
+const ups = DIVE ? [] : [...Object.values(PBR).flatMap((set) => Object.values(set)), ...Object.values(PICS), ...modelMaps]; // after the clones: one upload per map
 for (let i = 0; i < ups.length; i++) { renderer.initTexture(ups[i]); if (i % 8 === 7) { loaded('upload', i + 1, ups.length); await new Promise((r) => setTimeout(r)); } } // a breath every 8: the loading screen hears it
 loaded('upload', ups.length, ups.length);
 renderer.setRenderTarget(composer.readBuffer); // the room draws into the composer's target: its shaders differ from the canvas's
