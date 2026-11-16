@@ -479,3 +479,53 @@ Rule: before a size or speed number goes in front of Dan under "same look", run 
 comparison (five walk stops, originals against it, plus a zoom on the glossiest and the thinnest things in the room).
 A number whose look is not checked yet is labelled "estimate, look not checked". And never pipe a check you may need
 to read through `tail -3`: send it to a log file (one failed `pack.mjs build` run lost its error text that way).
+
+## 2026-11-11 - Dan's browser keeps old loading pictures; a render left in the tree blocks the push (`danavivi-cf`)
+
+- `python3 -m http.server` sends no Cache-Control, only Last-Modified, so Chrome and Safari reuse a picture for a
+  while on their own (heuristic freshness). After `lights/render.mjs` re-rendered the loading screen, Dan's reload
+  still showed the old pictures and he asked why the sign wasn't there ("I don't see any sign, any skeleton of a
+  sign"). Serve the room Dan looks at with `Cache-Control: no-store`: an `http.server` subclass that adds the header
+  in `end_headers()` (11-11's: `.claude/garage-bench-2026-11-11/nocache_server.py`, run as
+  `python3 nocache_server.py <port> <worktree root>`). After switching servers, have him hard-reload once (Chrome
+  ⌘⇧R, Safari ⌥⌘R): what is already cached stays. Headless runs on Windows also need HTTP/1.1 keep-alive (shared
+  memory `feedback_bench_server_http11_keepalive`).
+- `lights/render.mjs` writes into `assets/lights/` in place. A render left uncommitted (and stale after the next
+  room change) makes `git pull --rebase` refuse, and the repo's hook wants that pull in the same command as every
+  push, so nothing pushes until it is committed or thrown away. Render the loading pictures once, last, right before
+  the commit that ships them; if one has to sit in the tree, commit it as a marked stopgap.
+
+## 2026-11-11 - The loading screen must match the room: check it every time (`danavivi-ee`)
+
+- Dan, after his car look was baked into the room: "in the loading screen the picture not matching the 3d asset in all
+  of the page. lets always chack it if the loeading screen matches the finel page". The loading pictures
+  (`assets/lights/*.webp`) are renders of the room at walk 0, so ANY change that shows there (a model, a material, the
+  car's look, a light, a moved prop, the TV picture) makes them stale, and the visitor sees one room turn into another
+  at the hand-off. I had baked the look and only noted "the pictures are stale, the next session re-renders": Dan
+  opened the room and saw the mismatch first.
+- The rule: a change to the room is not done, shown to Dan or pushed until `node tools/_home-opening/lights/check.mjs
+  --port <port>` prints PASS (it now exits 1 on FAIL: blurred mean 3.8, p99 20, worst area of a 16 x 9 grid 17). On
+  FAIL: `lights/render.mjs --port <port> --check`, check again, commit the 12 pictures with the change. This replaces
+  "render once, last" for anything Dan will look at: render again whenever the check fails, it costs minutes and no
+  credits.
+- The whole-picture numbers alone miss a small change (one prop is under 1 % of the pixels): the gate also reads the
+  picture area by area. Measured 11-11: stale 4.52 / 43 / 26.9 (FAIL), fresh 3.28 / 15 / 12.4 (PASS; the 12.4 is the
+  wet floor's moving shine).
+
+## 2026-11-11 - A bench for a claimed room; a new file the room imports is a dead live page (`danavivi-ee`)
+
+- The room was claimed (`danavivi-cf`, round 6) when Dan asked for a car bench. What worked without touching
+  `room.html`: a second page that runs the real room in a frame (`room.html?expose`), takes `three` from the frame's
+  own realm (`frame.contentWindow.eval("import('three')")`: same instance, same fonts) and moves the room's camera from
+  `scene.onBeforeRender` (the room sets its camera in `frame()`, the hook runs after it and before the draw; put the
+  near plane back in `scene.onAfterRender`). The object is judged in the room's real light, and the owner's file
+  stays the owner's.
+- `tools/garagepage/integration.mjs` (on main) copies a FIXED list to the live page: `room.html`, `street.js`,
+  `lights/lights-on.js`, and the folders `layouts`, `vendor`, `assets`. A new module that `room.html` imports is a 404
+  there, and a failed import kills the whole module script: no room. So room code goes inline in `room.html` (the
+  car's look did, `car-look.js` was folded in), or the integration's list changes in the same push as the import.
+- The coupe has no UVs: anything on it is drawn from the position in the car's frame (`uCarInv * modelMatrix`), never
+  from a texture coordinate. A material's clear coat is cut per pixel after `<lights_physical_fragment>`; keep
+  `material.clearcoat` above 0 (0.001) or three drops the clear-coat code from the program.
+- Auto mode refused this session's first push of the branch (no word from Dan in the session yet) and passed it after
+  his "תריץ תעלה". Do the local work, hand him the one push line, do not look for another way to publish.

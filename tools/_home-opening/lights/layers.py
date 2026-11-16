@@ -2,8 +2,10 @@
 # bank-k.webp = render k minus render k-1 per channel, never below 0, so the page's plus-lighter sum gives back render k
 # at every step. Prints each file's size and how far the encoded sum lands from the full room (the hand-off's picture).
 #   python3 -I layers.py <renders dir> <out dir> <banks> <quality>
-#   python3 -I layers.py --diff a.png b.png [top right bottom]   (two pictures of the same room, an edge band left out;
-#                                                                  also blurred 4 px: light and place, not edge resampling)
+#   python3 -I layers.py --diff a.png b.png [top right bottom [gate]]   (two pictures of the same room, an edge band left
+#       out; also blurred 4 px: light and place, not edge resampling. With "gate": does the loading screen match the room?
+#       PASS / FAIL on the blurred picture, whole and area by area (a changed prop is small in the whole and loud in its
+#       own area), exit 1 on FAIL. Dan 2026-11-11: "lets always chack it if the loeading screen matches the finel page")
 import os, subprocess, sys, tempfile
 import numpy as np
 from PIL import Image
@@ -22,6 +24,16 @@ if sys.argv[1] == '--diff':
     from PIL import ImageFilter
     blur = lambda x: np.asarray(Image.fromarray(x.astype(np.uint8)).filter(ImageFilter.GaussianBlur(4))).astype(np.int16)
     report(blur(a), blur(b), 'apart, blurred 4 px')
+    if 'gate' in sys.argv[7:]:
+        # limits: a fresh render reads mean 3.3, p99 14-15, worst area 12.4 (the wet floor's moving shine; 2026-11-10 /
+        # 11-11); pictures one round old (the car's new look, moved mess, a plate) read 4.5, 43 and 26.9
+        MEAN, P99, AREA, NY, NX = 3.8, 20, 17, 9, 16
+        d = np.abs(blur(a) - blur(b)).max(axis=2); h, w = d.shape
+        area, ay, ax = max((d[y * h // NY:(y + 1) * h // NY, x * w // NX:(x + 1) * w // NX].mean(), y, x) for y in range(NY) for x in range(NX))
+        ok = d.mean() <= MEAN and np.percentile(d, 99) <= P99 and area <= AREA
+        print(f'  worst area ({NX} x {NY} grid): mean {area:.1f} levels, column {ax + 1} from the left, row {ay + 1} from the top')
+        print(f"  {'PASS: the loading screen matches the room' if ok else 'FAIL: the loading screen does NOT match the room: re-render (lights/render.mjs), then check again'} (limits: mean {MEAN}, p99 {P99}, worst area {AREA})")
+        sys.exit(0 if ok else 1)
     sys.exit()
 
 import json

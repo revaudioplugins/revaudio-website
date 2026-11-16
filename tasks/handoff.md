@@ -1,3 +1,46 @@
+## 2026-11-15 — The long garage: Gil's faster first load KEPT (PR #33), plus one line that lets the model downloads go (Claude Code `Garage load-speed branch review [c19840]`, Dan's Mac) — on `feat/home-opening`, PUSHED 2026-11-15 on Dan's word ("keep gil"); MERGED TO MAIN 2026-11-16 on Dan's word ("lets commit and marge to main")
+
+Claim: CLOSED 2026-11-15, opened the same day. Files: `tools/_home-opening/room.html` (one line at the end of
+`loadModels()`), `tasks/handoff.md` (this entry).
+
+Request (Dan, 2026-11-15, on Gil's note): compare `perf/home-opening-load` with `feat/home-opening` and keep the better
+one. Dan's answer after the results: "keep gil".
+
+- Done: `feat/home-opening` fast-forwarded `2380642` -> `17c3620` (Gil's three commits exactly as pushed; GitHub shows
+  PR #33 as merged). On top, `02e021c`: `loadModels()` empties the early download's two lists (`modelFiles`,
+  `modelBytes`) once the models are placed.
+- **⚠️ Read this before the phone cut (`feat/phone-dive`, `?dive`) merges this branch.** `prefetchModels()` starts before
+  `createRoom()` and downloads every `MODELS` row, the mess models and the sign, and it merges with no conflict. The
+  `?dive` filter lives inside `loadModels()`, so after a merge the phone still downloads everything: in a test merge 100
+  model requests instead of 30, 54 MB held instead of 8, ready at 12.0 s instead of 6.5 s on 10 Mbit/s, with no error
+  or warning. When merging: for `DIVE` skip `prefetchModels()` and the early `initTexture` loop, or hand
+  `prefetchModels` the kept list. Expect 2 conflicts: the first lines of `loadModels()` and the `const ups` upload loop.
+- Speed, time until the room is ready (Chrome 1141x636 @2, cold first visits, the versions taking turns; Gil's sooner in
+  all 42 pairs of two methods: the team's `perf/simserve.py`, and an HTTP/2 server with Chrome's line limiter):
+  135 Mbit/s (the world's median home line, Ookla, September 2026) 3.83 -> 3.59 s · 50 Mbit/s 6.17 -> 4.56 s ·
+  25 Mbit/s 9.59 -> 7.45 s · 10 Mbit/s 20.69 -> 16.88 s · processor slowed 4x 8.39 -> 7.97 s · 4 Mbit/s 48.7 -> 40.5 s.
+  Download 23.19 -> 19.75 MB, the same 175 files. Gil's table holds. On a fast line the room now stands ready about
+  half a second before the hand-off: the loading lights' own pacing (`lights/lights-on.js`, one flash per 0.4 s) is the
+  limit there, not the download (read from the code and the idle frames, not tested by shortening the lights).
+- Look: the same. Motion frozen, 14 walk stops: at most 0.05 of 255 mean difference; `lights/check.mjs` PASS on both
+  (3.28 / 3.31). A rebuild of all 102 models from `masters/` gives the committed files byte for byte.
+- The fix's checks (the committed file): data held after loading 53.6 -> 14.7 MB (15.2 MB before the early download);
+  97 model files, each asked for once; the same 94 models, 64 mess pieces and sign; a download that fails once still
+  recovers; Playwright WebKit loads clean; `lights/check.mjs` PASS (3.28); stills at five walk stops match;
+  50 Mbit/s 4.5 s with and without.
+- Left open in Gil's change, all small: the neon's colour strip `neon_core` went from PNG to WebP for one byte and its
+  glow shifted slightly (keep the PNG); a failed early download is fetched again without a console line; a host that
+  sends models without `Content-Length` makes the loading lights wait about 1 s; the picture is no longer identical from
+  one load to the next (a few dozen pixels at the car's tail lamp: the models can be read before the room is built,
+  which changes the draw order where two surfaces touch).
+- Found on the way, the same before and after: a font file that fails to download stops the 3D room from starting
+  (`document.fonts.load` rejects in the boot line; a slow font is fine); about 2 MB of PBR sets (carpet, fabric, rust,
+  cardboard) are downloaded and shown on nothing since round 6.
+- Not measured: real Safari, a phone, Windows, a weak graphics chip, the live host.
+- Raw results on Dan's Mac: `.claude/perf-compare-2026-11-15/` (git-ignored).
+- Merged into main on 2026-11-16 (a `--no-ff` merge of `feat/home-opening` @ `2736e6b`; this file was the only conflict,
+  both sides kept). The unlisted `/garage-9f3c/` serves this room once that deploy finishes.
+- Next: Dan's own look in Safari and on a phone, on the live unlisted page.
 ## 2026-11-15 — Review: RevFX joins the plugin picker (Claude Code `revaudio-fc`, Yoni's laptop 2) — LIVE ON MAIN 2026-11-15 on Yoni's word "push" (`a0e0fdb` + `1a884b9`, fast-forward from `1b4bc34`); head was `[skip ci]`, so the
 deploy was dispatched by hand: run 43720976072 success (build, deploy, Cloudflare cache clear). Live check on revaudio.net/review/ (Chromium):
 6 columns at 1280, 2 at 390; price question RevLimiter $49, Radio Roulette $19, RevFX $19, the free three hidden; no page errors.
@@ -85,7 +128,7 @@ the names), `tools/_gas2-scene/README.md`, `tools/gas2page/integration.mjs` (the
 
 ## 2026-11-03 — Home opening: the long garage, an ACTIVE PROJECT (Claude Code `danavivi-4e [b36252]`, Dan's Mac; continues `danavivi-7a [9ae241]`) — on branch `feat/home-opening`, pushed, not on main
 
-Claim: OPEN `danavivi-d5 [443a28]` (Dan's Mac; the same session as `danavivi-20 [c417bc]` after a restart; the next session takes it, see SESSION END 2026-11-10 below); `danavivi-20` took it over from `danavivi-09` on 2026-11-08 (Dan: "take the claim from
+Claim: CLOSED 2026-11-11 `danavivi-cf [3dcc55]` at its SESSION END (round 6 mostly landed, see "SESSION END 2026-11-11 — `danavivi-cf`" below: the next session takes it over) (Dan's Mac; took it over 2026-11-11 from `danavivi-d5 [443a28]`, closed, as its SESSION END 2026-11-10 says; round 6: the plugin objects for the CRTs, the props, the TV picture, the sign, see "2026-11-11 round 6" below); `danavivi-d5` was the same session as `danavivi-20 [c417bc]` after a restart; `danavivi-20` took it over from `danavivi-09` on 2026-11-08 (Dan: "take the claim from
 danavivi-09, then go", for the look pass), which took it from `danavivi-4e` on 2026-11-04, which took it from `danavivi-7a`
 (closed) on 2026-11-03. Dan, 2026-11-03: "this is a
 project we start working on now, from now on": the long garage is a standing project of the site, not a one-off hero. It
@@ -589,7 +632,7 @@ pid 52126: `kill 52126` if it's in the way), then http://127.0.0.1:4490/tools/_h
 default to port 4471: pass the port.
 Loose ends: `home-bake` has the untracked, regenerable `bake/room/` + `bake/test-room/` (leave or delete).
 
-### 2026-11-11 — `danavivi-cc [172bce]` (the speed session) — direction 1 built on `feat/home-speed`: the models download 4.7 MB lighter, same look — MERGED into `feat/home-opening` 2026-11-11 on Dan's word, NOT on main
+### 2026-11-11 — `danavivi-cc [172bce]` (the speed session) — direction 1 built on `feat/home-speed`: the models download 4.7 MB lighter, same look — MERGED into `feat/home-opening` and PUSHED TO MAIN 2026-11-11 on Dan's word, live and checked
 
 Claim: CLOSED 2026-11-11 (rv close); it was `danavivi-cc [172bce]` (Dan's Mac), worktree `.claude/worktrees/home-speed`, branch `feat/home-speed` (cut from
 `feat/home-opening` at `05e1a09`). Files: `tools/_home-opening/masters/**` (new), `tools/_home-opening/assets/models/*.glb`
@@ -658,14 +701,21 @@ shows them without their pictures). The word needed is the one already asked for
 shared repo. The live header on the morning of 11-11 still lacked all three.
 **Update 11-11 12:34: the edit is live** (Yoni + `revaudio-bf`, shared `collaboration/STATUS.md`): the header on
 https://revaudio.net/garage-9f3c/ now carries `'wasm-unsafe-eval'` in `script-src` and `blob:` in `img-src` and
-`connect-src` (read with `curl -sI`). The blocker is gone. Still unchecked: the packed room on the live domain itself;
-after a merge to main open /garage-9f3c/ and confirm no CSP errors and textured models (locally it passed under the
-proposed policy, see Checks).
+`connect-src` (read with `curl -sI`). The blocker is gone. Checked on the live domain after the main push (11-11, below):
+no CSP errors, every model textured.
 
 Not done / open:
 - Merged into `feat/home-opening` on Dan's word ("marge", 11-11 after the close): a fast-forward from `05e1a09`, pushed to
-  origin. Not on main: the room-only push OK for main was given to other sessions, not this one, and Dan has not seen
-  the built room yet.
+  origin.
+- **On main, live** (Dan, 11-11: "push to main", then "send and sonnet - to marge to main"): a Sonnet subagent merged
+  `origin/feat/home-opening` into `origin/main` with `--no-ff` in this worktree, merge commit `833f632`, pushed
+  `200a599..833f632`. Deploy to GitHub Pages run 43007936331 and Smoke test run 43007936347: both success. The merge
+  touches only `tools/_home-opening/**` and `tasks/**` (215 files).
+- Live check by this session after the deploy, https://revaudio.net/garage-9f3c/?expose&capture=0 in Chrome 157 and
+  WebKit 26.5 (Playwright, headless): 1339 objects, 708 meshes, 282 textures, 0 empty, 0 dropped, 0 CSP violations,
+  no page errors, in both: the same counts as the local packed room. The live `assets/models/coupe.glb` is the packed
+  file (363,052 bytes); `masters/` is not on the live site (404), as intended. Not checked on live: Firefox, a real
+  phone, a look by eye at the walk (Dan's).
 - Direction 2 (the slow-line safety net) is not built. Other savings not built: the picture quality was not lowered, and
   the PBR maps were left alone.
 - Not measured: real phones, Safari timings (the timings are Chrome on this Mac through `perf/simserve.py`).
@@ -673,22 +723,144 @@ Not done / open:
   (`/private/tmp/claude-501/-Users-danavivi/38d326b1-1855-4bfb-9b05-ed9017ee0743/scratchpad`: `stills6/`, `perf/final.txt`).
 
 Next: Dan looks at the room from this worktree (`python3 -m http.server 4618 --bind 127.0.0.1` at its root, then
-http://127.0.0.1:4618/tools/_home-opening/room.html) (he said merge before looking). Then main, on his word; the first thing after that deploy: open
-https://revaudio.net/garage-9f3c/ and confirm textured models and no CSP errors. The CSP edit is live since 11-11 (above).
+http://127.0.0.1:4618/tools/_home-opening/room.html) (he said merge before looking). Main: done 11-11, live check passed (above). What is left is Dan's own look at
+https://revaudio.net/garage-9f3c/ and, if he wants the slow lines faster, direction 2.
+This entry's update sits on `feat/home-speed` / `feat/home-opening` only: it rides to main with the next room push (a
+handoff-only push to main would run a deploy and a full Cloudflare purge for nothing).
 
-Session end 2026-11-11 (rv close):
-- Dan's last word on the build: none yet. He got the report (numbers, the three before/after pictures, the CSP warning)
-  and closed the session; he has not looked at the built room and has not said merge.
+Session end 2026-11-11 (rv close, then a second close after the main push):
+- Dan's words on the build, in order: "marge" (into `feat/home-opening`), "push to main", "send and sonnet - to marge to
+  main". He got the live-check report and closed the session. He has not said he looked at the live room himself, and
+  has not answered on direction 2.
 - Stopped on Dan's word at close (both ports are free; Dan also confirmed the CSP edit is active). They were: `python3 -m http.server` on 127.0.0.1:4618 (pid 39650, this
   worktree's root = the packed room) and on 127.0.0.1:4619 (pid 54424, a scratchpad copy of the originals = today's
   room). `pack.sh` uses 4618 by default, or `KIT_PORT=<port>`.
 - The scratchpad is under `/private/tmp` and does not survive a restart: the stills and `perf/final.txt` are evidence
   only, every number that matters is written above.
-- Git at close: the worktree is clean; `feat/home-speed` = `origin/feat/home-opening` (`05e1a09`) + this session's
-  commits, 0 behind it. `origin/main` has three commits this branch lacks (`8aef421`, `9fb1151`, `200a599`: the unlisted
-  /garage-9f3c/ page and its fonts, another session's). Untouched by this session: every other branch and worktree.
+- Git at the second close: `feat/home-speed` = `origin/feat/home-speed` = `origin/feat/home-opening` = `04d2b66` plus the one commit
+  that carries this block (0 ahead, 0 behind). `origin/main` = `833f632`: it holds everything here except `04d2b66` (the handoff note of the main push,
+  kept off main on purpose) and this block's last edit. The builders' local `home-opening` worktree was not touched
+  after the first fast-forward: it is behind origin by the handoff commits until its next pull. No servers and no test
+  browsers of this session are running.
 - After the merge `feat/home-speed` has nothing `feat/home-opening` lacks; work goes on in `feat/home-opening`. A branch cut
   before the merge that replaced a model: see "Read this before you add or replace a model".
+
+### 2026-11-11 round 6 — `danavivi-cf [3dcc55]` (Dan's Mac) — mostly landed (state: SESSION END 2026-11-11 below): the plugins as objects, the props, the TV picture, the sign, the plate
+
+Dan, 11-11: "remove ... the drift on the right table ... the radio roulette on the top compressors and all those near
+the headphones. I want to make a 3D asset out of it ... the rev limiter [on the table] a 3D asset as well ... the rev
+effects on the left ... all the elements [still plain] I want to build them, like the box on the left in the beginning
+of the room, the boxes behind the guitars ... the main TV is not updated to the current TV ... the sign of Rev Audio
+on the left is not in the beginning of the loading screen." His picks (AskUserQuestion, all four the recommended ones):
+clear the compressor rack R06 and W10's shelf items too (the headphones N49 stay on their hook); the plugin objects
+built from code with each plugin's real UI as the face (0 credits); the REVAUDIO sign lit from the loading screen's
+first frame (its own circuit, like the GAS globes); roster: 2 Opus builders (DRIFT + RevFX, Radio Roulette +
+RevLimiter), 1 Sonnet builder (the 9 kinds of mess props + W10 bare), a Sonnet review per batch.
+Plan: M01-M04 become the plugins' objects in the CRTs' spots (M04 on the red chest R05 once R06 is out); the mess's
+9 kinds become models; W10 keeps its plank; the TV / nav / below pictures re-captured from the live homepage (they were
+11-02's: ALL 4, no GAS 2); the 3 waiting builds of round 5 (N17, L20, N03) ride along; then the loading pictures, the
+checks, a bench, and one push to main under Dan's room-only OK.
+Later the same day (Dan): "dont need to build drift object" -> M02 removed, no object in its place (cde1913); "the
+revaudio sign what about it?" -> his pick: build the REVAUDIO neon as a real 3D neon sign (tubes along Bebas Neue's
+outlines, a rail, standoffs, blockouts; the RevFX builder takes it after M01). Also built on his "all the elements":
+the door's last plain slots that wide screens see (N08 vending machine on its own circuit, N05 compressor, R01
+parts-store shelf); the never-seen slots behind the walk's first camera (L10 R04 R11 R12 R13 N04 N09 N22 N25) left plain.
+Then (Dan): "lets put the radio on the shelf where is the headphones" (M04 on W10, 07fb24f); "Put a plant over there"
+(N50 pothos on the red chest R05, 3ffc279). RevFX's lunchbox + the 3D neon landed (8155f0b); loading pictures
+re-rendered after them (uncommitted, stale again after 7c49ce8; re-render once the fixes land).
+Reviews (Workflow, 3 lenses + 3 skeptics per finding): props `wf_7d79ec52-688` done: crate, drum, papers, case, W10
+ship; coil (rebuild, dark rubber), tyre (OD 0.66), cone (black base), can (lid rings, plain band) back to the props
+builder, landed (a8ee864); the room's mess spots fixed + check.mjs tests the mess (7c49ce8). Heroes (M01 M03 M04
+SIGN) `wf_37a22192-28b` done: M01, M04 and SIGN ship; M03 needs its colours fixed (below). Seen by me: the neon's
+black electrode boots read as a strike-through at walk 0 (the review passed the sign: Dan judges).
+Dan, 11-11: "there is an asset of a license plate in one of the Rev Audio folders ... Let's put it in the back of
+the car" -> design-assets `3d-assets/revaudio-plate/revaudio-plate-1.0.0.glb` (145k tris, 16 MB: a Higgsfield
+image_to_3d build of our own art); builder B bakes a room copy (~2k tris, 1k maps) and measures its spot on the
+coupe's tail (R.car local frame); the RevLimiter plate beside it is the other option. Landed (923dc37); Dan: "nice".
+Files: `tools/_home-opening/**`, this entry.
+
+### SESSION END 2026-11-11 — `danavivi-cf [3dcc55]` — round 6 mostly landed; left: M03's colours, the pack, the loading pictures, the bench, the push
+
+State at session end: `feat/home-opening` PUSHED to origin on Dan's "push branch" (11-11), with the stopgap loading
+pictures and this entry; main untouched. Against origin/main: the branch has its round-6 commits main lacks, main 4
+the branch lacks.
+This session's commits: `e279e0f` claim · `9c68426` TV / nav / below pictures re-captured from the live homepage
+(new `tvcap.mjs`) · `1dac589` part 1: the sign on its own circuit, R06 out, the plugin-object and mess-model hooks,
+round 5 landed · `97e4f87` part 2: the mess's nine kinds as models, W10 bare · `347f2b7` part 3: N08 vending
+machine, N05 compressor, R01 parts-store shelf · `cde1913` M02 DRIFT out · `cd13d99` loading pictures · `3f135b8` M04
+Radio Roulette + M03 RevLimiter objects · `07fb24f` the radio up on W10 · `3ffc279` N50 the plant · `8155f0b` M01
+RevFX lunchbox + the 3D neon · `7c49ce8` the mess clear of the furniture + check.mjs tests the mess · `a8ee864` the
+props review's model fixes · `923dc37` the RevAudio plate on the coupe's tail.
+- `tools/_home-opening/assets/lights/*.webp` (12, the loading screen) committed as a STOPGAP (Dan: "push branch"):
+  rendered 15:51 after `8155f0b`, so slightly stale (before the mess moves, the props fixes and the plate, which shows
+  at walk 0). Re-render them once, last, after M03 + the pack and before main (NEXT 4).
+- Lasting copies (git-ignored; the scratchpad dies with the session): `/Users/danavivi/projects/revaudio/
+  revaudio-website/.claude/garage-bench-2026-11-11/`: the briefs, the three builders' `candidates/` + `work/` (scripts,
+  notes, stills), `look/` (pose.mjs, mbox.mjs, lightcap.mjs, loadseq.mjs, messvis.mjs/.py, messfree.mjs, depth.mjs),
+  `nocache_server.py`, both reviews' full JSON (`reviews/`), M03's hue tool + its reference still
+  (`review-heroes-m03/`), `sign-old-vs-new-loading.png`, `plate-in-room.png`.
+
+Unverified:
+- Dan's last open question, the sign in the loading screen ("I don't see any sign, any skeleton of a sign"): his
+  browser kept the old pictures; the local server now sends no-store. He hasn't said whether he sees it now (asked:
+  hard-reload with `?lights=demo`). The loading pictures now carry the 3D glass (base.webp: the first light).
+- Dan saw the plate ("nice"). Not seen by Dan: the RevFX lunchbox, the 3D neon, the props' fixes, the moved mess.
+- The neon, my own look: on every letter a 40 mm gap with black electrode boots on the raceway's line; in the
+  loading picture they read as a dashed strike-through (`sign-old-vs-new-loading.png`, 3x). The three-lens review
+  passed the sign ("reads REVAUDIO ... in the dark loading frame"). Dan judges on the bench.
+- The pack has not run: 22 raw files served (7.86 MB), the four heroes among them.
+
+Background processes:
+- `python3 nocache_server.py` (worktree root, Cache-Control: no-store), port 4641, pid 32988: Dan's local room
+  http://127.0.0.1:4641/tools/_home-opening/room.html. `kill 32988`.
+- `python3 -m http.server 4652` (the scratchpad's plate viewer), pid 56004: nothing needs it. `kill 56004`.
+- Both workflows are done; the three builders (A `a43ebdf684cb1ceed`, B `a9b2aa24849fc26ea`, props
+  `a523c8d41ab6d72d4`) are idle and reachable only from this session: a new session spawns a fresh builder with the
+  brief (lasting copy) and points it at the old builder's `work/`.
+
+NEXT, in order:
+1. M03 RevLimiter's colours (the heroes review's one confirmed model finding, 3 of 3): in the room its gold on black
+   renders rose-copper on maroon, salmon on top, right under the TV's gold RevLimiter card. The recipe:
+   `reviews/heroes-review-wf_37a22192-28b.json`, synth.perPiece M03.modelFixes. In short, change the model's colours,
+   not the desk light. Brass yellower at the same brightness: (206,160,84) -> (206,180,78), (150,110,52) ->
+   (150,130,50), (182,138,70) -> (182,159,68). The face picture's brass pixels +10° hue and its darks neutralised
+   (`prep_tex.py`). The top deck black satin leather (the June look). The lip quilt (92,22,26) -> (60,12,22). Toggle
+   bushings black. Keep the footprint 0.58 x 0.385, height 0.293, origin, node names, 4 materials. Builder B's
+   scripts: `b-plugB/work/prep_tex.py`, `build_rl.py`. Pass at walk 0.7 (1141x636, `review-heroes-m03/
+   skeptic-2-2-tools/hue.py`, boxes gauges 165,530,280,636 · topdeck 100,505,370,525 · tvcard 573,246,729,322): the
+   gauges' sat-top-5% hue >= 30° (today 23), the top deck black or burgundy (today salmon (168,77,61)).
+2. Land M03 into BOTH `masters/models/revlimiter.glb` and `assets/models/revlimiter.glb`: pack.sh's adopt step
+   moves raw assets/ copies onto masters/, so a stale raw copy would overwrite the new master.
+3. Pack: `cd tools/_home-opening/models-kit/pack && KIT_PORT=<free port> ./pack.sh` (~10 min), then
+   `./pack.sh check` (exit 0). The review expects the heroes 3.36 -> about 1.49 MB. Commit the masters, the packed
+   files and need.json by path.
+4. Loading pictures: `node tools/_home-opening/lights/render.mjs --port 4641 --check`, then `lights/check.mjs --port
+   4641` (today: hand-off blurred mean 3.40 p99 15; layers vs room mean 4.14 p99 22; README baseline 3.3 / 14 and
+   3.9 / 20). Then `layout-kit/check.mjs layout-kit/start-layout.json --port 4641` (0 overlaps; the drum listed as
+   tucked), `layout-kit/handoff.mjs` (baseline 1.05 / 0.68 / 0.45 / 2.57 %), drawcalls.mjs + fps.mjs (the heroes add
+   42 draw calls at walk 0: act only if walk-0 fps drops more than 10 %).
+5. The bench for Dan (`review-bench` skill; round 5's link https://claude.ai/artifact/54aorRBcCAvWJTrPHqaPZm,
+   personal account, pass `url`, collection `notes-r6`): the plugin objects (M01, M03, M04 on W10), the neon (+ the
+   strike-through question), the props, the plant N50, the plate, the TV picture, the loading screen.
+6. Push: the branch (`git pull --rebase && git push`), then main under Dan's standing room-only OK (the four limits
+   in SESSION END 2026-11-10 above): Deploy + Smoke test green, /garage-9f3c/ loads, Dan gets the link + one line.
+
+Decide / ask Dan:
+1. The neon's electrode boots: keep (the review passed them) or rebuild with each letter's gap at its foot, off the
+   raceway's line (builder A's `sign.py`).
+2. The neon's bare raceway (review nit): it runs 0.53 m past each end of the word to reach the room's wire points.
+   Shorter = a rebuild + the room's wires moved to ±0.85 + the cord re-aimed; or keep.
+3. The sign's size in the loading screen (~130 px wide at 1141): bigger or closer? Asked 11-11, no answer.
+4. A cone in the scatter: none shows (33 off since 11-10). Low priority.
+5. Unused model files: crt-casing.glb, vu-rack.glb, jack-creeper.glb, bass.glb, guitar-black.glb, guitar.glb (+ the
+   never-landed DRIFT pod, `b-plugA/candidates/M02/`): keep or delete.
+
+Suggested commits (after the steps): `feat(garage): RevLimiter's console in brass and black (review fix)`
+(masters + assets revlimiter.glb, SOURCES.md) · `perf(garage): pack round 6's models` (masters/models, assets/models,
+models-kit/pack/need.json) · `feat(garage): loading pictures for round 6` (assets/lights/*.webp) · the handoff.
+
+Cleanup: the review's optional SIGN early-fetch line in loadModels (tidies the load order, nothing visible).
+Memory written: none (all of it is this repo's state, here).
 
 ## 2026-11-09 — /revfx trial form sends the download at once (`gateWired: true`) (Claude Code `revaudio-0b [3311c0]`, Yoni's laptop 2) — branch `revfx-gate-on` — PUSHED TO MAIN 2026-11-09 on Yoni's "deploy" (worker deployed first, version `b31a75bd`)
 
@@ -703,6 +875,35 @@ Claim: CLOSED 2026-11-09 `revaudio-0b`. Files: `src/data/revfx.ts` (`gateWired` 
   `/download/register` and the ok text "Download on its way by email." Not checked: a real sign-up (after deploy).
 - Open (not touched): `winReady: false` + the fine print "Open it on a Mac", though `revfx-win` is live in R2 since
   2026-11-09 16:07; the download email offers both.
+
+## 2026-11-11 — The car's bench + Dan's car look baked into the room (Claude Code `danavivi-ee [6acc6f]`, Dan's Mac) — on `feat/home-opening`, PUSHED 2026-11-11 on Dan's word (`5efaf80`), not on main
+
+Claim: CLOSED 2026-11-11 `danavivi-ee` (it held `tools/_home-opening/room.html` for the car look only, after `danavivi-cf`'s claim closed; the room's round 6 NEXT list above is untouched and still the next session's). Files: `tools/_home-opening/room.html` (one block + two lines), `tools/_home-opening/car-bench.html` (new), this entry.
+- Dan, 11-11: "a bench for the car ... control over wear, texture and other". His picks (AskUserQuestion): wear drawn by code, live, plus a slot for a painted texture; in the bench too: paint + lacquer, glass / chrome / wheels, decals, lamps + plate. He tuned it and pasted his settings the same day.
+- `room.html`, "the car's look": `CAR_DEF` (the coupe as built, every layer 0), `CAR_LOOK` (the room's car = Dan's pasted bench, verbatim: metallic black + fine flake, tread plate over the paint, cream twin stripes, gold wheels, mud 0.44, chips 0.44) and `createCarLook()`. The coupe has no UVs and flat colours, so the wear is drawn in its materials' shaders from the position in the car's own frame (`onBeforeCompile` on paint / black / glass / metal / plate): dust, mud, rain streaks, wash swirls, scratches, stone chips, peeling lacquer, rust (pitting on the chrome), metal flake, a picture from three sides, stripes, a door number, a sticker, the tail lamps (dark with Engine off, as before), the plate. `R.carLook` is made right after `loadModels()`; `frame()` calls its `tick`.
+- Inline, not a module file: main's `tools/garagepage/integration.mjs` copies only `street.js`, `lights/lights-on.js` and three folders to the live page, so an imported `car-look.js` would have been a 404 there and a dead room.
+- `car-bench.html` (the editor): runs the real room in a frame (`room.html?expose`) and drives `R.carLook`, so the car is judged in the room's light. Close-up (orbit, wheel zoom, Clear view = a near plane that hides what stands in front) or Visitor's view (the room's camera + walk). Presets, undo / redo, Hold: today's car (= `CAR_LOOK`), Copy settings -> paste -> replace `CAR_LOOK`. Its work light is never part of the look. It is not copied to the live page (not in the integration's list).
+- Run: the worktree root, `python3 -m http.server <port> --bind 127.0.0.1` -> `/tools/_home-opening/car-bench.html`.
+- Checks (Playwright 1141x636, real Chrome + WebKit): the room and the bench load with no page errors (the one 404 is the dev server's favicon); the room at walk 0 / 30 %: 60 / 60 fps Chrome, 57 / 60 WebKit, as before the look; Engine off still darkens the lamps; the bench's presets, undo / redo, hold, copy, reload and reset behave. Not checked: a phone, the live page.
+- The loading pictures were re-rendered the same day (Dan: "in the loading screen the picture not matching the 3d asset in all of the page. lets always chack it if the loeading screen matches the finel page"): `lights/check.mjs` before 4.52 / 43 (blurred mean / p99), after 3.28 / 15, back at the README's baseline. **Standing rule, for every room session: `lights/check.mjs` must print PASS before the room is shown to Dan or pushed** (it now ends with PASS / FAIL and exits 1 on FAIL: `layers.py --diff ... gate`, whole picture + area by area; rule in `lights/README.md`, lesson in `tasks/lessons.md`). Round 6's NEXT 4 still applies after M03 + the pack: the check will say FAIL, re-render then. The slow-connection still (`assets/still/`) is no longer used by room.html (README), so it was left.
+- Not done: the model has no head lamps to light; wheels and chrome share one material, tyres and trim another, so they tune together. `stk` is 1 with no picture in Dan's settings: no sticker shows (kept as pasted).
+- SESSION END 2026-11-11 (`danavivi-ee`, "rv close"). Dan on the room after the render: "looks very good just the main tv shop ... its not updated to what we have so we do it alter just rimind it". Checked: the loading screen and the room load the same TV file at every width (1141 / 1312 / 1440 / 1512 / 1728 / 1920), so the gap is the TV picture's content, not the loading screen. Parked on his word; in his Reminders (list Revaudio) + a Notes prompt "garage room: update the main TV shop picture (2026-11-11)". Ask him first what the TV should show: `tvcap.mjs` captures the LIVE homepage.
+  - Git at close: `feat/home-opening` level with origin; against origin/main the branch has 23 commits main lacks, main 10 the branch lacks (merge main before the room goes to main). Worktree clean. `feat/car-bench` and its worktree are gone (fast-forwarded into this branch).
+  - Processes: this session's server (4481) is stopped. Still running, `danavivi-cf`'s: `nocache_server.py` on 4641 (pid 32988), Dan's local room and bench.
+  - Lasting copies (git-ignored): `.claude/car-bench-2026-11-11/` in the main checkout: `bench.mjs` (bench shots: settings + view per shot), `check.mjs` (the bench's controls + fps, Chrome / WebKit), `roomcheck.mjs` (the room with the look: fps, Engine off), `tv.mjs` (loader vs room TV per width), `probe.mjs` (the car's parts and materials).
+  - Not started (Dan said "go" to the reminders, then "rvclose"): round 6's NEXT 1-3 above (M03's colours, the pack, then render + check). Also open: the car look on a phone; the sticker (on, no picture); the design hook's Inter waiver for `car-bench.html` did not persist (auto mode blocked `impeccable hooks ignore-value`), Dan has the line.
+- **Dan's word after the close (11-11), for the next car session:** "it's important to me that next time we will work on a car, then we'll have that bench and we can change the car as well, the type of the car". So: any car work starts in `car-bench.html`, never by hand in `room.html`; and the bench's first new control is the car's TYPE (a picker that swaps the model in the room, live). Not built. What is tied to the coupe today, so the next session knows the seams:
+  - One model, hard-wired: `CAR: { src: 'assets/models/coupe.glb', yaw, tail, plate: { at } }` in room.html's model list. A type = that record per car (file, yaw, the plate's place on its tail, tail lamps yes / no).
+  - The look finds its parts by material NAME: `CAR_ROLES = { paint, black, glass, metal, plate, plate_bolt }`. Another model needs its materials named so, or a name map per type; a part with no role gets no look. `.claude/car-bench-2026-11-11/probe.mjs` (main checkout) lists a model's parts and materials.
+  - The stripes, the door number and the sticker sit in metres in the car's own frame, so their places are per type; `CAR_LOOK` becomes one look per type, and Copy settings must carry the type.
+  - A new model file is fine for the live page (the integration copies the whole `assets` folder); new code still goes inline in `room.html`.
+  - A car swap shows at walk 0: re-render the loading pictures, `lights/check.mjs` must print PASS.
+  - Ask Dan first which cars (his team models them: Supra-inspired, no badges). No model is picked.
+  - **Dan again, same day: "I want the bench will actually like replace cars, and we'll have like saved cars and saved asset".** Three things, none built:
+    - Replace: the picker really swaps the car in the room (the model, its plate, its look), not a preview beside it.
+    - Saved cars: a named list in the bench (a car = its type + its whole look), save / load / rename / delete, and "put this one in the room". Today the bench keeps ONE working look in the browser (`localStorage` `carbench:v1`) and the room has ONE `CAR_LOOK`; presets are fixed in code. Saved cars must live in the repo (a file every laptop and the live page get), not in one browser.
+    - Saved assets: a shelf of the files a car uses, picked from a list instead of typed paths: car models, painted textures (`texSrc`), stickers (`stkSrc`, today only an upload kept in `localStorage` `carbench:pics:v1`, so it never reaches the room: the reason the sticker is "on, no picture"). My reading of "saved asset"; confirm with Dan what belongs on the shelf.
+    - Seam: data files under `tools/_home-opening/assets/` reach the live page (the whole folder is copied); a browser can't write repo files, so "save" = the bench hands the file / the settings over and the session lands it (as Copy settings does today), unless Dan wants a small local save server.
 
 ## 2026-11-09 — /revfx player: the die moves into the player and rolls Yoni's presets (Claude Code `revaudio-2f [e388a1]`, Yoni's laptop 2) — branch `feat/revfx-hear` — LIVE on main `81922f5` (2026-11-09, Yoni: "push deploy to the revfx page (dont add it to the index just like its now)")
 
