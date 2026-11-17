@@ -108,7 +108,7 @@ export function initStory(section: HTMLElement) {
     ctx.fillStyle = rg;
     ctx.beginPath(); ctx.moveTo(cx - half(hz), hz); ctx.lineTo(cx + half(hz), hz); ctx.lineTo(cx + half(H), H); ctx.lineTo(cx - half(H), H); ctx.closePath(); ctx.fill();
     // frequency marks across the road
-    ctx.font = '600 10px ui-monospace, monospace'; ctx.textAlign = 'right';
+    ctx.font = '500 11px Oswald, sans-serif'; ctx.textAlign = 'right';
     for (const f of [50, 100, 200, 500, 1000, 2000, 5000, 10000]) {
       const y = yOf(f);
       ctx.strokeStyle = 'rgba(201,163,92,.10)'; ctx.lineWidth = 1;
@@ -168,7 +168,7 @@ export function initStory(section: HTMLElement) {
       ctx.globalCompositeOperation = 'lighter';
       ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r * 2.6, 0, Math.PI * 2); ctx.fill();
       ctx.globalCompositeOperation = 'source-over';
-      if (s.n) { ctx.fillStyle = 'rgba(20,16,12,.85)'; ctx.font = '700 9px ui-monospace, monospace'; ctx.fillText(s.n, x, y + 3); }
+      if (s.n) { ctx.fillStyle = 'rgba(20,16,12,.85)'; ctx.font = '600 9px Oswald, sans-serif'; ctx.fillText(s.n, x, y + 3); }
     }
 
     // the correlation needle (mass-spring like the face's)
