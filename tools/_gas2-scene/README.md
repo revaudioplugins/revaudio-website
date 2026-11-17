@@ -50,6 +50,8 @@ the PNGs were 3.5 MB of the page's first visit, the WebPs are 0.5 MB). After cha
   from 2026-10-31; `danavivi-83` from 2026-11-01 (one script for page-b and the phone).**
 - **The phone postcards (`postcards.html` + `postcards/**`): Claude Code `danavivi-75` from 2026-10-29, `danavivi-83` from
   2026-10-31.**
+- **The TV on the porch (`tv/**` + its one `<link>`/`<script>` line in `page-b.html`): Gil's session, branch `feat/gas2-tv`,
+  from 2026-11-12. How it works: `tv/README.md`.**
 - **The drone intro (`drone/**` + its one `<link>`/`<script>` line in `page-b.html`): Claude Code `revaudio-59`, branch
   `feat/gas2-drone`, from 2026-10-28; on main from 2026-11-01 (`danavivi-83`).**
 - Claims and state: `tasks/handoff.md` (top entry).

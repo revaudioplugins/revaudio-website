@@ -8,14 +8,15 @@ first visit of a session; after that soft rises, no flicker).
 ## What the visitor sees
 
 1. Black, then the eyes get used to the dark: the night through the door, the car's red tail lights, the vending
-   machine and the GAS globes (their own circuit), a faint camera grain (Dan 11-09: less noise).
+   machine and the GAS globes (their own circuit), the REVAUDIO sign (its own circuit too, lit from the first frame:
+   Dan 11-11, "the sign ... is not in the beginning of the loading screen"), a faint camera grain (Dan 11-09: less noise).
 2. The TV at the end of the aisle comes on first (Dan 11-09: "the small lcd screen to light up first"): standby, the
    backlight on a dark panel, the picture; its glow on the end wall, the desk and the wet floor. Its picture is drawn
    per screen width (`bank-1@1141x636.webp` ...), the one the room's TV will show (CAPS), so the hand-off is the same.
 3. The shop light by the door: its ends glow, it tries twice, it strikes.
 4. The violet strip buzzes on, then the magenta one: the room appears (the exposure catches up: a short overexposure).
 5. The four hanging lamps warm up, front to back toward the TV (the trouble light and the clamp lamp with theirs).
-6. The gear: the REVAUDIO sign, the CRTs, the racks' LEDs and meters, the floor strips.
+6. The gear: the plugins' objects (their displays and dials), the racks' LEDs and meters, the floor strips.
 7. The live room takes over (the same picture). Then the big line.
 
 ## How it works
@@ -41,6 +42,11 @@ first visit of a session; after that soft rises, no flicker).
 
 ## When the room changes
 
+**The rule (Dan 2026-11-11: "lets always chack it if the loeading screen matches the finel page"):** every change that
+shows in the room at walk 0 (a model, a material, the car's look, a light, a moved prop, the TV picture) makes the
+loading pictures stale. Before the room is pushed or shown to Dan as done, `lights/check.mjs` must print PASS (it exits 1
+on FAIL); if it fails, re-render and check again. Never ship a room whose check failed or did not run.
+
 Re-run the pictures (like still.mjs), then the checks:
 
     python3 -m http.server 4471 --bind 127.0.0.1        # from the worktree root
@@ -49,6 +55,13 @@ Re-run the pictures (like still.mjs), then the checks:
 
 A new light: put it in a bank (`props`, or a new bank in `LIGHT_BANKS` and its lines in `lightRoom`), re-render.
 A new skin = new pictures from the same script.
+
+## Checks (2026-11-11, real Chrome, the room with Dan's car look, `5efaf80` + this render)
+
+- Before the render (pictures one round old): blurred mean 4.52, p99 43, worst area 26.9: FAIL (Dan saw it: "the
+  picture not matching the 3d asset in all of the page").
+- After: blurred mean 3.28, p99 15, worst area 12.4 (the wet floor): PASS. The layers vs the full room: mean 4.10, p99 22.
+- The gate's limits (`layers.py --diff ... gate`): blurred mean 3.8, p99 20, worst area of a 16 x 9 grid 17.
 
 ## Checks (2026-11-10, real Chrome, the room at 064d8b9)
 

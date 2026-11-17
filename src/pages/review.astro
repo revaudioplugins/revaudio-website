@@ -7,9 +7,11 @@ import gas2Img from '../assets/plugins/gas2-hero.jpg';
 // cut along its own chrome outline, transparent outside (2026-11-03)
 import rrImg from '../assets/plugins/radioroulette-hero-cut.png';
 import driftImg from '../assets/showcase/drift-window-init.png';
+import revfxImg from '../assets/plugins/revfx-hero.png';
 import { site } from '../data/site';
 import { plugins, fmtPrice } from '../data/plugins';
 import { tvName } from '../data/library';
+import { revfx, buyable } from '../data/revfx';
 import { sections, questions, reviewMeta, ratingWords, REVIEW_PLUGINS } from '../data/review-survey';
 
 const ui = reviewMeta.ui;
@@ -22,6 +24,7 @@ const CHANNEL: Record<string, [number, number]> = {
   'radio-roulette': [38, 28],
   gas: [46, 62],
   gas2: [14, 58],
+  revfx: [305, 72],
 };
 const WINDOWS: Record<string, { img: ImageMetadata; portrait?: boolean; cut?: boolean }> = {
   revlimiter: { img: rlImg },
@@ -29,13 +32,18 @@ const WINDOWS: Record<string, { img: ImageMetadata; portrait?: boolean; cut?: bo
   'radio-roulette': { img: rrImg, cut: true },
   gas: { img: gasImg, portrait: true },
   gas2: { img: gas2Img, portrait: true },
+  revfx: { img: revfxImg },
 };
 
 const picks = REVIEW_PLUGINS.map((slug) => {
   const p = plugins.find((x) => x.slug === slug);
   if (!p) throw new Error(`review: no plugin "${slug}" in plugins.ts`);
-  // a price only when it sells today (DRIFT's free beta and GAS have none, so the price question is skipped)
-  const price = p.status === 'live' && !p.isFree && p.introPriceUsd != null ? fmtPrice(p.introPriceUsd) : '';
+  // a price only when it sells today (DRIFT's free beta and GAS have none, so the price question is skipped);
+  // RevFX keeps its price in revfx.ts (its status stays 'in-development'), as the home TV's price line does
+  const price =
+    p.slug === 'revfx'
+      ? buyable() ? fmtPrice(revfx.priceUsd!) : ''
+      : p.status === 'live' && !p.isFree && p.introPriceUsd != null ? fmtPrice(p.introPriceUsd) : '';
   const [h, sat] = CHANNEL[slug] ?? [38, 28];
   return { slug, name: tvName(p), price, h, sat, ...WINDOWS[slug] };
 });
@@ -509,7 +517,7 @@ const clientConfig = {
     .sec-n { font-family: var(--font-mono); font-size: 0.75rem; color: var(--fg-faint); letter-spacing: 0.08em; }
     .sec-n::before { content: '0'; }
 
-    /* ── plugin picker: four small screens. At rest a dark glass; hover tunes one in: its channel colour (the home
+    /* ── plugin picker: one small screen per plugin. At rest a dark glass; hover tunes one in: its channel colour (the home
        TV's numbers) fades up, the picture and the glass glitch once, the name lights; the picked one stays lit ── */
     .pick-sec { margin-top: 1.75rem; }
     .pick-title {
@@ -520,7 +528,8 @@ const clientConfig = {
       letter-spacing: 0.02em;
       color: var(--fg);
     }
-    .cubes { --gap: clamp(0.6rem, 1.8vw, 0.9rem); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--gap); }
+    /* six screens: one row on a laptop (900 px and up, below), 3 x 2 on a tablet, 2 x 3 on a phone (max-width: 640px) */
+    .cubes { --gap: clamp(0.6rem, 1.8vw, 0.9rem); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gap); }
     .cube {
       --gs: min(100%, calc(var(--s) * 1% + 20%));
       --ink: hsl(var(--h) min(100%, calc(var(--s) * 1% + 25%)) 66%);
@@ -596,6 +605,11 @@ const clientConfig = {
       color: transparent;
       -webkit-text-stroke: 1.1px var(--fg-dim);
       transition: color 140ms ease, -webkit-text-stroke-color 140ms ease, filter 140ms ease;
+    }
+    /* one row of six: the cubes are ~100 px, so the names step down a size to keep REVLIMITER inside its padding */
+    @media (min-width: 900px) {
+      .cubes { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+      .cube-name { font-size: clamp(0.95rem, 1.4vw, 1.1rem); }
     }
 
     /* tuned in: hover (a mouse) or the pick */

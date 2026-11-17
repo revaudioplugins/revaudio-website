@@ -1,0 +1,102 @@
+/* GAS 2 page: the TV on the porch (Gil 2026-11-12). How it works: tv/README.md.
+   The set is a photo (img/, Nano Banana Pro from Gil's reference, background removed), cut in two at the cabinet's bottom
+   edge, so the cabinet can lift off its legs. The glass is a hole in the cabinet art: the picture plays behind the real
+   bezel, and the glass's own light (img/tv-glass) lies back over it. One markup, drawn twice: small in the scene (1em =
+   a tenth of its width, in cqw of the photo) and big in the theater, so every size below is in em or % of the art. */
+
+/* ── the set ── */
+.tv { position: absolute; left: 67.4%; top: 67.6%; width: 10em; font-size: 1cqw; z-index: 2; } /* 10em = 10 % of the photo's width; left / top = the cabinet's corner */
+.tv.away .tvCab, .tv.away .tvSpill, .tv.away .tvCap { visibility: hidden; } /* in the theater: the legs stay on the porch */
+.tvSet { display: block; width: 10em; position: relative; cursor: pointer; transition: transform .35s cubic-bezier(.2, .9, .25, 1.25);
+  filter: brightness(.8) sepia(.1) contrast(1.04); } /* the dusk grade the mailbox and chalkboard take */
+.tvSet:hover { transform: translateY(-1.5%); }
+.tvSet:focus-visible { outline: none; }
+.tvSet:focus-visible .tvArt { filter: drop-shadow(0 0 .12em var(--honey, #f2be4a)); }
+
+/* the cabinet: the art is 1462 x 1226 (the glass hole 171-1265 x 101-833, corners r 125) */
+.tvCab { position: relative; z-index: 2; display: block; width: 10em; aspect-ratio: 1462 / 1226; }
+.tvArt { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; user-select: none; }
+.tvScreen { position: absolute; left: 11.696%; top: 8.238%; width: 74.829%; height: 59.706%; z-index: 1; overflow: hidden;
+  border-radius: 11.43% / 17.08%; background: #0d0f0b; isolation: isolate; }
+.tvScreen video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; z-index: 0; }
+/* the curved glass over the picture: the art's own reflection, a tube's dark edges, faint lines */
+.tvGlass { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; opacity: .6; user-select: none; }
+.tvScreen::after { content: ""; position: absolute; inset: 0; z-index: 4; pointer-events: none;
+  background: radial-gradient(closest-side, transparent 62%, rgba(10, 8, 4, .6)), repeating-linear-gradient(0deg, rgba(0, 0, 0, .12) 0 1px, transparent 1px 3px); }
+
+/* the legs: the rest of the art (1462 x 510), under the cabinet's bottom edge */
+.tvLegs { position: absolute; left: 0; top: 100%; width: 10em; pointer-events: none; user-select: none; z-index: 1; }
+.tvShadow { position: absolute; left: -4%; right: -4%; top: calc(100% + 2.75em); height: 1.3em; border-radius: 50%; pointer-events: none; z-index: 0;
+  background: radial-gradient(closest-side, rgba(10, 5, 2, .7), rgba(10, 5, 2, .28) 60%, transparent); }
+/* the screen's light on the porch while it plays */
+.tvSpill { position: absolute; left: 4%; right: 4%; top: calc(100% + 2.2em); height: 2.2em; border-radius: 50%; pointer-events: none; z-index: 0;
+  background: radial-gradient(closest-side, rgba(170, 200, 255, .2), transparent); mix-blend-mode: screen; opacity: 0; transition: opacity .8s; }
+.tvSet.on .tvSpill { opacity: 1; animation: tvFlick 2.4s steps(6) infinite; }
+@keyframes tvFlick { 30% { opacity: .75; } 55% { opacity: 1; } 80% { opacity: .85; } }
+
+.tvCap { position: absolute; left: 0; right: 0; padding-left: .2em; top: calc(100% + 3.6em); /* the set's width; the pad evens out the letter-spacing after the last letter */ text-align: center; font: 600 max(11px, .78em) Oswald, sans-serif; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--paper, #efe3c2); text-shadow: 0 1px 3px #000; pointer-events: none; white-space: nowrap; opacity: 0; transition: opacity .25s; }
+.tv:hover .tvCap, .tvSet:focus-visible + .tvCap { opacity: 1; }
+
+/* ── the stand-by card while there is no video yet: colour bars, a plate, a little snow ── */
+.tvBars { position: absolute; inset: 0; z-index: 1; display: grid; grid-template-rows: 66% 9% 25%; }
+.tvBars .top, .tvBars .mid, .tvBars .low { display: grid; }
+.tvBars .top { grid-template-columns: repeat(7, 1fr); background: #000; }
+.tvBars .top i:nth-child(1) { background: #bfbfbf; } .tvBars .top i:nth-child(2) { background: #c0c000; }
+.tvBars .top i:nth-child(3) { background: #00c0c0; } .tvBars .top i:nth-child(4) { background: #00c000; }
+.tvBars .top i:nth-child(5) { background: #c000c0; } .tvBars .top i:nth-child(6) { background: #c00000; }
+.tvBars .top i:nth-child(7) { background: #0000c0; }
+.tvBars .mid { grid-template-columns: repeat(7, 1fr); }
+.tvBars .mid i:nth-child(odd) { background: #131313; } .tvBars .mid i:nth-child(1) { background: #0000c0; }
+.tvBars .mid i:nth-child(3) { background: #c000c0; } .tvBars .mid i:nth-child(5) { background: #00c0c0; } .tvBars .mid i:nth-child(7) { background: #bfbfbf; }
+.tvBars .low { grid-template-columns: 5fr 5fr 5fr 6fr 3fr; }
+.tvBars .low i:nth-child(1) { background: #00214c; } .tvBars .low i:nth-child(2) { background: #fff; }
+.tvBars .low i:nth-child(3) { background: #32006a; } .tvBars .low i:nth-child(4) { background: #131313; } .tvBars .low i:nth-child(5) { background: #090909; }
+.tvBars::before { content: ""; position: absolute; inset: -50%; opacity: .16; mix-blend-mode: overlay; animation: tvSnow .5s steps(4) infinite;
+  background: repeating-radial-gradient(circle at 17% 32%, #fff 0 .02em, #000 .03em .05em), repeating-radial-gradient(circle at 73% 61%, #fff 0 .015em, transparent .03em .07em); }
+@keyframes tvSnow { 25% { transform: translate(3%, -2%); } 50% { transform: translate(-2%, 3%); } 75% { transform: translate(2%, 2%); } }
+.tvPlate { position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%); z-index: 2; padding: .14em .5em .12em; border-radius: .12em; white-space: nowrap;
+  background: #120804; color: #efe3c2; font: 400 .62em/1.05 Bebas, Oswald, sans-serif; letter-spacing: .12em; text-align: center; box-shadow: 0 0 0 .06em #efe3c2; }
+.tvPlate b { color: #e0442c; font-weight: 400; }
+.tvPlate small { display: block; font: 600 .38em Oswald, sans-serif; letter-spacing: .28em; color: #b9b0a2; }
+
+/* ── the theater: the set comes off its legs to the front, with sound ── */
+html.tvOpen, html.tvOpen body { overflow: hidden; }
+.tvTheater { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; align-content: center; gap: max(14px, 1.6vmin); padding: 16px;
+  isolation: isolate; }
+.tvTheater::before { content: ""; position: fixed; inset: 0; z-index: -1; background: rgba(10, 5, 2, .84); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  opacity: 0; transition: opacity .35s; } /* only the room darkens and comes back: the set itself flies, never fades */
+.tvTheater.in::before { opacity: 1; }
+.tvTheater[hidden] { display: none; }
+.tvTheater .tvSet { font-size: min(8.6vw, calc((100vh - 120px) / 8.6)); cursor: default; filter: none; transform-origin: 0 0; } /* 10em wide, 8.4em tall: the window, less the bar */
+.tvTheater .tvSet:hover { transform: none; }
+.tvTheater .tvScreen { cursor: pointer; }
+.tvTheater .tvScreen video { object-fit: contain; background: #000; }
+.tvTheater .tvPlate { font-size: .5em; }
+.tvBar { display: flex; align-items: center; gap: 14px; width: min(86vw, calc((100vh - 120px) / 8.6 * 10)); max-width: 100%; opacity: 0; transform: translateY(8px);
+  transition: opacity .3s .15s, transform .3s .15s; font: 600 12px Oswald, Inter, sans-serif; letter-spacing: .18em; text-transform: uppercase; color: #e8c878; }
+.tvTheater.in .tvBar { opacity: 1; transform: none; }
+.tvBar button { display: inline-flex; align-items: center; justify-content: center; min-width: 40px; height: 40px; padding: 0 10px; border-radius: 6px;
+  border: 1px solid rgba(232, 200, 120, .35); background: rgba(18, 8, 4, .7); color: inherit; font: inherit; letter-spacing: inherit; cursor: pointer; }
+.tvBar button:hover:not(:disabled) { background: rgba(232, 200, 120, .14); }
+.tvBar button:disabled { opacity: .35; cursor: default; }
+.tvBar button:focus-visible { outline: 2px solid #f2be4a; outline-offset: 2px; }
+.tvBar svg { width: 18px; height: 18px; fill: currentColor; }
+.tvSeek { flex: 1; height: 40px; display: flex; align-items: center; cursor: pointer; }
+.tvSeek i { position: relative; display: block; width: 100%; height: 4px; border-radius: 2px; background: rgba(232, 200, 120, .22); }
+.tvSeek b { position: absolute; inset: 0 auto 0 0; width: 0; border-radius: inherit; background: #f2be4a; }
+.tvSeek[aria-disabled="true"] { opacity: .35; cursor: default; }
+.tvTime { min-width: 84px; text-align: right; color: #b9b0a2; font-variant-numeric: tabular-nums; }
+.tvClose { margin-left: 4px; }
+
+/* true full screen: the picture only */
+.tvScreen:fullscreen { border-radius: 0; background: #000; }
+.tvScreen:fullscreen .tvGlass, .tvScreen:fullscreen::after { display: none; }
+.tvScreen:-webkit-full-screen { border-radius: 0; background: #000; }
+.tvScreen:-webkit-full-screen .tvGlass, .tvScreen:-webkit-full-screen::after { display: none; }
+.tvScreen:fullscreen .tvPlate { font-size: 3vw; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tvBars::before, .tvSet.on .tvSpill { animation: none; }
+  .tvTheater::before, .tvBar { transition: none; }
+}
