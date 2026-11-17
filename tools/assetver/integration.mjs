@@ -13,7 +13,7 @@ import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { join, posix } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const FOLDERS = ['station-mixer', 'gas-mixer', 'gas2', 'audio', 'fonts', 'drift'];
+const FOLDERS = ['station-mixer', 'gas-mixer', 'gas2', 'audio', 'fonts', 'drift', 'widebeam'];
 const FROZEN = /^(_astro|garage-9f3c)\//;
 const TEXT = /\.(html|css|m?js|json|svg|xml|txt|vtt|webmanifest)$/;
 // A whole URL: after a quote, url(, =, whitespace, a srcset comma or the ; of &quot;. It ends at a quote, ), whitespace,

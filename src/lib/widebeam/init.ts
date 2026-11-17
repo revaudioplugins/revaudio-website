@@ -9,6 +9,7 @@ import { createStore, PRESETS } from './state';
 import { createFace, type FaceArt } from './face';
 import { startNight } from './night';
 import { initStory } from './story';
+import { initIntro } from './intro';
 import type { WideBeamEngine } from './audio';
 
 export function initWideBeam(art: FaceArt) {
@@ -17,18 +18,31 @@ export function initWideBeam(art: FaceArt) {
   const store = createStore();
   const reduced = reducedMotion();
 
-  // ── hero: the road, the wordmark that opens with WIDTH ──
-  const night = page.querySelector<HTMLCanvasElement>('[data-wb-night]');
-  if (night) startNight(night, store);
+  // ── hero: the intro video, the road, the wordmark that opens with WIDTH ──
+  const hero = page.querySelector<HTMLElement>('.wb-hero')!;
+  const nightEl = page.querySelector<HTMLCanvasElement>('[data-wb-night]');
+  const night = nightEl ? startNight(nightEl, store) : null;
   const mark = page.querySelector<HTMLElement>('[data-wb-mark]');
   const setMark = () => { const s = store.get(); page.style.setProperty('--wb-w', String(s.power ? (s.mono ? 0 : s.width / 200) : 0)); };
   store.on(setMark); setMark();
-  if (mark && !reduced) {
-    // the letters come out of the dark one by one, as if the beams found them
-    gsap.fromTo(mark.querySelectorAll('i'), { opacity: 0, filter: 'blur(10px)', y: 18 }, { opacity: 1, filter: 'blur(0px)', y: 0, duration: 1.1, ease: 'expo.out', stagger: 0.07, delay: 0.35 });
-    gsap.fromTo(page.querySelectorAll('[data-wb-hero-in]'), { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.9, ease: 'expo.out', stagger: 0.1, delay: 1.0 });
-    // scrolling away opens the wordmark to full beam and fades the road
-    gsap.to(page.querySelector('[data-wb-hero-inner]'), { scrollTrigger: { trigger: page.querySelector('.wb-hero'), start: 'top top', end: 'bottom top', scrub: true }, y: 120, opacity: 0.1, ease: 'none' });
+  initIntro(hero, {
+    reveal(instant) {
+      hero.classList.add('is-shown');
+      if (!mark || reduced) return;
+      // the letters come out of the dark one by one, as if the beams found them
+      const d = instant ? 0.35 : 0;
+      gsap.fromTo(mark.querySelectorAll('i'), { opacity: 0, filter: 'blur(10px)', y: 18 }, { opacity: 1, filter: 'blur(0px)', y: 0, duration: 1.1, ease: 'expo.out', stagger: 0.07, delay: d });
+      gsap.fromTo(page.querySelectorAll('[data-wb-hero-in]'), { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.9, ease: 'expo.out', stagger: 0.1, delay: d + 0.65 });
+    },
+    handoff() {
+      // the video's last frame: the coupe's tail lights at (969, 697), 54 px apart, on a 1920×1080 frame
+      night?.tailLights(969, 697, 54);
+      night?.ignite();
+    },
+  });
+  if (!reduced) {
+    // scrolling away lifts the title off the road
+    gsap.to(page.querySelector('[data-wb-hero-inner]'), { scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true }, y: 120, opacity: 0.1, ease: 'none' });
   }
 
   // ── the face ──

@@ -62,9 +62,9 @@
 @keyframes wb-flash { 0% { opacity: 0; } 12% { opacity: 1; } 100% { opacity: 0; } }
 
 /* ---------- HERO ---------- */
-.wb-hero { position: relative; min-height: min(100svh, 980px); display: grid; place-items: center; overflow: hidden; isolation: isolate; }
+.wb-hero { position: relative; min-height: min(calc(100svh - var(--nav-h, 44px)), 980px); display: grid; justify-items: center; align-items: start; overflow: hidden; isolation: isolate; }
 .wb-night { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; display: block; background: #07080a; }
-.wb-hero-inner { position: relative; text-align: center; padding: 96px 16px 140px; max-width: 1100px; }
+.wb-hero-inner { position: relative; text-align: center; padding: clamp(48px, 8vh, 110px) 16px 140px; max-width: 1100px; } /* the title sits in the sky; the road below the horizon (64 %) stays clear for the car */
 
 /* the wordmark: engraved brass that opens with WIDTH */
 .wb-mark { margin: 0; line-height: 1; font-weight: 400; }
@@ -81,14 +81,37 @@
   filter: drop-shadow(0 2px 0 rgba(10, 8, 6, .9)) drop-shadow(0 0 calc(10px + var(--wb-w) * 34px) rgba(255, 214, 140, calc(.08 + var(--wb-w) * .3)));
 }
 .wb-mark-row .wb-sp { width: .32em; }
-.wb-sub { display: flex; align-items: center; justify-content: center; white-space: nowrap; font-family: var(--serif); letter-spacing: .62em; font-size: clamp(.68rem, 1.6vw, 1rem); color: var(--ivory-2); margin: 18px 0 0; padding-left: .62em; }
+.wb-sub { display: flex; align-items: center; justify-content: center; white-space: nowrap; font-family: var(--serif); letter-spacing: .62em; font-size: clamp(.68rem, 1.6vw, 1rem); color: var(--ivory-2); margin: 12px 0 0; padding-left: .62em; }
 .wb-sub::before, .wb-sub::after { content: ''; flex: 0 0 auto; width: clamp(24px, 8vw, 110px); height: 1px; margin: 0 1.2em; background: linear-gradient(90deg, transparent, var(--brass)); }
 .wb-sub::after { background: linear-gradient(90deg, var(--brass), transparent); }
-.wb-lede { max-width: 50ch; margin: 28px auto 32px; color: var(--ivory-2); font-size: clamp(1.02rem, 1.5vw, 1.2rem); line-height: 1.6; text-shadow: 0 2px 14px rgba(5, 5, 6, .9); }
+.wb-lede { max-width: 50ch; margin: 18px auto 22px; color: var(--ivory-2); font-size: clamp(1.02rem, 1.5vw, 1.2rem); line-height: 1.6; text-shadow: 0 2px 14px rgba(5, 5, 6, .9); }
 .wb-ctas { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
 .wb-cue { position: absolute; left: 50%; bottom: 28px; width: 24px; height: 44px; transform: translateX(-50%); border: 1px solid rgba(201, 163, 92, .5); border-radius: 14px; }
 .wb-cue span { position: absolute; left: 50%; top: 8px; width: 2px; height: 8px; margin-left: -1px; border-radius: 2px; background: var(--brass-hi); animation: wb-cue 1.8s infinite; }
 @keyframes wb-cue { 0% { transform: translateY(0); opacity: 1; } 80% { transform: translateY(18px); opacity: 0; } 100% { opacity: 0; } }
+
+/* the intro video over the road, and its dissolve into it */
+.wb-intro { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; background: #07080a; transition: opacity 1s ease, visibility 0s; }
+.wb-intro.is-gone { opacity: 0; visibility: hidden; transition: opacity .9s ease, visibility 0s .9s; }
+.is-intro-fast .wb-intro.is-gone { transition-duration: .4s, 0s; transition-delay: 0s, .4s; }
+.wb-skip, .wb-replay {
+  position: absolute; bottom: 26px; z-index: 2; padding: .55em 1.1em; border-radius: 999px; cursor: pointer;
+  font-family: var(--serif); font-size: .74rem; letter-spacing: .22em; text-transform: uppercase; color: var(--ivory-2);
+  background: rgba(10, 9, 8, .45); border: 1px solid rgba(201, 163, 92, .35); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  transition: color .2s, border-color .2s, opacity .4s;
+}
+.wb-skip:hover, .wb-replay:hover { color: var(--ivory); border-color: var(--brass-hi); }
+.wb-skip:focus-visible, .wb-replay:focus-visible { outline: 2px solid var(--brass-hi); outline-offset: 3px; }
+.wb-skip { right: 22px; display: none; }
+.wb-hero.is-intro .wb-skip { display: inline-flex; animation: wb-in .6s 1.2s both; }
+.wb-replay { right: 22px; }
+.wb-replay[hidden] { display: none; }
+@keyframes wb-in { from { opacity: 0; } }
+.wb-hero.is-intro .wb-cue { opacity: 0; }
+.wb-cue { transition: opacity .6s; }
+@media (scripting: enabled) { .wb-hero:not(.is-shown) .wb-hero-inner { visibility: hidden; } }
+@media (scripting: none) { .wb-intro, .wb-skip, .wb-replay { display: none; } }
+.wb-hero.is-hush .wb-hero-inner { opacity: 0 !important; transition: opacity .3s; }
 
 /* ---------- THE DASH ---------- */
 .wb-drive { position: relative; padding: clamp(70px, 10vw, 140px) 0 clamp(50px, 7vw, 90px); }
@@ -281,7 +304,7 @@ button.wb-hit { cursor: pointer; }
   [data-wb-reveal] { opacity: 1; transform: none; transition: none; }
   .wb-mark-row, .wb-card, .wb-card-beam { transition: none; }
   .wb-cue span, .wb-notify-lamps i, .is-playing .wb-btn--engine .wb-key { animation: none; }
-  .wb-flash { display: none; }
+  .wb-flash, .wb-intro, .wb-skip { display: none; }
 }
 .wb-page h3 { text-transform: none; letter-spacing: 0; }
 .wb-head > p, .wb-notify-card > p { margin-left: auto; margin-right: auto; }

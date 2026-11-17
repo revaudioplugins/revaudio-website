@@ -6,7 +6,8 @@
  * The face in #wb-drive is the plugin's own art: a clean 2x capture of Source/ui (every moving part hidden) with the
  * baked filmstrips laid back on their seats (src/lib/widebeam/face.ts). It plays: the audio is a Web Audio mid/side
  * chain after the plugin's laws (audio.ts), fed by a synthesized loop or the visitor's own file, never uploaded.
- * Order: hero (the night road) · #wb-drive (the dash, live) · #wb-story (the stereo road, six controls) ·
+ * The hero opens on public/widebeam/intro-*.mp4 (Higgsfield: a GT coupe sweeps past and drives off down the road),
+ * then dissolves into the canvas road (intro.ts). Order: hero (intro + the night road) · #wb-drive (the dash, live) · #wb-story (the stereo road, six controls) ·
  * #wb-presets (sixteen roads) · #wb-specs (the readout) · #wb-notify (launch list).
  */
 import { getImage } from 'astro:assets';
@@ -22,6 +23,7 @@ import mixImg from '../assets/widebeam/knob-mix.webp';
 import toggleImg from '../assets/widebeam/switch-toggle2.webp';
 import powerImg from '../assets/widebeam/power-rocker.webp';
 import wheelImg from '../assets/widebeam/level-wheel.webp';
+import introPosterImg from '../assets/widebeam/intro-poster.jpg';
 
 // filmstrips keep their full frame size (the grid maths needs every frame whole); only re-encoded
 const webp = (src: ImageMetadata, quality = 80) => getImage({ src, format: 'webp', quality });
@@ -35,6 +37,7 @@ const art = {
   wheel: (await webp(wheelImg)).src,
 };
 const poster = await getImage({ src: baseImg, format: 'webp', width: 1536, quality: 70 });
+const introPoster = await getImage({ src: introPosterImg, format: 'webp', width: 1280, quality: 70 });
 
 const onceUrl = site.downloadGate.workerUrl + '/form-once';
 const WORD = ['W', 'I', 'D', 'E', ' ', 'B', 'E', 'A', 'M'];
@@ -80,6 +83,12 @@ const focusY = (f: number) => 74 - (Math.log(f / 20) / Math.log(50)) * 60;
     <!-- ============ HERO: the night road ============ -->
     <section class="wb-hero" aria-labelledby="wb-title">
       <canvas class="wb-night" data-wb-night aria-hidden="true"></canvas>
+      <video class="wb-intro" data-wb-intro muted playsinline preload="none" poster={introPoster.src} aria-hidden="true" tabindex="-1">
+        <source src="/widebeam/intro-720.mp4" type="video/mp4" media="(max-width: 900px)" />
+        <source src="/widebeam/intro-1080.mp4" type="video/mp4" />
+      </video>
+      <button type="button" class="wb-skip" data-wb-skip>Skip intro</button>
+      <button type="button" class="wb-replay" data-wb-replay hidden aria-label="Replay the intro"><span aria-hidden="true">↺</span> Replay</button>
       <div class="wb-hero-inner" data-wb-hero-inner>
         <h1 id="wb-title" class="wb-mark" data-wb-mark>
           <span class="sr-only">WIDE BEAM</span>
