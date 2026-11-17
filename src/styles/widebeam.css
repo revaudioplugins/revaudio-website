@@ -63,7 +63,8 @@
 
 /* ---------- HERO ---------- */
 .wb-hero { position: relative; min-height: min(calc(100svh - var(--nav-h, 44px)), 980px); display: grid; justify-items: center; align-items: start; overflow: hidden; isolation: isolate; }
-.wb-night { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; display: block; background: #07080a; }
+.wb-still { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; display: block; background: #07080a; }
+.wb-night { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; display: block; pointer-events: none; }
 .wb-hero-inner { position: relative; text-align: center; padding: clamp(48px, 8vh, 110px) 16px 140px; max-width: 1100px; } /* the title sits in the sky; the road below the horizon (64 %) stays clear for the car */
 
 /* the wordmark: engraved brass that opens with WIDTH */
@@ -100,14 +101,31 @@
 }
 .wb-skip:hover, .wb-replay:hover { color: var(--ivory); border-color: var(--brass-hi); }
 .wb-skip:focus-visible, .wb-replay:focus-visible { outline: 2px solid var(--brass-hi); outline-offset: 3px; }
-.wb-skip { right: 22px; display: none; }
+.wb-skip { left: 50%; transform: translateX(-50%); display: none; }
 .wb-hero.is-intro .wb-skip { display: inline-flex; animation: wb-in .6s 1.2s both; }
-.wb-replay { right: 22px; }
+.wb-replay { left: 50%; transform: translateX(-50%); }
 .wb-replay[hidden] { display: none; }
 @keyframes wb-in { from { opacity: 0; } }
 @media (scripting: enabled) { .wb-hero:not(.is-shown) .wb-hero-inner { visibility: hidden; } }
 @media (scripting: none) { .wb-intro, .wb-skip, .wb-replay { display: none; } }
 .wb-hero.is-hush .wb-hero-inner { opacity: 0 !important; transition: opacity .3s; }
+
+/* the music switch: stays on screen wherever the visitor is */
+.wb-sound {
+  position: fixed; right: 18px; bottom: 18px; z-index: 50; display: inline-flex; align-items: center; gap: .7em; padding: .6em 1em .6em .85em;
+  border-radius: 999px; cursor: pointer; font-family: var(--serif); font-size: .72rem; letter-spacing: .2em; text-transform: uppercase;
+  color: var(--ivory-2); background: rgba(14, 12, 10, .72); border: 1px solid rgba(201, 163, 92, .35);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 8px 22px rgba(4, 3, 2, .5); transition: color .2s, border-color .2s;
+}
+.wb-sound:hover, .wb-sound[aria-pressed='true'] { color: var(--ivory); border-color: var(--brass); }
+.wb-sound:focus-visible { outline: 2px solid var(--brass-hi); outline-offset: 3px; }
+.wb-eq { display: inline-flex; align-items: flex-end; gap: 2px; height: 12px; }
+.wb-eq i { width: 2px; height: 3px; border-radius: 1px; background: var(--brass-hi); }
+.wb-sound[aria-pressed='true'] .wb-eq i { animation: wb-eq .9s ease-in-out infinite alternate; }
+.wb-sound[aria-pressed='true'] .wb-eq i:nth-child(2) { animation-delay: -.3s; }
+.wb-sound[aria-pressed='true'] .wb-eq i:nth-child(3) { animation-delay: -.6s; }
+.wb-sound[aria-pressed='true'] .wb-eq i:nth-child(4) { animation-delay: -.15s; }
+@keyframes wb-eq { from { height: 3px; } to { height: 12px; } }
 
 /* ---------- THE DASH ---------- */
 .wb-drive { position: relative; padding: clamp(70px, 10vw, 140px) 0 clamp(50px, 7vw, 90px); }
@@ -292,6 +310,7 @@ button.wb-hit { cursor: pointer; }
   .wb-sub span { margin-right: -.4em; }
   .wb-sub::before, .wb-sub::after { width: 18px; margin: 0 .6em; }
   .wb-form { flex-direction: column; }
+  .wb-skip, .wb-replay { bottom: 74px; } /* above the sound pill and the cart button */
   .wb-dr { grid-template-columns: 1fr; gap: 2px; }
   .wb-keys { display: none; }
   .wb-level { display: none; }
@@ -302,6 +321,7 @@ button.wb-hit { cursor: pointer; }
   .wb-mark-row, .wb-card, .wb-card-beam { transition: none; }
   .wb-notify-lamps i, .is-playing .wb-btn--engine .wb-key { animation: none; }
   .wb-flash, .wb-intro, .wb-skip { display: none; }
+  .wb-sound[aria-pressed='true'] .wb-eq i { animation: none; height: 8px; }
 }
 .wb-page h3 { text-transform: none; letter-spacing: 0; }
 .wb-head > p, .wb-notify-card > p { margin-left: auto; margin-right: auto; }

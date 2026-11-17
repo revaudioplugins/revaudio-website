@@ -1,6 +1,6 @@
 /**
- * /widebeam boot: one shared state (state.ts) for the hero road (night.ts), the living face (face.ts), the audio
- * (audio.ts, built on the first START so no AudioContext exists before a gesture), the stereo road story (story.ts),
+ * /widebeam boot: one shared state (state.ts) for the hero (intro.ts: the video, then its own last frame; night.ts: the departing tail lights), the living face (face.ts), the audio
+ * (audio.ts; the music starts at load where the browser allows sound, else on the first click / tap / key), the stereo road story (story.ts),
  * the preset strip, the reveals and the launch-list form (POST {form:'newsletter', email, source:'widebeam-notify',
  * _gotcha, page} to the worker's /form-once, the list relay every site form uses).
  */
@@ -10,7 +10,7 @@ import { createFace, type FaceArt } from './face';
 import { startNight } from './night';
 import { initStory } from './story';
 import { initIntro } from './intro';
-import type { WideBeamEngine } from './audio';
+import { WideBeamEngine } from './audio';
 
 export function initWideBeam(art: FaceArt) {
   const page = document.querySelector<HTMLElement>('[data-wb-page]');
@@ -18,10 +18,10 @@ export function initWideBeam(art: FaceArt) {
   const store = createStore();
   const reduced = reducedMotion();
 
-  // ── hero: the intro video, the road, the wordmark that opens with WIDTH ──
+  // ── hero: the intro video, its last frame as the road, the wordmark that opens with WIDTH ──
   const hero = page.querySelector<HTMLElement>('.wb-hero')!;
   const nightEl = page.querySelector<HTMLCanvasElement>('[data-wb-night]');
-  const night = nightEl ? startNight(nightEl, store) : null;
+  const night = nightEl ? startNight(nightEl) : null;
   const mark = page.querySelector<HTMLElement>('[data-wb-mark]');
   const setMark = () => { const s = store.get(); page.style.setProperty('--wb-w', String(s.power ? (s.mono ? 0 : s.width / 200) : 0)); };
   store.on(setMark); setMark();
@@ -37,7 +37,6 @@ export function initWideBeam(art: FaceArt) {
     handoff() {
       // the video's last frame: the coupe's tail lights at (969, 697), 54 px apart, on a 1920×1080 frame
       night?.tailLights(969, 697, 54);
-      night?.ignite();
     },
   });
   if (!reduced) {
@@ -61,17 +60,22 @@ export function initWideBeam(art: FaceArt) {
   }
 
   // ── audio ──
-  let engine: WideBeamEngine | null = null, mod: typeof import('./audio') | null = null;
+  let engine: WideBeamEngine | null = null, userStopped = false;
   const playBtn = page.querySelector<HTMLButtonElement>('[data-wb-play]');
   const fileIn = page.querySelector<HTMLInputElement>('[data-wb-file]');
   const msg = page.querySelector<HTMLElement>('[data-wb-msg]');
   const scope = page.querySelector<HTMLCanvasElement>('[data-wb-scope]');
   const corrRead = page.querySelector<HTMLElement>('[data-wb-corr]');
-  const getEngine = async () => {
-    mod ??= await import('./audio');
-    if (!engine) { engine = new mod.WideBeamEngine(); engine.set(store.get()); store.on((s) => engine!.set(s)); }
-    if (engine.ctx.state !== 'running') await engine.ctx.resume();
+  const sound = page.querySelector<HTMLButtonElement>('[data-wb-sound]');
+  // created synchronously so a gesture handler can resume it inside the gesture (iOS Safari unlocks audio only there)
+  const makeEngine = () => {
+    if (!engine) { engine = new WideBeamEngine(); engine.set(store.get()); store.on((s) => engine!.set(s)); }
     return engine;
+  };
+  const getEngine = async () => {
+    const e = makeEngine();
+    if (e.ctx.state !== 'running') await e.ctx.resume();
+    return e;
   };
   const setPlaying = (on: boolean, label?: string) => {
     page.classList.toggle('is-playing', on);
@@ -79,12 +83,41 @@ export function initWideBeam(art: FaceArt) {
     const f = playBtn?.querySelector('[data-face]');
     if (f) f.textContent = on ? 'Stop the engine' : 'Start the engine';
     if (msg) msg.textContent = on ? (label ?? 'Night Drive loop · turn WIDTH, flip HIGH BEAM, press MONO') : 'Engine off.';
-    if (on) { ignite(); meterLoop(); } else face.setCorrelation(null);
+    sound?.setAttribute('aria-pressed', String(on));
+    const sf = sound?.querySelector('[data-face]');
+    if (sf) sf.textContent = on ? 'Sound on' : 'Sound off';
+    if (on) meterLoop(); else face.setCorrelation(null);
   };
-  playBtn?.addEventListener('click', async () => {
+  const toggle = async () => {
+    const e = makeEngine();
+    if (e.playing) { e.stop(); userStopped = true; setPlaying(false); return; }
+    userStopped = false;
+    await getEngine(); e.playDemo(); setPlaying(true);
+  };
+  playBtn?.addEventListener('click', async () => { await toggle(); ignite(); });
+  sound?.addEventListener('click', toggle);
+
+  // the music plays by itself: at load where the browser already allows sound (Chrome, for a site it trusts),
+  // otherwise on the first click / tap / key anywhere on the page. A scroll is not a gesture, so it can't count.
+  // Never restarts a visitor who stopped it.
+  const autoStart = async () => {
+    if (userStopped) return;
     const e = await getEngine();
-    if (e.playing) { e.stop(); setPlaying(false); } else { e.playDemo(); setPlaying(true); }
-  });
+    if (!e.playing && !userStopped) { e.playDemo(); setPlaying(true); }
+  };
+  const GESTURES = ['pointerdown', 'pointerup', 'touchend', 'keydown', 'click'] as const;
+  const offGesture = () => GESTURES.forEach((k) => document.removeEventListener(k, onGesture, true));
+  function onGesture(ev: Event) {
+    if ((ev.target as HTMLElement)?.closest?.('[data-wb-play], [data-wb-file], [data-wb-sound]')) { offGesture(); return; } // those choose for themselves
+    if (ev instanceof KeyboardEvent && (ev.key === 'Escape' || ev.metaKey || ev.ctrlKey || ev.altKey)) return; // not activations
+    const e = makeEngine();
+    if (e.ctx.state !== 'running') e.ctx.resume().catch(() => {}); // inside the gesture: this is what unlocks audio
+    // a touch counts on release, not on press; browsers without userActivation (Safari < 16.4) get that rule by hand
+    const active = navigator.userActivation ? navigator.userActivation.isActive : ev.type !== 'pointerdown' || (ev as PointerEvent).pointerType === 'mouse';
+    if (e.ctx.state === 'running' || active) { offGesture(); autoStart(); }
+  }
+  GESTURES.forEach((k) => document.addEventListener(k, onGesture, true));
+  try { if (makeEngine().ctx.state === 'running') { offGesture(); autoStart(); } } catch {}
   page.querySelectorAll<HTMLElement>('[data-wb-start]').forEach((b) => b.addEventListener('click', async () => {
     const e = await getEngine();
     if (!e.playing) { e.playDemo(); setPlaying(true); }

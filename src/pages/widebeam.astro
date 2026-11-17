@@ -7,7 +7,7 @@
  * baked filmstrips laid back on their seats (src/lib/widebeam/face.ts). It plays: the audio is a Web Audio mid/side
  * chain after the plugin's laws (audio.ts), fed by a synthesized loop or the visitor's own file, never uploaded.
  * The hero opens on public/widebeam/intro-*.mp4 (Higgsfield: a GT coupe sweeps past and drives off down the road),
- * then dissolves into the canvas road (intro.ts). Order: hero (intro + the night road) · #wb-drive (the dash, live) · #wb-story (the stereo road, six controls) ·
+ * then dissolves into its own last frame without the car (intro-end.jpg), the tail lights carried to the horizon (intro.ts). Order: hero (intro + the night road) · #wb-drive (the dash, live) · #wb-story (the stereo road, six controls) ·
  * #wb-presets (sixteen roads) · #wb-specs (the readout) · #wb-notify (launch list).
  */
 import { getImage } from 'astro:assets';
@@ -24,6 +24,7 @@ import toggleImg from '../assets/widebeam/switch-toggle2.webp';
 import powerImg from '../assets/widebeam/power-rocker.webp';
 import wheelImg from '../assets/widebeam/level-wheel.webp';
 import introPosterImg from '../assets/widebeam/intro-poster.jpg';
+import introEndImg from '../assets/widebeam/intro-end.jpg';
 
 // filmstrips keep their full frame size (the grid maths needs every frame whole); only re-encoded
 const webp = (src: ImageMetadata, quality = 80) => getImage({ src, format: 'webp', quality });
@@ -38,6 +39,8 @@ const art = {
 };
 const poster = await getImage({ src: baseImg, format: 'webp', width: 1536, quality: 70 });
 const introPoster = await getImage({ src: introPosterImg, format: 'webp', width: 1280, quality: 70 });
+// the hero's road after the intro: the video's last frame with the car painted out, so the look never changes
+const roadStill = await Promise.all([1280, 1920].map((width) => getImage({ src: introEndImg, format: 'webp', width, quality: 72 })));
 
 const onceUrl = site.downloadGate.workerUrl + '/form-once';
 const WORD = ['W', 'I', 'D', 'E', ' ', 'B', 'E', 'A', 'M'];
@@ -79,9 +82,11 @@ const focusY = (f: number) => 74 - (Math.log(f / 20) / Math.log(50)) * 60;
   <link slot="head" rel="preload" as="image" href={art.base} type="image/webp" />
   <div class="wb-page" data-wb-page data-art={JSON.stringify(art)}>
     <div class="wb-flash" data-wb-flash aria-hidden="true"></div>
+    <button type="button" class="wb-sound" data-wb-sound aria-pressed="false" aria-label="Music"><span class="wb-eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span data-face>Sound off</span></button>
 
     <!-- ============ HERO: the night road ============ -->
     <section class="wb-hero" aria-labelledby="wb-title">
+      <img class="wb-still" src={roadStill[1].src} srcset={`${roadStill[0].src} 1280w, ${roadStill[1].src} 1920w`} sizes="100vw" alt="" aria-hidden="true" decoding="async" fetchpriority="high" />
       <canvas class="wb-night" data-wb-night aria-hidden="true"></canvas>
       <video class="wb-intro" data-wb-intro muted playsinline preload="none" poster={introPoster.src} aria-hidden="true" tabindex="-1">
         <source src="/widebeam/intro-720.mp4" type="video/mp4" media="(max-width: 900px)" />
