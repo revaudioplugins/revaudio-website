@@ -7,13 +7,15 @@
  * baked filmstrips laid back on their seats (src/lib/widebeam/face.ts). It plays: the audio is a Web Audio mid/side
  * chain after the plugin's laws (audio.ts), fed by a synthesized loop or the visitor's own file, never uploaded.
  * The hero opens on public/widebeam/intro-*.mp4 (Higgsfield: a GT coupe sweeps past and drives off down the road),
- * then dissolves into its own last frame without the car (intro-end.jpg), the tail lights carried to the horizon (intro.ts). Order: hero (intro + the night road) · #wb-drive (the dash, live) · #wb-story (the stereo road, six controls) ·
- * #wb-presets (sixteen roads) · #wb-specs (the readout) · #wb-notify (launch list).
+ * then dissolves into its own last frame without the car (intro-end.jpg), the tail lights carried to the horizon
+ * (intro.ts). Order: hero (intro + the road) · #wb-get (free trial + BUY NOW, src/data/widebeam.ts) ·
+ * #wb-drive (the dash, live) · #wb-story (the stereo road, six controls) · #wb-presets (sixteen roads) ·
+ * #wb-specs (the readout) · #wb-notify (launch list).
  */
 import { getImage } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { site } from '../data/site';
 import { PRESETS } from '../lib/widebeam/state';
+import { widebeam, buyable, registerUrl, onceUrl as formOnceUrl, fmtUsd } from '../data/widebeam';
 import '../styles/widebeam.css';
 
 import baseImg from '../assets/widebeam/face-base.webp';
@@ -42,7 +44,9 @@ const introPoster = await getImage({ src: introPosterImg, format: 'webp', width:
 // the hero's road after the intro: the video's last frame with the car painted out, so the look never changes
 const roadStill = await Promise.all([1280, 1920].map((width) => getImage({ src: introEndImg, format: 'webp', width, quality: 72 })));
 
-const onceUrl = site.downloadGate.workerUrl + '/form-once';
+const onceUrl = formOnceUrl();
+const trialRegister = registerUrl();
+const canBuy = buyable();
 const WORD = ['W', 'I', 'D', 'E', ' ', 'B', 'E', 'A', 'M'];
 
 const STEPS = [
@@ -104,6 +108,52 @@ const focusY = (f: number) => 74 - (Math.log(f / 20) / Math.log(50)) * 60;
         <div class="wb-ctas" data-wb-hero-in>
           <a class="rv-btn rv-btn--lg rv-btn--shine" href="#wb-drive" data-wb-start><span data-face>Take it for a drive</span></a>
           <a class="rv-btn rv-btn--lg rv-btn--ghost" href="#wb-story">How it works ↓</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ GET IT: the free trial + BUY NOW (src/data/widebeam.ts) ============ -->
+    <section class="wb-get" id="wb-get" aria-label="Get WIDE BEAM">
+      <div class="wb-get-plate" data-wb-reveal>
+        <div class="wb-get-trial">
+          <p class="wb-get-label">Get your <em>free</em> {widebeam.trialDays}-day trial</p>
+          <form
+            class="wb-get-form" data-wb-trial novalidate
+            data-once-url={onceUrl}
+            data-register-url={trialRegister ?? undefined}
+            data-plugin={widebeam.gateId}
+            data-msg-ok={trialRegister ? 'Check your inbox: your WIDE BEAM download link is on its way.' : "You're in. We'll email your WIDE BEAM download link the day the trial opens."}
+            data-msg-already={trialRegister ? "You're already signed up. Check your inbox (and spam) for the download link." : "You're already on the list. The download link comes the day the trial opens."}
+          >
+            <label class="sr-only" for="wb-trial-email">Your email</label>
+            <input id="wb-trial-email" type="email" name="email" inputmode="email" autocomplete="email" enterkeyhint="go" spellcheck="false" placeholder="your@email.com" required aria-label="Your email, we send the WIDE BEAM download link here" />
+            <input type="hidden" name="source" value="widebeam-trial" />
+            <input type="text" name="_gotcha" class="wb-hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+            <button type="submit" class="rv-btn"><span data-face>Get it <span aria-hidden="true">&#9656;</span></span></button>
+          </form>
+          <p class="wb-get-status" data-wb-trial-status role="status" aria-live="polite" tabindex="-1"></p>
+          <p class="wb-get-micro">Full version &middot; no credit card</p>
+          <p class="wb-get-notice">We&rsquo;ll also send a few short getting-started emails and a heads-up before your trial ends. Unsubscribe anytime.</p>
+        </div>
+        <div class="wb-get-or" aria-hidden="true"><span>or</span></div>
+        <div class="wb-get-buy">
+          {canBuy ? (
+            <>
+              <p class="wb-get-price"><b>{fmtUsd(widebeam.priceUsd!)}</b><span>one-time · yours to keep</span></p>
+              <button
+                type="button" class="rv-btn rv-btn--lg wb-buy"
+                data-add-to-cart data-cart-open
+                data-slug={widebeam.slug} data-name={widebeam.name} data-price={widebeam.priceUsd}
+              >Buy now</button>
+            </>
+          ) : (
+            <>
+              <p class="wb-get-price"><b>Own it</b><span>price announced at launch</span></p>
+              <button type="button" class="rv-btn rv-btn--lg wb-buy" data-wb-buy-soon aria-describedby="wb-buy-note">Buy now</button>
+              <p class="wb-get-status" id="wb-buy-note" data-wb-buy-note role="status" aria-live="polite"></p>
+            </>
+          )}
+          <p class="wb-get-micro">Mac VST3 · AU · AAX &middot; Windows VST3</p>
         </div>
       </div>
     </section>
