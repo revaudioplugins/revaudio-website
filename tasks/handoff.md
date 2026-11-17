@@ -1,3 +1,22 @@
+## 2026-11-17 — WIDE BEAM page, `/widebeam` (Claude Code, Gil's Mac) — on `feat/widebeam-page`, PUSHED 2026-11-17 on Gil's word ("push this to Dan"), NOT merged, NOT live
+
+Claim: OPEN, handed to Dan. Full brief: `tasks/widebeam-handoff-dan-2026-11-17.md`.
+Files: `src/pages/widebeam.astro`, `src/lib/widebeam/*`, `src/data/widebeam.ts`, `src/styles/widebeam.css`,
+`src/assets/widebeam/*`, `public/widebeam/*`, `tools/assetver/integration.mjs` + `docs/assets.md` (the `widebeam/`
+folder), `src/components/{WelcomeDiscountPopup,ExitIntentPopup}.astro` (`/widebeam` excluded), this entry.
+
+- Unlisted product page for WIDE BEAM (revaudioplugins/WideBeam, 1.0 candidate): Higgsfield intro that dissolves into
+  its own last frame, a free-trial + BUY NOW plate, the plugin's real face live with a Web Audio demo, a scroll story,
+  the 16 factory presets, specs, launch list. House type and `.rv-btn` buttons.
+- Not wired, on purpose (Gil): BUY NOW is a placeholder until there is a Paddle price id; the trial form only joins the
+  list (`gateWired: false`) until the license worker has `DL_PLUGINS.widebeam`. Steps to go live: the brief, "Open".
+- `main` gained `713f6b3` today ("Wide Beam ($9)" in the BF/CM bundle, `sale.ts` only); the branch merges into
+  `origin/main` with no conflict (checked with `git merge-tree` before the push).
+- Checked: `npm run build` green; Playwright Chromium + WebKit at 1440×900 and 390×844, no page errors; the trial
+  form's payload against a stubbed worker; the cart's add-and-open with the same markup on revfx. Not checked: a real
+  iPhone, Windows, Firefox, the live host.
+- Next: Dan's review on the branch; Gil sends the Paddle id.
+
 ## 2026-11-15 — The long garage: Gil's faster first load KEPT (PR #33), plus one line that lets the model downloads go (Claude Code `Garage load-speed branch review [c19840]`, Dan's Mac) — on `feat/home-opening`, PUSHED 2026-11-15 on Dan's word ("keep gil"); MERGED TO MAIN 2026-11-16 on Dan's word ("lets commit and marge to main")
 
 Claim: CLOSED 2026-11-16 at rv close (opened 2026-11-15; merged to main 2026-11-16). Files: `tools/_home-opening/room.html` (one line at the end of
