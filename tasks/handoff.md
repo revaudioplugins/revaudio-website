@@ -45,9 +45,9 @@ Claim: CLOSED 2026-11-16 at session end (opened 2026-11-15) `Garage 3D phone pag
 - Next, in order (the nine steps on the page): the phone's look (the same phone 2-3 ways in the room's light, his pick before any model), the dive's numbers as bench sliders, the real phone + the fan's top as data in the shared room (after the laptop launch, so `DEF` and walk 0 are not touched before it), the hand-over to the real phone homepage (WordWall, svh-sized), the phone cut (load only what this camera sees) measured on his iPhone, the top-down loading picture with its own `lights/check.mjs` run, then the hidden page and the homepage for phones.
 - Run: from this worktree's root, a no-store static server on 127.0.0.1, then `/tools/_home-opening/phone-dive.html`.
 
-## 2026-11-15 — The long garage: Gil's faster first load KEPT (PR #33), plus one line that lets the model downloads go (Claude Code `Garage load-speed branch review [c19840]`, Dan's Mac) — on `feat/home-opening`, PUSHED 2026-11-15 on Dan's word ("keep gil"), not on main
+## 2026-11-15 — The long garage: Gil's faster first load KEPT (PR #33), plus one line that lets the model downloads go (Claude Code `Garage load-speed branch review [c19840]`, Dan's Mac) — on `feat/home-opening`, PUSHED 2026-11-15 on Dan's word ("keep gil"); MERGED TO MAIN 2026-11-16 on Dan's word ("lets commit and marge to main")
 
-Claim: CLOSED 2026-11-15, opened the same day. Files: `tools/_home-opening/room.html` (one line at the end of
+Claim: CLOSED 2026-11-16 at rv close (opened 2026-11-15; merged to main 2026-11-16). Files: `tools/_home-opening/room.html` (one line at the end of
 `loadModels()`), `tasks/handoff.md` (this entry).
 
 Request (Dan, 2026-11-15, on Gil's note): compare `perf/home-opening-load` with `feat/home-opening` and keep the better
@@ -85,8 +85,101 @@ one. Dan's answer after the results: "keep gil".
   cardboard) are downloaded and shown on nothing since round 6.
 - Not measured: real Safari, a phone, Windows, a weak graphics chip, the live host.
 - Raw results on Dan's Mac: `.claude/perf-compare-2026-11-15/` (git-ignored).
-- Next: Dan's own look in Safari. The live unlisted page still serves the older room from main; main waits for Dan's
-  word.
+- Merged into main on 2026-11-16: `8745067`, a `--no-ff` merge of `feat/home-opening` @ `2736e6b` (this file was the only
+  conflict, both sides kept). Built first in a temp worktree (`npm ci`, `npm run build`): the built `/garage-9f3c/` opened
+  in Chrome with 94 models, 97 model requests, no page errors; `lights/check.mjs` PASS. Deploy run 43851370710 success
+  (Cloudflare cache clear passed), Smoke test 43851370712 success (68 passed). Live: `/garage-9f3c/` serves the fix and
+  the early download; Chrome, 3 visits: 94 models, no page errors. Live timing NOT measured: Dan's Mac's line ran at
+  2-6 Mbit/s that hour and the room was ready with its last byte (35-56 s).
+- `feat/home-opening` (`2736e6b`) is now an ancestor of main. Next garage work can start from it or from main.
+- The phone-cut session (`feat/phone-dive`, "Garage 3D phone page") got the `prefetchModels` warning on 2026-11-16: Dan
+  pasted the note into it (his word "pasted"; a direct message from this session had been refused by auto mode).
+- Next: Dan's own look at https://revaudio.net/garage-9f3c/ in Safari and on a phone.
+
+## 2026-11-15 — Review: RevFX joins the plugin picker (Claude Code `revaudio-fc`, Yoni's laptop 2) — LIVE ON MAIN 2026-11-15 on Yoni's word "push" (`a0e0fdb` + `1a884b9`, fast-forward from `1b4bc34`); head was `[skip ci]`, so the
+deploy was dispatched by hand: run 43720976072 success (build, deploy, Cloudflare cache clear). Live check on revaudio.net/review/ (Chromium):
+6 columns at 1280, 2 at 390; price question RevLimiter $49, Radio Roulette $19, RevFX $19, the free three hidden; no page errors.
+Not done: a real RevFX review (code mail + team copy) - the worker side was probed live with an empty form only.
+
+Claim: CLOSED 2026-11-15 `revaudio-fc`. Files: `src/data/review-survey.ts` (`REVIEW_PLUGINS` + `revfx`), `src/pages/review.astro`, this entry.
+- Yoni: "lets add revfx to the review page in the website".
+- RevFX = the home TV's picture (`revfx-hero.png`) and channel colour (305 / 72). Its price comes from `revfx.ts` (`buyable()`, $19), as the TV's
+  price line does: plugins.ts keeps it `in-development` with no `introPriceUsd`, so the old rule would have skipped the "At $19" question.
+- Picker: 6 across from 900 px (names a size smaller there: `clamp(0.95rem, 1.4vw, 1.1rem)`), 3 x 2 from 641-899 px, 2 x 3 on phones (unchanged).
+- Checks (local build, Chromium, 320-1920 px): `astro build` clean; every name fits its cube at 10 widths; every picture gets enough pixels for
+  its slot, except landscape at exactly 640 px (462 needed, 400 served), the same on the live page today; price question: RevLimiter $49,
+  Radio Roulette $19, RevFX $19, DRIFT / GAS / GAS 2 hidden; no page errors (the CF beacon fails from localhost, as always).
+- Go-live order: RevLimiter worker deploy FIRST (DONE 2026-11-15, stamp `16f609b`, live probe: RevFX accepted), then this push. The other way round,
+  every RevFX review gets "bad request". After both: one real RevFX review -> code mail + team copy "Review: RevFX n/10".
+
+## 2026-11-11 — Assets in order: 33 unused files out, versions on static URLs, bench tools dev-only (Claude Code `danavivi-20 [1b9b41]`, Dan's Mac) — ON MAIN 2026-11-12 on Dan's word "push to main" (`132869b` + `5fb54fa` + `8d42e64`, fast-forward from `004c62a`); deploy + smoke green
+
+Claim: closed 2026-11-12. From the asset audit of 2026-11-11 (Dan: "go 2 and 3").
+Files: `tools/assetver/integration.mjs` (new), `astro.config.mjs` (assetver last + `benchdevonly`), `docs/assets.md` (new: where
+a file goes), `README.md` (pointer), 33 deletions: `src/assets/hero/` (all 7), `src/assets/ui/` (14 old button plates +
+`icon-cart`, `toggle-on`), `src/assets/showcase/` (`ac-icon`, `drift-car`, `rev-gauge`), `public/dl/` (3), `public/brand/` (2),
+`public/plate/` (`btn-viewmore`, `card-bolt`, `card-plate`), `public/bench/hero-bench.html`.
+- Live 2026-11-12: Deploy to GitHub Pages run 43209914344 and Smoke test run 43209914228, both success. On revaudio.net:
+  `/`, `/revlimiter/`, `/gas/`, `/gas2/`, `/drift/`, `/revfx/`, `/radio-roulette/`, `/plugins/` answer 200; `?v=` is in the live
+  HTML (unique URLs: `/radio-roulette/` 2, `/gas/` 2, `/gas2/` 7, `/drift/` 9; the rest sit in the folders' CSS); versioned
+  URLs answer 200 with `cache-control: max-age=600` (the Cloudflare rule is not in yet); the removed files answer 404
+  (`/bench/home-bench.html`, `/bench/hero-bench.html`, `/brand/revaudio-plate-3d.webp`, `/plate/card-plate.jpg`,
+  `/plate/btn-viewmore.png`, the three `/dl/` cards); `/plate/arm-mount-v3*.png` 200; Chromium 1440x900 on `/`, `/gas/`,
+  `/gas2/`, `/radio-roulette/`, `/drift/`: no response >= 400 and no failed request on revaudio.net.
+- Open: Yoni's Cloudflare rule (until it exists the `?v=` does nothing). This Mac's worktree `.claude/worktrees/webp-art`
+  no longer exists; the remote branches `chore/asset-order` and `perf/webp-mixer-art` remain until Dan says to delete them.
+- Removed files: nothing in `src`, `tools`, `tests` names them; no other RevAudio repo loads the `public/` ones (the `dl/`
+  cards were for a portal change that sits unmerged on Revlimiter `origin/portal-card-shots`). The 24 `src/assets` images
+  and the 5 `brand/` + `plate/` files are in `revaudio-kit` under `archive/` (`534a3d1`, `3c245ed`), byte-identical; its
+  sync leaves `archive/` alone. Built site vs the build before the removals: only those files are gone, no file differs.
+- Side effects accepted: root `bench/card-*-test.html` (a card design reverted in June) lose their plate images; the stale
+  branches `feat/conversion-stop-a` and `fs-checkout-local` still expect `public/brand/revaudio-plate-3d*.webp`.
+- Bench tools: `public/bench/{home,layout,drag,studio}-bench.html` stay and work on the dev server; the build deletes
+  `dist/bench/`, so `revaudio.net/bench/…` stops answering after the deploy (Dan: "Dev only"). This replaces the older
+  "master bench, live on prod too" note further down.
+- assetver: the last `astro:build:done` hook puts `?v=<10 hex of sha256>` on URLs into `station-mixer`, `gas-mixer`, `gas2`,
+  `audio`, `fonts`, `drift`, where the URL is written out in a page or in those folders' own CSS/JS: 125 refs in 13 files,
+  96 files. Never touches `_astro/` or `garage-9f3c/` (it throws if they change). A name a script builds at run time, or
+  one that also appears in `_astro`, stays plain everywhere, so no file is fetched under two URLs.
+- Why: GitHub Pages stamps every file with the deploy time, so a returning visitor re-downloads everything outside
+  `/_astro/` after each deploy. With a Cloudflare rule that keeps `?v=` URLs (handoff for Yoni: shared
+  `collaboration/handoffs/2026-11-11-yoni-cache-versioned/handoff-yoni.md`), return visit after a deploy, local, Chromium,
+  laptop: /radio-roulette/ 1.36 -> 0.43 MB, /gas/ 1.01 -> 0.30, /gas2/ 6.77 -> 4.66, /drift/ 0.72 -> 0.37. Without the
+  rule the `?v=` does nothing. First visits are unchanged.
+- Checks: two builds byte-identical; before vs after = 125 insertions of `?v=…` in 13 files and nothing else; Chromium +
+  WebKit at 1440x900@2x and 390x844@3x on `/`, `/revlimiter/`, `/gas/`, `/radio-roulette/`, `/drift/`, `/revfx/`, `/gas2/`:
+  no new failed request or error, no file under two URLs, screenshots within the animation noise; mixers play in
+  Chromium (stems 200). Smoke tests against the local build: 65 pass, 3 fail, the same 3 before the change (a local
+  server redirect on `/support`, WebKit's video-control icons on `/drift`).
+- Not checked: mixer playback in WebKit (never reached "playing" in the test, with or without the change), a real phone,
+  the Cloudflare rule itself (not in place yet).
+- Not versioned (they keep the 10-minute cache): mixer stems, GAS 2 drone art and three.js, the DRIFT / RevFX demo clips,
+  `fonts/drift/*`: their names are built at run time or sit in `_astro`. Next step if wanted: version those at the source.
+- Known limit: a script that builds a whole file name at run time while a page also writes that file's URL out would
+  fetch it twice. None today.
+- To add a `public/` folder to the versioning: `FOLDERS` in `tools/assetver/integration.mjs` + the Cloudflare rule.
+
+## 2026-11-11 — Radio Roulette mixer + GAS 2 page: the PNG art as WebP (Claude Code `danavivi-20 [1b9b41]`, Dan's Mac) — PUSHED TO MAIN 2026-11-11 on Dan's word "push to main" (from `perf/webp-mixer-art`, rebased on `8e1d07d`)
+
+Claim: closed 2026-11-11. From the asset audit of 2026-11-11 (Dan: "go 1").
+Files: `public/station-mixer/img/*` (15 PNG -> WebP), `public/station-mixer/station-mixer.js` (the image names + one
+comment), `tools/station-mixer/webp_pass.py` (new) + `export_component.py` (calls it last), `tools/_gas2-scene/frames/f6-v17.webp`
++ `props/{pump-cut,walk-cut,mailbox,chalkboard}.webp` (new, beside the PNG masters), `tools/_gas2-scene/page-b.html` (8 lines:
+the names), `tools/_gas2-scene/README.md`, `tools/gas2page/integration.mjs` (the build leaves `.png` out of /gas2/).
+- Why: both pages shipped raw PNGs from outside the image pipeline. First visit, cold cache, Chrome, local build:
+  /radio-roulette/ 6.02 -> 1.90 MB (laptop), 5.91 -> 1.78 MB (phone); /gas2/ laptop 9.57 -> 6.22 MB. The GAS 2 phone
+  page (postcards) is byte-identical.
+- Radio Roulette: quality 88, method 6 (the GAS mixer exporter's setting), same pixel sizes. `public/station-mixer/` is
+  generated: a re-export (laptop with `bench/assets/station-mixer/`) now ends with the same pass, so the PNGs don't come
+  back. The exporter was not run here (no bench sources on this Mac); the pass was run on the committed output.
+- GAS 2: quality 90 (the scene's `land.webp` setting). The PNGs stay as masters (the player / postcards art tools read
+  `f6-v17.png` and `pump-cut.png`; the mockup pages load them). After changing a master, remake its WebP (scene README).
+- Checks: build clean; Playwright Chromium + WebKit, 1280x665 @2x, 1440x900 @2x, 390x844 @3x: no 404, no page errors,
+  every mixer image loads; before / after pixel compare (same-build noise floor 0): mixer mean 0.7-1.0 of 255, max 25;
+  /gas2/ mean 1.9-2.4, 2 % of pixels over 8, max 49. Not checked: Dan's eye, a real phone, the drone intro
+  (`?drone=0` was used), the mixer exporter end to end.
+- Old URLs: `/station-mixer/img/*.png` and `/gas2/{frames,props}/*.png` stop existing on the site. Nothing in the site,
+  the licence worker or the plugin sources on this Mac links to them.
 
 ## 2026-11-03 — Home opening: the long garage, an ACTIVE PROJECT (Claude Code `danavivi-4e [b36252]`, Dan's Mac; continues `danavivi-7a [9ae241]`) — on branch `feat/home-opening`, pushed, not on main
 

@@ -43,6 +43,10 @@ Output goes to `dist/`. Every push to `main` runs the GitHub Pages workflow and 
 
 Defined in `src/styles/global.css` under `:root`. Muscle-car / mechanical aesthetic — dark warm base, brass accents, oxide warnings, chrome highlights.
 
+## Assets
+
+Where a file goes (`src/assets/` or `public/`), the URLs that must never change, and how an unused file leaves the repo: [docs/assets.md](docs/assets.md).
+
 ## Deploy
 
 **GitHub Pages**, via `.github/workflows/deploy.yml` (`public/CNAME` = revaudio.net). NOT Vercel: the `vercel.json` still in the repo is stale (wiki `website-update.md`).

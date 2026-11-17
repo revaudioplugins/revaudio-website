@@ -30,6 +30,13 @@ python -m http.server 4462 --bind 127.0.0.1
 - The drone intro (merged from `feat/gas2-drone` 2026-11-01) — scroll from a hovering drone down into the scene; `?drone=0` skips it,
   `?angle=top|front|right` picks the hover. How it works + its bench: `drone/README.md`.
 
+## PNG masters, WebP on the page
+
+`frames/f6-v17.png` and `props/{pump-cut,walk-cut,mailbox,chalkboard}.png` are the masters: the art tools read them,
+the mockup pages load them, and the site build leaves them out. `page-b.html` loads the `.webp` beside each (2026-11-11:
+the PNGs were 3.5 MB of the page's first visit, the WebPs are 0.5 MB). After changing a master, remake its WebP:
+`python -c "from PIL import Image; Image.open('frames/f6-v17.png').save('frames/f6-v17.webp', quality=90, method=6)"`
+
 ## Who works on what (one writer per file set)
 
 - **The player (the radio, `<!-- 3. radio player -->` block + its `.radio*` / `.dial` CSS): Yoni.** Build it in its own
@@ -43,6 +50,8 @@ python -m http.server 4462 --bind 127.0.0.1
   from 2026-10-31; `danavivi-83` from 2026-11-01 (one script for page-b and the phone).**
 - **The phone postcards (`postcards.html` + `postcards/**`): Claude Code `danavivi-75` from 2026-10-29, `danavivi-83` from
   2026-10-31.**
+- **The TV on the porch (`tv/**` + its one `<link>`/`<script>` line in `page-b.html`): Gil's session, branch `feat/gas2-tv`,
+  from 2026-11-12. How it works: `tv/README.md`.**
 - **The drone intro (`drone/**` + its one `<link>`/`<script>` line in `page-b.html`): Claude Code `revaudio-59`, branch
   `feat/gas2-drone`, from 2026-10-28; on main from 2026-11-01 (`danavivi-83`).**
 - Claims and state: `tasks/handoff.md` (top entry).

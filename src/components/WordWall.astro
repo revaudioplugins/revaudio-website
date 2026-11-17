@@ -44,10 +44,11 @@ import gasImg from '../assets/plugins/gas-hero.png';
    (GAS2.hose(true)), the house FLOATING shadow baked under it (53 deg, 30 / 24 / .50 + 5 / 4 / .55, rgb(12,9,6)) */
 import gas2Img from '../assets/plugins/gas2-float.png';
 import rrImg from '../assets/plugins/radioroulette-hero.png';
+import revfxImg from '../assets/plugins/revfx-hero.png';
 import driftImg from '../assets/showcase/drift-window-init.png';
 import brokenMeta from '../assets/seasons/drift/tv-broken.json';
 import { drift } from '../data/drift';
-import { tvPlugins, tvCats, catsOf, tvName, priceLine, tryAction, type TvAction } from '../data/library';
+import { tvPlugins, tvCats, catsOf, tvName, priceLine, tryAction, cartAction, type TvAction } from '../data/library';
 import type { LibraryWord } from '../data/plugins';
 
 /* What the whole wall is: the garage wood, or one TV every plugin plays on
@@ -139,6 +140,7 @@ const WINDOWS: Record<string, { img: ImageMetadata; portrait?: boolean; float?: 
   revlimiter: { img: rlImg },
   gas: { img: gasImg, portrait: true },
   gas2: { img: gas2Img, portrait: true, float: true }, // float: the object alone, its own shadow, no frame round it
+  revfx: { img: revfxImg },
   'radio-roulette': { img: rrImg },
 };
 type Item = {
@@ -171,6 +173,7 @@ const items: Item[] = tvPlugins()
     blurb: p.library!.blurb,
     price: priceLine(p),
     action: tryAction(p),
+    cart: cartAction(p),
     cats: catsOf(p),
   }));
 const cats = tvCats(tvPlugins().filter((p) => items.some((it) => it.slug === p.slug)));
@@ -315,6 +318,10 @@ const first = items[0]?.slug ?? '';
                   {it.action.sub && <span class="rv-btn__sub">{it.action.sub}</span>}
                 </button>
               ))}
+              {it.cart && (
+                <button type="button" class="ww-cart rv-btn rv-btn--ghost rv-btn--sm" data-add-to-cart data-cart-label
+                  data-slug={it.slug} data-name={it.name} data-price={it.cart.price}>Add to cart</button>
+              )}
               <a class="ww-more rv-btn rv-btn--ghost rv-btn--sm" href={`/${it.slug}`}><span class="sr-only">{it.name} </span>Product page <span aria-hidden="true">&rarr;</span></a>
             </div>
           </div>
@@ -1727,7 +1734,7 @@ const first = items[0]?.slug ?? '';
      the channel's phosphor with dark words, Product page = a phosphor outline; no plate, depth or lift. Hover
      brightens, a press dims like the tube. High contrast (html.hc) and the wood wall keep the button family. */
   :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy { gap: 0.6rem 1rem; }
-  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy :is(.ww-try, .ww-more) {
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy :is(.ww-try, .ww-more, .ww-cart) {
     min-height: 0;
     background: none;
     font-weight: 400;
@@ -1737,8 +1744,8 @@ const first = items[0]?.slug ?? '';
     transform: none;
     transition: color 120ms ease, background-color 120ms ease, box-shadow 160ms ease, filter 120ms ease;
   }
-  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy :is(.ww-try, .ww-more):is(:hover, :active, .is-pressed) { transform: none; }
-  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy :is(.ww-try, .ww-more):focus-visible { outline: 2px solid var(--ww-ink-hot); outline-offset: 4px; }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy :is(.ww-try, .ww-more, .ww-cart):is(:hover, :active, .is-pressed) { transform: none; }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy :is(.ww-try, .ww-more, .ww-cart):focus-visible { outline: 2px solid var(--ww-ink-hot); outline-offset: 4px; }
   :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-try {
     flex-direction: column;
     align-items: flex-start;
@@ -1772,7 +1779,7 @@ const first = items[0]?.slug ?? '';
     box-shadow: 0 0 0 1px var(--ww-ink-hot), 0 0 10px var(--ww-glow);
     transition-duration: 60ms;
   }
-  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-more {
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy :is(.ww-more, .ww-cart) {
     padding: 0.6rem 0.9rem 0.5rem;
     border-radius: 3px;
     color: var(--ww-ink);
@@ -1784,12 +1791,12 @@ const first = items[0]?.slug ?? '';
     box-shadow: inset 0 0 0 1.5px var(--ww-ink), inset 0 0 14px var(--ww-glow-faint), 0 0 14px var(--ww-glow-soft);
   }
   :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-more [aria-hidden] { font-family: var(--font-body); font-weight: 700; font-size: 0.72em; vertical-align: 0.08em; }
-  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-more:hover {
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy :is(.ww-more, .ww-cart):hover {
     color: var(--ww-ink-hot);
     background-color: hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.14);
     box-shadow: inset 0 0 0 1.5px var(--ww-ink-hot), inset 0 0 18px var(--ww-glow-soft), 0 0 20px var(--ww-glow);
   }
-  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-more:is(:active, .is-pressed) { background-color: hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.28); transition-duration: 60ms; }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy :is(.ww-more, .ww-cart):is(:active, .is-pressed) { background-color: hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.28); transition-duration: 60ms; }
 
   /* ==========================================================================
      INK. On the wood: brass, the lit one oxide (the old stencil). On the
@@ -1848,7 +1855,7 @@ const first = items[0]?.slug ?? '';
      saturation (unitless %) from the plugin's own UI: RevLimiter amber (its
      gauge + LCDs; kept well clear of race-red, the homepage's one red is
      .hh-redline), GAS brass gold, GAS 2 its pump's oxide red-orange, Radio Roulette the dial glass's pale warm
-     cream, DRIFT violet (its screen stays /drift's own tube). A plugin with no
+     cream, DRIFT violet (its screen stays /drift's own tube), RevFX its rack's neon magenta. A plugin with no
      channel here plays in neutral cream. */
   .ww {
     --ww-ch-revlimiter-h: 26;      --ww-ch-revlimiter-s: 78;
@@ -1856,6 +1863,7 @@ const first = items[0]?.slug ?? '';
     --ww-ch-gas2-h: 14;            --ww-ch-gas2-s: 58;
     --ww-ch-radio-roulette-h: 38;  --ww-ch-radio-roulette-s: 28;
     --ww-ch-drift-h: 280;          --ww-ch-drift-s: 70;
+    --ww-ch-revfx-h: 305;          --ww-ch-revfx-s: 72;
     --ww-on-h: 38;
     --ww-on-s: 28;
   }
@@ -1865,11 +1873,13 @@ const first = items[0]?.slug ?? '';
   .ww-panel[data-ww-panel='gas2'] { --ww-ch-h: var(--ww-ch-gas2-h); --ww-ch-s: var(--ww-ch-gas2-s); }
   .ww-panel[data-ww-panel='radio-roulette'] { --ww-ch-h: var(--ww-ch-radio-roulette-h); --ww-ch-s: var(--ww-ch-radio-roulette-s); }
   .ww-panel[data-ww-panel='drift'] { --ww-ch-h: var(--ww-ch-drift-h); --ww-ch-s: var(--ww-ch-drift-s); }
+  .ww-panel[data-ww-panel='revfx'] { --ww-ch-h: var(--ww-ch-revfx-h); --ww-ch-s: var(--ww-ch-revfx-s); }
   .ww[data-ww-on='revlimiter'] { --ww-on-h: var(--ww-ch-revlimiter-h); --ww-on-s: var(--ww-ch-revlimiter-s); }
   .ww[data-ww-on='gas'] { --ww-on-h: var(--ww-ch-gas-h); --ww-on-s: var(--ww-ch-gas-s); }
   .ww[data-ww-on='gas2'] { --ww-on-h: var(--ww-ch-gas2-h); --ww-on-s: var(--ww-ch-gas2-s); }
   .ww[data-ww-on='radio-roulette'] { --ww-on-h: var(--ww-ch-radio-roulette-h); --ww-on-s: var(--ww-ch-radio-roulette-s); }
   .ww[data-ww-on='drift'] { --ww-on-h: var(--ww-ch-drift-h); --ww-on-s: var(--ww-ch-drift-s); }
+  .ww[data-ww-on='revfx'] { --ww-on-h: var(--ww-ch-revfx-h); --ww-on-s: var(--ww-ch-revfx-s); }
 
   /* ---- THE SCREEN (WALL_BG 'screen') --------------------------------------
      /drift's digital screen (the keep-it TV's phosphor tube, .d-crt.d-keep-

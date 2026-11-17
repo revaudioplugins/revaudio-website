@@ -611,9 +611,8 @@ export const plugins: Plugin[] = [
     statusLabel: 'Free trial',
     trialOpen: true,
     introPriceUsd: null,
-    regularPriceUsd: null,
-    // The cart's Paddle item. The /revfx buy key shows only once revfx.ts is phase 'released' with priceUsd
-    // (set regularPriceUsd here to the same price then): keep this id equal to revfx.ts paddlePriceId.
+    regularPriceUsd: 19, // = revfx.ts priceUsd (the cart's price; Paddle charges its own $19.00)
+    // The cart's Paddle item: keep this id equal to revfx.ts paddlePriceId.
     paddlePriceId: 'pri_01m5a2rfk2kcb3tpm2j87kfgh9',
     checkoutPaused: false,
     demoUrl: null,
@@ -626,10 +625,24 @@ export const plugins: Plugin[] = [
       { name: 'Four snapshots', desc: 'Hold to save, click to recall. FX Scene is automatable, so your DAW can switch them.' },
     ],
     audioDemos: [],
-    // RevFX 1.2.0: Mac universal, macOS 10.13 floor (CMakeLists.txt); no AAX (no PACE wcguid yet), no Windows build yet.
-    systemReq: { ...baseSystemReq, os: 'macOS 10.13+ (Apple silicon + Intel)', formats: 'VST3 + AU on Mac' },
+    // RevFX 1.3.9: Mac universal, macOS 10.13 floor (CMakeLists.txt), PACE-signed AAX in the pkg; no Windows build yet.
+    systemReq: { ...baseSystemReq, os: 'macOS 10.13+ (Apple silicon + Intel)', formats: 'VST3 + AU + AAX on Mac' },
     reviewsCount: 0,
     reviewsAvg: 0,
+    library: {
+      cats: ['vocals', 'creative', 'reverb', 'modulation'],
+      typeWord: 'multi-effect rack',
+      words: [
+        { w: 'Wide',     o: 0.5 },
+        { w: 'Spacious', o: 0.72 },
+        { w: 'Stacked',  o: 1, hot: true },
+        { w: 'Shimmery', o: 0.72 },
+        { w: 'Glued',    o: 0.5 },
+      ],
+      blurb:
+        'Pitch, echo, reverb, halo and glue comp in one rack. Drag them into any order, or roll the dice for a whole scene.',
+      alt: 'RevFX plugin window: the Pitch, Echo, Reverb, Halo and Glue Comp strips side by side under the snapshots, the dice log and RANDOMIZE',
+    },
   },
   {
     slug: 'the-ac',

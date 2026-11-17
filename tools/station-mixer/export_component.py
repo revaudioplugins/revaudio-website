@@ -11,7 +11,7 @@ Output (all served from revaudio.net itself):
                      from the site's own fonts.css.
   audio/*.m4a        AAC 160k, each file = the loop + half a bar of padding both sides (taken from the loop itself),
                      the player loops the window inside, so encoder priming can never click at the loop point.
-  img/               the bench images the page uses.
+  img/               the bench images the page uses, as WebP (webp_pass.py, the last step).
 Usage: python tools/station-mixer/export_component.py"""
 import json, os, re, shutil, subprocess, urllib.request
 
@@ -72,7 +72,7 @@ const HTML = {json.dumps(body)};
 class StationMixer extends HTMLElement {{
   connectedCallback() {{
     if (this._armed) return; this._armed = true;
-    // build only when it comes near the viewport: its ~4 MB of images never slow the page's first paint
+    // build only when it comes near the viewport: its images never slow the page's first paint
     const io = new IntersectionObserver(es => {{ if (es.some(e => e.isIntersecting)) {{ io.disconnect(); this.build(); }} }}, {{ rootMargin: '800px 0px' }});
     io.observe(this);
   }}
@@ -138,6 +138,10 @@ for f in sorted(os.listdir(os.path.join(SRC, 'audio'))):
                     '-c:a', 'aac', '-b:a', '160k', '-movflags', '+faststart', os.path.join(OUT, 'audio', f[:-5] + '.m4a')],
                    input=padded.astype(np.float32).tobytes(), check=True)
     n += 1
+
+# images: PNG -> WebP, and the .js points at the .webp names
+from webp_pass import run as webp_pass
+webp_pass(OUT)
 
 size = sum(os.path.getsize(os.path.join(dp, fn)) for dp, _, fns in os.walk(OUT) for fn in fns)
 print(f'exported {OUT}: {n} m4a, {len(used)} images, {len(faces)} font faces, {size/1e6:.1f} MB total')
