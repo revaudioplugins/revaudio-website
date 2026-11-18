@@ -1,0 +1,52 @@
+/* /widebeam stereo road (lane S). */
+/* ---------- STORY ---------- */
+.wb-story { position: relative; padding: clamp(70px, 10vw, 130px) 0 40px; }
+.wb-story-grid { max-width: 1240px; margin: 50px auto 0; padding: 0 16px; display: grid; grid-template-columns: 1.15fr .85fr; gap: clamp(20px, 4vw, 60px); }
+.wb-story-stage { position: sticky; top: 9vh; height: 82vh; align-self: start; }
+.wb-windshield { position: relative; height: 100%; border-radius: 28px 28px 14px 14px; overflow: hidden;
+  background: linear-gradient(180deg, #06070a, #0c0d0f 30%, #101112); border: 10px solid #1c1915;
+  box-shadow: 0 0 0 1px var(--brass-lo), 0 0 0 3px #0e0c0a, inset 0 0 60px rgba(0, 0, 0, .7), 0 30px 70px rgba(0, 0, 0, .55); }
+.wb-windshield::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(115deg, rgba(255, 245, 225, .06), transparent 35%), radial-gradient(ellipse at 50% 120%, transparent 50%, rgba(0, 0, 0, .5)); }
+.wb-windshield canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.wb-hud { position: absolute; left: 50%; top: 18px; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; }
+.wb-hud-label { font-family: var(--wb-label); font-weight: 500; font-size: .74rem; letter-spacing: .32em; color: var(--brass); }
+.wb-hud-lcd { font-family: var(--wb-lcd); font-size: clamp(1.3rem, 2.5vw, 1.8rem); color: var(--lcd-ink); padding: 6px 16px; border-radius: 6px; letter-spacing: 1px;
+  background: radial-gradient(ellipse, #093567, var(--lcd-well) 65%, #030c16); text-shadow: 0 0 4px #bce8ff, 0 0 10px var(--lcd-glow); box-shadow: 0 0 0 1px #0b0a09, inset 0 3px 6px #0c0906cc; }
+.wb-mini-meter { position: absolute; right: 14px; bottom: 14px; width: 132px; padding: 10px 6px 6px; border-radius: 8px; z-index: 2;
+  background: radial-gradient(ellipse at 50% 100%, #f1e2bf, #d9c49a); box-shadow: 0 0 0 3px #8d6e40, 0 0 0 4px #3b2c17, 0 8px 20px rgba(0, 0, 0, .6); }
+.wb-mini-meter svg { width: 100%; display: block; }
+.wb-mini-meter text { font: 600 8px var(--wb-label); fill: #3a2a18; }
+.wb-mini-meter i { position: absolute; left: 50%; bottom: 22px; width: 2px; height: 50px; margin-left: -1px; background: #1b1510; transform-origin: 50% 100%; border-radius: 2px; }
+.wb-mini-meter small { display: block; text-align: center; font: 600 7px var(--wb-label); letter-spacing: .2em; color: #3a2a18; margin-top: 2px; }
+.wb-level { position: absolute; left: 14px; bottom: 14px; z-index: 2; display: grid; gap: 4px; font-family: var(--wb-lcd); color: var(--ivory-3); font-size: .95rem; letter-spacing: .14em; opacity: .35; transition: opacity .4s; }
+.wb-story[data-step='CRUISE'] .wb-level { opacity: 1; }
+.wb-level-bar { position: relative; width: 140px; height: 8px; border-radius: 4px; background: #0a0908; box-shadow: inset 0 0 0 1px #2a251e; overflow: hidden; }
+.wb-level-bar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; transition: width .15s; }
+.wb-level-bar .raw { width: calc(var(--raw, .6) * 100%); background: rgba(181, 67, 44, .55); }
+.wb-level-bar .out { width: calc(var(--lv, .6) * 100%); background: linear-gradient(90deg, #6aa86a, var(--brass-hi)); }
+.wb-level b { color: var(--brass-hi); font-weight: 400; }
+.wb-steps { list-style: none; margin: 0; padding: 0 0 20vh; }
+.wb-step { min-height: 78vh; display: flex; flex-direction: column; justify-content: center; opacity: .28; transition: opacity .5s; }
+.wb-step.is-on { opacity: 1; }
+.wb-step-n { font-family: var(--wb-display); font-size: clamp(3.8rem, 8vw, 6.4rem); line-height: 1; color: transparent; -webkit-text-stroke: 1px rgba(201, 163, 92, .55); }
+.wb-step.is-on .wb-step-n { color: rgba(201, 163, 92, .14); }
+.wb-step-l { font-family: var(--wb-label); font-weight: 500; letter-spacing: .3em; font-size: .82rem; color: var(--brass); margin: 10px 0 4px; }
+.wb-step h3 { font-family: var(--wb-display); font-weight: 400; font-size: clamp(2.1rem, 3.6vw, 3rem); line-height: 1; letter-spacing: .02em; margin: .2em 0 .45em; color: var(--ivory); }
+.wb-step p:last-child { color: var(--ivory-2); line-height: 1.65; font-size: 1.04rem; max-width: 44ch; margin: 0; }
+
+@media (max-width: 900px) {
+  .wb-story-grid { grid-template-columns: 1fr; }
+  .wb-story-stage { top: 64px; height: 48vh; z-index: 2; }
+  .wb-windshield { border-width: 6px; }
+  .wb-step { min-height: 64vh; padding: 0 4px; justify-content: flex-end; padding-bottom: 8vh; }
+  .wb-step-n { font-size: 2.6rem; }
+  .wb-mini-meter { width: 100px; }
+  .wb-mini-meter i { height: 36px; bottom: 20px; }
+}
+
+@media (max-width: 560px) {
+  .wb-level { display: none; }
+}
+
+/* page-wide, but it must stay after .wb-step h3 (today it wins on letter-spacing); F.3 removes it */
+.wb-page h3 { text-transform: none; letter-spacing: 0; }

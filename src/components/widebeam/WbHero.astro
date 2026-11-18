@@ -1,0 +1,35 @@
+---
+/** /widebeam hero (lane H): the night road, the intro film (public/widebeam/intro-*.mp4), Skip / Replay, the wordmark. */
+import { getImage } from 'astro:assets';
+import introPosterImg from '../../assets/widebeam/intro-poster.jpg';
+import introEndImg from '../../assets/widebeam/intro-end.jpg';
+
+const introPoster = await getImage({ src: introPosterImg, format: 'webp', width: 1280, quality: 70 });
+// the hero's road after the intro: the video's last frame with the car painted out, so the look never changes
+const roadStill = await Promise.all([1280, 1920].map((width) => getImage({ src: introEndImg, format: 'webp', width, quality: 72 })));
+
+const WORD = ['W', 'I', 'D', 'E', ' ', 'B', 'E', 'A', 'M'];
+---
+<!-- ============ HERO: the night road ============ -->
+<section class="wb-hero" aria-labelledby="wb-title">
+  <img class="wb-still" src={roadStill[1].src} srcset={`${roadStill[0].src} 1280w, ${roadStill[1].src} 1920w`} sizes="100vw" alt="" aria-hidden="true" decoding="async" fetchpriority="high" />
+  <canvas class="wb-night" data-wb-night aria-hidden="true"></canvas>
+  <video class="wb-intro" data-wb-intro muted playsinline preload="none" poster={introPoster.src} aria-hidden="true" tabindex="-1">
+    <source src="/widebeam/intro-720.mp4" type="video/mp4" media="(max-width: 900px)" />
+    <source src="/widebeam/intro-1080.mp4" type="video/mp4" />
+  </video>
+  <button type="button" class="wb-skip" data-wb-skip>Skip intro</button>
+  <button type="button" class="wb-replay" data-wb-replay hidden aria-label="Replay the intro"><span aria-hidden="true">↺</span> Replay</button>
+  <div class="wb-hero-inner" data-wb-hero-inner>
+    <h1 id="wb-title" class="wb-mark" data-wb-mark>
+      <span class="sr-only">WIDE BEAM</span>
+      <span class="wb-mark-row" aria-hidden="true">{WORD.map((c) => (c === ' ' ? <i class="wb-sp"></i> : <i>{c}</i>))}</span>
+    </h1>
+    <p class="wb-sub" data-wb-hero-in><span>STEREO WIDTH CONTROL</span></p>
+    <p class="wb-lede" data-wb-hero-in>Open the road. Keep the bass on the centre line. A stereo widener fronted by a pair of classic headlights: the wider you go, the brighter they burn.</p>
+    <div class="wb-ctas" data-wb-hero-in>
+      <a class="rv-btn rv-btn--lg rv-btn--shine" href="#wb-drive" data-wb-start><span data-face>Take it for a drive</span></a>
+      <a class="rv-btn rv-btn--lg rv-btn--ghost" href="#wb-story">How it works ↓</a>
+    </div>
+  </div>
+</section>

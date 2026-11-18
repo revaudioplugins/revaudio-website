@@ -1,0 +1,88 @@
+/* /widebeam dash: the live face and the console under it (lane D). */
+.wb-fine--c { text-align: center; padding: 0 16px; max-width: 70ch; margin-inline: auto; }
+
+/* ---------- THE DASH ---------- */
+.wb-drive { position: relative; padding: clamp(70px, 10vw, 140px) 0 clamp(50px, 7vw, 90px); }
+.wb-drive::before { /* the lamps' spill on the wall behind the dash grows with the light */
+  content: ''; position: absolute; left: 50%; top: 22%; width: min(1500px, 140vw); height: 70%; transform: translateX(-50%); pointer-events: none;
+  background: radial-gradient(closest-side, rgba(255, 228, 170, calc(.03 + var(--wb-energy, .5) * .09 + var(--wb-high, 0) * .08)), transparent);
+}
+.wb-dash-wrap { position: relative; max-width: 1240px; margin: clamp(30px, 5vw, 56px) auto 0; padding: 0 16px; perspective: 1600px; }
+/* laptops: the whole face fits under the nav (3:2 face, 16 px gutters), e.g. 1141x636 -> 828 x 552 */
+@media (min-width: 901px) { .wb-dash-wrap { max-width: min(1240px, calc((100svh - var(--nav-h, 44px) - 40px) * 1.5 + 32px)); } }
+.wb-dash { transform-origin: 50% 100%; will-change: transform; }
+.wb-face {
+  position: relative; width: 100%; aspect-ratio: 3 / 2; overflow: hidden; border-radius: clamp(8px, 1.4vw, 18px);
+  background: #141210 var(--poster) center / cover no-repeat;
+  box-shadow: 0 2px 0 rgba(255, 236, 200, .06) inset, 0 40px 80px -20px rgba(4, 3, 2, .9), 0 18px 30px rgba(4, 3, 2, .6);
+  user-select: none; -webkit-user-select: none; touch-action: pan-y;
+}
+.wb-turn { display: none; }
+@media (max-width: 700px) and (orientation: portrait) { .wb-turn { display: block; text-align: center; margin: 14px 16px 0; color: var(--ivory-3); font-size: .85rem; } }
+.wb-dash-floor { height: 50px; margin: -18px auto 0; width: 82%; background: radial-gradient(closest-side, rgba(4, 3, 2, .8), transparent); filter: blur(8px); }
+.wb-rig { position: absolute; left: 0; top: 0; width: 1536px; height: 1024px; transform-origin: 0 0; }
+.wb-art { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.wb-knob, .wb-toggle, .wb-wheel, .wb-power, .wb-monocap, .wb-lcd { position: absolute; }
+.wb-knob { pointer-events: none; isolation: isolate; }
+.wb-knob::before { content: ''; position: absolute; inset: 7%; border-radius: 50%; background: radial-gradient(ellipse at 35% 26%, #3a3b38, #171a1c 55%, #0b0e11 90%); box-shadow: 3px 7px 8px #080a0db3, inset 0 1px 2px #ae9e7755; }
+.wb-strip { position: absolute; inset: 0; background-repeat: no-repeat; }
+.wb-knob .wb-strip { filter: drop-shadow(2px 3px 2px #080b0c85); transform: translateY(1px); }
+.wb-toggle, .wb-power { pointer-events: none; }
+.wb-wheel { cursor: ns-resize; touch-action: none; outline: none; }
+.wb-power-lit { -webkit-mask-image: linear-gradient(#000 24%, #0000 28%); mask-image: linear-gradient(#000 24%, #0000 28%); }
+.wb-monocap { pointer-events: none; border-radius: 50%; opacity: 0; background-size: 1536px 1024px; background-position: -1298px -631px; background-repeat: no-repeat;
+  -webkit-mask-image: radial-gradient(circle, #000 47px, #0000 50px); mask-image: radial-gradient(circle, #000 47px, #0000 50px); }
+.wb-monocap.is-down { opacity: 1; background-position: -1298px -628px; }
+.wb-monocap::after { content: ''; position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle 60px at 50% calc(50% + 12px), #0000 48px, #0b080570 53px, #0b0805c8 59px); }
+.wb-hit { position: absolute; border: 0; padding: 0; margin: 0; background: transparent; color: transparent; border-radius: 50%; cursor: ns-resize; touch-action: none; outline: none; -webkit-tap-highlight-color: transparent; }
+button.wb-hit { cursor: pointer; }
+.wb-hit--pb, .wb-hit--power { border-radius: 6px; }
+.wb-hit:hover { background: radial-gradient(ellipse, #fff4d012, transparent 65%); }
+.wb-hit:focus-visible, .wb-wheel:focus-visible { box-shadow: 0 0 0 4px rgba(243, 220, 160, .75), 0 0 24px rgba(243, 220, 160, .45); }
+.wb-lcd {
+  display: flex; align-items: center; justify-content: center; white-space: nowrap; pointer-events: none;
+  font-family: var(--wb-lcd); color: var(--lcd-ink); letter-spacing: 1px;
+  text-shadow: 0 0 4px #bce8ff, 0 0 10px var(--lcd-glow); transition: color .25s, text-shadow .25s;
+}
+.wb-lcd--trip { font-size: 34px; }
+.wb-lcd--tilt { font-size: 28px; }
+.wb-lcd--preset { font-size: 22px; letter-spacing: .5px; overflow: hidden; }
+.wb-face.is-off .wb-lcd { color: transparent; text-shadow: none; }
+.wb-face.is-dragging { cursor: ns-resize; }
+
+/* the console under the dash */
+.wb-console { max-width: 1180px; margin: 28px auto 0; padding: 0 16px; display: grid; grid-template-columns: 1.3fr 1fr; gap: 18px; align-items: stretch; }
+.wb-transport { display: flex; flex-wrap: wrap; gap: 12px; align-content: flex-start; align-items: center; padding: 22px; border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255, 236, 200, .04), rgba(10, 8, 6, .2)), var(--charcoal-2); border: 1px solid rgba(201, 163, 92, .2); }
+.wb-engine .wb-key { width: 14px; height: 14px; border-radius: 50%; border: 2px solid currentColor; position: relative; }
+.wb-engine .wb-key::after { content: ''; position: absolute; left: 50%; top: -6px; width: 2px; height: 8px; margin-left: -1px; background: currentColor; }
+.is-playing .wb-engine { --rb-fill: #c9483a; --rb-fill-h: #d4574a; --rb-fill-p: #b63f33; --rb-ink: #fff3e6; --rb-lip: #5a1a12; }
+.is-playing .wb-engine .wb-key { animation: wb-spin 1.6s linear infinite; }
+@keyframes wb-spin { to { transform: rotate(360deg); } }
+.wb-file { position: relative; }
+.wb-file input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+.wb-file:focus-within { outline: 2px solid var(--brass-hi); outline-offset: 3px; }
+.wb-msg { flex: 1 0 100%; margin: 6px 0 0; font-family: var(--wb-lcd); color: var(--lcd-ink); font-size: 1.2rem; text-shadow: 0 0 8px rgba(40, 148, 250, .5); min-height: 1.4em; }
+.wb-keys { list-style: none; display: flex; flex-wrap: wrap; gap: 14px; padding: 0; margin: 4px 0 0; color: var(--ivory-3); font-size: .82rem; }
+.wb-keys kbd { display: inline-block; min-width: 1.7em; padding: .1em .4em; margin-right: .3em; text-align: center; border-radius: 5px; font-family: var(--wb-lcd); font-size: 1rem; color: var(--ivory);
+  background: linear-gradient(180deg, #2e2a24, #1a1814); box-shadow: 0 2px 0 #0a0908, 0 0 0 1px rgba(201, 163, 92, .25) inset; }
+.wb-mirror { position: relative; margin: 0; border-radius: 40px 40px 18px 18px; overflow: hidden; min-height: 190px;
+  background: radial-gradient(120% 90% at 50% 100%, #1a1611, #0a0908); border: 6px solid #2a251e; box-shadow: 0 0 0 1px var(--brass-lo), inset 0 6px 20px rgba(0, 0, 0, .7); }
+.wb-mirror::before { content: ''; position: absolute; inset: 0; background: linear-gradient(150deg, rgba(255, 245, 225, .07), transparent 40%); pointer-events: none; z-index: 1; }
+.wb-mirror canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.wb-mirror figcaption { position: absolute; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-between; padding: 10px 16px; font-family: var(--wb-lcd); font-size: 1rem; letter-spacing: .12em; color: var(--ivory-3); z-index: 2; }
+.wb-mirror figcaption b { color: var(--brass-hi); font-weight: 400; }
+.wb-page:not(.is-playing) .wb-mirror::after { content: 'START THE ENGINE TO SEE THE IMAGE'; position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--wb-lcd); font-size: 1.05rem; letter-spacing: .14em; color: var(--ivory-3); }
+
+@media (max-width: 900px) {
+  .wb-console { grid-template-columns: 1fr; }
+  .wb-mirror { min-height: 170px; }
+}
+
+@media (max-width: 560px) {
+  .wb-keys { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .is-playing .wb-engine .wb-key { animation: none; }
+}

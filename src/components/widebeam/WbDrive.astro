@@ -1,0 +1,30 @@
+---
+/** /widebeam dash (lane D): the live face (src/lib/widebeam/face.ts), with WbConsole under it. */
+import { getImage } from 'astro:assets';
+import baseImg from '../../assets/widebeam/face-base.webp';
+import WbConsole from './WbConsole.astro';
+
+const poster = await getImage({ src: baseImg, format: 'webp', width: 1536, quality: 70 });
+---
+<!-- ============ THE DASH: the live face ============ -->
+<section class="wb-drive" id="wb-drive" aria-labelledby="wb-drive-h">
+  <header class="wb-head" data-wb-reveal>
+    <p class="wb-eyebrow">THE DASH · LIVE</p>
+    <h2 id="wb-drive-h">Every knob works. <em>Turn it up.</em></h2>
+    <p class="wb-headsub">This is WIDE BEAM's real face, running in your browser. Drag a knob up or down, flip the switches, press MONO. Then start the engine and hear it.</p>
+  </header>
+
+  <div class="wb-dash-wrap">
+    <div class="wb-dash" data-wb-dash>
+      <div class="wb-face" data-wb-face style={`--poster:url(${poster.src})`}>
+        <span class="sr-only" data-wb-announce aria-live="polite"></span>
+      </div>
+    </div>
+    <div class="wb-dash-floor" aria-hidden="true"></div>
+  </div>
+  <p class="wb-turn">Turn your phone sideways for a bigger dash.</p>
+
+
+  <WbConsole />
+  <p class="wb-fine wb-fine--c">A browser demo of what the controls do, built on the plugin's own laws. The plugin's sound engine is the real thing.</p>
+</section>

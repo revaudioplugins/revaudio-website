@@ -1,0 +1,28 @@
+/* /widebeam furniture: everything position: fixed (the HIGH BEAM flash, the SOUND pill) (lane A). */
+/* the warm page-wide flash when HIGH BEAM goes on */
+.wb-flash { position: fixed; inset: 0; z-index: 60; pointer-events: none; opacity: 0;
+  background: radial-gradient(120% 90% at 50% 40%, rgba(255, 241, 203, .55), rgba(255, 228, 170, .18) 45%, transparent 75%); }
+.wb-flash.is-on { animation: wb-flash .9s cubic-bezier(.2, .8, .2, 1); }
+@keyframes wb-flash { 0% { opacity: 0; } 12% { opacity: 1; } 100% { opacity: 0; } }
+
+/* the music switch: stays on screen wherever the visitor is */
+.wb-sound {
+  position: fixed; right: 18px; bottom: 18px; z-index: 50; display: inline-flex; align-items: center; gap: .7em; padding: .6em 1em .6em .85em;
+  border-radius: 999px; cursor: pointer; font-family: var(--wb-label); font-weight: 500; font-size: .76rem; letter-spacing: .16em; text-transform: uppercase;
+  color: var(--ivory-2); background: rgba(14, 12, 10, .72); border: 1px solid rgba(201, 163, 92, .35);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 8px 22px rgba(4, 3, 2, .5); transition: color .2s, border-color .2s;
+}
+.wb-sound:hover, .wb-sound[aria-pressed='true'] { color: var(--ivory); border-color: var(--brass); }
+.wb-sound:focus-visible { outline: 2px solid var(--brass-hi); outline-offset: 3px; }
+.wb-eq { display: inline-flex; align-items: flex-end; gap: 2px; height: 12px; }
+.wb-eq i { width: 2px; height: 3px; border-radius: 1px; background: var(--brass-hi); }
+.wb-sound[aria-pressed='true'] .wb-eq i { animation: wb-eq .9s ease-in-out infinite alternate; }
+.wb-sound[aria-pressed='true'] .wb-eq i:nth-child(2) { animation-delay: -.3s; }
+.wb-sound[aria-pressed='true'] .wb-eq i:nth-child(3) { animation-delay: -.6s; }
+.wb-sound[aria-pressed='true'] .wb-eq i:nth-child(4) { animation-delay: -.15s; }
+@keyframes wb-eq { from { height: 3px; } to { height: 12px; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .wb-flash { display: none; }
+  .wb-sound[aria-pressed='true'] .wb-eq i { animation: none; height: 8px; }
+}

@@ -3,6 +3,11 @@
  * /widebeam: the WIDE BEAM page (branch feat/widebeam-page, 2026-11-17). WIDE BEAM = the car-headlight stereo-width
  * plugin (revaudioplugins/WideBeam, 1.0 candidate, not released). Unlisted (noindex, not in plugins.ts) until it ships.
  *
+ * The shell (lane F): it only places the sections, in order. Each section is its own component in
+ * src/components/widebeam/, its styles a partial in src/styles/widebeam/ (indexed by src/styles/widebeam.css), its
+ * script a module in src/lib/widebeam/ booted by init.ts. The face art is resolved here because the boot reads it
+ * from data-art and the head preloads the plate.
+ *
  * The face in #wb-drive is the plugin's own art: a clean 2x capture of Source/ui (every moving part hidden) with the
  * baked filmstrips laid back on their seats (src/lib/widebeam/face.ts). It plays: the audio is a Web Audio mid/side
  * chain after the plugin's laws (audio.ts), fed by a synthesized loop or the visitor's own file, never uploaded.
@@ -14,8 +19,13 @@
  */
 import { getImage } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { PRESETS } from '../lib/widebeam/state';
-import { widebeam, buyable, registerUrl, onceUrl as formOnceUrl, fmtUsd } from '../data/widebeam';
+import WbSound from '../components/widebeam/WbSound.astro';
+import WbHero from '../components/widebeam/WbHero.astro';
+import WbGet from '../components/widebeam/WbGet.astro';
+import WbDrive from '../components/widebeam/WbDrive.astro';
+import WbStory from '../components/widebeam/WbStory.astro';
+import WbGlove from '../components/widebeam/WbGlove.astro';
+import WbCloser from '../components/widebeam/WbCloser.astro';
 import '../styles/widebeam.css';
 
 import baseImg from '../assets/widebeam/face-base.webp';
@@ -25,8 +35,6 @@ import mixImg from '../assets/widebeam/knob-mix.webp';
 import toggleImg from '../assets/widebeam/switch-toggle2.webp';
 import powerImg from '../assets/widebeam/power-rocker.webp';
 import wheelImg from '../assets/widebeam/level-wheel.webp';
-import introPosterImg from '../assets/widebeam/intro-poster.jpg';
-import introEndImg from '../assets/widebeam/intro-end.jpg';
 
 // filmstrips keep their full frame size (the grid maths needs every frame whole); only re-encoded
 const webp = (src: ImageMetadata, quality = 80) => getImage({ src, format: 'webp', quality });
@@ -39,44 +47,6 @@ const art = {
   power: (await webp(powerImg)).src,
   wheel: (await webp(wheelImg)).src,
 };
-const poster = await getImage({ src: baseImg, format: 'webp', width: 1536, quality: 70 });
-const introPoster = await getImage({ src: introPosterImg, format: 'webp', width: 1280, quality: 70 });
-// the hero's road after the intro: the video's last frame with the car painted out, so the look never changes
-const roadStill = await Promise.all([1280, 1920].map((width) => getImage({ src: introEndImg, format: 'webp', width, quality: 72 })));
-
-const onceUrl = formOnceUrl();
-const trialRegister = registerUrl();
-const canBuy = buyable();
-const WORD = ['W', 'I', 'D', 'E', ' ', 'B', 'E', 'A', 'M'];
-
-const STEPS = [
-  { n: '01', label: 'WIDTH', h: 'Dipped to full beam.', p: 'One big knob, 0 to 200. 100 leaves your track exactly as it was. Below it the image folds in toward mono; above it the sides open, up to +6 dB at the top of the scale.' },
-  { n: '02', label: 'LOW FOCUS', h: 'The bass stays on the centre line.', p: 'Everything below LOW FOCUS (20 Hz to 1 kHz) is kept in the middle with a steep 24 dB/oct split, so the kick and bass hit hard in mono and on a club system while the top opens up.' },
-  { n: '03', label: 'HIGH BEAM', h: 'Throw a mono source wide.', p: "Flip the bat switch and a mono vocal or synth gets a wide, natural spread above LOW FOCUS. It's a decorrelator, not a delay, so there's no flanging. REACH sets how far it throws, and L+R never changes." },
-  { n: '04', label: 'TILT', h: 'Put the width where you want it.', p: 'The thumbwheel tilts the widening: roll up and the highs spread while the lows narrow, roll down for the opposite. ±6 dB at the ends, flat in the detent.' },
-  { n: '05', label: 'MONO · CORRELATION', h: 'Check it on a phone speaker. Before your listeners do.', p: 'A real moving-coil correlation meter reads the result. MONO sums the output with one press; SIDE solos what the widening added. Both are for listening only: they never get printed into your mix.' },
-  { n: '06', label: 'CRUISE', h: 'Wider, not louder.', p: "Widening usually makes things louder, and louder always sounds 'better'. CRUISE is always on. It holds the level as WIDTH goes up (−2 dB at 200, exactly unity at 100 or below), so you judge the width and not the volume." },
-];
-
-const DATA = [
-  ['WIDTH', '0 – 200 %', '100 = untouched · 200 = side +6 dB'],
-  ['LOW FOCUS', '20 – 1000 Hz', 'Linkwitz-Riley 4th-order mono-bass split'],
-  ['MIX', '0 – 100 %', 'Phase-aligned dry, no comb when blending'],
-  ['HIGH BEAM', 'On / off', 'Velvet-noise decorrelator, 25 ms, ducked on attacks'],
-  ['REACH', '0 – 100 %', 'How far HIGH BEAM throws'],
-  ['TILT', '±6 dB', 'Width tilt about 1.5 kHz'],
-  ['CRUISE', 'Always on', 'Holds the level as the image opens'],
-  ['MONO · SIDE', 'Listening', 'Sum to mono, or solo the side. Never automated'],
-  ['CORRELATION', '−1 … +1', 'Moving-coil meter, ~300 ms'],
-  ['POWER', 'Host bypass', '20 ms fade, no click'],
-  ['LATENCY', '0 samples', 'Zero latency, per-sample mid/side'],
-  ['PRESETS', '16 factory', 'Plus your own, saved as files'],
-  ['FORMATS', 'VST3 · AU · AAX', 'macOS 11+ universal · Windows x64'],
-];
-
-// a preset card's little road: two beams opening with its WIDTH, the focus line, the mix as the light's strength
-const beam = (w: number) => { const s = 6 + (w / 200) * 50; return `M58 74L${60 - s} 6L${60 - s + 14} 6Z M62 74L${60 + s - 14} 6L${60 + s} 6Z`; };
-const focusY = (f: number) => 74 - (Math.log(f / 20) / Math.log(50)) * 60;
 ---
 <BaseLayout
   title="WIDE BEAM: stereo width you can see"
@@ -85,222 +55,13 @@ const focusY = (f: number) => 74 - (Math.log(f / 20) / Math.log(50)) * 60;
 >
   <link slot="head" rel="preload" as="image" href={art.base} type="image/webp" />
   <div class="wb-page" data-wb-page data-art={JSON.stringify(art)}>
-    <div class="wb-flash" data-wb-flash aria-hidden="true"></div>
-    <button type="button" class="wb-sound" data-wb-sound aria-pressed="false" aria-label="Music"><span class="wb-eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span data-face>Sound off</span></button>
-
-    <!-- ============ HERO: the night road ============ -->
-    <section class="wb-hero" aria-labelledby="wb-title">
-      <img class="wb-still" src={roadStill[1].src} srcset={`${roadStill[0].src} 1280w, ${roadStill[1].src} 1920w`} sizes="100vw" alt="" aria-hidden="true" decoding="async" fetchpriority="high" />
-      <canvas class="wb-night" data-wb-night aria-hidden="true"></canvas>
-      <video class="wb-intro" data-wb-intro muted playsinline preload="none" poster={introPoster.src} aria-hidden="true" tabindex="-1">
-        <source src="/widebeam/intro-720.mp4" type="video/mp4" media="(max-width: 900px)" />
-        <source src="/widebeam/intro-1080.mp4" type="video/mp4" />
-      </video>
-      <button type="button" class="wb-skip" data-wb-skip>Skip intro</button>
-      <button type="button" class="wb-replay" data-wb-replay hidden aria-label="Replay the intro"><span aria-hidden="true">↺</span> Replay</button>
-      <div class="wb-hero-inner" data-wb-hero-inner>
-        <h1 id="wb-title" class="wb-mark" data-wb-mark>
-          <span class="sr-only">WIDE BEAM</span>
-          <span class="wb-mark-row" aria-hidden="true">{WORD.map((c) => (c === ' ' ? <i class="wb-sp"></i> : <i>{c}</i>))}</span>
-        </h1>
-        <p class="wb-sub" data-wb-hero-in><span>STEREO WIDTH CONTROL</span></p>
-        <p class="wb-lede" data-wb-hero-in>Open the road. Keep the bass on the centre line. A stereo widener fronted by a pair of classic headlights: the wider you go, the brighter they burn.</p>
-        <div class="wb-ctas" data-wb-hero-in>
-          <a class="rv-btn rv-btn--lg rv-btn--shine" href="#wb-drive" data-wb-start><span data-face>Take it for a drive</span></a>
-          <a class="rv-btn rv-btn--lg rv-btn--ghost" href="#wb-story">How it works ↓</a>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============ GET IT: the free trial + BUY NOW (src/data/widebeam.ts) ============ -->
-    <section class="wb-get" id="wb-get" aria-label="Get WIDE BEAM">
-      <div class="wb-get-plate" data-wb-reveal>
-        <div class="wb-get-trial">
-          <p class="wb-get-label">Get your <em>free</em> {widebeam.trialDays}-day trial</p>
-          <form
-            class="wb-get-form" data-wb-trial novalidate
-            data-once-url={onceUrl}
-            data-register-url={trialRegister ?? undefined}
-            data-plugin={widebeam.gateId}
-            data-msg-ok={trialRegister ? 'Check your inbox: your WIDE BEAM download link is on its way.' : "You're in. We'll email your WIDE BEAM download link the day the trial opens."}
-            data-msg-already={trialRegister ? "You're already signed up. Check your inbox (and spam) for the download link." : "You're already on the list. The download link comes the day the trial opens."}
-          >
-            <label class="sr-only" for="wb-trial-email">Your email</label>
-            <input id="wb-trial-email" type="email" name="email" inputmode="email" autocomplete="email" enterkeyhint="go" spellcheck="false" placeholder="your@email.com" required aria-label="Your email, we send the WIDE BEAM download link here" />
-            <input type="hidden" name="source" value="widebeam-trial" />
-            <input type="text" name="_gotcha" class="wb-hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
-            <button type="submit" class="rv-btn"><span data-face>Get it <span aria-hidden="true">&#9656;</span></span></button>
-          </form>
-          <p class="wb-get-status" data-wb-trial-status role="status" aria-live="polite" tabindex="-1"></p>
-          <p class="wb-get-micro">Full version &middot; no credit card</p>
-          <p class="wb-get-notice">We&rsquo;ll also send a few short getting-started emails and a heads-up before your trial ends. Unsubscribe anytime.</p>
-        </div>
-        <div class="wb-get-or" aria-hidden="true"><span>or</span></div>
-        <div class="wb-get-buy">
-          {canBuy ? (
-            <>
-              <p class="wb-get-price"><b>{fmtUsd(widebeam.priceUsd!)}</b><span>one-time · yours to keep</span></p>
-              <button
-                type="button" class="rv-btn rv-btn--lg wb-buy"
-                data-add-to-cart data-cart-open
-                data-slug={widebeam.slug} data-name={widebeam.name} data-price={widebeam.priceUsd}
-              >Buy now</button>
-            </>
-          ) : (
-            <>
-              <p class="wb-get-price"><b>Own it</b><span>price announced at launch</span></p>
-              <button type="button" class="rv-btn rv-btn--lg wb-buy" data-wb-buy-soon aria-describedby="wb-buy-note">Buy now</button>
-              <p class="wb-get-status" id="wb-buy-note" data-wb-buy-note role="status" aria-live="polite"></p>
-            </>
-          )}
-          <p class="wb-get-micro">Mac VST3 · AU · AAX &middot; Windows VST3</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============ THE DASH: the live face ============ -->
-    <section class="wb-drive" id="wb-drive" aria-labelledby="wb-drive-h">
-      <header class="wb-head" data-wb-reveal>
-        <p class="wb-eyebrow">THE DASH · LIVE</p>
-        <h2 id="wb-drive-h">Every knob works. <em>Turn it up.</em></h2>
-        <p class="wb-headsub">This is WIDE BEAM's real face, running in your browser. Drag a knob up or down, flip the switches, press MONO. Then start the engine and hear it.</p>
-      </header>
-
-      <div class="wb-dash-wrap">
-        <div class="wb-dash" data-wb-dash>
-          <div class="wb-face" data-wb-face style={`--poster:url(${poster.src})`}>
-            <span class="sr-only" data-wb-announce aria-live="polite"></span>
-          </div>
-        </div>
-        <div class="wb-dash-floor" aria-hidden="true"></div>
-      </div>
-      <p class="wb-turn">Turn your phone sideways for a bigger dash.</p>
-
-      <div class="wb-console" data-wb-reveal>
-        <div class="wb-transport">
-          <button type="button" class="rv-btn wb-engine" data-wb-play aria-pressed="false"><span class="wb-key" aria-hidden="true"></span><span data-face>Start the engine</span></button>
-          <label class="rv-btn rv-btn--ghost wb-file">
-            <input type="file" accept="audio/*" data-wb-file />
-            <span>Use your own track</span>
-          </label>
-          <p class="wb-msg" data-wb-msg role="status" aria-live="polite">Engine off. Headphones make it obvious.</p>
-          <ul class="wb-keys" aria-label="Keyboard shortcuts">
-            <li><kbd>H</kbd> high beam</li><li><kbd>M</kbd> mono</li><li><kbd>S</kbd> side</li><li><kbd>P</kbd> power</li><li><kbd>[</kbd><kbd>]</kbd> presets</li>
-          </ul>
-        </div>
-        <figure class="wb-mirror">
-          <canvas data-wb-scope aria-hidden="true"></canvas>
-          <figcaption><span>REAR VIEW · STEREO IMAGE</span><span>CORR <b data-wb-corr>--</b></span></figcaption>
-        </figure>
-      </div>
-      <p class="wb-fine wb-fine--c">A browser demo of what the controls do, built on the plugin's own laws. The plugin's sound engine is the real thing.</p>
-    </section>
-
-    <!-- ============ STORY: the stereo road ============ -->
-    <section class="wb-story" id="wb-story" data-wb-story aria-labelledby="wb-story-h">
-      <header class="wb-head" data-wb-reveal>
-        <p class="wb-eyebrow">THE STEREO ROAD</p>
-        <h2 id="wb-story-h">Your mix, seen from the driver's seat.</h2>
-        <p class="wb-headsub">Left to right is the stereo field. The bass is at your bumper and the air is at the horizon. Scroll, and watch one control at a time move the whole road.</p>
-      </header>
-      <div class="wb-story-grid">
-        <div class="wb-story-stage">
-          <div class="wb-windshield">
-            <canvas data-story-canvas aria-hidden="true"></canvas>
-            <div class="wb-hud">
-              <span class="wb-hud-label" data-story-label>WIDTH</span>
-              <span class="wb-hud-lcd" data-story-lcd>WIDTH 100%</span>
-            </div>
-            <div class="wb-mini-meter" aria-hidden="true">
-              <svg viewBox="0 0 120 64"><path d="M14 54A52 52 0 0 1 106 54" fill="none" stroke="#3b2c17" stroke-width="2"/><path d="M14 54A52 52 0 0 1 60 2" fill="none" stroke="#b5432c" stroke-width="3" opacity=".8"/><text x="10" y="62">−1</text><text x="56" y="12">0</text><text x="100" y="62">+1</text></svg>
-              <i data-story-needle></i>
-              <small>CORRELATION</small>
-            </div>
-            <div class="wb-level" data-story-level aria-hidden="true">
-              <small>LEVEL</small><span class="wb-level-bar"><i class="raw"></i><i class="out"></i></span><b data-story-level-read>0.0 dB</b>
-            </div>
-          </div>
-        </div>
-        <ol class="wb-steps">
-          {STEPS.map((s) => (
-            <li class="wb-step" data-step={s.label}>
-              <span class="wb-step-n">{s.n}</span>
-              <p class="wb-step-l">{s.label}</p>
-              <h3>{s.h}</h3>
-              <p>{s.p}</p>
-            </li>
-          ))}
-        </ol>
-      </div>
-    </section>
-
-    <!-- ============ PRESETS: sixteen roads ============ -->
-    <section class="wb-presets" id="wb-presets" aria-labelledby="wb-presets-h">
-      <header class="wb-head" data-wb-reveal>
-        <p class="wb-eyebrow">THE GLOVE BOX</p>
-        <h2 id="wb-presets-h">Sixteen roads to start on.</h2>
-        <p class="wb-headsub">Click one and the knobs on the dash glide to it. Drag the row to see them all.</p>
-      </header>
-      <div class="wb-lane" data-wb-lane>
-        {PRESETS.map((p, i) => {
-          const w = p.v.width ?? 136, f = p.v.focus ?? 120, m = p.v.mix ?? 100;
-          return (
-            <button type="button" class="wb-card" data-preset={i} style={`--m:${0.35 + (m / 100) * 0.65}`}>
-              <span class="wb-card-n">{String(i + 1).padStart(2, '0')}</span>
-              <svg viewBox="0 0 120 80" aria-hidden="true">
-                <path d="M54 6H66L110 76H10Z" fill="#14161a" />
-                <path d={beam(w)} fill="url(#wbCardBeam)" class="wb-card-beam" />
-                <path d={`M${60 - (focusY(f) - 6) * 0.6} ${focusY(f)}H${60 + (focusY(f) - 6) * 0.6}`} stroke="#e8c878" stroke-dasharray="3 3" stroke-width="1.2" opacity={f > 21 ? 0.9 : 0} />
-                <path d="M60 10V76" stroke="#ecdfbd" stroke-width="1" stroke-dasharray="4 5" opacity=".5" />
-              </svg>
-              <span class="wb-card-name">{p.name}</span>
-              <span class="wb-card-vals">W {w} · F {f}Hz · M {m}%</span>
-              <span class="wb-card-note">{p.note}</span>
-            </button>
-          );
-        })}
-        <svg width="0" height="0" aria-hidden="true" style="position:absolute"><defs><linearGradient id="wbCardBeam" x1="0" y1="1" x2="0" y2="0"><stop stop-color="#fff1cb" stop-opacity=".85"/><stop offset="1" stop-color="#fff1cb" stop-opacity=".05"/></linearGradient></defs></svg>
-      </div>
-    </section>
-
-    <!-- ============ SPECS ============ -->
-    <section class="wb-specs" id="wb-specs" aria-labelledby="wb-specs-h">
-      <header class="wb-head" data-wb-reveal>
-        <p class="wb-eyebrow">THE ODOMETER</p>
-        <h2 id="wb-specs-h">Under the hood.</h2>
-      </header>
-      <div class="wb-odos" data-wb-reveal>
-        <div class="wb-odo"><b data-odo="0">0</b><span>samples of latency</span></div>
-        <div class="wb-odo"><b data-odo="200">0</b><span>% top of WIDTH</span></div>
-        <div class="wb-odo"><b data-odo="24">0</b><span>dB/oct mono-bass split</span></div>
-        <div class="wb-odo"><b data-odo="16">0</b><span>factory presets</span></div>
-      </div>
-      <div class="wb-readout" data-wb-reveal>
-        <div class="wb-readout-bar"><span>TRIP COMPUTER · PARAMETERS</span><span>{DATA.length} ITEMS</span></div>
-        <dl>
-          {DATA.map(([k, v, d]) => (<div class="wb-dr"><dt>{k}</dt><dd><b>{v}</b><span>{d}</span></dd></div>))}
-        </dl>
-      </div>
-    </section>
-
-    <!-- ============ NOTIFY ============ -->
-    <section class="wb-notify" id="wb-notify" aria-labelledby="wb-notify-h">
-      <div class="wb-notify-card" data-wb-reveal>
-        <div class="wb-notify-lamps" aria-hidden="true"><i></i><i></i></div>
-        <p class="wb-eyebrow">LAUNCH LIST</p>
-        <h2 id="wb-notify-h">Be first on the road.</h2>
-        <p>One email the day WIDE BEAM goes live. Nothing else unless you ask for it.</p>
-        <form class="wb-form" data-wb-form data-once-url={onceUrl} novalidate>
-          <label class="sr-only" for="wb-email">Email</label>
-          <input id="wb-email" type="email" name="email" placeholder="you@studio.com" required autocomplete="email" />
-          <input type="hidden" name="source" value="widebeam-notify" />
-          <input type="text" name="_gotcha" class="wb-hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
-          <button type="submit" class="rv-btn"><span data-face>Notify me</span></button>
-        </form>
-        <p class="wb-form-status" data-wb-status role="status" aria-live="polite" tabindex="-1"></p>
-        <p class="wb-fine">WIDE BEAM is in final testing. Details can still change before release.</p>
-      </div>
-    </section>
+    <WbSound />
+    <WbHero />
+    <WbGet />
+    <WbDrive />
+    <WbStory />
+    <WbGlove />
+    <WbCloser />
   </div>
 </BaseLayout>
 

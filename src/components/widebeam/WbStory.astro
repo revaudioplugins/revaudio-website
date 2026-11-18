@@ -1,0 +1,49 @@
+---
+/** /widebeam stereo road (lane S): src/lib/widebeam/story.ts drives it. */
+
+const STEPS = [
+  { n: '01', label: 'WIDTH', h: 'Dipped to full beam.', p: 'One big knob, 0 to 200. 100 leaves your track exactly as it was. Below it the image folds in toward mono; above it the sides open, up to +6 dB at the top of the scale.' },
+  { n: '02', label: 'LOW FOCUS', h: 'The bass stays on the centre line.', p: 'Everything below LOW FOCUS (20 Hz to 1 kHz) is kept in the middle with a steep 24 dB/oct split, so the kick and bass hit hard in mono and on a club system while the top opens up.' },
+  { n: '03', label: 'HIGH BEAM', h: 'Throw a mono source wide.', p: "Flip the bat switch and a mono vocal or synth gets a wide, natural spread above LOW FOCUS. It's a decorrelator, not a delay, so there's no flanging. REACH sets how far it throws, and L+R never changes." },
+  { n: '04', label: 'TILT', h: 'Put the width where you want it.', p: 'The thumbwheel tilts the widening: roll up and the highs spread while the lows narrow, roll down for the opposite. ±6 dB at the ends, flat in the detent.' },
+  { n: '05', label: 'MONO · CORRELATION', h: 'Check it on a phone speaker. Before your listeners do.', p: 'A real moving-coil correlation meter reads the result. MONO sums the output with one press; SIDE solos what the widening added. Both are for listening only: they never get printed into your mix.' },
+  { n: '06', label: 'CRUISE', h: 'Wider, not louder.', p: "Widening usually makes things louder, and louder always sounds 'better'. CRUISE is always on. It holds the level as WIDTH goes up (−2 dB at 200, exactly unity at 100 or below), so you judge the width and not the volume." },
+];
+---
+<!-- ============ STORY: the stereo road ============ -->
+<section class="wb-story" id="wb-story" data-wb-story aria-labelledby="wb-story-h">
+  <header class="wb-head" data-wb-reveal>
+    <p class="wb-eyebrow">THE STEREO ROAD</p>
+    <h2 id="wb-story-h">Your mix, seen from the driver's seat.</h2>
+    <p class="wb-headsub">Left to right is the stereo field. The bass is at your bumper and the air is at the horizon. Scroll, and watch one control at a time move the whole road.</p>
+  </header>
+  <div class="wb-story-grid">
+    <div class="wb-story-stage">
+      <div class="wb-windshield">
+        <canvas data-story-canvas aria-hidden="true"></canvas>
+        <div class="wb-hud">
+          <span class="wb-hud-label" data-story-label>WIDTH</span>
+          <span class="wb-hud-lcd" data-story-lcd>WIDTH 100%</span>
+        </div>
+        <div class="wb-mini-meter" aria-hidden="true">
+          <svg viewBox="0 0 120 64"><path d="M14 54A52 52 0 0 1 106 54" fill="none" stroke="#3b2c17" stroke-width="2"/><path d="M14 54A52 52 0 0 1 60 2" fill="none" stroke="#b5432c" stroke-width="3" opacity=".8"/><text x="10" y="62">−1</text><text x="56" y="12">0</text><text x="100" y="62">+1</text></svg>
+          <i data-story-needle></i>
+          <small>CORRELATION</small>
+        </div>
+        <div class="wb-level" data-story-level aria-hidden="true">
+          <small>LEVEL</small><span class="wb-level-bar"><i class="raw"></i><i class="out"></i></span><b data-story-level-read>0.0 dB</b>
+        </div>
+      </div>
+    </div>
+    <ol class="wb-steps">
+      {STEPS.map((s) => (
+        <li class="wb-step" data-step={s.label}>
+          <span class="wb-step-n">{s.n}</span>
+          <p class="wb-step-l">{s.label}</p>
+          <h3>{s.h}</h3>
+          <p>{s.p}</p>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>

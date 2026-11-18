@@ -7,6 +7,7 @@
  */
 import type { WbParams } from './audio';
 import { PRESETS, presetValues, type Store } from './state';
+import { gsap } from '../motion';
 
 export interface FaceArt { base: string; width: string; focus: string; mix: string; toggle: string; power: string; wheel: string; }
 
@@ -348,4 +349,25 @@ export function createFace(root: HTMLElement, art: FaceArt, store: Store): Face 
       seq.forEach(([t, v]) => setTimeout(() => { if (v < 0) { igniting = false; } else { shown = v * 2; dark = 0; } kick(); }, t));
     },
   };
+}
+
+/** The page's dash: builds the face, lights it the first time it is a third on screen, and raises it as it scrolls in. */
+export function initFace(page: HTMLElement, art: FaceArt, store: Store, reducedMotion: boolean) {
+  // ── the face ──
+  const faceEl = page.querySelector<HTMLElement>('[data-wb-face]')!;
+  const face = createFace(faceEl, art, store);
+  let ignited = false;
+  const ignite = () => { if (!ignited) { ignited = true; face.ignite(); } };
+  new IntersectionObserver(([e], io) => { if (e.isIntersecting) { ignite(); io.disconnect(); } }, { threshold: 0.35 }).observe(faceEl);
+  const dash = page.querySelector<HTMLElement>('[data-wb-dash]');
+  if (dash && !reducedMotion) {
+    // the dash rises into the windscreen as it scrolls in
+    gsap.fromTo(dash, { rotateX: 28, y: 80, scale: 0.9, opacity: 0.4 }, {
+      rotateX: 0, y: 0, scale: 1, opacity: 1, ease: 'none',
+      // the trigger is the still wrapper: measured on the moving dash itself (80 px down, scaled .9 at refresh), the rise
+      // finished ~135 px late and a dash centred on screen still sat low and small
+      scrollTrigger: { trigger: dash.parentElement ?? dash, start: 'top 95%', end: 'top 30%', scrub: 0.6 },
+    });
+  }
+  return { face, ignite, dash };
 }
