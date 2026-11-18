@@ -1,5 +1,25 @@
 <!-- Copied from the design team's scratchpad on 2026-11-18 (Claude Code `Wide Beam page tour [3eef2b]`, Dan's Mac) so it
-     outlives the session. Nothing below is built yet: it waits for Dan's picks. -->
+     outlives the session. Dan's picks came in the same day (below); the build follows them. -->
+
+# Dan's picks (2026-11-18 ~16:10, on the pick page, no notes). These override every "my pick" below.
+
+| Id | Dan picked | What it means for the build |
+|---|---|---|
+| D1 | B, the four readings | Lockup, ONE line, ONE shine key "Take it for a drive", signature "Open the road.". Nothing else in the hero. |
+| D2 | **B: "WIDER MIX. BASS DEAD CENTRE."** (not the lead's A) | This is the hero line, word for word. Keep the body copy exact around it: the side below LOW FOCUS (120 Hz by default, 20-1000) is removed at any WIDTH; MIX under 100 blends the dry (its side bass included) back. |
+| D3 | B, the plate's satin brass | 3 brass tones sampled from the plugin, raised letters, the sans sub line between brass rules, live type, still opens with WIDTH. |
+| D4 | C, cut from the plugin, engraved serif labels | Plates / story window / spec card cut from the plugin's photo (parts kit); small labels in the plate's engraved serif caps; headlines stay Bebas. |
+| D5 | A, the console column | At >= 1100 px the console stands beside the face; face + every control on one screen at 1141x636. |
+| D6 | A, the Owner's Manual | The screen in a small copy of the plugin's face with the oxblood strap + badge; six chapters on owner's-card stock beside it. |
+| D7 | B, the phone deck | The face on top as the live display (inert), a deck of big native-range controls under it. |
+| D8 | B, the portrait cut that follows the car | Dan chose it knowing it bends DESIGN.md §7 ("never a crop of the desktop scene"). Build B; note the exception in the page's DESIGN notes. |
+| P1 (= D10) | A, launch after Black Friday | "Price at launch"; no BUY; the Black Friday strip is hidden on /widebeam until it can be bought. WIDE BEAM leaves the bundle on Nov 22 by Gil's rule: that is a `sale.ts` line on main, Gil's (with OBDTune), NOT this branch. |
+| P2 (= D11) | B, the first touch of the demo | The allow-list in lane D.1. |
+| P3 (= D12) | B, 3-4 real clips through the live demo | A mono vocal, a double / lead, a pad or instrument bed, a full mix. Source: the team's own material already published on the site (`public/audio/revfx/*-before.m4a`, `public/gas-mixer/audio/*_dry.m4a`, `public/audio/revlimiter/*-before.m4a`), cut to <= 0.4 MB each in `public/widebeam/clips/`. Dan confirms by ear. |
+| P4 (= D13) | A, a partner records the film | The Owner's Manual ships in stand-by; one data field turns on the YouTube facade. |
+| P5 | A, "Mac VST3 · AU · Windows VST3" | No AAX anywhere; `assertWidebeamConfig()` refuses `released` while `winReady` isn't confirmed. |
+
+D9, D14 and D15 stand as the lead wrote them ("choices made" on the pick page; Dan vetoed none).
 
 # Read first: what changed after the lead wrote this plan (2026-11-18)
 
