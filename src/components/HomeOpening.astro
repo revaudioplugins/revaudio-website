@@ -26,7 +26,7 @@
 
 <script is:inline>
   (function () {
-    var SHARE = 0.5;
+    var SHARE = 0; // soft launch (Dan 2026-11-18, "two stages"): only a ?home=garage pin, until his look on the live site
     var H = document.documentElement, KEY = 'ra-home', SEEN = 'ra-home-seen', DONE = 'ra-ho-done';
     var ls = function (k, v) { try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} return null; };
     var ss = function (k, v) { try { if (v === undefined) return sessionStorage.getItem(k); sessionStorage.setItem(k, v); } catch (e) {} return null; };
@@ -34,6 +34,8 @@
     if (q === 'garage' || q === 'tv') ls(KEY, q);
     if (q === 'off') { ls(KEY, null); ls(SEEN, null); }
     var forced = q === 'garage';
+    var v = q === 'garage' || q === 'tv' ? q : ls(KEY); // (a pin works even where site data is blocked)
+    if (v !== 'garage' && v !== 'tv' && !(SHARE > 0)) return; // soft launch: a browser with no pin runs nothing more
     var ok = false;
     try {
       ok = matchMedia('(min-width: 1000px) and (hover: hover) and (pointer: fine)').matches
@@ -48,11 +50,7 @@
       }
     } catch (e) { ok = false; }
     if (!ok && !forced) return; // phones, bots, no WebGL 2: today's home page, not in the test
-    var v = q === 'garage' || q === 'tv' ? q : ls(KEY); // (a pin works even where site data is blocked)
-    if (v !== 'garage' && v !== 'tv') {
-      if (!(SHARE > 0)) return; // soft launch: pins only
-      v = Math.random() < SHARE ? 'garage' : 'tv'; ls(KEY, v);
-    }
+    if (v !== 'garage' && v !== 'tv') { v = Math.random() < SHARE ? 'garage' : 'tv'; ls(KEY, v); }
     ls(SEEN, v);
     if (v !== 'garage') return;
     if (ss(DONE) && !forced) return; // walked it once this session: the TV straight away
