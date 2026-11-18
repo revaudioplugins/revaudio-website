@@ -459,6 +459,11 @@ is, three modes, a short line for each", A picked over B): THREE GRADES. PICK ON
 a Bebas honey headline + one Inter line, all readable at once (B, the key bank with one line that changes on tap, hid two of
 the three lines).
 Why: a portrait phone shows a third of a 3:2 scene, the photo goes soft, and the props turn into hunt-the-hotspot.
+One exception, Dan's pick (the WIDE BEAM page, 2026-11-18, D8 B over the zoom-in C, picked knowing it bends this
+rule): /widebeam's intro film on an upright phone is a portrait cut that FOLLOWS the car (both headlight pairs fill the
+screen at about 1 s, then it swings to the tail lights and settles on the road). The film is that page's signature, and
+a centre crop played its best moment off screen (15 % of the headlight light on screen; the follow-cut 77 %). The rest
+of that page is still rebuilt for portrait (the dash becomes a deck of big controls, D7 B).
 
 ## 8. Layout
 
