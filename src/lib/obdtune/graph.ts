@@ -1,15 +1,16 @@
 /**
- * LIVE DATA on a canvas: the scale lanes (legal notes lit, switched-off notes struck), the sung pitch (amber) and
- * where OBDTUNE puts it (cyan), scrolling right to left. One Graph per canvas; feed it Readings with push().
+ * LIVE DATA on a canvas: the scale lanes (legal notes lit, switched-off notes struck), the sung pitch (ink) and
+ * where OBDTUNE puts it (blue), scrolling right to left. One Graph per canvas; feed it Readings with push().
  * Also draws the cents gauge (needle = what was sung, ghost = where it lands).
  */
 import { legal, midiName, NOTE_NAMES, SCALES, state, type ObdState, type Reading } from './engine';
 
+/** The plugin screen's ink (OBDTune obdtune.css, skin PHOTO --lcd-*): sung = ink, where it lands = acc, as its LIVE DATA. */
 export const INK = {
-  bg0: '#07121b', bg1: '#0b1a26',
-  lane: 'rgba(95, 227, 255, 0.10)', laneOn: 'rgba(95, 227, 255, 0.22)', laneRoot: 'rgba(255, 194, 59, 0.34)',
-  label: 'rgba(160, 220, 240, 0.55)', off: 'rgba(232, 58, 58, 0.55)',
-  raw: '#ffb547', out: '#5fe3ff', harm: '#c99bff', grid: 'rgba(95, 227, 255, 0.06)',
+  bg0: '#0a141c', bg1: '#142432', bg2: '#081017',
+  lane: 'rgba(58, 82, 98, 0.45)', laneOn: 'rgba(108, 198, 230, 0.24)', laneRoot: 'rgba(217, 160, 60, 0.42)',
+  label: 'rgba(125, 147, 160, 0.9)', labelOff: 'rgba(125, 147, 160, 0.35)', labelRoot: '#e8b860', off: 'rgba(232, 58, 58, 0.55)',
+  raw: '#e2ebec', out: '#6cc6e6', harm: '#d9a03c', grid: 'rgba(58, 82, 98, 0.3)',
 };
 
 interface Sample { t: number; r: Reading; h: (number | null)[] }
@@ -52,7 +53,7 @@ export class Graph {
     const s = this.stateOf();
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     const g = ctx.createLinearGradient(0, 0, 0, h);
-    g.addColorStop(0, INK.bg1); g.addColorStop(0.55, INK.bg0); g.addColorStop(1, '#050d14');
+    g.addColorStop(0, INK.bg1); g.addColorStop(0.55, INK.bg0); g.addColorStop(1, INK.bg2);
     ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
 
     const lo = this.center - this.span / 2;
@@ -84,7 +85,7 @@ export class Graph {
       ctx.beginPath(); ctx.moveTo(this.labels ? 30 : 0, yy); ctx.lineTo(w, yy); ctx.stroke();
       if (this.labels) {
         const struck = inScale[pc] && !s.notes[pc];
-        ctx.fillStyle = struck ? INK.off : ok[pc] && s.on ? (root ? '#ffd27a' : INK.label) : 'rgba(160,220,240,.22)';
+        ctx.fillStyle = struck ? INK.off : ok[pc] && s.on ? (root ? INK.labelRoot : INK.label) : INK.labelOff;
         ctx.fillText(NOTE_NAMES[pc] + (Math.floor(m / 12) - 1), 4, yy);
         if (struck) { ctx.fillRect(3, yy, 24, 1.2); }
       }
@@ -134,12 +135,12 @@ export function drawGauge(cv: HTMLCanvasElement, r: Reading | null, on: boolean)
   const cx = w / 2, cy = h * 0.92, R = Math.min(w / 2 - 6, h * 0.86);
   const ang = (c: number) => Math.PI + ((Math.max(-50, Math.min(50, c)) + 50) / 100) * Math.PI;
   ctx.lineWidth = 2;
-  ctx.strokeStyle = 'rgba(95, 227, 255, .28)';
+  ctx.strokeStyle = 'rgba(108, 198, 230, .28)';
   ctx.beginPath(); ctx.arc(cx, cy, R, Math.PI, 2 * Math.PI); ctx.stroke();
   // the in-tune window
-  ctx.strokeStyle = 'rgba(125, 255, 138, .65)'; ctx.lineWidth = 5;
+  ctx.strokeStyle = 'rgba(108, 198, 230, .65)'; ctx.lineWidth = 5;
   ctx.beginPath(); ctx.arc(cx, cy, R, ang(-5), ang(5)); ctx.stroke();
-  ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(160, 220, 240, .5)';
+  ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(125, 147, 160, .55)';
   for (let c = -50; c <= 50; c += 10) {
     const a = ang(c), l = c % 50 === 0 ? 10 : c === 0 ? 12 : 6;
     ctx.beginPath(); ctx.moveTo(cx + Math.cos(a) * (R - l), cy + Math.sin(a) * (R - l));
@@ -153,10 +154,10 @@ export function drawGauge(cv: HTMLCanvasElement, r: Reading | null, on: boolean)
   };
   if (r && r.voiced && r.raw != null) {
     const ref = r.target ?? Math.round(r.raw);
-    needle((r.raw - ref) * 100, '#ffb547', R * 0.92, 2);
-    if (on && r.out != null) needle((r.out - ref) * 100, '#5fe3ff', R * 0.8, 3.2);
+    needle((r.raw - ref) * 100, INK.raw, R * 0.92, 2);
+    if (on && r.out != null) needle((r.out - ref) * 100, INK.out, R * 0.8, 3.2);
   }
-  ctx.fillStyle = '#1d3340';
+  ctx.fillStyle = '#1e3040';
   ctx.beginPath(); ctx.arc(cx, cy, 5, 0, Math.PI * 2); ctx.fill();
 }
 

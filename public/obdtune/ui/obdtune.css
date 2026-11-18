@@ -1,0 +1,853 @@
+/* OBDTUNE object CSS (10-1c). Becomes the plugin page's CSS in 10-3a.
+   Laws: shared/wiki/pages/design-language.md + DESIGN.md v3 (section 2 tokens verbatim, section 5 mockup laws):
+   one upper-left light; every surface (class surf) at least 3 gradient stops; no pure black or white; keys go DOWN by
+   depth; wear and texture sit under every text; race-red on the POWER key only.
+   Safari 14 floor: transform only (no standalone transform properties), no flex gaps, every mask paired with -webkit-. */
+
+/* ---------------------------------------------------------------- the screen font: PIXEL = VT323 (Yoni 2026-11-11:
+   Consolas "looks more like a pc, not a diagnostic device"; picked PIXEL over TECH / PC on the bench). SIL OFL;
+   RevTune's own plugin font (Source/ui/public/fonts). */
+
+/* ---------------------------------------------------------------- tokens + skins (CSS variable sets on the object) */
+.obd {
+  /* DESIGN.md section 2, house tokens verbatim */
+  --oxide: #8a2818; --oxide-hi: #a8321c;
+  --race-red-hi: #e83a3a; --race-red: #9e1b1b; --race-red-lo: #3a0808;
+  /* DESIGN.md section 2, additive tokens verbatim */
+  --oxide-sun-hi: #824b42; --oxide-sun: #7a3a30; --oxide-sun-lo: #4a2420;
+  --bumper-hi: #3a3632; --bumper: #22201e; --bumper-lo: #100e0d;
+  --parchment: #ebdcb6; --amber: #d9a03c;
+  /* additive, Factory = Dan's pick (2026-11-05); 10-2a sets a red of our own (not a sample of the reference), never race-red */
+  --factory-red-hi: #d4473a; --factory-red: #b52a1f; --factory-red-lo: #5c120c;
+  --cream: rgba(240, 228, 200, 1);
+  --kr: 9px;
+}
+.obd.skin-factory, .obd.skin-photo { /* PHOTO = FACTORY's colours under the photo plate (end of this file) */
+  --body-hi: var(--factory-red-hi); --body: var(--factory-red); --body-lo: var(--factory-red-lo);
+  --bmp-hi: var(--bumper-hi); --bmp: var(--bumper); --bmp-lo: var(--bumper-lo);
+  --key-hi: #3c3834; --key: #282521; --key-lo: #15120f;
+  --legend: var(--parchment); --grease: rgba(40, 22, 14, .35); --scuff: rgba(120, 112, 102, .07); --sun: rgba(130, 75, 66, .08); --scratch: rgba(236, 224, 196, .006); --rub: rgba(150, 140, 126, .03);
+  --lcd-bg-hi: #1e3040; --lcd-bg: #142432; --lcd-bg-lo: #0a141c;
+  --lcd-ink: #e2ebec; --lcd-acc: #6cc6e6; --lcd-dim: #7d93a0; --lcd-grid: #3a5262;
+}
+.obd.skin-shop {
+  --body-hi: var(--oxide-sun-hi); --body: var(--oxide-hi); --body-lo: var(--oxide);
+  --bmp-hi: var(--bumper-hi); --bmp: var(--bumper); --bmp-lo: var(--bumper-lo);
+  --key-hi: #3a3531; --key: #26221e; --key-lo: #14110e;
+  --legend: var(--parchment); --grease: rgba(28, 16, 10, .78); --scuff: rgba(120, 112, 102, .22); --sun: rgba(130, 75, 66, .26); --scratch: rgba(236, 224, 196, .02); --rub: rgba(150, 140, 126, .09);
+  --lcd-bg-hi: #24322e; --lcd-bg: #182522; --lcd-bg-lo: #0d1514;
+  --lcd-ink: #e4e0cc; --lcd-acc: #8fd2c0; --lcd-dim: #8a9688; --lcd-grid: #3e4e48;
+}
+.obd.skin-vintage {
+  --body-hi: var(--oxide-sun-hi); --body: var(--oxide-sun); --body-lo: var(--oxide-sun-lo);
+  --bmp-hi: #4c4842; --bmp: #36322e; --bmp-lo: #1e1b19;
+  --key-hi: #45403a; --key: #2e2a26; --key-lo: #191613;
+  --legend: #e2d2ac; --grease: rgba(30, 18, 10, .7); --scuff: rgba(132, 126, 116, .3); --sun: rgba(150, 104, 94, .34); --scratch: rgba(236, 224, 196, .026); --rub: rgba(150, 140, 126, .12);
+  --lcd-bg-hi: #2c1e0c; --lcd-bg: #1f1509; --lcd-bg-lo: #110b05;
+  --lcd-ink: var(--amber); --lcd-acc: #f0bc62; --lcd-dim: #8f6a2c; --lcd-grid: #5a4220;
+  --kr: 13px;
+}
+
+/* ---------------------------------------------------------------- the object root: FLOATING by default */
+.obd { position: absolute; left: 0; top: 0; transform-origin: 0 0; background: transparent; color: var(--legend);
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif; -webkit-user-select: none; user-select: none;
+  /* the house FLOATING shadow (design-language 3b), in design px so the transform scales it by s: contact + far */
+  filter: drop-shadow(3px 4px 8px rgba(12, 9, 6, .55)) drop-shadow(18px 24px 48px rgba(12, 9, 6, .5)); }
+.obd * { box-sizing: border-box; }
+.obd i, .obd b { font-style: normal; }
+/* ROOM: the object inside its rectangular window, on a placeholder scene lit from the upper left (10-2a makes it) */
+.obd.room { filter: none; overflow: hidden;
+  background: radial-gradient(120% 90% at 18% 10%, #8a7660 0%, #4a3d31 46%, #1e1813 100%); }
+.obd.room .bumper { box-shadow: 10px 16px 30px rgba(12, 9, 6, .6), 3px 4px 8px rgba(12, 9, 6, .5); }
+.obd.room .screw { display: none; } /* the close screw is FLOATING only: ROOM has the host's own close */
+
+/* ---------------------------------------------------------------- cable, bumper (the grab part), body */
+.cable { position: absolute; left: 50%; top: 0; width: 40px; height: 74px; margin-left: -20px; pointer-events: none; }
+.c-wire { position: absolute; left: 13px; top: 0; width: 14px; height: 60px; border-radius: 7px;
+  background: linear-gradient(90deg, #2a2724 0%, #4a4540 35%, #1c1a18 70%, #100e0d 100%);
+  /* solid for its first 12 % out of the body, then fading onto the DAW */
+  -webkit-mask-image: linear-gradient(to top, rgba(12, 9, 6, 1) 0%, rgba(12, 9, 6, 1) 12%, rgba(12, 9, 6, 0) 100%); mask-image: linear-gradient(to top, rgba(12, 9, 6, 1) 0%, rgba(12, 9, 6, 1) 12%, rgba(12, 9, 6, 0) 100%); }
+.c-boot { position: absolute; left: 6px; top: 46px; width: 28px; height: 26px; border-radius: 8px 8px 4px 4px;
+  background: linear-gradient(90deg, var(--bmp-hi) 0%, var(--bmp) 45%, var(--bmp-lo) 100%); }
+.bumper { position: absolute; left: 0; top: 50px; width: 100%; height: calc(100% - 50px); border-radius: 46px; cursor: move;
+  background:
+    radial-gradient(60px 50px at 0% 0%, var(--scuff), rgba(120, 112, 102, 0) 100%),
+    radial-gradient(70px 60px at 100% 100%, var(--scuff), rgba(120, 112, 102, 0) 100%),
+    radial-gradient(60px 60px at 0% 100%, var(--scuff), rgba(120, 112, 102, 0) 100%),
+    linear-gradient(150deg, var(--bmp-hi) 0%, var(--bmp) 40%, var(--bmp-lo) 100%);
+  box-shadow: inset 2px 2px 2px rgba(236, 224, 196, .1), inset -2px -3px 4px rgba(12, 9, 6, .6); }
+.body { position: absolute; left: 18px; top: 68px; width: calc(100% - 36px); height: calc(100% - 86px); border-radius: 30px;
+  background:
+    radial-gradient(90% 60% at 20% 8%, var(--sun), rgba(130, 75, 66, 0) 70%),
+    repeating-linear-gradient(115deg, var(--scratch) 0 1px, rgba(236, 224, 196, 0) 1px 9px),
+    radial-gradient(130% 100% at 22% 12%, var(--body-hi) 0%, var(--body) 48%, var(--body-lo) 100%);
+  box-shadow: inset 3px 3px 3px rgba(240, 228, 200, .14), inset -4px -5px 8px rgba(12, 9, 6, .45), 0 0 0 2px var(--grease); }
+.seam { position: absolute; left: 6px; top: 6px; right: 6px; bottom: 6px; border-radius: 25px;
+  box-shadow: inset 0 0 0 2px var(--grease), inset 0 0 6px var(--grease); }
+
+/* ---------------------------------------------------------------- logo, model text, the key legend line */
+.logo { position: absolute; left: 44px; top: 70px; font-size: 27px; font-weight: 700; font-style: italic; letter-spacing: .01em;
+  color: var(--legend); text-shadow: 0 1px 0 rgba(12, 9, 6, .55), 0 -1px 0 rgba(240, 228, 200, .12); pointer-events: none; }
+.model { position: absolute; right: 78px; top: 74px; font-size: 22px; font-weight: 800; letter-spacing: .16em;
+  color: var(--legend); text-shadow: 0 1px 0 rgba(12, 9, 6, .55); pointer-events: none; }
+.legend { position: absolute; text-align: center; font-size: 17px; font-weight: 600; letter-spacing: .08em; opacity: .9;
+  color: var(--legend); text-shadow: 0 1px 0 rgba(12, 9, 6, .55); pointer-events: none; white-space: nowrap; }
+
+/* ---------------------------------------------------------------- the close screw + the corner grip (on the bumper) */
+.screw { position: absolute; right: 0; top: 44px; width: 60px; height: 60px; z-index: 5; cursor: pointer; }
+.s-head { position: absolute; left: 22px; top: 12px; width: 26px; height: 26px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #d8d2c6 0%, #8c867c 45%, #3c3832 100%);
+  box-shadow: 1px 2px 2px rgba(12, 9, 6, .7), inset -1px -1px 2px rgba(12, 9, 6, .5); transform: rotate(13deg); }
+.s-head b { position: absolute; left: 3px; right: 3px; top: 11px; height: 4px; border-radius: 2px;
+  background: linear-gradient(180deg, #1c1916, #3a3631 60%, #6a645a); }
+.screw.down .s-head { transform: rotate(13deg) translateY(1px); }
+.grip { position: absolute; right: 0; bottom: 0; width: 60px; height: 60px; z-index: 5; cursor: nwse-resize; }
+.g-ribs { position: absolute; right: 12px; bottom: 12px; width: 28px; height: 28px; border-bottom-right-radius: 20px;
+  background: repeating-linear-gradient(135deg, rgba(236, 224, 196, .22) 0 2px, rgba(12, 9, 6, .55) 2px 4px, rgba(12, 9, 6, 0) 4px 7px);
+  -webkit-mask-image: linear-gradient(135deg, rgba(12, 9, 6, 0) 45%, rgba(12, 9, 6, 1) 50%); mask-image: linear-gradient(135deg, rgba(12, 9, 6, 0) 45%, rgba(12, 9, 6, 1) 50%); }
+
+/* ---------------------------------------------------------------- keys: hit zone > slot + cap; down = depth, never light */
+.key { position: absolute; cursor: pointer; }
+.key .well { position: absolute; left: 3px; top: 3px; right: 3px; bottom: 3px; border-radius: var(--kr);
+  background: linear-gradient(180deg, rgba(12, 9, 6, .92) 0%, rgba(20, 14, 10, .75) 45%, rgba(40, 30, 24, .55) 100%); }
+.key .cap { position: absolute; left: 5px; top: 5px; right: 5px; bottom: 7px; border-radius: var(--kr);
+  background: linear-gradient(168deg, var(--key-hi) 0%, var(--key) 48%, var(--key-lo) 100%);
+  box-shadow: inset 0 1px 0 rgba(236, 224, 196, .22), inset 1px 0 0 rgba(236, 224, 196, .08), 0 3px 3px rgba(12, 9, 6, .6);
+  transform-origin: 50% 100%;
+  /* release: the rubber dome springs back, a little past rest, then settles (Yoni 2026-11-11: "more rubbery") */
+  transition: transform 300ms cubic-bezier(.22, 1.65, .42, 1), box-shadow 220ms ease-out; }
+/* pressed: the rubber gives - sinks 3 px into its slot and squashes a little (wider, flatter) - fast, no bounce; the
+   dark slot opens above it, the lip shades its top; no cast shadow, no light (Law 3: down by depth) */
+.key.down .cap { transform: translateY(3px) scale(1.015, .95);
+  transition: transform 70ms cubic-bezier(.3, .7, .4, 1), box-shadow 70ms ease-out;
+  box-shadow: inset 0 4px 5px rgba(12, 9, 6, .62), inset 0 -1px 0 rgba(236, 224, 196, .04), 0 0 0 rgba(12, 9, 6, 0); }
+.dpad .key .cap { transform-origin: 50% 50%; }
+.dpad .key.down .cap { transform: translateY(2px) scale(.955); }
+.key .lg { position: absolute; left: 0; right: 0; top: 50%; margin-top: -12px; line-height: 24px; text-align: center;
+  font-size: 18px; font-weight: 700; letter-spacing: .08em; color: var(--legend); white-space: nowrap;
+  text-shadow: 0 -1px 0 rgba(12, 9, 6, .75); }
+.lamp { position: absolute; left: 30%; right: 30%; bottom: 5px; height: 4px; border-radius: 2px;
+  background: linear-gradient(180deg, rgba(60, 40, 24, .9), rgba(36, 24, 14, .9) 60%, rgba(24, 16, 10, .9)); }
+/* a lit key glows from its base (Law 4: lit from inside, never painted bright) */
+.key.lit .lamp, .lamp.lit { background: linear-gradient(180deg, #ffd9a0, #f0aa50 55%, #b8742c);
+  box-shadow: 0 0 6px 1px rgba(240, 170, 80, .65), 0 -2px 8px rgba(240, 170, 80, .3); }
+.key.blink .lamp { animation: obd-blink 600ms steps(2, start) infinite; }
+@keyframes obd-blink { 0% { opacity: 1; } 100% { opacity: .35; } }
+/* the ONE race-red key (DESIGN section 10 Q1 A, provisional): POWER, every layout and skin */
+.key[data-part="power"] .cap { background: linear-gradient(168deg, var(--race-red-hi) 0%, var(--race-red) 50%, var(--race-red-lo) 100%); }
+.key[data-part="power"].lit .lamp { background: linear-gradient(180deg, #fff0d8, #f2d6a8 55%, #c8a878);
+  box-shadow: 0 0 6px 1px rgba(242, 214, 168, .7), 0 -2px 8px rgba(242, 214, 168, .3); }
+/* note keys: out of the scale = inert and faded; in scale but switched off = struck through */
+.key.nk .lg { font-size: 21px; }
+.key.nk.fade { cursor: default; }
+.key.nk.fade .lg { opacity: .35; }
+.key.nk.off .lg { text-decoration: line-through; opacity: .7; }
+
+/* the D-pad: a ring with four arrows and OK; the ring itself takes no clicks (an oversized box is a click trap) */
+.dpad { position: absolute; pointer-events: none; }
+.dpad .key { pointer-events: auto; }
+.d-ring { position: absolute; left: 4px; top: 4px; right: 4px; bottom: 4px; border-radius: 50%;
+  background: radial-gradient(circle at 36% 30%, var(--key-hi) 0%, var(--key) 52%, var(--key-lo) 100%);
+  box-shadow: 0 4px 6px rgba(12, 9, 6, .55), inset 0 2px 2px rgba(236, 224, 196, .16), 0 0 0 3px var(--grease); }
+/* each pad sits in its own ROUND recess in the ring (Yoni 2026-11-11: the square shadows "don't make sense"; a radial
+   gradient in a square box only fades out at the corners, so it drew a square patch). The recess = a circle 2 px
+   wider than the pad, dark in the gap, its lower lip catching the lamp; the pad is a true circle and casts its own
+   soft shadow down-right, away from the upper-left lamp (Law 4). */
+.dpad .key .well { left: 4px; top: 4px; right: 4px; bottom: 4px; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(12, 9, 6, .82) 0%, rgba(12, 9, 6, .72) 82%, rgba(12, 9, 6, .3) 100%);
+  box-shadow: inset 1px 2px 3px rgba(12, 9, 6, .7), 0 1px 0 rgba(236, 224, 196, .07); }
+.dpad .key .cap { left: 6px; top: 6px; right: 6px; bottom: 6px; border-radius: 50%;
+  box-shadow: inset 0 1px 0 rgba(236, 224, 196, .2), inset 1px 0 0 rgba(236, 224, 196, .06),
+    1px 2px 2px rgba(12, 9, 6, .6), 2px 4px 6px rgba(12, 9, 6, .35); }
+.dpad .key.down .cap { box-shadow: inset 0 3px 4px rgba(12, 9, 6, .6), inset 0 -1px 0 rgba(236, 224, 196, .04), 0 0 0 rgba(12, 9, 6, 0); }
+.dpad .key .lg { font-size: 20px; }
+.dpad .key[data-part="ok"] .lg { font-size: 22px; }
+
+/* ---------------------------------------------------------------- knobs (C): only the pointer turns (Law 3) */
+.kwrap { position: absolute; text-align: center; }
+.knob { position: relative; margin: 0 auto; border-radius: 50%; cursor: ns-resize; }
+.k-skirt { position: absolute; left: 0; top: 0; width: 100%; height: 100%; border-radius: 50%;
+  background:
+    repeating-conic-gradient(from 0deg, rgba(236, 224, 196, .1) 0deg 5deg, rgba(12, 9, 6, .32) 5deg 10deg),
+    radial-gradient(circle at 36% 30%, var(--key-hi) 0%, var(--key) 55%, var(--key-lo) 100%);
+  box-shadow: 0 4px 6px rgba(12, 9, 6, .6), 0 0 0 2px var(--grease); }
+.k-face { position: absolute; left: 16%; top: 16%; width: 68%; height: 68%; border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, #4a4540 0%, #2a2622 55%, #171411 100%);
+  box-shadow: inset 0 1px 1px rgba(236, 224, 196, .2), 0 2px 3px rgba(12, 9, 6, .6); }
+.k-ptr { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; }
+.k-ptr b { position: absolute; left: 50%; top: 19%; width: 5px; height: 26%; margin-left: -2.5px; border-radius: 2px;
+  background: linear-gradient(180deg, #f4e6c4, var(--parchment) 60%, #c8b890); outline: 1.5px solid rgba(12, 9, 6, .88); }
+.k-light { position: absolute; left: 0; top: 0; width: 100%; height: 100%; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle at 34% 28%, rgba(240, 228, 200, .22) 0%, rgba(240, 228, 200, .05) 35%, rgba(240, 228, 200, 0) 60%); }
+.k-lg { display: block; margin-top: 4px; font-size: 17px; font-weight: 700; letter-spacing: .1em; color: var(--legend);
+  text-shadow: 0 1px 0 rgba(12, 9, 6, .55); pointer-events: none; }
+.k-v { display: block; font: 600 16px "Consolas", "Courier New", monospace; color: var(--legend); opacity: .85; pointer-events: none; }
+.kl .knob { width: 118px; height: 118px; }
+.km .knob { width: 86px; height: 86px; }
+.ks .knob { width: 54px; height: 54px; }
+.ks .k-lg { font-size: 16px; margin-top: 2px; }
+.leds { position: absolute; font-size: 16px; font-weight: 700; color: var(--legend); pointer-events: none; white-space: nowrap; }
+.leds i { display: inline-block; width: 10px; height: 10px; margin: 0 4px 0 10px; border-radius: 50%; vertical-align: -1px;
+  background: radial-gradient(circle at 35% 30%, #6a4a2a, #3a2412 60%, #1c120a); }
+.leds i.lit { background: radial-gradient(circle at 35% 30%, #ffe0a8, #f0aa50 55%, #b8742c); box-shadow: 0 0 6px rgba(240, 170, 80, .8); }
+.intk .lg { margin-top: -20px; line-height: 20px; font-size: 16px; }
+.intk .iv { display: block; font: 700 18px "Consolas", "Courier New", monospace; letter-spacing: .04em; }
+
+/* ---------------------------------------------------------------- the screen: bezel + LCD glass (DOM text, one canvas) */
+.bezel { position: absolute; border-radius: 16px;
+  background: linear-gradient(160deg, #3c3632 0%, #1e1b18 42%, #0f0d0b 100%);
+  box-shadow: 0 0 0 3px var(--grease), inset 0 1px 0 rgba(236, 224, 196, .14), inset 0 -2px 3px rgba(12, 9, 6, .6); }
+.glass { position: absolute; left: 9px; top: 9px; right: 9px; bottom: 9px; border-radius: 7px; padding: 6px; overflow: hidden;
+  display: flex; flex-direction: column; color: var(--lcd-ink); font-family: "Consolas", "Courier New", monospace;
+  /* the pixel grid lives HERE, under every text (Law 5) */
+  background:
+    repeating-linear-gradient(0deg, rgba(12, 9, 6, .16) 0 1px, rgba(12, 9, 6, 0) 1px 3px),
+    radial-gradient(120% 110% at 30% 20%, var(--lcd-bg-hi) 0%, var(--lcd-bg) 50%, var(--lcd-bg-lo) 100%);
+  box-shadow: inset 0 3px 6px rgba(12, 9, 6, .75); }
+/* only smooth light lies over what is read: the glass reflection from the upper-left lamp */
+.glass::after { content: ''; position: absolute; left: 0; top: 0; right: 0; bottom: 0; pointer-events: none;
+  background: linear-gradient(158deg, rgba(240, 232, 214, .09) 0%, rgba(240, 232, 214, .025) 20%, rgba(240, 232, 214, 0) 34%); }
+.pwr-off .glass > * { opacity: .38; }
+.hdr { flex: none; height: 52px; padding: 2px 4px; border-bottom: 1px solid var(--lcd-grid); font-size: 18px; line-height: 23px; white-space: nowrap; overflow: hidden; }
+/* every value in the status line owns a fixed-width slot, like an LCD's character cells (Yoni 2026-11-11: the line was
+   "changing the size when changing values" - a shorter key or scale slid VOICED and HARM along). Slots in characters:
+   ON / OFF 3, key 2, scale 10 (HARM MINOR, MIXOLYDIAN, WHOLE TONE), VOICED 6, voices 8 (2 VOICES). */
+.hdr .h1 > span { display: inline-block; vertical-align: top; margin-right: 1ch; white-space: nowrap; }
+.hdr .h-ks > span { display: inline-block; vertical-align: top; }
+.hdr .h-on { width: 3ch; }
+.hdr .h-ks > span:first-child { width: 2ch; }
+.hdr .h-ks > span:last-child { width: 10ch; }
+.hdr .lv-voiced { width: 6ch; }
+.hdr .h-hm { width: 8ch; margin-right: 0; }
+.h-on { color: var(--lcd-acc); font-weight: 700; }
+.pwr-off .h-on { color: var(--lcd-dim); }
+.lv-voiced { color: var(--lcd-dim); }
+.lv-voiced.on { color: var(--lcd-acc); }
+.h-hm { color: var(--lcd-dim); }
+.h2 { color: var(--lcd-acc); font-weight: 700; letter-spacing: .06em; }
+.h-arrow { margin-right: 6px; }
+.armed .h-mode { animation: obd-blink 600ms steps(2, start) infinite; }
+.content { position: relative; flex: 1 1 auto; margin-top: 6px; }
+.page { display: none; position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
+.page.on { display: block; }
+/* every value on the screen is a control: tap / drag / wheel / double-click */
+.val, .tile, .opt, .note { position: relative; display: inline-block; vertical-align: top; cursor: ns-resize; border-radius: 5px;
+  border: 1px solid var(--lcd-grid); background: linear-gradient(180deg, rgba(120, 150, 160, .1), rgba(120, 150, 160, .04) 60%, rgba(120, 150, 160, .08)); }
+.tile, .opt, .note, .tog { cursor: pointer; }
+.val.hl, .tile.hl, .opt.hl, .note.hl { border-color: var(--lcd-acc); box-shadow: inset 0 0 0 1px var(--lcd-acc); }
+.opt.sel { background: linear-gradient(180deg, rgba(140, 200, 220, .3), rgba(140, 200, 220, .18) 60%, rgba(140, 200, 220, .24)); color: var(--lcd-acc); }
+.v-n { position: absolute; left: 7px; top: 3px; font-size: 17px; color: var(--lcd-dim); letter-spacing: .04em; pointer-events: none; }
+.v-v { position: absolute; right: 8px; bottom: 5px; font-size: 22px; font-weight: 700; color: var(--lcd-ink); pointer-events: none; white-space: nowrap; }
+.tog .v-v { color: var(--lcd-acc); }
+.hero { position: relative; flex: none; }
+.hero canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; }
+.g-gauge, .g-graph { position: absolute; pointer-events: none; }
+.lv-note { font-size: 34px; font-weight: 700; color: var(--lcd-ink); line-height: 1; }
+.lv-cents { font-size: 17px; color: var(--lcd-dim); }
+.g-gauge .lv-note, .g-gauge .lv-cents { position: absolute; left: 0; width: 100%; text-align: center; }
+.list { position: relative; }
+.card { position: relative; white-space: nowrap; }
+.c-n { display: inline-block; vertical-align: top; width: 30px; font-size: 18px; font-weight: 700; color: var(--lcd-acc); line-height: 60px; }
+
+/* the SETUP page (all layouts): BACKGROUND + the version */
+.pg-setup .s-t { font-size: 18px; color: var(--lcd-dim); margin: 6px 4px; }
+.pg-setup .s-t span { color: var(--lcd-ink); font-weight: 700; }
+.pg-setup .opt { width: 46%; height: 72px; margin: 4px 2% 8px 1%; }
+.pg-setup .opt span, .pg-voice .opt span { position: absolute; left: 0; right: 0; top: 50%; margin-top: -13px; text-align: center; font-size: 22px; font-weight: 700; }
+.pg-setup .s-v { font-size: 18px; color: var(--lcd-dim); margin: 6px 4px; }
+
+/* ---------------------------------------------------------------- Layout A, Stock (520 x 810): modal, the tile menu
+   Dan's pick 2026-11-05: bigger box + screen text about x1.5; VOICE and SETUP are one-click tiles (no page);
+   left keys BACK / DETECT / POWER, top to bottom. */
+.L-A .bezel { left: 26px; top: 106px; width: 468px; height: 464px; }
+.L-A .legend { left: 26px; width: 468px; top: 578px; }
+/* two keys since DETECT moved to the OBD connector (Yoni 2026-11-11), centred on the D-pad (602..788) */
+.L-A .p-back { left: 34px; top: 626px; width: 200px; height: 58px; }
+.L-A .p-power { left: 34px; top: 706px; width: 200px; height: 58px; }
+.L-A .p-dpad { left: 300px; top: 602px; width: 186px; height: 186px; }
+.L-B .p-dpad { left: 200px; top: 576px; width: 186px; height: 186px; }
+.p-dpad .key { width: 62px; height: 62px; }
+.p-dpad .p-up { left: 62px; top: 0; }
+.p-dpad .p-left { left: 0; top: 62px; }
+.p-dpad .p-ok { left: 62px; top: 62px; }
+.p-dpad .p-right { left: 124px; top: 62px; }
+.p-dpad .p-down { left: 62px; top: 124px; }
+.L-A .key .lg { font-size: 22px; }
+/* a key with a lamp: the legend rides higher and the lamp sits lower, a clear gap between them (Yoni 2026-11-11) */
+.L-A [data-part="power"] .lg { margin-top: -17px; }
+.L-A [data-part="power"] .lamp { bottom: 4px; height: 3px; left: 36%; right: 36%; }
+.L-A .hdr { height: 66px; font-size: 24px; line-height: 31px; } /* 24: the 33 fixed character cells fit the 430 px line */
+.L-A .tile { width: 140px; height: 150px; margin: 0 8px 8px 0; }
+.L-A .tile:nth-child(3n) { margin-right: 0; }
+.L-A .t-n { position: absolute; left: 8px; top: 6px; font-size: 24px; font-weight: 700; color: var(--lcd-acc); letter-spacing: .03em; }
+.L-A .t-v { position: absolute; left: 8px; right: 6px; bottom: 8px; font-size: 26px; line-height: 31px; color: var(--lcd-ink); }
+.L-A .t-v .lv-note { font-size: 48px; }
+.L-A .t-s { font-size: 18px; color: var(--lcd-dim); }
+/* TUNE tile (10-10, Yoni 2026-11-18: the texts climbed into the title): AUTOTUNE = a fixed 3-cell slot in the title row,
+   the values = three lines that never wrap (KEY / SCALE / SPEED); off dims the lines, the slot reads OFF in the dim ink */
+.L-A .t-st { position: absolute; right: 8px; top: 6px; width: 3ch; text-align: right; font-size: 24px; font-weight: 700;
+  color: var(--lcd-acc); letter-spacing: .03em; }
+.L-A .tile.toff .t-st { color: var(--lcd-dim); }
+.L-A .tile.toff .t-v { opacity: .4; }
+.L-A .t-l { display: block; white-space: nowrap; }
+.L-A .t-sc { font-size: 24px; }   /* the title's size, every scale: a 10-letter name (MIXOLYDIAN) keeps ~9 px of air */
+.L-A .tls { display: block; width: 124px; line-height: 0; font-size: 0; } /* rows = the lamps alone: clear of the title */
+.L-A .tl { display: inline-block; width: 24px; height: 24px; margin: 0 6px 6px 0; border-radius: 4px;
+  background: linear-gradient(180deg, rgba(120, 150, 160, .25), rgba(120, 150, 160, .14) 60%, rgba(120, 150, 160, .2)); }
+.L-A .tl.lit { background: linear-gradient(180deg, var(--lcd-acc), var(--lcd-acc) 60%, var(--lcd-dim)); }
+.L-A .tl.root { box-shadow: 0 0 0 2px var(--lcd-ink); }
+.L-A .pg-tune .val { display: block; width: 100%; height: 56px; margin-bottom: 6px; }
+.L-A .pg-tune .v-n { top: 50%; margin-top: -15px; font-size: 26px; }
+.L-A .pg-tune .v-v { bottom: auto; top: 50%; margin-top: -19px; font-size: 32px; }
+/* KEY + SCALE combos (Yoni 2026-11-16: "lets do 2 combos for selection of key and scale"): the row says it opens - its
+   value sits left of an LCD down-arrow, the row is a press (not a vertical drag) - and the open one stays lit while its
+   list is up. The list covers the TUNE page: every key / scale at once, the picked one filled, the D-pad's cell ringed. */
+.L-A .pg-tune .val.combo { cursor: pointer; }
+.L-A .pg-tune .val.combo .v-v { right: 40px; }
+.L-A .pg-tune .val.combo::after { content: ''; position: absolute; right: 13px; top: 50%; margin-top: -5px; width: 0; height: 0;
+  border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 10px solid var(--lcd-acc); pointer-events: none; }
+.L-A .pg-tune .val.combo.open { border-color: var(--lcd-acc); box-shadow: inset 0 0 0 1px var(--lcd-acc); }
+.L-A .pg-tune .val.combo.open::after { border-top: 0; border-bottom: 10px solid var(--lcd-acc); }
+.L-A .cpick { display: none; position: absolute; left: 0; top: 62px; right: 0; bottom: 0; z-index: 2; padding: 6px;
+  background: var(--lcd-bg); border: 1px solid var(--lcd-acc); border-radius: 2px; box-shadow: 0 4px 10px rgba(12, 9, 6, .55); }
+.L-A .cpick[data-combo="AT_SCALE"] { top: 124px; }
+.L-A .cpick.open { display: block; }
+.L-A .cp-list { font-size: 0; }
+.L-A .cpo { cursor: pointer; vertical-align: top; }
+.L-A .cpo span { position: absolute; left: 0; right: 0; top: 50%; margin-top: -13px; text-align: center; font-size: 24px; line-height: 26px; }
+.L-A .cp-4c .cpo { width: calc(25% - 6px); height: 62px; margin: 0 6px 6px 0; }
+.L-A .cp-4c .cpo span { font-size: 30px; margin-top: -15px; line-height: 30px; }
+.L-A .cp-3c .cpo { width: calc(33.333% - 6px); height: 30px; margin: 0 6px 5px 0; }   /* 5 rows in the ~199 px under SCALE */
+.L-A .cp-3c .cpo span { font-size: 21px; margin-top: -11px; line-height: 22px; }
+/* the NOTES page (2026-11-12): the 12 cells over a two-key view row (NOTES = this grid | KEYBOARD = a piano octave) */
+.L-A .pg-notes .nt-keys { position: absolute; left: 0; right: 0; top: 0; bottom: 58px; }
+.L-A .pg-notes .nv-row { position: absolute; left: 0; right: 0; bottom: 0; height: 52px; white-space: nowrap; font-size: 0; }
+.L-A .pg-notes .nv-row .opt { width: 212px; height: 50px; margin-right: 6px; }
+.L-A .pg-notes .nv-row .opt:last-child { margin-right: 0; }
+.L-A .pg-notes .nv-row .opt span { position: absolute; left: 0; right: 0; top: 50%; margin-top: -12px; text-align: center; font-size: 21px; font-weight: 700; }
+.L-A .note { width: 105px; height: 78px; margin: 0 6px 6px 0; }
+.L-A .note:nth-child(4n) { margin-right: 0; }
+.L-A .note span { position: absolute; left: 0; right: 0; top: 10px; text-align: center; font-size: 34px; font-weight: 700; }
+.L-A .note .lamp { bottom: 9px; height: 6px; }
+/* KEYBOARD (Yoni 2026-11-12: "keyboard notes view ... make sure the notes in the keyboard mode are showing the notes
+   correctly"): the SAME 12 cells (same toggles, lamps, out-of-scale fade, struck = off, the key's root) placed as one
+   octave: 7 white keys C D E F G A B across the screen, the 5 black keys C# Eb F# Ab Bb on top between them */
+.L-A .pg-notes.kb .note { position: absolute; top: 0; margin: 0; }
+.L-A .pg-notes.kb .note.w { width: 57px; height: 100%; border-color: var(--lcd-dim);
+  background: linear-gradient(180deg, rgba(200, 225, 235, .2), rgba(200, 225, 235, .1) 70%, rgba(200, 225, 235, .16)); }
+.L-A .pg-notes.kb .note.b { width: 38px; height: 60%; z-index: 2; border-color: var(--lcd-grid);
+  background: linear-gradient(180deg, rgba(6, 12, 16, .97), rgba(12, 22, 28, .97) 75%, rgba(6, 12, 16, .97));
+  box-shadow: 2px 3px 4px rgba(4, 8, 10, .7); }
+.L-A .pg-notes.kb .note span { top: auto; bottom: 22px; font-size: 25px; }
+.L-A .pg-notes.kb .note.b span { bottom: 16px; font-size: 17px; }
+.L-A .pg-notes.kb .note .lamp { bottom: 8px; height: 5px; left: 24%; right: 24%; }
+.L-A .pg-notes.kb .note.b .lamp { bottom: 6px; }
+/* out of the scale on the keyboard: the key keeps its body (a black key stays black), only its name + lamp dim */
+.L-A .pg-notes.kb .note.fade { opacity: 1; }
+.L-A .pg-notes.kb .note.fade span, .L-A .pg-notes.kb .note.fade .lamp { opacity: .3; }
+.L-A .pg-notes.kb .note.w.fade { background: linear-gradient(180deg, rgba(200, 225, 235, .1), rgba(200, 225, 235, .05) 70%, rgba(200, 225, 235, .08)); }
+.L-A .pg-notes.kb [data-part="note-0"]  { left: 0; }
+.L-A .pg-notes.kb [data-part="note-1"]  { left: 42.4px; }
+.L-A .pg-notes.kb [data-part="note-2"]  { left: 61.4px; }
+.L-A .pg-notes.kb [data-part="note-3"]  { left: 103.9px; }
+.L-A .pg-notes.kb [data-part="note-4"]  { left: 122.9px; }
+.L-A .pg-notes.kb [data-part="note-5"]  { left: 184.3px; }
+.L-A .pg-notes.kb [data-part="note-6"]  { left: 226.7px; }
+.L-A .pg-notes.kb [data-part="note-7"]  { left: 245.7px; }
+.L-A .pg-notes.kb [data-part="note-8"]  { left: 288.1px; }
+.L-A .pg-notes.kb [data-part="note-9"]  { left: 307.1px; }
+.L-A .pg-notes.kb [data-part="note-10"] { left: 349.6px; }
+.L-A .pg-notes.kb [data-part="note-11"] { left: 368.6px; }
+.L-A .note.fade { opacity: .35; cursor: default; }
+.L-A .note.off span { text-decoration: line-through; opacity: .7; }
+/* TUNE (Yoni 2026-11-16): HUMAN + FLEX share a row, VOICE is the last row */
+.L-A .pg-tune .val.half { display: inline-block; width: calc(50% - 3px); margin-right: 6px; }
+.L-A .pg-tune .val.half.r { margin-right: 0; }
+/* FX (todo 10-7, Yoni 2026-11-16): HARMONY's idiom. The FX page = FX POWER + MIX, then a tile per unit (lit = it sounds);
+   a unit page = its power + MIX, then cards of four values. A cell behind a SYNC leaves while the other one shows. */
+.L-A .pg-fx > .tog, .L-A .pg-fxu > .tog { display: inline-block; width: calc(58% - 3px); height: 56px; margin: 0 6px 6px 0; }
+.L-A .pg-fx > .val:not(.tog), .L-A .pg-fxu > .val:not(.tog) { display: inline-block; width: calc(42% - 3px); height: 56px; margin-bottom: 6px; }
+.L-A .pg-fx > .val .v-n, .L-A .pg-fxu > .val .v-n { top: 50%; margin-top: -15px; font-size: 26px; }
+.L-A .pg-fx > .val:not(.tog) .v-v, .L-A .pg-fxu > .val:not(.tog) .v-v { bottom: auto; top: 50%; margin-top: -17px; font-size: 28px; }
+.L-A .pg-fx > .tog .v-v, .L-A .pg-fxu > .tog .v-v { font-size: 28px; }
+.L-A .pg-fx .fxt { width: calc(50% - 3px); height: 118px; margin: 0 6px 6px 0; }
+.L-A .pg-fx .fxt.r { margin-right: 0; }
+.L-A .pg-fx .fxt .t-n { font-size: 26px; }
+.L-A .pg-fx .fxt .t-v { font-size: 26px; }
+.L-A .fxt.lit { border-color: var(--lcd-acc); }
+.L-A .fxt.lit .t-n::after { content: ' \25CF'; font-size: 18px; vertical-align: 3px; }
+.L-A .fxl { display: block; margin-top: 6px; line-height: 0; font-size: 0; }
+.L-A .fxl i { display: inline-block; width: 26px; height: 26px; margin: 0 4px 0 0; border-radius: 4px; font-size: 20px; line-height: 26px;
+  font-style: normal; text-align: center; color: var(--lcd-dim);
+  background: linear-gradient(180deg, rgba(120, 150, 160, .25), rgba(120, 150, 160, .14) 60%, rgba(120, 150, 160, .2)); }
+.L-A .fxl i.lit { color: var(--lcd-bg, #10140f); background: linear-gradient(180deg, var(--lcd-acc), var(--lcd-acc) 60%, var(--lcd-dim)); }
+.L-A .gone { display: none !important; }
+.L-A .fx-gr { cursor: default; }
+.L-A .fx-gr i { position: absolute; left: 6px; top: 34px; height: 7px; width: 0; max-width: calc(100% - 12px); border-radius: 2px; background: var(--lcd-acc); }
+/* HARMONY + MIX share the top row (Yoni 2026-11-11: MIX "next to the harmony on off"); 2026-11-17 (Yoni: "the 2nd
+   harmony is not working"): + each voice's own switch, HARM | V1 | V2 | MIX; a voice's card dims while it is off */
+.L-A .pg-harm .tog { display: inline-block; width: calc(25% - 4.5px); height: 56px; margin: 0 6px 6px 0; }
+.L-A .pg-harm > .val[data-param="HM_MIX"] { display: inline-block; width: calc(25% - 4.5px); height: 56px; margin-bottom: 6px; }
+.L-A .pg-harm .card.voff .val { opacity: .4; }
+.L-A .pg-harm .card.voff .c-n::after { content: ' OFF'; color: var(--lcd-dim); }
+.L-A .pg-harm > .val[data-param="HM_MIX"] .v-n { top: 3px; margin-top: 0; font-size: 20px; }
+.L-A .pg-harm > .val[data-param="HM_MIX"] .v-v { bottom: 3px; top: auto; margin-top: 0; font-size: 26px; }
+.L-A .pg-harm .tog .v-n { top: 3px; margin-top: 0; font-size: 20px; }
+.L-A .pg-harm .tog .v-v { bottom: 3px; top: auto; font-size: 26px; }   /* four cells since 2026-11-17: two lines, as the cards */
+.L-A .card { height: 118px; margin-bottom: 6px; }
+.L-A .card .c-n { display: block; width: auto; line-height: 26px; height: 26px; font-size: 22px; }
+.L-A .card .val { width: 104px; height: 88px; margin-right: 4px; }
+.L-A .card .val:last-child { margin-right: 0; }
+.L-A .card .v-n { font-size: 20px; }
+.L-A .card .v-v { right: 5px; font-size: 22px; }
+/* EQ (10-11, Yoni 2026-11-18): EQ ON + the node in hand on top, the curve with its 4 dots, the node's FREQ / GAIN / WIDTH.
+   A dot = a lit disc (L, 1, 2, H) in a 52 px hit zone (28 css px at the laptop size); a cut that is OFF dims. */
+.L-A .pg-fx-eq > .eq-sel { display: inline-block; width: calc(42% - 3px); height: 56px; margin-bottom: 6px; cursor: pointer; }
+.L-A .pg-fx-eq > .eq-sel .v-n { top: 3px; margin-top: 0; font-size: 20px; }
+.L-A .pg-fx-eq > .eq-sel .v-v { bottom: 3px; top: auto; margin-top: 0; font-size: 26px; color: var(--lcd-acc); }
+.L-A .eq-graph { position: relative; height: 162px; margin-bottom: 6px; border: 1px solid var(--lcd-grid); border-radius: 5px; touch-action: none;
+  background: linear-gradient(180deg, rgba(120, 150, 160, .1), rgba(120, 150, 160, .04) 60%, rgba(120, 150, 160, .08)); }
+.L-A .eq-cv { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; }
+.L-A .eq-fl { position: absolute; bottom: 3px; transform: translateX(-50%); font-size: 16px; font-weight: 400;
+  color: var(--lcd-dim); pointer-events: none; }   /* 100 / 1k / 10k under their grid lines (left = the graph's law, set in the markup) */
+.L-A .eq-node { position: absolute; width: 52px; height: 52px; margin: -26px 0 0 -26px; z-index: 2; cursor: grab; }
+.L-A .eq-node b { position: absolute; left: 50%; top: 50%; width: 24px; height: 24px; margin: -12px 0 0 -12px; border-radius: 50%;
+  font-size: 16px; font-weight: 400; line-height: 24px; text-align: center; color: var(--lcd-bg, #10140f);
+  background: radial-gradient(circle at 40% 35%, var(--lcd-ink), var(--lcd-acc) 55%, var(--lcd-dim)); pointer-events: none; }
+.L-A .eq-node.sel b { box-shadow: 0 0 0 2px var(--lcd-ink), 0 0 10px rgba(108, 198, 230, .7); }
+.L-A .eq-node.hl b { box-shadow: 0 0 0 2px var(--lcd-acc); }
+.L-A .eq-node.off b { opacity: .45; }
+.L-A .eq-node.down { cursor: grabbing; }
+.L-A .eq-read { font-size: 0; white-space: nowrap; }
+.L-A .eq-read .val { display: inline-block; width: calc(33.333% - 4px); height: 72px; margin-right: 6px; }
+.L-A .eq-read .val:last-child { margin-right: 0; }
+.L-A .eq-read .v-n { top: 3px; font-size: 20px; }
+.L-A .eq-read .v-v { bottom: 5px; font-size: 26px; }
+/* 10-10 (Yoni 2026-11-18): HARM | V1 | V2 | MIX | POS - five cells; POS opens the POSITION page */
+.L-A .pg-harm .tog, .L-A .pg-harm > .val[data-param="HM_MIX"] { width: calc(20% - 4.8px); }
+.L-A .pg-harm > .val[data-param="HM_MIX"] { margin-right: 6px; }
+.L-A .pg-harm > .go { margin-right: 0; }
+/* POSITION (10-10): the FX unit page's idiom - the switch + one readout on top (the LATENCY it adds), then a card per
+   voice: MODE + the LANE (the control: press / drag the voice; Yoni 2026-11-18) + its readout (ms; + the note value in
+   SYNC). The lane: the VOX line = the lead (0 at a quarter in, the same law as the readout's ms), the block = the
+   voice, EARLY left / LATE right; the end the voice is pinned to says LIMIT. */
+.L-A .pg-pos > .tog { display: inline-block; width: calc(58% - 3px); height: 56px; margin: 0 6px 6px 0; }
+.L-A .pg-pos > .tog .v-n { top: 50%; margin-top: -15px; font-size: 26px; }
+.L-A .pg-pos > .tog .v-v { bottom: auto; top: 50%; margin-top: -17px; font-size: 28px; }
+.L-A .pg-pos > .pos-lat { display: inline-block; width: calc(42% - 3px); height: 56px; margin-bottom: 6px; cursor: default; }
+.L-A .pos-lat .v-n { top: 3px; font-size: 20px; }
+.L-A .pos-lat .v-v { bottom: 3px; font-size: 26px; color: var(--lcd-dim); }
+.L-A .pg-pos .c-iv { margin-left: 10px; color: var(--lcd-dim); font-weight: 400; }
+.L-A .pos-lane { position: relative; display: inline-block; vertical-align: top; width: 222px; height: 88px; margin-right: 4px;
+  border-radius: 5px; cursor: ew-resize; touch-action: none;
+  border: 1px solid var(--lcd-grid); background: linear-gradient(180deg, rgba(120, 150, 160, .1), rgba(120, 150, 160, .04) 60%, rgba(120, 150, 160, .08)); }
+.L-A .pos-lane.hl, .L-A .pos-lane.down { border-color: var(--lcd-acc); box-shadow: inset 0 0 0 1px var(--lcd-acc); }
+.L-A .pos-lane.down .pl-v { box-shadow: 0 0 10px rgba(108, 198, 230, .75); }
+/* the readout next to the lane: an LCD reading, not a key (no cell) - the note value (SYNC) or POS on top, the ms under it */
+.L-A .pos-read { position: relative; display: inline-block; vertical-align: top; width: 104px; height: 88px; }
+.L-A .pos-read .pr-n { position: absolute; left: 4px; top: 3px; font-size: 20px; color: var(--lcd-dim); letter-spacing: .04em; white-space: nowrap; }
+.L-A .pos-read .pr-v { position: absolute; right: 4px; bottom: 5px; font-size: 22px; color: var(--lcd-ink); white-space: nowrap; }
+.L-A .pos-lane b { position: absolute; font-size: 17px; font-weight: 400; color: var(--lcd-dim); letter-spacing: .04em; white-space: nowrap; pointer-events: none; }
+.L-A .pos-lane .pl-vt { top: 3px; left: calc(12px + (100% - 24px) * .25); transform: translateX(-50%); color: var(--lcd-ink); }
+.L-A .pos-lane .pl-e { left: 7px; bottom: 3px; }
+.L-A .pos-lane .pl-l { right: 7px; bottom: 3px; }
+.L-A .pos-lane b.lim { color: var(--lcd-acc); }
+.L-A .pl-in { position: absolute; left: 12px; right: 12px; top: 0; bottom: 0; pointer-events: none; }
+.L-A .pl-track { position: absolute; left: 0; right: 0; top: 43px; height: 2px; background: var(--lcd-grid); }
+.L-A .pl-vox { position: absolute; left: 25%; top: 24px; width: 2px; height: 40px; margin-left: -1px; background: var(--lcd-ink); opacity: .85; }
+.L-A .pl-v { position: absolute; left: 25%; top: 33px; width: 14px; height: 22px; margin-left: -7px; border-radius: 3px;
+  background: linear-gradient(180deg, var(--lcd-acc), var(--lcd-acc) 60%, var(--lcd-dim)); box-shadow: 0 0 6px rgba(108, 198, 230, .45); }
+.L-A .pg-pos.poff .card .val, .L-A .pg-pos.poff .pos-lane, .L-A .pg-pos.poff .pos-read,
+.L-A .pg-pos .card.voff .val, .L-A .pg-pos .card.voff .pos-lane, .L-A .pg-pos .card.voff .pos-read { opacity: .4; }
+.L-A .pg-pos .card.voff .c-n::after { content: ' OFF'; color: var(--lcd-dim); }
+.L-A .pg-live .hero { width: 100%; height: 100%; }
+.L-A .pg-live .g-gauge { left: 0; top: 0; width: 100%; height: 170px; }
+.L-A .pg-live .g-gauge .lv-note { top: 92px; font-size: 52px; }
+.L-A .pg-live .g-gauge .lv-cents { top: 148px; font-size: 24px; }
+.L-A .pg-live .g-graph { left: 4px; top: 182px; width: calc(100% - 8px); height: 124px; }
+.L-A .mini { flex: none; height: 46px; margin-top: 4px; padding: 0 4px; border-top: 1px solid var(--lcd-grid); line-height: 44px; font-size: 24px; white-space: nowrap; }
+.on-live .mini { visibility: hidden; } /* the full hero replaces the strip */
+.L-A .mini .m-l { color: var(--lcd-dim); margin-right: 12px; }
+.L-A .mini .lv-note { display: inline-block; width: 3ch; font-size: 28px; margin-right: 12px; } /* fixed slot: "Bb3" / "D4" / "--" never move the cents */
+.L-A .m-bar { position: absolute; right: 12px; bottom: 16px; width: 150px; height: 14px; border-radius: 3px;
+  background: linear-gradient(90deg, rgba(120, 150, 160, .14), rgba(120, 150, 160, .26) 50%, rgba(120, 150, 160, .14)); }
+.L-A .m-0 { position: absolute; left: 50%; top: -2px; width: 2px; height: 18px; background: var(--lcd-acc); }
+.L-A .m-in { position: absolute; top: 1px; width: 6px; height: 12px; margin-left: -3px; border-radius: 2px; background: var(--lcd-ink); }
+
+/* ---------------------------------------------------------------- Layout B, Keypad (500 x 920): no pages but SETUP */
+.L-B .bezel { left: 30px; top: 100px; width: 440px; height: 400px; }
+.L-B .legend { left: 30px; width: 440px; top: 506px; }
+.L-B .p-power { left: 30px; top: 532px; width: 70px; height: 62px; }
+.L-B .p-listen { left: 104px; top: 532px; width: 70px; height: 62px; }
+.L-B .p-key-arm { left: 178px; top: 532px; width: 70px; height: 62px; }
+.L-B .p-scale { left: 252px; top: 532px; width: 70px; height: 62px; }
+.L-B .p-voice { left: 326px; top: 532px; width: 70px; height: 62px; }
+.L-B .p-harm { left: 400px; top: 532px; width: 70px; height: 62px; }
+.L-B .key .lg, .L-C .key .lg { font-size: 17px; letter-spacing: .03em; }
+.L-B .key.nk .lg, .L-C .key.nk .lg { font-size: 21px; }
+.L-B .p-pad { left: 30px; top: 604px; width: 210px; height: 266px; }
+.L-B .p-dpad { left: 282px; top: 604px; }
+.L-B .p-esc { left: 282px; top: 796px; width: 90px; height: 62px; }
+.L-B .p-setup { left: 378px; top: 796px; width: 90px; height: 62px; }
+.p-pad { position: absolute; pointer-events: none; }
+.p-pad .key { pointer-events: auto; }
+.L-B .p-pad .key { width: 66px; height: 62px; }
+.p-note-0, .p-note-3, .p-note-6, .p-note-9 { left: 0; }
+.p-note-1, .p-note-4, .p-note-7, .p-note-10 { left: 72px; }
+.p-note-2, .p-note-5, .p-note-8, .p-note-11 { left: 144px; }
+.L-B .p-note-0, .L-B .p-note-1, .L-B .p-note-2 { top: 0; }
+.L-B .p-note-3, .L-B .p-note-4, .L-B .p-note-5 { top: 68px; }
+.L-B .p-note-6, .L-B .p-note-7, .L-B .p-note-8 { top: 136px; }
+.L-B .p-note-9, .L-B .p-note-10, .L-B .p-note-11 { top: 204px; }
+.L-B .hero { height: 112px; }
+.L-B .g-gauge { left: 0; top: 0; width: 150px; height: 112px; }
+.L-B .g-gauge .lv-note { top: 52px; }
+.L-B .g-gauge .lv-cents { top: 88px; }
+.L-B .g-graph { left: 160px; top: 6px; width: calc(100% - 164px); height: 100px; }
+.L-B .list { height: 60px; margin: 6px 0; }
+.L-B .list .val { width: 78px; height: 60px; margin-right: 4px; } /* 5 values since HM_MIX (0.3.4) */
+.L-B .list .val:last-child { margin-right: 0; }
+.L-B .card { height: 64px; margin-bottom: 4px; }
+.L-B .card .val { width: 91px; height: 60px; margin-right: 4px; }
+.L-B .card .val:last-child { margin-right: 0; }
+.L-B .card .v-v { font-size: 19px; }
+
+/* ---------------------------------------------------------------- Layout C, Console (1140 x 600): wide, most direct */
+.L-C .bezel { left: 30px; top: 100px; width: 540px; height: 264px; }
+.L-C .legend { left: 30px; width: 540px; top: 370px; }
+.L-C .kw-AT_HUMANIZE { left: 66px; top: 404px; width: 110px; }
+.L-C .kw-AT_RETUNE { left: 222px; top: 396px; width: 140px; }
+.L-C .kw-AT_FLEX { left: 404px; top: 404px; width: 110px; }
+.L-C .p-int-1 { left: 590px; top: 100px; width: 230px; height: 56px; }
+.L-C .p-int-2 { left: 590px; top: 254px; width: 230px; height: 56px; }
+.L-C .strip { position: absolute; left: 584px; width: 242px; height: 90px; }
+.L-C .st-1 { top: 160px; }
+.L-C .st-2 { top: 314px; }
+.L-C .strip .kwrap { position: relative; display: inline-block; vertical-align: top; width: 80px; }
+.L-C .p-dpad { left: 624px; top: 412px; width: 162px; height: 162px; }
+.L-C .p-dpad .key { width: 54px; height: 54px; }
+.L-C .p-dpad .p-up { left: 54px; top: 0; }
+.L-C .p-dpad .p-left { left: 0; top: 54px; }
+.L-C .p-dpad .p-ok { left: 54px; top: 54px; }
+.L-C .p-dpad .p-right { left: 108px; top: 54px; }
+.L-C .p-dpad .p-down { left: 54px; top: 108px; }
+.L-C .p-key-arm { left: 836px; top: 106px; width: 62px; height: 56px; }
+.L-C .p-scale { left: 904px; top: 106px; width: 62px; height: 56px; }
+.L-C .p-voice { left: 972px; top: 106px; width: 62px; height: 56px; }
+.L-C .p-harm { left: 1040px; top: 106px; width: 62px; height: 56px; }
+.L-C .leds { left: 940px; top: 162px; }
+.L-C .p-pad { left: 836px; top: 184px; width: 268px; height: 231px; }
+.L-C .p-pad .key { width: 84px; height: 54px; }
+.L-C .p-note-1, .L-C .p-note-4, .L-C .p-note-7, .L-C .p-note-10 { left: 92px; }
+.L-C .p-note-2, .L-C .p-note-5, .L-C .p-note-8, .L-C .p-note-11 { left: 184px; }
+.L-C .p-note-0, .L-C .p-note-1, .L-C .p-note-2 { top: 0; }
+.L-C .p-note-3, .L-C .p-note-4, .L-C .p-note-5 { top: 59px; }
+.L-C .p-note-6, .L-C .p-note-7, .L-C .p-note-8 { top: 118px; }
+.L-C .p-note-9, .L-C .p-note-10, .L-C .p-note-11 { top: 177px; }
+.L-C .p-power { left: 836px; top: 421px; width: 130px; height: 54px; }
+.L-C .p-listen { left: 974px; top: 421px; width: 130px; height: 54px; }
+.L-C .p-esc { left: 836px; top: 481px; width: 130px; height: 54px; }
+.L-C .p-setup { left: 974px; top: 481px; width: 130px; height: 54px; }
+.L-C .hero { height: 122px; }
+.L-C .g-gauge { left: 0; top: 0; width: 190px; height: 122px; }
+.L-C .g-gauge .lv-note { top: 58px; }
+.L-C .g-gauge .lv-cents { top: 96px; }
+.L-C .g-graph { left: 200px; top: 6px; width: calc(100% - 204px); height: 110px; }
+.L-C .list { height: 54px; margin-top: 0; }
+.L-C .list .val { width: 97px; height: 54px; margin-right: 5px; } /* 5 values since HM_MIX (0.3.4) */
+.L-C .list .val:last-child { margin-right: 0; }
+
+/* ---------------------------------------------------------------- skin wear (always under the text, Law 5) */
+/* Shop-worn: the legends rubbed at the thumb spots (a soft fade, never a chip on a letter) */
+.skin-shop [data-part="power"] .lg, .skin-shop [data-part="ok"] .lg, .skin-shop [data-part="esc"] .lg,
+.skin-vintage [data-part="power"] .lg, .skin-vintage [data-part="ok"] .lg, .skin-vintage [data-part="esc"] .lg {
+  -webkit-mask-image: radial-gradient(70% 90% at 62% 60%, rgba(12, 9, 6, .55) 0%, rgba(12, 9, 6, 1) 75%); mask-image: radial-gradient(70% 90% at 62% 60%, rgba(12, 9, 6, .55) 0%, rgba(12, 9, 6, 1) 75%); }
+.skin-shop .key .cap, .skin-vintage .key .cap {
+  background:
+    radial-gradient(60% 50% at 60% 62%, var(--rub), rgba(150, 140, 126, 0) 100%),
+    linear-gradient(168deg, var(--key-hi) 0%, var(--key) 48%, var(--key-lo) 100%); }
+.skin-shop .key[data-part="power"] .cap, .skin-vintage .key[data-part="power"] .cap {
+  background:
+    radial-gradient(60% 50% at 60% 62%, var(--rub), rgba(150, 120, 110, 0) 100%),
+    linear-gradient(168deg, var(--race-red-hi) 0%, var(--race-red) 50%, var(--race-red-lo) 100%); }
+/* Vintage: chunkier keys (bigger cap, deeper skirt), a chalky hardened bumper, an amber mono LCD */
+.skin-vintage .key .cap { left: 3px; top: 3px; right: 3px; bottom: 6px;
+  box-shadow: inset 0 2px 0 rgba(236, 224, 196, .2), inset 0 -3px 0 rgba(12, 9, 6, .35), 0 4px 4px rgba(12, 9, 6, .6); }
+.skin-vintage .key.down .cap { box-shadow: inset 0 5px 6px rgba(12, 9, 6, .65), inset 0 -1px 0 rgba(236, 224, 196, .04), 0 0 0 rgba(12, 9, 6, 0); }
+.skin-vintage .glass { text-shadow: 0 0 6px rgba(217, 160, 60, .35); }
+.skin-vintage .val, .skin-vintage .tile, .skin-vintage .opt, .skin-vintage .note {
+  background: linear-gradient(180deg, rgba(217, 160, 60, .1), rgba(217, 160, 60, .04) 60%, rgba(217, 160, 60, .08)); }
+.skin-vintage .opt.sel { background: linear-gradient(180deg, rgba(217, 160, 60, .32), rgba(217, 160, 60, .2) 60%, rgba(217, 160, 60, .26)); }
+.skin-vintage .bumper { box-shadow: inset 2px 2px 2px rgba(236, 224, 196, .16), inset -2px -3px 4px rgba(12, 9, 6, .5); }
+
+/* ---------------------------------------------------------------- PHOTO skin, layout A (10-2b / 10-2c, Yoni 2026-11-11)
+   The object is ONE photograph (Law 2): assets/photo/plate-A.webp = a gpt-image-2.6 edit of our own blank CSS render
+   (assets/photo/PROMPTS.md), cut to the object's silhouette. The keys are cut from the same photo, so they share its
+   light; a press sinks the cap 2 px and opens the dark slot above it (Law 3: down by depth, never by light).
+   Text, the screen content and the lamps stay live. The LCD wears a real scratched-glass layer (assets/photo/glass-A.jpg,
+   screen blend): heavy at the edges, nearly clean over the middle, under the smooth glare (Law 5). Other layouts fall
+   back to the FACTORY look.
+   LIGHT LAB (Yoni 2026-11-16: "the reflection of the light ... especially on the top left its a bit too much"; his
+   recipe bench/obdtune/light-recipe-2026-11-16.json): assets/photo/plate-A2.webp = plate-A.png with the lamp light
+   taken off the sheen behind the logo (50 %) and the bumper's top-left corner (35 %) by make-deglare.py --bake (alpha
+   identical, so the FLOATING cut is unchanged); the screen glare, the scratches' corner calm and the side wall's top
+   shade below are his numbers too. */
+.photo { display: none; }
+.skin-photo.L-A .photo { display: block; position: absolute; left: 0; top: 0; width: 520px; height: 810px; pointer-events: none;
+  background: url(assets/photo/plate-A2.webp) 0 0 / 520px 810px no-repeat; }
+.skin-photo.L-A .c-wire, .skin-photo.L-A .c-boot, .skin-photo.L-A .seam, .skin-photo.L-A .s-head,
+.skin-photo.L-A .g-ribs, .skin-photo.L-A .d-ring { display: none; }
+.skin-photo.L-A .bumper, .skin-photo.L-A .body, .skin-photo.L-A .bezel { background: none; box-shadow: none; }
+/* printed on the red plastic: pad print, a little thin, no embossed edge */
+.skin-photo.L-A .logo, .skin-photo.L-A .model, .skin-photo.L-A .legend { color: rgba(240, 230, 206, .94); text-shadow: 0 .5px .5px rgba(60, 10, 6, .45); }
+/* the photo's body has a moulded ridge along its top edge (y ~68-76): the print sits on the flat face below it */
+.skin-photo.L-A .logo { top: 75px; font-size: 25px; /* on the photo's brightest spot: a thin dark edge keeps it readable (Law 5) */
+  text-shadow: 0 0 1px rgba(60, 10, 6, .75), 0 1px 1px rgba(60, 10, 6, .55); }
+.skin-photo.L-A .model { top: 78px; font-size: 21px; }
+/* keys: the cap is the photo itself at the same spot; at rest it disappears into the plate */
+.skin-photo.L-A .key .well { background: none; transition: background 120ms; }
+.skin-photo.L-A .key.down .well { background: linear-gradient(180deg, rgba(12, 9, 6, .95) 0%, rgba(20, 14, 10, .8) 40%, rgba(30, 22, 16, .55) 100%); }
+.skin-photo.L-A .key .cap { background: url(assets/photo/plate-A2.webp) 0 0 / 520px 810px no-repeat; box-shadow: none; }
+.skin-photo.L-A .key.down .cap { box-shadow: inset 0 3px 4px rgba(12, 9, 6, .55); }
+/* the D-pad pads are round: so is the slot a press opens */
+.skin-photo.L-A .dpad .key .well { box-shadow: none; } /* the photo has its own recess: the slot shows only when pressed */
+.skin-photo.L-A .dpad .key.down .well { background: radial-gradient(circle at 50% 40%, rgba(12, 9, 6, .95) 0%, rgba(12, 9, 6, .8) 62%, rgba(12, 9, 6, 0) 100%); }
+.skin-photo.L-A [data-part="back"] .cap { background-position: -39px -631px; }
+.skin-photo.L-A [data-part="power"] .cap { background-position: -39px -711px; }
+.skin-photo.L-A [data-part="up"] .cap { background-position: -368px -608px; }
+.skin-photo.L-A [data-part="left"] .cap { background-position: -306px -670px; }
+.skin-photo.L-A [data-part="ok"] .cap { background-position: -368px -670px; }
+.skin-photo.L-A [data-part="right"] .cap { background-position: -430px -670px; }
+.skin-photo.L-A [data-part="down"] .cap { background-position: -368px -732px; }
+/* legends silk-screened onto the rubber: flat ink, no bevel */
+.skin-photo.L-A .key .lg { color: rgba(236, 226, 204, .9); text-shadow: 0 0 1px rgba(12, 9, 6, .5); }
+/* the LCD glass: real scratches, edge-heavy, screen blend over the content; the glare (::after) stays on top.
+   LIGHT LAB (Yoni 2026-11-16): the scratches at .79 but calmed in the screen's top-left corner (to .58 inside 25 % of a
+   67 % ellipse from the corner, full by its edge); the glare 164 deg, .11 -> .0306 at 36.47 % -> 0 at 62 %. */
+.skin-photo.L-A .glass::before { content: ''; position: absolute; left: 0; top: 0; right: 0; bottom: 0; z-index: 2; pointer-events: none;
+  background: url(assets/photo/glass-A.jpg) 0 0 / 100% 100% no-repeat; mix-blend-mode: screen; opacity: .79;
+  -webkit-mask-image: radial-gradient(67% 67% at 0 0, rgba(0, 0, 0, .58) 0%, rgba(0, 0, 0, .58) 25%, #000 100%);
+  mask-image: radial-gradient(67% 67% at 0 0, rgba(0, 0, 0, .58) 0%, rgba(0, 0, 0, .58) 25%, #000 100%); }
+.skin-photo.L-A .glass::after { z-index: 3;
+  background: linear-gradient(164deg, rgba(240, 232, 214, .11) 0%, rgba(240, 232, 214, .0306) 36.47%, rgba(240, 232, 214, 0) 62%); }
+/* the 3D side wall (LIGHT LAB, Yoni 2026-11-16): a shade over the top of every strip, so its top-left takes less lamp */
+.skin-photo.L-A .ex::after { content: ''; position: absolute; left: 0; top: 0; right: 0; bottom: 0; border-radius: inherit; pointer-events: none;
+  background: linear-gradient(180deg, rgba(12, 9, 6, .23) 0%, rgba(12, 9, 6, 0) 81%); }
+
+
+/* ---------------------------------------------------------------- the screen font (PIXEL, see the top of this file)
+   font-size-adjust keeps every size of the 10-1c layout: VT323 is drawn at Consolas' x-height, so nothing in a tile or
+   a value row moves or overflows. The scan tool's look: a soft backlit-LCD bloom on the ink (smooth light only, Law 5)
+   and squarer boxes, drawn the way an LCD draws them rather than as rounded PC widgets. */
+.obd .glass { font-family: "OBD Pixel", "Consolas", "Courier New", monospace; font-size-adjust: .5; letter-spacing: .02em;
+  text-shadow: 0 0 3px rgba(108, 198, 230, .22); }
+.obd .val, .obd .tile, .obd .opt, .obd .note { border-radius: 2px; }
+.obd .t-n, .obd .h2, .obd .v-v, .obd .c-n, .obd .h-on, .obd .lv-note { font-weight: 400; } /* a bitmap face has no bold: faux bold smears it */
+
+/* ---------------------------------------------------------------- layout A in 3D + the OBD connector (Yoni 2026-11-11)
+   The device = .dev, 215 px in from the box's left edge (obdtune.js DEV_LEFT). One-point camera off to the LEFT at the
+   device's middle height (RevAmp DESIGN 26; Yoni: "instead of up and down, go left and right"): perspective on .dev
+   reaches only its direct children, the .ex strips behind the front face = the device's left side wall; the front face
+   is never transformed, so it stays pixel-exact. The connector + cable are one photo beside it (.plug, under .dev, so
+   the cable tucks behind the side wall); its touch zones are .hot (actions: plug-lab.js). */
+.L-A .dev { position: absolute; left: 215px; top: 0; width: 520px; height: 810px;
+  -webkit-perspective: 1800px; perspective: 1800px; -webkit-perspective-origin: -1100px 405px; perspective-origin: -1100px 405px; }
+.L-A .ex { position: absolute; left: 0; top: 50px; width: 140px; height: 760px; border-radius: 46px 0 0 46px; pointer-events: none; }
+.L-A .cable { display: none; }
+.L-A .photo { -webkit-clip-path: inset(49px 0 0 0); clip-path: inset(49px 0 0 0); } /* the photo's own cable stub goes */
+.plug { position: absolute; }
+.plug-img { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none;
+  background: url(assets/photo/plug-A.webp) 0 0 / 100% 100% no-repeat;
+  /* pulled out (a touch zone's hold) and snapped back in: the rubbery house spring */
+  transition: transform 320ms cubic-bezier(.22, 1.5, .42, 1); }
+/* the connector (.con: the shell box of the photo) and the cable (.cab: the rest) are the same photo, split */
+.plug-img.con { -webkit-clip-path: inset(0 155px 366px 0); clip-path: inset(0 155px 366px 0); -webkit-transform-origin: 70px 90px; transform-origin: 70px 90px; }
+.plug-img.cab { -webkit-clip-path: polygon(140px 0, 295px 0, 295px 516px, 0 516px, 0 150px, 140px 150px); clip-path: polygon(140px 0, 295px 0, 295px 516px, 0 516px, 0 150px, 140px 150px); }
+.plug-glow { -webkit-transform-origin: 70px 90px; transform-origin: 70px 90px; }
+/* pulled out = the connector comes off its socket toward you: bigger, up-left, its shadow longer; the cable stays */
+.plug.pulled .con, .plug.pulled .plug-glow { -webkit-transform: translate(-5px, -6px) scale(1.07); transform: translate(-5px, -6px) scale(1.07); transition-duration: 90ms; }
+.plug.pulled .con { -webkit-filter: drop-shadow(6px 9px 7px rgba(12, 9, 6, .55)); filter: drop-shadow(6px 9px 7px rgba(12, 9, 6, .55)); }
+.plug-glow { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; transition: transform 320ms cubic-bezier(.22, 1.5, .42, 1); }
+/* a lit pin = a lamp inside the socket (Law 4: lit from inside, its light leaks a little) */
+.plug-glow b { position: absolute; width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px; border-radius: 50%; opacity: 0;
+  background: radial-gradient(circle, rgba(255, 240, 200, 1) 0%, rgba(240, 176, 80, .95) 45%, rgba(240, 176, 80, 0) 75%);
+  box-shadow: 0 0 7px 2px rgba(240, 176, 80, .55); transition: opacity 140ms; }
+.plug-glow b.on, .plug-glow b.ans { opacity: 1; }
+.hot { position: absolute; cursor: pointer; border-radius: 8px; }
+.hot-cable { cursor: grab; }
+.plug.show-zones .hot { box-shadow: inset 0 0 0 1.5px rgba(240, 200, 120, .8); background: rgba(240, 200, 120, .12); }
+
+/* ---------------------------------------------------------------- DETECT's scan (Yoni 2026-11-11: "when scanning the
+   key - lights on the obd connector + a progress bar in the screen when detecting"). obdtune.js render drives it from
+   ui.plugListen + ui.detectProgress (the plugin: the engine's progress, 0..1 of its listening window). */
+/* the screen: a segmented LCD bar takes the LIVE strip's place; fixed-width cells, nothing moves */
+.scanbar { display: none; }
+.L-A .glass.scanning .mini { visibility: hidden; }
+.L-A .glass.scanning .scanbar { display: block; position: absolute; left: 10px; right: 10px; bottom: 6px; height: 46px; padding: 0 4px;
+  border-top: 1px solid var(--lcd-grid); line-height: 44px; font-size: 22px; white-space: nowrap; color: var(--lcd-acc); }
+.scanbar .sb-l { display: inline-block; width: 13ch; vertical-align: top; -webkit-animation: obd-blink 900ms steps(2, start) infinite; animation: obd-blink 900ms steps(2, start) infinite; }
+.scanbar .sb-bar { position: absolute; left: calc(13ch + 16px); right: 5ch; top: 13px; height: 18px; border: 1px solid var(--lcd-acc);
+  background: repeating-linear-gradient(90deg, rgba(108, 198, 230, .1) 0 8px, rgba(108, 198, 230, 0) 8px 10px); }
+.scanbar .sb-fill { position: absolute; left: 2px; top: 2px; bottom: 2px; width: 0; max-width: calc(100% - 4px);
+  background: repeating-linear-gradient(90deg, var(--lcd-acc) 0 8px, rgba(108, 198, 230, 0) 8px 10px); }
+.scanbar .sb-p { position: absolute; right: 4px; top: 0; width: 4ch; text-align: right; color: var(--lcd-ink); }
+/* the connector: the pins fill with the progress, the rest keep chasing; a warm glow leaks from the pin recess */
+.plug-glow b.fill { opacity: 1; -webkit-animation: none; animation: none; }
+.plug.listening .plug-glow::before { content: ''; position: absolute; left: 20px; top: 92px; width: 108px; height: 48px; border-radius: 10px;
+  background: radial-gradient(60% 70% at 50% 50%, rgba(240, 176, 80, .32), rgba(240, 176, 80, .1) 60%, rgba(240, 176, 80, 0) 100%);
+  -webkit-animation: obd-recess 1100ms ease-in-out infinite alternate; animation: obd-recess 1100ms ease-in-out infinite alternate; }
+@-webkit-keyframes obd-recess { from { opacity: .45; } to { opacity: 1; } }
+@keyframes obd-recess { from { opacity: .45; } to { opacity: 1; } }
+
+/* ---------------------------------------------------------------- A: the mic, the CLOSE side key, the INFO wall screw,
+   the SERVICE page (Yoni 2026-11-11) */
+/* the measurement mic built into its OBD socket adapter - ONE molded piece (Yoni 2026-11-11: "the connector coming should
+   be with the mic embedded, not 1 by 1"; assets/photo/mic-A.webp, cut by diff from an edit of the connector photo, so it
+   is registered to the connector: its transform-origin is the connector face's centre).
+   0.3.8 (Yoni 2026-11-12, MIC LAB pick "C RISE": size 107 %, tempo 1.3; "instead of the graphic that the mic comes from
+   the left - make it like hanged from down ... pop in"; "enlarge the mic only by 30% - needs to understand it's a mic"):
+   it waits BELOW the plugin window's bottom edge (the lane clips there; the cable's U hides its way up) and while DETECT
+   listens it RISES to just in front of the slot (a hair past, held 1.177 = nearer the camera, its shadow long), then
+   SNAPS back into the slot and settles (1.3 s). Out: it pops out to the front, then drops back below the edge (0.76 s,
+   inside .unplugging's 780 ms). Never fades. The mic HEAD (.mic-head = the capsule above the housing's shoulder, the
+   same photo) is drawn again 30 % bigger from its collar, so it reads as a microphone. */
+.mic-lane { position: absolute; left: -25px; top: -92px; width: 192px; height: 627px; overflow: hidden; pointer-events: none; }   /* bottom = the window's bottom edge (365 + 535 = 900) */
+.mic { position: absolute; left: 33.5px; top: 95.5px; width: 130.2px; height: 144px; pointer-events: none;
+  background: url(assets/photo/mic-A.webp) 0 0 / 100% 100% no-repeat;
+  -webkit-transform-origin: 61.5px 91.5px; transform-origin: 61.5px 91.5px;           /* the connector face's centre */
+  -webkit-transform: translateY(546px) scale(1.07); transform: translateY(546px) scale(1.07); }   /* 546 = its top 8 px below the edge */
+.mic-head { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none;
+  background: url(assets/photo/mic-A.webp) 0 0 / 100% 100% no-repeat;
+  /* the capsule + its collar only (pixel scan of mic-A.png, 260 x 288: x 112..175, rows 4..70; the housing's side
+     ear starts at x 95..100 from row 52, so it stays out), grown from the collar's own centre (x 143.5 = 55.2 %) */
+  -webkit-clip-path: polygon(42.5% 0, 68% 0, 68% 24.5%, 42.5% 24.5%); clip-path: polygon(42.5% 0, 68% 0, 68% 24.5%, 42.5% 24.5%);
+  -webkit-transform-origin: 55.2% 24.5%; transform-origin: 55.2% 24.5%; -webkit-transform: scale(1.3); transform: scale(1.3); }
+.plug.listening .mic { -webkit-transform: translateY(0) scale(1.07); transform: translateY(0) scale(1.07);
+  -webkit-animation: obd-mic-in 1300ms both; animation: obd-mic-in 1300ms both;
+  -webkit-filter: drop-shadow(2px 3px 3px rgba(12, 9, 6, .55)) drop-shadow(0 0 6px rgba(240, 176, 80, .4)); filter: drop-shadow(2px 3px 3px rgba(12, 9, 6, .55)) drop-shadow(0 0 6px rgba(240, 176, 80, .4)); }
+.plug.unplugging .mic { -webkit-animation: obd-mic-out 760ms both; animation: obd-mic-out 760ms both; }
+@keyframes obd-mic-in {
+  0%   { transform: translateY(546px) scale(1.07);  filter: drop-shadow(3px 5px 4px rgba(12, 9, 6, .6)); animation-timing-function: cubic-bezier(.3, 0, .2, 1); }
+  58%  { transform: translateY(-4px) scale(1.177);  filter: drop-shadow(12px 16px 9px rgba(12, 9, 6, .45)); animation-timing-function: cubic-bezier(.5, 0, .9, .5); }
+  78%  { transform: translateY(0) scale(1.054);     filter: drop-shadow(2px 3px 3px rgba(12, 9, 6, .55)); animation-timing-function: ease-out; }
+  100% { transform: translateY(0) scale(1.07);      filter: drop-shadow(2px 3px 3px rgba(12, 9, 6, .55)) drop-shadow(0 0 6px rgba(240, 176, 80, .4)); } }
+@keyframes obd-mic-out {
+  0%   { transform: translateY(0) scale(1.07);      filter: drop-shadow(2px 3px 3px rgba(12, 9, 6, .55)); animation-timing-function: cubic-bezier(.2, .8, .3, 1); }
+  26%  { transform: translateY(-4px) scale(1.177);  filter: drop-shadow(12px 16px 9px rgba(12, 9, 6, .45)); animation-timing-function: cubic-bezier(.55, 0, .6, 1); }
+  100% { transform: translateY(546px) scale(1.07);  filter: drop-shadow(3px 5px 4px rgba(12, 9, 6, .6)); } }
+@-webkit-keyframes obd-mic-in {
+  0%   { -webkit-transform: translateY(546px) scale(1.07); -webkit-animation-timing-function: cubic-bezier(.3, 0, .2, 1); }
+  58%  { -webkit-transform: translateY(-4px) scale(1.177); -webkit-animation-timing-function: cubic-bezier(.5, 0, .9, .5); }
+  78%  { -webkit-transform: translateY(0) scale(1.054); -webkit-animation-timing-function: ease-out; }
+  100% { -webkit-transform: translateY(0) scale(1.07); } }
+@-webkit-keyframes obd-mic-out {
+  0%   { -webkit-transform: translateY(0) scale(1.07); -webkit-animation-timing-function: cubic-bezier(.2, .8, .3, 1); }
+  26%  { -webkit-transform: translateY(-4px) scale(1.177); -webkit-animation-timing-function: cubic-bezier(.55, 0, .6, 1); }
+  100% { -webkit-transform: translateY(546px) scale(1.07); } }
+/* CLOSE: a SIDE button in profile out of the RIGHT edge (Yoni 2026-11-11: "close doesn't look like it's a side button").
+   0.3.7 (Yoni 2026-11-12, BUTTON LAB pick 2 "SLIM SIDE KEY": h 138, y 212, x 512.5, base inside, legend on): a phone-style
+   rubber side key with a machined trim strip (assets/photo/side-B.webp = cand/btn-close-2, Higgsfield; prompts
+   assets/photo/PROMPTS.md section 12). Its base goes INTO the device: the clip holds at the device edge (x 520) whatever
+   the key does, so a press slides it in. Its legend is MOLDED into the rubber bumper beside it (an X + CLOSE, down the
+   rim) and never lights or moves: the warm light and the pop are on the key only (Yoni 2026-11-12).
+   0.4.0 (Yoni 2026-11-16, LIGHT LAB CLOSE KEY: "the side button to be more wide and include the "Close" text on it, same
+   like it is now but on the button itself not in the device body"): the key is 34 px wide (was 23.4), its photo drawn
+   as a 9-slice (the base + machined trim, photo columns 0-16, and the rounded end with its corners, 34-75, keep their
+   size; only the plain rubber, 17-33, stretches; widths = photo px / 3.248, the shipped scale). The X CLOSE legend is
+   on the key (its own <b>, so it slides in with a press), the same letters as before. The legend is STATIC under the
+   hand (Yoni 2026-11-16: "the close text when hovered on changing a little bit in size"): no halo on the letters any
+   more, and the key always sits on its own layer (will-change), so its text is drawn the same at rest and popped. The
+   window grew 7 px for it (the A box's right margin 25 -> 32). */
+.L-A .sidekey { position: absolute; left: 498px; top: 137px; width: 64.5px; height: 150px; cursor: pointer; z-index: 6; }
+.L-A .sk-well { display: none; }
+.L-A .sk-cap { position: absolute; left: 14.5px; top: 6px; width: 34px; height: 138px; box-sizing: border-box;
+  border: 0 solid transparent; -webkit-border-image: url(assets/photo/side-B.webp) 0 42 0 17 fill / 0 12.931px 0 5.234px stretch;
+  border-image-source: url(assets/photo/side-B.webp); border-image-slice: 0 42 0 17 fill;
+  border-image-width: 0 12.931px 0 5.234px; border-image-repeat: stretch; will-change: transform;
+  -webkit-clip-path: inset(-20px -20px -20px 7.5px); clip-path: inset(-20px -20px -20px 7.5px);   /* 7.5 = 520 - 512.5 */
+  -webkit-filter: drop-shadow(2px 3px 2px rgba(12, 9, 6, .55)); filter: drop-shadow(2px 3px 2px rgba(12, 9, 6, .55));
+  transition: -webkit-transform 300ms cubic-bezier(.22, 1.65, .42, 1), -webkit-clip-path 300ms cubic-bezier(.22, 1.65, .42, 1), -webkit-filter 200ms;
+  transition: transform 300ms cubic-bezier(.22, 1.65, .42, 1), clip-path 300ms cubic-bezier(.22, 1.65, .42, 1), filter 200ms; }
+/* the legend ON the key (0.4.0): raised rubber letters (12.5 px, .15 em), a column centred on the face the eye sees,
+   from the device edge (7.5) to the rounded end: left 7.5 + (34 - 9.5) / 2 - 18.18 / 2 = 10.66 */
+.L-A .sk-cap b { display: block; position: absolute; left: 10.66px; top: 0; width: 18.18px; height: 100%; font-size: 0; pointer-events: none; }
+.L-A .sk-cap b::before { content: '\2715  CLOSE'; display: block; width: 100%; height: 100%; white-space: pre;
+  font: 800 12.5px/18.18px "Segoe UI", Arial, sans-serif; letter-spacing: .15em; text-align: center;
+  color: rgba(214, 204, 186, .82); -webkit-writing-mode: vertical-rl; writing-mode: vertical-rl;
+  text-shadow: -1px -1px 0 rgba(240, 232, 214, .12), 1px 1px 1px rgba(12, 9, 6, .85); }
+/* hover: the key pops 1.5 px out and takes the warm light (house snap curve); press: it slides 5 px into the side */
+.L-A .sidekey:hover .sk-cap { -webkit-transform: translateX(1.5px); transform: translateX(1.5px);
+  -webkit-clip-path: inset(-20px -20px -20px 6px); clip-path: inset(-20px -20px -20px 6px);
+  -webkit-filter: drop-shadow(3px 4px 3px rgba(12, 9, 6, .6)) drop-shadow(0 0 6px rgba(240, 190, 110, .55)); filter: drop-shadow(3px 4px 3px rgba(12, 9, 6, .6)) drop-shadow(0 0 6px rgba(240, 190, 110, .55));
+  transition: -webkit-transform 160ms cubic-bezier(.2, .9, .25, 1.25), -webkit-clip-path 160ms cubic-bezier(.2, .9, .25, 1.25), -webkit-filter 160ms;
+  transition: transform 160ms cubic-bezier(.2, .9, .25, 1.25), clip-path 160ms cubic-bezier(.2, .9, .25, 1.25), filter 160ms; }
+.L-A .sidekey.down .sk-cap { -webkit-transform: translateX(-5px); transform: translateX(-5px);
+  -webkit-clip-path: inset(-20px -20px -20px 12.5px); clip-path: inset(-20px -20px -20px 12.5px); transition-duration: 70ms; }
+/* INFO on the LEFT side wall = the SERVICE page. 0.3.7 (Yoni 2026-11-12, BUTTON LAB pick 5 "BRASS LAMP": d 53, turn 55,
+   y 213, lamp .4, pop 2; "remove the info text under the info button"): an aged brass cap, the i cut through it and
+   filled with lit frosted glass, a lamp that is ON (assets/photo/info-B.webp = cand/btn-info-5, Higgsfield). The round
+   face is turned 55 deg away on the wall (real perspective, its near edge toward the device front). Law 4: only the
+   lamp brightens under the hand (info-B-lamp.png = its warm self-lit pixels, screened over the photo) plus a warm spill
+   on the wall; the brass is never painted bright. Hover = it pops 2 px out along its own axis (house snap curve) with a
+   sheen crossing the dome once; press = it sinks 3 px and the lamp flares; release = the rubber spring. */
+.L-A .wallscrew { position: absolute; left: -54.5px; top: 176.5px; width: 73px; height: 73px; cursor: pointer; z-index: 6; }
+.L-A .wallscrew::before { content: ''; position: absolute; left: -30%; top: -45%; width: 160%; height: 190%; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(closest-side, rgba(240, 165, 70, .42), rgba(240, 165, 70, .12) 55%, rgba(240, 165, 70, 0));
+  opacity: .22; transition: opacity 200ms; }
+.L-A .wallscrew:hover::before { opacity: .55; }
+.L-A .wallscrew.down::before { opacity: 1; transition-duration: 60ms; }
+.L-A .ws-head { position: absolute; left: 10px; top: 10px; width: 53px; height: 53px; border-radius: 50%;
+  background: url(assets/photo/info-B.webp) 0 0 / 100% 100% no-repeat;
+  -webkit-transform: perspective(260px) rotateY(-55deg) translateZ(0) scale(1); transform: perspective(260px) rotateY(-55deg) translateZ(0) scale(1);
+  -webkit-filter: drop-shadow(1px 2px 2px rgba(12, 9, 6, .75)); filter: drop-shadow(1px 2px 2px rgba(12, 9, 6, .75));
+  transition: -webkit-transform 300ms cubic-bezier(.22, 1.65, .42, 1), -webkit-filter 200ms; transition: transform 300ms cubic-bezier(.22, 1.65, .42, 1), filter 200ms; }
+.L-A .ws-head b { display: none; }   /* the photo carries the i */
+.L-A .ws-head::after { content: ''; position: absolute; left: 0; top: 0; width: 100%; height: 100%; border-radius: 50%; pointer-events: none;
+  background: url(assets/photo/info-B-lamp.webp) 0 0 / 100% 100% no-repeat; mix-blend-mode: screen; opacity: .24; transition: opacity 200ms; }
+.L-A .ws-head::before { content: ''; position: absolute; left: 0; top: 0; width: 100%; height: 100%; border-radius: 50%; pointer-events: none; opacity: 0;
+  background: linear-gradient(115deg, rgba(255, 244, 222, 0) 35%, rgba(255, 244, 222, .38) 50%, rgba(255, 244, 222, 0) 65%) -120% 0 / 250% 100% no-repeat;
+  mix-blend-mode: screen; }
+.L-A .wallscrew:hover .ws-head {
+  -webkit-transform: perspective(260px) rotateY(-55deg) translateZ(2px) scale(1.05); transform: perspective(260px) rotateY(-55deg) translateZ(2px) scale(1.05);
+  -webkit-filter: drop-shadow(3px 5px 4px rgba(12, 9, 6, .7)) drop-shadow(0 0 5px rgba(240, 165, 70, .45)); filter: drop-shadow(3px 5px 4px rgba(12, 9, 6, .7)) drop-shadow(0 0 5px rgba(240, 165, 70, .45));
+  transition: -webkit-transform 160ms cubic-bezier(.2, .9, .25, 1.25), -webkit-filter 160ms; transition: transform 160ms cubic-bezier(.2, .9, .25, 1.25), filter 160ms; }
+.L-A .wallscrew:hover .ws-head::after { opacity: .61; }
+.L-A .wallscrew:hover .ws-head::before { -webkit-animation: obd-sheen 520ms ease-out 1; animation: obd-sheen 520ms ease-out 1; }
+.L-A .wallscrew.down .ws-head {
+  -webkit-transform: perspective(260px) rotateY(-55deg) translateZ(-3px) scale(.96); transform: perspective(260px) rotateY(-55deg) translateZ(-3px) scale(.96);
+  -webkit-filter: drop-shadow(1px 1px 1px rgba(12, 9, 6, .8)) drop-shadow(0 0 8px rgba(240, 165, 70, .7)); filter: drop-shadow(1px 1px 1px rgba(12, 9, 6, .8)) drop-shadow(0 0 8px rgba(240, 165, 70, .7));
+  transition-duration: 70ms; }
+.L-A .wallscrew.down .ws-head::after { opacity: 1; transition-duration: 60ms; }
+@-webkit-keyframes obd-sheen { 0% { opacity: 0; background-position: -120% 0; } 20% { opacity: 1; } 100% { opacity: 0; background-position: 120% 0; } }
+@keyframes obd-sheen { 0% { opacity: 0; background-position: -120% 0; } 20% { opacity: 1; } 100% { opacity: 0; background-position: 120% 0; } }
+/* the SERVICE page (LCD): BACKGROUND, SIZE, FOLLOW + the five socials, version + revaudio.net */
+.L-A .pg-service .sv-row { position: relative; height: 54px; margin-bottom: 6px; white-space: nowrap; }
+.L-A .pg-service .sv-n { display: inline-block; width: 150px; vertical-align: top; line-height: 54px; font-size: 22px; color: var(--lcd-dim); }
+.L-A .pg-service .opt { width: 126px; height: 52px; margin: 1px 6px 0 0; }
+.L-A .pg-service .opt span { position: absolute; left: 0; right: 0; top: 50%; margin-top: -13px; text-align: center; font-size: 20px; }
+.L-A .pg-service .sv-k { width: 56px; }
+.L-A .pg-service .sv-k span { font-size: 28px; }
+.L-A .pg-service .sv-size { display: inline-block; width: 6ch; vertical-align: top; line-height: 54px; text-align: center; font-size: 26px; color: var(--lcd-ink); }
+.L-A .pg-service .sv-follow { height: 32px; }
+.L-A .pg-service .sv-follow .sv-n { line-height: 32px; }
+.L-A .pg-service .sv-at { line-height: 32px; font-size: 22px; color: var(--lcd-acc); }
+.L-A .pg-service .sv-soc { height: 62px; margin-bottom: 6px; white-space: nowrap; }
+.L-A .pg-service .sv-soc-k { width: 74px; height: 58px; margin: 0 9px 0 0; }
+.L-A .pg-service .sv-soc-k svg { position: absolute; left: 50%; top: 50%; width: 28px; height: 28px; margin: -14px 0 0 -14px; fill: var(--lcd-acc); }
+.L-A .pg-service .sv-ver { display: inline-block; width: 220px; vertical-align: top; line-height: 54px; font-size: 18px; color: var(--lcd-dim); }
+.L-A .pg-service .sv-foot .sv-k { width: 190px; }
+.L-A .pg-service .sv-foot .sv-k span { font-size: 20px; }
+
+/* ---------------------------------------------------------------- A: the CUSTOM page (Yoni 2026-11-12, todo 10-2q):
+   the timeline graph (drawn by obdtune-custom.js on .cm-cv) over five LCD soft keys in the house .opt style.
+   Every key >= 50 design px tall (28 css px at the laptop's 0.566). */
+.L-A .pg-custom .cm-graph { position: absolute; left: 0; top: 0; width: 100%; height: calc(100% - 62px); cursor: crosshair; border-radius: 5px;
+  border: 1px solid var(--lcd-grid); background: linear-gradient(180deg, rgba(120, 150, 160, .06), rgba(120, 150, 160, .02) 60%, rgba(120, 150, 160, .05));
+  touch-action: none; }
+.L-A .pg-custom .cm-graph.erase { cursor: cell; }
+.L-A .pg-custom .cm-cv { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; }
+.L-A .pg-custom .cm-keys { position: absolute; left: 0; right: 0; bottom: 0; height: 54px; white-space: nowrap; font-size: 0; }
+.L-A .pg-custom .cm-k { width: 82px; height: 54px; margin-right: 5px; }
+.L-A .pg-custom .cm-k:last-child { margin-right: 0; }
+.L-A .pg-custom .cm-k span { position: absolute; left: 0; right: 0; top: 50%; margin-top: -12px; text-align: center; font-size: 21px; font-weight: 700; }
+.L-A .pg-custom .cm-k.dim { opacity: .45; }

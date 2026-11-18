@@ -1,10 +1,10 @@
 /**
- * /obdtune boot: the live signal, the hero scanner, the scroll story, the bench, the reveals, the hero tilt and the
+ * /obdtune boot: the live signal, the hero scanner (the plugin's own UI, unit.ts), the scroll story, the bench, the reveals, the hero tilt and the
  * launch-list form (POST {form:'newsletter', email, source:'obdtune-notify', _gotcha, page} to the worker's
  * /form-once, the one-per-email list relay every site form uses).
  */
 import { startLive } from './live';
-import { initScanner } from './scanner';
+import { mountUnit } from './unit';
 import { initStory } from './story';
 import { initBench } from './bench';
 
@@ -14,8 +14,8 @@ export function initObdtune() {
   const page = document.querySelector<HTMLElement>('[data-obd-page]');
   if (!page) return;
   startLive();
-  const dev = page.querySelector<HTMLElement>('[data-obd-dev]');
-  if (dev) initScanner(dev);
+  const dev = page.querySelector<HTMLElement>('[data-obd-unit]');
+  if (dev) void mountUnit(dev);
   const story = page.querySelector<HTMLElement>('[data-obd-story]');
   if (story) initStory(story);
   const bench = page.querySelector<HTMLElement>('[data-obd-bench]');

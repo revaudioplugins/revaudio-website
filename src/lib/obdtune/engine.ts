@@ -36,16 +36,16 @@ export const VOICES = [
   { name: 'TENOR', lo: 80, hi: 550 },
 ];
 
-/** HARMONY (provisional HM_* in the plugin, in development): a voice an interval away in the scale. */
-export const HARM_INTERVALS = [
-  { name: '3RD UP', steps: 2 },
-  { name: '5TH UP', steps: 4 },
-  { name: '3RD DOWN', steps: -2 },
-  { name: 'OCT DOWN', steps: -7 },
+/** HM_n_INTERVAL, the plugin's list (obdtune.js INTERVALS): an octave is 12 semitones, the rest are scale steps. */
+export const HARM_INTERVALS: { name: string; steps?: number; st?: number }[] = [
+  { name: 'OCT DN', st: -12 }, { name: '6TH DN', steps: -5 }, { name: '5TH DN', steps: -4 }, { name: '4TH DN', steps: -3 },
+  { name: '3RD DN', steps: -2 }, { name: '2ND DN', steps: -1 }, { name: '2ND UP', steps: 1 }, { name: '3RD UP', steps: 2 },
+  { name: '4TH UP', steps: 3 }, { name: '5TH UP', steps: 4 }, { name: '6TH UP', steps: 5 }, { name: 'OCT UP', st: 12 },
 ];
 
 export interface ObdState {
-  on: boolean;          // AT_ON (POWER, a true bypass)
+  on: boolean;          // AT_ON (POWER, the whole plugin: tuner, harmony and FX)
+  tune: boolean;        // AT_TUNE (AUTOTUNE: off = the voice goes through untuned, HARMONY keeps working)
   key: number;          // AT_KEY 0-11
   scale: number;        // AT_SCALE 0-12
   speed: number;        // AT_RETUNE 1-200 ms
@@ -53,12 +53,14 @@ export interface ObdState {
   flex: number;         // AT_FLEX 0-100 cents
   voice: number;        // AT_VOICE 0-2
   notes: boolean[];     // AT_NOTE_0..11, absolute pitch class
-  harm: { on: boolean; v: { on: boolean; int: number; level: number }[] };
+  // HM_ON, HM_MIX (0-100: lead x min(1, 2(1-m)), voices x min(1, 2m)), per voice HM_n_ON / _INTERVAL / _LEVEL (linear)
+  harm: { on: boolean; mix: number; v: { on: boolean; int: number; level: number }[] };
   bg: 'FLOATING' | 'ROOM';
 }
 
 export const state: ObdState = {
   on: true,
+  tune: true,
   key: 0,
   scale: 1,
   speed: 25,
@@ -66,7 +68,7 @@ export const state: ObdState = {
   flex: 0,
   voice: 1,
   notes: Array(12).fill(true),
-  harm: { on: false, v: [{ on: true, int: 0, level: 0.7 }, { on: false, int: 1, level: 0.5 }] },
+  harm: { on: false, mix: 50, v: [{ on: true, int: 7, level: 0.5 }, { on: false, int: 9, level: 0.5 }] },
   bg: 'FLOATING',
 };
 
@@ -89,8 +91,8 @@ export const midiToHz = (m: number) => 440 * Math.pow(2, (m - 69) / 12);
 export function legal(s: ObdState = state): boolean[] {
   const out = Array(12).fill(false);
   for (const d of SCALES[s.scale][1]) out[(s.key + d) % 12] = true;
-  for (let i = 0; i < 12; i++) out[i] = out[i] && s.notes[i];
-  return out;
+  const kept = out.map((v, i) => v && s.notes[i]);
+  return kept.some(Boolean) ? kept : out; // every NOTE off = the scale, as in the plugin (legalAbs)
 }
 
 export function nearestLegal(p: number, ok: boolean[]): number {
@@ -116,6 +118,12 @@ export function scaleStep(m: number, steps: number, ok: boolean[]): number {
   return n;
 }
 
+/** Where a harmony voice sits for a lead target (an octave in semitones, the rest in scale steps). */
+export const harmNote = (target: number, int: number, ok: boolean[]) => {
+  const iv = HARM_INTERVALS[int];
+  return iv.st != null ? target + iv.st : scaleStep(target, iv.steps!, ok);
+};
+
 const smoothstep = (x: number) => { const t = clamp(x, 0, 1); return t * t * (3 - 2 * t); };
 
 export interface Reading { raw: number | null; out: number | null; target: number | null; voiced: boolean }
@@ -134,7 +142,7 @@ export class Corrector {
       return { raw: null, out: null, target: null, voiced: false };
     }
     this.unvoicedMs = 0;
-    if (!s.on) { this.corr = 0; return { raw: p, out: p, target: null, voiced: true }; }
+    if (!s.on || !s.tune) { this.corr = 0; return { raw: p, out: p, target: null, voiced: true }; }
     const target = nearestLegal(p, legal(s));
     if (target !== this.lastTarget) { this.age = 0; this.lastTarget = target; }
     this.age += dtMs;

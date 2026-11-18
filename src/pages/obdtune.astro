@@ -1,39 +1,44 @@
 ---
 /**
- * /obdtune: the OBDTUNE page (branch feat/obdtune-page, 2026-11-10). OBDTUNE = RevTune renamed (OBDTune repo,
- * docs/decisions.md 2026-11-02 / 11-09): vocal pitch correction as a handheld scan tool, layout A "Stock",
- * skin FACTORY (gate 10-1e, 2026-11-05). The plugin's own art isn't photographed yet (Stage 2), so the hero scanner
- * is built here in HTML / CSS after the bench's layout A: tile menu, D-pad + OK, BACK / DETECT / POWER keys,
- * race-red on POWER only.
+ * /obdtune: the OBDTUNE page (branch feat/obdtune-page, 2026-11-10; the new UI 2026-11-18). OBDTUNE = RevTune renamed
+ * (OBDTune repo): vocal pitch correction as a handheld scan tool, layout A in Yoni's PHOTO skin. The hero scanner IS the
+ * plugin's own UI (Source/ui/public, synced by tools/obdtune-ui/sync.sh into public/obdtune/ui, mounted by
+ * src/lib/obdtune/unit.ts): tiles TUNE / NOTES / FX / HARMONY / LIVE DATA / CUSTOM, D-pad + OK, BACK + POWER, DETECT on
+ * the OBD connector, the INFO lamp. Re-sync when the plugin's UI changes.
  *
  * Everything moving on the page runs the plugin's correction law (src/lib/obdtune/engine.ts, ported from
  * AtCorrector.h) on one shared state. Order: hero (the live scanner) · #obd-story (six readings, sticky screen) ·
  * #obd-bench (play / sing, every control) · #obd-data (the parameter list) · #obd-notify (launch list).
  * Unlisted (noindex, not in plugins.ts) until the plugin ships.
  */
+import { getImage } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { site } from '../data/site';
+import stillSrc from '../assets/obdtune/unit-still.png';
 import '../styles/obdtune.css';
 
 const onceUrl = site.downloadGate.workerUrl + '/form-once';
+// the scanner's still (the plugin's home screen, as the page opens): shows until unit.ts mounts the live UI
+const still = await getImage({ src: stillSrc, format: 'webp', width: 1080, quality: 82 });
 
 const STEPS = [
   { id: 'detect', n: '01', label: 'DETECT', h: "Don't know the key? Ask it.",
-    p: 'Press DETECT and sing a few bars. OBDTUNE listens, sets KEY and SCALE by itself (major or minor) and switches every note back on. Wrong answer? For 8 seconds the key reads UNDO and one press puts it all back.' },
+    p: 'Plug in the connector and sing a few bars: the measurement mic docks, the scan bar fills, and OBDTUNE sets KEY and SCALE by itself (major or minor) with every note switched back on. Wrong answer? For 8 seconds the screen reads UNDO? and one more press puts it all back.' },
   { id: 'speed', n: '02', label: 'SPEED', h: 'From hard snap to no trace.',
     p: 'At 1 ms the voice jumps note to note: the sound everybody knows. Up near 200 ms it glides home so gently nobody hears a tuner. Everything in between is yours.' },
   { id: 'human', n: '03', label: 'HUMANIZE + FLEX', h: 'Keep the life in it.',
     p: 'HUMANIZE lets held notes breathe: the longer a note lasts, the softer the pull, so vibrato survives. FLEX leaves small, musical intonation alone and only pulls the notes that are really off.' },
   { id: 'notes', n: '04', label: 'NOTES', h: 'Cut a note out.',
     p: 'Twelve switches, one per note. Turn one off and OBDTUNE never lands there: the voice goes to the nearest note you kept. Great for a melody that keeps tripping over the same one.' },
-  { id: 'harmony', n: '05', label: 'HARMONY', h: 'Stack a second voice.',
-    p: 'Up to two harmony voices that follow your key and scale: a third up, a fifth, a third down or an octave below, each with its own level. In development: this is a preview.' },
-  { id: 'power', n: '06', label: 'POWER', h: 'True bypass. Really.',
-    p: 'POWER off passes your audio straight through at the same latency, untouched. Flip it to hear before and after without a jump in timing.' },
+  { id: 'harmony', n: '05', label: 'HARMONY', h: 'Stack the harmonies.',
+    p: 'Two voices that follow your key and scale, anywhere from an octave down to an octave up, each with its own level, pan and formant. MIX blends them against the lead, and POSITION pulls a voice early or pushes it late, in ms or locked to your tempo.' },
+  { id: 'power', n: '06', label: 'POWER', h: 'One switch, the whole plugin.',
+    p: 'POWER bypasses everything (tuning, harmony and FX) at the same latency, so before and after line up. Only want the harmonies and FX? Switch AUTOTUNE off on the TUNE page and the voice goes through untuned.' },
 ];
 
 const DATA = [
-  ['POWER', 'On / off', 'True bypass, same latency'],
+  ['POWER', 'On / off', 'The whole plugin (tuning, harmony, FX), same latency'],
+  ['AUTOTUNE', 'On / off', 'Off = untuned, HARMONY and FX keep working'],
   ['KEY', 'C to B', '12 keys'],
   ['SCALE', '13 scales', 'Chromatic, Major, Minor, Harmonic minor, Pentatonic major + minor, Dorian, Phrygian, Lydian, Mixolydian, Melodic minor, Blues, Whole tone'],
   ['SPEED', '1 – 200 ms', 'Hard snap to transparent'],
@@ -41,15 +46,18 @@ const DATA = [
   ['FLEX', 'Off – ±100 ¢', 'Small intonation left alone'],
   ['VOICE', 'Soprano · Alto · Tenor', 'Sets the range it listens in'],
   ['NOTES', '12 switches', 'Cut any note from the scale'],
-  ['DETECT', 'Key + scale', 'Finds it by ear, 8-second UNDO'],
-  ['HARMONY', '2 voices', 'Follows key + scale (in development)'],
-  ['LATENCY', '48 ms', 'Constant, reported to your DAW'],
+  ['DETECT', 'Key + scale', 'Plug in the connector; 8-second UNDO'],
+  ['HARMONY', '2 voices', '12 intervals, level, pan, formant; MIX against the lead'],
+  ['POSITION', '−250 ms – +2 s', 'Each voice early or late, free or synced to tempo'],
+  ['FX', 'EQ · SQUEEZE · ECHO · REVERB', 'Low / high cut + 2 bells, a FET-style parallel comp, synced echo, room / plate / hall'],
+  ['CUSTOM', 'Your own line', 'Capture a take, then drag each note where you want it'],
+  ['LATENCY', '48 ms', 'Constant, reported to your DAW (+250 ms with POSITION on)'],
   ['WINDOW', 'Floating · Room', 'Hovers over your session, or sits on the bench'],
 ];
 ---
 <BaseLayout
   title="OBDTUNE: plug in, read the note, tune it"
-  description="OBDTUNE is vocal pitch correction built like a shop scan tool: it reads every note, finds the key with DETECT, and tunes as hard or as human as you want. Coming soon from RevAudio."
+  description="OBDTUNE is vocal pitch correction built like a shop scan tool: it reads every note, finds the key with DETECT, tunes as hard or as human as you want, stacks two harmony voices and adds EQ, compression, echo and reverb. Coming soon from RevAudio."
   index={false}
 >
   <div class="obd-page" data-obd-page>
@@ -59,51 +67,21 @@ const DATA = [
         <p class="obd-kicker"><span class="obd-dot" aria-hidden="true"></span>NEW FROM REVAUDIO · COMING SOON</p>
         <h1 id="obd-title" class="obd-wordmark"><span class="sr-only">OBDTUNE: </span><span aria-hidden="true">OBD<b>TUNE</b></span></h1>
         <p class="obd-tag">Plug in. Read the note. Tune it.</p>
-        <p class="obd-lede">Vocal pitch correction built like a shop scan tool. It reads every note you sing, finds the key by itself, and puts each note where it belongs, as hard or as human as you set it.</p>
+        <p class="obd-lede">Vocal pitch correction built like a shop scan tool. It reads every note you sing, finds the key by itself, and puts each note where it belongs, as hard or as human as you set it. Then it stacks the harmonies and finishes the vocal with its own EQ, compression, echo and reverb.</p>
         <div class="obd-ctas">
           <a class="obd-btn obd-btn--hot" href="#obd-notify">Get it first</a>
           <a class="obd-btn" href="#obd-bench">Play with it ↓</a>
         </div>
         <ul class="obd-chips" aria-label="At a glance">
-          <li>DETECT finds the key</li><li>1–200 ms SPEED</li><li>13 scales</li><li>48 ms latency</li><li>True-bypass POWER</li>
+          <li>DETECT finds the key</li><li>1–200 ms SPEED</li><li>13 scales</li><li>2 harmony voices</li><li>EQ · SQUEEZE · ECHO · REVERB</li>
         </ul>
       </div>
 
       <div class="obd-stage" data-obd-stage data-bg="floating">
-        <div class="obd-dev" data-obd-dev tabindex="0" role="group" aria-label="OBDTUNE scanner. Arrow keys move, Enter opens, Escape goes back, D detects, P is power.">
-          <div class="obd-cable" aria-hidden="true"><i></i></div>
-          <div class="obd-shell">
-            <div class="obd-face">
-              <div class="obd-brandbar"><span class="obd-logo">RevAudio</span><span class="obd-model">OBDTUNE</span></div>
-              <div class="obd-bezel">
-                <div class="obd-screen" data-obd-screen>
-                  <div class="obd-sbar"><span data-obd-title>LIVE DATA</span><span class="obd-skey" data-obd-key>C MAJOR</span></div>
-                  <div class="obd-spage" data-obd-page></div>
-                  <div class="obd-detect" data-obd-detect hidden><i><b></b></i><em></em></div>
-                  <div class="obd-strip"><span class="obd-strip-mode" data-obd-strip-mode>DEMO</span><span><b data-obd-strip-note>--</b> <em data-obd-strip-cents></em></span></div>
-                  <i class="obd-glass" aria-hidden="true"></i>
-                </div>
-              </div>
-              <p class="obd-legend">LIVE PITCH SCANNER</p>
-              <div class="obd-controls">
-                <div class="obd-col">
-                  <button type="button" class="obd-key" data-obd-key-back><span data-face>◂ BACK</span></button>
-                  <button type="button" class="obd-key" data-obd-key-detect><span data-face>DETECT</span></button>
-                  <button type="button" class="obd-key obd-key--power is-lit" data-obd-key-power aria-label="Power"><span data-face><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v8M6.3 6.6a8 8 0 1 0 11.4 0"/></svg>POWER</span></button>
-                </div>
-                <div class="obd-dpad" role="group" aria-label="D-pad">
-                  <button type="button" class="obd-pad obd-pad--up" data-pad="up" aria-label="Up">▲</button>
-                  <button type="button" class="obd-pad obd-pad--left" data-pad="left" aria-label="Left">◀</button>
-                  <button type="button" class="obd-pad obd-pad--ok" data-pad="ok" aria-label="OK">OK</button>
-                  <button type="button" class="obd-pad obd-pad--right" data-pad="right" aria-label="Right">▶</button>
-                  <button type="button" class="obd-pad obd-pad--down" data-pad="down" aria-label="Down">▼</button>
-                </div>
-              </div>
-              <div class="obd-grip" aria-hidden="true"></div>
-            </div>
-          </div>
+        <div class="obd-unit" data-obd-unit role="group" aria-label="OBDTUNE, the plugin's own screen, live. Tap a tile, drag a value, use the D-pad; plug in the connector (or press D) to DETECT the key, P for power.">
+          <img class="obd-unit-still" src={still.src} width={still.attributes.width} height={still.attributes.height} alt="" decoding="async" />
         </div>
-        <p class="obd-try">It's live. Use the D-pad, tap the screen, or press <kbd>D</kbd> to DETECT.</p>
+        <p class="obd-try">It's live: the plugin's own screen. Tap a tile, drag a value, or plug in the connector (<kbd>D</kbd>) to DETECT.</p>
       </div>
     </section>
 

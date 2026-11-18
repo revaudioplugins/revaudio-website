@@ -8,8 +8,8 @@
  * the 12 NOTEs back on; for 8 s after, it offers UNDO (the plugin's 10-5a-15 behaviour).
  */
 import {
-  Corrector, demoPitch, detectKey, hzToMidi, legal, midiToHz, scaleStep, set, state, touch, VOICES,
-  HARM_INTERVALS, type Reading,
+  Corrector, demoPitch, detectKey, hzToMidi, legal, midiToHz, set, state, touch, VOICES,
+  harmNote, type Reading,
 } from './engine';
 
 export type Source = 'demo' | 'synth' | 'mic';
@@ -186,18 +186,21 @@ function tick(now: number) {
   const ok = legal();
   const harm = state.harm.v.map((v) => {
     if (!state.on || !state.harm.on || !v.on || r.target == null || r.out == null) return null;
-    return scaleStep(r.target, HARM_INTERVALS[v.int].steps, ok) + (r.out - r.target);
+    return harmNote(r.target, v.int, ok) + (r.out - r.target);
   });
   feedDetect(raw, dt);
   if (source === 'synth' && ac) {
     const t = ac.currentTime;
     const lead = r.out ?? r.raw;
     if (lead != null) voices[0].osc.frequency.setTargetAtTime(midiToHz(lead - 12), t, 0.004);
-    voices[0].amp.gain.setTargetAtTime(r.voiced ? 0.32 : 0, t, r.voiced ? 0.02 : 0.04);
+    // HARMONY MIX: lead x min(1, 2(1-m)), voices x min(1, 2m) (revtune::HarmonyParams::mix)
+    const m = state.harm.on ? state.harm.mix / 100 : 0.5;
+    const leadK = Math.min(1, 2 * (1 - m)), harmK = Math.min(1, 2 * m);
+    voices[0].amp.gain.setTargetAtTime(r.voiced ? 0.32 * leadK : 0, t, r.voiced ? 0.02 : 0.04);
     harm.forEach((hm, i) => {
       const v = voices[i + 1];
       if (hm != null) v.osc.frequency.setTargetAtTime(midiToHz(hm - 12), t, 0.004);
-      v.amp.gain.setTargetAtTime(hm != null && r.voiced ? 0.2 * state.harm.v[i].level : 0, t, 0.03);
+      v.amp.gain.setTargetAtTime(hm != null && r.voiced ? 0.32 * harmK * state.harm.v[i].level : 0, t, 0.03);
     });
   }
   const f: Frame = { t: clock, r, harm, source };
