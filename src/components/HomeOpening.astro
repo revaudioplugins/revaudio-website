@@ -13,6 +13,8 @@
 // Once a session: a visitor who walked to the TV (or skipped) gets the TV straight away on the next home visit.
 // ra-home-seen = what the visitor was shown ('garage' | 'tv'); the cart sends it to Paddle as customData.home.
 // ?home=garage / ?home=tv pins a variant on this browser (testing); ?home=off forgets it.
+// SHARE = the garage's share of the visitors drawn. 0 = a soft launch: live, but only for a ?home=garage pin, and
+// nobody is drawn (or remembered), so the draw starts clean when it goes up.
 // Safety: the room says 'ready' (or 'error') by postMessage; no 'ready' in 45 s, an error first, or the Skip button
 // (after 6 s of loading) puts the normal home page back.
 ---
@@ -24,6 +26,7 @@
 
 <script is:inline>
   (function () {
+    var SHARE = 0.5;
     var H = document.documentElement, KEY = 'ra-home', SEEN = 'ra-home-seen', DONE = 'ra-ho-done';
     var ls = function (k, v) { try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} return null; };
     var ss = function (k, v) { try { if (v === undefined) return sessionStorage.getItem(k); sessionStorage.setItem(k, v); } catch (e) {} return null; };
@@ -46,7 +49,10 @@
     } catch (e) { ok = false; }
     if (!ok && !forced) return; // phones, bots, no WebGL 2: today's home page, not in the test
     var v = q === 'garage' || q === 'tv' ? q : ls(KEY); // (a pin works even where site data is blocked)
-    if (v !== 'garage' && v !== 'tv') { v = Math.random() < 0.5 ? 'garage' : 'tv'; ls(KEY, v); }
+    if (v !== 'garage' && v !== 'tv') {
+      if (!(SHARE > 0)) return; // soft launch: pins only
+      v = Math.random() < SHARE ? 'garage' : 'tv'; ls(KEY, v);
+    }
     ls(SEEN, v);
     if (v !== 'garage') return;
     if (ss(DONE) && !forced) return; // walked it once this session: the TV straight away
@@ -81,6 +87,7 @@
       ho.style.setProperty('--ho-walk', walkPx + 'px');
       wall = wall || document.querySelector('.garage-wall');
       if (wall) lockY = wall.getBoundingClientRect().top + scrollY - navTotal();
+      window.__hoLockY = lockY; // (the welcome popup measures its 35 % from here: the home page below the walk)
     }
     function onScroll() {
       raf = 0;
