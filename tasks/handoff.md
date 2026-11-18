@@ -1,7 +1,7 @@
 ## 2026-11-18 — WIDE BEAM page: review fixes (Claude Code `Wide Beam page tour [3eef2b]`, Dan's Mac) — on `feat/widebeam-page`, NOT pushed
 
 Claim: OPEN (Dan, 2026-11-18: "fix the code ... review it and fix whatever you see fit, then we continue with the design").
-Files: `src/lib/widebeam/{intro,init,face,story}.ts`, `src/styles/widebeam.css`, one line of
+Files: `src/lib/widebeam/{intro,init,face,story}.ts`, `src/styles/widebeam.css`, `tasks/widebeam-polish-plan-2026-11-18.md`, one line of
 `tasks/widebeam-handoff-dan-2026-11-17.md` (the intro rule), `tasks/lessons.md` (2026-11-18 entry), this entry.
 
 - The car: Dan didn't see it. It played once per tab (`sessionStorage`), so the tab opened for him played it unseen and
@@ -25,6 +25,19 @@ Files: `src/lib/widebeam/{intro,init,face,story}.ts`, `src/styles/widebeam.css`,
 - Left for Dan (design round next): the music starts on the first click anywhere (cookie Decline included); the
   "AAX" in the two formats lines (WideBeam README: PACE wcguid not created); the gold gradient on the WIDE BEAM lockup
   (the design hook flags gradient text; Gil chose it to match the plugin plate).
+- **Design round, same day** (Dan: "a team of designers that knows how we build websites ... meet the standard of the
+  DRIFT page and the GAS 2 page ... a place for a tutorial video ... no bugs"). Ten designer agents (guidelines, art,
+  motion, hero, video, copy, demo, mobile, a11y, perf) studied the page against DRIFT + GAS 2, debated, a lead wrote the
+  plan, one verifier per bug re-ran it (46 of 53 reproduced, 6 partly, 1 not), and a critic checked the plan. The plan,
+  with the critic's corrections on top: `tasks/widebeam-polish-plan-2026-11-18.md`. Four more designers mocked the 8
+  visual options (0 credits; the pictures live in the session scratchpad only).
+- **Dan's pick page:** https://claude.ai/artifact/CnPheXrffMYYjpPcN6Dr8Y (private; 8 looks + 5 plain calls, my pick
+  marked). His picks save to its database, collection `picks` (ArtifactData `list`). P1 (Black Friday) is time-bound:
+  `sale.ts` on main takes "Wide Beam ($9)" out of the bundle on Nov 22 unless it is released.
+- **State:** nothing from the plan is built; repo files touched by the round: the plan file and this entry only. Next,
+  after the picks: Step 0 (merge `origin/main` in in a temp worktree after `git merge-tree`; baselines), Step 0.5 (the
+  critic's corrections), lane F alone, then lanes H / D / S / A / T in their own worktrees, then the gates; commit per
+  lane by exact path; no push or merge to main until Dan says "push".
 
 ## 2026-11-17 — WIDE BEAM page, `/widebeam` (Claude Code, Gil's Mac) — on `feat/widebeam-page`, PUSHED 2026-11-17 on Gil's word ("push this to Dan"), NOT merged, NOT live
 
