@@ -82,13 +82,14 @@
 /* small labels on the plate: the plate's own engraved serif (LOW FOCUS, MIX), small capitals, pressed into the steel.
    Headlines stay Bebas. 'WB Serif' is lane F's Georgia-first face; Georgia is the fallback. */
 .wb-plate-label {
-  font-family: 'WB Serif', Georgia, 'Times New Roman', serif;
+  /* the page's engraved-serif tokens (base.css), so the kickers and the plate labels stay one voice */
+  font-family: var(--wb-engrave-font, 'WB Serif', Georgia, 'Times New Roman', serif);
   font-weight: 400;
   font-variant: small-caps;
   text-transform: none;
-  letter-spacing: .16em;
-  color: #e3d6bc;
-  text-shadow: 0 1px 0 rgba(8, 6, 4, .9), 0 -1px 0 rgba(255, 240, 210, .07);
+  letter-spacing: var(--wb-engrave-track, .16em);
+  color: var(--wb-engrave-ink, #e3d6bc);
+  text-shadow: var(--wb-engrave-cut, 0 1px 0 rgba(8, 6, 4, .9), 0 -1px 0 rgba(255, 240, 210, .07));
 }
 
 @media (max-width: 600px) {
