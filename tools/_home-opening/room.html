@@ -31,6 +31,10 @@
   .nav img, .stage-nav img { display: block; width: 100%; height: 100%; }
   .opening { position: relative; height: calc(var(--vh) + var(--walk-px)); }
   .cam { position: sticky; top: 0; height: var(--vh); overflow: hidden; background: #060509; transition: background .35s; }
+  /* ?embed: the room inside the home page (HomeOpening.astro): the page's own nav, TV and sections are real, so the
+     room's pictures of them stay out, and the page's scroll drives the walk (nothing scrolls in here) */
+  html.embed, html.embed body { overflow: hidden; }
+  html.embed .nav, html.embed .stage-nav, html.embed .below, html.embed .tv-live, html.embed .bench-open { display: none; }
 
   /* the page as the visitor sees it; with the bench open it shrinks beside it, whole */
   .stage { position: absolute; left: 0; top: 0; width: var(--vw); height: var(--vh); overflow: hidden; transform-origin: 0 0;
@@ -352,6 +356,17 @@ const CAPTURE = new URLSearchParams(location.search).get('capture'), CAPTURE_PAI
 // &lights=<k>: the loading screen's picture of the room with its first k light banks on (BANKS; lights/render.mjs)
 const LIGHTS = CAPTURE != null ? new URLSearchParams(location.search).get('lights') : null;
 const TVCAP = CAPTURE != null ? new URLSearchParams(location.search).get('tvcap') : null; // &tvcap=<CAPS tag>: the TV's picture for that screen width
+// ?embed: the room on the home page (src/components/HomeOpening.astro; Dan 2026-11-18: live on Nov 19 to half the
+// laptop visitors). The page's scroll drives the walk through window.__garage.to(p); &nav=<px> = the page's nav (+ the
+// sale strip) height, so the lock lands on the real TV; the room tells the page its walk length and when it is ready
+// The home page runs this file as its frame's srcdoc (the site sends X-Frame-Options: DENY and a frame-src without
+// 'self', so a framed URL is refused) with <base href="/garage-9f3c/"> and window.__EMBED = { nav } set first
+const EMBED = CAPTURE == null && (new URLSearchParams(location.search).has('embed') || !!window.__EMBED);
+const EMBED_NAV = EMBED ? Math.round(+(window.__EMBED?.nav ?? new URLSearchParams(location.search).get('nav'))) || 0 : 0;
+const embed = { y: 0, to: 0, paused: false };
+const embedSay = (ev, data) => { if (EMBED && parent !== window) parent.postMessage({ garage: ev, ...data }, '/'); };
+embedSay('boot'); // (the page falls back when this never comes: a script that failed to load)
+if (EMBED) { document.documentElement.classList.add('embed'); for (const t of ['error', 'unhandledrejection']) addEventListener(t, () => embedSay('error')); } // the page falls back to its TV if this comes before 'ready'
 // the station across the road outside the door (street.js), in G1 (dark): Dan's pick on bench round 5, card 1 (11-10).
 // ?street=G2 previews the darker grade, ?street=none today's old night
 const STREET_GRADE = 'G1';
@@ -359,11 +374,11 @@ const STREET = ((q) => (q === 'none' || q === 'off' ? null : q || STREET_GRADE))
 const S = { ...DEF, moves: structuredClone(DEF.moves) };
 let stored = {};
 try { stored = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) {}
-Object.assign(S, stored);
+if (!EMBED) Object.assign(S, stored); // a visitor on the home page sees the committed room, never a bench's saved settings
 if (!S.moves || typeof S.moves !== 'object') S.moves = {};
 delete S.roomLen; delete S.mirror; // older benches stored these
 // Dan's changes reach a bench saved before them, once
-const sv = Object.keys(stored).length ? (stored.ver || 1) : DEF.ver;
+const sv = !EMBED && Object.keys(stored).length ? (stored.ver || 1) : DEF.ver;
 if (sv < 2) Object.assign(S, { signWall: DEF.signWall, signX: DEF.signX, signY: DEF.signY });
 if (sv < 3) Object.assign(S, { signScale: DEF.signScale, signTilt: DEF.signTilt });
 if (sv < 4) Object.assign(S, { floorLines: 0, ledStrip: 0 });
@@ -419,7 +434,7 @@ function remember() {
   if (hist.length > 200) hist.shift();
   histAt = hist.length - 1; undoUi();
 }
-const save = () => { if (CAPTURE != null) return; if (LAYOUT) { remember(); return; } try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} remember(); };
+const save = () => { if (CAPTURE != null || EMBED) return; if (LAYOUT) { remember(); return; } try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} remember(); };
 
 // the live TV, captured per screen size (r = the bezel's corner radius, px)
 const CAPS = [
@@ -2139,8 +2154,10 @@ function resize() {
     cap = c;
     tvImg.src = `assets/tv-${c.tag}.webp`;
     $('tvLive').src = tvImg.src;
-    $('navImg').src = $('stageNavImg').src = `assets/nav-${c.navW}.webp`;
-    $('belowImg').src = `assets/below-${c.navW}.webp`;
+    if (!EMBED) { // (the home page shows its own nav and sections)
+      $('navImg').src = $('stageNavImg').src = `assets/nav-${c.navW}.webp`;
+      $('belowImg').src = `assets/below-${c.navW}.webp`;
+    }
   }
   renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.75, Math.sqrt(3.7e6 / (vw * vh)))); // the recipe's laptop budget: a 3.7 MP drawing buffer at most
   renderer.setSize(vw, vh, false); composer.setPixelRatio(renderer.getPixelRatio()); composer.setSize(vw, vh);
@@ -2152,7 +2169,7 @@ function resize() {
 // layoutCamera(): the camera's start and end on this screen. The room has one size in metres (Dan 2026-11-04: a room
 // built and lit in Blender can't stretch per screen); only the camera adapts
 function layoutCamera() {
-  const { vw, vh } = L, navH = cap.nav;
+  const { vw, vh } = L, navH = EMBED_NAV || cap.nav;
   const portrait = vw < vh, lens = S.lens + (portrait ? 18 : 0); // a portrait phone sees a narrow slice: a wider lens there
   camera.fov = lens; camera.aspect = vw / vh; camera.updateProjectionMatrix();
   const tv = Math.tan(deg(lens) / 2), th = tv * vw / vh; // tan of half the vertical / horizontal view
@@ -2170,9 +2187,10 @@ function layoutCamera() {
   const root = document.documentElement.style;
   root.setProperty('--nav-h', navH + 'px'); root.setProperty('--vh', vh + 'px'); root.setProperty('--vw', vw + 'px');
   root.setProperty('--walk-px', L.walkPx + 'px'); root.setProperty('--tv-r', cap.r + 'px');
+  embedSay('layout', { walkPx: L.walkPx });
   // a longer walk keeps the visitor where they stood; one reading the page below keeps their place in it (a phone's
   // address bar changes the height mid-read: the capped progress threw them back up to the TV)
-  if (oldWalk && Math.abs(oldWalk - L.walkPx) > 0.5) { const y = lenis ? lenis.scroll : scrollY; jumpTo(y > oldWalk ? y - oldWalk + L.walkPx : progress * L.walkPx); }
+  if (oldWalk && Math.abs(oldWalk - L.walkPx) > 0.5) { const y = EMBED ? embed.y : lenis ? lenis.scroll : scrollY; jumpTo(y > oldWalk ? y - oldWalk + L.walkPx : progress * L.walkPx); }
   const tvBottomPx = vh / 2 + (tvH / 2) / (d0 * tv) * (vh / 2);
   $('readB').style.top = Math.min(vh * 0.7, tvBottomPx + vh * 0.04) + 'px';
   $('tuneNote').textContent = `Room ${roomLen.toFixed(1)} m long · TV on the first screen: ${L.startPct.toFixed(1)} % of the width · walk ${(d0 - dEnd).toFixed(1)} m`;
@@ -2408,13 +2426,14 @@ function frame(now) {
 history.scrollRestoration = 'manual';
 scrollTo(0, 0);
 let lenis = null, lastScrollAt = 0, lastDir = 1, armed = false, touching = false;
-if (window.Lenis && !reduced) lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
+if (window.Lenis && !reduced && !EMBED) lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
 if (lenis && window.lightsOn && CAPTURE == null) lenis.stop(); // the walk waits for the loading screen's hand-off
 function jumpTo(y) {
+  if (EMBED) { embed.y = embed.to = y; return; }
   if (lenis) { lenis.resize(); lenis.scrollTo(y, { immediate: true, force: true }); } else scrollTo(0, y);
 }
 function readScroll() {
-  const y = lenis ? lenis.scroll : scrollY, prev = progress;
+  const y = EMBED ? embed.y : lenis ? lenis.scroll : scrollY, prev = progress;
   progress = clamp(y / L.walkPx);
   if (progress !== prev) { lastDir = progress > prev ? 1 : -1; lastScrollAt = performance.now(); }
   if (progress > 0.01 && performance.now() - t0 < INTRO.read[1]) t0 = performance.now() - INTRO.read[1];
@@ -2423,7 +2442,7 @@ addEventListener('wheel', (ev) => { if (!ev.target.closest('.bench, .slots-panel
 addEventListener('touchstart', (ev) => { if (!ev.target.closest('.bench, .slots-panel')) { touching = true; armed = true; } }, { passive: true });
 addEventListener('touchend', () => { touching = false; lastScrollAt = performance.now(); }, { passive: true });
 addEventListener('keydown', (ev) => { if (!ev.target.closest('input, select, textarea') && ['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', ' ', 'Home', 'End'].includes(ev.key)) armed = true; });
-const glideTo = (y, dur) => lenis ? lenis.scrollTo(y, { duration: dur, easing: (x) => 1 - Math.pow(1 - x, 4) }) : scrollTo({ top: y, behavior: reduced ? 'auto' : 'smooth' });
+const glideTo = (y, dur) => EMBED ? (embed.to = y) : lenis ? lenis.scrollTo(y, { duration: dur, easing: (x) => 1 - Math.pow(1 - x, 4) }) : scrollTo({ top: y, behavior: reduced ? 'auto' : 'smooth' });
 function snapCheck(now) {
   if (!S.snap || !armed || touching || walkDrag || drag || now - lastScrollAt < 170) return;
   if (progress <= 0.001 || progress >= 0.999) { armed = false; return; }
@@ -2586,6 +2605,10 @@ $('movesReset').addEventListener('click', () => {
 });
 
 function raf(now) {
+  if (EMBED) { // the page's scroll as it comes (the site's own Lenis already eases it); off screen: no drawing
+    embed.y = embed.to;
+    if (embed.paused) { requestAnimationFrame(raf); return; }
+  }
   if (lenis) lenis.raf(now);
   readScroll(); snapCheck(now); frame(now);
   requestAnimationFrame(raf);
@@ -3085,6 +3108,10 @@ if (LO) INTRO.neon = INTRO.lamps = INTRO.sign = INTRO.tv = [-2, -1];
 t0 = performance.now(); frame(t0); // one first frame (dark without the loading screen): the glow, the finish and the floor's mirror compile before the clock starts
 if (LO) { await LO.ready(); R.handoffAt = performance.now(); t0 = R.handoffAt - INTRO.read[0] + 400; LO.handoff(); lenis?.start(); }
 else t0 = performance.now();
+if (EMBED) { // the page drives the walk from here on (src/components/HomeOpening.astro)
+  window.__garage = { to: (p) => { embed.to = clamp(p) * L.walkPx; }, jump: (p) => jumpTo(clamp(p) * L.walkPx), pause: (b) => { embed.paused = !!b; }, get walkPx() { return L.walkPx; } };
+  embedSay('ready', { walkPx: L.walkPx });
+}
 if (LIGHTS != null) { t0 -= 1e5; window.__lightsReady = true; } // a light capture: every envelope done (lights/render.mjs)
 requestAnimationFrame(raf);
 </script>

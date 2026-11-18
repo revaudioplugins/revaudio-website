@@ -587,6 +587,8 @@ for (const p of plugins) {
         var gclid = adsClickId();
         if (gclid) customData.gclid = gclid;
         Object.assign(customData, saleSource(), metaCookies());
+        // the home page test (HomeOpening.astro): which home page this visitor was shown, 'garage' or 'tv'
+        try { var homeSeen = localStorage.getItem('ra-home-seen'); if (homeSeen === 'garage' || homeSeen === 'tv') customData.home = homeSeen; } catch (e) {}
         var checkout = {
           // Paddle sums the full cart natively.
           items: items.map(function (i) { return { priceId: checkoutTargetFor(i), quantity: i.qty || 1 }; }),

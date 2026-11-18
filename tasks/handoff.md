@@ -1,3 +1,15 @@
+## 2026-11-18 — The long garage ON THE HOME PAGE, an A/B test for laptops (Claude Code `3D Garage – סגירת האתר`, Dan's Mac) — branch `feat/garage-home` (worktree `.claude/worktrees/garage-home`, from main `713f6b3`), NOT on main
+
+Claim: OPEN 2026-11-18. Files: `src/components/HomeOpening.astro` (new), `src/pages/index.astro`, `src/components/Cart.astro`
+(customData.home), `src/components/WelcomeDiscountPopup.astro` (waits for the TV), `tools/_home-opening/room.html` (embed
+mode), `tools/_home-opening/lights/lights-on.js` (the stall give-up), `tools/_home-opening/assets/{tv,nav,below}-*`,
+`tools/_home-opening/assets/lights/*`, `tools/_home-opening/tvcap.mjs`, `tools/garagepage/integration.mjs`, this entry.
+Dan 2026-11-18: "let's close the 3D garage site", then picked "try for Nov 19 anyway" (the plan's date: the room as the
+home page for half the laptop visitors) and the two fixes "no more stuck" + "the TV updated".
+- The room runs as the srcdoc of a fixed frame behind the home page (the site's X-Frame-Options: DENY and CSP frame-src
+  refuse a framed URL of ours; checked against a local server sending the live headers). Details: the component's head.
+- Being checked by an approved agent team (Ultracode, 10 agents); full entry at the end of the session.
+
 ## 2026-11-15 — The long garage: Gil's faster first load KEPT (PR #33), plus one line that lets the model downloads go (Claude Code `Garage load-speed branch review [c19840]`, Dan's Mac) — on `feat/home-opening`, PUSHED 2026-11-15 on Dan's word ("keep gil"); MERGED TO MAIN 2026-11-16 on Dan's word ("lets commit and marge to main")
 
 Claim: CLOSED 2026-11-16 at rv close (opened 2026-11-15; merged to main 2026-11-16). Files: `tools/_home-opening/room.html` (one line at the end of

@@ -119,6 +119,8 @@ const excluded = path === '/thank-you' || path === '/review' || path === '/drift
       settle = window.setTimeout(() => {
         if (fired || suppressed()) return;
         if (document.querySelector('dialog[open]')) return; // never stack dialogs
+        // the long garage on the home page (HomeOpening.astro): never mid-walk, it waits for the TV
+        if (html.classList.contains('ho-on') && !html.classList.contains('ho-locked')) return;
         if (scrollProgress() < SCROLL_THRESHOLD) return;
         fired = true;
         window.removeEventListener('scroll', onScroll);
