@@ -37,6 +37,13 @@ first visit of a session; after that soft rises, no flicker).
   dust come in over 2.5 s.
 - Flashes: one at a time across the room, the next at least 400 ms after (2.5 a second; WCAG 2.3.1 allows 3, the
   room's rule since 11-04). Reduced motion and the second visit of a session: soft rises, no flicker, no flare.
+- The room's look (room.html `LOOKS`, `LOOK_DEFAULT`: VHS since Dan's pick, 2026-11-18): the pictures are rendered in it
+  (`&flat`), without the three marks that sit on the screen rather than in the room: the vignette, the scanlines and the
+  grain. The loading screen lays the vignette and the scanlines over them itself (`.lo-look`, room.html `lookOverlay`),
+  multiplied like the finish multiplies them, in the screen's own CSS pixels; the grain is the loading screen's own.
+  The look's lower resolution is drawn as a 1141x636 laptop shows the pictures (`object-fit: cover`), so they match there;
+  on a larger screen the pictures are a little softer than the live room. `?look=today` shows today's room over these
+  (VHS) pictures: a comparison switch, not a visitor's page.
 - The slow-connection still (`#still`, `assets/still/room-2560.webp`) is gone from room.html: the loading screen is the
   slow path now. `still.mjs` and its picture are left for whoever still uses them.
 
@@ -55,6 +62,14 @@ Re-run the pictures (like still.mjs), then the checks:
 
 A new light: put it in a bank (`props`, or a new bank in `LIGHT_BANKS` and its lines in `lightRoom`), re-render.
 A new skin = new pictures from the same script.
+
+## Checks (2026-11-18, real Chrome, the faster room in VHS, pictures re-rendered with `&flat`)
+
+- Hand-off at 1141x636 @2x: blurred mean 2.17, p99 12, worst area 5.4: PASS (today's room: 3.30, 15, 12.5).
+- 1440x900 @2x: blurred mean 3.24, p99 22, worst area 8.3: FAIL on p99 alone (the pictures are softer there). Today's
+  room fails there too, by more: 5.51, 24, 30.3.
+- 1920x1080 @1x: 2.53, 17, 10.8: PASS (today's: 2.71, 9, 7.2).
+- The layers vs the full room: mean 2.95, p99 14. 12 files, 313 KB (were 441 KB).
 
 ## Checks (2026-11-11, real Chrome, the room with Dan's car look, `5efaf80` + this render)
 

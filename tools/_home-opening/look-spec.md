@@ -34,6 +34,15 @@ everywhere.
 - Chrome and tool handles catch the neon (09). Concrete with a long soft reflection, never a mirror (32).
 - The REVAUDIO neon: crooked, warm, not in your face. Any flicker: 3 flashes a second or fewer.
 
+## The look on top (Dan, 2026-11-18)
+
+The room is shown through a VHS look (room.html `LOOKS.vhs`, `LOOK_DEFAULT`), Dan's pick on the comparison page over
+film and 16 mm, for its look and its speed. It draws the room at a lower resolution, without the wet floor's reflection or
+the bloom, then lays a soft halation, a tape's colour bleed, a grade, a vignette, still scanlines and a fine grain over
+it. At the door the far REVAUDIO neon blurs (Dan saw it in the stills he picked); it reads from the middle of the walk.
+The look eases off to today's finish before the TV, so the hand-off to the page is unchanged. So under the look, the
+"long soft reflection" above is left out; the room itself keeps it (`?look=today`).
+
 ## Materials
 
 - Floor: dark sealed concrete, oil stains, a soft sheen (14, 32).

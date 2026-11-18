@@ -212,7 +212,11 @@
       .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
       .then(function (html) {
         if (!H.classList.contains('ho-on')) return;
-        var head = '<base href="/garage-9f3c/"><script>window.__EMBED = { nav: ' + navTotal() + ', sale: \'' + (H.dataset.sale || (H.dataset.saleSoon ? 'soon' : '')).replace(/[^a-z]/g, '') + '\' };<\/script>';
+        // ?look=<id>: another look for the room than its own (room.html LOOK_DEFAULT, VHS since Dan's pick, 2026-11-18):
+        // today (today's look, without one), film, 16mm or vhs; only an id on this list
+        var look = null; try { look = new URLSearchParams(location.search).get('look'); } catch (e) {}
+        if (['today', 'film', '16mm', 'vhs'].indexOf(look) < 0) look = '';
+        var head = '<base href="/garage-9f3c/"><script>window.__EMBED = { nav: ' + navTotal() + ', sale: \'' + (H.dataset.sale || (H.dataset.saleSoon ? 'soon' : '')).replace(/[^a-z]/g, '') + '\'' + (look ? ', look: \'' + look + '\'' : '') + ' };<\/script>';
         frame.srcdoc = html
           .replace(/<head[^>]*>/i, function (m) { return m + head; })
           // the room's pictures of this page's nav, TV and below are not shown here; and the browser's early fetches in
@@ -236,6 +240,9 @@
   .ho-frame { position: fixed; inset: 0; width: 100%; height: 100vh; border: 0; z-index: 1; pointer-events: none;
     background: #060509; color-scheme: dark; }
   :global(html.ho-past) .ho-frame { visibility: hidden; }
+  /* speed (2026-11-18, O-2): the site's smoke plates sit behind the opaque frame for the whole walk; unseen, they still
+     cost the compositor about 3 ms a frame. They come back with ho-past, when the frame hides */
+  :global(html.ho-on:not(.ho-past) .haze) { visibility: hidden; }
   /* the real TV waits, unseen, at the end of the walk; at the lock it fades in over the room's TV (out at once).
      Unseen, not hidden: it stays in the tab order and for screen readers (focus in it lands on the lock, the script
      above); until then nothing in it takes the mouse (its lit panel sets pointer-events and visibility of its own) */

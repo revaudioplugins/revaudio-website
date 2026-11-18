@@ -2,6 +2,8 @@
 // ?capture=0&lights=k, k = 0..banks), then layers.py turns them into the dark room (base.webp) and each bank's own light
 // (bank-k.webp = room k minus room k-1, never below 0) that lights-on.js adds back up. One wide picture serves every
 // laptop, like still.mjs: object-fit cover only trims the sides. Re-run it whenever the room changes.
+// &flat: in the room's look (room.html LOOKS, LOOK_DEFAULT) the pictures leave out the vignette and the scanlines, which the
+// loading screen lays over them itself in the screen's own pixels (lookOverlay), and the grain; no look, no change.
 //   node tools/_home-opening/lights/render.mjs --port 4471 [--q 82] [--check]   (serve the worktree root; cwebp, dwebp, python3 numpy + PIL)
 //   --check renders the full room twice first: the two must match (a capture that moves would smear every layer)
 import { createRequire } from 'module';
@@ -19,7 +21,7 @@ const ctx = await browser.newContext({ viewport: { width: W, height: H }, device
 async function shot(k, file) {
   const page = await ctx.newPage(), errs = [];
   page.on('pageerror', (e) => errs.push(String(e)));
-  await page.goto(`http://127.0.0.1:${port}/tools/_home-opening/room.html?capture=0&lights=${k}`, { waitUntil: 'load', timeout: 90000 });
+  await page.goto(`http://127.0.0.1:${port}/tools/_home-opening/room.html?capture=0&lights=${k}&flat`, { waitUntil: 'load', timeout: 90000 });
   await page.waitForFunction(() => window.__lightsReady, null, { timeout: 90000 });
   await page.waitForTimeout(2500); // the pictures land after the first layout, the probe redraws
   const banks = await page.evaluate(() => window.LIGHT_BANKS);

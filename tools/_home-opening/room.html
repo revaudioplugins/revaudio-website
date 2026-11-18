@@ -69,6 +69,8 @@
   .lights .lo-bank, .lights .lo-flare, .lights .lo-grain { mix-blend-mode: plus-lighter; }
   .lights.no-plus .lo-bank, .lights.no-plus .lo-flare, .lights.no-plus .lo-grain { mix-blend-mode: screen; }
   .lights .lo-grain { position: absolute; inset: -96px; background-size: 192px 192px; opacity: 0; transition: opacity .9s ease; will-change: transform, opacity; }
+  /* the look's vignette and scanlines over the loading pictures (room.html lookOverlay): multiplied, like the finish */
+  .lights .lo-look { position: absolute; inset: 0; z-index: 1; mix-blend-mode: multiply; background-blend-mode: multiply; }
   html.lights-loading, html.lights-loading body { overflow: hidden; }
   html.lights-loading { scrollbar-gutter: stable; } /* (Windows: the scrollbar's room kept, so the hand-off doesn't re-lay the room) */
   .tv-live { position: absolute; left: 0; top: var(--nav-h); width: 100%; height: calc(var(--vh) - var(--nav-h)); display: block;
@@ -222,6 +224,11 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { Reflector } from 'three/addons/objects/Reflector.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { buildStreet } from './street.js'; // the night outside the door: the station across the road (Dan, round 4)
+// speed (2026-11-18, O-1): a lamp's lighting maths is skipped wherever it adds exactly nothing (outside a spot's cone, or
+// fully in its shadow): the same picture, a much lighter frame (the spot lamps' maths ran on every lit pixel of the room).
+// Patched once here, before any shader compiles; a three.js whose chunk reads differently is left as it is
+{ const RE = 'RE_Direct( directLight, geometryPosition, geometryNormal, geometryViewDir, geometryClearcoatNormal, material, reflectedLight );', ch = THREE.ShaderChunk.lights_fragment_begin;
+  if (ch.split(RE).length === 4) THREE.ShaderChunk.lights_fragment_begin = ch.split(RE).join(`if ( directLight.visible && dot( directLight.color, vec3( 1.0 ) ) > 0.0 ) ${RE}`); }
 
 // ---------- settings (the bench; COPY SETTINGS bakes them) ----------
 const DEF = {
@@ -366,6 +373,14 @@ const EMBED_NAV = EMBED ? Math.round(+(window.__EMBED?.nav ?? new URLSearchParam
 // __EMBED.sale = the page's sale strip over the nav ('soon' | 'bf' | 'cm', src/data/sale.ts): the home TV sits under it,
 // laid out for a shorter screen, so the TV's picture is its own capture (tvcap.mjs --suffix sale; the three show the same TV)
 const EMBED_SALE = EMBED && ['soon', 'bf', 'cm'].includes(window.__EMBED?.sale) ? 'sale' : '';
+// the room's look (LOOKS, below the finish): LOOK_DEFAULT (Dan 2026-11-18, his pick on the comparison page: "VHS"), or
+// the one ?look=<id> asks for (the home page: __EMBED.look); ?look=today = today's look, without one (for comparing: the
+// loading screen's pictures stay the default look's)
+const LOOK_DEFAULT = 'vhs';
+const LOOK_ID = (EMBED ? window.__EMBED?.look : null) || new URLSearchParams(location.search).get('look') || LOOK_DEFAULT;
+// &flat (lights/render.mjs): the loading screen's pictures, drawn in the look without the marks that screen lays over them
+// itself (the vignette and the scanlines: lookOverlay) or the grain, at the look's resolution as a 1141x636 laptop shows them
+const LOOK_FLAT = CAPTURE != null && new URLSearchParams(location.search).has('flat');
 const embed = { y: 0, to: 0, paused: false };
 const embedSay = (ev, data) => { if (EMBED && parent !== window) parent.postMessage({ garage: ev, ...data }, '/'); };
 embedSay('boot'); // (the page falls back when this never comes: a script that failed to load)
@@ -482,13 +497,14 @@ function liveScreen(m) { // an opaque screen: its pixels skip the tone mapping
 // the finish: the room tone-mapped (bench: tone, exposure) and dithered against banding in the dark; the screens as they are
 const TONES = { none: 0, agx: 1, neutral: 2, aces: 3 };
 const FINISH = {
-  uniforms: { tDiffuse: { value: null }, toneMappingExposure: { value: 1 }, uTone: { value: 1 } },
+  uniforms: { tDiffuse: { value: null }, tBloom: { value: null }, toneMappingExposure: { value: 1 }, uTone: { value: 1 } },
   vertexShader: /* glsl */`varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
   fragmentShader: /* glsl */`
-    uniform sampler2D tDiffuse; uniform float uTone; varying vec2 vUv;
+    uniform sampler2D tDiffuse, tBloom; uniform float uTone; varying vec2 vUv;
     #include <tonemapping_pars_fragment>
     void main() {
       vec4 c = texture2D(tDiffuse, vUv);
+      c.rgb += texture2D(tBloom, vUv).rgb; // the glow (O-4, see bloomPass): added to the colour, the frame's alpha left as it is
       vec3 room = uTone < 0.5 ? clamp(c.rgb * toneMappingExposure, 0.0, 1.0) : uTone < 1.5 ? AgXToneMapping(c.rgb)
         : uTone < 2.5 ? NeutralToneMapping(c.rgb) : ACESFilmicToneMapping(c.rgb);
       room = sRGBTransferOETF(vec4(room, 1.0)).rgb + (fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453) - 0.5) / 255.0;
@@ -496,14 +512,140 @@ const FINISH = {
       gl_FragColor = vec4(mix(screen, room, clamp(c.a, 0.0, 1.0)), 1.0);
     }`,
 };
+// ---------- the vintage looks (?look=<id>; 2026-11-18 speed run, Dan: "less modern, more vintage") ----------
+// A look is cheaper because of what it drops, not what it adds: the room is drawn into a corner of the composer's
+// target at a lower resolution (k: the scene pass's share of today's pixels per side, capped at dpr device px per
+// CSS px), without the wet floor (a second drawing of the room), without UnrealBloom (its five blur levels) and with
+// msaa samples (0 = none); the finish then lays the look over at the canvas's full size: a halation from the target's
+// mip levels in place of the bloom, a grade (lift, gain, saturation, contrast), a vignette, grain seeded per frame,
+// soft scanlines and a chroma bleed (vhs). No flashing, rolling or jitter (WCAG 2.3.1). Every look eases off to
+// today's finish between off[0] and off[1] of the walk, its resolution back to full, so the real TV takes over the
+// same picture (the hand-off gate). move: the 16mm look draws softer while the walk moves (k x move), sharp at rest.
+// On the faster room (O-3, O-4): lookFrame() runs before frame() decides on the floor's reflection, so hiding R.wet
+// there drops the top-level draw too; and a look's finish never reads tBloom (the glow pass is off, lookInit).
+const LOOKS = {
+  film: { name: '1970s film', k: 0.8, dpr: 1.0, msaa: 0, off: [0.9, 0.99],
+    halo: { px: 7, thr: 0.35, k: 0.55, tint: [1.0, 0.42, 0.22] }, lift: [0.032, 0.022, 0.026], gain: [1.03, 0.985, 0.9], sat: 0.86, con: 0.18,
+    vig: 0.42, grain: 0.05, grainPx: 1.1, scan: 0, bleed: 0 },
+  '16mm': { name: '16 mm', k: 0.7, dpr: 0.85, move: 0.7, msaa: 0, off: [0.9, 0.99],
+    halo: { px: 9, thr: 0.3, k: 0.7, tint: [1.0, 0.5, 0.3] }, lift: [0.04, 0.03, 0.036], gain: [1.02, 0.99, 0.92], sat: 0.8, con: 0.24,
+    vig: 0.6, grain: 0.07, grainPx: 1.6, scan: 0, bleed: 0 },
+  vhs: { name: 'VHS', k: 0.6, dpr: 0.7, msaa: 0, off: [0.9, 0.99],
+    halo: { px: 6, thr: 0.3, k: 0.45, tint: [1.0, 0.8, 0.85] }, lift: [0.04, 0.032, 0.045], gain: [0.99, 0.98, 1.0], sat: 0.92, con: 0.1,
+    vig: 0.32, grain: 0.03, grainPx: 1.0, scan: 0.12, bleed: 1.5 },
+};
+const LOOK_ON = Object.hasOwn(LOOKS, LOOK_ID || '') ? LOOKS[LOOK_ID] : null;
+const LK = { n: 0, p: null, hold: 0, m: 0 }; // the grain's frame count; the walk's last place, how much it moves (16mm)
+const lookFinish = (lk) => ({ // FINISH with the look on top; at uAmt 0 and uK 1 it is FINISH's own arithmetic (less the glow)
+  uniforms: { ...FINISH.uniforms, uK: { value: new THREE.Vector2(1, 1) }, uAmt: { value: 1 }, uSeed: { value: 0 }, uLod: { value: 3 }, uCss: { value: 1 },
+    uLift: { value: new THREE.Vector3(...lk.lift) }, uGain: { value: new THREE.Vector3(...lk.gain) }, uHalo: { value: new THREE.Vector3(...lk.halo.tint) },
+    uG: { value: new THREE.Vector4(lk.sat, lk.con, lk.vig, lk.halo.k) }, uF: { value: new THREE.Vector4(lk.grain, lk.grainPx, lk.scan, lk.bleed) }, uThr: { value: lk.halo.thr } },
+  vertexShader: FINISH.vertexShader,
+  fragmentShader: /* glsl */`
+    uniform sampler2D tDiffuse; uniform float uTone, uAmt, uSeed, uLod, uCss, uThr; uniform vec2 uK; uniform vec3 uLift, uGain, uHalo;
+    uniform vec4 uG, uF; varying vec2 vUv;
+    #include <tonemapping_pars_fragment>
+    float h12(vec2 p) { vec3 q = fract(vec3(p.xyx) * 0.1031); q += dot(q, q.yzx + 33.33); return fract((q.x + q.y) * q.z); }
+    float vnoise(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+      return mix(mix(h12(i), h12(i + vec2(1.0, 0.0)), f.x), mix(h12(i + vec2(0.0, 1.0)), h12(i + vec2(1.0, 1.0)), f.x), f.y); }
+    vec3 halo(vec2 uv, float lod, vec2 ts) { vec2 o = 0.5 * exp2(lod) / ts; // four taps half a texel of that level apart: a tent, not its blocks
+      return 0.25 * (textureLod(tDiffuse, uv + vec2(o.x, o.y), lod).rgb + textureLod(tDiffuse, uv + vec2(-o.x, o.y), lod).rgb
+        + textureLod(tDiffuse, uv + vec2(o.x, -o.y), lod).rgb + textureLod(tDiffuse, uv - o, lod).rgb); }
+    void main() {
+      vec2 ts = vec2(textureSize(tDiffuse, 0)), uv = uK.x < 1.0 ? min(vUv * uK, uK - 0.5 / ts) : vUv;
+      vec4 c = textureLod(tDiffuse, uv, 0.0);
+      vec3 hdr = c.rgb;
+      if (uAmt > 0.0) {
+        if (uF.w > 0.0) { // the tape's colour smeared from the left, its brightness kept
+          vec2 d = vec2(uF.w / ts.x, 0.0);
+          vec3 s = 0.4 * hdr + 0.3 * textureLod(tDiffuse, uv - d, 0.0).rgb + 0.2 * textureLod(tDiffuse, uv - 2.0 * d, 0.0).rgb + 0.1 * textureLod(tDiffuse, uv - 3.0 * d, 0.0).rgb;
+          vec3 Y = vec3(0.299, 0.587, 0.114);
+          hdr = mix(hdr, (s + 0.002) / (dot(s, Y) + 0.002) * dot(hdr, Y), uAmt); // (the smeared hue at this pixel's brightness)
+        }
+        vec3 b = 0.5 * halo(uv, uLod, ts) + 0.3 * halo(uv, uLod + 1.0, ts) + 0.2 * halo(uv, uLod + 2.0, ts);
+        float bl = max(max(b.r, b.g), b.b);
+        hdr += b * clamp((bl - uThr) / max(bl, 1e-4), 0.0, 1.0) * uHalo * uG.w * uAmt; // the light that spread in the emulsion: red-orange round the lamps and tubes
+      }
+      vec3 room = uTone < 0.5 ? clamp(hdr * toneMappingExposure, 0.0, 1.0) : uTone < 1.5 ? AgXToneMapping(hdr)
+        : uTone < 2.5 ? NeutralToneMapping(hdr) : ACESFilmicToneMapping(hdr);
+      room = sRGBTransferOETF(vec4(room, 1.0)).rgb + (fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453) - 0.5) / 255.0;
+      vec3 screen = sRGBTransferOETF(vec4(clamp(c.rgb, 0.0, 1.0), 1.0)).rgb;
+      vec3 o = mix(screen, room, clamp(c.a, 0.0, 1.0));
+      if (uAmt > 0.0) {
+        vec3 g = clamp(o, 0.0, 1.0); float l = dot(g, vec3(0.2126, 0.7152, 0.0722));
+        g = mix(vec3(l), g, uG.x);                     // saturation
+        g = mix(g, g * g * (3.0 - 2.0 * g), uG.y);     // a print's S-curve
+        g = uLift + g * (uGain - uLift);               // lifted, tinted blacks; warm highlights
+        vec2 q = (vUv - 0.5) * vec2(1.0, 0.8);
+        g *= 1.0 - uG.z * smoothstep(0.12, 0.62, dot(q, q) * 2.0); // the lens's falloff
+        if (uF.z > 0.0) g *= 1.0 - uF.z * (0.5 - 0.5 * cos(6.2832 * gl_FragCoord.y / (3.0 * uCss))); // soft scanlines, still (every 3 CSS px)
+        float n = vnoise(gl_FragCoord.xy / (uCss * uF.y) + fract(uSeed * vec2(0.6180, 0.7548)) * 512.0) * 2.0 - 1.0;
+        g += n * uF.x * (0.35 + 2.6 * l * (1.0 - l)); // grain: mostly in the mid-tones, a little in the dark
+        o = mix(o, g, uAmt);
+      }
+      gl_FragColor = vec4(o, 1.0);
+    }`,
+});
+// set the look's targets and passes up (once, before the first frame)
+function lookInit() {
+  bloomPass.enabled = false;
+  for (const rt of [composer.renderTarget1, composer.renderTarget2]) { rt.texture.generateMipmaps = true; rt.texture.minFilter = THREE.LinearMipmapLinearFilter; } // the halation's levels
+  if (LOOK_FLAT) { const u = finishPass.uniforms; u.uG.value.z = 0; u.uF.value.x = 0; u.uF.value.z = 0; } // (&flat: no vignette, grain or scanlines)
+}
+// the loading screen in the look (lights/lights-on.js): its pictures are drawn &flat, and the vignette and the scanlines
+// lie over them here the way the finish lays them over the room: the same factors (multiplied, as the finish multiplies
+// its colour), in the screen's own CSS pixels, the scanlines counted from the bottom edge like gl_FragCoord. So the
+// hand-off shows the same picture. They leave with the loading screen
+function lookOverlay(lk) {
+  const grey = (v) => { const c = (255 * v).toFixed(1); return `rgb(${c} ${c} ${c})`; }, layers = [];
+  if (lk.scan) { // 1 - scan (0.5 - 0.5 cos(2 pi y / 3)), y in CSS px up from the bottom
+    const st = []; for (let i = 0; i <= 12; i++) { const y = i / 4; st.push(`${grey(1 - lk.scan * (0.5 - 0.5 * Math.cos(2 * Math.PI * y / 3)))} ${y}px`); }
+    layers.push(`repeating-linear-gradient(to top, ${st.join(', ')})`);
+  }
+  if (lk.vig) { // 1 - vig smoothstep(0.12, 0.62, 2|q|^2), q = (uv - 0.5)(1, 0.8): r^2 = 2|q|^2 on an ellipse of radii W/sqrt2, H/(0.8 sqrt2)
+    const st = [`${grey(1)} 0%`]; for (let i = 0; i <= 16; i++) { const r2 = 0.12 + 0.5 * i / 16, t = (r2 - 0.12) / 0.5; st.push(`${grey(1 - lk.vig * t * t * (3 - 2 * t))} ${(100 * Math.sqrt(r2)).toFixed(2)}%`); }
+    layers.push(`radial-gradient(${(100 / Math.SQRT2).toFixed(3)}% ${(100 / (0.8 * Math.SQRT2)).toFixed(3)}% at 50% 50%, ${st.join(', ')})`);
+  }
+  return layers.join(', ');
+}
+// each frame, before the composer: how strong the look is here, what share of the target the room is drawn into
+function lookFrame(now) {
+  const lk = LOOK_ON, u = finishPass.uniforms, rt = composer.readBuffer, W = rt.width, H = rt.height;
+  const pr = renderer.getPixelRatio() * (LOOK_FLAT ? innerHeight / 636 : 1); // (&flat: the picture's pixels per CSS px on a 1141x636 laptop, object-fit cover)
+  const amt = 1 - smooth(lk.off[0], lk.off[1], progress);
+  let kk = Math.min(lk.k, lk.dpr / pr);
+  if (lk.move) { // the walk moving (it moved in the last 8 frames): softer, easing in and out over a few frames
+    LK.hold = LK.p != null && Math.abs(progress - LK.p) > 2e-4 && CAPTURE == null ? 8 : Math.max(0, (LK.hold || 0) - 1); LK.p = progress;
+    LK.m += ((LK.hold > 0 ? 1 : 0) - LK.m) * 0.2;
+    kk *= 1 - (1 - lk.move) * LK.m;
+  }
+  const k = 1 + (kk - 1) * amt, w = Math.max(1, Math.round(W * k)), h = Math.max(1, Math.round(H * k));
+  for (const t of [composer.renderTarget1, composer.renderTarget2]) t.viewport.set(0, 0, w, h);
+  u.uK.value.set(w / W, h / H); u.uAmt.value = amt; u.uCss.value = pr;
+  u.uSeed.value = CAPTURE != null || reduced ? 1 : (LK.n = (LK.n + 1) % 8192); // a still (and reduced motion) holds one grain; the walk's grain moves every frame
+  u.uLod.value = Math.log2(Math.max(1, lk.halo.px * pr * (h / H)));
+  R.dust.mat.size = 0.02 * (h / H); // (a point's size follows the canvas, not the corner it is drawn in)
+  R.wet.visible = false; // dropped: the floor keeps its own highlights
+}
 // half floats with 4x MSAA (the edges of a room full of thin things), the glow, the finish
-const composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 }));
+const composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: LOOK_ON ? LOOK_ON.msaa : 4 }));
 const bloomPass = new UnrealBloomPass(new THREE.Vector2(512, 512), S.bloom, 0.32, 0.9);
 keepAlpha(bloomPass.blendMaterial, true);
 bloomPass.blendMaterial.blendSrc = THREE.OneFactor; // its glow is premultiplied: x its alpha again squared the halos (the alpha factors still keep the frame's)
-const finishPass = new ShaderPass(FINISH);
+const finishPass = new ShaderPass(LOOK_ON ? lookFinish(LOOK_ON) : FINISH);
 finishPass.needsSwap = false; // it draws to the canvas; a swap after it kept a second MSAA half-float target alive
+// speed (2026-11-18, O-4; the 11-10 study's O4): the glow joins in the finish (tBloom) instead of being blended back into
+// the 4x MSAA target, which then had to be resolved a second time: the same sum (the glow is premultiplied and added as
+// it is; the frame's alpha stays), one full-size draw and one resolve fewer every frame. So the pass's last draw, that
+// blend, is skipped, only when three.js's bloom still works the way this assumes (its quad and composite target)
+if (bloomPass._fsQuad && bloomPass.renderTargetsHorizontal?.[0] && bloomPass.blendMaterial) {
+  const bloomQuadRender = bloomPass._fsQuad.render;
+  bloomPass._fsQuad.render = function (r) { if (this.material !== bloomPass.blendMaterial) bloomQuadRender.call(this, r); };
+  finishPass.uniforms.tBloom.value = bloomPass.renderTargetsHorizontal[0].texture; // the glow's composite (the same texture after a resize)
+} else finishPass.uniforms.tBloom.value = new THREE.DataTexture(new Uint8Array(4), 1, 1); // (old path: black, nothing added twice)
 composer.addPass(new RenderPass(scene, camera)); composer.addPass(bloomPass); composer.addPass(finishPass);
+if (LOOK_ON) lookInit();
+if (LOOK_ON && (LOOK_ON.vig || LOOK_ON.scan) && $('lights')) { const d = document.createElement('div'); d.className = 'lo-look'; d.style.backgroundImage = lookOverlay(LOOK_ON); $('lights').append(d); }
 const loader = new THREE.TextureLoader();
 const picture = (name) => PICS[name]; // the posters and the CRT screens, preloaded with the texture sets (loadTextures)
 const isUnit = (s) => !!(MODELS[s.id] && !MODELS[s.id].crt); // a monitor slot that holds its plugin's own object (round 6): no screen, so no screen picture to load
@@ -1361,6 +1503,11 @@ function createRoom() {
   Object.assign(R.wet.material.uniforms, { tWet: { value: PATCHES.wet }, tNrm: { value: wf.normalMap }, uTile: { value: 3 }, uK: { value: 0.6 }, uFog: { value: 0 } });
   keepAlpha(Object.assign(R.wet.material, { transparent: true, depthWrite: false }), true);
   scene.add(R.wet);
+  // speed (2026-11-18, O-3): frame() draws the floor's reflection just before the room's render, not from inside it.
+  // Nested, three.js re-resolved every lit material's shader in both renders, every frame (~4 ms of JS at the door). Every
+  // other view (the probe, the painter's projectors) still draws it the old way
+  R.wetDraw = R.wet.onBeforeRender;
+  R.wet.onBeforeRender = function (r, s, cam) { if (!(R.wetFirst && cam === camera)) R.wetDraw.call(this, r, s, cam); };
   R.lanesMat = new THREE.MeshStandardMaterial({ transparent: true, roughness: 0.6, depthWrite: false });
   R.lanes = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), R.lanesMat); R.lanes.rotation.x = -Math.PI / 2;
   R.mirror = new Reflector(new THREE.PlaneGeometry(1, 1), { clipBias: 0.003, textureWidth: 512, textureHeight: 512, color: 0x8a8590 });
@@ -2162,12 +2309,51 @@ function resize() {
       $('belowImg').src = `assets/below-${c.navW}.webp`;
     }
   }
-  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.75, Math.sqrt(3.7e6 / (vw * vh)))); // the recipe's laptop budget: a 3.7 MP drawing buffer at most
+  setBuffer();
+  layoutCamera(); arrange(); benchFit();
+}
+// the drawing buffer: the recipe's laptop budget, a 3.7 MP buffer at most; GOV.k < 1 only on a machine the governor
+// found too slow at the door (weak machines only, see GOV)
+function setBuffer() {
+  const { vw, vh } = L;
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.75, Math.sqrt(3.7e6 / (vw * vh))) * GOV.k);
   renderer.setSize(vw, vh, false); composer.setPixelRatio(renderer.getPixelRatio()); composer.setSize(vw, vh);
   const dpr = renderer.getPixelRatio();
   R.mirror.getRenderTarget().setSize(Math.round(vw * dpr * 0.5), Math.round(vh * dpr * 0.5));
   R.wet.getRenderTarget().setSize(Math.round(vw * dpr * 0.25), Math.round(vh * dpr * 0.25)); // it's softened anyway
-  layoutCamera(); arrange(); benchFit();
+}
+// ---------- the governor (2026-11-18, O-6): WEAK MACHINES ONLY ----------
+// A machine that can't hold the frame rate at the door draws a smaller buffer: one step at a time (x0.8), measured over
+// 1.5 s of frames at the door (or, mid-walk, over 3 s and applied only once the walk is at rest), never back up within a
+// visit (no flip-flop), and a step that buys less than 10 % is taken back at once (a slow CPU, not pixels: a smaller
+// buffer only blurs it). On a machine that holds ~36 fps or better nothing happens: the look is untouched. Never in a
+// capture (stills) or with ?governor=0. window.__gov reports what it did
+const GOV = { k: 1, level: 0, on: CAPTURE == null && new URLSearchParams(location.search).get('governor') !== '0', iv: [], last: 0, from: 0, door: true, before: 0, beforeDoor: true, done: false, log: [] };
+window.__gov = GOV;
+const GOV_STEPS = [1, 0.8, 0.64], GOV_SLOW = 1000 / 36, GOV_WALK_SLOW = 1000 / 25;
+function govern(now, drew) {
+  if (!GOV.on || GOV.done) return;
+  const gap = now - GOV.last; GOV.last = now;
+  if (!drew || document.hidden || gap > 250) { GOV.iv.length = 0; return; } // a pause, a hidden tab or a hitch: start over
+  if (!GOV.from) GOV.from = now + 1500; // the first frames after the hand-off settle (uploads, the first probe)
+  if (now < GOV.from) return;
+  const door = progress < 0.02;
+  if (GOV.iv.length && door !== GOV.door) GOV.iv.length = 0; // a window is all door or all walk
+  GOV.door = door; GOV.iv.push(gap);
+  const span = GOV.iv.reduce((a, b) => a + b, 0);
+  if (span < (door ? 1500 : 3000)) return;
+  const mean = span / GOV.iv.length; GOV.iv.length = 0; GOV.seen = (GOV.seen || 0) + 1; GOV.mean = +mean.toFixed(1); // (what it saw: window.__gov)
+  if (GOV.before && GOV.beforeDoor === door) { // judge the last step on a like window: under 10 % faster = not the pixels
+    const undo = mean > GOV.before * 0.9;
+    GOV.log.push({ at: Math.round(now), mean: +mean.toFixed(1), judged: GOV.level, undo });
+    GOV.before = 0;
+    if (undo) { GOV.level--; GOV.k = GOV_STEPS[GOV.level]; setBuffer(); GOV.done = true; return; } // take it back, stop
+  }
+  if (mean <= (door ? GOV_SLOW : GOV_WALK_SLOW)) return; // it holds: nothing changes
+  if (GOV.level >= GOV_STEPS.length - 1 || Math.min(devicePixelRatio || 1, 1.75) * GOV_STEPS[GOV.level + 1] < 0.75) { GOV.done = true; return; }
+  if (!door && now - lastScrollAt < 500) return; // mid-walk: only once the walk is at rest (no pop while it moves)
+  GOV.level++; GOV.k = GOV_STEPS[GOV.level]; GOV.before = mean; GOV.beforeDoor = door; setBuffer();
+  GOV.log.push({ at: Math.round(now), mean: +mean.toFixed(1), level: GOV.level, door });
 }
 // layoutCamera(): the camera's start and end on this screen. The room has one size in metres (Dan 2026-11-04: a room
 // built and lit in Blender can't stretch per screen); only the camera adapts
@@ -2327,6 +2513,11 @@ function lightRoom(neonK, warm, signK, open, far, now, full = false) {
   for (const m of SHINY) m.envMapIntensity = S.probe * (m.userData.env ?? 1) * warm * fill; // the reflections come up with the lamps
   for (const g of R.modelGlow || []) { const c = g.cyc, s = c && (now / 1000) % c.n; g.m.emissiveIntensity = g.k * warm * b(PROP_BANK[g.id] || (g.own ? 'own' : 'gear')) * (g.dying && !steady && hash(Math.floor(now / 400) + 9) > 0.93 ? 0.55 : 1) * (!c ? 1 : (steady ? !c.a : s >= c.a && s < c.b) ? 1 : 0.03); } // a model's meters and LEDs too (with its bank, or the gear's); a traffic light's lamps in turn
 }
+const wetFrustum = new THREE.Frustum(), wetPM = new THREE.Matrix4();
+function wetInView() { // the test the room's render makes before it draws R.wet, on this frame's matrices (O-3)
+  camera.updateMatrixWorld(); R.wet.updateMatrixWorld();
+  return wetFrustum.setFromProjectionMatrix(wetPM.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse)).intersectsObject(R.wet);
+}
 function frame(now) {
   const t = now - t0;
   if (!reduced) for (const mt of R.traces || []) mt.emissiveMap.offset.x = (now / 1000 * 0.35) % 1; // N33's green trace
@@ -2422,7 +2613,15 @@ function frame(now) {
   for (const f of R.film || []) f.box.classList.toggle('is-on', f === R.filmShown);
   if (R.filmShown) placeFilm(R.filmShown, tw);
   if (R.paintOn && R.shotsStale) { R.shotsStale = false; placeShots(); }
-  if ((!locked || document.body.classList.contains('bench-on')) && !R.filmShown) composer.render();
+  if (LOOK_ON) lookFrame(now);
+  if ((!locked || document.body.classList.contains('bench-on')) && !R.filmShown) {
+    // the floor's reflection first, at the top level (O-3). A frame that redraws the static shadows keeps it nested:
+    // the room's render draws them first
+    R.wetFirst = R.wet.visible && R.wet.material.visible && !renderer.shadowMap.needsUpdate && wetInView();
+    if (R.wetFirst) R.wetDraw.call(R.wet, renderer, scene, camera);
+    composer.render();
+    R.wetFirst = false;
+  }
 }
 
 // ---------- scroll: Lenis like the site; a half walk finishes the way the visitor was going ----------
@@ -2614,6 +2813,7 @@ function raf(now) {
   }
   if (lenis) lenis.raf(now);
   readScroll(); snapCheck(now); frame(now);
+  govern(now, progress < 0.999 && !R.filmShown); // (O-6: weak machines only)
   requestAnimationFrame(raf);
 }
 
