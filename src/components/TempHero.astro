@@ -1,58 +1,232 @@
 ---
 // The home page's opening screen until the long garage (HomeOpening.astro) is ready for everyone (Gil 2026-11-18,
-// for Black Friday). Only the garage's big line (tools/_home-opening/room.html, .read-b: the same words, faces and
-// colours), none of its room or walk: one screen of type over the site's own smoke, and the TV below it. Scrolling
-// past it lands on the TV by the TV's own scroll lock (WordWall.astro).
-// With the sale on (html[data-sale]), the strip stays over the nav as on every page, and the sale's TV intro
-// (SaleIntro.astro) waits until the visitor is past this screen.
-// Hidden where the garage plays (html.ho-on: a ?home=garage pin), which has this line in its own room.
-// Taking it off = remove the TempHero import and tag in src/pages/index.astro.
+// for Black Friday): the garage's big line (tools/_home-opening/room.html, .read-b: the same words), shown ON the
+// home TV's glass (WordWall.astro's slot) in the TV's own type and tint, in place of its menu. Once the tube is lit
+// the line tunes in pixelated (a canvas copy of it, sharpening block by block), then it is the real text.
+// The visitor's first scroll on it changes the channel: the line pixelates out and the menu powers on. With the
+// sale on and its intro still to show (SaleIntro.astro, window.__saleIntro), that scroll brings the offer up first,
+// and closing it changes the channel.
+// Not where the garage plays (html.ho-on: its walk ends on the TV), high contrast (the plain list), a link straight
+// to a plugin (?plugin= / ?cat= / #...), or a page that opens already scrolled.
+// Taking it off = <WordWall /> again in src/pages/index.astro (and the TempHero import).
 ---
 
-<section class="th" data-temp-hero aria-label="RevAudio">
-  <div class="th-glow" aria-hidden="true"></div>
+<div class="th" data-temp-hero hidden>
+  <canvas class="th-px" aria-hidden="true"></canvas>
   <div class="th-read">
-    <p class="th-kick th-in" style="--d:0">REVAUDIO · BOUTIQUE AUDIO PLUGINS</p>
-    <p class="th-head th-in" style="--d:1">Built like <em>cars.</em></p>
-    <span class="th-sig th-in" style="--d:2">Step inside.</span>
+    <p class="th-kick">REVAUDIO · BOUTIQUE AUDIO PLUGINS</p>
+    <p class="th-head"><span class="th-out">Built like</span> <em>cars.</em></p>
+    <span class="th-sig">Step inside.</span>
   </div>
-  <a class="th-down th-in" style="--d:3" href="#plugins">
-    <span>The plugins</span>
-    <svg viewBox="0 0 20 12" aria-hidden="true"><path d="M2 2 L10 10 L18 2" /></svg>
-  </a>
-</section>
+  <button type="button" class="th-down">SCROLL FOR THE PLUGINS <i aria-hidden="true">▾</i></button>
+</div>
+
+<script is:inline>
+  // before the first paint (the TV's menu never shows under the line first); after HomeOpening's gate, which sets ho-on
+  (function () {
+    var H = document.documentElement, q = location.search;
+    if (H.classList.contains('ho-on') || H.classList.contains('hc') || location.hash || /[?&](plugin|cat)=/.test(q)) return;
+    H.classList.add('th-on');
+  })();
+</script>
+
+<script>
+  const H = document.documentElement;
+  const th = document.querySelector<HTMLElement>('[data-temp-hero]');
+  const wall = th?.closest<HTMLElement>('.ww');
+  const canvas = th?.querySelector<HTMLCanvasElement>('.th-px');
+
+  if (th && wall && canvas && H.classList.contains('th-on')) {
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let state: 'in' | 'on' | 'asking' | 'out' = 'in';
+    const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+    // the line drawn on a canvas, where the text is on the page: every run of text at its own place, face and ink
+    // (a hollow letter as its outline), with the phosphor glow
+    const paint = () => {
+      const box = th.getBoundingClientRect();
+      const full = document.createElement('canvas');
+      full.width = Math.max(1, Math.round(box.width));
+      full.height = Math.max(1, Math.round(box.height));
+      const g = full.getContext('2d')!;
+      const walker = document.createTreeWalker(th, NodeFilter.SHOW_TEXT);
+      for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+        const text = n.textContent?.trim();
+        const el = n.parentElement;
+        if (!text || !el || el.closest('[aria-hidden="true"]')) continue;
+        const cs = getComputedStyle(el);
+        const range = document.createRange();
+        range.selectNodeContents(n);
+        const r = range.getBoundingClientRect();
+        if (!r.width) continue;
+        g.save();
+        g.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+        if ('letterSpacing' in g) (g as any).letterSpacing = cs.letterSpacing === 'normal' ? '0px' : cs.letterSpacing;
+        g.textAlign = 'center';
+        g.textBaseline = 'middle';
+        g.translate(r.left - box.left + r.width / 2, r.top - box.top + r.height / 2);
+        const rot = el.closest('.th-sig') ? getComputedStyle(el.closest('.th-sig')!).rotate : 'none';
+        if (rot && rot !== 'none') g.rotate((parseFloat(rot) * Math.PI) / 180);
+        const hollow = cs.color === 'rgba(0, 0, 0, 0)' || cs.color === 'transparent';
+        const ink = hollow ? cs.getPropertyValue('-webkit-text-stroke-color') || cs.color : cs.color;
+        g.shadowColor = ink;
+        g.shadowBlur = 10;
+        if (hollow) { g.strokeStyle = ink; g.lineWidth = 1.5; g.strokeText(text, 0, 0); }
+        else { g.fillStyle = ink; g.fillText(text, 0, 0); }
+        g.restore();
+      }
+      return full;
+    };
+
+    // the picture at a block size: down to a few pixels, then up again without smoothing
+    const block = (full: HTMLCanvasElement, px: number, alpha = 1) => {
+      canvas.width = full.width;
+      canvas.height = full.height;
+      const c = canvas.getContext('2d')!;
+      c.clearRect(0, 0, canvas.width, canvas.height);
+      const w = Math.max(1, Math.round(full.width / px)), h = Math.max(1, Math.round(full.height / px));
+      const small = document.createElement('canvas');
+      small.width = w;
+      small.height = h;
+      const s = small.getContext('2d')!;
+      s.imageSmoothingEnabled = true;
+      s.drawImage(full, 0, 0, w, h);
+      c.imageSmoothingEnabled = false;
+      c.globalAlpha = alpha;
+      c.drawImage(small, 0, 0, canvas.width, canvas.height);
+    };
+
+    const tuneIn = async () => {
+      th.hidden = false;
+      if (still) { th.classList.add('is-crisp'); state = 'on'; return; }
+      try { await document.fonts.ready; } catch {}
+      const full = paint();
+      th.classList.add('is-px');
+      for (const [px, a] of [[48, 0.35], [32, 0.6], [22, 0.85], [14, 1], [9, 1], [5, 1], [3, 1], [2, 1]]) {
+        block(full, px, a);
+        await wait(70);
+      }
+      th.classList.add('is-crisp');
+      th.classList.remove('is-px');
+      state = 'on';
+    };
+
+    // the channel change: the line breaks up and goes, the tube's power-on line opens on the menu
+    const toMenu = async () => {
+      if (state === 'out') return;
+      state = 'out';
+      removeListeners();
+      if (!still) {
+        try { await document.fonts.ready; } catch {}
+        const full = paint();
+        th.classList.remove('is-crisp');
+        th.classList.add('is-px');
+        for (const [px, a] of [[3, 1], [7, 1], [14, 0.8], [26, 0.5], [44, 0.2]]) {
+          block(full, px, a);
+          await wait(50);
+        }
+      }
+      th.hidden = true;
+      H.classList.remove('th-on');
+      wall.dispatchEvent(new CustomEvent('ww:replay'));
+    };
+
+    // the visitor's first move on the line: the offer first if it is still to come, else the menu
+    const go = () => {
+      if (state === 'asking' || state === 'out') return;
+      const ask = (window as any).__saleIntro as ((then: () => void) => void) | undefined;
+      if (ask) {
+        state = 'asking';
+        delete (window as any).__saleIntro;
+        ask(toMenu);
+      } else toMenu();
+    };
+    // the TV on screen (it is the page's top): a move down there is taken, not scrolled
+    const onTv = () => { const r = wall.getBoundingClientRect(); return r.top > -40 && r.top < innerHeight * 0.4; };
+    const modal = () => H.classList.contains('si-lock') || !!document.querySelector('dialog[open]');
+    const onWheel = (e: WheelEvent) => {
+      if (state === 'out' || modal() || e.deltaY <= 0 || !onTv()) return;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      go();
+    };
+    let touchY = 0;
+    const onTouchStart = (e: TouchEvent) => { touchY = e.touches[0]?.clientY ?? 0; };
+    const onTouchMove = (e: TouchEvent) => {
+      if (state === 'out' || modal() || !onTv() || (e.touches[0]?.clientY ?? 0) > touchY - 6) return;
+      e.preventDefault();
+      go();
+    };
+    const KEYS = new Set(['ArrowDown', 'PageDown', ' ', 'End']);
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (state === 'out' || modal() || !KEYS.has(e.key) || t?.closest('input, textarea, select, button, a, [contenteditable]') || !onTv()) return;
+      e.preventDefault();
+      go();
+    };
+    // a scroll the gestures above didn't catch (the scrollbar, a restored place): straight to the menu
+    const onScroll = () => { if (state !== 'asking' && scrollY > 60) toMenu(); };
+    // keyboard: a Tab into the TV's menu (it is there, unseen) changes the channel
+    const onFocus = (e: FocusEvent) => { if (th.contains(e.target as Node)) return; go(); };
+    const removeListeners = () => {
+      removeEventListener('wheel', onWheel, { capture: true });
+      removeEventListener('touchstart', onTouchStart);
+      removeEventListener('touchmove', onTouchMove);
+      removeEventListener('keydown', onKey, { capture: true });
+      removeEventListener('scroll', onScroll);
+      wall.removeEventListener('focusin', onFocus);
+    };
+    addEventListener('wheel', onWheel, { capture: true, passive: false });
+    addEventListener('touchstart', onTouchStart, { passive: true });
+    addEventListener('touchmove', onTouchMove, { passive: false });
+    addEventListener('keydown', onKey, { capture: true });
+    addEventListener('scroll', onScroll, { passive: true });
+    wall.addEventListener('focusin', onFocus);
+    th.addEventListener('click', go);
+
+    if (scrollY > 60) toMenu();
+    else {
+      // after the tube's power-on (WordWall: armed, powering, on), or at once where there is none
+      const lit = () => !wall.dataset.wwPower || wall.dataset.wwPower === 'on';
+      const until = async () => { for (let i = 0; i < 40 && !lit(); i++) await wait(50); };
+      until().then(tuneIn);
+    }
+  }
+</script>
 
 <style>
-  .th { position: relative; display: grid; place-items: center; overflow: hidden;
-    min-height: calc(100svh - var(--site-nav-h, var(--nav-h)) - var(--sale-h, 0px)); padding: 0 16px; text-align: center; }
-  :global(html.ho-on) .th { display: none; }
-  /* one warm lamp low behind the line (the garage's shop light), on the site's smoke */
-  .th-glow { position: absolute; inset: 0; pointer-events: none;
-    background: radial-gradient(ellipse 60% 42% at 50% 56%, rgba(255, 138, 60, 0.13), transparent 70%),
-      radial-gradient(ellipse 90% 60% at 50% 100%, rgba(232, 200, 120, 0.06), transparent 70%); }
-  .th-read { position: relative; margin-top: -4svh; }
-  .th-kick { margin: 0 0 .35em; font: 600 clamp(11px, 1.05vw, 15px)/1 var(--font-body); letter-spacing: .32em; color: var(--brass-bright); }
-  .th-head { margin: 0; font: 400 clamp(64px, 11vw, 176px)/.86 var(--font-display); letter-spacing: .02em; color: #efe3c6;
-    filter: drop-shadow(0 1px 0 rgba(0, 0, 0, .9)) drop-shadow(0 0 14px rgba(0, 0, 0, .75)) drop-shadow(0 10px 18px rgba(0, 0, 0, .6)); }
-  .th-head em { font-style: normal; color: #ff8a3c; }
-  .th-sig { display: inline-block; margin: .05em 0 0 22%; font: 400 clamp(26px, 3vw, 48px)/1 "Yellowtail", cursive; color: #f6c85d;
-    rotate: -6deg; text-shadow: 0 2px 3px rgba(0, 0, 0, .8); }
-  .th-down { position: absolute; left: 50%; bottom: max(22px, 4svh); translate: -50% 0; display: flex; flex-direction: column;
-    align-items: center; gap: 8px; padding: 8px 12px; color: var(--fg-dim); text-decoration: none;
-    font: 600 11px/1 var(--font-body); letter-spacing: .28em; text-transform: uppercase; transition: color .2s var(--ease); }
-  .th-down:hover, .th-down:focus-visible { color: var(--brass-bright); }
-  .th-down svg { width: 18px; height: 11px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  /* on the glass: the screen's own box (WordWall's framed set), over the tube, under its glare */
+  .th { position: absolute; inset: 0; z-index: 1; display: grid; place-items: center; align-content: center; gap: 0;
+    padding: 0 16px; text-align: center; cursor: pointer; }
+  .th[hidden] { display: none; }
+  :global(.ww[data-ww-bg='screen']:not([data-ww-frame='rails'])) > .th {
+    left: calc(var(--ww-frame-g) + var(--wf-zl) * var(--ww-frame-u) / 2);
+    right: calc(var(--ww-frame-g) + var(--wf-zr) * var(--ww-frame-u) / 2);
+    top: calc(var(--ww-frame-g) + var(--wf-zt) * var(--ww-frame-u) / 2);
+    bottom: calc(var(--ww-frame-g) + var(--wf-zb) * var(--ww-frame-u) / 2);
+  }
+  /* the menu waits unseen under it (still in the tab order: a Tab into it changes the channel) */
+  :global(html.th-on .ww > :not(.th, .ww-screen, .ww-screen-fx, .ww-frame, noscript)) { opacity: 0; pointer-events: none; }
 
-  /* in: the lines rise one after another (the room's own entrance), and the arrow nods */
-  :global(html.motion-ok) .th-in { opacity: 0; translate: 0 14px; animation: th-in .9s var(--ease-settle) calc(.15s + var(--d) * .16s) forwards; }
-  :global(html.motion-ok) .th-sig.th-in { translate: 0 14px; }
-  :global(html.motion-ok) .th-down.th-in { translate: -50% 14px; animation-name: th-in-down; }
-  :global(html.motion-ok) .th-down svg { animation: th-nod 2.2s ease-in-out 1.6s infinite; }
-  @keyframes th-in { to { opacity: 1; translate: 0 0; } }
-  @keyframes th-in-down { to { opacity: 1; translate: -50% 0; } }
-  @keyframes th-nod { 0%, 60%, 100% { translate: 0 0; } 30% { translate: 0 5px; } }
+  .th-px { position: absolute; inset: 0; width: 100%; height: 100%; display: none; image-rendering: pixelated; }
+  .th.is-px .th-px { display: block; }
+  .th-read, .th-down { opacity: 0; }
+  .th.is-crisp .th-read, .th.is-crisp .th-down { opacity: 1; }
 
-  :global(html.hc) .th-glow { display: none; }
-  :global(html.hc) .th-head, :global(html.hc) .th-sig { filter: none; text-shadow: none; }
-  :global(html.hc) .th-down { color: var(--fg); }
+  /* the TV's type in the TV's ink (its tint follows the lit plugin): the menu's mono, the names' outlined stencil,
+     the lit word filled */
+  .th-read { margin-top: -3%; }
+  .th-kick { margin: 0 0 .5em; font: 500 clamp(11px, 1.05vw, 15px)/1 var(--font-mono); letter-spacing: .32em; color: var(--ww-ink-text); }
+  .th-head { margin: 0; font: 400 clamp(64px, 10.5vw, 168px)/.86 var(--font-display); letter-spacing: .03em; text-transform: uppercase; }
+  .th-out { color: transparent; -webkit-text-stroke: 1.5px var(--ww-ink); filter: drop-shadow(0 0 6px var(--ww-glow)); }
+  .th-head em { font-style: normal; color: var(--ww-ink-hot); text-shadow: 0 0 18px var(--ww-glow-hot), 0 0 42px var(--ww-glow-soft); }
+  .th-sig { display: inline-block; margin: .05em 0 0 22%; font: 400 clamp(26px, 3vw, 48px)/1 "Yellowtail", cursive;
+    color: var(--ww-ink-hot); rotate: -6deg; text-shadow: 0 0 12px var(--ww-glow); }
+  .th-down { position: absolute; left: 50%; bottom: 7%; translate: -50% 0; appearance: none; border: 0; background: none; cursor: pointer;
+    padding: 8px 12px; white-space: nowrap; font: 500 12px/1 var(--font-mono); letter-spacing: .24em; color: var(--ww-ink-text); }
+  .th-down i { font-style: normal; color: var(--ww-ink-hot); margin-left: .3em; }
+  .th-down:hover, .th-down:focus-visible { color: var(--ww-ink-hot); }
+  :global(html.motion-ok) .th.is-crisp .th-down i { animation: th-blink 1.1s steps(1, end) infinite; }
+  @keyframes th-blink { 50% { opacity: 0; } }
+  @media (max-width: 720px) { .th-sig { margin-left: 30%; } .th-down { font-size: 11px; letter-spacing: .18em; } }
 </style>

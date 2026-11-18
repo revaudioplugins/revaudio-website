@@ -100,9 +100,7 @@ const excluded = path === '/thank-you' || path === '/review' || path === '/drift
     const scrollProgress = () => {
       const doc = document.documentElement;
       // the long garage on the home page (HomeOpening.astro): 35 % of the page below the walk, as on today's page
-      // and the same below the home page's opening screen (TempHero.astro)
-      const hero = document.querySelector<HTMLElement>('[data-temp-hero]');
-      const base = html.classList.contains('ho-on') ? (window as any).__hoLockY || 0 : hero ? hero.offsetHeight : 0;
+      const base = html.classList.contains('ho-on') ? (window as any).__hoLockY || 0 : 0;
       const scrollable = doc.scrollHeight - doc.clientHeight - base;
       return scrollable > 0 ? (doc.scrollTop - base) / scrollable : 0;
     };

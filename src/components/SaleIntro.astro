@@ -74,6 +74,7 @@ const copy = {
     const frame = set.querySelector<HTMLImageElement>('.si-frame');
     const opener = document.activeElement as HTMLElement | null;
     let closing = false;
+    let after: (() => void) | null = null; // the hero's turn, once the offer is closed
 
     const open = () => {
       root.hidden = false;
@@ -96,26 +97,19 @@ const copy = {
         document.documentElement.classList.remove('si-lock');
         opener?.focus?.({ preventScroll: true });
         then?.();
+        after?.();
+        after = null;
       }, still ? 0 : 620);
     };
 
     // the cabinet before the flight, so the set never flies in without its bezel (or after 700 ms, whatever comes first)
     if (frame) frame.loading = 'eager';
     const ready = frame ? Promise.race([frame.decode().catch(() => {}), new Promise((r) => setTimeout(r, 700))]) : Promise.resolve();
-    // with the opening screen on the home page (TempHero.astro), the offer waits until the visitor is past it: the
-    // hero's foot gone under the nav (the TV's scroll lock finishes a scroll that stops short)
-    const hero = document.querySelector<HTMLElement>('[data-temp-hero]');
-    const past = () => {
-      if (!hero || !hero.offsetHeight) return true; // (hidden where the garage plays)
-      const top = parseFloat(getComputedStyle(html).getPropertyValue('--site-nav-h')) || 44;
-      return hero.getBoundingClientRect().bottom <= top + parseFloat(getComputedStyle(html).getPropertyValue('--sale-h') || '0') + 2;
-    };
-    const heroPassed = new Promise<void>((done) => {
-      if (past()) return done();
-      const check = () => { if (past()) { removeEventListener('scroll', check); done(); } };
-      addEventListener('scroll', check, { passive: true });
-    });
-    Promise.all([ready, heroPassed]).then(open);
+    // with the opening screen on the TV (TempHero.astro), the offer waits for the visitor's first scroll there, and
+    // its close hands the TV over to the plugins (the hero asks through window.__saleIntro)
+    if (html.classList.contains('th-on')) {
+      (window as any).__saleIntro = (then: () => void) => { after = then; ready.then(open); };
+    } else ready.then(open);
 
     root.querySelectorAll<HTMLElement>('[data-si-close]').forEach((el) => {
       el.addEventListener('click', (e) => {
