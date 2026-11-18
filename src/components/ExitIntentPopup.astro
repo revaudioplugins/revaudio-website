@@ -117,6 +117,7 @@ const excluded = path === '/gas' || path === '/thank-you' || path === '/review' 
       if (fired || !armed || suppressed()) return;
       if (performance.now() - lastScroll < 500) return; // stale post-scroll event
       if (document.querySelector('dialog[open]')) return; // never stack dialogs
+      if (html.classList.contains('ho-on') && !html.classList.contains('ho-locked')) return; // never over the garage's loading or walk (HomeOpening.astro)
       const ae = document.activeElement;
       if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || (ae as HTMLElement).isContentEditable)) return;
 

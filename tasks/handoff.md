@@ -38,6 +38,14 @@ Files: `src/lib/widebeam/{intro,init,face,story}.ts`, `src/styles/widebeam.css`,
   after the picks: Step 0 (merge `origin/main` in in a temp worktree after `git merge-tree`; baselines), Step 0.5 (the
   critic's corrections), lane F alone, then lanes H / D / S / A / T in their own worktrees, then the gates; commit per
   lane by exact path; no push or merge to main until Dan says "push".
+- **Dan picked, 2026-11-18 ~16:10** (on the pick page, no notes): D1 B (the four readings), **D2 B "WIDER MIX. BASS DEAD
+  CENTRE."** (not my A), D3 B (satin brass), D4 C (cut from the plugin, engraved serif labels), D5 A (console column),
+  D6 A (Owner's Manual plate + strap), D7 B (phone deck), D8 B (portrait cut that follows the car), P1 A (launch after
+  Black Friday: WIDE BEAM leaves the bundle on Nov 22 by Gil's rule, "Price at launch", the BF strip hidden on
+  /widebeam), P2 B (music on the first touch of the demo), P3 B (3-4 real clips through the live demo), P4 A (a
+  partner records the film), P5 A ("Mac VST3 · AU · Windows VST3", the build guards the Windows flag).
+- **Build started the same day:** `origin/main` merged in (only this file clashed; `/widebeam` is still excluded in
+  both popups). Lanes and gates as in the plan.
 
 ## 2026-11-17 — WIDE BEAM page, `/widebeam` (Claude Code, Gil's Mac) — on `feat/widebeam-page`, PUSHED 2026-11-17 on Gil's word ("push this to Dan"), NOT merged, NOT live
 
@@ -57,6 +65,18 @@ folder), `src/components/{WelcomeDiscountPopup,ExitIntentPopup}.astro` (`/widebe
   form's payload against a stubbed worker; the cart's add-and-open with the same markup on revfx. Not checked: a real
   iPhone, Windows, Firefox, the live host.
 - Next: Dan's review on the branch; Gil sends the Paddle id.
+
+## 2026-11-18 — The long garage ON THE HOME PAGE, an A/B test for laptops (Claude Code `3D Garage – סגירת האתר`, Dan's Mac) — branch `feat/garage-home` (worktree `.claude/worktrees/garage-home`, from main `713f6b3`), NOT on main
+
+Claim: OPEN 2026-11-18. Files: `src/components/HomeOpening.astro` (new), `src/pages/index.astro`, `src/components/Cart.astro`
+(customData.home), `src/components/WelcomeDiscountPopup.astro` (waits for the TV), `tools/_home-opening/room.html` (embed
+mode), `tools/_home-opening/lights/lights-on.js` (the stall give-up), `tools/_home-opening/assets/{tv,nav,below}-*`,
+`tools/_home-opening/assets/lights/*`, `tools/_home-opening/tvcap.mjs`, `tools/garagepage/integration.mjs`, this entry.
+Dan 2026-11-18: "let's close the 3D garage site", then picked "try for Nov 19 anyway" (the plan's date: the room as the
+home page for half the laptop visitors) and the two fixes "no more stuck" + "the TV updated".
+- The room runs as the srcdoc of a fixed frame behind the home page (the site's X-Frame-Options: DENY and CSP frame-src
+  refuse a framed URL of ours; checked against a local server sending the live headers). Details: the component's head.
+- Being checked by an approved agent team (Ultracode, 10 agents); full entry at the end of the session.
 
 ## 2026-11-15 — The long garage: Gil's faster first load KEPT (PR #33), plus one line that lets the model downloads go (Claude Code `Garage load-speed branch review [c19840]`, Dan's Mac) — on `feat/home-opening`, PUSHED 2026-11-15 on Dan's word ("keep gil"); MERGED TO MAIN 2026-11-16 on Dan's word ("lets commit and marge to main")
 

@@ -25,6 +25,7 @@
   if (!(window.CSS && CSS.supports('mix-blend-mode', 'plus-lighter'))) root.classList.add('no-plus');
   document.documentElement.classList.add('lights-loading');
   const t0 = performance.now(), log = [];
+  let heard = t0; // the last load news (the give-up at the end waits for a stall)
   const note = (what) => log.push([Math.round(performance.now() - t0), what]);
 
   const pic = (src, cls, high) => {
@@ -121,6 +122,7 @@
   function progress(x) {
     if (at >= 0) { while (fired < Math.min(at, L.length)) fire(L[fired++]); return; } // the frozen stage
     if (demo && !progress.real) return; // the demo paces itself
+    if (x > p) heard = performance.now(); // load news: the room is still arriving (the give-up below waits)
     p = Math.max(p, x);
     while (fired < L.length && p >= (fired + 1) / (L.length + 1) - 1e-6) fire(L[fired++]);
   }
@@ -147,7 +149,17 @@
     document.documentElement.classList.remove('lights-loading');
     setTimeout(() => root.remove(), 700);
   }
-  // nothing came (the 3D failed): the lights all the same, and the page scrolls
-  const giveUp = setTimeout(() => { if (!readyCalls) { progress.real = true; progress(1); document.documentElement.classList.remove('lights-loading'); } }, 30000);
-  window.lightsOn = { progress, ready: (...a) => { clearTimeout(giveUp); return ready(...a); }, handoff, log, calm };
+  // nothing came (the 3D failed, or the line stopped): the lights all the same, and the page scrolls. Only on a real
+  // stall: no load news for STALL ms (the room's progress, or any file landing), or CAP ms in all. Not on a clock while
+  // the room still arrives (Dan 11-16, "its stuck": at 2 Mbit/s a 30 s clock lit the room as a still that did nothing for
+  // 40 s). Time with the tab hidden doesn't count (its timers sleep)
+  const STALL = 20000, CAP = 180000;
+  try { new PerformanceObserver(() => { heard = performance.now(); }).observe({ type: 'resource' }); } catch (e) {}
+  const giveUp = setInterval(() => {
+    const now = performance.now();
+    if (document.hidden) heard = now;
+    if (readyCalls || (now - heard < STALL && now - t0 < CAP)) return;
+    clearInterval(giveUp); note('give-up'); progress.real = true; progress(1); document.documentElement.classList.remove('lights-loading');
+  }, 1000);
+  window.lightsOn = { progress, ready: (...a) => { clearInterval(giveUp); return ready(...a); }, handoff, log, calm };
 })();
