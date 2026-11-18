@@ -363,6 +363,9 @@ const TVCAP = CAPTURE != null ? new URLSearchParams(location.search).get('tvcap'
 // 'self', so a framed URL is refused) with <base href="/garage-9f3c/"> and window.__EMBED = { nav } set first
 const EMBED = CAPTURE == null && (new URLSearchParams(location.search).has('embed') || !!window.__EMBED);
 const EMBED_NAV = EMBED ? Math.round(+(window.__EMBED?.nav ?? new URLSearchParams(location.search).get('nav'))) || 0 : 0;
+// __EMBED.sale = the page's sale strip over the nav ('soon' | 'bf' | 'cm', src/data/sale.ts): the home TV sits under it,
+// laid out for a shorter screen, so the TV's picture is its own capture (tvcap.mjs --suffix sale; the three show the same TV)
+const EMBED_SALE = EMBED && ['soon', 'bf', 'cm'].includes(window.__EMBED?.sale) ? 'sale' : '';
 const embed = { y: 0, to: 0, paused: false };
 const embedSay = (ev, data) => { if (EMBED && parent !== window) parent.postMessage({ garage: ev, ...data }, '/'); };
 embedSay('boot'); // (the page falls back when this never comes: a script that failed to load)
@@ -2152,7 +2155,7 @@ function resize() {
   const c = (TVCAP && CAPS.find((x) => x.tag === TVCAP)) || pickCap(vw);
   if (c !== cap) {
     cap = c;
-    tvImg.src = `assets/tv-${c.tag}.webp`;
+    tvImg.src = `assets/tv-${c.tag}${EMBED_SALE && c !== CAPS[3] ? '-' + EMBED_SALE : ''}.webp`;
     $('tvLive').src = tvImg.src;
     if (!EMBED) { // (the home page shows its own nav and sections)
       $('navImg').src = $('stageNavImg').src = `assets/nav-${c.navW}.webp`;
@@ -2783,7 +2786,7 @@ tvImg.addEventListener('load', applyTvTexture);
 
 // fonts first (the sign and the labels are drawn with them) and every texture, then the room, once; the models' bytes
 // come down as soon as the textures are in (prefetchModels)
-await Promise.all([Promise.race([Promise.all([document.fonts.load('400 64px "Bebas Neue"'), document.fonts.load('600 34px Inter')]), new Promise((r) => setTimeout(r, 1500))]), loadTextures().then(prefetchModels)]);
+await Promise.all([Promise.race([Promise.all([document.fonts.load('400 64px "Bebas Neue"'), document.fonts.load('600 34px Inter')].map((f) => f.catch(() => {}))), new Promise((r) => setTimeout(r, 1500))]), loadTextures().then(prefetchModels)]); // (a font that fails to load is not the room failing)
 createRoom();
 resize();
 applyFlags();

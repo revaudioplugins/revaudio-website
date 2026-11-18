@@ -1292,6 +1292,8 @@ const first = items[0]?.slug ?? '';
         if (lenis?.isScrolling === 'smooth') { later(); return; }
         armed = false;
         if (!lenis || wall.dataset.wwBg !== 'screen' || document.documentElement.classList.contains('hc')) return;
+        // the garage's walk lands itself on the TV, at its own lock (HomeOpening.astro)
+        if (document.documentElement.classList.contains('ho-on') && !document.documentElement.classList.contains('ho-locked')) return;
         // the page itself did not move: a sideways swipe, Space on a button, a wheel inside an open drawer
         const moved = window.scrollY - startY;
         if (Math.abs(moved) < 1 || document.querySelector('dialog[open]')) return;

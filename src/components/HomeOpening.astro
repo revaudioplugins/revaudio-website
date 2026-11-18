@@ -11,12 +11,16 @@
 // Who sees it: laptops and desktops (1000 px wide, a mouse or trackpad, WebGL 2), no reduced motion, no data saver,
 // no bot. Half of them, drawn once and kept (localStorage ra-home); phones keep today's home page (Dan 2026-11-08).
 // Once a session: a visitor who walked to the TV (or skipped) gets the TV straight away on the next home visit.
-// ra-home-seen = what the visitor was shown ('garage' | 'tv'); the cart sends it to Paddle as customData.home.
-// ?home=garage / ?home=tv pins a variant on this browser (testing); ?home=off forgets it.
-// SHARE = the garage's share of the visitors drawn. 0 = a soft launch: live, but only for a ?home=garage pin, and
-// nobody is drawn (or remembered), so the draw starts clean when it goes up.
-// Safety: the room says 'ready' (or 'error') by postMessage; no 'ready' in 45 s, an error first, or the Skip button
-// (after 6 s of loading) puts the normal home page back.
+// ra-home-seen = the side this visitor was drawn into ('garage' | 'tv'), whatever happened next; ra-home-outcome = how
+// the garage went ('started' | 'walked' to the TV | 'skipped' | 'fallback'). The cart sends both to Paddle
+// (customData.home, customData.home_out), so the test reads both ways: by the draw, and by what was really seen.
+// ?home=garage / ?home=tv pins a variant on this browser (testing; its own key, ra-home-pin: a pin never touches the
+// draw or the two keys above, and the cart sends nothing for a pinned browser); ?home=off forgets it all.
+// SHARE = the garage's share of the visitors drawn. 0 = off for everyone but a ?home=garage pin, visitors already drawn
+// 'garage' included (a soft launch, or the switch if the room misbehaves live); nobody is drawn while it is 0.
+// Taking it off the site altogether = revert the HomeOpening import and tag in src/pages/index.astro.
+// Safety: the room says 'ready' (or 'error') by postMessage; no 'ready' in 45 s of the tab being looked at, an error
+// first, or the Skip button (after 6 s of loading) puts the normal home page back.
 ---
 
 <div class="ho" id="ho">
@@ -27,33 +31,37 @@
 <script is:inline>
   (function () {
     var SHARE = 0.5;
-    var H = document.documentElement, KEY = 'ra-home', SEEN = 'ra-home-seen', DONE = 'ra-ho-done';
+    var H = document.documentElement, KEY = 'ra-home', SEEN = 'ra-home-seen', PIN = 'ra-home-pin', DONE = 'ra-ho-done';
     var ls = function (k, v) { try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} return null; };
     var ss = function (k, v) { try { if (v === undefined) return sessionStorage.getItem(k); sessionStorage.setItem(k, v); } catch (e) {} return null; };
     var q = null; try { q = new URLSearchParams(location.search).get('home'); } catch (e) {}
-    if (q === 'garage' || q === 'tv') ls(KEY, q);
-    if (q === 'off') { ls(KEY, null); ls(SEEN, null); }
+    if (q === 'garage' || q === 'tv') ls(PIN, q);
+    if (q === 'off') { ls(PIN, null); ls(KEY, null); ls(SEEN, null); ls('ra-home-outcome', null); }
+    var pin = q === 'garage' || q === 'tv' ? q : ls(PIN); // (a pin works even where site data is blocked)
+    if (pin !== 'garage' && pin !== 'tv') pin = null;
     var forced = q === 'garage';
+    if (!pin && !(SHARE > 0)) return; // SHARE 0: pins only, whatever was drawn before
+    var v = pin || ls(KEY);
     var ok = false;
     try {
       ok = matchMedia('(min-width: 1000px) and (hover: hover) and (pointer: fine)').matches
         && !matchMedia('(prefers-reduced-motion: reduce)').matches
+        && !H.classList.contains('hc') // (high contrast, set in BaseLayout's head: as the site's other scenes)
         && !(navigator.connection && navigator.connection.saveData)
         && !navigator.webdriver
         && !/bot|crawl|spider|slurp|lighthouse|headless|preview|facebookexternalhit/i.test(navigator.userAgent);
-      if (ok) {
+      // the WebGL 2 check costs 10 to 40 ms: only where the room could open now (not for 'tv', not once it was walked)
+      if (ok && !forced && v !== 'tv' && !(v === 'garage' && ss(DONE))) {
         var gl = document.createElement('canvas').getContext('webgl2');
         ok = !!gl;
         var lose = gl && gl.getExtension('WEBGL_lose_context'); if (lose) lose.loseContext();
       }
     } catch (e) { ok = false; }
     if (!ok && !forced) return; // phones, bots, no WebGL 2: today's home page, not in the test
-    var v = q === 'garage' || q === 'tv' ? q : ls(KEY); // (a pin works even where site data is blocked)
-    if (v !== 'garage' && v !== 'tv') {
-      if (!(SHARE > 0)) return; // soft launch: pins only
-      v = Math.random() < SHARE ? 'garage' : 'tv'; ls(KEY, v);
+    if (!pin) {
+      if (v !== 'garage' && v !== 'tv') { v = Math.random() < SHARE ? 'garage' : 'tv'; ls(KEY, v); }
+      ls(SEEN, v);
     }
-    ls(SEEN, v);
     if (v !== 'garage') return;
     if (ss(DONE) && !forced) return; // walked it once this session: the TV straight away
     H.classList.add('ho-on', 'ho-loading');
@@ -67,10 +75,18 @@
     if (!H.classList.contains('ho-on')) return;
     var ho = document.getElementById('ho'), frame = document.getElementById('hoFrame'), skip = document.getElementById('hoSkip');
     var wall = null, ready = false, booted = false, state = '', paused = false, pauseTimer = 0, raf = 0;
-    var walkPx = innerHeight * 3.7, lockY = 0;
+    var walkPx = innerHeight * 3.7, lockY = 0, lastY = 0, down = false, landTimer = 0, waited = 0, focusAt = -1e4;
     var px = function (name) { return parseFloat(getComputedStyle(H).getPropertyValue(name)) || 0; };
     var navTotal = function () { return Math.round((px('--site-nav-h') || 41) + px('--sale-h')); };
     function done() { try { sessionStorage.setItem('ra-ho-done', '1'); } catch (e) {} }
+    // how the garage went for this visitor, for the test's readout (the cart sends it); never for a tester's pin
+    function note(o) { try { if (!localStorage.getItem('ra-home-pin')) localStorage.setItem('ra-home-outcome', o); } catch (e) {} }
+    // the site's scroller (Lenis; the module script below hands it over once it has loaded) and a jump it can't undo
+    function lenis() { return window.__hoLenis ? window.__hoLenis() : null; }
+    function jump(y) {
+      var l = lenis(); if (l) l.scrollTo(y, { immediate: true, force: true });
+      if (Math.abs(scrollY - y) > 1) scrollTo(0, y);
+    }
     function room() { try { return frame.contentWindow && frame.contentWindow.__garage; } catch (e) { return null; } }
     function pause(b) { if (paused === b) return; paused = b; var r = room(); if (r) r.pause(b); }
     function setState(s) {
@@ -78,8 +94,13 @@
       state = s;
       H.classList.toggle('ho-locked', s === 'locked');
       clearTimeout(pauseTimer);
-      if (s === 'walk') { H.classList.remove('ho-past'); pause(false); return; }
-      done();
+      if (s === 'walk') {
+        H.classList.remove('ho-past'); pause(false);
+        if (wall && wall.contains(document.activeElement)) document.activeElement.blur(); // (focus doesn't stay in the TV, unseen again)
+        return;
+      }
+      done(); note('walked');
+      requestAnimationFrame(follow);
       // the real TV has faded in over the room's: the room hides and stops drawing
       pauseTimer = setTimeout(function () { H.classList.add('ho-past'); pause(true); }, 600);
     }
@@ -91,34 +112,76 @@
     }
     function onScroll() {
       raf = 0;
-      if (!ready) return;
       var y = scrollY, p = Math.max(0, Math.min(1, 1 - (lockY - y) / walkPx));
+      // (the browser brings a control it just focused into view by itself, Safari to the middle of the screen: for one
+      // in the TV that can be short of the lock)
+      if (p < 0.999 && performance.now() - focusAt < 400 && toTv()) return;
+      if (!ready) return;
       var r = room(); if (r) r.to(p);
       setState(p >= 0.999 ? 'locked' : 'walk');
-      // while the TV fades in past the lock, the room shows only behind it, never over the sections under it
-      var cut = state === 'locked' ? Math.max(0, Math.round(innerHeight - (lockY - y + navTotal() + wall.offsetHeight))) : 0;
+      place();
+    }
+    // past the lock the room goes up with the page, so its TV stays under the real one while that fades in (a wheel
+    // carries on through the lock: a still room showed two TVs apart); and it shows only behind the TV, never over the
+    // sections under it
+    function place() {
+      var y = scrollY, past = state === 'locked' ? Math.max(0, y - lockY) : 0;
+      var cut = state === 'locked' ? Math.max(0, Math.round(innerHeight - (lockY - y + past + navTotal() + wall.offsetHeight))) : 0;
+      frame.style.transform = past ? 'translateY(' + -past + 'px)' : '';
       frame.style.clipPath = cut ? 'inset(0 0 ' + cut + 'px 0)' : '';
     }
-    function fallback() { // today's home page, now
+    // (every frame while the two cross-fade: Safari's scroll event comes a frame or two after the page moved)
+    function follow() { if (state === 'locked' && !H.classList.contains('ho-past')) { place(); requestAnimationFrame(follow); } }
+    // the end of the walk is the room's picture of the TV, which does nothing: a walk that stops in its last tenth
+    // glides on to the lock (the TV's own landing, WordWall.astro, leaves the walk to this one; like it, never against
+    // the visitor: only when the last move was down)
+    function land() {
+      var l = lenis();
+      if (l && l.isScrolling === 'smooth') { landTimer = setTimeout(land, 160); return; } // still gliding: ask again
+      if (!ready || state !== 'walk' || !down || lockY - scrollY > 0.1 * walkPx || document.querySelector('dialog[open]')) return;
+      var y = Math.ceil(lockY);
+      if (l) l.scrollTo(y, { duration: 0.55, easing: function (t) { return 1 - Math.pow(1 - t, 4); } }); else scrollTo(0, y);
+    }
+    function fallback(skipped) { // today's home page, now
       if (!H.classList.contains('ho-on')) return;
-      done();
+      done(); note(skipped === true ? 'skipped' : 'fallback');
       H.classList.remove('ho-on', 'ho-loading', 'ho-locked', 'ho-past');
-      clearTimeout(slow); clearTimeout(give);
+      clearTimeout(slow); clearInterval(give); clearTimeout(landTimer);
       removeEventListener('scroll', queue);
       try { frame.src = 'about:blank'; } catch (e) {}
       ho.remove();
       scrollTo(0, 0);
+      history.scrollRestoration = 'auto'; // (today's page from here on: Back to it finds its place again)
+      // the Skip button went with the room: the focus it held goes to the TV it promised
+      var tag = skipped === true && document.querySelector('.garage-wall .ww-tag'); if (tag) tag.focus({ preventScroll: true });
     }
-    function queue() { if (!raf) raf = requestAnimationFrame(onScroll); }
+    function queue() {
+      if (!raf) raf = requestAnimationFrame(onScroll);
+      var y = scrollY; if (y !== lastY) { down = y > lastY; lastY = y; }
+      clearTimeout(landTimer); landTimer = setTimeout(land, 160);
+    }
+    // keyboard and screen readers reach the TV as on today's page (it is there, unseen, all along): focus inside it
+    // lands the page on the lock, where it shows. Not over a glide (the nav's Plugins link is on its way there)
+    function toTv() {
+      var l = lenis();
+      if ((l && l.isScrolling === 'smooth') || !H.classList.contains('ho-on') || !wall || !wall.contains(document.activeElement) || lockY - scrollY <= 0.001 * walkPx) return false;
+      jump(Math.ceil(lockY)); return true;
+    }
+    document.addEventListener('focusin', function (e) { if (wall && wall.contains(e.target)) { focusAt = performance.now(); toTv(); } });
     addEventListener('message', function (e) {
       if (e.origin !== location.origin || e.source !== frame.contentWindow || !e.data || !e.data.garage) return;
       var m = e.data;
-      if (m.walkPx) { walkPx = m.walkPx; measure(); }
+      if (m.walkPx) {
+        // a resize mid-walk (the walk's length follows the screen's height) keeps the visitor's place in it
+        var left = ready && state === 'walk' && m.walkPx !== walkPx ? (lockY - scrollY) / walkPx : -1;
+        walkPx = m.walkPx; measure();
+        if (left >= 0) jump(Math.max(0, Math.round(lockY - left * walkPx)));
+      }
       if (m.garage === 'boot') booted = true;
       if (m.garage === 'error' && !ready) fallback();
       if (m.garage === 'ready' && !ready) {
         ready = true;
-        clearTimeout(slow); clearTimeout(give);
+        clearTimeout(slow); clearInterval(give);
         skip.hidden = true;
         H.classList.remove('ho-loading');
         measure(); onScroll();
@@ -137,25 +200,34 @@
       try { var d = frame.contentDocument; if (booted && d && !room() && !d.documentElement.classList.contains('lights-loading')) fallback(); /* (room() is set just before 'ready') */ } catch (e) {}
     }, 1000);
     addEventListener('resize', function () { measure(); queue(); });
-    skip.addEventListener('click', fallback);
+    skip.addEventListener('click', function () { fallback(true); });
     var slow = setTimeout(function () { if (!ready) skip.hidden = false; }, 6000);
-    var give = setTimeout(function () { if (!ready) fallback(); }, 45000);
+    // 45 s of the tab being looked at: one opened in the background loads when the visitor comes to it (its room
+    // waits for frames a hidden tab doesn't draw)
+    var give = setInterval(function () { if (!ready && !document.hidden && (waited += 1000) >= 45000) fallback(); }, 1000);
     scrollTo(0, 0);
     measure();
+    note('started');
     fetch('/garage-9f3c/', { credentials: 'same-origin' })
       .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
       .then(function (html) {
         if (!H.classList.contains('ho-on')) return;
-        var head = '<base href="/garage-9f3c/"><script>window.__EMBED = { nav: ' + navTotal() + ' };<\/script>';
+        var head = '<base href="/garage-9f3c/"><script>window.__EMBED = { nav: ' + navTotal() + ', sale: \'' + (H.dataset.sale || (H.dataset.saleSoon ? 'soon' : '')).replace(/[^a-z]/g, '') + '\' };<\/script>';
         frame.srcdoc = html
           .replace(/<head[^>]*>/i, function (m) { return m + head; })
-          // the room's pictures of this page's nav and below are not shown here; and the browser's early fetches in
+          // the room's pictures of this page's nav, TV and below are not shown here; and the browser's early fetches in
           // a srcdoc ignore its <base> (Chrome asked /assets/..., /lights/... at the root), so the rest go absolute
-          .replace(/ src="assets\/(nav|below)-[^"]*"/g, '')
+          .replace(/ src="assets\/(nav|below|tv)-[^"]*"/g, '') // (and the TV's picture in the page's size comes from the room's resize())
           .replace(/ src="(assets|lights|vendor)\//g, ' src="/garage-9f3c/$1/');
       })
       .catch(fallback);
   })();
+</script>
+
+<script>
+  // the site's scroller, for the inline script above (which has to run before any module loads)
+  import { lenis } from '../lib/motion';
+  (window as any).__hoLenis = () => lenis;
 </script>
 
 <style>
@@ -164,9 +236,12 @@
   .ho-frame { position: fixed; inset: 0; width: 100%; height: 100vh; border: 0; z-index: 1; pointer-events: none;
     background: #060509; color-scheme: dark; }
   :global(html.ho-past) .ho-frame { visibility: hidden; }
-  /* the real TV waits, unseen, at the end of the walk; at the lock it fades in over the room's TV (out at once) */
-  :global(html.ho-on .garage-wall) { position: relative; z-index: 2; opacity: 0; visibility: hidden; }
-  :global(html.ho-on.ho-locked .garage-wall) { opacity: 1; visibility: visible; transition: opacity .45s ease-out; }
+  /* the real TV waits, unseen, at the end of the walk; at the lock it fades in over the room's TV (out at once).
+     Unseen, not hidden: it stays in the tab order and for screen readers (focus in it lands on the lock, the script
+     above); until then nothing in it takes the mouse (its lit panel sets pointer-events and visibility of its own) */
+  :global(html.ho-on .garage-wall) { position: relative; z-index: 2; opacity: 0; }
+  :global(html.ho-on:not(.ho-locked) .garage-wall), :global(html.ho-on:not(.ho-locked) .garage-wall *) { pointer-events: none !important; }
+  :global(html.ho-on.ho-locked .garage-wall) { opacity: 1; transition: opacity .45s ease-out; }
   :global(html.ho-loading), :global(html.ho-loading body) { overflow: hidden; scrollbar-gutter: stable; }
   .ho-skip { position: fixed; left: 50%; bottom: 28px; translate: -50% 0; z-index: 3; appearance: none; cursor: pointer;
     border: 1px solid rgba(232, 200, 120, 0.45); border-radius: 999px; background: rgba(12, 10, 8, 0.82); color: #e8dccb;
