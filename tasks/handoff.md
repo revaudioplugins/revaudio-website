@@ -46,6 +46,25 @@ Files: `src/lib/widebeam/{intro,init,face,story}.ts`, `src/styles/widebeam.css`,
   partner records the film), P5 A ("Mac VST3 · AU · Windows VST3", the build guards the Windows flag).
 - **Build started the same day:** `origin/main` merged in (only this file clashed; `/widebeam` is still excluded in
   both popups). Lanes and gates as in the plan.
+- **Build state, 2026-11-18 ~23:30 (all local on `feat/widebeam-page`, NOT pushed):**
+  - Stage 1 committed: `be6153d` the split into one file set per lane (196/196 shots pixel-identical, every behaviour
+    check the same), `49a9976` the parts kit cut from the plugin's photo (`tools/widebeam-parts/`), `0c0a6f8` DESIGN.md
+    §7 records Dan's D8 B exception.
+  - Stage 2 committed: `607fb1f` the data contract + honest words + final order + tokens (build green, honesty greps
+    clean, every behaviour change explained), `a7d186f` the plate label on the shared serif tokens.
+  - Stage 3 RUNNING (Workflow `wf_123ce5da-cd1`): five lanes in their own worktrees, each cut from `a7d186f`:
+    `.claude/worktrees/wb-lane-{h,d,s,a,t}` on branches `wb/lane-{h,d,s,a,t}`, dev servers 4513-4517 (each with its own
+    `node_modules` dir of links, so the `.vite` / `.astro` caches are private). Nothing in them is committed yet.
+  - Stage 4 (next): commit each lane by path, merge the five branches in a temp worktree, build, ff this branch; then
+    every gate (`run-gates.sh`), the timing gates one at a time on a quiet machine, bug-hunt rounds until dry, H.5
+    (the social card), and a review bench for Dan.
+  - The gate kit and the stage scripts live in the session scratchpad (lost on a reboot); stage 4 copies the gate
+    scripts into the repo. Dan's stills page of the state after stage 2: https://claude.ai/artifact/2b4CpXc2DCwT9suoVRHcfp
+  - Owed by others, unchanged: Gil (Paddle price, licence worker + hub line, signed builds on R2, the trial download,
+    a real test purchase; and on Nov 22 his `sale.ts` line takes "Wide Beam" out of the bundle with OBDTune), Ilay
+    (MANUAL -> /widebeam/#manual), a partner (the film), Yoni (Cloudflare long-cache rule; the cookie banner on
+    sideways phones, write-up coming from lane A). At launch someone sends the list "one email the day the trial
+    opens" (the page promises it; nothing sends it automatically).
 
 ## 2026-11-17 — WIDE BEAM page, `/widebeam` (Claude Code, Gil's Mac) — on `feat/widebeam-page`, PUSHED 2026-11-17 on Gil's word ("push this to Dan"), NOT merged, NOT live
 
