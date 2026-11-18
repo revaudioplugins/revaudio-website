@@ -3,11 +3,11 @@
  * headlights and drives off down the road. The title comes up as it leaves (5 s); on the last frame the video dissolves
  * into the live road and the canvas carries the tail lights on to the horizon while our own lamps cough on.
  *
- * Played once per browser session (a sessionStorage flag); REPLAY brings it back. Never with reduced motion or Save-Data.
+ * Plays on every load, a reload included (Dan, 2026-11-18: a once-per-tab rule hid the car on every reload); only a
+ * visitor who comes back with Back / Forward has seen it. REPLAY brings it back. Never with reduced motion or Save-Data.
  * Every failure (autoplay refused, an error, no start within 6 s, a stall over 3 s) goes straight to the road.
  */
 const REVEAL_AT = 5.0;
-const KEY = 'wb-intro-seen';
 
 export interface IntroHooks {
   reveal(instant: boolean): void; // the hero title comes up
@@ -23,8 +23,8 @@ export function initIntro(hero: HTMLElement, hooks: IntroHooks) {
 
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const saveData = !!(navigator as any).connection?.saveData;
-  let seen = false;
-  try { seen = sessionStorage.getItem(KEY) === '1'; } catch {}
+  const nav = performance.getEntriesByType?.('navigation')[0] as PerformanceNavigationTiming | undefined;
+  const seen = nav?.type === 'back_forward';
 
   if (!video || reduced || saveData) {
     video?.remove(); skip?.remove(); replay?.remove();
@@ -56,7 +56,6 @@ export function initIntro(hero: HTMLElement, hooks: IntroHooks) {
     try { video!.currentTime = 0; } catch {}
     watchdog = window.setTimeout(() => { if (video!.currentTime < 0.05) finish(true); }, 6000);
     video!.play().catch(() => finish(true));
-    try { sessionStorage.setItem(KEY, '1'); } catch {}
   }
 
   video.addEventListener('timeupdate', () => { if (running && video.currentTime >= REVEAL_AT) { reveal(false); hero.classList.remove('is-hush'); } });

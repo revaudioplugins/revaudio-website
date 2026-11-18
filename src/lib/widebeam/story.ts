@@ -160,6 +160,7 @@ export function initStory(section: HTMLElement) {
         for (const m of [-1, 1]) draws.push([cx + m * sp * half(y) * 0.92, y, { ...s, r: s.r * 0.7, n: '' }, -1]);
       }
     });
+    const labels: [number, number, number][] = []; // x, y, half width of each label drawn: twins that meet share one
     for (const [x, y, s] of draws) {
       const pulse = 1 + 0.06 * Math.sin(t * 4 + x * 0.05);
       const r = s.r * pulse * (0.6 + 0.5 * (y - hz) / (H - hz));
@@ -168,7 +169,14 @@ export function initStory(section: HTMLElement) {
       ctx.globalCompositeOperation = 'lighter';
       ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r * 2.6, 0, Math.PI * 2); ctx.fill();
       ctx.globalCompositeOperation = 'source-over';
-      if (s.n) { ctx.fillStyle = 'rgba(20,16,12,.85)'; ctx.font = '600 9px Oswald, sans-serif'; ctx.fillText(s.n, x, y + 3); }
+      if (s.n) {
+        ctx.font = '600 9px Oswald, sans-serif';
+        const hw = ctx.measureText(s.n).width / 2 + 3;
+        if (!labels.some(([lx, ly, lw]) => Math.abs(lx - x) < lw + hw && Math.abs(ly - y) < 11)) {
+          labels.push([x, y, hw]);
+          ctx.fillStyle = 'rgba(20,16,12,.85)'; ctx.fillText(s.n, x, y + 3);
+        }
+      }
     }
 
     // the correlation needle (mass-spring like the face's)

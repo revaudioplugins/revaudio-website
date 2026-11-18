@@ -11,7 +11,8 @@ cd ../revaudio-website-widebeam && npm ci   # or symlink node_modules from your 
 npx astro dev --port 4391                   # http://localhost:4391/widebeam
 ```
 
-The intro plays once per browser tab (`sessionStorage`); the REPLAY pill brings it back. Click anywhere to start the music.
+The intro plays on every load, a reload included (since 2026-11-18; Back / Forward skips it); the REPLAY pill brings it
+back. Click anywhere to start the music.
 
 ## What is on the page, top to bottom
 

@@ -1,3 +1,31 @@
+## 2026-11-18 — WIDE BEAM page: review fixes (Claude Code `Wide Beam page tour [3eef2b]`, Dan's Mac) — on `feat/widebeam-page`, NOT pushed
+
+Claim: OPEN (Dan, 2026-11-18: "fix the code ... review it and fix whatever you see fit, then we continue with the design").
+Files: `src/lib/widebeam/{intro,init,face,story}.ts`, `src/styles/widebeam.css`, one line of
+`tasks/widebeam-handoff-dan-2026-11-17.md` (the intro rule), `tasks/lessons.md` (2026-11-18 entry), this entry.
+
+- The car: Dan didn't see it. It played once per tab (`sessionStorage`), so the tab opened for him played it unseen and
+  every reload showed only the road. Now it plays on every load; Back / Forward skips it (`intro.ts`).
+- Launch list: the status line was looked up as `[data-wb-notify-status]` (the page has `data-wb-status`), and both
+  forms' `hidden` lost to their `display: flex`. A visitor pressing "Notify me" saw nothing change, not even for a bad
+  email. Both forms now go away after sending and say what happened.
+- Knobs: the wheel turned whichever knob was under the cursor while the visitor scrolled the page past the dash
+  (WIDTH 136 -> 0 in one pass). The wheel now turns a control only once it is clicked or tabbed to; Lenis leaves the
+  wheel to it then (`data-lenis-prevent-wheel` while focused).
+- The dash fits a laptop screen (min-width 901 px: the 3:2 face sized to the height under the nav; 1141x636 -> 828x552,
+  was 1109x739, never whole on screen). A preset click lands the whole face centred under the nav (a number to
+  `lenis.scrollTo`), and the dash's rise is triggered on its still wrapper, so it finishes where it should.
+- The stereo road: twin sources that meet (BASS / BASS, PAD / PAD, GTR L / GTR R) share one label instead of
+  printing over each other ("BASBASS" on a phone).
+- Checked (stubbed worker, nothing sent; Chrome + Playwright WebKit at 1141x636, WebKit 390x844): 9 of 9 fix checks
+  pass in both engines (car on first load, on reload, skipped on Back; dash fits; wheel ignored / works after a
+  click; launch list bad + good email; trial form), the old code failed the car-on-reload, wheel and launch-list checks
+  earlier the same session; preset click lands the face at 64-616 of 636 in both; `npm run build` green; no page
+  errors. Not checked: real Safari / iPhone (remote automation is off on Dan's Mac), Firefox, Windows, the sound by ear.
+- Left for Dan (design round next): the music starts on the first click anywhere (cookie Decline included); the
+  "AAX" in the two formats lines (WideBeam README: PACE wcguid not created); the gold gradient on the WIDE BEAM lockup
+  (the design hook flags gradient text; Gil chose it to match the plugin plate).
+
 ## 2026-11-17 — WIDE BEAM page, `/widebeam` (Claude Code, Gil's Mac) — on `feat/widebeam-page`, PUSHED 2026-11-17 on Gil's word ("push this to Dan"), NOT merged, NOT live
 
 Claim: OPEN, handed to Dan. Full brief: `tasks/widebeam-handoff-dan-2026-11-17.md`.

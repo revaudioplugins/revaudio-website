@@ -219,8 +219,11 @@ export function createFace(root: HTMLElement, art: FaceArt, store: Store): Face 
     });
     const end = () => { dragging = false; root.classList.remove('is-dragging'); };
     el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
-    el.addEventListener('wheel', (e) => { e.preventDefault(); lastKnob = id; apply(-e.deltaY * 0.6, e.shiftKey, read()); }, { passive: false });
-    el.addEventListener('focus', () => { lastKnob = id; });
+    // the wheel turns a control only once the visitor has picked it (click or Tab): scrolling the page past the dash
+    // must never turn a knob. While it has focus, Lenis leaves the wheel to it (data-lenis-prevent-wheel).
+    el.addEventListener('wheel', (e) => { if (document.activeElement !== el) return; e.preventDefault(); lastKnob = id; apply(-e.deltaY * 0.6, e.shiftKey, read()); }, { passive: false });
+    el.addEventListener('focus', () => { lastKnob = id; el.setAttribute('data-lenis-prevent-wheel', ''); });
+    el.addEventListener('blur', () => el.removeAttribute('data-lenis-prevent-wheel'));
   }
 
   // ── presets: the knobs glide to the new values (house overshoot), MONO + SIDE off, POWER untouched ──

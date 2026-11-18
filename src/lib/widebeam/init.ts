@@ -4,7 +4,7 @@
  * the preset strip, the reveals and the launch-list form (POST {form:'newsletter', email, source:'widebeam-notify',
  * _gotcha, page} to the worker's /form-once, the list relay every site form uses).
  */
-import { gsap, ScrollTrigger, reducedMotion } from '../motion';
+import { gsap, ScrollTrigger, reducedMotion, lenis, DUR_ANCHOR } from '../motion';
 import { createStore, PRESETS } from './state';
 import { createFace, type FaceArt } from './face';
 import { startNight } from './night';
@@ -55,7 +55,9 @@ export function initWideBeam(art: FaceArt) {
     // the dash rises into the windscreen as it scrolls in
     gsap.fromTo(dash, { rotateX: 28, y: 80, scale: 0.9, opacity: 0.4 }, {
       rotateX: 0, y: 0, scale: 1, opacity: 1, ease: 'none',
-      scrollTrigger: { trigger: dash, start: 'top 95%', end: 'top 30%', scrub: 0.6 },
+      // the trigger is the still wrapper: measured on the moving dash itself (80 px down, scaled .9 at refresh), the rise
+      // finished ~135 px late and a dash centred on screen still sat low and small
+      scrollTrigger: { trigger: dash.parentElement ?? dash, start: 'top 95%', end: 'top 30%', scrub: 0.6 },
     });
   }
 
@@ -195,7 +197,14 @@ export function initWideBeam(art: FaceArt) {
   page.querySelectorAll<HTMLButtonElement>('[data-preset]').forEach((b) => b.addEventListener('click', () => {
     face.loadPreset(Number(b.dataset.preset));
     page.querySelectorAll('[data-preset]').forEach((x) => x.classList.toggle('is-on', x === b));
-    dash?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' });
+    if (!dash) return;
+    // the whole face lands centred under the nav, so the visitor sees the knobs glide. A number, not the element:
+    // a native smooth scrollIntoView fights Lenis (stopped ~70 px short), and Lenis given the element adds the page's
+    // scroll-padding and reads its own scroll, which runs ahead of the page while a wheel glide is still going.
+    const nav = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--nav-h')) || 44;
+    const top = dash.getBoundingClientRect().top + scrollY - nav - Math.max(0, (innerHeight - nav - dash.offsetHeight) / 2);
+    if (lenis) lenis.scrollTo(top, { duration: DUR_ANCHOR });
+    else window.scrollTo({ top, behavior: reduced ? 'auto' : 'smooth' });
   }));
   store.on(() => { page.querySelectorAll('[data-preset]').forEach((x) => x.classList.toggle('is-on', Number((x as HTMLElement).dataset.preset) === store.preset && !store.edited)); });
   const lane = page.querySelector<HTMLElement>('[data-wb-lane]');
@@ -222,7 +231,7 @@ export function initWideBeam(art: FaceArt) {
 
   // ── the two sign-up forms: the free trial under the hero, the launch list at the end ──
   bindSignup(page.querySelector('[data-wb-trial]'), page.querySelector('[data-wb-trial-status]'));
-  bindSignup(page.querySelector('[data-wb-form]'), page.querySelector('[data-wb-notify-status]'), {
+  bindSignup(page.querySelector('[data-wb-form]'), page.querySelector('[data-wb-status]'), {
     ok: "You're on the list. We'll email you the day WIDE BEAM goes live.",
     already: "You're already on the list. We'll email you at launch.",
   });
