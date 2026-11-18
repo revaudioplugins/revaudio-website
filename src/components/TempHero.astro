@@ -1,0 +1,58 @@
+---
+// The home page's opening screen until the long garage (HomeOpening.astro) is ready for everyone (Gil 2026-11-18,
+// for Black Friday). Only the garage's big line (tools/_home-opening/room.html, .read-b: the same words, faces and
+// colours), none of its room or walk: one screen of type over the site's own smoke, and the TV below it. Scrolling
+// past it lands on the TV by the TV's own scroll lock (WordWall.astro).
+// With the sale on (html[data-sale]), the strip stays over the nav as on every page, and the sale's TV intro
+// (SaleIntro.astro) waits until the visitor is past this screen.
+// Hidden where the garage plays (html.ho-on: a ?home=garage pin), which has this line in its own room.
+// Taking it off = remove the TempHero import and tag in src/pages/index.astro.
+---
+
+<section class="th" data-temp-hero aria-label="RevAudio">
+  <div class="th-glow" aria-hidden="true"></div>
+  <div class="th-read">
+    <p class="th-kick th-in" style="--d:0">REVAUDIO · BOUTIQUE AUDIO PLUGINS</p>
+    <p class="th-head th-in" style="--d:1">Built like <em>cars.</em></p>
+    <span class="th-sig th-in" style="--d:2">Step inside.</span>
+  </div>
+  <a class="th-down th-in" style="--d:3" href="#plugins">
+    <span>The plugins</span>
+    <svg viewBox="0 0 20 12" aria-hidden="true"><path d="M2 2 L10 10 L18 2" /></svg>
+  </a>
+</section>
+
+<style>
+  .th { position: relative; display: grid; place-items: center; overflow: hidden;
+    min-height: calc(100svh - var(--site-nav-h, var(--nav-h)) - var(--sale-h, 0px)); padding: 0 16px; text-align: center; }
+  :global(html.ho-on) .th { display: none; }
+  /* one warm lamp low behind the line (the garage's shop light), on the site's smoke */
+  .th-glow { position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse 60% 42% at 50% 56%, rgba(255, 138, 60, 0.13), transparent 70%),
+      radial-gradient(ellipse 90% 60% at 50% 100%, rgba(232, 200, 120, 0.06), transparent 70%); }
+  .th-read { position: relative; margin-top: -4svh; }
+  .th-kick { margin: 0 0 .35em; font: 600 clamp(11px, 1.05vw, 15px)/1 var(--font-body); letter-spacing: .32em; color: var(--brass-bright); }
+  .th-head { margin: 0; font: 400 clamp(64px, 11vw, 176px)/.86 var(--font-display); letter-spacing: .02em; color: #efe3c6;
+    filter: drop-shadow(0 1px 0 rgba(0, 0, 0, .9)) drop-shadow(0 0 14px rgba(0, 0, 0, .75)) drop-shadow(0 10px 18px rgba(0, 0, 0, .6)); }
+  .th-head em { font-style: normal; color: #ff8a3c; }
+  .th-sig { display: inline-block; margin: .05em 0 0 22%; font: 400 clamp(26px, 3vw, 48px)/1 "Yellowtail", cursive; color: #f6c85d;
+    rotate: -6deg; text-shadow: 0 2px 3px rgba(0, 0, 0, .8); }
+  .th-down { position: absolute; left: 50%; bottom: max(22px, 4svh); translate: -50% 0; display: flex; flex-direction: column;
+    align-items: center; gap: 8px; padding: 8px 12px; color: var(--fg-dim); text-decoration: none;
+    font: 600 11px/1 var(--font-body); letter-spacing: .28em; text-transform: uppercase; transition: color .2s var(--ease); }
+  .th-down:hover, .th-down:focus-visible { color: var(--brass-bright); }
+  .th-down svg { width: 18px; height: 11px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* in: the lines rise one after another (the room's own entrance), and the arrow nods */
+  :global(html.motion-ok) .th-in { opacity: 0; translate: 0 14px; animation: th-in .9s var(--ease-settle) calc(.15s + var(--d) * .16s) forwards; }
+  :global(html.motion-ok) .th-sig.th-in { translate: 0 14px; }
+  :global(html.motion-ok) .th-down.th-in { translate: -50% 14px; animation-name: th-in-down; }
+  :global(html.motion-ok) .th-down svg { animation: th-nod 2.2s ease-in-out 1.6s infinite; }
+  @keyframes th-in { to { opacity: 1; translate: 0 0; } }
+  @keyframes th-in-down { to { opacity: 1; translate: -50% 0; } }
+  @keyframes th-nod { 0%, 60%, 100% { translate: 0 0; } 30% { translate: 0 5px; } }
+
+  :global(html.hc) .th-glow { display: none; }
+  :global(html.hc) .th-head, :global(html.hc) .th-sig { filter: none; text-shadow: none; }
+  :global(html.hc) .th-down { color: var(--fg); }
+</style>
