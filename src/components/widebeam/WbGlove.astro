@@ -1,6 +1,7 @@
 ---
 /** /widebeam glove box (lane S): the sixteen preset cards (src/lib/widebeam/presets.ts). */
 import { PRESETS } from '../../lib/widebeam/state';
+import { GLOVE_SUB } from '../../data/widebeam';
 
 // a preset card's little road: two beams opening with its WIDTH, the focus line, the mix as the light's strength
 const beam = (w: number) => { const s = 6 + (w / 200) * 50; return `M58 74L${60 - s} 6L${60 - s + 14} 6Z M62 74L${60 + s - 14} 6L${60 + s} 6Z`; };
@@ -8,16 +9,16 @@ const focusY = (f: number) => 74 - (Math.log(f / 20) / Math.log(50)) * 60;
 ---
 <!-- ============ PRESETS: sixteen roads ============ -->
 <section class="wb-presets" id="wb-presets" aria-labelledby="wb-presets-h">
-  <header class="wb-head" data-wb-reveal>
+  <header class="wb-head" data-reveal="fade">
     <p class="wb-eyebrow">THE GLOVE BOX</p>
     <h2 id="wb-presets-h">Sixteen roads to start on.</h2>
-    <p class="wb-headsub">Click one and the knobs on the dash glide to it. Drag the row to see them all.</p>
+    <p class="wb-headsub">{GLOVE_SUB}</p>
   </header>
   <div class="wb-lane" data-wb-lane>
     {PRESETS.map((p, i) => {
       const w = p.v.width ?? 136, f = p.v.focus ?? 120, m = p.v.mix ?? 100;
       return (
-        <button type="button" class="wb-card" data-preset={i} style={`--m:${0.35 + (m / 100) * 0.65}`}>
+        <button type="button" class="wb-card" data-preset={i} data-wb-demo style={`--m:${0.35 + (m / 100) * 0.65}`}>
           <span class="wb-card-n">{String(i + 1).padStart(2, '0')}</span>
           <svg viewBox="0 0 120 80" aria-hidden="true">
             <path d="M54 6H66L110 76H10Z" fill="#14161a" />

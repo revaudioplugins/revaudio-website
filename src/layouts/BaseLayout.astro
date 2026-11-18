@@ -124,6 +124,8 @@ const canonical = new URL(Astro.url.pathname, Astro.site).href;
           var sP = sessionStorage.getItem('sale-preview');
           if (sP) { sPick = sP === 'soon' ? null : sP; sSoon = sP === 'soon' && sHome; sH.dataset.salePreview = '1'; }
         }
+        // /widebeam can't be bought yet (src/data/widebeam.ts, P1 A): no sale strip there, no --sale-h
+        if (/^\/widebeam(\/|$)/.test(location.pathname)) sPick = null;
         if (sPick) sH.dataset.sale = sPick;
         else if (sSoon) sH.dataset.saleSoon = '1';
         var sA = sessionStorage.getItem('ss-arrive');

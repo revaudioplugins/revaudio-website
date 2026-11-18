@@ -1,53 +1,46 @@
 ---
-/** /widebeam ask plate under the hero (lane A): the free trial + BUY NOW (src/data/widebeam.ts). */
-import { widebeam, buyable, registerUrl, onceUrl as formOnceUrl, fmtUsd } from '../../data/widebeam';
+/** /widebeam ask plate under the hero (lane A): the one ask from askFor(phase) + the buy side (src/data/widebeam.ts). */
+import { widebeam, askFor, buyFor, formatsLine, onceUrl as formOnceUrl } from '../../data/widebeam';
 
 const onceUrl = formOnceUrl();
-const trialRegister = registerUrl();
-const canBuy = buyable();
+const ask = askFor();
+const buy = buyFor();
 ---
-<!-- ============ GET IT: the free trial + BUY NOW (src/data/widebeam.ts) ============ -->
-<section class="wb-get" id="wb-get" aria-label="Get WIDE BEAM">
-  <div class="wb-get-plate" data-wb-reveal>
+<!-- ============ GET IT: the one ask + the buy side (src/data/widebeam.ts askFor / buyFor) ============ -->
+<section class="wb-get" id="wb-get" aria-label="Get WIDE BEAM" data-wb-cta>
+  <div class="wb-get-plate" data-reveal="fade">
     <div class="wb-get-trial">
-      <p class="wb-get-label">Get your <em>free</em> {widebeam.trialDays}-day trial</p>
+      <p class="wb-get-label">{ask.label}</p>
       <form
         class="wb-get-form" data-wb-trial novalidate
         data-once-url={onceUrl}
-        data-register-url={trialRegister ?? undefined}
+        data-register-url={ask.registerUrl ?? undefined}
         data-plugin={widebeam.gateId}
-        data-msg-ok={trialRegister ? 'Check your inbox: your WIDE BEAM download link is on its way.' : "You're in. We'll email your WIDE BEAM download link the day the trial opens."}
-        data-msg-already={trialRegister ? "You're already signed up. Check your inbox (and spam) for the download link." : "You're already on the list. The download link comes the day the trial opens."}
+        data-msg-ok={ask.ok}
+        data-msg-already={ask.already}
       >
         <label class="sr-only" for="wb-trial-email">Your email</label>
-        <input id="wb-trial-email" type="email" name="email" inputmode="email" autocomplete="email" enterkeyhint="go" spellcheck="false" placeholder="your@email.com" required aria-label="Your email, we send the WIDE BEAM download link here" />
-        <input type="hidden" name="source" value="widebeam-trial" />
+        <input id="wb-trial-email" type="email" name="email" inputmode="email" autocomplete="email" enterkeyhint="go" spellcheck="false" placeholder="your@email.com" required aria-describedby="wb-get-micro wb-get-consent" />
+        <input type="hidden" name="source" value={ask.source} />
         <input type="text" name="_gotcha" class="wb-hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
-        <button type="submit" class="rv-btn"><span data-face>Get it <span aria-hidden="true">&#9656;</span></span></button>
+        <button type="submit" class="rv-btn"><span data-face>{ask.key.replace(/ ▸$/, '')} <span aria-hidden="true">&#9656;</span></span></button>
       </form>
       <p class="wb-get-status" data-wb-trial-status role="status" aria-live="polite" tabindex="-1"></p>
-      <p class="wb-get-micro">Full version &middot; no credit card</p>
-      <p class="wb-get-notice">We&rsquo;ll also send a few short getting-started emails and a heads-up before your trial ends. Unsubscribe anytime.</p>
+      <p class="wb-get-micro" id="wb-get-micro">{ask.micro}</p>
+      <p class="wb-get-notice" id="wb-get-consent">{ask.consent} &middot; <a href="/privacy" data-open-legal="privacy">Privacy</a></p>
     </div>
     <div class="wb-get-or" aria-hidden="true"><span>or</span></div>
     <div class="wb-get-buy">
-      {canBuy ? (
-        <>
-          <p class="wb-get-price"><b>{fmtUsd(widebeam.priceUsd!)}</b><span>one-time · yours to keep</span></p>
-          <button
-            type="button" class="rv-btn rv-btn--lg wb-buy"
-            data-add-to-cart data-cart-open
-            data-slug={widebeam.slug} data-name={widebeam.name} data-price={widebeam.priceUsd}
-          >Buy now</button>
-        </>
-      ) : (
-        <>
-          <p class="wb-get-price"><b>Own it</b><span>price announced at launch</span></p>
-          <button type="button" class="rv-btn rv-btn--lg wb-buy" data-wb-buy-soon aria-describedby="wb-buy-note">Buy now</button>
-          <p class="wb-get-status" id="wb-buy-note" data-wb-buy-note role="status" aria-live="polite"></p>
-        </>
+      <p class="wb-get-price"><b>{buy.title}</b><span>{buy.sub}</span></p>
+      {buy.key && (
+        <button
+          type="button" class="rv-btn rv-btn--lg wb-buy"
+          data-add-to-cart data-cart-open
+          data-slug={widebeam.slug} data-name={widebeam.name} data-price={widebeam.priceUsd}
+        >{buy.key}</button>
       )}
-      <p class="wb-get-micro">Mac VST3 · AU · AAX &middot; Windows VST3</p>
+      <p class="wb-get-micro">{formatsLine()}</p>
+      {buy.trust && <p class="wb-get-notice">{buy.trust}</p>}
     </div>
   </div>
 </section>

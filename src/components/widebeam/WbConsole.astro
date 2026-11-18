@@ -1,14 +1,16 @@
 ---
 /** /widebeam console under the face (lane D): the engine, your own track, the key list, the rear-view mirror. */
+import { DASH } from '../../data/widebeam';
 ---
-<div class="wb-console" data-wb-reveal>
+<div class="wb-console" data-reveal="fade">
   <div class="wb-transport">
-    <button type="button" class="rv-btn wb-engine" data-wb-play aria-pressed="false"><span class="wb-key" aria-hidden="true"></span><span data-face>Start the engine</span></button>
+    <button type="button" class="rv-btn wb-engine" data-wb-play data-wb-demo aria-pressed="false"><span class="wb-key" aria-hidden="true"></span><span data-face>Start the engine</span></button>
     <label class="rv-btn rv-btn--ghost wb-file">
       <input type="file" accept="audio/*" data-wb-file />
       <span>Use your own track</span>
     </label>
-    <p class="wb-msg" data-wb-msg role="status" aria-live="polite">Engine off. Headphones make it obvious.</p>
+    <p class="wb-fine wb-file-note">{DASH.fileNote}</p>
+    <p class="wb-msg" data-wb-msg role="status" aria-live="polite">{DASH.idle}</p>
     <ul class="wb-keys" aria-label="Keyboard shortcuts">
       <li><kbd>H</kbd> high beam</li><li><kbd>M</kbd> mono</li><li><kbd>S</kbd> side</li><li><kbd>P</kbd> power</li><li><kbd>[</kbd><kbd>]</kbd> presets</li>
     </ul>

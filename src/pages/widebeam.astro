@@ -1,31 +1,37 @@
 ---
 /**
- * /widebeam: the WIDE BEAM page (branch feat/widebeam-page, 2026-11-17). WIDE BEAM = the car-headlight stereo-width
- * plugin (revaudioplugins/WideBeam, 1.0 candidate, not released). Unlisted (noindex, not in plugins.ts) until it ships.
+ * /widebeam: the WIDE BEAM page (branch feat/widebeam-page). WIDE BEAM = the car-headlight stereo-width plugin
+ * (revaudioplugins/WideBeam, 1.0 candidate, not released). Unlisted (noindex, not in the sitemap, not in plugins.ts)
+ * until it ships: the launch-day list is the header of src/data/widebeam.ts.
  *
- * The shell (lane F): it only places the sections, in order. Each section is its own component in
- * src/components/widebeam/, its styles a partial in src/styles/widebeam/ (indexed by src/styles/widebeam.css), its
- * script a module in src/lib/widebeam/ booted by init.ts. The face art is resolved here because the boot reads it
- * from data-art and the head preloads the plate.
+ * The shell (lane F, final): it only places the sections, in their final order, and never changes after lane F.
+ *   WbFlash (the HIGH BEAM page flash, position: fixed) · WbSound (the SOUND pill, fixed)
+ *   hero (WbHero) · the ask plate (WbGet) · the dash (WbDrive with WbConsole; lane D's phone deck renders inside it)
+ *   · the glove box (WbGlove) · the stereo road (WbStory) · the Owner's Manual (WbManual, #manual)
+ *   · the closer (WbCloser) · the phone bar (WbStickyBar)
+ * Each section is its own component in src/components/widebeam/, its styles a partial in src/styles/widebeam/
+ * (indexed by src/styles/widebeam.css), its script a module in src/lib/widebeam/ booted by init.ts. Every word that
+ * names the ask, the price, the formats or a control comes from src/data/widebeam.ts; assertWidebeamConfig() fails
+ * the build on a phase the page can't back.
  *
  * The face in #wb-drive is the plugin's own art: a clean 2x capture of Source/ui (every moving part hidden) with the
  * baked filmstrips laid back on their seats (src/lib/widebeam/face.ts). It plays: the audio is a Web Audio mid/side
- * chain after the plugin's laws (audio.ts), fed by a synthesized loop or the visitor's own file, never uploaded.
- * The hero opens on public/widebeam/intro-*.mp4 (Higgsfield: a GT coupe sweeps past and drives off down the road),
- * then dissolves into its own last frame without the car (intro-end.jpg), the tail lights carried to the horizon
- * (intro.ts). Order: hero (intro + the road) · #wb-get (free trial + BUY NOW, src/data/widebeam.ts) ·
- * #wb-drive (the dash, live) · #wb-story (the stereo road, six controls) · #wb-presets (sixteen roads) ·
- * #wb-specs (the readout) · #wb-notify (launch list).
+ * sketch after the plugin's laws (audio.ts), fed by a synthesized loop or the visitor's own file, never uploaded.
+ * The face art is resolved here because the boot reads it from data-art and the head preloads the plate.
  */
 import { getImage } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { assertWidebeamConfig } from '../data/widebeam';
+import WbFlash from '../components/widebeam/WbFlash.astro';
 import WbSound from '../components/widebeam/WbSound.astro';
 import WbHero from '../components/widebeam/WbHero.astro';
 import WbGet from '../components/widebeam/WbGet.astro';
 import WbDrive from '../components/widebeam/WbDrive.astro';
 import WbStory from '../components/widebeam/WbStory.astro';
 import WbGlove from '../components/widebeam/WbGlove.astro';
+import WbManual from '../components/widebeam/WbManual.astro';
 import WbCloser from '../components/widebeam/WbCloser.astro';
+import WbStickyBar from '../components/widebeam/WbStickyBar.astro';
 import '../styles/widebeam.css';
 
 import baseImg from '../assets/widebeam/face-base.webp';
@@ -35,6 +41,9 @@ import mixImg from '../assets/widebeam/knob-mix.webp';
 import toggleImg from '../assets/widebeam/switch-toggle2.webp';
 import powerImg from '../assets/widebeam/power-rocker.webp';
 import wheelImg from '../assets/widebeam/level-wheel.webp';
+
+// a phase the page can't back fails the build (src/data/widebeam.ts)
+assertWidebeamConfig();
 
 // filmstrips keep their full frame size (the grid maths needs every frame whole); only re-encoded
 const webp = (src: ImageMetadata, quality = 80) => getImage({ src, format: 'webp', quality });
@@ -55,13 +64,16 @@ const art = {
 >
   <link slot="head" rel="preload" as="image" href={art.base} type="image/webp" />
   <div class="wb-page" data-wb-page data-art={JSON.stringify(art)}>
+    <WbFlash />
     <WbSound />
     <WbHero />
     <WbGet />
     <WbDrive />
-    <WbStory />
     <WbGlove />
+    <WbStory />
+    <WbManual />
     <WbCloser />
+    <WbStickyBar />
   </div>
 </BaseLayout>
 

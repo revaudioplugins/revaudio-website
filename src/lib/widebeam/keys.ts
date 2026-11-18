@@ -1,8 +1,11 @@
-/** /widebeam letter keys (lane D): H high beam, M mono, S side, P power, [ ] presets (never while typing). */
+/**
+ * /widebeam letter keys (lane D): H high beam, M mono, S side, P power, [ ] presets (never while typing), and the
+ * HIGH BEAM page flash (WbFlash.astro, CSS in drive.css; moved here whole from furniture.ts, behaviour unchanged).
+ */
 import { PRESETS, type Store } from './state';
 import type { Face } from './face';
 
-export function initKeys(store: Store, face: Face) {
+export function initKeys(page: HTMLElement, store: Store, face: Face, reduced: boolean) {
   // keys: H high beam, M mono, S side, P power, [ ] presets (never while typing)
   document.addEventListener('keydown', (e) => {
     if (e.metaKey || e.ctrlKey || e.altKey) return;
@@ -16,5 +19,13 @@ export function initKeys(store: Store, face: Face) {
     };
     const f = act[e.key.toLowerCase()];
     if (f) { f(); }
+  });
+
+  // HIGH BEAM on: a warm flash across the whole page, like flashing the lights at a crossing
+  const flash = page.querySelector<HTMLElement>('[data-wb-flash]');
+  store.on((s, ch) => {
+    if (flash && 'high' in ch && s.high && s.power && !reduced) {
+      flash.classList.remove('is-on'); void flash.offsetWidth; flash.classList.add('is-on');
+    }
   });
 }

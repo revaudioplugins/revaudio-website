@@ -1,58 +1,64 @@
 ---
-/** /widebeam closer (lane A): today the specs (odometers + trip computer) and the launch list, as they were. */
-import { onceUrl as formOnceUrl } from '../../data/widebeam';
+/** /widebeam closer (lane A): today the specs (odometers + folds + trip computer) and the one ask, all words from
+ *  src/data/widebeam.ts (SPECS, ODOMETER, FOLDS, askFor). Lane A rebuilds it into "Runs on your setup." */
+import { widebeam, askFor, SPECS, ODOMETER, FOLDS, onceUrl as formOnceUrl } from '../../data/widebeam';
 
 const onceUrl = formOnceUrl();
-
-const DATA = [
-  ['WIDTH', '0 – 200 %', '100 = untouched · 200 = side +6 dB'],
-  ['LOW FOCUS', '20 – 1000 Hz', 'Linkwitz-Riley 4th-order mono-bass split'],
-  ['MIX', '0 – 100 %', 'Phase-aligned dry, no comb when blending'],
-  ['HIGH BEAM', 'On / off', 'Velvet-noise decorrelator, 25 ms, ducked on attacks'],
-  ['REACH', '0 – 100 %', 'How far HIGH BEAM throws'],
-  ['TILT', '±6 dB', 'Width tilt about 1.5 kHz'],
-  ['CRUISE', 'Always on', 'Holds the level as the image opens'],
-  ['MONO · SIDE', 'Listening', 'Sum to mono, or solo the side. Never automated'],
-  ['CORRELATION', '−1 … +1', 'Moving-coil meter, ~300 ms'],
-  ['POWER', 'Host bypass', '20 ms fade, no click'],
-  ['LATENCY', '0 samples', 'Zero latency, per-sample mid/side'],
-  ['PRESETS', '16 factory', 'Plus your own, saved as files'],
-  ['FORMATS', 'VST3 · AU · AAX', 'macOS 11+ universal · Windows x64'],
-];
+const ask = askFor();
 ---
 <!-- ============ SPECS ============ -->
 <section class="wb-specs" id="wb-specs" aria-labelledby="wb-specs-h">
-  <header class="wb-head" data-wb-reveal>
+  <header class="wb-head" data-reveal="fade">
     <p class="wb-eyebrow">THE ODOMETER</p>
     <h2 id="wb-specs-h">Under the hood.</h2>
   </header>
-  <div class="wb-odos" data-wb-reveal>
-    <div class="wb-odo"><b data-odo="0">0</b><span>samples of latency</span></div>
-    <div class="wb-odo"><b data-odo="200">0</b><span>% top of WIDTH</span></div>
-    <div class="wb-odo"><b data-odo="24">0</b><span>dB/oct mono-bass split</span></div>
-    <div class="wb-odo"><b data-odo="16">0</b><span>factory presets</span></div>
+  <div class="wb-odos" data-reveal="fade">
+    {ODOMETER.map((o) => (
+      <div class="wb-odo"><span class="sr-only">{o.value}</span><b data-odo={o.value} aria-hidden="true">{o.value}</b><span>{o.unit}</span></div>
+    ))}
   </div>
-  <div class="wb-readout" data-wb-reveal>
-    <div class="wb-readout-bar"><span>TRIP COMPUTER · PARAMETERS</span><span>{DATA.length} ITEMS</span></div>
-    <dl>
-      {DATA.map(([k, v, d]) => (<div class="wb-dr"><dt>{k}</dt><dd><b>{v}</b><span>{d}</span></dd></div>))}
-    </dl>
+  <div class="wb-folds" data-reveal="fade">
+    {FOLDS.map((f) => (
+      f.id === 'specs' ? (
+        <details class="wb-fold wb-fold--specs" open>
+          <summary>{f.title}</summary>
+          <div class="wb-readout">
+            <div class="wb-readout-bar"><span>TRIP COMPUTER · PARAMETERS</span><span>{SPECS.length} ITEMS</span></div>
+            <dl>
+              {SPECS.map(([k, v, d]) => (<div class="wb-dr"><dt>{k}</dt><dd><b>{v}</b><span>{d}</span></dd></div>))}
+            </dl>
+          </div>
+        </details>
+      ) : (
+        <details class="wb-fold">
+          <summary>{f.title}</summary>
+          {f.body.map((line) => <p>{line}</p>)}
+        </details>
+      )
+    ))}
   </div>
 </section>
 
-<!-- ============ NOTIFY ============ -->
-<section class="wb-notify" id="wb-notify" aria-labelledby="wb-notify-h">
-  <div class="wb-notify-card" data-wb-reveal>
+<!-- ============ NOTIFY: the same one ask as the plate ============ -->
+<section class="wb-notify" id="wb-notify" aria-labelledby="wb-notify-h" data-wb-cta>
+  <div class="wb-notify-card" data-reveal="fade">
     <div class="wb-notify-lamps" aria-hidden="true"><i></i><i></i></div>
-    <p class="wb-eyebrow">LAUNCH LIST</p>
-    <h2 id="wb-notify-h">Be first on the road.</h2>
-    <p>One email the day WIDE BEAM goes live. Nothing else unless you ask for it.</p>
-    <form class="wb-form" data-wb-form data-once-url={onceUrl} novalidate>
-      <label class="sr-only" for="wb-email">Email</label>
-      <input id="wb-email" type="email" name="email" placeholder="you@studio.com" required autocomplete="email" />
-      <input type="hidden" name="source" value="widebeam-notify" />
+    <p class="wb-eyebrow">{widebeam.phase === 'preopen' ? 'LAUNCH LIST' : 'THE TRIAL'}</p>
+    <h2 id="wb-notify-h">{ask.closerTitle}</h2>
+    <p id="wb-notify-consent">{ask.consent} &middot; <a href="/privacy" data-open-legal="privacy">Privacy</a></p>
+    <form
+      class="wb-form" data-wb-form novalidate
+      data-once-url={onceUrl}
+      data-register-url={ask.registerUrl ?? undefined}
+      data-plugin={widebeam.gateId}
+      data-msg-ok={ask.ok}
+      data-msg-already={ask.already}
+    >
+      <label class="sr-only" for="wb-email">Your email</label>
+      <input id="wb-email" type="email" name="email" placeholder="you@studio.com" required autocomplete="email" aria-describedby="wb-notify-consent" />
+      <input type="hidden" name="source" value={ask.source} />
       <input type="text" name="_gotcha" class="wb-hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
-      <button type="submit" class="rv-btn"><span data-face>Notify me</span></button>
+      <button type="submit" class="rv-btn"><span data-face>{ask.key.replace(/ ▸$/, '')} <span aria-hidden="true">&#9656;</span></span></button>
     </form>
     <p class="wb-form-status" data-wb-status role="status" aria-live="polite" tabindex="-1"></p>
     <p class="wb-fine">WIDE BEAM is in final testing. Details can still change before release.</p>

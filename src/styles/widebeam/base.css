@@ -3,19 +3,69 @@
    chrome, oxblood leather, ivory lettering, LCD blue confined to readouts, warm halogen (never pure white) for light.
    House laws kept: one upper-left light, no #000 / #fff, keys sink by depth. */
 
+/* ---------- the plugin's own two faces, bundled for systems that lack them (SIL OFL 1.1; licences beside the files
+   in public/fonts/widebeam/). Subsets made with fontTools; add a character = re-subset and bump the -vN in the name.
+   'WB Serif': the plate's engraved serif. Georgia where it is installed (Mac, Windows, iOS); elsewhere (Android,
+   Linux) Gelasio, which is drawn to Georgia's metrics. Subset: A-Z a-z 0-9 and the label punctuation, 8.3 KB.
+   'WB Courier Prime': the LCD face for systems without Courier New (the plugin's LCDs are Courier New). The family
+   stack names Courier New first, so a Mac or a PC never downloads it. Subset: printable ASCII + · × ° – — ‘ ’ “ ” …
+   ‹ › −, 6.7 KB. */
+@font-face {
+  font-family: 'WB Serif';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Georgia'), url('/fonts/widebeam/Gelasio-Regular.subset-v1.woff2') format('woff2');
+  unicode-range: U+0020-007E, U+00B0, U+00B7, U+00D7, U+2013-2014, U+2019, U+201C-201D, U+2026, U+2039-203A;
+}
+@font-face {
+  font-family: 'WB Courier Prime';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/widebeam/CourierPrime-Regular.subset-v1.woff2') format('woff2');
+  unicode-range: U+0020-007E, U+00B0, U+00B7, U+00D7, U+2013-2014, U+2018-2019, U+201C-201D, U+2026, U+2039-203A, U+2212;
+}
+
 .wb-page {
   --charcoal: #15130f; --charcoal-2: #1d1a16; --steel: #24211c;
   --brass-hi: #f3dca0; --brass: #c9a35c; --brass-lo: #6f5430;
   --ox: #6b1d1a; --ox-hi: #93302a;
-  --ivory: #efe6d2; --ivory-2: #b8ad98; --ivory-3: #8a8070;
+  /* --ivory-3 = small print. #9c927f (was #8a8070) clears AA on the plate steel #24211c at 5.2:1 (art-18, a11y-10) */
+  --ivory: #efe6d2; --ivory-2: #b8ad98; --ivory-3: #9c927f;
   --halo: #fff1cb; --halo-2: #eadcc0;
   --lcd-ink: #b9e8ff; --lcd-glow: #2894fa; --lcd-well: #04152b;
-  /* house faces (DESIGN.md §3): Bebas for headlines, Oswald for labels, VT323 for every screen; the WIDE BEAM
-     lockup alone keeps the plugin plate's engraved serif (a product name wears its plugin's header lockup) */
-  --serif: Georgia, 'Times New Roman', serif;
+  /* status (art-19): the house --emerald (fills, lamps) as is; text needs a lift to read on the plate steel, so the
+     two text colours are the house hues mixed toward --ivory: --emerald 45 % (5.7:1 on --steel) and the house
+     --oxide-text 25 % (5.6:1; the house #d4622a is 4.3:1 there, AA only on bg-0 / bg-1) */
+  --emerald-text: #85a287;
+  --oxide-text: #db8354;
+
+  /* faces (DESIGN.md §3 + D4 C): Bebas for headlines; Oswald for button and pill labels; the plate's engraved serif
+     for the lockup, the kickers and the small plate labels; the plugin's Courier New for its LCDs; the house mono for
+     every other readout. No pixel font on readable text (DESIGN Law 5, art-07): VT323 is off the page. */
+  --serif: 'WB Serif', Georgia, 'Times New Roman', serif;
   --wb-display: var(--font-display);
   --wb-label: 'Oswald', var(--font-display);
-  --wb-lcd: 'VT323', var(--font-mono);
+  --wb-lcd: 'Courier New', 'WB Courier Prime', var(--font-mono);
+  --wb-read: var(--font-mono);
+  /* light on text only where a lamp is (art-15): the face's LCD glow, and a softer one for the other blue readouts */
+  --wb-lcd-glow: 0 0 4px #bce8ff, 0 0 10px var(--lcd-glow);
+  --wb-lcd-glow-soft: 0 0 8px rgba(40, 148, 250, .55);
+
+  /* the engraved label (D4 C, art-21), shared by .wb-eyebrow here and .wb-plate-label in parts.css: the plate's own
+     ink, sampled from the plugin's LOW FOCUS / MIX / MONO (#e6d6b6-#e9dabf at the letter cores), and the cut */
+  --wb-engrave-font: var(--serif);
+  --wb-engrave-track: .16em;
+  --wb-engrave-ink: #e3d6bc;
+  --wb-engrave-cut: 0 1px 0 rgba(8, 6, 4, .9), 0 -1px 0 rgba(255, 240, 210, .07);
+
+  /* rhythm (art-16, art-14): one gap between sections (72 px phone .. 128 px laptop), one-line section heads */
+  --wb-gap: clamp(72px, 10vw, 128px);
+  --wb-h2: clamp(2.2rem, 3.6vw, 3.2rem);
+  /* the phone floor for readable text (mobile-10; DriftStickyBar's 13 px) */
+  --wb-fine-min: 13px;
+
   --wb-w: .68;
   position: relative;
   color: var(--ivory);
@@ -28,12 +78,16 @@
 
 /* ---------- shared ---------- */
 .wb-head { max-width: 1180px; margin: 0 auto; padding: 0 16px; text-align: center; }
-.wb-eyebrow { font-family: var(--wb-label); font-weight: 500; font-size: .82rem; letter-spacing: .32em; color: var(--brass); margin: 0; text-transform: uppercase; }
-.wb-page h2 {
-  font-family: var(--wb-display); font-weight: 400; font-size: clamp(2.8rem, 6.6vw, 5.2rem); line-height: .95; letter-spacing: .02em;
-  margin: .25em auto .3em; max-width: 18ch; color: var(--ivory);
+/* kickers: the plate's engraved serif caps (D4 C) */
+.wb-eyebrow {
+  margin: 0; font-family: var(--wb-engrave-font); font-weight: 400; font-size: .86rem; font-variant: small-caps; text-transform: uppercase;
+  letter-spacing: var(--wb-engrave-track); color: var(--wb-engrave-ink); text-shadow: var(--wb-engrave-cut);
 }
-.wb-page h2 em { font-style: normal; color: var(--brass-hi); text-shadow: 0 0 34px rgba(255, 220, 150, .35); }
+.wb-page h2 {
+  font-family: var(--wb-display); font-weight: 400; font-size: var(--wb-h2); line-height: 1; letter-spacing: .02em;
+  margin: .3em auto .35em; max-width: none; text-wrap: balance; color: var(--ivory);
+}
+.wb-page h2 em { font-style: normal; color: var(--brass-hi); }
 .wb-headsub { color: var(--ivory-2); max-width: 54ch; margin: 0 auto; font-size: 1.06rem; line-height: 1.6; }
 .wb-fine { color: var(--ivory-3); font-size: .82rem; line-height: 1.45; margin: 14px 0 0; }
 
@@ -43,6 +97,47 @@
 .wb-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
 .wb-head > p, .wb-notify-card > p { margin-left: auto; margin-right: auto; }
 
+/* phones: no readable text under 13 px (mobile-10). The meter's own print (CORRELATION) is part of a drawn part and
+   stays; the lanes that redraw a part bring its print up with it. */
+@media (max-width: 560px) {
+  .wb-page :is(.wb-sub, .wb-get-micro, .wb-get-notice, .wb-get-or span, .wb-get-price span, .wb-skip, .wb-replay, .wb-sound, .wb-hud-label) {
+    font-size: var(--wb-fine-min);
+  }
+}
+
+/* the dash mirror's print in the house mono (lane F, gate F fix). The mono is wider than the old pixel face, so the
+   caption and the idle hint are sized by the mirror's own width, not the window's: the mirror is narrow on phones and
+   again at 901-1100 px, where the console goes two-column. The caption stays on one line (the long label gives way
+   with an ellipsis, CORR never does) and the hint keeps clear of it. Above 440 px of mirror (1141 and up) nothing
+   changes. Lives here, not in drive.css (lane D's file), hence the extra class in each selector. */
+.wb-page .wb-mirror { container-type: inline-size; }
+.wb-page .wb-mirror figcaption { gap: 12px; white-space: nowrap; }
+.wb-page .wb-mirror figcaption > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+@container (max-width: 440px) {
+  .wb-page .wb-mirror figcaption { padding: 8px 12px; font-size: var(--wb-fine-min); letter-spacing: .04em; }
+  .wb-page:not(.is-playing) figure.wb-mirror::after {
+    padding: 0 12px 32px; font-size: var(--wb-fine-min); letter-spacing: .06em; line-height: 1.35; text-align: center; text-wrap: balance;
+  }
+}
+@container (max-width: 280px) {
+  .wb-page .wb-mirror figcaption { gap: 8px; letter-spacing: 0; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   [data-wb-reveal] { opacity: 1; transform: none; transition: none; }
 }
+
+/* ---------- the site's High contrast switch (a11y-d02) ----------
+   html.hc (the footer switch, or the OS's "Increase contrast") re-tints :root, but .wb-page sets its own tokens, so
+   it has to follow here: the house hc values, small print to near-white, no glow on text, every story step lit. */
+html.hc .wb-page {
+  --ivory: #ffffff; --ivory-2: #e6e6e6; --ivory-3: #d4d4d4;
+  --brass: #ffd479; --brass-hi: #ffe9b0;
+  --lcd-ink: #e6f6ff;
+  --emerald-text: #a8e6bd; --oxide-text: #ff9a5a;
+  --wb-engrave-ink: #ffffff; --wb-engrave-cut: none;
+  --wb-lcd-glow: none; --wb-lcd-glow-soft: none;
+}
+html.hc .wb-page :is(.wb-step, .wb-level) { opacity: 1; }
+html.hc .wb-page :is(.wb-hud-lcd, .wb-lede) { text-shadow: none; }
+html.hc .wb-page .wb-dr dd { color: var(--lcd-ink); }

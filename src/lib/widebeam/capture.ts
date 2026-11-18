@@ -1,21 +1,11 @@
 /**
- * /widebeam sign-ups (lane A): the free trial under the hero and the launch list at the end, plus BUY NOW's
- * placeholder note before Paddle has a price (src/data/widebeam.ts).
+ * /widebeam sign-ups (lane A): the plate under the hero and the closer at the end carry the same one ask, every word
+ * from askFor(phase) in src/data/widebeam.ts (the forms' data-msg-ok / data-msg-already and hidden source). There is
+ * no BUY key before Paddle has a price (buyFor()), so there is no placeholder note any more.
  */
 export function initCapture(page: HTMLElement) {
-  // ── the two sign-up forms: the free trial under the hero, the launch list at the end ──
   bindSignup(page.querySelector('[data-wb-trial]'), page.querySelector('[data-wb-trial-status]'));
-  bindSignup(page.querySelector('[data-wb-form]'), page.querySelector('[data-wb-status]'), {
-    ok: "You're on the list. We'll email you the day WIDE BEAM goes live.",
-    already: "You're already on the list. We'll email you at launch.",
-  });
-
-  // ── BUY NOW before Paddle has a price (src/data/widebeam.ts): it explains instead of adding to the cart ──
-  const soon = page.querySelector<HTMLButtonElement>('[data-wb-buy-soon]');
-  const soonNote = page.querySelector<HTMLElement>('[data-wb-buy-note]');
-  soon?.addEventListener('click', () => {
-    if (soonNote) soonNote.textContent = 'Checkout opens on launch day. Start the free trial now and it rolls straight into the full version.';
-  });
+  bindSignup(page.querySelector('[data-wb-form]'), page.querySelector('[data-wb-status]'));
 }
 
 /**

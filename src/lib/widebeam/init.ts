@@ -1,11 +1,15 @@
 /**
- * /widebeam boot (lane F): one shared state (state.ts), then each section's module in the page's order. It owns
- * nothing else but the scroll reveals and the final ScrollTrigger refresh.
- *   hero.ts      the intro film (intro.ts), the road and its tail lights (night.ts), the wordmark, Skip / Replay
- *   face.ts      the living face and the dash's rise           sound.ts    the engine, the SOUND pill, the mirror
- *   keys.ts      the letter keys                              furniture.ts the fixed layer (the HIGH BEAM flash)
- *   story.ts     the stereo road                              presets.ts  the glove box cards (drive-to.ts)
- *   odometer.ts  the spec numbers                             capture.ts  the two sign-up forms + BUY NOW's note
+ * /widebeam boot (lane F, final): one shared state (state.ts), then one init per module, in the page's order.
+ *
+ * THIS FILE DOESN'T CHANGE AFTER LANE F. A lane that needs a new module calls it from a module it already owns (its
+ * own init), never from here. Scroll reveals are the house's (data-reveal="fade", src/lib/reveal.ts, booted by
+ * BaseLayout), so nothing here hides or shows content.
+ *   hero.ts      the intro film (intro.ts), the road and its tail lights (night.ts), the wordmark, Skip / Replay (H)
+ *   face.ts      the living face and the dash's rise (D)        sound.ts     the engine, the SOUND pill, the mirror (D)
+ *   keys.ts      the letter keys + the HIGH BEAM flash (D)      furniture.ts the fixed layer: SOUND key, phone bar (A)
+ *   presets.ts   the glove box cards (drive-to.ts) (S)          story.ts     the stereo road (S)
+ *   manual.ts    the Owner's Manual (S)                         odometer.ts  the spec numbers (A)
+ *   capture.ts   the one ask: the plate + the closer (A)
  */
 import { ScrollTrigger, reducedMotion } from '../motion';
 import { createStore } from './state';
@@ -16,6 +20,7 @@ import { initKeys } from './keys';
 import { initFurniture } from './furniture';
 import { initStory } from './story';
 import { initPresets } from './presets';
+import { initManual } from './manual';
 import { initOdometer } from './odometer';
 import { initCapture } from './capture';
 
@@ -28,20 +33,13 @@ export function initWideBeam(art: FaceArt) {
   initHero(page, store, reduced);
   const { face, ignite, dash } = initFace(page, art, store, reduced);
   initSound(page, store, face, ignite);
-  initKeys(store, face);
+  initKeys(page, store, face, reduced);
   initFurniture(page, store, reduced);
-
-  // ── story ──
+  initPresets(page, store, face, dash);
   const story = page.querySelector<HTMLElement>('[data-wb-story]');
   if (story) initStory(story);
-
-  initPresets(page, store, face, dash);
+  initManual(page);
   initOdometer(page, reduced);
-
-  // ── reveals ──
-  const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -10% 0px' });
-  page.querySelectorAll('[data-wb-reveal]').forEach((el) => io.observe(el));
-
   initCapture(page);
 
   ScrollTrigger.refresh();

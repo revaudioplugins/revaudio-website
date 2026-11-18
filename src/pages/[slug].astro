@@ -14,6 +14,7 @@ import AudioDemoRack from '../components/AudioDemoRack.astro';
 import MobileBuyBar from '../components/MobileBuyBar.astro';
 import HeroFacts from '../components/HeroFacts.astro';
 import { plugins, isBuyable } from '../data/plugins';
+import { widebeam, assertWidebeamConfig } from '../data/widebeam';
 import { pluginImage } from '../lib/images';
 import arrowBtn from '../assets/showcase/arrow-btn.png';
 import wallImg from '../assets/bg/wall-wood.png';
@@ -26,6 +27,8 @@ import railImg from '../assets/bg/wall-rail.png';
 export function getStaticPaths() {
   // inside the function: Astro runs getStaticPaths in its own scope (imports only)
   const OWN_ROUTE = new Set(['gas', 'gas2', 'drift', 'revfx']);
+  // a widebeam entry in plugins.ts needs 'widebeam' above, or two pages claim /widebeam (fails the build)
+  assertWidebeamConfig(widebeam, { pluginSlugs: plugins.map((p) => p.slug), ownRoute: OWN_ROUTE });
   return plugins
     .filter((p) => !OWN_ROUTE.has(p.slug))
     .map((p) => ({ params: { slug: p.slug }, props: { plugin: p } }));
