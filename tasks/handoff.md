@@ -1,3 +1,14 @@
+## 2026-11-18 — Temporary home hero ON THE TV (the garage's big line, pixel tune-in), with the BF/CM reskins (Claude Code, Gil's Mac) — branch `feat/temp-hero` (from main `94c8562`), PUSHED for Dan, NOT on main
+
+Claim: HANDED TO DAN 2026-11-18. Files: `src/components/TempHero.astro` (new), `src/components/WordWall.astro` (a slot),
+`src/pages/index.astro`, `src/components/SaleIntro.astro`, `tasks/temp-hero-handoff-dan-2026-11-18.md`, this entry.
+Gil 2026-11-18: until the garage is ready for everyone, the home TV first shows "Built like cars." on its glass. It
+tunes in pixelated, and the first scroll changes the channel to the menu. With the sale on, that scroll brings the
+sale's TV intro first, and its close shows the menu. "See the plugins" always goes to /plugins. Gil approved the look
+in the browser ("looks great").
+- Full brief, behaviour table, what was and wasn't checked, open items: `tasks/temp-hero-handoff-dan-2026-11-18.md`.
+- `npm run build` passes. Not tested: real Safari / iPhone, Windows, `?sale=soon`, `?home=garage` together with it.
+
 ## 2026-11-18 — The long garage ON THE HOME PAGE, an A/B test for laptops (Claude Code `3D Garage – סגירת האתר`, Dan's Mac) — branch `feat/garage-home` (worktree `.claude/worktrees/garage-home`, from main `713f6b3`), NOT on main
 
 Claim: OPEN 2026-11-18. Files: `src/components/HomeOpening.astro` (new), `src/pages/index.astro`, `src/components/Cart.astro`
