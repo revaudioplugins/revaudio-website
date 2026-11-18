@@ -121,12 +121,11 @@ const copy = {
       el.addEventListener('click', (e) => {
         const a = el.closest('a');
         if (a) {
-          // "See the plugins": power off, then go (the page-change scene stays out of it). With the TV on
-          // this page (the TV-first home), powering off is the whole trip: the TV is right there.
+          // "See the plugins": power off, then go to the plugins page (the page-change scene stays out of it),
+          // even from the home page with its own TV (Gil 2026-11-18)
           e.preventDefault();
           e.stopPropagation();
-          const tv = document.querySelector<HTMLElement>('section#plugins');
-          close(tv ? () => tv.querySelector<HTMLElement>('.ww-tag')?.focus({ preventScroll: true }) : () => { location.href = a.href; });
+          close(() => { location.href = a.href; });
         } else close();
       });
     });
