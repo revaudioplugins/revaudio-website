@@ -1,66 +1,112 @@
 ---
-/** /widebeam closer (lane A): today the specs (odometers + folds + trip computer) and the one ask, all words from
- *  src/data/widebeam.ts (SPECS, ODOMETER, FOLDS, askFor). Lane A rebuilds it into "Runs on your setup." */
-import { widebeam, askFor, SPECS, ODOMETER, FOLDS, onceUrl as formOnceUrl } from '../../data/widebeam';
+/**
+ * /widebeam closer, "Runs on your setup." (lane A, D4 C): one plate cut from the plugin's photo (.wb-plate--badge)
+ * with the plugin's two headlamps (parts kit), the MAC / WINDOWS rows (compatRows), the same one ask as the plate under
+ * the hero (askFor), the buy side (buyFor: the trust line only once buyable), one odometer and the folds (FOLDS; the
+ * Specs fold holds the trip computer on the plugin's owner's-card stock). Every word from src/data/widebeam.ts.
+ *
+ * Ids the gate kit and links read: #wb-notify (this section, the ask's section), #wb-specs (the Specs fold), #wb-email,
+ * [data-wb-form], [data-wb-status], [data-odo] (the real numbers), .wb-dr (the spec rows).
+ * The lamps (.wb-closer-lamp) are driven by furniture.ts (the store: WIDTH, POWER, MONO, HIGH BEAM; full beam on a
+ * sign-up). The odometer's drums by odometer.ts.
+ */
+import { widebeam, askFor, buyFor, compatRows, SPECS, ODOMETER, FOLDS, onceUrl as formOnceUrl } from '../../data/widebeam';
 
 const onceUrl = formOnceUrl();
 const ask = askFor();
+const buy = buyFor();
+// a drum strip holds 0-9 twice, so a roll can turn each drum a full revolution; at rest (and with no JS) the first set
+const STRIP = [...'01234567890123456789'];
 ---
-<!-- ============ SPECS ============ -->
-<section class="wb-specs" id="wb-specs" aria-labelledby="wb-specs-h">
-  <header class="wb-head" data-reveal="fade">
-    <p class="wb-eyebrow">THE ODOMETER</p>
-    <h2 id="wb-specs-h">Under the hood.</h2>
-  </header>
-  <div class="wb-odos" data-reveal="fade">
-    {ODOMETER.map((o) => (
-      <div class="wb-odo"><span class="sr-only">{o.value}</span><b data-odo={o.value} aria-hidden="true">{o.value}</b><span>{o.unit}</span></div>
-    ))}
-  </div>
-  <div class="wb-folds" data-reveal="fade">
-    {FOLDS.map((f) => (
-      f.id === 'specs' ? (
-        <details class="wb-fold wb-fold--specs" open>
-          <summary>{f.title}</summary>
-          <div class="wb-readout">
-            <div class="wb-readout-bar"><span>TRIP COMPUTER · PARAMETERS</span><span>{SPECS.length} ITEMS</span></div>
-            <dl>
-              {SPECS.map(([k, v, d]) => (<div class="wb-dr"><dt>{k}</dt><dd><b>{v}</b><span>{d}</span></dd></div>))}
-            </dl>
-          </div>
-        </details>
-      ) : (
-        <details class="wb-fold">
-          <summary>{f.title}</summary>
-          {f.body.map((line) => <p>{line}</p>)}
-        </details>
-      )
-    ))}
-  </div>
-</section>
+<!-- ============ THE CLOSER: runs on your setup + the one ask ============ -->
+<section class="wb-closer" id="wb-notify" aria-labelledby="wb-closer-h">
+  <div class="wb-closer-plate wb-plate wb-plate--badge" data-reveal="fade">
+    <i class="wb-closer-lamp wb-part-lamp-l" aria-hidden="true"></i>
+    <i class="wb-closer-lamp wb-closer-lamp--r wb-part-lamp-r" aria-hidden="true"></i>
+    <header class="wb-closer-top">
+      <p class="wb-eyebrow">{widebeam.phase === 'preopen' ? 'Before launch' : 'The trial'}</p>
+      <h2 id="wb-closer-h">Runs on your setup.</h2>
+    </header>
 
-<!-- ============ NOTIFY: the same one ask as the plate ============ -->
-<section class="wb-notify" id="wb-notify" aria-labelledby="wb-notify-h" data-wb-cta>
-  <div class="wb-notify-card" data-reveal="fade">
-    <div class="wb-notify-lamps" aria-hidden="true"><i></i><i></i></div>
-    <p class="wb-eyebrow">{widebeam.phase === 'preopen' ? 'LAUNCH LIST' : 'THE TRIAL'}</p>
-    <h2 id="wb-notify-h">{ask.closerTitle}</h2>
-    <p id="wb-notify-consent">{ask.consent} &middot; <a href="/privacy" data-open-legal="privacy">Privacy</a></p>
-    <form
-      class="wb-form" data-wb-form novalidate
-      data-once-url={onceUrl}
-      data-register-url={ask.registerUrl ?? undefined}
-      data-plugin={widebeam.gateId}
-      data-msg-ok={ask.ok}
-      data-msg-already={ask.already}
-    >
-      <label class="sr-only" for="wb-email">Your email</label>
-      <input id="wb-email" type="email" name="email" placeholder="you@studio.com" required autocomplete="email" aria-describedby="wb-notify-consent" />
-      <input type="hidden" name="source" value={ask.source} />
-      <input type="text" name="_gotcha" class="wb-hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
-      <button type="submit" class="rv-btn"><span data-face>{ask.key.replace(/ ▸$/, '')} <span aria-hidden="true">&#9656;</span></span></button>
-    </form>
-    <p class="wb-form-status" data-wb-status role="status" aria-live="polite" tabindex="-1"></p>
-    <p class="wb-fine">WIDE BEAM is in final testing. Details can still change before release.</p>
+    <div class="wb-closer-grid">
+      <div class="wb-closer-main">
+        <dl class="wb-closer-compat">
+          {compatRows().map((r) => (
+            <div><dt class="wb-plate-label">{r.k}</dt><dd><b>{r.v}</b>{r.d && <span>{r.d}</span>}</dd></div>
+          ))}
+        </dl>
+
+        <div class="wb-closer-ask" data-wb-ask>
+          <p class="wb-closer-ask-l">{ask.label}</p>
+          <form
+            class="wb-get-form wb-form" data-wb-form data-wb-cta novalidate
+            data-once-url={onceUrl}
+            data-register-url={ask.registerUrl ?? undefined}
+            data-plugin={widebeam.gateId}
+            data-msg-ok={ask.ok}
+            data-msg-already={ask.already}
+          >
+            <label class="sr-only" for="wb-email">Your email</label>
+            <input id="wb-email" type="email" name="email" inputmode="email" autocomplete="email" enterkeyhint="go" spellcheck="false" placeholder="your@email.com" required aria-describedby="wb-notify-consent" />
+            <input type="hidden" name="source" value={ask.source} />
+            <input type="text" name="_gotcha" class="wb-hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+            <button type="submit" class="rv-btn"><span data-face>{ask.key.replace(/ ▸$/, '')} <span aria-hidden="true">&#9656;</span></span></button>
+          </form>
+          <p class="wb-get-status" id="wb-notify-status" data-wb-status role="status" aria-live="polite" tabindex="-1"></p>
+          <p class="wb-get-notice" id="wb-notify-consent">{ask.consent} &middot; <a href="/privacy" data-open-legal="privacy">Privacy</a></p>
+        </div>
+
+        <div class="wb-closer-own">
+          <p class="wb-closer-price"><b>{buy.title}</b> <span class="wb-plate-label">&middot; {buy.sub}</span></p>
+          {buy.key && (
+            <button
+              type="button" class="rv-btn wb-buy"
+              data-add-to-cart data-cart-open
+              data-slug={widebeam.slug} data-name={widebeam.name} data-price={widebeam.priceUsd}
+            >{buy.key}</button>
+          )}
+          {buy.trust && <p class="wb-get-notice wb-get-trust">{buy.trust}</p>}
+          {widebeam.phase === 'preopen' && <p class="wb-get-notice">WIDE BEAM is in final testing. Details can still change before release.</p>}
+        </div>
+      </div>
+
+      <div class="wb-closer-side">
+        <!-- one odometer: the real numbers are the text ([data-odo]); the drums beside them are decoration -->
+        <ul class="wb-odo" role="list">
+          {ODOMETER.map((o) => (
+            <li class="wb-odo-cell">
+              <span class="sr-only" data-odo={o.value}>{o.value}</span>
+              <span class="wb-odo-drums" aria-hidden="true">
+                {[...String(o.value)].map((d) => (
+                  <span class="wb-odo-drum" data-d={d} style={`--d:${d}`}><span class="wb-odo-strip">{STRIP.map((n) => <span>{n}</span>)}</span></span>
+                ))}
+              </span>
+              <span class="wb-odo-unit wb-plate-label">{o.unit}</span>
+            </li>
+          ))}
+        </ul>
+
+        <div class="wb-folds">
+          {FOLDS.map((f) => (
+            f.id === 'specs' ? (
+              <details class="wb-fold wb-fold--specs" id="wb-specs">
+                <summary class="wb-plate-label">{f.title}</summary>
+                <div class="wb-spec-card">
+                  <p class="wb-spec-card-title">Trip computer · {SPECS.length} items</p>
+                  <dl>
+                    {SPECS.map(([k, v, d]) => (<div class="wb-dr"><dt>{k}</dt><dd><b>{v}</b>{d && <span>{d}</span>}</dd></div>))}
+                  </dl>
+                </div>
+              </details>
+            ) : (
+              <details class="wb-fold" id={`wb-fold-${f.id}`}>
+                <summary class="wb-plate-label">{f.title}</summary>
+                {f.body.map((line) => <p>{line}</p>)}
+              </details>
+            )
+          ))}
+        </div>
+      </div>
+    </div>
   </div>
 </section>
