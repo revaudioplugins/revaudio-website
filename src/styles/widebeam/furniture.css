@@ -1,12 +1,46 @@
-/* /widebeam furniture: everything position: fixed (the SOUND pill) (lane A). The HIGH BEAM flash lives in drive.css. */
-/* the music switch: stays on screen wherever the visitor is */
+/* /widebeam furniture (lane A, A.2 + A.3): everything position: fixed at the bottom edge. The HIGH BEAM flash lives in
+   drive.css.
+   The bottom edge has ONE owner, the stack furniture.ts measures into --wb-lift on <html>: the cookie banner's measured
+   height while it is up, else the phone bar's while it is up, else 0. The SOUND key and the cart FAB ride on
+   max(--wb-lift, the safe-area inset) (the banner and the bar already pad their own inset). furniture.ts moves the
+   SOUND key off the footer / a focused field (--wb-sound-dy) and slides it, or the FAB, aside (.is-aside). */
+html:has(.wb-page) {
+  --wb-edge: max(var(--wb-lift, 0px), env(safe-area-inset-bottom, 0px));
+  /* a focused control clears the stack and the SOUND key above it (G8) */
+  scroll-padding-bottom: calc(var(--wb-edge) + 72px);
+}
+
+/* while the cookie banner is up: room under the footer the size of the banner (furniture.ts --wb-banner), so the page
+   end, and a focused footer link, can scroll clear of it (G8). 0 once the banner is answered. */
+body:has(.wb-page) .site-footer { margin-bottom: var(--wb-banner, 0px); }
+
+/* ---------- the SOUND key ---------- */
+/* .wb-sound-home is the key's resting corner without a transition (furniture.ts adds it next to the key and reads it):
+   while the key glides on `bottom` (the bar leaving at the footer), the key's own computed bottom is a value in
+   between, and a ride measured from it left the key over the footer's links once the glide ended. The two share their
+   right / bottom here and in the round-key block below. */
+.wb-sound, .wb-sound-home { position: fixed; right: max(18px, env(safe-area-inset-right, 0px)); bottom: calc(18px + var(--wb-edge, 0px)); }
+.wb-sound-home { width: 0; height: 0; visibility: hidden; pointer-events: none; }
 .wb-sound {
-  position: fixed; right: 18px; bottom: 18px; z-index: 50; display: inline-flex; align-items: center; gap: .7em; padding: .6em 1em .6em .85em;
+  z-index: 50;
+  display: inline-flex; align-items: center; gap: .7em; padding: .6em 1em .6em .85em;
   border-radius: 999px; cursor: pointer; font-family: var(--wb-label); font-weight: 500; font-size: .76rem; letter-spacing: .16em; text-transform: uppercase;
   color: var(--ivory-2); background: rgba(14, 12, 10, .72); border: 1px solid rgba(201, 163, 92, .35);
-  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 8px 22px rgba(4, 3, 2, .5); transition: color .2s, border-color .2s;
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 8px 22px rgba(4, 3, 2, .5);
+  transform: translate(0, var(--wb-sound-dy, 0px));
+  transition: color .2s, border-color .2s, bottom .28s cubic-bezier(.22, 1, .36, 1), opacity .2s, visibility 0s;
 }
-.wb-sound:hover, .wb-sound[aria-pressed='true'] { color: var(--ivory); border-color: var(--brass); }
+/* riding a moving edge (the footer coming up) follows the scroll frame by frame; a jump (aside, back) glides */
+.wb-sound.is-gliding { transition: color .2s, border-color .2s, bottom .28s cubic-bezier(.22, 1, .36, 1), transform .28s cubic-bezier(.22, 1, .36, 1); }
+/* stepped aside: only ever while the sound is off (furniture.ts never sets it while playing) */
+.wb-sound.is-aside {
+  transform: translate(calc(100% + 32px), var(--wb-sound-dy, 0px)); visibility: hidden; pointer-events: none;
+  transition: transform .24s cubic-bezier(.4, 0, 1, 1), visibility 0s .24s, bottom .28s cubic-bezier(.22, 1, .36, 1);
+}
+@media (hover: hover) and (pointer: fine) {
+  .wb-sound:hover { color: var(--ivory); border-color: var(--brass); }
+}
+.wb-sound[aria-pressed='true'] { color: var(--ivory); border-color: var(--brass); }
 .wb-sound:focus-visible { outline: 2px solid var(--brass-hi); outline-offset: 3px; }
 .wb-eq { display: inline-flex; align-items: flex-end; gap: 2px; height: 12px; }
 .wb-eq i { width: 2px; height: 3px; border-radius: 1px; background: var(--brass-hi); }
@@ -14,8 +48,69 @@
 .wb-sound[aria-pressed='true'] .wb-eq i:nth-child(2) { animation-delay: -.3s; }
 .wb-sound[aria-pressed='true'] .wb-eq i:nth-child(3) { animation-delay: -.6s; }
 .wb-sound[aria-pressed='true'] .wb-eq i:nth-child(4) { animation-delay: -.15s; }
-@keyframes wb-eq { from { height: 3px; } to { height: 12px; } }
+/* the bars move on transform, not height: no layout per frame (motion-18, lane D's note in drive.css) */
+.wb-sound .wb-eq i { height: 12px; transform-origin: 50% 100%; transform: scaleY(.25); }
+@keyframes wb-eq { from { transform: scaleY(.25); } to { transform: scaleY(1); } }
+
+/* phones, and any touch screen (a phone held sideways is 844 px wide: the 115x36 pill was under the 44 px target): a
+   44 px round key, the EQ bars as its mark; the words stay in the DOM as its name (clipped, not removed) */
+@media (max-width: 700px), (pointer: coarse) {
+  .wb-sound, .wb-sound-home { right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + var(--wb-edge, 0px)); }
+  .wb-sound { width: 44px; height: 44px; padding: 0; gap: 0; justify-content: center; }
+  .wb-sound .wb-eq { height: 14px; gap: 3px; }
+  .wb-sound .wb-eq i { width: 3px; height: 14px; }
+  .wb-sound-face { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
+
+/* ---------- the phone bar (<= 900 px): DriftStickyBar's mechanics, the plate's steel and brass ---------- */
+.wb-bar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+  display: none; flex-direction: column; align-items: stretch; gap: .3rem;
+  padding: .5rem max(1rem, env(safe-area-inset-right, 0px)) calc(.45rem + env(safe-area-inset-bottom, 0px)) max(1rem, env(safe-area-inset-left, 0px));
+  background: linear-gradient(180deg, rgba(255, 236, 200, .05), transparent 40%), linear-gradient(180deg, #24211c, #15130f);
+  border-top: 1px solid rgba(201, 163, 92, .45);
+  box-shadow: 0 -8px 30px rgba(4, 3, 2, .5);
+  transition: transform .28s cubic-bezier(.22, 1, .36, 1), visibility 0s 0s; will-change: transform;
+}
+.wb-bar.is-away { transform: translateY(105%); visibility: hidden; transition: transform .24s cubic-bezier(.4, 0, 1, 1), visibility 0s .24s; }
+/* the cookie banner owns the bottom edge while it is up */
+body:has(#cookie-banner.cb--visible) .wb-bar { transform: translateY(105%); visibility: hidden; }
+.wb-bar-key { width: 100%; }
+.wb-bar-micro {
+  font-family: var(--wb-engrave-font); font-variant: small-caps; letter-spacing: .1em; font-size: 14px; line-height: 1.2;
+  text-align: center; color: var(--wb-engrave-ink); text-shadow: var(--wb-engrave-cut);
+}
+@media (max-width: 900px) {
+  .wb-bar { display: flex; }
+}
+@media (min-width: 600px) {
+  .wb-bar { align-items: center; }
+  .wb-bar-key { width: min(100%, 420px); }
+}
+/* a phone held sideways (a 390 px tall screen): one slim row, the key and its line side by side. Stacked it was 86 px,
+   22 % of the screen under a 47 px nav */
+@media (max-width: 900px) and (orientation: landscape) and (max-height: 500px) {
+  .wb-bar { flex-direction: row; justify-content: center; gap: 1rem; padding-top: .35rem; padding-bottom: calc(.35rem + env(safe-area-inset-bottom, 0px)); }
+  .wb-bar-key { width: auto; flex: none; }
+  .wb-bar-micro { min-width: 0; text-align: left; }
+}
+
+/* ---------- the cart FAB (<= 700 px, the house CartFab) on /widebeam ---------- */
+@media (max-width: 700px) {
+  body:has(.wb-page) .cart-fab.cart-fab { bottom: calc(16px + var(--wb-edge, 0px)); transition: bottom .28s cubic-bezier(.22, 1, .36, 1), transform .24s cubic-bezier(.4, 0, 1, 1); }
+  /* an empty cart has nothing to open: off the edge until a cart badge shows a count (mobile-08). Read ANY badge, not
+     the FAB's own: Cart.astro's first sync() runs before CartFab is in the DOM, so the FAB's badge stays hidden on a
+     load with items until the next add (the header badge is synced) */
+  body:has(.wb-page):not(:has([data-cart-badge]:not([hidden]))) .cart-fab.cart-fab,
+  /* over a watched block, an ask or the footer: off the edge until it has passed (furniture.ts) */
+  html.wb-fab-aside body .cart-fab.cart-fab { transform: translateX(calc(-100% - 24px)); pointer-events: none; }
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .wb-sound[aria-pressed='true'] .wb-eq i { animation: none; height: 8px; }
+  .wb-sound, .wb-sound.is-gliding, .wb-sound.is-aside, .wb-bar, .wb-bar.is-away { transition: none; }
+  body:has(.wb-page) .cart-fab.cart-fab { transition: none; }
+  .wb-sound[aria-pressed='true'] .wb-eq i { animation: none; transform: scaleY(.66); }
 }
+/* high contrast: no ambient loop (the EQ bars hold still) */
+html.hc .wb-sound[aria-pressed='true'] .wb-eq i { animation: none; transform: scaleY(.66); }
+html.hc .wb-sound { background: #0b0a09; }

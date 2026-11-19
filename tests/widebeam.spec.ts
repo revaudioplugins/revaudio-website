@@ -1,0 +1,130 @@
+import { test, expect, type Page } from '@playwright/test';
+import { widebeam, buyable } from '../src/data/widebeam';
+
+// The durable assertions for /widebeam (lane T of the WIDE BEAM build). Run by the house config (chromium + mobile-safari) against the built preview.
+// Honesty: the page says only what the plugin can back (src/data/widebeam.ts owns the phase and the formats). Behaviour: no errors, the ask's name,
+// the manual anchor, the letter keys scoped to the dash, the music never starting on Tab or on the cookie banner.
+// Everything is scoped to [data-wb-page] (the footer, the cart catalogue and the legal modal are site furniture and name AAX for other plugins).
+
+const WORKER = /workers\.dev|cloudflareinsights/;
+
+// The one known dev-only noise: the Astro dev toolbar's script answers 403 on a dev server (node_modules is outside Vite's allow list). A built preview
+// has no such request, so the filter is off unless the scratch config (tests are run against `astro dev`) sets WB_DEV_NOISE=1.
+const isDevNoise = (text: string, url = '') => process.env.WB_DEV_NOISE === '1' && /dev-toolbar|\/@astro\//.test(url + ' ' + text);
+
+async function open(page: Page, path = '/widebeam', wait = 2400) {
+  const errors: string[] = [];
+  // the licence worker and analytics are never reached: a stub answers
+  await page.route(WORKER, (r) => r.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{"ok":true}' }));
+  page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
+  page.on('console', (m) => { if (m.type() === 'error' && !isDevNoise(m.text(), m.location().url)) errors.push('console: ' + m.text()); });
+  page.on('response', (r) => { if (r.status() >= 400 && !isDevNoise('', r.url()) && !WORKER.test(r.url()) && !/paddle|googletagmanager|google-analytics|fonts\.g/.test(r.url())) errors.push(`http ${r.status()}: ${r.url()}`); });
+  await page.goto(path, { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(wait);
+  return errors;
+}
+const soundOn = (page: Page) => page.evaluate(() => document.querySelector('[data-wb-sound]')?.getAttribute('aria-pressed') === 'true' || !!document.querySelector('.wb-page.is-playing'));
+const pageText = (page: Page) => page.evaluate(() => {
+  const root = document.querySelector('[data-wb-page]') as HTMLElement;
+  const out = [root.innerText];
+  root.querySelectorAll('[aria-label],[title],[alt]').forEach((e) => out.push(['aria-label', 'title', 'alt'].map((a) => e.getAttribute(a) || '').join(' ')));
+  root.querySelectorAll('[role=status],[aria-live]').forEach((e) => out.push(e.textContent || ''));
+  return out.join('\n');
+});
+
+test.describe('/widebeam honesty', () => {
+  test('says nothing the plugin cannot back: no AAX, no Buy now, no Notify me, no trial promise before the trial opens', async ({ page }) => {
+    await open(page);
+    // interact once, so text that only exists after a click is read too (copy-02 lived in a script)
+    await page.evaluate(() => (document.querySelector('[data-wb-start]') as HTMLElement | null)?.click());
+    await page.waitForTimeout(600);
+    const text = await pageText(page);
+    if (!widebeam.aaxReady) expect(text, 'AAX named while aaxReady is false').not.toMatch(/AAX/);
+    expect(text, '"Buy now"').not.toMatch(/Buy now/i);
+    expect(text, '"Notify me"').not.toMatch(/Notify me/i);
+    expect(text, 'CRUISE "Always on"').not.toMatch(/Always on/);
+    if (!buyable()) {
+      await expect(page.locator('[data-wb-page] [data-add-to-cart]')).toHaveCount(0);
+      expect(text, 'a BUY note').not.toMatch(/Checkout opens on launch day|rolls straight into the full version/i);
+    }
+    if (widebeam.phase === 'preopen') {
+      expect(text, 'a trial-download promise before the trial opens').not.toMatch(/getting-started|heads-up before your trial ends|Start (your )?free trial|Get your free \d+-day trial|check your inbox/i);
+    }
+  });
+
+  test('the page asks search engines to skip it until launch', async ({ page }) => {
+    await open(page, '/widebeam', 300);
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
+  });
+});
+
+test.describe('/widebeam behaviour', () => {
+  test('loads and runs a visit with no console or page errors', async ({ page }) => {
+    test.setTimeout(120_000); // the page is heavy (canvas, video, a live face): a slow machine needs room
+    const errors = await open(page);
+    await page.keyboard.press('Escape');
+    for (let i = 0; i < 14; i++) { await page.evaluate(() => window.scrollBy(0, 900)); await page.waitForTimeout(160); }
+    await expect(page.locator('[data-wb-page]')).toBeVisible();
+    expect(errors, 'console / page errors on /widebeam').toEqual([]);
+  });
+
+  test('the single ask is named "Your email" and promises nothing else', async ({ page }) => {
+    await open(page, '/widebeam', 800);
+    const fields = page.locator('[data-wb-page]').getByRole('textbox', { name: 'Your email', exact: true });
+    expect(await fields.count(), 'email fields named exactly "Your email"').toBeGreaterThan(0);
+    const names = await page.evaluate(() => [...document.querySelectorAll('[data-wb-page] input[type=email]')].map((e) => (e.getAttribute('aria-label') || (e.id && document.querySelector(`label[for="${e.id}"]`)?.textContent) || '').trim()));
+    for (const n of names) expect(n, 'an email field whose name is not "Your email"').toBe('Your email');
+  });
+
+  test('the Owner\'s Manual anchor is there and /widebeam/#manual lands on it', async ({ page }) => {
+    await open(page, '/widebeam/#manual', 3500);
+    const top = await page.evaluate(() => { const m = document.getElementById('manual'); return m ? Math.round(m.getBoundingClientRect().top) : null; });
+    expect(top, '#manual section').not.toBeNull();
+    expect(top!, '#manual should land under the nav').toBeGreaterThanOrEqual(-4);
+    expect(top!, '#manual should land under the nav').toBeLessThan(200);
+  });
+
+  test('the letter keys act only inside the dash', async ({ page, isMobile }) => {
+    test.skip(!!isMobile, 'a keyboard check: phones have no letter keys');
+    await open(page);
+    await page.keyboard.press('Escape');
+    await page.evaluate(() => { window.scrollTo(0, 0); (document.activeElement as HTMLElement | null)?.blur(); });
+    await page.waitForTimeout(400);
+    const mono = () => page.evaluate(() => (document.querySelector('[aria-label="Mono"]') || document.querySelector('[aria-label^="Mono"]'))?.getAttribute('aria-pressed'));
+    const before = await mono();
+    await page.keyboard.press('m'); await page.waitForTimeout(250);
+    expect(await mono(), '"m" at the hero (dash off screen) must do nothing').toBe(before);
+    // inside the dash it works
+    await page.evaluate(() => { const f = document.querySelector('[data-wb-face]') as HTMLElement; window.scrollTo(0, f.getBoundingClientRect().top + scrollY - 120); });
+    await page.waitForTimeout(500);
+    await page.locator('[role=slider][aria-label="Width"]').focus();
+    const b2 = await mono();
+    await page.keyboard.press('m'); await page.waitForTimeout(300);
+    expect(await mono(), '"m" with a dash control focused toggles MONO').not.toBe(b2);
+  });
+
+  test('the music never starts on Tab or on the cookie banner', async ({ page, isMobile }) => {
+    test.setTimeout(90_000);
+    await open(page, '/widebeam', 3000);
+    expect(await soundOn(page), 'sound before any act').toBe(false);
+    if (!isMobile) { await page.keyboard.press('Tab'); await page.waitForTimeout(900); expect(await soundOn(page), 'sound after Tab').toBe(false); }
+    const decline = page.locator('#cookie-decline');
+    if (await decline.isVisible().catch(() => false)) {
+      // a real press: a tap on a phone, a click on a laptop (not scripted el.click(): that carries no user activation)
+      if (isMobile) await decline.tap({ timeout: 15_000 }); else await decline.click({ timeout: 15_000 });
+      await page.waitForTimeout(900);
+      expect(await soundOn(page), 'sound after the cookie Decline').toBe(false);
+    }
+  });
+
+  test('the music starts on a real act on the demo (SOUND key), and stops on a second press', async ({ page, browserName }) => {
+    test.skip(browserName === 'firefox', 'headless Firefox has no audio device: an AudioContext stays suspended even after a gesture');
+    await open(page, '/widebeam', 2500);
+    await page.evaluate(() => { const b = document.getElementById('cookie-banner'); if (b) b.remove(); });
+    const key = page.locator('[data-wb-sound]');
+    await key.click(); await page.waitForTimeout(900);
+    expect(await soundOn(page), 'sound after the SOUND key').toBe(true);
+    await key.click(); await page.waitForTimeout(600);
+    expect(await soundOn(page), 'sound after a second press').toBe(false);
+  });
+});

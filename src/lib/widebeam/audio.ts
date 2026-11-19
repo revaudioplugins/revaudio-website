@@ -2,10 +2,15 @@
  * WIDE BEAM in the browser: a Web Audio mid/side chain after the plugin's own laws (WideBeam README "Audio"), fed by a
  * synthesized night-drive loop or the visitor's own file (decoded locally, never uploaded).
  *
- *   in ─┬─ M = (L+R)/2 ──────────────────────────────────────────────┬─▶ L = M + S, R = M − S ─ wet (× CRUISE × MIX)
- *       │            └─ HP@focus (LR4) ─ velvet decorrelator ─ REACH ─┐│
- *       └─ S = (L−R)/2 ─ HP@focus (LR4) ─ TILT shelves ─ WIDTH ───────┴┘
- *       └──────────────────────────────────────────────────────────────── dry (× 1−MIX, or all of it with POWER off)
+ *   in ─┬─ M = (L+R)/2 ─────────────────────────────────────────────────────────┬─▶ L = M + S, R = M − S ─ wet (× CRUISE × MIX)
+ *       │            └─ HP@focus (LR4) ─ velvet decorrelator ─ −6 dB < 1.2 kHz ─ REACH ─┐│
+ *       └─ S = (L−R)/2 ─ HP@focus (LR4) ─ TILT shelves ─ WIDTH ──────────────────────────┴┘
+ *       └───────────────────────────────────────────────────────────────────────────────── dry (× 1−MIX, or all of it with POWER off)
+ *   wet + dry ─ master ─ limiter ─ −0.3 dBFS ceiling ─┬─ (the meter tap: CORR, the mirror) ─ VOLUME ─ out
+ *
+ * The limiter and the ceiling sit after the A/B, so ORIGINAL (POWER off) and WIDE BEAM go through the same output, and no
+ * setting clips (demo-d02). The beam is the plugin's: its amount (0.5 at REACH 100) and halved below 1.2 kHz, which keeps
+ * HIGH BEAM's lean inside the plugin's own 1-2 dB (demo-14). VOLUME is the page's monitor level: the plugin has no fader.
  *
  * It is a demo of what the controls do, not the plugin's DSP: no allpass-aligned dry, no attack ducking on HIGH BEAM.
  */
@@ -25,29 +30,45 @@ export const DEFAULTS: WbParams = { width: 136, focus: 120, mix: 100, tilt: 0, r
 
 // WIDTH: linear to 100, then dB-linear to +6 dB at 200 (README table)
 export const widthGain = (w: number) => (w <= 100 ? w / 100 : Math.pow(10, ((w - 100) / 100) * 6 / 20));
-// CRUISE: a static law, never above 1, exactly 1 at WIDTH ≤ 100 with HIGH BEAM off
+// CRUISE: a static law, never above 1, exactly 1 at WIDTH ≤ 100 with HIGH BEAM off. Its reach term is the beam's own
+// amount, as in the plugin (PluginProcessor.cpp: 0.5 at REACH 100, so -0.8 dB there, -2 dB at WIDTH 200)
+export const beamAmount = (p: WbParams) => (p.high ? 0.5 * p.reach / 100 : 0);
 export const cruise = (p: WbParams) => {
-  const w = Math.max(1, widthGain(p.width)), r = p.high ? p.reach / 100 : 0;
+  const w = Math.max(1, widthGain(p.width)), r = beamAmount(p);
   return Math.min(1, Math.sqrt(1.25 / (1.25 + 0.25 * (w * w - 1) + r * r)));
 };
 
 const T = 0.02; // the 20 ms glide every switch uses
+/** The Night Drive loop's level at the output with POWER off (measured offline, 48 kHz): a visitor's own file is brought
+ *  to the same RMS, so picking a file never jumps ~14 dB (demo-d02). */
+export const LOOP_RMS_DB = -21.4;
+const CEILING = 0.966; // -0.3 dBFS
+
+/** What the engine plays: the synthesized loop, or a decoded file / clip, looped. A visitor's file is RMS-matched to the
+ *  loop (matchGain); a demo clip comes loudness-matched already (`gain` 1) and loops its own window `loop` [start, end] s,
+ *  inside the padding its file carries on both sides (the AAC priming never lands on the seam). */
+export type WbSource = { kind: 'demo'; name?: string } | { kind: 'buffer'; buffer: AudioBuffer; name: string; loop?: [number, number]; gain?: number };
 
 export class WideBeamEngine {
   ctx: AudioContext;
   input: GainNode;
   analyserL: AnalyserNode;
   analyserR: AnalyserNode;
+  /** the very end of the chain (after VOLUME); connected to the context's destination */
+  output: GainNode;
   private master: GainNode;
   private nodes: Record<string, any> = {};
   private p: WbParams = { ...DEFAULTS };
   private source: { stop(): void } | null = null;
+  private current: WbSource = { kind: 'demo' };
   private bufL = new Float32Array(2048);
   private bufR = new Float32Array(2048);
+  private lastMeasure = 0;
   corr = 1;
 
-  constructor() {
-    const ctx = (this.ctx = new (window.AudioContext || (window as any).webkitAudioContext)());
+  /** `context` lets a test render the chain offline (an OfflineAudioContext); the page passes nothing. */
+  constructor(context?: BaseAudioContext) {
+    const ctx = (this.ctx = (context ?? new (window.AudioContext || (window as any).webkitAudioContext)()) as AudioContext);
     const mono = (g: AudioNode) => { g.channelCount = 1; g.channelCountMode = 'explicit'; g.channelInterpretation = 'speakers'; return g; };
     const gain = (v = 1, m = true) => { const g = ctx.createGain(); g.gain.value = v; return m ? mono(g) as GainNode : g; };
     const hp = () => { const f = ctx.createBiquadFilter(); f.type = 'highpass'; f.Q.value = Math.SQRT1_2; return mono(f) as BiquadFilterNode; };
@@ -67,11 +88,13 @@ export class WideBeamEngine {
     const widthG = gain(widthGain(this.p.width));
     side.connect(sHp1).connect(sHp2).connect(lo).connect(hi).connect(widthG);
 
-    // HIGH BEAM: the mono content above LOW FOCUS through a 25 ms velvet-noise decorrelator, into the side
+    // HIGH BEAM: the mono content above LOW FOCUS through a 25 ms velvet-noise decorrelator, halved below 1.2 kHz like the
+    // plugin's beam (README: "halved below 1.2 kHz"), into the side at the plugin's amount (0.5 at REACH 100)
     const bHp1 = hp(), bHp2 = hp();
     const conv = ctx.createConvolver(); conv.normalize = false; conv.buffer = this.velvet(0.025);
+    const beamShelf = ctx.createBiquadFilter(); beamShelf.type = 'lowshelf'; beamShelf.frequency.value = 1200; beamShelf.gain.value = -6;
     const beamG = gain(0);
-    mid.connect(bHp1).connect(bHp2).connect(conv).connect(beamG);
+    mid.connect(bHp1).connect(bHp2).connect(conv).connect(beamShelf).connect(beamG);
 
     const sideBus = gain(1), sideOut = gain(1), midOut = gain(1);
     widthG.connect(sideBus); beamG.connect(sideBus); sideBus.connect(sideOut);
@@ -89,11 +112,19 @@ export class WideBeamEngine {
     const out = gain(1, false);
     wet.connect(out); dry.connect(out);
 
+    // the output stage, the same for ORIGINAL and WIDE BEAM: master, a fast limiter, then a hard ceiling at -0.3 dBFS
+    // (a soft knee from -6 dBFS; the limiter keeps the signal out of it almost always)
     this.master = gain(0.9, false);
-    out.connect(this.master).connect(ctx.destination);
+    const limiter = ctx.createDynamicsCompressor();
+    limiter.threshold.value = -6; limiter.knee.value = 4; limiter.ratio.value = 12; limiter.attack.value = 0.002; limiter.release.value = 0.12;
+    const pre = gain(0.5, false), post = gain(2, false);
+    const shaper = ctx.createWaveShaper(); shaper.curve = ceilingCurve(); shaper.oversample = 'none';
+    this.output = gain(1, false);
+    out.connect(this.master).connect(limiter).connect(pre).connect(shaper).connect(post).connect(this.output).connect(ctx.destination);
 
+    // the meter tap: after the ceiling, before VOLUME (the mirror and CORR read the sound, not the monitor level)
     const meterSplit = ctx.createChannelSplitter(2);
-    out.connect(meterSplit);
+    post.connect(meterSplit);
     this.analyserL = ctx.createAnalyser(); this.analyserR = ctx.createAnalyser();
     this.analyserL.fftSize = this.analyserR.fftSize = 2048;
     meterSplit.connect(this.analyserL, 0); meterSplit.connect(this.analyserR, 1);
@@ -119,7 +150,7 @@ export class WideBeamEngine {
     const db = (p.tilt / 100) * 6.02;
     to(n.lo.gain, -db); to(n.hi.gain, db);
     to(n.widthG.gain, widthGain(p.width));
-    to(n.beamG.gain, p.high ? (p.reach / 100) * 0.9 : 0);
+    to(n.beamG.gain, beamAmount(p));
     // listening switches: SIDE wins over MONO (README); both act only while POWER is on
     to(n.midOut.gain, p.side ? 0 : 1);
     to(n.sideOut.gain, p.mono && !p.side ? 0 : 1);
@@ -130,7 +161,14 @@ export class WideBeamEngine {
 
   get params() { return this.p; }
 
-  // the measured correlation, about a 300 ms integrator like the plugin's meter; 0 with no signal
+  /** VOLUME, the page's own monitor level, in dB (-60 and below = silent; never above 0). */
+  setVolume(db: number) {
+    const g = db <= -60 ? 0 : Math.pow(10, Math.min(0, db) / 20);
+    this.output.gain.setTargetAtTime(g, this.ctx.currentTime, T);
+  }
+
+  /** The measured correlation, smoothed with a 300 ms time constant like the plugin's meter (demo-18); 0 with no
+   *  signal. `level` is the RMS of the analysers' window. */
   measure(): { corr: number; level: number } {
     this.analyserL.getFloatTimeDomainData(this.bufL);
     this.analyserR.getFloatTimeDomainData(this.bufR);
@@ -138,7 +176,9 @@ export class WideBeamEngine {
     for (let i = 0; i < this.bufL.length; i++) { const l = this.bufL[i], r = this.bufR[i]; lr += l * r; ll += l * l; rr += r * r; }
     const level = Math.sqrt((ll + rr) / (2 * this.bufL.length));
     const c = ll * rr > 1e-9 ? lr / Math.sqrt(ll * rr) : 0;
-    this.corr += (c - this.corr) * 0.12;
+    const now = performance.now(), dt = this.lastMeasure ? Math.min(0.25, (now - this.lastMeasure) / 1000) : 1 / 60;
+    this.lastMeasure = now;
+    this.corr += (c - this.corr) * (1 - Math.exp(-dt / 0.3));
     return { corr: level > 1e-4 ? this.corr : 0, level };
   }
 
@@ -146,27 +186,75 @@ export class WideBeamEngine {
 
   stop() { this.source?.stop(); this.source = null; }
   get playing() { return !!this.source; }
+  /** what plays (or would play on start): the loop or the last file / clip */
+  get sourceName() { return this.current.kind === 'demo' ? (this.current.name ?? 'Night Drive loop') : this.current.name; }
+  get sourceKind() { return this.current.kind; }
+
+  /** Pick what plays; if something is playing it switches at once. */
+  setSource(src: WbSource) {
+    this.current = src;
+    if (this.source) this.start();
+  }
+
+  /** Play the current source from the top (the loop, or the last file the visitor picked: demo-16). */
+  start() {
+    this.stop();
+    const src = this.current;
+    if (src.kind === 'demo') { this.source = nightDrive(this.ctx, this.input); return; }
+    const s = this.ctx.createBufferSource(); s.buffer = src.buffer; s.loop = true;
+    if (src.loop) { s.loopStart = src.loop[0]; s.loopEnd = src.loop[1]; }
+    // in and out over a few ms, so a switch between tracks never clicks
+    const g = this.ctx.createGain(), t = this.ctx.currentTime, level = src.gain ?? matchGain(src.buffer);
+    g.gain.setValueAtTime(0, t); g.gain.setTargetAtTime(level, t, 0.004);
+    s.connect(g).connect(this.input); s.start(t, src.loop ? src.loop[0] : 0);
+    this.source = { stop: () => {
+      const now = this.ctx.currentTime;
+      g.gain.cancelScheduledValues(now); g.gain.setTargetAtTime(0, now, 0.008);
+      try { s.stop(now + 0.05); } catch {}
+      s.onended = () => { s.disconnect(); g.disconnect(); };
+    } };
+  }
 
   async playFile(file: File) {
-    const buf = await this.ctx.decodeAudioData(await file.arrayBuffer());
-    this.stop();
-    const s = this.ctx.createBufferSource(); s.buffer = buf; s.loop = true; s.connect(this.input); s.start();
-    this.source = { stop: () => { try { s.stop(); } catch {} s.disconnect(); } };
+    const buffer = await this.ctx.decodeAudioData(await file.arrayBuffer());
+    this.current = { kind: 'buffer', buffer, name: file.name };
+    this.start();
   }
 
   playDemo() {
-    this.stop();
-    this.source = nightDrive(this.ctx, this.input);
+    this.current = { kind: 'demo' };
+    this.start();
   }
+}
+
+/** The gain that brings a buffer to the loop's RMS (LOOP_RMS_DB), boosting a quiet file by 12 dB at most. */
+export function matchGain(buf: AudioBuffer) {
+  let s = 0, n = 0;
+  for (let c = 0; c < buf.numberOfChannels; c++) { const d = buf.getChannelData(c); for (let i = 0; i < d.length; i += 4) { s += d[i] * d[i]; n++; } }
+  const rms = Math.sqrt(s / Math.max(1, n));
+  if (!(rms > 1e-5)) return 1;
+  return Math.min(Math.pow(10, 12 / 20), Math.pow(10, LOOP_RMS_DB / 20) / rms);
+}
+
+// the ceiling's transfer curve, on an input pre-scaled by 0.5 (so the curve's -1..1 spans ±6 dBFS) and post-scaled by 2:
+// straight to -6 dBFS, then a tanh knee that never passes -0.3 dBFS, whatever goes in
+function ceilingCurve() {
+  const N = 4097, c = new Float32Array(N), knee = 0.25, top = CEILING / 2 - knee;
+  for (let i = 0; i < N; i++) {
+    const x = (i / (N - 1)) * 2 - 1, a = Math.abs(x);
+    c[i] = Math.sign(x) * (a <= knee ? a : knee + top * Math.tanh((a - knee) / top));
+  }
+  return c;
 }
 
 /**
  * "Night Drive": 96 BPM, Am – F – C – G. Each part sits where a real mix puts it, so the controls have something to
  * move: kick + bass dead centre (LOW FOCUS keeps them there), a mono lead (HIGH BEAM's food), a wide detuned pad and
- * a ping-ponging arp (WIDTH's), hats a little off-centre (TILT's highs).
+ * a ping-ponging arp (WIDTH's), hats a little off-centre (TILT's highs). Lifted ~6 dB (demo-d02): the output limiter
+ * holds its peaks.
  */
 function nightDrive(ctx: AudioContext, dest: AudioNode) {
-  const bus = ctx.createGain(); bus.gain.value = 0.55; bus.connect(dest);
+  const bus = ctx.createGain(); bus.gain.value = 1.1; bus.connect(dest);
   const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -14; comp.ratio.value = 3; comp.connect(bus);
   const spb = 60 / 96, bar = spb * 4;
   const chords = [[57, 60, 64], [53, 57, 60], [48, 52, 55], [55, 59, 62]];
@@ -228,10 +316,12 @@ function nightDrive(ctx: AudioContext, dest: AudioNode) {
     }
   }
 
+  // an OfflineAudioContext (a test render) has no clock to tick on: schedule its whole length up front
+  const offline = typeof OfflineAudioContext !== 'undefined' && ctx instanceof OfflineAudioContext;
   let next = ctx.currentTime + 0.08, i = 0;
-  const tick = () => { while (next < ctx.currentTime + 0.6) { schedBar(next, i++); next += bar; } };
+  const tick = () => { const until = offline ? (ctx as unknown as OfflineAudioContext).length / ctx.sampleRate : ctx.currentTime + 0.6; while (next < until) { schedBar(next, i++); next += bar; } };
   tick();
-  const timer = window.setInterval(tick, 150);
+  const timer = offline ? 0 : window.setInterval(tick, 150);
   return {
     stop() {
       clearInterval(timer);

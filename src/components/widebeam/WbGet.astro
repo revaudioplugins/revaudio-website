@@ -1,5 +1,11 @@
 ---
-/** /widebeam ask plate under the hero (lane A): the one ask from askFor(phase) + the buy side (src/data/widebeam.ts). */
+/**
+ * /widebeam ask plate under the hero (lane A, D4 C): a plate cut from the plugin's own photo (.wb-plate--badge, the
+ * parts kit) carrying the one ask from askFor(phase) and the buy side from buyFor() (src/data/widebeam.ts).
+ * Hooks read elsewhere: [data-wb-trial] / [data-wb-trial-status] / #wb-trial-email (capture.ts, the gate kit),
+ * [data-wb-ask] (capture.ts: the done state on every surface), [data-wb-cta] on the form (furniture.ts: the phone
+ * bar steps away while the form is on screen).
+ */
 import { widebeam, askFor, buyFor, formatsLine, onceUrl as formOnceUrl } from '../../data/widebeam';
 
 const onceUrl = formOnceUrl();
@@ -7,12 +13,12 @@ const ask = askFor();
 const buy = buyFor();
 ---
 <!-- ============ GET IT: the one ask + the buy side (src/data/widebeam.ts askFor / buyFor) ============ -->
-<section class="wb-get" id="wb-get" aria-label="Get WIDE BEAM" data-wb-cta>
-  <div class="wb-get-plate" data-reveal="fade">
-    <div class="wb-get-trial">
+<section class="wb-get" id="wb-get" aria-label="Get WIDE BEAM">
+  <div class="wb-get-plate wb-plate wb-plate--badge" data-reveal="fade">
+    <div class="wb-get-trial" data-wb-ask>
       <p class="wb-get-label">{ask.label}</p>
       <form
-        class="wb-get-form" data-wb-trial novalidate
+        class="wb-get-form" data-wb-trial data-wb-cta novalidate
         data-once-url={onceUrl}
         data-register-url={ask.registerUrl ?? undefined}
         data-plugin={widebeam.gateId}
@@ -25,13 +31,13 @@ const buy = buyFor();
         <input type="text" name="_gotcha" class="wb-hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
         <button type="submit" class="rv-btn"><span data-face>{ask.key.replace(/ ▸$/, '')} <span aria-hidden="true">&#9656;</span></span></button>
       </form>
-      <p class="wb-get-status" data-wb-trial-status role="status" aria-live="polite" tabindex="-1"></p>
-      <p class="wb-get-micro" id="wb-get-micro">{ask.micro}</p>
+      <p class="wb-get-status" id="wb-get-status" data-wb-trial-status role="status" aria-live="polite" tabindex="-1"></p>
+      <p class="wb-get-micro wb-plate-label" id="wb-get-micro">{ask.micro}</p>
       <p class="wb-get-notice" id="wb-get-consent">{ask.consent} &middot; <a href="/privacy" data-open-legal="privacy">Privacy</a></p>
     </div>
-    <div class="wb-get-or" aria-hidden="true"><span>or</span></div>
+    <div class="wb-get-or" aria-hidden="true"></div>
     <div class="wb-get-buy">
-      <p class="wb-get-price"><b>{buy.title}</b><span>{buy.sub}</span></p>
+      <p class="wb-get-price"><b>{buy.title}</b><span class="wb-plate-label">{buy.sub}</span></p>
       {buy.key && (
         <button
           type="button" class="rv-btn rv-btn--lg wb-buy"
@@ -39,8 +45,8 @@ const buy = buyFor();
           data-slug={widebeam.slug} data-name={widebeam.name} data-price={widebeam.priceUsd}
         >{buy.key}</button>
       )}
-      <p class="wb-get-micro">{formatsLine()}</p>
-      {buy.trust && <p class="wb-get-notice">{buy.trust}</p>}
+      <p class="wb-get-micro wb-get-formats wb-plate-label">{formatsLine()}</p>
+      {buy.trust && <p class="wb-get-notice wb-get-trust">{buy.trust}</p>}
     </div>
   </div>
 </section>

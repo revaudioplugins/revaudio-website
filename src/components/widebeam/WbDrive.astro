@@ -1,14 +1,51 @@
 ---
-/** /widebeam dash (lane D): the live face (src/lib/widebeam/face.ts), with WbConsole under it. Words: DASH in
- *  src/data/widebeam.ts. Lane D's phone deck renders inside this section. */
+/** /widebeam dash (lane D): the live face (src/lib/widebeam/face.ts) with the console beside it at >= 1100 px (D5 A) and
+ *  under it below; on a phone held upright the deck (WbDeck, D.4 = D7 B) sits between them and holds the controls, the
+ *  face above it the live display (the "turn your phone sideways" line went with it: mobile-06). Words: DASH in
+ *  src/data/widebeam.ts.
+ *
+ *  The face's art is loaded late, by face.ts, in a size tier per part (perf-01, perf-02, art-d01): every filmstrip and
+ *  the plate come in at 50 / 75 / 100 % here, and the script picks per part from that part's rendered size x DPR. The
+ *  full tier is the same transform as the page's own `art` (same URL, built once). Until the art is decoded the face
+ *  shows face-still.webp, the dark face in its default state (perf-04, motion-03), captured from this face with
+ *  /widebeam/?wb-cold (face.ts) at 1536 px. */
 import { getImage } from 'astro:assets';
 import baseImg from '../../assets/widebeam/face-base.webp';
+import widthImg from '../../assets/widebeam/knob-width.webp';
+import focusImg from '../../assets/widebeam/knob-focus.webp';
+import mixImg from '../../assets/widebeam/knob-mix.webp';
+import toggleImg from '../../assets/widebeam/switch-toggle2.webp';
+import powerImg from '../../assets/widebeam/power-rocker.webp';
+import wheelImg from '../../assets/widebeam/level-wheel.webp';
+import stillImg from '../../assets/widebeam/face-still.webp';
 import WbConsole from './WbConsole.astro';
+import WbDeck from './WbDeck.astro';
 import { DASH } from '../../data/widebeam';
 
-const poster = await getImage({ src: baseImg, format: 'webp', width: 1536, quality: 70 });
+// [part, source, grid columns]: a tier keeps every frame whole (the frame width x the columns)
+const STRIPS: [string, ImageMetadata, number][] = [
+  ['width', widthImg, 11], ['focus', focusImg, 12], ['mix', mixImg, 11], ['toggle', toggleImg, 6], ['power', powerImg, 4], ['wheel', wheelImg, 9],
+];
+const tiers: Record<string, [number, string][]> = {};
+for (const [part, src, cols] of STRIPS) {
+  const frame = src.width / cols;
+  tiers[part] = [];
+  for (const f of [0.5, 0.75]) {
+    const w = Math.round(frame * f) * cols;
+    tiers[part].push([Math.round(frame * f), (await getImage({ src, format: 'webp', width: w, quality: 80 })).src]);
+  }
+  // the full tier: exactly the page's own transform (widebeam.astro), so it is one file
+  tiers[part].push([frame, (await getImage({ src, format: 'webp', quality: 80 })).src]);
+}
+tiers.base = [
+  [1536, (await getImage({ src: baseImg, format: 'webp', width: 1536, quality: 84 })).src],
+  [2304, (await getImage({ src: baseImg, format: 'webp', width: 2304, quality: 84 })).src],
+  [baseImg.width, (await getImage({ src: baseImg, format: 'webp', quality: 84 })).src],
+];
+const stills = await Promise.all([640, 960, 1280, 1536].map((width) => getImage({ src: stillImg, format: 'webp', width, quality: 74 })));
+const stillSrcset = stills.map((s, i) => `${s.src} ${[640, 960, 1280, 1536][i]}w`).join(', ');
 ---
-<!-- ============ THE DASH: the live face ============ -->
+<!-- ============ THE DASH: the live face + the console ============ -->
 <section class="wb-drive" id="wb-drive" aria-labelledby="wb-drive-h">
   <header class="wb-head" data-reveal="fade">
     <p class="wb-eyebrow">THE DASH · LIVE</p>
@@ -18,15 +55,25 @@ const poster = await getImage({ src: baseImg, format: 'webp', width: 1536, quali
 
   <div class="wb-dash-wrap">
     <div class="wb-dash" data-wb-dash>
-      <div class="wb-face" data-wb-face style={`--poster:url(${poster.src})`}>
-        <span class="sr-only" data-wb-announce aria-live="polite"></span>
+      <div class="wb-face is-cold" data-wb-face data-wb-art={JSON.stringify(tiers)}>
+        <img class="wb-dash-still" src={stills[1].src} srcset={stillSrcset} sizes="(min-width: 1100px) 1100px, (min-width: 901px) 75vw, 100vw" width="1536" height="1024" alt="" aria-hidden="true" loading="lazy" decoding="async" />
       </div>
+      <!-- beside the face, not in it: on an upright phone the face is inert, and so would be a live region inside it -->
+      <span class="sr-only" data-wb-announce aria-live="polite"></span>
+      <WbDeck />
+      <WbConsole />
     </div>
     <div class="wb-dash-floor" aria-hidden="true"></div>
   </div>
-  <p class="wb-turn">Turn your phone sideways for a bigger dash.</p>
 
-
-  <WbConsole />
+  <div class="wb-dash-tray">
+    <label class="rv-btn rv-btn--ghost rv-btn--sm wb-file" data-wb-file-label>
+      <input type="file" accept="audio/*" data-wb-file />
+      <span>Use your own track</span>
+    </label>
+    <p class="wb-msg" data-wb-msg role="status" aria-live="polite">{DASH.idle}</p>
+    <p class="wb-fine wb-file-note">{DASH.fileNote}</p>
+    <p class="wb-keys"><span>Keys while a control on the dash has focus:</span> <kbd>H</kbd> high beam · <kbd>M</kbd> mono · <kbd>S</kbd> side · <kbd>P</kbd> power · <kbd>[</kbd> <kbd>]</kbd> presets</p>
+  </div>
   <p class="wb-fine wb-fine--c">{DASH.demoNote}</p>
 </section>

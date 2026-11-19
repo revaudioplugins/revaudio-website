@@ -3,8 +3,21 @@
  * away from you (bass at the bumper, air at the horizon). Scrolling the six steps moves one control each, on the
  * story's own copy of the parameters (it never touches the face the visitor set):
  * WIDTH · LOW FOCUS · HIGH BEAM · TILT · MONO / CORRELATION · CRUISE.
+ *
+ * The road is the plugin's own window (parts.css .wb-part-road): the canvas draws over its night-road photo, matched to
+ * the photo's perspective (vanishing point measured on road.webp: x .498, y .408 of the glass; the road's half width
+ * reaches .51 of the glass at its bottom edge). The needle is the panel meter's (--wb-needle = correlation x 50deg).
+ *
+ * One line lights a step: the step whose box holds it is the lit one. On a laptop (two columns) the line is the middle of
+ * the screen under the nav; on an upright phone it is the middle of the free area under the sticky stage, and every step
+ * is exactly that area's height (--wb-story-free), so a lit step's text is whole on screen for most of its scroll
+ * (mobile-02). Each step carries a [data-step-mark], placed so that driveTo(mark, { align: 'top' }) lands the page on the
+ * middle of that step's lit range: the Owner's Manual chapters use it (manual.ts).
+ *
+ * Reduced motion: no loop at all. Each step is one still (its end state), drawn on a step change, a resize and once the
+ * fonts are in (motion-08, a11y-09). Otherwise the drawn values ease across step edges like the sources do (motion-16).
  */
-import { ScrollTrigger } from '../motion';
+import { ScrollTrigger, reducedMotion } from '../motion';
 import { cruise, widthGain, DEFAULTS, type WbParams } from './audio';
 
 const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
@@ -41,150 +54,198 @@ function stepParams(i: number, t: number): P {
   }
 }
 
+// the drawn values, eased toward the step's (or snapped, under reduced motion): one number per thing the road shows
+type Shown = { width: number; focusLn: number; reach: number; tilt: number; mono: number; high: number };
+const shownOf = (p: P): Shown => ({ width: p.width, focusLn: Math.log(p.focus), reach: p.reach, tilt: p.tilt, mono: p.mono ? 1 : 0, high: p.high ? 1 : 0 });
+
 export function initStory(section: HTMLElement) {
   const canvas = section.querySelector<HTMLCanvasElement>('[data-story-canvas]')!;
   const lcd = section.querySelector<HTMLElement>('[data-story-lcd]')!;
-  const lab = section.querySelector<HTMLElement>('[data-story-label]')!;
   const needle = section.querySelector<HTMLElement>('[data-story-needle]')!;
   const lvl = section.querySelector<HTMLElement>('[data-story-level]')!;
   const lvlRead = section.querySelector<HTMLElement>('[data-story-level-read]')!;
+  const stage = section.querySelector<HTMLElement>('[data-story-stage]')!;
   const steps = [...section.querySelectorAll<HTMLElement>('[data-step]')];
   const ctx = canvas.getContext('2d')!;
-  let W = 0, H = 0, dpr = 1, cur: P = stepParams(0, 0), raf = 0, t = 0, visible = false;
+  const still = reducedMotion();
+  let W = 0, H = 0, dpr = 1, raf = 0, t = 0, visible = false, active = 0;
+  let cur: P = stepParams(0, still ? 1 : 0), shown: Shown = shownOf(cur);
   let nPos = 1, nVel = 0, last = 0;
+  const pans = SRC.map(() => NaN);
+  section.classList.add('is-live'); // the dim / lit look exists only with the script (no-JS: every step full strength)
 
-  const resize = () => { dpr = Math.min(2, devicePixelRatio || 1); W = canvas.clientWidth; H = canvas.clientHeight; canvas.width = W * dpr; canvas.height = H * dpr; };
-  new ResizeObserver(resize).observe(canvas); resize();
-  new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible) go(); }).observe(canvas);
-
-  // which step is active: the one whose card crosses the middle of the screen; t = how far through it
-  steps.forEach((el, i) => {
-    ScrollTrigger.create({
-      trigger: el, start: 'top 65%', end: 'bottom 35%',
-      onUpdate: (st) => { cur = stepParams(i, st.progress); paintHud(); },
-      onToggle: (st) => { if (st.isActive) { steps.forEach((s, j) => s.classList.toggle('is-on', j === i)); cur = stepParams(i, st.progress); paintHud(); } },
-    });
-  });
-
-  // the source's on-screen pan for the story's parameters
-  const panOf = (s: (typeof SRC)[number], p: P, mirror = 1) => {
-    if (p.mono) return 0;
-    const below = s.f < p.focus ? 1 - clamp(Math.log(p.focus / s.f) / Math.log(2), 0, 1) : 1;
-    const tiltK = Math.pow(2, (p.tilt / 100) * (s.f > 1500 ? 1 : -1) * Math.min(1, Math.abs(Math.log2(s.f / 1500)) / 2));
-    const base = s.pan * widthGain(p.width) * tiltK * below;
-    return clamp(base * mirror, -1.15, 1.15);
+  const resize = () => {
+    dpr = Math.min(2, devicePixelRatio || 1); W = canvas.clientWidth; H = canvas.clientHeight;
+    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr); // this clears the canvas: draw again
+    if (still) drawStill(); else go();
   };
-  const corrOf = (p: P) => {
+  new ResizeObserver(resize).observe(canvas); resize();
+  new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible) (still ? drawStill() : go()); }).observe(canvas);
+  document.fonts?.ready.then(() => { if (still) drawStill(); });
+
+  // ── the line that lights a step, and each step's landing mark ──
+  let line = 0;
+  const navH = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--nav-h')) || 44;
+  const measure = () => {
+    const top = parseFloat(getComputedStyle(stage).top) || navH();
+    const stacked = getComputedStyle(stage).position === 'sticky' && stage.offsetWidth > section.offsetWidth * 0.8;
+    if (stacked) {
+      // upright phone: the stage sits on top; each step gets the free height under it, and the line is its middle
+      const below = top + stage.offsetHeight, free = Math.max(160, innerHeight - below);
+      section.style.setProperty('--wb-story-free', `${Math.round(free)}px`);
+      line = below + free / 2;
+    } else {
+      section.style.removeProperty('--wb-story-free');
+      line = top + (innerHeight - top) / 2;
+    }
+  };
+  ScrollTrigger.addEventListener('refreshInit', measure);
+  measure();
+
+  const triggers = steps.map((el, i) => ScrollTrigger.create({
+    trigger: el, start: () => `top ${line}px`, end: () => `bottom ${line}px`, invalidateOnRefresh: true,
+    onUpdate: (st) => { if (!still && active === i) { cur = stepParams(i, st.progress); paintHud(); } },
+    onToggle: (st) => { if (st.isActive) light(i, st.progress); },
+  }));
+  // the chapters' landing marks: driveTo(mark, { align: 'top' }) puts mark's top under the nav (drive-to.ts), so the mark
+  // sits that far above the scroll position at the middle of the step's lit range
+  const placeMarks = () => triggers.forEach((st, i) => {
+    const mark = steps[i].querySelector<HTMLElement>('[data-step-mark]');
+    if (!mark) return;
+    const liTop = steps[i].getBoundingClientRect().top + scrollY;
+    mark.style.top = `${Math.round((st.start + st.end) / 2 + navH() - liTop)}px`;
+  });
+  ScrollTrigger.addEventListener('refresh', placeMarks);
+  placeMarks();
+
+  function light(i: number, progress: number) {
+    active = i;
+    steps.forEach((s, j) => s.classList.toggle('is-on', j === i));
+    cur = stepParams(i, still ? 1 : progress);
+    paintHud();
+    if (still) drawStill();
+  }
+
+  // the source's on-screen pan for the drawn values
+  function panOf(s: (typeof SRC)[number], v: Shown) {
+    const focus = Math.exp(v.focusLn);
+    const below = s.f < focus ? 1 - clamp(Math.log(focus / s.f) / Math.log(2), 0, 1) : 1;
+    const tiltK = Math.pow(2, (v.tilt / 100) * (s.f > 1500 ? 1 : -1) * Math.min(1, Math.abs(Math.log2(s.f / 1500)) / 2));
+    return clamp(s.pan * widthGain(v.width) * tiltK * below * (1 - v.mono), -1.15, 1.15);
+  }
+  function corrOf(p: P) {
     if (p.mono) return 1;
     let c = 1 - Math.max(0, widthGain(p.width) - 0.3) * 0.32 - (p.tilt ? Math.abs(p.tilt) / 100 * 0.1 : 0);
     if (p.high) c -= 0.5 * p.reach / 100;
     return clamp(c, -1, 1);
-  };
+  }
 
   function paintHud() {
     lcd.textContent = cur.read;
-    lab.textContent = cur.label;
     const g = cruise(cur), raw = 20 * Math.log10(Math.max(1, widthGain(cur.width)) * 0.55 + 0.45);
-    const withCruise = raw + 20 * Math.log10(g);
-    const db = cur.label === 'CRUISE' ? withCruise : raw;
+    const db = cur.label === 'CRUISE' ? raw + 20 * Math.log10(g) : raw;
     lvl.style.setProperty('--lv', String(clamp(0.62 + db / 12, 0, 1)));
     lvl.style.setProperty('--raw', String(clamp(0.62 + raw / 12, 0, 1)));
     lvlRead.textContent = `${db >= 0 ? '+' : ''}${db.toFixed(1)} dB`;
     section.dataset.step = cur.label;
-    go();
+    if (!still) go();
   }
 
   function draw(dt: number) {
-    t += dt;
+    // ease the drawn values toward the step's (one exp curve, 8/s, like the sources); a still snaps them
+    const goal = shownOf(cur), k = still ? 1 : 1 - Math.exp(-dt * 8);
+    for (const key of Object.keys(goal) as (keyof Shown)[]) shown[key] += (goal[key] - shown[key]) * k;
+    if (!still) t += dt;
+    const v = shown, focus = Math.exp(v.focusLn);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, W, H);
-    const hz = H * 0.12, cx = W / 2;
-    const half = (y: number) => lerp(W * 0.05, W * 0.48, (y - hz) / (H - hz));
-    const yOf = (f: number) => lerp(H * 0.96, hz + 8, Math.log(f / 20) / Math.log(1000));
+    const hz = H * 0.408, cx = W * 0.498, small = W < 420;
+    const half = (y: number) => W * 0.51 * Math.max(0, (y - hz) / (H - hz));
+    const yOf = (f: number) => lerp(H * 0.97, hz + 6, Math.log(f / 20) / Math.log(1000));
+    const font = (w: number) => `${w} 13px Oswald, sans-serif`; // the 13 px floor for print (mobile-10)
 
-    // the road
-    const rg = ctx.createLinearGradient(0, hz, 0, H);
-    rg.addColorStop(0, '#0e1013'); rg.addColorStop(1, '#17191b');
-    ctx.fillStyle = rg;
-    ctx.beginPath(); ctx.moveTo(cx - half(hz), hz); ctx.lineTo(cx + half(hz), hz); ctx.lineTo(cx + half(H), H); ctx.lineTo(cx - half(H), H); ctx.closePath(); ctx.fill();
-    // frequency marks across the road
-    ctx.font = '500 11px Oswald, sans-serif'; ctx.textAlign = 'right';
-    for (const f of [50, 100, 200, 500, 1000, 2000, 5000, 10000]) {
-      const y = yOf(f);
-      ctx.strokeStyle = 'rgba(201,163,92,.10)'; ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(cx - half(y), y); ctx.lineTo(cx + half(y), y); ctx.stroke();
-      ctx.fillStyle = 'rgba(201,163,92,.45)';
-      ctx.fillText(f >= 1000 ? f / 1000 + 'k' : String(f), cx - half(y) - 8, y + 3);
-    }
-    // edges + centre line (dashes roll toward you)
-    ctx.strokeStyle = 'rgba(230,222,205,.35)'; ctx.lineWidth = 2;
-    for (const sg of [-1, 1]) { ctx.beginPath(); ctx.moveTo(cx + sg * half(hz), hz); ctx.lineTo(cx + sg * half(H), H); ctx.stroke(); }
-    const dashes = 18, off = (t * 0.35) % (1 / dashes);
-    for (let i = 0; i < dashes; i++) {
-      const a = i / dashes + off, z0 = a * a, z1 = Math.min(1, (a + 0.022) * (a + 0.022));
-      ctx.strokeStyle = 'rgba(236,223,189,.55)'; ctx.lineWidth = 1 + 4 * a;
-      ctx.beginPath(); ctx.moveTo(cx, lerp(hz, H, z0)); ctx.lineTo(cx, lerp(hz, H, z1)); ctx.stroke();
-    }
+    // the road's light follows the width (the plugin's own law: a narrow mix dims the road, app.js roadShade)
+    const energy = clamp(widthGain(v.width) * (1 - v.mono), 0, 1.6);
+    ctx.fillStyle = `rgba(8,16,25,${clamp(0.55 - energy * 0.42, 0, 0.55).toFixed(3)})`;
+    ctx.fillRect(0, 0, W, H);
 
-    // the beams: how wide the mix is, as the light on the road
-    const spread = cur.mono ? 0.03 : clamp(widthGain(cur.width) * 0.55, 0.03, 1.1);
+    // the beams: how wide the mix is, as light thrown on the road
+    const spread = clamp(widthGain(v.width) * 0.55 * (1 - v.mono) + 0.03 * v.mono, 0.03, 1.1);
     const bg = ctx.createLinearGradient(0, H, 0, hz);
-    bg.addColorStop(0, 'rgba(255,236,196,.20)'); bg.addColorStop(1, `rgba(255,236,196,${cur.high ? 0.12 + cur.reach / 100 * 0.15 : 0.02})`);
+    bg.addColorStop(0, 'rgba(255,236,196,.16)'); bg.addColorStop(1, `rgba(255,236,196,${(0.02 + v.high * (0.1 + v.reach / 100 * 0.14)).toFixed(3)})`);
     ctx.globalCompositeOperation = 'lighter';
     ctx.fillStyle = bg;
-    ctx.beginPath(); ctx.moveTo(cx - half(H) * spread, H); ctx.lineTo(cx - half(hz) * spread * 0.4, hz); ctx.lineTo(cx + half(hz) * spread * 0.4, hz); ctx.lineTo(cx + half(H) * spread, H); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(cx - half(H) * spread, H); ctx.lineTo(cx - W * 0.03 * spread, hz + 2); ctx.lineTo(cx + W * 0.03 * spread, hz + 2); ctx.lineTo(cx + half(H) * spread, H); ctx.closePath(); ctx.fill();
     ctx.globalCompositeOperation = 'source-over';
 
-    // LOW FOCUS: everything nearer than this line is kept on the centre line
-    if (cur.focus > 25) {
-      const y = yOf(cur.focus);
-      ctx.strokeStyle = 'rgba(232,200,120,.9)'; ctx.lineWidth = 2; ctx.setLineDash([6, 6]);
-      ctx.beginPath(); ctx.moveTo(cx - half(y), y); ctx.lineTo(cx + half(y), y); ctx.stroke(); ctx.setLineDash([]);
-      ctx.fillStyle = 'rgba(232,200,120,.08)';
-      ctx.beginPath(); ctx.moveTo(cx - half(y), y); ctx.lineTo(cx + half(y), y); ctx.lineTo(cx + half(H), H); ctx.lineTo(cx - half(H), H); ctx.closePath(); ctx.fill();
-      ctx.fillStyle = '#e8c878'; ctx.textAlign = 'left'; ctx.fillText(`LOW FOCUS ${Math.round(cur.focus)} Hz`, cx + half(y) + 8, y + 3);
+    // frequency marks across the road, labelled on the verge (labels at least 15 px apart)
+    ctx.font = font(500); ctx.textAlign = 'right';
+    let lastY = Infinity;
+    for (const f of [50, 100, 200, 500, 1000, 2000, 5000, 10000]) {
+      const y = yOf(f);
+      ctx.strokeStyle = 'rgba(232,200,120,.16)'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(cx - half(y), y); ctx.lineTo(cx + half(y), y); ctx.stroke();
+      if (lastY - y < 15) continue;
+      lastY = y;
+      ctx.fillStyle = 'rgba(232,200,120,.85)';
+      ctx.fillText(f >= 1000 ? f / 1000 + 'k' : String(f), cx - half(y) - 6, y + 4);
     }
 
-    // the sources (eased toward their target pans)
+    // LOW FOCUS: everything nearer than this line is kept on the centre line
+    if (focus > 25) {
+      const y = yOf(focus);
+      ctx.strokeStyle = 'rgba(232,200,120,.9)'; ctx.lineWidth = 2; ctx.setLineDash([6, 6]);
+      ctx.beginPath(); ctx.moveTo(cx - half(y), y); ctx.lineTo(cx + half(y), y); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle = 'rgba(232,200,120,.1)';
+      ctx.beginPath(); ctx.moveTo(cx - half(y), y); ctx.lineTo(cx + half(y), y); ctx.lineTo(cx + half(H), H); ctx.lineTo(cx - half(H), H); ctx.closePath(); ctx.fill();
+      ctx.font = font(500); ctx.fillStyle = '#f3dca0'; ctx.textAlign = 'left';
+      ctx.fillText(`LOW FOCUS ${Math.round(focus)} Hz`, Math.min(cx + half(y) + 6, W - (small ? 118 : 130)), y - 5);
+    }
+
+    // the sources (eased toward their target pans; a still snaps them)
     ctx.textAlign = 'center';
-    const draws: [number, number, (typeof SRC)[number], number][] = [];
+    const scale = clamp(H / 260, 0.5, 1.2);
+    const draws: [number, number, (typeof SRC)[number]][] = [];
     SRC.forEach((s, i) => {
-      const target = panOf(s, cur);
-      (s as any).cur = (s as any).cur ?? target;
-      (s as any).cur += (target - (s as any).cur) * (1 - Math.exp(-dt * 8));
+      const target = panOf(s, v);
+      pans[i] = Number.isNaN(pans[i]) || still ? target : pans[i] + (target - pans[i]) * (1 - Math.exp(-dt * 8));
       const y = yOf(s.f);
-      draws.push([cx + (s as any).cur * half(y) * 0.92, y, s, i]);
+      draws.push([cx + pans[i] * half(y) * 0.92, y, s]);
       // HIGH BEAM: the mono vocal throws a wide twin pair
-      if (s.n === 'VOCAL' && cur.high && !cur.mono) {
-        const sp = (cur.reach / 100) * 0.85 * widthGain(cur.width) * 0.8;
-        for (const m of [-1, 1]) draws.push([cx + m * sp * half(y) * 0.92, y, { ...s, r: s.r * 0.7, n: '' }, -1]);
+      if (s.n === 'VOCAL' && v.high > 0.02) {
+        const sp = (v.reach / 100) * 0.85 * widthGain(v.width) * 0.8 * v.high * (1 - v.mono);
+        for (const m of [-1, 1]) draws.push([cx + m * sp * half(y) * 0.92, y, { ...s, r: s.r * 0.7, n: '' }]);
       }
     });
     const labels: [number, number, number][] = []; // x, y, half width of each label drawn: twins that meet share one
     for (const [x, y, s] of draws) {
-      const pulse = 1 + 0.06 * Math.sin(t * 4 + x * 0.05);
-      const r = s.r * pulse * (0.6 + 0.5 * (y - hz) / (H - hz));
+      const pulse = still ? 1 : 1 + 0.06 * Math.sin(t * 4 + x * 0.05);
+      const r = s.r * scale * pulse * (0.6 + 0.5 * (y - hz) / (H - hz));
       const g = ctx.createRadialGradient(x, y, 0, x, y, r * 2.6);
       g.addColorStop(0, s.c); g.addColorStop(0.35, s.c + '88'); g.addColorStop(1, s.c + '00');
       ctx.globalCompositeOperation = 'lighter';
       ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r * 2.6, 0, Math.PI * 2); ctx.fill();
       ctx.globalCompositeOperation = 'source-over';
       if (s.n) {
-        ctx.font = '600 9px Oswald, sans-serif';
+        ctx.font = font(600);
         const hw = ctx.measureText(s.n).width / 2 + 3;
-        if (!labels.some(([lx, ly, lw]) => Math.abs(lx - x) < lw + hw && Math.abs(ly - y) < 11)) {
+        if (!labels.some(([lx, ly, lw]) => Math.abs(lx - x) < lw + hw && Math.abs(ly - y) < 14)) {
           labels.push([x, y, hw]);
-          ctx.fillStyle = 'rgba(20,16,12,.85)'; ctx.fillText(s.n, x, y + 3);
+          // ivory print with a dark keyline: it reads on a bright source and on the dark road alike
+          ctx.lineWidth = 3; ctx.lineJoin = 'round'; ctx.strokeStyle = 'rgba(10,8,6,.85)'; ctx.strokeText(s.n, x, y + 4);
+          ctx.fillStyle = '#efe6d2'; ctx.fillText(s.n, x, y + 4);
         }
       }
     }
 
-    // the correlation needle (mass-spring like the face's)
-    const k = 140, c = 2 * Math.sqrt(k) * 0.7, goal = corrOf(cur);
-    nVel += (k * (goal - nPos) - c * nVel) * Math.min(dt, 0.033); nPos += nVel * Math.min(dt, 0.033);
-    needle.style.transform = `rotate(${(nPos * 50).toFixed(2)}deg)`;
+    // the correlation needle (mass-spring like the face's; a still snaps it)
+    const ng = corrOf(cur);
+    if (still) { nPos = ng; nVel = 0; }
+    else { const kk = 140, c = 2 * Math.sqrt(kk) * 0.7, d = Math.min(dt, 0.033); nVel += (kk * (ng - nPos) - c * nVel) * d; nPos += nVel * d; }
+    needle.style.setProperty('--wb-needle', `${(nPos * 50).toFixed(2)}deg`);
   }
 
+  function drawStill() { if (W && H) draw(0); }
   function loop(now: number) {
     raf = 0;
     if (!visible) return;
@@ -192,6 +253,7 @@ export function initStory(section: HTMLElement) {
     draw(dt);
     raf = requestAnimationFrame(loop);
   }
-  function go() { if (!raf && visible) { last = 0; raf = requestAnimationFrame(loop); } }
+  function go() { if (!still && !raf && visible) { last = 0; raf = requestAnimationFrame(loop); } }
   paintHud();
+  if (still) drawStill();
 }
