@@ -1,49 +1,87 @@
-/* /widebeam stereo road (lane S). */
+/* /widebeam stereo road (lane S). The stage is the plugin's own road window, panel meter and a LEVEL readout on a slim
+   plate (parts.css; art-02, D4 C). Two columns on a laptop and on a phone held sideways; on an upright phone the stage
+   sits on top (at most 45 svh) and every step takes the free height under it (story.ts sets --wb-story-free). */
 /* ---------- STORY ---------- */
-.wb-story { position: relative; padding: clamp(70px, 10vw, 130px) 0 40px; }
+.wb-story { position: relative; padding: var(--wb-gap) 0 40px; }
 .wb-story-grid { max-width: 1240px; margin: 50px auto 0; padding: 0 16px; display: grid; grid-template-columns: 1.15fr .85fr; gap: clamp(20px, 4vw, 60px); }
-.wb-story-stage { position: sticky; top: 9vh; height: 82vh; align-self: start; }
-.wb-windshield { position: relative; height: 100%; border-radius: 28px 28px 14px 14px; overflow: hidden;
-  background: linear-gradient(180deg, #06070a, #0c0d0f 30%, #101112); border: 10px solid #1c1915;
-  box-shadow: 0 0 0 1px var(--brass-lo), 0 0 0 3px #0e0c0a, inset 0 0 60px rgba(0, 0, 0, .7), 0 30px 70px rgba(0, 0, 0, .55); }
-.wb-windshield::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(115deg, rgba(255, 245, 225, .06), transparent 35%), radial-gradient(ellipse at 50% 120%, transparent 50%, rgba(0, 0, 0, .5)); }
-.wb-windshield canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.wb-hud { position: absolute; left: 50%; top: 18px; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; }
-.wb-hud-label { font-family: var(--wb-label); font-weight: 500; font-size: .74rem; letter-spacing: .32em; color: var(--brass); }
-.wb-hud-lcd { font-family: var(--wb-lcd); font-size: clamp(1.3rem, 2.5vw, 1.8rem); color: var(--lcd-ink); padding: 6px 16px; border-radius: 6px; letter-spacing: 1px;
-  background: radial-gradient(ellipse, #093567, var(--lcd-well) 65%, #030c16); text-shadow: 0 0 4px #bce8ff, 0 0 10px var(--lcd-glow); box-shadow: 0 0 0 1px #0b0a09, inset 0 3px 6px #0c0906cc; }
-.wb-mini-meter { position: absolute; right: 14px; bottom: 14px; width: 132px; padding: 10px 6px 6px; border-radius: 8px; z-index: 2;
-  background: radial-gradient(ellipse at 50% 100%, #f1e2bf, #d9c49a); box-shadow: 0 0 0 3px #8d6e40, 0 0 0 4px #3b2c17, 0 8px 20px rgba(0, 0, 0, .6); }
-.wb-mini-meter svg { width: 100%; display: block; }
-.wb-mini-meter text { font: 600 8px var(--wb-label); fill: #3a2a18; }
-.wb-mini-meter i { position: absolute; left: 50%; bottom: 22px; width: 2px; height: 50px; margin-left: -1px; background: #1b1510; transform-origin: 50% 100%; border-radius: 2px; }
-.wb-mini-meter small { display: block; text-align: center; font: 600 7px var(--wb-label); letter-spacing: .2em; color: #3a2a18; margin-top: 2px; }
-.wb-level { position: absolute; left: 14px; bottom: 14px; z-index: 2; display: grid; gap: 4px; font-family: var(--wb-lcd); color: var(--ivory-3); font-size: .95rem; letter-spacing: .14em; opacity: .35; transition: opacity .4s; }
-.wb-story[data-step='CRUISE'] .wb-level { opacity: 1; }
-.wb-level-bar { position: relative; width: 140px; height: 8px; border-radius: 4px; background: #0a0908; box-shadow: inset 0 0 0 1px #2a251e; overflow: hidden; }
+
+/* the stage: centred in the screen under the nav while the steps scroll past */
+.wb-story-stage {
+  position: sticky; top: var(--nav-h, 44px); align-self: start;
+  height: calc(100svh - var(--nav-h, 44px)); display: flex; flex-direction: column; justify-content: center;
+}
+.wb-story-panel { --wb-ps: .4; --wb-plate-pad: 12px 14px 14px; width: 100%; }
+.wb-story-road { width: 100%; container-type: inline-size; }
+.wb-story-road canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+/* the trip LCD: the plugin's Courier New in its own glow; 13 px at the least (the phone floor) */
+.wb-hud-lcd {
+  font-family: var(--wb-lcd); font-size: max(13px, 3.3cqi); line-height: 1; color: var(--lcd-ink); letter-spacing: .04em;
+  white-space: nowrap; text-shadow: var(--wb-lcd-glow);
+}
+
+.wb-story-gauges { display: grid; grid-template-columns: 1fr minmax(0, 34%); gap: 14px; align-items: center; margin-top: 12px; }
+.wb-story-meter { width: 100%; }
+/* LEVEL: always at full strength (a11y-10); the bar shows the raw level and, at CRUISE, the trimmed one */
+.wb-level { display: grid; gap: 6px; justify-items: start; font-family: var(--wb-read); color: var(--ivory-2); }
+.wb-level small { font-size: .9rem; }
+.wb-level-bar { position: relative; width: min(100%, 180px); height: 8px; border-radius: 4px; background: #0a0908; box-shadow: inset 0 0 0 1px #2a251e, 0 1px 0 rgba(255, 240, 210, .06); overflow: hidden; }
 .wb-level-bar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; transition: width .15s; }
 .wb-level-bar .raw { width: calc(var(--raw, .6) * 100%); background: rgba(181, 67, 44, .55); }
-.wb-level-bar .out { width: calc(var(--lv, .6) * 100%); background: linear-gradient(90deg, #6aa86a, var(--brass-hi)); }
-.wb-level b { color: var(--brass-hi); font-weight: 400; }
-.wb-steps { list-style: none; margin: 0; padding: 0 0 20vh; }
-.wb-step { min-height: 78vh; display: flex; flex-direction: column; justify-content: center; opacity: .28; transition: opacity .5s; }
-.wb-step.is-on { opacity: 1; }
+.wb-level-bar .out { width: calc(var(--lv, .6) * 100%); background: var(--emerald-text); }
+.wb-level b { color: var(--brass-hi); font-weight: 400; font-size: .95rem; letter-spacing: .06em; }
+
+/* the steps: the line in the middle of each lights it (story.ts); unlit ones at 75 % (a11y-10), only with the script */
+.wb-steps { list-style: none; margin: 0; padding: 0 0 12vh; }
+.wb-step { position: relative; min-height: min(78svh, 640px); display: flex; flex-direction: column; justify-content: center; }
+.wb-story.is-live .wb-step { opacity: .75; transition: opacity .4s; }
+.wb-story.is-live .wb-step.is-on { opacity: 1; }
+.wb-step:focus { outline: none; } /* a chapter moves focus here (manual.ts); the lit step is the visible mark */
+.wb-step-mark { position: absolute; left: 0; top: 0; width: 1px; height: 0; pointer-events: none; }
 .wb-step-n { font-family: var(--wb-display); font-size: clamp(3.8rem, 8vw, 6.4rem); line-height: 1; color: transparent; -webkit-text-stroke: 1px rgba(201, 163, 92, .55); }
 .wb-step.is-on .wb-step-n { color: rgba(201, 163, 92, .14); }
 .wb-step-l { font-family: var(--wb-label); font-weight: 500; letter-spacing: .3em; font-size: .82rem; color: var(--brass); margin: 10px 0 4px; }
 .wb-step h3 { font-family: var(--wb-display); font-weight: 400; font-size: clamp(2.1rem, 3.6vw, 3rem); line-height: 1; letter-spacing: .02em; margin: .2em 0 .45em; color: var(--ivory); }
-.wb-step p:last-child { color: var(--ivory-2); line-height: 1.65; font-size: 1.04rem; max-width: 44ch; margin: 0; }
+.wb-step-text > p:last-child { color: var(--ivory-2); line-height: 1.65; font-size: 1.04rem; max-width: 44ch; margin: 0; }
 
+/* an upright phone (or a narrow window): the stage on top, every step the free height under it */
 @media (max-width: 900px) {
-  .wb-story-grid { grid-template-columns: 1fr; }
-  .wb-story-stage { top: 64px; height: 48vh; z-index: 2; }
-  .wb-windshield { border-width: 6px; }
-  .wb-step { min-height: 64vh; padding: 0 4px; justify-content: flex-end; padding-bottom: 8vh; }
-  .wb-step-n { font-size: 2.6rem; }
-  .wb-mini-meter { width: 100px; }
-  .wb-mini-meter i { height: 36px; bottom: 20px; }
+  .wb-story-grid { grid-template-columns: 1fr; gap: 0; margin-top: 32px; }
+  .wb-story-stage {
+    z-index: 2; height: auto; max-height: 45svh; margin: 0 -16px; padding: 6px 16px 8px;
+    background: #110f0c; box-shadow: 0 10px 14px -8px rgba(8, 6, 4, .9);
+  }
+  .wb-story-panel { --wb-ps: .24; --wb-plate-pad: 6px 8px 8px; }
+  .wb-story-gauges { grid-template-columns: 1fr minmax(0, 38%); gap: 10px; margin-top: 8px; }
+  .wb-level small, .wb-level b { font-size: var(--wb-fine-min); }
+  /* each step = the free height under the stage, its text centred there; with no script the native anchor jump lands
+     the step's top under the stage (scroll-margin ~ the stage's height) */
+  .wb-step { min-height: var(--wb-story-free, 52svh); padding: 14px 2px; scroll-margin-top: calc((100vw - 78px) * .41 + 120px); }
+  .wb-step-text { display: grid; grid-template-columns: auto 1fr; column-gap: 12px; align-items: baseline; }
+  .wb-step-text > :not(.wb-step-n):not(.wb-step-l) { grid-column: 1 / -1; }
+  .wb-step-n { font-size: 1.7rem; -webkit-text-stroke-width: 0; color: var(--brass); }
+  .wb-step.is-on .wb-step-n { color: var(--brass); }
+  .wb-step-l { margin: 0; font-size: var(--wb-fine-min); letter-spacing: .24em; }
+  .wb-step h3 { font-size: 1.7rem; line-height: 1.02; margin: .3em 0 .4em; }
+  .wb-step-text > p:last-child { font-size: .95rem; line-height: 1.5; }
 }
 
-@media (max-width: 560px) {
-  .wb-level { display: none; }
+/* a phone held sideways keeps the two columns (after the upright rules, so it wins): a smaller plate, compact steps
+   that fit the short screen */
+@media (max-width: 900px) and (orientation: landscape) and (max-height: 600px) {
+  /* the text column gets half the width and the number shares a row with the label (the upright grid), so the longest
+     step stays whole on the 346 px screen for a while (mobile-02 sideways) */
+  .wb-story-grid { grid-template-columns: 1fr 1fr; margin-top: 28px; gap: 20px; }
+  .wb-story-stage { height: calc(100svh - var(--nav-h, 44px)); max-height: none; margin: 0; padding: 0; background: none; box-shadow: none; }
+  .wb-story-panel { --wb-ps: .26; --wb-plate-pad: 8px 10px 10px; }
+  .wb-story-gauges { grid-template-columns: 1fr minmax(0, 34%); margin-top: 8px; gap: 10px; }
+  .wb-step { min-height: calc(100svh - var(--nav-h, 44px)); padding: 0; scroll-margin-top: 0; }
+  .wb-step-n { font-size: 1.5rem; -webkit-text-stroke-width: 0; color: var(--brass); }
+  .wb-step.is-on .wb-step-n { color: var(--brass); }
+  .wb-step-l { margin: 0; font-size: var(--wb-fine-min); }
+  .wb-step h3 { font-size: 1.45rem; margin: .2em 0 .3em; }
+  .wb-step-text > p:last-child { font-size: .9rem; line-height: 1.45; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wb-story.is-live .wb-step, .wb-level-bar i { transition: none; }
 }

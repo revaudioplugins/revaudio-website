@@ -1,8 +1,10 @@
 ---
 /** /widebeam stereo road (lane S): src/lib/widebeam/story.ts drives it. The six steps' words: STEPS in
- *  src/data/widebeam.ts (each step's id is the Owner's Manual chapter that lands on it). */
+ *  src/data/widebeam.ts (each step's id is the Owner's Manual chapter that lands on it).
+ *  The stage is a zoom into the plugin itself (art-02, D4 C): its road window with the trip LCD, the panel meter with
+ *  its needle and a LEVEL readout, on a slim plate, every part cut from the plugin's photo (parts.css). The canvas
+ *  draws the mix over the window's own night road. Without JS every step reads at full strength (none is "lit"). */
 import { STEPS } from '../../data/widebeam';
-
 ---
 <!-- ============ STORY: the stereo road ============ -->
 <section class="wb-story" id="wb-story" data-wb-story aria-labelledby="wb-story-h">
@@ -12,30 +14,32 @@ import { STEPS } from '../../data/widebeam';
     <p class="wb-headsub">Left to right is the stereo field. The bass is at your bumper and the air is at the horizon. Scroll, and watch one control at a time move the whole road.</p>
   </header>
   <div class="wb-story-grid">
-    <div class="wb-story-stage">
-      <div class="wb-windshield">
-        <canvas data-story-canvas aria-hidden="true"></canvas>
-        <div class="wb-hud">
-          <span class="wb-hud-label" data-story-label>WIDTH</span>
-          <span class="wb-hud-lcd" data-story-lcd>WIDTH 100%</span>
+    <div class="wb-story-stage" data-story-stage>
+      <div class="wb-plate wb-story-panel">
+        <div class="wb-part-road wb-story-road">
+          <div class="wb-part-road-glass"><canvas data-story-canvas aria-hidden="true"></canvas></div>
+          <div class="wb-part-road-lcd wb-hud"><span class="wb-hud-lcd" data-story-lcd>WIDTH 100%</span></div>
         </div>
-        <div class="wb-mini-meter" aria-hidden="true">
-          <svg viewBox="0 0 120 64"><path d="M14 54A52 52 0 0 1 106 54" fill="none" stroke="#3b2c17" stroke-width="2"/><path d="M14 54A52 52 0 0 1 60 2" fill="none" stroke="#b5432c" stroke-width="3" opacity=".8"/><text x="10" y="62">−1</text><text x="56" y="12">0</text><text x="100" y="62">+1</text></svg>
-          <i data-story-needle></i>
-          <small>CORRELATION</small>
-        </div>
-        <div class="wb-level" data-story-level aria-hidden="true">
-          <small>LEVEL</small><span class="wb-level-bar"><i class="raw"></i><i class="out"></i></span><b data-story-level-read>0.0 dB</b>
+        <div class="wb-story-gauges" aria-hidden="true">
+          <div class="wb-level" data-story-level>
+            <small class="wb-plate-label">Level</small>
+            <span class="wb-level-bar"><i class="raw"></i><i class="out"></i></span>
+            <b data-story-level-read>0.0 dB</b>
+          </div>
+          <div class="wb-part-meter wb-story-meter"><i class="wb-part-meter-needle" data-story-needle></i></div>
         </div>
       </div>
     </div>
     <ol class="wb-steps">
       {STEPS.map((s) => (
-        <li class="wb-step" id={s.id} data-step={s.label}>
-          <span class="wb-step-n">{s.n}</span>
-          <p class="wb-step-l">{s.label}</p>
-          <h3>{s.h}</h3>
-          <p>{s.p}</p>
+        <li class="wb-step" id={s.id} data-step={s.label} tabindex="-1">
+          <span class="wb-step-mark" data-step-mark aria-hidden="true"></span>
+          <div class="wb-step-text">
+            <span class="wb-step-n">{s.n}</span>
+            <p class="wb-step-l">{s.label}</p>
+            <h3>{s.h}</h3>
+            <p>{s.p}</p>
+          </div>
         </li>
       ))}
     </ol>
