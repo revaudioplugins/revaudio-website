@@ -1,22 +1,46 @@
 ---
-/** /widebeam console under the face (lane D): the engine, your own track, the key list, the rear-view mirror. */
-import { DASH } from '../../data/widebeam';
+/** /widebeam console (lane D, D.2 = Dan's pick D5 A): a column beside the face at >= 1100 px, a plate under it below.
+ *  Built from the plugin's own parts (DESIGN Law 7, the parts kit: src/styles/widebeam/parts.css): the plate with its
+ *  strap, the road window as the rear-view mirror (the live stereo picture, CORR in the window's own LCD), the plugin's bat
+ *  switch strip as ORIGINAL | WIDE BEAM (= POWER), the MONO cap as MONO CHECK, the preset box's LCD with 44 px keys, a
+ *  VOLUME fader (the page's own monitor level: the plugin has no fader) and the brass engine key with an emerald pilot.
+ *  Behaviour: src/lib/widebeam/console.ts; the engine, the mirror and CORR: sound.ts. */
 ---
-<div class="wb-console" data-reveal="fade">
-  <div class="wb-transport">
-    <button type="button" class="rv-btn wb-engine" data-wb-play data-wb-demo aria-pressed="false"><span class="wb-key" aria-hidden="true"></span><span data-face>Start the engine</span></button>
-    <label class="rv-btn rv-btn--ghost wb-file">
-      <input type="file" accept="audio/*" data-wb-file />
-      <span>Use your own track</span>
-    </label>
-    <p class="wb-fine wb-file-note">{DASH.fileNote}</p>
-    <p class="wb-msg" data-wb-msg role="status" aria-live="polite">{DASH.idle}</p>
-    <ul class="wb-keys" aria-label="Keyboard shortcuts">
-      <li><kbd>H</kbd> high beam</li><li><kbd>M</kbd> mono</li><li><kbd>S</kbd> side</li><li><kbd>P</kbd> power</li><li><kbd>[</kbd><kbd>]</kbd> presets</li>
-    </ul>
+<div class="wb-con wb-plate wb-plate--strap" data-wb-console>
+  <div class="wb-con-mirror wb-mirror">
+    <div class="wb-part-road wb-con-road">
+      <div class="wb-part-road-glass wb-con-glass"><canvas data-wb-scope aria-hidden="true"></canvas></div>
+      <p class="wb-part-road-lcd wb-con-corr"><span>CORR <b data-wb-corr>--</b></span></p>
+    </div>
+    <p class="wb-plate-label wb-con-label">Rear view · stereo</p>
   </div>
-  <figure class="wb-mirror">
-    <canvas data-wb-scope aria-hidden="true"></canvas>
-    <figcaption><span>REAR VIEW · STEREO IMAGE</span><span>CORR <b data-wb-corr>--</b></span></figcaption>
-  </figure>
+
+  <div class="wb-con-row">
+    <div class="wb-con-ab" role="group" aria-label="Before and after">
+      <span class="wb-con-bat" aria-hidden="true" data-wb-bat><span class="wb-con-bat-strip"></span></span>
+      <button type="button" class="wb-con-ab-key wb-con-ab-key--on" data-wb-ab="on" data-wb-demo aria-pressed="true"><span class="wb-plate-label">Wide Beam</span></button>
+      <button type="button" class="wb-con-ab-key wb-con-ab-key--off" data-wb-ab="off" data-wb-demo aria-pressed="false"><span class="wb-plate-label">Original</span></button>
+    </div>
+    <button type="button" class="wb-con-mono" data-wb-mono-check data-wb-demo aria-pressed="false">
+      <span class="wb-con-cap" aria-hidden="true"><span class="wb-part-cap"></span></span>
+      <span class="wb-plate-label">Mono check</span>
+    </button>
+  </div>
+
+  <div class="wb-con-preset">
+    <p class="wb-plate-label wb-con-k" id="wb-con-preset-k">Preset</p>
+    <div class="wb-con-lcd" role="group" aria-labelledby="wb-con-preset-k">
+      <button type="button" class="wb-con-step" data-wb-step="-1" data-wb-demo aria-label="Previous preset"><svg viewBox="0 0 9 16" aria-hidden="true"><path d="M7.5 1.5L1.5 8l6 6.5" /></svg></button>
+      <span class="wb-con-name" data-wb-preset-name>DEFAULT</span>
+      <button type="button" class="wb-con-step" data-wb-step="1" data-wb-demo aria-label="Next preset"><svg viewBox="0 0 9 16" aria-hidden="true"><path d="M1.5 1.5L7.5 8l-6 6.5" /></svg></button>
+    </div>
+  </div>
+
+  <div class="wb-con-vol">
+    <label class="wb-plate-label wb-con-k" for="wb-con-volume">Volume</label>
+    <input class="wb-con-fader" id="wb-con-volume" type="range" min="0" max="100" step="1" value="80" data-wb-volume aria-valuetext="-3.9 dB" />
+  </div>
+
+  <button type="button" class="rv-btn wb-engine wb-con-key" data-wb-play data-wb-demo><span class="wb-key" aria-hidden="true"><i></i></span><span data-face>Start the engine</span></button>
+  <span class="sr-only" data-wb-coach aria-live="polite"></span>
 </div>
