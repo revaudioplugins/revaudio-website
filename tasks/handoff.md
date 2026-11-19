@@ -46,18 +46,32 @@ Files: `src/lib/widebeam/{intro,init,face,story}.ts`, `src/styles/widebeam.css`,
   partner records the film), P5 A ("Mac VST3 · AU · Windows VST3", the build guards the Windows flag).
 - **Build started the same day:** `origin/main` merged in (only this file clashed; `/widebeam` is still excluded in
   both popups). Lanes and gates as in the plan.
-- **Build state, 2026-11-18 ~23:30 (all local on `feat/widebeam-page`, NOT pushed):**
+- **Build state, updated 2026-11-20 ~01:45 (all local on `feat/widebeam-page`, NOT pushed):**
   - Stage 1 committed: `be6153d` the split into one file set per lane (196/196 shots pixel-identical, every behaviour
     check the same), `49a9976` the parts kit cut from the plugin's photo (`tools/widebeam-parts/`), `0c0a6f8` DESIGN.md
     §7 records Dan's D8 B exception.
   - Stage 2 committed: `607fb1f` the data contract + honest words + final order + tokens (build green, honesty greps
     clean, every behaviour change explained), `a7d186f` the plate label on the shared serif tokens.
-  - Stage 3 RUNNING (Workflow `wf_123ce5da-cd1`): five lanes in their own worktrees, each cut from `a7d186f`:
-    `.claude/worktrees/wb-lane-{h,d,s,a,t}` on branches `wb/lane-{h,d,s,a,t}`, dev servers 4513-4517 (each with its own
-    `node_modules` dir of links, so the `.vite` / `.astro` caches are private). Nothing in them is committed yet.
-  - Stage 4 (next): commit each lane by path, merge the five branches in a temp worktree, build, ff this branch; then
-    every gate (`run-gates.sh`), the timing gates one at a time on a quiet machine, bug-hunt rounds until dry, H.5
-    (the social card), and a review bench for Dan.
+  - Stage 3 DONE and merged, 2026-11-20 ~01:20: five lanes built in their own worktrees
+    (`.claude/worktrees/wb-lane-{h,d,s,a,t}`, branches `wb/lane-{h,d,s,a,t}`), each committed by path; octopus merge
+    `7b06e2b` (no file touched by two lanes), build green. Lane servers 4513-4517 stopped. The lane worktrees and
+    `wb-base` (detached at `d76c750`) stay until stage 4 ends, then go.
+    - Stage 3's adversarial checkers for the hero, the dash and the glove box / road / manual never finished (sleep, then
+      the account limit); stage 4's hunt has three lenses that re-check those lanes' own claims.
+  - Stage 4 RUNNING (Workflow `wf_34e21857-e42`, Pit Wall http://127.0.0.1:8795, `caffeinate` 24 h): the lanes' 27
+    requests + 11 two-team checks + the social card; every gate on a production preview; timing on a quiet machine
+    (before and after the hunt); nine bug-hunt lenses with a skeptic per finding, until a round finds nothing above low;
+    then the final build, gates, house specs, the gate scripts copied to `tools/widebeam-gates/`. All agents Opus. A dead
+    agent stops the run: resume it with `resumeFromRunId`. Its inputs: scratchpad `team/build/stage4-inputs.json`.
+    G1 (the lanes' pixel isolation) is retired after the merge.
+  - Calls made for Dan (he can veto any): HIGH BEAM at the plugin's amount (0.5 at REACH 100); the level follows the
+    plugin's own auto-gain (CRUISE law), so some sources read up to ~1.5 dB off in A/B, as in the plugin; the portrait
+    film's short-screen limits stay; the phone bar's key goes forward to the closer's form from halfway down; "SLIDE
+    WIDTH RIGHT" as the coach's first line on touch screens.
+  - Open for Dan: the four demo clips by ear (vocal, guitar, pad, full mix, cut from Yoni's renders already live on
+    /revfx, /radio-roulette, /gas; no licence note was found for the loops underneath) and the review page after stage 4.
+  - For Yoni (a note): in headless Chrome the AudioContext clock stays near 0, so the page's level checks are offline
+    renders of its own engine, not real-time measures.
   - The gate kit and the stage scripts live in the session scratchpad (lost on a reboot); stage 4 copies the gate
     scripts into the repo. Dan's stills page of the state after stage 2: https://claude.ai/artifact/2b4CpXc2DCwT9suoVRHcfp
   - Owed by others, unchanged: Gil (Paddle price, licence worker + hub line, signed builds on R2, the trial download,
