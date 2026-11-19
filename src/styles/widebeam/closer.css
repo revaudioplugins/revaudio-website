@@ -93,10 +93,14 @@
 
 /* ---------- the owner's card (Specs): cream stock, oxblood band, Courier values (the plugin's INFO card) ---------- */
 .wb-spec-card {
-  position: relative; margin: 4px 0 14px; padding: 0 16px 10px; border-radius: 3px; color: #2c2218;
-  background: linear-gradient(172deg, #efe3c8, #e3d4b3 55%, #d8c7a3);
-  border-top: 6px solid #5c2a2a;
-  box-shadow: 0 1px 0 rgba(255, 250, 235, .5) inset, 0 10px 24px rgba(8, 6, 4, .55), 0 2px 4px rgba(8, 6, 4, .5);
+  position: relative; margin: 4px 0 14px; padding: 6px 16px 10px; border-radius: 3px; color: #2c2218;
+  /* the plugin's own band (WideBeam Source/ui/cards.css .ic-band: 6 px, its oxblood gradient) drawn as a layer, as the
+     plugin does, not as a border; then the stock's highlight line under it, then the cream stock */
+  background:
+    linear-gradient(#6a3333, #5c2a2a 55%, #4d2222) 0 0 / 100% 6px no-repeat,
+    linear-gradient(rgba(255, 250, 235, .5), rgba(255, 250, 235, .5)) 0 6px / 100% 1px no-repeat,
+    linear-gradient(172deg, #efe3c8, #e3d4b3 55%, #d8c7a3);
+  box-shadow: 0 10px 24px rgba(8, 6, 4, .55), 0 2px 4px rgba(8, 6, 4, .5);
 }
 .wb-spec-card-title {
   margin: 0; padding: 10px 0 6px; font-family: var(--wb-engrave-font); font-variant: small-caps; letter-spacing: .14em; font-size: 1rem; color: #7d2b22;
