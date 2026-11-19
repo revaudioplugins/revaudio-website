@@ -1,35 +1,70 @@
 ---
-/** /widebeam hero (lane H): the night road, the intro film (public/widebeam/intro-*.mp4), Skip / Replay, the wordmark. */
+/**
+ * /widebeam hero (lane H): the night road, the intro film, Skip / Replay, and "the readings" (DESIGN.md §7, Dan's
+ * picks D1 B, D2 B, D3 B): the lockup in the plate's satin brass, ONE line, ONE brass shine key, the signature.
+ *
+ * The film's <source>s (the order is the rule; intro.ts picks, drops and restores these nodes, and never writes a
+ * file name, so assetver's ?v= stamp on them holds):
+ *   1-2  an upright phone (D8 B, DESIGN.md §7's one exception): the portrait cut that follows the car, 680 px of the
+ *        1080p master, so any hero box up to 680:1080 is scaled by height and shows the centre (390x786: the 526 px
+ *        Dan picked). It starts and ends on the frame's centre, so the shared poster and the road still line up.
+ *   3    a narrow landscape screen: the 720 file.   4  everything else: the 1080 file.
+ *   5    the 720 file again, unconditional and last: a laptop on a slow line (intro.ts drops every data-wb-tier="hi"
+ *        source when navigator.connection.downlink < 3), and the last fallback; an error on it = no film at all.
+ * data-wb-frame = the part of the 1920x1080 master the file shows (x y w h), so night.ts maps the tail lights onto it.
+ */
 import { getImage } from 'astro:assets';
 import introPosterImg from '../../assets/widebeam/intro-poster.jpg';
 import introEndImg from '../../assets/widebeam/intro-end.jpg';
+import { widebeam, askFor, heroLine, signature, type WidebeamPhase } from '../../data/widebeam';
 
 const introPoster = await getImage({ src: introPosterImg, format: 'webp', width: 1280, quality: 70 });
 // the hero's road after the intro: the video's last frame with the car painted out, so the look never changes
 const roadStill = await Promise.all([1280, 1920].map((width) => getImage({ src: introEndImg, format: 'webp', width, quality: 72 })));
 
+// the phase drives the key (askFor). The shell passes nothing (the data file's phase); a fixture page may pass
+// phase="open" to render the open-phase hero without touching the data file.
+interface Props { phase?: WidebeamPhase }
+const phase: WidebeamPhase = Astro.props.phase ?? widebeam.phase;
+const trialKey = phase === 'preopen' ? null : askFor(phase).key;
+
+// the line breaks between its sentences, never inside one (a 360 px phone: "WIDER MIX." / "BASS DEAD CENTRE.")
+const LINE = heroLine.split(/(?<=\.)\s+/);
 const WORD = ['W', 'I', 'D', 'E', ' ', 'B', 'E', 'A', 'M'];
+const PORTRAIT = '(max-aspect-ratio: 3/5)';
+const FULL_FRAME = '0 0 1920 1080';
+const PORTRAIT_FRAME = '620 0 680 1080';
 ---
 <!-- ============ HERO: the night road ============ -->
 <section class="wb-hero" aria-labelledby="wb-title">
   <img class="wb-still" src={roadStill[1].src} srcset={`${roadStill[0].src} 1280w, ${roadStill[1].src} 1920w`} sizes="100vw" alt="" aria-hidden="true" decoding="async" fetchpriority="high" />
   <canvas class="wb-night" data-wb-night aria-hidden="true"></canvas>
   <video class="wb-intro" data-wb-intro muted playsinline preload="none" poster={introPoster.src} aria-hidden="true" tabindex="-1">
-    <source src="/widebeam/intro-720.mp4" type="video/mp4" media="(max-width: 900px)" />
-    <source src="/widebeam/intro-1080.mp4" type="video/mp4" />
+    <source src="/widebeam/intro-portrait-1080.mp4" type="video/mp4" media={PORTRAIT} data-wb-frame={PORTRAIT_FRAME} data-wb-tier="hi" />
+    <source src="/widebeam/intro-portrait-720.mp4" type="video/mp4" media={PORTRAIT} data-wb-frame={PORTRAIT_FRAME} />
+    <source src="/widebeam/intro-720.mp4" type="video/mp4" media="(max-width: 900px)" data-wb-frame={FULL_FRAME} />
+    <source src="/widebeam/intro-1080.mp4" type="video/mp4" data-wb-frame={FULL_FRAME} data-wb-tier="hi" />
+    <source src="/widebeam/intro-720.mp4" type="video/mp4" data-wb-frame={FULL_FRAME} />
   </video>
   <button type="button" class="wb-skip" data-wb-skip>Skip intro</button>
   <button type="button" class="wb-replay" data-wb-replay hidden aria-label="Replay the intro"><span aria-hidden="true">↺</span> Replay</button>
   <div class="wb-hero-inner" data-wb-hero-inner data-wb-cta>
-    <h1 id="wb-title" class="wb-mark" data-wb-mark>
+    <h1 id="wb-title" class="wb-mark" data-wb-mark tabindex="-1">
       <span class="sr-only">WIDE BEAM</span>
       <span class="wb-mark-row" aria-hidden="true">{WORD.map((c) => (c === ' ' ? <i class="wb-sp"></i> : <i>{c}</i>))}</span>
     </h1>
     <p class="wb-sub" data-wb-hero-in><span>STEREO WIDTH CONTROL</span></p>
-    <p class="wb-lede" data-wb-hero-in>Open the road. Keep the bass on the centre line. A stereo widener fronted by a pair of classic headlights: the wider you go, the brighter they burn.</p>
-    <div class="wb-ctas" data-wb-hero-in>
-      <a class="rv-btn rv-btn--lg rv-btn--shine" href="#wb-drive" data-wb-start data-wb-demo><span data-face>Take it for a drive</span></a>
-      <a class="rv-btn rv-btn--lg rv-btn--ghost" href="#wb-story">How it works ↓</a>
+    <p class="wb-hero-line" data-wb-hero-in>{LINE.map((s, i) => <>{i > 0 && ' '}<span>{s}</span></>)}</p>
+    <div class="wb-hero-keys" data-wb-hero-in>
+      {trialKey ? (
+        <>
+          <a class="rv-btn rv-btn--lg rv-btn--shine" href="#wb-get" data-wb-trial><span data-face>{trialKey}</span></a>
+          <a class="wb-hero-drive" href="#wb-drive" data-wb-start data-wb-demo data-wb-drive-key>Take it for a drive</a>
+        </>
+      ) : (
+        <a class="rv-btn rv-btn--lg rv-btn--shine" href="#wb-drive" data-wb-start data-wb-demo data-wb-drive-key><span data-face>Take it for a drive</span></a>
+      )}
     </div>
+    <p class="wb-hero-sig" data-wb-hero-in><span>{signature}</span></p>
   </div>
 </section>

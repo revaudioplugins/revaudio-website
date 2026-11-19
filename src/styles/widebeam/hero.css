@@ -1,62 +1,156 @@
-/* /widebeam hero: the night road, the intro film, the wordmark (lane H). */
+/* /widebeam hero: the night road, the intro film, and the readings (lane H; DESIGN.md §7, Dan's picks D1 B, D2 B, D3 B). */
 /* ---------- HERO ---------- */
-.wb-hero { position: relative; min-height: min(calc(100svh - var(--nav-h, 44px)), 980px); display: grid; justify-items: center; align-items: start; overflow: hidden; isolation: isolate; }
-.wb-still { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; display: block; background: #07080a; }
-.wb-night { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; display: block; pointer-events: none; }
-.wb-hero-inner { position: relative; text-align: center; padding: clamp(48px, 8vh, 110px) 16px 140px; max-width: 1100px; } /* the title sits in the sky; the road below the horizon (64 %) stays clear for the car */
+.wb-hero {
+  position: relative; display: grid; justify-items: center; align-items: start; overflow: hidden; isolation: isolate;
+  min-height: min(calc(100svh - var(--nav-h, 44px) - var(--sale-h, 0px)), 980px); /* a sale strip above the nav takes its share (hero-14) */
+}
+/* the road under the column: the still, the canvas and the film fade into the page over the last fifth (art-04), so
+   the plate below starts on the same night, not on a cut */
+.wb-still, .wb-night, .wb-intro {
+  position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; display: block;
+  -webkit-mask-image: linear-gradient(180deg, #000 78%, transparent); mask-image: linear-gradient(180deg, #000 78%, transparent);
+}
+.wb-still { object-fit: cover; background: #07080a; }
+.wb-night { pointer-events: none; }
+/* the column sits in the sky: its bottom stays >= 40 px above the car's vanishing point (art-03, measured at
+   1141x636, 1280x665, 1440x900, 1728x1000) */
+.wb-hero-inner { position: relative; text-align: center; padding: clamp(18px, calc(8vh - 30px), 110px) 16px 120px; max-width: 1100px; }
 
-/* the wordmark: engraved brass that opens with WIDTH */
+/* ---------- the lockup: the plate's satin brass (D3 B) ----------
+   Three tones sampled from the plugin's plate letters (5th / 50th / 95th percentile: #978366 / #ceb088 / #e3d1b0), lit
+   from the upper left. The plate's cut lives on the ROW, not on the letters, so the reveal's per-letter blur can't wipe
+   it (hero-01): a lit upper-left lip, a contact shadow, a short soft drop, and the warm glow that grows with WIDTH. */
 .wb-mark { margin: 0; line-height: 1; font-weight: 400; }
+.wb-mark:focus { outline: none; } /* focused by script after Skip (hero-10), never by Tab */
 .wb-mark-row {
   display: flex; justify-content: center; align-items: baseline;
   gap: calc(.01em + var(--wb-w) * .2em);
   font-family: var(--serif); font-size: clamp(3rem, 12.5vw, 10.5rem);
   transition: gap .9s cubic-bezier(.16, 1, .3, 1);
+  filter: drop-shadow(-.6px -.6px 0 rgba(255, 240, 212, .3)) drop-shadow(1px 3px 1px rgba(8, 6, 4, .85)) drop-shadow(0 6px 14px rgba(4, 3, 2, .55))
+    drop-shadow(0 0 calc(10px + var(--wb-w) * 34px) rgba(255, 214, 140, calc(.08 + var(--wb-w) * .3)));
 }
 .wb-mark-row i {
   font-style: normal; display: inline-block;
-  background: linear-gradient(176deg, #fff5d8 0%, var(--brass-hi) 22%, var(--brass) 48%, #7a5a2c 62%, #d6b676 80%, #8c6a36 100%);
+  background: linear-gradient(160deg, #e3d1b0 0%, #ceb088 50%, #978366 100%);
   -webkit-background-clip: text; background-clip: text; color: transparent;
-  filter: drop-shadow(0 2px 0 rgba(10, 8, 6, .9)) drop-shadow(0 0 calc(10px + var(--wb-w) * 34px) rgba(255, 214, 140, calc(.08 + var(--wb-w) * .3)));
 }
 .wb-mark-row .wb-sp { width: .32em; }
-.wb-sub { display: flex; align-items: center; justify-content: center; white-space: nowrap; font-family: var(--serif); letter-spacing: .62em; font-size: clamp(.68rem, 1.6vw, 1rem); color: var(--ivory-2); margin: 12px auto 0; max-width: none; }
-.wb-sub span { margin-right: -.62em; } /* cancels the last letter's trailing letter-spacing, so the words sit dead centre */
-.wb-sub::before, .wb-sub::after { content: ''; flex: 0 0 auto; width: clamp(24px, 8vw, 110px); height: 1px; margin: 0 1.2em; background: linear-gradient(90deg, transparent, var(--brass)); }
-.wb-sub::after { background: linear-gradient(90deg, var(--brass), transparent); }
-.wb-lede { max-width: 50ch; margin: 18px auto 22px; color: var(--ivory-2); font-size: clamp(1.02rem, 1.5vw, 1.2rem); line-height: 1.6; text-shadow: 0 2px 14px rgba(5, 5, 6, .9); }
-.wb-ctas { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+/* the plate's sub line: a wide geometric sans between solid brass rules. Futura on a Mac, Century Gothic on most PCs,
+   the house Inter anywhere else (no web font: a licence question, see the lane H report) */
+.wb-sub {
+  display: flex; align-items: center; justify-content: center; white-space: nowrap; margin: 12px auto 0; max-width: none;
+  font-family: Futura, 'Century Gothic', 'Avenir Next', var(--font-body); font-weight: 500; letter-spacing: .42em;
+  font-size: clamp(.75rem, 1.6vw, 1rem); color: #d6c39c; filter: drop-shadow(0 1px 1px rgba(6, 5, 4, .9));
+}
+.wb-sub span { margin-right: -.42em; } /* cancels the last letter's trailing letter-spacing, so the words sit dead centre */
+.wb-sub::before, .wb-sub::after {
+  content: ''; flex: 0 0 auto; width: clamp(28px, 9vw, 120px); height: 2px; margin: 0 1.2em;
+  background: linear-gradient(180deg, #e3d1b0, #978366); box-shadow: 0 1px 1px rgba(6, 5, 4, .8);
+}
 
-/* the intro video over the road, and its dissolve into it */
-.wb-intro { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; background: #07080a; transition: opacity 1s ease, visibility 0s; }
-.wb-intro.is-gone { opacity: 0; visibility: hidden; transition: opacity .9s ease, visibility 0s .9s; }
+/* ---------- the line, the key, the signature (D1 B, D2 B) ---------- */
+.wb-hero-line {
+  margin: 12px auto 0; max-width: none; text-wrap: balance;
+  font-family: var(--font-display); font-weight: 400; font-size: clamp(1.6rem, 2.7vw, 2.4rem); line-height: 1.02; letter-spacing: .05em; color: #f6c85d;
+  filter: drop-shadow(0 1px 0 rgba(8, 6, 4, .85)) drop-shadow(0 0 10px rgba(5, 5, 6, .55)) drop-shadow(0 4px 10px rgba(4, 3, 2, .5));
+}
+.wb-hero-line span { display: inline-block; }
+.wb-hero-keys { margin-top: 14px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px 22px; }
+/* at 'open' the trial key takes the shine and the drive steps down to a quiet link in the same row */
+.wb-hero-drive {
+  font-family: var(--font-body); font-weight: 600; font-size: 1rem; color: var(--ivory); text-decoration: underline;
+  text-decoration-color: rgba(201, 163, 92, .6); text-underline-offset: 4px; padding: 10px 2px;
+  text-shadow: 0 1px 2px rgba(6, 5, 4, .9), 0 0 10px rgba(5, 5, 6, .7);
+}
+.wb-hero-drive:focus-visible { outline: 2px solid var(--brass-hi); outline-offset: 3px; border-radius: 4px; }
+@media (hover: hover) and (pointer: fine) { .wb-hero-drive:hover { text-decoration-color: var(--brass-hi); } }
+/* the signature: Yellowtail under the key, offset right and tilted, as GAS 2's "Fill it up." (DESIGN.md §3, §7) */
+.wb-hero-sig { margin: -4px auto 0; width: max-content; max-width: none; font-family: 'Yellowtail', cursive; font-size: 1.85rem; line-height: 1.1; color: #f6c85d; }
+.wb-hero-sig span {
+  display: inline-block; transform: translateX(64px) rotate(-6deg);
+  filter: drop-shadow(0 1px 0 rgba(8, 6, 4, .85)) drop-shadow(0 0 12px rgba(255, 190, 90, .22)) drop-shadow(0 3px 8px rgba(4, 3, 2, .55));
+}
+
+/* a short laptop (Dan's 1141x636, 1280x665): the lockup about 15 % smaller so the column clears the car (art-d02) */
+@media (max-height: 700px) and (min-width: 561px) {
+  .wb-mark-row { font-size: calc(clamp(3rem, 12.5vw, 10.5rem) * .85); }
+}
+
+/* ---------- the intro film over the road, and its dissolve into it ----------
+   On the film's last frame the canvas lights sit on the film's own lamps, so the film goes in .3 s (the hand-off,
+   night.ts); a skip or a bail fades in .4 s. */
+.wb-intro { object-fit: cover; background: #07080a; transition: opacity .3s ease, visibility 0s; }
+.wb-intro.is-gone { opacity: 0; visibility: hidden; transition: opacity .3s ease, visibility 0s .3s; }
 .is-intro-fast .wb-intro.is-gone { transition-duration: .4s, 0s; transition-delay: 0s, .4s; }
+
+/* Skip / Replay: the hero's top right, out of the car's path and never under the cookie banner (hero-d03) */
 .wb-skip, .wb-replay {
-  position: absolute; bottom: 26px; z-index: 2; padding: .55em 1.1em; border-radius: 999px; cursor: pointer;
+  position: absolute; top: 14px; right: max(16px, calc(env(safe-area-inset-right, 0px) + 8px)); z-index: 2;
+  padding: .55em 1.1em; border-radius: 999px; cursor: pointer;
   font-family: var(--wb-label); font-weight: 500; font-size: .76rem; letter-spacing: .18em; text-transform: uppercase; color: var(--ivory-2);
   background: rgba(10, 9, 8, .45); border: 1px solid rgba(201, 163, 92, .35); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
   transition: color .2s, border-color .2s, opacity .4s;
 }
-.wb-skip:hover, .wb-replay:hover { color: var(--ivory); border-color: var(--brass-hi); }
+@media (hover: hover) and (pointer: fine) { .wb-skip:hover, .wb-replay:hover { color: var(--ivory); border-color: var(--brass-hi); } }
 .wb-skip:focus-visible, .wb-replay:focus-visible { outline: 2px solid var(--brass-hi); outline-offset: 3px; }
-.wb-skip { left: 50%; transform: translateX(-50%); display: none; }
+.wb-skip { display: none; }
 .wb-hero.is-intro .wb-skip { display: inline-flex; animation: wb-in .6s 1.2s both; }
-.wb-replay { left: 50%; transform: translateX(-50%); }
+.wb-hero.is-intro .wb-skip:focus-visible { animation: none; } /* reached by keyboard (or Replay): shown at once */
 .wb-replay[hidden] { display: none; }
 @keyframes wb-in { from { opacity: 0; } }
-@media (scripting: enabled) { .wb-hero:not(.is-shown) .wb-hero-inner { visibility: hidden; } }
+
+/* the title waits for the script's reveal; if no script ever runs (blocked, or it throws before the intro takes
+   charge) a CSS-only failsafe shows it at 8.5 s (hero-d01). `is-run` = intro.ts is in charge and keeps its own
+   deadlines (the title by 6.5 s after play(), or at once on a bail). */
+@media (scripting: enabled) {
+  .wb-hero:not(.is-shown) .wb-hero-inner { visibility: hidden; animation: wb-failsafe 0s 8.5s forwards; }
+  .wb-hero.is-run:not(.is-shown) .wb-hero-inner { animation: none; }
+}
+@keyframes wb-failsafe { to { visibility: visible; } }
 @media (scripting: none) { .wb-intro, .wb-skip, .wb-replay { display: none; } }
 .wb-hero.is-hush .wb-hero-inner { opacity: 0 !important; transition: opacity .3s; }
 
-@media (max-width: 560px) {
-  .wb-hero-inner { padding: 80px 16px 120px; }
-  .wb-mark-row { font-size: clamp(2rem, 10.6vw, 4rem); gap: calc(var(--wb-w) * .08em); }
-  .wb-hero-inner { overflow: hidden; }
-  .wb-sub { letter-spacing: .4em; }
-  .wb-sub span { margin-right: -.4em; }
-  .wb-sub::before, .wb-sub::after { width: 18px; margin: 0 .6em; }
-  .wb-skip, .wb-replay { bottom: 74px; } /* above the sound pill and the cart button */
+/* ---------- phones (upright) and narrow portrait screens ---------- */
+/* the full-width lockup leaves no room beside it: Skip / Replay get their own band above it */
+@media (orientation: portrait) and (max-width: 900px) {
+  .wb-hero-inner { padding-top: 64px; }
 }
+@media (max-width: 560px) {
+  .wb-hero-inner { padding: 60px 16px 120px; overflow: hidden; }
+  /* the lockup across the column (art-22): WIDE BEAM's glyph run is ~6.3 em at this gap, so the size is the column
+     width over 7 (room for the gap at WIDTH 200, --wb-w 1) */
+  .wb-mark-row { font-size: min(calc((100vw - 32px) / 6.9), 4.4rem); gap: calc(var(--wb-w) * .08em); }
+  .wb-sub { letter-spacing: .32em; } /* 13 px from base.css's phone floor (hero-15) */
+  .wb-sub span { margin-right: -.32em; }
+  .wb-sub::before, .wb-sub::after { width: 24px; margin: 0 .7em; }
+  .wb-hero-line { font-size: 2.05rem; margin-top: 16px; }
+  .wb-hero-keys { margin-top: 20px; }
+  .wb-hero-sig { margin-top: 6px; font-size: 1.9rem; }
+  .wb-hero-sig span { transform: translateX(36px) rotate(-6deg); }
+}
+
+/* ---------- a phone held sideways: tighter, and the key on the first screen (mobile-13) ---------- */
+@media (orientation: landscape) and (max-height: 500px) {
+  .wb-hero-inner { padding: 10px 16px 24px; }
+  .wb-mark-row { font-size: min(12.5vw, 15vh); }
+  .wb-sub { margin-top: 6px; font-size: 13px; }
+  .wb-hero-line { margin-top: 8px; font-size: 1.45rem; }
+  .wb-hero-keys { margin-top: 10px; }
+  .wb-hero-keys .rv-btn--lg { --rb-h: 52px; --rb-fs: 18px; --rb-px: 26px; --rb-r: 14px; }
+  .wb-hero-sig { margin-top: -6px; font-size: 1.6rem; }
+}
+
+/* ---------- forced colours (Windows High Contrast): the lockup reads as letters, not tiles (art-d04) ---------- */
+@media (forced-colors: active) {
+  /* the road photo behind the words goes: the hero is the system's own Canvas, so CanvasText reads in a light or a
+     dark contrast theme alike */
+  .wb-still, .wb-night, .wb-intro { display: none; }
+  .wb-mark-row, .wb-sub, .wb-hero-line, .wb-hero-sig span { filter: none; }
+  .wb-mark-row i { forced-color-adjust: none; background: none; -webkit-text-fill-color: CanvasText; color: CanvasText; }
+  .wb-sub::before, .wb-sub::after { background: CanvasText; box-shadow: none; }
+}
+html.hc .wb-page .wb-mark-row i { background: none; -webkit-text-fill-color: var(--brass-hi); color: var(--brass-hi); }
 
 @media (prefers-reduced-motion: reduce) {
   .wb-mark-row { transition: none; }
