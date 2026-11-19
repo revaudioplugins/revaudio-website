@@ -15,8 +15,14 @@ html:has(.wb-page) {
 body:has(.wb-page) .site-footer { margin-bottom: var(--wb-banner, 0px); }
 
 /* ---------- the SOUND key ---------- */
+/* .wb-sound-home is the key's resting corner without a transition (furniture.ts adds it next to the key and reads it):
+   while the key glides on `bottom` (the bar leaving at the footer), the key's own computed bottom is a value in
+   between, and a ride measured from it left the key over the footer's links once the glide ended. The two share their
+   right / bottom here and in the round-key block below. */
+.wb-sound, .wb-sound-home { position: fixed; right: max(18px, env(safe-area-inset-right, 0px)); bottom: calc(18px + var(--wb-edge, 0px)); }
+.wb-sound-home { width: 0; height: 0; visibility: hidden; pointer-events: none; }
 .wb-sound {
-  position: fixed; right: max(18px, env(safe-area-inset-right, 0px)); bottom: calc(18px + var(--wb-edge, 0px)); z-index: 50;
+  z-index: 50;
   display: inline-flex; align-items: center; gap: .7em; padding: .6em 1em .6em .85em;
   border-radius: 999px; cursor: pointer; font-family: var(--wb-label); font-weight: 500; font-size: .76rem; letter-spacing: .16em; text-transform: uppercase;
   color: var(--ivory-2); background: rgba(14, 12, 10, .72); border: 1px solid rgba(201, 163, 92, .35);
@@ -46,9 +52,11 @@ body:has(.wb-page) .site-footer { margin-bottom: var(--wb-banner, 0px); }
 .wb-sound .wb-eq i { height: 12px; transform-origin: 50% 100%; transform: scaleY(.25); }
 @keyframes wb-eq { from { transform: scaleY(.25); } to { transform: scaleY(1); } }
 
-/* phones: a 44 px round key, the EQ bars as its mark; the words stay in the DOM as its name (clipped, not removed) */
-@media (max-width: 700px) {
-  .wb-sound { right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + var(--wb-edge, 0px)); width: 44px; height: 44px; padding: 0; gap: 0; justify-content: center; }
+/* phones, and any touch screen (a phone held sideways is 844 px wide: the 115x36 pill was under the 44 px target): a
+   44 px round key, the EQ bars as its mark; the words stay in the DOM as its name (clipped, not removed) */
+@media (max-width: 700px), (pointer: coarse) {
+  .wb-sound, .wb-sound-home { right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + var(--wb-edge, 0px)); }
+  .wb-sound { width: 44px; height: 44px; padding: 0; gap: 0; justify-content: center; }
   .wb-sound .wb-eq { height: 14px; gap: 3px; }
   .wb-sound .wb-eq i { width: 3px; height: 14px; }
   .wb-sound-face { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
@@ -78,6 +86,13 @@ body:has(#cookie-banner.cb--visible) .wb-bar { transform: translateY(105%); visi
 @media (min-width: 600px) {
   .wb-bar { align-items: center; }
   .wb-bar-key { width: min(100%, 420px); }
+}
+/* a phone held sideways (a 390 px tall screen): one slim row, the key and its line side by side. Stacked it was 86 px,
+   22 % of the screen under a 47 px nav */
+@media (max-width: 900px) and (orientation: landscape) and (max-height: 500px) {
+  .wb-bar { flex-direction: row; justify-content: center; gap: 1rem; padding-top: .35rem; padding-bottom: calc(.35rem + env(safe-area-inset-bottom, 0px)); }
+  .wb-bar-key { width: auto; flex: none; }
+  .wb-bar-micro { min-width: 0; text-align: left; }
 }
 
 /* ---------- the cart FAB (<= 700 px, the house CartFab) on /widebeam ---------- */

@@ -16,8 +16,10 @@
  * The cart FAB (<= 700 px, the house CartFab): rides the stack; off the edge while the cart is empty (CSS), and over a
  *   watched block, an ask or the footer (html.wb-fab-aside).
  * The phone bar ([data-wb-bar], <= 900 px): askFor().sticky; away while any [data-wb-cta], the manual
- *   ([data-wb-manual]) or the footer is on screen, while an email field has focus, after a sign-up
- *   (html[data-wb-joined], capture.ts) and (CSS) while the cookie banner is up.
+ *   ([data-wb-manual]) or the footer is on screen (a sign-up form counts while its key is whole on screen or any of its
+ *   email field is: the closer's field enters from the bottom edge, where the bar sits), while an email field has
+ *   focus, after a sign-up (html[data-wb-joined], capture.ts) and (CSS) while the cookie banner is up. Its key goes to
+ *   the nearer sign-up form (the plate's or the closer's).
  *
  * API for the other lanes: watch(el) / ctaZone(el) add a block at runtime (safe before init). The markup attributes do
  * the same for what the server renders.
@@ -56,7 +58,7 @@ export function initFurniture(page: HTMLElement, store: Store, reduced: boolean)
     .map((m) => (m.matches(FRAME) ? m : m.querySelector<HTMLElement>(FRAME)))
     .filter((m): m is HTMLElement => !!m);
 
-  let raf = 0, lastDy = 0, lastAside = false;
+  let raf = 0, lastDy = 0, lastAside = false, lastY = scrollY;
   const schedule = () => { if (!raf) raf = requestAnimationFrame(place); };
 
   // ── the stack ──
@@ -104,8 +106,9 @@ export function initFurniture(page: HTMLElement, store: Store, reduced: boolean)
   const observeBar = () => {
     barIo?.disconnect(); hits.clear();
     if (!bar) return;
-    // a sign-up form counts by its key, and only while the key is whole on screen (a key half under the edge is no
-    // ask; the bar carries it there): DriftStickyBar's phone rule
+    // a sign-up form counts by its key while the key is whole on screen (a key half under the edge is no ask; the bar
+    // carries it there: DriftStickyBar's phone rule), and by its email field while any of the field is on screen: the
+    // closer's field enters from the bottom edge, under the bar, and a tap on it landed on the bar's key
     const keyOf = new Map<Element, true>();
     barIo = new IntersectionObserver((entries) => {
       for (const e of entries) {
@@ -114,10 +117,11 @@ export function initFurniture(page: HTMLElement, store: Store, reduced: boolean)
       }
       setBar();
     }, { threshold: [0, 1] });
-    const zones = [...ctas(), ...manuals(), ...(footer ? [footer] : [])].map((z) => {
-      const k = z.matches('form') ? z.querySelector<HTMLElement>('[type="submit"]') : null;
+    const zones = [...ctas(), ...manuals(), ...(footer ? [footer] : [])].flatMap((z) => {
+      if (!z.matches('form')) return [z];
+      const k = z.querySelector<HTMLElement>('[type="submit"]'), f = z.querySelector<HTMLElement>('input[type="email"]');
       if (k) keyOf.set(k, true);
-      return k ?? z;
+      return k || f ? [k, f].filter((x): x is HTMLElement => !!x) : [z];
     });
     zones.forEach((z) => barIo!.observe(z));
   };
@@ -127,10 +131,13 @@ export function initFurniture(page: HTMLElement, store: Store, reduced: boolean)
   new MutationObserver(setBar).observe(html, { attributes: true, attributeFilter: ['data-wb-joined'] });
   window.addEventListener('pageshow', (e) => { if ((e as PageTransitionEvent).persisted) observeBar(); }); // Safari bfcache
   barMq.addEventListener('change', () => { setBar(); setLift(); });
-  // the bar's key: one mover (stop Lenis's own anchor handling), to the plate's form, then the field takes focus
+  // the bar's key: one mover (stop Lenis's own anchor handling), to the NEARER sign-up form (beside the closer it was a
+  // 6,700 px trip back up to the plate), then the field takes focus. Without JS its href goes to the plate.
   const barKey = bar?.querySelector<HTMLAnchorElement>('[data-wb-bar-key]');
   barKey?.addEventListener('click', (e) => {
-    const form = page.querySelector<HTMLElement>('[data-wb-trial]') ?? page.querySelector<HTMLElement>('#wb-get');
+    const away = (f: HTMLElement) => { const r = f.getBoundingClientRect(); return Math.abs(r.top + r.height / 2 - innerHeight / 2); };
+    const form = [...page.querySelectorAll<HTMLFormElement>('form[data-wb-cta]')].filter((f) => !f.hidden)
+      .reduce<HTMLFormElement | null>((a, b) => (!a || away(b) < away(a) ? b : a), null);
     if (!form) return;
     e.preventDefault(); e.stopPropagation();
     const field = form.querySelector<HTMLInputElement>('input[type="email"]');
@@ -140,14 +147,18 @@ export function initFurniture(page: HTMLElement, store: Store, reduced: boolean)
   // ── the SOUND key and the FAB: where they may sit ──
   const overlaps = (a: DOMRect, b: DOMRect, pad = 0) => a.left < b.right + pad && a.right > b.left - pad && a.top < b.bottom + pad && a.bottom > b.top - pad;
   const visibleRect = (el: HTMLElement) => { const r = el.getBoundingClientRect(); return r.height > 0 && r.bottom > 0 && r.top < innerHeight ? r : null; };
+  // the key's resting corner, read from a twin with the key's right / bottom and no transition (furniture.css): the
+  // key's own computed bottom is a value in between while it glides on the stack (the bar leaving at the footer), and
+  // a ride measured from it put the key over the footer's links once the glide ended
+  const homeOf = key ? Object.assign(document.createElement('i'), { className: 'wb-sound-home' }) : null;
+  if (key && homeOf) { homeOf.setAttribute('aria-hidden', 'true'); key.after(homeOf); }
   function place() {
     raf = 0;
-    if (key) {
-      // the key's home: where its CSS puts it, without the ride / aside offset (a rect read mid-glide would lie)
-      const cs = getComputedStyle(key);
+    if (key && homeOf) {
+      // the key's home: where its CSS puts it at rest, without the ride / aside offset or the glide
       const w = key.offsetWidth, h = key.offsetHeight;
-      const right = innerWidth - (parseFloat(cs.right) || 0), bottom = innerHeight - (parseFloat(cs.bottom) || 0);
-      const home = new DOMRect(right - w, bottom - h, w, h);
+      const corner = homeOf.getBoundingClientRect();
+      const home = new DOMRect(corner.right - w, corner.bottom - h, w, h);
       const nav = parseFloat(getComputedStyle(html).getPropertyValue('--nav-h')) || 44;
       const playing = isPlaying() || key.getAttribute('aria-pressed') === 'true';
       // ride: the footer, the focused control
@@ -172,11 +183,16 @@ export function initFurniture(page: HTMLElement, store: Store, reduced: boolean)
         }
       }
       dy = Math.round(dy);
-      const jump = Math.abs(dy - lastDy) > 60 || aside !== lastAside;
-      key.classList.toggle('is-gliding', jump && !reduced);
+      // a ride the scroll made follows it at once: the page under the key moved with the scroll (a glide from the old
+      // place crossed the footer's links after a jump to the end). One the scroll didn't make glides: the stack (the
+      // same .28 s curve as the key's own glide on `bottom`, so riding the footer the two mostly cancel while the bar
+      // leaves), a focused control, stepping aside
+      const scrolled = Math.abs(scrollY - lastY) > 1;
+      const glide = aside !== lastAside || (dy !== lastDy && !scrolled);
+      key.classList.toggle('is-gliding', glide && !reduced);
       key.style.setProperty('--wb-sound-dy', dy + 'px');
       key.classList.toggle('is-aside', aside);
-      lastDy = dy; lastAside = aside;
+      lastDy = dy; lastAside = aside; lastY = scrollY;
     }
     if (fab && fabMq.matches) {
       const cs = getComputedStyle(fab);
@@ -192,6 +208,8 @@ export function initFurniture(page: HTMLElement, store: Store, reduced: boolean)
   }
   addEventListener('scroll', schedule, { passive: true });
   addEventListener('resize', () => { setLift(); schedule(); });
+  // a glide on `bottom` ends after the scroll has stopped: measure once more at rest (the FAB reads its own bottom)
+  for (const el of [key, fab]) el?.addEventListener('transitionend', (e) => { if (e.target === el && e.propertyName === 'bottom') schedule(); });
   onChange(() => schedule());
   // sound.ts sets aria-pressed itself: follow it too (a play / stop from any key)
   if (key) new MutationObserver(schedule).observe(key, { attributes: true, attributeFilter: ['aria-pressed'] });

@@ -4,8 +4,11 @@
  * source). Pre-open the forms post source 'widebeam-notify' to /form-once, which relays it to the list (copy-01).
  *
  * One sign-up is the done state on EVERY surface: each [data-wb-trial] / [data-wb-form] goes, each status line says
- * it, each [data-wb-ask] gets .is-joined, <html> gets data-wb-joined (the phone bar leaves: furniture.ts) and the page
- * hears a 'wb:joined' event (the closer's lamps go to full beam; lane S's line under the manual can listen too).
+ * it, each [data-wb-ask] gets .is-joined and data-wb-done, <html> gets data-wb-joined (the phone bar leaves:
+ * furniture.ts) and the page hears a 'wb:joined' event (the closer's lamps go to full beam).
+ * A [data-wb-ask] with no form in it is a LINE (the one under the manual: "WIDE BEAM isn't out yet ... Email me at
+ * launch"): its words become the done message, since its ask and its link to the plate are spent. A form surface keeps
+ * its markup; its own status line carries the message.
  *
  * Conversion events (guidelines-14): fbq StartTrial + the Google Ads conversion, the house's two guarded lines
  * (TrialPlates / TrialStamp), fire ONLY when the trial gate is wired (the form has data-register-url, i.e.
@@ -27,7 +30,11 @@ export function initCapture(page: HTMLElement) {
       if (s.form) s.form.hidden = true;
       if (s.status) { s.status.textContent = msg; s.status.classList.add('ok'); s.status.classList.remove('err'); }
     }
-    page.querySelectorAll('[data-wb-ask]').forEach((a) => a.classList.add('is-joined'));
+    page.querySelectorAll<HTMLElement>('[data-wb-ask]').forEach((a) => {
+      a.classList.add('is-joined');
+      a.setAttribute('data-wb-done', '');
+      if (!a.querySelector('[data-wb-trial], [data-wb-form]')) a.textContent = msg;
+    });
     document.documentElement.setAttribute('data-wb-joined', '');
     from?.focus({ preventScroll: true });
     page.dispatchEvent(new CustomEvent('wb:joined'));
