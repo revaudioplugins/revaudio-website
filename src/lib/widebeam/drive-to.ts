@@ -5,7 +5,8 @@
  * { align: 'face' })), the glove box cards (lane S: driveTo(dash, { align: 'face', onArrive: () => face.loadPreset(i) })).
  *
  *   align 'face': whatever the target (the #wb-drive section, the dash, the face), the FACE lands centred in the screen
- *     under the nav, measured on its layout box (the dash's rise transform never skews the maths).
+ *     under the nav, measured on its layout box (the dash's rise transform never skews the maths). On a phone held
+ *     upright (the deck, DECK_MQ) it lands at the top instead, 12 px under the nav, so the deck's controls show under it.
  *   align 'top': the target's top lands under the nav.
  *   duration .7 s + .1 s per 1000 px of travel, capped at 1.2 s (motion-09); instant under reduced motion.
  *   onArrive fires once, after the scroll has settled (Lenis done and the page still for 3 frames), also when the visitor
@@ -15,6 +16,11 @@
  * rise while it is still off screen and treat the arrival as the landing (face.ts).
  */
 import { lenis, reducedMotion } from '../motion';
+
+/** The phone deck's screens (D.4, Dan's pick D7 B): under 901 px held upright the face is the live display (inert) and
+ *  the deck under it holds the controls. There a drive to the face lands it at the top, so the deck shows under it. */
+export const DECK_MQ = '(max-width: 900px) and (orientation: portrait)';
+export const deckOn = () => !!document.querySelector('[data-wb-deck]') && matchMedia(DECK_MQ).matches;
 
 export type DriveAlign = 'face' | 'top';
 export interface DriveOptions { align?: DriveAlign; onArrive?: () => void }
@@ -34,7 +40,8 @@ const faceOf = (t: HTMLElement) => (t.matches('[data-wb-face]') ? t : t.querySel
 export function driveDestination(target: HTMLElement, align: DriveAlign = 'face') {
   const nav = navH(), face = align === 'face' ? faceOf(target) : null;
   let y: number;
-  if (face) { const room = innerHeight - nav, h = face.offsetHeight; y = docTop(face) - nav - Math.max(0, (room - h) / 2); }
+  if (face && deckOn()) y = docTop(face) - nav - 12; // the face on top, the deck's readout and knobs under it
+  else if (face) { const room = innerHeight - nav, h = face.offsetHeight; y = docTop(face) - nav - Math.max(0, (room - h) / 2); }
   else y = docTop(target) - nav;
   const max = document.documentElement.scrollHeight - innerHeight;
   return { y: Math.round(Math.max(0, Math.min(max, y))), face: !!face };

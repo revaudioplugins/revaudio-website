@@ -16,7 +16,8 @@ export function initKeys(page: HTMLElement, store: Store, face: Face, reduced: b
   drive?.addEventListener('keydown', (e) => {
     if (e.repeat || e.metaKey || e.ctrlKey || e.altKey || e.defaultPrevented) return;
     const t = e.target as HTMLElement;
-    if (t.closest('input, textarea, select, [contenteditable], iframe, video, [data-wb-manual]')) return;
+    // (a range takes no letters: the phone deck's knobs and VOLUME are dash controls like the face's)
+    if (t.closest('input:not([type=range]), textarea, select, [contenteditable], iframe, video, [data-wb-manual]')) return;
     const s = store.get();
     const act: Record<string, () => void> = {
       h: () => store.set({ high: !s.high }, 'key'), m: () => store.set({ mono: !s.mono }, 'key'),

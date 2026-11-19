@@ -35,9 +35,6 @@
 /* the dark face in its default state until the art is decoded (face-still.webp; perf-04): the rig paints over it */
 .wb-dash-still { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .wb-face:not(.is-art) .wb-rig > :not(.wb-rig-hits) { visibility: hidden; }
-.wb-turn { display: none; }
-/* the line shows only where turning the phone gives the height fit above (any portrait phone up to 600 px wide) */
-@media (orientation: portrait) and (max-width: 600px) { .wb-turn { display: block; text-align: center; margin: 14px 16px 0; color: var(--ivory-3); font-size: max(.85rem, var(--wb-fine-min, 13px)); } }
 .wb-dash-floor { height: 50px; margin: -18px auto 0; width: 82%; background: radial-gradient(closest-side, rgba(4, 3, 2, .8), transparent); filter: blur(8px); }
 .wb-rig { position: absolute; left: 0; top: 0; width: 1536px; height: 1024px; transform-origin: 0 0; }
 .wb-art { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
@@ -125,8 +122,8 @@ button.wb-hit { cursor: pointer; touch-action: manipulation; }
   content: ''; position: absolute; inset: -7px; border-radius: 50%; pointer-events: none; mix-blend-mode: screen;
   background: radial-gradient(closest-side, transparent 74%, rgba(255, 222, 160, .55) 86%, transparent 100%); animation: wb-dash-breathe 2.4s ease-in-out infinite;
 }
-/* PRESET ‹ name ›: the plugin's preset box (cards.css) with 44 px keys */
-.wb-con-preset, .wb-con-vol { display: grid; gap: 5px; min-width: 0; }
+/* PRESET ‹ name › and TRACK ‹ name ›: the plugin's preset box (cards.css) with 44 px keys */
+.wb-con-preset, .wb-con-track, .wb-con-vol { display: grid; gap: 5px; min-width: 0; }
 .wb-con-lcd {
   display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; height: 44px; border-radius: 6px; overflow: hidden;
   background: radial-gradient(ellipse, #093567, #04152b 65%, #030c16); box-shadow: 0 0 0 1px #0b0a09, inset 0 3px 6px #0c0906cc;
@@ -156,23 +153,125 @@ button.wb-hit { cursor: pointer; touch-action: manipulation; }
 .wb-engine.is-on .wb-key { transform: rotate(40deg); }
 .wb-engine.is-on .wb-key i { background: radial-gradient(circle at 40% 35%, #c8ffd9, #2ecc71 45%, var(--emerald, #2f6b4a) 85%); box-shadow: 0 0 6px rgba(46, 204, 113, .85); }
 
+/* beside the face (>= 1100 px): the column is the face's height, never taller (a taller console would stretch the face's
+   3:2 box). PRESET, TRACK, VOLUME and the key keep their 44 px; the mirror takes what is left, up to the column's width:
+   face height = (100cqw - the console - 16 px) / 1.5 (cqw = the dash: set on the mirror box, itself a container for its
+   own CORR), less the plate's border and pads and every other row (462 px). 1141x636: a 168 x 69 road; 1280x665 and up:
+   the full width. */
+@media (min-width: 1100px) {
+  .wb-dash > .wb-face { align-self: start; }
+  .wb-con { gap: 6px; }
+  .wb-con-ab { width: 96px; height: 96px; }
+  .wb-con-bat { width: 86px; height: 86px; }
+  .wb-con-vol { grid-template-columns: auto minmax(0, 1fr); align-items: center; column-gap: 12px; }
+  .wb-con-mirror { align-self: center; width: clamp(150px, calc(((100cqw - var(--wb-con-w) - 16px) / 1.5 - 462px) * 778 / 319), 100%); }
+}
+
 /* under the face (< 1100 px): one plate, the mirror on the left, the keys beside it */
 @media (max-width: 1099px) {
   .wb-con {
     margin-top: 18px; display: grid; gap: 10px 22px; align-items: center;
     grid-template-columns: minmax(0, 1.15fr) auto minmax(170px, 1fr);
-    grid-template-areas: 'mirror row preset' 'mirror row vol' 'mirror key key';
+    grid-template-areas: 'mirror row preset' 'mirror row track' 'mirror row vol' 'mirror key key';
   }
   .wb-con-mirror { grid-area: mirror; }
   .wb-con-row { grid-area: row; flex-direction: column; }
   .wb-con-preset { grid-area: preset; }
+  .wb-con-track { grid-area: track; }
   .wb-con-vol { grid-area: vol; }
   .wb-con-key { grid-area: key; }
 }
 @container wb-dash (max-width: 640px) {
-  .wb-con { grid-template-columns: minmax(0, 1fr); grid-template-areas: 'mirror' 'row' 'preset' 'vol' 'key'; --wb-plate-pad: 10px 8px 6px; }
+  .wb-con { grid-template-columns: minmax(0, 1fr); grid-template-areas: 'mirror' 'row' 'preset' 'track' 'vol' 'key'; --wb-plate-pad: 10px 8px 6px; }
   .wb-con-row { flex-direction: row; }
 }
+
+/* ---------- THE PHONE DECK (WbDeck.astro, deck.ts; D.4 = Dan's pick D7 B): held upright under 901 px, between the face
+   (the live display, inert) and the console. The plugin's plate (.wb-plate) with the plugin's own parts on it: the face's
+   strips at deck size, the seats cut from the plate photo (deck-seats.webp: a 2x sprite, 229.5 x 479.5 CSS px; rows
+   WIDTH 0, LOW FOCUS 184, MIX 278.5, REACH 373), the parts kit's MONO cap. Every key >= 44 x 44. ---------- */
+.wb-deck { display: none; }
+@media (max-width: 900px) and (orientation: portrait) {
+  .wb-deck {
+    --wb-ps: .3; --wb-plate-pad: 12px 6px 14px;
+    display: grid; gap: 16px;
+    /* 8 px wider than the face each side on a phone (the plate's leather takes 19 px), one phone-wide column on a tablet */
+    margin: 18px max(-8px, (100% - 460px) / 2) 0;
+  }
+  /* PRESET and TRACK are the deck's here; the console under it keeps the mirror, the A/B, MONO CHECK, VOLUME, the key */
+  .wb-con-preset, .wb-con-track { display: none; }
+}
+.wb-deck .wb-plate-label { font-size: 13px; letter-spacing: .1em; white-space: nowrap; }
+/* the readout: the face's trip LCD, in the plugin's LCD face (Courier New, its blue glass and glow) */
+.wb-deck-read {
+  display: flex; align-items: center; justify-content: center; height: 52px; margin: 0; overflow: hidden; white-space: nowrap;
+  font: 400 30px/1 var(--wb-lcd); letter-spacing: 1px; color: var(--lcd-ink); text-shadow: var(--wb-lcd-glow); border-radius: 6px;
+  background: radial-gradient(ellipse, #093567, #04152b 65%, #030c16);
+  box-shadow: 0 0 0 1px #0b0a09, 0 0 0 3px #2a251e, 0 0 0 4px var(--brass-lo), inset 0 3px 6px #0c0906cc;
+}
+.wb-deck.is-off .wb-deck-read, .wb-deck-read:empty { background: radial-gradient(ellipse, #06182b, #04111f 65%, #030a12); }
+.wb-deck-top { display: flex; justify-content: space-between; align-items: center; min-width: 0; }
+.wb-deck-cell { display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 0; }
+.wb-deck-cell--tilt, .wb-deck-cell--pad { flex: 0 1 44px; }
+.wb-deck-row--knobs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: end; }
+.wb-deck-row--keys { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: end; }
+
+/* the seats: the plate photo round each knob, feathered into the steel; the knob sits on it where the plugin puts it */
+.wb-deck-seat { position: relative; flex: none; }
+.wb-deck-seat::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  -webkit-mask-image: linear-gradient(90deg, #0000, #000 12%, #000 88%, #0000), linear-gradient(#0000, #000 10%, #000 90%, #0000);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(90deg, #0000, #000 12%, #000 88%, #0000), linear-gradient(#0000, #000 10%, #000 90%, #0000);
+  mask-composite: intersect;
+}
+.wb-deck.is-near .wb-deck-seat::before { background: var(--wb-seats) no-repeat 0 var(--wb-seat-y, 0) / 229.5px 479.5px; }
+.wb-deck-seat--width { width: 229.5px; height: 184px; }
+.wb-deck-seat--focus { width: 100.5px; height: 94.5px; --wb-seat-y: -184px; }
+.wb-deck-seat--mix { width: 100.5px; height: 94.5px; --wb-seat-y: -278.5px; }
+.wb-deck-seat--reach { width: 111.5px; height: 106.5px; --wb-seat-y: -373px; }
+/* the knobs: the seat's own knob box (face.ts KNOB_ART) at 150 / 88 px */
+.wb-deck-knob { position: absolute; touch-action: pan-y; cursor: ns-resize; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
+.wb-deck-knob.is-picked { touch-action: none; } /* picked by a tap: it takes vertical drags too */
+.wb-deck-knob--width { left: 44.3px; top: 32.4px; width: 150px; height: 150px; }
+.wb-deck-knob--focus, .wb-deck-knob--mix { left: 6.4px; top: 5.3px; width: 88px; height: 88px; }
+.wb-deck-knob--reach { left: 11.5px; top: 8.1px; width: 88px; height: 88px; }
+.wb-deck-knob--tilt { position: relative; width: 44px; height: 98px; }
+.wb-deck-art { position: absolute; inset: 0; display: block; pointer-events: none; }
+.wb-deck-strip { position: absolute; inset: 0; background-repeat: no-repeat; }
+.wb-deck-art--knob { border-radius: 50%; isolation: isolate; }
+.wb-deck-art--knob::before { content: ''; position: absolute; inset: 7%; border-radius: 50%; background: radial-gradient(ellipse at 35% 26%, #3a3b38, #171a1c 55%, #0b0e11 90%); box-shadow: 3px 7px 8px #080a0db3, inset 0 1px 2px #ae9e7755; }
+.wb-deck-art--knob .wb-deck-strip { filter: drop-shadow(2px 3px 2px #080b0c85); transform: translateY(1px); }
+.wb-deck-art--wheel { left: 2px; right: 2px; }
+/* the range under the art: the knob's semantics (a screen reader adjusts it), never its hit (the art takes the finger) */
+.wb-deck-in { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; pointer-events: none; }
+.wb-deck-in:focus-visible + .wb-deck-art, .wb-deck-knob.is-picked .wb-deck-art { outline: 3px solid var(--brass-hi); outline-offset: 2px; box-shadow: 0 0 0 1px #0a0908; }
+.wb-deck-knob--tilt .wb-deck-in:focus-visible + .wb-deck-art, .wb-deck-knob--tilt.is-picked .wb-deck-art { border-radius: 6px; }
+
+/* the keys: HIGH BEAM / SIDE (the bat toggle), MONO (the cap), POWER (the rocker), 60 px parts with their names */
+.wb-deck-key {
+  display: grid; justify-items: center; align-content: end; gap: 8px; min-width: 44px; min-height: 44px; padding: 4px 0 2px; margin: 0;
+  border: 0; border-radius: 10px; background: none; color: inherit; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+}
+.wb-deck-key:focus-visible { outline: 2px solid var(--brass-hi); outline-offset: 2px; }
+.wb-deck-art--tog { position: relative; width: 60px; height: 60px; }
+.wb-deck-art--power { position: relative; width: 48px; height: 60px; }
+.wb-deck-lit { opacity: 0; transition: opacity .3s; -webkit-mask-image: linear-gradient(#000 24%, #0000 28%); mask-image: linear-gradient(#000 24%, #0000 28%); }
+.wb-deck.is-lit:not(.is-off) .wb-deck-lit { opacity: 1; }
+.wb-deck-cap { position: relative; width: 60px; height: 60px; border-radius: 50%; box-shadow: 0 4px 7px rgba(8, 6, 4, .7); transition: box-shadow .12s, translate .12s; }
+.wb-deck-cap .wb-part-cap { width: 100%; transition: filter .12s; }
+.wb-deck-key.is-down .wb-deck-cap { translate: 0 2px; box-shadow: 0 1px 2px rgba(8, 6, 4, .8); }
+.wb-deck-key.is-down .wb-part-cap { filter: brightness(.82); }
+.wb-deck-key[aria-pressed='true'] .wb-plate-label, .wb-deck-key[aria-checked='true'] .wb-plate-label { color: var(--brass-hi); }
+.wb-deck-pick { display: grid; gap: 6px; }
+.wb-deck-pick .wb-plate-label { margin: 0; }
+.wb-deck-name { font-size: 16px; }
+/* the coach's breathing lamp (console.ts) on the deck's next control */
+.wb-deck .is-cue :is(.wb-deck-art--knob, .wb-deck-cap, .wb-deck-art--power)::after {
+  content: ''; position: absolute; inset: -8px; border-radius: 50%; pointer-events: none; mix-blend-mode: screen;
+  background: radial-gradient(closest-side, transparent 74%, rgba(255, 222, 160, .55) 86%, transparent 100%); animation: wb-dash-breathe 2.4s ease-in-out infinite;
+}
+.wb-deck .is-cue .wb-deck-art--power::after { border-radius: 30%; }
 
 /* ---------- the tray under the dash: your own track, the status line, the keys ---------- */
 .wb-dash-tray { max-width: 1180px; margin: 22px auto 0; padding: 0 16px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px 16px; }
@@ -193,9 +292,10 @@ button.wb-hit { cursor: pointer; touch-action: manipulation; }
 
 @media (prefers-reduced-motion: reduce) {
   .wb-engine .wb-key { transition: none; }
-  .wb-face-cue.is-on, .wb-con-mono.is-cue .wb-con-cap::after { animation: none; opacity: .8; }
+  .wb-face-cue.is-on, .wb-con-mono.is-cue .wb-con-cap::after, .wb-deck .is-cue :is(.wb-deck-art--knob, .wb-deck-cap, .wb-deck-art--power)::after { animation: none; opacity: .8; }
+  .wb-deck-lit, .wb-deck-cap, .wb-deck-cap .wb-part-cap { transition: none; }
 }
-html.hc .wb-face-cue.is-on, html.hc .wb-con-mono.is-cue .wb-con-cap::after { animation: none; opacity: .8; }
+html.hc .wb-face-cue.is-on, html.hc .wb-con-mono.is-cue .wb-con-cap::after, html.hc .wb-deck .is-cue :is(.wb-deck-art--knob, .wb-deck-cap, .wb-deck-art--power)::after { animation: none; opacity: .8; }
 
 /* motion-18 (lane D's item on lane A's key): the SOUND key's EQ bars move on transform, not height (no layout per
    frame). furniture.css can take these three rules and drop its height keyframes. */

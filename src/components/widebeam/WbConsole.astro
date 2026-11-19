@@ -2,9 +2,10 @@
 /** /widebeam console (lane D, D.2 = Dan's pick D5 A): a column beside the face at >= 1100 px, a plate under it below.
  *  Built from the plugin's own parts (DESIGN Law 7, the parts kit: src/styles/widebeam/parts.css): the plate with its
  *  strap, the road window as the rear-view mirror (the live stereo picture, CORR in the window's own LCD), the plugin's bat
- *  switch strip as ORIGINAL | WIDE BEAM (= POWER), the MONO cap as MONO CHECK, the preset box's LCD with 44 px keys, a
- *  VOLUME fader (the page's own monitor level: the plugin has no fader) and the brass engine key with an emerald pilot.
- *  Behaviour: src/lib/widebeam/console.ts; the engine, the mirror and CORR: sound.ts. */
+ *  switch strip as ORIGINAL | WIDE BEAM (= POWER), the MONO cap as MONO CHECK, the preset box's LCD with 44 px keys, the
+ *  same box as TRACK (what plays: the synth loop or a clip, D.3), a VOLUME fader (the page's own monitor level: the
+ *  plugin has no fader) and the brass engine key with an emerald pilot. On a phone held upright PRESET and TRACK live in
+ *  the deck above (WbDeck.astro). Behaviour: src/lib/widebeam/console.ts; the engine, TRACK, the mirror and CORR: sound.ts. */
 ---
 <div class="wb-con wb-plate wb-plate--strap" data-wb-console>
   <div class="wb-con-mirror wb-mirror">
@@ -33,6 +34,15 @@
       <button type="button" class="wb-con-step" data-wb-step="-1" data-wb-demo aria-label="Previous preset"><svg viewBox="0 0 9 16" aria-hidden="true"><path d="M7.5 1.5L1.5 8l6 6.5" /></svg></button>
       <span class="wb-con-name" data-wb-preset-name>DEFAULT</span>
       <button type="button" class="wb-con-step" data-wb-step="1" data-wb-demo aria-label="Next preset"><svg viewBox="0 0 9 16" aria-hidden="true"><path d="M1.5 1.5L7.5 8l-6 6.5" /></svg></button>
+    </div>
+  </div>
+
+  <div class="wb-con-track">
+    <p class="wb-plate-label wb-con-k" id="wb-con-track-k">Track</p>
+    <div class="wb-con-lcd" role="group" aria-labelledby="wb-con-track-k">
+      <button type="button" class="wb-con-step" data-wb-track-step="-1" data-wb-demo aria-label="Previous track"><svg viewBox="0 0 9 16" aria-hidden="true"><path d="M7.5 1.5L1.5 8l6 6.5" /></svg></button>
+      <span class="wb-con-name" data-wb-track-name aria-live="polite">NIGHT DRIVE (SYNTH)</span>
+      <button type="button" class="wb-con-step" data-wb-track-step="1" data-wb-demo aria-label="Next track"><svg viewBox="0 0 9 16" aria-hidden="true"><path d="M1.5 1.5L7.5 8l-6 6.5" /></svg></button>
     </div>
   </div>
 

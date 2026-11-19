@@ -21,16 +21,21 @@
  * both (demo-02, mobile-05, mobile-d03); every hit is at least 44 CSS px where its neighbours leave room, the preset LCD's
  * halves step (demo-09, a11y-14); the focus ring is an outline counter-scaled to 3 CSS px, so forced colours paint it
  * (a11y-13, a11y-d01); the announcer says what changed (a11y-07); the paint loop runs only on screen (a11y-17).
+ * On a phone held upright (D.4, DECK_MQ) the face is the live display and deck.ts holds the controls: the face goes inert
+ * (its announcer lives beside it, in .wb-dash), the art loads once the face is within two screens (not on the 8 s timer or
+ * the hand-off), and each strip's tier covers the larger of its face and deck sizes (one file for both). The soft snap on
+ * the dash (D.5, motion-17): snap.ts.
  *
  * /widebeam/?wb-cold keeps the face dark forever: the switch that captures face-still.webp (see WbDrive.astro).
  */
 import type { WbParams } from './audio';
 import { PRESETS, presetValues, type Store, type Source } from './state';
 import { gsap, ScrollTrigger } from '../motion';
-import { driveTo, isDriving } from './drive-to';
+import { driveTo, isDriving, deckOn } from './drive-to';
+import { initSnap } from './snap';
 
 export interface FaceArt { base: string; width: string; focus: string; mix: string; toggle: string; power: string; wheel: string; }
-type Part = keyof FaceArt;
+export type Part = keyof FaceArt;
 type Tiers = Partial<Record<Part, [number, string][]>>;
 export type CueTarget = 'width' | 'mono' | 'power' | null;
 
@@ -38,8 +43,9 @@ const NS = 'http://www.w3.org/2000/svg';
 const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
 const reducedNow = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-type Strip = { frames: number; cols: number; rows: number };
-const S: Record<Exclude<Part, 'base'>, Strip> = {
+// the strips' grids and the knobs' laws are shared with the phone deck (deck.ts)
+export type Strip = { frames: number; cols: number; rows: number };
+export const S: Record<Exclude<Part, 'base'>, Strip> = {
   width: { frames: 101, cols: 11, rows: 10 },
   focus: { frames: 129, cols: 12, rows: 11 },
   mix: { frames: 101, cols: 11, rows: 10 },
@@ -47,24 +53,26 @@ const S: Record<Exclude<Part, 'base'>, Strip> = {
   power: { frames: 16, cols: 4, rows: 4 },
   wheel: { frames: 81, cols: 9, rows: 9 },
 };
-const stripPos = (m: Strip, f: number) => `${((f % m.cols) / (m.cols - 1)) * 100}% ${(Math.floor(f / m.cols) / (m.rows - 1)) * 100}%`;
-const stripGrid = (el: HTMLElement, m: Strip) => { el.style.backgroundSize = `${m.cols * 100}% ${m.rows * 100}%`; };
+export const stripPos = (m: Strip, f: number) => `${((f % m.cols) / (m.cols - 1)) * 100}% ${(Math.floor(f / m.cols) / (m.rows - 1)) * 100}%`;
+export const stripGrid = (el: HTMLElement, m: Strip) => { el.style.backgroundSize = `${m.cols * 100}% ${m.rows * 100}%`; };
 // the widest box (plugin units) each file is drawn at on the face; the tier is the smallest whose frame covers it x scale x DPR
 const NEED: Record<Part, number> = { base: 1536, width: 264, focus: 166, mix: 166, toggle: 165, power: 80, wheel: 110 };
 
-type KnobId = 'width' | 'focus' | 'mix' | 'reach' | 'tilt';
-const KNOBS: Record<KnobId, { min: number; max: number; unit: string; label: string; name: string; log: boolean }> = {
+export type KnobId = 'width' | 'focus' | 'mix' | 'reach' | 'tilt';
+export const KNOBS: Record<KnobId, { min: number; max: number; unit: string; label: string; name: string; log: boolean }> = {
   width: { min: 0, max: 200, unit: '%', label: 'WIDTH', name: 'Width', log: false },
   focus: { min: 20, max: 1000, unit: 'Hz', label: 'FOCUS', name: 'Low focus', log: true },
   mix: { min: 0, max: 100, unit: '%', label: 'MIX', name: 'Mix', log: false },
   reach: { min: 0, max: 100, unit: '%', label: 'REACH', name: 'Reach', log: false },
   tilt: { min: -100, max: 100, unit: 'dB', label: 'TILT', name: 'Tilt', log: false },
 };
-const toNorm = (k: KnobId, v: number) => { const d = KNOBS[k]; return d.log ? Math.log(v / d.min) / Math.log(d.max / d.min) : (v - d.min) / (d.max - d.min); };
-const fromNorm = (k: KnobId, n: number) => { const d = KNOBS[k]; n = clamp(n, 0, 1); return d.log ? d.min * Math.pow(d.max / d.min, n) : d.min + n * (d.max - d.min); };
+export const toNorm = (k: KnobId, v: number) => { const d = KNOBS[k]; return d.log ? Math.log(v / d.min) / Math.log(d.max / d.min) : (v - d.min) / (d.max - d.min); };
+export const fromNorm = (k: KnobId, n: number) => { const d = KNOBS[k]; n = clamp(n, 0, 1); return d.log ? d.min * Math.pow(d.max / d.min, n) : d.min + n * (d.max - d.min); };
+/** the value a knob takes at travel n (0-1): what the face's own drag writes (FOCUS in whole Hz, TILT in steps of 2) */
+export const knobValue = (k: KnobId, n: number) => (k === 'focus' ? Math.round(fromNorm(k, n)) : Math.round(fromNorm(k, n) / (k === 'tilt' ? 2 : 1)) * (k === 'tilt' ? 2 : 1));
 const fmtTilt = (t: number) => { const db = (t / 100) * 6.02; return `${db > 0.04 ? '+' : db < -0.04 ? '-' : ''}${Math.abs(db).toFixed(1)}dB`; };
 const reading = (k: KnobId, s: WbParams) => (k === 'tilt' ? `TILT ${fmtTilt(s.tilt)}` : `${KNOBS[k].label} ${Math.round(s[k])}${KNOBS[k].unit}`);
-const valueText = (k: KnobId, v: number) => (k === 'tilt' ? fmtTilt(v).replace('dB', ' dB') : `${Math.round(v)} ${KNOBS[k].unit === '%' ? 'percent' : 'hertz'}`);
+export const valueText = (k: KnobId, v: number) => (k === 'tilt' ? fmtTilt(v).replace('dB', ' dB') : `${Math.round(v)} ${KNOBS[k].unit === '%' ? 'percent' : 'hertz'}`);
 
 // the hits, in reading order (a11y-15): [x, y, w, h] at the art's own size, and the room each may grow into for a
 // 44 CSS px target, [x0, y0, x1, y1], so a hit never covers its neighbour (demo-09)
@@ -84,7 +92,9 @@ const HITS: [HitId, number[], number[], boolean][] = [
   ['side', [1332, 477.5, 80, 75], [1290, 435, 1536, 628], true],
   ['mono', [1302, 635, 140, 140], [1290, 628, 1536, 830], true],
 ];
-const KEYSTEP: Record<string, number> = { ArrowUp: 1, ArrowRight: 1, ArrowDown: -1, ArrowLeft: -1, PageUp: 8, PageDown: -8 };
+export const KEYSTEP: Record<string, number> = { ArrowUp: 1, ArrowRight: 1, ArrowDown: -1, ArrowLeft: -1, PageUp: 8, PageDown: -8 };
+/** what the trip LCD can be showing the reading of: a knob, a switch, or SAVE's note */
+export type TouchId = KnobId | 'high' | 'side' | 'mono' | 'save';
 
 export interface Face {
   root: HTMLElement;
@@ -104,6 +114,12 @@ export interface Face {
   onIgnite(fn: () => void): void;
   isLit(): boolean;
   artUrl(part: Part): string | null;
+  /** the phone deck (deck.ts): its control's reading shows on the trip LCD for `ms`, as a touch on the face does */
+  touch(id: TouchId, ms?: number): void;
+  /** the phone deck: a drag on one of its knobs keeps that reading on the trip LCD until null */
+  drag(id: TouchId | null): void;
+  /** hears the trip LCD's text whenever it changes ('' = dark glass); the deck's readout prints the same */
+  onTrip(fn: (text: string) => void): void;
 }
 
 let current: Face | null = null;
@@ -172,7 +188,9 @@ export function createFace(root: HTMLElement, art: FaceArt, store: Store): Face 
     const s = document.createElement('span'); s.className = cls; parent.appendChild(s); stripGrid(s, S[part]); stripEls.push([s, part]); return s;
   };
   const stripEls: [HTMLElement, Part][] = [];
-  const announce = root.querySelector<HTMLElement>('[data-wb-announce]');
+  // the announcer sits beside the face, not in it: on an upright phone the face is inert (the deck holds the controls),
+  // and an inert subtree is out of the accessibility tree, live region and all
+  const announce = root.querySelector<HTMLElement>('[data-wb-announce]') ?? root.closest('[data-wb-dash]')?.querySelector<HTMLElement>('[data-wb-announce]') ?? null;
 
   // ── the parts (art only; the hits come after, in reading order) ──
   const knobStrips = {} as Record<Exclude<KnobId, 'tilt'>, HTMLElement>;
@@ -222,8 +240,8 @@ export function createFace(root: HTMLElement, art: FaceArt, store: Store): Face 
   }
 
   // ── the trip LCD: the readout, the hand's control while it is on it, the coach's line in between (garage.js trip) ──
-  type TouchId = KnobId | 'high' | 'side' | 'mono' | 'save';
   let touchId: TouchId | null = null, touchUntil = 0, dragId: TouchId | null = null, sayText: string | null = null, tripT = 0;
+  const tripFns: ((t: string) => void)[] = [];
   let cold = !!root.classList.contains('is-cold'), lcdCold = cold, igniting = false;
   function tripText() {
     const s = store.get();
@@ -245,6 +263,7 @@ export function createFace(root: HTMLElement, art: FaceArt, store: Store): Face 
       trip.textContent = t;
       // Courier New is 0.6 em a glyph (+1 unit tracking): the plugin's 27 px, down to its preset window's 18 px for a long line
       trip.style.fontSize = t.length > 13 ? `${clamp(((237 - 12) / t.length - 1) / 0.6, 18, 27).toFixed(1)}px` : '';
+      tripFns.forEach((f) => f(t));
     }
   }
   const touch = (id: TouchId, ms = 1400) => { touchId = id; touchUntil = performance.now() + ms; clearTimeout(tripT); tripT = window.setTimeout(paintTrip, ms + 30); paintTrip(); };
@@ -558,6 +577,9 @@ export function createFace(root: HTMLElement, art: FaceArt, store: Store): Face 
     onIgnite(fn) { if (!cold && !igniting) fn(); else igniteFns.push(fn); },
     isLit: () => !cold && !igniting,
     artUrl: (part) => urls[part] ?? null,
+    touch: (id, ms) => touch(id, ms),
+    drag(id) { dragId = id; if (id) touch(id); else if (touchId) touch(touchId, 1200); },
+    onTrip(fn) { tripFns.push(fn); fn(trip.textContent || ''); },
   };
   // internal hooks for initFace (not part of the Face API)
   (face as any)._art = { applyArt, setLoader: (fn: () => void) => { wantLoad = fn; }, wantIgnite: () => wantIgnite, isCold: () => cold, scale: () => k, tryGlide };
@@ -590,6 +612,9 @@ export function initFace(page: HTMLElement, art: FaceArt, store: Store, reducedM
     const dpr = window.devicePixelRatio || 1;
     let need = NEED[p] * hooks.scale() * dpr;
     if (p === 'toggle') { const bat = document.querySelector<HTMLElement>('[data-wb-bat]'); if (bat) need = Math.max(need, bat.getBoundingClientRect().width * dpr); }
+    // the phone deck draws the same strips bigger: one file per strip serves both (its frame is the deck's box, at 2x
+    // at most: a 3x phone gets 2x art, -5 % so the 75 % WIDTH tier's 288 px frame covers a 150 px knob)
+    if (deckOn()) page.querySelectorAll<HTMLElement>(`[data-wb-deck-art="${p}"]`).forEach((el) => { need = Math.max(need, el.getBoundingClientRect().width * Math.min(dpr, 2) * 0.95); });
     return list.find(([t]) => t >= need) ?? list[list.length - 1];
   };
 
@@ -630,7 +655,8 @@ export function initFace(page: HTMLElement, art: FaceArt, store: Store, reducedM
     const hero = page.querySelector('.wb-hero'), v = page.querySelector<HTMLVideoElement>('video[data-wb-intro]');
     return !!hero?.classList.contains('is-intro') || (!!v && !v.paused && !v.ended && !v.classList.contains('is-gone'));
   };
-  const near = () => section.getBoundingClientRect().top < innerHeight * 2.5;
+  // (the deck: once the face, right above it, is within one screen)
+  const near = () => (deckOn() ? faceEl.getBoundingClientRect().top < innerHeight * 2 : section.getBoundingClientRect().top < innerHeight * 2.5);
   const onScroll = () => { if (loading) removeEventListener('scroll', onScroll); else if (near() && (scrollY > 2 || !introRunning())) loadArt(); };
   addEventListener('scroll', onScroll, { passive: true });
   if (scrollY > 2) onScroll(); // a reload that restored the scroll, a link to #wb-drive
@@ -638,9 +664,11 @@ export function initFace(page: HTMLElement, art: FaceArt, store: Store, reducedM
   page.addEventListener('pointerdown', intent, true);
   page.addEventListener('keydown', intent, true);
   page.addEventListener('click', intent, true);
-  window.setTimeout(loadArt, 8000);
+  // on an upright phone the strips are the deck's (D.4: they load only when the deck nears): the dash coming near, or an
+  // act on the demo, never the hand-off or the clock alone
+  window.setTimeout(() => { if (!deckOn()) loadArt(); }, 8000);
   const idle = (fn: () => void) => ((window as any).requestIdleCallback ? (window as any).requestIdleCallback(fn, { timeout: 2000 }) : window.setTimeout(fn, 600));
-  const handoff = window.setInterval(() => { if (loading) { clearInterval(handoff); return; } if (!introRunning()) { clearInterval(handoff); idle(() => loadArt()); } }, 400);
+  const handoff = window.setInterval(() => { if (loading) { clearInterval(handoff); return; } if (!introRunning()) { clearInterval(handoff); if (!deckOn()) idle(() => loadArt()); } }, 400);
 
   // ── landing: the face mostly on screen and the page at rest (or a drive's arrival) lights it ──
   const nav = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--nav-h')) || 44;
@@ -698,6 +726,9 @@ export function initFace(page: HTMLElement, art: FaceArt, store: Store, reducedM
     e.preventDefault();
     driveTo('#wb-drive', { align: 'face' });
   }));
+
+  // the soft snap (D.5): a scroll that comes to rest near the dash settles it where a drive lands it (snap.ts)
+  initSnap(faceEl);
 
   // the engine key turns the key in the dash: it lights the face (once the art is in)
   const ignite = () => { if (!holdCold) face.ignite(); };

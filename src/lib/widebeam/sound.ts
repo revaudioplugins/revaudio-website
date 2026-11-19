@@ -3,8 +3,9 @@
  * the rear-view mirror (a vectorscope in the console's road window) and the face's correlation needle.
  *
  * When the music starts (Dan's pick P2 B, the allow-list; demo-08, a11y-01, mobile-07, hero-11, copy-17, guidelines-09):
- * only on a touch of the demo, an element marked [data-wb-demo] inside the page: a knob or switch on the face, a console
- * key, the engine key, the SOUND key, "Take it for a drive", a preset card. A pointer counts on press with a mouse and on
+ * only on a touch of the demo, an element marked [data-wb-demo] inside the page: a knob or switch on the face or the phone
+ * deck, a console key, the engine key, the SOUND key, "Take it for a drive", a preset card; a TRACK pick plays the picked
+ * track once it is in, as a chosen file does (D.3). A pointer counts on press with a mouse and on
  * release with a finger (a scroll swipe that starts on a knob is cancelled, never a start); a key counts when it adjusts a
  * focused control (arrows, Page Up / Down, Home, End; Enter and Space arrive as a click). Never: Tab, a letter, the cookie
  * banner, a form, Skip / Replay, the nav, the cart, the footer, the Owner's Manual ([data-wb-manual]). There is no
@@ -17,10 +18,17 @@
  * nothing restarts it by itself (lane S calls it when the tutorial plays); isPlaying(); onChange(fn) hears play / stop.
  * The SOUND key (lane A's markup, no aria-label): its visible text is its name, "Sound on" / "Sound off", with aria-pressed.
  */
-import { WideBeamEngine } from './audio';
+import { WideBeamEngine, type WbSource } from './audio';
 import type { Store } from './state';
 import type { Face } from './face';
 import { initConsole } from './console';
+import { initDeck } from './deck';
+// the demo clips (D.3, Dan's pick P3 B): Vite gives each a hashed /_astro/ name, so a returning visitor keeps it for a
+// year and a changed clip gets a new URL (perf-d02); nothing here fetches one until it is picked
+import vocalClip from '../../assets/widebeam/clips/vocal.m4a?url';
+import guitarClip from '../../assets/widebeam/clips/guitar.m4a?url';
+import padClip from '../../assets/widebeam/clips/pad.m4a?url';
+import mixClip from '../../assets/widebeam/clips/mix.m4a?url';
 
 let api: { request(srcEl: Element | null): Promise<void>; stopForFilm(): void; playing(): boolean } | null = null;
 const listeners = new Set<(on: boolean) => void>();
@@ -30,11 +38,37 @@ export const stopForFilm = () => api?.stopForFilm();
 export const isPlaying = () => !!api?.playing();
 export function onChange(fn: (on: boolean) => void) { listeners.add(fn); return () => { listeners.delete(fn); }; }
 
-const NEVER = '[data-wb-manual], form, input, textarea, select, label, iframe, video, [data-wb-sound], [data-wb-play]';
+/**
+ * What the demo plays: the synthesized Night Drive loop, or one of four clips cut from the team's own renders already on
+ * the site (Yoni's DAW bounces; how each was cut, measured and matched: the lane D report, D.3). Each clip is a seamless
+ * loop of `samples` at 48 kHz with 0.25 s of itself on both sides (the AAC priming never reaches the seam), AAC 160k,
+ * loudness-matched to the others and to the synth loop at the engine's input (-19.3 LUFS, true peak <= -1.4 dBTP), so it
+ * plays at unity gain through the same chain as everything else.
+ *   Vocal (mono)  RevFX's dry vocal (public/audio/revfx/vocal-before.m4a): mono, so WIDTH has no side to widen; HIGH BEAM does.
+ *   Guitar        the Radio Roulette station mixer's dry guitar (public/station-mixer/audio/guitar_dry.m4a): a double, two
+ *                 takes hard left and right, its first 4 of 8 bars (the two halves are the same audio).
+ *   Pad           RevFX's dry instrument bed (public/audio/revfx/instruments-before.m4a): sustained, side ~6 dB under mid.
+ *   Full mix      the GAS mixer's three dry stems summed (public/gas-mixer/audio/*_dry.m4a), its first 4 of 8 bars.
+ */
+const PAD = 0.25, SR = 48000;
+type Track = { name: string; hint: string; url?: string; loop?: [number, number] };
+const clip = (url: string, samples: number) => ({ url, loop: [PAD, PAD + samples / SR] as [number, number] });
+export const TRACKS: Track[] = [
+  { name: 'Night Drive (synth)', hint: 'turn WIDTH, flip HIGH BEAM, press MONO' },
+  { name: 'Vocal (mono)', hint: "WIDTH can't widen a mono track: flip HIGH BEAM", ...clip(vocalClip, 576000) },
+  { name: 'Guitar', hint: 'two takes, left and right: turn WIDTH, then press MONO', ...clip(guitarClip, 512000) },
+  { name: 'Pad', hint: 'turn WIDTH; LOW FOCUS keeps its low end in the middle', ...clip(padClip, 610331) },
+  { name: 'Full mix', hint: 'turn WIDTH, then press MONO', ...clip(mixClip, 658286) },
+];
+
+// the deck's knobs are range inputs: an act on one is an act on the demo (the console's VOLUME fader is not)
+const NEVER = '[data-wb-manual], form, input:not([data-wb-deck-k]), textarea, select, label, iframe, video, [data-wb-sound], [data-wb-play], [data-wb-track-step]';
 const ACT_KEYS = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'PageUp', 'PageDown', 'Home', 'End']);
 
 export function initSound(page: HTMLElement, store: Store, face: Face, ignite: () => void) {
-  let engine: WideBeamEngine | null = null, userStopped = false, token = 0, volumeDb = -3.9;
+  let engine: WideBeamEngine | null = null, userStopped = false, token = 0, volumeDb = -3.9, stops = 0;
+  // the track the picker shows (TRACKS index; -1 = the visitor's own file) and the one the engine has
+  let track = 0, playingTrack = 0, pickSeq = 0, pickT = 0;
   const playBtn = page.querySelector<HTMLButtonElement>('[data-wb-play]');
   const fileIn = page.querySelector<HTMLInputElement>('[data-wb-file]');
   const fileLabel = page.querySelector<HTMLElement>('[data-wb-file-label]');
@@ -61,7 +95,7 @@ export function initSound(page: HTMLElement, store: Store, face: Face, ignite: (
   const unlock = (e: WideBeamEngine) => (e.ctx.state === 'running' ? Promise.resolve() : e.ctx.resume().catch(() => {}));
   const faceShown = () => { const r = faceEl.getBoundingClientRect(); return r.height ? Math.max(0, Math.min(innerHeight, r.bottom) - Math.max(0, r.top)) / r.height : 0; };
 
-  const label = () => (engine?.sourceKind === 'buffer' ? `${engine.sourceName} · stays on your computer, nothing is uploaded` : 'Night Drive loop · turn WIDTH, flip HIGH BEAM, press MONO');
+  const label = () => (playingTrack < 0 ? `${engine?.sourceName} · stays on your computer, nothing is uploaded` : `${TRACKS[playingTrack].name} · ${TRACKS[playingTrack].hint}`);
   const setPlaying = (on: boolean) => {
     page.classList.toggle('is-playing', on);
     if (playBtn) {
@@ -93,7 +127,7 @@ export function initSound(page: HTMLElement, store: Store, face: Face, ignite: (
   }
   function stop(byVisitor: boolean) {
     token++;
-    if (byVisitor) userStopped = true;
+    if (byVisitor) { userStopped = true; stops++; }
     if (engine?.playing) { engine.stop(); setPlaying(false); }
   }
   const toggle = () => (engine?.playing ? stop(true) : start(true));
@@ -116,6 +150,9 @@ export function initSound(page: HTMLElement, store: Store, face: Face, ignite: (
   page.addEventListener('pointerup', (e) => { if (e.pointerType !== 'mouse') act(demoOf(e.target)); }, true);
   page.addEventListener('click', (e) => act(demoOf(e.target)), true);
   page.addEventListener('keydown', (e) => { if (ACT_KEYS.has(e.key) && !e.metaKey && !e.ctrlKey && !e.altKey) act(demoOf(e.target)); }, true);
+  // a screen reader's adjust on a deck knob (a native range) sends no key: its input event is the act (a script's own
+  // value change sends none)
+  page.addEventListener('input', (e) => { if ((e.target as Element)?.matches?.('input[data-wb-deck-k]')) act(demoOf(e.target)); }, true);
 
   // the engine key turns the key in the dash: it plays or stops, and lights the face if the face is there to see it
   playBtn?.addEventListener('click', () => { toggle(); if (faceShown() >= 0.35) ignite(); });
@@ -131,11 +168,69 @@ export function initSound(page: HTMLElement, store: Store, face: Face, ignite: (
     const e = makeEngine();
     try {
       const buffer = await e.ctx.decodeAudioData(await f.arrayBuffer());
+      pickSeq++; clearTimeout(pickT); // a track still loading gives way to the file
       e.setSource({ kind: 'buffer', buffer, name: f.name });
+      track = playingTrack = -1; paintTrack();
       if (e.playing) setPlaying(true); else await start(true);
       if (!e.playing && msg) msg.textContent = `${f.name} is loaded. Press Start the engine to hear it.`;
     } catch { if (msg) msg.textContent = "That file didn't decode. Try an MP3, WAV or M4A."; }
   });
+
+  // ── TRACK ‹ name › (the console's and the deck's): what plays. A clip is fetched once the visitor settles on it
+  //    (300 ms after the last step, so stepping past one never downloads it), decoded once, kept. A pick plays it, as a
+  //    chosen file does; a stop that comes after the pick (SOUND, the engine key, a film) wins: it is then only loaded. ──
+  const trackNames = [...page.querySelectorAll<HTMLElement>('[data-wb-track-name]')];
+  function paintTrack() {
+    const t = track < 0 ? 'YOUR TRACK' : TRACKS[track].name.toUpperCase();
+    for (const n of trackNames) {
+      n.textContent = t;
+      // Courier New, 0.6 em a glyph: the LCD's own size, smaller for a long name so it stays on the glass
+      n.style.fontSize = '';
+      const w = n.clientWidth - 12, px = parseFloat(getComputedStyle(n).fontSize) || 14;
+      if (w > 0 && t.length * 0.6 * px > w - 1) n.style.fontSize = `${Math.max(11, Math.floor(((w - 1) / t.length / 0.6) * 10) / 10)}px`; // 1 px spare: no ellipsis on a rounding
+    }
+  }
+  const decoded = new Map<number, Promise<AudioBuffer>>();
+  const bufferOf = (i: number, e: WideBeamEngine) => {
+    let p = decoded.get(i);
+    if (!p) {
+      p = fetch(TRACKS[i].url!).then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.arrayBuffer(); }).then((b) => e.ctx.decodeAudioData(b));
+      p.catch(() => decoded.delete(i)); // a failed fetch can be tried again
+      decoded.set(i, p);
+    }
+    return p;
+  };
+  async function loadTrack(my: number, stopsAtPick: number) {
+    const i = track, t = TRACKS[i], e = makeEngine();
+    let src: WbSource = { kind: 'demo' };
+    if (t.url) {
+      if (msg && !e.playing) msg.textContent = `Loading ${t.name}…`;
+      try { src = { kind: 'buffer', buffer: await bufferOf(i, e), name: t.name, loop: t.loop, gain: 1 }; }
+      catch {
+        if (my !== pickSeq) return;
+        track = playingTrack; paintTrack(); // the LCD goes back to what plays
+        if (msg) msg.textContent = `${t.name} didn't load. Try again.`;
+        return;
+      }
+    }
+    if (my !== pickSeq) return; // a newer pick (or a file) owns the source
+    e.setSource(src);
+    playingTrack = i;
+    if (e.playing) setPlaying(true); // the status line names the new track
+    else if (stops === stopsAtPick) await start(true);
+    else if (msg) msg.textContent = `${t.name} is loaded. Press Start the engine to hear it.`;
+  }
+  page.querySelectorAll<HTMLButtonElement>('[data-wb-track-step]').forEach((b) => b.addEventListener('click', () => {
+    unlock(makeEngine()); // the click is the gesture that opens the audio device (iOS)
+    const n = TRACKS.length, d = Number(b.dataset.wbTrackStep);
+    track = track < 0 ? (d > 0 ? 0 : n - 1) : (track + d + n) % n;
+    paintTrack();
+    const my = ++pickSeq, at = stops;
+    clearTimeout(pickT);
+    pickT = window.setTimeout(() => loadTrack(my, at), 300);
+  }));
+  paintTrack();
+  new ResizeObserver(() => paintTrack()).observe(page.querySelector('[data-wb-dash]') ?? page);
 
   // ── the rear-view mirror: a goniometer whose dots fade off the road window's glass; the face's needle reads the
   //    real correlation. Both draw only while on screen (a11y-17); the audio keeps playing off screen. ──
@@ -177,4 +272,6 @@ export function initSound(page: HTMLElement, store: Store, face: Face, ignite: (
 
   // ── the console beside the face (console.ts): its VOLUME is the engine's monitor level ──
   initConsole(page, store, face, { setVolume(db) { volumeDb = db; engine?.setVolume(db); } });
+  // ── the phone deck under the face (deck.ts, D.4): the same store; its TRACK keys are the picker's above ──
+  initDeck(page, store, face);
 }

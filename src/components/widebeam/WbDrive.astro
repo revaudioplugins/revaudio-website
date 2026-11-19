@@ -1,6 +1,8 @@
 ---
 /** /widebeam dash (lane D): the live face (src/lib/widebeam/face.ts) with the console beside it at >= 1100 px (D5 A) and
- *  under it below; the phone deck (WbDeck, D.4) renders inside this section. Words: DASH in src/data/widebeam.ts.
+ *  under it below; on a phone held upright the deck (WbDeck, D.4 = D7 B) sits between them and holds the controls, the
+ *  face above it the live display (the "turn your phone sideways" line went with it: mobile-06). Words: DASH in
+ *  src/data/widebeam.ts.
  *
  *  The face's art is loaded late, by face.ts, in a size tier per part (perf-01, perf-02, art-d01): every filmstrip and
  *  the plate come in at 50 / 75 / 100 % here, and the script picks per part from that part's rendered size x DPR. The
@@ -55,8 +57,10 @@ const stillSrcset = stills.map((s, i) => `${s.src} ${[640, 960, 1280, 1536][i]}w
     <div class="wb-dash" data-wb-dash>
       <div class="wb-face is-cold" data-wb-face data-wb-art={JSON.stringify(tiers)}>
         <img class="wb-dash-still" src={stills[1].src} srcset={stillSrcset} sizes="(min-width: 1100px) 1100px, (min-width: 901px) 75vw, 100vw" width="1536" height="1024" alt="" aria-hidden="true" loading="lazy" decoding="async" />
-        <span class="sr-only" data-wb-announce aria-live="polite"></span>
       </div>
+      <!-- beside the face, not in it: on an upright phone the face is inert, and so would be a live region inside it -->
+      <span class="sr-only" data-wb-announce aria-live="polite"></span>
+      <WbDeck />
       <WbConsole />
     </div>
     <div class="wb-dash-floor" aria-hidden="true"></div>
@@ -71,8 +75,5 @@ const stillSrcset = stills.map((s, i) => `${s.src} ${[640, 960, 1280, 1536][i]}w
     <p class="wb-fine wb-file-note">{DASH.fileNote}</p>
     <p class="wb-keys"><span>Keys while a control on the dash has focus:</span> <kbd>H</kbd> high beam · <kbd>M</kbd> mono · <kbd>S</kbd> side · <kbd>P</kbd> power · <kbd>[</kbd> <kbd>]</kbd> presets</p>
   </div>
-  <p class="wb-turn">Turn your phone sideways to see the whole dash bigger.</p>
-
-  <WbDeck />
   <p class="wb-fine wb-fine--c">{DASH.demoNote}</p>
 </section>

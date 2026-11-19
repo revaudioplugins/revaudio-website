@@ -8,10 +8,13 @@
  *   The coach: on a first visit the trip LCD on the face says what to try next, DRAG WIDTH UP, NOW PRESS MONO,
  *     POWER OFF = ORIGINAL, while that control's own light breathes (static under reduced motion and the site's high
  *     contrast) and a polite live region says it once (demo-05). It ends when the three are done, remembered per browser.
+ *     On the phone deck (deck.ts) the same lamp breathes on the deck's control; on a touch screen the first line says the
+ *     finger's gesture, SLIDE WIDTH RIGHT (a vertical swipe on a knob not picked yet scrolls the page, on the deck and the face).
  * The mirror, CORR and the engine key are sound.ts's.
  */
 import { PRESETS, type Store } from './state';
 import type { Face, CueTarget } from './face';
+import { deckOn, DECK_MQ } from './drive-to';
 
 const TOGGLE = { frames: 29, cols: 6, rows: 5 };
 const pos = (f: number) => `${((f % TOGGLE.cols) / (TOGGLE.cols - 1)) * 100}% ${(Math.floor(f / TOGGLE.cols) / (TOGGLE.rows - 1)) * 100}%`;
@@ -78,12 +81,14 @@ export function initConsole(page: HTMLElement, store: Store, face: Face, audio: 
   paint();
 
   // ── the coach (first visit): the trip LCD names the next thing to try, its control's light breathes ──
-  type Step = { text: string; say: string; cue: CueTarget; con?: string; done(s: ReturnType<Store['get']>, ch: Record<string, unknown>, src: string): boolean };
+  // con / deck: the console's and the phone deck's own control for that step; touchText / touchSay: a finger's gesture
+  type Step = { text: string; say: string; touchText?: string; touchSay?: string; cue: CueTarget; con?: string; deck: string; done(s: ReturnType<Store['get']>, ch: Record<string, unknown>, src: string): boolean };
   const STEPS: Step[] = [
-    { text: 'DRAG WIDTH UP', say: 'Try this: drag WIDTH up.', cue: 'width', done: (s, ch, src) => 'width' in ch && src !== 'preset' && s.width >= 160 },
-    { text: 'NOW PRESS MONO', say: 'Now press MONO.', cue: 'mono', con: '[data-wb-mono-check]', done: (s, ch) => 'mono' in ch && s.mono },
-    { text: 'POWER OFF = ORIGINAL', say: 'Now switch POWER off: that is the original.', cue: 'power', con: '[data-wb-ab="off"]', done: (s, ch) => 'power' in ch && !s.power },
+    { text: 'DRAG WIDTH UP', say: 'Try this: drag WIDTH up.', touchText: 'SLIDE WIDTH RIGHT', touchSay: 'Try this: slide a finger right across WIDTH.', cue: 'width', deck: '[data-wb-deck-ctl="width"]', done: (s, ch, src) => 'width' in ch && src !== 'preset' && s.width >= 160 },
+    { text: 'NOW PRESS MONO', say: 'Now press MONO.', cue: 'mono', con: '[data-wb-mono-check]', deck: '[data-wb-deck-sw="mono"]', done: (s, ch) => 'mono' in ch && s.mono },
+    { text: 'POWER OFF = ORIGINAL', say: 'Now switch POWER off: that is the original.', cue: 'power', con: '[data-wb-ab="off"]', deck: '[data-wb-deck-sw="power"]', done: (s, ch) => 'power' in ch && !s.power },
   ];
+  const deck = page.querySelector<HTMLElement>('[data-wb-deck]');
   const live = root.querySelector<HTMLElement>('[data-wb-coach]');
   let doneMask = 0;
   try { doneMask = Number(localStorage.getItem(COACH_KEY)) || 0; } catch {}
@@ -93,12 +98,13 @@ export function initConsole(page: HTMLElement, store: Store, face: Face, audio: 
     const s = store.get();
     const i = lit && doneMask !== all ? STEPS.findIndex((_, n) => !(doneMask & (1 << n))) : -1;
     // the line and the lamp only while the face is lit (POWER off leaves dark glass: the step that is next waits)
-    const showing = i >= 0 && s.power;
-    face.say(showing ? STEPS[i].text : null);
+    const showing = i >= 0 && s.power, finger = deckOn() || matchMedia('(pointer: coarse)').matches;
+    face.say(showing ? (finger && STEPS[i].touchText) || STEPS[i].text : null);
     face.cue(showing ? STEPS[i].cue : null);
-    root.querySelectorAll('.is-cue').forEach((n) => n.classList.remove('is-cue'));
+    [root, deck].forEach((r) => r?.querySelectorAll('.is-cue').forEach((n) => n.classList.remove('is-cue')));
     if (showing && STEPS[i].con) root.querySelector(STEPS[i].con!)?.classList.add('is-cue');
-    if (i !== shown) { shown = i; if (live) live.textContent = i >= 0 ? STEPS[i].say : ''; }
+    if (showing && deck) deck.querySelector(STEPS[i].deck)?.classList.add('is-cue');
+    if (i !== shown) { shown = i; if (live) live.textContent = i >= 0 ? (finger && STEPS[i].touchSay) || STEPS[i].say : ''; }
   };
   store.on((s, ch, src) => {
     if (src === 'init' || src === 'story') return;
@@ -108,4 +114,5 @@ export function initConsole(page: HTMLElement, store: Store, face: Face, audio: 
     coach();
   });
   face.onIgnite(() => { lit = true; coach(); });
+  matchMedia(DECK_MQ).addEventListener?.('change', coach); // turned sideways or back: the line for the controls in view
 }

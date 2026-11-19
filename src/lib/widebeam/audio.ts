@@ -44,8 +44,10 @@ const T = 0.02; // the 20 ms glide every switch uses
 export const LOOP_RMS_DB = -21.4;
 const CEILING = 0.966; // -0.3 dBFS
 
-/** What the engine plays: the synthesized loop, or a decoded file / clip (looped, RMS-matched to the loop). */
-export type WbSource = { kind: 'demo'; name?: string } | { kind: 'buffer'; buffer: AudioBuffer; name: string };
+/** What the engine plays: the synthesized loop, or a decoded file / clip, looped. A visitor's file is RMS-matched to the
+ *  loop (matchGain); a demo clip comes loudness-matched already (`gain` 1) and loops its own window `loop` [start, end] s,
+ *  inside the padding its file carries on both sides (the AAC priming never lands on the seam). */
+export type WbSource = { kind: 'demo'; name?: string } | { kind: 'buffer'; buffer: AudioBuffer; name: string; loop?: [number, number]; gain?: number };
 
 export class WideBeamEngine {
   ctx: AudioContext;
@@ -200,9 +202,17 @@ export class WideBeamEngine {
     const src = this.current;
     if (src.kind === 'demo') { this.source = nightDrive(this.ctx, this.input); return; }
     const s = this.ctx.createBufferSource(); s.buffer = src.buffer; s.loop = true;
-    const g = this.ctx.createGain(); g.gain.value = matchGain(src.buffer);
-    s.connect(g).connect(this.input); s.start();
-    this.source = { stop: () => { try { s.stop(); } catch {} s.disconnect(); g.disconnect(); } };
+    if (src.loop) { s.loopStart = src.loop[0]; s.loopEnd = src.loop[1]; }
+    // in and out over a few ms, so a switch between tracks never clicks
+    const g = this.ctx.createGain(), t = this.ctx.currentTime, level = src.gain ?? matchGain(src.buffer);
+    g.gain.setValueAtTime(0, t); g.gain.setTargetAtTime(level, t, 0.004);
+    s.connect(g).connect(this.input); s.start(t, src.loop ? src.loop[0] : 0);
+    this.source = { stop: () => {
+      const now = this.ctx.currentTime;
+      g.gain.cancelScheduledValues(now); g.gain.setTargetAtTime(0, now, 0.008);
+      try { s.stop(now + 0.05); } catch {}
+      s.onended = () => { s.disconnect(); g.disconnect(); };
+    } };
   }
 
   async playFile(file: File) {
