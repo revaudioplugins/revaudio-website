@@ -8,16 +8,18 @@
  *
  * Everything moving on the page runs the plugin's correction law (src/lib/obdtune/engine.ts, ported from
  * AtCorrector.h) on one shared state. Order: hero (the live scanner) · #obd-story (six readings, sticky screen) ·
- * #obd-bench (play / sing, every control) · #obd-data (the parameter list) · #obd-notify (launch list).
+ * #obd-bench (play / sing, every control) · #obd-data (the parameter list) · #obd-get (free trial + BUY NOW, src/data/obdtune.ts).
  * Unlisted (noindex, not in plugins.ts) until the plugin ships.
  */
 import { getImage } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { site } from '../data/site';
+import { obdtune, buyable, registerUrl, onceUrl as formOnceUrl, fmtUsd } from '../data/obdtune';
 import stillSrc from '../assets/obdtune/unit-still.png';
 import '../styles/obdtune.css';
 
-const onceUrl = site.downloadGate.workerUrl + '/form-once';
+const onceUrl = formOnceUrl();
+const trialRegister = registerUrl();
+const canBuy = buyable();
 // the scanner's still (the plugin's home screen, as the page opens): shows until unit.ts mounts the live UI
 const still = await getImage({ src: stillSrc, format: 'webp', width: 1080, quality: 82 });
 
@@ -57,19 +59,19 @@ const DATA = [
 ---
 <BaseLayout
   title="OBDTUNE: plug in, read the note, tune it"
-  description="OBDTUNE is vocal pitch correction built like a shop scan tool: it reads every note, finds the key with DETECT, tunes as hard or as human as you want, stacks two harmony voices and adds EQ, compression, echo and reverb. Coming soon from RevAudio."
+  description="OBDTUNE is vocal pitch correction built like a shop scan tool: it reads every note, finds the key with DETECT, tunes as hard or as human as you want, stacks two harmony voices and adds EQ, compression, echo and reverb. Free 30-day trial."
   index={false}
 >
   <div class="obd-page" data-obd-page>
     <!-- ============ HERO ============ -->
     <section class="obd-hero" aria-labelledby="obd-title">
       <div class="obd-hero-copy" data-obd-reveal>
-        <p class="obd-kicker"><span class="obd-dot" aria-hidden="true"></span>NEW FROM REVAUDIO · COMING SOON</p>
+        <p class="obd-kicker"><span class="obd-dot" aria-hidden="true"></span>NEW FROM REVAUDIO · FREE 30-DAY TRIAL</p>
         <h1 id="obd-title" class="obd-wordmark"><span class="sr-only">OBDTUNE: </span><span aria-hidden="true">OBD<b>TUNE</b></span></h1>
         <p class="obd-tag">Plug in. Read the note. Tune it.</p>
         <p class="obd-lede">Vocal pitch correction built like a shop scan tool. It reads every note you sing, finds the key by itself, and puts each note where it belongs, as hard or as human as you set it. Then it stacks the harmonies and finishes the vocal with its own EQ, compression, echo and reverb.</p>
         <div class="obd-ctas">
-          <a class="obd-btn obd-btn--hot" href="#obd-notify">Get it first</a>
+          <a class="obd-btn obd-btn--hot" href="#obd-get">Try it free</a>
           <a class="obd-btn" href="#obd-bench">Play with it ↓</a>
         </div>
         <ul class="obd-chips" aria-label="At a glance">
@@ -179,21 +181,43 @@ const DATA = [
       </div>
     </section>
 
-    <!-- ============ NOTIFY ============ -->
-    <section class="obd-notify" id="obd-notify" aria-labelledby="obd-notify-h">
-      <div class="obd-notify-card" data-obd-reveal>
-        <p class="obd-eyebrow">LAUNCH LIST</p>
-        <h2 id="obd-notify-h">Be first in line.</h2>
-        <p>One email the day OBDTUNE goes live. Nothing else unless you ask for it.</p>
-        <form class="obd-form" data-obd-form data-once-url={onceUrl} novalidate>
-          <label class="sr-only" for="obd-email">Email</label>
-          <input id="obd-email" type="email" name="email" placeholder="you@studio.com" required autocomplete="email" />
-          <input type="hidden" name="source" value="obdtune-notify" />
-          <input type="text" name="_gotcha" class="obd-hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
-          <button type="submit" class="obd-btn obd-btn--hot"><span data-face>Notify me</span></button>
-        </form>
-        <p class="obd-form-status" data-obd-status role="status" aria-live="polite" tabindex="-1"></p>
-        <p class="obd-fine">OBDTUNE is in development. Names, controls and the look can still change before release.</p>
+    <!-- ============ GET IT: the free trial + BUY NOW (src/data/obdtune.ts) ============ -->
+    <section class="obd-notify" id="obd-get" aria-labelledby="obd-get-h">
+      <div class="obd-notify-card obd-get-card" data-obd-reveal>
+        <p class="obd-eyebrow">GET IT</p>
+        <h2 id="obd-get-h">Plug it in for {obdtune.trialDays} days.</h2>
+        <div class="obd-get-grid">
+          <div class="obd-get-trial">
+            <p>The full OBDTUNE, free for {obdtune.trialDays} days. No credit card, no key.</p>
+            <form
+              class="obd-form" data-obd-form novalidate
+              data-once-url={onceUrl}
+              data-register-url={trialRegister ?? undefined}
+              data-plugin={obdtune.gateId}
+              data-msg-ok={trialRegister ? 'Check your inbox: your OBDTUNE download link is on its way.' : "You're in. We'll email your OBDTUNE download link the day the trial opens."}
+              data-msg-already={trialRegister ? "You're already signed up. Check your inbox (and spam) for the download link." : "You're already on the list. The download link comes the day the trial opens."}
+            >
+              <label class="sr-only" for="obd-email">Email</label>
+              <input id="obd-email" type="email" name="email" placeholder="you@studio.com" required autocomplete="email" aria-label="Your email, we send the OBDTUNE download link here" />
+              <input type="hidden" name="source" value="obdtune-trial" />
+              <input type="text" name="_gotcha" class="obd-hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+              <button type="submit" class="obd-btn obd-btn--hot"><span data-face>Get it ▸</span></button>
+            </form>
+            <p class="obd-form-status" data-obd-status role="status" aria-live="polite" tabindex="-1"></p>
+            <p class="obd-fine">We&rsquo;ll also send a few short getting-started emails and a heads-up before your trial ends. Unsubscribe anytime.</p>
+          </div>
+          {canBuy && (
+            <div class="obd-get-buy">
+              <p class="obd-get-price"><b>{fmtUsd(obdtune.priceUsd!)}</b><span>one-time · yours to keep</span></p>
+              <button
+                type="button" class="obd-btn obd-btn--hot obd-buy"
+                data-add-to-cart data-cart-open
+                data-slug={obdtune.slug} data-name={obdtune.name} data-price={obdtune.priceUsd}
+              >Buy now</button>
+              <p class="obd-fine">{obdtune.formats}</p>
+            </div>
+          )}
+        </div>
       </div>
     </section>
   </div>

@@ -1,7 +1,6 @@
 /**
  * /obdtune boot: the live signal, the hero scanner (the plugin's own UI, unit.ts), the scroll story, the bench, the reveals, the hero tilt and the
- * launch-list form (POST {form:'newsletter', email, source:'obdtune-notify', _gotcha, page} to the worker's
- * /form-once, the one-per-email list relay every site form uses).
+ * trial form (the download gate's /download/register, then the /form-once list relay; src/data/obdtune.ts).
  */
 import { startLive } from './live';
 import { mountUnit } from './unit';
@@ -47,9 +46,11 @@ export function initObdtune() {
     loop();
   }
 
-  // the launch list
+  // the trial (src/data/obdtune.ts): with data-register-url (gateWired) the form first posts {email, plugin, marketing}
+  // to /download/register, which emails the download, and joins the list in the background (widebeam's bindSignup)
   const form = page.querySelector<HTMLFormElement>('[data-obd-form]');
   const status = page.querySelector<HTMLElement>('[data-obd-status]');
+  const post = (url: string, body: object) => fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), keepalive: true });
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const fields = Object.fromEntries(new FormData(form)) as Record<string, string>;
@@ -57,23 +58,27 @@ export function initObdtune() {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(fields.email || '')) { show('That email looks off. Try again?', false); return; }
     const btn = form.querySelector<HTMLButtonElement>('button[type="submit"]');
     const face = btn?.querySelector<HTMLElement>('[data-face]');
+    const idle = face?.innerHTML;
     if (btn) btn.disabled = true;
     if (face) face.textContent = 'Sending';
+    const listJoin = { form: 'newsletter', page: location.pathname, ...fields };
     try {
-      const res = await fetch(form.dataset.onceUrl!, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ form: 'newsletter', page: location.pathname, ...fields }),
-      });
-      const j = await res.json().catch(() => null);
+      let j: { ok?: boolean; already?: boolean; error?: string } | null;
+      if (form.dataset.registerUrl && !fields._gotcha) {
+        j = await (await post(form.dataset.registerUrl, { email: fields.email, plugin: form.dataset.plugin, marketing: true })).json().catch(() => null);
+        if (j && j.ok) post(form.dataset.onceUrl!, listJoin).catch(() => { /* the list join is best-effort */ });
+      } else {
+        j = await (await post(form.dataset.onceUrl!, listJoin)).json().catch(() => null);
+      }
       if (j && j.ok) {
         form.hidden = true;
-        show(j.already ? "You're already on the list. We'll email you at launch." : "You're on the list. We'll email you the day it goes live.", true);
+        show(j.already ? form.dataset.msgAlready! : form.dataset.msgOk!, true);
         status?.focus({ preventScroll: true });
       } else show((j && j.error) || 'Something went wrong. Try again, or email info@revaudio.net.', false);
     } catch {
       show('Network hiccup. Try again in a moment.', false);
     }
     if (btn) btn.disabled = false;
-    if (face) face.textContent = 'Notify me';
+    if (face && idle !== undefined) face.innerHTML = idle;
   });
 }

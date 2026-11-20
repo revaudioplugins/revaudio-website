@@ -20,7 +20,7 @@
  */
 
 export type PluginStatus = 'in-development' | 'beta' | 'live';
-export type PluginCategory = 'limiter' | 'saturation' | 'panner' | 'eq' | 'multi-fx';
+export type PluginCategory = 'limiter' | 'saturation' | 'panner' | 'eq' | 'multi-fx' | 'vocal';
 
 /** A category on the home TV's plugin library (labels + order: src/data/library.ts). 'free' is never listed on a
  *  plugin: the library adds it from `isFree`, so "free" has one source. */
@@ -628,6 +628,41 @@ export const plugins: Plugin[] = [
     audioDemos: [],
     // RevFX 1.2.0: Mac universal, macOS 10.13 floor (CMakeLists.txt); no AAX (no PACE wcguid yet), no Windows build yet.
     systemReq: { ...baseSystemReq, os: 'macOS 10.13+ (Apple silicon + Intel)', formats: 'VST3 + AU on Mac' },
+    reviewsCount: 0,
+    reviewsAvg: 0,
+  },
+  {
+    // OBDTUNE (2026-11-19): in the catalog for the cart only (its Paddle price; keep paddlePriceId and
+    // regularPriceUsd equal to src/data/obdtune.ts). No `library`: off the home TV until it is meant to be listed;
+    // 'in-development' keeps it off /support and /buy. The /obdtune page is its own route ([slug].astro OWN_ROUTE).
+    slug: 'obdtune',
+    name: 'OBDTUNE',
+    category: 'vocal',
+    tagline: 'Plug in. Read the note. Tune it.',
+    oneLiner: 'Vocal pitch correction built like a shop scan tool.',
+    plainHook: 'As hard or as human as you set it.',
+    plainWhat:
+      'It reads every note you sing, finds the key with DETECT and puts each note where it belongs, then stacks harmonies and finishes the vocal with EQ, compression, echo and reverb.',
+    longPitch:
+      'DETECT sets KEY and SCALE from a few sung bars. SPEED runs from a hard 1 ms snap to a 200 ms glide, HUMANIZE and FLEX keep the life in it, two harmony voices follow the scale, and the FX page adds EQ, SQUEEZE, ECHO and REVERB.',
+    status: 'in-development',
+    statusLabel: 'Free trial',
+    trialOpen: true,
+    introPriceUsd: null,
+    regularPriceUsd: 15, // = obdtune.ts priceUsd (the cart's price; Paddle charges its own $15.00)
+    paddlePriceId: 'pri_01m7vhe769c8s1rsqs3c0f0xvm',
+    checkoutPaused: false,
+    demoUrl: null,
+    releaseTarget: '2026',
+    heroImage: 'obdtune-hero.png',
+    galleryImages: [],
+    features: [
+      { name: 'DETECT', desc: 'Sing a few bars and it sets KEY and SCALE by itself. UNDO? puts it back.' },
+      { name: 'SPEED, HUMANIZE, FLEX', desc: 'From a hard snap to no trace, with held notes and small drift left alone.' },
+      { name: 'Harmony + FX', desc: 'Two scale-aware harmony voices, then EQ, SQUEEZE, ECHO and REVERB.' },
+    ],
+    audioDemos: [],
+    systemReq: { ...baseSystemReq, formats: 'VST3 + AU on Mac, VST3 on Windows' },
     reviewsCount: 0,
     reviewsAvg: 0,
   },
