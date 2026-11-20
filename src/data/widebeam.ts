@@ -2,16 +2,14 @@
  * /widebeam commerce config: the one place the page reads its trial and buy state from (the src/data/revfx.ts
  * pattern). WIDE BEAM = revaudioplugins/WideBeam, a 1.0 candidate (not released, 2026-11-17).
  *
- * Nothing is wired yet (Gil 2026-11-17: "build it and keep it as a placeholder, this won't go live until I give you
- * an ID"), so the page ships in a state that promises only what works:
- *   - gateWired false: the trial form posts to the worker's /form-once (the newsletter relay, source
- *     'widebeam-trial') and says the download link comes by email when the trial opens. Flip true once the
- *     revlimiter-license worker has DL_PLUGINS.widebeam + the R2 builds: the form then posts {email, plugin, marketing}
- *     to /download/register first, which emails the download at once (as src/lib/drift/capture.ts does).
- *   - paddlePriceId / priceUsd null: BUY NOW shows as a placeholder that only explains. To go live: set both here,
- *     add a WideBeam entry to src/data/plugins.ts with the same paddlePriceId and regularPriceUsd (the cart only
- *     checks out slugs it finds there), add 'widebeam' to OWN_ROUTE in src/pages/[slug].astro, and keep it out of
- *     the home TV / store until it is meant to be listed (see how revfx.ts `listed` does it).
+ * Commerce (Gil 2026-11-19, Paddle product pro_01m7vhb719rzqnagt7vmm03kwh):
+ *   - gateWired true: the trial form posts {email, plugin, marketing} to the worker's /download/register first, which
+ *     emails the download at once (as src/lib/drift/capture.ts does), then joins the list via /form-once. The worker's
+ *     DL_PLUGINS.widebeam opened with revlimiter-license 0f241f7; until /pit-lane ships the builds the email says
+ *     "coming soon" per platform. The worker must be live before this page is, or the register call has no gate.
+ *   - priceUsd + paddlePriceId: BUY NOW adds to the cart and opens it. plugins.ts has the same id and price (the cart
+ *     only checks out slugs it finds there), [slug].astro OWN_ROUTE has 'widebeam', and the plugins.ts entry has no
+ *     `library`, so WIDE BEAM stays off the home TV until it is meant to be listed.
  */
 import { site } from './site';
 
@@ -19,9 +17,9 @@ export const widebeam = {
   slug: 'widebeam',
   name: 'WIDE BEAM',
   trialDays: 30, // WideBeam README "Licence": a silent 30-day trial from the first load
-  priceUsd: null as number | null,
-  paddlePriceId: null as string | null,
-  gateWired: false,
+  priceUsd: 9 as number | null, // = the Paddle price ($9.00 USD)
+  paddlePriceId: 'pri_01m7vhcdt6t1dtpbyn9g1mx00m' as string | null, // keep equal to plugins.ts widebeam
+  gateWired: true,
   gateId: 'widebeam',
 };
 
