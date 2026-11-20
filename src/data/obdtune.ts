@@ -21,8 +21,8 @@ export const obdtune = {
   paddlePriceId: 'pri_01m7vhe769c8s1rsqs3c0f0xvm' as string | null, // keep equal to plugins.ts obdtune
   gateWired: true,
   gateId: 'obdtune',
-  /** the CMake build adds AAX only when an AAX SDK is present: say it once the shipped pkg has it */
-  formats: 'Mac VST3 · AU · Windows VST3',
+  /** the Mac pkg ships AAX (Gil, 2026-11-19), same as WIDE BEAM */
+  formats: 'Mac VST3 · AU · AAX · Windows VST3',
 };
 
 /** BUY NOW adds to the cart only when Paddle has a price for it */

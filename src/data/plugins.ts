@@ -662,7 +662,7 @@ export const plugins: Plugin[] = [
       { name: 'Harmony + FX', desc: 'Two scale-aware harmony voices, then EQ, SQUEEZE, ECHO and REVERB.' },
     ],
     audioDemos: [],
-    systemReq: { ...baseSystemReq, formats: 'VST3 + AU on Mac, VST3 on Windows' },
+    systemReq: { ...baseSystemReq, formats: 'VST3 + AU + AAX on Mac, VST3 on Windows' },
     reviewsCount: 0,
     reviewsAvg: 0,
   },
