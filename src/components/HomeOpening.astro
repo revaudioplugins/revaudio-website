@@ -25,7 +25,7 @@
 
 <div class="ho" id="ho">
   <iframe class="ho-frame" id="hoFrame" title="The RevAudio garage" tabindex="-1" aria-hidden="true"></iframe>
-  <button class="ho-skip" id="hoSkip" type="button" hidden>Skip to the plugins <span aria-hidden="true">↓</span></button>
+  <button class="ho-skip" id="hoSkip" type="button">Skip to the plugins <span aria-hidden="true">↓</span></button>
 </div>
 
 <script is:inline>
@@ -75,7 +75,7 @@
     if (!H.classList.contains('ho-on')) return;
     var ho = document.getElementById('ho'), frame = document.getElementById('hoFrame'), skip = document.getElementById('hoSkip');
     var wall = null, ready = false, booted = false, state = '', paused = false, pauseTimer = 0, raf = 0;
-    var walkPx = innerHeight * 3.7, lockY = 0, lastY = 0, down = false, landTimer = 0, waited = 0, focusAt = -1e4;
+    var walkPx = innerHeight * 3.7, lockY = 0, lastY = 0, down = false, landTimer = 0, waited = 0, focusAt = -1e4, leftAt = 0, leftY = 0;
     var px = function (name) { return parseFloat(getComputedStyle(H).getPropertyValue(name)) || 0; };
     var navTotal = function () { return Math.round((px('--site-nav-h') || 41) + px('--sale-h')); };
     function done() { try { sessionStorage.setItem('ra-ho-done', '1'); } catch (e) {} }
@@ -91,14 +91,17 @@
     function pause(b) { if (paused === b) return; paused = b; var r = room(); if (r) r.pause(b); }
     function setState(s) {
       if (s === state) return;
+      var was = state;
       state = s;
       H.classList.toggle('ho-locked', s === 'locked');
       clearTimeout(pauseTimer);
       if (s === 'walk') {
         H.classList.remove('ho-past'); pause(false);
         if (wall && wall.contains(document.activeElement)) document.activeElement.blur(); // (focus doesn't stay in the TV, unseen again)
+        if (was === 'locked') { leftAt = performance.now(); leftY = scrollY; hold(); }
         return;
       }
+      wall.style.translate = '';
       done(); note('walked');
       requestAnimationFrame(follow);
       // the real TV has faded in over the room's: the room hides and stops drawing
@@ -107,7 +110,7 @@
     function measure() {
       ho.style.setProperty('--ho-walk', walkPx + 'px');
       wall = wall || document.querySelector('.garage-wall');
-      if (wall) lockY = wall.getBoundingClientRect().top + scrollY - navTotal();
+      if (wall) { wall.style.translate = ''; lockY = wall.getBoundingClientRect().top + scrollY - navTotal(); } // (its place in the page, without hold()'s shift)
       window.__hoLockY = lockY; // (the welcome popup measures its 35 % from here: the home page below the walk)
     }
     function onScroll() {
@@ -132,6 +135,14 @@
     }
     // (every frame while the two cross-fade: Safari's scroll event comes a frame or two after the page moved)
     function follow() { if (state === 'locked' && !H.classList.contains('ho-past')) { place(); requestAnimationFrame(follow); } }
+    // back up into the walk, its mirror: for the 0.2 s the real TV takes to fade out it stays where it was on the screen,
+    // over the room's TV, while the page goes on down under the wheel (the room's TV does move as the walk backs off:
+    // a pixel or two on a slow scroll, about 15 px by the end of the fade on a hard wheel)
+    function hold() {
+      var on = state === 'walk' && performance.now() - leftAt < 220;
+      wall.style.translate = on ? '0 ' + (scrollY - leftY).toFixed(1) + 'px' : '';
+      if (on) requestAnimationFrame(hold);
+    }
     // the end of the walk is the room's picture of the TV, which does nothing: a walk that stops in its last tenth
     // glides on to the lock (the TV's own landing, WordWall.astro, leaves the walk to this one; like it, never against
     // the visitor: only when the last move was down)
@@ -182,7 +193,7 @@
       if (m.garage === 'ready' && !ready) {
         ready = true;
         clearTimeout(slow); clearInterval(give);
-        skip.hidden = true;
+        skip.classList.remove('is-up');
         H.classList.remove('ho-loading');
         measure(); onScroll();
       }
@@ -200,8 +211,16 @@
       try { var d = frame.contentDocument; if (booted && d && !room() && !d.documentElement.classList.contains('lights-loading')) fallback(); /* (room() is set just before 'ready') */ } catch (e) {}
     }, 1000);
     addEventListener('resize', function () { measure(); queue(); });
-    skip.addEventListener('click', function () { fallback(true); });
-    var slow = setTimeout(function () { if (!ready) skip.hidden = false; }, 6000);
+    skip.addEventListener('click', function () { if (!ready) fallback(true); }); // (not in the 0.3 s it takes to fade out once the room is up)
+    // Skip comes up after 6 s of loading, but not as the room is about to take over: once the loading screen's last light
+    // bank is on (its log, lights/lights-on.js) the hand-off is a second or two away, and the button flashed up and out
+    // (11-20). It waits 3 s more, once: a load that stalls after the last bank still gets its Skip
+    function lastBank() { try { var w = frame.contentWindow; return w.lightsOn.log.length > w.LIGHT_BANKS.length; } catch (e) { return false; } }
+    var slow = setTimeout(function up() {
+      if (ready) return;
+      if (!up.waited && lastBank()) { up.waited = true; slow = setTimeout(up, 3000); return; }
+      skip.classList.add('is-up');
+    }, 6000);
     // 45 s of the tab being looked at: one opened in the background loads when the visitor comes to it (its room
     // waits for frames a hidden tab doesn't draw)
     var give = setInterval(function () { if (!ready && !document.hidden && (waited += 1000) >= 45000) fallback(); }, 1000);
@@ -213,10 +232,13 @@
       .then(function (html) {
         if (!H.classList.contains('ho-on')) return;
         // ?look=<id>: another look for the room than its own (room.html LOOK_DEFAULT, VHS since Dan's pick, 2026-11-18):
-        // today (today's look, without one), film, 16mm or vhs; only an id on this list
+        // today (today's look, without one), vhs or vhs-more (the three being compared, 11-20; film and 16mm stay on
+        // the room's own unlisted page); only an id on this list
         var look = null; try { look = new URLSearchParams(location.search).get('look'); } catch (e) {}
-        if (['today', 'film', '16mm', 'vhs'].indexOf(look) < 0) look = '';
-        var head = '<base href="/garage-9f3c/"><script>window.__EMBED = { nav: ' + navTotal() + ', sale: \'' + (H.dataset.sale || (H.dataset.saleSoon ? 'soon' : '')).replace(/[^a-z]/g, '') + '\'' + (look ? ', look: \'' + look + '\'' : '') + ' };<\/script>';
+        if (['today', 'vhs', 'vhs-more'].indexOf(look) < 0) look = '';
+        // (and the room's embed class before its first paint: its own script adds it once its imports are in, and until
+        // then its builder's Bench button showed on the black start of the loading screen)
+        var head = '<base href="/garage-9f3c/"><script>window.__EMBED = { nav: ' + navTotal() + ', sale: \'' + (H.dataset.sale || (H.dataset.saleSoon ? 'soon' : '')).replace(/[^a-z]/g, '') + '\'' + (look ? ', look: \'' + look + '\'' : '') + ' }; document.documentElement.classList.add(\'embed\');<\/script>';
         frame.srcdoc = html
           .replace(/<head[^>]*>/i, function (m) { return m + head; })
           // the room's pictures of this page's nav, TV and below are not shown here; and the browser's early fetches in
@@ -240,19 +262,30 @@
   .ho-frame { position: fixed; inset: 0; width: 100%; height: 100vh; border: 0; z-index: 1; pointer-events: none;
     background: #060509; color-scheme: dark; }
   :global(html.ho-past) .ho-frame { visibility: hidden; }
+  /* the site's nav is glass (and the sale strip sits over it): over the room it let the room through, tinted by it,
+     and went back to grey in the frame the room hid (11-20; sharp where the browser does not draw the blur). So a strip of the page's own dark lies between the room and the two, for as long as
+     the room shows: the nav as over the top of any page. Back at once with the room; out slowly, the smoke that takes
+     its place is a shade lighter */
+  :global(html.ho-on) .ho::after { content: ''; position: fixed; inset: 0 0 auto; height: calc(var(--site-nav-h, 41px) + var(--sale-h, 0px));
+    z-index: 1; background: var(--bg-0); pointer-events: none; }
+  :global(html.ho-past) .ho::after { opacity: 0; visibility: hidden; transition: opacity .4s ease-out, visibility 0s .4s; }
   /* speed (2026-11-18, O-2): the site's smoke plates sit behind the opaque frame for the whole walk; unseen, they still
-     cost the compositor about 3 ms a frame. They come back with ho-past, when the frame hides */
-  :global(html.ho-on:not(.ho-past) .haze) { visibility: hidden; }
-  /* the real TV waits, unseen, at the end of the walk; at the lock it fades in over the room's TV (out at once).
+     cost the compositor about 3 ms a frame. They come back with ho-past, when the frame hides: over 0.4 s (11-20), not
+     in one frame, which showed as the fog snapping on over the section under the TV */
+  :global(html.ho-on:not(.ho-past) .haze) { visibility: hidden; opacity: 0; }
+  :global(html.ho-on.ho-past .haze) { transition: opacity .4s ease-out; }
+  /* the real TV waits, unseen, at the end of the walk; at the lock it fades in over the room's TV, and back up into the
+     walk it fades out over it (0.2 s, 11-20: at once, the sharp TV became the room's softer one in one frame).
      Unseen, not hidden: it stays in the tab order and for screen readers (focus in it lands on the lock, the script
      above); until then nothing in it takes the mouse (its lit panel sets pointer-events and visibility of its own) */
-  :global(html.ho-on .garage-wall) { position: relative; z-index: 2; opacity: 0; }
+  :global(html.ho-on .garage-wall) { position: relative; z-index: 2; opacity: 0; transition: opacity .2s ease-out; }
   :global(html.ho-on:not(.ho-locked) .garage-wall), :global(html.ho-on:not(.ho-locked) .garage-wall *) { pointer-events: none !important; }
   :global(html.ho-on.ho-locked .garage-wall) { opacity: 1; transition: opacity .45s ease-out; }
   :global(html.ho-loading), :global(html.ho-loading body) { overflow: hidden; scrollbar-gutter: stable; }
   .ho-skip { position: fixed; left: 50%; bottom: 28px; translate: -50% 0; z-index: 3; appearance: none; cursor: pointer;
     border: 1px solid rgba(232, 200, 120, 0.45); border-radius: 999px; background: rgba(12, 10, 8, 0.82); color: #e8dccb;
-    font: 600 13px/1 Inter, system-ui, sans-serif; letter-spacing: 0.04em; padding: 12px 18px; }
+    font: 600 13px/1 Inter, system-ui, sans-serif; letter-spacing: 0.04em; padding: 12px 18px;
+    opacity: 0; visibility: hidden; transition: opacity .3s ease, visibility 0s .3s; } /* (in and out over 0.3 s, 11-20: it popped) */
+  .ho-skip.is-up { opacity: 1; visibility: visible; transition-delay: 0s; }
   .ho-skip:hover, .ho-skip:focus-visible { border-color: #e8c878; color: #fff3d6; }
-  .ho-skip[hidden] { display: none; }
 </style>

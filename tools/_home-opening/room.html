@@ -66,6 +66,7 @@
   .lights { position: absolute; inset: 0; background: #000; isolation: isolate; overflow: hidden; pointer-events: none; transition: opacity .5s ease; }
   .lights.is-off { opacity: 0; }
   .lights img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; will-change: opacity; }
+  .lights .lo-sign { opacity: 1; will-change: auto; } /* the sign: lit from the first frame, the dark room fades up over it (the same sign) */
   .lights .lo-bank, .lights .lo-flare, .lights .lo-grain { mix-blend-mode: plus-lighter; }
   .lights.no-plus .lo-bank, .lights.no-plus .lo-flare, .lights.no-plus .lo-grain { mix-blend-mode: screen; }
   .lights .lo-grain { position: absolute; inset: -96px; background-size: 192px 192px; opacity: 0; transition: opacity .9s ease; will-change: transform, opacity; }
@@ -134,7 +135,8 @@
     <div class="cam">
       <div class="stage" id="stage">
         <canvas id="gl" aria-hidden="true"></canvas>
-        <div class="lights" id="lights" data-dir="assets/lights/" aria-hidden="true"></div>
+        <!-- (the REVAUDIO sign's own picture, on from the first painted frame: lights/lights-on.js, lights/render.mjs) -->
+        <div class="lights" id="lights" data-dir="assets/lights/" aria-hidden="true"><img class="lo-sign" src="assets/lights/sign.webp" alt="" fetchpriority="high"></div>
         <script>/* the loading screen (lights/README.md): the dark room's lights come on bank by bank as the page loads, in this
           order, front to back toward the TV. Each bank is one picture rendered from this room (lights/render.mjs); kind = how
           it comes on (lights/lights-on.js): a tube strikes, a neon buzzes on, a bulb warms up, the gear powers on. props =
@@ -150,7 +152,16 @@
             { id: 'lamp2', kind: 'bulb', w: 1.4 },
             { id: 'lamp3', kind: 'bulb', w: 0.6 },                 // over the desk
             { id: 'gear', kind: 'gear', w: 0.3 },                  // the CRTs, the racks' LEDs and meters, the floor strips (the REVAUDIO sign is on its own circuit: lit from the first frame, Dan 11-11)
-          ];</script>
+          ];
+          /* the pictures come in sets, one per kind of screen (2026-11-20; one set for every screen sharpened at the hand-off on
+             the larger retina laptops). tag = its folder in assets/lights; ref = the screen it is drawn for (CSS width,
+             height, pixel ratio): its pictures carry the look at the resolution the live room draws there. What counts is
+             the rows of the room's drawing buffer (the height x roomRatio): 1113 on a 1141x636 @2x laptop and 1080 on a
+             1920x1080 @1x screen, so those two share the first set; 1520 at 1440x900 @2x (the retina laptops, 1440p and 4K
+             screens). lights-on.js takes the set nearest this screen's rows. All sets keep one wide shape (2560x1080) */
+          window.LIGHT_SETS = [{ tag: '1141', ref: [1141, 636, 2] }, { tag: '1440', ref: [1440, 900, 2] }];
+          /* the room's device pixels per CSS px on a screen (setBuffer's rule: the recipe's laptop budget, 3.7 MP at most) */
+          window.roomRatio = (vw, vh, dpr) => Math.min(dpr || 1, 1.75, Math.sqrt(3.7e6 / (vw * vh)));</script>
         <script src="lights/lights-on.js"></script>
         <img class="tv-live" id="tvLive" src="assets/tv-1141x636.webp" alt="The plugin TV">
         <div class="read-b" id="readB">
@@ -250,8 +261,8 @@ const DEF = {
   doorW: 4, doorH: 3.5, doorOpen: 0.9, outside: 3,
   // the REVAUDIO neon: off the aisle (Dan 2026-11-02: "not in your face"), then on the end wall, right of the TV (11-03)
   signWall: 'endLeft', signF: 0.52, signX: -1.47, signY: 3.09,  // the wall in front of you, top right (Dan 11-03, placed 11-04, nudged on his room bench of 11-09)
-  signScale: 1.15, signTilt: -2,        // hung a little crooked on two wires (Dan 11-03; sized 11-04)
-  ver: 27,                               // settings version (27 = RevFX's lunchbox on L09; 26 = N26 6 cm out for the plant N50; 25 = the radio up on the shelf W10; 24 = round 6: M03 / M04 hold the plugins' objects, their spots moved; 23 = round 5 landed: N03 the lift's pump on its own row, its move gone (11-11); 22 = batch 7, the far end: N42's tray hangs under the trusses on its own height (h 1.565, x -2.05 clear of the neon's lights); N29's narrower blankets fit Dan's spot (w 1.444, h 2.145, d 0.136); L17's pegboard v2, its tools in the gaps round the bass wall, d 0.085 (a thin board); N39 0.4 m along its truss + glow 0.7 (out of the neon's wash, deeper lamp colour); N18's board on the pegboard's face (on 0.02); N49 hung under W10's plank, 11-10; 21 = batch 6, the left wall: N12's box grows for its real 2x4, 11-10; 20 = batch 5, the car side: N43 out from under the lift's plate, N11 onto it, 11-10; 19 = batch 4 + the round-2 instruments: N02 on chains, N41/N39 onto the truss, the ukulele's hanger level with the banjo's; the round-3 checks: the rack 1.75 m out, the rims on the tyre rack, the sketch wall off the bass, 11-09; 18 = Dan's round-2 build notes, 11-09; 17 = the big line + the engine back on, Dan 11-09; 16 = his room bench of 11-09: the end wall rearranged; 15 = much less dust, Dan 11-09; 14 = the drum N06 moved, Dan's build bench of 11-09; 5 = Dan's bench of 11-03 baked, 6 = his third, with the pegboard move, 7 = back to the bare set; his bench of 11-04 needed no bump; 8 = the snap off; 9 = B + A's moves as the room; 10 = the look pass, 11 = its first fix round, 12 = his bench of 11-08 + two nudges, 13 = his neon pick): 2 moved the sign to the end wall, 3 made it bigger + crooked, 4 took the road off the floor
+  signScale: 1.61, signTilt: -2,        // hung a little crooked on two wires (Dan 11-03; sized 11-04; x1.4 on 11-18: read from the door through the VHS look)
+  ver: 28,                               // settings version (28 = the sign x1.4, Dan 11-18; 27 = RevFX's lunchbox on L09; 26 = N26 6 cm out for the plant N50; 25 = the radio up on the shelf W10; 24 = round 6: M03 / M04 hold the plugins' objects, their spots moved; 23 = round 5 landed: N03 the lift's pump on its own row, its move gone (11-11); 22 = batch 7, the far end: N42's tray hangs under the trusses on its own height (h 1.565, x -2.05 clear of the neon's lights); N29's narrower blankets fit Dan's spot (w 1.444, h 2.145, d 0.136); L17's pegboard v2, its tools in the gaps round the bass wall, d 0.085 (a thin board); N39 0.4 m along its truss + glow 0.7 (out of the neon's wash, deeper lamp colour); N18's board on the pegboard's face (on 0.02); N49 hung under W10's plank, 11-10; 21 = batch 6, the left wall: N12's box grows for its real 2x4, 11-10; 20 = batch 5, the car side: N43 out from under the lift's plate, N11 onto it, 11-10; 19 = batch 4 + the round-2 instruments: N02 on chains, N41/N39 onto the truss, the ukulele's hanger level with the banjo's; the round-3 checks: the rack 1.75 m out, the rims on the tyre rack, the sketch wall off the bass, 11-09; 18 = Dan's round-2 build notes, 11-09; 17 = the big line + the engine back on, Dan 11-09; 16 = his room bench of 11-09: the end wall rearranged; 15 = much less dust, Dan 11-09; 14 = the drum N06 moved, Dan's build bench of 11-09; 5 = Dan's bench of 11-03 baked, 6 = his third, with the pegboard move, 7 = back to the bare set; his bench of 11-04 needed no bump; 8 = the snap off; 9 = B + A's moves as the room; 10 = the look pass, 11 = its first fix round, 12 = his bench of 11-08 + two nudges, 13 = his neon pick): 2 moved the sign to the end wall, 3 made it bigger + crooked, 4 took the road off the floor
   // the look pass (2026-11-08, todo 1b): real materials and night light on the same set (Skeleton = the grey labelled
   // blocks); tone = the tone mapping (AgX), exposure its exposure; probe = how much the room shows in its own shiny
   // things (chrome, paint, the floor); shafts = the haze under the lamps
@@ -379,8 +390,10 @@ const EMBED_SALE = EMBED && ['soon', 'bf', 'cm'].includes(window.__EMBED?.sale) 
 const LOOK_DEFAULT = 'vhs';
 const LOOK_ID = (EMBED ? window.__EMBED?.look : null) || new URLSearchParams(location.search).get('look') || LOOK_DEFAULT;
 // &flat (lights/render.mjs): the loading screen's pictures, drawn in the look without the marks that screen lays over them
-// itself (the vignette and the scanlines: lookOverlay) or the grain, at the look's resolution as a 1141x636 laptop shows them
-const LOOK_FLAT = CAPTURE != null && new URLSearchParams(location.search).has('flat');
+// itself (the vignette and the scanlines: lookOverlay) or the grain, at the look's resolution as the screen it names shows
+// them: &flat=<w>x<h>@<dpr> (CSS px and its pixel ratio; a 1141x636 @2x laptop if it names none). LOOK_FLAT = [w, h, dpr]
+const LOOK_FLAT = CAPTURE != null && new URLSearchParams(location.search).has('flat')
+  ? (/^(\d+)x(\d+)@([\d.]+)$/.exec(new URLSearchParams(location.search).get('flat')) || [0, 1141, 636, 2]).slice(1).map(Number) : null;
 const embed = { y: 0, to: 0, paused: false };
 const embedSay = (ev, data) => { if (EMBED && parent !== window) parent.postMessage({ garage: ev, ...data }, '/'); };
 embedSay('boot'); // (the page falls back when this never comes: a script that failed to load)
@@ -427,6 +440,7 @@ if (sv < 24) for (const id of ['M03', 'M04']) S.moves[id] = { ...DEF.moves[id] }
 if (sv < 25) S.moves.M04 = { ...DEF.moves.M04 }; // the radio up on the shelf where the headphones hang (Dan 11-11)
 if (sv < 26) S.moves.N26 = { ...DEF.moves.N26 }; // the boom stand 6 cm out, clear of the plant (11-11)
 if (sv < 27) S.moves.M01 = { ...DEF.moves.M01 }; // RevFX's lunchbox on the bench (11-11)
+if (sv < 28) S.signScale = DEF.signScale; // the sign x1.4, read from the door through the VHS look (Dan 11-18)
 // (migrations run oldest first: put a new version's lines at the bottom, so a later one can undo an earlier one)
 S.ver = DEF.ver;
 // ?layout=<name>: a proposed layout (layouts/<name>.json, the bench's Copy-settings format) over the defaults, to walk
@@ -521,6 +535,14 @@ const FINISH = {
 // soft scanlines and a chroma bleed (vhs). No flashing, rolling or jitter (WCAG 2.3.1). Every look eases off to
 // today's finish between off[0] and off[1] of the walk, its resolution back to full, so the real TV takes over the
 // same picture (the hand-off gate). move: the 16mm look draws softer while the walk moves (k x move), sharp at rest.
+// sharp: the softness on its own curve (2026-11-20; Dan 11-18: the move from the room to the page "as seamless as
+// possible"). Eased with the grade, the TV filled the screen still soft and snapped sharp in the last 1 % of the walk:
+// any scale under 1 is resampled, so the picture stayed about as soft as the full look until the scale was exactly 1,
+// and scales just under 1 swept soft and sharp bands over the TV's fine lines. So the draw scale rises between
+// sharp[0] and sharp[1] only as far as LOOK_SNAP; from there the room is drawn at the target's full size (while the
+// camera still moves) and what softness is left is a blur from the target's first mip level (soft: its level at the
+// switch: 0.4 measures as soft as a 0.9 scale, edge energy 0.72 of today's against 0.70 to 0.73, stills at 80 and 90 %
+// of the walk), fading to none at sharp[1]. Without sharp, as before: with the grade.
 // On the faster room (O-3, O-4): lookFrame() runs before frame() decides on the floor's reflection, so hiding R.wet
 // there drops the top-level draw too; and a look's finish never reads tBloom (the glow pass is off, lookInit).
 const LOOKS = {
@@ -530,19 +552,27 @@ const LOOKS = {
   '16mm': { name: '16 mm', k: 0.7, dpr: 0.85, move: 0.7, msaa: 0, off: [0.9, 0.99],
     halo: { px: 9, thr: 0.3, k: 0.7, tint: [1.0, 0.5, 0.3] }, lift: [0.04, 0.03, 0.036], gain: [1.02, 0.99, 0.92], sat: 0.8, con: 0.24,
     vig: 0.6, grain: 0.07, grainPx: 1.6, scan: 0, bleed: 0 },
-  vhs: { name: 'VHS', k: 0.6, dpr: 0.7, msaa: 0, off: [0.9, 0.99],
-    halo: { px: 6, thr: 0.3, k: 0.45, tint: [1.0, 0.8, 0.85] }, lift: [0.04, 0.032, 0.045], gain: [0.99, 0.98, 1.0], sat: 0.92, con: 0.1,
-    vig: 0.32, grain: 0.03, grainPx: 1.0, scan: 0.12, bleed: 1.5 },
+  // VHS, lighter (Dan 11-18 on the first VHS: "way too much", the sign unreadable, the move to the page too far apart):
+  // drawn at 0.55 per side with 4x MSAA (the thin neon tubes stay whole; door 5.8 ms vs the faster room's 12.2, Chrome
+  // uncapped 1141x636@2), a light tape bleed, faint scanlines, a near-neutral grade; it eases off from 60 % of the walk,
+  // the grade gone by 92 %, the picture sharp by 88 % (sharp, above), before the TV fills the screen
+  vhs: { name: 'VHS', k: 0.55, dpr: 3, msaa: 4, off: [0.6, 0.92], sharp: [0.6, 0.88], soft: 0.4,
+    halo: { px: 6, thr: 0.3, k: 0.45, tint: [1.0, 0.8, 0.85] }, lift: [0.03, 0.024, 0.034], gain: [0.99, 0.98, 1.0], sat: 0.95, con: 0.08,
+    vig: 0.24, grain: 0.025, grainPx: 1.0, scan: 0.05, bleed: 0.6 },
+  'vhs-more': { name: 'VHS, a notch more', k: 0.45, dpr: 3, msaa: 4, off: [0.6, 0.92], sharp: [0.6, 0.88], soft: 0.4, // (for comparing: ?look=vhs-more)
+    halo: { px: 6, thr: 0.3, k: 0.45, tint: [1.0, 0.8, 0.85] }, lift: [0.035, 0.028, 0.04], gain: [0.99, 0.98, 1.0], sat: 0.93, con: 0.09,
+    vig: 0.28, grain: 0.03, grainPx: 1.0, scan: 0.08, bleed: 1.0 },
 };
 const LOOK_ON = Object.hasOwn(LOOKS, LOOK_ID || '') ? LOOKS[LOOK_ID] : null;
+const LOOK_SNAP = 0.9; // sharp: from this draw scale on, the full target and a mip blur (a scale between here and 1 only beats against the canvas's pixels)
 const LK = { n: 0, p: null, hold: 0, m: 0 }; // the grain's frame count; the walk's last place, how much it moves (16mm)
 const lookFinish = (lk) => ({ // FINISH with the look on top; at uAmt 0 and uK 1 it is FINISH's own arithmetic (less the glow)
-  uniforms: { ...FINISH.uniforms, uK: { value: new THREE.Vector2(1, 1) }, uAmt: { value: 1 }, uSeed: { value: 0 }, uLod: { value: 3 }, uCss: { value: 1 },
+  uniforms: { ...FINISH.uniforms, uK: { value: new THREE.Vector2(1, 1) }, uAmt: { value: 1 }, uSoft: { value: 0 }, uSeed: { value: 0 }, uLod: { value: 3 }, uCss: { value: 1 },
     uLift: { value: new THREE.Vector3(...lk.lift) }, uGain: { value: new THREE.Vector3(...lk.gain) }, uHalo: { value: new THREE.Vector3(...lk.halo.tint) },
     uG: { value: new THREE.Vector4(lk.sat, lk.con, lk.vig, lk.halo.k) }, uF: { value: new THREE.Vector4(lk.grain, lk.grainPx, lk.scan, lk.bleed) }, uThr: { value: lk.halo.thr } },
   vertexShader: FINISH.vertexShader,
   fragmentShader: /* glsl */`
-    uniform sampler2D tDiffuse; uniform float uTone, uAmt, uSeed, uLod, uCss, uThr; uniform vec2 uK; uniform vec3 uLift, uGain, uHalo;
+    uniform sampler2D tDiffuse; uniform float uTone, uAmt, uSoft, uSeed, uLod, uCss, uThr; uniform vec2 uK; uniform vec3 uLift, uGain, uHalo;
     uniform vec4 uG, uF; varying vec2 vUv;
     #include <tonemapping_pars_fragment>
     float h12(vec2 p) { vec3 q = fract(vec3(p.xyx) * 0.1031); q += dot(q, q.yzx + 33.33); return fract((q.x + q.y) * q.z); }
@@ -553,12 +583,12 @@ const lookFinish = (lk) => ({ // FINISH with the look on top; at uAmt 0 and uK 1
         + textureLod(tDiffuse, uv + vec2(o.x, -o.y), lod).rgb + textureLod(tDiffuse, uv - o, lod).rgb); }
     void main() {
       vec2 ts = vec2(textureSize(tDiffuse, 0)), uv = uK.x < 1.0 ? min(vUv * uK, uK - 0.5 / ts) : vUv;
-      vec4 c = textureLod(tDiffuse, uv, 0.0);
+      vec4 c = textureLod(tDiffuse, uv, uSoft); // (uSoft: the last of the look's softness, at the full size; 0 = the target's own pixels)
       vec3 hdr = c.rgb;
       if (uAmt > 0.0) {
         if (uF.w > 0.0) { // the tape's colour smeared from the left, its brightness kept
           vec2 d = vec2(uF.w / ts.x, 0.0);
-          vec3 s = 0.4 * hdr + 0.3 * textureLod(tDiffuse, uv - d, 0.0).rgb + 0.2 * textureLod(tDiffuse, uv - 2.0 * d, 0.0).rgb + 0.1 * textureLod(tDiffuse, uv - 3.0 * d, 0.0).rgb;
+          vec3 s = 0.4 * hdr + 0.3 * textureLod(tDiffuse, uv - d, uSoft).rgb + 0.2 * textureLod(tDiffuse, uv - 2.0 * d, uSoft).rgb + 0.1 * textureLod(tDiffuse, uv - 3.0 * d, uSoft).rgb;
           vec3 Y = vec3(0.299, 0.587, 0.114);
           hdr = mix(hdr, (s + 0.002) / (dot(s, Y) + 0.002) * dot(hdr, Y), uAmt); // (the smeared hue at this pixel's brightness)
         }
@@ -610,18 +640,29 @@ function lookOverlay(lk) {
 }
 // each frame, before the composer: how strong the look is here, what share of the target the room is drawn into
 function lookFrame(now) {
-  const lk = LOOK_ON, u = finishPass.uniforms, rt = composer.readBuffer, W = rt.width, H = rt.height;
-  const pr = renderer.getPixelRatio() * (LOOK_FLAT ? innerHeight / 636 : 1); // (&flat: the picture's pixels per CSS px on a 1141x636 laptop, object-fit cover)
+  // (W, H: the real drawing buffer, whole pixels, which the composer's target has too; its own width and height are
+  // fractions on most screens, and a viewport rounded from those was a pixel off the target, so the picture was still
+  // resampled with the look fully off: softer at the lock on a 1440x900 screen)
+  const lk = LOOK_ON, u = finishPass.uniforms, gl = renderer.getContext(), W = gl.drawingBufferWidth, H = gl.drawingBufferHeight;
+  const pr = renderer.getPixelRatio() * (LOOK_FLAT ? innerHeight / LOOK_FLAT[1] : 1); // (&flat: the picture's pixels per CSS px on its screen, object-fit cover)
   const amt = 1 - smooth(lk.off[0], lk.off[1], progress);
-  let kk = Math.min(lk.k, lk.dpr / pr);
+  // under the governor (GOV.k < 1: a weak machine's smaller buffer) the room keeps the pixels per CSS px this screen
+  // had before the step, up to the whole target (2026-11-20): a step shrinks the finish, not the room, or the sign went
+  // back to mush on the very machines that step. No step, no change
+  // (&flat: the share of the picture that gives the room the pixels per CSS px it has live on that screen)
+  const k0 = LOOK_FLAT ? lk.k * window.roomRatio(...LOOK_FLAT) / pr : lk.k;
+  let kk = Math.min(1, Math.min(k0, lk.dpr * GOV.k / pr) / GOV.k);
   if (lk.move) { // the walk moving (it moved in the last 8 frames): softer, easing in and out over a few frames
     LK.hold = LK.p != null && Math.abs(progress - LK.p) > 2e-4 && CAPTURE == null ? 8 : Math.max(0, (LK.hold || 0) - 1); LK.p = progress;
     LK.m += ((LK.hold > 0 ? 1 : 0) - LK.m) * 0.2;
     kk *= 1 - (1 - lk.move) * LK.m;
   }
-  const k = 1 + (kk - 1) * amt, w = Math.max(1, Math.round(W * k)), h = Math.max(1, Math.round(H * k));
+  const v = 1 + (kk - 1) * (lk.sharp ? 1 - smooth(lk.sharp[0], lk.sharp[1], progress) : amt); // the scale the softness asks for here
+  const full = v >= (lk.sharp ? LOOK_SNAP : 1), k = full ? 1 : v; // (full: the whole target, exactly: uK (1, 1), today's own arithmetic)
+  const w = full ? W : Math.max(1, Math.round(W * k)), h = full ? H : Math.max(1, Math.round(H * k));
   for (const t of [composer.renderTarget1, composer.renderTarget2]) t.viewport.set(0, 0, w, h);
   u.uK.value.set(w / W, h / H); u.uAmt.value = amt; u.uCss.value = pr;
+  u.uSoft.value = full && lk.sharp ? lk.soft * (1 - v) / (1 - LOOK_SNAP) : 0;
   u.uSeed.value = CAPTURE != null || reduced ? 1 : (LK.n = (LK.n + 1) % 8192); // a still (and reduced motion) holds one grain; the walk's grain moves every frame
   u.uLod.value = Math.log2(Math.max(1, lk.halo.px * pr * (h / H)));
   R.dust.mat.size = 0.02 * (h / H); // (a point's size follows the canvas, not the corner it is drawn in)
@@ -1154,9 +1195,11 @@ async function loadModels() {
   // the REVAUDIO neon's glass (round 6, Dan 11-11: a real 3D neon): hung on the drawn plane, in its frame, which keeps only
   // the halo; the glass on the sign's own circuit (lightRoom)
   try {
-    const sg = await get(SIGN_MODEL);
+    const sg = await get(SIGN_MODEL), glass = new THREE.Box3();
+    sg.updateMatrixWorld(true);
     sg.traverse((o) => { if (!o.isMesh) return; o.receiveShadow = true;
-      for (const mt of [o.material].flat()) { if (mt.name === 'neon_glow') { R.signGlow = mt; mt.userData.k = mt.emissiveIntensity; } else o.castShadow = true; } });
+      for (const mt of [o.material].flat()) { if (mt.name === 'neon_glow') { R.signGlow = mt; mt.userData.k = mt.emissiveIntensity; glass.expandByObject(o); } else o.castShadow = true; } });
+    if (!glass.isEmpty()) R.signHalf = Math.max(-glass.min.x, glass.max.x); // the lit word's own half-width, for the end wall's clamp (arrange)
     R.sign.add(sg); R.signMat.map.dispose(); R.signMat.map = signTex(true); R.signMat.needsUpdate = true;
   } catch (e) { console.warn('sign', SIGN_MODEL, e.message); } // the drawn sign stays
   applyFlags(); arrange(); // the look shows the models; their shadows drawn once
@@ -2074,8 +2117,11 @@ function placeItem(it) {
   } else if (it.kind === 'sign') {
     const H = S.roomH, k2 = S.signScale, z = S.signF * span, y = Math.min(S.signY, H - 0.55 - 0.375 * k2);
     it.obj.scale.setScalar(k2);
-    if (signOnEnd()) { // on the end wall beside the TV, kept inside the wall
-      const x = clamp(S.signX, -Wd / 2 + 1.55 * k2, Wd / 2 - 1.55 * k2);
+    if (signOnEnd()) { // on the end wall beside the TV, kept inside the wall: the lit word, by its own half-width (0.8 m
+      // in the model; 0.95 = the drawn word). Not the 3.1 m plane, which is mostly its glow's margin: at x1.4 that clamp
+      // pushed the sign 0.62 m toward the TV, off the spot Dan gave it on his bench (2026-11-20). The rail's ends and a
+      // wire may run on into the side wall, behind the corner trap
+      const half = (R.signHalf ?? 0.95) * k2, x = clamp(S.signX, -Wd / 2 + half, Wd / 2 - half);
       it.obj.position.set(x, y, 0.06); it.obj.rotation.y = 0; R.signLight.position.set(x, y - 0.3, 0.6);
     } else if (S.signWall === 'aisle') {
       it.obj.position.set(0, y, z); it.obj.rotation.y = 0; R.signLight.position.set(0, y - 0.4, z + 0.3);
@@ -2316,11 +2362,12 @@ function resize() {
 // found too slow at the door (weak machines only, see GOV)
 function setBuffer() {
   const { vw, vh } = L;
-  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.75, Math.sqrt(3.7e6 / (vw * vh))) * GOV.k);
+  renderer.setPixelRatio((LOOK_FLAT ? 1 : window.roomRatio(vw, vh, devicePixelRatio)) * GOV.k); // (a &flat picture: its own pixels, whatever its size)
   renderer.setSize(vw, vh, false); composer.setPixelRatio(renderer.getPixelRatio()); composer.setSize(vw, vh);
   const dpr = renderer.getPixelRatio();
   R.mirror.getRenderTarget().setSize(Math.round(vw * dpr * 0.5), Math.round(vh * dpr * 0.5));
   R.wet.getRenderTarget().setSize(Math.round(vw * dpr * 0.25), Math.round(vh * dpr * 0.25)); // it's softened anyway
+  R.lockDrawn = false; // (a new buffer is empty: at the lock, its one frame again)
 }
 // ---------- the governor (2026-11-18, O-6): WEAK MACHINES ONLY ----------
 // A machine that can't hold the frame rate at the door draws a smaller buffer: one step at a time (x0.8), measured over
@@ -2328,6 +2375,9 @@ function setBuffer() {
 // visit (no flip-flop), and a step that buys less than 10 % is taken back at once (a slow CPU, not pixels: a smaller
 // buffer only blurs it). On a machine that holds ~36 fps or better nothing happens: the look is untouched. Never in a
 // capture (stills) or with ?governor=0. window.__gov reports what it did
+// Under a look (2026-11-20, lookFrame): a step makes the canvas and the finish smaller, never the room, which is drawn
+// small already and keeps its pixels per CSS px (the sign stays as readable). A step that then buys under 10 % is
+// taken back by the rule above
 const GOV = { k: 1, level: 0, on: CAPTURE == null && new URLSearchParams(location.search).get('governor') !== '0', iv: [], last: 0, from: 0, door: true, before: 0, beforeDoor: true, done: false, log: [] };
 window.__gov = GOV;
 const GOV_STEPS = [1, 0.8, 0.64], GOV_SLOW = 1000 / 36, GOV_WALK_SLOW = 1000 / 25;
@@ -2405,6 +2455,13 @@ function flicker(t, win, salt) {
   // 200 ms steps: the whole room changes at most 5 times a second, at most 2.5 flashes (WCAG 2.3.1 allows 3; Dan 2026-11-04)
   return k >= 1 ? 1 : k <= 0 ? 0 : (hash(Math.floor(t / 200) + salt) < k * k * 1.2 ? 1 : 0.05);
 }
+// the live room's own clock (2026-11-20): ms since it took over from the loading screen, 0 until then. The neon's dip,
+// the sign's stutter, the dying tube and the traffic light run on it: counted from the page's start they fell at the
+// same moments for every visitor, the first dip 0.7 to 1.3 s after the hand-off, where it read as a glitch. So: nothing
+// in the first 3 s, then at this visit's own moments (FLK); the traffic light starts on the red the loading pictures show
+const liveClock = (now) => (R.liveAt ? Math.max(0, now - R.liveAt) : 0);
+const FLK = Math.floor(Math.random() * 4096); // (a capture holds the lights steady: nothing of this reaches a still)
+const blip = (now, ms, salt, over) => { const c = liveClock(now); return c > 3000 && hash(Math.floor(c / ms) + salt + FLK) > over; };
 const LED_RGB = [[0.25, 2.2, 0.6], [2.4, 1.3, 0.2], [2.4, 0.25, 0.2], [0.3, 1.6, 2.4]];
 const _c = new THREE.Color();
 let progress = 0, walkDrag = false;
@@ -2504,14 +2561,14 @@ function lightRoom(neonK, warm, signK, open, far, now, full = false) {
     lp.light.intensity = 130 * k * lp.k; lp.bulbMat.color.copy(lp.bulbMat.userData.base).multiplyScalar((0.3 + 3.2 * lampK) * on);
     lp.shaft.material.uniforms.uK.value = 0.05 * S.shafts * k * far; lp.inner.material.emissiveIntensity = 2.0 * on; });
   for (const g of R.litGlow || []) g.m.emissiveIntensity = g.k * b(PROP_BANK[g.id]); // a lit prop's globe with its light
-  for (const l of R.propLights || []) { const id = l.parent.userData.item?.id; l.intensity = l.userData.cd * warm * b(PROP_BANK[id]) * (!steady && id === 'N02' && hash(Math.floor(now / 400) + 9) > 0.93 ? 0.55 : 1); } // one tube dying (held lit in a capture: a still never catches it dimmed)
+  for (const l of R.propLights || []) { const id = l.parent.userData.item?.id; l.intensity = l.userData.cd * warm * b(PROP_BANK[id]) * (!steady && id === 'N02' && blip(now, 400, 9, 0.93) ? 0.55 : 1); } // one tube dying (held lit in a capture: a still never catches it dimmed)
   R.signMat.color.setScalar(0.08 + 1.4 * signK); R.signLight.intensity = 6 * signK; if (R.signGlow) R.signGlow.emissiveIntensity = R.signGlow.userData.k * (0.08 + 1.4 * signK) / 1.48; // the sign: its own circuit, lit from the loading screen's first frame like the GAS globes (Dan 11-11), not the gear bank
   const fill = full ? 1 : HEMI_DARK + (1 - HEMI_DARK) * litFrac();
   if (R.hemiK != null) R.hemi.intensity = R.hemiK * fill;
   R.tv.glow.intensity = 3 * S.tvGlow * open * (reduced ? 1 : 1 + 0.05 * Math.sin(now * 0.0019)) * far;
   R.tv.haloMat.opacity = 0.1 * open;
   for (const m of SHINY) m.envMapIntensity = S.probe * (m.userData.env ?? 1) * warm * fill; // the reflections come up with the lamps
-  for (const g of R.modelGlow || []) { const c = g.cyc, s = c && (now / 1000) % c.n; g.m.emissiveIntensity = g.k * warm * b(PROP_BANK[g.id] || (g.own ? 'own' : 'gear')) * (g.dying && !steady && hash(Math.floor(now / 400) + 9) > 0.93 ? 0.55 : 1) * (!c ? 1 : (steady ? !c.a : s >= c.a && s < c.b) ? 1 : 0.03); } // a model's meters and LEDs too (with its bank, or the gear's); a traffic light's lamps in turn
+  for (const g of R.modelGlow || []) { const c = g.cyc, s = c && (liveClock(now) / 1000) % c.n; g.m.emissiveIntensity = g.k * warm * b(PROP_BANK[g.id] || (g.own ? 'own' : 'gear')) * (g.dying && !steady && blip(now, 400, 9, 0.93) ? 0.55 : 1) * (!c ? 1 : (steady ? !c.a : s >= c.a && s < c.b) ? 1 : 0.03); } // a model's meters and LEDs too (with its bank, or the gear's); a traffic light's lamps in turn
 }
 const wetFrustum = new THREE.Frustum(), wetPM = new THREE.Matrix4();
 function wetInView() { // the test the room's render makes before it draws R.wet, on this frame's matrices (O-3)
@@ -2540,10 +2597,10 @@ function frame(now) {
 
   // light: the strips buzz on, the lamps warm up, the sign, then the tube opens
   // (reduced motion: the room settles and holds still, no hum, stutter or dying tube)
-  const hum = steady ? 1 : 1 + 0.03 * Math.sin(now * 0.004) + (hash(Math.floor(now / 90)) > 0.988 ? -0.3 : 0);
+  const hum = steady ? 1 : 1 + 0.03 * Math.sin(now * 0.004) + (blip(now, 90, 0, 0.988) ? -0.3 : 0);
   const neonK = flicker(t, INTRO.neon, 3) * S.neon * hum;
   const warm = smooth(0, 1, env(t, INTRO.lamps)), lampK = warm * S.lamps;
-  const signK = flicker(t, INTRO.sign, 11) * hum * (!steady && hash(Math.floor(now / 140) + 5) > 0.994 ? 0.25 : 1); // an old sign: a rare stutter (never in a capture)
+  const signK = flicker(t, INTRO.sign, 11) * hum * (!steady && blip(now, 140, 5, 0.994) ? 0.25 : 1); // an old sign: a rare stutter (never in a capture)
   const tk = LIGHTS != null ? lv('tv') : reduced ? 1 : env(t, INTRO.tv), open = smooth(0.18, 0.62, tk); // (a light capture: the TV with its bank)
   if (R.probe.due && now > R.probe.due) { R.probe.due = 0; updateProbe(); } // (its capture lights the room fully: before this frame's levels)
   lightRoom(neonK, warm, signK, open, far, now);
@@ -2582,7 +2639,7 @@ function frame(now) {
   finishPass.uniforms.uTone.value = TONES[S.tone] ?? 1; finishPass.uniforms.toneMappingExposure.value = renderer.toneMappingExposure = S.exposure;
   bloomPass.strength = R.paintOn ? 0 : S.bloom * (R.lookOn ? 0.25 : 1) * far * far; // the paintings carry their own glow
   bloomPass.threshold = R.lookOn ? 1.6 : 0.9; // in the look only real emitters glow: tubes, bulbs, screens
-  R.dust.mat.opacity = 0.55 * Math.max(S.dust, 0.5) * Math.pow(far, 1.2) * settle; // up to 0.5 the slider sets how many specks, above it how bright
+  R.dust.mat.opacity = 0.55 * Math.max(S.dust, 0.5) * Math.pow(far, 1.2) * settle * (LOOK_ON ? 0.5 : 1); // up to 0.5 the slider sets how many specks, above it how bright; under a look half as bright (a speck can't be smaller than a pixel of the look's small picture: at full strength they read as stars)
   R.dust.pts.visible = S.dust > 0; R.dust.pts.geometry.setDrawRange(0, Math.round(R.dust.seed.length * Math.min(1, S.dust / 0.5)));
   const p = R.dust.pts.geometry.attributes.position, b = R.dust.base, sd = R.dust.seed;
   for (let i = 0; i < sd.length; i++) {
@@ -2596,9 +2653,13 @@ function frame(now) {
   const rb = $('readB');
   rb.style.display = S.readB ? '' : 'none';
   if (S.readB) {
-    const readIn = reduced ? 1 : smooth(0, 1, env(t, INTRO.read)), leave = 1 - smooth(0, 0.22, e);
+    // its own fade, never a snap (2026-11-20): a wheel turned early skips the intro's clock (readScroll), and the line
+    // then comes in over 0.3 s where it used to land in one frame; under the loading screen it waits for the hand-off,
+    // in reduced motion too (there it stood over the loading pictures)
+    const want = window.lightsOn && !R.handoffAt ? 0 : reduced ? 1 : smooth(0, 1, env(t, INTRO.read));
+    const readIn = R.readIn = Math.min(want, (R.readIn || 0) + Math.min(34, now - (R.readAt ?? now)) / 300), leave = 1 - smooth(0, 0.22, e); R.readAt = now; // (34 ms: a pause between two frames is no reason to jump)
     rb.style.opacity = (readIn * leave).toFixed(3);
-    rb.style.transform = `translateY(${(1 - readIn) * 14 - (1 - leave) * 24}px)`;
+    rb.style.transform = `translateY(${(reduced ? 0 : (1 - readIn) * 14) - (1 - leave) * 24}px)`;
   }
   if (!walkDrag) { $('walkIn').value = progress; $('walkOut').textContent = Math.round(progress * 100) + ' %'; }
 
@@ -2614,7 +2675,10 @@ function frame(now) {
   if (R.filmShown) placeFilm(R.filmShown, tw);
   if (R.paintOn && R.shotsStale) { R.shotsStale = false; placeShots(); }
   if (LOOK_ON) lookFrame(now);
-  if ((!locked || document.body.classList.contains('bench-on')) && !R.filmShown) {
+  // at the lock the room stops drawing, after one last frame at the lock itself (2026-11-20: a fast wheel's last frame
+  // was up to 3 % of the walk short of it, a smaller, softer TV under the real one as that fades in)
+  const lockFrame = locked && !R.lockDrawn; R.lockDrawn = locked;
+  if ((!locked || lockFrame || document.body.classList.contains('bench-on')) && !R.filmShown) {
     // the floor's reflection first, at the top level (O-3). A frame that redraws the static shadows keeps it nested:
     // the room's render draws them first
     R.wetFirst = R.wet.visible && R.wet.material.visible && !renderer.shadowMap.needsUpdate && wetInView();
@@ -3311,6 +3375,7 @@ if (LO) INTRO.neon = INTRO.lamps = INTRO.sign = INTRO.tv = [-2, -1];
 t0 = performance.now(); frame(t0); // one first frame (dark without the loading screen): the glow, the finish and the floor's mirror compile before the clock starts
 if (LO) { await LO.ready(); R.handoffAt = performance.now(); t0 = R.handoffAt - INTRO.read[0] + 400; LO.handoff(); lenis?.start(); }
 else t0 = performance.now();
+R.liveAt = R.handoffAt || t0; // the live room's clock starts (liveClock)
 if (EMBED) { // the page drives the walk from here on (src/components/HomeOpening.astro)
   window.__garage = { to: (p) => { embed.to = clamp(p) * L.walkPx; }, jump: (p) => jumpTo(clamp(p) * L.walkPx), pause: (b) => { embed.paused = !!b; }, get walkPx() { return L.walkPx; } };
   embedSay('ready', { walkPx: L.walkPx });

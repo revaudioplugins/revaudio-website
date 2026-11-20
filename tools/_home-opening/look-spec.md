@@ -39,9 +39,17 @@ everywhere.
 The room is shown through a VHS look (room.html `LOOKS.vhs`, `LOOK_DEFAULT`), Dan's pick on the comparison page over
 film and 16 mm, for its look and its speed. It draws the room at a lower resolution, without the wet floor's reflection or
 the bloom, then lays a soft halation, a tape's colour bleed, a grade, a vignette, still scanlines and a fine grain over
-it. At the door the far REVAUDIO neon blurs (Dan saw it in the stills he picked); it reads from the middle of the walk.
-The look eases off to today's finish before the TV, so the hand-off to the page is unchanged. So under the look, the
+it. The look eases off to today's finish before the TV, so the hand-off to the page is unchanged. So under the look, the
 "long soft reflection" above is left out; the room itself keeps it (`?look=today`).
+
+Lighter (Dan, 2026-11-18, on the first VHS build: "way too much", "I can't read the RevAudio neon sign", the move to
+the page "too far apart"): the room is drawn at 0.55 per side with 4x MSAA, so the thin neon tubes stay whole and the
+REVAUDIO sign reads from the door; the bleed, scanlines, vignette and grade are a notch from neutral. The sign is x1.4
+(`signScale` 1.61) at Dan's own spot on the end wall. The look eases off from 60 % of the walk and the picture is sharp
+by 88 %, before the TV fills the screen (`LOOKS.vhs` `off`, `sharp`). The sign is lit from the loading screen's first
+frame (its own picture, `lights/README.md`). Dan, 2026-11-20 (in Hebrew): the sign reads now; said of the build where
+a clamp still held the sign 0.62 m nearer the TV, before it went back to his spot. `?look=vhs-more` is one notch
+stronger, for comparing.
 
 ## Materials
 
